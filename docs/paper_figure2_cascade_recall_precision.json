@@ -1,0 +1,182 @@
+{
+  "artifact_kind": "paper_figure2_cascade_recall_precision",
+  "caption": "Figure 2. Cascade decoding separates a source-aware recall ranker from a precision reranker: the recall stage retains more oracle-best edits (k64 retained fraction 0.80328), then precision reranking selects a top-1 candidate under hard constraints. The head256 cascade has a positive but non-significant TE trend versus sequential precision (delta +0.00092, paired p 0.09545); hard-negative v2 direct top64 is the current stronger default versus sequential (delta +0.00112, paired p 0.02049).",
+  "claim_policy": "Figure 2 may illustrate source-aware recall followed by precision reranking. It must not claim that cascade decoding significantly beats sequential or hard-negative v2 decoding unless the paired TE comparison is significant.",
+  "diagnostics": {
+    "cascade10k_vs_hardneg_delta": -0.0004754849241290026,
+    "cascade10k_vs_hardneg_p": 0.3663168415792104,
+    "cascade_recall_k64": 0.8032786885245902,
+    "cascade_regret": 0.02788468134413156,
+    "cascade_vs_seq_delta": 0.0009174015444026294,
+    "cascade_vs_seq_p": 0.09545227386306847,
+    "cascade_vs_seq_run_mean": 0.004822417400373527,
+    "hardneg_vs_cascade_delta": 0.00020557522122339886,
+    "hardneg_vs_cascade_p": 0.7526236881559221,
+    "hardneg_vs_seq_delta": 0.0011229767656260284,
+    "hardneg_vs_seq_p": 0.02048975512243878,
+    "mean_cascade_gain": 0.0009174015444026293,
+    "n_candidates": 54222,
+    "n_records": 64,
+    "precision_full_regret": 0.02797650422521014,
+    "previous_ranker_recall": 0.4262295081967213,
+    "sourceaware_recall": 0.7540983606557377,
+    "sourceaware_regret": 0.030880631175109474,
+    "win_fraction": 0.546875
+  },
+  "edges": [
+    {
+      "label": "score broad candidate pool",
+      "source": "A",
+      "target": "B"
+    },
+    {
+      "label": "retain high-recall top-k",
+      "source": "B",
+      "target": "C"
+    },
+    {
+      "label": "rerank for top-1 TE",
+      "source": "C",
+      "target": "D"
+    },
+    {
+      "label": "audit cascade output",
+      "source": "D",
+      "target": "E"
+    },
+    {
+      "label": "direct precision baseline",
+      "source": "A",
+      "target": "F"
+    },
+    {
+      "label": "mine cascade wins/losses",
+      "source": "E",
+      "target": "G"
+    },
+    {
+      "label": "compare against default",
+      "source": "F",
+      "target": "G"
+    },
+    {
+      "label": "train next teacher",
+      "source": "G",
+      "target": "H"
+    }
+  ],
+  "mermaid": "flowchart LR\n    A[\"Full legal candidate pool<br/>54222 candidates over 64 diagnostic records\"]\n    B[\"Source-aware recall ranker<br/>oracle-best top-k recall=0.75410; regret=0.03088\"]\n    C[\"Recall top-k set<br/>k=64 retains oracle-best fraction=0.80328\"]\n    D[\"Precision reranker<br/>full-pool regret=0.02798; cascade regret=0.02788\"]\n    E[\"Cascade output audit<br/>vs sequential delta=+0.00092; p=0.09545\"]\n    F[\"Hard-negative v2 direct top64<br/>vs sequential delta=+0.00112; p=0.02049\"]\n    G[\"Cascade win/loss mining<br/>win_fraction=0.54688; mean_gain=+0.00092\"]\n    H[\"Next training target<br/>Improve recall quality or precision ranker; do not simply claim cascade superiority.\"]\n    A -->|score broad candidate pool| B\n    B -->|retain high-recall top-k| C\n    C -->|rerank for top-1 TE| D\n    D -->|audit cascade output| E\n    A -->|direct precision baseline| F\n    E -->|mine cascade wins/losses| G\n    F -->|compare against default| G\n    G -->|train next teacher| H\n    classDef recall fill:#e6f7ff,stroke:#1677ff,color:#262626\n    classDef precision fill:#f9f0ff,stroke:#722ed1,color:#262626\n    classDef caution fill:#fff1f0,stroke:#cf1322,color:#262626\n    class B,C recall\n    class D,F precision\n    class E,H caution",
+  "nodes": [
+    {
+      "detail": "54222 candidates over 64 diagnostic records",
+      "id": "A",
+      "label": "Full legal candidate pool",
+      "role": "input"
+    },
+    {
+      "detail": "oracle-best top-k recall=0.75410; regret=0.03088",
+      "id": "B",
+      "label": "Source-aware recall ranker",
+      "role": "recall"
+    },
+    {
+      "detail": "k=64 retains oracle-best fraction=0.80328",
+      "id": "C",
+      "label": "Recall top-k set",
+      "role": "candidate_filter"
+    },
+    {
+      "detail": "full-pool regret=0.02798; cascade regret=0.02788",
+      "id": "D",
+      "label": "Precision reranker",
+      "role": "precision"
+    },
+    {
+      "detail": "vs sequential delta=+0.00092; p=0.09545",
+      "id": "E",
+      "label": "Cascade output audit",
+      "role": "trend_result"
+    },
+    {
+      "detail": "vs sequential delta=+0.00112; p=0.02049",
+      "id": "F",
+      "label": "Hard-negative v2 direct top64",
+      "role": "current_default"
+    },
+    {
+      "detail": "win_fraction=0.54688; mean_gain=+0.00092",
+      "id": "G",
+      "label": "Cascade win/loss mining",
+      "role": "error_analysis"
+    },
+    {
+      "detail": "Improve recall quality or precision ranker; do not simply claim cascade superiority.",
+      "id": "H",
+      "label": "Next training target",
+      "role": "future_work"
+    }
+  ],
+  "project_root": "/Users/bytedance/Documents/research/mrna_editflow",
+  "source_audit": [
+    {
+      "exists": true,
+      "n_bytes": 24190,
+      "path": "benchmark/proposal_ranking_t5_ranker_full1k_final_head64.json",
+      "sha256": "c15f1724f746c85a0597543e72f73900989afc4a6ea68f9a923af7e419686d85"
+    },
+    {
+      "exists": true,
+      "n_bytes": 24093,
+      "path": "benchmark/proposal_ranking_t5_sourceaware_hybrid_teacher_head64.json",
+      "sha256": "170570fde87026521c4a4dca961973e8d8c65156f16b5b53036c141b841c4306"
+    },
+    {
+      "exists": true,
+      "n_bytes": 41139,
+      "path": "benchmark/cascade_sourceaware_to_sequential_head64_k64.json",
+      "sha256": "bd4976cdd92ac9ee23d28c9093461871a6857e69c3e1ca6718bade0a36bfd268"
+    },
+    {
+      "exists": true,
+      "n_bytes": 9334,
+      "path": "benchmark/compare_t5_head256_cascade_vs_seq_top64.json",
+      "sha256": "a5de16372d108dbfa0e5cf428d64a2612381bd092ca0baf2a21dac347975fd83"
+    },
+    {
+      "exists": true,
+      "n_bytes": 16723,
+      "path": "benchmark/compare_t5_head256_hardneg_v2_top64.json",
+      "sha256": "735170d1c7b345fc4e0039f58d8874b37f1402968cf4d3838160f43e53e2a1b2"
+    },
+    {
+      "exists": true,
+      "n_bytes": 9390,
+      "path": "benchmark/compare_t5_head256_hardneg_v2_vs_cascade_top64.json",
+      "sha256": "021b789f5d7a7d741e188de4cd345d7413e1ba93304538ba0278419f4e1d247c"
+    },
+    {
+      "exists": true,
+      "n_bytes": 6192,
+      "path": "benchmark/compare_cascade_10krecall_vs_hardneg_v2.json",
+      "sha256": "7706ab73e327b25c907be1847c416792090bfd616a29c41595244e43731807f9"
+    },
+    {
+      "exists": true,
+      "n_bytes": 36880,
+      "path": "benchmark/cascade_error_analysis_head256_top64.json",
+      "sha256": "ec221ece3b8695d8e5b99325804849f40d416005ffd4e3eb8001f534914334a9"
+    }
+  ],
+  "summary": {
+    "cascade_te_significant_vs_sequential": false,
+    "hard_constraints_exact_1": true,
+    "hardneg_v2_direct_default": true,
+    "hardneg_v2_significant_vs_sequential": true,
+    "n_edges": 8,
+    "n_nodes": 8,
+    "ready_for_cascade_figure_draft": true,
+    "ready_for_cascade_positive_claim": false,
+    "recall_precision_roles_visible": true,
+    "source_files_ready": true
+  }
+}

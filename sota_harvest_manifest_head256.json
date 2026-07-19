@@ -1,0 +1,136 @@
+{
+  "artifact_kind": "sota_harvest_manifest",
+  "generated_at_utc": "2026-07-14T03:47:56.699962+00:00",
+  "local_root": "/Users/bytedance/Documents/research/mrna_editflow",
+  "missing_remote": [
+    "benchmark/region_adapter_vs_hardneg_v2_top64_head256.json",
+    "benchmark/region_adapter_vs_hardneg_v2_top64_head256.md",
+    "benchmark/region_adapter_vs_mo_grpo_top64_head256.json",
+    "benchmark/region_adapter_vs_mo_grpo_top64_head256.md",
+    "benchmark/region_adapter_vs_mo_scalar_top64_head256.json",
+    "benchmark/region_adapter_vs_mo_scalar_top64_head256.md",
+    "benchmark/region_adapter_vs_mo_pareto_top64_head256.json",
+    "benchmark/region_adapter_vs_mo_pareto_top64_head256.md",
+    "benchmark/region_adapter_vs_mo_te_only_top64_head256.json",
+    "benchmark/region_adapter_vs_mo_te_only_top64_head256.md",
+    "benchmark/region_adapter_decision_report_head256.json",
+    "benchmark/region_adapter_decision_report_head256.md",
+    "benchmark/region_adapter_result_audit_head256.json",
+    "benchmark/region_adapter_result_audit_head256.md",
+    "benchmark/protein_conditioned_cds_gc_sweep_head256.jsonl",
+    "benchmark/protein_conditioned_cds_gc_sweep_head256.summary.json",
+    "benchmark/protein_conditioned_cds_gc_sweep_head256.md",
+    "benchmark/protein_conditioned_cds_gc_sweep_head256.audit.json",
+    "benchmark/protein_conditioned_cds_gc_sweep_head256.audit.md"
+  ],
+  "n_missing_remote": 19,
+  "n_present_remote": 17,
+  "present": [
+    {
+      "exists_local": true,
+      "path": "benchmark/multiseed_t5_public_head256_mo_te_only_top64/multiseed_summary.json",
+      "sha256": "9562b67198f437a9bfccec627fb0e7e33f889d43b2d1798b62d6fefac0c0da67",
+      "size_bytes": 14830
+    },
+    {
+      "exists_local": true,
+      "path": "benchmark/multiseed_t5_public_head256_mo_scalar_top64/multiseed_summary.json",
+      "sha256": "acb36743de8182a20cd3ea89e82ad85a10c0c35f2c50c778d07685979528e8a8",
+      "size_bytes": 14802
+    },
+    {
+      "exists_local": true,
+      "path": "benchmark/multiseed_t5_public_head256_mo_pareto_top64/multiseed_summary.json",
+      "sha256": "629df09bb9e854e63694d32367de9ba4a500e0f934ac9fd8f4a59649e6f221c3",
+      "size_bytes": 14807
+    },
+    {
+      "exists_local": true,
+      "path": "benchmark/multiseed_t5_public_head256_mo_grpo_top64/multiseed_summary.json",
+      "sha256": "018e419c7293751ded1a4b1e274d0ba421067ae191f168c1e245b4f3ac4f3b99",
+      "size_bytes": 14725
+    },
+    {
+      "exists_local": true,
+      "path": "benchmark/multiseed_t5_public_head256_hardneg_v2_top64/multiseed_summary.json",
+      "sha256": "7c9f3f6c1446c3b94136049fbe7df2b24d30a6d4841514595733ff07e0845a91",
+      "size_bytes": 14864
+    },
+    {
+      "exists_local": true,
+      "path": "benchmark/multiseed_t5_public_head1024_mo_te_only_top64/multiseed_summary.json",
+      "sha256": "48d9fb8c533e2b3d14976e2da0cff673f6d740c96da3edb35be5e896ff6eca3d",
+      "size_bytes": 14914
+    },
+    {
+      "exists_local": true,
+      "path": "benchmark/multiseed_t5_public_head1024_mo_scalar_top64/multiseed_summary.json",
+      "sha256": "4a16d84c7f4f19d24ec929847d429a54673499b61b3ae2d25e1a9771c6131563",
+      "size_bytes": 14890
+    },
+    {
+      "exists_local": true,
+      "path": "benchmark/multiseed_t5_public_head1024_mo_pareto_top64/multiseed_summary.json",
+      "sha256": "2e421dad80576c7e6d612b264c629e915f72a819ad57cf7a9156a0f6264e771c",
+      "size_bytes": 14894
+    },
+    {
+      "exists_local": true,
+      "path": "benchmark/multiseed_t5_public_head1024_mo_grpo_top64/multiseed_summary.json",
+      "sha256": "116b136d0182b5da69ab1a548864109508b27de1839b388a152ee840bcb1bc3c",
+      "size_bytes": 14825
+    },
+    {
+      "exists_local": true,
+      "path": "benchmark/multiseed_t5_public_head1024_hardneg_v2_top64/multiseed_summary.json",
+      "sha256": "d6a6895dce7ff29f3014282524022d150e7b7e53bcab3f75da2da3e5b61015d4",
+      "size_bytes": 14943
+    },
+    {
+      "exists_local": true,
+      "path": "benchmark/frozen_backbone_protocol_head256/query.jsonl",
+      "sha256": "0f041ddb77c8f33961df0c89a20a8fad59960c88a189fdf9d8c70e2bdcb1a6ac",
+      "size_bytes": 1641
+    },
+    {
+      "exists_local": true,
+      "path": "benchmark/frozen_backbone_protocol_head256/reference.jsonl",
+      "sha256": "6ea3ffa037f9259100202e2f5cddbbbc23f2aea2bddf849c4d1d383429770089",
+      "size_bytes": 2619
+    },
+    {
+      "exists_local": true,
+      "path": "benchmark/frozen_backbone_protocol_head256/summary.json",
+      "sha256": "dbfd16a9cfca4be485fad91c5aabdb69935195e9a158b13878a517db208d7dbc",
+      "size_bytes": 3786
+    },
+    {
+      "exists_local": true,
+      "path": "benchmark/frozen_backbone_protocol_head256/table.md",
+      "sha256": "eae1b6a129af6f804c71a3ee1dac5ccdab208d3e6805aee395dc5daa00ea77df",
+      "size_bytes": 1332
+    },
+    {
+      "exists_local": true,
+      "path": "benchmark/frozen_backbone_protocol_head256/leakage.json",
+      "sha256": "65a65a23af0a1a188101ab35dafd39e531457abddaef7fd72252ff01e4f00136",
+      "size_bytes": 1100
+    },
+    {
+      "exists_local": true,
+      "path": "docs/sota_readiness_audit_head256.json",
+      "sha256": "51a26d70a9d76c7185f548a69b0f3befbe9a39e081a2f477eee9c450230a535b",
+      "size_bytes": 41730
+    },
+    {
+      "exists_local": true,
+      "path": "docs/sota_readiness_audit_head256.md",
+      "sha256": "a4fe21d1bd9fc4b122e459c46883120f663dc723cd25ce9a8a246b12b83c19fb",
+      "size_bytes": 2261
+    }
+  ],
+  "remote_host": "cunyuliu@36.137.135.49",
+  "remote_root": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow",
+  "slice": "head256",
+  "top_k": 64
+}

@@ -1,0 +1,284 @@
+{
+  "artifact_kind": "paper_figure3_oracle_gap_closure",
+  "caption": "Figure 3. Offline oracle-gap closure on the matched head64 proposal pool. The source-to-oracle gap is defined as mean_oracle_top_TE - mean_source_TE; each ranker closes (mean_model_top_TE - mean_source_TE) / gap. The best current point is Cascade hard-negative v2 with closure fraction 0.21671, so most of the proxy oracle gap remains open. Negative closure for the Stage A base is retained rather than hidden.",
+  "chart_spec": {
+    "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+    "data": {
+      "values": [
+        {
+          "closure_fraction": -0.18175987331259125,
+          "label": "Stage A base",
+          "mean_model_top_te": 0.7895265141590562,
+          "oracle_best_in_model_top_k_fraction": 0.03278688524590164,
+          "order": 0
+        },
+        {
+          "closure_fraction": 0.07452941470733146,
+          "label": "Previous TE-ranker",
+          "mean_model_top_te": 0.7977926880282098,
+          "oracle_best_in_model_top_k_fraction": 0.4262295081967213,
+          "order": 1
+        },
+        {
+          "closure_fraction": 0.004062719090048743,
+          "label": "UTR-teacher ranker",
+          "mean_model_top_te": 0.7955199049460238,
+          "oracle_best_in_model_top_k_fraction": 0.7049180327868853,
+          "order": 2
+        },
+        {
+          "closure_fraction": 0.021472407892380016,
+          "label": "Direct hybrid teacher",
+          "mean_model_top_te": 0.7960814247651304,
+          "oracle_best_in_model_top_k_fraction": 0.47540983606557374,
+          "order": 3
+        },
+        {
+          "closure_fraction": 0.1326001046358848,
+          "label": "Full-then-UTR sequential",
+          "mean_model_top_te": 0.7996656590889972,
+          "oracle_best_in_model_top_k_fraction": 0.4098360655737705,
+          "order": 4
+        },
+        {
+          "closure_fraction": 0.04255885458589129,
+          "label": "Source-aware hybrid",
+          "mean_model_top_te": 0.7967615321390978,
+          "oracle_best_in_model_top_k_fraction": 0.7540983606557377,
+          "order": 5
+        },
+        {
+          "closure_fraction": 0.21671195185787126,
+          "label": "Cascade hard-negative v2",
+          "mean_model_top_te": 0.8023785432636124,
+          "oracle_best_in_model_top_k_fraction": 0.7377049180327869,
+          "order": 6
+        }
+      ]
+    },
+    "description": "Offline oracle-gap closure over matched proposal-ranking diagnostics.",
+    "encoding": {
+      "tooltip": [
+        {
+          "field": "label",
+          "type": "nominal"
+        },
+        {
+          "field": "closure_fraction",
+          "type": "quantitative"
+        },
+        {
+          "field": "mean_model_top_te",
+          "type": "quantitative"
+        },
+        {
+          "field": "oracle_best_in_model_top_k_fraction",
+          "type": "quantitative"
+        }
+      ],
+      "x": {
+        "field": "label",
+        "sort": {
+          "field": "order"
+        },
+        "type": "nominal"
+      },
+      "y": {
+        "field": "closure_fraction",
+        "title": "Oracle-gap closure fraction",
+        "type": "quantitative"
+      }
+    },
+    "mark": {
+      "point": true,
+      "type": "line"
+    }
+  },
+  "claim_policy": "Figure 3 may show offline candidate-pool oracle-gap closure for matched proposal-ranking diagnostics. The oracle is a proxy upper bound within the generated candidate pool; it is not wet-lab validation, an external SOTA result, or proof of unconstrained de novo design.",
+  "points": [
+    {
+      "closure_fraction": -0.18175987331259125,
+      "delta_vs_source": -0.005862354711916096,
+      "label": "Stage A base",
+      "mean_model_regret": 0.038115649155151234,
+      "mean_model_top_te": 0.7895265141590562,
+      "mean_oracle_top_te": 0.8276421633142073,
+      "mean_source_te": 0.7953888688709723,
+      "n_candidates": 54222,
+      "n_records": 64,
+      "oracle_best_in_model_top_k_fraction": 0.03278688524590164,
+      "oracle_gap": 0.03225329444323499,
+      "order": 0,
+      "residual_oracle_gap": 0.03811564915515109,
+      "run_id": "stage_a_base",
+      "source": "benchmark/proposal_ranking_t5_base_full1k_head64.json"
+    },
+    {
+      "closure_fraction": 0.07452941470733146,
+      "delta_vs_source": 0.00240381915723753,
+      "label": "Previous TE-ranker",
+      "mean_model_regret": 0.029849475285997552,
+      "mean_model_top_te": 0.7977926880282098,
+      "mean_oracle_top_te": 0.8276421633142073,
+      "mean_source_te": 0.7953888688709723,
+      "n_candidates": 54222,
+      "n_records": 64,
+      "oracle_best_in_model_top_k_fraction": 0.4262295081967213,
+      "oracle_gap": 0.03225329444323499,
+      "order": 1,
+      "residual_oracle_gap": 0.029849475285997462,
+      "run_id": "previous_te_ranker",
+      "source": "benchmark/proposal_ranking_t5_ranker_full1k_final_head64.json"
+    },
+    {
+      "closure_fraction": 0.004062719090048743,
+      "delta_vs_source": 0.00013103607505149384,
+      "label": "UTR-teacher ranker",
+      "mean_model_regret": 0.03212225836818355,
+      "mean_model_top_te": 0.7955199049460238,
+      "mean_oracle_top_te": 0.8276421633142073,
+      "mean_source_te": 0.7953888688709723,
+      "n_candidates": 54222,
+      "n_records": 64,
+      "oracle_best_in_model_top_k_fraction": 0.7049180327868853,
+      "oracle_gap": 0.03225329444323499,
+      "order": 2,
+      "residual_oracle_gap": 0.0321222583681835,
+      "run_id": "utr_teacher",
+      "source": "benchmark/proposal_ranking_t5_utr_teacher_head64.json"
+    },
+    {
+      "closure_fraction": 0.021472407892380016,
+      "delta_vs_source": 0.0006925558941581755,
+      "label": "Direct hybrid teacher",
+      "mean_model_regret": 0.03156073854907687,
+      "mean_model_top_te": 0.7960814247651304,
+      "mean_oracle_top_te": 0.8276421633142073,
+      "mean_source_te": 0.7953888688709723,
+      "n_candidates": 54222,
+      "n_records": 64,
+      "oracle_best_in_model_top_k_fraction": 0.47540983606557374,
+      "oracle_gap": 0.03225329444323499,
+      "order": 3,
+      "residual_oracle_gap": 0.03156073854907682,
+      "run_id": "direct_hybrid",
+      "source": "benchmark/proposal_ranking_t5_hybrid_teacher_head64.json"
+    },
+    {
+      "closure_fraction": 0.1326001046358848,
+      "delta_vs_source": 0.004276790218024962,
+      "label": "Full-then-UTR sequential",
+      "mean_model_regret": 0.02797650422521014,
+      "mean_model_top_te": 0.7996656590889972,
+      "mean_oracle_top_te": 0.8276421633142073,
+      "mean_source_te": 0.7953888688709723,
+      "n_candidates": 54222,
+      "n_records": 64,
+      "oracle_best_in_model_top_k_fraction": 0.4098360655737705,
+      "oracle_gap": 0.03225329444323499,
+      "order": 4,
+      "residual_oracle_gap": 0.02797650422521003,
+      "run_id": "full_then_utr",
+      "source": "benchmark/proposal_ranking_t5_full1k_then_utr_teacher_head64.json"
+    },
+    {
+      "closure_fraction": 0.04255885458589129,
+      "delta_vs_source": 0.0013726632681255735,
+      "label": "Source-aware hybrid",
+      "mean_model_regret": 0.030880631175109474,
+      "mean_model_top_te": 0.7967615321390978,
+      "mean_oracle_top_te": 0.8276421633142073,
+      "mean_source_te": 0.7953888688709723,
+      "n_candidates": 54222,
+      "n_records": 64,
+      "oracle_best_in_model_top_k_fraction": 0.7540983606557377,
+      "oracle_gap": 0.03225329444323499,
+      "order": 5,
+      "residual_oracle_gap": 0.03088063117510942,
+      "run_id": "source_aware_hybrid",
+      "source": "benchmark/proposal_ranking_t5_sourceaware_hybrid_teacher_head64.json"
+    },
+    {
+      "closure_fraction": 0.21671195185787126,
+      "delta_vs_source": 0.006989674392640088,
+      "label": "Cascade hard-negative v2",
+      "mean_model_regret": 0.025263620050594907,
+      "mean_model_top_te": 0.8023785432636124,
+      "mean_oracle_top_te": 0.8276421633142073,
+      "mean_source_te": 0.7953888688709723,
+      "n_candidates": 54222,
+      "n_records": 64,
+      "oracle_best_in_model_top_k_fraction": 0.7377049180327869,
+      "oracle_gap": 0.03225329444323499,
+      "order": 6,
+      "residual_oracle_gap": 0.025263620050594904,
+      "run_id": "cascade_hardneg_v2",
+      "source": "benchmark/proposal_ranking_t5_cascade_hardneg_teacher_head64.json"
+    }
+  ],
+  "project_root": "/Users/bytedance/Documents/research/mrna_editflow",
+  "source_audit": [
+    {
+      "exists": true,
+      "id": "stage_a_base",
+      "n_bytes": 24304,
+      "path": "benchmark/proposal_ranking_t5_base_full1k_head64.json",
+      "sha256": "5e4b1f2dc3d8ff0dedd5de290136908d5e669e6ce442c2cc202b6dd7f623317f"
+    },
+    {
+      "exists": true,
+      "id": "previous_te_ranker",
+      "n_bytes": 24190,
+      "path": "benchmark/proposal_ranking_t5_ranker_full1k_final_head64.json",
+      "sha256": "c15f1724f746c85a0597543e72f73900989afc4a6ea68f9a923af7e419686d85"
+    },
+    {
+      "exists": true,
+      "id": "utr_teacher",
+      "n_bytes": 24044,
+      "path": "benchmark/proposal_ranking_t5_utr_teacher_head64.json",
+      "sha256": "f9cedd1754fcad814796a1adc5eb7f32046466c02ad62f480b2b2c46bad7125b"
+    },
+    {
+      "exists": true,
+      "id": "direct_hybrid",
+      "n_bytes": 24189,
+      "path": "benchmark/proposal_ranking_t5_hybrid_teacher_head64.json",
+      "sha256": "d0ee10bf1e089611afbb0ea376652a6c7dcac606c3ee3f8c9c83302e636d5bbc"
+    },
+    {
+      "exists": true,
+      "id": "full_then_utr",
+      "n_bytes": 24155,
+      "path": "benchmark/proposal_ranking_t5_full1k_then_utr_teacher_head64.json",
+      "sha256": "a5abd917f53704235beba700a308993f0438c683c2fc4e4518c57632284fa2ba"
+    },
+    {
+      "exists": true,
+      "id": "source_aware_hybrid",
+      "n_bytes": 24093,
+      "path": "benchmark/proposal_ranking_t5_sourceaware_hybrid_teacher_head64.json",
+      "sha256": "170570fde87026521c4a4dca961973e8d8c65156f16b5b53036c141b841c4306"
+    },
+    {
+      "exists": true,
+      "id": "cascade_hardneg_v2",
+      "n_bytes": 23914,
+      "path": "benchmark/proposal_ranking_t5_cascade_hardneg_teacher_head64.json",
+      "sha256": "db3eb0e1860fda13a8cbd521429ac86e0378dfb5d9c01e89c246ba937ac14da0"
+    }
+  ],
+  "summary": {
+    "best_closure_fraction": 0.21671195185787126,
+    "best_label": "Cascade hard-negative v2",
+    "best_run_id": "cascade_hardneg_v2",
+    "n_points": 7,
+    "negative_closure_present": true,
+    "oracle_gap_fully_closed": false,
+    "ready_for_oracle_gap_figure_draft": true,
+    "ready_for_oracle_sota_claim": false,
+    "ready_for_wet_lab_claim": false,
+    "source_files_ready": true,
+    "source_oracle_consistent": true
+  }
+}

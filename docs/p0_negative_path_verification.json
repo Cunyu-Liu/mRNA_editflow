@@ -1,0 +1,54 @@
+{
+  "all_expected_failures_observed": true,
+  "artifact_kind": "p0_negative_path_verification",
+  "results": [
+    {
+      "expected_nonzero": true,
+      "name": "paper_training_without_manifest",
+      "passed": true,
+      "returncode": 1,
+      "stderr_tail": "    require_paper_cli_inputs(\n  File \"/home/cunyuliu/mrna_editflow_goal/mrna_editflow/eval/artifact_contract.py\", line 66, in require_paper_cli_inputs\n    raise RunModeError(\"paper mode requires --split-manifest\")\nmrna_editflow.eval.artifact_contract.RunModeError: paper mode requires --split-manifest",
+      "stdout_tail": ""
+    },
+    {
+      "expected_nonzero": true,
+      "name": "paper_training_with_test_role",
+      "passed": true,
+      "returncode": 1,
+      "stderr_tail": "    require_paper_cli_inputs(\n  File \"/home/cunyuliu/mrna_editflow_goal/mrna_editflow/eval/artifact_contract.py\", line 68, in require_paper_cli_inputs\n    raise SplitRoleError(\nmrna_editflow.data.split_contract.SplitRoleError: paper mode requires --split-role in ('train',), got 'test'",
+      "stdout_tail": ""
+    },
+    {
+      "expected_nonzero": true,
+      "name": "paper_evaluation_with_train_role",
+      "passed": true,
+      "returncode": 1,
+      "stderr_tail": "    require_paper_cli_inputs(\n  File \"/home/cunyuliu/mrna_editflow_goal/mrna_editflow/eval/artifact_contract.py\", line 68, in require_paper_cli_inputs\n    raise SplitRoleError(\nmrna_editflow.data.split_contract.SplitRoleError: paper mode requires --split-role in ('test',), got 'train'",
+      "stdout_tail": ""
+    },
+    {
+      "expected_nonzero": true,
+      "name": "paper_evaluation_with_heuristic_oracle",
+      "passed": true,
+      "returncode": 1,
+      "stderr_tail": "    oracle_metadata = load_and_verify_oracle_manifest(oracle_manifest, run_mode=run_mode)\n  File \"/home/cunyuliu/mrna_editflow_goal/mrna_editflow/eval/artifact_contract.py\", line 239, in load_and_verify_oracle_manifest\n    raise OracleContractError(\"paper mode forbids heuristic or non-independent oracle contracts\")\nmrna_editflow.eval.artifact_contract.OracleContractError: paper mode forbids heuristic or non-independent oracle contracts",
+      "stdout_tail": ""
+    },
+    {
+      "expected_nonzero": true,
+      "name": "paper_builder_with_development_artifact",
+      "passed": true,
+      "returncode": 2,
+      "stderr_tail": "",
+      "stdout_tail": "{\"json_path\": \"/tmp/p0_scientific_validity_negative/paper_builder_rejection.json\", \"markdown_path\": \"/tmp/p0_scientific_validity_negative/paper_builder_rejection.md\"}"
+    },
+    {
+      "expected_nonzero": true,
+      "name": "resume_after_config_digest_change",
+      "passed": true,
+      "returncode": 1,
+      "stderr_tail": "    completed = _load_completed_seed(seed_dir, resume_fingerprint)\n  File \"/home/cunyuliu/mrna_editflow_goal/mrna_editflow/eval/run_multiseed_benchmark.py\", line 251, in _load_completed_seed\n    raise ValueError(\nValueError: refusing stale resume artifact: checkpoint/config/split/oracle fingerprint changed",
+      "stdout_tail": ""
+    }
+  ]
+}

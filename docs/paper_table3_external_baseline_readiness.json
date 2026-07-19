@@ -1,0 +1,349 @@
+{
+  "artifact_kind": "paper_table3_external_baseline_readiness",
+  "claim_policy": "Table 3 is an external-baseline readiness/protocol table. Do not report external TE/F1/runtime performance or SOTA comparisons until a row is executable_ready and a real adapter writes measured outputs under benchmark/external_sota/.",
+  "dataset": {
+    "exists": true,
+    "limit": 1024,
+    "record_count_effective": 1024,
+    "record_count_total": 1024,
+    "records_jsonl": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/benchmark/multiseed_t5_public_head1024_sources.jsonl",
+    "seed": 0,
+    "sha256": "8e2a1b6de75d418bafe42241fe18d36093fa50fde732b56866a2e4e8fc1231ec",
+    "split_name": "public_head1024"
+  },
+  "hardware": {
+    "hostname": "bms-18937653-012",
+    "label": "a100-server",
+    "machine": "x86_64",
+    "platform": "Linux-5.15.0-173-generic-x86_64-with-glibc2.35",
+    "processor": "x86_64"
+  },
+  "input_pack": {
+    "n_cds_protein_rows": 1024,
+    "n_skipped_invalid_cds": 0,
+    "n_utr5_rows": 1024,
+    "path": "benchmark/external_sota/input_pack_t5_head1024/summary.json",
+    "present": true,
+    "ready_for_external_real_run": true,
+    "sha256": "b0ccc98c07dbb67a7479595de2b7cf860e54e7fb5c9a295ebc6e67bd21313408"
+  },
+  "model_set_audit": {
+    "dry_run_models": [
+      "EnsembleDesign",
+      "LinearDesign",
+      "Prot2RNA",
+      "UTRGAN",
+      "UTailoR",
+      "codonGPT"
+    ],
+    "input_pack_models": [
+      "EnsembleDesign",
+      "LinearDesign",
+      "Prot2RNA",
+      "UTRGAN",
+      "UTailoR",
+      "codonGPT"
+    ],
+    "missing_from_dry_run": [],
+    "missing_from_input_pack": [],
+    "missing_from_real_run_audit": [],
+    "model_set_consistent": true,
+    "real_run_audit_models": [
+      "EnsembleDesign",
+      "LinearDesign",
+      "Prot2RNA",
+      "UTRGAN",
+      "UTailoR",
+      "codonGPT"
+    ]
+  },
+  "project_root": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow",
+  "real_run_audit": {
+    "audit_complete": true,
+    "n_models_expected": 6,
+    "n_models_invalid": 1,
+    "n_models_measured": 4,
+    "n_models_missing": 1,
+    "path": "docs/external_sota_real_run_audit.json",
+    "present": true,
+    "ready_for_external_real_metric_table": false,
+    "ready_for_external_sota_claim": false,
+    "ready_for_external_sota_metric_claim": false,
+    "sha256": "9bcc75d455eb38877e7458785ebe45fad81d96f876101646ef60861b953236ab"
+  },
+  "rows": [
+    {
+      "candidate_audit": [
+        {
+          "candidate": "LINEARDESIGN_BIN",
+          "env_value_set": true,
+          "kind": "env",
+          "resolved": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/scripts/external_lineardesign.sh",
+          "status": "executable"
+        }
+      ],
+      "candidate_audit_text": "LINEARDESIGN_BIN=executable",
+      "claim_language": "measured_external_metrics_available_not_sota_claim",
+      "command_candidates": [
+        "LINEARDESIGN_BIN",
+        "lineardesign",
+        "LinearDesign"
+      ],
+      "dataset_records": 1024,
+      "dataset_sha256": "8e2a1b6de75d418bafe42241fe18d36093fa50fde732b56866a2e4e8fc1231ec",
+      "dataset_split": "public_head1024",
+      "dry_run_elapsed_s": 0.007081896066665649,
+      "dry_run_status": "executable_ready",
+      "executable": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/scripts/external_lineardesign.sh",
+      "executable_source": "env:LINEARDESIGN_BIN",
+      "expected_inputs": "target protein sequence and codon-usage/structure objective weights.",
+      "expected_outputs": "CDS design co-optimized for folding stability and codon usage.",
+      "family": "dynamic-programming/lattice parsing mRNA optimizer",
+      "hard_constraints_exact_1": true,
+      "hardware_label": "a100-server",
+      "model_name": "LinearDesign",
+      "next_action": "Run head-to-head comparison and claim-language audit before any superiority claim.",
+      "protocol_difference": "Protocol difference: LinearDesign is a deterministic CDS optimizer with strong biological validation; it is not trained as a stochastic full-transcript edit model and does not optimize UTR edits.",
+      "real_metric_ready": true,
+      "real_run_failure_reasons": [],
+      "real_run_status": "measured",
+      "real_runtime_ready": true,
+      "success_fraction": 1.0
+    },
+    {
+      "candidate_audit": [
+        {
+          "candidate": "ENSEMBLEDESIGN_BIN",
+          "env_value_set": true,
+          "kind": "env",
+          "resolved": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/scripts/external_ensembledesign.sh",
+          "status": "executable"
+        }
+      ],
+      "candidate_audit_text": "ENSEMBLEDESIGN_BIN=executable",
+      "claim_language": "adapter_executable_but_real_metrics_still_required",
+      "command_candidates": [
+        "ENSEMBLEDESIGN_BIN",
+        "ensembledesign",
+        "EnsembleDesign"
+      ],
+      "dataset_records": 1024,
+      "dataset_sha256": "8e2a1b6de75d418bafe42241fe18d36093fa50fde732b56866a2e4e8fc1231ec",
+      "dataset_split": "public_head1024",
+      "dry_run_elapsed_s": 0.007081896066665649,
+      "dry_run_status": "executable_ready",
+      "executable": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/scripts/external_ensembledesign.sh",
+      "executable_source": "env:ENSEMBLEDESIGN_BIN",
+      "expected_inputs": "target protein/codon lattice and ensemble free-energy objective.",
+      "expected_outputs": "CDS designs minimizing ensemble free energy under codon constraints.",
+      "family": "probabilistic-lattice structure optimizer",
+      "hard_constraints_exact_1": true,
+      "hardware_label": "a100-server",
+      "model_name": "EnsembleDesign",
+      "next_action": "Run real adapter and write measured outputs under benchmark/external_sota/.",
+      "protocol_difference": "Protocol difference: EnsembleDesign targets structure/codon optimization in the protein-conditioned CDS lattice; MEF should compare against it on CDS structure objectives, not full UTR editing tasks.",
+      "real_metric_ready": false,
+      "real_run_failure_reasons": [
+        "expected_output_transcript_coverage_mismatch"
+      ],
+      "real_run_status": "invalid",
+      "real_runtime_ready": true,
+      "success_fraction": 0.9921875
+    },
+    {
+      "candidate_audit": [
+        {
+          "candidate": "CODONGPT_BIN",
+          "env_value_set": true,
+          "kind": "env",
+          "resolved": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/scripts/external_codongpt.sh",
+          "status": "executable"
+        }
+      ],
+      "candidate_audit_text": "CODONGPT_BIN=executable",
+      "claim_language": "measured_external_metrics_available_not_sota_claim",
+      "command_candidates": [
+        "CODONGPT_BIN",
+        "codongpt",
+        "codonGPT"
+      ],
+      "dataset_records": 1024,
+      "dataset_sha256": "8e2a1b6de75d418bafe42241fe18d36093fa50fde732b56866a2e4e8fc1231ec",
+      "dataset_split": "public_head1024",
+      "dry_run_elapsed_s": 0.007081896066665649,
+      "dry_run_status": "executable_ready",
+      "executable": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/scripts/external_codongpt.sh",
+      "executable_source": "env:CODONGPT_BIN",
+      "expected_inputs": "protein/CDS target and biological constraints such as expression, stability and GC content.",
+      "expected_outputs": "optimized synonymous coding mRNA sequences.",
+      "family": "codon-level autoregressive generator plus RL optimizer",
+      "hard_constraints_exact_1": true,
+      "hardware_label": "a100-server",
+      "model_name": "codonGPT",
+      "next_action": "Run head-to-head comparison and claim-language audit before any superiority claim.",
+      "protocol_difference": "Protocol difference: codonGPT focuses on CDS-constrained synonymous generation; it does not jointly edit 5'UTR, CDS and 3'UTR under one region-aware variable-length process.",
+      "real_metric_ready": true,
+      "real_run_failure_reasons": [],
+      "real_run_status": "measured",
+      "real_runtime_ready": true,
+      "success_fraction": 1.0
+    },
+    {
+      "candidate_audit": [
+        {
+          "candidate": "PROT2RNA_BIN",
+          "env_value_set": false,
+          "kind": "env",
+          "resolved": null,
+          "status": "env_unset"
+        },
+        {
+          "candidate": "prot2rna",
+          "kind": "path",
+          "resolved": null,
+          "status": "path_not_found"
+        },
+        {
+          "candidate": "Prot2RNA",
+          "kind": "path",
+          "resolved": null,
+          "status": "path_not_found"
+        }
+      ],
+      "candidate_audit_text": "PROT2RNA_BIN=env_unset; prot2rna=path_not_found; Prot2RNA=path_not_found",
+      "claim_language": "not_configured_no_external_metric_claim",
+      "command_candidates": [
+        "PROT2RNA_BIN",
+        "prot2rna",
+        "Prot2RNA"
+      ],
+      "dataset_records": 1024,
+      "dataset_sha256": "8e2a1b6de75d418bafe42241fe18d36093fa50fde732b56866a2e4e8fc1231ec",
+      "dataset_split": "public_head1024",
+      "dry_run_elapsed_s": 0.007081896066665649,
+      "dry_run_status": "not_configured",
+      "executable": null,
+      "executable_source": null,
+      "expected_inputs": "protein sequence or amino-acid target, often with codon-usage constraints.",
+      "expected_outputs": "coding RNA sequence candidates.",
+      "family": "conditional codon/mRNA generator",
+      "hard_constraints_exact_1": false,
+      "hardware_label": "a100-server",
+      "model_name": "Prot2RNA",
+      "next_action": "Install executable or set documented *_BIN/PATH candidate, then rerun dry-run and real adapter.",
+      "protocol_difference": "Protocol difference: Prot2RNA is protein/CDS-conditioned and does not directly model UTR editing or full-transcript variable-length tasks; comparisons should isolate CDS design from full mRNA generation.",
+      "real_metric_ready": false,
+      "real_run_failure_reasons": [
+        "summary_missing",
+        "outputs_jsonl_missing"
+      ],
+      "real_run_status": "missing",
+      "real_runtime_ready": false,
+      "success_fraction": null
+    },
+    {
+      "candidate_audit": [
+        {
+          "candidate": "UTAILOR_BIN",
+          "env_value_set": true,
+          "kind": "env",
+          "resolved": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/scripts/external_utailor.sh",
+          "status": "executable"
+        }
+      ],
+      "candidate_audit_text": "UTAILOR_BIN=executable",
+      "claim_language": "measured_external_metrics_available_not_sota_claim",
+      "command_candidates": [
+        "UTAILOR_BIN",
+        "utailor",
+        "UTailoR"
+      ],
+      "dataset_records": 1024,
+      "dataset_sha256": "8e2a1b6de75d418bafe42241fe18d36093fa50fde732b56866a2e4e8fc1231ec",
+      "dataset_split": "public_head1024",
+      "dry_run_elapsed_s": 0.007081896066665649,
+      "dry_run_status": "executable_ready",
+      "executable": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/scripts/external_utailor.sh",
+      "executable_source": "env:UTAILOR_BIN",
+      "expected_inputs": "5'UTR sequence and target mRNA context.",
+      "expected_outputs": "optimized 5'UTR candidates predicted and experimentally tested for translation efficiency.",
+      "family": "5'UTR discriminative-plus-generative optimizer",
+      "hard_constraints_exact_1": true,
+      "hardware_label": "a100-server",
+      "model_name": "UTailoR",
+      "next_action": "Run head-to-head comparison and claim-language audit before any superiority claim.",
+      "protocol_difference": "Protocol difference: UTailoR is focused on 5'UTR optimization; it does not preserve or edit CDS/3'UTR with an explicit CTMC grammar.",
+      "real_metric_ready": true,
+      "real_run_failure_reasons": [],
+      "real_run_status": "measured",
+      "real_runtime_ready": true,
+      "success_fraction": 1.0
+    },
+    {
+      "candidate_audit": [
+        {
+          "candidate": "UTRGAN_BIN",
+          "env_value_set": true,
+          "kind": "env",
+          "resolved": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/scripts/external_utrgan.sh",
+          "status": "executable"
+        }
+      ],
+      "candidate_audit_text": "UTRGAN_BIN=executable",
+      "claim_language": "measured_external_metrics_available_not_sota_claim",
+      "command_candidates": [
+        "UTRGAN_BIN",
+        "utrgan",
+        "UTRGAN"
+      ],
+      "dataset_records": 1024,
+      "dataset_sha256": "8e2a1b6de75d418bafe42241fe18d36093fa50fde732b56866a2e4e8fc1231ec",
+      "dataset_split": "public_head1024",
+      "dry_run_elapsed_s": 0.007081896066665649,
+      "dry_run_status": "executable_ready",
+      "executable": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/scripts/external_utrgan.sh",
+      "executable_source": "env:UTRGAN_BIN",
+      "expected_inputs": "5'UTR sequence corpus and expression labels, often task-specific.",
+      "expected_outputs": "synthetic 5'UTR sequences or expression-optimized UTR candidates.",
+      "family": "generative 5'UTR GAN",
+      "hard_constraints_exact_1": true,
+      "hardware_label": "a100-server",
+      "model_name": "UTRGAN",
+      "next_action": "Run head-to-head comparison and claim-language audit before any superiority claim.",
+      "protocol_difference": "Protocol difference: UTRGAN optimizes/generates UTRs rather than full 5'UTR-CDS-3'UTR transcripts; it has no codon-frame edit operator and is not evaluated on variable-length edit tasks.",
+      "real_metric_ready": true,
+      "real_run_failure_reasons": [],
+      "real_run_status": "measured",
+      "real_runtime_ready": true,
+      "success_fraction": 1.0
+    }
+  ],
+  "sources": {
+    "input_pack_summary_json": "benchmark/external_sota/input_pack_t5_head1024/summary.json",
+    "input_pack_summary_sha256": "b0ccc98c07dbb67a7479595de2b7cf860e54e7fb5c9a295ebc6e67bd21313408",
+    "real_run_audit_json": "docs/external_sota_real_run_audit.json",
+    "real_run_audit_sha256": "9bcc75d455eb38877e7458785ebe45fad81d96f876101646ef60861b953236ab",
+    "runtime_json": "benchmark/external_sota/dry_run_t5_head1024/runtime.json",
+    "runtime_sha256": "b621e7ef036b95cbcc2941372472802e363e6bb5eb5908396533336e615aeb12",
+    "summary_json": "benchmark/external_sota/dry_run_t5_head1024/summary.json",
+    "summary_sha256": "a5f5175a31916d5475a13a50264ce712099053a9b343daf7f77db557210b63ca",
+    "table_md": "benchmark/external_sota/dry_run_t5_head1024/table.md",
+    "table_sha256": "e1d876803fdc801dfb90c0d6ed980dcaca5fb9558d015dd05a565d59e064f79d"
+  },
+  "summary": {
+    "input_pack_ready": true,
+    "metadata_contract_ok": true,
+    "model_set_consistent": true,
+    "n_executable_ready": 5,
+    "n_models": 6,
+    "n_not_configured": 1,
+    "ready_for_external_sota_claim": false,
+    "ready_for_external_sota_metric_claim": false,
+    "ready_for_full_external_protocol_bundle": true,
+    "ready_for_protocol_table": true,
+    "ready_for_real_metric_table": false,
+    "real_metric_policy": "Do not report accuracy/F1/TE/runtime metrics for an external method until its row status is executable_ready and a real adapter writes measured outputs under benchmark/external_sota/.",
+    "real_run_audit_complete": true,
+    "task_id": "T5"
+  }
+}

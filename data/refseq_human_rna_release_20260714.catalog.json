@@ -1,0 +1,17 @@
+{
+  "human.1.rna.gbff.gz": {"size_bytes": 235266946, "last_modified": "Tue, 14 Jul 2026 14:50:16 GMT", "url": "https://ftp.ncbi.nlm.nih.gov/refseq/H_sapiens/mRNA_Prot/human.1.rna.gbff.gz"},
+  "human.2.rna.gbff.gz": {"size_bytes": 316955232, "last_modified": "Tue, 14 Jul 2026 14:50:35 GMT", "url": "https://ftp.ncbi.nlm.nih.gov/refseq/H_sapiens/mRNA_Prot/human.2.rna.gbff.gz"},
+  "human.3.rna.gbff.gz": {"size_bytes": 344979196, "last_modified": "Tue, 14 Jul 2026 14:50:38 GMT", "url": "https://ftp.ncbi.nlm.nih.gov/refseq/H_sapiens/mRNA_Prot/human.3.rna.gbff.gz"},
+  "human.4.rna.gbff.gz": {"size_bytes": 324754488, "last_modified": "Tue, 14 Jul 2026 14:50:41 GMT", "url": "https://ftp.ncbi.nlm.nih.gov/refseq/H_sapiens/mRNA_Prot/human.4.rna.gbff.gz"},
+  "human.5.rna.gbff.gz": {"size_bytes": 345659512, "last_modified": "Tue, 14 Jul 2026 14:50:44 GMT", "url": "https://ftp.ncbi.nlm.nih.gov/refseq/H_sapiens/mRNA_Prot/human.5.rna.gbff.gz"},
+  "human.6.rna.gbff.gz": {"size_bytes": 458495873, "last_modified": "Tue, 14 Jul 2026 14:50:47 GMT", "url": "https://ftp.ncbi.nlm.nih.gov/refseq/H_sapiens/mRNA_Prot/human.6.rna.gbff.gz"},
+  "human.7.rna.gbff.gz": {"size_bytes": 294064310, "last_modified": "Tue, 14 Jul 2026 14:50:51 GMT", "url": "https://ftp.ncbi.nlm.nih.gov/refseq/H_sapiens/mRNA_Prot/human.7.rna.gbff.gz"},
+  "human.8.rna.gbff.gz": {"size_bytes": 460389480, "last_modified": "Tue, 14 Jul 2026 14:50:53 GMT", "url": "https://ftp.ncbi.nlm.nih.gov/refseq/H_sapiens/mRNA_Prot/human.8.rna.gbff.gz"},
+  "human.9.rna.gbff.gz": {"size_bytes": 450341818, "last_modified": "Tue, 14 Jul 2026 14:50:57 GMT", "url": "https://ftp.ncbi.nlm.nih.gov/refseq/H_sapiens/mRNA_Prot/human.9.rna.gbff.gz"},
+  "human.10.rna.gbff.gz": {"size_bytes": 455105718, "last_modified": "Tue, 14 Jul 2026 14:50:19 GMT", "url": "https://ftp.ncbi.nlm.nih.gov/refseq/H_sapiens/mRNA_Prot/human.10.rna.gbff.gz"},
+  "human.11.rna.gbff.gz": {"size_bytes": 332306285, "last_modified": "Tue, 14 Jul 2026 14:50:22 GMT", "url": "https://ftp.ncbi.nlm.nih.gov/refseq/H_sapiens/mRNA_Prot/human.11.rna.gbff.gz"},
+  "human.12.rna.gbff.gz": {"size_bytes": 242983337, "last_modified": "Tue, 14 Jul 2026 14:50:25 GMT", "url": "https://ftp.ncbi.nlm.nih.gov/refseq/H_sapiens/mRNA_Prot/human.12.rna.gbff.gz"},
+  "human.13.rna.gbff.gz": {"size_bytes": 261898563, "last_modified": "Tue, 14 Jul 2026 14:50:27 GMT", "url": "https://ftp.ncbi.nlm.nih.gov/refseq/H_sapiens/mRNA_Prot/human.13.rna.gbff.gz"},
+  "human.14.rna.gbff.gz": {"size_bytes": 285592746, "last_modified": "Tue, 14 Jul 2026 14:50:29 GMT", "url": "https://ftp.ncbi.nlm.nih.gov/refseq/H_sapiens/mRNA_Prot/human.14.rna.gbff.gz"},
+  "human.15.rna.gbff.gz": {"size_bytes": 299703567, "last_modified": "Tue, 14 Jul 2026 14:50:32 GMT", "url": "https://ftp.ncbi.nlm.nih.gov/refseq/H_sapiens/mRNA_Prot/human.15.rna.gbff.gz"}
+}

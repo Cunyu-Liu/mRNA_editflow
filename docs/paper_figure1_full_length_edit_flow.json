@@ -1,0 +1,172 @@
+{
+  "artifact_kind": "paper_figure1_full_length_edit_flow",
+  "caption": "Figure 1. mRNA-EditFlow represents an existing full-length transcript as 5'UTR + CDS + 3'UTR, samples region-aware CTMC edit trajectories, applies hard constraint masks for CDS protein identity, frame, legality, edit budget, length and motifs, then reranks constraint-safe local edits with multi-objective fusion before T1-T7 audit. The figure supports a constrained local-optimization claim only, not unconstrained de novo SOTA or wet-lab validation.",
+  "claim_policy": "Figure 1 may describe full-length constrained edit-flow optimization over 5'UTR + CDS + 3'UTR. It must not depict MEF as unconstrained de novo generation, external SOTA reproduction, or wet-lab validated design.",
+  "constraint_callouts": [
+    {
+      "constraint": "Full-length representation",
+      "language": "The editable object is 5'UTR + CDS + 3'UTR, not CDS-only or UTR-only."
+    },
+    {
+      "constraint": "CDS protein identity",
+      "language": "CDS edits are constrained by a synonymous codon lattice and exact protein identity."
+    },
+    {
+      "constraint": "Frame and legality",
+      "language": "Reading frame, start/stop validity, alphabet, and legal transcript checks are hard gates."
+    },
+    {
+      "constraint": "Edit budget / length / motif",
+      "language": "Local edit budget, target length, Kozak/uAUG/polyA, and motif controls are evaluated explicitly."
+    },
+    {
+      "constraint": "Claim boundary",
+      "language": "Outputs are constrained local optimizations from existing sources, not full de novo SOTA or wet-lab validation."
+    }
+  ],
+  "edges": [
+    {
+      "label": "parse full-length regions",
+      "source": "A",
+      "target": "B"
+    },
+    {
+      "label": "align source and target edits",
+      "source": "B",
+      "target": "C"
+    },
+    {
+      "label": "train edit rates",
+      "source": "C",
+      "target": "D"
+    },
+    {
+      "label": "decode with masks",
+      "source": "D",
+      "target": "E"
+    },
+    {
+      "label": "filter invalid edits",
+      "source": "E",
+      "target": "F"
+    },
+    {
+      "label": "score and fuse objectives",
+      "source": "F",
+      "target": "G"
+    },
+    {
+      "label": "audit T1-T7",
+      "source": "G",
+      "target": "H"
+    },
+    {
+      "label": "select reportable candidates",
+      "source": "H",
+      "target": "I"
+    },
+    {
+      "label": "hard constraints must remain exact-1",
+      "source": "E",
+      "target": "H"
+    }
+  ],
+  "mermaid": "flowchart LR\n    A[\"Public full-transcript source<br/>Existing mRNA records with 5'UTR + CDS + 3'UTR and CDS coordinates.\"]\n    B[\"Region and phase annotation<br/>Track nucleotide region, CDS codon phase, source length, motifs, and edit budget.\"]\n    C[\"CTMC edit bridge<br/>Align source/target transcripts and sample gap-free intermediate edit states.\"]\n    D[\"Stage A edit-flow generator<br/>Predict insert, substitute, and delete rates under region-aware context.\"]\n    E[\"Hard-constraint masks<br/>Apply legal sequence checks, CDS synonymous lattice, protein identity, frame, length, motif, and budget gates.\"]\n    F[\"Candidate pool<br/>Generate constraint-safe local edits from the source transcript.\"]\n    G[\"Multi-objective ranker / fusion<br/>Rank candidates with TE proxy, CAI/GC, novelty, source-aware recall, and fusion modes.\"]\n    H[\"T1-T7 evaluation gates<br/>Audit legality, distribution, novelty, protein identity, edit budget, length, motif, and frame.\"]\n    I[\"Selected constrained local optimization<br/>Report proxy/offline gains only under exact hard constraints and explicit claim boundaries.\"]\n    A -->|parse full-length regions| B\n    B -->|align source and target edits| C\n    C -->|train edit rates| D\n    D -->|decode with masks| E\n    E -->|filter invalid edits| F\n    F -->|score and fuse objectives| G\n    G -->|audit T1-T7| H\n    H -->|select reportable candidates| I\n    E -->|hard constraints must remain exact-1| H\n    classDef constraint fill:#fff7e6,stroke:#d48806,color:#262626\n    classDef audit fill:#f6ffed,stroke:#389e0d,color:#262626\n    class E constraint\n    class H audit",
+  "nodes": [
+    {
+      "detail": "Existing mRNA records with 5'UTR + CDS + 3'UTR and CDS coordinates.",
+      "id": "A",
+      "label": "Public full-transcript source",
+      "role": "input"
+    },
+    {
+      "detail": "Track nucleotide region, CDS codon phase, source length, motifs, and edit budget.",
+      "id": "B",
+      "label": "Region and phase annotation",
+      "role": "representation"
+    },
+    {
+      "detail": "Align source/target transcripts and sample gap-free intermediate edit states.",
+      "id": "C",
+      "label": "CTMC edit bridge",
+      "role": "generator_training"
+    },
+    {
+      "detail": "Predict insert, substitute, and delete rates under region-aware context.",
+      "id": "D",
+      "label": "Stage A edit-flow generator",
+      "role": "generator"
+    },
+    {
+      "detail": "Apply legal sequence checks, CDS synonymous lattice, protein identity, frame, length, motif, and budget gates.",
+      "id": "E",
+      "label": "Hard-constraint masks",
+      "role": "constraint_layer"
+    },
+    {
+      "detail": "Generate constraint-safe local edits from the source transcript.",
+      "id": "F",
+      "label": "Candidate pool",
+      "role": "decoding"
+    },
+    {
+      "detail": "Rank candidates with TE proxy, CAI/GC, novelty, source-aware recall, and fusion modes.",
+      "id": "G",
+      "label": "Multi-objective ranker / fusion",
+      "role": "reranking"
+    },
+    {
+      "detail": "Audit legality, distribution, novelty, protein identity, edit budget, length, motif, and frame.",
+      "id": "H",
+      "label": "T1-T7 evaluation gates",
+      "role": "audit"
+    },
+    {
+      "detail": "Report proxy/offline gains only under exact hard constraints and explicit claim boundaries.",
+      "id": "I",
+      "label": "Selected constrained local optimization",
+      "role": "output"
+    }
+  ],
+  "project_root": "/Users/bytedance/Documents/research/mrna_editflow",
+  "source_audit": [
+    {
+      "exists": true,
+      "n_bytes": 61786,
+      "path": "README.md",
+      "sha256": "e47ccf15108df74ea873570f37580c09775b1a1fb1ade52abd38762f2ea3fe2d"
+    },
+    {
+      "exists": true,
+      "n_bytes": 49612,
+      "path": "sample.py",
+      "sha256": "2983d12f03ad83180bef62f19c1b92f0e282ccc78fda2fdcfa431c3c0e1c7bb9"
+    },
+    {
+      "exists": true,
+      "n_bytes": 19957,
+      "path": "eval/run_multiseed_benchmark.py",
+      "sha256": "cd8bf099019387171ff6eb22397eb3692b72dd828e309252f6a7e3d7bd5ba2f6"
+    },
+    {
+      "exists": true,
+      "n_bytes": 38395,
+      "path": "benchmark/t1_t7_evidence_status_head256.json",
+      "sha256": "0b7db37f9e98777791a614e46721e48195a43d50900e4736bb467b089a688b48"
+    }
+  ],
+  "summary": {
+    "full_length_segments": [
+      "5'UTR",
+      "CDS",
+      "3'UTR"
+    ],
+    "hard_constraints_visible": true,
+    "n_edges": 9,
+    "n_nodes": 9,
+    "ready_for_algorithm_figure_draft": true,
+    "ready_for_full_de_novo_claim": false,
+    "ready_for_wet_lab_claim": false,
+    "source_files_ready": true
+  }
+}

@@ -1,0 +1,293 @@
+{
+  "advisory_only": true,
+  "artifact_kind": "stage_a_health_audit",
+  "claim_policy": "Training loss is an engineering health signal, not evidence of biological progress.",
+  "generated_at": "2026-07-18T08:24:03.161155+00:00",
+  "overall_verdict": "manual_review_required",
+  "process_control_actions": [],
+  "runs": [
+    {
+      "advisory_only": true,
+      "amp": {
+        "enabled_fraction": 0.6468298109010011,
+        "fallback_fraction": 0.3531701890989989
+      },
+      "biological_progress_inferred_from_training_loss": false,
+      "checkpoint": {
+        "exists": true,
+        "path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/ckpts/stage_a_full_a100_max_gencode_100k_seed0/stage_a_best.pt",
+        "sha256": "25e649ef0e97d5cd961f8b64b190ed47c66eccc31941d5275133ea9cfd527918"
+      },
+      "held_out_curve_exists": false,
+      "last_completed_step": 7192,
+      "last_update_timestamp": "2026-07-18T08:23:29.067991+00:00",
+      "loss_all": {
+        "mean": 10739.805079820695,
+        "median": 10602.09236907959,
+        "nonfinite_count": 0
+      },
+      "preclip_gradient_norm": {
+        "max": 52534.1328125,
+        "median": 372.7297058105469,
+        "nonfinite_count": 0,
+        "p90": 834.8916381835938,
+        "p99": 8877.45891601563
+      },
+      "process_command_supplied": "pid=1495551 seed=0",
+      "profile_path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/logs/stage_a_full_a100_max_gencode_100k_seed0.profile.jsonl",
+      "profile_rows": 7192,
+      "profile_sha256": "776fd6cbe8d77bb3d888fe1d6248fc8f3fd382e98bfa7c1532a05d73aa46be28",
+      "retries": {
+        "distribution": {
+          "0": 4643,
+          "1": 7,
+          "2": 2,
+          "4": 2540
+        },
+        "oom_reduction_count": 0,
+        "p90": 4.0
+      },
+      "rolling_loss": {
+        "count": 500,
+        "mad": 1372.4813585281372,
+        "mean": 10998.264541433484,
+        "median": 10881.898719787598,
+        "slope_per_step": -1.3972669898208188
+      },
+      "scientific_validity_warnings": [
+        "unrestricted_full_corpus_training",
+        "pretruncated_records",
+        "auxiliary_zero_target_config_in_running_snapshot",
+        "missing_split_provenance",
+        "missing_held_out_curve"
+      ],
+      "throughput": {
+        "eta_is_estimate": true,
+        "eta_seconds_rough_estimate": 41849.573010085354,
+        "rough_steps_per_s": 2.2176570350582585,
+        "samples_per_s_mean": 2.3549918212730736,
+        "samples_per_s_median": 2.2176570350582585
+      },
+      "verdict": "manual_review_required",
+      "verdict_reasons": [
+        "frequent_amp_fallback",
+        "frequent_step_retries",
+        "large_preclip_gradient_norms",
+        "no_held_out_curve"
+      ]
+    },
+    {
+      "advisory_only": true,
+      "amp": {
+        "enabled_fraction": 0.7991933772022926,
+        "fallback_fraction": 0.2008066227977075
+      },
+      "biological_progress_inferred_from_training_loss": false,
+      "checkpoint": {
+        "exists": true,
+        "path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/ckpts/stage_a_full_a100_max_gencode_100k_seed1/stage_a_best.pt",
+        "sha256": "58511deebd2906d5f39ccf1e37b8bf946b3a015ca32e885448e284b9db963d23"
+      },
+      "held_out_curve_exists": false,
+      "last_completed_step": 9422,
+      "last_update_timestamp": "2026-07-18T08:22:45.327991+00:00",
+      "loss_all": {
+        "mean": 10731.976594440706,
+        "median": 10629.489608764648,
+        "nonfinite_count": 0
+      },
+      "preclip_gradient_norm": {
+        "max": 94299.6484375,
+        "median": 382.5904235839844,
+        "nonfinite_count": 0,
+        "p90": 769.3083679199218,
+        "p99": 2594.588964843679
+      },
+      "process_command_supplied": "pid=1495455 seed=1",
+      "profile_path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/logs/stage_a_full_a100_max_gencode_100k_seed1.profile.jsonl",
+      "profile_rows": 9422,
+      "profile_sha256": "4cb047fd26d576a306c449b23b20f14863cab767ef353d631825de78a21754fa",
+      "retries": {
+        "distribution": {
+          "0": 7518,
+          "1": 9,
+          "2": 2,
+          "3": 1,
+          "4": 1892
+        },
+        "oom_reduction_count": 0,
+        "p90": 4.0
+      },
+      "rolling_loss": {
+        "count": 500,
+        "mad": 1497.3824615478516,
+        "mean": 10866.499152492792,
+        "median": 10910.716678619385,
+        "slope_per_step": -0.14359907202227024
+      },
+      "scientific_validity_warnings": [
+        "unrestricted_full_corpus_training",
+        "pretruncated_records",
+        "auxiliary_zero_target_config_in_running_snapshot",
+        "missing_split_provenance",
+        "missing_held_out_curve"
+      ],
+      "throughput": {
+        "eta_is_estimate": true,
+        "eta_seconds_rough_estimate": 41536.1391601685,
+        "rough_steps_per_s": 2.180703402661475,
+        "samples_per_s_mean": 2.3193039411099168,
+        "samples_per_s_median": 2.180703402661475
+      },
+      "verdict": "manual_review_required",
+      "verdict_reasons": [
+        "frequent_step_retries",
+        "large_preclip_gradient_norms",
+        "no_held_out_curve"
+      ]
+    },
+    {
+      "advisory_only": true,
+      "amp": {
+        "enabled_fraction": 0.7420946400538238,
+        "fallback_fraction": 0.25790535994617625
+      },
+      "biological_progress_inferred_from_training_loss": false,
+      "checkpoint": {
+        "exists": true,
+        "path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/ckpts/stage_a_full_a100_max_gencode_100k_seed2/stage_a_best.pt",
+        "sha256": "206d592446b4290224e8f0916b1c1d5af5e0acc890e1e630a35883cad41df99c"
+      },
+      "held_out_curve_exists": false,
+      "last_completed_step": 8918,
+      "last_update_timestamp": "2026-07-18T08:23:29.659991+00:00",
+      "loss_all": {
+        "mean": 10814.156891159855,
+        "median": 10725.688006401062,
+        "nonfinite_count": 0
+      },
+      "preclip_gradient_norm": {
+        "max": 17467.197265625,
+        "median": 315.9097595214844,
+        "nonfinite_count": 0,
+        "p90": 737.2935974121095,
+        "p99": 2209.371857910155
+      },
+      "process_command_supplied": "pid=1495549 seed=2",
+      "profile_path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/logs/stage_a_full_a100_max_gencode_100k_seed2.profile.jsonl",
+      "profile_rows": 8918,
+      "profile_sha256": "92a4bf17c7eebe19e654c5770ba87522374726bb40577f490842f8f42dfa9026",
+      "retries": {
+        "distribution": {
+          "0": 6496,
+          "1": 111,
+          "2": 10,
+          "3": 1,
+          "4": 2300
+        },
+        "oom_reduction_count": 0,
+        "p90": 4.0
+      },
+      "rolling_loss": {
+        "count": 500,
+        "mad": 1546.752890586853,
+        "mean": 11004.625524228763,
+        "median": 10956.8598985672,
+        "slope_per_step": -0.7700020284220859
+      },
+      "scientific_validity_warnings": [
+        "unrestricted_full_corpus_training",
+        "pretruncated_records",
+        "auxiliary_zero_target_config_in_running_snapshot",
+        "missing_split_provenance",
+        "missing_held_out_curve"
+      ],
+      "throughput": {
+        "eta_is_estimate": true,
+        "eta_seconds_rough_estimate": 37884.911676638796,
+        "rough_steps_per_s": 2.404176121021933,
+        "samples_per_s_mean": 2.578106327338158,
+        "samples_per_s_median": 2.404176121021933
+      },
+      "verdict": "manual_review_required",
+      "verdict_reasons": [
+        "frequent_amp_fallback",
+        "frequent_step_retries",
+        "large_preclip_gradient_norms",
+        "no_held_out_curve"
+      ]
+    },
+    {
+      "advisory_only": true,
+      "amp": {
+        "enabled_fraction": 0.6681279009798865,
+        "fallback_fraction": 0.33187209902011344
+      },
+      "biological_progress_inferred_from_training_loss": false,
+      "checkpoint": {
+        "exists": true,
+        "path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/ckpts/stage_a_full_a100_max_gencode_100k_seed5/stage_a_best.pt",
+        "sha256": "add3c9fd17e8cb6646c91a1dcf170076db621d33ad44e7924e113ef11346f4fc"
+      },
+      "held_out_curve_exists": false,
+      "last_completed_step": 7756,
+      "last_update_timestamp": "2026-07-18T08:23:22.279991+00:00",
+      "loss_all": {
+        "mean": 10737.376049779547,
+        "median": 10613.284218549728,
+        "nonfinite_count": 0
+      },
+      "preclip_gradient_norm": {
+        "max": 84695.875,
+        "median": 378.79200744628906,
+        "nonfinite_count": 0,
+        "p90": 973.2349548339844,
+        "p99": 5187.591113281248
+      },
+      "process_command_supplied": "pid=1499316 seed=5",
+      "profile_path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/logs/stage_a_full_a100_max_gencode_100k_seed5.profile.jsonl",
+      "profile_rows": 7756,
+      "profile_sha256": "1acb270556c09708ad5c021f5ccaa1e2d11df882498b69d4388a09e5e2b1a42e",
+      "retries": {
+        "distribution": {
+          "0": 5132,
+          "1": 33,
+          "2": 11,
+          "3": 6,
+          "4": 2574
+        },
+        "oom_reduction_count": 0,
+        "p90": 4.0
+      },
+      "rolling_loss": {
+        "count": 500,
+        "mad": 1474.4661712646484,
+        "mean": 10972.514565985386,
+        "median": 10745.880290985107,
+        "slope_per_step": 1.052199847644399
+      },
+      "scientific_validity_warnings": [
+        "unrestricted_full_corpus_training",
+        "pretruncated_records",
+        "auxiliary_zero_target_config_in_running_snapshot",
+        "missing_split_provenance",
+        "missing_held_out_curve"
+      ],
+      "throughput": {
+        "eta_is_estimate": true,
+        "eta_seconds_rough_estimate": 39006.776272357616,
+        "rough_steps_per_s": 2.3648198804208604,
+        "samples_per_s_mean": 2.5295059846654806,
+        "samples_per_s_median": 2.3648198804208604
+      },
+      "verdict": "manual_review_required",
+      "verdict_reasons": [
+        "frequent_amp_fallback",
+        "frequent_step_retries",
+        "large_preclip_gradient_norms",
+        "no_held_out_curve"
+      ]
+    }
+  ],
+  "schema_version": 1
+}

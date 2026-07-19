@@ -1,0 +1,91 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Pytest / coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+.hypothesis/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Large data artifacts (excluded from git, kept on server)
+data/raw/
+data/reconstructed/
+data/processed/
+data/downloads/
+data/cache/
+*.gbff.gz
+*.fasta.gz
+*.fa.gz
+*.gtf.gz
+*.gff3.gz
+
+# Model checkpoints and benchmark outputs (excluded from git, kept on server)
+ckpts/
+benchmark/
+external_tools/
+logs/
+*.pt
+*.ckpt
+*.bin
+*.safetensors
+*.h5
+*.pth
+
+# Profile and temporary outputs
+*.profile.jsonl
+*.profile.json
+*.tmp
+*.bak
+
+# Local configuration
+.env
+.env.local
+config/local_*.yaml
+config/local_*.json
+
+# OS
+Thumbs.db
+ehthumbs.db
+Desktop.ini

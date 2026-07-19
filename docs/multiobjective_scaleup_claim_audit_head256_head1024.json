@@ -1,0 +1,553 @@
+{
+  "artifact_kind": "multiobjective_scaleup_claim_audit",
+  "comparisons": [
+    {
+      "baseline_mean": 0.0034822285363502064,
+      "claim_language": "may_claim_strict_significant_positive",
+      "comparison_constraints": {
+        "available_constraints_exact_1": true,
+        "metrics": {
+          "mean_protein_identity": 1.0,
+          "reading_frame_intact_fraction": 1.0,
+          "within_budget_fraction": 1.0
+        },
+        "missing_metrics": []
+      },
+      "comparison_id": "head256_mo_scalar_top64_vs_te_only",
+      "config_checks_ok": true,
+      "delta": 0.0073911750945904785,
+      "exists": true,
+      "expected_signal": "strict_positive",
+      "expected_signal_met": true,
+      "metric": "delta_oracle_te_vs_source",
+      "n_paired_seeds": 10,
+      "n_records": 256,
+      "paired_p": 0.004497751124437781,
+      "primary_row_exists": true,
+      "run": "mo_scalar_top64",
+      "run_mean": 0.010873403630940682,
+      "signal": "strict_positive",
+      "source": "benchmark/compare_mo_fusion_vs_te_only_head256.json"
+    },
+    {
+      "baseline_mean": 0.0034822285363502064,
+      "claim_language": "may_claim_strict_significant_positive",
+      "comparison_constraints": {
+        "available_constraints_exact_1": true,
+        "metrics": {
+          "mean_protein_identity": 1.0,
+          "reading_frame_intact_fraction": 1.0,
+          "within_budget_fraction": 1.0
+        },
+        "missing_metrics": []
+      },
+      "comparison_id": "head256_mo_pareto_top64_vs_te_only",
+      "config_checks_ok": true,
+      "delta": 0.006802888086087441,
+      "exists": true,
+      "expected_signal": "strict_positive",
+      "expected_signal_met": true,
+      "metric": "delta_oracle_te_vs_source",
+      "n_paired_seeds": 10,
+      "n_records": 256,
+      "paired_p": 0.004497751124437781,
+      "primary_row_exists": true,
+      "run": "mo_pareto_top64",
+      "run_mean": 0.010285116622437649,
+      "signal": "strict_positive",
+      "source": "benchmark/compare_mo_fusion_vs_te_only_head256.json"
+    },
+    {
+      "baseline_mean": 0.0034822285363502064,
+      "claim_language": "may_claim_strict_significant_positive",
+      "comparison_constraints": {
+        "available_constraints_exact_1": true,
+        "metrics": {
+          "mean_protein_identity": 1.0,
+          "reading_frame_intact_fraction": 1.0,
+          "within_budget_fraction": 1.0
+        },
+        "missing_metrics": []
+      },
+      "comparison_id": "head256_mo_grpo_top64_vs_te_only",
+      "config_checks_ok": true,
+      "delta": 0.007653849215211688,
+      "exists": true,
+      "expected_signal": "strict_positive",
+      "expected_signal_met": true,
+      "metric": "delta_oracle_te_vs_source",
+      "n_paired_seeds": 10,
+      "n_records": 256,
+      "paired_p": 0.004497751124437781,
+      "primary_row_exists": true,
+      "run": "mo_grpo_top64",
+      "run_mean": 0.011136077751561894,
+      "signal": "strict_positive",
+      "source": "benchmark/compare_mo_fusion_vs_te_only_head256.json"
+    },
+    {
+      "baseline_mean": 0.005027992621596925,
+      "claim_language": "may_claim_strict_significant_positive",
+      "comparison_constraints": {
+        "available_constraints_exact_1": true,
+        "metrics": {
+          "mean_protein_identity": 1.0,
+          "reading_frame_intact_fraction": 1.0,
+          "within_budget_fraction": 1.0
+        },
+        "missing_metrics": []
+      },
+      "comparison_id": "head256_mo_scalar_top64_vs_hardneg_v2",
+      "config_checks_ok": true,
+      "delta": 0.005845411009343759,
+      "exists": true,
+      "expected_signal": "strict_positive",
+      "expected_signal_met": true,
+      "metric": "delta_oracle_te_vs_source",
+      "n_paired_seeds": 10,
+      "n_records": 256,
+      "paired_p": 0.004497751124437781,
+      "primary_row_exists": true,
+      "run": "mo_scalar_top64",
+      "run_mean": 0.010873403630940682,
+      "signal": "strict_positive",
+      "source": "benchmark/compare_scalar_vs_hardneg_v2_head256.json"
+    },
+    {
+      "baseline_mean": 0.005027992621596925,
+      "claim_language": "may_claim_strict_significant_positive",
+      "comparison_constraints": {
+        "available_constraints_exact_1": true,
+        "metrics": {
+          "mean_protein_identity": 1.0,
+          "reading_frame_intact_fraction": 1.0,
+          "within_budget_fraction": 1.0
+        },
+        "missing_metrics": []
+      },
+      "comparison_id": "head256_mo_pareto_vs_hardneg_v2",
+      "config_checks_ok": true,
+      "delta": 0.0052571240008407235,
+      "exists": true,
+      "expected_signal": "strict_positive",
+      "expected_signal_met": true,
+      "metric": "delta_oracle_te_vs_source",
+      "n_paired_seeds": 10,
+      "n_records": 256,
+      "paired_p": 0.004497751124437781,
+      "primary_row_exists": true,
+      "run": "mo_pareto",
+      "run_mean": 0.010285116622437649,
+      "signal": "strict_positive",
+      "source": "benchmark/compare_pareto_vs_hardneg_v2_head256.json"
+    },
+    {
+      "baseline_mean": 0.005027992621596925,
+      "claim_language": "may_claim_strict_significant_positive",
+      "comparison_constraints": {
+        "available_constraints_exact_1": true,
+        "metrics": {
+          "mean_protein_identity": 1.0,
+          "reading_frame_intact_fraction": 1.0,
+          "within_budget_fraction": 1.0
+        },
+        "missing_metrics": []
+      },
+      "comparison_id": "head256_mo_grpo_vs_hardneg_v2",
+      "config_checks_ok": true,
+      "delta": 0.0061080851299649686,
+      "exists": true,
+      "expected_signal": "strict_positive",
+      "expected_signal_met": true,
+      "metric": "delta_oracle_te_vs_source",
+      "n_paired_seeds": 10,
+      "n_records": 256,
+      "paired_p": 0.004497751124437781,
+      "primary_row_exists": true,
+      "run": "mo_grpo",
+      "run_mean": 0.011136077751561894,
+      "signal": "strict_positive",
+      "source": "benchmark/compare_grpo_vs_hardneg_v2_head256.json"
+    },
+    {
+      "baseline_mean": 0.010873403630940682,
+      "claim_language": "numeric_positive_only_no_significance_claim",
+      "comparison_constraints": {
+        "available_constraints_exact_1": true,
+        "metrics": {
+          "mean_protein_identity": 1.0,
+          "reading_frame_intact_fraction": 1.0,
+          "within_budget_fraction": 1.0
+        },
+        "missing_metrics": []
+      },
+      "comparison_id": "head256_grpo_vs_scalar",
+      "config_checks_ok": true,
+      "delta": 0.0002626741206212098,
+      "exists": true,
+      "expected_signal": "positive_not_significant",
+      "expected_signal_met": true,
+      "metric": "delta_oracle_te_vs_source",
+      "n_paired_seeds": 10,
+      "n_records": 256,
+      "paired_p": 0.43478260869565216,
+      "primary_row_exists": true,
+      "run": "mo_grpo",
+      "run_mean": 0.011136077751561894,
+      "signal": "positive_not_significant",
+      "source": "benchmark/compare_grpo_vs_scalar_head256.json"
+    },
+    {
+      "baseline_mean": 0.010285116622437649,
+      "claim_language": "numeric_positive_only_no_significance_claim",
+      "comparison_constraints": {
+        "available_constraints_exact_1": true,
+        "metrics": {
+          "mean_protein_identity": 1.0,
+          "reading_frame_intact_fraction": 1.0,
+          "within_budget_fraction": 1.0
+        },
+        "missing_metrics": []
+      },
+      "comparison_id": "head256_scalar_vs_pareto",
+      "config_checks_ok": true,
+      "delta": 0.0005882870085030358,
+      "exists": true,
+      "expected_signal": "positive_not_significant",
+      "expected_signal_met": true,
+      "metric": "delta_oracle_te_vs_source",
+      "n_paired_seeds": 10,
+      "n_records": 256,
+      "paired_p": 0.21389305347326337,
+      "primary_row_exists": true,
+      "run": "mo_scalar",
+      "run_mean": 0.010873403630940682,
+      "signal": "positive_not_significant",
+      "source": "benchmark/compare_scalar_vs_pareto_head256.json"
+    },
+    {
+      "baseline_mean": 0.008464839516141364,
+      "claim_language": "numeric_positive_only_no_significance_claim",
+      "comparison_constraints": {
+        "available_constraints_exact_1": true,
+        "metrics": {
+          "mean_protein_identity": 1.0,
+          "reading_frame_intact_fraction": 1.0,
+          "within_budget_fraction": 1.0
+        },
+        "missing_metrics": []
+      },
+      "comparison_id": "head1024_mo_scalar_top64_vs_te_only",
+      "config_checks_ok": true,
+      "delta": 8.398692814247013e-05,
+      "exists": true,
+      "expected_signal": "positive_not_significant",
+      "expected_signal_met": true,
+      "metric": "delta_oracle_te_vs_source",
+      "n_paired_seeds": 10,
+      "n_records": 1024,
+      "paired_p": 0.7446276861569215,
+      "primary_row_exists": true,
+      "run": "mo_scalar_top64",
+      "run_mean": 0.008548826444283833,
+      "signal": "positive_not_significant",
+      "source": "benchmark/compare_mo_fusion_vs_te_only_head1024.json"
+    },
+    {
+      "baseline_mean": 0.008464839516141364,
+      "claim_language": "trend_or_borderline_only_no_strict_significance",
+      "comparison_constraints": {
+        "available_constraints_exact_1": true,
+        "metrics": {
+          "mean_protein_identity": 1.0,
+          "reading_frame_intact_fraction": 1.0,
+          "within_budget_fraction": 1.0
+        },
+        "missing_metrics": []
+      },
+      "comparison_id": "head1024_mo_pareto_top64_vs_te_only",
+      "config_checks_ok": true,
+      "delta": 0.0008079236397782952,
+      "exists": true,
+      "expected_signal": "borderline_positive",
+      "expected_signal_met": true,
+      "metric": "delta_oracle_te_vs_source",
+      "n_paired_seeds": 10,
+      "n_records": 1024,
+      "paired_p": 0.050474762618690654,
+      "primary_row_exists": true,
+      "run": "mo_pareto_top64",
+      "run_mean": 0.009272763155919657,
+      "signal": "borderline_positive",
+      "source": "benchmark/compare_mo_fusion_vs_te_only_head1024.json"
+    },
+    {
+      "baseline_mean": 0.008464839516141364,
+      "claim_language": "numeric_positive_only_no_significance_claim",
+      "comparison_constraints": {
+        "available_constraints_exact_1": true,
+        "metrics": {
+          "mean_protein_identity": 1.0,
+          "reading_frame_intact_fraction": 1.0,
+          "within_budget_fraction": 1.0
+        },
+        "missing_metrics": []
+      },
+      "comparison_id": "head1024_mo_grpo_top64_vs_te_only",
+      "config_checks_ok": true,
+      "delta": 5.5215266282776684e-05,
+      "exists": true,
+      "expected_signal": "positive_not_significant",
+      "expected_signal_met": true,
+      "metric": "delta_oracle_te_vs_source",
+      "n_paired_seeds": 10,
+      "n_records": 1024,
+      "paired_p": 0.8980509745127436,
+      "primary_row_exists": true,
+      "run": "mo_grpo_top64",
+      "run_mean": 0.008520054782424142,
+      "signal": "positive_not_significant",
+      "source": "benchmark/compare_mo_fusion_vs_te_only_head1024.json"
+    },
+    {
+      "baseline_mean": 0.0038544171514249604,
+      "claim_language": "may_claim_strict_significant_positive",
+      "comparison_constraints": {
+        "available_constraints_exact_1": true,
+        "metrics": {
+          "mean_protein_identity": 1.0,
+          "reading_frame_intact_fraction": 1.0,
+          "within_budget_fraction": 1.0
+        },
+        "missing_metrics": []
+      },
+      "comparison_id": "head1024_mo_scalar_top64_vs_hardneg_v2",
+      "config_checks_ok": true,
+      "delta": 0.004694409292858872,
+      "exists": true,
+      "expected_signal": "strict_positive",
+      "expected_signal_met": true,
+      "metric": "delta_oracle_te_vs_source",
+      "n_paired_seeds": 10,
+      "n_records": 1024,
+      "paired_p": 0.004497751124437781,
+      "primary_row_exists": true,
+      "run": "mo_scalar_top64",
+      "run_mean": 0.008548826444283833,
+      "signal": "strict_positive",
+      "source": "benchmark/compare_mo_fusion_vs_hardneg_v2_head1024.json"
+    },
+    {
+      "baseline_mean": 0.0038544171514249604,
+      "claim_language": "may_claim_strict_significant_positive",
+      "comparison_constraints": {
+        "available_constraints_exact_1": true,
+        "metrics": {
+          "mean_protein_identity": 1.0,
+          "reading_frame_intact_fraction": 1.0,
+          "within_budget_fraction": 1.0
+        },
+        "missing_metrics": []
+      },
+      "comparison_id": "head1024_mo_pareto_top64_vs_hardneg_v2",
+      "config_checks_ok": true,
+      "delta": 0.005418346004494698,
+      "exists": true,
+      "expected_signal": "strict_positive",
+      "expected_signal_met": true,
+      "metric": "delta_oracle_te_vs_source",
+      "n_paired_seeds": 10,
+      "n_records": 1024,
+      "paired_p": 0.004497751124437781,
+      "primary_row_exists": true,
+      "run": "mo_pareto_top64",
+      "run_mean": 0.009272763155919657,
+      "signal": "strict_positive",
+      "source": "benchmark/compare_mo_fusion_vs_hardneg_v2_head1024.json"
+    },
+    {
+      "baseline_mean": 0.0038544171514249604,
+      "claim_language": "may_claim_strict_significant_positive",
+      "comparison_constraints": {
+        "available_constraints_exact_1": true,
+        "metrics": {
+          "mean_protein_identity": 1.0,
+          "reading_frame_intact_fraction": 1.0,
+          "within_budget_fraction": 1.0
+        },
+        "missing_metrics": []
+      },
+      "comparison_id": "head1024_mo_grpo_top64_vs_hardneg_v2",
+      "config_checks_ok": true,
+      "delta": 0.004665637630999179,
+      "exists": true,
+      "expected_signal": "strict_positive",
+      "expected_signal_met": true,
+      "metric": "delta_oracle_te_vs_source",
+      "n_paired_seeds": 10,
+      "n_records": 1024,
+      "paired_p": 0.004497751124437781,
+      "primary_row_exists": true,
+      "run": "mo_grpo_top64",
+      "run_mean": 0.008520054782424142,
+      "signal": "strict_positive",
+      "source": "benchmark/compare_mo_fusion_vs_hardneg_v2_head1024.json"
+    }
+  ],
+  "primary_metric": "delta_oracle_te_vs_source",
+  "summary": {
+    "available_compare_constraints_exact_1": true,
+    "claim_policy": "head256 fusion-vs-control claims may be strict only where paired p < 0.05. The completed head1024 scale-up versus the stronger te_only control is not strictly significant; pareto is borderline/trend only, while all head1024 fusion modes remain strictly positive versus the older hardneg_v2 baseline.",
+    "comparison_rows_ready": true,
+    "expected_signal_contract_met": true,
+    "head1024_vs_hardneg_v2_all_strict": true,
+    "head1024_vs_te_only_best_signal": "borderline_positive",
+    "head1024_vs_te_only_strict_claim_allowed": false,
+    "head256_fusion_vs_hardneg_v2_all_strict": true,
+    "head256_fusion_vs_te_only_all_strict": true,
+    "ready_for_full_hard_constraint_claim_audit": true,
+    "summary_constraints_complete": true
+  },
+  "summary_constraints": [
+    {
+      "all_constraints_exact_1": true,
+      "exists": true,
+      "metrics": {
+        "legal_fraction": 1.0,
+        "mean_protein_identity": 1.0,
+        "reading_frame_intact_fraction": 1.0,
+        "within_budget_fraction": 1.0
+      },
+      "missing_metrics": [],
+      "mode": "te_only",
+      "path": "benchmark/multiseed_t5_public_head256_mo_te_only_top64/multiseed_summary.json",
+      "slice": "head256"
+    },
+    {
+      "all_constraints_exact_1": true,
+      "exists": true,
+      "metrics": {
+        "legal_fraction": 1.0,
+        "mean_protein_identity": 1.0,
+        "reading_frame_intact_fraction": 1.0,
+        "within_budget_fraction": 1.0
+      },
+      "missing_metrics": [],
+      "mode": "scalar",
+      "path": "benchmark/multiseed_t5_public_head256_mo_scalar_top64/multiseed_summary.json",
+      "slice": "head256"
+    },
+    {
+      "all_constraints_exact_1": true,
+      "exists": true,
+      "metrics": {
+        "legal_fraction": 1.0,
+        "mean_protein_identity": 1.0,
+        "reading_frame_intact_fraction": 1.0,
+        "within_budget_fraction": 1.0
+      },
+      "missing_metrics": [],
+      "mode": "pareto",
+      "path": "benchmark/multiseed_t5_public_head256_mo_pareto_top64/multiseed_summary.json",
+      "slice": "head256"
+    },
+    {
+      "all_constraints_exact_1": true,
+      "exists": true,
+      "metrics": {
+        "legal_fraction": 1.0,
+        "mean_protein_identity": 1.0,
+        "reading_frame_intact_fraction": 1.0,
+        "within_budget_fraction": 1.0
+      },
+      "missing_metrics": [],
+      "mode": "grpo",
+      "path": "benchmark/multiseed_t5_public_head256_mo_grpo_top64/multiseed_summary.json",
+      "slice": "head256"
+    },
+    {
+      "all_constraints_exact_1": true,
+      "exists": true,
+      "metrics": {
+        "legal_fraction": 1.0,
+        "mean_protein_identity": 1.0,
+        "reading_frame_intact_fraction": 1.0,
+        "within_budget_fraction": 1.0
+      },
+      "missing_metrics": [],
+      "mode": "hardneg_v2",
+      "path": "benchmark/multiseed_t5_public_head256_hardneg_v2_top64/multiseed_summary.json",
+      "slice": "head256"
+    },
+    {
+      "all_constraints_exact_1": true,
+      "exists": true,
+      "metrics": {
+        "legal_fraction": 1.0,
+        "mean_protein_identity": 1.0,
+        "reading_frame_intact_fraction": 1.0,
+        "within_budget_fraction": 1.0
+      },
+      "missing_metrics": [],
+      "mode": "te_only",
+      "path": "benchmark/multiseed_t5_public_head1024_mo_te_only_top64/multiseed_summary.json",
+      "slice": "head1024"
+    },
+    {
+      "all_constraints_exact_1": true,
+      "exists": true,
+      "metrics": {
+        "legal_fraction": 1.0,
+        "mean_protein_identity": 1.0,
+        "reading_frame_intact_fraction": 1.0,
+        "within_budget_fraction": 1.0
+      },
+      "missing_metrics": [],
+      "mode": "scalar",
+      "path": "benchmark/multiseed_t5_public_head1024_mo_scalar_top64/multiseed_summary.json",
+      "slice": "head1024"
+    },
+    {
+      "all_constraints_exact_1": true,
+      "exists": true,
+      "metrics": {
+        "legal_fraction": 1.0,
+        "mean_protein_identity": 1.0,
+        "reading_frame_intact_fraction": 1.0,
+        "within_budget_fraction": 1.0
+      },
+      "missing_metrics": [],
+      "mode": "pareto",
+      "path": "benchmark/multiseed_t5_public_head1024_mo_pareto_top64/multiseed_summary.json",
+      "slice": "head1024"
+    },
+    {
+      "all_constraints_exact_1": true,
+      "exists": true,
+      "metrics": {
+        "legal_fraction": 1.0,
+        "mean_protein_identity": 1.0,
+        "reading_frame_intact_fraction": 1.0,
+        "within_budget_fraction": 1.0
+      },
+      "missing_metrics": [],
+      "mode": "grpo",
+      "path": "benchmark/multiseed_t5_public_head1024_mo_grpo_top64/multiseed_summary.json",
+      "slice": "head1024"
+    },
+    {
+      "all_constraints_exact_1": true,
+      "exists": true,
+      "metrics": {
+        "legal_fraction": 1.0,
+        "mean_protein_identity": 1.0,
+        "reading_frame_intact_fraction": 1.0,
+        "within_budget_fraction": 1.0
+      },
+      "missing_metrics": [],
+      "mode": "hardneg_v2",
+      "path": "benchmark/multiseed_t5_public_head1024_hardneg_v2_top64/multiseed_summary.json",
+      "slice": "head1024"
+    }
+  ]
+}

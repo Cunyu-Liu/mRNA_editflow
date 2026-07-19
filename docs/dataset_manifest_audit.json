@@ -1,0 +1,148 @@
+{
+  "artifact_kind": "dataset_manifest_audit",
+  "claim_policy": "Dataset manifest audit is reproducibility-governance evidence. Do not claim data scale-up or leakage-safe training until every required data version has source URL, SHA256, raw/clean record counts, drop statistics, split statistics, and record-file SHA verification where applicable.",
+  "project_root": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow",
+  "rows": [
+    {
+      "checks": {
+        "dataset_name_present": true,
+        "drop_stats": true,
+        "raw_file_sha256": true,
+        "record_counts": true,
+        "records_path": true,
+        "records_sha256": true,
+        "source_url": true,
+        "split_stats": true
+      },
+      "clean_n_records": 54680,
+      "complete": true,
+      "dataset": "gencode_human_transcripts",
+      "manifest_dataset_name": "gencode_human_transcripts",
+      "manifest_exists": true,
+      "manifest_path": "data/processed/gencode_human_transcripts.data_manifest.json",
+      "manifest_sha256": "abaad838be11160157c2e0b97307223faf2ba57a6cd9928282cff2bd93207ab0",
+      "missing_fields": [],
+      "raw_n_records": 111048,
+      "records": {
+        "actual_sha256": "5a74b0ea8d40065fd44383625ab17a4b4bc6e33b7185b67056edda7ecb7448d3",
+        "declared_path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/data/processed/gencode_human_transcripts.records.jsonl",
+        "declared_sha256": "5a74b0ea8d40065fd44383625ab17a4b4bc6e33b7185b67056edda7ecb7448d3",
+        "exists": true,
+        "local_path": "data/processed/gencode_human_transcripts.records.jsonl",
+        "sha256_matches": true
+      },
+      "required_for": "base_training_corpus",
+      "split_sidecar": {
+        "exists": true,
+        "external_records_provided": true,
+        "n_clusters": 13706,
+        "n_test": 5468,
+        "n_train": 43744,
+        "n_val": 5468,
+        "path": "benchmark/gencode_family_leakage_protocol/report.json",
+        "sha256": "862f54901f7fbf8bb7225a43a22d520e7bd265eb13af91edf856d137a25f12d2",
+        "split_stats_pending": false,
+        "split_stats_ready": true,
+        "status_path": "benchmark/gencode_family_leakage_protocol/status.json",
+        "status_sha256": "d6514bb234dae00ea8f802e7a5ca5022a3b4791f08ab6c4e2acd82d2f42ff4ff",
+        "synthetic_smoke_only": false
+      }
+    },
+    {
+      "complete": false,
+      "dataset": "refseq_human_rna",
+      "manifest_exists": false,
+      "manifest_path": null,
+      "missing_fields": [
+        "manifest",
+        "source_url",
+        "raw_file_sha256",
+        "records_sha256",
+        "record_counts",
+        "drop_stats",
+        "split_stats"
+      ],
+      "required_for": "refseq_scaleup_corpus",
+      "split_sidecar": {
+        "exists": false,
+        "last_event": "wait_refseq_records",
+        "last_loadavg": null,
+        "path": null,
+        "split_stats_pending": true,
+        "split_stats_ready": false,
+        "status": "waiting_for_refseq_records",
+        "status_path": "benchmark/refseq_family_leakage_protocol/status.json",
+        "status_sha256": "bb7bd49eb15ab4ebb84859bb7fbb60af86a3c64315d5a5c0834e219326216aa3"
+      }
+    },
+    {
+      "complete": false,
+      "dataset": "mpra_te",
+      "manifest_exists": false,
+      "manifest_path": null,
+      "missing_fields": [
+        "manifest",
+        "source_url",
+        "raw_file_sha256",
+        "records_sha256",
+        "record_counts",
+        "drop_stats",
+        "split_stats"
+      ],
+      "required_for": "real_te_predictor",
+      "split_sidecar": {
+        "exists": false,
+        "last_event": null,
+        "last_loadavg": null,
+        "path": null,
+        "split_stats_pending": false,
+        "split_stats_ready": false,
+        "status": null,
+        "status_path": null,
+        "status_sha256": null
+      }
+    },
+    {
+      "complete": false,
+      "dataset": "stability_half_life",
+      "manifest_exists": false,
+      "manifest_path": null,
+      "missing_fields": [
+        "manifest",
+        "source_url",
+        "raw_file_sha256",
+        "records_sha256",
+        "record_counts",
+        "drop_stats",
+        "split_stats"
+      ],
+      "required_for": "real_stability_predictor",
+      "split_sidecar": {
+        "exists": false,
+        "last_event": null,
+        "last_loadavg": null,
+        "path": null,
+        "split_stats_pending": false,
+        "split_stats_ready": false,
+        "status": null,
+        "status_path": null,
+        "status_sha256": null
+      }
+    }
+  ],
+  "summary": {
+    "all_required_dataset_manifests_complete": false,
+    "incomplete_datasets": [
+      "refseq_human_rna",
+      "mpra_te",
+      "stability_half_life"
+    ],
+    "n_complete": 1,
+    "n_datasets": 4,
+    "n_manifests_present": 1,
+    "pending_split_sidecars": [
+      "refseq_human_rna"
+    ],
+    "ready_for_data_scale_claim": false
+  }
+}

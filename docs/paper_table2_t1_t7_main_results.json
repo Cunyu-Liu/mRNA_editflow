@@ -1,0 +1,142 @@
+{
+  "artifact_kind": "paper_table2_t1_t7_main_results",
+  "claim_policy": "Table 2 is an internal proxy/constraint table. It supports constrained local optimization claims only. It does not support wet-lab validation, external SOTA reproduction, speed SOTA, or full de novo mRNA generation claims.",
+  "project_root": "/Users/bytedance/Documents/research/mrna_editflow",
+  "rows": [
+    {
+      "claim_language": "Strict positive proxy-TE claim vs te_only and hardneg_v2; not wet-lab expression.",
+      "hard_constraints": "legal/protein/budget/frame = 1.0",
+      "n_seeds": 10,
+      "paired_p": [
+        {
+          "comparison": "mo_grpo vs te_only",
+          "metric": "delta_oracle_te_vs_source",
+          "n_paired_seeds": 10,
+          "paired_p": 0.004497751124437781
+        },
+        {
+          "comparison": "mo_grpo vs hardneg_v2",
+          "metric": "delta_oracle_te_vs_source",
+          "n_paired_seeds": 10,
+          "paired_p": 0.004497751124437781
+        }
+      ],
+      "paired_p_status": "available",
+      "primary_result": "legal=1.0000; delta_TE=0.01114; mean_TE=0.79097; mean_MRL=8.3923",
+      "sources": [
+        "benchmark/t1_t7_evidence_status_head256.json",
+        "benchmark/compare_mo_fusion_vs_te_only_head256.json",
+        "benchmark/compare_grpo_vs_hardneg_v2_head256.json"
+      ],
+      "task": "T1",
+      "task_name": "Validity / Oracle TE"
+    },
+    {
+      "claim_language": "No local distribution-collapse signal; still needs external split alignment.",
+      "hard_constraints": "distribution-collapse flag = False",
+      "n_seeds": 10,
+      "paired_p": [],
+      "paired_p_status": "NA_distribution_audit_no_paired_claim",
+      "primary_result": "kmer_JS=0.00001; codon_KL=0.00000; GC_length_dist=0.00225; length_delta=0.00000",
+      "sources": [
+        "benchmark/t2_t3_distribution_novelty_report_head256_head1024.json"
+      ],
+      "task": "T2",
+      "task_name": "Distribution preservation"
+    },
+    {
+      "claim_language": "Novel but not de novo: exact source matches are non-zero.",
+      "hard_constraints": "novelty exact; pairwise sampled",
+      "n_seeds": 10,
+      "paired_p": [],
+      "paired_p_status": "NA_novelty_audit_no_paired_claim",
+      "primary_result": "mean_novelty=0.00326; exact_match=0.01172; unique=0.99609; pairwise=0.51777 (64/32640 sampled)",
+      "sources": [
+        "benchmark/t2_t3_distribution_novelty_report_head256_head1024.json"
+      ],
+      "task": "T3",
+      "task_name": "Diversity / Novelty"
+    },
+    {
+      "claim_language": "Exact protein-identity and CAI/GC proxy claim; not external LinearDesign/codonGPT/MFE.",
+      "hard_constraints": "protein identity = 1.0",
+      "n_seeds": 10,
+      "paired_p": [],
+      "paired_p_status": "NA_constructive_DP_hard_constraint",
+      "primary_result": "protein_identity_exact_1=True; local_DP_delta_CAI=0.02682; protein_conditioned_delta_CAI=0.27092",
+      "sources": [
+        "benchmark/t4_protein_identity_cai_gc_report_head256.json"
+      ],
+      "task": "T4",
+      "task_name": "Protein identity / CDS CAI-GC"
+    },
+    {
+      "claim_language": "Budget curve supports controllable local edits; larger budgets increase edits.",
+      "hard_constraints": "legal/protein/budget/frame = 1.0",
+      "n_seeds": 10,
+      "paired_p": [],
+      "paired_p_status": "NA_curve_audit_no_single_paired_claim",
+      "primary_result": "budget3_delta_TE=0.01114; budget3_edit_distance=2.9527; budget10_delta_TE=0.02796; within_budget=1.0000",
+      "sources": [
+        "benchmark/edit_budget_curve_report_head256_head1024.json"
+      ],
+      "task": "T5",
+      "task_name": "Edit budget"
+    },
+    {
+      "claim_language": "Accurate length control under hard constraints; positive lengthening hurts proxy TE.",
+      "hard_constraints": "legal/protein/budget/frame = 1.0",
+      "n_seeds": 10,
+      "paired_p": [],
+      "paired_p_status": "NA_control_curve_no_single_paired_claim",
+      "primary_result": "head256_max_abs_error=0.35156; head1024_max_abs_error=0.52051; deltas=-30/-15/0/+15/+30",
+      "sources": [
+        "benchmark/t6_length_curve_report_head256_head1024.json"
+      ],
+      "task": "T6",
+      "task_name": "Length control"
+    },
+    {
+      "claim_language": "Frame is controlled; grpo increases uAUG vs te_only, so do not claim uAUG safety improvement.",
+      "hard_constraints": "frame/protein/budget = 1.0 in constructive edit benchmark",
+      "n_seeds": 10,
+      "paired_p": [
+        {
+          "comparison": "mo_grpo vs te_only",
+          "delta": 0.0078125,
+          "direction_note": "lower_is_safer",
+          "metric": "uAUG_presence_fraction",
+          "n_paired_seeds": 10,
+          "paired_p": 0.04047976011994003
+        }
+      ],
+      "paired_p_status": "available_for_uAUG_safety_side_effect",
+      "primary_result": "frame=1.0000; uAUG_presence=0.34375; constructive_insert_success=0.99336; constructive_excise_success=0.99336",
+      "sources": [
+        "benchmark/t7_motif_frame_report_head256.json",
+        "benchmark/t7_motif_edit_benchmark_head256/summary.json"
+      ],
+      "task": "T7",
+      "task_name": "Motif / Frame"
+    }
+  ],
+  "summary": {
+    "all_tasks_present": true,
+    "n_tasks": 7,
+    "paired_p_available_tasks": [
+      "T1",
+      "T7"
+    ],
+    "paired_p_na_tasks": [
+      "T2",
+      "T3",
+      "T4",
+      "T5",
+      "T6"
+    ],
+    "ready_for_external_sota_claim": false,
+    "ready_for_full_de_novo_claim": false,
+    "ready_for_wet_lab_claim": false,
+    "table_ready_for_internal_proxy_paper_draft": true
+  }
+}

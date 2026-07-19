@@ -1,0 +1,140 @@
+{
+  "alias_audit_passed": true,
+  "artifact_kind": "p0_data_reconstruction_v2_remediation_result",
+  "combined_dir": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/data/reconstructed/p0_data_reconstruction_v1/combined",
+  "combined_manifest": {
+    "alias_blocker_lifted": false,
+    "block_reasons": [
+      "exhaustive_cross_role_near_neighbor_audit_violations_found"
+    ],
+    "manifest_path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/data/reconstructed/p0_data_reconstruction_v1/combined/combined_reconstruction_manifest.json",
+    "manifest_sha256": "87932237cf8b4ee0deabfe2c3bb61fb7ff0e26e7c200adee5a89bf7553ada6ed",
+    "paper_eligible": false
+  },
+  "remediation_summary": {
+    "combined_family": {
+      "excluded_after": 395,
+      "excluded_before": 0,
+      "test_after": 14700,
+      "test_before": 14884,
+      "test_removed": 184,
+      "val_after": 14673,
+      "val_before": 14884,
+      "val_removed": 211,
+      "violations_after": 0,
+      "violations_before": 2040
+    },
+    "gencode_family": {
+      "excluded_after": 116,
+      "excluded_before": 0,
+      "test_after": 5418,
+      "test_before": 5468,
+      "test_removed": 50,
+      "val_after": 5402,
+      "val_before": 5468,
+      "val_removed": 66,
+      "violations_after": 0,
+      "violations_before": 188
+    },
+    "gencode_to_refseq": {
+      "excluded_after": 89683,
+      "excluded_before": 89492,
+      "test_after": 2205,
+      "test_before": 2297,
+      "test_removed": 92,
+      "val_after": 2275,
+      "val_before": 2374,
+      "val_removed": 99,
+      "violations_after": 0,
+      "violations_before": 727
+    },
+    "refseq_family": {
+      "excluded_after": 234,
+      "excluded_before": 0,
+      "test_after": 9316,
+      "test_before": 9416,
+      "test_removed": 100,
+      "val_after": 9282,
+      "val_before": 9416,
+      "val_removed": 134,
+      "violations_after": 0,
+      "violations_before": 2058
+    }
+  },
+  "split_results": {
+    "combined_family": {
+      "alias_audit_path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/benchmark/dev/p0_data_reconstruction_v1/combined_family/alias_audit.json",
+      "alias_audit_sha256": "7793f7d3b6e86a5bdefa1e21394d0691944034944699045ac4d2f565df304440",
+      "block_reasons": [],
+      "dataset_id": "p0_data_reconstruction_v1_combined_family",
+      "excluded_count": 395,
+      "manifest_path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/benchmark/dev/p0_data_reconstruction_v1/combined_family/split_manifest.json",
+      "manifest_sha256": "0b780676ba61b4288ca45fc22630313c38102666f23939b39abd9b633c1a459f",
+      "near_neighbor_audit_path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/benchmark/dev/p0_data_reconstruction_v1/combined_family/near_neighbor_audit.json",
+      "near_neighbor_audit_sha256": "a044ebc269edce1a5ea80a043065dd50bfa184255a9ac4dfc731262324efc068",
+      "paper_eligible": true,
+      "records_count": 148843,
+      "role_counts": {
+        "test": 14700,
+        "train": 119075,
+        "val": 14673
+      }
+    },
+    "gencode_family": {
+      "alias_audit_path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/benchmark/dev/p0_data_reconstruction_v1/gencode_family/alias_audit.json",
+      "alias_audit_sha256": "7793f7d3b6e86a5bdefa1e21394d0691944034944699045ac4d2f565df304440",
+      "block_reasons": [],
+      "dataset_id": "p0_data_reconstruction_v1_gencode_family",
+      "excluded_count": 116,
+      "manifest_path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/benchmark/dev/p0_data_reconstruction_v1/gencode_family/split_manifest.json",
+      "manifest_sha256": "51c5861d1f01ed7386e20b5fa44dd413c3ced9f0b3741afacc6c8d51e33efb18",
+      "near_neighbor_audit_path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/benchmark/dev/p0_data_reconstruction_v1/gencode_family/near_neighbor_audit.json",
+      "near_neighbor_audit_sha256": "59020cb349d5f4e2e5f827872a29fdbd59bad8eece637864eca9c0bd621d2c52",
+      "paper_eligible": true,
+      "records_count": 54680,
+      "role_counts": {
+        "test": 5418,
+        "train": 43744,
+        "val": 5402
+      }
+    },
+    "gencode_to_refseq": {
+      "alias_audit_path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/benchmark/dev/p0_data_reconstruction_v1/gencode_to_refseq/alias_audit.json",
+      "alias_audit_sha256": "7793f7d3b6e86a5bdefa1e21394d0691944034944699045ac4d2f565df304440",
+      "block_reasons": [],
+      "dataset_id": "p0_data_reconstruction_v1_gencode_to_refseq",
+      "excluded_count": 89683,
+      "manifest_path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/benchmark/dev/p0_data_reconstruction_v1/gencode_to_refseq/split_manifest.json",
+      "manifest_sha256": "152886f0876c7a47d63fdaf64d6f226eb86a8a82fef8db7337b0db6ccd12a7dd",
+      "near_neighbor_audit_path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/benchmark/dev/p0_data_reconstruction_v1/gencode_to_refseq/near_neighbor_audit.json",
+      "near_neighbor_audit_sha256": "40ded7f9237a2887cc944acff1ec3847a2116fdea9a0ba8a672654e2e63e8af5",
+      "paper_eligible": true,
+      "records_count": 148843,
+      "role_counts": {
+        "test": 2205,
+        "train": 54680,
+        "val": 2275
+      }
+    },
+    "refseq_family": {
+      "alias_audit_path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/benchmark/dev/p0_data_reconstruction_v1/refseq_family/alias_audit.json",
+      "alias_audit_sha256": "7793f7d3b6e86a5bdefa1e21394d0691944034944699045ac4d2f565df304440",
+      "block_reasons": [],
+      "dataset_id": "p0_data_reconstruction_v1_refseq_family",
+      "excluded_count": 234,
+      "manifest_path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/benchmark/dev/p0_data_reconstruction_v1/refseq_family/split_manifest.json",
+      "manifest_sha256": "e9d37b9a5082f2ea1b49270b267490d2106fed19e7ab7f18636a81a6a7a7d0f7",
+      "near_neighbor_audit_path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/benchmark/dev/p0_data_reconstruction_v1/refseq_family/near_neighbor_audit.json",
+      "near_neighbor_audit_sha256": "a9c782ef3d9df3a0d123b5c283ee20f646eb6a8114d770beac44c9c7abb96108",
+      "paper_eligible": true,
+      "records_count": 94163,
+      "role_counts": {
+        "test": 9316,
+        "train": 75331,
+        "val": 9282
+      }
+    }
+  },
+  "split_root": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/benchmark/dev/p0_data_reconstruction_v1",
+  "total_elapsed_seconds": 1052.34
+}

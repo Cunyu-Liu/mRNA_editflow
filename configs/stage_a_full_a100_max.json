@@ -1,0 +1,60 @@
+{
+  "data": {
+    "data_dir": "./data",
+    "max_5utr": 512,
+    "max_cds": 1536,
+    "max_3utr": 1024,
+    "length_buckets": [512, 1024, 2048, 3072],
+    "mmseqs_min_seq_id": 0.8,
+    "train_frac": 0.8,
+    "val_frac": 0.1,
+    "test_frac": 0.1,
+    "seed": 20260714
+  },
+  "backbone": {
+    "name": "none",
+    "hidden_dim": 384,
+    "freeze": true,
+    "cache_embeddings": true,
+    "weights_path": null,
+    "granularity": "nt"
+  },
+  "model": {
+    "model_dim": 768,
+    "num_layers": 12,
+    "num_heads": 12,
+    "ffn_mult": 4,
+    "dropout": 0.1,
+    "max_seq_len": 3072,
+    "use_region_film": true,
+    "use_codon_constraint": true,
+    "codon_indel": false,
+    "use_rope": true,
+    "use_aux_struct": false,
+    "aux_loss_weight": 0.0
+  },
+  "coupling": {
+    "empty_prob": 0.5,
+    "corruption_prob": 0.3,
+    "ortholog_prob": 0.2,
+    "sub_prob": 0.2,
+    "ins_prob": 0.1,
+    "del_prob": 0.1,
+    "min_x0_len": 8,
+    "max_x0_len": 64
+  },
+  "train": {
+    "epochs": 100000,
+    "batch_size": 1,
+    "grad_accum": 32,
+    "lr": 0.0001,
+    "weight_decay": 0.0,
+    "amp": true,
+    "grad_clip": 1.0,
+    "oom_batch_ladder": [1],
+    "nan_retry": 3,
+    "save_dir": "./ckpts/stage_a_full_a100_max_gencode_100k_seed0",
+    "profile_path": "./logs/stage_a_full_a100_max_gencode_100k_seed0.profile.jsonl",
+    "log_every": 20
+  }
+}

@@ -1,0 +1,361 @@
+{
+  "artifact_kind": "paper_table5_scale_law_readiness",
+  "claim_policy": "Table 5 is a scale-law readiness table over existing proxy/offline artifacts. It may report evaluation-head-size, edit-budget, length-control, and progress-log runtime audits, but it must not claim a true data-size x model-size x training-steps scaling law until those controlled sweeps exist.",
+  "claim_tier": "development_only",
+  "controlled_sweep_audit": {
+    "axes": {
+      "data_sizes": [
+        256,
+        1024
+      ],
+      "model_sizes": [
+        "tiny",
+        "small"
+      ],
+      "seeds": [
+        0
+      ],
+      "step_counts": [
+        200,
+        500
+      ]
+    },
+    "claim_policy": "This sweep is controlled Stage A infrastructure evidence. Do not claim a monotonic scale law until all planned runs finish and downstream T1-T7/proposal-ranking audits are generated.",
+    "last_event": "launched",
+    "latest_loadavg": null,
+    "load_gate_wait_events": 2402,
+    "n_complete": 0,
+    "n_incomplete": 8,
+    "n_runs": 8,
+    "plan_path": "benchmark/stage_a_scalelaw_p3p4_20260715_0714/plan.json",
+    "plan_ready": true,
+    "progress_path": "benchmark/stage_a_scalelaw_p3p4_20260715_0714/progress.jsonl",
+    "status": "queued_or_running",
+    "summary_exists": true,
+    "summary_path": "benchmark/stage_a_scalelaw_p3p4_20260715_0714/summary.json",
+    "sweep_id": "stage_a_scalelaw_p3p4_20260715_0714"
+  },
+  "curve_audit": {
+    "budget_head1024": {
+      "best_delta": 0.023545814484163253,
+      "best_x": 10,
+      "constraints_exact_1": true,
+      "first_delta": 0.0034082722393448833,
+      "last_delta": 0.023545814484163253,
+      "monotonic_non_decreasing_delta": true,
+      "n_rows": 5,
+      "section": "head1024_mo_pareto",
+      "status": "complete",
+      "x_values": [
+        1,
+        2,
+        3,
+        5,
+        10
+      ]
+    },
+    "budget_head256": {
+      "best_delta": 0.027959572506184194,
+      "best_x": 10,
+      "constraints_exact_1": true,
+      "first_delta": 0.004198013108828258,
+      "last_delta": 0.027959572506184194,
+      "monotonic_non_decreasing_delta": true,
+      "n_rows": 5,
+      "section": "head256_mo_grpo",
+      "status": "complete",
+      "x_values": [
+        1,
+        2,
+        3,
+        5,
+        10
+      ]
+    },
+    "length_head1024": {
+      "constraints_exact_1": true,
+      "max_mean_abs_length_error": 0.5205078125,
+      "positive_lengthening_min_delta_te": -0.04564917924943579,
+      "section": "head1024_stagea10k",
+      "status": "complete",
+      "targets": [
+        -30,
+        -15,
+        0,
+        15,
+        30
+      ],
+      "targets_complete": true
+    },
+    "length_head256": {
+      "constraints_exact_1": true,
+      "max_mean_abs_length_error": 0.3515625,
+      "positive_lengthening_min_delta_te": -0.04960955739156049,
+      "section": "head256_stagea10k",
+      "status": "complete",
+      "targets": [
+        -30,
+        -15,
+        0,
+        15,
+        30
+      ],
+      "targets_complete": true
+    }
+  },
+  "paper_eligible": false,
+  "project_root": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow",
+  "rows": [
+    {
+      "claim_language": "Head256 is strictly positive, but the stronger head1024 te_only control reduces the fusion gain to borderline/trend evidence only.",
+      "evidence": "head256 vs head1024 multi-objective fusion comparisons",
+      "result": "head256 grpo vs te_only: delta=+0.00765, p=0.00450, signal=strict_positive; head1024 pareto vs te_only: delta=+0.00081, p=0.05047, signal=borderline_positive",
+      "scale_dimension": "Evaluation head-size scale-up",
+      "signal": "observed_yield_contraction",
+      "sources": [
+        "docs/multiobjective_scaleup_claim_audit_head256_head1024.json"
+      ]
+    },
+    {
+      "claim_language": "Strictly positive versus the older hardneg_v2 baseline, but this does not override the non-strict head1024 result versus te_only.",
+      "evidence": "head1024 fusion modes vs old hardneg_v2 baseline",
+      "result": "head1024 pareto vs hardneg_v2: delta=+0.00542, p=0.00450, signal=strict_positive; all modes strict=True",
+      "scale_dimension": "Legacy-control scale-up",
+      "signal": "strict_vs_legacy_control_only",
+      "sources": [
+        "docs/multiobjective_scaleup_claim_audit_head256_head1024.json"
+      ]
+    },
+    {
+      "claim_language": "Larger edit budgets increase proxy TE under exact constraints; edit budget is an intervention-capacity sweep, not data/model/step scaling.",
+      "evidence": "budgets 1/2/3/5/10 at head256 and head1024",
+      "result": "head256 best budget=10 delta=+0.02796; head1024 best budget=10 delta=+0.02355; monotonic=(True, True)",
+      "scale_dimension": "Edit-budget curve",
+      "signal": "controlled_budget_curve_complete",
+      "sources": [
+        "benchmark/edit_budget_curve_report_head256_head1024.json"
+      ]
+    },
+    {
+      "claim_language": "Length control is complete and constraint-safe, but positive lengthening reduces proxy TE; this is control evidence, not a positive scale law.",
+      "evidence": "target deltas -30/-15/0/+15/+30 at head256 and head1024",
+      "result": "targets complete=(True, True); max mean abs length error=0.52051; positive lengthening min delta=(-0.04961, -0.04565)",
+      "scale_dimension": "Length-control curve",
+      "signal": "control_curve_complete_performance_mixed",
+      "sources": [
+        "benchmark/t6_length_curve_report_head256_head1024.json"
+      ]
+    },
+    {
+      "claim_language": "Useful runtime audit from progress logs only; do not report this as a strict hardware benchmark or speed SOTA.",
+      "evidence": "progress-log timing for primary head256/head1024 runs",
+      "result": "head256 records/s=2.1329, mean seed s=120.0270; head1024 records/s=8.4308, mean seed s=121.4591; throughput ratio=3.9528",
+      "scale_dimension": "Runtime / throughput audit",
+      "signal": "progress_log_runtime_audit_only",
+      "sources": [
+        "benchmark/t1_runtime_report_head256_head1024.json"
+      ]
+    },
+    {
+      "claim_language": "Required scale-law axes are now planned/queued, but true scale-law claims remain blocked until runs complete and downstream audits are generated.",
+      "evidence": "load-gated controlled Stage A scale-law sweep plan",
+      "result": "sweep=stage_a_scalelaw_p3p4_20260715_0714; data_sizes=[256, 1024]; model_sizes=['tiny', 'small']; steps=[200, 500]; runs complete=0/8; last_event=launched",
+      "scale_dimension": "Training data x model size x steps",
+      "signal": "required_scale_law_axes_queued_incomplete",
+      "sources": [
+        "benchmark/stage_a_scalelaw_p3p4_20260715_0714/plan.json",
+        "benchmark/stage_a_scalelaw_p3p4_20260715_0714/progress.jsonl"
+      ]
+    }
+  ],
+  "runtime_audit": {
+    "head1024_mo_pareto": {
+      "delta_oracle_te_vs_source": 0.009272763155919657,
+      "label": "head1024_mo_pareto",
+      "mean_seed_total_s": 121.45913262367249,
+      "n_records": 1024,
+      "observed_elapsed_scope": "complete_run_wall_clock",
+      "records_per_s_total": 8.430819304240787
+    },
+    "head256_mo_grpo": {
+      "delta_oracle_te_vs_source": 0.011136077751561894,
+      "label": "head256_mo_grpo",
+      "mean_seed_total_s": 120.02703711986541,
+      "n_records": 256,
+      "observed_elapsed_scope": "complete_seed_runtime_with_resume_markers",
+      "records_per_s_total": 2.132852781697383
+    }
+  },
+  "scaleup_audit": {
+    "head1024_pareto_vs_hardneg_v2": {
+      "baseline_mean": 0.0038544171514249604,
+      "claim_language": "may_claim_strict_significant_positive",
+      "comparison_constraints": {
+        "available_constraints_exact_1": true,
+        "metrics": {
+          "mean_protein_identity": 1.0,
+          "reading_frame_intact_fraction": 1.0,
+          "within_budget_fraction": 1.0
+        },
+        "missing_metrics": []
+      },
+      "comparison_id": "head1024_mo_pareto_top64_vs_hardneg_v2",
+      "config_checks_ok": true,
+      "delta": 0.005418346004494698,
+      "exists": true,
+      "expected_signal": "strict_positive",
+      "expected_signal_met": true,
+      "metric": "delta_oracle_te_vs_source",
+      "n_paired_seeds": 10,
+      "n_records": 1024,
+      "paired_p": 0.004497751124437781,
+      "primary_row_exists": true,
+      "run": "mo_pareto_top64",
+      "run_mean": 0.009272763155919657,
+      "signal": "strict_positive",
+      "source": "benchmark/compare_mo_fusion_vs_hardneg_v2_head1024.json"
+    },
+    "head1024_pareto_vs_te_only": {
+      "baseline_mean": 0.008464839516141364,
+      "claim_language": "trend_or_borderline_only_no_strict_significance",
+      "comparison_constraints": {
+        "available_constraints_exact_1": true,
+        "metrics": {
+          "mean_protein_identity": 1.0,
+          "reading_frame_intact_fraction": 1.0,
+          "within_budget_fraction": 1.0
+        },
+        "missing_metrics": []
+      },
+      "comparison_id": "head1024_mo_pareto_top64_vs_te_only",
+      "config_checks_ok": true,
+      "delta": 0.0008079236397782952,
+      "exists": true,
+      "expected_signal": "borderline_positive",
+      "expected_signal_met": true,
+      "metric": "delta_oracle_te_vs_source",
+      "n_paired_seeds": 10,
+      "n_records": 1024,
+      "paired_p": 0.050474762618690654,
+      "primary_row_exists": true,
+      "run": "mo_pareto_top64",
+      "run_mean": 0.009272763155919657,
+      "signal": "borderline_positive",
+      "source": "benchmark/compare_mo_fusion_vs_te_only_head1024.json"
+    },
+    "head256_grpo_vs_te_only": {
+      "baseline_mean": 0.0034822285363502064,
+      "claim_language": "may_claim_strict_significant_positive",
+      "comparison_constraints": {
+        "available_constraints_exact_1": true,
+        "metrics": {
+          "mean_protein_identity": 1.0,
+          "reading_frame_intact_fraction": 1.0,
+          "within_budget_fraction": 1.0
+        },
+        "missing_metrics": []
+      },
+      "comparison_id": "head256_mo_grpo_top64_vs_te_only",
+      "config_checks_ok": true,
+      "delta": 0.007653849215211688,
+      "exists": true,
+      "expected_signal": "strict_positive",
+      "expected_signal_met": true,
+      "metric": "delta_oracle_te_vs_source",
+      "n_paired_seeds": 10,
+      "n_records": 256,
+      "paired_p": 0.004497751124437781,
+      "primary_row_exists": true,
+      "run": "mo_grpo_top64",
+      "run_mean": 0.011136077751561894,
+      "signal": "strict_positive",
+      "source": "benchmark/compare_mo_fusion_vs_te_only_head256.json"
+    }
+  },
+  "summary": {
+    "controlled_sweep_complete": false,
+    "controlled_sweep_last_event": "launched",
+    "controlled_sweep_n_complete": 0,
+    "controlled_sweep_n_runs": 8,
+    "controlled_sweep_plan_ready": true,
+    "controlled_sweep_status": "queued_or_running",
+    "hard_constraints_exact_1": true,
+    "head1024_vs_te_only_best_signal": "borderline_positive",
+    "head1024_vs_te_only_strict_claim_allowed": false,
+    "incomplete_required_axes": [
+      "training_data_size",
+      "model_size",
+      "training_steps"
+    ],
+    "missing_required_axes": [],
+    "n_rows": 6,
+    "partial_axes": [
+      {
+        "axis": "evaluation_head_size",
+        "status": "available_partial",
+        "values": [
+          256,
+          1024
+        ]
+      },
+      {
+        "axis": "edit_budget",
+        "status": "available_control_curve",
+        "values": [
+          1,
+          2,
+          3,
+          5,
+          10
+        ]
+      },
+      {
+        "axis": "target_length_delta",
+        "status": "available_control_curve",
+        "values": [
+          -30,
+          -15,
+          0,
+          15,
+          30
+        ]
+      },
+      {
+        "axis": "runtime_progress_logs",
+        "status": "available_audit",
+        "values": [
+          "head256",
+          "head1024"
+        ]
+      },
+      {
+        "axis": "training_data_size",
+        "status": "queued_controlled_sweep",
+        "values": [
+          256,
+          1024
+        ]
+      },
+      {
+        "axis": "model_size",
+        "status": "queued_controlled_sweep",
+        "values": [
+          "tiny",
+          "small"
+        ]
+      },
+      {
+        "axis": "training_steps",
+        "status": "queued_controlled_sweep",
+        "values": [
+          200,
+          500
+        ]
+      }
+    ],
+    "ready_for_monotonic_scale_law_claim": false,
+    "ready_for_true_scale_law_claim": false,
+    "table_ready_for_scale_law_readiness_draft": true,
+    "yield_contraction_flag": true
+  }
+}

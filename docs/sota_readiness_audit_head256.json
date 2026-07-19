@@ -1,0 +1,1714 @@
+{
+  "artifact_kind": "sota_readiness_audit",
+  "positive_claim_gate": {
+    "allowed_claim_scope": "Constrained local full-length mRNA optimization/reranking with proxy/offline T1-T7 evidence. Do not state full de novo, wet-lab, external SOTA, or true scale-law claims until the blocking gates clear.",
+    "block_reasons": [
+      "external_sota_real_metrics_missing",
+      "full_de_novo_evidence_missing_or_overclaim_flagged",
+      "real_mpra_te_or_stability_data_missing",
+      "true_data_model_step_scale_law_missing",
+      "head1024_fusion_vs_strong_te_only_not_strict",
+      "wet_lab_validation_missing"
+    ],
+    "de_novo_overclaim_flag": true,
+    "evidence_paths": {
+      "data_scaleup_readiness": "docs/data_scaleup_readiness.json",
+      "external_sota_dry_run": "benchmark/external_sota/dry_run_t5_head1024/summary.json",
+      "external_sota_real_run_audit": "docs/external_sota_real_run_audit.json",
+      "multiobjective_scaleup_claims": "docs/multiobjective_scaleup_claim_audit_head256_head1024.json",
+      "t2_t3_distribution_novelty": "benchmark/t2_t3_distribution_novelty_report_head256_head1024.json"
+    },
+    "external_models_expected": 6,
+    "external_models_measured": 3,
+    "head1024_fusion_vs_strong_te_only_strict": false,
+    "head256_fusion_vs_te_only_strict_proxy": true,
+    "positive_sota_claim_ready": false,
+    "ready_for_external_sota_metric_claim": false,
+    "ready_for_full_de_novo_claim": false,
+    "ready_for_internal_proxy_constrained_optimization_claim": true,
+    "ready_for_real_te_or_stability_claim": false,
+    "ready_for_true_scale_law_claim": false,
+    "ready_for_wet_lab_claim": false
+  },
+  "sections": {
+    "external_sota_protocol": {
+      "audit": {
+        "artifact_kind": "external_sota_protocol_audit",
+        "input_pack_summary_path": "benchmark/external_sota/input_pack_t5_head1024/summary.json",
+        "real_run_audit_path": "docs/external_sota_real_run_audit.json",
+        "real_run_rows": [
+          {
+            "bad_output_rows": [],
+            "bad_summary_fields": [],
+            "constraint_failures": [],
+            "eligibility_contract_ok": true,
+            "eligibility_policy": null,
+            "expected_eligible_input_rows": 1024,
+            "expected_input_rows": 1024,
+            "failure_reasons": [],
+            "hard_constraints_exact_1": true,
+            "input_coverage_ok": true,
+            "metadata_failures": [],
+            "metadata_ok": true,
+            "model_name": "LinearDesign",
+            "n_failures": 0,
+            "n_inputs": 1024,
+            "n_outputs": 1024,
+            "output_fields_ok": true,
+            "outputs_jsonl": "benchmark/external_sota/real_runs_t5_head1024/LinearDesign/cds_outputs.jsonl",
+            "outputs_sha256": "01bf84d2118e00a76368ffb8a18a7ce9ba344bd486dcdc9c2e8c1d3d537c7751",
+            "protocol_fidelity": "unspecified",
+            "protocol_fidelity_sufficient_for_sota_reproduction": false,
+            "protocol_subset": false,
+            "real_metric_ready": true,
+            "real_runtime_ready": true,
+            "status": "measured",
+            "success_fraction": 1.0,
+            "summary_fields_ok": true,
+            "summary_path": "benchmark/external_sota/real_runs_t5_head1024/LinearDesign/summary.json",
+            "summary_sha256": "0ab5a5c654e092caf0368318f7df3d8865ca31b46b202cff65a0b0c5d35a6d2c",
+            "task_family": "cds_protein_conditioned"
+          },
+          {
+            "expected_input_rows": 1024,
+            "failure_reasons": [
+              "summary_missing"
+            ],
+            "hard_constraints_exact_1": false,
+            "model_name": "EnsembleDesign",
+            "n_failures": null,
+            "n_outputs": 0,
+            "outputs_jsonl": "benchmark/external_sota/real_runs_t5_head1024/EnsembleDesign/cds_outputs.jsonl",
+            "real_metric_ready": false,
+            "real_runtime_ready": false,
+            "status": "missing",
+            "summary_path": "benchmark/external_sota/real_runs_t5_head1024/EnsembleDesign/summary.json",
+            "task_family": "cds_protein_conditioned"
+          },
+          {
+            "expected_input_rows": 1024,
+            "failure_reasons": [
+              "summary_missing",
+              "outputs_jsonl_missing"
+            ],
+            "hard_constraints_exact_1": false,
+            "model_name": "codonGPT",
+            "n_failures": null,
+            "n_outputs": 0,
+            "outputs_jsonl": "benchmark/external_sota/real_runs_t5_head1024/codonGPT/cds_outputs.jsonl",
+            "real_metric_ready": false,
+            "real_runtime_ready": false,
+            "status": "missing",
+            "summary_path": "benchmark/external_sota/real_runs_t5_head1024/codonGPT/summary.json",
+            "task_family": "cds_protein_conditioned"
+          },
+          {
+            "expected_input_rows": 1024,
+            "failure_reasons": [
+              "summary_missing",
+              "outputs_jsonl_missing"
+            ],
+            "hard_constraints_exact_1": false,
+            "model_name": "Prot2RNA",
+            "n_failures": null,
+            "n_outputs": 0,
+            "outputs_jsonl": "benchmark/external_sota/real_runs_t5_head1024/Prot2RNA/cds_outputs.jsonl",
+            "real_metric_ready": false,
+            "real_runtime_ready": false,
+            "status": "missing",
+            "summary_path": "benchmark/external_sota/real_runs_t5_head1024/Prot2RNA/summary.json",
+            "task_family": "cds_protein_conditioned"
+          },
+          {
+            "bad_output_rows": [],
+            "bad_summary_fields": [],
+            "constraint_failures": [],
+            "eligibility_contract_ok": true,
+            "eligibility_policy": "official_input_length_25_100_strict",
+            "expected_eligible_input_rows": 315,
+            "expected_input_rows": 1024,
+            "failure_reasons": [],
+            "hard_constraints_exact_1": true,
+            "input_coverage_ok": true,
+            "metadata_failures": [],
+            "metadata_ok": true,
+            "model_name": "UTailoR",
+            "n_failures": 0,
+            "n_inputs": 1024,
+            "n_outputs": 315,
+            "output_fields_ok": true,
+            "outputs_jsonl": "benchmark/external_sota/real_runs_t5_head1024/UTailoR/utr5_outputs.jsonl",
+            "outputs_sha256": "1ae74c9223e2a0227076f8590de9f720828c4cccc93945a61b82e15d94ff65c3",
+            "protocol_fidelity": "official_public_code_and_weights_strict_25_100_nt_shared_public_subset_not_paper_dataset",
+            "protocol_fidelity_sufficient_for_sota_reproduction": false,
+            "protocol_subset": true,
+            "real_metric_ready": true,
+            "real_runtime_ready": true,
+            "status": "measured",
+            "success_fraction": 1.0,
+            "summary_fields_ok": true,
+            "summary_path": "benchmark/external_sota/real_runs_t5_head1024/UTailoR/summary.json",
+            "summary_sha256": "c1c141a923dd603c29d6617289da88f62227512da3df5816ef79d29e2f5c45f3",
+            "task_family": "utr5_only"
+          },
+          {
+            "bad_output_rows": [],
+            "bad_summary_fields": [],
+            "constraint_failures": [],
+            "eligibility_contract_ok": true,
+            "eligibility_policy": null,
+            "expected_eligible_input_rows": 1024,
+            "expected_input_rows": 1024,
+            "failure_reasons": [],
+            "hard_constraints_exact_1": true,
+            "input_coverage_ok": true,
+            "metadata_failures": [],
+            "metadata_ok": true,
+            "model_name": "UTRGAN",
+            "n_failures": 0,
+            "n_inputs": 1024,
+            "n_outputs": 1024,
+            "output_fields_ok": true,
+            "outputs_jsonl": "benchmark/external_sota/real_runs_t5_head1024/UTRGAN/utr5_outputs.jsonl",
+            "outputs_sha256": "26827ace4cbb8c25a633fc411bc8694e5327bf32f149012b392bd8fefdfa287d",
+            "protocol_fidelity": "official_code_budgeted_10_steps_vs_paper_default_10000",
+            "protocol_fidelity_sufficient_for_sota_reproduction": false,
+            "protocol_subset": false,
+            "real_metric_ready": true,
+            "real_runtime_ready": true,
+            "status": "measured",
+            "success_fraction": 1.0,
+            "summary_fields_ok": true,
+            "summary_path": "benchmark/external_sota/real_runs_t5_head1024/UTRGAN/summary.json",
+            "summary_sha256": "8cb3707b77528667c43739a2b03125d890896900faec158b745c7ae0d1cd1fdb",
+            "task_family": "utr5_only"
+          }
+        ],
+        "rows": [
+          {
+            "candidate_audit": [
+              {
+                "candidate": "LINEARDESIGN_BIN",
+                "env_value_set": true,
+                "kind": "env",
+                "resolved": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/scripts/external_lineardesign.sh",
+                "status": "executable"
+              }
+            ],
+            "citation": "Zhang et al., Algorithm for optimized mRNA design improves stability and immunogenicity, Nature 621:396-403, 2023.",
+            "command_candidates": [
+              "LINEARDESIGN_BIN",
+              "lineardesign",
+              "LinearDesign"
+            ],
+            "executable": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/scripts/external_lineardesign.sh",
+            "executable_source": "env:LINEARDESIGN_BIN",
+            "expected_inputs": "target protein sequence and codon-usage/structure objective weights.",
+            "expected_outputs": "CDS design co-optimized for folding stability and codon usage.",
+            "family": "dynamic-programming/lattice parsing mRNA optimizer",
+            "metrics": {},
+            "model_name": "LinearDesign",
+            "notes": "Use released software in the server benchmark; no local binary is bundled. Task context: T5. Dry-run only: no external executable was run and no metric is claimed unless status is executable_ready.",
+            "protocol_difference": "Protocol difference: LinearDesign is a deterministic CDS optimizer with strong biological validation; it is not trained as a stochastic full-transcript edit model and does not optimize UTR edits.",
+            "status": "executable_ready",
+            "task_id": "T5"
+          },
+          {
+            "candidate_audit": [
+              {
+                "candidate": "ENSEMBLEDESIGN_BIN",
+                "env_value_set": true,
+                "kind": "env",
+                "resolved": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/scripts/external_ensembledesign.sh",
+                "status": "executable"
+              }
+            ],
+            "citation": "Dai et al., EnsembleDesign: messenger RNA design minimizing ensemble free energy via probabilistic lattice parsing, Bioinformatics 41(Suppl.1):i391-i400, 2025.",
+            "command_candidates": [
+              "ENSEMBLEDESIGN_BIN",
+              "ensembledesign",
+              "EnsembleDesign"
+            ],
+            "executable": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/scripts/external_ensembledesign.sh",
+            "executable_source": "env:ENSEMBLEDESIGN_BIN",
+            "expected_inputs": "target protein/codon lattice and ensemble free-energy objective.",
+            "expected_outputs": "CDS designs minimizing ensemble free energy under codon constraints.",
+            "family": "probabilistic-lattice structure optimizer",
+            "metrics": {},
+            "model_name": "EnsembleDesign",
+            "notes": "External implementation is not bundled in the smoke environment. Task context: T5. Dry-run only: no external executable was run and no metric is claimed unless status is executable_ready.",
+            "protocol_difference": "Protocol difference: EnsembleDesign targets structure/codon optimization in the protein-conditioned CDS lattice; MEF should compare against it on CDS structure objectives, not full UTR editing tasks.",
+            "status": "executable_ready",
+            "task_id": "T5"
+          },
+          {
+            "candidate_audit": [
+              {
+                "candidate": "CODONGPT_BIN",
+                "env_value_set": false,
+                "kind": "env",
+                "resolved": null,
+                "status": "env_unset"
+              },
+              {
+                "candidate": "codongpt",
+                "kind": "path",
+                "resolved": null,
+                "status": "path_not_found"
+              },
+              {
+                "candidate": "codonGPT",
+                "kind": "path",
+                "resolved": null,
+                "status": "path_not_found"
+              }
+            ],
+            "citation": "Rajbanshi and Guruacharya, codonGPT: reinforcement learning on a generative language model enables scalable mRNA design, Nucleic Acids Research 53(22):gkaf1345, 2025.",
+            "command_candidates": [
+              "CODONGPT_BIN",
+              "codongpt",
+              "codonGPT"
+            ],
+            "executable": null,
+            "executable_source": null,
+            "expected_inputs": "protein/CDS target and biological constraints such as expression, stability and GC content.",
+            "expected_outputs": "optimized synonymous coding mRNA sequences.",
+            "family": "codon-level autoregressive generator plus RL optimizer",
+            "metrics": {},
+            "model_name": "codonGPT",
+            "notes": "External training data, policy weights and RL reward implementation are not bundled. Task context: T5. Dry-run only: no external executable was run and no metric is claimed unless status is executable_ready. No executable found via candidates ['CODONGPT_BIN', 'codongpt', 'codonGPT']. Set the documented *_BIN environment variable or install the tool on PATH before claiming external SOTA metrics.",
+            "protocol_difference": "Protocol difference: codonGPT focuses on CDS-constrained synonymous generation; it does not jointly edit 5'UTR, CDS and 3'UTR under one region-aware variable-length process.",
+            "status": "not_configured",
+            "task_id": "T5"
+          },
+          {
+            "candidate_audit": [
+              {
+                "candidate": "PROT2RNA_BIN",
+                "env_value_set": false,
+                "kind": "env",
+                "resolved": null,
+                "status": "env_unset"
+              },
+              {
+                "candidate": "prot2rna",
+                "kind": "path",
+                "resolved": null,
+                "status": "path_not_found"
+              },
+              {
+                "candidate": "Prot2RNA",
+                "kind": "path",
+                "resolved": null,
+                "status": "path_not_found"
+              }
+            ],
+            "citation": "Martinovic et al., Prot2RNA: A Diffusion Language Model for Protein-Conditioned mRNA Coding Sequence Generation, OpenReview ICLR 2026 submission.",
+            "command_candidates": [
+              "PROT2RNA_BIN",
+              "prot2rna",
+              "Prot2RNA"
+            ],
+            "executable": null,
+            "executable_source": null,
+            "expected_inputs": "protein sequence or amino-acid target, often with codon-usage constraints.",
+            "expected_outputs": "coding RNA sequence candidates.",
+            "family": "conditional codon/mRNA generator",
+            "metrics": {},
+            "model_name": "Prot2RNA",
+            "notes": "Weights and preprocessing are external to this repository. Task context: T5. Dry-run only: no external executable was run and no metric is claimed unless status is executable_ready. No executable found via candidates ['PROT2RNA_BIN', 'prot2rna', 'Prot2RNA']. Set the documented *_BIN environment variable or install the tool on PATH before claiming external SOTA metrics.",
+            "protocol_difference": "Protocol difference: Prot2RNA is protein/CDS-conditioned and does not directly model UTR editing or full-transcript variable-length tasks; comparisons should isolate CDS design from full mRNA generation.",
+            "status": "not_configured",
+            "task_id": "T5"
+          },
+          {
+            "candidate_audit": [
+              {
+                "candidate": "UTAILOR_BIN",
+                "env_value_set": true,
+                "kind": "env",
+                "resolved": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/scripts/external_utailor.sh",
+                "status": "executable"
+              }
+            ],
+            "citation": "Liu et al., Enhancing mRNA translation efficiency with discriminative and generative AI by optimizing 5' UTR sequences, iScience 28:113544, 2025.",
+            "command_candidates": [
+              "UTAILOR_BIN",
+              "utailor",
+              "UTailoR"
+            ],
+            "executable": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/scripts/external_utailor.sh",
+            "executable_source": "env:UTAILOR_BIN",
+            "expected_inputs": "5'UTR sequence and target mRNA context.",
+            "expected_outputs": "optimized 5'UTR candidates predicted and experimentally tested for translation efficiency.",
+            "family": "5'UTR discriminative-plus-generative optimizer",
+            "metrics": {},
+            "model_name": "UTailoR",
+            "notes": "Online service/model artifacts are external; local code records protocol only. Task context: T5. Dry-run only: no external executable was run and no metric is claimed unless status is executable_ready.",
+            "protocol_difference": "Protocol difference: UTailoR is focused on 5'UTR optimization; it does not preserve or edit CDS/3'UTR with an explicit CTMC grammar.",
+            "status": "executable_ready",
+            "task_id": "T5"
+          },
+          {
+            "candidate_audit": [
+              {
+                "candidate": "UTRGAN_BIN",
+                "env_value_set": true,
+                "kind": "env",
+                "resolved": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/scripts/external_utrgan.sh",
+                "status": "executable"
+              }
+            ],
+            "citation": "UTRGAN: GAN-based 5'UTR generation baseline for expression-control protocols.",
+            "command_candidates": [
+              "UTRGAN_BIN",
+              "utrgan",
+              "UTRGAN"
+            ],
+            "executable": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/scripts/external_utrgan.sh",
+            "executable_source": "env:UTRGAN_BIN",
+            "expected_inputs": "5'UTR sequence corpus and expression labels, often task-specific.",
+            "expected_outputs": "synthetic 5'UTR sequences or expression-optimized UTR candidates.",
+            "family": "generative 5'UTR GAN",
+            "metrics": {},
+            "model_name": "UTRGAN",
+            "notes": "No public checkpoint is bundled; local run records only the comparison protocol. Task context: T5. Dry-run only: no external executable was run and no metric is claimed unless status is executable_ready.",
+            "protocol_difference": "Protocol difference: UTRGAN optimizes/generates UTRs rather than full 5'UTR-CDS-3'UTR transcripts; it has no codon-frame edit operator and is not evaluated on variable-length edit tasks.",
+            "status": "executable_ready",
+            "task_id": "T5"
+          }
+        ],
+        "runtime_path": "benchmark/external_sota/dry_run_t5_head1024/runtime.json",
+        "summary": {
+          "dataset_ok": true,
+          "dry_run_models": [
+            "EnsembleDesign",
+            "LinearDesign",
+            "Prot2RNA",
+            "UTRGAN",
+            "UTailoR",
+            "codonGPT"
+          ],
+          "input_pack_claim_policy": "External SOTA input packs are reproducibility/preflight artifacts only. They define the exact input rows and expected output schema for external tools, but do not imply that LinearDesign, EnsembleDesign, codonGPT, Prot2RNA, UTailoR or UTRGAN has been executed, reproduced, or beaten.",
+          "input_pack_missing_artifacts": [],
+          "input_pack_models": [
+            "EnsembleDesign",
+            "LinearDesign",
+            "Prot2RNA",
+            "UTRGAN",
+            "UTailoR",
+            "codonGPT"
+          ],
+          "input_pack_ready": true,
+          "input_pack_summary_exists": true,
+          "missing_artifacts": [],
+          "model_set_consistent": true,
+          "n_executable_ready": 4,
+          "n_input_pack_cds_protein_rows": 1024,
+          "n_input_pack_skipped_invalid_cds": 0,
+          "n_input_pack_utr5_rows": 1024,
+          "n_models": 6,
+          "n_real_run_models_expected": 6,
+          "n_real_run_models_invalid": 0,
+          "n_real_run_models_measured": 3,
+          "n_real_run_models_missing": 3,
+          "protocol_ready": true,
+          "ready_for_external_real_metric_table": false,
+          "ready_for_external_sota_metric_claim": false,
+          "real_metric_policy": "Do not report accuracy/F1/TE/runtime metrics for an external method until its row status is executable_ready and a real adapter writes measured outputs under benchmark/external_sota/.",
+          "real_run_audit_complete": true,
+          "real_run_audit_exists": true,
+          "real_run_audit_models": [
+            "EnsembleDesign",
+            "LinearDesign",
+            "Prot2RNA",
+            "UTRGAN",
+            "UTailoR",
+            "codonGPT"
+          ],
+          "real_run_missing_artifacts": [],
+          "required_metadata_ok": true,
+          "rows_ok": true,
+          "runtime_exists": true,
+          "summary_exists": true,
+          "t5_external_utr_comparison_exists": true,
+          "t5_utr_descriptive_table_ready": true,
+          "t5_utr_mef_superiority_claim_ready": false,
+          "t5_utr_model_only_head_to_head_ready": false,
+          "table_exists": true
+        },
+        "summary_path": "benchmark/external_sota/dry_run_t5_head1024/summary.json",
+        "t5_external_utr_comparison_path": "docs/t5_external_utr_baseline_comparison.json",
+        "table_path": "benchmark/external_sota/dry_run_t5_head1024/table.md"
+      },
+      "persisted_audit_artifacts_exist": true,
+      "ready": true
+    },
+    "frozen_foundation_protocol": {
+      "audit": {
+        "artifact_kind": "frozen_foundation_protocol_audit",
+        "leakage_path": "benchmark/frozen_backbone_protocol_head256/leakage.json",
+        "runs": [
+          {
+            "backbone": "none",
+            "backbone_params": 3072,
+            "backbone_trainable_params": 0,
+            "best_loss": 3919.466796875,
+            "finite_loss": true,
+            "granularity": "nt",
+            "hidden_dim": 256,
+            "is_real": true,
+            "kind": "real",
+            "last_loss": 3919.466796875,
+            "note": "genuine trainable-quality signal (from-scratch light encoder).",
+            "steps": 1,
+            "trainable_params": 15191057,
+            "valid_quality_signal": true
+          },
+          {
+            "backbone": "helix_mrna",
+            "backbone_params": 2560,
+            "backbone_trainable_params": 0,
+            "best_loss": 3975.494140625,
+            "finite_loss": true,
+            "granularity": "nt",
+            "hidden_dim": 256,
+            "is_real": false,
+            "kind": "adapter-stub",
+            "last_loss": 3975.494140625,
+            "note": "placeholder encoder: loss reflects matched-budget pipeline plumbing ONLY, not the real foundation model's downstream quality. Do not cite as a SOTA metric.",
+            "steps": 1,
+            "trainable_params": 15191057,
+            "valid_quality_signal": false
+          },
+          {
+            "backbone": "mrnabert",
+            "backbone_params": 2560,
+            "backbone_trainable_params": 0,
+            "best_loss": 3973.014892578125,
+            "finite_loss": true,
+            "granularity": "nt",
+            "hidden_dim": 256,
+            "is_real": false,
+            "kind": "adapter-stub",
+            "last_loss": 3973.014892578125,
+            "note": "placeholder encoder: loss reflects matched-budget pipeline plumbing ONLY, not the real foundation model's downstream quality. Do not cite as a SOTA metric.",
+            "steps": 1,
+            "trainable_params": 15191057,
+            "valid_quality_signal": false
+          }
+        ],
+        "summary": {
+          "claim_policy": "Protocol ready means leakage-gated matched-budget plumbing is auditable. Placeholder external arms remain non-quotable until real foundation checkpoints are installed.",
+          "leakage_exists": true,
+          "leakage_gate_passed": true,
+          "matched_budget": true,
+          "missing_artifacts": [],
+          "n_real_arms": 1,
+          "n_stub_arms": 2,
+          "protocol_ready": true,
+          "runs_ok": true,
+          "summary_exists": true,
+          "table_exists": true
+        },
+        "summary_path": "benchmark/frozen_backbone_protocol_head256/summary.json",
+        "table_path": "benchmark/frozen_backbone_protocol_head256/table.md"
+      },
+      "persisted_audit_artifacts_exist": true,
+      "ready": true
+    },
+    "multiobjective_scaleup_claims": {
+      "audit": {
+        "artifact_kind": "multiobjective_scaleup_claim_audit",
+        "comparisons": [
+          {
+            "baseline_mean": 0.0034822285363502064,
+            "claim_language": "may_claim_strict_significant_positive",
+            "comparison_constraints": {
+              "available_constraints_exact_1": true,
+              "metrics": {
+                "mean_protein_identity": 1.0,
+                "reading_frame_intact_fraction": 1.0,
+                "within_budget_fraction": 1.0
+              },
+              "missing_metrics": []
+            },
+            "comparison_id": "head256_mo_scalar_top64_vs_te_only",
+            "config_checks_ok": true,
+            "delta": 0.0073911750945904785,
+            "exists": true,
+            "expected_signal": "strict_positive",
+            "expected_signal_met": true,
+            "metric": "delta_oracle_te_vs_source",
+            "n_paired_seeds": 10,
+            "n_records": 256,
+            "paired_p": 0.004497751124437781,
+            "primary_row_exists": true,
+            "run": "mo_scalar_top64",
+            "run_mean": 0.010873403630940682,
+            "signal": "strict_positive",
+            "source": "benchmark/compare_mo_fusion_vs_te_only_head256.json"
+          },
+          {
+            "baseline_mean": 0.0034822285363502064,
+            "claim_language": "may_claim_strict_significant_positive",
+            "comparison_constraints": {
+              "available_constraints_exact_1": true,
+              "metrics": {
+                "mean_protein_identity": 1.0,
+                "reading_frame_intact_fraction": 1.0,
+                "within_budget_fraction": 1.0
+              },
+              "missing_metrics": []
+            },
+            "comparison_id": "head256_mo_pareto_top64_vs_te_only",
+            "config_checks_ok": true,
+            "delta": 0.006802888086087441,
+            "exists": true,
+            "expected_signal": "strict_positive",
+            "expected_signal_met": true,
+            "metric": "delta_oracle_te_vs_source",
+            "n_paired_seeds": 10,
+            "n_records": 256,
+            "paired_p": 0.004497751124437781,
+            "primary_row_exists": true,
+            "run": "mo_pareto_top64",
+            "run_mean": 0.010285116622437649,
+            "signal": "strict_positive",
+            "source": "benchmark/compare_mo_fusion_vs_te_only_head256.json"
+          },
+          {
+            "baseline_mean": 0.0034822285363502064,
+            "claim_language": "may_claim_strict_significant_positive",
+            "comparison_constraints": {
+              "available_constraints_exact_1": true,
+              "metrics": {
+                "mean_protein_identity": 1.0,
+                "reading_frame_intact_fraction": 1.0,
+                "within_budget_fraction": 1.0
+              },
+              "missing_metrics": []
+            },
+            "comparison_id": "head256_mo_grpo_top64_vs_te_only",
+            "config_checks_ok": true,
+            "delta": 0.007653849215211688,
+            "exists": true,
+            "expected_signal": "strict_positive",
+            "expected_signal_met": true,
+            "metric": "delta_oracle_te_vs_source",
+            "n_paired_seeds": 10,
+            "n_records": 256,
+            "paired_p": 0.004497751124437781,
+            "primary_row_exists": true,
+            "run": "mo_grpo_top64",
+            "run_mean": 0.011136077751561894,
+            "signal": "strict_positive",
+            "source": "benchmark/compare_mo_fusion_vs_te_only_head256.json"
+          },
+          {
+            "baseline_mean": 0.005027992621596925,
+            "claim_language": "may_claim_strict_significant_positive",
+            "comparison_constraints": {
+              "available_constraints_exact_1": true,
+              "metrics": {
+                "mean_protein_identity": 1.0,
+                "reading_frame_intact_fraction": 1.0,
+                "within_budget_fraction": 1.0
+              },
+              "missing_metrics": []
+            },
+            "comparison_id": "head256_mo_scalar_top64_vs_hardneg_v2",
+            "config_checks_ok": true,
+            "delta": 0.005845411009343759,
+            "exists": true,
+            "expected_signal": "strict_positive",
+            "expected_signal_met": true,
+            "metric": "delta_oracle_te_vs_source",
+            "n_paired_seeds": 10,
+            "n_records": 256,
+            "paired_p": 0.004497751124437781,
+            "primary_row_exists": true,
+            "run": "mo_scalar_top64",
+            "run_mean": 0.010873403630940682,
+            "signal": "strict_positive",
+            "source": "benchmark/compare_scalar_vs_hardneg_v2_head256.json"
+          },
+          {
+            "baseline_mean": 0.005027992621596925,
+            "claim_language": "may_claim_strict_significant_positive",
+            "comparison_constraints": {
+              "available_constraints_exact_1": true,
+              "metrics": {
+                "mean_protein_identity": 1.0,
+                "reading_frame_intact_fraction": 1.0,
+                "within_budget_fraction": 1.0
+              },
+              "missing_metrics": []
+            },
+            "comparison_id": "head256_mo_pareto_vs_hardneg_v2",
+            "config_checks_ok": true,
+            "delta": 0.0052571240008407235,
+            "exists": true,
+            "expected_signal": "strict_positive",
+            "expected_signal_met": true,
+            "metric": "delta_oracle_te_vs_source",
+            "n_paired_seeds": 10,
+            "n_records": 256,
+            "paired_p": 0.004497751124437781,
+            "primary_row_exists": true,
+            "run": "mo_pareto",
+            "run_mean": 0.010285116622437649,
+            "signal": "strict_positive",
+            "source": "benchmark/compare_pareto_vs_hardneg_v2_head256.json"
+          },
+          {
+            "baseline_mean": 0.005027992621596925,
+            "claim_language": "may_claim_strict_significant_positive",
+            "comparison_constraints": {
+              "available_constraints_exact_1": true,
+              "metrics": {
+                "mean_protein_identity": 1.0,
+                "reading_frame_intact_fraction": 1.0,
+                "within_budget_fraction": 1.0
+              },
+              "missing_metrics": []
+            },
+            "comparison_id": "head256_mo_grpo_vs_hardneg_v2",
+            "config_checks_ok": true,
+            "delta": 0.0061080851299649686,
+            "exists": true,
+            "expected_signal": "strict_positive",
+            "expected_signal_met": true,
+            "metric": "delta_oracle_te_vs_source",
+            "n_paired_seeds": 10,
+            "n_records": 256,
+            "paired_p": 0.004497751124437781,
+            "primary_row_exists": true,
+            "run": "mo_grpo",
+            "run_mean": 0.011136077751561894,
+            "signal": "strict_positive",
+            "source": "benchmark/compare_grpo_vs_hardneg_v2_head256.json"
+          },
+          {
+            "baseline_mean": 0.010873403630940682,
+            "claim_language": "numeric_positive_only_no_significance_claim",
+            "comparison_constraints": {
+              "available_constraints_exact_1": true,
+              "metrics": {
+                "mean_protein_identity": 1.0,
+                "reading_frame_intact_fraction": 1.0,
+                "within_budget_fraction": 1.0
+              },
+              "missing_metrics": []
+            },
+            "comparison_id": "head256_grpo_vs_scalar",
+            "config_checks_ok": true,
+            "delta": 0.0002626741206212098,
+            "exists": true,
+            "expected_signal": "positive_not_significant",
+            "expected_signal_met": true,
+            "metric": "delta_oracle_te_vs_source",
+            "n_paired_seeds": 10,
+            "n_records": 256,
+            "paired_p": 0.43478260869565216,
+            "primary_row_exists": true,
+            "run": "mo_grpo",
+            "run_mean": 0.011136077751561894,
+            "signal": "positive_not_significant",
+            "source": "benchmark/compare_grpo_vs_scalar_head256.json"
+          },
+          {
+            "baseline_mean": 0.010285116622437649,
+            "claim_language": "numeric_positive_only_no_significance_claim",
+            "comparison_constraints": {
+              "available_constraints_exact_1": true,
+              "metrics": {
+                "mean_protein_identity": 1.0,
+                "reading_frame_intact_fraction": 1.0,
+                "within_budget_fraction": 1.0
+              },
+              "missing_metrics": []
+            },
+            "comparison_id": "head256_scalar_vs_pareto",
+            "config_checks_ok": true,
+            "delta": 0.0005882870085030358,
+            "exists": true,
+            "expected_signal": "positive_not_significant",
+            "expected_signal_met": true,
+            "metric": "delta_oracle_te_vs_source",
+            "n_paired_seeds": 10,
+            "n_records": 256,
+            "paired_p": 0.21389305347326337,
+            "primary_row_exists": true,
+            "run": "mo_scalar",
+            "run_mean": 0.010873403630940682,
+            "signal": "positive_not_significant",
+            "source": "benchmark/compare_scalar_vs_pareto_head256.json"
+          },
+          {
+            "baseline_mean": 0.008464839516141364,
+            "claim_language": "numeric_positive_only_no_significance_claim",
+            "comparison_constraints": {
+              "available_constraints_exact_1": true,
+              "metrics": {
+                "mean_protein_identity": 1.0,
+                "reading_frame_intact_fraction": 1.0,
+                "within_budget_fraction": 1.0
+              },
+              "missing_metrics": []
+            },
+            "comparison_id": "head1024_mo_scalar_top64_vs_te_only",
+            "config_checks_ok": true,
+            "delta": 8.398692814247013e-05,
+            "exists": true,
+            "expected_signal": "positive_not_significant",
+            "expected_signal_met": true,
+            "metric": "delta_oracle_te_vs_source",
+            "n_paired_seeds": 10,
+            "n_records": 1024,
+            "paired_p": 0.7446276861569215,
+            "primary_row_exists": true,
+            "run": "mo_scalar_top64",
+            "run_mean": 0.008548826444283833,
+            "signal": "positive_not_significant",
+            "source": "benchmark/compare_mo_fusion_vs_te_only_head1024.json"
+          },
+          {
+            "baseline_mean": 0.008464839516141364,
+            "claim_language": "trend_or_borderline_only_no_strict_significance",
+            "comparison_constraints": {
+              "available_constraints_exact_1": true,
+              "metrics": {
+                "mean_protein_identity": 1.0,
+                "reading_frame_intact_fraction": 1.0,
+                "within_budget_fraction": 1.0
+              },
+              "missing_metrics": []
+            },
+            "comparison_id": "head1024_mo_pareto_top64_vs_te_only",
+            "config_checks_ok": true,
+            "delta": 0.0008079236397782952,
+            "exists": true,
+            "expected_signal": "borderline_positive",
+            "expected_signal_met": true,
+            "metric": "delta_oracle_te_vs_source",
+            "n_paired_seeds": 10,
+            "n_records": 1024,
+            "paired_p": 0.050474762618690654,
+            "primary_row_exists": true,
+            "run": "mo_pareto_top64",
+            "run_mean": 0.009272763155919657,
+            "signal": "borderline_positive",
+            "source": "benchmark/compare_mo_fusion_vs_te_only_head1024.json"
+          },
+          {
+            "baseline_mean": 0.008464839516141364,
+            "claim_language": "numeric_positive_only_no_significance_claim",
+            "comparison_constraints": {
+              "available_constraints_exact_1": true,
+              "metrics": {
+                "mean_protein_identity": 1.0,
+                "reading_frame_intact_fraction": 1.0,
+                "within_budget_fraction": 1.0
+              },
+              "missing_metrics": []
+            },
+            "comparison_id": "head1024_mo_grpo_top64_vs_te_only",
+            "config_checks_ok": true,
+            "delta": 5.5215266282776684e-05,
+            "exists": true,
+            "expected_signal": "positive_not_significant",
+            "expected_signal_met": true,
+            "metric": "delta_oracle_te_vs_source",
+            "n_paired_seeds": 10,
+            "n_records": 1024,
+            "paired_p": 0.8980509745127436,
+            "primary_row_exists": true,
+            "run": "mo_grpo_top64",
+            "run_mean": 0.008520054782424142,
+            "signal": "positive_not_significant",
+            "source": "benchmark/compare_mo_fusion_vs_te_only_head1024.json"
+          },
+          {
+            "baseline_mean": 0.0038544171514249604,
+            "claim_language": "may_claim_strict_significant_positive",
+            "comparison_constraints": {
+              "available_constraints_exact_1": true,
+              "metrics": {
+                "mean_protein_identity": 1.0,
+                "reading_frame_intact_fraction": 1.0,
+                "within_budget_fraction": 1.0
+              },
+              "missing_metrics": []
+            },
+            "comparison_id": "head1024_mo_scalar_top64_vs_hardneg_v2",
+            "config_checks_ok": true,
+            "delta": 0.004694409292858872,
+            "exists": true,
+            "expected_signal": "strict_positive",
+            "expected_signal_met": true,
+            "metric": "delta_oracle_te_vs_source",
+            "n_paired_seeds": 10,
+            "n_records": 1024,
+            "paired_p": 0.004497751124437781,
+            "primary_row_exists": true,
+            "run": "mo_scalar_top64",
+            "run_mean": 0.008548826444283833,
+            "signal": "strict_positive",
+            "source": "benchmark/compare_mo_fusion_vs_hardneg_v2_head1024.json"
+          },
+          {
+            "baseline_mean": 0.0038544171514249604,
+            "claim_language": "may_claim_strict_significant_positive",
+            "comparison_constraints": {
+              "available_constraints_exact_1": true,
+              "metrics": {
+                "mean_protein_identity": 1.0,
+                "reading_frame_intact_fraction": 1.0,
+                "within_budget_fraction": 1.0
+              },
+              "missing_metrics": []
+            },
+            "comparison_id": "head1024_mo_pareto_top64_vs_hardneg_v2",
+            "config_checks_ok": true,
+            "delta": 0.005418346004494698,
+            "exists": true,
+            "expected_signal": "strict_positive",
+            "expected_signal_met": true,
+            "metric": "delta_oracle_te_vs_source",
+            "n_paired_seeds": 10,
+            "n_records": 1024,
+            "paired_p": 0.004497751124437781,
+            "primary_row_exists": true,
+            "run": "mo_pareto_top64",
+            "run_mean": 0.009272763155919657,
+            "signal": "strict_positive",
+            "source": "benchmark/compare_mo_fusion_vs_hardneg_v2_head1024.json"
+          },
+          {
+            "baseline_mean": 0.0038544171514249604,
+            "claim_language": "may_claim_strict_significant_positive",
+            "comparison_constraints": {
+              "available_constraints_exact_1": true,
+              "metrics": {
+                "mean_protein_identity": 1.0,
+                "reading_frame_intact_fraction": 1.0,
+                "within_budget_fraction": 1.0
+              },
+              "missing_metrics": []
+            },
+            "comparison_id": "head1024_mo_grpo_top64_vs_hardneg_v2",
+            "config_checks_ok": true,
+            "delta": 0.004665637630999179,
+            "exists": true,
+            "expected_signal": "strict_positive",
+            "expected_signal_met": true,
+            "metric": "delta_oracle_te_vs_source",
+            "n_paired_seeds": 10,
+            "n_records": 1024,
+            "paired_p": 0.004497751124437781,
+            "primary_row_exists": true,
+            "run": "mo_grpo_top64",
+            "run_mean": 0.008520054782424142,
+            "signal": "strict_positive",
+            "source": "benchmark/compare_mo_fusion_vs_hardneg_v2_head1024.json"
+          }
+        ],
+        "primary_metric": "delta_oracle_te_vs_source",
+        "summary": {
+          "available_compare_constraints_exact_1": true,
+          "claim_policy": "head256 fusion-vs-control claims may be strict only where paired p < 0.05. The completed head1024 scale-up versus the stronger te_only control is not strictly significant; pareto is borderline/trend only, while all head1024 fusion modes remain strictly positive versus the older hardneg_v2 baseline.",
+          "comparison_rows_ready": true,
+          "expected_signal_contract_met": true,
+          "head1024_vs_hardneg_v2_all_strict": true,
+          "head1024_vs_te_only_best_signal": "borderline_positive",
+          "head1024_vs_te_only_strict_claim_allowed": false,
+          "head256_fusion_vs_hardneg_v2_all_strict": true,
+          "head256_fusion_vs_te_only_all_strict": true,
+          "ready_for_full_hard_constraint_claim_audit": true,
+          "summary_constraints_complete": true
+        },
+        "summary_constraints": [
+          {
+            "all_constraints_exact_1": true,
+            "exists": true,
+            "metrics": {
+              "legal_fraction": 1.0,
+              "mean_protein_identity": 1.0,
+              "reading_frame_intact_fraction": 1.0,
+              "within_budget_fraction": 1.0
+            },
+            "missing_metrics": [],
+            "mode": "te_only",
+            "path": "benchmark/multiseed_t5_public_head256_mo_te_only_top64/multiseed_summary.json",
+            "slice": "head256"
+          },
+          {
+            "all_constraints_exact_1": true,
+            "exists": true,
+            "metrics": {
+              "legal_fraction": 1.0,
+              "mean_protein_identity": 1.0,
+              "reading_frame_intact_fraction": 1.0,
+              "within_budget_fraction": 1.0
+            },
+            "missing_metrics": [],
+            "mode": "scalar",
+            "path": "benchmark/multiseed_t5_public_head256_mo_scalar_top64/multiseed_summary.json",
+            "slice": "head256"
+          },
+          {
+            "all_constraints_exact_1": true,
+            "exists": true,
+            "metrics": {
+              "legal_fraction": 1.0,
+              "mean_protein_identity": 1.0,
+              "reading_frame_intact_fraction": 1.0,
+              "within_budget_fraction": 1.0
+            },
+            "missing_metrics": [],
+            "mode": "pareto",
+            "path": "benchmark/multiseed_t5_public_head256_mo_pareto_top64/multiseed_summary.json",
+            "slice": "head256"
+          },
+          {
+            "all_constraints_exact_1": true,
+            "exists": true,
+            "metrics": {
+              "legal_fraction": 1.0,
+              "mean_protein_identity": 1.0,
+              "reading_frame_intact_fraction": 1.0,
+              "within_budget_fraction": 1.0
+            },
+            "missing_metrics": [],
+            "mode": "grpo",
+            "path": "benchmark/multiseed_t5_public_head256_mo_grpo_top64/multiseed_summary.json",
+            "slice": "head256"
+          },
+          {
+            "all_constraints_exact_1": true,
+            "exists": true,
+            "metrics": {
+              "legal_fraction": 1.0,
+              "mean_protein_identity": 1.0,
+              "reading_frame_intact_fraction": 1.0,
+              "within_budget_fraction": 1.0
+            },
+            "missing_metrics": [],
+            "mode": "hardneg_v2",
+            "path": "benchmark/multiseed_t5_public_head256_hardneg_v2_top64/multiseed_summary.json",
+            "slice": "head256"
+          },
+          {
+            "all_constraints_exact_1": true,
+            "exists": true,
+            "metrics": {
+              "legal_fraction": 1.0,
+              "mean_protein_identity": 1.0,
+              "reading_frame_intact_fraction": 1.0,
+              "within_budget_fraction": 1.0
+            },
+            "missing_metrics": [],
+            "mode": "te_only",
+            "path": "benchmark/multiseed_t5_public_head1024_mo_te_only_top64/multiseed_summary.json",
+            "slice": "head1024"
+          },
+          {
+            "all_constraints_exact_1": true,
+            "exists": true,
+            "metrics": {
+              "legal_fraction": 1.0,
+              "mean_protein_identity": 1.0,
+              "reading_frame_intact_fraction": 1.0,
+              "within_budget_fraction": 1.0
+            },
+            "missing_metrics": [],
+            "mode": "scalar",
+            "path": "benchmark/multiseed_t5_public_head1024_mo_scalar_top64/multiseed_summary.json",
+            "slice": "head1024"
+          },
+          {
+            "all_constraints_exact_1": true,
+            "exists": true,
+            "metrics": {
+              "legal_fraction": 1.0,
+              "mean_protein_identity": 1.0,
+              "reading_frame_intact_fraction": 1.0,
+              "within_budget_fraction": 1.0
+            },
+            "missing_metrics": [],
+            "mode": "pareto",
+            "path": "benchmark/multiseed_t5_public_head1024_mo_pareto_top64/multiseed_summary.json",
+            "slice": "head1024"
+          },
+          {
+            "all_constraints_exact_1": true,
+            "exists": true,
+            "metrics": {
+              "legal_fraction": 1.0,
+              "mean_protein_identity": 1.0,
+              "reading_frame_intact_fraction": 1.0,
+              "within_budget_fraction": 1.0
+            },
+            "missing_metrics": [],
+            "mode": "grpo",
+            "path": "benchmark/multiseed_t5_public_head1024_mo_grpo_top64/multiseed_summary.json",
+            "slice": "head1024"
+          },
+          {
+            "all_constraints_exact_1": true,
+            "exists": true,
+            "metrics": {
+              "legal_fraction": 1.0,
+              "mean_protein_identity": 1.0,
+              "reading_frame_intact_fraction": 1.0,
+              "within_budget_fraction": 1.0
+            },
+            "missing_metrics": [],
+            "mode": "hardneg_v2",
+            "path": "benchmark/multiseed_t5_public_head1024_hardneg_v2_top64/multiseed_summary.json",
+            "slice": "head1024"
+          }
+        ]
+      },
+      "persisted_audit_artifacts_exist": true,
+      "ready": true
+    },
+    "protein_conditioned_gc_sweep": {
+      "audit": {
+        "artifact_kind": "protein_conditioned_gc_sweep_audit",
+        "identity_tolerance": 1e-12,
+        "jsonl_audit": {
+          "all_row_identity_exact_1": true,
+          "exists": true,
+          "malformed_rows": 0,
+          "n_rows": 2048,
+          "path": "benchmark/protein_conditioned_cds_gc_sweep_head256.jsonl"
+        },
+        "jsonl_path": "benchmark/protein_conditioned_cds_gc_sweep_head256.jsonl",
+        "md_path": "benchmark/protein_conditioned_cds_gc_sweep_head256.md",
+        "point_audits": [
+          {
+            "gc_weight": 0.0,
+            "is_pareto_front": true,
+            "pareto_rank": 0,
+            "pareto_rank_ok": true,
+            "protein_identity_exact_1": true,
+            "summary_metrics": {
+              "mean_abs_gc_error": 0.15719928363074892,
+              "mean_codon_changes": 174.3203125,
+              "mean_designed_cai": 1.0,
+              "mean_designed_gc": 0.7071992836307481,
+              "protein_identity_eq_1_fraction": 1.0
+            },
+            "summary_metrics_finite": true,
+            "target_gc": 0.55
+          },
+          {
+            "gc_weight": 0.1,
+            "is_pareto_front": true,
+            "pareto_rank": 0,
+            "pareto_rank_ok": true,
+            "protein_identity_exact_1": true,
+            "summary_metrics": {
+              "mean_abs_gc_error": 0.15719928363074892,
+              "mean_codon_changes": 174.3203125,
+              "mean_designed_cai": 1.0,
+              "mean_designed_gc": 0.7071992836307481,
+              "protein_identity_eq_1_fraction": 1.0
+            },
+            "summary_metrics_finite": true,
+            "target_gc": 0.55
+          },
+          {
+            "gc_weight": 0.5,
+            "is_pareto_front": true,
+            "pareto_rank": 0,
+            "pareto_rank_ok": true,
+            "protein_identity_exact_1": true,
+            "summary_metrics": {
+              "mean_abs_gc_error": 0.15719928363074892,
+              "mean_codon_changes": 174.3203125,
+              "mean_designed_cai": 1.0,
+              "mean_designed_gc": 0.7071992836307481,
+              "protein_identity_eq_1_fraction": 1.0
+            },
+            "summary_metrics_finite": true,
+            "target_gc": 0.55
+          },
+          {
+            "gc_weight": 1.0,
+            "is_pareto_front": true,
+            "pareto_rank": 0,
+            "pareto_rank_ok": true,
+            "protein_identity_exact_1": true,
+            "summary_metrics": {
+              "mean_abs_gc_error": 0.13133715451489272,
+              "mean_codon_changes": 174.3203125,
+              "mean_designed_cai": 0.9931685030702678,
+              "mean_designed_gc": 0.6813371545148921,
+              "protein_identity_eq_1_fraction": 1.0
+            },
+            "summary_metrics_finite": true,
+            "target_gc": 0.55
+          },
+          {
+            "gc_weight": 2.0,
+            "is_pareto_front": true,
+            "pareto_rank": 0,
+            "pareto_rank_ok": true,
+            "protein_identity_exact_1": true,
+            "summary_metrics": {
+              "mean_abs_gc_error": 0.1231140616161936,
+              "mean_codon_changes": 172.875,
+              "mean_designed_cai": 0.9831224849320712,
+              "mean_designed_gc": 0.6731140616161931,
+              "protein_identity_eq_1_fraction": 1.0
+            },
+            "summary_metrics_finite": true,
+            "target_gc": 0.55
+          },
+          {
+            "gc_weight": 4.0,
+            "is_pareto_front": true,
+            "pareto_rank": 0,
+            "pareto_rank_ok": true,
+            "protein_identity_exact_1": true,
+            "summary_metrics": {
+              "mean_abs_gc_error": 0.08517893580634024,
+              "mean_codon_changes": 163.9375,
+              "mean_designed_cai": 0.9174953007782634,
+              "mean_designed_gc": 0.6351789358063401,
+              "protein_identity_eq_1_fraction": 1.0
+            },
+            "summary_metrics_finite": true,
+            "target_gc": 0.55
+          },
+          {
+            "gc_weight": 8.0,
+            "is_pareto_front": true,
+            "pareto_rank": 0,
+            "pareto_rank_ok": true,
+            "protein_identity_exact_1": true,
+            "summary_metrics": {
+              "mean_abs_gc_error": 0.05350564277865458,
+              "mean_codon_changes": 152.6484375,
+              "mean_designed_cai": 0.856772934314737,
+              "mean_designed_gc": 0.6034761908937333,
+              "protein_identity_eq_1_fraction": 1.0
+            },
+            "summary_metrics_finite": true,
+            "target_gc": 0.55
+          },
+          {
+            "gc_weight": 16.0,
+            "is_pareto_front": true,
+            "pareto_rank": 0,
+            "pareto_rank_ok": true,
+            "protein_identity_exact_1": true,
+            "summary_metrics": {
+              "mean_abs_gc_error": 0.05350564277865458,
+              "mean_codon_changes": 152.6484375,
+              "mean_designed_cai": 0.856772934314737,
+              "mean_designed_gc": 0.6034761908937333,
+              "protein_identity_eq_1_fraction": 1.0
+            },
+            "summary_metrics_finite": true,
+            "target_gc": 0.55
+          }
+        ],
+        "summary": {
+          "all_point_metrics_finite": true,
+          "all_points_identity_exact_1": true,
+          "hard_constraint_contract_ok": true,
+          "jsonl_all_row_identity_exact_1": true,
+          "jsonl_row_count_ok": true,
+          "md_exists": true,
+          "missing_artifacts": [],
+          "n_pareto_front": 8,
+          "n_points": 8,
+          "n_targets": 256,
+          "pareto_metadata_ok": true,
+          "ready_for_pareto_claim_audit": true,
+          "summary_exists": true,
+          "sweep_kind_ok": true
+        },
+        "summary_json": "benchmark/protein_conditioned_cds_gc_sweep_head256.summary.json"
+      },
+      "persisted_audit_artifacts_exist": true,
+      "ready": true
+    },
+    "region_adapter": {
+      "audit": {
+        "artifact_kind": "region_adapter_result_audit",
+        "compare_files": [
+          {
+            "baseline": "hardneg_v2_top64",
+            "exists": true,
+            "path": "benchmark/region_adapter_vs_hardneg_v2_top64_head256.json"
+          },
+          {
+            "baseline": "mo_grpo_top64",
+            "exists": true,
+            "path": "benchmark/region_adapter_vs_mo_grpo_top64_head256.json"
+          },
+          {
+            "baseline": "mo_scalar_top64",
+            "exists": true,
+            "path": "benchmark/region_adapter_vs_mo_scalar_top64_head256.json"
+          },
+          {
+            "baseline": "mo_pareto_top64",
+            "exists": true,
+            "path": "benchmark/region_adapter_vs_mo_pareto_top64_head256.json"
+          },
+          {
+            "baseline": "mo_te_only_top64",
+            "exists": true,
+            "path": "benchmark/region_adapter_vs_mo_te_only_top64_head256.json"
+          }
+        ],
+        "constraint_metrics": [
+          "legal_fraction",
+          "mean_protein_identity",
+          "within_budget_fraction",
+          "reading_frame_intact_fraction"
+        ],
+        "constraint_tolerance": 1e-12,
+        "decision_report": {
+          "exists": true,
+          "path": "benchmark/region_adapter_decision_report_head256.json"
+        },
+        "expected_baselines": [
+          "hardneg_v2_top64",
+          "mo_grpo_top64",
+          "mo_scalar_top64",
+          "mo_pareto_top64",
+          "mo_te_only_top64"
+        ],
+        "expected_runs": [
+          "region_adapter_utr5_top64",
+          "region_adapter_cds_top64",
+          "region_adapter_utr3_top64",
+          "region_adapter_all_top64"
+        ],
+        "run_audits": [
+          {
+            "all_primary_stats_finite": true,
+            "constraint_exact": {
+              "legal_fraction": true,
+              "mean_protein_identity": true,
+              "reading_frame_intact_fraction": true,
+              "within_budget_fraction": true
+            },
+            "constraints": {
+              "legal_fraction": 1.0,
+              "mean_protein_identity": 1.0,
+              "reading_frame_intact_fraction": 1.0,
+              "within_budget_fraction": 1.0
+            },
+            "constraints_exact_1": true,
+            "present": true,
+            "primary_by_baseline": [
+              {
+                "baseline": "hardneg_v2_top64",
+                "baseline_mean": 0.005027992621596925,
+                "delta": -0.006217593111717776,
+                "paired_p": 0.004497751124437781,
+                "present": true,
+                "primary_stats_finite": true,
+                "run_mean": -0.0011896004901208513,
+                "signal": "not_positive"
+              },
+              {
+                "baseline": "mo_grpo_top64",
+                "baseline_mean": 0.011136077751561894,
+                "delta": -0.012325678241682746,
+                "paired_p": 0.004497751124437781,
+                "present": true,
+                "primary_stats_finite": true,
+                "run_mean": -0.0011896004901208513,
+                "signal": "not_positive"
+              },
+              {
+                "baseline": "mo_scalar_top64",
+                "baseline_mean": 0.010873403630940682,
+                "delta": -0.012063004121061534,
+                "paired_p": 0.004497751124437781,
+                "present": true,
+                "primary_stats_finite": true,
+                "run_mean": -0.0011896004901208513,
+                "signal": "not_positive"
+              },
+              {
+                "baseline": "mo_pareto_top64",
+                "baseline_mean": 0.010285116622437649,
+                "delta": -0.0114747171125585,
+                "paired_p": 0.004497751124437781,
+                "present": true,
+                "primary_stats_finite": true,
+                "run_mean": -0.0011896004901208513,
+                "signal": "not_positive"
+              },
+              {
+                "baseline": "mo_te_only_top64",
+                "baseline_mean": 0.0034822285363502064,
+                "delta": -0.004671829026471057,
+                "paired_p": 0.004497751124437781,
+                "present": true,
+                "primary_stats_finite": true,
+                "run_mean": -0.0011896004901208513,
+                "signal": "not_positive"
+              }
+            ],
+            "run": "region_adapter_utr5_top64"
+          },
+          {
+            "all_primary_stats_finite": true,
+            "constraint_exact": {
+              "legal_fraction": true,
+              "mean_protein_identity": true,
+              "reading_frame_intact_fraction": true,
+              "within_budget_fraction": true
+            },
+            "constraints": {
+              "legal_fraction": 1.0,
+              "mean_protein_identity": 1.0,
+              "reading_frame_intact_fraction": 1.0,
+              "within_budget_fraction": 1.0
+            },
+            "constraints_exact_1": true,
+            "present": true,
+            "primary_by_baseline": [
+              {
+                "baseline": "hardneg_v2_top64",
+                "baseline_mean": 0.005027992621596925,
+                "delta": -0.005573884818616303,
+                "paired_p": 0.004497751124437781,
+                "present": true,
+                "primary_stats_finite": true,
+                "run_mean": -0.0005458921970193777,
+                "signal": "not_positive"
+              },
+              {
+                "baseline": "mo_grpo_top64",
+                "baseline_mean": 0.011136077751561894,
+                "delta": -0.011681969948581271,
+                "paired_p": 0.004497751124437781,
+                "present": true,
+                "primary_stats_finite": true,
+                "run_mean": -0.0005458921970193777,
+                "signal": "not_positive"
+              },
+              {
+                "baseline": "mo_scalar_top64",
+                "baseline_mean": 0.010873403630940682,
+                "delta": -0.011419295827960061,
+                "paired_p": 0.004497751124437781,
+                "present": true,
+                "primary_stats_finite": true,
+                "run_mean": -0.0005458921970193777,
+                "signal": "not_positive"
+              },
+              {
+                "baseline": "mo_pareto_top64",
+                "baseline_mean": 0.010285116622437649,
+                "delta": -0.010831008819457028,
+                "paired_p": 0.004497751124437781,
+                "present": true,
+                "primary_stats_finite": true,
+                "run_mean": -0.0005458921970193777,
+                "signal": "not_positive"
+              },
+              {
+                "baseline": "mo_te_only_top64",
+                "baseline_mean": 0.0034822285363502064,
+                "delta": -0.004028120733369584,
+                "paired_p": 0.004497751124437781,
+                "present": true,
+                "primary_stats_finite": true,
+                "run_mean": -0.0005458921970193777,
+                "signal": "not_positive"
+              }
+            ],
+            "run": "region_adapter_cds_top64"
+          },
+          {
+            "all_primary_stats_finite": true,
+            "constraint_exact": {
+              "legal_fraction": true,
+              "mean_protein_identity": true,
+              "reading_frame_intact_fraction": true,
+              "within_budget_fraction": true
+            },
+            "constraints": {
+              "legal_fraction": 1.0,
+              "mean_protein_identity": 1.0,
+              "reading_frame_intact_fraction": 1.0,
+              "within_budget_fraction": 1.0
+            },
+            "constraints_exact_1": true,
+            "present": true,
+            "primary_by_baseline": [
+              {
+                "baseline": "hardneg_v2_top64",
+                "baseline_mean": 0.005027992621596925,
+                "delta": -0.005432398018662186,
+                "paired_p": 0.004497751124437781,
+                "present": true,
+                "primary_stats_finite": true,
+                "run_mean": -0.0004044053970652606,
+                "signal": "not_positive"
+              },
+              {
+                "baseline": "mo_grpo_top64",
+                "baseline_mean": 0.011136077751561894,
+                "delta": -0.011540483148627156,
+                "paired_p": 0.004497751124437781,
+                "present": true,
+                "primary_stats_finite": true,
+                "run_mean": -0.0004044053970652606,
+                "signal": "not_positive"
+              },
+              {
+                "baseline": "mo_scalar_top64",
+                "baseline_mean": 0.010873403630940682,
+                "delta": -0.011277809028005945,
+                "paired_p": 0.004497751124437781,
+                "present": true,
+                "primary_stats_finite": true,
+                "run_mean": -0.0004044053970652606,
+                "signal": "not_positive"
+              },
+              {
+                "baseline": "mo_pareto_top64",
+                "baseline_mean": 0.010285116622437649,
+                "delta": -0.01068952201950291,
+                "paired_p": 0.004497751124437781,
+                "present": true,
+                "primary_stats_finite": true,
+                "run_mean": -0.0004044053970652606,
+                "signal": "not_positive"
+              },
+              {
+                "baseline": "mo_te_only_top64",
+                "baseline_mean": 0.0034822285363502064,
+                "delta": -0.003886633933415467,
+                "paired_p": 0.004497751124437781,
+                "present": true,
+                "primary_stats_finite": true,
+                "run_mean": -0.0004044053970652606,
+                "signal": "not_positive"
+              }
+            ],
+            "run": "region_adapter_utr3_top64"
+          },
+          {
+            "all_primary_stats_finite": true,
+            "constraint_exact": {
+              "legal_fraction": true,
+              "mean_protein_identity": true,
+              "reading_frame_intact_fraction": true,
+              "within_budget_fraction": true
+            },
+            "constraints": {
+              "legal_fraction": 1.0,
+              "mean_protein_identity": 1.0,
+              "reading_frame_intact_fraction": 1.0,
+              "within_budget_fraction": 1.0
+            },
+            "constraints_exact_1": true,
+            "present": true,
+            "primary_by_baseline": [
+              {
+                "baseline": "hardneg_v2_top64",
+                "baseline_mean": 0.005027992621596925,
+                "delta": -0.0065946680795395006,
+                "paired_p": 0.004497751124437781,
+                "present": true,
+                "primary_stats_finite": true,
+                "run_mean": -0.0015666754579425756,
+                "signal": "not_positive"
+              },
+              {
+                "baseline": "mo_grpo_top64",
+                "baseline_mean": 0.011136077751561894,
+                "delta": -0.01270275320950447,
+                "paired_p": 0.004497751124437781,
+                "present": true,
+                "primary_stats_finite": true,
+                "run_mean": -0.0015666754579425756,
+                "signal": "not_positive"
+              },
+              {
+                "baseline": "mo_scalar_top64",
+                "baseline_mean": 0.010873403630940682,
+                "delta": -0.01244007908888326,
+                "paired_p": 0.004497751124437781,
+                "present": true,
+                "primary_stats_finite": true,
+                "run_mean": -0.0015666754579425756,
+                "signal": "not_positive"
+              },
+              {
+                "baseline": "mo_pareto_top64",
+                "baseline_mean": 0.010285116622437649,
+                "delta": -0.011851792080380223,
+                "paired_p": 0.004497751124437781,
+                "present": true,
+                "primary_stats_finite": true,
+                "run_mean": -0.0015666754579425756,
+                "signal": "not_positive"
+              },
+              {
+                "baseline": "mo_te_only_top64",
+                "baseline_mean": 0.0034822285363502064,
+                "delta": -0.005048903994292782,
+                "paired_p": 0.004497751124437781,
+                "present": true,
+                "primary_stats_finite": true,
+                "run_mean": -0.0015666754579425756,
+                "signal": "not_positive"
+              }
+            ],
+            "run": "region_adapter_all_top64"
+          }
+        ],
+        "slice": "head256",
+        "summary": {
+          "all_constraints_exact_1": true,
+          "all_expected_compare_files_exist": true,
+          "all_expected_runs_present": true,
+          "all_primary_stats_finite": true,
+          "decision_report_exists": true,
+          "missing_artifacts": [],
+          "n_compare_files_expected": 5,
+          "n_compare_files_found": 5,
+          "ready_for_sota_claim_audit": true
+        },
+        "top_k": 64
+      },
+      "persisted_audit_artifacts_exist": true,
+      "ready": true
+    },
+    "t1_t7_evidence_bundle": {
+      "audit": {
+        "artifact_kind": "t1_t7_evidence_bundle_audit",
+        "reports": [
+          {
+            "check_ok": true,
+            "json_exists": true,
+            "json_path": "benchmark/t1_t7_evidence_status_head256.json",
+            "md_exists": true,
+            "md_path": "benchmark/t1_t7_evidence_status_head256.md",
+            "name": "t1_t7_ledger"
+          },
+          {
+            "check_ok": true,
+            "json_exists": true,
+            "json_path": "benchmark/t1_runtime_report_head256_head1024.json",
+            "md_exists": true,
+            "md_path": "benchmark/t1_runtime_report_head256_head1024.md",
+            "name": "t1_runtime"
+          },
+          {
+            "check_ok": true,
+            "json_exists": true,
+            "json_path": "benchmark/t2_t3_distribution_novelty_report_head256_head1024.json",
+            "md_exists": true,
+            "md_path": "benchmark/t2_t3_distribution_novelty_report_head256_head1024.md",
+            "name": "t2_t3_distribution_novelty"
+          },
+          {
+            "check_ok": true,
+            "json_exists": true,
+            "json_path": "benchmark/multi_scale_sequence_spectrum_head32_ranker_full1k.json",
+            "md_exists": true,
+            "md_path": "benchmark/multi_scale_sequence_spectrum_head32_ranker_full1k.md",
+            "name": "multi_scale_sequence_spectrum"
+          },
+          {
+            "check_ok": true,
+            "json_exists": true,
+            "json_path": "benchmark/t4_protein_identity_cai_gc_report_head256.json",
+            "md_exists": true,
+            "md_path": "benchmark/t4_protein_identity_cai_gc_report_head256.md",
+            "name": "t4_protein_identity_cai_gc"
+          },
+          {
+            "check_ok": true,
+            "json_exists": true,
+            "json_path": "benchmark/edit_budget_curve_report_head256_head1024.json",
+            "md_exists": true,
+            "md_path": "benchmark/edit_budget_curve_report_head256_head1024.md",
+            "name": "t5_edit_budget_curve"
+          },
+          {
+            "check_ok": true,
+            "json_exists": true,
+            "json_path": "benchmark/t6_length_curve_report_head256_head1024.json",
+            "md_exists": true,
+            "md_path": "benchmark/t6_length_curve_report_head256_head1024.md",
+            "name": "t6_length_curve"
+          },
+          {
+            "check_ok": true,
+            "json_exists": true,
+            "json_path": "benchmark/t7_motif_frame_report_head256.json",
+            "md_exists": true,
+            "md_path": "benchmark/t7_motif_frame_report_head256.md",
+            "name": "t7_motif_frame"
+          },
+          {
+            "check_ok": true,
+            "json_exists": true,
+            "json_path": "benchmark/t7_motif_edit_benchmark_head256/summary.json",
+            "md_exists": true,
+            "md_path": "benchmark/t7_motif_edit_benchmark_head256/summary.md",
+            "name": "t7_motif_edit"
+          }
+        ],
+        "summary": {
+          "bundle_ready": true,
+          "claim_policy": "Bundle readiness means internal T1-T7 proxy/constraint reports are complete and boundary flags are auditable. It does not mean external SOTA, wet-lab, or de novo claims are complete.",
+          "failed_checks": [],
+          "missing_artifacts": [],
+          "n_reports_expected": 9,
+          "n_reports_ready": 9
+        }
+      },
+      "persisted_audit_artifacts_exist": true,
+      "ready": true
+    }
+  },
+  "slice": "head256",
+  "summary": {
+    "all_ready_for_sota_claim_audit": true,
+    "allowed_claim_scope": "Constrained local full-length mRNA optimization/reranking with proxy/offline T1-T7 evidence. Do not state full de novo, wet-lab, external SOTA, or true scale-law claims until the blocking gates clear.",
+    "claim_policy": "Ready only means evidence is complete and hard constraints are auditable; effect sizes and p-values still determine whether claims are positive, borderline, non-significant, or negative.",
+    "missing_artifacts": [],
+    "n_sections_expected": 6,
+    "n_sections_ready": 6,
+    "pending_sections": [],
+    "persisted_audit_artifacts_exist": {
+      "protein_conditioned_gc_sweep": true,
+      "region_adapter": true
+    },
+    "positive_sota_block_reasons": [
+      "external_sota_real_metrics_missing",
+      "full_de_novo_evidence_missing_or_overclaim_flagged",
+      "real_mpra_te_or_stability_data_missing",
+      "true_data_model_step_scale_law_missing",
+      "head1024_fusion_vs_strong_te_only_not_strict",
+      "wet_lab_validation_missing"
+    ],
+    "positive_sota_claim_ready": false,
+    "ready_for_external_sota_metric_claim": false,
+    "ready_for_full_de_novo_claim": false,
+    "ready_for_internal_proxy_constrained_optimization_claim": true,
+    "ready_for_real_te_or_stability_claim": false,
+    "ready_for_true_scale_law_claim": false,
+    "ready_for_wet_lab_claim": false
+  },
+  "top_k": 64
+}

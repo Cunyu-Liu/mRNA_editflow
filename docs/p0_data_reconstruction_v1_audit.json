@@ -1,0 +1,267 @@
+{
+  "artifact_kind": "p0_data_reconstruction_v1_audit",
+  "schema_version": 1,
+  "generated_at": "2026-07-19T03:30:00+00:00",
+  "project_root": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow",
+  "frozen_root": "data/reconstructed/p0_data_reconstruction_v1",
+  "split_root": "benchmark/dev/p0_data_reconstruction_v1",
+  "verdict": "reconstruction_complete_and_integrity_verified_paper_eligible_false_with_recorded_blockers",
+  "process_control_actions": [],
+  "stage_a_processes_unchanged": true,
+  "integrity_verification": {
+    "script": "/tmp/verify_p0_recon.py",
+    "total_checks": 59,
+    "passed": 59,
+    "failed": 0,
+    "method": "independent SHA-256 recompute of every artifact referenced in frozen manifests; comparison against recorded manifest hashes; presence checks for role idx / cluster_assignments / leakage_report / excluded.idx",
+    "checks_covered": [
+      "gencode raw artifact sha256",
+      "gencode canonical records + metadata sha256",
+      "gencode model_view records + lineage sha256",
+      "refseq raw artifact sha256 (15 release partitions)",
+      "refseq canonical records + metadata sha256",
+      "refseq model_view records + lineage sha256",
+      "combined records + metadata sha256",
+      "family assignments + evidence sha256",
+      "source manifest reference sha256 (2)",
+      "split manifest sha256 (4)",
+      "split role idx file presence (12)",
+      "split excluded.idx presence for gencode_to_refseq",
+      "split cluster_assignments.json presence (4)",
+      "split leakage_report.json presence (4)",
+      "canonical untruncated invariants (4)"
+    ]
+  },
+  "contract_level_verification": {
+    "script": "/tmp/handoff_verify.py",
+    "method": "calls mrna_editflow.data.split_contract.load_and_verify_split_manifest on each frozen split manifest; re-runs schema, count, identifier, overlap, role-file SHA, and cluster-disjointness verifiers implemented in data/split_contract.py against the actual frozen records (not synthetic test fixtures)",
+    "total_manifests": 4,
+    "passed": 4,
+    "failed": 0,
+    "results": [
+      {
+        "name": "combined_family",
+        "train": 119075,
+        "val": 14884,
+        "test": 14884,
+        "excluded": 0,
+        "paper_eligible": false,
+        "family_disjoint": true,
+        "near_neighbor_threshold_passed": false,
+        "block_reasons": [
+          "exhaustive_cross_role_near_neighbor_audit_pending",
+          "gene_symbol_alias_mapping_not_independently_audited"
+        ]
+      },
+      {
+        "name": "gencode_family",
+        "train": 43744,
+        "val": 5468,
+        "test": 5468,
+        "excluded": 0,
+        "paper_eligible": false,
+        "family_disjoint": true,
+        "near_neighbor_threshold_passed": false,
+        "block_reasons": [
+          "exhaustive_cross_role_near_neighbor_audit_pending",
+          "gene_symbol_alias_mapping_not_independently_audited"
+        ]
+      },
+      {
+        "name": "refseq_family",
+        "train": 75331,
+        "val": 9416,
+        "test": 9416,
+        "excluded": 0,
+        "paper_eligible": false,
+        "family_disjoint": true,
+        "near_neighbor_threshold_passed": false,
+        "block_reasons": [
+          "exhaustive_cross_role_near_neighbor_audit_pending",
+          "gene_symbol_alias_mapping_not_independently_audited"
+        ]
+      },
+      {
+        "name": "gencode_to_refseq",
+        "train": 54680,
+        "val": 2374,
+        "test": 2297,
+        "excluded": 89492,
+        "paper_eligible": false,
+        "family_disjoint": true,
+        "near_neighbor_threshold_passed": false,
+        "block_reasons": [
+          "exhaustive_cross_role_near_neighbor_audit_pending",
+          "gene_symbol_alias_mapping_not_independently_audited"
+        ]
+      }
+    ]
+  },
+  "canonical_records_untruncated": {
+    "gencode_v45": {
+      "canonical_count": 80290,
+      "truncated_5utr": 0,
+      "truncated_3utr": 0,
+      "verdict": "canonical_records_are_full_length_untruncated"
+    },
+    "refseq_human_rna": {
+      "canonical_count": 197627,
+      "truncated_5utr": 0,
+      "truncated_3utr": 0,
+      "verdict": "canonical_records_are_full_length_untruncated"
+    }
+  },
+  "derived_views": {
+    "model_capped_v1_caps": {
+      "max_5utr": 128,
+      "max_cds": 1536,
+      "max_3utr": 256
+    },
+    "gencode_v45_model_view": {
+      "count": 54680,
+      "total_canonical": 80290,
+      "dropped_cds_too_long": 25610,
+      "truncated_5utr": 27521,
+      "truncated_3utr": 40742,
+      "verdict": "capped_derived_view_with_full_lineage_and_traceable_metadata"
+    },
+    "refseq_human_rna_model_view": {
+      "count": 94163,
+      "total_canonical": 197627,
+      "dropped_cds_too_long": 103464,
+      "truncated_5utr": 62402,
+      "truncated_3utr": 73984,
+      "verdict": "capped_derived_view_with_full_lineage_and_traceable_metadata"
+    }
+  },
+  "combined_bundle": {
+    "records_count": 148843,
+    "gencode_count": 54680,
+    "refseq_count": 94163,
+    "n_families": 17057,
+    "n_cross_source_families": 13475,
+    "paper_eligible": false,
+    "block_reasons": [
+      "exhaustive_cross_role_near_neighbor_audit_pending",
+      "gene_symbol_alias_mapping_not_independently_audited"
+    ]
+  },
+  "frozen_split_manifests": {
+    "combined_family": {
+      "manifest_sha256": "8add072a57c53746ba663942797050b068e5487f235a46ddfce85606dd3bae2c",
+      "records_count": 148843,
+      "role_counts": {"train": 119075, "val": 14884, "test": 14884},
+      "excluded_count": 0,
+      "cluster_assignments_present": true,
+      "leakage_report_present": true,
+      "paper_eligible": false
+    },
+    "gencode_family": {
+      "manifest_sha256": "5a86f3bec24dca96e338a326cf3b53418e5fa3a27a7315c9a6eb5f48a42e69d7",
+      "records_count": 54680,
+      "role_counts": {"train": 43744, "val": 5468, "test": 5468},
+      "excluded_count": 0,
+      "cluster_assignments_present": true,
+      "leakage_report_present": true,
+      "paper_eligible": false
+    },
+    "refseq_family": {
+      "manifest_sha256": "42535fdef0cdb076f759414001860ef1691aeaff4edfc1e088e5161aae8be4ab",
+      "records_count": 94163,
+      "role_counts": {"train": 75331, "val": 9416, "test": 9416},
+      "excluded_count": 0,
+      "cluster_assignments_present": true,
+      "leakage_report_present": true,
+      "paper_eligible": false
+    },
+    "gencode_to_refseq": {
+      "manifest_sha256": "1965f86779bcf1492ea6efe68f6485f5006d90fe7cc6014639a3c04b01b06367",
+      "records_count": 148843,
+      "role_counts": {"train": 54680, "val": 2374, "test": 2297},
+      "excluded_count": 89492,
+      "cluster_assignments_present": true,
+      "leakage_report_present": true,
+      "paper_eligible": false
+    }
+  },
+  "raw_source_evidence": {
+    "gencode_v45": {
+      "raw_path": "data/reconstructed/p0_data_reconstruction_v1/raw/gencode.v45.pc_transcripts.fa.gz",
+      "raw_sha256": "2b30d353f3fe36b45fa9d7ae0aab7755700f55067d1bff26dd9fe0f7c3e05cd5",
+      "raw_size_bytes": 47890586,
+      "raw_uncompressed_size_bytes": 285299152,
+      "gzip_complete": true,
+      "complete_release_partition_set": true,
+      "parser_emitted": 111048,
+      "canonical_kept": 80290
+    },
+    "refseq_human_rna": {
+      "raw_dir": "data/reconstructed/p0_data_reconstruction_v1/raw/refseq",
+      "partition_count": 15,
+      "acquisition": "resume_from_same_process_verified_frozen_raw",
+      "all_partitions_gzip_complete": true,
+      "complete_release_partition_set": true,
+      "parser_emitted": 197843,
+      "canonical_kept": 197627
+    }
+  },
+  "manifest_hashes": {
+    "gencode_source_manifest_sha256": "e8b306bc2ca9b17c117363654937cfc4fd5861cdd7e7e4f09ad46ddd9ceb2bf3",
+    "refseq_source_manifest_sha256": "c552907d3db80e9bf4099a303d69bdfc98e699abf78f831ef13d96486f997d42",
+    "combined_manifest_sha256": "32e803305fb6ba41c24fd996fbcae37df23c725a9ea7b3eeed82a8c8d8554fa2"
+  },
+  "code_hashes": {
+    "data/reconstruction.py": "dbf0c981378498054866054e9641b9c0159209884c9ee6b09c40380b8be521a0",
+    "data/split_contract.py": "2713a56d20e2d2f9f17d3f22140078932e3c8ea25d27e8e9cf5f026c5b292a13",
+    "scripts/run_p0_data_reconstruction.sh": "1f755f736c9c5306daa28d7a865605243f6c8242c517565bae9533cc01f2f272",
+    "scripts/resume_p0_data_reconstruction.py": "e6da67c90b3e1484e381457e9f014261ac7005ee6e775b3a8e24349155e5d84d",
+    "tests/test_data_reconstruction.py": "12a6e8626f0f1170d02118067f653c22a57612bb0877b06cd770b18b86f87c01"
+  },
+  "stage_a_read_only_snapshot": {
+    "pids_running_at_audit": [
+      {"seed": 0, "pid": 1495551, "latest_step": 8103, "prior_handoff_step": 7195},
+      {"seed": 1, "pid": 1495455, "latest_step": 10365, "prior_handoff_step": 9425},
+      {"seed": 2, "pid": 1495549, "latest_step": 9929, "prior_handoff_step": 8921},
+      {"seed": 5, "pid": 1499316, "latest_step": 8781, "prior_handoff_step": 7760}
+    ],
+    "verdict": "all_four_stage_a_processes_alive_and_advanced_no_process_control_action_performed"
+  },
+  "test_results": {
+    "focused_test": {
+      "command": "PYTHONPATH=/home/cunyuliu/mrna_editflow_goal /home/cunyuliu/miniconda3/envs/editflow/bin/python -m unittest mrna_editflow.tests.test_data_reconstruction -v",
+      "tests": 11,
+      "passed": 11,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "duration_seconds": 0.147
+    },
+    "full_test": {
+      "command": "PYTHONPATH=/home/cunyuliu/mrna_editflow_goal /home/cunyuliu/miniconda3/envs/editflow/bin/python -m unittest discover -s mrna_editflow/tests -t .",
+      "tests": 241,
+      "passed": 241,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "duration_seconds": 175.538,
+      "vs_prior_handoff": "230 tests; +11 from new test_data_reconstruction module"
+    }
+  },
+  "remaining_blockers_for_paper_eligibility": [
+    "exhaustive_cross_role_near_neighbor_audit_pending",
+    "gene_symbol_alias_mapping_not_independently_audited"
+  ],
+  "scientific_warnings": [
+    "Combined bundle remains paper_eligible=false by design; block reasons are recorded in the manifest and propagated to every split manifest.",
+    "Exhaustive cross-role near-neighbour audit is pending; the recorded leakage reports cover exact-match and the implemented near-neighbour gate but the exhaustive cross-role sweep is not yet independently signed off.",
+    "Gene-symbol alias mapping (GENCODE HGNC symbols vs RefSeq gene names) is computed but not independently audited; cross-source family union uses both gene_id and exact-protein hash as defined in the contract.",
+    "No biological claim is made. No Stage A process was started, stopped, signalled, reprioritised, or had its checkpoints/logs edited.",
+    "Derived model_capped_v1 view intentionally applies caps (5UTR<=128, CDS<=1536, 3UTR<=256) and drops long-CDS records; canonical records remain the untruncated source of truth and all derived rows carry lineage."
+  ],
+  "files_created_in_this_session": [
+    "docs/p0_data_reconstruction_v1_audit.json",
+    "docs/p0_data_reconstruction_v1_audit.md",
+    "docs/p0_data_reconstruction_v1_handoff.md"
+  ],
+  "files_modified_in_this_session": []
+}

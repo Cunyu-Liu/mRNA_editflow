@@ -1,0 +1,340 @@
+{
+  "aggregate_report": {
+    "declared_path": "docs/stage_a_scalelaw_downstream_eval_summary.json",
+    "exists": false,
+    "local_path": "docs/stage_a_scalelaw_downstream_eval_summary.json",
+    "sha256": null
+  },
+  "artifact_kind": "stage_a_downstream_eval_readiness",
+  "claim_policy": "Stage A downstream evaluation readiness is post-training governance evidence. Do not claim a true data/model/step scale law until all planned Stage A runs complete and downstream proposal-ranking, T1-T7 aggregate, and scale-law trend audits are generated.",
+  "project_root": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow",
+  "rows": [
+    {
+      "checkpoint": {
+        "declared_path": null,
+        "exists": false,
+        "local_path": null,
+        "sha256": null
+      },
+      "data_size": null,
+      "downstream_ready": false,
+      "expected_downstream": {
+        "proposal_ranking": {
+          "declared_path": "benchmark/stage_a_scalelaw_downstream/data256_tiny_steps200_seed0/proposal_ranking_t5.json",
+          "exists": false,
+          "local_path": "benchmark/stage_a_scalelaw_downstream/data256_tiny_steps200_seed0/proposal_ranking_t5.json",
+          "sha256": null
+        },
+        "runtime_audit": {
+          "declared_path": "benchmark/stage_a_scalelaw_downstream/data256_tiny_steps200_seed0/runtime_audit.json",
+          "exists": false,
+          "local_path": "benchmark/stage_a_scalelaw_downstream/data256_tiny_steps200_seed0/runtime_audit.json",
+          "sha256": null
+        },
+        "t1_t7_eval": {
+          "declared_path": "benchmark/stage_a_scalelaw_downstream/data256_tiny_steps200_seed0/t1_t7_eval_summary.json",
+          "exists": false,
+          "local_path": "benchmark/stage_a_scalelaw_downstream/data256_tiny_steps200_seed0/t1_t7_eval_summary.json",
+          "sha256": null
+        }
+      },
+      "model_size": null,
+      "run_id": "data256_tiny_steps200_seed0",
+      "seed": null,
+      "status": "blocked_on_training",
+      "steps": null,
+      "training_complete": false,
+      "training_status": null
+    },
+    {
+      "checkpoint": {
+        "declared_path": null,
+        "exists": false,
+        "local_path": null,
+        "sha256": null
+      },
+      "data_size": null,
+      "downstream_ready": false,
+      "expected_downstream": {
+        "proposal_ranking": {
+          "declared_path": "benchmark/stage_a_scalelaw_downstream/data256_tiny_steps500_seed0/proposal_ranking_t5.json",
+          "exists": false,
+          "local_path": "benchmark/stage_a_scalelaw_downstream/data256_tiny_steps500_seed0/proposal_ranking_t5.json",
+          "sha256": null
+        },
+        "runtime_audit": {
+          "declared_path": "benchmark/stage_a_scalelaw_downstream/data256_tiny_steps500_seed0/runtime_audit.json",
+          "exists": false,
+          "local_path": "benchmark/stage_a_scalelaw_downstream/data256_tiny_steps500_seed0/runtime_audit.json",
+          "sha256": null
+        },
+        "t1_t7_eval": {
+          "declared_path": "benchmark/stage_a_scalelaw_downstream/data256_tiny_steps500_seed0/t1_t7_eval_summary.json",
+          "exists": false,
+          "local_path": "benchmark/stage_a_scalelaw_downstream/data256_tiny_steps500_seed0/t1_t7_eval_summary.json",
+          "sha256": null
+        }
+      },
+      "model_size": null,
+      "run_id": "data256_tiny_steps500_seed0",
+      "seed": null,
+      "status": "blocked_on_training",
+      "steps": null,
+      "training_complete": false,
+      "training_status": null
+    },
+    {
+      "checkpoint": {
+        "declared_path": null,
+        "exists": false,
+        "local_path": null,
+        "sha256": null
+      },
+      "data_size": null,
+      "downstream_ready": false,
+      "expected_downstream": {
+        "proposal_ranking": {
+          "declared_path": "benchmark/stage_a_scalelaw_downstream/data256_small_steps200_seed0/proposal_ranking_t5.json",
+          "exists": false,
+          "local_path": "benchmark/stage_a_scalelaw_downstream/data256_small_steps200_seed0/proposal_ranking_t5.json",
+          "sha256": null
+        },
+        "runtime_audit": {
+          "declared_path": "benchmark/stage_a_scalelaw_downstream/data256_small_steps200_seed0/runtime_audit.json",
+          "exists": false,
+          "local_path": "benchmark/stage_a_scalelaw_downstream/data256_small_steps200_seed0/runtime_audit.json",
+          "sha256": null
+        },
+        "t1_t7_eval": {
+          "declared_path": "benchmark/stage_a_scalelaw_downstream/data256_small_steps200_seed0/t1_t7_eval_summary.json",
+          "exists": false,
+          "local_path": "benchmark/stage_a_scalelaw_downstream/data256_small_steps200_seed0/t1_t7_eval_summary.json",
+          "sha256": null
+        }
+      },
+      "model_size": null,
+      "run_id": "data256_small_steps200_seed0",
+      "seed": null,
+      "status": "blocked_on_training",
+      "steps": null,
+      "training_complete": false,
+      "training_status": null
+    },
+    {
+      "checkpoint": {
+        "declared_path": null,
+        "exists": false,
+        "local_path": null,
+        "sha256": null
+      },
+      "data_size": null,
+      "downstream_ready": false,
+      "expected_downstream": {
+        "proposal_ranking": {
+          "declared_path": "benchmark/stage_a_scalelaw_downstream/data256_small_steps500_seed0/proposal_ranking_t5.json",
+          "exists": false,
+          "local_path": "benchmark/stage_a_scalelaw_downstream/data256_small_steps500_seed0/proposal_ranking_t5.json",
+          "sha256": null
+        },
+        "runtime_audit": {
+          "declared_path": "benchmark/stage_a_scalelaw_downstream/data256_small_steps500_seed0/runtime_audit.json",
+          "exists": false,
+          "local_path": "benchmark/stage_a_scalelaw_downstream/data256_small_steps500_seed0/runtime_audit.json",
+          "sha256": null
+        },
+        "t1_t7_eval": {
+          "declared_path": "benchmark/stage_a_scalelaw_downstream/data256_small_steps500_seed0/t1_t7_eval_summary.json",
+          "exists": false,
+          "local_path": "benchmark/stage_a_scalelaw_downstream/data256_small_steps500_seed0/t1_t7_eval_summary.json",
+          "sha256": null
+        }
+      },
+      "model_size": null,
+      "run_id": "data256_small_steps500_seed0",
+      "seed": null,
+      "status": "blocked_on_training",
+      "steps": null,
+      "training_complete": false,
+      "training_status": null
+    },
+    {
+      "checkpoint": {
+        "declared_path": null,
+        "exists": false,
+        "local_path": null,
+        "sha256": null
+      },
+      "data_size": null,
+      "downstream_ready": false,
+      "expected_downstream": {
+        "proposal_ranking": {
+          "declared_path": "benchmark/stage_a_scalelaw_downstream/data1024_tiny_steps200_seed0/proposal_ranking_t5.json",
+          "exists": false,
+          "local_path": "benchmark/stage_a_scalelaw_downstream/data1024_tiny_steps200_seed0/proposal_ranking_t5.json",
+          "sha256": null
+        },
+        "runtime_audit": {
+          "declared_path": "benchmark/stage_a_scalelaw_downstream/data1024_tiny_steps200_seed0/runtime_audit.json",
+          "exists": false,
+          "local_path": "benchmark/stage_a_scalelaw_downstream/data1024_tiny_steps200_seed0/runtime_audit.json",
+          "sha256": null
+        },
+        "t1_t7_eval": {
+          "declared_path": "benchmark/stage_a_scalelaw_downstream/data1024_tiny_steps200_seed0/t1_t7_eval_summary.json",
+          "exists": false,
+          "local_path": "benchmark/stage_a_scalelaw_downstream/data1024_tiny_steps200_seed0/t1_t7_eval_summary.json",
+          "sha256": null
+        }
+      },
+      "model_size": null,
+      "run_id": "data1024_tiny_steps200_seed0",
+      "seed": null,
+      "status": "blocked_on_training",
+      "steps": null,
+      "training_complete": false,
+      "training_status": null
+    },
+    {
+      "checkpoint": {
+        "declared_path": null,
+        "exists": false,
+        "local_path": null,
+        "sha256": null
+      },
+      "data_size": null,
+      "downstream_ready": false,
+      "expected_downstream": {
+        "proposal_ranking": {
+          "declared_path": "benchmark/stage_a_scalelaw_downstream/data1024_tiny_steps500_seed0/proposal_ranking_t5.json",
+          "exists": false,
+          "local_path": "benchmark/stage_a_scalelaw_downstream/data1024_tiny_steps500_seed0/proposal_ranking_t5.json",
+          "sha256": null
+        },
+        "runtime_audit": {
+          "declared_path": "benchmark/stage_a_scalelaw_downstream/data1024_tiny_steps500_seed0/runtime_audit.json",
+          "exists": false,
+          "local_path": "benchmark/stage_a_scalelaw_downstream/data1024_tiny_steps500_seed0/runtime_audit.json",
+          "sha256": null
+        },
+        "t1_t7_eval": {
+          "declared_path": "benchmark/stage_a_scalelaw_downstream/data1024_tiny_steps500_seed0/t1_t7_eval_summary.json",
+          "exists": false,
+          "local_path": "benchmark/stage_a_scalelaw_downstream/data1024_tiny_steps500_seed0/t1_t7_eval_summary.json",
+          "sha256": null
+        }
+      },
+      "model_size": null,
+      "run_id": "data1024_tiny_steps500_seed0",
+      "seed": null,
+      "status": "blocked_on_training",
+      "steps": null,
+      "training_complete": false,
+      "training_status": null
+    },
+    {
+      "checkpoint": {
+        "declared_path": null,
+        "exists": false,
+        "local_path": null,
+        "sha256": null
+      },
+      "data_size": null,
+      "downstream_ready": false,
+      "expected_downstream": {
+        "proposal_ranking": {
+          "declared_path": "benchmark/stage_a_scalelaw_downstream/data1024_small_steps200_seed0/proposal_ranking_t5.json",
+          "exists": false,
+          "local_path": "benchmark/stage_a_scalelaw_downstream/data1024_small_steps200_seed0/proposal_ranking_t5.json",
+          "sha256": null
+        },
+        "runtime_audit": {
+          "declared_path": "benchmark/stage_a_scalelaw_downstream/data1024_small_steps200_seed0/runtime_audit.json",
+          "exists": false,
+          "local_path": "benchmark/stage_a_scalelaw_downstream/data1024_small_steps200_seed0/runtime_audit.json",
+          "sha256": null
+        },
+        "t1_t7_eval": {
+          "declared_path": "benchmark/stage_a_scalelaw_downstream/data1024_small_steps200_seed0/t1_t7_eval_summary.json",
+          "exists": false,
+          "local_path": "benchmark/stage_a_scalelaw_downstream/data1024_small_steps200_seed0/t1_t7_eval_summary.json",
+          "sha256": null
+        }
+      },
+      "model_size": null,
+      "run_id": "data1024_small_steps200_seed0",
+      "seed": null,
+      "status": "blocked_on_training",
+      "steps": null,
+      "training_complete": false,
+      "training_status": null
+    },
+    {
+      "checkpoint": {
+        "declared_path": null,
+        "exists": false,
+        "local_path": null,
+        "sha256": null
+      },
+      "data_size": null,
+      "downstream_ready": false,
+      "expected_downstream": {
+        "proposal_ranking": {
+          "declared_path": "benchmark/stage_a_scalelaw_downstream/data1024_small_steps500_seed0/proposal_ranking_t5.json",
+          "exists": false,
+          "local_path": "benchmark/stage_a_scalelaw_downstream/data1024_small_steps500_seed0/proposal_ranking_t5.json",
+          "sha256": null
+        },
+        "runtime_audit": {
+          "declared_path": "benchmark/stage_a_scalelaw_downstream/data1024_small_steps500_seed0/runtime_audit.json",
+          "exists": false,
+          "local_path": "benchmark/stage_a_scalelaw_downstream/data1024_small_steps500_seed0/runtime_audit.json",
+          "sha256": null
+        },
+        "t1_t7_eval": {
+          "declared_path": "benchmark/stage_a_scalelaw_downstream/data1024_small_steps500_seed0/t1_t7_eval_summary.json",
+          "exists": false,
+          "local_path": "benchmark/stage_a_scalelaw_downstream/data1024_small_steps500_seed0/t1_t7_eval_summary.json",
+          "sha256": null
+        }
+      },
+      "model_size": null,
+      "run_id": "data1024_small_steps500_seed0",
+      "seed": null,
+      "status": "blocked_on_training",
+      "steps": null,
+      "training_complete": false,
+      "training_status": null
+    }
+  ],
+  "stage_a_status_path": "benchmark/stage_a_scalelaw_downstream/status.json",
+  "stage_a_status_sha256": "483675b102c8499f5cedce89ebfabd1cd4774f68f895d6f3729ab81e8cdf837a",
+  "stage_a_summary": {
+    "n_downstream_ready": 0,
+    "n_runs": 8,
+    "n_training_complete": 0,
+    "ready_for_stage_a_downstream_eval_claim": false,
+    "ready_for_true_scale_law_claim": false
+  },
+  "summary": {
+    "aggregate_report_ready": false,
+    "missing_or_incomplete": [
+      "stage_a_training_complete",
+      "per_run_downstream_reports",
+      "aggregate_downstream_report",
+      "scale_law_trend_audit"
+    ],
+    "n_downstream_ready": 0,
+    "n_runs": 8,
+    "n_training_complete": 0,
+    "ready_for_stage_a_downstream_eval_claim": false,
+    "ready_for_true_scale_law_claim": false,
+    "status": "blocked_on_stage_a_sweep",
+    "trend_report_ready": false
+  },
+  "trend_report": {
+    "declared_path": "docs/stage_a_scalelaw_downstream_trend_audit.json",
+    "exists": false,
+    "local_path": "docs/stage_a_scalelaw_downstream_trend_audit.json",
+    "sha256": null
+  }
+}

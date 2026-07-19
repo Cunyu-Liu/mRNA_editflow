@@ -1,0 +1,383 @@
+{
+  "artifact_kind": "data_scaleup_readiness",
+  "claim_policy": "Data scale-up readiness is infrastructure and corpus-governance evidence. Do not claim RefSeq-scale training, real MPRA/TE/stability prediction, family-disjoint leakage-safe splits, or a data-scale law until the raw files, cleaned records, manifests, split/leakage audits, and downstream T1-T7/scale-law evaluations are complete.",
+  "family_split_leakage_audit": {
+    "cross_corpus_reports": [
+      "benchmark/leakage_ranker_head256_vs_gencode.json"
+    ],
+    "family_leakage_ready": false,
+    "family_split_protocol_ready": true,
+    "latest_protocol_report": "benchmark/gencode_family_leakage_protocol/report.json",
+    "leakage_reports": [
+      "benchmark/dev/p0_data_reconstruction_v1/combined_family/leakage_report.json",
+      "benchmark/dev/p0_data_reconstruction_v1/gencode_family/leakage_report.json",
+      "benchmark/dev/p0_data_reconstruction_v1/gencode_to_refseq/leakage_report.json",
+      "benchmark/dev/p0_data_reconstruction_v1/refseq_family/leakage_report.json",
+      "benchmark/frozen_backbone_protocol_head256/leakage.json",
+      "benchmark/leakage_ranker_head256_vs_gencode.json"
+    ],
+    "leakage_tool_path": "data/leakage_audit.py",
+    "protocol_audit_ready": false,
+    "protocol_reports": [
+      "benchmark/family_leakage_protocol_smoke/report.json",
+      "benchmark/gencode_family_leakage_protocol/report.json"
+    ],
+    "protocol_synthetic_smoke_only": false,
+    "real_protocol_reports": [
+      "benchmark/gencode_family_leakage_protocol/report.json"
+    ],
+    "split_files": [
+      "benchmark/family_leakage_protocol_smoke/splits/train.idx",
+      "benchmark/gencode_family_leakage_protocol/splits/train.idx"
+    ],
+    "split_tool_path": "data/dedup_split.py",
+    "status": "blocked_on_refseq_records_real_gencode_split_ready",
+    "tooling_available": true
+  },
+  "gencode_manifest_audit": {
+    "clean_n_records": 54680,
+    "dataset": "gencode_human_transcripts",
+    "dataset_name": "gencode_human_transcripts",
+    "drop_counts": {
+      "bad_start_codon": 5123,
+      "cds_too_long": 25610,
+      "cds_too_short": 11,
+      "empty_cds": 0,
+      "frame_not_multiple_of_3": 19602,
+      "illegal_chars": 0,
+      "internal_stop": 93,
+      "kept": 54680,
+      "no_terminal_stop": 5929,
+      "total": 111048,
+      "truncated_3utr": 40742,
+      "truncated_5utr": 27521
+    },
+    "manifest_exists": true,
+    "manifest_path": "data/processed/gencode_human_transcripts.data_manifest.json",
+    "manifest_ready": true,
+    "manifest_sha256": "abaad838be11160157c2e0b97307223faf2ba57a6cd9928282cff2bd93207ab0",
+    "raw_n_records": 111048,
+    "records": {
+      "declared_path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/data/processed/gencode_human_transcripts.records.jsonl",
+      "exists": true,
+      "local_path": "data/processed/gencode_human_transcripts.records.jsonl",
+      "sha256": "5a74b0ea8d40065fd44383625ab17a4b4bc6e33b7185b67056edda7ecb7448d3",
+      "size_bytes": 62365234
+    },
+    "records_local_sha_matches_manifest": true,
+    "records_sha256_declared": "5a74b0ea8d40065fd44383625ab17a4b4bc6e33b7185b67056edda7ecb7448d3",
+    "status": "manifest_and_local_records_verified"
+  },
+  "manifest_audit": {
+    "contract_audit": {
+      "all_required_dataset_manifests_complete": false,
+      "exists": true,
+      "incomplete_datasets": [
+        "refseq_human_rna",
+        "mpra_te",
+        "stability_half_life"
+      ],
+      "n_complete": 1,
+      "n_datasets": 4,
+      "path": "docs/dataset_manifest_audit.json",
+      "sha256": "51752f643098eef001ff362b036e9da64437bf3c255d3898ce5c24be24c9f626"
+    },
+    "rows": [
+      {
+        "dataset": "gencode_human_transcripts",
+        "manifest_exists": true,
+        "manifest_ready": true,
+        "records_local_exists": true,
+        "status": "manifest_and_local_records_verified"
+      },
+      {
+        "dataset": "refseq_human_rna",
+        "manifest_exists": false,
+        "manifest_ready": false,
+        "records_local_exists": false,
+        "status": "queued_or_running"
+      }
+    ]
+  },
+  "mpra_te_stability_audit": {
+    "claim_language": "Real MPRA/TE and stability input tables need schema-valid sequences, numeric labels, official train/val/test splits, manifests, and held-out predictor validation before any real TE/stability claim.",
+    "downstream_input_tables_ready": false,
+    "latest_predictor_report": "benchmark/mpra_te_predictor_protocol_smoke/report.json",
+    "latest_stability_predictor_report": "benchmark/stability_predictor_protocol_smoke/report.json",
+    "manifest_builder_tooling_available": true,
+    "manifest_builder_tooling_path": "eval/build_downstream_table_manifest.py",
+    "mpra_input_table": {
+      "candidate_patterns": [
+        "data/raw/*mpra*.csv",
+        "data/raw/*mpra*.tsv",
+        "data/raw/*mrl*.csv",
+        "data/raw/*mrl*.tsv",
+        "data/processed/*mpra*.csv",
+        "data/processed/*mpra*.tsv",
+        "data/processed/*mrl*.csv",
+        "data/processed/*mrl*.tsv"
+      ],
+      "candidate_tables": [],
+      "dataset": "mpra_te",
+      "env_vars": [
+        "MRNA_EDITFLOW_MPRA_TE_TABLE",
+        "MPRA_TE_TABLE",
+        "MPRA_TABLE"
+      ],
+      "official_split_ready": false,
+      "ready_for_predictor_input": false,
+      "schema_valid": false,
+      "selected_table": null,
+      "status": "no_candidate_table_configured"
+    },
+    "mpra_input_table_ready": false,
+    "predictor_reports": [
+      "benchmark/mpra_te_predictor_protocol_smoke/report.json"
+    ],
+    "predictor_tooling_available": true,
+    "predictor_tooling_path": "eval/mpra_te_predictor.py",
+    "real_data_artifacts": [],
+    "real_data_ready": false,
+    "stability_input_table": {
+      "candidate_patterns": [
+        "data/raw/*stability*.csv",
+        "data/raw/*stability*.tsv",
+        "data/raw/*half_life*.csv",
+        "data/raw/*half_life*.tsv",
+        "data/raw/*degradation*.csv",
+        "data/raw/*degradation*.tsv",
+        "data/processed/*stability*.csv",
+        "data/processed/*stability*.tsv",
+        "data/processed/*half_life*.csv",
+        "data/processed/*half_life*.tsv",
+        "data/processed/*degradation*.csv",
+        "data/processed/*degradation*.tsv"
+      ],
+      "candidate_tables": [],
+      "dataset": "stability_half_life",
+      "env_vars": [
+        "MRNA_EDITFLOW_STABILITY_TABLE",
+        "STABILITY_TABLE",
+        "HALF_LIFE_TABLE"
+      ],
+      "official_split_ready": false,
+      "ready_for_predictor_input": false,
+      "schema_valid": false,
+      "selected_table": null,
+      "status": "no_candidate_table_configured"
+    },
+    "stability_input_table_ready": false,
+    "stability_predictor_ready": false,
+    "stability_predictor_reports": [
+      "benchmark/stability_predictor_protocol_smoke/report.json"
+    ],
+    "stability_predictor_synthetic_smoke_only": true,
+    "stability_tooling_available": true,
+    "stability_tooling_path": "eval/stability_predictor.py",
+    "status": "synthetic_predictor_smoke_only_no_real_data",
+    "te_predictor_audit_ready": false,
+    "te_predictor_synthetic_smoke_only": true,
+    "tooling_available": true,
+    "tooling_path": "data/prepare_mpra.py"
+  },
+  "project_root": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow",
+  "refseq_build_audit": {
+    "claim_policy": "RefSeq build status is corpus-readiness evidence only. Do not claim data scale-up until official raw file, cleaned records, manifest, and downstream leakage/family split audits are complete.",
+    "manifest": {
+      "dataset": "refseq_human_rna",
+      "manifest_exists": false,
+      "manifest_path": "data/processed/refseq_human_rna.data_manifest.json",
+      "manifest_ready": false,
+      "records": {
+        "declared_path": null,
+        "exists": false,
+        "local_path": null,
+        "sha256": null,
+        "size_bytes": null
+      },
+      "status": "missing_manifest"
+    },
+    "manifest_status": {
+      "clean_n_records": null,
+      "exists": false,
+      "path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/data/processed/refseq_human_rna.data_manifest.json",
+      "raw_n_records": null,
+      "sha256": null
+    },
+    "official_corpus_ready": false,
+    "progress": {
+      "last_event": "build_start",
+      "last_loadavg": null,
+      "n_events": 3,
+      "path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/benchmark/refseq_public_build_20260715_0743/progress.jsonl",
+      "tail": [
+        {
+          "data_dir": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/data/raw",
+          "dataset": "refseq_human_rna",
+          "event": "queued",
+          "out_dir": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/data/processed",
+          "time": 1784100401.8250716
+        },
+        {
+          "event": "load_gate_pass",
+          "loadavg": "124.03",
+          "max_loadavg": "999999",
+          "time": 1784100401.9538941
+        },
+        {
+          "command": "/home/cunyuliu/miniconda3/envs/editflow/bin/python3.10 -m mrna_editflow.data.public_pipeline --dataset refseq_human_rna --data-dir /home/cunyuliu/mrna_editflow_goal/mrna_editflow/data/raw --out-dir /home/cunyuliu/mrna_editflow_goal/mrna_editflow/data/processed --seed 20260714 --download",
+          "event": "build_start",
+          "time": 1784100402.0458214
+        }
+      ]
+    },
+    "raw": {
+      "exists": true,
+      "path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/data/raw/human.1.rna.gbff.gz",
+      "sha256": null,
+      "size_bytes": 0
+    },
+    "records": {
+      "exists": false,
+      "path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/data/processed/refseq_human_rna.records.jsonl",
+      "sha256": null,
+      "size_bytes": 0
+    },
+    "status": "queued_or_running",
+    "status_exists": true,
+    "status_path": "benchmark/refseq_public_build_20260715_0743/status.json",
+    "status_sha256": "4fb3b07cf2fc8838752449bf48e21882e77b74055d250471f8b985f5a180cfaf"
+  },
+  "rows": [
+    {
+      "area": "GENCODE base corpus",
+      "claim_language": "GENCODE manifest/SHA evidence is present; local records availability is reported separately.",
+      "evidence": "clean_n=54680; records_sha=5a74b0ea8d40065fd44383625ab17a4b4bc6e33b7185b67056edda7ecb7448d3",
+      "ready": true,
+      "status": "manifest_and_local_records_verified"
+    },
+    {
+      "area": "RefSeq corpus scale-up",
+      "claim_language": "RefSeq parser/build queue readiness only until official raw, records, and manifest exist.",
+      "evidence": "raw=True; records=False; manifest=False; last_event=build_start",
+      "ready": false,
+      "status": "queued_or_running"
+    },
+    {
+      "area": "Stage A data/model/step sweep",
+      "claim_language": "Controlled axes are queue evidence until all runs and downstream audits complete.",
+      "evidence": "runs=None/8; last_event=None; last_loadavg=None",
+      "ready": false,
+      "status": "queued_or_running"
+    },
+    {
+      "area": "Stage A downstream evaluation",
+      "claim_language": "Stage A checkpoints need proposal-ranking, T1-T7 aggregate, runtime, and trend audits before any scale-law claim.",
+      "evidence": "training=0/8; downstream=0/8; aggregate=False; trend=False",
+      "ready": false,
+      "status": "blocked_on_stage_a_sweep"
+    },
+    {
+      "area": "MPRA/TE/stability data",
+      "claim_language": "No real TE/stability predictor claim without external data and validation artifacts.",
+      "evidence": "tooling=True; predictor_tooling=True; stability_tooling=True; manifest_builder=True; mpra_table=False; stability_table=False; real_artifacts=0; te_predictor_audit=False; stability_predictor_audit=False; synthetic_smoke=(True, True)",
+      "ready": false,
+      "status": "synthetic_predictor_smoke_only_no_real_data"
+    },
+    {
+      "area": "Family-disjoint split and leakage",
+      "claim_language": "Leakage tooling exists, but GENCODE/RefSeq family-disjoint evidence awaits RefSeq records.",
+      "evidence": "split_files=2; cross_corpus_reports=1; protocol_reports=2; real_protocol_reports=1; split_protocol_ready=True; protocol_smoke=False",
+      "ready": false,
+      "status": "blocked_on_refseq_records_real_gencode_split_ready"
+    },
+    {
+      "area": "Dataset manifests",
+      "claim_language": "Every data version needs source URL, SHA256, record counts, drop stats, and split stats.",
+      "evidence": "gencode_human_transcripts=manifest_and_local_records_verified; refseq_human_rna=queued_or_running; contract=1/4; incomplete=['refseq_human_rna', 'mpra_te', 'stability_half_life']",
+      "ready": false,
+      "status": "incomplete"
+    }
+  ],
+  "stage_a_downstream_eval_audit": {
+    "aggregate_report_ready": false,
+    "exists": true,
+    "missing_or_incomplete": [
+      "stage_a_training_complete",
+      "per_run_downstream_reports",
+      "aggregate_downstream_report",
+      "scale_law_trend_audit"
+    ],
+    "n_downstream_ready": 0,
+    "n_runs": 8,
+    "n_training_complete": 0,
+    "path": "docs/stage_a_downstream_eval_readiness.json",
+    "ready_for_stage_a_downstream_eval_claim": false,
+    "ready_for_true_scale_law_claim": false,
+    "sha256": "3461bb87e4fb944709a463d52dd831406ce439c30d7c0f65bc6f61da44ca5103",
+    "status": "blocked_on_stage_a_sweep",
+    "trend_report_ready": false
+  },
+  "stage_a_sweep_audit": {
+    "axes": {},
+    "claim_policy": "Stage A downstream eval queue status is automation evidence only. Do not claim a true scale law until per-run downstream reports, aggregate report, and trend audit are complete.",
+    "controlled_sweep_complete": false,
+    "last_event": null,
+    "last_loadavg": null,
+    "n_complete": null,
+    "n_incomplete": null,
+    "n_load_gate_wait_events": null,
+    "n_runs": 8,
+    "plan_ready": true,
+    "progress_tail": [],
+    "ready_for_scale_law_claim": false,
+    "source_record_count": null,
+    "source_records_sha256": null,
+    "status": "queued_or_running",
+    "status_counts": null,
+    "status_path": "benchmark/stage_a_scalelaw_downstream/status.json",
+    "status_sha256": "483675b102c8499f5cedce89ebfabd1cd4774f68f895d6f3729ab81e8cdf837a"
+  },
+  "summary": {
+    "all_data_scaleup_ready": false,
+    "dataset_manifest_contract_ready": false,
+    "downstream_input_tables_ready": false,
+    "downstream_manifest_builder_tooling_available": true,
+    "family_leakage_protocol_audit_ready": false,
+    "family_leakage_protocol_real_report_present": true,
+    "family_leakage_protocol_synthetic_smoke_only": false,
+    "family_leakage_ready": false,
+    "family_split_protocol_ready": true,
+    "gencode_manifest_ready": true,
+    "gencode_records_local_exists": true,
+    "missing_or_incomplete": [
+      "refseq_official_corpus",
+      "stage_a_data_model_step_sweep",
+      "stage_a_downstream_evaluation",
+      "real_mpra_te_stability_data",
+      "family_disjoint_split_and_leakage_audit",
+      "all_dataset_manifests"
+    ],
+    "mpra_input_table_ready": false,
+    "mpra_real_data_ready": false,
+    "mpra_te_predictor_audit_ready": false,
+    "mpra_te_predictor_synthetic_smoke_only": true,
+    "n_missing_or_incomplete": 6,
+    "ready_for_data_scale_claim": false,
+    "ready_for_family_disjoint_leakage_claim": false,
+    "ready_for_real_te_or_stability_claim": false,
+    "ready_for_refseq_scaleup_claim": false,
+    "ready_for_true_scale_law_claim": false,
+    "refseq_build_status": "queued_or_running",
+    "refseq_official_corpus_ready": false,
+    "stability_input_table_ready": false,
+    "stability_predictor_audit_ready": false,
+    "stability_predictor_synthetic_smoke_only": true,
+    "stage_a_controlled_sweep_complete": false,
+    "stage_a_controlled_sweep_status": "queued_or_running",
+    "stage_a_downstream_eval_ready": false,
+    "stage_a_downstream_eval_status": "blocked_on_stage_a_sweep",
+    "stage_a_downstream_ready_runs": 0,
+    "stage_a_downstream_training_complete": 0
+  }
+}

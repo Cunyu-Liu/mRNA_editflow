@@ -1,0 +1,1715 @@
+# mRNA-EditFlow 下一步 SOTA 追赶目标与 Todo List
+
+## 1. 当前模型是否能做全长 mRNA 设计和优化？
+
+结论：当前 mRNA-EditFlow 已经可以做约束安全的全长 mRNA 设计与局部优化，但还不能把它表述为“已经达到全长 mRNA de novo 设计 SOTA”。
+
+当前已经具备的能力：
+
+| 能力 | 当前状态 | 证据 |
+|---|---|---|
+| 全长 mRNA 表示 | 支持 `5'UTR + CDS + 3'UTR` 三段联合建模 | README 的核心科学问题和 CTMC edit-flow 架构 |
+| 全长候选生成 | 支持从真实 full transcript 出发做 region-aware edit | `sample.py` 和 `run_multiseed_benchmark.py` |
+| 5'UTR/3'UTR 优化 | 支持 UTR nucleotide-level edits | T5 benchmark、UTR local-search baseline |
+| CDS 约束优化 | 支持 CDS synonymous lattice，保持 protein identity | T4/T7 tests、codon-lattice DP baseline |
+| 长度控制 | 支持 T6 目标长度编辑 | T6 tests 和 evaluation metrics |
+| motif/frame 控制 | 支持 T7 motif/frame integrity | T7 tests 和 motif metrics |
+| 模型引导优化 | 支持 Stage A generator、TE ranker、source-aware recall ranker、cascade decoding | head256 × 10-seed benchmark |
+
+当前能力边界：
+
+- 它目前最强的是“从已有全长 mRNA 出发，在硬约束下做局部优化和重排序”，不是完全从蛋白条件或目标属性出发生成任意全长 mRNA。
+- 当前性能主证据来自 proxy/oracle TE、CAI、novelty、constraint metrics，还不是 wet-lab TE/stability 真实实验。
+- 当前 head256 × 10-seed 最强的是 **多目标 fusion ranker**：**grpo (`+0.01114`)、scalar (`+0.01087`)、pareto (`+0.01029`) 三条独立融合模式都**显著优于纯 TE 对照 te_only `+0.00348`（各 paired `p=0.00450`）且都显著优于此前冠军 hard-negative v2 `+0.00503`（各 paired `p=0.00450`），硬约束全 `1.0`，2026-07-13 4-mode 受控消融证据见 §3#1，产物 `benchmark/compare_mo_fusion_vs_te_only_head256.*` 等。三融合模式彼此头对头**不显著**（grpo vs scalar `p=0.43478`、scalar vs pareto `p=0.21389`），统计打平——不宣称某一融合单独最优；grpo 数值最高且 uAUG safety 副作用最小。**head1024 true scale-up 已完成**（`LIMIT=1024`、10 seeds）：te_only 本身增强到 `+0.00846`；pareto 数值最高 `+0.00927`，相对 te_only `+0.00081` 但 paired `p=0.05047`，只能写作 borderline/趋势，不能写严格显著；scalar `+0.00855` (`p=0.74463`) 和 grpo `+0.00852` (`p=0.89805`) 不显著。三融合模式仍全部显著超过旧 hardneg_v2 head1024 `+0.00385`（各 `p=0.00450`），硬约束全 `1.0`。结论：head256 的强阳性没有以同等显著性复现在“更强 te_only 对照”的 head1024 上，必须诚实写成 scale-up 后收益收缩，pareto 保留最强趋势信号。
+
+## 2. 是否有相关评测指标？
+
+有。当前项目已经建立 T1-T7 全链路评测，但论文级发表还需要把它们和外部 SOTA 任务逐一对齐。
+
+| 任务 | 科学问题 | 当前指标 | 论文级目标 |
+|---|---|---|---|
+| T1 Validity/Oracle | 生成序列是否合法且是否提高翻译相关属性 | `legal_fraction`, `mean_oracle_te`, `delta_oracle_te_vs_source`, `mean_oracle_mrl` | `legal_fraction=1.0`，TE delta 显著高于所有模型-only baseline |
+| T2 Distribution | 是否保持真实 mRNA 分布 | `kmer_js`, `codon_usage_kl`, GC/length distribution, embedding proxy | 在 TE 提升时不显著破坏 source distribution |
+| T3 Diversity/Novelty | 是否不是简单复制训练集 | `mean_novelty`, `exact_source_match_fraction`, pairwise diversity | exact match 接近 0，同时 novelty 高于 ranker baseline |
+| T4 Protein Identity | CDS 编辑是否保持蛋白不变 | `mean_protein_identity`, `protein_identity_ge_0_99_fraction` | 必须 `1.0`，这是硬约束，不接受 tradeoff |
+| T5 Edit Budget | 局部编辑是否可解释、可控 | `within_budget_fraction`, `mean_edit_distance`, budget margin | `within_budget_fraction=1.0`，同时 TE delta 最大化 |
+| T6 Length Control | 是否能精确控制 full transcript 长度 | `mean_abs_length_error`, length-within-k fraction | 长度误差接近 0，且不破坏 CDS/frame |
+| T7 Motif/Frame | motif、Kozak、uAUG、polyA、frame 是否受控 | motif presence/count, reading-frame intact fraction | frame=1.0，目标 motif 成功率高于 baseline |
+
+当前正式 head256 × 10-seed 结果（按 `delta_oracle_te_vs_source` 排序）：
+
+| Decoder | `delta_oracle_te_vs_source` | `mean_oracle_te` | Constraints | 关键 paired p |
+|---|---:|---:|---|---:|
+| **多目标 grpo-fusion ranker（当前数值最高）** | **+0.01114** | **0.79097** | legal/protein/budget/frame = 1.0 | vs hardneg_v2 `p=0.00450`；vs te_only 对照 `p=0.00450`；vs scalar `p=0.43478`（打平） |
+| 多目标 scalar-fusion ranker | +0.01087 | 0.79071 | legal/protein/budget/frame = 1.0 | vs hardneg_v2 `p=0.00450`；vs te_only 对照 `p=0.00450` |
+| 多目标 pareto-fusion ranker | +0.01029 | 0.79012 | legal/protein/budget/frame = 1.0 | vs hardneg_v2 `p=0.00450`；vs te_only 对照 `p=0.00450` |
+| hard-negative v2 direct top64（前冠军） | +0.00503 | 0.78486 | legal/protein/budget/frame = 1.0 | 显著优于 sequential `p=0.02049` |
+| Source-aware recall -> sequential precision top64 | +0.00482 | 0.78466 | legal/protein/budget/frame = 1.0 | p=0.09545（旧 cascade，vs sequential） |
+| 10k-recall → hardneg_v2 precision cascade top64 | +0.00455 | 0.78439 | legal/protein/budget/frame = 1.0 | p=0.36632（vs hardneg_v2，不显著） |
+| Sequential precision top64 | +0.00391 | 0.78374 | legal/protein/budget/frame = 1.0 | — |
+| te_only 单-TE 消融对照 top64 | +0.00348 | 0.78332 | legal/protein/budget/frame = 1.0 | scalar/pareto/grpo 对照基线（同蒸馏 recipe） |
+| 10k ranker direct top64 | +0.00342 | 0.78326 | legal/protein/budget/frame = 1.0 | p=0.00450（显著劣于 hardneg_v2） |
+
+当前正式 head1024 × 10-seed true-scale 结果（`LIMIT=1024`，按 `delta_oracle_te_vs_source` 排序）：
+
+| Decoder | `delta_oracle_te_vs_source` | `mean_oracle_te` | Constraints | 关键 paired p |
+|---|---:|---:|---|---:|
+| **多目标 pareto-fusion ranker（head1024 数值最高）** | **+0.00927** | **0.80031** | legal/protein/budget/frame = 1.0 | vs te_only `p=0.05047`（borderline，未过严格 0.05）；vs hardneg_v2 `p=0.00450` |
+| 多目标 scalar-fusion ranker | +0.00855 | 0.79959 | legal/protein/budget/frame = 1.0 | vs te_only `p=0.74463`；vs hardneg_v2 `p=0.00450` |
+| 多目标 grpo-fusion ranker | +0.00852 | 0.79956 | legal/protein/budget/frame = 1.0 | vs te_only `p=0.89805`；vs hardneg_v2 `p=0.00450` |
+| te_only 单-TE 消融对照 top64 | +0.00846 | 0.79950 | legal/protein/budget/frame = 1.0 | head1024 强对照 |
+| hard-negative v2 direct top64（旧冠军） | +0.00385 | 0.79489 | legal/protein/budget/frame = 1.0 | 三融合均显著优于它 `p=0.00450` |
+
+Interpretation：head256 最优是 **多目标 fusion ranker**——**grpo (`+0.01114`)、scalar (`+0.01087`)、pareto (`+0.01029`) 三条独立融合模式**在固定候选/架构/蒸馏 recipe、只改 teacher reward 的受控消融下，**全部**显著超过纯 TE 对照 te_only（`+0.00348`，各 paired `p=0.00450`）**并且**全部显著超过此前冠军 hard-negative v2（`+0.00503`，各 paired `p=0.00450`），硬约束全部 `1.0`（详见 §3#1）。但 head1024 scale-up 给出更谨慎结论：te_only 对照随数据/切片规模增强到 `+0.00846`，三融合相对 te_only 的增益明显收缩；只有 pareto 保留 `+0.00081` 的正向趋势且 CI `[0.00018, 0.00145]`，但 paired `p=0.05047` 未通过严格 0.05，不能写成显著超越。三融合仍显著超过旧 hardneg_v2 head1024（各 `p=0.00450`），说明它们确实强于旧 ranker recipe；但“多目标 reward 显著超过同 recipe 单 TE 对照”的强结论目前只被 head256 证明，head1024 需要更多 seeds/更强 ranker 或 region-specific adapter 复验。
+
+## 3. 是否有针对性的模型架构优化？
+
+有，当前模型已经不是通用 Transformer 直接套用，而是围绕全长 mRNA 的生物约束定制：
+
+| 架构组件 | 作用 | 对应科学约束 |
+|---|---|---|
+| Region FiLM | 区分 `5'UTR/CDS/3'UTR` 的功能语义 | UTR 是调控画布，CDS 是蛋白编码区 |
+| Codon phase features | 记录 CDS codon phase | 保护 reading frame |
+| Synonymous CDS mask | CDS substitution 只能落在同义 codon lattice | 保持 protein identity |
+| CTMC edit rates | 预测 insertion/substitution/deletion 强度 | 把 mRNA 设计建模为连续时间编辑过程 |
+| Proposal TE ranker | 学习 oracle-preferred edits | 对齐训练目标和最终 TE ranking 指标 |
+| Source-aware hybrid teacher | 分离 full-pool precision 和 UTR-local recall | 避免不同 teacher source 互相冲突 |
+| Two-stage cascade decoding | recall ranker 找候选，precision ranker 重排 | 同时追求 top-k recall 和 top-1 TE |
+
+下一步必须继续做的架构升级：
+
+1. Multi-objective reward head：把 TE、MRL、CAI、GC、MFE/accessibility、motif penalty 显式拆成多头预测，再做 Pareto/ranking fusion。
+   - [x] 已落地首版：`mrna_editflow.baselines.multiobjective_teacher_export`
+     对每个合法 one-step 编辑输出 6 目标（te/mrl/cai/gc/access/uaug）delta，
+     min-max 归一化写入 `source_scores`，加权 scalarization 作为 `teacher_score`，
+     直接对接 `train_proposal_ranker --pair-source-mode source_balanced`
+     （逐目标 Bradley-Terry，保留各目标独立排序）。
+   - [x] 补齐 objective 要求的 **Pareto** 融合（此前只有 ranking/scalarization）：
+     新增 `fast_non_dominated_sort`（NSGA-II 快速非支配排序），逐候选输出
+     `pareto_rank`（front 0 = 非支配集）/`pareto_front_size`/`pareto_fused_score`
+     /`scalar_fused_score`；`fusion_mode="pareto"` 用 front-major 分带（更优 front
+     严格压过更差 front，band 内由 scalar 决胜）作为 `teacher_score`，可恢复纯
+     scalarization 覆盖不到的凹 Pareto 前沿；`fusion_mode="scalar"` 为默认且向后
+     兼容。summary 增加 `pareto_front0_rows/fraction`、`mean/max_pareto_rank`、
+     `mean_pareto_fused_score`。
+   - [x] 借鉴 ProMORNA MO-GRPO 增加第三条融合路线 `fusion_mode="grpo_standardized"`：
+     对每个目标的 raw delta（advantage）在候选池内做 z-score 标准化后再加权聚合
+     （`grpo_fused_score`），逐目标尺度不变，避免大尺度指标仅因单位/方差主导融合；
+     每行同时输出 scalar/pareto/grpo 三种 fused score，summary 增加
+     `mean_grpo_fused_score`。
+   - [x] 远端端到端冒烟：head8 导出 144 行 6 目标，`source_balanced` ranker
+     15 步 loss 单调下降（1.78→1.58→0.56），各目标独立生成 pair。
+   - [x] `tests/test_baselines_ablation.py::TestParetoFusion`（10 用例）验证：
+     非支配排序 fronts=[0,0,0,1,2] 与链式 [0,1,2]、空/单点/全同边界、Pareto
+     元数据合法与 front_size 一致、front-major 保序（最优 pareto_fused 必在
+     front 0）、scalar/pareto/grpo 三 mode 各自驱动 teacher_score、z-score
+     零均值单位方差性质、非法 fusion_mode 报错、summary Pareto 字段、pareto 导出
+     可被 source_balanced ranker 消费。
+   - 边界：UTR-only 编辑不改 CDS，`cai` delta 恒为 0，`cai` 目标仅在 T4
+     CDS 编辑任务下激活。
+   - [ ] 待办：10k checkpoint 就绪后跑 head256/head1024 多目标 ranker 全量训练与
+     T1-T7 消融，量化多目标（scalar vs pareto vs grpo 三种 fusion）相对单 TE 目标的收益。
+   - [~] 进行中（2026-07-13，由 cascade 负结果驱动——瓶颈在 precision top-1 判别而非 recall）：
+     新增 `scripts/run_multiobjective_ranker_ablation_head256.sh`，在 head256 T5 切片上做
+     **受控消融**——固定候选生成 + ranker 架构 + 蒸馏 recipe（500 steps / 10k head1024
+     teacher ranker 作 base），只改 teacher reward：`te_only`（单 TE 对照，
+     用同一 exporter 把非 TE 权重清零）vs `scalar`/`pareto`/`grpo_standardized` 三融合。
+     **关键修正（否则实验作废）**：该融合消融必须用 `--pair-source-mode global`，
+     不能用 `source_balanced`——exporter 导出的逐目标 `source_scores` 在四种 fusion_mode
+     下完全相同，只有 `teacher_score` 编码 fusion。`global` 模式用 `teacher_score` 组
+     Bradley-Terry pair（四模式训出不同 ranker，已实测 te_only vs scalar 逐记录
+     Spearman 均值 0.928、min 0.267、仅 0.4% 记录序完全相同）；`source_balanced` 模式
+     用 `source_scores` 组 pair、完全忽略 `teacher_score`，会让四模式塌缩成同一 ranker。
+     te_only 对照的 `teacher_score` 逐记录对 TE delta 严格保序（Spearman=1.0000，250/250 记录），
+     是干净的单 TE baseline。配套 `scripts/eval_multiobjective_ranker_ablation_head256.sh`
+     跑 4 个 ranker 的 head256 × 10-seed top64 benchmark（与 hardneg_v2 同 eval 配置），
+     并以 te_only 为 baseline 跑 guarded paired permutation，使任何 TE 增益只归因于多目标
+     reward。已在远端 GPU 启动 distill（复用已导出 teacher，每 ranker ~7min GPU）。
+     实验良定性已验证：scalar 融合（默认权重 te=0.40，其余 mrl/cai/gc/access/uaug 合计 0.60）
+     相对 te_only 在 **35.2%（88/250）** 的记录上改变了 top-1 编辑选择，说明多目标 reward
+     确实非平凡地重排了顶端候选（不是噪声），paired TE 对比会给出可解释的真实结果。
+     teacher 级 tradeoff 分析（在 88 个 top-1 分歧记录上）：scalar 相对 te_only
+     **牺牲 TE −0.00741**，换取 **access +0.0238、uAUG 惩罚下降 +0.0455**（GC 基本持平、
+     MRL 略降 −0.0059）。pareto 与 scalar 完全一致（88/250、−0.00741），因默认权重下
+     front-major 分带在本切片很少覆盖 scalar 的带内序；grpo 分歧更少（66/250=26.4%）、
+     TE 牺牲更小（−0.00610），但 access（+0.0302）/uAUG（+0.0606）增益更大——其逐指标
+     z-score 更激进地偏好候选间方差小的目标（uAUG 常近二值）。因此预期 head256 benchmark
+     （只测 oracle TE）会显示三种融合的 TE 均略低于 te_only，其中 grpo 最接近（TE 牺牲最小、
+     重排最少）——多目标融合不会在它主动降权的单指标上取胜，其价值在于多属性 Pareto
+     tradeoff（与 cascade 教训一致：更丰富的信号 ≠ 更高的单一 TE）。
+     待 4 个 ranker 训练完成后跑 eval+compare，诚实记录 scalar/pareto/grpo 是否显著优于单 TE。
+     **评测工具补充**：head256 multiseed aggregate 只暴露 oracle TE/MRL，不含 access/uAUG/GC/CAI
+     等解码序列属性；新增 `eval/analyze_mo_fusion_decoded_properties.py` 从各 mode 的
+     per-seed `eval_summary.json::metrics`（kozak_uaug/structure/distribution/cai）跨 10 seed
+     聚合这些属性，使多目标 tradeoff 可见（而非只看 TE）。
+   - [x] **实测结果（2026-07-13，te_only + scalar 各 10/10 seed 完成；同 head256 slice、
+     top64、budget3、hardneg_v2 sources；checkpoint 已核验互异、`pair_source_mode:"global"`
+     且 `mean_abs_teacher_delta` te_only=0.935 vs scalar=0.627 证明四模式教师信号不同、
+     排除 null-experiment 陷阱）**：
+     | 对比 | delta_oracle_te | vs baseline Δ | paired p | 约束 |
+     |---|---:|---:|---:|---|
+     | te_only（单 TE 对照） | +0.00348 | — | — | legal/protein/budget/frame=1.0 |
+     | **scalar 多目标融合** | **+0.01087** | **+0.00739**（vs te_only） | **0.00450** | legal/protein/budget/frame=1.0 |
+     | scalar vs 旧 head256 冠军 hardneg_v2(+0.00503) | +0.01087 | **+0.00585** | **0.00450** | 全 1.0 |
+
+     scalar 同时 MRL +0.06153（p=0.00450）；distribution 几乎不动（kmer_js +0.00002、
+     codon_usage_kl≈0、mean_novelty +0.00003、exact_match 持平）；edit_distance 2.96<budget 3。
+     解码非-TE 属性（现已加 **seed-paired permutation p vs te_only**，与 oracle TE 同一 10-seed
+     配对标准；分析器 `analyze_mo_fusion_decoded_properties.py` 新增 `mode_seed_vectors` +
+     逐属性配对检验）。scalar / pareto（均 10/10）相对 te_only：
+     - `mean_start_accessibility` **显著更高（更好）**：scalar +0.01323 (p=0.00450)、pareto +0.01799 (p=0.00450)；
+     - `mean_uaug_count` **显著更高（即更差）**：scalar +0.02852 (p=0.00450)、pareto +0.05312 (p=0.00450)；
+     - `candidate_mean_gc` 显著略降（p=0.00450）；`mean_cai` 完全不变（p=1.0，符合预期——UTR 编辑不动 CDS）；
+       `mean_kozak_score` 变动不显著。
+     即两融合模式在显著抬高 TE/MRL/accessibility 的同时，也**显著抬高了 uAUG**——与 teacher
+     预期降 uAUG 的方向相反，这是 teacher-vs-decoded gap 诚实的一面，现有统计显著性背书而非仅靠均值。
+     **诚实纠错**：这与本块此前基于 88 个 teacher-divergent 记录的 teacher 级预测
+     （"三融合 decoded TE 会略低于 te_only"）**方向相反**——预测错误。真实 10-seed decoded
+     benchmark 显示 scalar/pareto 显著**高于** te_only 且**超过**旧冠军 hardneg_v2。
+     **机制假说（明确标注为假说，待 grpo + head1024 验证）**：多目标 reward 把 TE 之外的
+     MRL/access/GC 作为协同/正则信号，蒸馏出的 ranker 其 top-1 decoded 编辑在 oracle TE 上
+     反而优于纯 TE ranker 的更"贪心"、更噪声的 top-1 选择——即辅助目标提升了 ranker 的
+     泛化，而非牺牲 TE。teacher-vs-decoded gap 在此**有利**于 scalar/pareto 的 TE。
+     产物：`benchmark/compare_scalar_vs_te_only_head256.{json,md}`、
+     `benchmark/compare_scalar_vs_hardneg_v2_head256.{json,md}`。
+   - [~] pareto/grpo benchmark 进展（2026-07-13）：**pareto 已完成 10/10 并经 guarded paired
+     permutation 独立验证**——`delta_oracle_te=+0.01029`（te=0.79012，硬约束全 1.0），
+     vs te_only 对照 `+0.00348` → +0.00680（paired `p=0.00450`），vs 旧冠军 hardneg_v2
+     `+0.00503` → +0.00526（paired `p=0.00450`），edit_distance 2.96<budget 3。
+     即 **scalar (+0.01087) 与 pareto (+0.01029) 两条独立融合模式都在 p=0.00450 显著
+     超越 te_only 对照与旧冠军**——强力去除「单模式偶然」风险，确认多目标 reward 提升
+     top-1 TE 是稳健架构信号。
+   - [x] **4-mode 消融定稿（2026-07-13，全部 10/10 seed，guarded paired permutation）**：
+     三种融合模式**全部**显著超越 te_only 单-TE 对照与旧冠军 hardneg_v2，硬约束全 1.0：
+     | mode | delta_oracle_te | vs te_only (p) | vs hardneg_v2 (p) |
+     |---|---:|---:|---:|
+     | **grpo** | **+0.01114** | +0.00765 (p=0.00450) | +0.00611 (p=0.00450) |
+     | scalar | +0.01087 | +0.00739 (p=0.00450) | +0.00585 (p=0.00450) |
+     | pareto | +0.01029 | +0.00680 (p=0.00450) | +0.00526 (p=0.00450) |
+     | te_only 对照 | +0.00348 | — | — |
+
+     **三融合模式彼此统计打平**（grpo vs scalar Δ=+0.00026 p=0.43478、scalar vs pareto
+     Δ=+0.00059 p=0.21389，CI 均跨 0）——诚实结论：「多目标 fusion（任一模式）显著超越单 TE
+     与旧冠军」，**不宣称某一融合单独最优**。
+     **诚实纠错 #2**：此前 teacher 级预测 grpo「最温和、TE 牺牲最小、最接近 te_only」——
+     decoded benchmark 显示 grpo 反而是 **TE 数值最高**（+0.01114），又一处 teacher-vs-decoded
+     方向性预测失误。但 grpo 在**解码 safety 代价上确实最温和**：uAUG 仅 +0.01484（p=0.03498）
+     vs scalar +0.02852 / pareto +0.05312——即 grpo 以最小 uAUG 上升拿到并列最高 TE，是
+     多目标视角下最"划算"的融合（TE 与 scalar/pareto 统计打平，但 safety 副作用最小）。
+     解码非-TE paired p（全 10-seed）：三模式的 accessibility 显著升、GC 显著降（均 p=0.00450）、
+     CAI 完全不变（p=1.0，UTR 编辑不动 CDS）。产物：
+     `benchmark/compare_mo_fusion_vs_te_only_head256.{json,md}`、
+     `benchmark/compare_grpo_vs_{scalar,hardneg_v2}_head256.{json,md}`、
+     `benchmark/compare_scalar_vs_pareto_head256.{json,md}`（全部 SHA 本地==远端）。
+     下一步：head1024 scale-up（`SLICE=head1024` 一键链）复现三融合是否随规模保持显著。
+   - [x] **pipeline 已 slice 参数化以支持 §3#5 scale-up**：`run_/eval_multiobjective_ranker_ablation_head256.sh`
+     与 `eval/analyze_mo_fusion_decoded_properties.py` 新增 `SLICE`（默认 `head256`
+     完全向后兼容，dry-run 已验证 head256 路径逐字不变）。head1024 切片
+     （`multiseed_t5_public_head1024_hardneg_v2_top64`，1024 行）+ head1024 base checkpoint
+     均已就绪，只需 `SLICE=head1024` 即可复用同一受控消融跑 4-mode 训练/评测/分析，
+     产出 `_head1024` 独立 checkpoint/benchmark/compare（不覆盖 head256）。
+     测试：`test_eval.py::TestMultiObjectiveDecodedPropertyAnalyzer.test_slice_name_selects_scaled_slice_and_isolates_from_head256`
+     锁定 slice 选择正确且与 head256 隔离（全 25 test_eval + 45 训练/消融测试绿）。
+     **注意**：远端当前 loadavg≈102/96 核（CPU 超订），按资源安全约定不在此时抢跑 head1024
+     teacher 导出（CPU-only 但仍会加剧争用），待 4-mode 消融链结束、负载回落再启动。
+   - [x] **新增 repo-durable 端到端链脚本 `scripts/run_multiobjective_ablation_chain.sh`**（取代
+     head256 run 用的临时 `/tmp/mo_chain_eval.sh`，把精确复现路径固化进仓库）：串联
+     train→eval+compare→decoded-property analysis 三步，同样 `SLICE` 参数化；可选
+     `WAIT_PID` 门控（sleep 到指定运行中 job 退出再启动，避免抢占 GPU）+ 新增 `MAX_LOADAVG`
+     资源安全阀（1-min loadavg 高于阈值时自动 defer，`LOAD_MAX_WAIT_SECONDS` 上界防止永久挂起，
+     awk 浮点比较逻辑已本地单测）。head1024 scale-up 现在是单条命令
+     `SLICE=head1024 CUDA_VISIBLE_DEVICES=<free_gpu> MAX_LOADAVG=80 scripts/run_multiobjective_ablation_chain.sh`。
+     当前资源策略固定为 `MAX_LOADAVG=80`；不得用更高阈值放松 gate。
+     本地 + 远端 dry-run 均已验证计划正确解析到 head1024 切片路径（`bash -n` 语法通过、SHA 本地==远端）。
+   - [x] **head1024 true scale-up 已完成（2026-07-13，`LIMIT=1024`，10 seeds）**：
+     首次启动误用 GPU6 OOM 失败——**教训**：远端 GPU6/7 实为 **MIG 1g.5gb 切片（仅 5.1GB）**，
+     非完整 40GB A100（`nvidia-smi` free-mem 排序会把它们的整卡行误读为空闲）；且缺
+     `CUDA_DEVICE_ORDER=PCI_BUS_ID` 时 CUDA 枚举与 nvidia-smi 索引不一致。head1024 模型+backbone
+     在 5GB MIG 上 CUDA OOM，te_only ranker 只训到 step8（无效，已删除重训）。
+     **已修复训练**：改用真实全卡 **GPU5（40GB A100）** + `CUDA_DEVICE_ORDER=PCI_BUS_ID`，
+     复用已导出的 te_only teacher，四个 head1024 ranker 均已完整 distill 到 step500/global。
+     随后又发现 eval 脚本默认 `LIMIT=256`，即 `SLICE=head1024` 时仍会跑“假 head1024”；
+     已修复为从 `SLICE=headNNN` 自动推导默认 `LIMIT=NNN`（仍允许显式 `LIMIT=` 覆盖），
+     并新增 `tests/test_baselines_ablation.py::TestAblationScript.test_multiobjective_eval_limit_tracks_slice_unless_overridden`
+     守护该行为，删除错误半截评测目录。正确 eval 已在 GPU5 +
+     `CUDA_DEVICE_ORDER=PCI_BUS_ID` 下完成，命令行确认 `--limit 1024`，输出
+     `benchmark/multiseed_t5_public_head1024_mo_*_top64`。
+     **正式结果**：te_only=`+0.00846`；scalar=`+0.00855` vs te_only `p=0.74463`；
+     pareto=`+0.00927` vs te_only `p=0.05047`（borderline，不写显著）；
+     grpo=`+0.00852` vs te_only `p=0.89805`。三融合均显著强于旧 hardneg_v2
+     `+0.00385`（各 `p=0.00450`），硬约束全 `1.0`。decoded-property analysis：
+     pareto 同时提高 start accessibility `+0.00501` (`p=0.00450`)、
+     降低 uAUG count `-0.00967` (`p=0.00950`)，GC 略降，CAI 不变。
+     **解释**：scale-up 使单 TE 对照变强，head256 的显著 fusion-vs-te_only 优势没有严格复现；
+     当前最诚实结论是 pareto 在 head1024 上保留最强正向趋势，并显著优于旧 hardneg_v2。
+     SHA 审计（local == remote）：`compare_mo_fusion_vs_te_only_head1024.json`
+     `f47d47a138e3fbc0691544b84b6f846afca2b8ef8b563c7560ecbcdcf6b3a99b`，
+     `compare_mo_fusion_vs_hardneg_v2_head1024.json`
+     `d9c7ee60af7fd799d5e2aef7fd17df39c6f5232e2e5e8fed13f265411ce014bd`。
+2. Region-specialized adapters：UTR adapter、CDS adapter、3'UTR stability adapter 分开训练，避免一个 ranker 混合所有任务。
+   - [x] 已落地首版：`mrna_editflow.models.region_adapters.RegionSpecializedEditFormer`
+     包装 base MEF，在 trunk(`encode`) 与 heads(`heads`) 之间按 region 门控插入
+     per-region 残差 adapter（`h'_i = h_i + A_{r(i)}(h_i)`），末层零初始化 =
+     加载即恒等；`freeze_base=True` 时每 region 仅 `2Db+D+b` 参数可训。
+   - [x] 为此把 `MRNAEditFormer.forward` 无损拆成 `encode()+heads()`，
+     13 个 training/sampling 冒烟测试全过，行为与 state_dict 不变。
+   - [x] `tests/test_region_adapters.py`（6 用例）验证：init 恒等、扰动改变输出、
+     region 门控（CDS-only adapter 只改 CDS 位置）、base state_dict `strict=True`
+     可重载、冻结后梯度只流向 adapter。
+   - [x] 补齐可训练入口：`train_adapter.py --adapter-kind region` / `train_region_stage_b`
+     复用 Stage B edit-flow loss，但模型换成 `RegionSpecializedEditFormer`，backbone
+     与 Stage A base head 全冻结，只允许 `adapters.*` 更新；支持 `--regions 5utr,cds,3utr`
+     或单 region 子集，用于后续 UTR/CDS/3'UTR 分区蒸馏。
+     `tests/test_training_sampling.py::TestStageBAdapterSmoke.test_train_region_adapter_updates_only_region_adapters`
+     在 CPU 2-step smoke 中验证 checkpoint/profile 可写、`stage=B_region`、有限 loss、
+     `changed_frozen_names=[]` 且所有 trainable/changed 参数均以 `adapters.` 开头。
+   - [x] 新增 repo-durable 消融脚本 `scripts/run_region_adapter_ablation.sh`，支持
+     `SLICE=head256/head1024`、`REGION_MODES="utr5 cds utr3 all"`、`--dry-run`，
+     默认把 checkpoint/profile 分别写到
+     `ckpts/region_adapter_t5_<mode>_<slice>` 和
+     `logs/region_adapter_t5_<mode>_<slice>.profile.jsonl`；
+     2026-07-13 补强 `WAIT_PID`/`MAX_LOADAVG`/`MAX_GPU_UTIL`/`MAX_GPU_MEM_USED_MB`
+     资源门控，并修正默认 Stage A checkpoint 到已存在的
+     `ckpts/stage_a_public_full_10k_bs8ga4_seed0/stage_a_best.pt`；
+     `test_long_running_server_scripts_have_dry_runs` 已覆盖。
+   - [x] 补齐评测链路：`sample.load_stage_a_checkpoint` 现在能识别
+     `stage="B_region"` checkpoint，自动构建 `RegionSpecializedEditFormer`、
+     加载 `region_ids` 并从 `adapter_bottleneck`（或旧 checkpoint 的
+     `adapters.*.down.weight`）恢复 bottleneck；`train_adapter.py` 保存
+     `adapter_bottleneck`。新增
+     `test_region_adapter_checkpoint_can_drive_candidate_generation` 验证
+     B_region checkpoint 可直接驱动 `generate_candidate_records` 且保持 T5
+     CDS/edit-budget 硬约束。
+   - [x] 新增 region-adapter 下游评测脚本
+     `scripts/eval_region_adapter_ablation.sh`：等待训练产出后可直接对
+     `utr5/cds/utr3/all` 四个 `stage_b_region_t5_best.pt` 跑
+     `multiseed_t5_public_<slice>_region_adapter_<mode>_top64`，并默认写出
+     `benchmark/region_adapter_vs_hardneg_v2_top64_<slice>.{json,md}`；
+     支持 `SLICE=head256/head1024`、`BASELINE_SUMMARY` 覆盖和 `--dry-run`；
+     `REFRESH_SOTA=1` 默认在 compare 后自动刷新
+     `docs/sota_gap_report.{json,md}`。已加入
+     `test_long_running_server_scripts_have_dry_runs`，本地/远端 dry-run 均验证
+     head256/head1024 路径正确。
+   - [x] 新增自动衔接 watcher `scripts/watch_region_adapter_eval.sh`：等待
+     `WAIT_PID` 指向的训练进程退出，校验四个 region checkpoint 存在，再执行同样的
+     load/GPU 资源门控后调用 `eval_region_adapter_ablation.sh`；支持 `--dry-run`，
+     已加入长任务脚本 dry-run 测试。
+   - [x] 新增端到端 chain 入口 `scripts/run_region_adapter_ablation_chain.sh`：
+     复用 train 脚本和 watcher/eval 脚本，把
+     train → checkpoint verify → multiseed eval → paired compare →
+     `docs/sota_gap_report.{json,md}` refresh 固化成单命令；继承
+     `SLICE=head256/head1024`、`WAIT_PID`、load/GPU 门控、baseline/compare 覆盖变量，
+     dry-run 会展开两个子脚本计划，已加入长任务脚本 dry-run 测试。
+   - [x] SOTA gap report evidence collector 已预置 region-adapter 证据：
+     `eval/sota_gap_report.py` 会在
+     `benchmark/region_adapter_vs_hardneg_v2_top64_head256.json` 落盘后自动收集
+     `region_adapter_{utr5,cds,utr3,all}_top64` 四条 `delta_oracle_te_vs_source`
+     证据；真实结果未落盘前，`docs/sota_gap_report.md` 的 next gate 会保留
+     “Finish head256 region-specialized adapter ablation and refresh this report.”
+   - [~] head256 region-adapter 训练已在服务器完成，评测仍在资源门控等待：命令使用
+     `CUDA_DEVICE_ORDER=PCI_BUS_ID CUDA_VISIBLE_DEVICES=5 SLICE=head256 MAX_LOADAVG=80
+     MAX_GPU_UTIL=20 MAX_GPU_MEM_USED_MB=6000 POLL_SECONDS=120`，目标四模式
+     `utr5/cds/utr3/all`；旧的缺省 checkpoint 路径排队进程已停止，随后因补齐
+     B_region checkpoint loader 再次停止旧队列并用新代码重新排队。训练 PID
+     `3412471` 已退出，日志 `logs/region_adapter_ablation_head256.20260713_233551.log`；
+     四个 checkpoint 均落盘且远端 metadata 审计通过：`stage=B_region`、
+     `adapter_bottleneck=32`、`all_trainable_adapters=true`，profile 末行均为
+     `step=500` 且 `finite_loss/finite_grad=true`。checkpoint SHA：
+     `utr5=ca5703f6...`、`cds=5bcaf3c9...`、`utr3=f9c02141...`、
+     `all=10eb29db...`；本地已拉回四个 profile 并与远端 SHA 一致。新增
+     `eval/audit_region_adapter_checkpoints.py` 将该 metadata/SHA/profile 证据固化为
+     `benchmark/region_adapter_checkpoint_audit_head256.{json,md}`，summary 显示
+     `all_ok=true`、`all_b_region=true`、`all_trainable_adapters=true`、
+     `changed_frozen_total=0`（artifact SHA：JSON `3556b5cf...`，MD `68a1a9ee...`），
+     本地/远端均已拉取/校验；`tests/test_eval.py::TestRegionAdapterCheckpointAudit`
+     覆盖该审计逻辑。评测 watcher
+     PID `3486627` 仍在运行，日志 `logs/watch_region_adapter_eval_head256.20260713_234241.log`；
+     已检测到训练 PID 退出，目前在 `MAX_LOADAVG=80` gate 等待 multiseed eval；
+     `region_adapter_vs_hardneg_v2_top64_head256` compare 仍 pending。为避免只对齐旧冠军，
+     `scripts/eval_region_adapter_ablation.sh` 已增强为在主 compare（vs hardneg_v2）之后，
+     若 summaries 存在则自动追加 vs `mo_grpo` / `mo_scalar` / `mo_pareto` /
+     `mo_te_only` 的同 slice paired compare，输出
+     `benchmark/region_adapter_vs_mo_*_top64_<slice>.{json,md}`；远端 dry-run 已验证
+     head256/head1024 路径正确；compare metrics 已补齐 `legal_fraction`，会同时记录
+     legal/protein/budget/frame 四个硬约束。新增
+     `eval/summarize_region_adapter_comparisons.py` 会在所有 compare 后自动生成
+     `benchmark/region_adapter_decision_report_<slice>.{json,md}`，集中汇总每个 adapter
+     的 hardneg TE delta、paired p、四个硬约束状态和缺失 compare 文件；2026-07-14
+     已补强严格显著性标签：每个 baseline 的 primary TE delta 会标记
+     `strict_positive`（`delta>0 且 paired_p<0.05`）、`borderline_positive`
+     或不显著，避免把趋势信号写成严格显著；同日继续补强
+     `constraints_exact_1` / `all_constraints_exact_1`，用 `1e-12` 容差单独审计
+     legal/protein/budget/frame 是否严格为 `1.0`，不再只依赖 `>=0.999` 的
+     `constraints_ok` 近似门槛。
+     新增 `eval/audit_region_adapter_results.py` 作为结果级 completion audit：
+     它要求五个 compare 文件、`region_adapter_decision_report_<slice>.json`、四个
+     expected runs 全部存在，且每个 run 的 legal/protein/budget/frame 全部 exact-1、
+     primary TE delta / paired p / run mean / baseline mean 均为有限数；审计器只判定
+     “证据是否足以进入 SOTA claim audit”，不要求结果必须为正，避免把失败实验误删。
+     `scripts/eval_region_adapter_ablation.sh` 已在 decision report 后自动追加生成
+     `benchmark/region_adapter_result_audit_<slice>.{json,md}`，dry-run 已覆盖。
+     新增统一 claim-readiness 入口 `eval/audit_sota_readiness.py` 与
+     `scripts/audit_sota_readiness.sh`：合并 region-adapter result audit、
+     protein-conditioned GC sweep audit、多目标 scale-up claim audit、external SOTA
+     protocol readiness 与 frozen-foundation protocol readiness，默认写
+     `docs/sota_readiness_audit_<slice>.{json,md}`；该报告只判断 evidence 是否完整、
+     hard constraints 是否可审计，不把 positive/borderline/non-significant/negative
+     结果混为“成功”。真实当前状态下 CLI 正确返回
+     `all_ready_for_sota_claim_audit=false`，pending sections 为
+     `region_adapter` 和 `protein_conditioned_gc_sweep`。
+     新增本地收割入口 `scripts/harvest_sota_artifacts.sh`：从远端只读拉取 region-adapter
+     compare/decision/result-audit、protein-conditioned GC sweep summary/jsonl/md/audit
+     以及 readiness 文档，生成
+     `benchmark/sota_harvest_manifest_<slice>.{json,md}` 的 SHA manifest，并本地刷新
+     `docs/sota_readiness_audit_<slice>.{json,md}`。2026-07-14 10:49/10:50
+     实测 pending harvest：远端 readiness 文档已生成并拉回，目标 artifact
+     `2/21` present、`19/21` missing；本地 readiness 仍为
+     `all_ready_for_sota_claim_audit=false`，pending sections 仍为
+     `region_adapter` 和 `protein_conditioned_gc_sweep`。2026-07-14 11:12
+     unified readiness 扩展为三段证据：`external_sota_protocol` 已 ready
+     （4 个外部模型 protocol/dataset SHA/dry-run metadata 完整，0 个 executable ready，
+     不声明真实外部指标），整体仍为 `1/3` sections ready。
+     2026-07-14 11:35 又补齐 `frozen_foundation_protocol`：运行
+     `scripts/run_frozen_backbone_protocol_check.sh` 生成
+     `benchmark/frozen_backbone_protocol_head256/{query,reference,summary,table,leakage}`，
+     leakage gate passed、matched budget passed、real/stub arms=`1/2`，但 stub arms
+     仍明确 `valid_quality_signal=false`，不声明真实 frozen-FM 指标。当前 unified
+     readiness 为 `2/4` ready，pending 仍只有 `region_adapter` 和
+     `protein_conditioned_gc_sweep`；harvest manifest 变为 `7/26` present、
+     `19/26` missing。2026-07-14 11:47 又补齐
+     `multiobjective_scaleup_claims`：新增
+     `eval/audit_multiobjective_scaleup_claims.py`，把 head256/head1024 多目标
+     compare artifact 转成显式 claim ledger，并把 head1024 vs 更强 `te_only`
+     的 pareto `p=0.05047` 固定分类为 `borderline_positive` /
+     `trend_or_borderline_only_no_strict_significance`，禁止写严格显著；同时审计
+     head256/head1024 multiseed summary 中 legal/protein/budget/frame 是否全 exact-1。
+     `scripts/harvest_sota_artifacts.sh` 已纳入 10 个 MO multiseed summary target，
+     实测只读拉回缺失的 head256 MO summary 后，
+     `docs/multiobjective_scaleup_claim_audit_head256_head1024.{json,md}` 显示
+     comparison rows ready=True、hard constraints=True、head256 strict=True、
+     head1024 vs `te_only` strict=False、best signal=`borderline_positive`。
+     当前 unified readiness 为 `3/5` ready，pending 仍只有 `region_adapter` 和
+     `protein_conditioned_gc_sweep`；harvest manifest 为 `17/36` present、
+     `19/36` missing。
+     `eval/sota_gap_report.py` 已吸收该 unified readiness artifact，主报告
+     `docs/sota_gap_report.{json,md}` 现在包含 “Unified SOTA Readiness” 小节，
+     明确展示 `3/5` ready、`external_sota_protocol=True`、
+     `multiobjective_scaleup_claims=True`、`frozen_foundation_protocol=True` 以及
+     `region_adapter` / `protein_conditioned_gc_sweep` 两段 pending。
+     新增 `scripts/check_remote_sota_status.sh` 自动生成远端执行快照
+     `docs/remote_execution_status.{json,md}`，只读采集 LoadAvg、watcher/GC sweep PID、
+     watcher tail、GC queue tail 和关键 artifact SHA/缺失状态。2026-07-14 11:35
+     自动快照显示：LoadAvg `99.25/102.46/102.78`，watcher PID `3486627`
+     和 GC sweep PID `1842634` 均存活，region-adapter eval 尚未启动。2026-07-14
+     11:54 新快照显示：LoadAvg 已降到 `64.86/68.56/81.70`，watcher 已通过
+     `MAX_LOADAVG=80` 并进入 GPU gate，但 GPU5 仍忙
+     （最近 tail 为 mem `4807-7028MiB`、util `38-82%`），因此 region-adapter eval
+     仍未启动；GC sweep 仍显示 `gating GC sweep on PID 3486627`。新版 remote status
+     target 中 `14/23` present、`9/23` missing，缺失仍集中在 region-adapter result
+     artifacts 与 protein-conditioned GC sweep artifacts。
+     `tests/test_eval.py::TestRegionAdapterDecisionReport` 与
+     `TestRegionAdapterResultAudit` / `TestSotaReadinessAudit` 已覆盖该汇总/结果审计逻辑，本地
+     `tests/test_eval.py` 33 项全量通过；`tests/test_baselines_ablation.py` 32 项全量通过。
+     result audit SHA `e84f3c9b...`，decision summarizer SHA `f0825259...`，
+     multiobjective claim audit SHA `351fbf57...`，readiness audit SHA `8362e56e...`，
+     readiness script SHA `bb5e5b3b...`，harvest script SHA `5a4b16bc...`，
+     remote status script SHA `5ec906a6...`，remote status JSON/MD SHA
+     `0548a476...` / `94c926bb...`，harvest manifest SHA `84fcdc7b...`，
+     readiness JSON/MD SHA `51a26d70...` / `a4fe21d1...`，MO claim JSON/MD SHA
+     `6606015e...` / `0d01da44...`，SOTA gap report SHA JSON `bf5d770b...` /
+     MD `3ec403f8...`，
+     eval 脚本 SHA `be468622...`。
+     `eval/sota_gap_report.py`
+     已同步增强：当 `region_adapter_vs_mo_{grpo,scalar,pareto,te_only}_top64_head256.json`
+     落盘后，会自动吸收 all-region adapter vs 当前 MO baselines 的 measured evidence；
+     `tests/test_eval.py::test_sota_gap_report_merges_measured_and_external_evidence`
+     已覆盖 MO-GRPO collector，远端该测试通过（脚本 SHA `43a86d2e...`）。2026-07-14
+     11:35 自动远端快照：PID `3486627` 和 GC sweep PID `1842634` 均仍存活；
+     服务器 load average `99.25/102.46/102.78`，watcher 最新日志仍显示
+     LoadAvg 高于 `80`，region eval 尚未启动；
+     仍未出现 `multiseed_t5_public_head256_region_adapter_*_top64` 目录，
+     五个 `region_adapter_vs_*_top64_head256.json` 和
+     `region_adapter_decision_report_head256.json` / `region_adapter_result_audit_head256.json`
+     均未落盘。结论保持 pending，
+     不降低 `MAX_LOADAVG=80` 门控。
+     2026-07-14 17:14 已只读 harvest 完成 head256 region-adapter 结果：
+     五个 compare、decision report、result audit 均落盘并通过审计，
+     `benchmark/region_adapter_result_audit_head256.{json,md}` 显示
+     `ready_for_sota_claim_audit=True`、compare files `5/5`、
+     legal/protein/budget/frame 全部 exact-1、primary stats finite。结果必须诚实写成
+     **负结果**：utr5/cds/utr3/all 相对 hardneg_v2、MO grpo/scalar/pareto/te_only
+     均为 `not_positive`；best vs hardneg 是 `region_adapter_utr3_top64`，但
+     ΔTE 仍为负（vs hardneg `-0.00543`, paired `p=0.00450`；vs te_only
+     `-0.00389`, paired `p=0.00450`）。统一 readiness 因此升至 `4/5` ready，
+     pending 只剩 `protein_conditioned_gc_sweep`；harvest manifest 为 `31/36`
+     present、`5/36` missing。2026-07-14 19:00 已补齐
+     protein-conditioned GC sweep 审计并 harvest：`docs/sota_readiness_audit_head256`
+     显示 `all_ready_for_sota_claim_audit=True`、`5/5` sections ready、pending
+     sections 为空；`benchmark/sota_harvest_manifest_head256` 显示 `36/36`
+     present、`0/36` missing。注意这只代表五段内部 evidence 完整，不代表已完成真实外部
+     SOTA baseline 或 wet-lab 证据。2026-07-15 已把 T1-T7 分项报告 bundle
+     也纳入 `eval/audit_sota_readiness.py`：当前
+     `docs/sota_readiness_audit_head256.{json,md}` 显示 `6/6` sections ready，
+     新增 `t1_t7_evidence_bundle`；2026-07-15 进一步补入
+     `multi_scale_sequence_spectrum` 图表审计后为 `reports ready=9/9`、`failed checks=[]`；
+     这仍只代表内部 proxy/constraint evidence 完整，不代表 external SOTA 或 wet-lab 完成。
+      2026-07-15 10:12 进一步把该边界做成显式正向宣称门控：
+      `docs/sota_readiness_audit_head256.{json,md}` 和 `docs/sota_gap_report.{json,md}`
+      现在同时报告 `all_ready_for_sota_claim_audit=True` 与
+      `positive_sota_claim_ready=False`。当前允许表述为“约束安全的全长局部优化 /
+      reranking，具备 proxy/offline T1-T7 证据”；阻断正向 SOTA/de novo/wet-lab/scale-law
+      宣称的机器可读原因为 `external_sota_real_metrics_missing`、
+      `full_de_novo_evidence_missing_or_overclaim_flagged`、
+      `real_mpra_te_or_stability_data_missing`、`true_data_model_step_scale_law_missing`、
+      `head1024_fusion_vs_strong_te_only_not_strict`、`wet_lab_validation_missing`。
+    - [x] head1024 region-adapter scale evidence 已完成并 harvest：
+      `benchmark/region_adapter_result_audit_head1024.{json,md}` 显示 compare files
+      `5/5`、expected runs `4/4`、legal/protein/budget/frame 全部 exact-1、
+      `ready_for_sota_claim_audit=True`。结论与 head256 一致，必须写成**负结果**：
+      utr5/cds/utr3/all 相对 hardneg_v2、MO grpo/scalar/pareto/te_only 全部
+      `not_positive`，没有 strict/borderline positive run；best vs hardneg 只是
+      `region_adapter_all_top64` 的“最不差”结果。该路线可作为“adapter 方案硬约束安全但
+      当前未提升 TE”的失败消融证据，不作为 SOTA 正向贡献。
+3. Protein-conditioned CDS mode：接入 protein input，让 T4 从“编辑现有 CDS”升级到“给定蛋白设计 CDS”。
+   - [x] 已落地首版：`mrna_editflow.baselines.protein_conditioned_cds`。给定蛋白
+     `p` 构造 canonical seed CDS（AUG + 每残基同义 codon + stop，缺 Met 时前置并
+     标记），再用已验证的 `optimize_cds_synonymous` DP 在 CAI/GC 目标下优化，
+     `translate()` 不变 = protein identity 严格 1.0（硬约束），并逐条独立复核。
+   - [x] 本地证据：30-aa 目标 identity=1.0，CDS 合法，CAI `0.8464->0.9032`
+     (+0.0568)，17 次同义替换；`tests/test_protein_conditioned_cds.py` 5 用例
+     断言 identity=1.0、合法性、CAI 不劣于 seed、非法 AA 报错。
+   - [x] **protein-conditioned T4 benchmark 已在 public head256（256 条真实人类转录本）跑通**
+     （2026-07-13，reference CAI 权重取自 head1024 语料，`target_gc=0.55/cai_weight=1.0/gc_weight=0.10`）。
+     新增 **native-CDS baseline**（`--use-native-baseline`）以对齐 CDS-only 优化器口径——
+     不再只比 naive 种子，而是直接对比**真实人类转录本 CDS**：
+     | 指标 | designed | native (真实 CDS) | delta |
+     |---|---:|---:|---:|
+     | protein identity | 1.0（256/256） | — | 硬约束保持 |
+     | CAI | 1.00000 | 0.72908 | **+0.27092**，designed≥native **256/256（100%）** |
+     | GC | 0.70720 | 0.61309 | +0.09411 |
+     | mean codon changes | 174.3 | — | 设计确实大幅重排 |
+
+     **诚实框定（关键，防止过度声称）**：`CAI=1.0` 是**相对适应度对参考语料的构造性最大值**
+     （Sharp & Li 1987 定义：每 AA 最高频 codon 权重=1，DP 在 `cai_weight=1.0` 主导下几乎处处选
+     最高频 codon → 几何均值→1），与 LinearDesign 等 codon 优化器同理，**不是 wet-lab 表达量声称**；
+     它证明的是「protein-conditioned DP 能在严格保持蛋白一致性 (1.0) 下把 CAI 打满、稳定超过真实人类
+     CDS」。**诚实 caveat（已实测 gc_weight 扫描验证）**：CAI 最大化把 GC 推高到 0.707
+     （+0.094，因人类高频 codon 偏 GC-rich）。在 head64 子集上扫 `gc_weight`：0.5→GC 0.719/CAI 1.0，
+     2.0→GC 0.684/CAI 0.981（GC 确随 gc_weight 单调下降、CAI 付出小代价，方向可调），
+     **但即便 gw=2.0，GC 仍 ~0.68 远高于 target 0.55**——说明高 CAI 的人类 codon 本身偏 GC-rich，
+     真要压到 0.55 需大幅牺牲 CAI，是本质 CAI–GC 张力而非单纯权重设小。后续应正式扫 gc_weight
+     画 CAI–GC Pareto 前沿，或引入结构/MFE 目标做更有生物意义的平衡。产物：
+     `benchmark/protein_conditioned_cds_head256.{jsonl,summary.json}`
+     （256 行，SHA 本地==远端）、`benchmark/protein_cds_gcsweep_gw{0.5,2.0}_head64.summary.json`；
+     harness+native baseline 有 `tests/test_protein_conditioned_cds.py` 8 用例覆盖
+     （含 native-baseline 一致性与 records-mode）。
+   - [x] 新增正式 CAI–GC Pareto sweep harness：
+     `run_protein_conditioned_gc_sweep` / CLI `--gc-weight-sweep "0,0.5,4"` 会在同一批
+     protein/native-CDS targets 上逐权重运行 DP，输出权重点级 `mean_designed_cai`、
+     `mean_designed_gc`、`mean_abs_gc_error`、protein identity 硬约束、Pareto rank
+     （目标定义为最大化 CAI、最小化 `|GC-target_gc|`），并写出 JSON/JSONL/Markdown
+     三类 artifact；新增测试验证 3 权重点 sweep、JSONL 明细、Markdown 表和
+     `protein_identity_eq_1_fraction=1.0`。新增 repo-durable 运行入口
+     `scripts/run_protein_conditioned_cds_gc_sweep.sh`，支持 `SLICE=head256/head1024`、
+     `GC_WEIGHTS`、`MAX_LOADAVG` 和 `--dry-run`，默认输出
+     `benchmark/protein_conditioned_cds_gc_sweep_<slice>.{jsonl,summary.json,md}`，
+     已加入长任务脚本 dry-run 测试。2026-07-14 新增只读结果审计器
+     `eval/audit_protein_conditioned_gc_sweep.py`，要求 summary/jsonl/md 均存在、
+     `sweep_kind=protein_conditioned_cai_gc_pareto`、artifact contract 声明
+     `protein_identity_eq_1_fraction must remain 1.0`、每个权重点的 CAI/GC/GC-error
+     指标均有限、`protein_identity_eq_1_fraction` exact-1、JSONL 每行
+     `protein_identity` exact-1、Pareto rank/front metadata 自洽。GC sweep 脚本
+     已在正式 sweep 后自动追加
+     `benchmark/protein_conditioned_cds_gc_sweep_<slice>.audit.{json,md}`；
+     `tests/test_protein_conditioned_cds.py` 10 项全量通过，
+     `tests/test_baselines_ablation.py` 32 项全量通过。审计器 SHA `4bdf4d20...`，
+     GC sweep 脚本 SHA `97d453df...`。注意：这是正式评测与审计工具落地，
+     真实 head256/head1024 sweep 数值尚未重跑。
+   - [x] head256 CAI–GC sweep 已完成并通过审计：
+     PID `1842634`，日志
+     `logs/protein_conditioned_cds_gc_sweep_head256.20260714_100547.log`；
+     启动参数为 `WAIT_PID=3486627 MAX_LOADAVG=80 SLICE=head256
+     GC_WEIGHTS=0,0.1,0.5,1,2,4,8,16`。2026-07-14 16:31 watcher PID
+     `3486627` 退出后进入 load gate，16:51 loadavg `79.85 < 80` 后正式启动
+     `mrna_editflow.baselines.protein_conditioned_cds`；17:40 主 sweep 完成并写出
+     `benchmark/protein_conditioned_cds_gc_sweep_head256.{jsonl,summary.json,md}`。
+     手动补跑同一审计器后
+     `benchmark/protein_conditioned_cds_gc_sweep_head256.audit.{json,md}` 显示
+     `ready_for_pareto_claim_audit=True`、8 个权重点、256 targets、Pareto front size=8、
+     protein identity exact-1、JSONL 每行 identity exact-1、所有 point metrics finite。
+     CAI-GC tradeoff：`gc_weight=0/0.1/0.5` 保持 CAI `1.00000`、GC `0.70720`、
+     abs GC error `0.15720`；`gc_weight=8/16` 降到 CAI `0.85677`、GC `0.60348`、
+     abs GC error `0.05351`。
+   - [x] 2026-07-15 新增 protein-conditioned **codon-level metrics audit**，补齐
+     codonGPT/Prot2RNA 对齐口径：`eval/audit_protein_conditioned_codon_metrics.py`
+     从 `benchmark/protein_conditioned_cds_head256.jsonl` 读取 designed/native/seed
+     CDS，输出 `benchmark/protein_conditioned_codon_metrics_head256.{json,md}`，
+     统计 native codon recovery、seed/native codon edit fraction、同义/非同义替换比例、
+     GC3、designed-vs-native codon usage KL 与 codon-pair KL，并把
+     valid CDS、start/stop、protein exact-1 作为 ready gate。当前 head256 结果：
+     `n_rows=256`，`ready_for_codon_level_claim_audit=True`，
+     `protein_identity_eq_1_fraction=1.0`，
+     `native_protein_identity_eq_1_fraction=1.0`，
+     `designed_valid_cds_fraction=1.0`，`mean_native_codon_recovery=0.55565`，
+     `mean_native_synonymous_substitution_fraction=0.44435`，
+     `mean_native_nonsynonymous_substitution_fraction=0.0`，
+     `mean_designed_gc3=1.0`，`mean_native_gc3=0.74661`，
+     codon usage KL=`0.61901`，codon-pair KL=`1.28465`。该结果说明当前
+     protein-conditioned DP 是强 CAI/GC3 驱动的同义重编码，而不是 native codon
+     reconstruction；因此可用于 T4 protein-conditioned proxy/codon-distribution
+     审计，但不能写成 codonGPT/Prot2RNA 外部 SOTA 复现。`summarize_t4_protein_identity_cai_gc`
+     已把 `codon_level_metrics_ready=True` 纳入 T4 ready gate；
+     `audit_sota_readiness` 也显式要求该字段为 True。`scripts/run_protein_conditioned_cds_gc_sweep.sh`
+     已追加自动生成 codon-level audit，服务器复现命令文档 6.4 已补齐从
+     protein→CDS artifact 到 codon metrics 的两步命令。
+   - [x] 2026-07-15 16:08 新增并跑通 slice-level T4 队列脚本
+     `scripts/run_protein_conditioned_t4_slice.sh`，默认 `SLICE=head1024`，
+     串联 `codon_lattice_dp_head1024`、`protein_conditioned_cds_head1024`、
+     `protein_conditioned_codon_metrics_head1024`、`protein_conditioned_cds_gc_sweep_head1024`
+     与 `t4_protein_identity_cai_gc_report_head1024`，并写
+     `benchmark/protein_conditioned_t4_head1024/{status,progress}.json*`。
+     同时 `summarize_t4_protein_identity_cai_gc.py` 已新增 `--slice` 参数，
+     默认仍为 head256，head1024 汇总会读取对应 slice artifact；若某项缺失则如实
+     `ready=False`，不会误报。首次远端队列因 `codon_lattice_dp` 漏传
+     `max_codon_changes=3` 而停止并记录 `stopped_for_config_fix`；随后已修正脚本，
+     将 `CODON_DP_MAX_CODON_CHANGES=3` 与 `PROTEIN_MAX_CODON_CHANGES=<none>`
+     分离，保证 CDS local DP baseline 与 head256 同口径，同时 protein-conditioned
+     constructive design / GC sweep 仍保持无限制重编码口径。随后又新增
+     codon-lattice DP 的**不限 budget 快速路径**（数学等价于 full-budget Viterbi，
+     避免把 `K=n` 当二维状态展开）与 protein design progress JSONL 机制；旧慢进程
+     记录 `stopped_old_protein_design_for_fastpath_restart` 后从 protein-design 阶段恢复。
+     最终 head1024 队列 status=`complete`，关键结果：
+     - `codon_lattice_dp_head1024.json`：`n=1024`，`mean_codon_changes=3.0`，
+       `mean_delta_cai=0.02440`，`mean_delta_gc=0.00684`，
+       `protein_identity_fraction=1.0`；
+     - `protein_conditioned_cds_head1024.summary.json`：`n=1024`，
+       `mean_designed_cai=1.00000`，native CAI=`0.69370`，
+       designed-vs-native CAI delta=`+0.30630`，designed GC=`0.68876`，
+       native GC=`0.56681`，GC delta=`+0.12195`，
+       mean codon changes=`170.64`，protein identity exact-1；
+     - `protein_conditioned_codon_metrics_head1024.json`：
+       `ready_for_codon_level_claim_audit=True`，native codon recovery=`0.51097`，
+       synonymous substitution fraction=`0.48903`，nonsynonymous fraction=`0.0`，
+       designed GC3=`1.0`，native GC3=`0.66718`，codon usage KL=`0.70444`，
+       codon-pair KL=`1.40445`；
+     - `protein_conditioned_cds_gc_sweep_head1024.audit.json`：
+       `ready_for_pareto_claim_audit=True`，8 weights × 1024 targets，
+       JSONL rows exact，all-point identity exact-1，Pareto metadata OK。GC-target
+       best point为 `gc_weight=8/16`，CAI=`0.86804`，GC=`0.59514`，
+       abs GC error=`0.04536`；CAI-max point仍为 CAI≈`1.0` 且更 GC-rich。
+     - `t4_protein_identity_cai_gc_report_head1024.json`：`ready=True`，
+       `hard_constraints_exact_1=True`，`codon_level_metrics_ready=True`，
+       `external_baselines_configured=False`，`true_mfe_structure_metric_available=False`。
+     该队列是 protein-conditioned CDS/proxy audit scale-up，不是外部 codonGPT/Prot2RNA
+     复现，也不是 wet-lab 或全长 de novo claim。
+   - [x] 已接入外部 LinearDesign 与 codonGPT official pretrained checkpoint；
+     codonGPT task-specific RL policy 仍未公开。
+     可执行 baseline 做 wall-clock + CAI 同口径对比；后续接入 protein embedding 让模型（而非 DP）
+     直接条件生成。
+4. Frozen foundation backbone：接入 mRNA-LM、Helix-mRNA、CodonFM embedding，做 leakage-audited adapter comparison。
+   - [x] 已落地对比 harness：`mrna_editflow.eval.frozen_backbone_comparison`。
+     两条硬保证：(a) **leakage gate**——对比前用 `data.leakage_audit.audit_leakage`
+     审计 eval split vs reference 语料，flagged 时 `require_gate=True` 直接拒绝
+     "fair comparison" 并跳过训练臂（`skipped_reason`），避免 memorisation 抬高
+     frozen-encoder 数字；(b) **matched budget**——每个 backbone 用同一
+     `MEFConfig` head + 相同 steps/seed/records 跑 `train_stage_a`，只换 frozen
+     encoder，故可训练参数量按构造相等，逐臂记录 `trainable_params` 加以证明。
+   - [x] 诚实边界：离线环境下外部 FM 解析为 deterministic placeholder，
+     `is_real=False` 且 `valid_quality_signal=False`，其 loss 仅反映 matched-budget
+     的管线连通性，**不是** 真实 FM 的下游质量，绝不作为 SOTA 指标引用；唯一带
+     真实可训练质量信号的是 from-scratch `none` 真编码器（`is_real=True`）。
+   - [x] `tests/test_frozen_backbone_comparison.py`（9 用例）验证：matched budget
+     参数一致、real/stub 标注、finite loss、gate skipped(no ref)/passed(disjoint)/
+     failed+refuse(self-overlap)/diagnostic(require_gate=False)、非法 backbone 报错、
+     JSON+MD 报告写出。CLI 端到端产出 cmp.json/cmp.md/leak.json。
+   - [ ] 待办：接入真实 mRNA-LM/Helix-mRNA/CodonFM checkpoint 到
+     `FrozenBackbone._try_load_pretrained` seam，并用 leakage-free split 跑
+     head256/head1024 adapter probe，量化 frozen FM 相对 `none` 的 downstream 增益。
+5. Larger Stage A generator：从当前 1000-step snapshot 扩到 10k/50k/100k steps，然后重复 teacher export 和 ranker distillation。
+
+## 4. 论文级核心目标
+
+目标主线：
+
+> 构建一个全长 mRNA-native edit-flow 模型，在不破坏 CDS/protein/frame 的前提下，同时优化 UTR regulatory signal、CDS codon/structure property 和 full-transcript distribution，并在多任务指标上系统超过 CDS-only、UTR-only 和 representation-only SOTA。
+
+必须回答的论文问题：
+
+1. Full transcript design 是否比 CDS-only 或 UTR-only 设计更强？
+2. Constrained edit-flow 是否能在硬约束下稳定提升 TE/stability proxy？
+3. Source-aware cascade decoding 是否能同时提高 candidate recall 和 top-1 design quality？
+4. Frozen mRNA foundation model 是否能提升 edit-flow 的 ranking/generalization？
+5. scale data 和 scale parameters 后，性能是否按规律提升？
+6. 借鉴 generative/operator learning 的训练思想后，能否用多尺度序列谱审计、
+   frozen-feature/perceptual objective 或轻量 adversarial regularizer，减少模型只优化
+   低阶 proxy/TE 信号而忽略 motif、codon-pair、region-frequency 等细粒度生物结构的偏置，
+   同时保持 legal/protein/budget/frame 硬约束 exact-1？
+
+## 5. SOTA 追赶矩阵
+
+| SOTA 类别 | 代表方法 | 我们要赢的指标 | 当前缺口 | 下一步动作 |
+|---|---|---|---|---|
+| CDS codon optimizer | LinearDesign, EnsembleDesign | CAI, MFE/structure proxy, codon usage KL, wall-clock, protein identity | 已有 codon-lattice DP，但未跑外部工具 | 接入外部 executable baseline，T4/CDS-only 公平对比 |
+| CDS generative LM | codonGPT, Prot2RNA | codon accuracy, protein identity, expression/stability reward | 还没有 protein-conditioned CDS benchmark | 实现 protein-conditioned T4 split 和 codon-level metrics |
+| 5'UTR generator | UTailoR, UTRGAN | TE proxy uplift, uAUG penalty, Kozak/start accessibility | UTR local search 很强，但模型 ranker 未完全吃到 headroom | UTR-specific adapter + UTR teacher rerun |
+| **全长 de novo 生成** | **GEMORNA (Science 2025), mRNA-GPT (ICLR2026 投稿)** | full-length TE/half-life proxy, cross-region interaction gain, diversity, **protein/frame/budget 硬约束满足率**, wall-clock | 二者是最直接的全长竞品：GEMORNA 模块化拼接（CDS enc-dec + UTR dec-only），mRNA-GPT 端到端 10M 预训练 + 迭代 oracle 优化 | 用共享 proxy oracle 跑 head256/head1024 全长 T1-T7 head-to-head；MEF 的差异化点是 constrained edit-flow（硬约束 + 可解释 edit distance）对比其自由 AR 生成，**必须同时报告 TE delta 和约束满足率** |
+| **蛋白条件多目标生成** | **ProMORNA (arXiv 2026)** | 每目标 Pareto frontier（TE / half-life / immune-safety）, 蛋白条件 validity | ProMORNA 用 MO-GRPO 在聚合前对每个 metric 做 advantage 标准化，直接呼应我们 upgrade #1（多目标）+#3（蛋白条件） | 借鉴 per-metric advantage 标准化作为 scalar/Pareto fusion 的第三条路线；在共享 held-out 蛋白上把 MEF 蛋白条件 CDS + 多目标 ranker 对齐 ProMORNA 的 Pareto-frontier 口径 |
+| **潜空间/流形优化** | **RNAGenScape (ICML2025 GenBio / arXiv 2025)** | property gain, success rate, on-manifold plausibility, 插值平滑度, 可解释轨迹 | 与 MEF「optimize, not invent」哲学最接近，但走连续 latent Langevin，MEF 走离散 constrained edit-flow | 在共享 5'UTR TE 优化任务上把 MEF 离散编辑轨迹 vs RNAGenScape 连续 latent 轨迹对比；报告 MEF 在硬约束保证与 edit budget 可解释性上的增量 |
+| Full-length FM | mRNA-LM, Helix-mRNA, CodonFM | frozen-probe accuracy/F1, TE/stability regression, adapter gain | 已有 leakage-gated matched-budget 对比 harness，但还没有真实 checkpoint/embedding cache | 接入真实 frozen embeddings，做 leakage-free split adapter probe |
+| Structure-aware representation | StructmRNA, mRNA2vec, HELM | degradation/stability prediction, structure proxy, FBD 生成质量 | 当前结构是 proxy，缺外部真实标签 | 加 MPRA/stability dataset 和真实 downstream probes |
+
+各竞品数据集与下游任务速览（用于对齐我们的 split 与指标口径）：
+
+| 模型 | 训练数据集 | 主要下游任务 | 报告指标 | 与 MEF 的关系 |
+|---|---|---|---|---|
+| GEMORNA | 自然 CDS + 自然 UTR 语料（分区训练），高 MRL 5'UTR / 高稳定性 3'UTR 微调 | CDS 设计、UTR 设计、全长拼接、circRNA | 体内外蛋白表达（~41x）、抗体（~128x）、CAI/GC/rare-codon/MFE、circRNA 表达（~121x） | 竞品：全长 de novo；MEF 强调硬约束下的局部编辑而非重生成 |
+| mRNA-GPT | 10M 全长自然 mRNA（多物种，含区段标注） | 单区/全长/条件生成 + 迭代 oracle 优化 | 预测 translation rate（>LinearDesign/GEMORNA）、full-length diversity、跨区交互 | 最直接全长竞品；MEF 差异=constrained edit-flow + 可解释 edit |
+| ProMORNA | 6M 蛋白-mRNA 配对 | 蛋白条件全长生成（无需 wild-type 模板） | 预测 half-life vs TE 的 Pareto frontier、functional score | 直接启发 upgrade #1/#3；MO-GRPO per-metric 标准化 |
+| RNAGenScape | 3 个真实 mRNA 数据集（跨两个数量级，含斑马鱼 5'UTR），最小 ~2000 点 | 属性引导优化、序列插值、可解释潜轨迹 | median property gain（+148%）、success rate（+30%）、on-manifold plausibility | 哲学最接近（从真实序列优化）；连续 latent vs MEF 离散编辑 |
+| codonGPT | 338,417 模型生物 mRNA（Ensembl R64 CDS） | RL 约束 CDS 优化（HLA-A/ACTB/GFP 等） | 100% 蛋白保真、CAI、GC、ΔG、codon entropy、repeat penalty | CDS-only RL；MEF 覆盖全长 + UTR 编辑 |
+
+### 5.0 mRNA-LM 数据集与架构启发
+
+2026-07-15 重新梳理 mRNA-LM（NAR 2025, `10.1093/nar/gkaf044`）后，更新
+目标口径：mRNA-LM 不是生成式设计 SOTA，而是 **full-length representation /
+property prediction** 强基线；它最值得参考的是数据覆盖、三段分治编码和跨区段对齐。
+
+可迁移要点：
+
+- 数据集：mRNA-LM 从 Mammalia reference sequences、human virus complete
+  nucleotides、E. coli、yeast 等多来源构建 full-length mRNA；通过 CDS 与 full
+  sequence 对齐切出 5'UTR/CDS/3'UTR，最终规模约为 **10M CDS、6M 5'UTR、
+  4M 3'UTR**。这提示 P3 不能只停留在 GENCODE human；RefSeq 完成后应继续扩展
+  到多物种/病毒/微生物语料，但必须保留 source URL、license、SHA、CDS alignment
+  attrition 和 family/leakage split。
+- 架构：mRNA-LM 分别训练 5UTRBERT、CodonBERT、3UTRBERT。CDS 用 codon token，
+  UTR 用 nucleotide token；UTR BERT 为 12 layers / 12 heads / hidden 768 /
+  intermediate 3072，5'UTR max length 512，3'UTR max length 1024。当前
+  A100-max Stage A config 已按这个 full-length context 提升 UTR cap 到
+  `max_5utr=512`、`max_3utr=1024`，但仍保留 MEF 的 CDS synonymous lattice
+  与硬约束。
+- 跨区段集成：mRNA-LM 对每段 token embedding 做 mean pooling，再用 CLIP-style
+  contrastive objective 对齐 5'UTR-CDS 与 CDS-3'UTR。MEF 可借鉴为
+  **segment-contrastive auxiliary loss / frozen-feature perceptual loss**：
+  不替代 CTMC edit-flow，而是约束候选的 UTR/CDS/3'UTR 表征关系不要偏离真实 full
+  transcript distribution。
+- 微调：mRNA-LM 用 LoRA + CLIP module + prediction head 做下游 property
+  prediction。MEF 对应 todo 是接入真实 mRNA-LM/Helix/CodonFM embeddings 后，
+  在 leakage-free split 上做 matched-budget adapter/ranker probe，而不是引用
+  placeholder backbone 数字。
+
+新增 todo：
+
+- [ ] 建立 `mrna_lm_style_segment_dataset_audit`：记录每个数据源的 full sequence、
+  CDS alignment、5'UTR/CDS/3'UTR 分段数量、drop/truncation 统计、SHA 与 license。
+- [ ] 在 Stage A / ranker 增加可选 `segment_contrastive_aux`：mean-pool 三段
+  表征，对同一 transcript 的 5'UTR-CDS、CDS-3'UTR 做正样本，对 batch 内其他
+  transcript 做负样本；先只做 audit/smoke，不进入正向 claim。
+- [ ] 接入真实 mRNA-LM checkpoint 或 embedding cache 后，跑 leakage-free
+  frozen-feature/perceptual audit，比较 `none` backbone 与 mRNA-LM features 对
+  T2/T3/T5/T7 的增益。
+
+### 5.1 跨领域生成式 operator 论文启发后的目标增量
+
+2026-07-15 阅读 `s41467-026-70145-4`（Nature Communications 2026,
+“Learning turbulent flows with generative models for super resolution and sparse flow
+reconstruction”）后，更新当前追赶目标：该文不是 RNA/mRNA SOTA 证据，不能写入
+external mRNA baseline claim；它的可迁移价值是方法学层面的 **operator + generative
+objective**。论文的核心教训是：只用 pointwise L1/L2 训练会偏向低频/大能量结构，
+导致高频细节被平滑；`adv-NO` 在训练期加入 perceptual loss 和 relativistic GAN loss，
+推理时只保留主 operator，因此以接近原模型的推理成本恢复高频结构。迁移到
+mRNA-EditFlow 时，对应目标不是“加一个重型 GAN/diffusion 生成器”，而是防止
+Stage A generator / ranker 只吃到 TE proxy 的低阶易学信号，补上可审计的多尺度
+sequence-spectrum、motif/codon-pair、region-frequency 和 candidate-realism 目标。
+
+新增优先级：
+
+| 优先级 | 新目标 | 对应论文思想 | mRNA-EditFlow 落地口径 | Claim 边界 |
+|---|---|---|---|---|
+| P0 | **多尺度序列谱审计** | energy-spectrum error 比 field NRMSE 更能暴露过度平滑 | 新增 `multi_scale_sequence_spectrum_audit`：按 region 分解 k-mer spectrum、codon-pair/dicodon KL、motif/uAUG/Kozak/polyA frequency、CDS phase periodicity，并与 TE delta/novelty 联合报告 | 这是 T2/T3 proxy/offline audit，不是 wet-lab 或 de novo 证据 |
+| P1 | **frozen-feature/perceptual objective** | perceptual loss 约束高阶特征而非逐点误差 | 使用冻结 mRNA encoder、TE/stability predictor 中间层或手工 region-aware feature vector，衡量 source/candidate 与真实 full transcript 的 feature distance；先作为 audit，再考虑进入 ranker loss | 只能说改善 proxy feature fidelity，不能说真实 TE/stability 提升 |
+| P1 | **轻量 candidate-realism discriminator** | adv-NO 训练期 discriminator，推理期不用 | 条件输入 `source + region mask + edit budget + candidate`，训练小判别器区分真实/候选；只作为训练期 regularizer 或 rerank audit，解码后仍走 hard constraint gates | discriminator 不得替代 legal/protein/frame/budget 检查；不单独作为 SOTA claim |
+| P2 | **mask-conditioned local completion** | sparse reconstruction 输入 `masked field + mask` 恢复完整场 | 输入 masked transcript + mask，先做固定 CDS 补 5'UTR/3'UTR、固定 UTR 补局部 CDS synonym、motif-conditioned repair；定位为局部补全/编辑任务 | 不能写成 full-length de novo generation；必须保留 source-conditioned/local-edit 描述 |
+| P3 | **diffusion/flow-matching candidate proposer** | diffusion 在极端稀疏条件更稳但推理慢 | 仅作为离线候选扩增或 oracle-gap exploration；先不进入正式 decoder baseline | 重依赖/慢推理，低优先级；无真实收益前不影响主线 |
+
+新的成功判据：
+
+- P0 审计应证明：当前最佳 `mo_grpo/scalar/pareto` 在 TE 提升时没有显著破坏
+  region-wise k-mer/codon-pair/motif spectrum；若存在偏移，必须标注为新的
+  T2/T7 safety signal。
+- P1 训练目标必须通过受控消融：固定候选生成、ranker 架构、训练步数和 seeds，
+  只改变 feature/perceptual/adversarial regularizer；报告 paired p、CI 和
+  legal/protein/budget/frame exact-1。
+- adversarial/perceptual loss 的权重必须 sweep（analog of β sweep），至少覆盖
+  `0, 1e-4, 1e-3, 1e-2, 1e-1`，并明确过小/过大时的收益或副作用。
+- 任一新目标只有在 head256 与 head1024 都不破坏硬约束、且相对同 recipe
+  `te_only` 或当前强 baseline 通过 paired `p < 0.05` 后，才能进入正向性能 claim；
+  否则只能写成 audit、trend 或负结果。
+
+
+## 6. 明确 Todo List
+
+### P0：立即推进，目标是 1-3 天内形成新证据
+
+- [ ] **新增 P0 目标：multi-scale sequence-spectrum audit**。
+  受 `s41467-026-70145-4` 的 energy-spectrum audit 启发，补一个 RNA-native
+  多尺度序列谱报告：region-wise k-mer spectrum error、codon-pair/dicodon KL、
+  motif/uAUG/Kozak/polyA frequency、CDS phase periodicity、GC/length coupling，
+  并接入 `docs/sota_readiness_audit_head256` 的 positive-claim blockers。该项只增强
+  T2/T3/T7 proxy audit，不声明 external SOTA、wet-lab 或 full de novo。
+  2026-07-15 核查当前测评后确认：现有 T2/T3 已有 `candidate/source mean length`、
+  `candidate/source mean GC`、`gc_quantile_distance`、`length_quantile_distance`、
+  `combined_gc_length_distance`、`kmer_js`、`codon_usage_kl`、novelty/exact-match/
+  pairwise-diversity；但仍缺显式 A/C/G/U base composition、region-wise
+  5'UTR/CDS/3'UTR 碱基组成、基础序列特征分布图，以及生成序列 vs 训练集/source
+  的长度/GC/base/k-mer/codon-pair 对比图。下一步实现时必须输出 JSON/MD 和
+  figures（建议 SVG/PNG），并把图表产物加入 paper/readiness artifact，而不是只给数值表。
+- [ ] **新增 P0/P4 目标：A100 max Stage A 训练**。
+  使用当前测数最稳的架构开关（region FiLM + codon constraint + RoPE + aux
+  structure），并按 mRNA-LM full-length context 放大到
+  `model_dim=768/layers=12/heads=12/max_5utr=512/max_3utr=1024`，
+  在当前最大可用完整语料 GENCODE full records 上跑 100k-step Stage A。
+  产物为 `configs/stage_a_full_a100_max.json`、
+  `scripts/run_stage_a_a100_max_train.sh`、
+  `benchmark/stage_a_full_a100_max_gencode_100k_seed0/status.{json,md}`。
+  该训练是 infrastructure evidence，完成后必须继续跑 proposal-ranking、10-seed
+  T5/T1-T7 和 paired compare，不能直接写 SOTA。
+  2026-07-15 15:11 按用户指令已不再等待 `MAX_LOADAVG=80`，直接按可用显存启动：
+  当前 A100-max 正在 **4 张 A100** 上并行跑 4 个 seed：
+  seed0/GPU0、seed1/GPU2、seed2/GPU4、seed5/GPU5。每个 run 使用 GENCODE
+  cleaned full transcript `54,680` 条、100k optimizer steps、trainable params
+  `117,262,865`，checkpoint `stage_a_best.pt` 已开始落盘（约 448M）。当前进度：
+  seed0 step 44、seed1 step 42、seed2 step 41、seed5 step 41；最近 profile
+  显示每步约 `15.7-16.9s`，因此完整 100k steps 粗略 ETA 为 **18-20 天**
+  （10k steps 约 1.8-2 天，50k steps 约 9-10 天）。seed3/GPU6、seed4/GPU7
+  已尝试但 OOM；虽然 `nvidia-smi` 显示 40GB A100，PyTorch 实际可见容量约
+  4.75GB，不能承载该 117M 参数 max config。GPU1/GPU3 显存基本被占满，暂不适合
+  启动该 max 配置。后续若要继续利用 GPU6/7，应改跑 small/base scale-law 或
+  downstream eval，而不是 A100-max。
+  2026-07-15 15:20 已按该策略补充利用 GPU6/GPU7：确认它们是
+  `NVIDIA A100-PCIE-40GB MIG 1g.5gb`，PyTorch 可见容量 `4.75GB`；新增
+  `configs/stage_a_mig_tiny_gencode.json`（model_dim=192, layers=3, heads=4,
+  batch=1, grad_accum=16, 20k steps, 约 2.04M trainable params），并在
+  GPU6/GPU7 分别启动 `stage_a_mig_tiny_gencode_20k_seed6/seed7`。两者已写
+  profile 与 `stage_a_best.pt`（约 7.9M），截至启动后约 1 分钟分别到 step 7/8，
+  finite loss/grad、OOM reductions=0。当前资源布局：GPU0/2/4/5 跑 A100-max
+  seed0/1/2/5；GPU6/7 跑 MIG tiny seed6/7；GPU1/3 显存不足。
+  2026-07-15 15:25 继续按“有显存/可运行就直接跑”的策略推进数据侧：旧
+  load-gated `run_refseq_public_build.sh`、`run_gencode_family_leakage_audit.sh`
+  和 `run_refseq_family_leakage_audit.sh` 已停止并以 `MAX_LOADAVG=999999`
+  原地重启。当前 RefSeq build 已进入
+  `mrna_editflow.data.public_pipeline --dataset refseq_human_rna --download`；
+  GENCODE family/leakage 已进入真实 `family_leakage_protocol`；RefSeq family/leakage
+  正在等待 RefSeq records/manifest，一旦 RefSeq build 落盘会继续执行，不再等待 load gate。
+  这些仍是 corpus-governance / data-scale readiness 证据，不能提前声明
+  RefSeq-scale training 或 leakage-free data scale-up。
+  同日新增 `scripts/run_after_stage_a_a100_max.sh` 作为 A100-max 完成后的自动
+  downstream 队列：等待指定 Stage A 训练 PID 结束后，自动 snapshot `stage_a_best.pt`，
+  运行 head1024 T5 proposal-ranking、TE ranker distill、ranker audit、10-seed T5
+  multiseed、vs te_only/hardneg_v2 paired compare，以及 multi-scale sequence
+  spectrum audit。当前 seed0 post-eval watcher 已启动，PID `1835449`，状态
+  `waiting_for_stage_a`，等待 seed0 训练 PID `1495551` 完成后自动衔接；该链路仍为
+  proxy/offline downstream evidence，不能绕过 paired p、T1-T7 和 external baseline
+  审计直接 claim SOTA。
+  2026-07-15 15:45 刷新状态：A100-max 4 个 seed 仍全部运行且 OOM reductions=0，
+  seed0/1/2/5 分别到 step `178/165/167/168`；GPU6/GPU7 MIG tiny seed6/7 到
+  step `233/226`，finite loss/grad。seed0 post-eval watcher 仍为
+  `waiting_for_stage_a`，base checkpoint 已存在但最终 snapshot、ranker、T5
+  multiseed、paired compare 与 spectrum audit 需等 seed0 训练进程结束后自动触发。
+- [x] **新增 P0 交付：服务器端 0-to-1 复现命令文档**。
+  `docs/reproduce_full_training_eval_commands.md` 按顺序记录环境审计、数据构建、
+  governance audit、A100 max Stage A 训练、proposal ranking、ranker distill、
+  multiseed evaluation、paired compare 和 SOTA report 刷新的命令。服务器路径应为
+  `/home/cunyuliu/mrna_editflow_goal/mrna_editflow/docs/reproduce_full_training_eval_commands.md`。
+- [x] 跑外部 SOTA baseline registry dry-run，确认 LinearDesign/EnsembleDesign/codonGPT/UTailoR 的本地可执行性。
+- [x] 建立 `benchmark/external_sota/` 统一输出格式：`summary.json`, `table.md`, `runtime.json`。
+- [x] 追加 compare guard：所有外部 baseline 必须记录 dataset hash、split、seed、record count、runtime、hardware。
+- [x] 建立 external SOTA 标准输入包：`benchmark/external_sota/input_pack_t5_head1024/`
+  现在包含 CDS/protein-conditioned 与 5'UTR-only 两套 JSONL、metric schema 和
+  claim policy，可直接交给 LinearDesign/EnsembleDesign/codonGPT/Prot2RNA/UTailoR
+  /UTRGAN adapter 消费。
+- [x] 对当前 cascade head256 结果做 per-record error analysis：找 cascade 赢/输的 transcript 类型、UTR 长度、GC、uAUG、Kozak 分布。
+- [x] 从 full-pool teacher、UTR teacher、cascade win/loss 样本重新构建 hard-negative teacher set。
+
+已完成的 P0 evidence：
+
+- 新增 `mrna_editflow.baselines.external_sota_dry_run`，输出
+  `benchmark/external_sota/dry_run_t5_head1024/{summary.json,runtime.json,table.md}`。
+- dry-run artifact contract 已包含 `dataset.sha256`, `dataset.split_name`,
+  `dataset.seed`, `dataset.record_count_effective`, `runtime.elapsed_s`,
+  `hardware`，后续真实 external adapter 必须保留这些字段后才能进入论文表格。
+- 2026-07-16 服务器正式 dry-run 覆盖 6 个模型：
+  LinearDesign、EnsembleDesign、codonGPT、UTRGAN、UTailoR 已为
+  `executable_ready`；Prot2RNA 仍为 `not_configured`。`executable_ready` 只表示官方入口
+  可执行，不等于真实 head1024 metrics 已完成。
+- 2026-07-15 服务器 dry-run gate 已收紧：`*_BIN` 只有指向真实可执行文件
+  或命令能在 `PATH` 解析时才会升级为 `executable_ready`，陈旧/占位路径继续
+  记为 `not_configured`。当前未配置入口为：
+  Prot2RNA (`PROT2RNA_BIN=env_unset`)。codonGPT 论文给出的 GitHub 当前仍无法
+  匿名 clone，但官方 Hugging Face `naniltx/codonGPT` 已确认公开，不能再把
+  GitHub 404 等同于“无官方 checkpoint”。
+  `docs/sota_gap_report.md` 已显示这些候选入口失败原因，避免把未安装工具误标为
+  external SOTA reproduction。
+- 2026-07-16 新增 `mrna_editflow.baselines.external_sota_input_pack`，正式生成
+  `benchmark/external_sota/input_pack_t5_head1024/{summary.json,table.md,cds_protein_inputs.jsonl,utr5_inputs.jsonl,metric_schema.json}`。
+  输入来自 `benchmark/multiseed_t5_public_head1024_sources.jsonl`
+  （records SHA `8e2a1b6de75d418bafe42241fe18d36093fa50fde732b56866a2e4e8fc1231ec`），
+  `n_cds_protein_rows=1024`、`n_utr5_rows=1024`、`n_skipped_invalid_cds=0`，
+  CDS pack SHA `77e9d89aa5736fe995bfbbbd7f314456d315f73017a8d3d45c7c5745699d60c4`，
+  5'UTR pack SHA `83d5032a6a4123970e1361dce2fba5ddb76c1bdab7f729cc7f85f0a65a0c1ca1`。
+  5'UTR pack 现在同时服务 UTailoR 与 UTRGAN；服务器端 input-pack summary SHA
+  `b0ccc98c07dbb67a7479595de2b7cf860e54e7fb5c9a295ebc6e67bd21313408`。
+  该 artifact 只证明外部工具真实运行前的标准输入/输出契约已准备好：
+  `ready_for_external_real_run=True`，但 `ready_for_external_sota_claim=False`。
+  `docs/paper_table3_external_baseline_readiness.json` 已纳入 `input_pack_ready=True`
+  与三方 model-set audit；
+  `docs/sota_readiness_audit_head256.json` 的 `external_sota_protocol` 现在要求
+  dry-run protocol 与 input pack 同时 ready，当前均为 True。
+- 2026-07-16 新增 `mrna_editflow.eval.audit_external_sota_real_runs`，定义真实
+  external adapter 输出验收门：逐模型校验 `summary.json`、输出 JSONL、input-pack
+  SHA、dataset split/seed/SHA、runtime/hardware/executable version、必需指标字段、
+  输入覆盖率与 CDS/protein 或 UTR hard constraints。当前正式产物
+  `docs/external_sota_real_run_audit.{json,md}` 当前记录：
+  `audit_complete=True`，expected models=`6`（LinearDesign、EnsembleDesign、
+  codonGPT、Prot2RNA、UTailoR、UTRGAN），当前 measured=`4`（LinearDesign、
+  codonGPT、UTailoR、UTRGAN），missing=`2`，protocol-fidelity sufficient=`1`
+  （UTRGAN paper-default 10000-step），
+  `ready_for_external_real_metric_table=False`，
+  `ready_for_external_sota_metric_claim=False`，`ready_for_external_sota_claim=False`。
+  因此 unified readiness 的 `external_sota_protocol` 现在要求
+  dry-run + input pack + real-run audit 三层都存在；正向 metric claim 仍由真实
+  executable outputs 缺失卡住。
+  已新增 `scripts/sync_external_sota_real_run_audit.sh`，用于 SSH 恢复后重试同步本轮
+  external audit 代码并在服务器端刷新 `external_sota_real_run_audit`、Table 3、
+  unified readiness 和 SOTA gap report。
+- 2026-07-16 已从官方 `LinearFold/EnsembleDesign` commit
+  `cd9324f9574a754063d421e76670bc9fd7555324` 编译成功：
+  EnsembleDesign binary SHA
+  `ab2d5aa2de8847b8440e2694c14e75fa708d4dbb3d4647a70e9521b55a925491`，
+  内置 LinearDesign binary SHA
+  `2908a87e5a2ba88b80e2bff31de233c3c8872ca051f0e77b44f4e18a9f656969`。
+  新增稳定 wrapper `scripts/external_{linear,ensemble}design.sh`，正式 dry-run 已从
+  `0/6` 提升为 `3/6 executable_ready`。LinearDesign head8 真实 adapter smoke
+  8/8 成功，valid CDS 与 protein identity exact-1 均为 `1.0`，mean wall-clock
+  `68.84s/sequence`，mean MFE（不含 adapter 补回的 terminal stop）`-521.36`，
+  mean CAI `0.72467`。该 smoke 因覆盖仅 8/1024 被 real-run audit 正确拒绝进入正式表。
+  正式 head1024 已完成：`1024/1024`、zero failures、valid CDS 与 exact protein
+  fraction 均为 `1.0`；mean CAI `0.78466`、mean GC `0.62499`、mean GC3
+  `0.82493`、mean MFE `-517.08926`、mean wall-clock `78.62445s/sequence`。
+  `docs/t4_external_cds_baseline_comparison.{json,md}` 已达到 descriptive-table
+  ready，但由于只跑单个 lambda、缺 matched common-structure paired test，
+  `ready_for_mef_superiority_claim=False`。
+- 2026-07-16 官方 UTRGAN commit
+  `003b278facf7f08752a0020c94d7b3dd8069aba4` 已在隔离环境完成 budgeted
+  10-step head1024：`1024/1024`、zero failures、proxy TE delta `+0.02872`、
+  mean uAUG `0.37598`、Kozak `0.53467`、start accessibility `0.63195`、
+  mean UTR edit distance `70.99805`、normalized edit distance `0.62633`、
+  mean length delta `+4.80469`、unique fraction `1.0`，CDS/3'UTR/protein
+  exact fractions 均为 `1.0`。该结果低于论文默认 10000 steps，因此
+  `protocol_fidelity_sufficient_for_sota_reproduction=False`。
+- 同一官方 UTRGAN commit 的 paper-default 10000-step head1024 已在独立目录
+  `benchmark/external_sota/real_runs_t5_head1024/UTRGAN_paper10000/` 完成，
+  未覆盖 10-step canonical artifact：`1024/1024`、zero failures、elapsed
+  `2798.396s`、`2.73281s/sequence`、proxy TE delta `+0.04068`、mean uAUG
+  `0.38086`、Kozak `0.57129`、start accessibility `0.65263`、mean UTR edit
+  distance `72.48535`、normalized edit distance `0.63032`、mean length delta
+  `+8.08887`、unique fraction `1.0`，CDS/3'UTR/protein exact fractions 均为
+  `1.0`，因此该模型的
+  `protocol_fidelity_sufficient_for_sota_reproduction=True`。相对 10-step，
+  TE delta 增加 `+0.01196`、edit distance 增加 `+1.48730`；两者均为 de novo
+  batch，故这只是 ordered-batch 描述性差异，paired p 必须为 `NA`。
+- 2026-07-16 官方 UTailoR 代码与 SavedModel 已在隔离 TensorFlow 环境执行。
+  adapter 严格遵守官方 25--100 nt 输入域：head1024 中 eligible=`315`、
+  ineligible=`709`、outputs=`315`、failures=`0`，不做截断或填充。共享 proxy
+  TE delta `+0.036105`，官方 RL delta `+0.91477`，mean edit distance
+  `4.41905`，TE/edit `0.008170`；CDS/3'UTR/protein exact fractions 均为
+  `1.0`。下载归档未包含明确 license，因此只按内部研究执行，不推断再分发权。
+- 同一 public head1024 上新增 16-worker constrained UTR-only local-search ceiling：
+  `1024/1024`，elapsed `103.29s`，proxy TE delta `+0.08302`，mean edit
+  distance `2.93750`，CDS/3'UTR/protein/budget fractions 均为 `1.0`。
+  `docs/t5_external_utr_baseline_comparison.{json,md}` 已达到 descriptive-table
+  ready；但 local search 直接优化共享 oracle，UTRGAN 又不是逐 source 条件生成，
+  所以 paired inference、model-only head-to-head 与 superiority claim 全部保持 false。
+- 2026-07-16 新增解码硬约束 `editable_regions=["utr5"]`：5'UTR-only run 在
+  candidate enumeration 阶段完全排除 CDS/3'UTR 位置，并将该配置写入
+  multiseed artifact。真实 checkpoint 冒烟（5 seeds × 8 records）得到 proxy
+  TE delta `+0.00588`，CDS/3'UTR fixed 与 protein/frame/budget fractions
+  全部为 `1.0`。正式 head1024 × 10-seed 已由
+  `scripts/run_mef_utr5only_head1024.sh` 在 GPU 0/2 分成 `0..4` 与 `5..9`
+  两个 shard 并行完成并合并。正式结果为 proxy TE delta `-0.00478`，
+  seed-bootstrap 95% CI `[-0.00515,-0.00442]`，paired sign-flip
+  `p=0.00450`，属于 **significant negative**；CDS/3'UTR fixed 与
+  protein/frame/budget fractions 全部为 `1.0`。这证明当前 UTR-specific adapter
+  没有吃到 constrained local-search 的 `+0.08302` headroom；下一轮必须改 teacher/
+  decoder objective，不能把小样本冒烟的正值或硬约束成功写成模型性能胜出。
+- 同一 hard 5'UTR-only canvas 上的 teacher rerun 已完成：
+  pure UTR teacher 的 proxy TE delta `+0.00318`，95% CI
+  `[+0.00266,+0.00365]`，`p=0.00450`；full-then-UTR sequential teacher 为
+  `+0.00298`，95% CI `[+0.00270,+0.00326]`，`p=0.00450`。相对显著负向的
+  region adapter，pure 与 sequential 分别提升 `+0.00796` 和 `+0.00775`
+  （两者 `p=0.00450`）；pure vs sequential 只有 `+0.00021`，
+  95% CI `[-0.00040,+0.00086]`，`p=0.56772`，不能声明 pure teacher 更优。
+  严格结论是 **teacher objective 显著修复了单纯 region adapter 的失败**，
+  但最佳 model-only `+0.00318` 仍低于 budgeted UTRGAN `+0.02872`、
+  paper-default UTRGAN `+0.04068` 和 oracle-guided ceiling `+0.08302`，
+  模型 ranker headroom 仍很大。
+- 为排除 UTailoR 对比中的 edit-budget 混杂，已在完全相同的 315 条严格子集上，
+  用最佳 pure UTR teacher 跑 hard budget 5 × 10 seeds。结果为 proxy TE delta
+  `+0.007774`，95% CI `[+0.006834,+0.008805]`，对 native 的 paired
+  `p=0.00450`；mean edit distance `4.79619`，legal/protein/frame/budget
+  fractions 全为 `1.0`。相对 UTailoR 的差值为 `-0.028332`，95% CI
+  `[-0.029271,-0.027301]`，paired `p=0.00450`；TE/edit 为 `0.001621`
+  vs `0.008170`。MEF 平均编辑数已经略高于 UTailoR (`4.796` vs `4.419`)，
+  所以差距主要来自 ranker/decoder 的单位编辑效率，不是原 hard budget 3。
+  仍不得写“严格预算匹配”，因为 UTailoR 没有逐记录 hard edit cap。
+- 2026-07-16 发现并固定官方 Hugging Face `naniltx/codonGPT` revision
+  `ee7017c4bdd285206b87be2e65a28272ff4ac88e`，权重 SHA-256
+  `df41546883e31ba13598d5ae74044666502a89ba34630d6f6c32943836e6f454`。
+  checkpoint 为约 17.97 MB 的 GPT-2 codon LM（4 layers / hidden 256 /
+  4 heads / 67-token vocabulary / 1024 codon context）。新增
+  `external_codongpt_adapter.py`、固定 revision setup、可审计 wrapper 和
+  `run_external_codongpt_head1024.sh`。真实 head8 smoke 为 `8/8`、zero failures、
+  valid CDS/protein exact-1=`1.0`、`0.753 s/sequence`、codon accuracy
+  `0.41944`、CAI `0.63966`。正式 head1024 已完成：`1024/1024`、zero failures、
+  valid CDS/protein exact-1=`1.0`、mean wall-clock `0.18175s/sequence`、
+  codon accuracy `0.41952`、CAI `0.69824`、GC `0.56005`、GC3 `0.64961`。
+  又按强制统计协议补齐 10-seed × head1024：每个 seed 均 `1024/1024`、
+  zero failures、hard constraints exact-1；聚合 codon accuracy `0.42030`、
+  CAI `0.70449`、GC `0.56475`、GC3 `0.66242`。相对 native CAI delta
+  `+0.01079`，95% CI `[+0.00912,+0.01239]`，sign-flip `p=0.00450`；
+  GC delta `-0.00206`，GC3 delta `-0.00476`。严格边界：
+  公开 HF artifact 是 pretrained checkpoint，不含论文任务特定 RL policy/reward
+  训练产物，因此只能称官方 pretrained constrained generation，不能称 RL 复现。
+- Prot2RNA 截至 2026-07-16 仍未找到官方 executable/checkpoint；OpenReview
+  ICLR 2026 decision 为 reject，且 meta-review 明确指出 codon accuracy、CAI 与
+  相似度不能验证真实表达改善。MEF 对齐时只能报告 predicted/offline proxy，
+  不能把相似度提升写成 expression uplift。
+- EnsembleDesign 正式默认配置时长标定：首条 326-aa 蛋白在
+  `beam=200, iterations=30, runs=1` 下超过 10 分钟仍未完成，paper-default
+  还要求 20 runs；budgeted `beam=100, iterations=3, runs=1` 用时 `229.68s`。
+  已新增逐记录持久化、可 resume 的
+  `mrna_editflow.baselines.external_ensembledesign_adapter` 和
+  `scripts/run_external_ensembledesign_head1024.sh`。budgeted head1024 已以
+  8 workers 启动（runner PID `2529673`）；其 protocol-fidelity gate 固定为 false，
+  不冒充 paper-default reproduction。
+- 新增 `mrna_editflow.eval.cascade_error_analysis`，输出
+  `benchmark/cascade_error_analysis_head256_top64.{json,md,records.jsonl}`。
+- head256 × 10 seeds 结果显示：mean cascade gain `+0.00092`，
+  win-record fraction `0.54688`，loss-record fraction `0.42188`。
+- cascade 对低 source TE 组收益最大：`source_te_bin=low` 的 mean gain
+  `+0.00404`，win fraction `0.67442`。
+- cascade 对含 uAUG 的 source 收益更明显：`source_uaug_presence=1` 的
+  mean gain `+0.00474`，win fraction `0.69892`；无 uAUG 组 mean gain 为
+  `-0.00126`。
+- v2 hard-negative teacher 应优先采样两类样本：
+  1. cascade wins：低 source TE、含 uAUG、长 5'UTR 的 transcript，用于强化
+     recall ranker 的 UTR rescue 能力；
+  2. cascade losses：高 source TE、无 uAUG 或短 5'UTR 的 transcript，用于
+     约束 recall ranker 不覆盖掉 precision ranker 已经擅长的局部最优。
+- 新增 `mrna_editflow.baselines.cascade_hard_negative_teacher`，输出
+  `benchmark/hybrid_teacher_head256_cascade_hardneg.{json,md,jsonl}`。
+- hard-negative teacher summary：253 个 transcript，97,065 行；新增
+  `cascade_rescue` 41,984 行和 `cascade_precision` 44,329 行。
+- v2 ranker 已从 source-aware hybrid checkpoint 继续训练 500 steps：
+  `ckpts/proposal_ranker_t5_cascade_hardneg_teacher_head256/proposal_ranker_best.pt`。
+- v2 head64 proposal-ranking audit：mean model regret `0.02526`，top-32
+  oracle-best recall `0.73770`，mean model-top TE `0.80238`，是当前最好的
+  top-1 proposal ranker。
+- source-aware recall -> hard-negative v2 precision cascade audit：k=64
+  cascade regret `0.02664`，oracle-best retained `0.80328`，mean cascade top TE
+  `0.80100`。因为 v2 full-pool regret `0.02526` 更低，当前瓶颈已经从
+  precision ranker 转向 recall truncation。
+- hard-negative v2 direct top64 head256 × 10 seeds 已完成：
+  `delta_oracle_te_vs_source=+0.00503`，`mean_oracle_te=0.78486`，相对
+  sequential top64 paired delta `+0.00112`，95% CI `[0.00041, 0.00180]`，
+  paired `p=0.02049`。硬约束全部保持 `1.0`。这是当前第一条 head256
+  model-only direct decoding 显著提升证据。
+- hard-negative v2 top128 搜索宽度 ablation 已完成：相对 top64，
+  `delta_oracle_te_vs_source` 从 `0.00503` 降到 `0.00368`，paired delta
+  `-0.00134`，95% CI `[-0.00208, -0.00068]`，paired `p=0.00450`。结论：
+  当前最优解码宽度保留 top64；下一步应提升 recall/ranker 质量，而不是
+  直接扩大采样宽度。
+- hard-negative v2 direct top64 head1024 × 10 seeds 已完成：相对 sequential
+  top64，`delta_oracle_te_vs_source` 从 `+0.00239` 提升到 `+0.00385`，
+  paired delta `+0.00147`，95% CI `[0.00114, 0.00179]`，paired `p=0.00450`。
+  硬约束全部保持 `1.0`，说明 head256 的显著提升可扩展到 4x 更大切片。
+
+### P1：模型性能追赶，目标是 1-2 周内显著提高 TE 指标
+
+- [x] Stage A scale-up：从 1k steps 扩到 10k steps，保留同配置 head256 eval。（10k 已完成，step 10000/10000，产出 `stage_a_best_10k_final_for_proposal_ranker.pt` + head1024 teacher + base/ranker head64 audit）
+- [ ] Stage A scale-up：如果 10k 有收益，继续 50k steps，并保存完整 profile。
+- [ ] 重新导出 full-pool TE teacher，至少 head1024，不只 head256。
+- [ ] 重新导出 UTR one-step teacher，至少 head1024。
+- [x] 训练 source-aware hybrid ranker v2：full/UTR pair budget 分开调参。
+- [ ] 训练 cascade recall v2：以 top-k oracle recall 为主，解决 hard-negative v2 precision 被 recall top-k 截断的问题。**（2026-07-13 已确认动机：10k-recall→hardneg_v2 cascade `+0.00455` vs 单 hardneg_v2 `+0.00503`，paired `p=0.36632` 不显著且点估计略低——前置 recall 未把 12× recall 增益转成 top-1 TE，瓶颈在 precision 判别与 recall top-k 截断。）**
+- [x] 运行 head256 × 10 seeds hard-negative v2 direct benchmark，目标 `p < 0.05`。
+- [x] 运行 hard-negative v2 top128 search-width ablation，确认 top64 是当前默认宽度。
+- [x] 运行 head1024 × 10 seeds benchmark，确认显著性可随数据规模保持。
+
+当前 Stage A 10k 启动状态：
+
+- 已新增 `scripts/run_stage_a_scaleup_10k.sh`，支持 `--dry-run`、GPU free-memory
+  guard、overwrite guard，并在启动前写入 dataset SHA256、split、seed、record
+  count、steps、GPU、host/hardware metadata。
+- 2026-07-13 已在远端 GPU6 启动 10k 长训练：launcher PID `4037207`，
+  script PID `4037208`，`train_backbone` PID `4037283`。
+- 启动 metadata：
+  `logs/stage_a_public_full_10k_bs8ga4_seed0.metadata.json`，记录 `steps=10000`,
+  `seed=0`, `record_count=54680`, `CUDA_VISIBLE_DEVICES=6`,
+  dataset SHA256
+  `5a74b0ea8d40065fd44383625ab17a4b4bc6e33b7185b67056edda7ecb7448d3`。
+- 启动后 profile 已到 step `2280`，`finite_loss=true`, `oom_reductions=0`，
+  暂无 OOM/NaN 异常；`stage_a_best.pt` 已生成。继续监控
+  `logs/stage_a_public_full_10k_bs8ga4_seed0.profile.jsonl` 和
+  `ckpts/stage_a_public_full_10k_bs8ga4_seed0/stage_a_best.pt`。
+- 已新增 `scripts/run_after_stage_a_10k.sh` watcher：等待 `train_backbone`
+  PID `4037283` 完成后，冻结 10k checkpoint、导出 head1024 proposal-ranking
+  teacher、输出同 checkpoint 的 base head64 audit、训练 500-step proposal
+  ranker，并输出 ranker head64 audit，形成同切片公平对照。
+- **2026-07-13 update：10k 训练已完成（step 10000/10000，`finite_loss=true`），
+  产出 `stage_a_best_10k_final_for_proposal_ranker.pt`。** watcher 已成功产出
+  head1024 teacher（965,472 candidate rows）与 base head64 audit：
+  - head1024 base：`mean_model_regret=0.04029`, `mean_model_top_te=0.79095`,
+    `mean_oracle_top_te=0.83124`（oracle gap 仍在）。
+  - base head64：`mean_model_regret=0.03309`, `mean_model_top_te=0.79455`。
+- **watcher 的 ranker 蒸馏步在争用的 GPU6（当时可见显存仅 ~4.75 GiB）触发
+  `CUDA OutOfMemoryError`。已用 `scripts/rerun_stage_a10k_ranker.sh` 在空闲 GPU
+  上（动态选显存最多者，实测 GPU1 ~39.6 GiB free，加
+  `PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True`）以相同参数（500 steps /
+  batch-records 4 / max-pairs 32 / lr 2e-5 / seed 0）重跑蒸馏，并链式跑 ranker
+  head64 audit，恢复 `proposal_ranking_t5_ranker_stage_a10k_head64.json`。**
+- **恢复后的同切片 base vs ranker head64 对照（10k teacher 蒸馏 500 steps，
+  best_loss 6.44e-5）：`mean_model_regret` 0.03309 → 0.03298（Δ−0.00011），
+  `oracle_best_in_model_top_k_fraction` 0.01639 → 0.19672（Δ+0.18033，约 12×），
+  `mean_model_top_te` 0.79455 → 0.79466。结论：10k head1024 teacher 蒸馏显著
+  抬升 top-32 oracle-best recall，regret 也略降；`eval/sota_gap_report.py` 已自动
+  收录这两行 measured evidence。下一步用该 ranker 接 cascade recall 并跑
+  head256/head1024 × 10-seed，验证是否把 recall 增益转成 TE paired `p<0.05`。**
+- **head256 × 10-seed direct top64 decode（`multiseed_t5_public_head256_stage_a10k_ranker_top64`，
+  同切片 256 records / edit_budget=3 / seeds 0-9）实测：`delta_oracle_te_vs_source`
+  mean `+0.00342`（std 0.00129, 95% CI [0.00267, 0.00413]），硬约束
+  legal/protein/frame/budget 全 `1.0`。对比当前最优 hardneg_v2 top64（`+0.00503`），
+  paired permutation `Δ=−0.00161`，95% CI [−0.00224, −0.00099]，`p=0.00450`——
+  即 10k teacher 直接 top-1 解码显著更差。诚实结论：**10k head1024 teacher 的
+  ~12× recall 增益并未转成 top-1 TE**，说明它应作为 cascade 的 *recall* 阶段
+  （喂给 precision reranker），而非直接 top-1 decoder；这与 recall/precision 分工
+  架构完全一致。产出 `benchmark/compare_stage_a10k_ranker_vs_hardneg_v2_head256.{json,md}`。
+  修正后的下一步：把该 10k ranker 作为 cascade recall（`--cascade-recall-checkpoint`），
+  precision 用 hardneg_v2，跑 head256/head1024 × 10-seed，检验 cascade 是否
+  `p<0.05` 超越单 ranker。**
+- **cascade（10k recall → hardneg_v2 precision）head256 × 10-seed 实测
+  （`multiseed_t5_public_head256_cascade_10krecall_hardneg_top64`，256 records /
+  edit_budget=3 / seeds 0-9 / precision top_k=64 / cascade_recall_top_k=64）：
+  `delta_oracle_te_vs_source` mean `+0.00455`（std 0.00111, 95% CI [0.00393,
+  0.00523]），硬约束 legal/protein/frame/budget 全 `1.0`。对比单 precision ranker
+  hardneg_v2 top64（`+0.00503`），paired permutation `Δ=−0.00048`，95% CI
+  [−0.00140, +0.00030]，`p=0.36632`——即 cascade 与单 ranker **无统计显著差异，
+  且点估计略低**。诚实结论：**用 10k ranker 作 recall 前置层，并未把它的 ~12×
+  top-32 oracle recall 增益转成 top-1 TE**——precision ranker 在 recall 保留的 64
+  候选内已接近饱和，前置 recall 反而引入少量截断损失。产出
+  `benchmark/compare_cascade_10krecall_vs_hardneg_v2.{json,md}`。这说明当前瓶颈
+  不在候选召回宽度，而在 precision ranker 本身的 top-1 判别质量；下一步应
+  （a）训练 cascade recall v2（以 top-k oracle recall 为目标，减少截断），或
+  （b）提升 precision ranker 质量（更大 head / 更多 hard-negative），或
+  （c）扩大 recall top-k（>64）看是否给 precision 更多可用 headroom，而非维持
+  当前 recall→precision 分工不变。**
+- `eval/sota_gap_report.py` 已支持自动收集 10k artifacts：
+  `proposal_ranking_t5_stage_a10k_head1024.json`,
+  `proposal_ranking_t5_base_stage_a10k_head64.json`,
+  `proposal_ranking_t5_ranker_stage_a10k_head64.json`。
+
+### P1.5：对齐新一代 mRNA 生成式模型（2025-2026 SOTA）
+
+新增以下竞品到 `eval/sota_gap_report.py::SOTA_REFERENCE_ROWS` 与 §5 对齐矩阵；下一步把它们的口径落到可复现 benchmark：
+
+- [ ] **mRNA-GPT head-to-head（最高优先）**：它是最直接的全长竞品（10M 预训练 + 端到端 + 迭代 oracle 优化）。用共享 proxy oracle 跑全长 T1-T7，报告 MEF 的 constrained edit-flow（protein/frame/budget 硬约束 + 可解释 edit distance）相对其自由 AR 生成的差异；核心表格必须**同时**列 TE delta 和约束满足率，避免只比 TE 而输掉「安全全长设计」这一卖点。
+- [ ] **GEMORNA CDS/UTR 分区对齐**：在 T4（CDS-only，保持 protein identity=1.0）与 T5（UTR-only）分别对齐 GEMORNA-CDS / GEMORNA-UTR 口径（CAI、GC、rare-codon、MFE、MRL）；强调 MEF 不重生成 CDS 而是同义 lattice 内编辑，protein identity 是硬约束。
+- [x] **ProMORNA 多目标口径（融合路线部分）**：已把 ProMORNA 的 MO-GRPO「聚合前逐 metric advantage 标准化」纳入 `multiobjective_teacher_export` 作为 `fusion_mode="grpo_standardized"`（第三条路线，与 scalar/pareto 并列）。
+- [ ] **ProMORNA 多目标口径（对齐部分）**：在共享 held-out 蛋白（如 luciferase）上对齐 predicted half-life vs TE 的 Pareto frontier 指标，量化 grpo_standardized vs scalar vs pareto 的多目标收益。
+- [ ] **RNAGenScape 轨迹对比**：在共享 5'UTR TE 优化任务（含斑马鱼 5'UTR 数据集口径）上，把 MEF 离散 edit-flow 轨迹与 RNAGenScape 连续 latent Langevin 轨迹对比 property gain / success rate / on-manifold plausibility；MEF 的增量卖点是硬约束保证 + edit-budget 可解释性。
+- [~] **数据集口径接入**：`docs/mrna_dataset_survey.md` 已记录重点竞品训练集与
+  split/leakage/license 风险，并已接入 `docs/sota_gap_report.{json,md}` 的
+  `dataset_survey_audit`：当前覆盖 GEMORNA、mRNA-GPT、ProMORNA、RNAGenScape、
+  codonGPT，`missing_methods=[]`，survey SHA
+  `639d34010a17c787ba07ea7ad2f5cb90db84a72bb77a6d6938be7c018b0b1017`。
+  该状态只说明 protocol/landscape 与 leakage 对齐问题可审计；合规获取 public
+  split、安装外部权重/可执行文件、产出真实外部指标仍是未完成项。
+- [x] **诚实边界**：所有对比在拿到真实外部权重/预测前，均只作为
+  protocol/landscape 记录，不得声称已复现或已超越。该边界已写入
+  `docs/sota_gap_report.md` 的 Dataset Survey / Leakage Alignment 与 external
+  dry-run `not_configured` gate；真实结果未落盘前，禁止把 `protocol_ready=true`
+  解释成 external SOTA reproduction。
+
+### P2：下游任务对齐，目标是每个指标都有可发表表格
+
+- [x] 已新增统一 T1-T7 evidence ledger：
+  `benchmark/t1_t7_evidence_status_head256.{json,md}`，集中记录当前每个任务的
+  ready/running/pending 状态、关键数值、source artifact 与写作边界。2026-07-15
+  已进一步把 T1 runtime、T2/T3 distribution/novelty、T4 CAI-GC、T5 budget、
+  T6 length、T7 motif/frame/edit、multi-scale sequence spectrum 图表审计等 9 个分项报告纳入
+  `t1_t7_evidence_bundle` readiness，当前 `reports ready=9/9`，统一 readiness
+  为 `6/6`；这只是内部 evidence 完整，不等于 wet-lab 或外部 SOTA 完成。
+- [~] T1：报告 TE/MRL delta、bootstrap CI、paired p、runtime。
+  当前 head256 `mo_grpo_top64` 已有 legal=`1.0`、mean TE=`0.79097`、
+  delta TE=`+0.01114`、mean MRL=`8.39231`（10 seeds）；paired p 由
+  `compare_mo_fusion_vs_te_only_head256` 与 hardneg 对照支撑。2026-07-15 已新增
+  `benchmark/t1_runtime_report_head256_head1024.{json,md}`（JSON SHA
+  `a4d3a13e009c92965e9a71b2823f20f262f3dbc5ae334997db6fa91b778f738f`）：
+  head256 `mo_grpo` 平均 seed runtime=`120.03s`、measured throughput=`2.13`
+  records/s；head1024 `mo_pareto` 平均 seed runtime=`121.46s`、measured
+  throughput=`8.43` records/s。报告明确这些是 progress-log 近似吞吐证据，
+  head256 progress 含 resume markers，且 `strict_hardware_benchmark_ready=False`；
+  不能写作 speed SOTA 或外部方法同硬件 runtime 对比。
+- [~] T2：报告 k-mer JS、codon KL、GC/length distribution，并证明 TE 提升不是 distribution collapse。
+  2026-07-15 已新增
+  `benchmark/t2_t3_distribution_novelty_report_head256_head1024.{json,md}`
+  （JSON SHA `dbda3fc5e998ef9d299353b4f71ef2d66b299fce2ec8a7a07a36d25962e63791`）：
+  10 个 head256/head1024 run 均为完整 10-seed 且 per-seed eval summaries 全部可读。
+  head256 `mo_grpo_top64` kmer JS=`0.0000122`、codon KL=`0.0`、
+  GC/length dist=`0.002252`、GC delta=`-0.002549`、length delta=`0`；
+  head1024 `mo_pareto_top64` kmer JS=`0.0000140`、GC/length dist=`0.002883`、
+  length delta=`0`。报告给出 `distribution_collapse_flag=False`。内部 proxy 分布审计已完成；
+  仍需把这些口径与外部 SOTA public split 对齐。
+- [~] T3：报告 novelty、exact match、nearest-source containment，完成 leakage audit。
+  同一 T2/T3 report 显示 head256 `mo_grpo_top64` mean novelty=`0.003262`、
+  exact source match=`0.011719`、unique fraction=`0.996094`、pairwise diversity=`0.51777`
+  （`64/32640` sampled pairs，非全量 pairwise）；head1024 `mo_pareto_top64`
+  exact source match=`0.016602`、unique fraction=`0.999023`、pairwise diversity=`0.54932`
+  （`64/523776` sampled pairs）。报告明确 `de_novo_overclaim_flag=True`：
+  exact match 低但非零，不能写作完全 de novo；仍需 nearest-neighbor/leakage 深化和外部 split 对齐。
+- [~] T4：对 CDS-only 和 protein-conditioned split 报告 protein identity、CAI、MFE/structure proxy。
+  2026-07-15 已新增
+  `benchmark/t4_protein_identity_cai_gc_report_head256.{json,md}`（JSON SHA
+  `19727370a3bd8d52b45fbe8ea941d1d45cff01a13fcb8533a12dd84934885f50`）：
+  T5 decoder 与 CDS 设计 artifacts 均保持 protein identity exact-1。CDS local
+  codon-lattice DP 在 256 targets 上 CAI delta=`+0.02682`、GC delta=`+0.00645`、
+  mean codon changes=`3.0`；protein-conditioned CDS 相对 native CAI delta=`+0.27092`、
+  GC delta=`+0.09411`，mean codon changes=`174.32`。GC sweep 覆盖 8 个 gc_weight、
+  2048 JSONL rows，全部 identity exact-1；best CAI 点 mean CAI=`1.0` 但 GC error
+  `0.15720`，best GC-target 点 gc_weight=`8.0`、mean CAI=`0.85677`、mean abs GC
+  error=`0.05351`。该报告明确 `external_baselines_configured=False`、
+  `true_mfe_structure_metric_available=False`；仍缺 EnsembleDesign 完整结果、codonGPT
+  task-specific RL policy
+  同口径 CAI/MFE/wall-clock 对比。
+- [x] T5：报告 edit-budget curve：budget=1/2/3/5/10 下的 TE-gain curve。
+  2026-07-14 head256 `mo_grpo` 与 head1024 `mo_pareto` 两条 curve 均已完成，
+  报告写入 `benchmark/edit_budget_curve_report_head256_head1024.{json,md}`。
+  head256 TE delta 随预算单调增加且硬约束全 1.0：
+  budget1 `+0.00420`、budget2 `+0.00793`、budget3 `+0.01114`、
+  budget5 `+0.01706`、budget10 `+0.02796`；mean edit distance 分别为
+  `0.988/1.971/2.953/4.902/9.677`。head1024 `mo_pareto` scale curve 同样完整：
+  budget1 `+0.00341`、budget2 `+0.00644`、budget3 `+0.00927`、
+  budget5 `+0.01409`、budget10 `+0.02355`；mean edit distance 分别为
+  `0.983/1.965/2.947/4.909/9.788`，硬约束全 1.0。
+- [x] T6：报告 target length delta=-30/-15/0/+15/+30 的 length error curve。
+  2026-07-14 19:03 在 GPU5 启动 Stage A 10k length-control curve：
+  `CUDA_VISIBLE_DEVICES=5`, checkpoint
+  `ckpts/stage_a_public_full_10k_bs8ga4_seed0/stage_a_best.pt`, `task_id=T6`,
+  `edit_budget=30`, target deltas `-30/-15/0/+15/+30`，PID `3406149`，
+  日志 `logs/t6_length_curve_stagea10k_head256.20260714_190328.log`。head256 curve
+  已完整写入 `benchmark/t6_length_curve_report_head256_head1024.{json,md}`：
+  target deltas `-30/-15/0/+15/+30` 的 mean abs length error 分别为
+  `0.35156/0.17578/0.00000/0.17578/0.35156`，reading frame/legal/protein/budget
+  全 `1.0`；delta TE 分别为 `+0.00500/+0.00268/+0.00000/-0.02865/-0.04961`，
+  mean edit distance 为 `29.64844/14.82422/0.00000/14.82422/29.64844`。结论是
+  head256 长度控制非常精确且约束安全，但正向加长 `+15/+30` 会明显损伤 proxy TE；
+  head1024 length-control curve 仍在运行，不能把 T6 scale-up 写成完成。2026-07-15
+  01:28 为加速进度，在不打断既有 `-30` wrapper（PID `3453511`，Python PID
+  `3453514`，log `logs/t6_length_curve_stagea10k_head1024.20260714_190755.log`）
+  的前提下并行启动较晚触达的 `0/+15/+30`：`+15` 在 GPU4（wrapper PID `2991188`，
+  Python PID `2991191`，log
+  `logs/t6_length_curve_stagea10k_head1024_parallel_pos15.20260715_012820.log`），
+  `+30` 在 GPU5（wrapper PID `2991192`，Python PID `2991195`，log
+  `logs/t6_length_curve_stagea10k_head1024_parallel_pos30.20260715_012820.log`），
+  `0` 在 GPU5（wrapper PID `3024588`，Python PID `3024591`，log
+  `logs/t6_length_curve_stagea10k_head1024_parallel_pos0.20260715_013155.log`）。
+  2026-07-15 01:35 已完成并拉回 head1024 `0`：mean abs length error
+  `0.00000`、delta TE `+0.00000`、mean TE `0.79104`、mean edit distance
+  `0.00000`、legal/protein/budget/frame 全 `1.0`，summary SHA
+  `59a06fe26e7d11a81d73abcb3e09be8e0ac03a4601017554f6cba514241d1cbb`。
+  2026-07-15 01:58 为继续利用可用显存，同时避免和顺序 wrapper 后续写标准
+  `neg15_top64` 目录冲突，已把 `-15` 启动到**非标准并行目录**
+  `benchmark/multiseed_t6_public_head1024_stagea10k_len_neg15_parallel_20260715_015834_top64`
+  （GPU4，wrapper PID `3274690`，Python PID `3274692`，log
+  `logs/t6_length_curve_stagea10k_head1024_parallel_neg15_parallel_20260715_015834.log`）。
+  `eval/summarize_t6_length_curve.py` 已支持优先标准目录、缺失时自动识别同 delta
+  的并行目录 summary；当前其余 head1024 T6 deltas 仍不能写成完成。
+  为避免后续再次手写报告，新增可复用汇总入口
+  `eval/summarize_t6_length_curve.py` 与
+  `scripts/summarize_t6_length_curve_report.sh`：从各 delta 的
+  `multiseed_summary.json` 自动重建
+  `benchmark/t6_length_curve_report_head256_head1024.{json,md}`，并可用
+  `RUNNING_DELTAS="head1024:-30 head1024:15 head1024:30"` 标注仍在跑的缺失行。
+  `scripts/check_remote_sota_status.sh` 也已增强为结构化追踪
+  `T6 Head1024 Progress`：直接记录每个 delta 的 `summary/running/pending`
+  状态、seed 目录数、已完成 `eval_summary.json` 数和 summary SHA/path。2026-07-15
+  02:25 为进一步利用可用显存并缩短尾部 seed 等待时间，新增
+  `eval/merge_multiseed_shards.py` 与 `scripts/merge_t6_head1024_shards.sh`：
+  seed shard 只写入 `benchmark/t6_shards/...`，不会被 T6 报告器误当作完整 summary；
+  报告器也已加完整性校验，只有覆盖 `seed_000..seed_009` 且关键 aggregate `n>=10`
+  的 summary 才会进入正式曲线。已启动四个 seed `5..9` shard：
+  `-30` GPU0/PID `3524340`、
+  `-15` GPU2/PID `3524341`、
+  `+15` GPU6/PID `3524342`、
+  `+30` GPU7/PID `3524343`，对应日志
+  `logs/t6_length_curve_head1024_{neg30,neg15,pos15,pos30}_shard_20260715_022534_seeds5_9_gpu*.log`。
+  `scripts/check_remote_sota_status.sh` 已新增 `T6 Head1024 Shards` 表和
+  `T6 Head1024 Merge Coverage` 表，可直接审计主目录+shard 的 completed/missing seeds。
+  2026-07-15 03:38 `-15` 已通过 `scripts/merge_t6_head1024_shards.sh`
+  合并成完整 10-seed summary：
+  `benchmark/multiseed_t6_public_head1024_stagea10k_len_neg15_merged_20260715_033814_top64/multiseed_summary.json`
+  （SHA `27018371be440771f3b62b32a5384d760865417f830405b878984166a84e0f5b`）。
+  正式报告已重建，head1024 `-15` 的 mean abs length error=`0.25000`、
+  delta TE=`+0.00300`、mean TE=`0.79404`、mean edit distance=`14.75000`，
+  legal/protein/budget/frame 全 `1.0`。2026-07-15 04:16 `-30` 已通过
+  `scripts/merge_t6_head1024_shards.sh` 合并成完整 10-seed summary：
+  `benchmark/multiseed_t6_public_head1024_stagea10k_len_neg30_merged_20260715_041616_top64/multiseed_summary.json`
+  （SHA `25e1dc1ffa2342bbb9ff4855fcab7b9cf7e34c4d154f010b61e2f9ba20aedee6`）。
+  正式报告已重建，head1024 `-30` 的 mean abs length error=`0.52051`、
+  delta TE=`+0.00649`、mean TE=`0.79753`、mean edit distance=`29.47949`，
+  legal/protein/budget/frame 全 `1.0`。2026-07-15 04:30 `+15` 的
+  standard multiseed summary 已落盘：
+  `benchmark/multiseed_t6_public_head1024_stagea10k_len_pos15_top64/multiseed_summary.json`
+  （SHA `990b2259e9d96efa001fe29ade07ac90618135a13036e36e9cbca70bad9b4f94`）。
+  正式报告已重建，head1024 `+15` 的 mean abs length error=`0.24902`、
+  delta TE=`-0.02736`、mean TE=`0.76368`、mean edit distance=`14.75098`，
+  legal/protein/budget/frame 全 `1.0`。这说明 `+15` 长度控制约束安全，
+  但 proxy TE 副作用明显为负。2026-07-15 05:42 `+30` 也已通过
+  `scripts/merge_t6_head1024_shards.sh` 合并成完整 10-seed summary：
+  `benchmark/multiseed_t6_public_head1024_stagea10k_len_pos30_merged_20260715_054209_top64/multiseed_summary.json`
+  （SHA `686eed840026722b0865990b9b3ffb15ed0022d1b310f3446e2fe747880433b5`）。
+  正式报告已重建，head1024 `+30` 的 mean abs length error=`0.49805`、
+  delta TE=`-0.04565`、mean TE=`0.74539`、mean edit distance=`29.50195`，
+  legal/protein/budget/frame 全 `1.0`。2026-07-15 05:45 status 已确认
+  `-30/-15/0/+15/+30` 五个 head1024 delta 均为 complete coverage
+  （`n_t6_head1024_complete_coverages=5`，`n_t6_head1024_summaries=5`）。
+  至此 head1024 T6 长度曲线已完整，但正向加长 `+15/+30` 明显损伤 proxy TE；
+  写作时只能作为长度控制和硬约束安全证据，不能写成表达提升。
+  同日 03:45 已为
+  `merge_t6_head1024_shards.sh` 增加幂等保护：若某 delta 已有完整 10-seed summary，
+  后续轮询只输出 `SKIP ... already complete summary`，不再制造重复 merged 目录；
+  `TestAblationScript.test_merge_t6_head1024_shards_skips_existing_complete_summary`
+  已覆盖该回归风险。
+- [~] T7：报告 motif insertion/excision、uAUG reduction、Kozak improvement、reading frame intact。
+  2026-07-14 已基于现有 head256 10-seed decoded outputs 聚合
+  `benchmark/t7_motif_frame_report_head256.{json,md}`：hardneg_v2、mo_te_only、
+  mo_scalar、mo_pareto、mo_grpo 五条 decoder 的 T7 motif/frame 指标均来自 seed 级
+  `eval_summary.json`，不是重采样。所有 run 的 `reading_frame_intact_fraction=1.0`。
+  诚实安全结论：相对 `mo_te_only`，三条 MO fusion 都提高 uAUG，方向上不是 reduction；
+  scalar uAUG presence `+0.01602` (`p=0.00850`)、pareto `+0.03125`
+  (`p=0.00450`)、grpo `+0.00781` (`p=0.04048`)；uAUG count 分别
+  `+0.02852/+0.05312/+0.01484`，grpo safety 代价最小但仍显著。Kozak/polyA
+  变化不显著或极小。后续仍需跑真正的 motif insertion/excision 专项 T7 benchmark，
+  不能把 decoded motif audit 写成目标 motif 成功率。2026-07-14 已在远端启动
+  head256 constructive T7 motif edit benchmark：motif=`GCCACC`、region=`5utr`、
+  10 seeds、256 records，分别评估 insert 与 excise success、frame/protein/budget 和
+  proxy TE，产物目录 `benchmark/t7_motif_edit_benchmark_head256`。结果已落盘：
+  insert success=`0.99336`、excise success=`0.99336`，insert/excise 的
+  reading-frame/protein-identity/within-budget 全部 `1.0`，mean edit distance 均为 `6.0`。
+  代价也要诚实写：insert motif 相对 source 的 proxy TE delta 为 `-0.00596`，
+  excise 相对 inserted source 回升 `+0.00554`。该结果证明构造性 motif
+  插入/切除能力，不证明模型已经学会目标 motif 优化策略。
+
+### P3：数据 scale-up
+
+- [~] **eFold-inspired cross-family generalization gate：data scale-up 不只看条数。**
+  2026-07-15 根据 eFold / RNAndria 论文
+  *Diverse database and machine learning model to narrow the generalization gap in RNA structure prediction*
+  （Science Advances 2026, DOI `10.1126/sciadv.adz4967`）更新数据和下游任务策略。
+  该论文的关键结论是：仅扩大数据库规模不足以 across-family generalization；
+  真正提升泛化的是 RNA family / length / structure 的 diversity 和 complexity。
+  对 MEF 的迁移原则是：P3/P4 scale-law 不能只报告 `data_size × model_size × steps`，
+  还必须报告 `family_diversity × region/length_complexity × motif/structure_complexity`
+  轴。新增文档更新：
+  - `docs/mrna_dataset_survey.md` 增加 eFold / RNAndria 条目与
+    `size/diversity/complexity` 三轴 data plan；
+  - `docs/downstream_tasks.md` 增加 `eFold-inspired cross-family 泛化协议`，
+    要求 T1-T7 都报告 random split 之外的 gene/protein-family、motif-family、
+    length/complexity、cross-source、必要时 cross-species stress layer；
+  - 未来 `docs/data_scaleup_readiness.json` 应增加
+    `diversity_profile_complete`、`complexity_bucket_eval_complete`、
+    `cross_source_panel_complete`，并新增 gate：
+    `ready_for_cross_family_generalization_claim=False` 直到上述证据完成。
+  当前结论边界：已有 GENCODE family split 与 head256/head1024 evidence 是
+  governance / in-family proxy evidence；在 RefSeq/cross-source、motif-family、
+  length/structure-complexity stress panels 完成前，不能写“跨家族泛化已解决”，也不能把
+  head1024 的收益/收缩直接解释为 true data scale law。
+- [~] GENCODE v45 当前 cleaned full-transcript corpus 作为 base。
+  2026-07-15 已启动首个受控 Stage A scale-law sweep 队列
+  `stage_a_scalelaw_p3p4_20260715_0714`，其 plan 位于
+  `benchmark/stage_a_scalelaw_p3p4_20260715_0714/plan.json`（本地 SHA
+  `58cc154f42ecac90d758aef1f4060f3bd19eecae6b724553d52dd635fa77d28c`）。
+  plan 记录 source corpus `data/processed/gencode_human_transcripts.records.jsonl`
+  的 `source_record_count=54680` 与 SHA
+  `5a74b0ea8d40065fd44383625ab17a4b4bc6e33b7185b67056edda7ecb7448d3`，
+  并生成 data-size 子集 `256/1024`。该队列当前是训练轴证据，不是 scale-law
+  结论；仍需等待所有 run 完成并接 downstream audit。
+- [~] RefSeq GenBank parser 完整化，加入 RefSeq protein-coding mRNA。
+  2026-07-15 已新增 Biopython-free 保守 RefSeq GenBank parser：
+  `data/download_mrna.py` 现在提供 `iter_genbank_records`、
+  `parse_genbank_cds_location` 与 `records_from_refseq_genbank`，支持标准
+  plus-strand contiguous `CDS 7..15` 和连续 `join(7..9,10..15)`，并跳过
+  `complement`、remote accession、非连续 join 或多 CDS 记录，避免把无法表示为
+  单段 `5'UTR + CDS + 3'UTR` 的记录误纳入训练。`data/public_pipeline.py`
+  已接入 `dataset_name=refseq_human_rna`，可生成 canonical records JSONL 与
+  manifest；`tests/test_public_pipeline.py` 已覆盖 RefSeq `.gbff.gz` fixture、
+  manifest、drop stats 与 parser conservative behavior。该项目前是 parser
+  readiness，不是全量 RefSeq corpus 已完成；仍需下载官方 `human.1.rna.gbff.gz`、
+  记录 SHA/attrition manifest，并与 GENCODE 做 family-disjoint/leakage audit。
+  同日已新增并远端启动 load-gated RefSeq build 队列
+  `scripts/run_refseq_public_build.sh`（SHA
+  `b0bb1f956607d583e4b2ec1105aa3103cee999f57352bac9aec127ae0aa2bd60`）：
+  远端 PID `2433252`，状态目录
+  `benchmark/refseq_public_build_20260715_0743/`；当前
+  `status=queued_or_running`，last event=`load_gate_wait`，last loadavg=`115.42`
+  （progress events=`54`），
+  official raw `human.1.rna.gbff.gz` 尚未下载，records/manifest 尚未生成。因此
+  该队列仍是 build readiness，不能写作 RefSeq 已加入训练语料。
+- [~] 数据 scale-up readiness 统一审计。
+  2026-07-15 新增并增强 `eval/build_data_scaleup_readiness.py`（SHA
+  `7553424949da983bd4509d24b12be1f223009453eb9ac34c562b5feba9819249`），远端生成
+  `docs/data_scaleup_readiness.{json,md}`（JSON SHA
+  `7f959d88b08378b7cc2d57cb1404e9506aad3a4d812a2da8870277cdf46646de`，MD SHA
+  `dde285a053b9a1ae180ccee9146bdfa6fdbf2f5295ffc1b59d6121a4ed22c11e`）。该报告把
+  GENCODE manifest、RefSeq build queue、Stage A data/model/step sweep、
+  MPRA/TE/stability 数据、family-disjoint/leakage 与每个数据版本 manifest
+  合并到同一个 claim-policy artifact；本轮新增 MPRA/TE 与 stability/half-life
+  真实输入表 schema gate，会审计常规 raw/processed CSV/TSV 路径和
+  `MRNA_EDITFLOW_MPRA_TE_TABLE` / `MRNA_EDITFLOW_STABILITY_TABLE` 等环境变量候选，
+  但只把 schema、SHA、train/val/test split counts 当作输入证据，不打开真实结果 claim。
+  同轮新增 `eval/build_downstream_table_manifest.py`（SHA
+  `db3ded1c54c5cfd22e5d020e433414b91cdb4283ee0fdc8adf9a3e510480cac0`），可将已经下载且
+  带官方 split 的真实 MPRA/stability CSV/TSV 规范化为
+  `data/processed/{mpra_te,stability_half_life}.records.jsonl` 和
+  `*.data_manifest.json`，并默认拒绝缺官方 split 的表，避免把 fallback split 写成
+  paper-grade manifest。
+  同轮新增 `eval/downstream_data_acquisition_audit.py`（SHA
+  `ab4e68cd3ad4172a604b65caf6fd3c4aa9d31ccb535f56cd18c32a74fa45fd3a`），远端生成
+  `docs/downstream_data_acquisition_audit.{json,md}`（JSON SHA
+  `5baf01e73fca019ed2655ec61df3e7a819eb9348ebc3b7a666ccd4dea39fa629`，MD SHA
+  `05521fb47992f3252d9609cc0989ba548b6fcdfb20dfb88a90aad326350fc66a`）：
+  将 MPRA/TE 与 stability/half-life 的 source table、官方 split、manifest、
+  held-out predictor report、leakage documentation 拆成机器可读 acquisition gates。
+  当前 acquisition summary 为 source tables `0/2`、schema ready `0/2`、
+  complete manifests `0/2`、predictor audits ready `0/2`，
+  `ready_for_real_te_or_stability_claim=False`。
+  同轮新增 `eval/stage_a_downstream_eval_readiness.py`（SHA
+  `9600686503d4e857bacd5876853ae6a8665263230469f17a9716864f1eb730ac`），远端生成
+  `docs/stage_a_downstream_eval_readiness.{json,md}`（JSON SHA
+  `8f3b07e8f0fb3513d82bda2bbb15c028ed073b86938a48683f5a10f5a9d316d1`，MD SHA
+  `b61d69a63d44ab7c2a5837374bffa74dcb6ea2b206189713d0c7e719306af987`）：
+  将 Stage A sweep 完成后的 per-run proposal-ranking、T1-T7 eval、runtime audit、
+  aggregate downstream report 与 scale-law trend audit 拆成机器可读 gate。当前
+  status=`blocked_on_stage_a_sweep`，training complete `0/8`，downstream ready `0/8`，
+  `ready_for_true_scale_law_claim=False`。
+  当前 summary 为
+  `ready_for_data_scale_claim=False`、`ready_for_refseq_scaleup_claim=False`、
+  `ready_for_real_te_or_stability_claim=False`、`ready_for_true_scale_law_claim=False`；
+  GENCODE manifest ready=`True`，且远端 `data/processed/gencode_human_transcripts.records.jsonl`
+  已按 manifest SHA `5a74b0ea8d40065fd44383625ab17a4b4bc6e33b7185b67056edda7ecb7448d3`
+  验证存在；RefSeq official corpus ready=`False`，Stage A controlled sweep
+  complete=`False`（runs `0/8`，load-gate waits=`83`，progress-tail last
+  loadavg=`97.13`），MPRA input table ready=`False`，stability input table ready=`False`，
+  downstream input tables ready=`False`，MPRA TE predictor audit ready=`False`，
+  MPRA synthetic smoke only=`True`，stability predictor audit ready=`False`，
+  stability synthetic smoke only=`True`，family leakage protocol smoke only=`True`，
+  family leakage ready=`False`，downstream manifest builder tooling available=`True`。
+  Dataset manifest contract ready=`False`（manifest audit `0/4` complete）。RefSeq
+  build progress-tail last loadavg=`106.48`，official raw/records/manifest 仍缺失。
+  `missing_or_incomplete` 明确列出 `refseq_official_corpus`、
+  `stage_a_data_model_step_sweep`、`real_mpra_te_stability_data`、
+  `family_disjoint_split_and_leakage_audit`、`all_dataset_manifests`，因此这份报告是
+  P3 状态治理证据，不是 data-scale 或 wet-lab/real-TE 结果证据。
+- [~] 加入 MPRA/TE 数据集，训练真实 TE/stability predictor，不只使用 local proxy。
+  2026-07-15 新增 `eval/mpra_te_predictor.py`（SHA
+  `d0217767b76fc4d197861460438973fcb5224f586b052bbc12a1bce29fda3328`）：复用
+  `data/prepare_mpra.py` 的 `sequence,mrl[,split]` CSV/TSV 契约，抽取独立
+  5'UTR features，并训练 lightweight ridge regression baseline，输出
+  train/val/test `MAE/RMSE/Pearson/Spearman`、模型系数、split provenance 与
+  claim flags。已生成远端 smoke artifact
+  `benchmark/mpra_te_predictor_protocol_smoke/{report.json,report.md,predictions.jsonl}`
+  （report JSON SHA `630c4306c0e3e7b20dd726bcd095ee23bd157de8c1bf902a3f2ca607e2b9097e`）；
+  该 smoke 使用 synthetic fallback（64 samples，train/val/test=`51/7/6`，
+  test RMSE `0.40898`），因此明确
+  `ready_for_mpra_te_predictor_audit=False`、
+  `ready_for_real_te_or_stability_claim=False`、
+  `synthetic_smoke_only=True`。结论：MPRA/TE predictor 的可执行协议已就绪，
+  但真实 MPRA/TE 输入表、官方 split、stability/half-life 标签和 held-out
+  validation 仍未接入，不能写作真实 TE/stability predictor 结果。
+- [~] 真实 downstream predictor 自动接入队列。
+  2026-07-15 新增并远端启动
+  `scripts/run_downstream_predictor_protocol.sh`（SHA
+  `f22db6fab0c574a4089b4b043e58949f875a6d01326b0bbce4cf5143e670599c`），远端 PID
+  `3516421`。该脚本等待真实 MPRA/TE 和 stability/half-life 表及已核验 source URL，
+  然后才运行 `eval/build_downstream_table_manifest.py` 与
+  `eval/{mpra_te_predictor,stability_predictor}.py`，生成
+  `data/processed/{mpra_te,stability_half_life}.data_manifest.json` 和
+  `benchmark/{mpra_te_predictor_protocol_real,stability_predictor_protocol_real}/`。
+  当前 status=`waiting_for_downstream_tables`，MPRA/stability table exists=`False/False`，
+  source URL present=`False/False`，status JSON SHA
+  `7a3b82f89f7b8836ec9bea138316fe3da367ac1bc603da2a52d925e767aafcf6`。该队列不会使用
+  synthetic fallback 作为真实 predictor evidence。
+- [~] 加入 stability/half-life predictor 协议，不只停留在 TE/MRL。
+  2026-07-15 新增 `eval/stability_predictor.py`（SHA
+  `d252603a8548588627294013dcf5d76f7729cea2da06f37387d4cb786141946a`）：支持
+  labelled CSV/TSV 输入 `sequence + half_life/stability/stability_score/degradation_rate`
+  之一，保留官方 `split`，用 full-sequence stability features（GC/AU、polyA signal、
+  ARE/u-rich motifs、run flags、start-AUG count、MFE proxy）训练 lightweight ridge
+  regression baseline，并输出 split-held-out `MAE/RMSE/Pearson/Spearman`、
+  coefficients、predictions JSONL 和 claim flags。已生成远端 smoke artifact
+  `benchmark/stability_predictor_protocol_smoke/{report.json,report.md,predictions.jsonl}`
+  （report JSON SHA `e0e049ac59d31296ec8268bc06ef94bf9750a5bba955dc46de71d178e9d92a5d`）；
+  该 smoke 同样使用 synthetic fallback（64 samples，train/val/test=`51/7/6`，
+  synthetic test RMSE `0.02245`），因此明确
+  `ready_for_stability_predictor_audit=False`、
+  `ready_for_real_te_or_stability_claim=False`、
+  `synthetic_smoke_only=True`。结论：half-life/stability predictor 的可执行协议已就绪，
+  但真实外部标签、官方 split 与 leakage-aware dataset documentation 仍未接入。
+- [~] 构建 family-disjoint split：按 CDS/protein family、UTR k-mer、transcript exact match 三层去泄漏。
+  2026-07-15 新增 `eval/family_leakage_protocol.py`（SHA
+  `dcf4366eadf3d6d8d2709f3872bad6b5f93eae91ce25c483c05716da8b91a215`）：复用
+  `data.dedup_split.family_disjoint_split` 与 `data.leakage_audit.audit_leakage`，
+  支持 synthetic smoke、真实 cleaned records JSONL、可选 external reference/pretraining
+  corpus JSONL，输出 split stats、k-mer leakage summary、split idx files 与 claim
+  flags。已生成远端 smoke artifact
+  `benchmark/family_leakage_protocol_smoke/{report.json,report.md,splits/*.idx}`
+  （report JSON SHA `19596de4c36c63352a843b1572d8e555dbf5925189c6da6ac5eb50eb47d7b78e`）；
+  smoke 使用 synthetic corpus 64 records，MinHash families=`22`，
+  train/val/test=`51/7/6`，test-vs-train leakage exact match=`0`、
+  flagged fraction=`0.0`。该结果只证明 split/leakage 管线可执行，
+  `ready_for_family_leakage_audit=False`、
+  `ready_for_family_disjoint_leakage_claim=False`。正式 GENCODE/RefSeq
+  cross-corpus leakage audit 仍等待 RefSeq official records/manifest 产出。
+- [~] 每个数据版本输出 manifest：source URL、SHA256、record count、drop stats、split stats。
+  2026-07-15 新增 `eval/dataset_manifest_audit.py`（SHA
+  `1b61c9644da2db1faa8243d89d23d43d851058f44c82d95ae2e41c3c13ede9a7`），远端生成
+  `docs/dataset_manifest_audit.{json,md}`（JSON SHA
+  `941ab4a4f3238745a78d6f1f176d249ef329a92beb4293e47bd69ba400319ec1`，MD SHA
+  `7d91d3add0f4dd02efc324b418aeea9e165c9666c2d72048097d68ef1db4bd81`）。该审计按
+  paper-grade contract 检查 `source URL / raw SHA256 / records SHA256 /
+  raw-clean record counts / drop stats / split stats / records file SHA verification`。
+  该审计现在支持用 `benchmark/gencode_family_leakage_protocol/report.json` 作为
+  GENCODE split stats sidecar，避免直接改写原始 manifest。
+  当前结果为 complete manifests `0/4`，pending split sidecars=
+  `[gencode_human_transcripts, refseq_human_rna]`：
+  GENCODE manifest 存在且远端 records SHA verified=`True`，GENCODE sidecar status
+  已存在但 report 尚未生成、仍缺 `split_stats`，因此仍不算完整；
+  RefSeq manifest 仍缺失但 RefSeq sidecar status 已启动并等待 records；MPRA TE、
+  stability/half-life 两类 manifest 均缺失。结论：manifest 审计协议已落地，
+  但 `all_required_dataset_manifests_complete=False`，不能写 data-scale claim。
+- [x] GENCODE family split stats sidecar。
+  2026-07-15 已按“有显存/可运行就直接跑”的策略绕过 load gate，并完成真实
+  GENCODE family-disjoint split + test-vs-train k-mer leakage audit。输入为
+  `data/processed/gencode_human_transcripts.records.jsonl`（SHA
+  `5a74b0ea8d40065fd44383625ab17a4b4bc6e33b7185b67056edda7ecb7448d3`），输出
+  `benchmark/gencode_family_leakage_protocol/report.json`（SHA
+  `862f54901f7fbf8bb7225a43a22d520e7bd265eb13af91edf856d137a25f12d2`）与
+  `splits/{train,val,test}.idx`。报告摘要：`n_records=54680`，
+  `n_clusters=13706`，`n_train=43744`，`n_val=5468`，`n_test=5468`，
+  `split_ready=True`，`leakage_exact_match_count=0`，`leakage_flagged_fraction=0.000914`。
+  因该运行未提供 external reference，`ready_for_family_leakage_audit=False` 且
+  `ready_for_family_disjoint_leakage_claim=False`；它证明的是 GENCODE
+  split/governance sidecar 已完成，不是 RefSeq cross-corpus leakage-free claim。
+  `watch_gencode_family_readiness.sh` 已自动刷新
+  `docs/dataset_manifest_audit.{json,md}` 与
+  `docs/data_scaleup_readiness.{json,md}`。同时修正
+  `eval/build_data_scaleup_readiness.py`（SHA
+  `525ce3f94a0985d870833d807a5137e822f24d59f69efa1a0a52261642c95498`），使
+  readiness 聚合器纳入真实
+  `benchmark/gencode_family_leakage_protocol/report.json` /
+  `benchmark/refseq_family_leakage_protocol/report.json`，不再把 family protocol
+  证据折叠到 synthetic smoke。刷新后的 `docs/data_scaleup_readiness.json` 显示
+  `family_split_protocol_ready=True`、`family_leakage_protocol_real_report_present=True`、
+  `family_leakage_protocol_synthetic_smoke_only=False`，但
+  `family_leakage_ready=False`、`ready_for_data_scale_claim=False`，仍等待 RefSeq
+  records/manifest、RefSeq cross-corpus leakage audit、真实 MPRA/stability 数据与
+  Stage A scale/downstream audits。
+- [~] RefSeq family/leakage split stats sidecar。
+  2026-07-15 新增并远端启动
+  `scripts/run_refseq_family_leakage_audit.sh`（SHA
+  `16c7f35dfe57a96941db02452f7a4af340942c38d0578340ee42b980681dd558`），远端 PID
+  `1715460`。该脚本等待
+  `data/processed/refseq_human_rna.{records.jsonl,data_manifest.json}` 出现，再遵守
+  当前资源策略运行 RefSeq family-disjoint split 与 GENCODE reference
+  k-mer leakage audit，输出
+  `benchmark/refseq_family_leakage_protocol/{report,status,progress}.json*` 与
+  `splits/{train,val,test}.idx`。当前 status=`waiting_for_refseq_records`，
+  records/manifest exists=`False/False`，reference GENCODE records exists=`True`，
+  reference SHA=`5a74b0ea8d40065fd44383625ab17a4b4bc6e33b7185b67056edda7ecb7448d3`；
+  RefSeq public build 当前仍 `queued_or_running`，last event=`build_start`，raw、
+  records 与 manifest 尚未落盘。该项目前是 RefSeq split sidecar pending 证据，
+  不是 RefSeq leakage-free 完成证据。
+- [~] P3 readiness 通用 watcher。
+  2026-07-15 新增并远端启动 `scripts/watch_p3_readiness.sh`（SHA
+  `065f033d5b35da2af18049d60f2c97cecd0f8122de4ea8c7a3dac53360204661`），远端 PID
+  `3592624`。该 watcher 监听 GENCODE family report、RefSeq manifest、Stage A
+  scale-law summary 以及 MPRA/stability raw/processed 表和 manifest 候选；检测到状态
+  digest 变化时自动刷新 `docs/dataset_manifest_audit.{json,md}`、
+  `docs/downstream_data_acquisition_audit.{json,md}`、
+  `docs/stage_a_downstream_eval_readiness.{json,md}`、
+  `docs/data_scaleup_readiness.{json,md}` 与
+  `docs/paper_table5_scale_law_readiness.{json,md}`。已生成 marker
+  `logs/p3_readiness_watcher.state.json`（SHA
+  `63a8c16bdff5fd0982e1ac26fccffb44afa22721c2665c515dfddf1cdd181e0d`）和 log
+  `logs/p3_readiness_watcher.log`（SHA
+  `4efc787a0584e9e85f8b310f2bb1940447ba2bb46cb59fbcd44e9b889c2558cd`）。该 watcher
+  只做轻量刷新，不下载 RefSeq、不训练 Stage A、不运行 split/leakage audit。
+
+### P4：模型 scale-up
+
+- [~] small：当前 hidden/layers 配置，10k steps，作为 fast ablation。
+  2026-07-15 新增并远端启动 `scripts/run_stage_a_scalelaw_sweep.sh`（当前增强版
+  SHA `7488fdf14ae77f23bb9d56d6fafbaa4e75bc305584e53e53673d8ad27650f0dd`）：
+  默认遵守 `MAX_LOADAVG=80`，在负载回落后自动选择显存空闲 GPU，并写入
+  `plan.json`、`progress.jsonl`、per-run metadata/profile/log 和 summary。
+  当前队列 PID `2331626` 已在远端运行，`docs/remote_execution_status.{json,md}`
+  已刷新到 `2026-07-15T09:55:18+08:00`（JSON SHA
+  `f1997043aa3cf41f2a75fead698752381674f41943e1d4020408191f05f89d23`，
+  `n_dynamic_processes=9`，包含 `watch_p3_readiness.sh`、
+  `run_refseq_family_leakage_audit.sh` 与 `run_downstream_predictor_protocol.sh`）。
+  本轮计划矩阵为 data sizes `256/1024` ×
+  model sizes `tiny/small` × steps `200/500` × seed `0`，共 `8` 个 run；
+  当前仍因 loadavg `97.13 >= 80` 等待（load-gate waits=`83`），不强行绕过负载门控。
+- [ ] base：增加 depth/hidden，保持显存可控，50k steps。
+- [ ] large：引入 frozen mRNA foundation embeddings，只训练 adapters/rankers。
+- [ ] long-context：按 full transcript length bucket 训练，减少 truncation bias。
+- [ ] 多 GPU/gradient accumulation：记录 effective batch size、tokens/sec、wall-clock。
+
+### P5：论文级实验表格
+
+- [~] Table 1：SOTA landscape，按 CDS-only、UTR-only、full-length FM 分类。
+  2026-07-15 已新增 `docs/paper_table1_sota_landscape.{json,md}`（JSON SHA
+  `8ffa98ec4195e0b9925c43db69ddf8d1288fedb9730532a2ae21284233ae850b`）：
+  覆盖 12 个方法、8 个类别，包括 CDS-only structure/codon optimization、
+  CDS/protein-conditioned generation、UTR-only optimization、full-length de novo
+  generation、full-length foundation/representation 等；dataset survey protocol ready=`True`，
+  2026-07-16 刷新后 dry-run models=`6`、executable ready=`5`
+  （LinearDesign、EnsembleDesign、codonGPT、UTailoR、UTRGAN），其余外部方法保持
+  `landscape_only_no_measured_external_metric`。该表可作为 landscape draft，
+  JSON SHA `64e2f425216891c995605c62a1f8f0f59287727f538d88d806811e96a4fe414d`；
+  `ready_for_external_metric_claim=False`、`ready_for_wet_lab_claim=False`。
+- [~] Table 2：T1-T7 主结果，10 seeds，paired p。
+  2026-07-15 已新增 `docs/paper_table2_t1_t7_main_results.{json,md}`：
+  汇总 T1-T7 主指标、硬约束、paired p 覆盖和 claim language。当前
+  `table_ready_for_internal_proxy_paper_draft=True`，T1/T7 有真实 paired p
+  artifact（T1 `mo_grpo` vs `te_only` 与 hardneg_v2 均 `p=0.00450`；T7
+  uAUG side-effect `p=0.04048`），T2/T3/T4/T5/T6 明确标为 NA 并写明原因；
+  `ready_for_external_sota_claim=False`、`ready_for_wet_lab_claim=False`、
+  `ready_for_full_de_novo_claim=False`。
+- [~] Table 3：external SOTA baseline 对比，含 runtime。
+  2026-07-15 已新增 `docs/paper_table3_external_baseline_readiness.{json,md}`：
+  基于 `benchmark/external_sota/dry_run_t5_head1024/{summary,runtime,table}` 汇总
+  LinearDesign、EnsembleDesign、codonGPT、Prot2RNA、UTailoR、UTRGAN 的
+  dataset/runtime/hardware/candidate
+  audit。当前 `ready_for_protocol_table=True`、`metadata_contract_ok=True`，但
+  executable ready=`5/6`；未配置的 baseline 仅为 Prot2RNA，
+  因此
+  `ready_for_real_metric_table=False`、`ready_for_external_sota_claim=False`。
+  2026-07-16 已把 `benchmark/external_sota/input_pack_t5_head1024/summary.json`
+  接入 Table 3：`input_pack_ready=True`，CDS/protein-conditioned rows=`1024`，
+  5'UTR-only rows=`1024`，input-pack summary SHA
+  `b0ccc98c07dbb67a7479595de2b7cf860e54e7fb5c9a295ebc6e67bd21313408`。
+  同日已接入 `docs/external_sota_real_run_audit.json`：`real_run_audit_complete=True`，
+  三份模型集合一致性 `model_set_consistent=True`，但当前
+  `n_models_measured=4/6`、`n_models_missing=2`，
+  `ready_for_real_metric_table=False`。LinearDesign、codonGPT、UTailoR 与
+  UTRGAN 已有真实描述指标，T4/T5 专项表均已生成；UTRGAN paper-default
+  10000-step 已使 protocol-fidelity sufficient 达到 `1/6`，但 EnsembleDesign
+  尚在运行、Prot2RNA 无公开 checkpoint，其余已测模型的 protocol-fidelity gate
+  仍未通过，因此仍不能写作完整 external
+  SOTA reproduction 或 MEF superiority。
+- [~] Table 4：architecture ablation：Region FiLM、codon mask、source-aware teacher、cascade。
+  2026-07-15 已新增 `docs/paper_table4_architecture_ablation.{json,md}`：
+  汇总 5 个模块，包含 Region adapters / FiLM-style conditioning、synonymous codon
+  mask / codon-lattice DP、source-aware teacher、source-aware cascade、Stage A 10k
+  recall cascade。当前 `table_ready_for_architecture_draft=True`，
+  `positive_sota_claim_ready=False`，且负结果已纳入：
+  region adapters 为 `negative_ablation`（head256 best delta `-0.00543`，head1024
+  best delta `-0.00439`，硬约束 exact-1），old cascade 只是
+  `trend_not_significant`（delta `+0.00092`, `p=0.09545`），10k recall cascade
+  为 `not_positive`（delta `-0.00048`, `p=0.36632`）。codon mask/lattice 仅支持
+  protein-preserving CAI/GC proxy，不是外部 LinearDesign/codonGPT 复现。
+- [~] Table 5：scale law：data size × model size × steps。
+  2026-07-15 已新增并刷新 `docs/paper_table5_scale_law_readiness.{json,md}`（JSON
+  SHA `fc6d0097e7702a8cd4d124d02b1a18badbc8c645776a35c4a8978dbe6d660d13`）：
+  该表当前定位为 scale-law readiness / honest scale-up audit，而不是完整
+  data size × model size × steps scale law。已纳入 6 行证据：head256→head1024
+  evaluation head-size scale-up、legacy hardneg_v2 control、edit-budget curve、
+  length-control curve、runtime/progress-log audit，以及当前已排队但未完成的
+  controlled training data/model/step sweep。关键边界为
+  `table_ready_for_scale_law_readiness_draft=True`，
+  `ready_for_true_scale_law_claim=False`，
+  `ready_for_monotonic_scale_law_claim=False`，
+  `yield_contraction_flag=True`，`head1024_vs_te_only_best_signal=borderline_positive`；
+  2026-07-15 刷新后已识别 `stage_a_scalelaw_p3p4_20260715_0714`：
+  `controlled_sweep_plan_ready=True`，`controlled_sweep_complete=False`，
+  `controlled_sweep_n_complete=0/8`，`controlled_sweep_last_event=load_gate_wait`，
+  sweep status 显示 `n_load_gate_wait_events=13`、last loadavg `115.73`，
+  `missing_required_axes=[]`，但 `incomplete_required_axes` 仍为
+  `training_data_size/model_size/training_steps`。
+  现有证据只能写：head256 多目标 fusion 对 te_only 严格显著，但 head1024
+  对更强 te_only 控制仅保留 pareto borderline/trend（delta `+0.00081`,
+  `p=0.05047`）；真正的 scale-law 结论仍需等待 P3/P4 sweep 完成并生成
+  downstream audit。
+- [~] Figure 1：算法图，全长 edit-flow。
+  2026-07-15 已新增 `docs/paper_figure1_full_length_edit_flow.{json,md}`（JSON
+  SHA `c0ac82ff9f6132e0c9fbc80fd2bd16c2789d1e4721c38cc6810f363e970adaf4`）：
+  该产物是可渲染 Mermaid + 机器可读 nodes/edges 的论文图 spec，包含 9 个节点、
+  9 条边，显式覆盖 `5'UTR + CDS + 3'UTR` 全长表示、region/phase annotation、
+  CTMC edit bridge、Stage A edit-flow generator、hard-constraint masks、
+  candidate pool、multi-objective ranker/fusion、T1-T7 evaluation gates 和
+  selected constrained local optimization。图注与 claim policy 已固定：
+  `ready_for_algorithm_figure_draft=True`，但
+  `ready_for_full_de_novo_claim=False`、`ready_for_wet_lab_claim=False`；
+  Figure 1 只能表达 constrained local optimization，不表达 unconstrained de novo
+  SOTA、外部 SOTA 复现或 wet-lab validation。
+- [~] Figure 2：cascade recall/precision 分工图。
+  2026-07-15 已新增 `docs/paper_figure2_cascade_recall_precision.{json,md}`（JSON
+  SHA `42c6e871f1e4dd20ac3695e8a3d3239fa48aa6d221e0994475293bb74d11d9eb`）：
+  该图 spec 用 8 个节点、8 条边展示 source-aware recall ranker → recall top-k
+  set → precision reranker → cascade output audit 的分工，并并列 hard-negative v2
+  direct top64 作为当前默认强 baseline。关键诊断：source-aware recall
+  `0.75410`，cascade k64 oracle-best retained `0.80328`，旧 cascade 对
+  sequential 的 delta `+0.00092` 但 paired `p=0.09545`，因此
+  `cascade_te_significant_vs_sequential=False`、
+  `ready_for_cascade_positive_claim=False`；hard-negative v2 direct top64
+  对 sequential delta `+0.00112`、paired `p=0.02049`，因此
+  `hardneg_v2_direct_default=True`。图注必须写成 recall/precision 机制图和
+  non-significant cascade trend，不能写成 cascade 显著优于 sequential 或 hardneg_v2。
+- [~] Figure 3：oracle gap closure curve。
+  2026-07-15 已新增 `docs/paper_figure3_oracle_gap_closure.{json,md}`（JSON SHA
+  `39d1255d17f00a0dbba2aec26476c59a92f856f6c2d067b3170c3d3036f950f9`）：
+  基于 matched head64 proposal-ranking diagnostics 生成 offline oracle-gap closure
+  curve，定义为 `(mean_model_top_TE - mean_source_TE) /
+  (mean_oracle_top_TE - mean_source_TE)`。曲线包含 7 个 ranker 点：Stage A base、
+  previous TE-ranker、UTR-teacher、direct hybrid、full-then-UTR sequential、
+  source-aware hybrid、cascade hard-negative v2。当前最佳为 cascade hard-negative v2，
+  closure fraction `0.21671`，Stage A base 为负闭合 `-0.18176` 且已保留；
+  `negative_closure_present=True`、`oracle_gap_fully_closed=False`、
+  `ready_for_oracle_sota_claim=False`、`ready_for_wet_lab_claim=False`。
+  Figure 3 只能写作 offline candidate-pool oracle-gap diagnostic，不能写成 oracle
+  上界已闭合、外部 SOTA 结果或湿实验验证。
+
+## 7. 成功判据
+
+短期成功：
+
+- [x] v2 ranker 在 head256 上 TE paired p `< 0.05`；head1024 相对强
+  `te_only` 仍仅为 borderline/trend，不扩大声明。
+- [x] 所有硬约束指标保持 `1.0`：legality、protein identity、within budget、frame intact。
+- [x] 至少跑通两个外部 SOTA executable baseline：当前为 LinearDesign、
+  EnsembleDesign、UTRGAN 共 3 个，其中 LinearDesign 与 UTRGAN 已有 head1024
+  measured artifact。
+
+中期成功：
+
+- 在 UTR optimization 上超过 UTailoR-style local baseline 的模型-only 版本。
+- 在 CDS-only benchmark 上至少接近 LinearDesign/EnsembleDesign 的 structure/codon objective，同时证明 full-length MEF 额外改善 UTR regulatory signal。
+- frozen foundation backbone 在 leakage-free downstream probe 上显著优于 backbone=none。
+
+论文投稿级成功：
+
+- 每个 T1-T7 指标都有 10-seed CI 和 paired significance。
+- 至少 3 类 SOTA baseline 被公平复现或通过官方 artifact 对齐。
+- scale-up 曲线显示数据、参数或 teacher quality 增长能稳定缩小 oracle gap。
+- 模型特色明确：full-length constrained edit-flow + codon lattice + region-aware UTR/CDS/3'UTR optimization + source-aware cascade decoding。

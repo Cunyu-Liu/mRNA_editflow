@@ -1,0 +1,189 @@
+{
+  "artifact_kind": "downstream_data_acquisition_audit",
+  "claim_policy": "Downstream data acquisition audit is planning and provenance evidence. Do not claim real MPRA/TE or stability performance until source tables are downloaded with license/source URLs, official splits are preserved, dataset manifests are complete, held-out predictor reports are generated, and leakage documentation is attached.",
+  "project_root": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow",
+  "rows": [
+    {
+      "dataset": "mpra_te",
+      "env_vars": [
+        "MRNA_EDITFLOW_MPRA_TE_TABLE",
+        "MPRA_TE_TABLE",
+        "MPRA_TABLE"
+      ],
+      "input_table_status": {
+        "candidate_patterns": [
+          "data/raw/*mpra*.csv",
+          "data/raw/*mpra*.tsv",
+          "data/raw/*mrl*.csv",
+          "data/raw/*mrl*.tsv",
+          "data/processed/*mpra*.csv",
+          "data/processed/*mpra*.tsv",
+          "data/processed/*mrl*.csv",
+          "data/processed/*mrl*.tsv"
+        ],
+        "candidate_tables": [],
+        "dataset": "mpra_te",
+        "env_vars": [
+          "MRNA_EDITFLOW_MPRA_TE_TABLE",
+          "MPRA_TE_TABLE",
+          "MPRA_TABLE"
+        ],
+        "official_split_ready": false,
+        "ready_for_predictor_input": false,
+        "schema_valid": false,
+        "selected_table": null,
+        "status": "no_candidate_table_configured"
+      },
+      "manifest": {
+        "audit_complete": false,
+        "exists": false,
+        "missing_fields": [
+          "manifest",
+          "source_url",
+          "raw_file_sha256",
+          "records_sha256",
+          "record_counts",
+          "drop_stats",
+          "split_stats"
+        ],
+        "path": null,
+        "records_sha256_verified": null,
+        "sha256": null
+      },
+      "manifest_builder": {
+        "command": "python -m mrna_editflow.eval.build_downstream_table_manifest --dataset mpra_te --input <csv_or_tsv> --source-url <verified_url>",
+        "exists": true,
+        "path": "eval/build_downstream_table_manifest.py"
+      },
+      "missing_gates": [
+        "source_table",
+        "schema_valid_official_split",
+        "complete_dataset_manifest",
+        "heldout_predictor_report",
+        "leakage_documentation"
+      ],
+      "predictor_report": {
+        "exists": true,
+        "external_input_provided": false,
+        "path": "benchmark/mpra_te_predictor_protocol_smoke/report.json",
+        "ready_for_predictor_audit": false,
+        "sha256": "630c4306c0e3e7b20dd726bcd095ee23bd157de8c1bf902a3f2ca607e2b9097e",
+        "synthetic_smoke_only": true
+      },
+      "raw_table": {
+        "candidate_paths": [],
+        "env_candidates": []
+      },
+      "ready_for_acquisition_claim": false,
+      "ready_for_real_te_or_stability_claim": false,
+      "required_columns": [
+        "sequence",
+        "mrl",
+        "split"
+      ],
+      "source_reference": "Sample et al. 2019 MPRA / Optimus-style 5'UTR MRL table",
+      "source_status": "needs_download_and_license_verification",
+      "status": "needs_source_table_download",
+      "task": "real_te_predictor"
+    },
+    {
+      "dataset": "stability_half_life",
+      "env_vars": [
+        "MRNA_EDITFLOW_STABILITY_TABLE",
+        "STABILITY_TABLE",
+        "HALF_LIFE_TABLE"
+      ],
+      "input_table_status": {
+        "candidate_patterns": [
+          "data/raw/*stability*.csv",
+          "data/raw/*stability*.tsv",
+          "data/raw/*half_life*.csv",
+          "data/raw/*half_life*.tsv",
+          "data/raw/*degradation*.csv",
+          "data/raw/*degradation*.tsv",
+          "data/processed/*stability*.csv",
+          "data/processed/*stability*.tsv",
+          "data/processed/*half_life*.csv",
+          "data/processed/*half_life*.tsv",
+          "data/processed/*degradation*.csv",
+          "data/processed/*degradation*.tsv"
+        ],
+        "candidate_tables": [],
+        "dataset": "stability_half_life",
+        "env_vars": [
+          "MRNA_EDITFLOW_STABILITY_TABLE",
+          "STABILITY_TABLE",
+          "HALF_LIFE_TABLE"
+        ],
+        "official_split_ready": false,
+        "ready_for_predictor_input": false,
+        "schema_valid": false,
+        "selected_table": null,
+        "status": "no_candidate_table_configured"
+      },
+      "manifest": {
+        "audit_complete": false,
+        "exists": false,
+        "missing_fields": [
+          "manifest",
+          "source_url",
+          "raw_file_sha256",
+          "records_sha256",
+          "record_counts",
+          "drop_stats",
+          "split_stats"
+        ],
+        "path": null,
+        "records_sha256_verified": null,
+        "sha256": null
+      },
+      "manifest_builder": {
+        "command": "python -m mrna_editflow.eval.build_downstream_table_manifest --dataset stability_half_life --input <csv_or_tsv> --source-url <verified_url>",
+        "exists": true,
+        "path": "eval/build_downstream_table_manifest.py"
+      },
+      "missing_gates": [
+        "source_table",
+        "schema_valid_official_split",
+        "complete_dataset_manifest",
+        "heldout_predictor_report",
+        "leakage_documentation"
+      ],
+      "predictor_report": {
+        "exists": true,
+        "external_input_provided": false,
+        "path": "benchmark/stability_predictor_protocol_smoke/report.json",
+        "ready_for_predictor_audit": false,
+        "sha256": "e0e049ac59d31296ec8268bc06ef94bf9750a5bba955dc46de71d178e9d92a5d",
+        "synthetic_smoke_only": true
+      },
+      "raw_table": {
+        "candidate_paths": [],
+        "env_candidates": []
+      },
+      "ready_for_acquisition_claim": false,
+      "ready_for_real_te_or_stability_claim": false,
+      "required_columns": [
+        "sequence",
+        "half_life|stability|stability_score|degradation_rate",
+        "split"
+      ],
+      "source_reference": "External mRNA stability/half-life table, e.g. mRNABench-compatible labelled task",
+      "source_status": "needs_dataset_selection_download_and_license_verification",
+      "status": "needs_source_table_download",
+      "task": "real_stability_predictor"
+    }
+  ],
+  "summary": {
+    "incomplete_datasets": [
+      "mpra_te",
+      "stability_half_life"
+    ],
+    "n_datasets": 2,
+    "n_manifests_complete": 0,
+    "n_predictor_audits_ready": 0,
+    "n_schema_ready": 0,
+    "n_source_tables_present": 0,
+    "ready_for_real_te_or_stability_claim": false
+  }
+}
