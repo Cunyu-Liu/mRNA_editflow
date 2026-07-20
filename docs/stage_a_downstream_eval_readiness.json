@@ -307,7 +307,7 @@
     }
   ],
   "stage_a_status_path": "benchmark/stage_a_scalelaw_downstream/status.json",
-  "stage_a_status_sha256": "483675b102c8499f5cedce89ebfabd1cd4774f68f895d6f3729ab81e8cdf837a",
+  "stage_a_status_sha256": "e3d688c12f93f787ea3d05e1525ef152849308e169b6496ec11bb7d06f160c58",
   "stage_a_summary": {
     "n_downstream_ready": 0,
     "n_runs": 8,

@@ -80,7 +80,7 @@
       "n_complete": 1,
       "n_datasets": 4,
       "path": "docs/dataset_manifest_audit.json",
-      "sha256": "51752f643098eef001ff362b036e9da64437bf3c255d3898ce5c24be24c9f626"
+      "sha256": "f3da3644f5fa1418e9d8120d265cb4e787e3ef1ca9a7f0d4ed8fe0c0bc843c2d"
     },
     "rows": [
       {
@@ -314,7 +314,7 @@
     "path": "docs/stage_a_downstream_eval_readiness.json",
     "ready_for_stage_a_downstream_eval_claim": false,
     "ready_for_true_scale_law_claim": false,
-    "sha256": "3461bb87e4fb944709a463d52dd831406ce439c30d7c0f65bc6f61da44ca5103",
+    "sha256": "718741d5eb0e7e7666555806dc96ceb275bff813288b91f89136ca377bff6140",
     "status": "blocked_on_stage_a_sweep",
     "trend_report_ready": false
   },
@@ -336,7 +336,7 @@
     "status": "queued_or_running",
     "status_counts": null,
     "status_path": "benchmark/stage_a_scalelaw_downstream/status.json",
-    "status_sha256": "483675b102c8499f5cedce89ebfabd1cd4774f68f895d6f3729ab81e8cdf837a"
+    "status_sha256": "e3d688c12f93f787ea3d05e1525ef152849308e169b6496ec11bb7d06f160c58"
   },
   "summary": {
     "all_data_scaleup_ready": false,

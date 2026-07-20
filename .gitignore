@@ -78,6 +78,7 @@ logs/
 *.profile.json
 *.tmp
 *.bak
+*.bak.*
 
 # Local configuration
 .env

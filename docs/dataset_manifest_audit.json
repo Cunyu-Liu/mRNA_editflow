@@ -72,7 +72,7 @@
         "split_stats_ready": false,
         "status": "waiting_for_refseq_records",
         "status_path": "benchmark/refseq_family_leakage_protocol/status.json",
-        "status_sha256": "bb7bd49eb15ab4ebb84859bb7fbb60af86a3c64315d5a5c0834e219326216aa3"
+        "status_sha256": "ea4fd107621e72e01b579f13a6ca98113820849672e469fe66a23e7764c55402"
       }
     },
     {
