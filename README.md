@@ -1304,3 +1304,44 @@ report mean, 95% bootstrap CI and paired significance against every baseline.
    structure loss, ortholog coupling and codon-indel modes with ablations.
 4. Evidence scale: use 10 seeds, family-disjoint splits, bootstrap CIs, paired
    permutation tests and wall-clock/parameter-efficiency reporting.
+
+
+## RL Status (2026-07-22)
+
+The reinforcement learning pipeline is **infrastructure-complete** with pilot
+results showing positive improvement, but **not yet paper-ready** due to
+backbone health and degraded training config.
+
+### What exists
+
+- **20 RL modules** (4727 lines): action space (ins/sub/del/STOP with
+  synonymous codon masking), CTMC policy, TinyMDP + RealMDP, GRPO trainer
+  with group-normalized advantages + KL penalty + entropy bonus, CTO
+  (constrained trajectory optimization), SynergyREINFORCE (counterfactual
+  cross-region RL), DAgger teacher export, reward vector, trajectory sampler
+- **~270 test functions** covering all modules (all passing)
+- **3-tier oracle protocol** (frozen in `docs/rl_protocol_v1.md`):
+  Oracle #1 (CNN ensemble, r=0.80), Oracle #3 (GBT, r=0.43), development
+  oracle
+- **GRPO pilot**: 3 policy seeds, verdict=improves, improvement CI
+  [+0.0208, +0.0336] entirely positive (predicted TE internal proxy)
+- **Cross-region synergy**: BORDERLINE (d=+0.371, p<1e-29) via 1000
+  wild-types x 8-arm counterfactual panel with MultiRegionOracle v2
+
+### Key gaps
+
+| Gap | Impact |
+|-----|--------|
+| Stage A backbone only 10k steps (val_loss plateau at step 500) | All RL uses a weak warm-start checkpoint |
+| GRPO config DEGRADED (n_groups=2, max_steps=5 vs spec 4/256) | Cannot claim full-scale RL results |
+| No equal-query comparison (beam/SA) | Cannot claim "RL independent gain" |
+| Algorithm identity (greedy vs true flow) unverified | Dashboard NO |
+| No reward-hacking adversarial audit | Dashboard NO |
+| No wet-lab validation | Dashboard NO |
+
+### Distance to paper-ready
+
+~40-50%. Infrastructure and pilot are promising; backbone health, full-scale
+training, and fair comparison are the main blockers. See
+`docs/next_steps_sota_roadmap.md` Section "P2 RL 落地总结" for details and
+`docs/p3_rl_roadmap.md` for the next phased plan.
