@@ -14,7 +14,8 @@
       "benchmark/dev/p0_data_reconstruction_v1/gencode_to_refseq/leakage_report.json",
       "benchmark/dev/p0_data_reconstruction_v1/refseq_family/leakage_report.json",
       "benchmark/frozen_backbone_protocol_head256/leakage.json",
-      "benchmark/leakage_ranker_head256_vs_gencode.json"
+      "benchmark/leakage_ranker_head256_vs_gencode.json",
+      "benchmark/paper/leakage_free_headline.json"
     ],
     "leakage_tool_path": "data/leakage_audit.py",
     "protocol_audit_ready": false,
@@ -80,7 +81,7 @@
       "n_complete": 1,
       "n_datasets": 4,
       "path": "docs/dataset_manifest_audit.json",
-      "sha256": "f3da3644f5fa1418e9d8120d265cb4e787e3ef1ca9a7f0d4ed8fe0c0bc843c2d"
+      "sha256": "7a2ecbf2a04f720b07c3222582e395705165a467d0557c8eabfe1cef1a55bddc"
     },
     "rows": [
       {
@@ -314,7 +315,7 @@
     "path": "docs/stage_a_downstream_eval_readiness.json",
     "ready_for_stage_a_downstream_eval_claim": false,
     "ready_for_true_scale_law_claim": false,
-    "sha256": "718741d5eb0e7e7666555806dc96ceb275bff813288b91f89136ca377bff6140",
+    "sha256": "6a05229783144283a26e634a26d866b39668b74e22b57d51ddd3534b098a075e",
     "status": "blocked_on_stage_a_sweep",
     "trend_report_ready": false
   },
@@ -336,7 +337,7 @@
     "status": "queued_or_running",
     "status_counts": null,
     "status_path": "benchmark/stage_a_scalelaw_downstream/status.json",
-    "status_sha256": "e3d688c12f93f787ea3d05e1525ef152849308e169b6496ec11bb7d06f160c58"
+    "status_sha256": "8e41fc1935994e00e1dc859a4182a8524cc9013d6a3950a287bc60ab3d8ada06"
   },
   "summary": {
     "all_data_scaleup_ready": false,

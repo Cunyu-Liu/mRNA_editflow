@@ -1,0 +1,28 @@
+{
+  "aux_loss_mean": 0.0,
+  "batch_size": 4,
+  "checkpoint": "ckpts/stage_a_full_a100_max_gencode_100k_seed0/stage_a_best.pt",
+  "checkpoint_best_loss": 3748.8968048095703,
+  "checkpoint_step": 8171,
+  "config_summary": {
+    "amp": true,
+    "batch_size": 1,
+    "grad_accum": 32,
+    "grad_clip": 1.0,
+    "lr": 0.0001,
+    "model_dim": 768,
+    "num_layers": 12
+  },
+  "device": "cuda:6",
+  "edit_loss_mean": 10947.279873046875,
+  "elapsed_s": 448.4736635349691,
+  "loss_max": 26276.27734375,
+  "loss_mean": 10947.279873046875,
+  "loss_median": 9662.26953125,
+  "loss_min": 3008.2666015625,
+  "loss_p95": 19185.759375,
+  "loss_p99": 23163.20820312501,
+  "loss_std": 4946.120575760095,
+  "n_eval": 500,
+  "samples_per_s": 1.1148926696361363
+}

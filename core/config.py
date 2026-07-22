@@ -97,6 +97,12 @@ class TrainConfig:
     save_dir: str = "./ckpts"
     profile_path: str = "./profile.jsonl"
     log_every: int = 20
+    # --- P2-02 recovery additions (backward-compatible defaults) ---
+    amp_init_scale: float = 1024.0    # P2-02: tunable AMP init scale (was hardcoded 1024)
+    save_every: int = 0               # P2-02: periodic ckpt interval (0 = off, best-only)
+    eval_every: int = 0               # P2-02: held-out eval interval (0 = off)
+    val_idx_path: Optional[str] = None  # P2-02: val.idx path for in-training eval
+    val_max_eval: int = 0             # P2-02: cap on val records per eval (0 = all)
 
 
 @dataclass

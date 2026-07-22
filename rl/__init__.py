@@ -15,6 +15,10 @@ cto
 synergy
     Innovation 2: Counterfactual Cross-Region Synergy RL — synergy reward
     shaping via 4 counterfactual rollouts + lambda schedule (P1-12).
+real_mdp
+    Real mRNA design MDP backed by Oracle #3 (P2-05). Implements the
+    TinyMDP interface but operates on real MRNARecord sequences with
+    a predictive oracle providing the reward signal.
 """
 from mrna_editflow.rl.action_space import (
     STOP_ACTION,
@@ -41,6 +45,12 @@ from mrna_editflow.rl.cto import (
     is_feasible,
     trajectory_cost,
 )
+from mrna_editflow.rl.grpo import (
+    GRPOConfig,
+    GRPOREINFORCE,
+    group_normalized_advantages,
+    grpo_convergence_check,
+)
 from mrna_editflow.rl.synergy import (
     SynergyConfig,
     SynergyREINFORCE,
@@ -48,6 +58,7 @@ from mrna_editflow.rl.synergy import (
     make_tiny_synergy_mdp,
     synergy_convergence_check,
 )
+from mrna_editflow.rl.real_mdp import OracleLike, RealMRNAMDP
 
 __all__ = [
     # action_space
@@ -80,4 +91,12 @@ __all__ = [
     "LambdaSchedule",
     "make_tiny_synergy_mdp",
     "synergy_convergence_check",
+    # grpo (P2-05)
+    "GRPOConfig",
+    "GRPOREINFORCE",
+    "group_normalized_advantages",
+    "grpo_convergence_check",
+    # real_mdp (P2-05)
+    "OracleLike",
+    "RealMRNAMDP",
 ]

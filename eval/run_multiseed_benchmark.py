@@ -635,9 +635,70 @@ def _parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
     parser.add_argument("--run-mode", choices=("development", "paper"), default="development")
     parser.add_argument("--split-manifest", default=None)
     parser.add_argument("--split-role", choices=("train", "val", "test"), default=None)
+    parser.add_argument("--train-idx", default=None, help="path to train.idx (paper mode: required if --split-manifest absent)")
+    parser.add_argument("--val-idx", default=None, help="path to val.idx (paper mode: required if --split-manifest absent)")
+    parser.add_argument("--test-idx", default=None, help="path to test.idx (paper mode: required if --split-manifest absent)")
     parser.add_argument("--training-seed", type=int, default=None)
     parser.add_argument("--oracle-manifest", default=None)
     return parser.parse_args(argv)
+
+
+def _enforce_exact_match_fail_closed(
+    args: argparse.Namespace,
+    split_contract: Optional["VerifiedSplitContract"],
+    records: Sequence[MRNARecord],
+) -> None:
+    """P1-10: Exact-match fail-closed enforcement.
+
+    Verifies that the records being evaluated exactly match the split contract's
+    records content digest. If there is any mismatch, the script FAILS (does not
+    proceed). This prevents accidental evaluation on wrong/leaked data.
+    """
+    if split_contract is None:
+        return  # No contract to verify against
+    # Compute records content digest
+    from mrna_editflow.data.split_contract import records_content_digest
+    computed_digest = records_content_digest(records)
+    # Get the contract's records digest
+    contract_digest = getattr(split_contract, "records_content_digest", None)
+    if contract_digest is None:
+        # Try to get from the manifest's records_sha256
+        contract_digest = getattr(split_contract, "records_sha256", None)
+    if contract_digest is None:
+        # No digest available to verify against; warn but don't fail
+        print("WARNING: split contract has no records_content_digest; cannot enforce exact-match fail-closed")
+        return
+    if computed_digest != contract_digest:
+        raise SystemExit(
+            f"EXACT-MATCH FAIL-CLOSED: records content digest mismatch!\n"
+            f"  computed: {computed_digest}\n"
+            f"  contract: {contract_digest}\n"
+            f"  The records being evaluated do not match the split contract.\n"
+            f"  Aborting to prevent evaluation on wrong/leaked data."
+        )
+    # Verify idx files if provided
+    idx_paths = {"train": args.train_idx, "val": args.val_idx, "test": args.test_idx}
+    for role, path_str in idx_paths.items():
+        if path_str is None:
+            continue
+        from pathlib import Path
+        path = Path(path_str)
+        if not path.exists():
+            raise FileNotFoundError(f"--{role}-idx file not found: {path}")
+        with path.open("r") as fh:
+            indices = [int(line.strip()) for line in fh if line.strip()]
+        contract_indices = split_contract.roles[role].indices
+        if len(indices) != len(contract_indices):
+            raise SystemExit(
+                f"EXACT-MATCH FAIL-CLOSED: --{role}-idx has {len(indices)} indices "
+                f"but split contract has {len(contract_indices)} for role '{role}'"
+            )
+        if set(indices) != set(contract_indices):
+            raise SystemExit(
+                f"EXACT-MATCH FAIL-CLOSED: --{role}-idx indices do not match "
+                f"split contract for role '{role}'"
+            )
+    print(f"OK: exact-match fail-closed passed (records digest: {computed_digest[:16]}...)")
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
@@ -650,10 +711,21 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         oracle_manifest=args.oracle_manifest,
         require_oracle=True,
     )
+    # P1-10: In paper mode, require either --split-manifest OR all three idx files.
+    if args.run_mode == "paper":
+        idx_provided = all([args.train_idx, args.val_idx, args.test_idx])
+        if not args.split_manifest and not idx_provided:
+            raise SystemExit(
+                "paper mode requires either --split-manifest OR "
+                "(--train-idx AND --val-idx AND --test-idx); aborting."
+            )
     split_contract = (
         load_and_verify_split_manifest(args.split_manifest, records_path=args.records_jsonl)
         if args.split_manifest else None
     )
+    # P1-10: Exact-match fail-closed verification
+    records = load_records_jsonl(args.records_jsonl)
+    _enforce_exact_match_fail_closed(args, split_contract, records)
     result = run_multiseed_benchmark(
         load_records_jsonl(args.records_jsonl),
         checkpoint_path=args.checkpoint,

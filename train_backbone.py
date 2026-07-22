@@ -20,7 +20,7 @@ import random
 import time
 from contextlib import nullcontext
 from dataclasses import asdict, is_dataclass
-from typing import Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 
 import numpy as np
 import torch
@@ -580,6 +580,49 @@ def train_stage_a(
     }
 
 
+def _verify_idx_files(
+    args: argparse.Namespace,
+    split_contract: Optional[Any],
+    records: Optional[Sequence[MRNARecord]],
+) -> None:
+    """P1-10: Verify that provided idx files match the split contract (if available).
+
+    If a split contract is available, verify that:
+    1. The idx file paths match the contract's referenced paths (or content matches).
+    2. The number of indices in each file matches the contract.
+
+    If no split contract is available (idx-only mode), just verify the files exist
+    and are readable.
+    """
+    from pathlib import Path
+    idx_paths = {"train": args.train_idx, "val": args.val_idx, "test": args.test_idx}
+    for role, path_str in idx_paths.items():
+        if path_str is None:
+            continue
+        path = Path(path_str)
+        if not path.exists():
+            raise FileNotFoundError(f"--{role}-idx file not found: {path}")
+        # Read indices
+        with path.open("r") as fh:
+            indices = [int(line.strip()) for line in fh if line.strip()]
+        if not indices:
+            raise ValueError(f"--{role}-idx file is empty: {path}")
+        # If split contract available, verify count matches
+        if split_contract is not None:
+            contract_indices = split_contract.roles[role].indices
+            if len(indices) != len(contract_indices):
+                raise ValueError(
+                    f"--{role}-idx has {len(indices)} indices but split contract "
+                    f"has {len(contract_indices)} for role '{role}'; mismatch."
+                )
+            # Verify content matches (as sets, since order may differ)
+            if set(indices) != set(contract_indices):
+                raise ValueError(
+                    f"--{role}-idx indices do not match split contract for role '{role}'; "
+                    f"content mismatch."
+                )
+
+
 def _parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Train mRNA-EditFlow Stage A head")
     parser.add_argument("--config", default=None, help="MEFConfig JSON path")
@@ -593,6 +636,9 @@ def _parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
     parser.add_argument("--run-mode", choices=("development", "paper"), default="development")
     parser.add_argument("--split-manifest", default=None)
     parser.add_argument("--split-role", choices=("train", "val", "test"), default=None)
+    parser.add_argument("--train-idx", default=None, help="path to train.idx file (required in paper mode if --split-manifest absent)")
+    parser.add_argument("--val-idx", default=None, help="path to val.idx file (required in paper mode if --split-manifest absent)")
+    parser.add_argument("--test-idx", default=None, help="path to test.idx file (required in paper mode if --split-manifest absent)")
     return parser.parse_args(argv)
 
 
@@ -604,6 +650,14 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         split_role=args.split_role,
         allowed_roles=("train",),
     )
+    # P1-10: In paper mode, require either --split-manifest OR all three idx files.
+    if args.run_mode == "paper":
+        idx_provided = all([args.train_idx, args.val_idx, args.test_idx])
+        if not args.split_manifest and not idx_provided:
+            raise SystemExit(
+                "paper mode requires either --split-manifest OR "
+                "(--train-idx AND --val-idx AND --test-idx); aborting."
+            )
     cfg = _coerce_config(args.config)
     if args.save_dir is not None:
         cfg.train.save_dir = args.save_dir
@@ -614,6 +668,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         load_and_verify_split_manifest(args.split_manifest, records_path=args.records_jsonl)
         if args.split_manifest else None
     )
+    # P1-10: If idx files provided, verify them against the split contract (if available).
+    if args.train_idx and args.val_idx and args.test_idx:
+        _verify_idx_files(args, split_contract, records)
     result = train_stage_a(
         cfg,
         records=records,
