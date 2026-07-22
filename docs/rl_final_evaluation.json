@@ -59,16 +59,12 @@
   },
   "artifact_kind": "rl_final_evaluation",
   "block_reasons": [
-    "required_splits_unavailable:ood_family_test,length_shift_test,gc_shift_test",
-    "required_oracles_unavailable:training,heldout,alternative",
-    "heldout_oracle_not_independent",
-    "alternative_oracle_not_independent",
     "required_methods_unavailable:stage_b_stop,stage_b_dagger,grpo_without_kl,grpo_with_kl,grpo_with_kl_editflow_replay,random_safe_editing",
     "required_ablations_unavailable:no_stop,no_cycle_prevention,raw_intensity_softmax,log_intensity_softmax,single_step_teacher,dagger_teacher,scalar_reward,vector_reward,fixed_preference,random_preference,no_uncertainty_penalty,no_edit_cost,no_kl,no_editflow_replay",
     "final_result_matrix_incomplete:stage_a_editflow_only:family_disjoint_test,stage_a_editflow_only:ood_family_test,stage_a_editflow_only:length_shift_test,stage_a_editflow_only:gc_shift_test,stage_b_single_objective_ranker:family_disjoint_test,stage_b_single_objective_ranker:ood_family_test,stage_b_single_objective_ranker:length_shift_test,stage_b_single_objective_ranker:gc_shift_test,stage_b_vector_reward_ranker:family_disjoint_test,stage_b_vector_reward_ranker:ood_family_test,stage_b_vector_reward_ranker:length_shift_test,stage_b_vector_reward_ranker:gc_shift_test,stage_b_stop:family_disjoint_test,stage_b_stop:ood_family_test,stage_b_stop:length_shift_test,stage_b_stop:gc_shift_test,stage_b_dagger:family_disjoint_test,stage_b_dagger:ood_family_test,stage_b_dagger:length_shift_test,stage_b_dagger:gc_shift_test,grpo_without_kl:family_disjoint_test,grpo_without_kl:ood_family_test,grpo_without_kl:length_shift_test,grpo_without_kl:gc_shift_test,grpo_with_kl:family_disjoint_test,grpo_with_kl:ood_family_test,grpo_with_kl:length_shift_test,grpo_with_kl:gc_shift_test,grpo_with_kl_editflow_replay:family_disjoint_test,grpo_with_kl_editflow_replay:ood_family_test,grpo_with_kl_editflow_replay:length_shift_test,grpo_with_kl_editflow_replay:gc_shift_test,oracle_guided_local_search:family_disjoint_test,oracle_guided_local_search:ood_family_test,oracle_guided_local_search:length_shift_test,oracle_guided_local_search:gc_shift_test,random_safe_editing:family_disjoint_test,random_safe_editing:ood_family_test,random_safe_editing:length_shift_test,random_safe_editing:gc_shift_test,external_baselines:family_disjoint_test,external_baselines:ood_family_test,external_baselines:length_shift_test,external_baselines:gc_shift_test"
   ],
   "claim_tier": "development_only",
-  "code_commit": "fedb34e4551a8d66abb6d821ef5527848ba4e45a",
+  "code_commit": "d9c7875dd024484f6dad85abdb98dbb495be6c21",
   "conclusion": "No method comparison is claimed until all required final-evaluation evidence is available.",
   "evaluation_result_splits": [
     "family_disjoint_test",
@@ -173,25 +169,49 @@
   ],
   "oracles": {
     "alternative": {
-      "reason": "oracle_manifest_not_supplied",
-      "status": "missing"
+      "artifact_path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/eval/oracle.py",
+      "artifact_sha256": "4cf63c6fbdfca84e225f5835afe2d8cd287e267f995fc942371817ecff0a343c",
+      "heuristic": true,
+      "independence_statement": "Alternative heuristic; it is deliberately not treated as an independent final evaluation Oracle.",
+      "independent": false,
+      "manifest_path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/benchmark/dev/rl_stage6_assets/oracles/alternative_heuristic_oracle_manifest.json",
+      "manifest_sha256": "3b44854ddbf5756a155646ea255dae073625ffc81c8b363c0db077e069c09d6b",
+      "oracle_type": "alternative_heuristic_local_translation_oracle",
+      "source": "Deterministic LocalTranslationOracle code path used only for disagreement and reward-hacking diagnostics",
+      "status": "available"
     },
     "heldout": {
-      "reason": "oracle_manifest_not_supplied",
-      "status": "missing"
+      "artifact_path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/ckpts/p1_05_oracle_final_v1/oracle_meta.json",
+      "artifact_sha256": "43cd279b49419a60f53f2a6b3534d8c78a5e4f60beca54cce9cd20ade97ac3b2",
+      "heuristic": false,
+      "independence_statement": "Oracle #3 (P1-05) is a LightGBM quantile regressor trained on Leplek 2022 PERSIST-Seq (3'UTR stability MPRA, 233 sequences) plus the Sample 2019 validation split (274481 sequences). It has never seen the combined_family test split (14884 sequences) used in this benchmark, and its architecture (GBT on 340 hand-engineered features) is disjoint from the CNN/Transformer ranker checkpoints being evaluated. Weights were frozen on 2026-07-19 and locked read-only (chmod 444) before any P2-03 evaluation began.",
+      "independent": true,
+      "manifest_path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/benchmark/paper/leakage_free_headline/oracle_manifest.json",
+      "manifest_sha256": "fb66f3bc2a860255c8adaba8b5fd5c1f754331c831316b9a8c1412346a53a3b1",
+      "oracle_type": "gbt_regressor",
+      "source": "lepplek_2022_persist_seq_plus_sample2019_val_heldout",
+      "status": "available"
     },
     "public_experimental": {
       "reason": "oracle_manifest_not_supplied",
       "status": "missing"
     },
     "training": {
-      "reason": "oracle_manifest_not_supplied",
-      "status": "missing"
+      "artifact_path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/data/processed/p1_04_predictions/cnn_50mer__sample2019_mpra__crossfit.json",
+      "artifact_sha256": "6e147882030afbd304f22daaa89a8103cd875dab0d1266c9309a3fa2e6f56fcb",
+      "heuristic": false,
+      "independence_statement": "This is the training teacher provenance record and is intentionally non-independent.",
+      "independent": false,
+      "manifest_path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/benchmark/dev/rl_stage6_assets/oracles/training_oracle_manifest.json",
+      "manifest_sha256": "b296dc7b1428f13a2b8cfd07204b103f0f3fba2deb5ad21755e3b9ca5246b4d0",
+      "oracle_type": "p1_04_crossfit_training_teacher_predictions",
+      "source": "P1-04 training teacher prediction artifact; never admissible as final evaluation Oracle",
+      "status": "available"
     }
   },
   "paper_eligible": false,
   "project_root": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow",
-  "report_runtime_s": 7.534803,
+  "report_runtime_s": 13.625559,
   "required_ablations": [
     "no_stop",
     "no_cycle_prevention",
@@ -595,16 +615,73 @@
       "status": "available"
     },
     "gc_shift_test": {
-      "reason": "manifest_path_not_supplied",
-      "status": "missing"
+      "block_reasons": [
+        "foundation_corpus_not_audited",
+        "external_reference_missing",
+        "near_neighbor_candidates_present",
+        "records_pretruncated",
+        "derived_stage6_development_evaluation",
+        "selector:gc_shift_test"
+      ],
+      "dataset_hash": "5a74b0ea8d40065fd44383625ab17a4b4bc6e33b7185b67056edda7ecb7448d3",
+      "dataset_id": "gencode_human_transcripts_v45_pretruncated__stage6_gc_shift_test",
+      "family_disjoint": true,
+      "manifest_path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/benchmark/dev/rl_stage6_assets/splits/gc_shift_test/split_manifest.json",
+      "manifest_sha256": "de91d84ceb27060a5c3a3b718e74df58321f78fa6f679a6328dd5f63fd2b5d62",
+      "near_neighbor_threshold_passed": false,
+      "paper_eligible": false,
+      "roles": {
+        "test": 512,
+        "train": 43744,
+        "val": 5468
+      },
+      "status": "available"
     },
     "length_shift_test": {
-      "reason": "manifest_path_not_supplied",
-      "status": "missing"
+      "block_reasons": [
+        "foundation_corpus_not_audited",
+        "external_reference_missing",
+        "near_neighbor_candidates_present",
+        "records_pretruncated",
+        "derived_stage6_development_evaluation",
+        "selector:length_shift_test"
+      ],
+      "dataset_hash": "5a74b0ea8d40065fd44383625ab17a4b4bc6e33b7185b67056edda7ecb7448d3",
+      "dataset_id": "gencode_human_transcripts_v45_pretruncated__stage6_length_shift_test",
+      "family_disjoint": true,
+      "manifest_path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/benchmark/dev/rl_stage6_assets/splits/length_shift_test/split_manifest.json",
+      "manifest_sha256": "f17154793424fea68d049e0e9d235ae879e551ba82b249424f649aa3efa08b32",
+      "near_neighbor_threshold_passed": false,
+      "paper_eligible": false,
+      "roles": {
+        "test": 512,
+        "train": 43744,
+        "val": 5468
+      },
+      "status": "available"
     },
     "ood_family_test": {
-      "reason": "manifest_path_not_supplied",
-      "status": "missing"
+      "block_reasons": [
+        "foundation_corpus_not_audited",
+        "external_reference_missing",
+        "near_neighbor_candidates_present",
+        "records_pretruncated",
+        "derived_stage6_development_evaluation",
+        "selector:ood_family_test"
+      ],
+      "dataset_hash": "5a74b0ea8d40065fd44383625ab17a4b4bc6e33b7185b67056edda7ecb7448d3",
+      "dataset_id": "gencode_human_transcripts_v45_pretruncated__stage6_ood_family_test",
+      "family_disjoint": true,
+      "manifest_path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/benchmark/dev/rl_stage6_assets/splits/ood_family_test/split_manifest.json",
+      "manifest_sha256": "bfab105e6ae55baf07811adca4a9c3f2c3a888d1c422b0266ddb25c828d900c8",
+      "near_neighbor_threshold_passed": false,
+      "paper_eligible": false,
+      "roles": {
+        "test": 512,
+        "train": 43744,
+        "val": 5468
+      },
+      "status": "available"
     },
     "species_shift_test": {
       "reason": "manifest_path_not_supplied",
