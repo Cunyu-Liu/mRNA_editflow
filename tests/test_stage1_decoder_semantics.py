@@ -8,10 +8,11 @@ import torch
 
 from mrna_editflow.core.constants import NUC_TO_ID, is_valid_cds, translate
 from mrna_editflow.core.schema import MRNARecord
-from mrna_editflow.rl.action_scoring import operation_log_score, softmax_from_log_scores
+from mrna_editflow.rl.action_scoring import action_log_intensities, operation_log_score, softmax_from_log_scores
 from mrna_editflow.rl.decoder_state import DecoderAction, DecoderState, choose_stop_aware_action, sequence_hash
 from mrna_editflow.sample import _model_score_for_choice, model_guided_edit_record, sample_mrna
 from mrna_editflow.train_proposal_ranker import ProposalTeacherRow, _operation_log_score
+from mrna_editflow.rl.policy import Policy, PolicyConfig
 
 
 class _ScoreModel(torch.nn.Module):
@@ -47,6 +48,18 @@ class TestStage1DecoderSemantics(unittest.TestCase):
         self.assertTrue(torch.equal(_operation_log_score(out, row), expected))
         self.assertAlmostEqual(_model_score_for_choice(out, "sub", 0, "G"), float(expected))
         self.assertAlmostEqual(float(expected), math.log(3.0 * 0.3), places=6)
+
+    def test_policy_uses_shared_log_intensity_tensor(self):
+        model = _ScoreModel(action_rate=2.0)
+        policy = Policy(model=model, backbone=object(), cfg=PolicyConfig(), device=torch.device("cpu"))
+        out = policy._model_forward(self.record)
+        log_ins, log_sub, log_del = action_log_intensities(out, eps=None)
+        lps = policy.action_logprobs(self.record, return_raw=True)
+        self.assertIsNotNone(lps.raw_log_partition)
+        # Recover raw q from policy-normalized log probability and compare
+        # against the one shared CTMC-intensity implementation.
+        raw_q = torch.exp(lps.raw_sub_logprobs[0, NUC_TO_ID["G"]] + lps.raw_log_partition)
+        self.assertTrue(torch.allclose(raw_q, torch.exp(log_sub[0, 0, NUC_TO_ID["G"]])))
 
     def test_all_negative_actions_select_stop_without_spending_budget(self):
         out = model_guided_edit_record(

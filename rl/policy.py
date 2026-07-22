@@ -38,6 +38,7 @@ from mrna_editflow.rl.action_space import (
     apply_action,
     build_legal_action_mask,
 )
+from mrna_editflow.rl.action_scoring import action_log_intensities
 
 
 # ---------------------------------------------------------------------------
@@ -236,33 +237,33 @@ class Policy:
         masked log-probs gives the "quality before/after masking" diagnostic.
         """
         out = self._model_forward(record, no_grad=no_grad)
-        rates = out["rates"][0].float()  # [L, 3]
-        # ins_probs/sub_probs have V_dim=VOCAB_MODEL_SIZE=6 (A,C,G,U,BOS,PAD).
-        # The legal mask only covers nucleotides 0..3, so slice to V=4.
-        ins_probs = out["ins_probs"][0, :, :V].float()  # [L, V]
-        sub_probs = out["sub_probs"][0, :, :V].float()  # [L, V]
-
-        # Raw unnormalized q(action) — model output as-is.
-        q_raw_ins = rates[:, 0:1] * ins_probs  # [L, V]
-        q_raw_sub = rates[:, 1:2] * sub_probs  # [L, V]
-        q_raw_del = rates[:, 2]  # [L]
+        # Raw unnormalized q(action) uses the same log CTMC-intensity
+        # implementation as offline ranking and decoder sampling.  Keeping
+        # exact zeros as -inf preserves the policy's degenerate STOP fallback.
+        log_raw_ins, log_raw_sub, log_raw_del = action_log_intensities(
+            out, nucleotide_count=V, eps=None
+        )
+        assert log_raw_ins is not None and log_raw_sub is not None and log_raw_del is not None
+        q_raw_ins = log_raw_ins[0].float().exp()  # [L, V]
+        q_raw_sub = log_raw_sub[0].float().exp()  # [L, V]
+        q_raw_del = log_raw_del[0].float().exp()  # [L]
         q_raw_stop = self._stop_rate(record, budget_remaining, budget_total)
 
         # Total raw mass (over all actions, legal or not).
-        Lambda_raw = float(
-            q_raw_ins.sum().item() + q_raw_sub.sum().item() + q_raw_del.sum().item() + q_raw_stop
-        )
+        lambda_raw = q_raw_ins.sum() + q_raw_sub.sum() + q_raw_del.sum() + q_raw_ins.sum() * 0.0 + q_raw_stop
+        Lambda_raw = float(lambda_raw.detach().cpu())
         if Lambda_raw <= 0 or not math.isfinite(Lambda_raw):
             # Degenerate: model produced all-zero rates. Fall back to uniform-over-STOP.
             return self._degenerate_logprobs(record, return_raw)
 
-        log_Lambda_raw = math.log(Lambda_raw)
+        log_Lambda_raw_tensor = torch.log(lambda_raw)
+        log_Lambda_raw = float(log_Lambda_raw_tensor.detach().cpu())
 
         # Raw log-probs (pre-external-mask).
-        raw_ins_logprobs = (q_raw_ins / Lambda_raw).clamp_min(1e-30).log()
-        raw_sub_logprobs = (q_raw_sub / Lambda_raw).clamp_min(1e-30).log()
-        raw_del_logprobs = (q_raw_del / Lambda_raw).clamp_min(1e-30).log()
-        raw_stop_logprob = math.log(max(q_raw_stop, 1e-30)) - log_Lambda_raw
+        raw_ins_logprobs = torch.log(q_raw_ins.clamp_min(1e-30)) - log_Lambda_raw_tensor
+        raw_sub_logprobs = torch.log(q_raw_sub.clamp_min(1e-30)) - log_Lambda_raw_tensor
+        raw_del_logprobs = torch.log(q_raw_del.clamp_min(1e-30)) - log_Lambda_raw_tensor
+        raw_stop_logprob = q_raw_ins.sum() * 0.0 + math.log(max(q_raw_stop, 1e-30)) - log_Lambda_raw_tensor
 
         # External legal mask.
         mask = self.legal_action_mask(record)
@@ -273,26 +274,23 @@ class Policy:
         q_masked_del = q_raw_del * mask.del_mask.float()
         q_masked_stop = q_raw_stop if mask.stop_legal else 0.0
 
-        Lambda_masked = float(
-            q_masked_ins.sum().item()
-            + q_masked_sub.sum().item()
-            + q_masked_del.sum().item()
-            + q_masked_stop
-        )
+        lambda_masked = q_masked_ins.sum() + q_masked_sub.sum() + q_masked_del.sum() + q_raw_ins.sum() * 0.0 + q_masked_stop
+        Lambda_masked = float(lambda_masked.detach().cpu())
         if Lambda_masked <= 0 or not math.isfinite(Lambda_masked):
             # All legal actions have zero rate. Force STOP to be the only legal action.
             return self._force_stop_logprobs(record, return_raw, raw_ins_logprobs, raw_sub_logprobs, raw_del_logprobs, raw_stop_logprob, log_Lambda_raw)
 
-        log_Lambda_masked = math.log(Lambda_masked)
+        log_Lambda_masked_tensor = torch.log(lambda_masked)
+        log_Lambda_masked = float(log_Lambda_masked_tensor.detach().cpu())
 
         # Masked log-probs (normalized over legal actions only).
-        masked_ins_logprobs = (q_masked_ins / Lambda_masked).clamp_min(1e-30).log()
-        masked_sub_logprobs = (q_masked_sub / Lambda_masked).clamp_min(1e-30).log()
-        masked_del_logprobs = (q_masked_del / Lambda_masked).clamp_min(1e-30).log()
-        masked_stop_logprob = math.log(max(q_masked_stop, 1e-30)) - log_Lambda_masked
+        masked_ins_logprobs = torch.log(q_masked_ins.clamp_min(1e-30)) - log_Lambda_masked_tensor
+        masked_sub_logprobs = torch.log(q_masked_sub.clamp_min(1e-30)) - log_Lambda_masked_tensor
+        masked_del_logprobs = torch.log(q_masked_del.clamp_min(1e-30)) - log_Lambda_masked_tensor
+        masked_stop_logprob = q_raw_ins.sum() * 0.0 + math.log(max(q_masked_stop, 1e-30)) - log_Lambda_masked_tensor
         # If stop was illegal (shouldn't happen by default), set logprob to -inf.
         if not mask.stop_legal:
-            masked_stop_logprob = float("-inf")
+            masked_stop_logprob = q_raw_ins.sum() * 0.0 + float("-inf")
 
         # Zero out illegal positions in the masked log-probs for clarity.
         masked_ins_logprobs = masked_ins_logprobs.masked_fill(~mask.ins_mask, float("-inf"))

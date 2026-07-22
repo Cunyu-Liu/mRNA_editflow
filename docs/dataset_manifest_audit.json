@@ -72,7 +72,7 @@
         "split_stats_ready": false,
         "status": "waiting_for_refseq_records",
         "status_path": "benchmark/refseq_family_leakage_protocol/status.json",
-        "status_sha256": "580eb26c478edd6bc9974892a27aedb2e25cecdd7192771f323ec01425e18438"
+        "status_sha256": "1b13baae8c273cb355291c1b62cdeede40555234806f4e4edb1eaf7828bb443c"
       }
     },
     {
@@ -113,36 +113,3 @@
         "raw_file_sha256",
         "records_sha256",
         "record_counts",
-        "drop_stats",
-        "split_stats"
-      ],
-      "required_for": "real_stability_predictor",
-      "split_sidecar": {
-        "exists": false,
-        "last_event": null,
-        "last_loadavg": null,
-        "path": null,
-        "split_stats_pending": false,
-        "split_stats_ready": false,
-        "status": null,
-        "status_path": null,
-        "status_sha256": null
-      }
-    }
-  ],
-  "summary": {
-    "all_required_dataset_manifests_complete": false,
-    "incomplete_datasets": [
-      "refseq_human_rna",
-      "mpra_te",
-      "stability_half_life"
-    ],
-    "n_complete": 1,
-    "n_datasets": 4,
-    "n_manifests_present": 1,
-    "pending_split_sidecars": [
-      "refseq_human_rna"
-    ],
-    "ready_for_data_scale_claim": false
-  }
-}

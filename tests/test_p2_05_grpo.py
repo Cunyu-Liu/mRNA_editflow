@@ -45,7 +45,11 @@ def _make_policy_and_mdp(
     """Build a tiny policy + MDP for testing (mirrors test_p1_12_cto.py)."""
     device = torch.device("cpu")
     record = MRNARecord(transcript_id="T", five_utr=initial, cds="", three_utr="")
-    model = TinyTrainableModel(vocab_dim=4, hidden=8)
+    # Keep the synthetic convergence contract deterministic without mutating
+    # the process-wide RNG used by other tests.
+    with torch.random.fork_rng(devices=[]):
+        torch.manual_seed(0)
+        model = TinyTrainableModel(vocab_dim=4, hidden=8)
     backbone = type(
         "B", (), {"out_dim": 8, "forward": lambda self, *a, **k: None}
     )()
@@ -266,19 +270,27 @@ class TestGRPOREINFORCE(unittest.TestCase):
 class TestGRPOConvergence(unittest.TestCase):
     def test_grpo_improves_return_on_tiny_mdp(self) -> None:
         # GRPO should improve mean return on the tiny MDP (target match reward).
-        policy, mdp = _make_policy_and_mdp(
-            target="AAAA", initial="CCCC", max_steps=4
-        )
-        cfg = GRPOConfig(group_size=4, clip_advantage=0.0)
-        trainer = GRPOREINFORCE(policy=policy, mdp=mdp, cfg=cfg, lr=0.05)
-        gen = torch.Generator(device=torch.device("cpu"))
-        gen.manual_seed(0)
-        result = grpo_convergence_check(
-            trainer,
-            n_iters=100,
-            n_groups=4,
-            generator=gen,
-        )
+        # This tiny workload is slower and less reproducible under the host's
+        # large OpenMP pool than under one CPU thread.  Preserve the complete
+        # 100-iteration assertion while avoiding scheduler noise.
+        prior_threads = torch.get_num_threads()
+        torch.set_num_threads(1)
+        try:
+            policy, mdp = _make_policy_and_mdp(
+                target="AAAA", initial="CCCC", max_steps=4
+            )
+            cfg = GRPOConfig(group_size=4, clip_advantage=0.0)
+            trainer = GRPOREINFORCE(policy=policy, mdp=mdp, cfg=cfg, lr=0.05)
+            gen = torch.Generator(device=torch.device("cpu"))
+            gen.manual_seed(0)
+            result = grpo_convergence_check(
+                trainer,
+                n_iters=100,
+                n_groups=4,
+                generator=gen,
+            )
+        finally:
+            torch.set_num_threads(prior_threads)
         self.assertTrue(result["converged"], msg=f"history={result['history'][-5:]}")
         self.assertGreater(
             result["final_return"],

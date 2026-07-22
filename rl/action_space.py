@@ -25,7 +25,7 @@ This module is intentionally model-agnostic: it only consumes
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Union
 
 import torch
 
@@ -161,13 +161,13 @@ class ActionLogProbs:
     ins_logprobs: torch.Tensor  # [L, V]
     sub_logprobs: torch.Tensor  # [L, V]
     del_logprobs: torch.Tensor  # [L]
-    stop_logprob: float
+    stop_logprob: Union[float, torch.Tensor]
     log_partition: float  # log Lambda_masked
     # Optional pre-external-mask values.
     raw_ins_logprobs: Optional[torch.Tensor] = None  # [L, V]
     raw_sub_logprobs: Optional[torch.Tensor] = None  # [L, V]
     raw_del_logprobs: Optional[torch.Tensor] = None  # [L]
-    raw_stop_logprob: Optional[float] = None
+    raw_stop_logprob: Optional[Union[float, torch.Tensor]] = None
     raw_log_partition: Optional[float] = None  # log Lambda_raw
 
     def logprob(self, action: Action) -> float:

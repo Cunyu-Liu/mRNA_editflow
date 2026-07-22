@@ -131,8 +131,16 @@ class GRPOREINFORCE:
         from mrna_editflow.rl.tiny_mdp import compute_returns
         for group in groups:
             if len(group) != self.cfg.group_size: raise ValueError("wrong group size")
+        if not groups:
+            return torch.zeros((), device=self.policy.device, requires_grad=True), {
+                "loss": 0.0, "mean_return": 0.0, "mean_advantage": 0.0,
+                "mean_advantage_sq": 0.0, "mean_logprob": 0.0,
+                "mean_kl": 0.0, "mean_entropy": 0.0, "n_steps": 0,
+                "n_groups": 0, "group_size": self.cfg.group_size,
+                "return_std_mean": 0.0,
+            }
         returns = torch.tensor([[compute_returns(traj.transitions, self.mdp.gamma)[0] if traj.transitions else 0.0 for traj in group] for group in groups], device=self.policy.device)
-        adv = group_normalized_advantages(returns, self.cfg); terms=[]; ent=[]
+        adv = group_normalized_advantages(returns, self.cfg); terms=[]; ent=[]; logprob_terms=[]
         for b, group in enumerate(groups):
             for i, traj in enumerate(group):
                 for transition in traj.transitions:
@@ -140,14 +148,14 @@ class GRPOREINFORCE:
                     lp = lps.logprob(transition.action)
                     if math.isfinite(lp):
                         # recover differentiable selected value
-                        if transition.action.is_stop(): value = lps.ins_logprobs.sum()*0.0 + lps.ins_logprobs.new_tensor(lp)
+                        if transition.action.is_stop(): value = torch.as_tensor(lps.stop_logprob, device=self.policy.device)
                         elif transition.action.op == "ins": value = lps.ins_logprobs[transition.action.pos, transition.action.nt]
                         elif transition.action.op == "sub": value = lps.sub_logprobs[transition.action.pos, transition.action.nt]
                         else: value = lps.del_logprobs[transition.action.pos]
-                        terms.append(-adv[b, i].detach() * value); ent.append(self._distribution_entropy(lps))
+                        terms.append(-adv[b, i].detach() * value); logprob_terms.append(value); ent.append(self._distribution_entropy(lps))
         loss = torch.stack(terms).mean() if terms else torch.zeros((), device=self.policy.device, requires_grad=True)
         if ent: loss = loss - self.cfg.entropy_coef * torch.stack(ent).mean()
-        return loss, {"loss": float(loss.detach()), "mean_return": float(returns.mean()), "mean_advantage": float(adv.mean()), "mean_advantage_sq": float((adv**2).mean()), "mean_kl": 0.0, "mean_entropy": float(torch.stack(ent).mean()) if ent else 0.0, "n_steps": len(terms), "n_groups": len(groups), "group_size": self.cfg.group_size, "return_std_mean": float(returns.std(dim=-1).mean())}
+        return loss, {"loss": float(loss.detach()), "mean_return": float(returns.mean()), "mean_advantage": float(adv.mean()), "mean_advantage_sq": float((adv**2).mean()), "mean_logprob": float(torch.stack(logprob_terms).detach().mean()) if logprob_terms else 0.0, "mean_kl": 0.0, "mean_entropy": float(torch.stack(ent).mean()) if ent else 0.0, "n_steps": len(terms), "n_groups": len(groups), "group_size": self.cfg.group_size, "return_std_mean": float(returns.std(dim=-1).mean())}
 
     def step(self, groups):
         self.optimizer.zero_grad(); loss, metrics = self.compute_loss(groups); loss.backward(); self.optimizer.step(); return metrics
@@ -159,11 +167,37 @@ class GRPOREINFORCE:
         return metrics
 
 
-def grpo_convergence_check(trainer, n_iters: int, n_groups: int, generator=None) -> dict[str, object]:
+def grpo_convergence_check(
+    trainer, n_iters: int, n_groups: int, generator=None, *, evaluation_trajectories: int = 256,
+) -> dict[str, object]:
+    """Train a tiny MDP and compare fixed-seed Monte Carlo evaluations.
+
+    Training-batch means are intentionally retained as ``history`` for
+    diagnostics, but are not a valid convergence metric: each batch is
+    on-policy and stochastic.  The reported before/after values instead use
+    the same independent generator seed and a larger sample, so a pass is
+    evidence of an actual policy-return change rather than a lucky last group.
+    """
+    from mrna_editflow.rl.tiny_mdp import compute_returns
+
+    if int(evaluation_trajectories) < 1:
+        raise ValueError("evaluation_trajectories must be positive")
+
+    def evaluate() -> float:
+        eval_generator = torch.Generator(device=trainer.policy.device)
+        eval_generator.manual_seed(918273)
+        values = []
+        for _ in range(int(evaluation_trajectories)):
+            trajectory = trainer.collect_trajectory(generator=eval_generator)
+            values.append(compute_returns(trajectory.transitions, trainer.mdp.gamma)[0] if trajectory.transitions else 0.0)
+        return float(torch.tensor(values).mean())
+
+    initial_return = evaluate()
     history=[]
     for _ in range(n_iters):
         metrics = trainer.step([trainer.collect_group(generator=generator) for _ in range(n_groups)]); history.append(metrics["mean_return"])
-    return {"history": history, "initial_return": history[0], "final_return": history[-1], "converged": history[-1] >= history[0]}
+    final_return = evaluate()
+    return {"history": history, "initial_return": initial_return, "final_return": final_return, "converged": final_return >= initial_return}
 
 
 __all__ = ["GRPOConfig", "GroupAdvantages", "group_advantages", "clipped_policy_loss", "group_normalized_advantages", "GRPOREINFORCE", "grpo_convergence_check"]

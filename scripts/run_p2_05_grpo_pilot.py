@@ -341,7 +341,9 @@ def build_run_config(args: argparse.Namespace) -> P205RunConfig:
         device=args.device,
         run_mode=args.run_mode,
         limit=args.limit,
-        max_steps=args.max_steps,
+        # ``max_steps`` was added after the programmatic Args interface.
+        # Preserve callers that construct the older Namespace directly.
+        max_steps=getattr(args, "max_steps", None),
         records_count=records_count,
     )
 

@@ -1,0 +1,216 @@
+{
+  "aggregated": {
+    "cross_seed": {
+      "best_mean_return": {
+        "ci_95": {
+          "high": 0.08278550952672958,
+          "low": 0.0778983011841774
+        },
+        "mean": 0.08071671426296234,
+        "n": 3,
+        "std": 0.00252836834684384
+      },
+      "final_mean_return": {
+        "ci_95": {
+          "high": 0.049144137650728226,
+          "low": 0.0466235876083374
+        },
+        "mean": 0.04772252341111501,
+        "n": 3,
+        "std": 0.0012908850294461155
+      },
+      "improvement": {
+        "ci_95": {
+          "high": 0.03362727630883455,
+          "low": 0.020831774920225143
+        },
+        "mean": 0.02564423872778813,
+        "n": 3,
+        "std": 0.006962084277448964
+      }
+    },
+    "n_seeds": 3,
+    "per_seed": [
+      {
+        "best_mean_return": 0.08278550952672958,
+        "final_loss": -0.15694730356335646,
+        "final_mean_advantage": -2.2351741790771484e-08,
+        "final_mean_entropy": 7.423183214664459,
+        "final_mean_kl": -0.004910135269165039,
+        "final_mean_return": 0.0466235876083374,
+        "final_return_std_mean": 0.0417514331638813,
+        "improvement": 0.022473664954304695,
+        "initial_mean_return": 0.024149922654032707,
+        "metadata": {
+          "checkpoint_path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/benchmark/paper/stage_a_recovery_p2_10_option_c_seed42/stage_a_step10000.pt",
+          "checkpoint_sha256": "4e5e7b500882af65989b65f460d1b659315ca7dae9bb083447877e5f1aea48dd",
+          "device": "cuda:0",
+          "entropy_coef": 0.01,
+          "group_size": 8,
+          "kl_coef": 0.05,
+          "limit": 1024,
+          "lr": 0.01,
+          "max_steps": 5,
+          "n_groups": 2,
+          "n_iter": 500,
+          "oracle_artifact_sha256": "43cd279b49419a60f53f2a6b3534d8c78a5e4f60beca54cce9cd20ade97ac3b2",
+          "oracle_manifest_path": "benchmark/paper/leakage_free_headline/oracle_manifest.json",
+          "out_dir": "benchmark/dev/grpo_pilot_preliminary/cds_seed0",
+          "policy_seed": 0,
+          "records_count": 148843,
+          "ref_checkpoint_path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/benchmark/paper/stage_a_recovery_p2_10_option_c_seed42/stage_a_step10000.pt",
+          "ref_checkpoint_sha256": "4e5e7b500882af65989b65f460d1b659315ca7dae9bb083447877e5f1aea48dd",
+          "reward_field": "predicted_te_internal_proxy",
+          "rollout_seeds": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9
+          ],
+          "run_mode": "development",
+          "split_manifest_path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/benchmark/dev/p0_data_reconstruction_v1/combined_family/split_manifest.json",
+          "split_manifest_sha256": "0b780676ba61b4288ca45fc22630313c38102666f23939b39abd9b633c1a459f",
+          "split_role": "train",
+          "start_time": 1784685753.2694433,
+          "status": "starting",
+          "task": "cds"
+        },
+        "n_iters": 455,
+        "seed_dir": "benchmark/dev/grpo_pilot_preliminary/cds_seed0",
+        "traj_mean_reward": 0.005972462274347391,
+        "traj_n_transitions": 4549
+      },
+      {
+        "best_mean_return": 0.08146633207798004,
+        "final_loss": -0.20424932688474645,
+        "final_mean_advantage": 6.332993507385254e-08,
+        "final_mean_entropy": 7.493755143880844,
+        "final_mean_kl": -0.0016424059867858887,
+        "final_mean_return": 0.047399844974279404,
+        "final_return_std_mean": 0.04092303663492203,
+        "improvement": 0.020831774920225143,
+        "initial_mean_return": 0.02656807005405426,
+        "metadata": {
+          "checkpoint_path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/benchmark/paper/stage_a_recovery_p2_10_option_c_seed42/stage_a_step10000.pt",
+          "checkpoint_sha256": "4e5e7b500882af65989b65f460d1b659315ca7dae9bb083447877e5f1aea48dd",
+          "device": "cuda:0",
+          "entropy_coef": 0.01,
+          "group_size": 8,
+          "kl_coef": 0.05,
+          "limit": 1024,
+          "lr": 0.01,
+          "max_steps": 5,
+          "n_groups": 2,
+          "n_iter": 500,
+          "oracle_artifact_sha256": "43cd279b49419a60f53f2a6b3534d8c78a5e4f60beca54cce9cd20ade97ac3b2",
+          "oracle_manifest_path": "benchmark/paper/leakage_free_headline/oracle_manifest.json",
+          "out_dir": "benchmark/dev/grpo_pilot_preliminary/cds_seed1",
+          "policy_seed": 1,
+          "records_count": 148843,
+          "ref_checkpoint_path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/benchmark/paper/stage_a_recovery_p2_10_option_c_seed42/stage_a_step10000.pt",
+          "ref_checkpoint_sha256": "4e5e7b500882af65989b65f460d1b659315ca7dae9bb083447877e5f1aea48dd",
+          "reward_field": "predicted_te_internal_proxy",
+          "rollout_seeds": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9
+          ],
+          "run_mode": "development",
+          "split_manifest_path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/benchmark/dev/p0_data_reconstruction_v1/combined_family/split_manifest.json",
+          "split_manifest_sha256": "0b780676ba61b4288ca45fc22630313c38102666f23939b39abd9b633c1a459f",
+          "split_role": "train",
+          "start_time": 1784685758.5904827,
+          "status": "starting",
+          "task": "cds"
+        },
+        "n_iters": 454,
+        "seed_dir": "benchmark/dev/grpo_pilot_preliminary/cds_seed1",
+        "traj_mean_reward": 0.005580673209358812,
+        "traj_n_transitions": 4537
+      },
+      {
+        "best_mean_return": 0.0778983011841774,
+        "final_loss": -0.147090247273445,
+        "final_mean_advantage": 0.0,
+        "final_mean_entropy": 7.406230765581131,
+        "final_mean_kl": -0.004838693141937256,
+        "final_mean_return": 0.049144137650728226,
+        "final_return_std_mean": 0.06237670034170151,
+        "improvement": 0.03362727630883455,
+        "initial_mean_return": 0.015516861341893673,
+        "metadata": {
+          "checkpoint_path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/benchmark/paper/stage_a_recovery_p2_10_option_c_seed42/stage_a_step10000.pt",
+          "checkpoint_sha256": "4e5e7b500882af65989b65f460d1b659315ca7dae9bb083447877e5f1aea48dd",
+          "device": "cuda:0",
+          "entropy_coef": 0.01,
+          "group_size": 8,
+          "kl_coef": 0.05,
+          "limit": 1024,
+          "lr": 0.01,
+          "max_steps": 5,
+          "n_groups": 2,
+          "n_iter": 500,
+          "oracle_artifact_sha256": "43cd279b49419a60f53f2a6b3534d8c78a5e4f60beca54cce9cd20ade97ac3b2",
+          "oracle_manifest_path": "benchmark/paper/leakage_free_headline/oracle_manifest.json",
+          "out_dir": "benchmark/dev/grpo_pilot_preliminary/cds_seed2",
+          "policy_seed": 2,
+          "records_count": 148843,
+          "ref_checkpoint_path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/benchmark/paper/stage_a_recovery_p2_10_option_c_seed42/stage_a_step10000.pt",
+          "ref_checkpoint_sha256": "4e5e7b500882af65989b65f460d1b659315ca7dae9bb083447877e5f1aea48dd",
+          "reward_field": "predicted_te_internal_proxy",
+          "rollout_seeds": [
+            0,
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9
+          ],
+          "run_mode": "development",
+          "split_manifest_path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/benchmark/dev/p0_data_reconstruction_v1/combined_family/split_manifest.json",
+          "split_manifest_sha256": "0b780676ba61b4288ca45fc22630313c38102666f23939b39abd9b633c1a459f",
+          "split_role": "train",
+          "start_time": 1784685763.3698328,
+          "status": "starting",
+          "task": "cds"
+        },
+        "n_iters": 374,
+        "seed_dir": "benchmark/dev/grpo_pilot_preliminary/cds_seed2",
+        "traj_mean_reward": 0.005858954418937095,
+        "traj_n_transitions": 3736
+      }
+    ]
+  },
+  "n_bootstrap": 10000,
+  "n_policy_seeds": 3,
+  "reward_qualifier": "predicted_te_internal_proxy",
+  "schema_version": "1.0",
+  "verdict": {
+    "alpha": 0.05,
+    "baseline": 0.0221,
+    "grpo_ci": {
+      "high": 0.049144137650728226,
+      "low": 0.0466235876083374
+    },
+    "grpo_mean": 0.04772252341111501,
+    "reason": "GRPO CI lower bound (0.046624) > baseline (0.022100)",
+    "verdict": "improves"
+  }
+}
