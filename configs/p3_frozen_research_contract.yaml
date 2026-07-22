@@ -1,0 +1,99 @@
+# P3-00A Task 2: Frozen Research Contract (master document)
+# This is the single authoritative statement of what the P3 paper line is.
+# Changes ONLY via amendment per docs/p3_00_change_governance.md.
+
+contract_name: p3_frozen_research_contract
+version: p3_contract_v2
+freeze_date: 2026-07-22
+amended_by: p3_00a_frozen_publication_contract_alignment
+supersedes: p3_contract_v1
+
+phase_status: PASS
+scientific_validation_status: PENDING
+
+# ---------------------------------------------------------------------------
+# 1. Method line (Base Model scope)
+# ---------------------------------------------------------------------------
+# The Base Model studies the FULL heterogeneous state space of protein-coding
+# mRNA: nucleotide tokens in UTRs, codon grammar in CDS, region boundaries,
+# and length-variable structure. The method is the paper's primary
+# contribution; application tasks are ordered, gated uses of it.
+paper_primary_method:
+  name: heterogeneous_grammar_constrained_mrna_edit_flow
+  scope:
+    - full_length_mrna_modeling
+    - protein_conditioned_cds_generation
+    - region_infilling
+    - source_conditioned_editing
+
+# ---------------------------------------------------------------------------
+# 2. Application-task line
+# ---------------------------------------------------------------------------
+# Task A is the FIRST application task, not the whole method scope.
+application_tasks:
+  task_a:
+    name: five_utr_minimal_substitution
+    status: active_primary
+  task_b:
+    name: cds_synonymous_minimal_substitution
+    status: frozen_fallback
+  task_c:
+    name: five_utr_cds_joint_substitution
+    status: locked_extension
+    unlock_requires:
+      - H1_pass_in_five_utr
+      - H2_pass_in_five_utr
+      - H3_pass_in_five_utr
+      - H1_pass_in_cds
+      - H2_pass_in_cds
+      - H3_pass_in_cds
+  task_d:
+    name: full_transcript_editing
+    status: rejected_for_primary_paper
+
+# ---------------------------------------------------------------------------
+# 3. Baseline registration
+# ---------------------------------------------------------------------------
+# Generic FlexFlow-mRNA: the closest baseline — a general full-length mRNA
+# flow model WITHOUT the heterogeneous grammar-constrained edit contract
+# (no region grammar, no frame lock, no minimal-edit budget semantics).
+# All matched-budget comparisons must include it before external baselines.
+closest_baseline: generic_flexflow_mrna
+closest_baseline_reason: same_model_class_without_grammar_constrained_edit_contract
+
+# ---------------------------------------------------------------------------
+# 4. Conditional extensions (gates, never defaults)
+# ---------------------------------------------------------------------------
+three_utr_status: locked_extension
+synergy_status: conditional_extension
+rl_status: conditional_extension
+rl_is_paper_blocker: false
+extension_unlock_rule: gate_passage_required_no_default_assumption
+
+# ---------------------------------------------------------------------------
+# 5. Minimum publishable unit (first paper)
+# ---------------------------------------------------------------------------
+minimum_publishable_unit:
+  - source_conditioned_minimal_edit_benchmark
+  - reliable_local_delta_predictor
+  - strong_search_or_learned_policy
+  - independent_predictor_transfer
+  - at_least_one_prospective_assay
+not_required_for_first_paper:
+  - full_transcript_editing
+  - three_utr
+  - multi_objective_preference
+  - cross_region_synergy
+  - grpo
+  - top_tier_scale_wet_lab
+
+# ---------------------------------------------------------------------------
+# 6. References and governance
+# ---------------------------------------------------------------------------
+task_contract: configs/p3_primary_task.yaml
+scientific_question_doc: docs/p3_00_frozen_scientific_question.md
+claim_ladder_doc: docs/p3_00_claim_ladder.md
+change_governance_doc: docs/p3_00_change_governance.md
+hypothesis_preregistration: docs/p3_00_hypothesis_preregistration.md
+task_scoring: docs/p3_00_scientific_problem_lock.md
+gate_matrix: docs/p3_00_go_no_go_matrix.json

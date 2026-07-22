@@ -1,0 +1,153 @@
+# P3-00A Task 1: Primary Task Contract (FROZEN, amended v2)
+# Source: 提示词/mrna的 rl 的后续优化的分阶段提示词.md L587-636 (P3-00)
+# Amended by: P3-00A Frozen Publication Contract Alignment Patch (2026-07-22)
+# Amendment: method/task hierarchy separation; active task narrowed to Task A;
+#            no_forbidden_motif replaced by versioned motif_policy;
+#            phase completion vs scientific validation separated.
+# Status: FROZEN — changes require an amendment per docs/p3_00_change_governance.md.
+
+task_name: source_conditioned_minimal_edit_protein_output
+task_version: p3_task_v2
+contract_status: frozen
+freeze_date: 2026-07-22
+amended_by: p3_00a_frozen_publication_contract_alignment
+phase_status: PASS
+scientific_validation_status: PENDING
+
+# ---------------------------------------------------------------------------
+# Method level: what the Base Model studies (NOT the same as the active task)
+# ---------------------------------------------------------------------------
+paper_primary_method:
+  name: heterogeneous_grammar_constrained_mrna_edit_flow
+  scope:
+    - full_length_mrna_modeling
+    - protein_conditioned_cds_generation
+    - region_infilling
+    - source_conditioned_editing
+
+# ---------------------------------------------------------------------------
+# Application-task level: ordered, gated applications of the method
+# ---------------------------------------------------------------------------
+application_tasks:
+  task_a:
+    name: five_utr_minimal_substitution
+    status: active_primary
+    allowed_actions:
+      - five_utr_substitution
+
+  task_b:
+    name: cds_synonymous_minimal_substitution
+    status: frozen_fallback
+    allowed_actions:
+      - synonymous_cds_substitution
+
+  task_c:
+    name: five_utr_cds_joint_substitution
+    status: locked_extension
+    unlock_requires:
+      - H1_pass_in_five_utr
+      - H2_pass_in_five_utr
+      - H3_pass_in_five_utr
+      - H1_pass_in_cds
+      - H2_pass_in_cds
+      - H3_pass_in_cds
+
+  task_d:
+    name: full_transcript_editing
+    status: rejected_for_primary_paper
+
+# Active application task. The operational allowed/forbidden action sets below
+# describe task_a only. task_b's action set is registered above but INACTIVE
+# until the fallback rule in docs/p3_00_scientific_problem_lock.md fires.
+active_task: task_a
+
+primary_endpoint: protein_output
+secondary_endpoints:
+  - mrna_abundance
+  - apparent_half_life
+  - translation_efficiency
+
+# Primary endpoint operational definition (pre-registered):
+# protein-output AUC over {4h, 8h, 24h, 48h}, or normalized protein abundance
+# at pre-registered time points. TE-only reward is forbidden (P3-00 §2.2).
+primary_endpoint_definition: protein_output_auc_or_preregistered_timepoint_abundance
+
+allowed_actions:
+  - five_utr_substitution
+
+forbidden_actions:
+  - nonsynonymous_cds_substitution
+  - cds_insertion
+  - cds_deletion
+  - utr_insertion
+  - utr_deletion
+  - three_utr_edit
+
+edit_budgets:
+  - 1
+  - 3
+  - 5
+  - 10
+
+hard_constraints:
+  - identical_protein
+  - identical_transcript_length
+  - preserved_start_codon
+  - preserved_stop_codon
+  - valid_reading_frame
+  - motif_policy_v1_hard_forbidden
+
+# Motif policy (P3-00A Task 5): replaces the unversioned `no_forbidden_motif`.
+# Three tiers, NOT one universal hard constraint:
+#   hard_forbidden — universally invalid sequences; excluded BY THE ACTION
+#                    SPACE, never by reward penalty (global constraint #15).
+#   guarded_risk   — context-dependent regulatory risks; surfaced to the
+#                    oracle/reviewer and tracked, not auto-illegal.
+#   soft_objective — sequence-quality preferences for reward shaping only;
+#                    never legality criteria.
+motif_policy:
+  version: motif_policy_v1
+  status: active
+  freeze_date: 2026-07-22
+  hard_forbidden:
+    - creates_upstream_in_frame_start_codon
+    - creates_premature_stop_codon
+    - creates_cryptic_splice_donor_or_acceptor
+    - creates_ivt_blocking_homopolymer_ge_6nt
+  guarded_risk:
+    - mirna_seed_creation_cell_context_specific
+    - rbp_binding_site_disruption
+    - m6a_motif_gain_or_loss
+    - upstream_aug_context_change
+  soft_objective:
+    - local_gc_extreme_window
+    - homopolymer_run_4_to_5nt
+    - codon_pair_deoptimization
+
+# 3′UTR editing is NOT part of the primary task. Unlock requires BOTH
+# (a) a 3′UTR local-delta oracle passing H2-level metrics and (b) joint-policy
+# gains transferring to independent oracles (H6).
+three_utr_status: locked_extension
+
+# RL and cross-region synergy are conditional extensions, not paper blockers.
+rl_status: conditional_extension
+synergy_status: conditional_extension
+
+# CDS scope to be analysed when task_b/task_c unlock (not claimed effective
+# a priori):
+cds_scope_analysis:
+  - start_proximal_cds
+  - first_30_codons
+  - first_50_codons
+  - full_cds
+
+# Legality must be guaranteed by the action space, never by reward penalty
+# (global hard constraint #15). STOP is a valid terminal action consuming no
+# edit budget.
+stop_action_allowed: true
+
+# Maximum claim level allowed until prospective validation completes.
+# Any "improves TE/stability/expression" statement must carry a
+# predicted / internal proxy / independent predictor / wet-lab measured
+# qualifier (global hard constraint #23).
+max_claim_level_without_prospective: C2_internal_proxy

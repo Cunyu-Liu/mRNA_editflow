@@ -1,0 +1,214 @@
+{
+  "phase": "P3-00",
+  "phase_name": "scientific-question lock and task-feasibility audit",
+  "date": "2026-07-22",
+  "status": "COMPLETE",
+  "verdict": "PASS",
+  "phase_status": "PASS",
+  "scientific_validation_status": "PENDING",
+  "amended_by": "p3_00a_frozen_publication_contract_alignment",
+  "contract_version": "p3_contract_v2",
+  "task_version": "p3_task_v2",
+  "p3_00a_verdict": "PASS",
+  "spec_source": "提示词/mrna的 rl 的后续优化的分阶段提示词.md L562-800",
+  "scope_limits": {
+    "grpo_modified": false,
+    "large_scale_training_started": false,
+    "full_transcript_synergy_assumed": false,
+    "scientific_question_resurveyed": false,
+    "model_data_or_training_code_modified": false
+  },
+  "acceptance_criteria": [
+    {
+      "id": "AC1",
+      "criterion": "Primary Task Contract 已冻结",
+      "status": "PASS",
+      "evidence": "configs/p3_primary_task.yaml",
+      "detail": "p3_task_v2; task_name=source_conditioned_minimal_edit_protein_output; primary_endpoint=protein_output; active_task=task_a with operational allowed={five_utr_substitution} only; task_b registered frozen_fallback with {synonymous_cds_substitution}; forbidden includes nonsynonymous CDS, CDS/UTR indels, three_utr_edit; edit_budgets={1,3,5,10}; 6 hard constraints incl. motif_policy_v1_hard_forbidden; three_utr_status=locked_extension"
+    },
+    {
+      "id": "AC2",
+      "criterion": "Task A/B/C/D 完成证据评分",
+      "status": "PASS",
+      "evidence": "docs/p3_00_scientific_problem_lock.md#2 + docs/p3_00_scientific_landscape.tsv",
+      "detail": "9 dimensions scored 1-5 from landscape evidence (16 studies); totals corrected by P3-00A to A=41, B=29, C=29, D=21 out of 45 (per-dimension scores unchanged; previously mis-summed 36/30/29/21)"
+    },
+    {
+      "id": "AC3",
+      "criterion": "明确首选任务和 fallback",
+      "status": "PASS",
+      "evidence": "docs/p3_00_scientific_problem_lock.md#2 decision",
+      "detail": "active_primary = Task A (5'UTR-only); frozen_fallback = Task B (CDS-only synonymous), activation requires amendment; Task C locked_extension, unlock requires H1+H2+H3 pass in BOTH five_utr and cds scopes; Task D rejected_for_primary_paper, hard-floor ineligible"
+    },
+    {
+      "id": "AC4",
+      "criterion": "所有假设可证伪",
+      "status": "PASS",
+      "evidence": "docs/p3_00_hypothesis_preregistration.md",
+      "detail": "H1-H6 each carry supporting/opposing evidence, validation experiment, minimum effect size, statistical method, and GO/PARTIAL/NO-GO conditions; thresholds frozen 2026-07-22 pre-data; all six remain scientific_validation_status=PENDING"
+    },
+    {
+      "id": "AC5",
+      "criterion": "明确什么结果会导致暂停 RL",
+      "status": "PASS",
+      "evidence": "docs/p3_00_hypothesis_preregistration.md#rl-pause-conditions + docs/p3_00_scientific_problem_lock.md#5",
+      "detail": "5 explicit pause triggers: H1 NO-GO, H2 NO-GO, H3 NO-GO, H4 NO-GO (Route C), adversarial reward hacking; recovery requires new evidence plus a fresh gate, never threshold edits"
+    },
+    {
+      "id": "AC6",
+      "criterion": "不再把 full-transcript synergy 当成默认前提",
+      "status": "PASS",
+      "evidence": "docs/p3_00_scientific_problem_lock.md#6",
+      "detail": "7 defaults explicitly rejected; H5/H6 demoted to optional unlock hypotheses; three_utr_status=locked_extension in frozen contract"
+    }
+  ],
+  "p3_00a_acceptance_criteria": [
+    {
+      "id": "A1",
+      "criterion": "method/task 层级区分",
+      "status": "PASS",
+      "evidence": "configs/p3_primary_task.yaml + configs/p3_frozen_research_contract.yaml",
+      "detail": "paper_primary_method scope = {full_length_mrna_modeling, protein_conditioned_cds_generation, region_infilling, source_conditioned_editing}; application_tasks A/B/C/D = active_primary/frozen_fallback/locked_extension/rejected_for_primary_paper; active Task A 的合法动作不含任何 CDS action"
+    },
+    {
+      "id": "A2",
+      "criterion": "最终冻结合同文件生成",
+      "status": "PASS",
+      "evidence": "configs/p3_frozen_research_contract.yaml; docs/p3_00_frozen_scientific_question.md; docs/p3_00_claim_ladder.md; docs/p3_00_change_governance.md",
+      "detail": "Base Model 研究完整 mRNA 异质状态空间；Task A 是第一项应用任务而非全部方法范围；Generic FlexFlow-mRNA 登记为 closest baseline；RL 不是 paper blocker；3'UTR 与 synergy 必须过 gate；后续路线只能经 amendment 修改"
+    },
+    {
+      "id": "A3",
+      "criterion": "phase 完成与科学验证分离",
+      "status": "PASS",
+      "evidence": "all gate files (2 configs, 5 docs, TSV header, this matrix)",
+      "detail": "phase_status=PASS 与 scientific_validation_status=PENDING 同时出现；禁止用 P3-00 PASS 暗示 H1-H6 已得到实验证明"
+    },
+    {
+      "id": "A4",
+      "criterion": "评分稳健性",
+      "status": "PASS",
+      "evidence": "docs/p3_00_scientific_problem_lock.md#2.5 + task_scores.robustness",
+      "detail": "hard-floor eligibility: D ineligible; LOCO: A first in 9/9 scenarios; alternative weights: A first in 5/5 schemes; B/C tie at 29 recorded, not hidden; resolved by governance (fallback activation order), not re-scoring"
+    },
+    {
+      "id": "A5",
+      "criterion": "约束版本化",
+      "status": "PASS",
+      "evidence": "configs/p3_primary_task.yaml#motif_policy",
+      "detail": "motif_policy_v1 三层: hard_forbidden (action space 排除，非 reward penalty), guarded_risk (oracle/reviewer 追踪), soft_objective (仅 reward shaping); unversioned no_forbidden_motif 已移除；并非所有 motif 风险都是普适硬约束"
+    },
+    {
+      "id": "A6",
+      "criterion": "契约测试覆盖任务6全部10项并全绿",
+      "status": "PASS",
+      "evidence": "tests/test_p3_00_task_contract.py",
+      "detail": "37 tests: Task A only 5'UTR; Task B only synonymous CDS; Task C default locked; Task C unlock = H1/H2/H3 in both regions; method covers full mRNA grammar flow; phase PASS + scientific PENDING coexist; Generic FlexFlow-mRNA registered; motif policy versioned; hashes match; canonical-newline and relative-path independence"
+    }
+  ],
+  "task_scores": {
+    "scale": "1-5 per dimension, 5 = most favourable; reward-hacking risk scored as favourability (5 = low risk)",
+    "dimensions": [
+      "experimental data availability",
+      "local-edit label availability",
+      "predictability",
+      "biological effect size",
+      "action-space tractability",
+      "external baseline availability",
+      "wet-lab feasibility",
+      "novelty",
+      "reward-hacking risk (favourability)"
+    ],
+    "task_a_5utr_only": [5, 4, 5, 4, 5, 5, 5, 3, 5],
+    "task_b_cds_only_synonymous": [3, 2, 3, 3, 3, 5, 4, 3, 3],
+    "task_c_5utr_cds_joint": [3, 2, 3, 4, 3, 4, 4, 4, 2],
+    "task_d_full_transcript": [2, 1, 2, 3, 2, 3, 3, 4, 1],
+    "totals": {"A": 41, "B": 29, "C": 29, "D": 21, "max": 45},
+    "robustness": {
+      "hard_floor": {
+        "floored_dimensions": ["experimental data availability", "local-edit label availability", "predictability", "reward-hacking risk (favourability)"],
+        "floor": 2,
+        "eligible": {"A": true, "B": true, "C": true, "D": false}
+      },
+      "leave_one_criterion_out": {
+        "scenarios": 9,
+        "a_first_in_scenarios": 9,
+        "b_c_order_swaps_recorded": true
+      },
+      "alternative_weights": {
+        "schemes": {
+          "equal": {"A": 41, "B": 29, "C": 29, "D": 21},
+          "data_first_x2_dims_1_2": {"A": 50, "B": 34, "C": 34, "D": 24},
+          "risk_averse_x2_dims_3_9": {"A": 51, "B": 35, "C": 34, "D": 24},
+          "novelty_seeking_x2_dim_8": {"A": 44, "B": 32, "C": 33, "D": 25},
+          "feasibility_first_x2_dims_5_7": {"A": 51, "B": 36, "C": 36, "D": 26}
+        },
+        "scenarios": 5,
+        "a_first_in_scenarios": 5
+      },
+      "ranking_instability": "B/C tie at 29 swaps under LOCO and weighting; affects fallback ordering only, never the preferred task; recorded, not hidden"
+    }
+  },
+  "task_decision": {
+    "active_primary": "Task A (5'UTR-only); operational allowed_actions = [five_utr_substitution]",
+    "frozen_fallback": "Task B (CDS-only synonymous); activates only via amendment if Task A fails H1/H2 while CDS passes",
+    "locked_extension": "Task C (5'UTR+CDS joint); unlock requires H1, H2 and H3 each passed in BOTH five_utr and cds scopes (6 conditions in configs/p3_primary_task.yaml application_tasks.task_c.unlock_requires)",
+    "rejected_for_primary_paper": "Task D (full-transcript); hard-floor ineligible; three_utr_status stays locked_extension, unlock per H6 only"
+  },
+  "closest_baseline": {
+    "name": "generic_flexflow_mrna",
+    "reason": "same_model_class_without_grammar_constrained_edit_contract",
+    "rule": "all matched-budget comparisons must include Generic FlexFlow-mRNA before any external baseline"
+  },
+  "hypotheses": {
+    "H1_local_effect_existence": {"gate_phase": "P3-01/P3-03", "no_go_action": "pause all RL; acquire Level-C intervention data"},
+    "H2_local_delta_predictability": {"gate_phase": "P3-02", "no_go_action": "pause all RL; rebuild oracles/data", "key_thresholds": "sign accuracy >=0.60 and >0.50 (binomial, FDR<0.05); top-10% enrichment >=1.5x; delta Spearman >=0.30 on family-disjoint test"},
+    "H3_optimization_headroom": {"gate_phase": "P3-02", "no_go_action": "pause all RL; improve oracles first", "key_thresholds": ">=30% sources with independent-oracle-confirmed positive candidate; median best-candidate gain >=5% predicted proxy; robust to GC/length controls"},
+    "H4_rl_quality_amortization_value": {"gate_phase": "P3-07", "no_go_action": "stop GRPO expansion (Route C); no-RL paper route", "key_thresholds": "H4-A: >=5% over best search at 512-query budget, paired bootstrap CI excludes 0, >=3 seeds; H4-B: within 2% quality, >=10x fewer inference calls"},
+    "H5_cross_region_synergy": {"gate_phase": "P3-10", "optional": true, "no_go_action": "drop synergy narrative; core paper unaffected", "key_thresholds": "interaction |d| >= 0.2 consistent across >=2 independent oracles + prospective arm"},
+    "H6_full_transcript_extension_value": {"gate_phase": "P3-10", "optional": true, "no_go_action": "3'UTR permanently excluded from primary task", "key_thresholds": "3'UTR delta oracle meets H2 thresholds; >=5% held-out gain over Task C policy"}
+  },
+  "rl_pause_conditions": [
+    "H1 NO-GO: best edits indistinguishable from matched random edits",
+    "H2 NO-GO: sign accuracy ~ random / no enrichment / independent-oracle reversal",
+    "H3 NO-GO: strong search cannot beat source on independent oracle",
+    "H4 NO-GO (Route C): ranker + limited search near-optimal, no RL advantage",
+    "P3-03/P3-09 adversarial high-training-reward candidates fail prospectively (reward hacking)"
+  ],
+  "minimum_publishable_unit": [
+    "source-conditioned minimal-edit benchmark (P3-01)",
+    "reliable local-delta predictor meeting H2 (P3-02)",
+    "strong search or learned policy (P3-02/P3-07/P3-08)",
+    "independent predictor transfer (C3)",
+    "at least one prospective assay (C5 for assayed panel only)"
+  ],
+  "explicitly_not_required_for_first_paper": [
+    "full-transcript editing",
+    "3'UTR",
+    "multi-objective preference",
+    "cross-region synergy",
+    "GRPO",
+    "top-tier-scale wet-lab"
+  ],
+  "outputs": [
+    {"path": "configs/p3_primary_task.yaml", "sha256": "141af03c2e5f58782eadb367f2f6ad75a889e7e4f9f67b167a901a2d4a1e33bb"},
+    {"path": "configs/p3_frozen_research_contract.yaml", "sha256": "173c0fc8e100321c1d1cdd062a6626449f3054d84c85c62ad23f829f4136b62c"},
+    {"path": "docs/p3_00_scientific_landscape.tsv", "sha256": "34e468277e24ae6039d3b237211527ae598a946a8188629ad65cbf3d9cae76d1", "studies": 16, "columns": 12},
+    {"path": "docs/p3_00_hypothesis_preregistration.md", "sha256": "775d8eaa4dbf6cb4ecbd8fee9faf6cf227e33bda830ca1f4ad469c95e9dde962"},
+    {"path": "docs/p3_00_scientific_problem_lock.md", "sha256": "4072d8121bd37e8401d00a36831898a4294eaed1d6ca328ed2f2313d3f0fcf92"},
+    {"path": "docs/p3_00_frozen_scientific_question.md", "sha256": "1c7815109974d8c4aa82b48304afe1f3fdd900866cc57aea81a3c7dceacf3fcb"},
+    {"path": "docs/p3_00_claim_ladder.md", "sha256": "cb0ff3383be8757ca5522cc9aff8658fccaf0c5057b8d6cd615841c25ca1a08a"},
+    {"path": "docs/p3_00_change_governance.md", "sha256": "d4112319d5e3ec0b87e5b2e7670fe04acf34265846ac52bb5af290d86fc5cc89"},
+    {"path": "tests/test_p3_00_task_contract.py", "sha256": "f0d8297a47353607bd8fe0d9de59b841ce4183b74c1f5d44e5bcaa612883fcb8"},
+    {"path": "docs/p3_00_go_no_go_matrix.json", "sha256": "self-referential; recompute after write"}
+  ],
+  "hash_note": "digests are SHA-256 over newline-canonicalized bytes (CRLF normalized to LF); paths resolve against the repo root, so caller cwd does not affect verification",
+  "unresolved_risks": [
+    "Task A headroom may not transfer from reporter-MPRA oracles to natural source UTRs (Sample 2019 is fixed 50 nt random library, OOD vs natural 5'UTRs)",
+    "No source-matched local-edit labels exist yet for CDS synonymous substitutions; H1/H2 for CDS may fail and force Task B fallback or Level-C data acquisition",
+    "PERSIST-seq is only 233 sequences; full-length multi-endpoint supervision is thin",
+    "Landscape rows for preprint methods (mRNA-GPT, ProMORNA, mRNAutilus, RiboNN) carry version/license uncertainty; numbers to be re-verified at citation time",
+    "B/C tie at 29 is ranking instability at the fallback level; if Task A fails H1/H2, governance (amendment order), not score, decides B-before-C"
+  ],
+  "next_phase": "P3-01: local-intervention data and benchmark freeze (no GRPO training)"
+}
