@@ -32,6 +32,7 @@ class MRNARecord:
     cds: str
     three_utr: str
     species: str = "human"
+    metadata: dict = field(default_factory=dict)
 
     @property
     def seq(self) -> str:
@@ -81,6 +82,7 @@ class MRNARecord:
             "cds": self.cds,
             "three_utr": self.three_utr,
             "species": self.species,
+            "metadata": dict(self.metadata),
         }
 
     @classmethod
@@ -91,6 +93,7 @@ class MRNARecord:
             cds=d.get("cds", ""),
             three_utr=d.get("three_utr", ""),
             species=d.get("species", "human"),
+            metadata=dict(d.get("metadata", {})),
         )
 
 

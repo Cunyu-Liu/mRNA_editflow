@@ -39,6 +39,7 @@ from mrna_editflow.sample import (
     generate_candidate_records,
     levenshtein_distance,
     load_stage_a_checkpoint,
+    model_guided_edit_record,
     sample_mrna,
     sample_sequence,
 )
@@ -291,11 +292,12 @@ class TestStageATrainingSmoke(unittest.TestCase):
             self.assertTrue(os.path.exists(out_json))
             self.assertTrue(os.path.exists(out_jsonl))
             self.assertEqual(audit["aggregate"]["n_records"], 1)
-            self.assertEqual(audit["aggregate"]["n_candidates"], 6)
+            self.assertEqual(audit["aggregate"]["n_candidates"], 7)
             self.assertIn("mean_model_regret", audit["aggregate"])
             with open(out_jsonl, "r", encoding="utf-8") as fh:
                 rows = [json.loads(line) for line in fh if line.strip()]
-            self.assertEqual(len(rows), 6)
+            self.assertEqual(len(rows), 7)
+            self.assertTrue(any(row["op"] == "stop" for row in rows))
             self.assertIn("teacher_score", rows[0])
             self.assertIn("student_score", rows[0])
 
@@ -368,6 +370,23 @@ class TestStageATrainingSmoke(unittest.TestCase):
             self.assertEqual(len(profile_rows), 2)
             self.assertTrue(all(row["stage"] == "proposal_ranker" for row in profile_rows))
             self.assertTrue(all(row["pair_count"] > 0 for row in profile_rows))
+            payload = torch.load(result["checkpoint_path"], map_location="cpu", weights_only=False)
+            self.assertEqual(
+                payload["trained_action_space"],
+                {
+                    "trained_task": "T5",
+                    "trained_editable_regions": ["utr5"],
+                    "trained_operations": ["sub", "ins", "del"],
+                },
+            )
+            _cfg, ranker_backbone, ranker_model = load_stage_a_checkpoint(
+                result["checkpoint_path"], device="cpu"
+            )
+            with self.assertRaises(ValueError):
+                model_guided_edit_record(
+                    _tiny_records()[0], ranker_model, ranker_backbone,
+                    task_id="T5", edit_budget=1, editable_regions=("utr3",), device="cpu",
+                )
 
     def test_proposal_ranker_source_balanced_pairs_use_source_scores(self):
         with tempfile.TemporaryDirectory(prefix="mef_rank_source_balanced_") as tmp:

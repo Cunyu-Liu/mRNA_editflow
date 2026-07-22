@@ -36,7 +36,6 @@ from typing import Mapping, Optional, Sequence
 
 import numpy as np
 
-from mrna_editflow.core.constants import NUC_TO_ID
 from mrna_editflow.core.schema import MRNARecord
 from mrna_editflow.data.download_mrna import load_records_jsonl
 from mrna_editflow.eval.oracle import LocalTranslationOracle
@@ -48,6 +47,7 @@ from mrna_editflow.eval.proposal_ranking import (
     _te_from_score,
 )
 from mrna_editflow.sample import _model_out_for_record, load_stage_a_checkpoint
+from mrna_editflow.rl.action_scoring import action_log_score_float
 
 
 @dataclass(frozen=True)
@@ -77,28 +77,8 @@ class CascadeCandidate:
 
 
 def _model_score_for_op(out: Mapping[str, object], op: str, pos: int, nt: str) -> float:
-    """Return CTMC proposal intensity for ``(op,pos,nt)`` from one model output.
-
-    Substitution and insertion scores multiply operation rate and nucleotide
-    probability; deletion uses the delete rate directly:
-
-    ``sub=lambda_sub(i)p_sub(a|i)``, ``ins=lambda_ins(i)p_ins(a|i)``,
-    ``del=lambda_del(i)``.
-
-    Complexity is ``O(1)``.
-    """
-    rates = out["rates"][0]
-    op_l = str(op).lower()
-    pos_i = int(pos)
-    if op_l == "sub":
-        nt_idx = NUC_TO_ID[str(nt)]
-        return float((rates[pos_i, 1] * out["sub_probs"][0, pos_i, nt_idx]).detach().float().cpu())
-    if op_l == "ins":
-        nt_idx = NUC_TO_ID[str(nt)]
-        return float((rates[pos_i, 0] * out["ins_probs"][0, pos_i, nt_idx]).detach().float().cpu())
-    if op_l == "del":
-        return float(rates[pos_i, 2].detach().float().cpu())
-    raise ValueError(f"unsupported proposal op {op!r}")
+    """Return the shared decoder/ranker log score for one proposal."""
+    return action_log_score_float(out, op, pos, nt or None)
 
 
 def summarise_cascade_record(

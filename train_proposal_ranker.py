@@ -50,7 +50,6 @@ from typing import Mapping, Optional, Sequence
 import torch
 import torch.nn.functional as F
 
-from mrna_editflow.core.constants import NUC_TO_ID
 from mrna_editflow.core.schema import MRNARecord
 from mrna_editflow.data.download_mrna import load_records_jsonl
 from mrna_editflow.data.split_contract import (
@@ -71,6 +70,7 @@ from mrna_editflow.eval.artifact_contract import (
     verify_provenance_compatibility,
 )
 from mrna_editflow.sample import _record_tensors, load_stage_a_checkpoint
+from mrna_editflow.rl.action_scoring import operation_log_score
 from mrna_editflow.train_backbone import _ensure_parent, _resolve_device, _set_seed, _write_profile
 
 
@@ -80,10 +80,11 @@ class ProposalTeacherRow:
 
     transcript_id: str
     op: str
-    pos: int
+    pos: Optional[int]
     nt: str
     teacher_score: float
     source_scores: Mapping[str, float]
+    task_id: str = "T5"
 
     @classmethod
     def from_json(cls, row: Mapping[str, object]) -> "ProposalTeacherRow":
@@ -101,8 +102,9 @@ class ProposalTeacherRow:
             source_scores = {"teacher": float(row["teacher_score"])}
         return cls(
             transcript_id=str(row["transcript_id"]),
+            task_id=str(row.get("task_id", "T5")).upper(),
             op=str(row["op"]),
-            pos=int(row["pos"]),
+            pos=(None if row.get("pos") is None else int(row["pos"])),
             nt=str(row.get("nt", "")),
             teacher_score=float(row["teacher_score"]),
             source_scores=source_scores,
@@ -146,22 +148,8 @@ def _forward_record(record: MRNARecord, model, backbone, device: torch.device) -
 
 
 def _operation_log_score(out: Mapping[str, torch.Tensor], row: ProposalTeacherRow) -> torch.Tensor:
-    """Return differentiable log CTMC intensity for one proposal row."""
-    eps = 1e-20
-    pos = int(row.pos)
-    op = row.op.lower()
-    rates = out["rates"][0]
-    if op == "sub":
-        nt_idx = NUC_TO_ID[row.nt]
-        score = rates[pos, 1].clamp_min(eps) * out["sub_probs"][0, pos, nt_idx].clamp_min(eps)
-    elif op == "ins":
-        nt_idx = NUC_TO_ID[row.nt]
-        score = rates[pos, 0].clamp_min(eps) * out["ins_probs"][0, pos, nt_idx].clamp_min(eps)
-    elif op == "del":
-        score = rates[pos, 2].clamp_min(eps)
-    else:
-        raise ValueError(f"unsupported proposal op {row.op!r}")
-    return torch.log(score.clamp_min(eps))
+    """Compatibility wrapper delegating to the shared differentiable scorer."""
+    return operation_log_score(out, row.op, row.pos, row.nt or None)
 
 
 def _pair_indices_from_scores(
@@ -329,9 +317,11 @@ def _save_ranker_checkpoint(
     teacher_jsonl: str,
     step: int,
     best_loss: float,
+    trained_action_space: Mapping[str, object],
     scientific_validity: Optional[Mapping[str, object]] = None,
 ) -> None:
     _ensure_parent(path)
+    action_space = dict(trained_action_space)
     torch.save(
         {
             "stage": "proposal_ranker",
@@ -339,6 +329,13 @@ def _save_ranker_checkpoint(
             "best_loss": float(best_loss),
             "base_checkpoint": base_checkpoint,
             "teacher_jsonl": teacher_jsonl,
+            # Keep the nested object as the canonical extensible form, while
+            # mirroring the three required fields at top level for tooling
+            # that reads checkpoint metadata without knowing this wrapper.
+            "trained_action_space": action_space,
+            "trained_task": action_space.get("trained_task"),
+            "trained_editable_regions": action_space.get("trained_editable_regions"),
+            "trained_operations": action_space.get("trained_operations"),
             "config": asdict(cfg),
             "backbone_state": backbone.state_dict(),
             "model_state": model.state_dict(),
@@ -370,6 +367,9 @@ def train_proposal_ranker(
     run_mode: str = "development",
     split_contract: Optional[VerifiedSplitContract] = None,
     split_role: Optional[str] = None,
+    trained_task: Optional[str] = None,
+    trained_editable_regions: Optional[Sequence[str]] = None,
+    trained_operations: Optional[Sequence[str]] = None,
 ) -> dict[str, object]:
     """Fine-tune the MEF head to rank oracle-preferred legal proposals higher."""
     run_mode = normalize_run_mode(run_mode)
@@ -444,6 +444,16 @@ def train_proposal_ranker(
     backbone.eval()
     model.train()
     teachers = load_teacher_rows(teacher_jsonl)
+    all_teacher_rows = [row for rows in teachers.values() for row in rows]
+    inferred_task = str(trained_task or (all_teacher_rows[0].task_id if all_teacher_rows else "T5")).upper()
+    inferred_ops = sorted({str(row.op).lower() for row in all_teacher_rows})
+    inferred_regions = list(trained_editable_regions or (("cds",) if inferred_task == "T4" else ("utr5",)))
+    default_ops = ("sub", "ins", "del") if inferred_task == "T5" else tuple(inferred_ops or ("sub",))
+    action_space = {
+        "trained_task": inferred_task,
+        "trained_editable_regions": inferred_regions,
+        "trained_operations": list(trained_operations or default_ops),
+    }
     records_by_id = _record_map(train_records)
     usable = _usable_transcripts(
         records_by_id,
@@ -531,6 +541,7 @@ def train_proposal_ranker(
                 teacher_jsonl=teacher_jsonl,
                 step=step,
                 best_loss=best_loss,
+                trained_action_space=action_space,
                 scientific_validity=scientific_validity,
             )
     return {
@@ -541,6 +552,7 @@ def train_proposal_ranker(
         "last_stats": last_stats,
         "usable_transcripts": len(usable),
         "pair_source_mode": pair_source_mode,
+        "trained_action_space": action_space,
         "scientific_validity": scientific_validity,
     }
 
@@ -575,6 +587,9 @@ def _parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
     parser.add_argument("--run-mode", choices=("development", "paper"), default="development")
     parser.add_argument("--split-manifest", default=None)
     parser.add_argument("--split-role", choices=("train", "val", "test"), default=None)
+    parser.add_argument("--trained-task", default=None)
+    parser.add_argument("--trained-editable-region", action="append", default=None)
+    parser.add_argument("--trained-operation", action="append", default=None)
     return parser.parse_args(argv)
 
 
@@ -611,6 +626,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         run_mode=args.run_mode,
         split_contract=split_contract,
         split_role=args.split_role,
+        trained_task=args.trained_task,
+        trained_editable_regions=args.trained_editable_region,
+        trained_operations=args.trained_operation,
     )
     print(json.dumps(result, sort_keys=True))
     return 0

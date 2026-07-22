@@ -56,6 +56,7 @@ from mrna_editflow.sample import (
     _utr_substitution_candidates,
     load_stage_a_checkpoint,
 )
+from mrna_editflow.rl.action_scoring import action_log_score_float
 
 
 @dataclass(frozen=True)
@@ -65,7 +66,7 @@ class ProposalCandidate:
     transcript_id: str
     task_id: str
     op: str
-    pos: int
+    pos: Optional[int]
     nt: str
     model_score: float
     source_te: float
@@ -98,15 +99,14 @@ def _proposal_pool(
     out: Mapping[str, object],
     task_id: str,
     target_length: Optional[int],
-) -> list[tuple[str, float, int, str, MRNARecord]]:
+) -> list[tuple[str, float, Optional[int], str, MRNARecord]]:
     """Return legal one-step proposals materialised as records.
 
-    Each tuple is ``(op, model_score, pos, nt, candidate_record)``. The model
-    score is the CTMC operation intensity already computed by the sampler.
+    Each tuple is ``(op, model_log_score, pos, nt, candidate_record)``.
     """
     tid = task_id.upper()
     suffix = f"{record.transcript_id}_{tid.lower()}_proposal"
-    rows: list[tuple[str, float, int, str, MRNARecord]] = []
+    rows: list[tuple[str, float, Optional[int], str, MRNARecord]] = []
     if tid in {"T2", "T3", "T5"}:
         for score, pos, nt in _utr_substitution_candidates(record, out):
             rows.append(("sub", float(score), int(pos), str(nt), _replace_nt(record, pos, nt, suffix)))
@@ -202,6 +202,8 @@ def score_record_proposals(
     target_length: Optional[int] = None,
     candidate_cap: int = 0,
     top_k: int = 32,
+    allow_stop: bool = True,
+    stop_logit_bias: float = 0.0,
 ) -> tuple[list[ProposalCandidate], dict[str, object]]:
     """Score one source record's legal one-step proposal pool."""
     pred = oracle if oracle is not None else LocalTranslationOracle()
@@ -212,6 +214,8 @@ def score_record_proposals(
     raw_pool.sort(key=lambda item: item[1], reverse=True)
     if int(candidate_cap) > 0:
         raw_pool = raw_pool[: max(1, min(int(candidate_cap), len(raw_pool)))]
+    if allow_stop:
+        raw_pool.append(("stop", action_log_score_float(out, "stop", None, None, stop_logit_bias=stop_logit_bias), None, "", record))
 
     source_te = _te_from_score(pred.score_record(record))  # type: ignore[attr-defined]
     model_scores = [float(row[1]) for row in raw_pool]
@@ -223,7 +227,7 @@ def score_record_proposals(
             transcript_id=record.transcript_id,
             task_id=task_id.upper(),
             op=op,
-            pos=int(pos),
+            pos=(None if pos is None else int(pos)),
             nt=str(nt),
             model_score=float(model_score),
             source_te=float(source_te),
@@ -231,7 +235,7 @@ def score_record_proposals(
             delta_te=float(oracle_te - source_te),
             model_rank=int(model_ranks[i]),
             oracle_rank=int(oracle_ranks[i]),
-            student_score=float(math.log(max(float(model_score), 1e-20))),
+            student_score=float(model_score),
             teacher_score=float(oracle_te - source_te),
             candidate=cand.to_dict(),
         )
@@ -282,6 +286,8 @@ def run_proposal_ranking_audit(
     top_k: int = 32,
     target_length_delta: int = 0,
     oracle: Optional[object] = None,
+    allow_stop: bool = True,
+    stop_logit_bias: float = 0.0,
 ) -> dict[str, object]:
     """Run a proposal ranking audit and write JSON/JSONL artifacts."""
     _cfg, backbone, model = load_stage_a_checkpoint(checkpoint_path, device=device)
@@ -307,6 +313,8 @@ def run_proposal_ranking_audit(
                 target_length=target_length,
                 candidate_cap=candidate_cap,
                 top_k=top_k,
+                allow_stop=allow_stop,
+                stop_logit_bias=stop_logit_bias,
             )
             record_summaries.append(summary)
             candidate_count += len(rows)
@@ -327,6 +335,8 @@ def run_proposal_ranking_audit(
             "top_k": int(top_k),
             "target_length_delta": int(target_length_delta),
             "out_jsonl": out_jsonl,
+            "allow_stop": bool(allow_stop),
+            "stop_logit_bias": float(stop_logit_bias),
         },
         "aggregate": _aggregate_record_summaries(record_summaries),
         "per_record": record_summaries,
@@ -349,6 +359,8 @@ def _parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
     parser.add_argument("--device", default=None)
     parser.add_argument("--candidate-cap", type=int, default=0, help="<=0 evaluates the full legal pool")
     parser.add_argument("--top-k", type=int, default=32)
+    parser.add_argument("--no-stop", action="store_true")
+    parser.add_argument("--stop-logit-bias", type=float, default=0.0)
     parser.add_argument("--target-length-delta", type=int, default=0)
     return parser.parse_args(argv)
 
@@ -366,6 +378,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         candidate_cap=args.candidate_cap,
         top_k=args.top_k,
         target_length_delta=args.target_length_delta,
+        allow_stop=not args.no_stop,
+        stop_logit_bias=args.stop_logit_bias,
     )
     print(json.dumps({"out_json": args.out_json, "aggregate": result["aggregate"]}, sort_keys=True))
     return 0

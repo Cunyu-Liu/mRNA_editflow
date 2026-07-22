@@ -9,6 +9,7 @@ source of safety for frame/protein constraints.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import math
 import random
@@ -31,6 +32,8 @@ from mrna_editflow.core.config import BackboneConfig, DataConfig, MEFConfig, Mod
 from mrna_editflow.core.schema import MRNARecord
 from mrna_editflow.data.clean_mrna import clean_record
 from mrna_editflow.data.download_mrna import load_records_jsonl, synthesize_corpus, write_records_jsonl
+from mrna_editflow.rl.action_scoring import action_log_score_float
+from mrna_editflow.rl.decoder_state import DecoderAction, DecoderState, choose_stop_aware_action, sequence_hash
 
 SampleOutput = Union[MRNARecord, str]
 
@@ -50,6 +53,9 @@ class SamplingConfig:
     guidance_candidates: int = 4
     return_record: bool = True
     seed: int = 0
+    allow_stop: bool = True
+    stop_logit_bias: float = 0.0
+    min_action_margin: float = 0.0
 
 
 def _normalise_nt(seq: str) -> str:
@@ -66,6 +72,7 @@ def _copy_record(rec: MRNARecord, transcript_id: Optional[str] = None) -> MRNARe
         cds=rec.cds,
         three_utr=rec.three_utr,
         species=rec.species,
+        metadata=dict(rec.metadata),
     )
 
 
@@ -87,6 +94,7 @@ def _finish(rec: MRNARecord, return_record: bool) -> SampleOutput:
         cds=_normalise_nt(rec.cds),
         three_utr=_normalise_nt(rec.three_utr),
         species=rec.species,
+        metadata=dict(rec.metadata),
     )
     if not is_valid_cds(checked.cds):
         raise ValueError("sampling produced an invalid mRNA record")
@@ -369,16 +377,47 @@ def sample_mrna(
     seed: int = 0,
     model: Optional[object] = None,
     backbone: Optional[object] = None,
+    device: Optional[str] = None,
+    proposal_top_k: int = 8,
+    proposal_temperature: float = 1.0,
+    editable_regions: Optional[Sequence[str]] = None,
+    allow_stop: bool = True,
+    stop_logit_bias: float = 0.0,
+    min_action_margin: float = 0.0,
+    allow_action_space_expansion: bool = False,
 ) -> SampleOutput:
     """Sample or edit an mRNA for tasks T1-T7.
 
-    ``model`` and ``backbone`` are accepted for API compatibility with trained
-    samplers. The offline operators here enforce the hard biological
-    constraints, so the function remains usable without checkpoints.
+    With both ``model`` and ``backbone``, route explicitly to the constrained
+    model-guided decoder. With neither, retain the random-safe decoder.
     """
-    del model, backbone  # model-guided proposal can be layered on this API later.
+    if (model is None) != (backbone is None):
+        raise ValueError("sample_mrna requires both model and backbone, or neither")
     tid = task_id.upper()
     base = _copy_record(record) if record is not None else _default_record(seed)
+    if model is not None and backbone is not None:
+        decoded = model_guided_edit_record(
+            base,
+            model,
+            backbone,
+            task_id=tid,
+            edit_budget=int(edit_budget if edit_budget is not None else steps),
+            target_length=target_length,
+            seed=seed,
+            device=device,
+            proposal_top_k=proposal_top_k,
+            proposal_temperature=proposal_temperature,
+            guidance_scale=guidance_scale,
+            target_te=target_te,
+            target_start_accessibility=target_start_accessibility,
+            oracle=oracle,
+            editable_regions=editable_regions,
+            allow_stop=allow_stop,
+            stop_logit_bias=stop_logit_bias,
+            min_action_margin=min_action_margin,
+            allow_action_space_expansion=allow_action_space_expansion,
+        )
+        return _finish(decoded, return_record)
     guided = _guidance_is_active(guidance_scale, target_te, target_start_accessibility)
     n_candidates = 1 if not guided else max(1, min(32, int(guidance_candidates)))
     candidates = []
@@ -403,6 +442,19 @@ def sample_mrna(
         target_te=target_te,
         target_start_accessibility=target_start_accessibility,
         oracle=oracle,
+    )
+    rec.metadata.update(
+        {
+            "decoder_type": "random_safe",
+            "checkpoint_path": None,
+            "checkpoint_sha256": None,
+            "oracle_guidance_used": bool(guided),
+            "terminated_by_stop": False,
+            "applied_edit_count": int(levenshtein_distance(base.seq, rec.seq)),
+            "max_edit_budget": int(edit_budget if edit_budget is not None else steps),
+            "cycle_rejections": 0,
+            "out_of_training_action_space": False,
+        }
     )
     return _finish(rec, return_record)
 
@@ -515,6 +567,27 @@ def load_stage_a_checkpoint(checkpoint_path: str, device: Optional[str] = None):
         model = base_model
     if "model_state" in payload:
         model.load_state_dict(payload["model_state"], strict=False)  # type: ignore[arg-type]
+    action_space = payload.get("trained_action_space")
+    if action_space is None and any(
+        key in payload
+        for key in ("trained_task", "trained_editable_regions", "trained_operations")
+    ):
+        action_space = {
+            key: payload.get(key)
+            for key in ("trained_task", "trained_editable_regions", "trained_operations")
+        }
+    if action_space is not None and not isinstance(action_space, Mapping):
+        raise ValueError("trained_action_space checkpoint metadata must be a mapping")
+    digest = hashlib.sha256()
+    with open(checkpoint_path, "rb") as fh:
+        for block in iter(lambda: fh.read(1024 * 1024), b""):
+            digest.update(block)
+    # Preserve the established three-value return while exposing checkpoint
+    # semantics to model-guided entry points without a second loader API.
+    model._trained_action_space = dict(action_space) if isinstance(action_space, Mapping) else None  # type: ignore[attr-defined]
+    model._checkpoint_path = str(checkpoint_path)  # type: ignore[attr-defined]
+    model._checkpoint_sha256 = digest.hexdigest()  # type: ignore[attr-defined]
+    model._checkpoint_stage = stage  # type: ignore[attr-defined]
     backbone.freeze()
     backbone.eval()
     model.eval()
@@ -639,6 +712,88 @@ def _normalise_editable_utr_regions(
     return tuple(normalized)
 
 
+def _task_operations(task_id: str) -> tuple[str, ...]:
+    tid = str(task_id).upper()
+    if tid in {"T2", "T3", "T4", "T5"}:
+        return ("sub",)
+    if tid == "T6":
+        return ("ins", "del")
+    return ()
+
+
+def _normalise_task_editable_regions(
+    task_id: str,
+    editable_regions: Optional[Sequence[str]],
+) -> tuple[str, ...]:
+    """Validate regions against the task's hard editing grammar."""
+    if str(task_id).upper() == "T4":
+        values = [editable_regions] if isinstance(editable_regions, str) else list(editable_regions or ("cds",))
+        if not values or any(str(value).strip().lower() != "cds" for value in values):
+            raise ValueError("T4 editable_regions must be exactly ('cds',)")
+        return ("cds",)
+    return _normalise_editable_utr_regions(editable_regions)
+
+
+def _resolve_decoder_action_space(
+    model: object,
+    *,
+    task_id: str,
+    requested_regions: Optional[Sequence[str]],
+    allow_action_space_expansion: bool,
+) -> tuple[tuple[str, ...], bool]:
+    """Resolve the trained action domain without silently widening it.
+
+    Legacy Stage A checkpoints have no teacher action-domain metadata and keep
+    the historical UTR default. Newly saved proposal-ranker checkpoints carry
+    an explicit domain and fail closed unless expansion is opted into.
+    """
+    metadata = getattr(model, "_trained_action_space", None)
+    if not isinstance(metadata, Mapping):
+        return _normalise_task_editable_regions(task_id, requested_regions), False
+    trained_task = str(metadata.get("trained_task", "")).upper()
+    raw_regions = metadata.get("trained_editable_regions", ())
+    raw_ops = {str(op).lower() for op in metadata.get("trained_operations", ())}
+    if not isinstance(raw_regions, Sequence) or isinstance(raw_regions, (str, bytes)):
+        raise ValueError("trained_action_space.trained_editable_regions must be a sequence")
+    trained_regions = _normalise_task_editable_regions(task_id, [str(region) for region in raw_regions])
+    requested = (
+        trained_regions
+        if requested_regions is None
+        else _normalise_task_editable_regions(task_id, requested_regions)
+    )
+    task_mismatch = bool(trained_task and trained_task != str(task_id).upper())
+    operation_mismatch = not set(_task_operations(task_id)).issubset(raw_ops)
+    region_mismatch = not set(requested).issubset(set(trained_regions))
+    if (task_mismatch or operation_mismatch or region_mismatch) and not allow_action_space_expansion:
+        raise ValueError(
+            "requested decoder action space is outside checkpoint training domain; "
+            "set allow_action_space_expansion=True to opt in explicitly"
+        )
+    if requested_regions is None and not (task_mismatch or operation_mismatch):
+        return trained_regions, False
+    return requested, bool(task_mismatch or operation_mismatch or region_mismatch)
+
+
+def _attach_decoder_metadata(
+    record: MRNARecord,
+    *,
+    state: DecoderState,
+    model: object,
+    decoder_type: str,
+    oracle_guidance_used: bool,
+) -> MRNARecord:
+    record.metadata.update(
+        {
+            "decoder_type": decoder_type,
+            "checkpoint_path": getattr(model, "_checkpoint_path", None),
+            "checkpoint_sha256": getattr(model, "_checkpoint_sha256", None),
+            "oracle_guidance_used": bool(oracle_guidance_used),
+            **state.to_metadata(),
+        }
+    )
+    return record
+
+
 def _utr_positions(
     record: MRNARecord,
     editable_regions: Optional[Sequence[str]] = None,
@@ -655,7 +810,7 @@ def _utr_positions(
 
 
 def _synonymous_substitution_candidates(record: MRNARecord, out) -> List[Tuple[float, int, str]]:
-    """Enumerate protein-preserving CDS single-nt substitutions scored by CTMC rate.
+    """Enumerate protein-preserving CDS substitutions scored by shared log score.
 
     Score for replacing position ``i`` with nucleotide ``a`` is
     ``lambda_sub(i) * p_sub_i(a)``. Start and terminal stop codons are skipped.
@@ -667,8 +822,6 @@ def _synonymous_substitution_candidates(record: MRNARecord, out) -> List[Tuple[f
     This avoids unsafe intermediate edits from multi-base synonymous codons
     such as Arg ``CGU -> AGA``. Complexity is ``O(N_codon * 3 * |V|)``.
     """
-    rates = out["rates"][0, :, 1].detach().float().cpu()
-    sub_probs = out["sub_probs"][0].detach().float().cpu()
     candidates: List[Tuple[float, int, str]] = []
     five_len = len(record.five_utr)
     codons = [record.cds[i:i + 3] for i in range(0, len(record.cds), 3)]
@@ -686,8 +839,7 @@ def _synonymous_substitution_candidates(record: MRNARecord, out) -> List[Tuple[f
                 edited = codon[:offset] + new + codon[offset + 1:]
                 if CODON_TABLE.get(edited) != aa:
                     continue
-                nt_idx = NUC_TO_ID[new]
-                score = float(rates[pos] * sub_probs[pos, nt_idx])
+                score = action_log_score_float(out, "sub", pos, new)
                 candidates.append((score, pos, new))
     candidates.sort(key=lambda item: item[0], reverse=True)
     return candidates
@@ -698,9 +850,7 @@ def _utr_substitution_candidates(
     out,
     editable_regions: Optional[Sequence[str]] = None,
 ) -> List[Tuple[float, int, str]]:
-    """Enumerate UTR single-nt substitutions scored by model CTMC intensity."""
-    rates = out["rates"][0, :, 1].detach().float().cpu()
-    sub_probs = out["sub_probs"][0].detach().float().cpu()
+    """Enumerate UTR substitutions scored by the shared CTMC log score."""
     seq = record.seq
     candidates: List[Tuple[float, int, str]] = []
     for pos in _utr_positions(record, editable_regions):
@@ -708,8 +858,7 @@ def _utr_substitution_candidates(
         for nt in NUC_VOCAB:
             if nt == old:
                 continue
-            nt_idx = NUC_TO_ID[nt]
-            score = float(rates[pos] * sub_probs[pos, nt_idx])
+            score = action_log_score_float(out, "sub", pos, nt)
             candidates.append((score, pos, nt))
     candidates.sort(key=lambda item: item[0], reverse=True)
     return candidates
@@ -720,13 +869,11 @@ def _utr_insert_candidates(
     out,
     editable_regions: Optional[Sequence[str]] = None,
 ) -> List[Tuple[float, int, str]]:
-    """Enumerate UTR single-nt insertions scored by ``lambda_ins p_ins``."""
-    rates = out["rates"][0, :, 0].detach().float().cpu()
-    ins_probs = out["ins_probs"][0].detach().float().cpu()
+    """Enumerate UTR insertions scored by the shared CTMC log score."""
     candidates: List[Tuple[float, int, str]] = []
     for pos in _utr_positions(record, editable_regions):
-        for nt_idx, nt in enumerate(NUC_VOCAB):
-            score = float(rates[pos] * ins_probs[pos, nt_idx])
+        for nt in NUC_VOCAB:
+            score = action_log_score_float(out, "ins", pos, nt)
             candidates.append((score, pos, nt))
     candidates.sort(key=lambda item: item[0], reverse=True)
     return candidates
@@ -737,10 +884,9 @@ def _utr_delete_candidates(
     out,
     editable_regions: Optional[Sequence[str]] = None,
 ) -> List[Tuple[float, int, str]]:
-    """Enumerate UTR deletions scored by ``lambda_del``."""
-    rates = out["rates"][0, :, 2].detach().float().cpu()
+    """Enumerate UTR deletions scored by the shared CTMC log score."""
     candidates = [
-        (float(rates[pos]), pos, "")
+        (action_log_score_float(out, "del", pos, None), pos, "")
         for pos in _utr_positions(record, editable_regions)
     ]
     candidates.sort(key=lambda item: item[0], reverse=True)
@@ -748,29 +894,8 @@ def _utr_delete_candidates(
 
 
 def _model_score_for_choice(out, op: str, pos: int, nt: str) -> float:
-    """Score one candidate operation from a model output.
-
-    The score matches the CTMC proposal intensity used throughout proposal
-    ranking:
-
-    ``sub=lambda_sub(i)p_sub(a|i)``, ``ins=lambda_ins(i)p_ins(a|i)``,
-    ``del=lambda_del(i)``.
-
-    Complexity is ``O(1)``.
-    """
-    op_l = op.lower()
-    if op_l == "sub":
-        rates = out["rates"][0, :, 1].detach().float().cpu()
-        probs = out["sub_probs"][0].detach().float().cpu()
-        return float(rates[int(pos)] * probs[int(pos), NUC_TO_ID[str(nt)]])
-    if op_l == "ins":
-        rates = out["rates"][0, :, 0].detach().float().cpu()
-        probs = out["ins_probs"][0].detach().float().cpu()
-        return float(rates[int(pos)] * probs[int(pos), NUC_TO_ID[str(nt)]])
-    if op_l == "del":
-        rates = out["rates"][0, :, 2].detach().float().cpu()
-        return float(rates[int(pos)])
-    raise ValueError(f"unsupported candidate op {op!r}")
+    """Backward-compatible wrapper around the shared action log-score."""
+    return action_log_score_float(out, op, pos, nt or None)
 
 
 def _choose_scored_candidate(
@@ -894,26 +1019,25 @@ def model_guided_edit_record(
     target_start_accessibility: Optional[float] = None,
     oracle: Optional[object] = None,
     editable_regions: Optional[Sequence[str]] = None,
+    allow_stop: bool = True,
+    stop_logit_bias: float = 0.0,
+    min_action_margin: float = 0.0,
+    allow_action_space_expansion: bool = False,
 ) -> MRNARecord:
-    """Generate one conservative model-guided candidate record.
+    """Decode grammar-valid edits with shared log scores and explicit STOP.
 
-    The model supplies a CTMC rate field, but the candidate set is restricted to
-    edits that are valid by construction:
-
-    * T4: synonymous CDS single-nt substitutions, preserving protein exactly.
-    * T2/T3/T5: substitutions in the explicitly enabled UTR regions only.
-    * T6: UTR insertions/deletions toward ``target_length``.
-
-    Each step recomputes the model field on the updated record, then applies the
-    highest-scoring legal edit. This is a greedy decoder for local refinement,
-    not a full tau-leaping sampler; it gives a verified checkpoint-to-JSONL
-    path for benchmarking while preserving hard biological constraints.
-    Complexity: ``O(E * (model_forward + L * V))`` for edit budget ``E``.
+    The requested budget is an upper bound. STOP is a configurable baseline,
+    not a learned head, and cycle/reverse actions are rejected before sampling.
     """
     import torch
 
     tid = task_id.upper()
-    enabled_utr_regions = _normalise_editable_utr_regions(editable_regions)
+    enabled_utr_regions, expanded = _resolve_decoder_action_space(
+        model,
+        task_id=tid,
+        requested_regions=editable_regions,
+        allow_action_space_expansion=allow_action_space_expansion,
+    )
     rng = random.Random(int(seed))
     dev = torch.device(device or next(model.parameters()).device)
     current = _copy_record(record, transcript_id=f"{record.transcript_id}_{tid.lower()}_model")
@@ -922,97 +1046,79 @@ def model_guided_edit_record(
         if target_length is None:
             target_length = len(record.seq)
         budget = abs(int(target_length) - len(record.seq)) if edit_budget is None else budget
-    for step in range(budget):
+    state = DecoderState(current.seq, budget, out_of_training_action_space=expanded)
+    guidance_active = _guidance_is_active(guidance_scale, target_te, target_start_accessibility)
+    for _step in range(budget):
         out = _model_out_for_record(current, model, backbone, dev)
         if tid == "T4":
             choices = _synonymous_substitution_candidates(current, out)
-            if not choices:
-                break
-            _score, pos, nt = _choose_guided_proposal(
-                choices,
-                rng,
-                current=current,
-                make_record=lambda pos, nt: _replace_nt(
-                    current, pos, nt, f"{record.transcript_id}_{tid.lower()}_model"
-                ),
-                guidance_scale=guidance_scale,
-                target_te=target_te,
-                target_start_accessibility=target_start_accessibility,
-                oracle=oracle,
-                top_k=proposal_top_k,
-                temperature=proposal_temperature,
-            )
-            current = _replace_nt(current, pos, nt, f"{record.transcript_id}_{tid.lower()}_model")
+            op = "sub"
+            make_record = lambda pos, nt: _replace_nt(current, pos, nt, f"{record.transcript_id}_{tid.lower()}_model")
         elif tid in {"T2", "T3", "T5"}:
-            choices = _utr_substitution_candidates(
-                current,
-                out,
-                enabled_utr_regions,
-            )
-            if not choices:
-                break
-            _score, pos, nt = _choose_guided_proposal(
-                choices,
-                rng,
-                current=current,
-                make_record=lambda pos, nt: _replace_nt(
-                    current, pos, nt, f"{record.transcript_id}_{tid.lower()}_model"
-                ),
-                guidance_scale=guidance_scale,
-                target_te=target_te,
-                target_start_accessibility=target_start_accessibility,
-                oracle=oracle,
-                top_k=proposal_top_k,
-                temperature=proposal_temperature,
-            )
-            current = _replace_nt(current, pos, nt, f"{record.transcript_id}_{tid.lower()}_model")
+            choices = _utr_substitution_candidates(current, out, enabled_utr_regions)
+            op = "sub"
+            make_record = lambda pos, nt: _replace_nt(current, pos, nt, f"{record.transcript_id}_{tid.lower()}_model")
         elif tid == "T6":
             delta = int(target_length) - len(current.seq)
             if delta == 0:
+                state.terminated_by_stop = True
                 break
             choices = (
                 _utr_insert_candidates(current, out, enabled_utr_regions)
                 if delta > 0
                 else _utr_delete_candidates(current, out, enabled_utr_regions)
             )
-            if not choices:
-                break
             if delta > 0:
-                make_record = lambda pos, nt: _insert_nt_after(  # noqa: E731 - concise local proposal builder
-                    current, pos, nt, f"{record.transcript_id}_{tid.lower()}_model"
-                )
+                op = "ins"
+                make_record = lambda pos, nt: _insert_nt_after(current, pos, nt, f"{record.transcript_id}_{tid.lower()}_model")
             else:
-                make_record = lambda pos, nt: _delete_nt(  # noqa: E731
-                    current, pos, f"{record.transcript_id}_{tid.lower()}_model"
-                )
-            _score, pos, nt = _choose_guided_proposal(
-                choices,
-                rng,
-                current=current,
-                make_record=make_record,
-                guidance_scale=guidance_scale,
-                target_te=target_te,
-                target_start_accessibility=target_start_accessibility,
-                oracle=oracle,
-                top_k=proposal_top_k,
-                temperature=proposal_temperature,
-            )
-            if delta > 0:
-                current = _insert_nt_after(current, pos, nt, f"{record.transcript_id}_{tid.lower()}_model")
-            else:
-                current = _delete_nt(current, pos, f"{record.transcript_id}_{tid.lower()}_model")
+                op = "del"
+                make_record = lambda pos, nt: _delete_nt(current, pos, f"{record.transcript_id}_{tid.lower()}_model")
         else:
-            # Fall back to deterministic safe operators for motif/unconditional tasks.
-            return sample_mrna(
-                task_id=tid,
-                record=record,
-                edit_budget=edit_budget,
-                target_length=target_length,
-                return_record=True,
-                seed=step,
-            )  # type: ignore[return-value]
+            raise ValueError("model-guided decoder supports T2/T3/T4/T5/T6")
+        actions: list[DecoderAction] = []
+        for log_score, pos, nt in choices:
+            candidate = make_record(pos, nt)
+            score = float(log_score)
+            if guidance_active:
+                score += _guidance_score(
+                    candidate,
+                    _guidance_oracle(oracle),
+                    guidance_scale=guidance_scale,
+                    target_te=target_te,
+                    target_start_accessibility=target_start_accessibility,
+                )
+            actions.append(
+                DecoderAction(
+                    op=op,
+                    pos=int(pos),
+                    nt=str(nt) or None,
+                    log_score=score,
+                    next_sequence_hash=sequence_hash(candidate.seq),
+                    old_nt=current.seq[int(pos)] if op == "sub" else None,
+                )
+            )
+        chosen = choose_stop_aware_action(
+            actions,
+            state,
+            rng,
+            top_k=proposal_top_k,
+            temperature=proposal_temperature,
+            allow_stop=allow_stop,
+            stop_logit_bias=stop_logit_bias,
+            min_action_margin=min_action_margin,
+        )
+        if chosen is None:
+            break
+        current = make_record(int(chosen.pos), str(chosen.nt or ""))
         _finish(current, return_record=True)
-    return _finish(current, return_record=True)  # type: ignore[return-value]
+    return _attach_decoder_metadata(
+        _finish(current, return_record=True),  # type: ignore[arg-type]
+        state=state,
+        model=model,
+        decoder_type="model_guided",
+        oracle_guidance_used=guidance_active,
+    )
 
 
 def cascade_model_guided_edit_record(
@@ -1034,6 +1140,10 @@ def cascade_model_guided_edit_record(
     target_start_accessibility: Optional[float] = None,
     oracle: Optional[object] = None,
     editable_regions: Optional[Sequence[str]] = None,
+    allow_stop: bool = True,
+    stop_logit_bias: float = 0.0,
+    min_action_margin: float = 0.0,
+    allow_action_space_expansion: bool = False,
 ) -> MRNARecord:
     """Generate one candidate with recall-then-precision cascade decoding.
 
@@ -1054,7 +1164,12 @@ def cascade_model_guided_edit_record(
     import torch
 
     tid = task_id.upper()
-    enabled_utr_regions = _normalise_editable_utr_regions(editable_regions)
+    enabled_utr_regions, expanded = _resolve_decoder_action_space(
+        precision_model,
+        task_id=tid,
+        requested_regions=editable_regions,
+        allow_action_space_expansion=allow_action_space_expansion,
+    )
     rng = random.Random(int(seed))
     dev = torch.device(device or next(recall_model.parameters()).device)
     current = _copy_record(record, transcript_id=f"{record.transcript_id}_{tid.lower()}_cascade")
@@ -1063,6 +1178,8 @@ def cascade_model_guided_edit_record(
         if target_length is None:
             target_length = len(record.seq)
         budget = abs(int(target_length) - len(record.seq)) if edit_budget is None else budget
+    state = DecoderState(current.seq, budget, out_of_training_action_space=expanded)
+    guidance_active = _guidance_is_active(guidance_scale, target_te, target_start_accessibility)
 
     for step in range(budget):
         recall_out = _model_out_for_record(current, recall_model, recall_backbone, dev)
@@ -1126,9 +1243,11 @@ def cascade_model_guided_edit_record(
                 target_start_accessibility=target_start_accessibility,
                 oracle=oracle,
                 editable_regions=enabled_utr_regions,
+                allow_stop=allow_stop,
+                stop_logit_bias=stop_logit_bias,
+                min_action_margin=min_action_margin,
+                allow_action_space_expansion=allow_action_space_expansion,
             )
-        if not choices:
-            break
         k = len(choices) if int(recall_top_k) <= 0 else max(1, min(int(recall_top_k), len(choices)))
         retained = choices[:k]
         precision_scored = [
@@ -1136,21 +1255,32 @@ def cascade_model_guided_edit_record(
             for _recall_score, pos, nt in retained
         ]
         precision_scored.sort(key=lambda item: item[0], reverse=True)
-        _score, pos, nt = _choose_guided_proposal(
-            precision_scored,
-            rng,
-            current=current,
-            make_record=make_record,
-            guidance_scale=guidance_scale,
-            target_te=target_te,
-            target_start_accessibility=target_start_accessibility,
-            oracle=oracle,
-            top_k=k,
-            temperature=proposal_temperature,
+        actions: list[DecoderAction] = []
+        for log_score, pos, nt in precision_scored:
+            candidate = make_record(pos, nt)
+            score = float(log_score)
+            if guidance_active:
+                score += _guidance_score(
+                    candidate, _guidance_oracle(oracle), guidance_scale=guidance_scale,
+                    target_te=target_te, target_start_accessibility=target_start_accessibility,
+                )
+            actions.append(DecoderAction(op, int(pos), str(nt) or None, score, sequence_hash(candidate.seq), current.seq[int(pos)] if op == "sub" else None))
+        chosen = choose_stop_aware_action(
+            actions, state, rng, top_k=k, temperature=proposal_temperature,
+            allow_stop=allow_stop, stop_logit_bias=stop_logit_bias,
+            min_action_margin=min_action_margin,
         )
-        current = make_record(pos, nt)
+        if chosen is None:
+            break
+        current = make_record(int(chosen.pos), str(chosen.nt or ""))
         _finish(current, return_record=True)
-    return _finish(current, return_record=True)  # type: ignore[return-value]
+    return _attach_decoder_metadata(
+        _finish(current, return_record=True),  # type: ignore[arg-type]
+        state=state,
+        model=precision_model,
+        decoder_type="cascade_model_guided",
+        oracle_guidance_used=guidance_active,
+    )
 
 
 def generate_candidate_records(
@@ -1174,6 +1304,10 @@ def generate_candidate_records(
     target_start_accessibility: Optional[float] = None,
     oracle: Optional[object] = None,
     editable_regions: Optional[Sequence[str]] = None,
+    allow_stop: bool = True,
+    stop_logit_bias: float = 0.0,
+    min_action_margin: float = 0.0,
+    allow_action_space_expansion: bool = False,
 ) -> List[MRNARecord]:
     """Generate benchmark candidates from records, optionally checkpoint-guided.
 
@@ -1214,6 +1348,10 @@ def generate_candidate_records(
                 target_start_accessibility=target_start_accessibility,
                 oracle=oracle,
                 editable_regions=editable_regions,
+                allow_stop=allow_stop,
+                stop_logit_bias=stop_logit_bias,
+                min_action_margin=min_action_margin,
+                allow_action_space_expansion=allow_action_space_expansion,
             )
         elif model is not None and backbone is not None:
             cand = model_guided_edit_record(
@@ -1232,6 +1370,10 @@ def generate_candidate_records(
                 target_start_accessibility=target_start_accessibility,
                 oracle=oracle,
                 editable_regions=editable_regions,
+                allow_stop=allow_stop,
+                stop_logit_bias=stop_logit_bias,
+                min_action_margin=min_action_margin,
+                allow_action_space_expansion=allow_action_space_expansion,
             )
         else:
             if editable_regions is not None:
