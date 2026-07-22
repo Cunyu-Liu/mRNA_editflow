@@ -1,0 +1,120 @@
+{
+  "artifact_kind": "rl_stage6_development_assets",
+  "claim_boundary": "Derived shifts are development-only source-test slices. They preserve the original family contract and blockers; they do not establish experimental performance or paper eligibility.",
+  "claim_tier": "development_only",
+  "oracles": {
+    "alternative": {
+      "artifact_path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/eval/oracle.py",
+      "artifact_sha256": "4cf63c6fbdfca84e225f5835afe2d8cd287e267f995fc942371817ecff0a343c",
+      "independence_statement": "Alternative heuristic; it is deliberately not treated as an independent final evaluation Oracle.",
+      "independent": false,
+      "manifest_path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/benchmark/dev/rl_stage6_assets/oracles/alternative_heuristic_oracle_manifest.json",
+      "manifest_sha256": "3b44854ddbf5756a155646ea255dae073625ffc81c8b363c0db077e069c09d6b",
+      "oracle_type": "alternative_heuristic_local_translation_oracle",
+      "schema_version": 1,
+      "source": "Deterministic LocalTranslationOracle code path used only for disagreement and reward-hacking diagnostics"
+    },
+    "heldout": {
+      "artifact_path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/ckpts/p1_05_oracle_final_v1/oracle_meta.json",
+      "artifact_sha256": "43cd279b49419a60f53f2a6b3534d8c78a5e4f60beca54cce9cd20ade97ac3b2",
+      "independence_statement": "Oracle #3 (P1-05) is a LightGBM quantile regressor trained on Leplek 2022 PERSIST-Seq (3'UTR stability MPRA, 233 sequences) plus the Sample 2019 validation split (274481 sequences). It has never seen the combined_family test split (14884 sequences) used in this benchmark, and its architecture (GBT on 340 hand-engineered features) is disjoint from the CNN/Transformer ranker checkpoints being evaluated. Weights were frozen on 2026-07-19 and locked read-only (chmod 444) before any P2-03 evaluation began.",
+      "independent": true,
+      "manifest_path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/benchmark/paper/leakage_free_headline/oracle_manifest.json",
+      "manifest_sha256": "fb66f3bc2a860255c8adaba8b5fd5c1f754331c831316b9a8c1412346a53a3b1",
+      "oracle_type": "gbt_regressor",
+      "schema_version": 1,
+      "source": "lepplek_2022_persist_seq_plus_sample2019_val_heldout"
+    },
+    "public_experimental": {
+      "reason": "no frozen public experimental predictor manifest",
+      "status": "unavailable"
+    },
+    "training": {
+      "artifact_path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/data/processed/p1_04_predictions/cnn_50mer__sample2019_mpra__crossfit.json",
+      "artifact_sha256": "6e147882030afbd304f22daaa89a8103cd875dab0d1266c9309a3fa2e6f56fcb",
+      "independence_statement": "This is the training teacher provenance record and is intentionally non-independent.",
+      "independent": false,
+      "manifest_path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/benchmark/dev/rl_stage6_assets/oracles/training_oracle_manifest.json",
+      "manifest_sha256": "b296dc7b1428f13a2b8cfd07204b103f0f3fba2deb5ad21755e3b9ca5246b4d0",
+      "oracle_type": "p1_04_crossfit_training_teacher_predictions",
+      "schema_version": 1,
+      "source": "P1-04 training teacher prediction artifact; never admissible as final evaluation Oracle"
+    }
+  },
+  "paper_eligible": false,
+  "schema_version": 1,
+  "source_dataset_hash": "5a74b0ea8d40065fd44383625ab17a4b4bc6e33b7185b67056edda7ecb7448d3",
+  "source_split_manifest": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/benchmark/dev/gencode_family_leakage_protocol/split_manifest.json",
+  "source_split_manifest_sha256": "9d35e176e8347d6a64ac9d9afc824a0a97c6c7cac8c80d99688db4cee1cc357e",
+  "species_shift": {
+    "reason": "source GENCODE evaluation corpus contains one species (human)",
+    "status": "unavailable"
+  },
+  "splits": [
+    {
+      "block_reasons": [
+        "foundation_corpus_not_audited",
+        "external_reference_missing",
+        "near_neighbor_candidates_present",
+        "records_pretruncated",
+        "derived_stage6_development_evaluation",
+        "selector:ood_family_test"
+      ],
+      "excluded_count": 4956,
+      "manifest_path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/benchmark/dev/rl_stage6_assets/splits/ood_family_test/split_manifest.json",
+      "manifest_sha256": "bfab105e6ae55baf07811adca4a9c3f2c3a888d1c422b0266ddb25c828d900c8",
+      "name": "ood_family_test",
+      "paper_eligible": false,
+      "selector": {
+        "kind": "deterministic_source_family_disjoint_test_hash_slice",
+        "max_records": 512,
+        "seed": 20260722,
+        "source_cluster_assignments_available": false
+      },
+      "test_count": 512
+    },
+    {
+      "block_reasons": [
+        "foundation_corpus_not_audited",
+        "external_reference_missing",
+        "near_neighbor_candidates_present",
+        "records_pretruncated",
+        "derived_stage6_development_evaluation",
+        "selector:length_shift_test"
+      ],
+      "excluded_count": 4956,
+      "manifest_path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/benchmark/dev/rl_stage6_assets/splits/length_shift_test/split_manifest.json",
+      "manifest_sha256": "f17154793424fea68d049e0e9d235ae879e551ba82b249424f649aa3efa08b32",
+      "name": "length_shift_test",
+      "paper_eligible": false,
+      "selector": {
+        "kind": "longest_source_test_records",
+        "max_records": 512,
+        "min_length": 1680.0
+      },
+      "test_count": 512
+    },
+    {
+      "block_reasons": [
+        "foundation_corpus_not_audited",
+        "external_reference_missing",
+        "near_neighbor_candidates_present",
+        "records_pretruncated",
+        "derived_stage6_development_evaluation",
+        "selector:gc_shift_test"
+      ],
+      "excluded_count": 4956,
+      "manifest_path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/benchmark/dev/rl_stage6_assets/splits/gc_shift_test/split_manifest.json",
+      "manifest_sha256": "de91d84ceb27060a5c3a3b718e74df58321f78fa6f679a6328dd5f63fd2b5d62",
+      "name": "gc_shift_test",
+      "paper_eligible": false,
+      "selector": {
+        "high_min_gc": 0.6596491228070176,
+        "kind": "low_and_high_gc_source_test_tails",
+        "low_max_gc": 0.39147286821705424,
+        "max_records": 512
+      },
+      "test_count": 512
+    }
+  ]
+}

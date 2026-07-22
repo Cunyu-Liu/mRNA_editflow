@@ -1,0 +1,9 @@
+{
+  "artifact_path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/data/processed/p1_04_predictions/cnn_50mer__sample2019_mpra__crossfit.json",
+  "artifact_sha256": "6e147882030afbd304f22daaa89a8103cd875dab0d1266c9309a3fa2e6f56fcb",
+  "independence_statement": "This is the training teacher provenance record and is intentionally non-independent.",
+  "independent": false,
+  "oracle_type": "p1_04_crossfit_training_teacher_predictions",
+  "schema_version": 1,
+  "source": "P1-04 training teacher prediction artifact; never admissible as final evaluation Oracle"
+}

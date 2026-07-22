@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "selector": {
+    "kind": "deterministic_source_family_disjoint_test_hash_slice",
+    "max_records": 512,
+    "seed": 20260722,
+    "source_cluster_assignments_available": false
+  },
+  "source_manifest_sha256": "9d35e176e8347d6a64ac9d9afc824a0a97c6c7cac8c80d99688db4cee1cc357e",
+  "split": {
+    "cluster_disjoint": true,
+    "derived_from": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/benchmark/dev/gencode_family_leakage_protocol/split_manifest.json"
+  },
+  "summary": {
+    "exact_match_count": 0,
+    "leakage_exact_match_count": 0,
+    "near_neighbor_threshold_passed": false
+  }
+}

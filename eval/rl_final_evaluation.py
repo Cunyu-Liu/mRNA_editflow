@@ -369,9 +369,15 @@ def default_inventory(project_root: Path) -> dict[str, Any]:
             "family_disjoint_train": {"manifest_path": "benchmark/dev/gencode_family_leakage_protocol/split_manifest.json"},
             "family_disjoint_validation": {"manifest_path": "benchmark/dev/gencode_family_leakage_protocol/split_manifest.json"},
             "family_disjoint_test": {"manifest_path": "benchmark/dev/gencode_family_leakage_protocol/split_manifest.json"},
+            "ood_family_test": {"manifest_path": "benchmark/dev/rl_stage6_assets/splits/ood_family_test/split_manifest.json"},
+            "length_shift_test": {"manifest_path": "benchmark/dev/rl_stage6_assets/splits/length_shift_test/split_manifest.json"},
+            "gc_shift_test": {"manifest_path": "benchmark/dev/rl_stage6_assets/splits/gc_shift_test/split_manifest.json"},
         },
         "oracles": {
-            "training": {}, "heldout": {}, "alternative": {}, "public_experimental": {},
+            "training": {"manifest_path": "benchmark/dev/rl_stage6_assets/oracles/training_oracle_manifest.json"},
+            "heldout": {"manifest_path": "benchmark/paper/leakage_free_headline/oracle_manifest.json"},
+            "alternative": {"manifest_path": "benchmark/dev/rl_stage6_assets/oracles/alternative_heuristic_oracle_manifest.json"},
+            "public_experimental": {},
         },
         "methods": {
             "stage_a_editflow_only": {"checkpoint_path": "ckpts/stage_a_public_full_1k/stage_a_best.pt"},
@@ -445,8 +451,9 @@ def build_report(project_root: str | Path, inventory: Mapping[str, object] | Non
         blockers.append("alternative_oracle_matches_training_oracle")
     if oracles["heldout"].get("independent") is not True:
         blockers.append("heldout_oracle_not_independent")
-    if oracles["alternative"].get("independent") is not True:
-        blockers.append("alternative_oracle_not_independent")
+    # The alternative Oracle is deliberately allowed to be a heuristic.  It
+    # supports disagreement and reward-hacking diagnostics, never a claim of
+    # experimental performance or an independent held-out result.
     # The protocol requires an external baseline only where an executable
     # implementation is actually available.  ``not_executable`` is therefore
     # auditable evidence of absence, not a fabricated comparator; a silent

@@ -1,0 +1,63 @@
+{
+  "audits": {
+    "exact_cross_role_matches": 0,
+    "family_disjoint": true,
+    "leakage_report_path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/benchmark/dev/rl_stage6_assets/splits/ood_family_test/leakage_report.json",
+    "leakage_report_sha256": "1766fcc1cd41960838fa8c47ccd2c3e07f16e21703f4742ed784dde998add866",
+    "near_neighbor_threshold_passed": false
+  },
+  "block_reasons": [
+    "foundation_corpus_not_audited",
+    "external_reference_missing",
+    "near_neighbor_candidates_present",
+    "records_pretruncated",
+    "derived_stage6_development_evaluation",
+    "selector:ood_family_test"
+  ],
+  "dataset_id": "gencode_human_transcripts_v45_pretruncated__stage6_ood_family_test",
+  "paper_eligible": false,
+  "records": {
+    "count": 54680,
+    "path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/data/processed/gencode_human_transcripts.records.jsonl",
+    "sha256": "5a74b0ea8d40065fd44383625ab17a4b4bc6e33b7185b67056edda7ecb7448d3",
+    "transcript_id_digest": "a9ba07b7137d69843679d97fff9b4d2303ab9da5a8f59ddc521b93539cf6c9cb"
+  },
+  "schema_version": 1,
+  "split": {
+    "algorithm": "stage6_deterministic_source_test_slice",
+    "excluded": {
+      "count": 4956,
+      "idx_path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/benchmark/dev/rl_stage6_assets/splits/ood_family_test/excluded.idx",
+      "reason": "not_selected_for_this_development_evaluation_slice",
+      "selected_id_digest": "6bc87f76231e7476edc504d735558d23db083cd9847d89c488b5208768f0d31c",
+      "sha256": "776fb8f7027d53688db4aa39b030b4762a6e37c87b929928ce8dcd5bf761a5dc"
+    },
+    "family_threshold": 0.8,
+    "near_neighbor": {
+      "containment": 0.95,
+      "jaccard": 0.8,
+      "k": 15
+    },
+    "roles": {
+      "test": {
+        "count": 512,
+        "idx_path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/benchmark/dev/rl_stage6_assets/splits/ood_family_test/test.idx",
+        "selected_id_digest": "15918b9db9823696f3ccd953bc6ae39cbdbaf200e65d7b91745453fc450759a4",
+        "sha256": "cae951fb74c94e78b0c303289dbf514d1d20d478d33822cc0a80f6bb1f3d1c78"
+      },
+      "train": {
+        "count": 43744,
+        "idx_path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/benchmark/dev/rl_stage6_assets/splits/ood_family_test/train.idx",
+        "selected_id_digest": "1e8705cbcdb017fd1e883fcce9b5f73faf2361f34cfcc1ede6a4ae5f98e3298d",
+        "sha256": "08bc473c3cef3d738d5de4d501ee8791b4a7d954223d8b8901ed0c3806c8ccd1"
+      },
+      "val": {
+        "count": 5468,
+        "idx_path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/benchmark/dev/rl_stage6_assets/splits/ood_family_test/val.idx",
+        "selected_id_digest": "c686e527ef29dd3cd44f63b4023c08f6f24175bae38646f2ed392c72ddda2adf",
+        "sha256": "4b618f3849bc98f92a6a244f1477aff1e77b0693ff1d6b254389956066750f52"
+      }
+    },
+    "seed": 20260722
+  }
+}

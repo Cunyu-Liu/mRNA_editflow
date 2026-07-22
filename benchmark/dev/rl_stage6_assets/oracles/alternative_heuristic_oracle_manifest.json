@@ -1,0 +1,9 @@
+{
+  "artifact_path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/eval/oracle.py",
+  "artifact_sha256": "4cf63c6fbdfca84e225f5835afe2d8cd287e267f995fc942371817ecff0a343c",
+  "independence_statement": "Alternative heuristic; it is deliberately not treated as an independent final evaluation Oracle.",
+  "independent": false,
+  "oracle_type": "alternative_heuristic_local_translation_oracle",
+  "schema_version": 1,
+  "source": "Deterministic LocalTranslationOracle code path used only for disagreement and reward-hacking diagnostics"
+}

@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "selector": {
+    "high_min_gc": 0.6596491228070176,
+    "kind": "low_and_high_gc_source_test_tails",
+    "low_max_gc": 0.39147286821705424,
+    "max_records": 512
+  },
+  "source_manifest_sha256": "9d35e176e8347d6a64ac9d9afc824a0a97c6c7cac8c80d99688db4cee1cc357e",
+  "split": {
+    "cluster_disjoint": true,
+    "derived_from": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/benchmark/dev/gencode_family_leakage_protocol/split_manifest.json"
+  },
+  "summary": {
+    "exact_match_count": 0,
+    "leakage_exact_match_count": 0,
+    "near_neighbor_threshold_passed": false
+  }
+}
