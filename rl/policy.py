@@ -22,6 +22,7 @@ quality comparison.
 from __future__ import annotations
 
 import math
+from contextlib import nullcontext
 from dataclasses import dataclass, field
 from typing import List, Optional, Tuple
 
@@ -72,6 +73,7 @@ class PolicyConfig:
     temperature: float = 1.0
     time_step: float = 0.5
     codon_indel: bool = False
+    mixed_precision: bool = False
 
     def __post_init__(self) -> None:
         if self.stop_rate_strategy not in ("constant", "budget_aware"):
@@ -145,11 +147,13 @@ class Policy:
         """
         token_ids, region_ids, phase_ids, padding_mask = self._record_tensors(record)
         t = torch.full((1, 1), float(self.cfg.time_step), dtype=torch.float32, device=self.device)
+        amp = torch.autocast(device_type=self.device.type, enabled=bool(self.cfg.mixed_precision and self.device.type == "cuda")) if self.device.type in {"cuda", "cpu"} else nullcontext()
         if no_grad:
-            with torch.no_grad():
+            with torch.no_grad(), amp:
                 out = self.model.forward(token_ids, region_ids, phase_ids, t, padding_mask, self.backbone)
         else:
-            out = self.model.forward(token_ids, region_ids, phase_ids, t, padding_mask, self.backbone)
+            with amp:
+                out = self.model.forward(token_ids, region_ids, phase_ids, t, padding_mask, self.backbone)
         return out
 
     # ------------------------------------------------------------------
