@@ -293,7 +293,8 @@ class TestStageATrainingSmoke(unittest.TestCase):
             self.assertTrue(os.path.exists(out_jsonl))
             self.assertEqual(audit["aggregate"]["n_records"], 1)
             self.assertEqual(audit["aggregate"]["n_candidates"], 7)
-            self.assertIn("mean_model_regret", audit["aggregate"])
+            self.assertIn("restricted_mean_model_regret", audit["aggregate"])
+            self.assertEqual(audit["aggregate"]["candidate_pool_scope"], "restricted")
             with open(out_jsonl, "r", encoding="utf-8") as fh:
                 rows = [json.loads(line) for line in fh if line.strip()]
             self.assertEqual(len(rows), 7)
@@ -347,10 +348,18 @@ class TestStageATrainingSmoke(unittest.TestCase):
             with open(teacher_path, "w", encoding="utf-8") as fh:
                 for row in rows:
                     fh.write(json.dumps(row, sort_keys=True) + "\n")
+            val_teacher_path = os.path.join(tmp, "val_teacher.jsonl")
+            with open(val_teacher_path, "w", encoding="utf-8") as fh:
+                for row in rows:
+                    val_row = dict(row)
+                    val_row["transcript_id"] = "r2"
+                    fh.write(json.dumps(val_row, sort_keys=True) + "\n")
 
             result = train_proposal_ranker(
-                records=_tiny_records(),
-                teacher_jsonl=teacher_path,
+                train_records=_tiny_records()[:1],
+                val_records=_tiny_records()[1:2],
+                train_teacher_jsonl=teacher_path,
+                val_teacher_jsonl=val_teacher_path,
                 base_checkpoint=stage_a["checkpoint_path"],
                 save_dir=os.path.join(tmp, "ranker_ckpts"),
                 profile_path=os.path.join(tmp, "ranker_profile.jsonl"),
@@ -359,12 +368,14 @@ class TestStageATrainingSmoke(unittest.TestCase):
                 max_pairs_per_record=3,
                 device="cpu",
                 seed=119,
+                validation_interval=1,
             )
 
             self.assertTrue(os.path.exists(result["checkpoint_path"]))
             self.assertTrue(os.path.exists(result["profile_path"]))
             self.assertTrue(math.isfinite(float(result["best_loss"])))
             self.assertEqual(result["usable_transcripts"], 1)
+            self.assertIn("mean_model_regret", result["validation_summary"])
             with open(result["profile_path"], "r", encoding="utf-8") as fh:
                 profile_rows = [json.loads(line) for line in fh if line.strip()]
             self.assertEqual(len(profile_rows), 2)
@@ -422,10 +433,18 @@ class TestStageATrainingSmoke(unittest.TestCase):
             with open(teacher_path, "w", encoding="utf-8") as fh:
                 for row in rows:
                     fh.write(json.dumps(row, sort_keys=True) + "\n")
+            val_teacher_path = os.path.join(tmp, "val_hybrid_teacher.jsonl")
+            with open(val_teacher_path, "w", encoding="utf-8") as fh:
+                for row in rows:
+                    val_row = dict(row)
+                    val_row["transcript_id"] = "r2"
+                    fh.write(json.dumps(val_row, sort_keys=True) + "\n")
 
             result = train_proposal_ranker(
-                records=_tiny_records(),
-                teacher_jsonl=teacher_path,
+                train_records=_tiny_records()[:1],
+                val_records=_tiny_records()[1:2],
+                train_teacher_jsonl=teacher_path,
+                val_teacher_jsonl=val_teacher_path,
                 base_checkpoint=stage_a["checkpoint_path"],
                 save_dir=os.path.join(tmp, "ranker_ckpts"),
                 profile_path=os.path.join(tmp, "ranker_profile.jsonl"),
@@ -435,6 +454,7 @@ class TestStageATrainingSmoke(unittest.TestCase):
                 device="cpu",
                 seed=123,
                 pair_source_mode="source_balanced",
+                validation_interval=1,
             )
 
             self.assertEqual(result["pair_source_mode"], "source_balanced")

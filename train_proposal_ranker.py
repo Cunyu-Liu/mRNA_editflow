@@ -54,8 +54,11 @@ from mrna_editflow.core.schema import MRNARecord
 from mrna_editflow.data.download_mrna import load_records_jsonl
 from mrna_editflow.data.split_contract import (
     VerifiedSplitContract,
+    assert_train_validation_disjoint,
+    build_split_provenance,
     load_and_verify_split_manifest,
     sha256_file,
+    verify_supplied_role_records,
 )
 from mrna_editflow.eval.artifact_contract import (
     ArtifactProvenanceError,
@@ -63,7 +66,6 @@ from mrna_editflow.eval.artifact_contract import (
     load_artifact_provenance,
     normalize_run_mode,
     prepare_scientific_records,
-    require_paper_cli_inputs,
     validate_output_namespace,
     verify_paper_artifact,
     verify_paper_checkpoint,
@@ -71,6 +73,7 @@ from mrna_editflow.eval.artifact_contract import (
 )
 from mrna_editflow.sample import _record_tensors, load_stage_a_checkpoint
 from mrna_editflow.rl.action_scoring import operation_log_score
+from mrna_editflow.rl.validation import evaluate_ranker_validation
 from mrna_editflow.train_backbone import _ensure_parent, _resolve_device, _set_seed, _write_profile
 
 
@@ -315,9 +318,17 @@ def _save_ranker_checkpoint(
     model,
     base_checkpoint: str,
     teacher_jsonl: str,
+    val_teacher_jsonl: str,
     step: int,
     best_loss: float,
+    best_validation_metric: float,
+    best_validation_step: int,
+    validation_summary: Mapping[str, object],
+    training_loss_at_best_step: float,
     trained_action_space: Mapping[str, object],
+    checkpoint_metric: str,
+    checkpoint_mode: str,
+    early_stopping_reason: Optional[str] = None,
     scientific_validity: Optional[Mapping[str, object]] = None,
 ) -> None:
     _ensure_parent(path)
@@ -329,6 +340,14 @@ def _save_ranker_checkpoint(
             "best_loss": float(best_loss),
             "base_checkpoint": base_checkpoint,
             "teacher_jsonl": teacher_jsonl,
+            "val_teacher_jsonl": val_teacher_jsonl,
+            "checkpoint_metric": checkpoint_metric,
+            "checkpoint_mode": checkpoint_mode,
+            "best_validation_metric": float(best_validation_metric),
+            "best_validation_step": int(best_validation_step),
+            "validation_summary": dict(validation_summary),
+            "training_loss_at_best_step": float(training_loss_at_best_step),
+            "early_stopping_reason": early_stopping_reason,
             # Keep the nested object as the canonical extensible form, while
             # mirroring the three required fields at top level for tooling
             # that reads checkpoint metadata without knowing this wrapper.
@@ -345,13 +364,100 @@ def _save_ranker_checkpoint(
     )
 
 
+def _partition_provenance(
+    records: Sequence[MRNARecord],
+    *,
+    run_mode: str,
+    split_contract: Optional[VerifiedSplitContract],
+    role: str,
+) -> tuple[list[MRNARecord], dict[str, object]]:
+    """Verify role-specific inputs while retaining development compatibility."""
+    if split_contract is not None:
+        selected = verify_supplied_role_records(records, split_contract, role)
+        provenance = build_split_provenance(split_contract, role)
+    elif run_mode == "paper":
+        raise ValueError("paper proposal-ranker training requires a split contract")
+    else:
+        selected = list(records)
+        provenance = {
+            "split_role": role,
+            "records_count": len(selected),
+            "selected_transcript_id_digest": None,
+            "block_reasons": ["verified_split_manifest_missing"],
+        }
+    provenance = dict(provenance)
+    provenance.update(
+        {
+            "run_mode": run_mode,
+            "claim_tier": "paper" if run_mode == "paper" else "development_only",
+            "paper_eligible": run_mode == "paper",
+        }
+    )
+    return selected, provenance
+
+
+def _require_teacher_alignment(
+    records: Sequence[MRNARecord],
+    teachers: Mapping[str, Sequence[ProposalTeacherRow]],
+    *,
+    partition: str,
+) -> None:
+    record_ids = {record.transcript_id for record in records}
+    teacher_ids = set(teachers)
+    missing = record_ids - teacher_ids
+    extra = teacher_ids - record_ids
+    if missing or extra:
+        raise ValueError(
+            f"{partition} teacher/record transcript mismatch; "
+            f"missing_teacher={sorted(missing)[:1]}, unknown_teacher={sorted(extra)[:1]}"
+        )
+
+
+def _checkpoint_metric_key(metric: str, *, candidate_cap: int) -> str:
+    allowed = {
+        "val_mean_model_regret": "mean_model_regret",
+        "val_oracle_best_recall_at_32": "oracle_best_recall_at_32",
+        "val_ndcg_at_32": "ndcg_at_32",
+    }
+    if metric not in allowed:
+        raise ValueError("checkpoint_metric must be one of " + ", ".join(sorted(allowed)))
+    if int(candidate_cap) > 0:
+        raise ValueError(
+            "global checkpoint metrics require validation_candidate_cap=0; "
+            "capped validation is restricted and cannot select a global-regret checkpoint"
+        )
+    return allowed[metric]
+
+
+def _metric_improved(value: float, best: Optional[float], *, mode: str, minimum_improvement: float) -> bool:
+    if best is None:
+        return True
+    if mode == "min":
+        return value < best - float(minimum_improvement)
+    return value > best + float(minimum_improvement)
+
+
+def _annotate_checkpoint_termination(path: str, reason: str) -> None:
+    """Add the final validation-only termination reason without replacing weights."""
+    payload = torch.load(path, map_location="cpu", weights_only=False)
+    if not isinstance(payload, Mapping):
+        raise ValueError("proposal ranker checkpoint payload is malformed")
+    updated = dict(payload)
+    updated["early_stopping_reason"] = reason
+    torch.save(updated, path)
+
+
 def train_proposal_ranker(
     *,
-    records: Sequence[MRNARecord],
-    teacher_jsonl: str,
     base_checkpoint: str,
     save_dir: str,
     profile_path: str,
+    records: Optional[Sequence[MRNARecord]] = None,
+    teacher_jsonl: Optional[str] = None,
+    train_records: Optional[Sequence[MRNARecord]] = None,
+    val_records: Optional[Sequence[MRNARecord]] = None,
+    train_teacher_jsonl: Optional[str] = None,
+    val_teacher_jsonl: Optional[str] = None,
     teacher_summary: Optional[str] = None,
     steps: int = 200,
     batch_records: int = 4,
@@ -370,31 +476,94 @@ def train_proposal_ranker(
     trained_task: Optional[str] = None,
     trained_editable_regions: Optional[Sequence[str]] = None,
     trained_operations: Optional[Sequence[str]] = None,
+    checkpoint_metric: str = "val_mean_model_regret",
+    checkpoint_mode: str = "min",
+    validation_interval: int = 25,
+    early_stopping_patience: int = 0,
+    minimum_improvement: float = 0.0,
+    validation_candidate_cap: int = 0,
 ) -> dict[str, object]:
-    """Fine-tune the MEF head to rank oracle-preferred legal proposals higher."""
+    """Fine-tune only on train rows and select checkpoints only on validation."""
     run_mode = normalize_run_mode(run_mode)
+    if checkpoint_mode not in {"min", "max"}:
+        raise ValueError("checkpoint_mode must be 'min' or 'max'")
+    if int(validation_interval) <= 0:
+        raise ValueError("validation_interval must be positive")
+    if float(minimum_improvement) < 0.0:
+        raise ValueError("minimum_improvement must be non-negative")
+    metric_key = _checkpoint_metric_key(
+        checkpoint_metric, candidate_cap=validation_candidate_cap
+    )
+    resolved_train_records = list(train_records if train_records is not None else (records or ()))
+    resolved_val_records = list(val_records or ())
+    train_teacher_path = train_teacher_jsonl or teacher_jsonl
+    # Preserve the established paper-mode provenance preflight for callers
+    # migrating from the Stage 1 single-partition API.  It intentionally runs
+    # before the Stage 2 validation-input error, so a mismatched teacher is
+    # never obscured by an interface migration message.
+    if (
+        run_mode == "paper"
+        and resolved_train_records
+        and train_teacher_path
+        and split_contract is not None
+        and (not resolved_val_records or not val_teacher_jsonl)
+    ):
+        _legacy_train_records, legacy_provenance = prepare_scientific_records(
+            resolved_train_records,
+            run_mode=run_mode,
+            split_contract=split_contract,
+            split_role="train",
+            allowed_roles=("train",),
+        )
+        verify_paper_checkpoint(base_checkpoint, legacy_provenance)
+        legacy_teacher_provenance = verify_paper_artifact(train_teacher_path)
+        verify_provenance_compatibility(
+            legacy_provenance,
+            legacy_teacher_provenance,
+            require_same_role=True,
+        )
+    if not resolved_train_records or not resolved_val_records:
+        raise ValueError("independent train_records and val_records are required")
+    if not train_teacher_path or not val_teacher_jsonl:
+        raise ValueError("independent train_teacher_jsonl and val_teacher_jsonl are required")
     _set_seed(int(seed))
     validate_output_namespace(save_dir, run_mode)
     validate_output_namespace(profile_path, run_mode)
     dev = _resolve_device(device)
-    train_records, data_provenance = prepare_scientific_records(
-        records,
-        run_mode=run_mode,
+    if split_role not in (None, "train"):
+        raise ValueError("split_role is legacy-only; Stage 2 uses train and val roles")
+    train_records_verified, data_provenance = _partition_provenance(
+        resolved_train_records, run_mode=run_mode, split_contract=split_contract, role="train"
+    )
+    val_records_verified, val_data_provenance = _partition_provenance(
+        resolved_val_records, run_mode=run_mode, split_contract=split_contract, role="val"
+    )
+    assert_train_validation_disjoint(
+        train_records_verified,
+        val_records_verified,
         split_contract=split_contract,
-        split_role=split_role,
-        allowed_roles=("train",),
     )
     teacher_provenance: Optional[dict[str, object]] = None
+    val_teacher_provenance: Optional[dict[str, object]] = None
     try:
-        teacher_provenance = load_artifact_provenance(teacher_jsonl)
+        teacher_provenance = load_artifact_provenance(train_teacher_path)
+    except ArtifactProvenanceError:
+        if run_mode == "paper":
+            raise
+    try:
+        val_teacher_provenance = load_artifact_provenance(val_teacher_jsonl)
     except ArtifactProvenanceError:
         if run_mode == "paper":
             raise
     if run_mode == "paper":
         verify_paper_checkpoint(base_checkpoint, data_provenance)
-        teacher_provenance = verify_paper_artifact(teacher_jsonl)
+        teacher_provenance = verify_paper_artifact(train_teacher_path)
         verify_provenance_compatibility(
             data_provenance, teacher_provenance, require_same_role=True
+        )
+        val_teacher_provenance = verify_paper_artifact(val_teacher_jsonl)
+        verify_provenance_compatibility(
+            val_data_provenance, val_teacher_provenance, require_same_role=True
         )
         if teacher_summary is None:
             raise ValueError("paper ranker requires --teacher-summary")
@@ -415,6 +584,12 @@ def train_proposal_ranker(
             "temperature": temperature,
             "min_pair_weight": min_pair_weight,
             "pair_source_mode": pair_source_mode,
+            "checkpoint_metric": checkpoint_metric,
+            "checkpoint_mode": checkpoint_mode,
+            "validation_interval": validation_interval,
+            "early_stopping_patience": early_stopping_patience,
+            "minimum_improvement": minimum_improvement,
+            "validation_candidate_cap": validation_candidate_cap,
         },
         code_paths=(__file__,),
         training_seed=int(seed),
@@ -426,24 +601,28 @@ def train_proposal_ranker(
         ),
         upstream={
             "base_checkpoint_sha256": sha256_file(base_checkpoint),
-            "teacher_jsonl_sha256": sha256_file(teacher_jsonl),
+            "teacher_jsonl_sha256": sha256_file(train_teacher_path),
+            "val_teacher_jsonl_sha256": sha256_file(val_teacher_jsonl),
             "teacher_summary_sha256": (
                 sha256_file(teacher_summary) if teacher_summary else None
             ),
             "teacher_provenance_sidecar_sha256": (
-                sha256_file(teacher_jsonl + ".provenance.json")
-                if os.path.isfile(teacher_jsonl + ".provenance.json") else None
+                sha256_file(train_teacher_path + ".provenance.json")
+                if os.path.isfile(train_teacher_path + ".provenance.json") else None
             ),
         },
         extra_block_reasons=(
             ("teacher_oracle_provenance_missing",)
-            if teacher_provenance is None else ()
+            if teacher_provenance is None or val_teacher_provenance is None else ()
         ),
     )
     cfg, backbone, model = load_stage_a_checkpoint(base_checkpoint, device=str(dev))
     backbone.eval()
     model.train()
-    teachers = load_teacher_rows(teacher_jsonl)
+    teachers = load_teacher_rows(train_teacher_path)
+    val_teachers = load_teacher_rows(val_teacher_jsonl)
+    _require_teacher_alignment(train_records_verified, teachers, partition="train")
+    _require_teacher_alignment(val_records_verified, val_teachers, partition="validation")
     all_teacher_rows = [row for rows in teachers.values() for row in rows]
     inferred_task = str(trained_task or (all_teacher_rows[0].task_id if all_teacher_rows else "T5")).upper()
     inferred_ops = sorted({str(row.op).lower() for row in all_teacher_rows})
@@ -454,7 +633,8 @@ def train_proposal_ranker(
         "trained_editable_regions": inferred_regions,
         "trained_operations": list(trained_operations or default_ops),
     }
-    records_by_id = _record_map(train_records)
+    records_by_id = _record_map(train_records_verified)
+    val_records_by_id = _record_map(val_records_verified)
     usable = _usable_transcripts(
         records_by_id,
         teachers,
@@ -472,6 +652,12 @@ def train_proposal_ranker(
     ckpt_path = os.path.join(save_dir, "proposal_ranker_best.pt")
     rng = random.Random(int(seed))
     best_loss = float("inf")
+    best_validation_metric: Optional[float] = None
+    best_validation_summary: dict[str, object] = {}
+    best_validation_step = 0
+    training_loss_at_best_step = float("nan")
+    bad_validations = 0
+    early_stopping_reason = "completed_max_steps"
     last_stats: dict[str, object] = {}
     tau = max(float(temperature), 1e-8)
 
@@ -514,10 +700,12 @@ def train_proposal_ranker(
         optimizer.step()
         elapsed = max(time.perf_counter() - start, 1e-12)
         loss_value = float(loss.detach().cpu())
+        best_loss = min(best_loss, loss_value)
         stats: dict[str, object] = {
             "stage": "proposal_ranker",
             "step": step,
             "loss": loss_value,
+            "train_loss": loss_value,
             "pair_count": pair_count,
             "pair_source_mode": pair_source_mode,
             "pair_source_counts": dict(sorted(pair_source_counts.items())),
@@ -528,27 +716,80 @@ def train_proposal_ranker(
             "records_per_s": len(selected) / elapsed,
             "finite_loss": True,
         }
+        should_validate = step % int(validation_interval) == 0 or step == int(steps)
+        if should_validate:
+            validation_summary = evaluate_ranker_validation(
+                records_by_id=val_records_by_id,
+                teachers_by_id=val_teachers,
+                score_row=_operation_log_score,
+                forward_record=_forward_record,
+                model=model,
+                backbone=backbone,
+                device=dev,
+                candidate_cap=validation_candidate_cap,
+            )
+            value = float(validation_summary[metric_key])
+            stats.update({f"val_{key}": value for key, value in validation_summary.items() if isinstance(value, (float, int))})
+            stats["val_recall_at_32"] = float(
+                validation_summary["oracle_best_recall_at_32"]
+            )
+            stats["validation_metric_name"] = checkpoint_metric
+            stats["validation_metric_value"] = value
+            if _metric_improved(
+                value, best_validation_metric, mode=checkpoint_mode,
+                minimum_improvement=minimum_improvement,
+            ):
+                best_validation_metric = value
+                best_validation_summary = dict(validation_summary)
+                best_validation_step = step
+                training_loss_at_best_step = loss_value
+                bad_validations = 0
+                _save_ranker_checkpoint(
+                    ckpt_path,
+                    cfg=cfg,
+                    backbone=backbone,
+                    model=model,
+                    base_checkpoint=base_checkpoint,
+                    teacher_jsonl=train_teacher_path,
+                    val_teacher_jsonl=val_teacher_jsonl,
+                    step=step,
+                    best_loss=best_loss,
+                    best_validation_metric=value,
+                    best_validation_step=step,
+                    validation_summary=validation_summary,
+                    training_loss_at_best_step=loss_value,
+                    trained_action_space=action_space,
+                    checkpoint_metric=checkpoint_metric,
+                    checkpoint_mode=checkpoint_mode,
+                    scientific_validity=scientific_validity,
+                )
+            else:
+                bad_validations += 1
+                if int(early_stopping_patience) > 0 and bad_validations >= int(early_stopping_patience):
+                    early_stopping_reason = (
+                        f"no_validation_improvement_for_{bad_validations}_intervals"
+                    )
+                    stats["early_stopping_reason"] = early_stopping_reason
+                    _write_profile(profile_path, stats)
+                    last_stats = stats
+                    break
         _write_profile(profile_path, stats)
         last_stats = stats
-        if loss_value < best_loss:
-            best_loss = loss_value
-            _save_ranker_checkpoint(
-                ckpt_path,
-                cfg=cfg,
-                backbone=backbone,
-                model=model,
-                base_checkpoint=base_checkpoint,
-                teacher_jsonl=teacher_jsonl,
-                step=step,
-                best_loss=best_loss,
-                trained_action_space=action_space,
-                scientific_validity=scientific_validity,
-            )
+    if best_validation_metric is None or not os.path.isfile(ckpt_path):
+        raise RuntimeError("no validation checkpoint was produced")
+    _annotate_checkpoint_termination(ckpt_path, early_stopping_reason)
     return {
         "stage": "proposal_ranker",
         "checkpoint_path": ckpt_path,
         "profile_path": profile_path,
         "best_loss": best_loss,
+        "best_validation_metric": best_validation_metric,
+        "best_validation_step": best_validation_step,
+        "validation_summary": best_validation_summary,
+        "training_loss_at_best_step": training_loss_at_best_step,
+        "checkpoint_metric": checkpoint_metric,
+        "checkpoint_mode": checkpoint_mode,
+        "early_stopping_reason": early_stopping_reason,
         "last_stats": last_stats,
         "usable_transcripts": len(usable),
         "pair_source_mode": pair_source_mode,
@@ -559,8 +800,12 @@ def train_proposal_ranker(
 
 def _parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Fine-tune MEF proposal ranking from oracle-teacher JSONL")
-    parser.add_argument("--records-jsonl", required=True)
-    parser.add_argument("--teacher-jsonl", required=True)
+    parser.add_argument("--records-jsonl", default=None, help="legacy alias for --train-records-jsonl")
+    parser.add_argument("--teacher-jsonl", default=None, help="legacy alias for --train-teacher-jsonl")
+    parser.add_argument("--train-records-jsonl", default=None)
+    parser.add_argument("--val-records-jsonl", default=None)
+    parser.add_argument("--train-teacher-jsonl", default=None)
+    parser.add_argument("--val-teacher-jsonl", default=None)
     parser.add_argument("--teacher-summary", default=None)
     parser.add_argument("--base-checkpoint", required=True)
     parser.add_argument("--save-dir", required=True)
@@ -590,24 +835,32 @@ def _parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
     parser.add_argument("--trained-task", default=None)
     parser.add_argument("--trained-editable-region", action="append", default=None)
     parser.add_argument("--trained-operation", action="append", default=None)
+    parser.add_argument("--checkpoint-metric", choices=("val_mean_model_regret", "val_oracle_best_recall_at_32", "val_ndcg_at_32"), default="val_mean_model_regret")
+    parser.add_argument("--checkpoint-mode", choices=("min", "max"), default="min")
+    parser.add_argument("--validation-interval", type=int, default=25)
+    parser.add_argument("--early-stopping-patience", type=int, default=0)
+    parser.add_argument("--minimum-improvement", type=float, default=0.0)
+    parser.add_argument("--validation-candidate-cap", type=int, default=0)
     return parser.parse_args(argv)
 
 
 def main(argv: Optional[Sequence[str]] = None) -> int:
     args = _parse_args(argv)
-    require_paper_cli_inputs(
-        run_mode=args.run_mode,
-        split_manifest=args.split_manifest,
-        split_role=args.split_role,
-        allowed_roles=("train",),
-    )
+    train_records_path = args.train_records_jsonl or args.records_jsonl
+    train_teacher_path = args.train_teacher_jsonl or args.teacher_jsonl
+    if not train_records_path or not args.val_records_jsonl or not train_teacher_path or not args.val_teacher_jsonl:
+        raise SystemExit("Stage 2 requires --train-records-jsonl --val-records-jsonl --train-teacher-jsonl --val-teacher-jsonl")
+    if args.run_mode == "paper" and not args.split_manifest:
+        raise SystemExit("paper ranker validation requires --split-manifest")
     split_contract = (
-        load_and_verify_split_manifest(args.split_manifest, records_path=args.records_jsonl)
+        load_and_verify_split_manifest(args.split_manifest)
         if args.split_manifest else None
     )
     result = train_proposal_ranker(
-        records=load_records_jsonl(args.records_jsonl),
-        teacher_jsonl=args.teacher_jsonl,
+        train_records=load_records_jsonl(train_records_path),
+        val_records=load_records_jsonl(args.val_records_jsonl),
+        train_teacher_jsonl=train_teacher_path,
+        val_teacher_jsonl=args.val_teacher_jsonl,
         teacher_summary=args.teacher_summary,
         base_checkpoint=args.base_checkpoint,
         save_dir=args.save_dir,
@@ -629,6 +882,12 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         trained_task=args.trained_task,
         trained_editable_regions=args.trained_editable_region,
         trained_operations=args.trained_operation,
+        checkpoint_metric=args.checkpoint_metric,
+        checkpoint_mode=args.checkpoint_mode,
+        validation_interval=args.validation_interval,
+        early_stopping_patience=args.early_stopping_patience,
+        minimum_improvement=args.minimum_improvement,
+        validation_candidate_cap=args.validation_candidate_cap,
     )
     print(json.dumps(result, sort_keys=True))
     return 0

@@ -38,6 +38,10 @@ class SplitRoleError(SplitContractError):
     """A caller requested an unknown or scientifically invalid role."""
 
 
+class TrainValidationOverlapError(SplitOverlapError):
+    """Train and validation inputs share identifiers, families, or sequences."""
+
+
 @dataclass(frozen=True)
 class VerifiedRole:
     name: str
@@ -97,6 +101,82 @@ def records_content_digest(records: Sequence[MRNARecord]) -> str:
         separators=(",", ":"),
     ).encode("utf-8")
     return hashlib.sha256(encoded).hexdigest()
+
+
+def sequence_hash(sequence: str) -> str:
+    """Stable sequence identity used to reject train/validation leakage."""
+    return hashlib.sha256(str(sequence).encode("utf-8")).hexdigest()
+
+
+def _family_clusters(records: Sequence[MRNARecord]) -> set[str]:
+    """Return supplied family-cluster identities, ignoring absent metadata."""
+    clusters: set[str] = set()
+    for record in records:
+        metadata = record.metadata if isinstance(record.metadata, Mapping) else {}
+        for key in ("family_cluster", "family_cluster_id", "cluster_id"):
+            value = metadata.get(key)
+            if value is not None and str(value).strip():
+                clusters.add(str(value))
+                break
+    return clusters
+
+
+def assert_train_validation_disjoint(
+    train_records: Sequence[MRNARecord],
+    val_records: Sequence[MRNARecord],
+    *,
+    split_contract: Optional["VerifiedSplitContract"] = None,
+) -> None:
+    """Fail closed on transcript, exact-sequence, or supplied-family overlap."""
+    train_ids = {record.transcript_id for record in train_records}
+    val_ids = {record.transcript_id for record in val_records}
+    overlap = train_ids & val_ids
+    if overlap:
+        raise TrainValidationOverlapError(
+            "train/val transcript id overlap: " + sorted(overlap)[0]
+        )
+    train_hashes = {sequence_hash(record.seq) for record in train_records}
+    val_hashes = {sequence_hash(record.seq) for record in val_records}
+    if train_hashes & val_hashes:
+        raise TrainValidationOverlapError("train/val sequence hash overlap detected")
+    cluster_overlap = _family_clusters(train_records) & _family_clusters(val_records)
+    if cluster_overlap:
+        raise TrainValidationOverlapError(
+            "train/val family cluster overlap: " + sorted(cluster_overlap)[0]
+        )
+    if split_contract is not None:
+        if not split_contract.family_disjoint:
+            raise TrainValidationOverlapError(
+                "split contract does not certify family-disjoint train/val roles"
+            )
+        if split_contract.cluster_assignments:
+            train_clusters = {
+                split_contract.cluster_assignments[index]
+                for index in split_contract.roles["train"].indices
+            }
+            val_clusters = {
+                split_contract.cluster_assignments[index]
+                for index in split_contract.roles["val"].indices
+            }
+            if train_clusters & val_clusters:
+                raise TrainValidationOverlapError(
+                    "split-contract train/val family cluster overlap detected"
+                )
+
+
+def verify_supplied_role_records(
+    records: Sequence[MRNARecord],
+    contract: "VerifiedSplitContract",
+    role: str,
+) -> list[MRNARecord]:
+    """Verify a role-specific JSONL against the immutable full split contract."""
+    universe = load_records_jsonl(contract.records_path)
+    expected = select_role_records(universe, contract, role)
+    if records_content_digest(records) != records_content_digest(expected):
+        raise SplitHashError(
+            f"provided {role} records do not exactly match the verified split role"
+        )
+    return list(records)
 
 
 def _resolve_path(manifest_dir: Path, raw: object, field: str) -> Path:
@@ -614,11 +694,15 @@ __all__ = [
     "SplitIndexError",
     "SplitOverlapError",
     "SplitRoleError",
+    "TrainValidationOverlapError",
     "VerifiedRole",
     "VerifiedSplitContract",
     "sha256_file",
     "transcript_id_digest",
     "records_content_digest",
+    "sequence_hash",
+    "assert_train_validation_disjoint",
+    "verify_supplied_role_records",
     "load_and_verify_split_manifest",
     "select_role_records",
     "build_split_provenance",

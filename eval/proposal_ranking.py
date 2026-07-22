@@ -157,38 +157,47 @@ def summarise_record_rows(
     *,
     top_k: int,
     source_te: float = 0.0,
+    candidate_cap: int = 0,
 ) -> dict[str, object]:
     """Summarise one source record's ranking gap.
 
     ``top_k`` measures whether the oracle-best candidate is reachable by a
     model top-k decoder. Complexity is ``O(|C|)`` because ranks are precomputed.
     """
+    prefix = "restricted_" if int(candidate_cap) > 0 else ""
+    scope = "restricted" if int(candidate_cap) > 0 else "global"
     if not rows:
-        return {
+        result = {
             "transcript_id": transcript_id,
+            "candidate_pool_scope": scope,
+            "candidate_cap": int(candidate_cap),
             "n_candidates": 0,
             "source_te": float(source_te),
             "model_top_te": float(source_te),
             "oracle_top_te": float(source_te),
-            "model_regret": 0.0,
             "oracle_best_model_rank": 0,
             "model_top_oracle_rank": 0,
             "oracle_best_in_model_top_k": False,
         }
+        result[f"{prefix}model_regret"] = 0.0
+        return result
     model_top = min(rows, key=lambda r: r.model_rank)
     oracle_top = min(rows, key=lambda r: r.oracle_rank)
     k = len(rows) if int(top_k) <= 0 else max(1, int(top_k))
-    return {
+    result = {
         "transcript_id": transcript_id,
+        "candidate_pool_scope": scope,
+        "candidate_cap": int(candidate_cap),
         "n_candidates": len(rows),
         "source_te": float(model_top.source_te),
         "model_top_te": float(model_top.oracle_te),
         "oracle_top_te": float(oracle_top.oracle_te),
-        "model_regret": float(oracle_top.oracle_te - model_top.oracle_te),
         "oracle_best_model_rank": int(oracle_top.model_rank),
         "model_top_oracle_rank": int(model_top.oracle_rank),
         "oracle_best_in_model_top_k": bool(oracle_top.model_rank <= k),
     }
+    result[f"{prefix}model_regret"] = float(oracle_top.oracle_te - model_top.oracle_te)
+    return result
 
 
 def score_record_proposals(
@@ -243,7 +252,13 @@ def score_record_proposals(
         for oracle_te in [oracle_tes[i]]
     ]
     rows.sort(key=lambda row: row.model_rank)
-    return rows, summarise_record_rows(record.transcript_id, rows, top_k=top_k, source_te=source_te)
+    return rows, summarise_record_rows(
+        record.transcript_id,
+        rows,
+        top_k=top_k,
+        source_te=source_te,
+        candidate_cap=candidate_cap,
+    )
 
 
 def _aggregate_record_summaries(record_summaries: Sequence[Mapping[str, object]]) -> dict[str, object]:
@@ -251,26 +266,31 @@ def _aggregate_record_summaries(record_summaries: Sequence[Mapping[str, object]]
         row for row in record_summaries
         if _as_float(row.get("n_candidates")) > 0.0
     ]
-    regrets = [_as_float(row.get("model_regret")) for row in record_summaries]
+    restricted = any(row.get("candidate_pool_scope") == "restricted" for row in record_summaries)
+    prefix = "restricted_" if restricted else ""
+    regret_key = f"{prefix}model_regret"
+    regrets = [_as_float(row.get(regret_key)) for row in record_summaries]
     hit = [1.0 if row.get("oracle_best_in_model_top_k") else 0.0 for row in with_candidates]
     n_candidates = [_as_float(row.get("n_candidates")) for row in record_summaries]
     model_top_te = [_as_float(row.get("model_top_te")) for row in record_summaries]
     oracle_top_te = [_as_float(row.get("oracle_top_te")) for row in record_summaries]
     source_te = [_as_float(row.get("source_te")) for row in record_summaries]
-    return {
+    result = {
+        "candidate_pool_scope": "restricted" if restricted else "global",
         "n_records": len(record_summaries),
         "n_records_with_candidates": len(with_candidates),
         "n_candidates": int(sum(n_candidates)),
         "mean_source_te": _mean(source_te),
         "mean_model_top_te": _mean(model_top_te),
         "mean_oracle_top_te": _mean(oracle_top_te),
-        "mean_model_regret": _mean(regrets),
-        "max_model_regret": _max(regrets),
         "oracle_best_in_model_top_k_fraction": _mean(hit),
         "candidate_pool_min": _min(n_candidates),
         "candidate_pool_mean": _mean(n_candidates),
         "candidate_pool_max": _max(n_candidates),
     }
+    result[f"{prefix}mean_model_regret"] = _mean(regrets)
+    result[f"{prefix}max_model_regret"] = _max(regrets)
+    return result
 
 
 def run_proposal_ranking_audit(
