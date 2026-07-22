@@ -17,7 +17,7 @@ from mrna_editflow.rl.rollout_buffer import ReplayBuffer, ReplayMixConfig, itera
 from mrna_editflow.rl.trajectory_schema import OfflineTrajectory, TrajectoryState, validate_telescoping
 from mrna_editflow.sample import load_stage_a_checkpoint
 from mrna_editflow.baselines.multiobjective_teacher_export import MultiObjectiveConfig, export_multiobjective_teacher_jsonl
-from mrna_editflow.train_dagger_ranker import DaggerIterationConfig, train_dagger_iteration
+from mrna_editflow.train_dagger_ranker import DaggerIterationConfig, run_dagger_iterations
 from mrna_editflow.train_backbone import train_stage_a
 from mrna_editflow.tests.test_training_sampling import _tiny_config, _tiny_records
 
@@ -117,16 +117,18 @@ class TestStage4Dagger(unittest.TestCase):
             teacher_cfg = MultiObjectiveConfig(max_edit_positions=2, candidate_cap=8)
             export_multiobjective_teacher_jsonl([self.record], out_jsonl=train_teacher, out_json=train_summary, config=teacher_cfg)
             export_multiobjective_teacher_jsonl([_tiny_records()[1]], out_jsonl=val_teacher, out_json=val_summary, config=teacher_cfg)
-            result = train_dagger_iteration(
+            results = run_dagger_iterations(
                 train_records=[self.record], validation_records=[_tiny_records()[1]],
                 original_train_teacher_jsonl=train_teacher, validation_teacher_jsonl=val_teacher,
-                policy_checkpoint=self.checkpoint, output_root=os.path.join(tmp, "iterations"),
-                config=DaggerIterationConfig(
+                initial_policy_checkpoint=self.checkpoint, output_root=os.path.join(tmp, "iterations"),
+                iteration_configs=[DaggerIterationConfig(
                     iteration=1, rollout_edit_budget=1, rollout_top_k=1, rollout_temperature=0.0,
                     rollout_allow_stop=False, mixed_rows=10, ranker_steps=1,
                     ranker_batch_records=1, ranker_validation_interval=1, seed=807,
-                ), device="cpu",
+                )], device="cpu",
             )
+            self.assertEqual(len(results), 1)
+            result = results[0]
             self.assertTrue(os.path.isfile(result["iteration_manifest"]))
             self.assertEqual(result["metrics"]["validation_transcripts_used_for_dagger"], 0)
             self.assertIsNotNone(result["metrics"]["validation_regret"])

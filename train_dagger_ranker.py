@@ -216,6 +216,50 @@ def train_dagger_iteration(
     return dict(manifest, iteration_dir=iteration_dir, iteration_manifest=manifest_path)
 
 
+def run_dagger_iterations(
+    *,
+    train_records: Sequence[MRNARecord],
+    validation_records: Sequence[MRNARecord],
+    original_train_teacher_jsonl: str,
+    validation_teacher_jsonl: str,
+    initial_policy_checkpoint: str,
+    output_root: str,
+    iteration_configs: Sequence[DaggerIterationConfig],
+    device: Optional[str] = None,
+    hard_negative_jsonl: Optional[str] = None,
+) -> list[dict[str, object]]:
+    """Run ``iteration 1 -> rollout/relabel/retrain -> iteration 2 -> ...``.
+
+    The validation-selected checkpoint from one offline iteration becomes the
+    rollout policy for the next. Each cycle still uses a non-overwritable
+    iteration directory, preserving its own evidence and policy version.
+    """
+    checkpoint = initial_policy_checkpoint
+    results: list[dict[str, object]] = []
+    seen: set[int] = set()
+    for config in iteration_configs:
+        if int(config.iteration) in seen:
+            raise ValueError("DAgger iteration numbers must be unique")
+        seen.add(int(config.iteration))
+        result = train_dagger_iteration(
+            train_records=train_records,
+            validation_records=validation_records,
+            original_train_teacher_jsonl=original_train_teacher_jsonl,
+            validation_teacher_jsonl=validation_teacher_jsonl,
+            policy_checkpoint=checkpoint,
+            output_root=output_root,
+            config=config,
+            device=device,
+            hard_negative_jsonl=hard_negative_jsonl,
+        )
+        ranker = result.get("ranker_result", {})
+        if not isinstance(ranker, Mapping) or not isinstance(ranker.get("checkpoint_path"), str):
+            raise RuntimeError("DAgger iteration did not return a ranker checkpoint")
+        checkpoint = str(ranker["checkpoint_path"])
+        results.append(result)
+    return results
+
+
 def _records(path: str) -> list[MRNARecord]:
     return [MRNARecord.from_dict(row) for row in _read_jsonl(path)]
 

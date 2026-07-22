@@ -63,6 +63,10 @@ checkpoint, and `iteration_manifest.json`.  The manifest records policy
 version, buffer size, state diversity, mean trajectory reward, validation
 regret, positive-edit precision, STOP rate, and cycle rejection rate.
 
+`run_dagger_iterations()` chains iterations: its validation-selected ranker
+checkpoint becomes the next iteration's rollout policy, while every cycle
+retains its own isolated manifest and replay artifacts.
+
 Only `train_records` are passed to rollout/export.  The exporter rejects any
 source in the validation ID set, and ranker validation continues to use the
 unchanged validation records and teacher JSONL.
