@@ -394,13 +394,15 @@ class TestMultiObjectiveTeacherExport(unittest.TestCase):
             ),
         )
         self.assertTrue(rows)
-        self.assertLessEqual(len(rows), 12)
+        self.assertLessEqual(len(rows), 13)  # capped edits plus mandatory STOP
+        self.assertTrue(any(row.op == "stop" for row in rows))
         for row in rows:
             self.assertEqual(row.transcript_id, "mo_utr")
-            self.assertIn(row.op, {"sub", "ins", "del"})
-            # source_scores must expose every objective label, normalized to [0,1].
-            self.assertEqual(set(row.source_scores), set(OBJECTIVE_LABELS))
-            for label in OBJECTIVE_LABELS:
+            self.assertIn(row.op, {"sub", "ins", "del", "stop"})
+            # Derived MRL and invalid UTR-only CAI stay auditable in the vector
+            # but are excluded from source-balanced optimization labels.
+            self.assertEqual(set(row.source_scores), {"te", "gc", "access", "uaug"})
+            for label in row.source_scores:
                 value = row.source_scores[label]
                 self.assertGreaterEqual(value, 0.0)
                 self.assertLessEqual(value, 1.0)
@@ -452,7 +454,9 @@ class TestMultiObjectiveTeacherExport(unittest.TestCase):
             self.assertTrue(grouped)
             for rows in grouped.values():
                 for row in rows:
-                    self.assertEqual(set(row.source_scores), set(OBJECTIVE_LABELS))
+                    self.assertEqual(set(row.source_scores), {"te", "gc", "access", "uaug"})
+                    self.assertTrue(row.reward_vector)
+                    self.assertFalse(row.validity.get("cai", True))
             with open(out_jsonl, "r", encoding="utf-8") as fh:
                 raw = [json.loads(line) for line in fh if line.strip()]
             for row in raw:
@@ -668,7 +672,7 @@ class TestParetoFusion(unittest.TestCase):
             self.assertTrue(grouped)
             for group in grouped.values():
                 for row in group:
-                    self.assertEqual(set(row.source_scores), set(OBJECTIVE_LABELS))
+                    self.assertEqual(set(row.source_scores), {"te", "gc", "access", "uaug"})
             with open(out_jsonl, "r", encoding="utf-8") as fh:
                 raw = [json.loads(line) for line in fh if line.strip()]
             for row in raw:

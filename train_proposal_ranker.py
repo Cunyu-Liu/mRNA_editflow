@@ -44,7 +44,7 @@ import math
 import os
 import random
 import time
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from typing import Mapping, Optional, Sequence
 
 import torch
@@ -73,6 +73,12 @@ from mrna_editflow.eval.artifact_contract import (
 )
 from mrna_editflow.sample import _record_tensors, load_stage_a_checkpoint
 from mrna_editflow.rl.action_scoring import operation_log_score
+from mrna_editflow.rl.preference_conditioning import (
+    PreferenceConditionedObjectiveHead,
+    normalized_preference,
+    sample_dirichlet_preference,
+)
+from mrna_editflow.rl.reward_vector import RewardVector
 from mrna_editflow.rl.validation import evaluate_ranker_validation
 from mrna_editflow.train_backbone import _ensure_parent, _resolve_device, _set_seed, _write_profile
 
@@ -88,6 +94,13 @@ class ProposalTeacherRow:
     teacher_score: float
     source_scores: Mapping[str, float]
     task_id: str = "T5"
+    reward_vector: Mapping[str, object] = field(default_factory=dict)
+    raw_absolute_level: Mapping[str, float] = field(default_factory=dict)
+    raw_delta_from_source: Mapping[str, float] = field(default_factory=dict)
+    normalized_within_group: Mapping[str, float] = field(default_factory=dict)
+    oracle_uncertainty: Optional[float] = None
+    oracle_agreement: Optional[float] = None
+    validity: Mapping[str, bool] = field(default_factory=dict)
 
     @classmethod
     def from_json(cls, row: Mapping[str, object]) -> "ProposalTeacherRow":
@@ -111,6 +124,25 @@ class ProposalTeacherRow:
             nt=str(row.get("nt", "")),
             teacher_score=float(row["teacher_score"]),
             source_scores=source_scores,
+            reward_vector=(dict(row["reward_vector"]) if isinstance(row.get("reward_vector"), Mapping) else {}),
+            raw_absolute_level={
+                str(k): float(v)
+                for k, v in (row.get("raw_absolute_level") if isinstance(row.get("raw_absolute_level"), Mapping) else {}).items()
+            },
+            raw_delta_from_source={
+                str(k): float(v)
+                for k, v in (row.get("raw_delta_from_source") if isinstance(row.get("raw_delta_from_source"), Mapping) else row.get("objective_deltas") if isinstance(row.get("objective_deltas"), Mapping) else {}).items()
+            },
+            normalized_within_group={
+                str(k): float(v)
+                for k, v in (row.get("normalized_within_group") if isinstance(row.get("normalized_within_group"), Mapping) else row.get("source_scores") if isinstance(row.get("source_scores"), Mapping) else {}).items()
+            },
+            oracle_uncertainty=(None if row.get("oracle_uncertainty") is None else float(row["oracle_uncertainty"])),
+            oracle_agreement=(None if row.get("oracle_agreement") is None else float(row["oracle_agreement"])),
+            validity={
+                str(k): bool(v)
+                for k, v in (row.get("validity") if isinstance(row.get("validity"), Mapping) else {}).items()
+            },
         )
 
 
@@ -153,6 +185,63 @@ def _forward_record(record: MRNARecord, model, backbone, device: torch.device) -
 def _operation_log_score(out: Mapping[str, torch.Tensor], row: ProposalTeacherRow) -> torch.Tensor:
     """Compatibility wrapper delegating to the shared differentiable scorer."""
     return operation_log_score(out, row.op, row.pos, row.nt or None)
+
+
+def _row_reward_vector(row: ProposalTeacherRow) -> RewardVector:
+    if row.reward_vector:
+        return RewardVector.from_dict(row.reward_vector)
+    return RewardVector.from_legacy(row.raw_delta_from_source or {"teacher": row.teacher_score}, row.source_scores)
+
+
+def _objective_schema(rows: Sequence[ProposalTeacherRow]) -> tuple[str, ...]:
+    names: set[str] = set()
+    for row in rows:
+        if not row.reward_vector:
+            # Old scalar/source-balanced teachers retain their established
+            # Bradley-Terry path rather than being silently reinterpreted.
+            continue
+        vector = _row_reward_vector(row)
+        for component in vector.components:
+            if component.valid and component.category != "hard_constraint" and component.independent:
+                names.add(component.name)
+    return tuple(sorted(names))
+
+
+def _operation_id(op: str) -> int:
+    return {"ins": 0, "sub": 1, "del": 2, "stop": 0}.get(str(op).lower(), 0)
+
+
+def score_objectives(
+    out: Mapping[str, torch.Tensor],
+    rows: Sequence[ProposalTeacherRow],
+    objective_head: PreferenceConditionedObjectiveHead,
+) -> dict[str, torch.Tensor]:
+    """Return independently parameterized objective scores for legal actions."""
+    base = torch.stack([_operation_log_score(out, row) for row in rows])
+    operation_ids = torch.tensor(
+        [_operation_id(row.op) for row in rows], dtype=torch.long, device=base.device
+    )
+    return objective_head(base, operation_ids)
+
+
+def load_objective_head_from_checkpoint(
+    checkpoint_path: str, *, device: Optional[str] = None
+) -> tuple[PreferenceConditionedObjectiveHead, dict[str, object]]:
+    """Load vector reward heads for preference-conditioned inference."""
+    payload = torch.load(checkpoint_path, map_location=device or "cpu", weights_only=False)
+    if not isinstance(payload, Mapping):
+        raise ValueError("checkpoint must contain a mapping payload")
+    schema = payload.get("objective_schema")
+    state = payload.get("objective_head_state")
+    if not isinstance(schema, Mapping) or not isinstance(state, Mapping):
+        raise ValueError("checkpoint does not contain a Stage 3 objective head")
+    names = schema.get("objective_names")
+    if not isinstance(names, Sequence) or isinstance(names, (str, bytes)) or not names:
+        raise ValueError("objective checkpoint schema has no objective_names")
+    head = PreferenceConditionedObjectiveHead([str(name) for name in names])
+    head.load_state_dict(state)  # type: ignore[arg-type]
+    head.to(device or "cpu").eval()
+    return head, dict(schema)
 
 
 def _pair_indices_from_scores(
@@ -328,6 +417,9 @@ def _save_ranker_checkpoint(
     trained_action_space: Mapping[str, object],
     checkpoint_metric: str,
     checkpoint_mode: str,
+    objective_head: Optional[PreferenceConditionedObjectiveHead] = None,
+    objective_schema: Optional[Mapping[str, object]] = None,
+    preference_training: Optional[Mapping[str, object]] = None,
     early_stopping_reason: Optional[str] = None,
     scientific_validity: Optional[Mapping[str, object]] = None,
 ) -> None:
@@ -348,6 +440,11 @@ def _save_ranker_checkpoint(
             "validation_summary": dict(validation_summary),
             "training_loss_at_best_step": float(training_loss_at_best_step),
             "early_stopping_reason": early_stopping_reason,
+            "objective_head_state": (
+                objective_head.state_dict() if objective_head is not None else None
+            ),
+            "objective_schema": dict(objective_schema or {}),
+            "preference_training": dict(preference_training or {}),
             # Keep the nested object as the canonical extensible form, while
             # mirroring the three required fields at top level for tooling
             # that reads checkpoint metadata without knowing this wrapper.
@@ -482,6 +579,9 @@ def train_proposal_ranker(
     early_stopping_patience: int = 0,
     minimum_improvement: float = 0.0,
     validation_candidate_cap: int = 0,
+    preference_alpha: Optional[Mapping[str, float]] = None,
+    uncertainty_penalty: float = 0.0,
+    minimum_oracle_agreement: Optional[float] = None,
 ) -> dict[str, object]:
     """Fine-tune only on train rows and select checkpoints only on validation."""
     run_mode = normalize_run_mode(run_mode)
@@ -590,6 +690,9 @@ def train_proposal_ranker(
             "early_stopping_patience": early_stopping_patience,
             "minimum_improvement": minimum_improvement,
             "validation_candidate_cap": validation_candidate_cap,
+            "preference_alpha": dict(preference_alpha or {}),
+            "uncertainty_penalty": uncertainty_penalty,
+            "minimum_oracle_agreement": minimum_oracle_agreement,
         },
         code_paths=(__file__,),
         training_seed=int(seed),
@@ -624,6 +727,18 @@ def train_proposal_ranker(
     _require_teacher_alignment(train_records_verified, teachers, partition="train")
     _require_teacher_alignment(val_records_verified, val_teachers, partition="validation")
     all_teacher_rows = [row for rows in teachers.values() for row in rows]
+    objective_names = _objective_schema(all_teacher_rows)
+    objective_head = (
+        PreferenceConditionedObjectiveHead(objective_names).to(dev)
+        if objective_names else None
+    )
+    objective_schema = (
+        objective_head.schema() if objective_head is not None else {"objective_names": [], "legacy_scalar_only": True}
+    )
+    alpha = {
+        name: float((preference_alpha or {}).get(name, 1.0))
+        for name in objective_names
+    }
     inferred_task = str(trained_task or (all_teacher_rows[0].task_id if all_teacher_rows else "T5")).upper()
     inferred_ops = sorted({str(row.op).lower() for row in all_teacher_rows})
     inferred_regions = list(trained_editable_regions or (("cds",) if inferred_task == "T4" else ("utr5",)))
@@ -644,7 +759,10 @@ def train_proposal_ranker(
     )
     if not usable:
         raise ValueError("no transcript has at least one informative teacher pair")
-    optimizer = torch.optim.AdamW(model.parameters(), lr=float(lr), weight_decay=float(weight_decay))
+    trainable_parameters = list(model.parameters()) + (
+        list(objective_head.parameters()) if objective_head is not None else []
+    )
+    optimizer = torch.optim.AdamW(trainable_parameters, lr=float(lr), weight_decay=float(weight_decay))
     os.makedirs(save_dir, exist_ok=True)
     _ensure_parent(profile_path)
     with open(profile_path, "w", encoding="utf-8") as fh:
@@ -681,7 +799,66 @@ def train_proposal_ranker(
                 continue
             out = _forward_record(records_by_id[tid], model, backbone, dev)
             scores = [_operation_log_score(out, row) for row in rows]
+            vectors = [_row_reward_vector(row) for row in rows]
+            objective_scores = (
+                score_objectives(out, rows, objective_head)
+                if objective_head is not None else None
+            )
+            sampled_preference = (
+                sample_dirichlet_preference(alpha) if alpha else {}
+            )
             for pair in pairs:
+                if (
+                    minimum_oracle_agreement is not None
+                    and any(
+                        row.oracle_agreement is not None
+                        and float(row.oracle_agreement) < float(minimum_oracle_agreement)
+                        for row in (rows[pair.i], rows[pair.j])
+                    )
+                ):
+                    continue
+                if objective_scores is not None:
+                    component_deltas: dict[str, float] = {}
+                    for name in objective_names:
+                        left = vectors[pair.i].raw_delta_from_source.get(name)
+                        right = vectors[pair.j].raw_delta_from_source.get(name)
+                        if left is None or right is None:
+                            continue
+                        valid_left = vectors[pair.i].validity.get(name, True)
+                        valid_right = vectors[pair.j].validity.get(name, True)
+                        if not valid_left or not valid_right:
+                            continue
+                        delta = float(left) - float(right)
+                        if abs(delta) < float(min_teacher_delta):
+                            continue
+                        direction = 1.0 if delta > 0.0 else -1.0
+                        margin = direction * (
+                            objective_scores[name][pair.i] - objective_scores[name][pair.j]
+                        ) / tau
+                        losses.append(F.softplus(-margin) * max(abs(delta), float(min_pair_weight)))
+                        component_deltas[name] = delta
+                    if component_deltas and sampled_preference:
+                        effective_preference = dict(sampled_preference)
+                        # The vector stores uncertainty as a negative component;
+                        # kappa controls whether/how strongly it enters a
+                        # sampled preference objective.  This remains offline
+                        # preference distillation, not online RL.
+                        if "uncertainty" in effective_preference:
+                            effective_preference["uncertainty"] *= float(uncertainty_penalty)
+                        preference = normalized_preference({
+                            name: effective_preference[name]
+                            for name in component_deltas if name in effective_preference
+                        })
+                        teacher_delta = sum(preference[name] * component_deltas[name] for name in preference)
+                        combined_scores = sum(
+                            preference[name] * objective_scores[name]
+                            for name in preference
+                        )
+                        direction = 1.0 if teacher_delta > 0.0 else -1.0
+                        margin = direction * (combined_scores[pair.i] - combined_scores[pair.j]) / tau
+                        losses.append(F.softplus(-margin) * max(abs(teacher_delta), float(min_pair_weight)))
+                    pair_count += 1
+                    continue
                 teacher_delta = float(pair.teacher_delta)
                 direction = 1.0 if teacher_delta > 0.0 else -1.0
                 margin = direction * (scores[pair.i] - scores[pair.j]) / tau
@@ -761,6 +938,14 @@ def train_proposal_ranker(
                     trained_action_space=action_space,
                     checkpoint_metric=checkpoint_metric,
                     checkpoint_mode=checkpoint_mode,
+                    objective_head=objective_head,
+                    objective_schema=objective_schema,
+                    preference_training={
+                        "mode": "dirichlet" if alpha else "legacy_scalar",
+                        "alpha": alpha,
+                        "uncertainty_penalty": float(uncertainty_penalty),
+                        "minimum_oracle_agreement": minimum_oracle_agreement,
+                    },
                     scientific_validity=scientific_validity,
                 )
             else:
@@ -794,6 +979,13 @@ def train_proposal_ranker(
         "usable_transcripts": len(usable),
         "pair_source_mode": pair_source_mode,
         "trained_action_space": action_space,
+        "objective_schema": objective_schema,
+        "preference_training": {
+            "mode": "dirichlet" if alpha else "legacy_scalar",
+            "alpha": alpha,
+            "uncertainty_penalty": float(uncertainty_penalty),
+            "minimum_oracle_agreement": minimum_oracle_agreement,
+        },
         "scientific_validity": scientific_validity,
     }
 
@@ -841,6 +1033,9 @@ def _parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
     parser.add_argument("--early-stopping-patience", type=int, default=0)
     parser.add_argument("--minimum-improvement", type=float, default=0.0)
     parser.add_argument("--validation-candidate-cap", type=int, default=0)
+    parser.add_argument("--preference-alpha", action="append", default=None, metavar="OBJECTIVE=ALPHA")
+    parser.add_argument("--uncertainty-penalty", type=float, default=0.0)
+    parser.add_argument("--minimum-oracle-agreement", type=float, default=None)
     return parser.parse_args(argv)
 
 
@@ -856,6 +1051,12 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         load_and_verify_split_manifest(args.split_manifest)
         if args.split_manifest else None
     )
+    preference_alpha: dict[str, float] = {}
+    for item in args.preference_alpha or ():
+        if "=" not in item:
+            raise SystemExit("--preference-alpha expects OBJECTIVE=ALPHA")
+        name, value = item.split("=", 1)
+        preference_alpha[name] = float(value)
     result = train_proposal_ranker(
         train_records=load_records_jsonl(train_records_path),
         val_records=load_records_jsonl(args.val_records_jsonl),
@@ -888,6 +1089,9 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         early_stopping_patience=args.early_stopping_patience,
         minimum_improvement=args.minimum_improvement,
         validation_candidate_cap=args.validation_candidate_cap,
+        preference_alpha=preference_alpha or None,
+        uncertainty_penalty=args.uncertainty_penalty,
+        minimum_oracle_agreement=args.minimum_oracle_agreement,
     )
     print(json.dumps(result, sort_keys=True))
     return 0
