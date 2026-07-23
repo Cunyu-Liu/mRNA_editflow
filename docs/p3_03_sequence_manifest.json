@@ -1,0 +1,1241 @@
+{
+  "phase": "P3-03",
+  "manifest_type": "prospective_falsification_sequence_manifest",
+  "generated_at": "2026-07-23T10:23:58",
+  "configuration": {
+    "n_cargos": 2,
+    "n_arms_per_cargo": 12,
+    "n_replicates": 3,
+    "total_unique_sequences": 24,
+    "total_wells": 72,
+    "cell_context": "HEK293T",
+    "time_points": [
+      "4h",
+      "8h",
+      "24h",
+      "48h"
+    ],
+    "readouts": [
+      "protein_output",
+      "mRNA_abundance",
+      "cell_viability"
+    ]
+  },
+  "cargo_definitions": [
+    {
+      "cargo_id": "EGFP",
+      "cargo_name": "Enhanced Green Fluorescent Protein",
+      "cargo_description": "Standard reporter, 239 aa, matches P3-01 measured tier (Sample2019 MPRA)",
+      "cargo_length_aa": 239,
+      "selection_criteria": "test split, edit_count=0 (WT anchor), 50nt 5'UTR"
+    },
+    {
+      "cargo_id": "mCherry",
+      "cargo_name": "mCherry Red Fluorescent Protein",
+      "cargo_description": "Different length/property cargo, 236 aa, NOT in P3-01 training data",
+      "cargo_length_aa": 236,
+      "selection_criteria": "proxy tier, test split, longer 5'UTR (>50nt) for out-of-distribution test"
+    }
+  ],
+  "arm_definitions": [
+    {
+      "arm_id": "A01",
+      "name": "wt_source",
+      "description": "Wild-type source sequence (no edits)"
+    },
+    {
+      "arm_id": "A02",
+      "name": "random_one_edit",
+      "description": "Random legal single-nt substitution in 5'UTR"
+    },
+    {
+      "arm_id": "A03",
+      "name": "random_three_edit",
+      "description": "Random legal 3-nt substitutions in 5'UTR"
+    },
+    {
+      "arm_id": "A04",
+      "name": "best_predicted_one_edit",
+      "description": "Oracle-predicted best single-nt edit"
+    },
+    {
+      "arm_id": "A05",
+      "name": "best_predicted_three_edit",
+      "description": "Oracle-predicted best 3-nt edits (greedy)"
+    },
+    {
+      "arm_id": "A06",
+      "name": "greedy_best",
+      "description": "Greedy search best (max 3 edits)"
+    },
+    {
+      "arm_id": "A07",
+      "name": "beam_search_best",
+      "description": "Beam search best (beam=5, max 2 edits)"
+    },
+    {
+      "arm_id": "A08",
+      "name": "five_utr_only_best",
+      "description": "Best edit restricted to 5'UTR region"
+    },
+    {
+      "arm_id": "A09",
+      "name": "cds_only_best",
+      "description": "Best synonymous codon edit in CDS"
+    },
+    {
+      "arm_id": "A10",
+      "name": "joint_best",
+      "description": "Best joint 5'UTR + CDS edit"
+    },
+    {
+      "arm_id": "A11",
+      "name": "high_disagreement_negative",
+      "description": "High ensemble disagreement, predicted negative (control)"
+    },
+    {
+      "arm_id": "A12",
+      "name": "adversarial_high_reward",
+      "description": "High predicted delta but suspicious features (reward hacking test)"
+    }
+  ],
+  "source_sequences": [
+    {
+      "cargo_id": "EGFP",
+      "source_record_id": "p3b:8dfa098bf1974042",
+      "source_sequence": "UAGAGGAACGGUGGUACCUGAACCCUUCAGUACUGAGUCGUUUACUCUGG",
+      "source_value": 5.77186293504,
+      "confidence": "measured",
+      "split_role": "test"
+    },
+    {
+      "cargo_id": "mCherry",
+      "source_record_id": "mcherry_wt_refseq_human_rna:XM_024452237.2",
+      "source_sequence": "CUUAUUUUAACUCCACUGAGCUGCAAGAUCUUCACUGAAGUACAACUGGACUUAUUUUUAGAAAAACUGCUCUGUUAAGAAGACCUUCGUGCCUGAUGA",
+      "source_value": 7.109370231628418,
+      "confidence": "proxy",
+      "split_role": "test"
+    }
+  ],
+  "sequences": [
+    {
+      "arm_id": "A01",
+      "arm_name": "wt_source",
+      "cargo_id": "EGFP",
+      "sequence": "UAGAGGAACGGUGGUACCUGAACCCUUCAGUACUGAGUCGUUUACUCUGG",
+      "edits": [],
+      "edit_count": 0,
+      "predicted_delta": 0.0,
+      "prediction_std": 0.0,
+      "selection_method": "none"
+    },
+    {
+      "arm_id": "A02",
+      "arm_name": "random_one_edit",
+      "cargo_id": "EGFP",
+      "sequence": "UAGAGGAACGGUGGUACCUGCACCCUUCAGUACUGAGUCGUUUACUCUGG",
+      "edits": [
+        {
+          "pos": 20,
+          "ref": "A",
+          "alt": "C",
+          "region": "five_utr"
+        }
+      ],
+      "edit_count": 1,
+      "predicted_delta": 0.05743940878680333,
+      "prediction_std": 0.03316861747620666,
+      "selection_method": "random"
+    },
+    {
+      "arm_id": "A03",
+      "arm_name": "random_three_edit",
+      "cargo_id": "EGFP",
+      "sequence": "GAGAGGACAGGUGGUACCUGAACCCUUCAGUACUGAGUCGUUUACUCUGG",
+      "edits": [
+        {
+          "pos": 0,
+          "ref": "U",
+          "alt": "G",
+          "region": "five_utr"
+        },
+        {
+          "pos": 8,
+          "ref": "C",
+          "alt": "A",
+          "region": "five_utr"
+        },
+        {
+          "pos": 7,
+          "ref": "A",
+          "alt": "C",
+          "region": "five_utr"
+        }
+      ],
+      "edit_count": 3,
+      "predicted_delta": 0.057451748718020446,
+      "prediction_std": 0.03313448813996663,
+      "selection_method": "random"
+    },
+    {
+      "arm_id": "A04",
+      "arm_name": "best_predicted_one_edit",
+      "cargo_id": "EGFP",
+      "sequence": "UAGAGGAACGGUGGUACCUGAACCCUUCAGUACUGAGUCGUUUACUGUGG",
+      "edits": [
+        {
+          "pos": 46,
+          "ref": "C",
+          "alt": "G",
+          "region": "five_utr"
+        }
+      ],
+      "edit_count": 1,
+      "predicted_delta": 0.057717476538876544,
+      "prediction_std": 0.03331741594015797,
+      "selection_method": "exact_enumeration"
+    },
+    {
+      "arm_id": "A05",
+      "arm_name": "best_predicted_three_edit",
+      "cargo_id": "EGFP",
+      "sequence": "UAGAGGAACGGUGGUACCUGAACCCUUCAGUACUGAGUCGUUAAGUGUGG",
+      "edits": [
+        {
+          "pos": 46,
+          "ref": "C",
+          "alt": "G",
+          "region": "five_utr"
+        },
+        {
+          "pos": 42,
+          "ref": "U",
+          "alt": "A",
+          "region": "five_utr"
+        },
+        {
+          "pos": 44,
+          "ref": "C",
+          "alt": "G",
+          "region": "five_utr"
+        }
+      ],
+      "edit_count": 3,
+      "predicted_delta": 0.057749875336377016,
+      "prediction_std": 0.03331549253232024,
+      "selection_method": "greedy_max3"
+    },
+    {
+      "arm_id": "A06",
+      "arm_name": "greedy_best",
+      "cargo_id": "EGFP",
+      "sequence": "UAGAGGAACGGUGGUACCUGAACCCUUCAGUACUGAGUCGUAAAGUGAGG",
+      "edits": [
+        {
+          "pos": 46,
+          "ref": "C",
+          "alt": "G",
+          "region": "five_utr"
+        },
+        {
+          "pos": 42,
+          "ref": "U",
+          "alt": "A",
+          "region": "five_utr"
+        },
+        {
+          "pos": 44,
+          "ref": "C",
+          "alt": "G",
+          "region": "five_utr"
+        },
+        {
+          "pos": 41,
+          "ref": "U",
+          "alt": "A",
+          "region": "five_utr"
+        },
+        {
+          "pos": 47,
+          "ref": "U",
+          "alt": "A",
+          "region": "five_utr"
+        }
+      ],
+      "edit_count": 5,
+      "predicted_delta": 0.05777695016023883,
+      "prediction_std": 0.03331998992815786,
+      "selection_method": "greedy_max5"
+    },
+    {
+      "arm_id": "A07",
+      "arm_name": "beam_search_best",
+      "cargo_id": "EGFP",
+      "sequence": "UAGAGGAACGGUGGUACCUGAACCCUUCAGUACUGAGUCGUUAAGUGUGG",
+      "edits": [
+        {
+          "pos": 46,
+          "ref": "C",
+          "alt": "G",
+          "region": "five_utr"
+        },
+        {
+          "pos": 42,
+          "ref": "U",
+          "alt": "A",
+          "region": "five_utr"
+        },
+        {
+          "pos": 44,
+          "ref": "C",
+          "alt": "G",
+          "region": "five_utr"
+        }
+      ],
+      "edit_count": 3,
+      "predicted_delta": 0.057749875336377016,
+      "prediction_std": 0.03331549253232024,
+      "selection_method": "beam_search_w5_d3"
+    },
+    {
+      "arm_id": "A08",
+      "arm_name": "five_utr_only_best",
+      "cargo_id": "EGFP",
+      "sequence": "UAGAGGAACGGUGGUACCUGAACCCUUCAGUACUGAGUCGUUUACUGUGG",
+      "edits": [
+        {
+          "pos": 46,
+          "ref": "C",
+          "alt": "G",
+          "region": "five_utr"
+        }
+      ],
+      "edit_count": 1,
+      "predicted_delta": 0.057717476538876544,
+      "prediction_std": 0.03331741594015797,
+      "selection_method": "exact_5utr_only"
+    },
+    {
+      "arm_id": "A09",
+      "arm_name": "cds_only_best",
+      "cargo_id": "EGFP",
+      "sequence": "UAGAGGAACGGUGGUACCUGAACCCUUCAGUACUGAGUCGUUUACUCUGG",
+      "edits": [],
+      "edit_count": 0,
+      "predicted_delta": 0.0,
+      "prediction_std": 0.0,
+      "selection_method": "exact_cds_synonymous"
+    },
+    {
+      "arm_id": "A10",
+      "arm_name": "joint_best",
+      "cargo_id": "EGFP",
+      "sequence": "UAGAGGAACGGUGGUACCUGAACCCUUCAGUACUGAGUCGUUUACUGUGG",
+      "edits": [
+        {
+          "pos": 46,
+          "ref": "C",
+          "alt": "G",
+          "region": "five_utr"
+        }
+      ],
+      "edit_count": 1,
+      "predicted_delta": 0.057717476538876544,
+      "prediction_std": 0.0,
+      "selection_method": "greedy_joint_5utr_cds"
+    },
+    {
+      "arm_id": "A11",
+      "arm_name": "high_disagreement_negative",
+      "cargo_id": "EGFP",
+      "sequence": "UAGAGGAACGGUGGUACCUGAACCCUUCAGUACUGAGUCGUUUACUCUGG",
+      "edits": [],
+      "edit_count": 0,
+      "predicted_delta": 0.0,
+      "prediction_std": 0.0,
+      "selection_method": "max_disagreement_negative"
+    },
+    {
+      "arm_id": "A12",
+      "arm_name": "adversarial_high_reward",
+      "cargo_id": "EGFP",
+      "sequence": "CGGGGGAACGGUGGUACCUGAACCCUUCAGUACUGAGUCGUUUACUCUGG",
+      "edits": [
+        {
+          "pos": 0,
+          "ref": "U",
+          "alt": "C",
+          "region": "five_utr"
+        },
+        {
+          "pos": 1,
+          "ref": "A",
+          "alt": "G",
+          "region": "five_utr"
+        },
+        {
+          "pos": 3,
+          "ref": "A",
+          "alt": "G",
+          "region": "five_utr"
+        }
+      ],
+      "edit_count": 3,
+      "predicted_delta": 0.05742706515534095,
+      "prediction_std": 0.033099396780154805,
+      "selection_method": "adversarial_high_gc_extreme"
+    },
+    {
+      "arm_id": "A01",
+      "arm_name": "wt_source",
+      "cargo_id": "mCherry",
+      "sequence": "CUUAUUUUAACUCCACUGAGCUGCAAGAUCUUCACUGAAGUACAACUGGACUUAUUUUUAGAAAAACUGCUCUGUUAAGAAGACCUUCGUGCCUGAUGA",
+      "edits": [],
+      "edit_count": 0,
+      "predicted_delta": 0.0,
+      "prediction_std": 0.0,
+      "selection_method": "none"
+    },
+    {
+      "arm_id": "A02",
+      "arm_name": "random_one_edit",
+      "cargo_id": "mCherry",
+      "sequence": "CUUACUUUAACUCCACUGAGCUGCAAGAUCUUCACUGAAGUACAACUGGACUUAUUUUUAGAAAAACUGCUCUGUUAAGAAGACCUUCGUGCCUGAUGA",
+      "edits": [
+        {
+          "pos": 4,
+          "ref": "U",
+          "alt": "C",
+          "region": "five_utr"
+        }
+      ],
+      "edit_count": 1,
+      "predicted_delta": 0.05733414325804714,
+      "prediction_std": 0.033120617678219846,
+      "selection_method": "random"
+    },
+    {
+      "arm_id": "A03",
+      "arm_name": "random_three_edit",
+      "cargo_id": "mCherry",
+      "sequence": "CUUAUUUUAACUCCACUGAGCUGCAAGAUCUUCACUGAAGUACAACUGGACUUAUUUUUGGAAAAACUGCUCUGUUAAGAAGACCGUCGAGCCUGAUGA",
+      "edits": [
+        {
+          "pos": 89,
+          "ref": "U",
+          "alt": "A",
+          "region": "five_utr"
+        },
+        {
+          "pos": 59,
+          "ref": "A",
+          "alt": "G",
+          "region": "five_utr"
+        },
+        {
+          "pos": 85,
+          "ref": "U",
+          "alt": "G",
+          "region": "five_utr"
+        }
+      ],
+      "edit_count": 3,
+      "predicted_delta": 0.0576002119872589,
+      "prediction_std": 0.03324045537270705,
+      "selection_method": "random"
+    },
+    {
+      "arm_id": "A04",
+      "arm_name": "best_predicted_one_edit",
+      "cargo_id": "mCherry",
+      "sequence": "CUUAUUUUAACUCCACUGAGCUGCAAGAUGUUCACUGAAGUACAACUGGACUUAUUUUUAGAAAAACUGCUCUGUUAAGAAGACCUUCGUGCCUGAUGA",
+      "edits": [
+        {
+          "pos": 29,
+          "ref": "C",
+          "alt": "G",
+          "region": "five_utr"
+        }
+      ],
+      "edit_count": 1,
+      "predicted_delta": 0.057728891675783475,
+      "prediction_std": 0.033189740299454165,
+      "selection_method": "exact_enumeration"
+    },
+    {
+      "arm_id": "A05",
+      "arm_name": "best_predicted_three_edit",
+      "cargo_id": "mCherry",
+      "sequence": "CUUAUUUUAACUCCACUGAGCUGGAUGAUGUUCACUGAAGUACAACUGGACUUAUUUUUAGAAAAACUGCUCUGUUAAGAAGACCUUCGUGCCUGAUGA",
+      "edits": [
+        {
+          "pos": 29,
+          "ref": "C",
+          "alt": "G",
+          "region": "five_utr"
+        },
+        {
+          "pos": 23,
+          "ref": "C",
+          "alt": "G",
+          "region": "five_utr"
+        },
+        {
+          "pos": 25,
+          "ref": "A",
+          "alt": "U",
+          "region": "five_utr"
+        }
+      ],
+      "edit_count": 3,
+      "predicted_delta": 0.057738240004536916,
+      "prediction_std": 0.03318336180335937,
+      "selection_method": "greedy_max3"
+    },
+    {
+      "arm_id": "A06",
+      "arm_name": "greedy_best",
+      "cargo_id": "mCherry",
+      "sequence": "CUUAUUUUAACUCCACUGAGGAGGAUGAUGUUCACUGAAGUACAACUGGACUUAUUUUUAGAAAAACUGCUCUGUUAAGAAGACCUUCGUGCCUGAUGA",
+      "edits": [
+        {
+          "pos": 29,
+          "ref": "C",
+          "alt": "G",
+          "region": "five_utr"
+        },
+        {
+          "pos": 23,
+          "ref": "C",
+          "alt": "G",
+          "region": "five_utr"
+        },
+        {
+          "pos": 25,
+          "ref": "A",
+          "alt": "U",
+          "region": "five_utr"
+        },
+        {
+          "pos": 20,
+          "ref": "C",
+          "alt": "G",
+          "region": "five_utr"
+        },
+        {
+          "pos": 21,
+          "ref": "U",
+          "alt": "A",
+          "region": "five_utr"
+        }
+      ],
+      "edit_count": 5,
+      "predicted_delta": 0.05774915990493457,
+      "prediction_std": 0.03318101387109749,
+      "selection_method": "greedy_max5"
+    },
+    {
+      "arm_id": "A07",
+      "arm_name": "beam_search_best",
+      "cargo_id": "mCherry",
+      "sequence": "CUUAUUUUAACUCCACUGAGCUGGAAGAUGUUCACUGAAGUACAACUGGACUUAUUUUUAGAAAAACUGCUCUGUUAAGAUGACCUUCGUGCCUGAUGA",
+      "edits": [
+        {
+          "pos": 80,
+          "ref": "A",
+          "alt": "U",
+          "region": "five_utr"
+        },
+        {
+          "pos": 29,
+          "ref": "C",
+          "alt": "G",
+          "region": "five_utr"
+        },
+        {
+          "pos": 23,
+          "ref": "C",
+          "alt": "G",
+          "region": "five_utr"
+        }
+      ],
+      "edit_count": 3,
+      "predicted_delta": 0.05774183264690712,
+      "prediction_std": 0.03319174469157301,
+      "selection_method": "beam_search_w5_d3"
+    },
+    {
+      "arm_id": "A08",
+      "arm_name": "five_utr_only_best",
+      "cargo_id": "mCherry",
+      "sequence": "CUUAUUUUAACUCCACUGAGCUGCAAGAUGUUCACUGAAGUACAACUGGACUUAUUUUUAGAAAAACUGCUCUGUUAAGAAGACCUUCGUGCCUGAUGA",
+      "edits": [
+        {
+          "pos": 29,
+          "ref": "C",
+          "alt": "G",
+          "region": "five_utr"
+        }
+      ],
+      "edit_count": 1,
+      "predicted_delta": 0.057728891675783475,
+      "prediction_std": 0.033189740299454165,
+      "selection_method": "exact_5utr_only"
+    },
+    {
+      "arm_id": "A09",
+      "arm_name": "cds_only_best",
+      "cargo_id": "mCherry",
+      "sequence": "CUUAUUUUAACUCCACUGAGCUGCAAGAUCUUCACUGAAGUACAACUGGACUUAUUUUUAGAAAAACUGCUCUGUUAAGAAGACCUUCGUGCCUGAUGA",
+      "edits": [],
+      "edit_count": 0,
+      "predicted_delta": 0.0,
+      "prediction_std": 0.0,
+      "selection_method": "exact_cds_synonymous"
+    },
+    {
+      "arm_id": "A10",
+      "arm_name": "joint_best",
+      "cargo_id": "mCherry",
+      "sequence": "CUUAUUUUAACUCCACUGAGCUGCAAGAUGUUCACUGAAGUACAACUGGACUUAUUUUUAGAAAAACUGCUCUGUUAAGAAGACCUUCGUGCCUGAUGA",
+      "edits": [
+        {
+          "pos": 29,
+          "ref": "C",
+          "alt": "G",
+          "region": "five_utr"
+        }
+      ],
+      "edit_count": 1,
+      "predicted_delta": 0.057728891675783475,
+      "prediction_std": 0.0,
+      "selection_method": "greedy_joint_5utr_cds"
+    },
+    {
+      "arm_id": "A11",
+      "arm_name": "high_disagreement_negative",
+      "cargo_id": "mCherry",
+      "sequence": "CUUAUUUUAACUCCACUGAGCUGCAAGAUCUUCACUGAAGUACAACUGGACUUAUUUUUAGAAAAACUGCUCUGUUAAGAAGACCUUCGUGCCUGAUGA",
+      "edits": [],
+      "edit_count": 0,
+      "predicted_delta": 0.0,
+      "prediction_std": 0.0,
+      "selection_method": "max_disagreement_negative"
+    },
+    {
+      "arm_id": "A12",
+      "arm_name": "adversarial_high_reward",
+      "cargo_id": "mCherry",
+      "sequence": "CCCGCUUUAACUCCACUGAGCUGCAAGAUCUUCACUGAAGUACAACUGGACUUAUUUUUAGAAAAACUGCUCUGUUAAGAAGACCUUCGUGCCUGAUGA",
+      "edits": [
+        {
+          "pos": 1,
+          "ref": "U",
+          "alt": "C",
+          "region": "five_utr"
+        },
+        {
+          "pos": 2,
+          "ref": "U",
+          "alt": "C",
+          "region": "five_utr"
+        },
+        {
+          "pos": 3,
+          "ref": "A",
+          "alt": "G",
+          "region": "five_utr"
+        },
+        {
+          "pos": 4,
+          "ref": "U",
+          "alt": "C",
+          "region": "five_utr"
+        }
+      ],
+      "edit_count": 4,
+      "predicted_delta": 0.05735535381628182,
+      "prediction_std": 0.0331653886005527,
+      "selection_method": "adversarial_high_gc_extreme"
+    }
+  ],
+  "well_layout": [
+    {
+      "well_id": "W049",
+      "arm_id": "A05",
+      "cargo_id": "mCherry",
+      "replicate": 2,
+      "sequence": "CUUAUUUUAACUCCACUGAGCUGGAUGAUGUUCACUGAAGUACAACUGGACUUAUUUUUAGAAAAACUGCUCUGUUAAGAAGACCUUCGUGCCUGAUGA",
+      "plate_position": "A01"
+    },
+    {
+      "well_id": "W018",
+      "arm_id": "A07",
+      "cargo_id": "EGFP",
+      "replicate": 1,
+      "sequence": "UAGAGGAACGGUGGUACCUGAACCCUUCAGUACUGAGUCGUUAAGUGUGG",
+      "plate_position": "A02"
+    },
+    {
+      "well_id": "W030",
+      "arm_id": "A11",
+      "cargo_id": "EGFP",
+      "replicate": 1,
+      "sequence": "UAGAGGAACGGUGGUACCUGAACCCUUCAGUACUGAGUCGUUUACUCUGG",
+      "plate_position": "A03"
+    },
+    {
+      "well_id": "W046",
+      "arm_id": "A04",
+      "cargo_id": "mCherry",
+      "replicate": 2,
+      "sequence": "CUUAUUUUAACUCCACUGAGCUGCAAGAUGUUCACUGAAGUACAACUGGACUUAUUUUUAGAAAAACUGCUCUGUUAAGAAGACCUUCGUGCCUGAUGA",
+      "plate_position": "A04"
+    },
+    {
+      "well_id": "W007",
+      "arm_id": "A03",
+      "cargo_id": "EGFP",
+      "replicate": 2,
+      "sequence": "GAGAGGACAGGUGGUACCUGAACCCUUCAGUACUGAGUCGUUUACUCUGG",
+      "plate_position": "A05"
+    },
+    {
+      "well_id": "W020",
+      "arm_id": "A07",
+      "cargo_id": "EGFP",
+      "replicate": 3,
+      "sequence": "UAGAGGAACGGUGGUACCUGAACCCUUCAGUACUGAGUCGUUAAGUGUGG",
+      "plate_position": "A06"
+    },
+    {
+      "well_id": "W015",
+      "arm_id": "A06",
+      "cargo_id": "EGFP",
+      "replicate": 1,
+      "sequence": "UAGAGGAACGGUGGUACCUGAACCCUUCAGUACUGAGUCGUAAAGUGAGG",
+      "plate_position": "A07"
+    },
+    {
+      "well_id": "W033",
+      "arm_id": "A12",
+      "cargo_id": "EGFP",
+      "replicate": 1,
+      "sequence": "CGGGGGAACGGUGGUACCUGAACCCUUCAGUACUGAGUCGUUUACUCUGG",
+      "plate_position": "A08"
+    },
+    {
+      "well_id": "W052",
+      "arm_id": "A06",
+      "cargo_id": "mCherry",
+      "replicate": 2,
+      "sequence": "CUUAUUUUAACUCCACUGAGGAGGAUGAUGUUCACUGAAGUACAACUGGACUUAUUUUUAGAAAAACUGCUCUGUUAAGAAGACCUUCGUGCCUGAUGA",
+      "plate_position": "A09"
+    },
+    {
+      "well_id": "W004",
+      "arm_id": "A02",
+      "cargo_id": "EGFP",
+      "replicate": 2,
+      "sequence": "UAGAGGAACGGUGGUACCUGCACCCUUCAGUACUGAGUCGUUUACUCUGG",
+      "plate_position": "A10"
+    },
+    {
+      "well_id": "W036",
+      "arm_id": "A01",
+      "cargo_id": "mCherry",
+      "replicate": 1,
+      "sequence": "CUUAUUUUAACUCCACUGAGCUGCAAGAUCUUCACUGAAGUACAACUGGACUUAUUUUUAGAAAAACUGCUCUGUUAAGAAGACCUUCGUGCCUGAUGA",
+      "plate_position": "A11"
+    },
+    {
+      "well_id": "W042",
+      "arm_id": "A03",
+      "cargo_id": "mCherry",
+      "replicate": 1,
+      "sequence": "CUUAUUUUAACUCCACUGAGCUGCAAGAUCUUCACUGAAGUACAACUGGACUUAUUUUUGGAAAAACUGCUCUGUUAAGAAGACCGUCGAGCCUGAUGA",
+      "plate_position": "A12"
+    },
+    {
+      "well_id": "W043",
+      "arm_id": "A03",
+      "cargo_id": "mCherry",
+      "replicate": 2,
+      "sequence": "CUUAUUUUAACUCCACUGAGCUGCAAGAUCUUCACUGAAGUACAACUGGACUUAUUUUUGGAAAAACUGCUCUGUUAAGAAGACCGUCGAGCCUGAUGA",
+      "plate_position": "B01"
+    },
+    {
+      "well_id": "W048",
+      "arm_id": "A05",
+      "cargo_id": "mCherry",
+      "replicate": 1,
+      "sequence": "CUUAUUUUAACUCCACUGAGCUGGAUGAUGUUCACUGAAGUACAACUGGACUUAUUUUUAGAAAAACUGCUCUGUUAAGAAGACCUUCGUGCCUGAUGA",
+      "plate_position": "B02"
+    },
+    {
+      "well_id": "W016",
+      "arm_id": "A06",
+      "cargo_id": "EGFP",
+      "replicate": 2,
+      "sequence": "UAGAGGAACGGUGGUACCUGAACCCUUCAGUACUGAGUCGUAAAGUGAGG",
+      "plate_position": "B03"
+    },
+    {
+      "well_id": "W057",
+      "arm_id": "A08",
+      "cargo_id": "mCherry",
+      "replicate": 1,
+      "sequence": "CUUAUUUUAACUCCACUGAGCUGCAAGAUGUUCACUGAAGUACAACUGGACUUAUUUUUAGAAAAACUGCUCUGUUAAGAAGACCUUCGUGCCUGAUGA",
+      "plate_position": "B04"
+    },
+    {
+      "well_id": "W029",
+      "arm_id": "A10",
+      "cargo_id": "EGFP",
+      "replicate": 3,
+      "sequence": "UAGAGGAACGGUGGUACCUGAACCCUUCAGUACUGAGUCGUUUACUGUGG",
+      "plate_position": "B05"
+    },
+    {
+      "well_id": "W056",
+      "arm_id": "A07",
+      "cargo_id": "mCherry",
+      "replicate": 3,
+      "sequence": "CUUAUUUUAACUCCACUGAGCUGGAAGAUGUUCACUGAAGUACAACUGGACUUAUUUUUAGAAAAACUGCUCUGUUAAGAUGACCUUCGUGCCUGAUGA",
+      "plate_position": "B06"
+    },
+    {
+      "well_id": "W068",
+      "arm_id": "A11",
+      "cargo_id": "mCherry",
+      "replicate": 3,
+      "sequence": "CUUAUUUUAACUCCACUGAGCUGCAAGAUCUUCACUGAAGUACAACUGGACUUAUUUUUAGAAAAACUGCUCUGUUAAGAAGACCUUCGUGCCUGAUGA",
+      "plate_position": "B07"
+    },
+    {
+      "well_id": "W062",
+      "arm_id": "A09",
+      "cargo_id": "mCherry",
+      "replicate": 3,
+      "sequence": "CUUAUUUUAACUCCACUGAGCUGCAAGAUCUUCACUGAAGUACAACUGGACUUAUUUUUAGAAAAACUGCUCUGUUAAGAAGACCUUCGUGCCUGAUGA",
+      "plate_position": "B08"
+    },
+    {
+      "well_id": "W053",
+      "arm_id": "A06",
+      "cargo_id": "mCherry",
+      "replicate": 3,
+      "sequence": "CUUAUUUUAACUCCACUGAGGAGGAUGAUGUUCACUGAAGUACAACUGGACUUAUUUUUAGAAAAACUGCUCUGUUAAGAAGACCUUCGUGCCUGAUGA",
+      "plate_position": "B09"
+    },
+    {
+      "well_id": "W070",
+      "arm_id": "A12",
+      "cargo_id": "mCherry",
+      "replicate": 2,
+      "sequence": "CCCGCUUUAACUCCACUGAGCUGCAAGAUCUUCACUGAAGUACAACUGGACUUAUUUUUAGAAAAACUGCUCUGUUAAGAAGACCUUCGUGCCUGAUGA",
+      "plate_position": "B10"
+    },
+    {
+      "well_id": "W039",
+      "arm_id": "A02",
+      "cargo_id": "mCherry",
+      "replicate": 1,
+      "sequence": "CUUACUUUAACUCCACUGAGCUGCAAGAUCUUCACUGAAGUACAACUGGACUUAUUUUUAGAAAAACUGCUCUGUUAAGAAGACCUUCGUGCCUGAUGA",
+      "plate_position": "B11"
+    },
+    {
+      "well_id": "W047",
+      "arm_id": "A04",
+      "cargo_id": "mCherry",
+      "replicate": 3,
+      "sequence": "CUUAUUUUAACUCCACUGAGCUGCAAGAUGUUCACUGAAGUACAACUGGACUUAUUUUUAGAAAAACUGCUCUGUUAAGAAGACCUUCGUGCCUGAUGA",
+      "plate_position": "B12"
+    },
+    {
+      "well_id": "W023",
+      "arm_id": "A08",
+      "cargo_id": "EGFP",
+      "replicate": 3,
+      "sequence": "UAGAGGAACGGUGGUACCUGAACCCUUCAGUACUGAGUCGUUUACUGUGG",
+      "plate_position": "C01"
+    },
+    {
+      "well_id": "W055",
+      "arm_id": "A07",
+      "cargo_id": "mCherry",
+      "replicate": 2,
+      "sequence": "CUUAUUUUAACUCCACUGAGCUGGAAGAUGUUCACUGAAGUACAACUGGACUUAUUUUUAGAAAAACUGCUCUGUUAAGAUGACCUUCGUGCCUGAUGA",
+      "plate_position": "C02"
+    },
+    {
+      "well_id": "W025",
+      "arm_id": "A09",
+      "cargo_id": "EGFP",
+      "replicate": 2,
+      "sequence": "UAGAGGAACGGUGGUACCUGAACCCUUCAGUACUGAGUCGUUUACUCUGG",
+      "plate_position": "C03"
+    },
+    {
+      "well_id": "W008",
+      "arm_id": "A03",
+      "cargo_id": "EGFP",
+      "replicate": 3,
+      "sequence": "GAGAGGACAGGUGGUACCUGAACCCUUCAGUACUGAGUCGUUUACUCUGG",
+      "plate_position": "C04"
+    },
+    {
+      "well_id": "W019",
+      "arm_id": "A07",
+      "cargo_id": "EGFP",
+      "replicate": 2,
+      "sequence": "UAGAGGAACGGUGGUACCUGAACCCUUCAGUACUGAGUCGUUAAGUGUGG",
+      "plate_position": "C05"
+    },
+    {
+      "well_id": "W064",
+      "arm_id": "A10",
+      "cargo_id": "mCherry",
+      "replicate": 2,
+      "sequence": "CUUAUUUUAACUCCACUGAGCUGCAAGAUGUUCACUGAAGUACAACUGGACUUAUUUUUAGAAAAACUGCUCUGUUAAGAAGACCUUCGUGCCUGAUGA",
+      "plate_position": "C06"
+    },
+    {
+      "well_id": "W051",
+      "arm_id": "A06",
+      "cargo_id": "mCherry",
+      "replicate": 1,
+      "sequence": "CUUAUUUUAACUCCACUGAGGAGGAUGAUGUUCACUGAAGUACAACUGGACUUAUUUUUAGAAAAACUGCUCUGUUAAGAAGACCUUCGUGCCUGAUGA",
+      "plate_position": "C07"
+    },
+    {
+      "well_id": "W022",
+      "arm_id": "A08",
+      "cargo_id": "EGFP",
+      "replicate": 2,
+      "sequence": "UAGAGGAACGGUGGUACCUGAACCCUUCAGUACUGAGUCGUUUACUGUGG",
+      "plate_position": "C08"
+    },
+    {
+      "well_id": "W063",
+      "arm_id": "A10",
+      "cargo_id": "mCherry",
+      "replicate": 1,
+      "sequence": "CUUAUUUUAACUCCACUGAGCUGCAAGAUGUUCACUGAAGUACAACUGGACUUAUUUUUAGAAAAACUGCUCUGUUAAGAAGACCUUCGUGCCUGAUGA",
+      "plate_position": "C09"
+    },
+    {
+      "well_id": "W024",
+      "arm_id": "A09",
+      "cargo_id": "EGFP",
+      "replicate": 1,
+      "sequence": "UAGAGGAACGGUGGUACCUGAACCCUUCAGUACUGAGUCGUUUACUCUGG",
+      "plate_position": "C10"
+    },
+    {
+      "well_id": "W060",
+      "arm_id": "A09",
+      "cargo_id": "mCherry",
+      "replicate": 1,
+      "sequence": "CUUAUUUUAACUCCACUGAGCUGCAAGAUCUUCACUGAAGUACAACUGGACUUAUUUUUAGAAAAACUGCUCUGUUAAGAAGACCUUCGUGCCUGAUGA",
+      "plate_position": "C11"
+    },
+    {
+      "well_id": "W006",
+      "arm_id": "A03",
+      "cargo_id": "EGFP",
+      "replicate": 1,
+      "sequence": "GAGAGGACAGGUGGUACCUGAACCCUUCAGUACUGAGUCGUUUACUCUGG",
+      "plate_position": "C12"
+    },
+    {
+      "well_id": "W040",
+      "arm_id": "A02",
+      "cargo_id": "mCherry",
+      "replicate": 2,
+      "sequence": "CUUACUUUAACUCCACUGAGCUGCAAGAUCUUCACUGAAGUACAACUGGACUUAUUUUUAGAAAAACUGCUCUGUUAAGAAGACCUUCGUGCCUGAUGA",
+      "plate_position": "D01"
+    },
+    {
+      "well_id": "W059",
+      "arm_id": "A08",
+      "cargo_id": "mCherry",
+      "replicate": 3,
+      "sequence": "CUUAUUUUAACUCCACUGAGCUGCAAGAUGUUCACUGAAGUACAACUGGACUUAUUUUUAGAAAAACUGCUCUGUUAAGAAGACCUUCGUGCCUGAUGA",
+      "plate_position": "D02"
+    },
+    {
+      "well_id": "W009",
+      "arm_id": "A04",
+      "cargo_id": "EGFP",
+      "replicate": 1,
+      "sequence": "UAGAGGAACGGUGGUACCUGAACCCUUCAGUACUGAGUCGUUUACUGUGG",
+      "plate_position": "D03"
+    },
+    {
+      "well_id": "W050",
+      "arm_id": "A05",
+      "cargo_id": "mCherry",
+      "replicate": 3,
+      "sequence": "CUUAUUUUAACUCCACUGAGCUGGAUGAUGUUCACUGAAGUACAACUGGACUUAUUUUUAGAAAAACUGCUCUGUUAAGAAGACCUUCGUGCCUGAUGA",
+      "plate_position": "D04"
+    },
+    {
+      "well_id": "W021",
+      "arm_id": "A08",
+      "cargo_id": "EGFP",
+      "replicate": 1,
+      "sequence": "UAGAGGAACGGUGGUACCUGAACCCUUCAGUACUGAGUCGUUUACUGUGG",
+      "plate_position": "D05"
+    },
+    {
+      "well_id": "W027",
+      "arm_id": "A10",
+      "cargo_id": "EGFP",
+      "replicate": 1,
+      "sequence": "UAGAGGAACGGUGGUACCUGAACCCUUCAGUACUGAGUCGUUUACUGUGG",
+      "plate_position": "D06"
+    },
+    {
+      "well_id": "W010",
+      "arm_id": "A04",
+      "cargo_id": "EGFP",
+      "replicate": 2,
+      "sequence": "UAGAGGAACGGUGGUACCUGAACCCUUCAGUACUGAGUCGUUUACUGUGG",
+      "plate_position": "D07"
+    },
+    {
+      "well_id": "W000",
+      "arm_id": "A01",
+      "cargo_id": "EGFP",
+      "replicate": 1,
+      "sequence": "UAGAGGAACGGUGGUACCUGAACCCUUCAGUACUGAGUCGUUUACUCUGG",
+      "plate_position": "D08"
+    },
+    {
+      "well_id": "W066",
+      "arm_id": "A11",
+      "cargo_id": "mCherry",
+      "replicate": 1,
+      "sequence": "CUUAUUUUAACUCCACUGAGCUGCAAGAUCUUCACUGAAGUACAACUGGACUUAUUUUUAGAAAAACUGCUCUGUUAAGAAGACCUUCGUGCCUGAUGA",
+      "plate_position": "D09"
+    },
+    {
+      "well_id": "W037",
+      "arm_id": "A01",
+      "cargo_id": "mCherry",
+      "replicate": 2,
+      "sequence": "CUUAUUUUAACUCCACUGAGCUGCAAGAUCUUCACUGAAGUACAACUGGACUUAUUUUUAGAAAAACUGCUCUGUUAAGAAGACCUUCGUGCCUGAUGA",
+      "plate_position": "D10"
+    },
+    {
+      "well_id": "W067",
+      "arm_id": "A11",
+      "cargo_id": "mCherry",
+      "replicate": 2,
+      "sequence": "CUUAUUUUAACUCCACUGAGCUGCAAGAUCUUCACUGAAGUACAACUGGACUUAUUUUUAGAAAAACUGCUCUGUUAAGAAGACCUUCGUGCCUGAUGA",
+      "plate_position": "D11"
+    },
+    {
+      "well_id": "W058",
+      "arm_id": "A08",
+      "cargo_id": "mCherry",
+      "replicate": 2,
+      "sequence": "CUUAUUUUAACUCCACUGAGCUGCAAGAUGUUCACUGAAGUACAACUGGACUUAUUUUUAGAAAAACUGCUCUGUUAAGAAGACCUUCGUGCCUGAUGA",
+      "plate_position": "D12"
+    },
+    {
+      "well_id": "W026",
+      "arm_id": "A09",
+      "cargo_id": "EGFP",
+      "replicate": 3,
+      "sequence": "UAGAGGAACGGUGGUACCUGAACCCUUCAGUACUGAGUCGUUUACUCUGG",
+      "plate_position": "E01"
+    },
+    {
+      "well_id": "W034",
+      "arm_id": "A12",
+      "cargo_id": "EGFP",
+      "replicate": 2,
+      "sequence": "CGGGGGAACGGUGGUACCUGAACCCUUCAGUACUGAGUCGUUUACUCUGG",
+      "plate_position": "E02"
+    },
+    {
+      "well_id": "W044",
+      "arm_id": "A03",
+      "cargo_id": "mCherry",
+      "replicate": 3,
+      "sequence": "CUUAUUUUAACUCCACUGAGCUGCAAGAUCUUCACUGAAGUACAACUGGACUUAUUUUUGGAAAAACUGCUCUGUUAAGAAGACCGUCGAGCCUGAUGA",
+      "plate_position": "E03"
+    },
+    {
+      "well_id": "W041",
+      "arm_id": "A02",
+      "cargo_id": "mCherry",
+      "replicate": 3,
+      "sequence": "CUUACUUUAACUCCACUGAGCUGCAAGAUCUUCACUGAAGUACAACUGGACUUAUUUUUAGAAAAACUGCUCUGUUAAGAAGACCUUCGUGCCUGAUGA",
+      "plate_position": "E04"
+    },
+    {
+      "well_id": "W045",
+      "arm_id": "A04",
+      "cargo_id": "mCherry",
+      "replicate": 1,
+      "sequence": "CUUAUUUUAACUCCACUGAGCUGCAAGAUGUUCACUGAAGUACAACUGGACUUAUUUUUAGAAAAACUGCUCUGUUAAGAAGACCUUCGUGCCUGAUGA",
+      "plate_position": "E05"
+    },
+    {
+      "well_id": "W012",
+      "arm_id": "A05",
+      "cargo_id": "EGFP",
+      "replicate": 1,
+      "sequence": "UAGAGGAACGGUGGUACCUGAACCCUUCAGUACUGAGUCGUUAAGUGUGG",
+      "plate_position": "E06"
+    },
+    {
+      "well_id": "W069",
+      "arm_id": "A12",
+      "cargo_id": "mCherry",
+      "replicate": 1,
+      "sequence": "CCCGCUUUAACUCCACUGAGCUGCAAGAUCUUCACUGAAGUACAACUGGACUUAUUUUUAGAAAAACUGCUCUGUUAAGAAGACCUUCGUGCCUGAUGA",
+      "plate_position": "E07"
+    },
+    {
+      "well_id": "W061",
+      "arm_id": "A09",
+      "cargo_id": "mCherry",
+      "replicate": 2,
+      "sequence": "CUUAUUUUAACUCCACUGAGCUGCAAGAUCUUCACUGAAGUACAACUGGACUUAUUUUUAGAAAAACUGCUCUGUUAAGAAGACCUUCGUGCCUGAUGA",
+      "plate_position": "E08"
+    },
+    {
+      "well_id": "W038",
+      "arm_id": "A01",
+      "cargo_id": "mCherry",
+      "replicate": 3,
+      "sequence": "CUUAUUUUAACUCCACUGAGCUGCAAGAUCUUCACUGAAGUACAACUGGACUUAUUUUUAGAAAAACUGCUCUGUUAAGAAGACCUUCGUGCCUGAUGA",
+      "plate_position": "E09"
+    },
+    {
+      "well_id": "W032",
+      "arm_id": "A11",
+      "cargo_id": "EGFP",
+      "replicate": 3,
+      "sequence": "UAGAGGAACGGUGGUACCUGAACCCUUCAGUACUGAGUCGUUUACUCUGG",
+      "plate_position": "E10"
+    },
+    {
+      "well_id": "W071",
+      "arm_id": "A12",
+      "cargo_id": "mCherry",
+      "replicate": 3,
+      "sequence": "CCCGCUUUAACUCCACUGAGCUGCAAGAUCUUCACUGAAGUACAACUGGACUUAUUUUUAGAAAAACUGCUCUGUUAAGAAGACCUUCGUGCCUGAUGA",
+      "plate_position": "E11"
+    },
+    {
+      "well_id": "W065",
+      "arm_id": "A10",
+      "cargo_id": "mCherry",
+      "replicate": 3,
+      "sequence": "CUUAUUUUAACUCCACUGAGCUGCAAGAUGUUCACUGAAGUACAACUGGACUUAUUUUUAGAAAAACUGCUCUGUUAAGAAGACCUUCGUGCCUGAUGA",
+      "plate_position": "E12"
+    },
+    {
+      "well_id": "W005",
+      "arm_id": "A02",
+      "cargo_id": "EGFP",
+      "replicate": 3,
+      "sequence": "UAGAGGAACGGUGGUACCUGCACCCUUCAGUACUGAGUCGUUUACUCUGG",
+      "plate_position": "F01"
+    },
+    {
+      "well_id": "W001",
+      "arm_id": "A01",
+      "cargo_id": "EGFP",
+      "replicate": 2,
+      "sequence": "UAGAGGAACGGUGGUACCUGAACCCUUCAGUACUGAGUCGUUUACUCUGG",
+      "plate_position": "F02"
+    },
+    {
+      "well_id": "W002",
+      "arm_id": "A01",
+      "cargo_id": "EGFP",
+      "replicate": 3,
+      "sequence": "UAGAGGAACGGUGGUACCUGAACCCUUCAGUACUGAGUCGUUUACUCUGG",
+      "plate_position": "F03"
+    },
+    {
+      "well_id": "W054",
+      "arm_id": "A07",
+      "cargo_id": "mCherry",
+      "replicate": 1,
+      "sequence": "CUUAUUUUAACUCCACUGAGCUGGAAGAUGUUCACUGAAGUACAACUGGACUUAUUUUUAGAAAAACUGCUCUGUUAAGAUGACCUUCGUGCCUGAUGA",
+      "plate_position": "F04"
+    },
+    {
+      "well_id": "W011",
+      "arm_id": "A04",
+      "cargo_id": "EGFP",
+      "replicate": 3,
+      "sequence": "UAGAGGAACGGUGGUACCUGAACCCUUCAGUACUGAGUCGUUUACUGUGG",
+      "plate_position": "F05"
+    },
+    {
+      "well_id": "W013",
+      "arm_id": "A05",
+      "cargo_id": "EGFP",
+      "replicate": 2,
+      "sequence": "UAGAGGAACGGUGGUACCUGAACCCUUCAGUACUGAGUCGUUAAGUGUGG",
+      "plate_position": "F06"
+    },
+    {
+      "well_id": "W017",
+      "arm_id": "A06",
+      "cargo_id": "EGFP",
+      "replicate": 3,
+      "sequence": "UAGAGGAACGGUGGUACCUGAACCCUUCAGUACUGAGUCGUAAAGUGAGG",
+      "plate_position": "F07"
+    },
+    {
+      "well_id": "W028",
+      "arm_id": "A10",
+      "cargo_id": "EGFP",
+      "replicate": 2,
+      "sequence": "UAGAGGAACGGUGGUACCUGAACCCUUCAGUACUGAGUCGUUUACUGUGG",
+      "plate_position": "F08"
+    },
+    {
+      "well_id": "W031",
+      "arm_id": "A11",
+      "cargo_id": "EGFP",
+      "replicate": 2,
+      "sequence": "UAGAGGAACGGUGGUACCUGAACCCUUCAGUACUGAGUCGUUUACUCUGG",
+      "plate_position": "F09"
+    },
+    {
+      "well_id": "W035",
+      "arm_id": "A12",
+      "cargo_id": "EGFP",
+      "replicate": 3,
+      "sequence": "CGGGGGAACGGUGGUACCUGAACCCUUCAGUACUGAGUCGUUUACUCUGG",
+      "plate_position": "F10"
+    },
+    {
+      "well_id": "W003",
+      "arm_id": "A02",
+      "cargo_id": "EGFP",
+      "replicate": 1,
+      "sequence": "UAGAGGAACGGUGGUACCUGCACCCUUCAGUACUGAGUCGUUUACUCUGG",
+      "plate_position": "F11"
+    },
+    {
+      "well_id": "W014",
+      "arm_id": "A05",
+      "cargo_id": "EGFP",
+      "replicate": 3,
+      "sequence": "UAGAGGAACGGUGGUACCUGAACCCUUCAGUACUGAGUCGUUAAGUGUGG",
+      "plate_position": "F12"
+    }
+  ],
+  "manifest_sha256": "5bc707cda2e9081c8512dcc5659e9b0b431ea81fa8c87d563814428e2aa32102"
+}
