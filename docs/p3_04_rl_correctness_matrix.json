@@ -1,0 +1,333 @@
+{
+  "phase": "P3-04",
+  "title": "RL Correctness Gate and Production-Path Freeze",
+  "date": "2026-07-23",
+  "status": "GO",
+  "phase_status": "PASS",
+  "scientific_validation_status": "PENDING",
+  "total_tests": 29,
+  "passed": 29,
+  "failed": 0,
+  "duration_seconds": 3.15,
+  "environment": {
+    "python": "3.10.20",
+    "pytest": "9.1.1",
+    "torch": "installed (editflow conda env)",
+    "device": "cpu",
+    "rootdir": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow"
+  },
+  "files": {
+    "rl/training_reward.py": {
+      "sha256": "680b3206a66bb93dc0f9aa94152575f3f9df0500de1969388889b859b8688a62",
+      "task": "Task 4: Training reward explicit",
+      "lines": 197
+    },
+    "rl/p3_04_correctness.py": {
+      "sha256": "0e9e6e3d61ec7dea47936cde3fc828144ebace9d008717206f19acd3e7559a30",
+      "task": "Tasks 1, 2, 3, 5, 6: Multi-epoch GRPO, deterministic forward, complete MDP state, codon action, production path gate",
+      "lines": 620
+    },
+    "tests/test_p3_04_rl_correctness.py": {
+      "sha256": "b7f85fa53b9496f176f27a7ed087a82d2e0ee0bca8e47cc583015b0af81b9097",
+      "task": "14 acceptance tests (29 test methods)",
+      "lines": 640
+    }
+  },
+  "acceptance_criteria": [
+    {
+      "criterion": 1,
+      "description": "update前 ratio≈1",
+      "test_class": "TestRatioBeforeUpdate",
+      "test_methods": [
+        {
+          "name": "test_ratio_approx_one_before_update",
+          "outcome": "passed",
+          "assertion": "max|ratio - 1.0| < 1e-4 before any optimizer step"
+        }
+      ],
+      "result": "PASS"
+    },
+    {
+      "criterion": 2,
+      "description": "update后 ratio不再恒等于1",
+      "test_class": "TestRatioAfterUpdate",
+      "test_methods": [
+        {
+          "name": "test_ratio_changes_after_update",
+          "outcome": "passed",
+          "assertion": "any|ratio - 1.0| > 1e-4 after weight perturbation"
+        }
+      ],
+      "result": "PASS"
+    },
+    {
+      "criterion": 3,
+      "description": "clip fraction test",
+      "test_class": "TestClipFraction",
+      "test_methods": [
+        {
+          "name": "test_clip_fraction_zero_when_ratio_in_range",
+          "outcome": "passed",
+          "assertion": "clip_fraction == 0.0 when all ratios in [1-eps, 1+eps]"
+        },
+        {
+          "name": "test_clip_fraction_nonzero_when_ratio_out_of_range",
+          "outcome": "passed",
+          "assertion": "clip_fraction > 0.0 when some ratios outside range"
+        },
+        {
+          "name": "test_clip_fraction_bounded_01",
+          "outcome": "passed",
+          "assertion": "0.0 <= clip_fraction <= 1.0 for random inputs"
+        }
+      ],
+      "result": "PASS"
+    },
+    {
+      "criterion": 4,
+      "description": "deterministic policy forward",
+      "test_class": "TestDeterministicForward",
+      "test_methods": [
+        {
+          "name": "test_grad_nograd_match",
+          "outcome": "passed",
+          "assertion": "same params + same state + same mask → same distribution (grad vs no-grad, finite values only)"
+        }
+      ],
+      "result": "PASS"
+    },
+    {
+      "criterion": 5,
+      "description": "categorical KL ≥ -1e-7",
+      "test_class": "TestCategoricalKL",
+      "test_methods": [
+        {
+          "name": "test_kl_self_is_zero",
+          "outcome": "passed",
+          "assertion": "KL(p||p) == 0.0"
+        },
+        {
+          "name": "test_kl_nonnegative",
+          "outcome": "passed",
+          "assertion": "KL >= -1e-7 for fixed distributions"
+        },
+        {
+          "name": "test_kl_nonnegative_random",
+          "outcome": "passed",
+          "assertion": "KL >= -1e-7 for random distributions"
+        }
+      ],
+      "result": "PASS"
+    },
+    {
+      "criterion": 6,
+      "description": "rollout/update legal action IDs consistent",
+      "test_class": "TestLegalActionConsistency",
+      "test_methods": [
+        {
+          "name": "test_legal_actions_match_between_calls",
+          "outcome": "passed",
+          "assertion": "legal action IDs identical between two constrained_distribution calls"
+        }
+      ],
+      "result": "PASS"
+    },
+    {
+      "criterion": 7,
+      "description": "historical cycle mask recoverable",
+      "test_class": "TestCycleMaskRecovery",
+      "test_methods": [
+        {
+          "name": "test_complete_step_has_all_fields",
+          "outcome": "passed",
+          "assertion": "CompletePolicyStep has all 13 required fields"
+        },
+        {
+          "name": "test_mask_hash_recoverable",
+          "outcome": "passed",
+          "assertion": "action_mask_hash recoverable from legal_action_ids"
+        }
+      ],
+      "result": "PASS"
+    },
+    {
+      "criterion": 8,
+      "description": "all-negative reward selects STOP",
+      "test_class": "TestAllNegativeStopPreferred",
+      "test_methods": [
+        {
+          "name": "test_all_negative_makes_stop_preferred",
+          "outcome": "passed",
+          "assertion": "all soft objectives negative → stop_preferred=True, scalar <= 0"
+        },
+        {
+          "name": "test_positive_te_makes_edit_preferred",
+          "outcome": "passed",
+          "assertion": "positive TE exceeding costs → stop_preferred=False, scalar > 0"
+        },
+        {
+          "name": "test_hard_failure_forces_stop",
+          "outcome": "passed",
+          "assertion": "hard constraint violation → stop_preferred=True, hard_constraint_gated=True, scalar < 0"
+        }
+      ],
+      "result": "PASS"
+    },
+    {
+      "criterion": 9,
+      "description": "synonymous codon action 100% preserves protein",
+      "test_class": "TestCodonActionProteinPreservation",
+      "test_methods": [
+        {
+          "name": "test_all_synonymous_actions_preserve_protein",
+          "outcome": "passed",
+          "assertion": "all synonymous codon actions preserve protein, n_violations=0"
+        },
+        {
+          "name": "test_apply_codon_action_preserves_protein",
+          "outcome": "passed",
+          "assertion": "applying a codon action preserves protein"
+        },
+        {
+          "name": "test_codon_action_no_single_nt_intermediate",
+          "outcome": "passed",
+          "assertion": "codon action is atomic (no single-nt intermediate)"
+        }
+      ],
+      "result": "PASS"
+    },
+    {
+      "criterion": 10,
+      "description": "reference policy bitwise unchanged",
+      "test_class": "TestReferencePolicyUnchanged",
+      "test_methods": [
+        {
+          "name": "test_reference_params_unchanged_after_update",
+          "outcome": "passed",
+          "assertion": "reference policy parameters bitwise unchanged after optimizer step"
+        }
+      ],
+      "result": "PASS"
+    },
+    {
+      "criterion": 11,
+      "description": "smoke batch at least 4 sources",
+      "test_class": "TestSmokeBatchFourSources",
+      "test_methods": [
+        {
+          "name": "test_four_distinct_sources",
+          "outcome": "passed",
+          "assertion": "4 distinct source sequences with different properties"
+        },
+        {
+          "name": "test_four_sources_produce_trajectories",
+          "outcome": "passed",
+          "assertion": "each source produces a non-empty trajectory"
+        }
+      ],
+      "result": "PASS"
+    },
+    {
+      "criterion": 12,
+      "description": "checkpoint resume consistent",
+      "test_class": "TestCheckpointResume",
+      "test_methods": [
+        {
+          "name": "test_save_load_roundtrip",
+          "outcome": "passed",
+          "assertion": "save/load roundtrip preserves model state and log-probs"
+        }
+      ],
+      "result": "PASS"
+    },
+    {
+      "criterion": 13,
+      "description": "legacy artifact rejected by paper loader",
+      "test_class": "TestLegacyArtifactRejection",
+      "test_methods": [
+        {
+          "name": "test_paper_loader_rejects_legacy",
+          "outcome": "passed",
+          "assertion": "load_for_paper raises ValueError for legacy checkpoint"
+        },
+        {
+          "name": "test_paper_loader_accepts_production",
+          "outcome": "passed",
+          "assertion": "load_for_paper accepts production checkpoint"
+        },
+        {
+          "name": "test_classify_checkpoint",
+          "outcome": "passed",
+          "assertion": "classify_checkpoint returns correct type for legacy/production"
+        }
+      ],
+      "result": "PASS"
+    },
+    {
+      "criterion": 14,
+      "description": "source baseline normalization",
+      "test_class": "TestSourceBaselineNormalization",
+      "test_methods": [
+        {
+          "name": "test_reward_is_source_normalized_delta",
+          "outcome": "passed",
+          "assertion": "reward scalar equals source-normalized delta"
+        },
+        {
+          "name": "test_stop_reward_is_zero_delta",
+          "outcome": "passed",
+          "assertion": "STOP reward vector is all zeros (source baseline)"
+        },
+        {
+          "name": "test_hard_failure_zeroes_relative_to_source",
+          "outcome": "passed",
+          "assertion": "hard failure scalar is -1.0 relative to source"
+        },
+        {
+          "name": "test_uncertainty_not_double_subtracted",
+          "outcome": "passed",
+          "assertion": "uncertainty subtracted exactly once (no double-subtraction)"
+        }
+      ],
+      "result": "PASS"
+    }
+  ],
+  "bugs_identified": [
+    {
+      "file": "train_grpo.py",
+      "lines": "L93/L97",
+      "description": "model.eval() for sampling then model.train() for update → dropout corrupts PPO ratio"
+    },
+    {
+      "file": "train_grpo.py",
+      "lines": "—",
+      "description": "risk_adjusted_reward computed but never used for advantage (audit-only dead code)"
+    },
+    {
+      "file": "rl/policy.py",
+      "lines": "_model_forward",
+      "description": "Does not enforce eval/train mode (root cause of dropout bug)"
+    },
+    {
+      "file": "rl/trajectory_sampler.py",
+      "lines": "L172/L175",
+      "description": "Uncertainty double-subtracted"
+    },
+    {
+      "file": "rl/action_space.py",
+      "lines": "—",
+      "description": "Nucleotide-level action, no codon-level action"
+    },
+    {
+      "file": "scripts/run_p2_05_grpo_pilot.py",
+      "lines": "—",
+      "description": "Uses GRPOREINFORCE (raw REINFORCE, not clipped); --kl-coef is dead code; max_steps defaults to limit (1024) → memory blow-up; reference policy not frozen"
+    }
+  ],
+  "unresolved_risks": [
+    "Existing modules not modified in-place; drop-in replacements must be wired into production training loop in P3-06/P3-08",
+    "No real MRNAEditFormer tested; DummyModel used for acceptance tests",
+    "No GPU smoke test; all tests run on CPU",
+    "CodonAction not integrated into build_legal_action_mask; integration deferred to P3-06"
+  ]
+}
