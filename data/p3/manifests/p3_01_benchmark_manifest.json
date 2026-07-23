@@ -1,0 +1,136 @@
+{
+  "build": {
+    "code_git_commit": "3e85c794f2c94e73c851050410885ae46a2cbf08",
+    "command": "scripts/p3_01_resolve_collisions.py",
+    "runtime_sec": 4660.48,
+    "seed": 20260723,
+    "smoke": false
+  },
+  "created_utc": "2026-07-23T04:21:52Z",
+  "dataset_card": {
+    "endpoint_semantics": {
+      "measured": "wet-lab measured MPRA ribosome load (Sample 2019); delta = variant - wild-type of the SAME mother",
+      "proxy": "predicted/internal proxy MRL (CNN-50mer cross-fitted ensemble, P1-04); first-50nt 5'UTR window only",
+      "unlabeled": "no values by contract (null); NOT local-delta ground truth"
+    },
+    "gated_tasks": [
+      "task_b_frozen_fallback (synonymous CDS)",
+      "task_c_locked_extension (joint 5'UTR+CDS)"
+    ],
+    "name": "mRNA-EditFlow P3-01 Local-Edit Benchmark",
+    "primary_task": "task_a_active (5'UTR substitution, edit_budget <= 10)",
+    "task_contract": "configs/p3_primary_task.yaml (p3_task_v2, frozen)"
+  },
+  "filter_rules": {
+    "edit_legality": [
+      "substitutions only (no indels; length preserved)",
+      "CDS edits synonymous by construction; protein identity verified against full CDS on every CDS/joint record",
+      "start/stop codon never edited",
+      "motif_policy_v1 hard_forbidden tier excluded at action space",
+      "edit_count <= 10 (p3_task_v2 budget)"
+    ],
+    "measured_tier": [
+      "variants anchored to wild-type of the SAME mother only",
+      "hamming distance 1..10 retained; others excluded",
+      "wild-type anchor value = median rl of WT replicates"
+    ],
+    "source_eligibility": [
+      "five_utr length >= 50 nt",
+      "ACGU alphabet (5'UTR and CDS)",
+      "valid CDS (AUG start, stop end, no internal stop, len%3==0)",
+      "no upstream in-frame start codon in source 5'UTR",
+      "no homopolymer run >= 6 nt (5'UTR, first 150 nt of CDS)",
+      "no cryptic splice consensus in source 5'UTR"
+    ]
+  },
+  "inputs": {
+    "cnn50mer_checkpoint_sha256": {
+      "cnn_50mer__sample2019_mpra__fold0_seed42.pt": "d69c86b0680e4726d024e1556f1cd97a7fe6f4b1bb1c39ec488547bce9584305",
+      "cnn_50mer__sample2019_mpra__fold0_seed43.pt": "591e3f8c5d17413ece2c68ce768976f7e953e714c6840393d5807e9ed4d4b0f3",
+      "cnn_50mer__sample2019_mpra__fold0_seed44.pt": "dba8f1c0054de229c39924cfa0e5e6a97c9e910c36b58f6b8abdb7ccc5e5d15d",
+      "cnn_50mer__sample2019_mpra__fold1_seed42.pt": "755c7c4489406b6e1501e8d919dc2909d7a0ff2c2274cc4fc6a5b7f9439ea937",
+      "cnn_50mer__sample2019_mpra__fold1_seed43.pt": "93d6d546b004e569c0ab56a9e773e5ee489056ff5eb64d497bf25f7ec442b623",
+      "cnn_50mer__sample2019_mpra__fold1_seed44.pt": "5f9d6823b15e5260cac1cbc9da1bf7bd65a40b1c7aa7abb11603883ff4bbc91c",
+      "cnn_50mer__sample2019_mpra__fold2_seed42.pt": "a7b0b2576a2353bf475183d3fd0b985421fe5fa9de5e7a3a1c4680ab1c93a8f1",
+      "cnn_50mer__sample2019_mpra__fold2_seed43.pt": "1ce98e77b558e919fe014cd4761d8750ebbff024d0d1790280e75c65e38816e3",
+      "cnn_50mer__sample2019_mpra__fold2_seed44.pt": "490e9b21deb60f18f395c0ca35a54f509c07efe5f41071eef678b1fb61aa7aea",
+      "cnn_50mer__sample2019_mpra__fold3_seed42.pt": "4458755fe5f1fb5ecf21ff3728a09b71e0edd0d7df4b9464dcf3afdf2b384a1b",
+      "cnn_50mer__sample2019_mpra__fold3_seed43.pt": "389c66f998a9eb0d7f00e9f361d6bc1d62b41684ad965d4a33851cdb2ab5b5f4",
+      "cnn_50mer__sample2019_mpra__fold3_seed44.pt": "37fe21c21f24249b8be6ae51778c31b5568003c0ccdf8ae9cdb693eeda4bc245",
+      "cnn_50mer__sample2019_mpra__fold4_seed42.pt": "e38e44e9e4f4e30caaf2e91e3c9690f18165726fc8b85d998d81f69f47677f9c",
+      "cnn_50mer__sample2019_mpra__fold4_seed43.pt": "c89b7f8653570658f4c636183e6bf13958d663e5834f8cd07c1b167ef74d1f42",
+      "cnn_50mer__sample2019_mpra__fold4_seed44.pt": "a29761207c105c5d22143dd0468e0182ff54292b3f6e7a30a067c642d539a1d2"
+    },
+    "family_assignments": {
+      "path": "data/reconstructed/p0_data_reconstruction_v1/combined/family_assignments.json",
+      "sha256": "435dda71343360cf6d94dbfa9b6b5b4e4bc51555510436f300aecc215ed46b4b"
+    },
+    "reconstructed_records": {
+      "path": "data/reconstructed/p0_data_reconstruction_v1/combined/combined_model_view.records.jsonl",
+      "sha256": "9666bbc94f0f7988a49709e309c44193bb5ce1f69164cb0bb2691b6f605e97a4"
+    },
+    "reconstruction_manifest": "data/reconstructed/p0_data_reconstruction_v1/combined/combined_reconstruction_manifest.json",
+    "sample2019_snv_csv": {
+      "path": "data/raw/sample2019_mpra/GSM3130443_designed_library.csv.gz",
+      "sha256": "b72ac298cb0f4d21f911d330c0def06f8d94f15d9f8cc22f3a50ae87a7ef7ee5"
+    }
+  },
+  "known_confounders": [
+    "measured tier: single cargo (EGFP), single cell context (HEK293T), 50 nt 5'UTR window, ribosome-load endpoint (not protein output)",
+    "proxy tier: CNN-50mer ensemble was trained on the SAME MPRA assay family as the measured tier (assay-family correlation; NOT an independent oracle)",
+    "measured mothers are human SNP-context 50-mers, not therapeutic UTRs",
+    "GC/length distributions differ between measured and reconstructed cohorts (handled by per-cohort OOD flagging)",
+    "unlabeled tier carries NO values; any downstream use as local-delta ground truth is a contract violation",
+    "5'UTR proxy coverage limited to first 50 nt; longer-UTR edits are unlabeled by design"
+  ],
+  "manifest_id": "p3_01_local_edit_benchmark",
+  "schema_version": "p3_benchmark_v1",
+  "split": {
+    "assignment_path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/data/p3/manifests/p3_01_split_assignment.json",
+    "assignment_sha256": "75f697089bdc8a31f34475c5cbcf44f30c7e83e50a279f76517ab8adb7018b0e",
+    "audit_passed": true,
+    "audit_path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/docs/p3_01_split_audit.json",
+    "collision_resolution": {
+      "drops_by_role": {
+        "ood": 0,
+        "test": 0,
+        "train": 11458,
+        "val": 0
+      },
+      "n_collision_sequences": 9360,
+      "n_dropped_records": 11458,
+      "policy": "keep all records of the highest-priority role for each colliding candidate_sequence; drop the rest (deterministic)",
+      "role_priority": {
+        "ood": 1,
+        "test": 0,
+        "train": 3,
+        "val": 2
+      }
+    },
+    "collision_resolution_path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/data/p3/manifests/p3_01_collision_resolution.json",
+    "grouping": "one group per source_id across ALL tiers; test holds whole protein families; train/val source-disjoint; OOD flagged per-cohort on GC/length tails",
+    "role_record_counts": {
+      "ood": 165302,
+      "test": 135104,
+      "train": 883992,
+      "val": 132920
+    }
+  },
+  "tiers": {
+    "measured": {
+      "n_records": 4802,
+      "path": "data/p3/benchmark/measured_tier.jsonl",
+      "sha256": "4e8662b1de17171beed548b59461b051705c06c58296aff35cf6ab6537cfaaf8"
+    },
+    "proxy": {
+      "n_records": 473228,
+      "path": "data/p3/benchmark/proxy_tier.jsonl",
+      "sha256": "426c15cf4e51fb5dc30c91603b3d2a239c404c5af49f6e7fc5f53772133a9407"
+    },
+    "unlabeled": {
+      "n_records": 839288,
+      "path": "data/p3/benchmark/unlabeled_tier.jsonl",
+      "sha256": "edea279dcf1cc7f88001cf17a789c78b6f01f03c2d6b0d090dc208dad4c2ea76"
+    }
+  }
+}

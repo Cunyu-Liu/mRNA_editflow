@@ -1,0 +1,243 @@
+{
+  "created_utc": "2026-07-23T05:39:32Z",
+  "levels": {
+    "level_a_observational": {
+      "definition": "Natural-sequence absolute labels (observational). Pretraining / background analysis ONLY; never used as local-delta ground truth.",
+      "entries": [
+        {
+          "citation": "Cao J, Novoa EM, Zhang Z, Chen WCW, Liu D, Choi GCG, Wong ASL, Wehrspaun C, Kellis M, Lu TK. High-throughput 5' UTR engineering for enhanced protein production in non-viral gene therapies. Nat Commun. 2021;12(1):4138. PMID:34230498. DOI:10.1038/s41467-021-24436-7.",
+          "dataset_id": "cao2021_5utr",
+          "description": "Cao, Novoa, Zhang et al. 2021 Nat Commun 5'UTR engineering dataset. Includes Ribo-seq-derived TE for endogenous 5'UTRs in 3 cell types (HEK293T, PC3, Muscle), filtered endogenous 5'UTR set, GENCODE v17 5'UTR FASTA, and top/bottom 5'UTRs from MPRA screens in each cell type.",
+          "files": [
+            {
+              "citation": "Cao J, Novoa EM, Zhang Z, Chen WCW, Liu D, Choi GCG, Wong ASL, Wehrspaun C, Kellis M, Lu TK. High-throughput 5' UTR engineering for enhanced protein production in non-viral gene therapies. Nat Commun. 2021;12(1):4138. PMID:34230498. DOI:10.1038/s41467-021-24436-7.",
+              "license": "GitHub code/data: MIT License (https://github.com/zzz2010/5UTR_Optimizer/blob/master/LICENSE). Article: CC BY 4.0 (Open Access). Raw FASTQ at NCBI GEO: NCBI public data terms. Cite: Cao et al. 2021 Nat Commun (PMID:34230498).",
+              "local_path": null,
+              "record_count": null,
+              "sha256": "d2323020d32af5fbe5500c97648a37a67c242f31b7c6109e3069fd69c9867bd3",
+              "source_url": "https://raw.githubusercontent.com/zzz2010/5UTR_Optimizer/master/data/df_counts_and_len.TE_sorted.HEK_Andrev2015.with_annot.txt"
+            },
+            {
+              "citation": "Cao J, Novoa EM, Zhang Z, Chen WCW, Liu D, Choi GCG, Wong ASL, Wehrspaun C, Kellis M, Lu TK. High-throughput 5' UTR engineering for enhanced protein production in non-viral gene therapies. Nat Commun. 2021;12(1):4138. PMID:34230498. DOI:10.1038/s41467-021-24436-7.",
+              "license": "GitHub code/data: MIT License (https://github.com/zzz2010/5UTR_Optimizer/blob/master/LICENSE). Article: CC BY 4.0 (Open Access). Raw FASTQ at NCBI GEO: NCBI public data terms. Cite: Cao et al. 2021 Nat Commun (PMID:34230498).",
+              "local_path": null,
+              "record_count": null,
+              "sha256": "91c41e7b340b348a1f87ef1c1743b5b176222820598860dd87b0e5a1ed97c852",
+              "source_url": "https://raw.githubusercontent.com/zzz2010/5UTR_Optimizer/master/data/df_counts_and_len.TE_sorted.pc3.with_annot.txt"
+            },
+            {
+              "citation": "Cao J, Novoa EM, Zhang Z, Chen WCW, Liu D, Choi GCG, Wong ASL, Wehrspaun C, Kellis M, Lu TK. High-throughput 5' UTR engineering for enhanced protein production in non-viral gene therapies. Nat Commun. 2021;12(1):4138. PMID:34230498. DOI:10.1038/s41467-021-24436-7.",
+              "license": "GitHub code/data: MIT License (https://github.com/zzz2010/5UTR_Optimizer/blob/master/LICENSE). Article: CC BY 4.0 (Open Access). Raw FASTQ at NCBI GEO: NCBI public data terms. Cite: Cao et al. 2021 Nat Commun (PMID:34230498).",
+              "local_path": null,
+              "record_count": null,
+              "sha256": "6f8f11db9f1ee2bfa475a86df3572127b24133ff1fd290bd52e50c775c6468f7",
+              "source_url": "https://raw.githubusercontent.com/zzz2010/5UTR_Optimizer/master/data/df_counts_and_len.TE_sorted.Muscle.with_annot.txt"
+            },
+            {
+              "citation": "Cao J, Novoa EM, Zhang Z, Chen WCW, Liu D, Choi GCG, Wong ASL, Wehrspaun C, Kellis M, Lu TK. High-throughput 5' UTR engineering for enhanced protein production in non-viral gene therapies. Nat Commun. 2021;12(1):4138. PMID:34230498. DOI:10.1038/s41467-021-24436-7.",
+              "license": "GitHub code/data: MIT License (https://github.com/zzz2010/5UTR_Optimizer/blob/master/LICENSE). Article: CC BY 4.0 (Open Access). Raw FASTQ at NCBI GEO: NCBI public data terms. Cite: Cao et al. 2021 Nat Commun (PMID:34230498).",
+              "local_path": null,
+              "record_count": null,
+              "sha256": "3fa6a1f942d693c2373bb5a34610a6377261f5fa9f5a474989f3930905d70100",
+              "source_url": "https://raw.githubusercontent.com/zzz2010/5UTR_Optimizer/master/data/final_endogenous.txt"
+            },
+            {
+              "citation": "Cao J, Novoa EM, Zhang Z, Chen WCW, Liu D, Choi GCG, Wong ASL, Wehrspaun C, Kellis M, Lu TK. High-throughput 5' UTR engineering for enhanced protein production in non-viral gene therapies. Nat Commun. 2021;12(1):4138. PMID:34230498. DOI:10.1038/s41467-021-24436-7.",
+              "license": "GitHub code/data: MIT License (https://github.com/zzz2010/5UTR_Optimizer/blob/master/LICENSE). Article: CC BY 4.0 (Open Access). Raw FASTQ at NCBI GEO: NCBI public data terms. Cite: Cao et al. 2021 Nat Commun (PMID:34230498).",
+              "local_path": null,
+              "record_count": null,
+              "sha256": "003624b40867b1a062a4fc45a0f807f33262853b0ad2a8b7dfb8110cd6e62335",
+              "source_url": "https://raw.githubusercontent.com/zzz2010/5UTR_Optimizer/master/data/gencode_v17_5utr_15bpcds.fa"
+            },
+            {
+              "citation": "Cao J, Novoa EM, Zhang Z, Chen WCW, Liu D, Choi GCG, Wong ASL, Wehrspaun C, Kellis M, Lu TK. High-throughput 5' UTR engineering for enhanced protein production in non-viral gene therapies. Nat Commun. 2021;12(1):4138. PMID:34230498. DOI:10.1038/s41467-021-24436-7.",
+              "license": "GitHub code/data: MIT License (https://github.com/zzz2010/5UTR_Optimizer/blob/master/LICENSE). Article: CC BY 4.0 (Open Access). Raw FASTQ at NCBI GEO: NCBI public data terms. Cite: Cao et al. 2021 Nat Commun (PMID:34230498).",
+              "local_path": null,
+              "record_count": null,
+              "sha256": "11aa0275c34a28f89a3437bd4e6886d939ca8f52620c925e5c83fef41eb91761",
+              "source_url": "https://raw.githubusercontent.com/zzz2010/5UTR_Optimizer/master/data/eva_5utrseq/unique.df.hek.withUTRfas.TE_sorted.txt.top1000.fasta"
+            },
+            {
+              "citation": "Cao J, Novoa EM, Zhang Z, Chen WCW, Liu D, Choi GCG, Wong ASL, Wehrspaun C, Kellis M, Lu TK. High-throughput 5' UTR engineering for enhanced protein production in non-viral gene therapies. Nat Commun. 2021;12(1):4138. PMID:34230498. DOI:10.1038/s41467-021-24436-7.",
+              "license": "GitHub code/data: MIT License (https://github.com/zzz2010/5UTR_Optimizer/blob/master/LICENSE). Article: CC BY 4.0 (Open Access). Raw FASTQ at NCBI GEO: NCBI public data terms. Cite: Cao et al. 2021 Nat Commun (PMID:34230498).",
+              "local_path": null,
+              "record_count": null,
+              "sha256": "fe64d27d0db4b5c4e773cd0086138aa8ebdf3a854e1a2c1bc441eca3dba40396",
+              "source_url": "https://raw.githubusercontent.com/zzz2010/5UTR_Optimizer/master/data/eva_5utrseq/unique.df.hek.withUTRfas.TE_sorted.txt.bottom500.fasta"
+            },
+            {
+              "citation": "Cao J, Novoa EM, Zhang Z, Chen WCW, Liu D, Choi GCG, Wong ASL, Wehrspaun C, Kellis M, Lu TK. High-throughput 5' UTR engineering for enhanced protein production in non-viral gene therapies. Nat Commun. 2021;12(1):4138. PMID:34230498. DOI:10.1038/s41467-021-24436-7.",
+              "license": "GitHub code/data: MIT License (https://github.com/zzz2010/5UTR_Optimizer/blob/master/LICENSE). Article: CC BY 4.0 (Open Access). Raw FASTQ at NCBI GEO: NCBI public data terms. Cite: Cao et al. 2021 Nat Commun (PMID:34230498).",
+              "local_path": null,
+              "record_count": null,
+              "sha256": "4bd38f7046133c486a4a138d27ae88438805b7d79d258aa8f4d3425d88bd9af4",
+              "source_url": "https://raw.githubusercontent.com/zzz2010/5UTR_Optimizer/master/data/eva_5utrseq/unique.df.pc3.withUTRfas.TE_sorted.txt.top1000.fasta"
+            },
+            {
+              "citation": "Cao J, Novoa EM, Zhang Z, Chen WCW, Liu D, Choi GCG, Wong ASL, Wehrspaun C, Kellis M, Lu TK. High-throughput 5' UTR engineering for enhanced protein production in non-viral gene therapies. Nat Commun. 2021;12(1):4138. PMID:34230498. DOI:10.1038/s41467-021-24436-7.",
+              "license": "GitHub code/data: MIT License (https://github.com/zzz2010/5UTR_Optimizer/blob/master/LICENSE). Article: CC BY 4.0 (Open Access). Raw FASTQ at NCBI GEO: NCBI public data terms. Cite: Cao et al. 2021 Nat Commun (PMID:34230498).",
+              "local_path": null,
+              "record_count": null,
+              "sha256": "34b72ab0c2903f6d5053e1945aa5b4a26b249b8b17409ba479348cb66c710736",
+              "source_url": "https://raw.githubusercontent.com/zzz2010/5UTR_Optimizer/master/data/eva_5utrseq/unique.df.pc3.withUTRfas.TE_sorted.txt.bottom500.fasta"
+            },
+            {
+              "citation": "Cao J, Novoa EM, Zhang Z, Chen WCW, Liu D, Choi GCG, Wong ASL, Wehrspaun C, Kellis M, Lu TK. High-throughput 5' UTR engineering for enhanced protein production in non-viral gene therapies. Nat Commun. 2021;12(1):4138. PMID:34230498. DOI:10.1038/s41467-021-24436-7.",
+              "license": "GitHub code/data: MIT License (https://github.com/zzz2010/5UTR_Optimizer/blob/master/LICENSE). Article: CC BY 4.0 (Open Access). Raw FASTQ at NCBI GEO: NCBI public data terms. Cite: Cao et al. 2021 Nat Commun (PMID:34230498).",
+              "local_path": null,
+              "record_count": null,
+              "sha256": "5daa303f6a7a40aa83193de31e9ecd4eb6b57a1d615b362439e0212fea730ffa",
+              "source_url": "https://raw.githubusercontent.com/zzz2010/5UTR_Optimizer/master/data/eva_5utrseq/unique.df.muscle.withUTRfas.TE_sorted.fasta"
+            }
+          ],
+          "license": "GitHub code/data: MIT License (https://github.com/zzz2010/5UTR_Optimizer/blob/master/LICENSE). Article: CC BY 4.0 (Open Access). Raw FASTQ at NCBI GEO: NCBI public data terms. Cite: Cao et al. 2021 Nat Commun (PMID:34230498).",
+          "role": "endogenous 5'UTR TE (Ribo-seq) in 3 cell types",
+          "why_not_local_delta": "cross-gene absolute TE; no source-matched edits"
+        },
+        {
+          "citation": null,
+          "dataset_id": "saluki_halflife",
+          "description": null,
+          "files": [
+            {
+              "citation": null,
+              "license": null,
+              "local_path": null,
+              "record_count": null,
+              "sha256": null,
+              "source_url": "https://zenodo.org/records/14708163/files/rna_hl_human.npz"
+            },
+            {
+              "citation": null,
+              "license": null,
+              "local_path": null,
+              "record_count": null,
+              "sha256": null,
+              "source_url": "https://zenodo.org/records/14708163/files/rna_hl_mouse.npz"
+            }
+          ],
+          "license": "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Primary source: Agarwal & Kelley 2022 Genome Biology (DOI:10.1186/s13059-022-02811-x). Redistribution: mRNABench (Shi et al. 2025 bioRxiv, DOI:10.1101/2025.07.05.662870), Zenodo record 14708163. Cite both primary and redistribution sources.",
+          "role": "mRNA half-life labels",
+          "why_not_local_delta": "cross-transcript absolute half-life"
+        },
+        {
+          "citation": null,
+          "dataset_id": "codonbert_stability",
+          "description": null,
+          "files": [
+            {
+              "citation": "Li S, Moayedpour S, Li R, et al. CodonBERT: large language models for mRNA design and optimization. Genome Res. 2024;34(7):1027-1035. PMCID:PMC11368176. DOI:10.1101/gr.278870.123. GitHub: https://github.com/Sanofi-Public/CodonBERT",
+              "license": "Sanofi CodonBERT Software + Artifact License (https://github.com/Sanofi-Public/CodonBERT/blob/master/ARTIFACT_LICENSE.md). Research use permitted; redistribution subject to Sanofi artifact license terms. Underlying data: iCodon (Mordstein 2022, Sci Rep CC BY) and OpenVaccine (CC0).",
+              "local_path": "data/raw/codonbert_stability/mRNA_Stability.csv",
+              "record_count": 65356,
+              "sha256": "d922e7d4b07516949d316856373031136b38e9b92a06e81bb4afbafd0c00d608",
+              "source_url": "https://raw.githubusercontent.com/Sanofi-Public/CodonBERT/master/benchmarks/CodonBERT/data/fine-tune/mRNA_Stability.csv"
+            },
+            {
+              "citation": "Li S, Moayedpour S, Li R, et al. CodonBERT: large language models for mRNA design and optimization. Genome Res. 2024;34(7):1027-1035. PMCID:PMC11368176. DOI:10.1101/gr.278870.123. GitHub: https://github.com/Sanofi-Public/CodonBERT",
+              "license": "Sanofi CodonBERT Software + Artifact License (https://github.com/Sanofi-Public/CodonBERT/blob/master/ARTIFACT_LICENSE.md). Research use permitted; redistribution subject to Sanofi artifact license terms. Underlying data: iCodon (Mordstein 2022, Sci Rep CC BY) and OpenVaccine (CC0).",
+              "local_path": "data/raw/codonbert_stability/CoV_Vaccine_Degradation.csv",
+              "record_count": 2400,
+              "sha256": "361828d96bfc52d91d74bc11042e399e2aea78a7d83b352227aca7f3bf43420c",
+              "source_url": "https://raw.githubusercontent.com/Sanofi-Public/CodonBERT/master/benchmarks/CodonBERT/data/fine-tune/CoV_Vaccine_Degradation.csv"
+            }
+          ],
+          "license": "Sanofi CodonBERT Software + Artifact License (https://github.com/Sanofi-Public/CodonBERT/blob/master/ARTIFACT_LICENSE.md). Research use permitted; redistribution subject to Sanofi artifact license terms. Underlying data: iCodon (Mordstein 2022, Sci Rep CC BY) and OpenVaccine (CC0).",
+          "role": "mRNA stability labels",
+          "why_not_local_delta": "cross-transcript absolute stability"
+        },
+        {
+          "dataset_id": "refseq_gencode_catalog",
+          "files": [
+            {
+              "local_path": "data/raw/human.1.rna.gbff.gz"
+            },
+            {
+              "local_path": "data/raw/gencode.v45.pc_transcripts.fa.gz"
+            }
+          ],
+          "reconstruction_manifest": "data/reconstructed/p0_data_reconstruction_v1/combined/combined_reconstruction_manifest.json",
+          "role": "sequence assets feeding p0_data_reconstruction_v1",
+          "why_not_local_delta": "no functional labels at all"
+        }
+      ],
+      "n_entries": 4
+    },
+    "level_b_cross_construct": {
+      "definition": "Cross-construct design data (many DIFFERENT constructs, absolute labels). Ranking / analysis ONLY; not source-matched perturbation.",
+      "entries": [
+        {
+          "dataset_id": "sample2019_mpra_random",
+          "files": [],
+          "role": "random 50-mer / varying-length MPRA libraries (GSM3130441/442 mCherry, GSM4084997 25-100nt)",
+          "why_not_local_delta": "random constructs share no anchored wild-type source"
+        },
+        {
+          "citation": "Leppek K, Byeon GW, Kladwang W, Wayment-Steele HK, Kerr CH, Xu AF, Kim DS, Topkar VV, Choe C, Rothschild D, Tiu GC, Wellington-Oguri R, Fujii K, Sharma E, Watkins AM, Nicol JJ, Romano J, Tunguz B, Diaz F, Cai H, Guo P, Wu J, Meng F, Shi S, Participants E, Dormitzer PR, Solorzano A, Barna M, Das R. Combinatorial optimization of mRNA structure, stability, and translation for RNA-based therapeutics. Nat Commun. 2022;13(1):1536. PMID:35318324. GSE173083.",
+          "dataset_id": "lepplek2022_persistseq",
+          "description": null,
+          "files": [
+            {
+              "citation": "Leppek K, Byeon GW, Kladwang W, Wayment-Steele HK, Kerr CH, Xu AF, Kim DS, Topkar VV, Choe C, Rothschild D, Tiu GC, Wellington-Oguri R, Fujii K, Sharma E, Watkins AM, Nicol JJ, Romano J, Tunguz B, Diaz F, Cai H, Guo P, Wu J, Meng F, Shi S, Participants E, Dormitzer PR, Solorzano A, Barna M, Das R. Combinatorial optimization of mRNA structure, stability, and translation for RNA-based therapeutics. Nat Commun. 2022;13(1):1536. PMID:35318324. GSE173083.",
+              "license": "NCBI GEO public data. Submitted to GEO per NIH data sharing policy. Cite: Leppek et al. 2022 Nat Commun (PMID:35318324). Use permitted for research purposes; redistribution subject to GEO terms.",
+              "local_path": "data/raw/lepplek2022_persistseq/GSE173083_Table_S1.xlsx",
+              "record_count": null,
+              "sha256": "2e11287568dd3be66cd4cc7656033335a66a76ef71d26528a300a9eae5dda7a8",
+              "source_url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE173nnn/GSE173083/suppl/GSE173083_Table_S1_-_Attributes_for_pooled_233_sequences.xlsx"
+            },
+            {
+              "citation": "Leppek K, Byeon GW, Kladwang W, Wayment-Steele HK, Kerr CH, Xu AF, Kim DS, Topkar VV, Choe C, Rothschild D, Tiu GC, Wellington-Oguri R, Fujii K, Sharma E, Watkins AM, Nicol JJ, Romano J, Tunguz B, Diaz F, Cai H, Guo P, Wu J, Meng F, Shi S, Participants E, Dormitzer PR, Solorzano A, Barna M, Das R. Combinatorial optimization of mRNA structure, stability, and translation for RNA-based therapeutics. Nat Commun. 2022;13(1):1536. PMID:35318324. GSE173083.",
+              "license": "NCBI GEO public data. Submitted to GEO per NIH data sharing policy. Cite: Leppek et al. 2022 Nat Commun (PMID:35318324). Use permitted for research purposes; redistribution subject to GEO terms.",
+              "local_path": "data/raw/lepplek2022_persistseq/GSE173083_Table_S5.xlsx",
+              "record_count": null,
+              "sha256": "714aa23649d8d56e8df85ffa5c815e730eb786bf88d2896c7759b98642848bb9",
+              "source_url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE173nnn/GSE173083/suppl/GSE173083_Table_S5_-_Attributes_for_24_CDS_designs.xlsx"
+            }
+          ],
+          "license": "NCBI GEO public data. Submitted to GEO per NIH data sharing policy. Cite: Leppek et al. 2022 Nat Commun (PMID:35318324). Use permitted for research purposes; redistribution subject to GEO terms.",
+          "role": "233 full-length mRNA designs with protein output over time",
+          "why_not_local_delta": "cross-design comparison, not local edits of one source"
+        },
+        {
+          "citation": "Khoroshkin M, Zinkevich A, Aristova E, Yousefi H, Lee SB, Mittmann T, Manegold K, Penzar D, Raleigh DR, Kulakovskiy IV, Goodarzi H. A generative framework for enhanced cell-type specificity in rationally designed mRNAs. bioRxiv [Preprint]. 2024 Dec 31:2024.12.31.630783. PMID:39803435. DOI:10.1101/2024.12.31.630783.",
+          "dataset_id": "khoroshkin2024_parade",
+          "description": "Khoroshkin et al. 2024 bioRxiv PARADE dataset. 60,000 5' and 3' UTRs screened across 6 cell types (Jurkat, Nalm-6, SW-480, PA-1, MDA-MB-231, HepG2) using MPRA. 15,800 de novo-designed validation sequences. Used to train PARADE Predictor and PARADE Generator for cell type-specific mRNA UTR design.",
+          "files": [],
+          "license": "Preprint: CC BY-NC-ND 4.0 (https://creativecommons.org/licenses/by-nc-nd/4.0/). Dataset NOT yet publicly deposited as of 2026-07-19. Contact authors: hani.goodarzi@arcinstitute.org, ivan.kulakovskiy@gmail.com, khorms21@gmail.com",
+          "role": "cross-construct mRNA design dataset",
+          "why_not_local_delta": "cross-design absolute labels"
+        }
+      ],
+      "n_entries": 3
+    },
+    "level_c_source_matched": {
+      "definition": "Source-matched local perturbation data (CORE). Only this level may anchor local-delta claims.",
+      "entries": [
+        {
+          "dataset_id": "sample2019_mpra_snv",
+          "files": [],
+          "role": "MEASURED tier: snv library (GSM3130443), wild-type-anchored single/double/multi 5'UTR variants, MPRA ribosome load",
+          "why_not_local_delta": "n/a \u2014 this IS local-delta ground truth (wet-lab measured, single cargo/cell context)"
+        },
+        {
+          "dataset_id": "p3_01_proxy_neighborhood",
+          "files": [
+            {
+              "local_path": "data/p3/benchmark/proxy_tier.jsonl",
+              "sha256": "<filled by benchmark manifest>"
+            }
+          ],
+          "role": "PROXY tier: reconstructed 5'UTR controlled neighborhoods scored by frozen CNN-50mer cross-fitted ensemble (P1-04)",
+          "why_not_local_delta": "predicted/internal proxy \u2014 NOT wet-lab; value_qualifier marks it on every record"
+        }
+      ],
+      "n_entries": 2
+    },
+    "level_d_prospective_intervention": {
+      "definition": "Prospective internal intervention data (held-out wet-lab assay of model-proposed edits). NONE exists yet; planned in P3-03. Registered empty by design.",
+      "entries": [],
+      "n_entries": 0
+    }
+  },
+  "registry_id": "p3_01_dataset_registry"
+}
