@@ -1,0 +1,152 @@
+{
+  "phase": "P3-05",
+  "task": "Region-Specialized Experts Ablation Design",
+  "date": "2026-07-23",
+  "status": "DESIGN_COMPLETE",
+  "spec_reference": "提示词/mrna的 rl 的后续优化的分阶段提示词.md#L1616-1627",
+  "motivation": "The existing RegionSpecializedEditFormer (models/region_adapters.py) uses residual bottleneck adapters with zero-initialized final layers. P3-05 compares three region-specialization strategies to determine whether full region experts are needed or whether lightweight adapters suffice.",
+  "existing_infrastructure": {
+    "class": "RegionSpecializedEditFormer",
+    "file": "models/region_adapters.py",
+    "approach": "Residual bottleneck adapter: h'_i = h_i + A_{r(i)}(h_i) where A_r is a region-specific MLP (D -> bottleneck -> D) with zero-initialized output",
+    "checkpoint_safety": "Adapters under adapters.* submodules; base weights untouched; base state_dict remains directly loadable",
+    "parameter_cost": "O(R * D * b) where R=3 regions, D=model_dim, b=bottleneck"
+  },
+  "ablation_variants": [
+    {
+      "variant_id": "R1",
+      "name": "single_shared_trunk",
+      "description": "Single shared trunk with no region-specific components. All positions pass through the same encoder and head. This is the baseline — the existing MRNAEditFormer without RegionAdapter.",
+      "architecture": {
+        "backbone": "frozen Orthrus 6-track",
+        "encoder": "shared Linear(512, model_dim) + LayerNorm + FiLM(region, phase, time)",
+        "head": "shared MLP(model_dim -> model_dim//2 -> 1)",
+        "region_specific": false,
+        "parameter_count": "baseline (smallest)"
+      },
+      "hypothesis": "May be sufficient if the FiLM modulation already captures region differences. Expected to underperform when 5'UTR and CDS have fundamentally different edit-effect patterns.",
+      "expected_rank": 3,
+      "risk": "Forces one representation to encode conflicting objectives across regions"
+    },
+    {
+      "variant_id": "R2",
+      "name": "dual_region_experts",
+      "description": "Separate experts for 5'UTR and CDS (the two primary editable regions in P3-00 task A). 3'UTR is locked and not edited in the primary task. Based on the existing RegionSpecializedEditFormer pattern.",
+      "architecture": {
+        "backbone": "frozen Orthrus 6-track",
+        "shared_encoder": "shared Linear(512, model_dim) + LayerNorm (produces base representation)",
+        "region_experts": {
+          "utr5_expert": "Bottleneck MLP(model_dim -> bottleneck -> model_dim), zero-init output, applied to 5'UTR positions",
+          "cds_expert": "Bottleneck MLP(model_dim -> bottleneck -> model_dim), zero-init output, applied to CDS positions"
+        },
+        "head": "shared MLP(model_dim -> model_dim//2 -> 1) — output head is shared",
+        "region_specific": true,
+        "parameter_count": "baseline + 2 * (2 * model_dim * bottleneck + model_dim + bottleneck)"
+      },
+      "hypothesis": "Region experts capture region-specific edit-effect patterns (5'UTR: regulatory/accessibility; CDS: codon optimality/synonymous effects). Expected to outperform R1.",
+      "expected_rank": 2,
+      "risk": "Shared output head may limit region-specific expressiveness"
+    },
+    {
+      "variant_id": "R3",
+      "name": "hierarchical_coordinator",
+      "description": "Region experts + a hierarchical coordinator that aggregates cross-region information. The coordinator produces a global context vector that modulates region experts via cross-attention or FiLM.",
+      "architecture": {
+        "backbone": "frozen Orthrus 6-track",
+        "shared_encoder": "shared Linear(512, model_dim) + LayerNorm",
+        "region_experts": {
+          "utr5_expert": "Bottleneck MLP(model_dim -> bottleneck -> model_dim), zero-init output",
+          "cds_expert": "Bottleneck MLP(model_dim -> bottleneck -> model_dim), zero-init output"
+        },
+        "coordinator": {
+          "type": "cross-region attention",
+          "description": "Pools per-region representations via attention, produces a global context vector g ∈ R^{model_dim}",
+          "mechanism": "g = softmax(W_q * mean(h_region)) · h_region, then g modulates experts via FiLM"
+        },
+        "head": "shared MLP(model_dim -> model_dim//2 -> 1)",
+        "region_specific": true,
+        "cross_region": true,
+        "parameter_count": "R2 + coordinator params (W_q, W_k, W_v: 3 * model_dim^2)"
+      },
+      "hypothesis": "Cross-region coordination captures synergy effects (H5: Δjoint > Δ5'UTR + ΔCDS). Expected to outperform R2 IF cross-region synergy exists.",
+      "expected_rank": 1,
+      "risk": "May overfit on small datasets; coordinator adds O(model_dim^2) parameters; only justified if H5 (cross-region synergy) is validated"
+    }
+  ],
+  "ablation_protocol": {
+    "fixed_components": [
+      "Backbone: Orthrus 6-track (frozen)",
+      "Delta architecture: Variant D (Siamese difference) from p3_05_delta_architecture.md",
+      "Training data: P3-01 measured + proxy tiers",
+      "Split: mmseqs group-aware (frozen)",
+      "Loss: MSE delta + Gaussian NLL uncertainty",
+      "Hyperparameters: same learning rate, batch size, epochs across all variants"
+    ],
+    "variable_components": [
+      "Region specialization strategy (R1 vs R2 vs R3)"
+    ],
+    "evaluation_metrics": [
+      {
+        "name": "spearman_delta",
+        "description": "Spearman rank correlation between predicted and true edit deltas",
+        "primary": true
+      },
+      {
+        "name": "mae_delta",
+        "description": "Mean absolute error of predicted delta",
+        "primary": false
+      },
+      {
+        "name": "beneficial_edit_enrichment",
+        "description": "Fraction of top-k predicted edits that are truly beneficial (delta > 0)",
+        "primary": true
+      },
+      {
+        "name": "per_region_spearman",
+        "description": "Spearman ρ computed separately for 5'UTR-only edits and CDS-only edits",
+        "primary": false
+      },
+      {
+        "name": "cross_region_synergy_score",
+        "description": "Δjoint_predicted - (Δ5'UTR_predicted + ΔCDS_predicted). If R3 >> R2 on this metric, coordinator captures synergy.",
+        "primary": false
+      },
+      {
+        "name": "ece_uncertainty",
+        "description": "Expected calibration error of uncertainty estimates",
+        "primary": false
+      }
+    ],
+    "statistical_test": {
+      "method": "paired_bootstrap",
+      "n_resamples": 10000,
+      "significance_level": 0.05,
+      "comparison": "R2 vs R1, R3 vs R2, R3 vs R1"
+    }
+  },
+  "decision_rule": {
+    "if_R2_significantly_better_than_R1": "Region experts are necessary; adopt R2 as default",
+    "if_R3_significantly_better_than_R2": "Cross-region synergy exists (supports H5); adopt R3 for joint 5'UTR+CDS task",
+    "if_R3_not_significantly_better_than_R2": "No cross-region synergy detected; R2 is sufficient; do NOT adopt R3 (Occam's razor)",
+    "if_R1_not_significantly_worse_than_R2": "FiLM modulation suffices; adopt R1 for parameter efficiency"
+  },
+  "parameter_budget": {
+    "R1_baseline": "model_dim * 512 (encoder) + model_dim * model_dim//2 (head)",
+    "R2_additional_per_region": "2 * model_dim * bottleneck + model_dim + bottleneck",
+    "R3_additional_vs_R2": "3 * model_dim * model_dim (coordinator attention)",
+    "recommended_model_dim": 256,
+    "recommended_bottleneck": 64,
+    "R2_total_additional_params": "2 * (2 * 256 * 64 + 256 + 64) = 66,560",
+    "R3_total_additional_params_vs_R2": "3 * 256 * 256 = 196,608"
+  },
+  "relationship_to_existing_code": {
+    "R1": "MRNAEditFormer with use_region_film=True, no RegionAdapter wrapper",
+    "R2": "RegionSpecializedEditFormer wrapping MRNAEditFormer (existing models/region_adapters.py)",
+    "R3": "RegionSpecializedEditFormer + cross-region coordinator (new module to implement)"
+  },
+  "unresolved_risks": [
+    "R3 coordinator may overfit on small P3-01 measured tier (~1000 sequences)",
+    "If 3'UTR is unlocked in a future phase, R2/R3 must add a third expert",
+    "Parameter budget for R3 may be excessive if model_dim is large"
+  ]
+}
