@@ -1,0 +1,119 @@
+{
+  "phase": "P3-06",
+  "task": "Reward Redundancy Audit",
+  "date": "2026-07-23",
+  "status": "DESIGN_COMPLETE",
+  "spec_reference": "提示词/mrna的 rl 的后续优化的分阶段提示词.md#L1826-1844",
+  "redundancy_checks": [
+    {
+      "check": "protein-output predictor 是否已包含 stability 信息",
+      "finding": "PARTIAL_OVERLAP",
+      "description": "The P3-02 delta oracle predicts protein output (a functional endpoint). Stability (half-life) is a contributing factor to protein output but is not identical. Some stability information may be implicitly captured by the protein-output predictor if stable mRNAs tend to produce more protein. However, explicit half-life prediction is a separate endpoint.",
+      "resolution": "Keep half_life_delta as a separate secondary term with its own weight (0.1). Do NOT remove it from the reward, but reduce its weight to account for partial overlap with protein output.",
+      "redundancy_group": "protein_output_group",
+      "action": "reduce_weight"
+    },
+    {
+      "check": "TE 与 accessibility 是否重复",
+      "finding": "OVERLAP_RISK",
+      "description": "Translation efficiency (TE) and ribosome accessibility are highly correlated — high accessibility typically implies high TE. The P3-02 oracle predicts protein output, which is downstream of TE. If the oracle already captures accessibility effects, adding a separate accessibility term would double-count.",
+      "resolution": "Do NOT add a separate accessibility term. The P3-02 oracle's protein-output prediction implicitly captures accessibility effects. If a separate accessibility predictor is needed for interpretability, it should be used as an input feature, not as a reward component.",
+      "redundancy_group": "protein_output_group",
+      "action": "exclude_from_reward"
+    },
+    {
+      "check": "GC 是否被多个组件重复计数",
+      "finding": "DOUBLE_COUNT_RISK",
+      "description": "GC content affects: (1) protein output (via codon optimality), (2) mRNA stability (via secondary structure), (3) manufacturability (via synthesis difficulty). If GC appears in multiple reward components, it is triple-counted.",
+      "resolution": "GC content should NOT appear as a standalone reward component. It should only enter through: (1) the P3-02 oracle's protein-output prediction (implicit), (2) manufacturability_penalty (explicit, as a binary violation flag, not a continuous GC score). Remove any standalone GC reward.",
+      "redundancy_group": "gc_group",
+      "action": "exclude_standalone_gc"
+    },
+    {
+      "check": "edit cost 与 novelty 是否重复",
+      "finding": "DUPLICATE_DEFINITION",
+      "description": "The existing codebase uses novelty = -edit_distance as a reward component. This is identical to edit_cost = -w × n_edits. Both penalize the number of edits. Using both is double-counting.",
+      "resolution": "REMOVE novelty = -edit_distance entirely. Use only edit_cost = -0.05 × n_edits. The spec explicitly forbids novelty = -edit_distance.",
+      "redundancy_group": "edit_cost_group",
+      "action": "remove_novelty"
+    },
+    {
+      "check": "structure feature 是否重复",
+      "finding": "INPUT_NOT_REWARD",
+      "description": "Structure features (pairing probability, accessibility, MFE) are used as input features to the P3-02 oracle. If they also appear as separate reward components, they are double-counted.",
+      "resolution": "Structure features should ONLY be input features to the oracle, NOT separate reward components. The oracle's protein-output prediction already incorporates structure effects. Do NOT add standalone structure reward terms.",
+      "redundancy_group": "structure_group",
+      "action": "exclude_from_reward"
+    }
+  ],
+  "forbidden_definitions": [
+    {
+      "definition": "novelty = -edit_distance",
+      "reason": "Duplicate of edit_cost; explicitly forbidden by spec",
+      "status": "REMOVED"
+    }
+  ],
+  "redundancy_groups": {
+    "protein_output_group": {
+      "members": ["protein_output", "te", "accessibility"],
+      "resolution": "Keep only protein_output as primary; exclude te/accessibility as separate reward terms"
+    },
+    "stability_group": {
+      "members": ["half_life", "mrna_abundance"],
+      "resolution": "Keep as secondary terms with reduced weights (0.1 each); partial overlap with protein_output acknowledged"
+    },
+    "gc_group": {
+      "members": ["gc_content", "codon_optimality"],
+      "resolution": "Exclude standalone GC; only enter through oracle prediction and manufacturability_penalty"
+    },
+    "edit_cost_group": {
+      "members": ["edit_cost", "novelty"],
+      "resolution": "Keep only edit_cost; REMOVE novelty = -edit_distance"
+    },
+    "structure_group": {
+      "members": ["mfe", "pairing_probability", "accessibility"],
+      "resolution": "Use as input features only; exclude from reward"
+    }
+  },
+  "final_reward_components": {
+    "primary": {
+      "name": "LCB[Δprotein_output]",
+      "formula": "ensemble_mean - λ × ensemble_uncertainty",
+      "weight": 1.0
+    },
+    "secondary": [
+      {
+        "name": "mrna_abundance_delta",
+        "weight": 0.1,
+        "contexts": ["balanced_experimental_profile"]
+      },
+      {
+        "name": "half_life_delta",
+        "weight": 0.1,
+        "contexts": ["protein_output_with_stability_guard", "balanced_experimental_profile"]
+      },
+      {
+        "name": "edit_cost",
+        "weight": -0.05,
+        "contexts": ["all"]
+      },
+      {
+        "name": "on_manifold_penalty",
+        "weight": 0.0,
+        "contexts": ["disabled_by_default"]
+      },
+      {
+        "name": "manufacturability_penalty",
+        "weight": -0.1,
+        "contexts": ["balanced_experimental_profile"]
+      }
+    ],
+    "excluded": [
+      "novelty (duplicate of edit_cost)",
+      "te (subsumed by protein_output)",
+      "accessibility (subsumed by protein_output)",
+      "gc_content (subsumed by oracle + manufacturability)",
+      "mfe/structure (input feature only)"
+    ]
+  }
+}

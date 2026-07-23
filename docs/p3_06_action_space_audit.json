@@ -1,0 +1,135 @@
+{
+  "phase": "P3-06",
+  "task": "Action Space Audit",
+  "date": "2026-07-23",
+  "status": "DESIGN_COMPLETE",
+  "spec_reference": "提示词/mrna的 rl 的后续优化的分阶段提示词.md#L1732-1745",
+  "primary_actions": {
+    "STOP": {
+      "parameters": [],
+      "description": "Terminate the trajectory",
+      "constraints": [],
+      "protein_identity_preserved": true,
+      "length_preserved": true
+    },
+    "FIVE_UTR_SUB": {
+      "parameters": ["position: int", "nucleotide: str (A/C/G/U)"],
+      "description": "Single-nucleotide substitution in 5'UTR",
+      "constraints": [
+        "position must be within 5'UTR (0 <= pos < len(five_utr))",
+        "nucleotide must be one of A/C/G/U",
+        "identity substitution (same nucleotide) is excluded from legal set"
+      ],
+      "protein_identity_preserved": true,
+      "length_preserved": true
+    },
+    "CDS_SYNONYMOUS_SUB": {
+      "parameters": ["codon_position: int", "target_codon: str"],
+      "description": "Atomic synonymous codon substitution in CDS",
+      "constraints": [
+        "codon_position must be within CDS (0 <= codon_pos < n_codons)",
+        "target_codon must be in SYNONYMOUS_CODONS[current_codon]",
+        "target_codon must not be START_CODON (AUG) unless current is AUG",
+        "target_codon must not be a STOP_CODON",
+        "codon_position must not be the first codon (start codon preserved)",
+        "codon_position must not be the last codon (stop codon preserved)"
+      ],
+      "protein_identity_preserved": true,
+      "length_preserved": true,
+      "atomic": true,
+      "no_single_nt_intermediate": true
+    }
+  },
+  "forbidden_actions": {
+    "INDEL": {
+      "description": "Any insertion or deletion",
+      "reason": "Primary task excludes indels; would change transcript length",
+      "status": "excluded_from_action_space"
+    },
+    "CDS_NONSYNONYMOUS_SUB": {
+      "description": "Single-nucleotide CDS substitution that changes amino acid",
+      "reason": "Would violate protein identity hard constraint",
+      "status": "excluded_from_action_space"
+    },
+    "CDS_SINGLE_NT_SUB": {
+      "description": "Single-nucleotide CDS substitution (even if synonymous)",
+      "reason": "Creates nonsynonymous intermediate states; atomic codon swap required",
+      "status": "excluded_from_action_space"
+    },
+    "THREE_UTR_SUB": {
+      "description": "3'UTR substitution",
+      "reason": "3'UTR is locked_extension in primary task (P3-00); not editable",
+      "status": "excluded_from_action_space"
+    },
+    "UTR_INDEL": {
+      "description": "UTR insertion or deletion",
+      "reason": "Primary task excludes all indels",
+      "status": "excluded_from_action_space"
+    }
+  },
+  "existing_action_space_issues": [
+    {
+      "file": "rl/action_space.py",
+      "issue": "Action(op, pos, nt) is nucleotide-level; CDS synonymous codon swap requiring >1 nt change costs multiple edit-budget steps and creates nonsynonymous intermediates",
+      "fix": "P3-06 introduces CDS_SYNONYMOUS_SUB as an atomic codon-level action",
+      "status": "addressed_by_p3_06"
+    },
+    {
+      "file": "rl/action_space.py",
+      "issue": "build_legal_action_mask includes ins/del actions (indels) which are forbidden in primary task",
+      "fix": "P3-06 build_legal_edit_actions excludes all indels",
+      "status": "addressed_by_p3_06"
+    },
+    {
+      "file": "rl/action_space.py",
+      "issue": "3'UTR is editable in existing action space but should be locked in primary task",
+      "fix": "P3-06 build_legal_edit_actions excludes 3'UTR edits",
+      "status": "addressed_by_p3_06"
+    }
+  ],
+  "hierarchical_policy_action_mapping": {
+    "level_1": {
+      "decision": "STOP or EDIT",
+      "output": "p_stop ∈ [0, 1]",
+      "action_if_stop": "STOP",
+      "action_if_edit": "proceed to level 2"
+    },
+    "level_2": {
+      "decision": "region selection",
+      "output": "p_region ∈ Δ^2 (5'UTR, CDS)",
+      "action": "choose region for edit"
+    },
+    "level_3": {
+      "decision": "position selection",
+      "output": "p_position ∈ Δ^|region|",
+      "action": "choose position within region"
+    },
+    "level_4": {
+      "decision": "target selection",
+      "output": "p_target ∈ Δ^4 (5'UTR) or Δ^|synonymous| (CDS)",
+      "action": "choose target nucleotide or codon"
+    }
+  },
+  "acceptance_criteria": {
+    "protein_identity_100_percent": {
+      "how": "CDS_SYNONYMOUS_SUB guarantees protein preservation by construction",
+      "verification": "test: translate(source.cds) == translate(candidate.cds) for all legal CDS actions",
+      "status": "verified"
+    },
+    "transcript_length_100_percent_unchanged": {
+      "how": "No indels in action space; all actions preserve length",
+      "verification": "test: len(source.seq) == len(candidate.seq) for all legal actions",
+      "status": "verified"
+    },
+    "no_single_nt_cds_nonsynonymous_intermediate": {
+      "how": "CDS_SYNONYMOUS_SUB is atomic (replaces entire codon, not single nt)",
+      "verification": "test: no intermediate state with partial codon change",
+      "status": "verified"
+    },
+    "t7_primary_trajectory_can_select_5utr_cds": {
+      "how": "Hierarchical policy level 2 allows region switching across steps",
+      "verification": "test: trajectory can alternate between 5'UTR and CDS edits",
+      "status": "design_verified"
+    }
+  }
+}
