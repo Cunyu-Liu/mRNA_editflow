@@ -1,0 +1,180 @@
+{
+  "phase": "P3-02",
+  "timestamp": "2026-07-23T09:52:55Z",
+  "elapsed_seconds": 61.13089323043823,
+  "smoke_test": false,
+  "data_summary": {
+    "n_measured": 4802,
+    "n_proxy": 473228,
+    "n_train": 3411,
+    "n_val": 573,
+    "n_test": 486,
+    "n_ood": 332
+  },
+  "model_architectures": [
+    "absolute",
+    "difference",
+    "siamese",
+    "edit_conditioned"
+  ],
+  "per_model_test_metrics": {
+    "absolute": {
+      "delta_spearman": -0.027905020481274363,
+      "delta_pearson": 0.2016639278469511,
+      "sign_accuracy": 0.4949748743718593,
+      "pairwise_ranking_auc": 0.49331103678929766,
+      "beneficial_edit_precision": 0.5420560747663551,
+      "top_k_enrichment_10pct": 1.1558219178082192,
+      "top_k_enrichment_5pct": 1.1095890410958904,
+      "calibration_error": 0.051595591057232354,
+      "false_positive_beneficial_rate": 0.45794392523364486,
+      "rmse": 0.5676141005528966,
+      "mae": 0.3473009654619678,
+      "source_normalized_rmse": 0.09939916970109668
+    },
+    "difference": {
+      "delta_spearman": -0.05945542463965234,
+      "delta_pearson": -0.015923257953015513,
+      "sign_accuracy": 0.550251256281407,
+      "pairwise_ranking_auc": 0.4736622073578595,
+      "beneficial_edit_precision": 0.4506172839506173,
+      "top_k_enrichment_10pct": 0.8321917808219178,
+      "top_k_enrichment_5pct": 0.6472602739726028,
+      "calibration_error": 0.0639784271733045,
+      "false_positive_beneficial_rate": 0.5493827160493827,
+      "rmse": 0.5673572453585971,
+      "mae": 0.35197823947212237,
+      "source_normalized_rmse": 0.0993541898582388
+    },
+    "siamese": {
+      "delta_spearman": -0.02434065027041364,
+      "delta_pearson": 0.20189444745604695,
+      "sign_accuracy": 0.550251256281407,
+      "pairwise_ranking_auc": 0.4935200668896321,
+      "beneficial_edit_precision": 0.4506172839506173,
+      "top_k_enrichment_10pct": 1.1558219178082192,
+      "top_k_enrichment_5pct": 1.1095890410958904,
+      "calibration_error": 0.035298605094622744,
+      "false_positive_beneficial_rate": 0.5493827160493827,
+      "rmse": 0.5673484337807103,
+      "mae": 0.3519698838268696,
+      "source_normalized_rmse": 0.0993526467966326
+    },
+    "edit_conditioned": {
+      "delta_spearman": -0.10568354169483048,
+      "delta_pearson": -0.09523591068095821,
+      "sign_accuracy": 0.550251256281407,
+      "pairwise_ranking_auc": 0.46801839464882944,
+      "beneficial_edit_precision": 0.4506172839506173,
+      "top_k_enrichment_10pct": 0.6934931506849314,
+      "top_k_enrichment_5pct": 0.6472602739726028,
+      "calibration_error": 0.062205708948642226,
+      "false_positive_beneficial_rate": 0.5493827160493827,
+      "rmse": 0.5673753444981974,
+      "mae": 0.3519922026593409,
+      "source_normalized_rmse": 0.09935735933455522
+    }
+  },
+  "ensemble_test_metrics": {
+    "delta_spearman": -0.07759725028949946,
+    "delta_pearson": -0.014876404381100394,
+    "sign_accuracy": 0.550251256281407,
+    "pairwise_ranking_auc": 0.4747073578595318,
+    "beneficial_edit_precision": 0.4506172839506173,
+    "top_k_enrichment_10pct": 0.7397260273972602,
+    "top_k_enrichment_5pct": 0.6472602739726028,
+    "calibration_error": 0.08777540134798517,
+    "false_positive_beneficial_rate": 0.5493827160493827,
+    "rmse": 0.5671724419964778,
+    "mae": 0.3507319654120469,
+    "source_normalized_rmse": 0.09932182755304811
+  },
+  "ood_metrics": {
+    "delta_spearman": -0.17528775461313295,
+    "delta_pearson": -0.10327378925780678,
+    "sign_accuracy": 0.5769230769230769,
+    "pairwise_ranking_auc": 0.43084994753410283,
+    "beneficial_edit_precision": 0.45180722891566266,
+    "top_k_enrichment_10pct": 0.8048484848484848,
+    "top_k_enrichment_5pct": 0.83,
+    "calibration_error": 0.08344658318623042,
+    "false_positive_beneficial_rate": 0.5481927710843374,
+    "rmse": 0.6337851398959649,
+    "mae": 0.37920952850231704,
+    "source_normalized_rmse": 0.12395393345196769
+  },
+  "sensitivity_checks": {
+    "position_sensitive": false,
+    "position_sensitivity_std": 8.276233178988714e-05,
+    "gc_only_risk": true,
+    "length_only_risk": true,
+    "cds_start_vs_late": 4.79473340526948e-06,
+    "cds_position_aware": false,
+    "source_aware": false
+  },
+  "headroom_analysis": {
+    "exact_one_edit": {
+      "mean_best_delta": 0.02952384140296716,
+      "median_best_delta": 0.029524277272558314,
+      "max_best_delta": 0.02953977660966982,
+      "positive_fraction": 1.0,
+      "n_sources": 20,
+      "mean_n_evaluated": 150.0
+    },
+    "greedy": {
+      "mean_best_delta": 0.029550332707463794,
+      "median_best_delta": 0.02954956210092828,
+      "max_best_delta": 0.0295611534715796,
+      "positive_fraction": 1.0,
+      "n_sources": 20,
+      "mean_n_evaluated": 450.0
+    },
+    "beam_search": {
+      "mean_best_delta": 0.02953826953365643,
+      "median_best_delta": 0.029539438489932773,
+      "max_best_delta": 0.029550206598221947,
+      "positive_fraction": 1.0,
+      "n_sources": 20,
+      "mean_n_evaluated": 600.0
+    },
+    "simulated_annealing": {
+      "mean_best_delta": 0.029449584072086376,
+      "median_best_delta": 0.029445183312507086,
+      "max_best_delta": 0.029510755982603554,
+      "positive_fraction": 1.0,
+      "n_sources": 20,
+      "mean_n_evaluated": 43.7
+    },
+    "mcts": {
+      "mean_best_delta": 0.02952068327852374,
+      "median_best_delta": 0.029521342754764257,
+      "max_best_delta": 0.02953508470165902,
+      "positive_fraction": 1.0,
+      "n_sources": 20,
+      "mean_n_evaluated": 50.0
+    },
+    "multi_edit_advantage": 2.6491304496632784e-05,
+    "mcts_vs_greedy": -2.9649428940053263e-05
+  },
+  "gate": {
+    "criteria": {
+      "sign_accuracy_above_random": true,
+      "sign_accuracy_value": 0.550251256281407,
+      "top_k_enrichment_gt_1": false,
+      "top_k_enrichment_value": 0.7397260273972602,
+      "search_finds_positive": true,
+      "best_positive_fraction": 1.0,
+      "best_search_method": "exact_one_edit",
+      "not_gc_only": false,
+      "not_length_only": false,
+      "has_stable_headroom": true
+    },
+    "verdict": "PARTIAL",
+    "rationale": [
+      "Model may be learning GC/length heuristic rather than true sequence effect.",
+      "Recommend: narrow task scope, do not enter full joint RL."
+    ],
+    "n_criteria_pass": 3,
+    "n_criteria_total": 5
+  }
+}
