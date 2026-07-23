@@ -1,0 +1,1645 @@
+{
+  "assignment_sha256": "75f697089bdc8a31f34475c5cbcf44f30c7e83e50a279f76517ab8adb7018b0e",
+  "audit_id": "p3_01_split_audit",
+  "audits": {
+    "global": {
+      "cross_role_exact_sequence_collisions": 0,
+      "n_families": 2750,
+      "n_records": 1317318,
+      "n_source_role_violations": 0,
+      "n_sources": 3163,
+      "n_test_family_violations": 0,
+      "passed": true,
+      "role_counts": {
+        "ood": 165302,
+        "test": 135104,
+        "train": 883992,
+        "val": 132920
+      },
+      "source_role_violations": [],
+      "test_family_violations": [],
+      "tier": "global",
+      "trainval_ood_family_overlap_count": 39,
+      "trainval_ood_family_overlap_examples": [
+        "10050",
+        "10265",
+        "10386",
+        "10619",
+        "10771",
+        "10963",
+        "11220",
+        "11480",
+        "12763",
+        "13661",
+        "14306",
+        "14834",
+        "15059",
+        "1825",
+        "2290",
+        "2328",
+        "2634",
+        "2981",
+        "3037",
+        "3217"
+      ]
+    },
+    "measured": {
+      "cross_role_exact_sequence_collisions": 0,
+      "n_families": 867,
+      "n_records": 4802,
+      "n_source_role_violations": 0,
+      "n_sources": 867,
+      "n_test_family_violations": 0,
+      "passed": true,
+      "role_counts": {
+        "ood": 332,
+        "test": 486,
+        "train": 3411,
+        "val": 573
+      },
+      "source_role_violations": [],
+      "test_family_violations": [],
+      "tier": "measured",
+      "trainval_ood_family_overlap_count": 0,
+      "trainval_ood_family_overlap_examples": []
+    },
+    "proxy": {
+      "cross_role_exact_sequence_collisions": 0,
+      "n_families": 1683,
+      "n_records": 473228,
+      "n_source_role_violations": 0,
+      "n_sources": 2000,
+      "n_test_family_violations": 0,
+      "passed": true,
+      "role_counts": {
+        "ood": 63427,
+        "test": 50671,
+        "train": 311300,
+        "val": 47830
+      },
+      "source_role_violations": [],
+      "test_family_violations": [],
+      "tier": "proxy",
+      "trainval_ood_family_overlap_count": 32,
+      "trainval_ood_family_overlap_examples": [
+        "10265",
+        "10386",
+        "10619",
+        "10771",
+        "10963",
+        "11220",
+        "11480",
+        "12763",
+        "13661",
+        "14306",
+        "14834",
+        "15059",
+        "1825",
+        "2290",
+        "2634",
+        "2981",
+        "3037",
+        "3217",
+        "3264",
+        "3739"
+      ]
+    },
+    "unlabeled": {
+      "cross_role_exact_sequence_collisions": 0,
+      "n_families": 1881,
+      "n_records": 839288,
+      "n_source_role_violations": 0,
+      "n_sources": 2293,
+      "n_test_family_violations": 0,
+      "passed": true,
+      "role_counts": {
+        "ood": 101543,
+        "test": 83947,
+        "train": 569281,
+        "val": 84517
+      },
+      "source_role_violations": [],
+      "test_family_violations": [],
+      "tier": "unlabeled",
+      "trainval_ood_family_overlap_count": 39,
+      "trainval_ood_family_overlap_examples": [
+        "10050",
+        "10265",
+        "10386",
+        "10619",
+        "10771",
+        "10963",
+        "11220",
+        "11480",
+        "12763",
+        "13661",
+        "14306",
+        "14834",
+        "15059",
+        "1825",
+        "2290",
+        "2328",
+        "2634",
+        "2981",
+        "3037",
+        "3217"
+      ]
+    }
+  },
+  "created_utc": "2026-07-23T06:58:46Z",
+  "passed": true,
+  "split_config": {
+    "ood_gc_quantile": 0.05,
+    "ood_length_quantile": 0.05,
+    "per_cohort_ood": true,
+    "seed": 20260723,
+    "test_frac": 0.1,
+    "train_frac": 0.7,
+    "val_frac": 0.1
+  },
+  "split_metadata": {
+    "collision_resolution": {
+      "drops_by_role": {
+        "ood": 0,
+        "test": 0,
+        "train": 11458,
+        "val": 0
+      },
+      "n_collision_sequences": 9360,
+      "n_dropped_records": 11458,
+      "policy": "keep all records of the highest-priority role for each colliding candidate_sequence; drop the rest (deterministic)",
+      "role_priority": {
+        "ood": 1,
+        "test": 0,
+        "train": 3,
+        "val": 2
+      }
+    },
+    "fractions": {
+      "test": 0.1,
+      "train": 0.7,
+      "val": 0.1
+    },
+    "ood_criteria": {
+      "gc_quantile": 0.05,
+      "length_quantile": 0.05,
+      "per_cohort": true
+    },
+    "ood_group_reasons": {
+      "gencode_v45:ENST00000046087.7": [
+        "length_shift"
+      ],
+      "gencode_v45:ENST00000233336.7": [
+        "gc_shift"
+      ],
+      "gencode_v45:ENST00000256644.8": [
+        "length_shift"
+      ],
+      "gencode_v45:ENST00000264560.11": [
+        "gc_shift"
+      ],
+      "gencode_v45:ENST00000265523.9": [
+        "length_shift"
+      ],
+      "gencode_v45:ENST00000265846.10": [
+        "gc_shift"
+      ],
+      "gencode_v45:ENST00000279068.11": [
+        "gc_shift"
+      ],
+      "gencode_v45:ENST00000293670.3": [
+        "length_shift"
+      ],
+      "gencode_v45:ENST00000297689.4": [
+        "gc_shift"
+      ],
+      "gencode_v45:ENST00000298466.9": [
+        "length_shift"
+      ],
+      "gencode_v45:ENST00000303202.8": [
+        "gc_shift"
+      ],
+      "gencode_v45:ENST00000304385.8": [
+        "length_shift"
+      ],
+      "gencode_v45:ENST00000305202.9": [
+        "gc_shift"
+      ],
+      "gencode_v45:ENST00000309881.11": [
+        "gc_shift"
+      ],
+      "gencode_v45:ENST00000311534.6": [
+        "gc_shift"
+      ],
+      "gencode_v45:ENST00000323037.5": [
+        "gc_shift"
+      ],
+      "gencode_v45:ENST00000326152.6": [
+        "gc_shift"
+      ],
+      "gencode_v45:ENST00000330798.3": [
+        "length_shift"
+      ],
+      "gencode_v45:ENST00000338533.9": [
+        "gc_shift",
+        "length_shift"
+      ],
+      "gencode_v45:ENST00000342665.5": [
+        "gc_shift"
+      ],
+      "gencode_v45:ENST00000344595.10": [
+        "length_shift"
+      ],
+      "gencode_v45:ENST00000347785.8": [
+        "length_shift"
+      ],
+      "gencode_v45:ENST00000355459.4": [
+        "length_shift"
+      ],
+      "gencode_v45:ENST00000358295.9": [
+        "gc_shift"
+      ],
+      "gencode_v45:ENST00000367641.7": [
+        "length_shift"
+      ],
+      "gencode_v45:ENST00000371483.8": [
+        "length_shift"
+      ],
+      "gencode_v45:ENST00000372187.9": [
+        "length_shift"
+      ],
+      "gencode_v45:ENST00000374044.1": [
+        "gc_shift"
+      ],
+      "gencode_v45:ENST00000376021.8": [
+        "gc_shift"
+      ],
+      "gencode_v45:ENST00000376371.7": [
+        "gc_shift"
+      ],
+      "gencode_v45:ENST00000378191.5": [
+        "gc_shift"
+      ],
+      "gencode_v45:ENST00000379780.6": [
+        "length_shift"
+      ],
+      "gencode_v45:ENST00000379995.1": [
+        "length_shift"
+      ],
+      "gencode_v45:ENST00000380045.7": [
+        "gc_shift"
+      ],
+      "gencode_v45:ENST00000381563.8": [
+        "length_shift"
+      ],
+      "gencode_v45:ENST00000382611.10": [
+        "gc_shift"
+      ],
+      "gencode_v45:ENST00000382638.3": [
+        "length_shift"
+      ],
+      "gencode_v45:ENST00000389462.8": [
+        "gc_shift"
+      ],
+      "gencode_v45:ENST00000391741.6": [
+        "length_shift"
+      ],
+      "gencode_v45:ENST00000391960.4": [
+        "length_shift"
+      ],
+      "gencode_v45:ENST00000393470.1": [
+        "length_shift"
+      ],
+      "gencode_v45:ENST00000397647.7": [
+        "gc_shift"
+      ],
+      "gencode_v45:ENST00000398187.6": [
+        "gc_shift"
+      ],
+      "gencode_v45:ENST00000401811.3": [
+        "length_shift"
+      ],
+      "gencode_v45:ENST00000408949.2": [
+        "gc_shift",
+        "length_shift"
+      ],
+      "gencode_v45:ENST00000409294.5": [
+        "length_shift"
+      ],
+      "gencode_v45:ENST00000409400.1": [
+        "gc_shift"
+      ],
+      "gencode_v45:ENST00000409739.2": [
+        "gc_shift"
+      ],
+      "gencode_v45:ENST00000415493.7": [
+        "gc_shift"
+      ],
+      "gencode_v45:ENST00000415999.1": [
+        "length_shift"
+      ],
+      "gencode_v45:ENST00000438329.5": [
+        "length_shift"
+      ],
+      "gencode_v45:ENST00000442394.5": [
+        "length_shift"
+      ],
+      "gencode_v45:ENST00000448366.6": [
+        "gc_shift"
+      ],
+      "gencode_v45:ENST00000468090.5": [
+        "gc_shift"
+      ],
+      "gencode_v45:ENST00000477186.5": [
+        "gc_shift",
+        "length_shift"
+      ],
+      "gencode_v45:ENST00000486039.1": [
+        "gc_shift"
+      ],
+      "gencode_v45:ENST00000486685.3": [
+        "gc_shift"
+      ],
+      "gencode_v45:ENST00000488253.5": [
+        "length_shift"
+      ],
+      "gencode_v45:ENST00000493230.5": [
+        "gc_shift"
+      ],
+      "gencode_v45:ENST00000502835.5": [
+        "length_shift"
+      ],
+      "gencode_v45:ENST00000504181.1": [
+        "length_shift"
+      ],
+      "gencode_v45:ENST00000504806.5": [
+        "gc_shift"
+      ],
+      "gencode_v45:ENST00000505260.5": [
+        "gc_shift"
+      ],
+      "gencode_v45:ENST00000505960.5": [
+        "gc_shift"
+      ],
+      "gencode_v45:ENST00000507500.5": [
+        "gc_shift"
+      ],
+      "gencode_v45:ENST00000515234.1": [
+        "gc_shift"
+      ],
+      "gencode_v45:ENST00000521789.5": [
+        "length_shift"
+      ],
+      "gencode_v45:ENST00000523957.1": [
+        "length_shift"
+      ],
+      "gencode_v45:ENST00000524195.2": [
+        "length_shift"
+      ],
+      "gencode_v45:ENST00000530349.2": [
+        "gc_shift"
+      ],
+      "gencode_v45:ENST00000533473.1": [
+        "gc_shift"
+      ],
+      "gencode_v45:ENST00000534980.7": [
+        "gc_shift"
+      ],
+      "gencode_v45:ENST00000535603.5": [
+        "gc_shift"
+      ],
+      "gencode_v45:ENST00000536020.5": [
+        "gc_shift",
+        "length_shift"
+      ],
+      "gencode_v45:ENST00000536839.1": [
+        "gc_shift"
+      ],
+      "gencode_v45:ENST00000537171.5": [
+        "gc_shift"
+      ],
+      "gencode_v45:ENST00000537561.5": [
+        "length_shift"
+      ],
+      "gencode_v45:ENST00000543641.5": [
+        "gc_shift"
+      ],
+      "gencode_v45:ENST00000545556.6": [
+        "gc_shift"
+      ],
+      "gencode_v45:ENST00000552989.5": [
+        "length_shift"
+      ],
+      "gencode_v45:ENST00000554585.6": [
+        "gc_shift"
+      ],
+      "gencode_v45:ENST00000560440.5": [
+        "length_shift"
+      ],
+      "gencode_v45:ENST00000566113.5": [
+        "gc_shift"
+      ],
+      "gencode_v45:ENST00000568295.5": [
+        "length_shift"
+      ],
+      "gencode_v45:ENST00000570330.5": [
+        "length_shift"
+      ],
+      "gencode_v45:ENST00000578544.1": [
+        "length_shift"
+      ],
+      "gencode_v45:ENST00000587843.5": [
+        "length_shift"
+      ],
+      "gencode_v45:ENST00000589797.5": [
+        "length_shift"
+      ],
+      "gencode_v45:ENST00000591120.1": [
+        "length_shift"
+      ],
+      "gencode_v45:ENST00000591902.6": [
+        "gc_shift"
+      ],
+      "gencode_v45:ENST00000593945.6": [
+        "gc_shift"
+      ],
+      "gencode_v45:ENST00000610164.1": [
+        "gc_shift"
+      ],
+      "gencode_v45:ENST00000614750.1": [
+        "gc_shift"
+      ],
+      "gencode_v45:ENST00000616170.4": [
+        "gc_shift"
+      ],
+      "gencode_v45:ENST00000617701.5": [
+        "gc_shift"
+      ],
+      "gencode_v45:ENST00000621093.5": [
+        "length_shift"
+      ],
+      "gencode_v45:ENST00000639393.1": [
+        "length_shift"
+      ],
+      "gencode_v45:ENST00000641555.1": [
+        "gc_shift"
+      ],
+      "gencode_v45:ENST00000642058.1": [
+        "gc_shift"
+      ],
+      "gencode_v45:ENST00000648964.1": [
+        "gc_shift"
+      ],
+      "gencode_v45:ENST00000651267.2": [
+        "gc_shift"
+      ],
+      "gencode_v45:ENST00000651874.1": [
+        "length_shift"
+      ],
+      "gencode_v45:ENST00000677997.1": [
+        "gc_shift"
+      ],
+      "gencode_v45:ENST00000679597.1": [
+        "gc_shift"
+      ],
+      "gencode_v45:ENST00000680203.1": [
+        "length_shift"
+      ],
+      "gencode_v45:ENST00000680480.1": [
+        "gc_shift"
+      ],
+      "gencode_v45:ENST00000696059.1": [
+        "gc_shift"
+      ],
+      "gencode_v45:ENST00000696157.1": [
+        "length_shift"
+      ],
+      "gencode_v45:ENST00000696506.1": [
+        "gc_shift"
+      ],
+      "gencode_v45:ENST00000698942.1": [
+        "length_shift"
+      ],
+      "gencode_v45:ENST00000700084.1": [
+        "gc_shift"
+      ],
+      "gencode_v45:ENST00000704711.1": [
+        "gc_shift"
+      ],
+      "gencode_v45:ENST00000706281.1": [
+        "gc_shift"
+      ],
+      "gencode_v45:ENST00000711626.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:NM_000989.4": [
+        "length_shift"
+      ],
+      "refseq_human_rna:NM_001004196.4": [
+        "length_shift"
+      ],
+      "refseq_human_rna:NM_001005217.4": [
+        "length_shift"
+      ],
+      "refseq_human_rna:NM_001009813.3": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:NM_001017970.3": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:NM_001037317.2": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:NM_001044391.3": [
+        "length_shift"
+      ],
+      "refseq_human_rna:NM_001045476.3": [
+        "gc_shift",
+        "length_shift"
+      ],
+      "refseq_human_rna:NM_001083111.2": [
+        "length_shift"
+      ],
+      "refseq_human_rna:NM_001099638.2": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:NM_001113228.3": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:NM_001134422.2": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:NM_001143681.2": [
+        "length_shift"
+      ],
+      "refseq_human_rna:NM_001143807.2": [
+        "length_shift"
+      ],
+      "refseq_human_rna:NM_001145461.2": [
+        "length_shift"
+      ],
+      "refseq_human_rna:NM_001146039.2": [
+        "length_shift"
+      ],
+      "refseq_human_rna:NM_001146152.2": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:NM_001166621.1": [
+        "length_shift"
+      ],
+      "refseq_human_rna:NM_001172439.2": [
+        "length_shift"
+      ],
+      "refseq_human_rna:NM_001190766.2": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:NM_001193425.2": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:NM_001199462.2": [
+        "length_shift"
+      ],
+      "refseq_human_rna:NM_001204384.2": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:NM_001207020.3": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:NM_001251974.2": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:NM_001253900.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:NM_001256892.2": [
+        "length_shift"
+      ],
+      "refseq_human_rna:NM_001260495.2": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:NM_001267895.2": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:NM_001270041.2": [
+        "length_shift"
+      ],
+      "refseq_human_rna:NM_001270527.2": [
+        "length_shift"
+      ],
+      "refseq_human_rna:NM_001286456.2": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:NM_001288982.2": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:NM_001301085.2": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:NM_001318166.2": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:NM_001320652.2": [
+        "length_shift"
+      ],
+      "refseq_human_rna:NM_001321067.2": [
+        "length_shift"
+      ],
+      "refseq_human_rna:NM_001330676.2": [
+        "length_shift"
+      ],
+      "refseq_human_rna:NM_001331102.2": [
+        "length_shift"
+      ],
+      "refseq_human_rna:NM_001348301.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:NM_001348307.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:NM_001350509.2": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:NM_001352539.2": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:NM_001354439.2": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:NM_001368301.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:NM_001377401.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:NM_001377504.1": [
+        "gc_shift",
+        "length_shift"
+      ],
+      "refseq_human_rna:NM_001382475.1": [
+        "length_shift"
+      ],
+      "refseq_human_rna:NM_001384416.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:NM_001386776.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:NM_001387214.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:NM_001388089.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:NM_001393559.2": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:NM_001394413.1": [
+        "length_shift"
+      ],
+      "refseq_human_rna:NM_001400029.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:NM_001400038.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:NM_001410787.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:NM_001425150.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:NM_001438938.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:NM_001439306.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:NM_003475.4": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:NM_005178.5": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:NM_005866.4": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:NM_012079.6": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:NM_014326.5": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:NM_014441.3": [
+        "length_shift"
+      ],
+      "refseq_human_rna:NM_016006.6": [
+        "length_shift"
+      ],
+      "refseq_human_rna:NM_016009.5": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:NM_016500.5": [
+        "length_shift"
+      ],
+      "refseq_human_rna:NM_017836.4": [
+        "length_shift"
+      ],
+      "refseq_human_rna:NM_022359.8": [
+        "length_shift"
+      ],
+      "refseq_human_rna:NM_024069.4": [
+        "length_shift"
+      ],
+      "refseq_human_rna:NM_024738.4": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:NM_025078.5": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:NM_030926.6": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:NM_031896.5": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:NM_032804.6": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:NM_053044.5": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:NM_138471.3": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:NM_153706.4": [
+        "gc_shift",
+        "length_shift"
+      ],
+      "refseq_human_rna:NM_198277.3": [
+        "length_shift"
+      ],
+      "refseq_human_rna:XM_005247591.6": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_005251503.6": [
+        "length_shift"
+      ],
+      "refseq_human_rna:XM_005265559.5": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_006718707.4": [
+        "length_shift"
+      ],
+      "refseq_human_rna:XM_006719471.5": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_011509163.4": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_011520587.3": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_011532578.3": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_011534971.3": [
+        "length_shift"
+      ],
+      "refseq_human_rna:XM_011537109.3": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_011540535.3": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_011545238.2": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_017001409.2": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_017001670.3": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_017007312.3": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_017007473.2": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_017011060.2": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_017011515.2": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_017011743.2": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_017015321.3": [
+        "length_shift"
+      ],
+      "refseq_human_rna:XM_017016167.2": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_017019569.2": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_017023136.3": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_017027247.3": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_024448959.2": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_024448974.2": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_024451811.2": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_024453826.2": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_047416384.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_047416852.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_047419827.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_047421402.1": [
+        "length_shift"
+      ],
+      "refseq_human_rna:XM_047422157.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_047422281.1": [
+        "length_shift"
+      ],
+      "refseq_human_rna:XM_047422979.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_047424415.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_047425484.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_047426413.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_047430020.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_047430083.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_047430758.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_047431413.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_047432110.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_047433907.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_047434501.1": [
+        "length_shift"
+      ],
+      "refseq_human_rna:XM_047437762.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_047438139.1": [
+        "length_shift"
+      ],
+      "refseq_human_rna:XM_047444170.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_047444715.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_047445683.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_047447076.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_054313974.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_054316715.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_054316913.1": [
+        "length_shift"
+      ],
+      "refseq_human_rna:XM_054317056.1": [
+        "length_shift"
+      ],
+      "refseq_human_rna:XM_054318199.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_054318782.1": [
+        "gc_shift",
+        "length_shift"
+      ],
+      "refseq_human_rna:XM_054318783.1": [
+        "gc_shift",
+        "length_shift"
+      ],
+      "refseq_human_rna:XM_054321016.1": [
+        "length_shift"
+      ],
+      "refseq_human_rna:XM_054322016.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_054322366.1": [
+        "gc_shift",
+        "length_shift"
+      ],
+      "refseq_human_rna:XM_054322804.1": [
+        "length_shift"
+      ],
+      "refseq_human_rna:XM_054322861.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_054322869.1": [
+        "length_shift"
+      ],
+      "refseq_human_rna:XM_054323393.1": [
+        "length_shift"
+      ],
+      "refseq_human_rna:XM_054323941.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_054325154.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_054325502.1": [
+        "length_shift"
+      ],
+      "refseq_human_rna:XM_054325643.1": [
+        "length_shift"
+      ],
+      "refseq_human_rna:XM_054325998.1": [
+        "length_shift"
+      ],
+      "refseq_human_rna:XM_054327046.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_054329317.1": [
+        "gc_shift",
+        "length_shift"
+      ],
+      "refseq_human_rna:XM_054331968.1": [
+        "length_shift"
+      ],
+      "refseq_human_rna:XM_054333938.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_054335145.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_054336257.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_054336534.1": [
+        "length_shift"
+      ],
+      "refseq_human_rna:XM_054336571.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_054337518.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_054337936.1": [
+        "length_shift"
+      ],
+      "refseq_human_rna:XM_054340039.1": [
+        "length_shift"
+      ],
+      "refseq_human_rna:XM_054341687.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_054342493.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_054346325.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_054348030.1": [
+        "length_shift"
+      ],
+      "refseq_human_rna:XM_054348292.1": [
+        "length_shift"
+      ],
+      "refseq_human_rna:XM_054348404.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_054348406.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_054348897.1": [
+        "gc_shift",
+        "length_shift"
+      ],
+      "refseq_human_rna:XM_054351193.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_054351434.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_054351885.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_054353097.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_054357032.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_054358491.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_054359361.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_054359363.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_054359624.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_054361317.1": [
+        "length_shift"
+      ],
+      "refseq_human_rna:XM_054361480.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_054362238.1": [
+        "length_shift"
+      ],
+      "refseq_human_rna:XM_054363054.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_054363533.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_054364938.1": [
+        "length_shift"
+      ],
+      "refseq_human_rna:XM_054366299.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_054366475.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_054367587.1": [
+        "length_shift"
+      ],
+      "refseq_human_rna:XM_054368610.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_054371718.1": [
+        "length_shift"
+      ],
+      "refseq_human_rna:XM_054372561.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_054372603.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_054373194.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_054375153.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_054377685.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_054377944.1": [
+        "gc_shift"
+      ],
+      "refseq_human_rna:XM_054379220.1": [
+        "gc_shift"
+      ],
+      "snv:00ec1cd27cf4": [
+        "gc_shift"
+      ],
+      "snv:012e0df183a9": [
+        "gc_shift"
+      ],
+      "snv:086a0fad371a": [
+        "gc_shift"
+      ],
+      "snv:0f2ff623d7c7": [
+        "gc_shift"
+      ],
+      "snv:0f6edb8e2923": [
+        "gc_shift"
+      ],
+      "snv:1a540fd8bf9c": [
+        "gc_shift"
+      ],
+      "snv:1d4303f8a701": [
+        "gc_shift"
+      ],
+      "snv:24ed50e7c097": [
+        "gc_shift"
+      ],
+      "snv:2959fad8091e": [
+        "gc_shift"
+      ],
+      "snv:2f2cb4ceeda5": [
+        "gc_shift"
+      ],
+      "snv:31b3b8ef3dbc": [
+        "gc_shift"
+      ],
+      "snv:32469ad1fd72": [
+        "gc_shift"
+      ],
+      "snv:33b1dd6934e6": [
+        "gc_shift"
+      ],
+      "snv:37e44578d8db": [
+        "gc_shift"
+      ],
+      "snv:3d129d21cdcc": [
+        "gc_shift"
+      ],
+      "snv:3f0fcb374fef": [
+        "gc_shift"
+      ],
+      "snv:44331c76911a": [
+        "gc_shift"
+      ],
+      "snv:47e6fdbaa5d0": [
+        "gc_shift"
+      ],
+      "snv:4815f45b165f": [
+        "gc_shift"
+      ],
+      "snv:486d690f937b": [
+        "gc_shift"
+      ],
+      "snv:4a00bac33f4b": [
+        "gc_shift"
+      ],
+      "snv:4be47c83215f": [
+        "gc_shift"
+      ],
+      "snv:4d30dd22b916": [
+        "gc_shift"
+      ],
+      "snv:4e2a11dcca0f": [
+        "gc_shift"
+      ],
+      "snv:4ee0ab4b7ac0": [
+        "gc_shift"
+      ],
+      "snv:509074f2cef9": [
+        "gc_shift"
+      ],
+      "snv:525aeee515a5": [
+        "gc_shift"
+      ],
+      "snv:545664dba4d9": [
+        "gc_shift"
+      ],
+      "snv:58cb1b67b9ec": [
+        "gc_shift"
+      ],
+      "snv:5c7aba10a912": [
+        "gc_shift"
+      ],
+      "snv:64b3e1d3668e": [
+        "gc_shift"
+      ],
+      "snv:66e1a877df69": [
+        "gc_shift"
+      ],
+      "snv:67b0c6bf98c0": [
+        "gc_shift"
+      ],
+      "snv:67b875afcb33": [
+        "gc_shift"
+      ],
+      "snv:720c3f6dc6fd": [
+        "gc_shift"
+      ],
+      "snv:73b199ff2834": [
+        "gc_shift"
+      ],
+      "snv:796d53904e2d": [
+        "gc_shift"
+      ],
+      "snv:7e99fa2a1b10": [
+        "gc_shift"
+      ],
+      "snv:7ee3827506a4": [
+        "gc_shift"
+      ],
+      "snv:90386eaf3ae0": [
+        "gc_shift"
+      ],
+      "snv:926dbc2d7d6a": [
+        "gc_shift"
+      ],
+      "snv:93cd7db57fba": [
+        "gc_shift"
+      ],
+      "snv:942567da517d": [
+        "gc_shift"
+      ],
+      "snv:a67e1b1a7fab": [
+        "gc_shift"
+      ],
+      "snv:a7015de460b7": [
+        "gc_shift"
+      ],
+      "snv:a9c48075751f": [
+        "gc_shift"
+      ],
+      "snv:afea2dfac0ff": [
+        "gc_shift"
+      ],
+      "snv:b4d6a8129454": [
+        "gc_shift"
+      ],
+      "snv:b977b2afb413": [
+        "gc_shift"
+      ],
+      "snv:c021b2da6246": [
+        "gc_shift"
+      ],
+      "snv:c037c5e81ba6": [
+        "gc_shift"
+      ],
+      "snv:c96c8f17c647": [
+        "gc_shift"
+      ],
+      "snv:c9f7e262f9de": [
+        "gc_shift"
+      ],
+      "snv:cebc0ff8da4b": [
+        "gc_shift"
+      ],
+      "snv:d4797e149480": [
+        "gc_shift"
+      ],
+      "snv:d5e00b933670": [
+        "gc_shift"
+      ],
+      "snv:d5e226e81665": [
+        "gc_shift"
+      ],
+      "snv:d7826afd1c23": [
+        "gc_shift"
+      ],
+      "snv:d7d913bb9bd8": [
+        "gc_shift"
+      ],
+      "snv:d9df6290a2ee": [
+        "gc_shift"
+      ],
+      "snv:dbd533ccf4d9": [
+        "gc_shift"
+      ],
+      "snv:e2a4887b2625": [
+        "gc_shift"
+      ],
+      "snv:e9410a910b8a": [
+        "gc_shift"
+      ],
+      "snv:ef3499e49cb3": [
+        "gc_shift"
+      ],
+      "snv:ef8304303907": [
+        "gc_shift"
+      ],
+      "snv:f2583c705150": [
+        "gc_shift"
+      ],
+      "snv:f25c05bdf496": [
+        "gc_shift"
+      ],
+      "snv:f364c8a5966d": [
+        "gc_shift"
+      ],
+      "snv:f3d6ccb3e8e5": [
+        "gc_shift"
+      ],
+      "snv:f5f138fa2824": [
+        "gc_shift"
+      ],
+      "snv:fda2bfd6e33a": [
+        "gc_shift"
+      ],
+      "snv:ff8ad49a1bee": [
+        "gc_shift"
+      ]
+    },
+    "role_group_counts": {
+      "ood": 383,
+      "test": 322,
+      "train": 2129,
+      "val": 329
+    },
+    "role_record_counts": {
+      "ood": 165302,
+      "test": 135104,
+      "train": 883992,
+      "val": 132920
+    },
+    "seed": 20260723,
+    "test_families": [
+      "1029",
+      "10430",
+      "10449",
+      "10505",
+      "10529",
+      "10548",
+      "10557",
+      "10679",
+      "10734",
+      "10749",
+      "10880",
+      "11014",
+      "11098",
+      "11236",
+      "11269",
+      "11329",
+      "11429",
+      "11607",
+      "11636",
+      "11980",
+      "12312",
+      "12467",
+      "12543",
+      "12571",
+      "12585",
+      "1273",
+      "12807",
+      "13075",
+      "13357",
+      "13372",
+      "13409",
+      "13419",
+      "13869",
+      "13892",
+      "13949",
+      "14028",
+      "14066",
+      "1408",
+      "14109",
+      "14150",
+      "14256",
+      "14311",
+      "14313",
+      "1439",
+      "14464",
+      "14610",
+      "1464",
+      "14787",
+      "14888",
+      "14948",
+      "15120",
+      "1521",
+      "1534",
+      "15423",
+      "15478",
+      "15581",
+      "15585",
+      "15663",
+      "15872",
+      "15937",
+      "15998",
+      "16063",
+      "1611",
+      "16301",
+      "16321",
+      "1636",
+      "16530",
+      "1677",
+      "16844",
+      "170",
+      "1900",
+      "1970",
+      "2016",
+      "2026",
+      "2028",
+      "2099",
+      "2136",
+      "2167",
+      "2205",
+      "2386",
+      "2517",
+      "2528",
+      "256",
+      "2602",
+      "2700",
+      "2705",
+      "2721",
+      "2851",
+      "287",
+      "2923",
+      "3012",
+      "3025",
+      "3136",
+      "3165",
+      "3228",
+      "3233",
+      "3249",
+      "3259",
+      "3335",
+      "3382",
+      "3412",
+      "3695",
+      "3791",
+      "3874",
+      "395",
+      "3966",
+      "4028",
+      "4102",
+      "4115",
+      "4374",
+      "4434",
+      "4456",
+      "4477",
+      "4520",
+      "4695",
+      "4900",
+      "4939",
+      "4968",
+      "4980",
+      "5115",
+      "5169",
+      "5371",
+      "5424",
+      "5555",
+      "5697",
+      "5754",
+      "5783",
+      "5951",
+      "613",
+      "6165",
+      "6426",
+      "6442",
+      "6446",
+      "6467",
+      "6515",
+      "653",
+      "655",
+      "6667",
+      "6689",
+      "6695",
+      "6703",
+      "6713",
+      "6770",
+      "6792",
+      "6942",
+      "7019",
+      "7394",
+      "7583",
+      "7600",
+      "7601",
+      "7618",
+      "7631",
+      "7668",
+      "7817",
+      "7862",
+      "7866",
+      "789",
+      "7979",
+      "800",
+      "8128",
+      "8226",
+      "8236",
+      "8252",
+      "8301",
+      "8322",
+      "8483",
+      "8487",
+      "853",
+      "8602",
+      "8707",
+      "8723",
+      "8727",
+      "8731",
+      "8739",
+      "8751",
+      "8781",
+      "8909",
+      "9052",
+      "911",
+      "914",
+      "927",
+      "928",
+      "9295",
+      "9305",
+      "9533",
+      "9569",
+      "9601",
+      "9914",
+      "994",
+      "9973",
+      "snvfam:00020",
+      "snvfam:00025",
+      "snvfam:00031",
+      "snvfam:00034",
+      "snvfam:00042",
+      "snvfam:00050",
+      "snvfam:00055",
+      "snvfam:00084",
+      "snvfam:00108",
+      "snvfam:00109",
+      "snvfam:00110",
+      "snvfam:00125",
+      "snvfam:00153",
+      "snvfam:00157",
+      "snvfam:00172",
+      "snvfam:00177",
+      "snvfam:00178",
+      "snvfam:00179",
+      "snvfam:00193",
+      "snvfam:00218",
+      "snvfam:00230",
+      "snvfam:00237",
+      "snvfam:00241",
+      "snvfam:00244",
+      "snvfam:00254",
+      "snvfam:00267",
+      "snvfam:00289",
+      "snvfam:00302",
+      "snvfam:00309",
+      "snvfam:00329",
+      "snvfam:00354",
+      "snvfam:00367",
+      "snvfam:00371",
+      "snvfam:00388",
+      "snvfam:00406",
+      "snvfam:00416",
+      "snvfam:00456",
+      "snvfam:00462",
+      "snvfam:00469",
+      "snvfam:00471",
+      "snvfam:00492",
+      "snvfam:00503",
+      "snvfam:00516",
+      "snvfam:00517",
+      "snvfam:00518",
+      "snvfam:00519",
+      "snvfam:00548",
+      "snvfam:00552",
+      "snvfam:00557",
+      "snvfam:00583",
+      "snvfam:00591",
+      "snvfam:00599",
+      "snvfam:00603",
+      "snvfam:00629",
+      "snvfam:00640",
+      "snvfam:00659",
+      "snvfam:00660",
+      "snvfam:00663",
+      "snvfam:00675",
+      "snvfam:00677",
+      "snvfam:00681",
+      "snvfam:00682",
+      "snvfam:00698",
+      "snvfam:00712",
+      "snvfam:00729",
+      "snvfam:00748",
+      "snvfam:00752",
+      "snvfam:00762",
+      "snvfam:00763",
+      "snvfam:00799",
+      "snvfam:00808",
+      "snvfam:00833",
+      "snvfam:00845",
+      "snvfam:00854",
+      "snvfam:00855",
+      "snvfam:00872",
+      "snvfam:00876",
+      "snvfam:00881",
+      "snvfam:00902",
+      "snvfam:00903",
+      "snvfam:00920",
+      "snvfam:00921",
+      "snvfam:00931",
+      "snvfam:00938",
+      "snvfam:00942",
+      "snvfam:00944",
+      "snvfam:00945",
+      "snvfam:00959"
+    ]
+  }
+}
