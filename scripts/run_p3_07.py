@@ -305,9 +305,13 @@ def run_real(args):
         out = exact_one_edit_optimum(src, oracle_factory())
         exact_one[src.transcript_id] = {
             "optimum_score": out["optimum_score"],
+            "source_score": out["source_score"],
+            "improvement": out["improvement"],
             "n_evaluated": out["n_evaluated"],
         }
-    print(f"    exact one-edit on {len(exact_one)} sources")
+    n_improved = sum(1 for v in exact_one.values() if v["improvement"] > 0)
+    print(f"    exact one-edit on {len(exact_one)} sources "
+          f"({n_improved} with improvement > 0)")
 
     n_two = min(args.n_two_edit_sources, len(test_srcs))
     exact_two: Dict[str, Any] = {}
@@ -423,28 +427,45 @@ def make_decision(
 
     Degenerate-reference guard: the A/B/C routing presupposes that the exact
     one-edit optimum is a positive improvement over the source (H3 headroom).
-    If the reference is non-positive for the majority of sources, the oracle
-    landscape is flat/STOP-dominated, normalization by a near-zero or negative
-    scale is meaningless, and the RL-vs-search question is moot: emit
-    NO_GO_PREMISE_FAILURE instead of a spurious Route A/B/C.
+    If the improvement (optimum − source_score) is non-positive for the
+    majority of sources, the oracle landscape is flat/STOP-dominated, and the
+    RL-vs-search question is moot: emit NO_GO_PREMISE_FAILURE instead of a
+    spurious Route A/B/C.
+
+    Normalization uses the *relative improvement* (optimum − source_score) as
+    the per-source scale, not the absolute optimum score. This ensures the
+    degenerate check is meaningful even when the oracle has a negative bias
+    (training label mean < 0) that shifts all scores downward.
     """
-    raw_opt = {sid: float(v["optimum_score"]) for sid, v in exact_one.items()}
+    # Relative headroom: improvement of best edit over 0-edit source.
+    improvements = {
+        sid: float(v.get("improvement", v["optimum_score"] - v.get("source_score", 0.0)))
+        for sid, v in exact_one.items()
+    }
     frac_positive_ref = (
-        float(np.mean([v > 0.0 for v in raw_opt.values()])) if raw_opt else 0.0
+        float(np.mean([v > 0.0 for v in improvements.values()])) if improvements else 0.0
     )
-    mean_ref = float(np.mean(list(raw_opt.values()))) if raw_opt else 0.0
+    mean_ref = float(np.mean(list(improvements.values()))) if improvements else 0.0
     degenerate_reference = frac_positive_ref < 0.5
 
-    # Per-source achievable range: exact one-edit optimum - source score(=0 baseline)
-    # Source score is 0 by construction (delta=0, edit cost 0). Range proxy:
-    # use the exact one-edit optimum as the scale of achievable improvement.
-    scale = {sid: max(abs(v["optimum_score"]), 1e-6) for sid, v in exact_one.items()}
+    # Per-source source_score (0-edit baseline reward)
+    source_scores = {
+        sid: float(v.get("source_score", 0.0)) for sid, v in exact_one.items()
+    }
+
+    # Per-source achievable scale: improvement = optimum - source_score.
+    # Normalized score = (grid_best_score - source_score) / improvement.
+    # This makes the exact one-edit optimum == 1.0 by construction.
+    scale = {sid: max(improvements[sid], 1e-6) for sid in exact_one}
 
     # Aggregate best score per (method, query_budget) over sources
     by_mq: Dict[str, Dict[str, List[float]]] = {}
     for g in grid_results:
+        sid = g["source_id"]
+        ss = source_scores.get(sid, 0.0)
+        sc = max(scale.get(sid, 1e-6), 1e-6)
         by_mq.setdefault(g["method"], {}).setdefault(str(g["query_budget"]), []).append(
-            g["best_score"] / max(scale.get(g["source_id"], 1e-6), 1e-6)
+            (g["best_score"] - ss) / sc
         )
     norm_score = {m: {qb: float(np.mean(v)) for qb, v in qbs.items()}
                   for m, qbs in by_mq.items()}
@@ -481,8 +502,8 @@ def make_decision(
     if degenerate_reference:
         route = "NO_GO_PREMISE_FAILURE"
         rationale = (
-            f"Exact one-edit reference is non-positive for "
-            f"{1.0 - frac_positive_ref:.0%} of sources (mean {mean_ref:.4f}); "
+            f"Exact one-edit improvement over source is non-positive for "
+            f"{1.0 - frac_positive_ref:.0%} of sources (mean improvement {mean_ref:.4f}); "
             "the internal oracle landscape has no actionable headroom (LCB-optimal "
             "policy is STOP). H3 (optimization headroom) is not established under "
             "the current internal oracle, so the Route A/B/C decision is not "
@@ -536,10 +557,11 @@ def make_decision(
         "rationale": rationale,
         "degenerate_reference": {
             "flag": degenerate_reference,
-            "frac_sources_positive_exact_one_edit": frac_positive_ref,
-            "mean_exact_one_edit_optimum": mean_ref,
-            "note": "when flag is True, normalized reach and the A/B/C routing "
-                    "are not applicable; see rationale",
+            "frac_sources_positive_improvement": frac_positive_ref,
+            "mean_improvement": mean_ref,
+            "note": "uses relative improvement (optimum - source_score), not "
+                    "absolute optimum score; when flag is True, normalized reach "
+                    "and the A/B/C routing are not applicable; see rationale",
         },
         "normalized_reach": {
             "best_search_qb128": reach_128,

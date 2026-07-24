@@ -196,8 +196,15 @@ class EnsembleDeltaOracle(CountingOracle):
             raise ValueError("ensemble needs >=2 predict fns for uncertainty")
         self._fns = list(predict_fns)
         self._max_seq_len = max_seq_len
+        # Cache for source-bias centering: maps source 5'UTR → (mean, std) at 0-edit.
+        # The raw ensemble predicts a non-zero delta for source→source because the
+        # training label mean is negative. Centering subtracts this bias so that
+        # delta(source→source) = 0 by construction, which is required for the
+        # degenerate-reference guard and the relative-headroom decision to work.
+        self._source_bias_cache: Dict[str, Tuple[float, float]] = {}
 
-    def _score(self, source: MRNARecord, candidate: MRNARecord) -> Tuple[float, float]:
+    def _raw_predict(self, source: MRNARecord, candidate: MRNARecord) -> np.ndarray:
+        """Raw per-model predictions (no centering)."""
         from core.p3_02_delta_oracle import extract_features
 
         edits = _diff_edits(source.five_utr, candidate.five_utr)
@@ -205,9 +212,22 @@ class EnsembleDeltaOracle(CountingOracle):
             source.five_utr, candidate.five_utr, edits, self._max_seq_len
         )
         batch = {k: v[np.newaxis] for k, v in feats.items()}
-        preds = np.array([float(fn(batch)[0]) for fn in self._fns])
-        mean = float(preds.mean())
-        std = float(preds.std(ddof=0)) + 1e-6
+        return np.array([float(fn(batch)[0]) for fn in self._fns])
+
+    def _get_source_bias(self, source: MRNARecord) -> np.ndarray:
+        """Per-model 0-edit prediction for this source (cached)."""
+        key = source.five_utr
+        if key not in self._source_bias_cache:
+            self._source_bias_cache[key] = self._raw_predict(source, source)
+        return self._source_bias_cache[key]
+
+    def _score(self, source: MRNARecord, candidate: MRNARecord) -> Tuple[float, float]:
+        preds = self._raw_predict(source, candidate)
+        # Center: subtract each model's 0-edit prediction so delta(source→source)=0.
+        bias = self._get_source_bias(source)
+        centered = preds - bias
+        mean = float(centered.mean())
+        std = float(centered.std(ddof=0)) + 1e-6
         return mean, std
 
 
@@ -1086,7 +1106,8 @@ def exact_one_edit_optimum(
     oracle.query_budget = None  # exact evaluation is unbudgeted
     best_rec = source
     best_edits: List[Dict[str, Any]] = []
-    best_sc = score_candidate(source, source, oracle, 0, cfg)
+    source_sc = score_candidate(source, source, oracle, 0, cfg)
+    best_sc = source_sc
     n = 1
     for a in legal_actions(source, regions=regions):
         if a.is_stop():
@@ -1099,6 +1120,8 @@ def exact_one_edit_optimum(
             best_sc, best_rec, best_edits = sc, child, edits
     return {
         "optimum_score": best_sc["scalar"],
+        "source_score": source_sc["scalar"],
+        "improvement": best_sc["scalar"] - source_sc["scalar"],
         "optimum_mean_delta": best_sc["mean_delta"],
         "best_candidate": best_rec,
         "best_edits": best_edits,
