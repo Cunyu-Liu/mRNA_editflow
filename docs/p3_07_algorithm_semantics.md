@@ -2,10 +2,23 @@
 
 **Date**: 2026-07-24
 **Phase**: P3-07
-**Status**: COMPLETED (degenerate-reference condition)
+**Status**: COMPLETED (degenerate-reference condition; see note below)
 **Oracle**: P3-02 cross-fitted ensemble (4 architectures x 5 folds, deterministic refit)
 **Sources**: 2 test mothers x 2 edit budgets (1, 2) = 4 experiments
 **Artifact**: `docs/p3_07_search_results.json` → `algorithm_semantics`
+
+> **Note (post-remediation)**: The semantics below were collected under the
+> original degenerate oracle (constant-predictor, flat negative landscape).
+> The oracle has since been remediated with position-aware features +
+> source-bias centering (see `docs/p3_07_rl_necessity_decision.md` Section 2).
+> The decision was updated to RL_ROUTE_B based on the remediated oracle's
+> search grid (3,840 runs), but the algorithm semantics experiments were
+> NOT re-run because: (1) the spec requirement "greedy != CTMC marginal"
+> is already satisfied (KL 4.0-4.8 nats); (2) the constraint validity and
+> implementation validation (exact marginal == CTMC marginal) are
+> oracle-independent. The semantics results stand as historical record of
+> the degenerate condition; the synthetic-oracle tests in
+> `tests/test_p3_07_search.py` cover the non-degenerate case.
 
 ---
 
