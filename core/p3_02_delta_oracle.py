@@ -625,8 +625,8 @@ class SeqDiffModel:
         }
 
     def _get_input(self, features: Dict[str, np.ndarray]) -> np.ndarray:
-        diff = features["candidate_onehot"] - features["source_onehot"]
-        return diff.reshape(diff.shape[0], -1)
+        diff = features["candidate_onehot"].astype(np.float64) - features["source_onehot"].astype(np.float64)
+        return np.ascontiguousarray(diff.reshape(diff.shape[0], -1))
 
     def _forward(self, X: np.ndarray) -> np.ndarray:
         h = np.maximum(0, X @ self._weights["w1"] + self._weights["b1"])
@@ -699,13 +699,14 @@ class SeqCNNModel:
 
     def _conv_forward(self, diff: np.ndarray):
         """diff: [batch, L, 4] -> (conv_out, cols)"""
+        diff = np.ascontiguousarray(diff, dtype=np.float64)
         batch, L, _ = diff.shape
         ks = self.kernel_size
         out_len = L - ks + 1
-        # im2col
-        cols = np.zeros((batch, out_len, ks * 4), dtype=diff.dtype)
-        for i in range(out_len):
-            cols[:, i, :] = diff[:, i:i+ks, :].reshape(batch, -1)
+        # Vectorized im2col via sliding_window_view
+        from numpy.lib.stride_tricks import sliding_window_view
+        window = sliding_window_view(diff, ks, axis=1)  # (batch, out_len, 4, ks)
+        cols = window.transpose(0, 1, 3, 2).reshape(batch, out_len, ks * 4)
         W = self._weights["conv_w"].reshape(ks * 4, self.n_filters)
         conv_out = cols @ W + self._weights["conv_b"]
         return conv_out, cols
@@ -739,9 +740,11 @@ class SeqCNNModel:
             grad_pooled = np.outer(grad_out, self._weights["fc_w"])  # [batch, F]
             # Global max pool backward: grad flows to argmax position only
             argmax = np.argmax(relu, axis=1)            # [batch, F]
+            # Vectorized: create one-hot mask of argmax positions
+            batch_idx = np.arange(n)[:, np.newaxis]     # [n, 1]
+            filt_idx = np.arange(nf)[np.newaxis, :]     # [1, F]
             grad_relu = np.zeros_like(relu)
-            for f in range(nf):
-                grad_relu[np.arange(n), argmax[:, f], f] = grad_pooled[:, f]
+            grad_relu[batch_idx, argmax, filt_idx] = grad_pooled
             # ReLU backward
             grad_conv = grad_relu * (conv_out > 0)      # [batch, out_len, F]
             # Conv weight grads via einsum
