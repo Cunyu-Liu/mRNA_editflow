@@ -461,9 +461,15 @@ def make_decision(
     positive_sources = {sid for sid, imp in improvements.items() if imp > 1e-9}
     scale = {sid: improvements[sid] for sid in positive_sources}
 
-    # Aggregate best score per (method, query_budget) over sources with headroom
+    # Aggregate best score per (method, query_budget) over sources with headroom.
+    # Only edit_budget=1 results are used for normalization, since the exact
+    # reference is the single-edit optimum. Multi-edit results (eb=3,5,10)
+    # naturally exceed the single-edit reference and would inflate the normalized
+    # scores, producing misleading reach values (e.g., 3700x at eb=10, qb2048).
     by_mq: Dict[str, Dict[str, List[float]]] = {}
     for g in grid_results:
+        if g.get("edit_budget", 1) != 1:
+            continue  # only use single-edit results for decision normalization
         sid = g["source_id"]
         if sid not in positive_sources:
             continue  # skip zero-headroom sources
@@ -525,21 +531,29 @@ def make_decision(
             "exact one-edit reference (normalized); strong search is insufficient "
             "within practical budgets, so RL has a potential quality advantage."
         )
-    elif reach_128 >= 0.95 or ranker_limited_128 >= 0.95:
-        # near-optimal at low budget -> no RL needed UNLESS cost asymmetry
-        if ranker_limited_128 >= 0.95 and best_search_128 < 0.95:
-            route = "RL_ROUTE_B"
-            rationale = (
-                f"DAgger ranker + limited search reaches {ranker_limited_128:.2%} "
-                f"at budget 128 while unguided strong search reaches {reach_128:.2%}; "
-                "a learned policy amortizes search cost. Compute break-even scale."
-            )
-        else:
-            route = "NO_RL_ROUTE_C"
-            rationale = (
-                f"Strong search already reaches {reach_128:.2%} of the exact "
-                "reference at query budget 128; no quality or cost gap for RL to fill."
-            )
+    elif reach_128 >= 0.95 and ranker_limited_128 >= 0.95:
+        # Per spec: Route C requires BOTH "ranker + limited search 已达到最优附近"
+        # AND "RL 没有质量或成本优势". If only unguided search reaches the
+        # optimum but the learned ranker does not, RL still has a cost-amortization
+        # role (Route B).
+        route = "NO_RL_ROUTE_C"
+        rationale = (
+            f"Both strong search ({reach_128:.2%}) and DAgger ranker + limited "
+            f"search ({ranker_limited_128:.2%}) reach near-optimal at query budget "
+            "128; no quality or cost gap for RL to fill."
+        )
+    elif reach_128 >= 0.95 and ranker_limited_128 < 0.95:
+        # Search reaches optimum at low budget, but the learned ranker does NOT.
+        # This is the RL amortization story: a better learned policy (via GRPO)
+        # could match search at much lower per-cargo cost.
+        route = "RL_ROUTE_B"
+        rationale = (
+            f"Strong search reaches {reach_128:.2%} of the exact reference at "
+            f"query budget 128, but DAgger ranker + limited search reaches only "
+            f"{ranker_limited_128:.2%}. The learned policy fails to amortize the "
+            "search cost, leaving room for RL (GRPO) to close the gap and reduce "
+            "per-cargo oracle queries. Compute break-even deployment scale."
+        )
     else:
         route = "RL_ROUTE_B"
         rationale = (
@@ -584,8 +598,10 @@ def make_decision(
         },
         "decision_rule": {
             "route_A": "best_search_qb2048 < 0.90 of exact one-edit reference",
-            "route_C": "best_search_qb128 >= 0.95 (or dagger+limited >= 0.95 with cheap search also >= 0.95)",
-            "route_B": "otherwise (quality achievable but expensive)",
+            "route_C": "best_search_qb128 >= 0.95 AND dagger+limited_qb128 >= 0.95 (both search and ranker near-optimal)",
+            "route_B_search_amortizes": "best_search_qb128 >= 0.95 but dagger+limited_qb128 < 0.95 (search works, ranker fails, RL could amortize)",
+            "route_B_quality_expensive": "otherwise (quality achievable but needs high budget)",
+            "normalization": "edit_budget=1 only, relative to exact one-edit improvement; multi-edit results excluded",
         },
     }
 
