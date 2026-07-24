@@ -362,3 +362,50 @@ class TestBudgetEnforcement:
             source, _oracle(budget), query_budget=budget, edit_budget=5, cfg=CFG
         )
         assert r.search_oracle_calls <= budget
+
+
+class TestDegenerateReferenceGuard:
+    """make_decision must detect flat / STOP-dominated oracle landscapes."""
+
+    @pytest.fixture
+    def _make_decision(self):
+        import importlib.util
+        spec = importlib.util.spec_from_file_location(
+            "_run_p3_07",
+            Path(__file__).resolve().parent.parent / "scripts" / "run_p3_07.py",
+        )
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        return mod.make_decision
+
+    def test_degenerate_reference_emits_no_go(self, _make_decision):
+        """When exact one-edit optimum is non-positive for majority of sources,
+        the decision must be NO_GO_PREMISE_FAILURE, not a spurious Route A."""
+        exact_one = {
+            "src_a": {"optimum_score": -0.027, "optimum_mean_delta": -0.017},
+            "src_b": {"optimum_score": -0.027, "optimum_mean_delta": -0.017},
+            "src_c": {"optimum_score": -0.027, "optimum_mean_delta": -0.017},
+        }
+        grid = [
+            {"method": "greedy", "query_budget": 128, "source_id": "src_a", "best_score": -0.05},
+            {"method": "greedy", "query_budget": 2048, "source_id": "src_a", "best_score": -0.05},
+        ]
+        decision = _make_decision(grid, exact_one, {}, {}, [])
+        assert decision["route"] == "NO_GO_PREMISE_FAILURE"
+        assert decision["degenerate_reference"]["flag"] is True
+        assert decision["degenerate_reference"]["frac_sources_positive_exact_one_edit"] == 0.0
+        assert decision["normalized_reach"]["best_search_qb128"] is None
+
+    def test_positive_reference_proceeds_to_route(self, _make_decision):
+        """When exact one-edit optimum is positive, normal A/B/C routing applies."""
+        exact_one = {
+            "src_a": {"optimum_score": 0.03, "optimum_mean_delta": 0.03},
+            "src_b": {"optimum_score": 0.03, "optimum_mean_delta": 0.03},
+        }
+        grid = [
+            {"method": "greedy", "query_budget": 128, "source_id": "src_a", "best_score": 0.0288},
+            {"method": "greedy", "query_budget": 128, "source_id": "src_b", "best_score": 0.0288},
+        ]
+        decision = _make_decision(grid, exact_one, {}, {}, [])
+        assert decision["route"] in ("NO_RL_ROUTE_C", "RL_ROUTE_B", "RL_ROUTE_A")
+        assert decision["degenerate_reference"]["flag"] is False

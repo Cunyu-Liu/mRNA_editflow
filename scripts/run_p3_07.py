@@ -414,7 +414,21 @@ def make_decision(
       ranker+limited search matches it at much lower amortized cost.
     - Route A (RL quality): even budget-2048 search leaves > 10% regret —
       search is insufficient within practical budgets.
+
+    Degenerate-reference guard: the A/B/C routing presupposes that the exact
+    one-edit optimum is a positive improvement over the source (H3 headroom).
+    If the reference is non-positive for the majority of sources, the oracle
+    landscape is flat/STOP-dominated, normalization by a near-zero or negative
+    scale is meaningless, and the RL-vs-search question is moot: emit
+    NO_GO_PREMISE_FAILURE instead of a spurious Route A/B/C.
     """
+    raw_opt = {sid: float(v["optimum_score"]) for sid, v in exact_one.items()}
+    frac_positive_ref = (
+        float(np.mean([v > 0.0 for v in raw_opt.values()])) if raw_opt else 0.0
+    )
+    mean_ref = float(np.mean(list(raw_opt.values()))) if raw_opt else 0.0
+    degenerate_reference = frac_positive_ref < 0.5
+
     # Per-source achievable range: exact one-edit optimum - source score(=0 baseline)
     # Source score is 0 by construction (delta=0, edit cost 0). Range proxy:
     # use the exact one-edit optimum as the scale of achievable improvement.
@@ -458,7 +472,21 @@ def make_decision(
     reach_128 = best_search_128 / exact_ref if exact_ref else 0.0
     reach_2048 = best_search_2048 / exact_ref if exact_ref else 0.0
 
-    if reach_2048 < 0.90:
+    if degenerate_reference:
+        route = "NO_GO_PREMISE_FAILURE"
+        rationale = (
+            f"Exact one-edit reference is non-positive for "
+            f"{1.0 - frac_positive_ref:.0%} of sources (mean {mean_ref:.4f}); "
+            "the internal oracle landscape has no actionable headroom (LCB-optimal "
+            "policy is STOP). H3 (optimization headroom) is not established under "
+            "the current internal oracle, so the Route A/B/C decision is not "
+            "applicable. Do not enter P3-08; route back to oracle remediation "
+            "(P3-02 feature/architecture upgrade or P3-05 real backbone) and "
+            "re-run P3-07."
+        )
+        reach_128 = None
+        reach_2048 = None
+    elif reach_2048 < 0.90:
         route = "RL_ROUTE_A"
         rationale = (
             f"Even query-budget-2048 search reaches only {reach_2048:.2%} of the "
@@ -500,6 +528,13 @@ def make_decision(
     return {
         "route": route,
         "rationale": rationale,
+        "degenerate_reference": {
+            "flag": degenerate_reference,
+            "frac_sources_positive_exact_one_edit": frac_positive_ref,
+            "mean_exact_one_edit_optimum": mean_ref,
+            "note": "when flag is True, normalized reach and the A/B/C routing "
+                    "are not applicable; see rationale",
+        },
         "normalized_reach": {
             "best_search_qb128": reach_128,
             "best_search_qb2048": reach_2048,
