@@ -1867,6 +1867,7 @@ __all__ = [
     "extract_features", "batch_extract_features",
     # Models
     "AbsoluteModel", "DifferenceModel", "SiameseModel", "EditConditionedModel",
+    "SeqDiffModel", "SeqCNNModel",
     "MODEL_REGISTRY",
     # Metrics
     "compute_all_metrics", "sign_accuracy", "top_k_enrichment",
