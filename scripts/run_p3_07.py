@@ -128,11 +128,12 @@ def build_ensemble_predict_fns(benchmark_dir: str, max_proxy: int = 10000, seed:
             idxs.extend(groups[gid])
         folds.append(np.array(sorted(idxs)))
 
-    # Use position-aware models (seq_diff + seq_cnn) to break the
+    # Use position-aware models (seq_diff MLP + seq_linear ridge) to break the
     # constant-predictor degeneracy of the old global-feature models.
+    # seq_cnn is available but too slow for full grid (6s/epoch x 150 x 5folds).
     ensemble = build_oracle_ensemble(
         feats, labels, folds, config,
-        model_names=("seq_diff", "seq_cnn"),
+        model_names=("seq_diff", "seq_linear"),
     )
 
     predict_fns = []

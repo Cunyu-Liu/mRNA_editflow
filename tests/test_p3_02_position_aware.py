@@ -19,6 +19,7 @@ from core.p3_02_delta_oracle import (
     MODEL_REGISTRY,
     SeqDiffModel,
     SeqCNNModel,
+    SeqLinearModel,
     extract_features,
     batch_extract_features,
     cross_fit_predict,
@@ -136,6 +137,40 @@ class TestSeqCNNModel:
         feats = batch_extract_features(records, max_seq_len=50)
         labels = feats["delta"]
         model = SeqCNNModel(n_filters=32, kernel_size=5, n_epochs=100, seed=42)
+        model.fit(feats, labels)
+        src_seq = records[0].source_sequence
+        preds_at_pos = []
+        for pos in range(len(src_seq)):
+            ref = src_seq[pos]
+            alt = "G" if ref != "G" else "A"
+            cand = src_seq[:pos] + alt + src_seq[pos+1:]
+            f = extract_features(src_seq, cand, [{"pos": pos, "ref": ref, "alt": alt, "region": "five_utr"}], 50)
+            batch = {k: v[np.newaxis] for k, v in f.items()}
+            pred = float(model.predict_delta(batch)[0])
+            preds_at_pos.append(pred)
+        preds_arr = np.array(preds_at_pos)
+        pos_sensitivity = float(np.std(preds_arr))
+        assert pos_sensitivity > 1e-3, (
+            f"Position sensitivity {pos_sensitivity:.6f} < 1e-3; "
+            "model is still a constant predictor"
+        )
+
+
+class TestSeqLinearModel:
+    def test_fit_predict_shape(self):
+        records = _make_synthetic_dataset(n_sources=10, n_edits_per_source=5)
+        feats = batch_extract_features(records, max_seq_len=50)
+        labels = feats["delta"]
+        model = SeqLinearModel(seed=42)
+        model.fit(feats, labels)
+        preds = model.predict_delta(feats)
+        assert preds.shape == (len(records),)
+
+    def test_learns_position_specific_signal(self):
+        records = _make_synthetic_dataset(n_sources=20, n_edits_per_source=15, seed=1)
+        feats = batch_extract_features(records, max_seq_len=50)
+        labels = feats["delta"]
+        model = SeqLinearModel(seed=42)
         model.fit(feats, labels)
         src_seq = records[0].source_sequence
         preds_at_pos = []

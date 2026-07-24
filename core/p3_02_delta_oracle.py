@@ -762,9 +762,51 @@ class SeqCNNModel:
         return pred * self._y_std + self._y_mean
 
 
+class SeqLinearModel:
+    """Model 7: Ridge regression on flattened one-hot sequence difference.
+
+    Closed-form solution (no SGD), trains in < 1 second.  Provides a
+    structurally different architecture from SeqDiffModel (linear vs
+    MLP) for ensemble diversity, while using the same position-aware
+    features.
+    """
+
+    def __init__(self, hidden_dim: int = 64, lr: float = 1e-3,
+                 n_epochs: int = 150, seed: int = 42, max_seq_len: int = 100,
+                 ridge_alpha: float = 1.0):
+        self.hidden_dim = hidden_dim  # interface compat (unused)
+        self.lr = lr  # interface compat (unused)
+        self.n_epochs = n_epochs  # interface compat (unused)
+        self.seed = seed
+        self.max_seq_len = max_seq_len
+        self.ridge_alpha = ridge_alpha
+        self._weights: Optional[np.ndarray] = None
+        self._bias: float = 0.0
+
+    def _get_input(self, features: Dict[str, np.ndarray]) -> np.ndarray:
+        diff = features["candidate_onehot"].astype(np.float64) - features["source_onehot"].astype(np.float64)
+        return np.ascontiguousarray(diff.reshape(diff.shape[0], -1))
+
+    def fit(self, features: Dict[str, np.ndarray], y: np.ndarray):
+        X = self._get_input(features)
+        n, d = X.shape
+        # Ridge regression: w = (X^T X + alpha I)^{-1} X^T y
+        XtX = X.T @ X + self.ridge_alpha * np.eye(d)
+        Xty = X.T @ y
+        self._weights = np.linalg.solve(XtX, Xty)
+        self._bias = float(np.mean(y - X @ self._weights))
+        self._y_mean = float(np.mean(y))
+        self._y_std = float(np.std(y)) + 1e-8
+
+    def predict_delta(self, features: Dict[str, np.ndarray]) -> np.ndarray:
+        X = self._get_input(features)
+        return X @ self._weights + self._bias
+
+
 # Fill forward references
 MODEL_REGISTRY["seq_diff"] = SeqDiffModel
 MODEL_REGISTRY["seq_cnn"] = SeqCNNModel
+MODEL_REGISTRY["seq_linear"] = SeqLinearModel
 
 
 # ===========================================================================
@@ -1870,7 +1912,7 @@ __all__ = [
     "extract_features", "batch_extract_features",
     # Models
     "AbsoluteModel", "DifferenceModel", "SiameseModel", "EditConditionedModel",
-    "SeqDiffModel", "SeqCNNModel",
+    "SeqDiffModel", "SeqCNNModel", "SeqLinearModel",
     "MODEL_REGISTRY",
     # Metrics
     "compute_all_metrics", "sign_accuracy", "top_k_enrichment",
