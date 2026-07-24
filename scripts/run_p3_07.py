@@ -106,8 +106,8 @@ def build_ensemble_predict_fns(benchmark_dir: str, max_proxy: int = 10000, seed:
         idx = rng.choice(len(proxy), min(len(proxy), max_proxy), replace=False)
         train_recs = train_recs + [proxy[i] for i in idx]
 
-    config = CrossFitConfig(n_folds=5, seed=seed, hidden_dim=64, lr=1e-3,
-                            n_epochs=100, max_seq_len=100)
+    config = CrossFitConfig(n_folds=5, seed=seed, hidden_dim=128, lr=1e-3,
+                            n_epochs=150, max_seq_len=100)
     feats = batch_extract_features(train_recs, config.max_seq_len)
     labels = feats["delta"]
 
@@ -128,7 +128,12 @@ def build_ensemble_predict_fns(benchmark_dir: str, max_proxy: int = 10000, seed:
             idxs.extend(groups[gid])
         folds.append(np.array(sorted(idxs)))
 
-    ensemble = build_oracle_ensemble(feats, labels, folds, config)
+    # Use position-aware models (seq_diff + seq_cnn) to break the
+    # constant-predictor degeneracy of the old global-feature models.
+    ensemble = build_oracle_ensemble(
+        feats, labels, folds, config,
+        model_names=("seq_diff", "seq_cnn"),
+    )
 
     predict_fns = []
     for name in ensemble["model_names"]:

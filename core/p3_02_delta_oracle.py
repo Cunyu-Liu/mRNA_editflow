@@ -585,7 +585,183 @@ MODEL_REGISTRY = {
     "difference": DifferenceModel,
     "siamese": SiameseModel,
     "edit_conditioned": EditConditionedModel,
+    "seq_diff": None,      # filled below (forward-ref)
+    "seq_cnn": None,       # filled below (forward-ref)
 }
+
+
+# ===========================================================================
+# Section 3b: Position-Aware Models (P3-02 fix for constant-predictor bug)
+# ===========================================================================
+
+class SeqDiffModel:
+    """Model 5: Position-aware MLP on flattened one-hot sequence difference.
+
+    Unlike DifferenceModel (20-dim global composition features), this model
+    uses the full [max_seq_len * 4] flattened one-hot difference, giving each
+    position its own input dimension.  This breaks the constant-predictor
+    degeneracy where single-nucleotide edits produce nearly identical global
+    statistics.
+    """
+
+    def __init__(self, hidden_dim: int = 128, lr: float = 1e-3,
+                 n_epochs: int = 150, seed: int = 42, max_seq_len: int = 100,
+                 weight_decay: float = 1e-4):
+        self.hidden_dim = hidden_dim
+        self.lr = lr
+        self.n_epochs = n_epochs
+        self.seed = seed
+        self.max_seq_len = max_seq_len
+        self.weight_decay = weight_decay
+        self._rng = np.random.RandomState(seed)
+        self._weights: Optional[Dict[str, np.ndarray]] = None
+
+    def _init_weights(self, feat_dim: int):
+        self._weights = {
+            "w1": self._rng.randn(feat_dim, self.hidden_dim) * np.sqrt(2.0 / feat_dim),
+            "b1": np.zeros(self.hidden_dim, dtype=np.float64),
+            "w2": self._rng.randn(self.hidden_dim) * np.sqrt(2.0 / self.hidden_dim),
+            "b2": 0.0,
+        }
+
+    def _get_input(self, features: Dict[str, np.ndarray]) -> np.ndarray:
+        diff = features["candidate_onehot"] - features["source_onehot"]
+        return diff.reshape(diff.shape[0], -1)
+
+    def _forward(self, X: np.ndarray) -> np.ndarray:
+        h = np.maximum(0, X @ self._weights["w1"] + self._weights["b1"])
+        return h @ self._weights["w2"] + self._weights["b2"]
+
+    def fit(self, features: Dict[str, np.ndarray], y: np.ndarray):
+        X = self._get_input(features)
+        if self._weights is None:
+            self._init_weights(X.shape[1])
+        self._y_mean = float(np.mean(y))
+        self._y_std = float(np.std(y)) + 1e-8
+        y_norm = (y - self._y_mean) / self._y_std
+        n = len(y_norm)
+        for _ in range(self.n_epochs):
+            pred = self._forward(X)
+            err = pred - y_norm
+            h = np.maximum(0, X @ self._weights["w1"] + self._weights["b1"])
+            grad_out = err / n
+            grad_w2 = h.T @ grad_out + self.weight_decay * self._weights["w2"]
+            grad_b2 = float(np.mean(grad_out))
+            grad_h = np.outer(grad_out, self._weights["w2"]) * (h > 0)
+            grad_w1 = X.T @ grad_h + self.weight_decay * self._weights["w1"]
+            grad_b1 = np.mean(grad_h, axis=0)
+            self._weights["w2"] -= self.lr * grad_w2
+            self._weights["b2"] -= self.lr * grad_b2
+            self._weights["w1"] -= self.lr * grad_w1
+            self._weights["b1"] -= self.lr * grad_b1
+
+    def predict_delta(self, features: Dict[str, np.ndarray]) -> np.ndarray:
+        X = self._get_input(features)
+        return self._forward(X) * self._y_std + self._y_mean
+
+
+class SeqCNNModel:
+    """Model 6: 1D CNN over one-hot sequence difference.
+
+    Architecture:
+        diff = candidate_onehot - source_onehot      [batch, L, 4]
+        conv1d(4 -> n_filters, kernel=k) -> ReLU      [batch, L-k+1, F]
+        global max pool                                 [batch, F]
+        FC(F -> 1)                                      [batch]
+
+    The convolution learns local sequence motifs around edit positions,
+    while global max pooling makes the prediction invariant to edit
+    position shift.  Far fewer parameters than SeqDiffModel, better
+    generalization to unseen positions.
+    """
+
+    def __init__(self, hidden_dim: int = 64, lr: float = 1e-3,
+                 n_epochs: int = 150, seed: int = 42, max_seq_len: int = 100,
+                 n_filters: int = 32, kernel_size: int = 5):
+        self.hidden_dim = hidden_dim  # interface compat (unused)
+        self.lr = lr
+        self.n_epochs = n_epochs
+        self.seed = seed
+        self.max_seq_len = max_seq_len
+        self.n_filters = n_filters
+        self.kernel_size = kernel_size
+        self._rng = np.random.RandomState(seed)
+        self._weights: Optional[Dict[str, np.ndarray]] = None
+
+    def _init_weights(self):
+        ks, nf = self.kernel_size, self.n_filters
+        self._weights = {
+            "conv_w": self._rng.randn(ks, 4, nf) * np.sqrt(2.0 / (ks * 4)),
+            "conv_b": np.zeros(nf, dtype=np.float64),
+            "fc_w": self._rng.randn(nf) * np.sqrt(2.0 / nf),
+            "fc_b": 0.0,
+        }
+
+    def _conv_forward(self, diff: np.ndarray):
+        """diff: [batch, L, 4] -> (conv_out, cols)"""
+        batch, L, _ = diff.shape
+        ks = self.kernel_size
+        out_len = L - ks + 1
+        # im2col
+        cols = np.zeros((batch, out_len, ks * 4), dtype=diff.dtype)
+        for i in range(out_len):
+            cols[:, i, :] = diff[:, i:i+ks, :].reshape(batch, -1)
+        W = self._weights["conv_w"].reshape(ks * 4, self.n_filters)
+        conv_out = cols @ W + self._weights["conv_b"]
+        return conv_out, cols
+
+    def _forward(self, source_oh, candidate_oh):
+        diff = candidate_oh - source_oh
+        conv_out, cols = self._conv_forward(diff)
+        relu = np.maximum(0, conv_out)
+        pooled = np.max(relu, axis=1)          # [batch, F]
+        pred = pooled @ self._weights["fc_w"] + self._weights["fc_b"]
+        return pred, conv_out, cols, relu, pooled
+
+    def fit(self, features: Dict[str, np.ndarray], y: np.ndarray):
+        src = features["source_onehot"]
+        cand = features["candidate_onehot"]
+        if self._weights is None:
+            self._init_weights()
+        self._y_mean = float(np.mean(y))
+        self._y_std = float(np.std(y)) + 1e-8
+        y_norm = (y - self._y_mean) / self._y_std
+        n = len(y_norm)
+        nf = self.n_filters
+        ks = self.kernel_size
+        for _ in range(self.n_epochs):
+            pred, conv_out, cols, relu, pooled = self._forward(src, cand)
+            err = pred - y_norm
+            grad_out = err / n                          # [batch]
+            # FC grads
+            grad_fc_w = pooled.T @ grad_out             # [F]
+            grad_fc_b = float(np.mean(grad_out))
+            grad_pooled = np.outer(grad_out, self._weights["fc_w"])  # [batch, F]
+            # Global max pool backward: grad flows to argmax position only
+            argmax = np.argmax(relu, axis=1)            # [batch, F]
+            grad_relu = np.zeros_like(relu)
+            for f in range(nf):
+                grad_relu[np.arange(n), argmax[:, f], f] = grad_pooled[:, f]
+            # ReLU backward
+            grad_conv = grad_relu * (conv_out > 0)      # [batch, out_len, F]
+            # Conv weight grads via einsum
+            W_flat = self._weights["conv_w"].reshape(ks * 4, nf)
+            grad_w_flat = np.einsum('blk,blf->kf', cols, grad_conv) / n
+            grad_conv_b = np.mean(grad_conv, axis=(0, 1))
+            # Update
+            self._weights["fc_w"] -= self.lr * grad_fc_w
+            self._weights["fc_b"] -= self.lr * grad_fc_b
+            self._weights["conv_w"] -= self.lr * grad_w_flat.reshape(ks, 4, nf)
+            self._weights["conv_b"] -= self.lr * grad_conv_b
+
+    def predict_delta(self, features: Dict[str, np.ndarray]) -> np.ndarray:
+        pred, *_ = self._forward(features["source_onehot"], features["candidate_onehot"])
+        return pred * self._y_std + self._y_mean
+
+
+# Fill forward references
+MODEL_REGISTRY["seq_diff"] = SeqDiffModel
+MODEL_REGISTRY["seq_cnn"] = SeqCNNModel
 
 
 # ===========================================================================
