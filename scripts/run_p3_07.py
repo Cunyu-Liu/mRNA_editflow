@@ -456,12 +456,17 @@ def make_decision(
     # Per-source achievable scale: improvement = optimum - source_score.
     # Normalized score = (grid_best_score - source_score) / improvement.
     # This makes the exact one-edit optimum == 1.0 by construction.
-    scale = {sid: max(improvements[sid], 1e-6) for sid in exact_one}
+    # Sources with improvement <= 0 have no headroom and are excluded from
+    # the normalization average (they would produce divide-by-near-zero noise).
+    positive_sources = {sid for sid, imp in improvements.items() if imp > 1e-9}
+    scale = {sid: improvements[sid] for sid in positive_sources}
 
-    # Aggregate best score per (method, query_budget) over sources
+    # Aggregate best score per (method, query_budget) over sources with headroom
     by_mq: Dict[str, Dict[str, List[float]]] = {}
     for g in grid_results:
         sid = g["source_id"]
+        if sid not in positive_sources:
+            continue  # skip zero-headroom sources
         ss = source_scores.get(sid, 0.0)
         sc = max(scale.get(sid, 1e-6), 1e-6)
         by_mq.setdefault(g["method"], {}).setdefault(str(g["query_budget"]), []).append(
