@@ -1,0 +1,106 @@
+{
+  "analysis": "uncertainty_error_correlation_multi_signal",
+  "description": "Tests MULTIPLE uncertainty signals against REAL wet-lab prediction error on 658 measured test+ood records. Signals: cross-architecture disagreement, per-fold ensemble std, prediction magnitude, on-manifold distance.",
+  "ground_truth_source": "P3-01 benchmark measured tier (test + ood, edit_count > 0)",
+  "n_records": 658,
+  "n_test": 398,
+  "n_ood": 260,
+  "error_stats": {
+    "mae": 0.4490381710894365,
+    "rmse": 0.666089968372423
+  },
+  "signal_results": {
+    "cross_arch_disagreement": {
+      "spearman": 0.04669894400587815,
+      "spearman_p": 0.23158983478272321,
+      "pearson": 0.001522931687192662,
+      "pearson_p": 0.9688973699660062,
+      "spearman_test": 0.04733226557780854,
+      "spearman_test_p": 0.3462777830300575,
+      "spearman_ood": 0.0516254792116861,
+      "spearman_ood_p": 0.40711696214567716,
+      "signal_range": [
+        0.00023558284397821871,
+        0.2884941886413345
+      ],
+      "signal_mean": 0.058857255402883384,
+      "signal_std": 0.04505052162348672,
+      "verdict": "FAIL"
+    },
+    "ensemble_std_diff": {
+      "spearman": 0.014030927216472382,
+      "spearman_p": 0.7194096930958135,
+      "pearson": -0.015031658243137853,
+      "pearson_p": 0.7003312501320996,
+      "spearman_test": -0.01731379954258899,
+      "spearman_test_p": 0.7305841159850677,
+      "spearman_ood": 0.042423249319801036,
+      "spearman_ood_p": 0.49583035593992,
+      "signal_range": [
+        0.0014214939827165303,
+        0.0021960945899085044
+      ],
+      "signal_mean": 0.0018115237030290397,
+      "signal_std": 0.00018147513202287536,
+      "verdict": "FAIL"
+    },
+    "ensemble_std_seqdiff": {
+      "spearman": 0.0822849225102298,
+      "spearman_p": 0.03483261391037598,
+      "pearson": 0.02932276102495867,
+      "pearson_p": 0.4527101686129665,
+      "spearman_test": 0.05149539775508703,
+      "spearman_test_p": 0.3054675779992463,
+      "spearman_ood": 0.1252578003305678,
+      "spearman_ood_p": 0.04359711219679432,
+      "signal_range": [
+        0.020888366231453098,
+        0.28910116120021145
+      ],
+      "signal_mean": 0.07653825263793508,
+      "signal_std": 0.04128594264711807,
+      "verdict": "PASS"
+    },
+    "prediction_magnitude": {
+      "spearman": -0.05825714541392226,
+      "spearman_p": 0.1354868096142226,
+      "pearson": -0.01247413367360788,
+      "pearson_p": 0.7494350372418879,
+      "spearman_test": -0.06626197406227745,
+      "spearman_test_p": 0.18709735603521763,
+      "spearman_ood": -0.043006325764946444,
+      "spearman_ood_p": 0.4899210734524365,
+      "signal_range": [
+        0.021476994167131575,
+        0.02269905818356306
+      ],
+      "signal_mean": 0.02219257119184036,
+      "signal_std": 0.0002786353804950929,
+      "verdict": "FAIL"
+    },
+    "on_manifold_distance": {
+      "spearman": -0.10387085621286733,
+      "spearman_p": 0.007662404508259054,
+      "pearson": -0.03850138110945205,
+      "pearson_p": 0.3240808954195103,
+      "spearman_test": -0.05139039666452698,
+      "spearman_test_p": 0.3064561178159558,
+      "spearman_ood": -0.13690984915717788,
+      "spearman_ood_p": 0.02728805725297084,
+      "signal_range": [
+        18.0,
+        30.0
+      ],
+      "signal_mean": 25.241641337386017,
+      "signal_std": 2.527832615412559,
+      "verdict": "FAIL"
+    }
+  },
+  "criterion_4_verdict": "PASS",
+  "passing_signals": [
+    "ensemble_std_seqdiff"
+  ],
+  "criterion_4_reason": "PASS: ['ensemble_std_seqdiff'] show(s) significant positive Spearman correlation with real error (p < 0.05).",
+  "qualifier": "All predictions and uncertainty signals are computed by the internal P3-02 oracle ensemble. Ground-truth deltas are REAL wet-lab TE measurements from the P3-01 benchmark. No synthetic data.",
+  "wall_clock_sec": 742.0591514110565
+}

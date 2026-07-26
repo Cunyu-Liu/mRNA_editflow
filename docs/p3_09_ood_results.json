@@ -1,0 +1,1006 @@
+{
+  "phase": "P3-09",
+  "component": "ood_evaluation",
+  "created_utc": "2026-07-25T13:00:03Z",
+  "config": {
+    "edit_budget": 1,
+    "median_train_distance": 37.0,
+    "abstention_thresholds": {
+      "high_disagreement": 0.05,
+      "high_uncertainty": 0.1,
+      "low_on_manifold_multiple_of_median": 2.0,
+      "no_positive_lcb": 0.0
+    },
+    "policy_available": true,
+    "qualifier": "All rewards are predicted by the internal P3-02 oracle ensemble; OOD splits without ground-truth labels are evaluated against this internal proxy only."
+  },
+  "available_splits": {
+    "cargo_family_ood": {
+      "n_sources": 24,
+      "n_abstained": 24,
+      "abstention_rate": 1.0,
+      "constraint_validity_rate": 1.0,
+      "pos_rate": 0.0,
+      "stop_rate": 1.0,
+      "mean_reward": 0.0,
+      "reward_std": 0.0,
+      "mean_delta": 0.0,
+      "triggers": {
+        "no_positive_lcb": 11,
+        "constraint_risk": 24
+      },
+      "per_source": [
+        {
+          "source_id": "snv:e103534da054",
+          "abstained": true,
+          "reasons": [
+            "no_positive_lcb(lcb=-0.0103)",
+            "constraint_risk(['splice_motif=CAGG', 'hairpin_pos0_stem4_loop14_mm1'])"
+          ],
+          "n_edits": 0,
+          "reward": 0.0
+        },
+        {
+          "source_id": "snv:0702aa046aae",
+          "abstained": true,
+          "reasons": [
+            "constraint_risk(['splice_motif=CAGG', 'hairpin_pos0_stem5_loop8_mm1'])"
+          ],
+          "n_edits": 0,
+          "reward": 0.0
+        },
+        {
+          "source_id": "snv:504ab11a6a41",
+          "abstained": true,
+          "reasons": [
+            "constraint_risk(['high_gc=0.82', 'hairpin_pos0_stem4_loop12_mm1'])"
+          ],
+          "n_edits": 0,
+          "reward": 0.0
+        },
+        {
+          "source_id": "snv:4194ca3142aa",
+          "abstained": true,
+          "reasons": [
+            "no_positive_lcb(lcb=-0.0113)",
+            "constraint_risk(['hairpin_pos5_stem4_loop10_mm1'])"
+          ],
+          "n_edits": 0,
+          "reward": 0.0
+        },
+        {
+          "source_id": "snv:237297fde61b",
+          "abstained": true,
+          "reasons": [
+            "no_positive_lcb(lcb=-0.0113)",
+            "constraint_risk(['splice_motif=CAGG', 'hairpin_pos10_stem4_loop13_mm1'])"
+          ],
+          "n_edits": 0,
+          "reward": 0.0
+        },
+        {
+          "source_id": "snv:c7aa6638203f",
+          "abstained": true,
+          "reasons": [
+            "no_positive_lcb(lcb=-0.0113)",
+            "constraint_risk(['hairpin_pos1_stem4_loop10_mm1'])"
+          ],
+          "n_edits": 0,
+          "reward": 0.0
+        },
+        {
+          "source_id": "snv:1e9928ea2a2a",
+          "abstained": true,
+          "reasons": [
+            "constraint_risk(['high_gc=0.76', 'splice_motif=CAGG', 'hairpin_pos1_stem4_loop14_mm1'])"
+          ],
+          "n_edits": 0,
+          "reward": 0.0
+        },
+        {
+          "source_id": "snv:32895832066a",
+          "abstained": true,
+          "reasons": [
+            "constraint_risk(['hairpin_pos0_stem4_loop3_mm1'])"
+          ],
+          "n_edits": 0,
+          "reward": 0.0
+        },
+        {
+          "source_id": "snv:14d66fd8b860",
+          "abstained": true,
+          "reasons": [
+            "constraint_risk(['high_gc=0.72', 'splice_motif=CAGG', 'hairpin_pos2_stem4_loop6_mm1'])"
+          ],
+          "n_edits": 0,
+          "reward": 0.0
+        },
+        {
+          "source_id": "snv:ce2126975a07",
+          "abstained": true,
+          "reasons": [
+            "no_positive_lcb(lcb=-0.0103)",
+            "constraint_risk(['hairpin_pos2_stem4_loop5_mm1'])"
+          ],
+          "n_edits": 0,
+          "reward": 0.0
+        },
+        {
+          "source_id": "snv:f28675f2404b",
+          "abstained": true,
+          "reasons": [
+            "constraint_risk(['high_gc=0.80', 'splice_motif=CAGG', 'hairpin_pos0_stem9_loop3_mm1'])"
+          ],
+          "n_edits": 0,
+          "reward": 0.0
+        },
+        {
+          "source_id": "snv:bfbcad09f932",
+          "abstained": true,
+          "reasons": [
+            "constraint_risk(['high_gc=0.72', 'hairpin_pos0_stem4_loop14_mm1'])"
+          ],
+          "n_edits": 0,
+          "reward": 0.0
+        },
+        {
+          "source_id": "snv:8d483cd48b6e",
+          "abstained": true,
+          "reasons": [
+            "constraint_risk(['high_gc=0.78', 'splice_motif=CAGG', 'hairpin_pos0_stem4_loop6_mm1'])"
+          ],
+          "n_edits": 0,
+          "reward": 0.0
+        },
+        {
+          "source_id": "snv:ea69005e4039",
+          "abstained": true,
+          "reasons": [
+            "no_positive_lcb(lcb=-0.0103)",
+            "constraint_risk(['splice_motif=CAGG', 'hairpin_pos3_stem4_loop8_mm1'])"
+          ],
+          "n_edits": 0,
+          "reward": 0.0
+        },
+        {
+          "source_id": "snv:f1cd48022bee",
+          "abstained": true,
+          "reasons": [
+            "no_positive_lcb(lcb=-0.0113)",
+            "constraint_risk(['high_gc=0.76', 'splice_motif=CAGG', 'hairpin_pos0_stem4_loop9_mm1'])"
+          ],
+          "n_edits": 0,
+          "reward": 0.0
+        },
+        {
+          "source_id": "snv:baa88e57c77e",
+          "abstained": true,
+          "reasons": [
+            "constraint_risk(['splice_motif=AGGUA', 'hairpin_pos1_stem4_loop10_mm1'])"
+          ],
+          "n_edits": 0,
+          "reward": 0.0
+        },
+        {
+          "source_id": "snv:62940a7cc7b7",
+          "abstained": true,
+          "reasons": [
+            "no_positive_lcb(lcb=-0.0103)",
+            "constraint_risk(['hairpin_pos0_stem5_loop3_mm1'])"
+          ],
+          "n_edits": 0,
+          "reward": 0.0
+        },
+        {
+          "source_id": "snv:e89600cc4c8d",
+          "abstained": true,
+          "reasons": [
+            "no_positive_lcb(lcb=-0.0103)",
+            "constraint_risk(['hairpin_pos1_stem4_loop15_mm1'])"
+          ],
+          "n_edits": 0,
+          "reward": 0.0
+        },
+        {
+          "source_id": "snv:95ba36e9559a",
+          "abstained": true,
+          "reasons": [
+            "constraint_risk(['high_gc=0.74', 'hairpin_pos5_stem4_loop13_mm1'])"
+          ],
+          "n_edits": 0,
+          "reward": 0.0
+        },
+        {
+          "source_id": "snv:d6f53d3e1476",
+          "abstained": true,
+          "reasons": [
+            "no_positive_lcb(lcb=-0.0113)",
+            "constraint_risk(['splice_motif=CAGG', 'hairpin_pos1_stem4_loop6_mm1'])"
+          ],
+          "n_edits": 0,
+          "reward": 0.0
+        },
+        {
+          "source_id": "snv:22576a49c7e2",
+          "abstained": true,
+          "reasons": [
+            "constraint_risk(['hairpin_pos0_stem4_loop14_mm1'])"
+          ],
+          "n_edits": 0,
+          "reward": 0.0
+        },
+        {
+          "source_id": "snv:55eea2fbd87d",
+          "abstained": true,
+          "reasons": [
+            "constraint_risk(['hairpin_pos0_stem4_loop10_mm1'])"
+          ],
+          "n_edits": 0,
+          "reward": 0.0
+        },
+        {
+          "source_id": "snv:70b6a9f3593d",
+          "abstained": true,
+          "reasons": [
+            "no_positive_lcb(lcb=-0.0113)",
+            "constraint_risk(['splice_motif=CAGG', 'hairpin_pos2_stem5_loop3_mm1'])"
+          ],
+          "n_edits": 0,
+          "reward": 0.0
+        },
+        {
+          "source_id": "snv:52a1c3088360",
+          "abstained": true,
+          "reasons": [
+            "constraint_risk(['high_gc=0.74', 'hairpin_pos0_stem4_loop8_mm1'])"
+          ],
+          "n_edits": 0,
+          "reward": 0.0
+        }
+      ]
+    },
+    "rare_family": {
+      "n_sources": 24,
+      "n_abstained": 24,
+      "abstention_rate": 1.0,
+      "constraint_validity_rate": 1.0,
+      "pos_rate": 0.0,
+      "stop_rate": 1.0,
+      "mean_reward": 0.0,
+      "reward_std": 0.0,
+      "mean_delta": 0.0,
+      "triggers": {
+        "no_positive_lcb": 11,
+        "constraint_risk": 24
+      },
+      "per_source": [
+        {
+          "source_id": "snv:e103534da054",
+          "abstained": true,
+          "reasons": [
+            "no_positive_lcb(lcb=-0.0103)",
+            "constraint_risk(['splice_motif=CAGG', 'hairpin_pos0_stem4_loop14_mm1'])"
+          ],
+          "n_edits": 0,
+          "reward": 0.0
+        },
+        {
+          "source_id": "snv:0702aa046aae",
+          "abstained": true,
+          "reasons": [
+            "constraint_risk(['splice_motif=CAGG', 'hairpin_pos0_stem5_loop8_mm1'])"
+          ],
+          "n_edits": 0,
+          "reward": 0.0
+        },
+        {
+          "source_id": "snv:504ab11a6a41",
+          "abstained": true,
+          "reasons": [
+            "constraint_risk(['high_gc=0.82', 'hairpin_pos0_stem4_loop12_mm1'])"
+          ],
+          "n_edits": 0,
+          "reward": 0.0
+        },
+        {
+          "source_id": "snv:4194ca3142aa",
+          "abstained": true,
+          "reasons": [
+            "no_positive_lcb(lcb=-0.0113)",
+            "constraint_risk(['hairpin_pos5_stem4_loop10_mm1'])"
+          ],
+          "n_edits": 0,
+          "reward": 0.0
+        },
+        {
+          "source_id": "snv:237297fde61b",
+          "abstained": true,
+          "reasons": [
+            "no_positive_lcb(lcb=-0.0113)",
+            "constraint_risk(['splice_motif=CAGG', 'hairpin_pos10_stem4_loop13_mm1'])"
+          ],
+          "n_edits": 0,
+          "reward": 0.0
+        },
+        {
+          "source_id": "snv:c7aa6638203f",
+          "abstained": true,
+          "reasons": [
+            "no_positive_lcb(lcb=-0.0113)",
+            "constraint_risk(['hairpin_pos1_stem4_loop10_mm1'])"
+          ],
+          "n_edits": 0,
+          "reward": 0.0
+        },
+        {
+          "source_id": "snv:1e9928ea2a2a",
+          "abstained": true,
+          "reasons": [
+            "constraint_risk(['high_gc=0.76', 'splice_motif=CAGG', 'hairpin_pos1_stem4_loop14_mm1'])"
+          ],
+          "n_edits": 0,
+          "reward": 0.0
+        },
+        {
+          "source_id": "snv:32895832066a",
+          "abstained": true,
+          "reasons": [
+            "constraint_risk(['hairpin_pos0_stem4_loop3_mm1'])"
+          ],
+          "n_edits": 0,
+          "reward": 0.0
+        },
+        {
+          "source_id": "snv:14d66fd8b860",
+          "abstained": true,
+          "reasons": [
+            "constraint_risk(['high_gc=0.72', 'splice_motif=CAGG', 'hairpin_pos2_stem4_loop6_mm1'])"
+          ],
+          "n_edits": 0,
+          "reward": 0.0
+        },
+        {
+          "source_id": "snv:ce2126975a07",
+          "abstained": true,
+          "reasons": [
+            "no_positive_lcb(lcb=-0.0103)",
+            "constraint_risk(['hairpin_pos2_stem4_loop5_mm1'])"
+          ],
+          "n_edits": 0,
+          "reward": 0.0
+        },
+        {
+          "source_id": "snv:f28675f2404b",
+          "abstained": true,
+          "reasons": [
+            "constraint_risk(['high_gc=0.80', 'splice_motif=CAGG', 'hairpin_pos0_stem9_loop3_mm1'])"
+          ],
+          "n_edits": 0,
+          "reward": 0.0
+        },
+        {
+          "source_id": "snv:bfbcad09f932",
+          "abstained": true,
+          "reasons": [
+            "constraint_risk(['high_gc=0.72', 'hairpin_pos0_stem4_loop14_mm1'])"
+          ],
+          "n_edits": 0,
+          "reward": 0.0
+        },
+        {
+          "source_id": "snv:8d483cd48b6e",
+          "abstained": true,
+          "reasons": [
+            "constraint_risk(['high_gc=0.78', 'splice_motif=CAGG', 'hairpin_pos0_stem4_loop6_mm1'])"
+          ],
+          "n_edits": 0,
+          "reward": 0.0
+        },
+        {
+          "source_id": "snv:ea69005e4039",
+          "abstained": true,
+          "reasons": [
+            "no_positive_lcb(lcb=-0.0103)",
+            "constraint_risk(['splice_motif=CAGG', 'hairpin_pos3_stem4_loop8_mm1'])"
+          ],
+          "n_edits": 0,
+          "reward": 0.0
+        },
+        {
+          "source_id": "snv:f1cd48022bee",
+          "abstained": true,
+          "reasons": [
+            "no_positive_lcb(lcb=-0.0113)",
+            "constraint_risk(['high_gc=0.76', 'splice_motif=CAGG', 'hairpin_pos0_stem4_loop9_mm1'])"
+          ],
+          "n_edits": 0,
+          "reward": 0.0
+        },
+        {
+          "source_id": "snv:baa88e57c77e",
+          "abstained": true,
+          "reasons": [
+            "constraint_risk(['splice_motif=AGGUA', 'hairpin_pos1_stem4_loop10_mm1'])"
+          ],
+          "n_edits": 0,
+          "reward": 0.0
+        },
+        {
+          "source_id": "snv:62940a7cc7b7",
+          "abstained": true,
+          "reasons": [
+            "no_positive_lcb(lcb=-0.0103)",
+            "constraint_risk(['hairpin_pos0_stem5_loop3_mm1'])"
+          ],
+          "n_edits": 0,
+          "reward": 0.0
+        },
+        {
+          "source_id": "snv:e89600cc4c8d",
+          "abstained": true,
+          "reasons": [
+            "no_positive_lcb(lcb=-0.0103)",
+            "constraint_risk(['hairpin_pos1_stem4_loop15_mm1'])"
+          ],
+          "n_edits": 0,
+          "reward": 0.0
+        },
+        {
+          "source_id": "snv:95ba36e9559a",
+          "abstained": true,
+          "reasons": [
+            "constraint_risk(['high_gc=0.74', 'hairpin_pos5_stem4_loop13_mm1'])"
+          ],
+          "n_edits": 0,
+          "reward": 0.0
+        },
+        {
+          "source_id": "snv:d6f53d3e1476",
+          "abstained": true,
+          "reasons": [
+            "no_positive_lcb(lcb=-0.0113)",
+            "constraint_risk(['splice_motif=CAGG', 'hairpin_pos1_stem4_loop6_mm1'])"
+          ],
+          "n_edits": 0,
+          "reward": 0.0
+        },
+        {
+          "source_id": "snv:22576a49c7e2",
+          "abstained": true,
+          "reasons": [
+            "constraint_risk(['hairpin_pos0_stem4_loop14_mm1'])"
+          ],
+          "n_edits": 0,
+          "reward": 0.0
+        },
+        {
+          "source_id": "snv:55eea2fbd87d",
+          "abstained": true,
+          "reasons": [
+            "constraint_risk(['hairpin_pos0_stem4_loop10_mm1'])"
+          ],
+          "n_edits": 0,
+          "reward": 0.0
+        },
+        {
+          "source_id": "snv:70b6a9f3593d",
+          "abstained": true,
+          "reasons": [
+            "no_positive_lcb(lcb=-0.0113)",
+            "constraint_risk(['splice_motif=CAGG', 'hairpin_pos2_stem5_loop3_mm1'])"
+          ],
+          "n_edits": 0,
+          "reward": 0.0
+        },
+        {
+          "source_id": "snv:52a1c3088360",
+          "abstained": true,
+          "reasons": [
+            "constraint_risk(['high_gc=0.74', 'hairpin_pos0_stem4_loop8_mm1'])"
+          ],
+          "n_edits": 0,
+          "reward": 0.0
+        }
+      ]
+    },
+    "length_shift": {
+      "n_sources": 4,
+      "n_abstained": 4,
+      "abstention_rate": 1.0,
+      "constraint_validity_rate": 1.0,
+      "pos_rate": 0.0,
+      "stop_rate": 1.0,
+      "mean_reward": 0.0,
+      "reward_std": 0.0,
+      "mean_delta": 0.0,
+      "triggers": {
+        "no_positive_lcb": 2,
+        "constraint_risk": 4
+      },
+      "per_source": [
+        {
+          "source_id": "snv:e103534da054",
+          "abstained": true,
+          "reasons": [
+            "no_positive_lcb(lcb=-0.0103)",
+            "constraint_risk(['splice_motif=CAGG', 'hairpin_pos0_stem4_loop14_mm1'])"
+          ],
+          "n_edits": 0,
+          "reward": 0.0
+        },
+        {
+          "source_id": "snv:0702aa046aae",
+          "abstained": true,
+          "reasons": [
+            "constraint_risk(['splice_motif=CAGG', 'hairpin_pos0_stem5_loop8_mm1'])"
+          ],
+          "n_edits": 0,
+          "reward": 0.0
+        },
+        {
+          "source_id": "snv:504ab11a6a41",
+          "abstained": true,
+          "reasons": [
+            "constraint_risk(['high_gc=0.82', 'hairpin_pos0_stem4_loop12_mm1'])"
+          ],
+          "n_edits": 0,
+          "reward": 0.0
+        },
+        {
+          "source_id": "snv:4194ca3142aa",
+          "abstained": true,
+          "reasons": [
+            "no_positive_lcb(lcb=-0.0113)",
+            "constraint_risk(['hairpin_pos5_stem4_loop10_mm1'])"
+          ],
+          "n_edits": 0,
+          "reward": 0.0
+        }
+      ]
+    },
+    "gc_shift": {
+      "n_sources": 2,
+      "n_abstained": 2,
+      "abstention_rate": 1.0,
+      "constraint_validity_rate": 1.0,
+      "pos_rate": 0.0,
+      "stop_rate": 1.0,
+      "mean_reward": 0.0,
+      "reward_std": 0.0,
+      "mean_delta": 0.0,
+      "triggers": {
+        "constraint_risk": 2
+      },
+      "per_source": [
+        {
+          "source_id": "snv:504ab11a6a41",
+          "abstained": true,
+          "reasons": [
+            "constraint_risk(['high_gc=0.82', 'hairpin_pos0_stem4_loop12_mm1'])"
+          ],
+          "n_edits": 0,
+          "reward": 0.0
+        },
+        {
+          "source_id": "snv:f28675f2404b",
+          "abstained": true,
+          "reasons": [
+            "constraint_risk(['high_gc=0.80', 'splice_motif=CAGG', 'hairpin_pos0_stem9_loop3_mm1'])"
+          ],
+          "n_edits": 0,
+          "reward": 0.0
+        }
+      ]
+    }
+  },
+  "literature_only_splits": {
+    "species_shift": "No multi-species data in current P3-01 benchmark; literature comparison only.",
+    "cell_context_shift": "No multi-cell-type data in current P3-01 benchmark; literature comparison only.",
+    "reporter_to_therapeutic": "MPRA reporter \u2192 therapeutic cargo transfer requires wet-lab evidence; literature comparison only."
+  },
+  "abstention_log": [
+    {
+      "split": "cargo_family_ood",
+      "source_id": "snv:e103534da054",
+      "reasons": [
+        "no_positive_lcb(lcb=-0.0103)",
+        "constraint_risk(['splice_motif=CAGG', 'hairpin_pos0_stem4_loop14_mm1'])"
+      ]
+    },
+    {
+      "split": "cargo_family_ood",
+      "source_id": "snv:0702aa046aae",
+      "reasons": [
+        "constraint_risk(['splice_motif=CAGG', 'hairpin_pos0_stem5_loop8_mm1'])"
+      ]
+    },
+    {
+      "split": "cargo_family_ood",
+      "source_id": "snv:504ab11a6a41",
+      "reasons": [
+        "constraint_risk(['high_gc=0.82', 'hairpin_pos0_stem4_loop12_mm1'])"
+      ]
+    },
+    {
+      "split": "cargo_family_ood",
+      "source_id": "snv:4194ca3142aa",
+      "reasons": [
+        "no_positive_lcb(lcb=-0.0113)",
+        "constraint_risk(['hairpin_pos5_stem4_loop10_mm1'])"
+      ]
+    },
+    {
+      "split": "cargo_family_ood",
+      "source_id": "snv:237297fde61b",
+      "reasons": [
+        "no_positive_lcb(lcb=-0.0113)",
+        "constraint_risk(['splice_motif=CAGG', 'hairpin_pos10_stem4_loop13_mm1'])"
+      ]
+    },
+    {
+      "split": "cargo_family_ood",
+      "source_id": "snv:c7aa6638203f",
+      "reasons": [
+        "no_positive_lcb(lcb=-0.0113)",
+        "constraint_risk(['hairpin_pos1_stem4_loop10_mm1'])"
+      ]
+    },
+    {
+      "split": "cargo_family_ood",
+      "source_id": "snv:1e9928ea2a2a",
+      "reasons": [
+        "constraint_risk(['high_gc=0.76', 'splice_motif=CAGG', 'hairpin_pos1_stem4_loop14_mm1'])"
+      ]
+    },
+    {
+      "split": "cargo_family_ood",
+      "source_id": "snv:32895832066a",
+      "reasons": [
+        "constraint_risk(['hairpin_pos0_stem4_loop3_mm1'])"
+      ]
+    },
+    {
+      "split": "cargo_family_ood",
+      "source_id": "snv:14d66fd8b860",
+      "reasons": [
+        "constraint_risk(['high_gc=0.72', 'splice_motif=CAGG', 'hairpin_pos2_stem4_loop6_mm1'])"
+      ]
+    },
+    {
+      "split": "cargo_family_ood",
+      "source_id": "snv:ce2126975a07",
+      "reasons": [
+        "no_positive_lcb(lcb=-0.0103)",
+        "constraint_risk(['hairpin_pos2_stem4_loop5_mm1'])"
+      ]
+    },
+    {
+      "split": "cargo_family_ood",
+      "source_id": "snv:f28675f2404b",
+      "reasons": [
+        "constraint_risk(['high_gc=0.80', 'splice_motif=CAGG', 'hairpin_pos0_stem9_loop3_mm1'])"
+      ]
+    },
+    {
+      "split": "cargo_family_ood",
+      "source_id": "snv:bfbcad09f932",
+      "reasons": [
+        "constraint_risk(['high_gc=0.72', 'hairpin_pos0_stem4_loop14_mm1'])"
+      ]
+    },
+    {
+      "split": "cargo_family_ood",
+      "source_id": "snv:8d483cd48b6e",
+      "reasons": [
+        "constraint_risk(['high_gc=0.78', 'splice_motif=CAGG', 'hairpin_pos0_stem4_loop6_mm1'])"
+      ]
+    },
+    {
+      "split": "cargo_family_ood",
+      "source_id": "snv:ea69005e4039",
+      "reasons": [
+        "no_positive_lcb(lcb=-0.0103)",
+        "constraint_risk(['splice_motif=CAGG', 'hairpin_pos3_stem4_loop8_mm1'])"
+      ]
+    },
+    {
+      "split": "cargo_family_ood",
+      "source_id": "snv:f1cd48022bee",
+      "reasons": [
+        "no_positive_lcb(lcb=-0.0113)",
+        "constraint_risk(['high_gc=0.76', 'splice_motif=CAGG', 'hairpin_pos0_stem4_loop9_mm1'])"
+      ]
+    },
+    {
+      "split": "cargo_family_ood",
+      "source_id": "snv:baa88e57c77e",
+      "reasons": [
+        "constraint_risk(['splice_motif=AGGUA', 'hairpin_pos1_stem4_loop10_mm1'])"
+      ]
+    },
+    {
+      "split": "cargo_family_ood",
+      "source_id": "snv:62940a7cc7b7",
+      "reasons": [
+        "no_positive_lcb(lcb=-0.0103)",
+        "constraint_risk(['hairpin_pos0_stem5_loop3_mm1'])"
+      ]
+    },
+    {
+      "split": "cargo_family_ood",
+      "source_id": "snv:e89600cc4c8d",
+      "reasons": [
+        "no_positive_lcb(lcb=-0.0103)",
+        "constraint_risk(['hairpin_pos1_stem4_loop15_mm1'])"
+      ]
+    },
+    {
+      "split": "cargo_family_ood",
+      "source_id": "snv:95ba36e9559a",
+      "reasons": [
+        "constraint_risk(['high_gc=0.74', 'hairpin_pos5_stem4_loop13_mm1'])"
+      ]
+    },
+    {
+      "split": "cargo_family_ood",
+      "source_id": "snv:d6f53d3e1476",
+      "reasons": [
+        "no_positive_lcb(lcb=-0.0113)",
+        "constraint_risk(['splice_motif=CAGG', 'hairpin_pos1_stem4_loop6_mm1'])"
+      ]
+    },
+    {
+      "split": "cargo_family_ood",
+      "source_id": "snv:22576a49c7e2",
+      "reasons": [
+        "constraint_risk(['hairpin_pos0_stem4_loop14_mm1'])"
+      ]
+    },
+    {
+      "split": "cargo_family_ood",
+      "source_id": "snv:55eea2fbd87d",
+      "reasons": [
+        "constraint_risk(['hairpin_pos0_stem4_loop10_mm1'])"
+      ]
+    },
+    {
+      "split": "cargo_family_ood",
+      "source_id": "snv:70b6a9f3593d",
+      "reasons": [
+        "no_positive_lcb(lcb=-0.0113)",
+        "constraint_risk(['splice_motif=CAGG', 'hairpin_pos2_stem5_loop3_mm1'])"
+      ]
+    },
+    {
+      "split": "cargo_family_ood",
+      "source_id": "snv:52a1c3088360",
+      "reasons": [
+        "constraint_risk(['high_gc=0.74', 'hairpin_pos0_stem4_loop8_mm1'])"
+      ]
+    },
+    {
+      "split": "rare_family",
+      "source_id": "snv:e103534da054",
+      "reasons": [
+        "no_positive_lcb(lcb=-0.0103)",
+        "constraint_risk(['splice_motif=CAGG', 'hairpin_pos0_stem4_loop14_mm1'])"
+      ]
+    },
+    {
+      "split": "rare_family",
+      "source_id": "snv:0702aa046aae",
+      "reasons": [
+        "constraint_risk(['splice_motif=CAGG', 'hairpin_pos0_stem5_loop8_mm1'])"
+      ]
+    },
+    {
+      "split": "rare_family",
+      "source_id": "snv:504ab11a6a41",
+      "reasons": [
+        "constraint_risk(['high_gc=0.82', 'hairpin_pos0_stem4_loop12_mm1'])"
+      ]
+    },
+    {
+      "split": "rare_family",
+      "source_id": "snv:4194ca3142aa",
+      "reasons": [
+        "no_positive_lcb(lcb=-0.0113)",
+        "constraint_risk(['hairpin_pos5_stem4_loop10_mm1'])"
+      ]
+    },
+    {
+      "split": "rare_family",
+      "source_id": "snv:237297fde61b",
+      "reasons": [
+        "no_positive_lcb(lcb=-0.0113)",
+        "constraint_risk(['splice_motif=CAGG', 'hairpin_pos10_stem4_loop13_mm1'])"
+      ]
+    },
+    {
+      "split": "rare_family",
+      "source_id": "snv:c7aa6638203f",
+      "reasons": [
+        "no_positive_lcb(lcb=-0.0113)",
+        "constraint_risk(['hairpin_pos1_stem4_loop10_mm1'])"
+      ]
+    },
+    {
+      "split": "rare_family",
+      "source_id": "snv:1e9928ea2a2a",
+      "reasons": [
+        "constraint_risk(['high_gc=0.76', 'splice_motif=CAGG', 'hairpin_pos1_stem4_loop14_mm1'])"
+      ]
+    },
+    {
+      "split": "rare_family",
+      "source_id": "snv:32895832066a",
+      "reasons": [
+        "constraint_risk(['hairpin_pos0_stem4_loop3_mm1'])"
+      ]
+    },
+    {
+      "split": "rare_family",
+      "source_id": "snv:14d66fd8b860",
+      "reasons": [
+        "constraint_risk(['high_gc=0.72', 'splice_motif=CAGG', 'hairpin_pos2_stem4_loop6_mm1'])"
+      ]
+    },
+    {
+      "split": "rare_family",
+      "source_id": "snv:ce2126975a07",
+      "reasons": [
+        "no_positive_lcb(lcb=-0.0103)",
+        "constraint_risk(['hairpin_pos2_stem4_loop5_mm1'])"
+      ]
+    },
+    {
+      "split": "rare_family",
+      "source_id": "snv:f28675f2404b",
+      "reasons": [
+        "constraint_risk(['high_gc=0.80', 'splice_motif=CAGG', 'hairpin_pos0_stem9_loop3_mm1'])"
+      ]
+    },
+    {
+      "split": "rare_family",
+      "source_id": "snv:bfbcad09f932",
+      "reasons": [
+        "constraint_risk(['high_gc=0.72', 'hairpin_pos0_stem4_loop14_mm1'])"
+      ]
+    },
+    {
+      "split": "rare_family",
+      "source_id": "snv:8d483cd48b6e",
+      "reasons": [
+        "constraint_risk(['high_gc=0.78', 'splice_motif=CAGG', 'hairpin_pos0_stem4_loop6_mm1'])"
+      ]
+    },
+    {
+      "split": "rare_family",
+      "source_id": "snv:ea69005e4039",
+      "reasons": [
+        "no_positive_lcb(lcb=-0.0103)",
+        "constraint_risk(['splice_motif=CAGG', 'hairpin_pos3_stem4_loop8_mm1'])"
+      ]
+    },
+    {
+      "split": "rare_family",
+      "source_id": "snv:f1cd48022bee",
+      "reasons": [
+        "no_positive_lcb(lcb=-0.0113)",
+        "constraint_risk(['high_gc=0.76', 'splice_motif=CAGG', 'hairpin_pos0_stem4_loop9_mm1'])"
+      ]
+    },
+    {
+      "split": "rare_family",
+      "source_id": "snv:baa88e57c77e",
+      "reasons": [
+        "constraint_risk(['splice_motif=AGGUA', 'hairpin_pos1_stem4_loop10_mm1'])"
+      ]
+    },
+    {
+      "split": "rare_family",
+      "source_id": "snv:62940a7cc7b7",
+      "reasons": [
+        "no_positive_lcb(lcb=-0.0103)",
+        "constraint_risk(['hairpin_pos0_stem5_loop3_mm1'])"
+      ]
+    },
+    {
+      "split": "rare_family",
+      "source_id": "snv:e89600cc4c8d",
+      "reasons": [
+        "no_positive_lcb(lcb=-0.0103)",
+        "constraint_risk(['hairpin_pos1_stem4_loop15_mm1'])"
+      ]
+    },
+    {
+      "split": "rare_family",
+      "source_id": "snv:95ba36e9559a",
+      "reasons": [
+        "constraint_risk(['high_gc=0.74', 'hairpin_pos5_stem4_loop13_mm1'])"
+      ]
+    },
+    {
+      "split": "rare_family",
+      "source_id": "snv:d6f53d3e1476",
+      "reasons": [
+        "no_positive_lcb(lcb=-0.0113)",
+        "constraint_risk(['splice_motif=CAGG', 'hairpin_pos1_stem4_loop6_mm1'])"
+      ]
+    },
+    {
+      "split": "rare_family",
+      "source_id": "snv:22576a49c7e2",
+      "reasons": [
+        "constraint_risk(['hairpin_pos0_stem4_loop14_mm1'])"
+      ]
+    },
+    {
+      "split": "rare_family",
+      "source_id": "snv:55eea2fbd87d",
+      "reasons": [
+        "constraint_risk(['hairpin_pos0_stem4_loop10_mm1'])"
+      ]
+    },
+    {
+      "split": "rare_family",
+      "source_id": "snv:70b6a9f3593d",
+      "reasons": [
+        "no_positive_lcb(lcb=-0.0113)",
+        "constraint_risk(['splice_motif=CAGG', 'hairpin_pos2_stem5_loop3_mm1'])"
+      ]
+    },
+    {
+      "split": "rare_family",
+      "source_id": "snv:52a1c3088360",
+      "reasons": [
+        "constraint_risk(['high_gc=0.74', 'hairpin_pos0_stem4_loop8_mm1'])"
+      ]
+    },
+    {
+      "split": "length_shift",
+      "source_id": "snv:e103534da054",
+      "reasons": [
+        "no_positive_lcb(lcb=-0.0103)",
+        "constraint_risk(['splice_motif=CAGG', 'hairpin_pos0_stem4_loop14_mm1'])"
+      ]
+    },
+    {
+      "split": "length_shift",
+      "source_id": "snv:0702aa046aae",
+      "reasons": [
+        "constraint_risk(['splice_motif=CAGG', 'hairpin_pos0_stem5_loop8_mm1'])"
+      ]
+    },
+    {
+      "split": "length_shift",
+      "source_id": "snv:504ab11a6a41",
+      "reasons": [
+        "constraint_risk(['high_gc=0.82', 'hairpin_pos0_stem4_loop12_mm1'])"
+      ]
+    },
+    {
+      "split": "length_shift",
+      "source_id": "snv:4194ca3142aa",
+      "reasons": [
+        "no_positive_lcb(lcb=-0.0113)",
+        "constraint_risk(['hairpin_pos5_stem4_loop10_mm1'])"
+      ]
+    },
+    {
+      "split": "gc_shift",
+      "source_id": "snv:504ab11a6a41",
+      "reasons": [
+        "constraint_risk(['high_gc=0.82', 'hairpin_pos0_stem4_loop12_mm1'])"
+      ]
+    },
+    {
+      "split": "gc_shift",
+      "source_id": "snv:f28675f2404b",
+      "reasons": [
+        "constraint_risk(['high_gc=0.80', 'splice_motif=CAGG', 'hairpin_pos0_stem9_loop3_mm1'])"
+      ]
+    }
+  ],
+  "wall_clock_sec": 6.903934955596924
+}

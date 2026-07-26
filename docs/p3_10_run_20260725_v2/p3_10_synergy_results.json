@@ -1,0 +1,3554 @@
+{
+  "phase": "P3-10",
+  "component": "counterfactual_arms",
+  "created_utc": "2026-07-25T14:16:38Z",
+  "config": {
+    "n_sequences": 24,
+    "arms": [
+      "wt",
+      "five_utr_only",
+      "cds_only",
+      "joint",
+      "matched_random",
+      "shuffled_joint",
+      "additive_reconstruction",
+      "joint_policy"
+    ],
+    "training_oracle": "p3_02 cross-fitted (seq_diff + seq_linear) for 5'UTR + CAI scorer for CDS",
+    "independent_oracle": "difference architecture (5'UTR) + CAI scorer (CDS)",
+    "cds_scorer": "CAIDeltaScorer (weight=0.5); \u0394CDS = 0.5 * \u0394CAI; Sharp & Li 1987 codon optimality",
+    "combined_oracle": "CombinedOracle = \u03945'UTR (oracle) + \u0394CDS (CAI); quadrature uncertainty",
+    "qualifier": "All deltas are predicted / internal proxy. 5'UTR deltas come from the P3-02 oracle ensemble; CDS deltas come from a CAI-based sequence heuristic (public, training-data-free). Joint deltas use CombinedOracle (additive). Not wet-lab measurements.",
+    "oracle_limitation": "The P3-02 oracle was trained exclusively on 5'UTR edit records. CDS-mediated effects are scored by a CAI heuristic (sequence-level, not learned). Synergy estimates combine two independent signals and represent a pre-registered lower bound on true biological synergy; wet-lab validation is required for GO."
+  },
+  "arm_summary": {
+    "wt": {
+      "delta_train": {
+        "mean": 0.0,
+        "std": 0.0,
+        "median": 0.0,
+        "n": 24
+      },
+      "delta_independent": {
+        "mean": 0.0,
+        "std": 0.0,
+        "median": 0.0,
+        "n": 24
+      },
+      "mean_n_edits": 0.0
+    },
+    "five_utr_only": {
+      "delta_train": {
+        "mean": 0.19677704362651008,
+        "std": 0.01652755663177968,
+        "median": 0.1972455651105733,
+        "n": 24
+      },
+      "delta_independent": {
+        "mean": 0.0009621835506501084,
+        "std": 0.00028157731691343666,
+        "median": 0.0010031491302460258,
+        "n": 24
+      },
+      "mean_n_edits": 1.0
+    },
+    "cds_only": {
+      "delta_train": {
+        "mean": 0.08750000000000002,
+        "std": 0.0,
+        "median": 0.08750000000000002,
+        "n": 24
+      },
+      "delta_independent": {
+        "mean": 0.08750000000000002,
+        "std": 0.0,
+        "median": 0.08750000000000002,
+        "n": 24
+      },
+      "mean_n_edits": 1.0
+    },
+    "joint": {
+      "delta_train": {
+        "mean": 0.28427704362651013,
+        "std": 0.016527556631779683,
+        "median": 0.28474556511057336,
+        "n": 24
+      },
+      "delta_independent": {
+        "mean": 0.08846218355065012,
+        "std": 0.00028157731691343753,
+        "median": 0.08850314913024604,
+        "n": 24
+      },
+      "mean_n_edits": 2.0
+    },
+    "matched_random": {
+      "delta_train": {
+        "mean": -0.004181332106405055,
+        "std": 0.08125984632441098,
+        "median": 0.001174525792475136,
+        "n": 24
+      },
+      "delta_independent": {
+        "mean": 0.0,
+        "std": 0.0,
+        "median": 0.0,
+        "n": 24
+      },
+      "mean_n_edits": 2.0
+    },
+    "shuffled_joint": {
+      "delta_train": {
+        "mean": 0.07101367807553334,
+        "std": 0.08614522688970314,
+        "median": 0.07416312889924752,
+        "n": 24
+      },
+      "delta_independent": {
+        "mean": 0.0,
+        "std": 0.0,
+        "median": 0.0,
+        "n": 24
+      },
+      "mean_n_edits": 2.0
+    },
+    "additive_reconstruction": {
+      "delta_train": {
+        "mean": 0.28427704362651013,
+        "std": 0.016527556631779683,
+        "median": 0.28474556511057336,
+        "n": 24
+      },
+      "delta_independent": {
+        "mean": 0.08846218355065012,
+        "std": 0.00028157731691343753,
+        "median": 0.08850314913024604,
+        "n": 24
+      },
+      "mean_n_edits": 2.0
+    },
+    "joint_policy": {
+      "delta_train": {
+        "mean": 0.0,
+        "std": 0.0,
+        "median": 0.0,
+        "n": 24
+      },
+      "delta_independent": {
+        "mean": 0.0,
+        "std": 0.0,
+        "median": 0.0,
+        "n": 24
+      },
+      "mean_n_edits": 0.0
+    }
+  },
+  "synergy_analysis": {
+    "definition": "synergy = \u0394joint - \u03945'UTR - \u0394CDS",
+    "training_oracle": {
+      "mean": 1.1564823173178713e-18,
+      "std": 1.2615732665287448e-17,
+      "median": 0.0,
+      "n": 24
+    },
+    "independent_oracle": {
+      "mean": 0.0,
+      "std": 0.0,
+      "median": 0.0,
+      "n": 24
+    },
+    "n_sequences": 24,
+    "qualifier": "predicted / internal proxy \u2014 5'UTR oracle + CAI CDS scorer (combined additive). Not wet-lab measurements.",
+    "interpretation": "Synergy is computed using a CombinedOracle (5'UTR oracle + CAI CDS scorer, additive). With an additive combined oracle, the joint delta equals \u03945'UTR + \u0394CDS by construction, so synergy \u2248 0 in the predicted space. This is a pre-registered limitation: the additive combined oracle cannot detect super-additive biological interactions by design. Non-zero synergy would only emerge if a learned joint oracle (processing 5'UTR and CDS jointly, not additively) were trained on multi-region intervention data. The pre-registered PARTIAL verdict applies: computational oracle only, effect small, single cargo \u2014 wet-lab validation required for GO."
+  },
+  "statistical_interaction": {
+    "model": "delta = \u03b20 + \u03b21*has_5utr + \u03b22*has_cds + \u03b23*interaction",
+    "coefficients": {
+      "beta0_intercept": -7.864079757761526e-17,
+      "beta1_5utr_main": 0.19677704362651025,
+      "beta2_cds_main": 0.08750000000000013,
+      "beta3_interaction": -1.4802973661668753e-16
+    },
+    "std_errors": {
+      "beta0": 0.002436855280250439,
+      "beta1": 0.0034462337868706606,
+      "beta2": 0.0034462337868706606,
+      "beta3": 0.004873710560500878
+    },
+    "t_statistics": {
+      "beta0": -3.227142711960032e-14,
+      "beta1": 57.099156875596904,
+      "beta2": 25.390036025226884,
+      "beta3": -3.0373107877270885e-14
+    },
+    "n_observations": 96,
+    "r_squared": 0.9883572825368204,
+    "interpretation": "\u03b23 (interaction term) tests whether joint editing differs from the sum of individual effects. With the additive CombinedOracle (5'UTR oracle + CAI CDS scorer), \u03b23 \u2248 0 by construction because the combined oracle cannot model super-additive interactions. A non-zero \u03b23 would require a learned joint oracle that processes 5'UTR and CDS features jointly rather than additively."
+  },
+  "spec_required_analysis": {
+    "pairwise_interaction": {
+      "status": "computed",
+      "method": "OLS: delta = \u03b20 + \u03b21*has_5utr + \u03b22*has_cds + \u03b23*interaction",
+      "result": {
+        "model": "delta = \u03b20 + \u03b21*has_5utr + \u03b22*has_cds + \u03b23*interaction",
+        "coefficients": {
+          "beta0_intercept": -7.864079757761526e-17,
+          "beta1_5utr_main": 0.19677704362651025,
+          "beta2_cds_main": 0.08750000000000013,
+          "beta3_interaction": -1.4802973661668753e-16
+        },
+        "std_errors": {
+          "beta0": 0.002436855280250439,
+          "beta1": 0.0034462337868706606,
+          "beta2": 0.0034462337868706606,
+          "beta3": 0.004873710560500878
+        },
+        "t_statistics": {
+          "beta0": -3.227142711960032e-14,
+          "beta1": 57.099156875596904,
+          "beta2": 25.390036025226884,
+          "beta3": -3.0373107877270885e-14
+        },
+        "n_observations": 96,
+        "r_squared": 0.9883572825368204,
+        "interpretation": "\u03b23 (interaction term) tests whether joint editing differs from the sum of individual effects. With the additive CombinedOracle (5'UTR oracle + CAI CDS scorer), \u03b23 \u2248 0 by construction because the combined oracle cannot model super-additive interactions. A non-zero \u03b23 would require a learned joint oracle that processes 5'UTR and CDS features jointly rather than additively."
+      },
+      "interpretation": "\u03b23 (interaction term) tests whether joint editing differs from the sum of individual effects. With the additive CombinedOracle, \u03b23 \u2248 0 by construction. See statistical_interaction for details."
+    },
+    "edit_order_effect": {
+      "status": "not_assessable",
+      "reason": "Edit-order dependence cannot be established with the current CombinedOracle. The oracle scores a candidate sequence holistically (5'UTR features + CAI), without modeling the order in which edits are applied. True edit-order effects require a joint oracle with edit-order awareness (e.g., autoregressive edit-sequence model) trained on multi-region intervention data. The mechanism_analysis.md also documents this limitation under edit_order_dependence."
+    },
+    "reward_per_edit": {
+      "status": "computed",
+      "definition": "reward_per_edit = delta_train / n_edits (per sequence, then aggregated per arm)",
+      "qualifier": "predicted / internal proxy",
+      "per_arm": {
+        "wt": {
+          "mean": 0.0,
+          "std": 0.0,
+          "median": 0.0,
+          "n": 0,
+          "note": "no edits in this arm (wt or joint_policy with 0 edits)"
+        },
+        "five_utr_only": {
+          "mean": 0.19677704362651008,
+          "std": 0.01652755663177968,
+          "median": 0.1972455651105733,
+          "n": 24
+        },
+        "cds_only": {
+          "mean": 0.08750000000000002,
+          "std": 0.0,
+          "median": 0.08750000000000002,
+          "n": 24
+        },
+        "joint": {
+          "mean": 0.14213852181325506,
+          "std": 0.008263778315889841,
+          "median": 0.14237278255528668,
+          "n": 24
+        },
+        "matched_random": {
+          "mean": -0.0020906660532025276,
+          "std": 0.04062992316220549,
+          "median": 0.000587262896237568,
+          "n": 24
+        },
+        "shuffled_joint": {
+          "mean": 0.03550683903776667,
+          "std": 0.04307261344485157,
+          "median": 0.03708156444962376,
+          "n": 24
+        },
+        "additive_reconstruction": {
+          "mean": 0.14213852181325506,
+          "std": 0.008263778315889841,
+          "median": 0.14237278255528668,
+          "n": 24
+        },
+        "joint_policy": {
+          "mean": 0.0,
+          "std": 0.0,
+          "median": 0.0,
+          "n": 0,
+          "note": "no edits in this arm (wt or joint_policy with 0 edits)"
+        }
+      },
+      "interpretation": "Reward per edit normalizes the predicted delta by the number of edits, giving the marginal contribution per edit action. Arms with 0 edits (wt, joint_policy without checkpoint) have no reward-per-edit by definition."
+    },
+    "independent_oracle_interaction": {
+      "status": "computed",
+      "result": {
+        "mean": 0.0,
+        "std": 0.0,
+        "median": 0.0,
+        "n": 24
+      },
+      "interpretation": "Synergy computed on the independent-architecture oracle (difference model for 5'UTR + CAI for CDS). See synergy_analysis.independent_oracle. The independent oracle provides a direction-consistency check against the training oracle."
+    },
+    "experimental_interaction": {
+      "status": "not_available",
+      "reason": "No wet-lab joint 5'UTR\u00d7CDS editing experiments are available in the current benchmark (data is 5'UTR-only, 4802 measured records). Experimental interaction cannot be assessed. This is documented as N/A (not PASS) in the decision artifact under n3_experiment_unsupportive. Wet-lab joint editing data is required for GO verdict."
+    }
+  },
+  "per_sequence": {
+    "wt": [
+      {
+        "source_id": "snv:67b875afcb33",
+        "delta_train": 0.0,
+        "uncertainty_train": 1e-06,
+        "n_edits": 0,
+        "edits": []
+      },
+      {
+        "source_id": "snv:7829a1b008f1",
+        "delta_train": 0.0,
+        "uncertainty_train": 1e-06,
+        "n_edits": 0,
+        "edits": []
+      },
+      {
+        "source_id": "snv:184eb1aac176",
+        "delta_train": 0.0,
+        "uncertainty_train": 1e-06,
+        "n_edits": 0,
+        "edits": []
+      },
+      {
+        "source_id": "snv:e5a1733e9ce3",
+        "delta_train": 0.0,
+        "uncertainty_train": 1e-06,
+        "n_edits": 0,
+        "edits": []
+      },
+      {
+        "source_id": "snv:702e9478f886",
+        "delta_train": 0.0,
+        "uncertainty_train": 1e-06,
+        "n_edits": 0,
+        "edits": []
+      },
+      {
+        "source_id": "snv:b34039f00d40",
+        "delta_train": 0.0,
+        "uncertainty_train": 1e-06,
+        "n_edits": 0,
+        "edits": []
+      },
+      {
+        "source_id": "snv:f91d5083207f",
+        "delta_train": 0.0,
+        "uncertainty_train": 1e-06,
+        "n_edits": 0,
+        "edits": []
+      },
+      {
+        "source_id": "snv:b306b483ea80",
+        "delta_train": 0.0,
+        "uncertainty_train": 1e-06,
+        "n_edits": 0,
+        "edits": []
+      },
+      {
+        "source_id": "snv:089791e14e7b",
+        "delta_train": 0.0,
+        "uncertainty_train": 1e-06,
+        "n_edits": 0,
+        "edits": []
+      },
+      {
+        "source_id": "snv:efaeeee5cb8f",
+        "delta_train": 0.0,
+        "uncertainty_train": 1e-06,
+        "n_edits": 0,
+        "edits": []
+      },
+      {
+        "source_id": "snv:1a1ed162e31b",
+        "delta_train": 0.0,
+        "uncertainty_train": 1e-06,
+        "n_edits": 0,
+        "edits": []
+      },
+      {
+        "source_id": "snv:7ee3827506a4",
+        "delta_train": 0.0,
+        "uncertainty_train": 1e-06,
+        "n_edits": 0,
+        "edits": []
+      },
+      {
+        "source_id": "snv:0f2ff623d7c7",
+        "delta_train": 0.0,
+        "uncertainty_train": 1e-06,
+        "n_edits": 0,
+        "edits": []
+      },
+      {
+        "source_id": "snv:3f8803f95d1e",
+        "delta_train": 0.0,
+        "uncertainty_train": 1e-06,
+        "n_edits": 0,
+        "edits": []
+      },
+      {
+        "source_id": "snv:c88f076638e7",
+        "delta_train": 0.0,
+        "uncertainty_train": 1e-06,
+        "n_edits": 0,
+        "edits": []
+      },
+      {
+        "source_id": "snv:8ae2a60ece6a",
+        "delta_train": 0.0,
+        "uncertainty_train": 1e-06,
+        "n_edits": 0,
+        "edits": []
+      },
+      {
+        "source_id": "snv:56bff55fcb6a",
+        "delta_train": 0.0,
+        "uncertainty_train": 1e-06,
+        "n_edits": 0,
+        "edits": []
+      },
+      {
+        "source_id": "snv:41b43e1441bb",
+        "delta_train": 0.0,
+        "uncertainty_train": 1e-06,
+        "n_edits": 0,
+        "edits": []
+      },
+      {
+        "source_id": "snv:4ada8deecaed",
+        "delta_train": 0.0,
+        "uncertainty_train": 1e-06,
+        "n_edits": 0,
+        "edits": []
+      },
+      {
+        "source_id": "snv:7d4b3f6720f8",
+        "delta_train": 0.0,
+        "uncertainty_train": 1e-06,
+        "n_edits": 0,
+        "edits": []
+      },
+      {
+        "source_id": "snv:19511752d43f",
+        "delta_train": 0.0,
+        "uncertainty_train": 1e-06,
+        "n_edits": 0,
+        "edits": []
+      },
+      {
+        "source_id": "snv:53aa980ae93a",
+        "delta_train": 0.0,
+        "uncertainty_train": 1e-06,
+        "n_edits": 0,
+        "edits": []
+      },
+      {
+        "source_id": "snv:9a05d587ca3e",
+        "delta_train": 0.0,
+        "uncertainty_train": 1e-06,
+        "n_edits": 0,
+        "edits": []
+      },
+      {
+        "source_id": "snv:1d131af5c4c4",
+        "delta_train": 0.0,
+        "uncertainty_train": 1e-06,
+        "n_edits": 0,
+        "edits": []
+      }
+    ],
+    "five_utr_only": [
+      {
+        "source_id": "snv:67b875afcb33",
+        "delta_train": 0.20630194201616892,
+        "uncertainty_train": 0.19046077916710477,
+        "delta_independent": 0.0008154010544356681,
+        "n_edits": 1,
+        "edits": [
+          {
+            "pos": 32,
+            "ref": "U",
+            "alt": "A",
+            "region": "five_utr"
+          }
+        ]
+      },
+      {
+        "source_id": "snv:7829a1b008f1",
+        "delta_train": 0.17293919922622694,
+        "uncertainty_train": 0.20223129142152801,
+        "delta_independent": 0.0008664765990176009,
+        "n_edits": 1,
+        "edits": [
+          {
+            "pos": 35,
+            "ref": "U",
+            "alt": "A",
+            "region": "five_utr"
+          }
+        ]
+      },
+      {
+        "source_id": "snv:184eb1aac176",
+        "delta_train": 0.21705025743988537,
+        "uncertainty_train": 0.2329148937941675,
+        "delta_independent": 0.0012262482479437169,
+        "n_edits": 1,
+        "edits": [
+          {
+            "pos": 36,
+            "ref": "G",
+            "alt": "U",
+            "region": "five_utr"
+          }
+        ]
+      },
+      {
+        "source_id": "snv:e5a1733e9ce3",
+        "delta_train": 0.21705025743988537,
+        "uncertainty_train": 0.2329148937941675,
+        "delta_independent": 0.0011541404571181434,
+        "n_edits": 1,
+        "edits": [
+          {
+            "pos": 36,
+            "ref": "G",
+            "alt": "U",
+            "region": "five_utr"
+          }
+        ]
+      },
+      {
+        "source_id": "snv:702e9478f886",
+        "delta_train": 0.20630194201616892,
+        "uncertainty_train": 0.19046077916710477,
+        "delta_independent": 0.0008268887113674489,
+        "n_edits": 1,
+        "edits": [
+          {
+            "pos": 32,
+            "ref": "U",
+            "alt": "A",
+            "region": "five_utr"
+          }
+        ]
+      },
+      {
+        "source_id": "snv:b34039f00d40",
+        "delta_train": 0.1972455651105733,
+        "uncertainty_train": 0.1876876468332836,
+        "delta_independent": 0.0009029956855861367,
+        "n_edits": 1,
+        "edits": [
+          {
+            "pos": 36,
+            "ref": "A",
+            "alt": "U",
+            "region": "five_utr"
+          }
+        ]
+      },
+      {
+        "source_id": "snv:f91d5083207f",
+        "delta_train": 0.21705025743988537,
+        "uncertainty_train": 0.2329148937941675,
+        "delta_independent": 0.0012002868645484485,
+        "n_edits": 1,
+        "edits": [
+          {
+            "pos": 36,
+            "ref": "G",
+            "alt": "U",
+            "region": "five_utr"
+          }
+        ]
+      },
+      {
+        "source_id": "snv:b306b483ea80",
+        "delta_train": 0.18335528740967855,
+        "uncertainty_train": 0.15330360024859854,
+        "delta_independent": 0.00047065589084622356,
+        "n_edits": 1,
+        "edits": [
+          {
+            "pos": 12,
+            "ref": "A",
+            "alt": "U",
+            "region": "five_utr"
+          }
+        ]
+      },
+      {
+        "source_id": "snv:089791e14e7b",
+        "delta_train": 0.21705025743988537,
+        "uncertainty_train": 0.2329148937941675,
+        "delta_independent": 0.0012364244307597541,
+        "n_edits": 1,
+        "edits": [
+          {
+            "pos": 36,
+            "ref": "G",
+            "alt": "U",
+            "region": "five_utr"
+          }
+        ]
+      },
+      {
+        "source_id": "snv:efaeeee5cb8f",
+        "delta_train": 0.17366656867561175,
+        "uncertainty_train": 0.21127696036429536,
+        "delta_independent": 0.0013262776344913352,
+        "n_edits": 1,
+        "edits": [
+          {
+            "pos": 42,
+            "ref": "G",
+            "alt": "U",
+            "region": "five_utr"
+          }
+        ]
+      },
+      {
+        "source_id": "snv:1a1ed162e31b",
+        "delta_train": 0.20630194201616892,
+        "uncertainty_train": 0.19046077916710477,
+        "delta_independent": 0.0008261388277821212,
+        "n_edits": 1,
+        "edits": [
+          {
+            "pos": 32,
+            "ref": "U",
+            "alt": "A",
+            "region": "five_utr"
+          }
+        ]
+      },
+      {
+        "source_id": "snv:7ee3827506a4",
+        "delta_train": 0.21705025743988537,
+        "uncertainty_train": 0.2329148937941675,
+        "delta_independent": 0.0012078743746329994,
+        "n_edits": 1,
+        "edits": [
+          {
+            "pos": 36,
+            "ref": "G",
+            "alt": "U",
+            "region": "five_utr"
+          }
+        ]
+      },
+      {
+        "source_id": "snv:0f2ff623d7c7",
+        "delta_train": 0.18870468460524092,
+        "uncertainty_train": 0.18189587504640622,
+        "delta_independent": 0.0010881997816999112,
+        "n_edits": 1,
+        "edits": [
+          {
+            "pos": 35,
+            "ref": "G",
+            "alt": "A",
+            "region": "five_utr"
+          }
+        ]
+      },
+      {
+        "source_id": "snv:3f8803f95d1e",
+        "delta_train": 0.18335528740967855,
+        "uncertainty_train": 0.15330360024859854,
+        "delta_independent": 0.0004765186553408636,
+        "n_edits": 1,
+        "edits": [
+          {
+            "pos": 12,
+            "ref": "A",
+            "alt": "U",
+            "region": "five_utr"
+          }
+        ]
+      },
+      {
+        "source_id": "snv:c88f076638e7",
+        "delta_train": 0.18870468460524092,
+        "uncertainty_train": 0.18189587504640622,
+        "delta_independent": 0.00109304783745863,
+        "n_edits": 1,
+        "edits": [
+          {
+            "pos": 35,
+            "ref": "G",
+            "alt": "A",
+            "region": "five_utr"
+          }
+        ]
+      },
+      {
+        "source_id": "snv:8ae2a60ece6a",
+        "delta_train": 0.21705025743988537,
+        "uncertainty_train": 0.2329148937941675,
+        "delta_independent": 0.0012267880443736362,
+        "n_edits": 1,
+        "edits": [
+          {
+            "pos": 36,
+            "ref": "G",
+            "alt": "U",
+            "region": "five_utr"
+          }
+        ]
+      },
+      {
+        "source_id": "snv:56bff55fcb6a",
+        "delta_train": 0.18335528740967855,
+        "uncertainty_train": 0.15330360024859854,
+        "delta_independent": 0.0004717402595694649,
+        "n_edits": 1,
+        "edits": [
+          {
+            "pos": 12,
+            "ref": "A",
+            "alt": "U",
+            "region": "five_utr"
+          }
+        ]
+      },
+      {
+        "source_id": "snv:41b43e1441bb",
+        "delta_train": 0.18870468460524092,
+        "uncertainty_train": 0.18189587504640622,
+        "delta_independent": 0.0011034648453301064,
+        "n_edits": 1,
+        "edits": [
+          {
+            "pos": 35,
+            "ref": "G",
+            "alt": "A",
+            "region": "five_utr"
+          }
+        ]
+      },
+      {
+        "source_id": "snv:4ada8deecaed",
+        "delta_train": 0.1972455651105733,
+        "uncertainty_train": 0.1876876468332836,
+        "delta_independent": 0.0009062708213228299,
+        "n_edits": 1,
+        "edits": [
+          {
+            "pos": 36,
+            "ref": "A",
+            "alt": "U",
+            "region": "five_utr"
+          }
+        ]
+      },
+      {
+        "source_id": "snv:7d4b3f6720f8",
+        "delta_train": 0.18870468460524092,
+        "uncertainty_train": 0.18189587504640622,
+        "delta_independent": 0.0009180984787921405,
+        "n_edits": 1,
+        "edits": [
+          {
+            "pos": 35,
+            "ref": "G",
+            "alt": "A",
+            "region": "five_utr"
+          }
+        ]
+      },
+      {
+        "source_id": "snv:19511752d43f",
+        "delta_train": 0.16251280195668497,
+        "uncertainty_train": 0.15566662305781928,
+        "delta_independent": 0.0012759768009129174,
+        "n_edits": 1,
+        "edits": [
+          {
+            "pos": 39,
+            "ref": "G",
+            "alt": "U",
+            "region": "five_utr"
+          }
+        ]
+      },
+      {
+        "source_id": "snv:53aa980ae93a",
+        "delta_train": 0.21705025743988537,
+        "uncertainty_train": 0.2329148937941675,
+        "delta_independent": 0.0012259423233807742,
+        "n_edits": 1,
+        "edits": [
+          {
+            "pos": 36,
+            "ref": "G",
+            "alt": "U",
+            "region": "five_utr"
+          }
+        ]
+      },
+      {
+        "source_id": "snv:9a05d587ca3e",
+        "delta_train": 0.1786515530682954,
+        "uncertainty_train": 0.15528501698534344,
+        "delta_independent": 0.0003434341804274925,
+        "n_edits": 1,
+        "edits": [
+          {
+            "pos": 6,
+            "ref": "A",
+            "alt": "U",
+            "region": "five_utr"
+          }
+        ]
+      },
+      {
+        "source_id": "snv:1d131af5c4c4",
+        "delta_train": 0.1972455651105733,
+        "uncertainty_train": 0.1876876468332836,
+        "delta_independent": 0.0009031144084642381,
+        "n_edits": 1,
+        "edits": [
+          {
+            "pos": 36,
+            "ref": "A",
+            "alt": "U",
+            "region": "five_utr"
+          }
+        ]
+      }
+    ],
+    "cds_only": [
+      {
+        "source_id": "snv:67b875afcb33",
+        "delta_train": 0.08750000000000002,
+        "uncertainty_train": 0.05,
+        "delta_independent": 0.08750000000000002,
+        "n_edits": 1,
+        "edits": [
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "cai_delta"
+      },
+      {
+        "source_id": "snv:7829a1b008f1",
+        "delta_train": 0.08750000000000002,
+        "uncertainty_train": 0.05,
+        "delta_independent": 0.08750000000000002,
+        "n_edits": 1,
+        "edits": [
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "cai_delta"
+      },
+      {
+        "source_id": "snv:184eb1aac176",
+        "delta_train": 0.08750000000000002,
+        "uncertainty_train": 0.05,
+        "delta_independent": 0.08750000000000002,
+        "n_edits": 1,
+        "edits": [
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "cai_delta"
+      },
+      {
+        "source_id": "snv:e5a1733e9ce3",
+        "delta_train": 0.08750000000000002,
+        "uncertainty_train": 0.05,
+        "delta_independent": 0.08750000000000002,
+        "n_edits": 1,
+        "edits": [
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "cai_delta"
+      },
+      {
+        "source_id": "snv:702e9478f886",
+        "delta_train": 0.08750000000000002,
+        "uncertainty_train": 0.05,
+        "delta_independent": 0.08750000000000002,
+        "n_edits": 1,
+        "edits": [
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "cai_delta"
+      },
+      {
+        "source_id": "snv:b34039f00d40",
+        "delta_train": 0.08750000000000002,
+        "uncertainty_train": 0.05,
+        "delta_independent": 0.08750000000000002,
+        "n_edits": 1,
+        "edits": [
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "cai_delta"
+      },
+      {
+        "source_id": "snv:f91d5083207f",
+        "delta_train": 0.08750000000000002,
+        "uncertainty_train": 0.05,
+        "delta_independent": 0.08750000000000002,
+        "n_edits": 1,
+        "edits": [
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "cai_delta"
+      },
+      {
+        "source_id": "snv:b306b483ea80",
+        "delta_train": 0.08750000000000002,
+        "uncertainty_train": 0.05,
+        "delta_independent": 0.08750000000000002,
+        "n_edits": 1,
+        "edits": [
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "cai_delta"
+      },
+      {
+        "source_id": "snv:089791e14e7b",
+        "delta_train": 0.08750000000000002,
+        "uncertainty_train": 0.05,
+        "delta_independent": 0.08750000000000002,
+        "n_edits": 1,
+        "edits": [
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "cai_delta"
+      },
+      {
+        "source_id": "snv:efaeeee5cb8f",
+        "delta_train": 0.08750000000000002,
+        "uncertainty_train": 0.05,
+        "delta_independent": 0.08750000000000002,
+        "n_edits": 1,
+        "edits": [
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "cai_delta"
+      },
+      {
+        "source_id": "snv:1a1ed162e31b",
+        "delta_train": 0.08750000000000002,
+        "uncertainty_train": 0.05,
+        "delta_independent": 0.08750000000000002,
+        "n_edits": 1,
+        "edits": [
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "cai_delta"
+      },
+      {
+        "source_id": "snv:7ee3827506a4",
+        "delta_train": 0.08750000000000002,
+        "uncertainty_train": 0.05,
+        "delta_independent": 0.08750000000000002,
+        "n_edits": 1,
+        "edits": [
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "cai_delta"
+      },
+      {
+        "source_id": "snv:0f2ff623d7c7",
+        "delta_train": 0.08750000000000002,
+        "uncertainty_train": 0.05,
+        "delta_independent": 0.08750000000000002,
+        "n_edits": 1,
+        "edits": [
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "cai_delta"
+      },
+      {
+        "source_id": "snv:3f8803f95d1e",
+        "delta_train": 0.08750000000000002,
+        "uncertainty_train": 0.05,
+        "delta_independent": 0.08750000000000002,
+        "n_edits": 1,
+        "edits": [
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "cai_delta"
+      },
+      {
+        "source_id": "snv:c88f076638e7",
+        "delta_train": 0.08750000000000002,
+        "uncertainty_train": 0.05,
+        "delta_independent": 0.08750000000000002,
+        "n_edits": 1,
+        "edits": [
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "cai_delta"
+      },
+      {
+        "source_id": "snv:8ae2a60ece6a",
+        "delta_train": 0.08750000000000002,
+        "uncertainty_train": 0.05,
+        "delta_independent": 0.08750000000000002,
+        "n_edits": 1,
+        "edits": [
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "cai_delta"
+      },
+      {
+        "source_id": "snv:56bff55fcb6a",
+        "delta_train": 0.08750000000000002,
+        "uncertainty_train": 0.05,
+        "delta_independent": 0.08750000000000002,
+        "n_edits": 1,
+        "edits": [
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "cai_delta"
+      },
+      {
+        "source_id": "snv:41b43e1441bb",
+        "delta_train": 0.08750000000000002,
+        "uncertainty_train": 0.05,
+        "delta_independent": 0.08750000000000002,
+        "n_edits": 1,
+        "edits": [
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "cai_delta"
+      },
+      {
+        "source_id": "snv:4ada8deecaed",
+        "delta_train": 0.08750000000000002,
+        "uncertainty_train": 0.05,
+        "delta_independent": 0.08750000000000002,
+        "n_edits": 1,
+        "edits": [
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "cai_delta"
+      },
+      {
+        "source_id": "snv:7d4b3f6720f8",
+        "delta_train": 0.08750000000000002,
+        "uncertainty_train": 0.05,
+        "delta_independent": 0.08750000000000002,
+        "n_edits": 1,
+        "edits": [
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "cai_delta"
+      },
+      {
+        "source_id": "snv:19511752d43f",
+        "delta_train": 0.08750000000000002,
+        "uncertainty_train": 0.05,
+        "delta_independent": 0.08750000000000002,
+        "n_edits": 1,
+        "edits": [
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "cai_delta"
+      },
+      {
+        "source_id": "snv:53aa980ae93a",
+        "delta_train": 0.08750000000000002,
+        "uncertainty_train": 0.05,
+        "delta_independent": 0.08750000000000002,
+        "n_edits": 1,
+        "edits": [
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "cai_delta"
+      },
+      {
+        "source_id": "snv:9a05d587ca3e",
+        "delta_train": 0.08750000000000002,
+        "uncertainty_train": 0.05,
+        "delta_independent": 0.08750000000000002,
+        "n_edits": 1,
+        "edits": [
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "cai_delta"
+      },
+      {
+        "source_id": "snv:1d131af5c4c4",
+        "delta_train": 0.08750000000000002,
+        "uncertainty_train": 0.05,
+        "delta_independent": 0.08750000000000002,
+        "n_edits": 1,
+        "edits": [
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "cai_delta"
+      }
+    ],
+    "joint": [
+      {
+        "source_id": "snv:67b875afcb33",
+        "delta_train": 0.29380194201616894,
+        "uncertainty_train": 0.19691446976019983,
+        "delta_independent": 0.0883154010544357,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 32,
+            "ref": "U",
+            "alt": "A",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:7829a1b008f1",
+        "delta_train": 0.26043919922622694,
+        "uncertainty_train": 0.20832065483292575,
+        "delta_independent": 0.08836647659901763,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 35,
+            "ref": "U",
+            "alt": "A",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:184eb1aac176",
+        "delta_train": 0.3045502574398854,
+        "uncertainty_train": 0.23822121599712381,
+        "delta_independent": 0.08872624824794374,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 36,
+            "ref": "G",
+            "alt": "U",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:e5a1733e9ce3",
+        "delta_train": 0.3045502574398854,
+        "uncertainty_train": 0.23822121599712381,
+        "delta_independent": 0.08865414045711817,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 36,
+            "ref": "G",
+            "alt": "U",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:702e9478f886",
+        "delta_train": 0.29380194201616894,
+        "uncertainty_train": 0.19691446976019983,
+        "delta_independent": 0.08832688871136747,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 32,
+            "ref": "U",
+            "alt": "A",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:b34039f00d40",
+        "delta_train": 0.28474556511057336,
+        "uncertainty_train": 0.194233500647585,
+        "delta_independent": 0.08840299568558616,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 36,
+            "ref": "A",
+            "alt": "U",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:f91d5083207f",
+        "delta_train": 0.3045502574398854,
+        "uncertainty_train": 0.23822121599712381,
+        "delta_independent": 0.08870028686454848,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 36,
+            "ref": "G",
+            "alt": "U",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:b306b483ea80",
+        "delta_train": 0.27085528740967857,
+        "uncertainty_train": 0.16125133751129664,
+        "delta_independent": 0.08797065589084624,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 12,
+            "ref": "A",
+            "alt": "U",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:089791e14e7b",
+        "delta_train": 0.3045502574398854,
+        "uncertainty_train": 0.23822121599712381,
+        "delta_independent": 0.08873642443075977,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 36,
+            "ref": "G",
+            "alt": "U",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:efaeeee5cb8f",
+        "delta_train": 0.2611665686756118,
+        "uncertainty_train": 0.2171127678898135,
+        "delta_independent": 0.08882627763449136,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 42,
+            "ref": "G",
+            "alt": "U",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:1a1ed162e31b",
+        "delta_train": 0.29380194201616894,
+        "uncertainty_train": 0.19691446976019983,
+        "delta_independent": 0.08832613882778215,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 32,
+            "ref": "U",
+            "alt": "A",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:7ee3827506a4",
+        "delta_train": 0.3045502574398854,
+        "uncertainty_train": 0.23822121599712381,
+        "delta_independent": 0.08870787437463303,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 36,
+            "ref": "G",
+            "alt": "U",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:0f2ff623d7c7",
+        "delta_train": 0.27620468460524095,
+        "uncertainty_train": 0.18864280892442686,
+        "delta_independent": 0.08858819978169993,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 35,
+            "ref": "G",
+            "alt": "A",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:3f8803f95d1e",
+        "delta_train": 0.27085528740967857,
+        "uncertainty_train": 0.16125133751129664,
+        "delta_independent": 0.08797651865534088,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 12,
+            "ref": "A",
+            "alt": "U",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:c88f076638e7",
+        "delta_train": 0.27620468460524095,
+        "uncertainty_train": 0.18864280892442686,
+        "delta_independent": 0.08859304783745865,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 35,
+            "ref": "G",
+            "alt": "A",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:8ae2a60ece6a",
+        "delta_train": 0.3045502574398854,
+        "uncertainty_train": 0.23822121599712381,
+        "delta_independent": 0.08872678804437366,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 36,
+            "ref": "G",
+            "alt": "U",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:56bff55fcb6a",
+        "delta_train": 0.27085528740967857,
+        "uncertainty_train": 0.16125133751129664,
+        "delta_independent": 0.08797174025956948,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 12,
+            "ref": "A",
+            "alt": "U",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:41b43e1441bb",
+        "delta_train": 0.27620468460524095,
+        "uncertainty_train": 0.18864280892442686,
+        "delta_independent": 0.08860346484533013,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 35,
+            "ref": "G",
+            "alt": "A",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:4ada8deecaed",
+        "delta_train": 0.28474556511057336,
+        "uncertainty_train": 0.194233500647585,
+        "delta_independent": 0.08840627082132285,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 36,
+            "ref": "A",
+            "alt": "U",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:7d4b3f6720f8",
+        "delta_train": 0.27620468460524095,
+        "uncertainty_train": 0.18864280892442686,
+        "delta_independent": 0.08841809847879216,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 35,
+            "ref": "G",
+            "alt": "A",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:19511752d43f",
+        "delta_train": 0.25001280195668496,
+        "uncertainty_train": 0.1634995337431431,
+        "delta_independent": 0.08877597680091294,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 39,
+            "ref": "G",
+            "alt": "U",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:53aa980ae93a",
+        "delta_train": 0.3045502574398854,
+        "uncertainty_train": 0.23822121599712381,
+        "delta_independent": 0.0887259423233808,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 36,
+            "ref": "G",
+            "alt": "U",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:9a05d587ca3e",
+        "delta_train": 0.2661515530682954,
+        "uncertainty_train": 0.16313625133653892,
+        "delta_independent": 0.08784343418042752,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 6,
+            "ref": "A",
+            "alt": "U",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:1d131af5c4c4",
+        "delta_train": 0.28474556511057336,
+        "uncertainty_train": 0.194233500647585,
+        "delta_independent": 0.08840311440846427,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 36,
+            "ref": "A",
+            "alt": "U",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      }
+    ],
+    "matched_random": [
+      {
+        "source_id": "snv:67b875afcb33",
+        "delta_train": 0.05766445026849511,
+        "uncertainty_train": 0.058798374579402214,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 38,
+            "ref": "A",
+            "alt": "C",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 3,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:7829a1b008f1",
+        "delta_train": -0.01582511450201729,
+        "uncertainty_train": 0.11191523190756891,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 18,
+            "ref": "U",
+            "alt": "G",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 3,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:184eb1aac176",
+        "delta_train": -0.11329152106925483,
+        "uncertainty_train": 0.13652418486150633,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 21,
+            "ref": "U",
+            "alt": "A",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 2,
+            "ref": "GCU",
+            "alt": "GCA",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:e5a1733e9ce3",
+        "delta_train": -0.18601541734441895,
+        "uncertainty_train": 0.1198300364304168,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 32,
+            "ref": "A",
+            "alt": "G",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 2,
+            "ref": "GCU",
+            "alt": "GCC",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:702e9478f886",
+        "delta_train": 0.017108215560642535,
+        "uncertainty_train": 0.05418217989843111,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 41,
+            "ref": "U",
+            "alt": "G",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 2,
+            "ref": "GCU",
+            "alt": "GCA",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:b34039f00d40",
+        "delta_train": 0.07798756284866168,
+        "uncertainty_train": 0.05483174830922921,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 2,
+            "ref": "G",
+            "alt": "A",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 3,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:f91d5083207f",
+        "delta_train": -0.07004777753893886,
+        "uncertainty_train": 0.11023340506391635,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 3,
+            "ref": "G",
+            "alt": "A",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 4,
+            "ref": "GCU",
+            "alt": "GCA",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:b306b483ea80",
+        "delta_train": 0.1484923026388575,
+        "uncertainty_train": 0.07657617214345441,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 1,
+            "ref": "G",
+            "alt": "U",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 4,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:089791e14e7b",
+        "delta_train": 0.07741835517971768,
+        "uncertainty_train": 0.09607116895830073,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 34,
+            "ref": "A",
+            "alt": "G",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCA",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:efaeeee5cb8f",
+        "delta_train": 0.14384521537490114,
+        "uncertainty_train": 0.05480229250948037,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 41,
+            "ref": "U",
+            "alt": "C",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:1a1ed162e31b",
+        "delta_train": 0.04140351605202035,
+        "uncertainty_train": 0.09499570710263319,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 9,
+            "ref": "A",
+            "alt": "G",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 4,
+            "ref": "GCU",
+            "alt": "GCA",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:7ee3827506a4",
+        "delta_train": 0.012083402281604833,
+        "uncertainty_train": 0.05000805003428567,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 22,
+            "ref": "G",
+            "alt": "A",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 2,
+            "ref": "GCU",
+            "alt": "GCC",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:0f2ff623d7c7",
+        "delta_train": -0.08980354509897406,
+        "uncertainty_train": 0.08501558868409906,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 23,
+            "ref": "C",
+            "alt": "G",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCC",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:3f8803f95d1e",
+        "delta_train": -0.03356075850881042,
+        "uncertainty_train": 0.05305975890555499,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 0,
+            "ref": "G",
+            "alt": "A",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 3,
+            "ref": "GCU",
+            "alt": "GCC",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:c88f076638e7",
+        "delta_train": -0.01417314450851985,
+        "uncertainty_train": 0.08787905757443627,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 10,
+            "ref": "C",
+            "alt": "U",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:8ae2a60ece6a",
+        "delta_train": -0.020744267217353618,
+        "uncertainty_train": 0.052887940623152,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 41,
+            "ref": "G",
+            "alt": "U",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 2,
+            "ref": "GCU",
+            "alt": "GCC",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:56bff55fcb6a",
+        "delta_train": -0.14800186171515564,
+        "uncertainty_train": 0.13702067400859438,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 32,
+            "ref": "C",
+            "alt": "U",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 3,
+            "ref": "GCU",
+            "alt": "GCA",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:41b43e1441bb",
+        "delta_train": -0.02216571743182283,
+        "uncertainty_train": 0.15222372525317743,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 26,
+            "ref": "A",
+            "alt": "U",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:4ada8deecaed",
+        "delta_train": 0.06463186144254889,
+        "uncertainty_train": 0.05058030295536075,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 0,
+            "ref": "U",
+            "alt": "A",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 2,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:7d4b3f6720f8",
+        "delta_train": 0.008061605269908663,
+        "uncertainty_train": 0.05249920326777252,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 14,
+            "ref": "A",
+            "alt": "U",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 2,
+            "ref": "GCU",
+            "alt": "GCA",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:19511752d43f",
+        "delta_train": 0.028958496346990416,
+        "uncertainty_train": 0.06078567358434279,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 48,
+            "ref": "C",
+            "alt": "A",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 4,
+            "ref": "GCU",
+            "alt": "GCA",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:53aa980ae93a",
+        "delta_train": -0.005712553684958391,
+        "uncertainty_train": 0.054108653648479534,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 14,
+            "ref": "C",
+            "alt": "U",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCC",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:9a05d587ca3e",
+        "delta_train": -0.08829911561467808,
+        "uncertainty_train": 0.11002198353692,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 21,
+            "ref": "C",
+            "alt": "G",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 2,
+            "ref": "GCU",
+            "alt": "GCC",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:1d131af5c4c4",
+        "delta_train": 0.02963384041683275,
+        "uncertainty_train": 0.05281242748828577,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 27,
+            "ref": "A",
+            "alt": "C",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 3,
+            "ref": "GCU",
+            "alt": "GCA",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      }
+    ],
+    "shuffled_joint": [
+      {
+        "source_id": "snv:67b875afcb33",
+        "delta_train": 0.10832965828278557,
+        "uncertainty_train": 0.050872165242821524,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 7,
+            "ref": "G",
+            "alt": "A",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:7829a1b008f1",
+        "delta_train": 0.051873691728779835,
+        "uncertainty_train": 0.07377185566114297,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 23,
+            "ref": "A",
+            "alt": "C",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 4,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:184eb1aac176",
+        "delta_train": 0.06718385668485555,
+        "uncertainty_train": 0.08058882263058906,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 37,
+            "ref": "A",
+            "alt": "G",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 4,
+            "ref": "GCU",
+            "alt": "GCC",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:e5a1733e9ce3",
+        "delta_train": -0.0009308970507637404,
+        "uncertainty_train": 0.07433079400988407,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 43,
+            "ref": "C",
+            "alt": "A",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:702e9478f886",
+        "delta_train": 0.16457239678073704,
+        "uncertainty_train": 0.08013495601085151,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 46,
+            "ref": "A",
+            "alt": "G",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 3,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:b34039f00d40",
+        "delta_train": -0.06946252778212922,
+        "uncertainty_train": 0.10346860431390882,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 20,
+            "ref": "A",
+            "alt": "C",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 3,
+            "ref": "GCU",
+            "alt": "GCA",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:f91d5083207f",
+        "delta_train": -0.012051690574114236,
+        "uncertainty_train": 0.06421550219916985,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 49,
+            "ref": "C",
+            "alt": "G",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCA",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:b306b483ea80",
+        "delta_train": 0.0022270261195149466,
+        "uncertainty_train": 0.07624456945566661,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 43,
+            "ref": "G",
+            "alt": "A",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 4,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:089791e14e7b",
+        "delta_train": 0.08114240111363949,
+        "uncertainty_train": 0.09281990700063902,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 39,
+            "ref": "G",
+            "alt": "C",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 2,
+            "ref": "GCU",
+            "alt": "GCA",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:efaeeee5cb8f",
+        "delta_train": 0.03294113051025972,
+        "uncertainty_train": 0.07583312915970844,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 17,
+            "ref": "G",
+            "alt": "C",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 4,
+            "ref": "GCU",
+            "alt": "GCA",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:1a1ed162e31b",
+        "delta_train": 0.1779652276675604,
+        "uncertainty_train": 0.15766047077843182,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 30,
+            "ref": "A",
+            "alt": "U",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 4,
+            "ref": "GCU",
+            "alt": "GCA",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:7ee3827506a4",
+        "delta_train": 0.11247843601459664,
+        "uncertainty_train": 0.05211466216164839,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 15,
+            "ref": "G",
+            "alt": "A",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 2,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:0f2ff623d7c7",
+        "delta_train": -0.06327182511641052,
+        "uncertainty_train": 0.07794357351250468,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 40,
+            "ref": "G",
+            "alt": "A",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 3,
+            "ref": "GCU",
+            "alt": "GCC",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:3f8803f95d1e",
+        "delta_train": 0.2160352264566228,
+        "uncertainty_train": 0.1299025174799291,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 23,
+            "ref": "G",
+            "alt": "A",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 4,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:c88f076638e7",
+        "delta_train": -0.05414519180255882,
+        "uncertainty_train": 0.11657494244912092,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 34,
+            "ref": "G",
+            "alt": "A",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 3,
+            "ref": "GCU",
+            "alt": "GCC",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:8ae2a60ece6a",
+        "delta_train": 0.016587995526202225,
+        "uncertainty_train": 0.07457244898141908,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 27,
+            "ref": "C",
+            "alt": "U",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCA",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:56bff55fcb6a",
+        "delta_train": -0.03562630827122016,
+        "uncertainty_train": 0.07377185566114297,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 23,
+            "ref": "A",
+            "alt": "C",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 3,
+            "ref": "GCU",
+            "alt": "GCA",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:41b43e1441bb",
+        "delta_train": 0.1959480940796122,
+        "uncertainty_train": 0.11365286536806035,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 36,
+            "ref": "C",
+            "alt": "U",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 2,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:4ada8deecaed",
+        "delta_train": 0.15373362650936154,
+        "uncertainty_train": 0.13964100111756342,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 13,
+            "ref": "U",
+            "alt": "G",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 3,
+            "ref": "GCU",
+            "alt": "GCC",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:7d4b3f6720f8",
+        "delta_train": 0.18693166128448283,
+        "uncertainty_train": 0.08989945802572663,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 12,
+            "ref": "C",
+            "alt": "U",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 3,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:19511752d43f",
+        "delta_train": 0.10844809407961217,
+        "uncertainty_train": 0.11365286536806035,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 36,
+            "ref": "C",
+            "alt": "U",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 3,
+            "ref": "GCU",
+            "alt": "GCC",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:53aa980ae93a",
+        "delta_train": 0.15022687235360715,
+        "uncertainty_train": 0.05243031497888174,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 31,
+            "ref": "C",
+            "alt": "U",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 3,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:9a05d587ca3e",
+        "delta_train": 0.09711314548817833,
+        "uncertainty_train": 0.05293260941660629,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 5,
+            "ref": "C",
+            "alt": "G",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 2,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      },
+      {
+        "source_id": "snv:1d131af5c4c4",
+        "delta_train": 0.016078173729588308,
+        "uncertainty_train": 0.07054670547289636,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 32,
+            "ref": "A",
+            "alt": "C",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "scorer": "combined_5utr_oracle_plus_cai"
+      }
+    ],
+    "additive_reconstruction": [
+      {
+        "source_id": "snv:67b875afcb33",
+        "delta_train": 0.29380194201616894,
+        "delta_independent": 0.0883154010544357,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 32,
+            "ref": "U",
+            "alt": "A",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "note": "additive: \u03945'UTR (oracle) + \u0394CDS (CAI)"
+      },
+      {
+        "source_id": "snv:7829a1b008f1",
+        "delta_train": 0.26043919922622694,
+        "delta_independent": 0.08836647659901763,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 35,
+            "ref": "U",
+            "alt": "A",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "note": "additive: \u03945'UTR (oracle) + \u0394CDS (CAI)"
+      },
+      {
+        "source_id": "snv:184eb1aac176",
+        "delta_train": 0.3045502574398854,
+        "delta_independent": 0.08872624824794374,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 36,
+            "ref": "G",
+            "alt": "U",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "note": "additive: \u03945'UTR (oracle) + \u0394CDS (CAI)"
+      },
+      {
+        "source_id": "snv:e5a1733e9ce3",
+        "delta_train": 0.3045502574398854,
+        "delta_independent": 0.08865414045711817,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 36,
+            "ref": "G",
+            "alt": "U",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "note": "additive: \u03945'UTR (oracle) + \u0394CDS (CAI)"
+      },
+      {
+        "source_id": "snv:702e9478f886",
+        "delta_train": 0.29380194201616894,
+        "delta_independent": 0.08832688871136747,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 32,
+            "ref": "U",
+            "alt": "A",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "note": "additive: \u03945'UTR (oracle) + \u0394CDS (CAI)"
+      },
+      {
+        "source_id": "snv:b34039f00d40",
+        "delta_train": 0.28474556511057336,
+        "delta_independent": 0.08840299568558616,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 36,
+            "ref": "A",
+            "alt": "U",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "note": "additive: \u03945'UTR (oracle) + \u0394CDS (CAI)"
+      },
+      {
+        "source_id": "snv:f91d5083207f",
+        "delta_train": 0.3045502574398854,
+        "delta_independent": 0.08870028686454848,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 36,
+            "ref": "G",
+            "alt": "U",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "note": "additive: \u03945'UTR (oracle) + \u0394CDS (CAI)"
+      },
+      {
+        "source_id": "snv:b306b483ea80",
+        "delta_train": 0.27085528740967857,
+        "delta_independent": 0.08797065589084624,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 12,
+            "ref": "A",
+            "alt": "U",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "note": "additive: \u03945'UTR (oracle) + \u0394CDS (CAI)"
+      },
+      {
+        "source_id": "snv:089791e14e7b",
+        "delta_train": 0.3045502574398854,
+        "delta_independent": 0.08873642443075977,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 36,
+            "ref": "G",
+            "alt": "U",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "note": "additive: \u03945'UTR (oracle) + \u0394CDS (CAI)"
+      },
+      {
+        "source_id": "snv:efaeeee5cb8f",
+        "delta_train": 0.2611665686756118,
+        "delta_independent": 0.08882627763449136,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 42,
+            "ref": "G",
+            "alt": "U",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "note": "additive: \u03945'UTR (oracle) + \u0394CDS (CAI)"
+      },
+      {
+        "source_id": "snv:1a1ed162e31b",
+        "delta_train": 0.29380194201616894,
+        "delta_independent": 0.08832613882778215,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 32,
+            "ref": "U",
+            "alt": "A",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "note": "additive: \u03945'UTR (oracle) + \u0394CDS (CAI)"
+      },
+      {
+        "source_id": "snv:7ee3827506a4",
+        "delta_train": 0.3045502574398854,
+        "delta_independent": 0.08870787437463303,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 36,
+            "ref": "G",
+            "alt": "U",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "note": "additive: \u03945'UTR (oracle) + \u0394CDS (CAI)"
+      },
+      {
+        "source_id": "snv:0f2ff623d7c7",
+        "delta_train": 0.27620468460524095,
+        "delta_independent": 0.08858819978169993,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 35,
+            "ref": "G",
+            "alt": "A",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "note": "additive: \u03945'UTR (oracle) + \u0394CDS (CAI)"
+      },
+      {
+        "source_id": "snv:3f8803f95d1e",
+        "delta_train": 0.27085528740967857,
+        "delta_independent": 0.08797651865534088,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 12,
+            "ref": "A",
+            "alt": "U",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "note": "additive: \u03945'UTR (oracle) + \u0394CDS (CAI)"
+      },
+      {
+        "source_id": "snv:c88f076638e7",
+        "delta_train": 0.27620468460524095,
+        "delta_independent": 0.08859304783745865,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 35,
+            "ref": "G",
+            "alt": "A",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "note": "additive: \u03945'UTR (oracle) + \u0394CDS (CAI)"
+      },
+      {
+        "source_id": "snv:8ae2a60ece6a",
+        "delta_train": 0.3045502574398854,
+        "delta_independent": 0.08872678804437366,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 36,
+            "ref": "G",
+            "alt": "U",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "note": "additive: \u03945'UTR (oracle) + \u0394CDS (CAI)"
+      },
+      {
+        "source_id": "snv:56bff55fcb6a",
+        "delta_train": 0.27085528740967857,
+        "delta_independent": 0.08797174025956948,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 12,
+            "ref": "A",
+            "alt": "U",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "note": "additive: \u03945'UTR (oracle) + \u0394CDS (CAI)"
+      },
+      {
+        "source_id": "snv:41b43e1441bb",
+        "delta_train": 0.27620468460524095,
+        "delta_independent": 0.08860346484533013,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 35,
+            "ref": "G",
+            "alt": "A",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "note": "additive: \u03945'UTR (oracle) + \u0394CDS (CAI)"
+      },
+      {
+        "source_id": "snv:4ada8deecaed",
+        "delta_train": 0.28474556511057336,
+        "delta_independent": 0.08840627082132285,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 36,
+            "ref": "A",
+            "alt": "U",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "note": "additive: \u03945'UTR (oracle) + \u0394CDS (CAI)"
+      },
+      {
+        "source_id": "snv:7d4b3f6720f8",
+        "delta_train": 0.27620468460524095,
+        "delta_independent": 0.08841809847879216,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 35,
+            "ref": "G",
+            "alt": "A",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "note": "additive: \u03945'UTR (oracle) + \u0394CDS (CAI)"
+      },
+      {
+        "source_id": "snv:19511752d43f",
+        "delta_train": 0.25001280195668496,
+        "delta_independent": 0.08877597680091294,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 39,
+            "ref": "G",
+            "alt": "U",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "note": "additive: \u03945'UTR (oracle) + \u0394CDS (CAI)"
+      },
+      {
+        "source_id": "snv:53aa980ae93a",
+        "delta_train": 0.3045502574398854,
+        "delta_independent": 0.0887259423233808,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 36,
+            "ref": "G",
+            "alt": "U",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "note": "additive: \u03945'UTR (oracle) + \u0394CDS (CAI)"
+      },
+      {
+        "source_id": "snv:9a05d587ca3e",
+        "delta_train": 0.2661515530682954,
+        "delta_independent": 0.08784343418042752,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 6,
+            "ref": "A",
+            "alt": "U",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "note": "additive: \u03945'UTR (oracle) + \u0394CDS (CAI)"
+      },
+      {
+        "source_id": "snv:1d131af5c4c4",
+        "delta_train": 0.28474556511057336,
+        "delta_independent": 0.08840311440846427,
+        "n_edits": 2,
+        "edits": [
+          {
+            "pos": 36,
+            "ref": "A",
+            "alt": "U",
+            "region": "five_utr"
+          },
+          {
+            "codon_pos": 1,
+            "ref": "GCU",
+            "alt": "GCG",
+            "region": "cds",
+            "amino_acid": "A"
+          }
+        ],
+        "note": "additive: \u03945'UTR (oracle) + \u0394CDS (CAI)"
+      }
+    ],
+    "joint_policy": [
+      {
+        "source_id": "snv:67b875afcb33",
+        "delta_train": 0.0,
+        "n_edits": 0,
+        "edits": [],
+        "note": "policy arm populated separately if checkpoint available"
+      },
+      {
+        "source_id": "snv:7829a1b008f1",
+        "delta_train": 0.0,
+        "n_edits": 0,
+        "edits": [],
+        "note": "policy arm populated separately if checkpoint available"
+      },
+      {
+        "source_id": "snv:184eb1aac176",
+        "delta_train": 0.0,
+        "n_edits": 0,
+        "edits": [],
+        "note": "policy arm populated separately if checkpoint available"
+      },
+      {
+        "source_id": "snv:e5a1733e9ce3",
+        "delta_train": 0.0,
+        "n_edits": 0,
+        "edits": [],
+        "note": "policy arm populated separately if checkpoint available"
+      },
+      {
+        "source_id": "snv:702e9478f886",
+        "delta_train": 0.0,
+        "n_edits": 0,
+        "edits": [],
+        "note": "policy arm populated separately if checkpoint available"
+      },
+      {
+        "source_id": "snv:b34039f00d40",
+        "delta_train": 0.0,
+        "n_edits": 0,
+        "edits": [],
+        "note": "policy arm populated separately if checkpoint available"
+      },
+      {
+        "source_id": "snv:f91d5083207f",
+        "delta_train": 0.0,
+        "n_edits": 0,
+        "edits": [],
+        "note": "policy arm populated separately if checkpoint available"
+      },
+      {
+        "source_id": "snv:b306b483ea80",
+        "delta_train": 0.0,
+        "n_edits": 0,
+        "edits": [],
+        "note": "policy arm populated separately if checkpoint available"
+      },
+      {
+        "source_id": "snv:089791e14e7b",
+        "delta_train": 0.0,
+        "n_edits": 0,
+        "edits": [],
+        "note": "policy arm populated separately if checkpoint available"
+      },
+      {
+        "source_id": "snv:efaeeee5cb8f",
+        "delta_train": 0.0,
+        "n_edits": 0,
+        "edits": [],
+        "note": "policy arm populated separately if checkpoint available"
+      },
+      {
+        "source_id": "snv:1a1ed162e31b",
+        "delta_train": 0.0,
+        "n_edits": 0,
+        "edits": [],
+        "note": "policy arm populated separately if checkpoint available"
+      },
+      {
+        "source_id": "snv:7ee3827506a4",
+        "delta_train": 0.0,
+        "n_edits": 0,
+        "edits": [],
+        "note": "policy arm populated separately if checkpoint available"
+      },
+      {
+        "source_id": "snv:0f2ff623d7c7",
+        "delta_train": 0.0,
+        "n_edits": 0,
+        "edits": [],
+        "note": "policy arm populated separately if checkpoint available"
+      },
+      {
+        "source_id": "snv:3f8803f95d1e",
+        "delta_train": 0.0,
+        "n_edits": 0,
+        "edits": [],
+        "note": "policy arm populated separately if checkpoint available"
+      },
+      {
+        "source_id": "snv:c88f076638e7",
+        "delta_train": 0.0,
+        "n_edits": 0,
+        "edits": [],
+        "note": "policy arm populated separately if checkpoint available"
+      },
+      {
+        "source_id": "snv:8ae2a60ece6a",
+        "delta_train": 0.0,
+        "n_edits": 0,
+        "edits": [],
+        "note": "policy arm populated separately if checkpoint available"
+      },
+      {
+        "source_id": "snv:56bff55fcb6a",
+        "delta_train": 0.0,
+        "n_edits": 0,
+        "edits": [],
+        "note": "policy arm populated separately if checkpoint available"
+      },
+      {
+        "source_id": "snv:41b43e1441bb",
+        "delta_train": 0.0,
+        "n_edits": 0,
+        "edits": [],
+        "note": "policy arm populated separately if checkpoint available"
+      },
+      {
+        "source_id": "snv:4ada8deecaed",
+        "delta_train": 0.0,
+        "n_edits": 0,
+        "edits": [],
+        "note": "policy arm populated separately if checkpoint available"
+      },
+      {
+        "source_id": "snv:7d4b3f6720f8",
+        "delta_train": 0.0,
+        "n_edits": 0,
+        "edits": [],
+        "note": "policy arm populated separately if checkpoint available"
+      },
+      {
+        "source_id": "snv:19511752d43f",
+        "delta_train": 0.0,
+        "n_edits": 0,
+        "edits": [],
+        "note": "policy arm populated separately if checkpoint available"
+      },
+      {
+        "source_id": "snv:53aa980ae93a",
+        "delta_train": 0.0,
+        "n_edits": 0,
+        "edits": [],
+        "note": "policy arm populated separately if checkpoint available"
+      },
+      {
+        "source_id": "snv:9a05d587ca3e",
+        "delta_train": 0.0,
+        "n_edits": 0,
+        "edits": [],
+        "note": "policy arm populated separately if checkpoint available"
+      },
+      {
+        "source_id": "snv:1d131af5c4c4",
+        "delta_train": 0.0,
+        "n_edits": 0,
+        "edits": [],
+        "note": "policy arm populated separately if checkpoint available"
+      }
+    ]
+  },
+  "wall_clock_sec": 2.6956729888916016
+}

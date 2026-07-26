@@ -1,0 +1,160 @@
+{
+  "phase": "P3-09",
+  "component": "external_benchmark",
+  "created_utc": "2026-07-25T13:02:16Z",
+  "config": {
+    "n_test_sources": 24,
+    "edit_budget": 1,
+    "eval_oracle": "difference",
+    "qualifier": "All rewards are predicted by the independent P3-02 cross-fitted oracle; external methods marked literature_only were not executable in this environment."
+  },
+  "summary": {
+    "random_edit": {
+      "n_sources": 24,
+      "mean_reward": -1e-06,
+      "pos_rate": 0.0,
+      "constraint_validity_rate": 1.0,
+      "mean_edit_count": 0.0,
+      "wall_clock_sec": 1.9235116613951202,
+      "oracle_calls": 1000,
+      "status": "executed"
+    },
+    "greedy_search": {
+      "n_sources": 24,
+      "mean_reward": -1e-06,
+      "pos_rate": 0.0,
+      "constraint_validity_rate": 1.0,
+      "mean_edit_count": 0.0,
+      "wall_clock_sec": 0.09996166476048529,
+      "oracle_calls": 151,
+      "status": "executed"
+    },
+    "beam_search": {
+      "n_sources": 24,
+      "mean_reward": -1e-06,
+      "pos_rate": 0.0,
+      "constraint_validity_rate": 1.0,
+      "mean_edit_count": 0.0,
+      "wall_clock_sec": 0.1002131268226852,
+      "oracle_calls": 151,
+      "status": "executed"
+    },
+    "simulated_annealing": {
+      "n_sources": 24,
+      "mean_reward": -1e-06,
+      "pos_rate": 0.0,
+      "constraint_validity_rate": 1.0,
+      "mean_edit_count": 0.0,
+      "wall_clock_sec": 1.9249884662373613,
+      "oracle_calls": 1000,
+      "status": "executed"
+    },
+    "mcts_search": {
+      "n_sources": 24,
+      "mean_reward": -1e-06,
+      "pos_rate": 0.0,
+      "constraint_validity_rate": 1.0,
+      "mean_edit_count": 0.0,
+      "wall_clock_sec": 1.0537021573012073,
+      "oracle_calls": 1000,
+      "status": "executed"
+    },
+    "local_search": {
+      "n_sources": 24,
+      "mean_reward": -1e-06,
+      "pos_rate": 0.0,
+      "constraint_validity_rate": 1.0,
+      "mean_edit_count": 0.0,
+      "wall_clock_sec": 0.016102129011414945,
+      "oracle_calls": 17,
+      "status": "executed"
+    },
+    "ranker": {
+      "n_sources": 24,
+      "mean_reward": -1e-06,
+      "pos_rate": 0.0,
+      "constraint_validity_rate": 1.0,
+      "mean_edit_count": 0.0,
+      "wall_clock_sec": 0.04679666180163622,
+      "oracle_calls": 0,
+      "status": "executed"
+    },
+    "ranker_plus_search": {
+      "n_sources": 24,
+      "mean_reward": -1e-06,
+      "pos_rate": 0.0,
+      "constraint_validity_rate": 1.0,
+      "mean_edit_count": 0.0,
+      "wall_clock_sec": 0.049183533915008106,
+      "oracle_calls": 5,
+      "status": "executed"
+    },
+    "mef_policy": {
+      "n_sources": 24,
+      "mean_reward": -0.04954377282118011,
+      "pos_rate": 1.0,
+      "constraint_validity_rate": 1.0,
+      "mean_edit_count": 1.0,
+      "wall_clock_sec": 0.11426537029910833,
+      "oracle_calls": 0,
+      "status": "executed"
+    },
+    "mef_policy_plus_search": {
+      "n_sources": 24,
+      "mean_reward": -0.04954377282118011,
+      "pos_rate": 1.0,
+      "constraint_validity_rate": 1.0,
+      "mean_edit_count": 1.0,
+      "wall_clock_sec": 0.21110197680536658,
+      "oracle_calls": 0,
+      "status": "executed"
+    },
+    "UTailoR": {
+      "n_sources": 0,
+      "status": "literature_only",
+      "note": "Adapter requires external executable / weights not present in this run."
+    },
+    "UTRGAN": {
+      "n_sources": 0,
+      "status": "literature_only",
+      "note": "Adapter requires external executable / weights not present in this run."
+    },
+    "LinearDesign": {
+      "n_sources": 0,
+      "status": "literature_only",
+      "note": "Adapter requires external executable / weights not present in this run."
+    },
+    "EnsembleDesign": {
+      "n_sources": 0,
+      "status": "literature_only",
+      "note": "Adapter requires external executable / weights not present in this run."
+    },
+    "codonGPT": {
+      "n_sources": 0,
+      "status": "literature_only",
+      "note": "Adapter requires external executable / weights not present in this run."
+    },
+    "mRNA-GPT": {
+      "n_sources": 0,
+      "status": "literature_only",
+      "note": "Adapter not executable in this environment (no executable / weights / network)."
+    },
+    "ProMORNA": {
+      "n_sources": 0,
+      "status": "literature_only",
+      "note": "Adapter not executable in this environment (no executable / weights / network)."
+    },
+    "mRNAutilus": {
+      "n_sources": 0,
+      "status": "literature_only",
+      "note": "Adapter not executable in this environment (no executable / weights / network)."
+    },
+    "GEMORNA": {
+      "n_sources": 0,
+      "status": "literature_only",
+      "note": "Adapter not executable in this environment (no executable / weights / network)."
+    }
+  },
+  "n_total_rows": 276,
+  "wall_clock_sec": 133.33082675933838
+}

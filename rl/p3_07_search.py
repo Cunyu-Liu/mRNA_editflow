@@ -131,6 +131,36 @@ class CountingOracle:
             raise ValueError(f"unknown purpose {purpose!r}")
         return self._score(source, candidate)
 
+    def score_batch(
+        self,
+        pairs: Sequence[Tuple[MRNARecord, MRNARecord]],
+        *,
+        purpose: str = "search",
+    ) -> List[Tuple[float, float]]:
+        """Default sequential score_batch (override in subclasses for speed).
+
+        Counts each pair as one search/eval call. Subclasses with a real
+        batched implementation (e.g. EnsembleDeltaOracle) override this to
+        run feature extraction and model forward passes once for the whole
+        batch.
+        """
+        n = len(pairs)
+        if n == 0:
+            return []
+        # Budget check
+        if purpose == "search":
+            if self.query_budget is not None and self.search_calls + n > self.query_budget:
+                raise BudgetExhausted(
+                    f"query budget {self.query_budget} exhausted (need {n}, "
+                    f"have {self.query_budget - self.search_calls})"
+                )
+            self.search_calls += n
+        elif purpose == "eval":
+            self.eval_calls += n
+        else:
+            raise ValueError(f"unknown purpose {purpose!r}")
+        return [self._score(s, c) for s, c in pairs]
+
     def _score(self, source: MRNARecord, candidate: MRNARecord) -> Tuple[float, float]:
         raise NotImplementedError
 
@@ -214,12 +244,66 @@ class EnsembleDeltaOracle(CountingOracle):
         batch = {k: v[np.newaxis] for k, v in feats.items()}
         return np.array([float(fn(batch)[0]) for fn in self._fns])
 
+    def _raw_predict_batch(
+        self, pairs: Sequence[Tuple[MRNARecord, MRNARecord]]
+    ) -> np.ndarray:
+        """Batched raw predictions for many (source, candidate) pairs.
+
+        Returns array of shape (n_pairs, n_models). Groups by source 5'UTR
+        to reuse the source-side feature extraction, then stacks all
+        candidate features into one batch and runs each predict_fn once.
+        """
+        if not pairs:
+            return np.zeros((0, len(self._fns)), dtype=np.float64)
+        from core.p3_02_delta_oracle import extract_features
+
+        n = len(pairs)
+        # Determine feature shapes from first pair
+        s0, c0 = pairs[0]
+        edits0 = _diff_edits(s0.five_utr, c0.five_utr)
+        sample = extract_features(s0.five_utr, c0.five_utr, edits0, self._max_seq_len)
+        batch = {k: np.zeros((n,) + v.shape, dtype=v.dtype) for k, v in sample.items()}
+
+        # Cache source-side features by source 5'UTR to avoid re-extraction
+        # when many candidates share the same source (common in GRPO rollouts).
+        src_feat_cache: Dict[str, Dict[str, np.ndarray]] = {}
+        for i, (src, cand) in enumerate(pairs):
+            sk = src.five_utr
+            if sk not in src_feat_cache:
+                edits_src = _diff_edits(sk, sk)  # empty
+                src_feat_cache[sk] = extract_features(sk, sk, edits_src, self._max_seq_len)
+            cached_src = src_feat_cache[sk]
+            edits = _diff_edits(sk, cand.five_utr)
+            feats = extract_features(sk, cand.five_utr, edits, self._max_seq_len)
+            for k, v in feats.items():
+                batch[k][i] = v
+
+        # Each predict_fn already operates on batches; run once per fn.
+        preds = np.zeros((n, len(self._fns)), dtype=np.float64)
+        for j, fn in enumerate(self._fns):
+            preds[:, j] = fn(batch)
+        return preds
+
     def _get_source_bias(self, source: MRNARecord) -> np.ndarray:
         """Per-model 0-edit prediction for this source (cached)."""
         key = source.five_utr
         if key not in self._source_bias_cache:
             self._source_bias_cache[key] = self._raw_predict(source, source)
         return self._source_bias_cache[key]
+
+    def _get_source_bias_batch(self, sources: Sequence[MRNARecord]) -> np.ndarray:
+        """Batched source-bias lookup/compute. Returns (n_sources, n_models)."""
+        # Identify missing sources and compute their biases in one batch call.
+        missing_idx = [i for i, s in enumerate(sources) if s.five_utr not in self._source_bias_cache]
+        if missing_idx:
+            missing_sources = [sources[i] for i in missing_idx]
+            # Source bias = predict(source, source) for each
+            pairs = [(s, s) for s in missing_sources]
+            biases = self._raw_predict_batch(pairs)  # (n_missing, n_models)
+            for s, b in zip(missing_sources, biases):
+                self._source_bias_cache[s.five_utr] = b
+        # Assemble from cache
+        return np.array([self._source_bias_cache[s.five_utr] for s in sources])
 
     def _score(self, source: MRNARecord, candidate: MRNARecord) -> Tuple[float, float]:
         preds = self._raw_predict(source, candidate)
@@ -229,6 +313,45 @@ class EnsembleDeltaOracle(CountingOracle):
         mean = float(centered.mean())
         std = float(centered.std(ddof=0)) + 1e-6
         return mean, std
+
+    def score_batch(
+        self,
+        pairs: Sequence[Tuple[MRNARecord, MRNARecord]],
+        *,
+        purpose: str = "search",
+    ) -> List[Tuple[float, float]]:
+        """Batched scoring of many (source, candidate) pairs.
+
+        Returns a list of (mean, std) tuples, one per pair. Counts as one
+        search/eval call per pair for budget accounting. This is the
+        performance-critical path for GRPO rollouts: it runs feature
+        extraction and model forward passes once for the whole batch
+        instead of per-pair.
+        """
+        n = len(pairs)
+        if n == 0:
+            return []
+        # Budget accounting
+        if purpose == "search":
+            if self.query_budget is not None and self.search_calls + n > self.query_budget:
+                raise BudgetExhausted(
+                    f"query budget {self.query_budget} exhausted (need {n}, "
+                    f"have {self.query_budget - self.search_calls})"
+                )
+            self.search_calls += n
+        elif purpose == "eval":
+            self.eval_calls += n
+        else:
+            raise ValueError(f"unknown purpose {purpose!r}")
+
+        # Batch prediction + per-source bias centering
+        preds = self._raw_predict_batch(pairs)  # (n, n_models)
+        sources = [p[0] for p in pairs]
+        biases = self._get_source_bias_batch(sources)  # (n, n_models)
+        centered = preds - biases  # (n, n_models)
+        means = centered.mean(axis=1)
+        stds = centered.std(axis=1, ddof=0) + 1e-6
+        return [(float(means[i]), float(stds[i])) for i in range(n)]
 
 
 def _diff_edits(src: str, cand: str) -> List[Dict[str, Any]]:
