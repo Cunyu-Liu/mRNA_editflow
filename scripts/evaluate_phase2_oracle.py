@@ -63,6 +63,7 @@ def main() -> None:
     parser.add_argument("--batch-size", type=int, default=64)
     parser.add_argument("--max-len", type=int, default=256)
     parser.add_argument("--max-edits", type=int, default=10)
+    parser.add_argument("--foundation-leakage-audit", default=None)
     args = parser.parse_args()
     if not args.allow_final_labels:
         raise SystemExit("refusing final evaluation: pass --allow-final-labels after model/candidate freeze")
@@ -74,7 +75,7 @@ def main() -> None:
         raise SystemExit("refusing final evaluation: freeze manifest does not attest pre-unblinding candidate freeze")
     root = Path(args.benchmark_root)
     rows = load_final_rows(root, args.role)
-    payload = torch.load(args.checkpoint, map_location="cpu", weights_only=False)
+    payload = torch.load(args.checkpoint, map_location="cpu", weights_only=True)
     cfg = payload.get("config", {})
     if payload.get("backbone") != "small":
         if not payload.get("is_real_foundation", False):
@@ -83,6 +84,17 @@ def main() -> None:
         actual_sha = file_sha256(cfg.get("foundation_path"))
         if not expected_sha or actual_sha != expected_sha:
             raise SystemExit("refusing final evaluation: foundation checkpoint SHA256 provenance is missing or changed")
+        audit_name = args.foundation_leakage_audit or cfg.get("foundation_leakage_audit")
+        if not audit_name:
+            raise SystemExit("refusing final evaluation: foundation leakage audit is missing")
+        audit_path = Path(audit_name)
+        if not audit_path.exists():
+            raise SystemExit("refusing final evaluation: foundation leakage audit does not exist")
+        audit = json.loads(audit_path.read_text())
+        if audit.get("status") != "pass" or int(audit.get("exact_overlap_count", -1)) != 0:
+            raise SystemExit("refusing final evaluation: foundation leakage audit is not clean")
+        if audit.get("foundation_provenance", {}).get("foundation_sha256") != actual_sha:
+            raise SystemExit("refusing final evaluation: foundation leakage audit SHA256 mismatch")
     model = PairedDeltaFormer(
         hidden_dim=int(cfg.get("hidden_dim", 128)), layers=int(cfg.get("layers", 2)),
         max_len=int(cfg.get("max_len", args.max_len)), backbone=str(payload.get("backbone", "small")),
@@ -106,6 +118,7 @@ def main() -> None:
         "checkpoint": str(Path(args.checkpoint).resolve()),
         "candidate_freeze_manifest": str(freeze_path.resolve()),
         "candidate_freeze_manifest_sha256": manifest_sha256(freeze_path),
+        "foundation_leakage_audit": str(Path(args.foundation_leakage_audit or cfg.get("foundation_leakage_audit")).resolve()) if payload.get("backbone") != "small" else None,
         "final_test_used": True,
         "claim_policy": "only prospective_measured or explicitly eligible measured local-delta records support biological claims",
     }

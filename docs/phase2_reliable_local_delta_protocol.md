@@ -24,7 +24,13 @@ scientifically eligible only when a real local checkpoint and SHA256 are
 recorded. The adapter accepts either a local HuggingFace RNA model or the
 repository's Stage-A mRNA-pretrained trunk, but the latter is explicitly
 labelled `internal_stage_a_mrna_pretrained` and still requires a separate
-pretraining-corpus leakage audit. The adapter stub is smoke-only.
+pretraining-corpus leakage audit. The training runner and final evaluator
+require that audit to attest zero exact eligible final-sequence substrings and
+to match the checkpoint SHA256. The adapter stub is smoke-only.
+
+The audit is intentionally not a family-level or semantic-independence proof;
+those remain separate scientific requirements. An audit with any exact overlap
+is fail-closed and cannot support a foundation scientific claim.
 
 ## Gate
 

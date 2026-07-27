@@ -61,6 +61,23 @@ def validate_foundation_provenance(args: argparse.Namespace, backbone: str) -> O
         raise RuntimeError(f"foundation SHA256 mismatch: expected {args.foundation_sha256}, got {actual}")
     if not args.foundation_sha256 and not args.allow_foundation_stub:
         raise RuntimeError("foundation_sha256 is required for a scientific foundation run")
+    if not args.foundation_leakage_audit and not args.allow_foundation_stub:
+        raise RuntimeError("foundation_leakage_audit is required for a scientific foundation run")
+    if args.foundation_leakage_audit and not args.allow_foundation_stub:
+        audit_path = Path(args.foundation_leakage_audit)
+        if not audit_path.exists():
+            raise RuntimeError(f"foundation leakage audit does not exist: {audit_path}")
+        audit = json.loads(audit_path.read_text())
+        if audit.get("status") != "pass" or int(audit.get("exact_overlap_count", -1)) != 0:
+            raise RuntimeError(
+                "foundation leakage audit is not clean: "
+                f"status={audit.get('status')!r}, exact_overlap_count={audit.get('exact_overlap_count')}"
+            )
+        audited_sha = audit.get("foundation_provenance", {}).get("foundation_sha256")
+        if audited_sha != actual:
+            raise RuntimeError(
+                f"foundation leakage audit SHA mismatch: expected {actual}, got {audited_sha}"
+            )
     return actual
 
 
@@ -543,6 +560,7 @@ def main() -> None:
     parser.add_argument("--calibration-fraction", type=float, default=0.20)
     parser.add_argument("--foundation-path", default=None)
     parser.add_argument("--foundation-sha256", default=None)
+    parser.add_argument("--foundation-leakage-audit", default=None)
     parser.add_argument("--foundation-name", default="rna_foundation")
     parser.add_argument("--unfreeze-last-n", type=int, default=1)
     parser.add_argument("--allow-foundation-stub", action="store_true")
@@ -562,11 +580,11 @@ def main() -> None:
     seeds = [int(seed_text) for seed_text in args.seeds.split(",") if seed_text.strip()]
     if not seeds:
         raise ValueError("at least one seed is required")
-    prepared = prepare_data(root, args, seeds)
     foundation_sha256_by_backbone = {
         backbone: validate_foundation_provenance(args, backbone)
         for backbone in requested_backbones
     }
+    prepared = prepare_data(root, args, seeds)
     results = []
     for backbone in requested_backbones:
         for recipe in requested_recipes:
@@ -596,6 +614,12 @@ def main() -> None:
         "real_foundation_required_for_scientific_claim": True,
         "foundation_path": args.foundation_path,
         "foundation_sha256": foundation_sha256_by_backbone,
+        "foundation_leakage_audit": args.foundation_leakage_audit,
+        "foundation_leakage_audit_sha256": (
+            file_sha256(args.foundation_leakage_audit)
+            if args.foundation_leakage_audit and Path(args.foundation_leakage_audit).exists()
+            else None
+        ),
     }
     (out / "provenance.json").write_text(json.dumps(provenance, indent=2, sort_keys=True) + "\n")
     (out / "summary.json").write_text(json.dumps({"provenance": provenance, "results": results}, indent=2, sort_keys=True) + "\n")

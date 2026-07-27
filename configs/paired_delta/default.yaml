@@ -44,6 +44,7 @@ training:
 foundation:
   local_checkpoint_required_for_scientific_run: true
   sha256_required: true
+  exact_sequence_leakage_audit_required: true
   allow_stub_only_for_smoke: true
 final_roles:
   test_v2_untouched: test_id
