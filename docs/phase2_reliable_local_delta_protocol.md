@@ -32,6 +32,12 @@ The audit is intentionally not a family-level or semantic-independence proof;
 those remain separate scientific requirements. An audit with any exact overlap
 is fail-closed and cannot support a foundation scientific claim.
 
+`scripts/build_phase2_leakage_free_foundation_corpus.py` can construct a
+prospective Stage-A corpus after excluding exact overlaps. This output is not
+a checkpoint; a new Stage-A pretraining run and a fresh audit are still
+required before `frozen_foundation` or `partial_foundation` can enter the
+scientific comparison.
+
 ## Gate
 
 `test_v2_untouched` requires Spearman >= 0.35, sign accuracy >= 0.68,
