@@ -251,10 +251,23 @@ def derive_single_nucleotide_edits(source: str, candidate: str) -> Optional[List
     return changes
 
 
+def raw_ood_dimensions(source: str) -> List[str]:
+    """Return declared OOD dimensions supported by the untouched raw library."""
+    gc = (source.count("G") + source.count("C")) / max(1, len(source))
+    dimensions: List[str] = []
+    if gc <= 0.20 or gc >= 0.80:
+        dimensions.append("gc_tail")
+    # Sequences are normalized to RNA alphabet before this check. A uAUG is
+    # a declared motif stratum, not a claim that the motif is causally
+    # beneficial or deleterious.
+    if "AUG" in source:
+        dimensions.append("motif_uaug")
+    return dimensions
+
+
 def raw_source_role(source_id: str, family_id: str, source: str) -> Optional[str]:
     """Assign only new raw-library records to untouched final roles."""
-    gc = (source.count("G") + source.count("C")) / max(1, len(source))
-    if gc <= 0.20 or gc >= 0.80:
+    if raw_ood_dimensions(source):
         return "test_ood"
     family_fraction = stable_fraction("family:" + family_id)
     if family_fraction < 0.20:
@@ -347,6 +360,7 @@ def iter_raw_untouched_records(
             "value_qualifier": "wet-lab measured MPRA raw row not in historical P3 measured membership",
             "split_role": role,
             "v2_source_role": role,
+            "ood_dimensions": raw_ood_dimensions(source),
         }
         yield role, record
 
@@ -523,6 +537,7 @@ def build_asset_registry(data_root: Path) -> Dict[str, List[Dict[str, object]]]:
         "B_absolute_design_libraries": [
             asset_entry(data_root, "data/raw/sample2019_mpra/GSM3130435_egfp_unmod_1.csv.gz", level="B", name="Sample 2019 random 50mer absolute MPRA", label_semantics="absolute_property_only", provenance="Sample et al. 2019, GSE114002"),
             asset_entry(data_root, "data/raw/sample2019_mpra/GSM3130439_egfp_m1pseudo_1.csv.gz", level="B", name="Sample 2019 modified-RNA absolute MPRA", label_semantics="absolute_property_only", provenance="Sample et al. 2019, GSE114002"),
+            asset_entry(data_root, "data/raw/sample2019_mpra/GSM4084997_varying_length_25to100.csv.gz", level="B", name="Sample 2019 varying-length absolute MPRA", label_semantics="absolute_property_only; length-shift auxiliary", provenance="Sample et al. 2019 varying-length MPRA asset"),
             asset_entry(data_root, "data/raw/cao2021_5utr/hek_top1000_high_TE.fasta", level="B", name="Cao HEK293T high-TE library", label_semantics="absolute_property_only", provenance="Cao et al. 2021 source asset"),
             asset_entry(data_root, "data/raw/cao2021_5utr/hek_bottom500_low_TE.fasta", level="B", name="Cao HEK293T low-TE library", label_semantics="absolute_property_only", provenance="Cao et al. 2021 source asset"),
             asset_entry(data_root, "data/raw/codonbert_stability/mRNA_Stability.csv", level="B", name="CodonBERT mRNA stability library", label_semantics="absolute_property_only", provenance="CodonBERT stability asset"),
@@ -727,6 +742,12 @@ def build(input_paths: Iterable[Path], out_dir: Path, *, data_root: Path,
         "legacy_excluded_split_counts": dict(sorted(legacy_excluded.items())),
         "untouched_test_policy": "historical P3 test/ood/val labels are never promoted to v2 final; final local-edit roles come from raw designed-library rows excluded by historical measured source/candidate membership",
         "family_axis_policy": "test_family uses the raw designed-library family_cluster_id; it is not a cargo/protein-family claim",
+        "ood_dimension_policy": {
+            "local_delta_available": ["gc_tail", "motif_uaug"],
+            "length": "not available for source-matched local-delta final labels; GSM4084997 is registered as absolute-only auxiliary data",
+            "species": "not available for source-matched local-delta final labels in the current public registry",
+            "record_field": "ood_dimensions",
+        },
         "claim_policy": "absolute-property context/assay records do not authorize local-delta or SOTA claims",
     }
     (out_dir / "registry.json").write_text(json.dumps(registry, indent=2, sort_keys=True) + "\n")

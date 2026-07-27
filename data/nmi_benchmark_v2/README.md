@@ -16,7 +16,10 @@ Roles:
 - `test_context`, `test_assay`: source-matched context/assay shift records plus
   independent absolute-property records. These are measured axis interventions
   but are explicitly not nucleotide-edit local-delta ground truth.
-- `test_ood`: GC/length tail or other declared distribution shift.
+- `test_ood`: declared GC or uAUG-motif distribution shift in the untouched
+  raw source-matched library. Length is registered only as an absolute-only
+  auxiliary asset, and species-shift source-matched local-delta labels are not
+  available in the current public registry.
 
 `task_kind=local_delta` and `data_layer=C_source_matched_intervention` are the
 only records eligible for biological nucleotide local-delta metrics. The
