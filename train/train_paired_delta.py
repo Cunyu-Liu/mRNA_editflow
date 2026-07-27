@@ -26,7 +26,7 @@ import torch.nn.functional as F
 from torch import nn
 from torch.utils.data import DataLoader, Dataset
 
-from mrna_editflow.data.nmi_benchmark_v2 import iter_role_records, manifest_sha256
+from mrna_editflow.data.nmi_benchmark_v2 import load_manifest, manifest_sha256
 from mrna_editflow.models.context_encoder import context_feature_tensors
 from mrna_editflow.models.paired_delta_former import PairedDeltaFormer
 
@@ -349,37 +349,122 @@ def _source_group_split(rows: Sequence[dict], calibration_fraction: float, seed:
     return fit, calibration
 
 
-def load_labeled(root: Path, role: str, confidence: str, limit: int, seed: int) -> list[dict]:
-    rows = []
-    for row in iter_role_records(root / "manifests" / f"{role}.json"):
-        if row.get("delta") is None or row.get("confidence") != confidence:
-            continue
-        if confidence == "measured":
-            if row.get("task_kind") != "local_delta" or row.get("data_layer") != "C_source_matched_intervention":
-                continue
-            if not bool(row.get("local_delta_eligible")):
-                continue
-        elif confidence == "proxy":
-            if row.get("data_layer") != "B_absolute_design_library":
-                continue
-        rows.append(row)
-    random.Random(seed).shuffle(rows)
-    return rows[:limit] if limit > 0 else rows
+def _records_snapshot(path: Path) -> dict[str, int | str]:
+    stat = path.stat()
+    return {"path": str(path), "size": int(stat.st_size), "mtime_ns": int(stat.st_mtime_ns)}
 
 
-def run_experiment(args: argparse.Namespace, seed: int, backbone: str, recipe: str, device: torch.device) -> dict:
+def _eligible_training_row(row: dict, confidence: str) -> bool:
+    if row.get("delta") is None or row.get("confidence") != confidence:
+        return False
+    if confidence == "measured":
+        return (
+            row.get("task_kind") == "local_delta"
+            and row.get("data_layer") == "C_source_matched_intervention"
+            and bool(row.get("local_delta_eligible"))
+        )
+    if confidence == "proxy":
+        return row.get("data_layer") == "B_absolute_design_library"
+    return False
+
+
+def _load_training_roles(root: Path) -> tuple[dict[str, list[dict]], dict]:
+    """Read the canonical records store once for the train and val roles.
+
+    The manifest indexes are loaded first and the records file is hashed while
+    it is parsed.  A before/after stat check makes a concurrent rebuild fail
+    closed instead of silently producing different arms from different files.
+    """
+    role_indexes: dict[str, set[str]] = {}
+    records_path: Optional[Path] = None
+    manifest_digests: dict[str, str] = {}
+    for role in ("train", "val"):
+        manifest_path = root / "manifests" / f"{role}.json"
+        manifest = load_manifest(manifest_path)
+        current_records_path = root / str(manifest["records_path"])
+        if records_path is None:
+            records_path = current_records_path
+        elif current_records_path != records_path:
+            raise RuntimeError("train and val manifests point to different records stores")
+        index_path = root / str(manifest["index_path"])
+        role_indexes[role] = {
+            line.strip() for line in index_path.read_text().splitlines() if line.strip()
+        }
+        manifest_digests[role] = manifest_sha256(manifest_path)
+    assert records_path is not None
+    before = _records_snapshot(records_path)
+    wanted = set().union(*role_indexes.values())
+    rows: dict[str, list[dict]] = {"train_measured": [], "train_proxy": [], "val_measured": []}
+    digest = hashlib.sha256()
+    with records_path.open("rb") as handle:
+        for raw_line in handle:
+            digest.update(raw_line)
+            if not raw_line.strip():
+                continue
+            row = json.loads(raw_line)
+            record_id = str(row.get("record_id"))
+            if record_id not in wanted:
+                continue
+            if record_id in role_indexes["train"]:
+                if _eligible_training_row(row, "measured"):
+                    rows["train_measured"].append(row)
+                if _eligible_training_row(row, "proxy"):
+                    rows["train_proxy"].append(row)
+            if record_id in role_indexes["val"] and _eligible_training_row(row, "measured"):
+                rows["val_measured"].append(row)
+    after = _records_snapshot(records_path)
+    if before != after:
+        raise RuntimeError(f"records store changed during training snapshot: {before} -> {after}")
+    return rows, {
+        "records_snapshot": after,
+        "records_sha256": digest.hexdigest(),
+        "manifest_sha256": manifest_digests,
+        "eligible_counts": {key: len(value) for key, value in rows.items()},
+    }
+
+
+def _sample_rows(rows: Sequence[dict], limit: int, seed: int) -> list[dict]:
+    sampled = list(rows)
+    random.Random(seed).shuffle(sampled)
+    return sampled[:limit] if limit > 0 else sampled
+
+
+def prepare_data(root: Path, args: argparse.Namespace, seeds: Sequence[int]) -> dict:
+    rows, provenance = _load_training_roles(root)
+    by_seed = {}
+    for seed in seeds:
+        by_seed[seed] = {
+            "measured": _sample_rows(rows["train_measured"], args.measured_records, seed),
+            "proxy": _sample_rows(rows["train_proxy"], args.proxy_records, seed + 2000),
+            "val": _sample_rows(rows["val_measured"], args.val_records, seed + 1000),
+        }
+    provenance["prepared_counts"] = {
+        str(seed): {key: len(value) for key, value in by_seed[seed].items()}
+        for seed in seeds
+    }
+    return {"by_seed": by_seed, "provenance": provenance}
+
+
+def run_experiment(
+    args: argparse.Namespace,
+    seed: int,
+    backbone: str,
+    recipe: str,
+    device: torch.device,
+    prepared: dict,
+    foundation_sha256: Optional[str],
+) -> dict:
     seed_everything(seed)
-    root = Path(args.benchmark_root)
-    measured_all = load_labeled(root, "train", "measured", args.measured_records, seed)
+    seed_data = prepared["by_seed"][seed]
+    measured_all = seed_data["measured"]
     measured_fit, calibration_rows = _source_group_split(measured_all, args.calibration_fraction, seed)
-    measured_val = load_labeled(root, "val", "measured", args.val_records, seed + 1000)
-    proxy_train = load_labeled(root, "train", "proxy", args.proxy_records, seed + 2000)
+    measured_val = seed_data["val"]
+    proxy_train = seed_data["proxy"]
     if recipe in {"measured_only", "mixed_training", "pretrain_finetune", "pretrain_finetune_calibrate"} and not measured_fit:
         raise RuntimeError("no measured local-delta training records")
     if recipe in {"proxy_only", "mixed_training", "pretrain_finetune", "pretrain_finetune_calibrate"} and not proxy_train:
         raise RuntimeError("no proxy training records")
 
-    foundation_sha256 = validate_foundation_provenance(args, backbone)
     model = PairedDeltaFormer(
         hidden_dim=args.hidden_dim, layers=args.layers, max_len=args.max_len,
         backbone=backbone, foundation_path=args.foundation_path,
@@ -410,13 +495,16 @@ def run_experiment(args: argparse.Namespace, seed: int, backbone: str, recipe: s
         "seed": seed, "backbone": backbone, "recipe": recipe, "config": vars(args),
         "history": history, "calibration": calibration, "metrics": metrics,
         "backbone_status": model.backbone_status, "is_real_foundation": model.is_real_foundation,
+        "foundation_kind": model.foundation_kind,
         "foundation_sha256": foundation_sha256,
+        "prepared_data": prepared["provenance"],
         "final_test_used": False,
     }, checkpoint)
     (out_dir / "metrics.json").write_text(json.dumps({
         "seed": seed, "backbone": backbone, "recipe": recipe, "history": history,
         "calibration": calibration, "metrics": metrics,
         "backbone_status": model.backbone_status, "is_real_foundation": model.is_real_foundation,
+        "foundation_kind": model.foundation_kind,
         "foundation_sha256": foundation_sha256,
         "final_test_used": False,
     }, indent=2, sort_keys=True) + "\n")
@@ -424,6 +512,8 @@ def run_experiment(args: argparse.Namespace, seed: int, backbone: str, recipe: s
         "seed": seed, "backbone": backbone, "recipe": recipe,
         "metrics": metrics, "calibration": calibration,
         "backbone_status": model.backbone_status, "is_real_foundation": model.is_real_foundation,
+        "foundation_kind": model.foundation_kind,
+        "prepared_data": prepared["provenance"],
         "checkpoint": str(checkpoint), "final_test_used": False,
     }
 
@@ -457,7 +547,7 @@ def main() -> None:
     parser.add_argument("--unfreeze-last-n", type=int, default=1)
     parser.add_argument("--allow-foundation-stub", action="store_true")
     args = parser.parse_args()
-    if args.recipes not in {"all", *RECIPES}:
+    if args.recipes != "all":
         requested_recipes = [x.strip() for x in args.recipes.split(",") if x.strip()]
         unknown = set(requested_recipes) - set(RECIPES)
         if unknown:
@@ -469,25 +559,43 @@ def main() -> None:
         raise RuntimeError("CUDA requested but unavailable")
     device = torch.device(args.device)
     root = Path(args.benchmark_root)
+    seeds = [int(seed_text) for seed_text in args.seeds.split(",") if seed_text.strip()]
+    if not seeds:
+        raise ValueError("at least one seed is required")
+    prepared = prepare_data(root, args, seeds)
+    foundation_sha256_by_backbone = {
+        backbone: validate_foundation_provenance(args, backbone)
+        for backbone in requested_backbones
+    }
     results = []
     for backbone in requested_backbones:
         for recipe in requested_recipes:
-            for seed_text in args.seeds.split(","):
-                results.append(run_experiment(args, int(seed_text), backbone, recipe, device))
+            for seed in seeds:
+                results.append(run_experiment(
+                    args, seed, backbone, recipe, device, prepared,
+                    foundation_sha256_by_backbone[backbone],
+                ))
+    final_snapshot = _records_snapshot(root / "records.jsonl")
+    if final_snapshot != prepared["provenance"]["records_snapshot"]:
+        raise RuntimeError(
+            "records store changed during the experiment; output is invalid: "
+            f"{prepared['provenance']['records_snapshot']} -> {final_snapshot}"
+        )
     out = Path(args.out_dir)
     out.mkdir(parents=True, exist_ok=True)
     provenance = {
         "schema_version": "phase2_reliable_local_delta_v1",
         "benchmark_root": str(root),
-        "train_manifest_sha256": manifest_sha256(root / "manifests" / "train.json"),
-        "val_manifest_sha256": manifest_sha256(root / "manifests" / "val.json"),
+        "train_manifest_sha256": prepared["provenance"]["manifest_sha256"]["train"],
+        "val_manifest_sha256": prepared["provenance"]["manifest_sha256"]["val"],
+        "data_snapshot": prepared["provenance"],
         "backbones": requested_backbones, "recipes": requested_recipes,
         "feature_contract": ["source_sequence", "candidate_sequence", "explicit_edit_tokens", "relative_position_to_cds_start", "cargo_or_protein_embedding", "cell_context_embedding", "assay_embedding", "source_measured_or_proxy_value"],
         "same_training_steps": {"stage_a": args.stage_a_steps, "stage_b": args.stage_b_steps, "calibration": args.calibration_steps},
         "final_test_used": False,
         "real_foundation_required_for_scientific_claim": True,
         "foundation_path": args.foundation_path,
-        "foundation_sha256": args.foundation_sha256,
+        "foundation_sha256": foundation_sha256_by_backbone,
     }
     (out / "provenance.json").write_text(json.dumps(provenance, indent=2, sort_keys=True) + "\n")
     (out / "summary.json").write_text(json.dumps({"provenance": provenance, "results": results}, indent=2, sort_keys=True) + "\n")

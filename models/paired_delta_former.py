@@ -90,20 +90,30 @@ class FoundationSequenceEncoder(nn.Module):
         self.model_path = str(model_path) if model_path else None
         self.status = "missing_local_checkpoint"
         self.foundation = None
+        self.stage_backbone = None
+        self.stage_model = None
+        self.foundation_kind = None
         self.input_embedding = None
         self.output_proj = None
         if model_path and Path(model_path).exists():
-            try:
-                from transformers import AutoModel
-                self.foundation = AutoModel.from_pretrained(model_path, local_files_only=True)
-                model_dim = int(self.foundation.config.hidden_size)
-                self.input_embedding = nn.Embedding(5, model_dim, padding_idx=4)
-                self.output_proj = nn.Linear(model_dim, hidden_dim)
-                self.is_real_foundation = True
-                self.status = "real_local_checkpoint"
-            except Exception as exc:  # pragma: no cover - depends on optional local package/checkpoint.
-                self.status = f"load_failed:{type(exc).__name__}"
-        if self.foundation is None:
+            if Path(model_path).suffix in {".pt", ".pth", ".bin"}:
+                try:
+                    self._load_stage_a_checkpoint(model_path, hidden_dim)
+                except Exception as exc:  # pragma: no cover - checkpoint-dependent.
+                    self.status = f"stage_a_load_failed:{type(exc).__name__}"
+            else:
+                try:
+                    from transformers import AutoModel
+                    self.foundation = AutoModel.from_pretrained(model_path, local_files_only=True)
+                    model_dim = int(self.foundation.config.hidden_size)
+                    self.input_embedding = nn.Embedding(5, model_dim, padding_idx=4)
+                    self.output_proj = nn.Linear(model_dim, hidden_dim)
+                    self.is_real_foundation = True
+                    self.foundation_kind = "local_huggingface_rna_model"
+                    self.status = "real_local_checkpoint"
+                except Exception as exc:  # pragma: no cover - depends on optional package/checkpoint.
+                    self.status = f"load_failed:{type(exc).__name__}"
+        if self.foundation is None and self.stage_model is None:
             if not allow_stub:
                 raise RuntimeError(
                     "real RNA foundation checkpoint is required; pass a local model_path "
@@ -117,7 +127,50 @@ class FoundationSequenceEncoder(nn.Module):
         elif self.is_real_foundation:
             self._configure_partial(unfreeze_last_n)
 
+    def _load_stage_a_checkpoint(self, model_path: str, hidden_dim: int) -> None:
+        """Load the repository's RNA-pretrained Stage-A trunk safely.
+
+        Stage-A was trained on the GENCODE mRNA corpus. Its flow output heads
+        are discarded; only the frozen token-level trunk is used here. This is
+        explicitly tagged as an *internal mRNA-pretrained* foundation, not an
+        external RNA-FM/Orthrus claim.
+        """
+        from mrna_editflow.core.config import BackboneConfig, ModelConfig
+        from mrna_editflow.models.backbones import FrozenBackbone
+        from mrna_editflow.models.mrna_editformer import MRNAEditFormer
+
+        payload = torch.load(model_path, map_location="cpu", weights_only=True)
+        if not isinstance(payload, dict) or "config" not in payload:
+            raise ValueError("Stage-A checkpoint must contain a config")
+        cfg = payload["config"]
+        self.stage_backbone = FrozenBackbone(BackboneConfig(**cfg["backbone"]))
+        self.stage_backbone.load_state_dict(payload["backbone_state"], strict=True)
+        self.stage_model = MRNAEditFormer(
+            ModelConfig(**cfg["model"]), backbone_dim=self.stage_backbone.out_dim,
+        )
+        self.stage_model.load_state_dict(payload["model_state"], strict=True)
+        self.foundation_kind = "internal_stage_a_mrna_pretrained"
+        self.is_real_foundation = True
+        self.status = "real_internal_stage_a_mrna_pretrained"
+        self.output_proj = nn.Linear(self.stage_model.dim, hidden_dim)
+        self.stage_backbone.eval()
+        self.stage_model.eval()
+
+    def _configure_stage_a_partial(self, unfreeze_last_n: int) -> None:
+        for parameter in self.parameters():
+            parameter.requires_grad_(False)
+        if self.stage_model is not None and unfreeze_last_n > 0:
+            for block in list(self.stage_model.blocks)[-unfreeze_last_n:]:
+                for parameter in block.parameters():
+                    parameter.requires_grad_(True)
+        if self.output_proj is not None:
+            for parameter in self.output_proj.parameters():
+                parameter.requires_grad_(True)
+
     def _configure_partial(self, unfreeze_last_n: int) -> None:
+        if self.stage_model is not None:
+            self._configure_stage_a_partial(unfreeze_last_n)
+            return
         for parameter in self.parameters():
             parameter.requires_grad_(False)
         blocks = None
@@ -146,8 +199,30 @@ class FoundationSequenceEncoder(nn.Module):
             parameter.requires_grad_(False)
         self.eval()
 
+    def train(self, mode: bool = True):
+        super().train(mode)
+        # Frozen foundation representations must remain deterministic even when
+        # the paired-delta head enters train mode.
+        if all(not p.requires_grad for p in self.parameters()):
+            super().train(False)
+        return self
+
     def forward(self, tokens: torch.Tensor, mask: torch.Tensor) -> torch.Tensor:
-        if self.is_real_foundation:
+        if self.stage_model is not None:
+            if tokens.shape[1] > self.stage_model.cfg.max_seq_len:
+                raise ValueError("sequence length exceeds Stage-A foundation max_seq_len")
+            from mrna_editflow.core.constants import PAD_TOKEN, PHASE_NONE
+            stage_tokens = tokens.long().masked_fill(tokens.eq(4), PAD_TOKEN)
+            region_ids = torch.zeros_like(stage_tokens)
+            phase_ids = torch.full_like(stage_tokens, PHASE_NONE)
+            padding_mask = ~mask.bool()
+            time_step = torch.full((tokens.shape[0], 1), 0.5, device=tokens.device)
+            output = self.stage_model.encode(
+                stage_tokens, region_ids, phase_ids, time_step,
+                padding_mask, self.stage_backbone,
+            )
+            output = self.output_proj(output)
+        elif self.is_real_foundation:
             inputs = self.input_embedding(tokens.long())
             output = self.foundation(
                 inputs_embeds=inputs,
@@ -266,6 +341,10 @@ class PairedDeltaFormer(nn.Module):
     @property
     def backbone_status(self) -> str:
         return str(getattr(self.sequence_encoder, "status", "unknown"))
+
+    @property
+    def foundation_kind(self) -> str:
+        return str(getattr(self.sequence_encoder, "foundation_kind", "none"))
 
     @property
     def is_real_foundation(self) -> bool:

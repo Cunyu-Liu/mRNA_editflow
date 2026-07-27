@@ -1,3 +1,6 @@
+import os
+
+import pytest
 import torch
 
 from mrna_editflow.models.paired_delta_former import PairedDeltaFormer
@@ -63,3 +66,19 @@ def test_multitask_loss_propagates_to_all_heads():
     assert model.head.logvar.weight.grad is not None
     assert model.head.beneficial.weight.grad is not None
     assert model.head.rank.weight.grad is not None
+
+
+def test_stage_a_checkpoint_adapter_when_explicitly_provided():
+    path = os.environ.get("PHASE2_STAGE_A_CHECKPOINT")
+    if not path:
+        pytest.skip("set PHASE2_STAGE_A_CHECKPOINT to run the real internal mRNA-pretrained adapter test")
+    model = PairedDeltaFormer(
+        hidden_dim=32, layers=1, max_len=32, backbone="frozen_foundation",
+        foundation_path=path, allow_foundation_stub=False,
+    )
+    assert model.is_real_foundation
+    assert model.foundation_kind == "internal_stage_a_mrna_pretrained"
+    assert model.backbone_status == "real_internal_stage_a_mrna_pretrained"
+    assert sum(parameter.requires_grad for parameter in model.sequence_encoder.parameters()) == 0
+    output = model(**_inputs(length=16))
+    assert torch.isfinite(output["mean"]).all()

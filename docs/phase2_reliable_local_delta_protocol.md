@@ -21,7 +21,10 @@ feature contract, Siamese/cross-attention adapter, context/edit encoders,
 uncertainty/ranking head, train/val manifests, stage step budgets, seeds,
 calibration protocol and one-configuration search budget. A foundation run is
 scientifically eligible only when a real local checkpoint and SHA256 are
-recorded. The adapter stub is smoke-only.
+recorded. The adapter accepts either a local HuggingFace RNA model or the
+repository's Stage-A mRNA-pretrained trunk, but the latter is explicitly
+labelled `internal_stage_a_mrna_pretrained` and still requires a separate
+pretraining-corpus leakage audit. The adapter stub is smoke-only.
 
 ## Gate
 
