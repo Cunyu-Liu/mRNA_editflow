@@ -14,3 +14,27 @@ roles:
 final_test_default: refuse
 allowed_final_label_flag: --allow-final-labels
 proxy_is_biological_ground_truth: false
+required_source_matched_fields:
+  - source_id
+  - candidate_id
+  - source_sequence
+  - candidate_sequence
+  - edit_list
+  - edit_count
+  - measured_source
+  - measured_candidate
+  - measured_delta
+  - cargo
+  - cell_context
+  - assay
+  - batch
+  - replicate
+task_kinds:
+  local_delta: source-matched intervention; eligible for biological delta metrics
+  derived_candidate_asset: proxy/unlabeled candidate asset; never ground truth
+  absolute_property_regression: measured absolute property; no local-delta semantics
+  absolute_property_context_shift: measured context-shift absolute property; no local-delta semantics
+  absolute_property_assay_shift: measured assay-shift absolute property; no local-delta semantics
+prospective:
+  manifest: data/nmi_benchmark_v2/manifests/prospective.json
+  frozen: false

@@ -6,8 +6,12 @@ P0 contract at commit `295ea86`.
 ## Phase 1
 
 `data/nmi_benchmark_v2/` is a canonical JSONL store plus role indexes. The
-builder preserves measured/proxy/unlabeled provenance and refuses to invent
-family/context/assay holdouts. Final roles require an explicit loader flag.
+builder registers four layers (observational, absolute design, measured
+source-matched intervention, and post-freeze prospective intake), preserves
+measured/proxy/unlabeled provenance, and creates distinct source/family/OOD
+roles. Context and assay roles contain independent absolute-property shift
+records and are explicitly excluded from local-delta ground truth. Final roles
+require an explicit loader flag.
 
 ## Phase 2
 

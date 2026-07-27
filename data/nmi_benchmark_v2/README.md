@@ -10,10 +10,18 @@ Roles:
 
 - `train`, `val`: source-disjoint development data;
 - `test_id`: source-disjoint in-distribution final test;
-- `test_family`: cargo/protein-family holdout when independent families exist;
-- `test_context`, `test_assay`: context/assay holdouts only when the source
-  registry contains a genuine independent axis;
+- `test_family`: cargo/protein-family holdout from the frozen P3 source split;
+- `test_context`, `test_assay`: independent absolute-property context/assay
+  shift tasks. They are present for axis coverage but are explicitly not
+  source-matched local-delta ground truth.
 - `test_ood`: GC/length tail or other declared distribution shift.
 
-An empty final role is a valid audit result when the current registry cannot
-support that scientific claim.  It is never filled with proxy data silently.
+`task_kind=local_delta` and `data_layer=C_source_matched_intervention` are the
+only records eligible for biological local-delta metrics. Public absolute
+libraries are registered as Layer B and retain their measured values for
+absolute-property evaluation only. Proxy and unlabeled records are assets,
+not biological ground truth.
+
+`manifests/prospective.json` is an empty Layer D intake and remains unfrozen
+until model development, candidate selection, and all development audits are
+complete. An empty or proxy-only axis never authorizes a SOTA/OOD claim.
