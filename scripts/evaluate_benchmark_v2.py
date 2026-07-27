@@ -459,6 +459,21 @@ def ece(pred: Sequence[float], truth: Sequence[float], bins: int = 10) -> Option
     return error
 
 
+def binary_auc(score: Sequence[float], label: Sequence[bool]) -> Optional[float]:
+    positives = [i for i, value in enumerate(label) if value]
+    negatives = [i for i, value in enumerate(label) if not value]
+    if not positives or not negatives:
+        return None
+    wins = 0.0
+    for i in positives:
+        for j in negatives:
+            if score[i] > score[j]:
+                wins += 1.0
+            elif score[i] == score[j]:
+                wins += 0.5
+    return wins / (len(positives) * len(negatives))
+
+
 def metrics(pred: Sequence[float], uncertainty: Sequence[float], truth: Sequence[float]) -> Dict[str, Optional[float]]:
     if not truth:
         return {"n": 0}
@@ -478,6 +493,8 @@ def metrics(pred: Sequence[float], uncertainty: Sequence[float], truth: Sequence
         n = max(1, int(math.ceil(len(order) * coverage)))
         ix = order[:n]
         selective[f"coverage_{coverage:.2f}"] = math.sqrt(mean_or([(pred[i] - truth[i]) ** 2 for i in ix]))
+    error_cut = float(np.median(np.abs(np.asarray(pred) - np.asarray(truth))))
+    error_labels = [abs(p - y) > error_cut for p, y in zip(pred, truth)]
     return {
         "n": len(truth),
         "spearman": corr(ranks, true_ranks),
@@ -492,6 +509,8 @@ def metrics(pred: Sequence[float], uncertainty: Sequence[float], truth: Sequence
         "rmse": math.sqrt(mean_or([(p - y) ** 2 for p, y in zip(pred, truth)])),
         "calibration_ece": ece(pred, truth),
         "selective_risk_rmse": selective,
+        "abstention_auroc": binary_auc(uncertainty, error_labels),
+        "abstention_target": "absolute_error_above_validation_median",
     }
 
 
@@ -609,8 +628,8 @@ def evaluate(root: Path, roles: Sequence[str], *, allow_final_labels: bool) -> D
                 role_result["baselines"][name]["task4_ood"] = {
                     "coverage": metrics(pred, uncertainty, truth)["selective_risk_rmse"],
                     "false_positive_beneficial": role_result["baselines"][name]["task1_local_delta"].get("beneficial_precision"),
-                    "abstention_auroc": None,
-                    "abstention_auroc_status": "not_estimated_without_independent_uncertainty_labels",
+                    "abstention_auroc": role_result["baselines"][name]["task1_local_delta"].get("abstention_auroc"),
+                    "abstention_auroc_status": "error_detection_auc; not a biological uncertainty ground truth",
                 }
             all_role_results.setdefault(role, {})[name] = {"pred": pred, "truth": truth}
         output["roles"][role] = role_result
