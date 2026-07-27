@@ -1,0 +1,14 @@
+schema_version: paired_delta_v1
+hidden_dim: 128
+layers: 2
+max_len: 256
+max_edits: 10
+batch_size: 64
+epochs_proxy: 3
+epochs_measured: 8
+epochs_calibration: 2
+learning_rate: 0.0003
+weight_decay: 0.00001
+seeds: [0, 1, 2, 3, 4]
+device: cuda
+final_test_requires_explicit_flag: true

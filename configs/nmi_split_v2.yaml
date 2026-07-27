@@ -1,0 +1,16 @@
+schema_version: nmi_benchmark_v2
+records:
+  - data/p3/benchmark/measured_tier.jsonl
+  - data/p3/benchmark/proxy_tier.jsonl
+  - data/p3/benchmark/unlabeled_tier.jsonl
+roles:
+  train: source_disjoint_development
+  val: source_disjoint_development
+  test_id: untouched_source_disjoint_final
+  test_family: untouched_family_disjoint_final
+  test_context: untouched_context_disjoint_final
+  test_assay: untouched_assay_disjoint_final
+  test_ood: untouched_distribution_shift_final
+final_test_default: refuse
+allowed_final_label_flag: --allow-final-labels
+proxy_is_biological_ground_truth: false
