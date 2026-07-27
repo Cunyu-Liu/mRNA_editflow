@@ -126,8 +126,14 @@ def main() -> None:
         audit = json.loads(audit_path.read_text())
         if audit.get("status") != "pass" or int(audit.get("exact_overlap_count", -1)) != 0:
             raise SystemExit("refusing final evaluation: foundation leakage audit is not clean")
-        if audit.get("foundation_provenance", {}).get("foundation_sha256") != actual_sha:
-            raise SystemExit("refusing final evaluation: foundation leakage audit SHA256 mismatch")
+        audited_corpus_sha = audit.get("foundation_provenance", {}).get("foundation_sha256")
+        snapshot_name = audit.get("foundation_provenance", {}).get("foundation_snapshot", {}).get("path")
+        if not audited_corpus_sha or not snapshot_name:
+            raise SystemExit("refusing final evaluation: foundation corpus provenance is missing")
+        corpus_candidates = [Path(str(snapshot_name)), audit_path.parent / Path(str(snapshot_name)).name]
+        corpus_path = next((path for path in corpus_candidates if path.exists()), None)
+        if corpus_path is None or file_sha256(str(corpus_path)) != audited_corpus_sha:
+            raise SystemExit("refusing final evaluation: foundation corpus SHA256 mismatch")
     model = PairedDeltaFormer(
         hidden_dim=int(cfg.get("hidden_dim", 128)), layers=int(cfg.get("layers", 2)),
         max_len=int(cfg.get("max_len", args.max_len)), backbone=str(payload.get("backbone", "small")),

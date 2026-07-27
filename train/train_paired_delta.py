@@ -49,6 +49,32 @@ def file_sha256(path: Optional[str]) -> Optional[str]:
     return digest.hexdigest()
 
 
+def foundation_audit_corpus_sha256(audit_path: str) -> str:
+    """Validate and return the SHA of the corpus used by a leakage audit.
+
+    The audit hashes the Stage-A training corpus, whereas
+    ``--foundation-sha256`` hashes the Stage-A checkpoint.  These are separate
+    provenance objects and must never be compared to one another.
+    """
+    audit_file = Path(audit_path)
+    audit = json.loads(audit_file.read_text())
+    audited_sha = audit.get("foundation_provenance", {}).get("foundation_sha256")
+    snapshot = audit.get("foundation_provenance", {}).get("foundation_snapshot", {})
+    snapshot_name = snapshot.get("path")
+    if not audited_sha or not snapshot_name:
+        raise RuntimeError("foundation leakage audit is missing corpus SHA/snapshot")
+    candidates = [Path(str(snapshot_name)), audit_file.parent / Path(str(snapshot_name)).name]
+    corpus_path = next((path for path in candidates if path.exists()), None)
+    if corpus_path is None:
+        raise RuntimeError(f"foundation leakage audit corpus does not exist: {snapshot_name}")
+    actual_corpus_sha = file_sha256(str(corpus_path))
+    if actual_corpus_sha != audited_sha:
+        raise RuntimeError(
+            f"foundation leakage audit corpus SHA mismatch: expected {audited_sha}, got {actual_corpus_sha}"
+        )
+    return str(audited_sha)
+
+
 def validate_foundation_provenance(args: argparse.Namespace, backbone: str) -> Optional[str]:
     if backbone == "small":
         return None
@@ -73,11 +99,7 @@ def validate_foundation_provenance(args: argparse.Namespace, backbone: str) -> O
                 "foundation leakage audit is not clean: "
                 f"status={audit.get('status')!r}, exact_overlap_count={audit.get('exact_overlap_count')}"
             )
-        audited_sha = audit.get("foundation_provenance", {}).get("foundation_sha256")
-        if audited_sha != actual:
-            raise RuntimeError(
-                f"foundation leakage audit SHA mismatch: expected {actual}, got {audited_sha}"
-            )
+        foundation_audit_corpus_sha256(str(audit_path))
     return actual
 
 
@@ -584,6 +606,14 @@ def main() -> None:
         backbone: validate_foundation_provenance(args, backbone)
         for backbone in requested_backbones
     }
+    foundation_audit_corpus_sha256_by_backbone = {
+        backbone: (
+            foundation_audit_corpus_sha256(args.foundation_leakage_audit)
+            if backbone != "small" and args.foundation_leakage_audit and not args.allow_foundation_stub
+            else None
+        )
+        for backbone in requested_backbones
+    }
     prepared = prepare_data(root, args, seeds)
     results = []
     for backbone in requested_backbones:
@@ -614,6 +644,7 @@ def main() -> None:
         "real_foundation_required_for_scientific_claim": True,
         "foundation_path": args.foundation_path,
         "foundation_sha256": foundation_sha256_by_backbone,
+        "foundation_audit_corpus_sha256": foundation_audit_corpus_sha256_by_backbone,
         "foundation_leakage_audit": args.foundation_leakage_audit,
         "foundation_leakage_audit_sha256": (
             file_sha256(args.foundation_leakage_audit)
