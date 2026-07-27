@@ -9,7 +9,11 @@ from pathlib import Path
 
 import torch
 
-from mrna_editflow.data.nmi_benchmark_v2 import iter_role_records, manifest_sha256
+from mrna_editflow.data.nmi_benchmark_v2 import (
+    iter_role_records,
+    iter_role_selection_records,
+    manifest_sha256,
+)
 from mrna_editflow.models.paired_delta_former import PairedDeltaFormer
 from mrna_editflow.train.train_paired_delta import DeltaDataset, collate, file_sha256, metrics_from_predictions, move_batch
 from torch.utils.data import DataLoader
@@ -36,6 +40,14 @@ def load_final_rows(root: Path, role: str, alias: str) -> list[dict]:
             continue
         rows.append(row)
     return rows
+
+
+def load_selection_rows(root: Path, role: str, alias: str) -> list[dict]:
+    """Load only pre-unblinding-safe inputs for candidate digest checks."""
+    assay = INDEPENDENT_ASSAY_NAME if alias == "independent_assay" else None
+    return list(iter_role_selection_records(
+        root / "manifests" / f"{role}.json", assay=assay,
+    ))
 
 
 def candidate_digest(rows: list[dict]) -> str:
@@ -97,6 +109,7 @@ def main() -> None:
         raise SystemExit("refusing final evaluation: freeze manifest does not attest pre-unblinding candidate freeze")
     root = Path(args.benchmark_root)
     rows = load_final_rows(root, args.role, args.alias)
+    selection_rows = load_selection_rows(root, args.role, args.alias)
     role_manifest_path = root / "manifests" / f"{args.role}.json"
     role_manifest = json.loads(role_manifest_path.read_text())
     records_path = root / str(role_manifest["records_path"])
@@ -106,7 +119,7 @@ def main() -> None:
         raise SystemExit("refusing final evaluation: role manifest changed after candidate freeze")
     if freeze.get("records_sha256") != file_sha256(str(records_path)):
         raise SystemExit("refusing final evaluation: benchmark records changed after candidate freeze")
-    if freeze.get("candidate_digest") != candidate_digest(rows):
+    if freeze.get("candidate_digest") != candidate_digest(selection_rows):
         raise SystemExit("refusing final evaluation: candidate set changed after candidate freeze")
     payload = torch.load(args.checkpoint, map_location="cpu", weights_only=True)
     cfg = payload.get("config", {})

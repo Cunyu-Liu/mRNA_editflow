@@ -13,7 +13,7 @@ from pathlib import Path
 
 from mrna_editflow.data.nmi_benchmark_v2 import manifest_sha256
 from mrna_editflow.train.train_paired_delta import file_sha256
-from scripts.evaluate_phase2_oracle import EXPECTED_ROLES, candidate_digest, load_final_rows
+from scripts.evaluate_phase2_oracle import EXPECTED_ROLES, candidate_digest, load_selection_rows
 
 
 def main() -> None:
@@ -39,7 +39,15 @@ def main() -> None:
     role_manifest_path = root / "manifests" / f"{args.role}.json"
     role_manifest = json.loads(role_manifest_path.read_text())
     records_path = root / str(role_manifest["records_path"])
-    rows = load_final_rows(root, args.role, args.alias)
+    selection = json.loads(selection_path.read_text())
+    if selection.get("role") != args.role or selection.get("alias") != args.alias:
+        raise SystemExit("selection artifact role/alias does not match freeze request")
+    if selection.get("labels_accessed", True):
+        raise SystemExit("refusing freeze: selection artifact does not attest labels_accessed=false")
+    rows = load_selection_rows(root, args.role, args.alias)
+    digest = candidate_digest(rows)
+    if selection.get("candidate_digest") != digest:
+        raise SystemExit("refusing freeze: selection artifact candidate set digest mismatch")
     manifest = {
         "schema_version": "phase2_candidate_freeze_v1",
         "candidate_selection_frozen_before_unblinding": True,
@@ -50,7 +58,7 @@ def main() -> None:
         "selection_artifact_sha256": file_sha256(str(selection_path)),
         "role_manifest_sha256": manifest_sha256(role_manifest_path),
         "records_sha256": file_sha256(str(records_path)),
-        "candidate_digest": candidate_digest(rows),
+        "candidate_digest": digest,
         "eligible_local_delta_count": len(rows),
         "claim_policy": "freeze evidence only; final metrics require an independently trained checkpoint and explicit label access",
     }
