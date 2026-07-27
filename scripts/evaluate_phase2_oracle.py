@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 from pathlib import Path
 
@@ -18,9 +19,11 @@ THRESHOLDS = {
     "test_v2_untouched": {"spearman": 0.35, "sign_accuracy": 0.68, "top10_enrichment": 1.75, "beneficial_precision": 0.75, "ece": 0.10},
     "independent_assay": {"spearman": 0.25, "top10_enrichment": 1.40, "beneficial_precision": 0.65},
 }
+INDEPENDENT_ASSAY_NAME = "GSE246381_mouse_Vglut_MPRA_combined_UMI"
+EXPECTED_ROLES = {"test_v2_untouched": "test_id", "independent_assay": "test_ood"}
 
 
-def load_final_rows(root: Path, role: str) -> list[dict]:
+def load_final_rows(root: Path, role: str, alias: str) -> list[dict]:
     rows = []
     for row in iter_role_records(root / "manifests" / f"{role}.json", allow_final_labels=True):
         if row.get("delta") is None:
@@ -29,8 +32,23 @@ def load_final_rows(root: Path, role: str) -> list[dict]:
             continue
         if not bool(row.get("local_delta_eligible")):
             continue
+        if alias == "independent_assay" and row.get("assay") != INDEPENDENT_ASSAY_NAME:
+            continue
         rows.append(row)
     return rows
+
+
+def candidate_digest(rows: list[dict]) -> str:
+    digest = hashlib.sha256()
+    for row in sorted(rows, key=lambda item: str(item.get("record_id"))):
+        source_sha = row.get("source_sequence_sha256") or hashlib.sha256(
+            str(row.get("source_sequence", "")).encode()
+        ).hexdigest()
+        candidate_sha = row.get("candidate_sequence_sha256") or hashlib.sha256(
+            str(row.get("candidate_sequence", "")).encode()
+        ).hexdigest()
+        digest.update(f"{row.get('record_id')}\t{source_sha}\t{candidate_sha}\n".encode())
+    return digest.hexdigest()
 
 
 @torch.no_grad()
@@ -67,6 +85,10 @@ def main() -> None:
     args = parser.parse_args()
     if not args.allow_final_labels:
         raise SystemExit("refusing final evaluation: pass --allow-final-labels after model/candidate freeze")
+    if EXPECTED_ROLES[args.alias] != args.role:
+        raise SystemExit(
+            f"refusing final evaluation: alias {args.alias} requires role {EXPECTED_ROLES[args.alias]}"
+        )
     freeze_path = Path(args.candidate_freeze_manifest)
     if not freeze_path.exists():
         raise SystemExit("refusing final evaluation: candidate freeze manifest does not exist")
@@ -74,7 +96,18 @@ def main() -> None:
     if not freeze.get("candidate_selection_frozen_before_unblinding", False):
         raise SystemExit("refusing final evaluation: freeze manifest does not attest pre-unblinding candidate freeze")
     root = Path(args.benchmark_root)
-    rows = load_final_rows(root, args.role)
+    rows = load_final_rows(root, args.role, args.alias)
+    role_manifest_path = root / "manifests" / f"{args.role}.json"
+    role_manifest = json.loads(role_manifest_path.read_text())
+    records_path = root / str(role_manifest["records_path"])
+    if freeze.get("role") != args.role or freeze.get("alias") != args.alias:
+        raise SystemExit("refusing final evaluation: freeze role/alias does not match evaluation role")
+    if freeze.get("role_manifest_sha256") != manifest_sha256(role_manifest_path):
+        raise SystemExit("refusing final evaluation: role manifest changed after candidate freeze")
+    if freeze.get("records_sha256") != file_sha256(str(records_path)):
+        raise SystemExit("refusing final evaluation: benchmark records changed after candidate freeze")
+    if freeze.get("candidate_digest") != candidate_digest(rows):
+        raise SystemExit("refusing final evaluation: candidate set changed after candidate freeze")
     payload = torch.load(args.checkpoint, map_location="cpu", weights_only=True)
     cfg = payload.get("config", {})
     if payload.get("backbone") != "small":
@@ -113,11 +146,13 @@ def main() -> None:
     report = {
         "schema_version": "phase2_final_evaluation_v1",
         "alias": args.alias, "role": args.role,
+        "selection_filter": INDEPENDENT_ASSAY_NAME if args.alias == "independent_assay" else None,
         "n_eligible_local_delta": len(rows), "metrics": metrics,
         "thresholds": threshold, "gate_passed": gate,
         "checkpoint": str(Path(args.checkpoint).resolve()),
         "candidate_freeze_manifest": str(freeze_path.resolve()),
         "candidate_freeze_manifest_sha256": manifest_sha256(freeze_path),
+        "candidate_digest": candidate_digest(rows),
         "foundation_leakage_audit": str(Path(args.foundation_leakage_audit or cfg.get("foundation_leakage_audit")).resolve()) if payload.get("backbone") != "small" else None,
         "final_test_used": True,
         "claim_policy": "only prospective_measured or explicitly eligible measured local-delta records support biological claims",

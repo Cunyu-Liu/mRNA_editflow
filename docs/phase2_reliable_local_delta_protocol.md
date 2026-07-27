@@ -43,8 +43,17 @@ scientific comparison.
 `test_v2_untouched` requires Spearman >= 0.35, sign accuracy >= 0.68,
 top-10% enrichment >= 1.75, beneficial precision >= 0.75 and ECE <= 0.10.
 The independent assay requires Spearman >= 0.25, enrichment >= 1.40 and
-beneficial precision >= 0.65. Empty or non-local-delta axes are blockers, not
-zeros that can be reported as a scientific failure of the model.
+beneficial precision >= 0.65. The registered independent axis is the 703-record
+`GSE246381_mouse_Vglut_MPRA_combined_UMI` local-delta subset of `test_ood`,
+which differs in assay, batch, cargo and cell context. The `test_assay` role is
+not eligible local-delta ground truth and cannot be used for this gate. Empty
+or non-local-delta axes are blockers, not zeros that can be reported as a
+scientific failure of the model.
+
+`scripts/freeze_phase2_candidate_manifest.py` requires a selection artifact
+and an explicit pre-unblinding attestation. Final evaluation additionally
+recomputes the role-manifest SHA, canonical records SHA and candidate digest;
+the boolean attestation alone cannot unlock labels.
 
 ## Forced route when the gate fails
 

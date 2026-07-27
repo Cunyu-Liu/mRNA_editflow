@@ -48,6 +48,7 @@ foundation:
   allow_stub_only_for_smoke: true
 final_roles:
   test_v2_untouched: test_id
-  independent_assay: test_assay
+  independent_assay: test_ood
+  independent_assay_filter: "assay=GSE246381_mouse_Vglut_MPRA_combined_UMI"
   require_candidate_freeze_manifest: true
   explicit_allow_final_labels: true
