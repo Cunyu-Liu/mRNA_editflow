@@ -1,0 +1,83 @@
+# mrna_editflow package definition (P0-06: dependency environment rebuild).
+#
+# The repository root IS the importable package `mrna_editflow` (top-level
+# modules such as train_grpo.py are imported as `mrna_editflow.train_grpo`),
+# so package-dir maps the package onto the project root.
+
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mrna-editflow"
+version = "0.1.0"
+description = "mRNA EditFlow: local-edit benchmark, delta-oracle ensemble, and GRPO policy training for 5'UTR optimisation"
+readme = "docs/nmi_execution_contract.md"
+requires-python = ">=3.10"
+license = { text = "Proprietary" }
+
+# Runtime dependencies actually imported by first-party code
+# (verified by AST scan of core/, rl/, eval/, baselines/, scripts/, tests/).
+dependencies = [
+    "numpy>=1.23,<2.0",
+    "torch>=2.1",
+    "scipy>=1.10",
+    "PyYAML>=6.0",
+    "certifi>=2024.0",
+    # pytest is a default dependency so the P0-06 acceptance commands
+    # (pip install -e . && pytest -q) work verbatim in a clean environment.
+    "pytest>=7.0",
+]
+
+[project.optional-dependencies]
+# Data-acquisition scripts (scripts/acquire_*.py)
+acquisition = [
+    "pandas>=2.0",
+    "openpyxl>=3.1",
+    "biopython>=1.83",
+]
+# External baseline adapters (baselines/external_codongpt_adapter.py,
+# scripts/smoke_test_p1_05.py)
+external = [
+    "transformers>=4.40",
+    "lightgbm>=4.0",
+]
+# Plotting (optional figures; no first-party module imports it yet)
+plotting = [
+    "matplotlib>=3.8",
+]
+# ViennaRNA: optional production MFE backend for eval/multi_region_oracle.py
+# (the shipped oracle uses a deterministic simplified fold; install this extra
+# to swap in ViennaRNA for production runs).
+vienna = [
+    "ViennaRNA>=2.6",
+]
+
+[tool.setuptools]
+package-dir = { "mrna_editflow" = "." }
+packages = [
+    "mrna_editflow",
+    "mrna_editflow.core",
+    "mrna_editflow.rl",
+    "mrna_editflow.eval",
+    "mrna_editflow.baselines",
+]
+
+[tool.pytest.ini_options]
+# Restrict collection to the first-party suite. Vendored external repos under
+# benchmark_v21/ and helper scripts under scripts/ contain test_*.py files
+# that parse CLI args at import time and must never be collected.
+testpaths = ["tests"]
+norecursedirs = [
+    "benchmark_v21",
+    "data",
+    "checkpoints",
+    "docs",
+    "artifacts",
+    "results",
+    "scripts",
+    "configs",
+    "external_data",
+    ".*",
+    "__pycache__",
+]

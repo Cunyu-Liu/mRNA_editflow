@@ -1,0 +1,933 @@
+{
+  "project": "mrna_editflow",
+  "phase": "nmi_phase0_freeze",
+  "generated_at": "2026-07-26T21:58:00.198781+00:00",
+  "generation_command": "scripts/build_freeze_manifest.py --config configs/nmi_execution.yaml --strict",
+  "config_path": "configs/nmi_execution.yaml",
+  "config_sha256": "97a106da62a8dd958a2b943aa8b474b3443da29fb3b23b3a204e1f4a651b4622",
+  "seeds": [
+    42,
+    123,
+    456
+  ],
+  "git": {
+    "commit": "c366f06b5d5b7681c3635ce15229fba9cbd1c56f",
+    "branch": "main",
+    "working_tree_dirty": true,
+    "dirty_files": [
+      ".dockerignore",
+      ".github/",
+      "Dockerfile",
+      "artifacts/",
+      "benchmark_v21/",
+      "configs/nmi_execution.yaml",
+      "core/motif_policy.py",
+      "docs/dataset_manifest_audit.json.bak_truncated",
+      "docs/external_sota_evidence_manifest.sha256",
+      "docs/nmi_artifact_discrepancy_report.md",
+      "docs/nmi_artifact_dispositions.json",
+      "docs/nmi_execution_contract.md",
+      "docs/p1_05_independent_oracle_design.md",
+      "docs/p2_10_alternative_backbone.md",
+      "docs/p3_07_search_results.json",
+      "docs/p3_08_failed_runs.md",
+      "docs/p3_08_grpo_checkpoint_selection.json",
+      "docs/p3_08_grpo_preregistered_config.md",
+      "docs/p3_08_grpo_results.json",
+      "docs/p3_08_grpo_results_gateA.json",
+      "docs/p3_08_grpo_results_gateA.json.bak_pre_reeval",
+      "docs/p3_08_grpo_results_gateB.json",
+      "docs/p3_08_grpo_results_gateB.json.bak_stale_merge",
+      "docs/p3_08_grpo_results_gateB_gpu1.json",
+      "docs/p3_08_grpo_results_gateB_gpu6.json",
+      "docs/p3_08_grpo_training_health.md",
+      "docs/p3_08_grpo_training_health_gateB.md",
+      "docs/p3_09_external_results.json",
+      "docs/p3_09_external_task_matrix.md",
+      "docs/p3_09_failure_cases.md",
+      "docs/p3_09_ood_results.json",
+      "docs/p3_09_oracle_transfer.json",
+      "docs/p3_09_reward_hacking.md",
+      "docs/p3_09_uncertainty_error_correlation.json",
+      "docs/p3_10_run_20260725/",
+      "docs/p3_10_run_20260725_v2/",
+      "docs/p3_11_run_20260725/",
+      "docs/p3_11_run_20260725_v2/",
+      "docs/p3_11_run_20260725_v3/",
+      "docs/plans/2026-07-18-p0-data-reconstruction-v1.md",
+      "docs/stage_a_recovery_decision.md",
+      "environment.yml",
+      "launch_p3_08_gateA.sh",
+      "logs_p3_07_v2.log",
+      "logs_p3_07_v3.log",
+      "logs_p3_07_v4.log",
+      "logs_p3_07_v5.log",
+      "models/predictors/base.py",
+      "ocs/dataset_manifest_audit.json",
+      "p3_07_analyze.py",
+      "p3_07_diag.py",
+      "p3_07_diag2.py",
+      "p3_07_diag3.py",
+      "p3_07_extract.py",
+      "p3_07_redecide.py",
+      "pyproject.toml",
+      "requirements-lock.txt",
+      "rl/action_scoring.py",
+      "rl/p3_06_mdp.py",
+      "rl/p3_07_search.py",
+      "rl/p3_08_grpo.py",
+      "scripts/audit_result_artifacts.py",
+      "scripts/audit_training_membership.py",
+      "scripts/build_freeze_manifest.py",
+      "scripts/generate_gateB_health_report.py",
+      "scripts/generate_p3_08_gateB_report.py",
+      "scripts/merge_gateB_results.py",
+      "scripts/reeval_p3_08_gateA.py",
+      "scripts/reproduce_smoke.sh",
+      "scripts/run_p3_02.py",
+      "scripts/run_p3_08.py",
+      "scripts/run_p3_09.py",
+      "scripts/run_p3_10.py",
+      "scripts/run_p3_11.py",
+      "scripts/select_p3_08_checkpoint.py",
+      "tests/test_budget_accounting.py",
+      "tests/test_cross_role_family_leakage.py",
+      "tests/test_cross_role_sequence_collision.py",
+      "tests/test_cross_role_source_leakage.py",
+      "tests/test_grpo_entropy_gradient.py",
+      "tests/test_grpo_kl_gradient.py",
+      "tests/test_grpo_multi_epoch.py",
+      "tests/test_grpo_ratio.py",
+      "tests/test_grpo_reference_freeze.py",
+      "tests/test_mdp_cycle_prevention.py",
+      "tests/test_mdp_state_identity.py",
+      "tests/test_motif_action_filter.py",
+      "tests/test_p3_07_search.py",
+      "tests/test_p3_08_grpo.py",
+      "tests/test_p3_10_synergy.py",
+      "tests/test_p3_11_prospective.py",
+      "tests/test_proxy_role_filtering.py",
+      "tests/test_result_artifact_integrity.py",
+      "tests/test_reward_telescoping.py",
+      "tests/test_stage5_constrained_grpo.py",
+      "tests/test_terminal_reward_equivalence.py"
+    ]
+  },
+  "environment": {
+    "python_version": "3.10.20",
+    "platform": "Linux-5.15.0-173-generic-x86_64-with-glibc2.35",
+    "hostname": "bms-18937653-012",
+    "pytorch_version": "2.5.1+cu121",
+    "cuda_version": "12.1",
+    "cudnn_version": "9.0.1.0.0",
+    "gpu_names": [
+      "NVIDIA A100-PCIE-40GB",
+      "NVIDIA A100-PCIE-40GB",
+      "NVIDIA A100-PCIE-40GB",
+      "NVIDIA A100-PCIE-40GB",
+      "NVIDIA A100-PCIE-40GB",
+      "NVIDIA A100-PCIE-40GB",
+      "NVIDIA A100-PCIE-40GB MIG 1g.5gb",
+      "NVIDIA A100-PCIE-40GB MIG 1g.5gb"
+    ]
+  },
+  "artifacts": {
+    "p3_01_benchmark_tiers": {
+      "description": "P3-01 local-edit benchmark \u2014 the raw data truth source.",
+      "provenance": {
+        "command": "python scripts/p3_01_build_benchmark.py --output-dir data/p3/benchmark",
+        "inputs": [
+          "data/raw/gencode.v45.pc_transcripts.fa.gz",
+          "data/raw/human.1.rna.gbff.gz"
+        ]
+      },
+      "files": [
+        {
+          "path": "data/p3/benchmark/measured_tier.jsonl",
+          "sha256": "4e8662b1de17171beed548b59461b051705c06c58296aff35cf6ab6537cfaaf8",
+          "size_bytes": 4976594,
+          "missing": false
+        },
+        {
+          "path": "data/p3/benchmark/proxy_tier.jsonl",
+          "sha256": "426c15cf4e51fb5dc30c91603b3d2a239c404c5af49f6e7fc5f53772133a9407",
+          "size_bytes": 553616835,
+          "missing": false
+        },
+        {
+          "path": "data/p3/benchmark/unlabeled_tier.jsonl",
+          "sha256": "edea279dcf1cc7f88001cf17a789c78b6f01f03c2d6b0d090dc208dad4c2ea76",
+          "size_bytes": 1130100915,
+          "missing": false
+        }
+      ]
+    },
+    "p3_01_split_audit": {
+      "description": "Split membership / leakage audit for the benchmark tiers.",
+      "provenance": {
+        "command": "python scripts/p3_01_resolve_collisions.py --audit-only",
+        "inputs": [
+          "data/p3/benchmark/measured_tier.jsonl",
+          "data/p3/benchmark/proxy_tier.jsonl"
+        ]
+      },
+      "files": [
+        {
+          "path": "docs/p3_01_split_audit.json",
+          "sha256": "961668f1fa60570064e59867f3256e3423700f35f842b01132615390be20a0f5",
+          "size_bytes": 35823,
+          "missing": false
+        }
+      ]
+    },
+    "p3_execution_configs": {
+      "description": "Frozen research contract and primary task configuration.",
+      "provenance": {
+        "command": "manual (frozen under docs/p3_00_change_governance.md)",
+        "inputs": []
+      },
+      "files": [
+        {
+          "path": "configs/p3_frozen_research_contract.yaml",
+          "sha256": "173c0fc8e100321c1d1cdd062a6626449f3054d84c85c62ad23f829f4136b62c",
+          "size_bytes": 4058,
+          "missing": false
+        },
+        {
+          "path": "configs/p3_primary_task.yaml",
+          "sha256": "141af03c2e5f58782eadb367f2f6ad75a889e7e4f9f67b167a901a2d4a1e33bb",
+          "size_bytes": 5333,
+          "missing": false
+        }
+      ]
+    },
+    "p3_03_sequence_manifest": {
+      "description": "Frozen evaluation sequence manifest for P3-03+.",
+      "provenance": {
+        "command": "python scripts/generate_p3_03_manifest.py",
+        "inputs": [
+          "data/p3/benchmark/measured_tier.jsonl"
+        ]
+      },
+      "files": [
+        {
+          "path": "docs/p3_03_sequence_manifest.json",
+          "sha256": "221d5b4ddbd1bd0491be81a693a5121ab41da3fc66796ff3c4029f2bd4c64541",
+          "size_bytes": 34578,
+          "missing": false
+        }
+      ]
+    },
+    "p3_02_delta_oracle_checkpoints": {
+      "description": "Cross-fitted delta-oracle ensemble checkpoints (4 architectures).",
+      "provenance": {
+        "command": "python scripts/run_p3_02.py --benchmark-dir data/p3/benchmark --output results/p3_02 --checkpoint-dir checkpoints/p3_delta_oracles",
+        "inputs": [
+          "data/p3/benchmark/measured_tier.jsonl",
+          "data/p3/benchmark/proxy_tier.jsonl"
+        ]
+      },
+      "files": [
+        {
+          "path": "checkpoints/p3_delta_oracles/absolute_fold0.npz",
+          "sha256": "5932063b23d339d3d1b3981667ede6035cc8b19e5f25840de4cd9f98b40ffd68",
+          "size_bytes": 13018,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_delta_oracles/difference_fold0.npz",
+          "sha256": "66f6b6b83b4a066d9a7e2a03e90c801920ca347f55338478b045d7ef0d846dfb",
+          "size_bytes": 19406,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_delta_oracles/edit_conditioned_fold0.npz",
+          "sha256": "13fc9230abea1f23164ea89def91c763975ad9cfeebcbea5600d050ef305ca3c",
+          "size_bytes": 19406,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_delta_oracles/siamese_fold0.npz",
+          "sha256": "c37965008b77a26454d143bb5dccea1b3be13443666a33bbe51d03aadeb35b93",
+          "size_bytes": 13298,
+          "missing": false
+        }
+      ]
+    },
+    "p3_02_delta_oracle_results": {
+      "description": "Delta-oracle metrics and test-set predictions.",
+      "provenance": {
+        "command": "python scripts/run_p3_02.py --benchmark-dir data/p3/benchmark --output results/p3_02 --checkpoint-dir checkpoints/p3_delta_oracles",
+        "inputs": [
+          "checkpoints/p3_delta_oracles/absolute_fold0.npz",
+          "checkpoints/p3_delta_oracles/difference_fold0.npz",
+          "checkpoints/p3_delta_oracles/edit_conditioned_fold0.npz",
+          "checkpoints/p3_delta_oracles/siamese_fold0.npz"
+        ]
+      },
+      "files": [
+        {
+          "path": "docs/p3_02_delta_oracle_results.json",
+          "sha256": "f9e45f52f18921fca4f5dadc8f7a400e6fab25af97694af7c47aafabf3738c34",
+          "size_bytes": 6305,
+          "missing": false
+        },
+        {
+          "path": "results/p3_02/test_predictions.npz",
+          "sha256": "e2f6f87eebae0369016fc1506706c52fbcea7f1ead8031b232ed9f08692ad30d",
+          "size_bytes": 18820,
+          "missing": false
+        }
+      ]
+    },
+    "p3_07_search_results": {
+      "description": "Headroom search (greedy/beam/SA/MCTS/oracle-guided) results.",
+      "provenance": {
+        "command": "python scripts/run_p3_07.py --config configs/p3_primary_task.yaml",
+        "inputs": [
+          "docs/p3_02_delta_oracle_results.json",
+          "docs/p3_03_sequence_manifest.json"
+        ]
+      },
+      "files": [
+        {
+          "path": "docs/p3_07_search_results.json",
+          "sha256": "094b04ef3fa98242d6e121ff74bb4ddf1c6bf17d1e2b5d2a7db3fadf1816f32b",
+          "size_bytes": 2754990,
+          "missing": false
+        }
+      ]
+    },
+    "p3_08_grpo_gateA_checkpoints": {
+      "description": "GRPO Gate A training checkpoints (seeds 42/123/456).",
+      "provenance": {
+        "command": "python scripts/run_p3_08.py --gate A --config configs/p3_primary_task.yaml",
+        "inputs": [
+          "checkpoints/p3_delta_oracles/absolute_fold0.npz",
+          "checkpoints/p3_delta_oracles/difference_fold0.npz",
+          "checkpoints/p3_delta_oracles/edit_conditioned_fold0.npz",
+          "checkpoints/p3_delta_oracles/siamese_fold0.npz"
+        ]
+      },
+      "files": [
+        {
+          "path": "checkpoints/p3_08_gateA/grpo_seed123_step1000.pt",
+          "sha256": "60318635432d1dbbc9b8b1e1c8988fc92b5d6b0e65c5f0bd5e1a59fa777a81fe",
+          "size_bytes": 1098622,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_08_gateA/grpo_seed123_step200.pt",
+          "sha256": "6eba3f051176ba3d1710d2208b1df2bf88213a7e8341cf76f151e41fd13476e9",
+          "size_bytes": 1098538,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_08_gateA/grpo_seed123_step400.pt",
+          "sha256": "0c3398b962a5e55fb1c0506a4359c4e2811871067cbc6c006d168cdafb94a2bf",
+          "size_bytes": 1098538,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_08_gateA/grpo_seed123_step600.pt",
+          "sha256": "e6d040866d6c5403905cd948c11099fdd6687294a320f8e9b1574e2709df9b2a",
+          "size_bytes": 1098538,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_08_gateA/grpo_seed123_step800.pt",
+          "sha256": "35e7ba0e2dec04a57d1d41ab355c8e2210ef17f05a02901f68ae6c099db8457c",
+          "size_bytes": 1098538,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_08_gateA/grpo_seed42_step1000.pt",
+          "sha256": "d7ec5e32dccdbe0ec8549e17789922c98b458437c5e6cbcd725e3c9b8e53f3e1",
+          "size_bytes": 1098538,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_08_gateA/grpo_seed42_step200.pt",
+          "sha256": "aa865240f61ce2d360071dbb4a310ac35527baeb6eec56743289237eb601d76f",
+          "size_bytes": 1098454,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_08_gateA/grpo_seed42_step400.pt",
+          "sha256": "eb3604f8d9bc63888d261eddac17c1c970770f7971fdc9624fa78bf26fc4865b",
+          "size_bytes": 1098454,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_08_gateA/grpo_seed42_step600.pt",
+          "sha256": "8082c39b4fd6366891f890eb9336c2a17efb9f5c0bf683810ac6c105b87fcbd4",
+          "size_bytes": 1098454,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_08_gateA/grpo_seed42_step800.pt",
+          "sha256": "e978fc1c876e8a3b738b5bbfefd619b2924f35d492beaac8958603c7826a58a4",
+          "size_bytes": 1098454,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_08_gateA/grpo_seed456_step1000.pt",
+          "sha256": "c1bf83ae0b8219a0b035bd84ed5682b8c966fe9ccf3e13562ac303af2c264618",
+          "size_bytes": 1098622,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_08_gateA/grpo_seed456_step200.pt",
+          "sha256": "c2076fe18961f6fceebce29b6b7f97443a9fa7a753f91f4465eb5c3fabaa9508",
+          "size_bytes": 1098538,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_08_gateA/grpo_seed456_step400.pt",
+          "sha256": "0de71e660c9e42175ba5aaa7e408e1bf5614d1295e1a9b577a22fefca2981ee9",
+          "size_bytes": 1098538,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_08_gateA/grpo_seed456_step600.pt",
+          "sha256": "adcb167388ee9e153817d6a9c3e35250a0f409723c0671c753d0847a22d53401",
+          "size_bytes": 1098538,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_08_gateA/grpo_seed456_step800.pt",
+          "sha256": "592c6668ba3dad87c7af442f08b930ab880b81313790a592be359eefafdd62f9",
+          "size_bytes": 1098538,
+          "missing": false
+        }
+      ]
+    },
+    "p3_08_grpo_gateB_checkpoints": {
+      "description": "GRPO Gate B long-horizon checkpoints across GPU shards.",
+      "provenance": {
+        "command": "python scripts/run_p3_08.py --gate B --config configs/p3_primary_task.yaml",
+        "inputs": [
+          "checkpoints/p3_delta_oracles/absolute_fold0.npz",
+          "checkpoints/p3_delta_oracles/difference_fold0.npz",
+          "checkpoints/p3_delta_oracles/edit_conditioned_fold0.npz",
+          "checkpoints/p3_delta_oracles/siamese_fold0.npz"
+        ]
+      },
+      "files": [
+        {
+          "path": "checkpoints/p3_08_gateB_gpu1/grpo_seed1024_step1000.pt",
+          "sha256": "cd902ccac3749705712744d3cc3ebfae5b4753a95d239199f6a74a849cd8e034",
+          "size_bytes": 1098834,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_08_gateB_gpu1/grpo_seed1024_step2000.pt",
+          "sha256": "356c2d571539ed5bf8469ea028c30bc14be6f178350b79d883f411378c6bf82c",
+          "size_bytes": 1098834,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_08_gateB_gpu1/grpo_seed1024_step3000.pt",
+          "sha256": "41a51c8c0152a97aafa6eeaecab3bfaf290030db84b0042e0c40de8704b99a78",
+          "size_bytes": 1098834,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_08_gateB_gpu1/grpo_seed1024_step4000.pt",
+          "sha256": "9b5f71059566445ba4fdea0f3371b85e44492259b9d5fc2d92a684eea9c20df4",
+          "size_bytes": 1098834,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_08_gateB_gpu1/grpo_seed1024_step5000.pt",
+          "sha256": "8070197835d999e953a62e6c11d62287b2db6ee24b8c96c31574eb4d6f6b9dec",
+          "size_bytes": 1098834,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_08_gateB_gpu1/grpo_seed123_step1000.pt",
+          "sha256": "a45ef5e21f7278180321c26f1dd626a3d0ad548f94f33a120ea0945ecbdf6be3",
+          "size_bytes": 1098622,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_08_gateB_gpu1/grpo_seed123_step2000.pt",
+          "sha256": "10365a00807ea83afc235201c435db49f1d0f38c074967aa7c41d458c812711e",
+          "size_bytes": 1098622,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_08_gateB_gpu1/grpo_seed123_step3000.pt",
+          "sha256": "f6255462cc301ee8b900c10abbe139357fc1b22b5b98025e4fb502647e838b59",
+          "size_bytes": 1098622,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_08_gateB_gpu1/grpo_seed123_step4000.pt",
+          "sha256": "add7ef9f2803f1b99157ec031aa836fe8aed9ade62095e324d3b85b2cc6897fd",
+          "size_bytes": 1098622,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_08_gateB_gpu1/grpo_seed123_step5000.pt",
+          "sha256": "f0b14306bc63d35a214ba815f979b8192243a9f4b7507155cb13ff704646174a",
+          "size_bytes": 1098622,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_08_gateB_gpu1/grpo_seed3072_step1000.pt",
+          "sha256": "d68fbe34e4741bafeda2f7b6a6c4de8a63b73bf0597c37c1c62319513d9a7dd4",
+          "size_bytes": 1098834,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_08_gateB_gpu1/grpo_seed3072_step2000.pt",
+          "sha256": "3d0bb89427dd9c3beb93f638c99d29f295066c736fa26d2a121f9fa4088d5521",
+          "size_bytes": 1098834,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_08_gateB_gpu1/grpo_seed3072_step3000.pt",
+          "sha256": "ea0eb1e92ab4a92f2e8148378af506aae90c063f811f570b3be330caf82ee4fd",
+          "size_bytes": 1098834,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_08_gateB_gpu1/grpo_seed3072_step4000.pt",
+          "sha256": "7ab8c03957a30ce338002659a1573f3a7d05ea89f206cf462e8640d300dd624b",
+          "size_bytes": 1098834,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_08_gateB_gpu1/grpo_seed3072_step5000.pt",
+          "sha256": "edfcabad74ad4828ae468f3d25b83e0f84fd3a2e6b03b1547b0ffd4e2c7a7ea0",
+          "size_bytes": 1098834,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_08_gateB_gpu1/grpo_seed456_step1000.pt",
+          "sha256": "39754f1c0b94637f404b30eadea47bff2d06124e4cd15b75af0d4a30d0241eb9",
+          "size_bytes": 1098686,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_08_gateB_gpu1/grpo_seed456_step2000.pt",
+          "sha256": "16a3c42655b4793c34afe3bc1af778b8ba0b939981a1aec27c3d9029d0460bee",
+          "size_bytes": 1098686,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_08_gateB_gpu1/grpo_seed456_step3000.pt",
+          "sha256": "f83f256dadaca0c61ca6592175d0cbea03e8c7bbda1fd7ecdea187c13485743a",
+          "size_bytes": 1098686,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_08_gateB_gpu1/grpo_seed456_step4000.pt",
+          "sha256": "755f3bf568fbfea72823bb684485bd4e1fe193293efa4f3ef272093259ff7300",
+          "size_bytes": 1098686,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_08_gateB_gpu1/grpo_seed456_step5000.pt",
+          "sha256": "5448b1089c870ca0cda4280f01468d651ee9133f3fef2984701277828b61e66c",
+          "size_bytes": 1098686,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_08_gateB_gpu1/grpo_seed5120_step1000.pt",
+          "sha256": "eaa3743c3f3f72962e3dc1882d3a10131b2b148a28d30f9e4b79183f83674c16",
+          "size_bytes": 1098834,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_08_gateB_gpu1/grpo_seed5120_step2000.pt",
+          "sha256": "2995bc6c28e02a7ccb6680dd8f7b55ae3c34b0d6e29abce5e1ee2fe3cc56ecd4",
+          "size_bytes": 1098834,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_08_gateB_gpu1/grpo_seed5120_step3000.pt",
+          "sha256": "2352f4077ed0fba7ef51f574a4830fb926d22d8e15d67743983c7495f318fbe8",
+          "size_bytes": 1098834,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_08_gateB_gpu1/grpo_seed5120_step4000.pt",
+          "sha256": "00b97e79e9badfd010140fed51b1d3e3fc603aa478022c89d05941a9fa1c9746",
+          "size_bytes": 1098834,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_08_gateB_gpu1/grpo_seed5120_step5000.pt",
+          "sha256": "369c18d1f279d1361b6ed283bb48fbe930d036b0ef1577602367e5421903393c",
+          "size_bytes": 1098834,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_08_gateB_gpu6/grpo_seed2048_step1000.pt",
+          "sha256": "aa1df9f59d9f1739f19059a34e557196c2b1046d8b2f0cdb3573beb6a47d07aa",
+          "size_bytes": 1098834,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_08_gateB_gpu6/grpo_seed2048_step2000.pt",
+          "sha256": "676b9ff579df2f49db63199c13b6ed9bb1e3e2a4b9e6b8e73d41fe4d8992ed40",
+          "size_bytes": 1098834,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_08_gateB_gpu6/grpo_seed2048_step3000.pt",
+          "sha256": "e1c43240c95596a88d4e1477dfd0bd1214cbfc2b48213c385fec43355ef2919b",
+          "size_bytes": 1098834,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_08_gateB_gpu6/grpo_seed2048_step4000.pt",
+          "sha256": "8a97339e1a02a90b542735f782bc7406c841868490567671c5d4d2fe36e6d750",
+          "size_bytes": 1098834,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_08_gateB_gpu6/grpo_seed2048_step5000.pt",
+          "sha256": "76edc633acfffcfd17a43ca56c05dd58a033e7bd9b40a153a5c2c9a50bbad12c",
+          "size_bytes": 1098834,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_08_gateB_gpu6/grpo_seed4096_step1000.pt",
+          "sha256": "8eebaeb5b909cd31701bb1db8500c7c345e6c55bb491df59964e61231b7980fc",
+          "size_bytes": 1098834,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_08_gateB_gpu6/grpo_seed4096_step2000.pt",
+          "sha256": "eb8457edbd444d4ac1fc662c26aca6e950a63cc99eded48c508f28277a845b9e",
+          "size_bytes": 1098834,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_08_gateB_gpu6/grpo_seed4096_step3000.pt",
+          "sha256": "255bbd4d1f90f8741f4b7786e6612ff06ee14d99a815426f035b0ad0a40b21e6",
+          "size_bytes": 1098834,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_08_gateB_gpu6/grpo_seed4096_step4000.pt",
+          "sha256": "3d3762234fa6c61c5a975045c0dd449831138fca34678a0db207a51f3620c2da",
+          "size_bytes": 1098834,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_08_gateB_gpu6/grpo_seed4096_step5000.pt",
+          "sha256": "25434192cf248c4ef3ee08f6c65655657ee70c4750c70c6b2a51d69229d6e0fb",
+          "size_bytes": 1098834,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_08_gateB_gpu6/grpo_seed42_step1000.pt",
+          "sha256": "e559129d22adbee88e8fd4434d7b7175d4f64821bd5e970a239d3b81ac737498",
+          "size_bytes": 1098538,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_08_gateB_gpu6/grpo_seed42_step2000.pt",
+          "sha256": "30c83923d968c27dee3ea336f419b2f00983dea200abb50e5ad97522b83b6a52",
+          "size_bytes": 1098538,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_08_gateB_gpu6/grpo_seed42_step3000.pt",
+          "sha256": "3ab585ac9e3e8497f2426428d44f77a7621f983acf5fca32db1bb4510f689d4e",
+          "size_bytes": 1098538,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_08_gateB_gpu6/grpo_seed42_step4000.pt",
+          "sha256": "e4ae3d6d8c4ee876f1d855e61cc3f1bbcba8c25061c811502e4a37f138f4f2fc",
+          "size_bytes": 1098538,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_08_gateB_gpu6/grpo_seed42_step5000.pt",
+          "sha256": "c3c6833d1e56f37f04210c57a70f79a58f2b2ebea58d5fa2fafacdf12c061c09",
+          "size_bytes": 1098538,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_08_gateB_gpu6/grpo_seed6144_step1000.pt",
+          "sha256": "c65430ac36136a71a4979ce9bb0ec6a9e16de3145f589b2723dd79838bb5b697",
+          "size_bytes": 1098834,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_08_gateB_gpu6/grpo_seed6144_step2000.pt",
+          "sha256": "d052ee1f300d9005c09c029c7aa469e94f0c3ed6e4ed18fc761c61809b9b8343",
+          "size_bytes": 1098834,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_08_gateB_gpu6/grpo_seed6144_step3000.pt",
+          "sha256": "9f24a173175d9572bc319e9bcf8271228383c5b0afffaad2bf6299c456247f75",
+          "size_bytes": 1098834,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_08_gateB_gpu6/grpo_seed6144_step4000.pt",
+          "sha256": "98c0f18dd52b25d20da9c83bcb2c2d7ef5e79511d4e2a13d3df53996b59f9c1a",
+          "size_bytes": 1098834,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_08_gateB_gpu6/grpo_seed6144_step5000.pt",
+          "sha256": "acdee75f7835f8ee7e928e95d9f94d8847fc4557e5f3fa6fc105af41cf40498c",
+          "size_bytes": 1098834,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_08_gateB_gpu6/grpo_seed789_step1000.pt",
+          "sha256": "746d5b64b7841e846cfe334fb34ae7c0892e2951e1d4001f7f166cb0f285cdde",
+          "size_bytes": 1098686,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_08_gateB_gpu6/grpo_seed789_step2000.pt",
+          "sha256": "8a9e8a28b479ff9a3c0fb208ff0f3658ee15f832604236403801d311cdbb9e6b",
+          "size_bytes": 1098686,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_08_gateB_gpu6/grpo_seed789_step3000.pt",
+          "sha256": "2a5f4c38feed0bbc98bf53a3a18745da872944ebdd2b4819fb0fe450955e033f",
+          "size_bytes": 1098686,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_08_gateB_gpu6/grpo_seed789_step4000.pt",
+          "sha256": "d7c38c446ff0b8720288e636d6d782f6ee844edf1c2506526c3a51d1a4894a4a",
+          "size_bytes": 1098686,
+          "missing": false
+        },
+        {
+          "path": "checkpoints/p3_08_gateB_gpu6/grpo_seed789_step5000.pt",
+          "sha256": "25024b2a67ff33100478c3cfe061982b974ef119b4e645d8ec12193d42c01936",
+          "size_bytes": 1098686,
+          "missing": false
+        }
+      ]
+    },
+    "p3_08_grpo_results": {
+      "description": "GRPO Gate A/B evaluation result tables.",
+      "provenance": {
+        "command": "python scripts/reeval_p3_08_gateA.py && python scripts/merge_gateB_results.py",
+        "inputs": [
+          "checkpoints/p3_08_gateA",
+          "checkpoints/p3_08_gateB_gpu1",
+          "checkpoints/p3_08_gateB_gpu6",
+          "checkpoints/p3_08_gateB_gpu7"
+        ]
+      },
+      "files": [
+        {
+          "path": "docs/p3_08_grpo_results.json",
+          "sha256": "2af0f4b1b3e471c14433dbbe5d8b869ee9749d18dafb513fbb28fdfa6aa33aa4",
+          "size_bytes": 70641,
+          "missing": false
+        },
+        {
+          "path": "docs/p3_08_grpo_results_gateA.json",
+          "sha256": "8ade8d1ed7c0b1321f8cf09eb2506aeb53f099f0a288cc88626b45b4c90d4118",
+          "size_bytes": 77083,
+          "missing": false
+        },
+        {
+          "path": "docs/p3_08_grpo_results_gateB.json",
+          "sha256": "f128a572d78bc34254ff904557cd27a0ece2d5c0593583ad366c046fa824cf72",
+          "size_bytes": 68630,
+          "missing": false
+        },
+        {
+          "path": "docs/p3_08_grpo_results_gateB_gpu1.json",
+          "sha256": "d52d32c7b4a65da4384454b4cf40fce36b45cdbe154d669bf1a5f45fa8a1d91d",
+          "size_bytes": 30883,
+          "missing": false
+        },
+        {
+          "path": "docs/p3_08_grpo_results_gateB_gpu6.json",
+          "sha256": "61eca3b70860e04ce2b10704039c5dbfdbab0c8c8c93fb4ad2a2aeaf3bdc1438",
+          "size_bytes": 30986,
+          "missing": false
+        }
+      ]
+    },
+    "p3_09_oracle_transfer": {
+      "description": "Independent-oracle transfer evaluation.",
+      "provenance": {
+        "command": "python scripts/run_p3_09.py --config configs/p3_primary_task.yaml",
+        "inputs": [
+          "docs/p3_08_grpo_results_gateB.json"
+        ]
+      },
+      "files": [
+        {
+          "path": "docs/p3_09_oracle_transfer.json",
+          "sha256": "7b074dc3fdb85746cb4bad2aa46c8618ef9fe0be2587a9869d25b8f9e83b8ae2",
+          "size_bytes": 26417,
+          "missing": false
+        }
+      ]
+    },
+    "p3_10_synergy": {
+      "description": "Cross-region synergy experiment results (v2 rerun).",
+      "provenance": {
+        "command": "python scripts/run_p3_10.py --run-dir docs/p3_10_run_20260725_v2",
+        "inputs": [
+          "docs/p3_09_oracle_transfer.json"
+        ]
+      },
+      "files": [
+        {
+          "path": "docs/p3_10_run_20260725_v2/p3_10_synergy_results.json",
+          "sha256": "6992853c887528632ef1c9bc04d1e124902cd4226cce6536315d3c5c53d51e39",
+          "size_bytes": 94099,
+          "missing": false
+        }
+      ]
+    },
+    "p3_11_prospective_designs": {
+      "description": "Prospective full-length design freeze (v3).",
+      "provenance": {
+        "command": "python scripts/run_p3_11.py --run-dir docs/p3_11_run_20260725_v3",
+        "inputs": [
+          "docs/p3_10_run_20260725_v2/p3_10_synergy_results.json"
+        ]
+      },
+      "files": [
+        {
+          "path": "docs/p3_11_run_20260725_v3/p3_11_full_length_designs.json",
+          "sha256": "bdc7890878c1eee6f3f409a2cb22b265eaa24c605257da71fc9ba6a90c449039",
+          "size_bytes": 332646,
+          "missing": false
+        },
+        {
+          "path": "docs/p3_11_run_20260725_v3/p3_11_pooled_designs.json",
+          "sha256": "b7f434bfe6d761999c0bcc0a852721a976a0450cf5b1add3b742e8bec995df5c",
+          "size_bytes": 826559,
+          "missing": false
+        }
+      ]
+    }
+  },
+  "dependency_graph": [
+    {
+      "stage": "raw_data",
+      "produces": [
+        "p3_01_benchmark_tiers"
+      ],
+      "consumes": []
+    },
+    {
+      "stage": "split_audit",
+      "produces": [
+        "p3_01_split_audit"
+      ],
+      "consumes": [
+        "p3_01_benchmark_tiers"
+      ]
+    },
+    {
+      "stage": "frozen_config",
+      "produces": [
+        "p3_execution_configs",
+        "p3_03_sequence_manifest"
+      ],
+      "consumes": [
+        "p3_01_benchmark_tiers"
+      ]
+    },
+    {
+      "stage": "oracle_training",
+      "produces": [
+        "p3_02_delta_oracle_checkpoints"
+      ],
+      "consumes": [
+        "p3_01_benchmark_tiers",
+        "p3_01_split_audit"
+      ]
+    },
+    {
+      "stage": "oracle_evaluation",
+      "produces": [
+        "p3_02_delta_oracle_results"
+      ],
+      "consumes": [
+        "p3_02_delta_oracle_checkpoints"
+      ]
+    },
+    {
+      "stage": "headroom_search",
+      "produces": [
+        "p3_07_search_results"
+      ],
+      "consumes": [
+        "p3_02_delta_oracle_results",
+        "p3_03_sequence_manifest"
+      ]
+    },
+    {
+      "stage": "rl_training",
+      "produces": [
+        "p3_08_grpo_gateA_checkpoints",
+        "p3_08_grpo_gateB_checkpoints"
+      ],
+      "consumes": [
+        "p3_02_delta_oracle_checkpoints",
+        "p3_execution_configs"
+      ]
+    },
+    {
+      "stage": "rl_evaluation",
+      "produces": [
+        "p3_08_grpo_results"
+      ],
+      "consumes": [
+        "p3_08_grpo_gateA_checkpoints",
+        "p3_08_grpo_gateB_checkpoints"
+      ]
+    },
+    {
+      "stage": "transfer_evaluation",
+      "produces": [
+        "p3_09_oracle_transfer"
+      ],
+      "consumes": [
+        "p3_08_grpo_results"
+      ]
+    },
+    {
+      "stage": "synergy_analysis",
+      "produces": [
+        "p3_10_synergy"
+      ],
+      "consumes": [
+        "p3_09_oracle_transfer"
+      ]
+    },
+    {
+      "stage": "prospective_design",
+      "produces": [
+        "p3_11_prospective_designs"
+      ],
+      "consumes": [
+        "p3_10_synergy"
+      ]
+    }
+  ],
+  "validation": {
+    "missing_files": [],
+    "unknown_provenance": [],
+    "dependency_graph_errors": [],
+    "strict": true,
+    "strict_passed": true
+  }
+}

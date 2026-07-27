@@ -23,7 +23,18 @@ from core.constants import (
     CODON_TABLE, SYNONYMOUS_CODONS, START_CODON, STOP_CODONS,
     ID_TO_NUC, NUC_TO_ID, is_valid_cds, translate,
 )
+from core.motif_policy import is_hard_legal
 from core.schema import MRNARecord
+
+
+def sequence_identity(record: MRNARecord) -> str:
+    """Canonical state identity: sha256 of the FULL current sequence.
+
+    P0-05 hard rule: every state-identity computation in the MDP and the
+    GRPO pipeline must use this function. Mixing tuple-based identity with
+    hash-based identity is forbidden.
+    """
+    return hashlib.sha256(record.seq.encode()).hexdigest()
 
 # Build codon → synonymous codons reverse lookup from amino-acid keyed table.
 # SYNONYMOUS_CODONS is keyed by amino acid (e.g., "A" → ["GCA","GCC","GCG","GCU"]).
@@ -149,7 +160,11 @@ def apply_edit_action(record: MRNARecord, action: EditAction) -> MRNARecord:
     raise ValueError(f"Unknown action op: {action.op!r}")
 
 
-def build_legal_edit_actions(record: MRNARecord, visited: Optional[set] = None) -> List[EditAction]:
+def build_legal_edit_actions(
+    record: MRNARecord,
+    visited: Optional[set] = None,
+    enforce_hard_motif: bool = True,
+) -> List[EditAction]:
     """Build all legal edit actions for a record.
 
     Returns:
@@ -162,7 +177,10 @@ def build_legal_edit_actions(record: MRNARecord, visited: Optional[set] = None) 
     - 3'UTR edits
     - Start/stop codon edits
     - Identity substitutions
-    - Actions leading to visited states (cycle avoidance)
+    - Actions leading to visited states (cycle avoidance, sha256 identity)
+    - Actions violating the hard motif policy (P0-05): upstream AUG,
+      cryptic splice sites, homopolymer >= 6, premature stop,
+      start/stop violation, reading-frame violation
     """
     actions = [STOP_EDIT]
     visited = visited or set()
@@ -175,9 +193,12 @@ def build_legal_edit_actions(record: MRNARecord, visited: Optional[set] = None) 
                 action = EditAction(op="five_utr_sub", pos=pos, nt=nt)
                 # Check cycle
                 new_rec = apply_edit_action(record, action)
-                seq_hash = hashlib.md5(new_rec.seq.encode()).hexdigest()
-                if seq_hash not in visited:
-                    actions.append(action)
+                seq_hash = sequence_identity(new_rec)
+                if seq_hash in visited:
+                    continue
+                if enforce_hard_motif and not is_hard_legal(record, new_rec):
+                    continue
+                actions.append(action)
 
     # CDS synonymous substitutions
     n_codons = len(record.cds) // 3
@@ -189,9 +210,12 @@ def build_legal_edit_actions(record: MRNARecord, visited: Optional[set] = None) 
             if target != old_codon:
                 action = EditAction(op="cds_synonymous_sub", pos=codon_pos, target_codon=target)
                 new_rec = apply_edit_action(record, action)
-                seq_hash = hashlib.md5(new_rec.seq.encode()).hexdigest()
-                if seq_hash not in visited:
-                    actions.append(action)
+                seq_hash = sequence_identity(new_rec)
+                if seq_hash in visited:
+                    continue
+                if enforce_hard_motif and not is_hard_legal(record, new_rec):
+                    continue
+                actions.append(action)
 
     return actions
 
@@ -214,7 +238,7 @@ class MDPState:
     current_predicted_delta: float = 0.0
 
     def sequence_hash(self) -> str:
-        return hashlib.md5(self.current_mrna.seq.encode()).hexdigest()
+        return sequence_identity(self.current_mrna)
 
     def n_edits(self) -> int:
         return len(self.edit_history)
@@ -226,7 +250,7 @@ def initial_state(
     cargo: str = "",
 ) -> MDPState:
     """Create the initial MDP state from a source sequence."""
-    seq_hash = hashlib.md5(source.seq.encode()).hexdigest()
+    seq_hash = sequence_identity(source)
     return MDPState(
         source_mrna=source,
         current_mrna=source,
@@ -240,7 +264,7 @@ def initial_state(
 def transition(state: MDPState, action: EditAction) -> MDPState:
     """Apply an action to get the next state."""
     new_record = apply_edit_action(state.current_mrna, action)
-    seq_hash = hashlib.md5(new_record.seq.encode()).hexdigest()
+    seq_hash = sequence_identity(new_record)
 
     new_history = state.edit_history + (action,) if not action.is_stop() else state.edit_history
     new_budget = state.remaining_budget - (0 if action.is_stop() else 1)
@@ -509,3 +533,71 @@ def compute_reward_v3(
             "no_novelty": True,
         },
     }
+
+
+# ===========================================================================
+# P0-05: frozen reward semantics — strict incremental reward with telescoping
+# ===========================================================================
+#
+# REWARD MODE (frozen): strict incremental
+#   r_t = F(x_t) - F(x_{t-1}) - one_step_cost
+# where F(x) is the risk-adjusted predicted improvement of x vs the source
+# (LCB + context secondary terms, WITHOUT edit cost), and
+#   one_step_cost = -w_edit_cost  (positive cost per edit).
+#
+# Telescoping guarantee:
+#   sum_t r_t = F(x_final) - F(x_0) - n_edits * one_step_cost
+#             = terminal_delta - total_cost
+# which equals the terminal reward
+#   R = Oracle(source, final_candidate) - edit_cost_total - risk_penalty.
+
+def reward_value_fn(
+    source: MRNARecord,
+    candidate: MRNARecord,
+    predicted_deltas: Dict[str, float],
+    uncertainties: Dict[str, float],
+    config: Optional[RewardV3Config] = None,
+) -> float:
+    """F(x): risk-adjusted predicted improvement of candidate vs source.
+
+    Excludes edit cost (handled separately as per-step cost) so that the
+    incremental rewards telescope exactly.
+    """
+    out = compute_reward_v3(
+        source, candidate,
+        predicted_deltas=predicted_deltas,
+        uncertainties=uncertainties,
+        n_edits=0,  # edit cost excluded from the value function
+        config=config,
+    )
+    return float(out["scalar"])
+
+
+def one_step_edit_cost(config: Optional[RewardV3Config] = None) -> float:
+    """Positive per-edit cost deducted at every incremental step."""
+    cfg = config or RewardV3Config()
+    return -float(cfg.w_edit_cost)
+
+
+def compute_terminal_reward(
+    source: MRNARecord,
+    final_candidate: MRNARecord,
+    predicted_deltas: Dict[str, float],
+    uncertainties: Dict[str, float],
+    n_edits: int,
+    config: Optional[RewardV3Config] = None,
+) -> float:
+    """Terminal reward: R = F(final) - F(source) - total_edit_cost.
+
+    Exactly equals the sum of incremental rewards over any trajectory from
+    source to final_candidate (telescoping).
+    """
+    f_final = reward_value_fn(source, final_candidate,
+                              predicted_deltas, uncertainties, config)
+    f_source = reward_value_fn(
+        source, source,
+        predicted_deltas={"protein_output": 0.0},
+        uncertainties={"protein_output": 0.0},
+        config=config,
+    )
+    return f_final - f_source - n_edits * one_step_edit_cost(config)

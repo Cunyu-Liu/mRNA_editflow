@@ -1,0 +1,2262 @@
+{
+  "gate": "B",
+  "n_seeds": 10,
+  "seeds": [
+    {
+      "seed": 42,
+      "final_pos_rate": 0.7082999999999999,
+      "final_stop_rate": 0.0,
+      "final_constraint": 1.0,
+      "final_val_reward": -0.040823,
+      "warm_start_reward": -0.1,
+      "beat_warm_start": true,
+      "mean_kl": 0.06605169660678649,
+      "max_kl": 0.2194,
+      "n_kl_skips": 34,
+      "n_ref_resets": 11,
+      "wall_clock_sec": 8116.8,
+      "no_collapse": true
+    },
+    {
+      "seed": 123,
+      "final_pos_rate": 0.875,
+      "final_stop_rate": 0.0,
+      "final_constraint": 1.0,
+      "final_val_reward": -0.067096,
+      "warm_start_reward": -0.1,
+      "beat_warm_start": true,
+      "mean_kl": 0.07535389221556885,
+      "max_kl": 0.2444,
+      "n_kl_skips": 51,
+      "n_ref_resets": 14,
+      "wall_clock_sec": 2927.9,
+      "no_collapse": true
+    },
+    {
+      "seed": 456,
+      "final_pos_rate": 0.7082999999999999,
+      "final_stop_rate": 0.0,
+      "final_constraint": 1.0,
+      "final_val_reward": -0.040823,
+      "warm_start_reward": -0.1,
+      "beat_warm_start": true,
+      "mean_kl": 0.06362854291417162,
+      "max_kl": 0.2117,
+      "n_kl_skips": 21,
+      "n_ref_resets": 7,
+      "wall_clock_sec": 2972.0,
+      "no_collapse": true
+    },
+    {
+      "seed": 789,
+      "final_pos_rate": 0.7082999999999999,
+      "final_stop_rate": 0.0,
+      "final_constraint": 1.0,
+      "final_val_reward": -0.040823,
+      "warm_start_reward": -0.1,
+      "beat_warm_start": true,
+      "mean_kl": 0.15439520958083822,
+      "max_kl": 0.216,
+      "n_kl_skips": 18,
+      "n_ref_resets": 6,
+      "wall_clock_sec": 6227.1,
+      "no_collapse": true
+    },
+    {
+      "seed": 1024,
+      "final_pos_rate": 0.875,
+      "final_stop_rate": 0.0,
+      "final_constraint": 1.0,
+      "final_val_reward": -0.067096,
+      "warm_start_reward": -0.1,
+      "beat_warm_start": true,
+      "mean_kl": 0.06140439121756487,
+      "max_kl": 0.2752,
+      "n_kl_skips": 66,
+      "n_ref_resets": 19,
+      "wall_clock_sec": 3033.8,
+      "no_collapse": true
+    },
+    {
+      "seed": 2048,
+      "final_pos_rate": 0.7031000000000001,
+      "final_stop_rate": 0.0,
+      "final_constraint": 1.0,
+      "final_val_reward": -0.049827,
+      "warm_start_reward": -0.1,
+      "beat_warm_start": true,
+      "mean_kl": 0.15463932135728534,
+      "max_kl": 0.2244,
+      "n_kl_skips": 31,
+      "n_ref_resets": 10,
+      "wall_clock_sec": 5527.3,
+      "no_collapse": true
+    },
+    {
+      "seed": 3072,
+      "final_pos_rate": 0.7082999999999999,
+      "final_stop_rate": 0.0,
+      "final_constraint": 1.0,
+      "final_val_reward": -0.040823,
+      "warm_start_reward": -0.1,
+      "beat_warm_start": true,
+      "mean_kl": 0.10742974051896212,
+      "max_kl": 0.2378,
+      "n_kl_skips": 24,
+      "n_ref_resets": 7,
+      "wall_clock_sec": 3194.0,
+      "no_collapse": true
+    },
+    {
+      "seed": 4096,
+      "final_pos_rate": 0.8854000000000001,
+      "final_stop_rate": 0.0,
+      "final_constraint": 1.0,
+      "final_val_reward": -0.045469,
+      "warm_start_reward": -0.1,
+      "beat_warm_start": true,
+      "mean_kl": 0.03064590818363272,
+      "max_kl": 0.2138,
+      "n_kl_skips": 40,
+      "n_ref_resets": 9,
+      "wall_clock_sec": 4920.1,
+      "no_collapse": true
+    },
+    {
+      "seed": 5120,
+      "final_pos_rate": 0.7082999999999999,
+      "final_stop_rate": 0.0,
+      "final_constraint": 1.0,
+      "final_val_reward": -0.040823,
+      "warm_start_reward": -0.1,
+      "beat_warm_start": true,
+      "mean_kl": 0.06618822355289418,
+      "max_kl": 0.2184,
+      "n_kl_skips": 22,
+      "n_ref_resets": 7,
+      "wall_clock_sec": 8427.3,
+      "no_collapse": true
+    },
+    {
+      "seed": 6144,
+      "final_pos_rate": 0.7082999999999999,
+      "final_stop_rate": 0.0,
+      "final_constraint": 1.0,
+      "final_val_reward": -0.040823,
+      "warm_start_reward": -0.1,
+      "beat_warm_start": true,
+      "mean_kl": 0.060610379241516944,
+      "max_kl": 0.2237,
+      "n_kl_skips": 22,
+      "n_ref_resets": 7,
+      "wall_clock_sec": 5352.5,
+      "no_collapse": true
+    }
+  ],
+  "gpu6_config": {
+    "gpu": "GPU 6 (MIG 1g.5gb)",
+    "seeds": [
+      42,
+      789,
+      2048,
+      4096,
+      6144
+    ]
+  },
+  "gpu1_config": {
+    "gpu": "GPU 1 (Full A100-PCIE-40GB)",
+    "seeds": [
+      123,
+      456,
+      1024,
+      3072,
+      5120
+    ]
+  },
+  "gate_b_criteria": {
+    "n_seeds_10": true,
+    "pos_rate_ge_30pct": true,
+    "constraint_100pct": true,
+    "no_collapse": true,
+    "stop_not_collapsed": true
+  },
+  "gate_b_verdict": "PASS",
+  "gpu6_details": {
+    "gate": "B",
+    "config": {
+      "n_updates": 5000,
+      "edit_budget": 1,
+      "sources_per_batch": 8,
+      "group_size": 4,
+      "lr": 0.0001,
+      "weight_decay": 0.0001,
+      "clip_epsilon": 0.2,
+      "beta_kl": 0.3,
+      "beta_entropy": 0.05,
+      "max_kl": 0.15,
+      "gradient_clip": 1.0,
+      "warmup_steps": 100,
+      "stop_penalty": 0.1,
+      "validation_interval": 200,
+      "checkpoint_interval": 1000,
+      "seed": 0,
+      "n_validation_trajectories": 8
+    },
+    "n_seeds": 5,
+    "n_seeds_completed": 5,
+    "n_seeds_failed": 0,
+    "verdict": "PASS",
+    "criteria": {
+      "no_collapse": true,
+      "finite_fractions": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "hard_constraints_100": true,
+      "constraint_validities": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "two_thirds_beat_warm": true,
+      "beat_warm_start": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "no_reward_hacking": true,
+      "positive_rates": [
+        0.7083333333333334,
+        0.7083333333333334,
+        0.703125,
+        0.8854166666666666,
+        0.7083333333333334
+      ],
+      "stop_not_collapsed": true,
+      "stop_rates": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "kl_normal": true,
+      "mean_kls": [
+        0.05592543172806753,
+        0.15264217580342543,
+        0.1513463267092235,
+        0.015175133759780008,
+        0.05458645216129075
+      ],
+      "clip_normal": true,
+      "mean_clips": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "all_pass": true
+    },
+    "results": [
+      {
+        "seed": 42,
+        "n_updates": 5000,
+        "wall_clock_sec": 8116.781841993332,
+        "warm_start_validation": {
+          "mean_reward": -0.10187328898312847,
+          "std_reward": 0.055252658644305626,
+          "mean_n_edits": 0.5,
+          "constraint_validity": 1.0,
+          "positive_improvement_rate": 0.22916666666666666,
+          "stop_at_root_rate": 0.5,
+          "n_trajectories": 192
+        },
+        "final_validation": {
+          "mean_reward": -0.040822976037690896,
+          "std_reward": 0.036199970476515124,
+          "mean_n_edits": 1.0,
+          "constraint_validity": 1.0,
+          "positive_improvement_rate": 0.7083333333333334,
+          "stop_at_root_rate": 0.0,
+          "n_trajectories": 192
+        },
+        "validation_log_summary": [
+          {
+            "step": 0,
+            "mean_reward": -0.10187328898312847,
+            "positive_improvement_rate": 0.22916666666666666,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 200,
+            "mean_reward": -0.10493153599561238,
+            "positive_improvement_rate": 0.3072916666666667,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 400,
+            "mean_reward": -0.08459341121823984,
+            "positive_improvement_rate": 0.5833333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 600,
+            "mean_reward": -0.05627358467076602,
+            "positive_improvement_rate": 0.78125,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 800,
+            "mean_reward": -0.055226023479834296,
+            "positive_improvement_rate": 0.7916666666666666,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 1000,
+            "mean_reward": -0.055206090469873535,
+            "positive_improvement_rate": 0.7916666666666666,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 1200,
+            "mean_reward": -0.05475724153144843,
+            "positive_improvement_rate": 0.796875,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 1400,
+            "mean_reward": -0.05503972030979682,
+            "positive_improvement_rate": 0.7916666666666666,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 1600,
+            "mean_reward": -0.04691599601198521,
+            "positive_improvement_rate": 0.71875,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 1800,
+            "mean_reward": -0.040384886072423,
+            "positive_improvement_rate": 0.7135416666666666,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 2000,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 2200,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 2400,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 2600,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 2800,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 3000,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 3200,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 3400,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 3600,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 3800,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 4000,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 4200,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 4400,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 4600,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 4800,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 5000,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          }
+        ],
+        "train_log_summary": {
+          "n_steps": 5000,
+          "mean_loss": 0.02909729171250947,
+          "mean_kl": 0.06607340438180442,
+          "mean_entropy": 0.49413584643841024,
+          "mean_clip_fraction": 0.0,
+          "n_skipped": 340,
+          "n_updated": 4660
+        }
+      },
+      {
+        "seed": 789,
+        "n_updates": 5000,
+        "wall_clock_sec": 6227.14045548439,
+        "warm_start_validation": {
+          "mean_reward": -0.10117024699264594,
+          "std_reward": 0.05500547843008954,
+          "mean_n_edits": 0.4895833333333333,
+          "constraint_validity": 1.0,
+          "positive_improvement_rate": 0.23958333333333334,
+          "stop_at_root_rate": 0.5104166666666666,
+          "n_trajectories": 192
+        },
+        "final_validation": {
+          "mean_reward": -0.040822976037690896,
+          "std_reward": 0.036199970476515124,
+          "mean_n_edits": 1.0,
+          "constraint_validity": 1.0,
+          "positive_improvement_rate": 0.7083333333333334,
+          "stop_at_root_rate": 0.0,
+          "n_trajectories": 192
+        },
+        "validation_log_summary": [
+          {
+            "step": 0,
+            "mean_reward": -0.10117024699264594,
+            "positive_improvement_rate": 0.23958333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 200,
+            "mean_reward": -0.09684208273840882,
+            "positive_improvement_rate": 0.3385416666666667,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 400,
+            "mean_reward": -0.07564865712036194,
+            "positive_improvement_rate": 0.578125,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 600,
+            "mean_reward": -0.04060083526290071,
+            "positive_improvement_rate": 0.7135416666666666,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 800,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 1000,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 1200,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 1400,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 1600,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 1800,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 2000,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 2200,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 2400,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 2600,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 2800,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 3000,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 3200,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 3400,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 3600,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 3800,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 4000,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 4200,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 4400,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 4600,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 4800,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 5000,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          }
+        ],
+        "train_log_summary": {
+          "n_steps": 5000,
+          "mean_loss": 0.1413721256762743,
+          "mean_kl": 0.15452598355645755,
+          "mean_entropy": 0.38487736885504054,
+          "mean_clip_fraction": 0.0,
+          "n_skipped": 180,
+          "n_updated": 4820
+        }
+      },
+      {
+        "seed": 2048,
+        "n_updates": 5000,
+        "wall_clock_sec": 5527.339028596878,
+        "warm_start_validation": {
+          "mean_reward": -0.10161048550775713,
+          "std_reward": 0.05413603091677237,
+          "mean_n_edits": 0.4479166666666667,
+          "constraint_validity": 1.0,
+          "positive_improvement_rate": 0.22395833333333334,
+          "stop_at_root_rate": 0.5520833333333334,
+          "n_trajectories": 192
+        },
+        "final_validation": {
+          "mean_reward": -0.049826507918648115,
+          "std_reward": 0.009230692944848481,
+          "mean_n_edits": 1.0,
+          "constraint_validity": 1.0,
+          "positive_improvement_rate": 0.703125,
+          "stop_at_root_rate": 0.0,
+          "n_trajectories": 192
+        },
+        "validation_log_summary": [
+          {
+            "step": 0,
+            "mean_reward": -0.10161048550775713,
+            "positive_improvement_rate": 0.22395833333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 200,
+            "mean_reward": -0.09872755957661639,
+            "positive_improvement_rate": 0.3229166666666667,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 400,
+            "mean_reward": -0.07813367222252748,
+            "positive_improvement_rate": 0.5572916666666666,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 600,
+            "mean_reward": -0.05653063843629728,
+            "positive_improvement_rate": 0.4166666666666667,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 800,
+            "mean_reward": -0.055411762826166534,
+            "positive_improvement_rate": 0.515625,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 1000,
+            "mean_reward": -0.049826507918648115,
+            "positive_improvement_rate": 0.703125,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 1200,
+            "mean_reward": -0.049826507918648115,
+            "positive_improvement_rate": 0.703125,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 1400,
+            "mean_reward": -0.049826507918648115,
+            "positive_improvement_rate": 0.703125,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 1600,
+            "mean_reward": -0.049826507918648115,
+            "positive_improvement_rate": 0.703125,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 1800,
+            "mean_reward": -0.049826507918648115,
+            "positive_improvement_rate": 0.703125,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 2000,
+            "mean_reward": -0.049826507918648115,
+            "positive_improvement_rate": 0.703125,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 2200,
+            "mean_reward": -0.049826507918648115,
+            "positive_improvement_rate": 0.703125,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 2400,
+            "mean_reward": -0.049826507918648115,
+            "positive_improvement_rate": 0.703125,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 2600,
+            "mean_reward": -0.049826507918648115,
+            "positive_improvement_rate": 0.703125,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 2800,
+            "mean_reward": -0.049826507918648115,
+            "positive_improvement_rate": 0.703125,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 3000,
+            "mean_reward": -0.049826507918648115,
+            "positive_improvement_rate": 0.703125,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 3200,
+            "mean_reward": -0.049826507918648115,
+            "positive_improvement_rate": 0.703125,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 3400,
+            "mean_reward": -0.049826507918648115,
+            "positive_improvement_rate": 0.703125,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 3600,
+            "mean_reward": -0.049826507918648115,
+            "positive_improvement_rate": 0.703125,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 3800,
+            "mean_reward": -0.049826507918648115,
+            "positive_improvement_rate": 0.703125,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 4000,
+            "mean_reward": -0.049826507918648115,
+            "positive_improvement_rate": 0.703125,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 4200,
+            "mean_reward": -0.049826507918648115,
+            "positive_improvement_rate": 0.703125,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 4400,
+            "mean_reward": -0.049826507918648115,
+            "positive_improvement_rate": 0.703125,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 4600,
+            "mean_reward": -0.049826507918648115,
+            "positive_improvement_rate": 0.703125,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 4800,
+            "mean_reward": -0.049826507918648115,
+            "positive_improvement_rate": 0.703125,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 5000,
+            "mean_reward": -0.049826507918648115,
+            "positive_improvement_rate": 0.703125,
+            "constraint_validity": 1.0
+          }
+        ],
+        "train_log_summary": {
+          "n_steps": 5000,
+          "mean_loss": 0.1435012782770209,
+          "mean_kl": 0.15483351441841264,
+          "mean_entropy": 0.42942023253347145,
+          "mean_clip_fraction": 0.0,
+          "n_skipped": 304,
+          "n_updated": 4696
+        }
+      },
+      {
+        "seed": 4096,
+        "n_updates": 5000,
+        "wall_clock_sec": 4920.122816324234,
+        "warm_start_validation": {
+          "mean_reward": -0.10117870558988085,
+          "std_reward": 0.053523464864907784,
+          "mean_n_edits": 0.5,
+          "constraint_validity": 1.0,
+          "positive_improvement_rate": 0.23958333333333334,
+          "stop_at_root_rate": 0.5,
+          "n_trajectories": 192
+        },
+        "final_validation": {
+          "mean_reward": -0.04546908388592754,
+          "std_reward": 0.03089330189197056,
+          "mean_n_edits": 1.0,
+          "constraint_validity": 1.0,
+          "positive_improvement_rate": 0.8854166666666666,
+          "stop_at_root_rate": 0.0,
+          "n_trajectories": 192
+        },
+        "validation_log_summary": [
+          {
+            "step": 0,
+            "mean_reward": -0.10117870558988085,
+            "positive_improvement_rate": 0.23958333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 200,
+            "mean_reward": -0.10142802471846708,
+            "positive_improvement_rate": 0.3072916666666667,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 400,
+            "mean_reward": -0.07684773337825755,
+            "positive_improvement_rate": 0.59375,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 600,
+            "mean_reward": -0.049188176653249115,
+            "positive_improvement_rate": 0.96875,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 800,
+            "mean_reward": -0.049439619891311674,
+            "positive_improvement_rate": 0.9895833333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 1000,
+            "mean_reward": -0.048838584037374115,
+            "positive_improvement_rate": 0.9947916666666666,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 1200,
+            "mean_reward": -0.04904224331766901,
+            "positive_improvement_rate": 0.9947916666666666,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 1400,
+            "mean_reward": -0.04858987274573118,
+            "positive_improvement_rate": 1.0,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 1600,
+            "mean_reward": -0.04858987274573118,
+            "positive_improvement_rate": 1.0,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 1800,
+            "mean_reward": -0.04858987274573118,
+            "positive_improvement_rate": 1.0,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 2000,
+            "mean_reward": -0.048838584037374115,
+            "positive_improvement_rate": 0.9947916666666666,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 2200,
+            "mean_reward": -0.04858987274573118,
+            "positive_improvement_rate": 1.0,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 2400,
+            "mean_reward": -0.048838584037374115,
+            "positive_improvement_rate": 0.9947916666666666,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 2600,
+            "mean_reward": -0.04923596061101678,
+            "positive_improvement_rate": 0.9895833333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 2800,
+            "mean_reward": -0.048838584037374115,
+            "positive_improvement_rate": 0.9947916666666666,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 3000,
+            "mean_reward": -0.04858987274573118,
+            "positive_improvement_rate": 1.0,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 3200,
+            "mean_reward": -0.048838584037374115,
+            "positive_improvement_rate": 0.9947916666666666,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 3400,
+            "mean_reward": -0.0484106056453133,
+            "positive_improvement_rate": 1.0,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 3600,
+            "mean_reward": -0.048838584037374115,
+            "positive_improvement_rate": 0.9947916666666666,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 3800,
+            "mean_reward": -0.0484106056453133,
+            "positive_improvement_rate": 1.0,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 4000,
+            "mean_reward": -0.048838584037374115,
+            "positive_improvement_rate": 0.9947916666666666,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 4200,
+            "mean_reward": -0.04858987274573118,
+            "positive_improvement_rate": 1.0,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 4400,
+            "mean_reward": -0.0484106056453133,
+            "positive_improvement_rate": 1.0,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 4600,
+            "mean_reward": -0.048393244007278124,
+            "positive_improvement_rate": 0.9947916666666666,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 4800,
+            "mean_reward": -0.048816540451312146,
+            "positive_improvement_rate": 0.9895833333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 5000,
+            "mean_reward": -0.04546908388592754,
+            "positive_improvement_rate": 0.8854166666666666,
+            "constraint_validity": 1.0
+          }
+        ],
+        "train_log_summary": {
+          "n_steps": 5000,
+          "mean_loss": 0.016467798000248147,
+          "mean_kl": 0.030546823614028107,
+          "mean_entropy": 0.4704833091102424,
+          "mean_clip_fraction": 0.0,
+          "n_skipped": 407,
+          "n_updated": 4593
+        }
+      },
+      {
+        "seed": 6144,
+        "n_updates": 5000,
+        "wall_clock_sec": 5352.491161823273,
+        "warm_start_validation": {
+          "mean_reward": -0.10177594559635093,
+          "std_reward": 0.0529830332652641,
+          "mean_n_edits": 0.4739583333333333,
+          "constraint_validity": 1.0,
+          "positive_improvement_rate": 0.22395833333333334,
+          "stop_at_root_rate": 0.5260416666666666,
+          "n_trajectories": 192
+        },
+        "final_validation": {
+          "mean_reward": -0.040822976037690896,
+          "std_reward": 0.036199970476515124,
+          "mean_n_edits": 1.0,
+          "constraint_validity": 1.0,
+          "positive_improvement_rate": 0.7083333333333334,
+          "stop_at_root_rate": 0.0,
+          "n_trajectories": 192
+        },
+        "validation_log_summary": [
+          {
+            "step": 0,
+            "mean_reward": -0.10177594559635093,
+            "positive_improvement_rate": 0.22395833333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 200,
+            "mean_reward": -0.09708532721547414,
+            "positive_improvement_rate": 0.328125,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 400,
+            "mean_reward": -0.07869264541900822,
+            "positive_improvement_rate": 0.59375,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 600,
+            "mean_reward": -0.04327322648865043,
+            "positive_improvement_rate": 0.703125,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 800,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 1000,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 1200,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 1400,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 1600,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 1800,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 2000,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 2200,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 2400,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 2600,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 2800,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 3000,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 3200,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 3400,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 3600,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 3800,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 4000,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 4200,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 4400,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 4600,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 4800,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 5000,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          }
+        ],
+        "train_log_summary": {
+          "n_steps": 5000,
+          "mean_loss": 0.014150058689061553,
+          "mean_kl": 0.061036885357827655,
+          "mean_entropy": 0.4111064427342094,
+          "mean_clip_fraction": 0.0,
+          "n_skipped": 214,
+          "n_updated": 4786
+        }
+      }
+    ],
+    "failed_seeds": [],
+    "total_wall_clock_sec": 30450.0821621418
+  },
+  "gpu1_details": {
+    "gate": "B",
+    "config": {
+      "n_updates": 5000,
+      "edit_budget": 1,
+      "sources_per_batch": 8,
+      "group_size": 4,
+      "lr": 0.0001,
+      "weight_decay": 0.0001,
+      "clip_epsilon": 0.2,
+      "beta_kl": 0.3,
+      "beta_entropy": 0.05,
+      "max_kl": 0.15,
+      "gradient_clip": 1.0,
+      "warmup_steps": 100,
+      "stop_penalty": 0.1,
+      "validation_interval": 200,
+      "checkpoint_interval": 1000,
+      "seed": 0,
+      "n_validation_trajectories": 8
+    },
+    "n_seeds": 5,
+    "n_seeds_completed": 5,
+    "n_seeds_failed": 0,
+    "verdict": "PASS",
+    "criteria": {
+      "no_collapse": true,
+      "finite_fractions": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "hard_constraints_100": true,
+      "constraint_validities": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "two_thirds_beat_warm": true,
+      "beat_warm_start": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ],
+      "no_reward_hacking": true,
+      "positive_rates": [
+        0.875,
+        0.7083333333333334,
+        0.875,
+        0.7083333333333334,
+        0.7083333333333334
+      ],
+      "stop_not_collapsed": true,
+      "stop_rates": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "kl_normal": true,
+      "mean_kls": [
+        0.059944579037874056,
+        0.057314966442313896,
+        0.03867065060111167,
+        0.1023099476359893,
+        0.059887911274983
+      ],
+      "clip_normal": true,
+      "mean_clips": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "all_pass": true
+    },
+    "results": [
+      {
+        "seed": 123,
+        "n_updates": 5000,
+        "wall_clock_sec": 2927.8518691062927,
+        "warm_start_validation": {
+          "mean_reward": -0.10126540668539379,
+          "std_reward": 0.05607393032992733,
+          "mean_n_edits": 0.5,
+          "constraint_validity": 1.0,
+          "positive_improvement_rate": 0.23958333333333334,
+          "stop_at_root_rate": 0.5,
+          "n_trajectories": 192
+        },
+        "final_validation": {
+          "mean_reward": -0.06709568889580957,
+          "std_reward": 0.07328488719547249,
+          "mean_n_edits": 1.0,
+          "constraint_validity": 1.0,
+          "positive_improvement_rate": 0.875,
+          "stop_at_root_rate": 0.0,
+          "n_trajectories": 192
+        },
+        "validation_log_summary": [
+          {
+            "step": 0,
+            "mean_reward": -0.10126540668539379,
+            "positive_improvement_rate": 0.23958333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 200,
+            "mean_reward": -0.10377850901339175,
+            "positive_improvement_rate": 0.3177083333333333,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 400,
+            "mean_reward": -0.09274666916911349,
+            "positive_improvement_rate": 0.515625,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 600,
+            "mean_reward": -0.065558202697916,
+            "positive_improvement_rate": 0.671875,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 800,
+            "mean_reward": -0.050525969728210905,
+            "positive_improvement_rate": 0.8854166666666666,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 1000,
+            "mean_reward": -0.04563035415966323,
+            "positive_improvement_rate": 0.8958333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 1200,
+            "mean_reward": -0.044453860650200905,
+            "positive_improvement_rate": 0.90625,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 1400,
+            "mean_reward": -0.044196188013627034,
+            "positive_improvement_rate": 0.90625,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 1600,
+            "mean_reward": -0.044196188013627034,
+            "positive_improvement_rate": 0.90625,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 1800,
+            "mean_reward": -0.044715327402299804,
+            "positive_improvement_rate": 0.8958333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 2000,
+            "mean_reward": -0.045082085607518356,
+            "positive_improvement_rate": 0.8958333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 2200,
+            "mean_reward": -0.04472561811892902,
+            "positive_improvement_rate": 0.8958333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 2400,
+            "mean_reward": -0.049204473082229284,
+            "positive_improvement_rate": 0.8489583333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 2600,
+            "mean_reward": -0.06720505612004242,
+            "positive_improvement_rate": 0.625,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 2800,
+            "mean_reward": -0.07822029874094796,
+            "positive_improvement_rate": 0.5,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 3000,
+            "mean_reward": -0.07666198581778767,
+            "positive_improvement_rate": 0.5052083333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 3200,
+            "mean_reward": -0.07694933598839983,
+            "positive_improvement_rate": 0.5,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 3400,
+            "mean_reward": -0.06791682615352541,
+            "positive_improvement_rate": 0.84375,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 3600,
+            "mean_reward": -0.06709568889580957,
+            "positive_improvement_rate": 0.875,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 3800,
+            "mean_reward": -0.06709568889580957,
+            "positive_improvement_rate": 0.875,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 4000,
+            "mean_reward": -0.06709568889580957,
+            "positive_improvement_rate": 0.875,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 4200,
+            "mean_reward": -0.06709568889580957,
+            "positive_improvement_rate": 0.875,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 4400,
+            "mean_reward": -0.06709568889580957,
+            "positive_improvement_rate": 0.875,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 4600,
+            "mean_reward": -0.06709568889580957,
+            "positive_improvement_rate": 0.875,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 4800,
+            "mean_reward": -0.06709568889580957,
+            "positive_improvement_rate": 0.875,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 5000,
+            "mean_reward": -0.06709568889580957,
+            "positive_improvement_rate": 0.875,
+            "constraint_validity": 1.0
+          }
+        ],
+        "train_log_summary": {
+          "n_steps": 5000,
+          "mean_loss": 0.03570818381458521,
+          "mean_kl": 0.07559794301808528,
+          "mean_entropy": 0.7899338315543415,
+          "mean_clip_fraction": 0.0,
+          "n_skipped": 524,
+          "n_updated": 4476
+        }
+      },
+      {
+        "seed": 456,
+        "n_updates": 5000,
+        "wall_clock_sec": 2972.0167977809906,
+        "warm_start_validation": {
+          "mean_reward": -0.09834049843942454,
+          "std_reward": 0.050431644221391285,
+          "mean_n_edits": 0.4583333333333333,
+          "constraint_validity": 1.0,
+          "positive_improvement_rate": 0.22916666666666666,
+          "stop_at_root_rate": 0.5416666666666666,
+          "n_trajectories": 192
+        },
+        "final_validation": {
+          "mean_reward": -0.040822976037690896,
+          "std_reward": 0.036199970476515124,
+          "mean_n_edits": 1.0,
+          "constraint_validity": 1.0,
+          "positive_improvement_rate": 0.7083333333333334,
+          "stop_at_root_rate": 0.0,
+          "n_trajectories": 192
+        },
+        "validation_log_summary": [
+          {
+            "step": 0,
+            "mean_reward": -0.09834049843942454,
+            "positive_improvement_rate": 0.22916666666666666,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 200,
+            "mean_reward": -0.09582820429225679,
+            "positive_improvement_rate": 0.3125,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 400,
+            "mean_reward": -0.09080656815976512,
+            "positive_improvement_rate": 0.5,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 600,
+            "mean_reward": -0.05446540562231098,
+            "positive_improvement_rate": 0.640625,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 800,
+            "mean_reward": -0.04215155831614357,
+            "positive_improvement_rate": 0.703125,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 1000,
+            "mean_reward": -0.040892745487916875,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 1200,
+            "mean_reward": -0.0408099858740116,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 1400,
+            "mean_reward": -0.0408099858740116,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 1600,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 1800,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 2000,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 2200,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 2400,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 2600,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 2800,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 3000,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 3200,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 3400,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 3600,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 3800,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 4000,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 4200,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 4400,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 4600,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 4800,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 5000,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          }
+        ],
+        "train_log_summary": {
+          "n_steps": 5000,
+          "mean_loss": 0.01544280096529983,
+          "mean_kl": 0.06361441265596571,
+          "mean_entropy": 0.4285423596948342,
+          "mean_clip_fraction": 0.0,
+          "n_skipped": 216,
+          "n_updated": 4784
+        }
+      },
+      {
+        "seed": 1024,
+        "n_updates": 5000,
+        "wall_clock_sec": 3033.7940962314606,
+        "warm_start_validation": {
+          "mean_reward": -0.09943554411287776,
+          "std_reward": 0.05086306800087257,
+          "mean_n_edits": 0.4479166666666667,
+          "constraint_validity": 1.0,
+          "positive_improvement_rate": 0.22395833333333334,
+          "stop_at_root_rate": 0.5520833333333334,
+          "n_trajectories": 192
+        },
+        "final_validation": {
+          "mean_reward": -0.06709568889580957,
+          "std_reward": 0.07328488719547249,
+          "mean_n_edits": 1.0,
+          "constraint_validity": 1.0,
+          "positive_improvement_rate": 0.875,
+          "stop_at_root_rate": 0.0,
+          "n_trajectories": 192
+        },
+        "validation_log_summary": [
+          {
+            "step": 0,
+            "mean_reward": -0.09943554411287776,
+            "positive_improvement_rate": 0.22395833333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 200,
+            "mean_reward": -0.09914134264000718,
+            "positive_improvement_rate": 0.28125,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 400,
+            "mean_reward": -0.08069618659109801,
+            "positive_improvement_rate": 0.5208333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 600,
+            "mean_reward": -0.05305258403485791,
+            "positive_improvement_rate": 0.7708333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 800,
+            "mean_reward": -0.049179275841728064,
+            "positive_improvement_rate": 0.8333333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 1000,
+            "mean_reward": -0.04914392847451895,
+            "positive_improvement_rate": 0.8333333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 1200,
+            "mean_reward": -0.04917586891557805,
+            "positive_improvement_rate": 0.8333333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 1400,
+            "mean_reward": -0.048357989250875276,
+            "positive_improvement_rate": 0.8333333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 1600,
+            "mean_reward": -0.04853258594986609,
+            "positive_improvement_rate": 0.8333333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 1800,
+            "mean_reward": -0.04795616136459407,
+            "positive_improvement_rate": 0.8385416666666666,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 2000,
+            "mean_reward": -0.06604274221082097,
+            "positive_improvement_rate": 0.8489583333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 2200,
+            "mean_reward": -0.06791952723597898,
+            "positive_improvement_rate": 0.875,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 2400,
+            "mean_reward": -0.06589490971430899,
+            "positive_improvement_rate": 0.8802083333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 2600,
+            "mean_reward": -0.06610761787663341,
+            "positive_improvement_rate": 0.8802083333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 2800,
+            "mean_reward": -0.06709568889580957,
+            "positive_improvement_rate": 0.875,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 3000,
+            "mean_reward": -0.06709568889580957,
+            "positive_improvement_rate": 0.875,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 3200,
+            "mean_reward": -0.06709568889580957,
+            "positive_improvement_rate": 0.875,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 3400,
+            "mean_reward": -0.06709568889580957,
+            "positive_improvement_rate": 0.875,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 3600,
+            "mean_reward": -0.06709568889580957,
+            "positive_improvement_rate": 0.875,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 3800,
+            "mean_reward": -0.06709568889580957,
+            "positive_improvement_rate": 0.875,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 4000,
+            "mean_reward": -0.06709568889580957,
+            "positive_improvement_rate": 0.875,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 4200,
+            "mean_reward": -0.06709568889580957,
+            "positive_improvement_rate": 0.875,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 4400,
+            "mean_reward": -0.06709568889580957,
+            "positive_improvement_rate": 0.875,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 4600,
+            "mean_reward": -0.06709568889580957,
+            "positive_improvement_rate": 0.875,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 4800,
+            "mean_reward": -0.06709568889580957,
+            "positive_improvement_rate": 0.875,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 5000,
+            "mean_reward": -0.06709568889580957,
+            "positive_improvement_rate": 0.875,
+            "constraint_validity": 1.0
+          }
+        ],
+        "train_log_summary": {
+          "n_steps": 5000,
+          "mean_loss": 0.04658643009033985,
+          "mean_kl": 0.06107118080395373,
+          "mean_entropy": 0.5353658360995545,
+          "mean_clip_fraction": 0.0,
+          "n_skipped": 655,
+          "n_updated": 4345
+        }
+      },
+      {
+        "seed": 3072,
+        "n_updates": 5000,
+        "wall_clock_sec": 3193.9813475608826,
+        "warm_start_validation": {
+          "mean_reward": -0.1020541672259271,
+          "std_reward": 0.053433141357745524,
+          "mean_n_edits": 0.4947916666666667,
+          "constraint_validity": 1.0,
+          "positive_improvement_rate": 0.22395833333333334,
+          "stop_at_root_rate": 0.5052083333333334,
+          "n_trajectories": 192
+        },
+        "final_validation": {
+          "mean_reward": -0.040822976037690896,
+          "std_reward": 0.036199970476515124,
+          "mean_n_edits": 1.0,
+          "constraint_validity": 1.0,
+          "positive_improvement_rate": 0.7083333333333334,
+          "stop_at_root_rate": 0.0,
+          "n_trajectories": 192
+        },
+        "validation_log_summary": [
+          {
+            "step": 0,
+            "mean_reward": -0.1020541672259271,
+            "positive_improvement_rate": 0.22395833333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 200,
+            "mean_reward": -0.0975462908540629,
+            "positive_improvement_rate": 0.3541666666666667,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 400,
+            "mean_reward": -0.08752115891241509,
+            "positive_improvement_rate": 0.546875,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 600,
+            "mean_reward": -0.05825699107785461,
+            "positive_improvement_rate": 0.65625,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 800,
+            "mean_reward": -0.040384886072423,
+            "positive_improvement_rate": 0.7135416666666666,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 1000,
+            "mean_reward": -0.040384886072423,
+            "positive_improvement_rate": 0.7135416666666666,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 1200,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 1400,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 1600,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 1800,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 2000,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 2200,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 2400,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 2600,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 2800,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 3000,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 3200,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 3400,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 3600,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 3800,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 4000,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 4200,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 4400,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 4600,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 4800,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 5000,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          }
+        ],
+        "train_log_summary": {
+          "n_steps": 5000,
+          "mean_loss": 0.09141737477146089,
+          "mean_kl": 0.10730382583986212,
+          "mean_entropy": 0.4852445097100542,
+          "mean_clip_fraction": 0.0,
+          "n_skipped": 242,
+          "n_updated": 4758
+        }
+      },
+      {
+        "seed": 5120,
+        "n_updates": 5000,
+        "wall_clock_sec": 8427.294691085815,
+        "warm_start_validation": {
+          "mean_reward": -0.10097308238538676,
+          "std_reward": 0.05545526313428826,
+          "mean_n_edits": 0.5052083333333334,
+          "constraint_validity": 1.0,
+          "positive_improvement_rate": 0.25,
+          "stop_at_root_rate": 0.4947916666666667,
+          "n_trajectories": 192
+        },
+        "final_validation": {
+          "mean_reward": -0.040822976037690896,
+          "std_reward": 0.036199970476515124,
+          "mean_n_edits": 1.0,
+          "constraint_validity": 1.0,
+          "positive_improvement_rate": 0.7083333333333334,
+          "stop_at_root_rate": 0.0,
+          "n_trajectories": 192
+        },
+        "validation_log_summary": [
+          {
+            "step": 0,
+            "mean_reward": -0.10097308238538676,
+            "positive_improvement_rate": 0.25,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 200,
+            "mean_reward": -0.09974499642926894,
+            "positive_improvement_rate": 0.3333333333333333,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 400,
+            "mean_reward": -0.08544265670601081,
+            "positive_improvement_rate": 0.53125,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 600,
+            "mean_reward": -0.06032637042912095,
+            "positive_improvement_rate": 0.671875,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 800,
+            "mean_reward": -0.04179748412669667,
+            "positive_improvement_rate": 0.703125,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 1000,
+            "mean_reward": -0.041038925228168606,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 1200,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 1400,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 1600,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 1800,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 2000,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 2200,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 2400,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 2600,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 2800,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 3000,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 3200,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 3400,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 3600,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 3800,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 4000,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 4200,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 4400,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 4600,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 4800,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          },
+          {
+            "step": 5000,
+            "mean_reward": -0.040822976037690896,
+            "positive_improvement_rate": 0.7083333333333334,
+            "constraint_validity": 1.0
+          }
+        ],
+        "train_log_summary": {
+          "n_steps": 5000,
+          "mean_loss": 0.012306901145260781,
+          "mean_kl": 0.06600102906728735,
+          "mean_entropy": 0.4770457811706387,
+          "mean_clip_fraction": 0.0,
+          "n_skipped": 214,
+          "n_updated": 4786
+        }
+      }
+    ],
+    "failed_seeds": [],
+    "total_wall_clock_sec": 20709.87882876396
+  }
+}

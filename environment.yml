@@ -1,0 +1,17 @@
+# Conda environment for mrna_editflow (P0-06).
+# Mirrors requirements-lock.txt. CPU-only by default; for CUDA 12.1 replace
+# the torch line with:  - torch==2.5.1 --index-url https://download.pytorch.org/whl/cu121
+name: mrna_editflow
+channels:
+  - conda-forge
+dependencies:
+  - python=3.10
+  - pip>=24
+  - numpy=1.26.4
+  - scipy=1.15.3
+  - pyyaml=6.0.3
+  - pytest=9.1.1
+  - certifi=2026.7.22
+  - pip:
+      - torch==2.5.1
+      - -e .

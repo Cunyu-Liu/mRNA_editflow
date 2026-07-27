@@ -1,0 +1,36 @@
+# Locked dependency set for mrna_editflow (P0-06).
+#
+# Pinned from the reference training environment:
+#   Python 3.10.20, Linux x86_64, torch 2.5.1+cu121 (8xA100).
+#
+# Install (CPU):
+#   pip install torch==2.5.1 --index-url https://download.pytorch.org/whl/cpu
+#   pip install -r requirements-lock.txt
+# Install (GPU, CUDA 12.1):
+#   pip install torch==2.5.1 --index-url https://download.pytorch.org/whl/cu121
+#   pip install -r requirements-lock.txt
+#
+# torch is intentionally NOT pinned inside this file: the wheel index URL
+# selects the CPU vs CUDA build and pip cannot express that in a lock file.
+
+# --- core runtime (imported by first-party code) ---
+numpy==1.26.4
+scipy==1.15.3
+PyYAML==6.0.3
+certifi==2026.7.22
+pytest==9.1.1
+
+# --- torch 2.5.1 transitive closure (platform-portable subset) ---
+typing_extensions==4.15.0
+sympy==1.13.1
+mpmath==1.3.0
+networkx==3.4.2
+Jinja2==3.1.6
+filelock==3.29.0
+fsspec==2026.4.0
+
+# --- optional extras (install only when the feature is needed) ---
+# acquisition: pandas==2.2.2, openpyxl==3.1.5, biopython==1.87
+# external:    transformers==5.14.1, lightgbm==4.7.0
+# plotting:    matplotlib==3.10.9
+# vienna:      ViennaRNA==2.7.2

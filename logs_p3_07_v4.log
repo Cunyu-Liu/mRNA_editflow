@@ -1,0 +1,26 @@
+======================================================================
+P3-07: strong-search ceiling and RL necessity gate (real oracle)
+======================================================================
+
+[1] Building P3-02 ensemble (deterministic refit, frozen config)
+    ensemble built in 116.3s; architectures=['seq_diff', 'seq_linear']
+
+[2] Selecting sources (test mothers for search, train mothers for DAgger)
+    test sources: 24, train sources: 24
+
+[3] Training Stage B ranker on benchmark pairs
+    ranker trained on 23984 pairs in 17.0s
+
+[4] Training DAgger ranker (2 rounds on train mothers)
+    DAgger done in 9.6s; training_oracle_calls=3072, pairs=3096
+
+[5] Baseline grid: 10 methods x query budgets x edit budgets
+    source 1/24 done (snv:0f7ee24bb93a, utr_len=50)
+    source 2/24 done (snv:2510b14d4ee8, utr_len=50)
+    source 3/24 done (snv:8d483cd48b6e, utr_len=50)
+    source 4/24 done (snv:735ddfa083c2, utr_len=50)
+    source 5/24 done (snv:c01362b8f752, utr_len=50)
+    source 6/24 done (snv:55eea2fbd87d, utr_len=50)
+    source 7/24 done (snv:7829a1b008f1, utr_len=50)
+    source 8/24 done (snv:73bb6461c592, utr_len=50)
+    source 9/24 done (snv:e31357a6f90f, utr_len=50)

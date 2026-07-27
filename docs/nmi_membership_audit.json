@@ -1,0 +1,99 @@
+{
+  "benchmark_dir": "data/p3/benchmark",
+  "n_measured": 4802,
+  "n_proxy": 473228,
+  "n_train_pool": 363114,
+  "n_test_pool": 51157,
+  "checks": [
+    {
+      "check": "source_overlap",
+      "n_train_sources": 2229,
+      "n_test_sources": 300,
+      "n_overlap": 0,
+      "overlap_ids": [],
+      "pass": true
+    },
+    {
+      "check": "family_overlap",
+      "n_train_families": 2006,
+      "n_test_families": 264,
+      "n_overlap": 0,
+      "overlap_ids": [],
+      "pass": true
+    },
+    {
+      "check": "exact_sequence_collision",
+      "n_train_candidates": 324815,
+      "n_collisions": 0,
+      "collision_examples": [],
+      "pass": true
+    },
+    {
+      "check": "edit_neighborhood_collision",
+      "threshold": 1,
+      "n_test": 51157,
+      "n_near_duplicate": 0,
+      "rate": 0.0,
+      "max_rate": 0.01,
+      "examples": [],
+      "pass": true
+    },
+    {
+      "check": "assay_batch_overlap",
+      "n_shared_batches": 9,
+      "shared_batches": [
+        [
+          "measured",
+          "measured_double"
+        ],
+        [
+          "measured",
+          "measured_multi"
+        ],
+        [
+          "measured",
+          "measured_single"
+        ],
+        [
+          "measured",
+          "wild_type_anchor"
+        ],
+        [
+          "proxy",
+          "all_legal_single"
+        ],
+        [
+          "proxy",
+          "matched_negative_single"
+        ],
+        [
+          "proxy",
+          "random_double"
+        ],
+        [
+          "proxy",
+          "structure_guided_double"
+        ],
+        [
+          "proxy",
+          "topranked_double"
+        ]
+      ],
+      "pass": true
+    },
+    {
+      "check": "proxy_role_compliance",
+      "role_counts": {
+        "train": 311300,
+        "ood": 63427,
+        "test": 50671,
+        "val": 47830
+      },
+      "n_total": 473228,
+      "n_kept_train_role": 311300,
+      "n_excluded": 161928,
+      "pass": true
+    }
+  ],
+  "all_pass": true
+}

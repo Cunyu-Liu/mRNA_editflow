@@ -86,8 +86,8 @@ The RefSeq file currently under `data/raw/` is retained as historical evidence: 
 ### Task 6: Audit, verification, and handoff
 
 **Files:**
-- Create: `docs/p0_data_reconstruction_audit.json`
-- Create: `docs/p0_data_reconstruction_audit.md`
+- Create: `docs/p0_data_reconstruction_v1_audit.json`
+- Create: `docs/p0_data_reconstruction_v1_audit.md`
 - Create: `docs/p0_data_reconstruction_v1_handoff.md`
 
 **Steps:**

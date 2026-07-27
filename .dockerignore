@@ -1,0 +1,25 @@
+# Keep the Docker build context small and deterministic (P0-06).
+.git
+__pycache__
+*.pyc
+.pytest_cache
+
+# heavy runtime assets not needed by the acceptance gate
+data
+checkpoints
+results
+benchmark_v21
+artifacts
+benchmark
+external_tools
+ckpts
+logs
+*.log
+
+# large generated reports
+docs/p3_10_run_*
+docs/p3_11_run_*
+
+# OS noise
+.DS_Store
+._*

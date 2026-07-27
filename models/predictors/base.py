@@ -201,6 +201,14 @@ class PredictorBase(abc.ABC):
             device=device,
             hyperparams=meta["hyperparams"],
         )
+        # The persisted hyperparams may record the *training* device (e.g.
+        # "cuda"); the explicit runtime ``device`` argument must win so
+        # checkpoints also load on hosts without that accelerator (P0-06
+        # clean-environment reproducibility).
+        instance.device = device
+        hp = getattr(instance, "hp", None)
+        if hp is not None and hasattr(hp, "device"):
+            hp.device = device
         state = torch.load(str(ckpt_path) + ".pt", map_location=device)
         instance._build_model()
         instance._model.load_state_dict(state["model_state_dict"])

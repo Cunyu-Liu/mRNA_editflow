@@ -190,13 +190,24 @@ def run_p3_02(
     # Use measured for training, proxy as additional training data if available
     train_all = train_recs + val_recs  # train+val for cross-fitting
     if proxy_records and not smoke_test:
+        # P0-03 hard rule: ONLY train-role proxy records may enter training.
+        # Sampling from the full proxy pool leaks val/test-role proxy records
+        # into the training set (membership contamination).
+        proxy_train = [
+            record for record in proxy_records
+            if record.split_role == "train"
+        ]
+        n_proxy_total = len(proxy_records)
+        n_proxy_excluded = n_proxy_total - len(proxy_train)
         # Subsample proxy to keep training time reasonable
         rng = np.random.RandomState(seed)
-        n_proxy_sample = min(len(proxy_records), max_proxy)
-        proxy_sample_idx = rng.choice(len(proxy_records), n_proxy_sample, replace=False)
-        proxy_sample = [proxy_records[i] for i in proxy_sample_idx]
+        n_proxy_sample = min(len(proxy_train), max_proxy)
+        proxy_sample_idx = rng.choice(len(proxy_train), n_proxy_sample, replace=False)
+        proxy_sample = [proxy_train[i] for i in proxy_sample_idx]
         train_all = train_all + proxy_sample
-        print(f"  Added {n_proxy_sample} proxy records to training set")
+        print(f"  Proxy role filtering: {len(proxy_train)}/{n_proxy_total} train-role "
+              f"({n_proxy_excluded} non-train excluded)")
+        print(f"  Added {n_proxy_sample} train-role proxy records to training set")
 
     train_features = batch_extract_features(train_all, config.max_seq_len)
     test_features = batch_extract_features(test_recs, config.max_seq_len)

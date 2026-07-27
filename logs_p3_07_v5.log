@@ -1,0 +1,55 @@
+======================================================================
+P3-07: strong-search ceiling and RL necessity gate (real oracle)
+======================================================================
+
+[1] Building P3-02 ensemble (deterministic refit, frozen config)
+    ensemble built in 84.2s; architectures=['seq_diff', 'seq_linear']
+
+[2] Selecting sources (test mothers for search, train mothers for DAgger)
+    test sources: 24, train sources: 24
+
+[3] Training Stage B ranker on benchmark pairs
+    ranker trained on 23984 pairs in 25.1s
+
+[4] Training DAgger ranker (2 rounds on train mothers)
+    DAgger done in 11.7s; training_oracle_calls=3072, pairs=3096
+
+[5] Baseline grid: 10 methods x query budgets x edit budgets
+    source 1/24 done (snv:0f7ee24bb93a, utr_len=50)
+    source 2/24 done (snv:2510b14d4ee8, utr_len=50)
+    source 3/24 done (snv:8d483cd48b6e, utr_len=50)
+    source 4/24 done (snv:735ddfa083c2, utr_len=50)
+    source 5/24 done (snv:c01362b8f752, utr_len=50)
+    source 6/24 done (snv:55eea2fbd87d, utr_len=50)
+    source 7/24 done (snv:7829a1b008f1, utr_len=50)
+    source 8/24 done (snv:73bb6461c592, utr_len=50)
+    source 9/24 done (snv:e31357a6f90f, utr_len=50)
+    source 10/24 done (snv:faa4aa9c9149, utr_len=50)
+    source 11/24 done (snv:19511752d43f, utr_len=50)
+    source 12/24 done (snv:504ab11a6a41, utr_len=50)
+    source 13/24 done (snv:62940a7cc7b7, utr_len=50)
+    source 14/24 done (snv:a98238f3d0a8, utr_len=50)
+    source 15/24 done (snv:1ce66c4fb125, utr_len=50)
+    source 16/24 done (snv:2d8a9c6eeef5, utr_len=50)
+    source 17/24 done (snv:42d49b89aede, utr_len=50)
+    source 18/24 done (snv:984d929038e9, utr_len=50)
+    source 19/24 done (snv:e103534da054, utr_len=50)
+    source 20/24 done (snv:739ba7680e8c, utr_len=50)
+    source 21/24 done (snv:4194ca3142aa, utr_len=50)
+    source 22/24 done (snv:18e5a6120b6b, utr_len=50)
+    source 23/24 done (snv:a1d7fea25ca5, utr_len=50)
+    source 24/24 done (snv:7d4b3f6720f8, utr_len=50)
+
+[6] Exact evaluation
+    exact one-edit on 24 sources (13 with improvement > 0)
+    exact two-edit on 6 sources
+
+[7] Tiny-MDP DP (budget 2) + regrets
+    DP on 2 sources
+
+[8] Algorithm semantics on 2 sources (budgets 1 and 2)
+
+[9] Cost accounting + RL necessity decision
+
+[done] wrote docs/p3_07_search_results.json in 5518.2s
+DECISION: NO_RL_ROUTE_C — Strong search already reaches 3161.26% of the exact reference at query budget 128; no quality or cost gap for RL to fill.

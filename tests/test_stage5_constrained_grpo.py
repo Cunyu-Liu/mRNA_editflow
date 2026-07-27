@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import math
 import os
 import tempfile
 import unittest
@@ -63,6 +64,49 @@ class TestStage5ConstrainedGRPO(unittest.TestCase):
         self.assertTrue(skip)
         with self.assertRaises(OracleContractError):
             train_grpo(records=[self.record], base_checkpoint=self.stage_a["checkpoint_path"], save_dir=os.path.join(self.tmp.name, "paper"), profile_path=os.path.join(self.tmp.name, "paper.jsonl"), config=TrainGRPOConfig(steps=1), device="cpu", run_mode="paper")
+
+    def test_exact_zero_probabilities_keep_gradients_finite(self):
+        """Regression (P0-04): exact-zero rates/probs must keep exact -inf
+        forward semantics (legality) without poisoning backward with NaN.
+
+        Previously ``torch.log(0)`` in the eps=None branch produced -inf in
+        forward (fine) but ``grad * 1/0`` in backward, which turned every
+        GRPO update into NaN weights and made same-seed reruns "differ"
+        because NaN != NaN.
+        """
+        from mrna_editflow.rl.action_scoring import action_log_intensities
+
+        rates = torch.tensor([[[0.0, 0.5, 0.25], [0.3, 0.0, 0.0]]], requires_grad=True)
+        sub_probs = torch.tensor([[[0.0, 0.4, 0.6, 0.0], [0.25, 0.25, 0.25, 0.25]]], requires_grad=True)
+        ins_probs = torch.tensor([[[0.1, 0.2, 0.3, 0.4], [0.0, 0.5, 0.5, 0.0]]], requires_grad=True)
+        log_ins, log_sub, log_del = action_log_intensities(
+            {"rates": rates, "sub_probs": sub_probs, "ins_probs": ins_probs}, eps=None
+        )
+        # Forward: exact -inf wherever an input was exactly zero.
+        self.assertTrue(torch.isneginf(log_ins[0, 1, 0]))  # ins_probs == 0
+        self.assertTrue(torch.isneginf(log_sub[0, 0, 0]))  # sub_probs == 0
+        self.assertTrue(torch.isneginf(log_del[0, 1]))     # del rate == 0
+        # Positive entries keep exact log semantics.
+        self.assertAlmostEqual(float(log_del[0, 0]), float(torch.log(torch.tensor(0.25))), places=6)
+        # Backward: exp() of the intensities (as the policy does) must give
+        # finite gradients everywhere; zero entries receive exactly zero grad.
+        total = log_ins.exp().sum() + log_sub.exp().sum() + log_del.exp().sum()
+        total.backward()
+        for tensor in (rates, sub_probs, ins_probs):
+            self.assertIsNotNone(tensor.grad)
+            self.assertTrue(torch.isfinite(tensor.grad).all())
+        self.assertEqual(float(rates.grad[0, 0, 0]), 0.0)
+        self.assertEqual(float(sub_probs.grad[0, 0, 0]), 0.0)
+
+    def test_grpo_update_writes_finite_weights(self):
+        """End-to-end (P0-04): a GRPO update step must not write NaN weights."""
+        result = train_grpo(records=[self.record], base_checkpoint=self.stage_a["checkpoint_path"], save_dir=os.path.join(self.tmp.name, "finite"), profile_path=os.path.join(self.tmp.name, "finite.jsonl"), config=TrainGRPOConfig(steps=1, group_size=2, max_edits=1, checkpoint_interval=1, seed=904), device="cpu")
+        payload = torch.load(result["checkpoint_path"], map_location="cpu", weights_only=False)
+        self.assertTrue(all(torch.isfinite(value).all() for value in payload["model_state"].values()))
+        with open(result["profile_path"], encoding="utf-8") as fh:
+            profile = json.loads(next(line for line in fh if line.strip()))
+        self.assertTrue(profile["updated"])
+        self.assertTrue(math.isfinite(profile["loss"]))
 
     def test_update_reference_freeze_resume_and_seed_reproducibility(self):
         def run(name: str, steps: int, resume: str | None = None):

@@ -17,6 +17,24 @@ from mrna_editflow.core.constants import NUC_TO_ID
 ACTION_OPERATIONS = ("sub", "ins", "del", "stop")
 
 
+def _log_exact_zeros(x: torch.Tensor) -> torch.Tensor:
+    """``log(x)`` keeping exact ``-inf`` at zero entries with finite backward.
+
+    Zero entries route their gradient through the constant ``-inf`` branch of
+    ``torch.where``, so autograd never evaluates ``grad * (1/0)`` there;
+    positive entries keep exact ``log`` semantics and the usual ``1/x``
+    gradient.  Required by the on-policy path: exact zero probabilities must
+    remain exactly zero after ``exp()`` (legality), while policy-gradient
+    updates through the full intensity tensor must stay NaN-free.
+    """
+    floor = torch.finfo(x.dtype).tiny
+    return torch.where(
+        x > 0,
+        torch.log(x.clamp_min(floor)),
+        torch.full_like(x, float("-inf")),
+    )
+
+
 def _reference_tensor(model_output: Mapping[str, torch.Tensor]) -> torch.Tensor:
     rates = model_output.get("rates")
     if not isinstance(rates, torch.Tensor):
@@ -61,10 +79,10 @@ def action_log_intensities(
             )
         tensors[name] = probs[..., :nucleotide_count]
     if eps is None:
-        log_rates = torch.log(rates[..., :3])
+        log_rates = _log_exact_zeros(rates[..., :3])
         return (
-            log_rates[..., 0:1] + torch.log(tensors["ins_probs"]) if "ins" in requested else None,
-            log_rates[..., 1:2] + torch.log(tensors["sub_probs"]) if "sub" in requested else None,
+            log_rates[..., 0:1] + _log_exact_zeros(tensors["ins_probs"]) if "ins" in requested else None,
+            log_rates[..., 1:2] + _log_exact_zeros(tensors["sub_probs"]) if "sub" in requested else None,
             log_rates[..., 2] if "del" in requested else None,
         )
     floor = max(float(eps), torch.finfo(rates.dtype).tiny)

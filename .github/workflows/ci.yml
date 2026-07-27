@@ -1,0 +1,34 @@
+# CI for mrna_editflow (P0-06 acceptance gate).
+# Runs the exact acceptance commands in a clean environment:
+#   pip install -e . && pytest -q && bash scripts/reproduce_smoke.sh
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: Install CPU torch
+        run: pip install torch==2.5.1 --index-url https://download.pytorch.org/whl/cpu
+
+      - name: Install locked dependencies
+        run: pip install -r requirements-lock.txt
+
+      - name: Install package (editable)
+        run: pip install -e .
+
+      - name: Run test suite
+        run: pytest -q
+
+      - name: Run reproduction smoke
+        run: bash scripts/reproduce_smoke.sh

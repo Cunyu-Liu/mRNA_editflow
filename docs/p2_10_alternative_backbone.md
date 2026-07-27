@@ -208,7 +208,7 @@ split contract (combined_family, paper mode).
 | Launcher | `scripts/launch_p2_10_option_c.sh` | deployed |
 | Unit tests | `tests/test_stage_a_recovery_p2_10_option_c.py` | 40/40 pass |
 | Profile (pending) | `benchmark/paper/stage_a_recovery_p2_10_option_c_seed42.profile.jsonl` | TBD on launch |
-| Best ckpt (pending) | `benchmark/paper/stage_a_recovery_p2_10_option_c_seed42/stage_a_best.pt` | TBD on completion |
+| Best ckpt (completed) | `benchmark/paper/stage_a_recovery_p2_10_option_c_seed42/stage_a_step10000.pt` | completed |
 
 ### Constraint compliance
 

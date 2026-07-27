@@ -222,8 +222,21 @@ class TestTinyMDPDP:
     def test_state_enumeration_size(self):
         source = _make_record("ACGUA")
         states = enumerate_states(source, 1)
-        # 1 + 15 single edits
-        assert len(states) == 16
+        # 1 + 15 single-edit candidates, minus the 2 hard-illegal edits
+        # (P0-05): pos1->G creates a cryptic splice site (AGGUA) and
+        # pos1->U creates an upstream AUG (AUGUA); both are excluded from
+        # the legal state space by the hard motif policy.
+        assert len(states) == 14
+
+    def test_state_enumeration_excludes_hard_illegal(self):
+        source = _make_record("ACGUA")
+        states = enumerate_states(source, 1)
+        children = {r.five_utr for r in states.values()}
+        assert "AGGUA" not in children  # cryptic splice
+        assert "AUGUA" not in children  # upstream AUG
+        # A source with no hard-illegal single edits enumerates all 1+3L.
+        clean = _make_record("UUUUA")
+        assert len(enumerate_states(clean, 1)) == 1 + 3 * 5
 
 
 # ---------------------------------------------------------------------------
@@ -393,7 +406,7 @@ class TestDegenerateReferenceGuard:
         decision = _make_decision(grid, exact_one, {}, {}, [])
         assert decision["route"] == "NO_GO_PREMISE_FAILURE"
         assert decision["degenerate_reference"]["flag"] is True
-        assert decision["degenerate_reference"]["frac_sources_positive_exact_one_edit"] == 0.0
+        assert decision["degenerate_reference"]["frac_sources_positive_improvement"] == 0.0
         assert decision["normalized_reach"]["best_search_qb128"] is None
 
     def test_positive_reference_proceeds_to_route(self, _make_decision):

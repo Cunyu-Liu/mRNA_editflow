@@ -1,0 +1,237 @@
+# NMI execution configuration — Phase 0 freeze baseline.
+#
+# Single source of truth for build_freeze_manifest.py. Every artifact that
+# any Phase-0+ result depends on MUST be declared here with full provenance.
+# The strict gate fails on any missing file or any unknown provenance.
+
+project: mrna_editflow
+phase: nmi_phase0_freeze
+manifest_output: artifacts/nmi_phase0_freeze_manifest.json
+
+# Global seeds used across P3 experiments (see configs/p3_primary_task.yaml
+# and scripts/run_p3_08.py).
+seeds: [42, 123, 456]
+
+git:
+  record_commit: true
+  record_dirty_state: true   # uncommitted changes are listed, not hidden
+
+environment:
+  record:
+    - python_version
+    - pytorch_version
+    - cuda_version
+    - cudnn_version
+    - gpu_names
+    - platform
+    - hostname
+
+# ---------------------------------------------------------------------------
+# Artifact groups. Each group carries machine-checkable provenance:
+#   command: the exact command that (re)generates the artifacts
+#   inputs:  upstream paths the artifacts derive from
+# ---------------------------------------------------------------------------
+artifact_groups:
+
+  - name: p3_01_benchmark_tiers
+    description: P3-01 local-edit benchmark — the raw data truth source.
+    provenance:
+      command: >-
+        python scripts/p3_01_build_benchmark.py --output-dir data/p3/benchmark
+      inputs:
+        - data/raw/gencode.v45.pc_transcripts.fa.gz
+        - data/raw/human.1.rna.gbff.gz
+    files:
+      - data/p3/benchmark/measured_tier.jsonl
+      - data/p3/benchmark/proxy_tier.jsonl
+      - data/p3/benchmark/unlabeled_tier.jsonl
+
+  - name: p3_01_split_audit
+    description: Split membership / leakage audit for the benchmark tiers.
+    provenance:
+      command: python scripts/p3_01_resolve_collisions.py --audit-only
+      inputs:
+        - data/p3/benchmark/measured_tier.jsonl
+        - data/p3/benchmark/proxy_tier.jsonl
+    files:
+      - docs/p3_01_split_audit.json
+
+  - name: p3_execution_configs
+    description: Frozen research contract and primary task configuration.
+    provenance:
+      command: manual (frozen under docs/p3_00_change_governance.md)
+      inputs: []
+    files:
+      - configs/p3_frozen_research_contract.yaml
+      - configs/p3_primary_task.yaml
+
+  - name: p3_03_sequence_manifest
+    description: Frozen evaluation sequence manifest for P3-03+.
+    provenance:
+      command: python scripts/generate_p3_03_manifest.py
+      inputs:
+        - data/p3/benchmark/measured_tier.jsonl
+    files:
+      - docs/p3_03_sequence_manifest.json
+
+  - name: p3_02_delta_oracle_checkpoints
+    description: Cross-fitted delta-oracle ensemble checkpoints (4 architectures).
+    provenance:
+      command: >-
+        python scripts/run_p3_02.py --benchmark-dir data/p3/benchmark
+        --output results/p3_02 --checkpoint-dir checkpoints/p3_delta_oracles
+      inputs:
+        - data/p3/benchmark/measured_tier.jsonl
+        - data/p3/benchmark/proxy_tier.jsonl
+    files:
+      - checkpoints/p3_delta_oracles/absolute_fold0.npz
+      - checkpoints/p3_delta_oracles/difference_fold0.npz
+      - checkpoints/p3_delta_oracles/edit_conditioned_fold0.npz
+      - checkpoints/p3_delta_oracles/siamese_fold0.npz
+
+  - name: p3_02_delta_oracle_results
+    description: Delta-oracle metrics and test-set predictions.
+    provenance:
+      command: >-
+        python scripts/run_p3_02.py --benchmark-dir data/p3/benchmark
+        --output results/p3_02 --checkpoint-dir checkpoints/p3_delta_oracles
+      inputs:
+        - checkpoints/p3_delta_oracles/absolute_fold0.npz
+        - checkpoints/p3_delta_oracles/difference_fold0.npz
+        - checkpoints/p3_delta_oracles/edit_conditioned_fold0.npz
+        - checkpoints/p3_delta_oracles/siamese_fold0.npz
+    files:
+      - docs/p3_02_delta_oracle_results.json
+      - results/p3_02/test_predictions.npz
+
+  - name: p3_07_search_results
+    description: Headroom search (greedy/beam/SA/MCTS/oracle-guided) results.
+    provenance:
+      command: python scripts/run_p3_07.py --config configs/p3_primary_task.yaml
+      inputs:
+        - docs/p3_02_delta_oracle_results.json
+        - docs/p3_03_sequence_manifest.json
+    files:
+      - docs/p3_07_search_results.json
+
+  - name: p3_08_grpo_gateA_checkpoints
+    description: GRPO Gate A training checkpoints (seeds 42/123/456).
+    provenance:
+      command: >-
+        python scripts/run_p3_08.py --gate A --config configs/p3_primary_task.yaml
+      inputs:
+        - checkpoints/p3_delta_oracles/absolute_fold0.npz
+        - checkpoints/p3_delta_oracles/difference_fold0.npz
+        - checkpoints/p3_delta_oracles/edit_conditioned_fold0.npz
+        - checkpoints/p3_delta_oracles/siamese_fold0.npz
+    glob:
+      - checkpoints/p3_08_gateA/*.pt
+
+  - name: p3_08_grpo_gateB_checkpoints
+    description: GRPO Gate B long-horizon checkpoints across GPU shards.
+    provenance:
+      command: >-
+        python scripts/run_p3_08.py --gate B --config configs/p3_primary_task.yaml
+      inputs:
+        - checkpoints/p3_delta_oracles/absolute_fold0.npz
+        - checkpoints/p3_delta_oracles/difference_fold0.npz
+        - checkpoints/p3_delta_oracles/edit_conditioned_fold0.npz
+        - checkpoints/p3_delta_oracles/siamese_fold0.npz
+    glob:
+      - checkpoints/p3_08_gateB_gpu1/*.pt
+      - checkpoints/p3_08_gateB_gpu6/*.pt
+      - checkpoints/p3_08_gateB_gpu7/*.pt
+
+  - name: p3_08_grpo_results
+    description: GRPO Gate A/B evaluation result tables.
+    provenance:
+      command: >-
+        python scripts/reeval_p3_08_gateA.py && python scripts/merge_gateB_results.py
+      inputs:
+        - checkpoints/p3_08_gateA
+        - checkpoints/p3_08_gateB_gpu1
+        - checkpoints/p3_08_gateB_gpu6
+        - checkpoints/p3_08_gateB_gpu7
+    files:
+      - docs/p3_08_grpo_results.json
+      - docs/p3_08_grpo_results_gateA.json
+      - docs/p3_08_grpo_results_gateB.json
+      - docs/p3_08_grpo_results_gateB_gpu1.json
+      - docs/p3_08_grpo_results_gateB_gpu6.json
+
+  - name: p3_09_oracle_transfer
+    description: Independent-oracle transfer evaluation.
+    provenance:
+      command: python scripts/run_p3_09.py --config configs/p3_primary_task.yaml
+      inputs:
+        - docs/p3_08_grpo_results_gateB.json
+    files:
+      - docs/p3_09_oracle_transfer.json
+
+  - name: p3_10_synergy
+    description: Cross-region synergy experiment results (v2 rerun).
+    provenance:
+      command: python scripts/run_p3_10.py --run-dir docs/p3_10_run_20260725_v2
+      inputs:
+        - docs/p3_09_oracle_transfer.json
+    files:
+      - docs/p3_10_run_20260725_v2/p3_10_synergy_results.json
+
+  - name: p3_11_prospective_designs
+    description: Prospective full-length design freeze (v3).
+    provenance:
+      command: python scripts/run_p3_11.py --run-dir docs/p3_11_run_20260725_v3
+      inputs:
+        - docs/p3_10_run_20260725_v2/p3_10_synergy_results.json
+    files:
+      - docs/p3_11_run_20260725_v3/p3_11_pooled_designs.json
+      - docs/p3_11_run_20260725_v3/p3_11_full_length_designs.json
+
+# ---------------------------------------------------------------------------
+# Result dependency graph: raw data -> ... -> final table cells.
+# Every node references artifact groups declared above.
+# ---------------------------------------------------------------------------
+dependency_graph:
+  - stage: raw_data
+    produces: [p3_01_benchmark_tiers]
+    consumes: []
+
+  - stage: split_audit
+    produces: [p3_01_split_audit]
+    consumes: [p3_01_benchmark_tiers]
+
+  - stage: frozen_config
+    produces: [p3_execution_configs, p3_03_sequence_manifest]
+    consumes: [p3_01_benchmark_tiers]
+
+  - stage: oracle_training
+    produces: [p3_02_delta_oracle_checkpoints]
+    consumes: [p3_01_benchmark_tiers, p3_01_split_audit]
+
+  - stage: oracle_evaluation
+    produces: [p3_02_delta_oracle_results]
+    consumes: [p3_02_delta_oracle_checkpoints]
+
+  - stage: headroom_search
+    produces: [p3_07_search_results]
+    consumes: [p3_02_delta_oracle_results, p3_03_sequence_manifest]
+
+  - stage: rl_training
+    produces: [p3_08_grpo_gateA_checkpoints, p3_08_grpo_gateB_checkpoints]
+    consumes: [p3_02_delta_oracle_checkpoints, p3_execution_configs]
+
+  - stage: rl_evaluation
+    produces: [p3_08_grpo_results]
+    consumes: [p3_08_grpo_gateA_checkpoints, p3_08_grpo_gateB_checkpoints]
+
+  - stage: transfer_evaluation
+    produces: [p3_09_oracle_transfer]
+    consumes: [p3_08_grpo_results]
+
+  - stage: synergy_analysis
+    produces: [p3_10_synergy]
+    consumes: [p3_09_oracle_transfer]
+
+  - stage: prospective_design
+    produces: [p3_11_prospective_designs]
+    consumes: [p3_10_synergy]

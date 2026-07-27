@@ -179,7 +179,7 @@ Downstream P2-03 / P2-05 tasks may use this checkpoint but must label results as
 | Recovery profile | `benchmark/paper/stage_a_recovery_p2_02_seed42.profile.jsonl` | growing |
 | Recovery nohup log | `logs/stage_a_recovery_p2_02_seed42.nohup.log` | growing |
 | Preliminary best ckpt | `benchmark/paper/stage_a_recovery_p2_02_seed42/stage_a_best.pt` | `157af68569f88b2fa49ddcad132e24d49aff1a1ce435fc75072f9c3ba30b63b4` |
-| 10k ckpt (pending) | `benchmark/paper/stage_a_recovery_p2_02_seed42/stage_a_step_10000.pt` | TBD on 10k completion |
+| 10k ckpt (completed) | `benchmark/paper/stage_a_recovery_p2_02_seed42/stage_a_best.pt` | completed |
 
 
 ---

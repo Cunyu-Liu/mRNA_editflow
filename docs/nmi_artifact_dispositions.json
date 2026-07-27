@@ -1,0 +1,70 @@
+{
+  "description": "P0-02 documented dispositions for result-asset discrepancies that cannot be restored. Each entry records the finding, its disposition, and an impact assessment. Entries here downgrade audit FAIL findings to WARN only when the impact assessment concludes that no paper-candidate number depends on the missing asset.",
+  "remediation_log": [
+    {
+      "date": "2026-07-26",
+      "finding": "docs/p3_08_grpo_results_gateB.json verdict=FAIL conflicted with shard verdicts (gpu1/gpu6 PASS) and top-level gate_b_verdict=PASS (check gate_status_conflict)",
+      "root_cause": "merge_gateB_results.py re-ran evaluate_gate_a on merged per-seed records whose full train_log had been stripped; empty logs gave finite_fraction=0 and spurious no_collapse=False",
+      "fix": "merge_gateB_results.py now merges authoritative per-shard criteria (merge_shard_criteria) when full train logs are absent; merged verdict=PASS consistent with shards",
+      "impact": "paper-candidate Gate B numbers now internally consistent"
+    },
+    {
+      "date": "2026-07-26",
+      "finding": "docs/p3_08_grpo_results_gateB.json sha256 differs from freeze manifest (check frozen_artifact_overwrite)",
+      "root_cause": "intentional remediation above rewrote the artifact after the initial P0-01 freeze",
+      "fix": "freeze manifest regenerated with scripts/build_freeze_manifest.py --strict after the remediation, so the frozen baseline records the remediated hash; remediation recorded here",
+      "impact": "frozen baseline now matches the corrected paper-candidate artifact"
+    },
+    {
+      "date": "2026-07-26",
+      "finding": "docs/dataset_manifest_audit.json invalid JSON (truncated write)",
+      "root_cause": "interrupted generation left a partial file",
+      "fix": "regenerated with python -m mrna_editflow.eval.dataset_manifest_audit",
+      "impact": "no paper-candidate number affected"
+    },
+    {
+      "date": "2026-07-26",
+      "finding": "docs/external_sota_evidence_manifest.sha256 sidecar hash did not match payload",
+      "root_cause": "payload edited without regenerating sidecar",
+      "fix": "sidecar regenerated with sha256sum",
+      "impact": "no paper-candidate number affected"
+    }
+  ],
+  "dispositions": [
+    {
+      "check": "missing_references",
+      "reference": "benchmark/paper/leakage_free_headline/family_cluster_ci.json",
+      "disposition": "lost_accepted",
+      "rationale": "P2-03 phase analysis asset, superseded by the P3 result chain (p3_01..p3_11). No script in the repo regenerates it; the numbers are not cited by any paper-candidate table (paper_table1-5, paper_figure1-3 all trace to P3 artifacts).",
+      "impact": "no paper-candidate number affected"
+    },
+    {
+      "check": "missing_references",
+      "reference": "benchmark/paper/leakage_free_headline/paired_tests.json",
+      "disposition": "lost_accepted",
+      "rationale": "Same as family_cluster_ci.json: P2-03 phase asset, superseded by the P3 result chain.",
+      "impact": "no paper-candidate number affected"
+    },
+    {
+      "check": "missing_references",
+      "reference": "benchmark/paper/leakage_free_headline/exploratory_fdr.json",
+      "disposition": "lost_accepted",
+      "rationale": "Same as family_cluster_ci.json: P2-03 phase asset, superseded by the P3 result chain.",
+      "impact": "no paper-candidate number affected"
+    },
+    {
+      "check": "missing_references",
+      "reference": "data/counterfactual_edit_panel_v1_manifest.json",
+      "disposition": "superseded",
+      "rationale": "v1 counterfactual panel protocol (cross_region_synergy_protocol_v1.md) was superseded by v2; v2 results exist at docs/cross_region_synergy_panel_results_v2.json and docs/p3_10_run_20260725_v2/. The v1 manifest was never frozen as a result asset.",
+      "impact": "no paper-candidate number affected"
+    },
+    {
+      "check": "missing_references",
+      "reference": "docs/p1_04_predictor_ensemble_metrics.json",
+      "disposition": "planned_never_produced",
+      "rationale": "P1-04 design doc listed this as a planned output; the predictor-ensemble line was superseded by P1-05 (independent oracle) and P3-02 (delta oracle). The metrics file was never produced and no number from it is cited downstream.",
+      "impact": "no paper-candidate number affected"
+    }
+  ]
+}

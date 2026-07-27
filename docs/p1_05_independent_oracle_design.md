@@ -109,7 +109,7 @@ Hand-engineered features (per region: 5'UTR, CDS, 3'UTR, full mRNA):
 3. **Lock**:
    - Save model to `ckpts/p1_05_oracle_final_v1_<sha8>.pt`
    - Compute SHA-256 of model file + feature extractor config
-   - Write `ckpts/p1_05_oracle_final_v1_manifest.json` with:
+   - Write `ckpts/p1_05_oracle_final_v1/lock_manifest.json` with:
      - `model_sha256`
      - `feature_extractor_sha256`
      - `train_data_sha256` (hash of train record IDs)
@@ -284,7 +284,7 @@ A deprecation notice will be added to `eval/oracle.py` pointing to `eval/indepen
 
 P1-05 is **complete** when:
 1. Oracle #3 artifact exists at `ckpts/p1_05_oracle_final_v1_<sha>.pt` with read-only permissions
-2. Signed manifest exists at `ckpts/p1_05_oracle_final_v1_manifest.json`
+2. Signed manifest exists at `ckpts/p1_05_oracle_final_v1/lock_manifest.json`
 3. `eval/independent_oracle.py` exposes only predictions (no labels)
 4. `tests/test_p1_05_oracle_independence.py` passes
 5. `docs/independent_oracle_design_v1.md` is written with full audit results

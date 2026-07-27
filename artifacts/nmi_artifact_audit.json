@@ -1,0 +1,1343 @@
+{
+  "generated_at": "2026-07-26T11:10:19.481535+00:00",
+  "repo_root": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow",
+  "n_fail": 0,
+  "n_warn": 129,
+  "checks_run": [
+    "empty_json",
+    "missing_references",
+    "checkpoint_correspondence",
+    "gate_status_conflict",
+    "hash_mismatch",
+    "record_count_mismatch",
+    "summary_vs_records",
+    "frozen_artifact_overwrite"
+  ],
+  "findings": [
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/codongpt_rl_reproduction_blocker.md",
+      "message": "referenced file not found: config.json",
+      "details": {
+        "reference": "config.json"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/codongpt_rl_reproduction_blocker.md",
+      "message": "referenced file not found: generation_config.json",
+      "details": {
+        "reference": "generation_config.json"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/codongpt_rl_reproduction_blocker.md",
+      "message": "referenced file not found: synonymous_logit_processor.py",
+      "details": {
+        "reference": "synonymous_logit_processor.py"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/codongpt_rl_reproduction_blocker.md",
+      "message": "referenced file not found: tokenizer.py",
+      "details": {
+        "reference": "tokenizer.py"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/codongpt_rl_reproduction_blocker.md",
+      "message": "referenced file not found: model_manifest.json",
+      "details": {
+        "reference": "model_manifest.json"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/cross_region_synergy_protocol_v1.md",
+      "message": "referenced file not found: docs/independent_oracle_design_v1.md",
+      "details": {
+        "reference": "docs/independent_oracle_design_v1.md"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/cross_region_synergy_protocol_v1.md",
+      "message": "referenced file not found: data/counterfactual_edit_panel_v1_manifest.json [disposition: superseded \u2014 no paper-candidate number affected]",
+      "details": {
+        "reference": "data/counterfactual_edit_panel_v1_manifest.json",
+        "disposition": "superseded",
+        "disposition_rationale": "v1 counterfactual panel protocol (cross_region_synergy_protocol_v1.md) was superseded by v2; v2 results exist at docs/cross_region_synergy_panel_results_v2.json and docs/p3_10_run_20260725_v2/. The v1 manifest was never frozen as a result asset."
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/cross_region_synergy_protocol_v1.md",
+      "message": "referenced file not found: docs/cross_region_synergy_protocol_v1_changelog.md",
+      "details": {
+        "reference": "docs/cross_region_synergy_protocol_v1_changelog.md"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/editflow_architecture_analysis.md",
+      "message": "referenced file not found: editflow/flow.py",
+      "details": {
+        "reference": "editflow/flow.py"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/editflow_architecture_analysis.md",
+      "message": "referenced file not found: editflow/core/flow_utils.py",
+      "details": {
+        "reference": "editflow/core/flow_utils.py"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/editflow_architecture_analysis.md",
+      "message": "referenced file not found: editflow/utils.py",
+      "details": {
+        "reference": "editflow/utils.py"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/editflow_architecture_analysis.md",
+      "message": "referenced file not found: editflow/models/editformer.py",
+      "details": {
+        "reference": "editflow/models/editformer.py"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/editflow_architecture_analysis.md",
+      "message": "referenced file not found: editflow/train_mix.py",
+      "details": {
+        "reference": "editflow/train_mix.py"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/editflow_architecture_analysis.md",
+      "message": "referenced file not found: editflow/sample.py",
+      "details": {
+        "reference": "editflow/sample.py"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/editflow_architecture_analysis.md",
+      "message": "referenced file not found: flow.py",
+      "details": {
+        "reference": "flow.py"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/editflow_architecture_analysis.md",
+      "message": "referenced file not found: utils.py",
+      "details": {
+        "reference": "utils.py"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/editflow_architecture_analysis.md",
+      "message": "referenced file not found: core/flow_utils.py",
+      "details": {
+        "reference": "core/flow_utils.py"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/editflow_architecture_analysis.md",
+      "message": "referenced file not found: models/editformer.py",
+      "details": {
+        "reference": "models/editformer.py"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/editflow_architecture_analysis.md",
+      "message": "referenced file not found: train_mix.py",
+      "details": {
+        "reference": "train_mix.py"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/full_length_mpra_design_v1.md",
+      "message": "referenced file not found: data_acquisition_blocker.md",
+      "details": {
+        "reference": "data_acquisition_blocker.md"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/mrna_dataset_survey.md",
+      "message": "referenced file not found: leakage_report.json",
+      "details": {
+        "reference": "leakage_report.json"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/next_steps_sota_roadmap.md",
+      "message": "referenced file not found: multiobjective_teacher_export.py",
+      "details": {
+        "reference": "multiobjective_teacher_export.py"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/next_steps_sota_roadmap.md",
+      "message": "referenced file not found: public_pipeline.py",
+      "details": {
+        "reference": "public_pipeline.py"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/next_steps_sota_roadmap.md",
+      "message": "referenced file not found: clean_mrna.py",
+      "details": {
+        "reference": "clean_mrna.py"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/next_steps_sota_roadmap.md",
+      "message": "referenced file not found: dedup_split.py",
+      "details": {
+        "reference": "dedup_split.py"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/next_steps_sota_roadmap.md",
+      "message": "referenced file not found: leakage_audit.py",
+      "details": {
+        "reference": "leakage_audit.py"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/next_steps_sota_roadmap.md",
+      "message": "referenced file not found: refseq_public_build_20260715_0743/status.json",
+      "details": {
+        "reference": "refseq_public_build_20260715_0743/status.json"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/next_steps_sota_roadmap.md",
+      "message": "referenced file not found: split_manifest.json",
+      "details": {
+        "reference": "split_manifest.json"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/next_steps_sota_roadmap.md",
+      "message": "referenced file not found: run_multiseed_benchmark.py",
+      "details": {
+        "reference": "run_multiseed_benchmark.py"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/next_steps_sota_roadmap.md",
+      "message": "referenced file not found: lock_manifest.json",
+      "details": {
+        "reference": "lock_manifest.json"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/next_steps_sota_roadmap.md",
+      "message": "referenced file not found: docs/independent_oracle_design_v1.md",
+      "details": {
+        "reference": "docs/independent_oracle_design_v1.md"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/next_steps_sota_roadmap.md",
+      "message": "referenced file not found: docs/data_acquisition_blocker.md",
+      "details": {
+        "reference": "docs/data_acquisition_blocker.md"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/next_steps_sota_roadmap.md",
+      "message": "referenced file not found: stage_a_best.pt",
+      "details": {
+        "reference": "stage_a_best.pt"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/next_steps_sota_roadmap.md",
+      "message": "referenced file not found: docs/p2_05_rl2_pilot.md",
+      "details": {
+        "reference": "docs/p2_05_rl2_pilot.md"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/next_steps_sota_roadmap.md",
+      "message": "referenced file not found: docs/p2_06_synergy_rl_full_mrna.md",
+      "details": {
+        "reference": "docs/p2_06_synergy_rl_full_mrna.md"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/next_steps_sota_roadmap.md",
+      "message": "referenced file not found: docs/p2_07_codongpt_rl_reproduction.md",
+      "details": {
+        "reference": "docs/p2_07_codongpt_rl_reproduction.md"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/next_steps_sota_roadmap.md",
+      "message": "referenced file not found: docs/p2_10_backbone_pivot_decision.md",
+      "details": {
+        "reference": "docs/p2_10_backbone_pivot_decision.md"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/next_steps_sota_roadmap.md",
+      "message": "referenced file not found: docs/wet_lab_collaboration_plan.md",
+      "details": {
+        "reference": "docs/wet_lab_collaboration_plan.md"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p0_data_reconstruction_v1_audit.md",
+      "message": "referenced file not found: cluster_assignments.json",
+      "details": {
+        "reference": "cluster_assignments.json"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p0_data_reconstruction_v1_audit.md",
+      "message": "referenced file not found: leakage_report.json",
+      "details": {
+        "reference": "leakage_report.json"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p0_data_reconstruction_v1_handoff.md",
+      "message": "referenced file not found: cluster_assignments.json",
+      "details": {
+        "reference": "cluster_assignments.json"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p0_data_reconstruction_v1_handoff.md",
+      "message": "referenced file not found: leakage_report.json",
+      "details": {
+        "reference": "leakage_report.json"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p0_data_reconstruction_v2_audit.md",
+      "message": "referenced file not found: near_neighbor_audit.json",
+      "details": {
+        "reference": "near_neighbor_audit.json"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p0_data_reconstruction_v2_audit.md",
+      "message": "referenced file not found: alias_audit.json",
+      "details": {
+        "reference": "alias_audit.json"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p0_data_reconstruction_v2_audit.md",
+      "message": "referenced file not found: combined_alias_audit.json",
+      "details": {
+        "reference": "combined_alias_audit.json"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p1_02a_data_acquisition_report.md",
+      "message": "referenced file not found: project_memory.md",
+      "details": {
+        "reference": "project_memory.md"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p1_03_data_acquisition_report.md",
+      "message": "referenced file not found: rna_hl_human.npz",
+      "details": {
+        "reference": "rna_hl_human.npz"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p1_03_data_acquisition_report.md",
+      "message": "referenced file not found: rna_hl_mouse.npz",
+      "details": {
+        "reference": "rna_hl_mouse.npz"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p1_03_data_acquisition_report.md",
+      "message": "referenced file not found: mRNA_Stability.csv",
+      "details": {
+        "reference": "mRNA_Stability.csv"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p1_03_data_acquisition_report.md",
+      "message": "referenced file not found: CoV_Vaccine_Degradation.csv",
+      "details": {
+        "reference": "CoV_Vaccine_Degradation.csv"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p1_03_data_acquisition_report.md",
+      "message": "referenced file not found: project_memory.md",
+      "details": {
+        "reference": "project_memory.md"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p1_04_predictor_ensemble_design.md",
+      "message": "referenced file not found: docs/p1_04_predictor_ensemble_report.md",
+      "details": {
+        "reference": "docs/p1_04_predictor_ensemble_report.md"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p1_04_predictor_ensemble_design.md",
+      "message": "referenced file not found: docs/p1_04_predictor_ensemble_metrics.json [disposition: planned_never_produced \u2014 no paper-candidate number affected]",
+      "details": {
+        "reference": "docs/p1_04_predictor_ensemble_metrics.json",
+        "disposition": "planned_never_produced",
+        "disposition_rationale": "P1-04 design doc listed this as a planned output; the predictor-ensemble line was superseded by P1-05 (independent oracle) and P3-02 (delta oracle). The metrics file was never produced and no number from it is cited downstream."
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p1_04_predictor_ensemble_design.md",
+      "message": "referenced file not found: tests/test_p1_04_predictor_ensemble.py",
+      "details": {
+        "reference": "tests/test_p1_04_predictor_ensemble.py"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p1_04_predictor_ensemble_design.md",
+      "message": "referenced file not found: leakage_audit.py",
+      "details": {
+        "reference": "leakage_audit.py"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p1_04_predictor_ensemble_design.md",
+      "message": "referenced file not found: docs/independent_oracle_design_v1.md",
+      "details": {
+        "reference": "docs/independent_oracle_design_v1.md"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p1_05_independent_oracle_design.md",
+      "message": "referenced file not found: eval/independent_oracle.py",
+      "details": {
+        "reference": "eval/independent_oracle.py"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p1_05_independent_oracle_design.md",
+      "message": "referenced file not found: scripts/audit_oracle_independence.py",
+      "details": {
+        "reference": "scripts/audit_oracle_independence.py"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p1_05_independent_oracle_design.md",
+      "message": "referenced file not found: docs/independent_oracle_design_v1.md",
+      "details": {
+        "reference": "docs/independent_oracle_design_v1.md"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p1_05_independent_oracle_design.md",
+      "message": "referenced file not found: tests/test_p1_05_oracle_independence.py",
+      "details": {
+        "reference": "tests/test_p1_05_oracle_independence.py"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p1_05_independent_oracle_design.md",
+      "message": "referenced file not found: oracle_meta.json",
+      "details": {
+        "reference": "oracle_meta.json"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p1_05_independent_oracle_design.md",
+      "message": "referenced file not found: lock_manifest.json",
+      "details": {
+        "reference": "lock_manifest.json"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p1_11_long_view_attrition_report.md",
+      "message": "referenced file not found: sources/gencode_v45/long_view_manifest.json",
+      "details": {
+        "reference": "sources/gencode_v45/long_view_manifest.json"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p1_11_long_view_attrition_report.md",
+      "message": "referenced file not found: sources/refseq_human_rna/long_view_manifest.json",
+      "details": {
+        "reference": "sources/refseq_human_rna/long_view_manifest.json"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p1_11_long_view_attrition_report.md",
+      "message": "referenced file not found: combined/long_view_attrition_report.json",
+      "details": {
+        "reference": "combined/long_view_attrition_report.json"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p1_11_long_view_attrition_report.md",
+      "message": "referenced file not found: p1_long_view_manifest.json",
+      "details": {
+        "reference": "p1_long_view_manifest.json"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p2_03_leakage_free_headline.md",
+      "message": "referenced file not found: split_manifest.json",
+      "details": {
+        "reference": "split_manifest.json"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p2_03_leakage_free_headline.md",
+      "message": "referenced file not found: leakage_report.json",
+      "details": {
+        "reference": "leakage_report.json"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p2_03_leakage_free_headline.md",
+      "message": "referenced file not found: benchmark/paper/leakage_free_headline/family_cluster_ci.json [disposition: lost_accepted \u2014 no paper-candidate number affected]",
+      "details": {
+        "reference": "benchmark/paper/leakage_free_headline/family_cluster_ci.json",
+        "disposition": "lost_accepted",
+        "disposition_rationale": "P2-03 phase analysis asset, superseded by the P3 result chain (p3_01..p3_11). No script in the repo regenerates it; the numbers are not cited by any paper-candidate table (paper_table1-5, paper_figure1-3 all trace to P3 artifacts)."
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p2_03_leakage_free_headline.md",
+      "message": "referenced file not found: benchmark/paper/leakage_free_headline/paired_tests.json [disposition: lost_accepted \u2014 no paper-candidate number affected]",
+      "details": {
+        "reference": "benchmark/paper/leakage_free_headline/paired_tests.json",
+        "disposition": "lost_accepted",
+        "disposition_rationale": "Same as family_cluster_ci.json: P2-03 phase asset, superseded by the P3 result chain."
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p2_03_leakage_free_headline.md",
+      "message": "referenced file not found: benchmark/paper/leakage_free_headline/exploratory_fdr.json [disposition: lost_accepted \u2014 no paper-candidate number affected]",
+      "details": {
+        "reference": "benchmark/paper/leakage_free_headline/exploratory_fdr.json",
+        "disposition": "lost_accepted",
+        "disposition_rationale": "Same as family_cluster_ci.json: P2-03 phase asset, superseded by the P3 result chain."
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p2_03_leakage_free_headline.md",
+      "message": "referenced file not found: cluster_assignments.json",
+      "details": {
+        "reference": "cluster_assignments.json"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p2_03_leakage_free_headline.md",
+      "message": "referenced file not found: eval_multiobjective_ranker_ablation_head256.sh",
+      "details": {
+        "reference": "eval_multiobjective_ranker_ablation_head256.sh"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p2_03_leakage_free_headline_preliminary.md",
+      "message": "referenced file not found: eval_summary.json",
+      "details": {
+        "reference": "eval_summary.json"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p2_04_split_contract.md",
+      "message": "referenced file not found: run_stage_a_recovery_p2_02.py",
+      "details": {
+        "reference": "run_stage_a_recovery_p2_02.py"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p2_04_split_contract.md",
+      "message": "referenced file not found: train_p1_04_crossfit.py",
+      "details": {
+        "reference": "train_p1_04_crossfit.py"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p2_05_grpo_pilot.md",
+      "message": "referenced file not found: records.sha256",
+      "details": {
+        "reference": "records.sha256"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p2_05_grpo_pilot.md",
+      "message": "referenced file not found: stage_a_recovery_p2_10_option_c_seed42/stage_a_step10000.pt",
+      "details": {
+        "reference": "stage_a_recovery_p2_10_option_c_seed42/stage_a_step10000.pt"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p2_05_grpo_pilot.md",
+      "message": "referenced file not found: launch_p2_05_grpo_cds.sh",
+      "details": {
+        "reference": "launch_p2_05_grpo_cds.sh"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p2_05_grpo_pilot.md",
+      "message": "referenced file not found: test_p2_05_grpo.py",
+      "details": {
+        "reference": "test_p2_05_grpo.py"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p2_05_grpo_pilot.md",
+      "message": "referenced file not found: test_real_mdp.py",
+      "details": {
+        "reference": "test_real_mdp.py"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p2_05_grpo_pilot.md",
+      "message": "referenced file not found: test_p1_08_tiny_mdp.py",
+      "details": {
+        "reference": "test_p1_08_tiny_mdp.py"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p2_05_grpo_pilot.md",
+      "message": "referenced file not found: stage_a_step10000.pt",
+      "details": {
+        "reference": "stage_a_step10000.pt"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p2_07_codongpt_reinforce.md",
+      "message": "referenced file not found: summary.json",
+      "details": {
+        "reference": "summary.json"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p2_09_ood_robustness.md",
+      "message": "referenced file not found: benchmark/dev/ood_robustness_p2_09/robustness_summary.md",
+      "details": {
+        "reference": "benchmark/dev/ood_robustness_p2_09/robustness_summary.md"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p2_09_ood_robustness_v3_clusters.md",
+      "message": "referenced file not found: headline.json",
+      "details": {
+        "reference": "headline.json"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p2_10_alternative_backbone.md",
+      "message": "referenced file not found: stage_a_best.pt",
+      "details": {
+        "reference": "stage_a_best.pt"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p2_10_alternative_backbone.md",
+      "message": "referenced file not found: stage_a_step7000.pt",
+      "details": {
+        "reference": "stage_a_step7000.pt"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p2_10_alternative_backbone.md",
+      "message": "referenced file not found: stage_a_step500.pt",
+      "details": {
+        "reference": "stage_a_step500.pt"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p2_10_alternative_backbone.md",
+      "message": "referenced file not found: stage_a_step1000.pt",
+      "details": {
+        "reference": "stage_a_step1000.pt"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p2_10_alternative_backbone.md",
+      "message": "referenced file not found: stage_a_step1500.pt",
+      "details": {
+        "reference": "stage_a_step1500.pt"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p2_10_alternative_backbone.md",
+      "message": "referenced file not found: stage_a_step10000.pt",
+      "details": {
+        "reference": "stage_a_step10000.pt"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p2_10_alternative_backbone.md",
+      "message": "referenced file not found: stage_a_step2000.pt",
+      "details": {
+        "reference": "stage_a_step2000.pt"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p2_12_leplek_integration.md",
+      "message": "referenced file not found: CoV_Vaccine_Degradation.csv",
+      "details": {
+        "reference": "CoV_Vaccine_Degradation.csv"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p3_01_dataset_inventory.md",
+      "message": "referenced file not found: p3_01_dataset_registry.json",
+      "details": {
+        "reference": "p3_01_dataset_registry.json"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p3_03_analysis_plan.md",
+      "message": "referenced file not found: results/p3_03/p3_03_analysis_results.json",
+      "details": {
+        "reference": "results/p3_03/p3_03_analysis_results.json"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p3_03_analysis_plan.md",
+      "message": "referenced file not found: scripts/run_p3_03_analysis.py",
+      "details": {
+        "reference": "scripts/run_p3_03_analysis.py"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p3_03_experiment_preregistration.md",
+      "message": "referenced file not found: analysis_plan.md",
+      "details": {
+        "reference": "analysis_plan.md"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p3_03_experiment_preregistration.md",
+      "message": "referenced file not found: go_no_go_decision.md",
+      "details": {
+        "reference": "go_no_go_decision.md"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p3_04_rl_correctness_gate.md",
+      "message": "referenced file not found: trajectory_sampler.py",
+      "details": {
+        "reference": "trajectory_sampler.py"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p3_06_mdp_spec.md",
+      "message": "referenced file not found: rl/p3_06_policy.py",
+      "details": {
+        "reference": "rl/p3_06_policy.py"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p3_06_mdp_spec.md",
+      "message": "referenced file not found: rl/p3_06_stop.py",
+      "details": {
+        "reference": "rl/p3_06_stop.py"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/p3_06_mdp_spec.md",
+      "message": "referenced file not found: rl/p3_06_reward.py",
+      "details": {
+        "reference": "rl/p3_06_reward.py"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/reproduce_full_training_eval_commands.md",
+      "message": "referenced file not found: stage_a_best.pt",
+      "details": {
+        "reference": "stage_a_best.pt"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/rl_protocol_v1.md",
+      "message": "referenced file not found: run_multiseed_benchmark.py",
+      "details": {
+        "reference": "run_multiseed_benchmark.py"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/rl_protocol_v1.md",
+      "message": "referenced file not found: policy.pt",
+      "details": {
+        "reference": "policy.pt"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/rl_protocol_v1.md",
+      "message": "referenced file not found: optimizer.pt",
+      "details": {
+        "reference": "optimizer.pt"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/rl_protocol_v1.md",
+      "message": "referenced file not found: metrics.json",
+      "details": {
+        "reference": "metrics.json"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/rl_protocol_v1.md",
+      "message": "referenced file not found: docs/rl_protocol_v1_changelog.md",
+      "details": {
+        "reference": "docs/rl_protocol_v1_changelog.md"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/rl_stage1_decoder_semantics.md",
+      "message": "referenced file not found: test_operators.py",
+      "details": {
+        "reference": "test_operators.py"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/rl_stage1_decoder_semantics.md",
+      "message": "referenced file not found: test_protein_conditioned_cds.py",
+      "details": {
+        "reference": "test_protein_conditioned_cds.py"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/rl_stage1_decoder_semantics.md",
+      "message": "referenced file not found: test_stage1_decoder_semantics.py",
+      "details": {
+        "reference": "test_stage1_decoder_semantics.py"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/rl_stage1_decoder_semantics.md",
+      "message": "referenced file not found: test_training_sampling.py",
+      "details": {
+        "reference": "test_training_sampling.py"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/rl_stage4_dagger.md",
+      "message": "referenced file not found: iteration_manifest.json",
+      "details": {
+        "reference": "iteration_manifest.json"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/rl_stage5_constrained_grpo.md",
+      "message": "referenced file not found: trajectory_sampler.py",
+      "details": {
+        "reference": "trajectory_sampler.py"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/rl_upgrade_baseline_audit.md",
+      "message": "referenced file not found: utr_teacher_export.py",
+      "details": {
+        "reference": "utr_teacher_export.py"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/rl_upgrade_baseline_audit.md",
+      "message": "referenced file not found: multiobjective_teacher_export.py",
+      "details": {
+        "reference": "multiobjective_teacher_export.py"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/stage_a_100k_health_decision.md",
+      "message": "referenced file not found: stage_a_best.pt",
+      "details": {
+        "reference": "stage_a_best.pt"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/stage_a_recovery_decision.md",
+      "message": "referenced file not found: stage_a_best.pt",
+      "details": {
+        "reference": "stage_a_best.pt"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/stage_a_recovery_decision.md",
+      "message": "referenced file not found: docs/p2_10_backbone_pivot_decision.md",
+      "details": {
+        "reference": "docs/p2_10_backbone_pivot_decision.md"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/stage_a_recovery_decision.md",
+      "message": "referenced file not found: stage_a_recovery_p2_02_seed42_10k.pt",
+      "details": {
+        "reference": "stage_a_recovery_p2_02_seed42_10k.pt"
+      }
+    },
+    {
+      "check": "missing_references",
+      "severity": "WARN",
+      "artifact": "docs/stage_a_recovery_decision.md",
+      "message": "referenced file not found: stage_a_step7000.pt",
+      "details": {
+        "reference": "stage_a_step7000.pt"
+      }
+    },
+    {
+      "check": "hash_mismatch",
+      "severity": "WARN",
+      "artifact": "benchmark/paper/leakage_free_headline.json.sha256",
+      "message": "sidecar payload missing: artifact",
+      "details": {}
+    },
+    {
+      "check": "hash_mismatch",
+      "severity": "WARN",
+      "artifact": "docs/external_sota_evidence_manifest.remote.sha256",
+      "message": "sidecar payload missing: external_sota_evidence_manifest.remote.md",
+      "details": {}
+    },
+    {
+      "check": "traceability",
+      "severity": "WARN",
+      "artifact": "docs/p3_10_run_20260725/p3_10_synergy_results.json",
+      "message": "paper-candidate artifact not recorded in freeze manifest",
+      "details": {}
+    },
+    {
+      "check": "traceability",
+      "severity": "WARN",
+      "artifact": "docs/p3_11_run_20260725/p3_11_full_length_designs.json",
+      "message": "paper-candidate artifact not recorded in freeze manifest",
+      "details": {}
+    },
+    {
+      "check": "traceability",
+      "severity": "WARN",
+      "artifact": "docs/p3_11_run_20260725/p3_11_pooled_designs.json",
+      "message": "paper-candidate artifact not recorded in freeze manifest",
+      "details": {}
+    },
+    {
+      "check": "traceability",
+      "severity": "WARN",
+      "artifact": "docs/p3_11_run_20260725_v2/p3_11_full_length_designs.json",
+      "message": "paper-candidate artifact not recorded in freeze manifest",
+      "details": {}
+    },
+    {
+      "check": "traceability",
+      "severity": "WARN",
+      "artifact": "docs/p3_11_run_20260725_v2/p3_11_pooled_designs.json",
+      "message": "paper-candidate artifact not recorded in freeze manifest",
+      "details": {}
+    }
+  ],
+  "traceability": [
+    {
+      "artifact": "docs/p3_07_search_results.json",
+      "in_manifest": true,
+      "manifest_group": "p3_07_search_results",
+      "sha256": "094b04ef3fa98242d6e121ff74bb4ddf1c6bf17d1e2b5d2a7db3fadf1816f32b",
+      "current_sha256": "094b04ef3fa98242d6e121ff74bb4ddf1c6bf17d1e2b5d2a7db3fadf1816f32b",
+      "hash_matches": true,
+      "provenance_command": "python scripts/run_p3_07.py --config configs/p3_primary_task.yaml",
+      "declared_inputs": [
+        "docs/p3_02_delta_oracle_results.json",
+        "docs/p3_03_sequence_manifest.json"
+      ],
+      "inputs_present": true
+    },
+    {
+      "artifact": "docs/p3_08_grpo_results.json",
+      "in_manifest": true,
+      "manifest_group": "p3_08_grpo_results",
+      "sha256": "2af0f4b1b3e471c14433dbbe5d8b869ee9749d18dafb513fbb28fdfa6aa33aa4",
+      "current_sha256": "2af0f4b1b3e471c14433dbbe5d8b869ee9749d18dafb513fbb28fdfa6aa33aa4",
+      "hash_matches": true,
+      "provenance_command": "python scripts/reeval_p3_08_gateA.py && python scripts/merge_gateB_results.py",
+      "declared_inputs": [
+        "checkpoints/p3_08_gateA",
+        "checkpoints/p3_08_gateB_gpu1",
+        "checkpoints/p3_08_gateB_gpu6",
+        "checkpoints/p3_08_gateB_gpu7"
+      ],
+      "inputs_present": true
+    },
+    {
+      "artifact": "docs/p3_08_grpo_results_gateA.json",
+      "in_manifest": true,
+      "manifest_group": "p3_08_grpo_results",
+      "sha256": "8ade8d1ed7c0b1321f8cf09eb2506aeb53f099f0a288cc88626b45b4c90d4118",
+      "current_sha256": "8ade8d1ed7c0b1321f8cf09eb2506aeb53f099f0a288cc88626b45b4c90d4118",
+      "hash_matches": true,
+      "provenance_command": "python scripts/reeval_p3_08_gateA.py && python scripts/merge_gateB_results.py",
+      "declared_inputs": [
+        "checkpoints/p3_08_gateA",
+        "checkpoints/p3_08_gateB_gpu1",
+        "checkpoints/p3_08_gateB_gpu6",
+        "checkpoints/p3_08_gateB_gpu7"
+      ],
+      "inputs_present": true
+    },
+    {
+      "artifact": "docs/p3_08_grpo_results_gateB.json",
+      "in_manifest": true,
+      "manifest_group": "p3_08_grpo_results",
+      "sha256": "f128a572d78bc34254ff904557cd27a0ece2d5c0593583ad366c046fa824cf72",
+      "current_sha256": "f128a572d78bc34254ff904557cd27a0ece2d5c0593583ad366c046fa824cf72",
+      "hash_matches": true,
+      "provenance_command": "python scripts/reeval_p3_08_gateA.py && python scripts/merge_gateB_results.py",
+      "declared_inputs": [
+        "checkpoints/p3_08_gateA",
+        "checkpoints/p3_08_gateB_gpu1",
+        "checkpoints/p3_08_gateB_gpu6",
+        "checkpoints/p3_08_gateB_gpu7"
+      ],
+      "inputs_present": true
+    },
+    {
+      "artifact": "docs/p3_08_grpo_results_gateB_gpu1.json",
+      "in_manifest": true,
+      "manifest_group": "p3_08_grpo_results",
+      "sha256": "d52d32c7b4a65da4384454b4cf40fce36b45cdbe154d669bf1a5f45fa8a1d91d",
+      "current_sha256": "d52d32c7b4a65da4384454b4cf40fce36b45cdbe154d669bf1a5f45fa8a1d91d",
+      "hash_matches": true,
+      "provenance_command": "python scripts/reeval_p3_08_gateA.py && python scripts/merge_gateB_results.py",
+      "declared_inputs": [
+        "checkpoints/p3_08_gateA",
+        "checkpoints/p3_08_gateB_gpu1",
+        "checkpoints/p3_08_gateB_gpu6",
+        "checkpoints/p3_08_gateB_gpu7"
+      ],
+      "inputs_present": true
+    },
+    {
+      "artifact": "docs/p3_08_grpo_results_gateB_gpu6.json",
+      "in_manifest": true,
+      "manifest_group": "p3_08_grpo_results",
+      "sha256": "61eca3b70860e04ce2b10704039c5dbfdbab0c8c8c93fb4ad2a2aeaf3bdc1438",
+      "current_sha256": "61eca3b70860e04ce2b10704039c5dbfdbab0c8c8c93fb4ad2a2aeaf3bdc1438",
+      "hash_matches": true,
+      "provenance_command": "python scripts/reeval_p3_08_gateA.py && python scripts/merge_gateB_results.py",
+      "declared_inputs": [
+        "checkpoints/p3_08_gateA",
+        "checkpoints/p3_08_gateB_gpu1",
+        "checkpoints/p3_08_gateB_gpu6",
+        "checkpoints/p3_08_gateB_gpu7"
+      ],
+      "inputs_present": true
+    },
+    {
+      "artifact": "docs/p3_09_oracle_transfer.json",
+      "in_manifest": true,
+      "manifest_group": "p3_09_oracle_transfer",
+      "sha256": "7b074dc3fdb85746cb4bad2aa46c8618ef9fe0be2587a9869d25b8f9e83b8ae2",
+      "current_sha256": "7b074dc3fdb85746cb4bad2aa46c8618ef9fe0be2587a9869d25b8f9e83b8ae2",
+      "hash_matches": true,
+      "provenance_command": "python scripts/run_p3_09.py --config configs/p3_primary_task.yaml",
+      "declared_inputs": [
+        "docs/p3_08_grpo_results_gateB.json"
+      ],
+      "inputs_present": true
+    },
+    {
+      "artifact": "docs/p3_10_run_20260725/p3_10_synergy_results.json",
+      "in_manifest": false
+    },
+    {
+      "artifact": "docs/p3_10_run_20260725_v2/p3_10_synergy_results.json",
+      "in_manifest": true,
+      "manifest_group": "p3_10_synergy",
+      "sha256": "6992853c887528632ef1c9bc04d1e124902cd4226cce6536315d3c5c53d51e39",
+      "current_sha256": "6992853c887528632ef1c9bc04d1e124902cd4226cce6536315d3c5c53d51e39",
+      "hash_matches": true,
+      "provenance_command": "python scripts/run_p3_10.py --run-dir docs/p3_10_run_20260725_v2",
+      "declared_inputs": [
+        "docs/p3_09_oracle_transfer.json"
+      ],
+      "inputs_present": true
+    },
+    {
+      "artifact": "docs/p3_11_run_20260725/p3_11_full_length_designs.json",
+      "in_manifest": false
+    },
+    {
+      "artifact": "docs/p3_11_run_20260725/p3_11_pooled_designs.json",
+      "in_manifest": false
+    },
+    {
+      "artifact": "docs/p3_11_run_20260725_v2/p3_11_full_length_designs.json",
+      "in_manifest": false
+    },
+    {
+      "artifact": "docs/p3_11_run_20260725_v2/p3_11_pooled_designs.json",
+      "in_manifest": false
+    },
+    {
+      "artifact": "docs/p3_11_run_20260725_v3/p3_11_full_length_designs.json",
+      "in_manifest": true,
+      "manifest_group": "p3_11_prospective_designs",
+      "sha256": "bdc7890878c1eee6f3f409a2cb22b265eaa24c605257da71fc9ba6a90c449039",
+      "current_sha256": "bdc7890878c1eee6f3f409a2cb22b265eaa24c605257da71fc9ba6a90c449039",
+      "hash_matches": true,
+      "provenance_command": "python scripts/run_p3_11.py --run-dir docs/p3_11_run_20260725_v3",
+      "declared_inputs": [
+        "docs/p3_10_run_20260725_v2/p3_10_synergy_results.json"
+      ],
+      "inputs_present": true
+    },
+    {
+      "artifact": "docs/p3_11_run_20260725_v3/p3_11_pooled_designs.json",
+      "in_manifest": true,
+      "manifest_group": "p3_11_prospective_designs",
+      "sha256": "b7f434bfe6d761999c0bcc0a852721a976a0450cf5b1add3b742e8bec995df5c",
+      "current_sha256": "b7f434bfe6d761999c0bcc0a852721a976a0450cf5b1add3b742e8bec995df5c",
+      "hash_matches": true,
+      "provenance_command": "python scripts/run_p3_11.py --run-dir docs/p3_11_run_20260725_v3",
+      "declared_inputs": [
+        "docs/p3_10_run_20260725_v2/p3_10_synergy_results.json"
+      ],
+      "inputs_present": true
+    }
+  ]
+}
