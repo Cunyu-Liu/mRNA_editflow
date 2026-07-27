@@ -112,6 +112,22 @@ def audit(root: Path, *, allow_final_labels: bool) -> Dict:
     }
     context_test = sum(task_kinds["test_context"].values())
     assay_test = sum(task_kinds["test_assay"].values())
+    test_context_values = {
+        key[1] for key, roles in context_roles.items() if "test_context" in roles
+    }
+    development_context_values = {
+        key[1] for key, roles in context_roles.items()
+        if roles & {"train", "val"}
+    }
+    context_overlap = test_context_values & development_context_values
+    test_assay_values = {
+        key[1] for key, roles in assay_roles.items() if "test_assay" in roles
+    }
+    development_assay_values = {
+        key[1] for key, roles in assay_roles.items()
+        if roles & {"train", "val"}
+    }
+    assay_overlap = test_assay_values & development_assay_values
     normalize_cargo = lambda value: str(value).strip().casefold()
     family_absolute_cargos = {
         normalize_cargo(key[1]) for key, roles in cargo_roles.items()
@@ -157,6 +173,10 @@ def audit(root: Path, *, allow_final_labels: bool) -> Dict:
         strict_acceptance_reasons.append("species OOD has observational mouse 5UTRs but no source-matched local_delta labels")
     if not length_local_delta_ready:
         strict_acceptance_reasons.append("length OOD is measured absolute-only; no source-matched local_delta length tail")
+    if context_overlap:
+        strict_acceptance_reasons.append("test_context overlaps train/val cell-context values")
+    if assay_overlap:
+        strict_acceptance_reasons.append("test_assay overlaps train/val assay values")
     # P1 Task 2/3 use a declared observed measured candidate-state reference.
     # The combinatorial full legal action space remains a separate unknown and
     # must never be promoted to a biological or full-legal regret claim.
@@ -173,6 +193,7 @@ def audit(root: Path, *, allow_final_labels: bool) -> Dict:
         and not required_missing and not measured_missing and not scored_delta_missing
         and all(nonempty.values())
         and context_test > 0 and assay_test > 0
+        and not context_overlap and not assay_overlap
         and family_absolute_cargo_holdout_ready
     )
     report = {
@@ -208,7 +229,10 @@ def audit(root: Path, *, allow_final_labels: bool) -> Dict:
             "source_matched_context_delta_ready": context_delta_counts["test_context"] > 0,
             "local_delta_ready": local_delta_counts["test_context"] > 0,
             "absolute_property_only_records": int(task_kinds["test_context"].get("absolute_property_context_shift", 0)),
-            "contexts": sorted({k[1] for k, v in context_roles.items() if "test_context" in v}),
+            "contexts": sorted(test_context_values),
+            "development_contexts": sorted(development_context_values),
+            "train_val_context_overlap": sorted(context_overlap),
+            "context_disjoint": not context_overlap,
         },
         "assay_axis": {
             "records_present": assay_test > 0,
@@ -216,7 +240,10 @@ def audit(root: Path, *, allow_final_labels: bool) -> Dict:
             "source_matched_assay_delta_ready": assay_delta_counts["test_assay"] > 0,
             "local_delta_ready": local_delta_counts["test_assay"] > 0,
             "absolute_property_only_records": int(task_kinds["test_assay"].get("absolute_property_assay_shift", 0)),
-            "assays": sorted({k[1] for k, v in assay_roles.items() if "test_assay" in v}),
+            "assays": sorted(test_assay_values),
+            "development_assays": sorted(development_assay_values),
+            "train_val_assay_overlap": sorted(assay_overlap),
+            "assay_disjoint": not assay_overlap,
         },
         "strict_p1_acceptance": strict_p1_acceptance,
         "full_legal_action_space": {
