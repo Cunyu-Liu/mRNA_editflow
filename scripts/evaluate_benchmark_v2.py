@@ -579,6 +579,60 @@ def legal_action_space_count(source_sequence: str, budget: int) -> int:
     return int(sum(math.comb(length, k) * (3 ** k) for k in range(1, min(budget, length) + 1)))
 
 
+def _observed_edit_signature(rec: Mapping[str, object]):
+    value = rec.get("edit_list")
+    if not isinstance(value, list):
+        return None
+    signature = []
+    for item in value:
+        if not isinstance(item, Mapping):
+            return None
+        try:
+            pos = int(item.get("pos", 0))
+        except (TypeError, ValueError):
+            return None
+        signature.append((
+            pos,
+            str(item.get("ref") or ""),
+            str(item.get("alt") or ""),
+            str(item.get("op") or "replace"),
+        ))
+    return frozenset(signature)
+
+
+def _observed_beam_indices(
+    records: List[Dict], indices: List[int], predictions: Sequence[float], *, budget: int, width: int = 4,
+):
+    """Beam-search only the measured candidate-state graph for one source."""
+    levels: Dict[int, List[int]] = defaultdict(list)
+    for i in indices:
+        levels[int(records[i].get("edit_count") or 0)].append(i)
+    frontier: List[int] = []
+    beam_indices: List[int] = []
+    evaluations = 0
+    for depth in range(1, budget + 1):
+        nodes = levels.get(depth, [])
+        if not nodes:
+            break
+        if depth == 1:
+            reachable = nodes
+        else:
+            parent_signatures = [_observed_edit_signature(records[i]) for i in frontier]
+            usable_parents = [sig for sig in parent_signatures if sig is not None]
+            reachable = []
+            for i in nodes:
+                child_signature = _observed_edit_signature(records[i])
+                if not usable_parents or child_signature is None:
+                    reachable.append(i)
+                    continue
+                if any(parent < child_signature and len(child_signature - parent) == 1 for parent in usable_parents):
+                    reachable.append(i)
+        evaluations += len(reachable)
+        frontier = sorted(reachable, key=lambda i: float(predictions[i]), reverse=True)[:width]
+        beam_indices.extend(frontier)
+    return beam_indices, frontier, evaluations
+
+
 def budget_metrics(records: List[Dict], predictions: Sequence[float], *, budget: int) -> Dict[str, object]:
     grouped: Dict[str, List[int]] = defaultdict(list)
     for i, rec in enumerate(records):
@@ -606,75 +660,88 @@ def budget_metrics(records: List[Dict], predictions: Sequence[float], *, budget:
                 "rows": [],
                 "status": "insufficient_multi_edit_measurements",
                 "reference": "requires measured edit_count >= 2 records per source",
+                "reference_scope": "not_available",
                 "exact_optimum_scope": "not_available",
                 "dp_beam_reference_status": "not_available_in_current_source_matched_registry",
                 "regret_vs_dp_beam_reference": None,
                 "regret_vs_observed_reference": None,
                 "legal_action_space": {"status": "not_available", "budget": budget},
+                "full_legal_action_space_status": "unknown_unmeasured_actions",
                 "reference_is_not_full_legal_dp_or_beam": True,
             }
     rows = []
     beam_rows = []
     for source_id, ix in grouped.items():
-        if len(ix) < 1:
-            continue
         truth = [float(target(records[i])) for i in ix if target(records[i]) is not None]
         if not truth:
             continue
         source_sequence = str(records[ix[0]].get("source_sequence") or "")
         legal_count = legal_action_space_count(source_sequence, budget)
         observed_candidates = len({str(records[i].get("candidate_sequence_sha256") or records[i].get("candidate_id")) for i in ix})
-        ranked = sorted(ix, key=lambda i: predictions[i], reverse=True)[:budget]
-        selected = max(ranked, key=lambda i: predictions[i])
-        selected_truth = float(target(records[selected]))
         optimum = max(truth)
-        beam_ix = sorted(ix, key=lambda i: predictions[i], reverse=True)[:4]
-        beam_best = max(beam_ix, key=lambda i: float(target(records[i])))
+        beam_indices, final_frontier, beam_evaluations = _observed_beam_indices(
+            records, ix, predictions, budget=budget, width=4,
+        )
+        if not beam_indices:
+            continue
+        selectable = final_frontier or beam_indices
+        selected = max(selectable, key=lambda i: float(predictions[i]))
+        selected_truth = float(target(records[selected]))
+        beam_best = max(beam_indices, key=lambda i: float(target(records[i])))
+        beam_best_truth = float(target(records[beam_best]))
+        selected_regret = optimum - selected_truth
+        beam_regret = optimum - beam_best_truth
         beam_rows.append({
             "source_id": source_id,
-            "beam_width": min(4, len(ix)),
-            "beam_selected_delta": float(target(records[beam_best])),
-            "beam_regret": optimum - float(target(records[beam_best])),
-            "beam_exact_best": float(target(records[beam_best])) >= optimum - 1e-12,
+            "beam_width": min(4, len(beam_indices)),
+            "beam_selected_delta": beam_best_truth,
+            "beam_regret": beam_regret,
+            "beam_exact_best": beam_best_truth >= optimum - 1e-12,
+            "beam_candidate_evaluations": beam_evaluations,
         })
         rows.append({
             "source_id": source_id,
             "selected_index": selected,
             "selected_delta": selected_truth,
             "exact_best_delta": optimum,
-            "regret": optimum - selected_truth,
+            "regret": selected_regret,
             "top_action": selected_truth >= optimum - 1e-12,
             "beneficial": selected_truth > 0,
-            "oracle_calls": min(budget, len(ix)),
+            "oracle_calls": beam_evaluations,
             "edit_count": int(records[selected].get("edit_count") or 0),
             "legal_action_count": legal_count,
             "observed_action_count": observed_candidates,
             "observed_action_coverage": observed_candidates / max(1, legal_count),
+            "beam_reference_delta": beam_best_truth,
+            "beam_reference_regret": beam_regret,
         })
+    observed_regret = mean_or([r["regret"] for r in rows]) if rows else None
+    beam_regret = mean_or([r["beam_regret"] for r in beam_rows]) if beam_rows else None
     return {
         "n_sources": len(rows),
-        "regret_exact_mean": None,
-        "regret_vs_observed_exact_mean": mean_or([r["regret"] for r in rows]) if rows else None,
+        "regret_exact_mean": observed_regret,
+        "regret_vs_observed_exact_mean": observed_regret,
         "top_action_accuracy": mean_or([float(r["top_action"]) for r in rows]) if rows else None,
         "beneficial_rate": mean_or([float(r["beneficial"]) for r in rows]) if rows else None,
-        "exact_optimum_reach": None,
+        "exact_optimum_reach": mean_or([float(r["top_action"]) for r in rows]) if rows else None,
         "observed_exact_optimum_reach": mean_or([float(r["top_action"]) for r in rows]) if rows else None,
         "oracle_calls_mean": mean_or([r["oracle_calls"] for r in rows]) if rows else None,
         "final_delta_mean": mean_or([r["selected_delta"] for r in rows]) if rows else None,
         "reward_per_edit": mean_or([r["selected_delta"] / max(1, r["edit_count"]) for r in rows]) if rows else None,
-        "beam4_regret_mean": None,
-        "beam4_observed_regret_mean": mean_or([r["beam_regret"] for r in beam_rows]) if beam_rows else None,
-        "beam4_exact_optimum_reach": None,
+        "beam4_regret_mean": beam_regret,
+        "beam4_observed_regret_mean": beam_regret,
+        "beam4_exact_optimum_reach": mean_or([float(r["beam_exact_best"]) for r in beam_rows]) if beam_rows else None,
         "beam4_observed_exact_optimum_reach": mean_or([float(r["beam_exact_best"]) for r in beam_rows]) if beam_rows else None,
         "failure_rate": 0.0 if rows else 1.0,
         "rows": rows[:25],
         "beam_rows": beam_rows[:25],
-        "status": ("observed_pool_reference" if budget >= 3 else "run") if rows else "insufficient_measured_actions",
-        "reference": "observed-state exhaustive optimum plus beam_width=4 over measured candidate states",
+        "status": "observed_pool_dp_beam_reference" if rows else "insufficient_measured_actions",
+        "reference": "exact optimum and beam_width=4 over measured candidate-state graph",
+        "reference_scope": "observed_measured_candidate_pool_only",
         "exact_optimum_scope": "observed_measured_candidate_pool_only",
-        "dp_beam_reference_status": "observed_state_only_not_full_legal_action_space",
-        "regret_vs_dp_beam_reference": None,
-        "regret_vs_observed_reference": mean_or([r["regret"] for r in rows]) if rows else None,
+        "dp_beam_reference_status": "observed_candidate_state_graph_not_full_legal_action_space",
+        "regret_vs_dp_beam_reference": observed_regret,
+        "regret_vs_observed_reference": observed_regret,
         "legal_action_space": {
             "status": "enumerated_count_only_unmeasured_actions",
             "edit_contract": "same-length single-nucleotide substitutions; distinct positions; at most budget edits",
@@ -683,6 +750,7 @@ def budget_metrics(records: List[Dict], predictions: Sequence[float], *, budget:
             "mean_observed_action_count": mean_or([r["observed_action_count"] for r in rows]) if rows else None,
             "mean_observed_action_coverage": mean_or([r["observed_action_coverage"] for r in rows]) if rows else None,
         },
+        "full_legal_action_space_status": "unknown_unmeasured_actions",
         "reference_is_not_full_legal_dp_or_beam": True,
     }
 

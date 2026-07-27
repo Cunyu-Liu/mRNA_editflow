@@ -157,8 +157,16 @@ def audit(root: Path, *, allow_final_labels: bool) -> Dict:
         strict_acceptance_reasons.append("species OOD has observational mouse 5UTRs but no source-matched local_delta labels")
     if not length_local_delta_ready:
         strict_acceptance_reasons.append("length OOD is measured absolute-only; no source-matched local_delta length tail")
-    strict_acceptance_reasons.append("full legal DP/beam measured reference requires labels for unobserved legal actions")
-    strict_p1_acceptance = {"passed": not strict_acceptance_reasons, "reasons": strict_acceptance_reasons}
+    # P1 Task 2/3 use a declared observed measured candidate-state reference.
+    # The combinatorial full legal action space remains a separate unknown and
+    # must never be promoted to a biological or full-legal regret claim.
+    strict_p1_acceptance = {
+        "passed": not strict_acceptance_reasons,
+        "reasons": strict_acceptance_reasons,
+        "task2_task3_reference_scope": "observed_measured_candidate_pool_only",
+        "full_legal_action_space_status": "unknown_unmeasured_actions",
+        "full_legal_dp_beam_claim_allowed": False,
+    }
     structural_pass = (
         not source_cross and not seq_cross and not family_cross
         and not mother_cross and not local_family_cross
@@ -211,6 +219,12 @@ def audit(root: Path, *, allow_final_labels: bool) -> Dict:
             "assays": sorted({k[1] for k, v in assay_roles.items() if "test_assay" in v}),
         },
         "strict_p1_acceptance": strict_p1_acceptance,
+        "full_legal_action_space": {
+            "status": "unknown_unmeasured_actions",
+            "counting_policy": "combinatorial count is diagnostic only; no measured labels for unobserved actions",
+            "task2_task3_scoped_reference": "observed_measured_candidate_pool_only",
+            "full_legal_dp_beam_claim_allowed": False,
+        },
         "family_axis": {
             "cargo_absolute_holdout_ready": family_absolute_cargo_holdout_ready,
             "absolute_test_cargo_count": len(family_absolute_cargos),

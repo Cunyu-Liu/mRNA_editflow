@@ -34,8 +34,9 @@ libraries are registered as Layer B and retain their measured values for
 absolute-property evaluation only. Proxy and unlabeled records are assets,
 not biological ground truth. GSE246381 paired labels are deposited reporter
 abundance derived from mean sample-normalized UMI CPM; they are not direct
-protein-abundance measurements. Full legal DP/beam references remain blocked
-until every legal action has a measured label.
+protein-abundance measurements. Task 2/3 exact and beam references are scoped
+to the observed measured candidate-state graph. The combinatorial full legal
+DP/beam optimum remains unknown and cannot support a full-legal claim.
 
 `manifests/prospective.json` is an empty Layer D intake and remains unfrozen
 until model development, candidate selection, and all development audits are

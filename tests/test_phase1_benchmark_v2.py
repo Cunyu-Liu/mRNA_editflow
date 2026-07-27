@@ -105,3 +105,27 @@ def test_scored_delta_is_preferred_for_cross_assay_metrics():
     from evaluate_benchmark_v2 import target
 
     assert target({"measured_delta": 100.0, "scored_delta": 0.25}) == 0.25
+
+def test_budget_three_exposes_scoped_observed_dp_beam_reference():
+    from evaluate_benchmark_v2 import budget_metrics
+
+    def rec(count, delta, edits):
+        return {
+            "source_id": "s",
+            "source_sequence": "AAAA",
+            "candidate_sequence": "AAAA",
+            "edit_count": count,
+            "measured_delta": delta,
+            "edit_list": edits,
+        }
+
+    records = [
+        rec(1, 0.2, [{"pos": 0, "ref": "A", "alt": "C"}]),
+        rec(2, 0.5, [{"pos": 0, "ref": "A", "alt": "C"}, {"pos": 1, "ref": "A", "alt": "G"}]),
+        rec(3, 0.9, [{"pos": 0, "ref": "A", "alt": "C"}, {"pos": 1, "ref": "A", "alt": "G"}, {"pos": 2, "ref": "A", "alt": "U"}]),
+    ]
+    result = budget_metrics(records, [0.1, 0.2, 0.9], budget=3)
+    assert result["status"] == "observed_pool_dp_beam_reference"
+    assert result["regret_vs_dp_beam_reference"] == 0.0
+    assert result["reference_scope"] == "observed_measured_candidate_pool_only"
+    assert result["full_legal_action_space_status"] == "unknown_unmeasured_actions"
