@@ -41,6 +41,7 @@ def audit(root: Path, *, allow_final_labels: bool) -> Dict:
     context_roles: Dict[tuple, set] = defaultdict(set)
     assay_roles: Dict[tuple, set] = defaultdict(set)
     cargo_roles: Dict[tuple, set] = defaultdict(set)
+    local_family_roles: Dict[tuple, set] = defaultdict(set)
     ood_dimension_counts = Counter()
     counts = Counter()
     confidence = {role: Counter() for role in ROLES}
@@ -74,6 +75,12 @@ def audit(root: Path, *, allow_final_labels: bool) -> Dict:
                 context_roles[(task_kind, str(rec.get("cell_context")))].add(role)
                 assay_roles[(task_kind, str(rec.get("assay")))].add(role)
                 cargo_roles[(task_kind, str(rec.get("cargo")))].add(role)
+                if task_kind == "local_delta":
+                    local_family_roles[(
+                        task_kind,
+                        str(rec.get("cargo") or "").strip().casefold(),
+                        str(rec.get("protein_family_id") or "").strip().casefold(),
+                    )].add(role)
                 for dimension in rec.get("ood_dimensions") or []:
                     ood_dimension_counts[(str(dimension), task_kind, role)] += 1
 
@@ -121,17 +128,37 @@ def audit(root: Path, *, allow_final_labels: bool) -> Dict:
         normalize_cargo(key[1]) for key, roles in cargo_roles.items()
         if key[0] == "local_delta" and "train" in roles
     }
+    # The independent-family contract compares test_family against the
+    # development/test_id pool. test_ood may intentionally reuse a cargo
+    # family while remaining sequence/family-cluster disjoint and is reported
+    # as a distribution-shift diagnostic instead of train leakage.
+    local_family_cross = {
+        str(k): sorted(v) for k, v in local_family_roles.items()
+        if "test_family" in v and any(r in {"train", "val", "test_id"} for r in v)
+    }
+    local_family_test_keys = {
+        (key[1], key[2]) for key, roles in local_family_roles.items()
+        if "test_family" in roles
+    }
+    local_family_train_keys = {
+        (key[1], key[2]) for key, roles in local_family_roles.items()
+        if "train" in roles
+    }
+    species_local_delta_ready = ood_dimension_counts[("species_tail", "local_delta", "test_ood")] > 0
+    length_local_delta_ready = ood_dimension_counts[("length_tail", "local_delta", "test_ood")] > 0
     prospective = json.loads((root / "manifests" / "prospective.json").read_text())
     strict_acceptance_reasons = []
-    if family_local_delta_cargos & train_local_delta_cargos:
+    if local_family_test_keys & local_family_train_keys:
         strict_acceptance_reasons.append("test_family local_delta is not cargo/protein-family disjoint")
-    strict_acceptance_reasons.append("species OOD has observational mouse 5UTRs but no source-matched local_delta labels")
-    strict_acceptance_reasons.append("length OOD is measured absolute-only; no source-matched local_delta length tail")
+    if not species_local_delta_ready:
+        strict_acceptance_reasons.append("species OOD has observational mouse 5UTRs but no source-matched local_delta labels")
+    if not length_local_delta_ready:
+        strict_acceptance_reasons.append("length OOD is measured absolute-only; no source-matched local_delta length tail")
     strict_acceptance_reasons.append("full legal DP/beam measured reference requires labels for unobserved legal actions")
-    strict_p1_acceptance = {"passed": False, "reasons": strict_acceptance_reasons}
+    strict_p1_acceptance = {"passed": not strict_acceptance_reasons, "reasons": strict_acceptance_reasons}
     structural_pass = (
         not source_cross and not seq_cross and not family_cross
-        and not mother_cross
+        and not mother_cross and not local_family_cross
         and not required_missing and not measured_missing
         and all(nonempty.values())
         and context_test > 0 and assay_test > 0
@@ -154,6 +181,7 @@ def audit(root: Path, *, allow_final_labels: bool) -> Dict:
         "mother_cross_role_count": len(mother_cross),
         "candidate_cross_role_count": len(seq_cross),
         "family_train_final_overlap_count": len(family_cross),
+        "local_family_train_final_overlap_count": len(local_family_cross),
         "ood_family_overlap_count": len(ood_family_overlap),
         "ood_dimension_counts": {
             f"{dimension}:{task_kind}:{role}": int(count)
@@ -186,9 +214,11 @@ def audit(root: Path, *, allow_final_labels: bool) -> Dict:
             "absolute_train_cargo_count": len(train_absolute_cargos),
             "absolute_train_cargo_examples": sorted(train_absolute_cargos)[:10],
             "absolute_cargo_overlap": sorted(family_absolute_cargo_overlap),
-            "local_delta_cargo_family_disjoint": not bool(family_local_delta_cargos & train_local_delta_cargos),
+            "local_delta_cargo_family_disjoint": not bool(local_family_test_keys & local_family_train_keys),
             "local_delta_test_cargos": sorted(family_local_delta_cargos),
             "local_delta_train_cargos": sorted(train_local_delta_cargos),
+            "local_delta_test_family_keys": sorted([list(key) for key in local_family_test_keys]),
+            "local_delta_train_family_keys": sorted([list(key) for key in local_family_train_keys]),
             "scope": manifests["test_family"].get("role_scope"),
         },
         "prospective": prospective,
@@ -197,6 +227,7 @@ def audit(root: Path, *, allow_final_labels: bool) -> Dict:
             "mother_cross_role": dict(list(mother_cross.items())[:10]),
             "candidate_cross_role": dict(list(seq_cross.items())[:10]),
             "family_train_final_overlap": dict(list(family_cross.items())[:10]),
+            "local_family_train_final_overlap": dict(list(local_family_cross.items())[:10]),
             "ood_family_overlap": dict(list(ood_family_overlap.items())[:10]),
         },
         "claim_policy": {

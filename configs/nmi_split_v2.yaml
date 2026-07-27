@@ -4,14 +4,19 @@ records:
   - data/p3/benchmark/proxy_tier.jsonl
   - data/p3/benchmark/unlabeled_tier.jsonl
   - data/raw/sample2019_mpra/GSM3130443_designed_library.csv.gz
+  - data/raw/gse246381_utr_mutation/media-1.xlsx
+  - data/raw/gse246381_utr_mutation/media-3.xlsx
+  - data/raw/gse246381_utr_mutation/media-6.xlsx
+  - data/raw/gse246381_utr_mutation/GSE246381_hek_combined_umi_counts.csv.gz
+  - data/raw/gse246381_utr_mutation/GSE246381_vglut_combined_umi_counts.csv.gz
 roles:
   train: source_disjoint_development
   val: source_disjoint_development
   test_id: untouched_source_disjoint_final
-  test_family: exact_protein_family_and_mcherry_absolute_holdout_plus_raw_local_delta_family_holdout
+  test_family: exact_protein_family_and_mcherry_absolute_holdout_plus_gse246381_tdTomato_local_delta_family_holdout
   test_context: untouched_context_disjoint_final
   test_assay: untouched_assay_disjoint_final
-  test_ood: untouched_distribution_shift_final_gc_or_motif
+  test_ood: untouched_distribution_shift_final_gc_motif_species_or_length_tail
 final_test_default: refuse
 allowed_final_label_flag: --allow-final-labels
 proxy_is_biological_ground_truth: false
@@ -42,6 +47,6 @@ prospective:
   manifest: data/nmi_benchmark_v2/manifests/prospective.json
   frozen: false
 ood_dimensions:
-  local_delta_available: [gc_tail, motif_uaug]
-  length: measured_absolute_only_not_local_delta
-  species: observational_asset_only_not_local_delta
+  local_delta_available: [gc_tail, motif_uaug, species_tail, length_tail]
+  length: gse246381_source_matched_length_tail_plus_absolute_only_sample2019_tail
+  species: gse246381_source_matched_mouse_vglut_endpoint; observational_gencode_mouse_is_auxiliary_only

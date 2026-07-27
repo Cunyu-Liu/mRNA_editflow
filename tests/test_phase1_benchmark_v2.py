@@ -94,3 +94,9 @@ def test_legal_action_space_count_is_explicit_and_budget_scoped():
 
     assert legal_action_space_count("AAAA", 1) == 12
     assert legal_action_space_count("AAAA", 3) == 174
+
+def test_edit_operations_are_auditable_for_indels():
+    from build_nmi_split_v2 import derive_edit_operations
+
+    edits = derive_edit_operations("AAACCC", "AAAGCCC")
+    assert edits == [{"pos": 3, "ref": "", "alt": "G", "region": "five_utr", "op": "insert"}]

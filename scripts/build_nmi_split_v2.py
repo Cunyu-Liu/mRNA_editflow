@@ -17,11 +17,13 @@ from __future__ import annotations
 
 import argparse
 import csv
+import difflib
 import gzip
 import hashlib
 import json
 import math
 import os
+import re
 from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Dict, Iterable, Iterator, List, Mapping, Optional, Sequence, Tuple
@@ -110,6 +112,10 @@ def normalize_p3_record(rec: Mapping[str, object], role: str) -> Dict[str, objec
         "measured_candidate": measured_candidate,
         "measured_delta": measured_delta,
         "cargo": rec.get("cargo_id"),
+        "protein_family_id": rec.get("protein_family_id") or (
+            f"reporter_family:{str(rec.get('cargo_id') or 'unknown').casefold()}"
+            if rec.get("cargo_id") else None
+        ),
         "cell_context": rec.get("cell_context"),
         "assay": rec.get("assay_type"),
         "batch": rec.get("data_source"),
@@ -174,6 +180,7 @@ def make_absolute_record(
         "measured_or_proxy_candidate_value": value,
         "cargo": cargo,
         "cargo_id": cargo,
+        "protein_family_id": f"reporter_family:{str(cargo).casefold()}",
         "cell_context": context,
         "assay": assay,
         "assay_type": assay,
@@ -241,14 +248,35 @@ def make_source_matched_axis_record(
     }
 
 
+def derive_edit_operations(source: str, candidate: str) -> List[Dict[str, object]]:
+    """Return auditable contiguous substitutions/insertions/deletions."""
+    changes: List[Dict[str, object]] = []
+    matcher = difflib.SequenceMatcher(a=source, b=candidate, autojunk=False)
+    for tag, i1, i2, j1, j2 in matcher.get_opcodes():
+        if tag == "equal":
+            continue
+        changes.append({
+            "pos": i1,
+            "ref": source[i1:i2],
+            "alt": candidate[j1:j2],
+            "region": "five_utr",
+            "op": tag,
+        })
+    return changes
+
+
 def derive_single_nucleotide_edits(source: str, candidate: str) -> Optional[List[Dict[str, object]]]:
     if len(source) != len(candidate):
         return None
-    changes = []
-    for pos, (ref, alt) in enumerate(zip(source, candidate)):
-        if ref != alt:
-            changes.append({"pos": pos, "ref": ref, "alt": alt, "region": "five_utr"})
-    return changes
+    changes = derive_edit_operations(source, candidate)
+    if all(
+        item["op"] == "replace"
+        and len(str(item["ref"])) == 1
+        and len(str(item["alt"])) == 1
+        for item in changes
+    ):
+        return changes
+    return None
 
 
 def raw_ood_dimensions(source: str) -> List[str]:
@@ -270,8 +298,9 @@ def raw_source_role(source_id: str, family_id: str, source: str) -> Optional[str
     if raw_ood_dimensions(source):
         return "test_ood"
     family_fraction = stable_fraction("family:" + family_id)
-    if family_fraction < 0.20:
-        return "test_family"
+    # Raw eGFP rows remain ID/OOD development controls; the final local-delta
+    # family holdout is reserved for the independently sourced tdTomato
+    # intervention panel below.
     source_fraction = stable_fraction("source:" + source_id)
     if 0.20 <= source_fraction < 0.40:
         return "test_id"
@@ -344,6 +373,7 @@ def iter_raw_untouched_records(
             "measured_or_proxy_candidate_value": candidate_value,
             "cargo": "eGFP",
             "cargo_id": "eGFP",
+            "protein_family_id": "reporter_family:egfp",
             "cell_context": "HEK293T",
             "assay": "MPRA_2019_designed_library_untouched",
             "assay_type": "MPRA_2019_designed_library_untouched",
@@ -363,6 +393,222 @@ def iter_raw_untouched_records(
             "ood_dimensions": raw_ood_dimensions(source),
         }
         yield role, record
+
+
+
+def iter_xlsx_rows(path: Path, sheet_name: str) -> Iterator[Dict[str, object]]:
+    """Read a small, provenance-registered XLSX sheet without pandas state."""
+    try:
+        from openpyxl import load_workbook
+    except ImportError as exc:
+        raise RuntimeError(
+            "GSE246381 import requires openpyxl in the benchmark environment"
+        ) from exc
+    workbook = load_workbook(path, read_only=True, data_only=True)
+    try:
+        worksheet = workbook[sheet_name]
+        rows = worksheet.iter_rows(values_only=True)
+        header = [str(value) if value is not None else "" for value in next(rows)]
+        for row in rows:
+            yield dict(zip(header, row))
+    finally:
+        workbook.close()
+
+
+def _gse_family_id(seq_id: str) -> str:
+    match = re.search(r"(?:^|;)Family=([^;]+)", seq_id)
+    return f"gse246381_family:{match.group(1) if match else 'unknown'}"
+
+
+def _gse_variant_base(seq_id: str, allele: str) -> str:
+    # Supplement 1 SeqID already carries the leading ``Variant;`` token.
+    return f"{seq_id};{allele}"
+
+
+def _gzip_header_is_valid(path: Path) -> bool:
+    try:
+        with gzip.open(path, "rb") as fh:
+            fh.read(1)
+    except (OSError, EOFError):
+        return False
+    return True
+
+
+def _load_gse_umi_cpm(path: Path, barcode_map: Mapping[str, Tuple[str, str]]) -> Tuple[Dict[Tuple[str, str], float], int]:
+    """Aggregate barcode UMI counts to mean per-sample CPM by allele."""
+    with gzip.open(path, "rt", newline="") as fh:
+        reader = csv.reader(fh)
+        header = next(reader)
+        n_samples = max(0, len(header) - 1)
+        totals = [0.0] * n_samples
+        rows: Dict[Tuple[str, str], List[float]] = defaultdict(lambda: [0.0] * n_samples)
+        for row in reader:
+            if len(row) < n_samples + 1:
+                continue
+            values = [parse_float(value) or 0.0 for value in row[1:n_samples + 1]]
+            totals = [left + right for left, right in zip(totals, values)]
+            mapped = barcode_map.get(row[0])
+            if mapped is not None:
+                target = rows[mapped]
+                for i, value in enumerate(values):
+                    target[i] += value
+    measurements: Dict[Tuple[str, str], float] = {}
+    for key, values in rows.items():
+        cpm = [value / total * 1_000_000.0 for value, total in zip(values, totals) if total > 0]
+        if cpm:
+            measurements[key] = sum(cpm) / len(cpm)
+    return measurements, n_samples
+
+
+def _load_gse_label_map(path: Path, sheet_name: str) -> Dict[str, float]:
+    result: Dict[str, float] = {}
+    for row in iter_xlsx_rows(path, sheet_name):
+        seq_id = str(row.get("SeqID") or "")
+        value = parse_float(row.get("logFC"))
+        if seq_id and value is not None:
+            result[seq_id] = value
+    return result
+
+
+def iter_gse246381_records(data_root: Path) -> Iterator[Tuple[str, Dict[str, object]]]:
+    """Emit exact paired tdTomato UTR interventions from GSE246381.
+
+    HEK and mouse endpoints are split by the stable family hash so a paired
+    sequence never appears in two final roles. Absolute values are derived
+    only from the deposited UMI count matrices (mean sample-normalized CPM);
+    the publication's reported allelic logFC is retained as an independent
+    provenance field.
+    """
+    base = data_root / "data/raw/gse246381_utr_mutation"
+    sequence_xlsx = base / "media-1.xlsx"
+    hek_labels_xlsx = base / "media-6.xlsx"
+    mouse_labels_xlsx = base / "media-3.xlsx"
+    hek_counts = base / "GSE246381_hek_combined_umi_counts.csv.gz"
+    mouse_counts = base / "GSE246381_vglut_combined_umi_counts.csv.gz"
+    if not sequence_xlsx.exists():
+        return
+
+    variant_rows = list(iter_xlsx_rows(sequence_xlsx, "S1.2 MPRA Library Variants"))
+    oligo_rows = list(iter_xlsx_rows(sequence_xlsx, "S1.3 Library Oligo Sequences"))
+
+    def make_barcode_map() -> Dict[str, Tuple[str, str]]:
+        result: Dict[str, Tuple[str, str]] = {}
+        for row in oligo_rows:
+            oligo_id = str(row.get("SeqID") or "")
+            barcode = str(row.get("BC") or "")
+            if not barcode or not oligo_id.endswith((";REF", ";ALT")):
+                continue
+            raw_seq_id, allele = oligo_id.rsplit(";", 1)
+            seq_id = raw_seq_id.removeprefix("Variant;")
+            result[f"{_gse_variant_base(raw_seq_id, allele)};{barcode}"] = (seq_id, allele)
+        return result
+    hek_measurements: Dict[Tuple[str, str], float] = {}
+    mouse_measurements: Dict[Tuple[str, str], float] = {}
+    hek_sample_count = 0
+    mouse_sample_count = 0
+    if hek_counts.exists() and _gzip_header_is_valid(hek_counts) and hek_labels_xlsx.exists():
+        hek_measurements, hek_sample_count = _load_gse_umi_cpm(hek_counts, make_barcode_map())
+        hek_reported = _load_gse_label_map(
+            hek_labels_xlsx, "S2.4 Polysome-Total RNA Enrichm"
+        )
+    else:
+        hek_reported = {}
+    if mouse_counts.exists() and _gzip_header_is_valid(mouse_counts) and mouse_labels_xlsx.exists():
+        mouse_measurements, mouse_sample_count = _load_gse_umi_cpm(mouse_counts, make_barcode_map())
+        mouse_reported = _load_gse_label_map(
+            mouse_labels_xlsx, "S5.4 CreON Polysome-Total RNA"
+        )
+    else:
+        mouse_reported = {}
+
+    for row in variant_rows:
+        seq_id = str(row.get("SeqID") or "")
+        source = normalize_sequence(row.get("RefSequence"))
+        candidate = normalize_sequence(row.get("AltSequence"))
+        if not seq_id or not source or not candidate:
+            continue
+        family_id = _gse_family_id(seq_id)
+        family_fraction = stable_fraction("gse246381-family:" + family_id)
+        edits = derive_edit_operations(source, candidate)
+        if not edits:
+            continue
+        for endpoint in ("hek", "mouse"):
+            if endpoint == "hek":
+                if not hek_measurements or family_fraction >= 0.50:
+                    continue
+                measured_source = hek_measurements.get((seq_id, "REF"))
+                measured_candidate = hek_measurements.get((seq_id, "ALT"))
+                reported_logfc = hek_reported.get(seq_id)
+                role = "test_family"
+                context = "HEK293T"
+                assay = "GSE246381_HEK_MPRA_combined_UMI"
+                batch = "GSE246381_HEK_combined_umi_counts.csv.gz"
+                sample_count = hek_sample_count
+                ood_dimensions: List[str] = []
+            else:
+                if not mouse_measurements or family_fraction < 0.50:
+                    continue
+                measured_source = mouse_measurements.get((seq_id, "REF"))
+                measured_candidate = mouse_measurements.get((seq_id, "ALT"))
+                reported_logfc = mouse_reported.get(seq_id)
+                role = "test_ood"
+                context = "mouse_brain_Vglut2_CreON"
+                assay = "GSE246381_mouse_Vglut_MPRA_combined_UMI"
+                batch = "GSE246381_vglut_combined_umi_counts.csv.gz"
+                sample_count = mouse_sample_count
+                ood_dimensions = ["species_tail"]
+                if len(source) <= 60 or len(source) >= 210:
+                    ood_dimensions.append("length_tail")
+            if measured_source is None or measured_candidate is None:
+                continue
+            rid = f"v2gse246381:{endpoint}:{sha256_text(seq_id)[:20]}"
+            yield role, {
+                "benchmark_version": "nmi_benchmark_v2",
+                "record_id": rid,
+                "source_id": f"{rid}:source",
+                "mother_id": f"{rid}:source",
+                "candidate_id": f"{rid}:candidate",
+                "source_sequence": source,
+                "candidate_sequence": candidate,
+                "source_sequence_sha256": sha256_text(source),
+                "candidate_sequence_sha256": sha256_text(candidate),
+                "edit_list": edits,
+                "edit_count": len(edits),
+                "measured_source": measured_source,
+                "measured_candidate": measured_candidate,
+                "measured_delta": measured_candidate - measured_source,
+                "delta": measured_candidate - measured_source,
+                "measured_or_proxy_source_value": measured_source,
+                "measured_or_proxy_candidate_value": measured_candidate,
+                "cargo": "tdTomato",
+                "cargo_id": "tdTomato",
+                "protein_family_id": "reporter_family:tdTomato",
+                "cell_context": context,
+                "assay": assay,
+                "assay_type": assay,
+                "batch": batch,
+                "replicate": sample_count,
+                "family_cluster_id": family_id,
+                "confidence": "measured",
+                "data_source": f"GSE246381:{endpoint}:GEO_processed_counts",
+                "data_layer": "C_source_matched_intervention",
+                "task_kind": "local_delta",
+                "local_delta_eligible": True,
+                "label_semantics": "wet_lab_source_matched_reporter_abundance_delta; reported_polysome_total_RNA_logFC_retained",
+                "value_qualifier": "mean sample-normalized UMI CPM across deposited combined count matrix; not direct protein abundance",
+                "task_eligibility": "task_a_active_substitution" if all(
+                    item["op"] == "replace"
+                    and len(str(item["ref"])) == 1
+                    and len(str(item["alt"])) == 1
+                    for item in edits
+                ) else "local_delta_only_indel_or_complex",
+                "reported_logFC": reported_logfc,
+                "species": "human" if endpoint == "hek" else "mouse",
+                "gene": str(row.get("SYMBOL")) if row.get("SYMBOL") is not None else None,
+                "phenotype": str(row.get("Pheno")) if row.get("Pheno") is not None else None,
+                "transcript_id": str(row.get("Ensembl_TxID")) if row.get("Ensembl_TxID") is not None else None,
+                "ood_dimensions": ood_dimensions,
+            }
 
 
 def iter_mpra_records(
@@ -615,6 +861,11 @@ def build_asset_registry(data_root: Path) -> Dict[str, List[Dict[str, object]]]:
             {"name": "P3 measured source-matched intervention tier", "level": "C", "relative_path": "data/p3/benchmark/measured_tier.jsonl", "label_semantics": "wet_lab_local_delta_ground_truth", "provenance": "P3 source-matched measured tier", "status": "available"},
             {"name": "Sample 2019 chemistry-matched assay pairs", "level": "C", "relative_path": "data/nmi_benchmark_v2/records.jsonl", "label_semantics": "source_matched_assay_delta_not_sequence_edit", "provenance": "paired unmodified and 1-methylpseudouridine MPRA records", "status": "generated_by_builder"},
             {"name": "Cao context-matched pairs", "level": "C", "relative_path": "data/nmi_benchmark_v2/records.jsonl", "label_semantics": "source_matched_context_delta_not_sequence_edit", "provenance": "paired HEK293T and PC3/Muscle TE records by transcript accession", "status": "generated_by_builder"},
+            asset_entry(data_root, "data/raw/gse246381_utr_mutation/media-1.xlsx", level="C", name="GSE246381 exact paired UTR sequences", label_semantics="source_matched_intervention_sequence_contract", provenance="GSE246381 Supplement 1; GEO GSE246381"),
+            asset_entry(data_root, "data/raw/gse246381_utr_mutation/media-6.xlsx", level="C", name="GSE246381 HEK allelic-effect labels", label_semantics="source_matched_reporter_effect", provenance="GSE246381 Supplement 2; GEO GSE246381"),
+            asset_entry(data_root, "data/raw/gse246381_utr_mutation/media-3.xlsx", level="C", name="GSE246381 mouse Vglut allelic-effect labels", label_semantics="source_matched_reporter_effect", provenance="GSE246381 Supplement 5; GEO GSE246381"),
+            asset_entry(data_root, "data/raw/gse246381_utr_mutation/GSE246381_hek_combined_umi_counts.csv.gz", level="C", name="GSE246381 HEK combined UMI counts", label_semantics="measured_source_candidate_reporter_abundance", provenance="GEO GSE246381 processed supplementary counts"),
+            asset_entry(data_root, "data/raw/gse246381_utr_mutation/GSE246381_vglut_combined_umi_counts.csv.gz", level="C", name="GSE246381 mouse Vglut combined UMI counts", label_semantics="measured_source_candidate_reporter_abundance", provenance="GEO GSE246381 processed supplementary counts"),
         ],
         "D_prospective_data": [
             {"name": "prospective post-freeze intake", "level": "D", "relative_path": "data/nmi_benchmark_v2/manifests/prospective.json", "label_semantics": "future_only_not_available_during_model_development", "provenance": "P1-01 freeze gate", "status": "empty_until_freeze", "frozen": False},
@@ -698,6 +949,12 @@ def build(input_paths: Iterable[Path], out_dir: Path, *, data_root: Path,
                     excluded_candidate_hashes=historical_measured_candidate_hashes,
                 ):
                     write_record(out, rec, role)
+
+            # GSE246381 supplies exact paired sequences and independent
+            # HEK/mouse reporter-abundance interventions. Its family split is
+            # intentionally disjoint between test_family and species/length OOD.
+            for role, rec in iter_gse246381_records(data_root):
+                write_record(out, rec, role)
 
             # Exact CDS joins to P0 GENCODE/RefSeq protein metadata provide a
             # real protein-family absolute holdout. These records never enter
@@ -809,7 +1066,7 @@ def build(input_paths: Iterable[Path], out_dir: Path, *, data_root: Path,
             "role_scope": {
                 "test_context": "source_matched context_delta plus absolute_property_context_shift; no nucleotide edit context holdout",
                 "test_assay": "source_matched assay_delta plus absolute_property_assay_shift; no nucleotide edit assay holdout",
-                "test_family": "measured mCherry absolute cargo-family holdout plus raw-library family_cluster local-delta holdout; local-delta cargo/protein-family disjointness is unavailable",
+                "test_family": "tdTomato GSE246381 source-matched local-delta cargo/protein-family holdout plus mCherry absolute holdout",
             }.get(role, "source_matched_or_distribution_split"),
         }
         p = out_dir / "manifests" / f"{role}.json"
@@ -838,6 +1095,11 @@ def build(input_paths: Iterable[Path], out_dir: Path, *, data_root: Path,
             "data/reconstructed/p0_data_reconstruction_v1/combined/gencode_family.metadata.jsonl",
             "data/reconstructed/p0_data_reconstruction_v1/combined/refseq_family.records.jsonl",
             "data/reconstructed/p0_data_reconstruction_v1/combined/refseq_family.metadata.jsonl",
+            "data/raw/gse246381_utr_mutation/media-1.xlsx",
+            "data/raw/gse246381_utr_mutation/media-3.xlsx",
+            "data/raw/gse246381_utr_mutation/media-6.xlsx",
+            "data/raw/gse246381_utr_mutation/GSE246381_hek_combined_umi_counts.csv.gz",
+            "data/raw/gse246381_utr_mutation/GSE246381_vglut_combined_umi_counts.csv.gz",
         ],
         "records_path": str(records_path.relative_to(out_dir)),
         "records_sha256": sha256_file(records_path),
@@ -858,12 +1120,12 @@ def build(input_paths: Iterable[Path], out_dir: Path, *, data_root: Path,
         "proxy_is_biological_ground_truth": False,
         "legacy_excluded_split_counts": dict(sorted(legacy_excluded.items())),
         "untouched_test_policy": "historical P3 test/ood/val labels are never promoted to v2 final; final local-edit roles come from raw designed-library rows excluded by historical measured source/candidate membership",
-        "family_axis_policy": "test_family contains exact protein-family absolute holdout records joined from CodonBERT CDS to P0 GENCODE/RefSeq metadata, plus measured mCherry-vs-eGFP absolute cargo holdout; its local_delta subset remains raw-library family_cluster holdout and is not cargo/protein-family disjoint",
+        "family_axis_policy": "test_family contains an independently sourced tdTomato GSE246381 source-matched local-delta family holdout, with mCherry-vs-eGFP absolute holdout and exact CodonBERT protein-family absolute holdout; raw eGFP rows are not assigned to local-delta test_family",
         "protein_family_join_policy": "normalize RNA alphabet, SHA-256 exact CDS match, first provenance record wins for duplicate CDS; family split is stable_fraction(protein_family_id)",
         "ood_dimension_policy": {
-            "local_delta_available": ["gc_tail", "motif_uaug"],
-            "length": "available as measured absolute-only test_ood records; not source-matched local-delta",
-            "species": "mouse 5UTR observational asset available; source-matched local-delta final labels are unavailable",
+            "local_delta_available": ["gc_tail", "motif_uaug", "species_tail", "length_tail"],
+            "length": "source-matched GSE246381 length-tail subset is tagged on test_ood; Sample 2019 varying-length remains absolute-only",
+            "species": "source-matched mouse GSE246381 Vglut labels are tagged on test_ood; GENCODE mouse 5UTRs remain observational-only",
             "record_field": "ood_dimensions",
         },
         "claim_policy": "absolute-property context/assay records do not authorize local-delta or SOTA claims",
