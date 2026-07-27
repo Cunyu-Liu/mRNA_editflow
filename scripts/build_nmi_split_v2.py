@@ -83,6 +83,13 @@ def normalize_sequence(value: object) -> str:
     return str(value or "").strip().upper().replace("T", "U")
 
 
+def normalized_log2_delta(source: Optional[float], candidate: Optional[float]) -> Optional[float]:
+    """Return the cross-assay scoring endpoint while retaining raw values."""
+    if source is None or candidate is None or source <= -1.0 or candidate <= -1.0:
+        return None
+    return math.log2((candidate + 1.0) / (source + 1.0))
+
+
 def normalize_p3_record(rec: Mapping[str, object], role: str) -> Dict[str, object]:
     confidence = str(rec.get("confidence", "unknown"))
     measured = confidence == "measured"
@@ -111,6 +118,8 @@ def normalize_p3_record(rec: Mapping[str, object], role: str) -> Dict[str, objec
         "measured_source": measured_source,
         "measured_candidate": measured_candidate,
         "measured_delta": measured_delta,
+        "scored_delta": normalized_log2_delta(measured_source, measured_candidate),
+        "scoring_endpoint": "log2_plus_one_fold_change_candidate_over_source",
         "cargo": rec.get("cargo_id"),
         "protein_family_id": rec.get("protein_family_id") or (
             f"reporter_family:{str(rec.get('cargo_id') or 'unknown').casefold()}"
@@ -368,6 +377,8 @@ def iter_raw_untouched_records(
             "measured_source": anchors[source],
             "measured_candidate": candidate_value,
             "measured_delta": candidate_value - anchors[source],
+            "scored_delta": normalized_log2_delta(anchors[source], candidate_value),
+            "scoring_endpoint": "log2_plus_one_fold_change_candidate_over_source",
             "delta": candidate_value - anchors[source],
             "measured_or_proxy_source_value": anchors[source],
             "measured_or_proxy_candidate_value": candidate_value,
@@ -577,6 +588,8 @@ def iter_gse246381_records(data_root: Path) -> Iterator[Tuple[str, Dict[str, obj
                 "measured_source": measured_source,
                 "measured_candidate": measured_candidate,
                 "measured_delta": measured_candidate - measured_source,
+                "scored_delta": normalized_log2_delta(measured_source, measured_candidate),
+                "scoring_endpoint": "log2_plus_one_fold_change_candidate_over_source",
                 "delta": measured_candidate - measured_source,
                 "measured_or_proxy_source_value": measured_source,
                 "measured_or_proxy_candidate_value": measured_candidate,
@@ -595,7 +608,7 @@ def iter_gse246381_records(data_root: Path) -> Iterator[Tuple[str, Dict[str, obj
                 "task_kind": "local_delta",
                 "local_delta_eligible": True,
                 "label_semantics": "wet_lab_source_matched_reporter_abundance_delta; reported_polysome_total_RNA_logFC_retained",
-                "value_qualifier": "mean sample-normalized UMI CPM across deposited combined count matrix; not direct protein abundance",
+                "value_qualifier": "mean sample-normalized UMI CPM across deposited combined count matrix; not direct protein abundance; scored_delta is log2 plus-one fold change",
                 "task_eligibility": "task_a_active_substitution" if all(
                     item["op"] == "replace"
                     and len(str(item["ref"])) == 1

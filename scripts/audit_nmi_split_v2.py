@@ -48,6 +48,7 @@ def audit(root: Path, *, allow_final_labels: bool) -> Dict:
     task_kinds = {role: Counter() for role in ROLES}
     required_missing = Counter()
     measured_missing = Counter()
+    scored_delta_missing = Counter()
     records_path = root / str(next(iter(manifests.values()))["records_path"])
     with records_path.open() as fh:
         for line in fh:
@@ -64,6 +65,8 @@ def audit(root: Path, *, allow_final_labels: bool) -> Dict:
                 required_missing.update(missing)
                 if task_kind in {"local_delta", "context_delta", "assay_delta"} and any(rec.get(f) is None for f in ("measured_source", "measured_candidate", "measured_delta")):
                     measured_missing[role] += 1
+                if task_kind == "local_delta" and rec.get("scored_delta") is None:
+                    scored_delta_missing[role] += 1
                 # Leakage checks cover local-delta and absolute family
                 # tasks; context/assay axis records remain separate tasks and
                 # are not silently treated as nucleotide interventions.
@@ -159,7 +162,7 @@ def audit(root: Path, *, allow_final_labels: bool) -> Dict:
     structural_pass = (
         not source_cross and not seq_cross and not family_cross
         and not mother_cross and not local_family_cross
-        and not required_missing and not measured_missing
+        and not required_missing and not measured_missing and not scored_delta_missing
         and all(nonempty.values())
         and context_test > 0 and assay_test > 0
         and family_absolute_cargo_holdout_ready
@@ -189,6 +192,7 @@ def audit(root: Path, *, allow_final_labels: bool) -> Dict:
         },
         "required_field_missing_counts": dict(required_missing),
         "local_delta_measured_field_missing_by_role": dict(measured_missing),
+        "local_delta_scored_delta_missing_by_role": dict(scored_delta_missing),
         "nonempty_final_roles": {role: nonempty[role] for role in FINAL_ROLES},
         "context_axis": {
             "records_present": context_test > 0,

@@ -24,7 +24,10 @@ Roles:
   records. GENCODE mouse 5′UTRs remain Level A observational assets only.
 
 `task_kind=local_delta` and `data_layer=C_source_matched_intervention` are the
-only records eligible for biological nucleotide local-delta metrics. The
+only records eligible for biological nucleotide local-delta metrics. Pooled
+Task 1--3 scoring uses `scored_delta = log2((candidate+1)/(source+1))` so
+cross-assay/cargo units are aligned; raw measured fields remain provenance.
+The
 `context_delta` and `assay_delta` records are retained for axis-shift audits,
 not editing claims. Public absolute
 libraries are registered as Layer B and retain their measured values for

@@ -20,6 +20,8 @@ roles:
 final_test_default: refuse
 allowed_final_label_flag: --allow-final-labels
 proxy_is_biological_ground_truth: false
+scoring_endpoint: log2_plus_one_fold_change_candidate_over_source
+raw_measurement_fields_remain_provenance: true
 required_source_matched_fields:
   - source_id
   - candidate_id

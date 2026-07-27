@@ -100,3 +100,8 @@ def test_edit_operations_are_auditable_for_indels():
 
     edits = derive_edit_operations("AAACCC", "AAAGCCC")
     assert edits == [{"pos": 3, "ref": "", "alt": "G", "region": "five_utr", "op": "insert"}]
+
+def test_scored_delta_is_preferred_for_cross_assay_metrics():
+    from evaluate_benchmark_v2 import target
+
+    assert target({"measured_delta": 100.0, "scored_delta": 0.25}) == 0.25

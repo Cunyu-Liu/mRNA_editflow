@@ -53,7 +53,10 @@ def edits(rec: Mapping[str, object]) -> List[Mapping[str, object]]:
 
 
 def target(rec: Mapping[str, object]) -> Optional[float]:
-    return finite(rec.get("measured_delta"))
+    # Raw measured_delta remains the provenance field; scored_delta aligns
+    # cross-assay/cargo local effects for pooled Task 1--3 metrics.
+    scored = finite(rec.get("scored_delta"))
+    return scored if scored is not None else finite(rec.get("measured_delta"))
 
 
 def load_records(root: Path, role: str, *, allow_final_labels: bool, task_kind: Optional[str] = "local_delta") -> List[Dict]:
@@ -723,7 +726,8 @@ def evaluate(root: Path, roles: Sequence[str], *, allow_final_labels: bool) -> D
         "evaluated_roles": list(roles),
         "allow_final_labels": allow_final_labels,
         "label_policy": "final roles opened only by explicit flag",
-        "task_contract": "only measured task_kind=local_delta enters Task 1-3 metrics",
+        "task_contract": "only measured task_kind=local_delta enters Task 1-3 metrics; target is scored_delta when present",
+        "scoring_endpoint": "log2_plus_one_fold_change_candidate_over_source; raw measured_source/measured_candidate/measured_delta remain provenance",
         "roles": {},
         "baselines": {},
         "validation_error_cut_reference": "computed on val predictions and reused for final-role abstention labels",
