@@ -10,14 +10,18 @@ Roles:
 
 - `train`, `val`: source-disjoint development data;
 - `test_id`: source-disjoint in-distribution final test;
-- `test_family`: cargo/protein-family holdout from the frozen P3 source split;
-- `test_context`, `test_assay`: independent absolute-property context/assay
-  shift tasks. They are present for axis coverage but are explicitly not
-  source-matched local-delta ground truth.
+- `test_family`: untouched raw-library `family_cluster_id` holdout. The
+  current public source does not provide cargo/protein-family labels, so this
+  role must not be described as a cargo/protein-family result.
+- `test_context`, `test_assay`: source-matched context/assay shift records plus
+  independent absolute-property records. These are measured axis interventions
+  but are explicitly not nucleotide-edit local-delta ground truth.
 - `test_ood`: GC/length tail or other declared distribution shift.
 
 `task_kind=local_delta` and `data_layer=C_source_matched_intervention` are the
-only records eligible for biological local-delta metrics. Public absolute
+only records eligible for biological nucleotide local-delta metrics. The
+`context_delta` and `assay_delta` records are retained for axis-shift audits,
+not editing claims. Public absolute
 libraries are registered as Layer B and retain their measured values for
 absolute-property evaluation only. Proxy and unlabeled records are assets,
 not biological ground truth.

@@ -35,6 +35,7 @@ def audit(root: Path, *, allow_final_labels: bool) -> Dict:
                     record_to_roles[rid].add(role)
 
     source_roles: Dict[tuple, set] = defaultdict(set)
+    mother_roles: Dict[tuple, set] = defaultdict(set)
     family_roles: Dict[tuple, set] = defaultdict(set)
     seq_roles: Dict[tuple, set] = defaultdict(set)
     context_roles: Dict[tuple, set] = defaultdict(set)
@@ -58,19 +59,21 @@ def audit(root: Path, *, allow_final_labels: bool) -> Dict:
                 task_kinds[role][task_kind] += 1
                 missing = [f for f in REQUIRED_SOURCE_MATCHED_FIELDS if f not in rec]
                 required_missing.update(missing)
-                if task_kind == "local_delta" and any(rec.get(f) is None for f in ("measured_source", "measured_candidate", "measured_delta")):
+                if task_kind in {"local_delta", "context_delta", "assay_delta"} and any(rec.get(f) is None for f in ("measured_source", "measured_candidate", "measured_delta")):
                     measured_missing[role] += 1
                 # Local-delta leakage checks are intentionally scoped to the
                 # local task. Absolute context/assay libraries are separate
                 # tasks and are not silently treated as intervention data.
                 if task_kind == "local_delta":
                     source_roles[(task_kind, str(rec.get("source_id")))].add(role)
+                    mother_roles[(task_kind, str(rec.get("mother_id", rec.get("source_id"))))].add(role)
                     family_roles[(task_kind, str(rec.get("family_cluster_id")))].add(role)
                     seq_roles[(task_kind, str(rec.get("candidate_sequence_sha256")).strip())].add(role)
                 context_roles[(task_kind, str(rec.get("cell_context")))].add(role)
                 assay_roles[(task_kind, str(rec.get("assay")))].add(role)
 
     source_cross = {str(k): sorted(v) for k, v in source_roles.items() if len(v) > 1}
+    mother_cross = {str(k): sorted(v) for k, v in mother_roles.items() if len(v) > 1}
     seq_cross = {str(k): sorted(v) for k, v in seq_roles.items() if len(v) > 1}
     family_cross = {
         str(k): sorted(v) for k, v in family_roles.items()
@@ -86,11 +89,18 @@ def audit(root: Path, *, allow_final_labels: bool) -> Dict:
     local_delta_counts = {
         role: int(task_kinds[role].get("local_delta", 0)) for role in ROLES
     }
+    context_delta_counts = {
+        role: int(task_kinds[role].get("context_delta", 0)) for role in ROLES
+    }
+    assay_delta_counts = {
+        role: int(task_kinds[role].get("assay_delta", 0)) for role in ROLES
+    }
     context_test = sum(task_kinds["test_context"].values())
     assay_test = sum(task_kinds["test_assay"].values())
     prospective = json.loads((root / "manifests" / "prospective.json").read_text())
     structural_pass = (
         not source_cross and not seq_cross and not family_cross
+        and not mother_cross
         and not required_missing and not measured_missing
         and all(nonempty.values())
         and context_test > 0 and assay_test > 0
@@ -102,9 +112,14 @@ def audit(root: Path, *, allow_final_labels: bool) -> Dict:
         "final_label_gate": "open" if allow_final_labels else "closed",
         "counts": {role: int(counts[role]) for role in ROLES},
         "local_delta_counts": local_delta_counts,
+        "source_matched_axis_counts": {
+            "context_delta": context_delta_counts,
+            "assay_delta": assay_delta_counts,
+        },
         "confidence_by_role": {role: dict(confidence[role]) for role in ROLES},
         "task_kinds_by_role": {role: dict(task_kinds[role]) for role in ROLES},
         "source_cross_role_count": len(source_cross),
+        "mother_cross_role_count": len(mother_cross),
         "candidate_cross_role_count": len(seq_cross),
         "family_train_final_overlap_count": len(family_cross),
         "ood_family_overlap_count": len(ood_family_overlap),
@@ -114,18 +129,23 @@ def audit(root: Path, *, allow_final_labels: bool) -> Dict:
         "context_axis": {
             "records_present": context_test > 0,
             "scope": manifests["test_context"].get("role_scope"),
+            "source_matched_context_delta_ready": context_delta_counts["test_context"] > 0,
             "local_delta_ready": local_delta_counts["test_context"] > 0,
+            "absolute_property_only_records": int(task_kinds["test_context"].get("absolute_property_context_shift", 0)),
             "contexts": sorted({k[1] for k, v in context_roles.items() if "test_context" in v}),
         },
         "assay_axis": {
             "records_present": assay_test > 0,
             "scope": manifests["test_assay"].get("role_scope"),
+            "source_matched_assay_delta_ready": assay_delta_counts["test_assay"] > 0,
             "local_delta_ready": local_delta_counts["test_assay"] > 0,
+            "absolute_property_only_records": int(task_kinds["test_assay"].get("absolute_property_assay_shift", 0)),
             "assays": sorted({k[1] for k, v in assay_roles.items() if "test_assay" in v}),
         },
         "prospective": prospective,
         "examples": {
             "source_cross_role": dict(list(source_cross.items())[:10]),
+            "mother_cross_role": dict(list(mother_cross.items())[:10]),
             "candidate_cross_role": dict(list(seq_cross.items())[:10]),
             "family_train_final_overlap": dict(list(family_cross.items())[:10]),
             "ood_family_overlap": dict(list(ood_family_overlap.items())[:10]),

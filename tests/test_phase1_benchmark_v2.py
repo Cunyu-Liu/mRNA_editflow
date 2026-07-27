@@ -1,6 +1,9 @@
 import json
+import sys
 
 import pytest
+
+sys.path.insert(0, "scripts")
 
 from data.nmi_benchmark_v2 import (
     FinalTestAccessError,
@@ -48,3 +51,23 @@ def test_required_source_matched_contract_is_explicit():
         "edit_list", "edit_count", "measured_source", "measured_candidate",
         "measured_delta", "cargo", "cell_context", "assay", "batch", "replicate",
     )
+
+
+def test_budget_one_does_not_use_multi_edit_candidate():
+    from evaluate_benchmark_v2 import budget_metrics
+
+    records = [
+        {"source_id": "s", "edit_count": 1, "measured_delta": 0.2},
+        {"source_id": "s", "edit_count": 2, "measured_delta": 0.9},
+    ]
+    result = budget_metrics(records, [0.1, 1.0], budget=1)
+    assert result["final_delta_mean"] == 0.2
+    assert result["reference_is_not_full_legal_dp_or_beam"] is True
+
+
+def test_abstention_auc_detects_high_error_when_uncertainty_is_informative():
+    from evaluate_benchmark_v2 import metrics
+
+    result = metrics([0.0, 0.9, 0.1, 0.8], [0.1, 0.9, 0.2, 0.8], [0.0, 0.0, 0.1, 0.1])
+    assert result["abstention_auroc"] is not None
+    assert result["abstention_auroc"] >= 0.75

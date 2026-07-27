@@ -3,11 +3,12 @@ records:
   - data/p3/benchmark/measured_tier.jsonl
   - data/p3/benchmark/proxy_tier.jsonl
   - data/p3/benchmark/unlabeled_tier.jsonl
+  - data/raw/sample2019_mpra/GSM3130443_designed_library.csv.gz
 roles:
   train: source_disjoint_development
   val: source_disjoint_development
   test_id: untouched_source_disjoint_final
-  test_family: untouched_family_disjoint_final
+  test_family: untouched_raw_library_family_disjoint_final_cargo_family_unavailable
   test_context: untouched_context_disjoint_final
   test_assay: untouched_assay_disjoint_final
   test_ood: untouched_distribution_shift_final
@@ -35,6 +36,8 @@ task_kinds:
   absolute_property_regression: measured absolute property; no local-delta semantics
   absolute_property_context_shift: measured context-shift absolute property; no local-delta semantics
   absolute_property_assay_shift: measured assay-shift absolute property; no local-delta semantics
+  context_delta: source-matched context intervention; measured axis shift, not a nucleotide edit
+  assay_delta: source-matched assay/chemistry intervention; measured axis shift, not a nucleotide edit
 prospective:
   manifest: data/nmi_benchmark_v2/manifests/prospective.json
   frozen: false

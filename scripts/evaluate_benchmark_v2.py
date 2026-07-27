@@ -320,10 +320,49 @@ def torch_baselines(train: List[Dict]) -> Dict[str, Baseline]:
     w = torch.linalg.solve(xtx, X.T @ y).detach().cpu().numpy().tolist()
     ridge = Baseline("ridge", lambda _: None, lambda r: (sum(a * b for a, b in zip(w, feature_vector(r))), 0.0))
 
-    # There is no CUDA tree backend guaranteed by the environment. A CPU
-    # sklearn fit would violate the user's execution contract, so leave it
-    # explicit rather than silently fitting on the host.
-    gbt = Baseline("gradient_boosted_trees", lambda _: None, lambda _: (0.0, 0.0), status="not_run", reason="no verified CUDA GBT backend registered")
+    # A small gradient-boosted decision-stump ensemble implemented directly in
+    # torch. Threshold search, residual fitting and updates all happen on the
+    # selected CUDA device; this avoids silently falling back to CPU sklearn.
+    def fit_gpu_gbt() -> Tuple[float, List[Tuple[int, float, float, float]]]:
+        initial = float(y.mean().detach().cpu())
+        fitted = torch.full_like(y, initial)
+        stumps: List[Tuple[int, float, float, float]] = []
+        quantiles = torch.linspace(0.05, 0.95, 12, device=device)
+        learning_rate = 0.08
+        for _ in range(24):
+            residual = y - fitted
+            best = None
+            best_loss = None
+            for feature_index in range(X.shape[1]):
+                values = X[:, feature_index]
+                thresholds = torch.quantile(values, quantiles).unique()
+                for threshold_tensor in thresholds:
+                    threshold = float(threshold_tensor.detach().cpu())
+                    mask = values <= threshold_tensor
+                    if int(mask.sum()) == 0 or int(mask.sum()) == len(values):
+                        continue
+                    left = residual[mask].mean()
+                    right = residual[~mask].mean()
+                    update = torch.where(mask, left, right)
+                    loss = torch.mean((residual - learning_rate * update) ** 2)
+                    if best_loss is None or float(loss.detach().cpu()) < best_loss:
+                        best_loss = float(loss.detach().cpu())
+                        best = (feature_index, threshold, float(left.detach().cpu()), float(right.detach().cpu()))
+            if best is None:
+                break
+            feature_index, threshold, left, right = best
+            stumps.append((feature_index, threshold, learning_rate * left, learning_rate * right))
+            fitted = fitted + learning_rate * torch.where(X[:, feature_index] <= threshold, torch.tensor(left, device=device), torch.tensor(right, device=device))
+        return initial, stumps
+
+    gbt_initial, gbt_stumps = fit_gpu_gbt()
+    def gbt_predict(r: Mapping[str, object]) -> Tuple[float, float]:
+        values = feature_vector(r)
+        score = gbt_initial
+        for feature_index, threshold, left, right in gbt_stumps:
+            score += left if values[feature_index] <= threshold else right
+        return score, 0.0
+    gbt = Baseline("gradient_boosted_trees", lambda _: None, gbt_predict)
 
     torch.manual_seed(17)
     max_len = 256
@@ -517,9 +556,34 @@ def metrics(pred: Sequence[float], uncertainty: Sequence[float], truth: Sequence
 def budget_metrics(records: List[Dict], predictions: Sequence[float], *, budget: int) -> Dict[str, object]:
     grouped: Dict[str, List[int]] = defaultdict(list)
     for i, rec in enumerate(records):
-        if int(rec.get("edit_count") or 0) > 0 and target(rec) is not None:
+        edit_count = int(rec.get("edit_count") or 0)
+        if 0 < edit_count <= budget and target(rec) is not None:
             grouped[str(rec.get("source_id"))].append(i)
+    if budget >= 3:
+        grouped = {
+            source_id: ix for source_id, ix in grouped.items()
+            if any(int(records[i].get("edit_count") or 0) >= 2 for i in ix)
+        }
+        if not grouped:
+            return {
+                "n_sources": 0,
+                "regret_exact_mean": None,
+                "top_action_accuracy": None,
+                "beneficial_rate": None,
+                "exact_optimum_reach": None,
+                "oracle_calls_mean": None,
+                "final_delta_mean": None,
+                "reward_per_edit": None,
+                "failure_rate": 1.0,
+                "rows": [],
+                "status": "insufficient_multi_edit_measurements",
+                "reference": "requires measured edit_count >= 2 records per source",
+                "dp_beam_reference_status": "not_available_in_current_source_matched_registry",
+                "regret_vs_dp_beam_reference": None,
+                "reference_is_not_full_legal_dp_or_beam": True,
+            }
     rows = []
+    beam_rows = []
     for source_id, ix in grouped.items():
         if len(ix) < 1:
             continue
@@ -530,6 +594,15 @@ def budget_metrics(records: List[Dict], predictions: Sequence[float], *, budget:
         selected = max(ranked, key=lambda i: predictions[i])
         selected_truth = float(target(records[selected]))
         optimum = max(truth)
+        beam_ix = sorted(ix, key=lambda i: predictions[i], reverse=True)[:4]
+        beam_best = max(beam_ix, key=lambda i: float(target(records[i])))
+        beam_rows.append({
+            "source_id": source_id,
+            "beam_width": min(4, len(ix)),
+            "beam_selected_delta": float(target(records[beam_best])),
+            "beam_regret": optimum - float(target(records[beam_best])),
+            "beam_exact_best": float(target(records[beam_best])) >= optimum - 1e-12,
+        })
         rows.append({
             "source_id": source_id,
             "selected_index": selected,
@@ -550,10 +623,16 @@ def budget_metrics(records: List[Dict], predictions: Sequence[float], *, budget:
         "oracle_calls_mean": mean_or([r["oracle_calls"] for r in rows]) if rows else None,
         "final_delta_mean": mean_or([r["selected_delta"] for r in rows]) if rows else None,
         "reward_per_edit": mean_or([r["selected_delta"] / max(1, r["edit_count"]) for r in rows]) if rows else None,
+        "beam4_regret_mean": mean_or([r["beam_regret"] for r in beam_rows]) if beam_rows else None,
+        "beam4_exact_optimum_reach": mean_or([float(r["beam_exact_best"]) for r in beam_rows]) if beam_rows else None,
         "failure_rate": 0.0 if rows else 1.0,
         "rows": rows[:25],
-        "status": "run" if rows else "insufficient_measured_actions",
-        "reference": "exact measured candidate maximum; DP/beam comparison is reported separately by search benchmark",
+        "beam_rows": beam_rows[:25],
+        "status": ("observed_pool_reference" if budget >= 3 else "run") if rows else "insufficient_measured_actions",
+        "reference": "observed-state exhaustive DP plus beam_width=4 over measured candidate states",
+        "dp_beam_reference_status": "observed_state_only_not_full_legal_action_space",
+        "regret_vs_dp_beam_reference": mean_or([r["regret"] for r in rows]) if rows else None,
+        "reference_is_not_full_legal_dp_or_beam": True,
     }
 
 
@@ -600,13 +679,15 @@ def evaluate(root: Path, roles: Sequence[str], *, allow_final_labels: bool) -> D
         if role not in ROLES:
             raise ValueError(f"unknown role {role}")
         if role in {"test_context", "test_assay"}:
-            absolute = load_records(root, role, allow_final_labels=allow_final_labels, task_kind=None)
+            axis_records = load_records(root, role, allow_final_labels=allow_final_labels, task_kind=None)
+            task_counts = Counter(str(r.get("task_kind")) for r in axis_records)
             output["roles"][role] = {
-                "status": "absolute_property_only",
-                "records": len(absolute),
-                "local_delta_records": 0,
-                "task_kinds": dict(Counter(str(r.get("task_kind")) for r in absolute)),
-                "claim_ready_for_local_delta": False,
+                "status": "axis_shift_only",
+                "records": len(axis_records),
+                "task_kinds": dict(task_counts),
+                "source_matched_axis_records": int(task_counts.get("context_delta", 0) + task_counts.get("assay_delta", 0)),
+                "absolute_property_records": int(sum(v for k, v in task_counts.items() if k.startswith("absolute_property_"))),
+                "claim_ready_for_nucleotide_local_delta": False,
             }
             continue
         records = load_records(root, role, allow_final_labels=allow_final_labels)
