@@ -62,6 +62,14 @@ script verifies its role/alias and no-label candidate digest. Final evaluation
 additionally recomputes the safe candidate digest, role-manifest SHA and
 canonical records SHA; the boolean attestation alone cannot unlock labels.
 
+`scripts/run_phase2_final_protocol.py` fixes the order operationally: it
+chooses a checkpoint using validation-only metrics, creates both label-free
+selection artifacts and freeze manifests, and only then invokes the evaluator
+with `--allow-final-labels`. If either registered gate fails, invoke
+`scripts/run_phase2_remediation.py` with both final reports; its
+error-stratification report and source-matched active-learning queue are
+mandatory evidence, not a claim of new measurements.
+
 ## Forced route when the gate fails
 
 The runner records error stratification and an active-learning acquisition
