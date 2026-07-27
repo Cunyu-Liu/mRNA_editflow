@@ -8,7 +8,7 @@ roles:
   train: source_disjoint_development
   val: source_disjoint_development
   test_id: untouched_source_disjoint_final
-  test_family: untouched_raw_library_family_disjoint_final_cargo_family_unavailable
+  test_family: exact_protein_family_and_mcherry_absolute_holdout_plus_raw_local_delta_family_holdout
   test_context: untouched_context_disjoint_final
   test_assay: untouched_assay_disjoint_final
   test_ood: untouched_distribution_shift_final_gc_or_motif
@@ -43,5 +43,5 @@ prospective:
   frozen: false
 ood_dimensions:
   local_delta_available: [gc_tail, motif_uaug]
-  length: absolute_only_auxiliary_not_local_delta
-  species: unavailable_in_current_source_matched_registry
+  length: measured_absolute_only_not_local_delta
+  species: observational_asset_only_not_local_delta

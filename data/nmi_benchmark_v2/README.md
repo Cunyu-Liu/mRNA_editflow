@@ -10,16 +10,19 @@ Roles:
 
 - `train`, `val`: source-disjoint development data;
 - `test_id`: source-disjoint in-distribution final test;
-- `test_family`: untouched raw-library `family_cluster_id` holdout. The
-  current public source does not provide cargo/protein-family labels, so this
-  role must not be described as a cargo/protein-family result.
+- `test_family`: exact protein-family absolute-property holdout (CodonBERT
+  CDS joined to P0 GENCODE/RefSeq protein metadata) plus measured mCherry
+  cargo-family holdout against eGFP development libraries, and the untouched
+  raw-library `family_cluster_id` local-delta holdout. The protein/cargo
+  family results are absolute-property only; the local-delta subset is not
+  cargo/protein-family disjoint.
 - `test_context`, `test_assay`: source-matched context/assay shift records plus
   independent absolute-property records. These are measured axis interventions
   but are explicitly not nucleotide-edit local-delta ground truth.
-- `test_ood`: declared GC or uAUG-motif distribution shift in the untouched
-  raw source-matched library. Length is registered only as an absolute-only
-  auxiliary asset, and species-shift source-matched local-delta labels are not
-  available in the current public registry.
+- `test_ood`: declared GC or uAUG-motif local-delta shift plus measured
+  varying-length absolute-property records. Mouse 5′UTRs are available as
+  Level A observational assets, but species-shift source-matched local-delta
+  labels are not available.
 
 `task_kind=local_delta` and `data_layer=C_source_matched_intervention` are the
 only records eligible for biological nucleotide local-delta metrics. The

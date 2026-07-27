@@ -513,7 +513,10 @@ def binary_auc(score: Sequence[float], label: Sequence[bool]) -> Optional[float]
     return wins / (len(positives) * len(negatives))
 
 
-def metrics(pred: Sequence[float], uncertainty: Sequence[float], truth: Sequence[float]) -> Dict[str, Optional[float]]:
+def metrics(
+    pred: Sequence[float], uncertainty: Sequence[float], truth: Sequence[float],
+    *, error_cut: Optional[float] = None,
+) -> Dict[str, object]:
     if not truth:
         return {"n": 0}
     ranks = rankdata(pred)
@@ -522,6 +525,10 @@ def metrics(pred: Sequence[float], uncertainty: Sequence[float], truth: Sequence
     beneficial = [y > 0 for y in truth]
     selected = [p > 0 for p in pred]
     predicted_beneficial = sum(selected)
+    false_positive_beneficial_rate = (
+        sum(float(s and not b) for b, s in zip(beneficial, selected)) / predicted_beneficial
+        if predicted_beneficial else None
+    )
     top_k = max(1, int(math.ceil(len(truth) * 0.10)))
     top_ix = sorted(range(len(pred)), key=lambda i: pred[i], reverse=True)[:top_k]
     base_rate = mean_or([float(v) for v in beneficial])
@@ -532,8 +539,15 @@ def metrics(pred: Sequence[float], uncertainty: Sequence[float], truth: Sequence
         n = max(1, int(math.ceil(len(order) * coverage)))
         ix = order[:n]
         selective[f"coverage_{coverage:.2f}"] = math.sqrt(mean_or([(pred[i] - truth[i]) ** 2 for i in ix]))
-    error_cut = float(np.median(np.abs(np.asarray(pred) - np.asarray(truth))))
-    error_labels = [abs(p - y) > error_cut for p, y in zip(pred, truth)]
+    resolved_error_cut = (
+        float(error_cut) if error_cut is not None else
+        float(np.median(np.abs(np.asarray(pred) - np.asarray(truth))))
+    )
+    error_labels = [abs(p - y) > resolved_error_cut for p, y in zip(pred, truth)]
+    abstention_target = (
+        "validation_absolute_error_median" if error_cut is not None
+        else "role_absolute_error_median"
+    )
     return {
         "n": len(truth),
         "spearman": corr(ranks, true_ranks),
@@ -542,6 +556,7 @@ def metrics(pred: Sequence[float], uncertainty: Sequence[float], truth: Sequence
         "pairwise_comparable": comparable,
         "sign_accuracy": mean_or([float((p > 0) == (y > 0)) for p, y in zip(pred, truth)]),
         "beneficial_precision": (sum(float(b) for b, s in zip(beneficial, selected) if s) / predicted_beneficial) if predicted_beneficial else None,
+        "false_positive_beneficial_rate": false_positive_beneficial_rate,
         "top_k_enrichment": (top_rate / base_rate) if base_rate > 0 else None,
         "top_k_beneficial_rate": top_rate,
         "ndcg_at_10pct": ndcg(pred, truth),
@@ -549,8 +564,16 @@ def metrics(pred: Sequence[float], uncertainty: Sequence[float], truth: Sequence
         "calibration_ece": ece(pred, truth),
         "selective_risk_rmse": selective,
         "abstention_auroc": binary_auc(uncertainty, error_labels),
-        "abstention_target": "absolute_error_above_validation_median",
+        "abstention_target": f"absolute_error_above_{abstention_target}",
+        "abstention_error_cut": resolved_error_cut,
     }
+
+
+def legal_action_space_count(source_sequence: str, budget: int) -> int:
+    """Count legal same-length SNV candidates under the benchmark edit contract."""
+    normalized = str(source_sequence or "").upper().replace("T", "U")
+    length = sum(1 for base in normalized if base in "ACGU")
+    return int(sum(math.comb(length, k) * (3 ** k) for k in range(1, min(budget, length) + 1)))
 
 
 def budget_metrics(records: List[Dict], predictions: Sequence[float], *, budget: int) -> Dict[str, object]:
@@ -568,9 +591,11 @@ def budget_metrics(records: List[Dict], predictions: Sequence[float], *, budget:
             return {
                 "n_sources": 0,
                 "regret_exact_mean": None,
+                "regret_vs_observed_exact_mean": None,
                 "top_action_accuracy": None,
                 "beneficial_rate": None,
                 "exact_optimum_reach": None,
+                "observed_exact_optimum_reach": None,
                 "oracle_calls_mean": None,
                 "final_delta_mean": None,
                 "reward_per_edit": None,
@@ -578,8 +603,11 @@ def budget_metrics(records: List[Dict], predictions: Sequence[float], *, budget:
                 "rows": [],
                 "status": "insufficient_multi_edit_measurements",
                 "reference": "requires measured edit_count >= 2 records per source",
+                "exact_optimum_scope": "not_available",
                 "dp_beam_reference_status": "not_available_in_current_source_matched_registry",
                 "regret_vs_dp_beam_reference": None,
+                "regret_vs_observed_reference": None,
+                "legal_action_space": {"status": "not_available", "budget": budget},
                 "reference_is_not_full_legal_dp_or_beam": True,
             }
     rows = []
@@ -590,6 +618,9 @@ def budget_metrics(records: List[Dict], predictions: Sequence[float], *, budget:
         truth = [float(target(records[i])) for i in ix if target(records[i]) is not None]
         if not truth:
             continue
+        source_sequence = str(records[ix[0]].get("source_sequence") or "")
+        legal_count = legal_action_space_count(source_sequence, budget)
+        observed_candidates = len({str(records[i].get("candidate_sequence_sha256") or records[i].get("candidate_id")) for i in ix})
         ranked = sorted(ix, key=lambda i: predictions[i], reverse=True)[:budget]
         selected = max(ranked, key=lambda i: predictions[i])
         selected_truth = float(target(records[selected]))
@@ -613,25 +644,42 @@ def budget_metrics(records: List[Dict], predictions: Sequence[float], *, budget:
             "beneficial": selected_truth > 0,
             "oracle_calls": min(budget, len(ix)),
             "edit_count": int(records[selected].get("edit_count") or 0),
+            "legal_action_count": legal_count,
+            "observed_action_count": observed_candidates,
+            "observed_action_coverage": observed_candidates / max(1, legal_count),
         })
     return {
         "n_sources": len(rows),
-        "regret_exact_mean": mean_or([r["regret"] for r in rows]) if rows else None,
+        "regret_exact_mean": None,
+        "regret_vs_observed_exact_mean": mean_or([r["regret"] for r in rows]) if rows else None,
         "top_action_accuracy": mean_or([float(r["top_action"]) for r in rows]) if rows else None,
         "beneficial_rate": mean_or([float(r["beneficial"]) for r in rows]) if rows else None,
-        "exact_optimum_reach": mean_or([float(r["top_action"]) for r in rows]) if rows else None,
+        "exact_optimum_reach": None,
+        "observed_exact_optimum_reach": mean_or([float(r["top_action"]) for r in rows]) if rows else None,
         "oracle_calls_mean": mean_or([r["oracle_calls"] for r in rows]) if rows else None,
         "final_delta_mean": mean_or([r["selected_delta"] for r in rows]) if rows else None,
         "reward_per_edit": mean_or([r["selected_delta"] / max(1, r["edit_count"]) for r in rows]) if rows else None,
-        "beam4_regret_mean": mean_or([r["beam_regret"] for r in beam_rows]) if beam_rows else None,
-        "beam4_exact_optimum_reach": mean_or([float(r["beam_exact_best"]) for r in beam_rows]) if beam_rows else None,
+        "beam4_regret_mean": None,
+        "beam4_observed_regret_mean": mean_or([r["beam_regret"] for r in beam_rows]) if beam_rows else None,
+        "beam4_exact_optimum_reach": None,
+        "beam4_observed_exact_optimum_reach": mean_or([float(r["beam_exact_best"]) for r in beam_rows]) if beam_rows else None,
         "failure_rate": 0.0 if rows else 1.0,
         "rows": rows[:25],
         "beam_rows": beam_rows[:25],
         "status": ("observed_pool_reference" if budget >= 3 else "run") if rows else "insufficient_measured_actions",
-        "reference": "observed-state exhaustive DP plus beam_width=4 over measured candidate states",
+        "reference": "observed-state exhaustive optimum plus beam_width=4 over measured candidate states",
+        "exact_optimum_scope": "observed_measured_candidate_pool_only",
         "dp_beam_reference_status": "observed_state_only_not_full_legal_action_space",
-        "regret_vs_dp_beam_reference": mean_or([r["regret"] for r in rows]) if rows else None,
+        "regret_vs_dp_beam_reference": None,
+        "regret_vs_observed_reference": mean_or([r["regret"] for r in rows]) if rows else None,
+        "legal_action_space": {
+            "status": "enumerated_count_only_unmeasured_actions",
+            "edit_contract": "same-length single-nucleotide substitutions; distinct positions; at most budget edits",
+            "budget": budget,
+            "mean_legal_action_count": mean_or([r["legal_action_count"] for r in rows]) if rows else None,
+            "mean_observed_action_count": mean_or([r["observed_action_count"] for r in rows]) if rows else None,
+            "mean_observed_action_coverage": mean_or([r["observed_action_coverage"] for r in rows]) if rows else None,
+        },
         "reference_is_not_full_legal_dp_or_beam": True,
     }
 
@@ -664,8 +712,13 @@ def evaluate(root: Path, roles: Sequence[str], *, allow_final_labels: bool) -> D
     baselines = {**statistical, **fitted}
     for baseline in baselines.values():
         baseline.fit(train)
+    registry_meta = {}
+    registry_path = root / "registry.json"
+    if registry_path.exists():
+        registry_meta = json.loads(registry_path.read_text())
     output: Dict[str, object] = {
         "schema_version": "nmi_benchmark_v2_metrics_v1",
+        "benchmark_records_sha256": registry_meta.get("records_sha256"),
         "train_local_delta_records": len(train),
         "evaluated_roles": list(roles),
         "allow_final_labels": allow_final_labels,
@@ -673,9 +726,12 @@ def evaluate(root: Path, roles: Sequence[str], *, allow_final_labels: bool) -> D
         "task_contract": "only measured task_kind=local_delta enters Task 1-3 metrics",
         "roles": {},
         "baselines": {},
+        "validation_error_cut_reference": "computed on val predictions and reused for final-role abstention labels",
     }
     all_role_results: Dict[str, Dict[str, object]] = {}
-    for role in roles:
+    validation_error_cut: Dict[str, float] = {}
+    ordered_roles = (["val"] if "val" in roles else []) + [role for role in roles if role != "val"]
+    for role in ordered_roles:
         if role not in ROLES:
             raise ValueError(f"unknown role {role}")
         if role in {"test_context", "test_assay"}:
@@ -699,17 +755,23 @@ def evaluate(root: Path, roles: Sequence[str], *, allow_final_labels: bool) -> D
                 role_result["baselines"][name] = {"status": baseline.status, "reason": baseline.reason}
                 continue
             pred, uncertainty = baseline.predict(eval_records)
+            task1 = metrics(pred, uncertainty, truth, error_cut=validation_error_cut.get(name))
+            if role == "val" and truth:
+                validation_error_cut[name] = float(np.median(np.abs(np.asarray(pred) - np.asarray(truth))))
             role_result["baselines"][name] = {
                 "status": "run",
-                "task1_local_delta": metrics(pred, uncertainty, truth),
+                "task1_local_delta": task1,
                 "task2_budget1": budget_metrics(eval_records, pred, budget=1),
                 "task3_budget3": budget_metrics(eval_records, pred, budget=3),
             }
             if role == "test_ood":
                 role_result["baselines"][name]["task4_ood"] = {
-                    "coverage": metrics(pred, uncertainty, truth)["selective_risk_rmse"],
-                    "false_positive_beneficial": role_result["baselines"][name]["task1_local_delta"].get("beneficial_precision"),
-                    "abstention_auroc": role_result["baselines"][name]["task1_local_delta"].get("abstention_auroc"),
+                    "coverage": [0.25, 0.50, 0.75, 1.00],
+                    "selective_risk": task1.get("selective_risk_rmse"),
+                    "false_positive_beneficial_rate": task1.get("false_positive_beneficial_rate"),
+                    "calibration_ece": task1.get("calibration_ece"),
+                    "abstention_auroc": task1.get("abstention_auroc"),
+                    "abstention_target": task1.get("abstention_target"),
                     "abstention_auroc_status": "error_detection_auc; not a biological uncertainty ground truth",
                 }
             all_role_results.setdefault(role, {})[name] = {"pred": pred, "truth": truth}

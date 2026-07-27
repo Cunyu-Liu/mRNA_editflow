@@ -404,6 +404,70 @@ def iter_mpra_records(
             emitted += 1
 
 
+def iter_codonbert_family_records(
+    path: Path, *, data_root: Path, max_records: Optional[int] = None,
+) -> Iterator[Tuple[str, Dict[str, object]]]:
+    """Emit absolute CodonBERT records joined to exact CDS protein families."""
+    cds_metadata: Dict[str, Dict[str, object]] = {}
+    for stem in ("gencode_family", "refseq_family"):
+        records_path = data_root / "data/reconstructed/p0_data_reconstruction_v1/combined" / f"{stem}.records.jsonl"
+        metadata_path = data_root / "data/reconstructed/p0_data_reconstruction_v1/combined" / f"{stem}.metadata.jsonl"
+        if not records_path.exists() or not metadata_path.exists():
+            continue
+        with records_path.open() as records_fh, metadata_path.open() as metadata_fh:
+            for record_line, metadata_line in zip(records_fh, metadata_fh):
+                record = json.loads(record_line)
+                metadata = json.loads(metadata_line)
+                cds = normalize_sequence(record.get("cds"))
+                protein_sha = str(metadata.get("protein_sha256") or "")
+                if cds and protein_sha:
+                    cds_metadata.setdefault(sha256_text(cds), {
+                        "protein_family_id": f"protein_family:{protein_sha}",
+                        "protein_sha256": protein_sha,
+                        "species": record.get("species"),
+                        "transcript_id": record.get("transcript_id"),
+                        "source": stem,
+                    })
+    emitted = 0
+    with path.open(newline="") as fh:
+        reader = csv.DictReader(fh)
+        for row_i, row in enumerate(reader):
+            if max_records is not None and emitted >= max_records:
+                break
+            sequence = normalize_sequence(row.get("Sequence"))
+            value = parse_float(row.get("Value"))
+            metadata = cds_metadata.get(sha256_text(sequence)) if sequence else None
+            if not sequence or value is None or metadata is None:
+                continue
+            family_id = str(metadata["protein_family_id"])
+            family_fraction = stable_fraction("codonbert-family:" + family_id)
+            if family_fraction < 0.20:
+                role = "test_family"
+                task_kind = "absolute_property_family_shift"
+            else:
+                source_fraction = stable_fraction("codonbert-source:" + sha256_text(sequence))
+                role = "val" if source_fraction < 0.20 else "train"
+                task_kind = "absolute_property_regression"
+            record_id = f"v2abs:codonbert:{row_i:07d}:{sha256_text(sequence)[:12]}"
+            record = make_absolute_record(
+                record_id=record_id, source_id=f"{record_id}:source", sequence=sequence,
+                value=value, cargo=family_id, context=str(metadata.get("species") or "not_reported"),
+                assay="CodonBERT_mRNA_Stability", batch=path.name, replicate=None,
+                family=family_id, role=role, task_kind=task_kind,
+                data_source=f"codonbert_stability:{path.name}:row_{row_i}",
+            )
+            record.update({
+                "protein_family_id": family_id,
+                "protein_sha256": metadata["protein_sha256"],
+                "species": metadata.get("species"),
+                "matched_transcript_id": metadata.get("transcript_id"),
+                "family_join": "exact_cds_sha256_to_p0_gencode_or_refseq_metadata",
+                "label_semantics": "absolute_property_protein_family_holdout_not_local_delta_ground_truth" if role == "test_family" else "absolute_property_only",
+            })
+            yield role, record
+            emitted += 1
+
+
 def iter_mpra_assay_pairs(
     source_path: Path, candidate_path: Path, *, role: str, max_pairs: int,
 ) -> Iterator[Dict[str, object]]:
@@ -528,6 +592,8 @@ def build_asset_registry(data_root: Path) -> Dict[str, List[Dict[str, object]]]:
     assets = {
         "A_observational_pretraining": [
             asset_entry(data_root, "data/raw/gencode.v45.pc_transcripts.fa.gz", level="A", name="GENCODE v45 protein-coding transcripts", label_semantics="representation/observational_only", provenance="GENCODE v45 source asset"),
+            asset_entry(data_root, "data/raw/gencode_mouse/gencode.vM36.pc_transcripts.fa.gz", level="A", name="GENCODE mouse vM36 protein-coding transcripts", label_semantics="representation/observational_only", provenance="GENCODE mouse vM36 source asset"),
+            asset_entry(data_root, "data/raw/gencode_mouse/gencode_vM36_5utr.jsonl", level="A", name="GENCODE mouse vM36 species 5UTRs", label_semantics="representation/observational_only", provenance="Derived from GENCODE vM36 FASTA UTR5 header coordinates"),
             asset_entry(data_root, "data/reconstructed/p0_data_reconstruction_v1/sources/gencode_v45/canonical.records.jsonl", level="A", name="GENCODE canonical transcript records", label_semantics="representation/observational_only", provenance="P0 canonical reconstruction"),
             asset_entry(data_root, "data/raw/cao2021_5utr/final_endogenous_5utr.txt", level="A", name="endogenous 5UTR abundance/TE source table", label_semantics="representation/observational_only", provenance="Cao et al. 2021 source asset"),
             asset_entry(data_root, "data/raw/saluki_halflife/rna_hl_human.npz", level="A", name="human RNA half-life arrays", label_semantics="representation/auxiliary_only", provenance="Saluki RNA half-life asset"),
@@ -537,6 +603,8 @@ def build_asset_registry(data_root: Path) -> Dict[str, List[Dict[str, object]]]:
         "B_absolute_design_libraries": [
             asset_entry(data_root, "data/raw/sample2019_mpra/GSM3130435_egfp_unmod_1.csv.gz", level="B", name="Sample 2019 random 50mer absolute MPRA", label_semantics="absolute_property_only", provenance="Sample et al. 2019, GSE114002"),
             asset_entry(data_root, "data/raw/sample2019_mpra/GSM3130439_egfp_m1pseudo_1.csv.gz", level="B", name="Sample 2019 modified-RNA absolute MPRA", label_semantics="absolute_property_only", provenance="Sample et al. 2019, GSE114002"),
+            asset_entry(data_root, "data/raw/sample2019_mpra/GSM3130441_mcherry_1.csv.gz", level="B", name="Sample 2019 mCherry absolute MPRA replicate 1", label_semantics="absolute_property_only; cargo-family holdout", provenance="Sample et al. 2019, GSE114002"),
+            asset_entry(data_root, "data/raw/sample2019_mpra/GSM3130442_mcherry_2.csv.gz", level="B", name="Sample 2019 mCherry absolute MPRA replicate 2", label_semantics="absolute_property_only; cargo-family holdout", provenance="Sample et al. 2019, GSE114002"),
             asset_entry(data_root, "data/raw/sample2019_mpra/GSM4084997_varying_length_25to100.csv.gz", level="B", name="Sample 2019 varying-length absolute MPRA", label_semantics="absolute_property_only; length-shift auxiliary", provenance="Sample et al. 2019 varying-length MPRA asset"),
             asset_entry(data_root, "data/raw/cao2021_5utr/hek_top1000_high_TE.fasta", level="B", name="Cao HEK293T high-TE library", label_semantics="absolute_property_only", provenance="Cao et al. 2021 source asset"),
             asset_entry(data_root, "data/raw/cao2021_5utr/hek_bottom500_low_TE.fasta", level="B", name="Cao HEK293T low-TE library", label_semantics="absolute_property_only", provenance="Cao et al. 2021 source asset"),
@@ -631,6 +699,14 @@ def build(input_paths: Iterable[Path], out_dir: Path, *, data_root: Path,
                 ):
                     write_record(out, rec, role)
 
+            # Exact CDS joins to P0 GENCODE/RefSeq protein metadata provide a
+            # real protein-family absolute holdout. These records never enter
+            # the local-delta metric stream.
+            codonbert_path = data_root / "data/raw/codonbert_stability/mRNA_Stability.csv"
+            if codonbert_path.exists():
+                for role, rec in iter_codonbert_family_records(codonbert_path, data_root=data_root):
+                    write_record(out, rec, role)
+
             # Absolute MPRA: unmodified HEK is development-only; m1pseudo is a
             # held-out assay/chemistry condition. These records never enter the
             # local-delta metric stream.
@@ -659,6 +735,37 @@ def build(input_paths: Iterable[Path], out_dir: Path, *, data_root: Path,
                     role="test_assay", max_pairs=1000,
                 ):
                     write_record(out, rec, "test_assay")
+
+            # mCherry is a measured cargo-family holdout relative to the
+            # eGFP development libraries. These are absolute-property records
+            # only; no sequence overlap is assumed or required.
+            for replicate, name in enumerate(("GSM3130441_mcherry_1.csv.gz", "GSM3130442_mcherry_2.csv.gz"), 1):
+                path = mpra_dir / name
+                if not path.exists():
+                    continue
+                for rec in iter_mpra_records(
+                    path, role="test_family", max_records=1000,
+                    task_kind="absolute_property_family_shift", assay_label="MPRA_mCherry",
+                    cargo="mCherry", context="HEK293T", batch=path.name,
+                    replicate=replicate,
+                ):
+                    write_record(out, rec, "test_family")
+
+            # Varying-length MPRA supplies a measured length-shift axis, but
+            # has no source-matched nucleotide edit and therefore stays
+            # absolute-only within test_ood.
+            varying_length = mpra_dir / "GSM4084997_varying_length_25to100.csv.gz"
+            if varying_length.exists():
+                for rec in iter_mpra_records(
+                    varying_length, role="test_ood", max_records=1000,
+                    task_kind="absolute_property_length_shift", assay_label="MPRA_varying_length",
+                    cargo="eGFP", context="HEK293T", batch=varying_length.name,
+                    replicate=1,
+                ):
+                    rec["ood_dimensions"] = ["length_tail"]
+                    rec["label_semantics"] = "absolute_property_length_shift_not_local_delta_ground_truth"
+                    rec["value_qualifier"] = "wet-lab measured absolute MPRA property; varying-length auxiliary OOD axis"
+                    write_record(out, rec, "test_ood")
 
             cao_dir = data_root / "data/raw/cao2021_5utr"
             for name in ("hek_top1000_high_TE.fasta", "hek_bottom500_low_TE.fasta"):
@@ -702,7 +809,7 @@ def build(input_paths: Iterable[Path], out_dir: Path, *, data_root: Path,
             "role_scope": {
                 "test_context": "source_matched context_delta plus absolute_property_context_shift; no nucleotide edit context holdout",
                 "test_assay": "source_matched assay_delta plus absolute_property_assay_shift; no nucleotide edit assay holdout",
-                "test_family": "raw-library family_cluster holdout; cargo/protein-family labels are not available in this source",
+                "test_family": "measured mCherry absolute cargo-family holdout plus raw-library family_cluster local-delta holdout; local-delta cargo/protein-family disjointness is unavailable",
             }.get(role, "source_matched_or_distribution_split"),
         }
         p = out_dir / "manifests" / f"{role}.json"
@@ -721,7 +828,17 @@ def build(input_paths: Iterable[Path], out_dir: Path, *, data_root: Path,
     registry = {
         "schema_version": "nmi_benchmark_v2",
         "source_inputs": [str(p) for p in input_paths],
-        "additional_raw_inputs": ["data/raw/sample2019_mpra/GSM3130443_designed_library.csv.gz"],
+        "additional_raw_inputs": [
+            "data/raw/sample2019_mpra/GSM3130443_designed_library.csv.gz",
+            "data/raw/sample2019_mpra/GSM3130441_mcherry_1.csv.gz",
+            "data/raw/sample2019_mpra/GSM3130442_mcherry_2.csv.gz",
+            "data/raw/sample2019_mpra/GSM4084997_varying_length_25to100.csv.gz",
+            "data/raw/codonbert_stability/mRNA_Stability.csv",
+            "data/reconstructed/p0_data_reconstruction_v1/combined/gencode_family.records.jsonl",
+            "data/reconstructed/p0_data_reconstruction_v1/combined/gencode_family.metadata.jsonl",
+            "data/reconstructed/p0_data_reconstruction_v1/combined/refseq_family.records.jsonl",
+            "data/reconstructed/p0_data_reconstruction_v1/combined/refseq_family.metadata.jsonl",
+        ],
         "records_path": str(records_path.relative_to(out_dir)),
         "records_sha256": sha256_file(records_path),
         "total_records": sum(counts.values()),
@@ -741,11 +858,12 @@ def build(input_paths: Iterable[Path], out_dir: Path, *, data_root: Path,
         "proxy_is_biological_ground_truth": False,
         "legacy_excluded_split_counts": dict(sorted(legacy_excluded.items())),
         "untouched_test_policy": "historical P3 test/ood/val labels are never promoted to v2 final; final local-edit roles come from raw designed-library rows excluded by historical measured source/candidate membership",
-        "family_axis_policy": "test_family uses the raw designed-library family_cluster_id; it is not a cargo/protein-family claim",
+        "family_axis_policy": "test_family contains exact protein-family absolute holdout records joined from CodonBERT CDS to P0 GENCODE/RefSeq metadata, plus measured mCherry-vs-eGFP absolute cargo holdout; its local_delta subset remains raw-library family_cluster holdout and is not cargo/protein-family disjoint",
+        "protein_family_join_policy": "normalize RNA alphabet, SHA-256 exact CDS match, first provenance record wins for duplicate CDS; family split is stable_fraction(protein_family_id)",
         "ood_dimension_policy": {
             "local_delta_available": ["gc_tail", "motif_uaug"],
-            "length": "not available for source-matched local-delta final labels; GSM4084997 is registered as absolute-only auxiliary data",
-            "species": "not available for source-matched local-delta final labels in the current public registry",
+            "length": "available as measured absolute-only test_ood records; not source-matched local-delta",
+            "species": "mouse 5UTR observational asset available; source-matched local-delta final labels are unavailable",
             "record_field": "ood_dimensions",
         },
         "claim_policy": "absolute-property context/assay records do not authorize local-delta or SOTA claims",

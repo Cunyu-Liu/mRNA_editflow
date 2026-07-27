@@ -71,3 +71,26 @@ def test_abstention_auc_detects_high_error_when_uncertainty_is_informative():
     result = metrics([0.0, 0.9, 0.1, 0.8], [0.1, 0.9, 0.2, 0.8], [0.0, 0.0, 0.1, 0.1])
     assert result["abstention_auroc"] is not None
     assert result["abstention_auroc"] >= 0.75
+
+
+def test_task4_reports_false_positive_beneficial_and_locked_error_reference():
+    from evaluate_benchmark_v2 import metrics
+
+    result = metrics([0.5, -0.2, 0.1], [-0.1, 0.2, 0.3], [-0.1, -0.3, 0.2], error_cut=0.15)
+    assert result["false_positive_beneficial_rate"] == 0.5
+    assert result["calibration_ece"] is not None
+    assert result["abstention_target"] == "absolute_error_above_validation_absolute_error_median"
+
+
+def test_raw_ood_dimensions_are_declared():
+    from build_nmi_split_v2 import raw_ood_dimensions
+
+    assert "motif_uaug" in raw_ood_dimensions("CCCAUGGGG")
+    assert "gc_tail" in raw_ood_dimensions("GGGGGGGG")
+
+
+def test_legal_action_space_count_is_explicit_and_budget_scoped():
+    from evaluate_benchmark_v2 import legal_action_space_count
+
+    assert legal_action_space_count("AAAA", 1) == 12
+    assert legal_action_space_count("AAAA", 3) == 174

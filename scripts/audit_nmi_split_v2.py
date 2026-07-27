@@ -40,6 +40,8 @@ def audit(root: Path, *, allow_final_labels: bool) -> Dict:
     seq_roles: Dict[tuple, set] = defaultdict(set)
     context_roles: Dict[tuple, set] = defaultdict(set)
     assay_roles: Dict[tuple, set] = defaultdict(set)
+    cargo_roles: Dict[tuple, set] = defaultdict(set)
+    ood_dimension_counts = Counter()
     counts = Counter()
     confidence = {role: Counter() for role in ROLES}
     task_kinds = {role: Counter() for role in ROLES}
@@ -61,16 +63,19 @@ def audit(root: Path, *, allow_final_labels: bool) -> Dict:
                 required_missing.update(missing)
                 if task_kind in {"local_delta", "context_delta", "assay_delta"} and any(rec.get(f) is None for f in ("measured_source", "measured_candidate", "measured_delta")):
                     measured_missing[role] += 1
-                # Local-delta leakage checks are intentionally scoped to the
-                # local task. Absolute context/assay libraries are separate
-                # tasks and are not silently treated as intervention data.
-                if task_kind == "local_delta":
+                # Leakage checks cover local-delta and absolute family
+                # tasks; context/assay axis records remain separate tasks and
+                # are not silently treated as nucleotide interventions.
+                if task_kind in {"local_delta", "absolute_property_regression", "absolute_property_family_shift", "absolute_property_length_shift"}:
                     source_roles[(task_kind, str(rec.get("source_id")))].add(role)
                     mother_roles[(task_kind, str(rec.get("mother_id", rec.get("source_id"))))].add(role)
                     family_roles[(task_kind, str(rec.get("family_cluster_id")))].add(role)
                     seq_roles[(task_kind, str(rec.get("candidate_sequence_sha256")).strip())].add(role)
                 context_roles[(task_kind, str(rec.get("cell_context")))].add(role)
                 assay_roles[(task_kind, str(rec.get("assay")))].add(role)
+                cargo_roles[(task_kind, str(rec.get("cargo")))].add(role)
+                for dimension in rec.get("ood_dimensions") or []:
+                    ood_dimension_counts[(str(dimension), task_kind, role)] += 1
 
     source_cross = {str(k): sorted(v) for k, v in source_roles.items() if len(v) > 1}
     mother_cross = {str(k): sorted(v) for k, v in mother_roles.items() if len(v) > 1}
@@ -97,13 +102,40 @@ def audit(root: Path, *, allow_final_labels: bool) -> Dict:
     }
     context_test = sum(task_kinds["test_context"].values())
     assay_test = sum(task_kinds["test_assay"].values())
+    normalize_cargo = lambda value: str(value).strip().casefold()
+    family_absolute_cargos = {
+        normalize_cargo(key[1]) for key, roles in cargo_roles.items()
+        if key[0] == "absolute_property_family_shift" and "test_family" in roles
+    }
+    train_absolute_cargos = {
+        normalize_cargo(key[1]) for key, roles in cargo_roles.items()
+        if key[0] == "absolute_property_regression" and "train" in roles
+    }
+    family_absolute_cargo_overlap = family_absolute_cargos & train_absolute_cargos
+    family_absolute_cargo_holdout_ready = bool(family_absolute_cargos) and not family_absolute_cargo_overlap
+    family_local_delta_cargos = {
+        normalize_cargo(key[1]) for key, roles in cargo_roles.items()
+        if key[0] == "local_delta" and "test_family" in roles
+    }
+    train_local_delta_cargos = {
+        normalize_cargo(key[1]) for key, roles in cargo_roles.items()
+        if key[0] == "local_delta" and "train" in roles
+    }
     prospective = json.loads((root / "manifests" / "prospective.json").read_text())
+    strict_acceptance_reasons = []
+    if family_local_delta_cargos & train_local_delta_cargos:
+        strict_acceptance_reasons.append("test_family local_delta is not cargo/protein-family disjoint")
+    strict_acceptance_reasons.append("species OOD has observational mouse 5UTRs but no source-matched local_delta labels")
+    strict_acceptance_reasons.append("length OOD is measured absolute-only; no source-matched local_delta length tail")
+    strict_acceptance_reasons.append("full legal DP/beam measured reference requires labels for unobserved legal actions")
+    strict_p1_acceptance = {"passed": False, "reasons": strict_acceptance_reasons}
     structural_pass = (
         not source_cross and not seq_cross and not family_cross
         and not mother_cross
         and not required_missing and not measured_missing
         and all(nonempty.values())
         and context_test > 0 and assay_test > 0
+        and family_absolute_cargo_holdout_ready
     )
     report = {
         "schema_version": "nmi_benchmark_v2_audit_v2",
@@ -123,6 +155,10 @@ def audit(root: Path, *, allow_final_labels: bool) -> Dict:
         "candidate_cross_role_count": len(seq_cross),
         "family_train_final_overlap_count": len(family_cross),
         "ood_family_overlap_count": len(ood_family_overlap),
+        "ood_dimension_counts": {
+            f"{dimension}:{task_kind}:{role}": int(count)
+            for (dimension, task_kind, role), count in sorted(ood_dimension_counts.items())
+        },
         "required_field_missing_counts": dict(required_missing),
         "local_delta_measured_field_missing_by_role": dict(measured_missing),
         "nonempty_final_roles": {role: nonempty[role] for role in FINAL_ROLES},
@@ -141,6 +177,19 @@ def audit(root: Path, *, allow_final_labels: bool) -> Dict:
             "local_delta_ready": local_delta_counts["test_assay"] > 0,
             "absolute_property_only_records": int(task_kinds["test_assay"].get("absolute_property_assay_shift", 0)),
             "assays": sorted({k[1] for k, v in assay_roles.items() if "test_assay" in v}),
+        },
+        "strict_p1_acceptance": strict_p1_acceptance,
+        "family_axis": {
+            "cargo_absolute_holdout_ready": family_absolute_cargo_holdout_ready,
+            "absolute_test_cargo_count": len(family_absolute_cargos),
+            "absolute_test_cargo_examples": sorted(family_absolute_cargos)[:10],
+            "absolute_train_cargo_count": len(train_absolute_cargos),
+            "absolute_train_cargo_examples": sorted(train_absolute_cargos)[:10],
+            "absolute_cargo_overlap": sorted(family_absolute_cargo_overlap),
+            "local_delta_cargo_family_disjoint": not bool(family_local_delta_cargos & train_local_delta_cargos),
+            "local_delta_test_cargos": sorted(family_local_delta_cargos),
+            "local_delta_train_cargos": sorted(train_local_delta_cargos),
+            "scope": manifests["test_family"].get("role_scope"),
         },
         "prospective": prospective,
         "examples": {
