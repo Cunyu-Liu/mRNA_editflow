@@ -24,9 +24,12 @@ scientifically eligible only when a real local checkpoint and SHA256 are
 recorded. The adapter accepts either a local HuggingFace RNA model or the
 repository's Stage-A mRNA-pretrained trunk, but the latter is explicitly
 labelled `internal_stage_a_mrna_pretrained` and still requires a separate
-pretraining-corpus leakage audit. The training runner and final evaluator
-require that audit to attest zero exact eligible final-sequence substrings and
-to match the checkpoint SHA256. The adapter stub is smoke-only.
+pretraining-corpus leakage audit. The checkpoint SHA256 and pretraining
+corpus SHA256 are separate provenance objects: the former identifies the
+loaded model, while the latter identifies the corpus scanned by the leakage
+audit. The training runner and final evaluator verify both independently and
+require zero exact eligible final-sequence substrings. The adapter stub is
+smoke-only.
 
 The audit is intentionally not a family-level or semantic-independence proof;
 those remain separate scientific requirements. An audit with any exact overlap
@@ -51,9 +54,13 @@ or non-local-delta axes are blockers, not zeros that can be reported as a
 scientific failure of the model.
 
 `scripts/freeze_phase2_candidate_manifest.py` requires a selection artifact
-and an explicit pre-unblinding attestation. Final evaluation additionally
-recomputes the role-manifest SHA, canonical records SHA and candidate digest;
-the boolean attestation alone cannot unlock labels.
+and an explicit pre-unblinding attestation. Generate the artifact with
+`scripts/select_phase2_candidates.py`; its safe loader exposes only sequence,
+edit and context inputs, records `labels_accessed=false`, and retains all
+registered eligible candidates without a post-hoc score cutoff. The freeze
+script verifies its role/alias and no-label candidate digest. Final evaluation
+additionally recomputes the safe candidate digest, role-manifest SHA and
+canonical records SHA; the boolean attestation alone cannot unlock labels.
 
 ## Forced route when the gate fails
 
