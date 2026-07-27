@@ -1,14 +1,52 @@
-schema_version: paired_delta_v1
-hidden_dim: 128
-layers: 2
-max_len: 256
-max_edits: 10
-batch_size: 64
-epochs_proxy: 3
-epochs_measured: 8
-epochs_calibration: 2
-learning_rate: 0.0003
-weight_decay: 0.00001
-seeds: [0, 1, 2, 3, 4]
-device: cuda
-final_test_requires_explicit_flag: true
+schema_version: paired_delta_reliable_local_delta_v1
+feature_contract:
+  - source_sequence
+  - candidate_sequence
+  - explicit_edit_tokens
+  - relative_position_to_cds_start
+  - cargo_or_protein_embedding
+  - cell_context_embedding
+  - assay_embedding
+  - source_measured_or_proxy_value
+backbones:
+  - small
+  - frozen_foundation
+  - partial_foundation
+recipes:
+  - measured_only
+  - proxy_only
+  - mixed_training
+  - pretrain_finetune
+  - pretrain_finetune_calibrate
+fairness:
+  same_train_val_manifests: true
+  same_feature_contract: true
+  same_head_capacity: true
+  same_stage_a_steps: 1000
+  same_stage_b_steps: 2000
+  same_calibration_steps: 200
+  same_early_stopping: true
+  same_hyperparameter_search_budget: 1
+training:
+  hidden_dim: 128
+  layers: 2
+  max_len: 256
+  max_edits: 10
+  batch_size: 64
+  stage_a_steps: 1000
+  stage_b_steps: 2000
+  calibration_steps: 200
+  learning_rate: 0.0003
+  calibration_learning_rate: 0.05
+  weight_decay: 0.00001
+  seeds: [0, 1, 2, 3, 4]
+  calibration_fraction: 0.2
+foundation:
+  local_checkpoint_required_for_scientific_run: true
+  sha256_required: true
+  allow_stub_only_for_smoke: true
+final_roles:
+  test_v2_untouched: test_id
+  independent_assay: test_assay
+  require_candidate_freeze_manifest: true
+  explicit_allow_final_labels: true

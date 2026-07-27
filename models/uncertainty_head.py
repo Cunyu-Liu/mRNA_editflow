@@ -1,4 +1,4 @@
-"""Mean/variance/beneficial heads used by the Local-Delta Oracle."""
+"""Mean, heteroscedastic variance, benefit probability and ranking heads."""
 from __future__ import annotations
 
 import torch
@@ -16,10 +16,15 @@ class UncertaintyHead(nn.Module):
     def forward(self, x: torch.Tensor) -> dict[str, torch.Tensor]:
         mean = self.mean(x).squeeze(-1)
         logvar = self.logvar(x).squeeze(-1).clamp(-8.0, 6.0)
+        beneficial_logit = self.beneficial(x).squeeze(-1)
         return {
             "mean": mean,
             "logvar": logvar,
             "variance": logvar.exp(),
-            "beneficial_logit": self.beneficial(x).squeeze(-1),
+            "beneficial_logit": beneficial_logit,
+            "beneficial_probability": torch.sigmoid(beneficial_logit),
             "rank": self.rank(x).squeeze(-1),
         }
+
+
+__all__ = ["UncertaintyHead"]
