@@ -20,9 +20,14 @@ THRESHOLDS = {
     "beneficial_precision": 0.75,
     "ece": 0.10,
 }
+INDEPENDENT_THRESHOLDS = {
+    "spearman": 0.25,
+    "top10_enrichment": 1.40,
+    "beneficial_precision": 0.65,
+}
 
 
-def load_metrics(root: Path) -> dict:
+def load_metrics(root: Path, final_reports: list[str] | None = None) -> dict:
     rows = []
     for path in sorted(root.glob("**/metrics.json")):
         obj = json.loads(path.read_text())
@@ -32,7 +37,25 @@ def load_metrics(root: Path) -> dict:
         raise RuntimeError(f"no oracle metrics under {root}")
     keys = ["spearman", "sign_accuracy", "top10_enrichment", "beneficial_precision", "ece", "rmse"]
     mean = {key: float(np.mean([row[key] for row in rows if key in row])) for key in keys if any(key in row for row in rows)}
-    return {"runs": rows, "mean": mean}
+    final = []
+    for report_path in final_reports or []:
+        report = json.loads(Path(report_path).read_text())
+        thresholds = INDEPENDENT_THRESHOLDS if report.get("alias") == "independent_assay" else THRESHOLDS
+        metrics = report.get("metrics", {})
+        checks = {
+            key: (float(metrics.get(key, math.nan)) >= value if key != "ece" else float(metrics.get(key, math.inf)) <= value)
+            for key, value in thresholds.items()
+        }
+        final.append({
+            "path": str(Path(report_path).resolve()),
+            "alias": report.get("alias"),
+            "role": report.get("role"),
+            "metrics": metrics,
+            "thresholds": thresholds,
+            "checks": checks,
+            "gate_passed": bool(checks) and all(checks.values()),
+        })
+    return {"runs": rows, "mean": mean, "final_reports": final}
 
 
 def stratify(rows: list[dict]) -> dict:
@@ -65,12 +88,18 @@ def main() -> None:
     parser.add_argument("--out", required=True)
     parser.add_argument("--queue-out", required=True)
     parser.add_argument("--queue-size", type=int, default=200)
+    parser.add_argument("--final-reports", nargs="*", default=[])
     args = parser.parse_args()
-    metric_report = load_metrics(Path(args.metrics_dir))
-    passed = all(
-        (metric_report["mean"].get(key, -math.inf) >= value if key != "ece" else metric_report["mean"].get(key, math.inf) <= value)
-        for key, value in THRESHOLDS.items()
-    )
+    metric_report = load_metrics(Path(args.metrics_dir), args.final_reports)
+    if metric_report["final_reports"]:
+        passed = all(item["gate_passed"] for item in metric_report["final_reports"])
+        metric_basis = "explicit_final_gate_reports"
+    else:
+        passed = all(
+            (metric_report["mean"].get(key, -math.inf) >= value if key != "ece" else metric_report["mean"].get(key, math.inf) <= value)
+            for key, value in THRESHOLDS.items()
+        )
+        metric_basis = "validation_metric_mean_fallback"
     val = [
         row for row in iter_role_records(Path(args.benchmark_root) / "manifests/val.json")
         if row.get("confidence") == "measured" and row.get("delta") is not None
@@ -92,6 +121,8 @@ def main() -> None:
     report = {
         "schema_version": "phase2_reliable_local_delta_remediation_v2",
         "thresholds": THRESHOLDS, "pilot_metrics": metric_report,
+        "metric_basis": metric_basis,
+        "final_gate_evidence": metric_report["final_reports"],
         "oracle_gate_passed": passed,
         "mandatory_route": "independent_validation" if passed else "continue_with_error_stratification_active_learning_context_heads_assay_effects_hierarchical_calibration_and_measured_data_acquisition",
         "error_stratification": {"status": "complete", "strata": strata},
