@@ -4,11 +4,17 @@
 - source: ENCODE publication-data / `ENCFF957TLC.fastq.gz`
 - provider-listed size: `5124286754` bytes
 - preserved partial size at capture: `7430144` bytes
-- operational D0 cap: `1073741824` bytes
+- raw acquisition route: official ENCODE cloud URLs with provider md5 values
 - status: incomplete; not a raw file and not admitted to a benchmark
-- next action: complete the 1 GiB-cap run, retain provider md5 for deferred
-  files, and use raw-read reconstruction/archive only if the scientific audit
-  later requires the large fastq
+- processed companion: `data/p0/ENCSR854RUF/processed/MPRAu_Supplementary_Table1.xlsx`
+  is complete separately and has its own processed manifest; it does not close
+  the raw-read acceptance gate
+- the later parallel-download `.part` files are retained under
+  `/mnt/cunyuliu/partial_evidence/ENCSR854RUF/` on the mounted acquisition volume
+- next action: resume official cloud raw-file acquisition, or document raw-read
+  reconstruction/archive/author contact after the scientific audit identifies
+  that raw reads are required
 
-The binary `.part` file is kept on the remote acquisition volume and is not
-committed to Git.
+The binary `.part` files are kept on the remote acquisition volume and are not
+committed to Git. An earlier 7,430,144-byte capture is also retained in this
+Git-side evidence directory for provenance.
