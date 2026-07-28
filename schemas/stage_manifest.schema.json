@@ -1,0 +1,220 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Cunyu-Liu/mRNA_editflow/schemas/stage_manifest.schema.json",
+  "title": "mRNA-EditFlow V2 auditable stage manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "stage_id",
+    "phase_ids",
+    "captured_at_utc",
+    "workload_class",
+    "goal_contract",
+    "remote",
+    "git",
+    "protection",
+    "resources",
+    "data_state",
+    "execution_boundary"
+  ],
+  "properties": {
+    "artifact_type": {"const": "stage_manifest"},
+    "schema_version": {"const": "utr_stage_manifest.v1"},
+    "stage_id": {
+      "type": "string",
+      "pattern": "^D1_B0_[0-9]{8}T[0-9]{6}Z_[0-9a-f]{7}$"
+    },
+    "phase_ids": {
+      "const": ["D1", "B0"]
+    },
+    "captured_at_utc": {"type": "string", "format": "date-time"},
+    "workload_class": {"const": "NON_NEURAL_DATA_BENCHMARK"},
+    "goal_contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "sha256", "source_path_local", "repository_snapshot"],
+      "properties": {
+        "id": {"const": "utr_editflow_goal_v2"},
+        "sha256": {
+          "const": "c3dc5875868d847b8519fee40b14c43b65e4c5948dc5c3b98101ca61a5671dd5"
+        },
+        "source_path_local": {"type": "string", "minLength": 1},
+        "repository_snapshot": {"const": "docs/contracts/mrna_latest_build_contract_v2.md"}
+      }
+    },
+    "remote": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "host",
+        "port",
+        "user",
+        "hostname",
+        "original_project_root",
+        "isolated_worktree",
+        "external_data_root"
+      ],
+      "properties": {
+        "host": {"type": "string", "minLength": 1},
+        "port": {"type": "integer", "minimum": 1, "maximum": 65535},
+        "user": {"type": "string", "minLength": 1},
+        "hostname": {"type": "string", "minLength": 1},
+        "original_project_root": {"type": "string", "minLength": 1},
+        "isolated_worktree": {"type": "string", "minLength": 1},
+        "external_data_root": {"type": "string", "minLength": 1}
+      }
+    },
+    "git": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["original", "isolated"],
+      "properties": {
+        "original": {"$ref": "#/$defs/gitSnapshot"},
+        "isolated": {"$ref": "#/$defs/gitSnapshot"}
+      }
+    },
+    "protection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "protected_processes",
+        "processes_terminated",
+        "original_worktree_mutations",
+        "existing_results_overwritten"
+      ],
+      "properties": {
+        "protected_processes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["pid", "kind", "action"],
+            "properties": {
+              "pid": {"type": "integer", "minimum": 1},
+              "kind": {"type": "string", "minLength": 1},
+              "action": {"const": "observe_only"}
+            }
+          }
+        },
+        "processes_terminated": {"const": 0},
+        "original_worktree_mutations": {"const": 0},
+        "existing_results_overwritten": {"const": 0}
+      }
+    },
+    "resources": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["gpu", "memory", "disk"],
+      "properties": {
+        "gpu": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["count", "model", "driver", "formal_neural_work_planned"],
+          "properties": {
+            "count": {"type": "integer", "minimum": 0},
+            "model": {"type": ["string", "null"]},
+            "driver": {"type": ["string", "null"]},
+            "formal_neural_work_planned": {"const": false}
+          }
+        },
+        "memory": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "total_bytes",
+            "available_bytes",
+            "swap_total_bytes",
+            "swap_free_bytes"
+          ],
+          "properties": {
+            "total_bytes": {"type": "integer", "minimum": 1},
+            "available_bytes": {"type": "integer", "minimum": 0},
+            "swap_total_bytes": {"type": "integer", "minimum": 0},
+            "swap_free_bytes": {"type": "integer", "minimum": 0}
+          }
+        },
+        "disk": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["path", "available_bytes"],
+            "properties": {
+              "path": {"type": "string", "minLength": 1},
+              "available_bytes": {"type": "integer", "minimum": 0}
+            }
+          },
+          "minProperties": 1
+        }
+      }
+    },
+    "data_state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "input_inventory",
+        "existing_artifact_inventory",
+        "encode_reconstruction"
+      ],
+      "properties": {
+        "input_inventory": {"type": "string", "minLength": 1},
+        "existing_artifact_inventory": {"type": "string", "minLength": 1},
+        "encode_reconstruction": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "expected_files",
+            "verified_files",
+            "complete",
+            "role"
+          ],
+          "properties": {
+            "expected_files": {"type": "integer", "minimum": 1},
+            "verified_files": {"type": "integer", "minimum": 0},
+            "complete": {"type": "boolean"},
+            "role": {"const": "OBSERVATIONAL_ONLY"}
+          }
+        }
+      }
+    },
+    "execution_boundary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "formal_neural_activity_started",
+        "gpu_validation_started",
+        "cuda_fallback_events",
+        "gpu_requirement_status",
+        "smoke_or_proxy_is_final_evidence",
+        "d1_required_before_b0"
+      ],
+      "properties": {
+        "formal_neural_activity_started": {"const": false},
+        "gpu_validation_started": {"const": false},
+        "cuda_fallback_events": {"const": 0},
+        "gpu_requirement_status": {"const": "NOT_APPLICABLE_NO_NEURAL_WORK"},
+        "smoke_or_proxy_is_final_evidence": {"const": false},
+        "d1_required_before_b0": {"const": true}
+      }
+    }
+  },
+  "$defs": {
+    "gitSnapshot": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "branch", "head", "clean", "dirty_diff_sha256"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "branch": {"type": "string", "minLength": 1},
+        "head": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "clean": {"type": "boolean"},
+        "dirty_diff_sha256": {
+          "type": ["string", "null"],
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    }
+  }
+}

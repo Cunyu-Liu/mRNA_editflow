@@ -12,15 +12,31 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
+import subprocess
 import sys
 from pathlib import Path
+from urllib.parse import urlparse
 
 import yaml
 
+try:
+    from scripts.execution.acceptance_semantics import validate_phase_acceptance
+except ModuleNotFoundError:  # direct script execution from scripts/execution
+    from acceptance_semantics import validate_phase_acceptance
+
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SCHEMA_PATH = REPO_ROOT / "schemas" / "task_registry.schema.json"
+CANONICAL_GITHUB_URL = "https://github.com/Cunyu-Liu/mRNA_editflow.git"
+RELEASE_PROFILES = {
+    "D1_B0": {
+        *(f"D1-{index:02d}" for index in range(1, 9)),
+        *(f"B0-{index:02d}" for index in range(1, 6)),
+    }
+}
+PHASE_GATE_TASKS = {"D1-08", "B0-05"}
 
 REQUIRED_TASK_FIELDS = [
     "task_id", "phase_id", "status", "hypotheses", "dependencies",
@@ -28,11 +44,32 @@ REQUIRED_TASK_FIELDS = [
     "resource_labels", "conflict_keys", "allowed_parallel_tasks", "files",
     "commands", "outputs", "acceptance", "repair_loop", "commit_sha", "report",
 ]
+GOVERNED_TASK_FIELDS = [
+    "evidence_class", "completion_policy", "acceptance_artifact",
+    "acceptance_sha256", "gate_evidence", "known_blockers", "phase_gate",
+]
+ALLOWED_TASK_FIELDS = set(REQUIRED_TASK_FIELDS) | set(GOVERNED_TASK_FIELDS)
 LIST_FIELDS = [
     "hypotheses", "dependencies", "dependency_gates", "forbidden_actions",
     "inputs", "resource_labels", "conflict_keys", "allowed_parallel_tasks",
     "files", "commands", "outputs", "acceptance", "repair_loop",
 ]
+EVIDENCE_CLASSES = {
+    "READ_ONLY_PREFLIGHT",
+    "FULL_SCOPE_DATA",
+    "FULL_SCOPE_BENCHMARK",
+    "SMOKE",
+    "FIXTURE_ONLY",
+}
+COMPLETION_POLICIES = {"MUST_PASS_ALL", "FAIL_CLOSED_WITH_BLOCKERS"}
+PHASE_GATE_EVIDENCE_CLASSES = {
+    "READ_ONLY_PREFLIGHT",
+    "FULL_SCOPE_DATA",
+    "FULL_SCOPE_BENCHMARK",
+}
+FINAL_STATUSES = {"VERIFIED", "FROZEN"}
+COMMIT_SHA_PATTERN = re.compile(r"^[0-9a-f]{40}$")
+SHA256_PATTERN = re.compile(r"^[0-9a-f]{64}$")
 TASK_ID_PATTERN = re.compile(r"^[A-Z0-9]+-[0-9]{2}$")
 DEPENDENCY_GATE_PATTERN = re.compile(
     r"^(?P<task>[A-Z0-9]+-[0-9]{2}):(?P<state>VERIFIED|FROZEN)$"
@@ -57,9 +94,21 @@ def load_schema_statuses() -> list[str]:
     return schema["properties"]["tasks"]["items"]["properties"]["status"]["enum"]
 
 
-def validate(registry: dict, schema_statuses: list[str] | None = None) -> list[str]:
+def validate(
+    registry: dict,
+    schema_statuses: list[str] | None = None,
+    repo_root: Path | None = None,
+    *,
+    release_profile: str | None = None,
+    remote_name: str = "origin",
+    expected_remote_url: str = CANONICAL_GITHUB_URL,
+    allow_unfrozen_b0_inventory: bool = True,
+) -> list[str]:
     """Return a list of validation error strings (empty == valid)."""
     errors: list[str] = []
+    root = REPO_ROOT if repo_root is None else Path(repo_root)
+    if not isinstance(registry, dict):
+        return ["registry must be a mapping"]
     if schema_statuses is None:
         schema_statuses = [
             "PLANNED", "REGISTERED", "PREFLIGHT_PASSED", "RUNNING",
@@ -92,7 +141,7 @@ def validate(registry: dict, schema_statuses: list[str] | None = None) -> list[s
         for field in REQUIRED_TASK_FIELDS:
             if field not in task:
                 errors.append(f"{tid}: missing required field '{field}'")
-        extra = set(task) - set(REQUIRED_TASK_FIELDS)
+        extra = set(task) - ALLOWED_TASK_FIELDS
         if extra:
             errors.append(f"{tid}: unexpected fields {sorted(extra)}")
         if "task_id" in task:
@@ -121,6 +170,36 @@ def validate(registry: dict, schema_statuses: list[str] | None = None) -> list[s
         labels = task.get("resource_labels", [])
         if any(label not in RESOURCE_LABELS for label in labels):
             errors.append(f"{tid}: unknown resource label")
+        phase = task.get("phase_id")
+        if phase in {"D1", "B0"}:
+            for field in GOVERNED_TASK_FIELDS:
+                if field not in task:
+                    errors.append(
+                        f"{tid}: D1/B0 task missing required field '{field}'"
+                    )
+            if "FINAL_LABEL_ACCESS" in labels:
+                errors.append(
+                    f"{tid}: FINAL_LABEL_ACCESS is forbidden for D1/B0 tasks"
+                )
+            if task.get("evidence_class") not in EVIDENCE_CLASSES:
+                errors.append(f"{tid}: invalid evidence_class")
+            if task.get("completion_policy") not in COMPLETION_POLICIES:
+                errors.append(f"{tid}: invalid completion_policy")
+            if not isinstance(task.get("known_blockers"), list) or not all(
+                isinstance(item, str) for item in task.get("known_blockers", [])
+            ):
+                errors.append(f"{tid}: known_blockers must be a list of strings")
+            if not isinstance(task.get("phase_gate"), bool):
+                errors.append(f"{tid}: phase_gate must be boolean")
+            _validate_gate_evidence(task, errors)
+            if task.get("status") in FINAL_STATUSES:
+                _validate_final_evidence(
+                    task,
+                    root,
+                    errors,
+                    remote_name=remote_name,
+                    expected_remote_url=expected_remote_url,
+                )
         gates = task.get("dependency_gates", [])
         gate_tasks: set[str] = set()
         for gate in gates:
@@ -146,6 +225,24 @@ def validate(registry: dict, schema_statuses: list[str] | None = None) -> list[s
                 errors.append(
                     f"{task.get('task_id')}: unknown allowed_parallel_task '{parallel}'"
                 )
+            else:
+                other = next(
+                    (
+                        candidate
+                        for candidate in registry["tasks"]
+                        if candidate.get("task_id") == parallel
+                    ),
+                    None,
+                )
+                if (
+                    other is not None
+                    and task.get("task_id")
+                    not in other.get("allowed_parallel_tasks", [])
+                ):
+                    errors.append(
+                        f"{task.get('task_id')}: allowed_parallel_tasks must be "
+                        f"reciprocal with '{parallel}'"
+                    )
     status_by_task = {
         task["task_id"]: task.get("status")
         for task in registry["tasks"]
@@ -160,9 +257,326 @@ def validate(registry: dict, schema_statuses: list[str] | None = None) -> list[s
                     f"{task.get('task_id')}: verified task has unmet dependency "
                     f"'{dependency}'"
                 )
+    _validate_phase_anchors(
+        registry["tasks"],
+        status_by_task,
+        errors,
+        allow_unfrozen_b0_inventory=allow_unfrozen_b0_inventory,
+    )
+    _validate_release_profile(registry["tasks"], release_profile, errors)
     if _has_cycle(registry["tasks"]):
         errors.append("registry dependency graph contains a cycle")
     return errors
+
+
+def _validate_gate_evidence(task: dict, errors: list[str]) -> None:
+    tid = task.get("task_id")
+    evidence = task.get("gate_evidence")
+    if not isinstance(evidence, list):
+        errors.append(f"{tid}: gate_evidence must be a list")
+        return
+    for index, item in enumerate(evidence):
+        if not isinstance(item, dict):
+            errors.append(f"{tid}: gate_evidence[{index}] must be a mapping")
+            continue
+        if set(item) != {"predicate", "status", "evidence"}:
+            errors.append(
+                f"{tid}: gate_evidence[{index}] must contain exactly "
+                "predicate/status/evidence"
+            )
+            continue
+        if not isinstance(item["predicate"], str) or not item["predicate"]:
+            errors.append(f"{tid}: gate_evidence[{index}] predicate is invalid")
+        if item["status"] not in {"PASS", "FAIL", "UNKNOWN"}:
+            errors.append(f"{tid}: gate_evidence[{index}] status is invalid")
+        if not isinstance(item["evidence"], str) or not item["evidence"]:
+            errors.append(f"{tid}: gate_evidence[{index}] evidence is invalid")
+
+
+def _validate_final_evidence(
+    task: dict,
+    root: Path,
+    errors: list[str],
+    *,
+    remote_name: str,
+    expected_remote_url: str,
+) -> None:
+    tid = task.get("task_id")
+    commit_sha = task.get("commit_sha")
+    if not isinstance(commit_sha, str) or not COMMIT_SHA_PATTERN.fullmatch(commit_sha):
+        errors.append(f"{tid}: final D1/B0 task requires a 40-hex commit_sha")
+    if not isinstance(task.get("report"), str) or not task["report"].strip():
+        errors.append(f"{tid}: final D1/B0 task requires a non-empty report")
+    if task.get("known_blockers"):
+        errors.append(f"{tid}: final D1/B0 task has unresolved known_blockers")
+    if task.get("phase_gate") and task.get("evidence_class") not in (
+        PHASE_GATE_EVIDENCE_CLASSES
+    ):
+        errors.append(
+            f"{tid}: {task.get('evidence_class')} evidence cannot satisfy a phase gate"
+        )
+    evidence = task.get("gate_evidence")
+    if not evidence:
+        errors.append(f"{tid}: final D1/B0 task requires gate_evidence")
+    elif any(item.get("status") != "PASS" for item in evidence if isinstance(item, dict)):
+        errors.append(f"{tid}: all final gate_evidence predicates must PASS")
+
+    artifact = task.get("acceptance_artifact")
+    artifact_sha = task.get("acceptance_sha256")
+    if not isinstance(artifact, str) or not artifact:
+        errors.append(f"{tid}: final D1/B0 task requires acceptance_artifact")
+        return
+    if not isinstance(artifact_sha, str) or not SHA256_PATTERN.fullmatch(artifact_sha):
+        errors.append(f"{tid}: final D1/B0 task requires acceptance_sha256")
+        return
+    path = root / artifact
+    if not path.is_file():
+        errors.append(f"{tid}: acceptance_artifact not found: {artifact}")
+        return
+    observed = hashlib.sha256(path.read_bytes()).hexdigest()
+    if observed != artifact_sha:
+        errors.append(f"{tid}: acceptance_artifact sha256 mismatch")
+        return
+
+    try:
+        acceptance = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        errors.append(f"{tid}: acceptance_artifact is not valid JSON")
+        return
+    phase = str(task.get("phase_id") or "")
+    for semantic_error in validate_phase_acceptance(
+        phase, acceptance, require_pass=True
+    ):
+        errors.append(f"{tid}: {semantic_error}")
+
+    if not _git_commit_exists(root, str(commit_sha)):
+        errors.append(f"{tid}: commit_sha is not an existing Git commit")
+        return
+    try:
+        artifact_relative = path.resolve().relative_to(root.resolve()).as_posix()
+    except ValueError:
+        errors.append(f"{tid}: acceptance_artifact must be inside the repository")
+        return
+    committed = _git_blob(root, str(commit_sha), artifact_relative)
+    if committed is None or hashlib.sha256(committed).hexdigest() != artifact_sha:
+        errors.append(
+            f"{tid}: acceptance_artifact is not the hash-matching blob in commit_sha"
+        )
+
+    publication = [
+        item
+        for item in task.get("gate_evidence", [])
+        if isinstance(item, dict)
+        and item.get("predicate") == "published_remote_ref_contains_commit"
+    ]
+    if len(publication) != 1 or publication[0].get("status") != "PASS":
+        errors.append(
+            f"{tid}: final status requires one published_remote_ref_contains_commit PASS"
+        )
+    else:
+        remote_ref = str(publication[0].get("evidence") or "")
+        if not remote_ref.startswith(("refs/heads/", "refs/tags/")):
+            errors.append(
+                f"{tid}: published remote ref must be refs/heads/* or refs/tags/*"
+            )
+        elif not _remote_ref_contains_commit(
+            root,
+            remote_name,
+            remote_ref,
+            str(commit_sha),
+            expected_remote_url=expected_remote_url,
+        ):
+            errors.append(
+                f"{tid}: published remote ref does not contain commit_sha"
+            )
+
+
+def _git_command(root: Path, *args: str) -> subprocess.CompletedProcess[bytes]:
+    command = ["git", "-C", str(root), *args]
+    try:
+        return subprocess.run(
+            command,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=False,
+            timeout=30,
+        )
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        return subprocess.CompletedProcess(
+            command,
+            124,
+            stdout=b"",
+            stderr=str(exc).encode("utf-8", errors="replace"),
+        )
+
+
+def _git_commit_exists(root: Path, commit_sha: str) -> bool:
+    if not COMMIT_SHA_PATTERN.fullmatch(commit_sha):
+        return False
+    return (
+        _git_command(root, "cat-file", "-e", f"{commit_sha}^{{commit}}").returncode
+        == 0
+    )
+
+
+def _git_blob(root: Path, commit_sha: str, path: str) -> bytes | None:
+    result = _git_command(root, "show", f"{commit_sha}:{path}")
+    return result.stdout if result.returncode == 0 else None
+
+
+def _canonical_remote_identity(value: str) -> str:
+    text = value.strip()
+    if text.startswith("git@github.com:"):
+        path = text.split(":", 1)[1]
+        return f"github.com/{path.removesuffix('.git')}"
+    parsed = urlparse(text)
+    if parsed.hostname == "github.com":
+        path = parsed.path.lstrip("/").removesuffix(".git")
+        return f"github.com/{path}"
+    if parsed.scheme == "file":
+        return str(Path(parsed.path).resolve())
+    return str(Path(text).expanduser().resolve())
+
+
+def _remote_ref_oid(root: Path, remote_name: str, ref: str) -> str | None:
+    result = _git_command(root, "ls-remote", "--exit-code", remote_name, ref)
+    if result.returncode != 0:
+        return None
+    try:
+        lines = result.stdout.decode("utf-8", errors="strict").splitlines()
+    except UnicodeDecodeError:
+        return None
+    matches: list[str] = []
+    for line in lines:
+        fields = line.split("\t")
+        if len(fields) == 2 and fields[1] == ref and COMMIT_SHA_PATTERN.fullmatch(
+            fields[0]
+        ):
+            matches.append(fields[0])
+    return matches[0] if len(matches) == 1 else None
+
+
+def _remote_ref_contains_commit(
+    root: Path,
+    remote_name: str,
+    ref: str,
+    commit_sha: str,
+    *,
+    expected_remote_url: str,
+) -> bool:
+    remote_url = _git_command(root, "remote", "get-url", remote_name)
+    if remote_url.returncode != 0:
+        return False
+    try:
+        observed_url = remote_url.stdout.decode("utf-8", errors="strict").strip()
+    except UnicodeDecodeError:
+        return False
+    if _canonical_remote_identity(observed_url) != _canonical_remote_identity(
+        expected_remote_url
+    ):
+        return False
+    remote_oid = _remote_ref_oid(root, remote_name, ref)
+    if remote_oid is None or not _git_commit_exists(root, remote_oid):
+        return False
+    return (
+        _git_command(
+            root, "merge-base", "--is-ancestor", commit_sha, remote_oid
+        ).returncode
+        == 0
+    )
+
+
+def _validate_release_profile(
+    tasks: list[dict], release_profile: str | None, errors: list[str]
+) -> None:
+    if release_profile is None:
+        return
+    expected = RELEASE_PROFILES.get(release_profile)
+    if expected is None:
+        errors.append(f"unknown release profile: {release_profile}")
+        return
+    governed = {
+        str(task.get("task_id"))
+        for task in tasks
+        if isinstance(task, dict) and task.get("phase_id") in {"D1", "B0"}
+    }
+    missing = expected - governed
+    unexpected = governed - expected
+    if missing:
+        errors.append(
+            f"{release_profile} release profile missing tasks: {sorted(missing)}"
+        )
+    if unexpected:
+        errors.append(
+            f"{release_profile} release profile has unexpected tasks: "
+            f"{sorted(unexpected)}"
+        )
+    by_id = {
+        str(task.get("task_id")): task
+        for task in tasks
+        if isinstance(task, dict) and task.get("task_id")
+    }
+    for task_id in expected & set(by_id):
+        expected_gate = task_id in PHASE_GATE_TASKS
+        if by_id[task_id].get("phase_gate") is not expected_gate:
+            errors.append(
+                f"{task_id}: phase_gate must be {str(expected_gate).lower()} "
+                f"for {release_profile}"
+            )
+
+
+def _validate_phase_anchors(
+    tasks: list[dict],
+    status_by_task: dict[str, str],
+    errors: list[str],
+    *,
+    allow_unfrozen_b0_inventory: bool,
+) -> None:
+    deps = {
+        task.get("task_id"): set(task.get("dependencies", []))
+        for task in tasks
+        if isinstance(task, dict) and task.get("task_id")
+    }
+
+    def ancestors(task_id: str) -> set[str]:
+        found: set[str] = set()
+        stack = list(deps.get(task_id, set()))
+        while stack:
+            current = stack.pop()
+            if current in found:
+                continue
+            found.add(current)
+            stack.extend(deps.get(current, set()))
+        return found
+
+    for task in tasks:
+        if not isinstance(task, dict):
+            continue
+        tid = task.get("task_id", "")
+        phase = task.get("phase_id")
+        lineage = ancestors(tid)
+        if phase == "D1" and not {"C0-05", "D0-05"} <= lineage:
+            errors.append(
+                f"{tid}: D1 lineage must descend from C0-05 and D0-05"
+            )
+        if phase == "B0":
+            if "D1-08" not in lineage:
+                errors.append(f"{tid}: B0 lineage must descend from D1-08")
+            if status_by_task.get("D1-08") != "FROZEN":
+                # Registering the complete future inventory is not execution.
+                # Any active or final B0 status still fails before D1 freezes.
+                inactive_statuses = {"PLANNED", "REGISTERED", "SAFE_PAUSED"}
+                if (
+                    not allow_unfrozen_b0_inventory
+                    or task.get("status") not in inactive_statuses
+                ):
+                    errors.append(f"{tid}: B0 requires D1-08:FROZEN")
+        if tid == "B0-05" and task.get("status") == "FROZEN":
+            for required in ("B0-01", "B0-02", "B0-03", "B0-04"):
+                if status_by_task.get(required) not in FINAL_STATUSES:
+                    errors.append(
+                        f"B0-05: cannot freeze before {required}:VERIFIED"
+                    )
 
 
 def _has_cycle(tasks: list[dict]) -> bool:
@@ -192,6 +606,8 @@ def main(argv=None) -> int:
         "--registry",
         default=str(REPO_ROOT / "docs/execution/task_registry_v2.yaml"),
     )
+    parser.add_argument("--release-profile", choices=sorted(RELEASE_PROFILES))
+    parser.add_argument("--remote-name", default="origin")
     args = parser.parse_args(argv)
 
     path = Path(args.registry)
@@ -204,7 +620,12 @@ def main(argv=None) -> int:
     except Exception:
         statuses = None
 
-    errors = validate(registry, statuses)
+    errors = validate(
+        registry,
+        statuses,
+        release_profile=args.release_profile,
+        remote_name=args.remote_name,
+    )
     for err in errors:
         print(f"ERROR: {err}")
     n_tasks = len(registry.get("tasks", [])) if isinstance(registry, dict) else 0

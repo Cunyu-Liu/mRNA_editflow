@@ -1,0 +1,319 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Cunyu-Liu/mRNA_editflow/schemas/stage_completion_manifest.schema.json",
+  "title": "mRNA-EditFlow D1/B0 remotely published completion manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "stage_id",
+    "phase_ids",
+    "status",
+    "started_at_utc",
+    "ended_at_utc",
+    "workload_class",
+    "goal_contract",
+    "stage_root",
+    "phase_acceptance",
+    "artifacts",
+    "git",
+    "protection",
+    "execution_boundary",
+    "claim_boundary",
+    "stop_reason",
+    "known_deviations"
+  ],
+  "properties": {
+    "artifact_type": {"const": "stage_completion_manifest"},
+    "schema_version": {"const": "utr_stage_completion.v2"},
+    "stage_id": {
+      "type": "string",
+      "pattern": "^D1_B0_[0-9]{8}T[0-9]{6}Z_[0-9a-f]{7}(?:_A[0-9]+)?$"
+    },
+    "phase_ids": {"const": ["D1", "B0"]},
+    "status": {
+      "enum": ["FROZEN", "SAFE_PAUSED", "FAILED_WITH_EVIDENCE"]
+    },
+    "started_at_utc": {"type": "string", "format": "date-time"},
+    "ended_at_utc": {"type": "string", "format": "date-time"},
+    "workload_class": {"const": "NON_NEURAL_DATA_BENCHMARK"},
+    "goal_contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "sha256", "repository_snapshot"],
+      "properties": {
+        "id": {"const": "utr_editflow_goal_v2"},
+        "sha256": {
+          "const": "c3dc5875868d847b8519fee40b14c43b65e4c5948dc5c3b98101ca61a5671dd5"
+        },
+        "repository_snapshot": {
+          "const": "docs/contracts/mrna_latest_build_contract_v2.md"
+        }
+      }
+    },
+    "stage_root": {"$ref": "#/$defs/repositoryPath"},
+    "phase_acceptance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["D1", "B0"],
+      "properties": {
+        "D1": {"$ref": "#/$defs/d1Acceptance"},
+        "B0": {"$ref": "#/$defs/b0Acceptance"}
+      }
+    },
+    "artifacts": {
+      "type": "array",
+      "minItems": 9,
+      "maxItems": 9,
+      "items": {"$ref": "#/$defs/artifact"}
+    },
+    "git": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "repository",
+        "remote_name",
+        "canonical_remote_url",
+        "code_commit_sha",
+        "evidence_commit_sha",
+        "registry_commit_sha",
+        "published_remote_ref"
+      ],
+      "properties": {
+        "repository": {"type": "string", "minLength": 1},
+        "remote_name": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+        },
+        "canonical_remote_url": {"type": "string", "minLength": 1},
+        "code_commit_sha": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "evidence_commit_sha": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "registry_commit_sha": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "published_remote_ref": {
+          "type": "string",
+          "pattern": "^refs/(?:heads|tags)/[A-Za-z0-9][A-Za-z0-9._/-]*$"
+        }
+      }
+    },
+    "protection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "preflight_role",
+        "protected_state_role",
+        "recheck_role",
+        "original_worktree_path",
+        "initial_head",
+        "final_head",
+        "initial_dirty_diff_sha256",
+        "final_dirty_diff_sha256",
+        "original_worktree_unchanged",
+        "protected_pids",
+        "terminated_protected_pids",
+        "processes_terminated",
+        "existing_results_overwritten"
+      ],
+      "properties": {
+        "preflight_role": {"const": "preflight_manifest"},
+        "protected_state_role": {"const": "protected_state"},
+        "recheck_role": {"const": "protection_recheck"},
+        "original_worktree_path": {"type": "string", "minLength": 1},
+        "initial_head": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "final_head": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "initial_dirty_diff_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "final_dirty_diff_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "original_worktree_unchanged": {"const": true},
+        "protected_pids": {
+          "type": "array",
+          "items": {"type": "integer", "minimum": 1},
+          "uniqueItems": true
+        },
+        "terminated_protected_pids": {
+          "type": "array",
+          "maxItems": 0
+        },
+        "processes_terminated": {"const": 0},
+        "existing_results_overwritten": {"const": 0}
+      }
+    },
+    "execution_boundary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "formal_neural_activity_started",
+        "gpu_validation_started",
+        "cuda_fallback_events",
+        "gpu_requirement_status",
+        "smoke_or_proxy_is_final_evidence"
+      ],
+      "properties": {
+        "formal_neural_activity_started": {"const": false},
+        "gpu_validation_started": {"const": false},
+        "cuda_fallback_events": {"const": 0},
+        "gpu_requirement_status": {
+          "const": "NOT_APPLICABLE_NO_NEURAL_WORK"
+        },
+        "smoke_or_proxy_is_final_evidence": {"const": false}
+      }
+    },
+    "claim_boundary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scientific_result_claimed",
+        "efficacy_claimed",
+        "sota_claimed",
+        "foundation_status",
+        "allowed_claim"
+      ],
+      "properties": {
+        "scientific_result_claimed": {"const": false},
+        "efficacy_claimed": {"const": false},
+        "sota_claimed": {"const": false},
+        "foundation_status": {"const": "UNKNOWN_PENDING_FM0"},
+        "allowed_claim": {"const": "NONE"}
+      }
+    },
+    "stop_reason": {"type": ["string", "null"]},
+    "known_deviations": {
+      "type": "array",
+      "items": {"type": "string"}
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {"status": {"const": "FROZEN"}},
+        "required": ["status"]
+      },
+      "then": {
+        "properties": {
+          "stop_reason": {"const": null},
+          "known_deviations": {"maxItems": 0},
+          "phase_acceptance": {
+            "properties": {
+              "D1": {"properties": {"gate_passed": {"const": true}}},
+              "B0": {"properties": {"gate_passed": {"const": true}}}
+            }
+          }
+        }
+      },
+      "else": {
+        "properties": {
+          "stop_reason": {"type": "string", "minLength": 1}
+        },
+        "anyOf": [
+          {
+            "properties": {
+              "phase_acceptance": {
+                "properties": {
+                  "D1": {"properties": {"gate_passed": {"const": false}}}
+                }
+              }
+            }
+          },
+          {
+            "properties": {
+              "phase_acceptance": {
+                "properties": {
+                  "B0": {"properties": {"gate_passed": {"const": false}}}
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "$defs": {
+    "repositoryPath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"
+    },
+    "acceptanceBase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "sha256",
+        "bytes",
+        "schema_version",
+        "gate_field",
+        "gate_passed"
+      ],
+      "properties": {
+        "path": {"$ref": "#/$defs/repositoryPath"},
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "bytes": {"type": "integer", "minimum": 1},
+        "schema_version": {"type": "string", "minLength": 1},
+        "gate_field": {"type": "string", "minLength": 1},
+        "gate_passed": {"type": "boolean"}
+      }
+    },
+    "d1Acceptance": {
+      "allOf": [
+        {"$ref": "#/$defs/acceptanceBase"},
+        {
+          "properties": {
+            "schema_version": {"const": "d1_acceptance_v2"},
+            "gate_field": {"const": "phase_gate_passed"}
+          }
+        }
+      ]
+    },
+    "b0Acceptance": {
+      "allOf": [
+        {"$ref": "#/$defs/acceptanceBase"},
+        {
+          "properties": {
+            "schema_version": {"const": "utr_b0_acceptance.v2"},
+            "gate_field": {"const": "b0_gate_passed"}
+          }
+        }
+      ]
+    },
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["role", "commit_role", "path", "sha256", "bytes"],
+      "properties": {
+        "role": {"type": "string", "minLength": 1},
+        "commit_role": {
+          "enum": ["code", "evidence", "registry"]
+        },
+        "path": {"$ref": "#/$defs/repositoryPath"},
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "bytes": {"type": "integer", "minimum": 1}
+      }
+    }
+  }
+}

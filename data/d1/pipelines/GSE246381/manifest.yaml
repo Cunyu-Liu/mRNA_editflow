@@ -1,0 +1,11 @@
+schema_version: d1_pipeline_manifest_v2
+dataset_id: GSE246381
+status: template_not_frozen
+region: five_utr
+role: historically_exposed_retrospective_E4
+training_allowed: false
+selection_allowed: false
+untouched_claim_allowed: false
+trajectory_observed: false
+production_entrypoint: scripts/data/build_d1_utr_benchmark.py
+overwrite_existing_snapshot: false

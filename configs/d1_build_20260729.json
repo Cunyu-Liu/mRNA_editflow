@@ -1,0 +1,147 @@
+{
+  "schema_version": "d1_build_config_v2",
+  "stage_id": "D1_B0_20260728T160012Z_8862125",
+  "config_repository_path": "configs/d1_build_20260729.json",
+  "input_inventory": {
+    "path": "/mnt/cunyuliu/mrna_editflow_goal_worktrees/d1-b0-utr-v2-20260729/artifacts/stages/D1_B0_20260728T160012Z_8862125/D1/input_inventory.json",
+    "repository_path": "artifacts/stages/D1_B0_20260728T160012Z_8862125/D1/input_inventory.json",
+    "bytes": 5215,
+    "sha256": "64f17ff3fc19b98a62f6c6c2dfd1ba526773622729436556ccfb4c0241f73948"
+  },
+  "selection_policy": {
+    "candidate_final_labels_used_for_dataset_role_selection": false,
+    "dataset_scope_manifest": {
+      "path": "/mnt/cunyuliu/mrna_editflow_goal_worktrees/d1-b0-utr-v2-20260729/data_registry/d1_dataset_scope_manifest.yaml",
+      "repository_path": "data_registry/d1_dataset_scope_manifest.yaml",
+      "bytes": 10646,
+      "sha256": "b5ae778b09bc551fc2f6034ca9b45eb180b8da583f527ac0344207f84890a2ef"
+    },
+    "goal_contract_sha256": "c3dc5875868d847b8519fee40b14c43b65e4c5948dc5c3b98101ca61a5671dd5"
+  },
+  "datasets": [
+    {
+      "dataset_id": "GSE114002",
+      "download_manifest": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/inputs/GSE114002/manifest.json",
+      "license": "GEO_public_per_series_terms",
+      "input_files": [
+        {
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/inputs/GSE114002/GSM3130443_designed_library.csv.gz",
+          "format": "csv",
+          "role": "sequence_and_provided_label_input"
+        }
+      ]
+    },
+    {
+      "dataset_id": "GSE149487",
+      "download_manifest": "/mnt/cunyuliu/mrna_editflow_goal_worktrees/d1-b0-utr-v2-20260729/data_registry/d1_dataset_scope_manifest.yaml",
+      "license": "GEO_public_per_series_terms",
+      "input_files": []
+    },
+    {
+      "dataset_id": "GSE246381",
+      "download_manifest": "/mnt/cunyuliu/mrna_editflow_goal_worktrees/d1-b0-utr-v2-20260729/artifacts/stages/D1_B0_20260728T160012Z_8862125/D1/input_inventory.json",
+      "license": "GEO_public_per_series_terms",
+      "input_files": [
+        {
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/inputs/GSE246381/media-1.xlsx",
+          "format": "xlsx",
+          "sheet_name": "S1.2 MPRA Library Variants",
+          "role": "historically_exposed_sequence_pair_input",
+          "defaults": {
+            "endpoint": "sequence_pair_only",
+            "cell_context": "GSE246381_retrospective_unspecified_context",
+            "assay_id": "GSE246381_supplementary_variant_design"
+          }
+        }
+      ]
+    },
+    {
+      "dataset_id": "GSE145046",
+      "download_manifest": "/mnt/cunyuliu/mrna_editflow_goal_worktrees/d1-b0-utr-v2-20260729/data_registry/d1_dataset_scope_manifest.yaml",
+      "license": "GEO_public_per_series_terms",
+      "input_files": []
+    },
+    {
+      "dataset_id": "GSE217518",
+      "download_manifest": "/mnt/cunyuliu/mrna_editflow_goal_worktrees/d1-b0-utr-v2-20260729/artifacts/stages/D1_B0_20260728T160012Z_8862125/D1/input_inventory.json",
+      "license": "GEO_and_official_code_public_terms_citation_required",
+      "input_files": [
+        {
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/inputs/GSE217518/SHdiNT_U3.csv",
+          "format": "csv",
+          "role": "three_utr_sequence_and_processed_label_input",
+          "defaults": {
+            "table_region": "three_utr"
+          }
+        },
+        {
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/inputs/GSE217518/SHdiNT_U5.csv",
+          "format": "csv",
+          "role": "five_utr_sequence_and_processed_label_input",
+          "defaults": {
+            "table_region": "five_utr"
+          }
+        }
+      ]
+    },
+    {
+      "dataset_id": "GSE200304",
+      "download_manifest": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/inputs/GSE200304/manifest.json",
+      "license": "GEO_public_per_series_terms",
+      "input_files": [
+        {
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/inputs/GSE200304/GSM6030637_Twist_Oligo_Order_with_merged_ids.txt.gz",
+          "format": "tsv",
+          "role": "construct_table"
+        },
+        {
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/inputs/GSE200304/GSM6030637_log2_cpm_small_seq_on_plasmid.txt.gz",
+          "format": "tsv",
+          "role": "processed_label_table"
+        }
+      ]
+    },
+    {
+      "dataset_id": "MPRAu_processed_ENCSR854RUF",
+      "download_manifest": "/mnt/cunyuliu/mrna_editflow_goal_worktrees/d1-b0-utr-v2-20260729/artifacts/stages/D1_B0_20260728T160012Z_8862125/D1/input_inventory.json",
+      "license": "ENCODE_unrestricted_public_release_with_citation",
+      "input_files": [],
+      "reference_audit": {
+        "status": "blocked_reference_not_frozen",
+        "reference_coverage": 0.0,
+        "roundtrip_fraction": 0.0,
+        "reason_code": "GRCH37_HG19_REFERENCE_NOT_FROZEN"
+      }
+    },
+    {
+      "dataset_id": "ENCSR854RUF_raw62",
+      "download_manifest": "/mnt/cunyuliu/mrna_editflow_goal_worktrees/d1-b0-utr-v2-20260729/data_registry/d1_dataset_scope_manifest.yaml",
+      "license": "ENCODE_unrestricted_public_release_and_ENA_INSDC_terms",
+      "input_files": []
+    },
+    {
+      "dataset_id": "GSE330741",
+      "download_manifest": "/mnt/cunyuliu/mrna_editflow_goal_worktrees/d1-b0-utr-v2-20260729/data_registry/d1_dataset_scope_manifest.yaml",
+      "license": "GEO_public_per_series_terms",
+      "input_files": []
+    },
+    {
+      "dataset_id": "GSE291719",
+      "download_manifest": "/mnt/cunyuliu/mrna_editflow_goal_worktrees/d1-b0-utr-v2-20260729/data_registry/d1_dataset_scope_manifest.yaml",
+      "license": "GEO_public_per_series_terms",
+      "input_files": []
+    },
+    {
+      "dataset_id": "GSE207584",
+      "download_manifest": "/mnt/cunyuliu/mrna_editflow_goal_worktrees/d1-b0-utr-v2-20260729/data_registry/d1_dataset_scope_manifest.yaml",
+      "license": "GEO_public_per_series_terms",
+      "input_files": []
+    },
+    {
+      "dataset_id": "GSE173083",
+      "download_manifest": "/mnt/cunyuliu/mrna_editflow_goal_worktrees/d1-b0-utr-v2-20260729/data_registry/d1_dataset_scope_manifest.yaml",
+      "license": "GEO_public_per_series_terms",
+      "input_files": []
+    }
+  ]
+}

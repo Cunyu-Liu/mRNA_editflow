@@ -1,0 +1,9 @@
+schema_version: d1_pipeline_manifest_v2
+dataset_id: GSE114002
+status: template_not_frozen
+region: five_utr
+role: source_paired_snv_plus_separate_absolute_prior
+label_reproduction: PROVIDED_LABEL_ONLY
+trajectory_observed: false
+production_entrypoint: scripts/data/build_d1_utr_benchmark.py
+overwrite_existing_snapshot: false

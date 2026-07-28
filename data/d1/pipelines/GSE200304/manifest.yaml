@@ -1,0 +1,11 @@
+schema_version: d1_pipeline_manifest_v2
+dataset_id: GSE200304
+status: template_not_frozen
+region: three_utr
+role: paired_sequence_mapping_with_label_coverage_roles
+join_rule: construct.merged_id == labels.Barcode
+pair_rule: remove_terminal__WT_or__Mutant
+label_reproduction: PROVIDED_LABEL_ONLY
+trajectory_observed: false
+production_entrypoint: scripts/data/build_d1_utr_benchmark.py
+overwrite_existing_snapshot: false

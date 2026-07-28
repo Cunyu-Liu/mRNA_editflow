@@ -1,0 +1,514 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Cunyu-Liu/mRNA_editflow/schemas/utr_edit_record.schema.json",
+  "title": "UTR EditFlow v2 canonical paired-edit record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "record_id",
+    "dataset_id",
+    "study_id",
+    "assay_id",
+    "context_id",
+    "evidence_grade",
+    "exposure_grade",
+    "region",
+    "organism",
+    "cell_context",
+    "reporter",
+    "cargo",
+    "endpoint",
+    "endpoint_provenance",
+    "timepoint",
+    "source_id",
+    "source_sequence",
+    "candidate_sequence",
+    "source_length",
+    "candidate_length",
+    "edit_script",
+    "edit_types",
+    "edit_positions",
+    "reference_alleles",
+    "alternate_alleles",
+    "edit_count",
+    "edit_distance",
+    "source_value_raw",
+    "candidate_value_raw",
+    "delta_raw",
+    "delta_normalized",
+    "effect_standard_error",
+    "replicate_count",
+    "pair_type",
+    "trajectory_observed",
+    "trajectory_source",
+    "trajectory_provenance",
+    "coupling_type",
+    "intermediate_sequences",
+    "paper_split",
+    "canonical_split",
+    "source_group",
+    "gene_group",
+    "study_group",
+    "context_group",
+    "sequence_cluster",
+    "scaffold_group",
+    "barcode_batch",
+    "library_batch",
+    "sequence_provenance",
+    "label_provenance",
+    "download_manifest",
+    "license",
+    "quality_flags",
+    "historical_exposure"
+  ],
+  "properties": {
+    "record_id": {"type": "string", "minLength": 1},
+    "dataset_id": {"type": "string", "minLength": 1},
+    "study_id": {"type": "string", "minLength": 1},
+    "assay_id": {"type": "string", "minLength": 1},
+    "context_id": {"type": "string", "minLength": 1},
+    "evidence_grade": {
+      "enum": ["E0", "E1", "E2", "E3", "E4", "E5", "E6"]
+    },
+    "exposure_grade": {"type": "string", "minLength": 1},
+    "region": {"enum": ["five_utr", "three_utr"]},
+    "organism": {"type": "string", "minLength": 1},
+    "cell_context": {"type": "string", "minLength": 1},
+    "reporter": {"type": "string", "minLength": 1},
+    "cargo": {"type": "string", "minLength": 1},
+    "endpoint": {"type": "string", "minLength": 1},
+    "endpoint_provenance": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true
+    },
+    "timepoint": {
+      "type": ["string", "number", "null"]
+    },
+    "source_id": {"type": ["string", "null"], "minLength": 1},
+    "candidate_id": {"type": ["string", "null"], "minLength": 1},
+    "source_sequence": {
+      "oneOf": [
+        {"$ref": "#/$defs/rna_sequence"},
+        {"type": "null"}
+      ]
+    },
+    "candidate_sequence": {"$ref": "#/$defs/rna_sequence"},
+    "source_length": {"type": ["integer", "null"], "minimum": 1},
+    "candidate_length": {"type": "integer", "minimum": 1},
+    "edit_script": {
+      "oneOf": [
+        {
+          "type": "array",
+          "items": {
+            "allOf": [
+              {"$ref": "edit_script.schema.json#/$defs/operation"},
+              {
+                "not": {
+                  "properties": {"op": {"const": "STOP"}},
+                  "required": ["op"]
+                }
+              }
+            ]
+          }
+        },
+        {"type": "null"}
+      ]
+    },
+    "edit_types": {
+      "type": "array",
+      "items": {"enum": ["INS", "SUB", "DEL"]}
+    },
+    "edit_positions": {
+      "type": "array",
+      "items": {"type": "integer", "minimum": 0}
+    },
+    "reference_alleles": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[ACGU]*$"
+      }
+    },
+    "alternate_alleles": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^[ACGU]*$"
+      }
+    },
+    "edit_count": {"type": "integer", "minimum": 0},
+    "edit_distance": {"type": ["integer", "null"], "minimum": 0},
+    "source_value_raw": {"type": ["number", "null"]},
+    "candidate_value_raw": {"type": ["number", "null"]},
+    "delta_raw": {"type": ["number", "null"]},
+    "delta_normalized": {"type": ["number", "null"]},
+    "effect_standard_error": {
+      "type": ["number", "null"],
+      "minimum": 0
+    },
+    "replicate_count": {
+      "type": ["integer", "null"],
+      "minimum": 0
+    },
+    "pair_type": {
+      "enum": [
+        "true_wt_mutant",
+        "dense_measured_neighbor",
+        "measured_multi_edit_family",
+        "measured_indel_pair",
+        "absolute_property_only",
+        "unlabeled_pretraining",
+        "retrospective_constructed_neighbor"
+      ]
+    },
+    "trajectory_observed": {"type": "boolean"},
+    "trajectory_source": {"enum": ["latent", "constructed", "observed"]},
+    "trajectory_provenance": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true
+    },
+    "coupling_type": {
+      "enum": [
+        "observed_endpoint_coupling",
+        "constructed_alignment_coupling",
+        "corruption_denoising_coupling",
+        "dense_landscape_coupling",
+        "property_conditioned_target_coupling"
+      ]
+    },
+    "intermediate_sequences": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["sequence", "observed", "provenance"],
+        "properties": {
+          "sequence": {"$ref": "#/$defs/rna_sequence"},
+          "observed": {"type": "boolean"},
+          "provenance": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "paper_split": {"type": ["string", "null"]},
+    "canonical_split": {"type": ["string", "null"]},
+    "source_group": {"$ref": "#/$defs/scoped_group"},
+    "gene_group": {"$ref": "#/$defs/scoped_group"},
+    "study_group": {"$ref": "#/$defs/scoped_group"},
+    "context_group": {"$ref": "#/$defs/scoped_group"},
+    "sequence_cluster": {"$ref": "#/$defs/scoped_group"},
+    "scaffold_group": {"$ref": "#/$defs/scoped_group"},
+    "barcode_batch": {"$ref": "#/$defs/scoped_group"},
+    "library_batch": {"$ref": "#/$defs/scoped_group"},
+    "library_design": {
+      "oneOf": [
+        {"type": "string", "minLength": 1},
+        {
+          "type": "object",
+          "additionalProperties": true
+        }
+      ]
+    },
+    "sequence_provenance": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true
+    },
+    "label_provenance": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": true
+    },
+    "download_manifest": {
+      "oneOf": [
+        {"type": "string", "minLength": 1},
+        {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": true
+        }
+      ]
+    },
+    "license": {"type": "string", "minLength": 1},
+    "quality_flags": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "historical_exposure": {
+      "oneOf": [
+        {"type": "string", "minLength": 1},
+        {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": true
+        }
+      ]
+    },
+    "raw_source_sequence": {
+      "oneOf": [
+        {"$ref": "#/$defs/rna_sequence"},
+        {"type": "null"}
+      ]
+    },
+    "raw_candidate_sequence": {"$ref": "#/$defs/rna_sequence"},
+    "canonicalization_provenance": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "edit_script_ambiguity": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {"trajectory_source": {"const": "observed"}},
+        "required": ["trajectory_source"]
+      },
+      "then": {
+        "properties": {
+          "trajectory_observed": {"const": true},
+          "coupling_type": {"const": "observed_endpoint_coupling"},
+          "intermediate_sequences": {
+            "items": {
+              "properties": {"observed": {"const": true}}
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {"trajectory_source": {"const": "constructed"}},
+        "required": ["trajectory_source"]
+      },
+      "then": {
+        "properties": {
+          "trajectory_observed": {"const": false},
+          "coupling_type": {
+            "enum": [
+              "constructed_alignment_coupling",
+              "dense_landscape_coupling"
+            ]
+          },
+          "intermediate_sequences": {
+            "items": {
+              "properties": {"observed": {"const": false}}
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {"trajectory_source": {"const": "latent"}},
+        "required": ["trajectory_source"]
+      },
+      "then": {
+        "properties": {
+          "trajectory_observed": {"const": false},
+          "coupling_type": {
+            "enum": [
+              "corruption_denoising_coupling",
+              "property_conditioned_target_coupling"
+            ]
+          },
+          "intermediate_sequences": {
+            "items": {
+              "properties": {"observed": {"const": false}}
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "pair_type": {
+            "enum": ["absolute_property_only", "unlabeled_pretraining"]
+          }
+        },
+        "required": ["pair_type"]
+      },
+      "then": {
+        "properties": {
+          "source_id": {"const": null},
+          "source_sequence": {"const": null},
+          "source_length": {"const": null},
+          "edit_script": {"const": null},
+          "edit_types": {"maxItems": 0},
+          "edit_positions": {"maxItems": 0},
+          "reference_alleles": {"maxItems": 0},
+          "alternate_alleles": {"maxItems": 0},
+          "edit_count": {"const": 0},
+          "edit_distance": {"const": null},
+          "source_value_raw": {"const": null},
+          "delta_raw": {"const": null},
+          "delta_normalized": {"const": null},
+          "trajectory_source": {"const": "latent"},
+          "trajectory_observed": {"const": false},
+          "intermediate_sequences": {"maxItems": 0},
+          "raw_source_sequence": {"const": null}
+        }
+      }
+    },
+    {
+      "if": {
+        "not": {
+          "properties": {
+            "pair_type": {
+              "enum": ["absolute_property_only", "unlabeled_pretraining"]
+            }
+          },
+          "required": ["pair_type"]
+        }
+      },
+      "then": {
+        "properties": {
+          "source_id": {"type": "string", "minLength": 1},
+          "source_sequence": {"$ref": "#/$defs/rna_sequence"},
+          "source_length": {"type": "integer", "minimum": 1},
+          "edit_script": {"type": "array", "minItems": 1},
+          "edit_types": {"minItems": 1},
+          "edit_positions": {"minItems": 1},
+          "reference_alleles": {"minItems": 1},
+          "alternate_alleles": {"minItems": 1},
+          "edit_count": {"type": "integer", "minimum": 1},
+          "edit_distance": {"type": "integer", "minimum": 1},
+          "raw_source_sequence": {"$ref": "#/$defs/rna_sequence"}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "pair_type": {
+            "enum": [
+              "true_wt_mutant",
+              "dense_measured_neighbor",
+              "measured_multi_edit_family",
+              "measured_indel_pair"
+            ]
+          }
+        },
+        "required": ["pair_type"]
+      },
+      "then": {
+        "properties": {
+          "source_value_raw": {"type": "number"},
+          "candidate_value_raw": {"type": "number"},
+          "delta_raw": {"type": "number"},
+          "trajectory_source": {
+            "enum": ["constructed", "observed"]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "pair_type": {
+            "enum": ["true_wt_mutant", "measured_indel_pair"]
+          }
+        },
+        "required": ["pair_type"]
+      },
+      "then": {
+        "properties": {
+          "coupling_type": {
+            "enum": [
+              "observed_endpoint_coupling",
+              "constructed_alignment_coupling"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "pair_type": {
+            "enum": [
+              "dense_measured_neighbor",
+              "measured_multi_edit_family"
+            ]
+          }
+        },
+        "required": ["pair_type"]
+      },
+      "then": {
+        "properties": {
+          "coupling_type": {
+            "enum": [
+              "observed_endpoint_coupling",
+              "constructed_alignment_coupling",
+              "dense_landscape_coupling"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "pair_type": {"const": "retrospective_constructed_neighbor"}
+        },
+        "required": ["pair_type"]
+      },
+      "then": {
+        "properties": {
+          "trajectory_source": {"const": "constructed"},
+          "trajectory_observed": {"const": false},
+          "coupling_type": {"const": "constructed_alignment_coupling"}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {"pair_type": {"const": "absolute_property_only"}},
+        "required": ["pair_type"]
+      },
+      "then": {
+        "properties": {
+          "candidate_value_raw": {"type": "number"},
+          "coupling_type": {
+            "const": "property_conditioned_target_coupling"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {"pair_type": {"const": "unlabeled_pretraining"}},
+        "required": ["pair_type"]
+      },
+      "then": {
+        "properties": {
+          "candidate_value_raw": {"const": null},
+          "coupling_type": {"const": "corruption_denoising_coupling"}
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "rna_sequence": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[ACGU]+$"
+    },
+    "scoped_group": {
+      "oneOf": [
+        {"type": "string", "minLength": 1},
+        {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"type": "string", "minLength": 1}
+        }
+      ]
+    }
+  }
+}

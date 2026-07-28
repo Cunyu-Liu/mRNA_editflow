@@ -1,0 +1,9 @@
+schema_version: d1_pipeline_manifest_v2
+dataset_id: MPRAu_processed_ENCSR854RUF
+status: blocked_until_reference_frozen_100_percent
+region: three_utr
+reference_coverage_required: 1.0
+roundtrip_fraction_required: 1.0
+partial_subset_allowed: false
+trajectory_observed: false
+production_entrypoint: scripts/data/build_d1_utr_benchmark.py

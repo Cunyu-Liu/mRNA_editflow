@@ -1,0 +1,287 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Cunyu-Liu/mRNA_editflow/schemas/edit_script.schema.json",
+  "title": "UTR EditFlow v2 traceable edit script",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "script_id",
+    "source_sequence",
+    "candidate_sequence",
+    "coordinate_system",
+    "path_status",
+    "path_provenance",
+    "operations",
+    "ambiguity",
+    "intermediate_sequences"
+  ],
+  "properties": {
+    "schema_version": {"const": "edit_script.v2"},
+    "script_id": {"type": "string", "minLength": 1},
+    "source_sequence": {"$ref": "#/$defs/rna_sequence"},
+    "candidate_sequence": {"$ref": "#/$defs/rna_sequence"},
+    "coordinate_system": {"const": "zero_based_current_state_before_operation"},
+    "path_status": {
+      "enum": [
+        "OBSERVED_TRAJECTORY",
+        "OBSERVED_ENDPOINT_ONLY_CONSTRUCTED_PATH",
+        "UNIQUE_MINIMAL_PATH",
+        "CANONICAL_PATH_AMBIGUOUS"
+      ]
+    },
+    "path_provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["observed", "evidence_type", "artifact_ref"],
+      "properties": {
+        "observed": {"type": "boolean"},
+        "evidence_type": {"type": "string", "minLength": 1},
+        "artifact_ref": {"type": "string", "minLength": 1}
+      }
+    },
+    "operations": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/operation"}
+    },
+    "ambiguity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "minimal_path_count",
+        "enumeration_capped",
+        "selected_path_rule"
+      ],
+      "properties": {
+        "minimal_path_count": {"type": "integer", "minimum": 1},
+        "enumeration_capped": {"type": "boolean"},
+        "selected_path_rule": {"type": "string", "minLength": 1}
+      }
+    },
+    "intermediate_sequences": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["sequence", "observed", "provenance"],
+        "properties": {
+          "sequence": {"$ref": "#/$defs/rna_sequence"},
+          "observed": {"type": "boolean"},
+          "provenance": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {"path_status": {"const": "OBSERVED_TRAJECTORY"}},
+        "required": ["path_status"]
+      },
+      "then": {
+        "properties": {
+          "path_provenance": {
+            "properties": {
+              "observed": {"const": true},
+              "evidence_type": {"const": "observed_trajectory"}
+            }
+          },
+          "intermediate_sequences": {
+            "items": {
+              "properties": {"observed": {"const": true}}
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "path_status": {
+            "const": "OBSERVED_ENDPOINT_ONLY_CONSTRUCTED_PATH"
+          }
+        },
+        "required": ["path_status"]
+      },
+      "then": {
+        "properties": {
+          "path_provenance": {
+            "properties": {
+              "observed": {"const": false},
+              "evidence_type": {"const": "constructed_alignment"}
+            }
+          },
+          "intermediate_sequences": {
+            "items": {
+              "properties": {"observed": {"const": false}}
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {"path_status": {"const": "UNIQUE_MINIMAL_PATH"}},
+        "required": ["path_status"]
+      },
+      "then": {
+        "properties": {
+          "path_provenance": {
+            "properties": {
+              "observed": {"const": false},
+              "evidence_type": {
+                "const": "canonical_minimum_edit_alignment"
+              }
+            }
+          },
+          "ambiguity": {
+            "properties": {
+              "minimal_path_count": {"const": 1},
+              "enumeration_capped": {"const": false}
+            }
+          },
+          "intermediate_sequences": {
+            "items": {
+              "properties": {"observed": {"const": false}}
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "path_status": {"const": "CANONICAL_PATH_AMBIGUOUS"}
+        },
+        "required": ["path_status"]
+      },
+      "then": {
+        "properties": {
+          "path_provenance": {
+            "properties": {
+              "observed": {"const": false},
+              "evidence_type": {
+                "const": "canonical_minimum_edit_alignment"
+              }
+            }
+          },
+          "ambiguity": {
+            "properties": {
+              "minimal_path_count": {"type": "integer", "minimum": 2}
+            }
+          },
+          "intermediate_sequences": {
+            "items": {
+              "properties": {"observed": {"const": false}}
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "rna_sequence": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[ACGU]+$"
+    },
+    "operation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["op", "pos", "ref", "alt"],
+      "properties": {
+        "op": {"enum": ["INS", "SUB", "DEL", "STOP"]},
+        "pos": {"type": ["integer", "null"], "minimum": 0},
+        "ref": {
+          "type": "string",
+          "pattern": "^[ACGU]*$"
+        },
+        "alt": {
+          "type": "string",
+          "pattern": "^[ACGU]*$"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {"op": {"const": "INS"}},
+            "required": ["op"]
+          },
+          "then": {
+            "properties": {
+              "pos": {"type": "integer", "minimum": 0},
+              "ref": {"const": ""},
+              "alt": {"minLength": 1}
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {"op": {"const": "DEL"}},
+            "required": ["op"]
+          },
+          "then": {
+            "properties": {
+              "pos": {"type": "integer", "minimum": 0},
+              "ref": {"minLength": 1},
+              "alt": {"const": ""}
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {"op": {"const": "SUB"}},
+            "required": ["op"]
+          },
+          "then": {
+            "properties": {
+              "pos": {"type": "integer", "minimum": 0},
+              "ref": {"minLength": 1, "maxLength": 1},
+              "alt": {"minLength": 1, "maxLength": 1}
+            },
+            "oneOf": [
+              {
+                "properties": {
+                  "ref": {"const": "A"},
+                  "alt": {"enum": ["C", "G", "U"]}
+                }
+              },
+              {
+                "properties": {
+                  "ref": {"const": "C"},
+                  "alt": {"enum": ["A", "G", "U"]}
+                }
+              },
+              {
+                "properties": {
+                  "ref": {"const": "G"},
+                  "alt": {"enum": ["A", "C", "U"]}
+                }
+              },
+              {
+                "properties": {
+                  "ref": {"const": "U"},
+                  "alt": {"enum": ["A", "C", "G"]}
+                }
+              }
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {"op": {"const": "STOP"}},
+            "required": ["op"]
+          },
+          "then": {
+            "properties": {
+              "pos": {"const": null},
+              "ref": {"const": ""},
+              "alt": {"const": ""}
+            }
+          }
+        }
+      ]
+    }
+  }
+}

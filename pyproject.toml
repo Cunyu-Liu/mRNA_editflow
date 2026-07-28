@@ -23,6 +23,7 @@ dependencies = [
     "torch>=2.1",
     "scipy>=1.10",
     "PyYAML>=6.0",
+    "jsonschema>=4.18",
     "certifi>=2024.0",
     # pytest is a default dependency so the P0-06 acceptance commands
     # (pip install -e . && pytest -q) work verbatim in a clean environment.

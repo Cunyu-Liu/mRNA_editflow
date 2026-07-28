@@ -1,0 +1,255 @@
+scope_version: "1.0.0"
+contract_id: utr_editflow_goal_v2
+goal_contract_sha256: c3dc5875868d847b8519fee40b14c43b65e4c5948dc5c3b98101ca61a5671dd5
+stage_id: D1_B0_20260728T160012Z_8862125
+status: REGISTERED_PENDING_FULL_SCOPE_D1_ACCEPTANCE
+selection_basis: >-
+  Dataset roles are determined from exact source/candidate availability,
+  endpoint and provenance recoverability, region coverage, study independence,
+  exposure, and license. Effect direction, magnitude, significance, final split
+  score, and downstream model performance are not selection inputs.
+candidate_final_labels_used_for_role_selection: false
+raw_and_canonical_storage_separated: true
+label_free_and_label_bearing_storage_separated: true
+
+datasets:
+  - dataset_id: GSE114002
+    d1_role: PRIMARY_FIVE_UTR_INTERVENTION_PLUS_ABSOLUTE_PRIOR
+    admission_status: ELIGIBLE_PENDING_FULL_BUILD
+    regions: [five_utr]
+    source_candidate_status: >-
+      Accept only rows whose mother/source anchor is exactly recoverable;
+      retain unanchored constructs as absolute_property_only or rejected,
+      never as invented interventions.
+    label_reproduction_status: PROVIDED_LABEL_AND_RAW_COUNTS_REPRODUCTION_PENDING
+    exposure_grade: PREVIOUSLY_ACCESSED_BEFORE_V2
+    license: GEO_public_per_series_terms
+    allowed_uses:
+      - measured_single_edit_grounding_after_roundtrip
+      - source_disjoint_five_utr_split
+      - absolute_variable_length_prior_without_intervention_claim
+    blocked_claims:
+      - source_paired_indel_efficacy
+      - observed_edit_trajectory
+      - untouched_external
+      - absolute_library_as_intervention
+    reason_codes: [EXACT_ANCHOR_REQUIRED, ABSOLUTE_AND_INTERVENTION_STORES_SEPARATE]
+
+  - dataset_id: GSE149487
+    d1_role: BLOCKED_CANONICAL_PAIR_MAPPING
+    admission_status: BLOCKED
+    regions: [five_utr]
+    source_candidate_status: >-
+      Local raw inputs are barcode count matrices without a verified
+      barcode-to-designed-sequence map. D0's metadata-level pair capability is
+      not sufficient for D1 canonical admission.
+    label_reproduction_status: NOT_ATTEMPTED_SOURCE_MAPPING_BLOCKED
+    exposure_grade: PREVIOUSLY_ACCESSED_BEFORE_V2
+    license: GEO_public_per_series_terms
+    allowed_uses:
+      - provenance_inventory
+      - future_recovery_after_official_design_map
+    blocked_claims:
+      - canonical_source_candidate_pair
+      - intervention_training
+      - heldout_measured_evaluation
+      - untouched_external
+    reason_codes: [MISSING_BARCODE_TO_SEQUENCE_MAP, D0_METADATA_ROLE_REVISED_BY_D1]
+
+  - dataset_id: GSE246381
+    d1_role: SECONDARY_HISTORICALLY_EXPOSED_RETROSPECTIVE_FIVE_UTR
+    admission_status: ELIGIBLE_PENDING_FULL_BUILD
+    regions: [five_utr]
+    source_candidate_status: >-
+      Supplementary RefSequence and AltSequence are exact design endpoints;
+      every admitted pair must round-trip under the canonical edit script.
+    label_reproduction_status: RETROSPECTIVE_LABELS_NOT_USED_FOR_ROLE_SELECTION
+    exposure_grade: E4_HISTORICALLY_EXPOSED_RETROSPECTIVE
+    license: GEO_public_per_series_terms
+    allowed_uses:
+      - retrospective_external_stress_test
+      - diagnostics_with_disclosed_historical_exposure
+      - sequence_pair_and_edit_grammar_audit
+    blocked_claims:
+      - training_label_use
+      - model_or_hyperparameter_selection
+      - threshold_definition
+      - untouched_or_sealed_external
+      - confirmatory_primary_evidence_alone
+    reason_codes: [HISTORICAL_LABEL_EXPOSURE_FIXED_E4]
+
+  - dataset_id: GSE145046
+    d1_role: FIVE_UTR_ABSOLUTE_DENSE_LANDSCAPE_ONLY
+    admission_status: CONDITIONAL_ABSOLUTE_ONLY
+    regions: [five_utr]
+    source_candidate_status: >-
+      Randomized 10-mer constructs are available but the exact fixed reporter
+      scaffold has not been recovered locally; no source-paired intervention is
+      admitted.
+    label_reproduction_status: PROVIDED_COUNTS_REPRODUCTION_PENDING
+    exposure_grade: PREVIOUSLY_ACCESSED_BEFORE_V2
+    license: GEO_public_per_series_terms
+    allowed_uses:
+      - absolute_property_prior_after_full_construct_recovery
+      - dense_landscape_inventory
+    blocked_claims:
+      - source_paired_intervention
+      - observed_multi_step_trajectory
+      - indel_or_variable_length_biology
+      - untouched_external
+    reason_codes: [FIXED_SCAFFOLD_NOT_RECOVERED, ABSOLUTE_NOT_INTERVENTION]
+
+  - dataset_id: GSE217518
+    d1_role: PRIMARY_FIVE_AND_THREE_UTR_INTERVENTION
+    admission_status: ELIGIBLE_PENDING_FULL_BUILD
+    regions: [five_utr, three_utr]
+    source_candidate_status: >-
+      Official-code SHdiNT_U3 and SHdiNT_U5 tables provide full Ref/Mut oligo
+      sequences. Admit only base identifiers with exactly one unique Ref and
+      one unique Mut after exact publication-grounded primer handling.
+    label_reproduction_status: OFFICIAL_PROCESSED_HALF_LIFE_DELTA_REPRODUCTION_PENDING
+    exposure_grade: PREVIOUSLY_ACCESSED_BEFORE_V2
+    license: GEO_and_official_code_public_terms_citation_required
+    allowed_uses:
+      - measured_source_candidate_grounding
+      - source_disjoint_five_and_three_utr_splits
+      - study_disjoint_three_utr_split
+      - measured_indel_pair_only_when_exact_roundtrip
+    blocked_claims:
+      - observed_edit_order
+      - untouched_external
+      - general_insertion_efficacy_without_accepted_records
+    reason_codes:
+      - UNIQUE_REF_MUT_GROUP_REQUIRED
+      - EXACT_PRIMER_MATCH_REQUIRED
+      - PAPER_115BP_VERSUS_ACTUAL_LENGTH_DISCLOSURE_REQUIRED
+
+  - dataset_id: GSE200304
+    d1_role: PRIMARY_THREE_UTR_INTERVENTION
+    admission_status: ELIGIBLE_PENDING_FULL_BUILD
+    regions: [three_utr]
+    source_candidate_status: >-
+      Use only exact WT/Mutant 201-nt pairs with unambiguous construct and
+      endpoint mapping.
+    label_reproduction_status: OFFICIAL_PROCESSED_LABEL_REPRODUCTION_PENDING
+    exposure_grade: PREVIOUSLY_ACCESSED_BEFORE_V2
+    license: GEO_public_per_series_terms
+    allowed_uses:
+      - measured_substitution_grounding
+      - source_disjoint_three_utr_split
+      - study_disjoint_three_utr_split
+      - endpoint_specific_evaluation
+    blocked_claims:
+      - observed_edit_trajectory
+      - indel_or_multi_edit_process
+      - untouched_external
+    reason_codes: [PUBLISHED_6892_VERSUS_AVAILABLE_6885_DISCLOSURE_REQUIRED]
+
+  - dataset_id: MPRAu_processed_ENCSR854RUF
+    d1_role: CONDITIONAL_THREE_UTR_SUBSTITUTION_AND_DELETION
+    admission_status: BLOCKED_PENDING_FROZEN_GRCH37_RECONSTRUCTION
+    regions: [three_utr]
+    source_candidate_status: >-
+      Processed oligo metadata provide coordinates and alleles but not complete
+      source/candidate sequences. No record is admitted until a frozen
+      GRCh37/hg19 reference and strand-aware reconstruction produce 100%
+      round-trip.
+    label_reproduction_status: NOT_ATTEMPTED_SEQUENCE_RECONSTRUCTION_BLOCKED
+    exposure_grade: PREVIOUSLY_ACCESSED_BEFORE_V2
+    license: ENCODE_unrestricted_public_release_with_citation
+    allowed_uses:
+      - provenance_inventory
+      - future_all_or_nothing_reconstruction
+    blocked_claims:
+      - partial_deletion_subset
+      - canonical_intervention_before_reference_reconstruction
+      - insertion_efficacy
+      - observed_trajectory
+      - untouched_external
+    reason_codes: [REFERENCE_SEQUENCE_NOT_FROZEN, ALL_OR_NOTHING_ROUNDTRIP_GATE]
+
+  - dataset_id: ENCSR854RUF_raw62
+    d1_role: OBSERVATIONAL_PRETRAINING_CANDIDATE_ONLY
+    admission_status: EXCLUDED_FROM_INTERVENTION_BENCHMARK
+    regions: [five_utr, three_utr]
+    source_candidate_status: NOT_QUALIFIED_FROM_RAW_READ_INVENTORY
+    label_reproduction_status: NOT_APPLICABLE_OBSERVATIONAL_RAW_READS
+    exposure_grade: DOWNLOAD_STARTED_BEFORE_V2
+    license: ENCODE_unrestricted_public_release_and_ENA_INSDC_terms
+    allowed_uses:
+      - future_observational_pretraining_candidate_after_completion
+      - provenance_and_foundation_overlap_audit
+    blocked_claims:
+      - intervention_evidence
+      - candidate_ranking
+      - automatic_primary_role
+      - untouched_external
+    reason_codes: [OBSERVATIONAL_ONLY, RAW_RECONSTRUCTION_61_OF_62_AT_PREFLIGHT]
+
+  - dataset_id: GSE330741
+    d1_role: METADATA_ONLY_UNOPENED_CANDIDATE
+    admission_status: EXCLUDED_NO_FINAL_LABEL_ACCESS
+    regions: [three_utr]
+    source_candidate_status: UNKNOWN_LABELS_UNOPENED
+    label_reproduction_status: FORBIDDEN_BEFORE_FUTURE_PREACCESS_FREEZE
+    exposure_grade: METADATA_ONLY_DISCOVERED_2026_07_28
+    license: GEO_public_per_series_terms
+    allowed_uses: [metadata_inventory]
+    blocked_claims:
+      - training
+      - primary_evidence
+      - untouched_E5_without_preaccess_freeze
+    reason_codes: [FINAL_LABELS_UNOPENED, FUTURE_FREEZE_REQUIRED]
+
+  - dataset_id: GSE291719
+    d1_role: METADATA_ONLY_UNOPENED_CANDIDATE
+    admission_status: EXCLUDED_NO_FINAL_LABEL_ACCESS
+    regions: [three_utr]
+    source_candidate_status: UNKNOWN_LABELS_UNOPENED
+    label_reproduction_status: FORBIDDEN_BEFORE_FUTURE_PREACCESS_FREEZE
+    exposure_grade: METADATA_ONLY_DISCOVERED_2026_07_28
+    license: GEO_public_per_series_terms
+    allowed_uses: [metadata_inventory]
+    blocked_claims:
+      - training
+      - primary_evidence
+      - source_paired_edit_claim
+      - untouched_E5_without_preaccess_freeze
+    reason_codes: [FINAL_LABELS_UNOPENED, FUTURE_FREEZE_REQUIRED]
+
+  - dataset_id: GSE207584
+    d1_role: OUT_OF_SCOPE_CDS_ARCHIVE
+    admission_status: EXCLUDED_CURRENT_UTR_ONLY_PHASE
+    regions: []
+    source_candidate_status: CDS_ONLY
+    label_reproduction_status: NOT_APPLICABLE_CURRENT_PHASE
+    exposure_grade: PREVIOUSLY_ACCESSED_BEFORE_V2
+    license: GEO_public_per_series_terms
+    allowed_uses: [archived_context_only]
+    blocked_claims:
+      - current_UTR_intervention
+      - current_training_or_evaluation
+    reason_codes: [CURRENT_SCOPE_EXACTLY_FIVE_AND_THREE_UTR]
+
+  - dataset_id: GSE173083
+    d1_role: OUT_OF_SCOPE_FULL_LENGTH_ARCHIVE
+    admission_status: EXCLUDED_CURRENT_UTR_ONLY_PHASE
+    regions: []
+    source_candidate_status: FULL_LENGTH_COMBINATORIAL_NOT_UTR_EDIT_PROCESS
+    label_reproduction_status: NOT_APPLICABLE_CURRENT_PHASE
+    exposure_grade: PREVIOUSLY_ACCESSED_BEFORE_V2
+    license: GEO_public_per_series_terms
+    allowed_uses: [archived_context_only]
+    blocked_claims:
+      - current_UTR_intervention
+      - current_training_or_evaluation
+      - observed_edit_trajectory
+    reason_codes: [CURRENT_SCOPE_EXACTLY_FIVE_AND_THREE_UTR]
+
+acceptance:
+  d0_candidate_rows_expected: 12
+  d1_scope_rows: 12
+  duplicate_dataset_ids_allowed: false
+  missing_dataset_roles_allowed: false
+  final_label_selection_allowed: false
+  core_scientific_question_changed: false

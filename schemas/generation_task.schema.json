@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Cunyu-Liu/mRNA_editflow/schemas/generation_task.schema.json",
+  "title": "UTR EditFlow v2 physically sealed generation task",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "task_id",
+    "track_id",
+    "region",
+    "source_id",
+    "source_sequence",
+    "endpoint",
+    "candidate_id",
+    "candidate_sequence",
+    "legal_action_types",
+    "max_edits",
+    "constraints",
+    "provenance"
+  ],
+  "properties": {
+    "schema_version": {"const": "generation_task.v2"},
+    "task_id": {"type": "string", "minLength": 1},
+    "track_id": {"type": "string", "minLength": 1},
+    "region": {"enum": ["five_utr", "three_utr"]},
+    "source_id": {"type": "string", "minLength": 1},
+    "source_sequence": {"$ref": "#/$defs/rna_sequence"},
+    "endpoint": {"type": "string", "minLength": 1},
+    "candidate_id": {"type": ["string", "null"], "minLength": 1},
+    "candidate_sequence": {
+      "oneOf": [
+        {"$ref": "#/$defs/rna_sequence"},
+        {"type": "null"}
+      ]
+    },
+    "legal_action_types": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"enum": ["INS", "SUB", "DEL", "STOP"]}
+    },
+    "max_edits": {"type": "integer", "minimum": 0},
+    "constraints": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_conditioned",
+        "sequence_alphabet",
+        "allowed_operations",
+        "min_length",
+        "max_length"
+      ],
+      "properties": {
+        "source_conditioned": {"const": true},
+        "sequence_alphabet": {"const": "RNA"},
+        "allowed_operations": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {"enum": ["INS", "SUB", "DEL", "STOP"]}
+        },
+        "min_length": {"type": "integer", "minimum": 1},
+        "max_length": {"type": "integer", "minimum": 1},
+        "forbidden_motifs": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/rna_sequence"}
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["dataset_id", "study_id", "record_id"],
+      "properties": {
+        "dataset_id": {"type": "string", "minLength": 1},
+        "study_id": {"type": "string", "minLength": 1},
+        "record_id": {"type": "string", "minLength": 1}
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {"candidate_id": {"const": null}},
+        "required": ["candidate_id"]
+      },
+      "then": {
+        "properties": {"candidate_sequence": {"const": null}}
+      },
+      "else": {
+        "properties": {
+          "candidate_sequence": {"$ref": "#/$defs/rna_sequence"}
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "rna_sequence": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[ACGU]+$"
+    }
+  }
+}

@@ -1,0 +1,5 @@
+schema_version: d1_pipeline_manifest_v2
+dataset_id: GSE173083
+status: excluded
+reason_code: EXCLUDED_OUTSIDE_UTR_ONLY_SCOPE
+read_final_labels: false

@@ -1,0 +1,5 @@
+schema_version: d1_pipeline_manifest_v2
+dataset_id: ENCSR854RUF_raw62
+status: blocked_as_intervention
+reason_code: OBSERVATIONAL_ONLY_NOT_INTERVENTION
+read_final_labels: false

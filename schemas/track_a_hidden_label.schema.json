@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Cunyu-Liu/mRNA_editflow/schemas/track_a_hidden_label.schema.json",
+  "title": "UTR EditBench v2 Track A hidden measured-label record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "candidate_id",
+    "canonical_candidate_id",
+    "record_id",
+    "dataset_id",
+    "study_id",
+    "assay_id",
+    "context_id",
+    "endpoint",
+    "pair_type",
+    "source_id",
+    "source_sequence_sha256",
+    "candidate_sequence_sha256",
+    "source_value_raw",
+    "candidate_value_raw",
+    "delta_raw",
+    "delta_normalized",
+    "effect_standard_error",
+    "replicate_count",
+    "label_provenance",
+    "canonical_record_sha256",
+    "measurement_evidence"
+  ],
+  "properties": {
+    "schema_version": {"const": "utr_track_a_hidden_label.v2"},
+    "candidate_id": {"type": "string", "minLength": 1},
+    "canonical_candidate_id": {"type": "string", "minLength": 1},
+    "record_id": {"type": "string", "minLength": 1},
+    "dataset_id": {"type": "string", "minLength": 1},
+    "study_id": {"type": "string", "minLength": 1},
+    "assay_id": {"type": "string", "minLength": 1},
+    "context_id": {"type": "string", "minLength": 1},
+    "endpoint": {"type": "string", "minLength": 1},
+    "pair_type": {
+      "enum": [
+        "true_wt_mutant",
+        "dense_measured_neighbor",
+        "measured_multi_edit_family",
+        "measured_indel_pair"
+      ]
+    },
+    "source_id": {"type": "string", "minLength": 1},
+    "source_sequence_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "candidate_sequence_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "source_value_raw": {"type": "number"},
+    "candidate_value_raw": {"type": "number"},
+    "delta_raw": {"type": "number"},
+    "delta_normalized": {"type": ["number", "null"]},
+    "effect_standard_error": {
+      "type": ["number", "null"],
+      "minimum": 0
+    },
+    "replicate_count": {
+      "type": ["integer", "null"],
+      "minimum": 0
+    },
+    "label_provenance": {
+      "type": "object",
+      "minProperties": 1
+    },
+    "canonical_record_sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "measurement_evidence": {
+      "const": "paired_finite_measured_endpoints"
+    }
+  }
+}

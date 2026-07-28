@@ -128,9 +128,65 @@
             "minItems": 1,
             "items": {"type": "string"}
           },
+          "evidence_class": {
+            "enum": [
+              "READ_ONLY_PREFLIGHT",
+              "FULL_SCOPE_DATA",
+              "FULL_SCOPE_BENCHMARK",
+              "SMOKE",
+              "FIXTURE_ONLY"
+            ]
+          },
+          "completion_policy": {
+            "enum": ["MUST_PASS_ALL", "FAIL_CLOSED_WITH_BLOCKERS"]
+          },
+          "acceptance_artifact": {"type": ["string", "null"]},
+          "acceptance_sha256": {
+            "type": ["string", "null"],
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "gate_evidence": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["predicate", "status", "evidence"],
+              "properties": {
+                "predicate": {"type": "string", "minLength": 1},
+                "status": {"enum": ["PASS", "FAIL", "UNKNOWN"]},
+                "evidence": {"type": "string", "minLength": 1}
+              }
+            }
+          },
+          "known_blockers": {
+            "type": "array",
+            "items": {"type": "string"}
+          },
+          "phase_gate": {"type": "boolean"},
           "commit_sha": {"type": ["string", "null"]},
           "report": {"type": ["string", "null"]}
-        }
+        },
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "phase_id": {"enum": ["D1", "B0"]}
+              },
+              "required": ["phase_id"]
+            },
+            "then": {
+              "required": [
+                "evidence_class",
+                "completion_policy",
+                "acceptance_artifact",
+                "acceptance_sha256",
+                "gate_evidence",
+                "known_blockers",
+                "phase_gate"
+              ]
+            }
+          }
+        ]
       }
     }
   }

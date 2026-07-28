@@ -1,0 +1,12 @@
+schema_version: d1_pipeline_manifest_v2
+dataset_id: GSE217518
+status: template_not_frozen
+region: five_utr_and_three_utr
+role: unique_ref_mut_measured_endpoint_pairs
+pair_rule: remove_terminal_(Ref|Mut)_[0-9]+
+u3_boundary_rule: trim_observed_fixed_suffix_20nt
+u5_boundary_rule: trim_observed_fixed_prefix_20nt_and_suffix_13nt
+label_reproduction: official_processed_halfLife_not_raw_read_reproduced
+trajectory_observed: false
+production_entrypoint: scripts/data/build_d1_utr_benchmark.py
+overwrite_existing_snapshot: false
