@@ -32,14 +32,16 @@ transfer, never a checksum-verified raw file.
 
 | accession | state | evidence | permitted use now |
 |---|---|---|---|
-| GSE114002 | partial; retry required | 5 files downloaded, 5 timed out, RAW.tar listed but intentionally skipped | candidate metadata only |
-| GSE173083 | direct download in progress | `.part` files retained; final manifest and checksum verification pending | candidate metadata only |
-| ENCSR854RUF | queued | accession and publication-data metadata live-verified; acquisition not yet finalized | candidate metadata only |
+| GSE114002 | direct sample repair in progress | 5 files previously downloaded; two missing samples are being resumed; RAW.tar partial moved to evidence storage | candidate metadata only |
+| GSE173083 | direct download complete | 6 files downloaded, 0 failed, 1 RAW.tar skipped; final verifier pending | direct files pending contract admission |
+| ENCSR854RUF | download in progress | accession and publication-data metadata live-verified; provider-md5 manifest pending | candidate metadata only |
 
 The authoritative per-file evidence is stored under `data/p0/<accession>/` in
-the corresponding `manifest.json` files. `docs/data/download_verification.md`
-is regenerated only after the active downloader exits. Partial files are never
-treated as raw files and are not deleted by this process.
+the corresponding `manifest.json` files. The incomplete GSE114002 archive is
+preserved at `data_registry/search_artifacts/partial_downloads/` as acquisition
+evidence, outside the raw-data root. `docs/data/download_verification.md` is
+regenerated only after the active downloaders exit. Partial files are never
+treated as raw files.
 
 ## Scientific boundary
 
