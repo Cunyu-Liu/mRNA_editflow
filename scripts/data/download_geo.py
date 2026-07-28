@@ -26,6 +26,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from download_common import (  # noqa: E402
+    _sha256_and_size,
     already_downloaded,
     http_get,
     http_head_size,
@@ -148,6 +149,24 @@ def download_geo(accession: str, dest: Path, include_archive: bool = False,
         old = old_files.get(name)
         if old and old.get("downloaded") and already_downloaded(dest_file, old):
             manifest["files"].append(old)
+            continue
+        # A prior worker can have completed the payload before its manifest
+        # write was interrupted. Recover such a file by re-hashing it instead
+        # of starting another large transfer. Size is the provider-side
+        # invariant available from GEO's filelist; the computed sha256 is then
+        # recorded as fresh manifest evidence.
+        if (dest_file.is_file() and expected_size is not None
+                and dest_file.stat().st_size == expected_size):
+            sha, nbytes = _sha256_and_size(dest_file)
+            manifest["files"].append({
+                "name": name,
+                "url": url,
+                "bytes": nbytes,
+                "sha256": sha,
+                "downloaded": True,
+                "expected_bytes": expected_size,
+                "recovered_existing": True,
+            })
             continue
         todo.append((item, url, dest_file, expected_size))
 

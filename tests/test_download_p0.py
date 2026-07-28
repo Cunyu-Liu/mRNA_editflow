@@ -91,6 +91,29 @@ def test_download_geo_skips_raw_tar_and_writes_manifest(tmp_path, monkeypatch):
     assert saved["accession"] == "GSE999999"
 
 
+def test_download_geo_recovers_size_matched_existing_file(tmp_path, monkeypatch):
+    payload = b"already here"
+    monkeypatch.setattr(
+        download_geo, "list_supplementary",
+        lambda acc: [{"name": "existing.txt", "size": len(payload), "kind": "file"}],
+    )
+    dataset = tmp_path / "GSE999999"
+    dataset.mkdir()
+    (dataset / "existing.txt").write_bytes(payload)
+
+    def should_not_download(*args, **kwargs):
+        raise AssertionError("size-matched existing file was unnecessarily downloaded")
+
+    monkeypatch.setattr(download_geo, "stream_download", should_not_download)
+    manifest = download_geo.download_geo("GSE999999", tmp_path)
+
+    record = manifest["files"][0]
+    assert record["downloaded"] is True
+    assert record["recovered_existing"] is True
+    assert record["bytes"] == len(payload)
+    assert record["sha256"] == hashlib.sha256(payload).hexdigest()
+
+
 def test_download_geo_flags_size_mismatch(tmp_path, monkeypatch):
     monkeypatch.setattr(download_geo, "list_supplementary",
                         lambda acc: download_geo.parse_filelist(FILELIST))
