@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import argparse
 import datetime as dt
+import json
 import sys
 from pathlib import Path
 
@@ -68,8 +69,16 @@ def download_encode(accession: str, dest: Path, max_bytes: int = 5 * (1 << 30),
     old_files = {}
     old_manifest = dataset_dir / "manifest.json"
     if old_manifest.is_file():
-        import json
-        old_files = {f["name"]: f for f in json.loads(old_manifest.read_text()).get("files", [])}
+        try:
+            old_files = {
+                f["name"]: f
+                for f in json.loads(old_manifest.read_text()).get("files", [])
+            }
+        except (OSError, json.JSONDecodeError, TypeError, AttributeError):
+            # A previous interrupted run may have created an empty or partial
+            # manifest. Treat it as absent and rebuild it from live ENCODE
+            # metadata; never let stale state block acquisition.
+            old_files = {}
 
     spent = 0
     for rec in related:
