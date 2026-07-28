@@ -31,7 +31,7 @@ tasks:
       - "isolated worktree required and created"
     repair_loop:
       - "if preflight evidence conflicts, pause and refresh only the affected read-only field"
-    commit_sha: null
+    commit_sha: "5c25cc30a76ce091ec6add18984376b2934757f4"
     report: "PREFLIGHT_PASSED_WITH_ISOLATION_REQUIRED"
 
   - task_id: C0-02
@@ -59,7 +59,7 @@ tasks:
       - "all legacy conflicts have an explicit archive or V2 resolution"
     repair_loop:
       - "archive or repoint the active reference, preserve original evidence, rerun strict audit"
-    commit_sha: null
+    commit_sha: "5c25cc30a76ce091ec6add18984376b2934757f4"
     report: "VERIFIED_ZERO_UNRESOLVED_ACTIVE_CONTRACT_CONFLICTS"
 
   - task_id: C0-03
@@ -93,7 +93,7 @@ tasks:
       - "formal neural CPU fallback forbidden"
     repair_loop:
       - "fix the lower-level file to match the Goal; never weaken the Goal test"
-    commit_sha: null
+    commit_sha: "5c25cc30a76ce091ec6add18984376b2934757f4"
     report: "VERIFIED_V2_AUTHORITY_CHAIN_FROZEN"
 
   - task_id: C0-04
@@ -129,7 +129,7 @@ tasks:
       - "CUDA violation produces FAILED_WITH_EVIDENCE"
     repair_loop:
       - "preserve failure output, fix code, create a new acceptance attempt"
-    commit_sha: null
+    commit_sha: "5c25cc30a76ce091ec6add18984376b2934757f4"
     report: "VERIFIED_FAIL_CLOSED_AUDIT_AND_GPU_RUN_CONTRACT"
 
   - task_id: C0-05
@@ -157,7 +157,7 @@ tasks:
       - "README names V2 as sole active contract and distinguishes current/future/evidence scope"
     repair_loop:
       - "remove ambiguous active wording and rerun the strict audit"
-    commit_sha: null
+    commit_sha: "5c25cc30a76ce091ec6add18984376b2934757f4"
     report: "VERIFIED_README_SCOPE_ALIGNED"
 
   - task_id: D0-01
@@ -185,7 +185,7 @@ tasks:
       - "every H1-H8 has a candidate path and an explicit insufficient-data path"
     repair_loop:
       - "record missing supervision and a non-deceptive alternative path; do not lower the hypothesis"
-    commit_sha: null
+    commit_sha: "5c25cc30a76ce091ec6add18984376b2934757f4"
     report: "VERIFIED_H1_H8_REQUIREMENTS_COMPLETE"
 
   - task_id: D0-02
@@ -215,7 +215,7 @@ tasks:
       - "GSE246381 and ENCODE roles match V2"
     repair_loop:
       - "set unknown where metadata are unverified; never guess or promote the claim"
-    commit_sha: null
+    commit_sha: "5c25cc30a76ce091ec6add18984376b2934757f4"
     report: "VERIFIED_CURRENT_CANDIDATE_CAPABILITY_MATRIX_COMPLETE"
 
   - task_id: D0-03
@@ -246,7 +246,7 @@ tasks:
       - "negative search conclusions retained"
     repair_loop:
       - "broaden terms and move T1 to T2 only when needed; report source failures"
-    commit_sha: null
+    commit_sha: "5c25cc30a76ce091ec6add18984376b2934757f4"
     report: "VERIFIED_BOUNDED_SEARCH_WITH_NEGATIVE_RESULTS_RETAINED"
 
   - task_id: D0-04
@@ -278,7 +278,7 @@ tasks:
       - "complete=false while any checksum/status is incomplete"
     repair_loop:
       - "retain partial evidence and rebuild inventory after the downloader completes; never synthesize a checksum"
-    commit_sha: null
+    commit_sha: "5c25cc30a76ce091ec6add18984376b2934757f4"
     report: "VERIFIED_62_ROW_INVENTORY_61_CHECKSUMS_1_EXPLICIT_MISSING_COMPLETE_FALSE"
 
   - task_id: D0-05
@@ -308,5 +308,5 @@ tasks:
       - "all D0 acceptance checks pass or phase remains SAFE_PAUSED with evidence"
     repair_loop:
       - "preserve the failed gate and continue the registered missing-data path"
-    commit_sha: null
+    commit_sha: "5c25cc30a76ce091ec6add18984376b2934757f4"
     report: "VERIFIED_CANDIDATE_ROLES_AND_MISSING_DATA_FORWARD_PATHS_FROZEN"

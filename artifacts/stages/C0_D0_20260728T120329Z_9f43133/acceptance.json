@@ -12,7 +12,7 @@
     "base_commit": "9f431332a6c922d784d61ae087f253c985ad524f",
     "branch": "c0-d0-utr-v2-20260728",
     "isolated_worktree": "/mnt/cunyuliu/mrna_editflow_goal_worktrees/c0-d0-utr-v2-20260728",
-    "implementation_commit_sha": null,
+    "implementation_commit_sha": "5c25cc30a76ce091ec6add18984376b2934757f4",
     "original_worktree_mutations_performed": 0
   },
   "phase_acceptance": {
