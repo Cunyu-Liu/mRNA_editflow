@@ -21,6 +21,7 @@ import argparse
 import datetime as dt
 import json
 import sys
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -47,12 +48,13 @@ def list_related_files(accession: str) -> list[dict]:
             "file_size": meta.get("file_size", 0),
             "md5sum": meta.get("md5sum", ""),
             "href": meta.get("href", ""),
+            "cloud_url": (meta.get("cloud_metadata") or {}).get("url", ""),
         })
     return records
 
 
 def download_encode(accession: str, dest: Path, max_bytes: int = 5 * (1 << 30),
-                    retries: int = 3) -> dict:
+                    retries: int = 3, workers: int = 1) -> dict:
     dataset_dir = dest / accession
     retrieved_at = dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds")
     related = list_related_files(accession)
@@ -81,15 +83,20 @@ def download_encode(accession: str, dest: Path, max_bytes: int = 5 * (1 << 30),
             old_files = {}
 
     spent = 0
+    ordered: list[dict | None] = []
+    planned: list[tuple[int, dict, str, str, Path]] = []
     for rec in related:
         size = rec["file_size"] or 0
         name = f"{rec['file_accession']}{_suffix(rec['href'])}"
-        url = f"{ENCODE}{rec['href']}" if rec["href"] else ""
+        # Prefer the provider's official cloud object when available. It is
+        # the same released ENCODE payload and retains the provider md5sum,
+        # but avoids routing all large raw reads through the portal endpoint.
+        url = rec.get("cloud_url") or (f"{ENCODE}{rec['href']}" if rec["href"] else "")
         if not url:
             manifest["skipped"].append({"name": name, "size": size, "reason": "no href"})
             continue
         if spent + size > max_bytes:
-            manifest["files"].append({
+            ordered.append({
                 "name": name, "url": url, "bytes": size, "sha256": "",
                 "downloaded": False, "provider_md5": rec["md5sum"],
                 "defer_reason": f"exceeds max_bytes cap ({max_bytes}); raw reads "
@@ -99,14 +106,31 @@ def download_encode(accession: str, dest: Path, max_bytes: int = 5 * (1 << 30),
         dest_file = dataset_dir / name
         old = old_files.get(name)
         if old and old.get("downloaded") and already_downloaded(dest_file, old):
-            manifest["files"].append(old)
+            ordered.append(old)
             spent += old["bytes"]
             continue
+        ordered.append(None)
+        planned.append((len(ordered) - 1, rec, name, url, dest_file))
+        spent += size
+
+    def run_one(rec: dict, name: str, url: str, dest_file: Path) -> dict:
         out = stream_download(url, dest_file, retries=retries)
         out["provider_md5"] = rec["md5sum"]
-        if out["downloaded"]:
-            spent += out["bytes"]
-        manifest["files"].append(out)
+        return out
+
+    if workers > 1 and planned:
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            futures = {
+                pool.submit(run_one, rec, name, url, dest_file): idx
+                for idx, rec, name, url, dest_file in planned
+            }
+            for future in as_completed(futures):
+                ordered[futures[future]] = future.result()
+    else:
+        for idx, rec, name, url, dest_file in planned:
+            ordered[idx] = run_one(rec, name, url, dest_file)
+
+    manifest["files"] = [record for record in ordered if record is not None]
     write_manifest(dataset_dir, manifest)
     return manifest
 
@@ -125,10 +149,12 @@ def main(argv=None) -> int:
     parser.add_argument("--dest", default=str(REPO_ROOT / "data/p0"))
     parser.add_argument("--max-bytes", type=int, default=5 * (1 << 30))
     parser.add_argument("--retries", type=int, default=3)
+    parser.add_argument("--workers", type=int, default=1)
     args = parser.parse_args(argv)
 
     manifest = download_encode(args.accession, Path(args.dest),
-                               max_bytes=args.max_bytes, retries=args.retries)
+                               max_bytes=args.max_bytes, retries=args.retries,
+                               workers=max(1, args.workers))
     n_ok = sum(1 for f in manifest["files"] if f["downloaded"])
     n_defer = sum(1 for f in manifest["files"]
                   if not f["downloaded"] and f.get("defer_reason"))

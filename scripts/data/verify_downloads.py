@@ -9,7 +9,8 @@ Checks for every manifest under ``data/p0/*/manifest.json``:
 * the file payload is not an HTML error page (first KB sniffed for
   ``<!DOCTYPE`` / ``<html`` markers);
 * ENCODE files carry the provider md5 (release pinning evidence);
-* deferred files (ENCODE size cap) are reported, not counted as failures.
+* deferred files (ENCODE size cap) are reported and keep the overall D0
+  verdict partial/non-zero; they are never treated as a completed raw release.
 
 Writes ``docs/data/download_verification.md`` and exits non-zero on failure.
 
@@ -143,7 +144,12 @@ def render_report_md(report: dict) -> str:
             lines.append(f"## FAILURES {d['accession']}")
             lines += [f"- {e}" for e in d["failed"]]
             lines.append("")
-    verdict = "PASS" if report["n_files_failed"] == 0 and report["n_files_ok"] > 0 else "FAIL"
+    if report["n_files_failed"] == 0 and report["n_deferred"] == 0 and report["n_files_ok"] > 0:
+        verdict = "PASS"
+    elif report["n_files_failed"] == 0 and report["n_deferred"] > 0:
+        verdict = "PARTIAL"
+    else:
+        verdict = "FAIL"
     lines.append(f"## Verdict: {verdict}")
     lines.append("")
     return "\n".join(lines)
@@ -163,7 +169,8 @@ def main(argv=None) -> int:
     print(render_report_md(report).splitlines()[-2])
     print(f"ok={report['n_files_ok']} failed={report['n_files_failed']} "
           f"deferred={report['n_deferred']} skipped={report['n_skipped']}")
-    return 0 if report["n_files_failed"] == 0 and report["n_files_ok"] > 0 else 1
+    complete = report["n_files_failed"] == 0 and report["n_deferred"] == 0 and report["n_files_ok"] > 0
+    return 0 if complete else 1
 
 
 if __name__ == "__main__":

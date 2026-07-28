@@ -29,24 +29,32 @@ restarted with that setting. A `.part` file is evidence of an unfinished
 transfer, never a checksum-verified raw file.
 
 For ENCSR854RUF, live publication-data metadata lists 62 files totaling about
-358 GB; the first fastq alone is 5.12 GiB. The operational D0 cap is therefore
-1 GiB. Files above the cap are recorded with provider md5 as deferred, while
-raw-read reconstruction remains an explicit repair path.
+358 GB; the first fastq alone is 5.12 GiB. The PMC Supplementary Table 1
+processed screen data and per-oligo read counts were downloaded separately and
+are recorded in `data/p0/ENCSR854RUF/processed/processed_manifest.json`.
+The 62 ENCODE raw files are still incomplete: cloud URLs, provider md5 values,
+and `.part` evidence are retained, but an incomplete transfer is never
+admitted as a raw file. Raw-read reconstruction remains an explicit repair path.
+The later parallel-download `.part` files are retained at
+`/mnt/cunyuliu/partial_evidence/ENCSR854RUF/`; because that volume is
+separate from the repository home filesystem, they are not duplicated into the
+Git-side evidence directory.
 
 ## Current acquisition states
 
 | accession | state | evidence | permitted use now |
 |---|---|---|---|
-| GSE114002 | direct sample repair in progress | 5 files previously downloaded; two missing samples are being resumed; RAW.tar partial moved to evidence storage | candidate metadata only |
-| GSE173083 | direct download complete | 6 files downloaded, 0 failed, 1 RAW.tar skipped; final verifier pending | direct files pending contract admission |
-| ENCSR854RUF | download in progress | 62 files / about 358 GB listed; 1 GiB operational cap; oversized fastq partial preserved separately | candidate metadata only |
+| GSE114002 | direct sample repair complete | 10 per-sample files downloaded; 1 RAW.tar duplicate skipped; incomplete archive retained in evidence storage | direct files pending final contract admission |
+| GSE173083 | direct download complete | 6 files downloaded, 0 failed, 1 RAW.tar skipped; two stale `.part` files moved to `/mnt/cunyuliu/partial_evidence/GSE173083/`; final verifier pending | direct files pending contract admission |
+| ENCSR854RUF | processed complete / raw incomplete | processed Supplementary Table 1 is 37,117,358 bytes and SHA-256 verified; 62 raw files remain incomplete and `.part` files are retained on the mounted acquisition volume | processed data for exploratory preprocessing; raw data not admitted |
 
 The authoritative per-file evidence is stored under `data/p0/<accession>/` in
-the corresponding `manifest.json` files. The incomplete GSE114002 archive is
-preserved at `data_registry/search_artifacts/partial_downloads/` as acquisition
-evidence, outside the raw-data root. `docs/data/download_verification.md` is
-regenerated only after the active downloaders exit. Partial files are never
-treated as raw files.
+the corresponding `manifest.json` files. Processed MPRAu evidence is stored
+under `data/p0/ENCSR854RUF/processed/processed_manifest.json`; it is explicitly
+separate from the ENCODE raw-read manifest. Incomplete GSE114002 and ENCSR854RUF
+transfers are preserved either at `data_registry/search_artifacts/partial_downloads/`
+or at `/mnt/cunyuliu/partial_evidence/`, depending on filesystem placement.
+Partial files are never treated as raw files.
 
 ## Scientific boundary
 

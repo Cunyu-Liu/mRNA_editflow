@@ -165,6 +165,7 @@ tasks:
       - "scripts/data/download_mavedb.py"
       - "scripts/data/verify_downloads.py"
       - "tests/test_verify_downloads.py"
+      - "data/p0/ENCSR854RUF/processed/processed_manifest.json"
     commands:
       - "MRNA_EDITFLOW_DOWNLOAD_TIMEOUT=3600 python scripts/data/download_geo.py --accession GSE145046 --dest data/p0 --workers 2 --retries 5 (repeat for each P0 GEO accession)"
       - "MRNA_EDITFLOW_DOWNLOAD_TIMEOUT=3600 python scripts/data/download_encode.py --accession ENCSR854RUF --dest data/p0 --max-bytes 1073741824"
@@ -172,6 +173,7 @@ tasks:
       - "python scripts/data/verify_downloads.py --root data/p0 --report-md docs/data/download_verification.md"
     outputs:
       - "data/p0/<accession>/ raw files and per-accession manifest.json"
+      - "data/p0/ENCSR854RUF/processed/MPRAu_Supplementary_Table1.xlsx and processed_manifest.json"
       - "docs/data/download_verification.md (checksums, sizes, HTML sniff, pinned accessions)"
     acceptance:
       - "raw files exist"
@@ -182,7 +184,7 @@ tasks:
     repair_loop:
       - "download failure -> retry -> alternate mirror -> archive source -> raw reconstruction -> author contact -> documented unavailable (never silently drop)"
     commit_sha: null
-    report: null
+    report: "PARTIAL: all required GEO accessions have verified direct files or manifests; MPRAu processed Supplementary Table 1 is complete (37,117,358 bytes, SHA-256 recorded), but the 62-file ENCODE raw-read release remains incomplete and is not admitted as raw data."
 
   - task_id: D0-04
     status: IN_PROGRESS
@@ -207,4 +209,4 @@ tasks:
     repair_loop:
       - "download failure != dataset removal; follow retry -> alternate mirror -> archive -> raw reconstruction -> author contact -> documented unavailable"
     commit_sha: null
-    report: null
+    report: "VALID acquisition trail: GSE114002 direct sample repair complete; GSE173083 direct files complete pending final verifier; ENCSR854RUF processed data complete but raw reads remain incomplete; all partial transfers retained and no dataset deleted."
