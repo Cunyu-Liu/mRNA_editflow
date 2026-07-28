@@ -96,7 +96,7 @@ tasks:
     report: null
 
   - task_id: D0-01
-    status: IN_PROGRESS
+    status: DONE
     dependencies: [R0-02]
     inputs:
       - "codonflow_integrated_dataset_catalog_ranked.xlsx"
@@ -108,7 +108,7 @@ tasks:
       - "scripts/data/import_excel_inventory.py"
       - "tests/test_import_excel_inventory.py"
     commands:
-      - "python scripts/data/import_excel_inventory.py --xlsx data/external_catalogs/codonflow_integrated_dataset_catalog_ranked.xlsx"
+      - "python scripts/data/import_excel_inventory.py --excel data/raw/codonflow_integrated_dataset_catalog_ranked.xlsx"
     outputs:
       - "data_registry/excel_inventory.parquet"
       - "docs/data/excel_inventory_audit.md"
@@ -119,10 +119,10 @@ tasks:
     repair_loop:
       - "unmapped row -> inspect row -> extend mapping rules with explicit justification -> re-run until zero unexplained entries"
     commit_sha: null
-    report: null
+    report: "VALID: 184 rows; 78 MODEL rows; 14 resource-class rows; 0 unexplained rows; input sha256 recorded in docs/data/excel_inventory_audit.md"
 
   - task_id: D0-02
-    status: IN_PROGRESS
+    status: DONE
     dependencies: [R0-02, D0-01]
     inputs:
       - "data_registry/excel_inventory.parquet"
@@ -137,7 +137,7 @@ tasks:
       - "data_registry/intervention_candidates.yaml"
       - "docs/data/systematic_search_results.md"
     commands:
-      - "documented protocol execution (see docs/data/systematic_search_protocol.md)"
+      - "python scripts/data/systematic_search.py"
     outputs:
       - "data_registry/intervention_candidates.yaml"
       - "docs/data/systematic_search_protocol.md"
@@ -147,7 +147,7 @@ tasks:
     repair_loop:
       - "missing metadata field -> re-check source (GEO/ENCODE/paper) -> if unavailable record explicit 'unknown' with search evidence, never guess"
     commit_sha: null
-    report: null
+    report: "VALID: 9 candidates; all required metadata fields populated; live accession/title verification passed; mirror-query errors retained as evidence"
 
   - task_id: D0-03
     status: IN_PROGRESS
@@ -166,13 +166,13 @@ tasks:
       - "scripts/data/verify_downloads.py"
       - "tests/test_verify_downloads.py"
     commands:
-      - "python scripts/data/download_geo.py --accession GSE145046 ... (per accession)"
-      - "python scripts/data/download_encode.py --accession ENCSR854RUF"
-      - "python scripts/data/download_mavedb.py --query 5utr (supplementary discovery)"
-      - "python scripts/data/verify_downloads.py --manifest data_registry/download_manifest.yaml"
+      - "python scripts/data/download_geo.py --accession GSE145046 --dest data/p0 --workers 2 --retries 5 (repeat for each P0 GEO accession)"
+      - "python scripts/data/download_encode.py --accession ENCSR854RUF --dest data/p0"
+      - "python scripts/data/download_mavedb.py --urn <verified-MaveDB-URN> --dest data/p0 (not run: no verified URN candidate adopted)"
+      - "python scripts/data/verify_downloads.py --root data/p0 --report-md docs/data/download_verification.md"
     outputs:
-      - "data/raw_public/<accession>/ raw files"
-      - "data_registry/download_manifest.yaml (checksums, sizes, pinned accessions)"
+      - "data/p0/<accession>/ raw files and per-accession manifest.json"
+      - "docs/data/download_verification.md (checksums, sizes, HTML sniff, pinned accessions)"
     acceptance:
       - "raw files exist"
       - "checksums complete"
@@ -188,7 +188,7 @@ tasks:
     status: IN_PROGRESS
     dependencies: [D0-03]
     inputs:
-      - "data_registry/download_manifest.yaml"
+      - "data/p0/*/manifest.json"
       - "data_registry/intervention_candidates.yaml"
     in_scope:
       - "missing dataset management with full acquisition trail"

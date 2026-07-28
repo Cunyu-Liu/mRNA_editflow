@@ -1,0 +1,56 @@
+registry_version: 1.0.0
+contract_id: public_intervention_contract_v1
+purpose: "Acquisition trail for incomplete or unavailable P0 raw files; no candidate is deleted."
+entries:
+  - accession: GSE114002
+    status: PARTIAL_REPAIR_REQUIRED
+    paper: "Sample et al. 2019, human 5' UTR massively parallel translation assay"
+    searched_locations:
+      - "GEO series page and GEO FTP file list"
+      - "GEO supplementary files via download_geo.py"
+      - "SRA links exposed by GEO (10 links)"
+      - "ENA links exposed by the systematic search record"
+      - "paper supplementary files and official repository search"
+    supplemental: "GEO file list exposes GSE114002_RAW.tar (listed; 431175680 bytes) and per-sample files. Five per-sample files downloaded; five timed out after retry. RAW.tar was skipped because the downloader avoids duplicate archives."
+    author_code: "No verified official author-code mirror located in this run."
+    archive: "No independent archive copy located in this run; retain GEO/SRA accession as the authoritative source."
+    author_contact_needed: true
+    raw_reads_reconstruction: "YES: 10 SRA links are recorded; reconstruct only after accession-to-sample and WT/mutant labels are audited."
+    current_substitute: "Candidate metadata only; do not admit to the primary benchmark until all required raw files or a documented reconstruction are available."
+    next_repair: "retry timed-out files -> retrieve GEO RAW.tar or alternate NCBI mirror -> reconstruct from SRA/ENA -> contact authors -> document unavailable"
+    evidence: "download log records 5 downloaded, 5 failed (curl timeout), 1 intentionally skipped archive"
+
+  - accession: GSE173083
+    status: IN_PROGRESS
+    paper: "Leppek et al. 2022, PERSIST-seq"
+    searched_locations:
+      - "GEO series page and GEO FTP file list"
+      - "GEO supplementary files via download_geo.py"
+      - "SRA links exposed by GEO (70 links)"
+      - "ENA links exposed by the systematic search record"
+      - "paper supplementary files and official repository search"
+    supplemental: "GEO supplementary files are being retried with two workers. Streaming .part files are retained until checksum verification succeeds."
+    author_code: "No verified official author-code mirror located in this run."
+    archive: "No independent archive copy located in this run; retain GEO/SRA accession as the authoritative source."
+    author_contact_needed: true
+    raw_reads_reconstruction: "YES: 70 SRA links are recorded; possible but not yet performed because the direct GEO supplementary download is still active."
+    current_substitute: "Candidate metadata only; not a primary benchmark substitute."
+    next_repair: "finish direct retry -> alternate NCBI mirror -> archive search -> reconstruct from SRA/ENA -> contact authors -> document unavailable"
+    evidence: "d0_03_download.log shows the accession in progress; verifier must be rerun after the downloader exits"
+
+  - accession: ENCSR854RUF
+    status: PENDING_DOWNLOAD
+    paper: "MPRAu: 3' UTR variant allele-specific abundance across six human cell lines"
+    searched_locations:
+      - "ENCODE publication-data API"
+      - "ENCODE file metadata and provider checksums"
+      - "paper supplementary files and official repository search"
+      - "Zenodo and Figshare mirror queries"
+    supplemental: "ENCODE publication-data metadata is verified; download is queued after the current GEO retry."
+    author_code: "No verified official author-code mirror located in this run."
+    archive: "No independent archive copy located in this run; ENCODE remains the authoritative source."
+    author_contact_needed: false
+    raw_reads_reconstruction: "UNKNOWN: decide only after ENCODE file metadata and raw-read accessions are inspected."
+    current_substitute: "Candidate metadata only; no substitute is admitted to the primary benchmark."
+    next_repair: "download with ENCODE checksum -> verify provider md5 and non-HTML payload -> inspect deferred large files -> archive/raw reconstruction if needed -> author contact if needed -> document unavailable"
+    evidence: "systematic search live-verified ENCSR854RUF; acquisition manifest is not final until download_encode.py runs"

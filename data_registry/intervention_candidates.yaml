@@ -1,0 +1,269 @@
+registry_version: 1.0.0
+contract_id: public_intervention_contract_v1
+generated_by: scripts/data/systematic_search.py
+generated_at_utc: '2026-07-28T03:57:08+00:00'
+sources_queried:
+- GEO
+- SRA
+- ENA
+- Zenodo
+- Figshare
+- ENCODE
+- MaveDB
+- paper supplementary files
+- official GitHub/Bitbucket
+candidates:
+- candidate_id: editbench_5u_natural_sample2019
+  paper: Sample et al. 2019, Human 5' UTR design and variant effect prediction from
+    a massively parallel translation assay (Nat Biotechnol)
+  accession: GSE114002
+  variant_count: 3577 natural variants (of 280k random + 35,212 truncated human 5'UTR
+    library)
+  region: 5'UTR
+  endpoint: mean_ribosome_loading
+  wt_availability: 'yes'
+  mutant_availability: 'yes'
+  raw_count_availability: partial
+  license: GEO public access; per-series terms
+  evidence_grade: A1
+  sub_benchmark: EditBench-5U-Natural
+  role: primary_benchmark_component
+  verification:
+    checked_at_utc: '2026-07-28T03:57:08+00:00'
+    offline: false
+    geo:
+      accession: GSE114002
+      status: verified
+      title: Human 5′ UTR design and variant effect prediction from a massively parallel
+        translation assay
+      n_samples: 10
+      sra_link_count: 10
+      error: ''
+      uid: '200114002'
+      gse_type: ''
+    title_keyword_match: true
+- candidate_id: editbench_5u_natural_plumage
+  paper: PLUMAGE study, prostate cancer 5'UTR somatic mutation paired WT-mutant assay
+  accession: GSE149487
+  variant_count: 545 somatic mutations / 914 synthetic full-length 5'UTR sequences
+    (WT+mutant)
+  region: 5'UTR
+  endpoint: transcript_abundance;translation_efficiency
+  wt_availability: 'yes'
+  mutant_availability: 'yes'
+  raw_count_availability: partial
+  license: GEO public access; per-series terms
+  evidence_grade: A1
+  sub_benchmark: EditBench-5U-Natural
+  role: primary_benchmark_component
+  verification:
+    checked_at_utc: '2026-07-28T03:57:08+00:00'
+    offline: false
+    geo:
+      accession: GSE149487
+      status: verified
+      title: Multiplexed functional genomic analysis of somatic 5' untranslated region
+        mutations across the spectrum of human prostate cancer (PLUMAGE)
+      n_samples: 18
+      sra_link_count: 18
+      error: ''
+      uid: '200149487'
+      gse_type: ''
+    title_keyword_match: true
+    zenodo_top3:
+    - error: 'URLError: <urlopen error [Errno 111] Connection refused>'
+    figshare_top3:
+    - error: 'HTTPError: HTTP Error 403: Forbidden'
+- candidate_id: editbench_5u_natural_ndd
+  paper: Neurodevelopmental disorder 5'UTR mutation MPRA (HEK reporter + in vivo neuronal
+    MPRA), 2025
+  accession: GSE246381
+  variant_count: 997 NDD family 5'UTR mutations (6 biological replicates)
+  region: 5'UTR
+  endpoint: transcript_abundance;80S_monosome_polysome
+  wt_availability: 'yes'
+  mutant_availability: 'yes'
+  raw_count_availability: 'yes'
+  license: GEO public access; per-series terms
+  evidence_grade: A1
+  sub_benchmark: EditBench-5U-Natural
+  role: sealed_external_test
+  verification:
+    checked_at_utc: '2026-07-28T03:57:08+00:00'
+    offline: false
+    geo:
+      accession: GSE246381
+      status: verified
+      title: A Massively Parallel Screen of 5′UTR Mutations Identifies Variants Impacting
+        Translation and Protein Production in Neurodevelopmental Disorder Genes
+      n_samples: 186
+      sra_link_count: 186
+      error: ''
+      uid: '200246381'
+      gse_type: ''
+    title_keyword_match: true
+- candidate_id: editbench_5u_dense_gse145046
+  paper: Decoding mRNA translatability and stability from 5' UTR (>1M synthetic mRNA
+    library)
+  accession: GSE145046
+  variant_count: '>1,000,000 designed 10-nt randomized variants on fixed scaffold'
+  region: 5'UTR
+  endpoint: ribosome_free_monosome_polysome;fluorescence;in_cell_half_life;in_vitro_half_life
+  wt_availability: 'yes'
+  mutant_availability: 'yes'
+  raw_count_availability: 'yes'
+  license: GEO public access; per-series terms
+  evidence_grade: A2
+  sub_benchmark: EditBench-5U-Dense
+  role: large_scale_pretraining
+  verification:
+    checked_at_utc: '2026-07-28T03:57:08+00:00'
+    offline: false
+    geo:
+      accession: GSE145046
+      status: verified
+      title: Decoding mRNA translatability and stability from 5’ UTR
+      n_samples: 30
+      sra_link_count: 30
+      error: ''
+      uid: '200145046'
+      gse_type: ''
+    title_keyword_match: true
+- candidate_id: editbench_3u_gse217518
+  paper: Disease-relevant 3'UTR variant stability time-course (HEK293T + SH-SY5Y)
+  accession: GSE217518
+  variant_count: 6555 disease-relevant UTR variants (WT+mutant allele)
+  region: 3'UTR
+  endpoint: decay_constant;half_life
+  wt_availability: 'yes'
+  mutant_availability: 'yes'
+  raw_count_availability: partial
+  license: GEO public access; per-series terms
+  evidence_grade: A1
+  sub_benchmark: EditBench-3U-Variant
+  role: cross_region_benchmark
+  verification:
+    checked_at_utc: '2026-07-28T03:57:08+00:00'
+    offline: false
+    geo:
+      accession: GSE217518
+      status: verified
+      title: Multiplexed Assays of Human Disease-relevant Mutations Reveal UTR Dimer
+        Composition as a Major Determinant of RNA Stability
+      n_samples: 36
+      sra_link_count: 36
+      error: ''
+      uid: '200217518'
+      gse_type: ''
+    title_keyword_match: true
+- candidate_id: editbench_3u_gse200304
+  paper: Prostate cancer 3'UTR MPRA (patient mutations, 201-nt WT/mutant pairs)
+  accession: GSE200304
+  variant_count: 6892 patient mutations (6892 WT/mutant 201-nt pairs)
+  region: 3'UTR
+  endpoint: translation_efficiency;steady_state_rna;mrna_stability
+  wt_availability: 'yes'
+  mutant_availability: 'yes'
+  raw_count_availability: partial
+  license: GEO public access; per-series terms
+  evidence_grade: A1
+  sub_benchmark: EditBench-3U-Variant
+  role: cross_region_benchmark
+  verification:
+    checked_at_utc: '2026-07-28T03:57:08+00:00'
+    offline: false
+    geo:
+      accession: GSE200304
+      status: verified
+      title: A genome-wide functional study of 3’UTR mutations in advanced prostate
+        cancer
+      n_samples: 55
+      sra_link_count: 0
+      error: ''
+      uid: '200200304'
+      gse_type: ''
+    title_keyword_match: true
+- candidate_id: editbench_3u_mprau
+  paper: 'MPRAu: 3''UTR variant allele-specific abundance across 6 human cell lines'
+  accession: ENCSR854RUF
+  variant_count: 12173 3'UTR variants (6 cell lines)
+  region: 3'UTR
+  endpoint: allele_specific_rna_abundance
+  wt_availability: 'yes'
+  mutant_availability: 'yes'
+  raw_count_availability: partial
+  license: ENCODE public access (CC-BY-4.0 data policy)
+  evidence_grade: A1
+  sub_benchmark: EditBench-3U-Variant
+  role: cross_region_benchmark
+  verification:
+    checked_at_utc: '2026-07-28T03:57:08+00:00'
+    offline: false
+    encode:
+      accession: ENCSR854RUF
+      status: verified
+      title: ''
+      n_files: 62
+      error: ''
+    zenodo_top3:
+    - error: 'URLError: <urlopen error [Errno 111] Connection refused>'
+    figshare_top3:
+    - error: 'HTTPError: HTTP Error 403: Forbidden'
+- candidate_id: editbench_cds_icodon
+  paper: iCodon synonymous CDS reporter library (zebrafish embryo mRNA decay)
+  accession: GSE207584
+  variant_count: 1395 synthesized synonymous CDS (955 perfect; 100 proteins x 16 designs)
+  region: CDS
+  endpoint: mrna_decay_2h_5h_8h
+  wt_availability: 'yes'
+  mutant_availability: 'yes'
+  raw_count_availability: partial
+  license: GEO public access; per-series terms
+  evidence_grade: B1
+  sub_benchmark: EditBench-CDS-Synonymous
+  role: codon_benchmark
+  verification:
+    checked_at_utc: '2026-07-28T03:57:08+00:00'
+    offline: false
+    geo:
+      accession: GSE207584
+      status: verified
+      title: Synonymous codon massive reporter library in zebrafish embryos
+      n_samples: 9
+      sra_link_count: 9
+      error: ''
+      uid: '200207584'
+      gse_type: ''
+    title_keyword_match: true
+    zenodo_top3:
+    - error: 'URLError: <urlopen error [Errno 111] Connection refused>'
+    figshare_top3:
+    - error: 'HTTPError: HTTP Error 403: Forbidden'
+- candidate_id: editbench_cds_persistseq
+  paper: Leppek et al. 2022, Combinatorial optimization of mRNA structure, stability,
+    and translation (PERSIST-seq)
+  accession: GSE173083
+  variant_count: 233 full-length mRNA constructs (24 CDS designs)
+  region: full_length
+  endpoint: ribosome_load;in_cell_stability;in_solution_stability
+  wt_availability: partial
+  mutant_availability: 'yes'
+  raw_count_availability: partial
+  license: GEO public access; per-series terms
+  evidence_grade: B2
+  sub_benchmark: EditBench-CDS-Synonymous
+  role: full_length_transfer_benchmark
+  verification:
+    checked_at_utc: '2026-07-28T03:57:08+00:00'
+    offline: false
+    geo:
+      accession: GSE173083
+      status: verified
+      title: Combinatorial optimization of mRNA structure, stability, and translation
+        for RNA-based therapeutics
+      n_samples: 70
+      sra_link_count: 70
+      error: ''
+      uid: '200173083'
+      gse_type: ''
+    title_keyword_match: true
