@@ -186,3 +186,24 @@ def test_stream_download_retry_then_success(tmp_path, monkeypatch):
     assert rec["downloaded"] and rec["bytes"] == 7
     assert rec["sha256"] == hashlib.sha256(b"payload").hexdigest()
     assert attempts["n"] == 2
+
+
+def test_stream_download_retains_partial_for_resume(tmp_path, monkeypatch):
+    attempts = {"n": 0}
+    dest = tmp_path / "f.bin"
+
+    def fake_curl(url, tmp, timeout):
+        attempts["n"] += 1
+        if attempts["n"] == 1:
+            tmp.write_bytes(b"partial")
+            raise OSError("connection reset")
+        assert tmp.read_bytes() == b"partial"
+        tmp.write_bytes(b"payload")
+
+    monkeypatch.setattr(download_common, "_curl_download", fake_curl)
+    monkeypatch.setattr(download_common.time, "sleep", lambda s: None)
+    rec = download_common.stream_download("https://x/f", dest, retries=2)
+
+    assert rec["downloaded"] is True
+    assert dest.read_bytes() == b"payload"
+    assert not dest.with_suffix(dest.suffix + ".part").exists()

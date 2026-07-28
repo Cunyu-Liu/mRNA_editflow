@@ -42,7 +42,8 @@ def _curl_download(url: str, tmp: Path, timeout: int) -> None:
     if curl is None:
         raise RuntimeError("curl not found on PATH")
     subprocess.run(
-        [curl, "-fSL", "--retry", "0", "--connect-timeout", "30",
+        [curl, "-fSL", "--retry", "0", "--continue-at", "-",
+         "--connect-timeout", "30",
          "--max-time", str(timeout), "-A", USER_AGENT, "-o", str(tmp), url],
         check=True, capture_output=True)
 
@@ -61,9 +62,9 @@ def stream_download(url: str, dest: Path, retries: int = 3,
                     timeout: int | None = None) -> dict:
     """Download ``url`` to ``dest`` while computing sha256. Returns file record.
 
-    Retries with exponential backoff. A failed attempt never leaves a partial
-    file behind (downloads go to ``dest.part`` first and are renamed). The
-    default curl wall-clock timeout is configurable through
+    Retries with exponential backoff. A failed attempt retains ``dest.part``
+    so the next curl attempt can resume it; only a checksum-verified complete
+    payload is renamed to ``dest``. The default curl wall-clock timeout is configurable through
     ``MRNA_EDITFLOW_DOWNLOAD_TIMEOUT`` so large GEO archives can be retried
     without changing the scientific data contract.
     """
@@ -80,7 +81,6 @@ def stream_download(url: str, dest: Path, retries: int = 3,
                     "sha256": sha, "downloaded": True}
         except Exception as exc:
             last_error = f"{type(exc).__name__}: {exc}"
-            tmp.unlink(missing_ok=True)
             if attempt < retries:
                 time.sleep(2 ** attempt)
     return {"name": dest.name, "url": url, "bytes": 0, "sha256": "",
