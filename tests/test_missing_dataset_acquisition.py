@@ -54,7 +54,7 @@ def test_protocol_doc_exists_and_documents_full_ladder():
 def test_registry_is_valid_yaml_with_required_keys():
     data = yaml.safe_load(REGISTRY.read_text(encoding="utf-8"))
     assert data["registry_version"]
-    assert data["contract_id"] == "public_intervention_contract_v1"
+    assert data["contract_id"] == "utr_editflow_goal_v2"
     assert isinstance(data["datasets"], list)
 
 

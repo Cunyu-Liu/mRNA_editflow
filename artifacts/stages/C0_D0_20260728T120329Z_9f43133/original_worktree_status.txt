@@ -1,0 +1,9 @@
+snapshot_utc=2026-07-28T12:03:29Z
+repo=/home/cunyuliu/mrna_editflow_goal/mrna_editflow
+branch=phase2-reliable-local-delta-20260727
+head=9f431332a6c922d784d61ae087f253c985ad524f
+dirty_diff_sha256=25d8024ef1878929b75734006bbaef5781cb5a33351a0af9f9135b035396354a
+status=1 .M S..U benchmark_v21/external_data/LinearDesign
+status=1 .M N... scripts/data/download_ena_reconstruction.py
+submodule_status=benchmark_v21/external_data/LinearDesign: ?? bin/
+protection=original worktree not modified by C0+D0 implementation

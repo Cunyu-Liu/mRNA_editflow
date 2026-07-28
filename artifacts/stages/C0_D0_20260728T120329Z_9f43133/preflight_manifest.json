@@ -1,0 +1,85 @@
+{
+  "artifact_type": "phase_preflight_manifest",
+  "phase_ids": ["C0", "D0"],
+  "task_ids": ["C0-01", "D0-04"],
+  "snapshot_utc": "2026-07-28T12:03:29Z",
+  "goal_contract": {
+    "id": "utr_editflow_goal_v2",
+    "source_path_local": "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna 最新构建合同-先做.md",
+    "repository_snapshot": "docs/contracts/mrna_latest_build_contract_v2.md",
+    "sha256": "c3dc5875868d847b8519fee40b14c43b65e4c5948dc5c3b98101ca61a5671dd5"
+  },
+  "remote": {
+    "host": "36.137.135.49",
+    "port": 22,
+    "user": "cunyuliu",
+    "hostname": "bms-18937653-012",
+    "project_root": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow",
+    "isolated_worktree": "/mnt/cunyuliu/mrna_editflow_goal_worktrees/c0-d0-utr-v2-20260728"
+  },
+  "git": {
+    "branch": "phase2-reliable-local-delta-20260727",
+    "head": "9f431332a6c922d784d61ae087f253c985ad524f",
+    "clean": false,
+    "dirty_diff_sha256": "25d8024ef1878929b75734006bbaef5781cb5a33351a0af9f9135b035396354a",
+    "protected_paths": [
+      "scripts/data/download_ena_reconstruction.py",
+      "benchmark_v21/external_data/LinearDesign"
+    ]
+  },
+  "protected_processes": [
+    {
+      "pid": 2465750,
+      "kind": "torchrun",
+      "nproc_per_node": 3,
+      "output_dir": "artifacts/c1_3/runs/pairformer_ribonanza_frozen_small_pair_fsdp_seed0_v3",
+      "action": "observe_only"
+    },
+    {
+      "pid": 2914863,
+      "kind": "ena_reconstruction_download",
+      "workers": 8,
+      "destination": "/mnt/cunyuliu/mrna_editflow_p0/ENCSR854RUF/reconstructed",
+      "action": "observe_only"
+    }
+  ],
+  "gpu": {
+    "count": 8,
+    "model": "NVIDIA A100-PCIE-40GB",
+    "driver": "580.126.09",
+    "free_mib_by_index": [971, 2346, 2044, 1588, 5253, 2058, 38221, 24868],
+    "formal_training_planned_for_c0_d0": false
+  },
+  "memory": {
+    "total_gib": 754,
+    "available_gib": 599,
+    "swap_total_gib": 1.9,
+    "swap_free_gib": 0.0
+  },
+  "disk": {
+    "home_available_tib": 5.4,
+    "mnt_available_tib": 13.0,
+    "project_data_gib": 14,
+    "project_artifacts_mib": 762,
+    "project_checkpoints_mib": 69,
+    "mrna_editflow_p0_gib": 322
+  },
+  "encode_reconstruction": {
+    "manifest": "/mnt/cunyuliu/partial_evidence/ENCSR854RUF_ena_reconstruction_manifest.json",
+    "expected_files": 62,
+    "listed_files": 61,
+    "verified": 57,
+    "download_failed_or_incomplete": 4,
+    "missing_manifest_rows": 1,
+    "expected_bytes": 378589831611,
+    "status": "IN_PROGRESS",
+    "evidence_role": "unlabeled_or_observational_pretraining_candidate"
+  },
+  "preflight_gate": {
+    "original_worktree_protected": true,
+    "unknown_processes_terminated": 0,
+    "formal_training_started": false,
+    "cuda_fallback_events": 0,
+    "result": "PREFLIGHT_PASSED_WITH_ISOLATION_REQUIRED"
+  }
+}

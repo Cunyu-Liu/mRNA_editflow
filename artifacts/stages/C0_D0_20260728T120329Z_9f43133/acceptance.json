@@ -1,0 +1,125 @@
+{
+  "artifact_type": "phase_acceptance",
+  "schema_version": "c0_d0_acceptance.v1",
+  "stage_id": "C0_D0_20260728T120329Z_9f43133",
+  "generated_at_utc": "2026-07-28T15:41:40Z",
+  "contract": {
+    "id": "utr_editflow_goal_v2",
+    "goal_sha256": "c3dc5875868d847b8519fee40b14c43b65e4c5948dc5c3b98101ca61a5671dd5",
+    "repository_snapshot": "docs/contracts/mrna_latest_build_contract_v2.md"
+  },
+  "git": {
+    "base_commit": "9f431332a6c922d784d61ae087f253c985ad524f",
+    "branch": "c0-d0-utr-v2-20260728",
+    "isolated_worktree": "/mnt/cunyuliu/mrna_editflow_goal_worktrees/c0-d0-utr-v2-20260728",
+    "implementation_commit_sha": null,
+    "original_worktree_mutations_performed": 0
+  },
+  "phase_acceptance": {
+    "C0": {
+      "status": "VERIFIED",
+      "tasks": [
+        "C0-01",
+        "C0-02",
+        "C0-03",
+        "C0-04",
+        "C0-05"
+      ],
+      "authority_chain_frozen": true,
+      "active_contract_conflict_counters_zero": true,
+      "formal_model_work_completed": false
+    },
+    "D0": {
+      "status": "VERIFIED",
+      "tasks": [
+        "D0-01",
+        "D0-02",
+        "D0-03",
+        "D0-04",
+        "D0-05"
+      ],
+      "hypotheses_with_candidate_paths": 8,
+      "dataset_capability_rows": 12,
+      "new_external_candidates_metadata_only": [
+        "GSE330741",
+        "GSE291719"
+      ],
+      "new_external_candidate_labels_accessed": false,
+      "encode_inventory": {
+        "expected_rows": 62,
+        "inventory_rows": 62,
+        "verified_rows": 61,
+        "incomplete_rows": 1,
+        "status_of_incomplete_row": "MISSING_MANIFEST_ROW",
+        "complete": false,
+        "verified_bytes": 366043904843,
+        "expected_bytes": 378589831611,
+        "builder_exit_code": 2,
+        "builder_exit_code_interpretation": "EXPECTED_FAIL_CLOSED_INCOMPLETE_STATUS",
+        "raw_acquisition_state": "IN_PROGRESS_NONBLOCKING",
+        "evidence_role": "observational_pretraining_candidate_only",
+        "admitted_as_intervention_data": false,
+        "downstream_overlap_status": "UNKNOWN_REQUIRES_D1_B0_AUDIT",
+        "full_rehash_performed": false
+      }
+    }
+  },
+  "verification": {
+    "focused_pytest": {
+      "status": "PASS",
+      "passed": 55,
+      "failed": 0,
+      "command": "python -m pytest -q tests/test_build_encode_inventory_v2.py tests/test_dataset_capability_matrix_v2.py tests/test_execution_contract_v2.py tests/test_foundation_exposure_ledger_v2.py tests/test_gpu_training_contract.py tests/test_gse246381_exposure_status.py tests/test_missing_dataset_acquisition.py tests/test_no_predictor_only_fallback.py tests/test_utr_editflow_contract_v2.py tests/test_utr_only_scope.py tests/test_validate_registry.py tests/test_download_p0.py tests/test_verify_downloads.py tests/test_verify_ena_reconstruction.py tests/test_download_encode.py"
+    },
+    "strict_active_contract_audit": {
+      "status": "PASS",
+      "active_predictor_only_fallback": 0,
+      "active_flow_optional_clauses": 0,
+      "active_cds_full_length_phase1_tasks": 0,
+      "gse246381_sealed_wording": 0,
+      "formal_neural_cpu_fallback_allowed": 0,
+      "active_contract_ambiguity": 0
+    },
+    "task_registry": {
+      "status": "PASS",
+      "tasks": 10,
+      "errors": 0
+    },
+    "git_diff_check": {
+      "status": "PASS"
+    }
+  },
+  "safety_and_execution_boundary": {
+    "existing_processes_terminated": 0,
+    "existing_training_processes_modified": 0,
+    "existing_download_processes_modified": 0,
+    "formal_training_started_in_C0_D0": false,
+    "real_gpu_training_or_validation_run_started_in_C0_D0": false,
+    "gpu_contract_test_mode": "MOCK_AND_STATIC_ONLY",
+    "cuda_fallback_events": 0,
+    "wandb_used_as_evidence": false,
+    "raw_data_copied_into_git": false,
+    "redundant_raw_sha256_rehash_performed": false
+  },
+  "scientific_boundaries": {
+    "c0_d0_is_model_success_evidence": false,
+    "c0_d0_is_scientific_efficacy_evidence": false,
+    "smoke_or_proxy_promoted_to_final_evidence": false,
+    "gse246381_role": "historically_exposed_retrospective_external_stress_test",
+    "gse246381_labels_allowed_for_new_training_or_selection": false,
+    "verified_source_paired_utr_insertion_dataset_found": false,
+    "verified_observed_multistep_utr_trajectory_dataset_found": false,
+    "constructed_endpoint_paths_count_as_observed_trajectories": false,
+    "missing_data_forward_path_retained": true,
+    "core_question_changed_due_to_missing_data": false
+  },
+  "evidence_sha256": {
+    "preflight_manifest": "575b228ac3e637d609f0bb2c0958c633531f605d84f71742419b5456e5f0296d",
+    "execution_preflight": "296278b0c172523d73f6072e0a2b42a22862de1602c53d0b8cf65fb9e9c0fb6a",
+    "encode_inventory_csv": "241c7fa5656af5b100b25f5ce1d270b74ae5f650123098bcac062f17c5a42ed7",
+    "encode_inventory_summary": "49a2f3c0a1672cb75aee7692e547f4f14806702ddbb98083bc3e408dfe89ec98",
+    "dataset_capability_matrix": "afd1f3bcb8bbd711760f0c4597a82b9606c7929e6c0b621d98581415cb2d5d28",
+    "foundation_exposure_ledger": "c4008fb5e4cc2ef097e742d68105b329a8c3ccb5413d945831dc7e257cd77dc1"
+  },
+  "result": "C0_D0_VERIFIED_WITH_NONBLOCKING_ENCODE_ACQUISITION_PARTIAL"
+}

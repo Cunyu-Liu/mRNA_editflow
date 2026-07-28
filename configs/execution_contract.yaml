@@ -1,0 +1,132 @@
+contract_id: utr_editflow_execution_v2
+parent_contract_id: utr_editflow_goal_v2
+goal_contract_sha256: c3dc5875868d847b8519fee40b14c43b65e4c5948dc5c3b98101ca61a5671dd5
+project_root: /home/cunyuliu/mrna_editflow_goal/mrna_editflow
+run_root_template: /home/cunyuliu/mrna_editflow_goal/mrna_editflow/artifacts/runs/{run_id}
+run_id_pattern: "^[a-z0-9_]+_[0-9]{8}T[0-9]{6}Z_[a-f0-9]{7,12}_s[0-9]+$"
+
+states:
+  normal:
+    - REGISTERED
+    - PREFLIGHT_PASSED
+    - GPU_VERIFIED
+    - STARTED
+    - RUNNING
+    - TRAINING_FINISHED
+    - EVALUATED
+    - VERIFIED
+    - FROZEN
+  exceptional:
+    - WAITING_FOR_GPU
+    - SAFE_PAUSED
+    - FAILED_WITH_EVIDENCE
+    - REPAIR_REQUIRED
+    - SUPERSEDED_WITH_TRACE
+
+required_artifacts:
+  - status.json
+  - run_manifest.json
+  - resolved_config.yaml
+  - command.txt
+  - provenance/goal_contract.sha256
+  - provenance/data_manifest.json
+  - provenance/split_manifest.json
+  - provenance/foundation_manifest.json
+  - provenance/exposure_ledger.json
+  - provenance/code_manifest.json
+  - git/commit.txt
+  - git/diff.patch
+  - git/diff.sha256
+  - logs/stdout.log
+  - logs/stderr.log
+  - logs/cuda_preflight.json
+  - logs/metrics.jsonl
+  - logs/system_metrics.jsonl
+  - logs/events.jsonl
+  - checkpoints/checksums.sha256
+  - summary.json
+
+formal_neural_training:
+  device: cuda
+  cpu_fallback_allowed: false
+  launcher: scripts/execution/launch_gpu_run.py
+  required_real_training_health_file: logs/cuda_health.json
+  launcher_preflight_health_file: logs/cuda_preflight.json
+  health_fields:
+    - torch_cuda_available
+    - model_parameters_on_cuda
+    - input_batch_on_cuda
+    - real_forward_on_cuda
+    - real_backward_on_cuda
+    - optimizer_update_completed
+    - max_memory_allocated_gt_zero
+    - cpu_fallback_count_zero
+  failure_state: FAILED_WITH_EVIDENCE
+
+gpu_preflight_fields:
+  - gpu_index
+  - gpu_uuid
+  - gpu_model
+  - driver
+  - cuda_version
+  - framework_version
+  - total_vram_mib
+  - used_vram_mib
+  - free_vram_mib
+  - utilization_percent
+  - existing_gpu_processes
+  - cpu_ram
+  - disk
+
+monitoring:
+  initial_health_check_after_minutes: 3
+  initial_health_check_deadline_minutes: 5
+  watchdog_interval_minutes: 5
+  semantic_check_min_interval_minutes: 30
+  long_run_semantic_check_minutes: 60
+  continuous_tail_forbidden: true
+  validation_frequency_mutation_forbidden: true
+
+stop_rules:
+  non_finite:
+    - loss
+    - gradient
+    - parameter
+    - input
+    - primary_metric
+  cuda:
+    - unavailable
+    - device_mismatch
+    - cpu_fallback
+    - unexpected_oom
+    - xid_or_ecc
+    - illegal_memory_access
+  integrity:
+    - contract_hash_changed
+    - code_hash_changed
+    - data_hash_changed
+    - split_hash_changed
+    - final_label_access_violation
+    - checkpoint_write_or_checksum_failure
+    - hard_constraint_violation
+  stall_seconds_rule: "max(900, 3 * recent_p95_step_seconds)"
+  no_progress_validation_events: 5
+  silent_retry_forbidden: true
+
+oom_repair:
+  preserve_failure_bundle: true
+  switch_to_cpu: false
+  new_run_id_required: true
+  micro_batch_may_decrease: true
+  gradient_accumulation_may_increase: true
+  effective_batch_semantics_must_be_recorded: true
+
+resource_labels:
+  - GPU_EXCLUSIVE
+  - CPU_LIGHT
+  - CPU_HEAVY
+  - IO_HEAVY
+  - READ_ONLY
+  - MUTATES_CODE
+  - MUTATES_DATA
+  - FINAL_LABEL_ACCESS

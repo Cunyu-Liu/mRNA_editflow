@@ -70,12 +70,95 @@ def verify_file(dataset_dir: Path, record: dict) -> list[str]:
     return errors
 
 
+def verify_ena_reconstruction(manifest_path: Path) -> dict:
+    """Verify a completed 62-file ENA reconstruction manifest fail closed.
+
+    This is intentionally separate from ``verify_root``: the reconstruction
+    manifest stores absolute file paths and is updated atomically by the
+    long-running downloader. Callers should invoke this only after the
+    downloader has exited, because recomputing all SHA-256 values is I/O-heavy.
+    """
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    expected_files = int(manifest.get("expected_files") or 0)
+    records = manifest.get("files")
+    if not isinstance(records, list):
+        records = []
+    failures: list[str] = []
+    ok_files: list[str] = []
+    if expected_files != 62:
+        failures.append(f"expected_files={expected_files}, required=62")
+    if len(records) != 62:
+        failures.append(f"manifest_rows={len(records)}, required=62")
+
+    accessions: set[str] = set()
+    for index, record in enumerate(records):
+        accession = str(record.get("encode_accession") or "")
+        label = accession or str(record.get("name") or f"row-{index}")
+        if not accession:
+            failures.append(f"{label}: missing encode_accession")
+        elif accession in accessions:
+            failures.append(f"{label}: duplicate encode_accession")
+        accessions.add(accession)
+        if record.get("status") != "VERIFIED":
+            failures.append(f"{label}: status={record.get('status')}")
+            continue
+        path_text = record.get("path")
+        path = Path(path_text) if path_text else None
+        if path is None or not path.is_file():
+            failures.append(f"{label}: missing file")
+            continue
+        expected_bytes = int(record.get("bytes") or 0)
+        actual_bytes = path.stat().st_size
+        if expected_bytes <= 0 or actual_bytes != expected_bytes:
+            failures.append(
+                f"{label}: size {actual_bytes} != expected {expected_bytes}"
+            )
+            continue
+        with path.open("rb") as handle:
+            if handle.read(2) != b"\x1f\x8b":
+                failures.append(f"{label}: not gzip")
+                continue
+        expected_sha = str(record.get("sha256") or "")
+        if len(expected_sha) != 64:
+            failures.append(f"{label}: missing sha256")
+            continue
+        actual_sha = sha256_of(path)
+        if actual_sha != expected_sha:
+            failures.append(f"{label}: sha256 mismatch")
+            continue
+        ok_files.append(label)
+
+    return {
+        "manifest": str(manifest_path),
+        "expected_files": 62,
+        "manifest_rows": len(records),
+        "n_files_ok": len(ok_files),
+        "n_files_failed": len(failures),
+        "failures": failures,
+        "ok": len(ok_files) == 62 and not failures,
+    }
+
+
 def verify_root(root: Path) -> dict:
     report = {"root": str(root), "datasets": [], "n_files_ok": 0,
               "n_files_failed": 0, "n_deferred": 0, "n_skipped": 0}
     for manifest_path in sorted(root.glob("*/manifest.json")):
         dataset_dir = manifest_path.parent
-        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        try:
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+            entry = {
+                "accession": dataset_dir.name,
+                "provider": "",
+                "retrieved_at_utc": "",
+                "ok": [],
+                "failed": [f"manifest unreadable: {type(exc).__name__}: {exc}"],
+                "deferred": [],
+                "skipped": [],
+            }
+            report["datasets"].append(entry)
+            report["n_files_failed"] += 1
+            continue
         entry = {
             "accession": manifest.get("accession", dataset_dir.name),
             "provider": manifest.get("provider", ""),
@@ -83,6 +166,9 @@ def verify_root(root: Path) -> dict:
             "ok": [], "failed": [], "deferred": [],
             "skipped": manifest.get("skipped", []),
         }
+        for partial_path in sorted(dataset_dir.rglob("*.part")):
+            relative_path = partial_path.relative_to(dataset_dir)
+            entry["failed"].append(f"{relative_path}: partial file remains")
         for record in manifest.get("files", []):
             if not record.get("downloaded") and record.get("defer_reason"):
                 entry["deferred"].append(record["name"])

@@ -1,0 +1,152 @@
+contract_id: utr_editflow_goal_v2
+contract_version: "2.0.0"
+status: FROZEN
+created_on: "2026-07-28"
+scientific_question_id: RQ-UTR-EDITFLOW-V2
+
+goal_document:
+  path: docs/contracts/mrna_latest_build_contract_v2.md
+  sha256: c3dc5875868d847b8519fee40b14c43b65e4c5948dc5c3b98101ca61a5671dd5
+  authority_rank: 1
+
+authority_order:
+  - docs/contracts/mrna_latest_build_contract_v2.md
+  - configs/utr_editflow_contract_v2.yaml
+  - docs/utr_editflow_scientific_question_v2.md
+  - docs/utr_editflow_claim_matrix_v2.md
+  - docs/execution/task_registry_v2.yaml
+  - frozen_run_artifacts
+
+scientific_question: >-
+  Given an existing UTR source, region, assay/context, functional endpoint and
+  target condition, can a source-conditioned, region-aware,
+  grammar-constrained continuous-time mRNA-EditFlow learn transferable legal
+  edit-trajectory distributions and generate diverse, sparse, variable-length
+  and controllable 5′UTR/3′UTR candidates?
+
+method:
+  primary: mrna_editflow
+  edit_flow_required: true
+  continuous_time_required: true
+  source_conditioning_required: true
+  dynamic_current_state_required: true
+  variable_length_required: true
+  multi_step_required: true
+  action_types: [INS, SUB, DEL, STOP]
+  hard_mask_before_normalization: true
+  predictor_role: support_only
+  predictor_only_fallback_allowed: false
+  flow_optional: false
+
+current_scope:
+  regions: [five_utr, three_utr]
+  cds: forbidden
+  full_length: forbidden
+  new_wetlab: forbidden
+  edit_budgets: [1, 3, 5]
+  formal_training_in_c0_d0: forbidden
+
+future_scope:
+  cds_requires_new_contract: true
+  full_length_requires_new_contract: true
+  user_approval_required: true
+
+foundation_strategy:
+  reuse_first: true
+  order:
+    - frozen_embedding_or_cache
+    - adapter_or_lora
+    - last_block_partial_unfreeze
+    - full_finetune_if_justified
+  from_scratch_role: control_or_ablation
+  exposure_ledger_required: true
+  exposure_ledger: data_registry/foundation_exposure_ledger_v2.yaml
+
+gse246381:
+  historically_exposed: true
+  role: historically_exposed_retrospective_external_stress_test
+  evidence_grade: E4
+  confirmatory_primary: false
+  labels_allowed_for_new_training: false
+  labels_allowed_for_new_hyperparameter_selection: false
+  error_analysis_allowed: true
+  untouched_wording_allowed: false
+
+encode_62_raw_files:
+  role: unlabeled_or_observational_pretraining_candidate
+  intervention_evidence: false
+  download_may_continue_during_c0_d0: true
+  completion_requires_checksums_and_metadata: true
+
+evidence:
+  grades: [E0, E1, E2, E3, E4, E5, E6]
+  current_max_expected: [E3, E4, E5]
+  prospective_e6_in_scope: false
+  open_support_language: [predicted, computational, proxy-supported]
+  engineering_pass_is_scientific_pass: false
+
+training:
+  formal_neural_device: cuda
+  cpu_fallback_allowed: false
+  gpu_preflight_required: true
+  cuda_real_forward_required: true
+  cuda_real_backward_required: true
+  cuda_optimizer_update_required: true
+  cuda_memory_allocation_required: true
+  failure_state_on_cuda_violation: FAILED_WITH_EVIDENCE
+  formal_seeds: 5
+
+universal_gates:
+  hard_validity: 1.0
+  test_label_tuning_events: 0
+  unexplained_train_test_overlap: 0
+  formal_training_cpu_fallbacks: 0
+  missing_formal_seeds: 0
+  final_evaluator_used_for_guidance: false
+
+evaluation_tracks:
+  closed_measured_pool:
+    labels_hidden_until_freeze: true
+    metric_name: observed_pool_normalized_regret
+  heldout_generative:
+    proves_functional_improvement: false
+  open_legal_generation:
+    measured_improvement_language_allowed: false
+
+monitoring:
+  initial_health_check_minutes: [3, 5]
+  watchdog_interval_minutes: 5
+  semantic_check_min_interval_minutes: 30
+  long_run_semantic_check_minutes: 60
+  continuous_tail_forbidden: true
+  stall_rule: max_15_minutes_or_3x_recent_p95_step
+  no_progress_validation_events: 5
+
+artifact_contract:
+  run_root: artifacts/runs
+  local_jsonl_required: true
+  manifest_required: true
+  checkpoint_required: true
+  wandb_sufficient_alone: false
+  schema: schemas/run_manifest.schema.json
+
+phases:
+  C0:
+    title: contract_and_reality_alignment
+    dependencies: []
+    formal_training_allowed: false
+  D0:
+    title: scientific_question_driven_data_discovery
+    dependencies: [C0]
+    final_label_selection_allowed: false
+  D1:
+    locked_until: [C0, D0]
+  EF0:
+    locked_until: [C0, D0, D1, B0, FM0]
+  GP0:
+    locked_until: [EF0]
+
+change_control:
+  decision_log: docs/decision_log.md
+  user_approval_required_for_core_science: true
+  silent_history_rewrite_forbidden: true

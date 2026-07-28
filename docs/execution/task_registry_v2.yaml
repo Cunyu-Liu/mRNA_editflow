@@ -1,0 +1,312 @@
+registry_version: "2.0.0"
+contract_id: utr_editflow_goal_v2
+goal_contract_sha256: c3dc5875868d847b8519fee40b14c43b65e4c5948dc5c3b98101ca61a5671dd5
+
+tasks:
+  - task_id: C0-01
+    phase_id: C0
+    status: VERIFIED
+    hypotheses: []
+    dependencies: []
+    dependency_gates: []
+    scientific_service: "Establish the real repository/resource state before changing the active UTR Edit Flow contract."
+    forbidden_actions:
+      - "modify or stop existing training/download processes"
+      - "overwrite the dirty worktree"
+    inputs:
+      - "/home/cunyuliu/mrna_editflow_goal/mrna_editflow"
+      - "mrna_latest_build_contract_v2.md"
+    resource_labels: [READ_ONLY]
+    conflict_keys: [original_worktree, running_c1_3_training, encsr854ruf_download]
+    allowed_parallel_tasks: []
+    files:
+      - "artifacts/stages/C0_D0_20260728T120329Z_9f43133/preflight_manifest.json"
+    commands:
+      - "read-only SSH preflight"
+    outputs:
+      - "preflight manifest and protected-state hashes"
+    acceptance:
+      - "repo/branch/HEAD/dirty state/processes/GPU/RAM/disk/data/artifacts recorded"
+      - "no existing process stopped"
+      - "isolated worktree required and created"
+    repair_loop:
+      - "if preflight evidence conflicts, pause and refresh only the affected read-only field"
+    commit_sha: null
+    report: "PREFLIGHT_PASSED_WITH_ISOLATION_REQUIRED"
+
+  - task_id: C0-02
+    phase_id: C0
+    status: VERIFIED
+    hypotheses: [H1, H2, H3, H4, H5, H6, H7, H8]
+    dependencies: [C0-01]
+    dependency_gates: [C0-01:VERIFIED]
+    scientific_service: "Identify and remove active authority conflicts that would reduce Edit Flow to predictor support."
+    forbidden_actions:
+      - "delete legacy history or results"
+      - "rewrite historical logs"
+    inputs:
+      - "preflight contract and reference inventory"
+    resource_labels: [CPU_LIGHT, MUTATES_CODE]
+    conflict_keys: [active_contract_files]
+    allowed_parallel_tasks: [D0-03]
+    files:
+      - "docs/contracts/v2_contract_conflict_matrix.md"
+    commands:
+      - "python scripts/contracts/audit_active_contracts.py --strict"
+    outputs:
+      - "conflict matrix"
+    acceptance:
+      - "all legacy conflicts have an explicit archive or V2 resolution"
+    repair_loop:
+      - "archive or repoint the active reference, preserve original evidence, rerun strict audit"
+    commit_sha: null
+    report: "VERIFIED_ZERO_UNRESOLVED_ACTIVE_CONTRACT_CONFLICTS"
+
+  - task_id: C0-03
+    phase_id: C0
+    status: VERIFIED
+    hypotheses: [H1, H2, H3, H4, H5, H6, H7, H8]
+    dependencies: [C0-02]
+    dependency_gates: [C0-02:VERIFIED]
+    scientific_service: "Freeze the machine-readable UTR-only generative Edit Flow authority chain and evidence language."
+    forbidden_actions:
+      - "make Flow optional"
+      - "activate CDS or full-length Phase-1 tasks"
+      - "permit new wet lab"
+    inputs:
+      - "docs/contracts/mrna_latest_build_contract_v2.md"
+    resource_labels: [CPU_LIGHT, MUTATES_CODE]
+    conflict_keys: [active_contract_files, README.md]
+    allowed_parallel_tasks: [D0-03]
+    files:
+      - "configs/utr_editflow_contract_v2.yaml"
+      - "docs/utr_editflow_scientific_question_v2.md"
+      - "docs/utr_editflow_claim_matrix_v2.md"
+      - "docs/decision_log.md"
+    commands:
+      - "pytest -q tests/test_utr_editflow_contract_v2.py"
+    outputs:
+      - "V2 authority chain"
+    acceptance:
+      - "Flow mandatory, current scope exactly five_utr and three_utr"
+      - "GSE246381 historically exposed and no training/selection labels"
+      - "formal neural CPU fallback forbidden"
+    repair_loop:
+      - "fix the lower-level file to match the Goal; never weaken the Goal test"
+    commit_sha: null
+    report: "VERIFIED_V2_AUTHORITY_CHAIN_FROZEN"
+
+  - task_id: C0-04
+    phase_id: C0
+    status: VERIFIED
+    hypotheses: [H2, H3]
+    dependencies: [C0-03]
+    dependency_gates: [C0-03:VERIFIED]
+    scientific_service: "Make contract drift and CUDA fallback fail closed before later model work."
+    forbidden_actions:
+      - "launch formal training in C0"
+      - "accept W&B as sole run evidence"
+    inputs:
+      - "V2 contract files"
+    resource_labels: [CPU_LIGHT, MUTATES_CODE]
+    conflict_keys: [contract_audit, execution_infrastructure]
+    allowed_parallel_tasks: [D0-01, D0-02, D0-03]
+    files:
+      - "scripts/contracts/audit_active_contracts.py"
+      - "configs/execution_contract.yaml"
+      - "data_registry/foundation_exposure_ledger_v2.yaml"
+      - "schemas/run_manifest.schema.json"
+      - "scripts/execution/preflight.py"
+      - "scripts/execution/launch_gpu_run.py"
+      - "scripts/execution/monitor_run.py"
+    commands:
+      - "python scripts/contracts/audit_active_contracts.py --strict"
+      - "pytest -q tests/test_gpu_training_contract.py tests/test_execution_contract_v2.py"
+    outputs:
+      - "strict audit and frozen execution infrastructure"
+    acceptance:
+      - "six active-contract conflict counters are zero"
+      - "CUDA violation produces FAILED_WITH_EVIDENCE"
+    repair_loop:
+      - "preserve failure output, fix code, create a new acceptance attempt"
+    commit_sha: null
+    report: "VERIFIED_FAIL_CLOSED_AUDIT_AND_GPU_RUN_CONTRACT"
+
+  - task_id: C0-05
+    phase_id: C0
+    status: VERIFIED
+    hypotheses: []
+    dependencies: [C0-03, C0-04]
+    dependency_gates: [C0-03:VERIFIED, C0-04:VERIFIED]
+    scientific_service: "Expose one unambiguous current scope and evidence boundary to all contributors."
+    forbidden_actions:
+      - "present historical full-length/CDS work as current Phase-1 scope"
+      - "present C0 as model completion"
+    inputs:
+      - "V2 authority chain"
+    resource_labels: [CPU_LIGHT, MUTATES_CODE]
+    conflict_keys: [README.md]
+    allowed_parallel_tasks: [D0-01, D0-02, D0-03, D0-04, D0-05]
+    files:
+      - "README.md"
+    commands:
+      - "python scripts/contracts/audit_active_contracts.py --strict"
+    outputs:
+      - "V2-aligned README"
+    acceptance:
+      - "README names V2 as sole active contract and distinguishes current/future/evidence scope"
+    repair_loop:
+      - "remove ambiguous active wording and rerun the strict audit"
+    commit_sha: null
+    report: "VERIFIED_README_SCOPE_ALIGNED"
+
+  - task_id: D0-01
+    phase_id: D0
+    status: VERIFIED
+    hypotheses: [H1, H2, H3, H4, H5, H6, H7, H8]
+    dependencies: [C0-03]
+    dependency_gates: [C0-03:VERIFIED]
+    scientific_service: "Map each falsifiable hypothesis to minimum and ideal supervision before choosing data."
+    forbidden_actions:
+      - "change a hypothesis to fit available data"
+      - "treat a proxy as measured evidence"
+    inputs:
+      - "docs/utr_editflow_scientific_question_v2.md"
+    resource_labels: [CPU_LIGHT, MUTATES_CODE]
+    conflict_keys: [hypothesis_data_matrix]
+    allowed_parallel_tasks: [C0-04, C0-05, D0-03, D0-04]
+    files:
+      - "docs/data/hypothesis_data_requirement_matrix.md"
+    commands:
+      - "pytest -q tests/test_dataset_capability_matrix_v2.py"
+    outputs:
+      - "H1-H8 supervision/claim matrix"
+    acceptance:
+      - "every H1-H8 has a candidate path and an explicit insufficient-data path"
+    repair_loop:
+      - "record missing supervision and a non-deceptive alternative path; do not lower the hypothesis"
+    commit_sha: null
+    report: "VERIFIED_H1_H8_REQUIREMENTS_COMPLETE"
+
+  - task_id: D0-02
+    phase_id: D0
+    status: VERIFIED
+    hypotheses: [H1, H2, H3, H4, H5, H6, H7, H8]
+    dependencies: [D0-01]
+    dependency_gates: [D0-01:VERIFIED]
+    scientific_service: "Qualify each candidate dataset by measurable capabilities, exposure and forbidden claims."
+    forbidden_actions:
+      - "promote a dataset because it is large"
+      - "use final labels to choose a dataset version"
+    inputs:
+      - "archived V1 candidate inventory"
+      - "official repository and publication metadata"
+    resource_labels: [CPU_LIGHT, MUTATES_CODE]
+    conflict_keys: [dataset_capability_matrix]
+    allowed_parallel_tasks: [C0-04, C0-05, D0-04]
+    files:
+      - "data_registry/dataset_capability_matrix.csv"
+    commands:
+      - "pytest -q tests/test_dataset_capability_matrix_v2.py"
+    outputs:
+      - "V2 dataset capability matrix"
+    acceptance:
+      - "all current candidates have allowed tasks and forbidden claims"
+      - "GSE246381 and ENCODE roles match V2"
+    repair_loop:
+      - "set unknown where metadata are unverified; never guess or promote the claim"
+    commit_sha: null
+    report: "VERIFIED_CURRENT_CANDIDATE_CAPABILITY_MATRIX_COMPLETE"
+
+  - task_id: D0-03
+    phase_id: D0
+    status: VERIFIED
+    hypotheses: [H1, H2, H4, H5, H6]
+    dependencies: [D0-01]
+    dependency_gates: [D0-01:VERIFIED]
+    scientific_service: "Search specifically for measured UTR indel, variable-length, multi-edit and new external evidence."
+    forbidden_actions:
+      - "access per-candidate final labels of a new external candidate"
+      - "describe constructed paths as observed trajectories"
+    inputs:
+      - "GEO, SRA, ENA, ENCODE, MaveDB, PubMed/CrossRef/OpenAlex, official supplementary repositories"
+    resource_labels: [READ_ONLY, CPU_LIGHT]
+    conflict_keys: [academic_api_queries]
+    allowed_parallel_tasks: [C0-02, C0-03, C0-04, C0-05, D0-04]
+    files:
+      - "docs/data/systematic_search_protocol.md"
+      - "docs/data/systematic_search_results.md"
+    commands:
+      - "metadata-only multi-source search"
+    outputs:
+      - "deduplicated source-qualified search evidence"
+    acceptance:
+      - "indel/multi-edit existence conclusion explicit"
+      - "new external candidate status explicit"
+      - "negative search conclusions retained"
+    repair_loop:
+      - "broaden terms and move T1 to T2 only when needed; report source failures"
+    commit_sha: null
+    report: "VERIFIED_BOUNDED_SEARCH_WITH_NEGATIVE_RESULTS_RETAINED"
+
+  - task_id: D0-04
+    phase_id: D0
+    status: VERIFIED
+    hypotheses: [H6, H7]
+    dependencies: [C0-01]
+    dependency_gates: [C0-01:VERIFIED]
+    scientific_service: "Inventory ENCSR854RUF raw files without disturbing the active reconstruction."
+    forbidden_actions:
+      - "stop, restart or poll the downloader at high frequency"
+      - "admit partial files as complete"
+      - "upgrade observational reads to intervention labels"
+    inputs:
+      - "/mnt/cunyuliu/partial_evidence/ENCSR854RUF_ena_reconstruction_manifest.json"
+    resource_labels: [READ_ONLY, CPU_LIGHT]
+    conflict_keys: [encsr854ruf_download]
+    allowed_parallel_tasks: [C0-02, C0-03, C0-04, C0-05, D0-01, D0-02, D0-03]
+    files:
+      - "scripts/data/build_encode_inventory_v2.py"
+      - "data_registry/encode_62_inventory_v2.csv"
+      - "data_registry/encode_62_inventory_v2_summary.json"
+    commands:
+      - "python scripts/data/build_encode_inventory_v2.py --manifest <external> --output-csv data_registry/encode_62_inventory_v2.csv --output-summary data_registry/encode_62_inventory_v2_summary.json"
+    outputs:
+      - "checksum/status inventory and honest completion summary"
+    acceptance:
+      - "62 expected rows represented, including explicit missing rows"
+      - "complete=false while any checksum/status is incomplete"
+    repair_loop:
+      - "retain partial evidence and rebuild inventory after the downloader completes; never synthesize a checksum"
+    commit_sha: null
+    report: "VERIFIED_62_ROW_INVENTORY_61_CHECKSUMS_1_EXPLICIT_MISSING_COMPLETE_FALSE"
+
+  - task_id: D0-05
+    phase_id: D0
+    status: VERIFIED
+    hypotheses: [H1, H2, H4, H5, H6, H7, H8]
+    dependencies: [D0-02, D0-03, D0-04]
+    dependency_gates: [D0-02:VERIFIED, D0-03:VERIFIED, D0-04:VERIFIED]
+    scientific_service: "Freeze current-candidate roles and missing-data forward paths without changing the core question."
+    forbidden_actions:
+      - "declare C0/D0 model or scientific success"
+      - "hide missing indel, insertion or multi-edit evidence"
+    inputs:
+      - "hypothesis and dataset capability matrices"
+      - "systematic search results"
+      - "ENCODE inventory"
+    resource_labels: [CPU_LIGHT, MUTATES_CODE]
+    conflict_keys: [d0_acceptance]
+    allowed_parallel_tasks: []
+    files:
+      - "artifacts/stages/C0_D0_20260728T120329Z_9f43133/acceptance.json"
+    commands:
+      - "targeted pytest and strict audits"
+    outputs:
+      - "C0/D0 acceptance record"
+    acceptance:
+      - "all D0 acceptance checks pass or phase remains SAFE_PAUSED with evidence"
+    repair_loop:
+      - "preserve the failed gate and continue the registered missing-data path"
+    commit_sha: null
+    report: "VERIFIED_CANDIDATE_ROLES_AND_MISSING_DATA_FORWARD_PATHS_FROZEN"

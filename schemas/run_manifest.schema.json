@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Cunyu-Liu/mRNA_editflow/schemas/run_manifest.schema.json",
+  "title": "mRNA-EditFlow V2 run manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "run_id",
+    "task_id",
+    "phase_id",
+    "parent_run_id",
+    "hypotheses",
+    "evidence_level",
+    "paper_eligibility",
+    "goal_contract",
+    "scientific_question_id",
+    "git_commit",
+    "git_diff_sha256",
+    "command",
+    "resolved_config_sha256",
+    "data_manifest_sha256",
+    "split_manifest_sha256",
+    "foundation_checkpoint",
+    "foundation_checkpoint_sha256",
+    "foundation_license",
+    "exposure_ledger_version",
+    "seed",
+    "gpu",
+    "start_time_utc",
+    "end_time_utc",
+    "process",
+    "exit_code",
+    "stop_reason",
+    "artifact_checksums",
+    "known_deviations"
+  ],
+  "properties": {
+    "run_id": {"type": "string"},
+    "task_id": {"type": "string"},
+    "phase_id": {"type": "string"},
+    "parent_run_id": {"type": ["string", "null"]},
+    "hypotheses": {
+      "type": "array",
+      "items": {"type": "string", "pattern": "^H[1-8]$"}
+    },
+    "evidence_level": {"enum": ["E0", "E1", "E2", "E3", "E4", "E5", "E6"]},
+    "paper_eligibility": {"type": "boolean"},
+    "goal_contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "sha256"],
+      "properties": {
+        "id": {"const": "utr_editflow_goal_v2"},
+        "sha256": {
+          "const": "c3dc5875868d847b8519fee40b14c43b65e4c5948dc5c3b98101ca61a5671dd5"
+        }
+      }
+    },
+    "scientific_question_id": {"const": "RQ-UTR-EDITFLOW-V2"},
+    "git_commit": {"type": "string"},
+    "git_diff_sha256": {"type": ["string", "null"]},
+    "command": {"type": "array", "items": {"type": "string"}},
+    "resolved_config_sha256": {"type": "string"},
+    "data_manifest_sha256": {"type": "string"},
+    "split_manifest_sha256": {"type": "string"},
+    "foundation_checkpoint": {"type": ["string", "null"]},
+    "foundation_checkpoint_sha256": {"type": ["string", "null"]},
+    "foundation_license": {"type": ["string", "null"]},
+    "exposure_ledger_version": {"type": "string"},
+    "seed": {"type": "integer"},
+    "gpu": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["index", "uuid", "model", "driver", "framework", "max_memory_allocated"],
+      "properties": {
+        "index": {"type": "integer"},
+        "uuid": {"type": "string"},
+        "model": {"type": "string"},
+        "driver": {"type": "string"},
+        "framework": {"type": "string"},
+        "max_memory_allocated": {"type": "integer", "minimum": 1}
+      }
+    },
+    "start_time_utc": {"type": "string"},
+    "end_time_utc": {"type": ["string", "null"]},
+    "process": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pid", "tmux_or_job_id"],
+      "properties": {
+        "pid": {"type": ["integer", "null"]},
+        "tmux_or_job_id": {"type": ["string", "null"]}
+      }
+    },
+    "exit_code": {"type": ["integer", "null"]},
+    "stop_reason": {"type": ["string", "null"]},
+    "artifact_checksums": {"type": "object"},
+    "known_deviations": {"type": "array", "items": {"type": "string"}}
+  }
+}

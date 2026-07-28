@@ -1,0 +1,98 @@
+ledger_version: "2.0.0"
+contract_id: utr_editflow_goal_v2
+frozen_at_utc: "2026-07-28T13:28:35Z"
+phase: C0_D0
+selection_status: NO_FOUNDATION_SELECTED
+weights_downloaded_in_c0_d0: false
+default_sequence_exposure_language: "label-disjoint status unknown; sequence exposure unknown"
+claim_gate: "No foundation-model value or independence claim before FM0 checkpoint, license, corpus and overlap audit."
+
+required_fields:
+  - model
+  - checkpoint
+  - checkpoint_sha256
+  - license
+  - pretraining_corpus_known
+  - pretraining_corpus_version
+  - sequence_overlap_status
+  - downstream_label_overlap_status
+  - published_task_head_used
+  - allowed_claim
+
+candidates:
+  - model: mRNABERT
+    checkpoint: null
+    checkpoint_sha256: null
+    license: UNKNOWN_PENDING_FM0_OFFICIAL_AUDIT
+    pretraining_corpus_known: UNKNOWN_PENDING_FM0
+    pretraining_corpus_version: null
+    sequence_overlap_status: UNKNOWN
+    downstream_label_overlap_status: UNKNOWN
+    published_task_head_used: false
+    allowed_claim: NONE_BEFORE_FM0_AUDIT
+
+  - model: UTR-LM
+    checkpoint: null
+    checkpoint_sha256: null
+    license: UNKNOWN_PENDING_FM0_OFFICIAL_AUDIT
+    pretraining_corpus_known: UNKNOWN_PENDING_FM0
+    pretraining_corpus_version: null
+    sequence_overlap_status: UNKNOWN
+    downstream_label_overlap_status: UNKNOWN
+    published_task_head_used: false
+    allowed_claim: NONE_BEFORE_FM0_AUDIT
+
+  - model: 3UTRBERT
+    checkpoint: null
+    checkpoint_sha256: null
+    license: UNKNOWN_PENDING_FM0_OFFICIAL_AUDIT
+    pretraining_corpus_known: UNKNOWN_PENDING_FM0
+    pretraining_corpus_version: null
+    sequence_overlap_status: UNKNOWN
+    downstream_label_overlap_status: UNKNOWN
+    published_task_head_used: false
+    allowed_claim: NONE_BEFORE_FM0_AUDIT
+
+  - model: Orthrus
+    checkpoint: null
+    checkpoint_sha256: null
+    license: UNKNOWN_PENDING_FM0_OFFICIAL_AUDIT
+    pretraining_corpus_known: UNKNOWN_PENDING_FM0
+    pretraining_corpus_version: null
+    sequence_overlap_status: UNKNOWN
+    downstream_label_overlap_status: UNKNOWN
+    published_task_head_used: false
+    allowed_claim: NONE_BEFORE_FM0_AUDIT
+
+  - model: RNA-FM
+    checkpoint: null
+    checkpoint_sha256: null
+    license: UNKNOWN_PENDING_FM0_OFFICIAL_AUDIT
+    pretraining_corpus_known: UNKNOWN_PENDING_FM0
+    pretraining_corpus_version: null
+    sequence_overlap_status: UNKNOWN
+    downstream_label_overlap_status: UNKNOWN
+    published_task_head_used: false
+    allowed_claim: OPTIONAL_CANDIDATE_NONE_BEFORE_FM0_AUDIT
+
+  - model: RiNALMo
+    checkpoint: null
+    checkpoint_sha256: null
+    license: UNKNOWN_PENDING_FM0_OFFICIAL_AUDIT
+    pretraining_corpus_known: UNKNOWN_PENDING_FM0
+    pretraining_corpus_version: null
+    sequence_overlap_status: UNKNOWN
+    downstream_label_overlap_status: UNKNOWN
+    published_task_head_used: false
+    allowed_claim: OPTIONAL_CANDIDATE_NONE_BEFORE_FM0_AUDIT
+
+  - model: mRNA-LM
+    checkpoint: null
+    checkpoint_sha256: null
+    license: UNKNOWN_PENDING_FM0_OFFICIAL_AUDIT
+    pretraining_corpus_known: UNKNOWN_PENDING_FM0
+    pretraining_corpus_version: null
+    sequence_overlap_status: UNKNOWN
+    downstream_label_overlap_status: UNKNOWN
+    published_task_head_used: false
+    allowed_claim: OPTIONAL_CANDIDATE_NONE_BEFORE_FM0_AUDIT

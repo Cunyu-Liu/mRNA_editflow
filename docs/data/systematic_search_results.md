@@ -1,41 +1,132 @@
-# Systematic Search Results (D0-02)
+# D0 systematic search results — UTR intervention evidence
 
-- generated: 2026-07-28T03:57:08+00:00
-- protocol: `docs/data/systematic_search_protocol.md`
-- candidates yaml: `data_registry/intervention_candidates.yaml`
-- sources queried: GEO, SRA, ENA, Zenodo, Figshare, ENCODE, MaveDB, paper supplementary files, official GitHub/Bitbucket
+Generated: 2026-07-28
 
-## Per-source query log
+Contract: `utr_editflow_goal_v2`
 
-| source | method | result |
-|---|---|---|
-| GEO | eutils esearch/esummary `[ACCN]` | 8/8 series verified |
-| SRA | eutils elink gds->sra | raw-read links recorded per series |
-| ENCODE | REST `/publication-data/{acc}/` | 1/1 verified |
-| ENA | SRA mirror of GEO-linked runs | covered via SRA links |
-| Zenodo | REST `/api/records?q=` | supplementary mirror search, top-3 recorded |
-| Figshare | REST `/v2/articles/search` | supplementary mirror search, top-3 recorded |
-| MaveDB | API v1 is URN-only (no free-text); no UTR score set adopted at D0 | documented |
-| paper supplementary | cited variant counts from publications | recorded in yaml |
-| official GitHub/Bitbucket | referenced by protocol; no extra candidates adopted | documented |
+Protocol: `docs/data/systematic_search_protocol.md`
 
-## Candidates
+## Source log
 
-| candidate_id | accession | region | evidence_grade | endpoint | variant_count | geo/encode status |
-|---|---|---|---|---|---|---|
-| editbench_5u_natural_sample2019 | GSE114002 | 5'UTR | A1 | mean_ribosome_loading | 3577 natural variants (of 280k random + 35,212 truncated human 5'UTR library) | verified |
-| editbench_5u_natural_plumage | GSE149487 | 5'UTR | A1 | transcript_abundance;translation_efficiency | 545 somatic mutations / 914 synthetic full-length 5'UTR sequences (WT+mutant) | verified |
-| editbench_5u_natural_ndd | GSE246381 | 5'UTR | A1 | transcript_abundance;80S_monosome_polysome | 997 NDD family 5'UTR mutations (6 biological replicates) | verified |
-| editbench_5u_dense_gse145046 | GSE145046 | 5'UTR | A2 | ribosome_free_monosome_polysome;fluorescence;in_cell_half_life;in_vitro_half_life | >1,000,000 designed 10-nt randomized variants on fixed scaffold | verified |
-| editbench_3u_gse217518 | GSE217518 | 3'UTR | A1 | decay_constant;half_life | 6555 disease-relevant UTR variants (WT+mutant allele) | verified |
-| editbench_3u_gse200304 | GSE200304 | 3'UTR | A1 | translation_efficiency;steady_state_rna;mrna_stability | 6892 patient mutations (6892 WT/mutant 201-nt pairs) | verified |
-| editbench_3u_mprau | ENCSR854RUF | 3'UTR | A1 | allele_specific_rna_abundance | 12173 3'UTR variants (6 cell lines) | verified |
-| editbench_cds_icodon | GSE207584 | CDS | B1 | mrna_decay_2h_5h_8h | 1395 synthesized synonymous CDS (955 perfect; 100 proteins x 16 designs) | verified |
-| editbench_cds_persistseq | GSE173083 | full_length | B2 | ribosome_load;in_cell_stability;in_solution_stability | 233 full-length mRNA constructs (24 CDS designs) | verified |
+| Source | Result |
+|---|---|
+| PubMed/PMC and publisher primary text | MPRAu design verified; variable-length 5′UTR library designs verified |
+| GEO/SRA | Existing accessions rechecked at metadata level; GSE330741 and GSE291719 discovered and retained metadata-only |
+| ENCODE/ENA | ENCSR854RUF identity and 62-file raw inventory path retained; active reconstruction not disturbed |
+| OpenAlex | Broad title/abstract fallback completed; no additional verified source-paired UTR insertion dataset adopted |
+| MaveDB/Zenodo/Figshare/official code | No additional candidate was promoted without primary identity and required source/candidate metadata |
 
-## Acceptance
+## Qualified findings
 
-| check | status | detail |
-|---|---|---|
-| all 10 required fields non-empty on every candidate | PASS | 9 candidates, 0 with schema errors |
-| all accessions live-verified with title match | PASS | failed: none |
+### Measured UTR indel
+
+MPRAu is measured 3′UTR evidence and includes non-overlapping 5-bp deletion
+tiling across tested 3′UTRs around a subset of 80 tamVars, in addition to
+single-nucleotide changes. This qualifies as measured deletion coverage for
+that design only. It does not establish insertion coverage or a measured
+multi-step trajectory. The processed MPRAu measurement role is kept separate
+from the 62 reconstructed raw-read assets: the raw inventory alone is only an
+observational/pretraining candidate and cannot be promoted to intervention
+evidence.
+
+Primary record:
+<https://pmc.ncbi.nlm.nih.gov/articles/PMC8487971/>
+
+### Variable-length libraries
+
+Sample et al. measured random 25-nt and 50-nt 5′UTR libraries and designed
+5′UTRs. These data can support an absolute sequence prior or measured
+landscape analysis. They do not, without a recoverable explicit source for
+each candidate, establish source-paired insertion/deletion transitions.
+
+Primary record:
+<https://pubmed.ncbi.nlm.nih.gov/31267113/>
+
+A later 5′UTR study also reports fixed 25-nt and 50-nt random libraries and
+designed sequences. It is relevant to absolute design and foundation reuse,
+not evidence of observed edit trajectories.
+
+Primary record:
+<https://pmc.ncbi.nlm.nih.gov/articles/PMC11189900/>
+
+An earlier zebrafish 3′UTR MPRA measured 90,000 fixed 110-nt sequences
+covering annotated UTR fragments. This is a large absolute library and useful
+context for sequence priors, but it is neither variable-length nor a
+source-paired insertion/deletion trajectory dataset.
+
+Primary record:
+<https://pmc.ncbi.nlm.nih.gov/articles/PMC5994907/>
+
+### Dense and combinatorial endpoints
+
+GSE145046 provides a dense designed 5′UTR landscape on a fixed scaffold.
+Changed positions may be represented by constructed canonical edit scripts,
+but the endpoint library does not observe the order of biological edits.
+GSE200304 and the other paired natural-variant sets ground measured
+substitutions, not general INS/DEL trajectories.
+
+### New external candidate
+
+GSE330741 became public on 2026-05-17. Its official metadata describes
+single-nucleotide MPRA tiling of the Glt1 and Sparc 3′UTRs, with deletion
+validation and 163 samples. In V2 only metadata were inspected. The dataset is
+therefore a candidate for a future pre-access freeze/exposure audit, not yet an
+untouched E5 set; no candidate-level final labels were accessed in D0.
+
+Official record:
+<https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE330741>
+
+GSE200303/GSE200304 remains an already known measured 3′UTR substitution
+resource (6,892 reported mutations), not new indel evidence.
+
+Official record:
+<https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE200303>
+
+GSE291719 became public on 2025-05-14. Official metadata describes an
+approximately 500-member synthetic 3′UTR reporter library across HEK, CD4+
+T-cell and CD8+ T-cell contexts, with 27 samples and public raw/normalized
+count files. D0 did not access those candidate-level count tables. The
+accession is retained as a metadata-only conditional-context candidate pending
+source/template reconstruction, license/exposure audit and a label-free freeze;
+it is not source-paired INS/DEL evidence and is not yet E5.
+
+Official record:
+<https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE291719>
+
+## License and reuse audit
+
+- ENCODE states that publicly released data are available for unrestricted
+  use; scientific citation remains required practice:
+  <https://www.encodeproject.org/about/data-use-policy/>.
+- ENA/INSDC states free and unrestricted access and redistribution/use of
+  public sequence records, with credit to the original submission:
+  <https://www.ebi.ac.uk/ena/browser/about/policies>.
+- NCBI places no restriction on GEO data use or distribution, while warning
+  that submitters may retain patent, copyright or other rights:
+  <https://www.ncbi.nlm.nih.gov/geo/info/disclaimer.html>.
+
+The matrix therefore records repository policy and residual submitter-rights
+uncertainty rather than assigning an unsupported blanket Creative Commons
+license.
+
+## Negative findings retained
+
+- No verified source-paired UTR insertion dataset was found in this D0 search.
+- No candidate was verified to provide an experimentally observed multi-step
+  UTR edit trajectory.
+- Variable-length absolute libraries do not by themselves resolve edit-script
+  direction, source identity or transition order.
+- The GSE330741 role remains unresolved until a D1 exposure audit and
+  label-free freeze; public availability alone does not prove untouched status.
+- GSE291719 is a synthetic absolute library pending source/template audit, not
+  a verified edit-pair or insertion dataset.
+- Source and API coverage is not proof of universal absence. These are bounded
+  D0 findings and systematic searching remains an allowed forward path.
+
+## Forward path
+
+Retain measured single-edit grounding; use absolute variable-length data only
+for a separately labelled prior; use dense endpoint landscapes only with path
+ambiguity recorded; validate unsupported grammar operations synthetically; and
+continue metadata-first external discovery. Corresponding biological claims
+remain blocked rather than being replaced by predictor-only claims.
