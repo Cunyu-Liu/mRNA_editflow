@@ -103,13 +103,46 @@ def test_stage_manifest_schema_is_valid_json_schema():
     assert schema["properties"]["workload_class"]["const"] == (
         "NON_NEURAL_DATA_BENCHMARK"
     )
-    assert schema["properties"]["execution_boundary"]["properties"][
-        "formal_neural_activity_started"
-    ]["const"] is False
+    assert (
+        schema["properties"]["execution_boundary"]["properties"][
+            "formal_neural_activity_started"
+        ]["const"]
+        is False
+    )
 
 
 def test_valid_non_neural_stage_manifest_passes():
     assert validate(_manifest()) == []
+
+
+def test_schema_rejects_invalid_time_remote_and_extra_fields():
+    manifest = _manifest()
+    manifest["captured_at_utc"] = "2026-07-28T16:00:12"
+    manifest["remote"] = {}
+    manifest["unsealed_assertion"] = True
+    errors = validate(manifest)
+    assert any(
+        "schema:captured_at_utc" in error and "date-time" in error for error in errors
+    )
+    assert any(error.startswith("schema:remote") for error in errors)
+    assert any(
+        "schema:<root>" in error and "Additional properties" in error
+        for error in errors
+    )
+
+
+def test_stage_manifest_allows_auditable_retry_suffix():
+    manifest = _manifest()
+    manifest["stage_id"] += "_A2"
+    assert validate(manifest) == []
+
+
+def test_stage_id_rejects_invalid_calendar_timestamp():
+    manifest = _manifest()
+    manifest["stage_id"] = "D1_B0_20261340T250061Z_8862125"
+    assert any(
+        "invalid UTC calendar timestamp" in error for error in validate(manifest)
+    )
 
 
 def test_dirty_original_requires_diff_hash():

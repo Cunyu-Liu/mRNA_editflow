@@ -24,7 +24,7 @@
     "schema_version": {"const": "utr_stage_manifest.v1"},
     "stage_id": {
       "type": "string",
-      "pattern": "^D1_B0_[0-9]{8}T[0-9]{6}Z_[0-9a-f]{7}$"
+      "pattern": "^D1_B0_[0-9]{8}T[0-9]{6}Z_[0-9a-f]{7}(?:_A[0-9]+)?$"
     },
     "phase_ids": {
       "const": ["D1", "B0"]

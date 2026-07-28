@@ -146,6 +146,29 @@ def _prelaunch_file_binding(
     """
     repository = Path(str(git_snapshot.get("repository", "")))
     head = str(git_snapshot.get("head", ""))
+    explicit_binding = git_snapshot.get("artifacts", {}).get("explicit_prelaunch_files")
+    explicit_manifest: dict[str, Any] = {}
+    if isinstance(explicit_binding, Mapping):
+        passed, actual = _artifact_binding_valid(audit_root, explicit_binding)
+        if passed:
+            explicit_manifest = _load_json(Path(actual["path"]))
+    explicit_entries = {
+        str(item.get("path")): item
+        for item in explicit_manifest.get("entries", [])
+        if isinstance(item, Mapping)
+    }
+    if repository_relative_path in explicit_entries:
+        entry = explicit_entries[repository_relative_path]
+        checks = {
+            "captured_as_explicit_regular_file": (entry.get("kind") == "regular_file"),
+            "bytes_match": entry.get("bytes") == expected_bytes,
+            "sha256_match": entry.get("sha256") == expected_sha256,
+        }
+        return {
+            "passed": all(checks.values()),
+            "source": "explicit_prelaunch_file_manifest",
+            "checks": checks,
+        }
     untracked_binding = git_snapshot.get("artifacts", {}).get(
         "untracked_content_hashes"
     )
@@ -1264,7 +1287,14 @@ def _validate_builder_audit(
         evidence = audit["evidence"]
         verified_evidence: dict[str, Any] = {}
         evidence_valid = True
-        for name in ("invocation", "completion", "process", "stdout", "stderr"):
+        for name in (
+            "invocation",
+            "completion",
+            "process",
+            "stdout",
+            "stderr",
+            "explicit_prelaunch_recheck",
+        ):
             binding = evidence.get(name)
             if not isinstance(binding, Mapping):
                 evidence_valid = False
@@ -1280,6 +1310,9 @@ def _validate_builder_audit(
         invocation = _load_json(audit_root / "invocation.json")
         completion = _load_json(audit_root / "completion.json")
         process = _load_json(audit_root / "process.json")
+        explicit_prelaunch_recheck = _load_json(
+            audit_root / "git/explicit_prelaunch_recheck.json"
+        )
         stdout_bytes = (audit_root / "logs/stdout.log").read_bytes()
         stderr_bytes = (audit_root / "logs/stderr.log").read_bytes()
         build_manifest = _load_json(build_manifest_path)
@@ -1293,6 +1326,8 @@ def _validate_builder_audit(
     git_snapshot = audit.get("git_prelaunch_snapshot")
     git_evidence_valid = isinstance(git_snapshot, Mapping)
     verified_git_evidence: dict[str, Any] = {}
+    explicit_prelaunch_manifest_valid = False
+    index_flags_manifest_valid = False
     if isinstance(git_snapshot, Mapping):
         git_artifacts = dict(git_snapshot.get("artifacts", {}))
         git_artifacts["snapshot_manifest"] = git_snapshot.get("snapshot_manifest")
@@ -1302,6 +1337,8 @@ def _validate_builder_audit(
             "diff_head_binary",
             "untracked_paths_z",
             "untracked_content_hashes",
+            "explicit_prelaunch_files",
+            "index_flags",
             "snapshot_manifest",
         ):
             binding = git_artifacts.get(name)
@@ -1316,6 +1353,52 @@ def _validate_builder_audit(
                 "declared": dict(binding),
                 "actual": actual,
             }
+        explicit_verification = verified_git_evidence.get(
+            "explicit_prelaunch_files", {}
+        )
+        index_verification = verified_git_evidence.get("index_flags", {})
+        try:
+            explicit_manifest = _load_json(
+                Path(str(explicit_verification["actual"]["path"]))
+            )
+            explicit_entries = explicit_manifest.get("entries")
+            explicit_prelaunch_manifest_valid = (
+                explicit_verification.get("passed") is True
+                and explicit_manifest.get("schema_version")
+                == "git_explicit_prelaunch_files.v1"
+                and isinstance(explicit_entries, list)
+                and explicit_manifest.get("entry_count") == len(explicit_entries)
+                and all(
+                    isinstance(item, Mapping)
+                    and item.get("kind") == "regular_file"
+                    and isinstance(item.get("path"), str)
+                    and isinstance(item.get("bytes"), int)
+                    and item.get("bytes") >= 0
+                    and bool(re.fullmatch(r"[0-9a-f]{64}", str(item.get("sha256", ""))))
+                    for item in explicit_entries
+                )
+            )
+        except (KeyError, OSError, TypeError, ValueError):
+            explicit_prelaunch_manifest_valid = False
+        try:
+            index_manifest = _load_json(Path(str(index_verification["actual"]["path"])))
+            index_entries = index_manifest.get("entries")
+            index_flags_manifest_valid = (
+                index_verification.get("passed") is True
+                and index_manifest.get("schema_version") == "git_index_flags.v1"
+                and isinstance(index_entries, list)
+                and index_manifest.get("entry_count") == len(index_entries)
+                and index_manifest.get("all_entries_normal") is True
+                and index_manifest.get("unsafe_entries") == []
+                and all(
+                    isinstance(item, Mapping)
+                    and item.get("tag") == "H"
+                    and item.get("safe_normal_index_entry") is True
+                    for item in index_entries
+                )
+            )
+        except (KeyError, OSError, TypeError, ValueError):
+            index_flags_manifest_valid = False
 
     argv = audit.get("argv")
     argv_paths: dict[str, str] = {}
@@ -1411,6 +1494,37 @@ def _validate_builder_audit(
             "only_exact_child_pid_may_receive_interrupt": True,
         },
         "git_prelaunch_snapshot_present": isinstance(git_snapshot, Mapping),
+        "git_prelaunch_snapshot_before_command": (
+            isinstance(git_snapshot, Mapping)
+            and git_snapshot.get("captured_before_command") is True
+        ),
+        "git_index_flags_safe": (
+            isinstance(git_snapshot, Mapping)
+            and git_snapshot.get("index_flags_safe") is True
+        ),
+        "git_explicit_prelaunch_manifest_semantics": (
+            explicit_prelaunch_manifest_valid
+        ),
+        "git_index_flags_manifest_semantics": index_flags_manifest_valid,
+        "git_explicit_prelaunch_recheck_passed": (
+            explicit_prelaunch_recheck.get("schema_version")
+            == "git_explicit_prelaunch_recheck.v1"
+            and explicit_prelaunch_recheck.get(
+                "checked_immediately_before_child_launch"
+            )
+            is True
+            and explicit_prelaunch_recheck.get("matches") is True
+            and explicit_prelaunch_recheck.get("captured_manifest_sha256")
+            == (
+                git_snapshot.get("artifacts", {})
+                .get("explicit_prelaunch_files", {})
+                .get("sha256")
+                if isinstance(git_snapshot, Mapping)
+                else None
+            )
+            and explicit_prelaunch_recheck.get("observed_manifest_sha256")
+            == explicit_prelaunch_recheck.get("captured_manifest_sha256")
+        ),
         "git_prelaunch_artifacts_path_bytes_sha_recursive": git_evidence_valid,
     }
     return {

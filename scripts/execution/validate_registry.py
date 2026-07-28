@@ -24,8 +24,12 @@ import yaml
 
 try:
     from scripts.execution.acceptance_semantics import validate_phase_acceptance
+    from scripts.data.validate_d1_canonical_snapshot import validate_snapshot
 except ModuleNotFoundError:  # direct script execution from scripts/execution
     from acceptance_semantics import validate_phase_acceptance
+
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
+    from scripts.data.validate_d1_canonical_snapshot import validate_snapshot
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SCHEMA_PATH = REPO_ROOT / "schemas" / "task_registry.schema.json"
@@ -39,20 +43,53 @@ RELEASE_PROFILES = {
 PHASE_GATE_TASKS = {"D1-08", "B0-05"}
 
 REQUIRED_TASK_FIELDS = [
-    "task_id", "phase_id", "status", "hypotheses", "dependencies",
-    "dependency_gates", "scientific_service", "forbidden_actions", "inputs",
-    "resource_labels", "conflict_keys", "allowed_parallel_tasks", "files",
-    "commands", "outputs", "acceptance", "repair_loop", "commit_sha", "report",
+    "task_id",
+    "phase_id",
+    "status",
+    "hypotheses",
+    "dependencies",
+    "dependency_gates",
+    "scientific_service",
+    "forbidden_actions",
+    "inputs",
+    "resource_labels",
+    "conflict_keys",
+    "allowed_parallel_tasks",
+    "files",
+    "commands",
+    "outputs",
+    "acceptance",
+    "repair_loop",
+    "commit_sha",
+    "report",
 ]
 GOVERNED_TASK_FIELDS = [
-    "evidence_class", "completion_policy", "acceptance_artifact",
-    "acceptance_sha256", "gate_evidence", "known_blockers", "phase_gate",
+    "evidence_class",
+    "completion_policy",
+    "acceptance_artifact",
+    "acceptance_sha256",
+    "gate_evidence",
+    "known_blockers",
+    "phase_gate",
 ]
-ALLOWED_TASK_FIELDS = set(REQUIRED_TASK_FIELDS) | set(GOVERNED_TASK_FIELDS)
+SNAPSHOT_TASK_FIELDS = {"snapshot_artifact", "snapshot_sha256"}
+ALLOWED_TASK_FIELDS = (
+    set(REQUIRED_TASK_FIELDS) | set(GOVERNED_TASK_FIELDS) | SNAPSHOT_TASK_FIELDS
+)
 LIST_FIELDS = [
-    "hypotheses", "dependencies", "dependency_gates", "forbidden_actions",
-    "inputs", "resource_labels", "conflict_keys", "allowed_parallel_tasks",
-    "files", "commands", "outputs", "acceptance", "repair_loop",
+    "hypotheses",
+    "dependencies",
+    "dependency_gates",
+    "forbidden_actions",
+    "inputs",
+    "resource_labels",
+    "conflict_keys",
+    "allowed_parallel_tasks",
+    "files",
+    "commands",
+    "outputs",
+    "acceptance",
+    "repair_loop",
 ]
 EVIDENCE_CLASSES = {
     "READ_ONLY_PREFLIGHT",
@@ -111,9 +148,17 @@ def validate(
         return ["registry must be a mapping"]
     if schema_statuses is None:
         schema_statuses = [
-            "PLANNED", "REGISTERED", "PREFLIGHT_PASSED", "RUNNING",
-            "WAITING_FOR_GPU", "SAFE_PAUSED", "FAILED_WITH_EVIDENCE",
-            "REPAIR_REQUIRED", "SUPERSEDED_WITH_TRACE", "VERIFIED", "FROZEN",
+            "PLANNED",
+            "REGISTERED",
+            "PREFLIGHT_PASSED",
+            "RUNNING",
+            "WAITING_FOR_GPU",
+            "SAFE_PAUSED",
+            "FAILED_WITH_EVIDENCE",
+            "REPAIR_REQUIRED",
+            "SUPERSEDED_WITH_TRACE",
+            "VERIFIED",
+            "FROZEN",
         ]
 
     for key in ("registry_version", "contract_id", "goal_contract_sha256", "tasks"):
@@ -157,12 +202,20 @@ def validate(
         for field in LIST_FIELDS:
             if field in task:
                 val = task[field]
-                if not isinstance(val, list) or not all(isinstance(x, str) for x in val):
+                if not isinstance(val, list) or not all(
+                    isinstance(x, str) for x in val
+                ):
                     errors.append(f"{tid}: field '{field}' must be a list of strings")
         for field in ("commit_sha", "report"):
-            if field in task and task[field] is not None and not isinstance(task[field], str):
+            if (
+                field in task
+                and task[field] is not None
+                and not isinstance(task[field], str)
+            ):
                 errors.append(f"{tid}: field '{field}' must be a string or null")
-        if "scientific_service" in task and not isinstance(task["scientific_service"], str):
+        if "scientific_service" in task and not isinstance(
+            task["scientific_service"], str
+        ):
             errors.append(f"{tid}: scientific_service must be a string")
         hypotheses = task.get("hypotheses", [])
         if any(h not in {f"H{i}" for i in range(1, 9)} for h in hypotheses):
@@ -174,13 +227,9 @@ def validate(
         if phase in {"D1", "B0"}:
             for field in GOVERNED_TASK_FIELDS:
                 if field not in task:
-                    errors.append(
-                        f"{tid}: D1/B0 task missing required field '{field}'"
-                    )
+                    errors.append(f"{tid}: D1/B0 task missing required field '{field}'")
             if "FINAL_LABEL_ACCESS" in labels:
-                errors.append(
-                    f"{tid}: FINAL_LABEL_ACCESS is forbidden for D1/B0 tasks"
-                )
+                errors.append(f"{tid}: FINAL_LABEL_ACCESS is forbidden for D1/B0 tasks")
             if task.get("evidence_class") not in EVIDENCE_CLASSES:
                 errors.append(f"{tid}: invalid evidence_class")
             if task.get("completion_policy") not in COMPLETION_POLICIES:
@@ -234,10 +283,8 @@ def validate(
                     ),
                     None,
                 )
-                if (
-                    other is not None
-                    and task.get("task_id")
-                    not in other.get("allowed_parallel_tasks", [])
+                if other is not None and task.get("task_id") not in other.get(
+                    "allowed_parallel_tasks", []
                 ):
                     errors.append(
                         f"{task.get('task_id')}: allowed_parallel_tasks must be "
@@ -249,7 +296,10 @@ def validate(
         if isinstance(task, dict) and task.get("task_id")
     }
     for task in registry["tasks"]:
-        if not isinstance(task, dict) or task.get("status") not in {"VERIFIED", "FROZEN"}:
+        if not isinstance(task, dict) or task.get("status") not in {
+            "VERIFIED",
+            "FROZEN",
+        }:
             continue
         for dependency in task.get("dependencies", []):
             if status_by_task.get(dependency) not in {"VERIFIED", "FROZEN"}:
@@ -318,7 +368,9 @@ def _validate_final_evidence(
     evidence = task.get("gate_evidence")
     if not evidence:
         errors.append(f"{tid}: final D1/B0 task requires gate_evidence")
-    elif any(item.get("status") != "PASS" for item in evidence if isinstance(item, dict)):
+    elif any(
+        item.get("status") != "PASS" for item in evidence if isinstance(item, dict)
+    ):
         errors.append(f"{tid}: all final gate_evidence predicates must PASS")
 
     artifact = task.get("acceptance_artifact")
@@ -363,6 +415,14 @@ def _validate_final_evidence(
             f"{tid}: acceptance_artifact is not the hash-matching blob in commit_sha"
         )
 
+    if tid == "D1-08":
+        _validate_d1_snapshot_binding(
+            task,
+            root,
+            str(commit_sha),
+            errors,
+        )
+
     publication = [
         item
         for item in task.get("gate_evidence", [])
@@ -386,9 +446,40 @@ def _validate_final_evidence(
             str(commit_sha),
             expected_remote_url=expected_remote_url,
         ):
-            errors.append(
-                f"{tid}: published remote ref does not contain commit_sha"
-            )
+            errors.append(f"{tid}: published remote ref does not contain commit_sha")
+
+
+def _validate_d1_snapshot_binding(
+    task: dict,
+    root: Path,
+    commit_sha: str,
+    errors: list[str],
+) -> None:
+    tid = str(task.get("task_id") or "D1-08")
+    artifact = task.get("snapshot_artifact")
+    digest = task.get("snapshot_sha256")
+    canonical_path = "data/d1/manifests/d1_canonical_snapshot.json"
+    if artifact != canonical_path:
+        errors.append(f"{tid}: snapshot_artifact must equal {canonical_path}")
+        return
+    if not isinstance(digest, str) or not SHA256_PATTERN.fullmatch(digest):
+        errors.append(f"{tid}: snapshot_sha256 must be a full SHA-256")
+        return
+    path = root / canonical_path
+    if not path.is_file():
+        errors.append(f"{tid}: canonical snapshot artifact is missing")
+        return
+    if hashlib.sha256(path.read_bytes()).hexdigest() != digest:
+        errors.append(f"{tid}: canonical snapshot live sha256 mismatch")
+        return
+    semantic_errors = validate_snapshot(path, repo_root=root)
+    for error in semantic_errors:
+        errors.append(f"{tid}: canonical snapshot invalid: {error}")
+    committed = _git_blob(root, commit_sha, canonical_path)
+    if committed is None or hashlib.sha256(committed).hexdigest() != digest:
+        errors.append(
+            f"{tid}: canonical snapshot is not the hash-matching blob " "in commit_sha"
+        )
 
 
 def _git_command(root: Path, *args: str) -> subprocess.CompletedProcess[bytes]:
@@ -414,8 +505,7 @@ def _git_commit_exists(root: Path, commit_sha: str) -> bool:
     if not COMMIT_SHA_PATTERN.fullmatch(commit_sha):
         return False
     return (
-        _git_command(root, "cat-file", "-e", f"{commit_sha}^{{commit}}").returncode
-        == 0
+        _git_command(root, "cat-file", "-e", f"{commit_sha}^{{commit}}").returncode == 0
     )
 
 
@@ -449,8 +539,10 @@ def _remote_ref_oid(root: Path, remote_name: str, ref: str) -> str | None:
     matches: list[str] = []
     for line in lines:
         fields = line.split("\t")
-        if len(fields) == 2 and fields[1] == ref and COMMIT_SHA_PATTERN.fullmatch(
-            fields[0]
+        if (
+            len(fields) == 2
+            and fields[1] == ref
+            and COMMIT_SHA_PATTERN.fullmatch(fields[0])
         ):
             matches.append(fields[0])
     return matches[0] if len(matches) == 1 else None
@@ -556,9 +648,7 @@ def _validate_phase_anchors(
         phase = task.get("phase_id")
         lineage = ancestors(tid)
         if phase == "D1" and not {"C0-05", "D0-05"} <= lineage:
-            errors.append(
-                f"{tid}: D1 lineage must descend from C0-05 and D0-05"
-            )
+            errors.append(f"{tid}: D1 lineage must descend from C0-05 and D0-05")
         if phase == "B0":
             if "D1-08" not in lineage:
                 errors.append(f"{tid}: B0 lineage must descend from D1-08")
@@ -571,17 +661,30 @@ def _validate_phase_anchors(
                     or task.get("status") not in inactive_statuses
                 ):
                     errors.append(f"{tid}: B0 requires D1-08:FROZEN")
+        if tid == "D1-08" and task.get("status") == "FROZEN":
+            for required in (
+                "D1-01",
+                "D1-02",
+                "D1-03",
+                "D1-04",
+                "D1-05",
+                "D1-06",
+                "D1-07",
+            ):
+                if status_by_task.get(required) not in FINAL_STATUSES:
+                    errors.append(f"D1-08: cannot freeze before {required}:VERIFIED")
         if tid == "B0-05" and task.get("status") == "FROZEN":
             for required in ("B0-01", "B0-02", "B0-03", "B0-04"):
                 if status_by_task.get(required) not in FINAL_STATUSES:
-                    errors.append(
-                        f"B0-05: cannot freeze before {required}:VERIFIED"
-                    )
+                    errors.append(f"B0-05: cannot freeze before {required}:VERIFIED")
 
 
 def _has_cycle(tasks: list[dict]) -> bool:
-    deps = {t.get("task_id"): [d for d in t.get("dependencies", [])]
-            for t in tasks if isinstance(t, dict) and t.get("task_id")}
+    deps = {
+        t.get("task_id"): [d for d in t.get("dependencies", [])]
+        for t in tasks
+        if isinstance(t, dict) and t.get("task_id")
+    }
     WHITE, GRAY, BLACK = 0, 1, 2
     color = {k: WHITE for k in deps}
 

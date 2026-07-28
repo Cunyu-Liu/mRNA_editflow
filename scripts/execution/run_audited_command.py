@@ -12,6 +12,7 @@ import hashlib
 import json
 import os
 import platform
+import re
 import shutil
 import signal
 import stat
@@ -20,7 +21,7 @@ import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path, PurePosixPath
-from typing import Any, Callable, Mapping
+from typing import Any, Callable, Mapping, Sequence
 
 
 NON_NEURAL = "NON_NEURAL_DATA_BENCHMARK"
@@ -241,7 +242,131 @@ def _untracked_content_manifest(
     }
 
 
-def _capture_git_snapshot(project_root: Path) -> dict[str, Any]:
+def _explicit_prelaunch_file_manifest(
+    git_root: Path,
+    relative_paths: Sequence[str],
+) -> dict[str, Any]:
+    """Hash caller-selected repository files, including ignored files."""
+    entries: list[dict[str, Any]] = []
+    seen: set[str] = set()
+    for raw_relative in relative_paths:
+        if not isinstance(raw_relative, str) or not raw_relative:
+            raise AuditSnapshotError(
+                "explicit prelaunch file path must be a non-empty string"
+            )
+        pure = PurePosixPath(raw_relative)
+        if pure.is_absolute() or ".." in pure.parts or not pure.parts:
+            raise AuditSnapshotError(
+                f"unsafe explicit prelaunch file path: {raw_relative!r}"
+            )
+        relative = pure.as_posix()
+        if relative in seen:
+            raise AuditSnapshotError(
+                f"duplicate explicit prelaunch file path: {relative!r}"
+            )
+        seen.add(relative)
+        cursor = git_root
+        for part in pure.parts:
+            cursor /= part
+            try:
+                metadata = cursor.lstat()
+            except OSError as exc:
+                raise AuditSnapshotError(
+                    f"cannot stat explicit prelaunch path {relative!r}: "
+                    f"{type(exc).__name__}: {exc}"
+                ) from exc
+            if stat.S_ISLNK(metadata.st_mode):
+                raise AuditSnapshotError(
+                    f"symlinked explicit prelaunch path is forbidden: {relative!r}"
+                )
+        if not cursor.is_file():
+            raise AuditSnapshotError(
+                f"explicit prelaunch path is not a regular file: {relative!r}"
+            )
+        byte_count, content_sha256 = _stable_regular_file_hash(cursor)
+        entries.append(
+            {
+                "path": relative,
+                "kind": "regular_file",
+                "mode": stat.S_IMODE(cursor.stat().st_mode),
+                "bytes": byte_count,
+                "sha256": content_sha256,
+            }
+        )
+    entries.sort(key=lambda item: item["path"])
+    canonical_entries = json.dumps(
+        entries,
+        ensure_ascii=True,
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode("utf-8")
+    return {
+        "schema_version": "git_explicit_prelaunch_files.v1",
+        "entry_count": len(entries),
+        "entries": entries,
+        "entries_sha256": _sha256_bytes(canonical_entries),
+    }
+
+
+def _index_flag_manifest(raw_entries: bytes) -> dict[str, Any]:
+    entries: list[dict[str, Any]] = []
+    values = raw_entries.split(b"\0")
+    if values and values[-1] == b"":
+        values.pop()
+    for raw in values:
+        if len(raw) < 3 or raw[1:2] != b" ":
+            raise AuditSnapshotError("git ls-files -v returned an invalid entry")
+        tag = raw[:1].decode("ascii", errors="strict")
+        raw_path = raw[2:]
+        entries.append(
+            {
+                "tag": tag,
+                "path": os.fsdecode(raw_path),
+                "path_bytes_sha256": _sha256_bytes(raw_path),
+                "safe_normal_index_entry": tag == "H",
+            }
+        )
+    unsafe = [item for item in entries if item["safe_normal_index_entry"] is False]
+    return {
+        "schema_version": "git_index_flags.v1",
+        "entry_count": len(entries),
+        "entries": entries,
+        "unsafe_entries": unsafe,
+        "all_entries_normal": not unsafe,
+    }
+
+
+def _recheck_explicit_prelaunch_files(
+    git_root: Path,
+    captured_manifest: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Re-hash explicit controls immediately before the child may launch."""
+    captured_entries = captured_manifest.get("entries")
+    if not isinstance(captured_entries, list) or not all(
+        isinstance(item, Mapping) and isinstance(item.get("path"), str)
+        for item in captured_entries
+    ):
+        raise AuditSnapshotError("captured explicit prelaunch manifest is invalid")
+    relative_paths = [str(item["path"]) for item in captured_entries]
+    observed = _explicit_prelaunch_file_manifest(git_root, relative_paths)
+    captured_sha256 = _sha256_bytes(_json_bytes(dict(captured_manifest)))
+    observed_sha256 = _sha256_bytes(_json_bytes(observed))
+    return {
+        "schema_version": "git_explicit_prelaunch_recheck.v1",
+        "checked_at_utc": _utc_now(),
+        "checked_immediately_before_child_launch": True,
+        "captured_manifest_sha256": captured_sha256,
+        "observed_manifest_sha256": observed_sha256,
+        "entry_count": len(relative_paths),
+        "matches": observed == dict(captured_manifest),
+    }
+
+
+def _capture_git_snapshot(
+    project_root: Path,
+    *,
+    prelaunch_bind_files: Sequence[str] = (),
+) -> dict[str, Any]:
     captured_at_utc = _utc_now()
     git_root_raw = _git_bytes(project_root, "rev-parse", "--show-toplevel")
     git_root_text = git_root_raw.decode("utf-8", errors="surrogateescape").rstrip("\n")
@@ -277,12 +402,22 @@ def _capture_git_snapshot(project_root: Path) -> dict[str, Any]:
         "-z",
     )
     untracked_manifest = _untracked_content_manifest(git_root, untracked_paths)
+    index_flags_raw = _git_bytes(git_root, "ls-files", "-v", "-z")
+    index_flags = _index_flag_manifest(index_flags_raw)
+    explicit_prelaunch_manifest = _explicit_prelaunch_file_manifest(
+        git_root,
+        prelaunch_bind_files,
+    )
     component_hashes = {
         "head": _sha256_bytes((head + "\n").encode("ascii")),
         "status_porcelain_v2_z": _sha256_bytes(status_bytes),
         "diff_head_binary": _sha256_bytes(diff_bytes),
         "untracked_paths_z": _sha256_bytes(untracked_paths),
         "untracked_content_manifest": _sha256_bytes(_json_bytes(untracked_manifest)),
+        "explicit_prelaunch_file_manifest": _sha256_bytes(
+            _json_bytes(explicit_prelaunch_manifest)
+        ),
+        "index_flags": _sha256_bytes(_json_bytes(index_flags)),
     }
     dirty_state_sha256 = _sha256_bytes(_json_bytes(component_hashes))
     return {
@@ -293,9 +428,14 @@ def _capture_git_snapshot(project_root: Path) -> dict[str, Any]:
         "diff_bytes": diff_bytes,
         "untracked_paths": untracked_paths,
         "untracked_manifest": untracked_manifest,
+        "explicit_prelaunch_manifest": explicit_prelaunch_manifest,
+        "index_flags": index_flags,
         "component_hashes": component_hashes,
         "dirty_state_sha256": dirty_state_sha256,
-        "clean": not bool(diff_bytes or untracked_paths),
+        "clean": (
+            not bool(diff_bytes or untracked_paths)
+            and index_flags["all_entries_normal"] is True
+        ),
     }
 
 
@@ -309,6 +449,8 @@ def _write_git_snapshot(
     diff_path = git_dir / "diff.head.binary.patch"
     untracked_paths_path = git_dir / "untracked.paths.z"
     untracked_manifest_path = git_dir / "untracked_content_hashes.json"
+    explicit_prelaunch_path = git_dir / "explicit_prelaunch_files.json"
+    index_flags_path = git_dir / "index_flags.json"
     _write_bytes_exclusive(head_path, (str(captured["head"]) + "\n").encode("ascii"))
     _write_bytes_exclusive(status_path, bytes(captured["status_bytes"]))
     _write_bytes_exclusive(diff_path, bytes(captured["diff_bytes"]))
@@ -320,6 +462,11 @@ def _write_git_snapshot(
         untracked_manifest_path,
         captured["untracked_manifest"],
     )
+    _write_json_exclusive(
+        explicit_prelaunch_path,
+        captured["explicit_prelaunch_manifest"],
+    )
+    _write_json_exclusive(index_flags_path, captured["index_flags"])
     summary = {
         "schema_version": "git_prelaunch_snapshot.v1",
         "captured_before_command": True,
@@ -328,6 +475,7 @@ def _write_git_snapshot(
         "head": captured["head"],
         "clean": captured["clean"],
         "dirty_state_sha256": captured["dirty_state_sha256"],
+        "index_flags_safe": captured["index_flags"]["all_entries_normal"],
         "component_hashes": captured["component_hashes"],
         "artifacts": {
             "head": _artifact_ref(head_path, run_root),
@@ -341,6 +489,11 @@ def _write_git_snapshot(
                 untracked_manifest_path,
                 run_root,
             ),
+            "explicit_prelaunch_files": _artifact_ref(
+                explicit_prelaunch_path,
+                run_root,
+            ),
+            "index_flags": _artifact_ref(index_flags_path, run_root),
         },
     }
     snapshot_path = git_dir / "snapshot.json"
@@ -402,7 +555,7 @@ def _neural_cuda_preflight(
             "passed": False,
             "error": f"{type(exc).__name__}: {exc}",
         }
-    report["passed"] = all(bool(report.get(field)) for field in CUDA_HEALTH_FIELDS)
+    report["passed"] = all(report.get(field) is True for field in CUDA_HEALTH_FIELDS)
     return {
         "applicability": "REQUIRED_FORMAL_NEURAL_WORKLOAD",
         "formal_neural_activity": True,
@@ -435,7 +588,7 @@ def _load_actual_cuda_health(path: Path) -> dict[str, Any]:
             "passed": False,
             "error": "ACTUAL_COMMAND_CUDA_HEALTH_NOT_OBJECT",
         }
-    payload["passed"] = all(bool(payload.get(field)) for field in CUDA_HEALTH_FIELDS)
+    payload["passed"] = all(payload.get(field) is True for field in CUDA_HEALTH_FIELDS)
     if not payload["passed"] and not payload.get("error"):
         payload["error"] = "ACTUAL_COMMAND_CUDA_HEALTH_FIELD_FALSE_OR_MISSING"
     return payload
@@ -525,6 +678,18 @@ def _finalize(
             git_error_path,
             run_root,
         )
+    git_binding_failure_path = run_root / "git/prelaunch_binding_failure.json"
+    if git_binding_failure_path.is_file():
+        evidence["git_prelaunch_binding_failure"] = _artifact_ref(
+            git_binding_failure_path,
+            run_root,
+        )
+    explicit_recheck_path = run_root / "git/explicit_prelaunch_recheck.json"
+    if explicit_recheck_path.is_file():
+        evidence["explicit_prelaunch_recheck"] = _artifact_ref(
+            explicit_recheck_path,
+            run_root,
+        )
 
     manifest = {
         "schema_version": SCHEMA_VERSION,
@@ -572,12 +737,27 @@ def run_audited_command(
     workload_class: str,
     working_directory: Path | None = None,
     cuda_probe: Callable[[], Mapping[str, Any]] | None = None,
+    expected_git_head: str | None = None,
+    expected_git_dirty_state_sha256: str | None = None,
+    prelaunch_bind_files: Sequence[str] = (),
 ) -> int:
     """Run ``command`` once and preserve immutable audit evidence."""
     if workload_class not in WORKLOAD_CLASSES:
         raise ValueError(f"unsupported workload class: {workload_class}")
     if not command:
         raise ValueError("audited command cannot be empty")
+    if (
+        expected_git_head is not None
+        and re.fullmatch(r"[0-9a-f]{40}", expected_git_head) is None
+    ):
+        raise ValueError("expected_git_head must be 40 lowercase hex characters")
+    if (
+        expected_git_dirty_state_sha256 is not None
+        and re.fullmatch(r"[0-9a-f]{64}", expected_git_dirty_state_sha256) is None
+    ):
+        raise ValueError(
+            "expected_git_dirty_state_sha256 must be 64 lowercase hex characters"
+        )
     project_root = project_root.expanduser().resolve(strict=True)
     if not project_root.is_dir():
         raise NotADirectoryError(project_root)
@@ -592,6 +772,39 @@ def run_audited_command(
     run_root = _prepare_run_root(run_root)
     started_at_utc = _utc_now()
     started_monotonic = time.monotonic()
+    child: subprocess.Popen[bytes] | None = None
+    child_exit_code: int | None = None
+    interrupted_by_signal: int | None = None
+    previous_signal_handlers: dict[int, Any] = {}
+    signal_handlers_restored = False
+
+    def forward_exact_child(signum: int, _frame: Any) -> None:
+        nonlocal interrupted_by_signal
+        if interrupted_by_signal is None:
+            interrupted_by_signal = signum
+        active_child = child
+        if active_child is not None and active_child.poll() is None:
+            try:
+                active_child.send_signal(signum)
+            except ProcessLookupError:
+                pass
+
+    def restore_signal_handlers() -> None:
+        nonlocal signal_handlers_restored
+        if signal_handlers_restored:
+            return
+        for handled_signal, previous_handler in previous_signal_handlers.items():
+            signal.signal(handled_signal, previous_handler)
+        signal_handlers_restored = True
+
+    for handled_signal in (signal.SIGINT, signal.SIGTERM, signal.SIGHUP):
+        previous_signal_handlers[handled_signal] = signal.getsignal(handled_signal)
+        signal.signal(handled_signal, forward_exact_child)
+
+    def finalize_with_signal_restore(**kwargs: Any) -> int:
+        restore_signal_handlers()
+        return _finalize(**kwargs)
+
     stdout_path = run_root / "logs/stdout.log"
     stderr_path = run_root / "logs/stderr.log"
     environment = dict(os.environ)
@@ -599,7 +812,10 @@ def run_audited_command(
     environment["EDITFLOW_WORKLOAD_CLASS"] = workload_class
 
     try:
-        captured_git = _capture_git_snapshot(project_root)
+        captured_git = _capture_git_snapshot(
+            project_root,
+            prelaunch_bind_files=prelaunch_bind_files,
+        )
         git_evidence = _write_git_snapshot(run_root, captured_git)
     except Exception as exc:
         _write_bytes_exclusive(stdout_path, b"")
@@ -637,7 +853,7 @@ def run_audited_command(
                 "cuda": cuda_evidence,
             },
         )
-        return _finalize(
+        return finalize_with_signal_restore(
             run_root=run_root,
             started_at_utc=started_at_utc,
             started_monotonic=started_monotonic,
@@ -651,6 +867,88 @@ def run_audited_command(
             wrapper_exit_code=AUDIT_FAILURE_EXIT,
             state="FAILED_WITH_EVIDENCE",
             stop_reason=f"GIT_PRELAUNCH_SNAPSHOT_FAILED_{type(exc).__name__}",
+            child_pid=None,
+            child_exit_code=None,
+        )
+
+    git_binding_checks = {
+        "index_flags_safe": {
+            "applicable": True,
+            "expected": True,
+            "observed": git_evidence["index_flags_safe"],
+            "passed": git_evidence["index_flags_safe"] is True,
+        },
+        "head": {
+            "applicable": expected_git_head is not None,
+            "expected": expected_git_head,
+            "observed": git_evidence["head"],
+            "passed": (
+                expected_git_head is None or git_evidence["head"] == expected_git_head
+            ),
+        },
+        "dirty_state_sha256": {
+            "applicable": expected_git_dirty_state_sha256 is not None,
+            "expected": expected_git_dirty_state_sha256,
+            "observed": git_evidence["dirty_state_sha256"],
+            "passed": (
+                expected_git_dirty_state_sha256 is None
+                or git_evidence["dirty_state_sha256"] == expected_git_dirty_state_sha256
+            ),
+        },
+    }
+    if not all(check["passed"] for check in git_binding_checks.values()):
+        _write_bytes_exclusive(stdout_path, b"")
+        _write_bytes_exclusive(stderr_path, b"")
+        binding_failure = {
+            "schema_version": "git_prelaunch_binding.v1",
+            "captured_at_utc": _utc_now(),
+            "command_started": False,
+            "checks": git_binding_checks,
+        }
+        _write_json_exclusive(
+            run_root / "git/prelaunch_binding_failure.json",
+            binding_failure,
+        )
+        python_evidence = _python_evidence(command, environment)
+        cuda_evidence = {
+            "applicability": (
+                "NOT_APPLICABLE_NON_NEURAL_WORKLOAD"
+                if workload_class == NON_NEURAL
+                else "REQUIRED_BUT_NOT_RUN_DUE_TO_GIT_BINDING_FAILURE"
+            ),
+            "probe_executed": False,
+            "gpu_launched_by_wrapper": False,
+            "automatic_cpu_fallback": False,
+        }
+        _write_json_exclusive(
+            run_root / "invocation.json",
+            {
+                "schema_version": SCHEMA_VERSION,
+                "started_at_utc": started_at_utc,
+                "wrapper_pid": os.getpid(),
+                "argv": command,
+                "workload_class": workload_class,
+                "command_started": False,
+                "git_prelaunch_snapshot": git_evidence,
+                "git_prelaunch_binding": binding_failure,
+                "python": python_evidence,
+                "cuda": cuda_evidence,
+            },
+        )
+        return finalize_with_signal_restore(
+            run_root=run_root,
+            started_at_utc=started_at_utc,
+            started_monotonic=started_monotonic,
+            workload_class=workload_class,
+            command=command,
+            project_root=project_root,
+            working_directory=working_directory,
+            python_evidence=python_evidence,
+            cuda_evidence=cuda_evidence,
+            git_evidence=git_evidence,
+            wrapper_exit_code=AUDIT_FAILURE_EXIT,
+            state="FAILED_WITH_EVIDENCE",
+            stop_reason="GIT_PRELAUNCH_BINDING_MISMATCH",
             child_pid=None,
             child_exit_code=None,
         )
@@ -707,7 +1005,7 @@ def run_audited_command(
     if workload_class == NEURAL and not cuda_evidence["preflight"]["passed"]:
         _write_bytes_exclusive(stdout_path, b"")
         _write_bytes_exclusive(stderr_path, b"")
-        return _finalize(
+        return finalize_with_signal_restore(
             run_root=run_root,
             started_at_utc=started_at_utc,
             started_monotonic=started_monotonic,
@@ -725,42 +1023,81 @@ def run_audited_command(
             child_exit_code=None,
         )
 
-    child: subprocess.Popen[bytes] | None = None
-    child_exit_code: int | None = None
-    interrupted_by_signal: int | None = None
+    try:
+        explicit_prelaunch_recheck = _recheck_explicit_prelaunch_files(
+            Path(str(git_evidence["repository"])),
+            captured_git["explicit_prelaunch_manifest"],
+        )
+    except Exception as exc:
+        explicit_prelaunch_recheck = {
+            "schema_version": "git_explicit_prelaunch_recheck.v1",
+            "checked_at_utc": _utc_now(),
+            "checked_immediately_before_child_launch": True,
+            "entry_count": None,
+            "matches": False,
+            "error": f"{type(exc).__name__}: {exc}",
+        }
+    _write_json_exclusive(
+        run_root / "git/explicit_prelaunch_recheck.json",
+        explicit_prelaunch_recheck,
+    )
+    if explicit_prelaunch_recheck["matches"] is not True:
+        _write_bytes_exclusive(stdout_path, b"")
+        _write_bytes_exclusive(stderr_path, b"")
+        return finalize_with_signal_restore(
+            run_root=run_root,
+            started_at_utc=started_at_utc,
+            started_monotonic=started_monotonic,
+            workload_class=workload_class,
+            command=command,
+            project_root=project_root,
+            working_directory=working_directory,
+            python_evidence=python_evidence,
+            cuda_evidence=cuda_evidence,
+            git_evidence=git_evidence,
+            wrapper_exit_code=AUDIT_FAILURE_EXIT,
+            state="FAILED_WITH_EVIDENCE",
+            stop_reason="EXPLICIT_PRELAUNCH_FILE_RECHECK_FAILED",
+            child_pid=None,
+            child_exit_code=None,
+        )
+
     try:
         with stdout_path.open("xb") as stdout, stderr_path.open("xb") as stderr:
-            child = subprocess.Popen(
-                command,
-                cwd=working_directory,
-                env=environment,
-                stdin=subprocess.DEVNULL,
-                stdout=stdout,
-                stderr=stderr,
-                shell=False,
-            )
-            _write_json_exclusive(
-                run_root / "process.json",
-                {
-                    "schema_version": SCHEMA_VERSION,
-                    "launched_at_utc": _utc_now(),
-                    "wrapper_pid": os.getpid(),
-                    "child_pid": child.pid,
-                    "argv": command,
-                },
-            )
-            try:
-                child_exit_code = child.wait()
-            except KeyboardInterrupt:
-                interrupted_by_signal = signal.SIGINT
-                child.send_signal(signal.SIGINT)
-                child_exit_code = child.wait()
+            if interrupted_by_signal is None:
+                child = subprocess.Popen(
+                    command,
+                    cwd=working_directory,
+                    env=environment,
+                    stdin=subprocess.DEVNULL,
+                    stdout=stdout,
+                    stderr=stderr,
+                    shell=False,
+                )
+                if interrupted_by_signal is not None and child.poll() is None:
+                    child.send_signal(interrupted_by_signal)
+                _write_json_exclusive(
+                    run_root / "process.json",
+                    {
+                        "schema_version": SCHEMA_VERSION,
+                        "launched_at_utc": _utc_now(),
+                        "wrapper_pid": os.getpid(),
+                        "child_pid": child.pid,
+                        "argv": command,
+                    },
+                )
+                try:
+                    child_exit_code = child.wait()
+                except KeyboardInterrupt:
+                    interrupted_by_signal = signal.SIGINT
+                    child.send_signal(signal.SIGINT)
+                    child_exit_code = child.wait()
             stdout.flush()
             stderr.flush()
             os.fsync(stdout.fileno())
             os.fsync(stderr.fileno())
     except OSError as exc:
-        return _finalize(
+        return finalize_with_signal_restore(
             run_root=run_root,
             started_at_utc=started_at_utc,
             started_monotonic=started_monotonic,
@@ -777,11 +1114,34 @@ def run_audited_command(
             child_pid=None,
             child_exit_code=None,
         )
+    finally:
+        restore_signal_handlers()
 
-    assert child is not None and child_exit_code is not None
+    if child is None:
+        assert interrupted_by_signal is not None
+        return finalize_with_signal_restore(
+            run_root=run_root,
+            started_at_utc=started_at_utc,
+            started_monotonic=started_monotonic,
+            workload_class=workload_class,
+            command=command,
+            project_root=project_root,
+            working_directory=working_directory,
+            python_evidence=python_evidence,
+            cuda_evidence=cuda_evidence,
+            git_evidence=git_evidence,
+            wrapper_exit_code=min(255, 128 + interrupted_by_signal),
+            state="FAILED_WITH_EVIDENCE",
+            stop_reason=f"INTERRUPTED_BEFORE_COMMAND_SIGNAL_{interrupted_by_signal}",
+            child_pid=None,
+            child_exit_code=None,
+            interrupted_by_signal=interrupted_by_signal,
+        )
+
+    assert child_exit_code is not None
     if child_exit_code != 0:
         wrapper_exit = _child_wrapper_exit(child_exit_code)
-        return _finalize(
+        return finalize_with_signal_restore(
             run_root=run_root,
             started_at_utc=started_at_utc,
             started_monotonic=started_monotonic,
@@ -794,7 +1154,30 @@ def run_audited_command(
             git_evidence=git_evidence,
             wrapper_exit_code=wrapper_exit,
             state="FAILED_WITH_EVIDENCE",
-            stop_reason=f"COMMAND_EXIT_{child_exit_code}",
+            stop_reason=(
+                f"INTERRUPTED_BY_SIGNAL_{interrupted_by_signal}"
+                if interrupted_by_signal is not None
+                else f"COMMAND_EXIT_{child_exit_code}"
+            ),
+            child_pid=child.pid,
+            child_exit_code=child_exit_code,
+            interrupted_by_signal=interrupted_by_signal,
+        )
+    if interrupted_by_signal is not None:
+        return finalize_with_signal_restore(
+            run_root=run_root,
+            started_at_utc=started_at_utc,
+            started_monotonic=started_monotonic,
+            workload_class=workload_class,
+            command=command,
+            project_root=project_root,
+            working_directory=working_directory,
+            python_evidence=python_evidence,
+            cuda_evidence=cuda_evidence,
+            git_evidence=git_evidence,
+            wrapper_exit_code=min(255, 128 + interrupted_by_signal),
+            state="FAILED_WITH_EVIDENCE",
+            stop_reason=f"INTERRUPTED_BY_SIGNAL_{interrupted_by_signal}",
             child_pid=child.pid,
             child_exit_code=child_exit_code,
             interrupted_by_signal=interrupted_by_signal,
@@ -807,7 +1190,7 @@ def run_audited_command(
             "actual_command_health": actual_health,
         }
         if not actual_health["passed"]:
-            return _finalize(
+            return finalize_with_signal_restore(
                 run_root=run_root,
                 started_at_utc=started_at_utc,
                 started_monotonic=started_monotonic,
@@ -825,7 +1208,7 @@ def run_audited_command(
                 child_exit_code=child_exit_code,
             )
 
-    return _finalize(
+    return finalize_with_signal_restore(
         run_root=run_root,
         started_at_utc=started_at_utc,
         started_monotonic=started_monotonic,
@@ -863,6 +1246,17 @@ def main(argv: list[str] | None = None) -> int:
         choices=WORKLOAD_CLASSES,
         required=True,
     )
+    parser.add_argument("--expected-git-head")
+    parser.add_argument("--expected-git-dirty-state-sha256")
+    parser.add_argument(
+        "--prelaunch-bind-file",
+        action="append",
+        default=[],
+        help=(
+            "repository-relative regular file to hash before child launch; "
+            "repeat for ignored or otherwise explicitly bound control files"
+        ),
+    )
     parser.add_argument(
         "command",
         nargs=argparse.REMAINDER,
@@ -877,6 +1271,9 @@ def main(argv: list[str] | None = None) -> int:
             working_directory=args.working_directory,
             command=command,
             workload_class=args.workload_class,
+            expected_git_head=args.expected_git_head,
+            expected_git_dirty_state_sha256=(args.expected_git_dirty_state_sha256),
+            prelaunch_bind_files=args.prelaunch_bind_file,
         )
     except FileExistsError as exc:
         print(

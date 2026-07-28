@@ -1,0 +1,290 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Cunyu-Liu/mRNA_editflow/schemas/d1_canonical_snapshot.schema.json",
+  "title": "D1 frozen canonical structural-data snapshot",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "generated_at_utc",
+    "stage_id",
+    "status",
+    "goal_contract",
+    "claim_boundary",
+    "acceptance",
+    "stage_d1_root",
+    "artifact_root",
+    "build_manifest",
+    "builder_audit",
+    "control_files",
+    "dataset_scope",
+    "datasets",
+    "global_stores",
+    "required_artifacts",
+    "semantic_summary",
+    "code_provenance"
+  ],
+  "properties": {
+    "artifact_type": {"const": "d1_canonical_snapshot"},
+    "schema_version": {"const": "d1_canonical_snapshot.v1"},
+    "generated_at_utc": {"type": "string", "format": "date-time"},
+    "stage_id": {
+      "type": "string",
+      "pattern": "^D1_B0_[0-9]{8}T[0-9]{6}Z_[0-9a-f]{7}(?:_A[0-9]+)?$"
+    },
+    "status": {"const": "FROZEN_STRUCTURAL_DATA_ONLY"},
+    "goal_contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "sha256"],
+      "properties": {
+        "id": {"const": "utr_editflow_goal_v2"},
+        "sha256": {
+          "const": "c3dc5875868d847b8519fee40b14c43b65e4c5948dc5c3b98101ca61a5671dd5"
+        }
+      }
+    },
+    "claim_boundary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scientific_result_claimed",
+        "model_efficacy_claimed",
+        "biological_improvement_claimed",
+        "sota_claimed",
+        "prospective_validity_claimed"
+      ],
+      "properties": {
+        "scientific_result_claimed": {"const": false},
+        "model_efficacy_claimed": {"const": false},
+        "biological_improvement_claimed": {"const": false},
+        "sota_claimed": {"const": false},
+        "prospective_validity_claimed": {"const": false}
+      }
+    },
+    "acceptance": {"$ref": "#/$defs/repositoryFile"},
+    "stage_d1_root": {"$ref": "#/$defs/absolutePath"},
+    "artifact_root": {"$ref": "#/$defs/absolutePath"},
+    "build_manifest": {"$ref": "#/$defs/absoluteFile"},
+    "builder_audit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["audit_root", "audit_manifest", "causal_chain_passed"],
+      "properties": {
+        "audit_root": {"$ref": "#/$defs/absolutePath"},
+        "audit_manifest": {"$ref": "#/$defs/absoluteFile"},
+        "causal_chain_passed": {"const": true}
+      }
+    },
+    "control_files": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["config", "dataset_scope_manifest", "input_inventory"],
+      "properties": {
+        "config": {"$ref": "#/$defs/controlFile"},
+        "dataset_scope_manifest": {"$ref": "#/$defs/controlFile"},
+        "input_inventory": {"$ref": "#/$defs/controlFile"}
+      }
+    },
+    "dataset_scope": {
+      "type": "array",
+      "minItems": 12,
+      "maxItems": 12,
+      "uniqueItems": true,
+      "items": {"type": "string", "minLength": 1}
+    },
+    "datasets": {
+      "type": "array",
+      "minItems": 12,
+      "maxItems": 12,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "dataset_id",
+          "status",
+          "paper_eligible",
+          "fixture_mode",
+          "counts",
+          "manifest",
+          "outputs"
+        ],
+        "properties": {
+          "dataset_id": {"type": "string", "minLength": 1},
+          "status": {"enum": ["accepted", "blocked"]},
+          "paper_eligible": {"type": "boolean"},
+          "fixture_mode": {"const": false},
+          "counts": {"type": "object"},
+          "manifest": {"$ref": "#/$defs/absoluteFile"},
+          "outputs": {
+            "type": "object",
+            "additionalProperties": {"$ref": "#/$defs/absoluteFile"}
+          }
+        }
+      }
+    },
+    "global_stores": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "canonical_label_store",
+        "sealed_label_free_candidate_store",
+        "paths_distinct",
+        "record_ids_sha256"
+      ],
+      "properties": {
+        "canonical_label_store": {"$ref": "#/$defs/countFile"},
+        "sealed_label_free_candidate_store": {"$ref": "#/$defs/countFile"},
+        "paths_distinct": {"const": true},
+        "record_ids_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      }
+    },
+    "required_artifacts": {
+      "type": "object",
+      "minProperties": 5,
+      "maxProperties": 5,
+      "additionalProperties": {"$ref": "#/$defs/absoluteFile"}
+    },
+    "semantic_summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "phase_gate_passed",
+        "structural_validation_passed",
+        "dataset_count",
+        "dataset_results_passed",
+        "required_supported_datasets",
+        "missing_required_datasets",
+        "missing_d1_scope_datasets",
+        "required_artifacts_passed",
+        "global_stores_passed",
+        "config_binding_passed",
+        "dataset_manifest_binding_passed",
+        "builder_audit_passed",
+        "scientific_result_claimed"
+      ],
+      "properties": {
+        "phase_gate_passed": {"const": true},
+        "structural_validation_passed": {"const": true},
+        "dataset_count": {"const": 12},
+        "dataset_results_passed": {"const": true},
+        "required_supported_datasets": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "uniqueItems": true,
+          "items": {"type": "string"}
+        },
+        "missing_required_datasets": {"type": "array", "maxItems": 0},
+        "missing_d1_scope_datasets": {"type": "array", "maxItems": 0},
+        "required_artifacts_passed": {"const": true},
+        "global_stores_passed": {"const": true},
+        "config_binding_passed": {"const": true},
+        "dataset_manifest_binding_passed": {"const": true},
+        "builder_audit_passed": {"const": true},
+        "scientific_result_claimed": {"const": false}
+      }
+    },
+    "code_provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code_commit_sha", "files"],
+      "properties": {
+        "code_commit_sha": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "files": {
+          "type": "array",
+          "minItems": 5,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/repositoryFile"}
+        }
+      }
+    }
+  },
+  "$defs": {
+    "absolutePath": {
+      "type": "string",
+      "pattern": "^/"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "absoluteFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "bytes", "sha256"],
+      "properties": {
+        "path": {"$ref": "#/$defs/absolutePath"},
+        "bytes": {"type": "integer", "minimum": 0},
+        "sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "repositoryFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "bytes", "sha256"],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"
+        },
+        "bytes": {"type": "integer", "minimum": 0},
+        "sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "controlFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "bytes",
+        "sha256",
+        "repository_path",
+        "prelaunch_binding_source"
+      ],
+      "properties": {
+        "path": {"$ref": "#/$defs/absolutePath"},
+        "bytes": {"type": "integer", "minimum": 0},
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "repository_path": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$)).+$"
+        },
+        "prelaunch_binding_source": {
+          "enum": [
+            "prelaunch_untracked_content_manifest",
+            "captured_head_blob",
+            "captured_head_plus_binary_diff"
+          ]
+        }
+      }
+    },
+    "countFile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "bytes",
+        "sha256",
+        "records",
+        "record_ids_sha256"
+      ],
+      "properties": {
+        "path": {"$ref": "#/$defs/absolutePath"},
+        "bytes": {"type": "integer", "minimum": 0},
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "records": {"type": "integer", "minimum": 0},
+        "record_ids_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    }
+  }
+}

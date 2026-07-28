@@ -1,4 +1,5 @@
 """Unit tests for scripts/execution/validate_registry.py."""
+
 import hashlib
 import json
 import subprocess
@@ -42,10 +43,12 @@ def _task(tid="D0-01", status="VERIFIED", deps=None):
 
 
 def _registry(tasks):
-    return {"registry_version": "2.0.0",
-            "contract_id": "utr_editflow_goal_v2",
-            "goal_contract_sha256": GOAL_SHA,
-            "tasks": tasks}
+    return {
+        "registry_version": "2.0.0",
+        "contract_id": "utr_editflow_goal_v2",
+        "goal_contract_sha256": GOAL_SHA,
+        "tasks": tasks,
+    }
 
 
 def _governed_task(tid, status="REGISTERED", deps=None):
@@ -71,9 +74,7 @@ def _release_inventory_tasks():
     previous = None
     for index in range(1, 9):
         task_id = f"D1-{index:02d}"
-        dependencies = (
-            ["C0-05", "D0-05"] if previous is None else [previous]
-        )
+        dependencies = ["C0-05", "D0-05"] if previous is None else [previous]
         tasks.append(_governed_task(task_id, deps=dependencies))
         previous = task_id
     previous = "D1-08"
@@ -93,21 +94,13 @@ def _git(repo: Path, *args: str) -> str:
     ).stdout.strip()
 
 
-def _commit_acceptance(
-    root: Path, *, phase: str = "D1"
-) -> tuple[Path, str, str, Path]:
+def _commit_acceptance(root: Path, *, phase: str = "D1") -> tuple[Path, str, str, Path]:
     _git(root, "init")
     _git(root, "config", "user.email", "tests@example.invalid")
     _git(root, "config", "user.name", "tests")
     acceptance = root / "acceptance.json"
-    payload = (
-        valid_d1_acceptance(root)
-        if phase == "D1"
-        else valid_b0_acceptance()
-    )
-    acceptance.write_text(
-        json.dumps(payload, sort_keys=True) + "\n", encoding="utf-8"
-    )
+    payload = valid_d1_acceptance(root) if phase == "D1" else valid_b0_acceptance()
+    acceptance.write_text(json.dumps(payload, sort_keys=True) + "\n", encoding="utf-8")
     _git(root, "add", "acceptance.json")
     _git(root, "commit", "-m", "freeze acceptance")
     commit = _git(root, "rev-parse", "HEAD")
@@ -200,9 +193,7 @@ def test_d1_and_b0_tasks_require_structured_gate_fields():
 def test_governed_verified_task_requires_full_evidence(tmp_path):
     c0 = _task("C0-05")
     d0 = _task("D0-05")
-    d1 = _governed_task(
-        "D1-01", status="VERIFIED", deps=["C0-05", "D0-05"]
-    )
+    d1 = _governed_task("D1-01", status="VERIFIED", deps=["C0-05", "D0-05"])
     errors = validate(_registry([c0, d0, d1]), repo_root=tmp_path)
     assert any("40-hex commit_sha" in error for error in errors)
     assert any("acceptance_artifact" in error for error in errors)
@@ -225,28 +216,27 @@ def test_governed_verified_task_requires_full_evidence(tmp_path):
             "evidence": remote_ref,
         },
     ]
-    assert validate(
-        _registry([c0, d0, d1]),
-        repo_root=tmp_path,
-        expected_remote_url=str(remote),
-    ) == []
+    assert (
+        validate(
+            _registry([c0, d0, d1]),
+            repo_root=tmp_path,
+            expected_remote_url=str(remote),
+        )
+        == []
+    )
 
 
 def test_final_task_rejects_fake_or_unpublished_commit(tmp_path):
     c0 = _task("C0-05")
     d0 = _task("D0-05")
     acceptance, commit, _, remote = _commit_acceptance(tmp_path)
-    d1 = _governed_task(
-        "D1-01", status="VERIFIED", deps=["C0-05", "D0-05"]
-    )
+    d1 = _governed_task("D1-01", status="VERIFIED", deps=["C0-05", "D0-05"])
     d1.update(
         {
             "commit_sha": "a" * 40,
             "report": "FALSE_PASS",
             "acceptance_artifact": "acceptance.json",
-            "acceptance_sha256": hashlib.sha256(
-                acceptance.read_bytes()
-            ).hexdigest(),
+            "acceptance_sha256": hashlib.sha256(acceptance.read_bytes()).hexdigest(),
             "gate_evidence": [
                 {
                     "predicate": "published_remote_ref_contains_commit",
@@ -278,9 +268,7 @@ def test_final_task_rejects_wrong_phase_acceptance_or_uncommitted_tamper(
     c0 = _task("C0-05")
     d0 = _task("D0-05")
     acceptance, commit, remote_ref, remote = _commit_acceptance(tmp_path)
-    d1 = _governed_task(
-        "D1-01", status="VERIFIED", deps=["C0-05", "D0-05"]
-    )
+    d1 = _governed_task("D1-01", status="VERIFIED", deps=["C0-05", "D0-05"])
     d1.update(
         {
             "commit_sha": commit,
@@ -305,9 +293,7 @@ def test_final_task_rejects_wrong_phase_acceptance_or_uncommitted_tamper(
         + "\n",
         encoding="utf-8",
     )
-    d1["acceptance_sha256"] = hashlib.sha256(
-        acceptance.read_bytes()
-    ).hexdigest()
+    d1["acceptance_sha256"] = hashlib.sha256(acceptance.read_bytes()).hexdigest()
     errors = validate(
         _registry([c0, d0, d1]),
         repo_root=tmp_path,
@@ -322,18 +308,14 @@ def test_smoke_or_fixture_evidence_cannot_close_phase_gate(tmp_path):
     d0 = _task("D0-05")
     acceptance = tmp_path / "acceptance.json"
     acceptance.write_text(json.dumps({"status": "PASS"}), encoding="utf-8")
-    d1 = _governed_task(
-        "D1-08", status="FROZEN", deps=["C0-05", "D0-05"]
-    )
+    d1 = _governed_task("D1-08", status="FROZEN", deps=["C0-05", "D0-05"])
     d1.update(
         {
             "evidence_class": "SMOKE",
             "commit_sha": "b" * 40,
             "report": "SMOKE_ONLY",
             "acceptance_artifact": "acceptance.json",
-            "acceptance_sha256": hashlib.sha256(
-                acceptance.read_bytes()
-            ).hexdigest(),
+            "acceptance_sha256": hashlib.sha256(acceptance.read_bytes()).hexdigest(),
             "gate_evidence": [
                 {
                     "predicate": "fixture",
@@ -347,12 +329,44 @@ def test_smoke_or_fixture_evidence_cannot_close_phase_gate(tmp_path):
     assert any("cannot satisfy a phase gate" in error for error in errors)
 
 
+def test_d1_08_frozen_requires_machine_checked_snapshot_binding(
+    tmp_path,
+):
+    c0 = _task("C0-05")
+    d0 = _task("D0-05")
+    acceptance, commit, remote_ref, remote = _commit_acceptance(tmp_path)
+    d1 = _governed_task("D1-08", status="FROZEN", deps=["C0-05", "D0-05"])
+    d1.update(
+        {
+            "commit_sha": commit,
+            "report": "D1_STRUCTURAL_DATA_ONLY",
+            "acceptance_artifact": "acceptance.json",
+            "acceptance_sha256": hashlib.sha256(acceptance.read_bytes()).hexdigest(),
+            "gate_evidence": [
+                {
+                    "predicate": "published_remote_ref_contains_commit",
+                    "status": "PASS",
+                    "evidence": remote_ref,
+                }
+            ],
+        }
+    )
+    errors = validate(
+        _registry([c0, d0, d1]),
+        repo_root=tmp_path,
+        expected_remote_url=str(remote),
+    )
+    assert any(
+        "snapshot_artifact must equal "
+        "data/d1/manifests/d1_canonical_snapshot.json" in error
+        for error in errors
+    )
+
+
 def test_active_b0_requires_frozen_d1_anchor():
     c0 = _task("C0-05")
     d0 = _task("D0-05")
-    d1 = _governed_task(
-        "D1-08", status="REGISTERED", deps=["C0-05", "D0-05"]
-    )
+    d1 = _governed_task("D1-08", status="REGISTERED", deps=["C0-05", "D0-05"])
     b0 = _governed_task("B0-01", status="RUNNING", deps=["D1-08"])
     errors = validate(_registry([c0, d0, d1, b0]))
     assert any("D1-08:FROZEN" in error for error in errors)
@@ -369,9 +383,7 @@ def test_registered_b0_inventory_is_not_execution():
 def test_d1_b0_final_label_access_is_forbidden():
     c0 = _task("C0-05")
     d0 = _task("D0-05")
-    d1 = _governed_task(
-        "D1-01", status="REGISTERED", deps=["C0-05", "D0-05"]
-    )
+    d1 = _governed_task("D1-01", status="REGISTERED", deps=["C0-05", "D0-05"])
     d1["resource_labels"].append("FINAL_LABEL_ACCESS")
     errors = validate(_registry([c0, d0, d1]))
     assert any("FINAL_LABEL_ACCESS" in error for error in errors)
@@ -380,12 +392,8 @@ def test_d1_b0_final_label_access_is_forbidden():
 def test_allowed_parallel_must_be_reciprocal():
     c0 = _task("C0-05")
     d0 = _task("D0-05")
-    left = _governed_task(
-        "D1-06", status="REGISTERED", deps=["C0-05", "D0-05"]
-    )
-    right = _governed_task(
-        "D1-07", status="REGISTERED", deps=["C0-05", "D0-05"]
-    )
+    left = _governed_task("D1-06", status="REGISTERED", deps=["C0-05", "D0-05"])
+    right = _governed_task("D1-07", status="REGISTERED", deps=["C0-05", "D0-05"])
     left["allowed_parallel_tasks"] = ["D1-07"]
     errors = validate(_registry([c0, d0, left, right]))
     assert any("reciprocal" in error for error in errors)
@@ -410,17 +418,13 @@ def test_minimal_acceptance_stub_cannot_close_d1(tmp_path):
     _git(tmp_path, "commit", "-m", "replace with stub")
     stub_commit = _git(tmp_path, "rev-parse", "HEAD")
     _git(tmp_path, "push", "origin", f"HEAD:{remote_ref}")
-    d1 = _governed_task(
-        "D1-01", status="VERIFIED", deps=["C0-05", "D0-05"]
-    )
+    d1 = _governed_task("D1-01", status="VERIFIED", deps=["C0-05", "D0-05"])
     d1.update(
         {
             "commit_sha": stub_commit,
             "report": "FALSE_PASS",
             "acceptance_artifact": "acceptance.json",
-            "acceptance_sha256": hashlib.sha256(
-                acceptance.read_bytes()
-            ).hexdigest(),
+            "acceptance_sha256": hashlib.sha256(acceptance.read_bytes()).hexdigest(),
             "gate_evidence": [
                 {
                     "predicate": "published_remote_ref_contains_commit",
@@ -451,17 +455,13 @@ def test_nested_false_acceptance_predicate_cannot_close_d1(tmp_path):
     _git(tmp_path, "commit", "-m", "nested false")
     commit = _git(tmp_path, "rev-parse", "HEAD")
     _git(tmp_path, "push", "origin", f"HEAD:{remote_ref}")
-    d1 = _governed_task(
-        "D1-01", status="VERIFIED", deps=["C0-05", "D0-05"]
-    )
+    d1 = _governed_task("D1-01", status="VERIFIED", deps=["C0-05", "D0-05"])
     d1.update(
         {
             "commit_sha": commit,
             "report": "FALSE_PASS",
             "acceptance_artifact": "acceptance.json",
-            "acceptance_sha256": hashlib.sha256(
-                acceptance.read_bytes()
-            ).hexdigest(),
+            "acceptance_sha256": hashlib.sha256(acceptance.read_bytes()).hexdigest(),
             "gate_evidence": [
                 {
                     "predicate": "published_remote_ref_contains_commit",
@@ -492,17 +492,13 @@ def test_local_tracking_ref_without_remote_is_not_publication(tmp_path):
     _git(tmp_path, "commit", "-m", "local only")
     commit = _git(tmp_path, "rev-parse", "HEAD")
     _git(tmp_path, "update-ref", "refs/remotes/origin/forged", commit)
-    d1 = _governed_task(
-        "D1-01", status="VERIFIED", deps=["C0-05", "D0-05"]
-    )
+    d1 = _governed_task("D1-01", status="VERIFIED", deps=["C0-05", "D0-05"])
     d1.update(
         {
             "commit_sha": commit,
             "report": "FALSE_PUBLICATION",
             "acceptance_artifact": "acceptance.json",
-            "acceptance_sha256": hashlib.sha256(
-                acceptance.read_bytes()
-            ).hexdigest(),
+            "acceptance_sha256": hashlib.sha256(acceptance.read_bytes()).hexdigest(),
             "gate_evidence": [
                 {
                     "predicate": "published_remote_ref_contains_commit",
@@ -512,7 +508,9 @@ def test_local_tracking_ref_without_remote_is_not_publication(tmp_path):
             ],
         }
     )
-    errors = validate(_registry([_task("C0-05"), _task("D0-05"), d1]), repo_root=tmp_path)
+    errors = validate(
+        _registry([_task("C0-05"), _task("D0-05"), d1]), repo_root=tmp_path
+    )
     assert any("refs/heads" in error for error in errors)
 
 
@@ -539,9 +537,7 @@ def test_release_profile_rejects_each_missing_inventory_item():
 def test_b0_phase_gate_cannot_skip_required_tasks():
     c0 = _task("C0-05")
     d0 = _task("D0-05")
-    d1 = _governed_task(
-        "D1-08", status="FROZEN", deps=["C0-05", "D0-05"]
-    )
+    d1 = _governed_task("D1-08", status="FROZEN", deps=["C0-05", "D0-05"])
     b0_tasks = [
         _governed_task(
             f"B0-{index:02d}",
@@ -554,6 +550,21 @@ def test_b0_phase_gate_cannot_skip_required_tasks():
     for required in ("B0-01", "B0-02", "B0-03", "B0-04"):
         assert any(
             f"B0-05: cannot freeze before {required}:VERIFIED" in error
+            for error in errors
+        )
+
+
+def test_d1_phase_gate_cannot_skip_required_tasks():
+    tasks = _release_inventory_tasks()
+    by_id = {task["task_id"]: task for task in tasks}
+    for task_id in (f"D1-{index:02d}" for index in range(1, 8)):
+        by_id[task_id]["status"] = "SAFE_PAUSED"
+        by_id[task_id]["known_blockers"] = ["not completed"]
+    by_id["D1-08"]["status"] = "FROZEN"
+    errors = validate(_registry(tasks))
+    for required in (f"D1-{index:02d}" for index in range(1, 8)):
+        assert any(
+            f"D1-08: cannot freeze before {required}:VERIFIED" in error
             for error in errors
         )
 

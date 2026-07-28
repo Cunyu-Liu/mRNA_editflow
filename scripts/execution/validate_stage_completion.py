@@ -24,6 +24,9 @@ try:
         _remote_ref_oid,
         validate as validate_registry,
     )
+    from scripts.execution.validate_stage_manifest import (
+        validate as validate_stage_manifest,
+    )
 except ModuleNotFoundError:  # direct script execution from scripts/execution
     from acceptance_semantics import validate_phase_acceptance
     from validate_registry import (
@@ -32,6 +35,7 @@ except ModuleNotFoundError:  # direct script execution from scripts/execution
         _remote_ref_oid,
         validate as validate_registry,
     )
+    from validate_stage_manifest import validate as validate_stage_manifest
 
 
 SOURCE_ROOT = Path(__file__).resolve().parents[2]
@@ -39,13 +43,16 @@ SCHEMA_PATH = SOURCE_ROOT / "schemas" / "stage_completion_manifest.schema.json"
 GOAL_SHA256 = "c3dc5875868d847b8519fee40b14c43b65e4c5948dc5c3b98101ca61a5671dd5"
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 COMMIT_RE = re.compile(r"^[0-9a-f]{40}$")
-STAGE_RE = re.compile(r"^D1_B0_[0-9]{8}T[0-9]{6}Z_[0-9a-f]{7}(?:_A[0-9]+)?$")
+STAGE_RE = re.compile(
+    r"^D1_B0_[0-9]{8}T[0-9]{6}Z_" r"(?P<base_short_sha>[0-9a-f]{7})(?:_A[0-9]+)?$"
+)
+MINIMUM_INDEPENDENT_GATE_ID = 26
 REQUIRED_ARTIFACT_ROLES = {
     "code_manifest": "code",
-    "d1_acceptance": "evidence",
+    "d1_acceptance": "d1_freeze",
     "b0_acceptance": "evidence",
-    "preflight_manifest": "evidence",
-    "protected_state": "evidence",
+    "preflight_manifest": "d1_freeze",
+    "protected_state": "d1_freeze",
     "independent_gate_review": "evidence",
     "task_registry": "registry",
     "decision_log": "registry",
@@ -407,10 +414,37 @@ def _validate_phase_acceptances(
     return observed_gates
 
 
+def _validate_preflight_manifest(
+    manifest: Mapping[str, Any],
+    repo: Path,
+    role: tuple[Mapping[str, Any], Path, str] | None,
+    errors: list[str],
+) -> Mapping[str, Any]:
+    if role is None:
+        return {}
+    _, path, _ = role
+    payload = _load_json(path, "preflight_manifest", errors)
+    if not isinstance(payload, dict):
+        return {}
+    for error in validate_stage_manifest(payload):
+        errors.append(f"preflight_manifest: {error}")
+    if payload.get("stage_id") != manifest.get("stage_id"):
+        errors.append("preflight_manifest stage_id mismatch")
+    git_state = payload.get("git")
+    isolated = git_state.get("isolated", {}) if isinstance(git_state, Mapping) else {}
+    isolated_head = str(isolated.get("head") if isinstance(isolated, Mapping) else "")
+    if not _git_object_exists(repo, isolated_head):
+        errors.append("preflight_manifest git.isolated.head is not an existing commit")
+    return payload
+
+
 def _validate_code_manifest(
     repo: Path,
     code_commit: str,
     role: tuple[Mapping[str, Any], Path, str] | None,
+    *,
+    expected_base: str,
+    stage_id: str,
     errors: list[str],
 ) -> None:
     if role is None:
@@ -432,6 +466,14 @@ def _validate_code_manifest(
     base = str(payload.get("base_commit_sha") or "")
     if not _git_object_exists(repo, base) or not _is_ancestor(repo, base, code_commit):
         errors.append("code_manifest base_commit_sha is not an ancestor of code")
+    if base != expected_base:
+        errors.append(
+            "code_manifest base_commit_sha does not equal "
+            "preflight_manifest git.isolated.head"
+        )
+    stage_match = STAGE_RE.fullmatch(stage_id)
+    if stage_match is None or not base.startswith(stage_match.group("base_short_sha")):
+        errors.append("code_manifest base_commit_sha stage_id short SHA does not match")
     files = payload.get("files")
     deleted = payload.get("deleted_paths")
     if not isinstance(files, list) or not files:
@@ -496,6 +538,8 @@ def _validate_code_manifest(
 def _validate_registry_artifact(
     repo: Path,
     role: tuple[Mapping[str, Any], Path, str] | None,
+    artifacts: Mapping[str, tuple[Mapping[str, Any], Path, str]],
+    commits: Mapping[str, str],
     remote_name: str,
     expected_remote_url: str,
     stage_status: str,
@@ -542,6 +586,130 @@ def _validate_registry_artifact(
                 f"task_registry: {anchor} cannot be FROZEN "
                 f"for a failing {phase} gate"
             )
+    phase_bindings = {
+        "D1": ("d1_acceptance", "d1_freeze"),
+        "B0": ("b0_acceptance", "evidence"),
+    }
+    for phase, (artifact_role, commit_role) in phase_bindings.items():
+        artifact = artifacts.get(artifact_role)
+        if artifact is None:
+            continue
+        reference = artifact[0]
+        expected_commit = commits.get(commit_role)
+        for task_id, task in tasks.items():
+            if (
+                not isinstance(task_id, str)
+                or not task_id.startswith(f"{phase}-")
+                or task.get("status") not in {"VERIFIED", "FROZEN"}
+            ):
+                continue
+            if task.get("commit_sha") != expected_commit:
+                errors.append(
+                    f"task_registry: {task_id}: commit_sha must equal "
+                    f"git.{commit_role}_commit_sha"
+                )
+            if task.get("acceptance_artifact") != reference.get("path") or task.get(
+                "acceptance_sha256"
+            ) != reference.get("sha256"):
+                errors.append(
+                    f"task_registry: {task_id}: acceptance must equal the "
+                    f"{artifact_role} completion reference"
+                )
+
+
+def _validate_governance_documents(
+    manifest: Mapping[str, Any],
+    repo: Path,
+    artifacts: Mapping[str, tuple[Mapping[str, Any], Path, str]],
+    commits: Mapping[str, str],
+    errors: list[str],
+) -> None:
+    decision = artifacts.get("decision_log")
+    if decision is not None:
+        _, decision_path, decision_relative = decision
+        try:
+            decision_text = decision_path.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError):
+            errors.append("decision_log is not valid UTF-8")
+        else:
+            required_markers = {
+                str(manifest.get("stage_id") or ""),
+                "docs/contracts/mrna_latest_build_contract_v2.md",
+                "D-2026-07-29-GOVERNANCE-METADATA-CORRECTION-01",
+                "D-2026-07-29-GOVERNANCE-METADATA-CORRECTION-02",
+                "record_type: append_only_metadata_correction",
+                "historical_records_modified: false",
+            }
+            missing = sorted(
+                marker for marker in required_markers if marker not in decision_text
+            )
+            if missing:
+                errors.append(
+                    f"decision_log missing current governance markers: {missing}"
+                )
+        registry_blob = _blob_bytes(
+            repo,
+            commits.get("registry", ""),
+            decision_relative,
+        )
+        for role in ("code", "d1_freeze", "evidence"):
+            prior_blob = _blob_bytes(
+                repo,
+                commits.get(role, ""),
+                decision_relative,
+            )
+            if (
+                prior_blob is None
+                or registry_blob is None
+                or not registry_blob.startswith(prior_blob)
+            ):
+                errors.append(f"decision_log is not append-only from {role}")
+
+    review = artifacts.get("independent_gate_review")
+    if review is None:
+        return
+    _, review_path, _ = review
+    try:
+        review_text = review_path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError):
+        errors.append("independent_gate_review is not valid UTF-8")
+        return
+    if str(manifest.get("stage_id") or "") not in review_text:
+        errors.append("independent_gate_review does not identify the current stage")
+    if GOAL_SHA256 not in review_text:
+        errors.append("independent_gate_review does not identify the frozen contract")
+    gate_ids = [int(value) for value in re.findall(r"\bGATE-([0-9]+)\b", review_text)]
+    unique_gate_ids = set(gate_ids)
+    latest = max(unique_gate_ids, default=0)
+    if (
+        len(gate_ids) != len(unique_gate_ids)
+        or latest < MINIMUM_INDEPENDENT_GATE_ID
+        or unique_gate_ids != set(range(1, latest + 1))
+        or "blocking" not in review_text.lower()
+    ):
+        errors.append(
+            "independent_gate_review must contain contiguous GATE-01 through "
+            "the latest blocking record"
+        )
+
+
+def _status_has_unhashed_content(status_lines: list[str]) -> bool:
+    """Return true when porcelain status names bytes the evidence did not hash."""
+    for line in status_lines:
+        fields = line.split()
+        if not fields:
+            continue
+        if fields[0] == "?":
+            return True
+        if (
+            fields[0] in {"1", "2"}
+            and len(fields) >= 3
+            and len(fields[2]) == 4
+            and fields[2].startswith("S")
+            and fields[2].endswith("U")
+        ):
+            return True
+    return False
 
 
 def _validate_protection(
@@ -628,6 +796,11 @@ def _validate_protection(
     ):
         errors.append("protected_state status_porcelain_v2 is invalid")
         initial_status = []
+    if _status_has_unhashed_content(initial_status):
+        errors.append(
+            "protection evidence has unhashed untracked content; "
+            "original_worktree_unchanged cannot be proven"
+        )
     if recheck_status != initial_status:
         errors.append("protection recheck status differs from preflight")
     live_repo = Path(path_text)
@@ -727,16 +900,24 @@ def validate(
         return errors
     commits = {
         role: str(git_state.get(f"{role}_commit_sha") or "")
-        for role in ("code", "evidence", "registry")
+        for role in ("code", "d1_freeze", "evidence", "registry")
     }
     for role, commit in commits.items():
         if not _git_object_exists(repository, commit):
             errors.append(f"git.{role}_commit_sha is not an existing commit")
     if all(_git_object_exists(repository, value) for value in commits.values()):
         if len(set(commits.values())) != len(commits):
-            errors.append("git code/evidence/registry commits must be distinct stages")
-        if not _is_ancestor(repository, commits["code"], commits["evidence"]):
-            errors.append("git code commit is not an ancestor of evidence")
+            errors.append(
+                "git code/d1_freeze/evidence/registry commits must be distinct stages"
+            )
+        if not _is_ancestor(repository, commits["code"], commits["d1_freeze"]):
+            errors.append("git code commit is not an ancestor of d1_freeze")
+        if not _is_ancestor(
+            repository,
+            commits["d1_freeze"],
+            commits["evidence"],
+        ):
+            errors.append("git d1_freeze commit is not an ancestor of evidence")
         if not _is_ancestor(repository, commits["evidence"], commits["registry"]):
             errors.append("git evidence commit is not an ancestor of registry")
 
@@ -767,8 +948,75 @@ def validate(
             errors.append("git registry commit is not an ancestor of remote release")
         elif release_commit in set(commits.values()):
             errors.append("remote release commit must follow the registry commit")
+        else:
+            parent_line = _git_text(
+                repository,
+                "rev-list",
+                "--parents",
+                "-n",
+                "1",
+                release_commit,
+            )
+            parents = parent_line.split()[1:] if parent_line is not None else []
+            if parents != [commits["registry"]]:
+                errors.append(
+                    "remote release must be the direct single-parent child of registry"
+                )
+            expected_manifest_relative = (
+                f"{manifest.get('stage_root')}/release/completion_manifest.json"
+            )
+            release_diff = _git(
+                repository,
+                "diff",
+                "--name-only",
+                "-z",
+                commits["registry"],
+                release_commit,
+            )
+            try:
+                changed_paths = (
+                    {
+                        item
+                        for item in release_diff.stdout.decode(
+                            "utf-8",
+                            errors="strict",
+                        ).split("\0")
+                        if item
+                    }
+                    if release_diff.returncode == 0
+                    else set()
+                )
+            except UnicodeDecodeError:
+                changed_paths = set()
+            if changed_paths != {expected_manifest_relative}:
+                errors.append(
+                    "remote release delta must contain only the completion manifest"
+                )
+            if (
+                _blob_bytes(
+                    repository,
+                    commits["registry"],
+                    expected_manifest_relative,
+                )
+                is not None
+                or _blob_bytes(
+                    repository,
+                    release_commit,
+                    expected_manifest_relative,
+                )
+                is None
+            ):
+                errors.append(
+                    "remote release must newly add the canonical completion manifest"
+                )
 
     artifacts = _validate_artifacts(manifest, repository, commits, errors)
+    preflight = _validate_preflight_manifest(
+        manifest,
+        repository,
+        artifacts.get("preflight_manifest"),
+        errors,
+    )
     observed_gates = _validate_phase_acceptances(manifest, artifacts, errors)
     if observed_gates.get("B0") is True and observed_gates.get("D1") is not True:
         errors.append("B0 acceptance cannot pass before D1 acceptance")
@@ -788,16 +1036,39 @@ def validate(
     else:
         errors.append("status is invalid")
 
+    preflight_git = preflight.get("git")
+    preflight_isolated = (
+        preflight_git.get("isolated", {}) if isinstance(preflight_git, Mapping) else {}
+    )
+    expected_base = str(
+        preflight_isolated.get("head")
+        if isinstance(preflight_isolated, Mapping)
+        else ""
+    )
     _validate_code_manifest(
-        repository, commits["code"], artifacts.get("code_manifest"), errors
+        repository,
+        commits["code"],
+        artifacts.get("code_manifest"),
+        expected_base=expected_base,
+        stage_id=str(manifest.get("stage_id") or ""),
+        errors=errors,
     )
     _validate_registry_artifact(
         repository,
         artifacts.get("task_registry"),
+        artifacts,
+        commits,
         remote_name,
         expected_remote_url,
         str(status or ""),
         observed_gates,
+        errors,
+    )
+    _validate_governance_documents(
+        manifest,
+        repository,
+        artifacts,
+        commits,
         errors,
     )
     _validate_protection(manifest, artifacts, errors)

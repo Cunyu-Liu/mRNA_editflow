@@ -76,6 +76,7 @@
         "remote_name",
         "canonical_remote_url",
         "code_commit_sha",
+        "d1_freeze_commit_sha",
         "evidence_commit_sha",
         "registry_commit_sha",
         "published_remote_ref"
@@ -88,6 +89,10 @@
         },
         "canonical_remote_url": {"type": "string", "minLength": 1},
         "code_commit_sha": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "d1_freeze_commit_sha": {
           "type": "string",
           "pattern": "^[0-9a-f]{40}$"
         },
@@ -305,7 +310,7 @@
       "properties": {
         "role": {"type": "string", "minLength": 1},
         "commit_role": {
-          "enum": ["code", "evidence", "registry"]
+          "enum": ["code", "d1_freeze", "evidence", "registry"]
         },
         "path": {"$ref": "#/$defs/repositoryPath"},
         "sha256": {

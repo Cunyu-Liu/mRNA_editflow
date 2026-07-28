@@ -163,6 +163,11 @@
             "items": {"type": "string"}
           },
           "phase_gate": {"type": "boolean"},
+          "snapshot_artifact": {"type": ["string", "null"]},
+          "snapshot_sha256": {
+            "type": ["string", "null"],
+            "pattern": "^[0-9a-f]{64}$"
+          },
           "commit_sha": {"type": ["string", "null"]},
           "report": {"type": ["string", "null"]}
         },
@@ -184,6 +189,27 @@
                 "known_blockers",
                 "phase_gate"
               ]
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "task_id": {"const": "D1-08"},
+                "status": {"const": "FROZEN"}
+              },
+              "required": ["task_id", "status"]
+            },
+            "then": {
+              "required": ["snapshot_artifact", "snapshot_sha256"],
+              "properties": {
+                "snapshot_artifact": {
+                  "const": "data/d1/manifests/d1_canonical_snapshot.json"
+                },
+                "snapshot_sha256": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{64}$"
+                }
+              }
             }
           }
         ]

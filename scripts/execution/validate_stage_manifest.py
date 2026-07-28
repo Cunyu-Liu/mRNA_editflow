@@ -6,20 +6,56 @@ import argparse
 import json
 import re
 import sys
+from datetime import datetime
 from pathlib import Path
 
+import jsonschema
 
-GOAL_SHA256 = (
-    "c3dc5875868d847b8519fee40b14c43b65e4c5948dc5c3b98101ca61a5671dd5"
-)
+SOURCE_ROOT = Path(__file__).resolve().parents[2]
+SCHEMA_PATH = SOURCE_ROOT / "schemas" / "stage_manifest.schema.json"
+GOAL_SHA256 = "c3dc5875868d847b8519fee40b14c43b65e4c5948dc5c3b98101ca61a5671dd5"
 COMMIT_RE = re.compile(r"^[0-9a-f]{40}$")
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
-STAGE_RE = re.compile(r"^D1_B0_[0-9]{8}T[0-9]{6}Z_[0-9a-f]{7}$")
+STAGE_RE = re.compile(
+    r"^D1_B0_(?P<timestamp>[0-9]{8}T[0-9]{6}Z)_" r"[0-9a-f]{7}(?:_A[0-9]+)?$"
+)
+
+
+def _valid_time(value: object) -> bool:
+    if not isinstance(value, str) or not value:
+        return False
+    try:
+        parsed = datetime.fromisoformat(value.replace("Z", "+00:00"))
+    except ValueError:
+        return False
+    return parsed.tzinfo is not None
+
+
+def _validate_schema(manifest: dict, errors: list[str]) -> None:
+    try:
+        schema = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
+        jsonschema.Draft202012Validator.check_schema(schema)
+        format_checker = jsonschema.FormatChecker()
+        format_checker.checks("date-time")(_valid_time)
+        validator = jsonschema.Draft202012Validator(
+            schema,
+            format_checker=format_checker,
+        )
+    except Exception as exc:
+        errors.append(f"stage manifest schema unavailable or invalid: {exc}")
+        return
+    for error in sorted(
+        validator.iter_errors(manifest),
+        key=lambda item: tuple(str(part) for part in item.path),
+    ):
+        location = ".".join(str(part) for part in error.path) or "<root>"
+        errors.append(f"schema:{location}: {error.message}")
 
 
 def validate(manifest: dict) -> list[str]:
     """Return semantic errors; an empty list means the manifest is accepted."""
     errors: list[str] = []
+    _validate_schema(manifest, errors)
     required = {
         "artifact_type",
         "schema_version",
@@ -43,8 +79,14 @@ def validate(manifest: dict) -> list[str]:
         errors.append("artifact_type must be stage_manifest")
     if manifest["schema_version"] != "utr_stage_manifest.v1":
         errors.append("schema_version must be utr_stage_manifest.v1")
-    if not STAGE_RE.fullmatch(str(manifest["stage_id"])):
+    stage_match = STAGE_RE.fullmatch(str(manifest["stage_id"]))
+    if stage_match is None:
         errors.append("stage_id is not a D1_B0 stage identifier")
+    else:
+        try:
+            datetime.strptime(stage_match.group("timestamp"), "%Y%m%dT%H%M%SZ")
+        except ValueError:
+            errors.append("stage_id contains an invalid UTC calendar timestamp")
     if manifest["phase_ids"] != ["D1", "B0"]:
         errors.append("phase_ids must be exactly ['D1', 'B0']")
     if manifest["workload_class"] != "NON_NEURAL_DATA_BENCHMARK":
