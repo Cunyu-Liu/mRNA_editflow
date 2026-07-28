@@ -28,13 +28,18 @@ download helper was then repaired to accept
 restarted with that setting. A `.part` file is evidence of an unfinished
 transfer, never a checksum-verified raw file.
 
+For ENCSR854RUF, live publication-data metadata lists 62 files totaling about
+358 GB; the first fastq alone is 5.12 GiB. The operational D0 cap is therefore
+1 GiB. Files above the cap are recorded with provider md5 as deferred, while
+raw-read reconstruction remains an explicit repair path.
+
 ## Current acquisition states
 
 | accession | state | evidence | permitted use now |
 |---|---|---|---|
 | GSE114002 | direct sample repair in progress | 5 files previously downloaded; two missing samples are being resumed; RAW.tar partial moved to evidence storage | candidate metadata only |
 | GSE173083 | direct download complete | 6 files downloaded, 0 failed, 1 RAW.tar skipped; final verifier pending | direct files pending contract admission |
-| ENCSR854RUF | download in progress | accession and publication-data metadata live-verified; provider-md5 manifest pending | candidate metadata only |
+| ENCSR854RUF | download in progress | 62 files / about 358 GB listed; 1 GiB operational cap; oversized fastq partial preserved separately | candidate metadata only |
 
 The authoritative per-file evidence is stored under `data/p0/<accession>/` in
 the corresponding `manifest.json` files. The incomplete GSE114002 archive is

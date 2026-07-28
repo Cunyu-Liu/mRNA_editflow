@@ -167,7 +167,7 @@ tasks:
       - "tests/test_verify_downloads.py"
     commands:
       - "MRNA_EDITFLOW_DOWNLOAD_TIMEOUT=3600 python scripts/data/download_geo.py --accession GSE145046 --dest data/p0 --workers 2 --retries 5 (repeat for each P0 GEO accession)"
-      - "MRNA_EDITFLOW_DOWNLOAD_TIMEOUT=3600 python scripts/data/download_encode.py --accession ENCSR854RUF --dest data/p0"
+      - "MRNA_EDITFLOW_DOWNLOAD_TIMEOUT=3600 python scripts/data/download_encode.py --accession ENCSR854RUF --dest data/p0 --max-bytes 1073741824"
       - "python scripts/data/download_mavedb.py --urn <verified-MaveDB-URN> --dest data/p0 (not run: no verified URN candidate adopted)"
       - "python scripts/data/verify_downloads.py --root data/p0 --report-md docs/data/download_verification.md"
     outputs:
