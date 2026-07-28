@@ -12,7 +12,7 @@ build-backend = "setuptools.build_meta"
 name = "mrna-editflow"
 version = "0.1.0"
 description = "mRNA EditFlow: local-edit benchmark, delta-oracle ensemble, and GRPO policy training for 5'UTR optimisation"
-readme = "docs/nmi_execution_contract.md"
+readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "Proprietary" }
 

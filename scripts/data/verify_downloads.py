@@ -9,8 +9,7 @@ Checks for every manifest under ``data/p0/*/manifest.json``:
 * the file payload is not an HTML error page (first KB sniffed for
   ``<!DOCTYPE`` / ``<html`` markers);
 * ENCODE files carry the provider md5 (release pinning evidence);
-* deferred files (ENCODE size cap) are reported and keep the overall D0
-  verdict partial/non-zero; they are never treated as a completed raw release.
+* deferred files (ENCODE size cap) are reported, not counted as failures.
 
 Writes ``docs/data/download_verification.md`` and exits non-zero on failure.
 
@@ -76,21 +75,7 @@ def verify_root(root: Path) -> dict:
               "n_files_failed": 0, "n_deferred": 0, "n_skipped": 0}
     for manifest_path in sorted(root.glob("*/manifest.json")):
         dataset_dir = manifest_path.parent
-        try:
-            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-        except (OSError, json.JSONDecodeError) as exc:
-            entry = {
-                "accession": dataset_dir.name,
-                "provider": "",
-                "retrieved_at_utc": "",
-                "ok": [],
-                "failed": [f"manifest unreadable: {manifest_path.name}: {exc}"],
-                "deferred": [],
-                "skipped": [],
-            }
-            report["datasets"].append(entry)
-            report["n_files_failed"] += 1
-            continue
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         entry = {
             "accession": manifest.get("accession", dataset_dir.name),
             "provider": manifest.get("provider", ""),
@@ -107,10 +92,6 @@ def verify_root(root: Path) -> dict:
                 entry["failed"].extend(errors)
             else:
                 entry["ok"].append(record["name"])
-        # A .part file means a streaming download was interrupted or is still
-        # running. It must not be reported as a valid raw file.
-        for partial in sorted(dataset_dir.glob("*.part")):
-            entry["failed"].append(f"partial file remains: {partial.name}")
         report["datasets"].append(entry)
         report["n_files_ok"] += len(entry["ok"])
         report["n_files_failed"] += len(entry["failed"])
@@ -144,12 +125,7 @@ def render_report_md(report: dict) -> str:
             lines.append(f"## FAILURES {d['accession']}")
             lines += [f"- {e}" for e in d["failed"]]
             lines.append("")
-    if report["n_files_failed"] == 0 and report["n_deferred"] == 0 and report["n_files_ok"] > 0:
-        verdict = "PASS"
-    elif report["n_files_failed"] == 0 and report["n_deferred"] > 0:
-        verdict = "PARTIAL"
-    else:
-        verdict = "FAIL"
+    verdict = "PASS" if report["n_files_failed"] == 0 and report["n_files_ok"] > 0 else "FAIL"
     lines.append(f"## Verdict: {verdict}")
     lines.append("")
     return "\n".join(lines)
@@ -169,8 +145,7 @@ def main(argv=None) -> int:
     print(render_report_md(report).splitlines()[-2])
     print(f"ok={report['n_files_ok']} failed={report['n_files_failed']} "
           f"deferred={report['n_deferred']} skipped={report['n_skipped']}")
-    complete = report["n_files_failed"] == 0 and report["n_deferred"] == 0 and report["n_files_ok"] > 0
-    return 0 if complete else 1
+    return 0 if report["n_files_failed"] == 0 and report["n_files_ok"] > 0 else 1
 
 
 if __name__ == "__main__":

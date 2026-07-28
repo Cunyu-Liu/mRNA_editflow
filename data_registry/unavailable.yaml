@@ -1,56 +1,13 @@
-registry_version: 1.0.0
+registry_version: "1.0.0"
 contract_id: public_intervention_contract_v1
-purpose: "Acquisition trail for incomplete or unavailable P0 raw files; no candidate is deleted."
-entries:
-  - accession: GSE114002
-    status: DIRECT_SAMPLE_REPAIR_COMPLETE
-    paper: "Sample et al. 2019, human 5' UTR massively parallel translation assay"
-    searched_locations:
-      - "GEO series page and GEO FTP file list"
-      - "GEO supplementary files via download_geo.py"
-      - "SRA links exposed by GEO (10 links)"
-      - "ENA links exposed by the systematic search record"
-      - "paper supplementary files and official repository search"
-    supplemental: "GEO file list exposes GSE114002_RAW.tar (listed; 431175680 bytes) and 10 per-sample files. All 10 per-sample files are now downloaded and verified; RAW.tar was skipped because the downloader avoids duplicate archives."
-    author_code: "No verified official author-code mirror located in this run."
-    archive: "GEO RAW.tar was attempted as an archive fallback; the 28178928-byte incomplete transfer is preserved at data_registry/search_artifacts/partial_downloads/GSE114002/GSE114002_RAW.tar.part and is not admitted as a raw file."
-    author_contact_needed: true
-    raw_reads_reconstruction: "YES: 10 SRA links are recorded; reconstruct only after accession-to-sample and WT/mutant labels are audited."
-    current_substitute: "Verified direct per-sample files; benchmark admission remains gated on endpoint, WT/mutant, replicate, and split audits."
-    next_repair: "final verifier -> alternate NCBI mirror/archive/raw reconstruction only if a file fails -> author contact -> document unavailable"
-    evidence: "final manifest records 10 downloaded, 0 failed, 1 skipped; the incomplete RAW.tar transfer remains preserved separately as acquisition evidence"
+generated_by: docs/data/missing_dataset_acquisition.md
+generated_at_utc: "2026-07-28T00:00:00Z"
 
-  - accession: GSE173083
-    status: DIRECT_DOWNLOAD_COMPLETE
-    paper: "Leppek et al. 2022, PERSIST-seq"
-    searched_locations:
-      - "GEO series page and GEO FTP file list"
-      - "GEO supplementary files via download_geo.py"
-      - "SRA links exposed by GEO (70 links)"
-      - "ENA links exposed by the systematic search record"
-      - "paper supplementary files and official repository search"
-    supplemental: "GEO supplementary retry completed: six listed data files downloaded; RAW.tar intentionally skipped as a duplicate archive. Two stale interrupted-transfer .part files were moved to the mounted acquisition-volume partial_evidence directory; final checksum verification remains a release gate."
-    author_code: "No verified official author-code mirror located in this run."
-    archive: "No independent archive copy located in this run; retain GEO/SRA accession as the authoritative source."
-    author_contact_needed: true
-    raw_reads_reconstruction: "YES: 70 SRA links are recorded; not needed for the currently complete direct supplementary files unless final verification fails."
-    current_substitute: "Direct supplementary files are available; benchmark admission remains gated on final checksum, endpoint, WT/mutant and split audits."
-    next_repair: "final verifier -> alternate NCBI mirror/archive/raw reconstruction only if a file fails -> author contact -> document unavailable"
-    evidence: "download log records GSE173083: 6 downloaded, 0 failed, 1 skipped"
+# Datasets that could not be obtained after the initial D0-03 download pass.
+# Each record follows the escalation ladder:
+#   retry → alternate mirror → archive → raw reconstruction → author contact
+#   → documented unavailable
+# A dataset may only carry status=documented_unavailable after all earlier
+# rungs have been attempted and evidenced below.
 
-  - accession: ENCSR854RUF
-    status: PROCESSED_DATA_COMPLETE_RAW_READS_INCOMPLETE
-    paper: "MPRAu: 3' UTR variant allele-specific abundance across six human cell lines"
-    searched_locations:
-      - "ENCODE publication-data API"
-      - "ENCODE file metadata and provider checksums"
-      - "paper supplementary files and official repository search"
-      - "Zenodo and Figshare mirror queries"
-    supplemental: "ENCODE publication-data metadata is verified. The PMC Supplementary Table 1 processed screen data and per-oligo read counts were downloaded and SHA-256 verified at data/p0/ENCSR854RUF/processed/MPRAu_Supplementary_Table1.xlsx. The 62 ENCODE raw files remain incomplete; parallel cloud acquisition preserved .part evidence at /mnt/cunyuliu/partial_evidence/ENCSR854RUF/ but was stopped after the operational review because the observed throughput was not sufficient for a bounded D0 completion."
-    author_code: "No verified official author-code mirror located in this run."
-    archive: "A 7430144-byte early partial of ENCFF957TLC.fastq.gz is preserved at data_registry/search_artifacts/partial_downloads/ENCSR854RUF/. The later parallel-download .part files remain at /mnt/cunyuliu/partial_evidence/ENCSR854RUF/; none is admitted as a raw file."
-    author_contact_needed: false
-    raw_reads_reconstruction: "UNKNOWN: decide only after ENCODE file metadata and raw-read accessions are inspected."
-    current_substitute: "Verified processed screen data may support exploratory/model-preprocessing work; it does not substitute for the incomplete ENCODE raw-read release in the D0 raw-file acceptance gate."
-    next_repair: "resume official cloud raw-file acquisition -> verify provider md5 and non-HTML payload -> inspect deferred large files -> raw-read reconstruction/archive if needed -> author contact if needed -> document unavailable"
-    evidence: "systematic search live-verified ENCSR854RUF; processed manifest is complete; raw manifest remains incomplete and all .part files are retained on the acquisition volume outside benchmark admission"
+datasets: []

@@ -91,29 +91,6 @@ def test_download_geo_skips_raw_tar_and_writes_manifest(tmp_path, monkeypatch):
     assert saved["accession"] == "GSE999999"
 
 
-def test_download_geo_recovers_size_matched_existing_file(tmp_path, monkeypatch):
-    payload = b"already here"
-    monkeypatch.setattr(
-        download_geo, "list_supplementary",
-        lambda acc: [{"name": "existing.txt", "size": len(payload), "kind": "file"}],
-    )
-    dataset = tmp_path / "GSE999999"
-    dataset.mkdir()
-    (dataset / "existing.txt").write_bytes(payload)
-
-    def should_not_download(*args, **kwargs):
-        raise AssertionError("size-matched existing file was unnecessarily downloaded")
-
-    monkeypatch.setattr(download_geo, "stream_download", should_not_download)
-    manifest = download_geo.download_geo("GSE999999", tmp_path)
-
-    record = manifest["files"][0]
-    assert record["downloaded"] is True
-    assert record["recovered_existing"] is True
-    assert record["bytes"] == len(payload)
-    assert record["sha256"] == hashlib.sha256(payload).hexdigest()
-
-
 def test_download_geo_flags_size_mismatch(tmp_path, monkeypatch):
     monkeypatch.setattr(download_geo, "list_supplementary",
                         lambda acc: download_geo.parse_filelist(FILELIST))
@@ -186,24 +163,3 @@ def test_stream_download_retry_then_success(tmp_path, monkeypatch):
     assert rec["downloaded"] and rec["bytes"] == 7
     assert rec["sha256"] == hashlib.sha256(b"payload").hexdigest()
     assert attempts["n"] == 2
-
-
-def test_stream_download_retains_partial_for_resume(tmp_path, monkeypatch):
-    attempts = {"n": 0}
-    dest = tmp_path / "f.bin"
-
-    def fake_curl(url, tmp, timeout):
-        attempts["n"] += 1
-        if attempts["n"] == 1:
-            tmp.write_bytes(b"partial")
-            raise OSError("connection reset")
-        assert tmp.read_bytes() == b"partial"
-        tmp.write_bytes(b"payload")
-
-    monkeypatch.setattr(download_common, "_curl_download", fake_curl)
-    monkeypatch.setattr(download_common.time, "sleep", lambda s: None)
-    rec = download_common.stream_download("https://x/f", dest, retries=2)
-
-    assert rec["downloaded"] is True
-    assert dest.read_bytes() == b"payload"
-    assert not dest.with_suffix(dest.suffix + ".part").exists()

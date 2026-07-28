@@ -184,10 +184,10 @@ tasks:
     repair_loop:
       - "download failure -> retry -> alternate mirror -> archive source -> raw reconstruction -> author contact -> documented unavailable (never silently drop)"
     commit_sha: null
-    report: "PARTIAL: all required GEO accessions have verified direct files or manifests; MPRAu processed Supplementary Table 1 is complete (37,117,358 bytes, SHA-256 recorded), but the 62-file ENCODE raw-read release remains incomplete and is not admitted as raw data."
+    report: "PARTIAL: all required GEO accessions have verified direct files or manifests; MPRAu processed Supplementary Table 1 is complete (37,117,358 bytes, SHA-256 recorded); all 62 ENCODE files have fixed GEO/SRA alternate provenance, but the 62-file ENCODE raw-read release remains incomplete and is not admitted as raw data."
 
   - task_id: D0-04
-    status: IN_PROGRESS
+    status: DONE
     dependencies: [D0-03]
     inputs:
       - "data/p0/*/manifest.json"

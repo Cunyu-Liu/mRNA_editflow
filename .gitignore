@@ -90,3 +90,10 @@ config/local_*.json
 Thumbs.db
 ehthumbs.db
 Desktop.ini
+
+# R0/D0 large data (NFS-mounted, not for git)
+data/p0
+artifacts/
+data/nmi_benchmark_v2/
+data_registry/search_artifacts/partial_downloads/
+benchmark_v21/external_data/

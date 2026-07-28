@@ -8,6 +8,8 @@
 - archives skipped: 5 duplicate `RAW.tar` entries
 - processed MPRAu supplement: 37,117,358 bytes; SHA-256
   `a02e6bd45e4f57bc0cf877aee766f006699b40469568c82974d21ac4d0346145`
+- alternate raw-read provenance: 62/62 ENCODE files mapped to GEO/SRA; map
+  retained at `/mnt/cunyuliu/partial_evidence/ENCSR854RUF_sra_reconstruction_map.json`
 - verdict: `PARTIAL` — raw ENCSR854RUF remains incomplete, so D0-03 is not
   closed.
 

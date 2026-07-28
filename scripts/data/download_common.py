@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import hashlib
 import json
-import os
 import shutil
 import subprocess
 import time
@@ -12,7 +11,6 @@ import urllib.request
 from pathlib import Path
 
 USER_AGENT = "mrna-editflow-d0/1.0 (public_intervention_contract_v1)"
-DEFAULT_CURL_TIMEOUT = int(os.environ.get("MRNA_EDITFLOW_DOWNLOAD_TIMEOUT", "600"))
 
 
 def http_get(url: str, timeout: int = 60) -> bytes:
@@ -42,8 +40,7 @@ def _curl_download(url: str, tmp: Path, timeout: int) -> None:
     if curl is None:
         raise RuntimeError("curl not found on PATH")
     subprocess.run(
-        [curl, "-fSL", "--retry", "0", "--continue-at", "-",
-         "--connect-timeout", "30",
+        [curl, "-fSL", "--retry", "0", "--connect-timeout", "30",
          "--max-time", str(timeout), "-A", USER_AGENT, "-o", str(tmp), url],
         check=True, capture_output=True)
 
@@ -58,29 +55,25 @@ def _sha256_and_size(path: Path) -> tuple[str, int]:
     return sha.hexdigest(), nbytes
 
 
-def stream_download(url: str, dest: Path, retries: int = 3,
-                    timeout: int | None = None) -> dict:
+def stream_download(url: str, dest: Path, retries: int = 3, timeout: int = 600) -> dict:
     """Download ``url`` to ``dest`` while computing sha256. Returns file record.
 
-    Retries with exponential backoff. A failed attempt retains ``dest.part``
-    so the next curl attempt can resume it; only a checksum-verified complete
-    payload is renamed to ``dest``. The default curl wall-clock timeout is configurable through
-    ``MRNA_EDITFLOW_DOWNLOAD_TIMEOUT`` so large GEO archives can be retried
-    without changing the scientific data contract.
+    Retries with exponential backoff. A failed attempt never leaves a partial
+    file behind (downloads go to ``dest.part`` first and are renamed).
     """
     dest.parent.mkdir(parents=True, exist_ok=True)
     tmp = dest.with_suffix(dest.suffix + ".part")
-    curl_timeout = DEFAULT_CURL_TIMEOUT if timeout is None else timeout
     last_error = ""
     for attempt in range(1, retries + 1):
         try:
-            _curl_download(url, tmp, curl_timeout)
+            _curl_download(url, tmp, timeout)
             sha, nbytes = _sha256_and_size(tmp)
             tmp.replace(dest)
             return {"name": dest.name, "url": url, "bytes": nbytes,
                     "sha256": sha, "downloaded": True}
         except Exception as exc:
             last_error = f"{type(exc).__name__}: {exc}"
+            tmp.unlink(missing_ok=True)
             if attempt < retries:
                 time.sleep(2 ** attempt)
     return {"name": dest.name, "url": url, "bytes": 0, "sha256": "",
