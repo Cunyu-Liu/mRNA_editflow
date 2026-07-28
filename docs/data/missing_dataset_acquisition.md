@@ -21,6 +21,13 @@ ENCODE, paper supplementary files, and official GitHub/Bitbucket locations.
 MaveDB was queried as a supplementary discovery route; no verified MaveDB URN
 was adopted, so `download_mavedb.py --urn ...` was not run.
 
+The first GEO attempts used a 600-second curl wall-clock limit. Large or slow
+files were observed timing out and leaving an incomplete acquisition state. The
+download helper was then repaired to accept
+`MRNA_EDITFLOW_DOWNLOAD_TIMEOUT=3600`; the affected P0 accessions were
+restarted with that setting. A `.part` file is evidence of an unfinished
+transfer, never a checksum-verified raw file.
+
 ## Current acquisition states
 
 | accession | state | evidence | permitted use now |
