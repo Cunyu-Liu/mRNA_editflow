@@ -1,0 +1,263 @@
+# =============================================================================
+# public_intervention_contract_v1
+#
+# The single authoritative research contract for mRNA-EditFlow.
+# Supersedes the entire P3/NMI legacy contract (SUPERSEDED_LEGACY, archived
+# under configs/archive/p3_legacy/, docs/archive/p3_legacy/,
+# scripts/archive/p3_legacy/; pre-archive commit
+# 20d33f104d164c783cd2182fcfa8824bfb2f6b28).
+#
+# Core principle: no prospective wet-lab. All core conclusions must come from
+# publicly measured experimental data, strict external testing, and
+# reproducible statistical analysis. Paper type: ML methods + data benchmark
+# + cross-experiment generalization study.
+# =============================================================================
+
+contract_id: public_intervention_contract_v1
+version: 1.0.0
+status: FROZEN
+created_on: "2026-07-28"
+supersedes: SUPERSEDED_LEGACY (P3/NMI contract, archived 2026-07-28)
+
+# ---------------------------------------------------------------------------
+# 1. The single core scientific question
+# ---------------------------------------------------------------------------
+scientific_question: >
+  Can publicly measured mRNA variant intervention data be used to learn
+  assay-specific functional increments of local sequence edits, such that the
+  predictions transfer across sources, genes, studies, cellular contexts and
+  mRNA regions?
+
+scientific_question_decomposition:
+  Q1_local_effect_predictability: >
+    Given source sequence + single or minimal edit + assay/context metadata,
+    predict candidate-minus-source functional effect.
+  Q2_transfer_across_public_studies: >
+    Whether regularities learned on earlier studies (e.g. Sample 2019,
+    PLUMAGE) transfer to later studies (e.g. 2025 neurodevelopmental 5'UTR
+    MPRA) without tuning on target-study labels.
+  Q3_endpoint_structure: >
+    Whether different endpoints (MRL, translation efficiency, RNA abundance,
+    half-life, protein abundance) share partial sequence regularities.
+    Endpoints are studied separately and are never merged into a single
+    unified "expression" label.
+  Q4_action_representation: >
+    Whether a strictly legal sparse explicit-action representation
+    (source + edit action) outperforms plain sequence-difference and
+    candidate-absolute representations.
+  Q5_flow_value: >
+    Whether SparseEditFlow adds value over the direct sparse scorer, decided
+    only by matched-compute experiments after the direct scorer is built.
+
+# ---------------------------------------------------------------------------
+# 2. Benchmarks (mRNA-EditBench: four independent sub-benchmarks)
+# ---------------------------------------------------------------------------
+primary_benchmark: EditBench-5U-Natural
+
+benchmarks:
+  EditBench-5U-Natural:
+    role: primary
+    data: [sample2019_natural_variants, plumage_5utr, ndd_5utr_mpra_2025]
+    task: "WT 5'UTR + single variant + assay metadata -> measured delta"
+    allowed_pair_types: [true_wt_mutant]
+    allowed_evidence_grades: [A1]
+  EditBench-5U-Dense:
+    role: large_scale_pretraining
+    data: [gse145046_dense_5utr]
+    task: "source 10-mer + one nucleotide edit -> translation/stability delta"
+    allowed_pair_types: [dense_synthetic_neighbor]
+    allowed_evidence_grades: [A2]
+  EditBench-3U-Variant:
+    role: cross_region
+    data: [gse217518, gse200304_prostate_3utr, mprau_encsr854ruf, maputr_after_validation]
+    task: "WT 3'UTR window + variant + cell context -> abundance/stability/TE delta"
+    allowed_pair_types: [true_wt_mutant]
+    allowed_evidence_grades: [A1]
+  EditBench-CDS-Synonymous:
+    role: codon_family
+    data: [icodon, persist_cds_subset, gfp_synonymous_library]
+    task: "protein identity + source CDS + synonymous candidate CDS -> stability/expression difference (family ranking)"
+    allowed_pair_types: [same_protein_synonymous_family]
+    allowed_evidence_grades: [B1]
+
+# ---------------------------------------------------------------------------
+# 3. Primary datasets and sealed external dataset
+# ---------------------------------------------------------------------------
+primary_datasets:
+  sample2019:
+    accession: GSE114002
+    evidence_grade: A1
+    region: five_utr
+    endpoint: mean_ribosome_loading
+    role: train_dev
+  plumage2021:
+    accession: GSE149487
+    evidence_grade: A1
+    region: five_utr
+    endpoint: [transcript_abundance, translation_efficiency]
+    role: train_dev
+  gse145046_dense:
+    accession: GSE145046
+    evidence_grade: A2
+    region: five_utr
+    endpoint: [ribosome_loading, fluorescence, in_cell_half_life, in_vitro_half_life]
+    role: dense_pretraining
+  ndd_5utr_mpra_2025:
+    accession: GSE246381
+    evidence_grade: A1
+    region: five_utr
+    endpoint: [transcript_abundance, monosome_80s_polysome]
+    role: sealed_external_test
+
+sealed_external_dataset:
+  accession: GSE246381
+  description: "2025 neurodevelopmental 5'UTR mutation MPRA (cell-line + neuronal contexts)"
+  rule: >
+    Per-variant labels of GSE246381 must not be read by training code before
+    the model and hyperparameters are frozen. The sealed evaluation thresholds
+    (see targets.external_temporal) are fixed here and cannot be modified
+    after unsealing.
+
+# ---------------------------------------------------------------------------
+# 4. Endpoint separation (no unified "expression" label)
+# ---------------------------------------------------------------------------
+endpoint_separation:
+  endpoints:
+    - mean_ribosome_loading      # MRL; NOT protein output
+    - translation_efficiency     # TE; NOT protein output
+    - rna_abundance
+    - half_life                  # never merged with expression
+    - protein_abundance
+  rules:
+    - "Every record carries exactly one primary endpoint label."
+    - "MRL must not be called protein output."
+    - "TE must not be called protein output."
+    - "Half-life must not be merged with expression."
+    - "3'UTR and 5'UTR labels must not be directly concatenated into one regression."
+    - "All conclusions must retain endpoint qualifiers."
+
+# ---------------------------------------------------------------------------
+# 5. Splits and leakage control
+# ---------------------------------------------------------------------------
+splits:
+  random_pair_split_forbidden: true
+  primary_splits:
+    split_A_source_disjoint: "All candidates of one WT/source stay in the same split."
+    split_B_gene_disjoint: "All UTR variants of one gene stay in the same split."
+    split_C_study_disjoint: "An entire study acts as test."
+    split_D_context_disjoint: "e.g. HEK train / neuronal test."
+    split_E_temporal_external:
+      train_dev: [sample2019 (GSE114002), plumage2021 (GSE149487)]
+      sealed_external: [ndd_5utr_mpra_2025 (GSE246381)]
+  dense_landscape_splits:
+    block_split: "Fixed-prefix sequence blocks; only intra-block edges."
+    position_holdout: "Train on edits at positions 1-7, test on edits at positions 8-10."
+    motif_holdout: "Hold out uAUG / G-quadruplex / A-rich / high-GC motifs as OOD test."
+  leakage_rules:
+    - "No reverse edge may cross train/test."
+    - "Near-duplicate audit must report source/candidate/reverse-edge/gene/Hamming/k-mer/study/assay overlap."
+    - "Any test contamination must fail paper mode."
+    - "Sealed labels must never be used for tuning."
+
+# ---------------------------------------------------------------------------
+# 6. Primary metrics (macro-averaged per study)
+# ---------------------------------------------------------------------------
+primary_metrics:
+  - delta_spearman
+  - sign_accuracy
+  - pairwise_ranking_auc
+  - top10pct_enrichment
+  - ndcg
+  - rmse
+  - ece
+  - coverage_risk
+metric_rules:
+  - "All metrics are computed per study and then macro-averaged."
+  - "GSE145046's million-scale samples must not dominate pooled results."
+  - "Never report only pooled metrics; never report only the best seed."
+
+# ---------------------------------------------------------------------------
+# 7. Targets
+# ---------------------------------------------------------------------------
+targets:
+  minimum_scientific_validity:
+    scope: "at least two independent 5'UTR studies"
+    delta_spearman: 0.30
+    sign_accuracy: 0.60
+    top10pct_enrichment: 1.5
+    beat: "strongest non-foundation baseline"
+  submission_stretch:
+    macro_delta_spearman: 0.35
+    macro_sign_accuracy: 0.65
+    top10pct_enrichment: 1.75
+    ece: 0.10
+    delta_spearman_vs_strongest_executable_baseline: 0.05
+    ci: "source-group bootstrap 95% CI lower bound > 0"
+  external_temporal:
+    dataset: GSE246381
+    delta_spearman: 0.25
+    sign_accuracy: 0.60
+    top10pct_enrichment: 1.5
+    immutable_after_unseal: true
+  optimization:
+    scope: "source families with multiple measured candidates only"
+    top10_recall: 0.70
+    ndcg_margin_vs_strongest_baseline: 0.05
+    normalized_regret: 0.10
+
+# ---------------------------------------------------------------------------
+# 8. Claim boundaries
+# ---------------------------------------------------------------------------
+claims:
+  primary: >
+    We introduce a harmonized benchmark of experimentally measured mRNA
+    variant effects and a source-conditioned sparse action model that
+    predicts local intervention effects across unseen genes, studies and
+    cellular contexts.
+  secondary:
+    - "Explicit source + edit-action modeling is more reliable than subtracting two absolute property scores."
+    - "Source cache + sparse action scoring enables large-scale candidate ranking without re-running a full foundation model per candidate."
+    - "Assay-aware uncertainty and abstention reduce false-beneficial predictions under cross-experiment generalization."
+    - "Explicit legal geometry of UTR nucleotide actions and CDS synonymous-codon actions improves validity and interpretability."
+  forbidden:
+    - "Claiming the model improves protein output of real therapeutic mRNA."
+    - "Claiming model-discovered candidates are experimentally validated."
+    - "Claiming the model outperforms real experimental screening."
+    - "Equating MRL improvement with protein-output improvement."
+    - "Equating TE improvement with protein-output improvement."
+    - "Claiming half-life improvement necessarily improves protein output."
+    - "Claiming general full-length therapeutic mRNA optimization."
+    - "Treating observational data as intervention labels."
+    - "Calling the random 50-nt UTR library WT-mutant pairs."
+    - "Treating same-protein synonymous families as independent pair samples."
+    - "Making any wet-lab validation claim; no new wet-lab experiments will be performed."
+    - "Merging half-life and expression into one label."
+    - "Tuning on sealed labels or modifying the test set after external failure."
+
+# ---------------------------------------------------------------------------
+# 9. No-wet-lab statement
+# ---------------------------------------------------------------------------
+no_wetlab_statement: >
+  This project performs no new wet-lab experiments. No conclusion depends on
+  prospective experimental validation. Any statement about improved
+  translation, stability, abundance or expression is a PREDICTED effect on a
+  measured public endpoint with explicit endpoint qualifiers, never a
+  demonstrated therapeutic benefit.
+
+# ---------------------------------------------------------------------------
+# 10. Evidence grades and pair types
+# ---------------------------------------------------------------------------
+evidence_grades:
+  A1: "intentionally assayed WT-mutant pair (trains primary local-delta model)"
+  A2: "controlled dense sequence landscape (trains primary local-delta model)"
+  B1: "same-protein synonymous design family (secondary tasks)"
+  B2: "modular full-length construct family (secondary tasks)"
+  C:  "cross-construct absolute-property data (pretrain/aux/baseline only)"
+  D:  "observational natural transcript data (pretrain/aux/baseline only)"
+
+pair_types:
+  - true_wt_mutant
+  - dense_synthetic_neighbor
+  - same_protein_synonymous_family
+  - modular_construct_family
+  - retrospective_nearest_neighbor

@@ -17,8 +17,8 @@ logs
 *.log
 
 # large generated reports
-docs/p3_10_run_*
-docs/p3_11_run_*
+docs/archive/p3_legacy/p3_10_run_*
+docs/archive/p3_legacy/p3_11_run_*
 
 # OS noise
 .DS_Store

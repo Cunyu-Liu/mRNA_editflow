@@ -1,0 +1,210 @@
+# Execution task registry — public_intervention_contract_v1
+# Validated by: python scripts/execution/validate_registry.py
+# Schema: schemas/task_registry.schema.json
+registry_version: "1.0.0"
+contract_id: public_intervention_contract_v1
+
+tasks:
+  - task_id: R0-01
+    status: DONE
+    dependencies: []
+    inputs:
+      - "legacy P3 contract configs (pre-archive; now under configs/archive/p3_legacy/)"
+      - "legacy P3 contract docs (pre-archive; now under docs/archive/p3_legacy/)"
+    in_scope:
+      - "git mv legacy contract configs/docs/code into archive dirs (history preserved)"
+      - "add SUPERSEDED.md markers with pre-archive commit hash"
+      - "stop active paper code referencing the legacy contract (README/.dockerignore updated)"
+    out_of_scope:
+      - "deleting git history"
+      - "modifying old results to fit the new question"
+      - "touching artifacts/ results/ data/ historical records"
+    files:
+      - "configs/archive/p3_legacy/"
+      - "docs/archive/p3_legacy/"
+      - "scripts/archive/p3_legacy/"
+      - "scripts/contracts/audit_legacy_references.py"
+      - "tests/test_audit_legacy_references.py"
+    commands:
+      - "python scripts/contracts/audit_legacy_references.py --strict"
+      - "python -m pytest tests/test_audit_legacy_references.py -q"
+    outputs:
+      - "docs/archive/p3_legacy/ (incl. SUPERSEDED.md)"
+      - "configs/archive/p3_legacy/ (incl. SUPERSEDED.md)"
+      - "scripts/archive/p3_legacy/ (incl. SUPERSEDED.md)"
+    acceptance:
+      - "active paper code references to legacy contract = 0"
+    repair_loop:
+      - "if audit > 0: move referencing legacy-era files into archive or repoint active docs to the new contract, then re-run audit"
+    commit_sha: null
+    report: null
+
+  - task_id: R0-02
+    status: DONE
+    dependencies: [R0-01]
+    inputs:
+      - "scientific question, benchmark definition, metrics and boundaries of public_intervention_contract_v1"
+    in_scope:
+      - "fix scientific question / primary benchmark / primary datasets / sealed external dataset / endpoint separation / splits / primary metrics / claim boundaries / no-wet-lab statement"
+    out_of_scope:
+      - "model architecture changes"
+      - "any wet-lab planning"
+    files:
+      - "configs/public_intervention_contract.yaml"
+      - "docs/public_intervention_scientific_question.md"
+      - "docs/public_intervention_claim_matrix.md"
+      - "tests/test_public_intervention_contract.py"
+    commands:
+      - "python -m pytest tests/test_public_intervention_contract.py -q"
+    outputs:
+      - "configs/public_intervention_contract.yaml (FROZEN)"
+      - "docs/public_intervention_scientific_question.md"
+      - "docs/public_intervention_claim_matrix.md"
+    acceptance:
+      - "pytest tests/test_public_intervention_contract.py -q passes"
+    repair_loop:
+      - "if contract test fails: fix the contract files (not the test) unless the test contradicts the written contract"
+    commit_sha: null
+    report: null
+
+  - task_id: R0-03
+    status: DONE
+    dependencies: [R0-01]
+    inputs:
+      - "list of Phase R0/D0 tasks and their contracts"
+    in_scope:
+      - "task registry yaml + JSON schema + dependency-free validator"
+    out_of_scope:
+      - "CI wiring (later phase)"
+    files:
+      - "docs/execution/task_registry.yaml"
+      - "schemas/task_registry.schema.json"
+      - "scripts/execution/validate_registry.py"
+      - "tests/test_validate_registry.py"
+    commands:
+      - "python scripts/execution/validate_registry.py"
+      - "python -m pytest tests/test_validate_registry.py -q"
+    outputs:
+      - "docs/execution/task_registry.yaml"
+      - "schemas/task_registry.schema.json"
+    acceptance:
+      - "validator reports: task registry VALID"
+      - "validator unit tests pass"
+    repair_loop:
+      - "if invalid: fix registry fields to satisfy schema (13 required fields per task)"
+    commit_sha: null
+    report: null
+
+  - task_id: D0-01
+    status: IN_PROGRESS
+    dependencies: [R0-02]
+    inputs:
+      - "codonflow_integrated_dataset_catalog_ranked.xlsx"
+    in_scope:
+      - "map every Excel row to DATASET / MODEL / DATABASE / PAPER / AUXILIARY_RESOURCE / NOT_RELEVANT"
+    out_of_scope:
+      - "downloading datasets (D0-03)"
+    files:
+      - "scripts/data/import_excel_inventory.py"
+      - "tests/test_import_excel_inventory.py"
+    commands:
+      - "python scripts/data/import_excel_inventory.py --xlsx data/external_catalogs/codonflow_integrated_dataset_catalog_ranked.xlsx"
+    outputs:
+      - "data_registry/excel_inventory.parquet"
+      - "docs/data/excel_inventory_audit.md"
+    acceptance:
+      - "78 model entries fully mapped"
+      - "14 resource categories fully mapped"
+      - "no unexplained entries"
+    repair_loop:
+      - "unmapped row -> inspect row -> extend mapping rules with explicit justification -> re-run until zero unexplained entries"
+    commit_sha: null
+    report: null
+
+  - task_id: D0-02
+    status: IN_PROGRESS
+    dependencies: [R0-02, D0-01]
+    inputs:
+      - "data_registry/excel_inventory.parquet"
+      - "GEO / SRA / ENA / Zenodo / Figshare / ENCODE / MaveDB / paper supplementary / official repos"
+    in_scope:
+      - "systematic search for real intervention datasets with full metadata"
+    out_of_scope:
+      - "dataset download (D0-03)"
+      - "canonical benchmark construction (D2)"
+    files:
+      - "docs/data/systematic_search_protocol.md"
+      - "data_registry/intervention_candidates.yaml"
+      - "docs/data/systematic_search_results.md"
+    commands:
+      - "documented protocol execution (see docs/data/systematic_search_protocol.md)"
+    outputs:
+      - "data_registry/intervention_candidates.yaml"
+      - "docs/data/systematic_search_protocol.md"
+      - "docs/data/systematic_search_results.md"
+    acceptance:
+      - "every candidate records: paper, accession, variant count, region, endpoint, WT availability, mutant availability, raw count availability, license, evidence grade"
+    repair_loop:
+      - "missing metadata field -> re-check source (GEO/ENCODE/paper) -> if unavailable record explicit 'unknown' with search evidence, never guess"
+    commit_sha: null
+    report: null
+
+  - task_id: D0-03
+    status: IN_PROGRESS
+    dependencies: [D0-02]
+    inputs:
+      - "data_registry/intervention_candidates.yaml (P0 accessions)"
+    in_scope:
+      - "download GSE145046, GSE114002, GSE149487(+PLUMAGE series), GSE246381, GSE217518, GSE200304, MPRAu/ENCSR854RUF, GSE207584, GSE173083"
+      - "download scripts for GEO / ENCODE / MaveDB + verification script"
+    out_of_scope:
+      - "paper-level reproduction (D1)"
+    files:
+      - "scripts/data/download_geo.py"
+      - "scripts/data/download_encode.py"
+      - "scripts/data/download_mavedb.py"
+      - "scripts/data/verify_downloads.py"
+      - "tests/test_verify_downloads.py"
+    commands:
+      - "python scripts/data/download_geo.py --accession GSE145046 ... (per accession)"
+      - "python scripts/data/download_encode.py --accession ENCSR854RUF"
+      - "python scripts/data/download_mavedb.py --query 5utr (supplementary discovery)"
+      - "python scripts/data/verify_downloads.py --manifest data_registry/download_manifest.yaml"
+    outputs:
+      - "data/raw_public/<accession>/ raw files"
+      - "data_registry/download_manifest.yaml (checksums, sizes, pinned accessions)"
+    acceptance:
+      - "raw files exist"
+      - "checksums complete"
+      - "file sizes plausible"
+      - "no HTML error pages"
+      - "release/accession pinned"
+    repair_loop:
+      - "download failure -> retry -> alternate mirror -> archive source -> raw reconstruction -> author contact -> documented unavailable (never silently drop)"
+    commit_sha: null
+    report: null
+
+  - task_id: D0-04
+    status: IN_PROGRESS
+    dependencies: [D0-03]
+    inputs:
+      - "data_registry/download_manifest.yaml"
+      - "data_registry/intervention_candidates.yaml"
+    in_scope:
+      - "missing dataset management with full acquisition trail"
+    out_of_scope:
+      - "deleting datasets after download failure"
+    files:
+      - "docs/data/missing_dataset_acquisition.md"
+      - "data_registry/unavailable.yaml"
+    commands:
+      - "review docs/data/missing_dataset_acquisition.md against data_registry/unavailable.yaml"
+    outputs:
+      - "docs/data/missing_dataset_acquisition.md"
+      - "data_registry/unavailable.yaml"
+    acceptance:
+      - "every missing dataset records: searched locations, supplemental, author code, archive, author-contact need, raw-reads reconstruction possibility, current substitute"
+    repair_loop:
+      - "download failure != dataset removal; follow retry -> alternate mirror -> archive -> raw reconstruction -> author contact -> documented unavailable"
+    commit_sha: null
+    report: null

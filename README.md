@@ -50,20 +50,15 @@ Protein identity, reading frame, region anchors, fixed positions, and edit budge
 
 ---
 
-## 2. Frozen research contract
+## 2. Research contract
 
-The authoritative P3 research contract is defined in:
+The authoritative research contract is public_intervention_contract_v1:
 
-- [`configs/p3_frozen_research_contract.yaml`](configs/p3_frozen_research_contract.yaml)
-- [`configs/p3_primary_task.yaml`](configs/p3_primary_task.yaml)
-- [`docs/p3_00_frozen_scientific_question.md`](docs/p3_00_frozen_scientific_question.md)
-- [`docs/p3_00_claim_ladder.md`](docs/p3_00_claim_ladder.md)
-- [`docs/p3_00_change_governance.md`](docs/p3_00_change_governance.md)
-- [`docs/p3_00_hypothesis_preregistration.md`](docs/p3_00_hypothesis_preregistration.md)
-- [`docs/p3_00_scientific_problem_lock.md`](docs/p3_00_scientific_problem_lock.md)
-- [`docs/p3_00_go_no_go_matrix.json`](docs/p3_00_go_no_go_matrix.json)
+- [configs/public_intervention_contract.yaml](configs/public_intervention_contract.yaml)
+- [docs/public_intervention_scientific_question.md](docs/public_intervention_scientific_question.md)
+- [docs/public_intervention_claim_matrix.md](docs/public_intervention_claim_matrix.md)
 
-Frozen artifacts must not be silently rewritten. Changes require an explicit amendment under the governance document.
+The former P3/NMI contract is SUPERSEDED_LEGACY and archived under [docs/archive/p3_legacy/](docs/archive/p3_legacy/), [configs/archive/p3_legacy/](configs/archive/p3_legacy/) and [scripts/archive/p3_legacy/](scripts/archive/p3_legacy/) (see the SUPERSEDED.md markers there). New training code, paper mode, and result-generation code must not read the archived contract as a constraint source. Frozen artifacts must not be silently rewritten.
 
 ---
 
@@ -1306,9 +1301,7 @@ Detailed evidence is stored under:
 - [`benchmark/`](benchmark/)
 - [`docs/sota_gap_report.md`](docs/sota_gap_report.md)
 - [`docs/t5_external_utr_baseline_comparison.md`](docs/t5_external_utr_baseline_comparison.md)
-- [`docs/p3_00_scientific_problem_lock.md`](docs/p3_00_scientific_problem_lock.md)
-- [`docs/p3_00_hypothesis_preregistration.md`](docs/p3_00_hypothesis_preregistration.md)
-- [`docs/p3_00_go_no_go_matrix.json`](docs/p3_00_go_no_go_matrix.json)
+- [docs/archive/p3_legacy/](docs/archive/p3_legacy/) (superseded P3 scientific-question lock, hypothesis preregistration and GO/NO-GO matrix; historical reference only)
 
 ---
 
@@ -1558,11 +1551,7 @@ A simple replacement of an existing architecture with Flow Matching is not suffi
 
 ## 26. Governance
 
-The P3 scientific question, task hierarchy, and claim ladder are frozen.
-
-They may change only through an explicit amendment under:
-
-[`docs/p3_00_change_governance.md`](docs/p3_00_change_governance.md)
+The P3 scientific question, task hierarchy, and claim ladder were frozen under the superseded P3 contract (see [docs/archive/p3_legacy/](docs/archive/p3_legacy/)). The active contract is public_intervention_contract_v1; changes follow the amendment rules of the new contract.
 
 Forbidden practices include:
 
