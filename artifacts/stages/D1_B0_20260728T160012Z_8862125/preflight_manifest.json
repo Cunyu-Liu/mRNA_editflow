@@ -1,0 +1,111 @@
+{
+  "artifact_type": "stage_manifest",
+  "schema_version": "utr_stage_manifest.v1",
+  "stage_id": "D1_B0_20260728T160012Z_8862125",
+  "phase_ids": [
+    "D1",
+    "B0"
+  ],
+  "captured_at_utc": "2026-07-28T16:46:59Z",
+  "workload_class": "NON_NEURAL_DATA_BENCHMARK",
+  "goal_contract": {
+    "id": "utr_editflow_goal_v2",
+    "sha256": "c3dc5875868d847b8519fee40b14c43b65e4c5948dc5c3b98101ca61a5671dd5",
+    "source_path_local": "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna 最新构建合同-先做.md",
+    "repository_snapshot": "docs/contracts/mrna_latest_build_contract_v2.md"
+  },
+  "remote": {
+    "host": "36.137.135.49",
+    "port": 22,
+    "user": "cunyuliu",
+    "hostname": "bms-18937653-012",
+    "original_project_root": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow",
+    "isolated_worktree": "/mnt/cunyuliu/mrna_editflow_goal_worktrees/d1-b0-utr-v2-20260729",
+    "external_data_root": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125"
+  },
+  "git": {
+    "original": {
+      "path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow",
+      "branch": "phase2-reliable-local-delta-20260727",
+      "head": "9f431332a6c922d784d61ae087f253c985ad524f",
+      "clean": false,
+      "dirty_diff_sha256": "25d8024ef1878929b75734006bbaef5781cb5a33351a0af9f9135b035396354a"
+    },
+    "isolated": {
+      "path": "/mnt/cunyuliu/mrna_editflow_goal_worktrees/d1-b0-utr-v2-20260729",
+      "branch": "d1-b0-utr-v2-20260729",
+      "head": "8862125c6a00fabaff97cbeb0b3160265261c585",
+      "clean": true,
+      "dirty_diff_sha256": null
+    }
+  },
+  "protection": {
+    "protected_processes": [
+      {
+        "pid": 3445128,
+        "kind": "encode_ena_reconstruction_download",
+        "action": "observe_only"
+      },
+      {
+        "pid": 3770756,
+        "kind": "encode_ena_reconstruction_curl_child",
+        "action": "observe_only"
+      },
+      {
+        "pid": 3275049,
+        "kind": "unrelated_reactflow_gpu_evaluation",
+        "action": "observe_only"
+      },
+      {
+        "pid": 622302,
+        "kind": "unrelated_c1_3_monitor",
+        "action": "observe_only"
+      }
+    ],
+    "processes_terminated": 0,
+    "original_worktree_mutations": 0,
+    "existing_results_overwritten": 0
+  },
+  "resources": {
+    "gpu": {
+      "count": 8,
+      "model": "NVIDIA A100-PCIE-40GB",
+      "driver": "580.126.09",
+      "formal_neural_work_planned": false
+    },
+    "memory": {
+      "total_bytes": 809978974208,
+      "available_bytes": 592701652992,
+      "swap_total_bytes": 2059399168,
+      "swap_free_bytes": 0
+    },
+    "disk": {
+      "home": {
+        "path": "/home",
+        "available_bytes": 5892993585152
+      },
+      "mnt": {
+        "path": "/mnt",
+        "available_bytes": 13863613366272
+      }
+    }
+  },
+  "data_state": {
+    "input_inventory": "artifacts/stages/D1_B0_20260728T160012Z_8862125/D1/input_inventory.json",
+    "existing_artifact_inventory": "artifacts/stages/D1_B0_20260728T160012Z_8862125/existing_artifact_inventory.json",
+    "encode_reconstruction": {
+      "expected_files": 62,
+      "verified_files": 61,
+      "complete": false,
+      "role": "OBSERVATIONAL_ONLY"
+    }
+  },
+  "execution_boundary": {
+    "formal_neural_activity_started": false,
+    "gpu_validation_started": false,
+    "cuda_fallback_events": 0,
+    "gpu_requirement_status": "NOT_APPLICABLE_NO_NEURAL_WORK",
+    "smoke_or_proxy_is_final_evidence": false,
+    "d1_required_before_b0": true
+  }
+}

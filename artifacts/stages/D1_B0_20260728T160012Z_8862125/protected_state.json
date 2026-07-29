@@ -1,0 +1,68 @@
+{
+  "artifact_type": "protected_state_snapshot",
+  "schema_version": "d1_b0_protected_state.v1",
+  "stage_id": "D1_B0_20260728T160012Z_8862125",
+  "captured_at_utc": "2026-07-28T16:46:59Z",
+  "original_worktree": {
+    "path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow",
+    "branch": "phase2-reliable-local-delta-20260727",
+    "head": "9f431332a6c922d784d61ae087f253c985ad524f",
+    "status_porcelain_v2": [
+      "1 .M S..U 160000 160000 160000 f0126ca89a8b853088b4bccfd2cc8c378d3678be f0126ca89a8b853088b4bccfd2cc8c378d3678be benchmark_v21/external_data/LinearDesign",
+      "1 .M N... 100755 100755 100755 f4eaf378abc6b3da56ef78fe8b1fcf0ec059fd8f f4eaf378abc6b3da56ef78fe8b1fcf0ec059fd8f scripts/data/download_ena_reconstruction.py"
+    ],
+    "dirty_diff_sha256": "25d8024ef1878929b75734006bbaef5781cb5a33351a0af9f9135b035396354a",
+    "action": "DO_NOT_MUTATE"
+  },
+  "isolated_worktree": {
+    "path": "/mnt/cunyuliu/mrna_editflow_goal_worktrees/d1-b0-utr-v2-20260729",
+    "branch": "d1-b0-utr-v2-20260729",
+    "base_head": "8862125c6a00fabaff97cbeb0b3160265261c585",
+    "status_at_capture": "CLEAN",
+    "action": "D1_B0_ONLY"
+  },
+  "processes": [
+    {
+      "pid": 3445128,
+      "parent_pid": 3445127,
+      "kind": "encode_ena_reconstruction_download",
+      "evidence": "61/62 manifest entries verified; ENCFF597AIT.fastq.gz.part still growing",
+      "action": "OBSERVE_ONLY"
+    },
+    {
+      "pid": 3770756,
+      "parent_pid": 3445128,
+      "kind": "curl_child_for_ENCFF597AIT",
+      "partial_file_bytes": 6777845432,
+      "action": "OBSERVE_ONLY"
+    },
+    {
+      "pid": 3275049,
+      "parent_pid": 3274940,
+      "kind": "reactflow_gpu_evaluation_cuda4",
+      "action": "UNRELATED_OBSERVE_ONLY"
+    },
+    {
+      "pid": 622302,
+      "parent_pid": 622299,
+      "kind": "c1_3_auto_monitor",
+      "action": "UNRELATED_OBSERVE_ONLY"
+    }
+  ],
+  "encode_manifest": {
+    "path": "/mnt/cunyuliu/partial_evidence/ENCSR854RUF_ena_reconstruction_manifest.json",
+    "expected_files": 62,
+    "listed_files": 61,
+    "verified_files": 61,
+    "verified_bytes": 366043904843,
+    "complete": false,
+    "admitted_as_intervention_data": false
+  },
+  "actions": {
+    "processes_terminated": 0,
+    "existing_processes_modified": 0,
+    "original_worktree_mutations": 0,
+    "existing_results_overwritten": 0,
+    "raw_inputs_modified": 0
+  }
+}

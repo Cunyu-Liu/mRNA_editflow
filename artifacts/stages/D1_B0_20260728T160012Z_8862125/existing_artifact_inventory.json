@@ -1,0 +1,30 @@
+{
+  "artifact_type": "existing_artifact_inventory",
+  "schema_version": "d1_b0_existing_artifacts.v1",
+  "stage_id": "D1_B0_20260728T160012Z_8862125",
+  "captured_at_utc": "2026-07-28T16:46:59Z",
+  "root": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/artifacts",
+  "existing_directories": [
+    "phase1",
+    "phase2",
+    "phase2/paired_delta",
+    "phase2_leakage_free_foundation_corpus_20260727",
+    "phase2_recipe_selector_smoke_20260727",
+    "phase2_reliable_local_delta_remediation_20260727",
+    "phase2_reliable_local_delta_smoke",
+    "phase2_reliable_stagea_smoke_20260727_v2",
+    "phase2_stage_a_leakage_free_2000_seed0_20260727",
+    "phase2_stage_a_leakage_free_2000_seed0_20260727_v2",
+    "phase3",
+    "phase3/mixed_resolution",
+    "phase4",
+    "phase4/policy",
+    "phase5"
+  ],
+  "protection": {
+    "action": "READ_ONLY_NO_OVERWRITE",
+    "directories_modified": 0,
+    "scientific_status_inferred_from_directory_names": false
+  },
+  "new_stage_artifact_root": "artifacts/stages/D1_B0_20260728T160012Z_8862125"
+}

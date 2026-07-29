@@ -1,0 +1,4745 @@
+{
+  "builder_audit_validation": {
+    "audit_manifest": {
+      "bytes": 6253,
+      "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/audit/builder/audit_manifest.json",
+      "sha256": "c287380ad83a3b805cfa9ab16ad275ba799a538d80ce2278fad3243d709130e0"
+    },
+    "audit_root": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/audit/builder",
+    "checks": {
+      "argv_exact_builder_shape": true,
+      "argv_identical_across_evidence": true,
+      "artifact_root_exact": true,
+      "audit_manifest_exact_location": true,
+      "audit_run_root_exact": true,
+      "builder_script_resolves_in_project": true,
+      "command_completed": true,
+      "config_path_exact": true,
+      "evidence_path_bytes_sha_recursive": true,
+      "git_explicit_prelaunch_manifest_semantics": true,
+      "git_explicit_prelaunch_recheck_passed": true,
+      "git_index_flags_manifest_semantics": true,
+      "git_index_flags_safe": true,
+      "git_prelaunch_artifacts_path_bytes_sha_recursive": true,
+      "git_prelaunch_snapshot_before_command": true,
+      "git_prelaunch_snapshot_present": true,
+      "non_neural_workload_exact": true,
+      "output_root_exact": true,
+      "protection_claims_exact": true,
+      "stderr_empty": true,
+      "stdout_one_json_line_equals_build_manifest": true,
+      "working_directory_is_project_root": true
+    },
+    "git_prelaunch_snapshot": {
+      "artifacts": {
+        "diff_head_binary": {
+          "bytes": 35646,
+          "path": "git/diff.head.binary.patch",
+          "sha256": "9592e318f930265724522ecef8a63fbd6bdf9e31ff06f03806af27e71a5d68ec"
+        },
+        "explicit_prelaunch_files": {
+          "bytes": 883,
+          "path": "git/explicit_prelaunch_files.json",
+          "sha256": "f6f1542ac991b6f34e7557308549bd4fbc17721ad1ff9e86ae24765d49318fa3"
+        },
+        "head": {
+          "bytes": 41,
+          "path": "git/head.txt",
+          "sha256": "0243fef35369a74080c9c17e322b4afaae988af65fa05b30b8202b2dafb42f24"
+        },
+        "index_flags": {
+          "bytes": 187682,
+          "path": "git/index_flags.json",
+          "sha256": "17c4e6975dfa0fe9f698b31b6a04ceed21fa6a3f104bb7355b052bff1c00b152"
+        },
+        "status_porcelain_v2_z": {
+          "bytes": 454,
+          "path": "git/status.porcelain_v2.z",
+          "sha256": "6e286dbc110b0cb4726838e1fd0c4248fd72d66ff3578216c740bc634a148198"
+        },
+        "untracked_content_hashes": {
+          "bytes": 565,
+          "path": "git/untracked_content_hashes.json",
+          "sha256": "de1c0be7c582df4c9a2d30545cfe636e84fb9f8d297886335f0fcc3e3157836f"
+        },
+        "untracked_paths_z": {
+          "bytes": 56,
+          "path": "git/untracked.paths.z",
+          "sha256": "e41a34c4713b83bf66d18e166e0139b74c36ebed676311d4ca9e33f97b01d57b"
+        }
+      },
+      "captured_at_utc": "2026-07-28T23:05:15.535131Z",
+      "captured_before_command": true,
+      "clean": false,
+      "component_hashes": {
+        "diff_head_binary": "9592e318f930265724522ecef8a63fbd6bdf9e31ff06f03806af27e71a5d68ec",
+        "explicit_prelaunch_file_manifest": "f6f1542ac991b6f34e7557308549bd4fbc17721ad1ff9e86ae24765d49318fa3",
+        "head": "0243fef35369a74080c9c17e322b4afaae988af65fa05b30b8202b2dafb42f24",
+        "index_flags": "17c4e6975dfa0fe9f698b31b6a04ceed21fa6a3f104bb7355b052bff1c00b152",
+        "status_porcelain_v2_z": "6e286dbc110b0cb4726838e1fd0c4248fd72d66ff3578216c740bc634a148198",
+        "untracked_content_manifest": "de1c0be7c582df4c9a2d30545cfe636e84fb9f8d297886335f0fcc3e3157836f",
+        "untracked_paths_z": "e41a34c4713b83bf66d18e166e0139b74c36ebed676311d4ca9e33f97b01d57b"
+      },
+      "dirty_state_sha256": "1e49249cc66b50ba3ccce1958c01dd1e2301d4e72b4a7d602284b3bcf90bba6a",
+      "head": "157ca23811621283f2e5cf20152421a85567ac91",
+      "index_flags_safe": true,
+      "repository": "/mnt/cunyuliu/mrna_editflow_goal_worktrees/d1-b0-utr-v2-20260729",
+      "schema_version": "git_prelaunch_snapshot.v1",
+      "snapshot_manifest": {
+        "bytes": 2379,
+        "path": "git/snapshot.json",
+        "sha256": "d0414466be5038ce1136b126cf20fa896d2057162d1fe378bf363431f47534c7"
+      }
+    },
+    "passed": true,
+    "reason": null,
+    "verified_evidence": {
+      "completion": {
+        "actual": {
+          "bytes": 432,
+          "exists": true,
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/audit/builder/completion.json",
+          "sha256": "ab5c3a942478b7345c084902422247f9902635bc5a7b751534bbcc48c5ae56ce"
+        },
+        "declared": {
+          "bytes": 432,
+          "path": "completion.json",
+          "sha256": "ab5c3a942478b7345c084902422247f9902635bc5a7b751534bbcc48c5ae56ce"
+        },
+        "passed": true
+      },
+      "explicit_prelaunch_recheck": {
+        "actual": {
+          "bytes": 397,
+          "exists": true,
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/audit/builder/git/explicit_prelaunch_recheck.json",
+          "sha256": "e2abc62f707496681ddbc47f1a94da7fc2993f20cacaff95f2945ab104795ab9"
+        },
+        "declared": {
+          "bytes": 397,
+          "path": "git/explicit_prelaunch_recheck.json",
+          "sha256": "e2abc62f707496681ddbc47f1a94da7fc2993f20cacaff95f2945ab104795ab9"
+        },
+        "passed": true
+      },
+      "invocation": {
+        "actual": {
+          "bytes": 5102,
+          "exists": true,
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/audit/builder/invocation.json",
+          "sha256": "0dfc229369a0e8d042ffc2717e99eace092933d8c56421de246a3c601057bf83"
+        },
+        "declared": {
+          "bytes": 5102,
+          "path": "invocation.json",
+          "sha256": "0dfc229369a0e8d042ffc2717e99eace092933d8c56421de246a3c601057bf83"
+        },
+        "passed": true
+      },
+      "process": {
+        "actual": {
+          "bytes": 720,
+          "exists": true,
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/audit/builder/process.json",
+          "sha256": "24c35f4fca1b85ad792fc8c68f8e26be571bc4fb0257496ddffd89395288a0e8"
+        },
+        "declared": {
+          "bytes": 720,
+          "path": "process.json",
+          "sha256": "24c35f4fca1b85ad792fc8c68f8e26be571bc4fb0257496ddffd89395288a0e8"
+        },
+        "passed": true
+      },
+      "stderr": {
+        "actual": {
+          "bytes": 0,
+          "exists": true,
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/audit/builder/logs/stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "declared": {
+          "bytes": 0,
+          "path": "logs/stderr.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "passed": true
+      },
+      "stdout": {
+        "actual": {
+          "bytes": 11293,
+          "exists": true,
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/audit/builder/logs/stdout.log",
+          "sha256": "8497790eda39d1d0b91557152f201724c275cabc308f224cca2ecffa641e84ab"
+        },
+        "declared": {
+          "bytes": 11293,
+          "path": "logs/stdout.log",
+          "sha256": "8497790eda39d1d0b91557152f201724c275cabc308f224cca2ecffa641e84ab"
+        },
+        "passed": true
+      }
+    },
+    "verified_git_evidence": {
+      "diff_head_binary": {
+        "actual": {
+          "bytes": 35646,
+          "exists": true,
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/audit/builder/git/diff.head.binary.patch",
+          "sha256": "9592e318f930265724522ecef8a63fbd6bdf9e31ff06f03806af27e71a5d68ec"
+        },
+        "declared": {
+          "bytes": 35646,
+          "path": "git/diff.head.binary.patch",
+          "sha256": "9592e318f930265724522ecef8a63fbd6bdf9e31ff06f03806af27e71a5d68ec"
+        },
+        "passed": true
+      },
+      "explicit_prelaunch_files": {
+        "actual": {
+          "bytes": 883,
+          "exists": true,
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/audit/builder/git/explicit_prelaunch_files.json",
+          "sha256": "f6f1542ac991b6f34e7557308549bd4fbc17721ad1ff9e86ae24765d49318fa3"
+        },
+        "declared": {
+          "bytes": 883,
+          "path": "git/explicit_prelaunch_files.json",
+          "sha256": "f6f1542ac991b6f34e7557308549bd4fbc17721ad1ff9e86ae24765d49318fa3"
+        },
+        "passed": true
+      },
+      "head": {
+        "actual": {
+          "bytes": 41,
+          "exists": true,
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/audit/builder/git/head.txt",
+          "sha256": "0243fef35369a74080c9c17e322b4afaae988af65fa05b30b8202b2dafb42f24"
+        },
+        "declared": {
+          "bytes": 41,
+          "path": "git/head.txt",
+          "sha256": "0243fef35369a74080c9c17e322b4afaae988af65fa05b30b8202b2dafb42f24"
+        },
+        "passed": true
+      },
+      "index_flags": {
+        "actual": {
+          "bytes": 187682,
+          "exists": true,
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/audit/builder/git/index_flags.json",
+          "sha256": "17c4e6975dfa0fe9f698b31b6a04ceed21fa6a3f104bb7355b052bff1c00b152"
+        },
+        "declared": {
+          "bytes": 187682,
+          "path": "git/index_flags.json",
+          "sha256": "17c4e6975dfa0fe9f698b31b6a04ceed21fa6a3f104bb7355b052bff1c00b152"
+        },
+        "passed": true
+      },
+      "snapshot_manifest": {
+        "actual": {
+          "bytes": 2379,
+          "exists": true,
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/audit/builder/git/snapshot.json",
+          "sha256": "d0414466be5038ce1136b126cf20fa896d2057162d1fe378bf363431f47534c7"
+        },
+        "declared": {
+          "bytes": 2379,
+          "path": "git/snapshot.json",
+          "sha256": "d0414466be5038ce1136b126cf20fa896d2057162d1fe378bf363431f47534c7"
+        },
+        "passed": true
+      },
+      "status_porcelain_v2_z": {
+        "actual": {
+          "bytes": 454,
+          "exists": true,
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/audit/builder/git/status.porcelain_v2.z",
+          "sha256": "6e286dbc110b0cb4726838e1fd0c4248fd72d66ff3578216c740bc634a148198"
+        },
+        "declared": {
+          "bytes": 454,
+          "path": "git/status.porcelain_v2.z",
+          "sha256": "6e286dbc110b0cb4726838e1fd0c4248fd72d66ff3578216c740bc634a148198"
+        },
+        "passed": true
+      },
+      "untracked_content_hashes": {
+        "actual": {
+          "bytes": 565,
+          "exists": true,
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/audit/builder/git/untracked_content_hashes.json",
+          "sha256": "de1c0be7c582df4c9a2d30545cfe636e84fb9f8d297886335f0fcc3e3157836f"
+        },
+        "declared": {
+          "bytes": 565,
+          "path": "git/untracked_content_hashes.json",
+          "sha256": "de1c0be7c582df4c9a2d30545cfe636e84fb9f8d297886335f0fcc3e3157836f"
+        },
+        "passed": true
+      },
+      "untracked_paths_z": {
+        "actual": {
+          "bytes": 56,
+          "exists": true,
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/audit/builder/git/untracked.paths.z",
+          "sha256": "e41a34c4713b83bf66d18e166e0139b74c36ebed676311d4ca9e33f97b01d57b"
+        },
+        "declared": {
+          "bytes": 56,
+          "path": "git/untracked.paths.z",
+          "sha256": "e41a34c4713b83bf66d18e166e0139b74c36ebed676311d4ca9e33f97b01d57b"
+        },
+        "passed": true
+      }
+    }
+  },
+  "config_binding_validation": {
+    "actual_bytes": 6411,
+    "actual_sha256": "26b83eccb6db2bab2dcebe16d224faac31c144c5d14f2581369e0ee47f2a9985",
+    "checks": {
+      "all_control_files_bound_to_prelaunch_snapshot": true,
+      "config_bytes_bound": true,
+      "config_exact_12_scope": true,
+      "config_path_absolute": true,
+      "config_path_exists": true,
+      "config_semantics_valid": true,
+      "config_sha256_bound": true,
+      "config_sha256_matches": true,
+      "config_size_matches": true,
+      "configured_inputs_exactly_in_inventory": true,
+      "contract_hash_bound": true,
+      "dataset_role_selection_label_independent": true,
+      "input_inventory_frozen_scope_exact": true,
+      "input_inventory_schema_and_stage_exact": true,
+      "inventory_counts_recomputed": true,
+      "inventory_live_path_bytes_sha_exact": true,
+      "repository_paths_exact": true,
+      "scope_manifest_path_bytes_sha_bound": true
+    },
+    "config_path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/input/d1_build_config.json",
+    "dataset_ids": [
+      "GSE114002",
+      "GSE149487",
+      "GSE246381",
+      "GSE145046",
+      "GSE217518",
+      "GSE200304",
+      "MPRAu_processed_ENCSR854RUF",
+      "ENCSR854RUF_raw62",
+      "GSE330741",
+      "GSE291719",
+      "GSE207584",
+      "GSE173083"
+    ],
+    "declared_bytes": 6411,
+    "declared_sha256": "26b83eccb6db2bab2dcebe16d224faac31c144c5d14f2581369e0ee47f2a9985",
+    "input_inventory_binding": {
+      "bytes": 5215,
+      "legacy_inference_used": false,
+      "path": "/mnt/cunyuliu/mrna_editflow_goal_worktrees/d1-b0-utr-v2-20260729/artifacts/stages/D1_B0_20260728T160012Z_8862125/D1/input_inventory.json",
+      "sha256": "64f17ff3fc19b98a62f6c6c2dfd1ba526773622729436556ccfb4c0241f73948"
+    },
+    "inventory_error": null,
+    "inventory_live_failures": [],
+    "inventory_semantic_failures": [],
+    "passed": true,
+    "prelaunch_bindings": {
+      "config": {
+        "checks": {
+          "bytes_match": true,
+          "captured_as_explicit_regular_file": true,
+          "sha256_match": true
+        },
+        "passed": true,
+        "source": "explicit_prelaunch_file_manifest"
+      },
+      "input_inventory": {
+        "checks": {
+          "bytes_match": true,
+          "captured_as_explicit_regular_file": true,
+          "sha256_match": true
+        },
+        "passed": true,
+        "source": "explicit_prelaunch_file_manifest"
+      },
+      "scope": {
+        "checks": {
+          "bytes_match": true,
+          "captured_as_explicit_regular_file": true,
+          "sha256_match": true
+        },
+        "passed": true,
+        "source": "explicit_prelaunch_file_manifest"
+      }
+    },
+    "reason": null,
+    "scope_manifest_binding": {
+      "bytes": 10646,
+      "path": "/mnt/cunyuliu/mrna_editflow_goal_worktrees/d1-b0-utr-v2-20260729/data_registry/d1_dataset_scope_manifest.yaml",
+      "repository_path": "data_registry/d1_dataset_scope_manifest.yaml",
+      "sha256": "b5ae778b09bc551fc2f6034ca9b45eb180b8da583f527ac0344207f84890a2ef"
+    },
+    "semantic_error": null
+  },
+  "dataset_manifest_binding_validation": {
+    "build_manifest": {
+      "bytes": 13949,
+      "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/build_manifest.json",
+      "sha256": "c52d5848ade6c5f5cae5291851e79852ac962b3b488276fe6f99ccf49874784c"
+    },
+    "checks": {
+      "all_dataset_bindings_valid": true,
+      "build_manifest_exact_path": true,
+      "dataset_ids_unique": true,
+      "dataset_scope_exact": true,
+      "dataset_summaries_list": true,
+      "expected_scope_declaration_exact": true,
+      "missing_scope_empty": true
+    },
+    "failures": {},
+    "passed": true
+  },
+  "dataset_results": [
+    {
+      "checks": [
+        {
+          "detail": [
+            "accounting",
+            "auxiliary",
+            "candidate_store",
+            "label_store",
+            "paper_clean",
+            "raw_row_lineage",
+            "rejected"
+          ],
+          "name": "required_outputs_declared",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/ENCSR854RUF_raw62/paper_clean/records.jsonl",
+          "name": "output_integrity:paper_clean",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/ENCSR854RUF_raw62/candidate_store/candidates.jsonl",
+          "name": "output_integrity:candidate_store",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/ENCSR854RUF_raw62/audit/accounting.json",
+          "name": "output_integrity:accounting",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/ENCSR854RUF_raw62/paper_clean/auxiliary_records.jsonl",
+          "name": "output_integrity:auxiliary",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/ENCSR854RUF_raw62/canonical/records_with_labels.jsonl",
+          "name": "output_integrity:label_store",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/ENCSR854RUF_raw62/audit/raw_row_lineage.jsonl",
+          "name": "output_integrity:raw_row_lineage",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/ENCSR854RUF_raw62/rejected/records.jsonl",
+          "name": "output_integrity:rejected",
+          "passed": true
+        },
+        {
+          "detail": {
+            "declared": {
+              "accounting": 1,
+              "auxiliary": 0,
+              "candidate_store": 0,
+              "label_store": 0,
+              "paper_clean": 0,
+              "raw_row_lineage": 0,
+              "rejected": 0
+            },
+            "recomputed": {
+              "accounting": 1,
+              "auxiliary": 0,
+              "candidate_store": 0,
+              "label_store": 0,
+              "paper_clean": 0,
+              "raw_row_lineage": 0,
+              "rejected": 0
+            }
+          },
+          "name": "output_record_counts_bound",
+          "passed": true
+        },
+        {
+          "detail": {
+            "candidate": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/ENCSR854RUF_raw62/candidate_store/candidates.jsonl",
+            "label": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/ENCSR854RUF_raw62/canonical/records_with_labels.jsonl"
+          },
+          "name": "candidate_and_label_paths_distinct",
+          "passed": true
+        },
+        {
+          "detail": {
+            "recursive": [],
+            "top_level": []
+          },
+          "name": "candidate_store_label_free",
+          "passed": true
+        },
+        {
+          "detail": {
+            "candidate_records": 0,
+            "label_records": 0
+          },
+          "name": "candidate_label_record_id_bijection",
+          "passed": true
+        },
+        {
+          "detail": {
+            "actual_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+            "expected_records": 0,
+            "expected_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+            "records": 0
+          },
+          "name": "candidate_store_exact_canonical_projection",
+          "passed": true
+        },
+        {
+          "detail": {
+            "checks": {
+              "canonical_projection_exact": true,
+              "paper_clean_count_equals_canonical_count": true,
+              "record_id_bijection_with_canonical": true,
+              "record_ids_unique": true,
+              "row_roles_disjoint": true,
+              "strict_content_schema": true
+            },
+            "content_mismatches": [],
+            "passed": true,
+            "row_role_overlaps": {
+              "paper_clean_auxiliary": [],
+              "paper_clean_rejected": [],
+              "rejected_auxiliary": []
+            },
+            "schema_failures": {}
+          },
+          "name": "paper_clean_strict_content_and_layer_binding",
+          "passed": true
+        },
+        {
+          "detail": {
+            "declared": {
+              "auxiliary": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "row_id",
+                "records": 0
+              },
+              "candidate_store": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 0
+              },
+              "canonical": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 0
+              },
+              "paper_clean": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 0
+              },
+              "raw_row_lineage": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "lineage_id",
+                "records": 0
+              },
+              "rejected": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "row_id",
+                "records": 0
+              }
+            },
+            "recomputed": {
+              "auxiliary": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "row_id",
+                "records": 0
+              },
+              "candidate_store": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 0
+              },
+              "canonical": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 0
+              },
+              "paper_clean": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 0
+              },
+              "raw_row_lineage": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "lineage_id",
+                "records": 0
+              },
+              "rejected": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "row_id",
+                "records": 0
+              }
+            }
+          },
+          "name": "manifest_content_identities_exact",
+          "passed": true
+        },
+        {
+          "detail": {},
+          "name": "canonical_required_fields",
+          "passed": true
+        },
+        {
+          "detail": {},
+          "name": "strict_canonical_record_validator",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "edit_script_roundtrip_100_percent",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "record_identity_recomputed_from_endpoints",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "canonical_edit_script_and_ambiguity_exactly_recomputed",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "constructed_paths_never_observed",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "absolute_sequences_not_interventions",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "record_provenance_complete",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "rejected_rows_have_stable_reason_and_fingerprint",
+          "passed": true
+        },
+        {
+          "detail": {
+            "manifest": {
+              "accepted_absolute_rows": 0,
+              "accepted_input_rows": 0,
+              "accepted_intervention_rows": 0,
+              "accounted_rows": 0,
+              "auxiliary_source_anchor_rows": 0,
+              "rejected_rows": 0,
+              "total_input_rows": 0
+            },
+            "recomputed": 0
+          },
+          "name": "accepted_rejected_accounting_exact",
+          "passed": true
+        },
+        {
+          "detail": {
+            "accepted_provenance_passed": false,
+            "audit": {
+              "complete": false,
+              "download_manifest_complete": true,
+              "license_complete": true,
+              "raw_files": [],
+              "raw_files_complete": false
+            },
+            "blocked_or_excluded": true,
+            "fixture_exemption": false,
+            "integrity_failures": [],
+            "metadata_only_provenance_passed": true
+          },
+          "name": "production_input_provenance_complete",
+          "passed": true
+        },
+        {
+          "detail": {
+            "candidate_records": 0,
+            "label_records": 0,
+            "reason_code": "OBSERVATIONAL_ONLY_NOT_INTERVENTION"
+          },
+          "name": "blocked_dataset_has_no_admitted_records",
+          "passed": true
+        }
+      ],
+      "counts": {
+        "auxiliary": 0,
+        "candidates": 0,
+        "labels": 0,
+        "paper_clean": 0,
+        "raw_row_lineage": 0,
+        "rejected": 0
+      },
+      "dataset_id": "ENCSR854RUF_raw62",
+      "fixture_mode": false,
+      "paper_clean_validation": {
+        "checks": {
+          "canonical_projection_exact": true,
+          "paper_clean_count_equals_canonical_count": true,
+          "record_id_bijection_with_canonical": true,
+          "record_ids_unique": true,
+          "row_roles_disjoint": true,
+          "strict_content_schema": true
+        },
+        "content_mismatches": [],
+        "passed": true,
+        "row_role_overlaps": {
+          "paper_clean_auxiliary": [],
+          "paper_clean_rejected": [],
+          "rejected_auxiliary": []
+        },
+        "schema_failures": {}
+      },
+      "paper_eligible": false,
+      "passed": true,
+      "raw_row_lineage_validation": null,
+      "status": "blocked"
+    },
+    {
+      "checks": [
+        {
+          "detail": [
+            "accounting",
+            "auxiliary",
+            "candidate_store",
+            "label_store",
+            "paper_clean",
+            "raw_row_lineage",
+            "rejected"
+          ],
+          "name": "required_outputs_declared",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE114002/paper_clean/records.jsonl",
+          "name": "output_integrity:paper_clean",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE114002/candidate_store/candidates.jsonl",
+          "name": "output_integrity:candidate_store",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE114002/audit/accounting.json",
+          "name": "output_integrity:accounting",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE114002/paper_clean/auxiliary_records.jsonl",
+          "name": "output_integrity:auxiliary",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE114002/canonical/records_with_labels.jsonl",
+          "name": "output_integrity:label_store",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE114002/audit/raw_row_lineage.jsonl",
+          "name": "output_integrity:raw_row_lineage",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE114002/rejected/records.jsonl",
+          "name": "output_integrity:rejected",
+          "passed": true
+        },
+        {
+          "detail": {
+            "declared": {
+              "accounting": 1,
+              "auxiliary": 44833,
+              "candidate_store": 33001,
+              "label_store": 33001,
+              "paper_clean": 33001,
+              "raw_row_lineage": 0,
+              "rejected": 22183
+            },
+            "recomputed": {
+              "accounting": 1,
+              "auxiliary": 44833,
+              "candidate_store": 33001,
+              "label_store": 33001,
+              "paper_clean": 33001,
+              "raw_row_lineage": 0,
+              "rejected": 22183
+            }
+          },
+          "name": "output_record_counts_bound",
+          "passed": true
+        },
+        {
+          "detail": {
+            "candidate": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE114002/candidate_store/candidates.jsonl",
+            "label": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE114002/canonical/records_with_labels.jsonl"
+          },
+          "name": "candidate_and_label_paths_distinct",
+          "passed": true
+        },
+        {
+          "detail": {
+            "recursive": [],
+            "top_level": []
+          },
+          "name": "candidate_store_label_free",
+          "passed": true
+        },
+        {
+          "detail": {
+            "candidate_records": 33001,
+            "label_records": 33001
+          },
+          "name": "candidate_label_record_id_bijection",
+          "passed": true
+        },
+        {
+          "detail": {
+            "actual_sha256": "43b088026c7a309590f729f07d7b000b10f7be0f8b20c5fd83e387056669ce54",
+            "expected_records": 33001,
+            "expected_sha256": "43b088026c7a309590f729f07d7b000b10f7be0f8b20c5fd83e387056669ce54",
+            "records": 33001
+          },
+          "name": "candidate_store_exact_canonical_projection",
+          "passed": true
+        },
+        {
+          "detail": {
+            "checks": {
+              "canonical_projection_exact": true,
+              "paper_clean_count_equals_canonical_count": true,
+              "record_id_bijection_with_canonical": true,
+              "record_ids_unique": true,
+              "row_roles_disjoint": true,
+              "strict_content_schema": true
+            },
+            "content_mismatches": [],
+            "passed": true,
+            "row_role_overlaps": {
+              "paper_clean_auxiliary": [],
+              "paper_clean_rejected": [],
+              "rejected_auxiliary": []
+            },
+            "schema_failures": {}
+          },
+          "name": "paper_clean_strict_content_and_layer_binding",
+          "passed": true
+        },
+        {
+          "detail": {
+            "declared": {
+              "auxiliary": {
+                "identities_sha256": "1ebf004127734946d01d5571c4465c9574979f20eb42abbbda68363fd890f7d3",
+                "identities_unique": false,
+                "identity_field": "row_id",
+                "records": 44833
+              },
+              "candidate_store": {
+                "identities_sha256": "8f5fe1bc95dbf059882d3324973be03baa8f4ad58bcc7f785bbe78f3563c4fa9",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 33001
+              },
+              "canonical": {
+                "identities_sha256": "8f5fe1bc95dbf059882d3324973be03baa8f4ad58bcc7f785bbe78f3563c4fa9",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 33001
+              },
+              "paper_clean": {
+                "identities_sha256": "8f5fe1bc95dbf059882d3324973be03baa8f4ad58bcc7f785bbe78f3563c4fa9",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 33001
+              },
+              "raw_row_lineage": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "lineage_id",
+                "records": 0
+              },
+              "rejected": {
+                "identities_sha256": "c034d152131d7fc233ded5fe16eaa63978d15cee47b883b538dc2f7e01c0dedf",
+                "identities_unique": true,
+                "identity_field": "row_id",
+                "records": 22183
+              }
+            },
+            "recomputed": {
+              "auxiliary": {
+                "identities_sha256": "1ebf004127734946d01d5571c4465c9574979f20eb42abbbda68363fd890f7d3",
+                "identities_unique": false,
+                "identity_field": "row_id",
+                "records": 44833
+              },
+              "candidate_store": {
+                "identities_sha256": "8f5fe1bc95dbf059882d3324973be03baa8f4ad58bcc7f785bbe78f3563c4fa9",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 33001
+              },
+              "canonical": {
+                "identities_sha256": "8f5fe1bc95dbf059882d3324973be03baa8f4ad58bcc7f785bbe78f3563c4fa9",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 33001
+              },
+              "paper_clean": {
+                "identities_sha256": "8f5fe1bc95dbf059882d3324973be03baa8f4ad58bcc7f785bbe78f3563c4fa9",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 33001
+              },
+              "raw_row_lineage": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "lineage_id",
+                "records": 0
+              },
+              "rejected": {
+                "identities_sha256": "c034d152131d7fc233ded5fe16eaa63978d15cee47b883b538dc2f7e01c0dedf",
+                "identities_unique": true,
+                "identity_field": "row_id",
+                "records": 22183
+              }
+            }
+          },
+          "name": "manifest_content_identities_exact",
+          "passed": true
+        },
+        {
+          "detail": {},
+          "name": "canonical_required_fields",
+          "passed": true
+        },
+        {
+          "detail": {},
+          "name": "strict_canonical_record_validator",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "edit_script_roundtrip_100_percent",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "record_identity_recomputed_from_endpoints",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "canonical_edit_script_and_ambiguity_exactly_recomputed",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "constructed_paths_never_observed",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "absolute_sequences_not_interventions",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "record_provenance_complete",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "rejected_rows_have_stable_reason_and_fingerprint",
+          "passed": true
+        },
+        {
+          "detail": {
+            "manifest": {
+              "accepted_absolute_rows": 0,
+              "accepted_input_rows": 33001,
+              "accepted_intervention_rows": 33001,
+              "accounted_rows": 100017,
+              "auxiliary_source_anchor_rows": 44833,
+              "rejected_rows": 22183,
+              "total_input_rows": 100017
+            },
+            "recomputed": 100017
+          },
+          "name": "accepted_rejected_accounting_exact",
+          "passed": true
+        },
+        {
+          "detail": {
+            "accepted_provenance_passed": true,
+            "audit": {
+              "complete": true,
+              "download_manifest_complete": true,
+              "license_complete": true,
+              "raw_files": [
+                {
+                  "bytes": 17332142,
+                  "defaults": {},
+                  "delimiter": null,
+                  "format": "csv",
+                  "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/inputs/GSE114002/GSM3130443_designed_library.csv.gz",
+                  "role": "sequence_and_provided_label_input",
+                  "sha256": "b72ac298cb0f4d21f911d330c0def06f8d94f15d9f8cc22f3a50ae87a7ef7ee5",
+                  "sheet_name": null
+                }
+              ],
+              "raw_files_complete": true
+            },
+            "blocked_or_excluded": false,
+            "fixture_exemption": false,
+            "integrity_failures": [],
+            "metadata_only_provenance_passed": false
+          },
+          "name": "production_input_provenance_complete",
+          "passed": true
+        }
+      ],
+      "counts": {
+        "auxiliary": 44833,
+        "candidates": 33001,
+        "labels": 33001,
+        "paper_clean": 33001,
+        "raw_row_lineage": 0,
+        "rejected": 22183
+      },
+      "dataset_id": "GSE114002",
+      "fixture_mode": false,
+      "paper_clean_validation": {
+        "checks": {
+          "canonical_projection_exact": true,
+          "paper_clean_count_equals_canonical_count": true,
+          "record_id_bijection_with_canonical": true,
+          "record_ids_unique": true,
+          "row_roles_disjoint": true,
+          "strict_content_schema": true
+        },
+        "content_mismatches": [],
+        "passed": true,
+        "row_role_overlaps": {
+          "paper_clean_auxiliary": [],
+          "paper_clean_rejected": [],
+          "rejected_auxiliary": []
+        },
+        "schema_failures": {}
+      },
+      "paper_eligible": true,
+      "passed": true,
+      "raw_row_lineage_validation": null,
+      "status": "accepted"
+    },
+    {
+      "checks": [
+        {
+          "detail": [
+            "accounting",
+            "auxiliary",
+            "candidate_store",
+            "label_store",
+            "paper_clean",
+            "raw_row_lineage",
+            "rejected"
+          ],
+          "name": "required_outputs_declared",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE145046/paper_clean/records.jsonl",
+          "name": "output_integrity:paper_clean",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE145046/candidate_store/candidates.jsonl",
+          "name": "output_integrity:candidate_store",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE145046/audit/accounting.json",
+          "name": "output_integrity:accounting",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE145046/paper_clean/auxiliary_records.jsonl",
+          "name": "output_integrity:auxiliary",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE145046/canonical/records_with_labels.jsonl",
+          "name": "output_integrity:label_store",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE145046/audit/raw_row_lineage.jsonl",
+          "name": "output_integrity:raw_row_lineage",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE145046/rejected/records.jsonl",
+          "name": "output_integrity:rejected",
+          "passed": true
+        },
+        {
+          "detail": {
+            "declared": {
+              "accounting": 1,
+              "auxiliary": 0,
+              "candidate_store": 0,
+              "label_store": 0,
+              "paper_clean": 0,
+              "raw_row_lineage": 0,
+              "rejected": 0
+            },
+            "recomputed": {
+              "accounting": 1,
+              "auxiliary": 0,
+              "candidate_store": 0,
+              "label_store": 0,
+              "paper_clean": 0,
+              "raw_row_lineage": 0,
+              "rejected": 0
+            }
+          },
+          "name": "output_record_counts_bound",
+          "passed": true
+        },
+        {
+          "detail": {
+            "candidate": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE145046/candidate_store/candidates.jsonl",
+            "label": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE145046/canonical/records_with_labels.jsonl"
+          },
+          "name": "candidate_and_label_paths_distinct",
+          "passed": true
+        },
+        {
+          "detail": {
+            "recursive": [],
+            "top_level": []
+          },
+          "name": "candidate_store_label_free",
+          "passed": true
+        },
+        {
+          "detail": {
+            "candidate_records": 0,
+            "label_records": 0
+          },
+          "name": "candidate_label_record_id_bijection",
+          "passed": true
+        },
+        {
+          "detail": {
+            "actual_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+            "expected_records": 0,
+            "expected_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+            "records": 0
+          },
+          "name": "candidate_store_exact_canonical_projection",
+          "passed": true
+        },
+        {
+          "detail": {
+            "checks": {
+              "canonical_projection_exact": true,
+              "paper_clean_count_equals_canonical_count": true,
+              "record_id_bijection_with_canonical": true,
+              "record_ids_unique": true,
+              "row_roles_disjoint": true,
+              "strict_content_schema": true
+            },
+            "content_mismatches": [],
+            "passed": true,
+            "row_role_overlaps": {
+              "paper_clean_auxiliary": [],
+              "paper_clean_rejected": [],
+              "rejected_auxiliary": []
+            },
+            "schema_failures": {}
+          },
+          "name": "paper_clean_strict_content_and_layer_binding",
+          "passed": true
+        },
+        {
+          "detail": {
+            "declared": {
+              "auxiliary": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "row_id",
+                "records": 0
+              },
+              "candidate_store": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 0
+              },
+              "canonical": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 0
+              },
+              "paper_clean": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 0
+              },
+              "raw_row_lineage": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "lineage_id",
+                "records": 0
+              },
+              "rejected": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "row_id",
+                "records": 0
+              }
+            },
+            "recomputed": {
+              "auxiliary": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "row_id",
+                "records": 0
+              },
+              "candidate_store": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 0
+              },
+              "canonical": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 0
+              },
+              "paper_clean": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 0
+              },
+              "raw_row_lineage": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "lineage_id",
+                "records": 0
+              },
+              "rejected": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "row_id",
+                "records": 0
+              }
+            }
+          },
+          "name": "manifest_content_identities_exact",
+          "passed": true
+        },
+        {
+          "detail": {},
+          "name": "canonical_required_fields",
+          "passed": true
+        },
+        {
+          "detail": {},
+          "name": "strict_canonical_record_validator",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "edit_script_roundtrip_100_percent",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "record_identity_recomputed_from_endpoints",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "canonical_edit_script_and_ambiguity_exactly_recomputed",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "constructed_paths_never_observed",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "absolute_sequences_not_interventions",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "record_provenance_complete",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "rejected_rows_have_stable_reason_and_fingerprint",
+          "passed": true
+        },
+        {
+          "detail": {
+            "manifest": {
+              "accepted_absolute_rows": 0,
+              "accepted_input_rows": 0,
+              "accepted_intervention_rows": 0,
+              "accounted_rows": 0,
+              "auxiliary_source_anchor_rows": 0,
+              "rejected_rows": 0,
+              "total_input_rows": 0
+            },
+            "recomputed": 0
+          },
+          "name": "accepted_rejected_accounting_exact",
+          "passed": true
+        },
+        {
+          "detail": {
+            "accepted_provenance_passed": false,
+            "audit": {
+              "complete": false,
+              "download_manifest_complete": true,
+              "license_complete": true,
+              "raw_files": [],
+              "raw_files_complete": false
+            },
+            "blocked_or_excluded": true,
+            "fixture_exemption": false,
+            "integrity_failures": [],
+            "metadata_only_provenance_passed": true
+          },
+          "name": "production_input_provenance_complete",
+          "passed": true
+        },
+        {
+          "detail": {
+            "candidate_records": 0,
+            "label_records": 0,
+            "reason_code": "BLOCKED_SCAFFOLD_NOT_FROZEN"
+          },
+          "name": "blocked_dataset_has_no_admitted_records",
+          "passed": true
+        }
+      ],
+      "counts": {
+        "auxiliary": 0,
+        "candidates": 0,
+        "labels": 0,
+        "paper_clean": 0,
+        "raw_row_lineage": 0,
+        "rejected": 0
+      },
+      "dataset_id": "GSE145046",
+      "fixture_mode": false,
+      "paper_clean_validation": {
+        "checks": {
+          "canonical_projection_exact": true,
+          "paper_clean_count_equals_canonical_count": true,
+          "record_id_bijection_with_canonical": true,
+          "record_ids_unique": true,
+          "row_roles_disjoint": true,
+          "strict_content_schema": true
+        },
+        "content_mismatches": [],
+        "passed": true,
+        "row_role_overlaps": {
+          "paper_clean_auxiliary": [],
+          "paper_clean_rejected": [],
+          "rejected_auxiliary": []
+        },
+        "schema_failures": {}
+      },
+      "paper_eligible": false,
+      "passed": true,
+      "raw_row_lineage_validation": null,
+      "status": "blocked"
+    },
+    {
+      "checks": [
+        {
+          "detail": [
+            "accounting",
+            "auxiliary",
+            "candidate_store",
+            "label_store",
+            "paper_clean",
+            "raw_row_lineage",
+            "rejected"
+          ],
+          "name": "required_outputs_declared",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE149487/paper_clean/records.jsonl",
+          "name": "output_integrity:paper_clean",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE149487/candidate_store/candidates.jsonl",
+          "name": "output_integrity:candidate_store",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE149487/audit/accounting.json",
+          "name": "output_integrity:accounting",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE149487/paper_clean/auxiliary_records.jsonl",
+          "name": "output_integrity:auxiliary",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE149487/canonical/records_with_labels.jsonl",
+          "name": "output_integrity:label_store",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE149487/audit/raw_row_lineage.jsonl",
+          "name": "output_integrity:raw_row_lineage",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE149487/rejected/records.jsonl",
+          "name": "output_integrity:rejected",
+          "passed": true
+        },
+        {
+          "detail": {
+            "declared": {
+              "accounting": 1,
+              "auxiliary": 0,
+              "candidate_store": 0,
+              "label_store": 0,
+              "paper_clean": 0,
+              "raw_row_lineage": 0,
+              "rejected": 0
+            },
+            "recomputed": {
+              "accounting": 1,
+              "auxiliary": 0,
+              "candidate_store": 0,
+              "label_store": 0,
+              "paper_clean": 0,
+              "raw_row_lineage": 0,
+              "rejected": 0
+            }
+          },
+          "name": "output_record_counts_bound",
+          "passed": true
+        },
+        {
+          "detail": {
+            "candidate": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE149487/candidate_store/candidates.jsonl",
+            "label": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE149487/canonical/records_with_labels.jsonl"
+          },
+          "name": "candidate_and_label_paths_distinct",
+          "passed": true
+        },
+        {
+          "detail": {
+            "recursive": [],
+            "top_level": []
+          },
+          "name": "candidate_store_label_free",
+          "passed": true
+        },
+        {
+          "detail": {
+            "candidate_records": 0,
+            "label_records": 0
+          },
+          "name": "candidate_label_record_id_bijection",
+          "passed": true
+        },
+        {
+          "detail": {
+            "actual_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+            "expected_records": 0,
+            "expected_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+            "records": 0
+          },
+          "name": "candidate_store_exact_canonical_projection",
+          "passed": true
+        },
+        {
+          "detail": {
+            "checks": {
+              "canonical_projection_exact": true,
+              "paper_clean_count_equals_canonical_count": true,
+              "record_id_bijection_with_canonical": true,
+              "record_ids_unique": true,
+              "row_roles_disjoint": true,
+              "strict_content_schema": true
+            },
+            "content_mismatches": [],
+            "passed": true,
+            "row_role_overlaps": {
+              "paper_clean_auxiliary": [],
+              "paper_clean_rejected": [],
+              "rejected_auxiliary": []
+            },
+            "schema_failures": {}
+          },
+          "name": "paper_clean_strict_content_and_layer_binding",
+          "passed": true
+        },
+        {
+          "detail": {
+            "declared": {
+              "auxiliary": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "row_id",
+                "records": 0
+              },
+              "candidate_store": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 0
+              },
+              "canonical": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 0
+              },
+              "paper_clean": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 0
+              },
+              "raw_row_lineage": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "lineage_id",
+                "records": 0
+              },
+              "rejected": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "row_id",
+                "records": 0
+              }
+            },
+            "recomputed": {
+              "auxiliary": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "row_id",
+                "records": 0
+              },
+              "candidate_store": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 0
+              },
+              "canonical": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 0
+              },
+              "paper_clean": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 0
+              },
+              "raw_row_lineage": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "lineage_id",
+                "records": 0
+              },
+              "rejected": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "row_id",
+                "records": 0
+              }
+            }
+          },
+          "name": "manifest_content_identities_exact",
+          "passed": true
+        },
+        {
+          "detail": {},
+          "name": "canonical_required_fields",
+          "passed": true
+        },
+        {
+          "detail": {},
+          "name": "strict_canonical_record_validator",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "edit_script_roundtrip_100_percent",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "record_identity_recomputed_from_endpoints",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "canonical_edit_script_and_ambiguity_exactly_recomputed",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "constructed_paths_never_observed",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "absolute_sequences_not_interventions",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "record_provenance_complete",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "rejected_rows_have_stable_reason_and_fingerprint",
+          "passed": true
+        },
+        {
+          "detail": {
+            "manifest": {
+              "accepted_absolute_rows": 0,
+              "accepted_input_rows": 0,
+              "accepted_intervention_rows": 0,
+              "accounted_rows": 0,
+              "auxiliary_source_anchor_rows": 0,
+              "rejected_rows": 0,
+              "total_input_rows": 0
+            },
+            "recomputed": 0
+          },
+          "name": "accepted_rejected_accounting_exact",
+          "passed": true
+        },
+        {
+          "detail": {
+            "accepted_provenance_passed": false,
+            "audit": {
+              "complete": false,
+              "download_manifest_complete": true,
+              "license_complete": true,
+              "raw_files": [],
+              "raw_files_complete": false
+            },
+            "blocked_or_excluded": true,
+            "fixture_exemption": false,
+            "integrity_failures": [],
+            "metadata_only_provenance_passed": true
+          },
+          "name": "production_input_provenance_complete",
+          "passed": true
+        },
+        {
+          "detail": {
+            "candidate_records": 0,
+            "label_records": 0,
+            "reason_code": "BLOCKED_EXACT_PAIR_MAPPING_UNRECOVERED"
+          },
+          "name": "blocked_dataset_has_no_admitted_records",
+          "passed": true
+        }
+      ],
+      "counts": {
+        "auxiliary": 0,
+        "candidates": 0,
+        "labels": 0,
+        "paper_clean": 0,
+        "raw_row_lineage": 0,
+        "rejected": 0
+      },
+      "dataset_id": "GSE149487",
+      "fixture_mode": false,
+      "paper_clean_validation": {
+        "checks": {
+          "canonical_projection_exact": true,
+          "paper_clean_count_equals_canonical_count": true,
+          "record_id_bijection_with_canonical": true,
+          "record_ids_unique": true,
+          "row_roles_disjoint": true,
+          "strict_content_schema": true
+        },
+        "content_mismatches": [],
+        "passed": true,
+        "row_role_overlaps": {
+          "paper_clean_auxiliary": [],
+          "paper_clean_rejected": [],
+          "rejected_auxiliary": []
+        },
+        "schema_failures": {}
+      },
+      "paper_eligible": false,
+      "passed": true,
+      "raw_row_lineage_validation": null,
+      "status": "blocked"
+    },
+    {
+      "checks": [
+        {
+          "detail": [
+            "accounting",
+            "auxiliary",
+            "candidate_store",
+            "label_store",
+            "paper_clean",
+            "raw_row_lineage",
+            "rejected"
+          ],
+          "name": "required_outputs_declared",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE173083/paper_clean/records.jsonl",
+          "name": "output_integrity:paper_clean",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE173083/candidate_store/candidates.jsonl",
+          "name": "output_integrity:candidate_store",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE173083/audit/accounting.json",
+          "name": "output_integrity:accounting",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE173083/paper_clean/auxiliary_records.jsonl",
+          "name": "output_integrity:auxiliary",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE173083/canonical/records_with_labels.jsonl",
+          "name": "output_integrity:label_store",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE173083/audit/raw_row_lineage.jsonl",
+          "name": "output_integrity:raw_row_lineage",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE173083/rejected/records.jsonl",
+          "name": "output_integrity:rejected",
+          "passed": true
+        },
+        {
+          "detail": {
+            "declared": {
+              "accounting": 1,
+              "auxiliary": 0,
+              "candidate_store": 0,
+              "label_store": 0,
+              "paper_clean": 0,
+              "raw_row_lineage": 0,
+              "rejected": 0
+            },
+            "recomputed": {
+              "accounting": 1,
+              "auxiliary": 0,
+              "candidate_store": 0,
+              "label_store": 0,
+              "paper_clean": 0,
+              "raw_row_lineage": 0,
+              "rejected": 0
+            }
+          },
+          "name": "output_record_counts_bound",
+          "passed": true
+        },
+        {
+          "detail": {
+            "candidate": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE173083/candidate_store/candidates.jsonl",
+            "label": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE173083/canonical/records_with_labels.jsonl"
+          },
+          "name": "candidate_and_label_paths_distinct",
+          "passed": true
+        },
+        {
+          "detail": {
+            "recursive": [],
+            "top_level": []
+          },
+          "name": "candidate_store_label_free",
+          "passed": true
+        },
+        {
+          "detail": {
+            "candidate_records": 0,
+            "label_records": 0
+          },
+          "name": "candidate_label_record_id_bijection",
+          "passed": true
+        },
+        {
+          "detail": {
+            "actual_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+            "expected_records": 0,
+            "expected_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+            "records": 0
+          },
+          "name": "candidate_store_exact_canonical_projection",
+          "passed": true
+        },
+        {
+          "detail": {
+            "checks": {
+              "canonical_projection_exact": true,
+              "paper_clean_count_equals_canonical_count": true,
+              "record_id_bijection_with_canonical": true,
+              "record_ids_unique": true,
+              "row_roles_disjoint": true,
+              "strict_content_schema": true
+            },
+            "content_mismatches": [],
+            "passed": true,
+            "row_role_overlaps": {
+              "paper_clean_auxiliary": [],
+              "paper_clean_rejected": [],
+              "rejected_auxiliary": []
+            },
+            "schema_failures": {}
+          },
+          "name": "paper_clean_strict_content_and_layer_binding",
+          "passed": true
+        },
+        {
+          "detail": {
+            "declared": {
+              "auxiliary": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "row_id",
+                "records": 0
+              },
+              "candidate_store": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 0
+              },
+              "canonical": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 0
+              },
+              "paper_clean": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 0
+              },
+              "raw_row_lineage": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "lineage_id",
+                "records": 0
+              },
+              "rejected": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "row_id",
+                "records": 0
+              }
+            },
+            "recomputed": {
+              "auxiliary": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "row_id",
+                "records": 0
+              },
+              "candidate_store": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 0
+              },
+              "canonical": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 0
+              },
+              "paper_clean": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 0
+              },
+              "raw_row_lineage": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "lineage_id",
+                "records": 0
+              },
+              "rejected": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "row_id",
+                "records": 0
+              }
+            }
+          },
+          "name": "manifest_content_identities_exact",
+          "passed": true
+        },
+        {
+          "detail": {},
+          "name": "canonical_required_fields",
+          "passed": true
+        },
+        {
+          "detail": {},
+          "name": "strict_canonical_record_validator",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "edit_script_roundtrip_100_percent",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "record_identity_recomputed_from_endpoints",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "canonical_edit_script_and_ambiguity_exactly_recomputed",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "constructed_paths_never_observed",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "absolute_sequences_not_interventions",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "record_provenance_complete",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "rejected_rows_have_stable_reason_and_fingerprint",
+          "passed": true
+        },
+        {
+          "detail": {
+            "manifest": {
+              "accepted_absolute_rows": 0,
+              "accepted_input_rows": 0,
+              "accepted_intervention_rows": 0,
+              "accounted_rows": 0,
+              "auxiliary_source_anchor_rows": 0,
+              "rejected_rows": 0,
+              "total_input_rows": 0
+            },
+            "recomputed": 0
+          },
+          "name": "accepted_rejected_accounting_exact",
+          "passed": true
+        },
+        {
+          "detail": {
+            "accepted_provenance_passed": false,
+            "audit": {
+              "complete": false,
+              "download_manifest_complete": true,
+              "license_complete": true,
+              "raw_files": [],
+              "raw_files_complete": false
+            },
+            "blocked_or_excluded": true,
+            "fixture_exemption": false,
+            "integrity_failures": [],
+            "metadata_only_provenance_passed": true
+          },
+          "name": "production_input_provenance_complete",
+          "passed": true
+        },
+        {
+          "detail": {
+            "candidate_records": 0,
+            "label_records": 0,
+            "reason_code": "EXCLUDED_OUTSIDE_UTR_ONLY_SCOPE"
+          },
+          "name": "blocked_dataset_has_no_admitted_records",
+          "passed": true
+        }
+      ],
+      "counts": {
+        "auxiliary": 0,
+        "candidates": 0,
+        "labels": 0,
+        "paper_clean": 0,
+        "raw_row_lineage": 0,
+        "rejected": 0
+      },
+      "dataset_id": "GSE173083",
+      "fixture_mode": false,
+      "paper_clean_validation": {
+        "checks": {
+          "canonical_projection_exact": true,
+          "paper_clean_count_equals_canonical_count": true,
+          "record_id_bijection_with_canonical": true,
+          "record_ids_unique": true,
+          "row_roles_disjoint": true,
+          "strict_content_schema": true
+        },
+        "content_mismatches": [],
+        "passed": true,
+        "row_role_overlaps": {
+          "paper_clean_auxiliary": [],
+          "paper_clean_rejected": [],
+          "rejected_auxiliary": []
+        },
+        "schema_failures": {}
+      },
+      "paper_eligible": false,
+      "passed": true,
+      "raw_row_lineage_validation": null,
+      "status": "blocked"
+    },
+    {
+      "checks": [
+        {
+          "detail": [
+            "accounting",
+            "auxiliary",
+            "candidate_store",
+            "label_store",
+            "paper_clean",
+            "raw_row_lineage",
+            "rejected"
+          ],
+          "name": "required_outputs_declared",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE200304/paper_clean/records.jsonl",
+          "name": "output_integrity:paper_clean",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE200304/candidate_store/candidates.jsonl",
+          "name": "output_integrity:candidate_store",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE200304/audit/accounting.json",
+          "name": "output_integrity:accounting",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE200304/paper_clean/auxiliary_records.jsonl",
+          "name": "output_integrity:auxiliary",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE200304/canonical/records_with_labels.jsonl",
+          "name": "output_integrity:label_store",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE200304/audit/raw_row_lineage.jsonl",
+          "name": "output_integrity:raw_row_lineage",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE200304/rejected/records.jsonl",
+          "name": "output_integrity:rejected",
+          "passed": true
+        },
+        {
+          "detail": {
+            "declared": {
+              "accounting": 1,
+              "auxiliary": 0,
+              "candidate_store": 6885,
+              "label_store": 6885,
+              "paper_clean": 6885,
+              "raw_row_lineage": 26540,
+              "rejected": 66
+            },
+            "recomputed": {
+              "accounting": 1,
+              "auxiliary": 0,
+              "candidate_store": 6885,
+              "label_store": 6885,
+              "paper_clean": 6885,
+              "raw_row_lineage": 26540,
+              "rejected": 66
+            }
+          },
+          "name": "output_record_counts_bound",
+          "passed": true
+        },
+        {
+          "detail": {
+            "candidate": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE200304/candidate_store/candidates.jsonl",
+            "label": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE200304/canonical/records_with_labels.jsonl"
+          },
+          "name": "candidate_and_label_paths_distinct",
+          "passed": true
+        },
+        {
+          "detail": {
+            "recursive": [],
+            "top_level": []
+          },
+          "name": "candidate_store_label_free",
+          "passed": true
+        },
+        {
+          "detail": {
+            "candidate_records": 6885,
+            "label_records": 6885
+          },
+          "name": "candidate_label_record_id_bijection",
+          "passed": true
+        },
+        {
+          "detail": {
+            "actual_sha256": "f0ca0fe8e1d7600215ed4efa079f665ec534c8d68c545180a54083c97c9a6a1f",
+            "expected_records": 6885,
+            "expected_sha256": "f0ca0fe8e1d7600215ed4efa079f665ec534c8d68c545180a54083c97c9a6a1f",
+            "records": 6885
+          },
+          "name": "candidate_store_exact_canonical_projection",
+          "passed": true
+        },
+        {
+          "detail": {
+            "checks": {
+              "canonical_projection_exact": true,
+              "paper_clean_count_equals_canonical_count": true,
+              "record_id_bijection_with_canonical": true,
+              "record_ids_unique": true,
+              "row_roles_disjoint": true,
+              "strict_content_schema": true
+            },
+            "content_mismatches": [],
+            "passed": true,
+            "row_role_overlaps": {
+              "paper_clean_auxiliary": [],
+              "paper_clean_rejected": [],
+              "rejected_auxiliary": []
+            },
+            "schema_failures": {}
+          },
+          "name": "paper_clean_strict_content_and_layer_binding",
+          "passed": true
+        },
+        {
+          "detail": {
+            "declared": {
+              "auxiliary": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "row_id",
+                "records": 0
+              },
+              "candidate_store": {
+                "identities_sha256": "3991d59816dd75ea322074a9c91715bee4f83c3fadba098bd1a89fc2031a3dcb",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 6885
+              },
+              "canonical": {
+                "identities_sha256": "3991d59816dd75ea322074a9c91715bee4f83c3fadba098bd1a89fc2031a3dcb",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 6885
+              },
+              "paper_clean": {
+                "identities_sha256": "3991d59816dd75ea322074a9c91715bee4f83c3fadba098bd1a89fc2031a3dcb",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 6885
+              },
+              "raw_row_lineage": {
+                "identities_sha256": "47b38734d7c32b2312f6ba32bd07f29c426b38d363c60f3a431f609e0a016c6d",
+                "identities_unique": true,
+                "identity_field": "lineage_id",
+                "records": 26540
+              },
+              "rejected": {
+                "identities_sha256": "6c364806bc27cbc2b2b6a029b66080ead39bc92afe500398148124a20506ea21",
+                "identities_unique": true,
+                "identity_field": "row_id",
+                "records": 66
+              }
+            },
+            "recomputed": {
+              "auxiliary": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "row_id",
+                "records": 0
+              },
+              "candidate_store": {
+                "identities_sha256": "3991d59816dd75ea322074a9c91715bee4f83c3fadba098bd1a89fc2031a3dcb",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 6885
+              },
+              "canonical": {
+                "identities_sha256": "3991d59816dd75ea322074a9c91715bee4f83c3fadba098bd1a89fc2031a3dcb",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 6885
+              },
+              "paper_clean": {
+                "identities_sha256": "3991d59816dd75ea322074a9c91715bee4f83c3fadba098bd1a89fc2031a3dcb",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 6885
+              },
+              "raw_row_lineage": {
+                "identities_sha256": "47b38734d7c32b2312f6ba32bd07f29c426b38d363c60f3a431f609e0a016c6d",
+                "identities_unique": true,
+                "identity_field": "lineage_id",
+                "records": 26540
+              },
+              "rejected": {
+                "identities_sha256": "6c364806bc27cbc2b2b6a029b66080ead39bc92afe500398148124a20506ea21",
+                "identities_unique": true,
+                "identity_field": "row_id",
+                "records": 66
+              }
+            }
+          },
+          "name": "manifest_content_identities_exact",
+          "passed": true
+        },
+        {
+          "detail": {},
+          "name": "canonical_required_fields",
+          "passed": true
+        },
+        {
+          "detail": {},
+          "name": "strict_canonical_record_validator",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "edit_script_roundtrip_100_percent",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "record_identity_recomputed_from_endpoints",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "canonical_edit_script_and_ambiguity_exactly_recomputed",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "constructed_paths_never_observed",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "absolute_sequences_not_interventions",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "record_provenance_complete",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "rejected_rows_have_stable_reason_and_fingerprint",
+          "passed": true
+        },
+        {
+          "detail": {
+            "manifest": {
+              "accepted_absolute_rows": 0,
+              "accepted_input_rows": 6885,
+              "accepted_intervention_rows": 6885,
+              "accounted_rows": 6951,
+              "auxiliary_source_anchor_rows": 0,
+              "rejected_rows": 66,
+              "total_input_rows": 6951
+            },
+            "recomputed": 6951
+          },
+          "name": "accepted_rejected_accounting_exact",
+          "passed": true
+        },
+        {
+          "detail": {
+            "accepted_provenance_passed": true,
+            "audit": {
+              "complete": true,
+              "download_manifest_complete": true,
+              "license_complete": true,
+              "raw_files": [
+                {
+                  "bytes": 1091788,
+                  "defaults": {},
+                  "delimiter": null,
+                  "format": "tsv",
+                  "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/inputs/GSE200304/GSM6030637_Twist_Oligo_Order_with_merged_ids.txt.gz",
+                  "role": "construct_table",
+                  "sha256": "cc8c1b69f87e669bb45cdc34257e489352dad4659d193d9a9e29166a6e7d2d75",
+                  "sheet_name": null
+                },
+                {
+                  "bytes": 86041,
+                  "defaults": {},
+                  "delimiter": null,
+                  "format": "tsv",
+                  "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/inputs/GSE200304/GSM6030637_log2_cpm_small_seq_on_plasmid.txt.gz",
+                  "role": "processed_label_table",
+                  "sha256": "54bc28cd55959d8b4ddfab4d2ea7126654256fe115fbcc363d141d9ff5d9a216",
+                  "sheet_name": null
+                }
+              ],
+              "raw_files_complete": true
+            },
+            "blocked_or_excluded": false,
+            "fixture_exemption": false,
+            "integrity_failures": [],
+            "metadata_only_provenance_passed": false
+          },
+          "name": "production_input_provenance_complete",
+          "passed": true
+        },
+        {
+          "detail": {
+            "construct_rows": 13836,
+            "construct_unique_merged_ids": 13836,
+            "control_constructs": 66,
+            "invalid_label_rows": 0,
+            "join_rule": "construct.merged_id == labels.Barcode",
+            "label_barcodes_joined_to_construct": 12704,
+            "label_rows": 12704,
+            "label_unique_barcodes": 12704,
+            "labeled_control_constructs": 47,
+            "malformed_pair_constructs": 0,
+            "pair_201nt_count": 6885,
+            "pair_hamming_distribution": {
+              "1": 6885
+            },
+            "pair_rule": "remove terminal _WT or _Mutant from merged_id",
+            "production_gate_exact": true,
+            "raw_row_lineage_summary": {
+              "disposition_counts": {
+                "JOINED_TO_CONSTRUCT": 12704,
+                "NORMALIZED_CANDIDATE_ENDPOINT": 6885,
+                "NORMALIZED_SOURCE_ENDPOINT": 6885,
+                "REJECTED_CONTROL_NOT_WT_MUTANT_PAIR": 66
+              },
+              "duplicate_lineage_ids": 0,
+              "duplicate_raw_row_fingerprints": 0,
+              "duplicate_raw_row_keys": 0,
+              "row_counts_by_table": {
+                "construct_table": 13836,
+                "processed_label_table": 12704
+              },
+              "rows_with_normalized_target": 26540,
+              "rows_without_normalized_target": 0,
+              "schema_version": "gse200304_raw_row_lineage_summary_v1",
+              "total_raw_rows": 26540,
+              "unique_lineage_ids": 26540,
+              "unique_raw_row_fingerprints": 26540,
+              "unique_raw_row_keys": 26540
+            },
+            "raw_to_normalized_accounting": {
+              "construct_rows": 13836,
+              "control_construct_rows": 66,
+              "malformed_pair_construct_rows": 0,
+              "paired_construct_rows": 13770
+            },
+            "sequence_pair_groups": 6885,
+            "unjoined_label_barcodes": 0
+          },
+          "name": "gse200304_exact_construct_label_join",
+          "passed": true
+        },
+        {
+          "detail": {
+            "known_discrepancy": 7,
+            "observed_label_coverage": {
+              "both_labeled": 6120,
+              "candidate_only": 225,
+              "neither_labeled": 348,
+              "source_only": 192
+            },
+            "paper_reported_pairs": 6892,
+            "production_expected_both_labeled_pairs": 6120,
+            "production_expected_candidate_only_pairs": 225,
+            "production_expected_neither_labeled_pairs": 348,
+            "production_expected_sequence_pairs": 6885,
+            "production_expected_source_only_pairs": 192,
+            "production_observed_sequence_pairs": 6885,
+            "status": "sequence_and_label_coverage_reconciled"
+          },
+          "name": "gse200304_sequence_and_label_coverage_disclosed",
+          "passed": true
+        },
+        {
+          "detail": {
+            "checks": {
+              "lineage_ids_unique": true,
+              "normalized_targets_resolve": true,
+              "production_exact_row_counts": true,
+              "raw_fingerprints_exactly_recomputed": true,
+              "raw_row_keys_unique": true,
+              "raw_tables_reopened_without_error": true,
+              "strict_schema": true,
+              "summary_exactly_recomputed": true,
+              "table_coverage_matches_extraction": true
+            },
+            "invalid_normalized_targets": [],
+            "passed": true,
+            "raw_recompute_errors": [],
+            "recomputed_rows": 26540,
+            "schema_failure_indices": [],
+            "status": "PASS",
+            "stored_rows": 26540
+          },
+          "name": "gse200304_raw_row_lineage_exact",
+          "passed": true
+        }
+      ],
+      "counts": {
+        "auxiliary": 0,
+        "candidates": 6885,
+        "labels": 6885,
+        "paper_clean": 6885,
+        "raw_row_lineage": 26540,
+        "rejected": 66
+      },
+      "dataset_id": "GSE200304",
+      "fixture_mode": false,
+      "paper_clean_validation": {
+        "checks": {
+          "canonical_projection_exact": true,
+          "paper_clean_count_equals_canonical_count": true,
+          "record_id_bijection_with_canonical": true,
+          "record_ids_unique": true,
+          "row_roles_disjoint": true,
+          "strict_content_schema": true
+        },
+        "content_mismatches": [],
+        "passed": true,
+        "row_role_overlaps": {
+          "paper_clean_auxiliary": [],
+          "paper_clean_rejected": [],
+          "rejected_auxiliary": []
+        },
+        "schema_failures": {}
+      },
+      "paper_eligible": true,
+      "passed": true,
+      "raw_row_lineage_validation": {
+        "checks": {
+          "lineage_ids_unique": true,
+          "normalized_targets_resolve": true,
+          "production_exact_row_counts": true,
+          "raw_fingerprints_exactly_recomputed": true,
+          "raw_row_keys_unique": true,
+          "raw_tables_reopened_without_error": true,
+          "strict_schema": true,
+          "summary_exactly_recomputed": true,
+          "table_coverage_matches_extraction": true
+        },
+        "invalid_normalized_targets": [],
+        "passed": true,
+        "raw_recompute_errors": [],
+        "recomputed_rows": 26540,
+        "schema_failure_indices": [],
+        "status": "PASS",
+        "stored_rows": 26540
+      },
+      "status": "accepted"
+    },
+    {
+      "checks": [
+        {
+          "detail": [
+            "accounting",
+            "auxiliary",
+            "candidate_store",
+            "label_store",
+            "paper_clean",
+            "raw_row_lineage",
+            "rejected"
+          ],
+          "name": "required_outputs_declared",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE207584/paper_clean/records.jsonl",
+          "name": "output_integrity:paper_clean",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE207584/candidate_store/candidates.jsonl",
+          "name": "output_integrity:candidate_store",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE207584/audit/accounting.json",
+          "name": "output_integrity:accounting",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE207584/paper_clean/auxiliary_records.jsonl",
+          "name": "output_integrity:auxiliary",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE207584/canonical/records_with_labels.jsonl",
+          "name": "output_integrity:label_store",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE207584/audit/raw_row_lineage.jsonl",
+          "name": "output_integrity:raw_row_lineage",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE207584/rejected/records.jsonl",
+          "name": "output_integrity:rejected",
+          "passed": true
+        },
+        {
+          "detail": {
+            "declared": {
+              "accounting": 1,
+              "auxiliary": 0,
+              "candidate_store": 0,
+              "label_store": 0,
+              "paper_clean": 0,
+              "raw_row_lineage": 0,
+              "rejected": 0
+            },
+            "recomputed": {
+              "accounting": 1,
+              "auxiliary": 0,
+              "candidate_store": 0,
+              "label_store": 0,
+              "paper_clean": 0,
+              "raw_row_lineage": 0,
+              "rejected": 0
+            }
+          },
+          "name": "output_record_counts_bound",
+          "passed": true
+        },
+        {
+          "detail": {
+            "candidate": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE207584/candidate_store/candidates.jsonl",
+            "label": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE207584/canonical/records_with_labels.jsonl"
+          },
+          "name": "candidate_and_label_paths_distinct",
+          "passed": true
+        },
+        {
+          "detail": {
+            "recursive": [],
+            "top_level": []
+          },
+          "name": "candidate_store_label_free",
+          "passed": true
+        },
+        {
+          "detail": {
+            "candidate_records": 0,
+            "label_records": 0
+          },
+          "name": "candidate_label_record_id_bijection",
+          "passed": true
+        },
+        {
+          "detail": {
+            "actual_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+            "expected_records": 0,
+            "expected_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+            "records": 0
+          },
+          "name": "candidate_store_exact_canonical_projection",
+          "passed": true
+        },
+        {
+          "detail": {
+            "checks": {
+              "canonical_projection_exact": true,
+              "paper_clean_count_equals_canonical_count": true,
+              "record_id_bijection_with_canonical": true,
+              "record_ids_unique": true,
+              "row_roles_disjoint": true,
+              "strict_content_schema": true
+            },
+            "content_mismatches": [],
+            "passed": true,
+            "row_role_overlaps": {
+              "paper_clean_auxiliary": [],
+              "paper_clean_rejected": [],
+              "rejected_auxiliary": []
+            },
+            "schema_failures": {}
+          },
+          "name": "paper_clean_strict_content_and_layer_binding",
+          "passed": true
+        },
+        {
+          "detail": {
+            "declared": {
+              "auxiliary": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "row_id",
+                "records": 0
+              },
+              "candidate_store": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 0
+              },
+              "canonical": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 0
+              },
+              "paper_clean": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 0
+              },
+              "raw_row_lineage": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "lineage_id",
+                "records": 0
+              },
+              "rejected": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "row_id",
+                "records": 0
+              }
+            },
+            "recomputed": {
+              "auxiliary": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "row_id",
+                "records": 0
+              },
+              "candidate_store": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 0
+              },
+              "canonical": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 0
+              },
+              "paper_clean": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 0
+              },
+              "raw_row_lineage": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "lineage_id",
+                "records": 0
+              },
+              "rejected": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "row_id",
+                "records": 0
+              }
+            }
+          },
+          "name": "manifest_content_identities_exact",
+          "passed": true
+        },
+        {
+          "detail": {},
+          "name": "canonical_required_fields",
+          "passed": true
+        },
+        {
+          "detail": {},
+          "name": "strict_canonical_record_validator",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "edit_script_roundtrip_100_percent",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "record_identity_recomputed_from_endpoints",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "canonical_edit_script_and_ambiguity_exactly_recomputed",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "constructed_paths_never_observed",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "absolute_sequences_not_interventions",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "record_provenance_complete",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "rejected_rows_have_stable_reason_and_fingerprint",
+          "passed": true
+        },
+        {
+          "detail": {
+            "manifest": {
+              "accepted_absolute_rows": 0,
+              "accepted_input_rows": 0,
+              "accepted_intervention_rows": 0,
+              "accounted_rows": 0,
+              "auxiliary_source_anchor_rows": 0,
+              "rejected_rows": 0,
+              "total_input_rows": 0
+            },
+            "recomputed": 0
+          },
+          "name": "accepted_rejected_accounting_exact",
+          "passed": true
+        },
+        {
+          "detail": {
+            "accepted_provenance_passed": false,
+            "audit": {
+              "complete": false,
+              "download_manifest_complete": true,
+              "license_complete": true,
+              "raw_files": [],
+              "raw_files_complete": false
+            },
+            "blocked_or_excluded": true,
+            "fixture_exemption": false,
+            "integrity_failures": [],
+            "metadata_only_provenance_passed": true
+          },
+          "name": "production_input_provenance_complete",
+          "passed": true
+        },
+        {
+          "detail": {
+            "candidate_records": 0,
+            "label_records": 0,
+            "reason_code": "EXCLUDED_OUTSIDE_UTR_ONLY_SCOPE"
+          },
+          "name": "blocked_dataset_has_no_admitted_records",
+          "passed": true
+        }
+      ],
+      "counts": {
+        "auxiliary": 0,
+        "candidates": 0,
+        "labels": 0,
+        "paper_clean": 0,
+        "raw_row_lineage": 0,
+        "rejected": 0
+      },
+      "dataset_id": "GSE207584",
+      "fixture_mode": false,
+      "paper_clean_validation": {
+        "checks": {
+          "canonical_projection_exact": true,
+          "paper_clean_count_equals_canonical_count": true,
+          "record_id_bijection_with_canonical": true,
+          "record_ids_unique": true,
+          "row_roles_disjoint": true,
+          "strict_content_schema": true
+        },
+        "content_mismatches": [],
+        "passed": true,
+        "row_role_overlaps": {
+          "paper_clean_auxiliary": [],
+          "paper_clean_rejected": [],
+          "rejected_auxiliary": []
+        },
+        "schema_failures": {}
+      },
+      "paper_eligible": false,
+      "passed": true,
+      "raw_row_lineage_validation": null,
+      "status": "blocked"
+    },
+    {
+      "checks": [
+        {
+          "detail": [
+            "accounting",
+            "auxiliary",
+            "candidate_store",
+            "label_store",
+            "paper_clean",
+            "raw_row_lineage",
+            "rejected"
+          ],
+          "name": "required_outputs_declared",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE217518/paper_clean/records.jsonl",
+          "name": "output_integrity:paper_clean",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE217518/candidate_store/candidates.jsonl",
+          "name": "output_integrity:candidate_store",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE217518/audit/accounting.json",
+          "name": "output_integrity:accounting",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE217518/paper_clean/auxiliary_records.jsonl",
+          "name": "output_integrity:auxiliary",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE217518/canonical/records_with_labels.jsonl",
+          "name": "output_integrity:label_store",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE217518/audit/raw_row_lineage.jsonl",
+          "name": "output_integrity:raw_row_lineage",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE217518/rejected/records.jsonl",
+          "name": "output_integrity:rejected",
+          "passed": true
+        },
+        {
+          "detail": {
+            "declared": {
+              "accounting": 1,
+              "auxiliary": 0,
+              "candidate_store": 2880,
+              "label_store": 2880,
+              "paper_clean": 2880,
+              "raw_row_lineage": 0,
+              "rejected": 2116
+            },
+            "recomputed": {
+              "accounting": 1,
+              "auxiliary": 0,
+              "candidate_store": 2880,
+              "label_store": 2880,
+              "paper_clean": 2880,
+              "raw_row_lineage": 0,
+              "rejected": 2116
+            }
+          },
+          "name": "output_record_counts_bound",
+          "passed": true
+        },
+        {
+          "detail": {
+            "candidate": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE217518/candidate_store/candidates.jsonl",
+            "label": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE217518/canonical/records_with_labels.jsonl"
+          },
+          "name": "candidate_and_label_paths_distinct",
+          "passed": true
+        },
+        {
+          "detail": {
+            "recursive": [],
+            "top_level": []
+          },
+          "name": "candidate_store_label_free",
+          "passed": true
+        },
+        {
+          "detail": {
+            "candidate_records": 2880,
+            "label_records": 2880
+          },
+          "name": "candidate_label_record_id_bijection",
+          "passed": true
+        },
+        {
+          "detail": {
+            "actual_sha256": "3632aa7344818498d66138bb9adf9f8b7fd896cee2a92b8b7461e8527e90f0ae",
+            "expected_records": 2880,
+            "expected_sha256": "3632aa7344818498d66138bb9adf9f8b7fd896cee2a92b8b7461e8527e90f0ae",
+            "records": 2880
+          },
+          "name": "candidate_store_exact_canonical_projection",
+          "passed": true
+        },
+        {
+          "detail": {
+            "checks": {
+              "canonical_projection_exact": true,
+              "paper_clean_count_equals_canonical_count": true,
+              "record_id_bijection_with_canonical": true,
+              "record_ids_unique": true,
+              "row_roles_disjoint": true,
+              "strict_content_schema": true
+            },
+            "content_mismatches": [],
+            "passed": true,
+            "row_role_overlaps": {
+              "paper_clean_auxiliary": [],
+              "paper_clean_rejected": [],
+              "rejected_auxiliary": []
+            },
+            "schema_failures": {}
+          },
+          "name": "paper_clean_strict_content_and_layer_binding",
+          "passed": true
+        },
+        {
+          "detail": {
+            "declared": {
+              "auxiliary": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "row_id",
+                "records": 0
+              },
+              "candidate_store": {
+                "identities_sha256": "15e8a8a1c123788a8fe982358f9d1a5c6194ab38ced1166d18b96c08d54c27ea",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 2880
+              },
+              "canonical": {
+                "identities_sha256": "15e8a8a1c123788a8fe982358f9d1a5c6194ab38ced1166d18b96c08d54c27ea",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 2880
+              },
+              "paper_clean": {
+                "identities_sha256": "15e8a8a1c123788a8fe982358f9d1a5c6194ab38ced1166d18b96c08d54c27ea",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 2880
+              },
+              "raw_row_lineage": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "lineage_id",
+                "records": 0
+              },
+              "rejected": {
+                "identities_sha256": "877de829d5aaf5227297bfaf59cb442fc358b2fcbd0cf3e5375869be17c198ac",
+                "identities_unique": true,
+                "identity_field": "row_id",
+                "records": 2116
+              }
+            },
+            "recomputed": {
+              "auxiliary": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "row_id",
+                "records": 0
+              },
+              "candidate_store": {
+                "identities_sha256": "15e8a8a1c123788a8fe982358f9d1a5c6194ab38ced1166d18b96c08d54c27ea",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 2880
+              },
+              "canonical": {
+                "identities_sha256": "15e8a8a1c123788a8fe982358f9d1a5c6194ab38ced1166d18b96c08d54c27ea",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 2880
+              },
+              "paper_clean": {
+                "identities_sha256": "15e8a8a1c123788a8fe982358f9d1a5c6194ab38ced1166d18b96c08d54c27ea",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 2880
+              },
+              "raw_row_lineage": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "lineage_id",
+                "records": 0
+              },
+              "rejected": {
+                "identities_sha256": "877de829d5aaf5227297bfaf59cb442fc358b2fcbd0cf3e5375869be17c198ac",
+                "identities_unique": true,
+                "identity_field": "row_id",
+                "records": 2116
+              }
+            }
+          },
+          "name": "manifest_content_identities_exact",
+          "passed": true
+        },
+        {
+          "detail": {},
+          "name": "canonical_required_fields",
+          "passed": true
+        },
+        {
+          "detail": {},
+          "name": "strict_canonical_record_validator",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "edit_script_roundtrip_100_percent",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "record_identity_recomputed_from_endpoints",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "canonical_edit_script_and_ambiguity_exactly_recomputed",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "constructed_paths_never_observed",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "absolute_sequences_not_interventions",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "record_provenance_complete",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "rejected_rows_have_stable_reason_and_fingerprint",
+          "passed": true
+        },
+        {
+          "detail": {
+            "manifest": {
+              "accepted_absolute_rows": 0,
+              "accepted_input_rows": 5760,
+              "accepted_intervention_rows": 2880,
+              "accounted_rows": 7876,
+              "auxiliary_source_anchor_rows": 0,
+              "rejected_rows": 2116,
+              "total_input_rows": 7876
+            },
+            "recomputed": 7876
+          },
+          "name": "accepted_rejected_accounting_exact",
+          "passed": true
+        },
+        {
+          "detail": {
+            "accepted_provenance_passed": true,
+            "audit": {
+              "complete": true,
+              "download_manifest_complete": true,
+              "license_complete": true,
+              "raw_files": [
+                {
+                  "bytes": 1198197,
+                  "defaults": {
+                    "table_region": "three_utr"
+                  },
+                  "delimiter": null,
+                  "format": "csv",
+                  "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/inputs/GSE217518/SHdiNT_U3.csv",
+                  "role": "three_utr_sequence_and_processed_label_input",
+                  "sha256": "b34170cad076882ce43b1f2c0d4e1e0cfe9b688d5f5c92d7ee69de289f0a400d",
+                  "sheet_name": null
+                },
+                {
+                  "bytes": 1737444,
+                  "defaults": {
+                    "table_region": "five_utr"
+                  },
+                  "delimiter": null,
+                  "format": "csv",
+                  "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/inputs/GSE217518/SHdiNT_U5.csv",
+                  "role": "five_utr_sequence_and_processed_label_input",
+                  "sha256": "7bb7183865a6435c913563ff0dbd39b9697badad6247ebd7bd06c6604bb62579",
+                  "sheet_name": null
+                }
+              ],
+              "raw_files_complete": true
+            },
+            "blocked_or_excluded": false,
+            "fixture_exemption": false,
+            "integrity_failures": [],
+            "metadata_only_provenance_passed": false
+          },
+          "name": "production_input_provenance_complete",
+          "passed": true
+        },
+        {
+          "detail": {
+            "canonical_insert_length_mode": {
+              "five_utr": 115,
+              "three_utr": 116
+            },
+            "known_production_snapshot": {
+              "five_utr_rows": 4601,
+              "five_utr_unique_pairs": 1756,
+              "three_utr_rows": 3275,
+              "three_utr_unique_pairs": 1124
+            },
+            "official_csv_rows": {
+              "five_utr": 4601,
+              "three_utr": 3275
+            },
+            "official_csv_unique_pairs": {
+              "five_utr": 1756,
+              "three_utr": 1124
+            },
+            "paper_reported_pairs": 6555,
+            "paper_reported_total_sequences": 12472,
+            "status": "official_csv_counts_reconciled_and_paper_difference_disclosed",
+            "unpaired_group_counts": {
+              "five_utr": 1089,
+              "mixed": 0,
+              "three_utr": 1027
+            }
+          },
+          "name": "gse217518_official_csv_counts_and_paper_gap_disclosed",
+          "passed": true
+        }
+      ],
+      "counts": {
+        "auxiliary": 0,
+        "candidates": 2880,
+        "labels": 2880,
+        "paper_clean": 2880,
+        "raw_row_lineage": 0,
+        "rejected": 2116
+      },
+      "dataset_id": "GSE217518",
+      "fixture_mode": false,
+      "paper_clean_validation": {
+        "checks": {
+          "canonical_projection_exact": true,
+          "paper_clean_count_equals_canonical_count": true,
+          "record_id_bijection_with_canonical": true,
+          "record_ids_unique": true,
+          "row_roles_disjoint": true,
+          "strict_content_schema": true
+        },
+        "content_mismatches": [],
+        "passed": true,
+        "row_role_overlaps": {
+          "paper_clean_auxiliary": [],
+          "paper_clean_rejected": [],
+          "rejected_auxiliary": []
+        },
+        "schema_failures": {}
+      },
+      "paper_eligible": true,
+      "passed": true,
+      "raw_row_lineage_validation": null,
+      "status": "accepted"
+    },
+    {
+      "checks": [
+        {
+          "detail": [
+            "accounting",
+            "auxiliary",
+            "candidate_store",
+            "label_store",
+            "paper_clean",
+            "raw_row_lineage",
+            "rejected"
+          ],
+          "name": "required_outputs_declared",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE246381/paper_clean/records.jsonl",
+          "name": "output_integrity:paper_clean",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE246381/candidate_store/candidates.jsonl",
+          "name": "output_integrity:candidate_store",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE246381/audit/accounting.json",
+          "name": "output_integrity:accounting",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE246381/paper_clean/auxiliary_records.jsonl",
+          "name": "output_integrity:auxiliary",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE246381/canonical/records_with_labels.jsonl",
+          "name": "output_integrity:label_store",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE246381/audit/raw_row_lineage.jsonl",
+          "name": "output_integrity:raw_row_lineage",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE246381/rejected/records.jsonl",
+          "name": "output_integrity:rejected",
+          "passed": true
+        },
+        {
+          "detail": {
+            "declared": {
+              "accounting": 1,
+              "auxiliary": 0,
+              "candidate_store": 1385,
+              "label_store": 1385,
+              "paper_clean": 1385,
+              "raw_row_lineage": 0,
+              "rejected": 122
+            },
+            "recomputed": {
+              "accounting": 1,
+              "auxiliary": 0,
+              "candidate_store": 1385,
+              "label_store": 1385,
+              "paper_clean": 1385,
+              "raw_row_lineage": 0,
+              "rejected": 122
+            }
+          },
+          "name": "output_record_counts_bound",
+          "passed": true
+        },
+        {
+          "detail": {
+            "candidate": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE246381/candidate_store/candidates.jsonl",
+            "label": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE246381/canonical/records_with_labels.jsonl"
+          },
+          "name": "candidate_and_label_paths_distinct",
+          "passed": true
+        },
+        {
+          "detail": {
+            "recursive": [],
+            "top_level": []
+          },
+          "name": "candidate_store_label_free",
+          "passed": true
+        },
+        {
+          "detail": {
+            "candidate_records": 1385,
+            "label_records": 1385
+          },
+          "name": "candidate_label_record_id_bijection",
+          "passed": true
+        },
+        {
+          "detail": {
+            "actual_sha256": "f2494bd2f4165212402178f126869aead67409a56e0823719f01600268364912",
+            "expected_records": 1385,
+            "expected_sha256": "f2494bd2f4165212402178f126869aead67409a56e0823719f01600268364912",
+            "records": 1385
+          },
+          "name": "candidate_store_exact_canonical_projection",
+          "passed": true
+        },
+        {
+          "detail": {
+            "checks": {
+              "canonical_projection_exact": true,
+              "paper_clean_count_equals_canonical_count": true,
+              "record_id_bijection_with_canonical": true,
+              "record_ids_unique": true,
+              "row_roles_disjoint": true,
+              "strict_content_schema": true
+            },
+            "content_mismatches": [],
+            "passed": true,
+            "row_role_overlaps": {
+              "paper_clean_auxiliary": [],
+              "paper_clean_rejected": [],
+              "rejected_auxiliary": []
+            },
+            "schema_failures": {}
+          },
+          "name": "paper_clean_strict_content_and_layer_binding",
+          "passed": true
+        },
+        {
+          "detail": {
+            "declared": {
+              "auxiliary": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "row_id",
+                "records": 0
+              },
+              "candidate_store": {
+                "identities_sha256": "2f53d560c5d87cffc6736f7dcd085bf3a9b4c175428db45d46c586b421eb27b6",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 1385
+              },
+              "canonical": {
+                "identities_sha256": "2f53d560c5d87cffc6736f7dcd085bf3a9b4c175428db45d46c586b421eb27b6",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 1385
+              },
+              "paper_clean": {
+                "identities_sha256": "2f53d560c5d87cffc6736f7dcd085bf3a9b4c175428db45d46c586b421eb27b6",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 1385
+              },
+              "raw_row_lineage": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "lineage_id",
+                "records": 0
+              },
+              "rejected": {
+                "identities_sha256": "6365235643c550a41b43eb055030d16fd3ef0d32e194ed5e8c6c4488681ff67b",
+                "identities_unique": true,
+                "identity_field": "row_id",
+                "records": 122
+              }
+            },
+            "recomputed": {
+              "auxiliary": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "row_id",
+                "records": 0
+              },
+              "candidate_store": {
+                "identities_sha256": "2f53d560c5d87cffc6736f7dcd085bf3a9b4c175428db45d46c586b421eb27b6",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 1385
+              },
+              "canonical": {
+                "identities_sha256": "2f53d560c5d87cffc6736f7dcd085bf3a9b4c175428db45d46c586b421eb27b6",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 1385
+              },
+              "paper_clean": {
+                "identities_sha256": "2f53d560c5d87cffc6736f7dcd085bf3a9b4c175428db45d46c586b421eb27b6",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 1385
+              },
+              "raw_row_lineage": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "lineage_id",
+                "records": 0
+              },
+              "rejected": {
+                "identities_sha256": "6365235643c550a41b43eb055030d16fd3ef0d32e194ed5e8c6c4488681ff67b",
+                "identities_unique": true,
+                "identity_field": "row_id",
+                "records": 122
+              }
+            }
+          },
+          "name": "manifest_content_identities_exact",
+          "passed": true
+        },
+        {
+          "detail": {},
+          "name": "canonical_required_fields",
+          "passed": true
+        },
+        {
+          "detail": {},
+          "name": "strict_canonical_record_validator",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "edit_script_roundtrip_100_percent",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "record_identity_recomputed_from_endpoints",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "canonical_edit_script_and_ambiguity_exactly_recomputed",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "constructed_paths_never_observed",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "absolute_sequences_not_interventions",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "record_provenance_complete",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "rejected_rows_have_stable_reason_and_fingerprint",
+          "passed": true
+        },
+        {
+          "detail": {
+            "manifest": {
+              "accepted_absolute_rows": 0,
+              "accepted_input_rows": 1385,
+              "accepted_intervention_rows": 1385,
+              "accounted_rows": 1507,
+              "auxiliary_source_anchor_rows": 0,
+              "rejected_rows": 122,
+              "total_input_rows": 1507
+            },
+            "recomputed": 1507
+          },
+          "name": "accepted_rejected_accounting_exact",
+          "passed": true
+        },
+        {
+          "detail": {
+            "accepted_provenance_passed": true,
+            "audit": {
+              "complete": true,
+              "download_manifest_complete": true,
+              "license_complete": true,
+              "raw_files": [
+                {
+                  "bytes": 4201900,
+                  "defaults": {
+                    "assay_id": "GSE246381_supplementary_variant_design",
+                    "cell_context": "GSE246381_retrospective_unspecified_context",
+                    "endpoint": "sequence_pair_only"
+                  },
+                  "delimiter": null,
+                  "format": "xlsx",
+                  "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/inputs/GSE246381/media-1.xlsx",
+                  "role": "historically_exposed_sequence_pair_input",
+                  "sha256": "82fba477dbb55338524136db219dbcb9a90d1a694a79bbb37ffe373d1354f005",
+                  "sheet_name": "S1.2 MPRA Library Variants"
+                }
+              ],
+              "raw_files_complete": true
+            },
+            "blocked_or_excluded": false,
+            "fixture_exemption": false,
+            "integrity_failures": [],
+            "metadata_only_provenance_passed": false
+          },
+          "name": "production_input_provenance_complete",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "gse246381_retrospective_E4_only",
+          "passed": true
+        }
+      ],
+      "counts": {
+        "auxiliary": 0,
+        "candidates": 1385,
+        "labels": 1385,
+        "paper_clean": 1385,
+        "raw_row_lineage": 0,
+        "rejected": 122
+      },
+      "dataset_id": "GSE246381",
+      "fixture_mode": false,
+      "paper_clean_validation": {
+        "checks": {
+          "canonical_projection_exact": true,
+          "paper_clean_count_equals_canonical_count": true,
+          "record_id_bijection_with_canonical": true,
+          "record_ids_unique": true,
+          "row_roles_disjoint": true,
+          "strict_content_schema": true
+        },
+        "content_mismatches": [],
+        "passed": true,
+        "row_role_overlaps": {
+          "paper_clean_auxiliary": [],
+          "paper_clean_rejected": [],
+          "rejected_auxiliary": []
+        },
+        "schema_failures": {}
+      },
+      "paper_eligible": true,
+      "passed": true,
+      "raw_row_lineage_validation": null,
+      "status": "accepted"
+    },
+    {
+      "checks": [
+        {
+          "detail": [
+            "accounting",
+            "auxiliary",
+            "candidate_store",
+            "label_store",
+            "paper_clean",
+            "raw_row_lineage",
+            "rejected"
+          ],
+          "name": "required_outputs_declared",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE291719/paper_clean/records.jsonl",
+          "name": "output_integrity:paper_clean",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE291719/candidate_store/candidates.jsonl",
+          "name": "output_integrity:candidate_store",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE291719/audit/accounting.json",
+          "name": "output_integrity:accounting",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE291719/paper_clean/auxiliary_records.jsonl",
+          "name": "output_integrity:auxiliary",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE291719/canonical/records_with_labels.jsonl",
+          "name": "output_integrity:label_store",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE291719/audit/raw_row_lineage.jsonl",
+          "name": "output_integrity:raw_row_lineage",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE291719/rejected/records.jsonl",
+          "name": "output_integrity:rejected",
+          "passed": true
+        },
+        {
+          "detail": {
+            "declared": {
+              "accounting": 1,
+              "auxiliary": 0,
+              "candidate_store": 0,
+              "label_store": 0,
+              "paper_clean": 0,
+              "raw_row_lineage": 0,
+              "rejected": 0
+            },
+            "recomputed": {
+              "accounting": 1,
+              "auxiliary": 0,
+              "candidate_store": 0,
+              "label_store": 0,
+              "paper_clean": 0,
+              "raw_row_lineage": 0,
+              "rejected": 0
+            }
+          },
+          "name": "output_record_counts_bound",
+          "passed": true
+        },
+        {
+          "detail": {
+            "candidate": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE291719/candidate_store/candidates.jsonl",
+            "label": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE291719/canonical/records_with_labels.jsonl"
+          },
+          "name": "candidate_and_label_paths_distinct",
+          "passed": true
+        },
+        {
+          "detail": {
+            "recursive": [],
+            "top_level": []
+          },
+          "name": "candidate_store_label_free",
+          "passed": true
+        },
+        {
+          "detail": {
+            "candidate_records": 0,
+            "label_records": 0
+          },
+          "name": "candidate_label_record_id_bijection",
+          "passed": true
+        },
+        {
+          "detail": {
+            "actual_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+            "expected_records": 0,
+            "expected_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+            "records": 0
+          },
+          "name": "candidate_store_exact_canonical_projection",
+          "passed": true
+        },
+        {
+          "detail": {
+            "checks": {
+              "canonical_projection_exact": true,
+              "paper_clean_count_equals_canonical_count": true,
+              "record_id_bijection_with_canonical": true,
+              "record_ids_unique": true,
+              "row_roles_disjoint": true,
+              "strict_content_schema": true
+            },
+            "content_mismatches": [],
+            "passed": true,
+            "row_role_overlaps": {
+              "paper_clean_auxiliary": [],
+              "paper_clean_rejected": [],
+              "rejected_auxiliary": []
+            },
+            "schema_failures": {}
+          },
+          "name": "paper_clean_strict_content_and_layer_binding",
+          "passed": true
+        },
+        {
+          "detail": {
+            "declared": {
+              "auxiliary": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "row_id",
+                "records": 0
+              },
+              "candidate_store": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 0
+              },
+              "canonical": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 0
+              },
+              "paper_clean": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 0
+              },
+              "raw_row_lineage": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "lineage_id",
+                "records": 0
+              },
+              "rejected": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "row_id",
+                "records": 0
+              }
+            },
+            "recomputed": {
+              "auxiliary": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "row_id",
+                "records": 0
+              },
+              "candidate_store": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 0
+              },
+              "canonical": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 0
+              },
+              "paper_clean": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 0
+              },
+              "raw_row_lineage": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "lineage_id",
+                "records": 0
+              },
+              "rejected": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "row_id",
+                "records": 0
+              }
+            }
+          },
+          "name": "manifest_content_identities_exact",
+          "passed": true
+        },
+        {
+          "detail": {},
+          "name": "canonical_required_fields",
+          "passed": true
+        },
+        {
+          "detail": {},
+          "name": "strict_canonical_record_validator",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "edit_script_roundtrip_100_percent",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "record_identity_recomputed_from_endpoints",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "canonical_edit_script_and_ambiguity_exactly_recomputed",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "constructed_paths_never_observed",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "absolute_sequences_not_interventions",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "record_provenance_complete",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "rejected_rows_have_stable_reason_and_fingerprint",
+          "passed": true
+        },
+        {
+          "detail": {
+            "manifest": {
+              "accepted_absolute_rows": 0,
+              "accepted_input_rows": 0,
+              "accepted_intervention_rows": 0,
+              "accounted_rows": 0,
+              "auxiliary_source_anchor_rows": 0,
+              "rejected_rows": 0,
+              "total_input_rows": 0
+            },
+            "recomputed": 0
+          },
+          "name": "accepted_rejected_accounting_exact",
+          "passed": true
+        },
+        {
+          "detail": {
+            "accepted_provenance_passed": false,
+            "audit": {
+              "complete": false,
+              "download_manifest_complete": true,
+              "license_complete": true,
+              "raw_files": [],
+              "raw_files_complete": false
+            },
+            "blocked_or_excluded": true,
+            "fixture_exemption": false,
+            "integrity_failures": [],
+            "metadata_only_provenance_passed": true
+          },
+          "name": "production_input_provenance_complete",
+          "passed": true
+        },
+        {
+          "detail": {
+            "candidate_records": 0,
+            "label_records": 0,
+            "reason_code": "METADATA_ONLY_FINAL_LABELS_UNOPENED"
+          },
+          "name": "blocked_dataset_has_no_admitted_records",
+          "passed": true
+        }
+      ],
+      "counts": {
+        "auxiliary": 0,
+        "candidates": 0,
+        "labels": 0,
+        "paper_clean": 0,
+        "raw_row_lineage": 0,
+        "rejected": 0
+      },
+      "dataset_id": "GSE291719",
+      "fixture_mode": false,
+      "paper_clean_validation": {
+        "checks": {
+          "canonical_projection_exact": true,
+          "paper_clean_count_equals_canonical_count": true,
+          "record_id_bijection_with_canonical": true,
+          "record_ids_unique": true,
+          "row_roles_disjoint": true,
+          "strict_content_schema": true
+        },
+        "content_mismatches": [],
+        "passed": true,
+        "row_role_overlaps": {
+          "paper_clean_auxiliary": [],
+          "paper_clean_rejected": [],
+          "rejected_auxiliary": []
+        },
+        "schema_failures": {}
+      },
+      "paper_eligible": false,
+      "passed": true,
+      "raw_row_lineage_validation": null,
+      "status": "blocked"
+    },
+    {
+      "checks": [
+        {
+          "detail": [
+            "accounting",
+            "auxiliary",
+            "candidate_store",
+            "label_store",
+            "paper_clean",
+            "raw_row_lineage",
+            "rejected"
+          ],
+          "name": "required_outputs_declared",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE330741/paper_clean/records.jsonl",
+          "name": "output_integrity:paper_clean",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE330741/candidate_store/candidates.jsonl",
+          "name": "output_integrity:candidate_store",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE330741/audit/accounting.json",
+          "name": "output_integrity:accounting",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE330741/paper_clean/auxiliary_records.jsonl",
+          "name": "output_integrity:auxiliary",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE330741/canonical/records_with_labels.jsonl",
+          "name": "output_integrity:label_store",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE330741/audit/raw_row_lineage.jsonl",
+          "name": "output_integrity:raw_row_lineage",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE330741/rejected/records.jsonl",
+          "name": "output_integrity:rejected",
+          "passed": true
+        },
+        {
+          "detail": {
+            "declared": {
+              "accounting": 1,
+              "auxiliary": 0,
+              "candidate_store": 0,
+              "label_store": 0,
+              "paper_clean": 0,
+              "raw_row_lineage": 0,
+              "rejected": 0
+            },
+            "recomputed": {
+              "accounting": 1,
+              "auxiliary": 0,
+              "candidate_store": 0,
+              "label_store": 0,
+              "paper_clean": 0,
+              "raw_row_lineage": 0,
+              "rejected": 0
+            }
+          },
+          "name": "output_record_counts_bound",
+          "passed": true
+        },
+        {
+          "detail": {
+            "candidate": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE330741/candidate_store/candidates.jsonl",
+            "label": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE330741/canonical/records_with_labels.jsonl"
+          },
+          "name": "candidate_and_label_paths_distinct",
+          "passed": true
+        },
+        {
+          "detail": {
+            "recursive": [],
+            "top_level": []
+          },
+          "name": "candidate_store_label_free",
+          "passed": true
+        },
+        {
+          "detail": {
+            "candidate_records": 0,
+            "label_records": 0
+          },
+          "name": "candidate_label_record_id_bijection",
+          "passed": true
+        },
+        {
+          "detail": {
+            "actual_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+            "expected_records": 0,
+            "expected_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+            "records": 0
+          },
+          "name": "candidate_store_exact_canonical_projection",
+          "passed": true
+        },
+        {
+          "detail": {
+            "checks": {
+              "canonical_projection_exact": true,
+              "paper_clean_count_equals_canonical_count": true,
+              "record_id_bijection_with_canonical": true,
+              "record_ids_unique": true,
+              "row_roles_disjoint": true,
+              "strict_content_schema": true
+            },
+            "content_mismatches": [],
+            "passed": true,
+            "row_role_overlaps": {
+              "paper_clean_auxiliary": [],
+              "paper_clean_rejected": [],
+              "rejected_auxiliary": []
+            },
+            "schema_failures": {}
+          },
+          "name": "paper_clean_strict_content_and_layer_binding",
+          "passed": true
+        },
+        {
+          "detail": {
+            "declared": {
+              "auxiliary": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "row_id",
+                "records": 0
+              },
+              "candidate_store": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 0
+              },
+              "canonical": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 0
+              },
+              "paper_clean": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 0
+              },
+              "raw_row_lineage": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "lineage_id",
+                "records": 0
+              },
+              "rejected": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "row_id",
+                "records": 0
+              }
+            },
+            "recomputed": {
+              "auxiliary": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "row_id",
+                "records": 0
+              },
+              "candidate_store": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 0
+              },
+              "canonical": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 0
+              },
+              "paper_clean": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 0
+              },
+              "raw_row_lineage": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "lineage_id",
+                "records": 0
+              },
+              "rejected": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "row_id",
+                "records": 0
+              }
+            }
+          },
+          "name": "manifest_content_identities_exact",
+          "passed": true
+        },
+        {
+          "detail": {},
+          "name": "canonical_required_fields",
+          "passed": true
+        },
+        {
+          "detail": {},
+          "name": "strict_canonical_record_validator",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "edit_script_roundtrip_100_percent",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "record_identity_recomputed_from_endpoints",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "canonical_edit_script_and_ambiguity_exactly_recomputed",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "constructed_paths_never_observed",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "absolute_sequences_not_interventions",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "record_provenance_complete",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "rejected_rows_have_stable_reason_and_fingerprint",
+          "passed": true
+        },
+        {
+          "detail": {
+            "manifest": {
+              "accepted_absolute_rows": 0,
+              "accepted_input_rows": 0,
+              "accepted_intervention_rows": 0,
+              "accounted_rows": 0,
+              "auxiliary_source_anchor_rows": 0,
+              "rejected_rows": 0,
+              "total_input_rows": 0
+            },
+            "recomputed": 0
+          },
+          "name": "accepted_rejected_accounting_exact",
+          "passed": true
+        },
+        {
+          "detail": {
+            "accepted_provenance_passed": false,
+            "audit": {
+              "complete": false,
+              "download_manifest_complete": true,
+              "license_complete": true,
+              "raw_files": [],
+              "raw_files_complete": false
+            },
+            "blocked_or_excluded": true,
+            "fixture_exemption": false,
+            "integrity_failures": [],
+            "metadata_only_provenance_passed": true
+          },
+          "name": "production_input_provenance_complete",
+          "passed": true
+        },
+        {
+          "detail": {
+            "candidate_records": 0,
+            "label_records": 0,
+            "reason_code": "METADATA_ONLY_FINAL_LABELS_UNOPENED"
+          },
+          "name": "blocked_dataset_has_no_admitted_records",
+          "passed": true
+        }
+      ],
+      "counts": {
+        "auxiliary": 0,
+        "candidates": 0,
+        "labels": 0,
+        "paper_clean": 0,
+        "raw_row_lineage": 0,
+        "rejected": 0
+      },
+      "dataset_id": "GSE330741",
+      "fixture_mode": false,
+      "paper_clean_validation": {
+        "checks": {
+          "canonical_projection_exact": true,
+          "paper_clean_count_equals_canonical_count": true,
+          "record_id_bijection_with_canonical": true,
+          "record_ids_unique": true,
+          "row_roles_disjoint": true,
+          "strict_content_schema": true
+        },
+        "content_mismatches": [],
+        "passed": true,
+        "row_role_overlaps": {
+          "paper_clean_auxiliary": [],
+          "paper_clean_rejected": [],
+          "rejected_auxiliary": []
+        },
+        "schema_failures": {}
+      },
+      "paper_eligible": false,
+      "passed": true,
+      "raw_row_lineage_validation": null,
+      "status": "blocked"
+    },
+    {
+      "checks": [
+        {
+          "detail": [
+            "accounting",
+            "auxiliary",
+            "candidate_store",
+            "label_store",
+            "paper_clean",
+            "raw_row_lineage",
+            "rejected"
+          ],
+          "name": "required_outputs_declared",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/MPRAu_processed_ENCSR854RUF/paper_clean/records.jsonl",
+          "name": "output_integrity:paper_clean",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/MPRAu_processed_ENCSR854RUF/candidate_store/candidates.jsonl",
+          "name": "output_integrity:candidate_store",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/MPRAu_processed_ENCSR854RUF/audit/accounting.json",
+          "name": "output_integrity:accounting",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/MPRAu_processed_ENCSR854RUF/paper_clean/auxiliary_records.jsonl",
+          "name": "output_integrity:auxiliary",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/MPRAu_processed_ENCSR854RUF/canonical/records_with_labels.jsonl",
+          "name": "output_integrity:label_store",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/MPRAu_processed_ENCSR854RUF/audit/raw_row_lineage.jsonl",
+          "name": "output_integrity:raw_row_lineage",
+          "passed": true
+        },
+        {
+          "detail": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/MPRAu_processed_ENCSR854RUF/rejected/records.jsonl",
+          "name": "output_integrity:rejected",
+          "passed": true
+        },
+        {
+          "detail": {
+            "declared": {
+              "accounting": 1,
+              "auxiliary": 0,
+              "candidate_store": 0,
+              "label_store": 0,
+              "paper_clean": 0,
+              "raw_row_lineage": 0,
+              "rejected": 0
+            },
+            "recomputed": {
+              "accounting": 1,
+              "auxiliary": 0,
+              "candidate_store": 0,
+              "label_store": 0,
+              "paper_clean": 0,
+              "raw_row_lineage": 0,
+              "rejected": 0
+            }
+          },
+          "name": "output_record_counts_bound",
+          "passed": true
+        },
+        {
+          "detail": {
+            "candidate": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/MPRAu_processed_ENCSR854RUF/candidate_store/candidates.jsonl",
+            "label": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/MPRAu_processed_ENCSR854RUF/canonical/records_with_labels.jsonl"
+          },
+          "name": "candidate_and_label_paths_distinct",
+          "passed": true
+        },
+        {
+          "detail": {
+            "recursive": [],
+            "top_level": []
+          },
+          "name": "candidate_store_label_free",
+          "passed": true
+        },
+        {
+          "detail": {
+            "candidate_records": 0,
+            "label_records": 0
+          },
+          "name": "candidate_label_record_id_bijection",
+          "passed": true
+        },
+        {
+          "detail": {
+            "actual_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+            "expected_records": 0,
+            "expected_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+            "records": 0
+          },
+          "name": "candidate_store_exact_canonical_projection",
+          "passed": true
+        },
+        {
+          "detail": {
+            "checks": {
+              "canonical_projection_exact": true,
+              "paper_clean_count_equals_canonical_count": true,
+              "record_id_bijection_with_canonical": true,
+              "record_ids_unique": true,
+              "row_roles_disjoint": true,
+              "strict_content_schema": true
+            },
+            "content_mismatches": [],
+            "passed": true,
+            "row_role_overlaps": {
+              "paper_clean_auxiliary": [],
+              "paper_clean_rejected": [],
+              "rejected_auxiliary": []
+            },
+            "schema_failures": {}
+          },
+          "name": "paper_clean_strict_content_and_layer_binding",
+          "passed": true
+        },
+        {
+          "detail": {
+            "declared": {
+              "auxiliary": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "row_id",
+                "records": 0
+              },
+              "candidate_store": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 0
+              },
+              "canonical": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 0
+              },
+              "paper_clean": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 0
+              },
+              "raw_row_lineage": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "lineage_id",
+                "records": 0
+              },
+              "rejected": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "row_id",
+                "records": 0
+              }
+            },
+            "recomputed": {
+              "auxiliary": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "row_id",
+                "records": 0
+              },
+              "candidate_store": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 0
+              },
+              "canonical": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 0
+              },
+              "paper_clean": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "record_id",
+                "records": 0
+              },
+              "raw_row_lineage": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "lineage_id",
+                "records": 0
+              },
+              "rejected": {
+                "identities_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                "identities_unique": true,
+                "identity_field": "row_id",
+                "records": 0
+              }
+            }
+          },
+          "name": "manifest_content_identities_exact",
+          "passed": true
+        },
+        {
+          "detail": {},
+          "name": "canonical_required_fields",
+          "passed": true
+        },
+        {
+          "detail": {},
+          "name": "strict_canonical_record_validator",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "edit_script_roundtrip_100_percent",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "record_identity_recomputed_from_endpoints",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "canonical_edit_script_and_ambiguity_exactly_recomputed",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "constructed_paths_never_observed",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "absolute_sequences_not_interventions",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "record_provenance_complete",
+          "passed": true
+        },
+        {
+          "detail": [],
+          "name": "rejected_rows_have_stable_reason_and_fingerprint",
+          "passed": true
+        },
+        {
+          "detail": {
+            "manifest": {
+              "accepted_absolute_rows": 0,
+              "accepted_input_rows": 0,
+              "accepted_intervention_rows": 0,
+              "accounted_rows": 0,
+              "auxiliary_source_anchor_rows": 0,
+              "rejected_rows": 0,
+              "total_input_rows": 0
+            },
+            "recomputed": 0
+          },
+          "name": "accepted_rejected_accounting_exact",
+          "passed": true
+        },
+        {
+          "detail": {
+            "accepted_provenance_passed": false,
+            "audit": {
+              "complete": false,
+              "download_manifest_complete": true,
+              "license_complete": true,
+              "raw_files": [],
+              "raw_files_complete": false
+            },
+            "blocked_or_excluded": true,
+            "fixture_exemption": false,
+            "integrity_failures": [],
+            "metadata_only_provenance_passed": true
+          },
+          "name": "production_input_provenance_complete",
+          "passed": true
+        },
+        {
+          "detail": {
+            "candidate_records": 0,
+            "label_records": 0,
+            "reason_code": "BLOCKED_MPRAU_REFERENCE_NOT_FROZEN_100_PERCENT"
+          },
+          "name": "blocked_dataset_has_no_admitted_records",
+          "passed": true
+        }
+      ],
+      "counts": {
+        "auxiliary": 0,
+        "candidates": 0,
+        "labels": 0,
+        "paper_clean": 0,
+        "raw_row_lineage": 0,
+        "rejected": 0
+      },
+      "dataset_id": "MPRAu_processed_ENCSR854RUF",
+      "fixture_mode": false,
+      "paper_clean_validation": {
+        "checks": {
+          "canonical_projection_exact": true,
+          "paper_clean_count_equals_canonical_count": true,
+          "record_id_bijection_with_canonical": true,
+          "record_ids_unique": true,
+          "row_roles_disjoint": true,
+          "strict_content_schema": true
+        },
+        "content_mismatches": [],
+        "passed": true,
+        "row_role_overlaps": {
+          "paper_clean_auxiliary": [],
+          "paper_clean_rejected": [],
+          "rejected_auxiliary": []
+        },
+        "schema_failures": {}
+      },
+      "paper_eligible": false,
+      "passed": true,
+      "raw_row_lineage_validation": null,
+      "status": "blocked"
+    }
+  ],
+  "evidence_level": "production_reconstruction",
+  "expected_d1_scope_datasets": [
+    "ENCSR854RUF_raw62",
+    "GSE114002",
+    "GSE145046",
+    "GSE149487",
+    "GSE173083",
+    "GSE200304",
+    "GSE207584",
+    "GSE217518",
+    "GSE246381",
+    "GSE291719",
+    "GSE330741",
+    "MPRAu_processed_ENCSR854RUF"
+  ],
+  "fixture_mode": false,
+  "generated_at_utc": "2026-07-29T01:28:06.028016+00:00",
+  "global_store_validation": {
+    "candidate_label_leaks": [],
+    "candidate_store": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/candidate_store/candidates.jsonl",
+    "checks": {
+      "blocked_dataset_records_zero": true,
+      "candidate_store_integrity": true,
+      "candidate_store_recursively_label_free": true,
+      "canonical_records_strictly_valid": true,
+      "global_candidate_store_exact_canonical_projection": true,
+      "global_label_store_equals_per_dataset_union": true,
+      "label_store_integrity": true,
+      "paths_distinct": true,
+      "record_id_bijection": true,
+      "record_id_hash_bound": true,
+      "record_ids_unique": true
+    },
+    "label_store": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/canonical/records_with_labels.jsonl",
+    "passed": true,
+    "records": 44151,
+    "strict_validation_failures": {}
+  },
+  "missing_d1_scope_datasets": [],
+  "missing_required_datasets": [],
+  "note": "A green structural validator is not a final scientific result. Fixture validation can never freeze D1.",
+  "phase_gate_passed": true,
+  "required_artifact_validation": {
+    "artifacts": {
+      "data/data_exposure_ledger.jsonl": {
+        "bytes": 4335,
+        "declared": {
+          "bytes": 4335,
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/data/data_exposure_ledger.jsonl",
+          "sha256": "a5e6c62f53988c665fd00709b7d46bfff3c8d0a227607c0c77790dcc0eecc084"
+        },
+        "exists": true,
+        "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/data/data_exposure_ledger.jsonl",
+        "sha256": "a5e6c62f53988c665fd00709b7d46bfff3c8d0a227607c0c77790dcc0eecc084"
+      },
+      "data/edit_script_ambiguity_report.json": {
+        "bytes": 3483,
+        "declared": {
+          "bytes": 3483,
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/data/edit_script_ambiguity_report.json",
+          "sha256": "6ffd36fd238a03b77ba1ac97a75a1fcc9997cb617fed107df825c56b19810e68"
+        },
+        "exists": true,
+        "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/data/edit_script_ambiguity_report.json",
+        "sha256": "6ffd36fd238a03b77ba1ac97a75a1fcc9997cb617fed107df825c56b19810e68"
+      },
+      "data/library_ascertainment_report.json": {
+        "bytes": 74077,
+        "declared": {
+          "bytes": 74077,
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/data/library_ascertainment_report.json",
+          "sha256": "dad8a41b23e94b1edae6fc24906b6340d5152c4df78b6eef87a23b1a2d9a48e4"
+        },
+        "exists": true,
+        "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/data/library_ascertainment_report.json",
+        "sha256": "dad8a41b23e94b1edae6fc24906b6340d5152c4df78b6eef87a23b1a2d9a48e4"
+      },
+      "data/measured_action_coverage_report.json": {
+        "bytes": 9846,
+        "declared": {
+          "bytes": 9846,
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/data/measured_action_coverage_report.json",
+          "sha256": "4e98e238c69eef8dc3c940b7aa37a27989838c2a395bf585d1155cb2c664a654"
+        },
+        "exists": true,
+        "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/data/measured_action_coverage_report.json",
+        "sha256": "4e98e238c69eef8dc3c940b7aa37a27989838c2a395bf585d1155cb2c664a654"
+      },
+      "reports/data_reproduction/summary.csv": {
+        "bytes": 1463,
+        "declared": {
+          "bytes": 1463,
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/reports/data_reproduction/summary.csv",
+          "sha256": "f010f51f43f12251a458ff0f5946e61d6ed2c43f46f90edd3fdd90c3615dc2f1"
+        },
+        "exists": true,
+        "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/reports/data_reproduction/summary.csv",
+        "sha256": "f010f51f43f12251a458ff0f5946e61d6ed2c43f46f90edd3fdd90c3615dc2f1"
+      }
+    },
+    "binding_checks": {
+      "data/data_exposure_ledger.jsonl": true,
+      "data/edit_script_ambiguity_report.json": true,
+      "data/library_ascertainment_report.json": true,
+      "data/measured_action_coverage_report.json": true,
+      "reports/data_reproduction/summary.csv": true
+    },
+    "build_manifest": {
+      "bytes": 13949,
+      "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/build_manifest.json",
+      "sha256": "c52d5848ade6c5f5cae5291851e79852ac962b3b488276fe6f99ccf49874784c"
+    },
+    "content_checks": {
+      "data/data_exposure_ledger.jsonl": true,
+      "data/edit_script_ambiguity_report.json": true,
+      "data/library_ascertainment_report.json": true,
+      "data/measured_action_coverage_report.json": true,
+      "reports/data_reproduction/summary.csv": true
+    },
+    "library_schema_failures": {},
+    "passed": true,
+    "reason": null,
+    "semantic_checks": {
+      "action_coverage_observed_trajectory_zero": true,
+      "all_artifacts_exactly_recomputed_from_frozen_stores": true,
+      "all_path_bytes_sha_bindings_match": true,
+      "ambiguity_count_scope_preserved": true,
+      "build_manifest_required_artifact_scope_exact": true,
+      "constructed_paths_marked_observed_zero": true,
+      "library_ascertainment_schema_strict": true,
+      "reproduction_columns_exact": true
+    }
+  },
+  "required_supported_datasets": [
+    "GSE114002",
+    "GSE200304",
+    "GSE217518",
+    "GSE246381"
+  ],
+  "schema_version": "d1_acceptance_v2",
+  "scientific_result_claimed": false,
+  "stage_d1_root": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1",
+  "structural_validation_passed": true
+}

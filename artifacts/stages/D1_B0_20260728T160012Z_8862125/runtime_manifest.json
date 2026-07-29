@@ -1,0 +1,36 @@
+{
+  "artifact_type": "stage_runtime_manifest",
+  "schema_version": "stage_runtime_manifest.v1",
+  "stage_id": "D1_B0_20260728T160012Z_8862125",
+  "captured_at_utc": "2026-07-28T17:35:59Z",
+  "workload_class": "non_neural_data_and_schema_validation",
+  "gpu_required_for_this_stage": false,
+  "formal_neural_gpu_only_rule_changed": false,
+  "python": {
+    "executable": "/home/cunyuliu/miniconda3/envs/editflow/bin/python",
+    "version": "3.10.20"
+  },
+  "dependency_scope": {
+    "kind": "stage_local_python_target",
+    "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/runtime/python_deps",
+    "shared_conda_environment_modified": false,
+    "pythonpath_required": true
+  },
+  "packages": {
+    "attrs": "26.1.0",
+    "jsonschema": "4.26.0",
+    "jsonschema-specifications": "2025.9.1",
+    "referencing": "0.37.0",
+    "rpds-py": "0.30.0"
+  },
+  "install_log": {
+    "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/logs/jsonschema_install.log",
+    "bytes": 1471,
+    "sha256": "4546ad26caaa8d0b204ff524e78a6a9613fe0966bf42bbebc1968305073d38dc"
+  },
+  "acceptance_boundary": {
+    "draft_2020_12_validation_requires_jsonschema_4_x": true,
+    "missing_or_old_jsonschema_is_a_hard_failure": true,
+    "dependency_install_is_not_scientific_evidence": true
+  }
+}
