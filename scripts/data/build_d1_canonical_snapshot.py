@@ -59,6 +59,9 @@ CODE_PATHS = (
     "data/utr_benchmark_v2/d1_builder.py",
     "data/utr_benchmark_v2/d1_artifacts.py",
 )
+STAGE_ID_RE = re.compile(
+    r"^D1_B0_[0-9]{8}T[0-9]{6}Z_[0-9a-f]{7}(?:_A[0-9]+)?$"
+)
 
 
 def _sha256(path: Path) -> str:
@@ -196,7 +199,7 @@ def _control_file(
         "bytes": declared.get("bytes"),
         "sha256": declared.get("sha256"),
     }
-    if result != expected:
+    if not _json_exact(result, expected):
         raise ValueError(
             f"live control file differs from accepted binding: {repository_path}"
         )
@@ -224,6 +227,121 @@ def _control_file(
     return result
 
 
+def _stage_id_from_acceptance_path(
+    repo_root: Path,
+    acceptance_path: Path,
+) -> str:
+    resolved_repo_root = repo_root.resolve(strict=True)
+    resolved_acceptance = acceptance_path.resolve(strict=True)
+    try:
+        relative = resolved_acceptance.relative_to(resolved_repo_root)
+    except ValueError as exc:
+        raise ValueError("D1 acceptance must be inside the repository") from exc
+    parts = relative.parts
+    if (
+        len(parts) != 5
+        or parts[:2] != ("artifacts", "stages")
+        or parts[3:] != ("D1", "acceptance.json")
+    ):
+        raise ValueError(
+            "D1 acceptance path must be "
+            "artifacts/stages/<stage_id>/D1/acceptance.json"
+        )
+    stage_id = parts[2]
+    if STAGE_ID_RE.fullmatch(stage_id) is None:
+        raise ValueError(f"invalid D1 stage_id in acceptance path: {stage_id!r}")
+    return stage_id
+
+
+def _input_inventory_repository_path(
+    *,
+    build_manifest: Mapping[str, Any],
+    accepted_inventory: Mapping[str, Any],
+    stage_id: str,
+) -> str:
+    build_inventory = build_manifest.get("input_inventory")
+    required_keys = {"path", "bytes", "sha256", "repository_path"}
+    if not isinstance(build_inventory, Mapping) or set(build_inventory) != required_keys:
+        raise ValueError(
+            "build manifest input_inventory must contain exactly "
+            "path, bytes, sha256, and repository_path"
+        )
+    for key in ("path", "bytes", "sha256"):
+        if key not in accepted_inventory or not _json_exact(
+            build_inventory[key],
+            accepted_inventory[key],
+        ):
+            raise ValueError(
+                "build manifest and accepted input inventory binding differ"
+            )
+    if accepted_inventory.get("legacy_inference_used") is not False:
+        raise ValueError(
+            "accepted input inventory must explicitly disable legacy inference"
+        )
+    repository_path = build_inventory["repository_path"]
+    expected_repository_path = (
+        f"artifacts/stages/{stage_id}/D1/input_inventory.json"
+    )
+    if (
+        not isinstance(repository_path, str)
+        or repository_path != expected_repository_path
+    ):
+        raise ValueError(
+            "build manifest input_inventory repository_path is outside "
+            "the canonical D1 stage"
+        )
+    accepted_repository_path = accepted_inventory.get("repository_path")
+    if (
+        accepted_repository_path is not None
+        and not _json_exact(accepted_repository_path, repository_path)
+    ):
+        raise ValueError(
+            "build manifest and accepted input inventory repository_path differ"
+        )
+    return repository_path
+
+
+def _validate_stage_control_content(
+    *,
+    stage_id: str,
+    config_payload: Mapping[str, Any],
+    inventory_payload: Mapping[str, Any],
+    build_manifest: Mapping[str, Any],
+    config_repository_path: str,
+) -> None:
+    if build_manifest.get("schema_version") != "d1_build_snapshot_v2":
+        raise ValueError("unsupported D1 build manifest schema")
+    if config_payload.get("schema_version") != "d1_build_config_v2":
+        raise ValueError("unsupported D1 build config schema")
+    if not _json_exact(config_payload.get("stage_id"), stage_id):
+        raise ValueError("D1 build config stage_id differs from acceptance path")
+    if not _json_exact(
+        config_payload.get("config_repository_path"),
+        config_repository_path,
+    ):
+        raise ValueError("D1 build config repository path binding differs")
+    if not _json_exact(
+        build_manifest.get("config_repository_path"),
+        config_repository_path,
+    ):
+        raise ValueError("D1 build manifest config repository path binding differs")
+    if inventory_payload.get("artifact_type") != "d1_input_inventory":
+        raise ValueError("unsupported D1 input inventory artifact type")
+    if inventory_payload.get("schema_version") != "d1_input_inventory.v1":
+        raise ValueError("unsupported D1 input inventory schema")
+    if not _json_exact(inventory_payload.get("stage_id"), stage_id):
+        raise ValueError("D1 input inventory stage_id differs from acceptance path")
+    if inventory_payload.get("selection_is_label_independent") is not True:
+        raise ValueError("D1 input inventory selection is not label-independent")
+    if not _json_exact(
+        config_payload.get("input_inventory"),
+        build_manifest.get("input_inventory"),
+    ):
+        raise ValueError(
+            "D1 build config and build manifest input inventory bindings differ"
+        )
+
+
 def build_snapshot_payload(
     *,
     acceptance_path: Path,
@@ -233,6 +351,7 @@ def build_snapshot_payload(
 ) -> dict[str, Any]:
     repo_root = repo_root.resolve(strict=True)
     acceptance_path = acceptance_path.resolve(strict=True)
+    stage_id = _stage_id_from_acceptance_path(repo_root, acceptance_path)
     acceptance = _load_json(acceptance_path)
     semantic_errors = validate_phase_acceptance("D1", acceptance, require_pass=True)
     if semantic_errors:
@@ -243,6 +362,11 @@ def build_snapshot_payload(
     stage_root = Path(str(acceptance["stage_d1_root"])).resolve(strict=True)
     build_manifest_path = stage_root / "build_manifest.json"
     build_manifest = _load_json(build_manifest_path)
+    if build_manifest.get("schema_version") != "d1_build_snapshot_v2":
+        raise ValueError("unsupported D1 build manifest schema")
+    declared_stage_id = build_manifest.get("stage_id")
+    if declared_stage_id is not None and not _json_exact(declared_stage_id, stage_id):
+        raise ValueError("build manifest stage_id differs from acceptance path")
     declared_build = acceptance["required_artifact_validation"]["build_manifest"]
     if _file_ref(build_manifest_path) != declared_build:
         raise ValueError("acceptance build_manifest binding is stale")
@@ -388,16 +512,22 @@ def build_snapshot_payload(
     prelaunch = config_validation["prelaunch_bindings"]
     scope = config_validation["scope_manifest_binding"]
     inventory = config_validation["input_inventory_binding"]
+    config_repository_path = config_validation.get(
+        "config_repository_path",
+        "configs/d1_build_20260729.json",
+    )
+    if not isinstance(config_repository_path, str):
+        raise ValueError("D1 config repository path must be a string")
+    inventory_repository_path = _input_inventory_repository_path(
+        build_manifest=build_manifest,
+        accepted_inventory=inventory,
+        stage_id=stage_id,
+    )
     control_files = {
         "config": _control_file(
             repo_root=repo_root,
             path=str(config_validation["config_path"]),
-            repository_path=str(
-                config_validation.get(
-                    "config_repository_path",
-                    "configs/d1_build_20260729.json",
-                )
-            ),
+            repository_path=config_repository_path,
             declared={
                 "path": config_validation["config_path"],
                 "bytes": config_validation["declared_bytes"],
@@ -420,40 +550,44 @@ def build_snapshot_payload(
         "input_inventory": _control_file(
             repo_root=repo_root,
             path=str(inventory["path"]),
-            repository_path=str(
-                inventory.get(
-                    "repository_path",
-                    (
-                        "artifacts/stages/"
-                        f"{build_manifest['stage_id']}/D1/input_inventory.json"
-                    ),
-                )
-            ),
+            repository_path=inventory_repository_path,
             declared=inventory,
             binding=prelaunch["input_inventory"],
         ),
     }
-    if build_manifest.get("dataset_scope_manifest") != {
-        key: scope[key]
-        for key in ("path", "bytes", "sha256", "repository_path")
-        if key in scope
-    }:
+    config_payload = _load_json(Path(str(config_validation["config_path"])))
+    inventory_payload = _load_json(Path(str(inventory["path"])))
+    _validate_stage_control_content(
+        stage_id=stage_id,
+        config_payload=config_payload,
+        inventory_payload=inventory_payload,
+        build_manifest=build_manifest,
+        config_repository_path=config_repository_path,
+    )
+    if not _json_exact(
+        build_manifest.get("dataset_scope_manifest"),
+        {
+            key: scope[key]
+            for key in ("path", "bytes", "sha256", "repository_path")
+            if key in scope
+        },
+    ):
         raise ValueError("build manifest and accepted scope binding differ")
     if (
-        str(build_manifest.get("config_path", ""))
-        != str(config_validation["config_path"])
-        or build_manifest.get("config_bytes") != config_validation["declared_bytes"]
-        or build_manifest.get("config_sha256") != config_validation["declared_sha256"]
+        not _json_exact(
+            build_manifest.get("config_path"),
+            config_validation["config_path"],
+        )
+        or not _json_exact(
+            build_manifest.get("config_bytes"),
+            config_validation["declared_bytes"],
+        )
+        or not _json_exact(
+            build_manifest.get("config_sha256"),
+            config_validation["declared_sha256"],
+        )
     ):
         raise ValueError("build manifest and accepted config binding differ")
-    build_inventory = build_manifest.get("input_inventory")
-    if build_inventory is not None and build_inventory != {
-        key: inventory[key]
-        for key in ("path", "bytes", "sha256", "repository_path")
-        if key in inventory
-    }:
-        raise ValueError("build manifest and accepted input inventory binding differ")
-
     summary = {
         "phase_gate_passed": acceptance["phase_gate_passed"],
         "structural_validation_passed": acceptance["structural_validation_passed"],
@@ -486,7 +620,7 @@ def build_snapshot_payload(
         "artifact_type": "d1_canonical_snapshot",
         "schema_version": "d1_canonical_snapshot.v1",
         "generated_at_utc": generated_at_utc or datetime.now(timezone.utc).isoformat(),
-        "stage_id": str(build_manifest["stage_id"]),
+        "stage_id": stage_id,
         "status": "FROZEN_STRUCTURAL_DATA_ONLY",
         "goal_contract": {
             "id": "utr_editflow_goal_v2",

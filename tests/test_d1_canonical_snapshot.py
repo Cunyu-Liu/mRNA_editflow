@@ -14,6 +14,9 @@ from scripts.data.build_d1_canonical_snapshot import (
     EXPECTED_SCOPE,
     REQUIRED_ARTIFACTS,
     _control_file,
+    _input_inventory_repository_path,
+    _stage_id_from_acceptance_path,
+    _validate_stage_control_content,
     build_snapshot_payload,
     write_json_exclusive,
 )
@@ -47,6 +50,7 @@ def _git(repo: Path, *args: str) -> str:
 def _snapshot_fixture(tmp_path: Path) -> tuple[Path, Path, str, Path]:
     repo = tmp_path / "repo"
     repo.mkdir()
+    stage_id = "D1_B0_20260728T160012Z_8862125"
     _git(repo, "init")
     _git(repo, "config", "user.email", "snapshot@example.invalid")
     _git(repo, "config", "user.name", "snapshot")
@@ -126,14 +130,54 @@ def _snapshot_fixture(tmp_path: Path) -> tuple[Path, Path, str, Path]:
     label_store.write_text("", encoding="utf-8")
     candidate_store.write_text("", encoding="utf-8")
 
-    control_dir = repo / "controls"
-    control_dir.mkdir()
-    config = control_dir / "config.json"
-    scope = control_dir / "scope.yaml"
-    inventory = control_dir / "inventory.json"
-    config.write_text("{}\n", encoding="utf-8")
+    config = repo / "configs/d1_build_20260729.json"
+    scope = repo / "data_registry/d1_dataset_scope_manifest.yaml"
+    inventory = (
+        repo
+        / "artifacts"
+        / "stages"
+        / stage_id
+        / "D1"
+        / "input_inventory.json"
+    )
+    config.parent.mkdir(parents=True)
+    scope.parent.mkdir(parents=True)
+    inventory.parent.mkdir(parents=True)
     scope.write_text("scope: exact\n", encoding="utf-8")
-    inventory.write_text("{}\n", encoding="utf-8")
+    inventory.write_text(
+        json.dumps(
+            {
+                "artifact_type": "d1_input_inventory",
+                "schema_version": "d1_input_inventory.v1",
+                "stage_id": stage_id,
+                "selection_is_label_independent": True,
+                "files": [],
+            },
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    inventory_binding = {
+        **_ref(inventory),
+        "repository_path": (
+            f"artifacts/stages/{stage_id}/D1/input_inventory.json"
+        ),
+    }
+    config.write_text(
+        json.dumps(
+            {
+                "schema_version": "d1_build_config_v2",
+                "stage_id": stage_id,
+                "config_repository_path": "configs/d1_build_20260729.json",
+                "input_inventory": inventory_binding,
+                "selection_policy": {"final_labels_used": False},
+            },
+            sort_keys=True,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
 
     artifact_root = repo / "contract-artifacts"
     artifact_bindings = {}
@@ -153,19 +197,16 @@ def _snapshot_fixture(tmp_path: Path) -> tuple[Path, Path, str, Path]:
     audit_manifest.write_text('{"state":"COMMAND_COMPLETED"}\n', encoding="utf-8")
 
     build_manifest = {
-        "schema_version": "d1_build_manifest_v2",
-        "stage_id": "D1_B0_20260728T160012Z_8862125",
+        "schema_version": "d1_build_snapshot_v2",
         "config_path": str(config.resolve()),
+        "config_repository_path": "configs/d1_build_20260729.json",
         "config_bytes": config.stat().st_size,
         "config_sha256": _sha(config),
         "dataset_scope_manifest": {
             **_ref(scope),
-            "repository_path": "controls/scope.yaml",
+            "repository_path": "data_registry/d1_dataset_scope_manifest.yaml",
         },
-        "input_inventory": {
-            **_ref(inventory),
-            "repository_path": "controls/inventory.json",
-        },
+        "input_inventory": inventory_binding,
         "datasets": dataset_summaries,
         "global_stores": {
             "canonical_label_store": {
@@ -190,10 +231,6 @@ def _snapshot_fixture(tmp_path: Path) -> tuple[Path, Path, str, Path]:
         encoding="utf-8",
     )
 
-    build_manifest_path.write_text(
-        json.dumps(build_manifest, sort_keys=True) + "\n",
-        encoding="utf-8",
-    )
     acceptance["required_artifact_validation"]["artifacts"] = artifact_bindings
     acceptance["required_artifact_validation"]["build_manifest"] = _ref(
         build_manifest_path
@@ -207,16 +244,16 @@ def _snapshot_fixture(tmp_path: Path) -> tuple[Path, Path, str, Path]:
     acceptance["config_binding_validation"].update(
         {
             "config_path": str(config.resolve()),
-            "config_repository_path": "controls/config.json",
+            "config_repository_path": "configs/d1_build_20260729.json",
             "declared_bytes": config.stat().st_size,
             "declared_sha256": _sha(config),
             "scope_manifest_binding": {
                 **_ref(scope),
-                "repository_path": "controls/scope.yaml",
+                "repository_path": "data_registry/d1_dataset_scope_manifest.yaml",
             },
             "input_inventory_binding": {
                 **_ref(inventory),
-                "repository_path": "controls/inventory.json",
+                "legacy_inference_used": False,
             },
             "prelaunch_bindings": {
                 name: {"passed": True, "source": "captured_head_blob"}
@@ -224,10 +261,8 @@ def _snapshot_fixture(tmp_path: Path) -> tuple[Path, Path, str, Path]:
             },
         }
     )
-    acceptance_path = (
-        repo / "artifacts/stages/D1_B0_20260728T160012Z_8862125/D1/acceptance.json"
-    )
-    acceptance_path.parent.mkdir(parents=True)
+    acceptance_path = repo / "artifacts" / "stages" / stage_id / "D1/acceptance.json"
+    acceptance_path.parent.mkdir(parents=True, exist_ok=True)
     acceptance_path.write_text(
         json.dumps(acceptance, sort_keys=True) + "\n",
         encoding="utf-8",
@@ -246,6 +281,350 @@ def _snapshot_fixture(tmp_path: Path) -> tuple[Path, Path, str, Path]:
 def test_snapshot_exact_recomputation_passes(tmp_path: Path) -> None:
     repo, snapshot, _, _ = _snapshot_fixture(tmp_path)
     assert validate_snapshot(snapshot, repo_root=repo) == []
+    payload = json.loads(snapshot.read_text(encoding="utf-8"))
+    assert payload["stage_id"] == "D1_B0_20260728T160012Z_8862125"
+    assert payload["control_files"]["input_inventory"]["repository_path"] == (
+        "artifacts/stages/"
+        "D1_B0_20260728T160012Z_8862125/D1/input_inventory.json"
+    )
+
+
+def test_snapshot_stage_id_is_derived_from_canonical_acceptance_path(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "repo"
+    acceptance = (
+        repo
+        / "artifacts/stages/"
+        "D1_B0_20260728T160012Z_8862125/D1/acceptance.json"
+    )
+    acceptance.parent.mkdir(parents=True)
+    acceptance.write_text("{}\n", encoding="utf-8")
+
+    assert (
+        _stage_id_from_acceptance_path(repo, acceptance)
+        == "D1_B0_20260728T160012Z_8862125"
+    )
+
+
+@pytest.mark.parametrize(
+    "relative",
+    [
+        "acceptance.json",
+        "artifacts/stages/not-a-stage/D1/acceptance.json",
+        "artifacts/stages/D1_B0_20260728T160012Z_8862125/D0/acceptance.json",
+    ],
+)
+def test_snapshot_rejects_noncanonical_acceptance_path(
+    tmp_path: Path,
+    relative: str,
+) -> None:
+    repo = tmp_path / "repo"
+    acceptance = repo / relative
+    acceptance.parent.mkdir(parents=True)
+    acceptance.write_text("{}\n", encoding="utf-8")
+
+    with pytest.raises(ValueError):
+        _stage_id_from_acceptance_path(repo, acceptance)
+
+
+def test_snapshot_inventory_binding_requires_exact_canonical_stage_path() -> None:
+    stage_id = "D1_B0_20260728T160012Z_8862125"
+    accepted = {
+        "path": "/repo/input_inventory.json",
+        "bytes": 17,
+        "sha256": "a" * 64,
+        "legacy_inference_used": False,
+    }
+    build_manifest = {
+        "input_inventory": {
+            "path": accepted["path"],
+            "bytes": accepted["bytes"],
+            "sha256": accepted["sha256"],
+            "repository_path": (
+                f"artifacts/stages/{stage_id}/D1/input_inventory.json"
+            ),
+        }
+    }
+    assert _input_inventory_repository_path(
+        build_manifest=build_manifest,
+        accepted_inventory=accepted,
+        stage_id=stage_id,
+    ) == f"artifacts/stages/{stage_id}/D1/input_inventory.json"
+
+    build_manifest["input_inventory"]["repository_path"] = "controls/inventory.json"
+    with pytest.raises(ValueError, match="outside the canonical D1 stage"):
+        _input_inventory_repository_path(
+            build_manifest=build_manifest,
+            accepted_inventory=accepted,
+            stage_id=stage_id,
+        )
+
+
+@pytest.mark.parametrize(
+    ("accepted_mutation", "build_mutation"),
+    [
+        ({"path": "/repo/other.json"}, {}),
+        ({"bytes": 18}, {}),
+        ({"sha256": "b" * 64}, {}),
+        ({"bytes": True}, {"bytes": 1}),
+    ],
+)
+def test_snapshot_inventory_binding_rejects_exact_binding_mismatch(
+    accepted_mutation: dict,
+    build_mutation: dict,
+) -> None:
+    stage_id = "D1_B0_20260728T160012Z_8862125"
+    accepted = {
+        "path": "/repo/input_inventory.json",
+        "bytes": 17,
+        "sha256": "a" * 64,
+        "legacy_inference_used": False,
+    }
+    build_inventory = {
+        "path": "/repo/input_inventory.json",
+        "bytes": 17,
+        "sha256": "a" * 64,
+        "repository_path": (
+            f"artifacts/stages/{stage_id}/D1/input_inventory.json"
+        ),
+    }
+    accepted.update(accepted_mutation)
+    build_inventory.update(build_mutation)
+
+    with pytest.raises(
+        ValueError,
+        match="build manifest and accepted input inventory binding differ",
+    ):
+        _input_inventory_repository_path(
+            build_manifest={"input_inventory": build_inventory},
+            accepted_inventory=accepted,
+            stage_id=stage_id,
+        )
+
+
+@pytest.mark.parametrize("legacy_value", [None, True, 0, 1])
+def test_snapshot_inventory_binding_requires_explicit_nonlegacy(
+    legacy_value: object,
+) -> None:
+    stage_id = "D1_B0_20260728T160012Z_8862125"
+    accepted = {
+        "path": "/repo/input_inventory.json",
+        "bytes": 17,
+        "sha256": "a" * 64,
+    }
+    if legacy_value is not None:
+        accepted["legacy_inference_used"] = legacy_value
+    build_manifest = {
+        "input_inventory": {
+            "path": accepted["path"],
+            "bytes": accepted["bytes"],
+            "sha256": accepted["sha256"],
+            "repository_path": (
+                f"artifacts/stages/{stage_id}/D1/input_inventory.json"
+            ),
+        }
+    }
+
+    with pytest.raises(ValueError, match="explicitly disable legacy inference"):
+        _input_inventory_repository_path(
+            build_manifest=build_manifest,
+            accepted_inventory=accepted,
+            stage_id=stage_id,
+        )
+
+
+@pytest.mark.parametrize("key", ["path", "bytes", "sha256", "repository_path"])
+def test_snapshot_inventory_binding_requires_exact_build_fields(key: str) -> None:
+    stage_id = "D1_B0_20260728T160012Z_8862125"
+    accepted = {
+        "path": "/repo/input_inventory.json",
+        "bytes": 17,
+        "sha256": "a" * 64,
+        "legacy_inference_used": False,
+    }
+    build_inventory = {
+        "path": accepted["path"],
+        "bytes": accepted["bytes"],
+        "sha256": accepted["sha256"],
+        "repository_path": (
+            f"artifacts/stages/{stage_id}/D1/input_inventory.json"
+        ),
+    }
+    del build_inventory[key]
+
+    with pytest.raises(ValueError, match="must contain exactly"):
+        _input_inventory_repository_path(
+            build_manifest={"input_inventory": build_inventory},
+            accepted_inventory=accepted,
+            stage_id=stage_id,
+        )
+
+    build_inventory[key] = "restored"
+    build_inventory["unexpected"] = "not allowed"
+    with pytest.raises(ValueError, match="must contain exactly"):
+        _input_inventory_repository_path(
+            build_manifest={"input_inventory": build_inventory},
+            accepted_inventory=accepted,
+            stage_id=stage_id,
+        )
+
+
+def test_snapshot_inventory_binding_rejects_accepted_repository_path_conflict() -> None:
+    stage_id = "D1_B0_20260728T160012Z_8862125"
+    canonical = f"artifacts/stages/{stage_id}/D1/input_inventory.json"
+    accepted = {
+        "path": "/repo/input_inventory.json",
+        "bytes": 17,
+        "sha256": "a" * 64,
+        "legacy_inference_used": False,
+        "repository_path": "controls/not-canonical.json",
+    }
+
+    with pytest.raises(ValueError, match="repository_path differ"):
+        _input_inventory_repository_path(
+            build_manifest={
+                "input_inventory": {
+                    "path": accepted["path"],
+                    "bytes": accepted["bytes"],
+                    "sha256": accepted["sha256"],
+                    "repository_path": canonical,
+                }
+            },
+            accepted_inventory=accepted,
+            stage_id=stage_id,
+        )
+
+
+def _valid_stage_control_payloads(
+    stage_id: str,
+) -> tuple[dict, dict, dict, str]:
+    config_repository_path = "configs/d1_build_20260729.json"
+    inventory_binding = {
+        "path": "/mnt/cunyuliu/stage/D1/input_inventory.json",
+        "bytes": 17,
+        "sha256": "a" * 64,
+        "repository_path": (
+            f"artifacts/stages/{stage_id}/D1/input_inventory.json"
+        ),
+    }
+    config_payload = {
+        "schema_version": "d1_build_config_v2",
+        "stage_id": stage_id,
+        "config_repository_path": config_repository_path,
+        "input_inventory": copy.deepcopy(inventory_binding),
+    }
+    inventory_payload = {
+        "artifact_type": "d1_input_inventory",
+        "schema_version": "d1_input_inventory.v1",
+        "stage_id": stage_id,
+        "selection_is_label_independent": True,
+        "files": [],
+    }
+    build_manifest = {
+        "schema_version": "d1_build_snapshot_v2",
+        "config_repository_path": config_repository_path,
+        "input_inventory": copy.deepcopy(inventory_binding),
+    }
+    return (
+        config_payload,
+        inventory_payload,
+        build_manifest,
+        config_repository_path,
+    )
+
+
+@pytest.mark.parametrize(
+    ("target", "key", "value", "needle"),
+    [
+        ("config", "schema_version", "d1_build_config_v1", "config schema"),
+        ("config", "stage_id", "D1_B0_20260728T160012Z_deadbee", "config stage_id"),
+        (
+            "config",
+            "config_repository_path",
+            "configs/other.json",
+            "config repository path",
+        ),
+        ("inventory", "artifact_type", "other", "inventory artifact type"),
+        ("inventory", "schema_version", "d1_input_inventory.v0", "inventory schema"),
+        (
+            "inventory",
+            "stage_id",
+            "D1_B0_20260728T160012Z_deadbee",
+            "inventory stage_id",
+        ),
+        (
+            "inventory",
+            "selection_is_label_independent",
+            False,
+            "not label-independent",
+        ),
+        ("build", "schema_version", "d1_build_snapshot_v1", "build manifest schema"),
+        (
+            "build",
+            "config_repository_path",
+            "configs/other.json",
+            "manifest config repository path",
+        ),
+    ],
+)
+def test_snapshot_stage_control_content_rejects_identity_drift(
+    target: str,
+    key: str,
+    value: object,
+    needle: str,
+) -> None:
+    stage_id = "D1_B0_20260728T160012Z_8862125"
+    config, inventory, build, config_repository_path = (
+        _valid_stage_control_payloads(stage_id)
+    )
+    payloads = {"config": config, "inventory": inventory, "build": build}
+    payloads[target][key] = value
+
+    with pytest.raises(ValueError, match=needle):
+        _validate_stage_control_content(
+            stage_id=stage_id,
+            config_payload=config,
+            inventory_payload=inventory,
+            build_manifest=build,
+            config_repository_path=config_repository_path,
+        )
+
+
+def test_snapshot_stage_control_content_rejects_inventory_binding_drift() -> None:
+    stage_id = "D1_B0_20260728T160012Z_8862125"
+    config, inventory, build, config_repository_path = (
+        _valid_stage_control_payloads(stage_id)
+    )
+    config["input_inventory"]["bytes"] += 1
+
+    with pytest.raises(ValueError, match="input inventory bindings differ"):
+        _validate_stage_control_content(
+            stage_id=stage_id,
+            config_payload=config,
+            inventory_payload=inventory,
+            build_manifest=build,
+            config_repository_path=config_repository_path,
+        )
+
+
+def test_snapshot_rejects_acceptance_outside_or_symlinked_outside_repo(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    stage_id = "D1_B0_20260728T160012Z_8862125"
+    outside = tmp_path / "outside.json"
+    outside.write_text("{}\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="inside the repository"):
+        _stage_id_from_acceptance_path(repo, outside)
+
+    acceptance = repo / "artifacts" / "stages" / stage_id / "D1/acceptance.json"
+    acceptance.parent.mkdir(parents=True)
+    acceptance.symlink_to(outside)
+    with pytest.raises(ValueError, match="inside the repository"):
+        _stage_id_from_acceptance_path(repo, acceptance)
 
 
 def test_snapshot_code_provenance_includes_acceptance_semantics(
@@ -515,6 +894,57 @@ def test_snapshot_build_rejects_repository_control_copy_divergence(
             repository_path="controls/inventory.json",
             declared=declared,
             binding={"passed": True, "source": "captured_head_blob"},
+        )
+
+
+def test_snapshot_control_binding_rejects_bool_int_type_coercion(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    control = repo / "controls/control.json"
+    control.parent.mkdir()
+    control.write_text("x", encoding="utf-8")
+    declared = _ref(control)
+    declared["bytes"] = True
+
+    with pytest.raises(ValueError, match="live control file differs"):
+        _control_file(
+            repo_root=repo,
+            path=str(control),
+            repository_path="controls/control.json",
+            declared=declared,
+            binding={"passed": True, "source": "captured_head_blob"},
+        )
+
+
+def test_snapshot_rejects_optional_build_manifest_stage_id_conflict(
+    tmp_path: Path,
+) -> None:
+    repo, snapshot, code_commit, stage_root = _snapshot_fixture(tmp_path)
+    frozen = json.loads(snapshot.read_text(encoding="utf-8"))
+    acceptance_path = repo / frozen["acceptance"]["path"]
+    acceptance = json.loads(acceptance_path.read_text(encoding="utf-8"))
+    build_manifest_path = stage_root / "build_manifest.json"
+    build_manifest = json.loads(build_manifest_path.read_text(encoding="utf-8"))
+    build_manifest["stage_id"] = "D1_B0_20260728T160012Z_deadbee"
+    build_manifest_path.write_text(
+        json.dumps(build_manifest, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    acceptance["required_artifact_validation"]["build_manifest"] = _ref(
+        build_manifest_path
+    )
+    acceptance_path.write_text(
+        json.dumps(acceptance, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="build manifest stage_id differs"):
+        build_snapshot_payload(
+            acceptance_path=acceptance_path,
+            repo_root=repo,
+            code_commit=code_commit,
         )
 
 
