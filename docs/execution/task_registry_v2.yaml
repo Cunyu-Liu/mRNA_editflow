@@ -670,7 +670,7 @@ tasks:
 
   - task_id: B0-01
     phase_id: B0
-    status: REGISTERED
+    status: RUNNING
     hypotheses: [H1, H2, H3, H4, H5, H6, H7, H8]
     dependencies: [D1-08]
     dependency_gates: [D1-08:FROZEN]
@@ -703,8 +703,7 @@ tasks:
     acceptance_artifact: null
     acceptance_sha256: null
     gate_evidence: []
-    known_blockers:
-      - "D1-08:FROZEN dependency gate has not passed"
+    known_blockers: []
     phase_gate: false
     commit_sha: null
     report: null
@@ -752,7 +751,6 @@ tasks:
     acceptance_sha256: null
     gate_evidence: []
     known_blockers:
-      - "D1-08:FROZEN dependency gate has not passed"
       - "B0-01:VERIFIED dependency gate has not passed"
     phase_gate: false
     commit_sha: null
@@ -798,7 +796,6 @@ tasks:
     acceptance_sha256: null
     gate_evidence: []
     known_blockers:
-      - "D1-08:FROZEN dependency gate has not passed"
       - "B0-01:VERIFIED and B0-02:VERIFIED dependency gates have not passed"
     phase_gate: false
     commit_sha: null
@@ -847,7 +844,6 @@ tasks:
     acceptance_sha256: null
     gate_evidence: []
     known_blockers:
-      - "D1-08:FROZEN dependency gate has not passed"
       - "B0-01:VERIFIED through B0-03:VERIFIED dependency gates have not passed"
     phase_gate: false
     commit_sha: null
@@ -890,7 +886,6 @@ tasks:
     acceptance_sha256: null
     gate_evidence: []
     known_blockers:
-      - "D1-08:FROZEN dependency gate has not passed"
       - "B0-01:VERIFIED through B0-04:VERIFIED dependency gates have not passed"
     phase_gate: true
     commit_sha: null
