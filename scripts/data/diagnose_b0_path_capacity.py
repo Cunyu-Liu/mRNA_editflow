@@ -125,6 +125,12 @@ CONFIG_SAFETY_FIELDS = frozenset(
         "heartbeat_seconds",
     }
 )
+DIAGNOSTIC_LIMIT_FIELD_BY_DIMENSION = {
+    "max_dag_cells": "max_dag_cells_per_record",
+    "max_reachable_states": "max_reachable_states_per_record",
+    "max_neighbor_expansions": "max_neighbor_expansions_per_record",
+    "max_state_dp_cells": "max_state_dp_cells_per_record",
+}
 
 
 class CapacityDiagnosticError(ValueError):
@@ -1191,7 +1197,7 @@ def _run_record(
             raise CapacityDiagnosticError(
                 f"unclassified exact prototype failure for {record_id}: {message}"
             ) from error
-        if isinstance(error, PathStateError):
+        if not isinstance(error, StreamingPathStateError):
             if dimension != "max_dag_cells":
                 raise CapacityDiagnosticError(
                     "path-state oracle failure was not the typed DAG capacity stop "
@@ -1232,8 +1238,10 @@ def _run_record(
                 ]
             )
         )
+        diagnostic_limit = int(safety[DIAGNOSTIC_LIMIT_FIELD_BY_DIMENSION[dimension]])
         observed_lower_bound = max(
             FROZEN_B0_LIMITS[dimension] + 1,
+            diagnostic_limit + 1,
             observed_metric,
         )
         stop = {
@@ -2380,9 +2388,13 @@ def _validate_bundle(*, run_root: Path, schema_path: Path) -> None:
                 )
             stop = row["stop"]
             dimension = str(stop["dimension"])
+            diagnostic_limit = resolved_config["diagnostic_safety_limits"][
+                DIAGNOSTIC_LIMIT_FIELD_BY_DIMENSION[dimension]
+            ]
             if (
                 stop["frozen_limit"] != FROZEN_B0_LIMITS[dimension]
                 or stop["observed_lower_bound"] <= stop["frozen_limit"]
+                or stop["observed_lower_bound"] <= diagnostic_limit
                 or row["frozen_gate_assessment"]
                 != {
                     "would_pass_frozen_b0_limits": False,

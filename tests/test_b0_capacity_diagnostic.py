@@ -518,6 +518,133 @@ def test_dag_capacity_stop_emits_typed_lower_bound_row(
     assert row["stop"]["observed_lower_bound"] == 1_000_001
 
 
+@pytest.mark.parametrize(
+    ("message", "dimension", "frozen_limit", "observed_lower_bound"),
+    (
+        (
+            "STOP_RULE_B0_PATH_STATE_COMPLEXITY: exact shortest-action "
+            "closure exceeded 150000 reachable states; "
+            "no approximation was emitted",
+            "max_reachable_states",
+            50_000,
+            150_001,
+        ),
+        (
+            "STOP_RULE_B0_PATH_STATE_COMPLEXITY: exact shortest-action "
+            "closure exceeded 10000000 evaluated primitive actions; "
+            "no approximation was emitted",
+            "max_neighbor_expansions",
+            5_000_000,
+            10_000_001,
+        ),
+        (
+            "STOP_RULE_B0_PATH_STATE_COMPLEXITY: exact shortest-action "
+            "closure exceeded 100000000 state DP cells; "
+            "no approximation was emitted",
+            "max_state_dp_cells",
+            50_000_000,
+            100_000_001,
+        ),
+    ),
+)
+def test_streaming_capacity_stop_emits_typed_lower_bound_row(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    message: str,
+    dimension: str,
+    frozen_limit: int,
+    observed_lower_bound: int,
+) -> None:
+    record = _record("streaming-stop", "AC", "CA")
+    record["_canonical_jsonl_line"] = 1
+    run_root = tmp_path / "run"
+    run_root.mkdir()
+
+    def raise_streaming_stop(*_args: object, **_kwargs: object) -> None:
+        raise capacity_diagnostic.StreamingPathStateError(message)
+
+    monkeypatch.setattr(
+        capacity_diagnostic,
+        "minimum_alignment_state_summary",
+        raise_streaming_stop,
+    )
+    safety = _config()["diagnostic_safety_limits"]
+    watchdog = SimpleNamespace(prototype_callback=lambda _progress: None)
+    row, state_file = capacity_diagnostic._run_record(
+        record=record,
+        ordinal=0,
+        run_root=run_root,
+        safety=safety,
+        watchdog=watchdog,
+    )
+
+    assert state_file is None
+    assert row["outcome"] == "LOWER_BOUND_STOPPED"
+    assert row["capacity"]["exact"] is None
+    assert row["capacity"]["lower_bound"] == {
+        "reachable_node_count": 1,
+        "reachable_transition_count": 0,
+        "minimum_state_path_count": 1,
+        "evaluated_primitive_action_count": 0,
+        "evaluated_state_dp_cell_count": 0,
+    }
+    assert row["state_universe_artifact"] is None
+    assert row["alignment_statistics"]["counts_exact"] is True
+    assert row["alignment_statistics"]["minimum_edit_count"] == 2
+    assert row["evidence_semantics"] == {
+        "counts_exact": False,
+        "state_set_complete": False,
+        "no_approximation_emitted": True,
+        "usable_for_b0_acceptance": False,
+    }
+    assert row["stop"] == {
+        "stop_rule": "STOP_RULE_B0_PATH_STATE_COMPLEXITY",
+        "dimension": dimension,
+        "frozen_limit": frozen_limit,
+        "observed_lower_bound": observed_lower_bound,
+        "message": message,
+    }
+    assert row["frozen_gate_assessment"] == {
+        "would_pass_frozen_b0_limits": False,
+        "exceeded_limits": [dimension],
+    }
+
+
+def test_non_streaming_non_dag_path_error_remains_fatal(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    record = _record("raw-path-error", "AC", "CA")
+    record["_canonical_jsonl_line"] = 1
+    run_root = tmp_path / "run"
+    run_root.mkdir()
+
+    def raise_raw_path_error(*_args: object, **_kwargs: object) -> None:
+        raise capacity_diagnostic.PathStateError(
+            "STOP_RULE_B0_PATH_STATE_COMPLEXITY: exact shortest-action "
+            "closure exceeded 100000000 state DP cells; "
+            "no approximation was emitted"
+        )
+
+    monkeypatch.setattr(
+        capacity_diagnostic,
+        "minimum_alignment_state_summary",
+        raise_raw_path_error,
+    )
+    watchdog = SimpleNamespace(prototype_callback=lambda _progress: None)
+    with pytest.raises(
+        CapacityDiagnosticError,
+        match="path-state oracle failure was not the typed DAG capacity stop",
+    ):
+        capacity_diagnostic._run_record(
+            record=record,
+            ordinal=0,
+            run_root=run_root,
+            safety=_config()["diagnostic_safety_limits"],
+            watchdog=watchdog,
+        )
+
+
 def test_file_descriptor_capture_records_os_level_streams_and_restores_fds(
     tmp_path: Path,
 ) -> None:

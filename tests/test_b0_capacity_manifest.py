@@ -316,7 +316,7 @@ def _record_result(*, exact: bool) -> dict:
                 "stop_rule": "STOP_RULE_B0_PATH_STATE_COMPLEXITY",
                 "dimension": "max_reachable_states",
                 "frozen_limit": 50_000,
-                "observed_lower_bound": 50_001,
+                "observed_lower_bound": 150_001,
                 "message": "exact diagnostic stopped without approximation",
             }
         ),
@@ -1167,6 +1167,27 @@ def test_schema_is_strict_draft_2020_12_and_valid_manifest_passes() -> None:
 def test_detached_bundle_seal_and_cross_accounting_validate(tmp_path: Path) -> None:
     run_root, _manifest_payload = _bundle_fixture(tmp_path)
     _validate_bundle(run_root=run_root, schema_path=SCHEMA_PATH)
+
+
+def test_lower_bound_stop_cannot_understate_diagnostic_limit(
+    tmp_path: Path,
+) -> None:
+    run_root, manifest = _bundle_fixture(tmp_path)
+    rows = [
+        dict(row)
+        for row in capacity_diagnostic._read_jsonl_objects(
+            run_root / "records/results.jsonl"
+        )
+    ]
+    rows[1]["stop"]["observed_lower_bound"] = 150_000
+    _rewrite_rows_and_bindings(run_root, manifest, rows)
+    _seal_test_bundle(run_root, manifest)
+
+    with pytest.raises(
+        CapacityDiagnosticError,
+        match="lower-bound row stop or frozen-gate assessment is invalid",
+    ):
+        _validate_bundle(run_root=run_root, schema_path=SCHEMA_PATH)
 
 
 def test_resealed_selection_and_rows_must_match_live_d1_recomputation(
