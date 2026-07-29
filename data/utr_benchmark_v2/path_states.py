@@ -36,7 +36,15 @@ STATE_CLOSURE_SCOPE = (
 STATE_PATH_COUNT_SCOPE = (
     "minimum_primitive_edit_state_paths_coordinate_equivalent_transitions_collapsed"
 )
-ALGORITHM_ID = "all_shortest_dynamic_edit_state_closure_v2"
+ALGORITHM_ID = "all_shortest_dynamic_edit_state_closure_v3"
+MINIMUM_ALIGNMENT_ALGORITHM_ID = "banded_levenshtein_alignment_count_v1"
+PRIMITIVE_ACTION_EVALUATION_SCOPE = (
+    "distinct_dynamic_geodesic_actions_before_sequence_identity_collapse"
+)
+# This operational guard remains intentionally fail-closed. The frozen D1
+# universe contains a 95,217-state witness, so the default must stop rather
+# than silently truncate, sample, or approximate that closure.
+DEFAULT_MAX_REACHABLE_STATES = 50_000
 
 
 class PathStateError(ValueError):
@@ -63,7 +71,21 @@ class MinimumAlignmentStateClosure:
     state_closure_scope: str = STATE_CLOSURE_SCOPE
     state_path_count_scope: str = STATE_PATH_COUNT_SCOPE
     algorithm: str = ALGORITHM_ID
+    primitive_action_evaluation_scope: str = PRIMITIVE_ACTION_EVALUATION_SCOPE
     constructed_not_observed: bool = True
+
+
+@dataclass(frozen=True)
+class MinimumAlignmentStatistics:
+    """Exact minimum character-alignment distance and multiplicity."""
+
+    source_sequence: str
+    candidate_sequence: str
+    minimum_edit_count: int
+    minimum_alignment_count: int
+    evaluated_dag_cell_count: int
+    count_scope: str = MINIMUM_ALIGNMENT_COUNT_SCOPE
+    algorithm: str = MINIMUM_ALIGNMENT_ALGORITHM_ID
 
 
 def _validate_rna(sequence: str, name: str) -> None:
@@ -217,21 +239,188 @@ def _banded_cost_tables(
     return forward_cost, backward_cost
 
 
+@lru_cache(maxsize=8_192)
+def minimum_alignment_statistics(
+    source: str,
+    candidate: str,
+    *,
+    known_minimum_edit_count: int | None = None,
+    max_dag_cells: int = 1_000_000,
+) -> MinimumAlignmentStatistics:
+    """Return exact alignment distance/count without expanding path states."""
+
+    _validate_rna(source, "source")
+    _validate_rna(candidate, "candidate")
+    if (
+        isinstance(max_dag_cells, bool)
+        or not isinstance(max_dag_cells, int)
+        or max_dag_cells < 1
+    ):
+        raise PathStateError("max_dag_cells must be a positive integer")
+    if (
+        known_minimum_edit_count is not None
+        and (
+            isinstance(known_minimum_edit_count, bool)
+            or not isinstance(known_minimum_edit_count, int)
+            or known_minimum_edit_count < 0
+        )
+    ):
+        raise PathStateError(
+            "known_minimum_edit_count must be a non-negative integer"
+        )
+    band = (
+        max(len(source), len(candidate))
+        if known_minimum_edit_count is None
+        else known_minimum_edit_count
+    )
+    if abs(len(source) - len(candidate)) > band:
+        raise PathStateError(
+            "known minimum edit count is smaller than the length difference"
+        )
+    cells = _band_cell_count(len(source), len(candidate), band)
+    if cells > max_dag_cells:
+        raise PathStateError(
+            f"minimum-alignment DAG has {cells} cells, exceeding "
+            f"the audited limit {max_dag_cells}"
+        )
+    forward_cost, forward_count, _ = _banded_tables(source, candidate, band)
+    terminal = (len(source), len(candidate))
+    if terminal not in forward_cost:
+        raise PathStateError(
+            "minimum-alignment band cannot reach the endpoint"
+        )
+    minimum_edit_count = forward_cost[terminal]
+    if (
+        known_minimum_edit_count is not None
+        and minimum_edit_count != known_minimum_edit_count
+    ):
+        raise PathStateError(
+            "known minimum edit count disagrees with recomputed alignment"
+        )
+    return MinimumAlignmentStatistics(
+        source_sequence=source,
+        candidate_sequence=candidate,
+        minimum_edit_count=minimum_edit_count,
+        minimum_alignment_count=forward_count[terminal],
+        evaluated_dag_cell_count=cells,
+    )
+
+
+def _subsequence_embedding_bounds(
+    shorter: str,
+    longer: str,
+) -> tuple[list[int], list[int]]:
+    """Return embedding bounds for every cut in the shorter sequence."""
+
+    alphabet = tuple(sorted(RNA_ALPHABET))
+    alphabet_index = {base: index for index, base in enumerate(alphabet)}
+    m = len(longer)
+    next_position = [[m] * len(alphabet) for _ in range(m + 1)]
+    for position in range(m - 1, -1, -1):
+        next_position[position] = next_position[position + 1].copy()
+        next_position[position][alphabet_index[longer[position]]] = position
+    previous_position = [[-1] * len(alphabet) for _ in range(m + 1)]
+    for end in range(1, m + 1):
+        previous_position[end] = previous_position[end - 1].copy()
+        previous_position[end][alphabet_index[longer[end - 1]]] = end - 1
+
+    prefix_ends = [0]
+    cursor = 0
+    for base in shorter:
+        position = next_position[cursor][alphabet_index[base]]
+        if position == m:
+            raise AssertionError("declared subsequence has no leftmost embedding")
+        cursor = position + 1
+        prefix_ends.append(cursor)
+
+    suffix_starts = [m] * (len(shorter) + 1)
+    cursor = m
+    for index in range(len(shorter) - 1, -1, -1):
+        position = previous_position[cursor][alphabet_index[shorter[index]]]
+        if position < 0:
+            raise AssertionError("declared subsequence has no rightmost embedding")
+        cursor = position
+        suffix_starts[index] = cursor
+    return prefix_ends, suffix_starts
+
+
+def _pure_indel_distance_reducing_neighbors(
+    sequence: str,
+    candidate: str,
+    remaining_distance: int,
+) -> tuple[Tuple[str, ...], int] | None:
+    """Return exact geodesic neighbors when only one indel direction is legal."""
+
+    if len(sequence) - len(candidate) == remaining_distance:
+        prefix_matches = [0] * (len(sequence) + 1)
+        matched = 0
+        for position, base in enumerate(sequence):
+            if matched < len(candidate) and base == candidate[matched]:
+                matched += 1
+            prefix_matches[position + 1] = matched
+        if matched != len(candidate):
+            raise AssertionError(
+                "pure-deletion distance requires candidate to be a subsequence"
+            )
+        suffix_starts = [len(candidate)] * (len(sequence) + 1)
+        matched = len(candidate)
+        for position in range(len(sequence) - 1, -1, -1):
+            if matched > 0 and sequence[position] == candidate[matched - 1]:
+                matched -= 1
+            suffix_starts[position] = matched
+        if matched != 0:
+            raise AssertionError(
+                "pure-deletion distance requires candidate to be a subsequence"
+            )
+        actions = {
+            ("DEL", position, "")
+            for position in range(len(sequence))
+            if prefix_matches[position] >= suffix_starts[position + 1]
+        }
+    elif len(candidate) - len(sequence) == remaining_distance:
+        prefix_ends, suffix_starts = _subsequence_embedding_bounds(
+            sequence, candidate
+        )
+        actions = set()
+        for position in range(len(sequence) + 1):
+            left = prefix_ends[position]
+            right = suffix_starts[position]
+            for base in set(candidate[left:right]):
+                actions.add(("INS", position, base))
+    else:
+        return None
+
+    neighbors: set[str] = set()
+    for operation, position, base in actions:
+        if operation == "DEL":
+            neighbors.add(sequence[:position] + sequence[position + 1 :])
+        else:
+            neighbors.add(sequence[:position] + base + sequence[position:])
+    return tuple(sorted(neighbors)), len(actions)
+
+
 def _distance_reducing_neighbors(
     sequence: str,
     candidate: str,
     remaining_distance: int,
-) -> Tuple[str, ...]:
+) -> tuple[Tuple[str, ...], int, int]:
     """Return every one-edit neighbor exactly one step closer to candidate.
 
-    Prefix/suffix Levenshtein tables make the distance after each possible
-    local edit exact without recomputing one full alignment per neighbor.
-    Missing band cells cannot hide a qualifying neighbor: any alignment of
-    cost ``remaining_distance - 1`` stays inside this band.
+    A primitive edit is geodesic exactly when it lies on at least one optimal
+    prefix/edge/suffix alignment. Enumerating those certified edit edges is
+    exhaustive but avoids trying every impossible base at every position.
+    Coordinate-distinct edits are counted before their resulting sequence
+    identities are collapsed.
     """
 
     if remaining_distance < 1:
         raise AssertionError("distance-reducing neighbors require distance > 0")
+    pure_indel = _pure_indel_distance_reducing_neighbors(
+        sequence, candidate, remaining_distance
+    )
+    if pure_indel is not None:
+        neighbors, action_count = pure_indel
+        return neighbors, action_count, 0
     forward, backward = _banded_cost_tables(
         sequence, candidate, remaining_distance
     )
@@ -242,81 +431,47 @@ def _distance_reducing_neighbors(
         )
 
     n, m = len(sequence), len(candidate)
-    target_distance = remaining_distance - 1
-    unreachable = remaining_distance + max(n, m) + 2
+    certified_actions: set[tuple[str, int, str]] = set()
     neighbors: set[str] = set()
 
-    for i, original in enumerate(sequence):
-        j_start = max(0, i - remaining_distance)
-        j_stop = min(m, i + remaining_distance)
+    for (i, j), prefix_cost in forward.items():
+        if i < n:
+            deletion_suffix = backward.get((i + 1, j))
+            if (
+                deletion_suffix is not None
+                and prefix_cost + 1 + deletion_suffix == remaining_distance
+            ):
+                certified_actions.add(("DEL", i, ""))
+        if i < n and j < m and sequence[i] != candidate[j]:
+            substitution_suffix = backward.get((i + 1, j + 1))
+            if (
+                substitution_suffix is not None
+                and prefix_cost + 1 + substitution_suffix
+                == remaining_distance
+            ):
+                certified_actions.add(("SUB", i, candidate[j]))
+        if j < m:
+            insertion_suffix = backward.get((i, j + 1))
+            if (
+                insertion_suffix is not None
+                and prefix_cost + 1 + insertion_suffix == remaining_distance
+            ):
+                certified_actions.add(("INS", i, candidate[j]))
 
-        deletion_distance = unreachable
-        for j in range(j_start, j_stop + 1):
-            prefix = forward.get((i, j))
-            suffix = backward.get((i + 1, j))
-            if prefix is not None and suffix is not None:
-                deletion_distance = min(
-                    deletion_distance, prefix + suffix
-                )
-        if deletion_distance == target_distance:
-            neighbors.add(sequence[:i] + sequence[i + 1 :])
+    for operation, position, base in certified_actions:
+        if operation == "DEL":
+            neighbors.add(sequence[:position] + sequence[position + 1 :])
+        elif operation == "SUB":
+            neighbors.add(
+                sequence[:position] + base + sequence[position + 1 :]
+            )
+        else:
+            neighbors.add(sequence[:position] + base + sequence[position:])
 
-        for alternative in RNA_ALPHABET:
-            if alternative == original:
-                continue
-            substitution_distance = unreachable
-            for j in range(j_start, j_stop + 1):
-                prefix = forward.get((i, j))
-                if prefix is None:
-                    continue
-                deleted_suffix = backward.get((i + 1, j))
-                if deleted_suffix is not None:
-                    substitution_distance = min(
-                        substitution_distance,
-                        prefix + 1 + deleted_suffix,
-                    )
-                if j < m:
-                    diagonal_suffix = backward.get((i + 1, j + 1))
-                    if diagonal_suffix is not None:
-                        substitution_distance = min(
-                            substitution_distance,
-                            prefix
-                            + (alternative != candidate[j])
-                            + diagonal_suffix,
-                        )
-            if substitution_distance == target_distance:
-                neighbors.add(
-                    sequence[:i] + alternative + sequence[i + 1 :]
-                )
-
-    for i in range(n + 1):
-        j_start = max(0, i - remaining_distance)
-        j_stop = min(m, i + remaining_distance)
-        for base in RNA_ALPHABET:
-            insertion_distance = unreachable
-            for j in range(j_start, j_stop + 1):
-                prefix = forward.get((i, j))
-                if prefix is None:
-                    continue
-                deleted_suffix = backward.get((i, j))
-                if deleted_suffix is not None:
-                    insertion_distance = min(
-                        insertion_distance,
-                        prefix + 1 + deleted_suffix,
-                    )
-                if j < m:
-                    diagonal_suffix = backward.get((i, j + 1))
-                    if diagonal_suffix is not None:
-                        insertion_distance = min(
-                            insertion_distance,
-                            prefix
-                            + (base != candidate[j])
-                            + diagonal_suffix,
-                        )
-            if insertion_distance == target_distance:
-                neighbors.add(sequence[:i] + base + sequence[i:])
-
-    return tuple(sorted(neighbors))
+    evaluated_dp_cells = 2 * _band_cell_count(
+        len(sequence), len(candidate), remaining_distance
+    )
+    return tuple(sorted(neighbors)), len(certified_actions), evaluated_dp_cells
 
 
 def _one_primitive_edit_apart(left: str, right: str) -> bool:
@@ -356,7 +511,7 @@ def minimum_alignment_state_closure(
     *,
     known_minimum_edit_count: int | None = None,
     max_dag_cells: int = 1_000_000,
-    max_reachable_states: int = 50_000,
+    max_reachable_states: int = DEFAULT_MAX_REACHABLE_STATES,
     max_neighbor_expansions: int = 5_000_000,
     max_state_dp_cells: int = 50_000_000,
 ) -> MinimumAlignmentStateClosure:
@@ -436,16 +591,14 @@ def minimum_alignment_state_closure(
         remaining_before_edit = minimum_edit_count - depth + 1
         next_layer_counts: dict[str, int] = {}
         for state in current_layer:
-            primitive_action_count = 8 * len(state) + 4
-            evaluated_primitive_action_count += primitive_action_count
-            if evaluated_primitive_action_count > max_neighbor_expansions:
-                raise PathStateError(
-                    "STOP_RULE_B0_PATH_STATE_COMPLEXITY: exact shortest-action "
-                    f"closure exceeded {max_neighbor_expansions} evaluated "
-                    "primitive actions; no approximation was emitted"
-                )
-            state_cells = 2 * _band_cell_count(
-                len(state), len(candidate), remaining_before_edit
+            (
+                neighbors,
+                primitive_action_count,
+                state_cells,
+            ) = _distance_reducing_neighbors(
+                state,
+                candidate,
+                remaining_before_edit,
             )
             evaluated_state_dp_cell_count += state_cells
             if evaluated_state_dp_cell_count > max_state_dp_cells:
@@ -454,11 +607,13 @@ def minimum_alignment_state_closure(
                     f"closure exceeded {max_state_dp_cells} state DP cells; "
                     "no approximation was emitted"
                 )
-            neighbors = _distance_reducing_neighbors(
-                state,
-                candidate,
-                remaining_before_edit,
-            )
+            evaluated_primitive_action_count += primitive_action_count
+            if evaluated_primitive_action_count > max_neighbor_expansions:
+                raise PathStateError(
+                    "STOP_RULE_B0_PATH_STATE_COMPLEXITY: exact shortest-action "
+                    f"closure exceeded {max_neighbor_expansions} evaluated "
+                    "primitive actions; no approximation was emitted"
+                )
             for neighbor in neighbors:
                 reachable_transition_count += 1
                 if (
@@ -544,10 +699,15 @@ def minimum_alignment_state_closure(
 
 __all__ = [
     "ALGORITHM_ID",
+    "DEFAULT_MAX_REACHABLE_STATES",
+    "MINIMUM_ALIGNMENT_ALGORITHM_ID",
     "MINIMUM_ALIGNMENT_COUNT_SCOPE",
+    "PRIMITIVE_ACTION_EVALUATION_SCOPE",
     "STATE_CLOSURE_SCOPE",
     "STATE_PATH_COUNT_SCOPE",
+    "MinimumAlignmentStatistics",
     "MinimumAlignmentStateClosure",
     "PathStateError",
+    "minimum_alignment_statistics",
     "minimum_alignment_state_closure",
 ]

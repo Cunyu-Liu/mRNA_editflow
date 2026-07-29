@@ -1,0 +1,85 @@
+{
+  "acceptance_evidence": false,
+  "artifact_type": "b0_path_complexity_post_failure_diagnosis",
+  "attempt_id": "B0_attempt_001_20260729T125546Z",
+  "b0_accepted": false,
+  "b0_frozen": false,
+  "diagnostic_classification": "POST_FAILURE_EXACT_WITNESS_WITH_UNPACKAGED_CAPACITY_CONTEXT_NOT_PRODUCTION_ACCEPTANCE",
+  "diagnostic_scope": {
+    "decision_evidence": "The immutable formal stop plus the exact first-witness regression support SAFE_PAUSED.",
+    "frozen_universe_capacity_numbers_role": "UNPACKAGED_CONTEXT_ONLY_NOT_DECISION_OR_ACCEPTANCE_EVIDENCE",
+    "mixed_edit_closures_expanded": false,
+    "purpose": "exact_first_witness_attribution_and_contextual_capacity_diagnosis",
+    "recomputed_after_terminal_failure_evidence_was_sealed": true,
+    "scientific_result_claimed": false
+  },
+  "first_witness": {
+    "candidate_length": 114,
+    "canonical_jsonl_line": 39913,
+    "constructed_intermediate_state_count": 95215,
+    "edit_class": "pure_deletion",
+    "evaluated_primitive_action_count": 1205477,
+    "evaluated_state_dp_cell_count": 0,
+    "exact_minimum_edit_count": 15,
+    "minimum_character_alignment_count": 2340,
+    "minimum_state_path_count_after_coordinate_equivalent_transition_collapse": 3934510691993,
+    "reachable_node_count": 95217,
+    "reachable_states_sha256": "900076096ad75979a1b592b6d14fd7647dfe54c39b4cee80a053937de9411332",
+    "reachable_transition_count": 751771,
+    "record_id": "GSE217518:record:025e56d3b64660abb559dcbd",
+    "region": "five_utr",
+    "source_length": 129
+  },
+  "frozen_universe_capacity_diagnosis": {
+    "evidence_role": "UNPACKAGED_CONTEXT_ONLY_NOT_DECISION_OR_ACCEPTANCE_EVIDENCE",
+    "exact_pure_indel_closure_state_union_count": 350127,
+    "largest_pure_indel_closure": {
+      "reachable_node_count": 95423,
+      "record_id": "GSE217518:record:7f0dcbc493517a1775cda972"
+    },
+    "mixed_edit_multi_edit_record_count_excluded_from_closure_union": 6,
+    "multi_edit_record_count": 144,
+    "pure_indel_multi_edit_record_count": 138,
+    "pure_indel_records_above_default_state_guard": 3,
+    "scope_note": "These one-off post-failure values cover 138 pure-indel multi-edit records, but their exact replay command and independent log were not persisted. They are not independently replayable and must not support a gate, budget change, or new formal attempt. Six mixed-edit closures were not expanded.",
+    "split_eligible_unique_endpoint_count": 77366,
+    "state_universe_lower_bound_before_mixed_edit_closures": 427217,
+    "top_three_disjoint_closure_conservative_banded_dp_cell_lower_bound": 2490000000,
+    "top_three_disjoint_closure_unique_one_edit_transition_lower_bound": 2023858
+  },
+  "original_failure": {
+    "driver_failure_reason": "AUDITED_NODE_FAILED_01_canonical_validation",
+    "failure_node": "01_canonical_validation",
+    "formal_attempt_runtime_commit_sha": "11c3fa2946c50691108293f537bee7836e0a54bb",
+    "original_runtime_path_states_sha256": "f95ba046f5611edb30923e9465b9bf588a22fa77a1eb76d6cb618a3f785ae1d1",
+    "original_trigger_guard": {
+      "guard_name": "max_neighbor_expansions",
+      "guard_value": 5000000,
+      "message": "exact shortest-action closure exceeded 5000000 evaluated primitive actions; no approximation was emitted"
+    },
+    "underlying_stop_rule": "STOP_RULE_B0_PATH_STATE_COMPLEXITY"
+  },
+  "provenance": {
+    "canonical_records_sha256": "68fca987bf9775df2ff74975fd60b7ce4574f774aa0f44e1c05988387d38bd44",
+    "contract_snapshot_sha256": "c3dc5875868d847b8519fee40b14c43b65e4c5948dc5c3b98101ca61a5671dd5",
+    "diagnostic_near_neighbors_sha256": "128567e6674dc3937f42f649e7c8deae332e9892960ca688ac66847d230c80cd",
+    "diagnostic_path_states_sha256": "908d2ea396896e6e27341253891ba198e78416ac0000c1af7ef0b37127841683",
+    "d1_edit_script_ambiguity_report_sha256": "6ffd36fd238a03b77ba1ac97a75a1fcc9997cb617fed107df825c56b19810e68",
+    "recorded_at_utc": "2026-07-29T14:31:36Z"
+  },
+  "recovery_boundary": {
+    "default_max_reachable_states": 50000,
+    "downstream_candidate_pair_guard": 1000000,
+    "downstream_global_near_neighbor_state_guard": 100000,
+    "simple_per_record_state_guard_increase_sufficiency": "NOT_ESTABLISHED_BY_PRODUCTION_OR_REPLAYABLE_EVIDENCE",
+    "user_stop_boundary_decision_required_before_new_formal_attempt": true
+  },
+  "reproducibility_boundary": {
+    "exact_replay_command_persisted": false,
+    "frozen_universe_capacity_numbers_decision_role": "CONTEXT_ONLY",
+    "independent_diagnostic_log_persisted": false,
+    "required_before_recovery": "Persist an exact replay command and independent diagnostic log before using this diagnosis to authorize a new formal B0 attempt.",
+    "support_current_stop_only": "The current safe pause is supported by immutable formal failure evidence, hashed frozen inputs and diagnostic code, bounded exhaustive parity tests, and the exact witness regression."
+  },
+  "schema_version": "b0_path_complexity_diagnosis.v1"
+}

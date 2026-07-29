@@ -15,7 +15,7 @@ if __package__ in (None, ""):
 from data.utr_benchmark_v2.d1_builder import CANDIDATE_STORE_FIELDS
 from data.utr_benchmark_v2.d1_builder import candidate_store_label_paths
 from data.utr_benchmark_v2.path_states import MINIMUM_ALIGNMENT_COUNT_SCOPE
-from data.utr_benchmark_v2.path_states import minimum_alignment_state_closure
+from data.utr_benchmark_v2.path_states import minimum_alignment_statistics
 from data.utr_benchmark_v2.split_graph import REGIONS
 from data.utr_benchmark_v2.split_graph import SPLIT_KINDS
 from data.utr_benchmark_v2.split_graph import build_split_manifest
@@ -180,8 +180,8 @@ def _ambiguity_audit(
         failures.append({"kind": "ambiguity_datasets_missing"})
     for dataset_id, report_row in report_datasets.items():
         records = by_dataset.get(str(dataset_id), [])
-        closures = [
-            minimum_alignment_state_closure(
+        statistics = [
+            minimum_alignment_statistics(
                 str(record["source_sequence"]),
                 str(record["candidate_sequence"]),
                 known_minimum_edit_count=(
@@ -194,12 +194,12 @@ def _ambiguity_audit(
             for record in records
         ]
         expected = {
-            "records": len(closures),
+            "records": len(statistics),
             "ambiguous_records": sum(
-                closure.minimum_alignment_count > 1 for closure in closures
+                summary.minimum_alignment_count > 1 for summary in statistics
             ),
             "max_equivalent_minimal_script_count": max(
-                (closure.minimum_alignment_count for closure in closures),
+                (summary.minimum_alignment_count for summary in statistics),
                 default=0,
             ),
             "constructed_paths_marked_observed": sum(

@@ -1,0 +1,48 @@
+{
+  "artifact_type": "b0_failed_attempt_index",
+  "attempt_id": "B0_attempt_001_20260729T125546Z",
+  "attempt_root": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/B0_attempt_001_20260729T125546Z",
+  "b0_accepted": false,
+  "b0_frozen": false,
+  "evidence_path_roots": {
+    "attempt_root": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/B0_attempt_001_20260729T125546Z",
+    "repository_root": "/mnt/cunyuliu/mrna_editflow_goal_worktrees/d1-b0-utr-v2-20260729"
+  },
+  "evidence": {
+    "attempt_evidence_path_scope": "relative_to_attempt_root",
+    "audit_manifest": {
+      "path": "audit/01_canonical_validation/audit_manifest.json",
+      "sha256": "cd5a8e7737633491a094c76cdb986cccf189a0e02a959c61b4167fb2b67c1bc8"
+    },
+    "failure": {
+      "path": "failure/failure.json",
+      "sha256": "2c8455c26a0566da17ba69697af7aa7020fd84ba8ff3f096e3c88101a1696ecf"
+    },
+    "post_failure_diagnosis": {
+      "classification": "POST_FAILURE_EXACT_WITNESS_WITH_UNPACKAGED_CAPACITY_CONTEXT_NOT_PRODUCTION_ACCEPTANCE",
+      "path": "artifacts/stages/D1_B0_20260728T160012Z_8862125/B0/path_complexity_diagnosis.json",
+      "path_scope": "relative_to_repository_root",
+      "sha256": "e25565c004ce199d432ef47716afb3b025a24d47848e164786fab4d3b5f02c49"
+    },
+    "status": {
+      "path": "status.json",
+      "sha256": "56132bf3c392421cf7965934a7cb230d647bde258b9c6962eb7aa915a0480d89"
+    },
+    "stderr": {
+      "path": "audit/01_canonical_validation/logs/stderr.log",
+      "sha256": "15d3e46de8ce3927fd98bed3b14cb89a7d175eb9e0dab4aff4676fd1b94cad57"
+    },
+    "terminal_lock": {
+      "path": "terminal.lock",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "driver_failure_reason": "AUDITED_NODE_FAILED_01_canonical_validation",
+  "failure_node": "01_canonical_validation",
+  "gate_lowered": false,
+  "runtime_commit_sha": "11c3fa2946c50691108293f537bee7836e0a54bb",
+  "schema_version": "b0_failed_attempt_index.v2",
+  "scientific_result_claimed": false,
+  "state": "SAFE_PAUSED_AFTER_FAILED_WITH_EVIDENCE",
+  "underlying_stop_rule": "STOP_RULE_B0_PATH_STATE_COMPLEXITY"
+}

@@ -295,3 +295,58 @@ decision_owner: implementation_agent
 user_approval_status: not_required_for_contract_conforming_D1_gate_closure
 requires_separate_user_scientific_fork: false
 ```
+
+## D-2026-07-29-B0-PATH-COMPLEXITY-STOP
+
+```yaml
+decision_id: D-2026-07-29-B0-PATH-COMPLEXITY-STOP
+date: "2026-07-29"
+record_type: failed_with_evidence_safe_pause
+decision: >-
+  Retain B0 attempt 001 as FAILED_WITH_EVIDENCE and safe-pause B0 without
+  changing the all-shortest-path leakage scope or any acceptance gate.
+reason: >-
+  The formal attempt first stopped at the existing 5,000,000 primitive-action
+  guard. A post-failure exact, regression-tested recomputation attributes the
+  same witness to a 95,217-state closure above the unchanged 50,000-state
+  guard. This witness and the immutable formal failure support SAFE_PAUSED.
+  Broader one-off capacity numbers are context only because their replay
+  command and independent log were not persisted.
+attempt:
+  id: B0_attempt_001_20260729T125546Z
+  runtime_commit: 11c3fa2946c50691108293f537bee7836e0a54bb
+  state: FAILED_WITH_EVIDENCE
+  node: 01_canonical_validation
+  status_sha256: 56132bf3c392421cf7965934a7cb230d647bde258b9c6962eb7aa915a0480d89
+  failure_sha256: 2c8455c26a0566da17ba69697af7aa7020fd84ba8ff3f096e3c88101a1696ecf
+stop_semantics:
+  approximation_emitted: false
+  state_or_record_dropped: false
+  gate_lowered: false
+  failed_evidence_deleted_or_relabelled: false
+  b0_accepted: false
+  b0_frozen: false
+  scientific_result_claimed: false
+recovery_boundary:
+  - exact symbolic or streaming global connectivity with exhaustive parity evidence
+  - or explicit approval and audit of every affected operational resource budget
+  - either path first requires a persisted replayable capacity diagnostic
+forbidden_recovery:
+  - choose one traceback
+  - sample paths
+  - drop the witness
+  - omit constructed intermediate states
+  - weaken path or near-neighbor leakage
+evidence:
+  - docs/audits/2026-07-29-b0-attempt-001-path-complexity-stop.md
+  - artifacts/stages/D1_B0_20260728T160012Z_8862125/B0/path_complexity_diagnosis.json
+  - /mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/B0_attempt_001_20260729T125546Z
+affected_tasks: [B0-01, B0-02, B0-03, B0-04, B0-05]
+core_scientific_question_changed: false
+approved_by_user: false
+authorization_basis: contract_stop_rule_and_failure_preservation
+decision_owner: implementation_agent
+user_approval_status: required_before_crossing_the_recorded_stop_boundary
+requires_separate_user_stop_boundary_decision: true
+requires_separate_user_scientific_fork: false
+```

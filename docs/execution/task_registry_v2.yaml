@@ -670,7 +670,7 @@ tasks:
 
   - task_id: B0-01
     phase_id: B0
-    status: RUNNING
+    status: SAFE_PAUSED
     hypotheses: [H1, H2, H3, H4, H5, H6, H7, H8]
     dependencies: [D1-08]
     dependency_gates: [D1-08:FROZEN]
@@ -702,11 +702,22 @@ tasks:
     completion_policy: MUST_PASS_ALL
     acceptance_artifact: null
     acceptance_sha256: null
-    gate_evidence: []
-    known_blockers: []
+    gate_evidence:
+      - predicate: "b0_attempt_001_terminal_failure_preserved"
+        status: PASS
+        evidence: "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/B0_attempt_001_20260729T125546Z"
+      - predicate: "all_shortest_path_closure_within_frozen_resource_guard"
+        status: FAIL
+        evidence: "docs/audits/2026-07-29-b0-attempt-001-path-complexity-stop.md"
+      - predicate: "no_scientific_scope_or_gate_weakened"
+        status: PASS
+        evidence: "no approximation emitted; gate changes=0; record deletion=0; traceback selection=0"
+    known_blockers:
+      - "STOP_RULE_B0_PATH_STATE_COMPLEXITY: exact witness has 95,217 states above the 50,000 fail-closed guard"
+      - "resume requires a persisted replayable capacity diagnostic plus an explicitly reviewed exact symbolic/streaming design or approval to revise affected operational budgets"
     phase_gate: false
     commit_sha: null
-    report: null
+    report: "SAFE_PAUSED_FAILED_WITH_EVIDENCE_NO_B0_ACCEPTANCE_OR_SCIENTIFIC_RESULT"
 
   - task_id: B0-02
     phase_id: B0
@@ -752,6 +763,7 @@ tasks:
     gate_evidence: []
     known_blockers:
       - "B0-01:VERIFIED dependency gate has not passed"
+      - "B0 path-state and downstream near-neighbor exact-complexity stop remains active"
     phase_gate: false
     commit_sha: null
     report: null
