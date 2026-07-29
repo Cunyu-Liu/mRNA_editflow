@@ -75,20 +75,63 @@ same newline-delimited SHA-256 definition as the legacy closure.
 
 The CLI creates a unique run root such as:
 
-`/mnt/cunyuliu/mrna_editflow_b0_capacity/B0_CAPACITY_DIAG_<UTC>_<nonce>`
+`/mnt/cunyuliu/mrna_editflow_b0_capacity/B0_capacity_<UTC>_<commit-prefix>`
 
 It refuses an existing root. The bundle contains:
 
 - `command.json` and `replay.sh`;
-- `run_manifest.json`, `input_manifest.json`, `code_manifest.json`, and
+- `diagnostic_manifest.json`, `input_manifest.json`, `code_manifest.json`, and
   `runtime_manifest.json`;
-- `records.jsonl`, `summary.json`, and `resource_usage.json`;
+- `records/results.jsonl`, `capacity_summary.json`, and low-frequency system
+  metrics;
 - `logs/stdout.log` and `logs/stderr.log`;
-- `checksums.sha256`, `status.json`, and `terminal.lock`;
+- `artifact_checksums.json`, `status.json`, `bundle_seal.json`, and a non-empty
+  `terminal.lock`, followed by a post-validation `VERIFIED` marker;
 - per-record prototype subdirectories and exact layer hashes where applicable.
 
-The terminal seal is created only after all committed files validate. A failed
-run preserves the same provenance bundle plus typed failure evidence.
+Every `EXACT_COMPLETED` row explicitly references
+`record_workspaces/<ordinal>-<record-id-hash>/state_universe.tsv`. The file is
+strictly sorted, its row count equals `reachable_node_count`, and its canonical
+newline SHA-256 equals `reachable_states_sha256`. A lower-bound row has a null
+reference and no completed file at that deterministic path; partial layer
+files remain failure evidence.
+
+The detached seal binds the manifest, complete pre-seal checksum index,
+terminal marker, status, and process result. The terminal lock binds that seal.
+The bundle verifier live-recomputes D1 snapshot trust and structural selection,
+then compares all selection counts, record order, ID digests, endpoint values,
+structural hashes, and terminal-row identities. It validates every exact
+row's deterministic state file and replays a bounded external merge of the
+eligible endpoints plus all exact state files. Count, byte length, newline
+digest, and file SHA-256 must match the claimed global artifact. Self-consistent
+saved manifests alone cannot pass. `VERIFIED` binds those terminal artifacts
+only after validation. Captured stdout/stderr are OS-level,
+hash-bound evidence and may be non-empty; warnings are preserved rather than
+silently erased. A failed run preserves provenance plus typed failure evidence.
+
+Global-universe roles are explicit: `EXACT` requires a completed fully
+accounted all-exact run; a successful partial merge is
+`LOWER_BOUND_FROM_ENDPOINTS_AND_EXACT_COMPLETED_RECORDS`; an endpoint-only
+artifact is legal only with bound global-merge resource-pause evidence.
+Verification uses the configured `max_open_chunks` and temporary scratch
+outside the immutable run root, and removes that scratch after comparison.
+The same declared scratch-byte, free-disk, RSS, and wall-time safety envelope
+fails verification closed if the independent replay cannot finish safely.
+
+Before global replay, every claimed exact row is independently recomputed from
+its live source/candidate endpoints in fresh temporary scratch. The verifier
+compares the full alignment statistics, nodes, transitions, state paths,
+primitive actions, DP cells, state artifact, and frozen-gate assessment.
+All row replays and global replay share one wall-time budget. It then rebuilds
+the complete capacity summary and requires dictionary equality, so claim
+boundaries and distribution fields cannot be altered by re-sealing.
+
+A census also embeds hashes for the exact witness manifest, `VERIFIED` marker,
+detached seal, terminal lock, and process result that authorized it. The
+parent diagnostic ID alone is not an authorization proof.
+The child verifier opens and validates that actual parent bundle recursively,
+validates its `VERIFIED` marker, requires a completed parentless witness for
+the same code/data/config, and rehashes every embedded parent reference.
 
 ## Exactness invariants
 
@@ -99,7 +142,13 @@ run preserves the same provenance bundle plus typed failure evidence.
 - A sequence cannot appear in two distance layers.
 - Integer path counts are unbounded.
 - State and record ordering is deterministic.
-- The input candidate store is read without final-label values.
+- Candidate rows must match the frozen D1 field allowlist and pass the existing
+  recursive label-path detector.
+- The exact D1 snapshot is live-recomputed first. Its validator may hash the
+  canonical label store as opaque bytes, but neither selection nor capacity
+  code parses or accesses any label value. Recompute explicitly binds the
+  authoritative external Git directory and worktree so a stale native `.git`
+  cannot change the result.
 - A result is `exact=true` only when all layers complete and all hashes and
   counters validate.
 - A summary may call a value a lower bound only when its included exact rows
@@ -111,6 +160,15 @@ Resource limits are prototype guards, not scientific gates. Crossing one emits
 `FAILED_WITH_EVIDENCE` or a typed per-record `STOPPED_WITH_EVIDENCE`; it does
 not raise production budgets, weaken the record set, sample paths, or retry
 with a less exact method.
+
+The external-memory engine invokes a resource callback within record expansion,
+merge, and digest loops. RSS, free disk, wall time, and total run bytes are
+checked at that finer cadence, while metrics are persisted only at the
+low-frequency heartbeat interval. Every merge forces a callback on its final
+tail, even below the ordinary progress interval, and a second forced check runs
+before terminal evidence is built. The guard scope ends at that preterminal
+check; immutable sealing overhead is recorded in the post-seal metric. Any
+retained `.partial` evidence is checksum-indexed.
 
 A checkpoint may be resumed only when contract, code, input, CLI, algorithm,
 and every completed-layer hash match. Otherwise resume fails closed. The first
@@ -128,7 +186,7 @@ files; it must state `resume_supported=false` rather than imply crash recovery.
 | Symbolic certificate | pure insert/delete node and layer parity |
 | Frozen witness | all four frozen exact quantities reproduced |
 | Resource stops | no completed exact result, typed evidence retained |
-| Bundle | schema, SHA-256, row count, replay command, terminal seal |
+| Bundle | schema, live D1 selection/order/endpoints, independent full replay of every exact row, deterministic state files, bounded global-union replay, regenerated full summary, recursive parent authorization, cross-accounting, complete SHA-256 index including partial evidence, exact absolute replay/cwd, detached seal, VERIFIED |
 | Production isolation | existing B0 files/guards unchanged |
 
 ## Decision point after credible numbers
@@ -145,4 +203,3 @@ That evidence will support a later choice among retaining external-memory
 execution, authorizing an explicit audited resource envelope, or pursuing a
 more compressed exact connectivity proof. It will not itself authorize any
 change.
-

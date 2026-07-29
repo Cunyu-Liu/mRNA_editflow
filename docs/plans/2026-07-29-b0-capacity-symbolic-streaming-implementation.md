@@ -130,26 +130,65 @@ Expected: PASS with deterministic results.
 **Step 1: Write failing bundle tests**
 
 Use a tiny label-free fixture. Verify unique-root refusal, candidate-store hash
-binding, stable record selection, one output row per selected record, exact
-versus uncomputed separation, logs, checksums, replay command, status, and
-terminal seal.
+binding, the frozen field allowlist and recursive label-path detector, stable
+record selection, witness-only endpoint scope, one output row per selected
+record, exact versus uncomputed separation, logs, checksums, replay command,
+status, cross-accounting, detached seal, and terminal lock.
 
 **Step 2: Implement unique bundle creation**
 
 Add explicit `--candidate-store`, `--d1-snapshot`, `--output-root`,
 `--contract`, `--expected-code-commit`, mode, selection, and resource-limit
-arguments. Refuse label-bearing structural rows and existing roots.
+arguments. Require an absolute entrypoint and authoritative worktree cwd.
+Restrict new roots to `/mnt/cunyuliu/mrna_editflow_b0_capacity`, outside the
+formal attempt tree. Refuse label-bearing structural rows and existing roots.
 
 **Step 3: Implement mandatory witness precheck**
 
-Bind the frozen record ID/endpoints and require its exact known node, edge,
-path, and digest values before `--scope census` may continue.
+Live-recompute the exact D1 snapshot first, recording that the canonical label
+store is opaque-hashed only and never parsed or used for selection. Bind the
+validator to the authoritative external Git directory/worktree rather than the
+stale native `.git`. Bind the frozen record ID/endpoints and require its exact
+known node, edge, path, and digest values. A census must name and independently
+validate that completed witness bundle before it may start.
 
 **Step 4: Implement terminal validation and sealing**
 
-Create checksums and `terminal.lock` only after the final status and summary
-validate. On exception, retain provenance and failure evidence, return
-non-zero, and never mark partial values exact.
+Create the manifest and marker, then checksum the complete pre-seal bundle
+including the manifest. Write a detached seal over manifest/checksum/status/
+process refs and a non-empty terminal lock over that seal. Independently
+recompute schema, references, checksums, live D1 structural selection and
+endpoint values, full row identities, every deterministic field of each exact
+row through an independent endpoint replay, each exact state-universe
+count/digest, a bounded external replay of the global union, the complete
+summary dictionary, exact replay rendering, and the committed return-code
+contract.
+Only then write and validate a post-seal `VERIFIED` marker. Include retained
+`.partial` evidence in the checksum index. Capture stdout/stderr at the OS file
+descriptor layer and hash-bind them; non-empty warnings remain evidence rather
+than being discarded. On exception, retain provenance and failure evidence,
+return non-zero, and never mark partial values exact.
+
+Use three fail-closed global roles: `EXACT`,
+`LOWER_BOUND_FROM_ENDPOINTS_AND_EXACT_COMPLETED_RECORDS`, and
+`LOWER_BOUND_FROM_ELIGIBLE_ENDPOINTS_ONLY`. The last role is permitted only
+when the sealed evidence records a global-merge resource pause. Verification
+scratch lives outside the sealed run root and uses the configured bounded
+fan-in. Apply the declared scratch-byte, free-disk, RSS, and wall-time
+diagnostic safety envelope to that independent replay and fail closed on a
+breach.
+
+Share one verification wall-time budget across all exact-row replays and the
+global replay. Compare alignment count/DAG cells, nodes, transitions, path
+count, primitive actions, state-DP cells, state file, and frozen-gate
+assessment; treat elapsed/RSS/spill telemetry as observations. Recursively
+validate the real completed parent witness bundle and `VERIFIED` marker, then
+rehash every parent authorization reference rather than trusting its path.
+
+For census scope, embed hashes for the exact parent witness manifest,
+`VERIFIED`, detached seal, terminal lock, and process result. Revalidate the
+parent’s frozen row counters, global count/digest, structural input, code,
+configuration, and D1 snapshot before creating the census root.
 
 **Step 5: Re-run focused tests**
 
@@ -230,4 +269,3 @@ changing them.
 **Stop condition:** End with B0 still `SAFE_PAUSED`. Present the credible
 numbers and decision consequences to the user. A fresh formal B0 or any budget
 change requires a subsequent explicit decision.
-

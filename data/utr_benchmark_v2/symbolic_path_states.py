@@ -19,9 +19,9 @@ import heapq
 import json
 import os
 from collections import defaultdict
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 from pathlib import Path
-from typing import Iterable, Iterator, Sequence, TextIO
+from typing import Any, Callable, Iterable, Iterator, Mapping, Sequence, TextIO
 
 from data.utr_benchmark_v2.path_states import (
     DEFAULT_MAX_REACHABLE_STATES,
@@ -42,6 +42,7 @@ STREAMING_SUMMARY_ALGORITHM_ID = (
 )
 DEFAULT_MAX_SPILL_BYTES = 20_000_000_000
 DEFAULT_MAX_OPEN_CHUNKS = 128
+ProgressCallback = Callable[[Mapping[str, Any]], None]
 
 
 class StreamingPathStateError(PathStateError):
@@ -325,6 +326,8 @@ def _merge_contribution_chunks(
     *,
     prior_node_count: int,
     max_reachable_states: int,
+    progress_callback: ProgressCallback | None = None,
+    progress_interval: int = 10_000,
 ) -> int:
     if not chunks:
         raise StreamingPathStateError(
@@ -337,7 +340,20 @@ def _merge_contribution_chunks(
     current_sequence: str | None = None
     current_count = 0
     with partial.open("x", encoding="utf-8", newline="") as handle:
-        for sequence, contribution in merged:
+        for contribution_index, (sequence, contribution) in enumerate(
+            merged,
+            start=1,
+        ):
+            if (
+                progress_callback is not None
+                and contribution_index % progress_interval == 0
+            ):
+                progress_callback(
+                    {
+                        "phase": "merge_contribution_chunks",
+                        "processed_contributions": contribution_index,
+                    }
+                )
             if current_sequence is None:
                 current_sequence = sequence
                 current_count = contribution
@@ -375,6 +391,9 @@ def _merge_contribution_chunks(
 def _merge_contribution_runs(
     chunks: Sequence[Path],
     output: Path,
+    *,
+    progress_callback: ProgressCallback | None = None,
+    progress_interval: int = 10_000,
 ) -> int:
     """Aggregate sorted contribution chunks into one sorted reusable run."""
 
@@ -385,7 +404,20 @@ def _merge_contribution_runs(
     current_sequence: str | None = None
     current_count = 0
     with output.open("x", encoding="utf-8", newline="") as handle:
-        for sequence, contribution in merged:
+        for contribution_index, (sequence, contribution) in enumerate(
+            merged,
+            start=1,
+        ):
+            if (
+                progress_callback is not None
+                and contribution_index % progress_interval == 0
+            ):
+                progress_callback(
+                    {
+                        "phase": "merge_contribution_runs",
+                        "processed_contributions": contribution_index,
+                    }
+                )
             if current_sequence is None:
                 current_sequence = sequence
                 current_count = contribution
@@ -402,13 +434,25 @@ def _merge_contribution_runs(
     return output.stat().st_size
 
 
-def _global_state_digest(layer_paths: Sequence[Path]) -> str:
+def _global_state_digest(
+    layer_paths: Sequence[Path],
+    *,
+    progress_callback: ProgressCallback | None = None,
+    progress_interval: int = 10_000,
+) -> str:
     iterators = (
         (sequence for sequence, _count in _iter_layer(path)) for path in layer_paths
     )
     digest = hashlib.sha256()
     previous: str | None = None
-    for sequence in heapq.merge(*iterators):
+    for state_index, sequence in enumerate(heapq.merge(*iterators), start=1):
+        if progress_callback is not None and state_index % progress_interval == 0:
+            progress_callback(
+                {
+                    "phase": "global_state_digest",
+                    "processed_states": state_index,
+                }
+            )
         if previous is not None and sequence == previous:
             raise StreamingPathStateError(
                 "a shortest edit path revisited a sequence state across layers"
@@ -436,6 +480,8 @@ def minimum_alignment_state_summary(
     max_spill_bytes: int = DEFAULT_MAX_SPILL_BYTES,
     max_open_chunks: int = DEFAULT_MAX_OPEN_CHUNKS,
     chunk_size: int = 50_000,
+    progress_callback: ProgressCallback | None = None,
+    progress_interval: int = 10_000,
 ) -> MinimumAlignmentStateSummary:
     """Return an exact external-memory closure summary.
 
@@ -452,8 +498,13 @@ def minimum_alignment_state_summary(
         ("max_spill_bytes", max_spill_bytes),
         ("max_open_chunks", max_open_chunks),
         ("chunk_size", chunk_size),
+        ("progress_interval", progress_interval),
     ):
         _validate_positive_limit(name, value)
+    if max_open_chunks < 2:
+        raise StreamingPathStateError(
+            "max_open_chunks must be at least two for convergent external merge"
+        )
     workspace = Path(workspace)
     if workspace.exists():
         raise StreamingPathStateError(f"workspace must not already exist: {workspace}")
@@ -487,6 +538,13 @@ def minimum_alignment_state_summary(
         except PathStateError as error:
             raise StreamingPathStateError(str(error)) from error
         minimum_edit_count = statistics.minimum_edit_count
+        if progress_callback is not None:
+            progress_callback(
+                {
+                    "phase": "alignment_statistics_complete",
+                    "minimum_edit_count": minimum_edit_count,
+                }
+            )
         symbolic_certificate: PureIndelStateCertificate | None = None
         if minimum_edit_count == abs(len(source) - len(candidate)):
             symbolic_certificate = pure_indel_state_certificate(
@@ -510,6 +568,13 @@ def minimum_alignment_state_summary(
         spill_paths: list[Path] = []
         current_layer = layer_paths[0]
         accounted_bytes = _workspace_bytes(workspace)
+        if accounted_bytes > max_spill_bytes:
+            raise StreamingPathStateError(
+                "STOP_RULE_B0_PATH_STATE_COMPLEXITY: exact "
+                f"external-memory closure exceeded "
+                f"{max_spill_bytes} spill bytes; "
+                "no approximation was emitted"
+            )
 
         for depth in range(1, minimum_edit_count):
             remaining_before_edit = minimum_edit_count - depth + 1
@@ -541,7 +606,26 @@ def minimum_alignment_state_summary(
                         "no approximation was emitted"
                     )
 
-            for state, state_path_count in _iter_layer(current_layer):
+            for state_index, (state, state_path_count) in enumerate(
+                _iter_layer(current_layer),
+                start=1,
+            ):
+                if (
+                    progress_callback is not None
+                    and state_index % progress_interval == 0
+                ):
+                    progress_callback(
+                        {
+                            "phase": "expand_layer",
+                            "depth": depth,
+                            "processed_parent_states": state_index,
+                            "reachable_node_count": total_nodes,
+                            "evaluated_primitive_action_count": (
+                                primitive_action_count
+                            ),
+                            "evaluated_state_dp_cell_count": state_dp_cell_count,
+                        }
+                    )
                 try:
                     (
                         neighbors,
@@ -590,6 +674,8 @@ def minimum_alignment_state_summary(
                     written_bytes = _merge_contribution_runs(
                         depth_chunks[offset : offset + max_open_chunks],
                         run_path,
+                        progress_callback=progress_callback,
+                        progress_interval=progress_interval,
                     )
                     accounted_bytes += written_bytes
                     spill_paths.append(run_path)
@@ -610,6 +696,8 @@ def minimum_alignment_state_summary(
                 next_layer,
                 prior_node_count=total_nodes,
                 max_reachable_states=max_reachable_states,
+                progress_callback=progress_callback,
+                progress_interval=progress_interval,
             )
             layer_paths.append(next_layer)
             layer_counts.append(next_count)
@@ -623,6 +711,16 @@ def minimum_alignment_state_summary(
                     "no approximation was emitted"
                 )
             current_layer = next_layer
+            if progress_callback is not None:
+                progress_callback(
+                    {
+                        "phase": "layer_complete",
+                        "depth": depth,
+                        "reachable_node_count": total_nodes,
+                        "evaluated_primitive_action_count": primitive_action_count,
+                        "evaluated_state_dp_cell_count": state_dp_cell_count,
+                    }
+                )
 
         if minimum_edit_count == 0:
             minimum_state_path_count = 1
@@ -636,7 +734,20 @@ def minimum_alignment_state_summary(
                 )
             minimum_state_path_count = 0
             penultimate_count = 0
-            for state, state_path_count in _iter_layer(current_layer):
+            for state_index, (state, state_path_count) in enumerate(
+                _iter_layer(current_layer),
+                start=1,
+            ):
+                if (
+                    progress_callback is not None
+                    and state_index % progress_interval == 0
+                ):
+                    progress_callback(
+                        {
+                            "phase": "final_transition_check",
+                            "processed_parent_states": state_index,
+                        }
+                    )
                 if not _one_primitive_edit_apart(state, candidate):
                     raise StreamingPathStateError(
                         "penultimate state is not one edit from the candidate"
@@ -670,7 +781,11 @@ def minimum_alignment_state_summary(
                 "sequence-identity layer counts"
             )
 
-        state_digest = _global_state_digest(layer_paths)
+        state_digest = _global_state_digest(
+            layer_paths,
+            progress_callback=progress_callback,
+            progress_interval=progress_interval,
+        )
         layer_hashes = tuple(_sha256_file(path) for path in layer_paths)
         summary = MinimumAlignmentStateSummary(
             source_sequence=source,
@@ -689,25 +804,42 @@ def minimum_alignment_state_summary(
             ),
             layer_files_sha256=layer_hashes,
             spill_file_count=len(spill_paths),
-            spill_bytes=_workspace_bytes(workspace),
+            spill_bytes=0,
             symbolic_certificate_sha256=(
                 symbolic_certificate.proof_sha256
                 if symbolic_certificate is not None
                 else None
             ),
         )
-        _atomic_json(workspace / "summary.json", asdict(summary))
-        _atomic_json(
-            workspace / "status.json",
-            {
-                "algorithm": STREAMING_SUMMARY_ALGORITHM_ID,
-                "exact": True,
-                "production_gate_changed": False,
-                "status": "EXACT_COMPLETED",
-                "summary_sha256": _sha256_file(workspace / "summary.json"),
-            },
+        for _iteration in range(8):
+            _atomic_json(workspace / "summary.json", asdict(summary))
+            _atomic_json(
+                workspace / "status.json",
+                {
+                    "algorithm": STREAMING_SUMMARY_ALGORITHM_ID,
+                    "exact": True,
+                    "production_gate_changed": False,
+                    "status": "EXACT_COMPLETED",
+                    "summary_sha256": _sha256_file(workspace / "summary.json"),
+                },
+            )
+            terminal_workspace_bytes = _workspace_bytes(workspace)
+            if terminal_workspace_bytes > max_spill_bytes:
+                raise StreamingPathStateError(
+                    "STOP_RULE_B0_PATH_STATE_COMPLEXITY: exact "
+                    f"external-memory closure exceeded "
+                    f"{max_spill_bytes} spill bytes; "
+                    "no approximation was emitted"
+                )
+            if terminal_workspace_bytes == summary.spill_bytes:
+                return summary
+            summary = replace(
+                summary,
+                spill_bytes=terminal_workspace_bytes,
+            )
+        raise StreamingPathStateError(
+            "terminal workspace-byte accounting did not converge"
         )
-        return summary
     except Exception as error:
         wrapped = (
             error

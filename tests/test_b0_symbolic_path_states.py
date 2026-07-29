@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from dataclasses import is_dataclass
 from itertools import product
 from pathlib import Path
@@ -269,6 +270,72 @@ def test_chunk_size_and_workspace_ownership_fail_closed(
     assert (existing_nonempty / "foreign.txt").read_text(
         encoding="utf-8"
     ) == "must not be overwritten\n"
+
+    invalid_merge = _fresh_workspace(tmp_path, "invalid-open-chunks")
+    with pytest.raises(StreamingPathStateError, match="max_open_chunks"):
+        minimum_alignment_state_summary(
+            "AC",
+            "CA",
+            workspace=invalid_merge,
+            max_open_chunks=1,
+        )
+    assert not invalid_merge.exists()
+
+
+def test_zero_edit_terminal_workspace_bytes_are_exact_and_guarded(
+    tmp_path: Path,
+) -> None:
+    completed_workspace = _fresh_workspace(tmp_path, "zero-edit-complete")
+    summary = minimum_alignment_state_summary(
+        "A",
+        "A",
+        workspace=completed_workspace,
+    )
+    observed_bytes = sum(
+        path.stat().st_size for path in completed_workspace.rglob("*") if path.is_file()
+    )
+    assert summary.spill_bytes == observed_bytes
+
+    with pytest.raises(
+        StreamingPathStateError,
+        match="STOP_RULE_B0_PATH_STATE_COMPLEXITY",
+    ):
+        minimum_alignment_state_summary(
+            "A",
+            "A",
+            workspace=_fresh_workspace(tmp_path, "zero-edit-stop"),
+            max_spill_bytes=observed_bytes - 1,
+        )
+
+
+def test_progress_callback_runs_inside_a_record_and_can_fail_closed(
+    tmp_path: Path,
+) -> None:
+    observed: list[dict] = []
+
+    def stop_during_expansion(progress: dict) -> None:
+        observed.append(dict(progress))
+        if progress["phase"] == "expand_layer":
+            raise StreamingPathStateError("SAFE_RESOURCE_PAUSE: fixture")
+
+    workspace = _fresh_workspace(tmp_path, "callback-stop")
+    with pytest.raises(StreamingPathStateError, match="SAFE_RESOURCE_PAUSE"):
+        minimum_alignment_state_summary(
+            "AAAA",
+            "AA",
+            workspace=workspace,
+            max_reachable_states=100,
+            progress_callback=stop_during_expansion,
+            progress_interval=1,
+        )
+
+    assert any(item["phase"] == "alignment_statistics_complete" for item in observed)
+    assert any(item["phase"] == "expand_layer" for item in observed)
+    assert (
+        json.loads((workspace / "status.json").read_text(encoding="utf-8"))["status"]
+        == "FAILED_WITH_EVIDENCE"
+    )
+    assert (workspace / "failure.json").is_file()
 
 
 def test_real_witness_streams_exact_summary_without_materializing_states(

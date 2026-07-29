@@ -10,6 +10,7 @@
     "schema_version",
     "diagnostic_id",
     "parent_diagnostic_id",
+    "parent_authorization",
     "state",
     "terminal",
     "started_at_utc",
@@ -47,6 +48,16 @@
         {
           "type": "string",
           "pattern": "^B0_capacity_[0-9]{8}T[0-9]{6}Z_[0-9a-f]{7,40}$"
+        }
+      ]
+    },
+    "parent_authorization": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/$defs/parentAuthorization"
         }
       ]
     },
@@ -136,6 +147,8 @@
       "required": [
         "source_store_role",
         "selection_algorithm",
+        "diagnostic_scope",
+        "state_universe_scope",
         "regions",
         "record_order",
         "source_record_count",
@@ -143,7 +156,7 @@
         "excluded_record_count",
         "selected_record_ids_sha256",
         "label_fields_read",
-        "canonical_label_store_opened",
+        "canonical_label_store_opened_by_selection",
         "selection_manifest"
       ],
       "properties": {
@@ -152,6 +165,18 @@
         },
         "selection_algorithm": {
           "const": "split_graph.select_split_eligible_records+edit_distance_gte_2"
+        },
+        "diagnostic_scope": {
+          "enum": [
+            "witness",
+            "census"
+          ]
+        },
+        "state_universe_scope": {
+          "enum": [
+            "FROZEN_WITNESS_SUBSET",
+            "FULL_CENSUS"
+          ]
         },
         "regions": {
           "const": [
@@ -181,13 +206,47 @@
           "type": "array",
           "maxItems": 0
         },
-        "canonical_label_store_opened": {
+        "canonical_label_store_opened_by_selection": {
           "const": false
         },
         "selection_manifest": {
           "$ref": "#/$defs/artifactRef"
         }
-      }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "diagnostic_scope": {
+                "const": "witness"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "state_universe_scope": {
+                "const": "FROZEN_WITNESS_SUBSET"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "diagnostic_scope": {
+                "const": "census"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "state_universe_scope": {
+                "const": "FULL_CENSUS"
+              }
+            }
+          }
+        }
+      ]
     },
     "witnesses": {
       "type": "array",
@@ -364,6 +423,64 @@
           }
         }
       }
+    },
+    {
+      "if": {
+        "properties": {
+          "selection": {
+            "properties": {
+              "diagnostic_scope": {
+                "const": "witness"
+              }
+            },
+            "required": [
+              "diagnostic_scope"
+            ]
+          }
+        },
+        "required": [
+          "selection"
+        ]
+      },
+      "then": {
+        "properties": {
+          "parent_diagnostic_id": {
+            "type": "null"
+          },
+          "parent_authorization": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "selection": {
+            "properties": {
+              "diagnostic_scope": {
+                "const": "census"
+              }
+            },
+            "required": [
+              "diagnostic_scope"
+            ]
+          }
+        },
+        "required": [
+          "selection"
+        ]
+      },
+      "then": {
+        "properties": {
+          "parent_diagnostic_id": {
+            "type": "string"
+          },
+          "parent_authorization": {
+            "$ref": "#/$defs/parentAuthorization"
+          }
+        }
+      }
     }
   ],
   "$defs": {
@@ -394,6 +511,39 @@
         },
         "sha256": {
           "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "parentAuthorization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "diagnostic_id",
+        "diagnostic_manifest",
+        "verified_marker",
+        "bundle_seal",
+        "terminal_lock",
+        "process_result"
+      ],
+      "properties": {
+        "diagnostic_id": {
+          "type": "string",
+          "pattern": "^B0_capacity_[0-9]{8}T[0-9]{6}Z_[0-9a-f]{7,40}$"
+        },
+        "diagnostic_manifest": {
+          "$ref": "#/$defs/artifactRef"
+        },
+        "verified_marker": {
+          "$ref": "#/$defs/artifactRef"
+        },
+        "bundle_seal": {
+          "$ref": "#/$defs/artifactRef"
+        },
+        "terminal_lock": {
+          "$ref": "#/$defs/artifactRef"
+        },
+        "process_result": {
+          "$ref": "#/$defs/artifactRef"
         }
       }
     },
@@ -482,15 +632,22 @@
           "minimum": 0
         },
         "minimum_alignment_count": {
-          "type": "integer",
-          "minimum": 1
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "evaluated_dag_cell_count": {
           "type": "integer",
           "minimum": 1
         },
         "counts_exact": {
-          "const": true
+          "type": "boolean"
         }
       }
     },
@@ -555,6 +712,7 @@
         "candidate_length",
         "alignment_statistics",
         "outcome",
+        "state_universe_artifact",
         "capacity",
         "frozen_gate_assessment",
         "evidence_semantics",
@@ -613,6 +771,16 @@
           "enum": [
             "EXACT_COMPLETED",
             "LOWER_BOUND_STOPPED"
+          ]
+        },
+        "state_universe_artifact": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/artifactRef"
+            }
           ]
         },
         "capacity": {
@@ -726,6 +894,17 @@
           },
           "then": {
             "properties": {
+              "alignment_statistics": {
+                "properties": {
+                  "minimum_alignment_count": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "counts_exact": {
+                    "const": true
+                  }
+                }
+              },
               "capacity": {
                 "properties": {
                   "exact": {
@@ -735,6 +914,9 @@
                     "type": "null"
                   }
                 }
+              },
+              "state_universe_artifact": {
+                "$ref": "#/$defs/artifactRef"
               },
               "evidence_semantics": {
                 "properties": {
@@ -765,6 +947,31 @@
           },
           "then": {
             "properties": {
+              "alignment_statistics": {
+                "oneOf": [
+                  {
+                    "properties": {
+                      "minimum_alignment_count": {
+                        "type": "integer",
+                        "minimum": 1
+                      },
+                      "counts_exact": {
+                        "const": true
+                      }
+                    }
+                  },
+                  {
+                    "properties": {
+                      "minimum_alignment_count": {
+                        "type": "null"
+                      },
+                      "counts_exact": {
+                        "const": false
+                      }
+                    }
+                  }
+                ]
+              },
               "capacity": {
                 "properties": {
                   "exact": {
@@ -774,6 +981,9 @@
                     "$ref": "#/$defs/lowerBounds"
                   }
                 }
+              },
+              "state_universe_artifact": {
+                "type": "null"
               },
               "evidence_semantics": {
                 "properties": {
@@ -902,14 +1112,18 @@
         "git",
         "exact_argv",
         "exact_argv_sha256",
+        "launch_cwd",
         "resolved_config",
         "runtime_manifest",
         "python_launcher",
+        "d1_snapshot",
+        "d1_snapshot_validation",
         "d1_acceptance",
         "d1_build_manifest",
         "canonical_store_metadata_only",
         "structural_store",
         "ambiguity_report",
+        "process_result",
         "code_files"
       ],
       "properties": {
@@ -918,12 +1132,17 @@
           "additionalProperties": false,
           "required": [
             "project_root",
+            "git_dir",
             "head",
             "clean",
             "dirty_state_sha256"
           ],
           "properties": {
             "project_root": {
+              "type": "string",
+              "pattern": "^/"
+            },
+            "git_dir": {
               "type": "string",
               "pattern": "^/"
             },
@@ -949,6 +1168,10 @@
         "exact_argv_sha256": {
           "$ref": "#/$defs/sha256"
         },
+        "launch_cwd": {
+          "type": "string",
+          "pattern": "^/"
+        },
         "resolved_config": {
           "$ref": "#/$defs/artifactRef"
         },
@@ -956,6 +1179,12 @@
           "$ref": "#/$defs/artifactRef"
         },
         "python_launcher": {
+          "$ref": "#/$defs/artifactRef"
+        },
+        "d1_snapshot": {
+          "$ref": "#/$defs/artifactRef"
+        },
+        "d1_snapshot_validation": {
           "$ref": "#/$defs/artifactRef"
         },
         "d1_acceptance": {
@@ -974,7 +1203,11 @@
             "record_count",
             "record_ids_sha256",
             "content_sha256",
-            "opened"
+            "selection_opened",
+            "capacity_algorithm_opened",
+            "opaque_integrity_hash_opened",
+            "jsonl_parsed",
+            "label_values_accessed"
           ],
           "properties": {
             "path": {
@@ -998,7 +1231,19 @@
             "content_sha256": {
               "$ref": "#/$defs/sha256"
             },
-            "opened": {
+            "selection_opened": {
+              "const": false
+            },
+            "capacity_algorithm_opened": {
+              "const": false
+            },
+            "opaque_integrity_hash_opened": {
+              "const": true
+            },
+            "jsonl_parsed": {
+              "const": false
+            },
+            "label_values_accessed": {
               "const": false
             }
           }
@@ -1043,6 +1288,9 @@
           }
         },
         "ambiguity_report": {
+          "$ref": "#/$defs/artifactRef"
+        },
+        "process_result": {
           "$ref": "#/$defs/artifactRef"
         },
         "code_files": {
@@ -1335,7 +1583,9 @@
         "sealed_at_utc",
         "terminal_marker",
         "terminal_marker_ref",
-        "artifact_checksum_index",
+        "artifact_checksum_index_path",
+        "bundle_seal_path",
+        "terminal_lock_path",
         "record_shard_index"
       ],
       "properties": {
@@ -1349,8 +1599,14 @@
         "terminal_marker_ref": {
           "$ref": "#/$defs/artifactRef"
         },
-        "artifact_checksum_index": {
-          "$ref": "#/$defs/artifactRef"
+        "artifact_checksum_index_path": {
+          "const": "artifact_checksums.json"
+        },
+        "bundle_seal_path": {
+          "const": "bundle_seal.json"
+        },
+        "terminal_lock_path": {
+          "const": "terminal.lock"
         },
         "record_shard_index": {
           "$ref": "#/$defs/artifactRef"
