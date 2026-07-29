@@ -48,7 +48,7 @@ tasks:
       - "preflight contract and reference inventory"
     resource_labels: [CPU_LIGHT, MUTATES_CODE]
     conflict_keys: [active_contract_files]
-    allowed_parallel_tasks: [D0-03]
+    allowed_parallel_tasks: [D0-03, D0-04]
     files:
       - "docs/contracts/v2_contract_conflict_matrix.md"
     commands:
@@ -77,7 +77,7 @@ tasks:
       - "docs/contracts/mrna_latest_build_contract_v2.md"
     resource_labels: [CPU_LIGHT, MUTATES_CODE]
     conflict_keys: [active_contract_files, README.md]
-    allowed_parallel_tasks: [D0-03]
+    allowed_parallel_tasks: [D0-03, D0-04]
     files:
       - "configs/utr_editflow_contract_v2.yaml"
       - "docs/utr_editflow_scientific_question_v2.md"
@@ -110,7 +110,7 @@ tasks:
       - "V2 contract files"
     resource_labels: [CPU_LIGHT, MUTATES_CODE]
     conflict_keys: [contract_audit, execution_infrastructure]
-    allowed_parallel_tasks: [D0-01, D0-02, D0-03]
+    allowed_parallel_tasks: [D0-01, D0-02, D0-03, D0-04]
     files:
       - "scripts/contracts/audit_active_contracts.py"
       - "configs/execution_contract.yaml"
@@ -146,7 +146,7 @@ tasks:
       - "V2 authority chain"
     resource_labels: [CPU_LIGHT, MUTATES_CODE]
     conflict_keys: [README.md]
-    allowed_parallel_tasks: [D0-01, D0-02, D0-03, D0-04, D0-05]
+    allowed_parallel_tasks: [D0-01, D0-02, D0-03, D0-04]
     files:
       - "README.md"
     commands:
@@ -232,7 +232,7 @@ tasks:
       - "GEO, SRA, ENA, ENCODE, MaveDB, PubMed/CrossRef/OpenAlex, official supplementary repositories"
     resource_labels: [READ_ONLY, CPU_LIGHT]
     conflict_keys: [academic_api_queries]
-    allowed_parallel_tasks: [C0-02, C0-03, C0-04, C0-05, D0-04]
+    allowed_parallel_tasks: [C0-02, C0-03, C0-04, C0-05, D0-01, D0-04]
     files:
       - "docs/data/systematic_search_protocol.md"
       - "docs/data/systematic_search_results.md"
@@ -310,3 +310,588 @@ tasks:
       - "preserve the failed gate and continue the registered missing-data path"
     commit_sha: "5c25cc30a76ce091ec6add18984376b2934757f4"
     report: "VERIFIED_CANDIDATE_ROLES_AND_MISSING_DATA_FORWARD_PATHS_FROZEN"
+
+  - task_id: D1-01
+    phase_id: D1
+    status: VERIFIED
+    hypotheses: [H1, H2, H3, H4, H5, H6, H7, H8]
+    dependencies: [C0-05, D0-05]
+    dependency_gates: [C0-05:VERIFIED, D0-05:VERIFIED]
+    scientific_service: "Capture the real D1/B0 repository, process, resource, data, and artifact state without mutating protected work."
+    forbidden_actions:
+      - "mutate the original dirty worktree"
+      - "stop existing download, training, evaluation, or monitoring jobs"
+      - "promote incomplete ENCODE reconstruction to intervention evidence"
+    inputs:
+      - "/home/cunyuliu/mrna_editflow_goal/mrna_editflow"
+      - "/mnt/cunyuliu/partial_evidence/ENCSR854RUF_ena_reconstruction_manifest.json"
+    resource_labels: [READ_ONLY, CPU_LIGHT]
+    conflict_keys: [original_worktree, encsr854ruf_download, existing_gpu_jobs]
+    allowed_parallel_tasks: []
+    files:
+      - "artifacts/stages/D1_B0_20260728T160012Z_8862125/preflight_manifest.json"
+      - "artifacts/stages/D1_B0_20260728T160012Z_8862125/protected_state.json"
+      - "artifacts/stages/D1_B0_20260728T160012Z_8862125/existing_artifact_inventory.json"
+    commands:
+      - "read-only SSH preflight and stage-manifest validation"
+    outputs:
+      - "immutable preflight and protected-state evidence"
+    acceptance:
+      - "original Git state, jobs, GPU, RAM, disk, data, and artifacts are recorded"
+      - "original worktree mutations, process terminations, and result overwrites remain zero"
+    repair_loop:
+      - "refresh only stale read-only evidence; never disturb protected state"
+    evidence_class: READ_ONLY_PREFLIGHT
+    completion_policy: MUST_PASS_ALL
+    acceptance_artifact: "artifacts/stages/D1_B0_20260728T160012Z_8862125/D1/acceptance.json"
+    acceptance_sha256: "f6da5ab89de1128ba157916ea7015e7bfb95d75c465e44ff5d68e65d6f824c05"
+    gate_evidence:
+      - predicate: "read_only_preflight_and_protection_recheck_passed"
+        status: PASS
+        evidence: "artifacts/stages/D1_B0_20260728T160012Z_8862125/preflight_manifest.json and protected_state.json"
+      - predicate: "published_remote_ref_contains_commit"
+        status: PASS
+        evidence: "refs/heads/d1-b0-utr-v2-20260729"
+    known_blockers: []
+    phase_gate: false
+    commit_sha: "a674912f4667bb0b88e244b2836599fef4bdba2c"
+    report: "VERIFIED_READ_ONLY_PREFLIGHT_PROTECTED_HOME_AND_EXISTING_JOBS_UNTOUCHED"
+
+  - task_id: D1-02
+    phase_id: D1
+    status: VERIFIED
+    hypotheses: [H1, H2, H3, H4, H5, H6, H7, H8]
+    dependencies: [D1-01]
+    dependency_gates: [D1-01:VERIFIED]
+    scientific_service: "Make D1/B0 phase completion depend on hashed full-scope evidence rather than smoke or prose."
+    forbidden_actions:
+      - "close a phase gate with smoke, fixture, proxy, or missing evidence"
+      - "register asymmetric parallel permissions"
+    inputs:
+      - "docs/execution/task_registry_v2.yaml"
+      - "schemas/task_registry.schema.json"
+    resource_labels: [CPU_LIGHT, MUTATES_CODE]
+    conflict_keys: [task_registry_v2, stage_manifest]
+    allowed_parallel_tasks: []
+    files:
+      - "schemas/task_registry.schema.json"
+      - "schemas/stage_manifest.schema.json"
+      - "scripts/execution/validate_registry.py"
+      - "scripts/execution/validate_stage_manifest.py"
+    commands:
+      - "pytest -q tests/test_validate_registry.py tests/test_stage_manifest_v2.py"
+    outputs:
+      - "fail-closed governed task and stage evidence contract"
+    acceptance:
+      - "D1/B0 final tasks require a full commit, hashed acceptance artifact, passing predicates, and no blockers"
+    repair_loop:
+      - "fix evidence wiring or registry lineage without weakening the gate"
+    evidence_class: FULL_SCOPE_DATA
+    completion_policy: MUST_PASS_ALL
+    acceptance_artifact: "artifacts/stages/D1_B0_20260728T160012Z_8862125/D1/acceptance.json"
+    acceptance_sha256: "f6da5ab89de1128ba157916ea7015e7bfb95d75c465e44ff5d68e65d6f824c05"
+    gate_evidence:
+      - predicate: "governed_full_scope_evidence_contract_passed"
+        status: PASS
+        evidence: "tests/test_validate_registry.py, tests/test_stage_manifest_v2.py, and D1 acceptance"
+      - predicate: "published_remote_ref_contains_commit"
+        status: PASS
+        evidence: "refs/heads/d1-b0-utr-v2-20260729"
+    known_blockers: []
+    phase_gate: false
+    commit_sha: "a674912f4667bb0b88e244b2836599fef4bdba2c"
+    report: "VERIFIED_FAIL_CLOSED_D1_B0_GOVERNANCE_AND_COMMIT_BINDING"
+
+  - task_id: D1-03
+    phase_id: D1
+    status: VERIFIED
+    hypotheses: [H1, H2, H4, H5, H6]
+    dependencies: [D1-02]
+    dependency_gates: [D1-02:VERIFIED]
+    scientific_service: "Freeze exact dynamic-coordinate UTR edit actions and quantify minimum-alignment ambiguity."
+    forbidden_actions:
+      - "accept no-op, allele mismatch, invalid coordinate, cycle, or action after STOP"
+      - "describe a constructed minimum alignment as an observed biological trajectory"
+    inputs:
+      - "source and candidate RNA sequences"
+    resource_labels: [CPU_LIGHT, MUTATES_CODE]
+    conflict_keys: [canonical_edit_script]
+    allowed_parallel_tasks: [D1-04]
+    files:
+      - "data/utr_benchmark_v2/edit_script.py"
+      - "data/utr_benchmark_v2/records.py"
+    commands:
+      - "pytest -q tests/test_edit_script_v2.py tests/test_utr_record_v2.py"
+    outputs:
+      - "canonical SUB/INS/DEL/STOP semantics and strict canonical record validator"
+    acceptance:
+      - "deterministic minimal scripts reproduce every endpoint exactly"
+      - "ambiguity count scope is explicitly minimum-cost character alignments"
+    repair_loop:
+      - "preserve failed fixtures and fix canonicalization; never relax allele or round-trip checks"
+    evidence_class: FULL_SCOPE_DATA
+    completion_policy: MUST_PASS_ALL
+    acceptance_artifact: "artifacts/stages/D1_B0_20260728T160012Z_8862125/D1/acceptance.json"
+    acceptance_sha256: "f6da5ab89de1128ba157916ea7015e7bfb95d75c465e44ff5d68e65d6f824c05"
+    gate_evidence:
+      - predicate: "canonical_edit_round_trip_and_ambiguity_checks_passed"
+        status: PASS
+        evidence: "D1 acceptance dataset_results and data/edit_script_ambiguity_report.json binding"
+      - predicate: "published_remote_ref_contains_commit"
+        status: PASS
+        evidence: "refs/heads/d1-b0-utr-v2-20260729"
+    known_blockers: []
+    phase_gate: false
+    commit_sha: "a674912f4667bb0b88e244b2836599fef4bdba2c"
+    report: "VERIFIED_CANONICAL_DYNAMIC_COORDINATE_EDIT_SEMANTICS"
+
+  - task_id: D1-04
+    phase_id: D1
+    status: VERIFIED
+    hypotheses: [H1, H2, H4, H5, H6, H7, H8]
+    dependencies: [D1-02]
+    dependency_gates: [D1-02:VERIFIED]
+    scientific_service: "Freeze dataset roles, immutable input checksums, exposure, provenance, license, and blocked claims."
+    forbidden_actions:
+      - "invent a source for an absolute or unmapped construct"
+      - "use final labels to select a dataset version"
+      - "call GSE246381 untouched or sealed"
+    inputs:
+      - "D0 dataset capability matrix"
+      - "official raw, processed, supplementary, and code artifacts"
+    resource_labels: [READ_ONLY, CPU_LIGHT, MUTATES_CODE]
+    conflict_keys: [d1_dataset_scope, d1_input_inventory]
+    allowed_parallel_tasks: [D1-03]
+    files:
+      - "data_registry/d1_dataset_scope_manifest.yaml"
+      - "artifacts/stages/D1_B0_20260728T160012Z_8862125/D1/input_inventory.json"
+      - "data/d1/pipelines"
+    commands:
+      - "dataset-specific input and scope audit"
+    outputs:
+      - "one role and claim boundary for every D0 candidate"
+    acceptance:
+      - "every included byte is hashed and every excluded or blocked dataset has a stable reason"
+    repair_loop:
+      - "keep the dataset blocked or excluded until exact source/candidate provenance is recovered"
+    evidence_class: FULL_SCOPE_DATA
+    completion_policy: MUST_PASS_ALL
+    acceptance_artifact: "artifacts/stages/D1_B0_20260728T160012Z_8862125/D1/acceptance.json"
+    acceptance_sha256: "f6da5ab89de1128ba157916ea7015e7bfb95d75c465e44ff5d68e65d6f824c05"
+    gate_evidence:
+      - predicate: "scope_inventory_provenance_and_exposure_bindings_passed"
+        status: PASS
+        evidence: "artifacts/stages/D1_B0_20260728T160012Z_8862125/D1/input_inventory.json and D1 acceptance"
+      - predicate: "published_remote_ref_contains_commit"
+        status: PASS
+        evidence: "refs/heads/d1-b0-utr-v2-20260729"
+    known_blockers: []
+    phase_gate: false
+    commit_sha: "a674912f4667bb0b88e244b2836599fef4bdba2c"
+    report: "VERIFIED_EXACT_TWELVE_DATASET_SCOPE_AND_LABEL_INDEPENDENT_INPUT_FREEZE"
+
+  - task_id: D1-05
+    phase_id: D1
+    status: VERIFIED
+    hypotheses: [H1, H2, H4, H5, H6]
+    dependencies: [D1-03, D1-04]
+    dependency_gates: [D1-03:VERIFIED, D1-04:VERIFIED]
+    scientific_service: "Reconstruct paper-clean, canonical, label-free, label-bearing, and rejected D1 stores without role collapse."
+    forbidden_actions:
+      - "write an absolute sequence as an intervention"
+      - "put final labels in the candidate-selection store"
+      - "silently discard a rejected input row"
+    inputs:
+      - "frozen D1 input inventory and dataset-local pipelines"
+    resource_labels: [CPU_HEAVY, IO_HEAVY, MUTATES_DATA]
+    conflict_keys: [d1_external_data_root]
+    allowed_parallel_tasks: []
+    files:
+      - "scripts/data/build_d1_utr_benchmark.py"
+      - "data/utr_benchmark_v2/d1_builder.py"
+    commands:
+      - "full-scope D1 production build"
+    outputs:
+      - "immutable raw-derived, canonical, candidate-only, label-bearing, and rejected stores"
+    acceptance:
+      - "all source/candidate pairs round-trip and all raw input rows reconcile to accepted or rejected status"
+    repair_loop:
+      - "preserve failed output under its attempt id, fix the dataset parser, and rebuild to a new immutable snapshot"
+    evidence_class: FULL_SCOPE_DATA
+    completion_policy: MUST_PASS_ALL
+    acceptance_artifact: "artifacts/stages/D1_B0_20260728T160012Z_8862125/D1/acceptance.json"
+    acceptance_sha256: "f6da5ab89de1128ba157916ea7015e7bfb95d75c465e44ff5d68e65d6f824c05"
+    gate_evidence:
+      - predicate: "production_stores_and_row_reconciliation_passed"
+        status: PASS
+        evidence: "D1 acceptance global_store_validation, dataset_results, and builder audit binding"
+      - predicate: "published_remote_ref_contains_commit"
+        status: PASS
+        evidence: "refs/heads/d1-b0-utr-v2-20260729"
+    known_blockers: []
+    phase_gate: false
+    commit_sha: "a674912f4667bb0b88e244b2836599fef4bdba2c"
+    report: "VERIFIED_FULL_SCOPE_PRODUCTION_STORES_AND_REJECTION_ACCOUNTING"
+
+  - task_id: D1-06
+    phase_id: D1
+    status: VERIFIED
+    hypotheses: [H1, H2, H4, H5, H6, H7, H8]
+    dependencies: [D1-05]
+    dependency_gates: [D1-05:VERIFIED]
+    scientific_service: "Report label reproduction, library ascertainment, exposure, edit ambiguity, and measured action coverage."
+    forbidden_actions:
+      - "write provided-label-only as raw label reproduction"
+      - "call constructed paths observed"
+      - "hide zero measured insertions or trajectories"
+    inputs:
+      - "full D1 production snapshot"
+    resource_labels: [CPU_LIGHT, MUTATES_DATA]
+    conflict_keys: [d1_required_reports]
+    allowed_parallel_tasks: []
+    files:
+      - "data/data_exposure_ledger.jsonl"
+      - "data/library_ascertainment_report.json"
+      - "data/edit_script_ambiguity_report.json"
+      - "data/measured_action_coverage_report.json"
+      - "reports/data_reproduction/summary.csv"
+    commands:
+      - "generate D1 required reports from the immutable snapshot"
+    outputs:
+      - "contract-required D1 audit artifacts"
+    acceptance:
+      - "report counts reconcile to frozen stores and preserve negative or unsupported capabilities"
+    repair_loop:
+      - "fix report derivation against the same immutable records; never alter evaluation meaning"
+    evidence_class: FULL_SCOPE_DATA
+    completion_policy: MUST_PASS_ALL
+    acceptance_artifact: "artifacts/stages/D1_B0_20260728T160012Z_8862125/D1/acceptance.json"
+    acceptance_sha256: "f6da5ab89de1128ba157916ea7015e7bfb95d75c465e44ff5d68e65d6f824c05"
+    gate_evidence:
+      - predicate: "required_reports_recomputed_and_cryptographically_bound"
+        status: PASS
+        evidence: "D1 acceptance required_artifact_validation and semantic recomputation checks"
+      - predicate: "published_remote_ref_contains_commit"
+        status: PASS
+        evidence: "refs/heads/d1-b0-utr-v2-20260729"
+    known_blockers: []
+    phase_gate: false
+    commit_sha: "a674912f4667bb0b88e244b2836599fef4bdba2c"
+    report: "VERIFIED_CONTRACT_REQUIRED_D1_REPORTS_WITH_NEGATIVE_CAPABILITIES_PRESERVED"
+
+  - task_id: D1-07
+    phase_id: D1
+    status: VERIFIED
+    hypotheses: [H1, H2, H4, H5, H6, H7, H8]
+    dependencies: [D1-06]
+    dependency_gates: [D1-06:VERIFIED]
+    scientific_service: "Run full-scope semantic acceptance over records, reports, provenance, exposure, and rejection coverage."
+    forbidden_actions:
+      - "substitute fixture or smoke evidence for production acceptance"
+      - "erase failed acceptance evidence"
+    inputs:
+      - "full D1 production snapshot and required reports"
+    resource_labels: [CPU_HEAVY, IO_HEAVY]
+    conflict_keys: [d1_acceptance]
+    allowed_parallel_tasks: []
+    files:
+      - "scripts/data/validate_d1_acceptance.py"
+      - "artifacts/stages/D1_B0_20260728T160012Z_8862125/D1/acceptance.json"
+    commands:
+      - "full-scope D1 semantic acceptance"
+    outputs:
+      - "hashed D1 acceptance evidence"
+    acceptance:
+      - "all contract D1 predicates pass with zero unexplained or unlabeled rejection rows"
+    repair_loop:
+      - "retain the failed acceptance artifact and return to the narrowest failed upstream task"
+    evidence_class: FULL_SCOPE_DATA
+    completion_policy: MUST_PASS_ALL
+    acceptance_artifact: "artifacts/stages/D1_B0_20260728T160012Z_8862125/D1/acceptance.json"
+    acceptance_sha256: "f6da5ab89de1128ba157916ea7015e7bfb95d75c465e44ff5d68e65d6f824c05"
+    gate_evidence:
+      - predicate: "full_scope_d1_semantic_acceptance_passed"
+        status: PASS
+        evidence: "artifacts/stages/D1_B0_20260728T160012Z_8862125/D1/acceptance.json"
+      - predicate: "published_remote_ref_contains_commit"
+        status: PASS
+        evidence: "refs/heads/d1-b0-utr-v2-20260729"
+    known_blockers: []
+    phase_gate: false
+    commit_sha: "a674912f4667bb0b88e244b2836599fef4bdba2c"
+    report: "VERIFIED_FULL_SCOPE_D1_ACCEPTANCE_WITH_NO_UNRESOLVED_BLOCKERS"
+
+  - task_id: D1-08
+    phase_id: D1
+    status: FROZEN
+    hypotheses: [H1, H2, H4, H5, H6, H7, H8]
+    dependencies: [D1-07]
+    dependency_gates: [D1-07:VERIFIED]
+    scientific_service: "Freeze the accepted D1 canonical snapshot and unlock B0 without making a model-efficacy claim."
+    forbidden_actions:
+      - "freeze a snapshot with any failed D1 predicate"
+      - "present D1 data acceptance as Edit Flow scientific success"
+    inputs:
+      - "hashed D1 acceptance evidence"
+    resource_labels: [CPU_LIGHT, MUTATES_DATA]
+    conflict_keys: [d1_frozen_snapshot]
+    allowed_parallel_tasks: []
+    files:
+      - "data/d1/manifests/d1_canonical_snapshot.json"
+      - "artifacts/stages/D1_B0_20260728T160012Z_8862125/D1/acceptance.json"
+    commands:
+      - "freeze D1 snapshot only after full-scope acceptance"
+    outputs:
+      - "D1:FROZEN gate"
+    acceptance:
+      - "D1 acceptance is full-scope, hashed, blocker-free, and commit-bound"
+    repair_loop:
+      - "remain SAFE_PAUSED and preserve evidence until every D1 predicate passes"
+    evidence_class: FULL_SCOPE_DATA
+    completion_policy: MUST_PASS_ALL
+    acceptance_artifact: "artifacts/stages/D1_B0_20260728T160012Z_8862125/D1/acceptance.json"
+    acceptance_sha256: "f6da5ab89de1128ba157916ea7015e7bfb95d75c465e44ff5d68e65d6f824c05"
+    gate_evidence:
+      - predicate: "canonical_snapshot_exact_recomputation_passed"
+        status: PASS
+        evidence: "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/audit/snapshot_validation_001"
+      - predicate: "failed_freeze_attempts_retained_with_evidence"
+        status: PASS
+        evidence: "snapshot_freeze_001 and snapshot_freeze_002 remain FAILED_WITH_EVIDENCE; snapshot_freeze_003 is COMMAND_COMPLETED"
+      - predicate: "published_remote_ref_contains_commit"
+        status: PASS
+        evidence: "refs/heads/d1-b0-utr-v2-20260729"
+    known_blockers: []
+    phase_gate: true
+    snapshot_artifact: "data/d1/manifests/d1_canonical_snapshot.json"
+    snapshot_sha256: "d9f82bf0fa249b533fc97993015ebe3f8a81016c855da6c9e89437d0204eebcd"
+    commit_sha: "a674912f4667bb0b88e244b2836599fef4bdba2c"
+    report: "FROZEN_D1_STRUCTURAL_DATA_ONLY_NO_SCIENTIFIC_RESULT_CLAIM"
+
+  - task_id: B0-01
+    phase_id: B0
+    status: REGISTERED
+    hypotheses: [H1, H2, H3, H4, H5, H6, H7, H8]
+    dependencies: [D1-08]
+    dependency_gates: [D1-08:FROZEN]
+    scientific_service: "Freeze canonical 5′UTR/3′UTR record, edit-script, and generation-task schemas for all three benchmark tracks."
+    forbidden_actions:
+      - "start B0 execution before D1-08:FROZEN"
+      - "admit records that collapse source and candidate or omit provenance"
+      - "allow final-label values into candidate-selection records"
+    inputs:
+      - "data/d1/manifests/d1_canonical_snapshot.json"
+      - "frozen D1 canonical records"
+    resource_labels: [CPU_LIGHT, MUTATES_CODE]
+    conflict_keys: [b0_canonical_schemas]
+    allowed_parallel_tasks: []
+    files:
+      - "schemas/utr_edit_record.schema.json"
+      - "schemas/edit_script.schema.json"
+      - "schemas/generation_task.schema.json"
+      - "tests/test_utr_edit_schemas_v2.py"
+    commands:
+      - "pytest -q tests/test_utr_edit_schemas_v2.py"
+    outputs:
+      - "strict canonical schemas for UTR records, dynamic edit scripts, and generation tasks"
+    acceptance:
+      - "all frozen D1 records validate and invalid region, endpoint collapse, fake observed path, invalid action, missing provenance, or label-bearing candidate records fail closed"
+    repair_loop:
+      - "preserve rejected fixtures, correct the schema or upstream canonical record, and rerun without weakening provenance or label isolation"
+    evidence_class: FULL_SCOPE_BENCHMARK
+    completion_policy: MUST_PASS_ALL
+    acceptance_artifact: null
+    acceptance_sha256: null
+    gate_evidence: []
+    known_blockers:
+      - "D1-08:FROZEN dependency gate has not passed"
+    phase_gate: false
+    commit_sha: null
+    report: null
+
+  - task_id: B0-02
+    phase_id: B0
+    status: REGISTERED
+    hypotheses: [H1, H2, H3, H4, H5, H6, H7, H8]
+    dependencies: [B0-01]
+    dependency_gates: [B0-01:VERIFIED]
+    scientific_service: "Generate the five preregistered, deterministic, label-independent 5′UTR/3′UTR/cross-region split manifests."
+    forbidden_actions:
+      - "inspect final labels while assigning records or selecting a split version"
+      - "replace an infeasible required fold or stratum with random pairs or a post-hoc subset"
+      - "silently ignore source, state, path, cluster, scaffold, gene, study, context, barcode, or library-batch overlap"
+    inputs:
+      - "frozen D1 canonical snapshot"
+      - "B0 canonical schemas"
+    resource_labels: [CPU_HEAVY, IO_HEAVY, MUTATES_DATA]
+    conflict_keys: [b0_split_manifests]
+    allowed_parallel_tasks: []
+    files:
+      - "data/utr_benchmark_v2/split_graph.py"
+      - "scripts/data/build_b0_splits.py"
+      - "splits/5utr_source_disjoint.json"
+      - "splits/5utr_study_disjoint.json"
+      - "splits/3utr_source_disjoint.json"
+      - "splits/3utr_study_disjoint.json"
+      - "splits/cross_region_transfer.json"
+      - "splits/split_registry_v2.yaml"
+      - "tests/test_b0_split_manifests_v2.py"
+    commands:
+      - "full-scope deterministic B0 split build"
+      - "pytest -q tests/test_b0_split_manifests_v2.py"
+    outputs:
+      - "five immutable split manifests and one hash-bound split registry"
+    acceptance:
+      - "assignment is deterministic and label-independent, source/candidate/intermediate components are atomic, and every required fold or stratum is present or fail-closed"
+      - "each manifest binds the same frozen canonical and structural record universe"
+    repair_loop:
+      - "preserve the failed manifest attempt, correct the narrowest grouping or provenance defect, and rebuild without changing the preregistered estimand"
+    evidence_class: FULL_SCOPE_BENCHMARK
+    completion_policy: MUST_PASS_ALL
+    acceptance_artifact: null
+    acceptance_sha256: null
+    gate_evidence: []
+    known_blockers:
+      - "D1-08:FROZEN dependency gate has not passed"
+      - "B0-01:VERIFIED dependency gate has not passed"
+    phase_gate: false
+    commit_sha: null
+    report: null
+
+  - task_id: B0-03
+    phase_id: B0
+    status: REGISTERED
+    hypotheses: [H1, H2, H3, H4, H5, H6, H7, H8]
+    dependencies: [B0-01, B0-02]
+    dependency_gates: [B0-01:VERIFIED, B0-02:VERIFIED]
+    scientific_service: "Audit every contract leakage axis and foundation-pretraining exposure against the frozen split universe."
+    forbidden_actions:
+      - "report only exact-sequence overlap while omitting path, grouping, or exposure axes"
+      - "describe UNKNOWN_PENDING_FM0 foundation exposure as unseen or no-overlap"
+      - "hide unexplained overlap or final-endpoint-as-intermediate failures"
+    inputs:
+      - "five frozen B0 split manifests"
+      - "splits/split_registry_v2.yaml"
+      - "data/data_exposure_ledger.jsonl"
+    resource_labels: [CPU_HEAVY, IO_HEAVY, MUTATES_DATA]
+    conflict_keys: [b0_leakage_audit]
+    allowed_parallel_tasks: []
+    files:
+      - "data/utr_benchmark_v2/leakage.py"
+      - "scripts/data/audit_b0_leakage.py"
+      - "evaluation/leakage_audit_v2.json"
+      - "evaluation/foundation_pretraining_overlap_audit.json"
+      - "tests/test_b0_leakage_v2.py"
+    commands:
+      - "full-scope B0 leakage and exposure audit"
+      - "pytest -q tests/test_b0_leakage_v2.py"
+    outputs:
+      - "content-hash-bound leakage evidence for every fold, stratum, and required axis"
+    acceptance:
+      - "exact source/candidate overlap, reverse edge/path leakage, and final endpoint as train intermediate are zero"
+      - "all grouping axes are explicit, exposure coverage is 100%, and foundation overlap remains UNKNOWN_PENDING_FM0 with no allowed unseen claim"
+    repair_loop:
+      - "retain failed leakage evidence, repair the responsible split or metadata mapping, and rerun every axis without reclassifying unexplained overlap"
+    evidence_class: FULL_SCOPE_BENCHMARK
+    completion_policy: MUST_PASS_ALL
+    acceptance_artifact: null
+    acceptance_sha256: null
+    gate_evidence: []
+    known_blockers:
+      - "D1-08:FROZEN dependency gate has not passed"
+      - "B0-01:VERIFIED and B0-02:VERIFIED dependency gates have not passed"
+    phase_gate: false
+    commit_sha: null
+    report: null
+
+  - task_id: B0-04
+    phase_id: B0
+    status: REGISTERED
+    hypotheses: [H1, H2, H3, H4, H5, H6, H7, H8]
+    dependencies: [B0-01, B0-02, B0-03]
+    dependency_gates: [B0-01:VERIFIED, B0-02:VERIFIED, B0-03:VERIFIED]
+    scientific_service: "Freeze unambiguous Track A/B/C roles and label-safe loaders over the same accepted benchmark universe."
+    forbidden_actions:
+      - "expose Track A final-label values to selection or ordinary loaders"
+      - "claim measured functional improvement for Track B"
+      - "present Track C computational or predicted outcomes as measured evidence"
+      - "assign one record to ambiguous track roles"
+    inputs:
+      - "frozen B0 schemas, split manifests, and leakage evidence"
+      - "frozen D1 exposure ledger and candidate-only/final-label store bindings"
+    resource_labels: [CPU_LIGHT, IO_HEAVY, MUTATES_CODE, MUTATES_DATA]
+    conflict_keys: [b0_evaluation_tracks, b0_hidden_labels]
+    allowed_parallel_tasks: []
+    files:
+      - "data/utr_benchmark_v2/track_loader.py"
+      - "scripts/data/build_b0_evaluation_artifacts.py"
+      - "schemas/track_a_hidden_label.schema.json"
+      - "evaluation/tracks/closed_measured_pool.yaml"
+      - "evaluation/tracks/heldout_generative.yaml"
+      - "evaluation/tracks/open_legal_generation.yaml"
+      - "evaluation/tracks/track_role_matrix.yaml"
+      - "tests/test_b0_tracks_and_acceptance_v2.py"
+    commands:
+      - "full-scope Track A/B/C and role-matrix build"
+      - "pytest -q tests/test_b0_tracks_and_acceptance_v2.py"
+    outputs:
+      - "three frozen evaluation-track manifests, one role matrix, and label-safe loaders"
+    acceptance:
+      - "Track A freezes candidate IDs and label-store bindings without exposing final-label values to selection"
+      - "GSE246381 is retrospective only, Track B has no measured-improvement claim, Track C is computational or predicted, and every record has one role"
+    repair_loop:
+      - "retain the failed track attempt, correct role or binding logic, and regenerate all tracks against the same frozen universe"
+    evidence_class: FULL_SCOPE_BENCHMARK
+    completion_policy: MUST_PASS_ALL
+    acceptance_artifact: null
+    acceptance_sha256: null
+    gate_evidence: []
+    known_blockers:
+      - "D1-08:FROZEN dependency gate has not passed"
+      - "B0-01:VERIFIED through B0-03:VERIFIED dependency gates have not passed"
+    phase_gate: false
+    commit_sha: null
+    report: null
+
+  - task_id: B0-05
+    phase_id: B0
+    status: REGISTERED
+    hypotheses: [H1, H2, H3, H4, H5, H6, H7, H8]
+    dependencies: [B0-01, B0-02, B0-03, B0-04]
+    dependency_gates: [B0-01:VERIFIED, B0-02:VERIFIED, B0-03:VERIFIED, B0-04:VERIFIED]
+    scientific_service: "Publish the full Data Card and freeze B0 only after strict semantic acceptance of schemas, splits, leakage, exposure, and Track A/B/C."
+    forbidden_actions:
+      - "freeze B0 with any nonzero hard counter, unresolved blocker, missing artifact, or ambiguous role"
+      - "close the phase with smoke, fixture, proxy, training-set, or prose-only evidence"
+      - "present benchmark acceptance as Edit Flow efficacy or a final scientific conclusion"
+    inputs:
+      - "all accepted B0 schemas, split manifests, leakage evidence, exposure bindings, and track manifests"
+    resource_labels: [CPU_LIGHT, IO_HEAVY, MUTATES_DATA]
+    conflict_keys: [b0_acceptance, b0_data_card, b0_frozen_snapshot]
+    allowed_parallel_tasks: []
+    files:
+      - "docs/data/UTR_EditBench_v2_Data_Card.md"
+      - "scripts/data/validate_b0_acceptance.py"
+      - "artifacts/stages/D1_B0_20260728T160012Z_8862125/B0/acceptance.json"
+      - "tests/test_b0_tracks_and_acceptance_v2.py"
+    commands:
+      - "full-scope B0 semantic acceptance"
+      - "freeze B0 only after every required predicate passes"
+    outputs:
+      - "hash-bound Data Card and B0:FROZEN phase gate"
+    acceptance:
+      - "unexplained_overlap=0, reverse_path_leakage=0, final_endpoint_as_train_intermediate=0, exposure_ledger_coverage=100%, and track_role_ambiguity=0"
+      - "acceptance is full-scope, hash-bound, blocker-free, commit-bound, and published before B0:FROZEN"
+    repair_loop:
+      - "remain SAFE_PAUSED, retain failed evidence, return to the narrowest failed B0 task, and never change the frozen metric or gate"
+    evidence_class: FULL_SCOPE_BENCHMARK
+    completion_policy: MUST_PASS_ALL
+    acceptance_artifact: null
+    acceptance_sha256: null
+    gate_evidence: []
+    known_blockers:
+      - "D1-08:FROZEN dependency gate has not passed"
+      - "B0-01:VERIFIED through B0-04:VERIFIED dependency gates have not passed"
+    phase_gate: true
+    commit_sha: null
+    report: null
