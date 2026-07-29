@@ -1,0 +1,35 @@
+{
+  "diagnostic_safety_limits": {
+    "chunk_size": 50000,
+    "heartbeat_seconds": 300,
+    "max_dag_cells_per_record": 1000000,
+    "max_neighbor_expansions_per_record": 10000000,
+    "max_open_chunks": 128,
+    "max_reachable_states_per_record": 150000,
+    "max_rss_bytes": 68719476736,
+    "max_spill_bytes": 200000000000,
+    "max_spill_bytes_per_record": 20000000000,
+    "max_state_dp_cells_per_record": 100000000,
+    "max_wall_seconds": 86400,
+    "minimum_free_bytes": 107374182400
+  },
+  "frozen_b0_limits": {
+    "max_block_postings": 600000,
+    "max_candidate_pairs": 1000000,
+    "max_dag_cells": 1000000,
+    "max_exact_dp_cells": 100000000,
+    "max_neighbor_expansions": 5000000,
+    "max_reachable_states": 50000,
+    "max_sequences": 100000,
+    "max_state_dp_cells": 50000000,
+    "max_substring_probes": 50000000
+  },
+  "schema_version": "b0_capacity_config.v1",
+  "selection": {
+    "minimum_edit_distance": 2,
+    "regions": [
+      "five_utr",
+      "three_utr"
+    ]
+  }
+}
