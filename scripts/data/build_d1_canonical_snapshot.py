@@ -54,6 +54,7 @@ CODE_PATHS = (
     "scripts/data/validate_d1_acceptance.py",
     "scripts/data/build_d1_canonical_snapshot.py",
     "scripts/data/validate_d1_canonical_snapshot.py",
+    "scripts/execution/acceptance_semantics.py",
     "scripts/execution/validate_registry.py",
     "data/utr_benchmark_v2/d1_builder.py",
     "data/utr_benchmark_v2/d1_artifacts.py",
@@ -95,6 +96,17 @@ def _load_json(path: Path) -> dict[str, Any]:
     if not isinstance(value, dict):
         raise ValueError(f"JSON object required: {path}")
     return value
+
+
+def _json_exact(left: Any, right: Any) -> bool:
+    """Compare parsed JSON values without Python bool/int equality coercion."""
+
+    options = {
+        "ensure_ascii": False,
+        "separators": (",", ":"),
+        "sort_keys": True,
+    }
+    return json.dumps(left, **options) == json.dumps(right, **options)
 
 
 def _safe_stage_child(stage_root: Path, relative: str) -> Path:
@@ -246,7 +258,18 @@ def build_snapshot_payload(
     datasets = []
     for dataset_id in sorted(EXPECTED_SCOPE):
         result = dataset_results[dataset_id]
-        binding = summaries[dataset_id]["manifest"]
+        summary = summaries[dataset_id]
+        if not isinstance(result.get("status"), str) or summary.get(
+            "status"
+        ) != result.get("status"):
+            raise ValueError(f"acceptance/build manifest status mismatch: {dataset_id}")
+        if not isinstance(result.get("paper_eligible"), bool) or summary.get(
+            "paper_eligible"
+        ) is not result.get("paper_eligible"):
+            raise ValueError(
+                f"acceptance/build manifest paper_eligible mismatch: {dataset_id}"
+            )
+        binding = summary["manifest"]
         manifest_path = _safe_stage_child(stage_root, str(binding["path"]))
         manifest = _load_json(manifest_path)
         if _file_ref(manifest_path) != {
@@ -255,6 +278,45 @@ def build_snapshot_payload(
             "sha256": binding["sha256"],
         }:
             raise ValueError(f"stale dataset manifest binding: {dataset_id}")
+        if manifest.get("status") != result.get("status"):
+            raise ValueError(
+                f"acceptance/dataset manifest status mismatch: {dataset_id}"
+            )
+        if manifest.get("paper_eligible") is not result.get("paper_eligible"):
+            raise ValueError(
+                f"acceptance/dataset manifest paper_eligible mismatch: {dataset_id}"
+            )
+        provenance_checks = [
+            check
+            for check in result.get("checks", [])
+            if (
+                isinstance(check, Mapping)
+                and check.get("name") == "production_input_provenance_complete"
+            )
+        ]
+        if len(provenance_checks) != 1:
+            raise ValueError(
+                f"acceptance production provenance inventory mismatch: {dataset_id}"
+            )
+        acceptance_raw_files = (
+            provenance_checks[0].get("detail", {}).get("audit", {}).get("raw_files")
+        )
+        manifest_raw_files = (
+            manifest.get("input_provenance", {})
+            .get("provenance_audit", {})
+            .get("raw_files")
+        )
+        if not _json_exact(acceptance_raw_files, manifest_raw_files):
+            raise ValueError(
+                f"acceptance/dataset manifest raw_files mismatch: {dataset_id}"
+            )
+        if result["status"] == "accepted":
+            if not isinstance(acceptance_raw_files, list) or not acceptance_raw_files:
+                raise ValueError(
+                    f"accepted dataset has no bound raw_files: {dataset_id}"
+                )
+        elif acceptance_raw_files != [] or manifest_raw_files != []:
+            raise ValueError(f"blocked dataset binds non-empty raw_files: {dataset_id}")
         outputs = {
             name: _file_ref(
                 _safe_stage_child(manifest_path.parent, str(output["path"]))
@@ -271,8 +333,8 @@ def build_snapshot_payload(
             {
                 "dataset_id": dataset_id,
                 "status": result["status"],
-                "paper_eligible": bool(result["paper_eligible"]),
-                "fixture_mode": bool(result["fixture_mode"]),
+                "paper_eligible": result["paper_eligible"],
+                "fixture_mode": result["fixture_mode"],
                 "counts": dict(result["counts"]),
                 "manifest": _file_ref(manifest_path),
                 "outputs": outputs,

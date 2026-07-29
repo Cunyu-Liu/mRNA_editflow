@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import hashlib
 import json
 import subprocess
@@ -7,6 +8,7 @@ from pathlib import Path
 
 import pytest
 
+import scripts.data.build_d1_canonical_snapshot as snapshot_builder
 from scripts.data.build_d1_canonical_snapshot import (
     CODE_PATHS,
     EXPECTED_SCOPE,
@@ -58,14 +60,32 @@ def _snapshot_fixture(tmp_path: Path) -> tuple[Path, Path, str, Path]:
 
     stage_root = tmp_path / "external-stage" / "D1"
     stage_root.mkdir(parents=True)
+    acceptance = valid_d1_acceptance(stage_root)
+    acceptance_results = {
+        item["dataset_id"]: item for item in acceptance["dataset_results"]
+    }
     dataset_summaries = []
     for dataset_id in sorted(EXPECTED_SCOPE):
+        acceptance_result = acceptance_results[dataset_id]
+        provenance_check = next(
+            check
+            for check in acceptance_result["checks"]
+            if check["name"] == "production_input_provenance_complete"
+        )
+        raw_files = copy.deepcopy(provenance_check["detail"]["audit"]["raw_files"])
         dataset_root = stage_root / "datasets" / dataset_id
         dataset_root.mkdir(parents=True)
         output = dataset_root / "paper_clean.jsonl"
         output.write_text("", encoding="utf-8")
         manifest = {
             "dataset_id": dataset_id,
+            "status": acceptance_result["status"],
+            "paper_eligible": acceptance_result["paper_eligible"],
+            "input_provenance": {
+                "provenance_audit": {
+                    "raw_files": raw_files,
+                }
+            },
             "outputs": {
                 "paper_clean": {
                     "path": output.name,
@@ -82,6 +102,14 @@ def _snapshot_fixture(tmp_path: Path) -> tuple[Path, Path, str, Path]:
         dataset_summaries.append(
             {
                 "dataset_id": dataset_id,
+                "status": acceptance_result["status"],
+                "paper_eligible": acceptance_result["paper_eligible"],
+                "fixture_mode": False,
+                "accounting": {
+                    "total_input_rows": (
+                        1 if acceptance_result["status"] == "accepted" else 0
+                    )
+                },
                 "manifest": {
                     "path": (f"datasets/{dataset_id}/manifest.json"),
                     "bytes": manifest_path.stat().st_size,
@@ -162,7 +190,6 @@ def _snapshot_fixture(tmp_path: Path) -> tuple[Path, Path, str, Path]:
         encoding="utf-8",
     )
 
-    acceptance = valid_d1_acceptance(stage_root)
     build_manifest_path.write_text(
         json.dumps(build_manifest, sort_keys=True) + "\n",
         encoding="utf-8",
@@ -219,6 +246,218 @@ def _snapshot_fixture(tmp_path: Path) -> tuple[Path, Path, str, Path]:
 def test_snapshot_exact_recomputation_passes(tmp_path: Path) -> None:
     repo, snapshot, _, _ = _snapshot_fixture(tmp_path)
     assert validate_snapshot(snapshot, repo_root=repo) == []
+
+
+def test_snapshot_code_provenance_includes_acceptance_semantics(
+    tmp_path: Path,
+) -> None:
+    repo, snapshot, _, _ = _snapshot_fixture(tmp_path)
+    payload = json.loads(snapshot.read_text(encoding="utf-8"))
+    references = {item["path"]: item for item in payload["code_provenance"]["files"]}
+    relative = "scripts/execution/acceptance_semantics.py"
+
+    assert relative in CODE_PATHS
+    assert set(references) == set(CODE_PATHS)
+    assert references[relative] == {
+        "path": relative,
+        "bytes": (repo / relative).stat().st_size,
+        "sha256": _sha(repo / relative),
+    }
+
+
+def test_snapshot_rejects_live_acceptance_semantics_drift(
+    tmp_path: Path,
+) -> None:
+    repo, snapshot, _, _ = _snapshot_fixture(tmp_path)
+    semantics = repo / "scripts/execution/acceptance_semantics.py"
+    semantics.write_text(
+        semantics.read_text(encoding="utf-8") + "# live drift\n",
+        encoding="utf-8",
+    )
+
+    errors = validate_snapshot(snapshot, repo_root=repo)
+
+    assert any(
+        "snapshot_recompute_failure" in error and "acceptance_semantics.py" in error
+        for error in errors
+    )
+
+
+def test_snapshot_rejects_acceptance_semantics_commit_drift(
+    tmp_path: Path,
+) -> None:
+    repo, snapshot, _, _ = _snapshot_fixture(tmp_path)
+    semantics = repo / "scripts/execution/acceptance_semantics.py"
+    semantics.write_text(
+        semantics.read_text(encoding="utf-8") + "# committed drift\n",
+        encoding="utf-8",
+    )
+    _git(repo, "add", "scripts/execution/acceptance_semantics.py")
+    _git(repo, "commit", "-m", "drift semantic gate")
+    new_commit = _git(repo, "rev-parse", "HEAD")
+    payload = json.loads(snapshot.read_text(encoding="utf-8"))
+    payload["code_provenance"]["code_commit_sha"] = new_commit
+    snapshot.write_text(
+        json.dumps(payload, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+
+    errors = validate_snapshot(snapshot, repo_root=repo)
+
+    assert "snapshot_differs_from_exact_live_recomputation" in errors
+
+
+@pytest.mark.parametrize(
+    ("mutation", "needle"),
+    [
+        ("delete_provenance", "missing the required production provenance check"),
+        ("promote_blocked", "was promoted from the frozen disposition"),
+    ],
+)
+def test_snapshot_builder_and_validator_reject_d1_semantic_mutations(
+    tmp_path: Path,
+    mutation: str,
+    needle: str,
+) -> None:
+    repo, snapshot, code_commit, _ = _snapshot_fixture(tmp_path)
+    frozen = json.loads(snapshot.read_text(encoding="utf-8"))
+    acceptance_path = repo / frozen["acceptance"]["path"]
+    acceptance = json.loads(acceptance_path.read_text(encoding="utf-8"))
+    if mutation == "delete_provenance":
+        result = acceptance["dataset_results"][0]
+        result["checks"] = [
+            check
+            for check in result["checks"]
+            if check["name"] != "production_input_provenance_complete"
+        ]
+    else:
+        result = next(
+            item
+            for item in acceptance["dataset_results"]
+            if item["status"] == "blocked"
+        )
+        result["status"] = "accepted"
+        result["paper_eligible"] = True
+    acceptance_path.write_text(
+        json.dumps(acceptance, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match=needle):
+        build_snapshot_payload(
+            acceptance_path=acceptance_path,
+            repo_root=repo,
+            code_commit=code_commit,
+        )
+    errors = validate_snapshot(snapshot, repo_root=repo)
+    assert any(
+        "snapshot_recompute_failure" in error and needle in error for error in errors
+    )
+
+
+def test_snapshot_rejects_promotion_against_bound_build_manifest_if_semantics_bypassed(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    repo, snapshot, code_commit, _ = _snapshot_fixture(tmp_path)
+    frozen = json.loads(snapshot.read_text(encoding="utf-8"))
+    acceptance_path = repo / frozen["acceptance"]["path"]
+    acceptance = json.loads(acceptance_path.read_text(encoding="utf-8"))
+    result = next(
+        item for item in acceptance["dataset_results"] if item["status"] == "blocked"
+    )
+    result["status"] = "accepted"
+    result["paper_eligible"] = True
+    acceptance_path.write_text(
+        json.dumps(acceptance, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        snapshot_builder,
+        "validate_phase_acceptance",
+        lambda *_args, **_kwargs: [],
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="acceptance/build manifest status mismatch",
+    ):
+        build_snapshot_payload(
+            acceptance_path=acceptance_path,
+            repo_root=repo,
+            code_commit=code_commit,
+        )
+
+
+def test_snapshot_rejects_paper_eligibility_drift_if_semantics_bypassed(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    repo, snapshot, code_commit, _ = _snapshot_fixture(tmp_path)
+    frozen = json.loads(snapshot.read_text(encoding="utf-8"))
+    acceptance_path = repo / frozen["acceptance"]["path"]
+    acceptance = json.loads(acceptance_path.read_text(encoding="utf-8"))
+    result = next(
+        item for item in acceptance["dataset_results"] if item["status"] == "accepted"
+    )
+    result["paper_eligible"] = False
+    acceptance_path.write_text(
+        json.dumps(acceptance, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        snapshot_builder,
+        "validate_phase_acceptance",
+        lambda *_args, **_kwargs: [],
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="acceptance/build manifest paper_eligible mismatch",
+    ):
+        build_snapshot_payload(
+            acceptance_path=acceptance_path,
+            repo_root=repo,
+            code_commit=code_commit,
+        )
+
+
+def test_snapshot_builder_and_validator_reject_raw_file_binding_tamper(
+    tmp_path: Path,
+) -> None:
+    repo, snapshot, code_commit, _ = _snapshot_fixture(tmp_path)
+    frozen = json.loads(snapshot.read_text(encoding="utf-8"))
+    acceptance_path = repo / frozen["acceptance"]["path"]
+    acceptance = json.loads(acceptance_path.read_text(encoding="utf-8"))
+    result = next(
+        item for item in acceptance["dataset_results"] if item["status"] == "accepted"
+    )
+    provenance_check = next(
+        check
+        for check in result["checks"]
+        if check["name"] == "production_input_provenance_complete"
+    )
+    provenance_check["detail"]["audit"]["raw_files"][0]["sha256"] = "f" * 64
+    acceptance_path.write_text(
+        json.dumps(acceptance, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="acceptance/dataset manifest raw_files mismatch",
+    ):
+        build_snapshot_payload(
+            acceptance_path=acceptance_path,
+            repo_root=repo,
+            code_commit=code_commit,
+        )
+    errors = validate_snapshot(snapshot, repo_root=repo)
+    assert any(
+        "snapshot_recompute_failure" in error
+        and "acceptance/dataset manifest raw_files mismatch" in error
+        for error in errors
+    )
 
 
 def test_snapshot_rejects_live_external_artifact_replacement(

@@ -1591,7 +1591,8 @@ def validate_b0_acceptance(
     if not strict_foundation:
         failed.append("foundation_state_must_remain_unknown_pending_fm0")
     if (
-        exposure_audit.get("coverage") != 1.0
+        type(exposure_audit.get("coverage")) is not float
+        or exposure_audit.get("coverage") != 1.0
         or exposure_audit.get("gate_passed") is not True
         or exposure_audit.get("identity_level") not in ("record_id", "dataset_id")
     ):
@@ -1605,7 +1606,8 @@ def validate_b0_acceptance(
     ):
         failed.append("d1_exposure_ledger_exact_binding")
     if (
-        track_audit.get("track_role_ambiguity_count") != 0
+        type(track_audit.get("track_role_ambiguity_count")) is not int
+        or track_audit.get("track_role_ambiguity_count") != 0
         or track_audit.get("gate_passed") is not True
     ):
         failed.append("track_role_ambiguity_zero")
@@ -1628,11 +1630,16 @@ def validate_b0_acceptance(
         and all(isinstance(row, Mapping) for row in track_rows)
         else set()
     )
-    if track_audit.get("track_count") != 3 or observed_track_types != {
-        "closed_measured_pool",
-        "heldout_generative",
-        "open_legal_generation",
-    }:
+    if (
+        type(track_audit.get("track_count")) is not int
+        or track_audit.get("track_count") != 3
+        or observed_track_types
+        != {
+            "closed_measured_pool",
+            "heldout_generative",
+            "open_legal_generation",
+        }
+    ):
         failed.append("exact_three_tracks_present")
     track_c_rows = (
         [
