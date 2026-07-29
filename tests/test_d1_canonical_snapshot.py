@@ -18,6 +18,7 @@ from scripts.data.build_d1_canonical_snapshot import (
     _stage_id_from_acceptance_path,
     _validate_stage_control_content,
     build_snapshot_payload,
+    validate_payload_schema,
     write_json_exclusive,
 )
 from scripts.data.validate_d1_canonical_snapshot import validate_snapshot
@@ -256,7 +257,10 @@ def _snapshot_fixture(tmp_path: Path) -> tuple[Path, Path, str, Path]:
                 "legacy_inference_used": False,
             },
             "prelaunch_bindings": {
-                name: {"passed": True, "source": "captured_head_blob"}
+                name: {
+                    "passed": True,
+                    "source": "explicit_prelaunch_file_manifest",
+                }
                 for name in ("config", "scope", "input_inventory")
             },
         }
@@ -274,6 +278,7 @@ def _snapshot_fixture(tmp_path: Path) -> tuple[Path, Path, str, Path]:
         code_commit=code_commit,
         generated_at_utc="2026-07-29T01:00:00+00:00",
     )
+    validate_payload_schema(payload)
     write_json_exclusive(snapshot_path, payload)
     return repo, snapshot_path, code_commit, stage_root
 
@@ -287,6 +292,10 @@ def test_snapshot_exact_recomputation_passes(tmp_path: Path) -> None:
         "artifacts/stages/"
         "D1_B0_20260728T160012Z_8862125/D1/input_inventory.json"
     )
+    assert {
+        item["prelaunch_binding_source"]
+        for item in payload["control_files"].values()
+    } == {"explicit_prelaunch_file_manifest"}
 
 
 def test_snapshot_stage_id_is_derived_from_canonical_acceptance_path(
