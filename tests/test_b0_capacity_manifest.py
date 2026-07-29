@@ -16,12 +16,13 @@ from scripts.data.diagnose_b0_path_capacity import _artifact_ref
 from scripts.data.diagnose_b0_path_capacity import _canonical_sha256
 from scripts.data.diagnose_b0_path_capacity import _checksum_index
 from scripts.data.diagnose_b0_path_capacity import _code_files
+from scripts.data.diagnose_b0_path_capacity import _runtime_manifest
 from scripts.data.diagnose_b0_path_capacity import _record_ids_sha256
 from scripts.data.diagnose_b0_path_capacity import _render_replay_script
+from scripts.data.diagnose_b0_path_capacity import _validated_python_launcher
 from scripts.data.diagnose_b0_path_capacity import _validate_bundle
 from scripts.data.diagnose_b0_path_capacity import _validate_verified_marker
 from scripts.data.diagnose_b0_path_capacity import _verified_marker_payload
-from scripts.data.diagnose_b0_path_capacity import RESOURCE_LIMIT_SCOPE
 from scripts.data.diagnose_b0_path_capacity import STREAM_CAPTURE_SCOPE
 
 
@@ -739,7 +740,7 @@ def _bundle_fixture(tmp_path: Path) -> tuple[Path, dict]:
     config_path = ROOT / "configs/b0_capacity_diagnostic_v1.json"
     contract_path = ROOT / "docs/contracts/mrna_latest_build_contract_v2.md"
     config = json.loads(config_path.read_text(encoding="utf-8"))
-    launcher = Path(sys.executable).resolve(strict=True)
+    launcher = _validated_python_launcher(sys.executable)
     entrypoint = (ROOT / "scripts/data/diagnose_b0_path_capacity.py").resolve(
         strict=True
     )
@@ -749,19 +750,15 @@ def _bundle_fixture(tmp_path: Path) -> tuple[Path, dict]:
     (run_root / "logs/events.jsonl").write_text("{}\n", encoding="utf-8")
     (run_root / "logs/system_metrics.jsonl").write_text("{}\n", encoding="utf-8")
     _write_json(run_root / "resolved_config.json", config)
-    launcher_binding = {
-        "path": str(launcher),
-        "bytes": launcher.stat().st_size,
-        "sha256": hashlib.sha256(launcher.read_bytes()).hexdigest(),
-    }
+    runtime_manifest = _runtime_manifest(
+        launcher=launcher,
+        entrypoint=entrypoint,
+        project_root=ROOT,
+    )
+    launcher_binding = runtime_manifest["python_launcher"]
     _write_json(
         run_root / "provenance/runtime_manifest.json",
-        {
-            "executable": launcher_binding["path"],
-            "executable_bytes": launcher_binding["bytes"],
-            "executable_sha256": launcher_binding["sha256"],
-            "resource_limit_scope": RESOURCE_LIMIT_SCOPE,
-        },
+        runtime_manifest,
     )
     _write_json(
         run_root / "provenance/python_launcher.json",
@@ -894,6 +891,8 @@ def _bundle_fixture(tmp_path: Path) -> tuple[Path, dict]:
     parent_diagnostic_id = "B0_capacity_20260729T140000Z_2e58254"
     exact_argv = [
         str(launcher),
+        "-I",
+        "-B",
         str(entrypoint),
         "--config",
         str(config_path),
@@ -1580,6 +1579,65 @@ def test_replay_script_cannot_be_replaced_by_an_arbitrary_command(
     _seal_test_bundle(run_root, manifest)
 
     with pytest.raises(CapacityDiagnosticError, match="exact rendering"):
+        _validate_bundle(run_root=run_root, schema_path=SCHEMA_PATH)
+
+
+def test_resealed_exact_argv_cannot_drop_isolated_python_flags(
+    tmp_path: Path,
+) -> None:
+    run_root, manifest = _bundle_fixture(tmp_path)
+    exact_argv = list(manifest["provenance"]["exact_argv"])
+    exact_argv.remove("-B")
+    manifest["provenance"]["exact_argv"] = exact_argv
+    manifest["provenance"]["exact_argv_sha256"] = _canonical_sha256(exact_argv)
+    command_path = run_root / "command.json"
+    command = json.loads(command_path.read_text(encoding="utf-8"))
+    command["exact_argv"] = exact_argv
+    command["exact_argv_sha256"] = _canonical_sha256(exact_argv)
+    _write_json(command_path, command)
+    _seal_test_bundle(run_root, manifest)
+
+    with pytest.raises(CapacityDiagnosticError, match="isolated Python flags"):
+        _validate_bundle(run_root=run_root, schema_path=SCHEMA_PATH)
+
+
+def test_resealed_runtime_probe_observation_requires_live_reexecution(
+    tmp_path: Path,
+) -> None:
+    run_root, manifest = _bundle_fixture(tmp_path)
+    runtime_path = run_root / "provenance/runtime_manifest.json"
+    runtime = json.loads(runtime_path.read_text(encoding="utf-8"))
+    runtime["live_probe"]["identity"]["sys_prefix"] = "/forged/runtime"
+    _write_json(runtime_path, runtime)
+    manifest["provenance"]["runtime_manifest"] = _artifact_ref(
+        runtime_path,
+        root=run_root,
+    )
+    _seal_test_bundle(run_root, manifest)
+
+    with pytest.raises(CapacityDiagnosticError, match="runtime binding"):
+        _validate_bundle(run_root=run_root, schema_path=SCHEMA_PATH)
+
+
+def test_resealed_runtime_probe_rejects_boolean_date_time_counts(
+    tmp_path: Path,
+) -> None:
+    run_root, manifest = _bundle_fixture(tmp_path)
+    runtime_path = run_root / "provenance/runtime_manifest.json"
+    runtime = json.loads(runtime_path.read_text(encoding="utf-8"))
+    runtime["live_probe"]["identity"]["date_time_format_probe"] = {
+        "2026-07-29T22:00:00Z": False,
+        "not-a-date": True,
+        "2026-99-99": True,
+    }
+    _write_json(runtime_path, runtime)
+    manifest["provenance"]["runtime_manifest"] = _artifact_ref(
+        runtime_path,
+        root=run_root,
+    )
+    _seal_test_bundle(run_root, manifest)
+
+    with pytest.raises(CapacityDiagnosticError, match="runtime binding"):
         _validate_bundle(run_root=run_root, schema_path=SCHEMA_PATH)
 
 

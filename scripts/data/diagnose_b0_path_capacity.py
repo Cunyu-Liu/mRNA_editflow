@@ -12,10 +12,8 @@ from __future__ import annotations
 import argparse
 import hashlib
 import heapq
-import importlib.metadata
 import json
 import os
-import platform
 import re
 import resource
 import shlex
@@ -77,6 +75,22 @@ STREAM_CAPTURE_SCOPE = (
     "POST_RUN_ROOT_CREATION_THROUGH_TERMINAL_COMPUTE_EVENT;"
     "SEAL_FAILURES_FAIL_CLOSED_WITHOUT_VERIFIED_MARKER"
 )
+RUNTIME_PROBE_TIMEOUT_SECONDS = 60
+REPLAY_ENVIRONMENT = {
+    "LANG": "C",
+    "LC_ALL": "C",
+    "PATH": "/usr/bin:/bin",
+}
+PYTHON_ENVIRONMENT_VARIABLES = frozenset(
+    {
+        "PYTHONHOME",
+        "PYTHONPATH",
+        "PYTHONSTARTUP",
+        "PYTHONUSERBASE",
+        "PYTHONINSPECT",
+    }
+)
+FORBIDDEN_RUNTIME_ROOT = Path("/home/cunyuliu")
 WITNESS_RECORD_ID = "GSE217518:record:025e56d3b64660abb559dcbd"
 WITNESS_CANONICAL_JSONL_LINE = 39_913
 WITNESS_SOURCE = (
@@ -1364,18 +1378,505 @@ def _verify_witness(
         )
 
 
-def _runtime_manifest() -> dict[str, Any]:
-    executable = Path(sys.executable).resolve(strict=True)
+def _validated_python_launcher(raw: str | None = None) -> Path:
+    rendered = sys.executable if raw is None else raw
+    if not isinstance(rendered, str) or not rendered:
+        raise CapacityDiagnosticError("Python invocation launcher is empty")
+    launcher = Path(rendered)
+    if (
+        not launcher.is_absolute()
+        or str(launcher) != rendered
+        or ".." in launcher.parts
+    ):
+        raise CapacityDiagnosticError(
+            "Python invocation launcher must be an absolute lexical path"
+        )
+    try:
+        launcher.lstat()
+    except OSError as error:
+        raise CapacityDiagnosticError(
+            "Python invocation launcher does not exist"
+        ) from error
+    if not launcher.exists() or not launcher.is_file():
+        raise CapacityDiagnosticError(
+            "Python invocation launcher is broken or is not a file"
+        )
+    if not os.access(launcher, os.X_OK):
+        raise CapacityDiagnosticError("Python invocation launcher is not executable")
+    return launcher
+
+
+def _python_launcher_binding(launcher: Path) -> dict[str, Any]:
+    launcher = _validated_python_launcher(str(launcher))
+    resolved = launcher.resolve(strict=True)
+    if not resolved.is_file():
+        raise CapacityDiagnosticError(
+            "resolved Python invocation launcher is not a file"
+        )
+    with resolved.open("rb") as handle:
+        magic = handle.read(4)
+    if magic == b"\x7fELF":
+        executable_format = "ELF"
+    elif magic in {
+        b"\xca\xfe\xba\xbe",
+        b"\xbe\xba\xfe\xca",
+        b"\xce\xfa\xed\xfe",
+        b"\xcf\xfa\xed\xfe",
+        b"\xfe\xed\xfa\xce",
+        b"\xfe\xed\xfa\xcf",
+    }:
+        executable_format = "MACH_O"
+    else:
+        raise CapacityDiagnosticError(
+            "resolved Python invocation launcher is not a native executable"
+        )
+    metadata = launcher.lstat()
     return {
+        "invocation_path": str(launcher),
+        "invocation_lstat_bytes": metadata.st_size,
+        "invocation_mode": f"{metadata.st_mode & 0o7777:04o}",
+        "invocation_is_symlink": launcher.is_symlink(),
+        "invocation_symlink_target": (
+            os.readlink(launcher) if launcher.is_symlink() else None
+        ),
+        "resolved_executable_path": str(resolved),
+        "resolved_executable_format": executable_format,
+        "resolved_executable_bytes": resolved.stat().st_size,
+        "resolved_executable_sha256": _sha256_file(resolved),
+    }
+
+
+def _probe_environment() -> dict[str, str]:
+    return dict(REPLAY_ENVIRONMENT)
+
+
+def _exact_python_argv(launcher: Path) -> list[str]:
+    expected = [str(launcher), "-I", "-B", *sys.argv]
+    observed = getattr(sys, "orig_argv", None)
+    if not isinstance(observed, list) or observed != expected:
+        raise CapacityDiagnosticError(
+            "diagnostic interpreter argv differs from the frozen -I -B invocation"
+        )
+    return list(observed)
+
+
+def _validate_launch_environment() -> None:
+    unexpected = sorted(
+        key for key in PYTHON_ENVIRONMENT_VARIABLES if key in os.environ
+    )
+    if unexpected:
+        raise CapacityDiagnosticError(
+            "diagnostic launch environment contains Python override variables: "
+            + ", ".join(unexpected)
+        )
+    if dict(os.environ) != REPLAY_ENVIRONMENT:
+        raise CapacityDiagnosticError(
+            "diagnostic launch environment is not the frozen replay environment"
+        )
+    if (
+        not sys.flags.isolated
+        or not sys.flags.no_user_site
+        or not sys.dont_write_bytecode
+    ):
+        raise CapacityDiagnosticError(
+            "diagnostic interpreter did not honor the frozen isolation environment"
+        )
+
+
+def _runtime_probe(
+    *,
+    launcher: Path,
+    entrypoint: Path,
+    project_root: Path,
+) -> dict[str, Any]:
+    identity_program = r"""
+import importlib.metadata
+import importlib.util
+import json
+import jsonschema
+import os
+import pathlib
+import platform
+import sys
+
+print(json.dumps({
+    "base_exec_prefix": sys.base_exec_prefix,
+    "cache_tag": sys.implementation.cache_tag,
+    "date_time_format_probe": {
+        value: len(list(jsonschema.Draft202012Validator(
+            {"type": "string", "format": "date-time"},
+            format_checker=jsonschema.Draft202012Validator.FORMAT_CHECKER,
+        ).iter_errors(value)))
+        for value in (
+            "2026-07-29T22:00:00Z",
+            "not-a-date",
+            "2026-99-99",
+        )
+    },
+    "date_time_format_registered": (
+        "date-time" in jsonschema.Draft202012Validator.FORMAT_CHECKER.checkers
+    ),
+    "executable_realpath": os.path.realpath(sys.executable),
+    "implementation": platform.python_implementation(),
+    "jsonschema_module_file": str(
+        pathlib.Path(jsonschema.__file__).resolve(strict=True)
+    ),
+    "jsonschema_version": importlib.metadata.version("jsonschema"),
+    "platform": platform.platform(),
+    "python_version": platform.python_version(),
+    "rfc3339_validator_module_file": str(
+        pathlib.Path(
+            importlib.util.find_spec("rfc3339_validator").origin
+        ).resolve(strict=True)
+    ),
+    "rfc3339_validator_version": importlib.metadata.version(
+        "rfc3339-validator"
+    ),
+    "sys_base_prefix": sys.base_prefix,
+    "sys_exec_prefix": sys.exec_prefix,
+    "sys_executable": sys.executable,
+    "sys_path": sys.path,
+    "sys_prefix": sys.prefix,
+}, sort_keys=True))
+""".strip()
+    identity_argv = [str(launcher), "-I", "-B", "-c", identity_program]
+    try:
+        identity = subprocess.run(
+            identity_argv,
+            cwd=project_root,
+            env=_probe_environment(),
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            timeout=RUNTIME_PROBE_TIMEOUT_SECONDS,
+            check=False,
+        )
+    except subprocess.TimeoutExpired as error:
+        raise CapacityDiagnosticError(
+            "Python runtime identity probe timed out"
+        ) from error
+    if identity.returncode != 0:
+        raise CapacityDiagnosticError(
+            "Python runtime identity probe failed: "
+            f"exit={identity.returncode}, stderr={identity.stderr.decode('utf-8', 'replace').strip()!r}"
+        )
+    try:
+        identity_lines = identity.stdout.decode("utf-8").splitlines()
+        if len(identity_lines) != 1:
+            raise ValueError("identity probe must emit exactly one JSON line")
+        observation = json.loads(identity_lines[0])
+    except (UnicodeDecodeError, json.JSONDecodeError, ValueError) as error:
+        raise CapacityDiagnosticError(
+            "Python runtime identity probe emitted invalid evidence"
+        ) from error
+    if not isinstance(observation, Mapping):
+        raise CapacityDiagnosticError(
+            "Python runtime identity probe did not emit an object"
+        )
+
+    help_argv = [str(launcher), "-I", "-B", str(entrypoint), "--help"]
+    try:
+        entrypoint_help = subprocess.run(
+            help_argv,
+            cwd=project_root,
+            env=_probe_environment(),
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            timeout=RUNTIME_PROBE_TIMEOUT_SECONDS,
+            check=False,
+        )
+    except subprocess.TimeoutExpired as error:
+        raise CapacityDiagnosticError(
+            "Python entrypoint dependency probe timed out"
+        ) from error
+    if (
+        entrypoint_help.returncode != 0
+        or b"usage:" not in entrypoint_help.stdout.lower()
+    ):
+        raise CapacityDiagnosticError(
+            "Python entrypoint dependency probe failed: "
+            f"exit={entrypoint_help.returncode}, "
+            f"stderr={entrypoint_help.stderr.decode('utf-8', 'replace').strip()!r}"
+        )
+    return {
+        "identity": dict(observation),
+        "identity_argv": identity_argv,
+        "identity_argv_sha256": _canonical_sha256(identity_argv),
+        "identity_stderr_bytes": len(identity.stderr),
+        "identity_stderr_sha256": _sha256_bytes(identity.stderr),
+        "entrypoint_help": {
+            "argv": help_argv,
+            "argv_sha256": _canonical_sha256(help_argv),
+            "returncode": entrypoint_help.returncode,
+            "stdout_bytes": len(entrypoint_help.stdout),
+            "stdout_sha256": _sha256_bytes(entrypoint_help.stdout),
+            "stderr_bytes": len(entrypoint_help.stderr),
+            "stderr_sha256": _sha256_bytes(entrypoint_help.stderr),
+        },
+    }
+
+
+def _validate_runtime_probe_semantics(
+    *,
+    launcher_binding: Mapping[str, Any],
+    live_probe: Mapping[str, Any],
+    entrypoint: Path,
+) -> None:
+    expected_probe_fields = {
+        "identity",
+        "identity_argv",
+        "identity_argv_sha256",
+        "identity_stderr_bytes",
+        "identity_stderr_sha256",
+        "entrypoint_help",
+    }
+    identity_fields = {
+        "base_exec_prefix",
+        "cache_tag",
+        "date_time_format_probe",
+        "date_time_format_registered",
+        "executable_realpath",
+        "implementation",
+        "jsonschema_module_file",
+        "jsonschema_version",
+        "platform",
+        "python_version",
+        "rfc3339_validator_module_file",
+        "rfc3339_validator_version",
+        "sys_base_prefix",
+        "sys_exec_prefix",
+        "sys_executable",
+        "sys_path",
+        "sys_prefix",
+    }
+    if set(live_probe) != expected_probe_fields:
+        raise CapacityDiagnosticError("Python runtime probe field set is invalid")
+    identity = live_probe.get("identity")
+    if not isinstance(identity, Mapping) or set(identity) != identity_fields:
+        raise CapacityDiagnosticError("Python runtime identity field set is invalid")
+    identity_argv = live_probe.get("identity_argv")
+    if (
+        not isinstance(identity_argv, list)
+        or len(identity_argv) != 5
+        or identity_argv[:4]
+        != [
+            launcher_binding["invocation_path"],
+            "-I",
+            "-B",
+            "-c",
+        ]
+        or not isinstance(identity_argv[4], str)
+        or live_probe.get("identity_argv_sha256") != _canonical_sha256(identity_argv)
+        or live_probe.get("identity_stderr_bytes") != 0
+        or live_probe.get("identity_stderr_sha256") != _sha256_bytes(b"")
+    ):
+        raise CapacityDiagnosticError(
+            "Python runtime identity probe binding is invalid"
+        )
+    if (
+        identity.get("sys_executable") != launcher_binding["invocation_path"]
+        or identity.get("executable_realpath")
+        != launcher_binding["resolved_executable_path"]
+        or identity.get("implementation") != "CPython"
+        or not isinstance(identity.get("cache_tag"), str)
+        or not identity["cache_tag"].startswith("cpython-")
+    ):
+        raise CapacityDiagnosticError("Python runtime executable identity is invalid")
+
+    prefix_fields = (
+        "base_exec_prefix",
+        "sys_base_prefix",
+        "sys_exec_prefix",
+        "sys_prefix",
+    )
+    prefixes: dict[str, Path] = {}
+    for field in prefix_fields:
+        raw = identity.get(field)
+        if not isinstance(raw, str) or not Path(raw).is_absolute():
+            raise CapacityDiagnosticError(
+                f"Python runtime identity {field} is not absolute"
+            )
+        try:
+            prefixes[field] = Path(raw).resolve(strict=True)
+        except OSError as error:
+            raise CapacityDiagnosticError(
+                f"Python runtime identity {field} does not exist"
+            ) from error
+        if not prefixes[field].is_dir():
+            raise CapacityDiagnosticError(
+                f"Python runtime identity {field} is not a directory"
+            )
+
+    runtime_modules = (
+        ("jsonschema", "jsonschema_module_file", "jsonschema_version"),
+        (
+            "rfc3339-validator",
+            "rfc3339_validator_module_file",
+            "rfc3339_validator_version",
+        ),
+    )
+    for distribution, path_field, version_field in runtime_modules:
+        module_raw = identity.get(path_field)
+        if not isinstance(module_raw, str) or not Path(module_raw).is_absolute():
+            raise CapacityDiagnosticError(f"{distribution} module path is not absolute")
+        try:
+            module_path = Path(module_raw).resolve(strict=True)
+        except OSError as error:
+            raise CapacityDiagnosticError(
+                f"{distribution} module path does not exist"
+            ) from error
+        if (
+            not module_path.is_file()
+            or not module_path.is_relative_to(prefixes["sys_prefix"])
+            or not isinstance(identity.get(version_field), str)
+            or not identity[version_field]
+        ):
+            raise CapacityDiagnosticError(
+                f"{distribution} is not bound inside the Python runtime prefix"
+            )
+    expected_date_time_probe = {
+        "2026-07-29T22:00:00Z": 0,
+        "not-a-date": 1,
+        "2026-99-99": 1,
+    }
+    observed_date_time_probe = identity.get("date_time_format_probe")
+    if (
+        identity.get("date_time_format_registered") is not True
+        or not isinstance(observed_date_time_probe, Mapping)
+        or set(observed_date_time_probe) != set(expected_date_time_probe)
+        or any(
+            type(observed_date_time_probe[key]) is not int
+            or observed_date_time_probe[key] != expected
+            for key, expected in expected_date_time_probe.items()
+        )
+    ):
+        raise CapacityDiagnosticError(
+            "Python runtime date-time format semantics are unavailable or invalid"
+        )
+    for field in ("platform", "python_version"):
+        if not isinstance(identity.get(field), str) or not identity[field]:
+            raise CapacityDiagnosticError(f"Python runtime identity {field} is invalid")
+    sys_path = identity.get("sys_path")
+    if (
+        not isinstance(sys_path, list)
+        or not sys_path
+        or any(not isinstance(item, str) for item in sys_path)
+        or any(item == "" for item in sys_path)
+    ):
+        raise CapacityDiagnosticError("isolated Python sys.path is invalid")
+
+    entrypoint_help = live_probe.get("entrypoint_help")
+    expected_help_argv = [
+        launcher_binding["invocation_path"],
+        "-I",
+        "-B",
+        str(entrypoint),
+        "--help",
+    ]
+    if (
+        not isinstance(entrypoint_help, Mapping)
+        or set(entrypoint_help)
+        != {
+            "argv",
+            "argv_sha256",
+            "returncode",
+            "stdout_bytes",
+            "stdout_sha256",
+            "stderr_bytes",
+            "stderr_sha256",
+        }
+        or entrypoint_help.get("argv") != expected_help_argv
+        or entrypoint_help.get("argv_sha256") != _canonical_sha256(expected_help_argv)
+        or entrypoint_help.get("returncode") != 0
+        or not isinstance(entrypoint_help.get("stdout_bytes"), int)
+        or entrypoint_help["stdout_bytes"] <= 0
+        or entrypoint_help.get("stderr_bytes") != 0
+        or entrypoint_help.get("stderr_sha256") != _sha256_bytes(b"")
+    ):
+        raise CapacityDiagnosticError(
+            "Python entrypoint dependency probe binding is invalid"
+        )
+    for field in ("stdout_sha256", "stderr_sha256"):
+        value = entrypoint_help.get(field)
+        if (
+            not isinstance(value, str)
+            or len(value) != 64
+            or any(character not in "0123456789abcdef" for character in value)
+        ):
+            raise CapacityDiagnosticError(
+                "Python entrypoint dependency probe hash is invalid"
+            )
+
+
+def _forbidden_runtime_dependency_paths(
+    *,
+    launcher_binding: Mapping[str, Any],
+    live_probe: Mapping[str, Any],
+) -> list[str]:
+    identity = live_probe["identity"]
+    candidates = [
+        launcher_binding["invocation_path"],
+        launcher_binding["resolved_executable_path"],
+        identity["executable_realpath"],
+        identity["jsonschema_module_file"],
+        identity["rfc3339_validator_module_file"],
+        identity["sys_base_prefix"],
+        identity["sys_exec_prefix"],
+        identity["sys_executable"],
+        identity["sys_prefix"],
+        identity["base_exec_prefix"],
+        *identity["sys_path"],
+    ]
+    forbidden = FORBIDDEN_RUNTIME_ROOT.resolve(strict=False)
+    observed: set[str] = set()
+    for candidate in candidates:
+        if not isinstance(candidate, str) or not candidate:
+            continue
+        path = Path(candidate)
+        if not path.is_absolute():
+            continue
+        resolved = path.resolve(strict=False)
+        if resolved == forbidden or resolved.is_relative_to(forbidden):
+            observed.add(str(path))
+    return sorted(observed)
+
+
+def _runtime_manifest(
+    *,
+    launcher: Path,
+    entrypoint: Path,
+    project_root: Path,
+) -> dict[str, Any]:
+    launcher_binding = _python_launcher_binding(launcher)
+    live_probe = _runtime_probe(
+        launcher=launcher,
+        entrypoint=entrypoint,
+        project_root=project_root,
+    )
+    _validate_runtime_probe_semantics(
+        launcher_binding=launcher_binding,
+        live_probe=live_probe,
+        entrypoint=entrypoint,
+    )
+    forbidden_paths = _forbidden_runtime_dependency_paths(
+        launcher_binding=launcher_binding,
+        live_probe=live_probe,
+    )
+    if forbidden_paths:
+        raise CapacityDiagnosticError(
+            "Python runtime depends on the forbidden home tree: "
+            + ", ".join(forbidden_paths)
+        )
+    return {
+        "schema_version": "b0_capacity_runtime.v2",
         "captured_at_utc": _utc_now(),
-        "executable": str(executable),
-        "executable_bytes": executable.stat().st_size,
-        "executable_sha256": _sha256_file(executable),
-        "implementation": platform.python_implementation(),
-        "jsonschema_version": importlib.metadata.version("jsonschema"),
-        "machine": platform.machine(),
-        "platform": platform.platform(),
-        "python_version": platform.python_version(),
+        "python_launcher": launcher_binding,
+        "live_probe": live_probe,
+        "forbidden_runtime_root": str(FORBIDDEN_RUNTIME_ROOT),
+        "forbidden_dependency_paths": [],
+        "cunyuliu_home_independent": True,
+        "replay_environment": dict(REPLAY_ENVIRONMENT),
         "workload_class": "NON_NEURAL_DATA_BENCHMARK",
         "cuda_required": False,
         "cuda_used": False,
@@ -1561,6 +2062,15 @@ def _render_replay_script(
     argv: Sequence[str],
     launch_cwd: Path,
 ) -> str:
+    if (
+        len(argv) < 4
+        or not Path(argv[0]).is_absolute()
+        or list(argv[1:3]) != ["-I", "-B"]
+        or not Path(argv[3]).is_absolute()
+    ):
+        raise CapacityDiagnosticError(
+            "exact argv must begin with an absolute launcher, -I -B, and entrypoint"
+        )
     rendered: list[str] = []
     replace_next = False
     replacements = 0
@@ -1580,6 +2090,21 @@ def _render_replay_script(
         raise CapacityDiagnosticError(
             "exact argv must contain exactly one replaceable --output-root"
         )
+    replay_environment = " ".join(
+        f"{key}={shlex.quote(value)}" for key, value in REPLAY_ENVIRONMENT.items()
+    )
+    isolated_prefix = f"/usr/bin/env -i {replay_environment}"
+    dependency_probe = " ".join(
+        (
+            isolated_prefix,
+            shlex.quote(argv[0]),
+            "-I",
+            "-B",
+            shlex.quote(argv[3]),
+            "--help",
+            ">/dev/null",
+        )
+    )
     return (
         "#!/bin/sh\n"
         "set -eu\n"
@@ -1588,7 +2113,8 @@ def _render_replay_script(
         "  exit 2\n"
         "fi\n"
         f"cd {shlex.quote(str(launch_cwd.resolve(strict=True)))}\n"
-        "exec " + " ".join(rendered) + "\n"
+        f"{dependency_probe}\n"
+        f"exec {isolated_prefix} " + " ".join(rendered) + "\n"
     )
 
 
@@ -1798,6 +2324,50 @@ def _verify_external_ref(
         )
 
 
+def _validate_code_provenance(
+    *,
+    run_root: Path,
+    provenance: Mapping[str, Any],
+    project_root: Path,
+) -> None:
+    code_files = provenance["code_files"]
+    code_manifest = _read_json(run_root / "provenance/code_manifest.json")
+    if code_manifest != {
+        "code_commit": provenance["git"]["head"],
+        "files": code_files,
+    }:
+        raise CapacityDiagnosticError(
+            "bundle code manifest differs from terminal provenance"
+        )
+    entrypoint_refs = [
+        reference
+        for reference in code_files
+        if reference.get("role") == "DIAGNOSTIC_ENTRYPOINT"
+    ]
+    if len(entrypoint_refs) != 1:
+        raise CapacityDiagnosticError(
+            "bundle code manifest lacks one diagnostic entrypoint"
+        )
+    for reference in code_files:
+        relative = Path(str(reference.get("path") or ""))
+        if relative.is_absolute() or ".." in relative.parts:
+            raise CapacityDiagnosticError(
+                "bundle code-file reference is not repository-relative"
+            )
+        expected = {
+            **_artifact_ref(project_root / relative, root=project_root),
+            "role": reference["role"],
+        }
+        if dict(reference) != expected:
+            raise CapacityDiagnosticError(
+                f"bundle code-file reference drifted: {relative}"
+            )
+    if entrypoint_refs[0]["path"] != "scripts/data/diagnose_b0_path_capacity.py":
+        raise CapacityDiagnosticError(
+            "bundle entrypoint role is bound to the wrong code file"
+        )
+
+
 def _validate_replay_provenance(
     *,
     run_root: Path,
@@ -1807,14 +2377,18 @@ def _validate_replay_provenance(
     exact_argv = provenance["exact_argv"]
     if (
         not isinstance(exact_argv, list)
-        or len(exact_argv) < 2
+        or len(exact_argv) < 4
         or any(not isinstance(token, str) for token in exact_argv)
         or provenance.get("exact_argv_sha256") != _canonical_sha256(exact_argv)
     ):
         raise CapacityDiagnosticError("bundle exact argv is invalid")
+    if exact_argv[1:3] != ["-I", "-B"]:
+        raise CapacityDiagnosticError(
+            "bundle exact argv does not preserve isolated Python flags"
+        )
+    launcher = _validated_python_launcher(exact_argv[0])
     try:
-        launcher = Path(exact_argv[0]).resolve(strict=True)
-        entrypoint = Path(exact_argv[1]).resolve(strict=True)
+        entrypoint = Path(exact_argv[3]).resolve(strict=True)
         launch_cwd = Path(str(provenance["launch_cwd"])).resolve(strict=True)
         project_root = Path(str(provenance["git"]["project_root"])).resolve(strict=True)
         git_dir = Path(str(provenance["git"]["git_dir"])).resolve(strict=True)
@@ -1826,7 +2400,7 @@ def _validate_replay_provenance(
         raise CapacityDiagnosticError(
             "bundle launch cwd differs from the authoritative project root"
         )
-    if exact_argv[0] != str(launcher) or exact_argv[1] != str(entrypoint):
+    if exact_argv[0] != str(launcher) or exact_argv[3] != str(entrypoint):
         raise CapacityDiagnosticError(
             "bundle launcher or entrypoint is not captured canonically"
         )
@@ -1838,7 +2412,7 @@ def _validate_replay_provenance(
             "bundle exact argv does not use the authoritative entrypoint"
         )
     try:
-        replay_args = _parse_args(exact_argv[2:])
+        replay_args = _parse_args(exact_argv[4:])
     except SystemExit as error:
         raise CapacityDiagnosticError(
             "bundle exact argv cannot be parsed by the frozen entrypoint"
@@ -1943,6 +2517,14 @@ def _validate_replay_provenance(
             "bundle contract hash differs between manifest and replay input"
         )
 
+    # Verify every imported repository file before executing the entrypoint's
+    # read-only dependency probe.
+    _validate_code_provenance(
+        run_root=run_root,
+        provenance=provenance,
+        project_root=project_root,
+    )
+
     runtime_path = _verify_bundle_ref(run_root, provenance["runtime_manifest"])
     runtime = _read_json(runtime_path)
     launcher_binding_path = _verify_bundle_ref(
@@ -1950,56 +2532,63 @@ def _validate_replay_provenance(
         provenance["python_launcher"],
     )
     launcher_binding = _read_json(launcher_binding_path)
-    actual_launcher = {
-        "path": str(launcher),
-        "bytes": launcher.stat().st_size,
-        "sha256": _sha256_file(launcher),
-    }
-    if launcher_binding != actual_launcher or (
-        runtime.get("executable") != actual_launcher["path"]
-        or runtime.get("executable_bytes") != actual_launcher["bytes"]
-        or runtime.get("executable_sha256") != actual_launcher["sha256"]
-        or runtime.get("resource_limit_scope") != RESOURCE_LIMIT_SCOPE
+    actual_launcher = _python_launcher_binding(launcher)
+    if (
+        launcher_binding != actual_launcher
+        or runtime.get("python_launcher") != actual_launcher
     ):
         raise CapacityDiagnosticError(
             "bundle Python launcher or runtime binding is invalid"
         )
-
-    code_files = provenance["code_files"]
-    code_manifest = _read_json(run_root / "provenance/code_manifest.json")
-    if code_manifest != {
-        "code_commit": provenance["git"]["head"],
-        "files": code_files,
-    }:
+    actual_probe = _runtime_probe(
+        launcher=launcher,
+        entrypoint=entrypoint,
+        project_root=project_root,
+    )
+    _validate_runtime_probe_semantics(
+        launcher_binding=actual_launcher,
+        live_probe=actual_probe,
+        entrypoint=entrypoint,
+    )
+    forbidden_paths = _forbidden_runtime_dependency_paths(
+        launcher_binding=actual_launcher,
+        live_probe=actual_probe,
+    )
+    expected_runtime_fields = {
+        "schema_version",
+        "captured_at_utc",
+        "python_launcher",
+        "live_probe",
+        "forbidden_runtime_root",
+        "forbidden_dependency_paths",
+        "cunyuliu_home_independent",
+        "replay_environment",
+        "workload_class",
+        "cuda_required",
+        "cuda_used",
+        "resource_limit_scope",
+    }
+    if (
+        launcher_binding != actual_launcher
+        or set(runtime) != expected_runtime_fields
+        or runtime.get("schema_version") != "b0_capacity_runtime.v2"
+        or not isinstance(runtime.get("captured_at_utc"), str)
+        or not runtime["captured_at_utc"].endswith("Z")
+        or runtime.get("python_launcher") != actual_launcher
+        or _canonical_sha256(runtime.get("live_probe"))
+        != _canonical_sha256(actual_probe)
+        or runtime.get("forbidden_runtime_root") != str(FORBIDDEN_RUNTIME_ROOT)
+        or runtime.get("forbidden_dependency_paths") != []
+        or runtime.get("cunyuliu_home_independent") is not True
+        or forbidden_paths
+        or runtime.get("replay_environment") != REPLAY_ENVIRONMENT
+        or runtime.get("workload_class") != "NON_NEURAL_DATA_BENCHMARK"
+        or runtime.get("cuda_required") is not False
+        or runtime.get("cuda_used") is not False
+        or runtime.get("resource_limit_scope") != RESOURCE_LIMIT_SCOPE
+    ):
         raise CapacityDiagnosticError(
-            "bundle code manifest differs from terminal provenance"
-        )
-    entrypoint_refs = [
-        reference
-        for reference in code_files
-        if reference.get("role") == "DIAGNOSTIC_ENTRYPOINT"
-    ]
-    if len(entrypoint_refs) != 1:
-        raise CapacityDiagnosticError(
-            "bundle code manifest lacks one diagnostic entrypoint"
-        )
-    for reference in code_files:
-        relative = Path(str(reference.get("path") or ""))
-        if relative.is_absolute() or ".." in relative.parts:
-            raise CapacityDiagnosticError(
-                "bundle code-file reference is not repository-relative"
-            )
-        expected = {
-            **_artifact_ref(project_root / relative, root=project_root),
-            "role": reference["role"],
-        }
-        if dict(reference) != expected:
-            raise CapacityDiagnosticError(
-                f"bundle code-file reference drifted: {relative}"
-            )
-    if entrypoint_refs[0]["path"] != ("scripts/data/diagnose_b0_path_capacity.py"):
-        raise CapacityDiagnosticError(
-            "bundle entrypoint role is bound to the wrong code file"
+            "bundle Python launcher or runtime binding is invalid"
         )
 
     command = _read_json(run_root / "command.json")
@@ -2961,11 +3550,17 @@ def _validate_cli_paths(args: argparse.Namespace) -> None:
         raise CapacityDiagnosticError(
             "diagnostic launch cwd must equal the authoritative project root"
         )
+    if not sys.flags.isolated or not sys.dont_write_bytecode:
+        raise CapacityDiagnosticError(
+            "diagnostic must be launched with Python flags -I -B"
+        )
+    _exact_python_argv(_validated_python_launcher())
 
 
 def run(args: argparse.Namespace) -> Mapping[str, Any]:
     global _ACTIVE_FD_CAPTURE
     _validate_cli_paths(args)
+    _validate_launch_environment()
     config = _validate_config(_read_json(args.config))
     parent_authorization: dict[str, Any] | None = None
     prevalidated_selection: StructuralSelection | None = None
@@ -3060,17 +3655,22 @@ def run(args: argparse.Namespace) -> Mapping[str, Any]:
     selection_manifest_path = run_root / "provenance/selection_manifest.json"
     _write_json_exclusive(selection_manifest_path, selection_manifest)
 
-    runtime = _runtime_manifest()
+    launcher = _validated_python_launcher()
+    entrypoint = (
+        args.project_root / "scripts/data/diagnose_b0_path_capacity.py"
+    ).resolve(strict=True)
+    launch_cwd = Path.cwd().resolve(strict=True)
+    runtime = _runtime_manifest(
+        launcher=launcher,
+        entrypoint=entrypoint,
+        project_root=launch_cwd,
+    )
     runtime_path = run_root / "provenance/runtime_manifest.json"
     _write_json_exclusive(runtime_path, runtime)
     python_launcher_path = run_root / "provenance/python_launcher.json"
     _write_json_exclusive(
         python_launcher_path,
-        {
-            "path": runtime["executable"],
-            "bytes": runtime["executable_bytes"],
-            "sha256": runtime["executable_sha256"],
-        },
+        runtime["python_launcher"],
     )
     code_files = _code_files(args.project_root)
     code_manifest_path = run_root / "provenance/code_manifest.json"
@@ -3108,8 +3708,7 @@ def run(args: argparse.Namespace) -> Mapping[str, Any]:
             "label_fields_read": [],
         },
     )
-    launch_cwd = Path.cwd().resolve(strict=True)
-    argv_exact = [str(Path(sys.executable).resolve(strict=True)), *sys.argv]
+    argv_exact = _exact_python_argv(launcher)
     command_path = run_root / "command.json"
     _write_json_exclusive(
         command_path,

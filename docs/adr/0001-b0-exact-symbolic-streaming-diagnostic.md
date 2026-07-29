@@ -101,6 +101,22 @@ formal D1/B0 attempt tree. It binds:
   manifest/checksum seal, a non-empty terminal lock, a post-validation
   `VERIFIED` marker, and an exactly rendered replay command.
 
+The Python invocation path is preserved lexically rather than final-resolving a
+virtual-environment launcher. Its symlink metadata and resolved executable hash
+are recorded separately. Generation and verification rerun a bounded live
+runtime probe and an isolated entrypoint-import probe. The replay script repeats
+that probe before executing under a minimal frozen environment with user-site,
+bytecode writes, and Python path overrides disabled. Any runtime-critical path
+under `/home/cunyuliu` fails closed, so a pseudo-runtime on `/mnt` that still
+depends on a mutable home environment cannot authorize a census.
+Because the schemas use `format: date-time`, the probe also binds the
+`rfc3339-validator` implementation inside the runtime and executes one frozen
+valid plus two frozen invalid cases. A runtime that silently skips format
+validation fails closed.
+This contract supports same-server replay against the bound `/mnt` runtime and
+host ABI. It does not claim containerized, cross-host, or permanent bitwise
+environment reproduction.
+
 Captured streams are hash-bound evidence and may be non-empty. A warning or
 diagnostic message must be retained, not erased to satisfy an “empty log”
 proxy. The verifier checks the OS-level capture contract, stream references,

@@ -89,6 +89,15 @@ It refuses an existing root. The bundle contains:
   `terminal.lock`, followed by a post-validation `VERIFIED` marker;
 - per-record prototype subdirectories and exact layer hashes where applicable.
 
+`runtime_manifest.json` distinguishes the lexical Python invocation path from
+its resolved executable target and binds both. It also records and live-replays
+the prefix, base prefix, import path, `jsonschema` and `rfc3339-validator`
+identities, frozen valid/invalid `date-time` semantics, and isolated entrypoint
+`--help` probe. `replay.sh` uses a minimal fixed environment, disables
+user-site and bytecode writes, probes dependencies before execution, and
+retains the lexical launcher. Runtime-critical dependencies under
+`/home/cunyuliu` are forbidden.
+
 Every `EXACT_COMPLETED` row explicitly references
 `record_workspaces/<ordinal>-<record-id-hash>/state_universe.tsv`. The file is
 strictly sorted, its row count equals `reachable_node_count`, and its canonical

@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import subprocess
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -25,13 +26,34 @@ from scripts.data.diagnose_b0_path_capacity import (
     _create_exclusive_run_root,
 )
 from scripts.data.diagnose_b0_path_capacity import (
+    _exact_python_argv,
+)
+from scripts.data.diagnose_b0_path_capacity import (
+    _forbidden_runtime_dependency_paths,
+)
+from scripts.data.diagnose_b0_path_capacity import (
     _load_structural_selection,
+)
+from scripts.data.diagnose_b0_path_capacity import (
+    _python_launcher_binding,
+)
+from scripts.data.diagnose_b0_path_capacity import (
+    _runtime_probe,
 )
 from scripts.data.diagnose_b0_path_capacity import (
     _validate_config,
 )
 from scripts.data.diagnose_b0_path_capacity import (
     _validate_d1_snapshot_trust,
+)
+from scripts.data.diagnose_b0_path_capacity import (
+    _validate_launch_environment,
+)
+from scripts.data.diagnose_b0_path_capacity import (
+    _validate_runtime_probe_semantics,
+)
+from scripts.data.diagnose_b0_path_capacity import (
+    _validated_python_launcher,
 )
 from scripts.data.diagnose_b0_path_capacity import (
     _write_replay_script,
@@ -406,6 +428,8 @@ def test_replay_captures_cwd_and_replaces_equals_form_output_root(
         run_root=run_root,
         argv=(
             "/runtime/python",
+            "-I",
+            "-B",
             "/project/diagnose.py",
             "--output-root=/old/run",
         ),
@@ -416,6 +440,265 @@ def test_replay_captures_cwd_and_replaces_equals_form_output_root(
     assert '--output-root="${1}"' in replay
     assert "/old/run" not in replay
     assert replay.count("${1}") == 1
+    assert (
+        "/usr/bin/env -i LANG=C LC_ALL=C PATH=/usr/bin:/bin "
+        "/runtime/python -I -B /project/diagnose.py --help >/dev/null"
+    ) in replay
+    assert (
+        "exec /usr/bin/env -i LANG=C LC_ALL=C PATH=/usr/bin:/bin "
+        "/runtime/python -I -B /project/diagnose.py"
+    ) in replay
+
+
+def test_launcher_binding_preserves_invocation_symlink(tmp_path: Path) -> None:
+    target = Path(capacity_diagnostic.sys.executable).resolve(strict=True)
+    launcher = tmp_path / "python"
+    launcher.symlink_to(target)
+
+    validated = _validated_python_launcher(str(launcher))
+    binding = _python_launcher_binding(validated)
+
+    assert validated == launcher
+    assert binding["invocation_path"] == str(launcher)
+    assert binding["invocation_is_symlink"] is True
+    assert binding["resolved_executable_path"] == str(target)
+    assert binding["invocation_path"] != binding["resolved_executable_path"]
+    assert binding["resolved_executable_format"] in {"ELF", "MACH_O"}
+
+
+def test_launcher_binding_detects_symlink_retarget(tmp_path: Path) -> None:
+    launcher = tmp_path / "python"
+    launcher.symlink_to(Path(capacity_diagnostic.sys.executable).resolve(strict=True))
+    before = _python_launcher_binding(launcher)
+
+    launcher.unlink()
+    launcher.symlink_to(Path("/bin/sh").resolve(strict=True))
+    after = _python_launcher_binding(launcher)
+
+    assert before != after
+    assert before["resolved_executable_path"] != after["resolved_executable_path"]
+    assert before["resolved_executable_sha256"] != after["resolved_executable_sha256"]
+
+
+def test_launcher_validation_rejects_relative_broken_and_non_executable(
+    tmp_path: Path,
+) -> None:
+    with pytest.raises(CapacityDiagnosticError, match="absolute lexical"):
+        _validated_python_launcher("python")
+
+    broken = tmp_path / "broken"
+    broken.symlink_to(tmp_path / "missing")
+    with pytest.raises(CapacityDiagnosticError, match="broken"):
+        _validated_python_launcher(str(broken))
+
+    non_executable = tmp_path / "not-executable"
+    non_executable.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+    non_executable.chmod(0o640)
+    with pytest.raises(CapacityDiagnosticError, match="not executable"):
+        _validated_python_launcher(str(non_executable))
+
+
+def test_runtime_probe_fails_closed_when_launcher_cannot_import_entrypoint(
+    tmp_path: Path,
+) -> None:
+    project_root = tmp_path / "project"
+    entrypoint = project_root / "diagnose.py"
+    project_root.mkdir()
+    entrypoint.write_text("raise RuntimeError('dependency unavailable')\n")
+    bad_launcher = tmp_path / "bad-python"
+    bad_launcher.write_text("#!/bin/sh\nexit 1\n", encoding="utf-8")
+    bad_launcher.chmod(0o750)
+
+    with pytest.raises(CapacityDiagnosticError, match="native executable"):
+        _python_launcher_binding(bad_launcher)
+    with pytest.raises(CapacityDiagnosticError, match="identity probe failed"):
+        _runtime_probe(
+            launcher=bad_launcher,
+            entrypoint=entrypoint,
+            project_root=project_root,
+        )
+
+
+def test_exact_python_argv_rejects_unrecorded_interpreter_flags(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    launcher = Path("/runtime/python")
+    script_argv = ["/project/diagnose.py", "--scope", "witness"]
+    expected = [str(launcher), "-I", "-B", *script_argv]
+    monkeypatch.setattr(capacity_diagnostic.sys, "argv", script_argv)
+    monkeypatch.setattr(capacity_diagnostic.sys, "orig_argv", expected)
+    assert _exact_python_argv(launcher) == expected
+
+    monkeypatch.setattr(
+        capacity_diagnostic.sys,
+        "orig_argv",
+        [str(launcher), "-I", "-B", "-O", *script_argv],
+    )
+    with pytest.raises(CapacityDiagnosticError, match="interpreter argv"):
+        _exact_python_argv(launcher)
+
+
+def test_launch_environment_is_exact_and_accepts_isolated_subprocess(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    for key in list(os.environ):
+        monkeypatch.delenv(key, raising=False)
+    for key, value in capacity_diagnostic.REPLAY_ENVIRONMENT.items():
+        monkeypatch.setenv(key, value)
+    monkeypatch.setenv("UNRECORDED_ENV", "forbidden")
+    with pytest.raises(CapacityDiagnosticError, match="frozen replay environment"):
+        _validate_launch_environment()
+
+    root = Path(__file__).resolve().parents[1]
+    program = (
+        "import sys;"
+        f"sys.path.insert(0,{str(root)!r});"
+        "from scripts.data.diagnose_b0_path_capacity "
+        "import _validate_launch_environment;"
+        "_validate_launch_environment()"
+    )
+    completed = subprocess.run(
+        [capacity_diagnostic.sys.executable, "-I", "-B", "-c", program],
+        cwd=root,
+        env=capacity_diagnostic.REPLAY_ENVIRONMENT,
+        stdin=subprocess.DEVNULL,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stderr.decode("utf-8", "replace")
+
+
+def test_runtime_probe_semantics_rejects_forged_self_report() -> None:
+    root = Path(__file__).resolve().parents[1]
+    launcher = _validated_python_launcher()
+    entrypoint = root / "scripts/data/diagnose_b0_path_capacity.py"
+    binding = _python_launcher_binding(launcher)
+    probe = _runtime_probe(
+        launcher=launcher,
+        entrypoint=entrypoint,
+        project_root=root,
+    )
+    probe["identity"]["sys_executable"] = "/forged/python"
+
+    with pytest.raises(CapacityDiagnosticError, match="executable identity"):
+        _validate_runtime_probe_semantics(
+            launcher_binding=binding,
+            live_probe=probe,
+            entrypoint=entrypoint,
+        )
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("date_time_format_registered", False),
+        (
+            "date_time_format_probe",
+            {
+                "2026-07-29T22:00:00Z": 0,
+                "not-a-date": 0,
+                "2026-99-99": 0,
+            },
+        ),
+        (
+            "date_time_format_probe",
+            {
+                "2026-07-29T22:00:00Z": False,
+                "not-a-date": True,
+                "2026-99-99": True,
+            },
+        ),
+    ],
+)
+def test_runtime_probe_semantics_requires_date_time_checker(
+    field: str,
+    value: object,
+) -> None:
+    root = Path(__file__).resolve().parents[1]
+    launcher = _validated_python_launcher()
+    entrypoint = root / "scripts/data/diagnose_b0_path_capacity.py"
+    binding = _python_launcher_binding(launcher)
+    probe = _runtime_probe(
+        launcher=launcher,
+        entrypoint=entrypoint,
+        project_root=root,
+    )
+    probe["identity"][field] = value
+
+    with pytest.raises(CapacityDiagnosticError, match="date-time format semantics"):
+        _validate_runtime_probe_semantics(
+            launcher_binding=binding,
+            live_probe=probe,
+            entrypoint=entrypoint,
+        )
+
+
+def test_forbidden_runtime_dependency_detects_cunyuliu_home_path() -> None:
+    root = Path(__file__).resolve().parents[1]
+    launcher = _validated_python_launcher()
+    entrypoint = root / "scripts/data/diagnose_b0_path_capacity.py"
+    binding = _python_launcher_binding(launcher)
+    probe = _runtime_probe(
+        launcher=launcher,
+        entrypoint=entrypoint,
+        project_root=root,
+    )
+    probe["identity"]["sys_base_prefix"] = "/home/cunyuliu/forged-runtime"
+
+    observed = _forbidden_runtime_dependency_paths(
+        launcher_binding=binding,
+        live_probe=probe,
+    )
+
+    assert "/home/cunyuliu/forged-runtime" in observed
+
+
+def test_rendered_replay_executes_fresh_root_under_frozen_environment(
+    tmp_path: Path,
+) -> None:
+    project_root = tmp_path / "project"
+    project_root.mkdir()
+    entrypoint = project_root / "tiny_diagnostic.py"
+    entrypoint.write_text(
+        "import argparse\n"
+        "from pathlib import Path\n"
+        "parser = argparse.ArgumentParser()\n"
+        "parser.add_argument('--output-root', required=True)\n"
+        "args = parser.parse_args()\n"
+        "root = Path(args.output_root)\n"
+        "root.mkdir()\n"
+        "(root / 'DONE').write_text('ok\\n', encoding='utf-8')\n",
+        encoding="utf-8",
+    )
+    bundle_root = tmp_path / "bundle"
+    bundle_root.mkdir()
+    launcher = _validated_python_launcher()
+    _write_replay_script(
+        run_root=bundle_root,
+        argv=(
+            str(launcher),
+            "-I",
+            "-B",
+            str(entrypoint),
+            "--output-root",
+            str(tmp_path / "old-root"),
+        ),
+        launch_cwd=project_root,
+    )
+    fresh_root = tmp_path / "fresh-root"
+
+    completed = subprocess.run(
+        [str(bundle_root / "replay.sh"), str(fresh_root)],
+        cwd=project_root,
+        stdin=subprocess.DEVNULL,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+
+    assert completed.returncode == 0, completed.stderr.decode("utf-8", "replace")
+    assert (fresh_root / "DONE").read_text(encoding="utf-8") == "ok\n"
 
 
 def test_replay_rejects_missing_or_duplicate_output_root(tmp_path: Path) -> None:
@@ -426,7 +709,7 @@ def test_replay_rejects_missing_or_duplicate_output_root(tmp_path: Path) -> None
     with pytest.raises(CapacityDiagnosticError, match="exactly one"):
         _write_replay_script(
             run_root=run_root,
-            argv=("/runtime/python", "/project/diagnose.py"),
+            argv=("/runtime/python", "-I", "-B", "/project/diagnose.py"),
             launch_cwd=launch_cwd,
         )
     with pytest.raises(CapacityDiagnosticError, match="exactly one"):
@@ -434,6 +717,8 @@ def test_replay_rejects_missing_or_duplicate_output_root(tmp_path: Path) -> None
             run_root=run_root,
             argv=(
                 "/runtime/python",
+                "-I",
+                "-B",
                 "/project/diagnose.py",
                 "--output-root=/one",
                 "--output-root",

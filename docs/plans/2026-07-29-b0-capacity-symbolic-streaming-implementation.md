@@ -142,6 +142,13 @@ Add explicit `--candidate-store`, `--d1-snapshot`, `--output-root`,
 arguments. Require an absolute entrypoint and authoritative worktree cwd.
 Restrict new roots to `/mnt/cunyuliu/mrna_editflow_b0_capacity`, outside the
 formal attempt tree. Refuse label-bearing structural rows and existing roots.
+Preserve the lexical Python launcher, separately hash its resolved target, and
+bind a live runtime/import probe. Require a minimal replay environment with
+Python override paths and user-site disabled, fail closed on runtime-critical
+paths under `/home/cunyuliu`, and make `replay.sh` probe the exact launcher
+before starting a fresh run. Bind the runtime's `rfc3339-validator` and require
+frozen positive/negative `date-time` cases to prevent silent JSON Schema format
+checker degradation.
 
 **Step 3: Implement mandatory witness precheck**
 
