@@ -1,21 +1,21 @@
 {
-  "actual_bytes": 366043904843,
+  "actual_bytes": 378589831611,
   "admitted_as_intervention_data": false,
-  "complete": false,
+  "complete": true,
   "contract_id": "utr_editflow_goal_v2",
   "dataset_id": "ENCSR854RUF",
   "disk_plan": {
     "inventory_output_bytes_expected_lt": 10485760,
     "raw_bytes": 378589831611,
-    "storage_filesystem_free_bytes": 13866833543168,
+    "storage_filesystem_free_bytes": 13731827286016,
     "temporary_raw_copy_bytes": 0
   },
   "downstream_overlap_status": "UNKNOWN_REQUIRES_D1_B0_AUDIT",
   "evidence_role": "observational_pretraining_candidate_only",
   "expected_bytes": 378589831611,
   "expected_files": 62,
-  "generated_at_utc": "2026-07-28T15:40:11.742240+00:00",
-  "incomplete_files": 1,
+  "generated_at_utc": "2026-07-30T14:58:26.821522+00:00",
+  "incomplete_files": 0,
   "inventory_rows": 62,
   "io_plan": {
     "additional_raw_copy_planned": false,
@@ -23,11 +23,11 @@
     "inventory_read_mode": "stat_plus_downloader_verified_sha256",
     "redundant_concurrent_rehash_forbidden": true
   },
-  "reconstruction_manifest": "/mnt/cunyuliu/partial_evidence/ENCSR854RUF_ena_reconstruction_manifest.json",
-  "reconstruction_manifest_sha256": "ed8b9da9130719c6b0a9074371a6a0a51456716dbcd9b8735721ae5084199671",
+  "reconstruction_manifest": "/mnt/cunyuliu/partial_evidence/ENCSR854RUF/ENCSR854RUF_ena_reconstruction_manifest_20260730T142611Z_closure_v1.json",
+  "reconstruction_manifest_sha256": "7dbf0340a7866540446eab41a71f2c97b3ab2c155bda85a67d80f2a4b2675190",
   "rehash_performed": false,
   "schema_version": "encode_62_inventory_v2",
   "source_manifest": "/mnt/cunyuliu/partial_evidence/ENCSR854RUF_ena_manifest.json",
   "source_manifest_sha256": "018bb82c892e1f751c47355c631ea0f70c01b00ef48336b88349ec926faa4af9",
-  "verified_files": 61
+  "verified_files": 62
 }

@@ -12,7 +12,7 @@ Protocol: `docs/data/systematic_search_protocol.md`
 |---|---|
 | PubMed/PMC and publisher primary text | MPRAu design verified; variable-length 5′UTR library designs verified |
 | GEO/SRA | Existing accessions rechecked at metadata level; GSE330741 and GSE291719 discovered and retained metadata-only |
-| ENCODE/ENA | ENCSR854RUF identity and 62-file raw inventory path retained; active reconstruction not disturbed |
+| ENCODE/ENA | ENCSR854RUF identity and 62-file raw inventory completed with versioned reconstruction closure; raw assets remain observational/pretraining-only |
 | OpenAlex | Broad title/abstract fallback completed; no additional verified source-paired UTR insertion dataset adopted |
 | MaveDB/Zenodo/Figshare/official code | No additional candidate was promoted without primary identity and required source/candidate metadata |
 

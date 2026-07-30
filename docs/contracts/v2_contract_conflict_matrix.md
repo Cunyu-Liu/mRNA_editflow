@@ -20,7 +20,7 @@ not active authority.
 | Run evidence | legacy artifacts were heterogeneous and W&B/local evidence rules were not unified | local manifest, JSONL, Git/data/split/foundation/exposure hashes and checkpoints | execution contract and run schema | schema/launcher tests |
 | Task registry | active registry described V1 R0/D0 tasks and used coarse statuses | V2 C0/D0 IDs, gates, legal states, resource labels, conflict keys | V1 registry archived; V2 registry validated | registry validator |
 | D0 question | V1 inventory emphasized predictor benchmarks and included CDS/full-length | H1–H8 supervision/capability/claim qualification with indel/multi-edit priority | hypothesis and dataset capability matrices | D0 tests |
-| ENCODE | V1 download report deferred all 62 raw files | observational/pretraining candidate pending checksums, metadata, role and overlap | non-invasive 62-row inventory records 61 verified checksums and 1 explicit missing row; `complete=false`; acquisition continues independently | inventory summary and snapshot consistency test |
+| ENCODE | V1 download report deferred all 62 raw files | observational/pretraining candidate; raw-acquisition checksum/metadata closure does not settle role or overlap | versioned closure manifest plus 62-row inventory records 62 verified checksums; `complete=true`; role remains observational/pretraining-only | inventory summary and snapshot consistency test |
 | Active code entry | download/search strings and tests named V1 or its exposure language | active code must not load or advertise V1 as a constraint source | archive V1 search/test assets; update active user-agent/registry/audits | reference scan |
 
 ## Preservation record
