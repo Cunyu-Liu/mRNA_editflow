@@ -1,0 +1,1657 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mrna-editflow.local/schemas/b0_capacity_diagnostic.schema.json",
+  "title": "B0 capacity diagnostic manifest",
+  "description": "Fail-closed manifest for replayable, exact-or-lower-bound B0 capacity diagnostics. This artifact cannot constitute a formal B0 attempt, a gate change, or scientific evidence.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact_type",
+    "schema_version",
+    "diagnostic_id",
+    "parent_diagnostic_id",
+    "parent_authorization",
+    "state",
+    "terminal",
+    "started_at_utc",
+    "ended_at_utc",
+    "workload_class",
+    "purpose",
+    "goal_contract",
+    "claim_boundary",
+    "selection",
+    "witnesses",
+    "provenance",
+    "algorithm_contract",
+    "accounting",
+    "result_semantics",
+    "stop_reason",
+    "completion_seal",
+    "failure"
+  ],
+  "properties": {
+    "artifact_type": {
+      "const": "b0_capacity_diagnostic"
+    },
+    "schema_version": {
+      "const": "b0_capacity_diagnostic.v1"
+    },
+    "diagnostic_id": {
+      "type": "string",
+      "pattern": "^B0_capacity_[0-9]{8}T[0-9]{6}Z_[0-9a-f]{7,40}$"
+    },
+    "parent_diagnostic_id": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string",
+          "pattern": "^B0_capacity_[0-9]{8}T[0-9]{6}Z_[0-9a-f]{7,40}$"
+        }
+      ]
+    },
+    "parent_authorization": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/$defs/parentAuthorization"
+        }
+      ]
+    },
+    "state": {
+      "enum": [
+        "COMPLETED",
+        "SAFE_PAUSED",
+        "FAILED_WITH_EVIDENCE"
+      ]
+    },
+    "terminal": {
+      "const": true
+    },
+    "started_at_utc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "ended_at_utc": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "workload_class": {
+      "const": "NON_NEURAL_DATA_BENCHMARK"
+    },
+    "purpose": {
+      "const": "B0_PATH_CAPACITY_DIAGNOSTIC_ONLY"
+    },
+    "goal_contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "sha256",
+        "repository_snapshot"
+      ],
+      "properties": {
+        "id": {
+          "const": "utr_editflow_goal_v2"
+        },
+        "sha256": {
+          "const": "c3dc5875868d847b8519fee40b14c43b65e4c5948dc5c3b98101ca61a5671dd5"
+        },
+        "repository_snapshot": {
+          "const": "docs/contracts/mrna_latest_build_contract_v2.md"
+        }
+      }
+    },
+    "claim_boundary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "formal_b0_attempt_started",
+        "b0_gate_values_changed",
+        "b0_phase_acceptance_claimed",
+        "scientific_result_claimed",
+        "budget_change_authorized",
+        "approximation_emitted",
+        "allowed_claim"
+      ],
+      "properties": {
+        "formal_b0_attempt_started": {
+          "const": false
+        },
+        "b0_gate_values_changed": {
+          "const": false
+        },
+        "b0_phase_acceptance_claimed": {
+          "const": false
+        },
+        "scientific_result_claimed": {
+          "const": false
+        },
+        "budget_change_authorized": {
+          "const": false
+        },
+        "approximation_emitted": {
+          "const": false
+        },
+        "allowed_claim": {
+          "const": "CAPACITY_DIAGNOSTIC_ONLY"
+        }
+      }
+    },
+    "selection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_store_role",
+        "selection_algorithm",
+        "diagnostic_scope",
+        "state_universe_scope",
+        "regions",
+        "record_order",
+        "source_record_count",
+        "selected_record_count",
+        "excluded_record_count",
+        "selected_record_ids_sha256",
+        "label_fields_read",
+        "canonical_label_store_opened_by_selection",
+        "selection_manifest"
+      ],
+      "properties": {
+        "source_store_role": {
+          "const": "D1_SEALED_LABEL_FREE_CANDIDATE_STORE"
+        },
+        "selection_algorithm": {
+          "const": "split_graph.select_split_eligible_records+edit_distance_gte_2"
+        },
+        "diagnostic_scope": {
+          "enum": [
+            "witness",
+            "census"
+          ]
+        },
+        "state_universe_scope": {
+          "enum": [
+            "FROZEN_WITNESS_SUBSET",
+            "FULL_CENSUS"
+          ]
+        },
+        "regions": {
+          "const": [
+            "five_utr",
+            "three_utr"
+          ]
+        },
+        "record_order": {
+          "const": "FROZEN_WITNESS_FIRST_THEN_CANONICAL_JSONL_LINE_ASCENDING"
+        },
+        "source_record_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "selected_record_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "excluded_record_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "selected_record_ids_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "label_fields_read": {
+          "type": "array",
+          "maxItems": 0
+        },
+        "canonical_label_store_opened_by_selection": {
+          "const": false
+        },
+        "selection_manifest": {
+          "$ref": "#/$defs/artifactRef"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "diagnostic_scope": {
+                "const": "witness"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "state_universe_scope": {
+                "const": "FROZEN_WITNESS_SUBSET"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "diagnostic_scope": {
+                "const": "census"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "state_universe_scope": {
+                "const": "FULL_CENSUS"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "witnesses": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1,
+      "items": {
+        "$ref": "#/$defs/frozenFirstWitness"
+      }
+    },
+    "provenance": {
+      "$ref": "#/$defs/provenance"
+    },
+    "algorithm_contract": {
+      "$ref": "#/$defs/algorithmContract"
+    },
+    "accounting": {
+      "$ref": "#/$defs/accounting"
+    },
+    "result_semantics": {
+      "$ref": "#/$defs/resultSemantics"
+    },
+    "stop_reason": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string",
+          "minLength": 1
+        }
+      ]
+    },
+    "completion_seal": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/$defs/completionSeal"
+        }
+      ]
+    },
+    "failure": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/$defs/failureEvidence"
+        }
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "state": {
+            "const": "COMPLETED"
+          }
+        },
+        "required": [
+          "state"
+        ]
+      },
+      "then": {
+        "properties": {
+          "stop_reason": {
+            "type": "null"
+          },
+          "completion_seal": {
+            "$ref": "#/$defs/completionSeal"
+          },
+          "failure": {
+            "type": "null"
+          },
+          "accounting": {
+            "properties": {
+              "failed_record_count": {
+                "const": 0
+              },
+              "all_scheduled_records_accounted": {
+                "const": true
+              },
+              "accounting_reconciled": {
+                "const": true
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "state": {
+            "const": "SAFE_PAUSED"
+          }
+        },
+        "required": [
+          "state"
+        ]
+      },
+      "then": {
+        "properties": {
+          "stop_reason": {
+            "type": "string",
+            "minLength": 1
+          },
+          "completion_seal": {
+            "type": "null"
+          },
+          "failure": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/failureEvidence"
+              },
+              {
+                "properties": {
+                  "failure_class": {
+                    "const": "SAFE_RESOURCE_PAUSE"
+                  },
+                  "resume_allowed": {
+                    "const": true
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "state": {
+            "const": "FAILED_WITH_EVIDENCE"
+          }
+        },
+        "required": [
+          "state"
+        ]
+      },
+      "then": {
+        "properties": {
+          "stop_reason": {
+            "type": "string",
+            "minLength": 1
+          },
+          "completion_seal": {
+            "type": "null"
+          },
+          "failure": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/failureEvidence"
+              },
+              {
+                "properties": {
+                  "failure_class": {
+                    "enum": [
+                      "INTEGRITY_FAILURE",
+                      "INVARIANT_FAILURE",
+                      "INPUT_FAILURE",
+                      "UNHANDLED_FAILURE"
+                    ]
+                  },
+                  "resume_allowed": {
+                    "const": false
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "selection": {
+            "properties": {
+              "diagnostic_scope": {
+                "const": "witness"
+              }
+            },
+            "required": [
+              "diagnostic_scope"
+            ]
+          }
+        },
+        "required": [
+          "selection"
+        ]
+      },
+      "then": {
+        "properties": {
+          "parent_diagnostic_id": {
+            "type": "null"
+          },
+          "parent_authorization": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "selection": {
+            "properties": {
+              "diagnostic_scope": {
+                "const": "census"
+              }
+            },
+            "required": [
+              "diagnostic_scope"
+            ]
+          }
+        },
+        "required": [
+          "selection"
+        ]
+      },
+      "then": {
+        "properties": {
+          "parent_diagnostic_id": {
+            "type": "string"
+          },
+          "parent_authorization": {
+            "$ref": "#/$defs/parentAuthorization"
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "gitCommit": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "artifactRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "bytes",
+        "sha256"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "parentAuthorization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "diagnostic_id",
+        "diagnostic_manifest",
+        "verified_marker",
+        "bundle_seal",
+        "terminal_lock",
+        "process_result"
+      ],
+      "properties": {
+        "diagnostic_id": {
+          "type": "string",
+          "pattern": "^B0_capacity_[0-9]{8}T[0-9]{6}Z_[0-9a-f]{7,40}$"
+        },
+        "diagnostic_manifest": {
+          "$ref": "#/$defs/artifactRef"
+        },
+        "verified_marker": {
+          "$ref": "#/$defs/artifactRef"
+        },
+        "bundle_seal": {
+          "$ref": "#/$defs/artifactRef"
+        },
+        "terminal_lock": {
+          "$ref": "#/$defs/artifactRef"
+        },
+        "process_result": {
+          "$ref": "#/$defs/artifactRef"
+        }
+      }
+    },
+    "exactCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "reachable_node_count",
+        "reachable_transition_count",
+        "minimum_state_path_count",
+        "evaluated_primitive_action_count",
+        "evaluated_state_dp_cell_count",
+        "reachable_states_sha256"
+      ],
+      "properties": {
+        "reachable_node_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "reachable_transition_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "minimum_state_path_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "evaluated_primitive_action_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "evaluated_state_dp_cell_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "reachable_states_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
+    },
+    "lowerBounds": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "reachable_node_count",
+        "reachable_transition_count",
+        "minimum_state_path_count",
+        "evaluated_primitive_action_count",
+        "evaluated_state_dp_cell_count"
+      ],
+      "properties": {
+        "reachable_node_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "reachable_transition_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "minimum_state_path_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "evaluated_primitive_action_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "evaluated_state_dp_cell_count": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "alignmentStatistics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "minimum_edit_count",
+        "minimum_alignment_count",
+        "evaluated_dag_cell_count",
+        "counts_exact"
+      ],
+      "properties": {
+        "minimum_edit_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "minimum_alignment_count": {
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "evaluated_dag_cell_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "counts_exact": {
+          "type": "boolean"
+        }
+      }
+    },
+    "recordStopEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "stop_rule",
+        "dimension",
+        "frozen_limit",
+        "observed_lower_bound",
+        "message"
+      ],
+      "properties": {
+        "stop_rule": {
+          "const": "STOP_RULE_B0_PATH_STATE_COMPLEXITY"
+        },
+        "dimension": {
+          "$ref": "#/$defs/frozenLimitName"
+        },
+        "frozen_limit": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "observed_lower_bound": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "frozenLimitName": {
+      "enum": [
+        "max_dag_cells",
+        "max_reachable_states",
+        "max_neighbor_expansions",
+        "max_state_dp_cells",
+        "max_sequences",
+        "max_block_postings",
+        "max_substring_probes",
+        "max_candidate_pairs",
+        "max_exact_dp_cells"
+      ]
+    },
+    "recordResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schema_version",
+        "ordinal",
+        "record_id",
+        "dataset_id",
+        "region",
+        "canonical_jsonl_line",
+        "input_record_structural_sha256",
+        "source_sequence_sha256",
+        "candidate_sequence_sha256",
+        "source_length",
+        "candidate_length",
+        "alignment_statistics",
+        "outcome",
+        "state_universe_artifact",
+        "capacity",
+        "frozen_gate_assessment",
+        "evidence_semantics",
+        "stop",
+        "elapsed_seconds",
+        "peak_rss_bytes",
+        "spill_bytes"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "b0_capacity_record.v1"
+        },
+        "ordinal": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "record_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "dataset_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "region": {
+          "enum": [
+            "five_utr",
+            "three_utr"
+          ]
+        },
+        "canonical_jsonl_line": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "input_record_structural_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "source_sequence_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "candidate_sequence_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "source_length": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "candidate_length": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "alignment_statistics": {
+          "$ref": "#/$defs/alignmentStatistics"
+        },
+        "outcome": {
+          "enum": [
+            "EXACT_COMPLETED",
+            "LOWER_BOUND_STOPPED"
+          ]
+        },
+        "state_universe_artifact": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/artifactRef"
+            }
+          ]
+        },
+        "capacity": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "exact",
+            "lower_bound"
+          ],
+          "properties": {
+            "exact": {
+              "oneOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "$ref": "#/$defs/exactCounts"
+                }
+              ]
+            },
+            "lower_bound": {
+              "oneOf": [
+                {
+                  "type": "null"
+                },
+                {
+                  "$ref": "#/$defs/lowerBounds"
+                }
+              ]
+            }
+          }
+        },
+        "frozen_gate_assessment": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "would_pass_frozen_b0_limits",
+            "exceeded_limits"
+          ],
+          "properties": {
+            "would_pass_frozen_b0_limits": {
+              "type": "boolean"
+            },
+            "exceeded_limits": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "$ref": "#/$defs/frozenLimitName"
+              }
+            }
+          }
+        },
+        "evidence_semantics": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "counts_exact",
+            "state_set_complete",
+            "no_approximation_emitted",
+            "usable_for_b0_acceptance"
+          ],
+          "properties": {
+            "counts_exact": {
+              "type": "boolean"
+            },
+            "state_set_complete": {
+              "type": "boolean"
+            },
+            "no_approximation_emitted": {
+              "const": true
+            },
+            "usable_for_b0_acceptance": {
+              "const": false
+            }
+          }
+        },
+        "stop": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/recordStopEvidence"
+            }
+          ]
+        },
+        "elapsed_seconds": {
+          "type": "number",
+          "minimum": 0
+        },
+        "peak_rss_bytes": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "spill_bytes": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "outcome": {
+                "const": "EXACT_COMPLETED"
+              }
+            },
+            "required": [
+              "outcome"
+            ]
+          },
+          "then": {
+            "properties": {
+              "alignment_statistics": {
+                "properties": {
+                  "minimum_alignment_count": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "counts_exact": {
+                    "const": true
+                  }
+                }
+              },
+              "capacity": {
+                "properties": {
+                  "exact": {
+                    "$ref": "#/$defs/exactCounts"
+                  },
+                  "lower_bound": {
+                    "type": "null"
+                  }
+                }
+              },
+              "state_universe_artifact": {
+                "$ref": "#/$defs/artifactRef"
+              },
+              "evidence_semantics": {
+                "properties": {
+                  "counts_exact": {
+                    "const": true
+                  },
+                  "state_set_complete": {
+                    "const": true
+                  }
+                }
+              },
+              "stop": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "outcome": {
+                "const": "LOWER_BOUND_STOPPED"
+              }
+            },
+            "required": [
+              "outcome"
+            ]
+          },
+          "then": {
+            "properties": {
+              "alignment_statistics": {
+                "oneOf": [
+                  {
+                    "properties": {
+                      "minimum_alignment_count": {
+                        "type": "integer",
+                        "minimum": 1
+                      },
+                      "counts_exact": {
+                        "const": true
+                      }
+                    }
+                  },
+                  {
+                    "properties": {
+                      "minimum_alignment_count": {
+                        "type": "null"
+                      },
+                      "counts_exact": {
+                        "const": false
+                      }
+                    }
+                  }
+                ]
+              },
+              "capacity": {
+                "properties": {
+                  "exact": {
+                    "type": "null"
+                  },
+                  "lower_bound": {
+                    "$ref": "#/$defs/lowerBounds"
+                  }
+                }
+              },
+              "state_universe_artifact": {
+                "type": "null"
+              },
+              "evidence_semantics": {
+                "properties": {
+                  "counts_exact": {
+                    "const": false
+                  },
+                  "state_set_complete": {
+                    "const": false
+                  }
+                }
+              },
+              "stop": {
+                "$ref": "#/$defs/recordStopEvidence"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "frozenFirstWitness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "witness_kind",
+        "record_id",
+        "canonical_jsonl_line",
+        "source_length",
+        "candidate_length",
+        "expected",
+        "observed_record_ordinal",
+        "parity_passed"
+      ],
+      "properties": {
+        "witness_kind": {
+          "const": "FROZEN_FIRST_PATH_COMPLEXITY_WITNESS"
+        },
+        "record_id": {
+          "const": "GSE217518:record:025e56d3b64660abb559dcbd"
+        },
+        "canonical_jsonl_line": {
+          "const": 39913
+        },
+        "source_length": {
+          "const": 129
+        },
+        "candidate_length": {
+          "const": 114
+        },
+        "expected": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "reachable_node_count",
+            "reachable_transition_count",
+            "minimum_state_path_count",
+            "evaluated_primitive_action_count",
+            "evaluated_state_dp_cell_count",
+            "reachable_states_sha256"
+          ],
+          "properties": {
+            "reachable_node_count": {
+              "const": 95217
+            },
+            "reachable_transition_count": {
+              "const": 751771
+            },
+            "minimum_state_path_count": {
+              "const": 3934510691993
+            },
+            "evaluated_primitive_action_count": {
+              "const": 1205477
+            },
+            "evaluated_state_dp_cell_count": {
+              "const": 0
+            },
+            "reachable_states_sha256": {
+              "const": "900076096ad75979a1b592b6d14fd7647dfe54c39b4cee80a053937de9411332"
+            }
+          }
+        },
+        "observed_record_ordinal": {
+          "const": 0
+        },
+        "parity_passed": {
+          "const": true
+        }
+      }
+    },
+    "codeFileRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path",
+        "bytes",
+        "sha256",
+        "role"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "role": {
+          "enum": [
+            "PATH_STATE_ORACLE",
+            "NEAR_NEIGHBOR_ORACLE",
+            "SELECTION_ORACLE",
+            "STREAMING_PROTOTYPE",
+            "DIAGNOSTIC_ENTRYPOINT",
+            "DIAGNOSTIC_SCHEMA"
+          ]
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "git",
+        "exact_argv",
+        "exact_argv_sha256",
+        "launch_cwd",
+        "resolved_config",
+        "runtime_manifest",
+        "python_launcher",
+        "d1_snapshot",
+        "d1_snapshot_validation",
+        "d1_acceptance",
+        "d1_build_manifest",
+        "canonical_store_metadata_only",
+        "structural_store",
+        "ambiguity_report",
+        "process_result",
+        "code_files"
+      ],
+      "properties": {
+        "git": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "project_root",
+            "git_dir",
+            "head",
+            "clean",
+            "dirty_state_sha256"
+          ],
+          "properties": {
+            "project_root": {
+              "type": "string",
+              "pattern": "^/"
+            },
+            "git_dir": {
+              "type": "string",
+              "pattern": "^/"
+            },
+            "head": {
+              "$ref": "#/$defs/gitCommit"
+            },
+            "clean": {
+              "const": true
+            },
+            "dirty_state_sha256": {
+              "$ref": "#/$defs/sha256"
+            }
+          }
+        },
+        "exact_argv": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "exact_argv_sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "launch_cwd": {
+          "type": "string",
+          "pattern": "^/"
+        },
+        "resolved_config": {
+          "$ref": "#/$defs/artifactRef"
+        },
+        "runtime_manifest": {
+          "$ref": "#/$defs/artifactRef"
+        },
+        "python_launcher": {
+          "$ref": "#/$defs/artifactRef"
+        },
+        "d1_snapshot": {
+          "$ref": "#/$defs/artifactRef"
+        },
+        "d1_snapshot_validation": {
+          "$ref": "#/$defs/artifactRef"
+        },
+        "d1_acceptance": {
+          "$ref": "#/$defs/artifactRef"
+        },
+        "d1_build_manifest": {
+          "$ref": "#/$defs/artifactRef"
+        },
+        "canonical_store_metadata_only": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "path",
+            "bytes",
+            "sha256",
+            "record_count",
+            "record_ids_sha256",
+            "content_sha256",
+            "selection_opened",
+            "capacity_algorithm_opened",
+            "opaque_integrity_hash_opened",
+            "jsonl_parsed",
+            "label_values_accessed"
+          ],
+          "properties": {
+            "path": {
+              "type": "string",
+              "minLength": 1
+            },
+            "bytes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "sha256": {
+              "$ref": "#/$defs/sha256"
+            },
+            "record_count": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "record_ids_sha256": {
+              "$ref": "#/$defs/sha256"
+            },
+            "content_sha256": {
+              "$ref": "#/$defs/sha256"
+            },
+            "selection_opened": {
+              "const": false
+            },
+            "capacity_algorithm_opened": {
+              "const": false
+            },
+            "opaque_integrity_hash_opened": {
+              "const": true
+            },
+            "jsonl_parsed": {
+              "const": false
+            },
+            "label_values_accessed": {
+              "const": false
+            }
+          }
+        },
+        "structural_store": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "path",
+            "bytes",
+            "sha256",
+            "record_count",
+            "record_ids_sha256",
+            "structural_content_sha256",
+            "role"
+          ],
+          "properties": {
+            "path": {
+              "type": "string",
+              "minLength": 1
+            },
+            "bytes": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "sha256": {
+              "$ref": "#/$defs/sha256"
+            },
+            "record_count": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "record_ids_sha256": {
+              "$ref": "#/$defs/sha256"
+            },
+            "structural_content_sha256": {
+              "$ref": "#/$defs/sha256"
+            },
+            "role": {
+              "const": "D1_SEALED_LABEL_FREE_CANDIDATE_STORE"
+            }
+          }
+        },
+        "ambiguity_report": {
+          "$ref": "#/$defs/artifactRef"
+        },
+        "process_result": {
+          "$ref": "#/$defs/artifactRef"
+        },
+        "code_files": {
+          "type": "array",
+          "minItems": 6,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/codeFileRef"
+          }
+        }
+      }
+    },
+    "frozenB0Limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "max_dag_cells",
+        "max_reachable_states",
+        "max_neighbor_expansions",
+        "max_state_dp_cells",
+        "max_sequences",
+        "max_block_postings",
+        "max_substring_probes",
+        "max_candidate_pairs",
+        "max_exact_dp_cells"
+      ],
+      "properties": {
+        "max_dag_cells": {
+          "const": 1000000
+        },
+        "max_reachable_states": {
+          "const": 50000
+        },
+        "max_neighbor_expansions": {
+          "const": 5000000
+        },
+        "max_state_dp_cells": {
+          "const": 50000000
+        },
+        "max_sequences": {
+          "const": 100000
+        },
+        "max_block_postings": {
+          "const": 600000
+        },
+        "max_substring_probes": {
+          "const": 50000000
+        },
+        "max_candidate_pairs": {
+          "const": 1000000
+        },
+        "max_exact_dp_cells": {
+          "const": 100000000
+        }
+      }
+    },
+    "diagnosticSafetyLimits": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "minimum_free_bytes",
+        "max_rss_bytes",
+        "max_wall_seconds",
+        "max_spill_bytes",
+        "max_dag_cells_per_record",
+        "max_reachable_states_per_record",
+        "max_neighbor_expansions_per_record",
+        "max_state_dp_cells_per_record",
+        "max_spill_bytes_per_record",
+        "chunk_size",
+        "max_open_chunks",
+        "heartbeat_seconds"
+      ],
+      "properties": {
+        "minimum_free_bytes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_rss_bytes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_wall_seconds": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_spill_bytes": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_dag_cells_per_record": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_reachable_states_per_record": {
+          "type": "integer",
+          "minimum": 50001
+        },
+        "max_neighbor_expansions_per_record": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_state_dp_cells_per_record": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_spill_bytes_per_record": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "chunk_size": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_open_chunks": {
+          "type": "integer",
+          "minimum": 2
+        },
+        "heartbeat_seconds": {
+          "type": "integer",
+          "minimum": 300
+        }
+      }
+    },
+    "algorithmContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "path_state_algorithm",
+        "state_closure_scope",
+        "state_path_count_scope",
+        "primitive_action_evaluation_scope",
+        "near_neighbor_algorithm",
+        "near_neighbor_edit_distance_threshold",
+        "frozen_b0_limits",
+        "diagnostic_safety_limits"
+      ],
+      "properties": {
+        "path_state_algorithm": {
+          "const": "all_shortest_dynamic_edit_state_closure_v3"
+        },
+        "state_closure_scope": {
+          "const": "all_shortest_primitive_dynamic_edit_execution_orders_sequence_identity"
+        },
+        "state_path_count_scope": {
+          "const": "minimum_primitive_edit_state_paths_coordinate_equivalent_transitions_collapsed"
+        },
+        "primitive_action_evaluation_scope": {
+          "const": "distinct_dynamic_geodesic_actions_before_sequence_identity_collapse"
+        },
+        "near_neighbor_algorithm": {
+          "const": "six_block_pigeonhole_all_substring_candidates_exact_banded_levenshtein_v1"
+        },
+        "near_neighbor_edit_distance_threshold": {
+          "const": 5
+        },
+        "frozen_b0_limits": {
+          "$ref": "#/$defs/frozenB0Limits"
+        },
+        "diagnostic_safety_limits": {
+          "$ref": "#/$defs/diagnosticSafetyLimits"
+        }
+      }
+    },
+    "accounting": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "scheduled_record_count",
+        "terminal_record_count",
+        "exact_completed_count",
+        "lower_bound_count",
+        "failed_record_count",
+        "outcome_counts",
+        "all_scheduled_records_accounted",
+        "accounting_reconciled",
+        "record_results",
+        "record_shard_index",
+        "capacity_summary"
+      ],
+      "properties": {
+        "scheduled_record_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "terminal_record_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "exact_completed_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "lower_bound_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "failed_record_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "outcome_counts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "EXACT_COMPLETED",
+            "LOWER_BOUND_STOPPED"
+          ],
+          "properties": {
+            "EXACT_COMPLETED": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "LOWER_BOUND_STOPPED": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "all_scheduled_records_accounted": {
+          "type": "boolean"
+        },
+        "accounting_reconciled": {
+          "type": "boolean"
+        },
+        "record_results": {
+          "$ref": "#/$defs/artifactRef"
+        },
+        "record_shard_index": {
+          "$ref": "#/$defs/artifactRef"
+        },
+        "capacity_summary": {
+          "$ref": "#/$defs/artifactRef"
+        }
+      }
+    },
+    "resultSemantics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "exact_capacity_complete",
+        "lower_bounds_present",
+        "no_approximation_emitted",
+        "usable_for_budget_decision",
+        "usable_for_b0_acceptance"
+      ],
+      "properties": {
+        "exact_capacity_complete": {
+          "type": "boolean"
+        },
+        "lower_bounds_present": {
+          "type": "boolean"
+        },
+        "no_approximation_emitted": {
+          "const": true
+        },
+        "usable_for_budget_decision": {
+          "type": "boolean"
+        },
+        "usable_for_b0_acceptance": {
+          "const": false
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "lower_bounds_present": {
+                "const": true
+              }
+            },
+            "required": [
+              "lower_bounds_present"
+            ]
+          },
+          "then": {
+            "properties": {
+              "exact_capacity_complete": {
+                "const": false
+              }
+            }
+          }
+        }
+      ]
+    },
+    "completionSeal": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sealed_at_utc",
+        "terminal_marker",
+        "terminal_marker_ref",
+        "artifact_checksum_index_path",
+        "bundle_seal_path",
+        "terminal_lock_path",
+        "record_shard_index"
+      ],
+      "properties": {
+        "sealed_at_utc": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "terminal_marker": {
+          "const": "DONE"
+        },
+        "terminal_marker_ref": {
+          "$ref": "#/$defs/artifactRef"
+        },
+        "artifact_checksum_index_path": {
+          "const": "artifact_checksums.json"
+        },
+        "bundle_seal_path": {
+          "const": "bundle_seal.json"
+        },
+        "terminal_lock_path": {
+          "const": "terminal.lock"
+        },
+        "record_shard_index": {
+          "$ref": "#/$defs/artifactRef"
+        }
+      }
+    },
+    "failureEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "failed_at_utc",
+        "failure_class",
+        "reason",
+        "evidence",
+        "partial_outputs_preserved",
+        "resume_allowed"
+      ],
+      "properties": {
+        "failed_at_utc": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "failure_class": {
+          "enum": [
+            "SAFE_RESOURCE_PAUSE",
+            "INTEGRITY_FAILURE",
+            "INVARIANT_FAILURE",
+            "INPUT_FAILURE",
+            "UNHANDLED_FAILURE"
+          ]
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1
+        },
+        "evidence": {
+          "$ref": "#/$defs/artifactRef"
+        },
+        "partial_outputs_preserved": {
+          "const": true
+        },
+        "resume_allowed": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}
