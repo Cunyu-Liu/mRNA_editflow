@@ -1,14 +1,60 @@
 """Small but structurally complete governance documents for validator tests."""
+
 from __future__ import annotations
 
 import hashlib
 from pathlib import Path
 
 from scripts.execution.acceptance_semantics import (
+    B0_CLAIM_BOUNDARY,
+    B0_FOUNDATION_STATE,
+    B0_LEAKAGE_GATE_KEYS,
+    B0_LEAKAGE_ZERO_COUNTS,
+    B0_REQUIRED_PARTITION_IDS,
+    D1_ACCEPTED_DATASETS,
+    D1_BLOCKED_DATASETS,
     D1_REQUIRED_ARTIFACT_PATHS,
     D1_REQUIRED_SUPPORTED_DATASETS,
     D1_SCOPE_DATASETS,
 )
+
+
+def _d1_provenance_check(dataset_id: str) -> dict:
+    is_accepted = dataset_id in D1_ACCEPTED_DATASETS
+    raw_files = (
+        [
+            {
+                "bytes": len(dataset_id),
+                "defaults": {},
+                "delimiter": None,
+                "format": "tsv",
+                "path": f"/production/inputs/{dataset_id}/input.tsv",
+                "role": "sequence_and_provided_label_input",
+                "sha256": hashlib.sha256(dataset_id.encode("utf-8")).hexdigest(),
+                "sheet_name": None,
+            }
+        ]
+        if is_accepted
+        else []
+    )
+    return {
+        "name": "production_input_provenance_complete",
+        "passed": True,
+        "detail": {
+            "accepted_provenance_passed": is_accepted,
+            "audit": {
+                "complete": is_accepted,
+                "download_manifest_complete": True,
+                "license_complete": True,
+                "raw_files": raw_files,
+                "raw_files_complete": is_accepted,
+            },
+            "blocked_or_excluded": not is_accepted,
+            "fixture_exemption": False,
+            "integrity_failures": [],
+            "metadata_only_provenance_passed": not is_accepted,
+        },
+    }
 
 
 def valid_d1_acceptance(stage_root: Path) -> dict:
@@ -27,12 +73,17 @@ def valid_d1_acceptance(stage_root: Path) -> dict:
         "dataset_results": [
             {
                 "dataset_id": dataset_id,
-                "status": "accepted",
+                "status": (
+                    "accepted" if dataset_id in D1_ACCEPTED_DATASETS else "blocked"
+                ),
                 "passed": True,
-                "paper_eligible": True,
+                "paper_eligible": dataset_id in D1_ACCEPTED_DATASETS,
                 "fixture_mode": False,
-                "checks": [{"name": "complete", "passed": True}],
-                "counts": {"labels": 1},
+                "checks": [
+                    {"name": "complete", "passed": True},
+                    _d1_provenance_check(dataset_id),
+                ],
+                "counts": {"labels": 1 if dataset_id in D1_ACCEPTED_DATASETS else 0},
             }
             for dataset_id in sorted(D1_SCOPE_DATASETS)
         ],
@@ -66,9 +117,7 @@ def valid_d1_acceptance(stage_root: Path) -> dict:
             "build_manifest": {
                 "path": str(build_manifest_path.resolve()),
                 "bytes": build_manifest_path.stat().st_size,
-                "sha256": hashlib.sha256(
-                    build_manifest_path.read_bytes()
-                ).hexdigest(),
+                "sha256": hashlib.sha256(build_manifest_path.read_bytes()).hexdigest(),
             },
         },
         "builder_audit_validation": {
@@ -93,11 +142,14 @@ def valid_d1_acceptance(stage_root: Path) -> dict:
     }
 
 
-def valid_b0_acceptance() -> dict:
+assert D1_ACCEPTED_DATASETS == D1_REQUIRED_SUPPORTED_DATASETS
+assert D1_ACCEPTED_DATASETS | D1_BLOCKED_DATASETS == D1_SCOPE_DATASETS
+assert not D1_ACCEPTED_DATASETS & D1_BLOCKED_DATASETS
+
+
+def _b0_acceptance_base() -> dict:
     eligible_track_ids = ["record-1"]
-    eligible_track_ids_sha256 = hashlib.sha256(
-        b"record-1\n"
-    ).hexdigest()
+    eligible_track_ids_sha256 = hashlib.sha256(b"record-1\n").hexdigest()
     universe_binding = {
         "canonical_records_sha256": "a" * 64,
         "structural_records_sha256": "b" * 64,
@@ -217,15 +269,9 @@ def valid_b0_acceptance() -> dict:
             "hidden_label_schema_sha256": "5" * 64,
             "d1_acceptance_sha256": "6" * 64,
             "d1_build_manifest_sha256": "7" * 64,
-            "candidate_ids_sha256": universe_binding[
-                "candidate_ids_sha256"
-            ],
-            "canonical_records_sha256": universe_binding[
-                "canonical_records_sha256"
-            ],
-            "structural_records_sha256": universe_binding[
-                "structural_records_sha256"
-            ],
+            "candidate_ids_sha256": universe_binding["candidate_ids_sha256"],
+            "canonical_records_sha256": universe_binding["canonical_records_sha256"],
+            "structural_records_sha256": universe_binding["structural_records_sha256"],
             "record_ids_sha256": universe_binding["record_ids_sha256"],
         },
         "required_artifact_audit": {
@@ -248,3 +294,215 @@ def valid_b0_acceptance() -> dict:
             },
         },
     }
+
+
+def valid_b0_acceptance() -> dict:
+    """Return the exact 16-field production B0 acceptance document shape."""
+    payload = _b0_acceptance_base()
+    universe_binding = payload["track_role_audit"]["universe_binding"]
+    split_universe = payload["observed"]["split_universe"]
+    split_universe["structural_records_bytes"] = 12
+    eligible_sha = universe_binding["record_ids_sha256"]
+    payload["observed"]["eligible_track_role_universe"] = {
+        "record_ids_sha256": eligible_sha,
+        "record_count": universe_binding["record_count"],
+        "excluded_record_ids_sha256": hashlib.sha256(b"record-2\n").hexdigest(),
+        "excluded_record_count": 11,
+    }
+    payload["observed"]["foundation_states"] = [
+        dict(B0_FOUNDATION_STATE) for _ in range(5)
+    ]
+    payload["claim_boundary"] = B0_CLAIM_BOUNDARY
+
+    payload["exposure_ledger"] = {
+        "coverage": 1.0,
+        "covered": 4,
+        "expected": 4,
+        "identity_level": "dataset_id",
+        "missing": [],
+        "extra": sorted(D1_SCOPE_DATASETS)[4:],
+        "required_ledger_identity_count": len(D1_SCOPE_DATASETS),
+        "missing_from_required_ledger_scope": [],
+        "outside_required_ledger_scope": [],
+        "ledger_scope_gate_passed": True,
+        "gate_passed": True,
+    }
+
+    track = payload["track_role_audit"]
+    track.update(
+        {
+            "task_structural_binding_checked": True,
+            "task_structural_binding_complete": True,
+            "identity_universes": {},
+            "data_card_counts": {},
+        }
+    )
+    seal = payload["track_a_label_seal_audit"]
+    seal.update(
+        {
+            "current_d1_chain_binding_passed": True,
+            "role_policy_exact_binding_passed": True,
+            "label_store_bytes": 1,
+            "candidate_count": universe_binding["candidate_count"],
+            "label_record_ids_sha256": eligible_sha,
+            "label_record_count": universe_binding["record_count"],
+        }
+    )
+
+    exposure_path = "/fixture/data/data_exposure_ledger.jsonl"
+    required = payload["required_artifact_audit"]
+    for index, (name, artifact) in enumerate(
+        required["artifacts"].items(),
+        start=1,
+    ):
+        artifact["path"] = (
+            exposure_path if name == "exposure_ledger" else f"/fixture/{name}"
+        )
+        if name == "exposure_ledger":
+            artifact["bytes"] = 1
+            artifact["sha256"] = "1" * 64
+    required["claims"]["schema_valid"] = True
+    d1_binding = {
+        "schema_version": "utr_b0_d1_exposure_binding.v2",
+        "gate_passed": True,
+        "failures": [],
+        "d1_acceptance_path": "/fixture/D1/acceptance.json",
+        "d1_acceptance_sha256": seal["d1_acceptance_sha256"],
+        "d1_build_manifest_path": "/fixture/D1/build_manifest.json",
+        "d1_build_manifest_sha256": seal["d1_build_manifest_sha256"],
+        "exposure_ledger_path": exposure_path,
+        "exposure_ledger_bytes": required["artifacts"]["exposure_ledger"]["bytes"],
+        "exposure_ledger_sha256": required["artifacts"]["exposure_ledger"]["sha256"],
+        "ledger_semantics_valid": True,
+    }
+
+    leakage_gates = {name: True for name in B0_LEAKAGE_GATE_KEYS}
+    leakage_counts = {name: 0 for name in B0_LEAKAGE_ZERO_COUNTS.values()}
+    leakage_counts.update(
+        {
+            "metadata_overlap_count": 0,
+            "explained_metadata_overlap_count": 0,
+            "unexplained_metadata_overlap_count": 0,
+            "record_role_overlap_count": 0,
+            "component_role_overlap_count": 0,
+            "frozen_universe_issue_count": 0,
+        }
+    )
+    reports = []
+    for report_index, (
+        identity,
+        partition_ids,
+    ) in enumerate(B0_REQUIRED_PARTITION_IDS.items(), start=1):
+        split_kind, left_region, right_region = identity
+        region = None if split_kind == "cross_region_transfer" else left_region
+        source_region = left_region if split_kind == "cross_region_transfer" else None
+        target_region = right_region if split_kind == "cross_region_transfer" else None
+        partitions = []
+        for partition_index, partition_id in enumerate(
+            sorted(partition_ids),
+            start=1,
+        ):
+            heldout_study = (
+                partition_id.split(":", 1)[1]
+                if split_kind == "study_disjoint"
+                else None
+            )
+            partitions.append(
+                {
+                    "schema_version": ("utr_b0_partition_leakage_report.v2"),
+                    "partition_id": partition_id,
+                    "split_partition_sha256": (
+                        f"{report_index * 100 + partition_index:064x}"
+                    ),
+                    "split_kind": split_kind,
+                    "region": region,
+                    "source_region": source_region,
+                    "target_region": target_region,
+                    "heldout_study": heldout_study,
+                    "counts": dict(leakage_counts),
+                    "acceptance_gates": dict(leakage_gates),
+                    "gate_passed": True,
+                    "foundation_pretraining_overlap": dict(B0_FOUNDATION_STATE),
+                    "metadata_axis_status": {},
+                    "required_axis_status": {},
+                    "examples": {},
+                }
+            )
+        reports.append(
+            {
+                "schema_version": "utr_b0_leakage_report.v2",
+                "split_kind": split_kind,
+                "region": region,
+                "source_region": source_region,
+                "target_region": target_region,
+                "required_partition_ids": sorted(partition_ids),
+                "partition_count": len(partitions),
+                "partitions": partitions,
+                "counts": dict(leakage_counts),
+                "acceptance_gates": dict(leakage_gates),
+                "gate_passed": True,
+                "common_universe_binding": {
+                    "full_record_count": split_universe["canonical_record_count"],
+                    "full_record_ids_sha256": split_universe[
+                        "canonical_record_ids_sha256"
+                    ],
+                    "full_record_universe_sha256": split_universe[
+                        "structural_content_sha256"
+                    ],
+                },
+                "foundation_pretraining_overlap": dict(B0_FOUNDATION_STATE),
+                "structural_issues": [],
+                "structural_records_path": ("/fixture/D1/structural_records.jsonl"),
+                "structural_records_sha256": split_universe[
+                    "structural_records_sha256"
+                ],
+                "structural_records_bytes": split_universe["structural_records_bytes"],
+                "canonical_records_path": ("/fixture/D1/canonical_records.jsonl"),
+                "canonical_records_sha256": split_universe["canonical_records_sha256"],
+                "canonical_record_count": split_universe["canonical_record_count"],
+                "canonical_record_ids_sha256": split_universe[
+                    "canonical_record_ids_sha256"
+                ],
+                "structural_record_count": split_universe["structural_record_count"],
+                "structural_record_ids_sha256": split_universe[
+                    "structural_record_ids_sha256"
+                ],
+                "structural_content_sha256": split_universe[
+                    "structural_content_sha256"
+                ],
+                "split_manifest_path": (f"/fixture/B0/split-{report_index}.json"),
+                "split_manifest_sha256": f"{report_index + 20:064x}",
+                "split_manifest_bytes": report_index,
+                "foundation_exposure_path": None,
+                "foundation_exposure_sha256": None,
+                "recomputed_from_bound_structural_records": True,
+                "canonical_manifest_exact_recomputation": True,
+                "canonical_manifest_core_sha256": (f"{report_index + 30:064x}"),
+                "auditor_binding": {
+                    "schema_version": "utr_b0_leakage_auditor.v2",
+                    "entrypoint_path": ("/fixture/scripts/data/audit_b0_leakage.py"),
+                    "entrypoint_sha256": "a" * 64,
+                    "canonical_auditor_path": (
+                        "/fixture/data/utr_benchmark_v2/leakage.py"
+                    ),
+                    "canonical_auditor_sha256": "b" * 64,
+                },
+            }
+        )
+
+    payload.update(
+        {
+            "d1_exposure_ledger_binding": d1_binding,
+            "supplied_leakage_reports_match_recomputation": True,
+            "recomputed_leakage_reports": reports,
+            "supplied_leakage_report_files": [
+                {
+                    "path": f"/fixture/B0/report-{index}.json",
+                    "bytes": index,
+                    "sha256": f"{index + 40:064x}",
+                }
+                for index in range(1, 6)
+            ],
+        }
+    )
+    return payload

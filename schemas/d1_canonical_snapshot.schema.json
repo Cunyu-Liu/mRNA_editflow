@@ -263,7 +263,8 @@
           "enum": [
             "prelaunch_untracked_content_manifest",
             "captured_head_blob",
-            "captured_head_plus_binary_diff"
+            "captured_head_plus_binary_diff",
+            "explicit_prelaunch_file_manifest"
           ]
         }
       }
