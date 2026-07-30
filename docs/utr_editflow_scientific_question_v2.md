@@ -1,10 +1,14 @@
-# Scientific Question — UTR EditFlow V2
+# Scientific Question — UTR EditFlow V2.2
 
 **Contract:** `utr_editflow_goal_v2`
 
 **Question ID:** `RQ-UTR-EDITFLOW-V2`
 
-**Goal SHA256:** `c3dc5875868d847b8519fee40b14c43b65e4c5948dc5c3b98101ca61a5671dd5`
+**Goal SHA256:** `15acc49183b66038dcf6f1c108824b4fd22c367e7fb9ebbb355562dac637a6fb`
+
+**B0 amendment:** Capacity diagnostics are non-blocking for B0 under v2.2;
+the historical E1 failure evidence remains preserved and does not become a
+PASS or an efficacy result.
 
 ## Primary question
 

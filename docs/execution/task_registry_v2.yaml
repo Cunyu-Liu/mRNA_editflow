@@ -1,6 +1,6 @@
-registry_version: "2.0.0"
+registry_version: "2.2.0"
 contract_id: utr_editflow_goal_v2
-goal_contract_sha256: c3dc5875868d847b8519fee40b14c43b65e4c5948dc5c3b98101ca61a5671dd5
+goal_contract_sha256: 15acc49183b66038dcf6f1c108824b4fd22c367e7fb9ebbb355562dac637a6fb
 
 tasks:
   - task_id: C0-01
@@ -310,3 +310,43 @@ tasks:
       - "preserve the failed gate and continue the registered missing-data path"
     commit_sha: "5c25cc30a76ce091ec6add18984376b2934757f4"
     report: "VERIFIED_CANDIDATE_ROLES_AND_MISSING_DATA_FORWARD_PATHS_FROZEN"
+
+  - task_id: B0-REBUILD-20260731
+    phase_id: B0
+    status: REGISTERED
+    hypotheses: [H1, H2, H3, H4, H5, H6]
+    dependencies: [C0-03, D0-05]
+    dependency_gates: [C0-03:VERIFIED, D0-05:VERIFIED]
+    scientific_service: >-
+      Build the physically sealed B0 Track A/B/C benchmark from the accepted
+      D1 canonical and label-free structural stores under the v2.2 contract.
+    forbidden_actions:
+      - "overwrite an existing B0 output root"
+      - "alter D1 stores, split identities, leakage reports or hidden labels"
+      - "treat capacity diagnostics, a smoke test or training-set result as a scientific conclusion"
+    inputs:
+      - "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/acceptance_hardened_postaudit_001.json"
+      - "accepted D1 canonical and sealed structural stores"
+      - "accepted D1 exposure ledger"
+    resource_labels: [CPU_HEAVY, MUTATES_EXTERNAL_ARTIFACTS]
+    conflict_keys: [b0_benchmark_v2_2]
+    allowed_parallel_tasks: []
+    files:
+      - "scripts/data/build_b0_splits.py"
+      - "scripts/data/audit_b0_leakage.py"
+      - "scripts/data/build_b0_evaluation_artifacts.py"
+      - "scripts/data/validate_b0_acceptance.py"
+    commands:
+      - "canonical D1 binding validation"
+      - "five required split builds and leakage recomputations"
+      - "sealed Track A/B/C artifact build and independent acceptance validation"
+    outputs:
+      - "fresh external B0 run root with manifest, five split manifests, five leakage reports, tracks, Data Card, claims and acceptance record"
+    acceptance:
+      - "exactly five required split identities and one bound leakage report per split"
+      - "all formal B0 leakage, exposure, track-role and artifact-binding gates pass"
+      - "B0 Data Card and manifest bind the v2.2 contract hash"
+      - "capacity diagnostics are not an acceptance gate; physical disk/RAM/process safety remains mandatory"
+    repair_loop:
+      - "preserve failed artifacts and stop at any formal B0 gate; do not change split or leakage criteria to obtain a pass"
+    report: "PENDING_FRESH_B0_V2_2_BUILD"

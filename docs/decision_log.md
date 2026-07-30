@@ -34,3 +34,35 @@ approved_by_user: true
 
 Historical files were moved unchanged into version-labelled archive
 directories. No old result, log, or Git history was deleted or rewritten.
+
+## D-2026-07-31-B0-CAPACITY-NONBLOCKING
+
+```yaml
+decision_id: D-2026-07-31-B0-CAPACITY-NONBLOCKING
+date: "2026-07-31"
+old_text: >-
+  B0 engineering execution treated exact EditFlow path/state capacity census
+  as a blocking production gate. E1 stopped after four exact records exceeded
+  50,000 reachable states and a fifth exceeded the bounded DP resource limit.
+new_text: >-
+  Under utr_editflow_goal_v2.2_b0_capacity_nonblocking, B0 capacity census is
+  an optional diagnostic only. New B0 benchmark construction is accepted only
+  against the formal B0 split, leakage, exposure, track-seal, artifact-binding
+  and Data Card gates; it does not have a B0 capacity-validation failure state.
+reason: >-
+  The user explicitly authorized removal of all B0 capacity gates and ordered
+  a fresh B0 benchmark rebuild. This alters engineering execution policy only;
+  the scientific question, Edit Flow role, leakage gates, label seals and
+  claim boundary are unchanged.
+evidence:
+  - docs/contracts/mrna_latest_build_contract_v2_2.md
+  - /mnt/cunyuliu/mrna_editflow_b0_capacity/B0_capacity_20260730T043737Z_f8e30a4
+historical_evidence_policy: >-
+  Retain E1 capacity diagnostics without deletion or relabelling. They are not
+  retroactively passed and do not prove or disprove model efficacy.
+affected_tasks: [B0-REBUILD-20260731]
+requires_rerun: >-
+  A new B0 task/run manifest must bind the v2.2 contract hash. No previous B0
+  capacity outcome can be used as the acceptance outcome of the new run.
+approved_by_user: true
+```
