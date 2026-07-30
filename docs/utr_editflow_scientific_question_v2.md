@@ -4,11 +4,14 @@
 
 **Question ID:** `RQ-UTR-EDITFLOW-V2`
 
-**Goal SHA256:** `15acc49183b66038dcf6f1c108824b4fd22c367e7fb9ebbb355562dac637a6fb`
+**Goal SHA256:** `1ec94044e7f4626c3a0d9848e31a2f7122ed6d09ac1919a73cbda659c5d3993d`
 
-**B0 amendment:** Capacity diagnostics are non-blocking for B0 under v2.2;
-the historical E1 failure evidence remains preserved and does not become a
-PASS or an efficacy result.
+**B0 amendments:** Capacity diagnostics are non-blocking for B0 under v2.2;
+the active path-leakage audit deterministically replays each accepted D1
+canonical edit script, its declared intermediates and endpoints. The historical
+E1 failure evidence remains preserved and does not become a PASS or an efficacy
+result. This qualification does not claim enumeration or clearance of all
+alternative edit orders or dynamic paths.
 
 ## Primary question
 

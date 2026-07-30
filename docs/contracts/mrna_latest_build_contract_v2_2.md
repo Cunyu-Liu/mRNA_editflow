@@ -5314,3 +5314,45 @@ requires_rerun:
 本修订仅改变未来 B0 的工程验收边界：容量诊断不再是 B0 的阻断 Gate。Section 30.3 的零泄漏、100% exposure ledger coverage 与 track-role 无歧义门槛，以及 B0-01 至 B0-05 的全部必需产物，均保持不变。
 
 不得借本修订删除既有容量失败日志、修改其时间戳、伪称旧合同已通过，或将新 B0 benchmark qualification 冒充为 Edit Flow 的性能或科学成功。任何未来 B0 运行必须在 manifest 中引用本修订后的合同哈希，并将旧容量证据列为 historical non-blocking diagnostic。
+
+---
+
+# 46. 2026-07-31 B0 冻结编辑脚本路径范围决策
+
+```yaml
+decision_id: DEC-UTR-EF-V2-20260731-B0-FROZEN-REPLAY-SCOPE
+date: 2026-07-31
+amendment_id: utr_editflow_goal_v2.2_b0_frozen_d1_replay_scope
+change_type: explicit_user_authorized_contract_amendment
+approved_by_user: explicit
+affected_phase:
+  - B0
+purpose:
+  - remove every B0 path-state capacity gate without weakening the remaining B0 zero-leakage requirement
+active_path_state_scope:
+  name: frozen_d1_canonical_edit_script_prefixes_and_declared_intermediates
+  includes:
+    - the D1-accepted source sequence and candidate endpoint
+    - every prefix obtained by deterministic replay of the D1-accepted ordered canonical edit_script
+    - explicitly declared intermediate_sequences, if present
+  replay_requirements:
+    - each edit action must be legal at replay time
+    - the full replay must reproduce the D1-accepted candidate sequence exactly
+    - edit_distance must equal the canonical edit-script length when that field is declared
+    - constructed replay states must remain marked as not observed trajectories
+  leakage_gate:
+    - the Section 30.3 zero path-leakage gate applies exactly to this frozen replay scope across train, validation, test, and held-out roles
+    - the B0 leakage report and split manifests must declare this scope and the deterministic replay algorithm
+out_of_scope_claims:
+  - B0 does not enumerate all legal edit orders, all minimum-action orders, or all dynamic edit-path states
+  - B0 pass must not be reported as a proof of leakage absence outside the frozen replay scope
+  - exact all-order state enumeration may be retained only as a non-gating diagnostic and can never create a B0 capacity-failure state
+unchanged_requirements:
+  - all non-capacity B0 schema, split, role, exposure-ledger, Data Card, track, source/candidate, and frozen-scope zero-leakage gates remain mandatory
+  - historical E1 capacity evidence remains immutable and non-blocking
+requires_rerun:
+  - true
+  - a fresh B0 manifest must bind this contract hash and report the frozen replay state scope
+```
+
+本节把容量 gate 的移除限定为可复现、可证伪的路径表示变更：B0 仍必须对每条 D1 接受的编辑脚本进行确定性逐步重放，并对该范围执行零泄漏审计；不得将未枚举的替代顺序或动态路径伪称为已审计。

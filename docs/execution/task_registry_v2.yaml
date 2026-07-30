@@ -1,6 +1,6 @@
 registry_version: "2.2.0"
 contract_id: utr_editflow_goal_v2
-goal_contract_sha256: 15acc49183b66038dcf6f1c108824b4fd22c367e7fb9ebbb355562dac637a6fb
+goal_contract_sha256: 1ec94044e7f4626c3a0d9848e31a2f7122ed6d09ac1919a73cbda659c5d3993d
 
 tasks:
   - task_id: C0-01
@@ -344,8 +344,8 @@ tasks:
       - "fresh external B0 run root with manifest, five split manifests, five leakage reports, tracks, Data Card, claims and acceptance record"
     acceptance:
       - "exactly five required split identities and one bound leakage report per split"
-      - "all formal B0 leakage, exposure, track-role and artifact-binding gates pass"
-      - "B0 Data Card and manifest bind the v2.2 contract hash"
+      - "all formal B0 leakage (within the frozen D1 replay scope), exposure, track-role and artifact-binding gates pass"
+      - "B0 Data Card and manifest bind the v2.2 contract hash and frozen D1 replay scope"
       - "capacity diagnostics are not an acceptance gate; physical disk/RAM/process safety remains mandatory"
     repair_loop:
       - "preserve failed artifacts and stop at any formal B0 gate; do not change split or leakage criteria to obtain a pass"

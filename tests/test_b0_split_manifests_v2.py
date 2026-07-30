@@ -6,6 +6,7 @@ from pathlib import Path
 
 import pytest
 
+from data.utr_benchmark_v2.edit_script import canonical_edit_script
 from data.utr_benchmark_v2.split_graph import MissingGroupingMetadataError
 from data.utr_benchmark_v2.split_graph import SplitGraphError
 from data.utr_benchmark_v2.split_graph import build_atomic_components
@@ -13,6 +14,7 @@ from data.utr_benchmark_v2.split_graph import build_split_manifest
 from data.utr_benchmark_v2.split_graph import expected_partition_ids
 from data.utr_benchmark_v2.split_graph import partition_sha256
 from scripts.data.build_b0_splits import _load_d1_acceptance_binding
+from scripts.data.build_b0_splits import _frozen_ambiguity_binding_audit
 from scripts.data.build_b0_splits import _projection_comparison
 from scripts.data.build_b0_splits import load_structural_jsonl
 
@@ -41,6 +43,7 @@ def _record(
     expanded_code = "".join(base * 6 for base in _code(index))
     source_sequence = source or (expanded_code + "AAAAAA")
     candidate_sequence = candidate or (expanded_code + "AAAAAC")
+    actions = canonical_edit_script(source_sequence, candidate_sequence)
     study = study_group or dataset
     return {
         "record_id": f"record-{index}",
@@ -52,8 +55,8 @@ def _record(
         "source_id": f"source-{index}",
         "source_sequence": source_sequence,
         "candidate_sequence": candidate_sequence,
-        "edit_script": [],
-        "edit_distance": None,
+        "edit_script": [action.to_dict() for action in actions],
+        "edit_distance": len(actions),
         "intermediate_sequences": [],
         "trajectory_observed": False,
         "source_group": source_group or f"source-group-{index}",
@@ -119,6 +122,10 @@ def test_source_assignment_is_label_independent_deterministic_and_hashed() -> No
     partition = first["partitions"][0]
     assert partition["label_free_assignment"] is True
     assert partition["algorithm"]["uses_randomness"] is False
+    assert (
+        partition["algorithm"]["state_closure_scope"]
+        == "frozen_d1_canonical_edit_script_prefixes_and_declared_intermediates"
+    )
     assert partition["partition_sha256"] == partition_sha256(partition)
     assert partition["near_neighbor_binding"]["edit_distance_threshold"] == 5
     assert partition["near_neighbor_binding"]["candidate_generation_complete"] is True
@@ -156,11 +163,11 @@ def test_each_source_axis_is_independent_and_near_neighbors_never_split() -> Non
     assert "gene_group" in gene_partition["required_disjoint_axes"]
 
 
-def test_atomic_component_uses_all_minimum_dag_states_not_declared_metadata() -> None:
+def test_atomic_component_uses_frozen_canonical_replay_states_not_metadata() -> None:
     ambiguous = _record(0, source="AC", candidate="CA")
     bridge = _record(1, source="CC", candidate="CU")
     independent = _record(2, source="GG", candidate="GU")
-    # "CC" is a reachable intermediate of an optimal AC -> CA alignment.
+    # "CC" is a prefix state of D1's deterministic canonical AC -> CA script.
     components = build_atomic_components([ambiguous, bridge, independent])
     membership = {
         record_id: component.component_id
@@ -169,6 +176,11 @@ def test_atomic_component_uses_all_minimum_dag_states_not_declared_metadata() ->
     }
     assert membership["record-0"] == membership["record-1"]
     assert membership["record-2"] != membership["record-0"]
+    assert all(
+        component.ambiguity_scope
+        == "frozen_d1_canonical_edit_script_prefixes_and_declared_intermediates"
+        for component in components
+    )
 
     # Shared metadata is audited later and must not redefine atomic state.
     metadata_only = [_record(10), _record(11)]
@@ -339,6 +351,11 @@ def test_cross_region_keeps_a_failed_required_stratum_and_blocks_outer() -> None
     records = _cross_region_records()
     # A shared state joins the required within-study 5 -> 3 source/test sides.
     records[2]["source_sequence"] = records[0]["candidate_sequence"]
+    actions = canonical_edit_script(
+        records[2]["source_sequence"], records[2]["candidate_sequence"]
+    )
+    records[2]["edit_script"] = [action.to_dict() for action in actions]
+    records[2]["edit_distance"] = len(actions)
     manifest = build_split_manifest(
         records,
         region=None,
@@ -406,6 +423,28 @@ def test_d1_projection_detects_source_or_candidate_tamper_with_same_id() -> None
         comparison = _projection_comparison([canonical], [tampered])
         assert comparison["passed"] is False
         assert comparison["mismatched_record_ids"] == ["record-0"]
+
+
+def test_b0_binds_frozen_d1_ambiguity_without_state_reenumeration() -> None:
+    record = _record(0, source="A" * 600, candidate="C" * 600)
+    report = {
+        "schema_version": "d1_edit_script_ambiguity_v2",
+        "count_scope": ["minimum_cost_character_alignments"],
+        "constructed_paths_marked_observed": 0,
+        "datasets": {
+            "dataset-0": {
+                "records": 1,
+                "records_with_quantified_ambiguity": 1,
+                "ambiguous_records": 0,
+                "max_equivalent_minimal_script_count": 1,
+                "constructed_paths_marked_observed": 0,
+                "count_scopes": ["minimum_cost_character_alignments"],
+            }
+        },
+    }
+    audit = _frozen_ambiguity_binding_audit([record], report)
+    assert audit["passed"] is True
+    assert audit["audit_mode"] == "frozen_d1_binding_no_b0_state_reenumeration"
 
 
 def test_structural_loader_recursively_rejects_nested_label_escape(

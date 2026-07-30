@@ -8,6 +8,8 @@ from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Set, 
 
 from .near_neighbors import NearNeighborClusters
 from .split_graph import METADATA_DIMENSIONS
+from .split_graph import FROZEN_EDIT_SCRIPT_ALGORITHM_ID
+from .split_graph import FROZEN_EDIT_SCRIPT_STATE_SCOPE
 from .split_graph import ROLE_NAMES
 from .split_graph import ROLE_PAIRS
 from .split_graph import SplitGraphError
@@ -830,7 +832,7 @@ def audit_cross_role_leakage(
     *,
     _near_neighbors: Optional[NearNeighborClusters] = None,
 ) -> Dict[str, Any]:
-    """Audit one partition's exact, path, intermediate, and metadata leakage."""
+    """Audit one partition within the frozen D1 replay-state scope."""
 
     try:
         near_neighbors = (
@@ -913,6 +915,8 @@ def audit_cross_role_leakage(
     }
     return {
         "schema_version": "utr_b0_partition_leakage_report.v2",
+        "path_state_scope": FROZEN_EDIT_SCRIPT_STATE_SCOPE,
+        "path_state_algorithm": FROZEN_EDIT_SCRIPT_ALGORITHM_ID,
         "partition_id": split_manifest.get("partition_id"),
         "split_partition_sha256": split_manifest.get("partition_sha256"),
         "split_kind": split_manifest.get("split_kind"),
@@ -1021,6 +1025,8 @@ def _blocked_partition_report(
     }
     return {
         "schema_version": "utr_b0_partition_leakage_report.v2",
+        "path_state_scope": FROZEN_EDIT_SCRIPT_STATE_SCOPE,
+        "path_state_algorithm": FROZEN_EDIT_SCRIPT_ALGORITHM_ID,
         "partition_id": partition.get("partition_id"),
         "split_partition_sha256": partition.get("partition_sha256"),
         "split_kind": partition.get("split_kind"),
@@ -1043,7 +1049,7 @@ def audit_split_manifest(
     *,
     _near_neighbors: Optional[NearNeighborClusters] = None,
 ) -> Dict[str, Any]:
-    """Audit every declared partition and aggregate only exact gate counts."""
+    """Audit every declared partition in the frozen D1 replay-state scope."""
 
     try:
         near_neighbors = _near_neighbors or global_near_neighbor_clusters(records)
@@ -1224,6 +1230,8 @@ def audit_split_manifest(
     foundation = normalize_foundation_exposure(foundation_exposure)
     return {
         "schema_version": "utr_b0_leakage_report.v2",
+        "path_state_scope": FROZEN_EDIT_SCRIPT_STATE_SCOPE,
+        "path_state_algorithm": FROZEN_EDIT_SCRIPT_ALGORITHM_ID,
         "split_kind": split_manifest.get("split_kind"),
         "region": split_manifest.get("region"),
         "source_region": split_manifest.get("source_region"),

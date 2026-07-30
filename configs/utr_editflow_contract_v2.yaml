@@ -3,11 +3,11 @@ contract_version: "2.2.0"
 status: FROZEN
 created_on: "2026-07-28"
 scientific_question_id: RQ-UTR-EDITFLOW-V2
-amendment_id: utr_editflow_goal_v2.2_b0_capacity_nonblocking
+amendment_id: utr_editflow_goal_v2.2_b0_frozen_d1_replay_scope
 
 goal_document:
   path: docs/contracts/mrna_latest_build_contract_v2_2.md
-  sha256: 15acc49183b66038dcf6f1c108824b4fd22c367e7fb9ebbb355562dac637a6fb
+  sha256: 1ec94044e7f4626c3a0d9848e31a2f7122ed6d09ac1919a73cbda659c5d3993d
   authority_rank: 1
 
 authority_order:
@@ -128,6 +128,19 @@ b0_capacity_diagnostics:
     physical_disk_ram_and_process_safety_required: true
     exhaustive_path_or_state_enumeration_required: false
     diagnostic_results_must_not_support_efficacy_claims: true
+
+b0_path_leakage_scope:
+  status: active_formal_gate
+  scope: frozen_d1_canonical_edit_script_prefixes_and_declared_intermediates
+  algorithm: frozen_d1_ordered_edit_script_replay_v2_2
+  required_checks:
+    - each ordered D1 edit-script prefix replays legally
+    - full replay exactly reproduces the accepted candidate
+    - declared intermediates remain non-observed
+    - cross-role leakage is zero inside this frozen replay scope
+  prohibited_claims:
+    - exhaustive all-order or all-dynamic-path enumeration
+    - leakage clearance outside the declared frozen replay scope
 
 monitoring:
   initial_health_check_minutes: [3, 5]

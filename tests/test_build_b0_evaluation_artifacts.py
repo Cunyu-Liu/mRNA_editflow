@@ -946,7 +946,8 @@ def test_full_builder_freezes_before_labels_and_emits_bound_three_tracks(
         ).read_text(encoding="utf-8")
     )
     assert selection_freeze["role_policy_sha256"] == builder._sha256(policy_path)
-    assert policy["rerouted_test_record_count"] == 1
+    # Under the frozen canonical replay scope, no alternate-order component reroutes r9.
+    assert policy["rerouted_test_record_count"] == 0
     assert (
         policy["track_evidence_counts"]["closed_measured_pool"][
             "structural_unmeasured_pair_type"
@@ -962,7 +963,8 @@ def test_full_builder_freezes_before_labels_and_emits_bound_three_tracks(
         .read_text(encoding="utf-8")
         .splitlines()
     ]
-    assert "r9" in {task["provenance"]["record_id"] for task in track_b_tasks}
+    # r9 is structural-only and no longer shares an all-order path component.
+    assert "r9" not in {task["provenance"]["record_id"] for task in track_b_tasks}
     track_c_tasks = [
         json.loads(line)
         for line in (
@@ -975,6 +977,7 @@ def test_full_builder_freezes_before_labels_and_emits_bound_three_tracks(
         task["candidate_id"] is None and task["candidate_sequence"] is None
         for task in track_c_tasks
     )
+    assert "r9" in {task["provenance"]["record_id"] for task in track_c_tasks}
     hidden_labels = [
         json.loads(line)
         for line in (

@@ -1,10 +1,9 @@
-"""Label-free, fail-closed split construction for UTR EditFlow benchmark v2.
+"""Label-free, fail-closed split construction for the UTR EditFlow benchmark.
 
-Atomic components are defined *only* by source/candidate sequence states and
-the complete sequence-state closure of every shortest primitive dynamic edit
-execution order.  Study, scaffold, library, and other metadata are audited
-separately under an explicit overlap policy; they never silently collapse the
-complete benchmark into one component.
+Under the active v2.2 B0 amendment, atomic components are defined by the
+frozen D1 canonical edit-script replay states, declared intermediates, and
+endpoints.  Exact all-order shortest-path closure remains available below as a
+diagnostic utility, but is not an active B0 acceptance computation.
 """
 
 from __future__ import annotations
@@ -28,6 +27,7 @@ from typing import (
 from .near_neighbors import NearNeighborClusters
 from .near_neighbors import NearNeighborError
 from .near_neighbors import build_near_neighbor_clusters
+from .edit_script import apply_edit_script
 from .path_states import ALGORITHM_ID as PATH_STATE_ALGORITHM_ID
 from .path_states import MINIMUM_ALIGNMENT_COUNT_SCOPE
 from .path_states import STATE_CLOSURE_SCOPE
@@ -91,6 +91,29 @@ _UNKNOWN_TOKENS = {
     "UNRESOLVED",
     "TBD",
 }
+
+FROZEN_EDIT_SCRIPT_STATE_SCOPE = (
+    "frozen_d1_canonical_edit_script_prefixes_and_declared_intermediates"
+)
+FROZEN_EDIT_SCRIPT_ALGORITHM_ID = "frozen_d1_ordered_edit_script_replay_v2_2"
+
+
+@dataclass(frozen=True)
+class FrozenEditScriptStateClosure:
+    """A bounded, revalidated state set for one frozen D1 edit script."""
+
+    source_sequence: str
+    candidate_sequence: str
+    reachable_states: Tuple[str, ...]
+    constructed_intermediate_states: Tuple[str, ...]
+    minimum_alignment_count: int
+    minimum_state_path_count: int
+    reachable_transition_count: int
+    reachable_states_sha256: str
+
+    @property
+    def reachable_node_count(self) -> int:
+        return len(self.reachable_states)
 _NON_INTERVENTION_PAIR_TYPES = {
     "absolute_property_only",
     "unlabeled_pretraining",
@@ -152,14 +175,14 @@ class DuplicateRecordIDError(SplitGraphError):
 
 @dataclass(frozen=True)
 class AtomicComponent:
-    """One indivisible minimum-alignment state component."""
+    """One indivisible component in the frozen D1 replay-state scope."""
 
     component_id: str
     record_ids: Tuple[str, ...]
     sequence_nodes: Tuple[str, ...]
     regions: Tuple[str, ...]
     grouping_values: Mapping[str, Tuple[str, ...]]
-    ambiguity_scope: str = MINIMUM_ALIGNMENT_COUNT_SCOPE
+    ambiguity_scope: str = FROZEN_EDIT_SCRIPT_STATE_SCOPE
 
 
 class _UnionFind:
@@ -436,16 +459,73 @@ def alignment_state_closure(
     return closure
 
 
-def intermediate_sequences(record: Mapping[str, Any]) -> Tuple[str, ...]:
-    """Return all constructed states inside any shortest dynamic edit path."""
+def frozen_edit_script_state_closure(
+    record: Mapping[str, Any],
+) -> FrozenEditScriptStateClosure:
+    """Replay the accepted D1 script without enumerating alternate edit orders."""
 
-    return alignment_state_closure(record).constructed_intermediate_states
+    if record.get("trajectory_observed") is True:
+        raise SplitGraphError(
+            "B0 frozen edit-script replay cannot relabel an observed trajectory "
+            "as a constructed path"
+        )
+    source = canonical_sequence(record.get("source_sequence"), "source_sequence")
+    candidate = canonical_sequence(
+        record.get("candidate_sequence"), "candidate_sequence"
+    )
+    actions = record.get("edit_script")
+    if not isinstance(actions, list):
+        raise SplitGraphError("frozen B0 edit_script must be a list")
+    replayed = [source]
+    for index in range(1, len(actions) + 1):
+        try:
+            replayed.append(apply_edit_script(source, actions[:index]))
+        except Exception as exc:
+            raise SplitGraphError(
+                f"frozen B0 edit_script prefix {index} cannot be replayed"
+            ) from exc
+    if replayed[-1] != candidate:
+        raise SplitGraphError(
+            "frozen B0 edit_script does not reproduce candidate_sequence"
+        )
+    edit_distance = record.get("edit_distance")
+    if (
+        isinstance(edit_distance, int)
+        and not isinstance(edit_distance, bool)
+        and edit_distance != len(actions)
+    ):
+        raise SplitGraphError(
+            "frozen B0 edit_distance does not equal canonical edit-script length"
+        )
+    states = tuple(sorted(set(replayed) | set(_declared_intermediate_sequences(record))))
+    intermediates = tuple(
+        state for state in states if state not in {source, candidate}
+    )
+    digest = hashlib.sha256(
+        ("\n".join(states) + ("\n" if states else "")).encode("utf-8")
+    ).hexdigest()
+    return FrozenEditScriptStateClosure(
+        source_sequence=source,
+        candidate_sequence=candidate,
+        reachable_states=states,
+        constructed_intermediate_states=intermediates,
+        minimum_alignment_count=1,
+        minimum_state_path_count=1,
+        reachable_transition_count=max(len(replayed) - 1, 0),
+        reachable_states_sha256=digest,
+    )
+
+
+def intermediate_sequences(record: Mapping[str, Any]) -> Tuple[str, ...]:
+    """Return frozen D1 script intermediates for B0 leakage auditing."""
+
+    return frozen_edit_script_state_closure(record).constructed_intermediate_states
 
 
 def state_sequences(record: Mapping[str, Any]) -> Tuple[str, ...]:
-    """Return endpoints and every shortest dynamic-edit reachable state."""
+    """Return frozen D1 script states and declared intermediates for B0."""
 
-    return alignment_state_closure(record).reachable_states
+    return frozen_edit_script_state_closure(record).reachable_states
 
 
 def _intrinsic_exclusion_reason(
@@ -552,7 +632,7 @@ def global_near_neighbor_clusters(
 def build_atomic_components(
     records: Sequence[Mapping[str, Any]],
 ) -> Tuple[AtomicComponent, ...]:
-    """Build components from all shortest-action sequence states only."""
+    """Build components from the frozen D1 edit-script state scope only."""
 
     normalized = list(records)
     if not normalized:
@@ -561,7 +641,7 @@ def build_atomic_components(
     if len(ids) != len(set(ids)):
         raise DuplicateRecordIDError("duplicate record_id in component input")
 
-    closures = [alignment_state_closure(record) for record in normalized]
+    closures = [frozen_edit_script_state_closure(record) for record in normalized]
     extracted_groups = [grouping_values(record) for record in normalized]
     uf = _UnionFind(len(normalized))
     first_by_sequence: Dict[str, int] = {}
@@ -616,10 +696,10 @@ def build_atomic_components(
                     )
                     for index, record in zip(indices, component_records)
                 ],
-                "ambiguity_scope": MINIMUM_ALIGNMENT_COUNT_SCOPE,
-                "state_closure_scope": STATE_CLOSURE_SCOPE,
-                "state_path_count_scope": STATE_PATH_COUNT_SCOPE,
-                "path_state_algorithm": PATH_STATE_ALGORITHM_ID,
+                "ambiguity_scope": "frozen_d1_bound_ambiguity_report",
+                "state_closure_scope": FROZEN_EDIT_SCRIPT_STATE_SCOPE,
+                "state_path_count_scope": "one_frozen_ordered_script",
+                "path_state_algorithm": FROZEN_EDIT_SCRIPT_ALGORITHM_ID,
             }
         )
         components.append(
@@ -647,20 +727,15 @@ def _reason_counts(
 def _ambiguity_binding(
     records: Sequence[Mapping[str, Any]],
 ) -> Dict[str, Any]:
-    closures = [alignment_state_closure(record) for record in records]
+    closures = [frozen_edit_script_state_closure(record) for record in records]
     return {
-        "count_scope": MINIMUM_ALIGNMENT_COUNT_SCOPE,
-        "state_closure_scope": STATE_CLOSURE_SCOPE,
-        "state_path_count_scope": STATE_PATH_COUNT_SCOPE,
-        "algorithm": PATH_STATE_ALGORITHM_ID,
+        "count_scope": "frozen_d1_bound_ambiguity_report",
+        "state_closure_scope": FROZEN_EDIT_SCRIPT_STATE_SCOPE,
+        "state_path_count_scope": "one_frozen_ordered_script",
+        "algorithm": FROZEN_EDIT_SCRIPT_ALGORITHM_ID,
         "records": len(closures),
-        "ambiguous_records": sum(
-            closure.minimum_alignment_count > 1 for closure in closures
-        ),
-        "max_equivalent_minimal_script_count": max(
-            (closure.minimum_alignment_count for closure in closures),
-            default=0,
-        ),
+        "ambiguous_records": None,
+        "max_equivalent_minimal_script_count": None,
         "max_minimum_state_path_count": max(
             (closure.minimum_state_path_count for closure in closures),
             default=0,
@@ -678,7 +753,7 @@ def _ambiguity_binding(
             sorted(
                 (
                     _record_id(record),
-                    closure.minimum_alignment_count,
+                    "frozen_d1_aggregate_binding",
                     closure.minimum_state_path_count,
                     closure.reachable_transition_count,
                     closure.reachable_states_sha256,
@@ -714,15 +789,15 @@ def _manifest_base(
         "label_free_assignment": True,
         "candidate_store_contains_labels": False,
         "algorithm": {
-            "name": "deterministic_all_shortest_action_component_partition_v3",
+            "name": "deterministic_frozen_d1_edit_script_component_partition_v2_2",
             "uses_randomness": False,
             "seed": None,
             "label_fields_read": [],
             "atomic_component_definition": (
-                "source_candidate_and_all_shortest_primitive_dynamic_edit_states"
+                "source_candidate_frozen_d1_edit_script_prefixes_and_declared_intermediates"
             ),
-            "path_state_algorithm": PATH_STATE_ALGORITHM_ID,
-            "state_closure_scope": STATE_CLOSURE_SCOPE,
+            "path_state_algorithm": FROZEN_EDIT_SCRIPT_ALGORITHM_ID,
+            "state_closure_scope": FROZEN_EDIT_SCRIPT_STATE_SCOPE,
             "constructed_states_claimed_observed": False,
         },
         "full_record_count": len(full_records),
@@ -1251,7 +1326,7 @@ def _build_source_disjoint_manifest(
                 "axis_partition": True,
                 "independent_group_dimension": axis_name,
                 "assignment_firewall_axes": [
-                    "exact_shortest_path_state_component",
+                    "frozen_d1_edit_script_state_component",
                     "near_neighbor_edit_distance_lte_5",
                     "source_group",
                     "scaffold_group",
@@ -1332,7 +1407,7 @@ def _study_fold_contract_fields(
         "independent_group_dimension": "study_group",
         "disjoint_scope": "test_vs_development",
         "assignment_firewall_axes": [
-            "exact_shortest_path_state_component",
+            "frozen_d1_edit_script_state_component",
             "near_neighbor_edit_distance_lte_5",
             "source_group",
             "scaffold_group",
@@ -1747,7 +1822,7 @@ def _build_cross_region_stratum(
                 within_study=bool(spec["within_study"])
             ),
             "assignment_firewall_axes": [
-                "exact_shortest_path_state_component",
+                "frozen_d1_edit_script_state_component",
                 "near_neighbor_edit_distance_lte_5",
                 "source_group",
                 "scaffold_group",

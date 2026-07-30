@@ -66,3 +66,34 @@ requires_rerun: >-
   capacity outcome can be used as the acceptance outcome of the new run.
 approved_by_user: true
 ```
+
+## D-2026-07-31-B0-FROZEN-REPLAY-SCOPE
+
+```yaml
+decision_id: D-2026-07-31-B0-FROZEN-REPLAY-SCOPE
+date: "2026-07-31"
+old_text: >-
+  B0 split construction and leakage auditing recomputed exact all-order
+  shortest-action state closures, which could recreate the removed capacity
+  gate while overstating the path scope audited by a benchmark qualification.
+new_text: >-
+  Under utr_editflow_goal_v2.2_b0_frozen_d1_replay_scope, B0 deterministically
+  replays every accepted D1 canonical edit-script prefix plus declared
+  intermediates and endpoints. Zero path leakage remains a formal gate exactly
+  within this recorded scope; no all-order or all-dynamic-path claim is made.
+reason: >-
+  The user explicitly removed every B0 capacity gate and ordered a fresh B0
+  construction. The replacement preserves an executable, falsifiable leakage
+  audit without reintroducing exhaustive path-state enumeration.
+evidence:
+  - docs/contracts/mrna_latest_build_contract_v2_2.md
+  - configs/utr_editflow_contract_v2.yaml
+historical_evidence_policy: >-
+  Historical E1 capacity outputs remain immutable diagnostics and are neither
+  deleted nor relabelled as a pass.
+affected_tasks: [B0-REBUILD-20260731]
+requires_rerun: >-
+  The fresh B0 manifest, split manifests, leakage reports and Data Card must
+  record the frozen D1 replay scope and new contract hash.
+approved_by_user: true
+```

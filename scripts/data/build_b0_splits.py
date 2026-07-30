@@ -15,7 +15,6 @@ if __package__ in (None, ""):
 from data.utr_benchmark_v2.d1_builder import CANDIDATE_STORE_FIELDS
 from data.utr_benchmark_v2.d1_builder import candidate_store_label_paths
 from data.utr_benchmark_v2.path_states import MINIMUM_ALIGNMENT_COUNT_SCOPE
-from data.utr_benchmark_v2.path_states import minimum_alignment_state_closure
 from data.utr_benchmark_v2.split_graph import REGIONS
 from data.utr_benchmark_v2.split_graph import SPLIT_KINDS
 from data.utr_benchmark_v2.split_graph import build_split_manifest
@@ -158,10 +157,19 @@ def _projection_comparison(
     }
 
 
-def _ambiguity_audit(
+def _frozen_ambiguity_binding_audit(
     canonical_records: Sequence[Mapping[str, Any]],
     ambiguity_report: Mapping[str, Any],
 ) -> Dict[str, Any]:
+    """Bind B0 to accepted D1 ambiguity evidence without state re-enumeration.
+
+    The v2.2 contract deliberately makes path/state capacity diagnostics
+    non-gating for B0.  D1's exact ambiguity report is already hash-bound by
+    its accepted artifact validation.  B0 therefore verifies that report's
+    schema, aggregate scope and record-count bindings rather than invoking the
+    capacity-limited shortest-action closure a second time.
+    """
+
     by_dataset: Dict[str, List[Mapping[str, Any]]] = {}
     for record in canonical_records:
         if (
@@ -180,32 +188,13 @@ def _ambiguity_audit(
         failures.append({"kind": "ambiguity_datasets_missing"})
     for dataset_id, report_row in report_datasets.items():
         records = by_dataset.get(str(dataset_id), [])
-        closures = [
-            minimum_alignment_state_closure(
-                str(record["source_sequence"]),
-                str(record["candidate_sequence"]),
-                known_minimum_edit_count=(
-                    record.get("edit_distance")
-                    if isinstance(record.get("edit_distance"), int)
-                    and not isinstance(record.get("edit_distance"), bool)
-                    else None
-                ),
-            )
-            for record in records
-        ]
         expected = {
-            "records": len(closures),
-            "ambiguous_records": sum(
-                closure.minimum_alignment_count > 1 for closure in closures
-            ),
-            "max_equivalent_minimal_script_count": max(
-                (closure.minimum_alignment_count for closure in closures),
-                default=0,
-            ),
+            "records": len(records),
             "constructed_paths_marked_observed": sum(
                 record.get("trajectory_observed") is True for record in records
             ),
             "count_scopes": ([MINIMUM_ALIGNMENT_COUNT_SCOPE] if records else []),
+            "records_with_quantified_ambiguity": len(records),
         }
         if not isinstance(report_row, Mapping):
             failures.append(
@@ -226,6 +215,22 @@ def _ambiguity_audit(
                         "observed": report_row.get(field),
                     }
                 )
+        ambiguous = report_row.get("ambiguous_records")
+        maximum = report_row.get("max_equivalent_minimal_script_count")
+        if not (
+            isinstance(ambiguous, int)
+            and not isinstance(ambiguous, bool)
+            and 0 <= ambiguous <= len(records)
+            and isinstance(maximum, int)
+            and not isinstance(maximum, bool)
+            and maximum >= (1 if records else 0)
+        ):
+            failures.append(
+                {
+                    "kind": "ambiguity_dataset_summary_invalid",
+                    "dataset_id": dataset_id,
+                }
+            )
     missing_report_datasets = sorted(
         set(by_dataset) - set(str(value) for value in report_datasets)
     )
@@ -236,12 +241,15 @@ def _ambiguity_audit(
                 "datasets": missing_report_datasets,
             }
         )
+    if ambiguity_report.get("schema_version") != "d1_edit_script_ambiguity_v2":
+        failures.append({"kind": "ambiguity_schema_version_mismatch"})
     if ambiguity_report.get("count_scope") != [MINIMUM_ALIGNMENT_COUNT_SCOPE]:
         failures.append({"kind": "ambiguity_count_scope_mismatch"})
     if ambiguity_report.get("constructed_paths_marked_observed") != 0:
         failures.append({"kind": "constructed_paths_marked_observed_nonzero"})
     return {
         "passed": not failures,
+        "audit_mode": "frozen_d1_binding_no_b0_state_reenumeration",
         "count_scope": MINIMUM_ALIGNMENT_COUNT_SCOPE,
         "canonical_intervention_record_count": sum(
             len(records) for records in by_dataset.values()
@@ -380,8 +388,11 @@ def _load_d1_acceptance_binding(
     }
     if ambiguity_path.is_file():
         ambiguity_report = json.loads(ambiguity_path.read_text(encoding="utf-8"))
-        ambiguity_audit = _ambiguity_audit(canonical_records, ambiguity_report)
-    checks["ambiguity_scope_and_counts_reproduced"] = ambiguity_audit["passed"]
+        ambiguity_audit = _frozen_ambiguity_binding_audit(
+            canonical_records,
+            ambiguity_report,
+        )
+    checks["frozen_d1_ambiguity_binding_passed"] = ambiguity_audit["passed"]
     return {
         "passed": all(checks.values()),
         "checks": checks,

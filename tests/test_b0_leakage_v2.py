@@ -2,6 +2,10 @@ from __future__ import annotations
 
 import copy
 
+import pytest
+
+from data.utr_benchmark_v2.edit_script import canonical_edit_script
+from data.utr_benchmark_v2.leakage import LeakageAuditError
 from data.utr_benchmark_v2.leakage import audit_cross_role_leakage
 from data.utr_benchmark_v2.leakage import audit_split_manifest
 from data.utr_benchmark_v2.split_graph import METADATA_DIMENSIONS
@@ -25,6 +29,7 @@ def _record(
 ) -> dict:
     suffix = record_id.replace("-", "_")
     dataset = dataset_id or f"dataset_{suffix}"
+    actions = canonical_edit_script(source, candidate)
     return {
         "record_id": record_id,
         "candidate_id": f"candidate_{suffix}",
@@ -35,7 +40,8 @@ def _record(
         "source_id": f"source_{suffix}",
         "source_sequence": source,
         "candidate_sequence": candidate,
-        "edit_script": [],
+        "edit_script": [action.to_dict() for action in actions],
+        "edit_distance": len(actions),
         "intermediate_sequences": [],
         "trajectory_observed": False,
         "source_group": f"source_group_{suffix}",
@@ -230,11 +236,10 @@ def test_final_endpoint_as_recomputed_train_dag_intermediate_is_detected() -> No
     ] is False
 
 
-def test_final_endpoint_from_noncanonical_action_order_is_detected() -> None:
+def test_noncanonical_action_order_is_out_of_scope_but_declared() -> None:
     records = [
-        # AA -> CC has two shortest SUB execution orders.  AC is reachable
-        # only when the second position is edited first; the former
-        # alignment-prefix implementation omitted it and falsely returned 0.
+        # AA -> CC has two shortest SUB execution orders. AC is not a state
+        # on the accepted canonical script and is deliberately out of scope.
         _record("train-1", "AA", "CC"),
         _record("val-1", "UU", "UA"),
         _record("test-1", "GG", "AC"),
@@ -244,11 +249,11 @@ def test_final_endpoint_from_noncanonical_action_order_is_detected() -> None:
         _manifest(records, ["train-1"], ["val-1"], ["test-1"]),
     )
     assert (
-        report["counts"]["final_endpoint_as_train_intermediate_count"] == 1
+        report["counts"]["final_endpoint_as_train_intermediate_count"] == 0
     )
     assert report["acceptance_gates"][
         "final_endpoint_as_train_intermediate_zero"
-    ] is False
+    ] is True
 
 
 def test_metadata_overlap_must_be_predeclared_or_is_unexplained() -> None:
@@ -327,10 +332,8 @@ def test_source_or_candidate_tamper_with_same_record_id_cannot_pass() -> None:
     ):
         tampered = copy.deepcopy(records)
         tampered[0][field] = replacement
-        report = audit_cross_role_leakage(tampered, manifest)
-        assert report["counts"]["frozen_universe_issue_count"] > 0
-        assert report["counts"]["unexplained_overlap_count"] > 0
-        assert report["gate_passed"] is False
+        with pytest.raises(LeakageAuditError, match="frozen B0 edit_script"):
+            audit_cross_role_leakage(tampered, manifest)
 
 
 def test_near_neighbor_algorithm_or_threshold_tamper_cannot_pass() -> None:
