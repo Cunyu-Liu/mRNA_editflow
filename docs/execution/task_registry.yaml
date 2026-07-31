@@ -314,16 +314,16 @@ tasks:
   - &d1_registered
     task_id: D1-01
     phase_id: D1
-    status: REGISTERED
+    status: VERIFIED
     hypotheses: [H1, H2, H3, H4, H5, H6]
     dependencies: [C0-05, D0-05]
     dependency_gates: [C0-05:VERIFIED, D0-05:VERIFIED]
     scientific_service: >-
-      Register the first required D1 stage without claiming execution, data
-      acceptance, or a frozen release state.
+      Register the existing accepted D1 stage against the confirmed canonical
+      release view without claiming a new scientific result.
     forbidden_actions:
       - "overwrite a historical D1 artifact"
-      - "treat a registered task as executed"
+      - "treat a structural release freeze as a scientific result"
       - "use final labels outside sealed evaluation"
     inputs:
       - "active single contract"
@@ -335,22 +335,27 @@ tasks:
       - "scripts/data/rebind_d1_current_canonical.py"
       - "data/d1/manifests/d1_canonical_snapshot.json"
     commands:
-      - "run the declared task only after its dependency gate is satisfied"
+      - "verify the existing D1 release acceptance and current structural snapshot"
     outputs:
       - "immutable D1 evidence or a failed-with-evidence record"
     acceptance:
       - "all declared gates pass before a final status"
     repair_loop:
       - "preserve evidence and create a new attempt; never weaken a gate"
-    commit_sha: null
-    report: "REGISTERED_NOT_EXECUTED"
+    commit_sha: "c6e72229ab18d3fd99847a5ce1b1ebdc8aff5c27"
+    report: "VERIFIED_EXISTING_D1_CURRENT_CANONICAL_RELEASE"
     evidence_class: FULL_SCOPE_DATA
     completion_policy: MUST_PASS_ALL
-    acceptance_artifact: null
-    acceptance_sha256: null
-    gate_evidence: []
-    known_blockers:
-      - "registration is not execution; D1-08 must freeze before formal B0 release"
+    acceptance_artifact: "artifacts/stages/D1_B0_20260728T160012Z_8862125/D1/acceptance.json"
+    acceptance_sha256: "611d588cb73f71f5778d449474a8f193b9988cf5aab89e0938804ef1a12a4ded"
+    gate_evidence:
+      - predicate: "d1_current_canonical_release_snapshot_passed"
+        status: PASS
+        evidence: "data/d1/manifests/d1_canonical_snapshot.json sha256=06ffbc4d07d4c48154a0694bd56ba44479666c18de5a3c28bd98a69db4d92fd8"
+      - predicate: "published_remote_ref_contains_commit"
+        status: PASS
+        evidence: "refs/heads/b0-fm0-single-contract-20260731T080551Z"
+    known_blockers: []
     phase_gate: false
 
   - <<: *d1_registered
@@ -381,7 +386,10 @@ tasks:
     task_id: D1-08
     dependencies: [D1-07]
     dependency_gates: [D1-07:VERIFIED]
+    status: FROZEN
     phase_gate: true
+    snapshot_artifact: "data/d1/manifests/d1_canonical_snapshot.json"
+    snapshot_sha256: "06ffbc4d07d4c48154a0694bd56ba44479666c18de5a3c28bd98a69db4d92fd8"
 
   - &b0_registered
     task_id: B0-01
@@ -422,8 +430,7 @@ tasks:
     acceptance_artifact: null
     acceptance_sha256: null
     gate_evidence: []
-    known_blockers:
-      - "D1-08 is not FROZEN; formal B0 release remains locked"
+    known_blockers: []
     phase_gate: false
 
   - <<: *b0_registered
