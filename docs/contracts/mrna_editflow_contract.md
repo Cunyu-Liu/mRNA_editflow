@@ -5332,10 +5332,15 @@ active_path_state_scope:
     - the D1-accepted source sequence and candidate endpoint
     - every prefix obtained by deterministic replay of the D1-accepted ordered canonical edit_script
     - explicitly declared intermediate_sequences, if present
+  replay_algorithm_id: frozen_d1_ordered_edit_script_replay_v2_3
   replay_requirements:
     - each edit action must be legal at replay time
     - the full replay must reproduce the D1-accepted candidate sequence exactly
-    - edit_distance must equal the canonical edit-script length when that field is declared
+    - edit_count must equal the canonical edit-script length when that field is declared
+    - edit_distance remains the D1-validated minimum character-level alignment distance; it can exceed edit_count when adjacent primitive indels are merged into one canonical action
+  semantic_correction:
+    - This supersedes the prior erroneous equality between edit_distance and canonical edit-script length.
+    - The correction preserves the frozen D1 file and its D1 validation semantics; it does not rebuild, filter, or relabel D1 records.
     - constructed replay states must remain marked as not observed trajectories
   leakage_gate:
     - the Section 30.3 zero path-leakage gate applies exactly to this frozen replay scope across train, validation, test, and held-out roles

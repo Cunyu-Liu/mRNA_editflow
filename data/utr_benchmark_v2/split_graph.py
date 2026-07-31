@@ -95,7 +95,7 @@ _UNKNOWN_TOKENS = {
 FROZEN_EDIT_SCRIPT_STATE_SCOPE = (
     "frozen_d1_canonical_edit_script_prefixes_and_declared_intermediates"
 )
-FROZEN_EDIT_SCRIPT_ALGORITHM_ID = "frozen_d1_ordered_edit_script_replay_v2_2"
+FROZEN_EDIT_SCRIPT_ALGORITHM_ID = "frozen_d1_ordered_edit_script_replay_v2_3"
 
 
 @dataclass(frozen=True)
@@ -488,14 +488,21 @@ def frozen_edit_script_state_closure(
         raise SplitGraphError(
             "frozen B0 edit_script does not reproduce candidate_sequence"
         )
-    edit_distance = record.get("edit_distance")
+    # D1 distinguishes character-level Levenshtein distance from canonical
+    # action count: adjacent primitive indels are intentionally merged.
+    # Therefore only edit_count may bind the number of replayed actions;
+    # D1 acceptance already binds edit_distance to the minimum alignment.
+    edit_count = record.get("edit_count")
     if (
-        isinstance(edit_distance, int)
-        and not isinstance(edit_distance, bool)
-        and edit_distance != len(actions)
+        edit_count is not None
+        and (
+            not isinstance(edit_count, int)
+            or isinstance(edit_count, bool)
+            or edit_count != len(actions)
+        )
     ):
         raise SplitGraphError(
-            "frozen B0 edit_distance does not equal canonical edit-script length"
+            "frozen B0 edit_count does not equal canonical edit-script length"
         )
     states = tuple(sorted(set(replayed) | set(_declared_intermediate_sequences(record))))
     intermediates = tuple(
