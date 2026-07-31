@@ -17,6 +17,11 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, Iterable, Mapping, Tuple
 
+try:
+    from rapidfuzz.distance import Levenshtein as _RapidFuzzLevenshtein
+except ImportError:  # pragma: no cover - exercised in minimal environments.
+    _RapidFuzzLevenshtein = None
+
 
 NEAR_NEIGHBOR_EDIT_THRESHOLD = 5
 NEAR_NEIGHBOR_BLOCK_COUNT = NEAR_NEIGHBOR_EDIT_THRESHOLD + 1
@@ -25,6 +30,11 @@ NEAR_NEIGHBOR_ALGORITHM_ID = (
 )
 NEAR_NEIGHBOR_CANDIDATE_BACKEND = "sqlite_without_rowid_exact_dedup_spool_v1"
 _CANDIDATE_INSERT_BATCH_SIZE = 10_000
+NEAR_NEIGHBOR_DISTANCE_BACKEND = (
+    "rapidfuzz_levenshtein_score_cutoff_v3"
+    if _RapidFuzzLevenshtein is not None
+    else "python_banded_levenshtein_v1"
+)
 
 
 class NearNeighborError(ValueError):
@@ -142,6 +152,15 @@ def _banded_distance_at_most(
 
     if abs(len(left) - len(right)) > threshold:
         return None
+    if _RapidFuzzLevenshtein is not None:
+        distance = int(
+            _RapidFuzzLevenshtein.distance(
+                left,
+                right,
+                score_cutoff=threshold,
+            )
+        )
+        return distance if distance <= threshold else None
     previous: Dict[int, int] = {
         j: j for j in range(0, min(len(right), threshold) + 1)
     }
@@ -464,7 +483,8 @@ def build_near_neighbor_clusters(
             "six_nonempty_source_blocks; every_distance_lte_5_pair_shares_at_"
             "least_one_untouched_block_found_by_all_substring_scan"
         ),
-        "exact_verification": "banded_levenshtein",
+        "exact_verification": "exact_levenshtein_score_cutoff",
+        "distance_backend": NEAR_NEIGHBOR_DISTANCE_BACKEND,
         "sequence_count": len(sequences),
         "record_count": len(normalized_records),
         "block_posting_count": block_postings,

@@ -4,7 +4,9 @@ import pytest
 
 from data.utr_benchmark_v2.near_neighbors import NEAR_NEIGHBOR_ALGORITHM_ID
 from data.utr_benchmark_v2.near_neighbors import NEAR_NEIGHBOR_CANDIDATE_BACKEND
+from data.utr_benchmark_v2.near_neighbors import NEAR_NEIGHBOR_DISTANCE_BACKEND
 from data.utr_benchmark_v2.near_neighbors import NearNeighborError
+from data.utr_benchmark_v2.near_neighbors import _banded_distance_at_most
 from data.utr_benchmark_v2.near_neighbors import build_near_neighbor_clusters
 
 
@@ -41,6 +43,7 @@ def test_six_block_candidates_cannot_miss_five_distributed_edits() -> None:
         == NEAR_NEIGHBOR_CANDIDATE_BACKEND
     )
     assert clusters.binding["resource_policy"] == "uncapped_exact_completion"
+    assert clusters.binding["distance_backend"] == NEAR_NEIGHBOR_DISTANCE_BACKEND
     assert clusters.binding["edit_distance_threshold"] == 5
     assert clusters.binding["candidate_generation_complete"] is True
     assert clusters.binding["qualifying_pair_count"] == 1
@@ -91,3 +94,8 @@ def test_exact_candidate_spool_retains_an_explicit_fail_closed_cap() -> None:
             },
             max_candidate_pairs=1,
         )
+
+
+def test_distance_backend_preserves_thresholded_exact_distance() -> None:
+    assert _banded_distance_at_most("AAAAACCCC", "AAAAA", 5) == 4
+    assert _banded_distance_at_most("AAAAAA", "CCCCCC", 5) is None

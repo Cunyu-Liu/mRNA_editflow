@@ -2,3 +2,4 @@ numpy>=1.23
 torch>=2.1
 pytest>=7.0
 certifi>=2024.0
+rapidfuzz>=3.14,<4
