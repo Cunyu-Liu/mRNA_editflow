@@ -18,8 +18,10 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, Mapping, Tuple
 
 try:
+    import rapidfuzz as _rapidfuzz
     from rapidfuzz.distance import Levenshtein as _RapidFuzzLevenshtein
 except ImportError:  # pragma: no cover - exercised in minimal environments.
+    _rapidfuzz = None
     _RapidFuzzLevenshtein = None
 
 
@@ -34,6 +36,9 @@ NEAR_NEIGHBOR_DISTANCE_BACKEND = (
     "rapidfuzz_levenshtein_score_cutoff_v3"
     if _RapidFuzzLevenshtein is not None
     else "python_banded_levenshtein_v1"
+)
+NEAR_NEIGHBOR_DISTANCE_BACKEND_VERSION = (
+    str(_rapidfuzz.__version__) if _rapidfuzz is not None else None
 )
 
 
@@ -485,6 +490,7 @@ def build_near_neighbor_clusters(
         ),
         "exact_verification": "exact_levenshtein_score_cutoff",
         "distance_backend": NEAR_NEIGHBOR_DISTANCE_BACKEND,
+        "distance_backend_version": NEAR_NEIGHBOR_DISTANCE_BACKEND_VERSION,
         "sequence_count": len(sequences),
         "record_count": len(normalized_records),
         "block_posting_count": block_postings,
