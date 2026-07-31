@@ -40,6 +40,7 @@ def test_six_block_candidates_cannot_miss_five_distributed_edits() -> None:
         clusters.binding["candidate_deduplication"]
         == NEAR_NEIGHBOR_CANDIDATE_BACKEND
     )
+    assert clusters.binding["resource_policy"] == "uncapped_exact_completion"
     assert clusters.binding["edit_distance_threshold"] == 5
     assert clusters.binding["candidate_generation_complete"] is True
     assert clusters.binding["qualifying_pair_count"] == 1

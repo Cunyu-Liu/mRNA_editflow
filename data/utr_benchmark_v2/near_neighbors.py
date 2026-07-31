@@ -21,10 +21,9 @@ from typing import Any, Dict, Iterable, Mapping, Tuple
 NEAR_NEIGHBOR_EDIT_THRESHOLD = 5
 NEAR_NEIGHBOR_BLOCK_COUNT = NEAR_NEIGHBOR_EDIT_THRESHOLD + 1
 NEAR_NEIGHBOR_ALGORITHM_ID = (
-    "six_block_pigeonhole_sqlite_exact_dedup_banded_levenshtein_v2"
+    "six_block_pigeonhole_sqlite_exact_dedup_banded_levenshtein_v3"
 )
 NEAR_NEIGHBOR_CANDIDATE_BACKEND = "sqlite_without_rowid_exact_dedup_spool_v1"
-DEFAULT_MAX_CANDIDATE_SPOOL_BYTES = 8 * 1024 * 1024 * 1024
 _CANDIDATE_INSERT_BATCH_SIZE = 10_000
 
 
@@ -174,18 +173,18 @@ def _banded_distance_at_most(
 def build_near_neighbor_clusters(
     record_states: Mapping[str, Iterable[str]],
     *,
-    max_sequences: int = 100_000,
-    max_block_postings: int = 600_000,
-    max_substring_probes: int = 50_000_000,
+    max_sequences: int | None = None,
+    max_block_postings: int | None = None,
+    max_substring_probes: int | None = None,
     max_candidate_pairs: int | None = None,
-    max_candidate_spool_bytes: int = DEFAULT_MAX_CANDIDATE_SPOOL_BYTES,
-    max_exact_dp_cells: int = 100_000_000,
+    max_candidate_spool_bytes: int | None = None,
+    max_exact_dp_cells: int | None = None,
 ) -> NearNeighborClusters:
     """Build exact global edit-distance-5 connected components.
 
     The input must contain the complete shortest-path state closure for every
-    eligible record.  Every limit is fail-closed and no partial clustering is
-    returned.
+    eligible record.  Passing an explicit resource limit fails closed with no
+    partial clustering; the production default is uncapped exact completion.
     """
 
     for name, value in (
@@ -195,7 +194,8 @@ def build_near_neighbor_clusters(
         ("max_candidate_spool_bytes", max_candidate_spool_bytes),
         ("max_exact_dp_cells", max_exact_dp_cells),
     ):
-        _validate_limit(name, value)
+        if value is not None:
+            _validate_limit(name, value)
     if max_candidate_pairs is not None:
         _validate_limit("max_candidate_pairs", max_candidate_pairs)
     if not isinstance(record_states, Mapping) or not record_states:
@@ -218,7 +218,7 @@ def build_near_neighbor_clusters(
         sequence_set.update(states)
 
     sequences = tuple(sorted(sequence_set))
-    if len(sequences) > max_sequences:
+    if max_sequences is not None and len(sequences) > max_sequences:
         raise NearNeighborError(
             "STOP_RULE_B0_NEAR_NEIGHBOR_COMPLEXITY: exact global clustering "
             f"has {len(sequences)} states, exceeding {max_sequences}; "
@@ -237,7 +237,10 @@ def build_near_neighbor_clusters(
             if index not in owners:
                 owners.add(index)
                 block_postings += 1
-                if block_postings > max_block_postings:
+                if (
+                    max_block_postings is not None
+                    and block_postings > max_block_postings
+                ):
                     raise NearNeighborError(
                         "STOP_RULE_B0_NEAR_NEIGHBOR_COMPLEXITY: six-block "
                         f"index exceeded {max_block_postings} postings; "
@@ -247,7 +250,8 @@ def build_near_neighbor_clusters(
     # Candidate generation can be complete yet substantially larger than the
     # in-memory set permitted by the original implementation.  SQLite provides
     # exact deduplication and deterministic ordered replay without sampling or
-    # approximation; a spool-size ceiling remains a fail-closed resource guard.
+    # approximation.  The production path deliberately has no resource ceiling;
+    # callers may still provide explicit diagnostic caps that fail closed.
     sequence_hashes = {
         sequence: hashlib.sha256(sequence.encode("utf-8")).hexdigest()
         for sequence in sequences
@@ -304,7 +308,10 @@ def build_near_neighbor_clusters(
                         f"candidate set exceeded {max_candidate_pairs} pairs; "
                         "no approximation was emitted"
                     )
-                if candidate_spool_bytes > max_candidate_spool_bytes:
+                if (
+                    max_candidate_spool_bytes is not None
+                    and candidate_spool_bytes > max_candidate_spool_bytes
+                ):
                     raise NearNeighborError(
                         "STOP_RULE_B0_NEAR_NEIGHBOR_COMPLEXITY: exact SQLite "
                         f"candidate spool exceeded {max_candidate_spool_bytes} bytes; "
@@ -354,7 +361,10 @@ def build_near_neighbor_clusters(
                         for start in range(len(target) - block_length + 1)
                     }
                     substring_probes += len(observed_substrings)
-                    if substring_probes > max_substring_probes:
+                    if (
+                        max_substring_probes is not None
+                        and substring_probes > max_substring_probes
+                    ):
                         raise NearNeighborError(
                             "STOP_RULE_B0_NEAR_NEIGHBOR_COMPLEXITY: exact "
                             f"substring scan exceeded {max_substring_probes} probes; "
@@ -376,7 +386,10 @@ def build_near_neighbor_clusters(
                     len(sequences[right]),
                     NEAR_NEIGHBOR_EDIT_THRESHOLD,
                 )
-                if exact_dp_cells > max_exact_dp_cells:
+                if (
+                    max_exact_dp_cells is not None
+                    and exact_dp_cells > max_exact_dp_cells
+                ):
                     raise NearNeighborError(
                         "STOP_RULE_B0_NEAR_NEIGHBOR_COMPLEXITY: exact banded "
                         f"verification exceeded {max_exact_dp_cells} DP cells; "
@@ -439,6 +452,7 @@ def build_near_neighbor_clusters(
     binding = {
         "algorithm": NEAR_NEIGHBOR_ALGORITHM_ID,
         "candidate_deduplication": NEAR_NEIGHBOR_CANDIDATE_BACKEND,
+        "resource_policy": "uncapped_exact_completion",
         "edit_distance_threshold": NEAR_NEIGHBOR_EDIT_THRESHOLD,
         "pigeonhole_block_count": NEAR_NEIGHBOR_BLOCK_COUNT,
         "scope": (

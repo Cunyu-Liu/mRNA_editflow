@@ -5342,6 +5342,11 @@ active_path_state_scope:
     - This supersedes the prior erroneous equality between edit_distance and canonical edit-script length.
     - The correction preserves the frozen D1 file and its D1 validation semantics; it does not rebuild, filter, or relabel D1 records.
     - constructed replay states must remain marked as not observed trajectories
+  execution_resource_policy:
+    - near_neighbor_algorithm_id: six_block_pigeonhole_sqlite_exact_dedup_banded_levenshtein_v3
+    - Exact B0 near-neighbor candidate generation and exact distance verification have no failure-closing resource ceiling.
+    - Resource exhaustion is an operational pause/recovery event, never a B0 capacity-failure result and never grounds sampling or approximation.
+    - The candidate spool remains exact, deterministically ordered, and auditable.
   leakage_gate:
     - the Section 30.3 zero path-leakage gate applies exactly to this frozen replay scope across train, validation, test, and held-out roles
     - the B0 leakage report and split manifests must declare this scope and the deterministic replay algorithm
