@@ -1,0 +1,120 @@
+{
+  "artifact_type": "d1_input_inventory",
+  "schema_version": "d1_input_inventory.v1",
+  "stage_id": "D1_B0_20260728T160012Z_8862125",
+  "captured_at_utc": "2026-07-28T16:55:00Z",
+  "root": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/inputs",
+  "selection_is_label_independent": true,
+  "files": [
+    {
+      "dataset_id": "GSE114002",
+      "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/inputs/GSE114002/GSM3130443_designed_library.csv.gz",
+      "bytes": 17332142,
+      "sha256": "b72ac298cb0f4d21f911d330c0def06f8d94f15d9f8cc22f3a50ae87a7ef7ee5",
+      "source": "GEO:GSM3130443",
+      "role": "SEQUENCE_AND_PROVIDED_LABEL_INPUT",
+      "label_access": "D1_REPRODUCTION_ALLOWED_NOT_SELECTION"
+    },
+    {
+      "dataset_id": "GSE114002",
+      "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/inputs/GSE114002/manifest.json",
+      "bytes": 3841,
+      "sha256": "143b27b0edfef93942ad6ff7e595624ee6873d1998ac0a4a546d333dcd47f2c9",
+      "source": "data/p0/GSE114002/manifest.json",
+      "role": "DOWNLOAD_PROVENANCE",
+      "label_access": "NONE"
+    },
+    {
+      "dataset_id": "GSE200304",
+      "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/inputs/GSE200304/GSM6030637_Twist_Oligo_Order_with_merged_ids.txt.gz",
+      "bytes": 1091788,
+      "sha256": "cc8c1b69f87e669bb45cdc34257e489352dad4659d193d9a9e29166a6e7d2d75",
+      "source": "GEO:GSM6030637",
+      "role": "STRUCTURAL_SEQUENCE_AND_PAIR_INPUT",
+      "label_access": "NONE"
+    },
+    {
+      "dataset_id": "GSE200304",
+      "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/inputs/GSE200304/GSM6030637_log2_cpm_small_seq_on_plasmid.txt.gz",
+      "bytes": 86041,
+      "sha256": "54bc28cd55959d8b4ddfab4d2ea7126654256fe115fbcc363d141d9ff5d9a216",
+      "source": "GEO:GSM6030637",
+      "role": "PROCESSED_LABEL_INPUT",
+      "label_access": "D1_REPRODUCTION_ALLOWED_NOT_SELECTION"
+    },
+    {
+      "dataset_id": "GSE200304",
+      "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/inputs/GSE200304/manifest.json",
+      "bytes": 1115,
+      "sha256": "4a9a0b162f0731df6a5c15441b8984505e2ebaee260ad4e46f62636621125a8c",
+      "source": "data/p0/GSE200304/manifest.json",
+      "role": "DOWNLOAD_PROVENANCE",
+      "label_access": "NONE"
+    },
+    {
+      "dataset_id": "GSE217518",
+      "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/inputs/GSE217518/SHdiNT_U3.csv",
+      "bytes": 1198197,
+      "sha256": "b34170cad076882ce43b1f2c0d4e1e0cfe9b688d5f5c92d7ee69de289f0a400d",
+      "source": "https://github.com/chienlinglin/modeling-UTR-variants-stability/blob/30b9983b77a5673a090316d0068a28ec1c0ef510/Figure4/datatable/SHdiNT_U3.csv",
+      "role": "THREE_UTR_SEQUENCE_AND_PROCESSED_LABEL_INPUT",
+      "label_access": "D1_REPRODUCTION_ALLOWED_NOT_SELECTION"
+    },
+    {
+      "dataset_id": "GSE217518",
+      "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/inputs/GSE217518/SHdiNT_U5.csv",
+      "bytes": 1737444,
+      "sha256": "7bb7183865a6435c913563ff0dbd39b9697badad6247ebd7bd06c6604bb62579",
+      "source": "https://github.com/chienlinglin/modeling-UTR-variants-stability/blob/30b9983b77a5673a090316d0068a28ec1c0ef510/Figure4/datatable/SHdiNT_U5.csv",
+      "role": "FIVE_UTR_SEQUENCE_AND_PROCESSED_LABEL_INPUT",
+      "label_access": "D1_REPRODUCTION_ALLOWED_NOT_SELECTION"
+    },
+    {
+      "dataset_id": "GSE246381",
+      "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/inputs/GSE246381/media-1.xlsx",
+      "bytes": 4201900,
+      "sha256": "82fba477dbb55338524136db219dbcb9a90d1a694a79bbb37ffe373d1354f005",
+      "source": "GSE246381 supplementary media-1",
+      "role": "HISTORICALLY_EXPOSED_SEQUENCE_PAIR_INPUT",
+      "label_access": "E4_RETROSPECTIVE_ONLY_NO_SELECTION"
+    },
+    {
+      "dataset_id": "MPRAu_processed_ENCSR854RUF",
+      "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/inputs/MPRAu_processed_ENCSR854RUF/MPRAu_Supplementary_Table1.xlsx",
+      "bytes": 37117358,
+      "sha256": "a02e6bd45e4f57bc0cf877aee766f006699b40469568c82974d21ac4d0346145",
+      "source": "ENCODE:ENCSR854RUF processed supplementary table",
+      "role": "CONDITIONAL_PROCESSED_INPUT_BLOCKED_WITHOUT_GRCH37",
+      "label_access": "NO_D1_RECORD_ADMISSION_WHILE_SEQUENCE_RECONSTRUCTION_BLOCKED"
+    }
+  ],
+  "dataset_input_counts": {
+    "GSE114002": 2,
+    "GSE200304": 3,
+    "GSE217518": 2,
+    "GSE246381": 1,
+    "MPRAu_processed_ENCSR854RUF": 1
+  },
+  "blocked_or_excluded_without_input_copy": [
+    "GSE149487",
+    "GSE145046",
+    "ENCSR854RUF_raw62",
+    "GSE330741",
+    "GSE291719",
+    "GSE207584",
+    "GSE173083"
+  ],
+  "official_code_revisions": {
+    "GSE217518": {
+      "repository": "https://github.com/chienlinglin/modeling-UTR-variants-stability.git",
+      "commit": "30b9983b77a5673a090316d0068a28ec1c0ef510"
+    }
+  },
+  "preflight_gate": {
+    "all_copied_files_have_sha256": true,
+    "all_copied_files_have_byte_size": true,
+    "unknown_input_hashes": 0,
+    "raw_source_files_modified": 0,
+    "existing_results_overwritten": 0
+  }
+}

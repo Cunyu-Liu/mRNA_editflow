@@ -1,15 +1,15 @@
 {
   "acceptance": {
-    "bytes": 176431,
+    "bytes": 176523,
     "path": "artifacts/stages/D1_B0_20260728T160012Z_8862125/D1/acceptance.json",
-    "sha256": "611d588cb73f71f5778d449474a8f193b9988cf5aab89e0938804ef1a12a4ded"
+    "sha256": "f6da5ab89de1128ba157916ea7015e7bfb95d75c465e44ff5d68e65d6f824c05"
   },
   "artifact_root": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts",
   "artifact_type": "d1_canonical_snapshot",
   "build_manifest": {
-    "bytes": 15441,
-    "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/build_manifest.json",
-    "sha256": "7aa0b662be30ccb32a94ac02195ad1a6823a259f2aa938fbda8dae952481cc2d"
+    "bytes": 13949,
+    "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/build_manifest.json",
+    "sha256": "c52d5848ade6c5f5cae5291851e79852ac962b3b488276fe6f99ccf49874784c"
   },
   "builder_audit": {
     "audit_manifest": {
@@ -28,22 +28,22 @@
     "sota_claimed": false
   },
   "code_provenance": {
-    "code_commit_sha": "f3ddef7c6d24f1e4b27352a155eda076a1d802ae",
+    "code_commit_sha": "5030431933b22d6fafb2a3c8a917552b0f416b72",
     "files": [
       {
-        "bytes": 8839,
+        "bytes": 8823,
         "path": "schemas/d1_canonical_snapshot.schema.json",
-        "sha256": "1e6ba399972bf68d91bbde81e95121c48c57290e3e9cf15b6c2da87dfd8345dd"
+        "sha256": "3bd91bb233dbf3903abf150f7683643c805fa5689aea11842219c359d618362d"
       },
       {
-        "bytes": 6492,
+        "bytes": 6476,
         "path": "schemas/task_registry.schema.json",
-        "sha256": "da022643887a8883f3123605829d265f64e9a0e0c768d4fa2655fe81084db628"
+        "sha256": "fab4ce561b584bfd3ebd0b74f9bc701a5ef81aeef56f788626eb8d1e5615227b"
       },
       {
         "bytes": 18050,
         "path": "scripts/data/build_d1_utr_benchmark.py",
-        "sha256": "0d41a9f55c5444656bd0a48d3f4b021939cd9a682f587a9f07b9681747b0609e"
+        "sha256": "cd0027f8c45530d06c4d0226ae7d836dbba829e396441d27af40082591e8822a"
       },
       {
         "bytes": 92133,
@@ -51,9 +51,9 @@
         "sha256": "baa87bb59df5293b153b5a7f59cb1fd65c57e662380e29573234f8696b96cbf6"
       },
       {
-        "bytes": 27345,
+        "bytes": 27329,
         "path": "scripts/data/build_d1_canonical_snapshot.py",
-        "sha256": "27561bf1af3846fde2b59edfa5c12fbc00cee5846341360dc57adfafdae20f85"
+        "sha256": "ad0874766b74fa712baaba9fe44703613691334914372fca81cb052b8e90c582"
       },
       {
         "bytes": 2909,
@@ -66,9 +66,9 @@
         "sha256": "6509b4cbf1864d93615788b878ba6461ea15722ff5b68e545ad4d6b74e07fe50"
       },
       {
-        "bytes": 27031,
+        "bytes": 27008,
         "path": "scripts/execution/validate_registry.py",
-        "sha256": "59f3451a743666a6d567ed57928bd0d0209efc94574fb4222d2ae4f3eb25e541"
+        "sha256": "c1b38cdaae73117e038cd0acf9e91f4c64b463ec81e1f1d8088f729451314387"
       },
       {
         "bytes": 117304,
@@ -133,43 +133,43 @@
       "fixture_mode": false,
       "manifest": {
         "bytes": 5725,
-        "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/ENCSR854RUF_raw62/manifest.json",
+        "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/ENCSR854RUF_raw62/manifest.json",
         "sha256": "de26ef1a4079993968bc3e50c3678899e9bba5232f5b9e0a11b03e3c3fe4f720"
       },
       "outputs": {
         "accounting": {
           "bytes": 204,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/ENCSR854RUF_raw62/audit/accounting.json",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/ENCSR854RUF_raw62/audit/accounting.json",
           "sha256": "670c884ac4b144791ad7af1b81136443c30ad826ae3845e0e32fcecca73676f0"
         },
         "auxiliary": {
           "bytes": 0,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/ENCSR854RUF_raw62/paper_clean/auxiliary_records.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/ENCSR854RUF_raw62/paper_clean/auxiliary_records.jsonl",
           "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "candidate_store": {
           "bytes": 0,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/ENCSR854RUF_raw62/candidate_store/candidates.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/ENCSR854RUF_raw62/candidate_store/candidates.jsonl",
           "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "label_store": {
           "bytes": 0,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/ENCSR854RUF_raw62/canonical/records_with_labels.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/ENCSR854RUF_raw62/canonical/records_with_labels.jsonl",
           "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "paper_clean": {
           "bytes": 0,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/ENCSR854RUF_raw62/paper_clean/records.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/ENCSR854RUF_raw62/paper_clean/records.jsonl",
           "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "raw_row_lineage": {
           "bytes": 0,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/ENCSR854RUF_raw62/audit/raw_row_lineage.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/ENCSR854RUF_raw62/audit/raw_row_lineage.jsonl",
           "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "rejected": {
           "bytes": 0,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/ENCSR854RUF_raw62/rejected/records.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/ENCSR854RUF_raw62/rejected/records.jsonl",
           "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         }
       },
@@ -189,43 +189,43 @@
       "fixture_mode": false,
       "manifest": {
         "bytes": 7838,
-        "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE114002/manifest.json",
+        "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE114002/manifest.json",
         "sha256": "8460ed0a49c89a167914508f791562a6886219ff13b99e14e6111580899f1c0a"
       },
       "outputs": {
         "accounting": {
           "bytes": 230,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE114002/audit/accounting.json",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE114002/audit/accounting.json",
           "sha256": "dce189b72127a946bd13f74a6b4b7c854473e9a6d13872a29eae4076dbb9bac4"
         },
         "auxiliary": {
           "bytes": 10501408,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE114002/paper_clean/auxiliary_records.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE114002/paper_clean/auxiliary_records.jsonl",
           "sha256": "26b74d1a56153c15673ce44947e95709c5c78467f37500f8ea4d5e12332b106a"
         },
         "candidate_store": {
           "bytes": 121986432,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE114002/candidate_store/candidates.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE114002/candidate_store/candidates.jsonl",
           "sha256": "9ecb3ced9c32cde7c0133b2efb311c3e0f4f4d9339ec0c0ff11e0a265a164b1b"
         },
         "label_store": {
           "bytes": 186275495,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE114002/canonical/records_with_labels.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE114002/canonical/records_with_labels.jsonl",
           "sha256": "14f24a99d66ed8e7097e3c9571a296c6bbd635da416ad68447f1650eb81ee34d"
         },
         "paper_clean": {
           "bytes": 15429048,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE114002/paper_clean/records.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE114002/paper_clean/records.jsonl",
           "sha256": "032204914d8a504b95afe5fde9650ecf887176748b2d816308de16222ef11b46"
         },
         "raw_row_lineage": {
           "bytes": 0,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE114002/audit/raw_row_lineage.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE114002/audit/raw_row_lineage.jsonl",
           "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "rejected": {
           "bytes": 6637232,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE114002/rejected/records.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE114002/rejected/records.jsonl",
           "sha256": "8d0f8a6ea2a1434c440d3f66849e096a59cb174b81eb12c4500b2e2e830a253b"
         }
       },
@@ -245,43 +245,43 @@
       "fixture_mode": false,
       "manifest": {
         "bytes": 5655,
-        "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE145046/manifest.json",
+        "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE145046/manifest.json",
         "sha256": "6f457f18aee90454b455e5223f0d968a97febd867b8c54c3de337d086a1bb33c"
       },
       "outputs": {
         "accounting": {
           "bytes": 204,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE145046/audit/accounting.json",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE145046/audit/accounting.json",
           "sha256": "670c884ac4b144791ad7af1b81136443c30ad826ae3845e0e32fcecca73676f0"
         },
         "auxiliary": {
           "bytes": 0,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE145046/paper_clean/auxiliary_records.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE145046/paper_clean/auxiliary_records.jsonl",
           "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "candidate_store": {
           "bytes": 0,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE145046/candidate_store/candidates.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE145046/candidate_store/candidates.jsonl",
           "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "label_store": {
           "bytes": 0,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE145046/canonical/records_with_labels.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE145046/canonical/records_with_labels.jsonl",
           "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "paper_clean": {
           "bytes": 0,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE145046/paper_clean/records.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE145046/paper_clean/records.jsonl",
           "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "raw_row_lineage": {
           "bytes": 0,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE145046/audit/raw_row_lineage.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE145046/audit/raw_row_lineage.jsonl",
           "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "rejected": {
           "bytes": 0,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE145046/rejected/records.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE145046/rejected/records.jsonl",
           "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         }
       },
@@ -301,43 +301,43 @@
       "fixture_mode": false,
       "manifest": {
         "bytes": 5682,
-        "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE149487/manifest.json",
+        "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE149487/manifest.json",
         "sha256": "48c2d7dff55ed139551ea981d53a41363c9d5e2e4bca5a13d0fec275b0ea8a36"
       },
       "outputs": {
         "accounting": {
           "bytes": 204,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE149487/audit/accounting.json",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE149487/audit/accounting.json",
           "sha256": "670c884ac4b144791ad7af1b81136443c30ad826ae3845e0e32fcecca73676f0"
         },
         "auxiliary": {
           "bytes": 0,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE149487/paper_clean/auxiliary_records.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE149487/paper_clean/auxiliary_records.jsonl",
           "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "candidate_store": {
           "bytes": 0,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE149487/candidate_store/candidates.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE149487/candidate_store/candidates.jsonl",
           "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "label_store": {
           "bytes": 0,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE149487/canonical/records_with_labels.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE149487/canonical/records_with_labels.jsonl",
           "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "paper_clean": {
           "bytes": 0,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE149487/paper_clean/records.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE149487/paper_clean/records.jsonl",
           "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "raw_row_lineage": {
           "bytes": 0,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE149487/audit/raw_row_lineage.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE149487/audit/raw_row_lineage.jsonl",
           "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "rejected": {
           "bytes": 0,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE149487/rejected/records.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE149487/rejected/records.jsonl",
           "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         }
       },
@@ -357,43 +357,43 @@
       "fixture_mode": false,
       "manifest": {
         "bytes": 5659,
-        "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE173083/manifest.json",
+        "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE173083/manifest.json",
         "sha256": "7bc64a6a8e412463b989bd038bf8630ba2392f997c47fc2e321249b8d75441d3"
       },
       "outputs": {
         "accounting": {
           "bytes": 204,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE173083/audit/accounting.json",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE173083/audit/accounting.json",
           "sha256": "670c884ac4b144791ad7af1b81136443c30ad826ae3845e0e32fcecca73676f0"
         },
         "auxiliary": {
           "bytes": 0,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE173083/paper_clean/auxiliary_records.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE173083/paper_clean/auxiliary_records.jsonl",
           "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "candidate_store": {
           "bytes": 0,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE173083/candidate_store/candidates.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE173083/candidate_store/candidates.jsonl",
           "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "label_store": {
           "bytes": 0,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE173083/canonical/records_with_labels.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE173083/canonical/records_with_labels.jsonl",
           "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "paper_clean": {
           "bytes": 0,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE173083/paper_clean/records.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE173083/paper_clean/records.jsonl",
           "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "raw_row_lineage": {
           "bytes": 0,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE173083/audit/raw_row_lineage.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE173083/audit/raw_row_lineage.jsonl",
           "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "rejected": {
           "bytes": 0,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE173083/rejected/records.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE173083/rejected/records.jsonl",
           "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         }
       },
@@ -413,43 +413,43 @@
       "fixture_mode": false,
       "manifest": {
         "bytes": 10983,
-        "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE200304/manifest.json",
+        "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE200304/manifest.json",
         "sha256": "4ee5f7ab82c7edfc906c7eba5d879d92b50ed9bdfeadc70baf52fbafd162b760"
       },
       "outputs": {
         "accounting": {
           "bytes": 217,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE200304/audit/accounting.json",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE200304/audit/accounting.json",
           "sha256": "057387f4961ab99501e7e8b60da63cbccb9810d2ed6e71a5ff17c880e51e25ab"
         },
         "auxiliary": {
           "bytes": 0,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE200304/paper_clean/auxiliary_records.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE200304/paper_clean/auxiliary_records.jsonl",
           "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "candidate_store": {
           "bytes": 34198732,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE200304/candidate_store/candidates.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE200304/candidate_store/candidates.jsonl",
           "sha256": "a9d6019ce0a0a21010b439d63e1d2aa82983e223d32490f993bae515b01948e4"
         },
         "label_store": {
           "bytes": 53954497,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE200304/canonical/records_with_labels.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE200304/canonical/records_with_labels.jsonl",
           "sha256": "d84090377b62bfbdfab8c91313ed009ba86409c93fe04b6936ed9a1b51ede69b"
         },
         "paper_clean": {
           "bytes": 5578658,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE200304/paper_clean/records.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE200304/paper_clean/records.jsonl",
           "sha256": "2c68463d994c0eb9cad788fcad8479ee1953740860512e468247ddc8ec054ca2"
         },
         "raw_row_lineage": {
           "bytes": 14477410,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE200304/audit/raw_row_lineage.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE200304/audit/raw_row_lineage.jsonl",
           "sha256": "7f1658e58df68703e2445f92f81d9c1946d7bec3ddd5af64e48e41cc7adf918e"
         },
         "rejected": {
           "bytes": 14969,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE200304/rejected/records.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE200304/rejected/records.jsonl",
           "sha256": "0e45e4d37d68b797ebcf184eabcb59310a2f03e542520f7037c790dc892e2b8a"
         }
       },
@@ -469,43 +469,43 @@
       "fixture_mode": false,
       "manifest": {
         "bytes": 5659,
-        "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE207584/manifest.json",
+        "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE207584/manifest.json",
         "sha256": "434a6c2e01aac4b203b9bb2308c1cf306048e5b67b7fcc2720c0aa0bb7553ede"
       },
       "outputs": {
         "accounting": {
           "bytes": 204,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE207584/audit/accounting.json",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE207584/audit/accounting.json",
           "sha256": "670c884ac4b144791ad7af1b81136443c30ad826ae3845e0e32fcecca73676f0"
         },
         "auxiliary": {
           "bytes": 0,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE207584/paper_clean/auxiliary_records.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE207584/paper_clean/auxiliary_records.jsonl",
           "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "candidate_store": {
           "bytes": 0,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE207584/candidate_store/candidates.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE207584/candidate_store/candidates.jsonl",
           "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "label_store": {
           "bytes": 0,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE207584/canonical/records_with_labels.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE207584/canonical/records_with_labels.jsonl",
           "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "paper_clean": {
           "bytes": 0,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE207584/paper_clean/records.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE207584/paper_clean/records.jsonl",
           "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "raw_row_lineage": {
           "bytes": 0,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE207584/audit/raw_row_lineage.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE207584/audit/raw_row_lineage.jsonl",
           "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "rejected": {
           "bytes": 0,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE207584/rejected/records.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE207584/rejected/records.jsonl",
           "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         }
       },
@@ -525,43 +525,43 @@
       "fixture_mode": false,
       "manifest": {
         "bytes": 10014,
-        "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE217518/manifest.json",
+        "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE217518/manifest.json",
         "sha256": "ff59441dc2481cc8789e01d1b2047b3d297b52a02d9443ca82377c429e320c0b"
       },
       "outputs": {
         "accounting": {
           "bytes": 219,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE217518/audit/accounting.json",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE217518/audit/accounting.json",
           "sha256": "bbe1de0c574693e427ddd3e941eb4f3baf6128a3f52f9514eeca462414f89110"
         },
         "auxiliary": {
           "bytes": 0,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE217518/paper_clean/auxiliary_records.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE217518/paper_clean/auxiliary_records.jsonl",
           "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "candidate_store": {
           "bytes": 22487480,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE217518/candidate_store/candidates.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE217518/candidate_store/candidates.jsonl",
           "sha256": "25b9281598911f12366cbe3195b9c3f047aecf83ecfd0870b7452ea48af43f69"
         },
         "label_store": {
           "bytes": 31162452,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE217518/canonical/records_with_labels.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE217518/canonical/records_with_labels.jsonl",
           "sha256": "18af1e4306b2c10c19a0350fe9687ef1afbad741a6c7b5b2a90e705c79725585"
         },
         "paper_clean": {
           "bytes": 6866464,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE217518/paper_clean/records.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE217518/paper_clean/records.jsonl",
           "sha256": "4279fa1dbb5ce27ac32add20eb5461ff3cb54cea2d53baa2414f3804c8efb2c4"
         },
         "raw_row_lineage": {
           "bytes": 0,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE217518/audit/raw_row_lineage.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE217518/audit/raw_row_lineage.jsonl",
           "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "rejected": {
           "bytes": 526884,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE217518/rejected/records.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE217518/rejected/records.jsonl",
           "sha256": "8484dc4d2e364b227047dff51fbf589d63d50ef1dc0257be7fa7c3ca34ffb92a"
         }
       },
@@ -581,43 +581,43 @@
       "fixture_mode": false,
       "manifest": {
         "bytes": 7907,
-        "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE246381/manifest.json",
+        "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE246381/manifest.json",
         "sha256": "38213d0128755fb05e6a1bfcd465735ae37d9b9a57c8ce8568dda95e60125924"
       },
       "outputs": {
         "accounting": {
           "bytes": 218,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE246381/audit/accounting.json",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE246381/audit/accounting.json",
           "sha256": "8fb1d0f23b04938604b4df0922ee565b320cb7685d3533d4e4f35348f0ff4739"
         },
         "auxiliary": {
           "bytes": 0,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE246381/paper_clean/auxiliary_records.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE246381/paper_clean/auxiliary_records.jsonl",
           "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "candidate_store": {
           "bytes": 6960682,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE246381/candidate_store/candidates.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE246381/candidate_store/candidates.jsonl",
           "sha256": "ea86670fba591b5e58a0fc1d733739c76ec3653a785dc893a4a59a0b501bf33b"
         },
         "label_store": {
           "bytes": 10074162,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE246381/canonical/records_with_labels.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE246381/canonical/records_with_labels.jsonl",
           "sha256": "ac2d2541ded815abe4eb29bac0b2f812ea8301b22ac1ff604a5a21a71f8ebe89"
         },
         "paper_clean": {
           "bytes": 1967475,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE246381/paper_clean/records.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE246381/paper_clean/records.jsonl",
           "sha256": "8a66509e9350252536710d88b3f8073989b455dfba3be7861113ea00996ada74"
         },
         "raw_row_lineage": {
           "bytes": 0,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE246381/audit/raw_row_lineage.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE246381/audit/raw_row_lineage.jsonl",
           "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "rejected": {
           "bytes": 34576,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE246381/rejected/records.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE246381/rejected/records.jsonl",
           "sha256": "eb7525b6f1fc769ac165c143c3713bf05fd11726e101010b7b641e279b6021cf"
         }
       },
@@ -637,43 +637,43 @@
       "fixture_mode": false,
       "manifest": {
         "bytes": 5690,
-        "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE291719/manifest.json",
+        "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE291719/manifest.json",
         "sha256": "2d757a754ecbf435ad130814693efc99b26d236918ad6d57ec028ee646fae121"
       },
       "outputs": {
         "accounting": {
           "bytes": 204,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE291719/audit/accounting.json",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE291719/audit/accounting.json",
           "sha256": "670c884ac4b144791ad7af1b81136443c30ad826ae3845e0e32fcecca73676f0"
         },
         "auxiliary": {
           "bytes": 0,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE291719/paper_clean/auxiliary_records.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE291719/paper_clean/auxiliary_records.jsonl",
           "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "candidate_store": {
           "bytes": 0,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE291719/candidate_store/candidates.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE291719/candidate_store/candidates.jsonl",
           "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "label_store": {
           "bytes": 0,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE291719/canonical/records_with_labels.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE291719/canonical/records_with_labels.jsonl",
           "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "paper_clean": {
           "bytes": 0,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE291719/paper_clean/records.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE291719/paper_clean/records.jsonl",
           "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "raw_row_lineage": {
           "bytes": 0,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE291719/audit/raw_row_lineage.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE291719/audit/raw_row_lineage.jsonl",
           "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "rejected": {
           "bytes": 0,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE291719/rejected/records.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE291719/rejected/records.jsonl",
           "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         }
       },
@@ -693,43 +693,43 @@
       "fixture_mode": false,
       "manifest": {
         "bytes": 5690,
-        "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE330741/manifest.json",
+        "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE330741/manifest.json",
         "sha256": "b746322e1d45825eb89a149049676f68651dab8dd2c4dcb62e4fbd379bbfbe5d"
       },
       "outputs": {
         "accounting": {
           "bytes": 204,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE330741/audit/accounting.json",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE330741/audit/accounting.json",
           "sha256": "670c884ac4b144791ad7af1b81136443c30ad826ae3845e0e32fcecca73676f0"
         },
         "auxiliary": {
           "bytes": 0,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE330741/paper_clean/auxiliary_records.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE330741/paper_clean/auxiliary_records.jsonl",
           "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "candidate_store": {
           "bytes": 0,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE330741/candidate_store/candidates.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE330741/candidate_store/candidates.jsonl",
           "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "label_store": {
           "bytes": 0,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE330741/canonical/records_with_labels.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE330741/canonical/records_with_labels.jsonl",
           "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "paper_clean": {
           "bytes": 0,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE330741/paper_clean/records.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE330741/paper_clean/records.jsonl",
           "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "raw_row_lineage": {
           "bytes": 0,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE330741/audit/raw_row_lineage.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE330741/audit/raw_row_lineage.jsonl",
           "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "rejected": {
           "bytes": 0,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/GSE330741/rejected/records.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/GSE330741/rejected/records.jsonl",
           "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         }
       },
@@ -749,43 +749,43 @@
       "fixture_mode": false,
       "manifest": {
         "bytes": 6788,
-        "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/MPRAu_processed_ENCSR854RUF/manifest.json",
+        "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/MPRAu_processed_ENCSR854RUF/manifest.json",
         "sha256": "045ed654646f077ab005a685bb304d31433269573c7c7a912afbef89e2367326"
       },
       "outputs": {
         "accounting": {
           "bytes": 204,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/MPRAu_processed_ENCSR854RUF/audit/accounting.json",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/MPRAu_processed_ENCSR854RUF/audit/accounting.json",
           "sha256": "670c884ac4b144791ad7af1b81136443c30ad826ae3845e0e32fcecca73676f0"
         },
         "auxiliary": {
           "bytes": 0,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/MPRAu_processed_ENCSR854RUF/paper_clean/auxiliary_records.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/MPRAu_processed_ENCSR854RUF/paper_clean/auxiliary_records.jsonl",
           "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "candidate_store": {
           "bytes": 0,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/MPRAu_processed_ENCSR854RUF/candidate_store/candidates.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/MPRAu_processed_ENCSR854RUF/candidate_store/candidates.jsonl",
           "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "label_store": {
           "bytes": 0,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/MPRAu_processed_ENCSR854RUF/canonical/records_with_labels.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/MPRAu_processed_ENCSR854RUF/canonical/records_with_labels.jsonl",
           "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "paper_clean": {
           "bytes": 0,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/MPRAu_processed_ENCSR854RUF/paper_clean/records.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/MPRAu_processed_ENCSR854RUF/paper_clean/records.jsonl",
           "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "raw_row_lineage": {
           "bytes": 0,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/MPRAu_processed_ENCSR854RUF/audit/raw_row_lineage.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/MPRAu_processed_ENCSR854RUF/audit/raw_row_lineage.jsonl",
           "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
         "rejected": {
           "bytes": 0,
-          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/datasets/MPRAu_processed_ENCSR854RUF/rejected/records.jsonl",
+          "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/datasets/MPRAu_processed_ENCSR854RUF/rejected/records.jsonl",
           "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         }
       },
@@ -793,28 +793,28 @@
       "status": "blocked"
     }
   ],
-  "generated_at_utc": "2026-07-31T10:43:55.235584+00:00",
+  "generated_at_utc": "2026-07-29T12:33:14.289681+00:00",
   "global_stores": {
     "canonical_label_store": {
-      "bytes": 297987356,
-      "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/canonical/records_with_labels.jsonl",
+      "bytes": 281466606,
+      "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/canonical/records_with_labels.jsonl",
       "record_ids_sha256": "0c8b9b9de92d5bc1136bbf7e1a2d3be36f12893a15d1979af35b597e99cd5c4c",
       "records": 44151,
-      "sha256": "a0aaa5e70427782c64a9c8502e830b9a87dfe4d50fca6c31a97ba4714554c969"
+      "sha256": "68fca987bf9775df2ff74975fd60b7ce4574f774aa0f44e1c05988387d38bd44"
     },
     "paths_distinct": true,
     "record_ids_sha256": "0c8b9b9de92d5bc1136bbf7e1a2d3be36f12893a15d1979af35b597e99cd5c4c",
     "sealed_label_free_candidate_store": {
-      "bytes": 197587912,
-      "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e/candidate_store/candidates.jsonl",
+      "bytes": 185633326,
+      "path": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/candidate_store/candidates.jsonl",
       "record_ids_sha256": "0c8b9b9de92d5bc1136bbf7e1a2d3be36f12893a15d1979af35b597e99cd5c4c",
       "records": 44151,
-      "sha256": "82e5501d6c62d875a78f1a2bef8b0b1333850cfb62fbc51819b16f76f1b9923e"
+      "sha256": "01c9fdaad7de013d2f6d5eeac7620ef8fd35bb3eb5693a9672975540ed701be1"
     }
   },
   "goal_contract": {
-    "id": "mrna_editflow_single_active_contract",
-    "sha256": "ff5a440910c9c8ef47e460b3f2d6a291c7fce12e687e090f2200dc79796a89c3"
+    "id": "utr_editflow_goal_v2",
+    "sha256": "c3dc5875868d847b8519fee40b14c43b65e4c5948dc5c3b98101ca61a5671dd5"
   },
   "required_artifacts": {
     "data/data_exposure_ledger.jsonl": {
@@ -864,7 +864,7 @@
     "scientific_result_claimed": false,
     "structural_validation_passed": true
   },
-  "stage_d1_root": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_CURRENT_CANONICAL_RELEASE_20260731T123000Z_a0aaa5e",
+  "stage_d1_root": "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1",
   "stage_id": "D1_B0_20260728T160012Z_8862125",
   "status": "FROZEN_STRUCTURAL_DATA_ONLY"
 }
