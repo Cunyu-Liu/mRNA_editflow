@@ -7,7 +7,7 @@
   "additionalProperties": false,
   "properties": {
     "registry_version": {"const": "2.0.0"},
-    "contract_id": {"const": "utr_editflow_goal_v2"},
+    "contract_id": {"const": "mrna_editflow_single_active_contract"},
     "goal_contract_sha256": {
       "const": "c3dc5875868d847b8519fee40b14c43b65e4c5948dc5c3b98101ca61a5671dd5"
     },

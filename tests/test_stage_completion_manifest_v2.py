@@ -229,7 +229,7 @@ def _registry(
         tasks.append(task)
     return {
         "registry_version": "2.0.0",
-        "contract_id": "utr_editflow_goal_v2",
+        "contract_id": "mrna_editflow_single_active_contract",
         "goal_contract_sha256": GOAL_SHA256,
         "tasks": tasks,
     }
@@ -343,10 +343,10 @@ def _fixture(
         "captured_at_utc": "2026-07-29T00:00:00Z",
         "workload_class": "NON_NEURAL_DATA_BENCHMARK",
         "goal_contract": {
-            "id": "utr_editflow_goal_v2",
+            "id": "mrna_editflow_single_active_contract",
             "sha256": GOAL_SHA256,
             "source_path_local": "/local/goal.md",
-            "repository_snapshot": "docs/contracts/mrna_latest_build_contract_v2.md",
+            "repository_snapshot": "docs/contracts/mrna_editflow_contract.md",
         },
         "remote": {
             "host": "36.137.135.49",
@@ -491,7 +491,7 @@ def _fixture(
 
     d1_ref = _reference(repo, d1_path)
     b0_ref = _reference(repo, b0_path)
-    registry_path = repo / "docs" / "execution" / "task_registry_v2.yaml"
+    registry_path = repo / "docs" / "execution" / "task_registry.yaml"
     registry_path.parent.mkdir(parents=True, exist_ok=True)
     registry_path.write_text(
         yaml.safe_dump(
@@ -514,7 +514,7 @@ def _fixture(
         initial_decision_text
         + "\n## Current D1/B0 governance metadata\n\n"
         + f"stage_id: {stage_id}\n"
-        + "contract_snapshot: docs/contracts/mrna_latest_build_contract_v2.md\n"
+        + "contract_snapshot: docs/contracts/mrna_editflow_contract.md\n"
         + "decision_id: D-2026-07-29-GOVERNANCE-METADATA-CORRECTION-01\n"
         + "record_type: append_only_metadata_correction\n"
         + "historical_records_modified: false\n"
@@ -616,9 +616,9 @@ def _fixture(
         "ended_at_utc": "2026-07-29T01:00:00Z",
         "workload_class": "NON_NEURAL_DATA_BENCHMARK",
         "goal_contract": {
-            "id": "utr_editflow_goal_v2",
+            "id": "mrna_editflow_single_active_contract",
             "sha256": GOAL_SHA256,
-            "repository_snapshot": ("docs/contracts/mrna_latest_build_contract_v2.md"),
+            "repository_snapshot": ("docs/contracts/mrna_editflow_contract.md"),
         },
         "stage_root": stage_root.relative_to(repo).as_posix(),
         "phase_acceptance": {

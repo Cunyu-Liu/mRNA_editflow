@@ -95,13 +95,13 @@
       ],
       "properties": {
         "id": {
-          "const": "utr_editflow_goal_v2"
+          "const": "mrna_editflow_single_active_contract"
         },
         "sha256": {
-          "const": "c3dc5875868d847b8519fee40b14c43b65e4c5948dc5c3b98101ca61a5671dd5"
+          "const": "ff5a440910c9c8ef47e460b3f2d6a291c7fce12e687e090f2200dc79796a89c3"
         },
         "repository_snapshot": {
-          "const": "docs/contracts/mrna_latest_build_contract_v2.md"
+          "const": "docs/contracts/mrna_editflow_contract.md"
         }
       }
     },

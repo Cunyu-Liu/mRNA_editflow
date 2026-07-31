@@ -28,7 +28,7 @@ from scripts.data.diagnose_b0_path_capacity import STREAM_CAPTURE_SCOPE
 
 ROOT = Path(__file__).resolve().parents[1]
 SCHEMA_PATH = ROOT / "schemas/b0_capacity_diagnostic.schema.json"
-GOAL_SHA256 = "c3dc5875868d847b8519fee40b14c43b65e4c5948dc5c3b98101ca61a5671dd5"
+GOAL_SHA256 = "ff5a440910c9c8ef47e460b3f2d6a291c7fce12e687e090f2200dc79796a89c3"
 HEX64 = "a" * 64
 WITNESS_ID = "GSE217518:record:025e56d3b64660abb559dcbd"
 BOUNDED_ID = "GSE217518:record:bounded"
@@ -370,9 +370,9 @@ def _manifest() -> dict:
         "workload_class": "NON_NEURAL_DATA_BENCHMARK",
         "purpose": "B0_PATH_CAPACITY_DIAGNOSTIC_ONLY",
         "goal_contract": {
-            "id": "utr_editflow_goal_v2",
+            "id": "mrna_editflow_single_active_contract",
             "sha256": GOAL_SHA256,
-            "repository_snapshot": "docs/contracts/mrna_latest_build_contract_v2.md",
+            "repository_snapshot": "docs/contracts/mrna_editflow_contract.md",
         },
         "claim_boundary": {
             "formal_b0_attempt_started": False,
@@ -738,7 +738,7 @@ def _bundle_fixture(tmp_path: Path) -> tuple[Path, dict]:
     canonical_store.write_text('{"label":1}\n', encoding="utf-8", newline="")
     candidate_store.write_text('{"fixture":true}\n', encoding="utf-8", newline="")
     config_path = ROOT / "configs/b0_capacity_diagnostic_v1.json"
-    contract_path = ROOT / "docs/contracts/mrna_latest_build_contract_v2.md"
+    contract_path = ROOT / "docs/contracts/mrna_editflow_contract.md"
     config = json.loads(config_path.read_text(encoding="utf-8"))
     launcher = _validated_python_launcher(sys.executable)
     entrypoint = (ROOT / "scripts/data/diagnose_b0_path_capacity.py").resolve(
@@ -1680,9 +1680,9 @@ def test_census_parent_authorization_requires_live_bundle_hashes_and_verified(
         "role": "D1_SEALED_LABEL_FREE_CANDIDATE_STORE",
     }
     goal_contract = {
-        "id": "utr_editflow_goal_v2",
+        "id": "mrna_editflow_single_active_contract",
         "sha256": GOAL_SHA256,
-        "repository_snapshot": "docs/contracts/mrna_latest_build_contract_v2.md",
+        "repository_snapshot": "docs/contracts/mrna_editflow_contract.md",
     }
     algorithm_contract = {"frozen": True}
     parent_manifest = {

@@ -33,9 +33,9 @@ SKIP_PREFIXES = (
     "data_registry/search_artifacts/",
 )
 SKIP_FILES = {
-    "scripts/contracts/audit_active_contracts.py",
+    "scripts/contracts/audit_single_contract.py",
     "docs/contracts/v2_contract_conflict_matrix.md",
-    "docs/contracts/mrna_latest_build_contract_v2.md",
+    "docs/contracts/mrna_editflow_contract.md",
     "docs/decision_log.md",
     "tests/test_audit_legacy_references.py",
 }
@@ -46,7 +46,6 @@ LEGACY_ACTIVE_PATTERNS = {
     "legacy_contract_path": re.compile(r"\bconfigs/public_intervention_contract\.yaml\b"),
     "legacy_question_path": re.compile(r"\bdocs/public_intervention_scientific_question\.md\b"),
     "legacy_claim_path": re.compile(r"\bdocs/public_intervention_claim_matrix\.md\b"),
-    "legacy_registry_path": re.compile(r"\bdocs/execution/task_registry\.yaml\b"),
     "sealed_assignment": re.compile(r"\brole\s*:\s*sealed_external_test\b"),
     "sealed_block": re.compile(r"\bsealed_external_dataset\s*:"),
     "flow_optional_assignment": re.compile(r"\bflow_optional\s*:\s*true\b", re.I),
@@ -104,15 +103,15 @@ def _get(mapping: dict, *keys, default=None):
 
 
 def audit(root: Path) -> dict[str, object]:
-    contract_path = root / "configs/utr_editflow_contract_v2.yaml"
-    goal_path = root / "docs/contracts/mrna_latest_build_contract_v2.md"
+    contract_path = root / "configs/utr_editflow_execution_policy.yaml"
+    goal_path = root / "docs/contracts/mrna_editflow_contract.md"
     readme_path = root / "README.md"
     errors: list[str] = []
 
     if not contract_path.is_file():
         return {
             "strict_pass": False,
-            "errors": ["missing configs/utr_editflow_contract_v2.yaml"],
+            "errors": ["missing configs/utr_editflow_execution_policy.yaml"],
             "counters": {
                 "active_predictor_only_fallback": 1,
                 "active_flow_optional_clauses": 1,
@@ -159,11 +158,11 @@ def audit(root: Path) -> dict[str, object]:
         if "archive" not in path.parts and path.name != "execution_contract.yaml"
     ]
     ambiguity = int(
-        contract.get("contract_id") != "utr_editflow_goal_v2"
+        contract.get("contract_id") != "mrna_editflow_single_active_contract"
         or _get(contract, "goal_document", "sha256") != EXPECTED_GOAL_SHA
         or goal_hash != EXPECTED_GOAL_SHA
         or len(active_contract_files) != 1
-        or "utr_editflow_goal_v2" not in readme
+        or "mrna_editflow_single_active_contract" not in readme
     )
 
     legacy_violations = scan_legacy_references(root)
@@ -192,6 +191,56 @@ def audit(root: Path) -> dict[str, object]:
         "strict_pass": not errors,
     }
 
+
+def audit(root: Path) -> dict[str, object]:
+    policy_path = root / "configs/utr_editflow_execution_policy.yaml"
+    goal_path = root / "docs/contracts/mrna_editflow_contract.md"
+    errors: list[str] = []
+    if not policy_path.is_file() or not goal_path.is_file():
+        return {
+            "strict_pass": False,
+            "errors": ["missing canonical contract or derived execution policy"],
+            "counters": {"active_contract_count": 0, "parallel_active_contract_references": 1, "versioned_amendment_active_contract_files": 1, "derived_policy_hash_mismatch": 1, "active_predictor_only_fallback": 1, "active_flow_optional_clauses": 1, "active_cds_full_length_phase1_tasks": 1, "gse246381_sealed_wording": 1, "formal_neural_cpu_fallback_allowed": 1},
+            "violations": [],
+        }
+    policy = yaml.safe_load(policy_path.read_text(encoding="utf-8"))
+    goal_hash = sha256_path(goal_path)
+    canonical_files = [path for path in (root / "docs/contracts").glob("*.md") if "archive" not in path.parts and path.name != "v2_contract_conflict_matrix.md"]
+    active_count = len(canonical_files)
+    versioned = [path for path in canonical_files if re.search(r"(?:_v\d|amendment)", path.name, re.I)]
+    policy_mismatch = int(policy.get("execution_policy_id") != "utr_editflow_execution_policy" or policy.get("non_authoritative_derivative") is not True or policy.get("generated_from_contract_path") != goal_path.relative_to(root).as_posix() or policy.get("generated_from_contract_sha256") != goal_hash)
+    predictor_fallback = int(_get(policy, "method", "predictor_role") != "support_only" or _get(policy, "method", "predictor_only_fallback_allowed") is not False)
+    flow_optional = int(_get(policy, "method", "edit_flow_required") is not True or _get(policy, "method", "flow_optional") is not False)
+    regions = _get(policy, "current_scope", "regions", default=[])
+    cds_full_length = int(regions != ["five_utr", "three_utr"] or _get(policy, "current_scope", "cds") != "forbidden" or _get(policy, "current_scope", "full_length") != "forbidden")
+    gse_sealed = int(_get(policy, "gse246381", "historically_exposed") is not True or _get(policy, "gse246381", "role") != "historically_exposed_retrospective_external_stress_test" or _get(policy, "gse246381", "untouched_wording_allowed") is not False)
+    cpu_fallback = int(_get(policy, "training", "formal_neural_device") != "cuda" or _get(policy, "training", "cpu_fallback_allowed") is not False)
+    legacy_violations = scan_legacy_references(root)
+    parallel = int(active_count != 1 or any(path.resolve() != goal_path.resolve() for path in canonical_files) or bool(legacy_violations))
+    counters = {
+        "active_contract_count": active_count,
+        "parallel_active_contract_references": parallel,
+        "versioned_amendment_active_contract_files": len(versioned),
+        "derived_policy_hash_mismatch": policy_mismatch,
+        "active_predictor_only_fallback": predictor_fallback,
+        "active_flow_optional_clauses": flow_optional,
+        "active_cds_full_length_phase1_tasks": cds_full_length,
+        "gse246381_sealed_wording": gse_sealed,
+        "formal_neural_cpu_fallback_allowed": cpu_fallback,
+    }
+    for name, value in counters.items():
+        if (name == "active_contract_count" and value != 1) or (name != "active_contract_count" and value):
+            errors.append(f"{name}={value}")
+    return {
+        "canonical_contract_path": goal_path.relative_to(root).as_posix(),
+        "contract_sha256": goal_hash,
+        "derived_policy_path": policy_path.relative_to(root).as_posix(),
+        "active_contract_files": [path.relative_to(root).as_posix() for path in canonical_files],
+        "counters": counters,
+        "violations": legacy_violations,
+        "errors": errors,
+        "strict_pass": not errors,
+    }
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)

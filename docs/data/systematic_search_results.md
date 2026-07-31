@@ -2,7 +2,7 @@
 
 Generated: 2026-07-28
 
-Contract: `utr_editflow_goal_v2`
+Contract: `mrna_editflow_single_active_contract`
 
 Protocol: `docs/data/systematic_search_protocol.md`
 

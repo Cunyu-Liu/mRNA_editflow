@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate docs/execution/task_registry_v2.yaml against the registry contract.
+"""Validate docs/execution/task_registry.yaml against the registry contract.
 
 The JSON Schema source of truth is schemas/task_registry.schema.json. This
 validator implements the same checks without requiring the jsonschema
@@ -7,7 +7,7 @@ package (keeps the execution environment dependency-free).
 
 Usage:
     python scripts/execution/validate_registry.py \
-        --registry docs/execution/task_registry_v2.yaml
+        --registry docs/execution/task_registry.yaml
 """
 from __future__ import annotations
 
@@ -112,7 +112,7 @@ DEPENDENCY_GATE_PATTERN = re.compile(
     r"^(?P<task>[A-Z0-9]+-[0-9]{2}):(?P<state>VERIFIED|FROZEN)$"
 )
 EXPECTED_GOAL_SHA256 = (
-    "c3dc5875868d847b8519fee40b14c43b65e4c5948dc5c3b98101ca61a5671dd5"
+    "ff5a440910c9c8ef47e460b3f2d6a291c7fce12e687e090f2200dc79796a89c3"
 )
 RESOURCE_LABELS = {
     "GPU_EXCLUSIVE",
@@ -171,8 +171,8 @@ def validate(
         return errors
     if registry["registry_version"] != "2.0.0":
         errors.append("registry_version must equal 2.0.0")
-    if registry["contract_id"] != "utr_editflow_goal_v2":
-        errors.append("contract_id must equal utr_editflow_goal_v2")
+    if registry["contract_id"] != "mrna_editflow_single_active_contract":
+        errors.append("contract_id must equal mrna_editflow_single_active_contract")
     if registry["goal_contract_sha256"] != EXPECTED_GOAL_SHA256:
         errors.append("goal_contract_sha256 does not match the frozen Goal")
 
@@ -707,7 +707,7 @@ def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--registry",
-        default=str(REPO_ROOT / "docs/execution/task_registry_v2.yaml"),
+        default=str(REPO_ROOT / "docs/execution/task_registry.yaml"),
     )
     parser.add_argument("--release-profile", choices=sorted(RELEASE_PROFILES))
     parser.add_argument("--remote-name", default="origin")

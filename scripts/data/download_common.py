@@ -10,7 +10,7 @@ import time
 import urllib.request
 from pathlib import Path
 
-USER_AGENT = "mrna-editflow-d0/2.0 (utr_editflow_goal_v2)"
+USER_AGENT = "mrna-editflow-d0/2.0 (mrna_editflow_single_active_contract)"
 
 
 def http_get(url: str, timeout: int = 60) -> bytes:

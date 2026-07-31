@@ -42,9 +42,9 @@ inventory represents all 62 expected rows and remains fail-closed with
 
 **Files:**
 
-- Create: `configs/utr_editflow_contract_v2.yaml`
-- Create: `docs/utr_editflow_scientific_question_v2.md`
-- Create: `docs/utr_editflow_claim_matrix_v2.md`
+- Create: `configs/utr_editflow_execution_policy.yaml`
+- Create: `docs/utr_editflow_scientific_question.md`
+- Create: `docs/utr_editflow_claim_matrix.md`
 - Create: `docs/decision_log.md`
 - Modify: `README.md`
 - Archive: V1 contract, V1 question/claim matrix, V1 task registry and plans
@@ -57,13 +57,13 @@ inventory represents all 62 expected rows and remains fail-closed with
 3. Align README and archive V1 files without changing their contents.
 4. Run contract tests.
 
-**Test:** `pytest -q tests/test_utr_editflow_contract_v2.py`.
+**Test:** `pytest -q tests/test_single_contract.py`.
 
 ### Task 3: Add fail-closed contract and execution audits
 
 **Files:**
 
-- Create: `scripts/contracts/audit_active_contracts.py`
+- Create: `scripts/contracts/audit_single_contract.py`
 - Create: `configs/execution_contract.yaml`
 - Create: `schemas/run_manifest.schema.json`
 - Create: `docs/execution/state_machine.md`
@@ -80,7 +80,7 @@ inventory represents all 62 expected rows and remains fail-closed with
 3. Test CPU fallback rejection, NaN/Inf detection, manifest contents, and
    registry validity.
 
-**Test:** `python scripts/contracts/audit_active_contracts.py --strict` and
+**Test:** `python scripts/contracts/audit_single_contract.py --strict` and
 focused pytest suite.
 
 ### Task 4: Freeze D0 hypothesis and dataset capability
@@ -127,7 +127,7 @@ not claim completion while any record is incomplete.
 **Files:**
 
 - Create: `artifacts/stages/C0_D0_20260728T120329Z_9f43133/acceptance.json`
-- Update: `docs/execution/task_registry_v2.yaml`
+- Update: `docs/execution/task_registry.yaml`
 
 **Steps:**
 

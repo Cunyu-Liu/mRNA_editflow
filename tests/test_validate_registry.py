@@ -14,7 +14,7 @@ from tests.governance_fixtures import (  # noqa: E402
     valid_d1_acceptance,
 )
 
-GOAL_SHA = "c3dc5875868d847b8519fee40b14c43b65e4c5948dc5c3b98101ca61a5671dd5"
+GOAL_SHA = "ff5a440910c9c8ef47e460b3f2d6a291c7fce12e687e090f2200dc79796a89c3"
 
 
 def _task(tid="D0-01", status="VERIFIED", deps=None):
@@ -45,7 +45,7 @@ def _task(tid="D0-01", status="VERIFIED", deps=None):
 def _registry(tasks):
     return {
         "registry_version": "2.0.0",
-        "contract_id": "utr_editflow_goal_v2",
+        "contract_id": "mrna_editflow_single_active_contract",
         "goal_contract_sha256": GOAL_SHA,
         "tasks": tasks,
     }

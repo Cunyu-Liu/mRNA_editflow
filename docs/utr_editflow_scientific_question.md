@@ -1,6 +1,6 @@
 # Scientific Question — UTR EditFlow V2.2
 
-**Contract:** `utr_editflow_goal_v2`
+**Contract:** `mrna_editflow_single_active_contract`
 
 **Question ID:** `RQ-UTR-EDITFLOW-V2`
 

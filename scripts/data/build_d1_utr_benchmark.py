@@ -27,7 +27,7 @@ from data.utr_benchmark_v2.d1_builder import (
 )
 
 EXPECTED_GOAL_CONTRACT_SHA256 = (
-    "c3dc5875868d847b8519fee40b14c43b65e4c5948dc5c3b98101ca61a5671dd5"
+    "ff5a440910c9c8ef47e460b3f2d6a291c7fce12e687e090f2200dc79796a89c3"
 )
 EXPECTED_SCOPE_REPOSITORY_PATH = "data_registry/d1_dataset_scope_manifest.yaml"
 EXPECTED_CONFIG_REPOSITORY_PATH = "configs/d1_build_20260729.json"

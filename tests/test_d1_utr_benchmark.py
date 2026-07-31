@@ -36,7 +36,7 @@ def _strict_fixture_selection_policy() -> dict[str, object]:
     return {
         "candidate_final_labels_used_for_dataset_role_selection": False,
         "goal_contract_sha256": (
-            "c3dc5875868d847b8519fee40b14c43b65e4c5948dc5c3b98101ca61a5671dd5"
+            "ff5a440910c9c8ef47e460b3f2d6a291c7fce12e687e090f2200dc79796a89c3"
         ),
         "dataset_scope_manifest": {
             "path": str(scope_path),

@@ -13,7 +13,7 @@ import jsonschema
 
 SOURCE_ROOT = Path(__file__).resolve().parents[2]
 SCHEMA_PATH = SOURCE_ROOT / "schemas" / "stage_manifest.schema.json"
-GOAL_SHA256 = "c3dc5875868d847b8519fee40b14c43b65e4c5948dc5c3b98101ca61a5671dd5"
+GOAL_SHA256 = "ff5a440910c9c8ef47e460b3f2d6a291c7fce12e687e090f2200dc79796a89c3"
 COMMIT_RE = re.compile(r"^[0-9a-f]{40}$")
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 STAGE_RE = re.compile(
@@ -93,13 +93,13 @@ def validate(manifest: dict) -> list[str]:
         errors.append("D1+B0 workload_class must be NON_NEURAL_DATA_BENCHMARK")
 
     contract = manifest.get("goal_contract", {})
-    if contract.get("id") != "utr_editflow_goal_v2":
+    if contract.get("id") != "mrna_editflow_single_active_contract":
         errors.append("goal contract id mismatch")
     if contract.get("sha256") != GOAL_SHA256:
         errors.append("goal contract sha256 mismatch")
     if (
         contract.get("repository_snapshot")
-        != "docs/contracts/mrna_latest_build_contract_v2.md"
+        != "docs/contracts/mrna_editflow_contract.md"
     ):
         errors.append("repository contract snapshot mismatch")
 

@@ -6,14 +6,14 @@
 > - **适用对象：**Codex / Trae / 代码智能体 / 数据工程人员 / 模型训练人员 / 论文撰写人员
 > - **目标仓库：**`/home/cunyuliu/mrna_editflow_goal/mrna_editflow`
 > - **本地仓库标识：**`Cunyu-Liu/mRNA_editflow`
-> - **合同版本：**`utr_editflow_goal_v2`
+> - **合同身份：**`mrna_editflow_single_active_contract`
 > - **制定日期：**2026-07-28
 > - **当前范围：**5′UTR 与 3′UTR；全长 mRNA 和 CDS 延后到架构成熟之后
 > - **湿实验边界：**当前阶段不开展任何新增湿实验
 > - **核心方法：**mRNA-EditFlow 必须是主方法，不得降级为可选附件
 > - **基础模型策略：**优先复用现有 RNA/mRNA foundation model；从零训练仅作为必要消融
 > - **执行原则：**问题先于数据、证据先于宣传、训练必须使用 GPU、失败证据不可删除、门槛不可事后降低
-> - **增补状态（2026-07-30）：**`utr_editflow_goal_v2.1_additive_math_mb0`；本次仅新增数学内核、架构图与 MB0 基线合同，`utr_editflow_goal_v2` 原文逐字保留
+> - **单合同治理状态（2026-07-31）：**本文是唯一 active scientific/engineering contract；所有 YAML、问题说明、claim matrix、registry、Data Card 与 manifests 均为 hash-bound non-authoritative derivatives。
 > - **新增强制 Gate：**`FM0 → MK0 → EF0`；数学内核未冻结前，不得启动 EF0 正式实现验收或 GP0 正式训练
 > - **文献快照边界：**公开模型与代码资格以 2026-07-30 审计快照为准；论文冻结前必须刷新，未检索到精确同任务模型不等于证明其不存在
 
@@ -52,23 +52,19 @@ source-conditioned 合法编辑轨迹与候选分布
 
 ## 0.2 权威顺序
 
-后续仓库应建立以下权威顺序：
+唯一权威顺序为：
 
-1. 本 Goal 文档所定义的科学思想和不可变边界；
-2. `configs/utr_editflow_contract_v2.yaml`；
-3. `docs/utr_editflow_scientific_question_v2.md`；
-4. `docs/utr_editflow_claim_matrix_v2.md`；
-5. `docs/execution/task_registry_v2.yaml`；
-6. 单次实验的 frozen config、manifest 和 run artifacts。
+1. 本文件所定义的科学思想、不可变边界和 decision records；
+2. 单次运行所绑定的本文件 SHA-256。
 
-如果低层文件与高层文件冲突，必须 fail closed，停止相关任务并修复合同，不得由训练代码自行选择更方便的解释。
+`configs/utr_editflow_execution_policy.yaml`、科学问题说明、claim matrix、task registry、Data Card、schemas 和 manifests 都是本文件的派生证据：它们必须声明生成来源与相同 SHA-256，不能作为独立合同或覆盖本文。若任一派生文件冲突、缺少绑定或 hash 不一致，必须 fail closed，停止相关任务并修复派生文件。
 
 ## 0.3 每个执行者的读取义务
 
 开始任何数据、模型、训练、评测或论文任务前，执行者必须：
 
 1. 完整阅读本 Goal；
-2. 记录本 Goal 的版本和 SHA256；
+2. 记录本 Goal 的合同身份、路径和 SHA256；
 3. 指明当前所属 Phase、Task ID 和依赖 Gate；
 4. 写出本任务如何服务核心科学问题；
 5. 明确本任务不允许做什么；
@@ -80,7 +76,7 @@ source-conditioned 合法编辑轨迹与候选分布
 
 ```yaml
 goal_contract:
-  id: utr_editflow_goal_v2
+  id: mrna_editflow_single_active_contract
   sha256: <actual_sha256>
 scientific_question_id: RQ-UTR-EDITFLOW-V2
 phase_id:
@@ -124,6 +120,7 @@ approved_by_user:
 ```
 
 不得静默重写历史，也不得让旧结果看起来天然符合新合同。
+单合同治理记录：本文件是唯一 active contract；旧版和增补标签仅为内部 provenance，任何派生 YAML、registry、Data Card 或 manifest 均不得独立编辑或提升为合同。
 
 ---
 
@@ -2507,7 +2504,7 @@ tests/test_utr_editflow_contract_v2.py
 新增：
 
 ```text
-scripts/contracts/audit_active_contracts.py
+scripts/contracts/audit_single_contract.py
 tests/test_no_predictor_only_fallback.py
 tests/test_gse246381_exposure_status.py
 tests/test_utr_only_scope.py
@@ -2541,7 +2538,7 @@ tests/test_utr_editflow_contract_v2.py
 
 ```bash
 pytest -q tests/test_utr_editflow_contract_v2.py
-python scripts/contracts/audit_active_contracts.py --strict
+python scripts/contracts/audit_single_contract.py --strict
 ```
 
 必须满足：

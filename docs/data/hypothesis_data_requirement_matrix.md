@@ -1,6 +1,6 @@
 # H1–H8 hypothesis-to-data requirement matrix
 
-Contract: `utr_editflow_goal_v2`
+Contract: `mrna_editflow_single_active_contract`
 
 Question: `RQ-UTR-EDITFLOW-V2`
 

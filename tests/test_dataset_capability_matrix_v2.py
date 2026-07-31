@@ -100,7 +100,7 @@ def test_new_external_candidates_remain_metadata_only_and_label_free():
         assert "no_training" in row["forbidden_claims"]
 
     registry = yaml.safe_load(
-        (ROOT / "docs/execution/task_registry_v2.yaml").read_text(encoding="utf-8")
+        (ROOT / "docs/execution/task_registry.yaml").read_text(encoding="utf-8")
     )
     d0_tasks = [task for task in registry["tasks"] if task["phase_id"] == "D0"]
     assert d0_tasks

@@ -62,7 +62,7 @@ from scripts.execution.acceptance_semantics import validate_phase_acceptance
 
 
 GOAL_CONTRACT_SHA256 = (
-    "c3dc5875868d847b8519fee40b14c43b65e4c5948dc5c3b98101ca61a5671dd5"
+    "ff5a440910c9c8ef47e460b3f2d6a291c7fce12e687e090f2200dc79796a89c3"
 )
 ALLOWED_OUTPUT_PARENT = Path("/mnt/cunyuliu/mrna_editflow_b0_capacity")
 FORMAL_ATTEMPT_ROOT = Path("/mnt/cunyuliu/mrna_editflow_d1_b0")
@@ -4003,9 +4003,9 @@ def run(args: argparse.Namespace) -> Mapping[str, Any]:
         "workload_class": "NON_NEURAL_DATA_BENCHMARK",
         "purpose": "B0_PATH_CAPACITY_DIAGNOSTIC_ONLY",
         "goal_contract": {
-            "id": "utr_editflow_goal_v2",
+            "id": "mrna_editflow_single_active_contract",
             "sha256": GOAL_CONTRACT_SHA256,
-            "repository_snapshot": ("docs/contracts/mrna_latest_build_contract_v2.md"),
+            "repository_snapshot": ("docs/contracts/mrna_editflow_contract.md"),
         },
         "claim_boundary": _claim_boundary(),
         "selection": {

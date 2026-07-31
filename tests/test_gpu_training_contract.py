@@ -38,7 +38,7 @@ def _passed_health() -> dict:
 
 def test_contract_forbids_cpu_fallback():
     contract = yaml.safe_load(
-        (ROOT / "configs/utr_editflow_contract_v2.yaml").read_text(encoding="utf-8")
+        (ROOT / "configs/utr_editflow_execution_policy.yaml").read_text(encoding="utf-8")
     )
     assert contract["training"]["formal_neural_device"] == "cuda"
     assert contract["training"]["cpu_fallback_allowed"] is False

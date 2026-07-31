@@ -7,23 +7,25 @@ import yaml
 
 
 ROOT = Path(__file__).resolve().parents[1]
-GOAL_SHA = "c3dc5875868d847b8519fee40b14c43b65e4c5948dc5c3b98101ca61a5671dd5"
 
 
 def _contract() -> dict:
     return yaml.safe_load(
-        (ROOT / "configs/utr_editflow_contract_v2.yaml").read_text(encoding="utf-8")
+        (ROOT / "configs/utr_editflow_execution_policy.yaml").read_text(encoding="utf-8")
     )
 
 
-def test_goal_snapshot_is_exact_and_is_highest_authority():
-    goal = ROOT / "docs/contracts/mrna_latest_build_contract_v2.md"
-    assert hashlib.sha256(goal.read_bytes()).hexdigest() == GOAL_SHA
-    contract = _contract()
-    assert contract["contract_id"] == "utr_editflow_goal_v2"
-    assert contract["goal_document"]["sha256"] == GOAL_SHA
-    assert contract["authority_order"][0] == goal.relative_to(ROOT).as_posix()
 
+def test_single_contract_and_derived_policy_binding():
+    goal = ROOT / "docs/contracts/mrna_editflow_contract.md"
+    goal_hash = hashlib.sha256(goal.read_bytes()).hexdigest()
+    policy = _contract()
+    assert policy["execution_policy_id"] == "utr_editflow_execution_policy"
+    assert policy["non_authoritative_derivative"] is True
+    assert policy["generated_from_contract_path"] == goal.relative_to(ROOT).as_posix()
+    assert policy["generated_from_contract_sha256"] == goal_hash
+    active_contracts = [path for path in (ROOT / "docs/contracts").glob("*.md") if path.name != "v2_contract_conflict_matrix.md"]
+    assert active_contracts == [goal]
 
 def test_editflow_is_mandatory_and_predictor_is_support_only():
     method = _contract()["method"]

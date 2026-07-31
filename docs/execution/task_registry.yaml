@@ -1,6 +1,6 @@
-registry_version: "2.2.0"
-contract_id: utr_editflow_goal_v2
-goal_contract_sha256: 1ec94044e7f4626c3a0d9848e31a2f7122ed6d09ac1919a73cbda659c5d3993d
+registry_version: "2.0.0"
+contract_id: mrna_editflow_single_active_contract
+goal_contract_sha256: ff5a440910c9c8ef47e460b3f2d6a291c7fce12e687e090f2200dc79796a89c3
 
 tasks:
   - task_id: C0-01
@@ -15,7 +15,7 @@ tasks:
       - "overwrite the dirty worktree"
     inputs:
       - "/home/cunyuliu/mrna_editflow_goal/mrna_editflow"
-      - "mrna_latest_build_contract_v2.md"
+      - "mrna_editflow_contract.md"
     resource_labels: [READ_ONLY]
     conflict_keys: [original_worktree, running_c1_3_training, encsr854ruf_download]
     allowed_parallel_tasks: []
@@ -48,11 +48,11 @@ tasks:
       - "preflight contract and reference inventory"
     resource_labels: [CPU_LIGHT, MUTATES_CODE]
     conflict_keys: [active_contract_files]
-    allowed_parallel_tasks: [D0-03]
+    allowed_parallel_tasks: []
     files:
       - "docs/contracts/v2_contract_conflict_matrix.md"
     commands:
-      - "python scripts/contracts/audit_active_contracts.py --strict"
+      - "python scripts/contracts/audit_single_contract.py --strict"
     outputs:
       - "conflict matrix"
     acceptance:
@@ -74,17 +74,17 @@ tasks:
       - "activate CDS or full-length Phase-1 tasks"
       - "permit new wet lab"
     inputs:
-      - "docs/contracts/mrna_latest_build_contract_v2.md"
+      - "docs/contracts/mrna_editflow_contract.md"
     resource_labels: [CPU_LIGHT, MUTATES_CODE]
     conflict_keys: [active_contract_files, README.md]
-    allowed_parallel_tasks: [D0-03]
+    allowed_parallel_tasks: []
     files:
-      - "configs/utr_editflow_contract_v2.yaml"
-      - "docs/utr_editflow_scientific_question_v2.md"
-      - "docs/utr_editflow_claim_matrix_v2.md"
+      - "configs/utr_editflow_execution_policy.yaml"
+      - "docs/utr_editflow_scientific_question.md"
+      - "docs/utr_editflow_claim_matrix.md"
       - "docs/decision_log.md"
     commands:
-      - "pytest -q tests/test_utr_editflow_contract_v2.py"
+      - "pytest -q tests/test_single_contract.py"
     outputs:
       - "V2 authority chain"
     acceptance:
@@ -110,9 +110,9 @@ tasks:
       - "V2 contract files"
     resource_labels: [CPU_LIGHT, MUTATES_CODE]
     conflict_keys: [contract_audit, execution_infrastructure]
-    allowed_parallel_tasks: [D0-01, D0-02, D0-03]
+    allowed_parallel_tasks: []
     files:
-      - "scripts/contracts/audit_active_contracts.py"
+      - "scripts/contracts/audit_single_contract.py"
       - "configs/execution_contract.yaml"
       - "data_registry/foundation_exposure_ledger_v2.yaml"
       - "schemas/run_manifest.schema.json"
@@ -120,7 +120,7 @@ tasks:
       - "scripts/execution/launch_gpu_run.py"
       - "scripts/execution/monitor_run.py"
     commands:
-      - "python scripts/contracts/audit_active_contracts.py --strict"
+      - "python scripts/contracts/audit_single_contract.py --strict"
       - "pytest -q tests/test_gpu_training_contract.py tests/test_execution_contract_v2.py"
     outputs:
       - "strict audit and frozen execution infrastructure"
@@ -146,11 +146,11 @@ tasks:
       - "V2 authority chain"
     resource_labels: [CPU_LIGHT, MUTATES_CODE]
     conflict_keys: [README.md]
-    allowed_parallel_tasks: [D0-01, D0-02, D0-03, D0-04, D0-05]
+    allowed_parallel_tasks: []
     files:
       - "README.md"
     commands:
-      - "python scripts/contracts/audit_active_contracts.py --strict"
+      - "python scripts/contracts/audit_single_contract.py --strict"
     outputs:
       - "V2-aligned README"
     acceptance:
@@ -171,10 +171,10 @@ tasks:
       - "change a hypothesis to fit available data"
       - "treat a proxy as measured evidence"
     inputs:
-      - "docs/utr_editflow_scientific_question_v2.md"
+      - "docs/utr_editflow_scientific_question.md"
     resource_labels: [CPU_LIGHT, MUTATES_CODE]
     conflict_keys: [hypothesis_data_matrix]
-    allowed_parallel_tasks: [C0-04, C0-05, D0-03, D0-04]
+    allowed_parallel_tasks: []
     files:
       - "docs/data/hypothesis_data_requirement_matrix.md"
     commands:
@@ -203,7 +203,7 @@ tasks:
       - "official repository and publication metadata"
     resource_labels: [CPU_LIGHT, MUTATES_CODE]
     conflict_keys: [dataset_capability_matrix]
-    allowed_parallel_tasks: [C0-04, C0-05, D0-04]
+    allowed_parallel_tasks: []
     files:
       - "data_registry/dataset_capability_matrix.csv"
     commands:
@@ -232,7 +232,7 @@ tasks:
       - "GEO, SRA, ENA, ENCODE, MaveDB, PubMed/CrossRef/OpenAlex, official supplementary repositories"
     resource_labels: [READ_ONLY, CPU_LIGHT]
     conflict_keys: [academic_api_queries]
-    allowed_parallel_tasks: [C0-02, C0-03, C0-04, C0-05, D0-04]
+    allowed_parallel_tasks: []
     files:
       - "docs/data/systematic_search_protocol.md"
       - "docs/data/systematic_search_results.md"
@@ -264,7 +264,7 @@ tasks:
       - "/mnt/cunyuliu/partial_evidence/ENCSR854RUF_ena_reconstruction_manifest.json"
     resource_labels: [READ_ONLY, CPU_LIGHT]
     conflict_keys: [encsr854ruf_download]
-    allowed_parallel_tasks: [C0-02, C0-03, C0-04, C0-05, D0-01, D0-02, D0-03]
+    allowed_parallel_tasks: []
     files:
       - "scripts/data/build_encode_inventory_v2.py"
       - "data_registry/encode_62_inventory_v2.csv"
@@ -311,25 +311,96 @@ tasks:
     commit_sha: "5c25cc30a76ce091ec6add18984376b2934757f4"
     report: "VERIFIED_CANDIDATE_ROLES_AND_MISSING_DATA_FORWARD_PATHS_FROZEN"
 
-  - task_id: B0-REBUILD-20260731
+  - &d1_registered
+    task_id: D1-01
+    phase_id: D1
+    status: REGISTERED
+    hypotheses: [H1, H2, H3, H4, H5, H6]
+    dependencies: [C0-05, D0-05]
+    dependency_gates: [C0-05:VERIFIED, D0-05:VERIFIED]
+    scientific_service: >-
+      Register the first required D1 stage without claiming execution, data
+      acceptance, or a frozen release state.
+    forbidden_actions:
+      - "overwrite a historical D1 artifact"
+      - "treat a registered task as executed"
+      - "use final labels outside sealed evaluation"
+    inputs:
+      - "active single contract"
+      - "historical D1 evidence and any immutable current-canonical rebind"
+    resource_labels: [CPU_HEAVY, MUTATES_DATA]
+    conflict_keys: [d1_release_governance]
+    allowed_parallel_tasks: []
+    files:
+      - "scripts/data/rebind_d1_current_canonical.py"
+      - "data/d1/manifests/d1_canonical_snapshot.json"
+    commands:
+      - "run the declared task only after its dependency gate is satisfied"
+    outputs:
+      - "immutable D1 evidence or a failed-with-evidence record"
+    acceptance:
+      - "all declared gates pass before a final status"
+    repair_loop:
+      - "preserve evidence and create a new attempt; never weaken a gate"
+    commit_sha: null
+    report: "REGISTERED_NOT_EXECUTED"
+    evidence_class: FULL_SCOPE_DATA
+    completion_policy: MUST_PASS_ALL
+    acceptance_artifact: null
+    acceptance_sha256: null
+    gate_evidence: []
+    known_blockers:
+      - "registration is not execution; D1-08 must freeze before formal B0 release"
+    phase_gate: false
+
+  - <<: *d1_registered
+    task_id: D1-02
+    dependencies: [D1-01]
+    dependency_gates: [D1-01:VERIFIED]
+  - <<: *d1_registered
+    task_id: D1-03
+    dependencies: [D1-02]
+    dependency_gates: [D1-02:VERIFIED]
+  - <<: *d1_registered
+    task_id: D1-04
+    dependencies: [D1-03]
+    dependency_gates: [D1-03:VERIFIED]
+  - <<: *d1_registered
+    task_id: D1-05
+    dependencies: [D1-04]
+    dependency_gates: [D1-04:VERIFIED]
+  - <<: *d1_registered
+    task_id: D1-06
+    dependencies: [D1-05]
+    dependency_gates: [D1-05:VERIFIED]
+  - <<: *d1_registered
+    task_id: D1-07
+    dependencies: [D1-06]
+    dependency_gates: [D1-06:VERIFIED]
+  - <<: *d1_registered
+    task_id: D1-08
+    dependencies: [D1-07]
+    dependency_gates: [D1-07:VERIFIED]
+    phase_gate: true
+
+  - &b0_registered
+    task_id: B0-01
     phase_id: B0
     status: REGISTERED
     hypotheses: [H1, H2, H3, H4, H5, H6]
-    dependencies: [C0-03, D0-05]
-    dependency_gates: [C0-03:VERIFIED, D0-05:VERIFIED]
+    dependencies: [D1-08]
+    dependency_gates: [D1-08:FROZEN]
     scientific_service: >-
-      Build the physically sealed B0 Track A/B/C benchmark from the accepted
-      D1 canonical and label-free structural stores under the v2.2 contract.
+      Register the first required B0 stage without claiming a benchmark build,
+      acceptance, efficacy, or SOTA result.
     forbidden_actions:
       - "overwrite an existing B0 output root"
       - "alter D1 stores, split identities, leakage reports or hidden labels"
-      - "treat capacity diagnostics, a smoke test or training-set result as a scientific conclusion"
+      - "treat a registered task as executed"
     inputs:
-      - "/mnt/cunyuliu/mrna_editflow_d1_b0/D1_B0_20260728T160012Z_8862125/attempts/D1_attempt_004_20260728T230404Z/artifacts/D1/acceptance_hardened_postaudit_001.json"
-      - "accepted D1 canonical and sealed structural stores"
-      - "accepted D1 exposure ledger"
-    resource_labels: [CPU_HEAVY, MUTATES_EXTERNAL_ARTIFACTS]
-    conflict_keys: [b0_benchmark_v2_2]
+      - "frozen D1-08 authority and immutable D1 stores"
+    resource_labels: [CPU_HEAVY, MUTATES_DATA]
+    conflict_keys: [b0_release_governance]
     allowed_parallel_tasks: []
     files:
       - "scripts/data/build_b0_splits.py"
@@ -337,16 +408,38 @@ tasks:
       - "scripts/data/build_b0_evaluation_artifacts.py"
       - "scripts/data/validate_b0_acceptance.py"
     commands:
-      - "canonical D1 binding validation"
-      - "five required split builds and leakage recomputations"
-      - "sealed Track A/B/C artifact build and independent acceptance validation"
+      - "run the declared task only after D1-08 is FROZEN"
     outputs:
-      - "fresh external B0 run root with manifest, five split manifests, five leakage reports, tracks, Data Card, claims and acceptance record"
+      - "immutable B0 evidence or a failed-with-evidence record"
     acceptance:
-      - "exactly five required split identities and one bound leakage report per split"
-      - "all formal B0 leakage (within the frozen D1 replay scope), exposure, track-role and artifact-binding gates pass"
-      - "B0 Data Card and manifest bind the v2.2 contract hash and frozen D1 replay scope"
-      - "capacity diagnostics are not an acceptance gate; physical disk/RAM/process safety remains mandatory"
+      - "all declared gates pass before a final status"
     repair_loop:
-      - "preserve failed artifacts and stop at any formal B0 gate; do not change split or leakage criteria to obtain a pass"
-    report: "PENDING_FRESH_B0_V2_2_BUILD"
+      - "preserve evidence and create a new attempt; never weaken a gate"
+    commit_sha: null
+    report: "REGISTERED_NOT_EXECUTED"
+    evidence_class: FULL_SCOPE_BENCHMARK
+    completion_policy: MUST_PASS_ALL
+    acceptance_artifact: null
+    acceptance_sha256: null
+    gate_evidence: []
+    known_blockers:
+      - "D1-08 is not FROZEN; formal B0 release remains locked"
+    phase_gate: false
+
+  - <<: *b0_registered
+    task_id: B0-02
+    dependencies: [B0-01]
+    dependency_gates: [B0-01:VERIFIED]
+  - <<: *b0_registered
+    task_id: B0-03
+    dependencies: [B0-02]
+    dependency_gates: [B0-02:VERIFIED]
+  - <<: *b0_registered
+    task_id: B0-04
+    dependencies: [B0-03]
+    dependency_gates: [B0-03:VERIFIED]
+  - <<: *b0_registered
+    task_id: B0-05
+    dependencies: [B0-04]
+    dependency_gates: [B0-04:VERIFIED]
+    phase_gate: true

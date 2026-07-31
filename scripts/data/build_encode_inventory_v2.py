@@ -157,7 +157,7 @@ def build_inventory(
     summary = {
         "schema_version": "encode_62_inventory_v2",
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
-        "contract_id": "utr_editflow_goal_v2",
+        "contract_id": "mrna_editflow_single_active_contract",
         "dataset_id": "ENCSR854RUF",
         "source_manifest": str(source_manifest) if source_manifest else None,
         "source_manifest_sha256": (

@@ -14,7 +14,7 @@ def test_execution_contract_freezes_artifacts_and_monitor_cadence():
     contract = yaml.safe_load(
         (ROOT / "configs/execution_contract.yaml").read_text(encoding="utf-8")
     )
-    assert contract["parent_contract_id"] == "utr_editflow_goal_v2"
+    assert contract["parent_contract_id"] == "mrna_editflow_single_active_contract"
     assert contract["formal_neural_training"]["device"] == "cuda"
     assert contract["formal_neural_training"]["cpu_fallback_allowed"] is False
     assert len(contract["formal_neural_training"]["health_fields"]) == 8

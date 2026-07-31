@@ -378,7 +378,7 @@
           "alternate_alleles": {"minItems": 1},
           "edit_count": {"type": "integer", "minimum": 1},
           "edit_distance": {"type": "integer", "minimum": 1},
-          "raw_source_sequence": {"$ref": "#/$defs/rna_sequence"}
+          "raw_source_sequence": {"oneOf": [{"$ref": "#/$defs/rna_sequence"}, {"type": "null"}]}
         }
       }
     },

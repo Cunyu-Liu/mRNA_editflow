@@ -1,5 +1,5 @@
 ledger_version: "2.0.0"
-contract_id: utr_editflow_goal_v2
+contract_id: mrna_editflow_single_active_contract
 frozen_at_utc: "2026-07-28T13:28:35Z"
 phase: C0_D0
 selection_status: NO_FOUNDATION_SELECTED

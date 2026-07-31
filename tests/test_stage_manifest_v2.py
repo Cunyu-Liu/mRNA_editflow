@@ -19,10 +19,10 @@ def _manifest() -> dict:
         "captured_at_utc": "2026-07-28T16:00:12Z",
         "workload_class": "NON_NEURAL_DATA_BENCHMARK",
         "goal_contract": {
-            "id": "utr_editflow_goal_v2",
+            "id": "mrna_editflow_single_active_contract",
             "sha256": GOAL_SHA256,
             "source_path_local": "/local/goal.md",
-            "repository_snapshot": "docs/contracts/mrna_latest_build_contract_v2.md",
+            "repository_snapshot": "docs/contracts/mrna_editflow_contract.md",
         },
         "remote": {
             "host": "36.137.135.49",

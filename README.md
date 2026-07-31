@@ -6,16 +6,16 @@ Flow for 5′UTR and 3′UTR generation.
 ## Active scientific contract
 
 The only active scientific and engineering contract is
-`utr_editflow_goal_v2`:
+`mrna_editflow_single_active_contract`:
 
-- `docs/contracts/mrna_latest_build_contract_v2.md` — verbatim Goal document;
-- `configs/utr_editflow_contract_v2.yaml` — machine-readable contract;
-- `docs/utr_editflow_scientific_question_v2.md` — frozen question and hypotheses;
-- `docs/utr_editflow_claim_matrix_v2.md` — claim/evidence boundaries;
-- `docs/execution/task_registry_v2.yaml` — phase and gate registry.
+- `docs/contracts/mrna_editflow_contract.md` — verbatim Goal document;
+- `configs/utr_editflow_execution_policy.yaml` — hash-bound non-authoritative execution policy;
+- `docs/utr_editflow_scientific_question.md` — frozen question and hypotheses;
+- `docs/utr_editflow_claim_matrix.md` — claim/evidence boundaries;
+- `docs/execution/task_registry.yaml` — phase and gate registry.
 
 The Goal snapshot SHA256 is
-`c3dc5875868d847b8519fee40b14c43b65e4c5948dc5c3b98101ca61a5671dd5`.
+`f2ae4ec8a153819f873706f652cfa5caedc6849356d68665df8154abeb40d829`.
 If a lower-level file conflicts with the Goal, execution fails closed.
 
 Previous P3/NMI and predictor-first V1 materials are retained
@@ -59,7 +59,7 @@ Out of scope for the current contract:
 - new wet-lab experiments;
 - treating latent algorithmic trajectories as observed biological processes.
 
-CDS and full-transcript work remain a future versioned extension. Historical
+CDS and full-transcript work remain a future explicit decision record. Historical
 implementations and results are preserved, but they are not Phase-1 tasks
 under the active contract.
 
@@ -160,10 +160,10 @@ failure evidence. W&B may supplement these files but cannot replace them.
 ## Contract checks
 
 ```bash
-pytest -q tests/test_utr_editflow_contract_v2.py
-python scripts/contracts/audit_active_contracts.py --strict
+pytest -q tests/test_single_contract.py
+python scripts/contracts/audit_single_contract.py --strict
 python scripts/execution/validate_registry.py \
-  --registry docs/execution/task_registry_v2.yaml
+  --registry docs/execution/task_registry.yaml
 ```
 
 These checks validate contract alignment only. Passing them does not establish

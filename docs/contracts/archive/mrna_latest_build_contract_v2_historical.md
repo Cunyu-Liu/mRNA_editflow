@@ -52,10 +52,10 @@ source-conditioned 合法编辑轨迹与候选分布
 后续仓库应建立以下权威顺序：
 
 1. 本 Goal 文档所定义的科学思想和不可变边界；
-2. `configs/utr_editflow_contract_v2.yaml`；
-3. `docs/utr_editflow_scientific_question_v2.md`；
-4. `docs/utr_editflow_claim_matrix_v2.md`；
-5. `docs/execution/task_registry_v2.yaml`；
+2. `configs/utr_editflow_execution_policy.yaml`；
+3. `docs/utr_editflow_scientific_question.md`；
+4. `docs/utr_editflow_claim_matrix.md`；
+5. `docs/execution/task_registry.yaml`；
 6. 单次实验的 frozen config、manifest 和 run artifacts。
 
 如果低层文件与高层文件冲突，必须 fail closed，停止相关任务并修复合同，不得由训练代码自行选择更方便的解释。
@@ -2357,11 +2357,11 @@ docs/contracts/v2_contract_conflict_matrix.md
 新增：
 
 ```text
-configs/utr_editflow_contract_v2.yaml
-docs/utr_editflow_scientific_question_v2.md
-docs/utr_editflow_claim_matrix_v2.md
+configs/utr_editflow_execution_policy.yaml
+docs/utr_editflow_scientific_question.md
+docs/utr_editflow_claim_matrix.md
 docs/decision_log.md
-tests/test_utr_editflow_contract_v2.py
+tests/test_single_contract.py
 ```
 
 ### C0-04 Active contract audit
@@ -2369,7 +2369,7 @@ tests/test_utr_editflow_contract_v2.py
 新增：
 
 ```text
-scripts/contracts/audit_active_contracts.py
+scripts/contracts/audit_single_contract.py
 tests/test_no_predictor_only_fallback.py
 tests/test_gse246381_exposure_status.py
 tests/test_utr_only_scope.py
@@ -2391,19 +2391,19 @@ README 必须清楚区分：
 ## 27.3 Outputs
 
 ```text
-configs/utr_editflow_contract_v2.yaml
-docs/utr_editflow_scientific_question_v2.md
-docs/utr_editflow_claim_matrix_v2.md
+configs/utr_editflow_execution_policy.yaml
+docs/utr_editflow_scientific_question.md
+docs/utr_editflow_claim_matrix.md
 docs/contracts/v2_contract_conflict_matrix.md
-docs/execution/task_registry_v2.yaml
-tests/test_utr_editflow_contract_v2.py
+docs/execution/task_registry.yaml
+tests/test_single_contract.py
 ```
 
 ## 27.4 Acceptance
 
 ```bash
-pytest -q tests/test_utr_editflow_contract_v2.py
-python scripts/contracts/audit_active_contracts.py --strict
+pytest -q tests/test_single_contract.py
+python scripts/contracts/audit_single_contract.py --strict
 ```
 
 必须满足：
@@ -3212,7 +3212,7 @@ scripts/paper/audit_exposure_language.py
 
 ### Step 3：合同 V2
 
-- 写 `utr_editflow_contract_v2.yaml`；
+- 写 `utr_editflow_execution_policy.yaml`；
 - 写 scientific question；
 - 写 claim matrix；
 - 写 decision log；

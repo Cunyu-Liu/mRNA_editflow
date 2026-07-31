@@ -18,11 +18,11 @@ new_text: >-
   wet-lab work, and records GSE246381 as historically exposed retrospective
   external evidence.
 reason: >-
-  The user supplied mrna_latest_build_contract_v2.md as the only active
+  The user supplied mrna_editflow_contract.md as the only active
   scientific and engineering execution contract and explicitly required C0
   and D0 implementation without lowering its gates.
 evidence:
-  - docs/contracts/mrna_latest_build_contract_v2.md
+  - docs/contracts/mrna_editflow_contract.md
   - artifacts/stages/C0_D0_20260728T120329Z_9f43133/preflight_manifest.json
 affected_tasks: [C0-01, C0-02, C0-03, C0-04, C0-05, D0-01, D0-02, D0-03, D0-04, D0-05]
 requires_rerun: >-
@@ -55,7 +55,7 @@ reason: >-
   the scientific question, Edit Flow role, leakage gates, label seals and
   claim boundary are unchanged.
 evidence:
-  - docs/contracts/mrna_latest_build_contract_v2_2.md
+  - docs/contracts/mrna_editflow_contract.md
   - /mnt/cunyuliu/mrna_editflow_b0_capacity/B0_capacity_20260730T043737Z_f8e30a4
 historical_evidence_policy: >-
   Retain E1 capacity diagnostics without deletion or relabelling. They are not
@@ -86,8 +86,8 @@ reason: >-
   construction. The replacement preserves an executable, falsifiable leakage
   audit without reintroducing exhaustive path-state enumeration.
 evidence:
-  - docs/contracts/mrna_latest_build_contract_v2_2.md
-  - configs/utr_editflow_contract_v2.yaml
+  - docs/contracts/mrna_editflow_contract.md
+  - configs/utr_editflow_execution_policy.yaml
 historical_evidence_policy: >-
   Historical E1 capacity outputs remain immutable diagnostics and are neither
   deleted nor relabelled as a pass.

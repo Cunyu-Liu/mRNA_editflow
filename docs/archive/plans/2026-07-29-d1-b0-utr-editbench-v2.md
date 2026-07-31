@@ -1,7 +1,7 @@
 # D1 + B0 UTR EditBench V2 Implementation Plan
 
 > **Execution contract:** Follow
-> `docs/contracts/mrna_latest_build_contract_v2.md` at SHA-256
+> `docs/contracts/mrna_editflow_contract.md` at SHA-256
 > `c3dc5875868d847b8519fee40b14c43b65e4c5948dc5c3b98101ca61a5671dd5`.
 > Do not enter B0 before the D1 snapshot is accepted and frozen.
 
@@ -56,7 +56,7 @@ out of scope for this stage.
 - Modify: `schemas/task_registry.schema.json`
 - Modify: `scripts/execution/validate_registry.py`
 - Modify: `tests/test_validate_registry.py`
-- Modify: `docs/execution/task_registry_v2.yaml`
+- Modify: `docs/execution/task_registry.yaml`
 - Modify: `docs/decision_log.md`
 
 **Acceptance**

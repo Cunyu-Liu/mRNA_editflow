@@ -1,22 +1,10 @@
-contract_id: utr_editflow_goal_v2
-contract_version: "2.2.0"
-status: FROZEN
+execution_policy_id: utr_editflow_execution_policy
+non_authoritative_derivative: true
+generated_from_contract_path: docs/contracts/mrna_editflow_contract.md
+generated_from_contract_sha256: ff5a440910c9c8ef47e460b3f2d6a291c7fce12e687e090f2200dc79796a89c3
+policy_status: HASH_BOUND
 created_on: "2026-07-28"
 scientific_question_id: RQ-UTR-EDITFLOW-V2
-amendment_id: utr_editflow_goal_v2.2_b0_frozen_d1_replay_scope
-
-goal_document:
-  path: docs/contracts/mrna_latest_build_contract_v2_2.md
-  sha256: 1ec94044e7f4626c3a0d9848e31a2f7122ed6d09ac1919a73cbda659c5d3993d
-  authority_rank: 1
-
-authority_order:
-  - docs/contracts/mrna_latest_build_contract_v2_2.md
-  - configs/utr_editflow_contract_v2.yaml
-  - docs/utr_editflow_scientific_question_v2.md
-  - docs/utr_editflow_claim_matrix_v2.md
-  - docs/execution/task_registry_v2.yaml
-  - frozen_run_artifacts
 
 scientific_question: >-
   Given an existing UTR source, region, assay/context, functional endpoint and
@@ -48,8 +36,8 @@ current_scope:
   formal_training_in_c0_d0: forbidden
 
 future_scope:
-  cds_requires_new_contract: true
-  full_length_requires_new_contract: true
+  cds_requires_decision_record: true
+  full_length_requires_decision_record: true
   user_approval_required: true
 
 foundation_strategy:

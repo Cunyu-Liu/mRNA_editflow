@@ -8,7 +8,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def test_gse246381_is_permanently_historically_exposed():
     contract = yaml.safe_load(
-        (ROOT / "configs/utr_editflow_contract_v2.yaml").read_text(encoding="utf-8")
+        (ROOT / "configs/utr_editflow_execution_policy.yaml").read_text(encoding="utf-8")
     )
     exposure = contract["gse246381"]
     assert exposure["historically_exposed"] is True

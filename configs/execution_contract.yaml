@@ -1,6 +1,6 @@
 contract_id: utr_editflow_execution_v2
-parent_contract_id: utr_editflow_goal_v2
-goal_contract_sha256: c3dc5875868d847b8519fee40b14c43b65e4c5948dc5c3b98101ca61a5671dd5
+parent_contract_id: mrna_editflow_single_active_contract
+goal_contract_sha256: ff5a440910c9c8ef47e460b3f2d6a291c7fce12e687e090f2200dc79796a89c3
 project_root: /home/cunyuliu/mrna_editflow_goal/mrna_editflow
 run_root_template: /home/cunyuliu/mrna_editflow_goal/mrna_editflow/artifacts/runs/{run_id}
 run_id_pattern: "^[a-z0-9_]+_[0-9]{8}T[0-9]{6}Z_[a-f0-9]{7,12}_s[0-9]+$"

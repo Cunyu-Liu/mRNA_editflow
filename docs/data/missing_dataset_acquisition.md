@@ -1,6 +1,6 @@
 # Missing Dataset Acquisition Protocol (D0-04)
 
-Contract: `utr_editflow_goal_v2`
+Contract: `mrna_editflow_single_active_contract`
 Registry: `data_registry/unavailable.yaml`
 
 ## Policy

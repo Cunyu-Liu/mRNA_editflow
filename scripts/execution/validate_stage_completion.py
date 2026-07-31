@@ -40,7 +40,7 @@ except ModuleNotFoundError:  # direct script execution from scripts/execution
 
 SOURCE_ROOT = Path(__file__).resolve().parents[2]
 SCHEMA_PATH = SOURCE_ROOT / "schemas" / "stage_completion_manifest.schema.json"
-GOAL_SHA256 = "c3dc5875868d847b8519fee40b14c43b65e4c5948dc5c3b98101ca61a5671dd5"
+GOAL_SHA256 = "ff5a440910c9c8ef47e460b3f2d6a291c7fce12e687e090f2200dc79796a89c3"
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 COMMIT_RE = re.compile(r"^[0-9a-f]{40}$")
 STAGE_RE = re.compile(
@@ -75,7 +75,7 @@ STAGE_ROLE_SUFFIXES = {
     "protection_recheck": "release/protection_recheck.json",
 }
 FIXED_ROLE_PATHS = {
-    "task_registry": "docs/execution/task_registry_v2.yaml",
+    "task_registry": "docs/execution/task_registry.yaml",
     "decision_log": "docs/decision_log.md",
     "independent_gate_review": (
         "docs/audits/2026-07-29-d1-b0-independent-gate-review.md"
@@ -634,7 +634,7 @@ def _validate_governance_documents(
         else:
             required_markers = {
                 str(manifest.get("stage_id") or ""),
-                "docs/contracts/mrna_latest_build_contract_v2.md",
+                "docs/contracts/mrna_editflow_contract.md",
                 "D-2026-07-29-GOVERNANCE-METADATA-CORRECTION-01",
                 "D-2026-07-29-GOVERNANCE-METADATA-CORRECTION-02",
                 "record_type: append_only_metadata_correction",
@@ -882,9 +882,9 @@ def validate(
         errors.append("ended_at_utc precedes started_at_utc")
     contract = manifest.get("goal_contract")
     if contract != {
-        "id": "utr_editflow_goal_v2",
+        "id": "mrna_editflow_single_active_contract",
         "sha256": GOAL_SHA256,
-        "repository_snapshot": "docs/contracts/mrna_latest_build_contract_v2.md",
+        "repository_snapshot": "docs/contracts/mrna_editflow_contract.md",
     }:
         errors.append("goal_contract is not the frozen contract")
 
