@@ -18,7 +18,7 @@ import jsonschema
 from scripts.execution.acceptance_semantics import validate_phase_acceptance
 
 
-GOAL_SHA256 = "c3dc5875868d847b8519fee40b14c43b65e4c5948dc5c3b98101ca61a5671dd5"
+GOAL_SHA256 = "ff5a440910c9c8ef47e460b3f2d6a291c7fce12e687e090f2200dc79796a89c3"
 SCHEMA_PATH = (
     Path(__file__).resolve().parents[2] / "schemas/d1_canonical_snapshot.schema.json"
 )
@@ -623,7 +623,7 @@ def build_snapshot_payload(
         "stage_id": stage_id,
         "status": "FROZEN_STRUCTURAL_DATA_ONLY",
         "goal_contract": {
-            "id": "utr_editflow_goal_v2",
+            "id": "mrna_editflow_single_active_contract",
             "sha256": GOAL_SHA256,
         },
         "claim_boundary": {
