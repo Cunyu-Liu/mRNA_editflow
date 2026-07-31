@@ -3,6 +3,7 @@ from __future__ import annotations
 import pytest
 
 from data.utr_benchmark_v2.near_neighbors import NEAR_NEIGHBOR_ALGORITHM_ID
+from data.utr_benchmark_v2.near_neighbors import NEAR_NEIGHBOR_CANDIDATE_BACKEND
 from data.utr_benchmark_v2.near_neighbors import NearNeighborError
 from data.utr_benchmark_v2.near_neighbors import build_near_neighbor_clusters
 
@@ -35,6 +36,10 @@ def test_six_block_candidates_cannot_miss_five_distributed_edits() -> None:
         == clusters.record_clusters["candidate-record"]
     )
     assert clusters.binding["algorithm"] == NEAR_NEIGHBOR_ALGORITHM_ID
+    assert (
+        clusters.binding["candidate_deduplication"]
+        == NEAR_NEIGHBOR_CANDIDATE_BACKEND
+    )
     assert clusters.binding["edit_distance_threshold"] == 5
     assert clusters.binding["candidate_generation_complete"] is True
     assert clusters.binding["qualifying_pair_count"] == 1
@@ -69,4 +74,19 @@ def test_near_neighbor_clustering_is_order_stable_and_fails_closed() -> None:
         build_near_neighbor_clusters(
             {"a": ("AAAAAAAA",), "b": ("CCCCCCCC",)},
             max_sequences=1,
+        )
+
+
+def test_exact_candidate_spool_retains_an_explicit_fail_closed_cap() -> None:
+    with pytest.raises(
+        NearNeighborError,
+        match="STOP_RULE_B0_NEAR_NEIGHBOR_COMPLEXITY",
+    ):
+        build_near_neighbor_clusters(
+            {
+                "a": ("AAAAAA",),
+                "b": ("AAAAAC",),
+                "c": ("AAAACC",),
+            },
+            max_candidate_pairs=1,
         )

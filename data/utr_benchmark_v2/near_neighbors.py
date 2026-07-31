@@ -11,15 +11,21 @@ from __future__ import annotations
 
 import hashlib
 import json
+import sqlite3
+import tempfile
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any, Dict, Iterable, Mapping, Tuple
 
 
 NEAR_NEIGHBOR_EDIT_THRESHOLD = 5
 NEAR_NEIGHBOR_BLOCK_COUNT = NEAR_NEIGHBOR_EDIT_THRESHOLD + 1
 NEAR_NEIGHBOR_ALGORITHM_ID = (
-    "six_block_pigeonhole_all_substring_candidates_exact_banded_levenshtein_v1"
+    "six_block_pigeonhole_sqlite_exact_dedup_banded_levenshtein_v2"
 )
+NEAR_NEIGHBOR_CANDIDATE_BACKEND = "sqlite_without_rowid_exact_dedup_spool_v1"
+DEFAULT_MAX_CANDIDATE_SPOOL_BYTES = 8 * 1024 * 1024 * 1024
+_CANDIDATE_INSERT_BATCH_SIZE = 10_000
 
 
 class NearNeighborError(ValueError):
@@ -171,7 +177,8 @@ def build_near_neighbor_clusters(
     max_sequences: int = 100_000,
     max_block_postings: int = 600_000,
     max_substring_probes: int = 50_000_000,
-    max_candidate_pairs: int = 1_000_000,
+    max_candidate_pairs: int | None = None,
+    max_candidate_spool_bytes: int = DEFAULT_MAX_CANDIDATE_SPOOL_BYTES,
     max_exact_dp_cells: int = 100_000_000,
 ) -> NearNeighborClusters:
     """Build exact global edit-distance-5 connected components.
@@ -185,10 +192,12 @@ def build_near_neighbor_clusters(
         ("max_sequences", max_sequences),
         ("max_block_postings", max_block_postings),
         ("max_substring_probes", max_substring_probes),
-        ("max_candidate_pairs", max_candidate_pairs),
+        ("max_candidate_spool_bytes", max_candidate_spool_bytes),
         ("max_exact_dp_cells", max_exact_dp_cells),
     ):
         _validate_limit(name, value)
+    if max_candidate_pairs is not None:
+        _validate_limit("max_candidate_pairs", max_candidate_pairs)
     if not isinstance(record_states, Mapping) or not record_states:
         raise NearNeighborError("record_states must be a non-empty mapping")
 
@@ -235,93 +244,171 @@ def build_near_neighbor_clusters(
                         "no approximation was emitted"
                     )
 
-    candidate_pairs: set[Tuple[int, int]] = set()
-
-    def add_candidate(left: int, right: int) -> None:
-        if left == right:
-            return
-        pair = (left, right) if left < right else (right, left)
-        if pair in candidate_pairs:
-            return
-        if (
-            abs(len(sequences[pair[0]]) - len(sequences[pair[1]]))
-            > NEAR_NEIGHBOR_EDIT_THRESHOLD
-        ):
-            return
-        candidate_pairs.add(pair)
-        if len(candidate_pairs) > max_candidate_pairs:
-            raise NearNeighborError(
-                "STOP_RULE_B0_NEAR_NEIGHBOR_COMPLEXITY: pigeonhole "
-                f"candidate set exceeded {max_candidate_pairs} pairs; "
-                "no approximation was emitted"
-            )
-
-    short_indices = [
-        index
-        for index, sequence in enumerate(sequences)
-        if len(sequence) < NEAR_NEIGHBOR_BLOCK_COUNT
-    ]
-    for offset, left in enumerate(short_indices):
-        for right in short_indices[offset + 1 :]:
-            add_candidate(left, right)
-
-    substring_probes = 0
-    for target_index, target in enumerate(sequences):
-        possible_block_lengths: set[int] = set()
-        minimum_query_length = max(
-            NEAR_NEIGHBOR_BLOCK_COUNT,
-            len(target) - NEAR_NEIGHBOR_EDIT_THRESHOLD,
-        )
-        maximum_query_length = len(target) + NEAR_NEIGHBOR_EDIT_THRESHOLD
-        for query_length in range(
-            minimum_query_length, maximum_query_length + 1
-        ):
-            possible_block_lengths.update(
-                _block_lengths_for_sequence_length(query_length)
-            )
-        for block_length in sorted(possible_block_lengths):
-            if block_length > len(target):
-                continue
-            observed_substrings = {
-                target[start : start + block_length]
-                for start in range(len(target) - block_length + 1)
-            }
-            substring_probes += len(observed_substrings)
-            if substring_probes > max_substring_probes:
-                raise NearNeighborError(
-                    "STOP_RULE_B0_NEAR_NEIGHBOR_COMPLEXITY: exact "
-                    f"substring scan exceeded {max_substring_probes} probes; "
-                    "no approximation was emitted"
-                )
-            for substring in sorted(observed_substrings):
-                for owner in sorted(
-                    block_index.get((block_length, substring), ())
-                ):
-                    add_candidate(owner, target_index)
-
+    # Candidate generation can be complete yet substantially larger than the
+    # in-memory set permitted by the original implementation.  SQLite provides
+    # exact deduplication and deterministic ordered replay without sampling or
+    # approximation; a spool-size ceiling remains a fail-closed resource guard.
+    sequence_hashes = {
+        sequence: hashlib.sha256(sequence.encode("utf-8")).hexdigest()
+        for sequence in sequences
+    }
     union_find = _UnionFind(len(sequences))
-    qualifying_pairs: list[Tuple[int, int]] = []
+    substring_probes = 0
     exact_dp_cells = 0
-    for left, right in sorted(candidate_pairs):
-        exact_dp_cells += _band_cell_count(
-            len(sequences[left]),
-            len(sequences[right]),
-            NEAR_NEIGHBOR_EDIT_THRESHOLD,
-        )
-        if exact_dp_cells > max_exact_dp_cells:
-            raise NearNeighborError(
-                "STOP_RULE_B0_NEAR_NEIGHBOR_COMPLEXITY: exact banded "
-                f"verification exceeded {max_exact_dp_cells} DP cells; "
-                "no approximation was emitted"
+    qualifying_pair_count = 0
+    qualifying_edges_digest = hashlib.sha256()
+    qualifying_edges_digest.update(b"[")
+    candidate_pair_count = 0
+    candidate_spool_bytes = 0
+
+    with tempfile.TemporaryDirectory(prefix="utr_b0_near_neighbors_") as spool:
+        database_path = Path(spool) / "candidate_pairs.sqlite"
+        connection = sqlite3.connect(str(database_path))
+        try:
+            connection.execute("PRAGMA journal_mode=OFF")
+            connection.execute("PRAGMA synchronous=OFF")
+            connection.execute(
+                "CREATE TABLE candidate_pairs ("
+                "left_index INTEGER NOT NULL, "
+                "right_index INTEGER NOT NULL, "
+                "PRIMARY KEY (left_index, right_index)"
+                ") WITHOUT ROWID"
             )
-        distance = _banded_distance_at_most(
-            sequences[left],
-            sequences[right],
-            NEAR_NEIGHBOR_EDIT_THRESHOLD,
-        )
-        if distance is not None:
-            qualifying_pairs.append((left, right))
-            union_find.union(left, right)
+            pending_candidates: list[Tuple[int, int]] = []
+            insert_batch_size = _CANDIDATE_INSERT_BATCH_SIZE
+            if max_candidate_pairs is not None:
+                insert_batch_size = min(insert_batch_size, max_candidate_pairs + 1)
+
+            def flush_candidates() -> None:
+                nonlocal candidate_pair_count, candidate_spool_bytes
+                if not pending_candidates:
+                    return
+                connection.executemany(
+                    "INSERT OR IGNORE INTO candidate_pairs VALUES (?, ?)",
+                    pending_candidates,
+                )
+                connection.commit()
+                pending_candidates.clear()
+                candidate_pair_count = int(
+                    connection.execute(
+                        "SELECT COUNT(*) FROM candidate_pairs"
+                    ).fetchone()[0]
+                )
+                candidate_spool_bytes = database_path.stat().st_size
+                if (
+                    max_candidate_pairs is not None
+                    and candidate_pair_count > max_candidate_pairs
+                ):
+                    raise NearNeighborError(
+                        "STOP_RULE_B0_NEAR_NEIGHBOR_COMPLEXITY: exact SQLite "
+                        f"candidate set exceeded {max_candidate_pairs} pairs; "
+                        "no approximation was emitted"
+                    )
+                if candidate_spool_bytes > max_candidate_spool_bytes:
+                    raise NearNeighborError(
+                        "STOP_RULE_B0_NEAR_NEIGHBOR_COMPLEXITY: exact SQLite "
+                        f"candidate spool exceeded {max_candidate_spool_bytes} bytes; "
+                        "no approximation was emitted"
+                    )
+
+            def add_candidate(left: int, right: int) -> None:
+                if left == right:
+                    return
+                pair = (left, right) if left < right else (right, left)
+                if (
+                    abs(len(sequences[pair[0]]) - len(sequences[pair[1]]))
+                    > NEAR_NEIGHBOR_EDIT_THRESHOLD
+                ):
+                    return
+                pending_candidates.append(pair)
+                if len(pending_candidates) >= insert_batch_size:
+                    flush_candidates()
+
+            short_indices = [
+                index
+                for index, sequence in enumerate(sequences)
+                if len(sequence) < NEAR_NEIGHBOR_BLOCK_COUNT
+            ]
+            for offset, left in enumerate(short_indices):
+                for right in short_indices[offset + 1 :]:
+                    add_candidate(left, right)
+
+            for target_index, target in enumerate(sequences):
+                possible_block_lengths: set[int] = set()
+                minimum_query_length = max(
+                    NEAR_NEIGHBOR_BLOCK_COUNT,
+                    len(target) - NEAR_NEIGHBOR_EDIT_THRESHOLD,
+                )
+                maximum_query_length = len(target) + NEAR_NEIGHBOR_EDIT_THRESHOLD
+                for query_length in range(
+                    minimum_query_length, maximum_query_length + 1
+                ):
+                    possible_block_lengths.update(
+                        _block_lengths_for_sequence_length(query_length)
+                    )
+                for block_length in sorted(possible_block_lengths):
+                    if block_length > len(target):
+                        continue
+                    observed_substrings = {
+                        target[start : start + block_length]
+                        for start in range(len(target) - block_length + 1)
+                    }
+                    substring_probes += len(observed_substrings)
+                    if substring_probes > max_substring_probes:
+                        raise NearNeighborError(
+                            "STOP_RULE_B0_NEAR_NEIGHBOR_COMPLEXITY: exact "
+                            f"substring scan exceeded {max_substring_probes} probes; "
+                            "no approximation was emitted"
+                        )
+                    for substring in sorted(observed_substrings):
+                        for owner in sorted(
+                            block_index.get((block_length, substring), ())
+                        ):
+                            add_candidate(owner, target_index)
+            flush_candidates()
+
+            for left, right in connection.execute(
+                "SELECT left_index, right_index FROM candidate_pairs "
+                "ORDER BY left_index, right_index"
+            ):
+                exact_dp_cells += _band_cell_count(
+                    len(sequences[left]),
+                    len(sequences[right]),
+                    NEAR_NEIGHBOR_EDIT_THRESHOLD,
+                )
+                if exact_dp_cells > max_exact_dp_cells:
+                    raise NearNeighborError(
+                        "STOP_RULE_B0_NEAR_NEIGHBOR_COMPLEXITY: exact banded "
+                        f"verification exceeded {max_exact_dp_cells} DP cells; "
+                        "no approximation was emitted"
+                    )
+                distance = _banded_distance_at_most(
+                    sequences[left],
+                    sequences[right],
+                    NEAR_NEIGHBOR_EDIT_THRESHOLD,
+                )
+                if distance is not None:
+                    if qualifying_pair_count:
+                        qualifying_edges_digest.update(b",")
+                    qualifying_edges_digest.update(
+                        json.dumps(
+                            (sequence_hashes[sequences[left]], sequence_hashes[sequences[right]]),
+                            sort_keys=True,
+                            separators=(",", ":"),
+                            ensure_ascii=False,
+                        ).encode("utf-8")
+                    )
+                    qualifying_pair_count += 1
+                    union_find.union(left, right)
+        except sqlite3.Error as exc:
+            raise NearNeighborError(
+                "STOP_RULE_B0_NEAR_NEIGHBOR_COMPLEXITY: exact SQLite candidate "
+                "spool failed; no approximation was emitted"
+            ) from exc
+        finally:
+            connection.close()
+    qualifying_edges_digest.update(b"]")
+    qualifying_edges_sha256 = qualifying_edges_digest.hexdigest()
 
     indices_by_root: Dict[int, list[int]] = {}
     for index in range(len(sequences)):
@@ -349,12 +436,9 @@ def build_near_neighbor_clusters(
             )
         record_clusters[record_id] = next(iter(cluster_ids))
 
-    sequence_hashes = {
-        sequence: hashlib.sha256(sequence.encode("utf-8")).hexdigest()
-        for sequence in sequences
-    }
     binding = {
         "algorithm": NEAR_NEIGHBOR_ALGORITHM_ID,
+        "candidate_deduplication": NEAR_NEIGHBOR_CANDIDATE_BACKEND,
         "edit_distance_threshold": NEAR_NEIGHBOR_EDIT_THRESHOLD,
         "pigeonhole_block_count": NEAR_NEIGHBOR_BLOCK_COUNT,
         "scope": (
@@ -371,23 +455,16 @@ def build_near_neighbor_clusters(
         "record_count": len(normalized_records),
         "block_posting_count": block_postings,
         "substring_probe_count": substring_probes,
-        "candidate_pair_count": len(candidate_pairs),
-        "qualifying_pair_count": len(qualifying_pairs),
+        "candidate_pair_count": candidate_pair_count,
+        "candidate_spool_bytes": candidate_spool_bytes,
+        "qualifying_pair_count": qualifying_pair_count,
         "cluster_count": len(indices_by_root),
         "maximum_cluster_sequence_count": max(cluster_sizes, default=0),
         "exact_dp_cell_count": exact_dp_cells,
         "sequence_universe_sha256": _sha256_payload(
             sorted(sequence_hashes.values())
         ),
-        "qualifying_edges_sha256": _sha256_payload(
-            [
-                (
-                    sequence_hashes[sequences[left]],
-                    sequence_hashes[sequences[right]],
-                )
-                for left, right in qualifying_pairs
-            ]
-        ),
+        "qualifying_edges_sha256": qualifying_edges_sha256,
         "cluster_assignment_sha256": _sha256_payload(
             sorted(
                 (
@@ -405,6 +482,7 @@ def build_near_neighbor_clusters(
             "max_block_postings": max_block_postings,
             "max_substring_probes": max_substring_probes,
             "max_candidate_pairs": max_candidate_pairs,
+            "max_candidate_spool_bytes": max_candidate_spool_bytes,
             "max_exact_dp_cells": max_exact_dp_cells,
         },
     }
