@@ -65,7 +65,7 @@ def test_title_matches_keyword_rules():
 
 def test_offline_run_produces_valid_registry_and_acceptance():
     registry = run_discovery(offline=True)
-    assert registry["contract_id"] == "public_intervention_contract_v1"
+    assert registry["contract_id"] == "utr_editflow_contract_v2"
     assert len(registry["candidates"]) == len(CANDIDATES)
     checks = acceptance_checks(registry)
     # offline mode: schema check present, live-verification check skipped

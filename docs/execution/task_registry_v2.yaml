@@ -1,0 +1,273 @@
+# Execution task registry — utr_editflow_contract_v2
+# Validated by: python scripts/execution/validate_registry.py
+# Schema: schemas/task_registry.schema.json
+registry_version: "2.0.0"
+contract_id: utr_editflow_contract_v2
+goal_document_version: "utr_editflow_goal_v2 (+ v2.1, v2.2 amendments)"
+
+# Phase execution rule: forward-only state machine.
+# Upstream Gate not passed → may continue non-conflicting parallel prep,
+# but no downstream formal scientific conclusions.
+
+tasks:
+  # ============================================================
+  # Phase C0: 合同与现实对齐
+  # ============================================================
+  - task_id: C0-01
+    phase: C0
+    status: DONE
+    dependencies: []
+    description: "只读 preflight: 核验 repo/HEAD/git status/进程/GPU/磁盘/合同/task registry"
+    acceptance: ["preflight report generated (read-only)"]
+
+  - task_id: C0-02
+    phase: C0
+    status: DONE
+    dependencies: [C0-01]
+    description: "合同冲突矩阵: docs/contracts/v2_contract_conflict_matrix.md"
+    files: ["docs/contracts/v2_contract_conflict_matrix.md"]
+    acceptance: ["all v1-v2 conflicts listed with disposition"]
+
+  - task_id: C0-03
+    phase: C0
+    status: DONE
+    dependencies: [C0-01]
+    description: "新合同文件族: contract_v2.yaml + scientific_question_v2 + claim_matrix_v2 + decision_log + task_registry_v2"
+    files:
+      - "configs/utr_editflow_contract_v2.yaml"
+      - "docs/utr_editflow_scientific_question_v2.md"
+      - "docs/utr_editflow_claim_matrix_v2.md"
+      - "docs/decision_log.md"
+      - "docs/execution/task_registry_v2.yaml"
+    acceptance: ["all v2 contract files exist and are internally consistent"]
+
+  - task_id: C0-04
+    phase: C0
+    status: DONE
+    dependencies: [C0-03]
+    description: "Active contract audit + tests"
+    files:
+      - "scripts/contracts/audit_active_contracts.py"
+      - "tests/test_utr_editflow_contract_v2.py"
+    commands:
+      - "python -m pytest tests/test_utr_editflow_contract_v2.py -q"
+      - "python scripts/contracts/audit_active_contracts.py --strict"
+    acceptance:
+      - "active predictor-only fallback = 0"
+      - "active Flow-optional clauses = 0"
+      - "active CDS/full-length Phase-1 tasks = 0"
+      - "GSE246381 sealed wording = 0"
+      - "formal neural CPU fallback allowed = 0"
+      - "active contract ambiguity = 0"
+
+  - task_id: C0-05
+    phase: C0
+    status: DONE
+    dependencies: [C0-03]
+    description: "README 对齐 v2: UTR-only, Edit Flow primary, no wetlab, GPU-only"
+    files: ["README.md"]
+    acceptance: ["README does not contradict Goal v2 on scope/method/wetlab"]
+
+  # ============================================================
+  # Phase D0: 科学问题驱动的数据发现
+  # ============================================================
+  - task_id: D0-01
+    phase: D0
+    status: DONE
+    dependencies: [C0-03]
+    description: "Hypothesis-to-data matrix: docs/data/hypothesis_data_requirement_matrix.md"
+    acceptance: ["H1-H8 each has minimum/ideal supervision + irreplaceable fields"]
+
+  - task_id: D0-02
+    phase: D0
+    status: DONE
+    dependencies: [D0-01]
+    description: "Dataset capability matrix: data_registry/dataset_capability_matrix.csv"
+    acceptance: ["every candidate dataset has all required metadata fields"]
+
+  - task_id: D0-03
+    phase: D0
+    status: DONE
+    dependencies: [D0-02]
+    description: "Download GEO + ENCODE datasets"
+    acceptance: ["all GEO + ENCODE files downloaded and verified"]
+
+  - task_id: D0-04
+    phase: D0
+    status: DONE
+    dependencies: [D0-03]
+    description: "Missing dataset acquisition protocol"
+    acceptance: ["every missing dataset has full acquisition trail"]
+
+  - task_id: D0-05
+    phase: D0
+    status: PENDING
+    dependencies: [D0-02]
+    description: "Current candidates audit: GSE145046, Sample, PLUMAGE, GSE246381, GSE217518, GSE200304, MPRAu per-dataset role table"
+    acceptance: ["each dataset has allowed/forbidden claim", "no dataset auto-promoted by size"]
+
+  # ============================================================
+  # Phase D1: 数据资格、重建与暴露审计
+  # ============================================================
+  - task_id: D1-01
+    phase: D1
+    status: PENDING
+    dependencies: [D0-05]
+    description: "Canonical records: download/extract/clean/build_source_candidate/build_edit_scripts/reproduce_labels/audit per dataset"
+    acceptance: ["apply(edit_script, source) == candidate 100%", "path ambiguity quantified"]
+
+  - task_id: D1-02
+    phase: D1
+    status: PENDING
+    dependencies: [D1-01]
+    description: "Exposure ledger: data/data_exposure_ledger.jsonl"
+    acceptance: ["exposure ledger coverage = 100%"]
+
+  # ============================================================
+  # Phase B0: 生成式 UTR Benchmark 与 splits
+  # ============================================================
+  - task_id: B0-01
+    phase: B0
+    status: PENDING
+    dependencies: [D1-02]
+    description: "Canonical schemas: utr_edit_record, edit_script, generation_task"
+    gate: "MB0-Freeze prerequisite"
+    acceptance: ["schemas defined and tested"]
+
+  - task_id: B0-02
+    phase: B0
+    status: PENDING
+    dependencies: [B0-01]
+    description: "Split manifests: 5utr/3utr source_disjoint, study_disjoint, cross_region_transfer"
+    acceptance: ["unexplained overlap = 0", "reverse/path leakage = 0"]
+
+  - task_id: B0-03
+    phase: B0
+    status: PENDING
+    dependencies: [B0-02]
+    description: "Leakage audit: exact/reverse/intermediate/cluster/scaffold/gene/study/context/barcode/foundation overlap"
+    acceptance: ["final endpoint as train intermediate = 0", "exposure ledger coverage = 100%"]
+
+  - task_id: B0-04
+    phase: B0
+    status: PENDING
+    dependencies: [B0-03]
+    description: "Evaluation tracks: closed_measured_pool, heldout_generative, open_legal_generation"
+    acceptance: ["track-role ambiguity = 0"]
+
+  - task_id: B0-05
+    phase: B0
+    status: PENDING
+    dependencies: [B0-04]
+    description: "Data Card: counts, bias, exposure, allowed claims, unsupported capabilities"
+    acceptance: ["data card complete for all tracks"]
+
+  # ============================================================
+  # Phase FM0: Foundation model 接入
+  # ============================================================
+  - task_id: FM0-01
+    phase: FM0
+    status: PENDING
+    dependencies: [B0-05]
+    description: "Foundation model checkpoint + tokenizer + hash/license + GPU loader + frozen cache + LoRA + partial unfreeze + from-scratch control + exposure audit"
+    gate: "FM0 → MK0 → EF0 mandatory"
+    acceptance: ["load test", "tokenization test", "GPU forward test", "hash/license manifest", "exposure record", "embedding determinism", "input-length behavior", "memory/latency profile"]
+
+  # ============================================================
+  # Phase MK0: UTR Edit Flow 数学内核冻结
+  # ============================================================
+  - task_id: MK0-01
+    phase: MK0
+    status: PENDING
+    dependencies: [FM0-01]
+    description: "Freeze math semantics: state/action space, coupling, path, rates, loss, STOP, sampler, numerical stability"
+    gate: "MK0 Gate not passed → no EF0 acceptance, no GP0 formal training"
+    acceptance: ["math kernel frozen and tested", "numerical verification complete"]
+
+  # ============================================================
+  # Phase EF0: True UTR Edit Flow 工程实现
+  # ============================================================
+  - task_id: EF0-01
+    phase: EF0
+    status: PENDING
+    dependencies: [MK0-01]
+    description: "Implement true UTR Edit Flow: continuous-time rate field, source conditioning, region adapters, hard masks, variable-length, multi-step, STOP, conditional generation"
+    acceptance: ["H3 hard-constrained validity 100%", "not just greedy/top-k substitution"]
+
+  # ============================================================
+  # Phase GP0: Generative prior GPU 训练
+  # ============================================================
+  - task_id: GP0-01
+    phase: GP0
+    status: PENDING
+    dependencies: [EF0-01]
+    description: "GPU training of generative prior"
+    acceptance: ["training manifest complete with all required fields", "GPU-only"]
+
+  # ============================================================
+  # Phase FC0: Functional conditioning / critic 系统
+  # ============================================================
+  - task_id: FC0-01
+    phase: FC0
+    status: PENDING
+    dependencies: [GP0-01]
+    description: "Effect predictor/critic: teacher/guidance, selection, final evaluator separated"
+    acceptance: ["role separation audited"]
+
+  # ============================================================
+  # Phase ME0: Measured-support 与 candidate freeze
+  # ============================================================
+  - task_id: ME0-01
+    phase: ME0
+    status: PENDING
+    dependencies: [FC0-01]
+    description: "Measured-support evaluation and candidate freeze"
+    gate: "ME0 → MB0-Freeze → MB0-Run mandatory"
+    acceptance: ["candidate freeze complete", "no final label leakage"]
+
+  # ============================================================
+  # Phase MB0: Matched-budget 正式比较
+  # ============================================================
+  - task_id: MB0-Freeze
+    phase: MB0
+    status: PENDING
+    dependencies: [ME0-01]
+    description: "Freeze tasks, executable baselines, published anchors, matched budget"
+    acceptance: ["MB0-Freeze Gate passed before viewing final labels"]
+
+  - task_id: MB0-Run
+    phase: MB0
+    status: PENDING
+    dependencies: [MB0-Freeze]
+    description: "Run matched-budget comparison: Edit Flow vs AR/diffusion/generic Edit Flow/scorer+search"
+    acceptance: ["Pareto frontier comparison complete", "H5 evaluated"]
+
+  # ============================================================
+  # Phase TR0: 5'UTR→3'UTR 迁移
+  # ============================================================
+  - task_id: TR0-01
+    phase: TR0
+    status: PENDING
+    dependencies: [MB0-Run]
+    description: "Cross-region transfer evaluation"
+    acceptance: ["H8 evaluated", "H6 cross-study transfer evaluated"]
+
+  # ============================================================
+  # Phase ER0: Robustness、failure 与机制分析
+  # ============================================================
+  - task_id: ER0-01
+    phase: ER0
+    status: PENDING
+    dependencies: [TR0-01]
+    description: "Robustness, failure analysis, mechanism analysis"
+    acceptance: ["failure card complete", "H4 conditional controllability evaluated"]
+
+  # ============================================================
+  # Phase PP0: 论文、复现与发布
+  # ============================================================
+  - task_id: PP0-01
+    phase: PP0
+    status: PENDING
+    dependencies: [ER0-01]
+    description: "Paper, reproducibility, release"
+    acceptance: ["submission readiness (§39.5) met", "all main figures reconstructable from frozen artifacts"]

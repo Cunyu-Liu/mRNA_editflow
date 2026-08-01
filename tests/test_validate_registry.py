@@ -10,16 +10,16 @@ from scripts.execution.validate_registry import _has_cycle, main, validate  # no
 def _task(tid="D0-01", status="DONE", deps=None):
     return {
         "task_id": tid,
+        "phase": "D0",
         "status": status,
         "dependencies": deps or [],
+        "description": "test task",
+        "acceptance": ["check"],
+        # optional fields included for coverage
         "inputs": ["in"],
-        "in_scope": ["scope"],
-        "out_of_scope": ["oos"],
         "files": ["f.py"],
         "commands": ["make f"],
         "outputs": ["out"],
-        "acceptance": ["check"],
-        "repair_loop": ["retry"],
         "commit_sha": None,
         "report": None,
     }
@@ -27,7 +27,7 @@ def _task(tid="D0-01", status="DONE", deps=None):
 
 def _registry(tasks):
     return {"registry_version": "1.0.0",
-            "contract_id": "public_intervention_contract_v1",
+            "contract_id": "utr_editflow_contract_v2",
             "tasks": tasks}
 
 
@@ -38,9 +38,9 @@ def test_valid_registry_passes():
 
 def test_missing_field_fails():
     task = _task()
-    del task["repair_loop"]
+    del task["acceptance"]  # acceptance is required in v2 schema
     errors = validate(_registry([task]))
-    assert any("repair_loop" in e for e in errors)
+    assert any("acceptance" in e for e in errors)
 
 
 def test_bad_status_fails():

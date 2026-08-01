@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate docs/execution/task_registry.yaml against the registry contract.
+"""Validate docs/execution/task_registry_v2.yaml against the registry contract.
 
 The JSON Schema source of truth is schemas/task_registry.schema.json. This
 validator implements the same checks without requiring the jsonschema
@@ -7,7 +7,7 @@ package (keeps the execution environment dependency-free).
 
 Usage:
     python scripts/execution/validate_registry.py \
-        --registry docs/execution/task_registry.yaml
+        --registry docs/execution/task_registry_v2.yaml
 """
 from __future__ import annotations
 
@@ -22,16 +22,21 @@ import yaml
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SCHEMA_PATH = REPO_ROOT / "schemas" / "task_registry.schema.json"
 
+# v2 schema: 5 required fields; the rest are optional
 REQUIRED_TASK_FIELDS = [
-    "task_id", "status", "dependencies", "inputs", "in_scope",
-    "out_of_scope", "files", "commands", "outputs", "acceptance",
-    "repair_loop", "commit_sha", "report",
+    "task_id", "phase", "status", "dependencies", "acceptance",
+]
+# All valid task fields (required + optional) — used for unexpected-field check
+ALL_TASK_FIELDS = [
+    "task_id", "phase", "status", "dependencies", "acceptance",
+    "description", "gate", "inputs", "in_scope", "out_of_scope",
+    "files", "commands", "outputs", "repair_loop", "commit_sha", "report",
 ]
 LIST_FIELDS = [
     "dependencies", "inputs", "in_scope", "out_of_scope", "files",
     "commands", "outputs", "acceptance", "repair_loop",
 ]
-TASK_ID_PATTERN = re.compile(r"^[A-Z0-9]+-[0-9]+$")
+TASK_ID_PATTERN = re.compile(r"^[A-Z0-9]+-[A-Za-z0-9]+$")
 
 
 def load_schema_statuses() -> list[str]:
@@ -64,7 +69,7 @@ def validate(registry: dict, schema_statuses: list[str] | None = None) -> list[s
         for field in REQUIRED_TASK_FIELDS:
             if field not in task:
                 errors.append(f"{tid}: missing required field '{field}'")
-        extra = set(task) - set(REQUIRED_TASK_FIELDS)
+        extra = set(task) - set(ALL_TASK_FIELDS)
         if extra:
             errors.append(f"{tid}: unexpected fields {sorted(extra)}")
         if "task_id" in task:
@@ -121,7 +126,7 @@ def _has_cycle(tasks: list[dict]) -> bool:
 
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--registry", default=str(REPO_ROOT / "docs/execution/task_registry.yaml"))
+    parser.add_argument("--registry", default=str(REPO_ROOT / "docs/execution/task_registry_v2.yaml"))
     args = parser.parse_args(argv)
 
     path = Path(args.registry)

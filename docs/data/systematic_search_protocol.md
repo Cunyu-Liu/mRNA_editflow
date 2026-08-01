@@ -1,6 +1,6 @@
 # Systematic Search Protocol (D0-02)
 
-Contract: `public_intervention_contract_v1` (`configs/public_intervention_contract.yaml`)
+Contract: `utr_editflow_contract_v2` (`configs/utr_editflow_contract_v2.yaml`)
 Executor: `scripts/data/systematic_search.py`
 Results: `docs/data/systematic_search_results.md`
 Registry: `data_registry/intervention_candidates.yaml`
@@ -63,7 +63,7 @@ A dataset is admitted as a candidate only if all of the following hold:
 |---|---|---|---|
 | Sample 2019 natural 5'UTR variants | GSE114002 | EditBench-5U-Natural | primary benchmark |
 | PLUMAGE 5'UTR mutation library | GSE149487 | EditBench-5U-Natural | primary benchmark |
-| NDD 5'UTR mutation MPRA | GSE246381 | EditBench-5U-Natural | sealed external test |
+| NDD 5'UTR mutation MPRA | GSE246381 | EditBench-5U-Natural | historically_exposed external stress test (E4) |
 | dense synthetic 5'UTR library | GSE145046 | EditBench-5U-Dense | large-scale pretraining |
 | 3'UTR stability variants | GSE217518 | EditBench-3U-Variant | cross-region benchmark |
 | prostate 3'UTR MPRA | GSE200304 | EditBench-3U-Variant | cross-region benchmark |
@@ -71,10 +71,10 @@ A dataset is admitted as a candidate only if all of the following hold:
 | iCodon synonymous library | GSE207584 | EditBench-CDS-Synonymous | codon benchmark |
 | PERSIST-seq | GSE173083 | EditBench-CDS-Synonymous | full-length transfer |
 
-## Sealing rule
+## Historical-exposure rule (v2 §2)
 
 Per-variant labels of GSE246381 must not be read by training code before the
-model and hyperparameters are frozen (see contract `sealed_external_dataset`).
+model and hyperparameters are frozen (see contract `utr_editflow_contract_v2` §2 (historically_exposed, E4; labels forbidden for new training and new hyperparameter selection)).
 
 ## Repair loop
 

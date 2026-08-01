@@ -1,6 +1,6 @@
 # Missing Dataset Acquisition Protocol (D0-04)
 
-Contract: `public_intervention_contract_v1`
+Contract: `utr_editflow_contract_v2`
 Registry: `data_registry/unavailable.yaml`
 
 ## Policy

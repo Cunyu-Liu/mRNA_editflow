@@ -1,0 +1,306 @@
+# =============================================================================
+# utr_editflow_contract_v2
+#
+# The single authoritative executable research contract for mRNA-EditFlow.
+# Supersedes public_intervention_contract_v1 (archived under
+# archive/legacy_predictor_first_v1/contracts_v1/).
+#
+# Authority hierarchy (Goal §0.2):
+#   1. Goal document (提示词/mrna 最新构建合同-先做.md) — scientific thought,
+#      immutable boundaries
+#   2. THIS FILE — structured executable contract
+#   3. docs/utr_editflow_scientific_question_v2.md
+#   4. docs/utr_editflow_claim_matrix_v2.md
+#   5. docs/execution/task_registry_v2.yaml
+#   6. Per-experiment frozen config / manifest / run artifacts
+#
+# If a lower-level file conflicts with a higher-level one, fail closed.
+# =============================================================================
+
+contract_id: utr_editflow_contract_v2
+version: 2.0.0
+status: FROZEN
+created_on: "2026-08-01"
+supersedes: "public_intervention_contract_v1 (archived to archive/legacy_predictor_first_v1/contracts_v1/)"
+goal_document: "提示词/mrna 最新构建合同-先做.md"
+goal_document_version: "utr_editflow_goal_v2 (+ v2.1_additive_math_mb0, v2.2_b0_capacity_nonblocking, v2.2_b0_frozen_d1_replay_scope)"
+
+# ---------------------------------------------------------------------------
+# 1. Core immutable boundaries (Goal §1, §4)
+# ---------------------------------------------------------------------------
+core_boundaries:
+  edit_flow_is_primary_method: true    # §1.1 — Flow is NOT optional, NOT a fallback
+  scope: [five_utr, three_utr]          # §1.2 — UTR-only first phase
+  out_of_scope:                         # §4.2
+    - cds_synonymous_generation
+    - protein_conditioned_codon_flow
+    - full_length_mrna_joint_optimization
+    - full_length_therapeutic_mrna_generation
+    - cross_region_full_transcript_synergy
+  new_wetlab: forbidden                 # §1.6
+  training_device: GPU_only             # Execution principle
+  foundation_strategy: reuse_first      # §1.7 — frozen embedding → adapter → LoRA → partial unfreeze → full FT only if justified
+  failure_evidence_deletion: forbidden  # Execution principle
+  gate_lowering_post_hoc: forbidden     # Execution principle
+
+# ---------------------------------------------------------------------------
+# 2. GSE246381 status (Goal §1.4)
+# ---------------------------------------------------------------------------
+gse246381_status:
+  historically_exposed: true
+  role: historically_exposed_retrospective_external_stress_test
+  labels_allowed_for_new_training: false
+  labels_allowed_for_new_hyperparameter_selection: false
+  evidence_grade: E4
+  forbidden_wording: [sealed, untouched, never-seen_external_test]
+  must_report: historical_exposure_path
+
+# ---------------------------------------------------------------------------
+# 3. ENCODE status (Goal §1.5, corrected 2026-08-01)
+# ---------------------------------------------------------------------------
+encode_status:
+  accession: ENCSR854RUF
+  raw_files: 62
+  download_status: COMPLETE
+  download_location: "data/p0/ENCSR854RUF/reconstructed/"
+  verification_method: "provider_md5 + file_size + presence_check"
+  total_bytes_approx: 357950358596
+  candidate_role: unlabeled_or_observational_pretraining
+  not_primary_intervention_evidence: true
+  can_enhance: [utr_sequence_prior, foundation_adaptation, region_representation, generative_denoising]
+  cannot_provide: [wt_mutant_causal_labels, multi_step_real_trajectory, prospective_improvement, final_independent_oracle]
+
+# ---------------------------------------------------------------------------
+# 4. Scientific question (Goal §2)
+# ---------------------------------------------------------------------------
+scientific_question_id: RQ-UTR-EDITFLOW-V2
+scientific_question: >
+  Given an existing UTR source, region, assay/context, functional endpoint
+  and target condition, can a source-conditioned, region-aware,
+  grammar-constrained continuous-time mRNA-EditFlow learn transferable
+  legal edit-trajectory distributions and generate diverse, sparse,
+  variable-length and controllable 5'UTR/3'UTR candidates?
+comparative_question: >
+  Under matched training data, backbone, trainable parameters, GPU budget,
+  candidate budget, oracle-query budget and constraints, can mRNA-EditFlow
+  achieve a better Pareto frontier than autoregressive generation,
+  masked/discrete diffusion, generic Edit Flow, and direct scorer + search
+  on function-control, legality, diversity, edit-cost and generation-efficiency?
+
+# ---------------------------------------------------------------------------
+# 5. Falsifiable hypotheses (Goal §3)
+# ---------------------------------------------------------------------------
+hypotheses:
+  H1_edit_process_modeling:
+    description: "Explicit continuous-time edit-rate field outperforms candidate-only, subtraction, Siamese, AR, masked/diffusion, generic Edit Flow"
+    evidence_required: [heldout_generative_likelihood, candidate_recovery, calibration, multi_seed_statistics]
+  H2_architecture_irreplacability:
+    description: "Each component (source conditioning, continuous time, INS/DEL/SUB rates, STOP, variable-length, multi-step, region rate field, legal mask, edit budget, target condition) produces measurable contribution"
+    requires_ablation_per_component: true
+  H3_hard_constrained_validity:
+    description: "100% validity at every generation step and final sample"
+    metrics: [invalid_nucleotide=0, forbidden_position_edit=0, anchor_violation=0, budget_violation=0, length_bound_violation=0, identity_edit_counted=0]
+    no_soft_penalty_substitute: true
+  H4_conditional_controllability:
+    description: "Changing region/assay/endpoint/direction produces interpretable and reproducible distribution changes"
+    must_evaluate: [target_direction_success, condition_consistency, condition_sensitivity, permutation_negative_control, target_strength_monotonicity, identical_condition_reproducibility, diversity_under_fixed_condition]
+  H5_generative_advantage_over_search:
+    description: "Edit Flow not fully dominated by strong search on Pareto frontier"
+    must_compare: [random_legal, greedy, beam, best_of_N, simulated_annealing, direct_scorer_exhaustive_ranking]
+    dimensions: [high_effect_recovery, independent_critic_score, diversity, edit_cost, inference_latency, oracle_query_efficiency]
+  H6_cross_source_and_cross_study_transfer:
+    description: "Transfer under source-disjoint, gene-disjoint, study-disjoint, context-disjoint, exposure-aware external evaluation"
+    cannot_report_only_random_pair_split: true
+  H7_foundation_model_value:
+    description: "Foundation model improves representation, sample efficiency or cross-study generalization"
+    must_validate: [small_from_scratch_control, frozen_foundation, adapter_LoRA, partial_full_finetune]
+  H8_5utr_3utr_unify_and_diff:
+    description: "Shared edit process + independent endpoint heads/motif rules/length priors/region adapters"
+    forbidden: merging_5utr_3utr_endpoints_into_unified_expression_label
+
+# ---------------------------------------------------------------------------
+# 6. Evidence grades (Goal §7.1)
+# ---------------------------------------------------------------------------
+evidence_grades:
+  E0: "engineering — unit tests, shape tests, smoke, synthetic sanity"
+  E1: "internal computational — train/validation, proxy reward, development split"
+  E2: "retrospective measured — held-out measured source/candidate labels"
+  E3: "cross-study / context — study-disjoint or context-disjoint measured evidence"
+  E4: "historically exposed external — independent study but prior label exposure recorded"
+  E5: "untouched external — genuinely unexposed and frozen before access"
+  E6: "prospective experimental — new wet-lab measurement"
+max_expected_grade: "E3-E5"
+gse246381_fixed_grade: E4
+e6_in_scope: false
+
+# ---------------------------------------------------------------------------
+# 7. Data function levels (Goal §8.2)
+# ---------------------------------------------------------------------------
+data_levels:
+  D_A: "Unlabeled / observational UTR corpus — foundation representation, generative prior, denoising. No functional improvement claim."
+  D_B: "Absolute-property measured sequences — conditional property representation, auxiliary predictor. No intervention claim."
+  D_C: "Source-matched measured interventions — primary supervised data for edit-effect and generative grounding."
+  D_D: "Dense measured landscape — multi-step generation, dense pretraining."
+  D_E: "External independent — cross-study/context transfer evaluation."
+
+# ---------------------------------------------------------------------------
+# 8. System architecture (Goal §6)
+# ---------------------------------------------------------------------------
+system_layers:
+  Layer_A_foundation: "mRNABERT / UTR-LM / 3UTRBERT / Orthrus / alternatives — source encoder, candidate encoder, sequence prior, initialization"
+  Layer_B_effect: "paired-delta model, endpoint-specific heads, uncertainty, independent critic(s) — teacher/guidance, selection, final evaluator must be separated"
+  Layer_C_editflow: "continuous-time legal edit rate field, source conditioning, region conditioning, target conditioning, variable-length multi-step sampling"
+  Layer_D_evaluation: "measured candidate recovery, independent critic, external retrospective, matched-budget baselines, calibration, failure analysis"
+  rule: "Foundation model and effect predictor are support systems; Edit Flow rate heads + legal state/action space complete generation.不得把 GPT 生成器改名为 Edit Flow。"
+
+# ---------------------------------------------------------------------------
+# 9. Phase structure + mandatory gates (Goal §26)
+# ---------------------------------------------------------------------------
+phases:
+  C0: "合同与现实对齐"
+  D0: "科学问题驱动的数据发现"
+  D1: "数据资格、重建与暴露审计"
+  B0: "生成式 UTR benchmark 与 splits"
+  FM0: "Foundation model 接入"
+  MK0: "UTR Edit Flow 数学内核冻结"
+  EF0: "True UTR Edit Flow 工程实现"
+  GP0: "Generative prior GPU 训练"
+  FC0: "Functional conditioning / critic 系统"
+  ME0: "Measured-support 与 candidate freeze"
+  MB0: "Matched-budget 正式比较"
+  TR0: "5'UTR→3'UTR 迁移"
+  ER0: "Robustness、failure 与机制分析"
+  PP0: "论文、复现与发布"
+  FL0: "未来 full-length 决策 (not in current scope)"
+
+mandatory_freeze_gates:
+  FM0_to_MK0_to_EF0: "数学内核未冻结前，不得启动 EF0 正式实现验收或 GP0 正式训练"
+  ME0_to_MB0_Freeze_to_MB0_Run: "MB0-Freeze 未通过时不得查看 final labels 后再选择/删除/改名 baseline"
+
+phase_execution_rule: "forward-only state machine; upstream Gate not passed → may continue non-conflicting parallel prep, but no downstream formal scientific conclusions"
+
+# ---------------------------------------------------------------------------
+# 10. Evaluation tracks (Goal §30 B0-04)
+# ---------------------------------------------------------------------------
+evaluation_tracks:
+  closed_measured_pool: "measured source-candidate pairs, closed support"
+  heldout_generative: "held-out source→candidate generative likelihood/recovery"
+  open_legal_generation: "open-support legal generation under constraints"
+
+# ---------------------------------------------------------------------------
+# 11. Edit Flow architecture requirements (Goal §5)
+# ---------------------------------------------------------------------------
+edit_flow_requirements:
+  continuous_time: "Non-negative event rates λ_ins, λ_sub, λ_del, λ_stop + token/action distributions; retain t in training and sampling"
+  source_conditioning: "p(candidate, trajectory | source, region, context, target, constraints); report source preservation rate"
+  variable_length: "INS/DEL are first-class actions in training, sampling, evaluation — not post-processing"
+  multi_step: "Support edit budget k ∈ {1, 3, 5}; evaluate order, STOP calibration, cycling, reverse, repeated position, budget utilization, per-step legality, real edit distance"
+  hard_action_mask: "Region boundary, protected positions, anchor motifs, allowed alphabet, max/min length, edit budget, forbidden identity, optional motif-preservation, source-relative state tracking. Must act before rate normalization."
+  region_aware: "Shared trunk + 5'UTR adapter + 3'UTR adapter; compare fully-shared vs adapter vs independent vs wrong-region negative control"
+  conditional_generation: "Endpoint, assay, context, target direction, target quantile, max edit budget, length target, must-preserve motif; report train-sample vs sample-time condition consistency"
+  diversity: "Multiple candidates per source/condition; report unique rate, pairwise edit distance, motif/structure diversity, mode collapse, duplicate rate, candidates/sec, amortized cost"
+
+# ---------------------------------------------------------------------------
+# 12. Claim boundaries (Goal §7.2-7.4)
+# ---------------------------------------------------------------------------
+claims:
+  primary: >
+    We introduce a source-conditioned, region-aware and grammar-constrained
+    continuous-time Edit Flow that generates diverse and biologically legal
+    minimal edits for 5' and 3' UTRs, and evaluate its controllability and
+    transfer under matched-budget generative and search baselines.
+  secondary_conditional:
+    - "continuous-time edit-process modeling outperforms candidate-independent modeling"
+    - "explicit legal action geometry achieves 100% constraint validity"
+    - "variable-length flow improves infilling/refinement"
+    - "Edit Flow improves candidate/query efficiency vs strong search"
+    - "foundation-model initialization improves sample efficiency or transfer"
+    - "region-conditioned adapters outperform fully-shared or fully-independent"
+    - "uncertainty/abstention reduces false-beneficial selection"
+    - "public UTR intervention data supports generative edit evaluation"
+  forbidden:
+    - "generated candidates improve real therapeutic mRNA efficacy"
+    - "unmeasured candidates have experimentally validated improvement"
+    - "MRL equals protein output"
+    - "TE equals protein output"
+    - "half-life improvement necessarily improves protein output"
+    - "predictor high score equals real biological optimality"
+    - "model trajectory is observed biological trajectory"
+    - "GSE246381 is untouched sealed test"
+    - "full-length mRNA optimization is complete"
+    - "CDS grammar is verified"
+    - "mechanism conclusion from attention heatmap alone"
+    - "same predictor self-guides, self-selects, self-proves"
+    - "Edit Flow naturally superior to GPT/diffusion/search without proof"
+    - "the first Edit Flow for biological sequences"
+    - "the first source/template-conditioned Edit Flow"
+    - "the first constrained or function-guided Edit Flow"
+    - "the first variable-length biological sequence editor"
+  paper_wording_preference: "we formulate / we develop / we evaluate — not 'the first' unless with search date, database, query, exclusion criteria and per-field difference table vs nearest prior art"
+
+# ---------------------------------------------------------------------------
+# 13. Concept boundaries (Goal §2.4)
+# ---------------------------------------------------------------------------
+concept_boundaries:
+  edit_trajectory: "latent algorithmic edit trajectory — NOT biological RNA editing, NOT evolutionary history, NOT experimentally stepped, NOT causally measured"
+  public_data_gap: "If public data only has source and final candidate, intermediate path = latent algorithmic, not observed biological"
+
+# ---------------------------------------------------------------------------
+# 14. Prior art narrowing (Goal §4.4)
+# ---------------------------------------------------------------------------
+prior_art:
+  audited_date: "2026-07-30"
+  note: "Directed audit did not verify a method satisfying ALL of: 5'UTR+3'UTR + source-conditioned + continuous-time Edit Flow + INS/SUB/DEL+STOP + stepwise UTR grammar hard mask + region-aware trunk/adapters + matched-budget evaluation"
+  direct_precedents:
+    - "Edit Flows (arxiv 2506.09018) — variable-length INS/DEL/SUB Edit Flow"
+    - "EvoFlows (arxiv 2603.11703) — template protein INS/DEL/SUB editing"
+    - "Flexible Flows for Biological Sequence Design (arxiv 2606.10543)"
+    - "pCoMole (OpenReview tTILzscPs4) — pretrained Edit Flow + hard terminal feasibility"
+    - "SPROUT (OpenReview 4AF7WSp7Cs) — rollout utility guided promoter Edit Flow"
+
+# ---------------------------------------------------------------------------
+# 15. Training manifest requirements (Goal §0.3)
+# ---------------------------------------------------------------------------
+training_manifest_required_fields:
+  goal_contract:
+    id: utr_editflow_goal_v2
+    sha256: "<actual_sha256>"
+  scientific_question_id: RQ-UTR-EDITFLOW-V2
+  phase_id: "<current phase>"
+  task_id: "<current task>"
+  git_commit: "<commit>"
+  data_manifest_sha256: "<sha256>"
+  split_manifest_sha256: "<sha256>"
+  foundation_checkpoint: "<path or none>"
+  foundation_checkpoint_sha256: "<sha256 or none>"
+  exposure_ledger_version: "<version>"
+  rule: "Missing these fields → development smoke only, not paper evidence"
+
+# ---------------------------------------------------------------------------
+# 16. Amendments (Goal §0, §45, §46)
+# ---------------------------------------------------------------------------
+amendments:
+  - id: utr_editflow_goal_v2.1_additive_math_mb0
+    date: "2026-07-30"
+    summary: "Added math kernel, architecture diagram, MB0 baseline contract; added FM0→MK0→EF0 mandatory gate"
+  - id: utr_editflow_goal_v2.2_b0_capacity_nonblocking
+    date: "2026-07-31"
+    summary: "B0 capacity diagnostics are historical optional engineering diagnostics only, not B0 acceptance gates"
+    decision_id: DEC-UTR-EF-V2-20260731-B0-CAPACITY-NONBLOCKING
+  - id: utr_editflow_goal_v2.2_b0_frozen_d1_replay_scope
+    date: "2026-07-31"
+    summary: "B0 path-state scope = frozen D1 canonical edit_script prefixes + declared intermediates; capacity gate removed, zero-leakage gate retained"
+    decision_id: DEC-UTR-EF-V2-20260731-B0-FROZEN-REPLAY-SCOPE
+
+# ---------------------------------------------------------------------------
+# 17. Full-length future gate (Goal §4.3)
+# ---------------------------------------------------------------------------
+full_length_future_gate:
+  conditions:
+    - "5'UTR and 3'UTR true Edit Flow semantics pass"
+    - "INS/DEL/SUB/STOP and variable length all have non-smoke evidence"
+    - "No Critical blocker in H1-H6"
+    - "Generative model not fully dominated by baselines"
+    - "Data, foundation exposure, final evaluator roles auditable"
+    - "At least one region cross-study generational result with statistical support"
+    - "User explicitly approves extension"

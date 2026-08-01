@@ -16,7 +16,7 @@ from threading import Lock
 from typing import Any
 
 
-USER_AGENT = "mrna-editflow-d0/1.0 (public_intervention_contract_v1)"
+USER_AGENT = "mrna-editflow-d0/2.0 (utr_editflow_contract_v2)"
 
 
 def sha256_file(path: Path) -> str:
@@ -73,7 +73,8 @@ def download_one(record: dict[str, Any], dest: Path, timeout: int, retries: int)
         return {**record, "path": str(final_path), "status": "VERIFIED", "downloaded": True, "sha256": detail}
 
     command = [
-        "curl", "-fSL", "--http1.1", "--retry", str(retries), "--retry-delay", "10",
+        "curl", "-fSL", "--http1.1", "--retry", str(retries), "--retry-all-errors",
+        "--retry-delay", "10",
         "--continue-at", "-", "--connect-timeout", "60", "--max-time", str(timeout),
         "-A", USER_AGENT, "-o", str(part_path), record["url"],
     ]

@@ -61,7 +61,7 @@ AVAILABILITY = {"yes", "partial", "no"}
 
 # Frozen candidate list. Curated fields (variant_count, endpoint, evidence
 # grade, availability) come from the publications cited in
-# docs/public_intervention_scientific_question.md; accession existence and
+# docs/utr_editflow_scientific_question_v2.md; accession existence and
 # series titles are verified live by this script.
 CANDIDATES: list[dict] = [
     {
@@ -343,7 +343,7 @@ def run_discovery(offline: bool = False) -> dict:
         candidates.append(rec)
     return {
         "registry_version": "1.0.0",
-        "contract_id": "public_intervention_contract_v1",
+        "contract_id": "utr_editflow_contract_v2",
         "generated_by": "scripts/data/systematic_search.py",
         "generated_at_utc": checked_at,
         "sources_queried": [

@@ -150,7 +150,7 @@ tasks:
     report: "VALID: 9 candidates; all required metadata fields populated; live accession/title verification passed; mirror-query errors retained as evidence"
 
   - task_id: D0-03
-    status: IN_PROGRESS
+    status: DONE
     dependencies: [D0-02]
     inputs:
       - "data_registry/intervention_candidates.yaml (P0 accessions)"
@@ -184,7 +184,7 @@ tasks:
     repair_loop:
       - "download failure -> retry -> alternate mirror -> archive source -> raw reconstruction -> author contact -> documented unavailable (never silently drop)"
     commit_sha: null
-    report: "PARTIAL: all required GEO accessions have verified direct files or manifests; MPRAu processed Supplementary Table 1 is complete (37,117,358 bytes, SHA-256 recorded); all 62 ENCODE files have fixed GEO/SRA alternate provenance, but the 62-file ENCODE raw-read release remains incomplete and is not admitted as raw data."
+    report: "COMPLETE: all required GEO accessions verified; MPRAu processed table complete; all 62 ENCODE raw fastq.gz downloaded to reconstructed/ and verified by provider_md5 + file size."
 
   - task_id: D0-04
     status: DONE
@@ -209,4 +209,4 @@ tasks:
     repair_loop:
       - "download failure != dataset removal; follow retry -> alternate mirror -> archive -> raw reconstruction -> author contact -> documented unavailable"
     commit_sha: null
-    report: "VALID acquisition trail: GSE114002 direct sample repair complete; GSE173083 direct files complete pending final verifier; ENCSR854RUF processed data complete but raw reads remain incomplete; all partial transfers retained and no dataset deleted."
+    report: "VALID acquisition trail: GSE114002 complete; GSE173083 complete; ENCSR854RUF processed + 62 raw reads complete in reconstructed/; all partial transfers retained."
