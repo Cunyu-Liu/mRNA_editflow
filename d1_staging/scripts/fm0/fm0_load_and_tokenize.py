@@ -34,6 +34,7 @@ from fm0_common import (  # noqa: E402
     load_config_obj,
     load_model,
     load_tokenizer,
+    pick_gpu_device,
     summarize_model,
     tokenize_sequences,
     write_json,
@@ -51,7 +52,7 @@ SAMPLE_SEQUENCES = [
 ]
 
 
-def run_load_and_tokenize() -> dict:
+def run_load_and_tokenize(device_str: str = "auto") -> dict:
     cfg = load_config()
     model_id = get_model_id()
     ensure_offline_env()
@@ -111,17 +112,32 @@ def run_load_and_tokenize() -> dict:
             "T_to_U_applied": ("T" in seq and "T" not in decoded and "U" in decoded),
         })
 
-    # 4. Model load (CPU) + forward smoke
-    model = load_model(device="cpu")
+    # 4. Model load + forward smoke. FM0 contract requires neural forward on GPU.
+    if device_str == "auto":
+        device = pick_gpu_device()
+    else:
+        if not device_str.startswith("cuda"):
+            sys.exit(
+                f"[FM0] FATAL: device={device_str} is not CUDA. "
+                "Contract requires GPU-only neural forward."
+            )
+        if not torch.cuda.is_available():
+            sys.exit(f"[FM0] FATAL: device={device_str} but CUDA unavailable.")
+        device = torch.device(device_str)
+    model = load_model(device=str(device))
     summary = summarize_model(model)
 
     enc = tokenize_sequences(["ACGUACGUAC"], tok, max_length=None)
+    enc = {k: v.to(device) for k, v in enc.items()}
     with torch.no_grad():
         out = model(**enc)
     fwd_info = {
         "output_class": type(out).__name__,
         "last_hidden_state_shape": list(out.last_hidden_state.shape),
         "has_pooler_output": hasattr(out, "pooler_output") and out.pooler_output is not None,
+        "device": str(device),
+        "input_device": str(enc["input_ids"].device),
+        "output_device": str(out.last_hidden_state.device),
     }
     if fwd_info["has_pooler_output"]:
         fwd_info["pooler_output_shape"] = list(out.pooler_output.shape)
@@ -143,6 +159,9 @@ def run_load_and_tokenize() -> dict:
             not mismatches
             and summary["num_parameters_total"] == cfg["model"]["num_parameters"]
             and fwd_info["last_hidden_state_shape"][-1] == cfg["model"]["hidden_size"]
+            and fwd_info["device"].startswith("cuda")
+            and fwd_info["input_device"].startswith("cuda")
+            and fwd_info["output_device"].startswith("cuda")
         ),
     }
     return report
@@ -150,6 +169,7 @@ def run_load_and_tokenize() -> dict:
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--device", default="auto", help="CUDA device; auto selects a GPU with free memory.")
     ap.add_argument(
         "--output",
         default=str(DEFAULT_OUTPUT_DIR / "load_tokenize_report.json"),
@@ -157,7 +177,7 @@ def main():
     )
     args = ap.parse_args()
 
-    report = run_load_and_tokenize()
+    report = run_load_and_tokenize(args.device)
     out = Path(args.output)
     write_json(out, report)
 

@@ -88,19 +88,21 @@ def test_load_and_tokenize_report_passes(tmp_path):
     report = run_load_and_tokenize()
     assert report["pass"] is True
     assert report["config_mismatches_vs_yaml"] == []
+    assert report["forward_smoke"]["device"].startswith("cuda")
     # T->U applied for at least one example
     assert any(ex["T_to_U_applied"] for ex in report["tokenization_examples"])
 
 
 # ---------------------------------------------------------------------------
-# Embedding determinism (CPU ok for this small model)
+# Embedding determinism (GPU required by the active contract)
 # ---------------------------------------------------------------------------
 
 @fm0_real
-def test_embedding_determinism_passes_cpu():
+def test_embedding_determinism_passes_gpu():
     from fm0_embedding_determinism import run_determinism
-    report = run_determinism("cpu")
+    report = run_determinism("auto")
     assert report["pass"] is True
+    assert report["device"].startswith("cuda")
     assert report["bit_exact_two_runs"] is True
     assert report["max_abs_diff"] == 0.0
     for mode, r in report["pooling_results"].items():
@@ -108,14 +110,15 @@ def test_embedding_determinism_passes_cpu():
 
 
 # ---------------------------------------------------------------------------
-# Input-length behavior (CPU ok for this small model)
+# Input-length behavior (GPU required by the active contract)
 # ---------------------------------------------------------------------------
 
 @fm0_real
-def test_input_length_behavior_passes_cpu():
+def test_input_length_behavior_passes_gpu():
     from fm0_input_length_behavior import run_input_length
-    report = run_input_length("cpu")
+    report = run_input_length("auto")
     assert report["pass"] is True
+    assert report["device"].startswith("cuda")
     # No NaN/Inf anywhere
     for r in report["results"]:
         assert not r["any_nan"]
@@ -132,10 +135,11 @@ def test_input_length_behavior_passes_cpu():
 # ---------------------------------------------------------------------------
 
 @fm0_real
-def test_from_scratch_control_passes_cpu():
+def test_from_scratch_control_passes_gpu():
     from fm0_from_scratch_control import run_from_scratch
-    report = run_from_scratch("cpu", seed=20260801)
+    report = run_from_scratch("auto", seed=20260801)
     assert report["pass"] is True
+    assert report["device"].startswith("cuda")
     assert report["architecture_matches"] is True
     assert report["weights_differ"] is True
     assert report["forward_check"]["deterministic_two_runs"] is True
