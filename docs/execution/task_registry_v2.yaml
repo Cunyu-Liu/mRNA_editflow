@@ -178,12 +178,20 @@ tasks:
     pass. Report at data/b0_03_leakage_audit_report.json.
 - task_id: B0-04
   phase: B0
-  status: PENDING
+  status: DONE
   dependencies:
   - B0-03
   description: 'Evaluation tracks: closed_measured_pool, heldout_generative, open_legal_generation'
   acceptance:
   - track-role ambiguity = 0
+  commit_sha: ad83ef4
+  report: Three eval tracks (closed_measured_pool, heldout_generative, open_legal_generation)
+    assigned for 35183 (split, record) entries across all 4 split manifests.
+    Track-role ambiguity = 0. All 4 hard-gate checks PASS with 0 violations
+    (cross_track_exposure_consistency, single_role_per_track, eligibility_correctness,
+    train_eval_boundary). Cross-split role diversity (7174 records) informational
+    by design. 56 unit tests pass. Manifest at data/b0_04_eval_track_manifest.jsonl
+    (sha256 f68e8adf). Report at data/b0_04_eval_track_audit_report.json.
 - task_id: B0-05
   phase: B0
   status: PENDING
