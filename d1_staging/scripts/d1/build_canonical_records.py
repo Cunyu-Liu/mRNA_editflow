@@ -731,44 +731,31 @@ def extract_gse246381(data_root: Path) -> List[dict]:
 
 
 def extract_gse217518(data_root: Path) -> List[dict]:
-    """GSE217518 — 3'UTR, D_C.
+    """GSE217518 — 3'UTR/5'UTR, D_C.
 
-    CSV with variant annotation in row names (e.g., c.-134G|A).
-    No actual sequences in CSV — need reconstruction.
+    Paired UTR variants (Ref->Mut) with RNA stability labels (HEK293T, SH-SY5Y).
+    Source data has only HGVS c. notation + genomic coords (no sequences).
+    Sequences reconstructed via NCBI E-utilities in
+    reconstruct_gse217518_sequences.py -> reconstructed_variants.jsonl.
     """
     accession = "GSE217518"
     print(f"\n[{accession}] Extracting canonical records...")
-    fpath = _find_file(data_root, accession, [
-        "*.csv*",
-        "*.tsv*",
-        "*.txt*",
-    ])
-    if fpath is None:
-        print(f"  WARNING: No data file found for {accession}")
-        return []
 
-    try:
-        df = pd.read_csv(fpath, compression="infer", nrows=5, index_col=0)
-    except Exception:
-        try:
-            df = pd.read_csv(fpath, sep="\t", compression="infer", nrows=5, index_col=0)
-        except Exception as e:
-            print(f"  WARNING: could not parse {fpath.name}: {e}")
-            return []
-
-    print(f"  index name: {df.index.name}, columns: {list(df.columns)}")
-    # Check for sequence column
-    seq_col = None
-    for c in df.columns:
-        cl = c.strip().lower()
-        if cl in ("utr", "seq", "sequence", "3utr"):
-            seq_col = c
+    # Locate reconstructed_variants.jsonl
+    candidates = [
+        data_root / accession / "reconstructed_variants.jsonl",
+        data_root.parent / "raw" / "gse217518_utr_stability" / "reconstructed_variants.jsonl",
+    ]
+    fpath = None
+    for c in candidates:
+        if c.exists():
+            fpath = c
             break
-
-    if seq_col is None:
-        print(f"  INCOMPLETE: No actual UTR sequence column found.")
-        print(f"  GSE217518 row names encode variant notation (e.g., c.-134G|A).")
-        print(f"  Requires sequence reconstruction. Skipping for D1-01.")
+    if fpath is None:
+        print(f"  WARNING: reconstructed_variants.jsonl not found in:")
+        for c in candidates:
+            print(f"    {c}")
+        print(f"  Run reconstruct_gse217518_sequences.py first.")
         return [{
             "record_id": f"{accession}_INCOMPLETE",
             "dataset": "gse217518",
@@ -785,14 +772,107 @@ def extract_gse217518(data_root: Path) -> List[dict]:
             "metadata": {
                 "record_type": "incomplete",
                 "data_role": "D_C",
-                "note": "No sequences in CSV; variant notation in row names; needs reconstruction",
-                "source_file": fpath.name,
+                "note": "reconstructed_variants.jsonl not found; run reconstruct_gse217518_sequences.py",
             },
         }]
 
-    print(f"  found sequence column: {seq_col}")
-    print(f"  NOTE: Full extraction not yet implemented for {accession} with sequences")
-    return []
+    print(f"  reading: {fpath}")
+    records = []
+    skipped_no_seq = 0
+    skipped_identical = 0
+    max_records = MAX_RECORDS_PER_DATASET
+    seen_ids = set()
+
+    with open(fpath) as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            if len(records) >= max_records:
+                print(f"  capping at {max_records} records")
+                break
+            rec = json.loads(line)
+            source = _normalize_seq(rec.get("source_sequence", ""))
+            candidate = _normalize_seq(rec.get("candidate_sequence", ""))
+            if not source or not candidate:
+                skipped_no_seq += 1
+                continue
+
+            # Truncate to window around variant position for long UTRs.
+            # The O(n*m) alignment in canonical_record() is infeasible for
+            # sequences >~1000bp (3'UTRs can be 25k+ bp).  Use +/-250bp
+            # around the variant site (matches typical MPRA oligo context).
+            MAX_UTR_LEN = 500
+            if len(source) > MAX_UTR_LEN or len(candidate) > MAX_UTR_LEN:
+                raw_meta_tmp = rec.get("metadata", {})
+                var_pos = raw_meta_tmp.get("variant_position")
+                if var_pos is not None:
+                    half = MAX_UTR_LEN // 2
+                    pos_0idx = max(0, int(var_pos) - 1)
+                    src_start = max(0, pos_0idx - half)
+                    src_end = min(len(source), pos_0idx + half)
+                    delta = len(candidate) - len(source)
+                    cand_start = src_start
+                    cand_end = min(len(candidate), src_end + delta)
+                    source = source[src_start:src_end]
+                    candidate = candidate[cand_start:cand_end]
+                else:
+                    # No position info — take first MAX_UTR_LEN bp
+                    source = source[:MAX_UTR_LEN]
+                    candidate = candidate[:MAX_UTR_LEN]
+
+            if source == candidate:
+                skipped_identical += 1
+                continue
+
+            # Build labels (only include non-None float values)
+            raw_labels = rec.get("labels", {})
+            labels = {}
+            for k, v in raw_labels.items():
+                fv = _safe_float(v)
+                if fv is not None:
+                    labels[k] = fv
+
+            # Build metadata: role info + all reconstruction metadata
+            raw_meta = rec.get("metadata", {})
+            metadata = {
+                "data_role": "D_C",
+                "gene_symbol": rec.get("gene_symbol", ""),
+                "variant_name": rec.get("variant_name", ""),
+                "variant_type": rec.get("variant_type", ""),
+            }
+            metadata.update(raw_meta)
+            if "variant_position" in raw_meta:
+                metadata["utr_window"] = MAX_UTR_LEN
+
+            # Ensure unique record_id
+            rid = rec.get("record_id", "")
+            if not rid:
+                rid = f"{accession}_{len(records)}"
+            if rid in seen_ids:
+                rid = f"{rid}_{len(records)}"
+            seen_ids.add(rid)
+
+            crec = canonical_record(
+                record_id=rid,
+                dataset="gse217518",
+                accession=accession,
+                region=rec.get("region", "3'UTR"),
+                source=source,
+                candidate=candidate,
+                labels=labels,
+                metadata=metadata,
+            )
+            records.append(crec)
+
+    print(f"  extracted {len(records)} records "
+          f"(skipped: {skipped_no_seq} no_seq, {skipped_identical} identical)")
+    if records:
+        regions = {}
+        for r in records:
+            regions[r["region"]] = regions.get(r["region"], 0) + 1
+        print(f"  by region: {regions}")
+    return records
 
 
 def extract_gse149487(data_root: Path) -> List[dict]:

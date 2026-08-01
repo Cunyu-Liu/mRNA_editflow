@@ -2,51 +2,51 @@
   "5utr_source_disjoint": {
     "split_type": "5utr_source_disjoint",
     "output_path": "data/b0_splits/split_5utr_source_disjoint.jsonl",
-    "sha256": "03e5f1b1693236fabcbf298ed0cbf75637fc8a1d85653c265863cbae289d84e4",
-    "n_total": 5000,
+    "sha256": "e7e0635f3f934e09adffc8f2be2d481b4070a8aa4a0730115ffbfb858d36fbe0",
+    "n_total": 20000,
     "n_excluded": 0,
-    "n_train": 4035,
-    "n_val": 493,
-    "n_test": 472,
+    "n_train": 16030,
+    "n_val": 2038,
+    "n_test": 1932,
     "by_accession_split": {
       "GSE114002": {
-        "train": 4035,
-        "val": 493,
-        "test": 472
+        "val": 2038,
+        "train": 16030,
+        "test": 1932
       }
     },
-    "notes": "mmseqs clustering at identity=0.8, cov=0.8; 3781 clusters split 80/10/10 by cluster"
+    "notes": "mmseqs clustering at identity=0.8, cov=0.8; 15430 clusters split 80/10/10 by cluster"
   },
   "3utr_source_disjoint": {
     "split_type": "3utr_source_disjoint",
     "output_path": "data/b0_splits/split_3utr_source_disjoint.jsonl",
-    "sha256": "fd9d4e395aa6f93bd68c9da4f394e0c93e46c7117021eedf333604bf23e312d6",
+    "sha256": "dd87c979024654c82d61f576bc3bcfd27bf18b64a312b36c0d82c13fdafe14db",
     "n_total": 6885,
     "n_excluded": 0,
-    "n_train": 5530,
-    "n_val": 679,
-    "n_test": 676,
+    "n_train": 5518,
+    "n_val": 686,
+    "n_test": 681,
     "by_accession_split": {
       "GSE200304": {
-        "test": 676,
-        "train": 5530,
-        "val": 679
+        "test": 681,
+        "train": 5518,
+        "val": 686
       }
     },
-    "notes": "mmseqs clustering at identity=0.8, cov=0.8; 6342 clusters split 80/10/10 by cluster"
+    "notes": "mmseqs clustering at identity=0.8, cov=0.8; 6343 clusters split 80/10/10 by cluster"
   },
   "study_disjoint": {
     "split_type": "study_disjoint",
     "output_path": "data/b0_splits/split_study_disjoint.jsonl",
-    "sha256": "5080374f8b35dbe51b469c9f33c5c684af431bd3eb9ebbf9266a2c1081985104",
-    "n_total": 11885,
+    "sha256": "505f176df1a986e939d3dc0703e6b85f6887ce3cd8a1ebc882d6af9a0c31b827",
+    "n_total": 26885,
     "n_excluded": 0,
-    "n_train": 5000,
+    "n_train": 20000,
     "n_val": 0,
     "n_test": 6885,
     "by_accession_split": {
       "GSE114002": {
-        "train": 5000
+        "train": 20000
       },
       "GSE200304": {
         "test": 6885
@@ -57,16 +57,16 @@
   "cross_region_transfer": {
     "split_type": "cross_region_transfer",
     "output_path": "data/b0_splits/split_cross_region_transfer.jsonl",
-    "sha256": "7ef60118db389d46e99272ff197f44242119cbb20479547e962a566ff35f8776",
-    "n_total": 11413,
-    "n_excluded": 472,
-    "n_train": 4035,
-    "n_val": 493,
+    "sha256": "b6c92fea3dc2efe9fb4c7dc5fa19f9f8d89e8cb14e79ba09c35ef8a2869494b4",
+    "n_total": 24948,
+    "n_excluded": 1937,
+    "n_train": 16032,
+    "n_val": 2031,
     "n_test": 6885,
     "by_accession_split": {
       "GSE114002": {
-        "train": 4035,
-        "val": 493
+        "val": 2031,
+        "train": 16032
       },
       "GSE200304": {
         "test": 6885
