@@ -162,7 +162,7 @@ tasks:
     Report at data/b0_02_audit_report.json.
 - task_id: B0-03
   phase: B0
-  status: PENDING
+  status: DONE
   dependencies:
   - B0-02
   description: 'Leakage audit: exact/reverse/intermediate/cluster/scaffold/gene/study/context/barcode/foundation
@@ -170,6 +170,12 @@ tasks:
   acceptance:
   - final endpoint as train intermediate = 0
   - exposure ledger coverage = 100%
+  commit_sha: <pending>
+  report: Comprehensive leakage audit across 4 splits. Hard-gate channels (exact, reverse,
+    intermediate, cluster, study) all PASS with 0 overlap. endpoint_as_train_intermediate=0
+    for all splits. Exposure ledger coverage=100% (11885/11885). gene/context/barcode
+    N/A (no metadata). foundation PENDING_FM0. Scaffold informational. 28 unit tests
+    pass. Report at data/b0_03_leakage_audit_report.json.
 - task_id: B0-04
   phase: B0
   status: PENDING

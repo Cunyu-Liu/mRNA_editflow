@@ -1,0 +1,481 @@
+{
+  "task": "B0-03",
+  "contract": "utr_editflow_contract_v2",
+  "split_audit_results": {
+    "5utr_source_disjoint": {
+      "split_type": "5utr_source_disjoint",
+      "manifest_path": "data/b0_splits/split_5utr_source_disjoint.jsonl",
+      "n_train": 4035,
+      "n_test": 472,
+      "checks": [
+        {
+          "channel": "exact",
+          "applicable": true,
+          "n_train_seqs": 4158,
+          "n_test_seqs": 481,
+          "n_overlap": 0,
+          "overlap_examples": [],
+          "pass": true
+        },
+        {
+          "channel": "reverse",
+          "applicable": true,
+          "n_reverse": 0,
+          "n_symmetric": 0,
+          "n_overlap": 0,
+          "pass": true
+        },
+        {
+          "channel": "intermediate",
+          "applicable": true,
+          "n_train_intermediates": 82,
+          "n_test_intermediates": 22,
+          "n_endpoint_as_train_intermediate": 0,
+          "endpoint_as_train_intermediate_examples": [],
+          "n_train_endpoint_as_test_intermediate": 0,
+          "n_intermediate_intermediate_overlap": 0,
+          "n_overlap": 0,
+          "pass": true
+        },
+        {
+          "channel": "cluster",
+          "applicable": true,
+          "method": "proxy via exact source-sequence overlap (full mmseqs re-cluster done in B0-02)",
+          "n_proxy_overlap": 0,
+          "n_overlap": 0,
+          "pass": true
+        },
+        {
+          "channel": "scaffold",
+          "applicable": true,
+          "informational": true,
+          "n_train_scaffolds": 23,
+          "n_test_scaffolds": 18,
+          "n_overlap": 18,
+          "overlap_examples": [
+            "NC_000001.11",
+            "NC_000003.12",
+            "NC_000004.12",
+            "NC_000005.10",
+            "NC_000006.12"
+          ],
+          "n_train_no_scaffold": 3323,
+          "n_test_no_scaffold": 390,
+          "pass": true
+        },
+        {
+          "channel": "study",
+          "applicable": true,
+          "train_accessions": [
+            "GSE114002"
+          ],
+          "test_accessions": [
+            "GSE114002"
+          ],
+          "n_overlap": 1,
+          "overlap": [
+            "GSE114002"
+          ],
+          "pass": false,
+          "informational": true,
+          "hard_gate": false
+        },
+        {
+          "channel": "gene",
+          "applicable": false,
+          "reason": "canonical records have no gene identifier metadata; GSE114002 is a designed MPRA library (SNV variants on RefSeq scaffolds, not gene-tagged) and GSE200304 records are variant-keyed without gene symbols",
+          "n_overlap": 0,
+          "pass": true
+        },
+        {
+          "channel": "context",
+          "applicable": false,
+          "reason": "no experimental-context metadata (cell type / condition / batch) in canonical records; both D_C datasets are single-context MPRA libraries",
+          "n_overlap": 0,
+          "pass": true
+        },
+        {
+          "channel": "barcode",
+          "applicable": false,
+          "reason": "MPRA barcodes are not retained in canonical records (D1 canonical form stores source/candidate sequences + edit_script + labels, not raw oligo barcodes)",
+          "n_overlap": 0,
+          "pass": true
+        },
+        {
+          "channel": "foundation",
+          "applicable": false,
+          "status": "PENDING_FM0",
+          "reason": "foundation model checkpoint + training-data manifest not yet selected (FM0 depends on B0-05); re-run this check after FM0 completes",
+          "n_overlap": 0,
+          "pass": true
+        }
+      ],
+      "acceptance": {
+        "endpoint_as_train_intermediate": 0
+      },
+      "hard_gate_pass": true,
+      "pass": true
+    },
+    "3utr_source_disjoint": {
+      "split_type": "3utr_source_disjoint",
+      "manifest_path": "data/b0_splits/split_3utr_source_disjoint.jsonl",
+      "n_train": 5530,
+      "n_test": 676,
+      "checks": [
+        {
+          "channel": "exact",
+          "applicable": true,
+          "n_train_seqs": 11058,
+          "n_test_seqs": 1351,
+          "n_overlap": 0,
+          "overlap_examples": [],
+          "pass": true
+        },
+        {
+          "channel": "reverse",
+          "applicable": true,
+          "n_reverse": 0,
+          "n_symmetric": 0,
+          "n_overlap": 0,
+          "pass": true
+        },
+        {
+          "channel": "intermediate",
+          "applicable": true,
+          "n_train_intermediates": 0,
+          "n_test_intermediates": 0,
+          "n_endpoint_as_train_intermediate": 0,
+          "endpoint_as_train_intermediate_examples": [],
+          "n_train_endpoint_as_test_intermediate": 0,
+          "n_intermediate_intermediate_overlap": 0,
+          "n_overlap": 0,
+          "pass": true
+        },
+        {
+          "channel": "cluster",
+          "applicable": true,
+          "method": "proxy via exact source-sequence overlap (full mmseqs re-cluster done in B0-02)",
+          "n_proxy_overlap": 0,
+          "n_overlap": 0,
+          "pass": true
+        },
+        {
+          "channel": "scaffold",
+          "applicable": true,
+          "informational": true,
+          "n_train_scaffolds": 24,
+          "n_test_scaffolds": 23,
+          "n_overlap": 23,
+          "overlap_examples": [
+            "chr1",
+            "chr10",
+            "chr11",
+            "chr12",
+            "chr13"
+          ],
+          "n_train_no_scaffold": 0,
+          "n_test_no_scaffold": 0,
+          "pass": true
+        },
+        {
+          "channel": "study",
+          "applicable": true,
+          "train_accessions": [
+            "GSE200304"
+          ],
+          "test_accessions": [
+            "GSE200304"
+          ],
+          "n_overlap": 1,
+          "overlap": [
+            "GSE200304"
+          ],
+          "pass": false,
+          "informational": true,
+          "hard_gate": false
+        },
+        {
+          "channel": "gene",
+          "applicable": false,
+          "reason": "canonical records have no gene identifier metadata; GSE114002 is a designed MPRA library (SNV variants on RefSeq scaffolds, not gene-tagged) and GSE200304 records are variant-keyed without gene symbols",
+          "n_overlap": 0,
+          "pass": true
+        },
+        {
+          "channel": "context",
+          "applicable": false,
+          "reason": "no experimental-context metadata (cell type / condition / batch) in canonical records; both D_C datasets are single-context MPRA libraries",
+          "n_overlap": 0,
+          "pass": true
+        },
+        {
+          "channel": "barcode",
+          "applicable": false,
+          "reason": "MPRA barcodes are not retained in canonical records (D1 canonical form stores source/candidate sequences + edit_script + labels, not raw oligo barcodes)",
+          "n_overlap": 0,
+          "pass": true
+        },
+        {
+          "channel": "foundation",
+          "applicable": false,
+          "status": "PENDING_FM0",
+          "reason": "foundation model checkpoint + training-data manifest not yet selected (FM0 depends on B0-05); re-run this check after FM0 completes",
+          "n_overlap": 0,
+          "pass": true
+        }
+      ],
+      "acceptance": {
+        "endpoint_as_train_intermediate": 0
+      },
+      "hard_gate_pass": true,
+      "pass": true
+    },
+    "study_disjoint": {
+      "split_type": "study_disjoint",
+      "manifest_path": "data/b0_splits/split_study_disjoint.jsonl",
+      "n_train": 5000,
+      "n_test": 6885,
+      "checks": [
+        {
+          "channel": "exact",
+          "applicable": true,
+          "n_train_seqs": 5146,
+          "n_test_seqs": 13767,
+          "n_overlap": 0,
+          "overlap_examples": [],
+          "pass": true
+        },
+        {
+          "channel": "reverse",
+          "applicable": true,
+          "n_reverse": 0,
+          "n_symmetric": 0,
+          "n_overlap": 0,
+          "pass": true
+        },
+        {
+          "channel": "intermediate",
+          "applicable": true,
+          "n_train_intermediates": 133,
+          "n_test_intermediates": 0,
+          "n_endpoint_as_train_intermediate": 0,
+          "endpoint_as_train_intermediate_examples": [],
+          "n_train_endpoint_as_test_intermediate": 0,
+          "n_intermediate_intermediate_overlap": 0,
+          "n_overlap": 0,
+          "pass": true
+        },
+        {
+          "channel": "cluster",
+          "applicable": true,
+          "method": "proxy via exact source-sequence overlap (full mmseqs re-cluster done in B0-02)",
+          "n_proxy_overlap": 0,
+          "n_overlap": 0,
+          "pass": true
+        },
+        {
+          "channel": "scaffold",
+          "applicable": true,
+          "informational": true,
+          "n_train_scaffolds": 23,
+          "n_test_scaffolds": 24,
+          "n_overlap": 0,
+          "overlap_examples": [],
+          "n_train_no_scaffold": 4144,
+          "n_test_no_scaffold": 0,
+          "pass": true
+        },
+        {
+          "channel": "study",
+          "applicable": true,
+          "train_accessions": [
+            "GSE114002"
+          ],
+          "test_accessions": [
+            "GSE200304"
+          ],
+          "n_overlap": 0,
+          "overlap": [],
+          "pass": true,
+          "informational": false,
+          "hard_gate": true
+        },
+        {
+          "channel": "gene",
+          "applicable": false,
+          "reason": "canonical records have no gene identifier metadata; GSE114002 is a designed MPRA library (SNV variants on RefSeq scaffolds, not gene-tagged) and GSE200304 records are variant-keyed without gene symbols",
+          "n_overlap": 0,
+          "pass": true
+        },
+        {
+          "channel": "context",
+          "applicable": false,
+          "reason": "no experimental-context metadata (cell type / condition / batch) in canonical records; both D_C datasets are single-context MPRA libraries",
+          "n_overlap": 0,
+          "pass": true
+        },
+        {
+          "channel": "barcode",
+          "applicable": false,
+          "reason": "MPRA barcodes are not retained in canonical records (D1 canonical form stores source/candidate sequences + edit_script + labels, not raw oligo barcodes)",
+          "n_overlap": 0,
+          "pass": true
+        },
+        {
+          "channel": "foundation",
+          "applicable": false,
+          "status": "PENDING_FM0",
+          "reason": "foundation model checkpoint + training-data manifest not yet selected (FM0 depends on B0-05); re-run this check after FM0 completes",
+          "n_overlap": 0,
+          "pass": true
+        }
+      ],
+      "acceptance": {
+        "endpoint_as_train_intermediate": 0
+      },
+      "hard_gate_pass": true,
+      "pass": true
+    },
+    "cross_region_transfer": {
+      "split_type": "cross_region_transfer",
+      "manifest_path": "data/b0_splits/split_cross_region_transfer.jsonl",
+      "n_train": 4035,
+      "n_test": 6885,
+      "checks": [
+        {
+          "channel": "exact",
+          "applicable": true,
+          "n_train_seqs": 4158,
+          "n_test_seqs": 13767,
+          "n_overlap": 0,
+          "overlap_examples": [],
+          "pass": true
+        },
+        {
+          "channel": "reverse",
+          "applicable": true,
+          "n_reverse": 0,
+          "n_symmetric": 0,
+          "n_overlap": 0,
+          "pass": true
+        },
+        {
+          "channel": "intermediate",
+          "applicable": true,
+          "n_train_intermediates": 82,
+          "n_test_intermediates": 0,
+          "n_endpoint_as_train_intermediate": 0,
+          "endpoint_as_train_intermediate_examples": [],
+          "n_train_endpoint_as_test_intermediate": 0,
+          "n_intermediate_intermediate_overlap": 0,
+          "n_overlap": 0,
+          "pass": true
+        },
+        {
+          "channel": "cluster",
+          "applicable": true,
+          "method": "proxy via exact source-sequence overlap (full mmseqs re-cluster done in B0-02)",
+          "n_proxy_overlap": 0,
+          "n_overlap": 0,
+          "pass": true
+        },
+        {
+          "channel": "scaffold",
+          "applicable": true,
+          "informational": true,
+          "n_train_scaffolds": 23,
+          "n_test_scaffolds": 24,
+          "n_overlap": 0,
+          "overlap_examples": [],
+          "n_train_no_scaffold": 3323,
+          "n_test_no_scaffold": 0,
+          "pass": true
+        },
+        {
+          "channel": "study",
+          "applicable": true,
+          "train_accessions": [
+            "GSE114002"
+          ],
+          "test_accessions": [
+            "GSE200304"
+          ],
+          "n_overlap": 0,
+          "overlap": [],
+          "pass": true,
+          "informational": false,
+          "hard_gate": true
+        },
+        {
+          "channel": "gene",
+          "applicable": false,
+          "reason": "canonical records have no gene identifier metadata; GSE114002 is a designed MPRA library (SNV variants on RefSeq scaffolds, not gene-tagged) and GSE200304 records are variant-keyed without gene symbols",
+          "n_overlap": 0,
+          "pass": true
+        },
+        {
+          "channel": "context",
+          "applicable": false,
+          "reason": "no experimental-context metadata (cell type / condition / batch) in canonical records; both D_C datasets are single-context MPRA libraries",
+          "n_overlap": 0,
+          "pass": true
+        },
+        {
+          "channel": "barcode",
+          "applicable": false,
+          "reason": "MPRA barcodes are not retained in canonical records (D1 canonical form stores source/candidate sequences + edit_script + labels, not raw oligo barcodes)",
+          "n_overlap": 0,
+          "pass": true
+        },
+        {
+          "channel": "foundation",
+          "applicable": false,
+          "status": "PENDING_FM0",
+          "reason": "foundation model checkpoint + training-data manifest not yet selected (FM0 depends on B0-05); re-run this check after FM0 completes",
+          "n_overlap": 0,
+          "pass": true
+        }
+      ],
+      "acceptance": {
+        "endpoint_as_train_intermediate": 0
+      },
+      "hard_gate_pass": true,
+      "pass": true
+    }
+  },
+  "exposure_ledger_coverage": {
+    "n_manifest_records": 11885,
+    "n_in_ledger": 11885,
+    "n_missing": 0,
+    "coverage": 1.0,
+    "missing_examples": [],
+    "pass": true
+  },
+  "acceptance": {
+    "endpoint_as_train_intermediate_must_be_zero": true,
+    "exposure_ledger_coverage_must_be_100_percent": true
+  },
+  "overall_pass": true,
+  "channels": {
+    "hard_gate_always": [
+      "exact",
+      "reverse",
+      "intermediate",
+      "cluster"
+    ],
+    "hard_gate_conditional": [
+      "study (hard gate for study_disjoint + cross_region_transfer only; informational for *_source_disjoint)"
+    ],
+    "informational": [
+      "scaffold"
+    ],
+    "not_applicable": [
+      "gene",
+      "context",
+      "barcode"
+    ],
+    "pending": [
+      "foundation (pending FM0)"
+    ]
+  }
+}
