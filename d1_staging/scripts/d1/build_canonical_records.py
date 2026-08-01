@@ -806,9 +806,17 @@ def extract_gse217518(data_root: Path) -> List[dict]:
             if len(source) > MAX_UTR_LEN or len(candidate) > MAX_UTR_LEN:
                 raw_meta_tmp = rec.get("metadata", {})
                 var_pos = raw_meta_tmp.get("variant_position")
+                pos_type = raw_meta_tmp.get("variant_position_type", "")
                 if var_pos is not None:
                     half = MAX_UTR_LEN // 2
-                    pos_0idx = max(0, int(var_pos) - 1)
+                    # Convert HGVS position to UTR-local 0-indexed position.
+                    # 5'UTR: c.-N → utr_pos = len(utr) - N  (N bases before CDS)
+                    # 3'UTR: c.*N → utr_pos = N - 1        (N bases after CDS)
+                    if pos_type == "5utr":
+                        pos_0idx = len(source) - int(var_pos)
+                    else:
+                        pos_0idx = max(0, int(var_pos) - 1)
+                    pos_0idx = max(0, pos_0idx)
                     src_start = max(0, pos_0idx - half)
                     src_end = min(len(source), pos_0idx + half)
                     delta = len(candidate) - len(source)
