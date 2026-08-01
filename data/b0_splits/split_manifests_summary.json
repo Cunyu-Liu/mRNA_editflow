@@ -2,15 +2,15 @@
   "5utr_source_disjoint": {
     "split_type": "5utr_source_disjoint",
     "output_path": "data/b0_splits/split_5utr_source_disjoint.jsonl",
-    "sha256": "ab7e28d1e2b104085e2ee17ffe64d02af46a631159684e0120dc630baeba1517",
-    "n_total": 100017,
-    "n_excluded": 0,
-    "n_train": 80061,
+    "sha256": "a04cf3ae883cb01f56087093f439f49d961f8c4a1f68cd15ab641ff162249805",
+    "n_total": 100016,
+    "n_excluded": 1,
+    "n_train": 80060,
     "n_val": 9921,
     "n_test": 10035,
     "by_accession_split": {
       "GSE114002": {
-        "train": 80061,
+        "train": 80060,
         "test": 10035,
         "val": 9921
       }
@@ -20,20 +20,20 @@
   "3utr_source_disjoint": {
     "split_type": "3utr_source_disjoint",
     "output_path": "data/b0_splits/split_3utr_source_disjoint.jsonl",
-    "sha256": "d1d84f65d12ebbcb54fb8bb70e4881271eebd052ca6eab207c418e48b25d731a",
+    "sha256": "f3749c70dd4cdeb86362028824eb4665914480446503a6823de33a02f868edbc",
     "n_total": 6885,
     "n_excluded": 0,
-    "n_train": 5528,
-    "n_val": 684,
-    "n_test": 673,
+    "n_train": 5515,
+    "n_val": 692,
+    "n_test": 678,
     "by_accession_split": {
       "GSE200304": {
-        "test": 673,
-        "train": 5528,
-        "val": 684
+        "test": 678,
+        "train": 5515,
+        "val": 692
       }
     },
-    "notes": "mmseqs clustering at identity=0.8, cov=0.8; 6344 clusters split 80/10/10 by cluster"
+    "notes": "mmseqs clustering at identity=0.8, cov=0.8; 6343 clusters split 80/10/10 by cluster"
   },
   "study_disjoint": {
     "split_type": "study_disjoint",

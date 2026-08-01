@@ -11,12 +11,12 @@
     "heldout_generative": "D_C paired (measured candidate = recovery target)",
     "open_legal_generation": "any record with source_sequence"
   },
-  "n_total_assignments": 310671,
+  "n_total_assignments": 310670,
   "per_split": {
     "5utr_source_disjoint": {
-      "n_records": 100017,
+      "n_records": 100016,
       "by_split_role": {
-        "train": 80061,
+        "train": 80060,
         "test": 10035,
         "val": 9921
       }
@@ -24,9 +24,9 @@
     "3utr_source_disjoint": {
       "n_records": 6885,
       "by_split_role": {
-        "test": 673,
-        "train": 5528,
-        "val": 684
+        "test": 678,
+        "train": 5515,
+        "val": 692
       }
     },
     "study_disjoint": {
@@ -80,7 +80,7 @@
       "name": "cross_split_role_diversity",
       "hard_gate": false,
       "n_records_in_multiple_splits": 106902,
-      "n_records_with_multiple_split_roles": 26168,
+      "n_records_with_multiple_split_roles": 26163,
       "examples": {
         "GSE114002_0_10564": [
           "test",
@@ -130,32 +130,32 @@
       "hard_gate": false,
       "counts": {
         "3utr_source_disjoint/closed_measured_pool": {
-          "test_pair": 673,
-          "train_pair": 5528,
-          "val_pair": 684
+          "test_pair": 678,
+          "train_pair": 5515,
+          "val_pair": 692
         },
         "3utr_source_disjoint/heldout_generative": {
-          "test_heldout_source": 673,
-          "train_heldout_source": 5528,
-          "val_heldout_source": 684
+          "test_heldout_source": 678,
+          "train_heldout_source": 5515,
+          "val_heldout_source": 692
         },
         "3utr_source_disjoint/open_legal_generation": {
-          "test_gen_source": 673,
-          "train_gen_source": 5528,
-          "val_gen_source": 684
+          "test_gen_source": 678,
+          "train_gen_source": 5515,
+          "val_gen_source": 692
         },
         "5utr_source_disjoint/closed_measured_pool": {
-          "train_pair": 80061,
+          "train_pair": 80060,
           "test_pair": 10035,
           "val_pair": 9921
         },
         "5utr_source_disjoint/heldout_generative": {
-          "train_heldout_source": 80061,
+          "train_heldout_source": 80060,
           "test_heldout_source": 10035,
           "val_heldout_source": 9921
         },
         "5utr_source_disjoint/open_legal_generation": {
-          "train_gen_source": 80061,
+          "train_gen_source": 80060,
           "test_gen_source": 10035,
           "val_gen_source": 9921
         },
@@ -194,6 +194,6 @@
   },
   "overall_pass": true,
   "manifest_path": "data/b0_04_eval_track_manifest.jsonl",
-  "manifest_sha256": "4ccc8d2775eeaa21ba67aeba30789a3173ac19efa83441f952d135da64f80f46",
-  "manifest_n_records": 310671
+  "manifest_sha256": "ef6faa2eac378c12db0274c8c4652eabb56644e7c662c8712e7d6a0a474c8b9a",
+  "manifest_n_records": 310670
 }

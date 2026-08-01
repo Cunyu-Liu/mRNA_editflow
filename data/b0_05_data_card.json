@@ -17,18 +17,18 @@
     "closed_measured_pool": {
       "track": "closed_measured_pool",
       "description": "measured source-candidate pairs, closed support",
-      "n_assignments": 310671,
+      "n_assignments": 310670,
       "counts": {
-        "total_assignments": 310671,
+        "total_assignments": 310670,
         "unique_records": 106902,
         "by_split": {
           "3utr_source_disjoint": {
-            "test": 673,
-            "train": 5528,
-            "val": 684
+            "test": 678,
+            "train": 5515,
+            "val": 692
           },
           "5utr_source_disjoint": {
-            "train": 80061,
+            "train": 80060,
             "test": 10035,
             "val": 9921
           },
@@ -43,17 +43,17 @@
           }
         },
         "by_region": {
-          "5'UTR": 290016,
+          "5'UTR": 290015,
           "3'UTR": 20655
         },
         "by_accession": {
-          "GSE114002": 290016,
+          "GSE114002": 290015,
           "GSE200304": 20655
         },
         "by_exposure_class": {
-          "TRAIN": 265667,
-          "EVAL_TEST": 24478,
-          "EVAL_VAL": 20526
+          "TRAIN": 265653,
+          "EVAL_TEST": 24483,
+          "EVAL_VAL": 20534
         }
       },
       "bias": {
@@ -225,18 +225,18 @@
     "heldout_generative": {
       "track": "heldout_generative",
       "description": "held-out source\u2192candidate generative likelihood/recovery",
-      "n_assignments": 310671,
+      "n_assignments": 310670,
       "counts": {
-        "total_assignments": 310671,
+        "total_assignments": 310670,
         "unique_records": 106902,
         "by_split": {
           "3utr_source_disjoint": {
-            "test": 673,
-            "train": 5528,
-            "val": 684
+            "test": 678,
+            "train": 5515,
+            "val": 692
           },
           "5utr_source_disjoint": {
-            "train": 80061,
+            "train": 80060,
             "test": 10035,
             "val": 9921
           },
@@ -251,17 +251,17 @@
           }
         },
         "by_region": {
-          "5'UTR": 290016,
+          "5'UTR": 290015,
           "3'UTR": 20655
         },
         "by_accession": {
-          "GSE114002": 290016,
+          "GSE114002": 290015,
           "GSE200304": 20655
         },
         "by_exposure_class": {
-          "TRAIN": 265667,
-          "EVAL_TEST": 24478,
-          "EVAL_VAL": 20526
+          "TRAIN": 265653,
+          "EVAL_TEST": 24483,
+          "EVAL_VAL": 20534
         }
       },
       "bias": {
@@ -432,18 +432,18 @@
     "open_legal_generation": {
       "track": "open_legal_generation",
       "description": "open-support legal generation under constraints",
-      "n_assignments": 310671,
+      "n_assignments": 310670,
       "counts": {
-        "total_assignments": 310671,
+        "total_assignments": 310670,
         "unique_records": 106902,
         "by_split": {
           "3utr_source_disjoint": {
-            "test": 673,
-            "train": 5528,
-            "val": 684
+            "test": 678,
+            "train": 5515,
+            "val": 692
           },
           "5utr_source_disjoint": {
-            "train": 80061,
+            "train": 80060,
             "test": 10035,
             "val": 9921
           },
@@ -458,17 +458,17 @@
           }
         },
         "by_region": {
-          "5'UTR": 290016,
+          "5'UTR": 290015,
           "3'UTR": 20655
         },
         "by_accession": {
-          "GSE114002": 290016,
+          "GSE114002": 290015,
           "GSE200304": 20655
         },
         "by_exposure_class": {
-          "TRAIN": 265667,
-          "EVAL_TEST": 24478,
-          "EVAL_VAL": 20526
+          "TRAIN": 265653,
+          "EVAL_TEST": 24483,
+          "EVAL_VAL": 20534
         }
       },
       "bias": {

@@ -97968,7 +97968,6 @@
 {"record_id": "GSE114002_NC_000005.10:g.96433063C>T_v1_36736", "accession": "GSE114002", "region": "5'UTR", "split": "train", "split_type": "5utr_source_disjoint"}
 {"record_id": "GSE114002_NC_000006.12:g.112254187C>T_5585", "accession": "GSE114002", "region": "5'UTR", "split": "train", "split_type": "5utr_source_disjoint"}
 {"record_id": "GSE114002_NC_000006.12:g.116616608_116616612delTTCTTinsCACGCCCCTTTCATCCA_39188", "accession": "GSE114002", "region": "5'UTR", "split": "train", "split_type": "5utr_source_disjoint"}
-{"record_id": "GSE114002_NC_000006.12:g.116616608_116616612delTTCTTinsCACGCCCCTTTCATCCA_v1_46", "accession": "GSE114002", "region": "5'UTR", "split": "train", "split_type": "5utr_source_disjoint"}
 {"record_id": "GSE114002_NC_000006.12:g.118558882C>T_18121", "accession": "GSE114002", "region": "5'UTR", "split": "train", "split_type": "5utr_source_disjoint"}
 {"record_id": "GSE114002_NC_000006.12:g.118558882C>T_v1_11386", "accession": "GSE114002", "region": "5'UTR", "split": "train", "split_type": "5utr_source_disjoint"}
 {"record_id": "GSE114002_NC_000006.12:g.118558882C>T_v2_17773", "accession": "GSE114002", "region": "5'UTR", "split": "train", "split_type": "5utr_source_disjoint"}

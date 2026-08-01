@@ -5,32 +5,30 @@
     "5utr_source_disjoint": {
       "split_type": "5utr_source_disjoint",
       "manifest_path": "data/b0_splits/split_5utr_source_disjoint.jsonl",
-      "n_train": 80061,
+      "n_train": 80060,
       "n_test": 10035,
       "checks": [
         {
           "channel": "exact",
           "applicable": true,
-          "n_train_seqs": 80117,
+          "n_train_seqs": 80116,
           "n_test_seqs": 10046,
-          "n_overlap": 1,
-          "overlap_examples": [
-            "CCTTTCATCCAGAACATTTTTTCACGCCCCTTTCATCCAGAACTGCTTCC"
-          ],
-          "pass": false
+          "n_overlap": 0,
+          "overlap_examples": [],
+          "pass": true
         },
         {
           "channel": "reverse",
           "applicable": true,
-          "n_reverse": 1,
+          "n_reverse": 0,
           "n_symmetric": 0,
-          "n_overlap": 1,
-          "pass": false
+          "n_overlap": 0,
+          "pass": true
         },
         {
           "channel": "intermediate",
           "applicable": true,
-          "n_train_intermediates": 170078,
+          "n_train_intermediates": 170058,
           "n_test_intermediates": 21704,
           "n_endpoint_as_train_intermediate": 0,
           "endpoint_as_train_intermediate_examples": [],
@@ -115,20 +113,20 @@
       "acceptance": {
         "endpoint_as_train_intermediate": 0
       },
-      "hard_gate_pass": false,
-      "pass": false
+      "hard_gate_pass": true,
+      "pass": true
     },
     "3utr_source_disjoint": {
       "split_type": "3utr_source_disjoint",
       "manifest_path": "data/b0_splits/split_3utr_source_disjoint.jsonl",
-      "n_train": 5528,
-      "n_test": 673,
+      "n_train": 5515,
+      "n_test": 678,
       "checks": [
         {
           "channel": "exact",
           "applicable": true,
-          "n_train_seqs": 11053,
-          "n_test_seqs": 1346,
+          "n_train_seqs": 11027,
+          "n_test_seqs": 1356,
           "n_overlap": 0,
           "overlap_examples": [],
           "pass": true

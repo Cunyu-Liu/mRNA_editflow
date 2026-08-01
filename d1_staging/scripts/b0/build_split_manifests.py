@@ -226,6 +226,43 @@ def split_clusters(
     return assignments
 
 
+def fix_reverse_leakage(
+    records: List[UTREditRecord],
+    assignments: Dict[str, str],
+    max_iter: int = 10,
+) -> Dict[str, str]:
+    """Fix reverse leakage: candidate_sequence(train) ∩ source_sequence(test).
+
+    Excludes leaking train records from all splits (split='leakage_excluded')
+    so they appear in neither train nor test, avoiding cascading leaks that
+    would occur if they were moved to test (source_overlap, path_leakage).
+    """
+    record_by_id = {r.record_id: r for r in records}
+    total_excluded = 0
+    for iteration in range(max_iter):
+        test_sources: Set[str] = set()
+        for rid, split in assignments.items():
+            if split == "test":
+                rec = record_by_id[rid]
+                if rec.source_sequence:
+                    test_sources.add(rec.source_sequence)
+        leaking = [
+            rid for rid, split in assignments.items()
+            if split == "train"
+            and record_by_id[rid].candidate_sequence
+            and record_by_id[rid].candidate_sequence in test_sources
+        ]
+        if not leaking:
+            break
+        for rid in leaking:
+            assignments[rid] = "leakage_excluded"
+        total_excluded += len(leaking)
+        print(f"  reverse_leakage fix iter {iteration+1}: excluded {len(leaking)} records")
+    if total_excluded:
+        print(f"  Total leakage-excluded: {total_excluded}")
+    return assignments
+
+
 def assign_by_accession(
     records: List[UTREditRecord],
     train_accessions: Set[str],
@@ -344,6 +381,7 @@ def build_all_splits(
     n_clusters = len(set(r2c.values()))
     print(f"  mmseqs clusters: {n_clusters}")
     assignments = split_clusters(r2c)
+    assignments = fix_reverse_leakage(gse114002, assignments)
     summary = write_manifest(
         "5utr_source_disjoint",
         gse114002,
@@ -362,6 +400,7 @@ def build_all_splits(
     n_clusters = len(set(r2c.values()))
     print(f"  mmseqs clusters: {n_clusters}")
     assignments = split_clusters(r2c)
+    assignments = fix_reverse_leakage(gse200304, assignments)
     summary = write_manifest(
         "3utr_source_disjoint",
         gse200304,
