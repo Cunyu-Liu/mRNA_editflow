@@ -1,0 +1,234 @@
+{
+  "task": "B0-02",
+  "contract": "utr_editflow_contract_v2",
+  "split_audit_results": {
+    "5utr_source_disjoint": {
+      "split_type": "5utr_source_disjoint",
+      "manifest_path": "data/b0_splits/split_5utr_source_disjoint.jsonl",
+      "sha256": "03e5f1b1693236fabcbf298ed0cbf75637fc8a1d85653c265863cbae289d84e4",
+      "n_entries": 5000,
+      "checks": {
+        "manifest_format": {
+          "check": "manifest_format",
+          "n_entries": 5000,
+          "n_errors": 0,
+          "errors": [],
+          "pass": true
+        },
+        "source_overlap": {
+          "check": "source_overlap",
+          "n_train_sources": 3696,
+          "n_test_sources": 430,
+          "n_overlap": 0,
+          "overlap_examples": [],
+          "n_missing_records": 0,
+          "pass": true
+        },
+        "accession_overlap": null,
+        "reverse_leakage": {
+          "check": "reverse_leakage",
+          "n_train_candidates": 4035,
+          "n_test_sources": 430,
+          "n_reverse_leakage": 0,
+          "reverse_leakage_examples": [],
+          "n_symmetric_leakage": 0,
+          "symmetric_leakage_examples": [],
+          "n_missing_records": 0,
+          "pass": true
+        },
+        "path_leakage": {
+          "check": "path_leakage",
+          "n_train_intermediates": 82,
+          "n_test_intermediates": 22,
+          "n_forward_path_leakage": 0,
+          "forward_path_leakage_examples": [],
+          "n_reverse_path_leakage": 0,
+          "reverse_path_leakage_examples": [],
+          "n_skipped_no_source": 0,
+          "pass": true
+        }
+      },
+      "acceptance": {
+        "unexplained_overlap": 0,
+        "reverse_leakage": 0,
+        "path_leakage": 0
+      },
+      "pass": true
+    },
+    "3utr_source_disjoint": {
+      "split_type": "3utr_source_disjoint",
+      "manifest_path": "data/b0_splits/split_3utr_source_disjoint.jsonl",
+      "sha256": "fd9d4e395aa6f93bd68c9da4f394e0c93e46c7117021eedf333604bf23e312d6",
+      "n_entries": 6885,
+      "checks": {
+        "manifest_format": {
+          "check": "manifest_format",
+          "n_entries": 6885,
+          "n_errors": 0,
+          "errors": [],
+          "pass": true
+        },
+        "source_overlap": {
+          "check": "source_overlap",
+          "n_train_sources": 5528,
+          "n_test_sources": 675,
+          "n_overlap": 0,
+          "overlap_examples": [],
+          "n_missing_records": 0,
+          "pass": true
+        },
+        "accession_overlap": null,
+        "reverse_leakage": {
+          "check": "reverse_leakage",
+          "n_train_candidates": 5530,
+          "n_test_sources": 675,
+          "n_reverse_leakage": 0,
+          "reverse_leakage_examples": [],
+          "n_symmetric_leakage": 0,
+          "symmetric_leakage_examples": [],
+          "n_missing_records": 0,
+          "pass": true
+        },
+        "path_leakage": {
+          "check": "path_leakage",
+          "n_train_intermediates": 0,
+          "n_test_intermediates": 0,
+          "n_forward_path_leakage": 0,
+          "forward_path_leakage_examples": [],
+          "n_reverse_path_leakage": 0,
+          "reverse_path_leakage_examples": [],
+          "n_skipped_no_source": 0,
+          "pass": true
+        }
+      },
+      "acceptance": {
+        "unexplained_overlap": 0,
+        "reverse_leakage": 0,
+        "path_leakage": 0
+      },
+      "pass": true
+    },
+    "study_disjoint": {
+      "split_type": "study_disjoint",
+      "manifest_path": "data/b0_splits/split_study_disjoint.jsonl",
+      "sha256": "5080374f8b35dbe51b469c9f33c5c684af431bd3eb9ebbf9266a2c1081985104",
+      "n_entries": 11885,
+      "checks": {
+        "manifest_format": {
+          "check": "manifest_format",
+          "n_entries": 11885,
+          "n_errors": 0,
+          "errors": [],
+          "pass": true
+        },
+        "source_overlap": null,
+        "accession_overlap": {
+          "check": "accession_overlap",
+          "train_accessions": [
+            "GSE114002"
+          ],
+          "test_accessions": [
+            "GSE200304"
+          ],
+          "val_accessions": [],
+          "n_overlap": 0,
+          "overlap": [],
+          "pass": true
+        },
+        "reverse_leakage": {
+          "check": "reverse_leakage",
+          "n_train_candidates": 5000,
+          "n_test_sources": 6882,
+          "n_reverse_leakage": 0,
+          "reverse_leakage_examples": [],
+          "n_symmetric_leakage": 0,
+          "symmetric_leakage_examples": [],
+          "n_missing_records": 0,
+          "pass": true
+        },
+        "path_leakage": {
+          "check": "path_leakage",
+          "n_train_intermediates": 133,
+          "n_test_intermediates": 0,
+          "n_forward_path_leakage": 0,
+          "forward_path_leakage_examples": [],
+          "n_reverse_path_leakage": 0,
+          "reverse_path_leakage_examples": [],
+          "n_skipped_no_source": 0,
+          "pass": true
+        }
+      },
+      "acceptance": {
+        "unexplained_overlap": 0,
+        "reverse_leakage": 0,
+        "path_leakage": 0
+      },
+      "pass": true
+    },
+    "cross_region_transfer": {
+      "split_type": "cross_region_transfer",
+      "manifest_path": "data/b0_splits/split_cross_region_transfer.jsonl",
+      "sha256": "7ef60118db389d46e99272ff197f44242119cbb20479547e962a566ff35f8776",
+      "n_entries": 11413,
+      "checks": {
+        "manifest_format": {
+          "check": "manifest_format",
+          "n_entries": 11413,
+          "n_errors": 0,
+          "errors": [],
+          "pass": true
+        },
+        "source_overlap": null,
+        "accession_overlap": {
+          "check": "accession_overlap",
+          "train_accessions": [
+            "GSE114002"
+          ],
+          "test_accessions": [
+            "GSE200304"
+          ],
+          "val_accessions": [
+            "GSE114002"
+          ],
+          "n_overlap": 0,
+          "overlap": [],
+          "pass": true
+        },
+        "reverse_leakage": {
+          "check": "reverse_leakage",
+          "n_train_candidates": 4035,
+          "n_test_sources": 6882,
+          "n_reverse_leakage": 0,
+          "reverse_leakage_examples": [],
+          "n_symmetric_leakage": 0,
+          "symmetric_leakage_examples": [],
+          "n_missing_records": 0,
+          "pass": true
+        },
+        "path_leakage": {
+          "check": "path_leakage",
+          "n_train_intermediates": 82,
+          "n_test_intermediates": 0,
+          "n_forward_path_leakage": 0,
+          "forward_path_leakage_examples": [],
+          "n_reverse_path_leakage": 0,
+          "reverse_path_leakage_examples": [],
+          "n_skipped_no_source": 0,
+          "pass": true
+        }
+      },
+      "acceptance": {
+        "unexplained_overlap": 0,
+        "reverse_leakage": 0,
+        "path_leakage": 0
+      },
+      "pass": true
+    }
+  },
+  "overall_pass": true,
+  "acceptance_criteria": {
+    "unexplained_overlap_must_be_zero": true,
+    "reverse_leakage_must_be_zero": true,
+    "path_leakage_must_be_zero": true
+  }
+}

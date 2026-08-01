@@ -149,13 +149,17 @@ tasks:
   - schemas defined and tested
 - task_id: B0-02
   phase: B0
-  status: PENDING
+  status: DONE
   dependencies:
   - B0-01
   description: 'Split manifests: 5utr/3utr source_disjoint, study_disjoint, cross_region_transfer'
   acceptance:
   - unexplained overlap = 0
   - reverse/path leakage = 0
+  commit_sha: <pending>
+  report: 4 split manifests built (5utr/3utr source_disjoint, study_disjoint, cross_region_transfer).
+    Audit PASS on all 4 — unexplained_overlap=0, reverse_leakage=0, path_leakage=0. 33 unit tests pass.
+    Report at data/b0_02_audit_report.json.
 - task_id: B0-03
   phase: B0
   status: PENDING
