@@ -1,0 +1,595 @@
+{
+  "task": "B0-05",
+  "contract": "utr_editflow_contract_v2",
+  "tracks_documented": [
+    "closed_measured_pool",
+    "heldout_generative",
+    "open_legal_generation"
+  ],
+  "required_dimensions": [
+    "counts",
+    "bias",
+    "exposure",
+    "allowed_claims",
+    "unsupported_capabilities"
+  ],
+  "track_cards": {
+    "closed_measured_pool": {
+      "track": "closed_measured_pool",
+      "description": "measured source-candidate pairs, closed support",
+      "n_assignments": 35183,
+      "counts": {
+        "total_assignments": 35183,
+        "unique_records": 11885,
+        "by_split": {
+          "3utr_source_disjoint": {
+            "test": 676,
+            "train": 5530,
+            "val": 679
+          },
+          "5utr_source_disjoint": {
+            "train": 4035,
+            "val": 493,
+            "test": 472
+          },
+          "cross_region_transfer": {
+            "train": 4035,
+            "val": 493,
+            "test": 6885
+          },
+          "study_disjoint": {
+            "train": 5000,
+            "test": 6885
+          }
+        },
+        "by_region": {
+          "5'UTR": 14528,
+          "3'UTR": 20655
+        },
+        "by_accession": {
+          "GSE114002": 14528,
+          "GSE200304": 20655
+        },
+        "by_exposure_class": {
+          "TRAIN": 18600,
+          "EVAL_VAL": 1665,
+          "EVAL_TEST": 14918
+        }
+      },
+      "bias": {
+        "source_length": {
+          "n": 11885,
+          "min": 50.0,
+          "max": 201.0,
+          "mean": 137.4745477492638,
+          "median": 201.0,
+          "std": 74.5443505988254,
+          "p25": 50.0,
+          "p75": 201.0
+        },
+        "candidate_length": {
+          "n": 11885,
+          "min": 50.0,
+          "max": 201.0,
+          "mean": 137.4745477492638,
+          "median": 201.0,
+          "std": 74.5443505988254,
+          "p25": 50.0,
+          "p75": 201.0
+        },
+        "gc_content_source": {
+          "n": 11885,
+          "min": 0.1,
+          "max": 0.92,
+          "mean": 0.47693207500570345,
+          "median": 0.4577114427860697,
+          "std": 0.16067241040490562,
+          "p25": 0.3482587064676617,
+          "p75": 0.582089552238806
+        },
+        "gc_content_candidate": {
+          "n": 11885,
+          "min": 0.1,
+          "max": 0.92,
+          "mean": 0.47576862008845133,
+          "median": 0.4577114427860697,
+          "std": 0.16004691683078923,
+          "p25": 0.3482587064676617,
+          "p75": 0.58
+        },
+        "edit_distance": {
+          "n": 11885,
+          "min": 0.0,
+          "max": 26.0,
+          "mean": 0.6366007572570467,
+          "median": 1.0,
+          "std": 0.6570851782501853,
+          "p25": 0.0,
+          "p75": 1.0,
+          "distribution": {
+            "0": 4452,
+            "1": 7415,
+            "2": 7,
+            "4": 2,
+            "6": 3,
+            "8": 1,
+            "9": 1,
+            "22": 2,
+            "24": 1,
+            "26": 1
+          }
+        },
+        "n_ins_total": 58,
+        "n_del_total": 58,
+        "n_sub_total": 7450,
+        "n_ins_mean_per_record": 0.004880100967606226,
+        "n_del_mean_per_record": 0.004880100967606226,
+        "n_sub_mean_per_record": 0.6268405553218342,
+        "label_keys": [
+          "Freq",
+          "rl"
+        ],
+        "label_stats": {
+          "rl": {
+            "n": 5000,
+            "min": 1.4385353892,
+            "max": 7.9581107485,
+            "mean": 5.810960915600974,
+            "median": 6.15805507341,
+            "std": 1.3997847712975984,
+            "p25": 5.0216707291675,
+            "p75": 6.905878171865
+          },
+          "Freq": {
+            "n": 6345,
+            "min": 1.70595741693064,
+            "max": 9.84833914009556,
+            "mean": 5.303806251391761,
+            "median": 5.38281131354572,
+            "std": 1.7637245870943608,
+            "p25": 4.07357825606389,
+            "p75": 6.61890680582215
+          }
+        }
+      },
+      "exposure": {
+        "by_exposure_status": {
+          "unexposed": 11885
+        },
+        "by_data_role": {
+          "D_C": 11885
+        },
+        "by_record_type": {
+          "paired": 11885
+        },
+        "historically_exposed_count": 0,
+        "labels_allowed_for_new_training": 11885,
+        "labels_allowed_for_new_hyperparameter_selection": 11885
+      },
+      "allowed_claims": {
+        "track_supported_claims": [
+          "edit_effect",
+          "generation_grounding"
+        ],
+        "effective_supported_claims": [
+          "edit_effect",
+          "generation_grounding"
+        ],
+        "ledger_allowed_claims_per_claim_counts": {
+          "edit_effect": 11885,
+          "generation_grounding": 11885
+        },
+        "ledger_forbidden_claims_per_claim_counts": {},
+        "allowed_claims_pool_schema": [
+          "edit_effect",
+          "generation_grounding",
+          "observational_prior",
+          "foundation_adaptation",
+          "region_representation",
+          "generative_denoising"
+        ],
+        "note": "track_supported_claims = claims this track's evaluation procedure can support. effective_supported_claims = supported AND present in the ledger's allowed_claims for at least one record. ledger_*_per_claim_counts = how many unique records allow/forbid each claim."
+      },
+      "unsupported_capabilities": [
+        {
+          "capability": "open_ended_generation_diversity",
+          "reason": "candidate pool is closed to measured candidates only; cannot evaluate diversity of novel candidates"
+        },
+        {
+          "capability": "generative_denoising_from_unmeasured_sources",
+          "reason": "requires a measured (source, candidate) pair; cannot denoise from sources without a measured target"
+        },
+        {
+          "capability": "cross_region_transfer_quality",
+          "reason": "evaluates measured-pair likelihood, not transfer; cross-region splits are present but the candidate pool remains closed per region"
+        }
+      ]
+    },
+    "heldout_generative": {
+      "track": "heldout_generative",
+      "description": "held-out source\u2192candidate generative likelihood/recovery",
+      "n_assignments": 35183,
+      "counts": {
+        "total_assignments": 35183,
+        "unique_records": 11885,
+        "by_split": {
+          "3utr_source_disjoint": {
+            "test": 676,
+            "train": 5530,
+            "val": 679
+          },
+          "5utr_source_disjoint": {
+            "train": 4035,
+            "val": 493,
+            "test": 472
+          },
+          "cross_region_transfer": {
+            "train": 4035,
+            "val": 493,
+            "test": 6885
+          },
+          "study_disjoint": {
+            "train": 5000,
+            "test": 6885
+          }
+        },
+        "by_region": {
+          "5'UTR": 14528,
+          "3'UTR": 20655
+        },
+        "by_accession": {
+          "GSE114002": 14528,
+          "GSE200304": 20655
+        },
+        "by_exposure_class": {
+          "TRAIN": 18600,
+          "EVAL_VAL": 1665,
+          "EVAL_TEST": 14918
+        }
+      },
+      "bias": {
+        "source_length": {
+          "n": 11885,
+          "min": 50.0,
+          "max": 201.0,
+          "mean": 137.4745477492638,
+          "median": 201.0,
+          "std": 74.5443505988254,
+          "p25": 50.0,
+          "p75": 201.0
+        },
+        "candidate_length": {
+          "n": 11885,
+          "min": 50.0,
+          "max": 201.0,
+          "mean": 137.4745477492638,
+          "median": 201.0,
+          "std": 74.5443505988254,
+          "p25": 50.0,
+          "p75": 201.0
+        },
+        "gc_content_source": {
+          "n": 11885,
+          "min": 0.1,
+          "max": 0.92,
+          "mean": 0.47693207500570345,
+          "median": 0.4577114427860697,
+          "std": 0.16067241040490562,
+          "p25": 0.3482587064676617,
+          "p75": 0.582089552238806
+        },
+        "gc_content_candidate": {
+          "n": 11885,
+          "min": 0.1,
+          "max": 0.92,
+          "mean": 0.47576862008845133,
+          "median": 0.4577114427860697,
+          "std": 0.16004691683078923,
+          "p25": 0.3482587064676617,
+          "p75": 0.58
+        },
+        "edit_distance": {
+          "n": 11885,
+          "min": 0.0,
+          "max": 26.0,
+          "mean": 0.6366007572570467,
+          "median": 1.0,
+          "std": 0.6570851782501853,
+          "p25": 0.0,
+          "p75": 1.0,
+          "distribution": {
+            "0": 4452,
+            "1": 7415,
+            "2": 7,
+            "4": 2,
+            "6": 3,
+            "8": 1,
+            "9": 1,
+            "22": 2,
+            "24": 1,
+            "26": 1
+          }
+        },
+        "n_ins_total": 58,
+        "n_del_total": 58,
+        "n_sub_total": 7450,
+        "n_ins_mean_per_record": 0.004880100967606226,
+        "n_del_mean_per_record": 0.004880100967606226,
+        "n_sub_mean_per_record": 0.6268405553218342,
+        "label_keys": [
+          "Freq",
+          "rl"
+        ],
+        "label_stats": {
+          "rl": {
+            "n": 5000,
+            "min": 1.4385353892,
+            "max": 7.9581107485,
+            "mean": 5.810960915600974,
+            "median": 6.15805507341,
+            "std": 1.3997847712975984,
+            "p25": 5.0216707291675,
+            "p75": 6.905878171865
+          },
+          "Freq": {
+            "n": 6345,
+            "min": 1.70595741693064,
+            "max": 9.84833914009556,
+            "mean": 5.303806251391761,
+            "median": 5.38281131354572,
+            "std": 1.7637245870943608,
+            "p25": 4.07357825606389,
+            "p75": 6.61890680582215
+          }
+        }
+      },
+      "exposure": {
+        "by_exposure_status": {
+          "unexposed": 11885
+        },
+        "by_data_role": {
+          "D_C": 11885
+        },
+        "by_record_type": {
+          "paired": 11885
+        },
+        "historically_exposed_count": 0,
+        "labels_allowed_for_new_training": 11885,
+        "labels_allowed_for_new_hyperparameter_selection": 11885
+      },
+      "allowed_claims": {
+        "track_supported_claims": [
+          "generation_grounding",
+          "generative_denoising"
+        ],
+        "effective_supported_claims": [
+          "generation_grounding"
+        ],
+        "ledger_allowed_claims_per_claim_counts": {
+          "edit_effect": 11885,
+          "generation_grounding": 11885
+        },
+        "ledger_forbidden_claims_per_claim_counts": {},
+        "allowed_claims_pool_schema": [
+          "edit_effect",
+          "generation_grounding",
+          "observational_prior",
+          "foundation_adaptation",
+          "region_representation",
+          "generative_denoising"
+        ],
+        "note": "track_supported_claims = claims this track's evaluation procedure can support. effective_supported_claims = supported AND present in the ledger's allowed_claims for at least one record. ledger_*_per_claim_counts = how many unique records allow/forbid each claim."
+      },
+      "unsupported_capabilities": [
+        {
+          "capability": "fully_open_generation_without_target",
+          "reason": "always has a measured candidate as the recovery target; cannot evaluate generation without a target"
+        },
+        {
+          "capability": "edit_effect_on_unmeasured_candidates",
+          "reason": "recovery targets are measured candidates only; cannot assess edit effect on candidates that were never measured"
+        },
+        {
+          "capability": "candidate_quality_beyond_measured_recovery",
+          "reason": "evaluation is recovery-oriented; cannot claim candidate quality beyond measured-candidate likelihood"
+        }
+      ]
+    },
+    "open_legal_generation": {
+      "track": "open_legal_generation",
+      "description": "open-support legal generation under constraints",
+      "n_assignments": 35183,
+      "counts": {
+        "total_assignments": 35183,
+        "unique_records": 11885,
+        "by_split": {
+          "3utr_source_disjoint": {
+            "test": 676,
+            "train": 5530,
+            "val": 679
+          },
+          "5utr_source_disjoint": {
+            "train": 4035,
+            "val": 493,
+            "test": 472
+          },
+          "cross_region_transfer": {
+            "train": 4035,
+            "val": 493,
+            "test": 6885
+          },
+          "study_disjoint": {
+            "train": 5000,
+            "test": 6885
+          }
+        },
+        "by_region": {
+          "5'UTR": 14528,
+          "3'UTR": 20655
+        },
+        "by_accession": {
+          "GSE114002": 14528,
+          "GSE200304": 20655
+        },
+        "by_exposure_class": {
+          "TRAIN": 18600,
+          "EVAL_VAL": 1665,
+          "EVAL_TEST": 14918
+        }
+      },
+      "bias": {
+        "source_length": {
+          "n": 11885,
+          "min": 50.0,
+          "max": 201.0,
+          "mean": 137.4745477492638,
+          "median": 201.0,
+          "std": 74.5443505988254,
+          "p25": 50.0,
+          "p75": 201.0
+        },
+        "candidate_length": {
+          "n": 11885,
+          "min": 50.0,
+          "max": 201.0,
+          "mean": 137.4745477492638,
+          "median": 201.0,
+          "std": 74.5443505988254,
+          "p25": 50.0,
+          "p75": 201.0
+        },
+        "gc_content_source": {
+          "n": 11885,
+          "min": 0.1,
+          "max": 0.92,
+          "mean": 0.47693207500570345,
+          "median": 0.4577114427860697,
+          "std": 0.16067241040490562,
+          "p25": 0.3482587064676617,
+          "p75": 0.582089552238806
+        },
+        "gc_content_candidate": {
+          "n": 11885,
+          "min": 0.1,
+          "max": 0.92,
+          "mean": 0.47576862008845133,
+          "median": 0.4577114427860697,
+          "std": 0.16004691683078923,
+          "p25": 0.3482587064676617,
+          "p75": 0.58
+        },
+        "edit_distance": {
+          "n": 11885,
+          "min": 0.0,
+          "max": 26.0,
+          "mean": 0.6366007572570467,
+          "median": 1.0,
+          "std": 0.6570851782501853,
+          "p25": 0.0,
+          "p75": 1.0,
+          "distribution": {
+            "0": 4452,
+            "1": 7415,
+            "2": 7,
+            "4": 2,
+            "6": 3,
+            "8": 1,
+            "9": 1,
+            "22": 2,
+            "24": 1,
+            "26": 1
+          }
+        },
+        "n_ins_total": 58,
+        "n_del_total": 58,
+        "n_sub_total": 7450,
+        "n_ins_mean_per_record": 0.004880100967606226,
+        "n_del_mean_per_record": 0.004880100967606226,
+        "n_sub_mean_per_record": 0.6268405553218342,
+        "label_keys": [
+          "Freq",
+          "rl"
+        ],
+        "label_stats": {
+          "rl": {
+            "n": 5000,
+            "min": 1.4385353892,
+            "max": 7.9581107485,
+            "mean": 5.810960915600974,
+            "median": 6.15805507341,
+            "std": 1.3997847712975984,
+            "p25": 5.0216707291675,
+            "p75": 6.905878171865
+          },
+          "Freq": {
+            "n": 6345,
+            "min": 1.70595741693064,
+            "max": 9.84833914009556,
+            "mean": 5.303806251391761,
+            "median": 5.38281131354572,
+            "std": 1.7637245870943608,
+            "p25": 4.07357825606389,
+            "p75": 6.61890680582215
+          }
+        }
+      },
+      "exposure": {
+        "by_exposure_status": {
+          "unexposed": 11885
+        },
+        "by_data_role": {
+          "D_C": 11885
+        },
+        "by_record_type": {
+          "paired": 11885
+        },
+        "historically_exposed_count": 0,
+        "labels_allowed_for_new_training": 11885,
+        "labels_allowed_for_new_hyperparameter_selection": 11885
+      },
+      "allowed_claims": {
+        "track_supported_claims": [
+          "generation_grounding",
+          "foundation_adaptation",
+          "region_representation"
+        ],
+        "effective_supported_claims": [
+          "generation_grounding"
+        ],
+        "ledger_allowed_claims_per_claim_counts": {
+          "edit_effect": 11885,
+          "generation_grounding": 11885
+        },
+        "ledger_forbidden_claims_per_claim_counts": {},
+        "allowed_claims_pool_schema": [
+          "edit_effect",
+          "generation_grounding",
+          "observational_prior",
+          "foundation_adaptation",
+          "region_representation",
+          "generative_denoising"
+        ],
+        "note": "track_supported_claims = claims this track's evaluation procedure can support. effective_supported_claims = supported AND present in the ledger's allowed_claims for at least one record. ledger_*_per_claim_counts = how many unique records allow/forbid each claim."
+      },
+      "unsupported_capabilities": [
+        {
+          "capability": "recovery_against_measured_candidates",
+          "reason": "no measured target to compare against; generation is open-support and unconstrained by a measured pool"
+        },
+        {
+          "capability": "edit_effect_claims",
+          "reason": "no measured (source, candidate) pair to define an edit effect; candidates are generated, not measured"
+        },
+        {
+          "capability": "measured_pair_likelihood",
+          "reason": "no closed candidate pool; cannot compute likelihood of a specific measured candidate"
+        }
+      ]
+    }
+  },
+  "acceptance": {
+    "data_card_complete_for_all_tracks": true
+  },
+  "overall_pass": true,
+  "manifest_source": "data/b0_04_eval_track_manifest.jsonl"
+}
