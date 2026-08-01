@@ -1,0 +1,50 @@
+{
+  "task_id": "FM0-01",
+  "acceptance": "embedding determinism",
+  "generated_at_utc": "2026-08-01T11:19:06Z",
+  "device": "cpu",
+  "num_sequences": 5,
+  "input_lengths_nt": [
+    4,
+    12,
+    32,
+    50,
+    400
+  ],
+  "hidden_state_shape": [
+    5,
+    402,
+    128
+  ],
+  "bit_exact_two_runs": true,
+  "three_run_consistent": true,
+  "max_abs_diff": 0.0,
+  "mean_abs_diff": 0.0,
+  "pooling_results": {
+    "cls": {
+      "bit_exact": true,
+      "max_abs_diff": 0.0,
+      "shape": [
+        5,
+        128
+      ]
+    },
+    "mean": {
+      "bit_exact": true,
+      "max_abs_diff": 0.0,
+      "shape": [
+        5,
+        128
+      ]
+    },
+    "max": {
+      "bit_exact": true,
+      "max_abs_diff": 0.0,
+      "shape": [
+        5,
+        128
+      ]
+    }
+  },
+  "pass": true
+}

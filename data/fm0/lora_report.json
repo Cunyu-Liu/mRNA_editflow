@@ -1,0 +1,66 @@
+{
+  "task_id": "FM0-01",
+  "acceptance": "LoRA",
+  "generated_at_utc": "2026-08-01T11:23:43Z",
+  "device": "cuda:0",
+  "peft_version": "0.20.0",
+  "lora_config": {
+    "r": 8,
+    "lora_alpha": 16,
+    "lora_dropout": 0.05,
+    "bias": "none",
+    "target_modules": [
+      "query",
+      "value"
+    ],
+    "task_type": "FEATURE_EXTRACTION"
+  },
+  "base_model": {
+    "num_parameters_total": 1209984,
+    "num_parameters_trainable_before_peft": 1209984
+  },
+  "after_peft": {
+    "num_parameters_total": 1234560,
+    "num_parameters_trainable": 24576,
+    "num_parameters_frozen": 1209984,
+    "trainable_fraction": 0.019907,
+    "expected_trainable": 24576,
+    "trainable_count_matches_expectation": true
+  },
+  "non_lora_trainable_params": [],
+  "num_trainable_param_groups": 24,
+  "trainable_param_name_samples": [
+    "base_model.model.encoder.layer.0.attention.self.query.lora_A.default.weight",
+    "base_model.model.encoder.layer.0.attention.self.query.lora_B.default.weight",
+    "base_model.model.encoder.layer.0.attention.self.value.lora_A.default.weight",
+    "base_model.model.encoder.layer.0.attention.self.value.lora_B.default.weight",
+    "base_model.model.encoder.layer.1.attention.self.query.lora_A.default.weight",
+    "base_model.model.encoder.layer.1.attention.self.query.lora_B.default.weight",
+    "base_model.model.encoder.layer.1.attention.self.value.lora_A.default.weight",
+    "base_model.model.encoder.layer.1.attention.self.value.lora_B.default.weight"
+  ],
+  "forward_check": {
+    "input_shape": [
+      2,
+      50
+    ],
+    "adapter_hidden_shape": [
+      2,
+      50,
+      128
+    ],
+    "base_hidden_shape": [
+      2,
+      50,
+      128
+    ],
+    "max_abs_diff_at_init_vs_base": 0.0,
+    "max_abs_diff_after_loraB_perturb_vs_base": 2.1606881618499756,
+    "lora_A_nonzero_count": 12,
+    "lora_A_total": 12,
+    "lora_B_total": 12,
+    "init_is_identity": true,
+    "perturb_perturbs_output": true
+  },
+  "pass": true
+}

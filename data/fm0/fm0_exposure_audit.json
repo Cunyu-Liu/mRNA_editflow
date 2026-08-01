@@ -1,0 +1,248 @@
+{
+  "task_id": "FM0-01",
+  "acceptance": "exposure record",
+  "generated_at_utc": "2026-08-01T11:18:17Z",
+  "foundation_model_id": "multimolecule/utrlm-mrl",
+  "foundation_model_revision": "79e23de069449e659696b5210f833c28ddd0de50",
+  "contract_reference": "utr_editflow_contract_v2 §2.2, §4.2, §H7",
+  "utrlm_pretraining_sources": [
+    {
+      "source_id": "ensembl_genome_browser",
+      "url": "https://ensembl.org",
+      "description": "5'UTR sequences from 5 vertebrate species (human, rat, mouse, chicken, zebrafish) with high-quality annotations.",
+      "type": "broad_sequence_prior",
+      "overlaps_with_our_accessions": [],
+      "evidence_grade_for_us": "E5_unexposed_broad_prior"
+    },
+    {
+      "source_id": "sample2019",
+      "citation": "Sample et al. 2019, Nat Biotech, doi:10.1038/s41587-019-0164-5",
+      "url": "https://doi.org/10.1038/s41587-019-0164-5",
+      "description": "8 distinct 5'UTR libraries, each with random 50 nt sequences; mean ribosome loading (MRL) measurements via MPRA.",
+      "type": "mpra_library_with_mrl_labels",
+      "overlaps_with_our_accessions": [
+        "GSE114002"
+      ],
+      "evidence_grade_for_us": "E4_historically_exposed",
+      "exposure_type": "sequence_prior_only",
+      "labels_exposed_to_utrlm": false,
+      "notes": "UTR-LM used the 5'UTR sequences as MLM/SS/MFE input. The MRL labels were NOT used by UTR-LM (self-supervised + structural)."
+    },
+    {
+      "source_id": "cao2021",
+      "citation": "Cao et al. 2021, Nat Commun, doi:10.1038/s41467-021-24436-7",
+      "url": "https://doi.org/10.1038/s41467-021-24436-7",
+      "description": "Endogenous human 5'UTRs from 3 cell lines/tissues: HEK293T, PC3, Muscle.",
+      "type": "endogenous_5utr_mpra",
+      "overlaps_with_our_accessions": [],
+      "evidence_grade_for_us": "E5_unexposed",
+      "notes": "Cao 2021's GEO data is NOT in our D_C ledger (we use Sample2019 via GSE114002). No overlap with our downstream evaluation data."
+    }
+  ],
+  "per_accession_exposure": [
+    {
+      "accession": "GSE114002",
+      "dataset_name": "sample2019",
+      "data_role": "D_C",
+      "region": "5'UTR",
+      "in_d1_canonical_records": true,
+      "in_b0_splits": [
+        "5utr_source_disjoint",
+        "study_disjoint (train only)"
+      ],
+      "historically_exposed_to_utrlm": true,
+      "exposure_type": "sequence_prior_only",
+      "labels_exposed_to_utrlm": false,
+      "evidence_grade_for_foundation_eval": "E4",
+      "allowed_claims_with_foundation": [
+        "edit_effect",
+        "generation_grounding",
+        "foundation_transfer_vs_scratch"
+      ],
+      "forbidden_claims_with_foundation": [
+        "untouched_external_test",
+        "sealed_test"
+      ],
+      "notes": "UTR-LM saw these 5'UTR sequences during pretraining. For H7 evaluation, report as E4. Compare foundation-adapted vs from-scratch on the SAME split to isolate architecture value from pretraining value."
+    },
+    {
+      "accession": "GSE200304",
+      "dataset_name": "gse200304",
+      "data_role": "D_C",
+      "region": "3'UTR",
+      "in_d1_canonical_records": true,
+      "in_b0_splits": [
+        "study_disjoint (test only)"
+      ],
+      "historically_exposed_to_utrlm": false,
+      "exposure_type": "none",
+      "labels_exposed_to_utrlm": false,
+      "evidence_grade_for_foundation_eval": "E5",
+      "allowed_claims_with_foundation": [
+        "untouched_external_test",
+        "cross_region_transfer_5to3"
+      ],
+      "forbidden_claims_with_foundation": [],
+      "notes": "3'UTR data. UTR-LM was pretrained on 5'UTR only. This is the CLEANEST foundation-value test: does a 5'UTR-pretrained encoder transfer to 3'UTR edit-effect prediction?"
+    },
+    {
+      "accession": "GSE217518",
+      "dataset_name": "gse217518",
+      "data_role": "D_C",
+      "region": "3'UTR",
+      "in_d1_canonical_records": true,
+      "in_b0_splits": [],
+      "historically_exposed_to_utrlm": false,
+      "exposure_type": "none",
+      "labels_exposed_to_utrlm": false,
+      "evidence_grade_for_foundation_eval": "E5",
+      "allowed_claims_with_foundation": [
+        "untouched_external_test",
+        "cross_region_transfer_5to3"
+      ],
+      "forbidden_claims_with_foundation": [],
+      "notes": "3'UTR decay/half-life data. Not in B0 splits (per FM0 preflight)."
+    },
+    {
+      "accession": "GSE149487",
+      "dataset_name": "gse149487",
+      "data_role": "D_C",
+      "region": "5'UTR",
+      "in_d1_canonical_records": true,
+      "in_b0_splits": [],
+      "historically_exposed_to_utrlm": false,
+      "exposure_type": "none",
+      "labels_exposed_to_utrlm": false,
+      "evidence_grade_for_foundation_eval": "E5",
+      "allowed_claims_with_foundation": [
+        "untouched_external_test"
+      ],
+      "forbidden_claims_with_foundation": [],
+      "notes": "5'UTR TE/abundance (PLUMAGE). Distinct from Sample2019 / Cao2021. Cleanest 5'UTR foundation-value test (no sequence overlap with UTR-LM corpus)."
+    }
+  ],
+  "b0_split_exposure_summary": [
+    {
+      "split_file": "split_3utr_source_disjoint.jsonl",
+      "total_records": 6885,
+      "cells": [
+        {
+          "split": "test",
+          "accession": "GSE200304",
+          "count": 680,
+          "accession_historically_exposed_to_utrlm": false,
+          "evidence_grade_for_foundation_eval": "E5"
+        },
+        {
+          "split": "train",
+          "accession": "GSE200304",
+          "count": 5508,
+          "accession_historically_exposed_to_utrlm": false,
+          "evidence_grade_for_foundation_eval": "E5"
+        },
+        {
+          "split": "val",
+          "accession": "GSE200304",
+          "count": 697,
+          "accession_historically_exposed_to_utrlm": false,
+          "evidence_grade_for_foundation_eval": "E5"
+        }
+      ]
+    },
+    {
+      "split_file": "split_5utr_source_disjoint.jsonl",
+      "total_records": 20000,
+      "cells": [
+        {
+          "split": "test",
+          "accession": "GSE114002",
+          "count": 1992,
+          "accession_historically_exposed_to_utrlm": true,
+          "evidence_grade_for_foundation_eval": "E4"
+        },
+        {
+          "split": "train",
+          "accession": "GSE114002",
+          "count": 16031,
+          "accession_historically_exposed_to_utrlm": true,
+          "evidence_grade_for_foundation_eval": "E4"
+        },
+        {
+          "split": "val",
+          "accession": "GSE114002",
+          "count": 1977,
+          "accession_historically_exposed_to_utrlm": true,
+          "evidence_grade_for_foundation_eval": "E4"
+        }
+      ]
+    },
+    {
+      "split_file": "split_cross_region_transfer.jsonl",
+      "total_records": 24952,
+      "cells": [
+        {
+          "split": "test",
+          "accession": "GSE200304",
+          "count": 6885,
+          "accession_historically_exposed_to_utrlm": false,
+          "evidence_grade_for_foundation_eval": "E5"
+        },
+        {
+          "split": "train",
+          "accession": "GSE114002",
+          "count": 16035,
+          "accession_historically_exposed_to_utrlm": true,
+          "evidence_grade_for_foundation_eval": "E4"
+        },
+        {
+          "split": "val",
+          "accession": "GSE114002",
+          "count": 2032,
+          "accession_historically_exposed_to_utrlm": true,
+          "evidence_grade_for_foundation_eval": "E4"
+        }
+      ]
+    },
+    {
+      "split_file": "split_study_disjoint.jsonl",
+      "total_records": 26885,
+      "cells": [
+        {
+          "split": "test",
+          "accession": "GSE200304",
+          "count": 6885,
+          "accession_historically_exposed_to_utrlm": false,
+          "evidence_grade_for_foundation_eval": "E5"
+        },
+        {
+          "split": "train",
+          "accession": "GSE114002",
+          "count": 20000,
+          "accession_historically_exposed_to_utrlm": true,
+          "evidence_grade_for_foundation_eval": "E4"
+        }
+      ]
+    }
+  ],
+  "canonical_records_per_accession": {
+    "GSE114002": 20000,
+    "GSE200304": 6885,
+    "GSE145046": 50000,
+    "GSE207584": 10227,
+    "GSE173083": 1,
+    "ENCSR854RUF": 1,
+    "GSE246381": 1,
+    "GSE217518": 3564,
+    "GSE149487": 1
+  },
+  "summary": {
+    "num_accessions_audited": 4,
+    "num_historically_exposed_to_utrlm": 1,
+    "exposed_accessions": [
+      "GSE114002"
+    ],
+    "key_finding": "GSE114002 (Sample2019, 5'UTR MPRA) is historically exposed to UTR-LM at the sequence level (no label exposure). GSE200304 and GSE217518 (3'UTR) and GSE149487 (5'UTR PLUMAGE) are NOT exposed.",
+    "implication_for_H7": "H7 foundation-model-value evaluation must report GSE114002-derived test splits as E4. The cleanest foundation-value tests are: (1) cross-region transfer on GSE200304 (5'->3', E5), and (2) cross-study on GSE149487 (5'->5' PLUMAGE, E5)."
+  },
+  "pass": true
+}

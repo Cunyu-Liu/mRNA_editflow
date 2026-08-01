@@ -1,0 +1,100 @@
+{
+  "task_id": "FM0-01",
+  "acceptance": "GPU forward test",
+  "generated_at_utc": "2026-08-01T11:21:17Z",
+  "device": "cuda:0",
+  "device_name": "NVIDIA A100-PCIE-40GB",
+  "device_count": 1,
+  "cuda_version": "12.4",
+  "torch_version": "2.6.0+cu124",
+  "model_summary": {
+    "num_parameters_total": 1209984,
+    "num_parameters_trainable": 1209984,
+    "num_parameters_frozen": 0,
+    "dtype": "torch.float32",
+    "device": "cuda:0"
+  },
+  "test_cases": [
+    {
+      "batch_size": 1,
+      "seq_len_nt": 10,
+      "input_ids_shape": [
+        1,
+        12
+      ],
+      "last_hidden_state_shape": [
+        1,
+        12,
+        128
+      ],
+      "output_dtype": "torch.float32",
+      "output_device": "cuda:0",
+      "has_pooler_output": true
+    },
+    {
+      "batch_size": 1,
+      "seq_len_nt": 50,
+      "input_ids_shape": [
+        1,
+        52
+      ],
+      "last_hidden_state_shape": [
+        1,
+        52,
+        128
+      ],
+      "output_dtype": "torch.float32",
+      "output_device": "cuda:0",
+      "has_pooler_output": true
+    },
+    {
+      "batch_size": 8,
+      "seq_len_nt": 50,
+      "input_ids_shape": [
+        8,
+        52
+      ],
+      "last_hidden_state_shape": [
+        8,
+        52,
+        128
+      ],
+      "output_dtype": "torch.float32",
+      "output_device": "cuda:0",
+      "has_pooler_output": true
+    },
+    {
+      "batch_size": 4,
+      "seq_len_nt": 200,
+      "input_ids_shape": [
+        4,
+        202
+      ],
+      "last_hidden_state_shape": [
+        4,
+        202,
+        128
+      ],
+      "output_dtype": "torch.float32",
+      "output_device": "cuda:0",
+      "has_pooler_output": true
+    },
+    {
+      "batch_size": 2,
+      "seq_len_nt": 1000,
+      "input_ids_shape": [
+        2,
+        1002
+      ],
+      "last_hidden_state_shape": [
+        2,
+        1002,
+        128
+      ],
+      "output_dtype": "torch.float32",
+      "output_device": "cuda:0",
+      "has_pooler_output": true
+    }
+  ],
+  "pass": true
+}

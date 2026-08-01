@@ -1,0 +1,51 @@
+{
+  "task_id": "FM0-01",
+  "acceptance": "partial unfreeze",
+  "generated_at_utc": "2026-08-01T11:23:55Z",
+  "device": "cuda:0",
+  "unfreeze_last_n_layers": 2,
+  "total_encoder_layers": 6,
+  "unfrozen_layer_indices": [
+    4,
+    5
+  ],
+  "frozen_layer_indices": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "num_parameters_total": 1209984,
+  "num_parameters_trainable": 396544,
+  "num_parameters_frozen": 813440,
+  "trainable_fraction": 0.327727,
+  "expected_trainable": 396544,
+  "trainable_count_matches_expectation": true,
+  "embedding_trainable_count": 0,
+  "pooler_trainable_count": 0,
+  "num_trainable_param_groups": 32,
+  "trainable_param_name_samples": [
+    "encoder.layer.4.attention.layer_norm.weight",
+    "encoder.layer.4.attention.layer_norm.bias",
+    "encoder.layer.4.attention.self.query.weight",
+    "encoder.layer.4.attention.self.query.bias",
+    "encoder.layer.4.attention.self.key.weight",
+    "encoder.layer.4.attention.self.key.bias",
+    "encoder.layer.4.attention.self.value.weight",
+    "encoder.layer.4.attention.self.value.bias"
+  ],
+  "forward_check": {
+    "input_shape": [
+      2,
+      50
+    ],
+    "hidden_state_shape": [
+      2,
+      50,
+      128
+    ],
+    "any_nan": false,
+    "any_inf": false
+  },
+  "pass": true
+}

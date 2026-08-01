@@ -1,0 +1,248 @@
+{
+  "task_id": "FM0-01",
+  "acceptance": "input-length behavior",
+  "generated_at_utc": "2026-08-01T11:19:38Z",
+  "device": "cpu",
+  "max_position_embeddings": 1026,
+  "training_max_nt": 1022,
+  "note": "UTR-LM was pretrained on 5'UTR sequences truncated to 30..1022 bp. Inputs shorter than 30 nt or longer than 1022 nt are out-of-distribution but must still produce a forward pass without crashing (truncation applies).",
+  "test_lengths": [
+    1,
+    2,
+    4,
+    10,
+    30,
+    50,
+    100,
+    200,
+    500,
+    800,
+    1022,
+    1072,
+    2000
+  ],
+  "results": [
+    {
+      "input_nt_count": 1,
+      "token_count": 3,
+      "content_tokens": 1,
+      "expected_content_tokens": 1,
+      "truncated_by_tokenizer": false,
+      "hidden_state_shape": [
+        1,
+        3,
+        128
+      ],
+      "hidden_seq_dim_matches_tokens": true,
+      "mean_abs_hidden": 0.8086346983909607,
+      "std_hidden": 1.007900595664978,
+      "any_nan": false,
+      "any_inf": false
+    },
+    {
+      "input_nt_count": 2,
+      "token_count": 4,
+      "content_tokens": 2,
+      "expected_content_tokens": 2,
+      "truncated_by_tokenizer": false,
+      "hidden_state_shape": [
+        1,
+        4,
+        128
+      ],
+      "hidden_seq_dim_matches_tokens": true,
+      "mean_abs_hidden": 0.8118668794631958,
+      "std_hidden": 1.0092930793762207,
+      "any_nan": false,
+      "any_inf": false
+    },
+    {
+      "input_nt_count": 4,
+      "token_count": 6,
+      "content_tokens": 4,
+      "expected_content_tokens": 4,
+      "truncated_by_tokenizer": false,
+      "hidden_state_shape": [
+        1,
+        6,
+        128
+      ],
+      "hidden_seq_dim_matches_tokens": true,
+      "mean_abs_hidden": 0.819437563419342,
+      "std_hidden": 1.0111819505691528,
+      "any_nan": false,
+      "any_inf": false
+    },
+    {
+      "input_nt_count": 10,
+      "token_count": 12,
+      "content_tokens": 10,
+      "expected_content_tokens": 10,
+      "truncated_by_tokenizer": false,
+      "hidden_state_shape": [
+        1,
+        12,
+        128
+      ],
+      "hidden_seq_dim_matches_tokens": true,
+      "mean_abs_hidden": 0.8225978016853333,
+      "std_hidden": 1.0124114751815796,
+      "any_nan": false,
+      "any_inf": false
+    },
+    {
+      "input_nt_count": 30,
+      "token_count": 32,
+      "content_tokens": 30,
+      "expected_content_tokens": 30,
+      "truncated_by_tokenizer": false,
+      "hidden_state_shape": [
+        1,
+        32,
+        128
+      ],
+      "hidden_seq_dim_matches_tokens": true,
+      "mean_abs_hidden": 0.824550986289978,
+      "std_hidden": 1.0124707221984863,
+      "any_nan": false,
+      "any_inf": false
+    },
+    {
+      "input_nt_count": 50,
+      "token_count": 52,
+      "content_tokens": 50,
+      "expected_content_tokens": 50,
+      "truncated_by_tokenizer": false,
+      "hidden_state_shape": [
+        1,
+        52,
+        128
+      ],
+      "hidden_seq_dim_matches_tokens": true,
+      "mean_abs_hidden": 0.8179563283920288,
+      "std_hidden": 1.0135767459869385,
+      "any_nan": false,
+      "any_inf": false
+    },
+    {
+      "input_nt_count": 100,
+      "token_count": 102,
+      "content_tokens": 100,
+      "expected_content_tokens": 100,
+      "truncated_by_tokenizer": false,
+      "hidden_state_shape": [
+        1,
+        102,
+        128
+      ],
+      "hidden_seq_dim_matches_tokens": true,
+      "mean_abs_hidden": 0.8212664723396301,
+      "std_hidden": 1.0118167400360107,
+      "any_nan": false,
+      "any_inf": false
+    },
+    {
+      "input_nt_count": 200,
+      "token_count": 202,
+      "content_tokens": 200,
+      "expected_content_tokens": 200,
+      "truncated_by_tokenizer": false,
+      "hidden_state_shape": [
+        1,
+        202,
+        128
+      ],
+      "hidden_seq_dim_matches_tokens": true,
+      "mean_abs_hidden": 0.8199406862258911,
+      "std_hidden": 1.0115752220153809,
+      "any_nan": false,
+      "any_inf": false
+    },
+    {
+      "input_nt_count": 500,
+      "token_count": 502,
+      "content_tokens": 500,
+      "expected_content_tokens": 500,
+      "truncated_by_tokenizer": false,
+      "hidden_state_shape": [
+        1,
+        502,
+        128
+      ],
+      "hidden_seq_dim_matches_tokens": true,
+      "mean_abs_hidden": 0.8215889930725098,
+      "std_hidden": 1.0114140510559082,
+      "any_nan": false,
+      "any_inf": false
+    },
+    {
+      "input_nt_count": 800,
+      "token_count": 802,
+      "content_tokens": 800,
+      "expected_content_tokens": 800,
+      "truncated_by_tokenizer": false,
+      "hidden_state_shape": [
+        1,
+        802,
+        128
+      ],
+      "hidden_seq_dim_matches_tokens": true,
+      "mean_abs_hidden": 0.821831226348877,
+      "std_hidden": 1.011243462562561,
+      "any_nan": false,
+      "any_inf": false
+    },
+    {
+      "input_nt_count": 1022,
+      "token_count": 1024,
+      "content_tokens": 1022,
+      "expected_content_tokens": 1022,
+      "truncated_by_tokenizer": false,
+      "hidden_state_shape": [
+        1,
+        1024,
+        128
+      ],
+      "hidden_seq_dim_matches_tokens": true,
+      "mean_abs_hidden": 0.8216654062271118,
+      "std_hidden": 1.0111125707626343,
+      "any_nan": false,
+      "any_inf": false
+    },
+    {
+      "input_nt_count": 1072,
+      "token_count": 1026,
+      "content_tokens": 1024,
+      "expected_content_tokens": 1024,
+      "truncated_by_tokenizer": true,
+      "hidden_state_shape": [
+        1,
+        1026,
+        128
+      ],
+      "hidden_seq_dim_matches_tokens": true,
+      "mean_abs_hidden": 0.8216648101806641,
+      "std_hidden": 1.011114239692688,
+      "any_nan": false,
+      "any_inf": false
+    },
+    {
+      "input_nt_count": 2000,
+      "token_count": 1026,
+      "content_tokens": 1024,
+      "expected_content_tokens": 1024,
+      "truncated_by_tokenizer": true,
+      "hidden_state_shape": [
+        1,
+        1026,
+        128
+      ],
+      "hidden_seq_dim_matches_tokens": true,
+      "mean_abs_hidden": 0.8216648101806641,
+      "std_hidden": 1.011114239692688,
+      "any_nan": false,
+      "any_inf": false
+    }
+  ],
+  "pass": true
+}

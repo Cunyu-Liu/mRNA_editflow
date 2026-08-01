@@ -1,0 +1,165 @@
+# FM0-01: Foundation model (UTR-LM) frozen configuration.
+#
+# Contract: utr_editflow_contract_v2 (FROZEN), task FM0-01.
+# Gate: FM0 -> MK0 -> EF0 mandatory.
+#
+# This config is the SINGLE source of truth for the UTR-LM checkpoint used
+# throughout FM0/MK0/EF0/GP0. Any change here requires a contract amendment.
+#
+# Reference: Chu et al., "A 5' UTR Language Model for Decoding Untranslated
+# Regions of mRNA and Function Predictions", Nature Machine Intelligence 2024
+# (doi: 10.1038/s42256-024-00823-9). Original repo: a96123155/UTR-LM.
+# Multimolecule port: https://huggingface.co/multimolecule/utrlm-mrl
+
+meta:
+  task_id: FM0-01
+  contract: utr_editflow_contract_v2
+  frozen: true
+  date_frozen: "2026-08-01"
+  rule: "Do not change without contract amendment; downstream MK0/EF0/GP0 depend on this exact checkpoint."
+
+model:
+  # Primary foundation backbone. Multimolecule port of UTR-LM (MRL head variant).
+  # We use the bare encoder (UtrLmModel) WITHOUT the MRL/TE_EL/SS/MFE heads.
+  model_id: multimolecule/utrlm-mrl
+  revision: 79e23de069449e659696b5210f833c28ddd0de50
+  architecture: UtrLmModel          # bare encoder; pretraining heads dropped
+  model_type: utrlm
+  num_hidden_layers: 6
+  hidden_size: 128
+  num_attention_heads: 16
+  intermediate_size: 512
+  vocab_size: 28
+  max_position_embeddings: 1026     # 1022 nt + special tokens
+  num_parameters: 1209984           # 1.21M (encoder only, after dropping heads)
+  dtype: float32                    # checkpoint dtype; cast at load time if needed
+
+tokenizer:
+  class: multimolecule.RnaTokenizer
+  nmers: 1                          # nucleotide-level tokens (not k-mer)
+  codon: false
+  replace_T_with_U: true            # tokenizer converts T -> U on input
+  special_tokens:
+    bos: <cls>
+    eos: <eos>
+    pad: <pad>
+    unk: <unk>
+    mask: <mask>
+    cls: <cls>
+    sep: <eos>
+
+license:
+  type: agpl-3.0
+  source_files:
+    - license.md
+    - license-faq.md
+  note: "AGPL-3.0 — distribution & derivative-work obligations apply if model weights are served externally. Internal research use permitted."
+
+storage:
+  # Server-side HF cache. Snapshot directory holds the actual files.
+  hf_cache_root: /home/cunyuliu/.cache/huggingface/hub
+  snapshot_dir: /home/cunyuliu/.cache/huggingface/hub/models--multimolecule--utrlm-mrl/snapshots/79e23de069449e659696b5210f833c28ddd0de50
+  # Large precomputed caches go to /mnt (per contract: code in /home, data/weights in /mnt).
+  frozen_cache_dir: /mnt/cunyuliu/fm0_cache/utrlm_frozen_embeddings
+  lora_adapter_dir: /mnt/cunyuliu/fm0_cache/utrlm_lora_adapters
+
+offline:
+  # Server has no internet to huggingface.co; must force offline mode.
+  env:
+    HF_HUB_OFFLINE: "1"
+    TRANSFORMERS_OFFLINE: "1"
+
+gpu:
+  # Contract: training_device = GPU_only. Scripts must STOP if CUDA unavailable.
+  require_cuda: true
+  # Preferred devices (most free memory at time of FM0-01 preflight).
+  # dev5 = 39.6GB free (primary), dev0 = 33.6GB free (alternate), dev2 = 39.1GB free.
+  # dev6/dev7 are MIG 1g.5gb slices (5GB, too small for batch>32).
+  preferred_devices: ["5", "0", "2"]
+  default_device: "5"
+
+# ---------------------------------------------------------------------------
+# Adaptation strategies (H7_foundation_model_value ablation arms)
+# ---------------------------------------------------------------------------
+# Contract §H7: must_validate = [small_from_scratch_control, frozen_foundation,
+#                                adapter_LoRA, partial_full_finetune]
+# Each arm is implemented by a dedicated script and tested independently.
+adaptation:
+
+  frozen:
+    enabled: true
+    script: fm0_frozen_cache.py
+    requires_grad: false
+    pooling: [cls, mean, max]   # three pooling modes cached for downstream ablation
+    description: "Frozen encoder; precompute & cache embeddings for D_C sources."
+
+  lora:
+    enabled: true
+    script: fm0_lora.py
+    library: peft
+    peft_version: "0.20.0"
+    config:
+      r: 8
+      lora_alpha: 16
+      lora_dropout: 0.05
+      bias: none
+      target_modules: ["query", "value"]   # attention Q/V (BERT/ESM convention)
+      task_type: FEATURE_EXTRACTION        # encoder-only
+    description: "LoRA on attention Q/V; only adapter params trainable."
+
+  partial_unfreeze:
+    enabled: true
+    script: fm0_partial_unfreeze.py
+    config:
+      unfreeze_last_n_layers: 2            # unfreeze encoder layers 4,5 (0-indexed)
+      freeze_embeddings: true
+    description: "Unfreeze last N encoder layers; embeddings stay frozen."
+
+  from_scratch:
+    enabled: true
+    script: fm0_from_scratch_control.py
+    config:
+      init_from_checkpoint: false
+      same_architecture: true              # identical UtrLmConfig
+      random_seed: 20260801
+    description: "Random-init control arm; same arch, no pretrained weights."
+
+# ---------------------------------------------------------------------------
+# Exposure audit (FM0-01 acceptance: exposure record)
+# ---------------------------------------------------------------------------
+# CRITICAL: UTR-LM was pretrained on 5'UTR sequences from:
+#   1. Ensembl (5 species: human, rat, mouse, chicken, zebraﬁsh) — broad prior
+#   2. Sample et al. 2019 (Nat Biotech, doi:10.1038/s41587-019-0164-5) — GSE114002 in our D_C
+#   3. Cao et al. 2021 (Nat Commun, doi:10.1038/s41467-021-24436-7) — separate MPRA library
+# Implication: GSE114002 5'UTR SEQUENCES were historically exposed to UTR-LM
+# pretraining (sequence prior). The source-candidate edit LABELS were NOT exposed
+# (UTR-LM is self-supervised + structural, not edit-effect supervised).
+# This must be reflected in fm0_exposure_audit.json and downstream H7 evaluation.
+exposure:
+  historically_exposed_accessions: ["GSE114002"]
+  exposure_type: sequence_prior_only          # NOT label exposure
+  labels_exposed: false
+  evidence_grade_for_foundation_eval: E4      # historically exposed external
+  notes: >
+    UTR-LM saw raw 5'UTR sequences from Sample2019 (GSE114002) during MLM/SS/MFE
+    pretraining. Source-candidate edit labels were NOT used by UTR-LM. For H7
+    foundation-value evaluation, GSE114002-derived test splits must be reported
+    as E4 (historically exposed), not E5 (untouched). Cross-region transfer
+    (5'->3') on GSE200304 remains a valid E3/E5 test since UTR-LM is 5'UTR-only.
+
+# ---------------------------------------------------------------------------
+# Acceptance gates (FM0-01)
+# ---------------------------------------------------------------------------
+acceptance:
+  - load test
+  - tokenization test
+  - GPU forward test
+  - hash/license manifest
+  - exposure record
+  - embedding determinism
+  - input-length behavior
+  - memory/latency profile
+  - frozen cache
+  - LoRA
+  - partial unfreeze
+  - from-scratch control

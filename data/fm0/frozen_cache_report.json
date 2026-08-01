@@ -1,0 +1,268 @@
+{
+  "task_id": "FM0-01",
+  "acceptance": "frozen cache",
+  "generated_at_utc": "2026-08-01T11:25:22Z",
+  "device": "cuda:0",
+  "model_id": "multimolecule/utrlm-mrl",
+  "revision": "79e23de069449e659696b5210f833c28ddd0de50",
+  "records_path": "data/d1_canonical_records.jsonl",
+  "cache_dir": "/mnt/cunyuliu/fm0_cache/utrlm_frozen_embeddings",
+  "dc_accessions": [
+    "GSE114002",
+    "GSE149487",
+    "GSE200304",
+    "GSE217518"
+  ],
+  "poolings": [
+    "cls",
+    "mean",
+    "max"
+  ],
+  "num_total_items": 60898,
+  "num_unique_sequences": 40320,
+  "num_total_embedded": 60898,
+  "batch_size": 128,
+  "written_files": [
+    {
+      "path": "/mnt/cunyuliu/fm0_cache/utrlm_frozen_embeddings/GSE114002_5UTR_candidate.cls.npz",
+      "accession": "GSE114002",
+      "region": "5'UTR",
+      "kind": "candidate",
+      "pooling": "cls",
+      "num_records": 20000,
+      "hidden_size": 128,
+      "size_bytes": 9618605
+    },
+    {
+      "path": "/mnt/cunyuliu/fm0_cache/utrlm_frozen_embeddings/GSE114002_5UTR_candidate.mean.npz",
+      "accession": "GSE114002",
+      "region": "5'UTR",
+      "kind": "candidate",
+      "pooling": "mean",
+      "num_records": 20000,
+      "hidden_size": 128,
+      "size_bytes": 9577764
+    },
+    {
+      "path": "/mnt/cunyuliu/fm0_cache/utrlm_frozen_embeddings/GSE114002_5UTR_candidate.max.npz",
+      "accession": "GSE114002",
+      "region": "5'UTR",
+      "kind": "candidate",
+      "pooling": "max",
+      "num_records": 20000,
+      "hidden_size": 128,
+      "size_bytes": 9441046
+    },
+    {
+      "path": "/mnt/cunyuliu/fm0_cache/utrlm_frozen_embeddings/GSE114002_5UTR_source.cls.npz",
+      "accession": "GSE114002",
+      "region": "5'UTR",
+      "kind": "source",
+      "pooling": "cls",
+      "num_records": 20000,
+      "hidden_size": 128,
+      "size_bytes": 9596472
+    },
+    {
+      "path": "/mnt/cunyuliu/fm0_cache/utrlm_frozen_embeddings/GSE114002_5UTR_source.mean.npz",
+      "accession": "GSE114002",
+      "region": "5'UTR",
+      "kind": "source",
+      "pooling": "mean",
+      "num_records": 20000,
+      "hidden_size": 128,
+      "size_bytes": 9555936
+    },
+    {
+      "path": "/mnt/cunyuliu/fm0_cache/utrlm_frozen_embeddings/GSE114002_5UTR_source.max.npz",
+      "accession": "GSE114002",
+      "region": "5'UTR",
+      "kind": "source",
+      "pooling": "max",
+      "num_records": 20000,
+      "hidden_size": 128,
+      "size_bytes": 9419050
+    },
+    {
+      "path": "/mnt/cunyuliu/fm0_cache/utrlm_frozen_embeddings/GSE200304_3UTR_candidate.cls.npz",
+      "accession": "GSE200304",
+      "region": "3'UTR",
+      "kind": "candidate",
+      "pooling": "cls",
+      "num_records": 6885,
+      "hidden_size": 128,
+      "size_bytes": 3307020
+    },
+    {
+      "path": "/mnt/cunyuliu/fm0_cache/utrlm_frozen_embeddings/GSE200304_3UTR_candidate.mean.npz",
+      "accession": "GSE200304",
+      "region": "3'UTR",
+      "kind": "candidate",
+      "pooling": "mean",
+      "num_records": 6885,
+      "hidden_size": 128,
+      "size_bytes": 3303459
+    },
+    {
+      "path": "/mnt/cunyuliu/fm0_cache/utrlm_frozen_embeddings/GSE200304_3UTR_candidate.max.npz",
+      "accession": "GSE200304",
+      "region": "3'UTR",
+      "kind": "candidate",
+      "pooling": "max",
+      "num_records": 6885,
+      "hidden_size": 128,
+      "size_bytes": 3235947
+    },
+    {
+      "path": "/mnt/cunyuliu/fm0_cache/utrlm_frozen_embeddings/GSE200304_3UTR_source.cls.npz",
+      "accession": "GSE200304",
+      "region": "3'UTR",
+      "kind": "source",
+      "pooling": "cls",
+      "num_records": 6885,
+      "hidden_size": 128,
+      "size_bytes": 3305641
+    },
+    {
+      "path": "/mnt/cunyuliu/fm0_cache/utrlm_frozen_embeddings/GSE200304_3UTR_source.mean.npz",
+      "accession": "GSE200304",
+      "region": "3'UTR",
+      "kind": "source",
+      "pooling": "mean",
+      "num_records": 6885,
+      "hidden_size": 128,
+      "size_bytes": 3301895
+    },
+    {
+      "path": "/mnt/cunyuliu/fm0_cache/utrlm_frozen_embeddings/GSE200304_3UTR_source.max.npz",
+      "accession": "GSE200304",
+      "region": "3'UTR",
+      "kind": "source",
+      "pooling": "max",
+      "num_records": 6885,
+      "hidden_size": 128,
+      "size_bytes": 3234753
+    },
+    {
+      "path": "/mnt/cunyuliu/fm0_cache/utrlm_frozen_embeddings/GSE217518_3UTR_candidate.cls.npz",
+      "accession": "GSE217518",
+      "region": "3'UTR",
+      "kind": "candidate",
+      "pooling": "cls",
+      "num_records": 1997,
+      "hidden_size": 128,
+      "size_bytes": 967079
+    },
+    {
+      "path": "/mnt/cunyuliu/fm0_cache/utrlm_frozen_embeddings/GSE217518_3UTR_candidate.mean.npz",
+      "accession": "GSE217518",
+      "region": "3'UTR",
+      "kind": "candidate",
+      "pooling": "mean",
+      "num_records": 1997,
+      "hidden_size": 128,
+      "size_bytes": 966749
+    },
+    {
+      "path": "/mnt/cunyuliu/fm0_cache/utrlm_frozen_embeddings/GSE217518_3UTR_candidate.max.npz",
+      "accession": "GSE217518",
+      "region": "3'UTR",
+      "kind": "candidate",
+      "pooling": "max",
+      "num_records": 1997,
+      "hidden_size": 128,
+      "size_bytes": 945991
+    },
+    {
+      "path": "/mnt/cunyuliu/fm0_cache/utrlm_frozen_embeddings/GSE217518_3UTR_source.cls.npz",
+      "accession": "GSE217518",
+      "region": "3'UTR",
+      "kind": "source",
+      "pooling": "cls",
+      "num_records": 1997,
+      "hidden_size": 128,
+      "size_bytes": 946588
+    },
+    {
+      "path": "/mnt/cunyuliu/fm0_cache/utrlm_frozen_embeddings/GSE217518_3UTR_source.mean.npz",
+      "accession": "GSE217518",
+      "region": "3'UTR",
+      "kind": "source",
+      "pooling": "mean",
+      "num_records": 1997,
+      "hidden_size": 128,
+      "size_bytes": 946047
+    },
+    {
+      "path": "/mnt/cunyuliu/fm0_cache/utrlm_frozen_embeddings/GSE217518_3UTR_source.max.npz",
+      "accession": "GSE217518",
+      "region": "3'UTR",
+      "kind": "source",
+      "pooling": "max",
+      "num_records": 1997,
+      "hidden_size": 128,
+      "size_bytes": 925851
+    },
+    {
+      "path": "/mnt/cunyuliu/fm0_cache/utrlm_frozen_embeddings/GSE217518_5UTR_candidate.cls.npz",
+      "accession": "GSE217518",
+      "region": "5'UTR",
+      "kind": "candidate",
+      "pooling": "cls",
+      "num_records": 1567,
+      "hidden_size": 128,
+      "size_bytes": 758000
+    },
+    {
+      "path": "/mnt/cunyuliu/fm0_cache/utrlm_frozen_embeddings/GSE217518_5UTR_candidate.mean.npz",
+      "accession": "GSE217518",
+      "region": "5'UTR",
+      "kind": "candidate",
+      "pooling": "mean",
+      "num_records": 1567,
+      "hidden_size": 128,
+      "size_bytes": 758385
+    },
+    {
+      "path": "/mnt/cunyuliu/fm0_cache/utrlm_frozen_embeddings/GSE217518_5UTR_candidate.max.npz",
+      "accession": "GSE217518",
+      "region": "5'UTR",
+      "kind": "candidate",
+      "pooling": "max",
+      "num_records": 1567,
+      "hidden_size": 128,
+      "size_bytes": 740114
+    },
+    {
+      "path": "/mnt/cunyuliu/fm0_cache/utrlm_frozen_embeddings/GSE217518_5UTR_source.cls.npz",
+      "accession": "GSE217518",
+      "region": "5'UTR",
+      "kind": "source",
+      "pooling": "cls",
+      "num_records": 1567,
+      "hidden_size": 128,
+      "size_bytes": 511906
+    },
+    {
+      "path": "/mnt/cunyuliu/fm0_cache/utrlm_frozen_embeddings/GSE217518_5UTR_source.mean.npz",
+      "accession": "GSE217518",
+      "region": "5'UTR",
+      "kind": "source",
+      "pooling": "mean",
+      "num_records": 1567,
+      "hidden_size": 128,
+      "size_bytes": 512287
+    },
+    {
+      "path": "/mnt/cunyuliu/fm0_cache/utrlm_frozen_embeddings/GSE217518_5UTR_source.max.npz",
+      "accession": "GSE217518",
+      "region": "5'UTR",
+      "kind": "source",
+      "pooling": "max",
+      "num_records": 1567,
+      "hidden_size": 128,
+      "size_bytes": 500103
+    }
+  ],
+  "pass": true
+}

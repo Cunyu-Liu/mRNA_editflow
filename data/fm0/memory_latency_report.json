@@ -1,0 +1,239 @@
+{
+  "task_id": "FM0-01",
+  "acceptance": "memory/latency profile",
+  "generated_at_utc": "2026-08-01T11:21:39Z",
+  "device": "cuda:0",
+  "device_name": "NVIDIA A100-PCIE-40GB",
+  "model_dtype": "torch.float32",
+  "num_parameters": 1209984,
+  "grid": [
+    [
+      1,
+      50
+    ],
+    [
+      1,
+      500
+    ],
+    [
+      8,
+      50
+    ],
+    [
+      8,
+      500
+    ],
+    [
+      32,
+      50
+    ],
+    [
+      32,
+      500
+    ],
+    [
+      64,
+      100
+    ],
+    [
+      128,
+      100
+    ],
+    [
+      64,
+      1000
+    ]
+  ],
+  "results": [
+    {
+      "batch_size": 1,
+      "seq_len_nt": 50,
+      "input_ids_shape": [
+        1,
+        52
+      ],
+      "iters": 10,
+      "warmup": 3,
+      "total_time_s": 0.081711,
+      "per_batch_ms": 8.1711,
+      "per_sequence_ms": 8.1711,
+      "throughput_seqs_per_s": 122.38,
+      "peak_allocated_mb": 14.2,
+      "peak_reserved_mb": 28.0,
+      "output_last_hidden_shape": [
+        1,
+        52,
+        128
+      ]
+    },
+    {
+      "batch_size": 1,
+      "seq_len_nt": 500,
+      "input_ids_shape": [
+        1,
+        502
+      ],
+      "iters": 10,
+      "warmup": 3,
+      "total_time_s": 0.079571,
+      "per_batch_ms": 7.9571,
+      "per_sequence_ms": 7.9571,
+      "throughput_seqs_per_s": 125.67,
+      "peak_allocated_mb": 46.91,
+      "peak_reserved_mb": 64.0,
+      "output_last_hidden_shape": [
+        1,
+        502,
+        128
+      ]
+    },
+    {
+      "batch_size": 8,
+      "seq_len_nt": 50,
+      "input_ids_shape": [
+        8,
+        52
+      ],
+      "iters": 10,
+      "warmup": 3,
+      "total_time_s": 0.087116,
+      "per_batch_ms": 8.7116,
+      "per_sequence_ms": 1.089,
+      "throughput_seqs_per_s": 918.31,
+      "peak_allocated_mb": 17.18,
+      "peak_reserved_mb": 64.0,
+      "output_last_hidden_shape": [
+        8,
+        52,
+        128
+      ]
+    },
+    {
+      "batch_size": 8,
+      "seq_len_nt": 500,
+      "input_ids_shape": [
+        8,
+        502
+      ],
+      "iters": 10,
+      "warmup": 3,
+      "total_time_s": 0.102742,
+      "per_batch_ms": 10.2742,
+      "per_sequence_ms": 1.2843,
+      "throughput_seqs_per_s": 778.65,
+      "peak_allocated_mb": 276.81,
+      "peak_reserved_mb": 312.0,
+      "output_last_hidden_shape": [
+        8,
+        502,
+        128
+      ]
+    },
+    {
+      "batch_size": 32,
+      "seq_len_nt": 50,
+      "input_ids_shape": [
+        32,
+        52
+      ],
+      "iters": 10,
+      "warmup": 3,
+      "total_time_s": 0.066259,
+      "per_batch_ms": 6.6259,
+      "per_sequence_ms": 0.2071,
+      "throughput_seqs_per_s": 4829.52,
+      "peak_allocated_mb": 31.02,
+      "peak_reserved_mb": 316.0,
+      "output_last_hidden_shape": [
+        32,
+        52,
+        128
+      ]
+    },
+    {
+      "batch_size": 32,
+      "seq_len_nt": 500,
+      "input_ids_shape": [
+        32,
+        502
+      ],
+      "iters": 10,
+      "warmup": 3,
+      "total_time_s": 0.362086,
+      "per_batch_ms": 36.2086,
+      "per_sequence_ms": 1.1315,
+      "throughput_seqs_per_s": 883.77,
+      "peak_allocated_mb": 1060.97,
+      "peak_reserved_mb": 1304.0,
+      "output_last_hidden_shape": [
+        32,
+        502,
+        128
+      ]
+    },
+    {
+      "batch_size": 64,
+      "seq_len_nt": 100,
+      "input_ids_shape": [
+        64,
+        102
+      ],
+      "iters": 10,
+      "warmup": 3,
+      "total_time_s": 0.069372,
+      "per_batch_ms": 6.9372,
+      "per_sequence_ms": 0.1084,
+      "throughput_seqs_per_s": 9225.56,
+      "peak_allocated_mb": 124.66,
+      "peak_reserved_mb": 1304.0,
+      "output_last_hidden_shape": [
+        64,
+        102,
+        128
+      ]
+    },
+    {
+      "batch_size": 128,
+      "seq_len_nt": 100,
+      "input_ids_shape": [
+        128,
+        102
+      ],
+      "iters": 10,
+      "warmup": 3,
+      "total_time_s": 0.122614,
+      "per_batch_ms": 12.2614,
+      "per_sequence_ms": 0.0958,
+      "throughput_seqs_per_s": 10439.23,
+      "peak_allocated_mb": 226.62,
+      "peak_reserved_mb": 1304.0,
+      "output_last_hidden_shape": [
+        128,
+        102,
+        128
+      ]
+    },
+    {
+      "batch_size": 64,
+      "seq_len_nt": 1000,
+      "input_ids_shape": [
+        64,
+        1002
+      ],
+      "iters": 10,
+      "warmup": 3,
+      "total_time_s": 2.494429,
+      "per_batch_ms": 249.4429,
+      "per_sequence_ms": 3.8975,
+      "throughput_seqs_per_s": 256.57,
+      "peak_allocated_mb": 8108.64,
+      "peak_reserved_mb": 9148.0,
+      "output_last_hidden_shape": [
+        64,
+        1002,
+        128
+      ]
+    }
+  ],
+  "pass": true
+}
