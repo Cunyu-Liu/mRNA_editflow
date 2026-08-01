@@ -170,7 +170,7 @@ tasks:
   acceptance:
   - final endpoint as train intermediate = 0
   - exposure ledger coverage = 100%
-  commit_sha: <pending>
+  commit_sha: 6de5f44
   report: Comprehensive leakage audit across 4 splits. Hard-gate channels (exact, reverse,
     intermediate, cluster, study) all PASS with 0 overlap. endpoint_as_train_intermediate=0
     for all splits. Exposure ledger coverage=100% (11885/11885). gene/context/barcode
