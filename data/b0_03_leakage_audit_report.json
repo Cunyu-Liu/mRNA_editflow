@@ -5,31 +5,33 @@
     "5utr_source_disjoint": {
       "split_type": "5utr_source_disjoint",
       "manifest_path": "data/b0_splits/split_5utr_source_disjoint.jsonl",
-      "n_train": 4035,
-      "n_test": 472,
+      "n_train": 80061,
+      "n_test": 10035,
       "checks": [
         {
           "channel": "exact",
           "applicable": true,
-          "n_train_seqs": 4158,
-          "n_test_seqs": 481,
-          "n_overlap": 0,
-          "overlap_examples": [],
-          "pass": true
+          "n_train_seqs": 80117,
+          "n_test_seqs": 10046,
+          "n_overlap": 1,
+          "overlap_examples": [
+            "CCTTTCATCCAGAACATTTTTTCACGCCCCTTTCATCCAGAACTGCTTCC"
+          ],
+          "pass": false
         },
         {
           "channel": "reverse",
           "applicable": true,
-          "n_reverse": 0,
+          "n_reverse": 1,
           "n_symmetric": 0,
-          "n_overlap": 0,
-          "pass": true
+          "n_overlap": 1,
+          "pass": false
         },
         {
           "channel": "intermediate",
           "applicable": true,
-          "n_train_intermediates": 82,
-          "n_test_intermediates": 22,
+          "n_train_intermediates": 170078,
+          "n_test_intermediates": 21704,
           "n_endpoint_as_train_intermediate": 0,
           "endpoint_as_train_intermediate_examples": [],
           "n_train_endpoint_as_test_intermediate": 0,
@@ -50,17 +52,17 @@
           "applicable": true,
           "informational": true,
           "n_train_scaffolds": 23,
-          "n_test_scaffolds": 18,
-          "n_overlap": 18,
+          "n_test_scaffolds": 21,
+          "n_overlap": 21,
           "overlap_examples": [
             "NC_000001.11",
+            "NC_000002.12",
             "NC_000003.12",
             "NC_000004.12",
-            "NC_000005.10",
-            "NC_000006.12"
+            "NC_000005.10"
           ],
-          "n_train_no_scaffold": 3323,
-          "n_test_no_scaffold": 390,
+          "n_train_no_scaffold": 77789,
+          "n_test_no_scaffold": 9654,
           "pass": true
         },
         {
@@ -113,20 +115,20 @@
       "acceptance": {
         "endpoint_as_train_intermediate": 0
       },
-      "hard_gate_pass": true,
-      "pass": true
+      "hard_gate_pass": false,
+      "pass": false
     },
     "3utr_source_disjoint": {
       "split_type": "3utr_source_disjoint",
       "manifest_path": "data/b0_splits/split_3utr_source_disjoint.jsonl",
-      "n_train": 5530,
-      "n_test": 676,
+      "n_train": 5528,
+      "n_test": 673,
       "checks": [
         {
           "channel": "exact",
           "applicable": true,
-          "n_train_seqs": 11058,
-          "n_test_seqs": 1351,
+          "n_train_seqs": 11053,
+          "n_test_seqs": 1346,
           "n_overlap": 0,
           "overlap_examples": [],
           "pass": true
@@ -233,13 +235,13 @@
     "study_disjoint": {
       "split_type": "study_disjoint",
       "manifest_path": "data/b0_splits/split_study_disjoint.jsonl",
-      "n_train": 5000,
+      "n_train": 100017,
       "n_test": 6885,
       "checks": [
         {
           "channel": "exact",
           "applicable": true,
-          "n_train_seqs": 5146,
+          "n_train_seqs": 100095,
           "n_test_seqs": 13767,
           "n_overlap": 0,
           "overlap_examples": [],
@@ -256,7 +258,7 @@
         {
           "channel": "intermediate",
           "applicable": true,
-          "n_train_intermediates": 133,
+          "n_train_intermediates": 213150,
           "n_test_intermediates": 0,
           "n_endpoint_as_train_intermediate": 0,
           "endpoint_as_train_intermediate_examples": [],
@@ -281,7 +283,7 @@
           "n_test_scaffolds": 24,
           "n_overlap": 0,
           "overlap_examples": [],
-          "n_train_no_scaffold": 4144,
+          "n_train_no_scaffold": 96995,
           "n_test_no_scaffold": 0,
           "pass": true
         },
@@ -339,13 +341,13 @@
     "cross_region_transfer": {
       "split_type": "cross_region_transfer",
       "manifest_path": "data/b0_splits/split_cross_region_transfer.jsonl",
-      "n_train": 4035,
+      "n_train": 80061,
       "n_test": 6885,
       "checks": [
         {
           "channel": "exact",
           "applicable": true,
-          "n_train_seqs": 4158,
+          "n_train_seqs": 80117,
           "n_test_seqs": 13767,
           "n_overlap": 0,
           "overlap_examples": [],
@@ -362,7 +364,7 @@
         {
           "channel": "intermediate",
           "applicable": true,
-          "n_train_intermediates": 82,
+          "n_train_intermediates": 170078,
           "n_test_intermediates": 0,
           "n_endpoint_as_train_intermediate": 0,
           "endpoint_as_train_intermediate_examples": [],
@@ -387,7 +389,7 @@
           "n_test_scaffolds": 24,
           "n_overlap": 0,
           "overlap_examples": [],
-          "n_train_no_scaffold": 3323,
+          "n_train_no_scaffold": 77789,
           "n_test_no_scaffold": 0,
           "pass": true
         },
@@ -444,8 +446,8 @@
     }
   },
   "exposure_ledger_coverage": {
-    "n_manifest_records": 11885,
-    "n_in_ledger": 11885,
+    "n_manifest_records": 106902,
+    "n_in_ledger": 106902,
     "n_missing": 0,
     "coverage": 1.0,
     "missing_examples": [],

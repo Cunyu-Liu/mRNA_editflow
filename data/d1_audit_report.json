@@ -4,19 +4,19 @@
     "issues": []
   },
   "edit_script_verification": {
-    "n_paired": 11885,
-    "n_verified": 11885,
+    "n_paired": 124067,
+    "n_verified": 124067,
     "n_failed": 0,
     "passed": true
   },
   "path_ambiguity": {
-    "n_checked": 11885,
-    "n_ok": 11885,
+    "n_checked": 124067,
+    "n_ok": 124067,
     "n_missing": 0,
     "passed": true
   },
   "minimality": {
-    "n_checked": 11885,
+    "n_checked": 124067,
     "passed": true
   },
   "dataset_coverage": {

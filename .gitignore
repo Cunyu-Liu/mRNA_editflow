@@ -101,3 +101,4 @@ benchmark_v21/external_data/
 # D1 large data artifacts (verifiable on server via SHA-256, too large for git)
 data/d1_canonical_records.jsonl
 data/data_exposure_ledger.jsonl
+data/b0_04_eval_track_manifest.jsonl

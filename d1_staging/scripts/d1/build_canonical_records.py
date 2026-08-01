@@ -20,6 +20,7 @@ import gzip
 import io
 import json
 import os
+import re
 import sys
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
@@ -38,8 +39,9 @@ from edit_script_core import (  # noqa: E402
 import pandas as pd  # noqa: E402
 
 
-# Global cap on records per dataset (prevents hours-long runs on 280k+ rows)
-MAX_RECORDS_PER_DATASET = 20000
+# Global cap on records per dataset (0 = no cap). Default raised to 0
+# (unlimited) for D1-B0 full-data remediation; --max-records still enforces.
+MAX_RECORDS_PER_DATASET = 0
 
 
 # ---------------------------------------------------------------------------
@@ -164,7 +166,7 @@ def extract_gse114002(data_root: Path) -> List[dict]:
     n_edited = 0
     max_records = MAX_RECORDS_PER_DATASET
     for idx, row in df.iterrows():
-        if len(records) >= max_records:
+        if max_records and len(records) >= max_records:
             print(f"  capping at {max_records} records (total rows: {len(df)})")
             break
         source = _normalize_seq(str(row[mother_col]))
@@ -363,6 +365,7 @@ def extract_gse145046(data_root: Path) -> List[dict]:
 
     records = []
     skipped = 0
+    max_records = MAX_RECORDS_PER_DATASET
     for idx, row in df.iterrows():
         seq = _normalize_seq(str(row["seq"]))
         if len(seq) < 10:
@@ -385,9 +388,8 @@ def extract_gse145046(data_root: Path) -> List[dict]:
             metadata={"source_file": fpath.name, "data_role": "D_D"},
         )
         records.append(rec)
-        # Cap to avoid huge output
-        if len(records) >= 50000:
-            print(f"  capping at 50000 records (total rows: {len(df)})")
+        if max_records and len(records) >= max_records:
+            print(f"  capping at {max_records} records (total rows: {len(df)})")
             break
 
     print(f"  extracted {len(records)} records (skipped {skipped})")
@@ -478,22 +480,207 @@ def extract_gse207584(data_root: Path) -> List[dict]:
     return records
 
 
-def extract_gse173083(data_root: Path) -> List[dict]:
-    """GSE173083 — full-length mRNA, D_A (observational).
+def _parse_rdat(path: Path) -> List[dict]:
+    """Parse a .rdat file and extract ANNOTATION_DATA entries.
 
-    PERSIST-seq. Downloaded GEO files are .rdat (RNA structure) only.
-    Table S1 (with sequences + labels) is in the supplementary materials,
-    not in the GEO download. Mark as incomplete.
+    Each ANNOTATION_DATA line is tab-separated with key:value fields:
+      ANNOTATION_DATA:1<TAB>MAPseq:design_name:testing<TAB>...<TAB>sequence:GGAAAUUU...<TAB>signal_to_noise:medium:3.746
+
+    Extracts: MAPseq:ID, MAPseq:design_name, sequence, signal_to_noise (quality + value).
+
+    Returns:
+        List of dicts with keys: mapseq_id, design_name, sequence,
+        snr_quality, snr_value.
+    """
+    entries = []
+    with open(path, "r", encoding="utf-8", errors="replace") as f:
+        for line in f:
+            if not line.startswith("ANNOTATION_DATA:"):
+                continue
+            parts = line.rstrip("\n").split("\t")
+            entry = {
+                "mapseq_id": "",
+                "design_name": "",
+                "sequence": "",
+                "snr_quality": "",
+                "snr_value": None,
+            }
+            for part in parts:
+                if part.startswith("sequence:"):
+                    entry["sequence"] = part[len("sequence:"):]
+                elif part.startswith("MAPseq:ID:"):
+                    entry["mapseq_id"] = part[len("MAPseq:ID:"):]
+                elif part.startswith("MAPseq:design_name:"):
+                    entry["design_name"] = part[len("MAPseq:design_name:"):]
+                elif part.startswith("signal_to_noise:"):
+                    rest = part[len("signal_to_noise:"):]
+                    snr_parts = rest.split(":", 1)
+                    if len(snr_parts) == 2:
+                        entry["snr_quality"] = snr_parts[0]
+                        try:
+                            entry["snr_value"] = float(snr_parts[1])
+                        except ValueError:
+                            pass
+                    else:
+                        entry["snr_quality"] = rest
+            if entry["sequence"]:
+                entries.append(entry)
+    return entries
+
+
+def extract_gse173083(data_root: Path) -> List[dict]:
+    """GSE173083 — PERSIST-seq, full-length synthetic mRNA, D_A (observational).
+
+    Two data sources (zero sequence overlap between them):
+    1. .rdat files (6 conditions, same 3030 unique EteRNA designs each):
+       ANNOTATION_DATA lines with sequence:, MAPseq:ID:, signal_to_noise:.
+       Dedup by MAPseq:ID; record conditions + SNR per condition.
+    2. Table S1 xlsx (233 pooled full-length constructs, 1098nt):
+       Rich labels (ribosome load, half-life, CAI, dG(MFE), etc.).
+
+    Both: canonical_record_no_edit, region="full_length", data_role="D_A".
     """
     accession = "GSE173083"
     print(f"\n[{accession}] Extracting observational records (D_A, full-length)...")
-    # Check for xlsx/csv (Table S1) — not in GEO download
-    fpath = _find_file(data_root, accession, [
-        "*.xlsx", "*.xls", "*.csv*",
+    d = data_root / accession
+    if not d.exists():
+        print(f"  WARNING: {d} does not exist")
+        return []
+
+    records = []
+    max_records = MAX_RECORDS_PER_DATASET
+
+    # --- Source 1: .rdat files ---
+    rdat_files = sorted(d.rglob("*.rdat"))
+    if rdat_files:
+        print(f"  found {len(rdat_files)} .rdat files")
+        # Dedup by MAPseq:ID (same designs probed under 6 conditions)
+        by_id: Dict[str, dict] = {}
+        for rdat_path in rdat_files:
+            cond = rdat_path.stem
+            entries = _parse_rdat(rdat_path)
+            for e in entries:
+                mid = e["mapseq_id"]
+                if not mid:
+                    continue
+                if mid not in by_id:
+                    by_id[mid] = {
+                        "sequence": e["sequence"],
+                        "design_name": e["design_name"],
+                        "conditions": {},
+                    }
+                if e["snr_value"] is not None:
+                    by_id[mid]["conditions"][cond] = e["snr_value"]
+
+        print(f"  {len(by_id)} unique designs across {len(rdat_files)} conditions")
+        n_rdat = 0
+        for mid, info in sorted(by_id.items()):
+            if max_records and len(records) >= max_records:
+                print(f"  capping at {max_records} records")
+                break
+            seq = _normalize_seq(info["sequence"])
+            if len(seq) < 20:
+                continue
+            labels = {}
+            snr_vals = list(info["conditions"].values())
+            if snr_vals:
+                labels["signal_to_noise_mean"] = sum(snr_vals) / len(snr_vals)
+                labels["signal_to_noise_min"] = min(snr_vals)
+                labels["signal_to_noise_max"] = max(snr_vals)
+            rec = canonical_record_no_edit(
+                record_id=f"{accession}_rdat_{mid}",
+                dataset="lepplek2022_persistseq",
+                accession=accession,
+                region="full_length",
+                sequence=seq,
+                labels=labels,
+                metadata={
+                    "source_file": "rdat",
+                    "data_role": "D_A",
+                    "mapseq_id": mid,
+                    "design_name": info["design_name"],
+                    "conditions": info["conditions"],
+                    "n_conditions": len(info["conditions"]),
+                    "note": "PERSIST-seq EteRNA design; full-length synthetic RNA, observational",
+                },
+            )
+            records.append(rec)
+            n_rdat += 1
+        print(f"  extracted {n_rdat} records from .rdat")
+
+    # --- Source 2: Table S1 xlsx (233 pooled constructs) ---
+    s1_path = _find_file(data_root, accession, [
+        "*Table_S1*",
+        "*Attributes*pooled*",
+        "*.xlsx",
     ])
-    if fpath is None:
-        print(f"  INCOMPLETE: Only .rdat files in GEO download; Table S1 not available.")
-        print(f"  GSE173083 requires supplementary Table S1 for sequence + label extraction.")
+    if s1_path is not None:
+        try:
+            df = pd.read_excel(s1_path, sheet_name=0)
+            print(f"  Table S1: {len(df)} rows, {len(df.columns)} columns")
+            seq_col = None
+            for c in df.columns:
+                cl = c.strip().lower()
+                if cl == "rna sequence":
+                    seq_col = c
+                    break
+            if seq_col is None:
+                for c in df.columns:
+                    if "rna sequence" in c.strip().lower():
+                        seq_col = c
+                        break
+            if seq_col is None:
+                print(f"  WARNING: no 'RNA sequence' column in Table S1")
+            else:
+                id_col = None
+                for c in df.columns:
+                    if c.strip().lower() in ("sequence id", "sequence_id"):
+                        id_col = c
+                        break
+                # Skip sub-region sequence columns from labels
+                skip_cols = {seq_col, id_col}
+                for c in df.columns:
+                    if "sequence" in c.strip().lower() and c != seq_col:
+                        skip_cols.add(c)
+                n_s1 = 0
+                for idx, row in df.iterrows():
+                    if max_records and len(records) >= max_records:
+                        print(f"  capping at {max_records} records")
+                        break
+                    seq = _normalize_seq(str(row[seq_col]))
+                    if len(seq) < 20:
+                        continue
+                    labels = {}
+                    for c in df.columns:
+                        if c in skip_cols:
+                            continue
+                        v = _safe_float(row.get(c))
+                        if v is not None:
+                            labels[str(c)] = v
+                    sid = str(row.get(id_col, idx)).strip() if id_col else str(idx)
+                    rec = canonical_record_no_edit(
+                        record_id=f"{accession}_s1_{sid}",
+                        dataset="lepplek2022_persistseq",
+                        accession=accession,
+                        region="full_length",
+                        sequence=seq,
+                        labels=labels,
+                        metadata={
+                            "source_file": s1_path.name,
+                            "data_role": "D_A",
+                            "table": "Table_S1",
+                            "sequence_id": sid,
+                            "note": "PERSIST-seq pooled 233 full-length construct; observational with labels",
+                        },
+                    )
+                    records.append(rec)
+                    n_s1 += 1
+                print(f"  extracted {n_s1} records from Table S1")
+        except Exception as e:
+            print(f"  WARNING: could not parse Table S1: {e}")
+
+    if not records:
+        print(f"  INCOMPLETE: no .rdat or Table S1 data found")
         return [{
             "record_id": f"{accession}_INCOMPLETE",
             "dataset": "lepplek2022_persistseq",
@@ -510,101 +697,38 @@ def extract_gse173083(data_root: Path) -> List[dict]:
             "metadata": {
                 "record_type": "incomplete",
                 "data_role": "D_A",
-                "note": "Only .rdat files in GEO download; Table S1 with sequences not available",
+                "note": "No .rdat or Table S1 data found",
             },
         }]
 
-    # If xlsx/csv found, try to parse
-    try:
-        if fpath.suffix in (".xlsx", ".xls"):
-            df = pd.read_excel(fpath)
-        else:
-            df = pd.read_csv(fpath, compression="infer")
-    except Exception as e:
-        print(f"  WARNING: could not parse {fpath.name}: {e}")
-        return []
-
-    print(f"  loaded {len(df)} rows, columns: {list(df.columns)}")
-    seq_col = None
-    for c in df.columns:
-        cl = c.strip().lower()
-        if any(p in cl for p in ["rna sequence", "sequence", "seq"]):
-            seq_col = c
-            break
-    if seq_col is None:
-        print(f"  WARNING: no sequence column found")
-        return []
-
-    records = []
-    for idx, row in df.iterrows():
-        seq = _normalize_seq(str(row[seq_col]))
-        if len(seq) < 20:
-            continue
-        labels = {}
-        for c in df.columns:
-            if c == seq_col:
-                continue
-            v = _safe_float(row.get(c))
-            if v is not None:
-                labels[c] = v
-        rec = canonical_record_no_edit(
-            record_id=f"{accession}_{idx}",
-            dataset="lepplek2022_persistseq",
-            accession=accession,
-            region="full_length",
-            sequence=seq,
-            labels=labels,
-            metadata={"source_file": fpath.name, "data_role": "D_A",
-                      "note": "full-length out-of-scope for v2; observational only"},
-        )
-        records.append(rec)
-
-    print(f"  extracted {len(records)} records")
+    print(f"  total extracted {len(records)} records")
     return records
 
 
 def extract_encsr854ruf(data_root: Path) -> List[dict]:
     """ENCSR854RUF — 3'UTR, D_C (MPRAu processed table).
 
-    Multi-sheet xlsx. The "Variant MPRAu Results" sheet has variant activity
-    data but NO actual UTR sequences. The "Oligo Variant Info" sheet has
-    alt/ref tags. Without sequences, edit scripts cannot be computed.
-    Mark as incomplete.
+    15,266 paired 3'UTR variants with MPRA activity data across 6 cell types.
+    Source xlsx has no sequences — reconstructed via
+    reconstruct_encsr854ruf_sequences.py -> reconstructed_oligos.jsonl.
     """
     accession = "ENCSR854RUF"
     print(f"\n[{accession}] Extracting canonical records...")
-    fpath = _find_file(data_root, accession, [
-        "*.xlsx",
-        "*.xls",
-        "*.csv*",
-        "*.tsv*",
-    ])
-    if fpath is None:
-        print(f"  WARNING: No processed file found for {accession}")
-        return []
 
-    # Read the "Variant MPRAu Results" sheet for activity labels
-    try:
-        df = pd.read_excel(fpath, sheet_name="Variant MPRAu Results")
-    except Exception as e:
-        print(f"  WARNING: could not parse {fpath.name}: {e}")
-        return []
-
-    print(f"  loaded {len(df)} rows from 'Variant MPRAu Results' sheet")
-    print(f"  columns: {list(df.columns)[:10]}...")
-
-    # Check for sequence columns
-    seq_col = None
-    for c in df.columns:
-        cl = str(c).strip().lower()
-        if cl in ("seq", "sequence", "utr", "3utr") or "sequence" in cl:
-            seq_col = c
+    # Locate reconstructed_oligos.jsonl
+    candidates = [
+        data_root / accession / "reconstructed_oligos.jsonl",
+    ]
+    fpath = None
+    for c in candidates:
+        if c.exists():
+            fpath = c
             break
-
-    if seq_col is None:
-        print(f"  INCOMPLETE: No UTR sequence column in MPRAu results.")
-        print(f"  ENCSR854RUF has variant activity data but no sequences.")
-        print(f"  Requires genome reconstruction for UTR sequences.")
+    if fpath is None:
+        print(f"  WARNING: reconstructed_oligos.jsonl not found in:")
+        for c in candidates:
+            print(f"    {c}")
+        print(f"  Run reconstruct_encsr854ruf_sequences.py first.")
         return [{
             "record_id": f"{accession}_INCOMPLETE",
             "dataset": "encsr854ruf_mprau",
@@ -621,84 +745,118 @@ def extract_encsr854ruf(data_root: Path) -> List[dict]:
             "metadata": {
                 "record_type": "incomplete",
                 "data_role": "D_C",
-                "note": "MPRAu xlsx has variant activity data but no UTR sequences; needs genome reconstruction",
-                "source_file": fpath.name,
-                "n_variants": len(df),
+                "note": "reconstructed_oligos.jsonl not found; run reconstruct_encsr854ruf_sequences.py",
             },
         }]
 
-    # If sequences found, proceed with full extraction
-    print(f"  found sequence column: {seq_col}")
+    print(f"  reading: {fpath}")
     records = []
-    for idx, row in df.iterrows():
-        seq = _normalize_seq(str(row[seq_col]))
-        if len(seq) < 10:
-            continue
-        labels = {}
-        for c in df.columns:
-            if c == seq_col:
+    skipped_no_seq = 0
+    skipped_identical = 0
+    max_records = MAX_RECORDS_PER_DATASET
+    seen_ids = set()
+
+    with open(fpath) as f:
+        for line in f:
+            line = line.strip()
+            if not line:
                 continue
-            v = _safe_float(row.get(c))
-            if v is not None:
-                labels[str(c)] = v
-        rec = canonical_record_no_edit(
-            record_id=f"{accession}_{idx}",
-            dataset="encsr854ruf_mprau",
-            accession=accession,
-            region="3'UTR",
-            sequence=seq,
-            labels=labels,
-            metadata={"source_file": fpath.name},
-        )
-        records.append(rec)
-    print(f"  extracted {len(records)} records")
+            if max_records and len(records) >= max_records:
+                print(f"  capping at {max_records} records")
+                break
+            rec = json.loads(line)
+            source = _normalize_seq(rec.get("source_sequence", ""))
+            candidate = _normalize_seq(rec.get("candidate_sequence", ""))
+            if not source or not candidate:
+                skipped_no_seq += 1
+                continue
+
+            # Truncate to window around variant for long sequences (oligos
+            # are ~100bp so this rarely triggers, but keeps alignment feasible).
+            MAX_UTR_LEN = 500
+            if len(source) > MAX_UTR_LEN or len(candidate) > MAX_UTR_LEN:
+                raw_meta_tmp = rec.get("metadata", {})
+                var_pos = raw_meta_tmp.get("variant_position")
+                if var_pos is not None:
+                    half = MAX_UTR_LEN // 2
+                    pos_0idx = max(0, int(var_pos))
+                    src_start = max(0, pos_0idx - half)
+                    src_end = min(len(source), pos_0idx + half)
+                    delta = len(candidate) - len(source)
+                    source = source[src_start:src_end]
+                    candidate = candidate[src_start:src_end + delta]
+
+            if source == candidate:
+                skipped_identical += 1
+                continue
+
+            # Build labels
+            raw_labels = rec.get("labels", {})
+            labels = {}
+            for k, v in raw_labels.items():
+                fv = _safe_float(v)
+                if fv is not None:
+                    labels[k] = fv
+
+            # Build metadata
+            raw_meta = rec.get("metadata", {})
+            metadata = {
+                "data_role": "D_C",
+                "gene_symbol": rec.get("gene_symbol", raw_meta.get("gene_symbol", "")),
+                "variant_type": rec.get("variant_type", ""),
+            }
+            metadata.update(raw_meta)
+
+            # Ensure unique record_id
+            rid = rec.get("record_id", "")
+            if not rid:
+                rid = f"{accession}_{len(records)}"
+            if rid in seen_ids:
+                rid = f"{rid}_{len(records)}"
+            seen_ids.add(rid)
+
+            crec = canonical_record(
+                record_id=rid,
+                dataset="encsr854ruf_mprau",
+                accession=accession,
+                region=rec.get("region", "3'UTR"),
+                source=source,
+                candidate=candidate,
+                labels=labels,
+                metadata=metadata,
+            )
+            records.append(crec)
+
+    print(f"  extracted {len(records)} records "
+          f"(skipped: {skipped_no_seq} no_seq, {skipped_identical} identical)")
     return records
 
 
 def extract_gse246381(data_root: Path) -> List[dict]:
-    """GSE246381 — 5'UTR, D_E (historically exposed, E4).
+    """GSE246381 — 5'UTR, D_C (paired REF/ALT variants).
 
-    CSV with variant annotation in SeqID format. Actual UTR sequences need
-    genome reconstruction. For D1-01, mark as incomplete (no sequences to
-    compute edit scripts).
+    CSV with variant annotation in SeqID format. Actual UTR sequences
+    reconstructed via reconstruct_gse246381_sequences.py -> reconstructed_utrs.jsonl.
 
     Variant annotation format: Variant;chr3:123954485;CA|C;Family=...;ENST...;REF;TTAAGCTTCA
     """
     accession = "GSE246381"
-    print(f"\n[{accession}] D_E historically exposed — checking for sequence data...")
-    fpath = _find_file(data_root, accession, [
-        "*.csv*",
-        "*.tsv*",
-        "*.txt*",
-    ])
-    if fpath is None:
-        print(f"  WARNING: No data file found for {accession}")
-        return []
+    print(f"\n[{accession}] Extracting canonical records...")
 
-    # Check if actual UTR sequences are available
-    try:
-        df = pd.read_csv(fpath, compression="infer", nrows=5)
-    except Exception:
-        try:
-            df = pd.read_csv(fpath, sep="\t", compression="infer", nrows=5)
-        except Exception as e:
-            print(f"  WARNING: could not parse {fpath.name}: {e}")
-            return []
-
-    print(f"  columns: {list(df.columns)}")
-    # Look for actual UTR sequence column
-    seq_col = None
-    for c in df.columns:
-        cl = c.strip().lower()
-        if cl in ("utr", "seq", "sequence", "5utr", "five_prime_utr"):
-            seq_col = c
+    # Locate reconstructed_utrs.jsonl
+    candidates = [
+        data_root / accession / "reconstructed_utrs.jsonl",
+    ]
+    fpath = None
+    for c in candidates:
+        if c.exists():
+            fpath = c
             break
-
-    if seq_col is None:
-        print(f"  INCOMPLETE: No actual UTR sequence column found.")
-        print(f"  GSE246381 requires genome reconstruction for UTR sequences.")
-        print(f"  Skipping for D1-01 (variant annotations only).")
-        # Create a metadata-only record noting the gap
+    if fpath is None:
+        print(f"  WARNING: reconstructed_utrs.jsonl not found in:")
+        for c in candidates:
+            print(f"    {c}")
+        print(f"  Run reconstruct_gse246381_sequences.py first.")
         return [{
             "record_id": f"{accession}_INCOMPLETE",
             "dataset": "gse246381",
@@ -714,20 +872,91 @@ def extract_gse246381(data_root: Path) -> List[dict]:
             "labels": {},
             "metadata": {
                 "record_type": "incomplete",
-                "data_role": "D_E",
-                "evidence_grade": "E4",
-                "historically_exposed": True,
-                "note": "No UTR sequences in downloaded data; requires genome reconstruction",
-                "source_file": fpath.name,
+                "data_role": "D_C",
+                "note": "reconstructed_utrs.jsonl not found; run reconstruct_gse246381_sequences.py",
             },
         }]
 
-    # If sequences are available, proceed with full extraction
-    print(f"  found sequence column: {seq_col}")
-    # ... (would implement full extraction if sequences available)
-    # For now, mark as incomplete
-    print(f"  NOTE: Full extraction not yet implemented for {accession} with sequences")
-    return []
+    print(f"  reading: {fpath}")
+    records = []
+    skipped_no_seq = 0
+    skipped_identical = 0
+    max_records = MAX_RECORDS_PER_DATASET
+    seen_ids = set()
+
+    with open(fpath) as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            if max_records and len(records) >= max_records:
+                print(f"  capping at {max_records} records")
+                break
+            rec = json.loads(line)
+            source = _normalize_seq(rec.get("source_sequence", ""))
+            candidate = _normalize_seq(rec.get("candidate_sequence", ""))
+            if not source or not candidate:
+                skipped_no_seq += 1
+                continue
+
+            # Truncate to window around variant for long UTRs.
+            MAX_UTR_LEN = 500
+            if len(source) > MAX_UTR_LEN or len(candidate) > MAX_UTR_LEN:
+                raw_meta_tmp = rec.get("metadata", {})
+                var_pos = raw_meta_tmp.get("variant_position")
+                if var_pos is not None:
+                    half = MAX_UTR_LEN // 2
+                    pos_0idx = max(0, int(var_pos))
+                    src_start = max(0, pos_0idx - half)
+                    src_end = min(len(source), pos_0idx + half)
+                    delta = len(candidate) - len(source)
+                    source = source[src_start:src_end]
+                    candidate = candidate[src_start:src_end + delta]
+
+            if source == candidate:
+                skipped_identical += 1
+                continue
+
+            # Build labels
+            raw_labels = rec.get("labels", {})
+            labels = {}
+            for k, v in raw_labels.items():
+                fv = _safe_float(v)
+                if fv is not None:
+                    labels[k] = fv
+
+            # Build metadata
+            raw_meta = rec.get("metadata", {})
+            metadata = {
+                "data_role": "D_C",
+                "variant_type": rec.get("variant_type", ""),
+                "enst": rec.get("enst", raw_meta.get("enst", "")),
+            }
+            metadata.update(raw_meta)
+
+            # Ensure unique record_id
+            rid = rec.get("record_id", "")
+            if not rid:
+                rid = f"{accession}_{len(records)}"
+            if rid in seen_ids:
+                rid = f"{rid}_{len(records)}"
+            seen_ids.add(rid)
+
+            crec = canonical_record(
+                record_id=rid,
+                dataset="gse246381",
+                accession=accession,
+                region=rec.get("region", "5'UTR"),
+                source=source,
+                candidate=candidate,
+                labels=labels,
+                metadata=metadata,
+            )
+            records.append(crec)
+
+    print(f"  extracted {len(records)} records "
+          f"(skipped: {skipped_no_seq} no_seq, {skipped_identical} identical)")
+    return records
 
 
 def extract_gse217518(data_root: Path) -> List[dict]:
@@ -788,7 +1017,7 @@ def extract_gse217518(data_root: Path) -> List[dict]:
             line = line.strip()
             if not line:
                 continue
-            if len(records) >= max_records:
+            if max_records and len(records) >= max_records:
                 print(f"  capping at {max_records} records")
                 break
             rec = json.loads(line)
@@ -883,46 +1112,507 @@ def extract_gse217518(data_root: Path) -> List[dict]:
     return records
 
 
-def extract_gse149487(data_root: Path) -> List[dict]:
-    """GSE149487 — 5'UTR, D_C.
+# ---------------------------------------------------------------------------
+# GSE149487 helpers (Lim et al. 2021, Nat Commun — 5'UTR MPRA)
+# ---------------------------------------------------------------------------
 
-    Barcode + count files only. No barcode-to-UTR mapping in downloaded data.
+def _parse_6c_description(desc: str) -> Optional[dict]:
+    """Parse a Lim 6c ``description`` string into structured fields.
+
+    Recognized formats:
+      SNV:       ``{Gene}_{Ref}_{Alt}_{chr}_{start}_{end}[_potential]``
+      WT:        ``{Gene}_WT_{chr}_{start}_{end}``
+      haplotype: ``{Gene}_{ref|alt}_{chr}_{start}_{end}``
+      NA:        ``{Gene}_NA_{chr}_{start}_{end}``  (no variant, UTR control)
+
+    Returns dict with ``type`` key (``snv``/``wt``/``haplotype``/``na``) plus
+    fields, or ``None`` if the description does not match any known format.
+    """
+    d = str(desc).strip()
+    # SNV (with optional _potential suffix)
+    m = re.match(
+        r"^([^_]+)_([ACGT])_([ACGT])_(chr[^_]+)_(\d+)_(\d+)(?:_(potential))?$", d
+    )
+    if m:
+        return {
+            "type": "snv",
+            "gene": m.group(1),
+            "ref": m.group(2),
+            "alt": m.group(3),
+            "chr": m.group(4),
+            "start": int(m.group(5)),
+            "end": int(m.group(6)),
+            "suffix": m.group(7),
+        }
+    # WT
+    m = re.match(r"^([^_]+)_WT_(chr[^_]+)_(\d+)_(\d+)$", d)
+    if m:
+        return {
+            "type": "wt",
+            "gene": m.group(1),
+            "chr": m.group(2),
+            "start": int(m.group(3)),
+            "end": int(m.group(4)),
+        }
+    # haplotype (ref/alt)
+    m = re.match(r"^([^_]+)_(ref|alt)_(chr[^_]+)_(\d+)_(\d+)$", d)
+    if m:
+        return {
+            "type": "haplotype",
+            "gene": m.group(1),
+            "haplo": m.group(2),
+            "chr": m.group(3),
+            "start": int(m.group(4)),
+            "end": int(m.group(5)),
+        }
+    # NA (no variant)
+    m = re.match(r"^([^_]+)_NA_(chr[^_]+)_(\d+)_(\d+)$", d)
+    if m:
+        return {
+            "type": "na",
+            "gene": m.group(1),
+            "chr": m.group(2),
+            "start": int(m.group(3)),
+            "end": int(m.group(4)),
+        }
+    return None
+
+
+def _parse_6a_coordinate(coord: str) -> Optional[dict]:
+    """Parse a MOESM8 6a ``5' UTR genomic coordinate`` string.
+
+    Recognized formats:
+      Mutant: ``{Gene}_{chr}_{pos}_{Ref}_{Alt}_UTR5``
+      WT:     ``{Gene}_{chr}_{pos}_WT_UTR5``
+
+    Returns dict with ``type`` (``mut``/``wt``) and parsed fields, or ``None``.
+    """
+    c = str(coord).strip()
+    m = re.match(
+        r"^([^_]+)_(chr[^_]+)_(\d+)_([ACGT])_([ACGT])_UTR5$", c
+    )
+    if m:
+        return {
+            "type": "mut",
+            "gene": m.group(1),
+            "chr": m.group(2),
+            "pos": int(m.group(3)),
+            "ref": m.group(4),
+            "alt": m.group(5),
+        }
+    m = re.match(r"^([^_]+)_(chr[^_]+)_(\d+)_WT_UTR5$", c)
+    if m:
+        return {
+            "type": "wt",
+            "gene": m.group(1),
+            "chr": m.group(2),
+            "pos": int(m.group(3)),
+        }
+    return None
+
+
+def _aggregate_6c_cpm(df_6c: pd.DataFrame) -> Dict[str, dict]:
+    """Aggregate per-barcode CPMs in the Lim 6c table to per-description means.
+
+    The 6c table has a "wide" layout: the left half holds
+    ``description, barcode, TotalRNA_rep1, DNA_rep1, ... DNA_rep3`` and the
+    right half repeats ``description.1, barcode.1, TotalRNA_rep1.1, ...`` then
+    adds ``polysome_rep1/2/3``. The ``.1`` columns are duplicates of the left
+    side and are skipped.
+
+    Returns ``{description: {cpm_col: mean_value, ...}}``.
+    """
+    cpm_cols = []
+    for c in df_6c.columns:
+        cl = str(c).lower()
+        if cl in ("description", "barcode") or "unnamed" in cl:
+            continue
+        # Skip duplicate columns from the right half (barcode.1, *.1)
+        if str(c).endswith(".1"):
+            continue
+        cpm_cols.append(c)
+    grouped = df_6c.groupby("description")[cpm_cols].mean()
+    return {desc: row.to_dict() for desc, row in grouped.iterrows()}
+
+
+def _find_utr_seq_6a(
+    lookup: Dict[Tuple[str, str], List[dict]],
+    gene: str,
+    chrom: str,
+    start: int,
+    end: int,
+    ref: Optional[str] = None,
+    alt: Optional[str] = None,
+    want_wt: bool = False,
+) -> Optional[str]:
+    """Find a UTR sequence in the 6a lookup by (gene, chr, pos in [start, end]).
+
+    Args:
+        lookup: ``{(gene, chr): [{'type':'mut'/'wt', 'pos':int, ...}, ...]}``
+        gene, chrom: gene symbol and chromosome
+        start, end: UTR range (inclusive)
+        ref, alt: required alleles for mutant lookup (ignored if ``want_wt``)
+        want_wt: if True, look for a WT entry
+
+    Returns the UTR sequence string, or ``None`` if no match. When multiple
+    entries match, prefers the one whose ``pos`` is closest to the mid-range.
+    """
+    entries = lookup.get((gene, chrom))
+    if not entries:
+        return None
+    matches = []
+    for e in entries:
+        if not (start <= e["pos"] <= end):
+            continue
+        if want_wt:
+            if e["type"] == "wt":
+                matches.append(e)
+        else:
+            if (
+                e["type"] == "mut"
+                and e.get("ref") == ref
+                and e.get("alt") == alt
+            ):
+                matches.append(e)
+    if not matches:
+        return None
+    mid = (start + end) // 2
+    matches.sort(key=lambda e: abs(e["pos"] - mid))
+    return matches[0]["seq"]
+
+
+def extract_gse149487(data_root: Path) -> List[dict]:
+    """GSE149487 — Lim et al. 2021 5'UTR MPRA, paired D_C (WT -> SNV mutant).
+
+    Data sources (all on server under ``data/p0/GSE149487/``):
+      - ``41467_2021_24445_MOESM8_ESM.xlsx``
+        * sheet ``6a 5' UTR sequences``: WT + mutant UTR sequences (919 rows)
+        * sheet ``6d transcript FDR<0.1``: 545 significant transcript pairs
+        * sheet ``6e TE FDR<0.1``: 545 significant TE pairs
+      - ``Lim_et_al_Supp_Tbl_6c_293T.xlsx``: per-barcode CPMs with
+        ``description`` (179,791 rows, ~236 barcodes per UTR variant).
+
+    For each SNV description in 6c that has a matching mutant sequence and a
+    matching WT sequence in 6a (pos within [start, end]):
+      - source_sequence = WT UTR
+      - candidate_sequence = mutant UTR
+      - edit_script = compute_edit_script(WT, mutant)
+      - labels = per-description mean CPMs (mutant + WT, when available) +
+        significance labels from 6d (transcript) and 6e (TE).
+
+    SNV descriptions without a WT sequence become observational records
+    (mutant sequence only). WT descriptions in 6c become observational
+    records (WT control UTR with CPM labels).
     """
     accession = "GSE149487"
-    print(f"\n[{accession}] Checking data completeness...")
-    fpath = _find_file(data_root, accession, [
-        "*barcode*",
-        "*count*",
-        "*.csv*",
-        "*.tsv*",
-        "*.txt*",
-    ])
-    if fpath is None:
-        print(f"  WARNING: No data file found for {accession}")
+    print(f"\n[{accession}] Extracting paired D_C 5'UTR records (Lim 2021 MPRA)...")
+    d = data_root / accession
+    if not d.exists():
+        print(f"  WARNING: {d} does not exist")
         return []
 
-    print(f"  INCOMPLETE: GSE149487 has barcode+count files but no barcode-to-UTR mapping.")
-    print(f"  Needs supplementary mapping. Skipping for D1-01.")
-    return [{
-        "record_id": f"{accession}_INCOMPLETE",
-        "dataset": "gse149487",
-        "accession": accession,
-        "region": "5'UTR",
-        "source_sequence": None,
-        "candidate_sequence": None,
-        "edit_script": [],
-        "edit_script_verified": True,
-        "edit_distance": 0,
-        "n_ins": 0, "n_del": 0, "n_sub": 0,
-        "path_ambiguity": 1,
-        "labels": {},
-        "metadata": {
-            "record_type": "incomplete",
-            "data_role": "D_C",
-            "note": "No barcode-to-UTR mapping in downloaded data; needs supplementary mapping",
-            "source_file": fpath.name,
-        },
-    }]
+    moesm8_path = _find_file(data_root, accession, [
+        "*MOESM8*",
+        "*41467_2021_24445_MOESM8*",
+    ])
+    lim6c_path = _find_file(data_root, accession, [
+        "*Lim_et_al_Supp_Tbl_6c*",
+        "*Lim*6c*",
+    ])
+
+    if moesm8_path is None or lim6c_path is None:
+        print(
+            f"  INCOMPLETE: missing MOESM8 ({moesm8_path is None}) "
+            f"or Lim 6c ({lim6c_path is None})"
+        )
+        return [{
+            "record_id": f"{accession}_INCOMPLETE",
+            "dataset": "lim2021_5utr_mpra",
+            "accession": accession,
+            "region": "5'UTR",
+            "source_sequence": None,
+            "candidate_sequence": None,
+            "edit_script": [],
+            "edit_script_verified": True,
+            "edit_distance": 0,
+            "n_ins": 0, "n_del": 0, "n_sub": 0,
+            "path_ambiguity": 1,
+            "labels": {},
+            "metadata": {
+                "record_type": "incomplete",
+                "data_role": "D_C",
+                "note": (
+                    f"Missing MOESM8 ({moesm8_path is None}) "
+                    f"or Lim 6c ({lim6c_path is None})"
+                ),
+            },
+        }]
+
+    # --- Load 6a (UTR sequences) and build lookup ---
+    df_6a = pd.read_excel(moesm8_path, sheet_name="6a 5' UTR sequences")
+    print(f"  6a: {len(df_6a)} UTR sequence rows")
+    lookup_6a: Dict[Tuple[str, str], List[dict]] = {}
+    n_unparsed_6a = 0
+    for _, row in df_6a.iterrows():
+        coord = _parse_6a_coordinate(row["5' UTR genomic coordinate"])
+        if coord is None:
+            n_unparsed_6a += 1
+            continue
+        seq = _normalize_seq(row["sequence of 5' UTR"])
+        if not seq:
+            continue
+        entry = {
+            "type": coord["type"],
+            "pos": coord["pos"],
+            "seq": seq,
+        }
+        if coord["type"] == "mut":
+            entry["ref"] = coord["ref"]
+            entry["alt"] = coord["alt"]
+        lookup_6a.setdefault((coord["gene"], coord["chr"]), []).append(entry)
+    print(
+        f"  6a lookup: {len(lookup_6a)} (gene, chr) keys, "
+        f"{n_unparsed_6a} unparsed rows"
+    )
+
+    # --- Load 6c (per-barcode CPMs) and aggregate per description ---
+    df_6c = pd.read_excel(lim6c_path, sheet_name=0)
+    print(
+        f"  6c: {len(df_6c)} barcode rows, "
+        f"{df_6c['description'].nunique()} unique descriptions"
+    )
+    cpm_by_desc = _aggregate_6c_cpm(df_6c)
+    print(f"  6c aggregated: {len(cpm_by_desc)} descriptions with mean CPMs")
+
+    # --- Load 6d (transcript FDR<0.1) and 6e (TE FDR<0.1) for significance ---
+    df_6d = pd.read_excel(moesm8_path, sheet_name="6d transcript FDR<0.1")
+    df_6e = pd.read_excel(moesm8_path, sheet_name="6e TE FDR<0.1")
+    sig_6d: Dict[str, dict] = {}
+    for _, row in df_6d.iterrows():
+        sig_6d[str(row["Mutant"])] = {
+            "transcript_p_value": _safe_float(row["p value"]),
+            "transcript_log_fold_change": _safe_float(row["log fold change"]),
+            "transcript_padj_fdr": _safe_float(row["padj fdr"]),
+        }
+    sig_6e: Dict[str, dict] = {}
+    for _, row in df_6e.iterrows():
+        sig_6e[str(row["Mutant"])] = {
+            "te_p_value": _safe_float(row["p value"]),
+            "te_log_fold_change": _safe_float(row["log fold change"]),
+            "te_padj_fdr": _safe_float(row["padj fdr"]),
+        }
+    print(
+        f"  6d: {len(sig_6d)} transcript-significant, "
+        f"6e: {len(sig_6e)} TE-significant variants"
+    )
+
+    # --- Iterate unique descriptions in 6c ---
+    records: List[dict] = []
+    max_records = MAX_RECORDS_PER_DATASET
+    n_paired = 0
+    n_obs_mut = 0
+    n_obs_wt = 0
+    n_no_mut_seq = 0
+    n_no_wt_seq = 0
+
+    unique_descs = sorted(df_6c["description"].dropna().unique())
+    for desc in unique_descs:
+        if max_records and len(records) >= max_records:
+            print(f"  capping at {max_records} records")
+            break
+        parsed = _parse_6c_description(desc)
+        if parsed is None:
+            continue
+        cpm = cpm_by_desc.get(desc, {})
+
+        if parsed["type"] == "snv":
+            mut_seq = _find_utr_seq_6a(
+                lookup_6a,
+                parsed["gene"],
+                parsed["chr"],
+                parsed["start"],
+                parsed["end"],
+                ref=parsed["ref"],
+                alt=parsed["alt"],
+                want_wt=False,
+            )
+            if mut_seq is None:
+                n_no_mut_seq += 1
+                continue
+            wt_seq = _find_utr_seq_6a(
+                lookup_6a,
+                parsed["gene"],
+                parsed["chr"],
+                parsed["start"],
+                parsed["end"],
+                want_wt=True,
+            )
+            # Build a safe variant key for record_id
+            var_key = (
+                f"{parsed['gene']}_{parsed['ref']}_{parsed['alt']}_"
+                f"{parsed['chr']}_{parsed['start']}_{parsed['end']}"
+            )
+            if parsed.get("suffix"):
+                var_key += f"_{parsed['suffix']}"
+
+            if wt_seq is None:
+                # Observational record: mutant seq only
+                n_no_wt_seq += 1
+                labels = {
+                    f"mutant_{k}": v for k, v in cpm.items() if v is not None
+                }
+                if desc in sig_6d:
+                    labels.update(sig_6d[desc])
+                if desc in sig_6e:
+                    labels.update(sig_6e[desc])
+                rec = canonical_record_no_edit(
+                    record_id=f"{accession}_mut_{var_key}",
+                    dataset="lim2021_5utr_mpra",
+                    accession=accession,
+                    region="5'UTR",
+                    sequence=mut_seq,
+                    labels=labels,
+                    metadata={
+                        "source_file": (
+                            f"{lim6c_path.name} + {moesm8_path.name}"
+                        ),
+                        "data_role": "D_C",
+                        "variant_type": "snv",
+                        "gene": parsed["gene"],
+                        "chrom": parsed["chr"],
+                        "pos_start": parsed["start"],
+                        "pos_end": parsed["end"],
+                        "ref": parsed["ref"],
+                        "alt": parsed["alt"],
+                        "suffix": parsed.get("suffix"),
+                        "note": (
+                            "Mutant UTR; WT seq not found in 6a, "
+                            "observational with CPM labels"
+                        ),
+                    },
+                )
+                records.append(rec)
+                n_obs_mut += 1
+                continue
+
+            # Paired D_C record: WT -> mutant
+            labels: dict = {}
+            for k, v in cpm.items():
+                if v is not None:
+                    labels[f"mutant_{k}"] = v
+            # Look up WT description's CPMs in 6c
+            wt_desc = (
+                f"{parsed['gene']}_WT_{parsed['chr']}_"
+                f"{parsed['start']}_{parsed['end']}"
+            )
+            wt_cpm = cpm_by_desc.get(wt_desc, {})
+            for k, v in wt_cpm.items():
+                if v is not None:
+                    labels[f"wt_{k}"] = v
+            if desc in sig_6d:
+                labels.update(sig_6d[desc])
+            if desc in sig_6e:
+                labels.update(sig_6e[desc])
+
+            rec = canonical_record(
+                record_id=f"{accession}_snv_{var_key}",
+                dataset="lim2021_5utr_mpra",
+                accession=accession,
+                region="5'UTR",
+                source=wt_seq,
+                candidate=mut_seq,
+                labels=labels,
+                metadata={
+                    "source_file": (
+                        f"{lim6c_path.name} + {moesm8_path.name}"
+                    ),
+                    "data_role": "D_C",
+                    "variant_type": "snv",
+                    "gene": parsed["gene"],
+                    "chrom": parsed["chr"],
+                    "pos_start": parsed["start"],
+                    "pos_end": parsed["end"],
+                    "ref": parsed["ref"],
+                    "alt": parsed["alt"],
+                    "suffix": parsed.get("suffix"),
+                    "note": (
+                        "Paired WT->mutant 5'UTR; "
+                        "labels are per-barcode mean CPMs + 6d/6e significance"
+                    ),
+                },
+            )
+            records.append(rec)
+            n_paired += 1
+
+        elif parsed["type"] == "wt":
+            # Observational record for WT UTR control
+            wt_seq = _find_utr_seq_6a(
+                lookup_6a,
+                parsed["gene"],
+                parsed["chr"],
+                parsed["start"],
+                parsed["end"],
+                want_wt=True,
+            )
+            if wt_seq is None:
+                n_no_wt_seq += 1
+                continue
+            labels = {k: v for k, v in cpm.items() if v is not None}
+            rec = canonical_record_no_edit(
+                record_id=(
+                    f"{accession}_wt_{parsed['gene']}_"
+                    f"{parsed['chr']}_{parsed['start']}_{parsed['end']}"
+                ),
+                dataset="lim2021_5utr_mpra",
+                accession=accession,
+                region="5'UTR",
+                sequence=wt_seq,
+                labels=labels,
+                metadata={
+                    "source_file": (
+                        f"{lim6c_path.name} + {moesm8_path.name}"
+                    ),
+                    "data_role": "D_C",
+                    "variant_type": "wt_control",
+                    "gene": parsed["gene"],
+                    "chrom": parsed["chr"],
+                    "pos_start": parsed["start"],
+                    "pos_end": parsed["end"],
+                    "note": "WT UTR control; observational with CPM labels",
+                },
+            )
+            records.append(rec)
+            n_obs_wt += 1
+
+    print(
+        f"  extracted: {n_paired} paired D_C, "
+        f"{n_obs_mut} mutant-only obs, {n_obs_wt} WT-control obs; "
+        f"skipped: {n_no_mut_seq} no mutant seq, {n_no_wt_seq} no WT seq"
+    )
+
+    if not records:
+        return [{
+            "record_id": f"{accession}_INCOMPLETE",
+            "dataset": "lim2021_5utr_mpra",
+            "accession": accession,
+            "region": "5'UTR",
+            "source_sequence": None,
+            "candidate_sequence": None,
+            "edit_script": [],
+            "edit_script_verified": True,
+            "edit_distance": 0,
+            "n_ins": 0, "n_del": 0, "n_sub": 0,
+            "path_ambiguity": 1,
+            "labels": {},
+            "metadata": {
+                "record_type": "incomplete",
+                "data_role": "D_C",
+                "note": "No records extracted (data files present but no matches)",
+            },
+        }]
+
+    print(f"  total extracted {len(records)} records")
+    return records
 
 
 # ---------------------------------------------------------------------------
@@ -955,8 +1645,8 @@ def main():
                         help="Output JSONL path")
     parser.add_argument("--dataset", default=None,
                         help="Process only this dataset (default: all)")
-    parser.add_argument("--max-records", type=int, default=20000,
-                        help="Max records per dataset (default: 20000)")
+    parser.add_argument("--max-records", type=int, default=0,
+                        help="Max records per dataset (0 = no cap, default: 0)")
     args = parser.parse_args()
 
     MAX_RECORDS_PER_DATASET = args.max_records

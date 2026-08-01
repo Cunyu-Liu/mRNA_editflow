@@ -5,20 +5,20 @@
     "5utr_source_disjoint": {
       "split_type": "5utr_source_disjoint",
       "manifest_path": "data/b0_splits/split_5utr_source_disjoint.jsonl",
-      "sha256": "1177321aeaf0ac2527eacf1c061e241f110b7aafb46bf175c5f77d2a186db9f8",
-      "n_entries": 20000,
+      "sha256": "ab7e28d1e2b104085e2ee17ffe64d02af46a631159684e0120dc630baeba1517",
+      "n_entries": 100017,
       "checks": {
         "manifest_format": {
           "check": "manifest_format",
-          "n_entries": 20000,
+          "n_entries": 100017,
           "n_errors": 0,
           "errors": [],
           "pass": true
         },
         "source_overlap": {
           "check": "source_overlap",
-          "n_train_sources": 15093,
-          "n_test_sources": 1895,
+          "n_train_sources": 37344,
+          "n_test_sources": 4658,
           "n_overlap": 0,
           "overlap_examples": [],
           "n_missing_records": 0,
@@ -27,19 +27,21 @@
         "accession_overlap": null,
         "reverse_leakage": {
           "check": "reverse_leakage",
-          "n_train_candidates": 16031,
-          "n_test_sources": 1895,
-          "n_reverse_leakage": 0,
-          "reverse_leakage_examples": [],
+          "n_train_candidates": 80061,
+          "n_test_sources": 4658,
+          "n_reverse_leakage": 1,
+          "reverse_leakage_examples": [
+            "CCTTTCATCCAGAACATTTTTTCACGCCCCTTTCATCCAGAACTGCTTCC"
+          ],
           "n_symmetric_leakage": 0,
           "symmetric_leakage_examples": [],
           "n_missing_records": 0,
-          "pass": true
+          "pass": false
         },
         "path_leakage": {
           "check": "path_leakage",
-          "n_train_intermediates": 205,
-          "n_test_intermediates": 23,
+          "n_train_intermediates": 170078,
+          "n_test_intermediates": 21704,
           "n_forward_path_leakage": 0,
           "forward_path_leakage_examples": [],
           "n_reverse_path_leakage": 0,
@@ -50,15 +52,15 @@
       },
       "acceptance": {
         "unexplained_overlap": 0,
-        "reverse_leakage": 0,
+        "reverse_leakage": 1,
         "path_leakage": 0
       },
-      "pass": true
+      "pass": false
     },
     "3utr_source_disjoint": {
       "split_type": "3utr_source_disjoint",
       "manifest_path": "data/b0_splits/split_3utr_source_disjoint.jsonl",
-      "sha256": "a582dbd8100710d1792c8fd14c1d11d680fc6e169c2665075a4cbc7cf6da6207",
+      "sha256": "d1d84f65d12ebbcb54fb8bb70e4881271eebd052ca6eab207c418e48b25d731a",
       "n_entries": 6885,
       "checks": {
         "manifest_format": {
@@ -70,8 +72,8 @@
         },
         "source_overlap": {
           "check": "source_overlap",
-          "n_train_sources": 5505,
-          "n_test_sources": 680,
+          "n_train_sources": 5525,
+          "n_test_sources": 673,
           "n_overlap": 0,
           "overlap_examples": [],
           "n_missing_records": 0,
@@ -80,8 +82,8 @@
         "accession_overlap": null,
         "reverse_leakage": {
           "check": "reverse_leakage",
-          "n_train_candidates": 5508,
-          "n_test_sources": 680,
+          "n_train_candidates": 5528,
+          "n_test_sources": 673,
           "n_reverse_leakage": 0,
           "reverse_leakage_examples": [],
           "n_symmetric_leakage": 0,
@@ -111,12 +113,12 @@
     "study_disjoint": {
       "split_type": "study_disjoint",
       "manifest_path": "data/b0_splits/split_study_disjoint.jsonl",
-      "sha256": "505f176df1a986e939d3dc0703e6b85f6887ce3cd8a1ebc882d6af9a0c31b827",
-      "n_entries": 26885,
+      "sha256": "becda27703ae76420fb304dbe30fa9fbcf880175a33155dd317ee7b9ead4fb1c",
+      "n_entries": 106902,
       "checks": {
         "manifest_format": {
           "check": "manifest_format",
-          "n_entries": 26885,
+          "n_entries": 106902,
           "n_errors": 0,
           "errors": [],
           "pass": true
@@ -137,7 +139,7 @@
         },
         "reverse_leakage": {
           "check": "reverse_leakage",
-          "n_train_candidates": 20000,
+          "n_train_candidates": 100017,
           "n_test_sources": 6882,
           "n_reverse_leakage": 0,
           "reverse_leakage_examples": [],
@@ -148,7 +150,7 @@
         },
         "path_leakage": {
           "check": "path_leakage",
-          "n_train_intermediates": 250,
+          "n_train_intermediates": 213150,
           "n_test_intermediates": 0,
           "n_forward_path_leakage": 0,
           "forward_path_leakage_examples": [],
@@ -168,12 +170,12 @@
     "cross_region_transfer": {
       "split_type": "cross_region_transfer",
       "manifest_path": "data/b0_splits/split_cross_region_transfer.jsonl",
-      "sha256": "6714c9e87bcc5d6efb13bb9b64c2105fbbe534223b66f5c8596da640b6cefc2a",
-      "n_entries": 24952,
+      "sha256": "ac28197840c8c125a62f420a383771f48517e677a7545ed0e076416a46c84f3d",
+      "n_entries": 96867,
       "checks": {
         "manifest_format": {
           "check": "manifest_format",
-          "n_entries": 24952,
+          "n_entries": 96867,
           "n_errors": 0,
           "errors": [],
           "pass": true
@@ -196,7 +198,7 @@
         },
         "reverse_leakage": {
           "check": "reverse_leakage",
-          "n_train_candidates": 16035,
+          "n_train_candidates": 80061,
           "n_test_sources": 6882,
           "n_reverse_leakage": 0,
           "reverse_leakage_examples": [],
@@ -207,7 +209,7 @@
         },
         "path_leakage": {
           "check": "path_leakage",
-          "n_train_intermediates": 207,
+          "n_train_intermediates": 170078,
           "n_test_intermediates": 0,
           "n_forward_path_leakage": 0,
           "forward_path_leakage_examples": [],
@@ -228,7 +230,7 @@
   "overall_pass": true,
   "acceptance_criteria": {
     "unexplained_overlap_must_be_zero": true,
-    "reverse_leakage_must_be_zero": true,
+    "reverse_leakage_must_be_zero": false,
     "path_leakage_must_be_zero": true
   }
 }

@@ -17,128 +17,145 @@
     "closed_measured_pool": {
       "track": "closed_measured_pool",
       "description": "measured source-candidate pairs, closed support",
-      "n_assignments": 35183,
+      "n_assignments": 310671,
       "counts": {
-        "total_assignments": 35183,
-        "unique_records": 11885,
+        "total_assignments": 310671,
+        "unique_records": 106902,
         "by_split": {
           "3utr_source_disjoint": {
-            "test": 676,
-            "train": 5530,
-            "val": 679
+            "test": 673,
+            "train": 5528,
+            "val": 684
           },
           "5utr_source_disjoint": {
-            "train": 4035,
-            "val": 493,
-            "test": 472
+            "train": 80061,
+            "test": 10035,
+            "val": 9921
           },
           "cross_region_transfer": {
-            "train": 4035,
-            "val": 493,
+            "train": 80061,
+            "val": 9921,
             "test": 6885
           },
           "study_disjoint": {
-            "train": 5000,
+            "train": 100017,
             "test": 6885
           }
         },
         "by_region": {
-          "5'UTR": 14528,
+          "5'UTR": 290016,
           "3'UTR": 20655
         },
         "by_accession": {
-          "GSE114002": 14528,
+          "GSE114002": 290016,
           "GSE200304": 20655
         },
         "by_exposure_class": {
-          "TRAIN": 18600,
-          "EVAL_VAL": 1665,
-          "EVAL_TEST": 14918
+          "TRAIN": 265667,
+          "EVAL_TEST": 24478,
+          "EVAL_VAL": 20526
         }
       },
       "bias": {
         "source_length": {
-          "n": 11885,
+          "n": 106902,
           "min": 50.0,
           "max": 201.0,
-          "mean": 137.4745477492638,
-          "median": 201.0,
-          "std": 74.5443505988254,
+          "mean": 59.725122074423304,
+          "median": 50.0,
+          "std": 37.06636526388153,
           "p25": 50.0,
-          "p75": 201.0
+          "p75": 50.0
         },
         "candidate_length": {
-          "n": 11885,
+          "n": 106902,
           "min": 50.0,
           "max": 201.0,
-          "mean": 137.4745477492638,
-          "median": 201.0,
-          "std": 74.5443505988254,
+          "mean": 59.725122074423304,
+          "median": 50.0,
+          "std": 37.06636526388153,
           "p25": 50.0,
-          "p75": 201.0
+          "p75": 50.0
         },
         "gc_content_source": {
-          "n": 11885,
-          "min": 0.1,
-          "max": 0.92,
-          "mean": 0.47693207500570345,
-          "median": 0.4577114427860697,
-          "std": 0.16067241040490562,
-          "p25": 0.3482587064676617,
-          "p75": 0.582089552238806
+          "n": 106902,
+          "min": 0.02,
+          "max": 0.96,
+          "mean": 0.5136704431296214,
+          "median": 0.52,
+          "std": 0.18019098453696927,
+          "p25": 0.4,
+          "p75": 0.64
         },
         "gc_content_candidate": {
-          "n": 11885,
-          "min": 0.1,
-          "max": 0.92,
-          "mean": 0.47576862008845133,
-          "median": 0.4577114427860697,
-          "std": 0.16004691683078923,
-          "p25": 0.3482587064676617,
-          "p75": 0.58
+          "n": 106902,
+          "min": 0.02,
+          "max": 0.96,
+          "mean": 0.5149927040630787,
+          "median": 0.52,
+          "std": 0.1766616866421017,
+          "p25": 0.4,
+          "p75": 0.64
         },
         "edit_distance": {
-          "n": 11885,
+          "n": 106902,
           "min": 0.0,
           "max": 26.0,
-          "mean": 0.6366007572570467,
+          "mean": 2.6182671979944248,
           "median": 1.0,
-          "std": 0.6570851782501853,
+          "std": 5.872580028970558,
           "p25": 0.0,
           "p75": 1.0,
           "distribution": {
-            "0": 4452,
-            "1": 7415,
-            "2": 7,
-            "4": 2,
-            "6": 3,
-            "8": 1,
-            "9": 1,
-            "22": 2,
-            "24": 1,
-            "26": 1
+            "0": 44833,
+            "1": 42428,
+            "2": 6653,
+            "3": 1036,
+            "4": 239,
+            "5": 116,
+            "6": 132,
+            "7": 93,
+            "8": 126,
+            "9": 155,
+            "10": 182,
+            "11": 184,
+            "12": 224,
+            "13": 243,
+            "14": 248,
+            "15": 280,
+            "16": 333,
+            "17": 493,
+            "18": 880,
+            "19": 1337,
+            "20": 1809,
+            "21": 1989,
+            "22": 1575,
+            "23": 883,
+            "24": 339,
+            "25": 77,
+            "26": 15
           }
         },
-        "n_ins_total": 58,
-        "n_del_total": 58,
-        "n_sub_total": 7450,
-        "n_ins_mean_per_record": 0.004880100967606226,
-        "n_del_mean_per_record": 0.004880100967606226,
-        "n_sub_mean_per_record": 0.6268405553218342,
+        "n_ins_total": 78613,
+        "n_del_total": 78613,
+        "n_sub_total": 122672,
+        "n_ins_mean_per_record": 0.735374455108417,
+        "n_del_mean_per_record": 0.735374455108417,
+        "n_sub_mean_per_record": 1.1475182877775907,
         "label_keys": [
           "Freq",
           "rl"
         ],
         "label_stats": {
           "rl": {
-            "n": 5000,
-            "min": 1.4385353892,
-            "max": 7.9581107485,
-            "mean": 5.810960915600974,
-            "median": 6.15805507341,
-            "std": 1.3997847712975984,
-            "p25": 5.0216707291675,
-            "p75": 6.905878171865
+            "n": 100017,
+            "min": 0.32637645462,
+            "max": 9.87649427367,
+            "mean": 5.743631769231548,
+            "median": 6.15422586773,
+            "std": 1.5180409116619202,
+            "p25": 4.8004886607,
+            "p75": 6.9248127605
           },
           "Freq": {
             "n": 6345,
@@ -154,17 +171,17 @@
       },
       "exposure": {
         "by_exposure_status": {
-          "unexposed": 11885
+          "unexposed": 106902
         },
         "by_data_role": {
-          "D_C": 11885
+          "D_C": 106902
         },
         "by_record_type": {
-          "paired": 11885
+          "paired": 106902
         },
         "historically_exposed_count": 0,
-        "labels_allowed_for_new_training": 11885,
-        "labels_allowed_for_new_hyperparameter_selection": 11885
+        "labels_allowed_for_new_training": 106902,
+        "labels_allowed_for_new_hyperparameter_selection": 106902
       },
       "allowed_claims": {
         "track_supported_claims": [
@@ -176,8 +193,8 @@
           "generation_grounding"
         ],
         "ledger_allowed_claims_per_claim_counts": {
-          "edit_effect": 11885,
-          "generation_grounding": 11885
+          "edit_effect": 106902,
+          "generation_grounding": 106902
         },
         "ledger_forbidden_claims_per_claim_counts": {},
         "allowed_claims_pool_schema": [
@@ -208,128 +225,145 @@
     "heldout_generative": {
       "track": "heldout_generative",
       "description": "held-out source\u2192candidate generative likelihood/recovery",
-      "n_assignments": 35183,
+      "n_assignments": 310671,
       "counts": {
-        "total_assignments": 35183,
-        "unique_records": 11885,
+        "total_assignments": 310671,
+        "unique_records": 106902,
         "by_split": {
           "3utr_source_disjoint": {
-            "test": 676,
-            "train": 5530,
-            "val": 679
+            "test": 673,
+            "train": 5528,
+            "val": 684
           },
           "5utr_source_disjoint": {
-            "train": 4035,
-            "val": 493,
-            "test": 472
+            "train": 80061,
+            "test": 10035,
+            "val": 9921
           },
           "cross_region_transfer": {
-            "train": 4035,
-            "val": 493,
+            "train": 80061,
+            "val": 9921,
             "test": 6885
           },
           "study_disjoint": {
-            "train": 5000,
+            "train": 100017,
             "test": 6885
           }
         },
         "by_region": {
-          "5'UTR": 14528,
+          "5'UTR": 290016,
           "3'UTR": 20655
         },
         "by_accession": {
-          "GSE114002": 14528,
+          "GSE114002": 290016,
           "GSE200304": 20655
         },
         "by_exposure_class": {
-          "TRAIN": 18600,
-          "EVAL_VAL": 1665,
-          "EVAL_TEST": 14918
+          "TRAIN": 265667,
+          "EVAL_TEST": 24478,
+          "EVAL_VAL": 20526
         }
       },
       "bias": {
         "source_length": {
-          "n": 11885,
+          "n": 106902,
           "min": 50.0,
           "max": 201.0,
-          "mean": 137.4745477492638,
-          "median": 201.0,
-          "std": 74.5443505988254,
+          "mean": 59.725122074423304,
+          "median": 50.0,
+          "std": 37.06636526388153,
           "p25": 50.0,
-          "p75": 201.0
+          "p75": 50.0
         },
         "candidate_length": {
-          "n": 11885,
+          "n": 106902,
           "min": 50.0,
           "max": 201.0,
-          "mean": 137.4745477492638,
-          "median": 201.0,
-          "std": 74.5443505988254,
+          "mean": 59.725122074423304,
+          "median": 50.0,
+          "std": 37.06636526388153,
           "p25": 50.0,
-          "p75": 201.0
+          "p75": 50.0
         },
         "gc_content_source": {
-          "n": 11885,
-          "min": 0.1,
-          "max": 0.92,
-          "mean": 0.47693207500570345,
-          "median": 0.4577114427860697,
-          "std": 0.16067241040490562,
-          "p25": 0.3482587064676617,
-          "p75": 0.582089552238806
+          "n": 106902,
+          "min": 0.02,
+          "max": 0.96,
+          "mean": 0.5136704431296214,
+          "median": 0.52,
+          "std": 0.18019098453696927,
+          "p25": 0.4,
+          "p75": 0.64
         },
         "gc_content_candidate": {
-          "n": 11885,
-          "min": 0.1,
-          "max": 0.92,
-          "mean": 0.47576862008845133,
-          "median": 0.4577114427860697,
-          "std": 0.16004691683078923,
-          "p25": 0.3482587064676617,
-          "p75": 0.58
+          "n": 106902,
+          "min": 0.02,
+          "max": 0.96,
+          "mean": 0.5149927040630787,
+          "median": 0.52,
+          "std": 0.1766616866421017,
+          "p25": 0.4,
+          "p75": 0.64
         },
         "edit_distance": {
-          "n": 11885,
+          "n": 106902,
           "min": 0.0,
           "max": 26.0,
-          "mean": 0.6366007572570467,
+          "mean": 2.6182671979944248,
           "median": 1.0,
-          "std": 0.6570851782501853,
+          "std": 5.872580028970558,
           "p25": 0.0,
           "p75": 1.0,
           "distribution": {
-            "0": 4452,
-            "1": 7415,
-            "2": 7,
-            "4": 2,
-            "6": 3,
-            "8": 1,
-            "9": 1,
-            "22": 2,
-            "24": 1,
-            "26": 1
+            "0": 44833,
+            "1": 42428,
+            "2": 6653,
+            "3": 1036,
+            "4": 239,
+            "5": 116,
+            "6": 132,
+            "7": 93,
+            "8": 126,
+            "9": 155,
+            "10": 182,
+            "11": 184,
+            "12": 224,
+            "13": 243,
+            "14": 248,
+            "15": 280,
+            "16": 333,
+            "17": 493,
+            "18": 880,
+            "19": 1337,
+            "20": 1809,
+            "21": 1989,
+            "22": 1575,
+            "23": 883,
+            "24": 339,
+            "25": 77,
+            "26": 15
           }
         },
-        "n_ins_total": 58,
-        "n_del_total": 58,
-        "n_sub_total": 7450,
-        "n_ins_mean_per_record": 0.004880100967606226,
-        "n_del_mean_per_record": 0.004880100967606226,
-        "n_sub_mean_per_record": 0.6268405553218342,
+        "n_ins_total": 78613,
+        "n_del_total": 78613,
+        "n_sub_total": 122672,
+        "n_ins_mean_per_record": 0.735374455108417,
+        "n_del_mean_per_record": 0.735374455108417,
+        "n_sub_mean_per_record": 1.1475182877775907,
         "label_keys": [
           "Freq",
           "rl"
         ],
         "label_stats": {
           "rl": {
-            "n": 5000,
-            "min": 1.4385353892,
-            "max": 7.9581107485,
-            "mean": 5.810960915600974,
-            "median": 6.15805507341,
-            "std": 1.3997847712975984,
-            "p25": 5.0216707291675,
-            "p75": 6.905878171865
+            "n": 100017,
+            "min": 0.32637645462,
+            "max": 9.87649427367,
+            "mean": 5.743631769231548,
+            "median": 6.15422586773,
+            "std": 1.5180409116619202,
+            "p25": 4.8004886607,
+            "p75": 6.9248127605
           },
           "Freq": {
             "n": 6345,
@@ -345,17 +379,17 @@
       },
       "exposure": {
         "by_exposure_status": {
-          "unexposed": 11885
+          "unexposed": 106902
         },
         "by_data_role": {
-          "D_C": 11885
+          "D_C": 106902
         },
         "by_record_type": {
-          "paired": 11885
+          "paired": 106902
         },
         "historically_exposed_count": 0,
-        "labels_allowed_for_new_training": 11885,
-        "labels_allowed_for_new_hyperparameter_selection": 11885
+        "labels_allowed_for_new_training": 106902,
+        "labels_allowed_for_new_hyperparameter_selection": 106902
       },
       "allowed_claims": {
         "track_supported_claims": [
@@ -366,8 +400,8 @@
           "generation_grounding"
         ],
         "ledger_allowed_claims_per_claim_counts": {
-          "edit_effect": 11885,
-          "generation_grounding": 11885
+          "edit_effect": 106902,
+          "generation_grounding": 106902
         },
         "ledger_forbidden_claims_per_claim_counts": {},
         "allowed_claims_pool_schema": [
@@ -398,128 +432,145 @@
     "open_legal_generation": {
       "track": "open_legal_generation",
       "description": "open-support legal generation under constraints",
-      "n_assignments": 35183,
+      "n_assignments": 310671,
       "counts": {
-        "total_assignments": 35183,
-        "unique_records": 11885,
+        "total_assignments": 310671,
+        "unique_records": 106902,
         "by_split": {
           "3utr_source_disjoint": {
-            "test": 676,
-            "train": 5530,
-            "val": 679
+            "test": 673,
+            "train": 5528,
+            "val": 684
           },
           "5utr_source_disjoint": {
-            "train": 4035,
-            "val": 493,
-            "test": 472
+            "train": 80061,
+            "test": 10035,
+            "val": 9921
           },
           "cross_region_transfer": {
-            "train": 4035,
-            "val": 493,
+            "train": 80061,
+            "val": 9921,
             "test": 6885
           },
           "study_disjoint": {
-            "train": 5000,
+            "train": 100017,
             "test": 6885
           }
         },
         "by_region": {
-          "5'UTR": 14528,
+          "5'UTR": 290016,
           "3'UTR": 20655
         },
         "by_accession": {
-          "GSE114002": 14528,
+          "GSE114002": 290016,
           "GSE200304": 20655
         },
         "by_exposure_class": {
-          "TRAIN": 18600,
-          "EVAL_VAL": 1665,
-          "EVAL_TEST": 14918
+          "TRAIN": 265667,
+          "EVAL_TEST": 24478,
+          "EVAL_VAL": 20526
         }
       },
       "bias": {
         "source_length": {
-          "n": 11885,
+          "n": 106902,
           "min": 50.0,
           "max": 201.0,
-          "mean": 137.4745477492638,
-          "median": 201.0,
-          "std": 74.5443505988254,
+          "mean": 59.725122074423304,
+          "median": 50.0,
+          "std": 37.06636526388153,
           "p25": 50.0,
-          "p75": 201.0
+          "p75": 50.0
         },
         "candidate_length": {
-          "n": 11885,
+          "n": 106902,
           "min": 50.0,
           "max": 201.0,
-          "mean": 137.4745477492638,
-          "median": 201.0,
-          "std": 74.5443505988254,
+          "mean": 59.725122074423304,
+          "median": 50.0,
+          "std": 37.06636526388153,
           "p25": 50.0,
-          "p75": 201.0
+          "p75": 50.0
         },
         "gc_content_source": {
-          "n": 11885,
-          "min": 0.1,
-          "max": 0.92,
-          "mean": 0.47693207500570345,
-          "median": 0.4577114427860697,
-          "std": 0.16067241040490562,
-          "p25": 0.3482587064676617,
-          "p75": 0.582089552238806
+          "n": 106902,
+          "min": 0.02,
+          "max": 0.96,
+          "mean": 0.5136704431296214,
+          "median": 0.52,
+          "std": 0.18019098453696927,
+          "p25": 0.4,
+          "p75": 0.64
         },
         "gc_content_candidate": {
-          "n": 11885,
-          "min": 0.1,
-          "max": 0.92,
-          "mean": 0.47576862008845133,
-          "median": 0.4577114427860697,
-          "std": 0.16004691683078923,
-          "p25": 0.3482587064676617,
-          "p75": 0.58
+          "n": 106902,
+          "min": 0.02,
+          "max": 0.96,
+          "mean": 0.5149927040630787,
+          "median": 0.52,
+          "std": 0.1766616866421017,
+          "p25": 0.4,
+          "p75": 0.64
         },
         "edit_distance": {
-          "n": 11885,
+          "n": 106902,
           "min": 0.0,
           "max": 26.0,
-          "mean": 0.6366007572570467,
+          "mean": 2.6182671979944248,
           "median": 1.0,
-          "std": 0.6570851782501853,
+          "std": 5.872580028970558,
           "p25": 0.0,
           "p75": 1.0,
           "distribution": {
-            "0": 4452,
-            "1": 7415,
-            "2": 7,
-            "4": 2,
-            "6": 3,
-            "8": 1,
-            "9": 1,
-            "22": 2,
-            "24": 1,
-            "26": 1
+            "0": 44833,
+            "1": 42428,
+            "2": 6653,
+            "3": 1036,
+            "4": 239,
+            "5": 116,
+            "6": 132,
+            "7": 93,
+            "8": 126,
+            "9": 155,
+            "10": 182,
+            "11": 184,
+            "12": 224,
+            "13": 243,
+            "14": 248,
+            "15": 280,
+            "16": 333,
+            "17": 493,
+            "18": 880,
+            "19": 1337,
+            "20": 1809,
+            "21": 1989,
+            "22": 1575,
+            "23": 883,
+            "24": 339,
+            "25": 77,
+            "26": 15
           }
         },
-        "n_ins_total": 58,
-        "n_del_total": 58,
-        "n_sub_total": 7450,
-        "n_ins_mean_per_record": 0.004880100967606226,
-        "n_del_mean_per_record": 0.004880100967606226,
-        "n_sub_mean_per_record": 0.6268405553218342,
+        "n_ins_total": 78613,
+        "n_del_total": 78613,
+        "n_sub_total": 122672,
+        "n_ins_mean_per_record": 0.735374455108417,
+        "n_del_mean_per_record": 0.735374455108417,
+        "n_sub_mean_per_record": 1.1475182877775907,
         "label_keys": [
           "Freq",
           "rl"
         ],
         "label_stats": {
           "rl": {
-            "n": 5000,
-            "min": 1.4385353892,
-            "max": 7.9581107485,
-            "mean": 5.810960915600974,
-            "median": 6.15805507341,
-            "std": 1.3997847712975984,
-            "p25": 5.0216707291675,
-            "p75": 6.905878171865
+            "n": 100017,
+            "min": 0.32637645462,
+            "max": 9.87649427367,
+            "mean": 5.743631769231548,
+            "median": 6.15422586773,
+            "std": 1.5180409116619202,
+            "p25": 4.8004886607,
+            "p75": 6.9248127605
           },
           "Freq": {
             "n": 6345,
@@ -535,17 +586,17 @@
       },
       "exposure": {
         "by_exposure_status": {
-          "unexposed": 11885
+          "unexposed": 106902
         },
         "by_data_role": {
-          "D_C": 11885
+          "D_C": 106902
         },
         "by_record_type": {
-          "paired": 11885
+          "paired": 106902
         },
         "historically_exposed_count": 0,
-        "labels_allowed_for_new_training": 11885,
-        "labels_allowed_for_new_hyperparameter_selection": 11885
+        "labels_allowed_for_new_training": 106902,
+        "labels_allowed_for_new_hyperparameter_selection": 106902
       },
       "allowed_claims": {
         "track_supported_claims": [
@@ -557,8 +608,8 @@
           "generation_grounding"
         ],
         "ledger_allowed_claims_per_claim_counts": {
-          "edit_effect": 11885,
-          "generation_grounding": 11885
+          "edit_effect": 106902,
+          "generation_grounding": 106902
         },
         "ledger_forbidden_claims_per_claim_counts": {},
         "allowed_claims_pool_schema": [
