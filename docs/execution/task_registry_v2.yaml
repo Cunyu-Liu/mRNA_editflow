@@ -194,12 +194,21 @@ tasks:
     (sha256 f68e8adf). Report at data/b0_04_eval_track_audit_report.json.
 - task_id: B0-05
   phase: B0
-  status: PENDING
+  status: DONE
   dependencies:
   - B0-04
   description: 'Data Card: counts, bias, exposure, allowed claims, unsupported capabilities'
   acceptance:
   - data card complete for all tracks
+  commit_sha: 5e11add
+  report: Per-track data card covering counts/bias/exposure/allowed_claims/unsupported_capabilities
+    for all 3 eval tracks. All 11885 paired records are D_C unexposed. Source length
+    bimodal (50bp 5UTR vs 201bp 3UTR). Edit distance mean=0.637 (4452 no-ops + 7415
+    SNVs). closed_measured_pool effective claims=edit_effect+generation_grounding.
+    heldout_generative generative_denoising supported but NOT in ledger (gap documented).
+    open_legal_generation foundation_adaptation+region_representation supported but NOT
+    in ledger (gap documented). 39 unit tests pass (228 total B0 suite). Report at
+    data/b0_05_data_card.json.
 - task_id: FM0-01
   phase: FM0
   status: PENDING
