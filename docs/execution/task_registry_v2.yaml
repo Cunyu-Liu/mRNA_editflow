@@ -156,7 +156,7 @@ tasks:
   acceptance:
   - unexplained overlap = 0
   - reverse/path leakage = 0
-  commit_sha: <pending>
+  commit_sha: 1c670ff
   report: 4 split manifests built (5utr/3utr source_disjoint, study_disjoint, cross_region_transfer).
     Audit PASS on all 4 — unexplained_overlap=0, reverse_leakage=0, path_leakage=0. 33 unit tests pass.
     Report at data/b0_02_audit_report.json.
