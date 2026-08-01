@@ -13,7 +13,8 @@ Covers:
   - check_cluster_overlap: proxy detection
   - check_scaffold_overlap: informational, always pass
   - check_study_overlap: clean vs leaky
-  - check_gene/context/barcode/foundation: N/A + PENDING_FM0 stubs
+  - check_gene/context/barcode: N/A stubs; foundation is pending without an
+    FM0 manifest and audited at source level when one is supplied
   - check_exposure_ledger_coverage: 100% vs <100%
   - audit_split_leakage: integration pass/fail
 
@@ -292,6 +293,65 @@ class TestNAChannels:
         assert not res["applicable"]
         assert res["status"] == "PENDING_FM0"
         assert res["pass"]
+
+    def test_foundation_manifest_classifies_source_exposure(self):
+        records = {
+            "r1": make_record(
+                "r1", "GSE_A", "5'UTR", "AAAACCCC", "AAAATCCC",
+                ops_list=[("SUB", 4, "T")],
+            )
+        }
+        manifest = {
+            "schema_version": "fm0-foundation-training-data/v1",
+            "model_id": "multimolecule/utrlm-mrl",
+            "revision": "r" * 40,
+            "checkpoint_sha256": "a" * 64,
+            "license": {"type": "agpl-3.0"},
+            "corpus_sources": [{"source_id": "sample2019"}],
+            "dataset_exposure": [{
+                "accession": "GSE_A",
+                "region": "5'UTR",
+                "historically_exposed_to_model": True,
+                "exposure_type": "sequence_prior_only",
+                "evidence_grade": "E4",
+                "labels_exposed_to_model": False,
+            }],
+            "exposure_assertions_complete": True,
+            "exact_sequence_manifest_available": False,
+        }
+        res = check_foundation_overlap(
+            [], [{"record_id": "r1"}], records, manifest
+        )
+        assert res["applicable"]
+        assert res["status"] == "AUDITED_SOURCE_LEVEL_EXPOSURE"
+        assert res["pass"]
+        assert res["n_known_source_overlap"] == 1
+        assert res["n_overlap"] is None
+        assert res["exact_sequence_overlap_status"] == "NOT_AVAILABLE_NOT_ASSERTED"
+
+    def test_foundation_manifest_missing_test_coverage_fails_closed(self):
+        records = {
+            "r1": make_record(
+                "r1", "GSE_A", "5'UTR", "AAAACCCC", "AAAATCCC",
+                ops_list=[("SUB", 4, "T")],
+            )
+        }
+        manifest = {
+            "schema_version": "fm0-foundation-training-data/v1",
+            "model_id": "multimolecule/utrlm-mrl",
+            "revision": "r" * 40,
+            "checkpoint_sha256": "a" * 64,
+            "license": {"type": "agpl-3.0"},
+            "corpus_sources": [{"source_id": "sample2019"}],
+            "dataset_exposure": [],
+            "exposure_assertions_complete": True,
+            "exact_sequence_manifest_available": False,
+        }
+        res = check_foundation_overlap(
+            [], [{"record_id": "r1"}], records, manifest
+        )
+        assert res["status"] == "FOUNDATION_MANIFEST_INVALID"
+        assert not res["pass"]
 
 
 # ---------------------------------------------------------------------------

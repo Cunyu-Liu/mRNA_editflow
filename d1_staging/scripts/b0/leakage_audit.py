@@ -15,8 +15,9 @@ Scope notes (per contract amendment v2.2 DEC-UTR-EF-V2-20260731-B0-FROZEN-REPLAY
   - Only 2 D_C datasets have paired records (GSE114002 5'UTR, GSE200304
     3'UTR). gene/context/barcode metadata is not present in canonical
     records, so those channels are documented as N/A (not applicable) with
-    the reason recorded. foundation overlap is pending FM0 (no foundation
-    checkpoint selected yet); the check is stubbed as PENDING_FM0.
+    the reason recorded. foundation overlap is audited only when an FM0-bound
+    foundation training-data manifest is supplied; exact sequence-level
+    overlap is never inferred from source-level exposure metadata.
 
 Contract: utr_editflow_contract_v2 (FROZEN)
 Task: B0-03
@@ -76,6 +77,122 @@ def load_manifest(path: str) -> List[Dict[str, Any]]:
                 continue
             entries.append(json.loads(line))
     return entries
+
+
+def load_foundation_manifest(path: str) -> Dict[str, Any]:
+    """Load the FM0-bound foundation provenance manifest.
+
+    The manifest is deliberately small and source-level: it binds the exact
+    checkpoint revision/hash/license to the documented pretraining corpus and
+    to an explicit per-accession exposure classification. The model card does
+    not provide a dump of every pretraining sequence, so this function must
+    not turn source-level evidence into an exact sequence-overlap claim.
+    Invalid or missing manifests are returned as structured errors so the
+    caller can fail closed while preserving a report.
+    """
+    p = Path(path)
+    if not p.exists():
+        return {
+            "_load_error": f"foundation manifest not found: {p}",
+            "_manifest_path": str(p),
+        }
+    try:
+        with open(p, "r", encoding="utf-8") as f:
+            payload = json.load(f)
+    except Exception as exc:  # pragma: no cover - exercised by integration
+        return {
+            "_load_error": f"foundation manifest unreadable: {p}: {exc}",
+            "_manifest_path": str(p),
+        }
+    if not isinstance(payload, dict):
+        return {
+            "_load_error": f"foundation manifest must be a JSON object: {p}",
+            "_manifest_path": str(p),
+        }
+    payload = dict(payload)
+    payload["_manifest_path"] = str(p)
+    payload["_manifest_sha256"] = hashlib.sha256(p.read_bytes()).hexdigest()
+    return payload
+
+
+def _foundation_manifest_errors(manifest: Dict[str, Any]) -> List[str]:
+    """Validate the non-negotiable FM0 foundation provenance fields."""
+    errors: List[str] = []
+    if manifest.get("_load_error"):
+        errors.append(str(manifest["_load_error"]))
+        return errors
+    required = (
+        "schema_version",
+        "model_id",
+        "revision",
+        "checkpoint_sha256",
+        "license",
+        "corpus_sources",
+        "dataset_exposure",
+        "exposure_assertions_complete",
+        "exact_sequence_manifest_available",
+    )
+    errors.extend(f"missing:{key}" for key in required if key not in manifest)
+    if errors:
+        return errors
+    if manifest["schema_version"] != "fm0-foundation-training-data/v1":
+        errors.append("schema_version_mismatch")
+    if not isinstance(manifest["model_id"], str) or not manifest["model_id"].strip():
+        errors.append("invalid:model_id")
+    if not isinstance(manifest["revision"], str) or not manifest["revision"].strip():
+        errors.append("invalid:revision")
+    checkpoint_sha256 = manifest["checkpoint_sha256"]
+    if not isinstance(checkpoint_sha256, str) or len(checkpoint_sha256) != 64:
+        errors.append("invalid:checkpoint_sha256")
+    license_info = manifest["license"]
+    if not isinstance(license_info, dict) or not license_info.get("type"):
+        errors.append("invalid:license")
+    if not isinstance(manifest["corpus_sources"], list) or not manifest["corpus_sources"]:
+        errors.append("invalid:corpus_sources")
+    exposure = manifest["dataset_exposure"]
+    if not isinstance(exposure, list) or not exposure:
+        errors.append("invalid:dataset_exposure")
+    if manifest["exposure_assertions_complete"] is not True:
+        errors.append("exposure_assertions_not_complete")
+    if not isinstance(manifest["exact_sequence_manifest_available"], bool):
+        errors.append("invalid:exact_sequence_manifest_available")
+    seen = set()
+    if isinstance(exposure, list):
+        row_required = (
+            "accession",
+            "region",
+            "historically_exposed_to_model",
+            "exposure_type",
+            "evidence_grade",
+            "labels_exposed_to_model",
+        )
+        for row in exposure:
+            if not isinstance(row, dict):
+                errors.append("invalid:dataset_exposure_row")
+                continue
+            missing = [key for key in row_required if key not in row]
+            errors.extend(f"dataset_exposure_missing:{key}" for key in missing)
+            if missing:
+                continue
+            key = (str(row["accession"]), str(row["region"]))
+            if key in seen:
+                errors.append(f"duplicate:dataset_exposure:{key[0]}:{key[1]}")
+            seen.add(key)
+    return errors
+
+
+def _normalize_region(region: Any) -> str:
+    return str(region).replace("′", "'").strip()
+
+
+def _foundation_exposure_lookup(
+    manifest: Dict[str, Any],
+) -> Dict[Tuple[str, str], Dict[str, Any]]:
+    return {
+        (str(row["accession"]), _normalize_region(row["region"])): row
+        for row in manifest.get("dataset_exposure", [])
+        if isinstance(row, dict) and "accession" in row and "region" in row
+    }
 
 
 def load_paired_records_by_id(path: str) -> Dict[str, UTREditRecord]:
@@ -427,22 +544,84 @@ def check_foundation_overlap(
     train: List[Dict[str, Any]],
     test: List[Dict[str, Any]],
     records_by_id: Dict[str, UTREditRecord],
+    foundation_manifest: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
-    """Foundation overlap: pending FM0 — no foundation checkpoint selected yet.
+    """Audit test exposure against an explicitly bound FM0 corpus manifest.
 
-    The foundation-overlap channel verifies that test sequences do not appear
-    in the foundation model's pretraining corpus. This requires the FM0
-    foundation checkpoint + its training-data manifest, which is not yet
-    available (FM0 depends on B0-05). The check is stubbed as PENDING_FM0
-    and must be re-run after FM0 completes.
+    The official model card provides documented corpus sources and dataset-level
+    exposure provenance, but not a complete dump of every pretraining sequence.
+    Therefore this audit classifies known source/accession exposure and
+    explicitly records that exact sequence-level overlap is not asserted.
+    Missing or invalid manifest coverage fails closed.
     """
+    if foundation_manifest is None:
+        return {
+            "channel": "foundation",
+            "applicable": False,
+            "status": "PENDING_FM0",
+            "reason": "FM0-bound foundation training-data manifest was not supplied; no exposure claim is made",
+            "n_overlap": None,
+            "pass": True,
+        }
+
+    errors = _foundation_manifest_errors(foundation_manifest)
+    if errors:
+        return {
+            "channel": "foundation",
+            "applicable": True,
+            "status": "FOUNDATION_MANIFEST_INVALID",
+            "reason": "FM0 foundation manifest validation failed",
+            "validation_errors": errors,
+            "manifest_path": foundation_manifest.get("_manifest_path"),
+            "manifest_sha256": foundation_manifest.get("_manifest_sha256"),
+            "n_overlap": None,
+            "pass": False,
+        }
+
+    lookup = _foundation_exposure_lookup(foundation_manifest)
+    missing_records = 0
+    classified = 0
+    known_source_overlap = 0
+    grade_counts: Dict[str, int] = defaultdict(int)
+    for entry in test:
+        record = records_by_id.get(entry.get("record_id"))
+        if record is None:
+            missing_records += 1
+            continue
+        key = (str(record.accession), _normalize_region(record.region))
+        row = lookup.get(key)
+        if row is None:
+            missing_records += 1
+            continue
+        classified += 1
+        grade_counts[str(row["evidence_grade"])] += 1
+        if bool(row["historically_exposed_to_model"]):
+            known_source_overlap += 1
+
     return {
         "channel": "foundation",
-        "applicable": False,
-        "status": "PENDING_FM0",
-        "reason": "foundation model checkpoint + training-data manifest not yet selected (FM0 depends on B0-05); re-run this check after FM0 completes",
-        "n_overlap": 0,
-        "pass": True,  # not a gate at B0-03; gated at FM0
+        "applicable": True,
+        "status": "AUDITED_SOURCE_LEVEL_EXPOSURE",
+        "model_id": foundation_manifest["model_id"],
+        "revision": foundation_manifest["revision"],
+        "manifest_path": foundation_manifest.get("_manifest_path"),
+        "manifest_sha256": foundation_manifest.get("_manifest_sha256"),
+        "n_test_records": len(test),
+        "n_test_records_classified": classified,
+        "n_test_records_unclassified": missing_records,
+        "n_known_source_overlap": known_source_overlap,
+        "n_overlap": None,
+        "evidence_grade_counts": dict(sorted(grade_counts.items())),
+        "exact_sequence_overlap_status": (
+            "NOT_AVAILABLE_NOT_ASSERTED"
+            if not foundation_manifest["exact_sequence_manifest_available"]
+            else "EXACT_SEQUENCE_MANIFEST_BOUND"
+        ),
+        "claim_boundary": (
+            "Known source/accession exposure is classified; exact sequence-level "
+            "overlap is not inferred from the model card."
+        ),
+        "pass": missing_records == 0,
     }
 
 
@@ -476,6 +655,7 @@ def audit_split_leakage(
     split_type: str,
     manifest_path: str,
     records_by_id: Dict[str, UTREditRecord],
+    foundation_manifest: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """Run all overlap checks for one split."""
     entries = load_manifest(manifest_path)
@@ -510,14 +690,17 @@ def audit_split_leakage(
         check_gene_overlap,
         check_context_overlap,
         check_barcode_overlap,
-        check_foundation_overlap,
     ):
         checks.append(check_fn(train, test, records_by_id))
+    foundation_check = check_foundation_overlap(
+        train, test, records_by_id, foundation_manifest
+    )
+    checks.append(foundation_check)
 
     # Hard-gate channels: exact, reverse, intermediate (endpoint-as-train-inter),
     # cluster, and study (only for study_disjoint / cross_region_transfer).
-    # Scaffold is informational. gene/context/barcode/foundation are N/A or
-    # PENDING_FM0.
+    # Scaffold is informational. gene/context/barcode are N/A; foundation is
+    # a bound exposure audit when an FM0 manifest is supplied.
     hard_gate_channels = {"exact", "reverse", "intermediate", "cluster"}
     hard_pass = all(
         c["pass"] for c in checks
@@ -525,6 +708,8 @@ def audit_split_leakage(
     )
     # study hard gate (only where applicable)
     if study_check.get("hard_gate", False) and not study_check["pass"]:
+        hard_pass = False
+    if foundation_manifest is not None and not foundation_check["pass"]:
         hard_pass = False
     # Acceptance: final endpoint as train intermediate = 0
     inter_check = next(c for c in checks if c["channel"] == "intermediate")
@@ -552,8 +737,14 @@ def run_leakage_audit(
     splits_dir: str,
     canonical_records_path: str,
     exposure_ledger_path: str,
+    foundation_manifest_path: Optional[str] = None,
 ) -> Dict[str, Any]:
     splits_dir = Path(splits_dir)
+    foundation_manifest = (
+        load_foundation_manifest(foundation_manifest_path)
+        if foundation_manifest_path
+        else None
+    )
 
     print("Loading canonical records...")
     records_by_id = load_paired_records_by_id(canonical_records_path)
@@ -575,8 +766,11 @@ def run_leakage_audit(
             all_pass = False
             continue
         print(f"\nAuditing {split_type}...")
-        res = audit_split_leakage(split_type, path, records_by_id)
+        res = audit_split_leakage(
+            split_type, path, records_by_id, foundation_manifest
+        )
         split_results[split_type] = res
+        all_pass = all_pass and res["pass"]
         for e in load_manifest(path):
             all_manifest_records.add(e["record_id"])
         status = "PASS" if res["pass"] else "FAIL"
@@ -595,6 +789,21 @@ def run_leakage_audit(
         for r in split_results.values() if "acceptance" in r
     )
     coverage_ok = coverage["pass"]
+    foundation_checks = [
+        check
+        for result in split_results.values()
+        for check in result.get("checks", [])
+        if check.get("channel") == "foundation"
+    ]
+    foundation_bound = bool(foundation_manifest_path)
+    foundation_ok = (
+        foundation_bound
+        and len(foundation_checks) == len(split_results)
+        and all(
+            check.get("applicable") and check.get("pass")
+            for check in foundation_checks
+        )
+    )
 
     return {
         "task": "B0-03",
@@ -604,14 +813,26 @@ def run_leakage_audit(
         "acceptance": {
             "endpoint_as_train_intermediate_must_be_zero": endpoint_zero,
             "exposure_ledger_coverage_must_be_100_percent": coverage_ok,
+            "foundation_overlap_audit_bound": foundation_bound,
+            "foundation_overlap_audit_pass": foundation_ok if foundation_bound else False,
         },
-        "overall_pass": all_pass and endpoint_zero and coverage_ok,
+        "overall_pass": all_pass and endpoint_zero and coverage_ok and (
+            foundation_ok if foundation_bound else True
+        ),
+        "foundation_manifest_binding": {
+            "bound": foundation_bound,
+            "path": foundation_manifest_path,
+            "sha256": foundation_manifest.get("_manifest_sha256") if foundation_manifest else None,
+            "status": "AUDITED" if foundation_ok else (
+                "PENDING_FM0" if not foundation_bound else "FAILED"
+            ),
+        },
         "channels": {
             "hard_gate_always": ["exact", "reverse", "intermediate", "cluster"],
             "hard_gate_conditional": ["study (hard gate for study_disjoint + cross_region_transfer only; informational for *_source_disjoint)"],
             "informational": ["scaffold"],
             "not_applicable": ["gene", "context", "barcode"],
-            "pending": ["foundation (pending FM0)"],
+            "pending": [] if foundation_bound else ["foundation (pending FM0)"],
         },
     }
 
@@ -628,12 +849,18 @@ def main():
         "--exposure-ledger", default="data/data_exposure_ledger.jsonl",
     )
     parser.add_argument(
+        "--foundation-manifest",
+        default=None,
+        help="FM0-bound foundation checkpoint/training-data exposure manifest.",
+    )
+    parser.add_argument(
         "--output", default="data/b0_03_leakage_audit_report.json",
     )
     args = parser.parse_args()
 
     report = run_leakage_audit(
         args.splits_dir, args.canonical_records, args.exposure_ledger,
+        args.foundation_manifest,
     )
 
     out_path = Path(args.output)
