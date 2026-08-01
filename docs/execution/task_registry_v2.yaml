@@ -147,6 +147,10 @@ tasks:
   gate: MB0-Freeze prerequisite
   acceptance:
   - schemas defined and tested
+  commit_sha: 6948565
+  report: Canonical schemas (UTREditRecord, EditScript, EditOp, GenerationTask) defined
+    in d1_staging/scripts/b0/canonical_schemas.py with EVAL_TRACKS + ALLOWED_CLAIMS_POOL
+    constants. Schemas validated against D1 artifacts. Audit report at data/b0_01_audit_report.json.
 - task_id: B0-02
   phase: B0
   status: DONE
