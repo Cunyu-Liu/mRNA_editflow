@@ -174,12 +174,14 @@ tasks:
   acceptance:
   - final endpoint as train intermediate = 0
   - exposure ledger coverage = 100%
-  commit_sha: 6de5f44
+  commit_sha: f4d562d
   report: Comprehensive leakage audit across 4 splits. Hard-gate channels (exact, reverse,
     intermediate, cluster, study) all PASS with 0 overlap. endpoint_as_train_intermediate=0
     for all splits. Exposure ledger coverage=100% (11885/11885). gene/context/barcode
-    N/A (no metadata). foundation PENDING_FM0. Scaffold informational. 28 unit tests
-    pass. Report at data/b0_03_leakage_audit_report.json.
+    N/A (no metadata). Foundation source/accession exposure is audited through the
+    FM0-bound manifest; exact sequence-level overlap is NOT_AVAILABLE_NOT_ASSERTED.
+    Scaffold informational. 30 unit tests pass. Bound report is recorded in the
+    FM0 formal-closure run under /mnt/cunyuliu/mrna_editflow_fm0_runs.
 - task_id: B0-04
   phase: B0
   status: DONE
@@ -215,11 +217,18 @@ tasks:
     data/b0_05_data_card.json.
 - task_id: FM0-01
   phase: FM0
-  status: PENDING
+  status: DONE
   dependencies:
   - B0-05
   description: Foundation model checkpoint + tokenizer + hash/license + GPU loader
     + frozen cache + LoRA + partial unfreeze + from-scratch control + exposure audit
+  commit_sha: f4d562d
+  report: FM0 formal closure verified on GPU with 13 passed, 2 warnings; checkpoint,
+    tokenizer, hash/license, exposure, determinism, input-length, memory/latency,
+    LoRA, partial-unfreeze, from-scratch, and bound B0 foundation exposure audit
+    passed. Frozen cache is an engineering smoke only; exact sequence-level overlap
+    remains explicitly unasserted. Artifact bundle is under
+    /mnt/cunyuliu/mrna_editflow_fm0_runs/FM0_FORMAL_CLOSURE_20260802T022915Z_f4d562d.
   gate: FM0 → MK0 → EF0 mandatory
   acceptance:
   - load test
