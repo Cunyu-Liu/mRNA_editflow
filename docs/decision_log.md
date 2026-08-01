@@ -123,3 +123,45 @@ The following amendments were already recorded in the Goal document and are mirr
 - `utr_editflow_goal_v2.2_b0_frozen_d1_replay_scope` (2026-07-31): B0 path-state scope = frozen D1 canonical edit_script prefixes + declared intermediates; capacity gate removed, zero-leakage gate retained.
 
 Future amendments to `utr_editflow_contract_v2` must be recorded as new `DEC-UTR-EF-V2-YYYYMMDD-*` entries in this log.
+
+
+---
+
+## DEC-UTR-EF-V2-20260801-D0-05-CANDIDATES-AUDIT
+
+- **date:** 2026-08-01
+- **type:** data role audit (Phase D0, task D0-05)
+- **approved_by_user:** yes (user instruction 2026-08-01: execute D0-05 current candidates audit)
+
+### Summary
+
+Audited all 9 candidate datasets in `data_registry/intervention_candidates.yaml` and assigned v2-compliant roles (D_A-D_E) and evidence grades (E0-E6) with explicit allowed/forbidden claims.
+
+### Key changes
+
+1. **Grade scheme migration:** v1 `A1/A2/B1/B2` -> v2 `E0-E6` for all 9 datasets
+2. **Role scheme migration:** v1 descriptive roles -> v2 contract-defined data roles (D_A-D_E)
+3. **GSE246381 scope fix:** `sealed_external_test` (A1) -> `D_E` (E4, historically_exposed). v2 section 2 forbids "sealed/untouched/never-seen" wording.
+4. **GSE207584 CDS scope fix:** `codon_benchmark` (B1) -> `D_A` (E2, observational only). v2 section 4.2: CDS out of scope.
+5. **GSE173083 full-length scope fix:** `full_length_transfer_benchmark` (B2) -> `D_A` (E2, observational only). v2 section 4.2: full-length out of scope.
+6. **ENCSR854RUF dual-role clarification:** processed table = D_C (E2); raw reads = D_A (E1). Raw reads cannot provide causal labels.
+7. **Size promotion prevention:** GSE145046 (>1M variants) stays D_D not D_C; ENCSR854RUF raw (~357GB) stays D_A not D_C; GSE207584 (1395 CDS) stays D_A not D_C.
+
+### Acceptance
+
+| criterion | status |
+|---|---|
+| each dataset has allowed/forbidden claim | PASS (9/9) |
+| no dataset auto-promoted by size | PASS (4 anti-promotion checks) |
+
+### Artifacts
+
+- `docs/data/d0_05_dataset_role_table.yaml` (structured role table)
+- `docs/data/d0_05_current_candidates_audit.md` (human-readable audit report)
+- `data_registry/intervention_candidates.yaml` (updated with v2 fields)
+
+### Affected downstream tasks
+
+- D1-01 (canonical records) unblocked
+- D1-02 (exposure ledger) unblocked
+- B0-01 (generative UTR benchmark construction) unblocked

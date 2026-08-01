@@ -1,0 +1,315 @@
+# D0-05 Per-Dataset Role Table — utr_editflow_contract_v2
+#
+# Audit date: 2026-08-01
+# Task: D0-05 (Phase D0)
+# Contract: utr_editflow_contract_v2 (FROZEN)
+# Decision: docs/decision_log.md -> DEC-UTR-EF-V2-20260801-D0-05-CANDIDATES-AUDIT
+#
+# Acceptance criteria:
+#   1. each dataset has allowed/forbidden claim
+#   2. no dataset auto-promoted by size
+#
+# v2 data roles (contract §7):
+#   D_A: unlabeled/observational UTR corpus — foundation, generative prior, denoising
+#   D_B: absolute-property measured sequences — conditional property, auxiliary predictor
+#   D_C: source-matched measured interventions — primary supervised data
+#   D_D: dense measured landscape — multi-step generation, dense pretraining
+#   D_E: external independent — cross-study/context transfer evaluation
+#
+# v2 evidence grades (contract §5):
+#   E0: engineering | E1: internal computational | E2: retrospective measured
+#   E3: cross-study/context | E4: historically-exposed external
+#   E5: untouched external | E6: prospective experimental (NOT in scope)
+
+audit_metadata:
+  audit_id: D0-05-20260801
+  task_id: D0-05
+  contract_id: utr_editflow_contract_v2
+  audit_date_utc: "2026-08-01T12:00:00Z"
+  auditor: assistant
+  approved_by_user: true
+  git_commit_at_start: 1d91ed1
+  total_datasets: 9
+  acceptance:
+    - criterion: "each dataset has allowed/forbidden claim"
+      status: PASS
+      check: "all 9 datasets have non-empty allowed_claims and forbidden_claims lists"
+    - criterion: "no dataset auto-promoted by size"
+      status: PASS
+      check: "GSE145046 (>1M variants) stays D_D not D_C; GSE207584/GSE173083 stay D_A not promoted by CDS/full-length size"
+
+datasets:
+
+  # =====================================================================
+  # 1. Sample et al. 2019 — GSE114002 (5'UTR)
+  # =====================================================================
+  - candidate_id: editbench_5u_natural_sample2019
+    accession: GSE114002
+    paper: "Sample et al. 2019, Human 5' UTR design and variant effect prediction from a massively parallel translation assay (Nat Biotechnol)"
+    region: 5'UTR
+    endpoint: mean_ribosome_loading
+    variant_count: "3577 natural variants (of 280k random + 35,212 truncated human 5'UTR library)"
+    v2_role: D_C
+    v2_role_definition: "source-matched measured interventions — primary supervised data for edit-effect and generative grounding"
+    v2_evidence_grade: E2
+    v2_evidence_grade_definition: "retrospective measured (public MPRA data)"
+    v1_role: primary_benchmark_component
+    v1_grade: A1
+    role_change_reason: "v2 contract replaces v1 A/B grade scheme with E0-E6; source-matched 5'UTR WT-mutant MPRA with MRL endpoint maps to D_C (primary supervised) at E2 (retrospective measured)"
+    allowed_claims:
+      - "5'UTR edit-effect on mean ribosome loading (retrospective, E2)"
+      - "source-conditioned generative edit-trajectory learning on 5'UTR (internal, E1)"
+      - "MRL prediction as auxiliary critic signal (internal proxy, E1)"
+    forbidden_claims:
+      - "generated candidates improve real therapeutic mRNA efficacy (E6 not in scope)"
+      - "MRL equals protein output"
+      - "retrospective MRL improvement implies prospective improvement"
+      - "the first source-conditioned Edit Flow for 5'UTR"
+    size_note: "3577 natural variants — sufficient for D_C supervised grounding; not promoted to D_D (dense landscape) because variant count is moderate, not exhaustive dense tiling"
+
+  # =====================================================================
+  # 2. PLUMAGE — GSE149487 (5'UTR)
+  # =====================================================================
+  - candidate_id: editbench_5u_natural_plumage
+    accession: GSE149487
+    paper: "PLUMAGE study, prostate cancer 5'UTR somatic mutation paired WT-mutant assay"
+    region: 5'UTR
+    endpoint: "transcript_abundance; translation_efficiency"
+    variant_count: "545 somatic mutations / 914 synthetic full-length 5'UTR sequences (WT+mutant)"
+    v2_role: D_C
+    v2_role_definition: "source-matched measured interventions — primary supervised data for edit-effect and generative grounding"
+    v2_evidence_grade: E2
+    v2_evidence_grade_definition: "retrospective measured (public MPRA data)"
+    v1_role: primary_benchmark_component
+    v1_grade: A1
+    role_change_reason: "v2 contract replaces v1 grade scheme; paired WT-mutant 5'UTR with TE/transcript abundance maps to D_C at E2"
+    allowed_claims:
+      - "5'UTR edit-effect on translation efficiency and transcript abundance (retrospective, E2)"
+      - "somatic mutation edit-trajectory learning on 5'UTR (internal, E1)"
+      - "TE prediction as auxiliary critic signal (internal proxy, E1)"
+    forbidden_claims:
+      - "generated candidates improve real therapeutic mRNA efficacy (E6 not in scope)"
+      - "TE equals protein output"
+      - "retrospective TE improvement implies prospective improvement"
+      - "prostate cancer therapeutic efficacy claim"
+    size_note: "545 somatic mutations — small but source-matched; not promoted to D_D because variant count is low and not a dense landscape"
+
+  # =====================================================================
+  # 3. NDD — GSE246381 (5'UTR) — HISTORICALLY EXPOSED
+  # =====================================================================
+  - candidate_id: editbench_5u_natural_ndd
+    accession: GSE246381
+    paper: "Neurodevelopmental disorder 5'UTR mutation MPRA (HEK reporter + in vivo neuronal MPRA), 2025"
+    region: 5'UTR
+    endpoint: "transcript_abundance; 80S_monosome_polysome"
+    variant_count: "997 NDD family 5'UTR mutations (6 biological replicates)"
+    v2_role: D_E
+    v2_role_definition: "external independent — cross-study/context transfer evaluation"
+    v2_evidence_grade: E4
+    v2_evidence_grade_definition: "historically-exposed external (labels were read by prior v1 workflow; cannot serve as untouched external test)"
+    v1_role: sealed_external_test
+    v1_grade: A1
+    role_change_reason: "v2 contract §2: GSE246381 is historically_exposed (E4), NOT sealed/untouched. Labels were read by the v1 predictor-first workflow during benchmark construction. Forbidden wording: 'sealed', 'untouched', 'never-seen external test'. Demoted from 'sealed external test' to 'historically-exposed external transfer evaluation'."
+    allowed_claims:
+      - "cross-study 5'UTR transfer evaluation (historically exposed, E4)"
+      - "5'UTR edit-trajectory transfer from GSE114002/GSE149487 to GSE246381 (internal, E1)"
+      - "NDD mutation spectrum analysis as retrospective context (E4)"
+    forbidden_claims:
+      - "GSE246381 is sealed/untouched/never-seen external test (FORBIDDEN by v2 §2)"
+      - "using GSE246381 labels for new training or new hyperparameter selection (FORBIDDEN by v2 §2)"
+      - "generated candidates improve NDD therapeutic outcomes (E6 not in scope)"
+      - "GSE246381 provides untouched independent validation (it does NOT — it is E4)"
+    size_note: "997 NDD mutations — sufficient for transfer evaluation; role is D_E regardless of size because historical exposure is fixed by v2 §2, not by data volume"
+
+  # =====================================================================
+  # 4. Dense library — GSE145046 (5'UTR) — DENSE LANDSCAPE
+  # =====================================================================
+  - candidate_id: editbench_5u_dense_gse145046
+    accession: GSE145046
+    paper: "Dense 5'UTR randomized library MPRA (>1M variants, 10-nt randomized on fixed scaffold)"
+    region: 5'UTR
+    endpoint: "ribosome_free_monosome_polysome; fluorescence; in_cell_half_life; in_vitro_half_life"
+    variant_count: ">1,000,000 designed 10-nt randomized variants on fixed scaffold"
+    v2_role: D_D
+    v2_role_definition: "dense measured landscape — multi-step generation, dense pretraining"
+    v2_evidence_grade: E2
+    v2_evidence_grade_definition: "retrospective measured (public MPRA data)"
+    v1_role: large_scale_pretraining
+    v1_grade: A2
+    role_change_reason: "v2 contract: dense randomized library with >1M variants and multiple endpoints maps to D_D (dense measured landscape). NOT promoted to D_C (primary supervised) despite size — D_D is the correct role because the variants are randomized on a fixed scaffold, not source-matched natural interventions."
+    allowed_claims:
+      - "dense 5'UTR landscape pretraining for generative prior (retrospective, E2)"
+      - "multi-step edit-trajectory learning on dense 5'UTR space (internal, E1)"
+      - "5'UTR sequence-function landscape modeling as foundation (E2)"
+    forbidden_claims:
+      - "dense library results imply natural source-matched edit-effect (scaffold bias)"
+      - "generated candidates improve real therapeutic mRNA efficacy (E6 not in scope)"
+      - "promoted to primary supervised role by size alone (FORBIDDEN — D_D not D_C)"
+    size_note: ">1,000,000 variants — largest dataset; explicitly NOT promoted from D_D to D_C by size. Size qualifies for dense landscape (D_D) but does not change the role from landscape to source-matched intervention (D_C)."
+
+  # =====================================================================
+  # 5. GSE217518 (3'UTR)
+  # =====================================================================
+  - candidate_id: editbench_3u_gse217518
+    accession: GSE217518
+    paper: "3'UTR disease-relevant variant MPRA (decay constant / half-life)"
+    region: 3'UTR
+    endpoint: "decay_constant; half_life"
+    variant_count: "6555 disease-relevant UTR variants (WT+mutant allele)"
+    v2_role: D_C
+    v2_role_definition: "source-matched measured interventions — primary supervised data for 3'UTR edit-effect"
+    v2_evidence_grade: E2
+    v2_evidence_grade_definition: "retrospective measured (public MPRA data)"
+    v1_role: cross_region_benchmark
+    v1_grade: A1
+    role_change_reason: "v2 contract: paired WT-mutant 3'UTR with decay/half-life endpoint maps to D_C (primary supervised for 3'UTR) at E2. Renamed from 'cross_region_benchmark' to D_C because in v2 the 3'UTR is a primary scope region, not a 'cross-region' add-on."
+    allowed_claims:
+      - "3'UTR edit-effect on decay constant and half-life (retrospective, E2)"
+      - "source-conditioned 3'UTR edit-trajectory learning (internal, E1)"
+      - "3'UTR stability prediction as auxiliary critic signal (internal proxy, E1)"
+    forbidden_claims:
+      - "generated candidates improve real therapeutic mRNA stability (E6 not in scope)"
+      - "half-life equals therapeutic efficacy"
+      - "retrospective stability improvement implies prospective improvement"
+    size_note: "6555 variants — sufficient for D_C supervised grounding; not promoted to D_D because variant density is moderate, not exhaustive dense tiling"
+
+  # =====================================================================
+  # 6. GSE200304 (3'UTR)
+  # =====================================================================
+  - candidate_id: editbench_3u_gse200304
+    accession: GSE200304
+    paper: "3'UTR patient mutation MPRA (TE / steady-state RNA / mRNA stability)"
+    region: 3'UTR
+    endpoint: "translation_efficiency; steady_state_rna; mrna_stability"
+    variant_count: "6892 patient mutations (6892 WT/mutant 201-nt pairs)"
+    v2_role: D_C
+    v2_role_definition: "source-matched measured interventions — primary supervised data for 3'UTR edit-effect"
+    v2_evidence_grade: E2
+    v2_evidence_grade_definition: "retrospective measured (public MPRA data)"
+    v1_role: cross_region_benchmark
+    v1_grade: A1
+    role_change_reason: "v2 contract: paired WT-mutant 3'UTR with TE/RNA/stability endpoints maps to D_C (primary supervised for 3'UTR) at E2. Renamed from 'cross_region_benchmark' to D_C."
+    allowed_claims:
+      - "3'UTR edit-effect on TE, steady-state RNA, and stability (retrospective, E2)"
+      - "patient mutation edit-trajectory learning on 3'UTR (internal, E1)"
+      - "3'UTR stability/TE prediction as auxiliary critic signal (internal proxy, E1)"
+    forbidden_claims:
+      - "generated candidates improve real therapeutic mRNA efficacy (E6 not in scope)"
+      - "TE/stability equals protein output"
+      - "retrospective improvement implies prospective improvement"
+      - "patient disease therapeutic efficacy claim"
+    size_note: "6892 patient mutations — sufficient for D_C supervised grounding; not promoted to D_D because variant density is moderate"
+
+  # =====================================================================
+  # 7. MPRAu — ENCSR854RUF (3'UTR) — DUAL ROLE
+  # =====================================================================
+  - candidate_id: editbench_3u_mprau
+    accession: ENCSR854RUF
+    paper: "MPRAu 3'UTR variant MPRA (ENCODE, allele-specific RNA abundance, 6 cell lines)"
+    region: 3'UTR
+    endpoint: allele_specific_rna_abundance
+    variant_count: "12173 3'UTR variants (6 cell lines)"
+    v2_role:
+      processed_table: D_C
+      raw_reads: D_A
+    v2_role_definition:
+      processed_table: "source-matched measured interventions — primary supervised data for 3'UTR edit-effect"
+      raw_reads: "unlabeled/observational corpus — foundation representation, generative prior only"
+    v2_evidence_grade:
+      processed_table: E2
+      raw_reads: E1
+    v2_evidence_grade_definition:
+      processed_table: "retrospective measured (public MPRA processed table)"
+      raw_reads: "internal computational (raw fastq used as observational pretraining only, no causal labels extractable)"
+    v1_role: cross_region_benchmark
+    v1_grade: A1
+    role_change_reason: "v2 contract: processed MPRAu table (12173 3'UTR variants) maps to D_C at E2. Raw reads (62 fastq.gz, ~357GB) are DUAL-ROLE: they provide observational pretraining (D_A, E1) but CANNOT provide wt-mutant causal labels, multi-step real trajectories, or prospective improvement. The raw reads download status was corrected from 'deferred' to 'COMPLETE' in DEC-UTR-EF-V2-20260801-ENCODE-STATUS-CORRECTION, but this only fixes the download record — it does NOT promote raw reads to a higher evidence grade."
+    allowed_claims:
+      - "3'UTR edit-effect on allele-specific RNA abundance from processed table (retrospective, E2)"
+      - "observational pretraining from raw reads for foundation model (internal, E1)"
+      - "6-cell-line context conditioning for 3'UTR (internal, E1)"
+    forbidden_claims:
+      - "extracting wt-mutant causal labels from raw reads (FORBIDDEN — raw reads are D_A observational only)"
+      - "raw reads provide multi-step real edit trajectories (they do NOT)"
+      - "raw reads provide prospective improvement evidence (they do NOT — E1 internal only)"
+      - "generated candidates improve real therapeutic mRNA efficacy (E6 not in scope)"
+    size_note: "12173 variants (processed) + 62 fastq.gz raw reads (~357GB). The large raw-read volume does NOT promote raw reads from D_A to D_C — raw reads remain observational pretraining (D_A, E1) regardless of file size. The processed table is D_C (E2) based on its content (paired variant measurements), not its size."
+
+  # =====================================================================
+  # 8. iCodon — GSE207584 (CDS) — OUT OF SCOPE, DOWNGRADED
+  # =====================================================================
+  - candidate_id: editbench_cds_icodon
+    accession: GSE207584
+    paper: "iCodon synonymous CDS library MPRA (mRNA decay at 2h/5h/8h)"
+    region: CDS
+    endpoint: mrna_decay_2h_5h_8h
+    variant_count: "1395 synthesized synonymous CDS (955 perfect; 100 proteins x 16 designs)"
+    v2_role: D_A
+    v2_role_definition: "unlabeled/observational corpus — foundation representation only. CDS region is OUT OF SCOPE for v2 primary benchmark (v2 §4.2)."
+    v2_evidence_grade: E2
+    v2_evidence_grade_definition: "retrospective measured (public MPRA data, used as observational pretraining only)"
+    v1_role: codon_benchmark
+    v1_grade: B1
+    role_change_reason: "v2 contract §4.2: CDS synonymous generation is OUT OF SCOPE. Downgraded from 'codon_benchmark' (v1 B1) to D_A (observational pretraining only). The data is still downloaded and may be used for foundation model pretraining, but it CANNOT serve as a v2 primary benchmark component, cannot validate CDS edit-effect claims, and cannot be promoted by its variant count."
+    allowed_claims:
+      - "observational CDS pretraining for foundation model (retrospective, E2, used as D_A)"
+      - "codon-level sequence representation learning (internal, E1)"
+    forbidden_claims:
+      - "CDS synonymous edit-effect benchmark (FORBIDDEN by v2 §4.2 — CDS out of scope)"
+      - "CDS grammar validation (FORBIDDEN — out of scope)"
+      - "CDS edit-trajectory generation (FORBIDDEN — out of scope)"
+      - "promoted to primary benchmark by variant count (FORBIDDEN — size does not override scope)"
+      - "generated CDS candidates improve therapeutic mRNA efficacy (E6 not in scope + CDS out of scope)"
+    size_note: "1395 synonymous CDS — moderate size; explicitly NOT promoted to D_C or D_D by size. CDS is out of scope (v2 §4.2), so the dataset is capped at D_A regardless of variant count or data quality."
+
+  # =====================================================================
+  # 9. PERSIST-seq — GSE173083 (full-length) — OUT OF SCOPE, DOWNGRADED
+  # =====================================================================
+  - candidate_id: editbench_cds_persistseq
+    accession: GSE173083
+    paper: "PERSIST-seq full-length mRNA MPRA (ribosome load / in-cell stability / in-solution stability)"
+    region: full_length
+    endpoint: "ribosome_load; in_cell_stability; in_solution_stability"
+    variant_count: "233 full-length mRNA constructs (24 CDS designs)"
+    v2_role: D_A
+    v2_role_definition: "unlabeled/observational corpus — foundation representation only. Full-length mRNA is OUT OF SCOPE for v2 primary benchmark (v2 §4.2)."
+    v2_evidence_grade: E2
+    v2_evidence_grade_definition: "retrospective measured (public MPRA data, used as observational pretraining only)"
+    v1_role: full_length_transfer_benchmark
+    v1_grade: B2
+    role_change_reason: "v2 contract §4.2: full-length mRNA joint optimization is OUT OF SCOPE. Downgraded from 'full_length_transfer_benchmark' (v1 B2) to D_A (observational pretraining only). The data may be used for foundation model pretraining, but it CANNOT serve as a v2 primary benchmark component, cannot validate full-length edit-effect claims, and cannot be promoted by its construct count."
+    allowed_claims:
+      - "observational full-length mRNA pretraining for foundation model (retrospective, E2, used as D_A)"
+      - "full-length sequence representation learning (internal, E1)"
+    forbidden_claims:
+      - "full-length mRNA edit-effect benchmark (FORBIDDEN by v2 §4.2 — full-length out of scope)"
+      - "full-length mRNA joint optimization (FORBIDDEN — out of scope)"
+      - "cross-region full-transcript synergy (FORBIDDEN by v2 §4.2 — out of scope)"
+      - "promoted to primary benchmark by construct quality (FORBIDDEN — scope overrides quality)"
+      - "generated full-length candidates improve therapeutic mRNA efficacy (E6 not in scope + full-length out of scope)"
+    size_note: "233 full-length constructs — small dataset; explicitly NOT promoted to D_C or D_D. Full-length is out of scope (v2 §4.2), so the dataset is capped at D_A regardless of construct count or data quality."
+
+# =============================================================================
+# Summary statistics
+# =============================================================================
+summary:
+  total_datasets: 9
+  by_v2_role:
+    D_A: 3  # GSE207584, GSE173083, ENCSR854RUF(raw_reads only)
+    D_C: 6  # GSE114002, GSE149487, GSE217518, GSE200304, ENCSR854RUF(processed), (GSE145046 is D_D)
+    D_D: 1  # GSE145046
+    D_E: 1  # GSE246381
+    D_B: 0  # no absolute-property-only dataset in current candidates
+  by_v2_evidence_grade:
+    E1: 1  # ENCSR854RUF raw_reads (observational pretraining)
+    E2: 9  # all datasets have retrospective measured data
+    E4: 1  # GSE246381 (historically exposed)
+    E6: 0  # not in scope
+  scope_violations_fixed:
+    - "GSE246381: sealed_external_test -> D_E (E4) [v2 §2 historically_exposed]"
+    - "GSE207584: codon_benchmark -> D_A [v2 §4.2 CDS out-of-scope]"
+    - "GSE173083: full_length_transfer_benchmark -> D_A [v2 §4.2 full-length out-of-scope]"
+  size_promotion_prevented:
+    - "GSE145046 (>1M variants): D_D not D_C [size does not override role definition]"
+    - "ENCSR854RUF raw_reads (~357GB): D_A not D_C [file size does not promote observational to supervised]"
+    - "GSE207584 (1395 CDS): D_A not D_C [scope overrides size]"

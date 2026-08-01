@@ -1,4 +1,4 @@
-registry_version: 1.0.0
+registry_version: 2.0.0
 contract_id: utr_editflow_contract_v2
 generated_by: scripts/data/systematic_search.py
 generated_at_utc: '2026-07-28T03:57:08+00:00'
@@ -42,6 +42,19 @@ candidates:
       uid: '200114002'
       gse_type: ''
     title_keyword_match: true
+  v1_role: primary_benchmark_component
+  v1_grade: A1
+  v2_role: D_C
+  v2_evidence_grade: E2
+  allowed_claims:
+  - 5'UTR edit-effect on mean ribosome loading (retrospective, E2)
+  - source-conditioned generative edit-trajectory learning on 5'UTR (internal, E1)
+  - MRL prediction as auxiliary critic signal (internal proxy, E1)
+  forbidden_claims:
+  - generated candidates improve real therapeutic mRNA efficacy (E6 not in scope)
+  - MRL equals protein output
+  - retrospective MRL improvement implies prospective improvement
+  - the first source-conditioned Edit Flow for 5'UTR
 - candidate_id: editbench_5u_natural_plumage
   paper: PLUMAGE study, prostate cancer 5'UTR somatic mutation paired WT-mutant assay
   accession: GSE149487
@@ -74,6 +87,20 @@ candidates:
     - error: 'URLError: <urlopen error [Errno 111] Connection refused>'
     figshare_top3:
     - error: 'HTTPError: HTTP Error 403: Forbidden'
+  v1_role: primary_benchmark_component
+  v1_grade: A1
+  v2_role: D_C
+  v2_evidence_grade: E2
+  allowed_claims:
+  - 5'UTR edit-effect on translation efficiency and transcript abundance (retrospective,
+    E2)
+  - somatic mutation edit-trajectory learning on 5'UTR (internal, E1)
+  - TE prediction as auxiliary critic signal (internal proxy, E1)
+  forbidden_claims:
+  - generated candidates improve real therapeutic mRNA efficacy (E6 not in scope)
+  - TE equals protein output
+  - retrospective TE improvement implies prospective improvement
+  - prostate cancer therapeutic efficacy claim
 - candidate_id: editbench_5u_natural_ndd
   paper: Neurodevelopmental disorder 5'UTR mutation MPRA (HEK reporter + in vivo neuronal
     MPRA), 2025
@@ -87,7 +114,7 @@ candidates:
   license: GEO public access; per-series terms
   evidence_grade: A1
   sub_benchmark: EditBench-5U-Natural
-  role: sealed_external_test
+  role: historically_exposed_external_D_E
   verification:
     checked_at_utc: '2026-07-28T03:57:08+00:00'
     offline: false
@@ -102,6 +129,23 @@ candidates:
       uid: '200246381'
       gse_type: ''
     title_keyword_match: true
+  v1_role: sealed_external_test
+  v1_grade: A1
+  v2_role: D_E
+  v2_evidence_grade: E4
+  allowed_claims:
+  - cross-study 5'UTR transfer evaluation (historically exposed, E4)
+  - 5'UTR edit-trajectory transfer from GSE114002/GSE149487 to GSE246381 (internal,
+    E1)
+  - NDD mutation spectrum analysis as retrospective context (E4)
+  forbidden_claims:
+  - GSE246381 is sealed/untouched/never-seen external test (FORBIDDEN by v2 section
+    2)
+  - using GSE246381 labels for new training or new hyperparameter selection (FORBIDDEN
+    by v2 section 2)
+  - generated candidates improve NDD therapeutic outcomes (E6 not in scope)
+  - GSE246381 provides untouched independent validation (it does NOT -- it is E4)
+  v1_role_original: sealed_external_test
 - candidate_id: editbench_5u_dense_gse145046
   paper: Decoding mRNA translatability and stability from 5' UTR (>1M synthetic mRNA
     library)
@@ -129,6 +173,18 @@ candidates:
       uid: '200145046'
       gse_type: ''
     title_keyword_match: true
+  v1_role: large_scale_pretraining
+  v1_grade: A2
+  v2_role: D_D
+  v2_evidence_grade: E2
+  allowed_claims:
+  - dense 5'UTR landscape pretraining for generative prior (retrospective, E2)
+  - multi-step edit-trajectory learning on dense 5'UTR space (internal, E1)
+  - 5'UTR sequence-function landscape modeling as foundation (E2)
+  forbidden_claims:
+  - dense library results imply natural source-matched edit-effect (scaffold bias)
+  - generated candidates improve real therapeutic mRNA efficacy (E6 not in scope)
+  - promoted to primary supervised role by size alone (FORBIDDEN -- D_D not D_C)
 - candidate_id: editbench_3u_gse217518
   paper: Disease-relevant 3'UTR variant stability time-course (HEK293T + SH-SY5Y)
   accession: GSE217518
@@ -156,6 +212,18 @@ candidates:
       uid: '200217518'
       gse_type: ''
     title_keyword_match: true
+  v1_role: cross_region_benchmark
+  v1_grade: A1
+  v2_role: D_C
+  v2_evidence_grade: E2
+  allowed_claims:
+  - 3'UTR edit-effect on decay constant and half-life (retrospective, E2)
+  - source-conditioned 3'UTR edit-trajectory learning (internal, E1)
+  - 3'UTR stability prediction as auxiliary critic signal (internal proxy, E1)
+  forbidden_claims:
+  - generated candidates improve real therapeutic mRNA stability (E6 not in scope)
+  - half-life equals therapeutic efficacy
+  - retrospective stability improvement implies prospective improvement
 - candidate_id: editbench_3u_gse200304
   paper: Prostate cancer 3'UTR MPRA (patient mutations, 201-nt WT/mutant pairs)
   accession: GSE200304
@@ -183,6 +251,19 @@ candidates:
       uid: '200200304'
       gse_type: ''
     title_keyword_match: true
+  v1_role: cross_region_benchmark
+  v1_grade: A1
+  v2_role: D_C
+  v2_evidence_grade: E2
+  allowed_claims:
+  - 3'UTR edit-effect on TE, steady-state RNA, and stability (retrospective, E2)
+  - patient mutation edit-trajectory learning on 3'UTR (internal, E1)
+  - 3'UTR stability/TE prediction as auxiliary critic signal (internal proxy, E1)
+  forbidden_claims:
+  - generated candidates improve real therapeutic mRNA efficacy (E6 not in scope)
+  - TE/stability equals protein output
+  - retrospective improvement implies prospective improvement
+  - patient disease therapeutic efficacy claim
 - candidate_id: editbench_3u_mprau
   paper: 'MPRAu: 3''UTR variant allele-specific abundance across 6 human cell lines'
   accession: ENCSR854RUF
@@ -209,6 +290,26 @@ candidates:
     - error: 'URLError: <urlopen error [Errno 111] Connection refused>'
     figshare_top3:
     - error: 'HTTPError: HTTP Error 403: Forbidden'
+  v1_role: cross_region_benchmark
+  v1_grade: A1
+  v2_role:
+    processed_table: D_C
+    raw_reads: D_A
+  v2_evidence_grade:
+    processed_table: E2
+    raw_reads: E1
+  allowed_claims:
+  - 3'UTR edit-effect on allele-specific RNA abundance from processed table (retrospective,
+    E2)
+  - observational pretraining from raw reads for foundation model (internal, E1)
+  - 6-cell-line context conditioning for 3'UTR (internal, E1)
+  forbidden_claims:
+  - extracting wt-mutant causal labels from raw reads (FORBIDDEN -- raw reads are
+    D_A observational only)
+  - raw reads provide multi-step real edit trajectories (they do NOT)
+  - raw reads provide prospective improvement evidence (they do NOT -- E1 internal
+    only)
+  - generated candidates improve real therapeutic mRNA efficacy (E6 not in scope)
 - candidate_id: editbench_cds_icodon
   paper: iCodon synonymous CDS reporter library (zebrafish embryo mRNA decay)
   accession: GSE207584
@@ -221,7 +322,7 @@ candidates:
   license: GEO public access; per-series terms
   evidence_grade: B1
   sub_benchmark: EditBench-CDS-Synonymous
-  role: codon_benchmark
+  role: observational_pretraining_only_D_A
   verification:
     checked_at_utc: '2026-07-28T03:57:08+00:00'
     offline: false
@@ -239,6 +340,24 @@ candidates:
     - error: 'URLError: <urlopen error [Errno 111] Connection refused>'
     figshare_top3:
     - error: 'HTTPError: HTTP Error 403: Forbidden'
+  v1_role: codon_benchmark
+  v1_grade: B1
+  v2_role: D_A
+  v2_evidence_grade: E2
+  allowed_claims:
+  - observational CDS pretraining for foundation model (retrospective, E2, used as
+    D_A)
+  - codon-level sequence representation learning (internal, E1)
+  forbidden_claims:
+  - CDS synonymous edit-effect benchmark (FORBIDDEN by v2 section 4.2 -- CDS out of
+    scope)
+  - CDS grammar validation (FORBIDDEN -- out of scope)
+  - CDS edit-trajectory generation (FORBIDDEN -- out of scope)
+  - promoted to primary benchmark by variant count (FORBIDDEN -- size does not override
+    scope)
+  - generated CDS candidates improve therapeutic mRNA efficacy (E6 not in scope +
+    CDS out of scope)
+  v1_role_original: codon_benchmark
 - candidate_id: editbench_cds_persistseq
   paper: Leppek et al. 2022, Combinatorial optimization of mRNA structure, stability,
     and translation (PERSIST-seq)
@@ -252,7 +371,7 @@ candidates:
   license: GEO public access; per-series terms
   evidence_grade: B2
   sub_benchmark: EditBench-CDS-Synonymous
-  role: full_length_transfer_benchmark
+  role: observational_pretraining_only_D_A
   verification:
     checked_at_utc: '2026-07-28T03:57:08+00:00'
     offline: false
@@ -267,3 +386,23 @@ candidates:
       uid: '200173083'
       gse_type: ''
     title_keyword_match: true
+  v1_role: full_length_transfer_benchmark
+  v1_grade: B2
+  v2_role: D_A
+  v2_evidence_grade: E2
+  allowed_claims:
+  - observational full-length mRNA pretraining for foundation model (retrospective,
+    E2, used as D_A)
+  - full-length sequence representation learning (internal, E1)
+  forbidden_claims:
+  - full-length mRNA edit-effect benchmark (FORBIDDEN by v2 section 4.2 -- full-length
+    out of scope)
+  - full-length mRNA joint optimization (FORBIDDEN -- out of scope)
+  - cross-region full-transcript synergy (FORBIDDEN by v2 section 4.2 -- out of scope)
+  - promoted to primary benchmark by construct quality (FORBIDDEN -- scope overrides
+    quality)
+  - generated full-length candidates improve therapeutic mRNA efficacy (E6 not in
+    scope + full-length out of scope)
+  v1_role_original: full_length_transfer_benchmark
+d0_05_audit_date_utc: '2026-08-01T12:00:00Z'
+d0_05_audit_artifact: docs/data/d0_05_dataset_role_table.yaml

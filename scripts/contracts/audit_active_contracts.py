@@ -44,6 +44,9 @@ ALLOWED_TO_REFERENCE_V1_OR_FORBIDDEN = {
     "docs/execution/task_registry_v2.yaml",
     "docs/decision_log.md",
     "docs/contracts/v2_contract_conflict_matrix.md",
+    "docs/data/d0_05_dataset_role_table.yaml",
+    "docs/data/d0_05_current_candidates_audit.md",
+    "data_registry/intervention_candidates.yaml",
     "README.md",
     # Audit + test files — they check for forbidden terms by name
     "scripts/contracts/audit_active_contracts.py",
