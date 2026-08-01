@@ -1,0 +1,122 @@
+{
+  "task_id": "B0-01",
+  "phase": "B0",
+  "status": "DONE",
+  "acceptance_criteria": "schemas defined and tested",
+  "acceptance_met": true,
+  "contract": "utr_editflow_contract_v2",
+  "git_branch": "phase2-reliable-local-delta-20260727",
+  "schemas": {
+    "utr_edit_record": {
+      "dataclass": "UTREditRecord",
+      "module": "d1_staging/scripts/b0/canonical_schemas.py",
+      "fields": [
+        "record_id", "dataset", "accession", "region",
+        "source_sequence", "candidate_sequence", "edit_script",
+        "labels", "metadata"
+      ],
+      "record_types": ["paired", "observational", "incomplete"],
+      "regions": ["5'UTR", "3'UTR", "CDS", "full-length"],
+      "frozen": true,
+      "round_trip_with_d1_flat_form": true,
+      "backward_compat": "infers record_type when missing (legacy D1 paired records); normalizes 'full_length' -> 'full-length'"
+    },
+    "edit_script": {
+      "dataclass": "EditScript",
+      "module": "d1_staging/scripts/b0/canonical_schemas.py",
+      "fields": [
+        "ops", "verified", "edit_distance",
+        "n_ins", "n_del", "n_sub", "path_ambiguity"
+      ],
+      "op_types": ["INS", "DEL", "SUB", "STOP"],
+      "stop_policy": "STOP reserved for generation; rejected in canonical edit scripts",
+      "frozen": true,
+      "invariants_enforced": [
+        "no STOP in canonical edit scripts",
+        "n_ins/n_del/n_sub counts match ops",
+        "edit_distance == n_ins + n_del + n_sub",
+        "path_ambiguity >= 1"
+      ]
+    },
+    "generation_task": {
+      "dataclass": "GenerationTask",
+      "module": "d1_staging/scripts/b0/canonical_schemas.py",
+      "fields": [
+        "task_id", "record_id", "track", "region", "edit_budget",
+        "target_endpoint", "target_direction", "target_quantile",
+        "max_length", "min_length", "must_preserve_motifs",
+        "allowed_claims", "forbidden_claims", "notes"
+      ],
+      "tracks": [
+        "closed_measured_pool",
+        "heldout_generative",
+        "open_legal_generation"
+      ],
+      "edit_budget_values": [0, 1, 3, 5],
+      "region_restriction": "only 5'UTR and 3'UTR (CDS/full-length not editable)",
+      "frozen": true
+    }
+  },
+  "tests": {
+    "test_file": "d1_staging/tests/test_b0_canonical_schemas.py",
+    "n_tests": 72,
+    "n_passed": 72,
+    "n_failed": 0,
+    "coverage": [
+      "EditOp construction + validation (12 tests)",
+      "EditScript invariants (10 tests)",
+      "UTREditRecord round-trip + cross-field consistency (18 tests)",
+      "GenerationTask track/region/budget constraints (17 tests)",
+      "validate_canonical_records_file on temp files (4 tests)",
+      "Contract constants sanity (7 tests)",
+      "Incomplete record acceptance (1 test)",
+      "Legacy D1 record_type inference (2 tests)",
+      "Region alias normalization (1 test)"
+    ]
+  },
+  "integration_validation": {
+    "input": "data/d1_canonical_records.jsonl",
+    "n_total": 72117,
+    "n_paired": 11885,
+    "n_observational": 60227,
+    "n_incomplete": 5,
+    "n_invalid": 0,
+    "passed": true,
+    "by_accession": {
+      "GSE114002": 5000,
+      "GSE200304": 6885,
+      "GSE145046": 50000,
+      "GSE207584": 10227,
+      "GSE173083": 1,
+      "ENCSR854RUF": 1,
+      "GSE246381": 1,
+      "GSE217518": 1,
+      "GSE149487": 1
+    },
+    "by_region": {
+      "5'UTR": 55002,
+      "3'UTR": 6887,
+      "CDS": 10227,
+      "full-length": 1
+    }
+  },
+  "findings": [
+    {
+      "id": "B0-01-F1",
+      "severity": "info",
+      "message": "D1 paired records (11885 from GSE114002+GSE200304) did not emit metadata.record_type; B0-01 schema infers it from source_sequence presence (paired if not None). Inferred value is written back to metadata on from_dict so downstream consumers see explicit record_type."
+    },
+    {
+      "id": "B0-01-F2",
+      "severity": "info",
+      "message": "GSE173083 record uses region='full_length' (underscore) while v2 contract uses 'full-length' (hyphen). Schema normalizes the alias on ingestion."
+    },
+    {
+      "id": "B0-01-F3",
+      "severity": "warning",
+      "message": "4 D_C datasets (ENCSR854RUF, GSE246381, GSE217518, GSE149487) have only INCOMPLETE placeholder records in d1_canonical_records.jsonl because D1 build_canonical_records.py could not extract UTR sequences from their downloaded files (missing sequence columns / barcode mappings). Only 2 D_C datasets (GSE114002: 5000, GSE200304: 6885) have actual paired records. This may constrain B0-02 split manifests and B0-04 evaluation tracks. The D1 audit report marked these as 'found' (>=1 record) but did not flag the missing paired data. Recommend: address before B0-02 if closed_measured_pool track needs >2 D_C datasets."
+    }
+  ],
+  "gate": "MB0-Freeze prerequisite",
+  "gate_status": "B0-01 unblocks B0-02 (split manifests can consume UTREditRecord schema)"
+}

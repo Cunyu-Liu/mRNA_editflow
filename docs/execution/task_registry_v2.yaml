@@ -140,7 +140,7 @@ tasks:
     d1_staging/tests/test_d1_exposure_ledger.py (25 tests).
 - task_id: B0-01
   phase: B0
-  status: PENDING
+  status: DONE
   dependencies:
   - D1-02
   description: 'Canonical schemas: utr_edit_record, edit_script, generation_task'
