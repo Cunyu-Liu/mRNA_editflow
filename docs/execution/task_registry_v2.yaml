@@ -112,7 +112,7 @@ tasks:
     report at docs/data/d0_05_current_candidates_audit.md.
 - task_id: D1-01
   phase: D1
-  status: PENDING
+  status: DONE
   dependencies:
   - D0-05
   description: 'Canonical records: download/extract/clean/build_source_candidate/build_edit_scripts/reproduce_labels/audit
@@ -120,14 +120,24 @@ tasks:
   acceptance:
   - apply(edit_script, source) == candidate 100%
   - path ambiguity quantified
+  commit_sha: pending
+  report: 72117 records (11885 paired, 60227 observational, 5 incomplete). All 9 datasets
+    covered. 11885/11885 edit scripts verified (100%). Path ambiguity quantified for
+    all. Audit report at data/d1_audit_report.json. Scripts in d1_staging/scripts/d1/.
+    Tests in d1_staging/tests/test_d1_edit_script_core.py (41 tests).
 - task_id: D1-02
   phase: D1
-  status: PENDING
+  status: DONE
   dependencies:
   - D1-01
   description: 'Exposure ledger: data/data_exposure_ledger.jsonl'
   acceptance:
   - exposure ledger coverage = 100%
+  commit_sha: pending
+  report: 72117/72117 ledger entries (100% coverage). 0 duplicates. All 9 datasets
+    classified. GSE246381 historically_exposed (E4, labels forbidden). GSE207584/GSE173083
+    D_A observational. Audit report at data/d1_exposure_audit_report.json. Tests in
+    d1_staging/tests/test_d1_exposure_ledger.py (25 tests).
 - task_id: B0-01
   phase: B0
   status: PENDING

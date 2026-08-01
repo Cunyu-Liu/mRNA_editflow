@@ -165,3 +165,76 @@ Audited all 9 candidate datasets in `data_registry/intervention_candidates.yaml`
 - D1-01 (canonical records) unblocked
 - D1-02 (exposure ledger) unblocked
 - B0-01 (generative UTR benchmark construction) unblocked
+
+
+---
+
+## DEC-UTR-EF-V2-20260801-D1-CANONICAL-RECORDS-AND-EXPOSURE-LEDGER
+
+**Date:** 2026-08-01
+**Phase:** D1
+**Tasks:** D1-01 (canonical records), D1-02 (exposure ledger)
+**Decision:** D1-01 and D1-02 acceptance criteria met; both marked DONE.
+
+### D1-01: Canonical Records
+
+**Acceptance criteria:**
+- apply(edit_script, source) == candidate 100%: **PASS** (11885/11885 verified)
+- Path ambiguity quantified: **PASS** (11885/11885, all >= 1)
+
+**Artifacts:**
+- data/d1_canonical_records.jsonl — 72117 records (11885 paired, 60227 observational, 5 incomplete)
+- data/d1_audit_report.json — audit report (all checks PASS)
+- d1_staging/scripts/d1/edit_script_core.py — EditOp, compute_edit_script, apply_edit_script, count_optimal_alignments
+- d1_staging/scripts/d1/build_canonical_records.py — per-dataset extractors for all 9 datasets
+- d1_staging/scripts/d1/audit_canonical_records.py — D1-01 audit script
+- d1_staging/tests/test_d1_edit_script_core.py — 41 unit tests
+
+**Per-dataset breakdown:**
+
+| Accession | Records | Type | Role |
+|---|---|---|---|
+| GSE114002 | 5000 | paired | D_C (5UTR MRL) |
+| GSE200304 | 6885 | paired | D_C (3UTR TE/stability) |
+| GSE145046 | 50000 | observational | D_D (5UTR dense landscape) |
+| GSE207584 | 10227 | observational | D_A (CDS, out-of-scope) |
+| GSE149487 | 1 | incomplete | D_C (needs barcode mapping) |
+| GSE217518 | 1 | incomplete | D_C (needs sequence reconstruction) |
+| GSE173083 | 1 | incomplete | D_A (needs Table S1) |
+| ENCSR854RUF | 1 | incomplete | D_C (needs genome reconstruction) |
+| GSE246381 | 1 | incomplete | D_E (needs genome reconstruction) |
+
+### D1-02: Exposure Ledger
+
+**Acceptance criteria:**
+- Exposure ledger coverage = 100%: **PASS** (72117/72117 records covered)
+
+**Artifacts:**
+- data/data_exposure_ledger.jsonl — 72117 entries, one per canonical record
+- data/d1_exposure_audit_report.json — audit report (all 6 checks PASS)
+- d1_staging/scripts/d1/build_exposure_ledger.py — ledger builder
+- d1_staging/scripts/d1/audit_exposure_ledger.py — D1-02 audit script
+- d1_staging/tests/test_d1_exposure_ledger.py — 25 unit tests
+
+**Key policy decisions:**
+- GSE246381: historically_exposed=True, labels_allowed_for_new_training=False, evidence_grade=E4, historical_exposure_path documented
+- GSE207584/GSE173083: D_A observational_no_labels, labels forbidden (out-of-scope regions)
+- GSE145046: D_D dense_pretraining, labels allowed
+- GSE114002/GSE200304/GSE149487/GSE217518/ENCSR854RUF: D_C primary_supervised, labels allowed
+
+### Audit checks (D1-02)
+
+| check | status |
+|---|---|
+| coverage = 100% | PASS |
+| no duplicates | PASS |
+| required fields present | PASS |
+| per-dataset policy consistency | PASS |
+| GSE246381 constraints | PASS |
+| enum validation | PASS |
+
+### Affected downstream tasks
+
+- B0-01 (canonical schemas) unblocked
+- B0-02 (split manifests) unblocked
+- B0-03 (leakage audit) unblocked — exposure ledger now available

@@ -1,0 +1,38 @@
+{
+  "schema": {
+    "passed": true,
+    "issues": []
+  },
+  "edit_script_verification": {
+    "n_paired": 11885,
+    "n_verified": 11885,
+    "n_failed": 0,
+    "passed": true
+  },
+  "path_ambiguity": {
+    "n_checked": 11885,
+    "n_ok": 11885,
+    "n_missing": 0,
+    "passed": true
+  },
+  "minimality": {
+    "n_checked": 11885,
+    "passed": true
+  },
+  "dataset_coverage": {
+    "found": [
+      "ENCSR854RUF",
+      "GSE114002",
+      "GSE145046",
+      "GSE149487",
+      "GSE173083",
+      "GSE200304",
+      "GSE207584",
+      "GSE217518",
+      "GSE246381"
+    ],
+    "missing": [],
+    "passed": true
+  },
+  "json_serializable": true
+}

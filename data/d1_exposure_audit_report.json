@@ -1,0 +1,31 @@
+{
+  "coverage": {
+    "canonical_count": 72117,
+    "ledger_count": 72117,
+    "missing": 0,
+    "extra": 0,
+    "coverage_pct": 100.0,
+    "passed": true
+  },
+  "duplicates": {
+    "count": 0,
+    "passed": true
+  },
+  "required_fields": {
+    "passed": true,
+    "issues": []
+  },
+  "policy_consistency": {
+    "passed": true,
+    "issues": []
+  },
+  "gse246381_constraints": {
+    "passed": true,
+    "issues": []
+  },
+  "enum_validation": {
+    "passed": true,
+    "issues": []
+  },
+  "overall_passed": true
+}
