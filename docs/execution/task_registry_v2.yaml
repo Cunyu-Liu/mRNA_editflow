@@ -241,14 +241,14 @@ tasks:
   - memory/latency profile
 - task_id: MK0-01
   phase: MK0
-  status: IN_PROGRESS
+  status: DONE
   dependencies:
   - FM0-01
   description: 'Freeze math semantics: state/action space, coupling, path, rates,
     loss, STOP, sampler, numerical stability'
   gate: MK0 Gate not passed → no EF0 acceptance, no GP0 formal training
   goal_sha256: 3a3a654ca5c10a988eca897bff40be2e0b45c841f744f7423fdfd60b298b5791
-  run_id: MK0_utrlm_mathkernel_tiny_20260802T111348Z_d493363_s20260802
+  run_id: MK0_utrlm_mathkernel_tiny_20260802T181139Z_92cc510_s20260802
   evidence_level: E0 mathematical and engineering verification only; no functional,
     biological, superiority, or downstream-stage claim
   resource_tags:
@@ -263,6 +263,7 @@ tasks:
   - run:/home/cunyuliu/mrna_editflow_goal/mrna_editflow/artifacts/runs/MK0_utrlm_mathkernel_tiny_20260802T111348Z_d493363_s20260802
   - run:/home/cunyuliu/mrna_editflow_goal/mrna_editflow/artifacts/runs/PENDING_SECOND_REPAIR_CHILD_RUN_ID
   - preflight:/mnt/cunyuliu/mrna_editflow_mk0_preflight/PENDING_SECOND_REPAIR_CHILD_RUN_ID
+  - run:/home/cunyuliu/mrna_editflow_goal/mrna_editflow/artifacts/runs/MK0_utrlm_mathkernel_tiny_20260802T181139Z_92cc510_s20260802
   - gpu:formal-neural-validation
   - upstream:FM0_FORMAL_CLOSURE_20260802T022915Z_f4d562d
   allowed_parallel_tasks:
@@ -301,6 +302,7 @@ tasks:
   - /home/cunyuliu/mrna_editflow_goal/mrna_editflow/artifacts/runs/MK0_utrlm_mathkernel_tiny_20260802T111348Z_d493363_s20260802/
   - /mnt/cunyuliu/mrna_editflow_mk0_preflight/<SECOND_REPAIR_CHILD_RUN_ID>/mk0_preflight.json
   - /home/cunyuliu/mrna_editflow_goal/mrna_editflow/artifacts/runs/<SECOND_REPAIR_CHILD_RUN_ID>/
+  - /home/cunyuliu/mrna_editflow_goal/mrna_editflow/artifacts/runs/MK0_utrlm_mathkernel_tiny_20260802T181139Z_92cc510_s20260802/
   acceptance:
   - all M01-M35 pass against the frozen config without threshold relaxation
   - CPU gate evidence binds the clean implementation commit and fresh preflight
@@ -313,28 +315,51 @@ tasks:
   - diagnose in the isolated worktree and use a fresh run root after any code change
   - rerun fresh preflight after the implementation commit changes
   - stop if CUDA is unavailable, a neural tensor/model leaves CUDA, or CPU fallback occurs
-  commit_sha: d493363f541ae5cd6560219f8d0ce6d82f1eb950
-  report: The first formal run completed all CPU checks but its real-CUDA role observer
-    failed closed because it did not recognize a production rate-interface call. The
-    same run then exposed an independently preserved terminal-closure defect caused
-    by a pytest import symlink inside the canonical tree; it is classified as
-    UNSEALED_FAILED_EVIDENCE and remains unmodified. A non-dereferencing external
-    incident bundle was recorded under /mnt/cunyuliu/mrna_editflow_mk0_failures.
-    The first fresh repair child then passed its complete CPU gate and loaded the
-    real UTR-LM on CUDA, but failed closed before the first formal callback because
-    Transformers model-loading UI had created a persistent daemon tqdm_monitor
-    thread. This child is terminal FAILED_WITH_EVIDENCE with exit code 1 and remains
-    unmodified. The next repair prevents that UI thread before model loading while
-    preserving the rule that every live noncurrent Python thread is fatal; it must
-    use a new commit, preflight, run root, and parent binding to the terminal repair
-    child. MK0 remains IN_PROGRESS; EF0 and GP0 remain blocked.
+  commit_sha: 92cc5102180c1f5daa06cb66ec5a22b3558ca0b8
+  report: >
+    The latest formal run is CLOSED_ACCEPTED with all 35 M01-M35 gates passed
+    against the frozen MK0 configuration, using a clean isolated worktree at commit
+    92cc5102180c1f5daa06cb66ec5a22b3558ca0b8 and real CUDA foundation validation.
+    Earlier failed and repair-child artifacts remain preserved as separate evidence;
+    the accepted bundle is under
+    /home/cunyuliu/mrna_editflow_goal/mrna_editflow/artifacts/runs/MK0_utrlm_mathkernel_tiny_20260802T181139Z_92cc510_s20260802/.
+    MK0 evidence is E0 mathematical and engineering verification only: no functional,
+    biological, superiority, exact-Gillespie, or downstream-stage claim is made.
 - task_id: EF0-01
   phase: EF0
-  status: PENDING
+  status: DONE
   dependencies:
   - MK0-01
   description: 'Implement true UTR Edit Flow: continuous-time rate field, source conditioning,
     region adapters, hard masks, variable-length, multi-step, STOP, conditional generation'
+  goal_sha256: 3a3a654ca5c10a988eca897bff40be2e0b45c841f744f7423fdfd60b298b5791
+  run_id: EF0_true_utr_gpu_20260802T185555Z_8cc9f8b_s20260803_retry001
+  commit_sha: 8cc9f8b055a76e398ca8d4d12b7ddee515a24b01
+  evidence_level: E0 engineering verification only; no functional, biological, superiority,
+    or paper claim
+  gate: EF0 accepted only after MK0 closed; GP0 remains blocked until its own contract gate
+  final_label_access: false
+  downstream_stage_started: false
+  inputs:
+  - /mnt/cunyuliu/mrna_editflow_fm0_runs/FM0_FORMAL_CLOSURE_20260802T022915Z_f4d562d/
+  - /home/cunyuliu/mrna_editflow_goal/mrna_editflow/data/d1_canonical_records.jsonl
+  - /home/cunyuliu/mrna_editflow_goal/mrna_editflow/data/data_exposure_ledger.jsonl
+  - /mnt/cunyuliu/mrna_editflow_ef0_runs/EF0_true_utr_gpu_20260802T185555Z_8cc9f8b_s20260803_retry001/
+  outputs:
+  - /mnt/cunyuliu/mrna_editflow_ef0_runs/EF0_true_utr_gpu_20260802T185555Z_8cc9f8b_s20260803_retry001/evaluation/ef0_acceptance.json
+  - /mnt/cunyuliu/mrna_editflow_ef0_runs/EF0_true_utr_gpu_20260802T185555Z_8cc9f8b_s20260803_retry001/summary/summary.json
+  - /mnt/cunyuliu/mrna_editflow_ef0_runs/EF0_true_utr_gpu_20260802T185555Z_8cc9f8b_s20260803_retry001/artifact_checksums.sha256
+  report: >
+    EF0 formal GPU verification is VERIFIED at E0 engineering level. The accepted
+    bundle records explicit INS/SUB/DEL/STOP heads, dynamic current-state re-encoding,
+    source conditioning and mapping, 5UTR/3UTR adapters, hard legality before sampling,
+    protected-action rejection, variable-length insertion/deletion, multi-step rollout,
+    deterministic replay, and real CUDA forward/backward/optimizer evidence with zero
+    CPU fallback. Forced action coverage is a harness, not a random performance result;
+    the sampler is constrained_single_event_first_order rather than exact Gillespie.
+    No GP0 training, final labels, functional, biological, superiority, or paper claim
+    is allowed. The first binding failure remains preserved under the separate
+    FAILED_WITH_EVIDENCE run root.
   acceptance:
   - H3 hard-constrained validity 100%
   - not just greedy/top-k substitution
