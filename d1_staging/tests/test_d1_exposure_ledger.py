@@ -94,6 +94,22 @@ class TestPerDatasetPolicy:
         assert entry["data_role"] == "D_C"
         assert entry["evidence_grade"] == "E2"
 
+    def test_gse232572_is_dc_e2_unexposed(self):
+        rec = _make_record("GSE232572")
+        entry = build_ledger_entry(rec)
+        assert entry["data_role"] == "D_C"
+        assert entry["evidence_grade"] == "E2"
+        assert entry["exposure_status"] == "unexposed"
+        assert entry["labels_allowed_for_new_training"] is True
+
+    def test_gse186455_is_dc_e2_unexposed(self):
+        rec = _make_record("GSE186455")
+        entry = build_ledger_entry(rec)
+        assert entry["data_role"] == "D_C"
+        assert entry["evidence_grade"] == "E2"
+        assert entry["exposure_status"] == "unexposed"
+        assert entry["labels_allowed_for_new_training"] is True
+
     def test_gse145046_is_dd_e2(self):
         rec = _make_record("GSE145046", record_type="observational")
         entry = build_ledger_entry(rec)
@@ -269,14 +285,15 @@ class TestPolicyConsistency:
 
 
 # ---------------------------------------------------------------------------
-# Tests: all 9 datasets covered
+# Tests: all 11 datasets covered
 # ---------------------------------------------------------------------------
 
 class TestDatasetCoverage:
-    def test_all_9_datasets_have_policy(self):
+    def test_all_11_datasets_have_policy(self):
         expected = {
             "GSE114002", "GSE149487", "GSE217518", "GSE200304",
             "ENCSR854RUF", "GSE145046", "GSE246381",
             "GSE207584", "GSE173083",
+            "GSE232572", "GSE186455",
         }
         assert set(DATASET_EXPOSURE_POLICY.keys()) == expected

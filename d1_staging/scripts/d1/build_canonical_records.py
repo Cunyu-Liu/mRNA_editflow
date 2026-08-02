@@ -1112,6 +1112,226 @@ def extract_gse217518(data_root: Path) -> List[dict]:
     return records
 
 
+def extract_gse232572(data_root: Path) -> List[dict]:
+    """GSE232572 — MapUTR (Fu et al. 2024), 3'UTR, D_C (paired REF/ALT).
+
+    ~9,343 paired 3'UTR SNV variants with MPRA activity (mRNA abundance in
+    HeLa, 3 replicates). Oligo sequences reconstructed from FASTA files
+    via reconstruct_gse232572_sequences.py -> reconstructed_pairs.jsonl.
+    """
+    accession = "GSE232572"
+    print(f"\n[{accession}] Extracting canonical records...")
+
+    candidates = [
+        data_root / accession / "reconstructed_pairs.jsonl",
+    ]
+    fpath = None
+    for c in candidates:
+        if c.exists():
+            fpath = c
+            break
+    if fpath is None:
+        print(f"  WARNING: reconstructed_pairs.jsonl not found in:")
+        for c in candidates:
+            print(f"    {c}")
+        print(f"  Run reconstruct_gse232572_sequences.py first.")
+        return [{
+            "record_id": f"{accession}_INCOMPLETE",
+            "dataset": "gse232572_maputr",
+            "accession": accession,
+            "region": "3'UTR",
+            "source_sequence": None,
+            "candidate_sequence": None,
+            "edit_script": [],
+            "edit_script_verified": True,
+            "edit_distance": 0,
+            "n_ins": 0, "n_del": 0, "n_sub": 0,
+            "path_ambiguity": 1,
+            "labels": {},
+            "metadata": {
+                "record_type": "incomplete",
+                "data_role": "D_C",
+                "note": "reconstructed_pairs.jsonl not found; run reconstruct_gse232572_sequences.py",
+            },
+        }]
+
+    print(f"  reading: {fpath}")
+    records = []
+    skipped_no_seq = 0
+    skipped_identical = 0
+    max_records = MAX_RECORDS_PER_DATASET
+    seen_ids = set()
+
+    with open(fpath) as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            if max_records and len(records) >= max_records:
+                print(f"  capping at {max_records} records")
+                break
+            rec = json.loads(line)
+            source = _normalize_seq(rec.get("source_sequence", ""))
+            candidate = _normalize_seq(rec.get("candidate_sequence", ""))
+            if not source or not candidate:
+                skipped_no_seq += 1
+                continue
+            if source == candidate:
+                skipped_identical += 1
+                continue
+
+            # Build labels
+            raw_labels = rec.get("labels", {})
+            labels = {}
+            for k, v in raw_labels.items():
+                fv = _safe_float(v)
+                if fv is not None:
+                    labels[k] = fv
+
+            # Build metadata
+            raw_meta = rec.get("metadata", {})
+            metadata = {
+                "data_role": "D_C",
+                "gene_symbol": rec.get("gene_symbol", raw_meta.get("gene_symbol", "")),
+                "variant_type": rec.get("variant_type", ""),
+            }
+            metadata.update(raw_meta)
+
+            # Ensure unique record_id
+            rid = rec.get("record_id", "")
+            if not rid:
+                rid = f"{accession}_{len(records)}"
+            if rid in seen_ids:
+                rid = f"{rid}_{len(records)}"
+            seen_ids.add(rid)
+
+            crec = canonical_record(
+                record_id=rid,
+                dataset="gse232572_maputr",
+                accession=accession,
+                region=rec.get("region", "3'UTR"),
+                source=source,
+                candidate=candidate,
+                labels=labels,
+                metadata=metadata,
+            )
+            records.append(crec)
+
+    print(f"  extracted {len(records)} records "
+          f"(skipped: {skipped_no_seq} no_seq, {skipped_identical} identical)")
+    return records
+
+
+def extract_gse186455(data_root: Path) -> List[dict]:
+    """GSE186455 — 3'UTR, D_C (paired REF/ALT, TRAP-seq MPRA).
+
+    ~649 paired 3'UTR variants with MPRA activity across N2a and Vglut
+    cell types. Oligo sequences extracted from RAW.tar .tab.gz files
+    via reconstruct_gse186455_sequences.py -> reconstructed_pairs.jsonl.
+    """
+    accession = "GSE186455"
+    print(f"\n[{accession}] Extracting canonical records...")
+
+    candidates = [
+        data_root / accession / "reconstructed_pairs.jsonl",
+    ]
+    fpath = None
+    for c in candidates:
+        if c.exists():
+            fpath = c
+            break
+    if fpath is None:
+        print(f"  WARNING: reconstructed_pairs.jsonl not found in:")
+        for c in candidates:
+            print(f"    {c}")
+        print(f"  Run reconstruct_gse186455_sequences.py first.")
+        return [{
+            "record_id": f"{accession}_INCOMPLETE",
+            "dataset": "gse186455",
+            "accession": accession,
+            "region": "3'UTR",
+            "source_sequence": None,
+            "candidate_sequence": None,
+            "edit_script": [],
+            "edit_script_verified": True,
+            "edit_distance": 0,
+            "n_ins": 0, "n_del": 0, "n_sub": 0,
+            "path_ambiguity": 1,
+            "labels": {},
+            "metadata": {
+                "record_type": "incomplete",
+                "data_role": "D_C",
+                "note": "reconstructed_pairs.jsonl not found; run reconstruct_gse186455_sequences.py",
+            },
+        }]
+
+    print(f"  reading: {fpath}")
+    records = []
+    skipped_no_seq = 0
+    skipped_identical = 0
+    max_records = MAX_RECORDS_PER_DATASET
+    seen_ids = set()
+
+    with open(fpath) as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            if max_records and len(records) >= max_records:
+                print(f"  capping at {max_records} records")
+                break
+            rec = json.loads(line)
+            source = _normalize_seq(rec.get("source_sequence", ""))
+            candidate = _normalize_seq(rec.get("candidate_sequence", ""))
+            if not source or not candidate:
+                skipped_no_seq += 1
+                continue
+            if source == candidate:
+                skipped_identical += 1
+                continue
+
+            # Build labels
+            raw_labels = rec.get("labels", {})
+            labels = {}
+            for k, v in raw_labels.items():
+                fv = _safe_float(v)
+                if fv is not None:
+                    labels[k] = fv
+
+            # Build metadata
+            raw_meta = rec.get("metadata", {})
+            metadata = {
+                "data_role": "D_C",
+                "gene_symbol": rec.get("gene_symbol", raw_meta.get("gene_symbol", "")),
+                "variant_type": rec.get("variant_type", ""),
+            }
+            metadata.update(raw_meta)
+
+            # Ensure unique record_id
+            rid = rec.get("record_id", "")
+            if not rid:
+                rid = f"{accession}_{len(records)}"
+            if rid in seen_ids:
+                rid = f"{rid}_{len(records)}"
+            seen_ids.add(rid)
+
+            crec = canonical_record(
+                record_id=rid,
+                dataset="gse186455",
+                accession=accession,
+                region=rec.get("region", "3'UTR"),
+                source=source,
+                candidate=candidate,
+                labels=labels,
+                metadata=metadata,
+            )
+            records.append(crec)
+
+    print(f"  extracted {len(records)} records "
+          f"(skipped: {skipped_no_seq} no_seq, {skipped_identical} identical)")
+    return records
+
+
 # ---------------------------------------------------------------------------
 # GSE149487 helpers (Lim et al. 2021, Nat Commun — 5'UTR MPRA)
 # ---------------------------------------------------------------------------
@@ -1629,6 +1849,8 @@ EXTRACTORS = {
     "GSE246381": extract_gse246381,
     "GSE217518": extract_gse217518,
     "GSE149487": extract_gse149487,
+    "GSE232572": extract_gse232572,
+    "GSE186455": extract_gse186455,
 }
 
 

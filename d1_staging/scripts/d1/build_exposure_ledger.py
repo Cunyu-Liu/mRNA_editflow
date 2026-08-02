@@ -80,6 +80,30 @@ DATASET_EXPOSURE_POLICY = {
         "historical_exposure_path": None,
         "notes": "primary supervised; 3'UTR TE/RNA/stability",
     },
+    "GSE232572": {
+        "data_role": "D_C",
+        "evidence_grade": "E2",
+        "exposure_status": "unexposed",
+        "historically_exposed": False,
+        "labels_allowed_for_new_training": True,
+        "labels_allowed_for_new_hyperparameter_selection": True,
+        "allowed_claims": ["edit_effect", "generation_grounding"],
+        "forbidden_claims": [],
+        "historical_exposure_path": None,
+        "notes": "primary supervised; 3'UTR mRNA abundance (MapUTR, Fu et al. 2024)",
+    },
+    "GSE186455": {
+        "data_role": "D_C",
+        "evidence_grade": "E2",
+        "exposure_status": "unexposed",
+        "historically_exposed": False,
+        "labels_allowed_for_new_training": True,
+        "labels_allowed_for_new_hyperparameter_selection": True,
+        "allowed_claims": ["edit_effect", "generation_grounding"],
+        "forbidden_claims": [],
+        "historical_exposure_path": None,
+        "notes": "primary supervised; 3'UTR TRAP-seq MPRA (N2a/Vglut)",
+    },
     "ENCSR854RUF": {
         # processed table role is D_C E2; raw reads are D_A E1.
         # Canonical records only have the processed-table role (incomplete:
