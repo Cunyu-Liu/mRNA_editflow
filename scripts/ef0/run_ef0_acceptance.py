@@ -726,6 +726,12 @@ def main() -> int:
         if any(token not in "ACGU" for token in sampler_first.final_state.current):
             raise AssertionError("sampler produced an invalid nucleotide")
 
+        # Capture the runtime counter after the CUDA forward/backward and sampler
+        # checks, rather than the construction-time device snapshot.
+        device_audit = flow.runtime_device_audit()
+        if int(device_audit["runtime_forward_calls"]) < len(forced_actions):
+            raise RuntimeError("EF0 runtime forward counter did not observe CUDA rate calls")
+
         gpu["memory_allocated_after_bytes"] = torch.cuda.memory_allocated(device)
         gpu["memory_reserved_after_bytes"] = torch.cuda.memory_reserved(device)
         gpu["max_memory_allocated_after_bytes"] = torch.cuda.max_memory_allocated(device)
