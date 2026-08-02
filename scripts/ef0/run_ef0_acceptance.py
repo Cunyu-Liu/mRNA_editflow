@@ -378,11 +378,44 @@ def main() -> int:
         run_root / "logs" / "events.jsonl",
         {"created_at_utc": now_utc(), "event": "REGISTERED", "run_id": args.run_id},
     )
-    worktree_git = git_binding(args.worktree)
-    if not worktree_git["clean"]:
-        raise RuntimeError("EF0 formal run requires a clean committed worktree")
-    if worktree_git["commit"] != args.implementation_commit:
-        raise RuntimeError("implementation commit argument does not bind worktree HEAD")
+    try:
+        worktree_git = git_binding(args.worktree)
+        if not worktree_git["clean"]:
+            raise RuntimeError("EF0 formal run requires a clean committed worktree")
+        if worktree_git["commit"] != args.implementation_commit:
+            raise RuntimeError(
+                "implementation commit argument does not bind worktree HEAD"
+            )
+    except Exception as error:
+        append_jsonl(
+            run_root / "logs" / "events.jsonl",
+            {
+                "created_at_utc": now_utc(),
+                "event": "FAILED_WITH_EVIDENCE",
+                "stage": "PREFLIGHT_BINDING",
+                "error_type": type(error).__name__,
+                "error": str(error),
+            },
+        )
+        publish_terminal_failure(
+            run_root,
+            run_id=args.run_id,
+            error=error,
+            stage="PREFLIGHT_BINDING",
+        )
+        print(
+            json.dumps(
+                {
+                    "run_id": args.run_id,
+                    "status": "FAILED_WITH_EVIDENCE",
+                    "stage": "PREFLIGHT_BINDING",
+                    "run_root": str(run_root),
+                    "error": str(error),
+                }
+            ),
+            file=sys.stderr,
+        )
+        return 1
 
     write_text(run_root / "command.txt", " ".join([sys.executable, *sys.argv]) + "\n")
     write_json(
