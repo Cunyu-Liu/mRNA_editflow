@@ -5,14 +5,14 @@
     "5utr_source_disjoint": {
       "split_type": "5utr_source_disjoint",
       "manifest_path": "data/b0_splits/split_5utr_source_disjoint.jsonl",
-      "n_train": 80060,
-      "n_test": 10035,
+      "n_train": 80893,
+      "n_test": 10160,
       "checks": [
         {
           "channel": "exact",
           "applicable": true,
-          "n_train_seqs": 80116,
-          "n_test_seqs": 10046,
+          "n_train_seqs": 81846,
+          "n_test_seqs": 10270,
           "n_overlap": 0,
           "overlap_examples": [],
           "pass": true
@@ -28,8 +28,8 @@
         {
           "channel": "intermediate",
           "applicable": true,
-          "n_train_intermediates": 170058,
-          "n_test_intermediates": 21704,
+          "n_train_intermediates": 170322,
+          "n_test_intermediates": 22050,
           "n_endpoint_as_train_intermediate": 0,
           "endpoint_as_train_intermediate_examples": [],
           "n_train_endpoint_as_test_intermediate": 0,
@@ -49,9 +49,9 @@
           "channel": "scaffold",
           "applicable": true,
           "informational": true,
-          "n_train_scaffolds": 23,
-          "n_test_scaffolds": 21,
-          "n_overlap": 21,
+          "n_train_scaffolds": 45,
+          "n_test_scaffolds": 44,
+          "n_overlap": 44,
           "overlap_examples": [
             "NC_000001.11",
             "NC_000002.12",
@@ -59,22 +59,25 @@
             "NC_000004.12",
             "NC_000005.10"
           ],
-          "n_train_no_scaffold": 77789,
-          "n_test_no_scaffold": 9654,
+          "n_train_no_scaffold": 77522,
+          "n_test_no_scaffold": 9766,
           "pass": true
         },
         {
           "channel": "study",
           "applicable": true,
           "train_accessions": [
-            "GSE114002"
+            "GSE114002",
+            "GSE246381"
           ],
           "test_accessions": [
-            "GSE114002"
+            "GSE114002",
+            "GSE246381"
           ],
-          "n_overlap": 1,
+          "n_overlap": 2,
           "overlap": [
-            "GSE114002"
+            "GSE114002",
+            "GSE246381"
           ],
           "pass": false,
           "informational": true,
@@ -119,14 +122,14 @@
     "3utr_source_disjoint": {
       "split_type": "3utr_source_disjoint",
       "manifest_path": "data/b0_splits/split_3utr_source_disjoint.jsonl",
-      "n_train": 13601,
-      "n_test": 1585,
+      "n_train": 23209,
+      "n_test": 2861,
       "checks": [
         {
           "channel": "exact",
           "applicable": true,
-          "n_train_seqs": 27185,
-          "n_test_seqs": 3170,
+          "n_train_seqs": 46308,
+          "n_test_seqs": 5707,
           "n_overlap": 0,
           "overlap_examples": [],
           "pass": true
@@ -142,8 +145,8 @@
         {
           "channel": "intermediate",
           "applicable": true,
-          "n_train_intermediates": 702,
-          "n_test_intermediates": 127,
+          "n_train_intermediates": 2132,
+          "n_test_intermediates": 234,
           "n_endpoint_as_train_intermediate": 0,
           "endpoint_as_train_intermediate_examples": [],
           "n_train_endpoint_as_test_intermediate": 0,
@@ -163,8 +166,8 @@
           "channel": "scaffold",
           "applicable": true,
           "informational": true,
-          "n_train_scaffolds": 7617,
-          "n_test_scaffolds": 825,
+          "n_train_scaffolds": 7608,
+          "n_test_scaffolds": 922,
           "n_overlap": 23,
           "overlap_examples": [
             "chr1",
@@ -173,25 +176,28 @@
             "chr12",
             "chr13"
           ],
-          "n_train_no_scaffold": 499,
-          "n_test_no_scaffold": 75,
+          "n_train_no_scaffold": 10120,
+          "n_test_no_scaffold": 1253,
           "pass": true
         },
         {
           "channel": "study",
           "applicable": true,
           "train_accessions": [
+            "ENCSR854RUF",
             "GSE186455",
             "GSE200304",
             "GSE232572"
           ],
           "test_accessions": [
+            "ENCSR854RUF",
             "GSE186455",
             "GSE200304",
             "GSE232572"
           ],
-          "n_overlap": 3,
+          "n_overlap": 4,
           "overlap": [
+            "ENCSR854RUF",
             "GSE186455",
             "GSE200304",
             "GSE232572"
@@ -239,14 +245,14 @@
     "study_disjoint": {
       "split_type": "study_disjoint",
       "manifest_path": "data/b0_splits/split_study_disjoint.jsonl",
-      "n_train": 100017,
-      "n_test": 16877,
+      "n_train": 101201,
+      "n_test": 28846,
       "checks": [
         {
           "channel": "exact",
           "applicable": true,
-          "n_train_seqs": 100095,
-          "n_test_seqs": 33731,
+          "n_train_seqs": 102415,
+          "n_test_seqs": 57560,
           "n_overlap": 0,
           "overlap_examples": [],
           "pass": true
@@ -262,8 +268,8 @@
         {
           "channel": "intermediate",
           "applicable": true,
-          "n_train_intermediates": 213150,
-          "n_test_intermediates": 895,
+          "n_train_intermediates": 213517,
+          "n_test_intermediates": 2516,
           "n_endpoint_as_train_intermediate": 0,
           "endpoint_as_train_intermediate_examples": [],
           "n_train_endpoint_as_test_intermediate": 0,
@@ -283,21 +289,29 @@
           "channel": "scaffold",
           "applicable": true,
           "informational": true,
-          "n_train_scaffolds": 23,
+          "n_train_scaffolds": 45,
           "n_test_scaffolds": 9367,
-          "n_overlap": 0,
-          "overlap_examples": [],
+          "n_overlap": 22,
+          "overlap_examples": [
+            "chr1",
+            "chr10",
+            "chr11",
+            "chr12",
+            "chr13"
+          ],
           "n_train_no_scaffold": 96995,
-          "n_test_no_scaffold": 649,
+          "n_test_no_scaffold": 12613,
           "pass": true
         },
         {
           "channel": "study",
           "applicable": true,
           "train_accessions": [
-            "GSE114002"
+            "GSE114002",
+            "GSE246381"
           ],
           "test_accessions": [
+            "ENCSR854RUF",
             "GSE186455",
             "GSE200304",
             "GSE232572"
@@ -347,14 +361,14 @@
     "cross_region_transfer": {
       "split_type": "cross_region_transfer",
       "manifest_path": "data/b0_splits/split_cross_region_transfer.jsonl",
-      "n_train": 80061,
-      "n_test": 16877,
+      "n_train": 80893,
+      "n_test": 28846,
       "checks": [
         {
           "channel": "exact",
           "applicable": true,
-          "n_train_seqs": 80117,
-          "n_test_seqs": 33731,
+          "n_train_seqs": 81846,
+          "n_test_seqs": 57560,
           "n_overlap": 0,
           "overlap_examples": [],
           "pass": true
@@ -370,8 +384,8 @@
         {
           "channel": "intermediate",
           "applicable": true,
-          "n_train_intermediates": 170078,
-          "n_test_intermediates": 895,
+          "n_train_intermediates": 170322,
+          "n_test_intermediates": 2516,
           "n_endpoint_as_train_intermediate": 0,
           "endpoint_as_train_intermediate_examples": [],
           "n_train_endpoint_as_test_intermediate": 0,
@@ -391,21 +405,29 @@
           "channel": "scaffold",
           "applicable": true,
           "informational": true,
-          "n_train_scaffolds": 23,
+          "n_train_scaffolds": 45,
           "n_test_scaffolds": 9367,
-          "n_overlap": 0,
-          "overlap_examples": [],
-          "n_train_no_scaffold": 77789,
-          "n_test_no_scaffold": 649,
+          "n_overlap": 22,
+          "overlap_examples": [
+            "chr1",
+            "chr10",
+            "chr11",
+            "chr12",
+            "chr13"
+          ],
+          "n_train_no_scaffold": 77522,
+          "n_test_no_scaffold": 12613,
           "pass": true
         },
         {
           "channel": "study",
           "applicable": true,
           "train_accessions": [
-            "GSE114002"
+            "GSE114002",
+            "GSE246381"
           ],
           "test_accessions": [
+            "ENCSR854RUF",
             "GSE186455",
             "GSE200304",
             "GSE232572"
@@ -454,8 +476,8 @@
     }
   },
   "exposure_ledger_coverage": {
-    "n_manifest_records": 116894,
-    "n_in_ledger": 116894,
+    "n_manifest_records": 130047,
+    "n_in_ledger": 130047,
     "n_missing": 0,
     "coverage": 1.0,
     "missing_examples": [],

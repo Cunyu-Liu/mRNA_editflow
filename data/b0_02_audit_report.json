@@ -5,20 +5,20 @@
     "5utr_source_disjoint": {
       "split_type": "5utr_source_disjoint",
       "manifest_path": "data/b0_splits/split_5utr_source_disjoint.jsonl",
-      "sha256": "a04cf3ae883cb01f56087093f439f49d961f8c4a1f68cd15ab641ff162249805",
-      "n_entries": 100016,
+      "sha256": "85c4520196fe3ba1974f3ec68f5b1acf09d5de9f702f88805ca216dbda509558",
+      "n_entries": 101201,
       "checks": {
         "manifest_format": {
           "check": "manifest_format",
-          "n_entries": 100016,
+          "n_entries": 101201,
           "n_errors": 0,
           "errors": [],
           "pass": true
         },
         "source_overlap": {
           "check": "source_overlap",
-          "n_train_sources": 37344,
-          "n_test_sources": 4658,
+          "n_train_sources": 38225,
+          "n_test_sources": 4731,
           "n_overlap": 0,
           "overlap_examples": [],
           "n_missing_records": 0,
@@ -27,8 +27,8 @@
         "accession_overlap": null,
         "reverse_leakage": {
           "check": "reverse_leakage",
-          "n_train_candidates": 80060,
-          "n_test_sources": 4658,
+          "n_train_candidates": 80880,
+          "n_test_sources": 4731,
           "n_reverse_leakage": 0,
           "reverse_leakage_examples": [],
           "n_symmetric_leakage": 0,
@@ -38,8 +38,8 @@
         },
         "path_leakage": {
           "check": "path_leakage",
-          "n_train_intermediates": 170058,
-          "n_test_intermediates": 21704,
+          "n_train_intermediates": 170322,
+          "n_test_intermediates": 22050,
           "n_forward_path_leakage": 0,
           "forward_path_leakage_examples": [],
           "n_reverse_path_leakage": 0,
@@ -58,20 +58,20 @@
     "3utr_source_disjoint": {
       "split_type": "3utr_source_disjoint",
       "manifest_path": "data/b0_splits/split_3utr_source_disjoint.jsonl",
-      "sha256": "068ee7384542b555ddd562081a8d2ea48188523fbeea8cd0abd9dc1cc9340449",
-      "n_entries": 16877,
+      "sha256": "3675f19282c07580805a2b7fb4a279c5bcc17d3e67c9993224405f0773b4ff39",
+      "n_entries": 28846,
       "checks": {
         "manifest_format": {
           "check": "manifest_format",
-          "n_entries": 16877,
+          "n_entries": 28846,
           "n_errors": 0,
           "errors": [],
           "pass": true
         },
         "source_overlap": {
           "check": "source_overlap",
-          "n_train_sources": 13591,
-          "n_test_sources": 1585,
+          "n_train_sources": 23111,
+          "n_test_sources": 2846,
           "n_overlap": 0,
           "overlap_examples": [],
           "n_missing_records": 0,
@@ -80,8 +80,8 @@
         "accession_overlap": null,
         "reverse_leakage": {
           "check": "reverse_leakage",
-          "n_train_candidates": 13594,
-          "n_test_sources": 1585,
+          "n_train_candidates": 23197,
+          "n_test_sources": 2846,
           "n_reverse_leakage": 0,
           "reverse_leakage_examples": [],
           "n_symmetric_leakage": 0,
@@ -91,8 +91,8 @@
         },
         "path_leakage": {
           "check": "path_leakage",
-          "n_train_intermediates": 702,
-          "n_test_intermediates": 127,
+          "n_train_intermediates": 2132,
+          "n_test_intermediates": 234,
           "n_forward_path_leakage": 0,
           "forward_path_leakage_examples": [],
           "n_reverse_path_leakage": 0,
@@ -111,12 +111,12 @@
     "study_disjoint": {
       "split_type": "study_disjoint",
       "manifest_path": "data/b0_splits/split_study_disjoint.jsonl",
-      "sha256": "4cf822036737bb92f4fe1dc4bb78c71e3e05b34a8e446c104176a6caf74a86a2",
-      "n_entries": 116894,
+      "sha256": "9a453ff2d3347faa20a4e5f39a8d4d90d41438f37442851cd9a0f48ce5f11404",
+      "n_entries": 130047,
       "checks": {
         "manifest_format": {
           "check": "manifest_format",
-          "n_entries": 116894,
+          "n_entries": 130047,
           "n_errors": 0,
           "errors": [],
           "pass": true
@@ -125,9 +125,11 @@
         "accession_overlap": {
           "check": "accession_overlap",
           "train_accessions": [
-            "GSE114002"
+            "GSE114002",
+            "GSE246381"
           ],
           "test_accessions": [
+            "ENCSR854RUF",
             "GSE186455",
             "GSE200304",
             "GSE232572"
@@ -139,8 +141,8 @@
         },
         "reverse_leakage": {
           "check": "reverse_leakage",
-          "n_train_candidates": 100017,
-          "n_test_sources": 16864,
+          "n_train_candidates": 101187,
+          "n_test_sources": 28726,
           "n_reverse_leakage": 0,
           "reverse_leakage_examples": [],
           "n_symmetric_leakage": 0,
@@ -150,8 +152,8 @@
         },
         "path_leakage": {
           "check": "path_leakage",
-          "n_train_intermediates": 213150,
-          "n_test_intermediates": 895,
+          "n_train_intermediates": 213517,
+          "n_test_intermediates": 2516,
           "n_forward_path_leakage": 0,
           "forward_path_leakage_examples": [],
           "n_reverse_path_leakage": 0,
@@ -170,12 +172,12 @@
     "cross_region_transfer": {
       "split_type": "cross_region_transfer",
       "manifest_path": "data/b0_splits/split_cross_region_transfer.jsonl",
-      "sha256": "196808f4ab97bff0fbc6297e7934f1cb9932614161cb74ee51f2f2cf1f858efa",
-      "n_entries": 106859,
+      "sha256": "b9d99dcac140460f560bb44a8a1f6805bb87a996dfe4fd10ce6d35c0b2473f55",
+      "n_entries": 119887,
       "checks": {
         "manifest_format": {
           "check": "manifest_format",
-          "n_entries": 106859,
+          "n_entries": 119887,
           "n_errors": 0,
           "errors": [],
           "pass": true
@@ -184,15 +186,18 @@
         "accession_overlap": {
           "check": "accession_overlap",
           "train_accessions": [
-            "GSE114002"
+            "GSE114002",
+            "GSE246381"
           ],
           "test_accessions": [
+            "ENCSR854RUF",
             "GSE186455",
             "GSE200304",
             "GSE232572"
           ],
           "val_accessions": [
-            "GSE114002"
+            "GSE114002",
+            "GSE246381"
           ],
           "n_overlap": 0,
           "overlap": [],
@@ -200,8 +205,8 @@
         },
         "reverse_leakage": {
           "check": "reverse_leakage",
-          "n_train_candidates": 80061,
-          "n_test_sources": 16864,
+          "n_train_candidates": 80880,
+          "n_test_sources": 28726,
           "n_reverse_leakage": 0,
           "reverse_leakage_examples": [],
           "n_symmetric_leakage": 0,
@@ -211,8 +216,8 @@
         },
         "path_leakage": {
           "check": "path_leakage",
-          "n_train_intermediates": 170078,
-          "n_test_intermediates": 895,
+          "n_train_intermediates": 170322,
+          "n_test_intermediates": 2516,
           "n_forward_path_leakage": 0,
           "forward_path_leakage_examples": [],
           "n_reverse_path_leakage": 0,

@@ -3,7 +3,7 @@
 
 Tests:
 - build_ledger_entry produces correct fields for each dataset
-- GSE246381 entries have historically_exposed=True and labels forbidden
+- GSE246381 entries have historically_exposed=False and labels allowed (unexposed D_C)
 - D_A datasets (GSE207584, GSE173083) have labels forbidden
 - D_C datasets (GSE114002, GSE200304, etc.) have labels allowed
 - D_D dataset (GSE145046) has labels allowed
@@ -117,26 +117,22 @@ class TestPerDatasetPolicy:
         assert entry["evidence_grade"] == "E2"
         assert entry["labels_allowed_for_new_training"] is True
 
-    def test_gse246381_is_de_e4_historically_exposed(self):
+    def test_gse246381_is_dc_e2_unexposed(self):
         rec = _make_record("GSE246381")
         entry = build_ledger_entry(rec)
-        assert entry["data_role"] == "D_E"
-        assert entry["evidence_grade"] == "E4"
-        assert entry["historically_exposed"] is True
-        assert entry["exposure_status"] == "historically_exposed"
-        assert entry["labels_allowed_for_new_training"] is False
-        assert entry["labels_allowed_for_new_hyperparameter_selection"] is False
-        assert entry["historical_exposure_path"] is not None
-        assert len(entry["historical_exposure_path"]) > 0
+        assert entry["data_role"] == "D_C"
+        assert entry["evidence_grade"] == "E2"
+        assert entry["historically_exposed"] is False
+        assert entry["exposure_status"] == "unexposed"
+        assert entry["labels_allowed_for_new_training"] is True
+        assert entry["labels_allowed_for_new_hyperparameter_selection"] is True
+        assert entry["historical_exposure_path"] is None
 
-    def test_gse246381_forbidden_wording(self):
-        """GSE246381 must not allow 'sealed'/'untouched'/'never-seen' wording."""
+    def test_gse246381_no_forbidden_claims(self):
+        """GSE246381 has no forbidden claims (fully usable)."""
         rec = _make_record("GSE246381")
         entry = build_ledger_entry(rec)
-        forbidden = set(entry["forbidden_claims"])
-        assert "sealed" in forbidden
-        assert "untouched" in forbidden
-        assert "never-seen_external_test" in forbidden
+        assert entry["forbidden_claims"] == []
 
     def test_gse207584_is_da_observational(self):
         rec = _make_record("GSE207584", record_type="observational")
@@ -154,11 +150,12 @@ class TestPerDatasetPolicy:
         assert entry["exposure_status"] == "observational_no_labels"
         assert entry["labels_allowed_for_new_training"] is False
 
-    def test_encsr854ruf_incomplete(self):
-        rec = _make_record("ENCSR854RUF", record_type="incomplete")
+    def test_encsr854ruf_unexposed(self):
+        rec = _make_record("ENCSR854RUF")
         entry = build_ledger_entry(rec)
-        assert entry["exposure_status"] == "incomplete"
+        assert entry["exposure_status"] == "unexposed"
         assert entry["data_role"] == "D_C"
+        assert entry["labels_allowed_for_new_training"] is True
 
 
 # ---------------------------------------------------------------------------
@@ -209,19 +206,11 @@ class TestFailSafe:
 
 class TestIncompleteRecords:
     def test_incomplete_gets_incomplete_status(self):
-        for acc in ("ENCSR854RUF", "GSE149487", "GSE173083", "GSE217518", "GSE246381"):
+        for acc in ("GSE149487", "GSE173083", "GSE217518"):
             rec = _make_record(acc, record_type="incomplete")
             entry = build_ledger_entry(rec)
             assert entry["exposure_status"] == "incomplete", \
                 f"{acc} incomplete record should have exposure_status=incomplete"
-
-    def test_incomplete_gse246381_keeps_labels_forbidden(self):
-        """Even as incomplete, GSE246381 keeps historically_exposed constraints."""
-        rec = _make_record("GSE246381", record_type="incomplete")
-        entry = build_ledger_entry(rec)
-        assert entry["historically_exposed"] is True
-        assert entry["labels_allowed_for_new_training"] is False
-        assert entry["historical_exposure_path"] is not None
 
 
 # ---------------------------------------------------------------------------

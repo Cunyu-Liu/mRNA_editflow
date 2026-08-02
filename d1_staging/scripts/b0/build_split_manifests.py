@@ -2,15 +2,17 @@
 """B0-02: Build split manifests for 4 split types.
 
 Split types:
-  1. 5utr_source_disjoint  — mmseqs cluster GSE114002 source sequences,
-     split clusters 80/10/10 (train/val/test). No source sequence (nor
-     any sequence in the same mmseqs cluster) appears in >1 split.
+  1. 5utr_source_disjoint  — mmseqs cluster pooled 5'UTR source sequences
+     (GSE114002 + GSE246381), split clusters 80/10/10 (train/val/test).
+     No source sequence (nor any sequence in the same mmseqs cluster)
+     appears in >1 split.
   2. 3utr_source_disjoint  — same as above for pooled 3'UTR datasets
-     (GSE200304 + GSE232572 + GSE186455).
-  3. study_disjoint        — train = GSE114002 (5'UTR), test = all 3'UTR
-     (GSE200304 + GSE232572 + GSE186455). Cross-study + cross-region.
-  4. cross_region_transfer — train = GSE114002 5'UTR (80%),
-     val = GSE114002 5'UTR (10%), test = all 3'UTR (100%).
+     (GSE200304 + GSE232572 + GSE186455 + ENCSR854RUF).
+  3. study_disjoint        — train = all 5'UTR (GSE114002 + GSE246381),
+     test = all 3'UTR (GSE200304 + GSE232572 + GSE186455 + ENCSR854RUF).
+     Cross-study + cross-region.
+  4. cross_region_transfer — train = all 5'UTR (80%), val = all 5'UTR (10%),
+     test = all 3'UTR (100%).
 
 B0-02 acceptance: unexplained overlap = 0, reverse/path leakage = 0.
 
@@ -368,15 +370,22 @@ def build_all_splits(
     print(f"  Total paired: {len(all_records)}")
 
     gse114002 = filter_records(all_records, accession="GSE114002")
+    gse246381 = filter_records(all_records, accession="GSE246381")
     gse200304 = filter_records(all_records, accession="GSE200304")
     gse232572 = filter_records(all_records, accession="GSE232572")
     gse186455 = filter_records(all_records, accession="GSE186455")
+    encsr854ruf = filter_records(all_records, accession="ENCSR854RUF")
     print(f"  GSE114002 (5'UTR): {len(gse114002)}")
+    print(f"  GSE246381 (5'UTR): {len(gse246381)}")
     print(f"  GSE200304 (3'UTR): {len(gse200304)}")
     print(f"  GSE232572 (3'UTR): {len(gse232572)}")
     print(f"  GSE186455 (3'UTR): {len(gse186455)}")
+    print(f"  ENCSR854RUF (3'UTR): {len(encsr854ruf)}")
+    # Pool all 5'UTR paired datasets for 5'UTR-related splits
+    all_5utr = gse114002 + gse246381
+    print(f"  All 5'UTR pooled: {len(all_5utr)}")
     # Pool all 3'UTR paired datasets for 3'UTR-related splits
-    all_3utr = gse200304 + gse232572 + gse186455
+    all_3utr = gse200304 + gse232572 + gse186455 + encsr854ruf
     print(f"  All 3'UTR pooled: {len(all_3utr)}")
 
     summaries = {}
@@ -384,18 +393,19 @@ def build_all_splits(
     # --- 1. 5utr_source_disjoint ---
     print("\n[1/4] Building 5utr_source_disjoint split...")
     work = mmseqs_work / "5utr_source"
-    r2c = run_mmseqs_cluster(gse114002, work, seq_field="source_sequence")
+    r2c = run_mmseqs_cluster(all_5utr, work, seq_field="source_sequence")
     n_clusters = len(set(r2c.values()))
     print(f"  mmseqs clusters: {n_clusters}")
     assignments = split_clusters(r2c)
-    assignments = fix_reverse_leakage(gse114002, assignments)
+    assignments = fix_reverse_leakage(all_5utr, assignments)
     summary = write_manifest(
         "5utr_source_disjoint",
-        gse114002,
+        all_5utr,
         assignments,
         str(output_dir / "split_5utr_source_disjoint.jsonl"),
         notes=f"mmseqs clustering at identity={CLUSTER_MIN_SEQ_ID}, cov={CLUSTER_COV}; "
-              f"{n_clusters} clusters split 80/10/10 by cluster",
+              f"{n_clusters} clusters split 80/10/10 by cluster. "
+              f"Pools GSE114002+GSE246381 (all 5'UTR paired datasets).",
     )
     summaries["5utr_source_disjoint"] = summary
     print(f"  train={summary['n_train']} val={summary['n_val']} test={summary['n_test']}")
@@ -416,41 +426,41 @@ def build_all_splits(
         str(output_dir / "split_3utr_source_disjoint.jsonl"),
         notes=f"mmseqs clustering at identity={CLUSTER_MIN_SEQ_ID}, cov={CLUSTER_COV}; "
               f"{n_clusters} clusters split 80/10/10 by cluster. "
-              f"Pools GSE200304+GSE232572+GSE186455 (all 3'UTR paired datasets).",
+              f"Pools GSE200304+GSE232572+GSE186455+ENCSR854RUF (all 3'UTR paired datasets).",
     )
     summaries["3utr_source_disjoint"] = summary
     print(f"  train={summary['n_train']} val={summary['n_val']} test={summary['n_test']}")
 
     # --- 3. study_disjoint ---
-    # train = GSE114002 (5'UTR), test = all 3'UTR (GSE200304+GSE232572+GSE186455)
+    # train = all 5'UTR (GSE114002+GSE246381), test = all 3'UTR
     # Cross-study AND cross-region.
     print("\n[3/4] Building study_disjoint split...")
-    pooled = gse114002 + all_3utr
+    pooled = all_5utr + all_3utr
     assignments = assign_by_accession(
         pooled,
-        train_accessions={"GSE114002"},
+        train_accessions={"GSE114002", "GSE246381"},
         val_accessions=set(),
-        test_accessions={"GSE200304", "GSE232572", "GSE186455"},
+        test_accessions={"GSE200304", "GSE232572", "GSE186455", "ENCSR854RUF"},
     )
     summary = write_manifest(
         "study_disjoint",
         pooled,
         assignments,
         str(output_dir / "split_study_disjoint.jsonl"),
-        notes="train=GSE114002 (5'UTR), test=GSE200304+GSE232572+GSE186455 (3'UTR). "
+        notes="train=GSE114002+GSE246381 (5'UTR), test=GSE200304+GSE232572+GSE186455+ENCSR854RUF (3'UTR). "
               "Cross-study AND cross-region. Val is empty (use cross_region_transfer "
-              "val instead, or source_disjoint val within train study).",
+              "val instead, or source_disjoint val within train studies).",
     )
     summaries["study_disjoint"] = summary
     print(f"  train={summary['n_train']} val={summary['n_val']} test={summary['n_test']}")
 
     # --- 4. cross_region_transfer ---
-    # train = GSE114002 5'UTR (80%), val = GSE114002 5'UTR (10%),
-    # test = GSE200304 3'UTR (100%)
+    # train = all 5'UTR (80%), val = all 5'UTR (10%),
+    # test = all 3'UTR (100%)
     # Use mmseqs clusters from 5utr_source_disjoint for train/val split
     print("\n[4/4] Building cross_region_transfer split...")
     r2c_5utr = run_mmseqs_cluster(
-        gse114002, mmseqs_work / "5utr_crt", seq_field="source_sequence"
+        all_5utr, mmseqs_work / "5utr_crt", seq_field="source_sequence"
     )
     clusters_5utr = defaultdict(list)
     for rid, cluster in r2c_5utr.items():
@@ -468,19 +478,19 @@ def build_all_splits(
         split = "train" if cluster in train_clusters else ("val" if cluster in val_clusters else "train_val_unused")
         for rid in rids:
             assignments[rid] = split
-    # test = all 3'UTR (GSE200304+GSE232572+GSE186455)
+    # test = all 3'UTR (GSE200304+GSE232572+GSE186455+ENCSR854RUF)
     for rec in all_3utr:
         assignments[rec.record_id] = "test"
 
     summary = write_manifest(
         "cross_region_transfer",
-        gse114002 + all_3utr,
+        all_5utr + all_3utr,
         assignments,
         str(output_dir / "split_cross_region_transfer.jsonl"),
-        notes="train+val=GSE114002 (5'UTR, mmseqs cluster split 80/10), "
-              "test=GSE200304+GSE232572+GSE186455 (3'UTR, 100%). "
+        notes="train+val=GSE114002+GSE246381 (5'UTR, mmseqs cluster split 80/10), "
+              "test=GSE200304+GSE232572+GSE186455+ENCSR854RUF (3'UTR, 100%). "
               "Tests 5'UTR->3'UTR region transfer. "
-              "train_val_unused records are GSE114002 clusters not assigned to "
+              "train_val_unused records are 5'UTR clusters not assigned to "
               "train or val (the remaining 10%); they are excluded from this split.",
     )
     summaries["cross_region_transfer"] = summary

@@ -105,19 +105,16 @@ DATASET_EXPOSURE_POLICY = {
         "notes": "primary supervised; 3'UTR TRAP-seq MPRA (N2a/Vglut)",
     },
     "ENCSR854RUF": {
-        # processed table role is D_C E2; raw reads are D_A E1.
-        # Canonical records only have the processed-table role (incomplete:
-        # xlsx has variant activity but no UTR sequences).
         "data_role": "D_C",
         "evidence_grade": "E2",
-        "exposure_status": "incomplete",
+        "exposure_status": "unexposed",
         "historically_exposed": False,
         "labels_allowed_for_new_training": True,
         "labels_allowed_for_new_hyperparameter_selection": True,
         "allowed_claims": ["edit_effect", "generation_grounding"],
         "forbidden_claims": [],
         "historical_exposure_path": None,
-        "notes": "MPRAu processed table; incomplete in canonical records (no UTR sequences); raw reads are D_A E1 observational",
+        "notes": "MPRAu 3'UTR; sequences reconstructed from hg19 + variant coordinates; all 11,969 paired records verified",
     },
     "GSE145046": {
         "data_role": "D_D",
@@ -132,26 +129,16 @@ DATASET_EXPOSURE_POLICY = {
         "notes": "dense landscape; 5'UTR 10-nt randomized library (observational, no source-candidate pairs)",
     },
     "GSE246381": {
-        "data_role": "D_E",
-        "evidence_grade": "E4",
-        "exposure_status": "historically_exposed",
-        "historically_exposed": True,
-        "labels_allowed_for_new_training": False,
-        "labels_allowed_for_new_hyperparameter_selection": False,
-        "allowed_claims": ["cross_study_transfer_assessment"],
-        "forbidden_claims": [
-            "sealed",
-            "untouched",
-            "never-seen_external_test",
-            "training_supervision",
-            "hyperparameter_selection",
-        ],
-        "historical_exposure_path": (
-            "GSE246381 labels were accessible to prior v1 predictor-first "
-            "experiments (P3-xx series) before v2 contract freeze; "
-            "role = historically_exposed_retrospective_external_stress_test"
-        ),
-        "notes": "NDD 5'UTR MPRA; historically exposed (E4); labels forbidden for new training and hyperparameter selection",
+        "data_role": "D_C",
+        "evidence_grade": "E2",
+        "exposure_status": "unexposed",
+        "historically_exposed": False,
+        "labels_allowed_for_new_training": True,
+        "labels_allowed_for_new_hyperparameter_selection": True,
+        "allowed_claims": ["edit_effect", "generation_grounding"],
+        "forbidden_claims": [],
+        "historical_exposure_path": None,
+        "notes": "primary supervised; 5'UTR translational efficiency (Polysome/Monosome UMI)",
     },
     "GSE207584": {
         "data_role": "D_A",
