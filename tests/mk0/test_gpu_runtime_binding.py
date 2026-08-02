@@ -471,6 +471,74 @@ def test_frozen_foundation_prefix_remains_viable(
     )
 
 
+def test_typing_extensions_runtime_dependency_is_allowlisted_exactly(
+    tmp_path: Path,
+) -> None:
+    runner = _load_gpu_runner()
+    binding, code_identities = runner._typing_compatibility_shim_state()
+    assert binding["distribution_version"] == "4.16.0"
+    assert binding["source_sha256"] == runner.TYPING_COMPATIBILITY_SHIM_SOURCE_SHA256
+    assert binding["module_match"] == "exact_only_no_submodules"
+    assert binding["requirements_lock"]["reproduced"] is False
+    assert len(binding["allowed_calls"]) == 4
+    for record in binding["allowed_calls"]:
+        key = (record["function_qualname"], record["first_lineno"])
+        assert runner._external_call_classification(
+            "typing_extensions",
+            binding["source_file"],
+            key[0],
+            key[1],
+            code_identities[key],
+        ) == (runner.TYPING_COMPATIBILITY_SHIM_CLASSIFICATION, ())
+
+    fake = _external_callback(
+        tmp_path,
+        module_name="typing_extensions",
+        function_name="_collect_type_vars",
+    )
+    assert runner._external_call_classification(
+        "typing_extensions",
+        str(Path(fake.__code__.co_filename).resolve()),
+        fake.__qualname__,
+        fake.__code__.co_firstlineno,
+        fake.__code__,
+    ) == ("unknown_external", ())
+    assert runner._external_call_classification(
+        "typing_extensions.unrelated_sdk",
+        binding["source_file"],
+        "calculate",
+        1,
+        None,
+    ) == ("unknown_external", ())
+
+
+def test_typing_extensions_allowlist_does_not_hide_prohibited_roles(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    runner = _load_gpu_runner()
+    recorder = _external_recorder(runner, run_id="unit-typing-extensions-prohibited")
+    callback = _external_callback(
+        tmp_path,
+        module_name="typing_extensions.critic_sdk",
+        function_name="reward_candidate",
+    )
+    monkeypatch.setattr(sys.modules[__name__], "_EXTERNAL_CALLBACK", callback)
+
+    with pytest.raises(runner.SmokeFailure, match="prohibited role query") as caught:
+        recorder.run_phase(
+            "generator_rate_official_frozen_arm", _test_generator_with_external
+        )
+
+    phase = caught.value.partial_phase_evidence["phase_records"][0]
+    assert any(
+        record["module_name"] == "typing_extensions.critic_sdk"
+        and record["classification"] == "prohibited_role"
+        and "critic_query" in record["categories"]
+        and "final_evaluator_query" in record["categories"]
+        for record in phase["external_call_inventory"]
+    )
+
+
 def test_external_critic_in_new_thread_fails_closed_with_thread_evidence(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:

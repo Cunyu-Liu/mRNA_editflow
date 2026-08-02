@@ -13,6 +13,7 @@ import argparse
 import ast
 from dataclasses import replace
 from datetime import datetime, timezone
+from functools import lru_cache
 import hashlib
 import importlib
 from importlib import metadata as importlib_metadata
@@ -186,6 +187,24 @@ FROZEN_FOUNDATION_EXTERNAL_MODULE_PREFIXES = (
     "huggingface_hub",
     "packaging",
 )
+
+TYPING_COMPATIBILITY_SHIM_DISTRIBUTION = "typing_extensions"
+TYPING_COMPATIBILITY_SHIM_MODULE = "typing_extensions"
+TYPING_COMPATIBILITY_SHIM_VERSION = "4.16.0"
+TYPING_COMPATIBILITY_SHIM_SOURCE_SHA256 = (
+    "4040ca1a1ecbee00d1385c12a93084d1c5bd46f0b774f07e5ae7e91c4f55e696"
+)
+TYPING_COMPATIBILITY_SHIM_CALLS = (
+    ("_collect_type_vars", 3316),
+    ("_has_generic_or_protocol_as_origin", 3281),
+    ("_is_unpacked_typevartuple", 3303),
+    ("_should_collect_from_parameters", 281),
+)
+TYPING_COMPATIBILITY_SHIM_CLASSIFICATION = (
+    "bound_typing_compatibility_shim_exact_callable"
+)
+ENVIRONMENT_LOCK_DRIFT_MARKER = "ENVIRONMENT_LOCK_DRIFT_RECORDED_NOT_SILENTLY_MUTATED"
+REQUIREMENTS_LOCK_PATH = REPO_ROOT / "requirements-lock.txt"
 
 ROLE_PROHIBITED_TOKENS = (
     "critic",
@@ -2616,6 +2635,115 @@ def _path_is_within(path: Path, root: Path) -> bool:
     return True
 
 
+def _requirements_lock_typing_extensions_version() -> str:
+    matches = re.findall(
+        r"(?m)^typing_extensions==([^\s#]+)\s*$",
+        REQUIREMENTS_LOCK_PATH.read_text(encoding="utf-8"),
+    )
+    if len(matches) != 1:
+        raise FinalizeFailure("requirements lock has no unique typing_extensions pin")
+    return matches[0]
+
+
+@lru_cache(maxsize=1)
+def _typing_compatibility_shim_binding() -> dict[str, Any]:
+    """Independently bind the exact Python 3.10 typing shim."""
+
+    distribution = importlib_metadata.distribution(
+        TYPING_COMPATIBILITY_SHIM_DISTRIBUTION
+    )
+    if distribution.version != TYPING_COMPATIBILITY_SHIM_VERSION:
+        raise FinalizeFailure("typing compatibility shim version drift")
+    owned_files = [
+        item
+        for item in distribution.files or ()
+        if str(item).replace("\\", "/") == "typing_extensions.py"
+    ]
+    if len(owned_files) != 1:
+        raise FinalizeFailure("typing compatibility shim distribution ownership drift")
+    distribution_source = Path(distribution.locate_file(owned_files[0])).resolve(
+        strict=True
+    )
+    distribution_root = Path(distribution.locate_file(".")).resolve(strict=True)
+    module = importlib.import_module(TYPING_COMPATIBILITY_SHIM_MODULE)
+    module_file = getattr(module, "__file__", None)
+    module_spec_origin = getattr(getattr(module, "__spec__", None), "origin", None)
+    if not isinstance(module_file, str) or not isinstance(module_spec_origin, str):
+        raise FinalizeFailure("typing compatibility shim lacks an import origin")
+    source_path = Path(module_file).resolve(strict=True)
+    if (
+        source_path != distribution_source
+        or Path(module_spec_origin).resolve(strict=True) != source_path
+        or not _path_is_within(source_path, distribution_root)
+    ):
+        raise FinalizeFailure("typing compatibility shim source origin drift")
+    source_sha256 = sha256_file(source_path)
+    if source_sha256 != TYPING_COMPATIBILITY_SHIM_SOURCE_SHA256:
+        raise FinalizeFailure("typing compatibility shim source hash drift")
+
+    allowed_calls: list[dict[str, Any]] = []
+    for qualname, first_lineno in TYPING_COMPATIBILITY_SHIM_CALLS:
+        function = getattr(module, qualname, None)
+        code = getattr(function, "__code__", None)
+        if (
+            code is None
+            or getattr(function, "__module__", None) != TYPING_COMPATIBILITY_SHIM_MODULE
+            or getattr(function, "__qualname__", None) != qualname
+            or int(code.co_firstlineno) != first_lineno
+            or Path(code.co_filename).resolve(strict=True) != source_path
+        ):
+            raise FinalizeFailure(
+                f"typing compatibility shim callable identity drift: {qualname}"
+            )
+        allowed_calls.append(
+            {"function_qualname": qualname, "first_lineno": first_lineno}
+        )
+
+    locked_version = _requirements_lock_typing_extensions_version()
+    binding: dict[str, Any] = {
+        "schema_version": "mk0_typing_compatibility_shim_binding_v1",
+        "classification": TYPING_COMPATIBILITY_SHIM_CLASSIFICATION,
+        "distribution_name": TYPING_COMPATIBILITY_SHIM_DISTRIBUTION,
+        "distribution_version": distribution.version,
+        "module_name": TYPING_COMPATIBILITY_SHIM_MODULE,
+        "module_match": "exact_only_no_submodules",
+        "source_file": str(source_path),
+        "source_size_bytes": source_path.stat().st_size,
+        "source_sha256": source_sha256,
+        "distribution_owns_source": True,
+        "distribution_root": str(distribution_root),
+        "distribution_root_verified": True,
+        "current_sysconfig_site_package_root_match": any(
+            _path_is_within(source_path, root) for root in SITE_PACKAGE_ROOTS
+        ),
+        "allowed_calls": allowed_calls,
+        "requirements_lock": {
+            "path": str(REQUIREMENTS_LOCK_PATH.resolve(strict=True)),
+            "sha256": sha256_file(REQUIREMENTS_LOCK_PATH),
+            "expected_version": locked_version,
+            "observed_version": distribution.version,
+            "reproduced": distribution.version == locked_version,
+            "drift_disclosure_marker": ENVIRONMENT_LOCK_DRIFT_MARKER,
+        },
+    }
+    binding["binding_sha256"] = _canonical_sha256(binding)
+    return binding
+
+
+def _external_call_policy_payload() -> dict[str, Any]:
+    return {
+        "unknown_external_calls": "FAIL_CLOSED",
+        "stdlib_root": str(STDLIB_ROOT),
+        "site_package_roots_excluded_from_stdlib": [
+            str(path) for path in SITE_PACKAGE_ROOTS
+        ],
+        "frozen_foundation_module_prefixes": list(
+            FROZEN_FOUNDATION_EXTERNAL_MODULE_PREFIXES
+        ),
+        "exact_runtime_dependency_bindings": [_typing_compatibility_shim_binding()],
+    }
+
+
 def _external_prohibited_categories(
     module_name: str,
     source_file: str,
@@ -2638,6 +2766,7 @@ def _external_call_classification(
     module_name: str,
     source_file: str,
     qualname: str,
+    first_lineno: int,
 ) -> tuple[str, tuple[str, ...]]:
     categories = _external_prohibited_categories(
         module_name,
@@ -2646,6 +2775,18 @@ def _external_call_classification(
     )
     if categories:
         return "prohibited_role", categories
+    if module_name == TYPING_COMPATIBILITY_SHIM_MODULE:
+        binding = _typing_compatibility_shim_binding()
+        allowed = {
+            (record["function_qualname"], record["first_lineno"])
+            for record in binding["allowed_calls"]
+        }
+        if (
+            source_file == binding["source_file"]
+            and (qualname, first_lineno) in allowed
+        ):
+            return TYPING_COMPATIBILITY_SHIM_CLASSIFICATION, ()
+        return "unknown_external", ()
     if any(
         _module_matches_prefix(module_name, prefix)
         for prefix in FROZEN_FOUNDATION_EXTERNAL_MODULE_PREFIXES
@@ -3047,7 +3188,7 @@ def verify_gpu_post_role_query_audit(
     audit = foundation.get("post_gpu_role_query_audit")
     require(isinstance(audit, Mapping), "GPU post-role/query audit is missing")
     require(
-        audit.get("schema_version") == "mk0_gpu_post_role_query_audit_v1",
+        audit.get("schema_version") == "mk0_gpu_post_role_query_audit_v2",
         "GPU post-role/query audit schema drift",
     )
     require(audit.get("status") == "PASS", "GPU post-role/query audit did not pass")
@@ -3069,19 +3210,16 @@ def verify_gpu_post_role_query_audit(
         "GPU role/query thread scope drift",
     )
     require(
-        audit.get("external_call_policy")
-        == {
-            "unknown_external_calls": "FAIL_CLOSED",
-            "stdlib_root": str(STDLIB_ROOT),
-            "site_package_roots_excluded_from_stdlib": [
-                str(path) for path in SITE_PACKAGE_ROOTS
-            ],
-            "frozen_foundation_module_prefixes": list(
-                FROZEN_FOUNDATION_EXTERNAL_MODULE_PREFIXES
-            ),
-        },
+        audit.get("external_call_policy") == _external_call_policy_payload(),
         "GPU external-call policy drift",
     )
+    run_manifest = read_json(run_manifest_path)
+    typing_binding = _typing_compatibility_shim_binding()
+    if typing_binding["requirements_lock"]["reproduced"] is False:
+        require(
+            ENVIRONMENT_LOCK_DRIFT_MARKER in run_manifest.get("known_deviations", []),
+            "GPU typing compatibility lock drift is not disclosed",
+        )
     require(audit.get("run_id") == run_id, "GPU role/query run ID drift")
     require(audit.get("goal_sha256") == goal_sha256, "GPU role/query Goal drift")
     require(
@@ -3307,6 +3445,7 @@ def verify_gpu_post_role_query_audit(
                 module_name,
                 external_source,
                 external_qualname,
+                external_line,
             )
             require(
                 record["classification"] == classification

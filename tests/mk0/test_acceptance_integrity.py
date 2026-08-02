@@ -467,7 +467,7 @@ def _synthetic_gpu_role_query_audit(
         for phase in phase_records
     ]
     return {
-        "schema_version": "mk0_gpu_post_role_query_audit_v1",
+        "schema_version": "mk0_gpu_post_role_query_audit_v2",
         "status": "PASS",
         "placement": "after_all_formal_gpu_generator_rate_sampler_phases_before_support_publication",
         "runtime_instrumentation": "sys_setprofile_python_calls",
@@ -475,16 +475,7 @@ def _synthetic_gpu_role_query_audit(
             "formal_gpu_main_and_new_threading_threads_with_"
             "preexisting_noncurrent_threads_forbidden"
         ),
-        "external_call_policy": {
-            "unknown_external_calls": "FAIL_CLOSED",
-            "stdlib_root": str(FINALIZER.STDLIB_ROOT),
-            "site_package_roots_excluded_from_stdlib": [
-                str(path) for path in FINALIZER.SITE_PACKAGE_ROOTS
-            ],
-            "frozen_foundation_module_prefixes": list(
-                FINALIZER.FROZEN_FOUNDATION_EXTERNAL_MODULE_PREFIXES
-            ),
-        },
+        "external_call_policy": FINALIZER._external_call_policy_payload(),
         "run_id": run_id,
         "goal_sha256": goal_sha256,
         "implementation_commit": implementation_commit,
@@ -793,6 +784,7 @@ def test_cpu_gpu_sidecars_bind_run_source_preflight_and_support_bytes(
         "source_binding": source_binding,
         "preflight": preflight,
         "exact_commands": {"cpu_acceptance": {"argv": [sys.executable]}},
+        "known_deviations": [FINALIZER.ENVIRONMENT_LOCK_DRIFT_MARKER],
         "final_labels_accessed": False,
         "downstream_stage_started": False,
     }
@@ -1025,6 +1017,24 @@ def test_cpu_gpu_sidecars_bind_run_source_preflight_and_support_bytes(
             missing_audit_foundation, gpu, **role_verify_kwargs
         )
 
+    broad_typing_prefix = copy.deepcopy(foundation)
+    broad_typing_prefix["post_gpu_role_query_audit"]["external_call_policy"][
+        "frozen_foundation_module_prefixes"
+    ].append("typing_extensions")
+    with pytest.raises(FINALIZER.FinalizeFailure, match="external-call policy drift"):
+        FINALIZER.verify_gpu_post_role_query_audit(
+            broad_typing_prefix, gpu, **role_verify_kwargs
+        )
+
+    typing_hash_drift = copy.deepcopy(foundation)
+    typing_hash_drift["post_gpu_role_query_audit"]["external_call_policy"][
+        "exact_runtime_dependency_bindings"
+    ][0]["source_sha256"] = ("0" * 64)
+    with pytest.raises(FINALIZER.FinalizeFailure, match="external-call policy drift"):
+        FINALIZER.verify_gpu_post_role_query_audit(
+            typing_hash_drift, gpu, **role_verify_kwargs
+        )
+
     missing_phase_foundation = copy.deepcopy(foundation)
     missing_phase_foundation["post_gpu_role_query_audit"]["phase_records"].pop()
     with pytest.raises(FINALIZER.FinalizeFailure, match="phase coverage is incomplete"):
@@ -1077,6 +1087,35 @@ def test_cpu_gpu_sidecars_bind_run_source_preflight_and_support_bytes(
         FINALIZER.verify_gpu_post_role_query_audit(
             unknown_external_foundation, gpu, **role_verify_kwargs
         )
+
+    assert FINALIZER._external_call_classification(
+        "typing_extensions",
+        str(tmp_path / "typing_extensions.py"),
+        "_collect_type_vars",
+        3316,
+    ) == ("unknown_external", ())
+    typing_binding = FINALIZER._typing_compatibility_shim_binding()
+    assert FINALIZER._external_call_classification(
+        "typing_extensions",
+        typing_binding["source_file"],
+        "_collect_type_vars",
+        3316,
+    ) == (FINALIZER.TYPING_COMPATIBILITY_SHIM_CLASSIFICATION, ())
+    assert FINALIZER._external_call_classification(
+        "typing_extensions_extra",
+        str(tmp_path / "typing_extensions_extra.py"),
+        "_collect_type_vars",
+        3316,
+    ) == ("unknown_external", ())
+    assert FINALIZER._external_call_classification(
+        "typing_extensions.critic_sdk",
+        str(tmp_path / "typing_extensions_critic.py"),
+        "reward_candidate",
+        1,
+    ) == (
+        "prohibited_role",
+        ("critic_query", "final_evaluator_query"),
+    )
 
     thread_drift_foundation = copy.deepcopy(foundation)
     thread_drift_phase = thread_drift_foundation["post_gpu_role_query_audit"][
