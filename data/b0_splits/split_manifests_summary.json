@@ -20,58 +20,80 @@
   "3utr_source_disjoint": {
     "split_type": "3utr_source_disjoint",
     "output_path": "data/b0_splits/split_3utr_source_disjoint.jsonl",
-    "sha256": "f3749c70dd4cdeb86362028824eb4665914480446503a6823de33a02f868edbc",
-    "n_total": 6885,
+    "sha256": "068ee7384542b555ddd562081a8d2ea48188523fbeea8cd0abd9dc1cc9340449",
+    "n_total": 16877,
     "n_excluded": 0,
-    "n_train": 5515,
-    "n_val": 692,
-    "n_test": 678,
+    "n_train": 13601,
+    "n_val": 1691,
+    "n_test": 1585,
     "by_accession_split": {
+      "GSE186455": {
+        "test": 75,
+        "train": 499,
+        "val": 75
+      },
       "GSE200304": {
-        "test": 678,
-        "train": 5515,
-        "val": 692
+        "train": 5509,
+        "val": 668,
+        "test": 708
+      },
+      "GSE232572": {
+        "train": 7593,
+        "val": 948,
+        "test": 802
       }
     },
-    "notes": "mmseqs clustering at identity=0.8, cov=0.8; 6343 clusters split 80/10/10 by cluster"
+    "notes": "mmseqs clustering at identity=0.8, cov=0.8; 10156 clusters split 80/10/10 by cluster. Pools GSE200304+GSE232572+GSE186455 (all 3'UTR paired datasets)."
   },
   "study_disjoint": {
     "split_type": "study_disjoint",
     "output_path": "data/b0_splits/split_study_disjoint.jsonl",
-    "sha256": "becda27703ae76420fb304dbe30fa9fbcf880175a33155dd317ee7b9ead4fb1c",
-    "n_total": 106902,
+    "sha256": "4cf822036737bb92f4fe1dc4bb78c71e3e05b34a8e446c104176a6caf74a86a2",
+    "n_total": 116894,
     "n_excluded": 0,
     "n_train": 100017,
     "n_val": 0,
-    "n_test": 6885,
+    "n_test": 16877,
     "by_accession_split": {
       "GSE114002": {
         "train": 100017
       },
+      "GSE186455": {
+        "test": 649
+      },
       "GSE200304": {
         "test": 6885
+      },
+      "GSE232572": {
+        "test": 9343
       }
     },
-    "notes": "train=GSE114002 (5'UTR), test=GSE200304 (3'UTR). Data limitation: only 1 D_C study per region, so study_disjoint is also cross-region. Val is empty (use cross_region_transfer val instead, or source_disjoint val within train study)."
+    "notes": "train=GSE114002 (5'UTR), test=GSE200304+GSE232572+GSE186455 (3'UTR). Cross-study AND cross-region. Val is empty (use cross_region_transfer val instead, or source_disjoint val within train study)."
   },
   "cross_region_transfer": {
     "split_type": "cross_region_transfer",
     "output_path": "data/b0_splits/split_cross_region_transfer.jsonl",
-    "sha256": "ac28197840c8c125a62f420a383771f48517e677a7545ed0e076416a46c84f3d",
-    "n_total": 96867,
+    "sha256": "196808f4ab97bff0fbc6297e7934f1cb9932614161cb74ee51f2f2cf1f858efa",
+    "n_total": 106859,
     "n_excluded": 10035,
     "n_train": 80061,
     "n_val": 9921,
-    "n_test": 6885,
+    "n_test": 16877,
     "by_accession_split": {
       "GSE114002": {
         "train": 80061,
         "val": 9921
       },
+      "GSE186455": {
+        "test": 649
+      },
       "GSE200304": {
         "test": 6885
+      },
+      "GSE232572": {
+        "test": 9343
       }
     },
-    "notes": "train+val=GSE114002 (5'UTR, mmseqs cluster split 80/10), test=GSE200304 (3'UTR, 100%). Tests 5'UTR->3'UTR region transfer. train_val_unused records are GSE114002 clusters not assigned to train or val (the remaining 10%); they are excluded from this split."
+    "notes": "train+val=GSE114002 (5'UTR, mmseqs cluster split 80/10), test=GSE200304+GSE232572+GSE186455 (3'UTR, 100%). Tests 5'UTR->3'UTR region transfer. train_val_unused records are GSE114002 clusters not assigned to train or val (the remaining 10%); they are excluded from this split."
   }
 }

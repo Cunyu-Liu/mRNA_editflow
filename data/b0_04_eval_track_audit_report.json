@@ -11,7 +11,7 @@
     "heldout_generative": "D_C paired (measured candidate = recovery target)",
     "open_legal_generation": "any record with source_sequence"
   },
-  "n_total_assignments": 310670,
+  "n_total_assignments": 340646,
   "per_split": {
     "5utr_source_disjoint": {
       "n_records": 100016,
@@ -22,26 +22,26 @@
       }
     },
     "3utr_source_disjoint": {
-      "n_records": 6885,
+      "n_records": 16877,
       "by_split_role": {
-        "test": 678,
-        "train": 5515,
-        "val": 692
+        "test": 1585,
+        "train": 13601,
+        "val": 1691
       }
     },
     "study_disjoint": {
-      "n_records": 106902,
+      "n_records": 116894,
       "by_split_role": {
         "train": 100017,
-        "test": 6885
+        "test": 16877
       }
     },
     "cross_region_transfer": {
-      "n_records": 96867,
+      "n_records": 106859,
       "by_split_role": {
         "train": 80061,
         "val": 9921,
-        "test": 6885
+        "test": 16877
       }
     }
   },
@@ -79,8 +79,8 @@
     {
       "name": "cross_split_role_diversity",
       "hard_gate": false,
-      "n_records_in_multiple_splits": 106902,
-      "n_records_with_multiple_split_roles": 26163,
+      "n_records_in_multiple_splits": 116894,
+      "n_records_with_multiple_split_roles": 35248,
       "examples": {
         "GSE114002_0_10564": [
           "test",
@@ -130,19 +130,19 @@
       "hard_gate": false,
       "counts": {
         "3utr_source_disjoint/closed_measured_pool": {
-          "test_pair": 678,
-          "train_pair": 5515,
-          "val_pair": 692
+          "test_pair": 1585,
+          "train_pair": 13601,
+          "val_pair": 1691
         },
         "3utr_source_disjoint/heldout_generative": {
-          "test_heldout_source": 678,
-          "train_heldout_source": 5515,
-          "val_heldout_source": 692
+          "test_heldout_source": 1585,
+          "train_heldout_source": 13601,
+          "val_heldout_source": 1691
         },
         "3utr_source_disjoint/open_legal_generation": {
-          "test_gen_source": 678,
-          "train_gen_source": 5515,
-          "val_gen_source": 692
+          "test_gen_source": 1585,
+          "train_gen_source": 13601,
+          "val_gen_source": 1691
         },
         "5utr_source_disjoint/closed_measured_pool": {
           "train_pair": 80060,
@@ -162,29 +162,29 @@
         "cross_region_transfer/closed_measured_pool": {
           "train_pair": 80061,
           "val_pair": 9921,
-          "test_pair": 6885
+          "test_pair": 16877
         },
         "cross_region_transfer/heldout_generative": {
           "train_heldout_source": 80061,
           "val_heldout_source": 9921,
-          "test_heldout_source": 6885
+          "test_heldout_source": 16877
         },
         "cross_region_transfer/open_legal_generation": {
           "train_gen_source": 80061,
           "val_gen_source": 9921,
-          "test_gen_source": 6885
+          "test_gen_source": 16877
         },
         "study_disjoint/closed_measured_pool": {
           "train_pair": 100017,
-          "test_pair": 6885
+          "test_pair": 16877
         },
         "study_disjoint/heldout_generative": {
           "train_heldout_source": 100017,
-          "test_heldout_source": 6885
+          "test_heldout_source": 16877
         },
         "study_disjoint/open_legal_generation": {
           "train_gen_source": 100017,
-          "test_gen_source": 6885
+          "test_gen_source": 16877
         }
       }
     }
@@ -194,6 +194,6 @@
   },
   "overall_pass": true,
   "manifest_path": "data/b0_04_eval_track_manifest.jsonl",
-  "manifest_sha256": "ef6faa2eac378c12db0274c8c4652eabb56644e7c662c8712e7d6a0a474c8b9a",
-  "manifest_n_records": 310670
+  "manifest_sha256": "a1300a7723a1eaef6a9082051f4d1491c0b025c2d9cb38fca88013c800567c95",
+  "manifest_n_records": 340646
 }

@@ -5,12 +5,12 @@ Split types:
   1. 5utr_source_disjoint  — mmseqs cluster GSE114002 source sequences,
      split clusters 80/10/10 (train/val/test). No source sequence (nor
      any sequence in the same mmseqs cluster) appears in >1 split.
-  2. 3utr_source_disjoint  — same as above for GSE200304 (3'UTR).
-  3. study_disjoint        — train = GSE114002 (5'UTR), test = GSE200304
-     (3'UTR). Cross-study + cross-region (data limitation: only 1 D_C
-     study per region).
+  2. 3utr_source_disjoint  — same as above for pooled 3'UTR datasets
+     (GSE200304 + GSE232572 + GSE186455).
+  3. study_disjoint        — train = GSE114002 (5'UTR), test = all 3'UTR
+     (GSE200304 + GSE232572 + GSE186455). Cross-study + cross-region.
   4. cross_region_transfer — train = GSE114002 5'UTR (80%),
-     val = GSE114002 5'UTR (10%), test = GSE200304 3'UTR (100%).
+     val = GSE114002 5'UTR (10%), test = all 3'UTR (100%).
 
 B0-02 acceptance: unexplained overlap = 0, reverse/path leakage = 0.
 
@@ -369,8 +369,15 @@ def build_all_splits(
 
     gse114002 = filter_records(all_records, accession="GSE114002")
     gse200304 = filter_records(all_records, accession="GSE200304")
+    gse232572 = filter_records(all_records, accession="GSE232572")
+    gse186455 = filter_records(all_records, accession="GSE186455")
     print(f"  GSE114002 (5'UTR): {len(gse114002)}")
     print(f"  GSE200304 (3'UTR): {len(gse200304)}")
+    print(f"  GSE232572 (3'UTR): {len(gse232572)}")
+    print(f"  GSE186455 (3'UTR): {len(gse186455)}")
+    # Pool all 3'UTR paired datasets for 3'UTR-related splits
+    all_3utr = gse200304 + gse232572 + gse186455
+    print(f"  All 3'UTR pooled: {len(all_3utr)}")
 
     summaries = {}
 
@@ -394,44 +401,44 @@ def build_all_splits(
     print(f"  train={summary['n_train']} val={summary['n_val']} test={summary['n_test']}")
 
     # --- 2. 3utr_source_disjoint ---
+    # Pools all 3'UTR paired datasets (GSE200304 + GSE232572 + GSE186455)
     print("\n[2/4] Building 3utr_source_disjoint split...")
     work = mmseqs_work / "3utr_source"
-    r2c = run_mmseqs_cluster(gse200304, work, seq_field="source_sequence")
+    r2c = run_mmseqs_cluster(all_3utr, work, seq_field="source_sequence")
     n_clusters = len(set(r2c.values()))
     print(f"  mmseqs clusters: {n_clusters}")
     assignments = split_clusters(r2c)
-    assignments = fix_reverse_leakage(gse200304, assignments)
+    assignments = fix_reverse_leakage(all_3utr, assignments)
     summary = write_manifest(
         "3utr_source_disjoint",
-        gse200304,
+        all_3utr,
         assignments,
         str(output_dir / "split_3utr_source_disjoint.jsonl"),
         notes=f"mmseqs clustering at identity={CLUSTER_MIN_SEQ_ID}, cov={CLUSTER_COV}; "
-              f"{n_clusters} clusters split 80/10/10 by cluster",
+              f"{n_clusters} clusters split 80/10/10 by cluster. "
+              f"Pools GSE200304+GSE232572+GSE186455 (all 3'UTR paired datasets).",
     )
     summaries["3utr_source_disjoint"] = summary
     print(f"  train={summary['n_train']} val={summary['n_val']} test={summary['n_test']}")
 
     # --- 3. study_disjoint ---
-    # Data limitation: only 1 D_C study per region.
-    # train = GSE114002 (5'UTR), test = GSE200304 (3'UTR)
-    # This is also cross-region — documented in notes.
+    # train = GSE114002 (5'UTR), test = all 3'UTR (GSE200304+GSE232572+GSE186455)
+    # Cross-study AND cross-region.
     print("\n[3/4] Building study_disjoint split...")
-    pooled = gse114002 + gse200304
+    pooled = gse114002 + all_3utr
     assignments = assign_by_accession(
         pooled,
         train_accessions={"GSE114002"},
         val_accessions=set(),
-        test_accessions={"GSE200304"},
+        test_accessions={"GSE200304", "GSE232572", "GSE186455"},
     )
     summary = write_manifest(
         "study_disjoint",
         pooled,
         assignments,
         str(output_dir / "split_study_disjoint.jsonl"),
-        notes="train=GSE114002 (5'UTR), test=GSE200304 (3'UTR). "
-              "Data limitation: only 1 D_C study per region, so study_disjoint "
-              "is also cross-region. Val is empty (use cross_region_transfer "
+        notes="train=GSE114002 (5'UTR), test=GSE200304+GSE232572+GSE186455 (3'UTR). "
+              "Cross-study AND cross-region. Val is empty (use cross_region_transfer "
               "val instead, or source_disjoint val within train study).",
     )
     summaries["study_disjoint"] = summary
@@ -461,17 +468,18 @@ def build_all_splits(
         split = "train" if cluster in train_clusters else ("val" if cluster in val_clusters else "train_val_unused")
         for rid in rids:
             assignments[rid] = split
-    # test = all GSE200304
-    for rec in gse200304:
+    # test = all 3'UTR (GSE200304+GSE232572+GSE186455)
+    for rec in all_3utr:
         assignments[rec.record_id] = "test"
 
     summary = write_manifest(
         "cross_region_transfer",
-        gse114002 + gse200304,
+        gse114002 + all_3utr,
         assignments,
         str(output_dir / "split_cross_region_transfer.jsonl"),
         notes="train+val=GSE114002 (5'UTR, mmseqs cluster split 80/10), "
-              "test=GSE200304 (3'UTR, 100%). Tests 5'UTR->3'UTR region transfer. "
+              "test=GSE200304+GSE232572+GSE186455 (3'UTR, 100%). "
+              "Tests 5'UTR->3'UTR region transfer. "
               "train_val_unused records are GSE114002 clusters not assigned to "
               "train or val (the remaining 10%); they are excluded from this split.",
     )
