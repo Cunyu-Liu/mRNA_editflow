@@ -1,7 +1,7 @@
 {
   "task_id": "FM0-01",
   "acceptance": "exposure record",
-  "generated_at_utc": "2026-08-01T11:18:17Z",
+  "generated_at_utc": "2026-08-02T14:41:34Z",
   "foundation_model_id": "multimolecule/utrlm-mrl",
   "foundation_model_revision": "79e23de069449e659696b5210f833c28ddd0de50",
   "contract_reference": "utr_editflow_contract_v2 §2.2, §4.2, §H7",
@@ -124,26 +124,89 @@
   "b0_split_exposure_summary": [
     {
       "split_file": "split_3utr_source_disjoint.jsonl",
-      "total_records": 6885,
+      "total_records": 28846,
       "cells": [
         {
           "split": "test",
+          "accession": "ENCSR854RUF",
+          "count": 1195,
+          "accession_historically_exposed_to_utrlm": false,
+          "evidence_grade_for_foundation_eval": "E5"
+        },
+        {
+          "split": "test",
+          "accession": "GSE186455",
+          "count": 58,
+          "accession_historically_exposed_to_utrlm": false,
+          "evidence_grade_for_foundation_eval": "E5"
+        },
+        {
+          "split": "test",
           "accession": "GSE200304",
-          "count": 680,
+          "count": 710,
+          "accession_historically_exposed_to_utrlm": false,
+          "evidence_grade_for_foundation_eval": "E5"
+        },
+        {
+          "split": "test",
+          "accession": "GSE232572",
+          "count": 898,
+          "accession_historically_exposed_to_utrlm": false,
+          "evidence_grade_for_foundation_eval": "E5"
+        },
+        {
+          "split": "train",
+          "accession": "ENCSR854RUF",
+          "count": 9585,
+          "accession_historically_exposed_to_utrlm": false,
+          "evidence_grade_for_foundation_eval": "E5"
+        },
+        {
+          "split": "train",
+          "accession": "GSE186455",
+          "count": 537,
           "accession_historically_exposed_to_utrlm": false,
           "evidence_grade_for_foundation_eval": "E5"
         },
         {
           "split": "train",
           "accession": "GSE200304",
-          "count": 5508,
+          "count": 5502,
+          "accession_historically_exposed_to_utrlm": false,
+          "evidence_grade_for_foundation_eval": "E5"
+        },
+        {
+          "split": "train",
+          "accession": "GSE232572",
+          "count": 7585,
+          "accession_historically_exposed_to_utrlm": false,
+          "evidence_grade_for_foundation_eval": "E5"
+        },
+        {
+          "split": "val",
+          "accession": "ENCSR854RUF",
+          "count": 1189,
+          "accession_historically_exposed_to_utrlm": false,
+          "evidence_grade_for_foundation_eval": "E5"
+        },
+        {
+          "split": "val",
+          "accession": "GSE186455",
+          "count": 54,
           "accession_historically_exposed_to_utrlm": false,
           "evidence_grade_for_foundation_eval": "E5"
         },
         {
           "split": "val",
           "accession": "GSE200304",
-          "count": 697,
+          "count": 673,
+          "accession_historically_exposed_to_utrlm": false,
+          "evidence_grade_for_foundation_eval": "E5"
+        },
+        {
+          "split": "val",
+          "accession": "GSE232572",
+          "count": 860,
           "accession_historically_exposed_to_utrlm": false,
           "evidence_grade_for_foundation_eval": "E5"
         }
@@ -151,35 +214,70 @@
     },
     {
       "split_file": "split_5utr_source_disjoint.jsonl",
-      "total_records": 20000,
+      "total_records": 101201,
       "cells": [
         {
           "split": "test",
           "accession": "GSE114002",
-          "count": 1992,
+          "count": 10054,
+          "accession_historically_exposed_to_utrlm": true,
+          "evidence_grade_for_foundation_eval": "E4"
+        },
+        {
+          "split": "test",
+          "accession": "GSE246381",
+          "count": 106,
+          "accession_historically_exposed_to_utrlm": false,
+          "evidence_grade_for_foundation_eval": "E5"
+        },
+        {
+          "split": "train",
+          "accession": "GSE114002",
+          "count": 79956,
           "accession_historically_exposed_to_utrlm": true,
           "evidence_grade_for_foundation_eval": "E4"
         },
         {
           "split": "train",
+          "accession": "GSE246381",
+          "count": 937,
+          "accession_historically_exposed_to_utrlm": false,
+          "evidence_grade_for_foundation_eval": "E5"
+        },
+        {
+          "split": "val",
           "accession": "GSE114002",
-          "count": 16031,
+          "count": 10007,
           "accession_historically_exposed_to_utrlm": true,
           "evidence_grade_for_foundation_eval": "E4"
         },
         {
           "split": "val",
-          "accession": "GSE114002",
-          "count": 1977,
-          "accession_historically_exposed_to_utrlm": true,
-          "evidence_grade_for_foundation_eval": "E4"
+          "accession": "GSE246381",
+          "count": 141,
+          "accession_historically_exposed_to_utrlm": false,
+          "evidence_grade_for_foundation_eval": "E5"
         }
       ]
     },
     {
       "split_file": "split_cross_region_transfer.jsonl",
-      "total_records": 24952,
+      "total_records": 119887,
       "cells": [
+        {
+          "split": "test",
+          "accession": "ENCSR854RUF",
+          "count": 11969,
+          "accession_historically_exposed_to_utrlm": false,
+          "evidence_grade_for_foundation_eval": "E5"
+        },
+        {
+          "split": "test",
+          "accession": "GSE186455",
+          "count": 649,
+          "accession_historically_exposed_to_utrlm": false,
+          "evidence_grade_for_foundation_eval": "E5"
+        },
         {
           "split": "test",
           "accession": "GSE200304",
@@ -188,25 +286,60 @@
           "evidence_grade_for_foundation_eval": "E5"
         },
         {
+          "split": "test",
+          "accession": "GSE232572",
+          "count": 9343,
+          "accession_historically_exposed_to_utrlm": false,
+          "evidence_grade_for_foundation_eval": "E5"
+        },
+        {
           "split": "train",
           "accession": "GSE114002",
-          "count": 16035,
+          "count": 79956,
+          "accession_historically_exposed_to_utrlm": true,
+          "evidence_grade_for_foundation_eval": "E4"
+        },
+        {
+          "split": "train",
+          "accession": "GSE246381",
+          "count": 937,
+          "accession_historically_exposed_to_utrlm": false,
+          "evidence_grade_for_foundation_eval": "E5"
+        },
+        {
+          "split": "val",
+          "accession": "GSE114002",
+          "count": 10007,
           "accession_historically_exposed_to_utrlm": true,
           "evidence_grade_for_foundation_eval": "E4"
         },
         {
           "split": "val",
-          "accession": "GSE114002",
-          "count": 2032,
-          "accession_historically_exposed_to_utrlm": true,
-          "evidence_grade_for_foundation_eval": "E4"
+          "accession": "GSE246381",
+          "count": 141,
+          "accession_historically_exposed_to_utrlm": false,
+          "evidence_grade_for_foundation_eval": "E5"
         }
       ]
     },
     {
       "split_file": "split_study_disjoint.jsonl",
-      "total_records": 26885,
+      "total_records": 130047,
       "cells": [
+        {
+          "split": "test",
+          "accession": "ENCSR854RUF",
+          "count": 11969,
+          "accession_historically_exposed_to_utrlm": false,
+          "evidence_grade_for_foundation_eval": "E5"
+        },
+        {
+          "split": "test",
+          "accession": "GSE186455",
+          "count": 649,
+          "accession_historically_exposed_to_utrlm": false,
+          "evidence_grade_for_foundation_eval": "E5"
+        },
         {
           "split": "test",
           "accession": "GSE200304",
@@ -215,25 +348,41 @@
           "evidence_grade_for_foundation_eval": "E5"
         },
         {
+          "split": "test",
+          "accession": "GSE232572",
+          "count": 9343,
+          "accession_historically_exposed_to_utrlm": false,
+          "evidence_grade_for_foundation_eval": "E5"
+        },
+        {
           "split": "train",
           "accession": "GSE114002",
-          "count": 20000,
+          "count": 100017,
           "accession_historically_exposed_to_utrlm": true,
           "evidence_grade_for_foundation_eval": "E4"
+        },
+        {
+          "split": "train",
+          "accession": "GSE246381",
+          "count": 1184,
+          "accession_historically_exposed_to_utrlm": false,
+          "evidence_grade_for_foundation_eval": "E5"
         }
       ]
     }
   ],
   "canonical_records_per_accession": {
-    "GSE114002": 20000,
+    "GSE114002": 100017,
     "GSE200304": 6885,
-    "GSE145046": 50000,
+    "GSE145046": 1048106,
     "GSE207584": 10227,
-    "GSE173083": 1,
-    "ENCSR854RUF": 1,
-    "GSE246381": 1,
+    "GSE173083": 3263,
+    "ENCSR854RUF": 11969,
+    "GSE246381": 1184,
     "GSE217518": 3564,
-    "GSE149487": 1
+    "GSE149487": 751,
+    "GSE232572": 9343,
+    "GSE186455": 649
   },
   "summary": {
     "num_accessions_audited": 4,
