@@ -206,6 +206,7 @@ TYPING_COMPATIBILITY_SHIM_CALLS = (
 TYPING_COMPATIBILITY_SHIM_CLASSIFICATION = (
     "bound_typing_compatibility_shim_exact_callable"
 )
+REPOSITORY_GENERATED_CLASSIFICATION = "repository_generated"
 ENVIRONMENT_LOCK_DRIFT_MARKER = "ENVIRONMENT_LOCK_DRIFT_RECORDED_NOT_SILENTLY_MUTATED"
 REQUIREMENTS_LOCK_PATH = REPO_ROOT / "requirements-lock.txt"
 
@@ -2794,6 +2795,8 @@ def _external_call_classification(
     )
     if categories:
         return "prohibited_role", categories
+    if module_name.startswith("mrna_editflow.") and source_file.startswith("<"):
+        return REPOSITORY_GENERATED_CLASSIFICATION, ()
     if module_name == TYPING_COMPATIBILITY_SHIM_MODULE:
         binding = _typing_compatibility_shim_binding()
         allowed = {

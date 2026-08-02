@@ -184,6 +184,7 @@ TYPING_COMPATIBILITY_SHIM_CALLS = (
 TYPING_COMPATIBILITY_SHIM_CLASSIFICATION = (
     "bound_typing_compatibility_shim_exact_callable"
 )
+REPOSITORY_GENERATED_CLASSIFICATION = "repository_generated"
 ENVIRONMENT_LOCK_DRIFT_MARKER = "ENVIRONMENT_LOCK_DRIFT_RECORDED_NOT_SILENTLY_MUTATED"
 REQUIREMENTS_LOCK_PATH = REPO_ROOT / "requirements-lock.txt"
 
@@ -949,6 +950,8 @@ def _external_call_classification(
     )
     if categories:
         return "prohibited_role", categories
+    if module_name.startswith("mrna_editflow.") and source_file.startswith("<"):
+        return REPOSITORY_GENERATED_CLASSIFICATION, ()
     if module_name == TYPING_COMPATIBILITY_SHIM_MODULE:
         binding, code_identities = _typing_compatibility_shim_state()
         key = (qualname, first_lineno)
@@ -1042,8 +1045,12 @@ class _FormalGpuRoleQueryRecorder:
         if exact_metadata is not None:
             self._code_metadata_cache[code] = exact_metadata
             return exact_metadata
+        source_name = str(code.co_filename)
+        if source_name.startswith("<"):
+            self._code_metadata_cache[code] = None
+            return None
         try:
-            source = Path(code.co_filename).resolve()
+            source = Path(source_name).resolve()
             relative = str(source.relative_to(REPO_ROOT))
         except (OSError, ValueError):
             self._code_metadata_cache[code] = None

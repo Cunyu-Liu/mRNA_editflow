@@ -28,6 +28,15 @@ def _load_gpu_runner() -> Any:
     return module
 
 
+def _load_finalizer() -> Any:
+    path = ROOT / "scripts" / "mk0" / "finalize_mk0_acceptance.py"
+    spec = importlib.util.spec_from_file_location("mk0_finalizer_binding_test", path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 def _binding() -> dict[str, Any]:
     return {
         "goal_sha256": "a" * 64,
@@ -444,6 +453,46 @@ def test_unknown_external_call_fails_closed(
         and record["classification"] == "unknown_external"
         for record in phase["external_call_inventory"]
     )
+
+
+def test_repository_generated_pseudo_source_is_classified_explicitly(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    runner = _load_gpu_runner()
+    recorder = _external_recorder(runner, run_id="unit-repository-generated")
+    namespace: dict[str, Any] = {"__name__": "mrna_editflow.core.mk0.types"}
+    exec(
+        compile(
+            "def generated_repository_callable():\n    return None\n",
+            "<string>",
+            "exec",
+            dont_inherit=True,
+            optimize=0,
+        ),
+        namespace,
+    )
+    monkeypatch.setattr(
+        sys.modules[__name__],
+        "_EXTERNAL_CALLBACK",
+        namespace["generated_repository_callable"],
+    )
+
+    recorder.run_phase(
+        "generator_rate_official_frozen_arm", _test_generator_with_external
+    )
+    phase = recorder.partial_evidence()["phase_records"][0]
+    assert phase["phase_status"] == "PASS"
+    assert phase["unknown_external_call_count"] == 0
+    assert any(
+        record["module_name"] == "mrna_editflow.core.mk0.types"
+        and record["source_file"] == "<string>"
+        and record["classification"] == runner.REPOSITORY_GENERATED_CLASSIFICATION
+        for record in phase["external_call_inventory"]
+    )
+    finalizer = _load_finalizer()
+    assert finalizer._external_call_classification(
+        "mrna_editflow.core.mk0.types", "<string>", "__init__", 2
+    ) == (finalizer.REPOSITORY_GENERATED_CLASSIFICATION, ())
 
 
 def test_frozen_foundation_prefix_remains_viable(
