@@ -1378,6 +1378,23 @@ def _verify_declared_file(binding: Mapping[str, Any]) -> dict[str, Any]:
     )
 
 
+def _phase_acceptance_criteria(
+    b0: Mapping[str, Any], phase: str
+) -> dict[str, Any]:
+    phase_record = b0.get(phase)
+    require(isinstance(phase_record, Mapping), f"{phase} record is absent")
+    criteria = phase_record.get("acceptance")
+    if phase == "b0_02" and criteria is None:
+        criteria = phase_record.get("acceptance_criteria")
+    require(
+        isinstance(criteria, dict)
+        and criteria
+        and all(value is True for value in criteria.values()),
+        f"{phase} acceptance failed",
+    )
+    return criteria
+
+
 def verify_fm0_b0_d1(
     fm0_root: Path,
     *,
@@ -1521,13 +1538,7 @@ def verify_fm0_b0_d1(
         "B0 hard gate failed",
     )
     for phase in ("b0_02", "b0_03", "b0_04", "b0_05"):
-        criteria = b0.get(phase, {}).get("acceptance")
-        require(
-            isinstance(criteria, dict)
-            and criteria
-            and all(value is True for value in criteria.values()),
-            f"{phase} acceptance failed",
-        )
+        _phase_acceptance_criteria(b0, phase)
         _verify_declared_file(b0[phase]["report"])
     declared_splits = data_binding.get("split_manifests")
     require(isinstance(declared_splits, dict), "FM0 split-manifest bindings are absent")

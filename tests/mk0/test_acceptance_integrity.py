@@ -1736,3 +1736,23 @@ def test_runner_and_finalizer_sources_do_not_mechanically_declare_gate_passes() 
     assert '"passed": failure_count == 0' in cpu_source
     assert "gate_result_from_runtime_binding" in finalizer_source
     assert "passed=True" not in finalizer_source
+
+
+def test_b0_02_acceptance_criteria_schema_v4_is_checked_fail_closed() -> None:
+    b0 = {
+        "b0_02": {
+            "acceptance_criteria": {
+                "path_leakage_must_be_zero": True,
+                "reverse_leakage_must_be_zero": True,
+                "unexplained_overlap_must_be_zero": True,
+            }
+        }
+    }
+    assert FINALIZER._phase_acceptance_criteria(b0, "b0_02") == b0["b0_02"][
+        "acceptance_criteria"
+    ]
+
+    tampered = copy.deepcopy(b0)
+    tampered["b0_02"]["acceptance_criteria"]["path_leakage_must_be_zero"] = False
+    with pytest.raises(FINALIZER.FinalizeFailure, match="b0_02 acceptance failed"):
+        FINALIZER._phase_acceptance_criteria(tampered, "b0_02")
