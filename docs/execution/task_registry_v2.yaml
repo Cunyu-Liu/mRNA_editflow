@@ -333,8 +333,8 @@ tasks:
   description: 'Implement true UTR Edit Flow: continuous-time rate field, source conditioning,
     region adapters, hard masks, variable-length, multi-step, STOP, conditional generation'
   goal_sha256: 3a3a654ca5c10a988eca897bff40be2e0b45c841f744f7423fdfd60b298b5791
-  run_id: EF0_true_utr_gpu_20260802T185555Z_8cc9f8b_s20260803_retry001
-  commit_sha: 8cc9f8b055a76e398ca8d4d12b7ddee515a24b01
+  run_id: EF0_true_utr_gpu_20260802T191401Z_ffa0898_s20260803_retry003
+  commit_sha: ffa08987d772f1ca9b68bccfb4b33017c1d87d6c
   evidence_level: E0 engineering verification only; no functional, biological, superiority,
     or paper claim
   gate: EF0 accepted only after MK0 closed; GP0 remains blocked until its own contract gate
@@ -344,22 +344,27 @@ tasks:
   - /mnt/cunyuliu/mrna_editflow_fm0_runs/FM0_FORMAL_CLOSURE_20260802T022915Z_f4d562d/
   - /home/cunyuliu/mrna_editflow_goal/mrna_editflow/data/d1_canonical_records.jsonl
   - /home/cunyuliu/mrna_editflow_goal/mrna_editflow/data/data_exposure_ledger.jsonl
-  - /mnt/cunyuliu/mrna_editflow_ef0_runs/EF0_true_utr_gpu_20260802T185555Z_8cc9f8b_s20260803_retry001/
+  - /mnt/cunyuliu/mrna_editflow_ef0_runs/EF0_true_utr_gpu_20260802T191401Z_ffa0898_s20260803_retry003/
   outputs:
-  - /mnt/cunyuliu/mrna_editflow_ef0_runs/EF0_true_utr_gpu_20260802T185555Z_8cc9f8b_s20260803_retry001/evaluation/ef0_acceptance.json
-  - /mnt/cunyuliu/mrna_editflow_ef0_runs/EF0_true_utr_gpu_20260802T185555Z_8cc9f8b_s20260803_retry001/summary/summary.json
-  - /mnt/cunyuliu/mrna_editflow_ef0_runs/EF0_true_utr_gpu_20260802T185555Z_8cc9f8b_s20260803_retry001/artifact_checksums.sha256
+  - /mnt/cunyuliu/mrna_editflow_ef0_runs/EF0_true_utr_gpu_20260802T191401Z_ffa0898_s20260803_retry003/evaluation/ef0_acceptance.json
+  - /mnt/cunyuliu/mrna_editflow_ef0_runs/EF0_true_utr_gpu_20260802T191401Z_ffa0898_s20260803_retry003/summary/summary.json
+  - /mnt/cunyuliu/mrna_editflow_ef0_runs/EF0_true_utr_gpu_20260802T191401Z_ffa0898_s20260803_retry003/artifact_checksums.sha256
+  preserved_evidence:
+  - /mnt/cunyuliu/mrna_editflow_ef0_runs/EF0_true_utr_gpu_20260802T185555Z_8cc9f8b_s20260803_retry001/
+  - /mnt/cunyuliu/mrna_editflow_ef0_runs/EF0_true_utr_gpu_20260803T000000Z_514a35d_s20260803/
+  - /mnt/cunyuliu/mrna_editflow_ef0_preflight/EF0_true_utr_gpu_20260802T191401Z_ffa0898_s20260803_retry002/invocation_error.json
   report: >
     EF0 formal GPU verification is VERIFIED at E0 engineering level. The accepted
     bundle records explicit INS/SUB/DEL/STOP heads, dynamic current-state re-encoding,
     source conditioning and mapping, 5UTR/3UTR adapters, hard legality before sampling,
     protected-action rejection, variable-length insertion/deletion, multi-step rollout,
     deterministic replay, and real CUDA forward/backward/optimizer evidence with zero
-    CPU fallback. Forced action coverage is a harness, not a random performance result;
+    CPU fallback. The post-execution device audit observed 120 runtime CUDA forward
+    calls. Forced action coverage is a harness, not a random performance result;
     the sampler is constrained_single_event_first_order rather than exact Gillespie.
     No GP0 training, final labels, functional, biological, superiority, or paper claim
-    is allowed. The first binding failure remains preserved under the separate
-    FAILED_WITH_EVIDENCE run root.
+    is allowed. The first binding failure and the later CLI argument rejection remain
+    preserved as separate evidence; the final accepted bundle is the retry003 root.
   acceptance:
   - H3 hard-constrained validity 100%
   - not just greedy/top-k substitution
