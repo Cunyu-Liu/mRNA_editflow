@@ -13,7 +13,6 @@ from __future__ import annotations
 import argparse
 from datetime import datetime, timezone
 import hashlib
-import importlib.util
 import inspect
 import json
 import os
@@ -23,6 +22,9 @@ import re
 import secrets
 import subprocess
 import sys
+import sysconfig
+import threading
+from types import ModuleType
 import traceback
 from typing import Any, Callable, Iterable, Mapping, Sequence
 
@@ -31,70 +33,68 @@ from typing import Any, Callable, Iterable, Mapping, Sequence
 os.environ.setdefault("CUBLAS_WORKSPACE_CONFIG", ":4096:8")
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-PACKAGE_PARENT = REPO_ROOT.parent
-if str(PACKAGE_PARENT) not in sys.path:
-    sys.path.insert(0, str(PACKAGE_PARENT))
-
-# A Git worktree need not itself be named ``mrna_editflow``.  Bind the package
-# name explicitly to this script's checkout so an older editable installation
-# can never supply the MK0 implementation under test.
-_package_spec = importlib.util.spec_from_file_location(
-    "mrna_editflow",
-    REPO_ROOT / "__init__.py",
-    submodule_search_locations=[str(REPO_ROOT)],
+_bootstrap_path = REPO_ROOT / "scripts" / "mk0" / "strict_worktree_import.py"
+_bootstrap_module = ModuleType("_mk0_strict_worktree_import")
+_bootstrap_module.__file__ = str(_bootstrap_path)
+_bootstrap_module.__cached__ = None
+exec(
+    compile(
+        _bootstrap_path.read_bytes(),
+        str(_bootstrap_path),
+        "exec",
+        dont_inherit=True,
+        optimize=0,
+    ),
+    _bootstrap_module.__dict__,
 )
-if _package_spec is None or _package_spec.loader is None:
-    raise RuntimeError("could not bind mrna_editflow to the current worktree")
-_package_module = importlib.util.module_from_spec(_package_spec)
-sys.modules["mrna_editflow"] = _package_module
-_package_spec.loader.exec_module(_package_module)
 
 import torch
 import yaml
 
-from mrna_editflow.core.mk0.acceptance import (
-    canonical_json_bytes,
-    gate_result_from_runtime_binding,
-    sha256_file,
-)
-from mrna_editflow.core.mk0.foundation_fusion import (
-    FoundationFusionRateField,
-    OfficialPaperRateAdapter,
-    load_official_utrlm,
-    require_neural_cuda,
-)
-from mrna_editflow.core.mk0.run_contract import (
-    append_event,
-    append_jsonl,
-    append_text,
-    resume_failure_closure_if_present,
-    update_status,
-    validate_terminal_chain,
-    write_failed_sentinel,
-)
-from mrna_editflow.core.mk0.state_action import (
-    apply_action,
-    enumerate_legal_actions,
-    is_legal,
-)
-from mrna_editflow.core.mk0.samplers import (
-    constrained_single_event_first_order,
-    paper_first_order_parallel,
-    replay_constrained_result,
-    replay_paper_result,
-)
-from mrna_editflow.core.mk0.training_boundary import (
-    EditFlowTrainingExample,
-    canonical_rate_input_bytes,
-    rate_input_state,
-)
-from mrna_editflow.core.mk0.types import (
-    ALPHABET,
-    ActionType,
-    AtomicAction,
-    EditState,
-    TokenOrigin,
-)
+with _bootstrap_module.strict_worktree_package_import(REPO_ROOT):
+    from mrna_editflow.core.mk0.acceptance import (
+        canonical_json_bytes,
+        gate_result_from_runtime_binding,
+        sha256_file,
+    )
+    from mrna_editflow.core.mk0.foundation_fusion import (
+        FoundationFusionRateField,
+        OfficialPaperRateAdapter,
+        load_official_utrlm,
+        require_neural_cuda,
+    )
+    from mrna_editflow.core.mk0.run_contract import (
+        append_event,
+        append_jsonl,
+        append_text,
+        resume_failure_closure_if_present,
+        update_status,
+        validate_terminal_chain,
+        write_failed_sentinel,
+    )
+    from mrna_editflow.core.mk0.state_action import (
+        apply_action,
+        enumerate_legal_actions,
+        is_legal,
+    )
+    from mrna_editflow.core.mk0.samplers import (
+        constrained_single_event_first_order,
+        paper_first_order_parallel,
+        replay_constrained_result,
+        replay_paper_result,
+    )
+    from mrna_editflow.core.mk0.training_boundary import (
+        EditFlowTrainingExample,
+        canonical_rate_input_bytes,
+        rate_input_state,
+    )
+    from mrna_editflow.core.mk0.types import (
+        ALPHABET,
+        ActionType,
+        AtomicAction,
+        EditState,
+        TokenOrigin,
+    )
 
 
 SEED = 20260802
@@ -154,6 +154,39 @@ ROLE_QUERY_CATEGORIES = (
     "final_evaluator_query",
 )
 
+FROZEN_FOUNDATION_EXTERNAL_MODULE_PREFIXES = (
+    "torch",
+    "transformers",
+    "multimolecule",
+    "tokenizers",
+    "numpy",
+    "safetensors",
+    "huggingface_hub",
+    "packaging",
+)
+
+ROLE_PROHIBITED_TOKENS = (
+    "critic",
+    "guidance",
+    "evaluator",
+    "final_evaluator",
+    "reward",
+    "rerank",
+    "selector",
+)
+
+STDLIB_ROOT = Path(sysconfig.get_path("stdlib")).resolve()
+SITE_PACKAGE_ROOTS = tuple(
+    sorted(
+        {
+            Path(value).resolve()
+            for key in ("purelib", "platlib")
+            if (value := sysconfig.get_path(key))
+        },
+        key=str,
+    )
+)
+
 FORMAL_GPU_ROLE_INTERFACE_LABELS = (
     "gpu_runner.forced_action_arm",
     "gpu_runner.paper_sampler_route",
@@ -173,6 +206,69 @@ class SmokeFailure(RuntimeError):
     """A fail-closed MK0 GPU-smoke invariant violation."""
 
 
+def _module_matches_prefix(module_name: str, prefix: str) -> bool:
+    return module_name == prefix or module_name.startswith(f"{prefix}.")
+
+
+def _path_is_within(path: Path, root: Path) -> bool:
+    try:
+        path.relative_to(root)
+    except ValueError:
+        return False
+    return True
+
+
+def _external_prohibited_categories(
+    module_name: str,
+    source_file: str,
+    qualname: str,
+) -> tuple[str, ...]:
+    lower = f"{module_name} {source_file} {qualname}".lower()
+    categories: set[str] = set()
+    if "critic" in lower:
+        categories.add("critic_query")
+    if "guidance" in lower:
+        categories.add("guidance_query")
+    if "evaluator" in lower:
+        categories.add("final_evaluator_query")
+    if any(token in lower for token in ("reward", "rerank", "selector")):
+        categories.add("final_evaluator_query")
+    return tuple(sorted(categories))
+
+
+def _external_call_classification(
+    module_name: str,
+    source_file: str,
+    qualname: str,
+) -> tuple[str, tuple[str, ...]]:
+    categories = _external_prohibited_categories(
+        module_name,
+        source_file,
+        qualname,
+    )
+    if categories:
+        return "prohibited_role", categories
+    if any(
+        _module_matches_prefix(module_name, prefix)
+        for prefix in FROZEN_FOUNDATION_EXTERNAL_MODULE_PREFIXES
+    ):
+        return "frozen_foundation_stack_allowlist", ()
+    root_module = module_name.partition(".")[0]
+    if root_module in sys.stdlib_module_names:
+        if source_file.startswith(("<built-in", "<frozen")):
+            return "stdlib_allowlist", ()
+        try:
+            source_path = Path(source_file).resolve(strict=True)
+        except OSError:
+            return "unknown_external", ()
+        in_site_packages = any(
+            _path_is_within(source_path, root) for root in SITE_PACKAGE_ROOTS
+        )
+        if _path_is_within(source_path, STDLIB_ROOT) and not in_site_packages:
+            return "stdlib_allowlist", ()
+    return "unknown_external", ()
+
+
 class _FormalGpuRoleQueryRecorder:
     """Profile the actual formal GPU Python call chain phase by phase.
 
@@ -183,38 +279,40 @@ class _FormalGpuRoleQueryRecorder:
     finalizer.
     """
 
-    def __init__(self, formal_binding: Mapping[str, Any], *, run_id: str) -> None:
+    def __init__(
+        self,
+        formal_binding: Mapping[str, Any],
+        *,
+        run_id: str,
+        interface_records: Sequence[Mapping[str, Any]],
+        role_code_metadata: Mapping[Any, tuple[str, str, int, tuple[str, ...]]],
+    ) -> None:
         self._formal_binding = formal_binding
         self._run_id = run_id
+        self._interface_records = [dict(record) for record in interface_records]
+        self._role_code_metadata = dict(role_code_metadata)
         self._phase_records: list[dict[str, Any]] = []
         self._active_inventory: (
             dict[tuple[str, str, int, tuple[str, ...]], int] | None
         ) = None
+        self._active_external_inventory: (
+            dict[tuple[str, str, str, int, str, tuple[str, ...]], int] | None
+        ) = None
+        self._active_thread_inventory: dict[tuple[int, str], dict[str, int]] | None = (
+            None
+        )
+        self._inventory_lock = threading.Lock()
         self._code_metadata_cache: dict[
             Any, tuple[str, str, int, tuple[str, ...]] | None
         ] = {}
+        self._external_code_metadata_cache: dict[
+            tuple[Any, str], tuple[str, str, str, int, str, tuple[str, ...]]
+        ] = {}
 
     @staticmethod
-    def _categories(relative: str, qualname: str, name: str) -> tuple[str, ...]:
+    def _prohibited_categories(relative: str, qualname: str) -> tuple[str, ...]:
         categories: set[str] = set()
-        lower = qualname.lower()
-        if name == "_run_forced_action_arm":
-            categories.add("generator_interface")
-        if (
-            relative == "core/mk0/foundation_fusion.py"
-            and (
-                "foundationfusionratefield" in lower
-                or "officialpaperrateadapter" in lower
-            )
-        ) or name in {"stop_only_official", "planned_gpu_rates"}:
-            categories.add("rate_interface")
-        if relative == "core/mk0/samplers.py" and name in {
-            "constrained_single_event_first_order",
-            "paper_first_order_parallel",
-            "replay_constrained_result",
-            "replay_paper_result",
-        }:
-            categories.add("sampler_interface")
+        lower = f"{relative} {qualname}".lower()
         if "critic" in lower:
             categories.add("critic_query")
         if "guidance" in lower:
@@ -228,6 +326,10 @@ class _FormalGpuRoleQueryRecorder:
     ) -> tuple[str, str, int, tuple[str, ...]] | None:
         if code in self._code_metadata_cache:
             return self._code_metadata_cache[code]
+        exact_metadata = self._role_code_metadata.get(code)
+        if exact_metadata is not None:
+            self._code_metadata_cache[code] = exact_metadata
+            return exact_metadata
         try:
             source = Path(code.co_filename).resolve()
             relative = str(source.relative_to(REPO_ROOT))
@@ -239,19 +341,68 @@ class _FormalGpuRoleQueryRecorder:
             relative,
             qualname,
             int(code.co_firstlineno),
-            self._categories(relative, qualname, str(code.co_name)),
+            self._prohibited_categories(relative, qualname),
         )
         self._code_metadata_cache[code] = metadata
+        return metadata
+
+    def _external_metadata_for_frame(
+        self,
+        frame: Any,
+    ) -> tuple[str, str, str, int, str, tuple[str, ...]]:
+        code = frame.f_code
+        module_name = str(frame.f_globals.get("__name__", "<unknown>"))
+        cache_key = (code, module_name)
+        if cache_key in self._external_code_metadata_cache:
+            return self._external_code_metadata_cache[cache_key]
+        source_file = str(code.co_filename)
+        if not source_file.startswith("<"):
+            source_file = str(Path(source_file).resolve())
+        qualname = str(getattr(code, "co_qualname", code.co_name))
+        classification, categories = _external_call_classification(
+            module_name,
+            source_file,
+            qualname,
+        )
+        metadata = (
+            module_name,
+            source_file,
+            qualname,
+            int(code.co_firstlineno),
+            classification,
+            categories,
+        )
+        self._external_code_metadata_cache[cache_key] = metadata
         return metadata
 
     def _profile(self, frame: Any, event: str, _argument: Any) -> None:
         if event != "call" or self._active_inventory is None:
             return
         metadata = self._metadata_for_code(frame.f_code)
-        if metadata is not None:
-            self._active_inventory[metadata] = (
-                self._active_inventory.get(metadata, 0) + 1
-            )
+        current = threading.current_thread()
+        thread_key = (int(threading.get_ident()), current.name)
+        with self._inventory_lock:
+            if self._active_inventory is None:
+                return
+            if metadata is not None:
+                self._active_inventory[metadata] = (
+                    self._active_inventory.get(metadata, 0) + 1
+                )
+                kind = "repository_call_count"
+            else:
+                external_metadata = self._external_metadata_for_frame(frame)
+                if self._active_external_inventory is None:
+                    return
+                self._active_external_inventory[external_metadata] = (
+                    self._active_external_inventory.get(external_metadata, 0) + 1
+                )
+                kind = "external_call_count"
+            if self._active_thread_inventory is not None:
+                thread_counts = self._active_thread_inventory.setdefault(
+                    thread_key,
+                    {"repository_call_count": 0, "external_call_count": 0},
+                )
+                thread_counts[kind] += 1
 
     def run_phase(self, phase_id: str, callback: Callable[[], Any]) -> Any:
         specs = {item["phase_id"]: item for item in FORMAL_GPU_ROLE_PHASE_SPECS}
@@ -263,14 +414,62 @@ class _FormalGpuRoleQueryRecorder:
             raise SmokeFailure(
                 "an external Python profiler would invalidate GPU role audit"
             )
+        threading_getprofile = getattr(threading, "getprofile", lambda: None)
+        previous_thread_profile = threading_getprofile()
+        if previous_thread_profile is not None:
+            raise SmokeFailure(
+                "an external threading profiler would invalidate GPU role audit"
+            )
         self._active_inventory = {}
+        self._active_external_inventory = {}
+        self._active_thread_inventory = {}
         completed = False
-        sys.setprofile(self._profile)
+        callback_error: BaseException | None = None
+        result: Any = None
+        threading.setprofile(self._profile)
+        current_thread = threading.current_thread()
+        preexisting_noncurrent_threads = [
+            {
+                "thread_id": (int(thread.ident) if thread.ident is not None else None),
+                "native_id": (
+                    int(thread.native_id)
+                    if getattr(thread, "native_id", None) is not None
+                    else None
+                ),
+                "thread_name": thread.name,
+                "daemon": bool(thread.daemon),
+            }
+            for thread in sorted(
+                (
+                    thread
+                    for thread in threading.enumerate()
+                    if thread is not current_thread and thread.is_alive()
+                ),
+                key=lambda thread: (
+                    thread.name,
+                    int(thread.ident) if thread.ident is not None else -1,
+                ),
+            )
+        ]
         try:
-            result = callback()
-            completed = True
+            if not preexisting_noncurrent_threads:
+                sys.setprofile(self._profile)
+                try:
+                    result = callback()
+                    completed = True
+                except BaseException as error:
+                    callback_error = error
+                finally:
+                    sys.setprofile(None)
         finally:
-            sys.setprofile(None)
+            threading.setprofile(previous_thread_profile)
+        with self._inventory_lock:
+            active_inventory = self._active_inventory or {}
+            active_external_inventory = self._active_external_inventory or {}
+            active_thread_inventory = self._active_thread_inventory or {}
+            self._active_inventory = None
+            self._active_external_inventory = None
+            self._active_thread_inventory = None
         inventory = [
             {
                 "source_file": relative,
@@ -280,14 +479,57 @@ class _FormalGpuRoleQueryRecorder:
                 "call_count": call_count,
             }
             for (relative, qualname, first_lineno, categories), call_count in sorted(
-                self._active_inventory.items()
+                active_inventory.items()
             )
         ]
-        self._active_inventory = None
+        external_inventory = [
+            {
+                "module_name": module_name,
+                "source_file": source_file,
+                "function_qualname": qualname,
+                "first_lineno": first_lineno,
+                "classification": classification,
+                "categories": list(categories),
+                "call_count": call_count,
+            }
+            for (
+                module_name,
+                source_file,
+                qualname,
+                first_lineno,
+                classification,
+                categories,
+            ), call_count in sorted(active_external_inventory.items())
+        ]
+        thread_inventory = [
+            {
+                "thread_id": thread_id,
+                "thread_name": thread_name,
+                **counts,
+                "total_python_call_count": sum(counts.values()),
+            }
+            for (thread_id, thread_name), counts in sorted(
+                active_thread_inventory.items()
+            )
+        ]
+        # A formal phase is allowed to begin only when the current execution
+        # thread is the sole live Python thread.  Do not take a second
+        # "baseline" snapshot here: a thread that starts between two snapshots
+        # could otherwise be mistaken for preexisting audited state and remain
+        # alive after the callback without failing the phase.
+        unjoined_new_threads = sorted(
+            {
+                int(thread.ident)
+                for thread in threading.enumerate()
+                if thread is not current_thread
+                and thread.is_alive()
+                and thread.ident is not None
+            }
+        )
         category_counts = {
             category: sum(
                 int(record["call_count"])
-                for record in inventory
+                for record in (*inventory, *external_inventory)
                 if category in record["categories"]
             )
             for category in (
@@ -298,52 +540,181 @@ class _FormalGpuRoleQueryRecorder:
             )
         }
         spec = specs[phase_id]
+        failure_reason: str | None = None
+        if preexisting_noncurrent_threads:
+            failure_reason = (
+                "formal GPU phase started with unauditable preexisting noncurrent "
+                f"Python threads: {phase_id}"
+            )
+        elif callback_error is not None:
+            failure_reason = (
+                "formal GPU phase callback failed: "
+                f"{phase_id}: {type(callback_error).__name__}: {callback_error}"
+            )
+        elif not completed or not inventory:
+            failure_reason = f"formal GPU role-audit phase was not observed: {phase_id}"
+        else:
+            for category in spec["required_call_categories"]:
+                if category_counts[category] <= 0:
+                    failure_reason = (
+                        f"formal GPU phase lacks {category} calls: {phase_id}"
+                    )
+                    break
+        if failure_reason is None and any(
+            category_counts[category] != 0 for category in ROLE_QUERY_CATEGORIES
+        ):
+            failure_reason = f"prohibited role query observed in GPU phase: {phase_id}"
+        unknown_external_call_count = sum(
+            int(record["call_count"])
+            for record in external_inventory
+            if record["classification"] == "unknown_external"
+        )
+        if failure_reason is None and unknown_external_call_count:
+            failure_reason = (
+                f"unknown external Python calls observed in GPU phase: {phase_id}"
+            )
+        if failure_reason is None and unjoined_new_threads:
+            failure_reason = (
+                f"formal GPU phase left new Python threads running: {phase_id}"
+            )
+        external_python_call_count = sum(
+            int(record["call_count"]) for record in external_inventory
+        )
         record = {
             "phase_id": phase_id,
             "phase_kind": spec["phase_kind"],
             "entrypoint": spec["entrypoint"],
             "required_call_categories": list(spec["required_call_categories"]),
             "completed": completed,
+            "phase_status": "PASS" if failure_reason is None else "FAILED",
+            "failure_reason": failure_reason,
             "repository_python_call_count": sum(
                 int(item["call_count"]) for item in inventory
             ),
+            "external_python_call_count": external_python_call_count,
+            "unknown_external_call_count": unknown_external_call_count,
+            "total_python_call_count": sum(
+                int(item["call_count"]) for item in inventory
+            )
+            + external_python_call_count,
+            "python_thread_count": len(thread_inventory),
+            "preexisting_noncurrent_python_thread_count": len(
+                preexisting_noncurrent_threads
+            ),
+            "preexisting_noncurrent_python_threads": preexisting_noncurrent_threads,
+            "unjoined_new_thread_ids": unjoined_new_threads,
             **{f"{key}_call_count": value for key, value in category_counts.items()},
             "call_inventory": inventory,
             "record_stream_sha256": _canonical_hash(inventory),
+            "external_call_inventory": external_inventory,
+            "external_record_stream_sha256": _canonical_hash(external_inventory),
+            "thread_inventory": thread_inventory,
+            "thread_record_stream_sha256": _canonical_hash(thread_inventory),
         }
-        if not completed or record["repository_python_call_count"] <= 0:
-            raise SmokeFailure(
-                f"formal GPU role-audit phase was not observed: {phase_id}"
-            )
-        for category in spec["required_call_categories"]:
-            if category_counts[category] <= 0:
-                raise SmokeFailure(
-                    f"formal GPU phase lacks {category} calls: {phase_id}"
-                )
-        if any(category_counts[category] != 0 for category in ROLE_QUERY_CATEGORIES):
-            raise SmokeFailure(
-                f"prohibited role query observed in GPU phase: {phase_id}"
-            )
         self._phase_records.append(record)
+        if failure_reason is not None:
+            failure = SmokeFailure(failure_reason)
+            failure.partial_phase_evidence = self.partial_evidence()
+            if callback_error is not None:
+                raise failure from callback_error
+            raise failure
         return result
+
+    def partial_evidence(self) -> dict[str, Any]:
+        """Return auditable phase records without claiming formal completion."""
+
+        expected_ids = [item["phase_id"] for item in FORMAL_GPU_ROLE_PHASE_SPECS]
+        count_keys = (
+            "repository_python_call_count",
+            "external_python_call_count",
+            "unknown_external_call_count",
+            "total_python_call_count",
+            "generator_interface_call_count",
+            "rate_interface_call_count",
+            "sampler_interface_call_count",
+            "critic_query_call_count",
+            "guidance_query_call_count",
+            "final_evaluator_query_call_count",
+        )
+        totals = {
+            key: sum(int(phase[key]) for phase in self._phase_records)
+            for key in count_keys
+        }
+        stream_material = [
+            {
+                "phase_id": phase["phase_id"],
+                "phase_status": phase["phase_status"],
+                "call_inventory": phase["call_inventory"],
+                "external_call_inventory": phase["external_call_inventory"],
+                "thread_inventory": phase["thread_inventory"],
+                "preexisting_noncurrent_python_threads": phase[
+                    "preexisting_noncurrent_python_threads"
+                ],
+            }
+            for phase in self._phase_records
+        ]
+        source_binding = self._formal_binding.get("source_binding", {})
+        return {
+            "schema_version": "mk0_gpu_role_query_partial_evidence_v1",
+            "status": "FAILED_WITH_PARTIAL_EVIDENCE",
+            "runtime_instrumentation": "sys_setprofile_python_calls",
+            "thread_scope": (
+                "formal_gpu_main_and_new_threading_threads_with_"
+                "preexisting_noncurrent_threads_forbidden"
+            ),
+            "run_id": self._run_id,
+            "goal_sha256": self._formal_binding.get("goal_sha256"),
+            "implementation_commit": self._formal_binding.get("implementation_commit"),
+            "required_phase_ids": expected_ids,
+            "observed_phase_ids": [phase["phase_id"] for phase in self._phase_records],
+            "formal_gpu_phase_count": len(self._phase_records),
+            "completed_phase_count": sum(
+                bool(phase["completed"]) for phase in self._phase_records
+            ),
+            "failed_phase_count": sum(
+                phase["phase_status"] == "FAILED" for phase in self._phase_records
+            ),
+            "phase_records": self._phase_records,
+            "record_stream_sha256": _canonical_hash(stream_material),
+            "audited_interfaces": self._interface_records,
+            "audited_interface_count": len(self._interface_records),
+            "tracked_source_files_sha256": source_binding.get(
+                "tracked_source_files_sha256"
+            ),
+            **totals,
+            "formal_gpu_computation_complete": False,
+        }
 
     def finalize(self) -> dict[str, Any]:
         expected_ids = [item["phase_id"] for item in FORMAL_GPU_ROLE_PHASE_SPECS]
         observed_ids = [item["phase_id"] for item in self._phase_records]
         if observed_ids != expected_ids:
-            raise SmokeFailure(
+            failure = SmokeFailure(
                 f"formal GPU role-audit phase coverage drift: {observed_ids}"
             )
-        interface_records = _formal_gpu_role_interface_records()
+            failure.partial_phase_evidence = self.partial_evidence()
+            raise failure
+        if any(phase["phase_status"] != "PASS" for phase in self._phase_records):
+            failure = SmokeFailure("formal GPU role-audit includes a failed phase")
+            failure.partial_phase_evidence = self.partial_evidence()
+            raise failure
+        interface_records = self._interface_records
         interface_failures = sum(
             bool(record["prohibited_parameters"]) for record in interface_records
         )
         if interface_failures:
-            raise SmokeFailure("formal GPU interface exposes a prohibited role input")
+            failure = SmokeFailure(
+                "formal GPU interface exposes a prohibited role input"
+            )
+            failure.partial_phase_evidence = self.partial_evidence()
+            raise failure
         totals = {
             key: sum(int(phase[key]) for phase in self._phase_records)
             for key in (
                 "repository_python_call_count",
+                "external_python_call_count",
+                "unknown_external_call_count",
+                "total_python_call_count",
                 "generator_interface_call_count",
                 "rate_interface_call_count",
                 "sampler_interface_call_count",
@@ -356,6 +727,11 @@ class _FormalGpuRoleQueryRecorder:
             {
                 "phase_id": phase["phase_id"],
                 "call_inventory": phase["call_inventory"],
+                "external_call_inventory": phase["external_call_inventory"],
+                "thread_inventory": phase["thread_inventory"],
+                "preexisting_noncurrent_python_threads": phase[
+                    "preexisting_noncurrent_python_threads"
+                ],
             }
             for phase in self._phase_records
         ]
@@ -363,8 +739,21 @@ class _FormalGpuRoleQueryRecorder:
             "schema_version": "mk0_gpu_post_role_query_audit_v1",
             "status": "PASS",
             "placement": "after_all_formal_gpu_generator_rate_sampler_phases_before_support_publication",
-            "runtime_instrumentation": "sys_setprofile_repository_python_calls",
-            "thread_scope": "formal_gpu_main_python_thread",
+            "runtime_instrumentation": "sys_setprofile_python_calls",
+            "thread_scope": (
+                "formal_gpu_main_and_new_threading_threads_with_"
+                "preexisting_noncurrent_threads_forbidden"
+            ),
+            "external_call_policy": {
+                "unknown_external_calls": "FAIL_CLOSED",
+                "stdlib_root": str(STDLIB_ROOT),
+                "site_package_roots_excluded_from_stdlib": [
+                    str(path) for path in SITE_PACKAGE_ROOTS
+                ],
+                "frozen_foundation_module_prefixes": list(
+                    FROZEN_FOUNDATION_EXTERNAL_MODULE_PREFIXES
+                ),
+            },
             "run_id": self._run_id,
             "goal_sha256": self._formal_binding["goal_sha256"],
             "implementation_commit": self._formal_binding["implementation_commit"],
@@ -395,7 +784,37 @@ class _FormalGpuRoleQueryRecorder:
                 for category in ROLE_QUERY_CATEGORIES
             ),
             "formal_gpu_computation_complete": True,
+            "all_external_calls_allowlisted": totals["unknown_external_call_count"]
+            == 0,
+            "all_new_threads_joined": all(
+                not phase["unjoined_new_thread_ids"] for phase in self._phase_records
+            ),
+            "all_preexisting_noncurrent_threads_absent": all(
+                phase["preexisting_noncurrent_python_thread_count"] == 0
+                and phase["preexisting_noncurrent_python_threads"] == []
+                for phase in self._phase_records
+            ),
         }
+
+
+_ACTIVE_ROLE_QUERY_RECORDER: _FormalGpuRoleQueryRecorder | None = None
+
+
+def _standard_failure_reason(error: BaseException) -> str:
+    message = str(error).strip()
+    return f"{type(error).__name__}: {message}" if message else type(error).__name__
+
+
+def _attach_active_partial_phase_evidence(error: BaseException) -> None:
+    if getattr(error, "partial_phase_evidence", None) is not None:
+        return
+    recorder = _ACTIVE_ROLE_QUERY_RECORDER
+    if recorder is None:
+        return
+    try:
+        error.partial_phase_evidence = recorder.partial_evidence()
+    except BaseException:
+        pass
 
 
 def _utc_now() -> str:
@@ -466,6 +885,7 @@ def _write_failure_best_effort(
     device: str,
     error: BaseException,
 ) -> Path | None:
+    partial_phase_evidence = getattr(error, "partial_phase_evidence", None)
     payload = {
         "schema_version": "mk0_gpu_smoke_failure_v1",
         "run_id": run_id,
@@ -475,8 +895,9 @@ def _write_failure_best_effort(
         "requested_snapshot_dir": snapshot_dir,
         "requested_device": device,
         "exception_type": type(error).__name__,
-        "exception_message": str(error),
+        "exception_message": _standard_failure_reason(error),
         "traceback": traceback.format_exc(),
+        "partial_phase_evidence": partial_phase_evidence,
         "cpu_fallback_allowed": False,
         "scientific_claims": {
             "functional_improvement": False,
@@ -641,6 +1062,10 @@ def _validate_formal_source_binding(
     preflight_payload = _load_json_object(preflight_resolved)
     if preflight_payload.get("run_id") != run_id:
         raise SmokeFailure("preflight run_id differs from GPU run")
+    if preflight_payload.get("parent_run_id") != run_manifest.get("parent_run_id"):
+        raise SmokeFailure("preflight parent run differs from GPU manifest")
+    if preflight.get("parent_run_id") != run_manifest.get("parent_run_id"):
+        raise SmokeFailure("preflight binding parent differs from GPU manifest")
     if preflight_payload.get("goal_sha256") != goal_sha256:
         raise SmokeFailure("preflight goal hash differs from GPU run")
     observed_preflight_head = preflight_payload.get("worktree", {}).get("head")
@@ -1822,48 +2247,79 @@ def _configure_numerics() -> dict[str, Any]:
     }
 
 
-def _formal_gpu_role_interface_records() -> list[dict[str, Any]]:
-    """Audit every formal GPU generator/rate/sampler entry interface."""
+def _formal_gpu_role_interfaces() -> (
+    tuple[tuple[str, Callable[..., Any], tuple[str, ...]], ...]
+):
+    """Return the exact production callables used for role attribution."""
 
-    interfaces: tuple[tuple[str, Callable[..., Any]], ...] = (
-        ("gpu_runner.forced_action_arm", _run_forced_action_arm),
-        ("gpu_runner.paper_sampler_route", _run_official_paper_sampler_route),
+    return (
+        (
+            "gpu_runner.forced_action_arm",
+            _run_forced_action_arm,
+            ("generator_interface",),
+        ),
+        ("gpu_runner.paper_sampler_route", _run_official_paper_sampler_route, ()),
         (
             "gpu_runner.primary_sampler_integration",
             _run_primary_gpu_sampler_integration,
+            (),
         ),
         (
             "gpu_runner.target_alignment_leakage_audit",
             _audit_target_alignment_leakage,
+            (),
         ),
         (
             "gpu_runner.dynamic_current_encoding_audit",
             _audit_dynamic_current_encoding,
+            (),
         ),
-        ("foundation_fusion.rate_field_forward", FoundationFusionRateField.forward),
+        (
+            "foundation_fusion.rate_field_forward",
+            FoundationFusionRateField.forward,
+            ("rate_interface",),
+        ),
         (
             "foundation_fusion.official_paper_adapter",
             OfficialPaperRateAdapter.__call__,
+            ("rate_interface",),
         ),
-        ("samplers.constrained_primary", constrained_single_event_first_order),
-        ("samplers.paper_parallel", paper_first_order_parallel),
-        ("samplers.replay_constrained", replay_constrained_result),
-        ("samplers.replay_paper", replay_paper_result),
+        (
+            "samplers.constrained_primary",
+            constrained_single_event_first_order,
+            ("sampler_interface",),
+        ),
+        (
+            "samplers.paper_parallel",
+            paper_first_order_parallel,
+            ("sampler_interface",),
+        ),
+        (
+            "samplers.replay_constrained",
+            replay_constrained_result,
+            ("sampler_interface",),
+        ),
+        (
+            "samplers.replay_paper",
+            replay_paper_result,
+            ("sampler_interface",),
+        ),
     )
-    labels = tuple(label for label, _interface in interfaces)
+
+
+def _formal_gpu_role_interface_records() -> tuple[
+    list[dict[str, Any]],
+    dict[Any, tuple[str, str, int, tuple[str, ...]]],
+]:
+    """Audit interfaces and bind categories to exact code-object identities."""
+
+    interfaces = _formal_gpu_role_interfaces()
+    labels = tuple(label for label, _interface, _categories in interfaces)
     if labels != FORMAL_GPU_ROLE_INTERFACE_LABELS:
         raise SmokeFailure("formal GPU role-interface inventory/order drift")
-    prohibited_tokens = (
-        "critic",
-        "guidance",
-        "evaluator",
-        "final_evaluator",
-        "reward",
-        "rerank",
-        "selector",
-    )
     records: list[dict[str, Any]] = []
-    for label, interface in interfaces:
+    role_code_metadata: dict[Any, tuple[str, str, int, tuple[str, ...]]] = {}
+    for label, interface, categories in interfaces:
         source_file = inspect.getsourcefile(interface)
         if source_file is None:
             raise SmokeFailure(f"formal GPU interface lacks source: {label}")
@@ -1874,22 +2330,73 @@ def _formal_gpu_role_interface_records() -> list[dict[str, Any]]:
             raise SmokeFailure(
                 f"formal GPU interface source escaped repository: {label}"
             ) from error
+        code = getattr(interface, "__code__", None)
+        if code is None:
+            raise SmokeFailure(f"formal GPU interface lacks Python code: {label}")
+        try:
+            code_source = Path(code.co_filename).resolve(strict=True)
+        except OSError as error:
+            raise SmokeFailure(
+                f"formal GPU interface code source is unreadable: {label}"
+            ) from error
+        if code_source != resolved:
+            raise SmokeFailure(
+                f"formal GPU interface source/code origin differs: {label}"
+            )
+        qualname = str(getattr(interface, "__qualname__", interface.__name__))
+        metadata = (
+            relative,
+            qualname,
+            int(code.co_firstlineno),
+            tuple(sorted(categories)),
+        )
+        if code in role_code_metadata:
+            raise SmokeFailure(f"formal GPU interface code identity reused: {label}")
+        role_code_metadata[code] = metadata
         parameters = list(inspect.signature(interface).parameters)
         prohibited = sorted(
             parameter
             for parameter in parameters
-            if any(token in parameter.lower() for token in prohibited_tokens)
+            if any(token in parameter.lower() for token in ROLE_PROHIBITED_TOKENS)
         )
         records.append(
             {
                 "interface": label,
                 "source_file": relative,
                 "source_file_sha256": _hash_file(resolved),
+                "function_qualname": qualname,
+                "first_lineno": int(code.co_firstlineno),
+                "role_categories": list(metadata[3]),
                 "parameters": parameters,
                 "prohibited_parameters": prohibited,
             }
         )
-    return records
+    return records, role_code_metadata
+
+
+def _validate_formal_runtime_interface_origins(
+    formal_binding: Mapping[str, Any],
+) -> tuple[
+    list[dict[str, Any]],
+    dict[Any, tuple[str, str, int, tuple[str, ...]]],
+]:
+    """Fail before model load if a runtime callable escaped the bound tree."""
+
+    records, role_code_metadata = _formal_gpu_role_interface_records()
+    tracked = formal_binding["source_binding"]["tracked_source_files"]
+    for record in records:
+        relative = record["source_file"]
+        if relative not in tracked:
+            raise SmokeFailure(
+                f"formal GPU runtime interface is not source-bound: {record['interface']}"
+            )
+        if record["source_file_sha256"] != tracked[relative]:
+            raise SmokeFailure(
+                f"formal GPU runtime interface hash differs: {record['interface']}"
+            )
+    if len(role_code_metadata) != len(records):
+        raise SmokeFailure("formal GPU runtime code-identity inventory drift")
+    return records, role_code_metadata
 
 
 def run_gpu_smoke(
@@ -1903,6 +2410,8 @@ def run_gpu_smoke(
     run_manifest_path: Path,
     preflight_path: Path,
 ) -> dict[str, Any]:
+    global _ACTIVE_ROLE_QUERY_RECORDER
+    _ACTIVE_ROLE_QUERY_RECORDER = None
     if not run_id.strip():
         raise SmokeFailure("--run-id must not be empty")
     if any(
@@ -1917,6 +2426,9 @@ def run_gpu_smoke(
         implementation_commit=implementation_commit,
         run_manifest_path=run_manifest_path,
         preflight_path=preflight_path,
+    )
+    interface_records, role_code_metadata = _validate_formal_runtime_interface_origins(
+        formal_binding
     )
     run_root = Path(formal_binding["run_root"])
     expected_output_dir = (run_root / "artifacts" / "mk0").resolve(strict=True)
@@ -1979,7 +2491,13 @@ def run_gpu_smoke(
             "from-scratch control unexpectedly equals checkpoint weights"
         )
 
-    role_query_recorder = _FormalGpuRoleQueryRecorder(formal_binding, run_id=run_id)
+    role_query_recorder = _FormalGpuRoleQueryRecorder(
+        formal_binding,
+        run_id=run_id,
+        interface_records=interface_records,
+        role_code_metadata=role_code_metadata,
+    )
+    _ACTIVE_ROLE_QUERY_RECORDER = role_query_recorder
     official_field, official_arm, official_forward_telemetry = (
         role_query_recorder.run_phase(
             "generator_rate_official_frozen_arm",
@@ -2349,6 +2867,7 @@ def run_gpu_smoke(
     gpu_summary_sha256 = _write_canonical_atomic_exclusive(
         gpu_summary_path, gpu_summary
     )
+    _ACTIVE_ROLE_QUERY_RECORDER = None
     return {
         "status": "PASS",
         "run_id": run_id,
@@ -2551,6 +3070,8 @@ def main(argv: Iterable[str] | None = None) -> int:
             f"{_utc_now()} GPU smoke passed; finalizer pending\n",
         )
     except BaseException as error:
+        _attach_active_partial_phase_evidence(error)
+        failure_reason = _standard_failure_reason(error)
         failure_path = None
         if run_root is not None:
             try:
@@ -2568,7 +3089,7 @@ def main(argv: Iterable[str] | None = None) -> int:
                 json.dumps(
                     {
                         "status": "FAILED_WITH_EVIDENCE",
-                        "error": f"{type(error).__name__}: {error}",
+                        "error": failure_reason,
                         "failure_artifact": (
                             str(failure_path) if failure_path else None
                         ),
@@ -2593,8 +3114,11 @@ def main(argv: Iterable[str] | None = None) -> int:
                             "status": "FAILED_WITH_EVIDENCE",
                             "created_at_utc": _utc_now(),
                             "exception_type": type(error).__name__,
-                            "exception_message": str(error),
+                            "exception_message": failure_reason,
                             "traceback": traceback.format_exc(),
+                            "partial_phase_evidence": getattr(
+                                error, "partial_phase_evidence", None
+                            ),
                             "support_failure_path": (
                                 str(failure_path) if failure_path is not None else None
                             ),
@@ -2607,7 +3131,7 @@ def main(argv: Iterable[str] | None = None) -> int:
             try:
                 append_text(
                     run_root / "logs" / "stderr.log",
-                    f"{_utc_now()} GPU smoke failed: {error}\n",
+                    f"{_utc_now()} GPU smoke failed: {failure_reason}\n",
                 )
             except BaseException:
                 pass
@@ -2616,7 +3140,7 @@ def main(argv: Iterable[str] | None = None) -> int:
                     run_root,
                     run_id=bound_run_id or args.run_id,
                     stage="GPU_SMOKE",
-                    reason=str(error),
+                    reason=failure_reason,
                     exit_code=1,
                 )
             except BaseException as closure_error:

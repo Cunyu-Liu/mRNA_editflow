@@ -26,6 +26,53 @@ FINALIZER = _load(
     "scripts/mk0/finalize_mk0_acceptance.py",
 )
 
+PARENT_RUN_ID = "MK0_utrlm_mathkernel_tiny_20260802T083317Z_1d879e0_s20260802"
+CHILD_RUN_ID = "MK0_utrlm_mathkernel_tiny_20260802T093317Z_abcdef0_s20260802"
+
+
+def test_parent_run_lineage_is_optional_for_non_repair_preflight() -> None:
+    assert PREFLIGHT.validate_parent_run_lineage("legacy-unvalidated-id", None) is None
+    assert PREFLIGHT.preflight_lineage_fields("legacy-unvalidated-id", None) == {
+        "run_id": "legacy-unvalidated-id",
+        "parent_run_id": None,
+    }
+
+
+def test_parent_run_lineage_accepts_formal_strictly_earlier_parent() -> None:
+    assert (
+        PREFLIGHT.validate_parent_run_lineage(CHILD_RUN_ID, PARENT_RUN_ID)
+        == PARENT_RUN_ID
+    )
+    assert PREFLIGHT.preflight_lineage_fields(CHILD_RUN_ID, PARENT_RUN_ID) == {
+        "run_id": CHILD_RUN_ID,
+        "parent_run_id": PARENT_RUN_ID,
+    }
+
+
+@pytest.mark.parametrize(
+    ("child_run_id", "parent_run_id", "message"),
+    [
+        (CHILD_RUN_ID, "not-a-formal-run", "parent run ID"),
+        ("not-a-formal-run", PARENT_RUN_ID, "child run ID"),
+        (
+            CHILD_RUN_ID,
+            "MK0_utrlm_mathkernel_tiny_20261302T083317Z_1d879e0_s20260802",
+            "calendar time",
+        ),
+        (CHILD_RUN_ID, CHILD_RUN_ID, "must precede"),
+        (
+            PARENT_RUN_ID,
+            CHILD_RUN_ID,
+            "must precede",
+        ),
+    ],
+)
+def test_parent_run_lineage_rejects_invalid_or_nonchronological_repairs(
+    child_run_id: str, parent_run_id: str, message: str
+) -> None:
+    with pytest.raises(ValueError, match=message):
+        PREFLIGHT.validate_parent_run_lineage(child_run_id, parent_run_id)
+
 
 def test_preflight_inventory_digest_is_accepted_and_tamper_fails(
     tmp_path: Path,

@@ -10,59 +10,69 @@ bytes before it writes terminal acceptance records.
 from __future__ import annotations
 
 import argparse
+import ast
 from dataclasses import replace
 from datetime import datetime, timezone
 import hashlib
-import importlib.util
 import json
 import os
 from pathlib import Path
 import platform
 import re
 import shutil
+import stat
 import subprocess
 import sys
+import sysconfig
+import tempfile
+from types import ModuleType
 import traceback
 from typing import Any, Iterable, Mapping
+import xml.etree.ElementTree as ET
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-package_spec = importlib.util.spec_from_file_location(
-    "mrna_editflow",
-    REPO_ROOT / "__init__.py",
-    submodule_search_locations=[str(REPO_ROOT)],
+_bootstrap_path = REPO_ROOT / "scripts" / "mk0" / "strict_worktree_import.py"
+_bootstrap_module = ModuleType("_mk0_strict_worktree_import")
+_bootstrap_module.__file__ = str(_bootstrap_path)
+_bootstrap_module.__cached__ = None
+exec(
+    compile(
+        _bootstrap_path.read_bytes(),
+        str(_bootstrap_path),
+        "exec",
+        dont_inherit=True,
+        optimize=0,
+    ),
+    _bootstrap_module.__dict__,
 )
-if package_spec is None or package_spec.loader is None:
-    raise RuntimeError("cannot bind mrna_editflow to current worktree")
-package_module = importlib.util.module_from_spec(package_spec)
-sys.modules["mrna_editflow"] = package_module
-package_spec.loader.exec_module(package_module)
 
 import yaml
 
-from mrna_editflow.core.mk0.acceptance import (
-    GateResult,
-    aggregate_acceptance,
-    canonical_json_bytes,
-    gate_result_from_runtime_binding,
-    sha256_file,
-    verify_bound_file,
-)
-from mrna_editflow.core.mk0.run_contract import (
-    EVIDENCE_LEVEL,
-    LOG_FILENAMES,
-    RUN_DIRECTORIES,
-    append_event,
-    append_jsonl,
-    append_text,
-    immutable_file_inventory,
-    resume_failure_closure_if_present,
-    update_status,
-    validate_terminal_chain,
-    write_bytes_exclusive_atomic,
-    write_failed_sentinel,
-    write_json_exclusive_atomic,
-    write_whole_run_checksum_ledger,
-)
+with _bootstrap_module.strict_worktree_package_import(REPO_ROOT):
+    from mrna_editflow.core.mk0.acceptance import (
+        GateResult,
+        aggregate_acceptance,
+        canonical_json_bytes,
+        gate_result_from_runtime_binding,
+        sha256_file,
+        verify_bound_file,
+    )
+    from mrna_editflow.core.mk0.run_contract import (
+        EVIDENCE_LEVEL,
+        LOG_FILENAMES,
+        RUN_DIRECTORIES,
+        append_event,
+        append_jsonl,
+        append_text,
+        immutable_file_inventory,
+        resume_failure_closure_if_present,
+        update_status,
+        validate_terminal_chain,
+        write_bytes_exclusive_atomic,
+        write_failed_sentinel,
+        write_json_exclusive_atomic,
+        write_whole_run_checksum_ledger,
+    )
 
 GPU_GATE_IDS = {"M05", "M31", "M32", "M35"}
 CPU_RESULTS = "mk0_cpu_gate_results.json"
@@ -164,6 +174,59 @@ GPU_ROLE_QUERY_CATEGORIES = (
     "final_evaluator_query",
 )
 
+FROZEN_FOUNDATION_EXTERNAL_MODULE_PREFIXES = (
+    "torch",
+    "transformers",
+    "multimolecule",
+    "tokenizers",
+    "numpy",
+    "safetensors",
+    "huggingface_hub",
+    "packaging",
+)
+
+ROLE_PROHIBITED_TOKENS = (
+    "critic",
+    "guidance",
+    "evaluator",
+    "final_evaluator",
+    "reward",
+    "rerank",
+    "selector",
+)
+
+STDLIB_ROOT = Path(sysconfig.get_path("stdlib")).resolve()
+SITE_PACKAGE_ROOTS = tuple(
+    sorted(
+        {
+            Path(value).resolve()
+            for key in ("purelib", "platlib")
+            if (value := sysconfig.get_path(key))
+        },
+        key=str,
+    )
+)
+
+EXACT_GPU_ROLE_INTERFACES = {
+    ("scripts/mk0/run_mk0_gpu_smoke.py", "_run_forced_action_arm"): (
+        "generator_interface",
+    ),
+    (
+        "core/mk0/foundation_fusion.py",
+        "FoundationFusionRateField.forward",
+    ): ("rate_interface",),
+    (
+        "core/mk0/foundation_fusion.py",
+        "OfficialPaperRateAdapter.__call__",
+    ): ("rate_interface",),
+    ("core/mk0/samplers.py", "constrained_single_event_first_order"): (
+        "sampler_interface",
+    ),
+    ("core/mk0/samplers.py", "paper_first_order_parallel"): ("sampler_interface",),
+    ("core/mk0/samplers.py", "replay_constrained_result"): ("sampler_interface",),
+    ("core/mk0/samplers.py", "replay_paper_result"): ("sampler_interface",),
+}
+
 
 class FinalizeFailure(RuntimeError):
     pass
@@ -171,6 +234,11 @@ class FinalizeFailure(RuntimeError):
 
 def utc_now() -> str:
     return datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+
+
+def _standard_failure_reason(error: BaseException) -> str:
+    message = str(error).strip()
+    return f"{type(error).__name__}: {message}" if message else type(error).__name__
 
 
 def require(condition: bool, message: str) -> None:
@@ -182,6 +250,304 @@ def read_json(path: Path) -> dict[str, Any]:
     value = json.loads(path.read_text(encoding="utf-8"))
     require(isinstance(value, dict), f"JSON artifact is not an object: {path}")
     return value
+
+
+def _ordinary_unlinked_file_snapshot(
+    path: Path,
+    *,
+    label: str,
+    relative_to: Path | None = None,
+) -> tuple[dict[str, Any], bytes]:
+    """Read one no-follow FD and bind identity, bytes, size and digest together."""
+
+    flags = os.O_RDONLY | getattr(os, "O_CLOEXEC", 0)
+    if hasattr(os, "O_NOFOLLOW"):
+        flags |= os.O_NOFOLLOW
+    try:
+        descriptor = os.open(path, flags)
+    except OSError as error:
+        raise FinalizeFailure(
+            f"{label} is not an ordinary unlinked file or cannot be opened without following"
+        ) from error
+    try:
+        before = os.fstat(descriptor)
+        require(
+            stat.S_ISREG(before.st_mode) and before.st_nlink == 1,
+            f"{label} is not an ordinary unlinked file",
+        )
+        require(before.st_size > 0, f"{label} is empty")
+        chunks: list[bytes] = []
+        while True:
+            block = os.read(descriptor, 1024 * 1024)
+            if not block:
+                break
+            chunks.append(block)
+        after = os.fstat(descriptor)
+    finally:
+        os.close(descriptor)
+    identity_fields = (
+        "st_dev",
+        "st_ino",
+        "st_mode",
+        "st_nlink",
+        "st_size",
+        "st_mtime_ns",
+        "st_ctime_ns",
+    )
+    require(
+        all(
+            getattr(before, field) == getattr(after, field) for field in identity_fields
+        ),
+        f"{label} changed while it was read",
+    )
+    data = b"".join(chunks)
+    require(len(data) == before.st_size, f"{label} size changed while it was read")
+    try:
+        live = path.lstat()
+    except FileNotFoundError as error:
+        raise FinalizeFailure(f"{label} disappeared after it was read") from error
+    require(
+        not path.is_symlink()
+        and all(
+            getattr(before, field) == getattr(live, field) for field in identity_fields
+        ),
+        f"{label} pathname identity changed while it was read",
+    )
+    resolved = path.resolve(strict=True)
+    path_value = (
+        resolved.relative_to(relative_to).as_posix()
+        if relative_to is not None
+        else str(resolved)
+    )
+    return (
+        {
+            "path": path_value,
+            "size_bytes": before.st_size,
+            "sha256": hashlib.sha256(data).hexdigest(),
+        },
+        data,
+    )
+
+
+def _ordinary_unlinked_file_record(
+    path: Path,
+    *,
+    label: str,
+    relative_to: Path | None = None,
+) -> dict[str, Any]:
+    record, _data = _ordinary_unlinked_file_snapshot(
+        path,
+        label=label,
+        relative_to=relative_to,
+    )
+    return record
+
+
+def _parent_failure_path_snapshot(parent_root: Path) -> tuple[str, list[Path]]:
+    """Enumerate the exact canonical failure-evidence path set."""
+
+    sentinel_paths = [parent_root / name for name in ("DONE", "FAILED")]
+    sentinels = [
+        path.name for path in sentinel_paths if path.exists() or path.is_symlink()
+    ]
+    require(len(sentinels) <= 1, "parent run has contradictory terminal sentinels")
+    require("DONE" not in sentinels, "repair parent is terminal DONE")
+
+    evidence_paths: set[Path] = set()
+    if "FAILED" in sentinels:
+        evidence_paths.add(parent_root / "FAILED")
+
+    failure_root = parent_root / "failure"
+    if failure_root.exists() or failure_root.is_symlink():
+        failure_metadata = failure_root.lstat()
+        require(
+            stat.S_ISDIR(failure_metadata.st_mode) and not failure_root.is_symlink(),
+            "parent failure evidence root is not an ordinary directory",
+        )
+        for candidate in failure_root.rglob("*"):
+            candidate_metadata = candidate.lstat()
+            require(
+                not candidate.is_symlink(),
+                "parent failure evidence contains a symlink",
+            )
+            if stat.S_ISDIR(candidate_metadata.st_mode):
+                continue
+            require(
+                stat.S_ISREG(candidate_metadata.st_mode),
+                "parent failure evidence contains a special file",
+            )
+            evidence_paths.add(candidate)
+
+    artifacts_root = parent_root / "artifacts"
+    if artifacts_root.exists() or artifacts_root.is_symlink():
+        artifacts_metadata = artifacts_root.lstat()
+        require(
+            stat.S_ISDIR(artifacts_metadata.st_mode)
+            and not artifacts_root.is_symlink(),
+            "parent artifacts root is not an ordinary directory",
+        )
+        for candidate in artifacts_root.rglob("*failure*.json"):
+            candidate_metadata = candidate.lstat()
+            require(
+                not candidate.is_symlink(),
+                "parent failure evidence contains a symlink",
+            )
+            require(
+                stat.S_ISREG(candidate_metadata.st_mode),
+                "parent failure evidence contains a special file",
+            )
+            evidence_paths.add(candidate)
+
+    classification = "FAILED" if "FAILED" in sentinels else "UNSEALED_FAILED_EVIDENCE"
+    return classification, sorted(
+        evidence_paths,
+        key=lambda candidate: candidate.relative_to(parent_root).as_posix(),
+    )
+
+
+def _live_parent_failure_evidence(parent_root: Path) -> tuple[str, dict[str, Any]]:
+    """Rebuild the canonical parent-failure inventory from live bytes."""
+
+    classification, evidence_paths = _parent_failure_path_snapshot(parent_root)
+    records = [
+        _ordinary_unlinked_file_record(
+            path,
+            label="parent failure evidence file",
+            relative_to=parent_root,
+        )
+        for path in evidence_paths
+    ]
+    require(records, "repair parent has no failure evidence")
+    classification_after, evidence_paths_after = _parent_failure_path_snapshot(
+        parent_root
+    )
+    require(
+        classification_after == classification
+        and [path.relative_to(parent_root) for path in evidence_paths_after]
+        == [path.relative_to(parent_root) for path in evidence_paths],
+        "parent failure evidence inventory changed while it was verified",
+    )
+    return classification, {
+        "file_count": len(records),
+        "total_size_bytes": sum(int(record["size_bytes"]) for record in records),
+        "files": records,
+        "files_sha256": hashlib.sha256(canonical_json_bytes(records)).hexdigest(),
+    }
+
+
+def verify_parent_run_binding(
+    parent_binding: Mapping[str, Any],
+    *,
+    parent_run_id: str,
+    goal_sha256: str,
+    canonical_parent: Path = CANONICAL_RUN_PARENT,
+) -> dict[str, Any]:
+    """Independently revalidate a repair parent's manifest and failure bytes."""
+
+    require(isinstance(parent_binding, Mapping), "MK0 parent binding is absent")
+    canonical_root = canonical_parent.resolve(strict=True)
+    parent_root = canonical_root / parent_run_id
+    try:
+        root_metadata = parent_root.lstat()
+    except FileNotFoundError as error:
+        raise FinalizeFailure("parent run root is absent") from error
+    require(
+        stat.S_ISDIR(root_metadata.st_mode) and not parent_root.is_symlink(),
+        "parent run root is not an ordinary directory",
+    )
+    require(
+        parent_root.resolve(strict=True) == parent_root,
+        "parent run root is not canonical",
+    )
+
+    manifest_path = parent_root / "run_manifest.json"
+    manifest_record, manifest_bytes = _ordinary_unlinked_file_snapshot(
+        manifest_path,
+        label="parent run registration manifest",
+    )
+    try:
+        manifest = json.loads(manifest_bytes)
+    except (UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise FinalizeFailure(
+            "parent run registration manifest is invalid JSON"
+        ) from error
+    require(
+        isinstance(manifest, dict),
+        "parent run registration manifest is not a JSON object",
+    )
+    require(
+        manifest.get("schema_version") == "mk0_run_manifest_v3",
+        "parent run manifest schema drift",
+    )
+    require(manifest.get("run_id") == parent_run_id, "parent run manifest ID drift")
+    require(manifest.get("task_id") == "MK0-01", "parent run manifest task drift")
+    require(manifest.get("phase") == "MK0", "parent run manifest phase drift")
+    declared_root = Path(str(manifest.get("run_root", "")))
+    require(
+        declared_root.is_absolute()
+        and declared_root == parent_root
+        and declared_root.resolve(strict=True) == parent_root,
+        "parent run manifest root drift",
+    )
+    require(
+        manifest.get("goal_sha256") == goal_sha256
+        and isinstance(manifest.get("contract"), Mapping)
+        and manifest["contract"].get("sha256") == goal_sha256,
+        "parent run manifest Goal drift",
+    )
+    parent_commit = manifest.get("implementation_commit")
+    require(
+        isinstance(parent_commit, str) and HEX40.fullmatch(parent_commit) is not None,
+        "parent run implementation commit is invalid",
+    )
+    require(
+        isinstance(manifest.get("code"), Mapping)
+        and manifest["code"].get("commit") == parent_commit,
+        "parent run code binding drift",
+    )
+    require(
+        isinstance(manifest.get("source_binding"), Mapping)
+        and manifest["source_binding"].get("git_commit") == parent_commit,
+        "parent run source binding drift",
+    )
+    parent_match = FORMAL_RUN_ID.fullmatch(parent_run_id)
+    require(parent_match is not None, "parent run ID is not formal")
+    require(
+        parent_commit.startswith(parent_match.group("short_sha")),
+        "parent run ID short SHA differs from implementation commit",
+    )
+
+    classification, failure_evidence = _live_parent_failure_evidence(parent_root)
+    root_after = parent_root.lstat()
+    require(
+        not parent_root.is_symlink()
+        and all(
+            getattr(root_metadata, field) == getattr(root_after, field)
+            for field in (
+                "st_dev",
+                "st_ino",
+                "st_mode",
+                "st_nlink",
+                "st_mtime_ns",
+                "st_ctime_ns",
+            )
+        ),
+        "parent run root identity changed while lineage was verified",
+    )
+    live_binding = {
+        "schema_version": "mk0_parent_run_binding_v1",
+        "run_id": parent_run_id,
+        "run_root": str(parent_root),
+        "registration_manifest": manifest_record,
+        "observed_classification": classification,
+        "failure_evidence": failure_evidence,
+    }
+    require(
+        canonical_json_bytes(dict(parent_binding))
+        == canonical_json_bytes(live_binding),
+        "MK0 parent binding differs from live parent manifest/failure bytes",
+    )
+    return live_binding
 
 
 def write_new(path: Path, value: Any) -> str:
@@ -258,6 +624,672 @@ def verify_current_source_binding(
         "tracked_source_file_count": len(observed),
         "tracked_source_files_sha256": inventory_sha,
         "tracked_source_files": observed,
+    }
+
+
+def _ast_string_constant(
+    path: Path,
+    name: str,
+    *,
+    source_bytes: bytes | None = None,
+) -> str:
+    """Read a literal module string without importing or executing the module."""
+
+    try:
+        tree = ast.parse(
+            path.read_bytes() if source_bytes is None else source_bytes,
+            filename=str(path),
+        )
+    except (OSError, SyntaxError) as error:
+        raise FinalizeFailure(f"cannot parse source constant: {path}:{name}") from error
+    values = [
+        node.value.value
+        for node in tree.body
+        if isinstance(node, (ast.Assign, ast.AnnAssign))
+        for target in (node.targets if isinstance(node, ast.Assign) else [node.target])
+        if isinstance(target, ast.Name)
+        and target.id == name
+        and isinstance(node.value, ast.Constant)
+        and isinstance(node.value.value, str)
+    ]
+    require(len(values) == 1, f"source constant is not unique: {path}:{name}")
+    return values[0]
+
+
+def _pytest_junit_tree(data: bytes) -> ET.Element:
+    """Parse the exact already-hashed JUnit bytes."""
+
+    try:
+        return ET.fromstring(data)
+    except ET.ParseError as error:
+        raise FinalizeFailure("pytest JUnit evidence is invalid") from error
+
+
+def _pytest_junit_totals(data: bytes) -> dict[str, int]:
+    """Independently derive pytest totals from leaf JUnit test suites."""
+
+    root = _pytest_junit_tree(data)
+
+    def local_name(element: ET.Element) -> str:
+        return element.tag.rsplit("}", 1)[-1]
+
+    suites = [
+        element
+        for element in root.iter()
+        if local_name(element) == "testsuite"
+        and not any(local_name(child) == "testsuite" for child in element)
+    ]
+    require(bool(suites), "pytest JUnit contains no leaf test suite")
+    totals = {name: 0 for name in ("tests", "errors", "failures", "skipped")}
+    for suite in suites:
+        for name in totals:
+            raw = suite.get(name)
+            try:
+                value = int(raw) if raw is not None else None
+            except ValueError as error:
+                raise FinalizeFailure(f"pytest JUnit {name} is invalid") from error
+            require(
+                value is not None and value >= 0,
+                f"pytest JUnit {name} is invalid",
+            )
+            totals[name] += value
+    passed = totals["tests"] - totals["errors"] - totals["failures"] - totals["skipped"]
+    require(passed >= 0, "pytest JUnit totals are inconsistent")
+    return {**totals, "passed": passed}
+
+
+def _pytest_junit_identities(data: bytes) -> list[tuple[str, str]]:
+    """Extract canonical (classname, test name) identities from JUnit bytes."""
+
+    root = _pytest_junit_tree(data)
+
+    def local_name(element: ET.Element) -> str:
+        return element.tag.rsplit("}", 1)[-1]
+
+    identities: list[tuple[str, str]] = []
+    for element in root.iter():
+        if local_name(element) != "testcase":
+            continue
+        classname = element.get("classname")
+        name = element.get("name")
+        require(
+            isinstance(classname, str)
+            and bool(classname)
+            and isinstance(name, str)
+            and bool(name),
+            "pytest JUnit testcase identity is invalid",
+        )
+        identities.append((classname, name))
+    require(bool(identities), "pytest JUnit contains no testcase identity")
+    return sorted(identities)
+
+
+def _nodeid_junit_identity(nodeid: str) -> tuple[str, str]:
+    """Map a standard pytest Python nodeid to its JUnit identity."""
+
+    parts = nodeid.split("::")
+    require(len(parts) >= 2, f"pytest nodeid has no test selector: {nodeid}")
+    relative = parts[0]
+    require(
+        relative.startswith("tests/mk0/")
+        and relative.endswith(".py")
+        and not Path(relative).is_absolute()
+        and ".." not in Path(relative).parts,
+        f"pytest nodeid escaped the complete MK0 domain: {nodeid}",
+    )
+    source = (REPO_ROOT / relative).resolve(strict=True)
+    try:
+        source.relative_to(REPO_ROOT / "tests" / "mk0")
+    except ValueError as error:
+        raise FinalizeFailure(f"pytest nodeid escaped MK0 tests: {nodeid}") from error
+    require(source.is_file(), f"pytest nodeid source is absent: {nodeid}")
+    classname = relative[:-3].replace("/", ".")
+    if len(parts) > 2:
+        classname += "." + ".".join(parts[1:-1])
+    return classname, parts[-1]
+
+
+def _json_markers(stdout: str, marker: str) -> list[dict[str, Any]]:
+    raw_records = []
+    for line in stdout.splitlines():
+        index = line.find(marker)
+        if index >= 0:
+            raw_records.append(line[index + len(marker) :])
+    records: list[dict[str, Any]] = []
+    for raw in raw_records:
+        try:
+            value = json.loads(raw)
+        except json.JSONDecodeError as error:
+            raise FinalizeFailure(
+                f"pytest evidence emitted invalid {marker} JSON"
+            ) from error
+        require(isinstance(value, dict), f"pytest {marker} is not an object")
+        records.append(value)
+    return records
+
+
+def _unique_json_marker(stdout: str, marker: str) -> dict[str, Any]:
+    records = _json_markers(stdout, marker)
+    require(len(records) == 1, f"independent pytest collection lacks unique {marker}")
+    return records[0]
+
+
+def _independent_pytest_collection(
+    *,
+    run_root: Path,
+    python_executable: str,
+    bootstrap: str,
+    expected_nodeids: list[str],
+    expected_pytest_version: str,
+    helper_path: Path,
+    helper_sha256: str,
+) -> tuple[dict[str, Any], bytes]:
+    """Re-collect current source-bound tests outside the formal run tree."""
+
+    command = [
+        python_executable,
+        "-c",
+        bootstrap,
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--collect-only",
+        "tests/mk0",
+    ]
+    temporary_parent = Path(tempfile.gettempdir()).resolve(strict=True)
+    require(
+        temporary_parent != run_root and run_root not in temporary_parent.parents,
+        "independent pytest temporary root entered the formal run tree",
+    )
+    external_removed = False
+    with tempfile.TemporaryDirectory(
+        prefix="mk0-finalizer-collect-",
+        dir=temporary_parent,
+    ) as temporary_text:
+        import_root = Path(temporary_text).resolve(strict=True)
+        binding = import_root / "mrna_editflow"
+        os.symlink(REPO_ROOT, binding, target_is_directory=True)
+        require(
+            binding.is_symlink() and binding.resolve(strict=True) == REPO_ROOT,
+            "independent pytest import binding is invalid",
+        )
+        environment = os.environ.copy()
+        for key in tuple(environment):
+            if key.startswith("PYTEST_") or key.startswith("PYTHON"):
+                environment.pop(key, None)
+        environment.update(
+            {
+                "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1",
+                "PYTHONPATH": str(import_root),
+                "PYTHONNOUSERSITE": "1",
+                "PYTHONDONTWRITEBYTECODE": "1",
+                "MK0_EXPECTED_PACKAGE_INIT": str(REPO_ROOT / "__init__.py"),
+                "MK0_EXPECTED_PACKAGE_ROOT": str(REPO_ROOT),
+                "MK0_PYTEST_MODE": "collect",
+            }
+        )
+        try:
+            completed = subprocess.run(
+                command,
+                cwd=REPO_ROOT,
+                env=environment,
+                capture_output=True,
+                text=True,
+                timeout=300,
+            )
+        except (OSError, subprocess.TimeoutExpired) as error:
+            raise FinalizeFailure(
+                "independent pytest collection failed to run"
+            ) from error
+    external_removed = not Path(temporary_text).exists()
+    log_bytes = (
+        "=== FINALIZER INDEPENDENT PYTEST COLLECT STDOUT ===\n"
+        + completed.stdout
+        + "\n=== FINALIZER INDEPENDENT PYTEST COLLECT STDERR ===\n"
+        + completed.stderr
+    ).encode("utf-8")
+    require(completed.returncode == 0, "independent pytest collection returned nonzero")
+    origin = _unique_json_marker(completed.stdout, "__MK0_BOUND_MODULE_ORIGIN__=")
+    audit = _unique_json_marker(completed.stdout, "__MK0_PYTEST_AUDIT__=")
+    require(
+        origin.get("matches_current_worktree") is True
+        and origin.get("resolved_init") == str(REPO_ROOT / "__init__.py")
+        and origin.get("resolved_search_locations") == [str(REPO_ROOT)]
+        and origin.get("strict_importer_path") == str(helper_path)
+        and origin.get("strict_importer_sha256") == helper_sha256
+        and origin.get("strict_importer_loaded_from_source_bytes") is True,
+        "independent pytest source-byte origin drift",
+    )
+    nodeids = audit.get("nodeids")
+    require(
+        audit.get("schema_version") == "mk0_pytest_audit_v1"
+        and audit.get("mode") == "collect"
+        and audit.get("exitstatus") == 0
+        and audit.get("pytest_version") == expected_pytest_version
+        and isinstance(nodeids, list)
+        and nodeids == sorted(nodeids)
+        and len(nodeids) == len(set(nodeids))
+        and audit.get("collected_count") == len(nodeids)
+        and audit.get("deselected_count") == 0
+        and audit.get("xfailed_count") == 0
+        and audit.get("xpassed_count") == 0,
+        "independent pytest collection audit drift",
+    )
+    require(
+        nodeids == expected_nodeids,
+        "independent pytest collection differs from CPU collect/execute inventory",
+    )
+    nodeids_sha256 = hashlib.sha256(
+        "".join(f"{nodeid}\n" for nodeid in nodeids).encode("utf-8")
+    ).hexdigest()
+    require(external_removed, "independent pytest import root was not removed")
+    return (
+        {
+            "schema_version": "mk0_finalizer_pytest_collection_v1",
+            "status": "PASS",
+            "collection_method": "fresh_source_bound_sanitized_collect_only",
+            "python_executable": python_executable,
+            "command": command,
+            "pytest_version": expected_pytest_version,
+            "collected_count": len(nodeids),
+            "nodeids_sha256": nodeids_sha256,
+            "cpu_inventory_equal": True,
+            "deselected_count": 0,
+            "xfailed_count": 0,
+            "xpassed_count": 0,
+            "external_import_root_removed": True,
+            "stdout_sha256": hashlib.sha256(
+                completed.stdout.encode("utf-8")
+            ).hexdigest(),
+            "stderr_sha256": hashlib.sha256(
+                completed.stderr.encode("utf-8")
+            ).hexdigest(),
+            "source_origin": origin,
+        },
+        log_bytes,
+    )
+
+
+def verify_cpu_pytest_evidence(
+    cpu: Mapping[str, Any],
+    run_root: Path,
+    *,
+    source_binding: Mapping[str, Any],
+    expected_python_executable: str,
+) -> dict[str, Any]:
+    """Independently revalidate the CPU launcher's full pytest-v2 evidence."""
+
+    report = cpu.get("pytest")
+    require(isinstance(report, Mapping), "CPU pytest evidence is absent")
+    report = dict(report)
+    require(
+        report.get("schema_version") == "mk0_bound_pytest_report_v2",
+        "CPU pytest report schema drift",
+    )
+    require(
+        report.get("status") == "PASS"
+        and report.get("returncode") == 0
+        and report.get("collection_returncode") == 0
+        and report.get("pytest_returncode") == 0
+        and report.get("execution_started") is True,
+        "CPU pytest did not complete both formal phases",
+    )
+    require(report.get("pytest_args") == ["tests/mk0"], "CPU pytest domain drift")
+    require(
+        report.get("repo_root") == str(REPO_ROOT)
+        and report.get("formal_output_root") == str(run_root),
+        "CPU pytest repository/output binding drift",
+    )
+    python_executable = Path(str(report.get("python_executable", ""))).resolve(
+        strict=True
+    )
+    require(
+        python_executable == Path(expected_python_executable).resolve(strict=True),
+        "CPU pytest Python executable drift",
+    )
+    require(
+        isinstance(report.get("pytest_version"), str)
+        and bool(report["pytest_version"]),
+        "CPU pytest version binding is absent",
+    )
+
+    persisted_path = run_root / "provenance" / "pytest_import_binding.json"
+    persisted_record, persisted_bytes = _ordinary_unlinked_file_snapshot(
+        persisted_path,
+        label="CPU pytest persisted report",
+    )
+    try:
+        persisted = json.loads(persisted_bytes)
+    except (UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise FinalizeFailure("CPU pytest persisted report is invalid JSON") from error
+    require(
+        isinstance(persisted, dict),
+        "CPU pytest persisted report is not a JSON object",
+    )
+    extension_keys = {
+        "launcher_path",
+        "launcher_sha256",
+        "report_path",
+        "report_sha256",
+        "log_path",
+        "log_sha256",
+        "junit_path",
+        "junit_sha256",
+    }
+    require(
+        extension_keys.isdisjoint(persisted),
+        "CPU pytest persisted report contains runner-only fields",
+    )
+    require(
+        {key: value for key, value in report.items() if key not in extension_keys}
+        == persisted,
+        "CPU pytest embedded/persisted report drift",
+    )
+    require(
+        report.get("report_path") == str(persisted_path)
+        and report.get("report_sha256") == persisted_record["sha256"],
+        "CPU pytest persisted-report byte binding drift",
+    )
+
+    tracked_files = source_binding.get("tracked_source_files")
+    require(isinstance(tracked_files, Mapping), "tracked source inventory is absent")
+    launcher_relative = "scripts/mk0/run_bound_pytest.py"
+    helper_relative = "scripts/mk0/strict_worktree_import.py"
+    launcher_path = REPO_ROOT / launcher_relative
+    helper_path = REPO_ROOT / helper_relative
+    launcher_record, launcher_bytes = _ordinary_unlinked_file_snapshot(
+        launcher_path,
+        label="CPU pytest launcher source",
+    )
+    helper_record, _helper_bytes = _ordinary_unlinked_file_snapshot(
+        helper_path,
+        label="CPU pytest strict importer source",
+    )
+    require(
+        tracked_files.get(launcher_relative) == launcher_record["sha256"]
+        and tracked_files.get(helper_relative) == helper_record["sha256"],
+        "CPU pytest launcher/importer is absent from source binding",
+    )
+    require(
+        report.get("launcher_path") == str(launcher_path)
+        and report.get("launcher_sha256") == launcher_record["sha256"],
+        "CPU pytest launcher byte binding drift",
+    )
+
+    collection_nodeids = report.get("collection_nodeids")
+    execution_nodeids = report.get("execution_nodeids")
+    require(
+        isinstance(collection_nodeids, list)
+        and collection_nodeids
+        and all(isinstance(nodeid, str) and nodeid for nodeid in collection_nodeids)
+        and collection_nodeids == sorted(collection_nodeids)
+        and len(collection_nodeids) == len(set(collection_nodeids))
+        and execution_nodeids == collection_nodeids,
+        "CPU pytest collect/execute nodeid inventory drift",
+    )
+    nodeids_sha256 = hashlib.sha256(
+        "".join(f"{nodeid}\n" for nodeid in collection_nodeids).encode("utf-8")
+    ).hexdigest()
+    require(
+        report.get("collection_nodeids_sha256") == nodeids_sha256
+        and report.get("execution_nodeids_sha256") == nodeids_sha256,
+        "CPU pytest nodeid inventory digest drift",
+    )
+    collected = report.get("collected_count")
+    require(
+        isinstance(collected, int)
+        and not isinstance(collected, bool)
+        and collected > 0
+        and collected == len(collection_nodeids)
+        and report.get("executed_count") == collected
+        and report.get("passed_count") == collected,
+        "CPU pytest requires collected == executed == passed > 0",
+    )
+    for field in (
+        "failed_count",
+        "error_count",
+        "skipped_count",
+        "deselected_count",
+        "xfailed_count",
+        "xpassed_count",
+    ):
+        require(report.get(field) == 0, f"CPU pytest formal {field} is nonzero")
+    require(report.get("contract_violations") == [], "CPU pytest contract violation")
+    expected_junit_identities = sorted(
+        _nodeid_junit_identity(nodeid) for nodeid in collection_nodeids
+    )
+    for relative in sorted({nodeid.split("::", 1)[0] for nodeid in collection_nodeids}):
+        test_record = _ordinary_unlinked_file_record(
+            REPO_ROOT / relative,
+            label=f"CPU pytest collected source: {relative}",
+        )
+        require(
+            tracked_files.get(relative) == test_record["sha256"],
+            f"CPU pytest collected source is absent from source binding: {relative}",
+        )
+
+    environment = report.get("environment_contract")
+    require(
+        isinstance(environment, Mapping)
+        and environment.get("pytest_plugin_autoload_disabled") is True
+        and environment.get("pythonpath_replaced_with_external_binding") is True,
+        "CPU pytest environment was not sanitized",
+    )
+    require(
+        set(environment.get("controlled_environment_keys", []))
+        == {
+            "MK0_EXPECTED_PACKAGE_INIT",
+            "MK0_EXPECTED_PACKAGE_ROOT",
+            "MK0_PYTEST_MODE",
+            "PYTEST_DISABLE_PLUGIN_AUTOLOAD",
+            "PYTHONDONTWRITEBYTECODE",
+            "PYTHONNOUSERSITE",
+            "PYTHONPATH",
+        },
+        "CPU pytest controlled environment inventory drift",
+    )
+    for field, prefix in (
+        ("sanitized_pytest_environment_keys", "PYTEST_"),
+        ("sanitized_python_environment_keys", "PYTHON"),
+    ):
+        keys = environment.get(field)
+        require(
+            isinstance(keys, list)
+            and keys == sorted(set(keys))
+            and all(isinstance(key, str) and key.startswith(prefix) for key in keys),
+            f"CPU pytest sanitized environment inventory drift: {field}",
+        )
+
+    for field in (
+        "module_origin",
+        "collection_module_origin",
+        "execution_module_origin",
+    ):
+        origin = report.get(field)
+        require(
+            isinstance(origin, Mapping)
+            and origin.get("matches_current_worktree") is True
+            and origin.get("resolved_init") == str(REPO_ROOT / "__init__.py")
+            and origin.get("resolved_search_locations") == [str(REPO_ROOT)]
+            and origin.get("expected_init") == str(REPO_ROOT / "__init__.py")
+            and origin.get("expected_root") == str(REPO_ROOT)
+            and origin.get("strict_importer_path") == str(helper_path)
+            and origin.get("strict_importer_sha256") == helper_record["sha256"]
+            and origin.get("strict_importer_loaded_from_source_bytes") is True,
+            f"CPU pytest source-byte import binding drift: {field}",
+        )
+    isolation = report.get("import_isolation")
+    require(
+        isinstance(isolation, Mapping)
+        and isolation.get("method") == "external_ephemeral_symlink"
+        and isolation.get("resolved_target") == str(REPO_ROOT)
+        and isolation.get("inside_formal_output_tree") is False
+        and isolation.get("external_import_root_removed") is True
+        and isolation.get("ambient_pythonpath_replaced") is True,
+        "CPU pytest import isolation drift",
+    )
+
+    junit_path = run_root / "evaluation" / "pytest_mk0.junit.xml"
+    log_path = run_root / "logs" / "pytest_mk0.log"
+    junit_record, junit_bytes = _ordinary_unlinked_file_snapshot(
+        junit_path,
+        label="CPU pytest JUnit evidence",
+    )
+    log_record, log_bytes = _ordinary_unlinked_file_snapshot(
+        log_path,
+        label="CPU pytest log evidence",
+    )
+    junit = report.get("junit")
+    log = report.get("log")
+    expected_totals = {
+        "tests": collected,
+        "errors": 0,
+        "failures": 0,
+        "skipped": 0,
+        "passed": collected,
+    }
+    require(
+        isinstance(junit, Mapping)
+        and junit.get("path") == str(junit_path)
+        and junit.get("exists") is True
+        and junit.get("sha256") == junit_record["sha256"]
+        and junit.get("totals") == expected_totals
+        and _pytest_junit_totals(junit_bytes) == expected_totals
+        and _pytest_junit_identities(junit_bytes) == expected_junit_identities,
+        "CPU pytest JUnit binding drift",
+    )
+    require(
+        isinstance(log, Mapping)
+        and log.get("path") == str(log_path)
+        and log.get("sha256") == log_record["sha256"],
+        "CPU pytest log binding drift",
+    )
+    require(
+        report.get("junit_path") == str(junit_path)
+        and report.get("junit_sha256") == junit_record["sha256"]
+        and report.get("log_path") == str(log_path)
+        and report.get("log_sha256") == log_record["sha256"],
+        "CPU pytest runner evidence aliases drift",
+    )
+    try:
+        log_text = log_bytes.decode("utf-8")
+    except UnicodeDecodeError as error:
+        raise FinalizeFailure("CPU pytest log is not UTF-8") from error
+    log_origins = _json_markers(log_text, "__MK0_BOUND_MODULE_ORIGIN__=")
+    log_audits = _json_markers(log_text, "__MK0_PYTEST_AUDIT__=")
+    require(
+        log_origins
+        == [report["collection_module_origin"], report["execution_module_origin"]],
+        "CPU pytest log origin markers drift",
+    )
+    expected_log_audits = [
+        {
+            "schema_version": "mk0_pytest_audit_v1",
+            "mode": "collect",
+            "pytest_version": report["pytest_version"],
+            "exitstatus": 0,
+            "nodeids": collection_nodeids,
+            "collected_count": collected,
+            "deselected_count": 0,
+            "xfailed_count": 0,
+            "xpassed_count": 0,
+        },
+        {
+            "schema_version": "mk0_pytest_audit_v1",
+            "mode": "execute",
+            "pytest_version": report["pytest_version"],
+            "exitstatus": 0,
+            "nodeids": collection_nodeids,
+            "collected_count": collected,
+            "deselected_count": 0,
+            "xfailed_count": 0,
+            "xpassed_count": 0,
+        },
+    ]
+    require(log_audits == expected_log_audits, "CPU pytest log audit markers drift")
+    require(
+        report.get("formal_output_tree_regular_only") is True,
+        "CPU pytest regular-tree certificate is absent",
+    )
+
+    bootstrap = _ast_string_constant(
+        launcher_path,
+        "BOOTSTRAP",
+        source_bytes=launcher_bytes,
+    )
+    expected_collect_command = [
+        expected_python_executable,
+        "-c",
+        bootstrap,
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "--collect-only",
+        "tests/mk0",
+    ]
+    expected_command = [
+        expected_python_executable,
+        "-c",
+        bootstrap,
+        "-q",
+        "-p",
+        "no:cacheprovider",
+        "tests/mk0",
+        f"--junitxml={junit_path}",
+    ]
+    require(
+        report.get("collect_command") == expected_collect_command
+        and report.get("command") == expected_command,
+        "CPU pytest exact subprocess command drift",
+    )
+    independent_collection, independent_log_bytes = _independent_pytest_collection(
+        run_root=run_root,
+        python_executable=expected_python_executable,
+        bootstrap=bootstrap,
+        expected_nodeids=collection_nodeids,
+        expected_pytest_version=report["pytest_version"],
+        helper_path=helper_path,
+        helper_sha256=helper_record["sha256"],
+    )
+    independent_log_path = run_root / "logs" / "finalizer_pytest_collect.log"
+    independent_log_sha256 = write_bytes_exclusive_atomic(
+        independent_log_path,
+        independent_log_bytes,
+    )
+    independent_collection["log"] = {
+        "path": str(independent_log_path),
+        "sha256": independent_log_sha256,
+    }
+    independent_report_path = (
+        run_root / "provenance" / "finalizer_pytest_collection.json"
+    )
+    independent_report_sha256 = write_json_exclusive_atomic(
+        independent_report_path,
+        independent_collection,
+    )
+    return {
+        "schema_version": report["schema_version"],
+        "pytest_version": report["pytest_version"],
+        "collected_count": collected,
+        "executed_count": collected,
+        "passed_count": collected,
+        "nodeids_sha256": nodeids_sha256,
+        "persisted_report_sha256": persisted_record["sha256"],
+        "junit_sha256": junit_record["sha256"],
+        "log_sha256": log_record["sha256"],
+        "launcher_sha256": launcher_record["sha256"],
+        "strict_importer_sha256": helper_record["sha256"],
+        "independent_collection": {
+            "path": str(independent_report_path),
+            "sha256": independent_report_sha256,
+            "log_path": str(independent_log_path),
+            "log_sha256": independent_log_sha256,
+            "collected_count": independent_collection["collected_count"],
+            "nodeids_sha256": independent_collection["nodeids_sha256"],
+            "cpu_inventory_equal": True,
+        },
+        "all_forbidden_outcome_counts_zero": True,
+        "collect_execute_inventory_equal": True,
     }
 
 
@@ -629,6 +1661,7 @@ def verify_preflight(
     path: Path,
     *,
     run_id: str,
+    parent_run_id: str | None,
     goal_sha256: str,
     implementation_commit: str,
     fm0: Mapping[str, Any],
@@ -639,6 +1672,10 @@ def verify_preflight(
         report.get("schema_version") == "mk0_preflight_v1", "preflight schema drift"
     )
     require(report.get("run_id") == run_id, "preflight run ID drift")
+    require(
+        report.get("parent_run_id") == parent_run_id,
+        "preflight parent run ID drift",
+    )
     require(report.get("goal_sha256") == goal_sha256, "preflight Goal hash drift")
     require(
         report.get("mode") == "read_only_metadata_and_hashes", "preflight mode drift"
@@ -727,6 +1764,7 @@ def verify_preflight(
         "sha256": sha256_file(resolved),
         "observed_at_utc": report["observed_at_utc"],
         "preflight_worktree_head": preflight_head,
+        "parent_run_id": parent_run_id,
         "safety": safety,
     }
 
@@ -1564,33 +2602,148 @@ def verify_preflight_gpu_execution_identity(
     }
 
 
-def _gpu_role_categories(source_file: str, function_qualname: str) -> tuple[str, ...]:
-    """Recompute the runner's category assignment from immutable call metadata."""
+def _module_matches_prefix(module_name: str, prefix: str) -> bool:
+    return module_name == prefix or module_name.startswith(f"{prefix}.")
 
+
+def _path_is_within(path: Path, root: Path) -> bool:
+    try:
+        path.relative_to(root)
+    except ValueError:
+        return False
+    return True
+
+
+def _external_prohibited_categories(
+    module_name: str,
+    source_file: str,
+    qualname: str,
+) -> tuple[str, ...]:
+    lower = f"{module_name} {source_file} {qualname}".lower()
     categories: set[str] = set()
-    lower = function_qualname.lower()
-    name = function_qualname.rsplit(".", 1)[-1]
-    if name == "_run_forced_action_arm":
-        categories.add("generator_interface")
-    if (
-        source_file == "core/mk0/foundation_fusion.py"
-        and (
-            "foundationfusionratefield" in lower or "officialpaperrateadapter" in lower
-        )
-    ) or name in {"stop_only_official", "planned_gpu_rates"}:
-        categories.add("rate_interface")
-    if source_file == "core/mk0/samplers.py" and name in {
-        "constrained_single_event_first_order",
-        "paper_first_order_parallel",
-        "replay_constrained_result",
-        "replay_paper_result",
-    }:
-        categories.add("sampler_interface")
     if "critic" in lower:
         categories.add("critic_query")
     if "guidance" in lower:
         categories.add("guidance_query")
-    if "final_evaluator" in lower or ("final" in lower and "evaluator" in lower):
+    if "evaluator" in lower:
+        categories.add("final_evaluator_query")
+    if any(token in lower for token in ("reward", "rerank", "selector")):
+        categories.add("final_evaluator_query")
+    return tuple(sorted(categories))
+
+
+def _external_call_classification(
+    module_name: str,
+    source_file: str,
+    qualname: str,
+) -> tuple[str, tuple[str, ...]]:
+    categories = _external_prohibited_categories(
+        module_name,
+        source_file,
+        qualname,
+    )
+    if categories:
+        return "prohibited_role", categories
+    if any(
+        _module_matches_prefix(module_name, prefix)
+        for prefix in FROZEN_FOUNDATION_EXTERNAL_MODULE_PREFIXES
+    ):
+        return "frozen_foundation_stack_allowlist", ()
+    root_module = module_name.partition(".")[0]
+    if root_module in sys.stdlib_module_names:
+        if source_file.startswith(("<built-in", "<frozen")):
+            return "stdlib_allowlist", ()
+        try:
+            source_path = Path(source_file).resolve(strict=True)
+        except OSError:
+            return "unknown_external", ()
+        in_site_packages = any(
+            _path_is_within(source_path, root) for root in SITE_PACKAGE_ROOTS
+        )
+        if _path_is_within(source_path, STDLIB_ROOT) and not in_site_packages:
+            return "stdlib_allowlist", ()
+    return "unknown_external", ()
+
+
+def _ast_function_lines(relative: str) -> dict[str, int]:
+    """Map full class/function qualnames to lines from bound source bytes."""
+
+    path = (REPO_ROOT / relative).resolve(strict=True)
+    tree = ast.parse(path.read_bytes(), filename=str(path))
+    observed: dict[str, int] = {}
+
+    def visit_body(body: list[ast.stmt], parents: tuple[str, ...]) -> None:
+        for node in body:
+            if isinstance(node, ast.ClassDef):
+                visit_body(node.body, (*parents, node.name))
+            elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                qualname = ".".join((*parents, node.name))
+                observed[qualname] = int(node.lineno)
+
+    visit_body(tree.body, ())
+    return observed
+
+
+def _bound_gpu_role_identities(
+    source_binding: Mapping[str, Any] | None = None,
+) -> dict[tuple[str, str, int], tuple[str, ...]]:
+    """Independently reconstruct exact positive roles from bound source ASTs."""
+
+    source_files = (
+        source_binding.get("tracked_source_files", {})
+        if source_binding is not None
+        else {}
+    )
+    lines_by_source: dict[str, dict[str, int]] = {}
+    identities: dict[tuple[str, str, int], tuple[str, ...]] = {}
+    for (relative, qualname), categories in EXACT_GPU_ROLE_INTERFACES.items():
+        path = (REPO_ROOT / relative).resolve(strict=True)
+        if source_binding is not None:
+            require(
+                source_files.get(relative) == sha256_file(path),
+                f"exact GPU role source hash drift: {relative}",
+            )
+        lines = lines_by_source.setdefault(relative, _ast_function_lines(relative))
+        require(
+            qualname in lines,
+            f"exact GPU role callable is absent from bound source: {qualname}",
+        )
+        identity = (relative, qualname, lines[qualname])
+        require(identity not in identities, "duplicate exact GPU role identity")
+        identities[identity] = tuple(sorted(categories))
+    return identities
+
+
+def _gpu_role_categories(
+    source_file: str,
+    function_qualname: str,
+    first_lineno: int | None = None,
+    exact_identities: Mapping[tuple[str, str, int], tuple[str, ...]] | None = None,
+) -> tuple[str, ...]:
+    """Recompute roles from exact AST identity plus conservative prohibitions."""
+
+    identities = (
+        dict(exact_identities)
+        if exact_identities is not None
+        else _bound_gpu_role_identities()
+    )
+    categories: set[str] = set()
+    if first_lineno is None:
+        for (relative, qualname, _line), positive in identities.items():
+            if (source_file, function_qualname) == (relative, qualname):
+                categories.update(positive)
+    else:
+        categories.update(
+            identities.get((source_file, function_qualname, first_lineno), ())
+        )
+    lower = f"{source_file}:{function_qualname}".lower()
+    if "critic" in lower:
+        categories.add("critic_query")
+    if "guidance" in lower:
+        categories.add("guidance_query")
+    if "evaluator" in lower or any(
+        token in lower for token in ("reward", "rerank", "selector")
+    ):
         categories.add("final_evaluator_query")
     return tuple(sorted(categories))
 
@@ -1623,13 +2776,30 @@ def verify_gpu_post_role_query_audit(
         "GPU post-role/query audit placement drift",
     )
     require(
-        audit.get("runtime_instrumentation")
-        == "sys_setprofile_repository_python_calls",
+        audit.get("runtime_instrumentation") == "sys_setprofile_python_calls",
         "GPU role/query runtime instrumentation drift",
     )
     require(
-        audit.get("thread_scope") == "formal_gpu_main_python_thread",
+        audit.get("thread_scope")
+        == (
+            "formal_gpu_main_and_new_threading_threads_with_"
+            "preexisting_noncurrent_threads_forbidden"
+        ),
         "GPU role/query thread scope drift",
+    )
+    require(
+        audit.get("external_call_policy")
+        == {
+            "unknown_external_calls": "FAIL_CLOSED",
+            "stdlib_root": str(STDLIB_ROOT),
+            "site_package_roots_excluded_from_stdlib": [
+                str(path) for path in SITE_PACKAGE_ROOTS
+            ],
+            "frozen_foundation_module_prefixes": list(
+                FROZEN_FOUNDATION_EXTERNAL_MODULE_PREFIXES
+            ),
+        },
+        "GPU external-call policy drift",
     )
     require(audit.get("run_id") == run_id, "GPU role/query run ID drift")
     require(audit.get("goal_sha256") == goal_sha256, "GPU role/query Goal drift")
@@ -1663,6 +2833,7 @@ def verify_gpu_post_role_query_audit(
         isinstance(source_files, Mapping) and source_files,
         "GPU role/query source inventory is absent",
     )
+    exact_role_identities = _bound_gpu_role_identities(source_binding)
 
     expected_phase_ids = [item[0] for item in GPU_ROLE_PHASE_SPECS]
     require(
@@ -1675,7 +2846,14 @@ def verify_gpu_post_role_query_audit(
         "GPU role/query phase coverage is incomplete",
     )
     totals = {f"{category}_call_count": 0 for category in GPU_ROLE_CALL_CATEGORIES}
-    totals["repository_python_call_count"] = 0
+    totals.update(
+        {
+            "repository_python_call_count": 0,
+            "external_python_call_count": 0,
+            "unknown_external_call_count": 0,
+            "total_python_call_count": 0,
+        }
+    )
     stream_material: list[dict[str, Any]] = []
     for phase, expected in zip(phases, GPU_ROLE_PHASE_SPECS):
         phase_id, phase_kind, entrypoint, required_categories = expected
@@ -1698,6 +2876,10 @@ def verify_gpu_post_role_query_audit(
         require(
             phase.get("completed") is True,
             f"GPU formal phase did not complete: {phase_id}",
+        )
+        require(
+            phase.get("phase_status") == "PASS" and phase.get("failure_reason") is None,
+            f"GPU formal phase status failed: {phase_id}",
         )
         inventory = phase.get("call_inventory")
         require(
@@ -1746,7 +2928,12 @@ def verify_gpu_post_role_query_audit(
                 and call_count > 0,
                 "GPU role/query call count is invalid",
             )
-            expected_categories = _gpu_role_categories(source_file, qualname)
+            expected_categories = _gpu_role_categories(
+                source_file,
+                qualname,
+                first_lineno,
+                exact_role_identities,
+            )
             require(
                 record["categories"] == list(expected_categories),
                 "GPU role/query call category substitution",
@@ -1788,8 +2975,196 @@ def verify_gpu_post_role_query_audit(
                 observed_counts[category] == 0,
                 f"GPU formal phase made a prohibited {category}: {phase_id}",
             )
+        external_inventory = phase.get("external_call_inventory")
+        require(
+            isinstance(external_inventory, list),
+            f"GPU external-call inventory is invalid: {phase_id}",
+        )
+        external_call_count = 0
+        unknown_external_call_count = 0
+        previous_external_key: tuple[Any, ...] | None = None
+        for record in external_inventory:
+            require(
+                isinstance(record, Mapping)
+                and set(record)
+                == {
+                    "module_name",
+                    "source_file",
+                    "function_qualname",
+                    "first_lineno",
+                    "classification",
+                    "categories",
+                    "call_count",
+                },
+                "GPU external-call record shape drift",
+            )
+            module_name = record["module_name"]
+            external_source = record["source_file"]
+            external_qualname = record["function_qualname"]
+            external_line = record["first_lineno"]
+            external_count = record["call_count"]
+            require(
+                all(
+                    isinstance(value, str) and value
+                    for value in (module_name, external_source, external_qualname)
+                ),
+                "GPU external-call identity is invalid",
+            )
+            require(
+                isinstance(external_line, int)
+                and not isinstance(external_line, bool)
+                and external_line > 0,
+                "GPU external-call line is invalid",
+            )
+            require(
+                isinstance(external_count, int)
+                and not isinstance(external_count, bool)
+                and external_count > 0,
+                "GPU external-call count is invalid",
+            )
+            classification, external_categories = _external_call_classification(
+                module_name,
+                external_source,
+                external_qualname,
+            )
+            require(
+                record["classification"] == classification
+                and record["categories"] == list(external_categories),
+                "GPU external-call classification substitution",
+            )
+            external_key = (
+                module_name,
+                external_source,
+                external_qualname,
+                external_line,
+                classification,
+                external_categories,
+            )
+            require(
+                previous_external_key is None or external_key > previous_external_key,
+                "GPU external-call inventory is not canonical or is duplicated",
+            )
+            previous_external_key = external_key
+            external_call_count += external_count
+            unknown_external_call_count += int(classification == "unknown_external") * (
+                external_count
+            )
+            for category in external_categories:
+                observed_counts[category] += external_count
+        require(
+            phase.get("external_record_stream_sha256")
+            == _canonical_sha256(external_inventory),
+            f"GPU external-call stream digest drift: {phase_id}",
+        )
+        require(
+            phase.get("external_python_call_count") == external_call_count,
+            f"GPU external-call count drift: {phase_id}",
+        )
+        require(
+            phase.get("unknown_external_call_count")
+            == unknown_external_call_count
+            == 0,
+            f"GPU phase contains an unknown external call: {phase_id}",
+        )
+        require(
+            phase.get("total_python_call_count")
+            == repository_call_count + external_call_count,
+            f"GPU total Python-call count drift: {phase_id}",
+        )
+        for category in GPU_ROLE_QUERY_CATEGORIES:
+            require(
+                observed_counts[category] == 0,
+                f"GPU external call made a prohibited {category}: {phase_id}",
+            )
+        thread_inventory = phase.get("thread_inventory")
+        require(
+            isinstance(thread_inventory, list) and thread_inventory,
+            f"GPU thread inventory is absent: {phase_id}",
+        )
+        thread_repository_calls = 0
+        thread_external_calls = 0
+        previous_thread_key: tuple[int, str] | None = None
+        for thread_record in thread_inventory:
+            require(
+                isinstance(thread_record, Mapping)
+                and set(thread_record)
+                == {
+                    "thread_id",
+                    "thread_name",
+                    "repository_call_count",
+                    "external_call_count",
+                    "total_python_call_count",
+                },
+                "GPU thread record shape drift",
+            )
+            thread_id = thread_record["thread_id"]
+            thread_name = thread_record["thread_name"]
+            require(
+                isinstance(thread_id, int)
+                and not isinstance(thread_id, bool)
+                and thread_id > 0
+                and isinstance(thread_name, str)
+                and thread_name,
+                "GPU thread identity is invalid",
+            )
+            thread_key = (thread_id, thread_name)
+            require(
+                previous_thread_key is None or thread_key > previous_thread_key,
+                "GPU thread inventory is not canonical or is duplicated",
+            )
+            previous_thread_key = thread_key
+            repository_calls = thread_record["repository_call_count"]
+            external_calls = thread_record["external_call_count"]
+            require(
+                isinstance(repository_calls, int)
+                and not isinstance(repository_calls, bool)
+                and repository_calls >= 0
+                and isinstance(external_calls, int)
+                and not isinstance(external_calls, bool)
+                and external_calls >= 0
+                and thread_record["total_python_call_count"]
+                == repository_calls + external_calls
+                > 0,
+                "GPU thread call counts are invalid",
+            )
+            thread_repository_calls += repository_calls
+            thread_external_calls += external_calls
+        require(
+            thread_repository_calls == repository_call_count
+            and thread_external_calls == external_call_count,
+            f"GPU thread/call inventory count drift: {phase_id}",
+        )
+        require(
+            phase.get("python_thread_count") == len(thread_inventory),
+            f"GPU thread-count drift: {phase_id}",
+        )
+        require(
+            phase.get("thread_record_stream_sha256")
+            == _canonical_sha256(thread_inventory),
+            f"GPU thread stream digest drift: {phase_id}",
+        )
+        require(
+            phase.get("unjoined_new_thread_ids") == [],
+            f"GPU phase left a new thread running: {phase_id}",
+        )
+        require(
+            phase.get("preexisting_noncurrent_python_thread_count") == 0
+            and phase.get("preexisting_noncurrent_python_threads") == [],
+            f"GPU phase started with a preexisting noncurrent thread: {phase_id}",
+        )
         totals["repository_python_call_count"] += repository_call_count
-        stream_material.append({"phase_id": phase_id, "call_inventory": inventory})
+        totals["external_python_call_count"] += external_call_count
+        totals["unknown_external_call_count"] += unknown_external_call_count
+        totals["total_python_call_count"] += repository_call_count + external_call_count
+        stream_material.append(
+            {
+                "phase_id": phase_id,
+                "call_inventory": inventory,
+                "external_call_inventory": external_inventory,
+                "thread_inventory": thread_inventory,
+                "preexisting_noncurrent_python_threads": [],
+            }
+        )
 
     require(
         audit.get("formal_gpu_phase_count") == len(GPU_ROLE_PHASE_SPECS),
@@ -1820,6 +3195,19 @@ def verify_gpu_post_role_query_audit(
         audit.get("formal_gpu_computation_complete") is True,
         "GPU role/query formal-computation completion is absent",
     )
+    require(
+        audit.get("all_external_calls_allowlisted") is True
+        and totals["unknown_external_call_count"] == 0,
+        "GPU role/query external-call allowlist failed",
+    )
+    require(
+        audit.get("all_new_threads_joined") is True,
+        "GPU role/query new-thread closure failed",
+    )
+    require(
+        audit.get("all_preexisting_noncurrent_threads_absent") is True,
+        "GPU role/query preexisting-thread exclusion failed",
+    )
 
     interfaces = audit.get("audited_interfaces")
     require(
@@ -1845,6 +3233,19 @@ def verify_gpu_post_role_query_audit(
             if label.startswith("samplers.")
         },
     }
+    expected_interface_qualnames = {
+        "gpu_runner.forced_action_arm": "_run_forced_action_arm",
+        "gpu_runner.paper_sampler_route": "_run_official_paper_sampler_route",
+        "gpu_runner.primary_sampler_integration": "_run_primary_gpu_sampler_integration",
+        "gpu_runner.target_alignment_leakage_audit": "_audit_target_alignment_leakage",
+        "gpu_runner.dynamic_current_encoding_audit": "_audit_dynamic_current_encoding",
+        "foundation_fusion.rate_field_forward": "FoundationFusionRateField.forward",
+        "foundation_fusion.official_paper_adapter": "OfficialPaperRateAdapter.__call__",
+        "samplers.constrained_primary": "constrained_single_event_first_order",
+        "samplers.paper_parallel": "paper_first_order_parallel",
+        "samplers.replay_constrained": "replay_constrained_result",
+        "samplers.replay_paper": "replay_paper_result",
+    }
     for record in interfaces:
         require(
             isinstance(record, Mapping), "GPU role/query interface record is invalid"
@@ -1858,6 +3259,29 @@ def verify_gpu_post_role_query_audit(
         require(
             record.get("source_file_sha256") == source_files.get(source_file),
             f"GPU role/query interface source hash drift: {label}",
+        )
+        qualname = record.get("function_qualname")
+        require(
+            qualname == expected_interface_qualnames[label],
+            f"GPU role/query interface qualname drift: {label}",
+        )
+        require(
+            isinstance(record.get("first_lineno"), int)
+            and not isinstance(record["first_lineno"], bool)
+            and record["first_lineno"] > 0,
+            f"GPU role/query interface line drift: {label}",
+        )
+        require(
+            record.get("role_categories")
+            == list(
+                _gpu_role_categories(
+                    source_file,
+                    qualname,
+                    record["first_lineno"],
+                    exact_role_identities,
+                )
+            ),
+            f"GPU role/query interface category drift: {label}",
         )
         parameters = record.get("parameters")
         require(
@@ -2165,6 +3589,22 @@ def verify_runner_results(
         manifest.get("downstream_stage_started") is False,
         "MK0 run manifest records downstream work",
     )
+    cpu_command_argv = (
+        manifest.get("exact_commands", {}).get("cpu_acceptance", {}).get("argv")
+    )
+    require(
+        isinstance(cpu_command_argv, list)
+        and cpu_command_argv
+        and isinstance(cpu_command_argv[0], str)
+        and bool(cpu_command_argv[0]),
+        "MK0 registered CPU command is absent",
+    )
+    pytest_evidence = verify_cpu_pytest_evidence(
+        cpu,
+        run_root,
+        source_binding=source_binding,
+        expected_python_executable=cpu_command_argv[0],
+    )
 
     cpu_hashes = cpu.get("artifact_hashes")
     gpu_hashes = gpu.get("artifact_hashes")
@@ -2257,6 +3697,7 @@ def verify_runner_results(
         gpu=gpu,
     )
     summaries["gpu_post_role_query_audit"] = gpu_post_role_query
+    summaries["cpu_pytest_evidence"] = pytest_evidence
     return cpu, gpu, foundation, leakage, summaries
 
 
@@ -2264,6 +3705,7 @@ def verify_run_contract_registration(
     run_root: Path,
     *,
     run_id: str,
+    parent_run_id: str | None,
     goal_sha256: str,
     implementation_commit: str,
     preflight: Mapping[str, Any],
@@ -2296,6 +3738,21 @@ def verify_run_contract_registration(
         run_id_time.strftime("%Y%m%dT%H%M%SZ") == match.group("utc"),
         "formal run ID UTC is not canonical",
     )
+    parent_time: datetime | None = None
+    if parent_run_id is not None:
+        parent_match = FORMAL_RUN_ID.fullmatch(parent_run_id)
+        require(parent_match is not None, "parent run ID is not formal")
+        try:
+            parent_time = datetime.strptime(
+                parent_match.group("utc"), "%Y%m%dT%H%M%SZ"
+            ).replace(tzinfo=timezone.utc)
+        except ValueError as error:
+            raise FinalizeFailure("parent run ID UTC is not a calendar time") from error
+        require(
+            parent_time.strftime("%Y%m%dT%H%M%SZ") == parent_match.group("utc"),
+            "parent run ID UTC is not canonical",
+        )
+        require(parent_time < run_id_time, "parent run ID must precede child run ID")
     require(run_root.name == run_id, "formal run root basename drift")
     require(
         run_root.parent == CANONICAL_RUN_PARENT,
@@ -2323,6 +3780,7 @@ def verify_run_contract_registration(
         "provenance/code_manifest.json",
         "provenance/cpu_command.json",
         "provenance/gpu_command.json",
+        "provenance/pytest_import_binding.json",
         "git/commit.txt",
         "git/diff.patch",
         "git/diff.sha256",
@@ -2330,6 +3788,7 @@ def verify_run_contract_registration(
         "checkpoints/checksums.sha256",
         "summary/cpu_acceptance_summary.json",
         "summary/gpu_acceptance_summary.json",
+        "evaluation/pytest_mk0.junit.xml",
     ):
         require(
             (run_root / relative).is_file(),
@@ -2356,7 +3815,23 @@ def verify_run_contract_registration(
     )
     require(manifest.get("run_id") == run_id, "MK0 run-manifest ID drift")
     require(manifest.get("task_id") == "MK0-01", "MK0 run-manifest task drift")
-    require(manifest.get("parent_run_id") is None, "unexpected MK0 parent run")
+    require(
+        manifest.get("parent_run_id") == parent_run_id,
+        "MK0 run-manifest parent drift",
+    )
+    parent_binding = manifest.get("parent_run_binding")
+    if parent_run_id is None:
+        require(parent_binding is None, "unexpected MK0 parent binding")
+    else:
+        parent_binding = verify_parent_run_binding(
+            parent_binding,
+            parent_run_id=parent_run_id,
+            goal_sha256=goal_sha256,
+        )
+    require(
+        preflight.get("parent_run_id") == parent_run_id,
+        "MK0 preflight/registration parent drift",
+    )
     require(manifest.get("phase") == "MK0", "MK0 run-manifest phase drift")
     require(
         manifest.get("hypotheses")
@@ -2568,6 +4043,8 @@ def verify_run_contract_registration(
         "registered_cpu_pid": process["cpu_pid"],
         "observed_gpu_pid": gpu_command["pid"],
         "registered_gpu_uuid": manifest["gpu_uuid"],
+        "parent_run_id": parent_run_id,
+        "parent_run_binding": parent_binding,
         "section_19_tree_verified": True,
         "local_structured_logs_verified": True,
         "checkpoint_semantics": "MK0_NOT_APPLICABLE",
@@ -2657,6 +4134,7 @@ def parse_args(argv: Iterable[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--run-root", type=Path, required=True)
     parser.add_argument("--run-id", required=True)
+    parser.add_argument("--parent-run-id")
     parser.add_argument("--goal-sha256", required=True)
     parser.add_argument("--implementation-commit", required=True)
     parser.add_argument("--fm0-closure-root", type=Path, required=True)
@@ -2761,6 +4239,7 @@ def main(argv: Iterable[str] | None = None) -> int:
         preflight = verify_preflight(
             args.preflight_record,
             run_id=args.run_id,
+            parent_run_id=args.parent_run_id,
             goal_sha256=args.goal_sha256,
             implementation_commit=args.implementation_commit,
             fm0=fm0,
@@ -2768,6 +4247,7 @@ def main(argv: Iterable[str] | None = None) -> int:
         run_contract_registration = verify_run_contract_registration(
             run_root,
             run_id=args.run_id,
+            parent_run_id=args.parent_run_id,
             goal_sha256=args.goal_sha256,
             implementation_commit=args.implementation_commit,
             preflight=preflight,
@@ -3034,6 +4514,13 @@ def main(argv: Iterable[str] | None = None) -> int:
             "downstream_started": False,
         }
         write_new(run_root / "summary" / "mk0_final_summary.json", summary)
+        terminal_parent_binding: dict[str, Any] | None = None
+        if args.parent_run_id is not None:
+            terminal_parent_binding = verify_parent_run_binding(
+                run_contract_registration["parent_run_binding"],
+                parent_run_id=args.parent_run_id,
+                goal_sha256=args.goal_sha256,
+            )
         terminal_at = utc_now()
         root_summary = {
             **summary,
@@ -3094,6 +4581,7 @@ def main(argv: Iterable[str] | None = None) -> int:
             "run_id": args.run_id,
             "task_id": "MK0-01",
             "parent_run_id": registration_manifest["parent_run_id"],
+            "parent_run_binding": terminal_parent_binding,
             "status": "DONE",
             "evidence_level": EVIDENCE_LEVEL,
             "hypotheses": registration_manifest["hypotheses"],
@@ -3170,6 +4658,18 @@ def main(argv: Iterable[str] | None = None) -> int:
             == whole_run_ledger["entry_count"],
             "whole-run checksum ledger entry-count drift",
         )
+        if args.parent_run_id is not None:
+            require(
+                canonical_json_bytes(
+                    verify_parent_run_binding(
+                        terminal_parent_binding,
+                        parent_run_id=args.parent_run_id,
+                        goal_sha256=args.goal_sha256,
+                    )
+                )
+                == canonical_json_bytes(terminal_parent_binding),
+                "MK0 parent binding drifted before DONE publication",
+            )
         done_path = run_root / "DONE"
         write_bytes_exclusive_atomic(
             done_path,
@@ -3194,6 +4694,7 @@ def main(argv: Iterable[str] | None = None) -> int:
         print(json.dumps(console_summary, sort_keys=True))
         return 0
     except BaseException as error:
+        failure_reason = _standard_failure_reason(error)
         if isinstance(bound_run_id, str) and (
             (run_root / "DONE").exists() or (run_root / "FAILED").exists()
         ):
@@ -3215,7 +4716,7 @@ def main(argv: Iterable[str] | None = None) -> int:
                 "status": "FAILED_WITH_EVIDENCE",
                 "created_at_utc": utc_now(),
                 "exception_type": type(error).__name__,
-                "exception_message": str(error),
+                "exception_message": failure_reason,
                 "traceback": traceback.format_exc(),
             }
             path = failure_dir / "finalize_failure.json"
@@ -3229,19 +4730,19 @@ def main(argv: Iterable[str] | None = None) -> int:
             if (run_root / "logs" / "stderr.log").is_file():
                 append_text(
                     run_root / "logs" / "stderr.log",
-                    f"{utc_now()} MK0 finalization failed: {error}\n",
+                    f"{utc_now()} MK0 finalization failed: {failure_reason}\n",
                 )
             if (run_root / "logs" / "events.jsonl").is_file():
                 write_failed_sentinel(
                     run_root,
                     run_id=args.run_id,
                     stage="FINALIZER",
-                    reason=str(error),
+                    reason=failure_reason,
                     exit_code=1,
                 )
         except BaseException:
             pass
-        print(f"MK0 finalization failed: {error}", file=sys.stderr)
+        print(f"MK0 finalization failed: {failure_reason}", file=sys.stderr)
         return 1
 
 

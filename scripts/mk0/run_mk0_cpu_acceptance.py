@@ -24,115 +24,126 @@ from pathlib import Path
 import random
 import re
 import shlex
+import stat
 import subprocess
 import sys
 import traceback
 from typing import Any, Mapping
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-package_spec = importlib.util.spec_from_file_location(
-    "mrna_editflow",
-    REPO_ROOT / "__init__.py",
-    submodule_search_locations=[str(REPO_ROOT)],
+_bootstrap_path = (REPO_ROOT / "scripts" / "mk0" / "strict_worktree_import.py").resolve(
+    strict=True
 )
-if package_spec is None or package_spec.loader is None:
-    raise RuntimeError("cannot bind mrna_editflow to current worktree")
-package_module = importlib.util.module_from_spec(package_spec)
-sys.modules["mrna_editflow"] = package_module
-package_spec.loader.exec_module(package_module)
+_bootstrap_source = _bootstrap_path.read_bytes()
+_bootstrap_namespace = {
+    "__file__": str(_bootstrap_path),
+    "__name__": "_mk0_strict_worktree_import",
+}
+exec(
+    compile(
+        _bootstrap_source,
+        str(_bootstrap_path),
+        "exec",
+        dont_inherit=True,
+        optimize=0,
+    ),
+    _bootstrap_namespace,
+)
+_strict_worktree_package_import = _bootstrap_namespace["strict_worktree_package_import"]
 
 import numpy as np
 import yaml
 
-from mrna_editflow.core.mk0.acceptance import (
-    canonical_json_bytes,
-    gate_result_from_runtime_binding,
-    sha256_file,
-)
-from mrna_editflow.core.mk0.alignment_coupling import (
-    BLANK,
-    alignment_actions,
-    build_alignment,
-    changed_indices,
-    joint_path_probability,
-    reconstruct_alignment,
-    sample_optimal_alignment,
-    sample_switch_clocks,
-)
-from mrna_editflow.core.mk0.bregman import (
-    brute_force_bregman_loss,
-    edit_flow_loss,
-)
-from mrna_editflow.core.mk0.critic_boundary import (
-    base_generation_without_critic,
-    reject_final_evaluator_as_guidance,
-)
-from mrna_editflow.core.mk0.foundation_fusion import (
-    FoundationFusionRateField,
-    OfficialPaperRateAdapter,
-)
-from mrna_editflow.core.mk0.rate_kernel import (
-    FactorizedRates,
-    aggregate_transition_rates,
-    conditioned_event_distribution,
-    enumerate_action_rates,
-    generator,
-    total_hazard,
-)
-from mrna_editflow.core.mk0.run_contract import (
-    EVIDENCE_LEVEL,
-    append_event,
-    append_jsonl,
-    append_text,
-    create_contract_tree,
-    resume_failure_closure_if_present,
-    update_status,
-    write_failed_sentinel,
-    write_json_exclusive_atomic,
-)
-from mrna_editflow.core.mk0.samplers import (
-    certify_remaining_integrated_hazard,
-    constrained_single_event_first_order,
-    paper_first_order_parallel,
-    replay_constrained_result,
-    replay_paper_result,
-    sampler_result_to_schema_record,
-)
-from mrna_editflow.core.mk0.schedule import (
-    cubic_schedule,
-    evaluate_schedule,
-    linear_schedule,
-    rho,
-)
-from mrna_editflow.core.mk0.state_action import (
-    action_to_schema_record,
-    apply_action,
-    enumerate_legal_actions,
-    force_terminate,
-    replay_actions,
-    state_to_schema_record,
-    termination_to_schema_record,
-    validate_schema_facing_record,
-)
-from mrna_editflow.core.mk0.stop import (
-    StopTarget,
-    constant_hazard_stop_loss,
-    sample_stop_target,
-    stop_event_censor_oracle,
-    survival_stop_loss,
-)
-from mrna_editflow.core.mk0.target_kernel import (
-    TargetKernelRejected,
-    build_target_transition_oracle,
-)
-from mrna_editflow.core.mk0.types import (
-    ALPHABET,
-    ActionType,
-    AtomicAction,
-    EditState,
-    Phase,
-    TerminationReason,
-)
+with _strict_worktree_package_import(REPO_ROOT):
+    from mrna_editflow.core.mk0.acceptance import (
+        canonical_json_bytes,
+        gate_result_from_runtime_binding,
+        sha256_file,
+    )
+    from mrna_editflow.core.mk0.alignment_coupling import (
+        BLANK,
+        alignment_actions,
+        build_alignment,
+        changed_indices,
+        joint_path_probability,
+        reconstruct_alignment,
+        sample_optimal_alignment,
+        sample_switch_clocks,
+    )
+    from mrna_editflow.core.mk0.bregman import (
+        brute_force_bregman_loss,
+        edit_flow_loss,
+    )
+    from mrna_editflow.core.mk0.critic_boundary import (
+        base_generation_without_critic,
+        reject_final_evaluator_as_guidance,
+    )
+    from mrna_editflow.core.mk0.foundation_fusion import (
+        FoundationFusionRateField,
+        OfficialPaperRateAdapter,
+    )
+    from mrna_editflow.core.mk0.rate_kernel import (
+        FactorizedRates,
+        aggregate_transition_rates,
+        conditioned_event_distribution,
+        enumerate_action_rates,
+        generator,
+        total_hazard,
+    )
+    from mrna_editflow.core.mk0.run_contract import (
+        EVIDENCE_LEVEL,
+        append_event,
+        append_jsonl,
+        append_text,
+        create_contract_tree,
+        resume_failure_closure_if_present,
+        update_status,
+        write_failed_sentinel,
+        write_json_exclusive_atomic,
+    )
+    from mrna_editflow.core.mk0.samplers import (
+        certify_remaining_integrated_hazard,
+        constrained_single_event_first_order,
+        paper_first_order_parallel,
+        replay_constrained_result,
+        replay_paper_result,
+        sampler_result_to_schema_record,
+    )
+    from mrna_editflow.core.mk0.schedule import (
+        cubic_schedule,
+        evaluate_schedule,
+        linear_schedule,
+        rho,
+    )
+    from mrna_editflow.core.mk0.state_action import (
+        action_to_schema_record,
+        apply_action,
+        enumerate_legal_actions,
+        force_terminate,
+        replay_actions,
+        state_to_schema_record,
+        termination_to_schema_record,
+        validate_schema_facing_record,
+    )
+    from mrna_editflow.core.mk0.stop import (
+        StopTarget,
+        constant_hazard_stop_loss,
+        sample_stop_target,
+        stop_event_censor_oracle,
+        survival_stop_loss,
+    )
+    from mrna_editflow.core.mk0.target_kernel import (
+        TargetKernelRejected,
+        build_target_transition_oracle,
+    )
+    from mrna_editflow.core.mk0.types import (
+        ALPHABET,
+        ActionType,
+        AtomicAction,
+        EditState,
+        Phase,
+        TerminationReason,
+    )
 
 SEED = 20260802
 ATOL = 1.0e-10
@@ -181,10 +192,311 @@ def require(condition: bool, message: str) -> None:
         raise AcceptanceFailure(message)
 
 
+def failure_reason(error: BaseException) -> str:
+    """Return a non-empty, stable reason for terminal failure closure."""
+
+    exception_type = type(error).__name__
+    message = str(error).strip()
+    return f"{exception_type}: {message}" if message else exception_type
+
+
 def read_json_object(path: Path) -> dict[str, Any]:
     value = json.loads(path.read_text(encoding="utf-8"))
     require(isinstance(value, dict), f"JSON artifact is not an object: {path}")
     return value
+
+
+def _read_ordinary_unlinked_bytes(
+    path: Path,
+    *,
+    label: str,
+) -> tuple[bytes, os.stat_result]:
+    """Read one no-follow FD and prove its identity stayed stable."""
+
+    flags = os.O_RDONLY | getattr(os, "O_CLOEXEC", 0)
+    if hasattr(os, "O_NOFOLLOW"):
+        flags |= os.O_NOFOLLOW
+    try:
+        descriptor = os.open(path, flags)
+    except OSError as error:
+        raise AcceptanceFailure(
+            f"{label} is not an ordinary unlinked file or cannot be opened without following"
+        ) from error
+    try:
+        before = os.fstat(descriptor)
+        require(
+            stat.S_ISREG(before.st_mode) and before.st_nlink == 1,
+            f"{label} is not an ordinary unlinked file",
+        )
+        require(before.st_size > 0, f"{label} is empty")
+        chunks: list[bytes] = []
+        while True:
+            block = os.read(descriptor, 1024 * 1024)
+            if not block:
+                break
+            chunks.append(block)
+        after = os.fstat(descriptor)
+    finally:
+        os.close(descriptor)
+    identity_fields = (
+        "st_dev",
+        "st_ino",
+        "st_mode",
+        "st_nlink",
+        "st_size",
+        "st_mtime_ns",
+        "st_ctime_ns",
+    )
+    require(
+        all(
+            getattr(before, field) == getattr(after, field) for field in identity_fields
+        ),
+        f"{label} changed while it was read",
+    )
+    data = b"".join(chunks)
+    require(len(data) == before.st_size, f"{label} size changed while it was read")
+    try:
+        live = path.lstat()
+    except FileNotFoundError as error:
+        raise AcceptanceFailure(f"{label} disappeared after it was read") from error
+    require(
+        not path.is_symlink()
+        and all(
+            getattr(before, field) == getattr(live, field) for field in identity_fields
+        ),
+        f"{label} pathname identity changed while it was read",
+    )
+    return data, before
+
+
+def _formal_run_time(run_id: str, *, label: str) -> datetime:
+    match = FORMAL_RUN_ID.fullmatch(run_id)
+    require(match is not None, f"{label} is not a formal MK0 run ID")
+    try:
+        observed = datetime.strptime(match.group("utc"), "%Y%m%dT%H%M%SZ").replace(
+            tzinfo=timezone.utc
+        )
+    except ValueError as error:
+        raise AcceptanceFailure(f"{label} UTC is not a calendar time") from error
+    require(
+        observed.strftime("%Y%m%dT%H%M%SZ") == match.group("utc"),
+        f"{label} UTC is not canonical",
+    )
+    return observed
+
+
+def _parent_failure_path_snapshot(parent_root: Path) -> tuple[str, list[Path]]:
+    """Enumerate the exact canonical failure-evidence path set."""
+
+    sentinel_paths = [parent_root / name for name in ("DONE", "FAILED")]
+    sentinels = [
+        path.name for path in sentinel_paths if path.exists() or path.is_symlink()
+    ]
+    require(len(sentinels) <= 1, "parent run has contradictory terminal sentinels")
+    require("DONE" not in sentinels, "repair parent is terminal DONE")
+    evidence_paths: set[Path] = set()
+    if "FAILED" in sentinels:
+        evidence_paths.add(parent_root / "FAILED")
+
+    failure_root = parent_root / "failure"
+    if failure_root.exists() or failure_root.is_symlink():
+        failure_root_stat = failure_root.lstat()
+        require(
+            stat.S_ISDIR(failure_root_stat.st_mode) and not failure_root.is_symlink(),
+            "parent failure evidence root is not an ordinary directory",
+        )
+        for candidate in failure_root.rglob("*"):
+            candidate_stat = candidate.lstat()
+            require(
+                not candidate.is_symlink(),
+                "parent failure evidence contains a symlink",
+            )
+            if stat.S_ISDIR(candidate_stat.st_mode):
+                continue
+            require(
+                stat.S_ISREG(candidate_stat.st_mode),
+                "parent failure evidence contains a special file",
+            )
+            evidence_paths.add(candidate)
+
+    artifacts_root = parent_root / "artifacts"
+    if artifacts_root.exists() or artifacts_root.is_symlink():
+        artifacts_root_stat = artifacts_root.lstat()
+        require(
+            stat.S_ISDIR(artifacts_root_stat.st_mode)
+            and not artifacts_root.is_symlink(),
+            "parent artifacts root is not an ordinary directory",
+        )
+        for candidate in artifacts_root.rglob("*failure*.json"):
+            candidate_stat = candidate.lstat()
+            require(
+                not candidate.is_symlink(),
+                "parent failure evidence contains a symlink",
+            )
+            require(
+                stat.S_ISREG(candidate_stat.st_mode),
+                "parent failure evidence contains a special file",
+            )
+            evidence_paths.add(candidate)
+    classification = "FAILED" if "FAILED" in sentinels else "UNSEALED_FAILED_EVIDENCE"
+    return classification, sorted(
+        evidence_paths,
+        key=lambda path: path.relative_to(parent_root).as_posix(),
+    )
+
+
+def validate_parent_run_lineage(
+    child_run_id: str,
+    parent_run_id: str | None,
+    *,
+    goal_sha256: str | None = None,
+    canonical_parent: Path = CANONICAL_RUN_PARENT,
+) -> dict[str, Any] | None:
+    """Bind a repair child to a valid failed parent and its failure evidence."""
+
+    if parent_run_id is None:
+        return None
+    parent_time = _formal_run_time(parent_run_id, label="parent run ID")
+    child_time = _formal_run_time(child_run_id, label="child run ID")
+    require(parent_time < child_time, "parent run ID UTC must precede child run ID UTC")
+    require(
+        isinstance(goal_sha256, str)
+        and re.fullmatch(r"[0-9a-f]{64}", goal_sha256) is not None,
+        "current Goal hash is invalid",
+    )
+    canonical_root = canonical_parent.resolve(strict=True)
+    parent_root = canonical_root / parent_run_id
+    try:
+        parent_root_stat = parent_root.lstat()
+    except FileNotFoundError as error:
+        raise AcceptanceFailure("parent run root is absent") from error
+    require(
+        stat.S_ISDIR(parent_root_stat.st_mode) and not parent_root.is_symlink(),
+        "parent run root is not an ordinary directory",
+    )
+    require(
+        parent_root.resolve(strict=True) == parent_root,
+        "parent run root is not canonical",
+    )
+    manifest_path = parent_root / "run_manifest.json"
+    manifest_bytes, manifest_stat = _read_ordinary_unlinked_bytes(
+        manifest_path,
+        label="parent run registration manifest",
+    )
+    try:
+        manifest = json.loads(manifest_bytes)
+    except (UnicodeDecodeError, json.JSONDecodeError) as error:
+        raise AcceptanceFailure(
+            "parent run registration manifest is invalid JSON"
+        ) from error
+    require(
+        isinstance(manifest, dict),
+        "parent run registration manifest is not a JSON object",
+    )
+    require(
+        manifest.get("schema_version") == "mk0_run_manifest_v3",
+        "parent run manifest schema drift",
+    )
+    require(manifest.get("run_id") == parent_run_id, "parent run manifest ID drift")
+    require(manifest.get("task_id") == "MK0-01", "parent run manifest task drift")
+    require(manifest.get("phase") == "MK0", "parent run manifest phase drift")
+    declared_root = Path(str(manifest.get("run_root", "")))
+    require(
+        declared_root.is_absolute()
+        and declared_root == parent_root
+        and declared_root.resolve(strict=True) == parent_root,
+        "parent run manifest root drift",
+    )
+    require(
+        manifest.get("goal_sha256") == goal_sha256
+        and isinstance(manifest.get("contract"), Mapping)
+        and manifest["contract"].get("sha256") == goal_sha256,
+        "parent run manifest Goal drift",
+    )
+    implementation_commit = manifest.get("implementation_commit")
+    require(
+        isinstance(implementation_commit, str)
+        and re.fullmatch(r"[0-9a-f]{40}", implementation_commit) is not None,
+        "parent run implementation commit is invalid",
+    )
+    code = manifest.get("code")
+    source_binding = manifest.get("source_binding")
+    require(
+        isinstance(code, Mapping) and code.get("commit") == implementation_commit,
+        "parent run code binding drift",
+    )
+    require(
+        isinstance(source_binding, Mapping)
+        and source_binding.get("git_commit") == implementation_commit,
+        "parent run source binding drift",
+    )
+    parent_match = FORMAL_RUN_ID.fullmatch(parent_run_id)
+    require(parent_match is not None, "parent run ID is not formal")
+    require(
+        implementation_commit.startswith(parent_match.group("short_sha")),
+        "parent run ID short SHA differs from implementation commit",
+    )
+
+    classification, evidence_paths = _parent_failure_path_snapshot(parent_root)
+
+    evidence_records: list[dict[str, Any]] = []
+    for evidence_path in evidence_paths:
+        evidence_bytes, evidence_stat = _read_ordinary_unlinked_bytes(
+            evidence_path,
+            label="parent failure evidence file",
+        )
+        evidence_records.append(
+            {
+                "path": evidence_path.relative_to(parent_root).as_posix(),
+                "size_bytes": evidence_stat.st_size,
+                "sha256": hashlib.sha256(evidence_bytes).hexdigest(),
+            }
+        )
+    require(evidence_records, "repair parent has no failure evidence")
+    classification_after, evidence_paths_after = _parent_failure_path_snapshot(
+        parent_root
+    )
+    require(
+        classification_after == classification
+        and [path.relative_to(parent_root) for path in evidence_paths_after]
+        == [path.relative_to(parent_root) for path in evidence_paths],
+        "parent failure evidence inventory changed while it was bound",
+    )
+    parent_root_after = parent_root.lstat()
+    require(
+        not parent_root.is_symlink()
+        and all(
+            getattr(parent_root_stat, field) == getattr(parent_root_after, field)
+            for field in (
+                "st_dev",
+                "st_ino",
+                "st_mode",
+                "st_nlink",
+                "st_mtime_ns",
+                "st_ctime_ns",
+            )
+        ),
+        "parent run root identity changed while lineage was bound",
+    )
+    return {
+        "schema_version": "mk0_parent_run_binding_v1",
+        "run_id": parent_run_id,
+        "run_root": str(parent_root),
+        "registration_manifest": {
+            "path": str(manifest_path),
+            "size_bytes": manifest_stat.st_size,
+            "sha256": hashlib.sha256(manifest_bytes).hexdigest(),
+        },
+        "observed_classification": classification,
+        "failure_evidence": {
+            "file_count": len(evidence_records),
+            "total_size_bytes": sum(
+                record["size_bytes"] for record in evidence_records
+            ),
+            "files": evidence_records,
+            "files_sha256": sha_record(evidence_records),
+        },
+    }
 
 
 def git_source_binding(expected_commit: str) -> dict[str, Any]:
@@ -255,7 +567,12 @@ def git_source_binding(expected_commit: str) -> dict[str, Any]:
 
 
 def validate_preflight_binding(
-    path: Path, *, run_id: str, goal_sha256: str, implementation_commit: str
+    path: Path,
+    *,
+    run_id: str,
+    parent_run_id: str | None,
+    goal_sha256: str,
+    implementation_commit: str,
 ) -> dict[str, Any]:
     resolved = path.resolve(strict=True)
     report = read_json_object(resolved)
@@ -263,6 +580,10 @@ def validate_preflight_binding(
         report.get("schema_version") == "mk0_preflight_v1", "preflight schema drift"
     )
     require(report.get("run_id") == run_id, "preflight run ID drift")
+    require(
+        report.get("parent_run_id") == parent_run_id,
+        "preflight parent run ID drift",
+    )
     require(report.get("goal_sha256") == goal_sha256, "preflight Goal hash drift")
     require(
         report.get("mode") == "read_only_metadata_and_hashes",
@@ -306,6 +627,7 @@ def validate_preflight_binding(
         "sha256": sha256_file(resolved),
         "observed_at_utc": report["observed_at_utc"],
         "preflight_worktree_head": preflight_head,
+        "parent_run_id": parent_run_id,
         "safety": safety,
     }
 
@@ -4573,47 +4895,223 @@ def run_critic_audit() -> dict[str, Any]:
     }
 
 
-def run_pytest(output_dir: Path) -> dict[str, Any]:
-    import_root = output_dir / "import_root"
-    import_root.mkdir(parents=True, exist_ok=False)
-    os.symlink(REPO_ROOT, import_root / "mrna_editflow", target_is_directory=True)
-    log_path = output_dir / "logs" / "pytest_mk0.log"
-    junit_path = output_dir / "evaluation" / "pytest_mk0.junit.xml"
-    log_path.parent.mkdir(parents=True, exist_ok=True)
-    junit_path.parent.mkdir(parents=True, exist_ok=True)
-    env = os.environ.copy()
-    env["PYTHONPATH"] = str(import_root)
-    env["PYTHONPYCACHEPREFIX"] = str(output_dir / "pycache")
-    command = [
-        sys.executable,
-        "-m",
-        "pytest",
-        "-q",
-        "tests/mk0",
-        f"--junitxml={junit_path}",
-    ]
-    completed = subprocess.run(
-        command,
-        cwd=REPO_ROOT,
-        env=env,
-        capture_output=True,
-        text=True,
+def _validate_bound_pytest_report(
+    report: Mapping[str, Any],
+    *,
+    output_dir: Path,
+    launcher_path: Path,
+) -> None:
+    """Re-verify the launcher's fail-closed test-domain evidence."""
+
+    require(
+        report.get("schema_version") == "mk0_bound_pytest_report_v2",
+        "bound pytest report schema drift",
     )
-    log_path.write_text(completed.stdout + "\n" + completed.stderr, encoding="utf-8")
-    require(completed.returncode == 0, f"MK0 pytest failed; see {log_path}")
-    match = re.search(r"(\d+) passed", completed.stdout)
-    require(match is not None, "pytest pass count unavailable")
+    require(
+        report.get("status") == "PASS"
+        and report.get("returncode") == 0
+        and report.get("collection_returncode") == 0
+        and report.get("pytest_returncode") == 0
+        and report.get("execution_started") is True,
+        "bound pytest did not complete both formal phases",
+    )
+    require(report.get("pytest_args") == ["tests/mk0"], "pytest domain drift")
+    require(
+        report.get("repo_root") == str(REPO_ROOT)
+        and report.get("formal_output_root") == str(output_dir),
+        "pytest repository/output binding drift",
+    )
+    require(
+        isinstance(report.get("pytest_version"), str)
+        and bool(report.get("pytest_version")),
+        "pytest version binding is absent",
+    )
+
+    collection_nodeids = report.get("collection_nodeids")
+    execution_nodeids = report.get("execution_nodeids")
+    require(
+        isinstance(collection_nodeids, list)
+        and collection_nodeids
+        and collection_nodeids == sorted(collection_nodeids)
+        and len(collection_nodeids) == len(set(collection_nodeids))
+        and execution_nodeids == collection_nodeids,
+        "pytest collect/execute nodeid inventory drift",
+    )
+    nodeid_sha256 = hashlib.sha256(
+        "".join(f"{nodeid}\n" for nodeid in collection_nodeids).encode("utf-8")
+    ).hexdigest()
+    require(
+        report.get("collection_nodeids_sha256") == nodeid_sha256
+        and report.get("execution_nodeids_sha256") == nodeid_sha256,
+        "pytest nodeid inventory digest drift",
+    )
+    collected = report.get("collected_count")
+    require(
+        isinstance(collected, int)
+        and not isinstance(collected, bool)
+        and collected == len(collection_nodeids)
+        and report.get("executed_count") == collected
+        and report.get("passed_count") == collected,
+        "pytest requires collected == executed == passed > 0",
+    )
+    for field in (
+        "failed_count",
+        "error_count",
+        "skipped_count",
+        "deselected_count",
+        "xfailed_count",
+        "xpassed_count",
+    ):
+        require(report.get(field) == 0, f"pytest formal {field} is nonzero")
+    require(report.get("contract_violations") == [], "pytest contract violation")
+
+    environment = report.get("environment_contract")
+    require(isinstance(environment, Mapping), "pytest environment contract is absent")
+    require(
+        environment.get("pytest_plugin_autoload_disabled") is True
+        and environment.get("pythonpath_replaced_with_external_binding") is True,
+        "pytest environment was not sanitized",
+    )
+    controlled = environment.get("controlled_environment_keys")
+    require(
+        isinstance(controlled, list)
+        and {
+            "MK0_EXPECTED_PACKAGE_INIT",
+            "MK0_EXPECTED_PACKAGE_ROOT",
+            "MK0_PYTEST_MODE",
+            "PYTEST_DISABLE_PLUGIN_AUTOLOAD",
+            "PYTHONDONTWRITEBYTECODE",
+            "PYTHONNOUSERSITE",
+            "PYTHONPATH",
+        }
+        == set(controlled),
+        "pytest controlled environment inventory drift",
+    )
+    for field, prefix in (
+        ("sanitized_pytest_environment_keys", "PYTEST_"),
+        ("sanitized_python_environment_keys", "PYTHON"),
+    ):
+        keys = environment.get(field)
+        require(
+            isinstance(keys, list)
+            and keys == sorted(set(keys))
+            and all(isinstance(key, str) and key.startswith(prefix) for key in keys),
+            f"pytest sanitized environment inventory drift: {field}",
+        )
+
+    helper_path = REPO_ROOT / "scripts" / "mk0" / "strict_worktree_import.py"
+    for field in (
+        "module_origin",
+        "collection_module_origin",
+        "execution_module_origin",
+    ):
+        origin = report.get(field)
+        require(
+            isinstance(origin, Mapping)
+            and origin.get("matches_current_worktree") is True
+            and origin.get("resolved_init") == str(REPO_ROOT / "__init__.py")
+            and origin.get("resolved_search_locations") == [str(REPO_ROOT)]
+            and origin.get("strict_importer_path") == str(helper_path)
+            and origin.get("strict_importer_sha256") == sha256_file(helper_path)
+            and origin.get("strict_importer_loaded_from_source_bytes") is True,
+            f"pytest source-byte import binding drift: {field}",
+        )
+    isolation = report.get("import_isolation")
+    require(
+        isinstance(isolation, Mapping)
+        and isolation.get("inside_formal_output_tree") is False
+        and isolation.get("external_import_root_removed") is True
+        and isolation.get("ambient_pythonpath_replaced") is True,
+        "pytest import isolation contaminated the formal run tree",
+    )
+
+    junit = report.get("junit")
+    log = report.get("log")
+    require(
+        isinstance(junit, Mapping) and isinstance(log, Mapping),
+        "pytest evidence absent",
+    )
+    junit_path = output_dir / "evaluation" / "pytest_mk0.junit.xml"
+    log_path = output_dir / "logs" / "pytest_mk0.log"
+    require(
+        Path(str(junit.get("path", ""))).resolve(strict=True) == junit_path
+        and junit.get("exists") is True
+        and junit.get("sha256") == sha256_file(junit_path),
+        "pytest JUnit binding drift",
+    )
+    require(
+        junit.get("totals")
+        == {
+            "tests": collected,
+            "errors": 0,
+            "failures": 0,
+            "skipped": 0,
+            "passed": collected,
+        },
+        "pytest JUnit totals drift",
+    )
+    require(
+        Path(str(log.get("path", ""))).resolve(strict=True) == log_path
+        and log.get("sha256") == sha256_file(log_path),
+        "pytest log binding drift",
+    )
+    require(
+        report.get("formal_output_tree_regular_only") is True,
+        "pytest regular-tree certificate is absent",
+    )
+    require(
+        launcher_path.is_file() and not launcher_path.is_symlink(),
+        "pytest launcher is not a regular source file",
+    )
+
+
+def run_pytest(output_dir: Path) -> dict[str, Any]:
+    launcher_path = REPO_ROOT / "scripts" / "mk0" / "run_bound_pytest.py"
+    launcher_source = launcher_path.read_bytes()
+    launcher_namespace = {
+        "__file__": str(launcher_path),
+        "__name__": "mk0_bound_pytest_launcher",
+    }
+    exec(
+        compile(
+            launcher_source,
+            str(launcher_path),
+            "exec",
+            dont_inherit=True,
+            optimize=0,
+        ),
+        launcher_namespace,
+    )
+    report = launcher_namespace["run_bound_pytest"](
+        repo_root=REPO_ROOT,
+        formal_output_root=output_dir,
+        pytest_args=["tests/mk0"],
+        junit_path=Path("evaluation/pytest_mk0.junit.xml"),
+        log_path=Path("logs/pytest_mk0.log"),
+        report_path=Path("provenance/pytest_import_binding.json"),
+        python_executable=sys.executable,
+    )
+    _validate_bound_pytest_report(
+        report,
+        output_dir=output_dir,
+        launcher_path=launcher_path,
+    )
+    persisted_report = read_json_object(
+        output_dir / "provenance" / "pytest_import_binding.json"
+    )
+    require(persisted_report == report, "persisted pytest report drift")
     return {
-        "command": command,
-        "returncode": completed.returncode,
-        "passed_count": int(match.group(1)),
-        "failed_count": 0,
-        "skipped_count": 0,
-        "log_path": str(log_path),
-        "log_sha256": sha256_file(log_path),
-        "junit_path": str(junit_path),
-        "junit_sha256": sha256_file(junit_path),
-        "import_binding": str(import_root / "mrna_editflow"),
+        **report,
+        "launcher_path": str(launcher_path),
+        "launcher_sha256": hashlib.sha256(launcher_source).hexdigest(),
+        "report_path": str(output_dir / "provenance" / "pytest_import_binding.json"),
+        "report_sha256": sha256_file(
+            output_dir / "provenance" / "pytest_import_binding.json"
+        ),
+        "log_path": report["log"]["path"],
+        "log_sha256": report["log"]["sha256"],
+        "junit_path": report["junit"]["path"],
+        "junit_sha256": report["junit"]["sha256"],
     }
 
 
@@ -5376,6 +5874,7 @@ def initialize_formal_run(
     *,
     output_dir: Path,
     run_id: str,
+    parent_run_binding: Mapping[str, Any] | None,
     goal_sha256: str,
     implementation_commit: str,
     preflight_path: Path,
@@ -5579,6 +6078,8 @@ def initialize_formal_run(
         "--preflight-record",
         str(preflight_path.resolve(strict=True)),
     ]
+    if parent_run_binding is not None:
+        finalizer_argv.extend(["--parent-run-id", str(parent_run_binding["run_id"])])
     finalizer_command = _command_record(finalizer_argv, environment={})
     commands = {
         "cpu_acceptance": cpu_command,
@@ -5598,7 +6099,12 @@ def initialize_formal_run(
         "schema_version": "mk0_run_manifest_v3",
         "run_id": run_id,
         "task_id": "MK0-01",
-        "parent_run_id": None,
+        "parent_run_id": (
+            None if parent_run_binding is None else parent_run_binding["run_id"]
+        ),
+        "parent_run_binding": (
+            None if parent_run_binding is None else dict(parent_run_binding)
+        ),
         "phase": "MK0",
         "hypotheses": {
             hypothesis: "NOT_TESTED_AT_MK0_E0"
@@ -5693,6 +6199,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--run-id", required=True)
+    parser.add_argument("--parent-run-id")
     parser.add_argument("--goal-sha256", required=True)
     parser.add_argument("--implementation-commit", required=True)
     parser.add_argument("--preflight-record", type=Path, required=True)
@@ -5741,6 +6248,11 @@ def main() -> int:
         require(
             run_id_time.strftime("%Y%m%dT%H%M%SZ") == run_id_match.group("utc"),
             "formal run ID UTC is not canonical",
+        )
+        parent_run_binding = validate_parent_run_lineage(
+            args.run_id,
+            args.parent_run_id,
+            goal_sha256=args.goal_sha256,
         )
         require(output_dir.name == args.run_id, "formal run root basename drift")
         require(
@@ -5810,6 +6322,7 @@ def main() -> int:
         preflight_binding = validate_preflight_binding(
             args.preflight_record,
             run_id=args.run_id,
+            parent_run_id=args.parent_run_id,
             goal_sha256=args.goal_sha256,
             implementation_commit=args.implementation_commit,
         )
@@ -5834,6 +6347,7 @@ def main() -> int:
         run_manifest_sha256, _ = initialize_formal_run(
             output_dir=output_dir,
             run_id=args.run_id,
+            parent_run_binding=parent_run_binding,
             goal_sha256=args.goal_sha256,
             implementation_commit=args.implementation_commit,
             preflight_path=args.preflight_record,
@@ -6046,7 +6560,7 @@ def main() -> int:
                         output_dir,
                         run_id=args.run_id,
                         stage="CPU_ACCEPTANCE",
-                        reason=str(error),
+                        reason=failure_reason(error),
                         exit_code=1,
                     )
                 except BaseException as closure_error:

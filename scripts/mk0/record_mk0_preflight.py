@@ -20,6 +20,51 @@ from typing import Any
 import torch
 
 
+FORMAL_RUN_ID = re.compile(
+    r"^MK0_(?P<model>[A-Za-z0-9]+)_(?P<dataset>[A-Za-z0-9]+)_"
+    r"(?P<split>[A-Za-z0-9]+)_(?P<utc>[0-9]{8}T[0-9]{6}Z)_"
+    r"(?P<short_sha>[0-9a-f]{7,12})_s(?P<seed>[0-9]+)$"
+)
+
+
+def _formal_run_time(run_id: str, *, label: str) -> datetime:
+    match = FORMAL_RUN_ID.fullmatch(run_id)
+    if match is None:
+        raise ValueError(f"{label} is not a formal MK0 run ID")
+    try:
+        observed = datetime.strptime(match.group("utc"), "%Y%m%dT%H%M%SZ").replace(
+            tzinfo=timezone.utc
+        )
+    except ValueError as error:
+        raise ValueError(f"{label} UTC is not a calendar time") from error
+    if observed.strftime("%Y%m%dT%H%M%SZ") != match.group("utc"):
+        raise ValueError(f"{label} UTC is not canonical")
+    return observed
+
+
+def validate_parent_run_lineage(
+    child_run_id: str, parent_run_id: str | None
+) -> str | None:
+    """Validate optional repair lineage without changing non-repair behavior."""
+
+    if parent_run_id is None:
+        return None
+    parent_time = _formal_run_time(parent_run_id, label="parent run ID")
+    child_time = _formal_run_time(child_run_id, label="child run ID")
+    if parent_time >= child_time:
+        raise ValueError("parent run ID UTC must precede child run ID UTC")
+    return parent_run_id
+
+
+def preflight_lineage_fields(
+    child_run_id: str, parent_run_id: str | None
+) -> dict[str, str | None]:
+    return {
+        "run_id": child_run_id,
+        "parent_run_id": validate_parent_run_lineage(child_run_id, parent_run_id),
+    }
+
+
 def canonical_json_bytes(value: Any) -> bytes:
     return (
         json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
@@ -161,6 +206,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--run-id", required=True)
+    parser.add_argument("--parent-run-id")
     parser.add_argument("--goal-sha256", required=True)
     parser.add_argument("--worktree", type=Path, required=True)
     parser.add_argument("--main-repo", type=Path, required=True)
@@ -169,6 +215,7 @@ def main() -> int:
     parser.add_argument("--d1-ledger", type=Path, required=True)
     parser.add_argument("--mnt-root", type=Path, required=True)
     args = parser.parse_args()
+    lineage = preflight_lineage_fields(args.run_id, args.parent_run_id)
     worktree = args.worktree.resolve(strict=True)
     main_repo = args.main_repo.resolve(strict=True)
     fm0 = args.fm0_closure_root.resolve(strict=True)
@@ -302,7 +349,7 @@ def main() -> int:
     artifacts_root = (main_repo / "artifacts").resolve(strict=True)
     payload: dict[str, Any] = {
         "schema_version": "mk0_preflight_v1",
-        "run_id": args.run_id,
+        **lineage,
         "observed_at_utc": datetime.now(timezone.utc)
         .isoformat()
         .replace("+00:00", "Z"),

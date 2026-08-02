@@ -7,6 +7,7 @@ import hashlib
 import importlib.util
 import inspect
 import json
+from argparse import Namespace
 from pathlib import Path
 import sys
 from typing import Any
@@ -85,11 +86,25 @@ def _synthetic_gpu_role_query_audit(
     source_binding: dict[str, Any],
 ) -> dict[str, Any]:
     source_files = source_binding["tracked_source_files"]
+    exact_identities = FINALIZER._bound_gpu_role_identities(source_binding)
+
+    def exact_line(source_file: str, qualname: str) -> int:
+        lines = FINALIZER._ast_function_lines(source_file)
+        assert qualname in lines
+        return lines[qualname]
+
     phase_records: list[dict[str, Any]] = []
     total_counts = {
         f"{category}_call_count": 0 for category in FINALIZER.GPU_ROLE_CALL_CATEGORIES
     }
-    total_counts["repository_python_call_count"] = 0
+    total_counts.update(
+        {
+            "repository_python_call_count": 0,
+            "external_python_call_count": 0,
+            "unknown_external_call_count": 0,
+            "total_python_call_count": 0,
+        }
+    )
     for phase_id, phase_kind, entrypoint, required in FINALIZER.GPU_ROLE_PHASE_SPECS:
         inventory: list[dict[str, Any]] = []
         if "rate_interface" in required:
@@ -97,7 +112,10 @@ def _synthetic_gpu_role_query_audit(
                 {
                     "source_file": "core/mk0/foundation_fusion.py",
                     "function_qualname": "FoundationFusionRateField.forward",
-                    "first_lineno": 1,
+                    "first_lineno": exact_line(
+                        "core/mk0/foundation_fusion.py",
+                        "FoundationFusionRateField.forward",
+                    ),
                     "categories": ["rate_interface"],
                     "call_count": 2,
                 }
@@ -112,7 +130,7 @@ def _synthetic_gpu_role_query_audit(
                 {
                     "source_file": "core/mk0/samplers.py",
                     "function_qualname": sampler_name,
-                    "first_lineno": 1,
+                    "first_lineno": exact_line("core/mk0/samplers.py", sampler_name),
                     "categories": ["sampler_interface"],
                     "call_count": 1,
                 }
@@ -122,7 +140,10 @@ def _synthetic_gpu_role_query_audit(
                 {
                     "source_file": "scripts/mk0/run_mk0_gpu_smoke.py",
                     "function_qualname": "_run_forced_action_arm",
-                    "first_lineno": 1,
+                    "first_lineno": exact_line(
+                        "scripts/mk0/run_mk0_gpu_smoke.py",
+                        "_run_forced_action_arm",
+                    ),
                     "categories": ["generator_interface"],
                     "call_count": 1,
                 }
@@ -144,13 +165,31 @@ def _synthetic_gpu_role_query_audit(
             for category in FINALIZER.GPU_ROLE_CALL_CATEGORIES
         }
         repository_calls = sum(record["call_count"] for record in inventory)
+        thread_inventory = [
+            {
+                "thread_id": 1,
+                "thread_name": "MainThread",
+                "repository_call_count": repository_calls,
+                "external_call_count": 0,
+                "total_python_call_count": repository_calls,
+            }
+        ]
         phase = {
             "phase_id": phase_id,
             "phase_kind": phase_kind,
             "entrypoint": entrypoint,
             "required_call_categories": list(required),
             "completed": True,
+            "phase_status": "PASS",
+            "failure_reason": None,
             "repository_python_call_count": repository_calls,
+            "external_python_call_count": 0,
+            "unknown_external_call_count": 0,
+            "total_python_call_count": repository_calls,
+            "python_thread_count": 1,
+            "preexisting_noncurrent_python_thread_count": 0,
+            "preexisting_noncurrent_python_threads": [],
+            "unjoined_new_thread_ids": [],
             **{
                 f"{category}_call_count": count
                 for category, count in category_counts.items()
@@ -159,9 +198,18 @@ def _synthetic_gpu_role_query_audit(
             "record_stream_sha256": hashlib.sha256(
                 canonical_json_bytes(inventory)
             ).hexdigest(),
+            "external_call_inventory": [],
+            "external_record_stream_sha256": hashlib.sha256(
+                canonical_json_bytes([])
+            ).hexdigest(),
+            "thread_inventory": thread_inventory,
+            "thread_record_stream_sha256": hashlib.sha256(
+                canonical_json_bytes(thread_inventory)
+            ).hexdigest(),
         }
         phase_records.append(phase)
         total_counts["repository_python_call_count"] += repository_calls
+        total_counts["total_python_call_count"] += repository_calls
         for category, count in category_counts.items():
             total_counts[f"{category}_call_count"] += count
 
@@ -182,26 +230,72 @@ def _synthetic_gpu_role_query_audit(
             if label.startswith("samplers.")
         },
     }
+    interface_qualnames = {
+        "gpu_runner.forced_action_arm": "_run_forced_action_arm",
+        "gpu_runner.paper_sampler_route": "_run_official_paper_sampler_route",
+        "gpu_runner.primary_sampler_integration": "_run_primary_gpu_sampler_integration",
+        "gpu_runner.target_alignment_leakage_audit": "_audit_target_alignment_leakage",
+        "gpu_runner.dynamic_current_encoding_audit": "_audit_dynamic_current_encoding",
+        "foundation_fusion.rate_field_forward": "FoundationFusionRateField.forward",
+        "foundation_fusion.official_paper_adapter": "OfficialPaperRateAdapter.__call__",
+        "samplers.constrained_primary": "constrained_single_event_first_order",
+        "samplers.paper_parallel": "paper_first_order_parallel",
+        "samplers.replay_constrained": "replay_constrained_result",
+        "samplers.replay_paper": "replay_paper_result",
+    }
     interfaces = [
         {
             "interface": label,
             "source_file": interface_sources[label],
             "source_file_sha256": source_files[interface_sources[label]],
+            "function_qualname": interface_qualnames[label],
+            "first_lineno": exact_line(
+                interface_sources[label], interface_qualnames[label]
+            ),
+            "role_categories": list(
+                FINALIZER._gpu_role_categories(
+                    interface_sources[label],
+                    interface_qualnames[label],
+                    exact_line(interface_sources[label], interface_qualnames[label]),
+                    exact_identities,
+                )
+            ),
             "parameters": ["state"],
             "prohibited_parameters": [],
         }
         for label in FINALIZER.GPU_ROLE_INTERFACE_LABELS
     ]
     stream_material = [
-        {"phase_id": phase["phase_id"], "call_inventory": phase["call_inventory"]}
+        {
+            "phase_id": phase["phase_id"],
+            "call_inventory": phase["call_inventory"],
+            "external_call_inventory": phase["external_call_inventory"],
+            "thread_inventory": phase["thread_inventory"],
+            "preexisting_noncurrent_python_threads": phase[
+                "preexisting_noncurrent_python_threads"
+            ],
+        }
         for phase in phase_records
     ]
     return {
         "schema_version": "mk0_gpu_post_role_query_audit_v1",
         "status": "PASS",
         "placement": "after_all_formal_gpu_generator_rate_sampler_phases_before_support_publication",
-        "runtime_instrumentation": "sys_setprofile_repository_python_calls",
-        "thread_scope": "formal_gpu_main_python_thread",
+        "runtime_instrumentation": "sys_setprofile_python_calls",
+        "thread_scope": (
+            "formal_gpu_main_and_new_threading_threads_with_"
+            "preexisting_noncurrent_threads_forbidden"
+        ),
+        "external_call_policy": {
+            "unknown_external_calls": "FAIL_CLOSED",
+            "stdlib_root": str(FINALIZER.STDLIB_ROOT),
+            "site_package_roots_excluded_from_stdlib": [
+                str(path) for path in FINALIZER.SITE_PACKAGE_ROOTS
+            ],
+            "frozen_foundation_module_prefixes": list(
+                FINALIZER.FROZEN_FOUNDATION_EXTERNAL_MODULE_PREFIXES
+            ),
+        },
         "run_id": run_id,
         "goal_sha256": goal_sha256,
         "implementation_commit": implementation_commit,
@@ -227,6 +321,9 @@ def _synthetic_gpu_role_query_audit(
         **total_counts,
         "all_role_query_counts_zero": True,
         "formal_gpu_computation_complete": True,
+        "all_external_calls_allowlisted": True,
+        "all_new_threads_joined": True,
+        "all_preexisting_noncurrent_threads_absent": True,
     }
 
 
@@ -459,7 +556,13 @@ def test_failed_runtime_binding_cannot_be_summarized_as_pass(tmp_path: Path) -> 
 
 def test_cpu_gpu_sidecars_bind_run_source_preflight_and_support_bytes(
     tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    monkeypatch.setattr(
+        FINALIZER,
+        "verify_cpu_pytest_evidence",
+        lambda *_args, **_kwargs: {"synthetic_fixture": True},
+    )
     run_root = tmp_path / "run"
     artifact_dir = run_root / "artifacts" / "mk0"
     artifact_dir.mkdir(parents=True)
@@ -500,6 +603,7 @@ def test_cpu_gpu_sidecars_bind_run_source_preflight_and_support_bytes(
         "run_root": str(run_root.resolve()),
         "source_binding": source_binding,
         "preflight": preflight,
+        "exact_commands": {"cpu_acceptance": {"argv": [sys.executable]}},
         "final_labels_accessed": False,
         "downstream_stage_started": False,
     }
@@ -709,6 +813,66 @@ def test_cpu_gpu_sidecars_bind_run_source_preflight_and_support_bytes(
             missing_phase_foundation, gpu, **role_verify_kwargs
         )
 
+    fake_qualname_foundation = copy.deepcopy(foundation)
+    fake_qualname_record = fake_qualname_foundation["post_gpu_role_query_audit"][
+        "phase_records"
+    ][0]["call_inventory"][0]
+    fake_qualname_record["function_qualname"] = "FakeWrapper.forward"
+    with pytest.raises(FINALIZER.FinalizeFailure, match="category substitution"):
+        FINALIZER.verify_gpu_post_role_query_audit(
+            fake_qualname_foundation, gpu, **role_verify_kwargs
+        )
+
+    fake_line_foundation = copy.deepcopy(foundation)
+    fake_line_record = fake_line_foundation["post_gpu_role_query_audit"][
+        "phase_records"
+    ][0]["call_inventory"][0]
+    fake_line_record["first_lineno"] = 1
+    with pytest.raises(FINALIZER.FinalizeFailure, match="category substitution"):
+        FINALIZER.verify_gpu_post_role_query_audit(
+            fake_line_foundation, gpu, **role_verify_kwargs
+        )
+
+    unknown_external_foundation = copy.deepcopy(foundation)
+    unknown_external_phase = unknown_external_foundation["post_gpu_role_query_audit"][
+        "phase_records"
+    ][0]
+    unknown_external_phase["external_call_inventory"] = [
+        {
+            "module_name": "thirdparty.benign_sdk",
+            "source_file": str(tmp_path / "benign_sdk.py"),
+            "function_qualname": "calculate",
+            "first_lineno": 7,
+            "classification": "unknown_external",
+            "categories": [],
+            "call_count": 1,
+        }
+    ]
+    unknown_external_phase["external_record_stream_sha256"] = hashlib.sha256(
+        canonical_json_bytes(unknown_external_phase["external_call_inventory"])
+    ).hexdigest()
+    unknown_external_phase["external_python_call_count"] = 1
+    unknown_external_phase["unknown_external_call_count"] = 1
+    unknown_external_phase["total_python_call_count"] += 1
+    with pytest.raises(FINALIZER.FinalizeFailure, match="unknown external call"):
+        FINALIZER.verify_gpu_post_role_query_audit(
+            unknown_external_foundation, gpu, **role_verify_kwargs
+        )
+
+    thread_drift_foundation = copy.deepcopy(foundation)
+    thread_drift_phase = thread_drift_foundation["post_gpu_role_query_audit"][
+        "phase_records"
+    ][0]
+    thread_drift_phase["thread_inventory"][0]["repository_call_count"] -= 1
+    thread_drift_phase["thread_inventory"][0]["total_python_call_count"] -= 1
+    thread_drift_phase["thread_record_stream_sha256"] = hashlib.sha256(
+        canonical_json_bytes(thread_drift_phase["thread_inventory"])
+    ).hexdigest()
+    with pytest.raises(FINALIZER.FinalizeFailure, match="thread/call inventory"):
+        FINALIZER.verify_gpu_post_role_query_audit(
+            thread_drift_foundation, gpu, **role_verify_kwargs
+        )
+
     nonzero_query_foundation = copy.deepcopy(foundation)
     nonzero_audit = nonzero_query_foundation["post_gpu_role_query_audit"]
     first_phase = nonzero_audit["phase_records"][0]
@@ -795,6 +959,54 @@ def test_cpu_gpu_sidecars_bind_run_source_preflight_and_support_bytes(
         )
 
 
+@pytest.mark.parametrize(
+    ("error", "expected_reason"),
+    [(KeyboardInterrupt(), "KeyboardInterrupt"), (RuntimeError(), "RuntimeError")],
+)
+def test_finalizer_main_writes_nonempty_standard_failure_reason(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+    error: BaseException,
+    expected_reason: str,
+) -> None:
+    run_root = tmp_path / "finalizer_failure"
+    (run_root / "artifacts" / "mk0").mkdir(parents=True)
+    (run_root / "logs").mkdir()
+    (run_root / "logs" / "events.jsonl").write_text("", encoding="utf-8")
+    (run_root / "logs" / "stderr.log").write_text("", encoding="utf-8")
+    args = Namespace(
+        run_root=run_root,
+        run_id="MK0_FAILURE_REASON_TEST",
+        parent_run_id=None,
+        goal_sha256="a" * 64,
+        implementation_commit="b" * 40,
+        fm0_closure_root=tmp_path,
+        d1_data=tmp_path,
+        d1_ledger=tmp_path,
+        preflight_record=tmp_path,
+    )
+    observed: dict[str, Any] = {}
+
+    monkeypatch.setattr(FINALIZER, "parse_args", lambda _argv: args)
+
+    def raise_failure(_condition: Any, _message: str) -> None:
+        raise error
+
+    monkeypatch.setattr(FINALIZER, "require", raise_failure)
+    monkeypatch.setattr(
+        FINALIZER,
+        "write_failed_sentinel",
+        lambda _root, **kwargs: observed.update(kwargs),
+    )
+
+    assert FINALIZER.main([]) == 1
+    assert observed["reason"] == expected_reason
+    persisted = json.loads(
+        (run_root / "failure" / "finalize_failure.json").read_text(encoding="utf-8")
+    )
+    assert persisted["exception_message"] == expected_reason
+
+
 def test_absent_fm0_terminal_prerequisite_fails_closed(tmp_path: Path) -> None:
     fm0 = tmp_path / "fm0"
     fm0.mkdir()
@@ -821,6 +1033,7 @@ def test_preflight_run_substitution_fails_before_acceptance(tmp_path: Path) -> N
             {
                 "schema_version": "mk0_preflight_v1",
                 "run_id": "WRONG_RUN",
+                "parent_run_id": None,
                 "goal_sha256": "a" * 64,
                 "mode": "read_only_metadata_and_hashes",
             }
@@ -833,6 +1046,7 @@ def test_preflight_run_substitution_fails_before_acceptance(tmp_path: Path) -> N
             goal_sha256="a" * 64,
             implementation_commit="b" * 40,
             fm0={},
+            parent_run_id=None,
         )
 
 
@@ -1128,13 +1342,9 @@ def test_preflight_requires_project_tasks_gpu_disk_data_and_artifact_evidence(
 
     missing_owner = copy.deepcopy(report)
     missing_owner["resources"]["gpu_compute_processes"][0]["owner"] = None
-    missing_owner["resources"]["gpu_compute_process_metadata_sha256"] = (
-        hashlib.sha256(
-            canonical_json_bytes(
-                missing_owner["resources"]["gpu_compute_processes"]
-            )
-        ).hexdigest()
-    )
+    missing_owner["resources"]["gpu_compute_process_metadata_sha256"] = hashlib.sha256(
+        canonical_json_bytes(missing_owner["resources"]["gpu_compute_processes"])
+    ).hexdigest()
     with pytest.raises(FINALIZER.FinalizeFailure, match="owner is invalid"):
         FINALIZER._validate_preflight_observation_fields(missing_owner, **kwargs)
 
@@ -1213,7 +1423,11 @@ def test_live_preflight_authenticity_rechecks_stable_resource_identity(
             return "" if cwd == paths["worktree"] else " M user-file"
         if command[:3] == ["git", "worktree", "list"]:
             return report["protected_main_repo"]["worktree_list_porcelain"]
-        if command[0] == "nvidia-smi" and "--query-gpu=index,name,uuid,driver_version,memory.total,memory.used,memory.free,utilization.gpu" in command:
+        if (
+            command[0] == "nvidia-smi"
+            and "--query-gpu=index,name,uuid,driver_version,memory.total,memory.used,memory.free,utilization.gpu"
+            in command
+        ):
             return "0, Test GPU, GPU-00000000-0000-0000-0000-000000000000, 550.54.15, 40960, 1024, 39936, 25"
         if command == ["nvidia-smi"]:
             return "NVIDIA-SMI 550.54.15 Driver Version: 550.54.15 CUDA Version: 12.4"

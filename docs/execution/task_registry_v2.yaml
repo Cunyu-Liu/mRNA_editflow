@@ -248,7 +248,7 @@ tasks:
     loss, STOP, sampler, numerical stability'
   gate: MK0 Gate not passed → no EF0 acceptance, no GP0 formal training
   goal_sha256: 3a3a654ca5c10a988eca897bff40be2e0b45c841f744f7423fdfd60b298b5791
-  run_id: null
+  run_id: MK0_utrlm_mathkernel_tiny_20260802T083317Z_1d879e0_s20260802
   evidence_level: E0 mathematical and engineering verification only; no functional,
     biological, superiority, or downstream-stage claim
   resource_tags:
@@ -259,8 +259,9 @@ tasks:
   - MUTATES_CODE
   conflict_keys:
   - repo:/home/cunyuliu/mrna_editflow_goal/worktrees/mk0_math_kernel_20260802T023454Z
-  - run:/home/cunyuliu/mrna_editflow_goal/mrna_editflow/artifacts/runs/PENDING_FRESH_SECTION19_RUN_ID
-  - preflight:/mnt/cunyuliu/mrna_editflow_mk0_preflight/PENDING_FRESH_SECTION19_RUN_ID
+  - run:/home/cunyuliu/mrna_editflow_goal/mrna_editflow/artifacts/runs/MK0_utrlm_mathkernel_tiny_20260802T083317Z_1d879e0_s20260802
+  - run:/home/cunyuliu/mrna_editflow_goal/mrna_editflow/artifacts/runs/PENDING_FRESH_REPAIR_CHILD_RUN_ID
+  - preflight:/mnt/cunyuliu/mrna_editflow_mk0_preflight/PENDING_FRESH_REPAIR_CHILD_RUN_ID
   - gpu:formal-neural-validation
   - upstream:FM0_FORMAL_CLOSURE_20260802T022915Z_f4d562d
   allowed_parallel_tasks:
@@ -294,6 +295,7 @@ tasks:
   - scripts/mk0/
   - tests/mk0/
   outputs:
+  - /mnt/cunyuliu/mrna_editflow_mk0_failures/MK0_utrlm_mathkernel_tiny_20260802T083317Z_1d879e0_s20260802_incident_20260802T085723Z/
   - /mnt/cunyuliu/mrna_editflow_mk0_preflight/<FRESH_SECTION19_RUN_ID>/mk0_preflight.json
   - /home/cunyuliu/mrna_editflow_goal/mrna_editflow/artifacts/runs/<FRESH_SECTION19_RUN_ID>/
   acceptance:
@@ -308,9 +310,16 @@ tasks:
   - diagnose in the isolated worktree and use a fresh run root after any code change
   - rerun fresh preflight after the implementation commit changes
   - stop if CUDA is unavailable, a neural tensor/model leaves CUDA, or CPU fallback occurs
-  commit_sha: null
-  report: Formal run has not started. Implementation and adversarial acceptance audits
-    are in progress in an isolated worktree; EF0 and GP0 remain blocked.
+  commit_sha: 1d879e030c6ab2f86fa28c6bb491d1fb77059b9a
+  report: The first formal run completed all CPU checks but its real-CUDA role observer
+    failed closed because it did not recognize a production rate-interface call. The
+    same run then exposed an independently preserved terminal-closure defect caused
+    by a pytest import symlink inside the canonical tree; it is classified as
+    UNSEALED_FAILED_EVIDENCE and remains unmodified. A non-dereferencing external
+    incident bundle was recorded under /mnt/cunyuliu/mrna_editflow_mk0_failures.
+    Repair work binds a fresh child run to this parent registration manifest, uses
+    an external ephemeral pytest import root, and verifies exact production code
+    objects before model loading. MK0 remains IN_PROGRESS; EF0 and GP0 remain blocked.
 - task_id: EF0-01
   phase: EF0
   status: PENDING
