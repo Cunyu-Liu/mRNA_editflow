@@ -83,6 +83,9 @@ GPU_RESULTS = "mk0_gpu_gate_results.json"
 CPU_SUMMARY = "cpu_acceptance_summary.json"
 GPU_SUMMARY = "gpu_acceptance_summary.json"
 FM0_HASH_LICENSE_RELATIVE = Path("evaluation/hash_license_manifest.json")
+FM0_READY_MARKER_TEXT = (
+    "FM0 formal acceptance bound and verified; no downstream phase was started."
+)
 CPU_SUPPORT = {
     "coupling_manifest.json",
     "transition_aggregation_oracle.json",
@@ -265,6 +268,15 @@ def _standard_failure_reason(error: BaseException) -> str:
 def require(condition: bool, message: str) -> None:
     if not condition:
         raise FinalizeFailure(message)
+
+
+def verify_fm0_ready_marker(marker_path: Path) -> None:
+    """Bind the terminal marker to the exact text emitted by formal FM0 closure."""
+
+    require(
+        marker_path.read_text(encoding="utf-8").strip() == FM0_READY_MARKER_TEXT,
+        "FM0 marker content drift",
+    )
 
 
 def read_json(path: Path) -> dict[str, Any]:
@@ -1490,11 +1502,7 @@ def verify_fm0_b0_d1(
         acceptance.get("b0_bound_gate", {}).get("strict_unlock") is True,
         "FM0 did not strictly unlock B0",
     )
-    require(
-        (root / "PASS_READY_FOR_MK0").read_text(encoding="utf-8").strip()
-        == "PASS_READY_FOR_MK0",
-        "FM0 marker content drift",
-    )
+    verify_fm0_ready_marker(root / "PASS_READY_FOR_MK0")
 
     require(
         b0.get("schema_version") == "b0-current-gate/v4", "B0 current gate schema drift"

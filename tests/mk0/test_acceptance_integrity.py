@@ -1284,6 +1284,16 @@ def test_absent_fm0_terminal_prerequisite_fails_closed(tmp_path: Path) -> None:
         )
 
 
+def test_fm0_ready_marker_binds_formal_closure_text(tmp_path: Path) -> None:
+    marker = tmp_path / "PASS_READY_FOR_MK0"
+    marker.write_text(FINALIZER.FM0_READY_MARKER_TEXT + "\n", encoding="utf-8")
+    FINALIZER.verify_fm0_ready_marker(marker)
+
+    marker.write_text("PASS_READY_FOR_MK0\n", encoding="utf-8")
+    with pytest.raises(FINALIZER.FinalizeFailure, match="marker content drift"):
+        FINALIZER.verify_fm0_ready_marker(marker)
+
+
 def test_preflight_run_substitution_fails_before_acceptance(tmp_path: Path) -> None:
     preflight = tmp_path / "preflight.json"
     preflight.write_bytes(
