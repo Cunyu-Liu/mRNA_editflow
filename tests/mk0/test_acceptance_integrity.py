@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import copy
 import hashlib
+from importlib import metadata as importlib_metadata
 import importlib.util
 import inspect
 import json
@@ -39,6 +40,194 @@ def _load_finalizer():
 
 
 FINALIZER = _load_finalizer()
+
+
+def _valid_model_loading_thread_policy() -> dict[str, Any]:
+    from huggingface_hub.utils import tqdm as hub_tqdm
+    from tqdm.auto import tqdm as auto_tqdm
+    from tqdm.std import tqdm as standard_tqdm
+
+    classes = (
+        ("tqdm_standard", standard_tqdm),
+        ("tqdm_auto", auto_tqdm),
+        ("huggingface_hub_tqdm", hub_tqdm),
+    )
+    class_records = []
+    for role, cls in classes:
+        value = getattr(cls, "monitor_interval")
+        owned = "monitor_interval" in cls.__dict__
+        class_records.append(
+            {
+                "role": role,
+                "class_path": f"{cls.__module__}.{cls.__qualname__}",
+                "original_monitor_interval_owned_by_class": owned,
+                "original_monitor_interval": value,
+                "original_monitor_interval_type": type(value).__name__,
+                "monitor_interval_owned_during_load": True,
+                "monitor_interval_during_load": 0,
+                "monitor_interval_during_load_type": "int",
+                "monitor_interval_owned_after_restore": owned,
+                "monitor_interval_after_restore": value,
+                "monitor_interval_after_restore_type": type(value).__name__,
+                "state_restored_exactly": True,
+            }
+        )
+    return {
+        "schema_version": "mk0_model_loading_thread_policy_v1",
+        "status": "PASS",
+        "scope": "two_load_official_utrlm_calls_only",
+        "prevention_mechanism": "scoped_tqdm_monitor_interval_zero",
+        "loads_covered": [
+            "official_frozen",
+            "same_architecture_from_scratch_control",
+        ],
+        "load_completion": {
+            "official_frozen": True,
+            "same_architecture_from_scratch_control": True,
+        },
+        "control_apis": [
+            "transformers.utils.logging.disable_progress_bar",
+            "HF_HUB_DISABLE_PROGRESS_BARS=1",
+            "tqdm.monitor_interval=0",
+        ],
+        "package_versions": {
+            name: importlib_metadata.version(name)
+            for name in ("transformers", "tqdm", "huggingface_hub")
+        },
+        "class_records": class_records,
+        "distinct_class_count": 3,
+        "restoration_order": [
+            "huggingface_hub_tqdm",
+            "tqdm_auto",
+            "tqdm_standard",
+        ],
+        "hf_hub_env_present_before": False,
+        "hf_hub_env_value_before": None,
+        "hf_hub_env_value_during_load": "1",
+        "hf_hub_env_present_after_restore": False,
+        "hf_hub_env_value_after_restore": None,
+        "hf_hub_env_state_restored": True,
+        "transformers_progress_bar_enabled_before": True,
+        "transformers_progress_bar_enabled_during_load": False,
+        "transformers_progress_bar_enabled_after_restore": True,
+        "transformers_progress_state_restored": True,
+        "huggingface_hub_progress_registry_before": {
+            "_global": True,
+            "unit.named": False,
+        },
+        "huggingface_hub_progress_registry_during_load": {"_global": False},
+        "huggingface_hub_progress_registry_after_restore": {
+            "_global": True,
+            "unit.named": False,
+        },
+        "huggingface_hub_progress_registry_restored": True,
+        "huggingface_hub_progress_registry_object_identity_preserved": True,
+        "huggingface_hub_progress_registry_restoration_method": (
+            "in_place_clear_and_update_after_official_api_restore"
+        ),
+        "noncurrent_python_threads_before_model_loading": [],
+        "noncurrent_python_threads_after_policy_configuration": [],
+        "noncurrent_python_threads_after_model_loading": [],
+        "noncurrent_python_threads_after_policy_restoration": [],
+        "thread_name_allowlist": [],
+        "thread_name_filtering_used": False,
+        "thread_cleanup_attempted": False,
+        "tqdm_monitor_object_touched": False,
+        "all_monitor_states_restored": True,
+        "restoration_errors": [],
+        "failure_stage": None,
+        "failure_reason": None,
+    }
+
+
+@pytest.mark.parametrize(
+    ("mutate", "message"),
+    [
+        (
+            lambda policy: policy["load_completion"].__setitem__(
+                "official_frozen", False
+            ),
+            "completion binding drift",
+        ),
+        (
+            lambda policy: policy["load_completion"].__setitem__("official_frozen", 1),
+            "completion binding drift",
+        ),
+        (
+            lambda policy: policy["class_records"].pop(),
+            "class coverage is incomplete",
+        ),
+        (
+            lambda policy: policy["class_records"][1].__setitem__(
+                "class_path", "tqdm.fake.NotActual"
+            ),
+            "runtime class identity drift",
+        ),
+        (
+            lambda policy: policy["class_records"][0].__setitem__(
+                "monitor_interval_during_load", False
+            ),
+            "monitor suppression drift",
+        ),
+        (
+            lambda policy: policy["class_records"][1].__setitem__(
+                "state_restored_exactly", False
+            ),
+            "state restoration drift",
+        ),
+        (
+            lambda policy: policy.__setitem__(
+                "noncurrent_python_threads_after_model_loading",
+                [
+                    {
+                        "thread_id": 1,
+                        "native_id": 2,
+                        "thread_name": "Thread-1",
+                        "daemon": True,
+                    }
+                ],
+            ),
+            "noncurrent Python thread",
+        ),
+        (
+            lambda policy: policy.__setitem__(
+                "thread_name_allowlist", ["tqdm_monitor"]
+            ),
+            "escape-hatch policy drift",
+        ),
+        (
+            lambda policy: policy.__setitem__("thread_cleanup_attempted", True),
+            "escape-hatch policy drift",
+        ),
+        (
+            lambda policy: policy.__setitem__(
+                "transformers_progress_bar_enabled_after_restore", False
+            ),
+            "progress state restoration drift",
+        ),
+        (
+            lambda policy: policy.__setitem__("hf_hub_env_present_after_restore", True),
+            "environment restoration drift",
+        ),
+        (
+            lambda policy: policy[
+                "huggingface_hub_progress_registry_after_restore"
+            ].__setitem__("unit.named", True),
+            "progress registry restoration drift",
+        ),
+        (
+            lambda policy: policy.__setitem__("unexpected_field", True),
+            "schema is missing or malformed",
+        ),
+    ],
+)
+def test_model_loading_thread_policy_tamper_fails_closed(
+    mutate: Any, message: str
+) -> None:
+    policy = _valid_model_loading_thread_policy()
+    mutate(policy)
+    with pytest.raises(FINALIZER.FinalizeFailure, match=message):
+        FINALIZER.verify_model_loading_thread_policy(policy)
 
 
 def _load_gpu_runner():
@@ -631,6 +820,7 @@ def test_cpu_gpu_sidecars_bind_run_source_preflight_and_support_bytes(
     foundation = {
         "run_id": run_id,
         "status": "PASS",
+        "model_loading_progress_policy": _valid_model_loading_thread_policy(),
         "cuda": {
             "cpu_fallback_observed": False,
             "cpu_fallback_allowed": False,
@@ -799,6 +989,35 @@ def test_cpu_gpu_sidecars_bind_run_source_preflight_and_support_bytes(
         "source_binding": source_binding,
         "foundation_sha256": gpu_hashes["foundation_fusion_audit.json"],
     }
+    progress_drift_foundation = copy.deepcopy(foundation)
+    progress_drift_foundation["model_loading_progress_policy"][
+        "transformers_progress_bar_enabled_after_restore"
+    ] = False
+    with pytest.raises(
+        FINALIZER.FinalizeFailure, match="progress state restoration drift"
+    ):
+        FINALIZER.verify_gpu_post_role_query_audit(
+            progress_drift_foundation, gpu, **role_verify_kwargs
+        )
+
+    progress_thread_foundation = copy.deepcopy(foundation)
+    progress_thread_foundation["model_loading_progress_policy"][
+        "noncurrent_python_threads_after_model_loading"
+    ] = [
+        {
+            "thread_id": 101,
+            "native_id": 202,
+            "thread_name": "tqdm_monitor",
+            "daemon": True,
+        }
+    ]
+    with pytest.raises(
+        FINALIZER.FinalizeFailure, match="created or inherited a noncurrent"
+    ):
+        FINALIZER.verify_gpu_post_role_query_audit(
+            progress_thread_foundation, gpu, **role_verify_kwargs
+        )
+
     missing_audit_foundation = copy.deepcopy(foundation)
     missing_audit_foundation.pop("post_gpu_role_query_audit")
     with pytest.raises(FINALIZER.FinalizeFailure, match="audit is missing"):

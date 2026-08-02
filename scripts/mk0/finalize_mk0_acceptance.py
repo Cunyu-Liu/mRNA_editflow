@@ -14,6 +14,8 @@ import ast
 from dataclasses import replace
 from datetime import datetime, timezone
 import hashlib
+import importlib
+from importlib import metadata as importlib_metadata
 import json
 import os
 from pathlib import Path
@@ -2748,6 +2750,282 @@ def _gpu_role_categories(
     return tuple(sorted(categories))
 
 
+def verify_model_loading_thread_policy(policy: Any) -> dict[str, Any]:
+    """Independently verify the scoped, three-class model-loading policy."""
+
+    expected_keys = {
+        "schema_version",
+        "status",
+        "scope",
+        "prevention_mechanism",
+        "loads_covered",
+        "load_completion",
+        "control_apis",
+        "package_versions",
+        "class_records",
+        "distinct_class_count",
+        "restoration_order",
+        "hf_hub_env_present_before",
+        "hf_hub_env_value_before",
+        "hf_hub_env_value_during_load",
+        "hf_hub_env_present_after_restore",
+        "hf_hub_env_value_after_restore",
+        "hf_hub_env_state_restored",
+        "transformers_progress_bar_enabled_before",
+        "transformers_progress_bar_enabled_during_load",
+        "transformers_progress_bar_enabled_after_restore",
+        "transformers_progress_state_restored",
+        "huggingface_hub_progress_registry_before",
+        "huggingface_hub_progress_registry_during_load",
+        "huggingface_hub_progress_registry_after_restore",
+        "huggingface_hub_progress_registry_restored",
+        "huggingface_hub_progress_registry_object_identity_preserved",
+        "huggingface_hub_progress_registry_restoration_method",
+        "noncurrent_python_threads_before_model_loading",
+        "noncurrent_python_threads_after_policy_configuration",
+        "noncurrent_python_threads_after_model_loading",
+        "noncurrent_python_threads_after_policy_restoration",
+        "thread_name_allowlist",
+        "thread_name_filtering_used",
+        "thread_cleanup_attempted",
+        "tqdm_monitor_object_touched",
+        "all_monitor_states_restored",
+        "restoration_errors",
+        "failure_stage",
+        "failure_reason",
+    }
+    require(
+        isinstance(policy, Mapping) and set(policy) == expected_keys,
+        "GPU model-loading thread policy schema is missing or malformed",
+    )
+    expected_roles = [
+        "official_frozen",
+        "same_architecture_from_scratch_control",
+    ]
+    require(
+        policy.get("schema_version") == "mk0_model_loading_thread_policy_v1"
+        and policy.get("status") == "PASS"
+        and policy.get("scope") == "two_load_official_utrlm_calls_only"
+        and policy.get("prevention_mechanism") == "scoped_tqdm_monitor_interval_zero"
+        and policy.get("loads_covered") == expected_roles,
+        "GPU model-loading thread policy scope or load coverage drift",
+    )
+    load_completion = policy.get("load_completion")
+    require(
+        type(load_completion) is dict
+        and list(load_completion) == expected_roles
+        and all(load_completion[role] is True for role in expected_roles),
+        "GPU model-loading completion binding drift",
+    )
+    require(
+        policy.get("control_apis")
+        == [
+            "transformers.utils.logging.disable_progress_bar",
+            "HF_HUB_DISABLE_PROGRESS_BARS=1",
+            "tqdm.monitor_interval=0",
+        ],
+        "GPU model-loading progress-control API drift",
+    )
+
+    package_versions = policy.get("package_versions")
+    require(
+        isinstance(package_versions, Mapping)
+        and set(package_versions) == {"transformers", "tqdm", "huggingface_hub"}
+        and all(
+            isinstance(package_versions.get(name), str)
+            and bool(package_versions.get(name))
+            for name in ("transformers", "tqdm", "huggingface_hub")
+        ),
+        "GPU model-loading package-version binding is malformed",
+    )
+    for distribution in ("transformers", "tqdm", "huggingface_hub"):
+        try:
+            current_version = importlib_metadata.version(distribution)
+        except Exception as error:
+            raise FinalizeFailure(
+                f"cannot resolve current model-loading package version: {distribution}"
+            ) from error
+        require(
+            package_versions[distribution] == current_version,
+            f"GPU model-loading package-version drift: {distribution}",
+        )
+
+    require(
+        type(policy.get("distinct_class_count")) is int
+        and policy.get("distinct_class_count") == 3,
+        "GPU model-loading tqdm class identity coverage drift",
+    )
+    class_records = policy.get("class_records")
+    require(
+        isinstance(class_records, list) and len(class_records) == 3,
+        "GPU model-loading tqdm class coverage is incomplete",
+    )
+    expected_class_roles = [
+        "tqdm_standard",
+        "tqdm_auto",
+        "huggingface_hub_tqdm",
+    ]
+    record_keys = {
+        "role",
+        "class_path",
+        "original_monitor_interval_owned_by_class",
+        "original_monitor_interval",
+        "original_monitor_interval_type",
+        "monitor_interval_owned_during_load",
+        "monitor_interval_during_load",
+        "monitor_interval_during_load_type",
+        "monitor_interval_owned_after_restore",
+        "monitor_interval_after_restore",
+        "monitor_interval_after_restore_type",
+        "state_restored_exactly",
+    }
+    require(
+        all(
+            isinstance(record, Mapping) and set(record) == record_keys
+            for record in class_records
+        ),
+        "GPU model-loading tqdm class record schema drift",
+    )
+    require(
+        [record.get("role") for record in class_records] == expected_class_roles,
+        "GPU model-loading tqdm class role drift",
+    )
+    class_paths = [record.get("class_path") for record in class_records]
+    try:
+        actual_standard_tqdm = importlib.import_module("tqdm.std").tqdm
+        actual_auto_tqdm = importlib.import_module("tqdm.auto").tqdm
+        actual_hub_tqdm = importlib.import_module("huggingface_hub.utils.tqdm").tqdm
+    except Exception as error:
+        raise FinalizeFailure(
+            "cannot independently resolve the model-loading tqdm classes"
+        ) from error
+    actual_classes = (
+        actual_standard_tqdm,
+        actual_auto_tqdm,
+        actual_hub_tqdm,
+    )
+    actual_class_paths = [
+        f"{cls.__module__}.{cls.__qualname__}" for cls in actual_classes
+    ]
+    require(
+        len({id(cls) for cls in actual_classes}) == 3
+        and class_paths == actual_class_paths,
+        "GPU model-loading tqdm runtime class identity drift",
+    )
+    for record in class_records:
+        original = record.get("original_monitor_interval")
+        restored = record.get("monitor_interval_after_restore")
+        require(
+            type(record.get("original_monitor_interval_owned_by_class")) is bool
+            and type(original) is int
+            and original >= 0
+            and record.get("original_monitor_interval_type") == "int"
+            and record.get("monitor_interval_owned_during_load") is True
+            and type(record.get("monitor_interval_during_load")) is int
+            and record.get("monitor_interval_during_load") == 0
+            and record.get("monitor_interval_during_load_type") == "int",
+            f"GPU model-loading tqdm monitor suppression drift: {record.get('role')}",
+        )
+        require(
+            type(record.get("monitor_interval_owned_after_restore")) is bool
+            and record.get("monitor_interval_owned_after_restore")
+            is record.get("original_monitor_interval_owned_by_class")
+            and type(restored) is type(original)
+            and restored == original
+            and record.get("monitor_interval_after_restore_type") == "int"
+            and record.get("state_restored_exactly") is True,
+            f"GPU model-loading tqdm state restoration drift: {record.get('role')}",
+        )
+    require(
+        policy.get("restoration_order")
+        == ["huggingface_hub_tqdm", "tqdm_auto", "tqdm_standard"]
+        and policy.get("all_monitor_states_restored") is True
+        and policy.get("restoration_errors") == [],
+        "GPU model-loading tqdm restoration audit drift",
+    )
+
+    progress_before = policy.get("transformers_progress_bar_enabled_before")
+    progress_during = policy.get("transformers_progress_bar_enabled_during_load")
+    progress_after = policy.get("transformers_progress_bar_enabled_after_restore")
+    require(
+        type(progress_before) is bool
+        and progress_during is False
+        and type(progress_after) is bool
+        and progress_after is progress_before
+        and policy.get("transformers_progress_state_restored") is True,
+        "GPU model-loading Transformers progress state restoration drift",
+    )
+    hub_registry_before = policy.get("huggingface_hub_progress_registry_before")
+    hub_registry_during = policy.get("huggingface_hub_progress_registry_during_load")
+    hub_registry_after = policy.get("huggingface_hub_progress_registry_after_restore")
+    require(
+        type(hub_registry_before) is dict
+        and type(hub_registry_during) is dict
+        and type(hub_registry_after) is dict
+        and all(
+            isinstance(key, str) and type(value) is bool
+            for registry in (
+                hub_registry_before,
+                hub_registry_during,
+                hub_registry_after,
+            )
+            for key, value in registry.items()
+        )
+        and hub_registry_during == {"_global": False},
+        "GPU model-loading Hugging Face Hub progress registry is malformed",
+    )
+    require(
+        hub_registry_after == hub_registry_before
+        and policy.get("huggingface_hub_progress_registry_restored") is True
+        and policy.get("huggingface_hub_progress_registry_object_identity_preserved")
+        is True
+        and policy.get("huggingface_hub_progress_registry_restoration_method")
+        == "in_place_clear_and_update_after_official_api_restore",
+        "GPU model-loading Hugging Face Hub progress registry restoration drift",
+    )
+    environment_before_present = policy.get("hf_hub_env_present_before")
+    environment_after_present = policy.get("hf_hub_env_present_after_restore")
+    environment_before_value = policy.get("hf_hub_env_value_before")
+    environment_after_value = policy.get("hf_hub_env_value_after_restore")
+    require(
+        type(environment_before_present) is bool
+        and type(environment_after_present) is bool
+        and (
+            (environment_before_present and isinstance(environment_before_value, str))
+            or (not environment_before_present and environment_before_value is None)
+        )
+        and policy.get("hf_hub_env_value_during_load") == "1"
+        and environment_after_present is environment_before_present
+        and type(environment_after_value) is type(environment_before_value)
+        and environment_after_value == environment_before_value
+        and policy.get("hf_hub_env_state_restored") is True,
+        "GPU model-loading HF Hub environment restoration drift",
+    )
+
+    thread_fields = (
+        "noncurrent_python_threads_before_model_loading",
+        "noncurrent_python_threads_after_policy_configuration",
+        "noncurrent_python_threads_after_model_loading",
+        "noncurrent_python_threads_after_policy_restoration",
+    )
+    require(
+        all(policy.get(field) == [] for field in thread_fields),
+        "GPU model loading created or inherited a noncurrent Python thread",
+    )
+    require(
+        policy.get("thread_name_allowlist") == []
+        and policy.get("thread_name_filtering_used") is False
+        and policy.get("thread_cleanup_attempted") is False
+        and policy.get("tqdm_monitor_object_touched") is False,
+        "GPU model-loading thread escape-hatch policy drift",
+    )
+    require(
+        policy.get("failure_stage") is None and policy.get("failure_reason") is None,
+        "GPU model-loading PASS policy contains failure residue",
+    )
+    return dict(policy)
+
+
 def verify_gpu_post_role_query_audit(
     foundation: Mapping[str, Any],
     gpu: Mapping[str, Any],
@@ -2763,6 +3041,9 @@ def verify_gpu_post_role_query_audit(
 ) -> dict[str, Any]:
     """Verify post-GPU M34 role/query evidence before gate aggregation."""
 
+    progress_policy = verify_model_loading_thread_policy(
+        foundation.get("model_loading_progress_policy")
+    )
     audit = foundation.get("post_gpu_role_query_audit")
     require(isinstance(audit, Mapping), "GPU post-role/query audit is missing")
     require(

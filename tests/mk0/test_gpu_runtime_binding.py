@@ -341,6 +341,12 @@ def test_missing_exact_rate_call_preserves_partial_phase_evidence(
     assert phase["rate_interface_call_count"] == 0
     assert phase["failure_reason"] == str(caught.value)
 
+    partial_model_loading_policy = {
+        "schema_version": "mk0_model_loading_thread_policy_v1",
+        "status": "PASS",
+    }
+    caught.value.partial_model_loading_policy = partial_model_loading_policy
+
     failure_path = runner._write_failure_best_effort(
         tmp_path,
         run_id="unit-partial-evidence",
@@ -351,6 +357,7 @@ def test_missing_exact_rate_call_preserves_partial_phase_evidence(
     assert failure_path is not None
     persisted = json.loads(failure_path.read_text(encoding="utf-8"))
     assert persisted["partial_phase_evidence"] == evidence
+    assert persisted["partial_model_loading_policy"] == partial_model_loading_policy
 
 
 def test_exact_generator_and_rate_code_calls_satisfy_phase() -> None:
@@ -538,6 +545,246 @@ def test_preexisting_noncurrent_thread_fails_before_formal_callback() -> None:
     assert not thread.is_alive()
 
 
+@pytest.mark.parametrize("mode", ["success", "body_exception"])
+def test_scoped_model_loading_policy_controls_real_tqdm_apis_in_clean_process(
+    mode: str,
+) -> None:
+    script = r"""
+import importlib
+import importlib.util
+import json
+import os
+from pathlib import Path
+import sys
+import threading
+
+runner_path = Path(sys.argv[1])
+mode = sys.argv[2]
+spec = importlib.util.spec_from_file_location("mk0_progress_subprocess", runner_path)
+assert spec is not None and spec.loader is not None
+runner = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(runner)
+
+from huggingface_hub.utils import tqdm as hub_tqdm
+from tqdm.auto import tqdm as auto_tqdm
+from tqdm.std import tqdm as standard_tqdm
+from transformers.utils import logging as transformers_logging
+
+classes = (standard_tqdm, auto_tqdm, hub_tqdm)
+hub_progress_module = importlib.import_module("huggingface_hub.utils.tqdm")
+hub_progress_registry = hub_progress_module.progress_bar_states
+assert len({id(cls) for cls in classes}) == 3
+if mode == "success":
+    os.environ.pop("HF_HUB_DISABLE_PROGRESS_BARS", None)
+    transformers_logging.enable_progress_bar()
+else:
+    os.environ["HF_HUB_DISABLE_PROGRESS_BARS"] = "0"
+    transformers_logging.disable_progress_bar()
+hub_progress_registry.clear()
+hub_progress_registry.update({"_global": True, "probe.named": False})
+hub_registry_before = dict(hub_progress_registry)
+hub_registry_identity_before = id(hub_progress_registry)
+environment_before = (
+    "HF_HUB_DISABLE_PROGRESS_BARS" in os.environ,
+    os.environ.get("HF_HUB_DISABLE_PROGRESS_BARS"),
+)
+progress_before = transformers_logging.is_progress_bar_enabled()
+class_state_before = [
+    ("monitor_interval" in cls.__dict__, getattr(cls, "monitor_interval"))
+    for cls in classes
+]
+
+class Marker(RuntimeError):
+    pass
+
+policy = None
+try:
+    with runner._scoped_model_loading_thread_policy() as active_policy:
+        policy = active_policy
+        assert all(
+            "monitor_interval" in cls.__dict__
+            and type(cls.__dict__["monitor_interval"]) is int
+            and cls.__dict__["monitor_interval"] == 0
+            for cls in classes
+        )
+        for api in (
+            transformers_logging.tqdm,
+            standard_tqdm,
+            auto_tqdm,
+            hub_tqdm,
+        ):
+            progress = api(range(2), disable=True)
+            list(progress)
+            close = getattr(progress, "close", None)
+            if close is not None:
+                close()
+        assert runner._live_noncurrent_python_threads() == []
+        runner._mark_model_load_completed(active_policy, "official_frozen")
+        runner._mark_model_load_completed(
+            active_policy, "same_architecture_from_scratch_control"
+        )
+        if mode == "body_exception":
+            raise Marker("intentional body exception")
+except Marker as error:
+    assert mode == "body_exception"
+    policy = error.partial_model_loading_policy
+else:
+    assert mode == "success"
+
+assert policy is not None
+assert runner._live_noncurrent_python_threads() == []
+assert [
+    ("monitor_interval" in cls.__dict__, getattr(cls, "monitor_interval"))
+    for cls in classes
+] == class_state_before
+assert transformers_logging.is_progress_bar_enabled() is progress_before
+assert hub_progress_module.progress_bar_states is hub_progress_registry
+assert id(hub_progress_module.progress_bar_states) == hub_registry_identity_before
+assert dict(hub_progress_registry) == hub_registry_before
+assert (
+    "HF_HUB_DISABLE_PROGRESS_BARS" in os.environ,
+    os.environ.get("HF_HUB_DISABLE_PROGRESS_BARS"),
+) == environment_before
+assert policy["all_monitor_states_restored"] is True
+assert policy["transformers_progress_state_restored"] is True
+assert policy["hf_hub_env_state_restored"] is True
+assert policy["huggingface_hub_progress_registry_before"] == hub_registry_before
+assert policy["huggingface_hub_progress_registry_during_load"] == {"_global": False}
+assert policy["huggingface_hub_progress_registry_after_restore"] == hub_registry_before
+assert policy["huggingface_hub_progress_registry_restored"] is True
+assert policy["huggingface_hub_progress_registry_object_identity_preserved"] is True
+assert policy["thread_name_allowlist"] == []
+assert policy["thread_cleanup_attempted"] is False
+print(json.dumps(policy, sort_keys=True))
+"""
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "-c",
+            script,
+            str(ROOT / "scripts" / "mk0" / "run_mk0_gpu_smoke.py"),
+            mode,
+        ],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stderr
+    policy = json.loads(completed.stdout.splitlines()[-1])
+    assert policy["status"] == ("PASS" if mode == "success" else "FAILED")
+
+
+def test_model_loading_policy_rejects_any_preexisting_thread_without_cleanup() -> None:
+    runner = _load_gpu_runner()
+    ready = threading.Event()
+    release = threading.Event()
+    body_entered = False
+
+    def background() -> None:
+        ready.set()
+        release.wait(timeout=10)
+
+    thread = threading.Thread(target=background, name="Thread-1", daemon=True)
+    thread.start()
+    assert ready.wait(timeout=5)
+    try:
+        with pytest.raises(
+            runner.SmokeFailure, match="preexisting noncurrent Python threads"
+        ) as caught:
+            with runner._scoped_model_loading_thread_policy():
+                body_entered = True
+        policy = caught.value.partial_model_loading_policy
+        assert body_entered is False
+        assert policy["noncurrent_python_threads_before_model_loading"] == [
+            {
+                "thread_id": thread.ident,
+                "native_id": thread.native_id,
+                "thread_name": "Thread-1",
+                "daemon": True,
+            }
+        ]
+        assert policy["thread_name_allowlist"] == []
+        assert policy["thread_name_filtering_used"] is False
+        assert policy["thread_cleanup_attempted"] is False
+        assert thread.is_alive()
+    finally:
+        release.set()
+        thread.join(timeout=5)
+    assert not thread.is_alive()
+
+
+def test_formal_foundation_pair_covers_both_loads_and_restores_state(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    runner = _load_gpu_runner()
+    from huggingface_hub.utils import tqdm as hub_tqdm
+    from tqdm.auto import tqdm as auto_tqdm
+    from tqdm.std import tqdm as standard_tqdm
+
+    classes = (standard_tqdm, auto_tqdm, hub_tqdm)
+    before = [
+        ("monitor_interval" in cls.__dict__, getattr(cls, "monitor_interval"))
+        for cls in classes
+    ]
+    observed_from_scratch = []
+
+    def fake_load(*_args: Any, from_scratch: bool, **_kwargs: Any) -> tuple[Any, Any]:
+        observed_from_scratch.append(from_scratch)
+        assert all(
+            "monitor_interval" in cls.__dict__
+            and type(cls.__dict__["monitor_interval"]) is int
+            and cls.__dict__["monitor_interval"] == 0
+            for cls in classes
+        )
+        assert runner._live_noncurrent_python_threads() == []
+        return object(), object()
+
+    monkeypatch.setattr(runner, "load_official_utrlm", fake_load)
+    result = runner._load_formal_foundation_pair("/unit/snapshot", object())
+    policy = result[-1]
+    assert observed_from_scratch == [False, True]
+    assert policy["status"] == "PASS"
+    assert policy["load_completion"] == {
+        "official_frozen": True,
+        "same_architecture_from_scratch_control": True,
+    }
+    assert [
+        ("monitor_interval" in cls.__dict__, getattr(cls, "monitor_interval"))
+        for cls in classes
+    ] == before
+    later_error = runner.SmokeFailure("later formal phase failed")
+    runner._attach_active_partial_model_loading_policy(later_error)
+    assert later_error.partial_model_loading_policy is policy
+
+
+@pytest.mark.parametrize("fail_on_call", [1, 2])
+def test_model_load_failure_preserves_restored_partial_policy(
+    monkeypatch: pytest.MonkeyPatch, fail_on_call: int
+) -> None:
+    runner = _load_gpu_runner()
+    call_count = 0
+
+    def fake_load(*_args: Any, **_kwargs: Any) -> tuple[Any, Any]:
+        nonlocal call_count
+        call_count += 1
+        if call_count == fail_on_call:
+            raise RuntimeError(f"load-{fail_on_call}-failed")
+        return object(), object()
+
+    monkeypatch.setattr(runner, "load_official_utrlm", fake_load)
+    with pytest.raises(RuntimeError, match=f"load-{fail_on_call}-failed") as caught:
+        runner._load_formal_foundation_pair("/unit/snapshot", object())
+    policy = caught.value.partial_model_loading_policy
+    assert policy["status"] == "FAILED"
+    assert policy["all_monitor_states_restored"] is True
+    assert policy["transformers_progress_state_restored"] is True
+    assert policy["hf_hub_env_state_restored"] is True
+    assert policy["noncurrent_python_threads_after_policy_restoration"] == []
+    assert policy["load_completion"]["official_frozen"] is (fail_on_call == 2)
+    assert policy["load_completion"]["same_architecture_from_scratch_control"] is False
+
+
 def test_thread_starting_after_preexisting_snapshot_fails_closed(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -685,6 +932,11 @@ def test_gpu_main_writes_nonempty_standard_failure_reason(
         device="cuda:0",
     )
     observed: dict[str, Any] = {}
+    partial_model_loading_policy = {
+        "schema_version": "mk0_model_loading_thread_policy_v1",
+        "status": "PASS",
+    }
+    error.partial_model_loading_policy = partial_model_loading_policy
 
     monkeypatch.setattr(runner, "_parse_args", lambda _argv: args)
     monkeypatch.setattr(runner, "_candidate_bound_run_root", lambda _args: run_root)
@@ -711,3 +963,71 @@ def test_gpu_main_writes_nonempty_standard_failure_reason(
         (run_root / "failure" / "gpu_smoke_failure.json").read_text(encoding="utf-8")
     )
     assert persisted["exception_message"] == expected_reason
+    assert persisted["partial_model_loading_policy"] == partial_model_loading_policy
+
+
+def test_gpu_main_stdout_failure_preserves_active_loading_policy(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    runner = _load_gpu_runner()
+    run_root = tmp_path / "gpu_stdout_failure"
+    output_dir = run_root / "artifacts" / "mk0"
+    output_dir.mkdir(parents=True)
+    manifest_path = run_root / "run_manifest.json"
+    manifest_path.write_text(
+        json.dumps({"run_id": "MK0_STDOUT_FAILURE_TEST"}), encoding="utf-8"
+    )
+    args = Namespace(
+        output_dir=output_dir,
+        run_id="MK0_STDOUT_FAILURE_TEST",
+        goal_sha256="a" * 64,
+        implementation_commit="b" * 40,
+        run_manifest=manifest_path,
+        preflight_record=tmp_path / "preflight.json",
+        snapshot_dir=tmp_path / "snapshot",
+        device="cuda:0",
+    )
+    partial_policy = {
+        "schema_version": "mk0_model_loading_thread_policy_v1",
+        "status": "PASS",
+    }
+
+    monkeypatch.setattr(runner, "_parse_args", lambda _argv: args)
+    monkeypatch.setattr(runner, "_candidate_bound_run_root", lambda _args: run_root)
+    monkeypatch.setattr(
+        runner, "resume_failure_closure_if_present", lambda *_args, **_kwargs: None
+    )
+    monkeypatch.setattr(
+        runner,
+        "_validate_gpu_launch_contract",
+        lambda _args, _argv: (run_root, {}),
+    )
+
+    def successful_gpu_smoke(**_kwargs: Any) -> dict[str, Any]:
+        runner._ACTIVE_MODEL_LOADING_POLICY = partial_policy
+        return {"device_uuid": "GPU-unit", "max_memory_allocated_bytes": 1}
+
+    monkeypatch.setattr(runner, "run_gpu_smoke", successful_gpu_smoke)
+    monkeypatch.setattr(runner, "append_jsonl", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(runner, "append_text", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(runner, "update_status", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(
+        runner, "_write_failure_best_effort", lambda *_args, **_kwargs: None
+    )
+    monkeypatch.setattr(runner, "write_failed_sentinel", lambda *_args, **_kwargs: None)
+    print_calls = 0
+
+    def fail_first_print(*_args: Any, **_kwargs: Any) -> None:
+        nonlocal print_calls
+        print_calls += 1
+        if print_calls == 1:
+            raise BrokenPipeError("unit stdout closed")
+
+    monkeypatch.setattr("builtins.print", fail_first_print)
+
+    assert runner.main([]) == 1
+    persisted = json.loads(
+        (run_root / "failure" / "gpu_smoke_failure.json").read_text(encoding="utf-8")
+    )
+    assert persisted["exception_type"] == "BrokenPipeError"
+    assert persisted["partial_model_loading_policy"] == partial_policy

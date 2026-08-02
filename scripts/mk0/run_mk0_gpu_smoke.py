@@ -11,8 +11,11 @@ development or final labels.
 from __future__ import annotations
 
 import argparse
+from contextlib import contextmanager
 from datetime import datetime, timezone
 import hashlib
+import importlib
+from importlib import metadata as importlib_metadata
 import inspect
 import json
 import os
@@ -204,6 +207,569 @@ FORMAL_GPU_ROLE_INTERFACE_LABELS = (
 
 class SmokeFailure(RuntimeError):
     """A fail-closed MK0 GPU-smoke invariant violation."""
+
+
+def _live_noncurrent_python_threads(
+    current_thread: threading.Thread | None = None,
+) -> list[dict[str, Any]]:
+    """Return a canonical identity snapshot for every live noncurrent thread."""
+
+    current = current_thread or threading.current_thread()
+    return [
+        {
+            "thread_id": (int(thread.ident) if thread.ident is not None else None),
+            "native_id": (
+                int(thread.native_id)
+                if getattr(thread, "native_id", None) is not None
+                else None
+            ),
+            "thread_name": thread.name,
+            "daemon": bool(thread.daemon),
+        }
+        for thread in sorted(
+            (
+                thread
+                for thread in threading.enumerate()
+                if thread is not current and thread.is_alive()
+            ),
+            key=lambda thread: (
+                thread.name,
+                int(thread.ident) if thread.ident is not None else -1,
+            ),
+        )
+    ]
+
+
+MODEL_LOADING_ROLES = (
+    "official_frozen",
+    "same_architecture_from_scratch_control",
+)
+
+
+def _attach_model_loading_policy(error: BaseException, policy: dict[str, Any]) -> None:
+    """Attach the live policy object so restoration evidence remains visible."""
+
+    try:
+        error.partial_model_loading_policy = policy
+    except BaseException:
+        pass
+
+
+def _raise_model_loading_policy_failure(
+    policy: dict[str, Any],
+    *,
+    stage: str,
+    message: str,
+    cause: BaseException | None = None,
+) -> None:
+    policy["status"] = "FAILED"
+    policy["failure_stage"] = stage
+    policy["failure_reason"] = message
+    failure = SmokeFailure(message)
+    _attach_model_loading_policy(failure, policy)
+    if cause is not None:
+        raise failure from cause
+    raise failure
+
+
+def _mark_model_load_completed(policy: dict[str, Any], role: str) -> None:
+    """Bind each of the two exact model loads to the scoped thread policy."""
+
+    if role not in MODEL_LOADING_ROLES:
+        _raise_model_loading_policy_failure(
+            policy,
+            stage="model_load_completion_binding",
+            message=f"unknown model-loading role: {role}",
+        )
+    if policy.get("status") != "ACTIVE_DURING_MODEL_LOADING":
+        _raise_model_loading_policy_failure(
+            policy,
+            stage="model_load_completion_binding",
+            message="model load completion was recorded outside the active scope",
+        )
+    completion = policy.get("load_completion")
+    if not isinstance(completion, dict) or set(completion) != set(MODEL_LOADING_ROLES):
+        _raise_model_loading_policy_failure(
+            policy,
+            stage="model_load_completion_binding",
+            message="model-loading completion inventory drift",
+        )
+    if completion[role] is not False:
+        _raise_model_loading_policy_failure(
+            policy,
+            stage="model_load_completion_binding",
+            message=f"duplicate model-loading completion record: {role}",
+        )
+    completion[role] = True
+
+
+@contextmanager
+def _scoped_model_loading_thread_policy() -> Iterable[dict[str, Any]]:
+    """Prevent tqdm monitors only while the two formal UTR-LM loads execute."""
+
+    global _ACTIVE_MODEL_LOADING_POLICY
+    environment_name = "HF_HUB_DISABLE_PROGRESS_BARS"
+    environment_was_present = environment_name in os.environ
+    environment_value_before = os.environ.get(environment_name)
+    policy: dict[str, Any] = {
+        "schema_version": "mk0_model_loading_thread_policy_v1",
+        "status": "INITIALIZING",
+        "scope": "two_load_official_utrlm_calls_only",
+        "prevention_mechanism": "scoped_tqdm_monitor_interval_zero",
+        "loads_covered": list(MODEL_LOADING_ROLES),
+        "load_completion": {role: False for role in MODEL_LOADING_ROLES},
+        "control_apis": [
+            "transformers.utils.logging.disable_progress_bar",
+            "HF_HUB_DISABLE_PROGRESS_BARS=1",
+            "tqdm.monitor_interval=0",
+        ],
+        "package_versions": None,
+        "class_records": [],
+        "distinct_class_count": 0,
+        "restoration_order": [],
+        "hf_hub_env_present_before": environment_was_present,
+        "hf_hub_env_value_before": environment_value_before,
+        "hf_hub_env_value_during_load": None,
+        "hf_hub_env_present_after_restore": None,
+        "hf_hub_env_value_after_restore": None,
+        "hf_hub_env_state_restored": False,
+        "transformers_progress_bar_enabled_before": None,
+        "transformers_progress_bar_enabled_during_load": None,
+        "transformers_progress_bar_enabled_after_restore": None,
+        "transformers_progress_state_restored": False,
+        "huggingface_hub_progress_registry_before": None,
+        "huggingface_hub_progress_registry_during_load": None,
+        "huggingface_hub_progress_registry_after_restore": None,
+        "huggingface_hub_progress_registry_restored": False,
+        "huggingface_hub_progress_registry_object_identity_preserved": False,
+        "huggingface_hub_progress_registry_restoration_method": (
+            "in_place_clear_and_update_after_official_api_restore"
+        ),
+        "noncurrent_python_threads_before_model_loading": (
+            _live_noncurrent_python_threads()
+        ),
+        "noncurrent_python_threads_after_policy_configuration": None,
+        "noncurrent_python_threads_after_model_loading": None,
+        "noncurrent_python_threads_after_policy_restoration": None,
+        "thread_name_allowlist": [],
+        "thread_name_filtering_used": False,
+        "thread_cleanup_attempted": False,
+        "tqdm_monitor_object_touched": False,
+        "all_monitor_states_restored": False,
+        "restoration_errors": [],
+        "failure_stage": None,
+        "failure_reason": None,
+    }
+    _ACTIVE_MODEL_LOADING_POLICY = policy
+    transformers_logging: Any = None
+    transformers_state_captured = False
+    hub_progress_module: Any = None
+    hub_progress_registry: dict[str, bool] | None = None
+    hub_progress_registry_before: dict[str, bool] | None = None
+    environment_mutated = False
+    class_states: list[tuple[type[Any], dict[str, Any]]] = []
+    modified_records: list[tuple[type[Any], dict[str, Any]]] = []
+    caught_error: BaseException | None = None
+
+    try:
+        if policy["noncurrent_python_threads_before_model_loading"] != []:
+            _raise_model_loading_policy_failure(
+                policy,
+                stage="pre_model_loading_thread_snapshot",
+                message=(
+                    "formal model loading started with preexisting noncurrent "
+                    "Python threads"
+                ),
+            )
+        try:
+            import transformers
+
+            hub_progress_module = importlib.import_module("huggingface_hub.utils.tqdm")
+            hub_tqdm = hub_progress_module.tqdm
+            from tqdm.auto import tqdm as auto_tqdm
+            from tqdm.std import tqdm as standard_tqdm
+            from transformers.utils import logging as imported_transformers_logging
+        except Exception as error:
+            _raise_model_loading_policy_failure(
+                policy,
+                stage="progress_control_import",
+                message="cannot import the formal model-loading progress controls",
+                cause=error,
+            )
+
+        transformers_logging = imported_transformers_logging
+        classes = (
+            ("tqdm_standard", standard_tqdm),
+            ("tqdm_auto", auto_tqdm),
+            ("huggingface_hub_tqdm", hub_tqdm),
+        )
+        policy["package_versions"] = {
+            "transformers": str(transformers.__version__),
+            "tqdm": importlib_metadata.version("tqdm"),
+            "huggingface_hub": importlib_metadata.version("huggingface_hub"),
+        }
+        candidate_registry = getattr(hub_progress_module, "progress_bar_states", None)
+        if type(candidate_registry) is not dict or not all(
+            isinstance(key, str) and type(value) is bool
+            for key, value in candidate_registry.items()
+        ):
+            _raise_model_loading_policy_failure(
+                policy,
+                stage="huggingface_hub_progress_registry_snapshot",
+                message="Hugging Face Hub progress registry is not a str-to-bool dict",
+            )
+        hub_progress_registry = candidate_registry
+        hub_progress_registry_before = dict(candidate_registry)
+        policy["huggingface_hub_progress_registry_before"] = dict(
+            hub_progress_registry_before
+        )
+        policy["distinct_class_count"] = len({id(cls) for _role, cls in classes})
+        if policy["distinct_class_count"] != 3:
+            _raise_model_loading_policy_failure(
+                policy,
+                stage="progress_class_inventory",
+                message="formal model-loading tqdm classes are not three distinct classes",
+            )
+
+        # Snapshot every class before mutating any monitor_interval.  Ownership
+        # matters because the auto and Hub classes normally inherit this value.
+        for role, cls in classes:
+            original_value = getattr(cls, "monitor_interval")
+            record = {
+                "role": role,
+                "class_path": f"{cls.__module__}.{cls.__qualname__}",
+                "original_monitor_interval_owned_by_class": (
+                    "monitor_interval" in cls.__dict__
+                ),
+                "original_monitor_interval": original_value,
+                "original_monitor_interval_type": type(original_value).__name__,
+                "monitor_interval_owned_during_load": None,
+                "monitor_interval_during_load": None,
+                "monitor_interval_during_load_type": None,
+                "monitor_interval_owned_after_restore": None,
+                "monitor_interval_after_restore": None,
+                "monitor_interval_after_restore_type": None,
+                "state_restored_exactly": False,
+            }
+            policy["class_records"].append(record)
+            class_states.append((cls, record))
+
+        os.environ[environment_name] = "1"
+        environment_mutated = True
+        policy["hf_hub_env_value_during_load"] = os.environ.get(environment_name)
+        try:
+            progress_enabled_before = transformers_logging.is_progress_bar_enabled()
+            if not isinstance(progress_enabled_before, bool):
+                raise TypeError("progress-bar state is not boolean")
+            policy["transformers_progress_bar_enabled_before"] = progress_enabled_before
+            transformers_state_captured = True
+            transformers_logging.disable_progress_bar()
+            progress_enabled_during = transformers_logging.is_progress_bar_enabled()
+        except Exception as error:
+            _raise_model_loading_policy_failure(
+                policy,
+                stage="transformers_progress_control",
+                message=(
+                    "cannot disable the official Transformers progress bar before "
+                    "formal model loading"
+                ),
+                cause=error,
+            )
+        policy["transformers_progress_bar_enabled_during_load"] = (
+            progress_enabled_during
+        )
+        policy["huggingface_hub_progress_registry_during_load"] = dict(
+            hub_progress_registry
+        )
+        if progress_enabled_during is not False:
+            _raise_model_loading_policy_failure(
+                policy,
+                stage="transformers_progress_control",
+                message="Transformers progress-bar suppression did not take effect",
+            )
+        if policy["huggingface_hub_progress_registry_during_load"] != {
+            "_global": False
+        }:
+            _raise_model_loading_policy_failure(
+                policy,
+                stage="huggingface_hub_progress_control",
+                message=(
+                    "official progress suppression did not establish the expected "
+                    "Hugging Face Hub global-disabled registry"
+                ),
+            )
+
+        for cls, record in class_states:
+            try:
+                setattr(cls, "monitor_interval", 0)
+                modified_records.append((cls, record))
+                during_value = getattr(cls, "monitor_interval")
+            except Exception as error:
+                _raise_model_loading_policy_failure(
+                    policy,
+                    stage="tqdm_monitor_control",
+                    message=f"cannot disable tqdm monitor creation for {record['role']}",
+                    cause=error,
+                )
+            record["monitor_interval_owned_during_load"] = (
+                "monitor_interval" in cls.__dict__
+            )
+            record["monitor_interval_during_load"] = during_value
+            record["monitor_interval_during_load_type"] = type(during_value).__name__
+            if type(during_value) is not int or during_value != 0:
+                _raise_model_loading_policy_failure(
+                    policy,
+                    stage="tqdm_monitor_control",
+                    message=f"tqdm monitor suppression drift for {record['role']}",
+                )
+
+        policy["noncurrent_python_threads_after_policy_configuration"] = (
+            _live_noncurrent_python_threads()
+        )
+        if policy["noncurrent_python_threads_after_policy_configuration"] != []:
+            _raise_model_loading_policy_failure(
+                policy,
+                stage="post_policy_configuration_thread_snapshot",
+                message="progress policy configuration created a noncurrent Python thread",
+            )
+        policy["status"] = "ACTIVE_DURING_MODEL_LOADING"
+        yield policy
+        policy["noncurrent_python_threads_after_model_loading"] = (
+            _live_noncurrent_python_threads()
+        )
+        if policy["load_completion"] != {role: True for role in MODEL_LOADING_ROLES}:
+            _raise_model_loading_policy_failure(
+                policy,
+                stage="model_load_completion_binding",
+                message="both formal model loads did not complete inside the scoped policy",
+            )
+        if policy["noncurrent_python_threads_after_model_loading"] != []:
+            _raise_model_loading_policy_failure(
+                policy,
+                stage="post_model_loading_thread_snapshot",
+                message="formal model loading created a noncurrent Python thread",
+            )
+        policy["status"] = "LOADS_COMPLETED_PENDING_RESTORATION"
+    except BaseException as error:
+        caught_error = error
+        if policy["noncurrent_python_threads_after_model_loading"] is None:
+            policy["noncurrent_python_threads_after_model_loading"] = (
+                _live_noncurrent_python_threads()
+            )
+        if policy["failure_stage"] is None:
+            policy["failure_stage"] = "model_loading_scope"
+            policy["failure_reason"] = _standard_failure_reason(error)
+        policy["status"] = "FAILED"
+        _attach_model_loading_policy(error, policy)
+        raise
+    finally:
+        restoration_errors: list[str] = []
+        for cls, record in reversed(modified_records):
+            policy["restoration_order"].append(record["role"])
+            try:
+                if record["original_monitor_interval_owned_by_class"]:
+                    setattr(
+                        cls,
+                        "monitor_interval",
+                        record["original_monitor_interval"],
+                    )
+                else:
+                    delattr(cls, "monitor_interval")
+            except BaseException as error:
+                restoration_errors.append(
+                    f"{record['role']}: {type(error).__name__}: {error}"
+                )
+
+        # Verify only after all reverse-order restores so inherited effective
+        # values are compared against their fully restored parents.
+        for cls, record in class_states:
+            try:
+                restored_value = getattr(cls, "monitor_interval")
+                restored_owner = "monitor_interval" in cls.__dict__
+                record["monitor_interval_owned_after_restore"] = restored_owner
+                record["monitor_interval_after_restore"] = restored_value
+                record["monitor_interval_after_restore_type"] = type(
+                    restored_value
+                ).__name__
+                record["state_restored_exactly"] = bool(
+                    restored_owner is record["original_monitor_interval_owned_by_class"]
+                    and type(restored_value)
+                    is type(record["original_monitor_interval"])
+                    and restored_value == record["original_monitor_interval"]
+                )
+                if not record["state_restored_exactly"]:
+                    restoration_errors.append(
+                        f"{record['role']}: monitor_interval state restoration drift"
+                    )
+            except BaseException as error:
+                restoration_errors.append(
+                    f"{record['role']}: restore verification failed: "
+                    f"{type(error).__name__}: {error}"
+                )
+
+        if transformers_logging is not None and transformers_state_captured:
+            try:
+                if policy["transformers_progress_bar_enabled_before"]:
+                    transformers_logging.enable_progress_bar()
+                else:
+                    transformers_logging.disable_progress_bar()
+                progress_after_restore = transformers_logging.is_progress_bar_enabled()
+                policy["transformers_progress_bar_enabled_after_restore"] = (
+                    progress_after_restore
+                )
+                policy["transformers_progress_state_restored"] = bool(
+                    isinstance(progress_after_restore, bool)
+                    and progress_after_restore
+                    is policy["transformers_progress_bar_enabled_before"]
+                )
+                if not policy["transformers_progress_state_restored"]:
+                    restoration_errors.append(
+                        "Transformers progress-bar state restoration drift"
+                    )
+            except BaseException as error:
+                restoration_errors.append(
+                    "Transformers progress-bar state restoration failed: "
+                    f"{type(error).__name__}: {error}"
+                )
+
+        # The official Transformers API mutates and clears Hub's named progress
+        # registry.  Restore that exact mapping in place only after the official
+        # API has restored its own boolean, preserving external references.
+        if (
+            hub_progress_module is not None
+            and hub_progress_registry is not None
+            and hub_progress_registry_before is not None
+        ):
+            try:
+                current_registry = getattr(
+                    hub_progress_module, "progress_bar_states", None
+                )
+                registry_identity_preserved = current_registry is hub_progress_registry
+                policy[
+                    "huggingface_hub_progress_registry_object_identity_preserved"
+                ] = registry_identity_preserved
+                if not registry_identity_preserved:
+                    raise RuntimeError("Hub progress registry object identity changed")
+                hub_progress_registry.clear()
+                hub_progress_registry.update(hub_progress_registry_before)
+                registry_after_restore = dict(hub_progress_registry)
+                policy["huggingface_hub_progress_registry_after_restore"] = (
+                    registry_after_restore
+                )
+                policy["huggingface_hub_progress_registry_restored"] = bool(
+                    registry_after_restore == hub_progress_registry_before
+                    and all(
+                        isinstance(key, str) and type(value) is bool
+                        for key, value in registry_after_restore.items()
+                    )
+                )
+                if not policy["huggingface_hub_progress_registry_restored"]:
+                    restoration_errors.append(
+                        "Hugging Face Hub progress registry restoration drift"
+                    )
+            except BaseException as error:
+                restoration_errors.append(
+                    "Hugging Face Hub progress registry restoration failed: "
+                    f"{type(error).__name__}: {error}"
+                )
+
+        if environment_mutated:
+            try:
+                if environment_was_present:
+                    assert environment_value_before is not None
+                    os.environ[environment_name] = environment_value_before
+                else:
+                    os.environ.pop(environment_name, None)
+            except BaseException as error:
+                restoration_errors.append(
+                    f"HF Hub environment restoration failed: {type(error).__name__}: {error}"
+                )
+        policy["hf_hub_env_present_after_restore"] = environment_name in os.environ
+        policy["hf_hub_env_value_after_restore"] = os.environ.get(environment_name)
+        policy["hf_hub_env_state_restored"] = bool(
+            policy["hf_hub_env_present_after_restore"] is environment_was_present
+            and policy["hf_hub_env_value_after_restore"] == environment_value_before
+        )
+        if environment_mutated and not policy["hf_hub_env_state_restored"]:
+            restoration_errors.append("HF Hub environment restoration drift")
+
+        policy["all_monitor_states_restored"] = bool(
+            len(policy["class_records"]) == 3
+            and all(
+                record["state_restored_exactly"] for record in policy["class_records"]
+            )
+        )
+        policy["noncurrent_python_threads_after_policy_restoration"] = (
+            _live_noncurrent_python_threads()
+        )
+        if (
+            policy["noncurrent_python_threads_after_policy_restoration"]
+            != policy["noncurrent_python_threads_before_model_loading"]
+        ):
+            restoration_errors.append(
+                "noncurrent Python thread inventory changed across policy restoration"
+            )
+        policy["restoration_errors"] = restoration_errors
+
+        restoration_complete = bool(
+            policy["all_monitor_states_restored"]
+            and policy["transformers_progress_state_restored"]
+            and policy["huggingface_hub_progress_registry_restored"]
+            and policy["huggingface_hub_progress_registry_object_identity_preserved"]
+            and policy["hf_hub_env_state_restored"]
+            and not restoration_errors
+        )
+        if caught_error is not None and restoration_errors:
+            primary_stage = policy["failure_stage"]
+            primary_reason = policy["failure_reason"]
+            policy["status"] = "FAILED"
+            policy["failure_stage"] = "model_loading_policy_restoration_after_failure"
+            policy["failure_reason"] = (
+                "formal model-loading policy restoration failed after "
+                f"{primary_stage}: {primary_reason}"
+            )
+            failure = SmokeFailure(policy["failure_reason"])
+            _attach_model_loading_policy(failure, policy)
+            raise failure from caught_error
+        if caught_error is None and not restoration_complete:
+            policy["status"] = "FAILED"
+            policy["failure_stage"] = "model_loading_policy_restoration"
+            policy["failure_reason"] = (
+                "formal model-loading policy state was not restored exactly"
+            )
+            failure = SmokeFailure(policy["failure_reason"])
+            _attach_model_loading_policy(failure, policy)
+            raise failure
+        if caught_error is None:
+            policy["status"] = "PASS"
+            policy["failure_stage"] = None
+            policy["failure_reason"] = None
+
+
+def _load_formal_foundation_pair(
+    snapshot_dir: str, device: torch.device
+) -> tuple[Any, Any, Any, Any, dict[str, Any]]:
+    """Load exactly the frozen and from-scratch arms inside the thread scope."""
+
+    with _scoped_model_loading_thread_policy() as policy:
+        official, official_tokenizer = load_official_utrlm(
+            snapshot_dir,
+            device=device,
+            from_scratch=False,
+            seed=SEED,
+        )
+        _mark_model_load_completed(policy, "official_frozen")
+        control, control_tokenizer = load_official_utrlm(
+            snapshot_dir,
+            device=device,
+            from_scratch=True,
+            seed=SEED,
+        )
+        _mark_model_load_completed(
+            policy,
+            "same_architecture_from_scratch_control",
+        )
+    return official, official_tokenizer, control, control_tokenizer, policy
 
 
 def _module_matches_prefix(module_name: str, prefix: str) -> bool:
@@ -428,29 +994,7 @@ class _FormalGpuRoleQueryRecorder:
         result: Any = None
         threading.setprofile(self._profile)
         current_thread = threading.current_thread()
-        preexisting_noncurrent_threads = [
-            {
-                "thread_id": (int(thread.ident) if thread.ident is not None else None),
-                "native_id": (
-                    int(thread.native_id)
-                    if getattr(thread, "native_id", None) is not None
-                    else None
-                ),
-                "thread_name": thread.name,
-                "daemon": bool(thread.daemon),
-            }
-            for thread in sorted(
-                (
-                    thread
-                    for thread in threading.enumerate()
-                    if thread is not current_thread and thread.is_alive()
-                ),
-                key=lambda thread: (
-                    thread.name,
-                    int(thread.ident) if thread.ident is not None else -1,
-                ),
-            )
-        ]
+        preexisting_noncurrent_threads = _live_noncurrent_python_threads(current_thread)
         try:
             if not preexisting_noncurrent_threads:
                 sys.setprofile(self._profile)
@@ -798,6 +1342,7 @@ class _FormalGpuRoleQueryRecorder:
 
 
 _ACTIVE_ROLE_QUERY_RECORDER: _FormalGpuRoleQueryRecorder | None = None
+_ACTIVE_MODEL_LOADING_POLICY: dict[str, Any] | None = None
 
 
 def _standard_failure_reason(error: BaseException) -> str:
@@ -815,6 +1360,15 @@ def _attach_active_partial_phase_evidence(error: BaseException) -> None:
         error.partial_phase_evidence = recorder.partial_evidence()
     except BaseException:
         pass
+
+
+def _attach_active_partial_model_loading_policy(error: BaseException) -> None:
+    if getattr(error, "partial_model_loading_policy", None) is not None:
+        return
+    policy = _ACTIVE_MODEL_LOADING_POLICY
+    if policy is None:
+        return
+    _attach_model_loading_policy(error, policy)
 
 
 def _utc_now() -> str:
@@ -886,6 +1440,7 @@ def _write_failure_best_effort(
     error: BaseException,
 ) -> Path | None:
     partial_phase_evidence = getattr(error, "partial_phase_evidence", None)
+    partial_model_loading_policy = getattr(error, "partial_model_loading_policy", None)
     payload = {
         "schema_version": "mk0_gpu_smoke_failure_v1",
         "run_id": run_id,
@@ -898,6 +1453,7 @@ def _write_failure_best_effort(
         "exception_message": _standard_failure_reason(error),
         "traceback": traceback.format_exc(),
         "partial_phase_evidence": partial_phase_evidence,
+        "partial_model_loading_policy": partial_model_loading_policy,
         "cpu_fallback_allowed": False,
         "scientific_claims": {
             "functional_improvement": False,
@@ -2410,8 +2966,9 @@ def run_gpu_smoke(
     run_manifest_path: Path,
     preflight_path: Path,
 ) -> dict[str, Any]:
-    global _ACTIVE_ROLE_QUERY_RECORDER
+    global _ACTIVE_MODEL_LOADING_POLICY, _ACTIVE_ROLE_QUERY_RECORDER
     _ACTIVE_ROLE_QUERY_RECORDER = None
+    _ACTIVE_MODEL_LOADING_POLICY = None
     if not run_id.strip():
         raise SmokeFailure("--run-id must not be empty")
     if any(
@@ -2449,12 +3006,13 @@ def run_gpu_smoke(
     cuda_identity = _cuda_identity(device)
     torch.cuda.reset_peak_memory_stats(device)
 
-    official, official_tokenizer = load_official_utrlm(
-        snapshot_binding["snapshot_dir"], device=device, from_scratch=False, seed=SEED
-    )
-    control, control_tokenizer = load_official_utrlm(
-        snapshot_binding["snapshot_dir"], device=device, from_scratch=True, seed=SEED
-    )
+    (
+        official,
+        official_tokenizer,
+        control,
+        control_tokenizer,
+        model_loading_progress_policy,
+    ) = _load_formal_foundation_pair(snapshot_binding["snapshot_dir"], device)
     post_load_snapshot_binding = _validate_snapshot_binding(
         snapshot_dir, config, formal_binding["preflight_payload"]
     )
@@ -2490,7 +3048,6 @@ def run_gpu_smoke(
         raise SmokeFailure(
             "from-scratch control unexpectedly equals checkpoint weights"
         )
-
     role_query_recorder = _FormalGpuRoleQueryRecorder(
         formal_binding,
         run_id=run_id,
@@ -2617,6 +3174,7 @@ def run_gpu_smoke(
             "max_memory_allocated_bytes": peak_memory,
         },
         "numerical_policy": numerical_policy,
+        "model_loading_progress_policy": model_loading_progress_policy,
         "architecture_equivalence": {
             "same_architecture": True,
             "official_signature": official_signature,
@@ -2867,7 +3425,6 @@ def run_gpu_smoke(
     gpu_summary_sha256 = _write_canonical_atomic_exclusive(
         gpu_summary_path, gpu_summary
     )
-    _ACTIVE_ROLE_QUERY_RECORDER = None
     return {
         "status": "PASS",
         "run_id": run_id,
@@ -2982,6 +3539,7 @@ def _candidate_bound_run_root(args: argparse.Namespace) -> Path | None:
 
 
 def main(argv: Iterable[str] | None = None) -> int:
+    global _ACTIVE_MODEL_LOADING_POLICY, _ACTIVE_ROLE_QUERY_RECORDER
     raw_argv = list(sys.argv[1:] if argv is None else argv)
     args = _parse_args(raw_argv)
     run_root = _candidate_bound_run_root(args)
@@ -3069,8 +3627,13 @@ def main(argv: Iterable[str] | None = None) -> int:
             run_root / "logs" / "stdout.log",
             f"{_utc_now()} GPU smoke passed; finalizer pending\n",
         )
+        print(json.dumps(summary, ensure_ascii=False, sort_keys=True))
+        _ACTIVE_ROLE_QUERY_RECORDER = None
+        _ACTIVE_MODEL_LOADING_POLICY = None
+        return 0
     except BaseException as error:
         _attach_active_partial_phase_evidence(error)
+        _attach_active_partial_model_loading_policy(error)
         failure_reason = _standard_failure_reason(error)
         failure_path = None
         if run_root is not None:
@@ -3119,6 +3682,9 @@ def main(argv: Iterable[str] | None = None) -> int:
                             "partial_phase_evidence": getattr(
                                 error, "partial_phase_evidence", None
                             ),
+                            "partial_model_loading_policy": getattr(
+                                error, "partial_model_loading_policy", None
+                            ),
                             "support_failure_path": (
                                 str(failure_path) if failure_path is not None else None
                             ),
@@ -3149,8 +3715,6 @@ def main(argv: Iterable[str] | None = None) -> int:
                     file=sys.stderr,
                 )
         return 1
-    print(json.dumps(summary, ensure_ascii=False, sort_keys=True))
-    return 0
 
 
 if __name__ == "__main__":
