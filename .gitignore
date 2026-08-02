@@ -94,6 +94,14 @@ Desktop.ini
 # R0/D0 large data (NFS-mounted, not for git)
 data/p0
 artifacts/
+# Formal small run bundles remain ignored under the contract's artifacts/runs
+# path in /home.  Confirmed MK0 closure JSON is copied to artifacts/mk0 for Git;
+# large upstream data, snapshots and weights remain hash-bound under /mnt.
+!artifacts/
+artifacts/*
+!artifacts/mk0/
+!artifacts/mk0/*.json
+!artifacts/mk0/*.sha256
 data/nmi_benchmark_v2/
 data_registry/search_artifacts/partial_downloads/
 benchmark_v21/external_data/

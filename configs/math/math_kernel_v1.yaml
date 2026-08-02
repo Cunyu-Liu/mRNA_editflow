@@ -1,0 +1,711 @@
+schema_version: math_kernel_v1
+kernel_id: mk0-v1
+phase: MK0
+evidence_level: E0_MATH_ENGINEERING_ONLY
+contract:
+  path: "mrna 最新构建合同-先做.md"
+  sha256: "3a3a654ca5c10a988eca897bff40be2e0b45c841f744f7423fdfd60b298b5791"
+  section: "31A"
+  rule: "FM0_PASS_before_MK0; MK0_PASS_before_EF0_or_formal_GP0"
+scope:
+  performance_claims_allowed: false
+  biological_trajectory_claims_allowed: false
+  exact_gillespie_claims_allowed: false
+  final_label_access_allowed: false
+  primary_loss: "L_EF + alpha_stop * L_stop"
+  alpha_stop: 1.0
+  alpha_cond: 0.0
+  alpha_reg: 0.0
+
+provenance:
+  original_paper:
+    title: "Edit Flows: Variable Length Discrete Flow Matching with Sequence-Level Edit Operations"
+    arxiv_id: "2506.09018"
+    frozen_version: "v3"
+    publication: "NeurIPS 2025"
+    url: "https://arxiv.org/abs/2506.09018v3"
+  original_implementation:
+    public_status: NOT_VERIFIED_PUBLIC
+    revision: NOT_VERIFIED_PUBLIC
+    commit_sha256: NOT_VERIFIED_PUBLIC
+    rule: "Do not substitute a third-party or project-local revision for an official implementation hash."
+  project_reference_implementation:
+    git_commit: RUNTIME_REQUIRED
+    dirty_diff_sha256: RUNTIME_REQUIRED
+
+randomness:
+  master_seed: 20260802
+  deterministic_replay_required: true
+  numpy_seed: 20260802
+  torch_seed: 20260802
+  cuda_seed: 20260802
+
+alphabet: [A, C, G, U]
+time_direction: source_at_0_to_target_at_1
+
+numeric:
+  cpu:
+    use: [symbolic_derivation, exhaustive_oracle, non_neural_unit_test]
+    dtype: float64
+    atol: 1.0e-10
+    rtol: 1.0e-8
+    finite_difference_atol: 1.0e-6
+    finite_difference_rtol: 1.0e-5
+  gpu:
+    neural_forward_backward_required: true
+    dtype: float32
+    atol: 1.0e-5
+    rtol: 1.0e-4
+    allow_cpu_fallback: false
+    amp_enabled: false
+    tf32_enabled: false
+  probability:
+    atol: 1.0e-12
+    rtol: 1.0e-10
+  quadrature:
+    atol: 1.0e-8
+    rtol: 1.0e-7
+  exact_discrete:
+    atol: 0.0
+    rtol: 0.0
+  clip_policy:
+    rate_clip: null
+    weight_clip: null
+    silent_clip_allowed: false
+    endpoint_clip_only: true
+    clip_hit_count_required: true
+    nonfinite_policy: FAILED_NUMERICAL
+
+state_action:
+  state_schema: schemas/edit_state_v1.schema.json
+  action_schema: schemas/edit_action_v1.schema.json
+  trajectory_schema: schemas/edit_trajectory_v1.schema.json
+  termination_schema: schemas/termination_event_v1.schema.json
+  coordinate_system: pre_action_current_state_zero_based
+  insertion_coordinate: gap_index_0_through_L
+  edit_budget_cost:
+    INS: 1
+    SUB: 1
+    DEL: 1
+    STOP: 0
+    forced_termination: 0
+  reverse_and_cycle_edits_consume_budget: true
+  halted_is_absorbing: true
+
+coupling:
+  schema: schemas/coupling_manifest_v1.schema.json
+  primary: unit_cost_levenshtein_optimal_canonical
+  canonical_tie_break: MATCH_then_DEL_then_INS_then_SUB_then_lexicographic_token
+  sensitivities:
+    - sample_uniform_from_optimal_alignments
+    - equivalent_edit_order
+  path_is_observed: false
+  path_semantics: latent_algorithmic
+  joint_path: independent_switch_clock_product
+  z_aux_training_only: true
+  rate_field_receives_z_aux: false
+  illegal_target_action_policy: reject_or_repair_and_ledger
+
+schedule:
+  primary:
+    name: cubic
+    kappa: "t**3"
+    derivative: "3*t**2"
+    rho: "3*t**2/(1-t**3)"
+  sensitivity:
+    - name: linear
+      kappa: "t"
+      derivative: "1"
+      rho: "1/(1-t)"
+  time_eps: 1.0e-4
+  time_eps_sensitivity: [1.0e-3, 1.0e-5]
+  training_time_distribution:
+    name: uniform
+    minimum: 0.0
+    maximum: 0.9999
+  endpoint:
+    evaluate_exactly_at_t1: false
+    last_rate_evaluation_time: 0.9999
+    singular_nonfinite_policy: FAILED_NUMERICAL
+
+rate_kernel:
+  nonnegative_parameterization: softplus
+  hard_mask_before_normalization: true
+  token_distribution_normalized_over_legal_tokens_only: true
+  event_distribution_only_if_total_hazard_positive: true
+  zero_instantaneous_hazard: NO_EVENT_ADVANCE_AND_RECOMPUTE
+  zero_remaining_integrated_hazard:
+    requires_separate_numerical_verification: true
+    termination_reason: FORCED_ZERO_REMAINING_INTEGRATED_HAZARD
+  transition_level_aggregation_before_log: true
+  generator_space: extended_state_Y
+  explicit_external_time_argument: true
+
+loss:
+  edit_flow:
+    level: unique_next_extended_state
+    formula_version: mk0_bregman_transition_aggregate_v1
+    exact_nll_claim_allowed: false
+  stop:
+    primary: post_completion_exponential_dwell_survival
+    competing_risk_ratio_role: non_ctmc_event_type_ablation_only
+
+stop:
+  structural_completion_time: max_independent_edit_switch_clocks
+  zero_edit_completion_time: 0.0
+  dwell_distribution: exponential
+  gamma_ref: 16.0
+  gamma_ref_sensitivity: [8.0, 32.0]
+  dwell_independent_of_switch_clocks: true
+  dwell_independence_audit:
+    gamma_values: [8.0, 16.0, 32.0]
+    samples_per_gamma: 8192
+    oracle: shared_uniform_across_multiple_completion_clock_sets
+    completion_clock_variants: 3
+    bitwise_dwell_equality_required: true
+    analytic_inverse_transform: "-log1p(-max(u,nextafter(0,1)))/gamma"
+    analytic_atol: 1.0e-8
+    analytic_rtol: 1.0e-7
+    empirical_pearson_role: diagnostic_only_not_gate
+    claim_boundary: structural_rng_independence_oracle_plus_empirical_diagnostic
+  administrative_horizon: 1.0
+  event_uses_predictable_pre_event_state: true
+  quadrature:
+    method: gauss_legendre
+    nodes: 64
+    reference_nodes: 128
+  termination_reasons:
+    - LEARNED_STOP
+    - FORCED_BUDGET
+    - FORCED_NO_LEGAL_EDIT_ACTION
+    - FORCED_ZERO_REMAINING_INTEGRATED_HAZARD
+    - FORCED_TIME_HORIZON
+    - FAILED_NUMERICAL
+  step0_identity_output_allowed: false
+
+samplers:
+  paper_reference:
+    name: paper_first_order_parallel
+    role: numerical_reference_only
+    semantics: fixed_grid_parallel_first_order_approximation
+    exact_gillespie: false
+    posthoc_projection_or_repair_allowed: false
+    collision_order: DEL_descending_index_then_SUB_ascending_index_then_INS_ascending_gap_token
+    joint_event_legality_required_for_utr_use: true
+  primary:
+    name: constrained_single_event_first_order
+    role: hard_constrained_utr_primary
+    semantics: endpoint_single_event_frozen_rate_approximation
+    exact_gillespie: false
+    step_sizes: [0.03125, 0.015625, 0.0078125, 0.00390625]
+    primary_step_size: 0.0078125
+    adaptive_max_hazard_product: 0.05
+    max_events_per_substep: 1
+    event_probability: "-expm1(-h*total_hazard)"
+    recompute_state_mask_and_rates_after_every_edit: true
+  convergence:
+    trajectories_per_step_size: 512
+    finest_pair_total_variation_atol: 0.03
+    finest_pair_mean_edit_count_atol: 0.05
+    finest_pair_termination_fraction_atol: 0.03
+    require_error_nonincrease_against_integrated_hazard_reference: true
+
+foundation:
+  source_embedding_cache_allowed: true
+  current_embedding_recomputed_after_each_edit: true
+  incremental_update_enabled: false
+  incremental_requires_layerwise_equivalence_before_enable: true
+  frozen_foundation_first: true
+  required_rate_inputs:
+    - current_token_and_gap_representation
+    - source_aligned_representation_from_M_run
+    - source_current_inference_visible_features
+    - region_adapter
+    - assay_context_endpoint
+    - target_condition
+    - time_embedding
+    - remaining_budget
+    - edit_history_summary
+  prohibited_rate_inputs:
+    - Z_aux
+    - target_sequence
+    - target_alignment
+    - remaining_target_edits
+  gpu_smoke:
+    force_actions: [INS, SUB, DEL, STOP]
+    require_nonzero_oracle_rates: true
+    require_backward: true
+    require_cuda_tensor_and_memory_evidence: true
+
+critic_boundary:
+  base_sampler_requires_critic: false
+  critic_may_change_hard_legality: false
+  final_evaluator_guidance_allowed: false
+  guidance_query_log: append_only
+  future_routes: [classifier_free_condition, frozen_critic_guidance, post_generation_reranking]
+  final_route_selection_policy: development_once_then_freeze
+
+validation_domains:
+  tiny_state_exhaustive:
+    alphabet: [A, C]
+    sequence_lengths: [1, 2, 3]
+    sequence_count: 14
+    source_current_pair_count: 196
+    budgets: [0, 1, 2]
+    run_states: [ACTIVE, HALTED]
+    state_count: 1176
+  alignment_exhaustive:
+    alphabet: [A, C]
+    sequence_lengths: [1, 2, 3]
+    ordered_pair_count: 196
+  repeated_symbol_oracle:
+    cases: ["AA_to_A", "A_to_AA", "AAA_to_AA", "AA_to_AAA", "ACA_to_AAC"]
+  real_length_property_tests:
+    sample_count: 1024
+    lengths: [16, 32, 64, 128, 256]
+    seed: 20260802
+
+# Each gate's run artifact must replace RUNTIME_REQUIRED with the actual test count,
+# failure denominator and SHA-256. Missing runtime bindings fail closed.
+acceptance:
+  status_on_any_failure: FAILED_WITH_EVIDENCE
+  status_on_all_pass: PASS_E0_MATH_ENGINEERING_ONLY
+  require_actual_artifact_sha256: true
+  gates:
+    - id: M01
+      name: state_action_schema_validation
+      expected: PASS
+      domain: five_schema_documents_plus_1008_tiny_state_records_6736_action_records_504_termination_records_and_representative_coupling_trajectory_records
+      coverage: exhaustive
+      sample_count: 8255
+      dtype: discrete_json
+      atol: 0.0
+      rtol: 0.0
+      seed: 20260802
+      failure_denominator: schema_documents_plus_state_instances_plus_action_instances
+      artifact_path: artifacts/mk0/mk0_schema_action_audit.json
+    - id: M02
+      name: apply_action_state_exactness
+      expected: 1.0
+      domain: 6736_exhaustive_legal_actions_plus_1024_real_length_property_cases
+      coverage: exhaustive_plus_sampled
+      sample_count: 7760
+      dtype: discrete
+      atol: 0.0
+      rtol: 0.0
+      seed: 20260802
+      failure_denominator: evaluated_action_applications
+      artifact_path: artifacts/mk0/mk0_schema_action_audit.json
+    - id: M03
+      name: alignment_source_target_reconstruction
+      expected: 1.0
+      domain: 196_AC_tiny_pairs_plus_1024_real_length_pairs
+      coverage: exhaustive_plus_sampled
+      sample_count: 1220
+      dtype: discrete
+      atol: 0.0
+      rtol: 0.0
+      seed: 20260802
+      failure_denominator: alignment_pairs
+      artifact_path: artifacts/mk0/coupling_manifest.json
+    - id: M04
+      name: constructed_path_is_observed_false
+      expected: 1.0
+      domain: every_constructed_coupling_in_M03
+      coverage: exhaustive
+      sample_count: 1220
+      dtype: boolean
+      atol: 0.0
+      rtol: 0.0
+      seed: 20260802
+      failure_denominator: coupling_records
+      artifact_path: artifacts/mk0/coupling_manifest.json
+    - id: M05
+      name: target_alignment_leakage
+      expected: PASS
+      domain: 64_identical_inference_states_with_permuted_or_replaced_Z_aux
+      coverage: sampled_paired
+      sample_count: 64
+      dtype: float32_gpu_and_float64_cpu_stub
+      atol: 1.0e-5
+      rtol: 1.0e-4
+      seed: 20260802
+      failure_denominator: paired_rate_vectors
+      artifact_path: artifacts/mk0/target_alignment_leakage_audit.json
+    - id: M06
+      name: joint_product_path_independent_switch_clocks
+      expected: PASS
+      domain: 1024_enumerated_or_seeded_switch_vectors_on_tiny_alignments
+      coverage: exhaustive_plus_sampled
+      sample_count: 1024
+      dtype: float64
+      atol: 1.0e-10
+      rtol: 1.0e-8
+      seed: 20260802
+      failure_denominator: path_probability_checks
+      artifact_path: artifacts/mk0/coupling_manifest.json
+    - id: M07
+      name: remaining_switch_hazard_rho
+      expected: PASS
+      domain: cubic_and_linear_on_1001_point_grid_excluding_t1
+      coverage: exhaustive_grid
+      sample_count: 2002
+      dtype: float64
+      atol: 1.0e-10
+      rtol: 1.0e-8
+      seed: 20260802
+      failure_denominator: schedule_time_pairs
+      artifact_path: artifacts/mk0/hazard_audit.json
+    - id: M08
+      name: time_direction_errors
+      expected: 0
+      domain: schemas_config_docs_and_trajectory_fixtures
+      coverage: exhaustive_text_and_fixture_audit
+      sample_count: RUNTIME_REQUIRED
+      dtype: discrete
+      atol: 0.0
+      rtol: 0.0
+      seed: 20260802
+      failure_denominator: audited_direction_assertions
+      artifact_path: artifacts/mk0/mk0_text_contract_audit.json
+    - id: M09
+      name: schedule_endpoint_derivative
+      expected: PASS
+      domain: cubic_and_linear_endpoints_plus_1001_point_finite_difference_grid
+      coverage: exhaustive_grid
+      sample_count: 2006
+      dtype: float64
+      atol: 1.0e-10
+      rtol: 1.0e-8
+      seed: 20260802
+      failure_denominator: analytic_numeric_checks
+      artifact_path: artifacts/mk0/hazard_audit.json
+    - id: M10
+      name: negative_rates
+      expected: 0
+      domain: all_actions_in_1176_tiny_states_plus_1024_random_states
+      coverage: exhaustive_plus_sampled
+      sample_count: 2200
+      dtype: float64
+      atol: 1.0e-10
+      rtol: 1.0e-8
+      seed: 20260802
+      failure_denominator: evaluated_action_rates
+      artifact_path: artifacts/mk0/hazard_audit.json
+    - id: M11
+      name: masked_illegal_rates
+      expected: 0
+      domain: identity_boundary_protected_budget_alphabet_and_halted_negative_cases
+      coverage: exhaustive_plus_sampled
+      sample_count: 4704
+      dtype: float64
+      atol: 1.0e-10
+      rtol: 0.0
+      seed: 20260802
+      failure_denominator: illegal_action_rates
+      artifact_path: artifacts/mk0/hazard_audit.json
+    - id: M12
+      name: zero_instantaneous_hazard_advances_without_division
+      expected: PASS
+      domain: cubic_t0_and_63_constructed_zero_hazard_states
+      coverage: exhaustive_fixture
+      sample_count: 64
+      dtype: float64
+      atol: 1.0e-10
+      rtol: 1.0e-8
+      seed: 20260802
+      failure_denominator: zero_hazard_steps
+      artifact_path: artifacts/mk0/hazard_audit.json
+    - id: M13
+      name: zero_remaining_integrated_hazard_termination
+      expected: PASS
+      domain: 32_zero_integral_and_32_positive_future_hazard_fixtures
+      coverage: exhaustive_fixture
+      sample_count: 64
+      dtype: float64
+      atol: 1.0e-8
+      rtol: 1.0e-7
+      seed: 20260802
+      failure_denominator: integrated_hazard_fixtures
+      artifact_path: artifacts/mk0/hazard_audit.json
+    - id: M14
+      name: conditioned_event_action_distribution
+      expected: PASS
+      domain: every_positive_hazard_state_in_tiny_domain
+      coverage: exhaustive
+      sample_count: 1176
+      dtype: float64
+      atol: 1.0e-10
+      rtol: 1.0e-8
+      seed: 20260802
+      failure_denominator: positive_hazard_states
+      artifact_path: artifacts/mk0/hazard_audit.json
+    - id: M15
+      name: factorized_vs_enumerated_hazard
+      expected: PASS
+      domain: 1176_tiny_states_plus_1024_random_states
+      coverage: exhaustive_plus_sampled
+      sample_count: 2200
+      dtype: float64
+      atol: 1.0e-10
+      rtol: 1.0e-8
+      seed: 20260802
+      failure_denominator: state_hazard_pairs
+      artifact_path: artifacts/mk0/hazard_audit.json
+    - id: M16
+      name: generator_row_sum
+      expected: PASS
+      domain: 1176_tiny_extended_states
+      coverage: exhaustive
+      sample_count: 1176
+      dtype: float64
+      atol: 1.0e-10
+      rtol: 1.0e-8
+      seed: 20260802
+      failure_denominator: generator_rows
+      artifact_path: artifacts/mk0/hazard_audit.json
+    - id: M17
+      name: repeated_symbol_transition_aggregation
+      expected: PASS
+      domain: 5_named_repeated_symbol_cases_with_all_scripts_and_64_parameter_vectors
+      coverage: exhaustive
+      sample_count: 320
+      dtype: float64
+      atol: 1.0e-10
+      rtol: 1.0e-8
+      seed: 20260802
+      failure_denominator: transition_parameter_pairs
+      artifact_path: artifacts/mk0/transition_aggregation_oracle.json
+    - id: M18
+      name: bregman_toy_loss_vs_bruteforce
+      expected: PASS
+      domain: repeated_symbol_oracle_times_64_parameter_vectors
+      coverage: exhaustive
+      sample_count: 320
+      dtype: float64
+      atol: 1.0e-10
+      rtol: 1.0e-8
+      seed: 20260802
+      failure_denominator: loss_comparisons
+      artifact_path: artifacts/mk0/loss_oracle_report.json
+    - id: M19
+      name: finite_loss_and_gradients
+      expected: PASS
+      domain: 320_loss_cases_plus_64_finite_difference_gradient_cases
+      coverage: exhaustive_plus_sampled
+      sample_count: 384
+      dtype: float64
+      atol: 1.0e-6
+      rtol: 1.0e-5
+      seed: 20260802
+      failure_denominator: loss_or_gradient_checks
+      artifact_path: artifacts/mk0/loss_oracle_report.json
+    - id: M20
+      name: survival_stop_absolute_hazard_oracle
+      expected: PASS
+      domain: 64_constant_and_piecewise_hazard_fixtures
+      coverage: exhaustive_fixture
+      sample_count: 64
+      dtype: float64
+      atol: 1.0e-8
+      rtol: 1.0e-7
+      seed: 20260802
+      failure_denominator: survival_likelihood_checks
+      artifact_path: artifacts/mk0/stop_survival_oracle.json
+    - id: M21
+      name: stop_dwell_independent_positive
+      expected: PASS
+      domain: exponential_dwell_for_gamma_8_16_32
+      coverage: sampled
+      sample_count: 24576
+      dtype: float64
+      atol: 1.0e-8
+      rtol: 1.0e-7
+      seed: 20260802
+      failure_denominator: dwell_samples_and_independence_checks
+      artifact_path: artifacts/mk0/stop_survival_oracle.json
+    - id: M22
+      name: stop_event_rate_and_censor_fraction
+      expected: PASS
+      domain: analytic_vs_monte_carlo_for_gamma_8_16_32
+      coverage: sampled_with_analytic_reference
+      sample_count: 24576
+      dtype: float64
+      atol: 0.02
+      rtol: 0.02
+      seed: 20260802
+      failure_denominator: gamma_reference_statistics
+      artifact_path: artifacts/mk0/stop_survival_oracle.json
+    - id: M23
+      name: halted_states_no_edit_flow_terms
+      expected: PASS
+      domain: halted_half_of_1176_tiny_states
+      coverage: exhaustive
+      sample_count: 588
+      dtype: float64
+      atol: 1.0e-10
+      rtol: 0.0
+      seed: 20260802
+      failure_denominator: halted_states
+      artifact_path: artifacts/mk0/stop_audit.json
+    - id: M24
+      name: learned_stop_forced_termination_separation
+      expected: PASS
+      domain: every_termination_reason_times_64_state_fixtures
+      coverage: exhaustive
+      sample_count: 384
+      dtype: discrete
+      atol: 0.0
+      rtol: 0.0
+      seed: 20260802
+      failure_denominator: termination_records
+      artifact_path: artifacts/mk0/stop_audit.json
+    - id: M25
+      name: constrained_sampler_hard_validity
+      expected: 1.0
+      domain: primary_sampler_randomized_tiny_and_real_length_states
+      coverage: sampled
+      sample_count: 4096
+      dtype: float64
+      atol: 0.0
+      rtol: 0.0
+      seed: 20260802
+      failure_denominator: all_attempted_primary_sampler_trajectories_including_numerical_failures
+      artifact_path: artifacts/mk0/sampler_convergence.json
+    - id: M26
+      name: paper_parallel_sampler_validity_separate
+      expected: REPORTED_SEPARATELY
+      domain: paper_reference_randomized_tiny_states
+      coverage: sampled
+      sample_count: 4096
+      dtype: float64
+      atol: 0.0
+      rtol: 0.0
+      seed: 20260802
+      failure_denominator: paper_sampler_trajectories
+      artifact_path: artifacts/mk0/sampler_convergence.json
+    - id: M27
+      name: budget_violations
+      expected: 0
+      domain: all_M25_primary_sampler_trajectories
+      coverage: exhaustive_over_generated_logs
+      sample_count: 4096
+      dtype: discrete
+      atol: 0.0
+      rtol: 0.0
+      seed: 20260802
+      failure_denominator: primary_sampler_trajectories
+      artifact_path: artifacts/mk0/sampler_convergence.json
+    - id: M28
+      name: deterministic_replay
+      expected: 1.0
+      domain: first_1024_M25_logs_replayed_from_seed_and_random_draw_log
+      coverage: sampled
+      sample_count: 1024
+      dtype: discrete_hash
+      atol: 0.0
+      rtol: 0.0
+      seed: 20260802
+      failure_denominator: replayed_trajectory_state_hash_sequences
+      artifact_path: artifacts/mk0/sampler_convergence.json
+    - id: M29
+      name: step_halving_convergence
+      expected: PASS
+      domain: four_frozen_step_sizes_independent_exact_grid_to_RK4_distribution_convergence_plus_4x512_actual_sampler_logs_with_per_step_deterministic_kernel_binding
+      coverage: exhaustive_exact_grid_and_sampled_paired_log_binding
+      sample_count: 2048
+      dtype: float64
+      atol: 0.03
+      rtol: 0.0
+      seed: 20260802
+      failure_denominator: registered_exact_grid_convergence_statistics_plus_actual_logged_steps_actions_and_trajectories
+      artifact_path: artifacts/mk0/sampler_convergence.json
+    - id: M30
+      name: unsupported_affirmative_exact_gillespie_claims
+      expected: 0
+      domain: all_tracked_text_source_config_and_docs_files
+      coverage: exhaustive_text_audit
+      sample_count: RUNTIME_REQUIRED
+      dtype: text
+      atol: 0.0
+      rtol: 0.0
+      seed: 20260802
+      failure_denominator: affirmative_project_sampler_claims
+      artifact_path: artifacts/mk0/mk0_text_contract_audit.json
+    - id: M31
+      name: source_only_stale_state_encoding
+      expected: PASS
+      domain: 64_source_fixed_current_mutated_paired_rate_checks
+      coverage: sampled_paired
+      sample_count: 64
+      dtype: float32_gpu
+      atol: 1.0e-5
+      rtol: 1.0e-4
+      seed: 20260802
+      failure_denominator: paired_dynamic_current_encodings
+      artifact_path: artifacts/mk0/foundation_fusion_audit.json
+    - id: M32
+      name: paper_mode_placeholder_foundation
+      expected: 0
+      domain: all_paper_mode_foundation_forward_calls_in_gpu_smoke
+      coverage: exhaustive_log_audit
+      sample_count: RUNTIME_REQUIRED
+      dtype: discrete
+      atol: 0.0
+      rtol: 0.0
+      seed: 20260802
+      failure_denominator: paper_mode_foundation_forward_calls
+      artifact_path: artifacts/mk0/foundation_fusion_audit.json
+    - id: M33
+      name: base_generation_without_critic
+      expected: PASS
+      domain: 256_primary_sampler_trajectories_with_critic_interface_absent
+      coverage: sampled
+      sample_count: 256
+      dtype: discrete
+      atol: 0.0
+      rtol: 0.0
+      seed: 20260802
+      failure_denominator: no_critic_trajectories
+      artifact_path: artifacts/mk0/critic_role_audit.json
+    - id: M34
+      name: final_evaluator_used_for_guidance
+      expected: false
+      domain: all_MK0_query_logs_and_rate_head_interfaces
+      coverage: exhaustive_interface_and_log_audit
+      sample_count: RUNTIME_REQUIRED
+      dtype: boolean
+      atol: 0.0
+      rtol: 0.0
+      seed: 20260802
+      failure_denominator: evaluator_queries_and_generator_interfaces
+      artifact_path: artifacts/mk0/critic_role_audit.json
+    - id: M35
+      name: gpu_tiny_smoke_forced_INS_SUB_DEL_STOP
+      expected: PASS
+      domain: one_legal_nonzero_oracle_rate_case_per_action_with_forward_backward
+      coverage: forced_exhaustive_action_types
+      sample_count: 4
+      dtype: float32_cuda
+      atol: 1.0e-5
+      rtol: 1.0e-4
+      seed: 20260802
+      failure_denominator: forced_action_types
+      artifact_path: artifacts/mk0/foundation_fusion_audit.json
+
+runtime_binding_requirements:
+  each_gate_must_record:
+    - test_domain
+    - exhaustive_or_sampled
+    - actual_sample_count
+    - dtype
+    - atol
+    - rtol
+    - seed
+    - failure_count
+    - failure_denominator
+    - artifact_path
+    - artifact_sha256
+  missing_or_mismatched_binding_status: FAILED_WITH_EVIDENCE
+  freeze_manifest: artifacts/mk0/mk0_freeze_manifest.json
+  freeze_manifest_sha256: artifacts/mk0/mk0_freeze_manifest.sha256

@@ -1,0 +1,251 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mrna-editflow.local/schemas/edit_trajectory_v1.schema.json",
+  "title": "mRNA-EditFlow MK0 replayable trajectory",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "trajectory_id",
+    "source_id",
+    "seed",
+    "sampler",
+    "sampler_semantics",
+    "exact_gillespie",
+    "time_direction",
+    "sampler_config",
+    "remaining_hazard_certificate",
+    "initial_state",
+    "steps",
+    "final_state",
+    "run_status",
+    "termination",
+    "replay"
+  ],
+  "properties": {
+    "schema_version": {"const": "edit_trajectory_v1"},
+    "trajectory_id": {"type": "string", "minLength": 1},
+    "source_id": {"type": "string", "minLength": 1},
+    "seed": {"type": "integer", "minimum": 0},
+    "sampler": {"enum": ["paper_first_order_parallel", "constrained_single_event_first_order"]},
+    "sampler_semantics": {
+      "enum": [
+        "fixed_grid_parallel_first_order_approximation",
+        "endpoint_single_event_frozen_rate_approximation"
+      ]
+    },
+    "exact_gillespie": {"const": false},
+    "time_direction": {"const": "source_at_0_to_target_at_1"},
+    "sampler_config": {"$ref": "#/$defs/samplerConfig"},
+    "remaining_hazard_certificate": {
+      "anyOf": [{"type": "null"}, {"$ref": "#/$defs/remainingHazardCertificate"}]
+    },
+    "initial_state": {"$ref": "edit_state_v1.schema.json"},
+    "steps": {"type": "array", "items": {"$ref": "#/$defs/step"}},
+    "final_state": {"$ref": "edit_state_v1.schema.json"},
+    "run_status": {"enum": ["COMPLETED", "FAILED_NUMERICAL"]},
+    "termination": {"$ref": "termination_event_v1.schema.json"},
+    "replay": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "replayed_step_count", "state_hash_match_fraction"],
+      "properties": {
+        "status": {"enum": ["PASS", "FAIL"]},
+        "replayed_step_count": {"type": "integer", "minimum": 0},
+        "state_hash_match_fraction": {"type": "number", "minimum": 0.0, "maximum": 1.0}
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"run_status": {"const": "FAILED_NUMERICAL"}}, "required": ["run_status"]},
+      "then": {"properties": {"termination": {"properties": {"reason": {"const": "FAILED_NUMERICAL"}}}}}
+    },
+    {
+      "if": {"properties": {"run_status": {"const": "COMPLETED"}}, "required": ["run_status"]},
+      "then": {
+        "properties": {
+          "termination": {
+            "properties": {"reason": {"not": {"const": "FAILED_NUMERICAL"}}}
+          }
+        }
+      }
+    },
+    {
+      "if": {"properties": {"sampler": {"const": "constrained_single_event_first_order"}}, "required": ["sampler"]},
+      "then": {
+        "properties": {
+          "sampler_semantics": {"const": "endpoint_single_event_frozen_rate_approximation"},
+          "sampler_config": {"properties": {"stability_hazard": {"type": "number", "exclusiveMinimum": 0.0}}},
+          "steps": {
+            "items": {
+              "properties": {
+                "outcome": {"enum": ["NO_EVENT", "INS", "SUB", "DEL", "STOP"]},
+                "parallel_trials": {"maxItems": 0},
+                "parallel_actions": {"maxItems": 0}
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {"properties": {"sampler": {"const": "paper_first_order_parallel"}}, "required": ["sampler"]},
+      "then": {
+        "properties": {
+          "sampler_semantics": {"const": "fixed_grid_parallel_first_order_approximation"},
+          "sampler_config": {"properties": {"stability_hazard": {"type": "null"}}},
+          "steps": {
+            "items": {
+              "properties": {
+                "outcome": {"enum": ["NO_EVENT", "PARALLEL_EVENTS_APPLIED", "INVALID_JOINT_PROPOSAL_REPORTED"]},
+                "event_uniform": {"type": "null"},
+                "action_uniform": {"type": "null"},
+                "selected_action": {"type": "null"},
+                "adaptive_subdivision_count": {"const": 0}
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "termination": {"properties": {"reason": {"const": "FORCED_ZERO_REMAINING_INTEGRATED_HAZARD"}}, "required": ["reason"]}
+        },
+        "required": ["termination"]
+      },
+      "then": {"properties": {"remaining_hazard_certificate": {"$ref": "#/$defs/remainingHazardCertificate"}}}
+    }
+  ],
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "samplerConfig": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["step_size", "stability_hazard", "min_length", "max_length", "horizon", "rate_evaluation"],
+      "properties": {
+        "step_size": {"type": "number", "exclusiveMinimum": 0.0},
+        "stability_hazard": {"type": ["number", "null"], "exclusiveMinimum": 0.0},
+        "min_length": {"type": "integer", "minimum": 1},
+        "max_length": {"type": "integer", "minimum": 1},
+        "horizon": {"type": "number", "exclusiveMinimum": 0.0, "maximum": 1.0},
+        "rate_evaluation": {"const": "frozen_at_substep_start"}
+      }
+    },
+    "remainingHazardCertificate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["integral", "lower_order_integral", "disagreement", "lower_order", "higher_order", "zero_atol", "convergence_atol"],
+      "properties": {
+        "integral": {"type": "number", "minimum": 0.0},
+        "lower_order_integral": {"type": "number", "minimum": 0.0},
+        "disagreement": {"type": "number", "minimum": 0.0},
+        "lower_order": {"type": "integer", "minimum": 2},
+        "higher_order": {"type": "integer", "minimum": 3},
+        "zero_atol": {"type": "number", "minimum": 0.0},
+        "convergence_atol": {"type": "number", "minimum": 0.0}
+      }
+    },
+    "parallelAction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action_type", "position", "nucleotide", "coordinate_system"],
+      "properties": {
+        "action_type": {"enum": ["INS", "SUB", "DEL", "STOP"]},
+        "position": {"type": ["integer", "null"], "minimum": 0},
+        "nucleotide": {"type": ["string", "null"], "enum": ["A", "C", "G", "U", null]},
+        "coordinate_system": {"const": "pre_step_current_state_zero_based"}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"action_type": {"const": "STOP"}}, "required": ["action_type"]},
+          "then": {"properties": {"position": {"type": "null"}, "nucleotide": {"type": "null"}}}
+        },
+        {
+          "if": {"properties": {"action_type": {"enum": ["INS", "SUB"]}}, "required": ["action_type"]},
+          "then": {"properties": {"position": {"type": "integer", "minimum": 0}, "nucleotide": {"enum": ["A", "C", "G", "U"]}}}
+        },
+        {
+          "if": {"properties": {"action_type": {"const": "DEL"}}, "required": ["action_type"]},
+          "then": {"properties": {"position": {"type": "integer", "minimum": 0}, "nucleotide": {"type": "null"}}}
+        }
+      ]
+    },
+    "parallelTrial": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["action_key", "rate", "uniform", "event_probability", "proposed"],
+      "properties": {
+        "action_key": {"type": "string", "minLength": 1},
+        "rate": {"type": "number", "minimum": 0.0},
+        "uniform": {"type": "number", "minimum": 0.0, "exclusiveMaximum": 1.0},
+        "event_probability": {"type": "number", "minimum": 0.0, "maximum": 1.0},
+        "proposed": {"type": "boolean"}
+      }
+    },
+    "step": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "step_index",
+        "t_start",
+        "t_end",
+        "substep_h",
+        "total_hazard",
+        "event_probability",
+        "event_uniform",
+        "action_uniform",
+        "outcome",
+        "candidate_actions_hash",
+        "candidate_rates_hash",
+        "selected_action",
+        "parallel_trials",
+        "parallel_actions",
+        "state_hash_before",
+        "state_hash_after",
+        "rate_recomputed_after_step",
+        "adaptive_subdivision_count"
+      ],
+      "properties": {
+        "step_index": {"type": "integer", "minimum": 0},
+        "t_start": {"type": "number", "minimum": 0.0, "maximum": 1.0},
+        "t_end": {"type": "number", "minimum": 0.0, "maximum": 1.0},
+        "substep_h": {"type": "number", "exclusiveMinimum": 0.0},
+        "total_hazard": {"type": "number", "minimum": 0.0},
+        "event_probability": {"type": "number", "minimum": 0.0, "maximum": 1.0},
+        "event_uniform": {"type": ["number", "null"], "minimum": 0.0, "exclusiveMaximum": 1.0},
+        "action_uniform": {"type": ["number", "null"], "minimum": 0.0, "exclusiveMaximum": 1.0},
+        "outcome": {"enum": ["NO_EVENT", "INS", "SUB", "DEL", "STOP", "PARALLEL_EVENTS_APPLIED", "INVALID_JOINT_PROPOSAL_REPORTED"]},
+        "candidate_actions_hash": {"$ref": "#/$defs/sha256"},
+        "candidate_rates_hash": {"$ref": "#/$defs/sha256"},
+        "selected_action": {"anyOf": [{"type": "null"}, {"$ref": "edit_action_v1.schema.json"}]},
+        "parallel_trials": {"type": "array", "items": {"$ref": "#/$defs/parallelTrial"}},
+        "parallel_actions": {"type": "array", "items": {"$ref": "#/$defs/parallelAction"}},
+        "state_hash_before": {"$ref": "#/$defs/sha256"},
+        "state_hash_after": {"$ref": "#/$defs/sha256"},
+        "rate_recomputed_after_step": {"const": true},
+        "adaptive_subdivision_count": {"type": "integer", "minimum": 0}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"outcome": {"const": "NO_EVENT"}}, "required": ["outcome"]},
+          "then": {"properties": {"selected_action": {"type": "null"}, "action_uniform": {"type": "null"}}}
+        },
+        {
+          "if": {"properties": {"outcome": {"enum": ["INS", "SUB", "DEL", "STOP"]}}, "required": ["outcome"]},
+          "then": {
+            "properties": {"selected_action": {"$ref": "edit_action_v1.schema.json"}, "action_uniform": {"type": "number"}, "event_uniform": {"type": "number"}, "parallel_trials": {"maxItems": 0}, "parallel_actions": {"maxItems": 0}}
+          }
+        },
+        {
+          "if": {"properties": {"outcome": {"enum": ["PARALLEL_EVENTS_APPLIED", "INVALID_JOINT_PROPOSAL_REPORTED"]}}, "required": ["outcome"]},
+          "then": {
+            "properties": {"selected_action": {"type": "null"}, "event_uniform": {"type": "null"}, "action_uniform": {"type": "null"}, "parallel_actions": {"minItems": 1}}
+          }
+        }
+      ]
+    }
+  }
+}

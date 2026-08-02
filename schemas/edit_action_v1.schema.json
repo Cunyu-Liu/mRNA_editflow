@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mrna-editflow.local/schemas/edit_action_v1.schema.json",
+  "title": "mRNA-EditFlow MK0 atomic edit action",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "action_id",
+    "action_type",
+    "external_time",
+    "coordinate_system",
+    "budget_cost",
+    "pre_state_hash",
+    "post_state_hash",
+    "legal_under_pre_state_mask"
+  ],
+  "properties": {
+    "schema_version": {"const": "edit_action_v1"},
+    "action_id": {"type": "string", "minLength": 1},
+    "action_type": {"enum": ["INS", "SUB", "DEL", "STOP"]},
+    "external_time": {"type": "number", "minimum": 0.0, "maximum": 1.0},
+    "coordinate_system": {"const": "pre_action_current_state_zero_based"},
+    "gap_index": {"type": "integer", "minimum": 0},
+    "token_index": {"type": "integer", "minimum": 0},
+    "nucleotide": {"enum": ["A", "C", "G", "U"]},
+    "budget_cost": {"type": "integer", "enum": [0, 1]},
+    "pre_state_hash": {"$ref": "#/$defs/sha256"},
+    "post_state_hash": {"$ref": "#/$defs/sha256"},
+    "legal_under_pre_state_mask": {"const": true},
+    "source_token_id": {"type": ["integer", "null"], "minimum": 0},
+    "inserted_event_id": {"type": ["string", "null"]}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"action_type": {"const": "INS"}}, "required": ["action_type"]},
+      "then": {
+        "required": ["gap_index", "nucleotide"],
+        "properties": {"budget_cost": {"const": 1}},
+        "not": {"anyOf": [{"required": ["token_index"]}, {"required": ["source_token_id"]}]}
+      }
+    },
+    {
+      "if": {"properties": {"action_type": {"const": "SUB"}}, "required": ["action_type"]},
+      "then": {
+        "required": ["token_index", "nucleotide"],
+        "properties": {"budget_cost": {"const": 1}},
+        "not": {"required": ["gap_index"]}
+      }
+    },
+    {
+      "if": {"properties": {"action_type": {"const": "DEL"}}, "required": ["action_type"]},
+      "then": {
+        "required": ["token_index"],
+        "properties": {"budget_cost": {"const": 1}},
+        "not": {"anyOf": [{"required": ["gap_index"]}, {"required": ["nucleotide"]}]}
+      }
+    },
+    {
+      "if": {"properties": {"action_type": {"const": "STOP"}}, "required": ["action_type"]},
+      "then": {
+        "properties": {"budget_cost": {"const": 0}},
+        "not": {
+          "anyOf": [
+            {"required": ["gap_index"]},
+            {"required": ["token_index"]},
+            {"required": ["nucleotide"]},
+            {"required": ["source_token_id"]},
+            {"required": ["inserted_event_id"]}
+          ]
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

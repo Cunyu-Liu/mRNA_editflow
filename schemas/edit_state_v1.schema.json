@@ -1,0 +1,139 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mrna-editflow.local/schemas/edit_state_v1.schema.json",
+  "title": "mRNA-EditFlow MK0 inference-visible extended state",
+  "description": "Z_aux, target sequence, target alignment and remaining target edits are intentionally absent.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "source_id",
+    "x_src",
+    "x_current",
+    "external_time",
+    "region",
+    "context",
+    "target_condition",
+    "initial_budget",
+    "remaining_budget",
+    "executed_action_count",
+    "mapping_run",
+    "history_run",
+    "run_state",
+    "state_hash"
+  ],
+  "properties": {
+    "schema_version": {"const": "edit_state_v1"},
+    "source_id": {"type": "string", "minLength": 1},
+    "x_src": {"$ref": "#/$defs/rna"},
+    "x_current": {"$ref": "#/$defs/rna"},
+    "external_time": {"type": "number", "minimum": 0.0, "maximum": 1.0},
+    "time_direction": {"const": "source_at_0_to_target_at_1"},
+    "region": {"enum": ["5UTR", "3UTR"]},
+    "context": {"$ref": "#/$defs/context"},
+    "target_condition": {"$ref": "#/$defs/targetCondition"},
+    "initial_budget": {"type": "integer", "minimum": 0},
+    "remaining_budget": {"type": "integer", "minimum": 0},
+    "executed_action_count": {"type": "integer", "minimum": 0},
+    "mapping_run": {"$ref": "#/$defs/mappingRun"},
+    "history_run": {"$ref": "#/$defs/historyRun"},
+    "run_state": {"enum": ["ACTIVE", "HALTED"]},
+    "termination": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/stateTermination"}]},
+    "parent_state_hash": {"anyOf": [{"type": "null"}, {"$ref": "#/$defs/sha256"}]},
+    "state_hash": {"$ref": "#/$defs/sha256"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"run_state": {"const": "ACTIVE"}}, "required": ["run_state"]},
+      "then": {"properties": {"termination": {"type": "null"}}}
+    },
+    {
+      "if": {"properties": {"run_state": {"const": "HALTED"}}, "required": ["run_state"]},
+      "then": {"required": ["termination"], "properties": {"termination": {"$ref": "#/$defs/stateTermination"}}}
+    }
+  ],
+  "$defs": {
+    "rna": {"type": "string", "pattern": "^[ACGU]+$"},
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["assay", "cell_or_tissue", "endpoint"],
+      "properties": {
+        "assay": {"type": "string", "minLength": 1},
+        "cell_or_tissue": {"type": "string", "minLength": 1},
+        "endpoint": {"type": "string", "minLength": 1},
+        "batch": {"type": ["string", "null"]}
+      }
+    },
+    "targetCondition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["direction", "kind", "value"],
+      "properties": {
+        "direction": {"enum": ["increase", "decrease", "maintain", "interval"]},
+        "kind": {"enum": ["direction", "interval", "quantile"]},
+        "value": {
+          "oneOf": [
+            {"type": "number"},
+            {"type": "string", "minLength": 1},
+            {"type": "array", "prefixItems": [{"type": "number"}, {"type": "number"}], "items": false, "minItems": 2, "maxItems": 2}
+          ]
+        }
+      }
+    },
+    "tokenOrigin": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["origin", "source_token_id", "protected"],
+          "properties": {
+            "origin": {"const": "SOURCE"},
+            "source_token_id": {"type": "integer", "minimum": 0},
+            "protected": {"type": "boolean"}
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["origin", "inserted_event_id", "protected"],
+          "properties": {
+            "origin": {"const": "INSERTED"},
+            "inserted_event_id": {"type": "string", "minLength": 1},
+            "protected": {"const": false}
+          }
+        }
+      ]
+    },
+    "mappingRun": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["token_origins", "source_to_current", "gap_ids", "protected_current_indices"],
+      "properties": {
+        "token_origins": {"type": "array", "items": {"$ref": "#/$defs/tokenOrigin"}},
+        "source_to_current": {"type": "array", "items": {"type": ["integer", "null"], "minimum": 0}},
+        "gap_ids": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
+        "protected_current_indices": {"type": "array", "items": {"type": "integer", "minimum": 0}, "uniqueItems": true}
+      }
+    },
+    "historyRun": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ins_count", "sub_count", "del_count", "ordered_action_ids", "history_hash"],
+      "properties": {
+        "ins_count": {"type": "integer", "minimum": 0},
+        "sub_count": {"type": "integer", "minimum": 0},
+        "del_count": {"type": "integer", "minimum": 0},
+        "ordered_action_ids": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "history_hash": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "stateTermination": {
+      "allOf": [
+        {"$ref": "termination_event_v1.schema.json"},
+        {"properties": {"reason": {"not": {"const": "FAILED_NUMERICAL"}}}}
+      ]
+    }
+  }
+}

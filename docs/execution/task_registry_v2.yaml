@@ -147,7 +147,7 @@ tasks:
   gate: MB0-Freeze prerequisite
   acceptance:
   - schemas defined and tested
-  commit_sha: 6948565
+  commit_sha: '6948565'
   report: Canonical schemas (UTREditRecord, EditScript, EditOp, GenerationTask) defined
     in d1_staging/scripts/b0/canonical_schemas.py with EVAL_TRACKS + ALLOWED_CLAIMS_POOL
     constants. Schemas validated against D1 artifacts. Audit report at data/b0_01_audit_report.json.
@@ -241,15 +241,76 @@ tasks:
   - memory/latency profile
 - task_id: MK0-01
   phase: MK0
-  status: PENDING
+  status: IN_PROGRESS
   dependencies:
   - FM0-01
   description: 'Freeze math semantics: state/action space, coupling, path, rates,
     loss, STOP, sampler, numerical stability'
   gate: MK0 Gate not passed → no EF0 acceptance, no GP0 formal training
+  goal_sha256: 3a3a654ca5c10a988eca897bff40be2e0b45c841f744f7423fdfd60b298b5791
+  run_id: null
+  evidence_level: E0 mathematical and engineering verification only; no functional,
+    biological, superiority, or downstream-stage claim
+  resource_tags:
+  - GPU_EXCLUSIVE
+  - CPU_HEAVY
+  - IO_HEAVY
+  - READ_ONLY
+  - MUTATES_CODE
+  conflict_keys:
+  - repo:/home/cunyuliu/mrna_editflow_goal/worktrees/mk0_math_kernel_20260802T023454Z
+  - run:/home/cunyuliu/mrna_editflow_goal/mrna_editflow/artifacts/runs/PENDING_FRESH_SECTION19_RUN_ID
+  - preflight:/mnt/cunyuliu/mrna_editflow_mk0_preflight/PENDING_FRESH_SECTION19_RUN_ID
+  - gpu:formal-neural-validation
+  - upstream:FM0_FORMAL_CLOSURE_20260802T022915Z_f4d562d
+  allowed_parallel_tasks:
+  - read-only contract audit
+  - read-only source review
+  - metadata-only artifact audit
+  final_label_access: false
+  downstream_stage_started: false
+  inputs:
+  - /mnt/cunyuliu/mrna_editflow_fm0_runs/FM0_FORMAL_CLOSURE_20260802T022915Z_f4d562d
+  - data/d1_canonical_records.jsonl
+  - data/data_exposure_ledger.jsonl
+  in_scope:
+  - MK0 mathematical semantics and 35 acceptance gates M01-M35
+  - GPU-only foundation-fusion validation with explicit CUDA identity
+  - fail-closed manifests, logs, checksums, gate ledger, and freeze record
+  out_of_scope:
+  - EF0 implementation or acceptance
+  - GP0 formal training
+  - final-label access
+  - functional, biological, matched-budget, or superiority claims
+  files:
+  - core/mk0/
+  - configs/math/math_kernel_v1.yaml
+  - docs/math/
+  - schemas/edit_state_v1.schema.json
+  - schemas/edit_action_v1.schema.json
+  - schemas/edit_trajectory_v1.schema.json
+  - schemas/termination_event_v1.schema.json
+  - schemas/coupling_manifest_v1.schema.json
+  - scripts/mk0/
+  - tests/mk0/
+  outputs:
+  - /mnt/cunyuliu/mrna_editflow_mk0_preflight/<FRESH_SECTION19_RUN_ID>/mk0_preflight.json
+  - /home/cunyuliu/mrna_editflow_goal/mrna_editflow/artifacts/runs/<FRESH_SECTION19_RUN_ID>/
   acceptance:
-  - math kernel frozen and tested
-  - numerical verification complete
+  - all M01-M35 pass against the frozen config without threshold relaxation
+  - CPU gate evidence binds the clean implementation commit and fresh preflight
+  - neural validation uses real CUDA with zero CPU fallback
+  - foundation snapshot and AGPL-3.0 license.md bytes bind to the FM0 checksum ledger
+  - exact-sampling claims pass the tracked-source audit
+  - final mk0_status.json is DONE and the checksum ledger verifies every canonical artifact
+  repair_loop:
+  - preserve failed artifacts and stderr; never overwrite or delete evidence
+  - diagnose in the isolated worktree and use a fresh run root after any code change
+  - rerun fresh preflight after the implementation commit changes
+  - stop if CUDA is unavailable, a neural tensor/model leaves CUDA, or CPU fallback occurs
+  commit_sha: null
+  report: Formal run has not started. Implementation and adversarial acceptance audits
+    are in progress in an isolated worktree; EF0 and GP0 remain blocked.
 - task_id: EF0-01
   phase: EF0
   status: PENDING

@@ -34,6 +34,38 @@
           "outputs": {"type": "array", "items": {"type": "string"}},
           "acceptance": {"type": "array", "items": {"type": "string"}},
           "repair_loop": {"type": "array", "items": {"type": "string"}},
+          "goal_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "run_id": {"type": ["string", "null"]},
+          "evidence_level": {"type": "string"},
+          "resource_tags": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "enum": [
+                "GPU_EXCLUSIVE",
+                "CPU_LIGHT",
+                "CPU_HEAVY",
+                "IO_HEAVY",
+                "READ_ONLY",
+                "MUTATES_CODE",
+                "MUTATES_DATA",
+                "FINAL_LABEL_ACCESS"
+              ]
+            }
+          },
+          "conflict_keys": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {"type": "string", "minLength": 1}
+          },
+          "allowed_parallel_tasks": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {"type": "string", "minLength": 1}
+          },
+          "final_label_access": {"type": "boolean"},
+          "downstream_stage_started": {"type": "boolean"},
           "commit_sha": {"type": ["string", "null"]},
           "report": {"type": ["string", "null"]}
         }

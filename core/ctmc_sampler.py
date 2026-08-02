@@ -1,8 +1,8 @@
-"""True CTMC sampler for mRNA Edit Flow (tau-leaping).
+"""Legacy fixed-grid parallel tau-leaping approximation.
 
-This module implements a genuine Continuous-Time Markov Chain sampler that
-integrates the rate field from t=0 to t=1, replacing the old fixed-t=0.5
-sequential top-k decoder.
+This module implements a fixed-grid first-order approximation that queries a
+time-varying rate field from t=0 to t=1.  It is retained for legacy callers
+and is not an exact-event sampler.
 
 Key differences from the old ``ProposalEditor`` (sequential decoder):
 
@@ -245,7 +245,9 @@ def _recompute_phases(tokens: List[int], region_ids: List[int], phase_ids: List[
 # ---------------------------------------------------------------------------
 
 class CTMCSampler:
-    """True CTMC tau-leaping sampler for mRNA Edit Flow.
+    """Legacy fixed-grid parallel sampler for mRNA Edit Flow.
+
+    This class is not the MK0 primary sampler and is not exact Gillespie.
 
     Given a trained model (any callable returning the standard output dict),
     this sampler integrates the rate field from t=0 to t=1 to produce a

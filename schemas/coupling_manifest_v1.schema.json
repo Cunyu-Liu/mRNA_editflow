@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mrna-editflow.local/schemas/coupling_manifest_v1.schema.json",
+  "title": "mRNA-EditFlow MK0 alignment/coupling manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "source_id",
+    "target_id",
+    "coupling_type",
+    "alignment_algorithm_version",
+    "alignment_cost",
+    "tie_break_rule",
+    "alignment_hash",
+    "path_is_observed",
+    "path_semantics",
+    "z_src",
+    "z_tar",
+    "source_reconstruction",
+    "target_reconstruction",
+    "joint_path",
+    "schedule",
+    "target_auxiliary_isolation",
+    "rejected_path_ledger"
+  ],
+  "properties": {
+    "schema_version": {"const": "coupling_manifest_v1"},
+    "source_id": {"type": "string", "minLength": 1},
+    "target_id": {"type": "string", "minLength": 1},
+    "coupling_type": {"enum": ["canonical_optimal", "sampled_optimal_sensitivity", "equivalent_edit_order_sensitivity"]},
+    "alignment_algorithm_version": {"type": "string", "minLength": 1},
+    "alignment_cost": {"type": "integer", "minimum": 0},
+    "tie_break_rule": {"type": "string", "minLength": 1},
+    "alignment_hash": {"$ref": "#/$defs/sha256"},
+    "path_is_observed": {"const": false},
+    "path_semantics": {"const": "latent_algorithmic"},
+    "z_src": {"$ref": "#/$defs/alignedTokens"},
+    "z_tar": {"$ref": "#/$defs/alignedTokens"},
+    "source_reconstruction": {"$ref": "#/$defs/rna"},
+    "target_reconstruction": {"$ref": "#/$defs/rna"},
+    "joint_path": {"const": "independent_switch_clock_product"},
+    "schedule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "kappa", "kappa_derivative", "rho", "time_eps"],
+      "properties": {
+        "name": {"enum": ["cubic", "linear"]},
+        "kappa": {"type": "string", "minLength": 1},
+        "kappa_derivative": {"type": "string", "minLength": 1},
+        "rho": {"const": "kappa_derivative/(1-kappa)"},
+        "time_eps": {"type": "number", "exclusiveMinimum": 0.0, "maximum": 0.1}
+      }
+    },
+    "switch_clocks": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["aligned_coordinate", "uniform", "tau"],
+        "properties": {
+          "aligned_coordinate": {"type": "integer", "minimum": 0},
+          "uniform": {"type": "number", "minimum": 0.0, "exclusiveMaximum": 1.0},
+          "tau": {"type": "number", "minimum": 0.0, "maximum": 1.0}
+        }
+      }
+    },
+    "target_auxiliary_isolation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["z_aux_training_only", "rate_network_receives_z_aux", "leakage_test_status"],
+      "properties": {
+        "z_aux_training_only": {"const": true},
+        "rate_network_receives_z_aux": {"const": false},
+        "leakage_test_status": {"enum": ["PASS", "FAIL", "NOT_RUN"]}
+      }
+    },
+    "rejected_path_ledger": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["aligned_coordinate", "proposed_action", "reason", "disposition"],
+        "properties": {
+          "aligned_coordinate": {"type": "integer", "minimum": 0},
+          "proposed_action": {"type": "string", "minLength": 1},
+          "reason": {"type": "string", "minLength": 1},
+          "disposition": {"enum": ["REJECT_SAMPLE", "REPAIR_COUPLING_AND_REHASH"]}
+        }
+      }
+    },
+    "manifest_hash": {"$ref": "#/$defs/sha256"}
+  },
+  "$defs": {
+    "rna": {"type": "string", "pattern": "^[ACGU]*$"},
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "alignedTokens": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"enum": ["A", "C", "G", "U", "EPSILON"]}
+    }
+  }
+}

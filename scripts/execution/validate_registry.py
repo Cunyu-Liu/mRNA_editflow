@@ -24,19 +24,55 @@ SCHEMA_PATH = REPO_ROOT / "schemas" / "task_registry.schema.json"
 
 # v2 schema: 5 required fields; the rest are optional
 REQUIRED_TASK_FIELDS = [
-    "task_id", "phase", "status", "dependencies", "acceptance",
+    "task_id",
+    "phase",
+    "status",
+    "dependencies",
+    "acceptance",
 ]
 # All valid task fields (required + optional) — used for unexpected-field check
 ALL_TASK_FIELDS = [
-    "task_id", "phase", "status", "dependencies", "acceptance",
-    "description", "gate", "inputs", "in_scope", "out_of_scope",
-    "files", "commands", "outputs", "repair_loop", "commit_sha", "report",
+    "task_id",
+    "phase",
+    "status",
+    "dependencies",
+    "acceptance",
+    "description",
+    "gate",
+    "inputs",
+    "in_scope",
+    "out_of_scope",
+    "files",
+    "commands",
+    "outputs",
+    "repair_loop",
+    "goal_sha256",
+    "run_id",
+    "evidence_level",
+    "resource_tags",
+    "conflict_keys",
+    "allowed_parallel_tasks",
+    "final_label_access",
+    "downstream_stage_started",
+    "commit_sha",
+    "report",
 ]
 LIST_FIELDS = [
-    "dependencies", "inputs", "in_scope", "out_of_scope", "files",
-    "commands", "outputs", "acceptance", "repair_loop",
+    "dependencies",
+    "inputs",
+    "in_scope",
+    "out_of_scope",
+    "files",
+    "commands",
+    "outputs",
+    "acceptance",
+    "repair_loop",
+    "resource_tags",
+    "conflict_keys",
+    "allowed_parallel_tasks",
 ]
 TASK_ID_PATTERN = re.compile(r"^[A-Z0-9]+-[A-Za-z0-9]+$")
+SHA256_PATTERN = re.compile(r"^[0-9a-f]{64}$")
 
 
 def load_schema_statuses() -> list[str]:
@@ -85,9 +121,25 @@ def validate(registry: dict, schema_statuses: list[str] | None = None) -> list[s
                 val = task[field]
                 if not isinstance(val, list) or not all(isinstance(x, str) for x in val):
                     errors.append(f"{tid}: field '{field}' must be a list of strings")
-        for field in ("commit_sha", "report"):
+                elif field in {
+                    "resource_tags",
+                    "conflict_keys",
+                    "allowed_parallel_tasks",
+                } and len(val) != len(set(val)):
+                    errors.append(f"{tid}: field '{field}' must contain unique strings")
+        if "goal_sha256" in task and not SHA256_PATTERN.fullmatch(
+            str(task["goal_sha256"])
+        ):
+            errors.append(f"{tid}: field 'goal_sha256' must be a lowercase SHA-256")
+        for field in ("run_id", "commit_sha", "report"):
             if field in task and task[field] is not None and not isinstance(task[field], str):
                 errors.append(f"{tid}: field '{field}' must be a string or null")
+        for field in ("evidence_level",):
+            if field in task and not isinstance(task[field], str):
+                errors.append(f"{tid}: field '{field}' must be a string")
+        for field in ("final_label_access", "downstream_stage_started"):
+            if field in task and not isinstance(task[field], bool):
+                errors.append(f"{tid}: field '{field}' must be a boolean")
 
     # dependency graph must reference known task ids and be acyclic
     known = {t.get("task_id") for t in registry["tasks"] if isinstance(t, dict)}
@@ -104,8 +156,11 @@ def validate(registry: dict, schema_statuses: list[str] | None = None) -> list[s
 
 
 def _has_cycle(tasks: list[dict]) -> bool:
-    deps = {t.get("task_id"): [d for d in t.get("dependencies", [])]
-            for t in tasks if isinstance(t, dict) and t.get("task_id")}
+    deps = {
+        t.get("task_id"): [d for d in t.get("dependencies", [])]
+        for t in tasks
+        if isinstance(t, dict) and t.get("task_id")
+    }
     WHITE, GRAY, BLACK = 0, 1, 2
     color = {k: WHITE for k in deps}
 
@@ -126,7 +181,9 @@ def _has_cycle(tasks: list[dict]) -> bool:
 
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--registry", default=str(REPO_ROOT / "docs/execution/task_registry_v2.yaml"))
+    parser.add_argument(
+        "--registry", default=str(REPO_ROOT / "docs/execution/task_registry_v2.yaml")
+    )
     args = parser.parse_args(argv)
 
     path = Path(args.registry)

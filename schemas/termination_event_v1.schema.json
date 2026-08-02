@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mrna-editflow.local/schemas/termination_event_v1.schema.json",
+  "title": "mRNA-EditFlow MK0 termination event",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "reason",
+    "external_time",
+    "state_hash_before",
+    "state_hash_after",
+    "learned_stop",
+    "forced_termination",
+    "inside_ctmc",
+    "consumes_edit_budget"
+  ],
+  "properties": {
+    "schema_version": {"const": "termination_event_v1"},
+    "reason": {
+      "enum": [
+        "LEARNED_STOP",
+        "FORCED_BUDGET",
+        "FORCED_NO_LEGAL_EDIT_ACTION",
+        "FORCED_ZERO_REMAINING_INTEGRATED_HAZARD",
+        "FORCED_TIME_HORIZON",
+        "FAILED_NUMERICAL"
+      ]
+    },
+    "external_time": {"type": "number", "minimum": 0.0, "maximum": 1.0},
+    "state_hash_before": {"$ref": "#/$defs/sha256"},
+    "state_hash_after": {"$ref": "#/$defs/sha256"},
+    "learned_stop": {"type": "boolean"},
+    "forced_termination": {"type": "boolean"},
+    "inside_ctmc": {"type": "boolean"},
+    "consumes_edit_budget": {"const": false},
+    "instantaneous_edit_hazard": {"type": "number", "minimum": 0.0},
+    "instantaneous_stop_hazard": {"type": "number", "minimum": 0.0},
+    "remaining_integrated_total_hazard": {"type": ["number", "null"], "minimum": 0.0},
+    "diagnostic": {"type": ["string", "null"]}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"reason": {"const": "LEARNED_STOP"}}, "required": ["reason"]},
+      "then": {
+        "properties": {
+          "learned_stop": {"const": true},
+          "forced_termination": {"const": false},
+          "inside_ctmc": {"const": true}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"reason": {"const": "FAILED_NUMERICAL"}}, "required": ["reason"]},
+      "then": {
+        "properties": {
+          "learned_stop": {"const": false},
+          "forced_termination": {"const": false},
+          "inside_ctmc": {"const": false}
+        },
+        "required": ["diagnostic"]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "reason": {
+            "enum": [
+              "FORCED_BUDGET",
+              "FORCED_NO_LEGAL_EDIT_ACTION",
+              "FORCED_ZERO_REMAINING_INTEGRATED_HAZARD",
+              "FORCED_TIME_HORIZON"
+            ]
+          }
+        },
+        "required": ["reason"]
+      },
+      "then": {
+        "properties": {
+          "learned_stop": {"const": false},
+          "forced_termination": {"const": true},
+          "inside_ctmc": {"const": false}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"reason": {"const": "FORCED_ZERO_REMAINING_INTEGRATED_HAZARD"}}, "required": ["reason"]},
+      "then": {
+        "required": ["remaining_integrated_total_hazard"],
+        "properties": {
+          "remaining_integrated_total_hazard": {
+            "type": "number",
+            "minimum": 0.0,
+            "maximum": 1.0e-8
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

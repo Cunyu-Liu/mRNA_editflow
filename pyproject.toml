@@ -23,6 +23,7 @@ dependencies = [
     "torch>=2.1",
     "scipy>=1.10",
     "PyYAML>=6.0",
+    "jsonschema==4.23.0",
     "certifi>=2024.0",
     # pytest is a default dependency so the P0-06 acceptance commands
     # (pip install -e . && pytest -q) work verbatim in a clean environment.
@@ -59,6 +60,7 @@ packages = [
     "mrna_editflow",
     "mrna_editflow.core",
     "mrna_editflow.rl",
+    "mrna_editflow.core.mk0",
     "mrna_editflow.eval",
     "mrna_editflow.baselines",
 ]

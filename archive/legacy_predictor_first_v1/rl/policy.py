@@ -59,8 +59,9 @@ class PolicyConfig:
     stop_rate_value : float
         Base stop rate. Must be > 0.
     temperature : float
-        Temperature for sampling. ``1.0`` = exact CTMC sampling; ``>1`` = more
-        uniform; ``<1`` = more greedy.
+        Temperature for the legacy fixed-time categorical policy. ``1.0``
+        leaves the masked logits untempered; ``>1`` is more uniform and
+        ``<1`` is more greedy.  This sampler does not simulate event times.
     time_step : float
         Flow time at which to evaluate the model (default 0.5, matching
         ``sample.py``).

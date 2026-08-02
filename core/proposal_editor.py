@@ -3,7 +3,7 @@
 This module renames and wraps the existing sequential decoding logic
 (:func:`mrna_editflow.sample.model_guided_edit_record`) behind a clear, honest
 interface. :class:`ProposalEditor` is a **constrained proposal ranker**, NOT a
-true Continuous-Time Markov Chain (CTMC) sampler:
+legacy fixed-grid first-order approximation:
 
 * it queries the model at a **fixed** bridge time ``t`` (default ``0.5``) at
   every step, ignoring the time-varying rate field that a faithful CTMC
@@ -19,7 +19,7 @@ samples from the Edit-Flow path measure. For faithful flow integration use
 :class:`mrna_editflow.core.ctmc_sampler.CTMCSampler` (tau-leaping over a
 time-varying rate field). :class:`ProposalEditor` remains useful as a fast,
 grammar-safe, deterministic-ish proposal ranker and as the historical baseline
-against which the true CTMC sampler is compared.
+against which the legacy fixed-grid parallel CTMC approximation is compared.
 
 The editor is model-agnostic: it accepts any callable with the same signature
 as :class:`~mrna_editflow.core.ctmc_sampler.CTMCSampler`'s ``model_fn``::
