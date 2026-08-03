@@ -1,0 +1,132 @@
+# mRNA-EditFlow UTR Benchmark-First — v3.1 TaskRegistry (immutable definition registry)
+# Contract: utr_editflow_goal_v3.1_benchmark_first
+# schema_version: 3.1
+# C3 phase: definition-only. No data-dependent ACTIVE/N/A status, no final metric branches.
+#
+# Frozen constants (see §5.7.1 of the authoritative contract):
+#   REQUIRED_TASK_IDS_V1 set SHA256 = b0b43cb76f39b32009e3a6ef8ae6d05395d61bf7baa7480743587e6772447207
+#   task core semantic descriptor set SHA256 = 8f42ef044d8de1a26b9b587587c2de99c6068f67f37e269e226e143333245ba3
+#   activation-calibration rule bytes SHA256 = b2652abda7a2dbb7001e7fb655db9b6ac19f2b8f80fbc65362dc1236fd9781e9
+registry_version: "3.1"
+contract_id: "utr_editflow_goal_v3.1_benchmark_first"
+schema_version: "3.1"
+required_task_ids_sha256: "b0b43cb76f39b32009e3a6ef8ae6d05395d61bf7baa7480743587e6772447207"
+task_descriptor_set_sha256: "8f42ef044d8de1a26b9b587587c2de99c6068f67f37e269e226e143333245ba3"
+activation_calibration_rule_sha256: "b2652abda7a2dbb7001e7fb655db9b6ac19f2b8f80fbc65362dc1236fd9781e9"
+activation_calibration_rule_bytes: |
+  ACTIVATION_CALIBRATION_MASK_V1
+  ELIGIBLE_SCOPE=ORDINARY_NONSEALED_CURRENT_LEAF_TECHNICAL_ACCEPTED
+  COMPONENT_ATOMS=BIOLOGICAL_PARENT,GENE,LIBRARY_LINEAGE,SEQUENCE_CLUSTER,STUDY,TILE_FAMILY
+  COMPONENT_ID=SHA256_SORTED_MEMBER_IDS
+  SELECT=UINT64_BE(SHA256(UTR_EDITFLOW_V3_1_CALIBRATION|COMPONENT_ID)[0:8])%5==0
+  CALIBRATION_PARTITION=DEVELOPMENT_ONLY
+  OUTCOME_BLIND=true
+tasks:
+  - task_id: CROSS_REGION_PROPERTY_F_OBSERVATION
+    task_kind: BENCHMARK_EVALUATION
+    object_type: OBSERVATION
+    scientific_track: F
+    region_scope: CROSS_REGION
+    estimand_id: CROSS_REGION_ENDPOINT_PROPERTY_TRANSFER
+    activation_rule_id: CONDITIONAL_COMMON_SUPPORT
+    analysis_unit_id: ENDPOINT_CONTEXT_OBSERVATION
+    species_scope_policy_id: WITHIN_SPECIES_STRATIFIED_V1
+  - task_id: CROSS_REGION_RECONSTRUCT_E_PAIR
+    task_kind: BENCHMARK_EVALUATION
+    object_type: PAIR
+    scientific_track: E
+    region_scope: CROSS_REGION
+    estimand_id: CROSS_REGION_ENDPOINT_RECONSTRUCTION
+    activation_rule_id: CONDITIONAL_COMMON_SUPPORT
+    analysis_unit_id: UNIQUE_SEQUENCE_EDIT_RELATION
+    species_scope_policy_id: WITHIN_SPECIES_STRATIFIED_V1
+  - task_id: F3_OUTCOME_AUX_OBSERVATION
+    task_kind: AUXILIARY_TRAINING
+    object_type: OBSERVATION
+    scientific_track: F
+    region_scope: 3UTR
+    estimand_id: SUPERVISED_ENDPOINT_OUTCOME_AUXILIARY
+    activation_rule_id: ALWAYS_ACTIVE
+    analysis_unit_id: ENDPOINT_CONTEXT_OBSERVATION
+    species_scope_policy_id: WITHIN_SPECIES_STRATIFIED_V1
+  - task_id: F5_OUTCOME_AUX_OBSERVATION
+    task_kind: AUXILIARY_TRAINING
+    object_type: OBSERVATION
+    scientific_track: F
+    region_scope: 5UTR
+    estimand_id: SUPERVISED_ENDPOINT_OUTCOME_AUXILIARY
+    activation_rule_id: ALWAYS_ACTIVE
+    analysis_unit_id: ENDPOINT_CONTEXT_OBSERVATION
+    species_scope_policy_id: WITHIN_SPECIES_STRATIFIED_V1
+  - task_id: T3_EFFECT_DELTA_E_PAIR
+    task_kind: BENCHMARK_EVALUATION
+    object_type: PAIR
+    scientific_track: E
+    region_scope: 3UTR
+    estimand_id: WITHIN_ASSAY_NORMALIZED_DELTA
+    activation_rule_id: CONDITIONAL_DELTA_JOIN_GATE
+    analysis_unit_id: ENDPOINT_CONTEXT_PAIR_INSTANCE
+    species_scope_policy_id: WITHIN_SPECIES_STRATIFIED_V1
+  - task_id: T3_PROPERTY_E_PAIR
+    task_kind: BENCHMARK_EVALUATION
+    object_type: PAIR
+    scientific_track: E
+    region_scope: 3UTR
+    estimand_id: CANDIDATE_ENDPOINT_PROPERTY
+    activation_rule_id: ALWAYS_ACTIVE
+    analysis_unit_id: ENDPOINT_CONTEXT_PAIR_INSTANCE
+    species_scope_policy_id: WITHIN_SPECIES_STRATIFIED_V1
+  - task_id: T3_RANK_EXPLORATORY_E_PAIR
+    task_kind: BENCHMARK_EVALUATION
+    object_type: PAIR
+    scientific_track: E
+    region_scope: 3UTR
+    estimand_id: MEASURED_POOL_SOURCE_MACRO_RANKING
+    activation_rule_id: ACTIVE_EXPLORATORY_IF_NONEMPTY
+    analysis_unit_id: ENDPOINT_CONTEXT_PAIR_INSTANCE
+    species_scope_policy_id: WITHIN_SPECIES_STRATIFIED_V1
+  - task_id: T3_RECONSTRUCT_E_PAIR
+    task_kind: BENCHMARK_EVALUATION
+    object_type: PAIR
+    scientific_track: E
+    region_scope: 3UTR
+    estimand_id: HELDOUT_ENDPOINT_RECONSTRUCTION
+    activation_rule_id: ALWAYS_ACTIVE
+    analysis_unit_id: UNIQUE_SEQUENCE_EDIT_RELATION
+    species_scope_policy_id: WITHIN_SPECIES_STRATIFIED_V1
+  - task_id: T5_CONTEXT_E_PAIR
+    task_kind: BENCHMARK_EVALUATION
+    object_type: PAIR
+    scientific_track: E
+    region_scope: 5UTR
+    estimand_id: PAIR_CONTEXT_TRANSFER
+    activation_rule_id: CONDITIONAL_REPEATED_CONTEXT_GATE
+    analysis_unit_id: REPEATED_CONTEXT_RELATION_GROUP
+    species_scope_policy_id: WITHIN_SPECIES_STRATIFIED_V1
+  - task_id: T5_CONTEXT_F_OBSERVATION
+    task_kind: BENCHMARK_EVALUATION
+    object_type: OBSERVATION
+    scientific_track: F
+    region_scope: 5UTR
+    estimand_id: OBSERVATION_CONTEXT_TRANSFER
+    activation_rule_id: CONDITIONAL_REPEATED_CONTEXT_GATE
+    analysis_unit_id: REPEATED_CONTEXT_OBSERVATION_GROUP
+    species_scope_policy_id: WITHIN_SPECIES_STRATIFIED_V1
+  - task_id: T5_GEN_RECONSTRUCT_E_PAIR
+    task_kind: BENCHMARK_EVALUATION
+    object_type: PAIR
+    scientific_track: E
+    region_scope: 5UTR
+    estimand_id: HELDOUT_ENDPOINT_RECONSTRUCTION
+    activation_rule_id: ALWAYS_ACTIVE
+    analysis_unit_id: UNIQUE_SEQUENCE_EDIT_RELATION
+    species_scope_policy_id: WITHIN_SPECIES_STRATIFIED_V1
+  - task_id: T5_RANK_CLOSED_SELECT_E_PAIR
+    task_kind: BENCHMARK_EVALUATION
+    object_type: PAIR
+    scientific_track: E
+    region_scope: 5UTR
+    estimand_id: MEASURED_POOL_SOURCE_MACRO_RANKING
+    activation_rule_id: CONDITIONAL_MULTI_CANDIDATE_GATE
+    analysis_unit_id: ENDPOINT_CONTEXT_PAIR_INSTANCE
+    species_scope_policy_id: WITHIN_SPECIES_STRATIFIED_V1

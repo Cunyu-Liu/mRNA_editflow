@@ -1,0 +1,730 @@
+# mRNA-EditFlow UTR Benchmark-First — v3.1 Task x Split definition matrix (immutable)
+# Contract: utr_editflow_goal_v3.1_benchmark_first
+# schema_version: 3.1
+# C3 phase: definition-only. Exactly 120 rows = 12 tasks x 10 splits.
+# allowlist hash SHA256 = 02b25e4717e4a7192b658d5e69cdbb198e5b696b3ea520b7a0a887fcf89097ab
+matrix_version: "3.1"
+contract_id: "utr_editflow_goal_v3.1_benchmark_first"
+schema_version: "3.1"
+allowlist_sha256: "02b25e4717e4a7192b658d5e69cdbb198e5b696b3ea520b7a0a887fcf89097ab"
+rows:
+  - task_id: CROSS_REGION_PROPERTY_F_OBSERVATION
+    split_contract_id: 3utr_sequence_cluster_disjoint
+    contract_mapping: NOT_ALLOWED
+    object_type: OBSERVATION
+    scientific_track: F
+    definition_reason: not_in_contract_allowlist
+  - task_id: CROSS_REGION_PROPERTY_F_OBSERVATION
+    split_contract_id: 3utr_source_or_variant_disjoint
+    contract_mapping: NOT_ALLOWED
+    object_type: OBSERVATION
+    scientific_track: F
+    definition_reason: not_in_contract_allowlist
+  - task_id: CROSS_REGION_PROPERTY_F_OBSERVATION
+    split_contract_id: 3utr_study_disjoint
+    contract_mapping: NOT_ALLOWED
+    object_type: OBSERVATION
+    scientific_track: F
+    definition_reason: not_in_contract_allowlist
+  - task_id: CROSS_REGION_PROPERTY_F_OBSERVATION
+    split_contract_id: 5utr_sequence_cluster_disjoint
+    contract_mapping: NOT_ALLOWED
+    object_type: OBSERVATION
+    scientific_track: F
+    definition_reason: not_in_contract_allowlist
+  - task_id: CROSS_REGION_PROPERTY_F_OBSERVATION
+    split_contract_id: 5utr_source_disjoint
+    contract_mapping: NOT_ALLOWED
+    object_type: OBSERVATION
+    scientific_track: F
+    definition_reason: not_in_contract_allowlist
+  - task_id: CROSS_REGION_PROPERTY_F_OBSERVATION
+    split_contract_id: 5utr_study_disjoint
+    contract_mapping: NOT_ALLOWED
+    object_type: OBSERVATION
+    scientific_track: F
+    definition_reason: not_in_contract_allowlist
+  - task_id: CROSS_REGION_PROPERTY_F_OBSERVATION
+    split_contract_id: cross_region_3_to_5
+    contract_mapping: ALLOWED
+    object_type: OBSERVATION
+    scientific_track: F
+    definition_reason: contract_allowlist_definition
+  - task_id: CROSS_REGION_PROPERTY_F_OBSERVATION
+    split_contract_id: cross_region_5_to_3
+    contract_mapping: ALLOWED
+    object_type: OBSERVATION
+    scientific_track: F
+    definition_reason: contract_allowlist_definition
+  - task_id: CROSS_REGION_PROPERTY_F_OBSERVATION
+    split_contract_id: heldout_context
+    contract_mapping: NOT_ALLOWED
+    object_type: OBSERVATION
+    scientific_track: F
+    definition_reason: not_in_contract_allowlist
+  - task_id: CROSS_REGION_PROPERTY_F_OBSERVATION
+    split_contract_id: sealed_final_v1
+    contract_mapping: NOT_ALLOWED
+    object_type: OBSERVATION
+    scientific_track: F
+    definition_reason: not_in_contract_allowlist
+  - task_id: CROSS_REGION_RECONSTRUCT_E_PAIR
+    split_contract_id: 3utr_sequence_cluster_disjoint
+    contract_mapping: NOT_ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: not_in_contract_allowlist
+  - task_id: CROSS_REGION_RECONSTRUCT_E_PAIR
+    split_contract_id: 3utr_source_or_variant_disjoint
+    contract_mapping: NOT_ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: not_in_contract_allowlist
+  - task_id: CROSS_REGION_RECONSTRUCT_E_PAIR
+    split_contract_id: 3utr_study_disjoint
+    contract_mapping: NOT_ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: not_in_contract_allowlist
+  - task_id: CROSS_REGION_RECONSTRUCT_E_PAIR
+    split_contract_id: 5utr_sequence_cluster_disjoint
+    contract_mapping: NOT_ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: not_in_contract_allowlist
+  - task_id: CROSS_REGION_RECONSTRUCT_E_PAIR
+    split_contract_id: 5utr_source_disjoint
+    contract_mapping: NOT_ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: not_in_contract_allowlist
+  - task_id: CROSS_REGION_RECONSTRUCT_E_PAIR
+    split_contract_id: 5utr_study_disjoint
+    contract_mapping: NOT_ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: not_in_contract_allowlist
+  - task_id: CROSS_REGION_RECONSTRUCT_E_PAIR
+    split_contract_id: cross_region_3_to_5
+    contract_mapping: ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: contract_allowlist_definition
+  - task_id: CROSS_REGION_RECONSTRUCT_E_PAIR
+    split_contract_id: cross_region_5_to_3
+    contract_mapping: ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: contract_allowlist_definition
+  - task_id: CROSS_REGION_RECONSTRUCT_E_PAIR
+    split_contract_id: heldout_context
+    contract_mapping: NOT_ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: not_in_contract_allowlist
+  - task_id: CROSS_REGION_RECONSTRUCT_E_PAIR
+    split_contract_id: sealed_final_v1
+    contract_mapping: NOT_ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: not_in_contract_allowlist
+  - task_id: F3_OUTCOME_AUX_OBSERVATION
+    split_contract_id: 3utr_sequence_cluster_disjoint
+    contract_mapping: ALLOWED
+    object_type: OBSERVATION
+    scientific_track: F
+    definition_reason: contract_allowlist_definition
+  - task_id: F3_OUTCOME_AUX_OBSERVATION
+    split_contract_id: 3utr_source_or_variant_disjoint
+    contract_mapping: NOT_ALLOWED
+    object_type: OBSERVATION
+    scientific_track: F
+    definition_reason: not_in_contract_allowlist
+  - task_id: F3_OUTCOME_AUX_OBSERVATION
+    split_contract_id: 3utr_study_disjoint
+    contract_mapping: ALLOWED
+    object_type: OBSERVATION
+    scientific_track: F
+    definition_reason: contract_allowlist_definition
+  - task_id: F3_OUTCOME_AUX_OBSERVATION
+    split_contract_id: 5utr_sequence_cluster_disjoint
+    contract_mapping: NOT_ALLOWED
+    object_type: OBSERVATION
+    scientific_track: F
+    definition_reason: not_in_contract_allowlist
+  - task_id: F3_OUTCOME_AUX_OBSERVATION
+    split_contract_id: 5utr_source_disjoint
+    contract_mapping: NOT_ALLOWED
+    object_type: OBSERVATION
+    scientific_track: F
+    definition_reason: not_in_contract_allowlist
+  - task_id: F3_OUTCOME_AUX_OBSERVATION
+    split_contract_id: 5utr_study_disjoint
+    contract_mapping: NOT_ALLOWED
+    object_type: OBSERVATION
+    scientific_track: F
+    definition_reason: not_in_contract_allowlist
+  - task_id: F3_OUTCOME_AUX_OBSERVATION
+    split_contract_id: cross_region_3_to_5
+    contract_mapping: NOT_ALLOWED
+    object_type: OBSERVATION
+    scientific_track: F
+    definition_reason: not_in_contract_allowlist
+  - task_id: F3_OUTCOME_AUX_OBSERVATION
+    split_contract_id: cross_region_5_to_3
+    contract_mapping: NOT_ALLOWED
+    object_type: OBSERVATION
+    scientific_track: F
+    definition_reason: not_in_contract_allowlist
+  - task_id: F3_OUTCOME_AUX_OBSERVATION
+    split_contract_id: heldout_context
+    contract_mapping: NOT_ALLOWED
+    object_type: OBSERVATION
+    scientific_track: F
+    definition_reason: not_in_contract_allowlist
+  - task_id: F3_OUTCOME_AUX_OBSERVATION
+    split_contract_id: sealed_final_v1
+    contract_mapping: NOT_ALLOWED
+    object_type: OBSERVATION
+    scientific_track: F
+    definition_reason: not_in_contract_allowlist
+  - task_id: F5_OUTCOME_AUX_OBSERVATION
+    split_contract_id: 3utr_sequence_cluster_disjoint
+    contract_mapping: NOT_ALLOWED
+    object_type: OBSERVATION
+    scientific_track: F
+    definition_reason: not_in_contract_allowlist
+  - task_id: F5_OUTCOME_AUX_OBSERVATION
+    split_contract_id: 3utr_source_or_variant_disjoint
+    contract_mapping: NOT_ALLOWED
+    object_type: OBSERVATION
+    scientific_track: F
+    definition_reason: not_in_contract_allowlist
+  - task_id: F5_OUTCOME_AUX_OBSERVATION
+    split_contract_id: 3utr_study_disjoint
+    contract_mapping: NOT_ALLOWED
+    object_type: OBSERVATION
+    scientific_track: F
+    definition_reason: not_in_contract_allowlist
+  - task_id: F5_OUTCOME_AUX_OBSERVATION
+    split_contract_id: 5utr_sequence_cluster_disjoint
+    contract_mapping: ALLOWED
+    object_type: OBSERVATION
+    scientific_track: F
+    definition_reason: contract_allowlist_definition
+  - task_id: F5_OUTCOME_AUX_OBSERVATION
+    split_contract_id: 5utr_source_disjoint
+    contract_mapping: NOT_ALLOWED
+    object_type: OBSERVATION
+    scientific_track: F
+    definition_reason: not_in_contract_allowlist
+  - task_id: F5_OUTCOME_AUX_OBSERVATION
+    split_contract_id: 5utr_study_disjoint
+    contract_mapping: ALLOWED
+    object_type: OBSERVATION
+    scientific_track: F
+    definition_reason: contract_allowlist_definition
+  - task_id: F5_OUTCOME_AUX_OBSERVATION
+    split_contract_id: cross_region_3_to_5
+    contract_mapping: NOT_ALLOWED
+    object_type: OBSERVATION
+    scientific_track: F
+    definition_reason: not_in_contract_allowlist
+  - task_id: F5_OUTCOME_AUX_OBSERVATION
+    split_contract_id: cross_region_5_to_3
+    contract_mapping: NOT_ALLOWED
+    object_type: OBSERVATION
+    scientific_track: F
+    definition_reason: not_in_contract_allowlist
+  - task_id: F5_OUTCOME_AUX_OBSERVATION
+    split_contract_id: heldout_context
+    contract_mapping: NOT_ALLOWED
+    object_type: OBSERVATION
+    scientific_track: F
+    definition_reason: not_in_contract_allowlist
+  - task_id: F5_OUTCOME_AUX_OBSERVATION
+    split_contract_id: sealed_final_v1
+    contract_mapping: NOT_ALLOWED
+    object_type: OBSERVATION
+    scientific_track: F
+    definition_reason: not_in_contract_allowlist
+  - task_id: T3_EFFECT_DELTA_E_PAIR
+    split_contract_id: 3utr_sequence_cluster_disjoint
+    contract_mapping: NOT_ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: not_in_contract_allowlist
+  - task_id: T3_EFFECT_DELTA_E_PAIR
+    split_contract_id: 3utr_source_or_variant_disjoint
+    contract_mapping: ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: contract_allowlist_definition
+  - task_id: T3_EFFECT_DELTA_E_PAIR
+    split_contract_id: 3utr_study_disjoint
+    contract_mapping: ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: contract_allowlist_definition
+  - task_id: T3_EFFECT_DELTA_E_PAIR
+    split_contract_id: 5utr_sequence_cluster_disjoint
+    contract_mapping: NOT_ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: not_in_contract_allowlist
+  - task_id: T3_EFFECT_DELTA_E_PAIR
+    split_contract_id: 5utr_source_disjoint
+    contract_mapping: NOT_ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: not_in_contract_allowlist
+  - task_id: T3_EFFECT_DELTA_E_PAIR
+    split_contract_id: 5utr_study_disjoint
+    contract_mapping: NOT_ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: not_in_contract_allowlist
+  - task_id: T3_EFFECT_DELTA_E_PAIR
+    split_contract_id: cross_region_3_to_5
+    contract_mapping: NOT_ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: not_in_contract_allowlist
+  - task_id: T3_EFFECT_DELTA_E_PAIR
+    split_contract_id: cross_region_5_to_3
+    contract_mapping: NOT_ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: not_in_contract_allowlist
+  - task_id: T3_EFFECT_DELTA_E_PAIR
+    split_contract_id: heldout_context
+    contract_mapping: NOT_ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: not_in_contract_allowlist
+  - task_id: T3_EFFECT_DELTA_E_PAIR
+    split_contract_id: sealed_final_v1
+    contract_mapping: NOT_ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: not_in_contract_allowlist
+  - task_id: T3_PROPERTY_E_PAIR
+    split_contract_id: 3utr_sequence_cluster_disjoint
+    contract_mapping: NOT_ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: not_in_contract_allowlist
+  - task_id: T3_PROPERTY_E_PAIR
+    split_contract_id: 3utr_source_or_variant_disjoint
+    contract_mapping: ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: contract_allowlist_definition
+  - task_id: T3_PROPERTY_E_PAIR
+    split_contract_id: 3utr_study_disjoint
+    contract_mapping: ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: contract_allowlist_definition
+  - task_id: T3_PROPERTY_E_PAIR
+    split_contract_id: 5utr_sequence_cluster_disjoint
+    contract_mapping: NOT_ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: not_in_contract_allowlist
+  - task_id: T3_PROPERTY_E_PAIR
+    split_contract_id: 5utr_source_disjoint
+    contract_mapping: NOT_ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: not_in_contract_allowlist
+  - task_id: T3_PROPERTY_E_PAIR
+    split_contract_id: 5utr_study_disjoint
+    contract_mapping: NOT_ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: not_in_contract_allowlist
+  - task_id: T3_PROPERTY_E_PAIR
+    split_contract_id: cross_region_3_to_5
+    contract_mapping: NOT_ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: not_in_contract_allowlist
+  - task_id: T3_PROPERTY_E_PAIR
+    split_contract_id: cross_region_5_to_3
+    contract_mapping: NOT_ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: not_in_contract_allowlist
+  - task_id: T3_PROPERTY_E_PAIR
+    split_contract_id: heldout_context
+    contract_mapping: NOT_ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: not_in_contract_allowlist
+  - task_id: T3_PROPERTY_E_PAIR
+    split_contract_id: sealed_final_v1
+    contract_mapping: NOT_ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: not_in_contract_allowlist
+  - task_id: T3_RANK_EXPLORATORY_E_PAIR
+    split_contract_id: 3utr_sequence_cluster_disjoint
+    contract_mapping: NOT_ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: not_in_contract_allowlist
+  - task_id: T3_RANK_EXPLORATORY_E_PAIR
+    split_contract_id: 3utr_source_or_variant_disjoint
+    contract_mapping: ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: contract_allowlist_definition
+  - task_id: T3_RANK_EXPLORATORY_E_PAIR
+    split_contract_id: 3utr_study_disjoint
+    contract_mapping: ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: contract_allowlist_definition
+  - task_id: T3_RANK_EXPLORATORY_E_PAIR
+    split_contract_id: 5utr_sequence_cluster_disjoint
+    contract_mapping: NOT_ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: not_in_contract_allowlist
+  - task_id: T3_RANK_EXPLORATORY_E_PAIR
+    split_contract_id: 5utr_source_disjoint
+    contract_mapping: NOT_ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: not_in_contract_allowlist
+  - task_id: T3_RANK_EXPLORATORY_E_PAIR
+    split_contract_id: 5utr_study_disjoint
+    contract_mapping: NOT_ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: not_in_contract_allowlist
+  - task_id: T3_RANK_EXPLORATORY_E_PAIR
+    split_contract_id: cross_region_3_to_5
+    contract_mapping: NOT_ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: not_in_contract_allowlist
+  - task_id: T3_RANK_EXPLORATORY_E_PAIR
+    split_contract_id: cross_region_5_to_3
+    contract_mapping: NOT_ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: not_in_contract_allowlist
+  - task_id: T3_RANK_EXPLORATORY_E_PAIR
+    split_contract_id: heldout_context
+    contract_mapping: NOT_ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: not_in_contract_allowlist
+  - task_id: T3_RANK_EXPLORATORY_E_PAIR
+    split_contract_id: sealed_final_v1
+    contract_mapping: NOT_ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: not_in_contract_allowlist
+  - task_id: T3_RECONSTRUCT_E_PAIR
+    split_contract_id: 3utr_sequence_cluster_disjoint
+    contract_mapping: NOT_ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: not_in_contract_allowlist
+  - task_id: T3_RECONSTRUCT_E_PAIR
+    split_contract_id: 3utr_source_or_variant_disjoint
+    contract_mapping: ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: contract_allowlist_definition
+  - task_id: T3_RECONSTRUCT_E_PAIR
+    split_contract_id: 3utr_study_disjoint
+    contract_mapping: ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: contract_allowlist_definition
+  - task_id: T3_RECONSTRUCT_E_PAIR
+    split_contract_id: 5utr_sequence_cluster_disjoint
+    contract_mapping: NOT_ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: not_in_contract_allowlist
+  - task_id: T3_RECONSTRUCT_E_PAIR
+    split_contract_id: 5utr_source_disjoint
+    contract_mapping: NOT_ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: not_in_contract_allowlist
+  - task_id: T3_RECONSTRUCT_E_PAIR
+    split_contract_id: 5utr_study_disjoint
+    contract_mapping: NOT_ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: not_in_contract_allowlist
+  - task_id: T3_RECONSTRUCT_E_PAIR
+    split_contract_id: cross_region_3_to_5
+    contract_mapping: NOT_ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: not_in_contract_allowlist
+  - task_id: T3_RECONSTRUCT_E_PAIR
+    split_contract_id: cross_region_5_to_3
+    contract_mapping: NOT_ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: not_in_contract_allowlist
+  - task_id: T3_RECONSTRUCT_E_PAIR
+    split_contract_id: heldout_context
+    contract_mapping: NOT_ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: not_in_contract_allowlist
+  - task_id: T3_RECONSTRUCT_E_PAIR
+    split_contract_id: sealed_final_v1
+    contract_mapping: NOT_ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: not_in_contract_allowlist
+  - task_id: T5_CONTEXT_E_PAIR
+    split_contract_id: 3utr_sequence_cluster_disjoint
+    contract_mapping: NOT_ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: not_in_contract_allowlist
+  - task_id: T5_CONTEXT_E_PAIR
+    split_contract_id: 3utr_source_or_variant_disjoint
+    contract_mapping: NOT_ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: not_in_contract_allowlist
+  - task_id: T5_CONTEXT_E_PAIR
+    split_contract_id: 3utr_study_disjoint
+    contract_mapping: NOT_ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: not_in_contract_allowlist
+  - task_id: T5_CONTEXT_E_PAIR
+    split_contract_id: 5utr_sequence_cluster_disjoint
+    contract_mapping: NOT_ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: not_in_contract_allowlist
+  - task_id: T5_CONTEXT_E_PAIR
+    split_contract_id: 5utr_source_disjoint
+    contract_mapping: NOT_ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: not_in_contract_allowlist
+  - task_id: T5_CONTEXT_E_PAIR
+    split_contract_id: 5utr_study_disjoint
+    contract_mapping: NOT_ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: not_in_contract_allowlist
+  - task_id: T5_CONTEXT_E_PAIR
+    split_contract_id: cross_region_3_to_5
+    contract_mapping: NOT_ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: not_in_contract_allowlist
+  - task_id: T5_CONTEXT_E_PAIR
+    split_contract_id: cross_region_5_to_3
+    contract_mapping: NOT_ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: not_in_contract_allowlist
+  - task_id: T5_CONTEXT_E_PAIR
+    split_contract_id: heldout_context
+    contract_mapping: ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: contract_allowlist_definition
+  - task_id: T5_CONTEXT_E_PAIR
+    split_contract_id: sealed_final_v1
+    contract_mapping: NOT_ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: not_in_contract_allowlist
+  - task_id: T5_CONTEXT_F_OBSERVATION
+    split_contract_id: 3utr_sequence_cluster_disjoint
+    contract_mapping: NOT_ALLOWED
+    object_type: OBSERVATION
+    scientific_track: F
+    definition_reason: not_in_contract_allowlist
+  - task_id: T5_CONTEXT_F_OBSERVATION
+    split_contract_id: 3utr_source_or_variant_disjoint
+    contract_mapping: NOT_ALLOWED
+    object_type: OBSERVATION
+    scientific_track: F
+    definition_reason: not_in_contract_allowlist
+  - task_id: T5_CONTEXT_F_OBSERVATION
+    split_contract_id: 3utr_study_disjoint
+    contract_mapping: NOT_ALLOWED
+    object_type: OBSERVATION
+    scientific_track: F
+    definition_reason: not_in_contract_allowlist
+  - task_id: T5_CONTEXT_F_OBSERVATION
+    split_contract_id: 5utr_sequence_cluster_disjoint
+    contract_mapping: NOT_ALLOWED
+    object_type: OBSERVATION
+    scientific_track: F
+    definition_reason: not_in_contract_allowlist
+  - task_id: T5_CONTEXT_F_OBSERVATION
+    split_contract_id: 5utr_source_disjoint
+    contract_mapping: NOT_ALLOWED
+    object_type: OBSERVATION
+    scientific_track: F
+    definition_reason: not_in_contract_allowlist
+  - task_id: T5_CONTEXT_F_OBSERVATION
+    split_contract_id: 5utr_study_disjoint
+    contract_mapping: NOT_ALLOWED
+    object_type: OBSERVATION
+    scientific_track: F
+    definition_reason: not_in_contract_allowlist
+  - task_id: T5_CONTEXT_F_OBSERVATION
+    split_contract_id: cross_region_3_to_5
+    contract_mapping: NOT_ALLOWED
+    object_type: OBSERVATION
+    scientific_track: F
+    definition_reason: not_in_contract_allowlist
+  - task_id: T5_CONTEXT_F_OBSERVATION
+    split_contract_id: cross_region_5_to_3
+    contract_mapping: NOT_ALLOWED
+    object_type: OBSERVATION
+    scientific_track: F
+    definition_reason: not_in_contract_allowlist
+  - task_id: T5_CONTEXT_F_OBSERVATION
+    split_contract_id: heldout_context
+    contract_mapping: ALLOWED
+    object_type: OBSERVATION
+    scientific_track: F
+    definition_reason: contract_allowlist_definition
+  - task_id: T5_CONTEXT_F_OBSERVATION
+    split_contract_id: sealed_final_v1
+    contract_mapping: NOT_ALLOWED
+    object_type: OBSERVATION
+    scientific_track: F
+    definition_reason: not_in_contract_allowlist
+  - task_id: T5_GEN_RECONSTRUCT_E_PAIR
+    split_contract_id: 3utr_sequence_cluster_disjoint
+    contract_mapping: NOT_ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: not_in_contract_allowlist
+  - task_id: T5_GEN_RECONSTRUCT_E_PAIR
+    split_contract_id: 3utr_source_or_variant_disjoint
+    contract_mapping: NOT_ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: not_in_contract_allowlist
+  - task_id: T5_GEN_RECONSTRUCT_E_PAIR
+    split_contract_id: 3utr_study_disjoint
+    contract_mapping: NOT_ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: not_in_contract_allowlist
+  - task_id: T5_GEN_RECONSTRUCT_E_PAIR
+    split_contract_id: 5utr_sequence_cluster_disjoint
+    contract_mapping: NOT_ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: not_in_contract_allowlist
+  - task_id: T5_GEN_RECONSTRUCT_E_PAIR
+    split_contract_id: 5utr_source_disjoint
+    contract_mapping: ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: contract_allowlist_definition
+  - task_id: T5_GEN_RECONSTRUCT_E_PAIR
+    split_contract_id: 5utr_study_disjoint
+    contract_mapping: ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: contract_allowlist_definition
+  - task_id: T5_GEN_RECONSTRUCT_E_PAIR
+    split_contract_id: cross_region_3_to_5
+    contract_mapping: NOT_ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: not_in_contract_allowlist
+  - task_id: T5_GEN_RECONSTRUCT_E_PAIR
+    split_contract_id: cross_region_5_to_3
+    contract_mapping: NOT_ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: not_in_contract_allowlist
+  - task_id: T5_GEN_RECONSTRUCT_E_PAIR
+    split_contract_id: heldout_context
+    contract_mapping: NOT_ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: not_in_contract_allowlist
+  - task_id: T5_GEN_RECONSTRUCT_E_PAIR
+    split_contract_id: sealed_final_v1
+    contract_mapping: ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: contract_allowlist_definition
+  - task_id: T5_RANK_CLOSED_SELECT_E_PAIR
+    split_contract_id: 3utr_sequence_cluster_disjoint
+    contract_mapping: NOT_ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: not_in_contract_allowlist
+  - task_id: T5_RANK_CLOSED_SELECT_E_PAIR
+    split_contract_id: 3utr_source_or_variant_disjoint
+    contract_mapping: NOT_ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: not_in_contract_allowlist
+  - task_id: T5_RANK_CLOSED_SELECT_E_PAIR
+    split_contract_id: 3utr_study_disjoint
+    contract_mapping: NOT_ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: not_in_contract_allowlist
+  - task_id: T5_RANK_CLOSED_SELECT_E_PAIR
+    split_contract_id: 5utr_sequence_cluster_disjoint
+    contract_mapping: NOT_ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: not_in_contract_allowlist
+  - task_id: T5_RANK_CLOSED_SELECT_E_PAIR
+    split_contract_id: 5utr_source_disjoint
+    contract_mapping: ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: contract_allowlist_definition
+  - task_id: T5_RANK_CLOSED_SELECT_E_PAIR
+    split_contract_id: 5utr_study_disjoint
+    contract_mapping: ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: contract_allowlist_definition
+  - task_id: T5_RANK_CLOSED_SELECT_E_PAIR
+    split_contract_id: cross_region_3_to_5
+    contract_mapping: NOT_ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: not_in_contract_allowlist
+  - task_id: T5_RANK_CLOSED_SELECT_E_PAIR
+    split_contract_id: cross_region_5_to_3
+    contract_mapping: NOT_ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: not_in_contract_allowlist
+  - task_id: T5_RANK_CLOSED_SELECT_E_PAIR
+    split_contract_id: heldout_context
+    contract_mapping: NOT_ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: not_in_contract_allowlist
+  - task_id: T5_RANK_CLOSED_SELECT_E_PAIR
+    split_contract_id: sealed_final_v1
+    contract_mapping: ALLOWED
+    object_type: PAIR
+    scientific_track: E
+    definition_reason: contract_allowlist_definition

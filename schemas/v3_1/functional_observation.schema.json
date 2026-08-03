@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Cunyu-Liu/mRNA_editflow/schemas/v3_1/functional_observation.schema.json",
+  "title": "FunctionalObservation (v3.1)",
+  "description": "Functional observation record (Track F) plus required candidate/endpoint $defs.",
+  "schema_version": "3.1",
+  "contract_id": "utr_editflow_goal_v3.1_benchmark_first",
+  "type": "object",
+  "required": ["observation_id", "sequence_id", "endpoint_id", "context_id", "value", "unit"],
+  "additionalProperties": false,
+  "properties": {
+    "observation_id": {"type": "string"},
+    "sequence_id": {"type": "string"},
+    "endpoint_id": {"type": "string"},
+    "context_id": {"type": "string"},
+    "value": {"type": "number"},
+    "unit": {"type": "string"},
+    "replicate": {"type": ["string", "null"]}
+  },
+  "$defs": {
+    "FunctionalObservationCandidate": {
+      "type": "object",
+      "required": ["candidate_id", "sequence_id", "endpoint_id", "context_id", "source", "source_file_sha256", "lifecycle_status"],
+      "additionalProperties": false,
+      "properties": {
+        "candidate_id": {"type": "string"},
+        "sequence_id": {"type": "string"},
+        "endpoint_id": {"type": "string"},
+        "context_id": {"type": "string"},
+        "source": {"type": "string"},
+        "source_file_sha256": {"type": "string"},
+        "value": {"type": ["number", "null"]},
+        "lifecycle_status": {"type": "string", "enum": ["CANDIDATE", "ACCEPTED", "REJECTED"]}
+      }
+    },
+    "EndpointRegistryRow": {
+      "type": "object",
+      "required": ["endpoint_id", "name", "scaling", "missing_token", "missing_mask"],
+      "additionalProperties": false,
+      "properties": {
+        "endpoint_id": {"type": "string"},
+        "name": {"type": "string"},
+        "scaling": {"type": "string", "enum": ["LINEAR", "LOG", "RANK", "CATEGORICAL"]},
+        "missing_token": {"type": "boolean"},
+        "missing_mask": {"type": "boolean"}
+      }
+    }
+  }
+}

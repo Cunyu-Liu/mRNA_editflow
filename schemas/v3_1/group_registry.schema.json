@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Cunyu-Liu/mRNA_editflow/schemas/v3_1/group_registry.schema.json",
+  "title": "GroupRegistry (v3.1)",
+  "description": "Registry of grouping atoms (shared-group connected components) used for disjoint splits.",
+  "schema_version": "3.1",
+  "contract_id": "utr_editflow_goal_v3.1_benchmark_first",
+  "type": "object",
+  "required": ["group_id", "grouping_atom", "member_ids", "group_sha256"],
+  "additionalProperties": false,
+  "properties": {
+    "group_id": {"type": "string"},
+    "grouping_atom": {"type": "string", "enum": ["SOURCE", "PAIR", "BIOLOGICAL_PARENT", "GENE", "TRANSCRIPT", "TILE_FAMILY", "SEQUENCE_CLUSTER", "LIBRARY_LINEAGE", "STUDY", "CONTEXT"]},
+    "member_ids": {"type": "array", "items": {"type": "string"}},
+    "group_sha256": {"type": "string"}
+  }
+}

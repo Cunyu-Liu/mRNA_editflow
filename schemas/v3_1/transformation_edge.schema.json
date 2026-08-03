@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Cunyu-Liu/mRNA_editflow/schemas/v3_1/transformation_edge.schema.json",
+  "title": "TransformationEdge (v3.1)",
+  "description": "Parent-linked supersession edge and current canonical projection.",
+  "schema_version": "3.1",
+  "contract_id": "utr_editflow_goal_v3.1_benchmark_first",
+  "type": "object",
+  "required": ["edge_id", "parent_object_id", "child_object_id", "edge_sha256", "config_hash"],
+  "additionalProperties": false,
+  "properties": {
+    "edge_id": {"type": "string"},
+    "parent_object_id": {"type": ["string", "null"]},
+    "child_object_id": {"type": "string"},
+    "edge_sha256": {"type": "string"},
+    "config_hash": {"type": ["string", "null"]}
+  },
+  "$defs": {
+    "SupersessionEdge": {
+      "type": "object",
+      "required": ["edge_id", "parent_object_id", "child_object_id", "edge_sha256", "config_hash"],
+      "additionalProperties": false,
+      "properties": {
+        "edge_id": {"type": "string"},
+        "parent_object_id": {"type": ["string", "null"]},
+        "child_object_id": {"type": "string"},
+        "edge_sha256": {"type": "string"},
+        "config_hash": {"type": ["string", "null"]}
+      }
+    },
+    "CurrentCanonicalObjectProjection": {
+      "type": "object",
+      "required": ["object_id", "active", "canonical_manifest_sha256", "record_sha256"],
+      "additionalProperties": false,
+      "properties": {
+        "object_id": {"type": "string"},
+        "active": {"type": "boolean"},
+        "canonical_manifest_sha256": {"type": "string"},
+        "record_sha256": {"type": "string"}
+      }
+    }
+  }
+}

@@ -1,0 +1,50 @@
+# mRNA-EditFlow UTR Benchmark-First — v3.1 claim matrix (evidence-bound claims)
+# Contract: utr_editflow_goal_v3.1_benchmark_first
+# schema_version: 3.1
+# Every paper number and factual claim must bind an evidence ID, artifact hash, analysis
+# intent, denominator and status. Contract/search summaries/model output are not evidence.
+claim_matrix_version: "3.1"
+contract_id: "utr_editflow_goal_v3.1_benchmark_first"
+schema_version: "3.1"
+claims:
+  - claim_id: C-BENCHMARK
+    evidence_id: E-B0-CLOSURE
+    required_gate: G7
+    allowed_wording: "versioned UTR editing benchmark with anti-leakage splits"
+    prohibited_wording: "paired trajectories / unique paired edits / million paired edits"
+    intent: "benchmark"
+    outcome_axis: benchmark
+    unlock_status: LOCKED
+  - claim_id: C-METHOD
+    evidence_id: E-METHOD-CLOSURE
+    required_gate: G7
+    allowed_wording: "Edit-Flows-derived conditional action-rate + auxiliary alignment + multi-sample estimator"
+    prohibited_wording: "novel general path/alignment marginalization"
+    intent: "method"
+    outcome_axis: method
+    unlock_status: LOCKED
+  - claim_id: C-REGION
+    evidence_id: E-REGION-CLOSURE
+    required_gate: G7
+    allowed_wording: "5' primary confirmatory; 3' secondary/transfer/mechanism"
+    prohibited_wording: "forced 5'/3' symmetry"
+    intent: "region"
+    outcome_axis: region
+    unlock_status: LOCKED
+  - claim_id: C-GSE246381
+    evidence_id: E-GSE246381-TRUTH-LOCK
+    required_gate: G7
+    allowed_wording: "prior analytic use NONE_CONFIRMED; pipeline materialization PRESENT; sealed external final candidate"
+    prohibited_wording: "E4 / historically exposed / project had used the data"
+    intent: "truth-lock"
+    outcome_axis: truth
+    unlock_status: LOCKED
+  - claim_id: C-FOUNDATION
+    evidence_id: E-FM0-AUDIT
+    required_gate: FM0
+    allowed_wording: "checkpoint-level foundation overlap audit (required for GSE246381)"
+    prohibited_wording: "accession-level scalar foundation overlap as substitute"
+    intent: "foundation"
+    outcome_axis: foundation
+    unlock_status: LOCKED
+conflict_rule: "On contract-fact conflict, amend the contract via decision log; parser must not self-interpret."

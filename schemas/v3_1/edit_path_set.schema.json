@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Cunyu-Liu/mRNA_editflow/schemas/v3_1/edit_path_set.schema.json",
+  "title": "EditPathSet (v3.1)",
+  "description": "Set of edit paths / trajectories; explicit object type, not a shared ambiguous enum.",
+  "schema_version": "3.1",
+  "contract_id": "utr_editflow_goal_v3.1_benchmark_first",
+  "type": "object",
+  "required": ["path_set_id", "object_type", "paths", "cost_model"],
+  "additionalProperties": false,
+  "properties": {
+    "path_set_id": {"type": "string"},
+    "object_type": {"type": "string", "const": "EDIT_PATH_SET"},
+    "paths": {"type": "array", "items": {"type": "string"}},
+    "cost_model": {"type": "string"}
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Cunyu-Liu/mRNA_editflow/schemas/v3_1/task_eligibility_cell.schema.json",
+  "title": "TaskEligibilityCell (v3.1)",
+  "description": "object_id x task_id x split_contract_id eligibility cell (second counting unit, distinct from global unique-object).",
+  "schema_version": "3.1",
+  "contract_id": "utr_editflow_goal_v3.1_benchmark_first",
+  "type": "object",
+  "required": ["cell_id", "object_id", "task_id", "split_contract_id", "cell_status", "assigned_partition_id"],
+  "additionalProperties": false,
+  "properties": {
+    "cell_id": {"type": "string"},
+    "object_id": {"type": "string"},
+    "task_id": {"type": "string"},
+    "split_contract_id": {"type": "string"},
+    "cell_status": {"type": "string", "enum": ["ELIGIBLE", "INELIGIBLE", "INELIGIBLE_WITH_REASON"]},
+    "assigned_partition_id": {"type": ["string", "null"]}
+  }
+}

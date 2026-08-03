@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Cunyu-Liu/mRNA_editflow/schemas/v3_1/rejection_record.schema.json",
+  "title": "RejectionRecord (v3.1)",
+  "description": "Record of a rejected candidate with reason and evidence.",
+  "schema_version": "3.1",
+  "contract_id": "utr_editflow_goal_v3.1_benchmark_first",
+  "type": "object",
+  "required": ["rejection_id", "candidate_id", "reason", "evidence_id", "rejected_at"],
+  "additionalProperties": false,
+  "properties": {
+    "rejection_id": {"type": "string"},
+    "candidate_id": {"type": "string"},
+    "reason": {"type": "string"},
+    "evidence_id": {"type": "string"},
+    "rejected_at": {"type": "string", "format": "date-time"}
+  }
+}

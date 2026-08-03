@@ -1,0 +1,21 @@
+# mRNA-EditFlow UTR Benchmark-First — v3.1 resource viability rule (frozen before any label access)
+# Contract: utr_editflow_goal_v3.1_benchmark_first
+# schema_version: 3.1
+# C3 phase: resource viability thresholds MUST be frozen before any label access (C3-03).
+# These thresholds gate task/split activation decisions in B0; they are definition-only here.
+rule_version: "3.1"
+contract_id: "utr_editflow_goal_v3.1_benchmark_first"
+schema_version: "3.1"
+frozen_before_label_access: true
+thresholds:
+  min_available_analysis_units: 100
+  min_available_sources: 10
+  min_available_studies: 3
+  min_calibration_components_for_activation: 5
+  delta_join_min_pairs: 50
+  repeated_context_min_groups: 10
+  multi_candidate_min_sources: 5
+  common_support_min_regions: 2
+  sealed_final_min_cohort: 1
+eligibility_reduction: "CONDITIONAL_NOT_QUALIFIED"
+note: "Exact minimums are illustrative definition-only defaults; the authoritative numeric floor is set in the contract and re-asserted by the C3 validator."

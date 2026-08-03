@@ -1,0 +1,32 @@
+# mRNA-EditFlow UTR Benchmark-First — v3.1 USER decision for GSE246381 (four-axis truth lock)
+# Contract: utr_editflow_goal_v3.1_benchmark_first
+# schema_version: 3.1
+# Owner-confirmed: GSE246381 prior non-use, pipeline materialization, foundation overlap,
+# and conservative sealed-final role. The four axes must NOT overwrite one another.
+decision_id: USER_DECISION_GSE246381
+contract_id: "utr_editflow_goal_v3.1_benchmark_first"
+schema_version: "3.1"
+accession: GSE246381
+decision_source: "owner_confirmed_2026-08-03"
+axes:
+  project_sequence_analytic_exposure: NONE_CONFIRMED
+  project_sequence_analytic_use_types: [NONE_CONFIRMED]
+  project_label_analytic_exposure: NONE_CONFIRMED
+  project_label_analytic_use_types: [NONE_CONFIRMED]
+  pipeline_sequence_materialization: PRESENT
+  pipeline_label_materialization: PRESENT
+  foundation_requirement: REQUIRED_FM0_A
+  foundation_audit_status: DEFERRED_TO_FM0_A
+  future_role: SEALED_EXTERNAL_FINAL_CANDIDATE
+truth_lock:
+  prior_analytic_use: PRIOR_ANALYTIC_USE_NONE_CONFIRMED_BY_OWNER
+  pipeline_materialization: PIPELINE_MATERIALIZATION_PRESENT
+  foundation_overlap: REQUIRED_FM0_A
+  final_role: SEALED_EXTERNAL_FINAL_CANDIDATE
+  e4_interpretation_revoked: true
+  evidence_grade_E4X_positive_assignment_count: 0
+restrictions:
+  - "D1 onward: only allowlisted scripts + hash + append-only logs via restricted builder/aggregate-QC machine access."
+  - "Before one-time final: no human label view, no train/tune/model selection, no pre-final error analysis, no ordinary loader/report/final-evaluator access."
+  - "No automatic TRAIN/DEV assignment."
+  - "No accession-level scalar foundation overlap may substitute for a checkpoint ledger."

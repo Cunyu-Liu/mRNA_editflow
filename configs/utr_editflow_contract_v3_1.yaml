@@ -1,0 +1,37 @@
+# mRNA-EditFlow UTR Benchmark-First — v3.1 executable contract config
+# Contract: utr_editflow_goal_v3.1_benchmark_first
+contract_id: "utr_editflow_goal_v3.1_benchmark_first"
+contract_version: "3.1"
+schema_version: "3.1"
+status: "AUTHORITATIVE_REVISED_CONTRACT_APPROVED_NOT_ACTIVATED"
+publishability: BENCHMARK_FIRST
+region_primary: 5UTR
+region_secondary: 3UTR
+execution_activation_trigger: "GOAL-V3-DATA-BENCH-01"
+restrictions:
+  - "No remote write/download/commit/train authorized until execution trigger."
+  - "Do not touch the main repo or other worktrees."
+  - "C3 is definition-only; no data access."
+old_contract_sha256: "3a3a654ca5c10a988eca897bff40be2e0b45c841f744f7423fdfd60b298b5791"
+gse246381_truth_lock:
+  project_sequence_analytic_exposure: NONE_CONFIRMED
+  project_sequence_analytic_use_types: [NONE_CONFIRMED]
+  project_label_analytic_exposure: NONE_CONFIRMED
+  project_label_analytic_use_types: [NONE_CONFIRMED]
+  pipeline_sequence_materialization: PRESENT
+  pipeline_label_materialization: PRESENT
+  foundation_requirement: REQUIRED_FM0_A
+  foundation_audit_status: DEFERRED_TO_FM0_A
+  future_role: SEALED_EXTERNAL_FINAL_CANDIDATE
+  e4_interpretation_revoked: true
+frozen_hashes:
+  schema_filename_set_sha256: "d2e5ddaef3665214007422638df3cc6b0357747aad3911efd4f29319647b1762"
+  task_id_set_sha256: "b0b43cb76f39b32009e3a6ef8ae6d05395d61bf7baa7480743587e6772447207"
+  task_descriptor_set_sha256: "8f42ef044d8de1a26b9b587587c2de99c6068f67f37e269e226e143333245ba3"
+  split_id_set_sha256: "b8c6fb2718875862da500c949481d04db08d1d21f94e3d13da49e3ace64ff487"
+  split_descriptor_set_sha256: "c8a6c82a9a1ab687ef2c3cb912ed96aae26c73a0662b0ae0911040c37e8ef1fa"
+  task_split_allowlist_sha256: "02b25e4717e4a7192b658d5e69cdbb198e5b696b3ea520b7a0a887fcf89097ab"
+  grouping_atom_rule_sha256: "bd8395ab0ec23d98d7c1b717e7fcb0bdd3df6d18002985624cd9eb41f8bd7983"
+  activation_calibration_rule_sha256: "b2652abda7a2dbb7001e7fb655db9b6ac19f2b8f80fbc65362dc1236fd9781e9"
+  diagnostic_registry_expected_set_sha256: "f25c0adc643f38ff26c5e08bf07e4175a4e2571eaae939d61daa91fc6f2aabb2"
+  sealed_cohort_set_sha256: "275774a99cbe46ccd3084747f7a6efa4ac9af04ed841b2932c318f3682f07df0"

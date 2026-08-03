@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Cunyu-Liu/mRNA_editflow/schemas/v3_1/eligibility_record.schema.json",
+  "title": "EligibilityRecord (v3.1)",
+  "description": "Global object/purpose eligibility record (no task_id/split/partition).",
+  "schema_version": "3.1",
+  "contract_id": "utr_editflow_goal_v3.1_benchmark_first",
+  "type": "object",
+  "required": ["object_id", "object_type", "global_eligibility", "purpose", "eligibility_manifest_sha256"],
+  "additionalProperties": false,
+  "properties": {
+    "object_id": {"type": "string"},
+    "object_type": {"type": "string", "enum": ["PAIR", "OBSERVATION"]},
+    "global_eligibility": {"type": "string", "enum": ["ELIGIBLE", "INELIGIBLE", "INELIGIBLE_WITH_REASON"]},
+    "purpose": {"type": "string"},
+    "eligibility_manifest_sha256": {"type": "string"}
+  },
+  "$defs": {
+    "B0RoleDecisionEvidence": {
+      "type": "object",
+      "required": ["object_id", "role_decision", "evidence_id", "evidence_sha256"],
+      "additionalProperties": false,
+      "properties": {
+        "object_id": {"type": "string"},
+        "role_decision": {"type": "string"},
+        "evidence_id": {"type": "string"},
+        "evidence_sha256": {"type": "string"}
+      }
+    },
+    "GlobalEligibilityDecisionEvidence": {
+      "type": "object",
+      "required": ["decision_id", "global_eligibility", "evidence_id", "evidence_sha256"],
+      "additionalProperties": false,
+      "properties": {
+        "decision_id": {"type": "string"},
+        "global_eligibility": {"type": "string"},
+        "evidence_id": {"type": "string"},
+        "evidence_sha256": {"type": "string"}
+      }
+    }
+  }
+}

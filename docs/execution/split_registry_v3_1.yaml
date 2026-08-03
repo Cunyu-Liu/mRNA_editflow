@@ -1,0 +1,240 @@
+# mRNA-EditFlow UTR Benchmark-First — v3.1 SplitRegistry (immutable definition registry)
+# Contract: utr_editflow_goal_v3.1_benchmark_first
+# schema_version: 3.1
+# C3 phase: definition-only. No data-dependent active/N/A results.
+#
+# Frozen constants (see §5.7.2 of the authoritative contract):
+#   REQUIRED_SPLIT_CONTRACT_IDS_V1 set SHA256 = b8c6fb2718875862da500c949481d04db08d1d21f94e3d13da49e3ace64ff487
+#   split core semantic descriptor set SHA256 = c8a6c82a9a1ab687ef2c3cb912ed96aae26c73a0662b0ae0911040c37e8ef1fa
+#   grouping-atom projection rule bytes SHA256 = bd8395ab0ec23d98d7c1b717e7fcb0bdd3df6d18002985624cd9eb41f8bd7983
+registry_version: "3.1"
+contract_id: "utr_editflow_goal_v3.1_benchmark_first"
+schema_version: "3.1"
+required_split_contract_ids_sha256: "b8c6fb2718875862da500c949481d04db08d1d21f94e3d13da49e3ace64ff487"
+split_descriptor_set_sha256: "c8a6c82a9a1ab687ef2c3cb912ed96aae26c73a0662b0ae0911040c37e8ef1fa"
+grouping_atom_projection_rule_sha256: "bd8395ab0ec23d98d7c1b717e7fcb0bdd3df6d18002985624cd9eb41f8bd7983"
+grouping_atom_projection_rule_bytes: |
+  PAIR_OR_OBSERVATION_GROUPING_ATOMS_V1
+  PAIR:REQUIRE_ALL_LISTED
+  OBSERVATION:PAIR=NOT_APPLICABLE;SOURCE=NOT_APPLICABLE;BIOLOGICAL_PARENT=NOT_APPLICABLE;REQUIRE_OTHER_LISTED
+  MISSING_REQUIRED_ATOM=TASK_CELL_INELIGIBLE_NO_ASSIGNMENT
+  INVENTED_ATOM_FORBIDDEN=true
+splits:
+  - split_contract_id: 3utr_sequence_cluster_disjoint
+    split_version: "v1"
+    region_scope: 3UTR
+    object_scope: OBSERVATION
+    activation_rule_id: ALWAYS_ACTIVE
+    activation_rule_sha256: "NOT_APPLICABLE"
+    direction_or_cohort_rule_id: NOT_APPLICABLE
+    direction_or_cohort_rule_sha256: NOT_APPLICABLE
+    partitions:
+      - { partition_id: "3utr_sequence_cluster_disjoint::development", partition_role: DEVELOPMENT }
+      - { partition_id: "3utr_sequence_cluster_disjoint::internal_test", partition_role: INTERNAL_TEST }
+      - { partition_id: "3utr_sequence_cluster_disjoint::train", partition_role: TRAIN }
+    grouping_atoms: [GENE, LIBRARY_LINEAGE, SEQUENCE_CLUSTER, TILE_FAMILY, TRANSCRIPT]
+    grouping_atoms_by_object_type:
+      PAIR: [NOT_APPLICABLE_SCOPE]
+      OBSERVATION: [GENE, LIBRARY_LINEAGE, SEQUENCE_CLUSTER, TILE_FAMILY, TRANSCRIPT]
+    disjointness_constraints: ["SEQUENCE_CLUSTER", "GENE"]
+    stratification_fields: ["region", "study"]
+    assignment_algorithm_id: "GROUPED_KEEP_ONE_ORIGIN"
+    assignment_algorithm_sha256: "NOT_APPLICABLE"
+    seed_or_fold_definition: "fixed_seed_v1"
+    sealed_final: false
+  - split_contract_id: 3utr_source_or_variant_disjoint
+    split_version: "v1"
+    region_scope: 3UTR
+    object_scope: PAIR
+    activation_rule_id: ALWAYS_ACTIVE
+    activation_rule_sha256: "NOT_APPLICABLE"
+    direction_or_cohort_rule_id: NOT_APPLICABLE
+    direction_or_cohort_rule_sha256: NOT_APPLICABLE
+    partitions:
+      - { partition_id: "3utr_source_or_variant_disjoint::development", partition_role: DEVELOPMENT }
+      - { partition_id: "3utr_source_or_variant_disjoint::internal_test", partition_role: INTERNAL_TEST }
+      - { partition_id: "3utr_source_or_variant_disjoint::train", partition_role: TRAIN }
+    grouping_atoms: [BIOLOGICAL_PARENT, GENE, LIBRARY_LINEAGE, PAIR, SEQUENCE_CLUSTER, SOURCE, TILE_FAMILY, TRANSCRIPT]
+    grouping_atoms_by_object_type:
+      PAIR: [BIOLOGICAL_PARENT, GENE, LIBRARY_LINEAGE, PAIR, SEQUENCE_CLUSTER, SOURCE, TILE_FAMILY, TRANSCRIPT]
+      OBSERVATION: [NOT_APPLICABLE_SCOPE]
+    disjointness_constraints: ["SOURCE", "BIOLOGICAL_PARENT", "SEQUENCE_CLUSTER"]
+    stratification_fields: ["region", "study"]
+    assignment_algorithm_id: "GROUPED_KEEP_ONE_ORIGIN"
+    assignment_algorithm_sha256: "NOT_APPLICABLE"
+    seed_or_fold_definition: "fixed_seed_v1"
+    sealed_final: false
+  - split_contract_id: 3utr_study_disjoint
+    split_version: "v1"
+    region_scope: 3UTR
+    object_scope: PAIR_OR_OBSERVATION
+    activation_rule_id: ALWAYS_ACTIVE
+    activation_rule_sha256: "NOT_APPLICABLE"
+    direction_or_cohort_rule_id: NOT_APPLICABLE
+    direction_or_cohort_rule_sha256: NOT_APPLICABLE
+    partitions:
+      - { partition_id: "3utr_study_disjoint::development", partition_role: DEVELOPMENT }
+      - { partition_id: "3utr_study_disjoint::internal_test", partition_role: INTERNAL_TEST }
+      - { partition_id: "3utr_study_disjoint::train", partition_role: TRAIN }
+    grouping_atoms: [BIOLOGICAL_PARENT, GENE, LIBRARY_LINEAGE, PAIR, SEQUENCE_CLUSTER, SOURCE, STUDY, TILE_FAMILY, TRANSCRIPT]
+    grouping_atoms_by_object_type:
+      PAIR: [BIOLOGICAL_PARENT, GENE, LIBRARY_LINEAGE, PAIR, SEQUENCE_CLUSTER, SOURCE, STUDY, TILE_FAMILY, TRANSCRIPT]
+      OBSERVATION: [PAIR=NOT_APPLICABLE, SOURCE=NOT_APPLICABLE, BIOLOGICAL_PARENT=NOT_APPLICABLE, GENE, LIBRARY_LINEAGE, SEQUENCE_CLUSTER, STUDY, TILE_FAMILY, TRANSCRIPT]
+    disjointness_constraints: ["STUDY"]
+    stratification_fields: ["region", "study"]
+    assignment_algorithm_id: "GROUPED_KEEP_ONE_ORIGIN"
+    assignment_algorithm_sha256: "NOT_APPLICABLE"
+    seed_or_fold_definition: "fixed_seed_v1"
+    sealed_final: false
+  - split_contract_id: 5utr_sequence_cluster_disjoint
+    split_version: "v1"
+    region_scope: 5UTR
+    object_scope: OBSERVATION
+    activation_rule_id: ALWAYS_ACTIVE
+    activation_rule_sha256: "NOT_APPLICABLE"
+    direction_or_cohort_rule_id: NOT_APPLICABLE
+    direction_or_cohort_rule_sha256: NOT_APPLICABLE
+    partitions:
+      - { partition_id: "5utr_sequence_cluster_disjoint::development", partition_role: DEVELOPMENT }
+      - { partition_id: "5utr_sequence_cluster_disjoint::internal_test", partition_role: INTERNAL_TEST }
+      - { partition_id: "5utr_sequence_cluster_disjoint::train", partition_role: TRAIN }
+    grouping_atoms: [GENE, LIBRARY_LINEAGE, SEQUENCE_CLUSTER, TILE_FAMILY, TRANSCRIPT]
+    grouping_atoms_by_object_type:
+      PAIR: [NOT_APPLICABLE_SCOPE]
+      OBSERVATION: [GENE, LIBRARY_LINEAGE, SEQUENCE_CLUSTER, TILE_FAMILY, TRANSCRIPT]
+    disjointness_constraints: ["SEQUENCE_CLUSTER", "GENE"]
+    stratification_fields: ["region", "study"]
+    assignment_algorithm_id: "GROUPED_KEEP_ONE_ORIGIN"
+    assignment_algorithm_sha256: "NOT_APPLICABLE"
+    seed_or_fold_definition: "fixed_seed_v1"
+    sealed_final: false
+  - split_contract_id: 5utr_source_disjoint
+    split_version: "v1"
+    region_scope: 5UTR
+    object_scope: PAIR
+    activation_rule_id: ALWAYS_ACTIVE
+    activation_rule_sha256: "NOT_APPLICABLE"
+    direction_or_cohort_rule_id: NOT_APPLICABLE
+    direction_or_cohort_rule_sha256: NOT_APPLICABLE
+    partitions:
+      - { partition_id: "5utr_source_disjoint::development", partition_role: DEVELOPMENT }
+      - { partition_id: "5utr_source_disjoint::internal_test", partition_role: INTERNAL_TEST }
+      - { partition_id: "5utr_source_disjoint::train", partition_role: TRAIN }
+    grouping_atoms: [BIOLOGICAL_PARENT, GENE, LIBRARY_LINEAGE, PAIR, SEQUENCE_CLUSTER, SOURCE, TILE_FAMILY, TRANSCRIPT]
+    grouping_atoms_by_object_type:
+      PAIR: [BIOLOGICAL_PARENT, GENE, LIBRARY_LINEAGE, PAIR, SEQUENCE_CLUSTER, SOURCE, TILE_FAMILY, TRANSCRIPT]
+      OBSERVATION: [NOT_APPLICABLE_SCOPE]
+    disjointness_constraints: ["SOURCE", "BIOLOGICAL_PARENT", "SEQUENCE_CLUSTER"]
+    stratification_fields: ["region", "study"]
+    assignment_algorithm_id: "GROUPED_KEEP_ONE_ORIGIN"
+    assignment_algorithm_sha256: "NOT_APPLICABLE"
+    seed_or_fold_definition: "fixed_seed_v1"
+    sealed_final: false
+  - split_contract_id: 5utr_study_disjoint
+    split_version: "v1"
+    region_scope: 5UTR
+    object_scope: PAIR_OR_OBSERVATION
+    activation_rule_id: ALWAYS_ACTIVE
+    activation_rule_sha256: "NOT_APPLICABLE"
+    direction_or_cohort_rule_id: NOT_APPLICABLE
+    direction_or_cohort_rule_sha256: NOT_APPLICABLE
+    partitions:
+      - { partition_id: "5utr_study_disjoint::development", partition_role: DEVELOPMENT }
+      - { partition_id: "5utr_study_disjoint::internal_test", partition_role: INTERNAL_TEST }
+      - { partition_id: "5utr_study_disjoint::train", partition_role: TRAIN }
+    grouping_atoms: [BIOLOGICAL_PARENT, GENE, LIBRARY_LINEAGE, PAIR, SEQUENCE_CLUSTER, SOURCE, STUDY, TILE_FAMILY, TRANSCRIPT]
+    grouping_atoms_by_object_type:
+      PAIR: [BIOLOGICAL_PARENT, GENE, LIBRARY_LINEAGE, PAIR, SEQUENCE_CLUSTER, SOURCE, STUDY, TILE_FAMILY, TRANSCRIPT]
+      OBSERVATION: [PAIR=NOT_APPLICABLE, SOURCE=NOT_APPLICABLE, BIOLOGICAL_PARENT=NOT_APPLICABLE, GENE, LIBRARY_LINEAGE, SEQUENCE_CLUSTER, STUDY, TILE_FAMILY, TRANSCRIPT]
+    disjointness_constraints: ["STUDY"]
+    stratification_fields: ["region", "study"]
+    assignment_algorithm_id: "GROUPED_KEEP_ONE_ORIGIN"
+    assignment_algorithm_sha256: "NOT_APPLICABLE"
+    seed_or_fold_definition: "fixed_seed_v1"
+    sealed_final: false
+  - split_contract_id: cross_region_3_to_5
+    split_version: "v1"
+    region_scope: CROSS_REGION
+    object_scope: PAIR_OR_OBSERVATION
+    activation_rule_id: CONDITIONAL_COMMON_SUPPORT
+    activation_rule_sha256: "NOT_APPLICABLE"
+    direction_or_cohort_rule_id: TRAIN_3UTR_EVALUATE_5UTR
+    direction_or_cohort_rule_sha256: "4a2fc1e997856fa33348ed9adb9e101271ef8bdc61206db22f14b40cdf908c70"
+    partitions:
+      - { partition_id: "cross_region_3_to_5::development", partition_role: DEVELOPMENT }
+      - { partition_id: "cross_region_3_to_5::internal_test", partition_role: INTERNAL_TEST }
+      - { partition_id: "cross_region_3_to_5::train", partition_role: TRAIN }
+    grouping_atoms: [BIOLOGICAL_PARENT, GENE, LIBRARY_LINEAGE, PAIR, SEQUENCE_CLUSTER, SOURCE, STUDY, TILE_FAMILY, TRANSCRIPT]
+    grouping_atoms_by_object_type:
+      PAIR: [BIOLOGICAL_PARENT, GENE, LIBRARY_LINEAGE, PAIR, SEQUENCE_CLUSTER, SOURCE, STUDY, TILE_FAMILY, TRANSCRIPT]
+      OBSERVATION: [PAIR=NOT_APPLICABLE, SOURCE=NOT_APPLICABLE, BIOLOGICAL_PARENT=NOT_APPLICABLE, GENE, LIBRARY_LINEAGE, SEQUENCE_CLUSTER, STUDY, TILE_FAMILY, TRANSCRIPT]
+    disjointness_constraints: ["DIRECTION_REGION", "STUDY"]
+    stratification_fields: ["region", "study"]
+    assignment_algorithm_id: "GROUPED_KEEP_ONE_ORIGIN"
+    assignment_algorithm_sha256: "NOT_APPLICABLE"
+    seed_or_fold_definition: "fixed_seed_v1"
+    sealed_final: false
+  - split_contract_id: cross_region_5_to_3
+    split_version: "v1"
+    region_scope: CROSS_REGION
+    object_scope: PAIR_OR_OBSERVATION
+    activation_rule_id: CONDITIONAL_COMMON_SUPPORT
+    activation_rule_sha256: "NOT_APPLICABLE"
+    direction_or_cohort_rule_id: TRAIN_5UTR_EVALUATE_3UTR
+    direction_or_cohort_rule_sha256: "789cca607b17a30dcea362ade94f74b60037af59ae58e05598f9552cc19c7b16"
+    partitions:
+      - { partition_id: "cross_region_5_to_3::development", partition_role: DEVELOPMENT }
+      - { partition_id: "cross_region_5_to_3::internal_test", partition_role: INTERNAL_TEST }
+      - { partition_id: "cross_region_5_to_3::train", partition_role: TRAIN }
+    grouping_atoms: [BIOLOGICAL_PARENT, GENE, LIBRARY_LINEAGE, PAIR, SEQUENCE_CLUSTER, SOURCE, STUDY, TILE_FAMILY, TRANSCRIPT]
+    grouping_atoms_by_object_type:
+      PAIR: [BIOLOGICAL_PARENT, GENE, LIBRARY_LINEAGE, PAIR, SEQUENCE_CLUSTER, SOURCE, STUDY, TILE_FAMILY, TRANSCRIPT]
+      OBSERVATION: [PAIR=NOT_APPLICABLE, SOURCE=NOT_APPLICABLE, BIOLOGICAL_PARENT=NOT_APPLICABLE, GENE, LIBRARY_LINEAGE, SEQUENCE_CLUSTER, STUDY, TILE_FAMILY, TRANSCRIPT]
+    disjointness_constraints: ["DIRECTION_REGION", "STUDY"]
+    stratification_fields: ["region", "study"]
+    assignment_algorithm_id: "GROUPED_KEEP_ONE_ORIGIN"
+    assignment_algorithm_sha256: "NOT_APPLICABLE"
+    seed_or_fold_definition: "fixed_seed_v1"
+    sealed_final: false
+  - split_contract_id: heldout_context
+    split_version: "v1"
+    region_scope: MULTI_REGION
+    object_scope: PAIR_OR_OBSERVATION
+    activation_rule_id: CONDITIONAL_CONTEXT_GATE
+    activation_rule_sha256: "NOT_APPLICABLE"
+    direction_or_cohort_rule_id: NOT_APPLICABLE
+    direction_or_cohort_rule_sha256: NOT_APPLICABLE
+    partitions:
+      - { partition_id: "heldout_context::development", partition_role: DEVELOPMENT }
+      - { partition_id: "heldout_context::internal_test", partition_role: INTERNAL_TEST }
+      - { partition_id: "heldout_context::train", partition_role: TRAIN }
+    grouping_atoms: [BIOLOGICAL_PARENT, CONTEXT, GENE, LIBRARY_LINEAGE, PAIR, SEQUENCE_CLUSTER, SOURCE, STUDY, TILE_FAMILY, TRANSCRIPT]
+    grouping_atoms_by_object_type:
+      PAIR: [BIOLOGICAL_PARENT, CONTEXT, GENE, LIBRARY_LINEAGE, PAIR, SEQUENCE_CLUSTER, SOURCE, STUDY, TILE_FAMILY, TRANSCRIPT]
+      OBSERVATION: [PAIR=NOT_APPLICABLE, SOURCE=NOT_APPLICABLE, BIOLOGICAL_PARENT=NOT_APPLICABLE, CONTEXT, GENE, LIBRARY_LINEAGE, SEQUENCE_CLUSTER, STUDY, TILE_FAMILY, TRANSCRIPT]
+    disjointness_constraints: ["CONTEXT"]
+    stratification_fields: ["region", "context"]
+    assignment_algorithm_id: "GROUPED_KEEP_ONE_ORIGIN"
+    assignment_algorithm_sha256: "NOT_APPLICABLE"
+    seed_or_fold_definition: "fixed_seed_v1"
+    sealed_final: false
+  - split_contract_id: sealed_final_v1
+    split_version: "v1"
+    region_scope: 5UTR
+    object_scope: PAIR
+    activation_rule_id: CONDITIONAL_SEALED_COHORT_GATE
+    activation_rule_sha256: "NOT_APPLICABLE"
+    direction_or_cohort_rule_id: SEALED_COHORT_IDS_V1_SHA256_275774A99CBE46CD
+    direction_or_cohort_rule_sha256: "f0ced6dc8869b040f1197b519403691bd97f07e59906c3c82434606a9861262a"
+    partitions:
+      - { partition_id: "sealed_final_v1::sealed_final", partition_role: SEALED_FINAL }
+    grouping_atoms: [BIOLOGICAL_PARENT, GENE, LIBRARY_LINEAGE, PAIR, SEQUENCE_CLUSTER, SOURCE, STUDY, TILE_FAMILY, TRANSCRIPT]
+    grouping_atoms_by_object_type:
+      PAIR: [BIOLOGICAL_PARENT, GENE, LIBRARY_LINEAGE, PAIR, SEQUENCE_CLUSTER, SOURCE, STUDY, TILE_FAMILY, TRANSCRIPT]
+      OBSERVATION: [NOT_APPLICABLE_SCOPE]
+    disjointness_constraints: ["SEALED_COHORT"]
+    stratification_fields: ["cohort"]
+    assignment_algorithm_id: "SEALED_COHORT_ONLY"
+    assignment_algorithm_sha256: "NOT_APPLICABLE"
+    seed_or_fold_definition: "sealed_cohort_set_v1"
+    sealed_final: true

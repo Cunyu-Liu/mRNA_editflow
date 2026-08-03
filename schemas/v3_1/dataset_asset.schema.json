@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Cunyu-Liu/mRNA_editflow/schemas/v3_1/dataset_asset.schema.json",
+  "title": "DatasetAsset (v3.1)",
+  "description": "Immutable dataset asset record for the UTR Edit-Flow benchmark-first contract.",
+  "schema_version": "3.1",
+  "contract_id": "utr_editflow_goal_v3.1_benchmark_first",
+  "type": "object",
+  "required": ["asset_id", "accession", "study_id", "provider", "publication_ids", "retrieved_date", "checksum", "license_status", "release_decision"],
+  "additionalProperties": false,
+  "properties": {
+    "asset_id": {"type": "string"},
+    "accession": {"type": "string"},
+    "study_id": {"type": "string"},
+    "provider": {"type": "string", "enum": ["GEO", "SRA", "ENCODE", "BioStudies", "supplement", "author-repository", "other"]},
+    "publication_ids": {"type": "array", "items": {"type": "string"}},
+    "retrieved_date": {"type": "string", "format": "date"},
+    "checksum": {"type": "string"},
+    "license_status": {"type": "string", "enum": ["REVIEW_REQUIRED", "LICENSED", "NOT_LICENSED", "NOT_APPLICABLE"]},
+    "release_decision": {"type": "string", "enum": ["PENDING", "APPROVED", "REJECTED", "EXCLUDED_WITH_EVIDENCE"]}
+  }
+}

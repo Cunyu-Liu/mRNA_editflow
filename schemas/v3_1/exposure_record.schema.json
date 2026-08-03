@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Cunyu-Liu/mRNA_editflow/schemas/v3_1/exposure_record.schema.json",
+  "title": "ExposureRecord (v3.1)",
+  "description": "Append-only exposure/access log with intent->completion/abort chains, foundation audit row and effective exposure projection.",
+  "schema_version": "3.1",
+  "contract_id": "utr_editflow_goal_v3.1_benchmark_first",
+  "type": "object",
+  "required": ["access_id", "object_id", "intent", "status", "prev_event_sha256", "event_sha256"],
+  "additionalProperties": false,
+  "properties": {
+    "access_id": {"type": "string"},
+    "object_id": {"type": "string"},
+    "intent": {"type": "string"},
+    "status": {"type": "string", "enum": ["INTENT", "COMPLETION", "ABORT"]},
+    "prev_event_sha256": {"type": ["string", "null"]},
+    "event_sha256": {"type": "string"}
+  },
+  "$defs": {
+    "AccessIntent": {
+      "type": "object",
+      "required": ["access_id", "object_id", "intent", "status", "prev_event_sha256", "event_sha256"],
+      "additionalProperties": false,
+      "properties": {
+        "access_id": {"type": "string"},
+        "object_id": {"type": "string"},
+        "intent": {"type": "string"},
+        "status": {"type": "string", "const": "INTENT"},
+        "prev_event_sha256": {"type": ["string", "null"]},
+        "event_sha256": {"type": "string"}
+      }
+    },
+    "AccessCompletion": {
+      "type": "object",
+      "required": ["access_id", "object_id", "intent", "status", "prev_event_sha256", "event_sha256"],
+      "additionalProperties": false,
+      "properties": {
+        "access_id": {"type": "string"},
+        "object_id": {"type": "string"},
+        "intent": {"type": "string"},
+        "status": {"type": "string", "const": "COMPLETION"},
+        "prev_event_sha256": {"type": ["string", "null"]},
+        "event_sha256": {"type": "string"}
+      }
+    },
+    "AccessAbort": {
+      "type": "object",
+      "required": ["access_id", "object_id", "intent", "status", "reason", "prev_event_sha256", "event_sha256"],
+      "additionalProperties": false,
+      "properties": {
+        "access_id": {"type": "string"},
+        "object_id": {"type": "string"},
+        "intent": {"type": "string"},
+        "status": {"type": "string", "const": "ABORT"},
+        "reason": {"type": "string"},
+        "prev_event_sha256": {"type": ["string", "null"]},
+        "event_sha256": {"type": "string"}
+      }
+    },
+    "FoundationExposureAuditRow": {
+      "type": "object",
+      "required": ["object_id", "checkpoint_revision", "weights_hash", "overlap", "audit_status"],
+      "additionalProperties": false,
+      "properties": {
+        "object_id": {"type": "string"},
+        "checkpoint_revision": {"type": "string"},
+        "weights_hash": {"type": "string"},
+        "overlap": {"type": "boolean"},
+        "audit_status": {"type": "string"}
+      }
+    },
+    "EffectiveExposureProjection": {
+      "type": "object",
+      "required": ["object_id", "effective_exposure", "projection_sha256", "chain_root_sha256"],
+      "additionalProperties": false,
+      "properties": {
+        "object_id": {"type": "string"},
+        "effective_exposure": {"type": "string"},
+        "projection_sha256": {"type": "string"},
+        "chain_root_sha256": {"type": "string"}
+      }
+    }
+  }
+}

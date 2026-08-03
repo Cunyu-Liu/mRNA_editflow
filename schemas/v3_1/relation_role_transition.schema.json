@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Cunyu-Liu/mRNA_editflow/schemas/v3_1/relation_role_transition.schema.json",
+  "title": "RelationRoleTransition (v3.1)",
+  "description": "Append-only transition ledger for candidate/pair effective roles, with hash-chain and exact-cardinality projection.",
+  "schema_version": "3.1",
+  "contract_id": "utr_editflow_goal_v3.1_benchmark_first",
+  "type": "object",
+  "required": ["transition_id", "object_id", "from_role", "to_role", "prev_event_sha256", "event_sha256"],
+  "additionalProperties": false,
+  "properties": {
+    "transition_id": {"type": "string"},
+    "object_id": {"type": "string"},
+    "from_role": {"type": "string"},
+    "to_role": {"type": "string"},
+    "prev_event_sha256": {"type": ["string", "null"]},
+    "event_sha256": {"type": "string"},
+    "config_hash": {"type": ["string", "null"]}
+  },
+  "$defs": {
+    "EffectiveRoleProjection": {
+      "type": "object",
+      "required": ["object_id", "effective_role", "cardinality", "transition_chain_root_sha256"],
+      "additionalProperties": false,
+      "properties": {
+        "object_id": {"type": "string"},
+        "effective_role": {"type": "string"},
+        "cardinality": {"type": "integer", "minimum": 0},
+        "transition_chain_root_sha256": {"type": "string"}
+      }
+    },
+    "B0PreparedManifest": {
+      "type": "object",
+      "required": ["manifest_id", "prepared_object_ids", "manifest_sha256"],
+      "additionalProperties": false,
+      "properties": {
+        "manifest_id": {"type": "string"},
+        "prepared_object_ids": {"type": "array", "items": {"type": "string"}},
+        "manifest_sha256": {"type": "string"}
+      }
+    },
+    "B0TransactionCommit": {
+      "type": "object",
+      "required": ["commit_id", "object_ids", "transition_chain_root_sha256", "commit_sha256"],
+      "additionalProperties": false,
+      "properties": {
+        "commit_id": {"type": "string"},
+        "object_ids": {"type": "array", "items": {"type": "string"}},
+        "transition_chain_root_sha256": {"type": "string"},
+        "commit_sha256": {"type": "string"}
+      }
+    }
+  }
+}

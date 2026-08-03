@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Cunyu-Liu/mRNA_editflow/schemas/v3_1/utr_edit_pair.schema.json",
+  "title": "UTR-Edit Pair (v3.1)",
+  "description": "Canonical source/candidate edit pair (Track E). One-to-one bijection with a relation candidate.",
+  "schema_version": "3.1",
+  "contract_id": "utr_editflow_goal_v3.1_benchmark_first",
+  "type": "object",
+  "required": ["pair_id", "candidate_id", "source_sequence_id", "candidate_sequence_id", "design_relation_group_id", "scientific_track", "relation_type", "immutable_base_future_use_role", "pairing_method", "evidence_id"],
+  "additionalProperties": false,
+  "properties": {
+    "pair_id": {"type": "string"},
+    "candidate_id": {"type": "string"},
+    "source_sequence_id": {"type": "string"},
+    "candidate_sequence_id": {"type": "string"},
+    "design_relation_group_id": {"type": "string"},
+    "scientific_track": {"type": "string", "enum": ["E", "F"]},
+    "relation_type": {"type": "string"},
+    "effect_evidence": {"type": ["string", "null"]},
+    "landscape_role": {"type": ["string", "null"]},
+    "immutable_base_future_use_role": {"type": "string"},
+    "pairing_method": {"type": "string"},
+    "evidence_id": {"type": "string"}
+  }
+}

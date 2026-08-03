@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Cunyu-Liu/mRNA_editflow/schemas/v3_1/group_assignment.schema.json",
+  "title": "GroupAssignment (v3.1)",
+  "description": "Assignment of an object to a grouping component.",
+  "schema_version": "3.1",
+  "contract_id": "utr_editflow_goal_v3.1_benchmark_first",
+  "type": "object",
+  "required": ["assignment_id", "object_id", "object_type", "group_id", "grouping_atom", "assignment_algorithm_id"],
+  "additionalProperties": false,
+  "properties": {
+    "assignment_id": {"type": "string"},
+    "object_id": {"type": "string"},
+    "object_type": {"type": "string", "enum": ["PAIR", "OBSERVATION"]},
+    "group_id": {"type": "string"},
+    "grouping_atom": {"type": "string"},
+    "assignment_algorithm_id": {"type": "string"}
+  }
+}

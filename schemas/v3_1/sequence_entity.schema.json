@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Cunyu-Liu/mRNA_editflow/schemas/v3_1/sequence_entity.schema.json",
+  "title": "SequenceEntity (v3.1)",
+  "description": "Canonical entity for a nucleotide sequence. Both sides of a candidate/pair must reference SequenceEntity.sequence_id.",
+  "schema_version": "3.1",
+  "contract_id": "utr_editflow_goal_v3.1_benchmark_first",
+  "type": "object",
+  "required": ["sequence_id", "sequence_scope", "raw_sequence_sha256", "normalized_sequence_sha256", "full_sequence_sha256", "original_length", "region_scope"],
+  "additionalProperties": false,
+  "properties": {
+    "sequence_id": {"type": "string"},
+    "sequence_scope": {"type": "string", "enum": ["5UTR", "3UTR", "CROSS_REGION", "MULTI_REGION", "CDS", "FULL_LENGTH"]},
+    "raw_sequence_sha256": {"type": "string"},
+    "normalized_sequence_sha256": {"type": ["string", "null"]},
+    "full_sequence_sha256": {"type": ["string", "null"]},
+    "window_start": {"type": ["integer", "null"]},
+    "window_end": {"type": ["integer", "null"]},
+    "original_length": {"type": "integer"},
+    "region_scope": {"type": "string", "enum": ["5UTR", "3UTR", "CROSS_REGION", "MULTI_REGION"]},
+    "scaffold": {"type": ["string", "null"]},
+    "editable_mask": {"type": ["array", "null"], "items": {"type": "boolean"}}
+  }
+}

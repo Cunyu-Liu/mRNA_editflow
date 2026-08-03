@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Cunyu-Liu/mRNA_editflow/schemas/v3_1/reporter_artifact_assessment.schema.json",
+  "title": "ReporterArtifactAssessment (v3.1)",
+  "description": "Reporter-artifact QC assessment for a functional observation.",
+  "schema_version": "3.1",
+  "contract_id": "utr_editflow_goal_v3.1_benchmark_first",
+  "type": "object",
+  "required": ["assessment_id", "observation_id", "artifact_risk", "evidence_id"],
+  "additionalProperties": false,
+  "properties": {
+    "assessment_id": {"type": "string"},
+    "observation_id": {"type": "string"},
+    "artifact_risk": {"type": "string", "enum": ["LOW", "MEDIUM", "HIGH"]},
+    "evidence_id": {"type": "string"}
+  }
+}

@@ -1,0 +1,20 @@
+# mRNA-EditFlow UTR Benchmark-First — v3.1 DiagnosticRegistry (open-generation diagnostics)
+# Contract: utr_editflow_goal_v3.1_benchmark_first
+# schema_version: 3.1
+# C3 phase: definition-only. Open-generation diagnostics do NOT enter TaskRegistry/E·F
+# TaskEligibilityCell, because their unit is GenerationTask/unique source, not held-out pair.
+#
+# Frozen constants (see §5.7.1):
+#   diagnostic registry expected-set SHA256 = f25c0adc643f38ff26c5e08bf07e4175a4e2571eaae939d61daa91fc6f2aabb2
+registry_version: "3.1"
+contract_id: "utr_editflow_goal_v3.1_benchmark_first"
+schema_version: "3.1"
+diagnostic_registry_expected_set_sha256: "f25c0adc643f38ff26c5e08bf07e4175a4e2571eaae939d61daa91fc6f2aabb2"
+rows:
+  - diagnostic_id: OPEN_GENERATION_DIAGNOSTIC_E_GENERATION_TASK
+    object_type: GENERATION_TASK
+    unit_id: GENERATION_TASK
+    schema_ref: "generation_task.schema.json#/$defs/DiagnosticRegistryRow"
+    denominator_rule: "generation_instances_under_unique_source"
+    claim_policy: "diagnostics_only_no_benchmark_primary_claim"
+    reports_section: "9.4"
