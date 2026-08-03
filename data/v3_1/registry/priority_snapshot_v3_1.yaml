@@ -1,0 +1,338 @@
+registry_version: "3.1"
+contract_id: utr_editflow_goal_v3.1_benchmark_first
+generated_at_utc: "2026-08-03T16:08:42+00:00"
+
+# Frozen priority sets (contract §7.1.1). Registry MUST NOT self-claim completeness.
+frozen_sets:
+  p0_asset_group_ids:
+    - GSE114002
+    - GSE145046
+    - GSE217518
+    - GSE232571
+    - GSE232572
+    - FAST_UTR_SIEGEL_2022
+    - GSE288185
+    - GSE256185_DART
+    - GSE232927
+    - GSE176581
+    - ENCSR854RUF
+    - GSE149487
+    - GSE200304
+    - GSE186455
+    - GSE246381
+    - NZIP_EMTAB_10902_11572_11575
+    - GSE330741
+    - GSE261709
+    - GSE298114
+    - PTRE_PRJNA1116243
+    - GSE207584_CLEANUP
+    - GSE173083_CLEANUP
+  p1_asset_group_ids:
+    - GSE194092
+    - GSE270252_270254
+    - GSE173098
+    - GSE295080_ISOMPRA
+    - GSE291719_SONAR
+    - GSE55396_FAST_UTR_2014
+    - PASSPORT_SEQ
+    - SEERS
+  p2_acquisition_watchlist:
+    - PARADE
+    - SALUKI_HALF_LIFE
+  reference_service:
+    - GENCODE
+    - REFSEQ
+    - ENSEMBL
+    - UTRDB
+    - RNACENTRAL
+  analysis_only_out_of_scope:
+    - CODONBERT
+    - OPENVACCINE
+    - BPRNA_STRUCTURE_ONLY
+  search_negative_ledger:
+    - MAVEDB
+    - MPRABASE
+  gse200304_members:
+    - GSE200304
+    - GSE200302
+    - GSE200303
+    - GSE217530
+
+# Per-asset overlay (audit_priority, scientific_priority, required_role, required_action, promotion_condition, expected_source_classes).
+assets:
+  GSE114002:
+    asset_group_id: GSE114002
+    accessions: [GSE114002]
+    audit_priority: P0
+    scientific_priority: E_F
+    required_role: SURVEY
+    required_action: inventory_join
+    promotion_condition: existing files present
+    expected_source_classes: [GEO]
+  GSE145046:
+    asset_group_id: GSE145046
+    accessions: [GSE145046]
+    audit_priority: P0
+    scientific_priority: F
+    required_role: SURVEY
+    required_action: 10mer_join
+    promotion_condition: existing files present
+    expected_source_classes: [GEO]
+  GSE217518:
+    asset_group_id: GSE217518
+    accessions: [GSE217518]
+    audit_priority: P0
+    scientific_priority: E_DELTA
+    required_role: SURVEY
+    required_action: ref_mut_join
+    promotion_condition: existing files present
+    expected_source_classes: [GEO]
+  GSE232571:
+    asset_group_id: GSE232571
+    accessions: [GSE232571]
+    audit_priority: P0
+    scientific_priority: E
+    required_role: ACQUIRE
+    required_action: gear_download
+    promotion_condition: download present
+    expected_source_classes: [GEO]
+  GSE232572:
+    asset_group_id: GSE232572
+    accessions: [GSE232572]
+    audit_priority: P0
+    scientific_priority: E
+    required_role: SURVEY
+    required_action: three_denominator_close
+    promotion_condition: existing files present
+    expected_source_classes: [GEO]
+  FAST_UTR_SIEGEL_2022:
+    asset_group_id: FAST_UTR_SIEGEL_2022
+    accessions: [FAST_UTR_SIEGEL_2022]
+    audit_priority: P0
+    scientific_priority: E_LINK
+    required_role: ACQUIRE
+    required_action: github_download
+    promotion_condition: download + license
+    expected_source_classes: [author-repository]
+  GSE288185:
+    asset_group_id: GSE288185
+    accessions: [GSE288185]
+    audit_priority: P0
+    scientific_priority: E
+    required_role: ACQUIRE
+    required_action: gear_download
+    promotion_condition: download present
+    expected_source_classes: [GEO]
+  GSE256185_DART:
+    asset_group_id: GSE256185_DART
+    accessions: [GSE256185]
+    audit_priority: P0
+    scientific_priority: E_F
+    required_role: ACQUIRE
+    required_action: gear_download
+    promotion_condition: download present
+    expected_source_classes: [GEO]
+  GSE232927:
+    asset_group_id: GSE232927
+    accessions: [GSE232927]
+    audit_priority: P0
+    scientific_priority: F
+    required_role: ACQUIRE
+    required_action: download_resolve
+    promotion_condition: download present
+    expected_source_classes: [GEO]
+  GSE176581:
+    asset_group_id: GSE176581
+    accessions: [GSE176581]
+    audit_priority: P0
+    scientific_priority: F
+    required_role: ACQUIRE
+    required_action: gear_download
+    promotion_condition: download present
+    expected_source_classes: [GEO]
+  ENCSR854RUF:
+    asset_group_id: ENCSR854RUF
+    accessions: [ENCSR854RUF]
+    audit_priority: P0
+    scientific_priority: E
+    required_role: SURVEY
+    required_action: source_alt_license_close
+    promotion_condition: existing files present
+    expected_source_classes: [ENCODE]
+  GSE149487:
+    asset_group_id: GSE149487
+    accessions: [GSE149487]
+    audit_priority: P0
+    scientific_priority: F
+    required_role: SURVEY
+    required_action: eligibility_audit
+    promotion_condition: existing files present
+    expected_source_classes: [GEO]
+  GSE200304:
+    asset_group_id: GSE200304
+    accessions: [GSE200304]
+    audit_priority: P0
+    scientific_priority: E
+    required_role: SURVEY
+    required_action: three_modality_join
+    promotion_condition: existing files present
+    expected_source_classes: [GEO]
+  GSE186455:
+    asset_group_id: GSE186455
+    accessions: [GSE186455]
+    audit_priority: P0
+    scientific_priority: E
+    required_role: SURVEY
+    required_action: provenance_review
+    promotion_condition: existing files present
+    expected_source_classes: [GEO]
+  GSE246381:
+    asset_group_id: GSE246381
+    accessions: [GSE246381]
+    audit_priority: P0
+    scientific_priority: E_DELTA
+    required_role: SURVEY
+    required_action: sealed_builder
+    promotion_condition: existing files present
+    expected_source_classes: [GEO]
+  NZIP_EMTAB_10902_11572_11575:
+    asset_group_id: NZIP_EMTAB_10902_11572_11575
+    accessions: [E-MTAB-10902]
+    audit_priority: P0
+    scientific_priority: E_F
+    required_role: ACQUIRE
+    required_action: biostudies_download
+    promotion_condition: download present
+    expected_source_classes: [BioStudies]
+  GSE330741:
+    asset_group_id: GSE330741
+    accessions: [GSE330741]
+    audit_priority: P0
+    scientific_priority: E_DENSE
+    required_role: ACQUIRE
+    required_action: gear_download
+    promotion_condition: download present
+    expected_source_classes: [GEO]
+  GSE261709:
+    asset_group_id: GSE261709
+    accessions: [GSE261709]
+    audit_priority: P0
+    scientific_priority: E_DELTA
+    required_role: ACQUIRE
+    required_action: gear_download
+    promotion_condition: download present
+    expected_source_classes: [GEO]
+  GSE298114:
+    asset_group_id: GSE298114
+    accessions: [GSE298114]
+    audit_priority: P0
+    scientific_priority: E_DELTA
+    required_role: ACQUIRE
+    required_action: gear_download
+    promotion_condition: download present
+    expected_source_classes: [GEO]
+  PTRE_PRJNA1116243:
+    asset_group_id: PTRE_PRJNA1116243
+    accessions: [PRJNA1116243]
+    audit_priority: P0
+    scientific_priority: AUX_QC
+    required_role: ACQUIRE
+    required_action: sra_download
+    promotion_condition: download present
+    expected_source_classes: [SRA]
+  GSE207584_CLEANUP:
+    asset_group_id: GSE207584_CLEANUP
+    accessions: [GSE207584]
+    audit_priority: P0
+    scientific_priority: OUT_OF_SCOPE
+    required_role: CLEANUP
+    required_action: exclude_fasta_recover
+    promotion_condition: existing files present
+    expected_source_classes: [GEO]
+  GSE173083_CLEANUP:
+    asset_group_id: GSE173083_CLEANUP
+    accessions: [GSE173083]
+    audit_priority: P0
+    scientific_priority: P2_AUX
+    required_role: CLEANUP
+    required_action: reconcile_units
+    promotion_condition: existing files present
+    expected_source_classes: [GEO]
+  GSE194092:
+    asset_group_id: GSE194092
+    accessions: [GSE194092]
+    audit_priority: P1
+    scientific_priority: F
+    required_role: ACQUIRE
+    required_action: landscape_calibration
+    promotion_condition: download present
+    expected_source_classes: [GEO]
+  GSE270252_270254:
+    asset_group_id: GSE270252_270254
+    accessions: [GSE270252]
+    audit_priority: P1
+    scientific_priority: F
+    required_role: ACQUIRE
+    required_action: full_length_recover
+    promotion_condition: download present
+    expected_source_classes: [GEO]
+  GSE173098:
+    asset_group_id: GSE173098
+    accessions: [GSE173098]
+    audit_priority: P1
+    scientific_priority: F
+    required_role: ACQUIRE
+    required_action: oligo_map
+    promotion_condition: download present
+    expected_source_classes: [GEO]
+  GSE295080_ISOMPRA:
+    asset_group_id: GSE295080_ISOMPRA
+    accessions: [GSE295080]
+    audit_priority: P1
+    scientific_priority: E_DENSE
+    required_role: ACQUIRE
+    required_action: design_table
+    promotion_condition: download present
+    expected_source_classes: [GEO]
+  GSE291719_SONAR:
+    asset_group_id: GSE291719_SONAR
+    accessions: [GSE291719]
+    audit_priority: P1
+    scientific_priority: F
+    required_role: ACQUIRE
+    required_action: oligo_map
+    promotion_condition: download present
+    expected_source_classes: [GEO]
+  GSE55396_FAST_UTR_2014:
+    asset_group_id: GSE55396_FAST_UTR_2014
+    accessions: [GSE55396]
+    audit_priority: P1
+    scientific_priority: F
+    required_role: ACQUIRE
+    required_action: three_denominator_replay
+    promotion_condition: download present
+    expected_source_classes: [GEO]
+  PASSPORT_SEQ:
+    asset_group_id: PASSPORT_SEQ
+    accessions: [PASSPORT_SEQ]
+    audit_priority: P1
+    scientific_priority: E_DELTA
+    required_role: ACQUIRE
+    required_action: accession_recover
+    promotion_condition: stable accession + license
+    expected_source_classes: [author-repository]
+  SEERS:
+    asset_group_id: SEERS
+    accessions: [SEERS]
+    audit_priority: P1
+    scientific_priority: F
+    required_role: ACQUIRE
+    required_action: design_label_license
+    promotion_condition: public design+label+license
+    expected_source_classes: [author-repository]
+
+service_assets:
+  reference_only_not_training: [GENCODE, REFSEQ, ENSEMBL, UTRDB, RNACENTRAL]
+  analysis_only_out_of_scope: [CODONBERT, OPENVACCINE, BPRNA_STRUCTURE_ONLY]
+  search_negative_ledger: [MAVEDB, MPRABASE]
+  p2_acquisition_watchlist: [PARADE, SALUKI_HALF_LIFE]
