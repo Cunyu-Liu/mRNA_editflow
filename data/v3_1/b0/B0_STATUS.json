@@ -1,0 +1,35 @@
+{
+  "phase": "B0-R",
+  "status": "PASS",
+  "generated_at_utc": "2026-08-03T18:38:56.251627+00:00",
+  "transaction_id": "b0_txn_20260803_001",
+  "run_id": "b0_r_v1",
+  "snapshot_id": "b0_snapshot_20260803_001",
+  "validator": "PASS (total_errors=0)",
+  "eligibility": {
+    "ordinary": {
+      "pairs": 88042,
+      "observations": 3322161,
+      "eligibility_records": 3410203
+    },
+    "restricted": {
+      "pairs": 1184,
+      "observations": 15392,
+      "eligibility_records": 16576
+    }
+  },
+  "cells_universe_total_rows": 31912907,
+  "components": {
+    "ordinary_prepared_set_sha256": "645042cc476710448f4f5b70c80c8cd624c4ea44177eea48d22233fd575545d8",
+    "restricted_prepared_set_sha256": "00ebb4bb9090ed74c2d37a424773edd2b4216e50fec084013d978469fcb9b3ff",
+    "ordinary_prepared_manifest_sha256": "e131a70e05127c3c6ad058b720bf4a65fad054a104aa7d6278af131fbec55f1f",
+    "restricted_prepared_manifest_sha256": "6d4eaca971478d1024a859e19a9cec7c998ff20cf62b038d0ded2b4f0fc38a8c"
+  },
+  "root_commit": {
+    "commit_sequence_no": 1,
+    "root_commit_record_sha256": "adcb3a8a608130128a98eaa3e91768aeb4a4980bfdaedc917392c280b400ac65"
+  },
+  "ordinary_dir": "/home/cunyuliu/mrna_editflow_goal/worktrees/v3_1_data_bench_closure_20260803/data/v3_1/benchmark",
+  "restricted_dir": "/home/cunyuliu/mrna_editflow_goal/restricted/v3_1_data_bench_closure_20260803/b0",
+  "note": "B0-R seven-stage transaction COMMITTED; no training, no GPU work. All cells INELIGIBLE_WITH_REASON (missing split atoms) -> zero assignments."
+}
