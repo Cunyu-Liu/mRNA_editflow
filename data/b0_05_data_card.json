@@ -17,101 +17,100 @@
     "closed_measured_pool": {
       "track": "closed_measured_pool",
       "description": "measured source-candidate pairs, closed support",
-      "n_assignments": 379981,
+      "n_assignments": 250161,
       "counts": {
-        "total_assignments": 379981,
-        "unique_records": 130047,
+        "total_assignments": 250161,
+        "unique_records": 85214,
         "by_split": {
           "3utr_source_disjoint": {
-            "test": 2861,
-            "train": 23209,
-            "val": 2776
+            "test": 2961,
+            "train": 23145,
+            "val": 2740
           },
           "5utr_source_disjoint": {
-            "train": 80893,
-            "test": 10160,
-            "val": 10148
+            "test": 5481,
+            "train": 45215,
+            "val": 5672
           },
           "cross_region_transfer": {
             "test": 28846,
-            "train": 80893,
-            "val": 10148
+            "train": 45215,
+            "val": 5672
           },
           "study_disjoint": {
             "test": 28846,
-            "train": 101201
+            "train": 56368
           }
         },
         "by_region": {
-          "5'UTR": 293443,
+          "5'UTR": 163623,
           "3'UTR": 86538
         },
         "by_accession": {
-          "GSE114002": 289997,
-          "GSE246381": 3446,
+          "GSE114002": 160187,
+          "GSE246381": 3436,
           "ENCSR854RUF": 35907,
           "GSE186455": 1947,
           "GSE200304": 20655,
           "GSE232572": 28029
         },
         "by_exposure_class": {
-          "TRAIN": 286196,
-          "EVAL_TEST": 70713,
-          "EVAL_VAL": 23072
+          "EVAL_TEST": 66134,
+          "TRAIN": 169943,
+          "EVAL_VAL": 14084
         }
       },
       "bias": {
         "source_length": {
-          "n": 130047,
+          "n": 85214,
           "min": 16.0,
           "max": 500.0,
-          "mean": 73.42017116888509,
+          "mean": 85.74204942849767,
           "median": 50.0,
-          "std": 50.49029665454735,
+          "std": 58.73745932888019,
           "p25": 50.0,
-          "p75": 50.0
+          "p75": 101.0
         },
         "candidate_length": {
-          "n": 130047,
+          "n": 85214,
           "min": 16.0,
           "max": 516.0,
-          "mean": 73.41328135212653,
+          "mean": 85.73153472434107,
           "median": 50.0,
-          "std": 50.48829427098036,
+          "std": 58.73703800322475,
           "p25": 50.0,
-          "p75": 50.0
+          "p75": 101.0
         },
         "gc_content_source": {
-          "n": 130047,
+          "n": 85214,
           "min": 0.02,
           "max": 0.96,
-          "mean": 0.5071921058450959,
-          "median": 0.504950495049505,
-          "std": 0.1727936232754623,
-          "p25": 0.38181818181818183,
-          "p75": 0.6237623762376238
+          "mean": 0.5053708520763863,
+          "median": 0.5,
+          "std": 0.1722360769630309,
+          "p25": 0.38,
+          "p75": 0.6242424242424243
         },
         "gc_content_candidate": {
-          "n": 130047,
-          "min": 0.02,
+          "n": 85214,
+          "min": 0.04,
           "max": 0.96,
-          "mean": 0.5079495327181364,
-          "median": 0.509090909090909,
-          "std": 0.16974746152134698,
-          "p25": 0.38613861386138615,
+          "mean": 0.5065267782453058,
+          "median": 0.5024875621890548,
+          "std": 0.16756075197401357,
+          "p25": 0.38,
           "p75": 0.62
         },
         "edit_distance": {
-          "n": 130047,
-          "min": 0.0,
+          "n": 85214,
+          "min": 1.0,
           "max": 73.0,
-          "mean": 2.3525879105246563,
+          "mean": 3.5903372685239514,
           "median": 1.0,
-          "std": 5.397002578075387,
-          "p25": 0.0,
+          "std": 6.325219629191585,
+          "p25": 1.0,
           "p75": 1.0,
           "distribution": {
-            "0": 44833,
             "1": 64781,
             "2": 6924,
             "3": 1208,
@@ -150,9 +149,9 @@
         "n_ins_total": 80166,
         "n_del_total": 81062,
         "n_sub_total": 144719,
-        "n_ins_mean_per_record": 0.6164386721723685,
-        "n_del_mean_per_record": 0.623328488930925,
-        "n_sub_mean_per_record": 1.112820749421363,
+        "n_ins_mean_per_record": 0.9407609078320464,
+        "n_del_mean_per_record": 0.9512756119886404,
+        "n_sub_mean_per_record": 1.6983007487032646,
         "label_keys": [
           "Freq",
           "activity_alt_mean",
@@ -391,14 +390,14 @@
         ],
         "label_stats": {
           "rl": {
-            "n": 100017,
+            "n": 55184,
             "min": 0.32637645462,
-            "max": 9.87649427367,
-            "mean": 5.743631769231548,
-            "median": 6.15422586773,
-            "std": 1.5180409116619202,
-            "p25": 4.8004886607,
-            "p75": 6.9248127605
+            "max": 9.66302215289,
+            "mean": 5.763370009049938,
+            "median": 6.159302753785,
+            "std": 1.5110426307310842,
+            "p25": 4.845324271512499,
+            "p75": 6.932979812035
           },
           "hek_mean_umi_ref": {
             "n": 1184,
@@ -2734,17 +2733,17 @@
       },
       "exposure": {
         "by_exposure_status": {
-          "unexposed": 130047
+          "unexposed": 85214
         },
         "by_data_role": {
-          "D_C": 130047
+          "D_C": 85214
         },
         "by_record_type": {
-          "paired": 130047
+          "paired": 85214
         },
         "historically_exposed_count": 0,
-        "labels_allowed_for_new_training": 130047,
-        "labels_allowed_for_new_hyperparameter_selection": 130047
+        "labels_allowed_for_new_training": 85214,
+        "labels_allowed_for_new_hyperparameter_selection": 85214
       },
       "allowed_claims": {
         "track_supported_claims": [
@@ -2756,8 +2755,8 @@
           "generation_grounding"
         ],
         "ledger_allowed_claims_per_claim_counts": {
-          "edit_effect": 130047,
-          "generation_grounding": 130047
+          "edit_effect": 85214,
+          "generation_grounding": 85214
         },
         "ledger_forbidden_claims_per_claim_counts": {},
         "allowed_claims_pool_schema": [
@@ -2788,101 +2787,100 @@
     "heldout_generative": {
       "track": "heldout_generative",
       "description": "held-out source\u2192candidate generative likelihood/recovery",
-      "n_assignments": 379981,
+      "n_assignments": 250161,
       "counts": {
-        "total_assignments": 379981,
-        "unique_records": 130047,
+        "total_assignments": 250161,
+        "unique_records": 85214,
         "by_split": {
           "3utr_source_disjoint": {
-            "test": 2861,
-            "train": 23209,
-            "val": 2776
+            "test": 2961,
+            "train": 23145,
+            "val": 2740
           },
           "5utr_source_disjoint": {
-            "train": 80893,
-            "test": 10160,
-            "val": 10148
+            "test": 5481,
+            "train": 45215,
+            "val": 5672
           },
           "cross_region_transfer": {
             "test": 28846,
-            "train": 80893,
-            "val": 10148
+            "train": 45215,
+            "val": 5672
           },
           "study_disjoint": {
             "test": 28846,
-            "train": 101201
+            "train": 56368
           }
         },
         "by_region": {
-          "5'UTR": 293443,
+          "5'UTR": 163623,
           "3'UTR": 86538
         },
         "by_accession": {
-          "GSE114002": 289997,
-          "GSE246381": 3446,
+          "GSE114002": 160187,
+          "GSE246381": 3436,
           "ENCSR854RUF": 35907,
           "GSE186455": 1947,
           "GSE200304": 20655,
           "GSE232572": 28029
         },
         "by_exposure_class": {
-          "TRAIN": 286196,
-          "EVAL_TEST": 70713,
-          "EVAL_VAL": 23072
+          "EVAL_TEST": 66134,
+          "TRAIN": 169943,
+          "EVAL_VAL": 14084
         }
       },
       "bias": {
         "source_length": {
-          "n": 130047,
+          "n": 85214,
           "min": 16.0,
           "max": 500.0,
-          "mean": 73.42017116888509,
+          "mean": 85.74204942849767,
           "median": 50.0,
-          "std": 50.49029665454735,
+          "std": 58.73745932888019,
           "p25": 50.0,
-          "p75": 50.0
+          "p75": 101.0
         },
         "candidate_length": {
-          "n": 130047,
+          "n": 85214,
           "min": 16.0,
           "max": 516.0,
-          "mean": 73.41328135212653,
+          "mean": 85.73153472434107,
           "median": 50.0,
-          "std": 50.48829427098036,
+          "std": 58.73703800322475,
           "p25": 50.0,
-          "p75": 50.0
+          "p75": 101.0
         },
         "gc_content_source": {
-          "n": 130047,
+          "n": 85214,
           "min": 0.02,
           "max": 0.96,
-          "mean": 0.5071921058450959,
-          "median": 0.504950495049505,
-          "std": 0.1727936232754623,
-          "p25": 0.38181818181818183,
-          "p75": 0.6237623762376238
+          "mean": 0.5053708520763863,
+          "median": 0.5,
+          "std": 0.1722360769630309,
+          "p25": 0.38,
+          "p75": 0.6242424242424243
         },
         "gc_content_candidate": {
-          "n": 130047,
-          "min": 0.02,
+          "n": 85214,
+          "min": 0.04,
           "max": 0.96,
-          "mean": 0.5079495327181364,
-          "median": 0.509090909090909,
-          "std": 0.16974746152134698,
-          "p25": 0.38613861386138615,
+          "mean": 0.5065267782453058,
+          "median": 0.5024875621890548,
+          "std": 0.16756075197401357,
+          "p25": 0.38,
           "p75": 0.62
         },
         "edit_distance": {
-          "n": 130047,
-          "min": 0.0,
+          "n": 85214,
+          "min": 1.0,
           "max": 73.0,
-          "mean": 2.3525879105246563,
+          "mean": 3.5903372685239514,
           "median": 1.0,
-          "std": 5.397002578075387,
-          "p25": 0.0,
+          "std": 6.325219629191585,
+          "p25": 1.0,
           "p75": 1.0,
           "distribution": {
-            "0": 44833,
             "1": 64781,
             "2": 6924,
             "3": 1208,
@@ -2921,9 +2919,9 @@
         "n_ins_total": 80166,
         "n_del_total": 81062,
         "n_sub_total": 144719,
-        "n_ins_mean_per_record": 0.6164386721723685,
-        "n_del_mean_per_record": 0.623328488930925,
-        "n_sub_mean_per_record": 1.112820749421363,
+        "n_ins_mean_per_record": 0.9407609078320464,
+        "n_del_mean_per_record": 0.9512756119886404,
+        "n_sub_mean_per_record": 1.6983007487032646,
         "label_keys": [
           "Freq",
           "activity_alt_mean",
@@ -3162,14 +3160,14 @@
         ],
         "label_stats": {
           "rl": {
-            "n": 100017,
+            "n": 55184,
             "min": 0.32637645462,
-            "max": 9.87649427367,
-            "mean": 5.743631769231548,
-            "median": 6.15422586773,
-            "std": 1.5180409116619202,
-            "p25": 4.8004886607,
-            "p75": 6.9248127605
+            "max": 9.66302215289,
+            "mean": 5.763370009049938,
+            "median": 6.159302753785,
+            "std": 1.5110426307310842,
+            "p25": 4.845324271512499,
+            "p75": 6.932979812035
           },
           "hek_mean_umi_ref": {
             "n": 1184,
@@ -5505,17 +5503,17 @@
       },
       "exposure": {
         "by_exposure_status": {
-          "unexposed": 130047
+          "unexposed": 85214
         },
         "by_data_role": {
-          "D_C": 130047
+          "D_C": 85214
         },
         "by_record_type": {
-          "paired": 130047
+          "paired": 85214
         },
         "historically_exposed_count": 0,
-        "labels_allowed_for_new_training": 130047,
-        "labels_allowed_for_new_hyperparameter_selection": 130047
+        "labels_allowed_for_new_training": 85214,
+        "labels_allowed_for_new_hyperparameter_selection": 85214
       },
       "allowed_claims": {
         "track_supported_claims": [
@@ -5526,8 +5524,8 @@
           "generation_grounding"
         ],
         "ledger_allowed_claims_per_claim_counts": {
-          "edit_effect": 130047,
-          "generation_grounding": 130047
+          "edit_effect": 85214,
+          "generation_grounding": 85214
         },
         "ledger_forbidden_claims_per_claim_counts": {},
         "allowed_claims_pool_schema": [
@@ -5558,101 +5556,100 @@
     "open_legal_generation": {
       "track": "open_legal_generation",
       "description": "open-support legal generation under constraints",
-      "n_assignments": 379981,
+      "n_assignments": 250161,
       "counts": {
-        "total_assignments": 379981,
-        "unique_records": 130047,
+        "total_assignments": 250161,
+        "unique_records": 85214,
         "by_split": {
           "3utr_source_disjoint": {
-            "test": 2861,
-            "train": 23209,
-            "val": 2776
+            "test": 2961,
+            "train": 23145,
+            "val": 2740
           },
           "5utr_source_disjoint": {
-            "train": 80893,
-            "test": 10160,
-            "val": 10148
+            "test": 5481,
+            "train": 45215,
+            "val": 5672
           },
           "cross_region_transfer": {
             "test": 28846,
-            "train": 80893,
-            "val": 10148
+            "train": 45215,
+            "val": 5672
           },
           "study_disjoint": {
             "test": 28846,
-            "train": 101201
+            "train": 56368
           }
         },
         "by_region": {
-          "5'UTR": 293443,
+          "5'UTR": 163623,
           "3'UTR": 86538
         },
         "by_accession": {
-          "GSE114002": 289997,
-          "GSE246381": 3446,
+          "GSE114002": 160187,
+          "GSE246381": 3436,
           "ENCSR854RUF": 35907,
           "GSE186455": 1947,
           "GSE200304": 20655,
           "GSE232572": 28029
         },
         "by_exposure_class": {
-          "TRAIN": 286196,
-          "EVAL_TEST": 70713,
-          "EVAL_VAL": 23072
+          "EVAL_TEST": 66134,
+          "TRAIN": 169943,
+          "EVAL_VAL": 14084
         }
       },
       "bias": {
         "source_length": {
-          "n": 130047,
+          "n": 85214,
           "min": 16.0,
           "max": 500.0,
-          "mean": 73.42017116888509,
+          "mean": 85.74204942849767,
           "median": 50.0,
-          "std": 50.49029665454735,
+          "std": 58.73745932888019,
           "p25": 50.0,
-          "p75": 50.0
+          "p75": 101.0
         },
         "candidate_length": {
-          "n": 130047,
+          "n": 85214,
           "min": 16.0,
           "max": 516.0,
-          "mean": 73.41328135212653,
+          "mean": 85.73153472434107,
           "median": 50.0,
-          "std": 50.48829427098036,
+          "std": 58.73703800322475,
           "p25": 50.0,
-          "p75": 50.0
+          "p75": 101.0
         },
         "gc_content_source": {
-          "n": 130047,
+          "n": 85214,
           "min": 0.02,
           "max": 0.96,
-          "mean": 0.5071921058450959,
-          "median": 0.504950495049505,
-          "std": 0.1727936232754623,
-          "p25": 0.38181818181818183,
-          "p75": 0.6237623762376238
+          "mean": 0.5053708520763863,
+          "median": 0.5,
+          "std": 0.1722360769630309,
+          "p25": 0.38,
+          "p75": 0.6242424242424243
         },
         "gc_content_candidate": {
-          "n": 130047,
-          "min": 0.02,
+          "n": 85214,
+          "min": 0.04,
           "max": 0.96,
-          "mean": 0.5079495327181364,
-          "median": 0.509090909090909,
-          "std": 0.16974746152134698,
-          "p25": 0.38613861386138615,
+          "mean": 0.5065267782453058,
+          "median": 0.5024875621890548,
+          "std": 0.16756075197401357,
+          "p25": 0.38,
           "p75": 0.62
         },
         "edit_distance": {
-          "n": 130047,
-          "min": 0.0,
+          "n": 85214,
+          "min": 1.0,
           "max": 73.0,
-          "mean": 2.3525879105246563,
+          "mean": 3.5903372685239514,
           "median": 1.0,
-          "std": 5.397002578075387,
-          "p25": 0.0,
+          "std": 6.325219629191585,
+          "p25": 1.0,
           "p75": 1.0,
           "distribution": {
-            "0": 44833,
             "1": 64781,
             "2": 6924,
             "3": 1208,
@@ -5691,9 +5688,9 @@
         "n_ins_total": 80166,
         "n_del_total": 81062,
         "n_sub_total": 144719,
-        "n_ins_mean_per_record": 0.6164386721723685,
-        "n_del_mean_per_record": 0.623328488930925,
-        "n_sub_mean_per_record": 1.112820749421363,
+        "n_ins_mean_per_record": 0.9407609078320464,
+        "n_del_mean_per_record": 0.9512756119886404,
+        "n_sub_mean_per_record": 1.6983007487032646,
         "label_keys": [
           "Freq",
           "activity_alt_mean",
@@ -5932,14 +5929,14 @@
         ],
         "label_stats": {
           "rl": {
-            "n": 100017,
+            "n": 55184,
             "min": 0.32637645462,
-            "max": 9.87649427367,
-            "mean": 5.743631769231548,
-            "median": 6.15422586773,
-            "std": 1.5180409116619202,
-            "p25": 4.8004886607,
-            "p75": 6.9248127605
+            "max": 9.66302215289,
+            "mean": 5.763370009049938,
+            "median": 6.159302753785,
+            "std": 1.5110426307310842,
+            "p25": 4.845324271512499,
+            "p75": 6.932979812035
           },
           "hek_mean_umi_ref": {
             "n": 1184,
@@ -8275,17 +8272,17 @@
       },
       "exposure": {
         "by_exposure_status": {
-          "unexposed": 130047
+          "unexposed": 85214
         },
         "by_data_role": {
-          "D_C": 130047
+          "D_C": 85214
         },
         "by_record_type": {
-          "paired": 130047
+          "paired": 85214
         },
         "historically_exposed_count": 0,
-        "labels_allowed_for_new_training": 130047,
-        "labels_allowed_for_new_hyperparameter_selection": 130047
+        "labels_allowed_for_new_training": 85214,
+        "labels_allowed_for_new_hyperparameter_selection": 85214
       },
       "allowed_claims": {
         "track_supported_claims": [
@@ -8297,8 +8294,8 @@
           "generation_grounding"
         ],
         "ledger_allowed_claims_per_claim_counts": {
-          "edit_effect": 130047,
-          "generation_grounding": 130047
+          "edit_effect": 85214,
+          "generation_grounding": 85214
         },
         "ledger_forbidden_claims_per_claim_counts": {},
         "allowed_claims_pool_schema": [

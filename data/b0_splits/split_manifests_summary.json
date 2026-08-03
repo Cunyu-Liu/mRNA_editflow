@@ -2,66 +2,66 @@
   "5utr_source_disjoint": {
     "split_type": "5utr_source_disjoint",
     "output_path": "data/b0_splits/split_5utr_source_disjoint.jsonl",
-    "sha256": "85c4520196fe3ba1974f3ec68f5b1acf09d5de9f702f88805ca216dbda509558",
-    "n_total": 101201,
+    "sha256": "e5027b370c5da025022e26f94793b91825da7e752458b35a99bb48b3eb3c5b43",
+    "n_total": 56368,
     "n_excluded": 0,
-    "n_train": 80893,
-    "n_val": 10148,
-    "n_test": 10160,
+    "n_train": 45215,
+    "n_val": 5672,
+    "n_test": 5481,
     "by_accession_split": {
       "GSE114002": {
-        "train": 79956,
-        "test": 10054,
-        "val": 10007
+        "test": 5365,
+        "train": 44265,
+        "val": 5554
       },
       "GSE246381": {
-        "train": 937,
-        "test": 106,
-        "val": 141
+        "train": 950,
+        "val": 118,
+        "test": 116
       }
     },
-    "notes": "mmseqs clustering at identity=0.8, cov=0.8; 38269 clusters split 80/10/10 by cluster. Pools GSE114002+GSE246381 (all 5'UTR paired datasets)."
+    "notes": "mmseqs clustering at identity=0.8, cov=0.8; 25363 clusters split 80/10/10 by cluster. Pools GSE114002+GSE246381 (all 5'UTR paired datasets)."
   },
   "3utr_source_disjoint": {
     "split_type": "3utr_source_disjoint",
     "output_path": "data/b0_splits/split_3utr_source_disjoint.jsonl",
-    "sha256": "3675f19282c07580805a2b7fb4a279c5bcc17d3e67c9993224405f0773b4ff39",
+    "sha256": "19d6f294f1e0d9f2be5afb4862a557abf43fdbc42fad9ee548f50f2d8a88580a",
     "n_total": 28846,
     "n_excluded": 0,
-    "n_train": 23209,
-    "n_val": 2776,
-    "n_test": 2861,
+    "n_train": 23145,
+    "n_val": 2740,
+    "n_test": 2961,
     "by_accession_split": {
       "ENCSR854RUF": {
-        "test": 1195,
-        "train": 9585,
-        "val": 1189
+        "test": 1230,
+        "train": 9526,
+        "val": 1213
       },
       "GSE186455": {
-        "train": 537,
-        "test": 58,
-        "val": 54
+        "train": 527,
+        "test": 65,
+        "val": 57
       },
       "GSE200304": {
-        "train": 5502,
-        "val": 673,
-        "test": 710
+        "train": 5490,
+        "val": 679,
+        "test": 716
       },
       "GSE232572": {
-        "train": 7585,
-        "test": 898,
-        "val": 860
+        "train": 7602,
+        "test": 950,
+        "val": 791
       }
     },
-    "notes": "mmseqs clustering at identity=0.8, cov=0.8; 20565 clusters split 80/10/10 by cluster. Pools GSE200304+GSE232572+GSE186455+ENCSR854RUF (all 3'UTR paired datasets)."
+    "notes": "mmseqs clustering at identity=0.8, cov=0.8; 20567 clusters split 80/10/10 by cluster. Pools GSE200304+GSE232572+GSE186455+ENCSR854RUF (all 3'UTR paired datasets)."
   },
   "study_disjoint": {
     "split_type": "study_disjoint",
     "output_path": "data/b0_splits/split_study_disjoint.jsonl",
-    "sha256": "9a453ff2d3347faa20a4e5f39a8d4d90d41438f37442851cd9a0f48ce5f11404",
-    "n_total": 130047,
+    "sha256": "966633afc9c6519c52330dda541eee68d9a32dedc93a2f6b950e95bfb4bd9d9a",
+    "n_total": 85214,
     "n_excluded": 0,
-    "n_train": 101201,
+    "n_train": 56368,
     "n_val": 0,
     "n_test": 28846,
     "by_accession_split": {
@@ -69,7 +69,7 @@
         "test": 11969
       },
       "GSE114002": {
-        "train": 100017
+        "train": 55184
       },
       "GSE186455": {
         "test": 649
@@ -89,19 +89,19 @@
   "cross_region_transfer": {
     "split_type": "cross_region_transfer",
     "output_path": "data/b0_splits/split_cross_region_transfer.jsonl",
-    "sha256": "b9d99dcac140460f560bb44a8a1f6805bb87a996dfe4fd10ce6d35c0b2473f55",
-    "n_total": 119887,
-    "n_excluded": 10160,
-    "n_train": 80893,
-    "n_val": 10148,
+    "sha256": "6d0292d4bd4e22b0503d78e005ae70f27b9af7986c09d7c83009e2b511bf9a32",
+    "n_total": 79733,
+    "n_excluded": 5481,
+    "n_train": 45215,
+    "n_val": 5672,
     "n_test": 28846,
     "by_accession_split": {
       "ENCSR854RUF": {
         "test": 11969
       },
       "GSE114002": {
-        "train": 79956,
-        "val": 10007
+        "train": 44265,
+        "val": 5554
       },
       "GSE186455": {
         "test": 649
@@ -113,8 +113,8 @@
         "test": 9343
       },
       "GSE246381": {
-        "train": 937,
-        "val": 141
+        "train": 950,
+        "val": 118
       }
     },
     "notes": "train+val=GSE114002+GSE246381 (5'UTR, mmseqs cluster split 80/10), test=GSE200304+GSE232572+GSE186455+ENCSR854RUF (3'UTR, 100%). Tests 5'UTR->3'UTR region transfer. train_val_unused records are 5'UTR clusters not assigned to train or val (the remaining 10%); they are excluded from this split."

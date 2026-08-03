@@ -176,6 +176,7 @@ def extract_gse114002(data_root: Path) -> List[dict]:
             continue
         if source == candidate:
             n_identical += 1
+            continue  # skip WT controls (mother == utr, no edit)
         else:
             n_edited += 1
         if len(records) % 5000 == 0 and len(records) > 0:
@@ -193,7 +194,7 @@ def extract_gse114002(data_root: Path) -> List[dict]:
         else:
             rid = str(idx)
 
-        metadata = {"source_file": fpath.name, "library": str(row.get("library", ""))}
+        metadata = {"source_file": fpath.name, "library": str(row.get("library", "")), "record_type": "paired"}
         rec = canonical_record(
             record_id=f"{accession}_{rid}",
             dataset="sample2019",
