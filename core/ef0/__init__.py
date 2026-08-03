@@ -6,7 +6,20 @@ leaving the MK0 state/action, legality and sampler semantics unchanged.
 """
 
 from .model import EF0ModelConfig, TrueUTREditFlow, TrueUTREditFlowRateField
-from .sampler import EF0SamplerConfig, generate_candidates
+from .exact_sampler import (
+    ExactCTMCResult,
+    ExactCTMCSamplerConfig,
+    HazardConvergenceError,
+    TimeInhomogeneousRateError,
+    time_homogeneity_audit,
+)
+from .sampler import (
+    EF0SamplerConfig,
+    generate_candidates,
+    generate_exact_gillespie_candidates,
+    generate_nonhomogeneous_ctmc_candidates,
+    replay_exact_candidates,
+)
 
 __all__ = [
     "EF0ModelConfig",
@@ -14,4 +27,12 @@ __all__ = [
     "TrueUTREditFlowRateField",
     "EF0SamplerConfig",
     "generate_candidates",
+    "ExactCTMCResult",
+    "ExactCTMCSamplerConfig",
+    "HazardConvergenceError",
+    "TimeInhomogeneousRateError",
+    "time_homogeneity_audit",
+    "generate_exact_gillespie_candidates",
+    "generate_nonhomogeneous_ctmc_candidates",
+    "replay_exact_candidates",
 ]

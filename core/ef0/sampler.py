@@ -10,6 +10,13 @@ from ..mk0.samplers import (
     constrained_single_event_first_order,
 )
 from ..mk0.types import EditState
+from .exact_sampler import (
+    ExactCTMCResult,
+    ExactCTMCSamplerConfig,
+    replay_exact_ctmc_result,
+    sample_exact_gillespie,
+    sample_nonhomogeneous_ctmc,
+)
 from .model import TrueUTREditFlow
 
 
@@ -60,3 +67,48 @@ def generate_candidates(
         remaining_hazard_zero_atol=config.remaining_hazard_zero_atol,
         remaining_hazard_convergence_atol=config.remaining_hazard_convergence_atol,
     )
+
+
+def generate_exact_gillespie_candidates(
+    flow: TrueUTREditFlow,
+    initial_state: EditState,
+    *,
+    config: ExactCTMCSamplerConfig,
+    seed: int,
+) -> ExactCTMCResult:
+    """Run exact Gillespie only after the homogeneous-rate gate passes."""
+
+    return sample_exact_gillespie(
+        initial_state,
+        flow.rate_fn,
+        config=config,
+        seed=seed,
+    )
+
+
+def generate_nonhomogeneous_ctmc_candidates(
+    flow: TrueUTREditFlow,
+    initial_state: EditState,
+    *,
+    config: ExactCTMCSamplerConfig,
+    seed: int,
+) -> ExactCTMCResult:
+    """Run the time-dependent EF0 route with certified hazard inversion."""
+
+    return sample_nonhomogeneous_ctmc(
+        initial_state,
+        flow.rate_fn,
+        config=config,
+        seed=seed,
+    )
+
+
+def replay_exact_candidates(
+    result: ExactCTMCResult,
+    flow: TrueUTREditFlow,
+    *,
+    config: ExactCTMCSamplerConfig,
+) -> bool:
+    """Replay either exact homogeneous or converged nonhomogeneous result."""
+
+    return replay_exact_ctmc_result(result, flow.rate_fn, config=config)

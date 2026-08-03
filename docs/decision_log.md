@@ -238,3 +238,26 @@ Audited all 9 candidate datasets in `data_registry/intervention_candidates.yaml`
 - B0-01 (canonical schemas) unblocked
 - B0-02 (split manifests) unblocked
 - B0-03 (leakage audit) unblocked — exposure ledger now available
+
+---
+
+## DEC-UTR-EF-V2-20260803-GSE246381-DATA-STATUS-CLARIFICATION
+
+- **date:** 2026-08-03
+- **type:** data-description correction
+- **approved_by_user:** yes (user confirmation that GSE246381 data is not a problem)
+
+### Correction
+
+The earlier wording that presented GSE246381 as a data-quality, data-validity, or
+dataset-integrity problem is withdrawn. A fresh read of the committed protected
+data ledger found 1,184 paired records, all classified as `D_C` / `E2` with
+`exposure_status=unexposed`, `historically_exposed=false`, and labels allowed for
+new training and new hyperparameter selection. The current D1 coverage and
+edit-script audits are passing.
+
+This correction does not mutate raw data or labels. The active contract's separate
+historical-exposure/E4 field is a provenance/admission-policy description, not a
+claim that the GSE246381 data are invalid. Until the contract itself is explicitly
+amended, downstream evidence must retain both fields and must not silently turn a
+data-status correction into a contract-policy change.

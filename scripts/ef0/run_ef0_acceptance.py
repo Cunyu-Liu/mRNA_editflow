@@ -226,6 +226,55 @@ def result_payload(result: Any) -> dict[str, Any]:
     }
 
 
+def exact_step_payload(step: Any) -> dict[str, Any]:
+    return {
+        "event_index": step.event_index,
+        "t_start": step.t_start,
+        "t_end": step.t_end,
+        "waiting_time": step.waiting_time,
+        "total_hazard_at_event": step.total_hazard_at_event,
+        "integrated_hazard": step.integrated_hazard,
+        "event_uniform": step.event_uniform,
+        "action_uniform": step.action_uniform,
+        "selected_action": (
+            action_payload(step.selected_action)
+            if step.selected_action is not None
+            else None
+        ),
+        "outcome": step.outcome,
+        "before_hash": step.before_hash,
+        "after_hash": step.after_hash,
+        "candidate_actions_hash": step.candidate_actions_hash,
+        "candidate_rates_hash": step.candidate_rates_hash,
+        "integration_disagreement": step.integration_disagreement,
+        "root_residual": step.root_residual,
+        "log_likelihood_increment": step.log_likelihood_increment,
+    }
+
+
+def exact_result_payload(result: Any) -> dict[str, Any]:
+    return {
+        "sampler": result.sampler,
+        "exact_gillespie": result.exact_gillespie,
+        "time_homogeneous": result.time_homogeneous,
+        "seed": result.seed,
+        "min_length": result.min_length,
+        "max_length": result.max_length,
+        "horizon": result.horizon,
+        "edit_events": result.edit_events,
+        "termination_time": result.termination_time,
+        "termination_before_hash": result.termination_before_hash,
+        "trajectory_log_likelihood": result.trajectory_log_likelihood,
+        "likelihood_semantics": result.likelihood_semantics,
+        "max_integration_disagreement": result.max_integration_disagreement,
+        "max_root_residual": result.max_root_residual,
+        "max_time_homogeneity_delta": result.max_time_homogeneity_delta,
+        "initial_state": state_payload(result.initial_state),
+        "final_state": state_payload(result.final_state),
+        "steps": [exact_step_payload(step) for step in result.steps],
+    }
+
+
 def create_initial_state() -> Any:
     from core.mk0.types import EditState
 
@@ -539,10 +588,15 @@ def main() -> int:
         from core.ef0 import (
             EF0ModelConfig,
             EF0SamplerConfig,
+            ExactCTMCSamplerConfig,
             TrueUTREditFlow,
             TrueUTREditFlowRateField,
             generate_candidates,
+            generate_nonhomogeneous_ctmc_candidates,
+            replay_exact_candidates,
+            time_homogeneity_audit,
         )
+        from core.ef0.exact_sampler import replay_exact_ctmc_result, sample_exact_gillespie
         from core.mk0.state_action import apply_action, enumerate_legal_actions
         from core.mk0.types import ActionType, AtomicAction, EditState
 
@@ -726,6 +780,86 @@ def main() -> int:
         if any(token not in "ACGU" for token in sampler_first.final_state.current):
             raise AssertionError("sampler produced an invalid nucleotide")
 
+        exact_config = ExactCTMCSamplerConfig(
+            min_length=1,
+            max_length=6,
+            horizon=0.5,
+            integration_lower_order=8,
+            integration_higher_order=16,
+            integration_convergence_atol=1.0e-7,
+            root_atol=1.0e-7,
+            max_root_iterations=40,
+        )
+
+        def constant_rate_fixture(state: Any, time: float) -> dict[Any, float]:
+            if not 0.0 <= time < 1.0:
+                raise ValueError("fixture time outside [0,1)")
+            return {
+                action: 0.25 if action.kind is ActionType.STOP else 0.5
+                for action in enumerate_legal_actions(
+                    state,
+                    min_length=exact_config.min_length,
+                    max_length=exact_config.max_length,
+                    include_stop=True,
+                )
+            }
+
+        homogeneous_fixture_state = EditState.initial(
+            "A",
+            region="5UTR",
+            context=dict(base_state.context),
+            target_condition="increase",
+            budget=1,
+        )
+        exact_homogeneous = sample_exact_gillespie(
+            homogeneous_fixture_state,
+            constant_rate_fixture,
+            config=exact_config,
+            seed=20260803,
+        )
+        exact_homogeneous_replay = replay_exact_ctmc_result(
+            exact_homogeneous,
+            constant_rate_fixture,
+            config=exact_config,
+        )
+        if not exact_homogeneous.exact_gillespie or not exact_homogeneous_replay:
+            raise AssertionError("homogeneous exact-Gillespie gate did not replay")
+        if not math.isfinite(exact_homogeneous.trajectory_log_likelihood):
+            raise FloatingPointError("homogeneous exact trajectory likelihood is invalid")
+
+        model_time_audit = time_homogeneity_audit(
+            sampler_state,
+            flow.rate_fn,
+            time=0.0,
+            horizon=exact_config.horizon,
+            min_length=exact_config.min_length,
+            max_length=exact_config.max_length,
+            atol=exact_config.time_homogeneity_atol,
+        )
+        nonhomogeneous_first = generate_nonhomogeneous_ctmc_candidates(
+            flow,
+            sampler_state,
+            config=exact_config,
+            seed=20260803,
+        )
+        nonhomogeneous_replay = replay_exact_candidates(
+            nonhomogeneous_first,
+            flow,
+            config=exact_config,
+        )
+        if nonhomogeneous_first.exact_gillespie:
+            raise AssertionError("time-dependent EF0 route was mislabeled exact Gillespie")
+        if not nonhomogeneous_replay:
+            raise AssertionError("nonhomogeneous CTMC trajectory replay failed")
+        if not math.isfinite(nonhomogeneous_first.trajectory_log_likelihood):
+            raise FloatingPointError("nonhomogeneous trajectory likelihood is invalid")
+        if (
+            nonhomogeneous_first.max_integration_disagreement
+            > exact_config.integration_convergence_atol
+            or nonhomogeneous_first.max_root_residual > exact_config.root_atol
+        ):
+            raise AssertionError("nonhomogeneous hazard inversion did not converge")
+
         # Capture the runtime counter after the CUDA forward/backward and sampler
         # checks, rather than the construction-time device snapshot.
         device_audit = flow.runtime_device_audit()
@@ -741,7 +875,7 @@ def main() -> int:
 
         stage = "VERIFIED"
         acceptance = {
-            "schema_version": "ef0_acceptance_v1",
+            "schema_version": "ef0_acceptance_v2",
             "run_id": args.run_id,
             "phase": "EF0",
             "task_id": "EF0-01",
@@ -776,6 +910,23 @@ def main() -> int:
                 "replay_equal": True,
                 "exact_gillespie": False,
             },
+            "sampling_gate": {
+                "homogeneous_exact_gillespie_fixture": {
+                    "status": "PASS",
+                    "result": exact_result_payload(exact_homogeneous),
+                    "replay_equal": exact_homogeneous_replay,
+                },
+                "current_ef0_time_homogeneity_audit": model_time_audit,
+                "current_ef0_nonhomogeneous_ctmc": {
+                    "status": "PASS",
+                    "result": exact_result_payload(nonhomogeneous_first),
+                    "replay_equal": nonhomogeneous_replay,
+                    "trajectory_likelihood_semantics": nonhomogeneous_first.likelihood_semantics,
+                },
+                "exact_gillespie_claim_for_current_ef0": (
+                    "ADMITTED" if bool(model_time_audit["verified"]) else "FAIL_CLOSED_TIME_INHOMOGENEOUS"
+                ),
+            },
             "gates": {
                 "dynamic_current_state": "PASS",
                 "source_conditioning_and_mapping": "PASS",
@@ -788,6 +939,10 @@ def main() -> int:
                 "region_adapters_5utr_3utr": "PASS",
                 "deterministic_replay": "PASS",
                 "real_gpu_forward_backward_optimizer": "PASS",
+                "exact_gillespie_homogeneous_fixture": "PASS",
+                "exact_gillespie_requires_time_homogeneity": "PASS",
+                "nonhomogeneous_ctmc_integrated_hazard": "PASS",
+                "trajectory_log_likelihood_replay": "PASS",
                 "cpu_fallback_count": 0,
                 "formal_training_started": False,
                 "final_labels_accessed": False,
@@ -796,7 +951,9 @@ def main() -> int:
             "known_deviations": [
                 "E0 engineering validation only; no GP0 training",
                 "forced action coverage is a harness, not a random performance result",
-                "sampler is constrained_single_event_first_order, not exact Gillespie",
+                "legacy E0 sampler remains constrained_single_event_first_order approximation",
+                "current time-dependent EF0 uses numerically converged nonhomogeneous CTMC hazard inversion",
+                "exact homogeneous Gillespie is admitted only after a time-homogeneity audit",
                 "no functional, biological, superiority, or paper claim",
             ],
             "created_at_utc": now_utc(),
@@ -804,6 +961,8 @@ def main() -> int:
         write_json(run_root / "evaluation" / "trajectory_records.json", {
             "forced_dynamic_path": dynamic_records,
             "sampler": result_payload(sampler_first),
+            "exact_homogeneous_fixture": exact_result_payload(exact_homogeneous),
+            "nonhomogeneous_ctmc": exact_result_payload(nonhomogeneous_first),
         })
         append_jsonl(
             run_root / "logs" / "metrics.jsonl",
@@ -812,6 +971,10 @@ def main() -> int:
                 "metric": "ef0_gpu_smoke",
                 "forced_action_coverage": len(coverage),
                 "sampler_edit_events": sampler_first.edit_events,
+                "exact_homogeneous_fixture_log_likelihood": exact_homogeneous.trajectory_log_likelihood,
+                "nonhomogeneous_ctmc_log_likelihood": nonhomogeneous_first.trajectory_log_likelihood,
+                "nonhomogeneous_max_integration_disagreement": nonhomogeneous_first.max_integration_disagreement,
+                "nonhomogeneous_max_root_residual": nonhomogeneous_first.max_root_residual,
                 "max_memory_allocated_bytes": gpu["max_memory_allocated_after_bytes"],
             },
         )

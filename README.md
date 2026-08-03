@@ -87,7 +87,17 @@ Full task list: `docs/execution/task_registry_v2.yaml`.
 | ENCSR854RUF raw reads | ENCODE | 62 | COMPLETE (provider_md5 + file_size verified, ~357 GB at `data/p0/ENCSR854RUF/reconstructed/`) |
 | ENCSR854RUF processed (MPRAu Supp Table1) | PMC | 1 | COMPLETE (sha256 verified) |
 
-`GSE246381` is **historically_exposed (E4)**, not sealed/untouched. Labels are forbidden for new training and new hyperparameter selection. Historical exposure path must be reported.
+`GSE246381` data integrity is verified. The current committed exposure ledger contains
+1,184 paired 5′UTR records classified as `D_C` / `E2` with
+`exposure_status=unexposed`; the D1 dataset-coverage and edit-script audits pass.
+The earlier description that treated GSE246381 as a data-quality or data-validity
+problem is withdrawn.
+
+The active contract's historical-exposure/E4 field is a separate provenance and
+admission-policy field; it must not be conflated with whether the dataset itself is
+valid. Until an authorized contract amendment changes that policy field, downstream
+code must continue to obey the contract's explicit label rules and record both fields
+separately.
 
 `ENCSR854RUF` raw reads provide **unlabeled/observational** pretraining only (D_A). They cannot provide wt–mutant causal labels, multi-step real trajectories, prospective improvement, or final independent oracle evidence.
 

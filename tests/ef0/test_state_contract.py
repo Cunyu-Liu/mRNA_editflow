@@ -3,6 +3,14 @@ from __future__ import annotations
 import pytest
 
 from core.ef0.model import EF0ModelConfig, TrueUTREditFlowRateField
+from core.ef0.exact_sampler import (
+    ExactCTMCSamplerConfig,
+    TimeInhomogeneousRateError,
+    sample_exact_gillespie,
+    sample_nonhomogeneous_ctmc,
+    time_homogeneity_audit,
+    replay_exact_ctmc_result,
+)
 from core.mk0.state_action import IllegalAction, apply_action, enumerate_legal_actions
 from core.mk0.types import ActionType, AtomicAction, EditState, Phase
 
@@ -88,3 +96,80 @@ def test_ef0_has_explicit_operation_heads_and_inference_only_signature() -> None
         "remaining_budget",
         "h_run",
     }
+
+
+def _constant_rates(state: EditState, time: float) -> dict[AtomicAction, float]:
+    assert 0.0 <= time < 1.0
+    return {
+        action: 0.25 if action.kind is ActionType.STOP else 0.5
+        for action in enumerate_legal_actions(state, min_length=1, max_length=8)
+    }
+
+
+def _time_dependent_rates(state: EditState, time: float) -> dict[AtomicAction, float]:
+    assert 0.0 <= time < 1.0
+    return {
+        action: (0.25 if action.kind is ActionType.STOP else 0.5) * (1.0 + time)
+        for action in enumerate_legal_actions(state, min_length=1, max_length=8)
+    }
+
+
+def test_exact_gillespie_requires_and_replays_homogeneous_generator() -> None:
+    state = EditState.initial("ACGU", budget=2)
+    config = ExactCTMCSamplerConfig(
+        min_length=1,
+        max_length=8,
+        horizon=0.5,
+        integration_lower_order=8,
+        integration_higher_order=16,
+    )
+    audit = time_homogeneity_audit(
+        state,
+        _constant_rates,
+        time=0.0,
+        horizon=config.horizon,
+        min_length=config.min_length,
+        max_length=config.max_length,
+        atol=config.time_homogeneity_atol,
+    )
+    assert audit["verified"] is True
+    result = sample_exact_gillespie(state, _constant_rates, config=config, seed=7)
+    assert result.exact_gillespie is True
+    assert result.time_homogeneous is True
+    assert result.likelihood_semantics == "exact_homogeneous_ctmc"
+    assert replay_exact_ctmc_result(result, _constant_rates, config=config) is True
+
+
+def test_time_dependent_rate_fails_exact_gillespie_but_passes_numeric_ctmc_gate() -> None:
+    state = EditState.initial("ACGU", budget=2)
+    config = ExactCTMCSamplerConfig(
+        min_length=1,
+        max_length=8,
+        horizon=0.5,
+        integration_lower_order=8,
+        integration_higher_order=16,
+        integration_convergence_atol=1.0e-8,
+        root_atol=1.0e-8,
+    )
+    audit = time_homogeneity_audit(
+        state,
+        _time_dependent_rates,
+        time=0.0,
+        horizon=config.horizon,
+        min_length=config.min_length,
+        max_length=config.max_length,
+        atol=config.time_homogeneity_atol,
+    )
+    assert audit["verified"] is False
+    with pytest.raises(TimeInhomogeneousRateError):
+        sample_exact_gillespie(state, _time_dependent_rates, config=config, seed=7)
+
+    result = sample_nonhomogeneous_ctmc(
+        state, _time_dependent_rates, config=config, seed=7
+    )
+    assert result.exact_gillespie is False
+    assert result.time_homogeneous is False
+    assert result.likelihood_semantics == "numerically_converged_nonhomogeneous_ctmc"
+    assert result.max_integration_disagreement <= config.integration_convergence_atol
+    assert result.max_root_residual <= config.root_atol
+    assert replay_exact_ctmc_result(result, _time_dependent_rates, config=config) is True
