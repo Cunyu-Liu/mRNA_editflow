@@ -339,8 +339,8 @@ tasks:
     edit-script audits pass. This is not a data-quality blocker; contract admission
     policy is recorded separately and must not be conflated with data validity.
   goal_sha256: 3a3a654ca5c10a988eca897bff40be2e0b45c841f744f7423fdfd60b298b5791
-  run_id: EF0_true_utr_gpu_20260802T191401Z_ffa0898_s20260803_retry003
-  commit_sha: ffa08987d772f1ca9b68bccfb4b33017c1d87d6c
+  run_id: EF0_true_utr_ctmc_gpu_20260803T032203Z_4f4d124_s20260803
+  commit_sha: 4f4d124a01a5c5b7d9ff7eb82b100d60f49b8d51
   evidence_level: E0 engineering verification only; no functional, biological, superiority,
     or paper claim
   gate: EF0 accepted only after MK0 closed; GP0 remains blocked until its own contract gate
@@ -350,29 +350,38 @@ tasks:
   - /mnt/cunyuliu/mrna_editflow_fm0_runs/FM0_FORMAL_CLOSURE_20260802T022915Z_f4d562d/
   - /home/cunyuliu/mrna_editflow_goal/mrna_editflow/data/d1_canonical_records.jsonl
   - /home/cunyuliu/mrna_editflow_goal/mrna_editflow/data/data_exposure_ledger.jsonl
-  - /mnt/cunyuliu/mrna_editflow_ef0_runs/EF0_true_utr_gpu_20260802T191401Z_ffa0898_s20260803_retry003/
+  - /mnt/cunyuliu/mrna_editflow_ef0_runs/EF0_true_utr_ctmc_gpu_20260803T032203Z_4f4d124_s20260803/
   outputs:
-  - /mnt/cunyuliu/mrna_editflow_ef0_runs/EF0_true_utr_gpu_20260802T191401Z_ffa0898_s20260803_retry003/evaluation/ef0_acceptance.json
-  - /mnt/cunyuliu/mrna_editflow_ef0_runs/EF0_true_utr_gpu_20260802T191401Z_ffa0898_s20260803_retry003/summary/summary.json
-  - /mnt/cunyuliu/mrna_editflow_ef0_runs/EF0_true_utr_gpu_20260802T191401Z_ffa0898_s20260803_retry003/artifact_checksums.sha256
+  - /mnt/cunyuliu/mrna_editflow_ef0_runs/EF0_true_utr_ctmc_gpu_20260803T032203Z_4f4d124_s20260803/evaluation/ef0_acceptance.json
+  - /mnt/cunyuliu/mrna_editflow_ef0_runs/EF0_true_utr_ctmc_gpu_20260803T032203Z_4f4d124_s20260803/summary/summary.json
+  - /mnt/cunyuliu/mrna_editflow_ef0_runs/EF0_true_utr_ctmc_gpu_20260803T032203Z_4f4d124_s20260803/artifact_checksums.sha256
   preserved_evidence:
   - /mnt/cunyuliu/mrna_editflow_ef0_runs/EF0_true_utr_gpu_20260802T185555Z_8cc9f8b_s20260803_retry001/
   - /mnt/cunyuliu/mrna_editflow_ef0_runs/EF0_true_utr_gpu_20260803T000000Z_514a35d_s20260803/
+  - /mnt/cunyuliu/mrna_editflow_ef0_runs/EF0_true_utr_gpu_20260802T191401Z_ffa0898_s20260803_retry003/
+  - /mnt/cunyuliu/mrna_editflow_ef0_runs/EF0_true_utr_ctmc_gpu_20260803T030057Z_8eae88f_s20260803/
+  - /mnt/cunyuliu/mrna_editflow_ef0_runs/EF0_true_utr_ctmc_gpu_20260803T031943Z_aa4fc37_s20260803/
   - /mnt/cunyuliu/mrna_editflow_ef0_preflight/EF0_true_utr_gpu_20260802T191401Z_ffa0898_s20260803_retry002/invocation_error.json
   sampling_gate:
     legacy_first_order: constrained_single_event_first_order
     homogeneous_exact_gillespie_fixture: PASS
     exact_gillespie_requires_time_homogeneity: PASS
     current_time_dependent_ef0_route: numerically_converged_nonhomogeneous_ctmc
+    current_time_homogeneity_delta: 0.0009098052978515625
     current_ef0_exact_gillespie_claim: FAIL_CLOSED_UNLESS_TIME_HOMOGENEOUS
     trajectory_likelihood: NUMERICALLY_CERTIFIED_ONLY
   report: >
-    EF0 formal GPU verification is VERIFIED at E0 engineering level. The accepted
+    EF0 formal GPU verification is VERIFIED at E0 engineering level in the fresh
+    repair child bound to commit 4f4d124a01a5c5b7d9ff7eb82b100d60f49b8d51. The accepted
     bundle records explicit INS/SUB/DEL/STOP heads, dynamic current-state re-encoding,
     source conditioning and mapping, 5UTR/3UTR adapters, hard legality before sampling,
     protected-action rejection, variable-length insertion/deletion, multi-step rollout,
     deterministic replay, and real CUDA forward/backward/optimizer evidence with zero
     CPU fallback. The post-execution device audit observed runtime CUDA forward calls.
+    A prior parent-linked run at aa4fc37941de03add66e635eae38f7cc104ab70e passed
+    preflight but failed closed at GPU_VERIFIED because the runner did not bind its
+    worktree root on sys.path; that failure bundle is preserved and the runner repair
+    was revalidated in the accepted child.
     The legacy constrained_single_event_first_order route remains an approximation.
     A homogeneous exact-Gillespie fixture gate now passes, while the actual time-dependent
     EF0 rate field uses a numerically converged nonhomogeneous CTMC hazard-inversion route
