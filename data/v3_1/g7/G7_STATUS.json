@@ -1,0 +1,16 @@
+{
+  "goal_id": "GOAL-V3-DATA-BENCH-01",
+  "phase": "G7",
+  "status": "BLOCKED_WITH_EVIDENCE",
+  "terminal_status": "BLOCKED_WITH_EVIDENCE",
+  "resource_viability_status": "LIMITED_DEVELOPMENT_ONLY",
+  "gp0_status": "LOCKED_NOT_AUTHORIZED",
+  "generated_at_utc": "2026-08-03T19:33:37.116245+00:00",
+  "g7_snapshot_id": "g7_snapshot_20260803_001",
+  "g7_run_id": "g7_r_v1",
+  "g7_transaction_id": "g7_txn_20260803_001",
+  "data_gates_engineering_closure": "PASS",
+  "data_goal_closed": false,
+  "done_generated": false,
+  "note": "BLOCKED_WITH_EVIDENCE: benchmark cannot form a usable anti-leakage partition (D1 grouping atoms missing) and resource_viability_status=LIMITED_DEVELOPMENT_ONLY; no DONE. GP0 remains LOCKED_NOT_AUTHORIZED."
+}
