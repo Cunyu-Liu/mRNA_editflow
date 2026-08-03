@@ -420,6 +420,13 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
+    # The runner is commonly invoked as ``python scripts/ef0/...py``.  In
+    # that mode Python puts ``scripts/ef0`` on sys.path, not the repository
+    # root.  Bind imports to the explicitly audited worktree instead of
+    # depending on an ambient PYTHONPATH.
+    worktree_path = str(args.worktree.resolve())
+    if worktree_path not in sys.path:
+        sys.path.insert(0, worktree_path)
     run_root = args.run_root.resolve()
     stage = "REGISTERED"
     prepare_run_tree(run_root)
