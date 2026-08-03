@@ -27,6 +27,20 @@ This project studies whether a **source-conditioned, region-aware, grammar-const
 - Matched-budget Pareto comparison vs AR / masked-diffusion / generic Edit Flow / scorer+search
 - Foundation-model reuse-first (frozen → adapter → LoRA → partial unfreeze → full FT only if justified)
 
+### EF0 sampler evidence boundary
+
+The frozen EF0 engineering interface retains the contract-specified
+`constrained_single_event_first_order` sampler; it is an approximation and is
+not exact Gillespie. A separate E0 sampling gate now checks an exact
+homogeneous-Gillespie fixture and fails closed when state-conditioned rates vary
+with external time. The current EF0 rate field is time-dependent, so its
+event-time route is recorded as a numerically converged nonhomogeneous CTMC
+using integrated-hazard inversion. Any trajectory likelihood from this route is
+numerical evidence under the recorded quadrature/root tolerances. Exact CTMC or
+trajectory-likelihood-as-exact claims for the current EF0 rate field, together
+with biological-validity claims, remain disallowed until their own contract
+gates pass.
+
 **Out of scope** (`configs/utr_editflow_contract_v2.yaml` §4.2):
 
 - CDS synonymous generation
