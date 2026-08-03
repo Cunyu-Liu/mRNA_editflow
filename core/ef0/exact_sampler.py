@@ -611,6 +611,7 @@ def sample_nonhomogeneous_ctmc(
     log_likelihood = 0.0
     max_disagreement = 0.0
     max_root_residual = 0.0
+    max_time_homogeneity_delta = 0.0
     termination_before_hash = state.state_hash
 
     while t < config.horizon and state.phase is Phase.ACTIVE:
@@ -619,6 +620,24 @@ def sample_nonhomogeneous_ctmc(
             termination_before_hash = before
             state = force_terminate(state, TerminationReason.FORCED_BUDGET)
             break
+
+        # Record the same fail-closed audit used by the homogeneous route.  A
+        # nonhomogeneous sampler is allowed to continue when this audit fails,
+        # but its evidence must expose the measured time dependence rather than
+        # silently reporting a homogeneous generator.
+        homogeneity = time_homogeneity_audit(
+            state,
+            rate_fn,
+            time=t,
+            horizon=config.horizon,
+            min_length=config.min_length,
+            max_length=config.max_length,
+            atol=config.time_homogeneity_atol,
+        )
+        max_time_homogeneity_delta = max(
+            max_time_homogeneity_delta,
+            float(homogeneity["max_abs_delta"]),
+        )
 
         whole = _integrated_hazard(
             state,
@@ -773,7 +792,7 @@ def sample_nonhomogeneous_ctmc(
         likelihood_semantics="numerically_converged_nonhomogeneous_ctmc",
         max_integration_disagreement=max_disagreement,
         max_root_residual=max_root_residual,
-        max_time_homogeneity_delta=0.0,
+        max_time_homogeneity_delta=max_time_homogeneity_delta,
     )
 
 
@@ -800,7 +819,11 @@ def replay_exact_ctmc_result(
             replayed.steps == result.steps
             and replayed.final_state == result.final_state
             and replayed.termination_time == result.termination_time
+            and replayed.termination_before_hash == result.termination_before_hash
             and replayed.trajectory_log_likelihood == result.trajectory_log_likelihood
+            and replayed.likelihood_semantics == result.likelihood_semantics
+            and replayed.exact_gillespie == result.exact_gillespie
+            and replayed.time_homogeneous == result.time_homogeneous
         )
     except (AssertionError, FloatingPointError, HazardConvergenceError, TypeError, ValueError):
         return False

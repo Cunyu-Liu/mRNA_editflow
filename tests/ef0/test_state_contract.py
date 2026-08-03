@@ -170,6 +170,7 @@ def test_time_dependent_rate_fails_exact_gillespie_but_passes_numeric_ctmc_gate(
     assert result.exact_gillespie is False
     assert result.time_homogeneous is False
     assert result.likelihood_semantics == "numerically_converged_nonhomogeneous_ctmc"
+    assert result.max_time_homogeneity_delta > 0.0
     assert result.max_integration_disagreement <= config.integration_convergence_atol
     assert result.max_root_residual <= config.root_atol
     assert replay_exact_ctmc_result(result, _time_dependent_rates, config=config) is True

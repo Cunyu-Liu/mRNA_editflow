@@ -849,6 +849,15 @@ def main() -> int:
         )
         if nonhomogeneous_first.exact_gillespie:
             raise AssertionError("time-dependent EF0 route was mislabeled exact Gillespie")
+        if bool(model_time_audit["verified"]):
+            raise AssertionError("current EF0 rate field unexpectedly passed homogeneity audit")
+        if not math.isclose(
+            nonhomogeneous_first.max_time_homogeneity_delta,
+            float(model_time_audit["max_abs_delta"]),
+            rel_tol=0.0,
+            abs_tol=1.0e-15,
+        ):
+            raise AssertionError("nonhomogeneous result omitted its time-dependence audit")
         if not nonhomogeneous_replay:
             raise AssertionError("nonhomogeneous CTMC trajectory replay failed")
         if not math.isfinite(nonhomogeneous_first.trajectory_log_likelihood):
