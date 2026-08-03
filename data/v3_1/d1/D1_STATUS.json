@@ -1,0 +1,22 @@
+{
+  "phase": "D1-R",
+  "status": "PASS",
+  "generated_at_utc": "2026-08-04T01:10:00+00:00",
+  "acceptance": "schema/required-field/FK/orphan/bijection/access-chain errors all 0; GSE246381 isolated; technical expected sets conserved 100%",
+  "validator": "PASS (total_errors=0)",
+  "conservation": {
+    "pairs": {"ordinary": 88042, "restricted": 1184, "total": 89226, "source_expect": 89226, "conserved": true},
+    "observations": {"ordinary": 3322161, "restricted": 15392, "total": 3337553},
+    "sequences": {"ordinary": 1227756, "restricted": 2368, "total": 1230124}
+  },
+  "quarantined": {
+    "no_sequence_rows_rejected": 10227,
+    "rejected_observations": 92043,
+    "reason": "GSE207584 has label-only rows with no bindable UTR sequence"
+  },
+  "ordinary_dir": "/mnt/cunyuliu/mrna_editflow_v3_1/d1/ordinary",
+  "restricted_dir": "/home/cunyuliu/mrna_editflow_goal/restricted/v3_1_data_bench_closure_20260803/sealed_external/GSE246381",
+  "gse246381_status": "SEALED_EXTERNAL_FINAL_CANDIDATE",
+  "g3b": "DEFERRED_TO_FM0_A",
+  "note": "D1_CANONICAL_CLEANING_COMPLETE_PRE_SPLIT; benchmark not yet ready"
+}

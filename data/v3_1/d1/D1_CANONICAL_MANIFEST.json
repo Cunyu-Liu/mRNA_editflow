@@ -1,0 +1,24 @@
+{
+  "artifact_files": {
+    "effective_exposure_projection.jsonl": 252644206,
+    "endpoint_registry.jsonl": 40090,
+    "exposure_records.jsonl": 295342136,
+    "functional_observation_candidates.jsonl": 825602805,
+    "functional_observations.jsonl": 682484076,
+    "group_assignments.jsonl": 783000856,
+    "group_registry.jsonl": 673775812,
+    "rejection_records.jsonl": 1807530,
+    "sequence_entities.jsonl": 563387239,
+    "transformation_edges.jsonl": 0,
+    "use_roles.jsonl": 178978846,
+    "utr_edit_pairs.jsonl": 44867056,
+    "utr_edit_relation_candidates.jsonl": 22916047
+  },
+  "config_hash": "v3.1-D1",
+  "generated_at_utc": "2026-08-03T17:06:42.360559+00:00",
+  "ordinary_dir": "/mnt/cunyuliu/mrna_editflow_v3_1/d1/ordinary",
+  "phase": "D1-R",
+  "run_root": "/home/cunyuliu/mrna_editflow_goal/runs/v3_1_data_bench_closure_20260803",
+  "sha256sums_file": "D1_SHA256SUMS",
+  "status": "GENERATED"
+}
