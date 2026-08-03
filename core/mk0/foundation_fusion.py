@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from contextlib import nullcontext
 from pathlib import Path
 from typing import Any, Optional, Sequence
 
@@ -84,12 +85,22 @@ class FoundationFusionRateField(nn.Module):
         min_length: int,
         max_length: int,
         hidden_size: Optional[int] = None,
+        train_foundation: bool = False,
+        cache_current_embeddings: bool = False,
     ) -> None:
         super().__init__()
         self.device = require_neural_cuda(device)
-        self.foundation = foundation.to(self.device).eval()
+        self.train_foundation = bool(train_foundation)
+        self.cache_current_embeddings = bool(cache_current_embeddings)
+        if self.train_foundation and self.cache_current_embeddings:
+            raise ValueError(
+                "train_foundation and embedding caching are incompatible: "
+                "caching would retain an optimizer graph across updates"
+            )
+        self.foundation = foundation.to(self.device)
         for parameter in self.foundation.parameters():
-            parameter.requires_grad_(False)
+            parameter.requires_grad_(self.train_foundation)
+        self.foundation.train(self.train_foundation)
         self.tokenizer = tokenizer
         self.min_length = min_length
         self.max_length = max_length
@@ -107,30 +118,72 @@ class FoundationFusionRateField(nn.Module):
             nn.SiLU(),
             nn.Linear(128, 1),
         ).to(self.device, dtype=torch.float32)
+        # A caller may replace this with a registered low-rank residual adapter.
+        # Keeping the identity in the production module makes the representation
+        # path explicit without changing the frozen-foundation default.
+        self.feature_adapter: nn.Module = nn.Identity()
         self._source_cache: dict[str, torch.Tensor] = {}
         self.source_encode_calls = 0
         self.current_encode_calls = 0
 
     def _encode_tokens(self, sequence: str, *, source_cache: bool) -> torch.Tensor:
         cache_key = hashlib.sha256(sequence.encode("ascii")).hexdigest()
-        if source_cache and cache_key in self._source_cache:
+        adapter_trainable = any(
+            parameter.requires_grad for parameter in self.feature_adapter.parameters()
+        )
+        cache_allowed = (
+            (source_cache or self.cache_current_embeddings)
+            and not self.train_foundation
+            and not adapter_trainable
+        )
+        if cache_allowed and cache_key in self._source_cache:
             return self._source_cache[cache_key]
         batch = self.tokenizer([sequence], padding=True, return_tensors="pt")
         batch = {key: value.to(self.device) for key, value in batch.items()}
-        with torch.no_grad():
+        with (nullcontext() if self.train_foundation else torch.no_grad()):
             hidden = self.foundation(**batch).last_hidden_state
         # Frozen FM0 tokenizer contract: <cls>, nucleotides, <eos>.
         if hidden.shape[1] < len(sequence) + 2:
             raise RuntimeError("UTR-LM tokenization is not nucleotide aligned")
-        tokens = hidden[0, 1 : 1 + len(sequence), :].detach()
+        tokens = hidden[0, 1 : 1 + len(sequence), :]
         if tokens.shape != (len(sequence), self.hidden_size):
             raise RuntimeError("unexpected UTR-LM token embedding shape")
-        if source_cache:
+        if not self.train_foundation:
+            tokens = tokens.detach()
+        tokens = self.feature_adapter(tokens)
+        if cache_allowed:
             self.source_encode_calls += 1
             self._source_cache[cache_key] = tokens
         else:
-            self.current_encode_calls += 1
+            if source_cache:
+                self.source_encode_calls += 1
+            else:
+                self.current_encode_calls += 1
         return tokens
+
+    def clear_embedding_cache(self) -> None:
+        """Clear frozen-representation cache at an auditable run boundary."""
+
+        self._source_cache.clear()
+
+    def train(self, mode: bool = True):  # type: ignore[override]
+        """Keep a frozen foundation in eval mode even when heads train."""
+
+        super().train(mode)
+        self.foundation.train(mode and self.train_foundation)
+        return self
+
+    def representation_mode(self) -> str:
+        adapter_trainable = any(
+            parameter.requires_grad for parameter in self.feature_adapter.parameters()
+        )
+        if self.train_foundation:
+            return "from_scratch_foundation"
+        if adapter_trainable:
+            return "low_rank_residual_adapter"
+        if self.cache_current_embeddings:
+            return "frozen_foundation_cached_embeddings"
+        return "frozen_foundation_dynamic_current"
 
     def _encoded_state(
         self, state: EditState, time: float

@@ -65,6 +65,8 @@ class TrueUTREditFlowRateField(FoundationFusionRateField):
         device: torch.device | str,
         config: EF0ModelConfig | None = None,
         hidden_size: Optional[int] = None,
+        train_foundation: bool = False,
+        cache_current_embeddings: bool = False,
     ) -> None:
         self.config = config or EF0ModelConfig()
         super().__init__(
@@ -74,6 +76,8 @@ class TrueUTREditFlowRateField(FoundationFusionRateField):
             min_length=self.config.min_length,
             max_length=self.config.max_length,
             hidden_size=hidden_size,
+            train_foundation=train_foundation,
+            cache_current_embeddings=cache_current_embeddings,
         )
         # The parent head is retained only for MK0 API compatibility.  EF0
         # uses explicit operation heads below; there is no hidden fallback to
