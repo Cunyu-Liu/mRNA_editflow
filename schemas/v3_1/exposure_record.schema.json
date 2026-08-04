@@ -6,16 +6,123 @@
         "access_id": {
           "type": "string"
         },
+        "actor_identity": {
+          "type": "string"
+        },
+        "actual_label_object_set_manifest_sha256": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "actual_sequence_object_set_manifest_sha256": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "analytic_access": {
+          "type": "boolean"
+        },
+        "container_or_environment_sha256": {
+          "type": "string"
+        },
+        "event_id": {
+          "type": "string"
+        },
         "event_sha256": {
+          "type": "string"
+        },
+        "event_type": {
+          "enum": [
+            "RESTRICTED_BUILDER_PARSE",
+            "AGGREGATE_QC_MACHINE",
+            "FM_OVERLAP_AGGREGATE",
+            "B0_ELIGIBILITY_SPLIT_BUILD",
+            "G7_RESTRICTED_FINALIZER",
+            "TASK_PROTOCOL_CALIBRATION",
+            "INTERNAL_TEST_EVALUATOR",
+            "HUMAN_SEQUENCE_VIEW",
+            "HUMAN_LABEL_VIEW",
+            "TRAIN",
+            "TUNE",
+            "MODEL_SELECTION",
+            "PRE_FINAL_ERROR_ANALYSIS",
+            "ONE_TIME_FINAL_EVALUATOR",
+            "POST_FINAL_ERROR_ANALYSIS"
+          ],
+          "type": "string"
+        },
+        "executable_sha256": {
+          "type": "string"
+        },
+        "failure_evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "input_manifest_sha256": {
           "type": "string"
         },
         "intent": {
           "type": "string"
         },
+        "intent_event_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "label_rows_touched": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "log_sequence_no": {
+          "type": "integer"
+        },
         "object_id": {
           "type": "string"
         },
+        "output_manifest_sha256": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "output_schema_id": {
+          "type": "string"
+        },
+        "output_schema_sha256": {
+          "type": "string"
+        },
+        "partial_actual_set_status": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "predecessor_event_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "predecessor_event_sha256": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
         "prev_event_sha256": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "realized_state_transition": {
           "type": [
             "string",
             "null"
@@ -24,19 +131,72 @@
         "reason": {
           "type": "string"
         },
+        "requested_label_object_set_manifest_sha256": {
+          "type": "string"
+        },
+        "requested_label_scope": {
+          "type": "string"
+        },
+        "requested_sequence_object_set_manifest_sha256": {
+          "type": "string"
+        },
+        "requested_sequence_scope": {
+          "type": "string"
+        },
+        "requested_state_transition": {
+          "type": "string"
+        },
+        "sequence_rows_touched": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
         "status": {
-          "const": "ABORT",
+          "enum": [
+            "ABORT"
+          ],
+          "type": "string"
+        },
+        "timestamp": {
           "type": "string"
         }
       },
       "required": [
         "access_id",
-        "object_id",
+        "actor_identity",
+        "actual_label_object_set_manifest_sha256",
+        "actual_sequence_object_set_manifest_sha256",
+        "analytic_access",
+        "container_or_environment_sha256",
+        "event_id",
+        "event_sha256",
+        "event_type",
+        "executable_sha256",
+        "failure_evidence_ids",
+        "input_manifest_sha256",
         "intent",
-        "status",
-        "reason",
+        "intent_event_id",
+        "label_rows_touched",
+        "log_sequence_no",
+        "object_id",
+        "output_manifest_sha256",
+        "output_schema_id",
+        "output_schema_sha256",
+        "partial_actual_set_status",
+        "predecessor_event_id",
+        "predecessor_event_sha256",
         "prev_event_sha256",
-        "event_sha256"
+        "realized_state_transition",
+        "reason",
+        "requested_label_object_set_manifest_sha256",
+        "requested_label_scope",
+        "requested_sequence_object_set_manifest_sha256",
+        "requested_sequence_scope",
+        "requested_state_transition",
+        "sequence_rows_touched",
+        "status",
+        "timestamp"
       ],
       "type": "object"
     },
@@ -46,14 +206,115 @@
         "access_id": {
           "type": "string"
         },
+        "actor_identity": {
+          "type": "string"
+        },
+        "actual_label_object_set_manifest_sha256": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "actual_sequence_object_set_manifest_sha256": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "analytic_access": {
+          "type": "boolean"
+        },
+        "container_or_environment_sha256": {
+          "type": "string"
+        },
+        "event_id": {
+          "type": "string"
+        },
         "event_sha256": {
+          "type": "string"
+        },
+        "event_type": {
+          "enum": [
+            "RESTRICTED_BUILDER_PARSE",
+            "AGGREGATE_QC_MACHINE",
+            "FM_OVERLAP_AGGREGATE",
+            "B0_ELIGIBILITY_SPLIT_BUILD",
+            "G7_RESTRICTED_FINALIZER",
+            "TASK_PROTOCOL_CALIBRATION",
+            "INTERNAL_TEST_EVALUATOR",
+            "HUMAN_SEQUENCE_VIEW",
+            "HUMAN_LABEL_VIEW",
+            "TRAIN",
+            "TUNE",
+            "MODEL_SELECTION",
+            "PRE_FINAL_ERROR_ANALYSIS",
+            "ONE_TIME_FINAL_EVALUATOR",
+            "POST_FINAL_ERROR_ANALYSIS"
+          ],
+          "type": "string"
+        },
+        "executable_sha256": {
+          "type": "string"
+        },
+        "failure_evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "input_manifest_sha256": {
           "type": "string"
         },
         "intent": {
           "type": "string"
         },
+        "intent_event_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "label_rows_touched": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "log_sequence_no": {
+          "type": "integer"
+        },
         "object_id": {
           "type": "string"
+        },
+        "output_manifest_sha256": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "output_schema_id": {
+          "type": "string"
+        },
+        "output_schema_sha256": {
+          "type": "string"
+        },
+        "partial_actual_set_status": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "predecessor_event_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "predecessor_event_sha256": {
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "prev_event_sha256": {
           "type": [
@@ -61,18 +322,77 @@
             "null"
           ]
         },
+        "realized_state_transition": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "requested_label_object_set_manifest_sha256": {
+          "type": "string"
+        },
+        "requested_label_scope": {
+          "type": "string"
+        },
+        "requested_sequence_object_set_manifest_sha256": {
+          "type": "string"
+        },
+        "requested_sequence_scope": {
+          "type": "string"
+        },
+        "requested_state_transition": {
+          "type": "string"
+        },
+        "sequence_rows_touched": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
         "status": {
-          "const": "COMPLETION",
+          "enum": [
+            "COMPLETION"
+          ],
+          "type": "string"
+        },
+        "timestamp": {
           "type": "string"
         }
       },
       "required": [
         "access_id",
-        "object_id",
+        "actor_identity",
+        "actual_label_object_set_manifest_sha256",
+        "actual_sequence_object_set_manifest_sha256",
+        "analytic_access",
+        "container_or_environment_sha256",
+        "event_id",
+        "event_sha256",
+        "event_type",
+        "executable_sha256",
+        "failure_evidence_ids",
+        "input_manifest_sha256",
         "intent",
-        "status",
+        "intent_event_id",
+        "label_rows_touched",
+        "log_sequence_no",
+        "object_id",
+        "output_manifest_sha256",
+        "output_schema_id",
+        "output_schema_sha256",
+        "partial_actual_set_status",
+        "predecessor_event_id",
+        "predecessor_event_sha256",
         "prev_event_sha256",
-        "event_sha256"
+        "realized_state_transition",
+        "requested_label_object_set_manifest_sha256",
+        "requested_label_scope",
+        "requested_sequence_object_set_manifest_sha256",
+        "requested_sequence_scope",
+        "requested_state_transition",
+        "sequence_rows_touched",
+        "status",
+        "timestamp"
       ],
       "type": "object"
     },
@@ -82,14 +402,115 @@
         "access_id": {
           "type": "string"
         },
+        "actor_identity": {
+          "type": "string"
+        },
+        "actual_label_object_set_manifest_sha256": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "actual_sequence_object_set_manifest_sha256": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "analytic_access": {
+          "type": "boolean"
+        },
+        "container_or_environment_sha256": {
+          "type": "string"
+        },
+        "event_id": {
+          "type": "string"
+        },
         "event_sha256": {
+          "type": "string"
+        },
+        "event_type": {
+          "enum": [
+            "RESTRICTED_BUILDER_PARSE",
+            "AGGREGATE_QC_MACHINE",
+            "FM_OVERLAP_AGGREGATE",
+            "B0_ELIGIBILITY_SPLIT_BUILD",
+            "G7_RESTRICTED_FINALIZER",
+            "TASK_PROTOCOL_CALIBRATION",
+            "INTERNAL_TEST_EVALUATOR",
+            "HUMAN_SEQUENCE_VIEW",
+            "HUMAN_LABEL_VIEW",
+            "TRAIN",
+            "TUNE",
+            "MODEL_SELECTION",
+            "PRE_FINAL_ERROR_ANALYSIS",
+            "ONE_TIME_FINAL_EVALUATOR",
+            "POST_FINAL_ERROR_ANALYSIS"
+          ],
+          "type": "string"
+        },
+        "executable_sha256": {
+          "type": "string"
+        },
+        "failure_evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "input_manifest_sha256": {
           "type": "string"
         },
         "intent": {
           "type": "string"
         },
+        "intent_event_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "label_rows_touched": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "log_sequence_no": {
+          "type": "integer"
+        },
         "object_id": {
           "type": "string"
+        },
+        "output_manifest_sha256": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "output_schema_id": {
+          "type": "string"
+        },
+        "output_schema_sha256": {
+          "type": "string"
+        },
+        "partial_actual_set_status": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "predecessor_event_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "predecessor_event_sha256": {
+          "type": [
+            "string",
+            "null"
+          ]
         },
         "prev_event_sha256": {
           "type": [
@@ -97,18 +518,77 @@
             "null"
           ]
         },
+        "realized_state_transition": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "requested_label_object_set_manifest_sha256": {
+          "type": "string"
+        },
+        "requested_label_scope": {
+          "type": "string"
+        },
+        "requested_sequence_object_set_manifest_sha256": {
+          "type": "string"
+        },
+        "requested_sequence_scope": {
+          "type": "string"
+        },
+        "requested_state_transition": {
+          "type": "string"
+        },
+        "sequence_rows_touched": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
         "status": {
-          "const": "INTENT",
+          "enum": [
+            "INTENT"
+          ],
+          "type": "string"
+        },
+        "timestamp": {
           "type": "string"
         }
       },
       "required": [
         "access_id",
-        "object_id",
+        "actor_identity",
+        "actual_label_object_set_manifest_sha256",
+        "actual_sequence_object_set_manifest_sha256",
+        "analytic_access",
+        "container_or_environment_sha256",
+        "event_id",
+        "event_sha256",
+        "event_type",
+        "executable_sha256",
+        "failure_evidence_ids",
+        "input_manifest_sha256",
         "intent",
-        "status",
+        "intent_event_id",
+        "label_rows_touched",
+        "log_sequence_no",
+        "object_id",
+        "output_manifest_sha256",
+        "output_schema_id",
+        "output_schema_sha256",
+        "partial_actual_set_status",
+        "predecessor_event_id",
+        "predecessor_event_sha256",
         "prev_event_sha256",
-        "event_sha256"
+        "realized_state_transition",
+        "requested_label_object_set_manifest_sha256",
+        "requested_label_scope",
+        "requested_sequence_object_set_manifest_sha256",
+        "requested_sequence_scope",
+        "requested_state_transition",
+        "sequence_rows_touched",
+        "status",
+        "timestamp"
       ],
       "type": "object"
     },

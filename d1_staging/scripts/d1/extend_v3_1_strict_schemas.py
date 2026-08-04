@@ -407,6 +407,13 @@ def extend_group_assignment(path: Path):
 def extend_exposure(path: Path):
     d = json.loads(path.read_text())
     object_types = ["SEQUENCE", "RELATION_CANDIDATE", "OBSERVATION_CANDIDATE", "PAIR", "OBSERVATION"]
+    event_types = [
+        "RESTRICTED_BUILDER_PARSE", "AGGREGATE_QC_MACHINE", "FM_OVERLAP_AGGREGATE",
+        "B0_ELIGIBILITY_SPLIT_BUILD", "G7_RESTRICTED_FINALIZER", "TASK_PROTOCOL_CALIBRATION",
+        "INTERNAL_TEST_EVALUATOR", "HUMAN_SEQUENCE_VIEW", "HUMAN_LABEL_VIEW", "TRAIN", "TUNE",
+        "MODEL_SELECTION", "PRE_FINAL_ERROR_ANALYSIS", "ONE_TIME_FINAL_EVALUATOR",
+        "POST_FINAL_ERROR_ANALYSIS",
+    ]
     exposure = {
         "exposure_record_id": st(), "object_type": st(object_types),
         "project_sequence_analytic_exposure": st(["NONE_CONFIRMED", "PRESENT", "UNKNOWN"]),
@@ -430,6 +437,50 @@ def extend_exposure(path: Path):
         "evidence_ids": array(st()), "canonical_object_sha256": st(), "record_sha256": st(),
     }
     extend(d, exposure, list(exposure))
+    access_common = {
+        "event_id": st(), "log_sequence_no": integer(), "predecessor_event_id": st(nullable=True),
+        "predecessor_event_sha256": st(nullable=True), "timestamp": st(), "actor_identity": st(),
+        "executable_sha256": st(), "container_or_environment_sha256": st(),
+        "input_manifest_sha256": st(), "event_type": st(event_types),
+        "requested_sequence_scope": st(), "requested_label_scope": st(),
+        "requested_sequence_object_set_manifest_sha256": st(),
+        "requested_label_object_set_manifest_sha256": st(), "output_schema_id": st(),
+        "output_schema_sha256": st(), "analytic_access": boolean(),
+        "requested_state_transition": st(), "intent_event_id": st(nullable=True),
+        "sequence_rows_touched": integer(nullable=True), "label_rows_touched": integer(nullable=True),
+        "actual_sequence_object_set_manifest_sha256": st(nullable=True),
+        "actual_label_object_set_manifest_sha256": st(nullable=True),
+        "output_manifest_sha256": st(nullable=True), "realized_state_transition": st(nullable=True),
+        "failure_evidence_ids": array(st()), "partial_actual_set_status": st(nullable=True),
+    }
+    access_common_required = list(access_common)
+    for def_name in ("AccessIntent", "AccessCompletion", "AccessAbort"):
+        access_def = d["$defs"][def_name]
+        extend(access_def, access_common, access_common_required)
+    d["$defs"]["AccessIntent"]["properties"]["status"] = st(["INTENT"])
+    d["$defs"]["AccessIntent"]["properties"]["intent_event_id"] = st(nullable=True)
+    d["$defs"]["AccessIntent"]["required"] = sorted(
+        set(d["$defs"]["AccessIntent"].get("required", []))
+        | {"access_id", "object_id", "intent", "status", "prev_event_sha256", "event_sha256"}
+    )
+    d["$defs"]["AccessCompletion"]["properties"]["status"] = st(["COMPLETION"])
+    d["$defs"]["AccessCompletion"]["required"] = sorted(
+        set(d["$defs"]["AccessCompletion"].get("required", []))
+        | {
+            "access_id", "object_id", "intent", "status", "prev_event_sha256", "event_sha256",
+            "intent_event_id", "sequence_rows_touched", "label_rows_touched",
+            "actual_sequence_object_set_manifest_sha256", "actual_label_object_set_manifest_sha256",
+            "output_manifest_sha256", "realized_state_transition",
+        }
+    )
+    d["$defs"]["AccessAbort"]["properties"]["status"] = st(["ABORT"])
+    d["$defs"]["AccessAbort"]["required"] = sorted(
+        set(d["$defs"]["AccessAbort"].get("required", []))
+        | {
+            "access_id", "object_id", "intent", "status", "reason", "prev_event_sha256", "event_sha256",
+            "intent_event_id", "failure_evidence_ids", "partial_actual_set_status",
+        }
+    )
     def extend_effective(e):
         props = {
             "object_type": st(object_types), "projection_phase": st(["D1", "FM0_A", "B0_R", "G7", "MODEL_REBIND_OR_LATER"]),

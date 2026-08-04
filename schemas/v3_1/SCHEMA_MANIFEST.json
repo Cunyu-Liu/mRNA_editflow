@@ -31,7 +31,7 @@
       "contract_id": "utr_editflow_goal_v3.1_benchmark_first",
       "filename": "exposure_record.schema.json",
       "schema_version": "3.1",
-      "sha256": "6e691b47237f6049ea8bbef76cf411c28da4a0fbfbb6accd1b5ead75c2b0bf6f"
+      "sha256": "a449c023450ec9487b23e92683a88ac877f97b7a12c90b7169742123b86ebcea"
     },
     {
       "$id": "https://github.com/Cunyu-Liu/mRNA_editflow/schemas/v3_1/functional_observation.schema.json",
