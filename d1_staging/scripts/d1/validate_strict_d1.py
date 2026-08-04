@@ -2017,7 +2017,13 @@ class Validator:
             self.errors.add("RESTRICTED_LOGICAL_COMPONENT_SET_HASH_MISMATCH")
         sealed_manifest = self.verify_self_json(root / "SEALED_CANONICAL_MANIFEST.json", "manifest_sha256", "restricted:SEALED_CANONICAL_MANIFEST")
         if sealed_manifest:
-            entries = [self.component_entry(logical, path, root) for logical, path in sorted(lp.items())]
+            entries = []
+            for logical, path in sorted(lp.items()):
+                entry = self.component_entry(logical, path, root)
+                if logical in {"ACCESS_SHA256SUMS", "EXPOSURE_USE_SHA256SUMS", "SEALED_CANONICAL_SHA256SUMS"}:
+                    entry["schema_id"] = NON_JSON_SCHEMA_ID
+                    entry["schema_sha256"] = NON_JSON_SCHEMA_SHA256
+                entries.append(entry)
             if sealed_manifest.get("logical_components") != entries:
                 self.errors.add("SEALED_LOGICAL_COMPONENT_BINDING_MISMATCH")
             for field, expected in {
