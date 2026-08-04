@@ -1,24 +1,203 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/Cunyu-Liu/mRNA_editflow/schemas/v3_1/sequence_entity.schema.json",
-  "title": "SequenceEntity (v3.1)",
-  "description": "Canonical entity for a nucleotide sequence. Both sides of a candidate/pair must reference SequenceEntity.sequence_id.",
-  "schema_version": "3.1",
-  "contract_id": "utr_editflow_goal_v3.1_benchmark_first",
-  "type": "object",
-  "required": ["sequence_id", "sequence_scope", "raw_sequence_sha256", "normalized_sequence_sha256", "full_sequence_sha256", "original_length", "region_scope"],
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
+  "contract_id": "utr_editflow_goal_v3.1_benchmark_first",
+  "description": "Canonical entity for a nucleotide sequence. Both sides of a candidate/pair must reference SequenceEntity.sequence_id.",
   "properties": {
-    "sequence_id": {"type": "string"},
-    "sequence_scope": {"type": "string", "enum": ["5UTR", "3UTR", "CROSS_REGION", "MULTI_REGION", "CDS", "FULL_LENGTH"]},
-    "raw_sequence_sha256": {"type": "string"},
-    "normalized_sequence_sha256": {"type": ["string", "null"]},
-    "full_sequence_sha256": {"type": ["string", "null"]},
-    "window_start": {"type": ["integer", "null"]},
-    "window_end": {"type": ["integer", "null"]},
-    "original_length": {"type": "integer"},
-    "region_scope": {"type": "string", "enum": ["5UTR", "3UTR", "CROSS_REGION", "MULTI_REGION"]},
-    "scaffold": {"type": ["string", "null"]},
-    "editable_mask": {"type": ["array", "null"], "items": {"type": "boolean"}}
-  }
+    "alphabet_status": {
+      "enum": [
+        "EXACT_ACGT",
+        "IUPAC_AMBIGUOUS",
+        "INVALID"
+      ],
+      "type": "string"
+    },
+    "contributing_asset_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "contributing_source_file_sha256s": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "contributor_set_sha256": {
+      "type": "string"
+    },
+    "editable_mask": {
+      "items": {
+        "type": "boolean"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "full_sequence_sha256": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "invalid_symbol_status": {
+      "enum": [
+        "PASS",
+        "QUARANTINED"
+      ],
+      "type": "string"
+    },
+    "model_sequence_eligible": {
+      "type": "boolean"
+    },
+    "normalization_steps": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "normalized_sequence": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "normalized_sequence_sha256": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "original_length": {
+      "type": "integer"
+    },
+    "primary_asset_id": {
+      "type": "string"
+    },
+    "raw_sequence_sha256": {
+      "type": "string"
+    },
+    "reference_build": {
+      "type": "string"
+    },
+    "region": {
+      "enum": [
+        "5UTR",
+        "3UTR",
+        "CDS_AUX",
+        "FULL_LENGTH_AUX"
+      ],
+      "type": "string"
+    },
+    "region_scope": {
+      "enum": [
+        "3UTR",
+        "5UTR",
+        "CDS_AUX",
+        "CROSS_REGION",
+        "FULL_LENGTH_AUX",
+        "MULTI_REGION"
+      ],
+      "type": "string"
+    },
+    "scaffold": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "sequence_id": {
+      "type": "string"
+    },
+    "sequence_reconstruction_rule_id": {
+      "type": "string"
+    },
+    "sequence_reconstruction_rule_sha256": {
+      "type": "string"
+    },
+    "sequence_scope": {
+      "enum": [
+        "3UTR",
+        "5UTR",
+        "CDS",
+        "CDS_AUXILIARY",
+        "CROSS_REGION",
+        "FULL_LENGTH",
+        "FULL_UTR",
+        "MULTI_REGION",
+        "OLIGO_CONSTRUCT",
+        "RANDOM_INSERT",
+        "UTR_WINDOW"
+      ],
+      "type": "string"
+    },
+    "source_record_id": {
+      "type": "string"
+    },
+    "source_row_locator": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "species": {
+      "type": "string"
+    },
+    "strand": {
+      "enum": [
+        "+",
+        "-",
+        "UNKNOWN",
+        "NOT_APPLICABLE"
+      ],
+      "type": "string"
+    },
+    "transcript_release": {
+      "type": "string"
+    },
+    "window_end": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "window_start": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "alphabet_status",
+    "contributing_asset_ids",
+    "contributing_source_file_sha256s",
+    "contributor_set_sha256",
+    "full_sequence_sha256",
+    "invalid_symbol_status",
+    "model_sequence_eligible",
+    "normalization_steps",
+    "normalized_sequence_sha256",
+    "original_length",
+    "primary_asset_id",
+    "raw_sequence_sha256",
+    "reference_build",
+    "region",
+    "region_scope",
+    "sequence_id",
+    "sequence_reconstruction_rule_id",
+    "sequence_reconstruction_rule_sha256",
+    "sequence_scope",
+    "source_record_id",
+    "source_row_locator",
+    "species",
+    "strand",
+    "transcript_release"
+  ],
+  "schema_version": "3.1",
+  "title": "SequenceEntity (v3.1)",
+  "type": "object"
 }

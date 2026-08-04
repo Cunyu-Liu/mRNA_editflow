@@ -1,43 +1,259 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/Cunyu-Liu/mRNA_editflow/schemas/v3_1/transformation_edge.schema.json",
-  "title": "TransformationEdge (v3.1)",
-  "description": "Parent-linked supersession edge and current canonical projection.",
-  "schema_version": "3.1",
-  "contract_id": "utr_editflow_goal_v3.1_benchmark_first",
-  "type": "object",
-  "required": ["edge_id", "parent_object_id", "child_object_id", "edge_sha256", "config_hash"],
-  "additionalProperties": false,
-  "properties": {
-    "edge_id": {"type": "string"},
-    "parent_object_id": {"type": ["string", "null"]},
-    "child_object_id": {"type": "string"},
-    "edge_sha256": {"type": "string"},
-    "config_hash": {"type": ["string", "null"]}
-  },
   "$defs": {
-    "SupersessionEdge": {
-      "type": "object",
-      "required": ["edge_id", "parent_object_id", "child_object_id", "edge_sha256", "config_hash"],
-      "additionalProperties": false,
-      "properties": {
-        "edge_id": {"type": "string"},
-        "parent_object_id": {"type": ["string", "null"]},
-        "child_object_id": {"type": "string"},
-        "edge_sha256": {"type": "string"},
-        "config_hash": {"type": ["string", "null"]}
-      }
-    },
     "CurrentCanonicalObjectProjection": {
-      "type": "object",
-      "required": ["object_id", "active", "canonical_manifest_sha256", "record_sha256"],
       "additionalProperties": false,
       "properties": {
-        "object_id": {"type": "string"},
-        "active": {"type": "boolean"},
-        "canonical_manifest_sha256": {"type": "string"},
-        "record_sha256": {"type": "string"}
-      }
+        "active": {
+          "type": "boolean"
+        },
+        "canonical_manifest_sha256": {
+          "type": "string"
+        },
+        "canonical_snapshot_id": {
+          "type": "string"
+        },
+        "chain_length": {
+          "type": "integer"
+        },
+        "chain_root_object_id": {
+          "type": "string"
+        },
+        "chain_root_object_sha256": {
+          "type": "string"
+        },
+        "current_leaf_object_id": {
+          "type": "string"
+        },
+        "current_leaf_object_sha256": {
+          "type": "string"
+        },
+        "generation_index": {
+          "type": "integer"
+        },
+        "is_current_leaf_accepted": {
+          "type": "boolean"
+        },
+        "last_supersession_edge_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "last_supersession_edge_sha256": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "object_id": {
+          "type": "string"
+        },
+        "object_type": {
+          "enum": [
+            "SEQUENCE",
+            "RELATION_CANDIDATE",
+            "PAIR",
+            "OBSERVATION_CANDIDATE",
+            "OBSERVATION"
+          ],
+          "type": "string"
+        },
+        "projection_record_id": {
+          "type": "string"
+        },
+        "projection_sha256": {
+          "type": "string"
+        },
+        "record_sha256": {
+          "type": "string"
+        },
+        "run_id": {
+          "type": "string"
+        },
+        "supersession_manifest_sha256": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "active",
+        "canonical_manifest_sha256",
+        "canonical_snapshot_id",
+        "chain_length",
+        "chain_root_object_id",
+        "chain_root_object_sha256",
+        "current_leaf_object_id",
+        "current_leaf_object_sha256",
+        "generation_index",
+        "is_current_leaf_accepted",
+        "last_supersession_edge_id",
+        "last_supersession_edge_sha256",
+        "object_id",
+        "object_type",
+        "projection_record_id",
+        "projection_sha256",
+        "record_sha256",
+        "run_id",
+        "supersession_manifest_sha256"
+      ],
+      "type": "object"
+    },
+    "SupersessionEdge": {
+      "additionalProperties": false,
+      "properties": {
+        "child_object_id": {
+          "type": "string"
+        },
+        "code_commit": {
+          "type": "string"
+        },
+        "config_hash": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "edge_id": {
+          "type": "string"
+        },
+        "edge_sha256": {
+          "type": "string"
+        },
+        "new_object_id": {
+          "type": "string"
+        },
+        "new_object_sha256": {
+          "type": "string"
+        },
+        "object_type": {
+          "enum": [
+            "SEQUENCE",
+            "RELATION_CANDIDATE",
+            "PAIR",
+            "OBSERVATION_CANDIDATE",
+            "OBSERVATION"
+          ],
+          "type": "string"
+        },
+        "old_object_id": {
+          "type": "string"
+        },
+        "old_object_sha256": {
+          "type": "string"
+        },
+        "parent_object_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reason": {
+          "type": "string"
+        },
+        "run_id": {
+          "type": "string"
+        },
+        "supersession_edge_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "child_object_id",
+        "code_commit",
+        "config_hash",
+        "edge_id",
+        "edge_sha256",
+        "new_object_id",
+        "new_object_sha256",
+        "object_type",
+        "old_object_id",
+        "old_object_sha256",
+        "parent_object_id",
+        "reason",
+        "run_id",
+        "supersession_edge_id"
+      ],
+      "type": "object"
     }
-  }
+  },
+  "$id": "https://github.com/Cunyu-Liu/mRNA_editflow/schemas/v3_1/transformation_edge.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "contract_id": "utr_editflow_goal_v3.1_benchmark_first",
+  "description": "Parent-linked supersession edge and current canonical projection.",
+  "properties": {
+    "child_object_id": {
+      "type": "string"
+    },
+    "code_commit": {
+      "type": "string"
+    },
+    "config_hash": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "edge_id": {
+      "type": "string"
+    },
+    "edge_sha256": {
+      "type": "string"
+    },
+    "new_object_id": {
+      "type": "string"
+    },
+    "new_object_sha256": {
+      "type": "string"
+    },
+    "object_type": {
+      "enum": [
+        "SEQUENCE",
+        "RELATION_CANDIDATE",
+        "PAIR",
+        "OBSERVATION_CANDIDATE",
+        "OBSERVATION"
+      ],
+      "type": "string"
+    },
+    "old_object_id": {
+      "type": "string"
+    },
+    "old_object_sha256": {
+      "type": "string"
+    },
+    "parent_object_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "reason": {
+      "type": "string"
+    },
+    "run_id": {
+      "type": "string"
+    },
+    "supersession_edge_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "child_object_id",
+    "code_commit",
+    "config_hash",
+    "edge_id",
+    "edge_sha256",
+    "new_object_id",
+    "new_object_sha256",
+    "object_type",
+    "old_object_id",
+    "old_object_sha256",
+    "parent_object_id",
+    "reason",
+    "run_id",
+    "supersession_edge_id"
+  ],
+  "schema_version": "3.1",
+  "title": "TransformationEdge (v3.1)",
+  "type": "object"
 }

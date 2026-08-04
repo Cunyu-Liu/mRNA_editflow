@@ -1,49 +1,480 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/Cunyu-Liu/mRNA_editflow/schemas/v3_1/functional_observation.schema.json",
-  "title": "FunctionalObservation (v3.1)",
-  "description": "Functional observation record (Track F) plus required candidate/endpoint $defs.",
-  "schema_version": "3.1",
-  "contract_id": "utr_editflow_goal_v3.1_benchmark_first",
-  "type": "object",
-  "required": ["observation_id", "sequence_id", "endpoint_id", "context_id", "value", "unit"],
-  "additionalProperties": false,
-  "properties": {
-    "observation_id": {"type": "string"},
-    "sequence_id": {"type": "string"},
-    "endpoint_id": {"type": "string"},
-    "context_id": {"type": "string"},
-    "value": {"type": "number"},
-    "unit": {"type": "string"},
-    "replicate": {"type": ["string", "null"]}
-  },
   "$defs": {
-    "FunctionalObservationCandidate": {
-      "type": "object",
-      "required": ["candidate_id", "sequence_id", "endpoint_id", "context_id", "source", "source_file_sha256", "lifecycle_status"],
-      "additionalProperties": false,
-      "properties": {
-        "candidate_id": {"type": "string"},
-        "sequence_id": {"type": "string"},
-        "endpoint_id": {"type": "string"},
-        "context_id": {"type": "string"},
-        "source": {"type": "string"},
-        "source_file_sha256": {"type": "string"},
-        "value": {"type": ["number", "null"]},
-        "lifecycle_status": {"type": "string", "enum": ["CANDIDATE", "ACCEPTED", "REJECTED"]}
-      }
-    },
     "EndpointRegistryRow": {
-      "type": "object",
-      "required": ["endpoint_id", "name", "scaling", "missing_token", "missing_mask"],
       "additionalProperties": false,
       "properties": {
-        "endpoint_id": {"type": "string"},
-        "name": {"type": "string"},
-        "scaling": {"type": "string", "enum": ["LINEAR", "LOG", "RANK", "CATEGORICAL"]},
-        "missing_token": {"type": "boolean"},
-        "missing_mask": {"type": "boolean"}
-      }
+        "aggregation_rule_id": {
+          "type": "string"
+        },
+        "aggregation_rule_sha256": {
+          "type": "string"
+        },
+        "biological_quantity": {
+          "type": "string"
+        },
+        "comparability_scope": {
+          "type": "string"
+        },
+        "delta_rule_id": {
+          "type": "string"
+        },
+        "delta_rule_sha256": {
+          "type": "string"
+        },
+        "directionality": {
+          "enum": [
+            "HIGHER_IS_BETTER",
+            "LOWER_IS_BETTER",
+            "TWO_SIDED",
+            "NOT_APPLICABLE"
+          ],
+          "type": "string"
+        },
+        "endpoint_id": {
+          "type": "string"
+        },
+        "label_transform": {
+          "type": "string"
+        },
+        "label_unit": {
+          "type": "string"
+        },
+        "missing_mask": {
+          "type": "boolean"
+        },
+        "missing_token": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        },
+        "raw_field_mappings": {
+          "type": "object"
+        },
+        "record_sha256": {
+          "type": "string"
+        },
+        "scaling": {
+          "enum": [
+            "CATEGORICAL",
+            "IDENTITY",
+            "LINEAR",
+            "LOG",
+            "LOG2",
+            "RANK"
+          ],
+          "type": "string"
+        },
+        "unknown_or_ambiguous_policy": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "aggregation_rule_id",
+        "aggregation_rule_sha256",
+        "biological_quantity",
+        "comparability_scope",
+        "delta_rule_id",
+        "delta_rule_sha256",
+        "directionality",
+        "endpoint_id",
+        "label_transform",
+        "label_unit",
+        "missing_mask",
+        "missing_token",
+        "name",
+        "raw_field_mappings",
+        "record_sha256",
+        "scaling",
+        "unknown_or_ambiguous_policy"
+      ],
+      "type": "object"
+    },
+    "FunctionalObservationCandidate": {
+      "additionalProperties": false,
+      "properties": {
+        "accepted_observation_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "asset_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "candidate_id": {
+          "type": "string"
+        },
+        "context_id": {
+          "type": "string"
+        },
+        "contributing_source_file_sha256s": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "contributor_set_sha256": {
+          "type": "string"
+        },
+        "endpoint_id": {
+          "type": "string"
+        },
+        "evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "join_method_id": {
+          "type": "string"
+        },
+        "join_method_sha256": {
+          "type": "string"
+        },
+        "lifecycle_status": {
+          "enum": [
+            "CANDIDATE",
+            "ACCEPTED",
+            "REJECTED"
+          ],
+          "type": "string"
+        },
+        "observation_acceptance_status": {
+          "enum": [
+            "CANDIDATE",
+            "ACCEPTED",
+            "AMBIGUOUS",
+            "UNMATCHED",
+            "REJECTED"
+          ],
+          "type": "string"
+        },
+        "observation_candidate_id": {
+          "type": "string"
+        },
+        "parent_candidate_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sequence_id": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string"
+        },
+        "source_file_sha256": {
+          "type": "string"
+        },
+        "source_row_locators": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "source_unit_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "terminal_disposition_reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "value": {
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "accepted_observation_id",
+        "asset_ids",
+        "candidate_id",
+        "context_id",
+        "contributing_source_file_sha256s",
+        "contributor_set_sha256",
+        "endpoint_id",
+        "evidence_ids",
+        "join_method_id",
+        "join_method_sha256",
+        "lifecycle_status",
+        "observation_acceptance_status",
+        "observation_candidate_id",
+        "parent_candidate_id",
+        "sequence_id",
+        "source",
+        "source_file_sha256",
+        "source_row_locators",
+        "source_unit_ids",
+        "terminal_disposition_reason"
+      ],
+      "type": "object"
     }
-  }
+  },
+  "$id": "https://github.com/Cunyu-Liu/mRNA_editflow/schemas/v3_1/functional_observation.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "contract_id": "utr_editflow_goal_v3.1_benchmark_first",
+  "description": "Functional observation record (Track F) plus required candidate/endpoint $defs.",
+  "properties": {
+    "assay_context": {
+      "type": "string"
+    },
+    "barcode_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "biological_replicate_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "canonical_status": {
+      "enum": [
+        "ACCEPTED",
+        "SUPERSEDED",
+        "REJECTED"
+      ],
+      "type": "string"
+    },
+    "cell_context": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "context_id": {
+      "type": "string"
+    },
+    "contributing_asset_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "contributing_source_file_sha256s": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "contributor_set_sha256": {
+      "type": "string"
+    },
+    "coverage_or_umi": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "endpoint_id": {
+      "type": "string"
+    },
+    "label_status": {
+      "enum": [
+        "OBSERVED",
+        "DERIVED",
+        "MISSING",
+        "BELOW_COVERAGE",
+        "QUARANTINED"
+      ],
+      "type": "string"
+    },
+    "label_transform": {
+      "type": "string"
+    },
+    "label_unit": {
+      "type": "string"
+    },
+    "missingness_reason": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "normalized_value": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "observation_candidate_id": {
+      "type": "string"
+    },
+    "observation_id": {
+      "type": "string"
+    },
+    "observation_role": {
+      "enum": [
+        "F_FUNCTION_LABEL",
+        "E_SOURCE_MEASUREMENT",
+        "E_CANDIDATE_MEASUREMENT",
+        "E_NOEDIT_MEASUREMENT",
+        "AUX_QC"
+      ],
+      "type": "string"
+    },
+    "parent_observation_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "primary_label_asset_id": {
+      "type": "string"
+    },
+    "promoter": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "quality_flags": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "raw_value": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "replicate": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "reporter_or_cargo": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "rna_chemistry": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "sample_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "scientific_track": {
+      "enum": [
+        "E",
+        "F",
+        "AUX"
+      ],
+      "type": "string"
+    },
+    "sequence_id": {
+      "type": "string"
+    },
+    "source_file_sha256": {
+      "type": "string"
+    },
+    "source_record_id": {
+      "type": "string"
+    },
+    "source_replicate_label": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "source_row_locator": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "standard_error": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "technical_replicate_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "timepoint": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "unit": {
+      "type": "string"
+    },
+    "value": {
+      "type": [
+        "number",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "assay_context",
+    "barcode_id",
+    "biological_replicate_id",
+    "canonical_status",
+    "cell_context",
+    "context_id",
+    "contributing_asset_ids",
+    "contributing_source_file_sha256s",
+    "contributor_set_sha256",
+    "coverage_or_umi",
+    "endpoint_id",
+    "label_status",
+    "label_transform",
+    "label_unit",
+    "missingness_reason",
+    "normalized_value",
+    "observation_candidate_id",
+    "observation_id",
+    "observation_role",
+    "primary_label_asset_id",
+    "promoter",
+    "quality_flags",
+    "raw_value",
+    "reporter_or_cargo",
+    "rna_chemistry",
+    "sample_id",
+    "scientific_track",
+    "sequence_id",
+    "source_file_sha256",
+    "source_record_id",
+    "source_replicate_label",
+    "source_row_locator",
+    "standard_error",
+    "technical_replicate_id",
+    "timepoint",
+    "unit",
+    "value"
+  ],
+  "schema_version": "3.1",
+  "title": "FunctionalObservation (v3.1)",
+  "type": "object"
 }

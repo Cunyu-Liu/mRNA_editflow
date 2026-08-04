@@ -1,17 +1,67 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/Cunyu-Liu/mRNA_editflow/schemas/v3_1/use_role.schema.json",
-  "title": "UseRole (v3.1)",
-  "description": "Role/use projection for an object, including future-use role.",
-  "schema_version": "3.1",
-  "contract_id": "utr_editflow_goal_v3.1_benchmark_first",
-  "type": "object",
-  "required": ["object_id", "use_role", "future_use_role", "authority_level"],
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
+  "contract_id": "utr_editflow_goal_v3.1_benchmark_first",
+  "description": "Role/use projection for an object, including future-use role.",
   "properties": {
-    "object_id": {"type": "string"},
-    "use_role": {"type": "string"},
-    "future_use_role": {"type": "string"},
-    "authority_level": {"type": "string", "enum": ["ORDINARY", "RESTRICTED_FINAL", "SEALED"]}
-  }
+    "authority_level": {
+      "enum": [
+        "ORDINARY",
+        "RESTRICTED_FINAL",
+        "SEALED"
+      ],
+      "type": "string"
+    },
+    "base_future_use_role": {
+      "type": "string"
+    },
+    "candidate_base_payload_sha256": {
+      "type": "string"
+    },
+    "canonical_manifest_sha256": {
+      "type": "string"
+    },
+    "future_use_role": {
+      "type": "string"
+    },
+    "object_id": {
+      "type": "string"
+    },
+    "pair_base_payload_sha256": {
+      "type": "string"
+    },
+    "pair_id": {
+      "type": "string"
+    },
+    "record_sha256": {
+      "type": "string"
+    },
+    "relation_candidate_id": {
+      "type": "string"
+    },
+    "use_role": {
+      "type": "string"
+    },
+    "use_role_record_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "authority_level",
+    "base_future_use_role",
+    "candidate_base_payload_sha256",
+    "canonical_manifest_sha256",
+    "future_use_role",
+    "object_id",
+    "pair_base_payload_sha256",
+    "pair_id",
+    "record_sha256",
+    "relation_candidate_id",
+    "use_role",
+    "use_role_record_id"
+  ],
+  "schema_version": "3.1",
+  "title": "UseRole (v3.1)",
+  "type": "object"
 }

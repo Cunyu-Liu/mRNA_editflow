@@ -98,6 +98,7 @@ SEALED_RULE_BYTES = (
 )
 
 REQUIRED_DEFS = {
+    "group_registry.schema.json": ["NoEditSamplingFrameRow"],
     "functional_observation.schema.json": ["FunctionalObservationCandidate", "EndpointRegistryRow"],
     "exposure_record.schema.json": ["AccessIntent", "AccessCompletion", "AccessAbort", "FoundationExposureAuditRow", "EffectiveExposureProjection"],
     "transformation_edge.schema.json": ["SupersessionEdge", "CurrentCanonicalObjectProjection"],

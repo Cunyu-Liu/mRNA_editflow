@@ -1,84 +1,501 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/Cunyu-Liu/mRNA_editflow/schemas/v3_1/exposure_record.schema.json",
-  "title": "ExposureRecord (v3.1)",
-  "description": "Append-only exposure/access log with intent->completion/abort chains, foundation audit row and effective exposure projection.",
-  "schema_version": "3.1",
-  "contract_id": "utr_editflow_goal_v3.1_benchmark_first",
-  "type": "object",
-  "required": ["access_id", "object_id", "intent", "status", "prev_event_sha256", "event_sha256"],
-  "additionalProperties": false,
-  "properties": {
-    "access_id": {"type": "string"},
-    "object_id": {"type": "string"},
-    "intent": {"type": "string"},
-    "status": {"type": "string", "enum": ["INTENT", "COMPLETION", "ABORT"]},
-    "prev_event_sha256": {"type": ["string", "null"]},
-    "event_sha256": {"type": "string"}
-  },
   "$defs": {
-    "AccessIntent": {
-      "type": "object",
-      "required": ["access_id", "object_id", "intent", "status", "prev_event_sha256", "event_sha256"],
+    "AccessAbort": {
       "additionalProperties": false,
       "properties": {
-        "access_id": {"type": "string"},
-        "object_id": {"type": "string"},
-        "intent": {"type": "string"},
-        "status": {"type": "string", "const": "INTENT"},
-        "prev_event_sha256": {"type": ["string", "null"]},
-        "event_sha256": {"type": "string"}
-      }
+        "access_id": {
+          "type": "string"
+        },
+        "event_sha256": {
+          "type": "string"
+        },
+        "intent": {
+          "type": "string"
+        },
+        "object_id": {
+          "type": "string"
+        },
+        "prev_event_sha256": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reason": {
+          "type": "string"
+        },
+        "status": {
+          "const": "ABORT",
+          "type": "string"
+        }
+      },
+      "required": [
+        "access_id",
+        "object_id",
+        "intent",
+        "status",
+        "reason",
+        "prev_event_sha256",
+        "event_sha256"
+      ],
+      "type": "object"
     },
     "AccessCompletion": {
-      "type": "object",
-      "required": ["access_id", "object_id", "intent", "status", "prev_event_sha256", "event_sha256"],
       "additionalProperties": false,
       "properties": {
-        "access_id": {"type": "string"},
-        "object_id": {"type": "string"},
-        "intent": {"type": "string"},
-        "status": {"type": "string", "const": "COMPLETION"},
-        "prev_event_sha256": {"type": ["string", "null"]},
-        "event_sha256": {"type": "string"}
-      }
+        "access_id": {
+          "type": "string"
+        },
+        "event_sha256": {
+          "type": "string"
+        },
+        "intent": {
+          "type": "string"
+        },
+        "object_id": {
+          "type": "string"
+        },
+        "prev_event_sha256": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "status": {
+          "const": "COMPLETION",
+          "type": "string"
+        }
+      },
+      "required": [
+        "access_id",
+        "object_id",
+        "intent",
+        "status",
+        "prev_event_sha256",
+        "event_sha256"
+      ],
+      "type": "object"
     },
-    "AccessAbort": {
-      "type": "object",
-      "required": ["access_id", "object_id", "intent", "status", "reason", "prev_event_sha256", "event_sha256"],
+    "AccessIntent": {
       "additionalProperties": false,
       "properties": {
-        "access_id": {"type": "string"},
-        "object_id": {"type": "string"},
-        "intent": {"type": "string"},
-        "status": {"type": "string", "const": "ABORT"},
-        "reason": {"type": "string"},
-        "prev_event_sha256": {"type": ["string", "null"]},
-        "event_sha256": {"type": "string"}
-      }
-    },
-    "FoundationExposureAuditRow": {
-      "type": "object",
-      "required": ["object_id", "checkpoint_revision", "weights_hash", "overlap", "audit_status"],
-      "additionalProperties": false,
-      "properties": {
-        "object_id": {"type": "string"},
-        "checkpoint_revision": {"type": "string"},
-        "weights_hash": {"type": "string"},
-        "overlap": {"type": "boolean"},
-        "audit_status": {"type": "string"}
-      }
+        "access_id": {
+          "type": "string"
+        },
+        "event_sha256": {
+          "type": "string"
+        },
+        "intent": {
+          "type": "string"
+        },
+        "object_id": {
+          "type": "string"
+        },
+        "prev_event_sha256": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "status": {
+          "const": "INTENT",
+          "type": "string"
+        }
+      },
+      "required": [
+        "access_id",
+        "object_id",
+        "intent",
+        "status",
+        "prev_event_sha256",
+        "event_sha256"
+      ],
+      "type": "object"
     },
     "EffectiveExposureProjection": {
-      "type": "object",
-      "required": ["object_id", "effective_exposure", "projection_sha256", "chain_root_sha256"],
       "additionalProperties": false,
       "properties": {
-        "object_id": {"type": "string"},
-        "effective_exposure": {"type": "string"},
-        "projection_sha256": {"type": "string"},
-        "chain_root_sha256": {"type": "string"}
-      }
+        "access_log_chain_root_sha256": {
+          "type": "string"
+        },
+        "as_of_event_id": {
+          "type": "string"
+        },
+        "baseline_exposure_record_id": {
+          "type": "string"
+        },
+        "baseline_record_sha256": {
+          "type": "string"
+        },
+        "chain_root_sha256": {
+          "type": "string"
+        },
+        "effective_exposure": {
+          "type": "string"
+        },
+        "effective_project_label_analytic_exposure": {
+          "enum": [
+            "NONE_CONFIRMED",
+            "PRESENT",
+            "UNKNOWN"
+          ],
+          "type": "string"
+        },
+        "effective_project_label_use_types": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "effective_project_sequence_analytic_exposure": {
+          "enum": [
+            "NONE_CONFIRMED",
+            "PRESENT",
+            "UNKNOWN"
+          ],
+          "type": "string"
+        },
+        "effective_project_sequence_use_types": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "final_access_status": {
+          "enum": [
+            "SEALED_UNOPENED",
+            "FINAL_ACCESS_RESERVED",
+            "FINAL_OPENED",
+            "FINAL_INVALIDATED"
+          ],
+          "type": "string"
+        },
+        "foundation_exposure_ledger_manifest_sha256": {
+          "type": "string"
+        },
+        "object_id": {
+          "type": "string"
+        },
+        "object_type": {
+          "enum": [
+            "SEQUENCE",
+            "RELATION_CANDIDATE",
+            "OBSERVATION_CANDIDATE",
+            "PAIR",
+            "OBSERVATION"
+          ],
+          "type": "string"
+        },
+        "projection_phase": {
+          "enum": [
+            "D1",
+            "FM0_A",
+            "B0_R",
+            "G7",
+            "MODEL_REBIND_OR_LATER"
+          ],
+          "type": "string"
+        },
+        "projection_sha256": {
+          "type": "string"
+        },
+        "snapshot_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "access_log_chain_root_sha256",
+        "as_of_event_id",
+        "baseline_exposure_record_id",
+        "baseline_record_sha256",
+        "chain_root_sha256",
+        "effective_exposure",
+        "effective_project_label_analytic_exposure",
+        "effective_project_label_use_types",
+        "effective_project_sequence_analytic_exposure",
+        "effective_project_sequence_use_types",
+        "final_access_status",
+        "foundation_exposure_ledger_manifest_sha256",
+        "object_id",
+        "object_type",
+        "projection_phase",
+        "projection_sha256",
+        "snapshot_id"
+      ],
+      "type": "object"
+    },
+    "FoundationExposureAuditRow": {
+      "additionalProperties": false,
+      "properties": {
+        "audit_status": {
+          "type": "string"
+        },
+        "checkpoint_revision": {
+          "type": "string"
+        },
+        "object_id": {
+          "type": "string"
+        },
+        "overlap": {
+          "type": "boolean"
+        },
+        "weights_hash": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "object_id",
+        "checkpoint_revision",
+        "weights_hash",
+        "overlap",
+        "audit_status"
+      ],
+      "type": "object"
     }
-  }
+  },
+  "$id": "https://github.com/Cunyu-Liu/mRNA_editflow/schemas/v3_1/exposure_record.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "contract_id": "utr_editflow_goal_v3.1_benchmark_first",
+  "description": "Append-only exposure/access log with intent->completion/abort chains, foundation audit row and effective exposure projection.",
+  "properties": {
+    "access_id": {
+      "type": "string"
+    },
+    "canonical_object_sha256": {
+      "type": "string"
+    },
+    "contributing_asset_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "contributing_file_sha256s": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "event_sha256": {
+      "type": "string"
+    },
+    "evidence_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "exposure_record_id": {
+      "type": "string"
+    },
+    "foundation_audit_scope_id": {
+      "type": "string"
+    },
+    "foundation_overlap_audit_status_at_baseline": {
+      "enum": [
+        "NOT_STARTED",
+        "DEFERRED_TO_FM0_A",
+        "NOT_APPLICABLE"
+      ],
+      "type": "string"
+    },
+    "foundation_overlap_requirement": {
+      "enum": [
+        "REQUIRED_FM0_A",
+        "NOT_APPLICABLE_NO_EXTERNAL_WEIGHTS"
+      ],
+      "type": "string"
+    },
+    "intent": {
+      "type": "string"
+    },
+    "object_id": {
+      "type": "string"
+    },
+    "object_type": {
+      "enum": [
+        "SEQUENCE",
+        "RELATION_CANDIDATE",
+        "OBSERVATION_CANDIDATE",
+        "PAIR",
+        "OBSERVATION"
+      ],
+      "type": "string"
+    },
+    "permitted_derived_release": {
+      "enum": [
+        "YES",
+        "NO",
+        "UNKNOWN"
+      ],
+      "type": "string"
+    },
+    "permitted_evaluation": {
+      "enum": [
+        "YES",
+        "NO",
+        "UNKNOWN"
+      ],
+      "type": "string"
+    },
+    "permitted_model_training": {
+      "enum": [
+        "YES",
+        "NO",
+        "UNKNOWN"
+      ],
+      "type": "string"
+    },
+    "permitted_raw_redistribution": {
+      "enum": [
+        "YES",
+        "NO",
+        "UNKNOWN"
+      ],
+      "type": "string"
+    },
+    "pipeline_label_materialization": {
+      "enum": [
+        "ABSENT",
+        "PRESENT",
+        "UNKNOWN"
+      ],
+      "type": "string"
+    },
+    "pipeline_sequence_materialization": {
+      "enum": [
+        "ABSENT",
+        "PRESENT",
+        "UNKNOWN"
+      ],
+      "type": "string"
+    },
+    "prev_event_sha256": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "project_label_analytic_exposure": {
+      "enum": [
+        "NONE_CONFIRMED",
+        "PRESENT",
+        "UNKNOWN"
+      ],
+      "type": "string"
+    },
+    "project_label_analytic_use_types": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "project_sequence_analytic_exposure": {
+      "enum": [
+        "NONE_CONFIRMED",
+        "PRESENT",
+        "UNKNOWN"
+      ],
+      "type": "string"
+    },
+    "project_sequence_analytic_use_types": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "record_sha256": {
+      "type": "string"
+    },
+    "rights_evidence_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "rights_override_evidence_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "rights_override_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "rights_override_reviewer": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "rights_override_scope": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "rights_override_sha256": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "rights_projection_rule_id": {
+      "type": "string"
+    },
+    "rights_projection_rule_sha256": {
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "INTENT",
+        "COMPLETION",
+        "ABORT"
+      ],
+      "type": "string"
+    }
+  },
+  "required": [
+    "access_id",
+    "canonical_object_sha256",
+    "contributing_asset_ids",
+    "contributing_file_sha256s",
+    "event_sha256",
+    "evidence_ids",
+    "exposure_record_id",
+    "foundation_audit_scope_id",
+    "foundation_overlap_audit_status_at_baseline",
+    "foundation_overlap_requirement",
+    "intent",
+    "object_id",
+    "object_type",
+    "permitted_derived_release",
+    "permitted_evaluation",
+    "permitted_model_training",
+    "permitted_raw_redistribution",
+    "pipeline_label_materialization",
+    "pipeline_sequence_materialization",
+    "prev_event_sha256",
+    "project_label_analytic_exposure",
+    "project_label_analytic_use_types",
+    "project_sequence_analytic_exposure",
+    "project_sequence_analytic_use_types",
+    "record_sha256",
+    "rights_evidence_ids",
+    "rights_override_evidence_ids",
+    "rights_override_id",
+    "rights_override_reviewer",
+    "rights_override_scope",
+    "rights_override_sha256",
+    "rights_projection_rule_id",
+    "rights_projection_rule_sha256",
+    "status"
+  ],
+  "schema_version": "3.1",
+  "title": "ExposureRecord (v3.1)",
+  "type": "object"
 }
