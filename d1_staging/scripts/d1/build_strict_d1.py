@@ -694,7 +694,7 @@ class StrictBuilder:
                 "endpoint_id": eid,
                 "name": label_key,
                 "scaling": scaling,
-                "missing_token": "NULL_OR_UNOBSERVED" if label_key == "NO_MEASUREMENT" else "NULL",
+                "missing_token": label_key == "NO_MEASUREMENT",
                 "missing_mask": label_key == "NO_MEASUREMENT",
                 "biological_quantity": "ASSAY_REPORTED_FUNCTIONAL_VALUE",
                 "raw_field_mappings": {"label_key": label_key},
