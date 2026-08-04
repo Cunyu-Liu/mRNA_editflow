@@ -502,7 +502,6 @@ class Bundle:
                 row["access_log_chain_root_sha256"] = chain_root
                 row["as_of_event_id"] = as_of_event_id
                 row["chain_root_sha256"] = chain_root
-                row["canonical_manifest_sha256"] = canonical_binding if "canonical_manifest_sha256" in row else None
                 row = self_hash_row(row, "projection_sha256")
                 dst.write(jline(row))
         return path
@@ -762,6 +761,7 @@ class StrictBuilder:
             "contributing_asset_ids": sorted(set(assets)),
             "contributing_source_file_sha256s": sorted(set(file_hashes)),
             "contributor_set_sha256": sha_json({"asset_ids": sorted(set(assets)), "source_file_sha256s": sorted(set(file_hashes))}),
+            "original_length": len(raw),
             "sequence_reconstruction_rule_id": "D1_SEALED_RECONSTRUCTED_UTR_V1" if bundle.shard == "restricted" else "D1_AUDITED_RAW_RECORD_SEQUENCE_V1",
             "sequence_reconstruction_rule_sha256": sha_text("D1_SEALED_RECONSTRUCTED_UTR_V1" if bundle.shard == "restricted" else "D1_AUDITED_RAW_RECORD_SEQUENCE_V1"),
             "source_record_id": record_id,
@@ -772,6 +772,7 @@ class StrictBuilder:
             "model_sequence_eligible": model_eligible,
             "invalid_symbol_status": invalid_status,
             "region": region_scope(region),
+            "region_scope": region_scope(region),
             "species": species,
             "reference_build": as_text(metadata.get("reference_build")) or "NOT_PROVIDED_D1",
             "transcript_release": as_text(metadata.get("transcript_release")) or "NOT_PROVIDED_D1",
@@ -798,6 +799,10 @@ class StrictBuilder:
             "exposure_record_id": f"EXP:{safe_id(bundle.shard + '|' + object_id)}",
             "object_id": object_id,
             "object_type": object_type,
+            "access_id": access_id,
+            "intent": "D1_CANONICAL_BASELINE",
+            "status": "COMPLETION",
+            "prev_event_sha256": GENESIS,
             "project_sequence_analytic_exposure": "NONE_CONFIRMED",
             "project_sequence_analytic_use_types": [],
             "project_label_analytic_exposure": "NONE_CONFIRMED",
@@ -840,7 +845,7 @@ class StrictBuilder:
             "final_access_status": "SEALED_UNOPENED",
             "projection_phase": "D1",
             "snapshot_id": bundle.snapshot_id,
-            "canonical_manifest_sha256": self.canonical_binding,
+            "foundation_exposure_ledger_manifest_sha256": sha_text("D1_FOUNDATION_EXPOSURE_LEDGER_NOT_STARTED"),
         }
         bundle.write_effective_pending(pending)
         self.counts[f"exposure:{bundle.shard}:{object_type}"] += 1
@@ -1635,7 +1640,6 @@ class StrictBuilder:
             "output_schema_sha256": sha_text("D1_STRICT_CANONICAL_BUNDLE_V1"),
             "analytic_access": False,
             "requested_state_transition": "D1_BUILDER_PARSE_WITHOUT_ANALYTIC_EXPOSURE",
-            "reason": "D1_CONTRACT_MACHINE_PARSE_ONLY",
             "failure_evidence_ids": [],
         }
         intent = dict(common)
