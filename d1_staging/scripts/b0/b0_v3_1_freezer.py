@@ -120,8 +120,27 @@ def _access_log_chain_root(res_out: Path) -> str:
 # Stage 6: materialize missing components + write PREPARED manifests
 # ---------------------------------------------------------------------------
 
+def _assignment_summary(path: Path) -> dict:
+    counts = Counter()
+    if path.exists():
+        for row in iter_jsonl(path):
+            counts[row.get("split_contract_id", "UNKNOWN")] += 1
+    five_utr_source_study = sum(
+        counts[sid] for sid in ("5utr_source_disjoint", "5utr_study_disjoint")
+    )
+    source_study = five_utr_source_study + sum(
+        counts[sid] for sid in ("3utr_source_or_variant_disjoint", "3utr_study_disjoint")
+    )
+    return {
+        "total": sum(counts.values()),
+        "by_split": dict(sorted(counts.items())),
+        "five_utr_source_or_study_disjoint": five_utr_source_study,
+        "source_or_study_disjoint": source_study,
+    }
+
+
 def materialize_ordinary(out: Path, ordinary_pairs: Path, ordinary_obs: Path,
-                         worktree: Path) -> None:
+                         worktree: Path, benchmark_out: Path) -> None:
     """Write the ordinary components the builder does not produce."""
     now = datetime.now(timezone.utc).isoformat()
 
@@ -153,17 +172,28 @@ def materialize_ordinary(out: Path, ordinary_pairs: Path, ordinary_obs: Path,
     }
     write_json(out / "FIVE_SCALE_DATA_CARD.json", data_card)
 
-    # RESOURCE_VIABILITY_ASSESSMENT (definition-only; separate from data closure)
+    # RESOURCE_VIABILITY_ASSESSMENT (separate from data closure). This is a
+    # conservative B0 snapshot; G7 recomputes the publication-grade rule from
+    # the fresh assignment and atom-coverage evidence.
+    assignment_summary = _assignment_summary(benchmark_out / "SPLIT_ASSIGNMENTS.jsonl")
+    viability_status = (
+        "LIMITED_DEVELOPMENT_ONLY"
+        if assignment_summary["five_utr_source_or_study_disjoint"] > 0
+        else "NOT_VIABLE"
+    )
     viability = {
         "assessment_id": "b0_resource_viability_v1",
         "schema_version": SCHEMA_VERSION,
         "contract_id": CONTRACT_ID,
-        "resource_viability_status": "LIMITED_DEVELOPMENT_ONLY",
-        "note": "Engineering/data closure PASS must be reported separately from resource viability. "
-                "PUBLICATION_GRADE_CANDIDATE requires >=500 independent 5-UTR units, >=5 studies, "
-                "non-empty source/study-disjoint partitions and preregistered CI precision; "
-                "these are not asserted here because the D1 grouping atoms are not materialized.",
-        "reason": "resource_viability_rule_v3_1.yaml thresholds not asserted; 3-UTR scope = EXPLORATORY_ONLY",
+        "resource_viability_status": viability_status,
+        "split_assignment_counts": assignment_summary,
+        "note": "Engineering/data closure is reported separately from resource viability. "
+                "G7 must re-evaluate the frozen publication-grade thresholds from fresh evidence.",
+        "reason": (
+            "no source/study-disjoint assignment was materialized"
+            if assignment_summary["five_utr_source_or_study_disjoint"] == 0
+            else "non-empty source/study assignments exist; publication-grade thresholds remain to be evaluated"
+        ),
         "generated_at_utc": now,
     }
     write_json(out / "RESOURCE_VIABILITY_ASSESSMENT.json", viability)
@@ -394,7 +424,10 @@ def main() -> int:
     res_out.mkdir(parents=True, exist_ok=True)
 
     # Stage 6: materialize missing components
-    materialize_ordinary(out, od / "utr_edit_pairs.jsonl", od / "functional_observations.jsonl", wt)
+    materialize_ordinary(
+        out, od / "utr_edit_pairs.jsonl", od / "functional_observations.jsonl",
+        wt, out,
+    )
     materialize_restricted(res_out, rd / "functional_observations.jsonl")
 
     # write PREPARED manifests

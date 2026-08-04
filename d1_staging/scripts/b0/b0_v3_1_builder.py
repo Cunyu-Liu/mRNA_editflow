@@ -24,6 +24,7 @@ No training, no GPU work.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import sys
 from collections import Counter
@@ -62,6 +63,8 @@ from b0_v3_1_common import (  # noqa: E402
 RUN_ID = "b0_r_v1"
 TRANSACTION_ID = "b0_txn_20260803_001"
 CONFIG_HASH = "v3.1-B0-R"
+GROUP_ASSIGNMENT_ALGORITHM_ID = "GROUPED_KEEP_ONE_ORIGIN"
+GROUPING_ATOM_RULE_SHA256 = "bd8395ab0ec23d98d7c1b717e7fcb0bdd3df6d18002985624cd9eb41f8bd7983"
 
 
 # ---------------------------------------------------------------------------
@@ -631,25 +634,180 @@ def _active_object_ids(eligibility_manifest: Path):
     return active
 
 
+def _load_object_projection(path: Path, active_ids: set[str]) -> dict:
+    """Load the compact D1 per-object grouping projection for active objects."""
+    objects = {}
+    if not path.exists():
+        return objects
+    for row in iter_jsonl(path):
+        oid = row.get("object_id")
+        if oid not in active_ids:
+            continue
+        groups = {}
+        for atom, gids in (row.get("group_ids_by_atom") or {}).items():
+            clean = sorted({str(g) for g in gids if g})
+            if clean:
+                groups[atom] = clean
+        objects[oid] = {
+            "object_id": oid,
+            "object_type": row.get("object_type"),
+            "scientific_track": row.get("scientific_track"),
+            "region_scope": row.get("region_scope"),
+            "study": row.get("study"),
+            "group_ids_by_atom": groups,
+        }
+    return objects
+
+
+def _ensure_object_projection(objects: dict, path: Path, active_ids: set[str],
+                              object_type: str, scientific_track: str):
+    """Keep the eligibility universe complete if an auxiliary row is absent."""
+    for row in iter_jsonl(path):
+        if scientific_track == "E" and row.get("scientific_track") != "E":
+            continue
+        oid = row.get("pair_id") if object_type == "PAIR" else row.get("observation_id")
+        if oid not in active_ids or oid in objects:
+            continue
+        objects[oid] = {
+            "object_id": oid,
+            "object_type": object_type,
+            "scientific_track": scientific_track,
+            "region_scope": None,
+            "study": None,
+            "group_ids_by_atom": {},
+        }
+
+
+def _required_atoms(split: dict, object_type: str) -> list[str]:
+    by_type = split.get("grouping_atoms_by_object_type", {})
+    listed = by_type.get(object_type, [])
+    return [a for a in listed if not str(a).startswith("NOT_APPLICABLE")]
+
+
+def _scope_matches(split: dict, obj: dict) -> bool:
+    object_scope = split.get("object_scope")
+    if object_scope == "PAIR" and obj.get("object_type") != "PAIR":
+        return False
+    if object_scope == "OBSERVATION" and obj.get("object_type") != "OBSERVATION":
+        return False
+    region = obj.get("region_scope")
+    scope = split.get("region_scope")
+    if scope in {"5UTR", "3UTR"} and region != scope:
+        return False
+    if scope in {"CROSS_REGION", "MULTI_REGION"} and region not in {"5UTR", "3UTR"}:
+        return False
+    return True
+
+
+def _calibration_selected(study: str | None) -> bool:
+    if not study:
+        return False
+    component_id = sha256_utf8(study)
+    selector = sha256_utf8(f"UTR_EDITFLOW_V3_1_CALIBRATION|{component_id}")
+    return int(selector[:8], 16) % 5 == 0
+
+
+def _build_grouped_plan(objects: dict, split: dict, apply_calibration: bool):
+    """Build a transitive group-connected component plan for one split.
+
+    All required grouping atoms participate in the union-find. This is
+    fail-closed: missing atoms never enter the plan, and a shared group cannot
+    be assigned to different partitions.
+    """
+    split_id = split["split_contract_id"]
+    parent = {}
+    groups_by_object = {}
+    first_by_group = {}
+
+    def find(x):
+        root = x
+        while parent[root] != root:
+            root = parent[root]
+        while parent[x] != x:
+            nxt = parent[x]
+            parent[x] = root
+            x = nxt
+        return root
+
+    def union(a, b):
+        ra, rb = find(a), find(b)
+        if ra != rb:
+            # Lexicographic root keeps the result independent of input order.
+            if ra < rb:
+                parent[rb] = ra
+            else:
+                parent[ra] = rb
+
+    missing_reasons = Counter()
+    for oid in sorted(objects):
+        obj = objects[oid]
+        if obj.get("object_type") not in {"PAIR", "OBSERVATION"}:
+            continue
+        if not _scope_matches(split, obj):
+            missing_reasons[(oid, "scope_mismatch")] += 1
+            continue
+        required = _required_atoms(split, obj["object_type"])
+        groups = obj.get("group_ids_by_atom", {})
+        missing = [a for a in required if not groups.get(a)]
+        if missing:
+            for atom in missing:
+                missing_reasons[(oid, f"missing_required_grouping_atom:{atom}")] += 1
+            continue
+        gids = sorted({gid for atom in required for gid in groups[atom]})
+        if not gids:
+            missing_reasons[(oid, "no_group_ids")] += 1
+            continue
+        parent[oid] = oid
+        groups_by_object[oid] = gids
+        for gid in gids:
+            previous = first_by_group.get(gid)
+            if previous is None:
+                first_by_group[gid] = oid
+            else:
+                union(oid, previous)
+
+    components = {}
+    for oid in parent:
+        root = find(oid)
+        components.setdefault(root, []).append(oid)
+
+    component_assignment = {}
+    partitions = split.get("partitions", [])
+    for root, members in components.items():
+        members = sorted(members)
+        component_id = sha256_utf8(
+            f"GROUPED_KEEP_ONE_ORIGIN|{split_id}|" + "\n".join(members) + "\n"
+        )
+        if split_id == "sealed_final_v1":
+            chosen = next((p for p in partitions if p.get("partition_role") == "SEALED_FINAL"), None)
+        else:
+            chosen = None
+            selected = apply_calibration and any(
+                _calibration_selected(objects[oid].get("study")) for oid in members
+            )
+            if selected:
+                chosen = next((p for p in partitions if p.get("partition_role") == "DEVELOPMENT"), None)
+            if chosen is None and partitions:
+                idx = int(component_id[:16], 16) % len(partitions)
+                chosen = partitions[idx]
+        if chosen is not None:
+            for oid in members:
+                component_assignment[oid] = {
+                    "partition_id": chosen["partition_id"],
+                    "partition_role": chosen["partition_role"],
+                    "component_id": component_id,
+                }
+    return component_assignment, missing_reasons
+
+
 def build_stage5(worktree: Path, out: Path, res_out: Path,
                  ordinary_pairs: Path, ordinary_obs: Path,
                  restricted_pairs: Path, restricted_obs: Path,
                  ord_elig_manifest: Path, res_elig_manifest: Path) -> Counter:
-    """Generate TaskEligibilityCells and (empty) SplitAssignments.
-
-    Only global ACTIVE objects (global_eligibility=ELIGIBLE) produce cells, and
-    only for contract-ALLOWED (task x split) rows. Because the D1 data only
-    carries SOURCE/SEQUENCE grouping atoms (the split contracts require atom
-    sets such as GENE/SEQUENCE_CLUSTER/LIBRARY_LINEAGE/TILE_FAMILY/TRANSCRIPT
-    that are not present), every cell is INELIGIBLE_WITH_REASON -> no assignment,
-    exactly as the contract §5.7.2 requires
-    (MISSING_REQUIRED_ATOM=TASK_CELL_INELIGIBLE_NO_ASSIGNMENT).
-
-    Ordinary and restricted cells are written to separate stores (dual-store
-    isolation); each store's cells are written to its own single file.
-    """
+    """Generate grouped task cells and deterministic split assignments."""
     counters = Counter()
     matrix = load_matrix(worktree / "docs" / "execution" / "task_split_contract_matrix_v3_1.yaml")
+    splits = load_splits(worktree / "docs" / "execution" / "split_registry_v3_1.yaml")
 
     # applicable rows = mapping ALLOWED
     applicable = [r for r in matrix if r["contract_mapping"] == "ALLOWED"]
@@ -659,54 +817,118 @@ def build_stage5(worktree: Path, out: Path, res_out: Path,
     for r in applicable:
         by_type_track.setdefault((r["object_type"], r["scientific_track"]), []).append(r)
 
-    def emit_cells(fh, objects, otype, track):
-        """Write one cell per active object x applicable row. Returns count."""
+    # Only active objects enter the universe. The compact D1 projection carries
+    # the region/study facts and group IDs; the fallback preserves cells as
+    # explicitly ineligible if the projection is absent.
+    ord_active = _active_object_ids(ord_elig_manifest)
+    res_active = _active_object_ids(res_elig_manifest)
+    ordinary_objects = _load_object_projection(ordinary_pairs.parent / "object_attributes.jsonl", ord_active)
+    restricted_objects = _load_object_projection(restricted_pairs.parent / "object_attributes.jsonl", res_active)
+    _ensure_object_projection(ordinary_objects, ordinary_pairs, ord_active, "PAIR", "E")
+    _ensure_object_projection(ordinary_objects, ordinary_obs, ord_active, "OBSERVATION", "F")
+    _ensure_object_projection(restricted_objects, restricted_pairs, res_active, "PAIR", "E")
+    _ensure_object_projection(restricted_objects, restricted_obs, res_active, "OBSERVATION", "F")
+
+    def emit_cells(fh, objects, out_store, apply_calibration):
+        """Write cells and one assignment per object x split contract."""
         n = 0
-        for (oid, role) in objects:
+        assignments = {}
+        evidence = Counter()
+        plans = {}
+        plan_missing = {}
+        for sid in sorted(splits):
+            plans[sid], plan_missing[sid] = _build_grouped_plan(
+                objects, splits[sid], apply_calibration,
+            )
+
+        for oid in sorted(objects):
+            obj = objects[oid]
+            otype = obj.get("object_type")
+            track = obj.get("scientific_track")
             for row in by_type_track.get((otype, track), []):
+                sid = row["split_contract_id"]
+                split = splits[sid]
+                plan = plans[sid]
+                required = _required_atoms(split, otype)
+                groups = obj.get("group_ids_by_atom", {})
+                missing = [a for a in required if not groups.get(a)]
+                if not _scope_matches(split, obj):
+                    status = "INELIGIBLE_WITH_REASON"
+                    assigned = None
+                    reason = "scope_mismatch"
+                elif missing:
+                    status = "INELIGIBLE_WITH_REASON"
+                    assigned = None
+                    reason = "missing_required_grouping_atom:" + ",".join(missing)
+                elif oid not in plan:
+                    status = "INELIGIBLE_WITH_REASON"
+                    assigned = None
+                    reason = "component_assignment_unavailable"
+                else:
+                    status = "ELIGIBLE"
+                    assigned = plan[oid]
+                    reason = "assigned_by_grouped_keep_one_origin"
+                    assignments[(oid, sid)] = assigned
+                evidence[f"{sid}|{otype}|{status}|{reason}"] += 1
                 cell = {
                     "cell_id": f"cell_{oid}_{row['task_id']}_{row['split_contract_id']}",
                     "object_id": oid,
                     "task_id": row["task_id"],
                     "split_contract_id": row["split_contract_id"],
-                    "cell_status": "INELIGIBLE_WITH_REASON",
-                    "assigned_partition_id": None,
+                    "cell_status": status,
+                    "assigned_partition_id": assigned["partition_id"] if assigned else None,
                 }
                 fh.write(json.dumps(cell, separators=(",", ":")) + "\n")
                 n += 1
+        assignment_rows = []
+        for (oid, sid), assigned in sorted(assignments.items()):
+            obj = objects[oid]
+            split = splits[sid]
+            assignment_rows.append({
+                "assignment_id": f"asg_{oid}_{sid}",
+                "object_id": oid,
+                "object_type": obj["object_type"],
+                "split_contract_id": sid,
+                "partition_id": assigned["partition_id"],
+                "partition_role": assigned["partition_role"],
+                "assignment_algorithm_id": split.get("assignment_algorithm_id", GROUP_ASSIGNMENT_ALGORITHM_ID),
+                "assignment_algorithm_sha256": split.get("assignment_algorithm_sha256", "NOT_APPLICABLE"),
+            })
+        write_jsonl(out_store / "SPLIT_ASSIGNMENTS.jsonl", assignment_rows)
+        evidence_payload = {
+            "artifact_id": "b0_grouping_cell_decision_evidence_v1",
+            "grouping_atom_projection_rule_sha256": GROUPING_ATOM_RULE_SHA256,
+            "assignment_algorithm_id": GROUP_ASSIGNMENT_ALGORITHM_ID,
+            "invented_atom_forbidden": True,
+            "counters": dict(sorted(evidence.items())),
+            "plan_missing_reasons": {
+                sid: dict(sorted((f"{oid}|{reason}", count) for (oid, reason), count in reasons.items()))
+                for sid, reasons in plan_missing.items()
+            },
+        }
+        (out_store / "GROUPING_CELL_DECISION_EVIDENCE.json").write_text(
+            json.dumps(evidence_payload, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        counters[f"{out_store.name}_split_assignments"] = len(assignment_rows)
         return n
-
-    # Only active objects enter the universe.
-    ord_active = _active_object_ids(ord_elig_manifest)
-    res_active = _active_object_ids(res_elig_manifest)
-
-    ordinary_e = [(r["pair_id"], "GENERAL_DEVELOPMENT_POOL") for r in iter_jsonl(ordinary_pairs)
-                  if r.get("scientific_track") == "E" and r["pair_id"] in ord_active]
-    ordinary_f = [(r["observation_id"], "NOT_APPLICABLE_OBSERVATION") for r in iter_jsonl(ordinary_obs)
-                  if r["observation_id"] in ord_active]
-    restricted_e = [(r["pair_id"], "SEALED_EXTERNAL_FINAL") for r in iter_jsonl(restricted_pairs)
-                    if r.get("scientific_track") == "E" and r["pair_id"] in res_active]
-    restricted_f = [(r["observation_id"], "NOT_APPLICABLE_OBSERVATION") for r in iter_jsonl(restricted_obs)
-                    if r["observation_id"] in res_active]
 
     # --- ordinary store: single file, single open ---
     with open(out / "TASK_ELIGIBILITY_UNIVERSE.jsonl", "w", encoding="utf-8") as fh:
-        counters["ordinary_e_cells"] = emit_cells(fh, ordinary_e, "PAIR", "E")
-        counters["ordinary_f_cells"] = emit_cells(fh, ordinary_f, "OBSERVATION", "F")
+        counters["ordinary_cells_total"] = emit_cells(
+            fh, ordinary_objects, out, True,
+        )
 
     # --- restricted store: single file, single open ---
     with open(res_out / "TASK_ELIGIBILITY_UNIVERSE.jsonl", "w", encoding="utf-8") as fh:
-        counters["restricted_e_cells"] = emit_cells(fh, restricted_e, "PAIR", "E")
-        counters["restricted_f_cells"] = emit_cells(fh, restricted_f, "OBSERVATION", "F")
+        counters["restricted_cells_total"] = emit_cells(
+            fh, restricted_objects, res_out, False,
+        )
 
-    counters["ordinary_cells_total"] = counters["ordinary_e_cells"] + counters["ordinary_f_cells"]
-    counters["restricted_cells_total"] = counters["restricted_e_cells"] + counters["restricted_f_cells"]
-
-    # assignments: none (all cells INELIGIBLE because required atoms are absent)
-    write_jsonl(out / "SPLIT_ASSIGNMENTS.jsonl", [])
-    write_jsonl(res_out / "SPLIT_ASSIGNMENTS.jsonl", [])
-    counters["ordinary_split_assignments"] = 0
-    counters["restricted_split_assignments"] = 0
+    counters["ordinary_e_objects"] = sum(1 for x in ordinary_objects.values() if x.get("object_type") == "PAIR")
+    counters["ordinary_f_objects"] = sum(1 for x in ordinary_objects.values() if x.get("object_type") == "OBSERVATION")
+    counters["restricted_e_objects"] = sum(1 for x in restricted_objects.values() if x.get("object_type") == "PAIR")
+    counters["restricted_f_objects"] = sum(1 for x in restricted_objects.values() if x.get("object_type") == "OBSERVATION")
     return counters
 
 

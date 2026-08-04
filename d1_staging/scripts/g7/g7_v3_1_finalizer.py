@@ -212,14 +212,14 @@ def append_access_event(sealed_gse: Path, now: str, intent: str = "G7_RESTRICTED
     return payload
 
 
-def compute_viability(b0_validator_log: dict, fm0_audit: dict, split_assignments: int) -> dict:
+def compute_viability(b0_validator_log: dict, fm0_audit: dict, split_assignments: int,
+                      assignment_summary: dict) -> dict:
     """Recompute ResourceViability and bind denominators / analysis units.
 
     Fails closed to LIMITED_DEVELOPMENT_ONLY unless a confirmatory 5-UTR task
-    meets the independent-unit/study/partition/CI thresholds (see
-    resource_viability_rule_v3_1.yaml). Because the D1 grouping atoms are not
-    materialized, split assignments == 0 and no non-empty source/study-disjoint
-    partition can be formed, so PUBLICATION_GRADE_CANDIDATE is not asserted.
+    meets the independent-unit/study/partition/CI thresholds. The assignment
+    summary is generated from the fresh ordinary B0 split file and D1 compact
+    object projection; no model or final-evaluator access is involved.
     """
     counters = b0_validator_log.get("counters", {})
     ord_pairs = counters.get("_ordinary_pairs", 0)
@@ -227,17 +227,35 @@ def compute_viability(b0_validator_log: dict, fm0_audit: dict, split_assignments
     res_pairs = counters.get("_restricted_pairs", 0)
     res_obs = counters.get("_restricted_obs", 0)
     n_clusters = len(fm0_audit.get("clusters", {}))
-    # 5-UTR independent-unit proxy (E pairs + F observations across 5-UTR clusters)
-    five_utr_e = sum(c.get("e_pairs", 0) for c in fm0_audit.get("clusters", {}).values()
-                     if c.get("region") == "5UTR")
-    five_utr_f = sum(c.get("f_observations", 0) for c in fm0_audit.get("clusters", {}).values()
-                     if c.get("region") == "5UTR")
-    # 3-UTR scope is exploratory-only.
+    five_utr_e = assignment_summary.get("five_utr_e_units", 0)
+    five_utr_f = assignment_summary.get("five_utr_f_units", 0)
+    five_utr_studies = assignment_summary.get("five_utr_e_studies", 0)
+    source_units = assignment_summary.get("five_utr_source_units", 0)
+    study_units = assignment_summary.get("five_utr_study_units", 0)
+    # Contract publication-grade thresholds are deliberately stronger than
+    # engineering closure and CI precision is not asserted by B0.
+    publication_gates = {
+        "five_utr_independent_units_ge_500": five_utr_e >= 500,
+        "five_utr_studies_ge_5": five_utr_studies >= 5,
+        "source_disjoint_partition_nonempty": source_units > 0,
+        "study_disjoint_partition_nonempty": study_units > 0,
+        "group_aware_ci_precision_pass": False,
+        "action_specific_strata_ge_100": False,
+        "no_single_study_or_library_over_70_percent": False,
+    }
+    publication_grade = all(publication_gates.values())
+    if publication_grade:
+        viability_status = "PUBLICATION_GRADE_CANDIDATE"
+    elif five_utr_e > 0 and (source_units > 0 or study_units > 0):
+        viability_status = "LIMITED_DEVELOPMENT_ONLY"
+    else:
+        viability_status = "NOT_VIABLE"
+    failed_gates = [k for k, passed in publication_gates.items() if not passed]
     viability = {
         "assessment_id": f"g7_{G7_RUN_ID}_resource_viability",
         "schema_version": SCHEMA_VERSION,
         "contract_id": CONTRACT_ID,
-        "resource_viability_status": "LIMITED_DEVELOPMENT_ONLY",
+        "resource_viability_status": viability_status,
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "denominators": {
             "ordinary_e_pairs": ord_pairs,
@@ -248,24 +266,83 @@ def compute_viability(b0_validator_log: dict, fm0_audit: dict, split_assignments
             "five_utr_e_pairs": five_utr_e,
             "five_utr_f_observations": five_utr_f,
             "split_assignments": split_assignments,
+            "five_utr_e_studies": five_utr_studies,
+            "five_utr_source_units": source_units,
+            "five_utr_study_units": study_units,
         },
         "analysis_units": {
             "global_unique_object_e": ord_pairs,
             "global_unique_object_f": ord_obs,
-            "task_eligibility_cell_denominator": "NOT_MEANINGFUL_SPLIT_UNASSIGNED",
+            "task_eligibility_cell_denominator": "FROZEN_TASK_SPLIT_CELLS",
         },
         "evidence_hashes": {
             "b0_validator_log_sha256": b0_validator_log.get("_sha256", ""),
             "resource_viability_rule": "resource_viability_rule_v3_1.yaml",
         },
-        "publication_grade_candidate": False,
-        "reason": ("split_assignments=0: no non-empty source/study-disjoint partition can be "
-                   "formed because the D1 canonical lacks the required grouping atoms "
-                   "(GENE/SEQUENCE_CLUSTER/LIBRARY_LINEAGE/TILE_FAMILY/TRANSCRIPT/STUDY); "
-                   "3-UTR scope = EXPLORATORY_ONLY"),
+        "publication_grade_candidate": publication_grade,
+        "publication_grade_gates": publication_gates,
+        "failed_publication_grade_gates": failed_gates,
+        "reason": (
+            "publication-grade candidate gates are all PASS"
+            if publication_grade
+            else "publication-grade candidate not asserted; failed gates: " + ",".join(failed_gates)
+        ),
         "note": "Engineering/data closure PASS is reported separately from resource viability.",
     }
     return viability
+
+
+def summarize_benchmark_assignments(benchmark: Path, ordinary_d1: Path) -> dict:
+    """Aggregate fresh ordinary assignment counts without reading labels."""
+    split_ids = (
+        "5utr_source_disjoint", "5utr_study_disjoint",
+        "5utr_sequence_cluster_disjoint", "3utr_source_or_variant_disjoint",
+        "3utr_study_disjoint", "3utr_sequence_cluster_disjoint",
+    )
+    ids_by_split_type = {
+        (sid, "PAIR"): set() for sid in split_ids
+    }
+    ids_by_split_type.update({(sid, "OBSERVATION"): set() for sid in split_ids})
+    by_split = Counter()
+    for row in iter_jsonl(benchmark / "SPLIT_ASSIGNMENTS.jsonl"):
+        sid = row.get("split_contract_id")
+        otype = row.get("object_type")
+        by_split[sid] += 1
+        key = (sid, otype)
+        if key in ids_by_split_type:
+            ids_by_split_type[key].add(row.get("object_id"))
+
+    five_e_ids = (
+        ids_by_split_type[("5utr_source_disjoint", "PAIR")]
+        | ids_by_split_type[("5utr_study_disjoint", "PAIR")]
+    )
+    five_f_ids = (
+        ids_by_split_type[("5utr_sequence_cluster_disjoint", "OBSERVATION")]
+        | ids_by_split_type[("5utr_study_disjoint", "OBSERVATION")]
+    )
+    study_ids = set()
+    attrs_path = ordinary_d1 / "object_attributes.jsonl"
+    if attrs_path.exists() and five_e_ids:
+        for row in iter_jsonl(attrs_path):
+            if row.get("object_id") in five_e_ids and row.get("region_scope") == "5UTR":
+                study = row.get("study")
+                if study:
+                    study_ids.add(study)
+
+    return {
+        "by_split": dict(sorted(by_split.items())),
+        "five_utr_e_units": len(five_e_ids),
+        "five_utr_f_units": len(five_f_ids),
+        "five_utr_e_studies": len(study_ids),
+        "five_utr_source_units": len(ids_by_split_type[("5utr_source_disjoint", "PAIR")]),
+        "five_utr_study_units": len(ids_by_split_type[("5utr_study_disjoint", "PAIR")]),
+        "source_or_study_disjoint_assignments": sum(
+            by_split[sid] for sid in (
+                "5utr_source_disjoint", "5utr_study_disjoint",
+                "3utr_source_or_variant_disjoint", "3utr_study_disjoint",
+            )
+        ),
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -273,28 +350,32 @@ def compute_viability(b0_validator_log: dict, fm0_audit: dict, split_assignments
 # ---------------------------------------------------------------------------
 
 
-def build_data_blockers(fresh: dict, b0_log: dict, audit: dict) -> list[dict]:
+def build_data_blockers(fresh: dict, b0_log: dict, audit: dict,
+                        assignment_summary: dict, viability: dict) -> list[dict]:
     """One row per data_goal_required_blocker_id with honest closure state."""
     rows = []
-    # DB_01 — cannot be closed inside this Goal (D1 data extension / rebuild needed).
+    # DB_01 closes only when a fresh, source/study-disjoint assignment exists;
+    # resource viability is evaluated separately and may still remain limited.
+    db01_closed = assignment_summary.get("source_or_study_disjoint_assignments", 0) > 0
     rows.append({
         "blocker_id": "DB_01_SPLIT_GROUPING_ATOMS_MISSING",
         "domain": "DATA",
-        "closure_status": "OPEN_WITH_EVIDENCE",
+        "closure_status": "CLOSED_WITH_EVIDENCE" if db01_closed else "OPEN_WITH_EVIDENCE",
         "statement": (
-            "B0 split assignments = 0: the benchmark cannot form a usable "
-            "anti-leakage partition because the D1 canonical lacks the grouping "
-            "atoms required by the split contracts (GENE / SEQUENCE_CLUSTER / "
-            "LIBRARY_LINEAGE / TILE_FAMILY / TRANSCRIPT / STUDY)."),
+            "Fresh D1 grouping-atom projection and B0 grouped split assignment "
+            "formed a non-empty source/study-disjoint partition."
+            if db01_closed else
+            "Fresh B0 still has no source/study-disjoint assignment; required "
+            "grouping atoms remain absent for every applicable cell."),
         "evidence": [
-            "SPLIT_ASSIGNMENTS.jsonl (0 rows)",
-            "TASK_ELIGIBILITY_UNIVERSE.jsonl all cells INELIGIBLE_WITH_REASON",
-            "RESOURCE_VIABILITY_ASSESSMENT.json = LIMITED_DEVELOPMENT_ONLY",
+            f"SPLIT_ASSIGNMENTS.jsonl source/study assignments={assignment_summary.get('source_or_study_disjoint_assignments', 0)}",
+            f"fresh assignment counts={assignment_summary.get('by_split', {})}",
+            "GROUPING_ATOM_PROJECTION.json and GROUPING_CELL_DECISION_EVIDENCE.json",
         ],
-        "path": "extend D1 data / rebuild technical canonical to materialize grouping atoms, then re-run B0 eligibility/split/seal",
+        "path": "retain the fresh atom projection and re-evaluate residual resource gates in G7",
         "closure_condition": "a re-run of B0 produces >=1 non-empty source/study-disjoint partition with assignments>0 and global/cell pending=0",
-        "owner": "user (data acquisition / scope decision)",
-        "closed_in_goal": False,
+        "owner": "none" if db01_closed else "user (data acquisition / scope decision)",
+        "closed_in_goal": db01_closed,
     })
     rows.append({
         "blocker_id": "DB_02_GSE246381_ROW_ISOLATION",
@@ -349,9 +430,9 @@ def build_data_blockers(fresh: dict, b0_log: dict, audit: dict) -> list[dict]:
         "blocker_id": "DB_06_RESOURCE_VIABILITY_BINDING",
         "domain": "RESOURCE",
         "closure_status": "CLOSED_WITH_EVIDENCE",
-        "statement": "ResourceViability recomputed and bound to denominators/analysis units/evidence hashes; status=LIMITED_DEVELOPMENT_ONLY.",
+        "statement": "ResourceViability recomputed and bound to denominators/analysis units/evidence hashes; the grade is reported without being promoted to publication success.",
         "evidence": ["G7 viability assessment (this run)",
-                     "RESOURCE_VIABILITY_ASSESSMENT.json = LIMITED_DEVELOPMENT_ONLY"],
+                     f"RESOURCE_VIABILITY_ASSESSMENT.json = {viability.get('resource_viability_status')}"],
         "path": "no action; the assessment itself is complete and honest",
         "closure_condition": "already satisfied (binding is complete; grade not achieved)",
         "owner": "none",
@@ -476,10 +557,11 @@ def main() -> int:
         b0_log["_sha256"] = sha256_file(b0_log_path)
     b0_validator_pass = b0_log.get("validator") == "PASS" and b0_log.get("total_errors") == 0
 
-    # split assignments count (small file, 0 rows)
+    # split assignments count + fresh ordinary atom-projection summary
     split_assignments = 0
     for _ in iter_jsonl(bench / "SPLIT_ASSIGNMENTS.jsonl"):
         split_assignments += 1
+    assignment_summary = summarize_benchmark_assignments(bench, od)
 
     # ---- 3. GSE access audit ----
     # Record the G7 closure as a non-analytic machine event in the restricted
@@ -503,11 +585,14 @@ def main() -> int:
             pass
 
     # ---- 5. ResourceViability ----
-    viability = compute_viability(b0_log, fm0_audit, split_assignments)
+    viability = compute_viability(
+        b0_log, fm0_audit, split_assignments, assignment_summary,
+    )
 
     # ---- 6. blockers ----
     data_blockers = build_data_blockers({"d1": d1, "fm0": fm0, "b0_light": b0_light,
-                                          "pytest": pytest}, b0_log, audit)
+                                          "pytest": pytest}, b0_log, audit,
+                                         assignment_summary, viability)
     model_blockers = build_model_blockers()
 
     # set-equality: each ledger covers exactly the required id set; intersection empty.
@@ -580,6 +665,7 @@ def main() -> int:
             "data/v3_1/benchmark/* (B0 artifacts)",
         ],
         "resource_viability": viability,
+        "fresh_assignment_summary": assignment_summary,
         "terminal_status": terminal,
         "done_generated": write_done,
         "gp0_status": GP0_STATUS,
@@ -610,9 +696,12 @@ def main() -> int:
         "data_gates_engineering_closure": "PASS" if all_data_gates_engineering else "FAIL",
         "data_goal_closed": data_goal_closed,
         "done_generated": write_done,
-        "note": ("BLOCKED_WITH_EVIDENCE: benchmark cannot form a usable anti-leakage "
-                 "partition (D1 grouping atoms missing) and resource_viability_status="
-                 "LIMITED_DEVELOPMENT_ONLY; no DONE. GP0 remains LOCKED_NOT_AUTHORIZED."),
+        "note": (
+            "DONE is withheld unless publication-grade viability is PASS; "
+            f"fresh assignment summary={assignment_summary}; "
+            f"resource_viability_status={viability['resource_viability_status']}. "
+            "GP0 remains LOCKED_NOT_AUTHORIZED."
+        ),
     }
     write_json(run / "STATUS.json", status)
 
@@ -635,7 +724,7 @@ def main() -> int:
     report = build_goal_report(
         git_head, now, d1, fm0, pytest, b0_light, b0_log, b0_validator_pass,
         audit, viability, data_blockers, model_blockers, data_set_ok, model_set_ok,
-        inter_empty, terminal, write_done, split_assignments)
+        inter_empty, terminal, write_done, split_assignments, assignment_summary)
     (run / "GOAL_REPORT.md").write_text(report, encoding="utf-8")
 
     # ---- 15. G7_STATUS / G7_MANIFEST / G7_SHA256SUMS ----
@@ -692,7 +781,8 @@ def main() -> int:
 
 def build_goal_report(git_head, now, d1, fm0, pytest, b0_light, b0_log, b0_validator_pass,
                       audit, viability, data_blockers, model_blockers, data_set_ok,
-                      model_set_ok, inter_empty, terminal, write_done, split_assignments) -> str:
+                      model_set_ok, inter_empty, terminal, write_done, split_assignments,
+                      assignment_summary) -> str:
     d1_pass = d1["exit_code"] == 0 and d1.get("stdout", {}).get("total_errors", 1) == 0
     fm0_pass = fm0["exit_code"] == 0 and fm0.get("stdout", {}).get("total_errors", 1) == 0
     pytest_pass = pytest["exit_code"] == 0
@@ -710,6 +800,7 @@ def build_goal_report(git_head, now, d1, fm0, pytest, b0_light, b0_log, b0_valid
     lines.append(f"- gp0_status: {GP0_STATUS}")
     lines.append(f"- resource_viability_status: {viability['resource_viability_status']}")
     lines.append(f"- split_assignments: {split_assignments}")
+    lines.append(f"- fresh_assignment_summary: {json.dumps(assignment_summary, sort_keys=True)}")
     lines.append("")
     lines.append("## Stage status")
     lines.append("")
@@ -724,13 +815,12 @@ def build_goal_report(git_head, now, d1, fm0, pytest, b0_light, b0_log, b0_valid
     lines.append("")
     lines.append("## Benchmark partition root cause")
     lines.append("")
-    lines.append("The benchmark cannot form a usable anti-leakage partition: **all split "
-                 "assignments = 0** because the D1 technical canonical lacks the grouping "
-                 "atoms required by the split contracts (GENE / SEQUENCE_CLUSTER / "
-                 "LIBRARY_LINEAGE / TILE_FAMILY / TRANSCRIPT / STUDY). Every task/split "
-                 "eligibility cell is INELIGIBLE_WITH_REASON, so no source/study-disjoint "
-                 "partition with assignments>0 can be formed. This is a data blocker "
-                 "(DB_01) that cannot be closed inside this Goal.")
+    lines.append("The fresh D1 projection uses only provenance-bound grouping atoms and "
+                 "the fresh B0 builder materializes grouped assignments. Missing atoms "
+                 "remain INELIGIBLE_WITH_REASON; no sentinel group IDs are created. "
+                 f"Assignment summary: {json.dumps(assignment_summary, sort_keys=True)}. "
+                 "DB_01 is closed only when a non-empty source/study-disjoint assignment "
+                 "is evidenced; resource viability remains an independent gate.")
     lines.append("")
     lines.append("## Resource viability")
     lines.append("")
@@ -771,16 +861,16 @@ def build_goal_report(git_head, now, d1, fm0, pytest, b0_light, b0_log, b0_valid
         lines.append("All data gates PASS and resource_viability_status=PUBLICATION_GRADE_CANDIDATE; "
                      "terminal = DATA_BENCHMARK_V1_CLOSED_READY_FOR_MODEL_REBIND; DONE generated.")
     else:
-        lines.append("BLOCKED_WITH_EVIDENCE: the data Goal is not fully closed "
-                     "(DB_01_SPLIT_GROUPING_ATOMS_MISSING is OPEN_WITH_EVIDENCE) and "
-                     "resource_viability_status=LIMITED_DEVELOPMENT_ONLY. No DONE is generated.")
+        lines.append("BLOCKED_WITH_EVIDENCE: the fresh data/benchmark result does not meet "
+                     "all terminal requirements; see blocker ledger and failed "
+                     f"publication-grade gates. resource_viability_status={viability['resource_viability_status']}. "
+                     "No DONE is generated.")
     lines.append("")
     lines.append("## Next steps for the user")
     lines.append("")
-    lines.append("1. **Extend data**: acquire/rebuild D1 data so the grouping atoms "
-                 "(GENE / SEQUENCE_CLUSTER / LIBRARY_LINEAGE / TILE_FAMILY / TRANSCRIPT / "
-                 "STUDY) are materialized, then re-run B0 eligibility/split/seal and G7. "
-                 "Only then can PUBLICATION_GRADE_CANDIDATE be reassessed.")
+    lines.append("1. Review the fresh grouping-atom coverage and the failed "
+                 "publication-grade gates; acquire/rebuild only the missing "
+                 "provenance-bearing fields before a future B0/G7 rerun.")
     lines.append("2. **Narrow the paper scope**: drop the split/anti-leakage benchmark "
                  "objective and report only the data/engineering/closure transparency "
                  "results (no model-rebind publication), accepting the "
