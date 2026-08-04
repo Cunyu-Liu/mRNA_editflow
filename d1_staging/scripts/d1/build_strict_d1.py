@@ -856,6 +856,58 @@ class StrictBuilder:
                 raw_id=getattr(self, "current_raw_id", None),
             )
 
+    def emit_transformation(self, bundle: Bundle, child_id: str, object_type: str, new_hash: str, locator: str, evidence: list[str], raw_line_sha: str | None = None, raw_id: str | None = None) -> None:
+        old_id = raw_id or f"RAW_UNIT:{bundle.shard}:{safe_id(locator)}"
+        old_hash = raw_line_sha or sha_text(locator)
+        base = {
+            "edge_id": f"EDGE:{safe_id(bundle.shard + '|' + old_id + '|' + child_id)}",
+            "old_object_id": old_id,
+            "old_object_sha256": old_hash,
+            "parent_object_id": old_id,
+            "new_object_id": child_id,
+            "new_object_sha256": new_hash,
+            "child_object_id": child_id,
+            "object_type": object_type,
+            "reason": "D1_RAW_UNIT_TO_CANONICAL_OBJECT",
+            "run_id": self.run_id,
+            "code_commit": self.code_commit,
+            "config_hash": self.config_hash,
+            "supersession_edge_id": None,
+        }
+        row = self_hash_row(base, "edge_sha256")
+        bundle.emit("TRANSFORMATION_EDGES", row)
+        self.counts[f"transformation_edges:{bundle.shard}"] += 1
+
+    def emit_rejection(self, bundle: Bundle, accession: str, record_id: str, reason: str, locator: str, assets: list[str], source_unit_id: str | None = None, terminal: str | None = None) -> str:
+        rid = f"REJ:{bundle.shard}:{safe_id(record_id + '|' + locator + '|' + reason)}"
+        row = {
+            "rejection_id": rid,
+            "candidate_id": f"CANDIDATE_REJECTED:{safe_id(record_id + '|' + locator)}",
+            "reason": reason,
+            "evidence_id": f"EVIDENCE:{safe_id(record_id + '|' + locator)}",
+            "rejected_at": "D1",
+            "source_unit_id": source_unit_id,
+            "source_row_locator": locator,
+            "asset_ids": sorted(set(assets)),
+            "disposition_status": "QUARANTINED" if "LEGACY" in reason or "NO_BINDABLE" in reason else "REJECTED",
+            "terminal_disposition_reason": terminal or reason,
+        }
+        bundle.emit("REJECTIONS", row)
+        self.emit_transformation(
+            bundle,
+            rid,
+            "REJECTION",
+            sha_json(row),
+            locator,
+            [row["evidence_id"]],
+            raw_line_sha=getattr(self, "current_raw_sha", None),
+            raw_id=getattr(self, "current_raw_id", None),
+        )
+        self.rejection_counts[reason] += 1
+        self.shard_rejection_counts[bundle.shard][reason] += 1
+        self.counts[f"rejections:{bundle.shard}"] += 1
+        return rid
+
     def emit_current_projection(self, bundle: Bundle, object_type: str, object_id: str, object_hash: str, accepted: bool) -> None:
         base = {
             "projection_record_id": f"PROJECTION:{safe_id(bundle.shard + '|' + object_id)}",
@@ -2079,56 +2131,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
-
-    def emit_transformation(self, bundle: Bundle, child_id: str, object_type: str, new_hash: str, locator: str, evidence: list[str], raw_line_sha: str | None = None, raw_id: str | None = None) -> None:
-        old_id = raw_id or f"RAW_UNIT:{bundle.shard}:{safe_id(locator)}"
-        old_hash = raw_line_sha or sha_text(locator)
-        base = {
-            "edge_id": f"EDGE:{safe_id(bundle.shard + '|' + old_id + '|' + child_id)}",
-            "old_object_id": old_id,
-            "old_object_sha256": old_hash,
-            "parent_object_id": old_id,
-            "new_object_id": child_id,
-            "new_object_sha256": new_hash,
-            "child_object_id": child_id,
-            "object_type": object_type,
-            "reason": "D1_RAW_UNIT_TO_CANONICAL_OBJECT",
-            "run_id": self.run_id,
-            "code_commit": self.code_commit,
-            "config_hash": self.config_hash,
-            "supersession_edge_id": None,
-        }
-        row = self_hash_row(base, "edge_sha256")
-        bundle.emit("TRANSFORMATION_EDGES", row)
-        self.counts[f"transformation_edges:{bundle.shard}"] += 1
-
-    def emit_rejection(self, bundle: Bundle, accession: str, record_id: str, reason: str, locator: str, assets: list[str], source_unit_id: str | None = None, terminal: str | None = None) -> str:
-        rid = f"REJ:{bundle.shard}:{safe_id(record_id + '|' + locator + '|' + reason)}"
-        row = {
-            "rejection_id": rid,
-            "candidate_id": f"CANDIDATE_REJECTED:{safe_id(record_id + '|' + locator)}",
-            "reason": reason,
-            "evidence_id": f"EVIDENCE:{safe_id(record_id + '|' + locator)}",
-            "rejected_at": "D1",
-            "source_unit_id": source_unit_id,
-            "source_row_locator": locator,
-            "asset_ids": sorted(set(assets)),
-            "disposition_status": "QUARANTINED" if "LEGACY" in reason or "NO_BINDABLE" in reason else "REJECTED",
-            "terminal_disposition_reason": terminal or reason,
-        }
-        bundle.emit("REJECTIONS", row)
-        self.emit_transformation(
-            bundle,
-            rid,
-            "REJECTION",
-            sha_json(row),
-            locator,
-            [row["evidence_id"]],
-            raw_line_sha=getattr(self, "current_raw_sha", None),
-            raw_id=getattr(self, "current_raw_id", None),
-        )
-        self.rejection_counts[reason] += 1
-        self.shard_rejection_counts[bundle.shard][reason] += 1
-        self.counts[f"rejections:{bundle.shard}"] += 1
-        return rid
