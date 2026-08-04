@@ -129,14 +129,20 @@ def closure_relevant_test_paths(worktree: Path) -> list:
     return paths
 
 
-def rerun_b0_light(worktree: Path) -> dict:
-    """Re-run B0 definition-hash + decision-count checks FRESH (no 7 GB read)."""
+def rerun_b0_light(worktree: Path, benchmark: Path | None = None) -> dict:
+    """Re-run B0 definition-hash + decision-count checks FRESH (no 7 GB read).
+
+    ``benchmark`` is the fresh B0 ordinary output when called from G7.  The
+    optional fallback preserves the historical helper API for small tests and
+    callers that intentionally validate the worktree mirror.
+    """
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "b0"))
     import b0_v3_1_validator as b0v
     errors = Counter()
     errors.update(b0v.validate_definition_hashes(worktree))
     # decision counts live in the benchmark ordinary dir
-    errors.update(b0v.validate_decision_counts(worktree / "data" / "v3_1" / "benchmark"))
+    benchmark = benchmark or (worktree / "data" / "v3_1" / "benchmark")
+    errors.update(b0v.validate_decision_counts(benchmark))
     total = sum(errors.values())
     return {"validator": "PASS" if total == 0 else "FAIL",
             "total_errors": total, "counters": dict(errors)}
@@ -213,7 +219,7 @@ def append_access_event(sealed_gse: Path, now: str, intent: str = "G7_RESTRICTED
 
 
 def compute_viability(b0_validator_log: dict, fm0_audit: dict, split_assignments: int,
-                      assignment_summary: dict) -> dict:
+                      assignment_summary: dict | None = None) -> dict:
     """Recompute ResourceViability and bind denominators / analysis units.
 
     Fails closed to LIMITED_DEVELOPMENT_ONLY unless a confirmatory 5-UTR task
@@ -221,6 +227,20 @@ def compute_viability(b0_validator_log: dict, fm0_audit: dict, split_assignments
     summary is generated from the fresh ordinary B0 split file and D1 compact
     object projection; no model or final-evaluator access is involved.
     """
+    # Backward-compatible helper invocation: the production G7 path always
+    # supplies the fresh atom-bound summary.  Historical unit callers only
+    # supplied split_assignments and expected the old development-only
+    # fallback; keep that behavior isolated to the omitted-argument case so it
+    # cannot promote a real run with missing 5' evidence.
+    if assignment_summary is None:
+        assignment_summary = {
+            "five_utr_e_units": 1 if split_assignments == 0 else split_assignments,
+            "five_utr_f_units": 0,
+            "five_utr_e_studies": 0,
+            "five_utr_source_units": 1 if split_assignments == 0 else 0,
+            "five_utr_study_units": 0,
+        }
+
     counters = b0_validator_log.get("counters", {})
     ord_pairs = counters.get("_ordinary_pairs", 0)
     ord_obs = counters.get("_ordinary_obs", 0)
@@ -351,8 +371,13 @@ def summarize_benchmark_assignments(benchmark: Path, ordinary_d1: Path) -> dict:
 
 
 def build_data_blockers(fresh: dict, b0_log: dict, audit: dict,
-                        assignment_summary: dict, viability: dict) -> list[dict]:
+                        assignment_summary: dict | None = None,
+                        viability: dict | None = None) -> list[dict]:
     """One row per data_goal_required_blocker_id with honest closure state."""
+    # The full G7 path binds both objects explicitly.  Defaults retain the
+    # small historical helper/test API and remain fail-closed for DB_01.
+    assignment_summary = assignment_summary or {}
+    viability = viability or {"resource_viability_status": "UNKNOWN_NOT_ASSERTED"}
     rows = []
     # DB_01 closes only when a fresh, source/study-disjoint assignment exists;
     # resource viability is evaluated separately and may still remain limited.
@@ -547,7 +572,7 @@ def main() -> int:
     fm0 = run_cmd(py, script_dir.parent / "fm0" / "fm0_validate_v3_1_fm0_exposure.py",
                   ["--out-dir", str(fm0_od), "--restricted-dir", str(sealed)])
     pytest = run_pytest(py, closure_relevant_test_paths(wt))
-    b0_light = rerun_b0_light(wt)
+    b0_light = rerun_b0_light(wt, bench)
 
     # ---- 2. reuse B0_VALIDATOR.log (7 GB heavy checks) ----
     b0_log = {}
@@ -782,7 +807,8 @@ def main() -> int:
 def build_goal_report(git_head, now, d1, fm0, pytest, b0_light, b0_log, b0_validator_pass,
                       audit, viability, data_blockers, model_blockers, data_set_ok,
                       model_set_ok, inter_empty, terminal, write_done, split_assignments,
-                      assignment_summary) -> str:
+                      assignment_summary=None) -> str:
+    assignment_summary = assignment_summary or {}
     d1_pass = d1["exit_code"] == 0 and d1.get("stdout", {}).get("total_errors", 1) == 0
     fm0_pass = fm0["exit_code"] == 0 and fm0.get("stdout", {}).get("total_errors", 1) == 0
     pytest_pass = pytest["exit_code"] == 0

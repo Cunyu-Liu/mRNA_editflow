@@ -140,8 +140,13 @@ def _assignment_summary(path: Path) -> dict:
 
 
 def materialize_ordinary(out: Path, ordinary_pairs: Path, ordinary_obs: Path,
-                         worktree: Path, benchmark_out: Path) -> None:
+                         worktree: Path, benchmark_out: Path | None = None) -> None:
     """Write the ordinary components the builder does not produce."""
+    # Keep the helper callable by the pre-existing unit-test/API surface.  In
+    # the full B0-R path the benchmark directory is passed explicitly; older
+    # callers only supplied the ordinary output directory, which is also the
+    # natural fallback for an unmaterialized fixture.
+    benchmark_out = benchmark_out or out
     now = datetime.now(timezone.utc).isoformat()
 
     # FIVE_SCALE_DATA_CARD
