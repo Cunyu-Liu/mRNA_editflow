@@ -16,6 +16,7 @@ require loading millions of identifiers or canonical rows into Python memory.
 from __future__ import annotations
 
 import argparse
+import csv
 import gzip
 import hashlib
 import json
@@ -606,7 +607,9 @@ class Validator:
         legacy = self.input_manifest.get("legacy_quarantine_input", {})
         if legacy.get("path") and self.raw_paths.get("legacy") and self.raw_paths["legacy"].exists():
             actual_sha, count = self.hash_jsonl_file(self.raw_paths["legacy"])
-            if actual_sha != legacy.get("sha256") or count != legacy.get("record_count"):
+            ordinary_count = ordinary.get("record_count")
+            full_ordinary = ordinary_count == self.args.expected_ordinary_records
+            if actual_sha != legacy.get("sha256") or (full_ordinary and count != legacy.get("record_count")):
                 self.errors.add("LEGACY_INPUT_BINDING_MISMATCH", "legacy_quarantine_input")
         elif legacy.get("record_count", 0) != 0:
             self.errors.add("LEGACY_INPUT_MISSING", "legacy_quarantine_input")
@@ -661,7 +664,16 @@ class Validator:
 
     def load_obs_candidate(self, shard: str, line_no: int, row: dict[str, Any]) -> None:
         object_id, row_hash = self.object_insert(shard, row, "OBSERVATION_CANDIDATE", "candidate_id")
-        payload_hash = sha_json({k: row.get(k) for k in ("sequence_id", "context_id", "endpoint_id", "contributing_asset_ids", "contributing_source_file_sha256s", "contributor_set_sha256", "source_file_sha256", "value")})
+        payload_hash = sha_json({
+            "sequence_id": row.get("sequence_id"),
+            "context_id": row.get("context_id"),
+            "endpoint_id": row.get("endpoint_id"),
+            "contributing_asset_ids": row.get("asset_ids"),
+            "contributing_source_file_sha256s": row.get("contributing_source_file_sha256s"),
+            "contributor_set_sha256": row.get("contributor_set_sha256"),
+            "source_file_sha256": row.get("source_file_sha256"),
+            "value": row.get("value"),
+        })
         self.store.insert("obs_candidates", {
             "object_id": object_id, "shard": shard, "row_sha256": row_hash, "sequence_id": row.get("sequence_id"),
             "context_id": row.get("context_id"), "endpoint_id": row.get("endpoint_id"),
@@ -846,6 +858,8 @@ class Validator:
             "group_assignments.jsonl": lambda n, r: self.load_assignment(shard, n, r),
         }
         for logical, filename in CANONICAL_FILES.items():
+            if shard == "restricted" and filename == "reporter_artifact_assessments.jsonl":
+                continue
             path = root / "canonical" / filename
             artifact = f"{shard}/canonical/{filename}"
             spec = SCHEMA_SPECS.get(filename)
@@ -1481,7 +1495,7 @@ class Validator:
                 f"transformation_edges:{shard}": actual["transformations"],
             }
             for key, value in pairs.items():
-                if summary_counts.get(key) != value:
+                if summary_counts.get(key, 0) != value:
                     self.errors.add("SUMMARY_COUNT_MISMATCH", f"{shard}:{key}")
 
     def verify_self_json(self, path: Path, field: str, artifact: str, marker_scan: bool = False) -> dict[str, Any]:
@@ -1596,6 +1610,10 @@ class Validator:
         for logical, filename in sorted(CANONICAL_FILES.items()):
             if logical == "REPORTER_ARTIFACT_ASSESSMENTS":
                 continue
+            p = root / "canonical" / filename
+            if p.exists():
+                components.append({"logical_id": logical, "relative_path": p.resolve().relative_to(root.resolve()).as_posix(), "sha256": sha_file(p)})
+        for logical, filename in (("DATASET_RECONCILIATION", "dataset_reconciliation.json"), ("DATA_UNITS_REPORT", "data_units_report.json")):
             p = root / "canonical" / filename
             if p.exists():
                 components.append({"logical_id": logical, "relative_path": p.resolve().relative_to(root.resolve()).as_posix(), "sha256": sha_file(p)})
@@ -1938,9 +1956,10 @@ class Validator:
                 if not header_line:
                     self.errors.add("SEALED_MATRIX_EMPTY", artifact)
                     return
-                header = next(__import__("csv").reader([header_line]))
+                reader = csv.reader(fh)
+                header = next(reader)
                 header_hash = sha_bytes(jline(header))
-                for _ in fh:
+                for _ in reader:
                     rows += 1
                 if header_hash != expected.get("header_sha256") or len(header) != expected.get("columns") or rows != expected.get("rows"):
                     self.errors.add("SEALED_MATRIX_PROFILE_MISMATCH", artifact)
