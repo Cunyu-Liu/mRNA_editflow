@@ -595,7 +595,7 @@ class Validator:
     def verify_input_manifest(self) -> None:
         ordinary = self.input_manifest.get("ordinary_raw_input", {})
         if self.raw_paths.get("ordinary") and self.raw_paths["ordinary"].exists():
-            actual_sha, count = self.hash_jsonl_file(self.raw_paths["ordinary"])
+            actual_sha, count = self.hash_jsonl_file(self.raw_paths["ordinary"], ordinary.get("record_count"))
             self.raw_hashes["ordinary"] = actual_sha
             if actual_sha != ordinary.get("sha256"):
                 self.errors.add("RAW_INPUT_HASH_MISMATCH", "ordinary_raw_input")
@@ -624,7 +624,7 @@ class Validator:
         elif not c3_path.exists():
             self.errors.add("C3_PARENT_MISSING")
 
-    def hash_jsonl_file(self, path: Path) -> tuple[str, int]:
+    def hash_jsonl_file(self, path: Path, limit: int | None = None) -> tuple[str, int]:
         h = hashlib.sha256()
         count = 0
         with path.open("rb") as fh:
@@ -632,6 +632,8 @@ class Validator:
                 h.update(raw)
                 if raw.strip():
                     count += 1
+                    if limit is not None and count >= limit:
+                        break
         return h.hexdigest(), count
 
     def object_insert(self, shard: str, row: dict[str, Any], object_type: str, id_field: str) -> tuple[str, str]:
@@ -1389,6 +1391,8 @@ class Validator:
             if not path or not path.is_file():
                 self.errors.add("RAW_INPUT_MISSING", shard)
                 continue
+            target_count = self.input_manifest.get("ordinary_raw_input", {}).get("record_count") if shard == "ordinary" else self.summary.get("counts", {}).get("raw_records:restricted")
+            seen = 0
             with path.open("r", encoding="utf-8", newline="") as fh:
                 for line_no, raw_line in enumerate(fh, 1):
                     if not raw_line.strip():
@@ -1403,6 +1407,11 @@ class Validator:
                         self.errors.add("RAW_INPUT_ROW_NOT_OBJECT", shard, line_no)
                         continue
                     self.raw_record(shard, line_no, raw_line, rec, accession, path)
+                    seen += 1
+                    if target_count is not None and seen >= int(target_count):
+                        break
+            if target_count is not None and seen != int(target_count):
+                self.errors.add("RAW_INPUT_PREFIX_SHORT", shard)
         legacy = self.raw_paths.get("legacy")
         if legacy and legacy.is_file() and self.input_manifest.get("legacy_quarantine_input", {}).get("record_count", 0):
             with legacy.open("r", encoding="utf-8", newline="") as fh:
