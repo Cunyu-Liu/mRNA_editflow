@@ -1547,7 +1547,7 @@ class Validator:
         if logical_id in {"DATASET_RECONCILIATION", "DATA_UNITS_REPORT", "EXPOSURE_USE_MANIFEST"}:
             sid = "AGGREGATE_REPORT_V1"
             return sid, sha_text(sid)
-        if logical_id in {"ACCESS_SHA256SUMS", "EXPOSURE_USE_SHA256SUMS", "SEALED_CANONICAL_SHA256SUMS"}:
+        if logical_id in {"SEALED_CANONICAL_SHA256SUMS"}:
             return NON_JSON_SCHEMA_ID, NON_JSON_SCHEMA_SHA256
         mapping = {
             "SEQUENCE_ENTITIES": ("sequence_entity.schema.json", None),
@@ -1955,12 +1955,12 @@ class Validator:
         rows = 0
         try:
             with gzip.open(path, "rt", encoding="utf-8", newline="") as fh:
-                header_line = fh.readline()
-                if not header_line:
+                reader = csv.reader(fh)
+                try:
+                    header = next(reader)
+                except StopIteration:
                     self.errors.add("SEALED_MATRIX_EMPTY", artifact)
                     return
-                reader = csv.reader(fh)
-                header = next(reader)
                 header_hash = sha_bytes(jline(header))
                 for _ in reader:
                     rows += 1
@@ -1988,7 +1988,7 @@ class Validator:
 
         sealed_sums = root / "SEALED_CANONICAL_SHA256SUMS"
         sealed_payload = [sealed_input_path]
-        for filename in [*CANONICAL_FILES.values(), "dataset_reconciliation.json", "data_units_report.json"]:
+        for filename in [*CANONICAL_FILES.values(), "dataset_reconciliation.json", "data_units_report.json", "EXPOSURE_USE_MANIFEST.json", "EXPOSURE_USE_SHA256SUMS"]:
             p = root / "canonical" / filename
             if filename == "reporter_artifact_assessments.jsonl":
                 continue
