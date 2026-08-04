@@ -12,4 +12,4 @@ records:
     status: HISTORICAL_SUPERSEDED
     note: "Kept read-only; superseded by v3.1."
 active_contract: "utr_editflow_goal_v3.1_benchmark_first"
-active_contract_sha256: "<computed-at-activation>"
+active_contract_sha256: "35dd4bf27a3c7d574ab777f5d858ad1b13dcb9273bdb4961e4c30a1a94bf875"
