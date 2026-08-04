@@ -2036,6 +2036,9 @@ class StrictBuilder:
         self.write_aggregate_reports()
         self.ordinary.close_rows()
         self.restricted.close_rows()
+        restricted_reporter = self.restricted.canonical_paths["REPORTER_ARTIFACT_ASSESSMENTS"]
+        if restricted_reporter.exists() and restricted_reporter.stat().st_size == 0:
+            restricted_reporter.unlink()
         input_paths = self.write_input_manifests()
         ordinary_access = self.build_access_chain(self.ordinary)
         restricted_access = self.build_access_chain(self.restricted)
