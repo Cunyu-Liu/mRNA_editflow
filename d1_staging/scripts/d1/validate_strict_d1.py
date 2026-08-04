@@ -2040,7 +2040,7 @@ class Validator:
         self.load_shard("restricted", self.restricted_root)
         self.store.conn.commit()
         self.verify_relational_all()
-        self.verify_raw_inputs()
+        self.validate_raw_inputs()
         self.verify_raw_counts()
         ordinary_access = self.verify_access_bundle("ordinary")
         restricted_access = self.verify_access_bundle("restricted")
