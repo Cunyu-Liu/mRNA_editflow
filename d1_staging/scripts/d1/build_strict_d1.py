@@ -872,7 +872,7 @@ class StrictBuilder:
             "run_id": self.run_id,
             "code_commit": self.code_commit,
             "config_hash": self.config_hash,
-            "supersession_edge_id": None,
+            "supersession_edge_id": GENESIS,
         }
         row = self_hash_row(base, "edge_sha256")
         bundle.emit("TRANSFORMATION_EDGES", row)
@@ -893,16 +893,6 @@ class StrictBuilder:
             "terminal_disposition_reason": terminal or reason,
         }
         bundle.emit("REJECTIONS", row)
-        self.emit_transformation(
-            bundle,
-            rid,
-            "REJECTION",
-            sha_json(row),
-            locator,
-            [row["evidence_id"]],
-            raw_line_sha=getattr(self, "current_raw_sha", None),
-            raw_id=getattr(self, "current_raw_id", None),
-        )
         self.rejection_counts[reason] += 1
         self.shard_rejection_counts[bundle.shard][reason] += 1
         self.counts[f"rejections:{bundle.shard}"] += 1
@@ -923,7 +913,7 @@ class StrictBuilder:
             "chain_length": 0,
             "last_supersession_edge_id": GENESIS,
             "last_supersession_edge_sha256": GENESIS,
-            "supersession_manifest_sha256": sha_text("EMPTY_SUPERSESSION_LEDGER_V1"),
+            "supersession_manifest_sha256": sha_bytes(b""),
             "is_current_leaf_accepted": bool(accepted),
             "active": bool(accepted),
             "canonical_manifest_sha256": self.canonical_binding,
