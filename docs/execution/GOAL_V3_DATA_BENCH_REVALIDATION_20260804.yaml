@@ -1,0 +1,93 @@
+goal_id: GOAL-V3-DATA-BENCH-01
+goal_name: E/F data exhaustion, canonical rebuild and benchmark-v1 closure
+execution_status: EXPLICITLY_ACTIVATED_BY_USER_INSTRUCTION
+report_type: CONTRACT_BOUND_REVALIDATION_AND_TERMINAL_BLOCKER
+generated_at_utc: 2026-08-04
+
+contract:
+  authoritative_source: "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna 最新构建合同-先做.md"
+  remote_bound_path: "/home/cunyuliu/mrna_editflow_goal/worktrees/v3_1_data_bench_closure_20260804/docs/contracts/utr_editflow_goal_v3_1.md"
+  contract_id: utr_editflow_goal_v3.1_benchmark_first
+  sha256: 35dd4bf27a3c7d574ab777f5d858ad1b13dcb9273bdb4961e4c30a1a94bf875
+  line_count: 3390
+  byte_count: 321141
+  supersession_binding_sha256: e93a10434f4a65a63d76416859bda5a7e345bf12afcecc8892eeaad5c7463b0e
+
+source_and_isolation:
+  main_repo: /home/cunyuliu/mrna_editflow_goal/mrna_editflow
+  main_repo_head: aca6c8c31f5843105f49c30e78e78342278bdd7d
+  main_repo_branch: phase2-reliable-local-delta-20260727
+  main_repo_dirty: true
+  main_repo_dirty_scope: "pre-existing untracked/legacy paths; not modified"
+  prior_v3_worktree: /home/cunyuliu/mrna_editflow_goal/worktrees/v3_1_data_bench_closure_20260803
+  prior_v3_worktree_head: affda26392b30ebb0d3c5436f4818794ba700661
+  current_v3_worktree: /home/cunyuliu/mrna_editflow_goal/worktrees/v3_1_data_bench_closure_20260804
+  current_v3_branch: v3.1-data-bench-closure-20260804
+  current_v3_head: fafbcd3a5dead1d152360cc434b5cb08e7cae97e
+  current_v3_worktree_dirty: false
+
+c3:
+  validator: PASS
+  validator_environment: /home/cunyuliu/miniconda3/envs/editflow/bin/python
+  contract_tests: PASS
+  contract_tests_passed: 21
+  contract_tests_failed: 0
+  old_c3_manifest_promotion: NOT_ALLOWED
+  old_c3_reason: "old manifest bound a different contract-file SHA256 987fd341e21ebfa44abf187d109fa4a58f2f9cb61e95d5ab5f4bf1195e998569"
+
+aggregate_split_probe:
+  ordinary_d1_dir: /mnt/cunyuliu/mrna_editflow_v3_1/d1/ordinary
+  group_registry_sample_rows: 100000
+  group_assignments_sample_rows: 100000
+  emitted_content: "field names, type counters, and presence counts only; no sequence/label/member values"
+  required_grouping_atoms:
+    GENE: false
+    SEQUENCE_CLUSTER: false
+    LIBRARY_LINEAGE: false
+    TILE_FAMILY: false
+    TRANSCRIPT: false
+    STUDY: false
+  split_blocker_crosscheck:
+    prior_full_b0_split_assignments_rows: 0
+    prior_b0_validator_total_errors: 0
+    prior_resource_viability_status: LIMITED_DEVELOPMENT_ONLY
+    prior_resource_viability_reason: "no non-empty source/study-disjoint partition can be formed because required grouping atoms are missing"
+
+inherited_data_evidence:
+  evidence_class: INHERITED_AGGREGATE_ONLY_NOT_PROMOTED_TO_CURRENT_PASS
+  prior_run_root: /home/cunyuliu/mrna_editflow_goal/runs/v3_1_data_bench_closure_20260803
+  prior_g7_status: BLOCKED_WITH_EVIDENCE
+  prior_g7_git_head: e17ba9b36653a59baf03d4e2785407f0ed919e59
+  prior_g7_contract_sha256: 35dd4bf27a3c7d574ab777f5d858ad1b13dcb9273bdb4961e4c30a1a94bf875
+  prior_d1_ordinary_pairs: 88042
+  prior_d1_ordinary_f_observations: 3322161
+  prior_b0_validator_log_sha256: 241a11bf7e33c919ec64bbef48d28a9feb58015bcd2e7bcdf1c5ba978da99c4b
+  prior_split_assignments_sha256: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+  prior_resource_viability_sha256: 37dcae385f90dbd14c2bb0d6dcd36106a214eec284691245d34fd93bf8e4c8d3
+  prior_g7_done_generated: false
+
+terminal:
+  status: BLOCKED_WITH_EVIDENCE
+  done_generated: false
+  gp0_status: LOCKED_NOT_AUTHORIZED
+  resource_viability_status: LIMITED_DEVELOPMENT_ONLY
+  data_goal_blockers:
+    DB_01_SPLIT_GROUPING_ATOMS_MISSING: OPEN_WITH_EVIDENCE
+    DB_02_GSE246381_ROW_ISOLATION: INHERITED_CLOSED_WITH_EVIDENCE_NOT_REPROMOTED
+    DB_03_DUAL_STORE_CONSERVATION: INHERITED_CLOSED_WITH_EVIDENCE_NOT_REPROMOTED
+    DB_04_ACCESS_CHAIN_INTEGRITY: INHERITED_CLOSED_WITH_EVIDENCE_NOT_REPROMOTED
+    DB_05_ANALYTIC_FINAL_COUNTERS_ZERO: INHERITED_CLOSED_WITH_EVIDENCE_NOT_REPROMOTED
+    DB_06_RESOURCE_VIABILITY_BINDING: INHERITED_CLOSED_WITH_EVIDENCE_NOT_REPROMOTED
+  blocker_closure_condition: "materialize the required D1 grouping atoms, rebuild canonical/group assignments, rerun B0 eligibility/split/seal and G7"
+  prohibited_actions_not_performed:
+    - GP0 real training
+    - project-side unlabeled pretraining
+    - sealed-final analytic access
+    - final-evaluator access
+    - human sealed-label/sequence view
+    - deletion or overwrite of prior evidence
+
+handoff:
+  model_rebind_handoff_blockers_remain_open: true
+  model_rebind_handoff_owner: future_separately_authorized_goal
+  publication_grade_candidate: false
