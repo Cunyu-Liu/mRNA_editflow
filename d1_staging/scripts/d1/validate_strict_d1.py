@@ -1087,7 +1087,9 @@ class Validator:
             actual_count = self.scalar("SELECT COUNT(*) FROM assignments WHERE shard=? AND group_id=?", (shard, group_id))
             if actual_count != row.get("member_count"):
                 self.errors.add("GROUP_MEMBER_COUNT_MISMATCH", shard)
-            member_ids = json.loads(row.get("member_ids_json") or "[]")
+            member_ids = row.get("member_ids")
+            if member_ids is None:
+                member_ids = json.loads(row.get("member_ids_json") or "[]")
             if actual_count <= 1000:
                 actual = [r[0] for r in self.store.conn.execute("SELECT object_id FROM assignments WHERE shard=? AND group_id=? ORDER BY object_id", (shard, group_id))]
                 if actual != sorted(set(member_ids)):
@@ -1617,6 +1619,7 @@ class Validator:
             p = root / "canonical" / filename
             if p.exists():
                 components.append({"logical_id": logical, "relative_path": p.resolve().relative_to(root.resolve()).as_posix(), "sha256": sha_file(p)})
+        components.sort(key=lambda x: x["logical_id"])
         components.append({"logical_id": "OBJECT_SEQUENCE_SET", "relative_path": paths["seq"].resolve().relative_to(root.resolve()).as_posix(), "sha256": sha_file(paths["seq"])})
         components.append({"logical_id": "OBJECT_LABEL_SET", "relative_path": paths["label"].resolve().relative_to(root.resolve()).as_posix(), "sha256": sha_file(paths["label"])})
         return sha_json({"run_id": self.summary.get("run_id"), "snapshot_id": self.summary.get("d1_snapshot_id"), "shard": shard, "components": components})
@@ -1825,7 +1828,7 @@ class Validator:
                 "exposure_records_relpath": expected_rel(expected_paths[0]), "exposure_records_sha256": sha_file(expected_paths[0]),
                 "use_roles_relpath": expected_rel(expected_paths[1]), "use_roles_sha256": sha_file(expected_paths[1]),
                 "effective_exposure_projection_relpath": expected_rel(effective_path), "effective_exposure_projection_sha256": sha_file(effective_path),
-                "access_snapshot_id": self.summary.get("d1_snapshot_id"), "access_log_chain_root": access.get("events", [{}])[-1].get("event_sha256"),
+                "access_snapshot_id": self.summary.get("d1_snapshot_id"), "access_log_chain_root_sha256": access.get("events", [{}])[-1].get("event_sha256"),
                 "access_manifest_sha256": sha_file(access["paths"]["manifest"]), "access_sha256s_sha256": sha_file(access["paths"]["sums"]),
                 "exposure_use_sha256s_sha256": sha_file(sums_path), "canonical_binding_sha256": self.summary.get("canonical_binding_sha256"),
             }.items():
@@ -1975,14 +1978,17 @@ class Validator:
                 self.errors.add("SEALED_INPUT_COHORT_BINDING_MISMATCH")
             if sealed_input.get("input_file_set_sha256") != set_sha([f"{x.get('relative_path')}|{x.get('sha256')}" for x in sealed_input.get("input_files", [])]):
                 self.errors.add("SEALED_INPUT_FILE_SET_HASH_MISMATCH")
+            profiles = {as_text(profile.get("path")): profile for profile in sealed_input.get("matrix_profiles", [])}
             for item in sealed_input.get("input_files", []):
-                self.verify_matrix_profile(Path(self.args.sealed_input).parent / item.get("relative_path", ""), item, f"restricted:input:{item.get('relative_path')}")
+                expected_profile = dict(item)
+                expected_profile.update(profiles.get(as_text(item.get("relative_path")), {}))
+                self.verify_matrix_profile(Path(self.args.sealed_input).parent / item.get("relative_path", ""), expected_profile, f"restricted:input:{item.get('relative_path')}")
             if sealed_input.get("reconstructed_record_count") != self.raw_stats["restricted"].get("raw_records", 0):
                 self.errors.add("SEALED_INPUT_RECORD_COUNT_MISMATCH")
 
         sealed_sums = root / "SEALED_CANONICAL_SHA256SUMS"
         sealed_payload = [sealed_input_path]
-        for filename in CANONICAL_FILES.values():
+        for filename in [*CANONICAL_FILES.values(), "dataset_reconciliation.json", "data_units_report.json"]:
             p = root / "canonical" / filename
             if filename == "reporter_artifact_assessments.jsonl":
                 continue
