@@ -27,6 +27,10 @@ def main() -> int:
     ap.add_argument("--parent-binding", type=Path, required=True)
     ap.add_argument("--source-evidence-root", type=Path, required=True)
     ap.add_argument("--attempt-root", type=Path, required=True)
+    ap.add_argument("--validator-log", type=Path)
+    ap.add_argument("--pytest-log", type=Path)
+    ap.add_argument("--revision-reports", nargs="+", type=Path)
+    ap.add_argument("--pair-repair-report", type=Path)
     args = ap.parse_args()
 
     wt = args.worktree
@@ -40,15 +44,22 @@ def main() -> int:
     schema_dir = wt / "schemas/v3_1"
     manifest = schema_dir / "SCHEMA_MANIFEST.json"
     sums = schema_dir / "SCHEMA_SHA256SUMS"
-    revision = args.source_evidence_root / "D1_SCHEMA_REVISION.json"
-    pair_repair = args.source_evidence_root / "D1_SCHEMA_REPAIR_PAIR.json"
+    validator_log = args.validator_log or (args.source_evidence_root / "C3_SCHEMA_REVISION_VALIDATOR_002.log")
+    pytest_log = args.pytest_log or (args.source_evidence_root / "C3_SCHEMA_REVISION_PYTEST_002.log")
+    revision_reports = args.revision_reports or [args.source_evidence_root / "D1_SCHEMA_REVISION.json"]
+    pair_repair = args.pair_repair_report or (args.source_evidence_root / "D1_SCHEMA_REPAIR_PAIR.json")
 
-    for src, dest_name in [
-        (args.source_evidence_root / "C3_SCHEMA_REVISION_VALIDATOR_002.log", "C3_VALIDATOR.log"),
-        (args.source_evidence_root / "C3_SCHEMA_REVISION_PYTEST_002.log", "C3_PYTEST.log"),
-        (revision, "D1_SCHEMA_REVISION.json"),
+    revision_dest_names = [
+        "D1_SCHEMA_REVISION.json" if i == 0 else f"D1_SCHEMA_REVISION_{i + 1:02d}.json"
+        for i in range(len(revision_reports))
+    ]
+    copy_pairs = [
+        (validator_log, "C3_VALIDATOR.log"),
+        (pytest_log, "C3_PYTEST.log"),
+        *list(zip(revision_reports, revision_dest_names)),
         (pair_repair, "D1_SCHEMA_REPAIR_PAIR.json"),
-    ]:
+    ]
+    for src, dest_name in copy_pairs:
         if not src.is_file():
             raise FileNotFoundError(src)
         shutil.copy2(src, out / dest_name)
@@ -82,7 +93,10 @@ def main() -> int:
         "schema_manifest_sha256": sha256(manifest),
         "schema_sha256sums_sha256": sha256(sums),
         "schema_count": len(list(schema_dir.glob("*.schema.json"))),
-        "revision_report_sha256": sha256(revision),
+        "revision_report_sha256": sha256(revision_reports[0]),
+        "revision_report_sha256s": {
+            dest: sha256(src) for src, dest in zip(revision_reports, revision_dest_names)
+        },
         "pair_repair_report_sha256": sha256(pair_repair),
         "source_commit": head,
         "status": "VALIDATED_C3_PASS",
@@ -100,7 +114,7 @@ def main() -> int:
             {"filename": p.name, "sha256": sha256(p)}
             for p in sorted(schema_dir.glob("*.schema.json"))
         ],
-        "revision_report": "D1_SCHEMA_REVISION.json",
+        "revision_reports": revision_dest_names,
         "pair_repair_report": "D1_SCHEMA_REPAIR_PAIR.json",
     }
     (out / "C3_SCHEMA_BINDING.json").write_text(json.dumps(schema_binding, indent=2, sort_keys=True) + "\n", encoding="utf-8")

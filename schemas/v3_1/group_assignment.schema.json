@@ -11,6 +11,18 @@
     "assignment_id": {
       "type": "string"
     },
+    "context_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "endpoint_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
     "group_id": {
       "type": "string"
     },
@@ -23,10 +35,38 @@
         "null"
       ]
     },
+    "no_edit_control_subtype": {
+      "enum": [
+        "DESIGNED_WT_CONTROL",
+        "OBSERVED_UNCHANGED_ENDPOINT",
+        "SOURCE_MEASUREMENT_ANCHOR",
+        "ALGORITHM_NO_CHANGE_OUTPUT",
+        "DUPLICATE_OR_MAPPING_IDENTITY",
+        "UNRESOLVED_IDENTITY",
+        "NOT_APPLICABLE_NON_IDENTITY"
+      ],
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "no_edit_sampling_frame_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
     "object_id": {
       "type": "string"
     },
     "object_type": {
+      "enum": [
+        "SEQUENCE",
+        "RELATION_CANDIDATE",
+        "PAIR",
+        "OBSERVATION_CANDIDATE",
+        "OBSERVATION"
+      ],
       "type": "string"
     },
     "source_evidence_ids": {
@@ -41,8 +81,12 @@
     "assignment_id",
     "group_id",
     "grouping_atom",
+    "member_locator",
+    "no_edit_control_subtype",
+    "no_edit_sampling_frame_id",
     "object_id",
-    "object_type"
+    "object_type",
+    "source_evidence_ids"
   ],
   "schema_version": "3.1",
   "title": "GroupAssignment (v3.1)",

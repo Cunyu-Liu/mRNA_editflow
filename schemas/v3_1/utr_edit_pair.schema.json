@@ -66,10 +66,14 @@
       "type": "string"
     },
     "effect_evidence": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "enum": [
+        "UNKNOWN",
+        "SEQUENCE_ONLY",
+        "CANDIDATE_ONLY",
+        "BOTH_CROSS_CONTEXT",
+        "BOTH_SAME_CONTEXT"
+      ],
+      "type": "string"
     },
     "endpoint_id": {
       "type": "string"
@@ -108,16 +112,36 @@
       "type": "string"
     },
     "landscape_role": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "enum": [
+        "SPARSE",
+        "DENSE",
+        "NOT_APPLICABLE"
+      ],
+      "type": "string"
     },
     "link_view_eligible": {
       "type": "boolean"
     },
     "minimum_edit_distance": {
       "type": "integer"
+    },
+    "no_edit_control_subtype": {
+      "enum": [
+        "DESIGNED_WT_CONTROL",
+        "OBSERVED_UNCHANGED_ENDPOINT",
+        "SOURCE_MEASUREMENT_ANCHOR",
+        "ALGORITHM_NO_CHANGE_OUTPUT",
+        "DUPLICATE_OR_MAPPING_IDENTITY",
+        "UNRESOLVED_IDENTITY",
+        "NOT_APPLICABLE_NON_IDENTITY"
+      ],
+      "type": "string"
+    },
+    "no_edit_sampling_frame_id": {
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "pair_direction_verified": {
       "type": "boolean"
@@ -160,6 +184,11 @@
       "type": "string"
     },
     "relation_type": {
+      "enum": [
+        "EXACT_REF_ALT",
+        "SOURCE_CANDIDATE",
+        "NO_EDIT_CONTROL"
+      ],
       "type": "string"
     },
     "same_assay_context": {
@@ -167,8 +196,7 @@
     },
     "scientific_track": {
       "enum": [
-        "E",
-        "F"
+        "E"
       ],
       "type": "string"
     },
@@ -225,6 +253,8 @@
     "landscape_role",
     "link_view_eligible",
     "minimum_edit_distance",
+    "no_edit_control_subtype",
+    "no_edit_sampling_frame_id",
     "pair_direction_verified",
     "pair_evidence_id",
     "pair_id",

@@ -64,6 +64,15 @@
       "type": "string"
     },
     "future_use_role": {
+      "enum": [
+        "GENERAL_DEVELOPMENT_POOL",
+        "SEALED_EXTERNAL_FINAL_CANDIDATE",
+        "SEALED_EXTERNAL_FINAL",
+        "EXTERNAL_STRESS_ONLY",
+        "EXCLUDED",
+        "PENDING",
+        "AWAITING_B0_GLOBAL_DISPOSITION"
+      ],
       "type": "string"
     },
     "label_transform": {
@@ -87,6 +96,24 @@
         "REJECTED"
       ],
       "type": "string"
+    },
+    "no_edit_control_subtype": {
+      "enum": [
+        "DESIGNED_WT_CONTROL",
+        "OBSERVED_UNCHANGED_ENDPOINT",
+        "SOURCE_MEASUREMENT_ANCHOR",
+        "ALGORITHM_NO_CHANGE_OUTPUT",
+        "DUPLICATE_OR_MAPPING_IDENTITY",
+        "UNRESOLVED_IDENTITY",
+        "NOT_APPLICABLE_NON_IDENTITY"
+      ],
+      "type": "string"
+    },
+    "no_edit_sampling_frame_id": {
+      "type": [
+        "string",
+        "null"
+      ]
     },
     "pair_evidence_id": {
       "type": "string"
@@ -161,6 +188,8 @@
     "label_unit",
     "landscape_role",
     "lifecycle_status",
+    "no_edit_control_subtype",
+    "no_edit_sampling_frame_id",
     "pair_evidence_id",
     "pairing_method",
     "parent_relation_candidate_id",

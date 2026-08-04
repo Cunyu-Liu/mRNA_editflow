@@ -52,7 +52,7 @@
       "contract_id": "utr_editflow_goal_v3.1_benchmark_first",
       "filename": "group_assignment.schema.json",
       "schema_version": "3.1",
-      "sha256": "47e44e6415e6c8a3dbe56ef5186840649c235029ab729a3543195ea0a516266f"
+      "sha256": "b05987d7336970452b11d335fd819a453f684bcdc027aa475b9769f9a12c86b2"
     },
     {
       "$id": "https://github.com/Cunyu-Liu/mRNA_editflow/schemas/v3_1/group_registry.schema.json",
@@ -143,14 +143,14 @@
       "contract_id": "utr_editflow_goal_v3.1_benchmark_first",
       "filename": "utr_edit_pair.schema.json",
       "schema_version": "3.1",
-      "sha256": "313538b514d04b8e466242db83a91a6c2cc5f17c4d192de61b0ee4d1f87e9593"
+      "sha256": "676bd636ebac418b8a4e44f014ce9db4b84d4f747863cc5d40c6ec333ac92787"
     },
     {
       "$id": "https://github.com/Cunyu-Liu/mRNA_editflow/schemas/v3_1/utr_edit_relation_candidate.schema.json",
       "contract_id": "utr_editflow_goal_v3.1_benchmark_first",
       "filename": "utr_edit_relation_candidate.schema.json",
       "schema_version": "3.1",
-      "sha256": "a7d7c9fd1be19961d2218aaf1e9eb2c6d180d70b69de29706937440f70d10081"
+      "sha256": "ca9efeb29ad20966844d815bdbb45c53529925f1f9b24999963df3921a8c5af9"
     }
   ]
 }

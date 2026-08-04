@@ -207,6 +207,15 @@ def extend_functional(path: Path):
 
 def extend_relation_candidate(path: Path):
     d = json.loads(path.read_text())
+    no_edit_subtypes = [
+        "DESIGNED_WT_CONTROL", "OBSERVED_UNCHANGED_ENDPOINT", "SOURCE_MEASUREMENT_ANCHOR",
+        "ALGORITHM_NO_CHANGE_OUTPUT", "DUPLICATE_OR_MAPPING_IDENTITY", "UNRESOLVED_IDENTITY",
+        "NOT_APPLICABLE_NON_IDENTITY",
+    ]
+    future_roles = [
+        "GENERAL_DEVELOPMENT_POOL", "SEALED_EXTERNAL_FINAL_CANDIDATE", "SEALED_EXTERNAL_FINAL",
+        "EXTERNAL_STRESS_ONLY", "EXCLUDED", "PENDING", "AWAITING_B0_GLOBAL_DISPOSITION",
+    ]
     extend(d, {
         "relation_candidate_id": st(),
         "parent_relation_candidate_id": st(nullable=True),
@@ -226,7 +235,9 @@ def extend_relation_candidate(path: Path):
         "relation_type": st(["EXACT_REF_ALT", "SOURCE_CANDIDATE", "NO_EDIT_CONTROL"]),
         "effect_evidence": st(["UNKNOWN", "SEQUENCE_ONLY", "CANDIDATE_ONLY", "BOTH_CROSS_CONTEXT", "BOTH_SAME_CONTEXT"]),
         "landscape_role": st(["SPARSE", "DENSE", "NOT_APPLICABLE"]),
-        "future_use_role": st(),
+        "future_use_role": st(future_roles),
+        "no_edit_control_subtype": st(no_edit_subtypes),
+        "no_edit_sampling_frame_id": st(nullable=True),
         "pair_evidence_id": st(),
         "terminal_disposition_reason": st(nullable=True),
         "accepted_pair_id": st(nullable=True),
@@ -236,6 +247,7 @@ def extend_relation_candidate(path: Path):
         "relation_context_key", "context_id", "endpoint_id", "label_unit", "label_transform",
         "delta_rule_id", "delta_rule_sha256", "scientific_track", "relation_acceptance_status",
         "relation_type", "effect_evidence", "landscape_role", "future_use_role",
+        "no_edit_control_subtype", "no_edit_sampling_frame_id",
         "source_sequence_id", "candidate_sequence_id", "pair_evidence_id", "terminal_disposition_reason",
         "accepted_pair_id", "candidate_id", "pairing_method", "evidence_id", "lifecycle_status",
     ])
@@ -247,6 +259,20 @@ def extend_relation_candidate(path: Path):
 
 def extend_pair(path: Path):
     d = json.loads(path.read_text())
+    no_edit_subtypes = [
+        "DESIGNED_WT_CONTROL", "OBSERVED_UNCHANGED_ENDPOINT", "SOURCE_MEASUREMENT_ANCHOR",
+        "ALGORITHM_NO_CHANGE_OUTPUT", "DUPLICATE_OR_MAPPING_IDENTITY", "UNRESOLVED_IDENTITY",
+        "NOT_APPLICABLE_NON_IDENTITY",
+    ]
+    future_roles = [
+        "GENERAL_DEVELOPMENT_POOL", "SEALED_EXTERNAL_FINAL_CANDIDATE", "SEALED_EXTERNAL_FINAL",
+        "EXTERNAL_STRESS_ONLY", "EXCLUDED", "PENDING", "AWAITING_B0_GLOBAL_DISPOSITION",
+    ]
+    d["properties"]["relation_type"] = st(["EXACT_REF_ALT", "SOURCE_CANDIDATE", "NO_EDIT_CONTROL"])
+    d["properties"]["effect_evidence"] = st(["UNKNOWN", "SEQUENCE_ONLY", "CANDIDATE_ONLY", "BOTH_CROSS_CONTEXT", "BOTH_SAME_CONTEXT"])
+    d["properties"]["landscape_role"] = st(["SPARSE", "DENSE", "NOT_APPLICABLE"])
+    d["properties"]["future_use_role"] = st(future_roles)
+    d["properties"]["scientific_track"] = st(["E"])
     extend(d, {
         "parent_pair_id": st(nullable=True),
         "relation_candidate_id": st(),
@@ -260,8 +286,11 @@ def extend_pair(path: Path):
         "delta_rule_id": st(),
         "delta_rule_sha256": st(),
         "relation_acceptance_status": st(["ACCEPTED"]),
+        "no_edit_control_subtype": st(no_edit_subtypes),
+        "no_edit_sampling_frame_id": st(nullable=True),
         "source_observation_id": st(nullable=True),
         "candidate_observation_id": st(nullable=True),
+        "future_use_role": st(),
         "delta": num(nullable=True),
         "delta_standard_error": num(nullable=True),
         "same_assay_context": boolean(),
@@ -284,6 +313,7 @@ def extend_pair(path: Path):
         "contributing_source_file_sha256s", "contributor_set_sha256", "context_id", "endpoint_id",
         "label_unit", "label_transform", "delta_rule_id", "delta_rule_sha256",
         "relation_acceptance_status", "relation_type", "effect_evidence", "landscape_role",
+        "no_edit_control_subtype", "no_edit_sampling_frame_id",
         "future_use_role", "source_sequence_id", "candidate_sequence_id", "source_observation_id",
         "candidate_observation_id", "delta", "delta_standard_error", "same_assay_context",
         "biological_parent_group", "gene_group", "tile_family_group", "sequence_cluster_group",
@@ -357,10 +387,20 @@ def extend_group_registry(path: Path):
 
 def extend_group_assignment(path: Path):
     d = json.loads(path.read_text())
-    extend(d, {"source_evidence_ids": array(st()), "member_locator": st(nullable=True)}, [
+    d["properties"]["object_type"] = st(["SEQUENCE", "RELATION_CANDIDATE", "PAIR", "OBSERVATION_CANDIDATE", "OBSERVATION"])
+    extend(d, {
+        "source_evidence_ids": array(st()), "member_locator": st(nullable=True),
+        "no_edit_control_subtype": st([
+            "DESIGNED_WT_CONTROL", "OBSERVED_UNCHANGED_ENDPOINT", "SOURCE_MEASUREMENT_ANCHOR",
+            "ALGORITHM_NO_CHANGE_OUTPUT", "DUPLICATE_OR_MAPPING_IDENTITY", "UNRESOLVED_IDENTITY",
+            "NOT_APPLICABLE_NON_IDENTITY",
+        ], nullable=True),
+        "no_edit_sampling_frame_id": st(nullable=True),
+        "context_id": st(nullable=True), "endpoint_id": st(nullable=True),
+    }, [
         "assignment_id", "object_id", "object_type", "group_id", "grouping_atom", "assignment_algorithm_id",
+        "source_evidence_ids", "member_locator", "no_edit_control_subtype", "no_edit_sampling_frame_id",
     ])
-    d["properties"]["object_type"] = st()
     return d
 
 
