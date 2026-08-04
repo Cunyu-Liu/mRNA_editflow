@@ -8,6 +8,7 @@ import hashlib
 import json
 import shutil
 import subprocess
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -59,7 +60,7 @@ def main() -> int:
             f"worktree={wt}",
             f"branch={branch}",
             f"head={head}",
-            run("python", "--version", cwd=wt),
+            f"Python {sys.version.split()[0]}",
             "DEPENDENCIES_IMPORT_PASS",
             "data_accessed=false",
             "training_started=false",
