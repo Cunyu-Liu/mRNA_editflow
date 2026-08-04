@@ -1,15 +1,16 @@
 # GOAL-V3-DATA-BENCH-01 — G7 Fresh Closure & Goal Terminal
 
-- generated_at_utc: 2026-08-03T19:33:37.116245+00:00
-- git_head: e17ba9b36653a59baf03d4e2785407f0ed919e59
+- generated_at_utc: 2026-08-04T06:27:47.828944+00:00
+- git_head: 7682bd30893f1c51c3a21aa0f2738699b0750da8
 - g7_snapshot_id: g7_snapshot_20260803_001
 - g7_run_id: g7_r_v1
 - contract_sha256: 35dd4bf27a3c7d574ab777f5d858ad1b13dcb9273bdb4961e4c30a1a94bf8759
 - terminal_status: **BLOCKED_WITH_EVIDENCE**
 - done_generated: False
 - gp0_status: LOCKED_NOT_AUTHORIZED
-- resource_viability_status: LIMITED_DEVELOPMENT_ONLY
-- split_assignments: 0
+- resource_viability_status: NOT_VIABLE
+- split_assignments: 856986
+- fresh_assignment_summary: {"by_split": {"3utr_sequence_cluster_disjoint": 856986}, "five_utr_e_studies": 0, "five_utr_e_units": 0, "five_utr_f_units": 0, "five_utr_source_units": 0, "five_utr_study_units": 0, "source_or_study_disjoint_assignments": 0}
 
 ## Stage status
 
@@ -24,13 +25,13 @@
 
 ## Benchmark partition root cause
 
-The benchmark cannot form a usable anti-leakage partition: **all split assignments = 0** because the D1 technical canonical lacks the grouping atoms required by the split contracts (GENE / SEQUENCE_CLUSTER / LIBRARY_LINEAGE / TILE_FAMILY / TRANSCRIPT / STUDY). Every task/split eligibility cell is INELIGIBLE_WITH_REASON, so no source/study-disjoint partition with assignments>0 can be formed. This is a data blocker (DB_01) that cannot be closed inside this Goal.
+The fresh D1 projection uses only provenance-bound grouping atoms and the fresh B0 builder materializes grouped assignments. Missing atoms remain INELIGIBLE_WITH_REASON; no sentinel group IDs are created. Assignment summary: {"by_split": {"3utr_sequence_cluster_disjoint": 856986}, "five_utr_e_studies": 0, "five_utr_e_units": 0, "five_utr_f_units": 0, "five_utr_source_units": 0, "five_utr_study_units": 0, "source_or_study_disjoint_assignments": 0}. DB_01 is closed only when a non-empty source/study-disjoint assignment is evidenced; resource viability remains an independent gate.
 
 ## Resource viability
 
-- status: **LIMITED_DEVELOPMENT_ONLY**
-- denominators: {"ordinary_e_pairs": 88042, "ordinary_f_observations": 3322161, "restricted_e_pairs": 1184, "restricted_f_observations": 15392, "cluster_count": 10, "five_utr_e_pairs": 67601, "five_utr_f_observations": 3021669, "split_assignments": 0}
-- reason: split_assignments=0: no non-empty source/study-disjoint partition can be formed because the D1 canonical lacks the required grouping atoms (GENE/SEQUENCE_CLUSTER/LIBRARY_LINEAGE/TILE_FAMILY/TRANSCRIPT/STUDY); 3-UTR scope = EXPLORATORY_ONLY
+- status: **NOT_VIABLE**
+- denominators: {"ordinary_e_pairs": 88042, "ordinary_f_observations": 3322161, "restricted_e_pairs": 1184, "restricted_f_observations": 15392, "cluster_count": 9, "five_utr_e_pairs": 0, "five_utr_f_observations": 0, "split_assignments": 856986, "five_utr_e_studies": 0, "five_utr_source_units": 0, "five_utr_study_units": 0}
+- reason: publication-grade candidate not asserted; failed gates: five_utr_independent_units_ge_500,five_utr_studies_ge_5,source_disjoint_partition_nonempty,study_disjoint_partition_nonempty,group_aware_ci_precision_pass,action_specific_strata_ge_100,no_single_study_or_library_over_70_percent
 
 ## GSE analytic/final counters
 
@@ -65,11 +66,11 @@ The benchmark cannot form a usable anti-leakage partition: **all split assignmen
 
 ## Terminal determination
 
-BLOCKED_WITH_EVIDENCE: the data Goal is not fully closed (DB_01_SPLIT_GROUPING_ATOMS_MISSING is OPEN_WITH_EVIDENCE) and resource_viability_status=LIMITED_DEVELOPMENT_ONLY. No DONE is generated.
+BLOCKED_WITH_EVIDENCE: the fresh data/benchmark result does not meet all terminal requirements; see blocker ledger and failed publication-grade gates. resource_viability_status=NOT_VIABLE. No DONE is generated.
 
 ## Next steps for the user
 
-1. **Extend data**: acquire/rebuild D1 data so the grouping atoms (GENE / SEQUENCE_CLUSTER / LIBRARY_LINEAGE / TILE_FAMILY / TRANSCRIPT / STUDY) are materialized, then re-run B0 eligibility/split/seal and G7. Only then can PUBLICATION_GRADE_CANDIDATE be reassessed.
+1. Review the fresh grouping-atom coverage and the failed publication-grade gates; acquire/rebuild only the missing provenance-bearing fields before a future B0/G7 rerun.
 2. **Narrow the paper scope**: drop the split/anti-leakage benchmark objective and report only the data/engineering/closure transparency results (no model-rebind publication), accepting the LIMITED_DEVELOPMENT_ONLY grade.
 
 ## Handoff declarations

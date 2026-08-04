@@ -3,14 +3,14 @@
   "phase": "G7",
   "status": "BLOCKED_WITH_EVIDENCE",
   "terminal_status": "BLOCKED_WITH_EVIDENCE",
-  "resource_viability_status": "LIMITED_DEVELOPMENT_ONLY",
+  "resource_viability_status": "NOT_VIABLE",
   "gp0_status": "LOCKED_NOT_AUTHORIZED",
-  "generated_at_utc": "2026-08-03T19:33:37.116245+00:00",
+  "generated_at_utc": "2026-08-04T06:27:47.828944+00:00",
   "g7_snapshot_id": "g7_snapshot_20260803_001",
   "g7_run_id": "g7_r_v1",
   "g7_transaction_id": "g7_txn_20260803_001",
   "data_gates_engineering_closure": "PASS",
   "data_goal_closed": false,
   "done_generated": false,
-  "note": "BLOCKED_WITH_EVIDENCE: benchmark cannot form a usable anti-leakage partition (D1 grouping atoms missing) and resource_viability_status=LIMITED_DEVELOPMENT_ONLY; no DONE. GP0 remains LOCKED_NOT_AUTHORIZED."
+  "note": "DONE is withheld unless publication-grade viability is PASS; fresh assignment summary={'by_split': {'3utr_sequence_cluster_disjoint': 856986}, 'five_utr_e_units': 0, 'five_utr_f_units': 0, 'five_utr_e_studies': 0, 'five_utr_source_units': 0, 'five_utr_study_units': 0, 'source_or_study_disjoint_assignments': 0}; resource_viability_status=NOT_VIABLE. GP0 remains LOCKED_NOT_AUTHORIZED."
 }

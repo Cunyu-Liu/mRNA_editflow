@@ -7,8 +7,8 @@
   "g7_snapshot_id": "g7_snapshot_20260803_001",
   "g7_run_id": "g7_r_v1",
   "g7_transaction_id": "g7_txn_20260803_001",
-  "git_head": "e17ba9b36653a59baf03d4e2785407f0ed919e59",
-  "generated_at_utc": "2026-08-03T19:33:37.116245+00:00",
+  "git_head": "7682bd30893f1c51c3a21aa0f2738699b0750da8",
+  "generated_at_utc": "2026-08-04T06:27:47.828944+00:00",
   "fresh_rerun": {
     "d1_validator": {
       "exit_code": 0,
@@ -20,7 +20,7 @@
     },
     "pytest": {
       "exit_code": 0,
-      "tail": "493 passed in 16.50s"
+      "tail": "499 passed in 15.17s"
     },
     "b0_light": {
       "validator": "PASS",
@@ -45,30 +45,62 @@
     "assessment_id": "g7_g7_r_v1_resource_viability",
     "schema_version": "3.1",
     "contract_id": "utr_editflow_goal_v3.1_benchmark_first",
-    "resource_viability_status": "LIMITED_DEVELOPMENT_ONLY",
-    "generated_at_utc": "2026-08-03T19:38:10.745558+00:00",
+    "resource_viability_status": "NOT_VIABLE",
+    "generated_at_utc": "2026-08-04T06:34:45.928061+00:00",
     "denominators": {
       "ordinary_e_pairs": 88042,
       "ordinary_f_observations": 3322161,
       "restricted_e_pairs": 1184,
       "restricted_f_observations": 15392,
-      "cluster_count": 10,
-      "five_utr_e_pairs": 67601,
-      "five_utr_f_observations": 3021669,
-      "split_assignments": 0
+      "cluster_count": 9,
+      "five_utr_e_pairs": 0,
+      "five_utr_f_observations": 0,
+      "split_assignments": 856986,
+      "five_utr_e_studies": 0,
+      "five_utr_source_units": 0,
+      "five_utr_study_units": 0
     },
     "analysis_units": {
       "global_unique_object_e": 88042,
       "global_unique_object_f": 3322161,
-      "task_eligibility_cell_denominator": "NOT_MEANINGFUL_SPLIT_UNASSIGNED"
+      "task_eligibility_cell_denominator": "FROZEN_TASK_SPLIT_CELLS"
     },
     "evidence_hashes": {
-      "b0_validator_log_sha256": "241a11bf7e33c919ec64bbef48d28a9feb58015bcd2e7bcdf1c5ba978da99c4b",
+      "b0_validator_log_sha256": "8ada28b3439f55b1ca141dc372802bb9e82029ac17d893a1bbbfa9d4163fa7ac",
       "resource_viability_rule": "resource_viability_rule_v3_1.yaml"
     },
     "publication_grade_candidate": false,
-    "reason": "split_assignments=0: no non-empty source/study-disjoint partition can be formed because the D1 canonical lacks the required grouping atoms (GENE/SEQUENCE_CLUSTER/LIBRARY_LINEAGE/TILE_FAMILY/TRANSCRIPT/STUDY); 3-UTR scope = EXPLORATORY_ONLY",
+    "publication_grade_gates": {
+      "five_utr_independent_units_ge_500": false,
+      "five_utr_studies_ge_5": false,
+      "source_disjoint_partition_nonempty": false,
+      "study_disjoint_partition_nonempty": false,
+      "group_aware_ci_precision_pass": false,
+      "action_specific_strata_ge_100": false,
+      "no_single_study_or_library_over_70_percent": false
+    },
+    "failed_publication_grade_gates": [
+      "five_utr_independent_units_ge_500",
+      "five_utr_studies_ge_5",
+      "source_disjoint_partition_nonempty",
+      "study_disjoint_partition_nonempty",
+      "group_aware_ci_precision_pass",
+      "action_specific_strata_ge_100",
+      "no_single_study_or_library_over_70_percent"
+    ],
+    "reason": "publication-grade candidate not asserted; failed gates: five_utr_independent_units_ge_500,five_utr_studies_ge_5,source_disjoint_partition_nonempty,study_disjoint_partition_nonempty,group_aware_ci_precision_pass,action_specific_strata_ge_100,no_single_study_or_library_over_70_percent",
     "note": "Engineering/data closure PASS is reported separately from resource viability."
+  },
+  "fresh_assignment_summary": {
+    "by_split": {
+      "3utr_sequence_cluster_disjoint": 856986
+    },
+    "five_utr_e_units": 0,
+    "five_utr_f_units": 0,
+    "five_utr_e_studies": 0,
+    "five_utr_source_units": 0,
+    "five_utr_study_units": 0,
+    "source_or_study_disjoint_assignments": 0
   },
   "terminal_status": "BLOCKED_WITH_EVIDENCE",
   "done_generated": false,
