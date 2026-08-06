@@ -26,6 +26,27 @@ EXCLUDED = "EXCLUDED_WITH_EVIDENCE"
 REF_ONLY = "REFERENCE_ONLY"
 PENDING = "PENDING_BLOCKED"
 
+# Genomic region of each asset, verified against the v3.1 canonical build script
+# (build_canonical_records.py) and the D1 reconstruct scripts. The benchmark pools
+# must keep 5'UTR / 3'UTR / CDS as independent endpoint heads (no cross-region
+# mixing). UNKNOWN is used for assets that are not bound to any primary pool.
+REGION = {
+    "GSE114002": "5UTR",
+    "GSE149487": "5UTR",
+    "GSE217518": "5UTR",  # mixed 3'UTR/5'UTR canonical, but 5'UTR natural pairs (eLife) -> 5U-A1
+    "GSE246381": "5UTR",  # sealed external 5'UTR final
+    "ENCSR854RUF": "3UTR",
+    "GSE186455": "3UTR",
+    "GSE200304": "3UTR",
+    "GSE232571": "3UTR",
+    "GSE232572": "3UTR",
+    "GSE261709": "3UTR",
+    "GSE298114": "3UTR",
+    "GSE207584": "CDS",
+    "GSE288185": "UNKNOWN",  # SLAM-seq stability + subcellular localization MPRA
+    "GSE330741": "UNKNOWN",  # in-vivo localization MPRA
+}
+
 # role -> evidence-needed mapping (per M2 special rules + d0 state).
 def classify(acc, d0, acquisition, mapping, priority, se):
     """Return (role, grade, method_role, endpoint_role, reason, eligibility)."""
@@ -56,6 +77,25 @@ def classify(acc, d0, acquisition, mapping, priority, se):
             "RECONSTRUCTION",
             "Legacy CDS liability; only enters B1 after sequence/family/label rebuild. "
             "Must not auto-unlock as B1.",
+            {"critic_eligibility": "NO", "flow_base_eligibility": "NO",
+             "guidance_training_eligibility": "NO",
+             "measured_optimization_eligibility": "NO",
+             "transfer_eligibility": "NO"},
+        )
+    if acc in ("GSE288185", "GSE330741"):
+        # Not standard source->candidate variant MPRA:
+        #   GSE288185 = SLAM-seq transcript stability + subcellular localization
+        #   GSE330741 = in-vivo localization MPRA
+        # Cannot construct legal 5'/3'UTR variant effect pairs -> PENDING_BLOCKED
+        # until a qualified variant-pair rebuild is demonstrated.
+        return (
+            PENDING,
+            "D",
+            "EXCLUDED",
+            "NOT_APPLICABLE",
+            "Not a standard source->candidate variant MPRA (SLAM-seq stability / "
+            "subcellular localization / in-vivo localization); cannot construct legal "
+            "5'/3'UTR variant effect pairs. PENDING_BLOCKED pending qualified rebuild.",
             {"critic_eligibility": "NO", "flow_base_eligibility": "NO",
              "guidance_training_eligibility": "NO",
              "measured_optimization_eligibility": "NO",
@@ -220,6 +260,7 @@ def main() -> None:
                 "asset_id": acc,
                 "audit_priority": d.get("audit_priority", "P0"),
                 "role": role,
+                "region": REGION.get(acc, "UNKNOWN"),
                 "reason": reason,
                 "evidence": {
                     "license_matrix_sha256": "preserved_v3_1",
@@ -258,6 +299,7 @@ def main() -> None:
         lines.append(f"  - asset_id: {a['asset_id']}")
         lines.append(f"    audit_priority: {a['audit_priority']}")
         lines.append(f"    role: {a['role']}")
+        lines.append(f"    region: {a['region']}")
         lines.append(f'    reason: "{a["reason"]}"')
         lines.append("    evidence:")
         lines.append(f"      source_evidence: {a['evidence']['source_evidence']}")

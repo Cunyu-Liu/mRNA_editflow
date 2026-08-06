@@ -96,15 +96,27 @@ def test_asset_binding_all_accepted():
 
 
 def test_no_cross_region_mixing():
-    """5'UTR and 3'UTR pools must be independent endpoint heads (no overlap)."""
+    """5'UTR and 3'UTR pools must be independent endpoint heads (no overlap), and
+    every bound asset must match its sub-benchmark region (verified against the
+    asset role assignment's region field)."""
     d, by_id = _bench()
+    asset_role = _load_yaml(ASSET_ROLE)
+    by_acc = {a["asset_id"]: a for a in asset_role["assets"]}
     five_u = set(by_id["EditBench-5U-A1-Natural"]["asset_ids"]) | \
         set(by_id["EditBench-5U-A2-Dense"]["asset_ids"])
     three_u = set(by_id["EditBench-3U-A1-Variant"]["asset_ids"])
     overlap = five_u & three_u
     assert not overlap, f"cross-region pool mixing: {overlap}"
-    # ENCSR854RUF is the 3'UTR asset and must NOT leak into the 5'UTR pool.
-    assert "ENCSR854RUF" not in five_u, "3'UTR ENT asset leaked into 5'UTR pool"
+    # Every asset bound to a 5'UTR pool must be a 5'UTR asset; every asset bound
+    # to the 3'UTR pool must be a 3'UTR asset.
+    for acc in five_u:
+        assert by_acc[acc]["region"] == "5UTR", f"5'UTR pool binds non-5'UTR asset {acc} ({by_acc[acc]['region']})"
+    for acc in three_u:
+        assert by_acc[acc]["region"] == "3UTR", f"3'UTR pool binds non-3'UTR asset {acc} ({by_acc[acc]['region']})"
+    # Known 3'UTR assets must never leak into the 5'UTR pool.
+    for acc in ["ENCSR854RUF", "GSE186455", "GSE200304", "GSE232571",
+                "GSE232572", "GSE261709", "GSE298114"]:
+        assert acc not in five_u, f"3'UTR asset {acc} leaked into 5'UTR pool"
 
 
 def test_dormant_does_not_fabricate_pass():

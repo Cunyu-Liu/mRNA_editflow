@@ -13,16 +13,10 @@ sub_benchmarks:
   evidence_grade: A1
   description: 5'UTR intentionally-assayed natural source/ref-candidate/alt pairs.
   status: ACTIVE
+  status_reason: null
   asset_ids:
   - GSE114002
-  - GSE186455
-  - GSE200304
   - GSE217518
-  - GSE232571
-  - GSE232572
-  - GSE261709
-  - GSE288185
-  - GSE298114
   primary_tasks:
   - T5_SOURCE_RELATIVE_EFFECT
   - T5_SELECTIVE_EFFECT
@@ -39,9 +33,11 @@ sub_benchmarks:
   region: 5UTR
   evidence_grade: A2
   description: 5'UTR controlled dense measured landscape.
-  status: ACTIVE
-  asset_ids:
-  - GSE330741
+  status: DORMANT
+  status_reason: 'No qualified 5''UTR A2 dense asset remains after region correction:
+    GSE330741 is a non-variant in-vivo localization MPRA (PENDING_BLOCKED). Must not
+    fabricate a PASS until a qualified 5''UTR A2 asset is accepted.'
+  asset_ids: []
   primary_tasks:
   - T5_SOURCE_RELATIVE_EFFECT
   - T5_MEASURED_NEIGHBORHOOD_OPTIMIZATION
@@ -56,8 +52,15 @@ sub_benchmarks:
   evidence_grade: A1
   description: 3'UTR variant transfer-track A1 (independent endpoint heads).
   status: ACTIVE
+  status_reason: null
   asset_ids:
   - ENCSR854RUF
+  - GSE186455
+  - GSE200304
+  - GSE232571
+  - GSE232572
+  - GSE261709
+  - GSE298114
   primary_tasks:
   - T3_EFFECT_TRANSFER
   - CROSS_REGION_TRANSFER

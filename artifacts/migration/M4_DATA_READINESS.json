@@ -8,9 +8,9 @@
     "EditBench-5U-A1-Natural": {
       "region": "5UTR",
       "status": "ACTIVE",
-      "n_assets": 9,
-      "n_assets_with_d1_pairs": 5,
-      "ready": false,
+      "n_assets": 2,
+      "n_assets_with_d1_pairs": 2,
+      "ready": true,
       "assets": [
         {
           "asset_id": "GSE114002",
@@ -18,6 +18,43 @@
           "evidence_grade": "A1",
           "method_role": "EFFECT_PRIMARY",
           "d1_pairs": 55184
+        },
+        {
+          "asset_id": "GSE217518",
+          "pool_role": "ACCEPTED_FOR_NEW_ROLE",
+          "evidence_grade": "A1",
+          "method_role": "EFFECT_PRIMARY",
+          "d1_pairs": 3564
+        }
+      ],
+      "primary_tasks": [
+        "T5_SOURCE_RELATIVE_EFFECT",
+        "T5_SELECTIVE_EFFECT",
+        "T5_MEASURED_NEIGHBORHOOD_OPTIMIZATION",
+        "T5_FIXED_BUDGET_MULTI_STEP_OPTIMIZATION"
+      ],
+      "splits": [
+        "S1",
+        "S2",
+        "S3",
+        "S4",
+        "S5"
+      ],
+      "sealed_external": "S6"
+    },
+    "EditBench-3U-A1-Variant": {
+      "region": "3UTR",
+      "status": "ACTIVE",
+      "n_assets": 7,
+      "n_assets_with_d1_pairs": 4,
+      "ready": false,
+      "assets": [
+        {
+          "asset_id": "ENCSR854RUF",
+          "pool_role": "ACCEPTED_FOR_NEW_ROLE",
+          "evidence_grade": "A1",
+          "method_role": "EFFECT_PRIMARY",
+          "d1_pairs": 11969
         },
         {
           "asset_id": "GSE186455",
@@ -32,13 +69,6 @@
           "evidence_grade": "A1",
           "method_role": "EFFECT_PRIMARY",
           "d1_pairs": 6885
-        },
-        {
-          "asset_id": "GSE217518",
-          "pool_role": "ACCEPTED_FOR_NEW_ROLE",
-          "evidence_grade": "A1",
-          "method_role": "EFFECT_PRIMARY",
-          "d1_pairs": 3564
         },
         {
           "asset_id": "GSE232571",
@@ -62,75 +92,11 @@
           "d1_pairs": 0
         },
         {
-          "asset_id": "GSE288185",
-          "pool_role": "ACCEPTED_FOR_NEW_ROLE",
-          "evidence_grade": "A1",
-          "method_role": "EFFECT_PRIMARY",
-          "d1_pairs": 0
-        },
-        {
           "asset_id": "GSE298114",
           "pool_role": "ACCEPTED_FOR_NEW_ROLE",
           "evidence_grade": "A1",
           "method_role": "EFFECT_PRIMARY",
           "d1_pairs": 0
-        }
-      ],
-      "primary_tasks": [
-        "T5_SOURCE_RELATIVE_EFFECT",
-        "T5_SELECTIVE_EFFECT",
-        "T5_MEASURED_NEIGHBORHOOD_OPTIMIZATION",
-        "T5_FIXED_BUDGET_MULTI_STEP_OPTIMIZATION"
-      ],
-      "splits": [
-        "S1",
-        "S2",
-        "S3",
-        "S4",
-        "S5"
-      ],
-      "sealed_external": "S6"
-    },
-    "EditBench-5U-A2-Dense": {
-      "region": "5UTR",
-      "status": "ACTIVE",
-      "n_assets": 1,
-      "n_assets_with_d1_pairs": 0,
-      "ready": false,
-      "assets": [
-        {
-          "asset_id": "GSE330741",
-          "pool_role": "ACCEPTED_FOR_NEW_ROLE",
-          "evidence_grade": "A2",
-          "method_role": "EFFECT_PRIMARY",
-          "d1_pairs": 0
-        }
-      ],
-      "primary_tasks": [
-        "T5_SOURCE_RELATIVE_EFFECT",
-        "T5_MEASURED_NEIGHBORHOOD_OPTIMIZATION"
-      ],
-      "splits": [
-        "S1",
-        "S2",
-        "S3",
-        "S4"
-      ],
-      "sealed_external": "S6"
-    },
-    "EditBench-3U-A1-Variant": {
-      "region": "3UTR",
-      "status": "ACTIVE",
-      "n_assets": 1,
-      "n_assets_with_d1_pairs": 1,
-      "ready": true,
-      "assets": [
-        {
-          "asset_id": "ENCSR854RUF",
-          "pool_role": "ACCEPTED_FOR_NEW_ROLE",
-          "evidence_grade": "A1",
-          "method_role": "EFFECT_PRIMARY",
-          "d1_pairs": 11969
         }
       ],
       "primary_tasks": [

@@ -14,16 +14,16 @@
     "docs/execution/xeditflow_task_registry.yaml": "494cf9d280e1c236d416e7f302feceb64005a8e1f4c81dd293a0d660148a4a70",
     "docs/execution/xeditflow_split_registry.yaml": "7897555c41c502f2cf90089ac555f5363795f7ca33e6b07c07bf42fcf0c7509b",
     "docs/execution/xeditflow_task_split_matrix.yaml": "b9e31f944be454fafd7ed08d3fc1baed57f1509aac5f6b5a82e1deb519b410b9",
-    "docs/execution/xeditflow_asset_role_assignment.yaml": "ee7e20adfed8050ab774cfc912bf5ec2be5eb920d4d50657af48c35c0583df8f",
-    "docs/execution/xeditflow_benchmark_registry.yaml": "c9453f6b531de690fac88a095d1533af59be14a7bf6709b21054e7b30451efe3",
+    "docs/execution/xeditflow_asset_role_assignment.yaml": "3e8625a4450483de9a646e09a363e7746c682ec15b398fd087a6e686c68ee27c",
+    "docs/execution/xeditflow_benchmark_registry.yaml": "7146a204f3e01e66294621fd291cac5e1451272c00d1b0422f31dff07272a873",
     "artifacts/migration/M0_INPUT_MANIFEST.json": "a1befa4afe857e0a8d651759c9e571d7148736369ef3a5e042127d1a646651a0",
     "artifacts/migration/MIGRATION_INVENTORY.jsonl": "d96a6f0d64ef517c5d55a3bfd6f94532f4dbe12ac65e4c186253fab3d22f6c7c",
     "artifacts/migration/OLD_TO_NEW_ARTIFACT_CROSSWALK.jsonl": "038d0f1a0aad7ea603c0eba1adbecc25f5c1445a620f1f28752db162187a02ac",
-    "artifacts/migration/OLD_BLOCKER_REBIND.jsonl": "7fc362e622babcbfbf0df032acb02a5d049505c408748736ce8c4ae60ee6ca3f",
+    "artifacts/migration/OLD_BLOCKER_REBIND.jsonl": "3728965311f92fb6076b6b63797e9793bee7964f2540c92362d5308a8f89fd77",
     "reports/migration/M0_READONLY_AUDIT.md": "3f90fb6970d2ccc1e3933b6ef97b746a43c80aca85c9b1ac7a663d6242b31635",
     "reports/migration/M1_CONTRACT_SUPERSESSION.md": "9cbf08d91db41b3dd415c966f5f0d7fde82b134241a47a962d4ceecab4ee90bd",
     "reports/migration/M2_SCHEMA_MIGRATION.md": "b1143d533712040c021301717be3750a99e2d958f5cfa5f8c37bf382da9cf188",
     "reports/migration/M3_BENCHMARK_REGISTRY.md": "a7a196b120cf202518149000aec72eed6f39af24c35d0cb521849360dd1d63cd",
-    "reports/migration/FINAL_MIGRATION_REPORT.md": "dd4679f0bb3410217499924cdf72fb9dc7ff4acc5d8046ba15691e78e4b4ad2f"
+    "reports/migration/FINAL_MIGRATION_REPORT.md": "a3172a57f52c957f6d80219ea5f69989623ddb59ceb7bb3d6f5a16460ef19332"
   }
 }

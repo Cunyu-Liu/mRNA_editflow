@@ -48,32 +48,39 @@ def main() -> None:
     def by_id(a):
         return a["asset_id"]
 
-    # 5'UTR A1 natural-pair benchmark: accepted EFFECT_PRIMARY A1 assets.
-    # ENCSR854RUF is a 3'UTR asset and is bound to EditBench-3U-A1-Variant, so it is
-    # excluded here (independent endpoint heads; no cross-pool mixing).
+    def region(acc):
+        return by_acc[acc]["region"]
+
+    # 5'UTR A1 natural-pair benchmark: accepted EFFECT_PRIMARY A1 assets whose
+    # genomic region is 5'UTR. 3'UTR assets (ENCSR854RUF, GSE186455, GSE200304,
+    # GSE232571, GSE232572, GSE261709, GSE298114) and non-variant MPRA assets
+    # (GSE288185, GSE330741 -> PENDING_BLOCKED) are excluded here so that the
+    # 5'UTR / 3'UTR pools stay independent endpoint heads.
     five_u_a1 = sorted(
         (a for a in assets
         if a["role"] == "ACCEPTED_FOR_NEW_ROLE"
-        and a["asset_id"] != "ENCSR854RUF"
+        and region(a["asset_id"]) == "5UTR"
         and a["orthogonal_axes"]["intervention_evidence_grade"] == "A1"
         and a["orthogonal_axes"]["method_training_role"] == "EFFECT_PRIMARY"
         and a["orthogonal_axes"]["critic_eligibility"] == "YES"),
         key=by_id,
     )
-    # 5'UTR A2 dense benchmark: accepted A2 EFFECT_PRIMARY.
+    # 5'UTR A2 dense benchmark: accepted A2 EFFECT_PRIMARY 5'UTR assets.
     five_u_a2 = sorted(
         (a for a in assets
         if a["role"] == "ACCEPTED_FOR_NEW_ROLE"
+        and region(a["asset_id"]) == "5UTR"
         and a["orthogonal_axes"]["intervention_evidence_grade"] == "A2"
         and a["orthogonal_axes"]["method_training_role"] == "EFFECT_PRIMARY"),
         key=by_id,
     )
-    # 3'UTR A1 variant transfer benchmark: ENCSR854RUF (3'UTR A1 EFFECT_PRIMARY,
-    # flow_base=NO, transfer=YES).
+    # 3'UTR A1 variant transfer benchmark: accepted A1 3'UTR assets (independent
+    # endpoint heads; transfer track). Includes ENCSR854RUF + the 3'UTR A1 assets
+    # that were previously (incorrectly) pooled into the 5'UTR benchmark.
     three_u_a1 = sorted(
         (a for a in assets
-        if a["asset_id"] == "ENCSR854RUF"
-        and a["role"] == "ACCEPTED_FOR_NEW_ROLE"
+        if a["role"] == "ACCEPTED_FOR_NEW_ROLE"
+        and region(a["asset_id"]) == "3UTR"
         and a["orthogonal_axes"]["intervention_evidence_grade"] == "A1"),
         key=by_id,
     )
@@ -89,7 +96,13 @@ def main() -> None:
             "region": "5UTR",
             "evidence_grade": "A1",
             "description": "5'UTR intentionally-assayed natural source/ref-candidate/alt pairs.",
-            "status": "ACTIVE",
+            "status": "ACTIVE" if five_u_a1 else "DORMANT",
+            "status_reason": None if five_u_a1 else (
+                "No qualified 5'UTR A1 natural-pair asset remains after region correction "
+                "(GSE186455/GSE200304/GSE232571/GSE232572/GSE261709/GSE298114 are 3'UTR; "
+                "GSE288185 is a non-variant MPRA). Must not fabricate a PASS until a "
+                "qualified 5'UTR A1 asset is accepted."
+            ),
             "asset_ids": [a["asset_id"] for a in five_u_a1],
             "primary_tasks": [
                 "T5_SOURCE_RELATIVE_EFFECT",
@@ -105,7 +118,12 @@ def main() -> None:
             "region": "5UTR",
             "evidence_grade": "A2",
             "description": "5'UTR controlled dense measured landscape.",
-            "status": "ACTIVE",
+            "status": "ACTIVE" if five_u_a2 else "DORMANT",
+            "status_reason": None if five_u_a2 else (
+                "No qualified 5'UTR A2 dense asset remains after region correction: "
+                "GSE330741 is a non-variant in-vivo localization MPRA (PENDING_BLOCKED). "
+                "Must not fabricate a PASS until a qualified 5'UTR A2 asset is accepted."
+            ),
             "asset_ids": [a["asset_id"] for a in five_u_a2],
             "primary_tasks": [
                 "T5_SOURCE_RELATIVE_EFFECT",
@@ -119,7 +137,10 @@ def main() -> None:
             "region": "3UTR",
             "evidence_grade": "A1",
             "description": "3'UTR variant transfer-track A1 (independent endpoint heads).",
-            "status": "ACTIVE",
+            "status": "ACTIVE" if three_u_a1 else "DORMANT",
+            "status_reason": None if three_u_a1 else (
+                "No qualified 3'UTR A1 variant asset remains after region correction."
+            ),
             "asset_ids": [a["asset_id"] for a in three_u_a1],
             "primary_tasks": ["T3_EFFECT_TRANSFER", "CROSS_REGION_TRANSFER"],
             "splits": ["S4", "S5"],

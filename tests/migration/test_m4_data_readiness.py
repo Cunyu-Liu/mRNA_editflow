@@ -19,7 +19,6 @@ EXEC = REPO_ROOT / "docs" / "execution"
 NEW_CONTRACT_ID = "mrna_xeditflow_goal_v1_1"
 ACTIVE_BENCHMARKS = {
     "EditBench-5U-A1-Natural",
-    "EditBench-5U-A2-Dense",
     "EditBench-3U-A1-Variant",
 }
 

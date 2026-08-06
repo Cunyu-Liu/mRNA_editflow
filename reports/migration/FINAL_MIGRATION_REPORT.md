@@ -41,10 +41,10 @@
 - `tests/migration/` full suite: **47/47 PASS** (M1 15 + M2 21 + M3 11, editflow env pytest 9.1.1).
 
 ## 9. DATA_COUNTS_AND_DENOMINATORS
-- Sub-benchmarks: 4 (ACTIVE: 3 — EditBench-5U-A1-Natural, EditBench-5U-A2-Dense, EditBench-3U-A1-Variant; DORMANT: EditBench-CDS-B1-Synonymous).
+- Sub-benchmarks: 4 (ACTIVE: 2 — EditBench-5U-A1-Natural, EditBench-3U-A1-Variant; DORMANT: EditBench-5U-A2-Dense, EditBench-CDS-B1-Synonymous).
 - Assets classified: 33 (ACCEPTED 14 / PENDING_BLOCKED 19).
 - Crosswalk rows: 19.
-- Blocker rebind rows: 23.
+- Blocker rebind rows: 25.
 
 ## 10. REUSE_DECISIONS
 - Raw/provenance/hash: REUSE_AS_IS. Schemas/registry: REUSE_WITH_ADAPTER or versioned REBUILD. Governance/provenance/license/exposure/sealed/split/audit: RETAIN_EXACT (hash-bound). Model-engine: AUDIT_AND_REBIND_IN_F0_X.
