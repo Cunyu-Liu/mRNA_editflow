@@ -93,7 +93,7 @@
 - Carry forward: anchored SparseEditFormer checkpoints, effect dataset SHA-256, S4 folds, and the min-max normalized NDCG convention for consistency.
 
 ## 15. COMMIT_SHA
-- `(pending — filled after commit)`
+- `64920c26a6f44505dae26b78e7a1df9dc933e336` (commit message marked `GOAL-XEDITFLOW-MIGRATION-01`).
 
 ## 16. MANIFEST_AND_HASHES
 - `artifacts/b0x/effect_dataset.jsonl` SHA-256: `f23a9fdd54a8ead90dccf793a073ccc6ed804a9b760a266c77b02e1fb1007ba1`
