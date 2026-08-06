@@ -1,0 +1,67 @@
+{
+  "migration_goal": "GOAL-XEDITFLOW-MIGRATION-01",
+  "generated_at_utc": "2026-08-06T02:47:00Z",
+  "phase": "M0",
+  "host": "A100 (36.137.135.49)",
+  "target_repo": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow",
+  "migration_worktree": "/home/cunyuliu/mrna_editflow_goal/worktrees/xeditflow_migration_20260806T024650Z",
+  "migration_branch": "xeditflow-migration-20260806T024650Z",
+  "migration_base_commit": "1ec984290025534c2f8a18f7d8b2fd2f4a5cc18b",
+  "migration_base_note": "Base = v3.1 authority worktree HEAD (utr_editflow_goal_v3.1_benchmark_first active), NOT main-tree v2.",
+  "contracts": {
+    "old_contract": {
+      "path_local": "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna 最新合同-v1.md",
+      "contract_id": "utr_editflow_goal_v3.1_benchmark_first",
+      "sha256": "ecc6c635f112575db2f14309c869a378fc31df8fb76c01dda0b54b832b4f8946",
+      "byte_size": 344589,
+      "status_in_repo": "HISTORICAL_SUPERSEDED_BY_MRNA_XEDITFLOW_V1_1 (TO BE WRITTEN IN M1)"
+    },
+    "new_contract": {
+      "path_local": "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna 最新合同-v2.md",
+      "contract_id": "mRNA-XEditFlow 项目科研与执行合同 v1.0",
+      "sha256": "9c79edd819e45551974bcfeb14a400dd504c55c0a7c869e456e638daf49f1c1e",
+      "byte_size": 69226,
+      "status_in_repo": "NOT_PRESENT (TO BE CREATED IN M1)"
+    },
+    "migration_prompt": {
+      "path_local": "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna 合同迁移.md",
+      "sha256": "55c89e5dc065a116063bdcdcd594322db4f2f33f6cc5d25c27cd4fc402fab916",
+      "byte_size": 39689
+    },
+    "v3_1_repo_contract": {
+      "path_repo": "docs/contracts/utr_editflow_goal_v3_1.md",
+      "sha256": "35dd4bf27a3c7d574ab777f5d858ad1b13dcb9273bdb4961e4c30a1a94bf8759"
+    }
+  },
+  "repo_facts": {
+    "main_tree_branch": "phase2-reliable-local-delta-20260727",
+    "main_tree_head": "aca6c8c31f5843105f49c30e78e78342278bdd7d",
+    "main_tree_active_contract": "utr_editflow_contract_v2",
+    "main_tree_dirty_files": 5,
+    "main_tree_dirty_notes": "4x data/d1_canonical_records.jsonl.pre_* snapshots + archive/legacy_predictor_first_v1/benchmark/benchmark_v21/external_data/LinearDesign"
+  },
+  "gpu_ownership": {
+    "note": "Multi-user shared A100 node. Many owners (shenxin, zhaobowei, yihaozhao, af3_bosun, jingxuange, root). No free-exclusive GPU; must claim only when needed and avoid disturbing owners.",
+    "must_not_disturb_processes": [
+      "PID 1535664 (cunyuliu): v3.1 strict D1 validation, 1d5h, STAT=D, uses sealed GSE246381 input, contract sha ecc6c635"
+    ]
+  },
+  "running_v3_1_validation": {
+    "pid": 1535664,
+    "worktree": "/home/cunyuliu/mrna_editflow_goal/worktrees/v3_1_authority_rebind_20260804T074227Z",
+    "run_root": "/mnt/cunyuliu/mrna_editflow_v3_1_goal_runs/GOAL-V3-DATA-BENCH-01_20260804/d1_strict_full_20260805T034500Z",
+    "authority_contract_sha256": "ecc6c635f112575db2f14309c869a378fc31df8fb76c01dda0b54b832b4f8946",
+    "expected_ordinary_records": 3831570,
+    "expected_restricted_records": 1300,
+    "expected_matrix_rows": 32990,
+    "status": "RUNNING (must not terminate/modify)"
+  },
+  "m0_acceptance": {
+    "contracts_hashed": true,
+    "main_tree_unmodified": true,
+    "user_changes_and_processes_unaffected": true,
+    "sealed_labels_not_read": true,
+    "all_key_artifacts_classified": "see MIGRATION_INVENTORY.jsonl",
+    "unknown_items_have_blocker": "see MIGRATION_INVENTORY.jsonl"
+  }
+}
