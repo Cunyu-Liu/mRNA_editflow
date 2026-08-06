@@ -100,7 +100,7 @@
 - Carry forward: anchored SparseEditFormer checkpoints, effect dataset SHA-256, S4 folds, min-max normalized NDCG convention.
 
 ## 15. COMMIT_SHA
-- _filled at commit time_
+- `e394a6e`
 
 ## 16. MANIFEST_AND_HASHES
 - `artifacts/b0x/effect_dataset.jsonl` SHA-256: `f23a9fdd54a8ead90dccf793a073ccc6ed804a9b760a266c77b02e1fb1007ba1`
