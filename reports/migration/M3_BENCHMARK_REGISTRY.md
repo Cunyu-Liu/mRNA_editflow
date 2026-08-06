@@ -81,7 +81,7 @@
 - CDS-B1 需 rebuilt sequence/family/label 后才可激活。
 
 ## 15. COMMIT_SHA
-- M3 commit：`98dd2ab`（4 files changed, 521 insertions）。
+- M3 产物 commit：`187c95f`（4 files changed, 521 insertions）。
 
 ## 16. MANIFEST_AND_HASHES
 - `xeditflow_benchmark_registry.yaml`：`c9453f6b531de690fac88a095d1533af59be14a7bf6709b21054e7b30451efe3`
