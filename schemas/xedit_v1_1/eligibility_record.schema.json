@@ -1,0 +1,93 @@
+{
+  "$defs": {
+    "B0RoleDecisionEvidence": {
+      "additionalProperties": false,
+      "properties": {
+        "evidence_id": {
+          "type": "string"
+        },
+        "evidence_sha256": {
+          "type": "string"
+        },
+        "object_id": {
+          "type": "string"
+        },
+        "role_decision": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "object_id",
+        "role_decision",
+        "evidence_id",
+        "evidence_sha256"
+      ],
+      "type": "object"
+    },
+    "GlobalEligibilityDecisionEvidence": {
+      "additionalProperties": false,
+      "properties": {
+        "decision_id": {
+          "type": "string"
+        },
+        "evidence_id": {
+          "type": "string"
+        },
+        "evidence_sha256": {
+          "type": "string"
+        },
+        "global_eligibility": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "decision_id",
+        "global_eligibility",
+        "evidence_id",
+        "evidence_sha256"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://github.com/Cunyu-Liu/mRNA_editflow/schemas/xedit_v1_1/eligibility_record.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "contract_id": "mrna_xeditflow_goal_v1_1",
+  "description": "Global object/purpose eligibility record (no task_id/split/partition).",
+  "properties": {
+    "eligibility_manifest_sha256": {
+      "type": "string"
+    },
+    "global_eligibility": {
+      "enum": [
+        "ELIGIBLE",
+        "INELIGIBLE",
+        "INELIGIBLE_WITH_REASON"
+      ],
+      "type": "string"
+    },
+    "object_id": {
+      "type": "string"
+    },
+    "object_type": {
+      "enum": [
+        "PAIR",
+        "OBSERVATION"
+      ],
+      "type": "string"
+    },
+    "purpose": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "object_id",
+    "object_type",
+    "global_eligibility",
+    "purpose",
+    "eligibility_manifest_sha256"
+  ],
+  "schema_version": "1.1",
+  "title": "EligibilityRecord (xedit_v1_1)",
+  "type": "object"
+}

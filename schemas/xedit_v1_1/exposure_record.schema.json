@@ -1,0 +1,981 @@
+{
+  "$defs": {
+    "AccessAbort": {
+      "additionalProperties": false,
+      "properties": {
+        "access_id": {
+          "type": "string"
+        },
+        "actor_identity": {
+          "type": "string"
+        },
+        "actual_label_object_set_manifest_sha256": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "actual_sequence_object_set_manifest_sha256": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "analytic_access": {
+          "type": "boolean"
+        },
+        "container_or_environment_sha256": {
+          "type": "string"
+        },
+        "event_id": {
+          "type": "string"
+        },
+        "event_sha256": {
+          "type": "string"
+        },
+        "event_type": {
+          "enum": [
+            "RESTRICTED_BUILDER_PARSE",
+            "AGGREGATE_QC_MACHINE",
+            "FM_OVERLAP_AGGREGATE",
+            "B0_ELIGIBILITY_SPLIT_BUILD",
+            "G7_RESTRICTED_FINALIZER",
+            "TASK_PROTOCOL_CALIBRATION",
+            "INTERNAL_TEST_EVALUATOR",
+            "HUMAN_SEQUENCE_VIEW",
+            "HUMAN_LABEL_VIEW",
+            "TRAIN",
+            "TUNE",
+            "MODEL_SELECTION",
+            "PRE_FINAL_ERROR_ANALYSIS",
+            "ONE_TIME_FINAL_EVALUATOR",
+            "POST_FINAL_ERROR_ANALYSIS"
+          ],
+          "type": "string"
+        },
+        "executable_sha256": {
+          "type": "string"
+        },
+        "failure_evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "input_manifest_sha256": {
+          "type": "string"
+        },
+        "intent": {
+          "type": "string"
+        },
+        "intent_event_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "label_rows_touched": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "log_sequence_no": {
+          "type": "integer"
+        },
+        "object_id": {
+          "type": "string"
+        },
+        "output_manifest_sha256": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "output_schema_id": {
+          "type": "string"
+        },
+        "output_schema_sha256": {
+          "type": "string"
+        },
+        "partial_actual_set_status": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "predecessor_event_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "predecessor_event_sha256": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "prev_event_sha256": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "realized_state_transition": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "reason": {
+          "type": "string"
+        },
+        "requested_label_object_set_manifest_sha256": {
+          "type": "string"
+        },
+        "requested_label_scope": {
+          "type": "string"
+        },
+        "requested_sequence_object_set_manifest_sha256": {
+          "type": "string"
+        },
+        "requested_sequence_scope": {
+          "type": "string"
+        },
+        "requested_state_transition": {
+          "type": "string"
+        },
+        "sequence_rows_touched": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "status": {
+          "enum": [
+            "ABORT"
+          ],
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "access_id",
+        "actor_identity",
+        "actual_label_object_set_manifest_sha256",
+        "actual_sequence_object_set_manifest_sha256",
+        "analytic_access",
+        "container_or_environment_sha256",
+        "event_id",
+        "event_sha256",
+        "event_type",
+        "executable_sha256",
+        "failure_evidence_ids",
+        "input_manifest_sha256",
+        "intent",
+        "intent_event_id",
+        "label_rows_touched",
+        "log_sequence_no",
+        "object_id",
+        "output_manifest_sha256",
+        "output_schema_id",
+        "output_schema_sha256",
+        "partial_actual_set_status",
+        "predecessor_event_id",
+        "predecessor_event_sha256",
+        "prev_event_sha256",
+        "realized_state_transition",
+        "reason",
+        "requested_label_object_set_manifest_sha256",
+        "requested_label_scope",
+        "requested_sequence_object_set_manifest_sha256",
+        "requested_sequence_scope",
+        "requested_state_transition",
+        "sequence_rows_touched",
+        "status",
+        "timestamp"
+      ],
+      "type": "object"
+    },
+    "AccessCompletion": {
+      "additionalProperties": false,
+      "properties": {
+        "access_id": {
+          "type": "string"
+        },
+        "actor_identity": {
+          "type": "string"
+        },
+        "actual_label_object_set_manifest_sha256": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "actual_sequence_object_set_manifest_sha256": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "analytic_access": {
+          "type": "boolean"
+        },
+        "container_or_environment_sha256": {
+          "type": "string"
+        },
+        "event_id": {
+          "type": "string"
+        },
+        "event_sha256": {
+          "type": "string"
+        },
+        "event_type": {
+          "enum": [
+            "RESTRICTED_BUILDER_PARSE",
+            "AGGREGATE_QC_MACHINE",
+            "FM_OVERLAP_AGGREGATE",
+            "B0_ELIGIBILITY_SPLIT_BUILD",
+            "G7_RESTRICTED_FINALIZER",
+            "TASK_PROTOCOL_CALIBRATION",
+            "INTERNAL_TEST_EVALUATOR",
+            "HUMAN_SEQUENCE_VIEW",
+            "HUMAN_LABEL_VIEW",
+            "TRAIN",
+            "TUNE",
+            "MODEL_SELECTION",
+            "PRE_FINAL_ERROR_ANALYSIS",
+            "ONE_TIME_FINAL_EVALUATOR",
+            "POST_FINAL_ERROR_ANALYSIS"
+          ],
+          "type": "string"
+        },
+        "executable_sha256": {
+          "type": "string"
+        },
+        "failure_evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "input_manifest_sha256": {
+          "type": "string"
+        },
+        "intent": {
+          "type": "string"
+        },
+        "intent_event_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "label_rows_touched": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "log_sequence_no": {
+          "type": "integer"
+        },
+        "object_id": {
+          "type": "string"
+        },
+        "output_manifest_sha256": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "output_schema_id": {
+          "type": "string"
+        },
+        "output_schema_sha256": {
+          "type": "string"
+        },
+        "partial_actual_set_status": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "predecessor_event_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "predecessor_event_sha256": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "prev_event_sha256": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "realized_state_transition": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "requested_label_object_set_manifest_sha256": {
+          "type": "string"
+        },
+        "requested_label_scope": {
+          "type": "string"
+        },
+        "requested_sequence_object_set_manifest_sha256": {
+          "type": "string"
+        },
+        "requested_sequence_scope": {
+          "type": "string"
+        },
+        "requested_state_transition": {
+          "type": "string"
+        },
+        "sequence_rows_touched": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "status": {
+          "enum": [
+            "COMPLETION"
+          ],
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "access_id",
+        "actor_identity",
+        "actual_label_object_set_manifest_sha256",
+        "actual_sequence_object_set_manifest_sha256",
+        "analytic_access",
+        "container_or_environment_sha256",
+        "event_id",
+        "event_sha256",
+        "event_type",
+        "executable_sha256",
+        "failure_evidence_ids",
+        "input_manifest_sha256",
+        "intent",
+        "intent_event_id",
+        "label_rows_touched",
+        "log_sequence_no",
+        "object_id",
+        "output_manifest_sha256",
+        "output_schema_id",
+        "output_schema_sha256",
+        "partial_actual_set_status",
+        "predecessor_event_id",
+        "predecessor_event_sha256",
+        "prev_event_sha256",
+        "realized_state_transition",
+        "requested_label_object_set_manifest_sha256",
+        "requested_label_scope",
+        "requested_sequence_object_set_manifest_sha256",
+        "requested_sequence_scope",
+        "requested_state_transition",
+        "sequence_rows_touched",
+        "status",
+        "timestamp"
+      ],
+      "type": "object"
+    },
+    "AccessIntent": {
+      "additionalProperties": false,
+      "properties": {
+        "access_id": {
+          "type": "string"
+        },
+        "actor_identity": {
+          "type": "string"
+        },
+        "actual_label_object_set_manifest_sha256": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "actual_sequence_object_set_manifest_sha256": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "analytic_access": {
+          "type": "boolean"
+        },
+        "container_or_environment_sha256": {
+          "type": "string"
+        },
+        "event_id": {
+          "type": "string"
+        },
+        "event_sha256": {
+          "type": "string"
+        },
+        "event_type": {
+          "enum": [
+            "RESTRICTED_BUILDER_PARSE",
+            "AGGREGATE_QC_MACHINE",
+            "FM_OVERLAP_AGGREGATE",
+            "B0_ELIGIBILITY_SPLIT_BUILD",
+            "G7_RESTRICTED_FINALIZER",
+            "TASK_PROTOCOL_CALIBRATION",
+            "INTERNAL_TEST_EVALUATOR",
+            "HUMAN_SEQUENCE_VIEW",
+            "HUMAN_LABEL_VIEW",
+            "TRAIN",
+            "TUNE",
+            "MODEL_SELECTION",
+            "PRE_FINAL_ERROR_ANALYSIS",
+            "ONE_TIME_FINAL_EVALUATOR",
+            "POST_FINAL_ERROR_ANALYSIS"
+          ],
+          "type": "string"
+        },
+        "executable_sha256": {
+          "type": "string"
+        },
+        "failure_evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "input_manifest_sha256": {
+          "type": "string"
+        },
+        "intent": {
+          "type": "string"
+        },
+        "intent_event_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "label_rows_touched": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "log_sequence_no": {
+          "type": "integer"
+        },
+        "object_id": {
+          "type": "string"
+        },
+        "output_manifest_sha256": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "output_schema_id": {
+          "type": "string"
+        },
+        "output_schema_sha256": {
+          "type": "string"
+        },
+        "partial_actual_set_status": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "predecessor_event_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "predecessor_event_sha256": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "prev_event_sha256": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "realized_state_transition": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "requested_label_object_set_manifest_sha256": {
+          "type": "string"
+        },
+        "requested_label_scope": {
+          "type": "string"
+        },
+        "requested_sequence_object_set_manifest_sha256": {
+          "type": "string"
+        },
+        "requested_sequence_scope": {
+          "type": "string"
+        },
+        "requested_state_transition": {
+          "type": "string"
+        },
+        "sequence_rows_touched": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "status": {
+          "enum": [
+            "INTENT"
+          ],
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "access_id",
+        "actor_identity",
+        "actual_label_object_set_manifest_sha256",
+        "actual_sequence_object_set_manifest_sha256",
+        "analytic_access",
+        "container_or_environment_sha256",
+        "event_id",
+        "event_sha256",
+        "event_type",
+        "executable_sha256",
+        "failure_evidence_ids",
+        "input_manifest_sha256",
+        "intent",
+        "intent_event_id",
+        "label_rows_touched",
+        "log_sequence_no",
+        "object_id",
+        "output_manifest_sha256",
+        "output_schema_id",
+        "output_schema_sha256",
+        "partial_actual_set_status",
+        "predecessor_event_id",
+        "predecessor_event_sha256",
+        "prev_event_sha256",
+        "realized_state_transition",
+        "requested_label_object_set_manifest_sha256",
+        "requested_label_scope",
+        "requested_sequence_object_set_manifest_sha256",
+        "requested_sequence_scope",
+        "requested_state_transition",
+        "sequence_rows_touched",
+        "status",
+        "timestamp"
+      ],
+      "type": "object"
+    },
+    "EffectiveExposureProjection": {
+      "additionalProperties": false,
+      "properties": {
+        "access_log_chain_root_sha256": {
+          "type": "string"
+        },
+        "as_of_event_id": {
+          "type": "string"
+        },
+        "baseline_exposure_record_id": {
+          "type": "string"
+        },
+        "baseline_record_sha256": {
+          "type": "string"
+        },
+        "chain_root_sha256": {
+          "type": "string"
+        },
+        "effective_exposure": {
+          "type": "string"
+        },
+        "effective_project_label_analytic_exposure": {
+          "enum": [
+            "NONE_CONFIRMED",
+            "PRESENT",
+            "UNKNOWN"
+          ],
+          "type": "string"
+        },
+        "effective_project_label_use_types": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "effective_project_sequence_analytic_exposure": {
+          "enum": [
+            "NONE_CONFIRMED",
+            "PRESENT",
+            "UNKNOWN"
+          ],
+          "type": "string"
+        },
+        "effective_project_sequence_use_types": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "final_access_status": {
+          "enum": [
+            "SEALED_UNOPENED",
+            "FINAL_ACCESS_RESERVED",
+            "FINAL_OPENED",
+            "FINAL_INVALIDATED"
+          ],
+          "type": "string"
+        },
+        "foundation_exposure_ledger_manifest_sha256": {
+          "type": "string"
+        },
+        "object_id": {
+          "type": "string"
+        },
+        "object_type": {
+          "enum": [
+            "SEQUENCE",
+            "RELATION_CANDIDATE",
+            "OBSERVATION_CANDIDATE",
+            "PAIR",
+            "OBSERVATION"
+          ],
+          "type": "string"
+        },
+        "projection_phase": {
+          "enum": [
+            "D1",
+            "FM0_A",
+            "B0_R",
+            "G7",
+            "MODEL_REBIND_OR_LATER"
+          ],
+          "type": "string"
+        },
+        "projection_sha256": {
+          "type": "string"
+        },
+        "snapshot_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "access_log_chain_root_sha256",
+        "as_of_event_id",
+        "baseline_exposure_record_id",
+        "baseline_record_sha256",
+        "chain_root_sha256",
+        "effective_exposure",
+        "effective_project_label_analytic_exposure",
+        "effective_project_label_use_types",
+        "effective_project_sequence_analytic_exposure",
+        "effective_project_sequence_use_types",
+        "final_access_status",
+        "foundation_exposure_ledger_manifest_sha256",
+        "object_id",
+        "object_type",
+        "projection_phase",
+        "projection_sha256",
+        "snapshot_id"
+      ],
+      "type": "object"
+    },
+    "FoundationExposureAuditRow": {
+      "additionalProperties": false,
+      "properties": {
+        "audit_status": {
+          "type": "string"
+        },
+        "checkpoint_revision": {
+          "type": "string"
+        },
+        "object_id": {
+          "type": "string"
+        },
+        "overlap": {
+          "type": "boolean"
+        },
+        "weights_hash": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "object_id",
+        "checkpoint_revision",
+        "weights_hash",
+        "overlap",
+        "audit_status"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://github.com/Cunyu-Liu/mRNA_editflow/schemas/xedit_v1_1/exposure_record.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "contract_id": "mrna_xeditflow_goal_v1_1",
+  "description": "Append-only exposure/access log with intent->completion/abort chains, foundation audit row and effective exposure projection.",
+  "properties": {
+    "access_id": {
+      "type": "string"
+    },
+    "canonical_object_sha256": {
+      "type": "string"
+    },
+    "contributing_asset_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "contributing_file_sha256s": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "event_sha256": {
+      "type": "string"
+    },
+    "evidence_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "exposure_record_id": {
+      "type": "string"
+    },
+    "foundation_audit_scope_id": {
+      "type": "string"
+    },
+    "foundation_overlap_audit_status_at_baseline": {
+      "enum": [
+        "NOT_STARTED",
+        "DEFERRED_TO_FM0_A",
+        "NOT_APPLICABLE"
+      ],
+      "type": "string"
+    },
+    "foundation_overlap_requirement": {
+      "enum": [
+        "REQUIRED_FM0_A",
+        "NOT_APPLICABLE_NO_EXTERNAL_WEIGHTS"
+      ],
+      "type": "string"
+    },
+    "intent": {
+      "type": "string"
+    },
+    "object_id": {
+      "type": "string"
+    },
+    "object_type": {
+      "enum": [
+        "SEQUENCE",
+        "RELATION_CANDIDATE",
+        "OBSERVATION_CANDIDATE",
+        "PAIR",
+        "OBSERVATION"
+      ],
+      "type": "string"
+    },
+    "permitted_derived_release": {
+      "enum": [
+        "YES",
+        "NO",
+        "UNKNOWN"
+      ],
+      "type": "string"
+    },
+    "permitted_evaluation": {
+      "enum": [
+        "YES",
+        "NO",
+        "UNKNOWN"
+      ],
+      "type": "string"
+    },
+    "permitted_model_training": {
+      "enum": [
+        "YES",
+        "NO",
+        "UNKNOWN"
+      ],
+      "type": "string"
+    },
+    "permitted_raw_redistribution": {
+      "enum": [
+        "YES",
+        "NO",
+        "UNKNOWN"
+      ],
+      "type": "string"
+    },
+    "pipeline_label_materialization": {
+      "enum": [
+        "ABSENT",
+        "PRESENT",
+        "UNKNOWN"
+      ],
+      "type": "string"
+    },
+    "pipeline_sequence_materialization": {
+      "enum": [
+        "ABSENT",
+        "PRESENT",
+        "UNKNOWN"
+      ],
+      "type": "string"
+    },
+    "prev_event_sha256": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "project_label_analytic_exposure": {
+      "enum": [
+        "NONE_CONFIRMED",
+        "PRESENT",
+        "UNKNOWN"
+      ],
+      "type": "string"
+    },
+    "project_label_analytic_use_types": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "project_sequence_analytic_exposure": {
+      "enum": [
+        "NONE_CONFIRMED",
+        "PRESENT",
+        "UNKNOWN"
+      ],
+      "type": "string"
+    },
+    "project_sequence_analytic_use_types": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "record_sha256": {
+      "type": "string"
+    },
+    "rights_evidence_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "rights_override_evidence_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "rights_override_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "rights_override_reviewer": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "rights_override_scope": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "rights_override_sha256": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "rights_projection_rule_id": {
+      "type": "string"
+    },
+    "rights_projection_rule_sha256": {
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "INTENT",
+        "COMPLETION",
+        "ABORT"
+      ],
+      "type": "string"
+    }
+  },
+  "required": [
+    "access_id",
+    "canonical_object_sha256",
+    "contributing_asset_ids",
+    "contributing_file_sha256s",
+    "event_sha256",
+    "evidence_ids",
+    "exposure_record_id",
+    "foundation_audit_scope_id",
+    "foundation_overlap_audit_status_at_baseline",
+    "foundation_overlap_requirement",
+    "intent",
+    "object_id",
+    "object_type",
+    "permitted_derived_release",
+    "permitted_evaluation",
+    "permitted_model_training",
+    "permitted_raw_redistribution",
+    "pipeline_label_materialization",
+    "pipeline_sequence_materialization",
+    "prev_event_sha256",
+    "project_label_analytic_exposure",
+    "project_label_analytic_use_types",
+    "project_sequence_analytic_exposure",
+    "project_sequence_analytic_use_types",
+    "record_sha256",
+    "rights_evidence_ids",
+    "rights_override_evidence_ids",
+    "rights_override_id",
+    "rights_override_reviewer",
+    "rights_override_scope",
+    "rights_override_sha256",
+    "rights_projection_rule_id",
+    "rights_projection_rule_sha256",
+    "status"
+  ],
+  "schema_version": "1.1",
+  "title": "ExposureRecord (xedit_v1_1)",
+  "type": "object"
+}

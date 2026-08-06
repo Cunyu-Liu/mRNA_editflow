@@ -1,0 +1,67 @@
+{
+  "$id": "https://github.com/Cunyu-Liu/mRNA_editflow/schemas/xedit_v1_1/use_role.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "contract_id": "mrna_xeditflow_goal_v1_1",
+  "description": "Role/use projection for an object, including future-use role.",
+  "properties": {
+    "authority_level": {
+      "enum": [
+        "ORDINARY",
+        "RESTRICTED_FINAL",
+        "SEALED"
+      ],
+      "type": "string"
+    },
+    "base_future_use_role": {
+      "type": "string"
+    },
+    "candidate_base_payload_sha256": {
+      "type": "string"
+    },
+    "canonical_manifest_sha256": {
+      "type": "string"
+    },
+    "future_use_role": {
+      "type": "string"
+    },
+    "object_id": {
+      "type": "string"
+    },
+    "pair_base_payload_sha256": {
+      "type": "string"
+    },
+    "pair_id": {
+      "type": "string"
+    },
+    "record_sha256": {
+      "type": "string"
+    },
+    "relation_candidate_id": {
+      "type": "string"
+    },
+    "use_role": {
+      "type": "string"
+    },
+    "use_role_record_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "authority_level",
+    "base_future_use_role",
+    "candidate_base_payload_sha256",
+    "canonical_manifest_sha256",
+    "future_use_role",
+    "object_id",
+    "pair_base_payload_sha256",
+    "pair_id",
+    "record_sha256",
+    "relation_candidate_id",
+    "use_role",
+    "use_role_record_id"
+  ],
+  "schema_version": "1.1",
+  "title": "UseRole (xedit_v1_1)",
+  "type": "object"
+}

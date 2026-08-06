@@ -1,0 +1,34 @@
+{
+  "$id": "https://github.com/Cunyu-Liu/mRNA_editflow/schemas/xedit_v1_1/edit_path_set.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "contract_id": "mrna_xeditflow_goal_v1_1",
+  "description": "Set of edit paths / trajectories; explicit object type, not a shared ambiguous enum.",
+  "properties": {
+    "cost_model": {
+      "type": "string"
+    },
+    "object_type": {
+      "const": "EDIT_PATH_SET",
+      "type": "string"
+    },
+    "path_set_id": {
+      "type": "string"
+    },
+    "paths": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "path_set_id",
+    "object_type",
+    "paths",
+    "cost_model"
+  ],
+  "schema_version": "1.1",
+  "title": "EditPathSet (xedit_v1_1)",
+  "type": "object"
+}

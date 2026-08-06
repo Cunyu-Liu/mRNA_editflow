@@ -1,0 +1,65 @@
+{
+  "$id": "https://github.com/Cunyu-Liu/mRNA_editflow/schemas/xedit_v1_1/rejection_record.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "contract_id": "mrna_xeditflow_goal_v1_1",
+  "description": "Record of a rejected candidate with reason and evidence.",
+  "properties": {
+    "asset_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "candidate_id": {
+      "type": "string"
+    },
+    "disposition_status": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "evidence_id": {
+      "type": "string"
+    },
+    "reason": {
+      "type": "string"
+    },
+    "rejected_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "rejection_id": {
+      "type": "string"
+    },
+    "source_row_locator": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "source_unit_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "terminal_disposition_reason": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "candidate_id",
+    "evidence_id",
+    "reason",
+    "rejected_at",
+    "rejection_id"
+  ],
+  "schema_version": "1.1",
+  "title": "RejectionRecord (xedit_v1_1)",
+  "type": "object"
+}

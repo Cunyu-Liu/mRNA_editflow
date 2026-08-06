@@ -1,0 +1,347 @@
+{
+  "$id": "https://github.com/Cunyu-Liu/mRNA_editflow/schemas/xedit_v1_1/utr_edit_pair.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "contract_id": "mrna_xeditflow_goal_v1_1",
+  "description": "Canonical source/candidate edit pair (Track E). One-to-one bijection with a relation candidate.",
+  "properties": {
+    "biological_parent_group": {
+      "type": "string"
+    },
+    "candidate_id": {
+      "type": "string"
+    },
+    "candidate_observation_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "candidate_sequence_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "confirmatory_delta_eligible": {
+      "type": "boolean"
+    },
+    "context_id": {
+      "type": "string"
+    },
+    "contributing_asset_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "contributing_source_file_sha256s": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "contributor_set_sha256": {
+      "type": "string"
+    },
+    "critic_eligibility": {
+      "enum": [
+        "YES",
+        "NO"
+      ],
+      "type": "string"
+    },
+    "delta": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "delta_rule_id": {
+      "type": "string"
+    },
+    "delta_rule_sha256": {
+      "type": "string"
+    },
+    "delta_standard_error": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "design_relation_group_id": {
+      "type": "string"
+    },
+    "effect_evidence": {
+      "enum": [
+        "UNKNOWN",
+        "SEQUENCE_ONLY",
+        "CANDIDATE_ONLY",
+        "BOTH_CROSS_CONTEXT",
+        "BOTH_SAME_CONTEXT"
+      ],
+      "type": "string"
+    },
+    "endpoint_id": {
+      "type": "string"
+    },
+    "endpoint_role": {
+      "enum": [
+        "DELTA",
+        "ABSOLUTE_PROPERTY",
+        "FAMILY_RANK",
+        "RECONSTRUCTION",
+        "NOT_APPLICABLE"
+      ],
+      "type": "string"
+    },
+    "evidence_id": {
+      "type": "string"
+    },
+    "exclusion_reason": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "flow_base_eligibility": {
+      "enum": [
+        "YES",
+        "NO"
+      ],
+      "type": "string"
+    },
+    "future_use_role": {
+      "type": "string"
+    },
+    "gene_group": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "guidance_training_eligibility": {
+      "enum": [
+        "YES",
+        "NO"
+      ],
+      "type": "string"
+    },
+    "immutable_base_future_use_role": {
+      "type": "string"
+    },
+    "intervention_evidence_grade": {
+      "description": "Evidence ladder, orthogonal to scientific_track.",
+      "enum": [
+        "A1",
+        "A2",
+        "B1",
+        "B2",
+        "C",
+        "D"
+      ],
+      "type": "string"
+    },
+    "join_keys": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "label_transform": {
+      "type": "string"
+    },
+    "label_unit": {
+      "type": "string"
+    },
+    "landscape_role": {
+      "enum": [
+        "SPARSE",
+        "DENSE",
+        "NOT_APPLICABLE"
+      ],
+      "type": "string"
+    },
+    "link_view_eligible": {
+      "type": "boolean"
+    },
+    "measured_optimization_eligibility": {
+      "enum": [
+        "YES",
+        "NO"
+      ],
+      "type": "string"
+    },
+    "method_training_role": {
+      "enum": [
+        "EFFECT_PRIMARY",
+        "FLOW_BASE",
+        "CRITIC_AUX",
+        "TRANSFER",
+        "DIAGNOSTIC",
+        "EXCLUDED"
+      ],
+      "type": "string"
+    },
+    "minimum_edit_distance": {
+      "type": "integer"
+    },
+    "no_edit_control_subtype": {
+      "enum": [
+        "DESIGNED_WT_CONTROL",
+        "OBSERVED_UNCHANGED_ENDPOINT",
+        "SOURCE_MEASUREMENT_ANCHOR",
+        "ALGORITHM_NO_CHANGE_OUTPUT",
+        "DUPLICATE_OR_MAPPING_IDENTITY",
+        "UNRESOLVED_IDENTITY",
+        "NOT_APPLICABLE_NON_IDENTITY"
+      ],
+      "type": "string"
+    },
+    "no_edit_sampling_frame_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pair_direction_verified": {
+      "type": "boolean"
+    },
+    "pair_evidence_id": {
+      "type": "string"
+    },
+    "pair_id": {
+      "type": "string"
+    },
+    "pairing_method": {
+      "type": "string"
+    },
+    "parent_pair_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "path_ambiguity_count_or_bound": {
+      "type": [
+        "integer",
+        "number",
+        "string"
+      ]
+    },
+    "permission_evidence_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "relation_acceptance_status": {
+      "enum": [
+        "ACCEPTED"
+      ],
+      "type": "string"
+    },
+    "relation_candidate_id": {
+      "type": "string"
+    },
+    "relation_type": {
+      "enum": [
+        "EXACT_REF_ALT",
+        "SOURCE_CANDIDATE",
+        "NO_EDIT_CONTROL"
+      ],
+      "type": "string"
+    },
+    "same_assay_context": {
+      "type": "boolean"
+    },
+    "scientific_track": {
+      "enum": [
+        "E"
+      ],
+      "type": "string"
+    },
+    "sequence_cluster_group": {
+      "type": "string"
+    },
+    "source_observation_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "source_sequence_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "tile_family_group": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "transfer_eligibility": {
+      "enum": [
+        "YES",
+        "NO"
+      ],
+      "type": "string"
+    },
+    "true_length_change": {
+      "type": "integer"
+    }
+  },
+  "required": [
+    "biological_parent_group",
+    "candidate_id",
+    "candidate_observation_id",
+    "candidate_sequence_id",
+    "confirmatory_delta_eligible",
+    "context_id",
+    "contributing_asset_ids",
+    "contributing_source_file_sha256s",
+    "contributor_set_sha256",
+    "delta",
+    "delta_rule_id",
+    "delta_rule_sha256",
+    "delta_standard_error",
+    "design_relation_group_id",
+    "effect_evidence",
+    "endpoint_id",
+    "evidence_id",
+    "exclusion_reason",
+    "future_use_role",
+    "gene_group",
+    "immutable_base_future_use_role",
+    "join_keys",
+    "label_transform",
+    "label_unit",
+    "landscape_role",
+    "link_view_eligible",
+    "minimum_edit_distance",
+    "no_edit_control_subtype",
+    "no_edit_sampling_frame_id",
+    "pair_direction_verified",
+    "pair_evidence_id",
+    "pair_id",
+    "pairing_method",
+    "parent_pair_id",
+    "path_ambiguity_count_or_bound",
+    "permission_evidence_ids",
+    "relation_acceptance_status",
+    "relation_candidate_id",
+    "relation_type",
+    "same_assay_context",
+    "scientific_track",
+    "sequence_cluster_group",
+    "source_observation_id",
+    "source_sequence_id",
+    "tile_family_group",
+    "true_length_change"
+  ],
+  "schema_version": "1.1",
+  "title": "UTR-Edit Pair (xedit_v1_1)",
+  "type": "object"
+}

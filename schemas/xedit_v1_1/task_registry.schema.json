@@ -1,0 +1,214 @@
+{
+  "$defs": {
+    "ActivationCalibrationMaskRow": {
+      "additionalProperties": false,
+      "properties": {
+        "calibration_partition": {
+          "const": "DEVELOPMENT_ONLY",
+          "type": "string"
+        },
+        "component_id": {
+          "type": "string"
+        },
+        "component_members": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "mask_rule_sha256": {
+          "type": "string"
+        },
+        "outcome_blind": {
+          "const": true,
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "component_id",
+        "component_members",
+        "calibration_partition",
+        "mask_rule_sha256",
+        "outcome_blind"
+      ],
+      "type": "object"
+    },
+    "TaskActivationDecision": {
+      "additionalProperties": false,
+      "properties": {
+        "activation_calibration_mask_sha256": {
+          "type": "string"
+        },
+        "activation_calibration_population_sha256": {
+          "type": "string"
+        },
+        "activation_input_manifest_sha256": {
+          "type": "string"
+        },
+        "activation_reason": {
+          "type": "string"
+        },
+        "confirmatory_status": {
+          "enum": [
+            "CONFIRMATORY",
+            "SECONDARY",
+            "EXPLORATORY",
+            "DESCRIPTIVE",
+            "NOT_APPLICABLE_AUXILIARY",
+            "NOT_APPLICABLE_DATA_GATE"
+          ],
+          "type": "string"
+        },
+        "decision_run_id": {
+          "type": "string"
+        },
+        "decision_sha256": {
+          "type": "string"
+        },
+        "internal_test_contribution_count": {
+          "const": 0,
+          "type": "integer"
+        },
+        "ordinary_access_event_chain_root_sha256": {
+          "type": "string"
+        },
+        "sealed_contribution_count": {
+          "const": 0,
+          "type": "integer"
+        },
+        "selected_primary_metric_id": {
+          "type": "string"
+        },
+        "task_activation_status": {
+          "enum": [
+            "ACTIVE",
+            "NOT_APPLICABLE_DATA_GATE"
+          ],
+          "type": "string"
+        },
+        "task_definition_sha256": {
+          "type": "string"
+        },
+        "task_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "task_id",
+        "decision_run_id",
+        "task_definition_sha256",
+        "task_activation_status",
+        "activation_reason",
+        "activation_input_manifest_sha256",
+        "activation_calibration_mask_sha256",
+        "activation_calibration_population_sha256",
+        "sealed_contribution_count",
+        "internal_test_contribution_count",
+        "selected_primary_metric_id",
+        "confirmatory_status",
+        "ordinary_access_event_chain_root_sha256",
+        "decision_sha256"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://github.com/Cunyu-Liu/mRNA_editflow/schemas/xedit_v1_1/task_registry.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "contract_id": "mrna_xeditflow_goal_v1_1",
+  "description": "Immutable definition registry of the 12 required tasks with activation-calibration and activation-decision $defs.",
+  "properties": {
+    "activation_calibration_rule_sha256": {
+      "type": "string"
+    },
+    "contract_id": {
+      "type": "string"
+    },
+    "registry_version": {
+      "type": "string"
+    },
+    "required_task_ids_sha256": {
+      "type": "string"
+    },
+    "schema_version": {
+      "type": "string"
+    },
+    "task_descriptor_set_sha256": {
+      "type": "string"
+    },
+    "tasks": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "activation_rule_id": {
+            "type": "string"
+          },
+          "analysis_unit_id": {
+            "type": "string"
+          },
+          "estimand_id": {
+            "type": "string"
+          },
+          "object_type": {
+            "enum": [
+              "PAIR",
+              "OBSERVATION"
+            ],
+            "type": "string"
+          },
+          "region_scope": {
+            "enum": [
+              "5UTR",
+              "3UTR",
+              "CROSS_REGION",
+              "MULTI_REGION"
+            ],
+            "type": "string"
+          },
+          "scientific_track": {
+            "enum": [
+              "E",
+              "F"
+            ],
+            "type": "string"
+          },
+          "species_scope_policy_id": {
+            "type": "string"
+          },
+          "task_id": {
+            "type": "string"
+          },
+          "task_kind": {
+            "enum": [
+              "BENCHMARK_EVALUATION",
+              "AUXILIARY_TRAINING"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "task_id",
+          "task_kind",
+          "object_type",
+          "scientific_track",
+          "region_scope",
+          "estimand_id",
+          "activation_rule_id",
+          "analysis_unit_id",
+          "species_scope_policy_id"
+        ],
+        "type": "object"
+      },
+      "minItems": 12,
+      "type": "array"
+    }
+  },
+  "required": [
+    "registry_version",
+    "contract_id",
+    "tasks"
+  ],
+  "schema_version": "1.1",
+  "title": "TaskRegistry (xedit_v1_1)",
+  "type": "object"
+}

@@ -1,0 +1,281 @@
+{
+  "$id": "https://github.com/Cunyu-Liu/mRNA_editflow/schemas/xedit_v1_1/sequence_entity.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "contract_id": "mrna_xeditflow_goal_v1_1",
+  "description": "Canonical entity for a nucleotide sequence. Both sides of a candidate/pair must reference SequenceEntity.sequence_id.",
+  "properties": {
+    "alphabet_status": {
+      "enum": [
+        "EXACT_ACGT",
+        "IUPAC_AMBIGUOUS",
+        "INVALID"
+      ],
+      "type": "string"
+    },
+    "contributing_asset_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "contributing_source_file_sha256s": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "contributor_set_sha256": {
+      "type": "string"
+    },
+    "critic_eligibility": {
+      "enum": [
+        "YES",
+        "NO"
+      ],
+      "type": "string"
+    },
+    "editable_mask": {
+      "items": {
+        "type": "boolean"
+      },
+      "type": [
+        "array",
+        "null"
+      ]
+    },
+    "endpoint_role": {
+      "enum": [
+        "DELTA",
+        "ABSOLUTE_PROPERTY",
+        "FAMILY_RANK",
+        "RECONSTRUCTION",
+        "NOT_APPLICABLE"
+      ],
+      "type": "string"
+    },
+    "flow_base_eligibility": {
+      "enum": [
+        "YES",
+        "NO"
+      ],
+      "type": "string"
+    },
+    "full_sequence_sha256": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "guidance_training_eligibility": {
+      "enum": [
+        "YES",
+        "NO"
+      ],
+      "type": "string"
+    },
+    "intervention_evidence_grade": {
+      "description": "Evidence ladder, orthogonal to scientific_track.",
+      "enum": [
+        "A1",
+        "A2",
+        "B1",
+        "B2",
+        "C",
+        "D"
+      ],
+      "type": "string"
+    },
+    "invalid_symbol_status": {
+      "enum": [
+        "PASS",
+        "QUARANTINED"
+      ],
+      "type": "string"
+    },
+    "measured_optimization_eligibility": {
+      "enum": [
+        "YES",
+        "NO"
+      ],
+      "type": "string"
+    },
+    "method_training_role": {
+      "enum": [
+        "EFFECT_PRIMARY",
+        "FLOW_BASE",
+        "CRITIC_AUX",
+        "TRANSFER",
+        "DIAGNOSTIC",
+        "EXCLUDED"
+      ],
+      "type": "string"
+    },
+    "model_sequence_eligible": {
+      "type": "boolean"
+    },
+    "normalization_steps": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "normalized_sequence": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "normalized_sequence_sha256": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "original_length": {
+      "type": "integer"
+    },
+    "primary_asset_id": {
+      "type": "string"
+    },
+    "raw_sequence_sha256": {
+      "type": "string"
+    },
+    "reference_build": {
+      "type": "string"
+    },
+    "region": {
+      "enum": [
+        "5UTR",
+        "3UTR",
+        "CDS_AUX",
+        "FULL_LENGTH_AUX"
+      ],
+      "type": "string"
+    },
+    "region_scope": {
+      "enum": [
+        "3UTR",
+        "5UTR",
+        "CDS_AUX",
+        "CROSS_REGION",
+        "FULL_LENGTH_AUX",
+        "MULTI_REGION"
+      ],
+      "type": "string"
+    },
+    "scaffold": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "scientific_track": {
+      "description": "Retained old scientific track; A1/D never overwrite E/F.",
+      "enum": [
+        "E",
+        "F",
+        "AUX",
+        "REFERENCE"
+      ],
+      "type": "string"
+    },
+    "sequence_id": {
+      "type": "string"
+    },
+    "sequence_reconstruction_rule_id": {
+      "type": "string"
+    },
+    "sequence_reconstruction_rule_sha256": {
+      "type": "string"
+    },
+    "sequence_scope": {
+      "enum": [
+        "3UTR",
+        "5UTR",
+        "CDS",
+        "CDS_AUXILIARY",
+        "CROSS_REGION",
+        "FULL_LENGTH",
+        "FULL_UTR",
+        "MULTI_REGION",
+        "OLIGO_CONSTRUCT",
+        "RANDOM_INSERT",
+        "UTR_WINDOW"
+      ],
+      "type": "string"
+    },
+    "source_record_id": {
+      "type": "string"
+    },
+    "source_row_locator": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "species": {
+      "type": "string"
+    },
+    "strand": {
+      "enum": [
+        "+",
+        "-",
+        "UNKNOWN",
+        "NOT_APPLICABLE"
+      ],
+      "type": "string"
+    },
+    "transcript_release": {
+      "type": "string"
+    },
+    "transfer_eligibility": {
+      "enum": [
+        "YES",
+        "NO"
+      ],
+      "type": "string"
+    },
+    "window_end": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "window_start": {
+      "type": [
+        "integer",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "alphabet_status",
+    "contributing_asset_ids",
+    "contributing_source_file_sha256s",
+    "contributor_set_sha256",
+    "full_sequence_sha256",
+    "invalid_symbol_status",
+    "model_sequence_eligible",
+    "normalization_steps",
+    "normalized_sequence_sha256",
+    "original_length",
+    "primary_asset_id",
+    "raw_sequence_sha256",
+    "reference_build",
+    "region",
+    "region_scope",
+    "sequence_id",
+    "sequence_reconstruction_rule_id",
+    "sequence_reconstruction_rule_sha256",
+    "sequence_scope",
+    "source_record_id",
+    "source_row_locator",
+    "species",
+    "strand",
+    "transcript_release"
+  ],
+  "schema_version": "1.1",
+  "title": "SequenceEntity (xedit_v1_1)",
+  "type": "object"
+}

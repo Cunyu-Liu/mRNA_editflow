@@ -1,0 +1,256 @@
+{
+  "$defs": {
+    "NoEditSamplingFrameRow": {
+      "additionalProperties": false,
+      "properties": {
+        "asset_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "context_id": {
+          "type": "string"
+        },
+        "endpoint_id": {
+          "type": "string"
+        },
+        "evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "frame_definition_sha256": {
+          "type": "string"
+        },
+        "group_id": {
+          "type": "string"
+        },
+        "group_type": {
+          "enum": [
+            "NO_EDIT_SAMPLING_FRAME"
+          ],
+          "type": "string"
+        },
+        "identity_inclusion_rule_id": {
+          "type": "string"
+        },
+        "identity_inclusion_rule_sha256": {
+          "type": "string"
+        },
+        "inclusion_mechanism": {
+          "type": "string"
+        },
+        "inclusion_probability_status": {
+          "enum": [
+            "KNOWN",
+            "RECOVERABLE",
+            "UNKNOWN"
+          ],
+          "type": "string"
+        },
+        "library_lineage_group_id": {
+          "type": "string"
+        },
+        "member_assignment_manifest_sha256": {
+          "type": "string"
+        },
+        "nonidentity_inclusion_rule_id": {
+          "type": "string"
+        },
+        "nonidentity_inclusion_rule_sha256": {
+          "type": "string"
+        },
+        "region_scope": {
+          "type": "string"
+        },
+        "reweighting_rule_id": {
+          "type": "string"
+        },
+        "reweighting_rule_sha256": {
+          "type": "string"
+        },
+        "species": {
+          "type": "string"
+        },
+        "study_id": {
+          "type": "string"
+        },
+        "sublibrary_or_design_stratum": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "group_id",
+        "group_type",
+        "study_id",
+        "asset_ids",
+        "library_lineage_group_id",
+        "sublibrary_or_design_stratum",
+        "species",
+        "region_scope",
+        "context_id",
+        "endpoint_id",
+        "inclusion_mechanism",
+        "identity_inclusion_rule_id",
+        "identity_inclusion_rule_sha256",
+        "nonidentity_inclusion_rule_id",
+        "nonidentity_inclusion_rule_sha256",
+        "inclusion_probability_status",
+        "reweighting_rule_id",
+        "reweighting_rule_sha256",
+        "evidence_ids",
+        "member_assignment_manifest_sha256",
+        "frame_definition_sha256"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://github.com/Cunyu-Liu/mRNA_editflow/schemas/xedit_v1_1/group_registry.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "contract_id": "mrna_xeditflow_goal_v1_1",
+  "description": "Registry of grouping atoms (shared-group connected components) used for disjoint splits.",
+  "properties": {
+    "ambiguous_membership": {
+      "type": "boolean"
+    },
+    "context_components": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "group_id": {
+      "type": "string"
+    },
+    "group_sha256": {
+      "type": "string"
+    },
+    "group_type": {
+      "enum": [
+        "SAMPLE",
+        "BIOLOGICAL_REPLICATE",
+        "TECHNICAL_REPLICATE",
+        "BARCODE",
+        "BIOLOGICAL_PARENT",
+        "GENE",
+        "TRANSCRIPT",
+        "TILE_FAMILY",
+        "SEQUENCE_CLUSTER",
+        "LIBRARY_LINEAGE",
+        "EXPERIMENTAL_CONTEXT",
+        "NO_EDIT_SAMPLING_FRAME"
+      ],
+      "type": "string"
+    },
+    "grouping_atom": {
+      "enum": [
+        "BARCODE",
+        "BIOLOGICAL_PARENT",
+        "BIOLOGICAL_REPLICATE",
+        "CONTEXT",
+        "EXPERIMENTAL_CONTEXT",
+        "GENE",
+        "LIBRARY_LINEAGE",
+        "NO_EDIT_SAMPLING_FRAME",
+        "PAIR",
+        "SAMPLE",
+        "SEQUENCE_CLUSTER",
+        "SOURCE",
+        "STUDY",
+        "TECHNICAL_REPLICATE",
+        "TILE_FAMILY",
+        "TRANSCRIPT"
+      ],
+      "type": "string"
+    },
+    "grouping_method": {
+      "type": "string"
+    },
+    "mapping_rule_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "mapping_rule_sha256": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "mapping_status": {
+      "enum": [
+        "RESOLVED",
+        "UNKNOWN",
+        "AMBIGUOUS",
+        "NOT_APPLICABLE"
+      ],
+      "type": "string"
+    },
+    "member_count": {
+      "type": "integer"
+    },
+    "member_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "method_version": {
+      "type": "string"
+    },
+    "ontology_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "ontology_version": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "parent_group_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "raw_context_values": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "source_evidence": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "thresholds": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "ambiguous_membership",
+    "group_id",
+    "group_sha256",
+    "group_type",
+    "grouping_atom",
+    "grouping_method",
+    "member_count",
+    "member_ids",
+    "method_version",
+    "parent_group_id",
+    "source_evidence",
+    "thresholds"
+  ],
+  "schema_version": "1.1",
+  "title": "GroupRegistry (xedit_v1_1)",
+  "type": "object"
+}

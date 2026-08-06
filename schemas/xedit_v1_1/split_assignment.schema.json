@@ -1,0 +1,57 @@
+{
+  "$id": "https://github.com/Cunyu-Liu/mRNA_editflow/schemas/xedit_v1_1/split_assignment.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "contract_id": "mrna_xeditflow_goal_v1_1",
+  "description": "Assignment of an object to a partition under a split contract.",
+  "properties": {
+    "assignment_algorithm_id": {
+      "type": "string"
+    },
+    "assignment_algorithm_sha256": {
+      "type": "string"
+    },
+    "assignment_id": {
+      "type": "string"
+    },
+    "object_id": {
+      "type": "string"
+    },
+    "object_type": {
+      "enum": [
+        "PAIR",
+        "OBSERVATION"
+      ],
+      "type": "string"
+    },
+    "partition_id": {
+      "type": "string"
+    },
+    "partition_role": {
+      "enum": [
+        "TRAIN",
+        "DEVELOPMENT",
+        "INTERNAL_TEST",
+        "SEALED_FINAL",
+        "STRESS_ONLY"
+      ],
+      "type": "string"
+    },
+    "split_contract_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "assignment_id",
+    "object_id",
+    "object_type",
+    "split_contract_id",
+    "partition_id",
+    "partition_role",
+    "assignment_algorithm_id",
+    "assignment_algorithm_sha256"
+  ],
+  "schema_version": "1.1",
+  "title": "SplitAssignment (xedit_v1_1)",
+  "type": "object"
+}

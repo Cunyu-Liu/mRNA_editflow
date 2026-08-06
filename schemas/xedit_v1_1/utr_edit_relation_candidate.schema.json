@@ -1,0 +1,275 @@
+{
+  "$id": "https://github.com/Cunyu-Liu/mRNA_editflow/schemas/xedit_v1_1/utr_edit_relation_candidate.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "contract_id": "mrna_xeditflow_goal_v1_1",
+  "description": "Candidate for a source/candidate UTR edit relation (Track E).",
+  "properties": {
+    "accepted_pair_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "candidate_id": {
+      "type": "string"
+    },
+    "candidate_sequence_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "context_id": {
+      "type": "string"
+    },
+    "contributing_asset_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "contributing_source_file_sha256s": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "contributor_set_sha256": {
+      "type": "string"
+    },
+    "critic_eligibility": {
+      "enum": [
+        "YES",
+        "NO"
+      ],
+      "type": "string"
+    },
+    "delta_rule_id": {
+      "type": "string"
+    },
+    "delta_rule_sha256": {
+      "type": "string"
+    },
+    "design_relation_group_id": {
+      "type": "string"
+    },
+    "effect_evidence": {
+      "enum": [
+        "UNKNOWN",
+        "SEQUENCE_ONLY",
+        "CANDIDATE_ONLY",
+        "BOTH_CROSS_CONTEXT",
+        "BOTH_SAME_CONTEXT"
+      ],
+      "type": "string"
+    },
+    "endpoint_id": {
+      "type": "string"
+    },
+    "endpoint_role": {
+      "enum": [
+        "DELTA",
+        "ABSOLUTE_PROPERTY",
+        "FAMILY_RANK",
+        "RECONSTRUCTION",
+        "NOT_APPLICABLE"
+      ],
+      "type": "string"
+    },
+    "evidence_id": {
+      "type": "string"
+    },
+    "flow_base_eligibility": {
+      "enum": [
+        "YES",
+        "NO"
+      ],
+      "type": "string"
+    },
+    "future_use_role": {
+      "enum": [
+        "GENERAL_DEVELOPMENT_POOL",
+        "SEALED_EXTERNAL_FINAL_CANDIDATE",
+        "SEALED_EXTERNAL_FINAL",
+        "EXTERNAL_STRESS_ONLY",
+        "EXCLUDED",
+        "PENDING",
+        "AWAITING_B0_GLOBAL_DISPOSITION"
+      ],
+      "type": "string"
+    },
+    "guidance_training_eligibility": {
+      "enum": [
+        "YES",
+        "NO"
+      ],
+      "type": "string"
+    },
+    "intervention_evidence_grade": {
+      "description": "Evidence ladder, orthogonal to scientific_track.",
+      "enum": [
+        "A1",
+        "A2",
+        "B1",
+        "B2",
+        "C",
+        "D"
+      ],
+      "type": "string"
+    },
+    "label_transform": {
+      "type": "string"
+    },
+    "label_unit": {
+      "type": "string"
+    },
+    "landscape_role": {
+      "enum": [
+        "SPARSE",
+        "DENSE",
+        "NOT_APPLICABLE"
+      ],
+      "type": "string"
+    },
+    "lifecycle_status": {
+      "enum": [
+        "CANDIDATE",
+        "ACCEPTED",
+        "REJECTED"
+      ],
+      "type": "string"
+    },
+    "measured_optimization_eligibility": {
+      "enum": [
+        "YES",
+        "NO"
+      ],
+      "type": "string"
+    },
+    "method_training_role": {
+      "enum": [
+        "EFFECT_PRIMARY",
+        "FLOW_BASE",
+        "CRITIC_AUX",
+        "TRANSFER",
+        "DIAGNOSTIC",
+        "EXCLUDED"
+      ],
+      "type": "string"
+    },
+    "no_edit_control_subtype": {
+      "enum": [
+        "DESIGNED_WT_CONTROL",
+        "OBSERVED_UNCHANGED_ENDPOINT",
+        "SOURCE_MEASUREMENT_ANCHOR",
+        "ALGORITHM_NO_CHANGE_OUTPUT",
+        "DUPLICATE_OR_MAPPING_IDENTITY",
+        "UNRESOLVED_IDENTITY",
+        "NOT_APPLICABLE_NON_IDENTITY"
+      ],
+      "type": "string"
+    },
+    "no_edit_sampling_frame_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "pair_evidence_id": {
+      "type": "string"
+    },
+    "pairing_method": {
+      "type": "string"
+    },
+    "parent_relation_candidate_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "relation_acceptance_status": {
+      "enum": [
+        "CANDIDATE",
+        "ACCEPTED",
+        "AMBIGUOUS",
+        "REJECTED"
+      ],
+      "type": "string"
+    },
+    "relation_candidate_id": {
+      "type": "string"
+    },
+    "relation_context_key": {
+      "type": "string"
+    },
+    "relation_type": {
+      "enum": [
+        "EXACT_REF_ALT",
+        "SOURCE_CANDIDATE",
+        "NO_EDIT_CONTROL"
+      ],
+      "type": "string"
+    },
+    "scientific_track": {
+      "enum": [
+        "E"
+      ],
+      "type": "string"
+    },
+    "source_sequence_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "terminal_disposition_reason": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "transfer_eligibility": {
+      "enum": [
+        "YES",
+        "NO"
+      ],
+      "type": "string"
+    }
+  },
+  "required": [
+    "accepted_pair_id",
+    "candidate_id",
+    "candidate_sequence_id",
+    "context_id",
+    "contributing_asset_ids",
+    "contributing_source_file_sha256s",
+    "contributor_set_sha256",
+    "delta_rule_id",
+    "delta_rule_sha256",
+    "design_relation_group_id",
+    "effect_evidence",
+    "endpoint_id",
+    "evidence_id",
+    "future_use_role",
+    "label_transform",
+    "label_unit",
+    "landscape_role",
+    "lifecycle_status",
+    "no_edit_control_subtype",
+    "no_edit_sampling_frame_id",
+    "pair_evidence_id",
+    "pairing_method",
+    "parent_relation_candidate_id",
+    "relation_acceptance_status",
+    "relation_candidate_id",
+    "relation_context_key",
+    "relation_type",
+    "scientific_track",
+    "source_sequence_id",
+    "terminal_disposition_reason"
+  ],
+  "schema_version": "1.1",
+  "title": "UTR-Edit-Relation Candidate (xedit_v1_1)",
+  "type": "object"
+}

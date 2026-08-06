@@ -1,0 +1,124 @@
+{
+  "$defs": {
+    "B0PreparedManifest": {
+      "additionalProperties": false,
+      "properties": {
+        "manifest_id": {
+          "type": "string"
+        },
+        "manifest_sha256": {
+          "type": "string"
+        },
+        "prepared_object_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "manifest_id",
+        "prepared_object_ids",
+        "manifest_sha256"
+      ],
+      "type": "object"
+    },
+    "B0TransactionCommit": {
+      "additionalProperties": false,
+      "properties": {
+        "commit_id": {
+          "type": "string"
+        },
+        "commit_sha256": {
+          "type": "string"
+        },
+        "object_ids": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "transition_chain_root_sha256": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "commit_id",
+        "object_ids",
+        "transition_chain_root_sha256",
+        "commit_sha256"
+      ],
+      "type": "object"
+    },
+    "EffectiveRoleProjection": {
+      "additionalProperties": false,
+      "properties": {
+        "cardinality": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "effective_role": {
+          "type": "string"
+        },
+        "object_id": {
+          "type": "string"
+        },
+        "transition_chain_root_sha256": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "object_id",
+        "effective_role",
+        "cardinality",
+        "transition_chain_root_sha256"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://github.com/Cunyu-Liu/mRNA_editflow/schemas/xedit_v1_1/relation_role_transition.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "contract_id": "mrna_xeditflow_goal_v1_1",
+  "description": "Append-only transition ledger for candidate/pair effective roles, with hash-chain and exact-cardinality projection.",
+  "properties": {
+    "config_hash": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "event_sha256": {
+      "type": "string"
+    },
+    "from_role": {
+      "type": "string"
+    },
+    "object_id": {
+      "type": "string"
+    },
+    "prev_event_sha256": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "to_role": {
+      "type": "string"
+    },
+    "transition_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "transition_id",
+    "object_id",
+    "from_role",
+    "to_role",
+    "prev_event_sha256",
+    "event_sha256"
+  ],
+  "schema_version": "1.1",
+  "title": "RelationRoleTransition (xedit_v1_1)",
+  "type": "object"
+}

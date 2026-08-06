@@ -1,0 +1,569 @@
+# M2: P0/P1 asset role assignment under mrna_xeditflow_goal_v1_1
+# Every old P0/P1 asset is classified to exactly one role below.
+# Must be one of: ACCEPTED_FOR_NEW_ROLE / EXCLUDED_WITH_EVIDENCE /
+# REFERENCE_ONLY / PENDING_BLOCKED.
+contract_id: mrna_xeditflow_goal_v1_1
+schema_version: 1.1
+source_namespace: v3_1_preserved
+assets:
+  - asset_id: E-MTAB-10902
+    audit_priority: P0
+    role: PENDING_BLOCKED
+    reason: "Raw not present; metadata-only. Re-acquisition required before role."
+    evidence:
+      source_evidence: EVIDENCE::NZIP_EMTAB_10902_11572_11575::file_inventory::D0_REPAIR_20260805T221500Z
+    orthogonal_axes:
+      scientific_track: "E"
+      intervention_evidence_grade: "D"
+      method_training_role: "EXCLUDED"
+      endpoint_role: "NOT_APPLICABLE"
+      critic_eligibility: "NO"
+      flow_base_eligibility: "NO"
+      guidance_training_eligibility: "NO"
+      measured_optimization_eligibility: "NO"
+      transfer_eligibility: "NO"
+    sealed_scope: False
+  - asset_id: ENCSR854RUF
+    audit_priority: P0
+    role: ACCEPTED_FOR_NEW_ROLE
+    reason: "3'UTR variant; transfer-track A1."
+    evidence:
+      source_evidence: EVIDENCE::ENCSR854RUF::file_inventory::D0_REPAIR_20260805T221500Z
+    orthogonal_axes:
+      scientific_track: "E"
+      intervention_evidence_grade: "A1"
+      method_training_role: "EFFECT_PRIMARY"
+      endpoint_role: "DELTA"
+      critic_eligibility: "YES"
+      flow_base_eligibility: "NO"
+      guidance_training_eligibility: "NO"
+      measured_optimization_eligibility: "YES"
+      transfer_eligibility: "YES"
+    sealed_scope: True
+  - asset_id: FAST_UTR_SIEGEL_2022
+    audit_priority: P0
+    role: PENDING_BLOCKED
+    reason: "Raw not present; metadata-only. Re-acquisition required before role."
+    evidence:
+      source_evidence: EVIDENCE::FAST_UTR_SIEGEL_2022::file_inventory::D0_REPAIR_20260805T221500Z
+    orthogonal_axes:
+      scientific_track: "E"
+      intervention_evidence_grade: "D"
+      method_training_role: "EXCLUDED"
+      endpoint_role: "NOT_APPLICABLE"
+      critic_eligibility: "NO"
+      flow_base_eligibility: "NO"
+      guidance_training_eligibility: "NO"
+      measured_optimization_eligibility: "NO"
+      transfer_eligibility: "NO"
+    sealed_scope: True
+  - asset_id: GSE114002
+    audit_priority: P0
+    role: ACCEPTED_FOR_NEW_ROLE
+    reason: "Full-file inventory + identity/no-edit recovery; primary 5'UTR natural pairs."
+    evidence:
+      source_evidence: EVIDENCE::GSE114002::file_inventory::D0_REPAIR_20260805T221500Z
+    orthogonal_axes:
+      scientific_track: "E"
+      intervention_evidence_grade: "A1"
+      method_training_role: "EFFECT_PRIMARY"
+      endpoint_role: "DELTA"
+      critic_eligibility: "YES"
+      flow_base_eligibility: "YES"
+      guidance_training_eligibility: "YES"
+      measured_optimization_eligibility: "YES"
+      transfer_eligibility: "YES"
+    sealed_scope: True
+  - asset_id: GSE145046
+    audit_priority: P0
+    role: PENDING_BLOCKED
+    reason: "Input/support rows only; must complete label join before counting as functional example."
+    evidence:
+      source_evidence: EVIDENCE::GSE145046::file_inventory::D0_REPAIR_20260805T221500Z
+    orthogonal_axes:
+      scientific_track: "F"
+      intervention_evidence_grade: "C"
+      method_training_role: "CRITIC_AUX"
+      endpoint_role: "ABSOLUTE_PROPERTY"
+      critic_eligibility: "NO"
+      flow_base_eligibility: "NO"
+      guidance_training_eligibility: "NO"
+      measured_optimization_eligibility: "NO"
+      transfer_eligibility: "NO"
+    sealed_scope: True
+  - asset_id: GSE149487
+    audit_priority: P0
+    role: ACCEPTED_FOR_NEW_ROLE
+    reason: "Downloaded+verified, acquired for rebuild."
+    evidence:
+      source_evidence: EVIDENCE::GSE149487::file_inventory::D0_REPAIR_20260805T221500Z
+    orthogonal_axes:
+      scientific_track: "F"
+      intervention_evidence_grade: "C"
+      method_training_role: "CRITIC_AUX"
+      endpoint_role: "ABSOLUTE_PROPERTY"
+      critic_eligibility: "NO"
+      flow_base_eligibility: "NO"
+      guidance_training_eligibility: "NO"
+      measured_optimization_eligibility: "NO"
+      transfer_eligibility: "NO"
+    sealed_scope: True
+  - asset_id: GSE173083
+    audit_priority: P0
+    role: PENDING_BLOCKED
+    reason: "Provenance not fully closed; keep BLOCKED/AUX until evidence chain closes."
+    evidence:
+      source_evidence: EVIDENCE::GSE173083_CLEANUP::file_inventory::D0_REPAIR_20260805T221500Z
+    orthogonal_axes:
+      scientific_track: "E"
+      intervention_evidence_grade: "C"
+      method_training_role: "CRITIC_AUX"
+      endpoint_role: "ABSOLUTE_PROPERTY"
+      critic_eligibility: "NO"
+      flow_base_eligibility: "NO"
+      guidance_training_eligibility: "NO"
+      measured_optimization_eligibility: "NO"
+      transfer_eligibility: "NO"
+    sealed_scope: False
+  - asset_id: GSE173098
+    audit_priority: P1
+    role: PENDING_BLOCKED
+    reason: "Raw not present; metadata-only. Re-acquisition required before role."
+    evidence:
+      source_evidence: EVIDENCE::GSE173098::file_inventory::D0_REPAIR_20260805T221500Z
+    orthogonal_axes:
+      scientific_track: "F"
+      intervention_evidence_grade: "D"
+      method_training_role: "EXCLUDED"
+      endpoint_role: "NOT_APPLICABLE"
+      critic_eligibility: "NO"
+      flow_base_eligibility: "NO"
+      guidance_training_eligibility: "NO"
+      measured_optimization_eligibility: "NO"
+      transfer_eligibility: "NO"
+    sealed_scope: False
+  - asset_id: GSE176581
+    audit_priority: P0
+    role: ACCEPTED_FOR_NEW_ROLE
+    reason: "Downloaded+verified, acquired for rebuild."
+    evidence:
+      source_evidence: EVIDENCE::GSE176581::file_inventory::D0_REPAIR_20260805T221500Z
+    orthogonal_axes:
+      scientific_track: "F"
+      intervention_evidence_grade: "C"
+      method_training_role: "CRITIC_AUX"
+      endpoint_role: "ABSOLUTE_PROPERTY"
+      critic_eligibility: "NO"
+      flow_base_eligibility: "NO"
+      guidance_training_eligibility: "NO"
+      measured_optimization_eligibility: "NO"
+      transfer_eligibility: "NO"
+    sealed_scope: True
+  - asset_id: GSE186455
+    audit_priority: P0
+    role: ACCEPTED_FOR_NEW_ROLE
+    reason: "Downloaded+verified, acquired for rebuild."
+    evidence:
+      source_evidence: EVIDENCE::GSE186455::file_inventory::D0_REPAIR_20260805T221500Z
+    orthogonal_axes:
+      scientific_track: "E"
+      intervention_evidence_grade: "A1"
+      method_training_role: "EFFECT_PRIMARY"
+      endpoint_role: "DELTA"
+      critic_eligibility: "YES"
+      flow_base_eligibility: "YES"
+      guidance_training_eligibility: "YES"
+      measured_optimization_eligibility: "YES"
+      transfer_eligibility: "NO"
+    sealed_scope: True
+  - asset_id: GSE194092
+    audit_priority: P1
+    role: PENDING_BLOCKED
+    reason: "Raw not present; metadata-only. Re-acquisition required before role."
+    evidence:
+      source_evidence: EVIDENCE::GSE194092::file_inventory::D0_REPAIR_20260805T221500Z
+    orthogonal_axes:
+      scientific_track: "F"
+      intervention_evidence_grade: "D"
+      method_training_role: "EXCLUDED"
+      endpoint_role: "NOT_APPLICABLE"
+      critic_eligibility: "NO"
+      flow_base_eligibility: "NO"
+      guidance_training_eligibility: "NO"
+      measured_optimization_eligibility: "NO"
+      transfer_eligibility: "NO"
+    sealed_scope: True
+  - asset_id: GSE200302
+    audit_priority: P0_MEMBER
+    role: PENDING_BLOCKED
+    reason: "SubSeries/asset mapping unresolved; blocked until member-accession closure."
+    evidence:
+      source_evidence: EVIDENCE::GSE200304::member_GSE200302_file_inventory::D0_REPAIR_20260805T221500Z
+    orthogonal_axes:
+      scientific_track: "E"
+      intervention_evidence_grade: "D"
+      method_training_role: "EXCLUDED"
+      endpoint_role: "NOT_APPLICABLE"
+      critic_eligibility: "NO"
+      flow_base_eligibility: "NO"
+      guidance_training_eligibility: "NO"
+      measured_optimization_eligibility: "NO"
+      transfer_eligibility: "NO"
+    sealed_scope: False
+  - asset_id: GSE200303
+    audit_priority: P0_MEMBER
+    role: PENDING_BLOCKED
+    reason: "SubSeries/asset mapping unresolved; blocked until member-accession closure."
+    evidence:
+      source_evidence: EVIDENCE::GSE200304::member_GSE200303_file_inventory::D0_REPAIR_20260805T221500Z
+    orthogonal_axes:
+      scientific_track: "E"
+      intervention_evidence_grade: "D"
+      method_training_role: "EXCLUDED"
+      endpoint_role: "NOT_APPLICABLE"
+      critic_eligibility: "NO"
+      flow_base_eligibility: "NO"
+      guidance_training_eligibility: "NO"
+      measured_optimization_eligibility: "NO"
+      transfer_eligibility: "NO"
+    sealed_scope: False
+  - asset_id: GSE200304
+    audit_priority: P0
+    role: ACCEPTED_FOR_NEW_ROLE
+    reason: "Downloaded+verified, acquired for rebuild."
+    evidence:
+      source_evidence: EVIDENCE::GSE200304::file_inventory::D0_REPAIR_20260805T221500Z
+    orthogonal_axes:
+      scientific_track: "E"
+      intervention_evidence_grade: "A1"
+      method_training_role: "EFFECT_PRIMARY"
+      endpoint_role: "DELTA"
+      critic_eligibility: "YES"
+      flow_base_eligibility: "YES"
+      guidance_training_eligibility: "YES"
+      measured_optimization_eligibility: "YES"
+      transfer_eligibility: "NO"
+    sealed_scope: True
+  - asset_id: GSE207584
+    audit_priority: P0
+    role: PENDING_BLOCKED
+    reason: "Legacy CDS liability; only enters B1 after sequence/family/label rebuild. Must not auto-unlock as B1."
+    evidence:
+      source_evidence: EVIDENCE::GSE207584_CLEANUP::file_inventory::D0_REPAIR_20260805T221500Z
+    orthogonal_axes:
+      scientific_track: "E"
+      intervention_evidence_grade: "D"
+      method_training_role: "EXCLUDED"
+      endpoint_role: "RECONSTRUCTION"
+      critic_eligibility: "NO"
+      flow_base_eligibility: "NO"
+      guidance_training_eligibility: "NO"
+      measured_optimization_eligibility: "NO"
+      transfer_eligibility: "NO"
+    sealed_scope: False
+  - asset_id: GSE217518
+    audit_priority: P0
+    role: ACCEPTED_FOR_NEW_ROLE
+    reason: "Attrition/window/assay join closure; 5'UTR natural pairs (eLife CC BY 4.0)."
+    evidence:
+      source_evidence: EVIDENCE::GSE217518::file_inventory::D0_REPAIR_20260805T221500Z
+    orthogonal_axes:
+      scientific_track: "E"
+      intervention_evidence_grade: "A1"
+      method_training_role: "EFFECT_PRIMARY"
+      endpoint_role: "DELTA"
+      critic_eligibility: "YES"
+      flow_base_eligibility: "YES"
+      guidance_training_eligibility: "YES"
+      measured_optimization_eligibility: "YES"
+      transfer_eligibility: "YES"
+    sealed_scope: True
+  - asset_id: GSE217530
+    audit_priority: P0_MEMBER
+    role: PENDING_BLOCKED
+    reason: "SubSeries/asset mapping unresolved; blocked until member-accession closure."
+    evidence:
+      source_evidence: EVIDENCE::GSE200304::member_GSE217530_file_inventory::D0_REPAIR_20260805T221500Z
+    orthogonal_axes:
+      scientific_track: "E"
+      intervention_evidence_grade: "D"
+      method_training_role: "EXCLUDED"
+      endpoint_role: "NOT_APPLICABLE"
+      critic_eligibility: "NO"
+      flow_base_eligibility: "NO"
+      guidance_training_eligibility: "NO"
+      measured_optimization_eligibility: "NO"
+      transfer_eligibility: "NO"
+    sealed_scope: False
+  - asset_id: GSE232571
+    audit_priority: P0
+    role: ACCEPTED_FOR_NEW_ROLE
+    reason: "Downloaded+verified, acquired for rebuild."
+    evidence:
+      source_evidence: EVIDENCE::GSE232571::file_inventory::D0_REPAIR_20260805T221500Z
+    orthogonal_axes:
+      scientific_track: "E"
+      intervention_evidence_grade: "A1"
+      method_training_role: "EFFECT_PRIMARY"
+      endpoint_role: "DELTA"
+      critic_eligibility: "YES"
+      flow_base_eligibility: "YES"
+      guidance_training_eligibility: "YES"
+      measured_optimization_eligibility: "YES"
+      transfer_eligibility: "NO"
+    sealed_scope: True
+  - asset_id: GSE232572
+    audit_priority: P0
+    role: ACCEPTED_FOR_NEW_ROLE
+    reason: "Downloaded+verified, acquired for rebuild."
+    evidence:
+      source_evidence: EVIDENCE::GSE232572::file_inventory::D0_REPAIR_20260805T221500Z
+    orthogonal_axes:
+      scientific_track: "E"
+      intervention_evidence_grade: "A1"
+      method_training_role: "EFFECT_PRIMARY"
+      endpoint_role: "DELTA"
+      critic_eligibility: "YES"
+      flow_base_eligibility: "YES"
+      guidance_training_eligibility: "YES"
+      measured_optimization_eligibility: "YES"
+      transfer_eligibility: "NO"
+    sealed_scope: True
+  - asset_id: GSE232927
+    audit_priority: P0
+    role: PENDING_BLOCKED
+    reason: "Raw not present; metadata-only. Re-acquisition required before role."
+    evidence:
+      source_evidence: EVIDENCE::GSE232927::file_inventory::D0_REPAIR_20260805T221500Z
+    orthogonal_axes:
+      scientific_track: "F"
+      intervention_evidence_grade: "D"
+      method_training_role: "EXCLUDED"
+      endpoint_role: "NOT_APPLICABLE"
+      critic_eligibility: "NO"
+      flow_base_eligibility: "NO"
+      guidance_training_eligibility: "NO"
+      measured_optimization_eligibility: "NO"
+      transfer_eligibility: "NO"
+    sealed_scope: True
+  - asset_id: GSE246381
+    audit_priority: P0
+    role: ACCEPTED_FOR_NEW_ROLE
+    reason: "Sealed external final candidate; restricted shard, one final only; never enters activation/calibration/model-selection."
+    evidence:
+      source_evidence: EVIDENCE::GSE246381::file_inventory::D0_REPAIR_20260805T221500Z
+    orthogonal_axes:
+      scientific_track: "E"
+      intervention_evidence_grade: "A2"
+      method_training_role: "CRITIC_AUX"
+      endpoint_role: "DELTA"
+      critic_eligibility: "NO"
+      flow_base_eligibility: "NO"
+      guidance_training_eligibility: "NO"
+      measured_optimization_eligibility: "NO"
+      transfer_eligibility: "NO"
+    sealed_scope: False
+  - asset_id: GSE256185
+    audit_priority: P0
+    role: PENDING_BLOCKED
+    reason: "Raw not present; metadata-only. Re-acquisition required before role."
+    evidence:
+      source_evidence: EVIDENCE::GSE256185_DART::file_inventory::D0_REPAIR_20260805T221500Z
+    orthogonal_axes:
+      scientific_track: "E"
+      intervention_evidence_grade: "D"
+      method_training_role: "EXCLUDED"
+      endpoint_role: "NOT_APPLICABLE"
+      critic_eligibility: "NO"
+      flow_base_eligibility: "NO"
+      guidance_training_eligibility: "NO"
+      measured_optimization_eligibility: "NO"
+      transfer_eligibility: "NO"
+    sealed_scope: False
+  - asset_id: GSE261709
+    audit_priority: P0
+    role: ACCEPTED_FOR_NEW_ROLE
+    reason: "Downloaded+verified, acquired for rebuild."
+    evidence:
+      source_evidence: EVIDENCE::GSE261709::file_inventory::D0_REPAIR_20260805T221500Z
+    orthogonal_axes:
+      scientific_track: "E"
+      intervention_evidence_grade: "A1"
+      method_training_role: "EFFECT_PRIMARY"
+      endpoint_role: "DELTA"
+      critic_eligibility: "YES"
+      flow_base_eligibility: "YES"
+      guidance_training_eligibility: "YES"
+      measured_optimization_eligibility: "YES"
+      transfer_eligibility: "NO"
+    sealed_scope: True
+  - asset_id: GSE270252
+    audit_priority: P1
+    role: PENDING_BLOCKED
+    reason: "Raw not present; metadata-only. Re-acquisition required before role."
+    evidence:
+      source_evidence: EVIDENCE::GSE270252_270254::file_inventory::D0_REPAIR_20260805T221500Z
+    orthogonal_axes:
+      scientific_track: "F"
+      intervention_evidence_grade: "D"
+      method_training_role: "EXCLUDED"
+      endpoint_role: "NOT_APPLICABLE"
+      critic_eligibility: "NO"
+      flow_base_eligibility: "NO"
+      guidance_training_eligibility: "NO"
+      measured_optimization_eligibility: "NO"
+      transfer_eligibility: "NO"
+    sealed_scope: False
+  - asset_id: GSE288185
+    audit_priority: P0
+    role: ACCEPTED_FOR_NEW_ROLE
+    reason: "Downloaded+verified, acquired for rebuild."
+    evidence:
+      source_evidence: EVIDENCE::GSE288185::file_inventory::D0_REPAIR_20260805T221500Z
+    orthogonal_axes:
+      scientific_track: "E"
+      intervention_evidence_grade: "A1"
+      method_training_role: "EFFECT_PRIMARY"
+      endpoint_role: "DELTA"
+      critic_eligibility: "YES"
+      flow_base_eligibility: "YES"
+      guidance_training_eligibility: "YES"
+      measured_optimization_eligibility: "YES"
+      transfer_eligibility: "NO"
+    sealed_scope: True
+  - asset_id: GSE291719
+    audit_priority: P1
+    role: PENDING_BLOCKED
+    reason: "Raw not present; metadata-only. Re-acquisition required before role."
+    evidence:
+      source_evidence: EVIDENCE::GSE291719_SONAR::file_inventory::D0_REPAIR_20260805T221500Z
+    orthogonal_axes:
+      scientific_track: "F"
+      intervention_evidence_grade: "D"
+      method_training_role: "EXCLUDED"
+      endpoint_role: "NOT_APPLICABLE"
+      critic_eligibility: "NO"
+      flow_base_eligibility: "NO"
+      guidance_training_eligibility: "NO"
+      measured_optimization_eligibility: "NO"
+      transfer_eligibility: "NO"
+    sealed_scope: False
+  - asset_id: GSE295080
+    audit_priority: P1
+    role: PENDING_BLOCKED
+    reason: "Raw not present; metadata-only. Re-acquisition required before role."
+    evidence:
+      source_evidence: EVIDENCE::GSE295080_ISOMPRA::file_inventory::D0_REPAIR_20260805T221500Z
+    orthogonal_axes:
+      scientific_track: "E"
+      intervention_evidence_grade: "D"
+      method_training_role: "EXCLUDED"
+      endpoint_role: "NOT_APPLICABLE"
+      critic_eligibility: "NO"
+      flow_base_eligibility: "NO"
+      guidance_training_eligibility: "NO"
+      measured_optimization_eligibility: "NO"
+      transfer_eligibility: "NO"
+    sealed_scope: False
+  - asset_id: GSE298114
+    audit_priority: P0
+    role: ACCEPTED_FOR_NEW_ROLE
+    reason: "Downloaded+verified, acquired for rebuild."
+    evidence:
+      source_evidence: EVIDENCE::GSE298114::file_inventory::D0_REPAIR_20260805T221500Z
+    orthogonal_axes:
+      scientific_track: "E"
+      intervention_evidence_grade: "A1"
+      method_training_role: "EFFECT_PRIMARY"
+      endpoint_role: "DELTA"
+      critic_eligibility: "YES"
+      flow_base_eligibility: "YES"
+      guidance_training_eligibility: "YES"
+      measured_optimization_eligibility: "YES"
+      transfer_eligibility: "NO"
+    sealed_scope: True
+  - asset_id: GSE330741
+    audit_priority: P0
+    role: ACCEPTED_FOR_NEW_ROLE
+    reason: "Downloaded+verified, acquired for rebuild."
+    evidence:
+      source_evidence: EVIDENCE::GSE330741::file_inventory::D0_REPAIR_20260805T221500Z
+    orthogonal_axes:
+      scientific_track: "E"
+      intervention_evidence_grade: "A2"
+      method_training_role: "EFFECT_PRIMARY"
+      endpoint_role: "DELTA"
+      critic_eligibility: "YES"
+      flow_base_eligibility: "YES"
+      guidance_training_eligibility: "YES"
+      measured_optimization_eligibility: "YES"
+      transfer_eligibility: "NO"
+    sealed_scope: True
+  - asset_id: GSE55396
+    audit_priority: P1
+    role: PENDING_BLOCKED
+    reason: "Raw not present; metadata-only. Re-acquisition required before role."
+    evidence:
+      source_evidence: EVIDENCE::GSE55396_FAST_UTR_2014::file_inventory::D0_REPAIR_20260805T221500Z
+    orthogonal_axes:
+      scientific_track: "F"
+      intervention_evidence_grade: "D"
+      method_training_role: "EXCLUDED"
+      endpoint_role: "NOT_APPLICABLE"
+      critic_eligibility: "NO"
+      flow_base_eligibility: "NO"
+      guidance_training_eligibility: "NO"
+      measured_optimization_eligibility: "NO"
+      transfer_eligibility: "NO"
+    sealed_scope: False
+  - asset_id: PASSPORT_SEQ
+    audit_priority: P1
+    role: PENDING_BLOCKED
+    reason: "Raw not present; metadata-only. Re-acquisition required before role."
+    evidence:
+      source_evidence: EVIDENCE::PASSPORT_SEQ::file_inventory::D0_REPAIR_20260805T221500Z
+    orthogonal_axes:
+      scientific_track: "E"
+      intervention_evidence_grade: "D"
+      method_training_role: "EXCLUDED"
+      endpoint_role: "NOT_APPLICABLE"
+      critic_eligibility: "NO"
+      flow_base_eligibility: "NO"
+      guidance_training_eligibility: "NO"
+      measured_optimization_eligibility: "NO"
+      transfer_eligibility: "NO"
+    sealed_scope: False
+  - asset_id: PRJNA1116243
+    audit_priority: P0
+    role: PENDING_BLOCKED
+    reason: "Raw not present; metadata-only. Re-acquisition required before role."
+    evidence:
+      source_evidence: EVIDENCE::PTRE_PRJNA1116243::file_inventory::D0_REPAIR_20260805T221500Z
+    orthogonal_axes:
+      scientific_track: "AUX"
+      intervention_evidence_grade: "D"
+      method_training_role: "EXCLUDED"
+      endpoint_role: "NOT_APPLICABLE"
+      critic_eligibility: "NO"
+      flow_base_eligibility: "NO"
+      guidance_training_eligibility: "NO"
+      measured_optimization_eligibility: "NO"
+      transfer_eligibility: "NO"
+    sealed_scope: False
+  - asset_id: SEERS
+    audit_priority: P1
+    role: PENDING_BLOCKED
+    reason: "Raw not present; metadata-only. Re-acquisition required before role."
+    evidence:
+      source_evidence: EVIDENCE::SEERS::file_inventory::D0_REPAIR_20260805T221500Z
+    orthogonal_axes:
+      scientific_track: "F"
+      intervention_evidence_grade: "D"
+      method_training_role: "EXCLUDED"
+      endpoint_role: "NOT_APPLICABLE"
+      critic_eligibility: "NO"
+      flow_base_eligibility: "NO"
+      guidance_training_eligibility: "NO"
+      measured_optimization_eligibility: "NO"
+      transfer_eligibility: "NO"
+    sealed_scope: False

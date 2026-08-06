@@ -1,0 +1,94 @@
+{
+  "$id": "https://github.com/Cunyu-Liu/mRNA_editflow/schemas/xedit_v1_1/group_assignment.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "contract_id": "mrna_xeditflow_goal_v1_1",
+  "description": "Assignment of an object to a grouping component.",
+  "properties": {
+    "assignment_algorithm_id": {
+      "type": "string"
+    },
+    "assignment_id": {
+      "type": "string"
+    },
+    "context_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "endpoint_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "group_id": {
+      "type": "string"
+    },
+    "grouping_atom": {
+      "type": "string"
+    },
+    "member_locator": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "no_edit_control_subtype": {
+      "enum": [
+        "DESIGNED_WT_CONTROL",
+        "OBSERVED_UNCHANGED_ENDPOINT",
+        "SOURCE_MEASUREMENT_ANCHOR",
+        "ALGORITHM_NO_CHANGE_OUTPUT",
+        "DUPLICATE_OR_MAPPING_IDENTITY",
+        "UNRESOLVED_IDENTITY",
+        "NOT_APPLICABLE_NON_IDENTITY"
+      ],
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "no_edit_sampling_frame_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "object_id": {
+      "type": "string"
+    },
+    "object_type": {
+      "enum": [
+        "SEQUENCE",
+        "RELATION_CANDIDATE",
+        "PAIR",
+        "OBSERVATION_CANDIDATE",
+        "OBSERVATION"
+      ],
+      "type": "string"
+    },
+    "source_evidence_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "assignment_algorithm_id",
+    "assignment_id",
+    "group_id",
+    "grouping_atom",
+    "member_locator",
+    "no_edit_control_subtype",
+    "no_edit_sampling_frame_id",
+    "object_id",
+    "object_type",
+    "source_evidence_ids"
+  ],
+  "schema_version": "1.1",
+  "title": "GroupAssignment (xedit_v1_1)",
+  "type": "object"
+}

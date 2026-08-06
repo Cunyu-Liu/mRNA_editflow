@@ -1,0 +1,90 @@
+{
+  "$id": "https://github.com/Cunyu-Liu/mRNA_editflow/schemas/xedit_v1_1/xedit_orthogonal_axes.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "contract_id": "mrna_xeditflow_goal_v1_1",
+  "description": "Shared orthogonal axes injected onto core data entities. Orthogonal to the retained scientific_track E/F/AUX/REFERENCE.",
+  "properties": {
+    "critic_eligibility": {
+      "enum": [
+        "YES",
+        "NO"
+      ],
+      "type": "string"
+    },
+    "endpoint_role": {
+      "enum": [
+        "DELTA",
+        "ABSOLUTE_PROPERTY",
+        "FAMILY_RANK",
+        "RECONSTRUCTION",
+        "NOT_APPLICABLE"
+      ],
+      "type": "string"
+    },
+    "flow_base_eligibility": {
+      "enum": [
+        "YES",
+        "NO"
+      ],
+      "type": "string"
+    },
+    "guidance_training_eligibility": {
+      "enum": [
+        "YES",
+        "NO"
+      ],
+      "type": "string"
+    },
+    "intervention_evidence_grade": {
+      "description": "Evidence ladder, orthogonal to scientific_track.",
+      "enum": [
+        "A1",
+        "A2",
+        "B1",
+        "B2",
+        "C",
+        "D"
+      ],
+      "type": "string"
+    },
+    "measured_optimization_eligibility": {
+      "enum": [
+        "YES",
+        "NO"
+      ],
+      "type": "string"
+    },
+    "method_training_role": {
+      "enum": [
+        "EFFECT_PRIMARY",
+        "FLOW_BASE",
+        "CRITIC_AUX",
+        "TRANSFER",
+        "DIAGNOSTIC",
+        "EXCLUDED"
+      ],
+      "type": "string"
+    },
+    "scientific_track": {
+      "description": "Retained old scientific track; A1/D never overwrite E/F.",
+      "enum": [
+        "E",
+        "F",
+        "AUX",
+        "REFERENCE"
+      ],
+      "type": "string"
+    },
+    "transfer_eligibility": {
+      "enum": [
+        "YES",
+        "NO"
+      ],
+      "type": "string"
+    }
+  },
+  "schema_version": "1.1",
+  "title": "OrthogonalAxes (xedit_v1_1)",
+  "type": "object"
+}

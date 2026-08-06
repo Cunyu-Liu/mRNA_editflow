@@ -1,0 +1,129 @@
+{
+  "$defs": {
+    "TaskSplitApplicabilityDecision": {
+      "additionalProperties": false,
+      "properties": {
+        "decision_run_id": {
+          "type": "string"
+        },
+        "decision_sha256": {
+          "type": "string"
+        },
+        "effective_decision": {
+          "enum": [
+            "APPLICABLE",
+            "NOT_APPLICABLE",
+            "CONDITIONAL_NOT_QUALIFIED"
+          ],
+          "type": "string"
+        },
+        "split_contract_id": {
+          "type": "string"
+        },
+        "task_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "task_id",
+        "split_contract_id",
+        "effective_decision",
+        "decision_run_id",
+        "decision_sha256"
+      ],
+      "type": "object"
+    },
+    "TaskSplitDefinitionRow": {
+      "additionalProperties": false,
+      "properties": {
+        "contract_mapping": {
+          "enum": [
+            "ALLOWED",
+            "NOT_ALLOWED"
+          ],
+          "type": "string"
+        },
+        "definition_reason": {
+          "type": "string"
+        },
+        "object_type": {
+          "enum": [
+            "PAIR",
+            "OBSERVATION"
+          ],
+          "type": "string"
+        },
+        "scientific_track": {
+          "enum": [
+            "E",
+            "F"
+          ],
+          "type": "string"
+        },
+        "split_contract_id": {
+          "type": "string"
+        },
+        "task_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "task_id",
+        "split_contract_id",
+        "contract_mapping",
+        "object_type",
+        "scientific_track",
+        "definition_reason"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://github.com/Cunyu-Liu/mRNA_editflow/schemas/xedit_v1_1/task_split_applicability.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "contract_id": "mrna_xeditflow_goal_v1_1",
+  "description": "Definition matrix row and applicability decision for task x split.",
+  "properties": {
+    "contract_mapping": {
+      "enum": [
+        "ALLOWED",
+        "NOT_ALLOWED"
+      ],
+      "type": "string"
+    },
+    "definition_reason": {
+      "type": "string"
+    },
+    "object_type": {
+      "enum": [
+        "PAIR",
+        "OBSERVATION"
+      ],
+      "type": "string"
+    },
+    "scientific_track": {
+      "enum": [
+        "E",
+        "F"
+      ],
+      "type": "string"
+    },
+    "split_contract_id": {
+      "type": "string"
+    },
+    "task_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "task_id",
+    "split_contract_id",
+    "contract_mapping",
+    "object_type",
+    "scientific_track",
+    "definition_reason"
+  ],
+  "schema_version": "1.1",
+  "title": "TaskSplitApplicability (xedit_v1_1)",
+  "type": "object"
+}

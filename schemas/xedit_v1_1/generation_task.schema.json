@@ -1,0 +1,83 @@
+{
+  "$defs": {
+    "DiagnosticRegistryRow": {
+      "additionalProperties": false,
+      "properties": {
+        "claim_policy": {
+          "type": "string"
+        },
+        "denominator_rule": {
+          "type": "string"
+        },
+        "diagnostic_id": {
+          "type": "string"
+        },
+        "object_type": {
+          "enum": [
+            "GENERATION_TASK"
+          ],
+          "type": "string"
+        },
+        "reports_section": {
+          "type": "string"
+        },
+        "schema_ref": {
+          "type": "string"
+        },
+        "unit_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "diagnostic_id",
+        "object_type",
+        "unit_id",
+        "schema_ref",
+        "denominator_rule",
+        "claim_policy"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://github.com/Cunyu-Liu/mRNA_editflow/schemas/xedit_v1_1/generation_task.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "contract_id": "mrna_xeditflow_goal_v1_1",
+  "description": "Open-generation diagnostic task and its DiagnosticRegistryRow $defs.",
+  "properties": {
+    "claim_policy": {
+      "type": "string"
+    },
+    "denominator_rule": {
+      "type": "string"
+    },
+    "diagnostics": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "generation_task_id": {
+      "type": "string"
+    },
+    "object_type": {
+      "enum": [
+        "GENERATION_TASK"
+      ],
+      "type": "string"
+    },
+    "unique_source_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "generation_task_id",
+    "object_type",
+    "unique_source_id",
+    "denominator_rule",
+    "claim_policy"
+  ],
+  "schema_version": "1.1",
+  "title": "GenerationTask (xedit_v1_1)",
+  "type": "object"
+}
