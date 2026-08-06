@@ -1,3 +1,10 @@
+> **合同状态（迁移标注，不改写正文）：**`HISTORICAL_SUPERSEDED_BY_MRNA_XEDITFLOW_V1_1`
+> **后继权威合同：**`mrna_xeditflow_goal_v1_1`（SHA256 见 `docs/contracts/supersession_mrna_editflow_v3_1_to_xeditflow_v1_1.md`）
+> **本合同正文在此标注前的 SHA256：**`35dd4bf27a3c7d574ab777f5d858ad1b13dcb9273bdb4961e4c30a1a94bf8759`
+> **迁移日期：**2026-08-06
+> **迁移范围：**仅 supersede 顶层科学主线；本合同已建立的 provenance/license/exposure/sealed-final/split/守恒/审计治理按 hash 原样继承，不因超指令而重写。
+> ---
+
 # mRNA-EditFlow UTR Benchmark-First 科研与执行合同
 
 ## provenance-controlled source-conditioned UTR editing benchmark、Edit-Flows-derived UTR reference method 与 alignment-robustness study

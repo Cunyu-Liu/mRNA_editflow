@@ -1,0 +1,49 @@
+# xeditflow split registry v4
+# Split primitives reused from v3.1; registry/hash/eligibility cells regenerated.
+contract_id: mrna_xeditflow_goal_v1_1
+version: 4.0
+date: "2026-08-06"
+
+splits:
+  - id: S1
+    name: within-study source-disjoint
+    partition_roles: [source_group]
+    leakage: exact_source_0, reverse_edge_0
+  - id: S2
+    name: gene-disjoint
+    partition_roles: [gene_group]
+    leakage: gene_0
+  - id: S3
+    name: sequence-cluster-disjoint
+    partition_roles: [sequence_cluster]
+    leakage: near_duplicate_reported, kmer_similarity_reported
+  - id: S4
+    name: leave-one-study-out
+    partition_roles: [study_group]
+    leakage: study_0
+  - id: S5
+    name: context-disjoint
+    partition_roles: [context_group]
+    leakage: context_0
+  - id: S6
+    name: operationally sealed external
+    partition_roles: [sealed_object]
+    leakage: sealed_isolated, one_final_only
+  - id: S7
+    name: protein-family-disjoint
+    partition_roles: [protein_family]
+    leakage: protein_family_0
+  - id: S8
+    name: dense block/position/motif holdout
+    partition_roles: [block, position, motif]
+    leakage: dense_no_random_edge_split
+
+expected_split_ids: [S1, S2, S3, S4, S5, S6, S7, S8]
+
+sealed_external:
+  dataset: GSE246381
+  role: SEALED_EXTERNAL_FINAL_CANDIDATE
+  dual_store: true
+  ordinary_loader_returns_zero_rows_before_final: true
+  foundation_overlap_audit_per_checkpoint: true
+  final_evaluator_count_max: 1

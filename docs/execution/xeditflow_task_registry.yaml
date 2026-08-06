@@ -1,0 +1,67 @@
+# xeditflow task registry v4
+# Expected set closure enforced by tests.
+contract_id: mrna_xeditflow_goal_v1_1
+version: 4.0
+date: "2026-08-06"
+
+primary_tasks:
+  - id: T5_SOURCE_RELATIVE_EFFECT
+    estimand: "source-relative measured delta given source, single edit, assay metadata"
+    primary_metric: [macro_delta_spearman, macro_sign_accuracy, top10_enrichment]
+    gate: effect_gate
+    eligibility_flags: [critic_eligibility=true]
+  - id: T5_SELECTIVE_EFFECT
+    estimand: "coverage-risk selective prediction with abstention"
+    primary_metric: [coverage_risk, selective_top_enrichment]
+    gate: effect_gate
+    eligibility_flags: [critic_eligibility=true]
+  - id: T5_MEASURED_NEIGHBORHOOD_OPTIMIZATION
+    estimand: "optimal discovery within each source's actually-measured candidate pool"
+    primary_metric: [ndcg, normalized_regret, top10_recall, enrichment]
+    gate: exact_guidance_gate
+    eligibility_flags: [measured_optimization_eligibility=true]
+  - id: T5_FIXED_BUDGET_MULTI_STEP_OPTIMIZATION
+    estimand: "multi-step optimization under k in {1,3,5}"
+    primary_metric: [normalized_regret, hit_rate, query_count]
+    gate: exact_guidance_gate
+    eligibility_flags: [measured_optimization_eligibility=true]
+
+secondary_tasks:
+  - id: T5_ENDPOINT_RECONSTRUCTION
+    estimand: "base-flow endpoint reconstruction/distribution"
+    primary_metric: [recovery, similarity]
+    eligibility_flags: [flow_base_eligibility=true]
+  - id: T3_EFFECT_TRANSFER
+    estimand: "effect transfer across studies"
+    primary_metric: [transfer_delta_spearman]
+    eligibility_flags: [transfer_eligibility=true]
+  - id: T3_RECONSTRUCTION
+    estimand: "endpoint reconstruction"
+    primary_metric: [recovery]
+    eligibility_flags: [flow_base_eligibility=true]
+  - id: CDS_SYNONYMOUS_FAMILY_RANKING
+    estimand: "same-protein synonymous-codon family ranking"
+    primary_metric: [family_listwise_ndcg, family_bootstrap_delta]
+    eligibility_flags: [transfer_eligibility=true]
+  - id: CROSS_REGION_TRANSFER
+    estimand: "shared legal-action geometry + exact-guidance math across 3'UTR/CDS"
+    primary_metric: [transfer_ndcg, transfer_vs_fromscratch_delta]
+    eligibility_flags: [transfer_eligibility=true]
+  - id: OPEN_WORLD_PROXY_DIAGNOSTIC
+    estimand: "supplement-only open-world proxy generation"
+    primary_metric: [legality, diversity, sampling_efficiency, independent_proxy_consistency]
+    eligibility_flags: [diagnostic=true]
+
+theory_tasks:
+  - id: EXACT_GUIDANCE_TOY_GRAPH
+    estimand: "exact density-ratio guidance on enumerable legal edit graph"
+    primary_metric: [toy_rate_rel_error_le_1e5, terminal_tv_within_tol, support_violation_0]
+    gate: exact_guidance_theory_gate
+  - id: EXACT_GUIDANCE_MATCHED_COMPUTE
+    estimand: "matched-compute exact vs first-order vs rate/latent CFG vs rerank"
+    primary_metric: [ndcg_matched_compute, forward_equivalent_cost, wall_time_frontier]
+    gate: exact_guidance_gate
+
+expected_primary_task_ids: [T5_SOURCE_RELATIVE_EFFECT, T5_SELECTIVE_EFFECT, T5_MEASURED_NEIGHBORHOOD_OPTIMIZATION, T5_FIXED_BUDGET_MULTI_STEP_OPTIMIZATION]
+expected_secondary_task_ids: [T5_ENDPOINT_RECONSTRUCTION, T3_EFFECT_TRANSFER, T3_RECONSTRUCTION, CDS_SYNONYMOUS_FAMILY_RANKING, CROSS_REGION_TRANSFER, OPEN_WORLD_PROXY_DIAGNOSTIC]
+expected_theory_task_ids: [EXACT_GUIDANCE_TOY_GRAPH, EXACT_GUIDANCE_MATCHED_COMPUTE]

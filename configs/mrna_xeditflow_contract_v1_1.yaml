@@ -1,0 +1,146 @@
+# =============================================================================
+# mrna_xeditflow_contract_v1_1
+#
+# Single authoritative executable research contract for mRNA-XEditFlow.
+# Supersedes utr_editflow_goal_v3.1_benchmark_first (scientific line only).
+# Data-integrity / license / exposure / sealed-final / split / audit governance
+# is INHERITED from v3.1, NOT superseded.
+#
+# Authority hierarchy:
+#   1. docs/contracts/mrna_xeditflow_goal_v1_1.md (this contract's spec)
+#   2. THIS FILE — structured executable contract
+#   3. docs/execution/xeditflow_claim_matrix.yaml
+#   4. docs/execution/xeditflow_task_registry.yaml
+#   5. docs/execution/xeditflow_split_registry.yaml
+#   6. docs/execution/xeditflow_task_split_matrix.yaml
+#   7. Per-experiment frozen config / manifest / run artifacts
+# If a lower-level file conflicts with a higher-level one, fail closed.
+# =============================================================================
+
+contract_id: mrna_xeditflow_goal_v1_1
+version: 1.1.0
+status: ACTIVE_AUTHORITATIVE_CONTRACT
+created_on: "2026-08-06"
+supersedes:
+  contract_id: utr_editflow_goal_v3.1_benchmark_first
+  sha256: ecc6c635f112575db2f14309c869a378fc31df8fb76c01dda0b54b832b4f8946
+  supersession_scope: SCIENTIFIC_LINE_ONLY
+  retained_governance: [provenance, license, exposure, sealed_final, split, conservation, audit]
+migration_prompt:
+  path_local: "提示词/mrna 合同迁移.md"
+  sha256: 55c89e5dc065a116063bdcdcd594322db4f2f33f6cc5d25c27cd4fc402fab916
+goal_document: "docs/contracts/mrna_xeditflow_goal_v1_1.md"
+
+# ---------------------------------------------------------------------------
+# 1. Core immutable boundaries
+# ---------------------------------------------------------------------------
+core_boundaries:
+  exact_guidance_is_primary_method: true
+  benchmark_is_primary_contribution: true
+  sparse_edit_former_is_frozen_critic: true
+  scope: [five_utr_primary, three_utr_transfer, cds_synonymous_transfer]
+  out_of_scope:
+    - nonsynonymous_cds_edit
+    - frameshift
+    - internal_stop
+    - start_stop_codon_destruction
+    - cds_nucleotide_indel
+    - full_length_mrna_joint_optimization_as_primary
+    - new_wetlab
+  training_device: GPU_only
+  failure_evidence_deletion: forbidden
+  gate_lowering_post_hoc: forbidden
+  foundation_strategy: one_backbone_per_experiment
+  no_foundation_concat: true
+
+# ---------------------------------------------------------------------------
+# 2. Frozen decisions (migration prompt §三 A-E)
+# ---------------------------------------------------------------------------
+frozen_decisions:
+  termination:
+    primary_termination_policy: FIXED_BUDGET_OR_FIXED_HORIZON
+    learned_general_stop: HOLD_IDENTIFIABILITY_GATE
+    initial_no_edit_aux: NON_SAMPLER_AUXILIARY
+    initial_no_edit_aux_sampler_call_count: 0
+  unlabeled_pretraining:
+    project_unlabeled_pretraining: DISABLED_IN_PRIMARY_V1
+    legal_corruption_adaptation: OPTIONAL_AMENDMENT_AFTER_DATA_AND_OVERLAP_GATE
+    track_u_recovery: FORBIDDEN
+  gse246381:
+    project_prior_analytic_use: NONE_CONFIRMED
+    pipeline_materialization: PRESENT
+    role: SEALED_EXTERNAL_FINAL_CANDIDATE
+    claim_wording: OPERATIONALLY_SEALED_RETROSPECTIVE_EXTERNAL
+    temporal_or_prospective_wording: FORBIDDEN_WITHOUT_TIME_EVIDENCE
+  edit_budget:
+    primary_edit_budget: [1, 3, 5]
+    exploratory_edit_budget: [10]
+  indel:
+    primary_region_five_utr: substitution_only
+    indel_heads: PHYSICALLY_DISABLED
+    real_length_change_vs_latent_alignment_indel: SEPARATE_ACCOUNTS
+
+# ---------------------------------------------------------------------------
+# 3. GSE246381 status
+# ---------------------------------------------------------------------------
+gse246381_status:
+  role: SEALED_EXTERNAL_FINAL_CANDIDATE
+  dual_store: true
+  restricted_store: restricted
+  labels_accessible_before_freeze: false
+  final_evaluator_count_max: 1
+
+# ---------------------------------------------------------------------------
+# 4. Evidence grade / track / role orthogonal axes (additive, not replacing E/F)
+# ---------------------------------------------------------------------------
+evidence_axes:
+  scientific_track: [E, F, AUX, REFERENCE]
+  intervention_evidence_grade: [A1, A2, B1, B2, C, D]
+  method_training_role: [EFFECT_PRIMARY, FLOW_BASE, CRITIC_AUX, TRANSFER, DIAGNOSTIC, EXCLUDED]
+  endpoint_role: [DELTA, ABSOLUTE_PROPERTY, FAMILY_RANK, RECONSTRUCTION, NOT_APPLICABLE]
+  eligibility_flags:
+    - critic_eligibility
+    - flow_base_eligibility
+    - guidance_training_eligibility
+    - measured_optimization_eligibility
+    - transfer_eligibility
+
+evidence_grade_mapping:
+  intentionally_assayed_pair: A1
+  controlled_dense_measured_graph: A2
+  same_protein_synonymous_family: B1
+  modular_full_length_construct_family: B2
+  source_unresolved_function_observation: C
+  unlabeled_reference_natural_transcript: D_REFERENCE_NO_TRAIN_BY_DEFAULT
+
+# ---------------------------------------------------------------------------
+# 5. Task registry (v4) reference
+# ---------------------------------------------------------------------------
+task_registry_ref: docs/execution/xeditflow_task_registry.yaml
+split_registry_ref: docs/execution/xeditflow_split_registry.yaml
+task_split_matrix_ref: docs/execution/xeditflow_task_split_matrix.yaml
+claim_matrix_ref: docs/execution/xeditflow_claim_matrix.yaml
+
+# ---------------------------------------------------------------------------
+# 6. Primary gates
+# ---------------------------------------------------------------------------
+effect_gate:
+  macro_delta_spearman_min: 0.25
+  macro_sign_accuracy_min: 0.60
+  top10_enrichment_min: 1.50
+  beat_strongest_nonfoundation_baseline: true
+
+exact_guidance_gate:
+  ndcg_over_strongest_baseline_min: 0.05
+  top10_recall_min: 0.70
+  normalized_regret_max: 0.10
+  hard_legality_target: 1.0
+  sealed_ood_degradation_margin: preregistered
+
+# ---------------------------------------------------------------------------
+# 7. Fallback route
+# ---------------------------------------------------------------------------
+fallback:
+  data_and_critic_and_exact: mRNA_XEDITFLOW_MAIN_PAPER
+  data_and_critic_no_flow: mRNA_EDITBENCH_PLUS_SPARSE_EDIT_FORMER
+  critic_random_split_only: STOP_GENERATION_LINE_FIX_DATA

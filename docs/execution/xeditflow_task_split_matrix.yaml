@@ -1,0 +1,27 @@
+# xeditflow task x split applicability matrix
+# FK/eligibility closure enforced by tests.
+contract_id: mrna_xeditflow_goal_v1_1
+version: 4.0
+date: "2026-08-06"
+
+# task_id -> allowed split ids
+matrix:
+  T5_SOURCE_RELATIVE_EFFECT: [S1, S2, S3, S4, S5]
+  T5_SELECTIVE_EFFECT: [S1, S2, S3, S4, S5]
+  T5_MEASURED_NEIGHBORHOOD_OPTIMIZATION: [S1, S2, S3, S4, S5]
+  T5_FIXED_BUDGET_MULTI_STEP_OPTIMIZATION: [S1, S2, S3, S4, S5]
+  T5_ENDPOINT_RECONSTRUCTION: [S1, S2, S3, S4, S5]
+  T3_EFFECT_TRANSFER: [S4, S5]
+  T3_RECONSTRUCTION: [S1, S2, S3, S4]
+  CDS_SYNONYMOUS_FAMILY_RANKING: [S7]
+  CROSS_REGION_TRANSFER: [S4, S5]
+  OPEN_WORLD_PROXY_DIAGNOSTIC: [S1, S5]
+  EXACT_GUIDANCE_TOY_GRAPH: [S8]
+  EXACT_GUIDANCE_MATCHED_COMPUTE: [S1, S2, S3, S4, S5]
+
+# Sealed external S6 is not in any task's activation set; it is the one-time final evaluator.
+sealed_split: S6
+sealed_split_in_task_activation: false
+sealed_split_in_metric_branch: false
+sealed_split_in_calibration: false
+sealed_split_in_model_selection: false

@@ -1,0 +1,80 @@
+# xeditflow claim matrix
+# Each claim binds to evidence ID, artifact hash, analysis intent, denominator, status.
+contract_id: mrna_xeditflow_goal_v1_1
+version: 1.1.0
+date: "2026-08-06"
+
+claims:
+  - id: L0_DATA_BENCHMARK
+    claim: "Built reproducible, evidence-tiered, leakage-controlled public mRNA intervention benchmark (mRNA-EditBench)."
+    prereq: "raw provenance, checksum, reproduction report, rejected table, license, split audit complete"
+    status: PENDING
+    standalone_wording: "development benchmark draft"
+
+  - id: L1_EFFECT
+    claim: "SparseEditFormer predicts source-relative measured delta on unseen source/gene/study with calibrated uncertainty."
+    prereq: "macro delta Spearman>=0.25, sign acc>=0.60, top10 enrichment>=1.50, beats strongest non-foundation baseline"
+    status: PENDING
+    standalone_wording: "development effect evidence only"
+
+  - id: L2_MEASURED_OPTIMIZATION
+    claim: "Model effectively ranks/discovers high-value local edits within actually-measured candidate sets."
+    prereq: "NDCG>=baseline+0.05, top10 recall>=0.70, normalized regret<=0.10 (primary optimization claim)"
+    status: PENDING
+    standalone_wording: "measured-space ranking not established"
+
+  - id: L3_PROXY_OPTIMIZATION
+    claim: "Model generates legal candidates with higher proxy score under frozen independent evaluator and preregistered constraints."
+    prereq: "independent evaluator + OOD/uncertainty/diversity; not real functional improvement"
+    status: PENDING
+    standalone_wording: "proxy-only, no functional improvement claim"
+
+  - id: L4_BIOLOGICAL_THERAPEUTIC
+    claim: "Model designs experimentally-validated higher protein yield or better therapeutic mRNA."
+    prereq: "new dry-lab-verified wet-lab evidence required; permanently locked in no-wet-lab version"
+    status: PROHIBITED
+    standalone_wording: "prohibited claim"
+
+  - id: C_BENCH_01
+    claim: "provenance-controlled source-conditioned UTR benchmark built"
+    prereq: "C3/D0-R/D1-R/FM0-A/B0-R/G7 all PASS; E/F tables + release rights closed"
+    status: PENDING
+    standalone_wording: "development dataset/benchmark draft"
+
+  - id: C_DATA_01
+    claim: "data cleaning complete"
+    prereq: "COMPLETE_CLEANING; row/edge/schema/pairing/labels/artifact/license/checksum closed"
+    status: PENDING
+    standalone_wording: "partially reconstructed / cleaning incomplete"
+
+  - id: C_METHOD_XEDITFLOW
+    claim: "mRNA-XEditFlow exact-guided legal edit flow contribution"
+    prereq: "data+critic+exact guidance all gates pass; exact>reranking matched compute"
+    status: PENDING
+    standalone_wording: "Edit-Flows-derived reference implementation"
+
+  - id: C_EXTERNAL_01
+    claim: "GSE246381 external evaluation"
+    prereq: "NONE_CONFIRMED prior use, pipeline materialization registered, QC/license/FM overlap/operational seal passed, one-time evaluator"
+    status: PENDING
+    standalone_wording: "sealed external candidate or excluded with evidence"
+
+  - id: C_REGION_5U
+    claim: "5'UTR primary effect effective"
+    prereq: "5' eligibility, preregistered metrics, study/source-aware CI, matched baselines"
+    status: PENDING
+    standalone_wording: "5' development evidence only"
+
+  - id: C_REGION_3U_CDS
+    claim: "3'UTR/CDS transfer effective"
+    prereq: "independent 3'/CDS data eligibility, task-specific gate, region-transfer final"
+    status: PENDING
+    standalone_wording: "exploratory/qualified transfer"
+
+  - id: C_EXACT_GUIDANCE
+    claim: "exact density-ratio guidance on legal edit CTMC"
+    prereq: "toy exactness (rate rel error<=1e-5), terminal TV within tolerance, matched-compute beats reranking/first-order/latent-CFG"
+    status: PENDING
+    standalone_wording: "learned rate guidance (downgraded)"
+
+evidence_rule: "Every paper number/factual claim binds evidence ID, artifact hash, analysis intent, denominator, status in this file. Contract/search-summary/model output is not itself evidence."
