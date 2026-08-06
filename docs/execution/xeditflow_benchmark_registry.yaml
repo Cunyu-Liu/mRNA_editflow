@@ -1,0 +1,89 @@
+contract_id: mrna_xeditflow_goal_v1_1
+version: '2.0'
+date: '2026-08-06'
+benchmark_name: mRNA-EditBench v2
+expected_benchmark_ids:
+- EditBench-5U-A1-Natural
+- EditBench-5U-A2-Dense
+- EditBench-3U-A1-Variant
+- EditBench-CDS-B1-Synonymous
+sub_benchmarks:
+- id: EditBench-5U-A1-Natural
+  region: 5UTR
+  evidence_grade: A1
+  description: 5'UTR intentionally-assayed natural source/ref-candidate/alt pairs.
+  status: ACTIVE
+  asset_ids:
+  - GSE114002
+  - GSE186455
+  - GSE200304
+  - GSE217518
+  - GSE232571
+  - GSE232572
+  - GSE261709
+  - GSE288185
+  - GSE298114
+  primary_tasks:
+  - T5_SOURCE_RELATIVE_EFFECT
+  - T5_SELECTIVE_EFFECT
+  - T5_MEASURED_NEIGHBORHOOD_OPTIMIZATION
+  - T5_FIXED_BUDGET_MULTI_STEP_OPTIMIZATION
+  splits:
+  - S1
+  - S2
+  - S3
+  - S4
+  - S5
+  sealed_external: S6
+- id: EditBench-5U-A2-Dense
+  region: 5UTR
+  evidence_grade: A2
+  description: 5'UTR controlled dense measured landscape.
+  status: ACTIVE
+  asset_ids:
+  - GSE330741
+  primary_tasks:
+  - T5_SOURCE_RELATIVE_EFFECT
+  - T5_MEASURED_NEIGHBORHOOD_OPTIMIZATION
+  splits:
+  - S1
+  - S2
+  - S3
+  - S4
+  sealed_external: S6
+- id: EditBench-3U-A1-Variant
+  region: 3UTR
+  evidence_grade: A1
+  description: 3'UTR variant transfer-track A1 (independent endpoint heads).
+  status: ACTIVE
+  asset_ids:
+  - ENCSR854RUF
+  primary_tasks:
+  - T3_EFFECT_TRANSFER
+  - CROSS_REGION_TRANSFER
+  splits:
+  - S4
+  - S5
+  sealed_external: S6
+- id: EditBench-CDS-B1-Synonymous
+  region: CDS
+  evidence_grade: B1
+  description: same-protein synonymous-codon family ranking (transfer).
+  status: DORMANT
+  status_reason: No qualified B1 data accepted yet; GSE207584 is PENDING_BLOCKED legacy
+    CDS liability. Must not fabricate a PASS until sequence/family/label rebuild.
+  asset_ids: []
+  primary_tasks:
+  - CDS_SYNONYMOUS_FAMILY_RANKING
+  splits:
+  - S7
+  sealed_external: S6
+gse246381:
+  role: SEALED_EXTERNAL_FINAL_CANDIDATE
+  in_task_activation: false
+  in_metric_branch: false
+  in_calibration: false
+  in_model_selection: false
+  ordinary_loader_returns_zero_rows_before_final: true
+  final_evaluator_count_max: 1
+# EOF
