@@ -26,7 +26,7 @@ ART = R / "artifacts" / "migration"
 
 BENCH_REG = EXEC / "xeditflow_benchmark_registry.yaml"
 ASSET_ROLE = EXEC / "xeditflow_asset_role_assignment.yaml"
-D1_PAIRS = pathlib.Path("/mnt/cunyuliu/mrna_editflow_v3_1/d1/ordinary/utr_edit_pairs.jsonl")
+D1_PAIRS = pathlib.Path("/mnt/cunyuliu/mrna_editflow_v3_1/d1_3u_rebuild_staging/ordinary/utr_edit_pairs.jsonl")
 
 NEW_CONTRACT_ID = "mrna_xeditflow_goal_v1_1"
 

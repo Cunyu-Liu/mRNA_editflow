@@ -2,7 +2,7 @@
   "contract_id": "mrna_xeditflow_goal_v1_1",
   "phase": "M4-DATA-READINESS",
   "date": "2026-08-06",
-  "d1_pairs_total": 88042,
+  "d1_pairs_total": 103694,
   "d1_pairs_available": true,
   "sub_benchmarks": {
     "EditBench-5U-A1-Natural": {
@@ -46,8 +46,8 @@
       "region": "3UTR",
       "status": "ACTIVE",
       "n_assets": 7,
-      "n_assets_with_d1_pairs": 4,
-      "ready": false,
+      "n_assets_with_d1_pairs": 7,
+      "ready": true,
       "assets": [
         {
           "asset_id": "ENCSR854RUF",
@@ -75,7 +75,7 @@
           "pool_role": "ACCEPTED_FOR_NEW_ROLE",
           "evidence_grade": "A1",
           "method_role": "EFFECT_PRIMARY",
-          "d1_pairs": 0
+          "d1_pairs": 14503
         },
         {
           "asset_id": "GSE232572",
@@ -89,14 +89,14 @@
           "pool_role": "ACCEPTED_FOR_NEW_ROLE",
           "evidence_grade": "A1",
           "method_role": "EFFECT_PRIMARY",
-          "d1_pairs": 0
+          "d1_pairs": 749
         },
         {
           "asset_id": "GSE298114",
           "pool_role": "ACCEPTED_FOR_NEW_ROLE",
           "evidence_grade": "A1",
           "method_role": "EFFECT_PRIMARY",
-          "d1_pairs": 0
+          "d1_pairs": 400
         }
       ],
       "primary_tasks": [
