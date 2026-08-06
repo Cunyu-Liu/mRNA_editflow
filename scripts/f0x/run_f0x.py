@@ -222,6 +222,8 @@ def main() -> int:
     ap.add_argument("--seed", type=int, default=42)
     ap.add_argument("--gpu", default=None)
     ap.add_argument("--skip-train", action="store_true")
+    ap.add_argument("--ckpt", type=Path, default=None,
+                    help="path to save the trained (frozen) base-flow checkpoint")
     args = ap.parse_args()
 
     cfg = get_config()
@@ -243,6 +245,13 @@ def main() -> int:
         net.eval()  # FIX: disable dropout so flow-policy inference is deterministic
         print(f"[f0x] trained base flow: steps={args.steps} "
               f"loss_first={losses[0]:.4f} loss_last={losses[-1]:.4f}")
+        if args.ckpt is not None:
+            args.ckpt.parent.mkdir(parents=True, exist_ok=True)
+            torch.save({"state_dict": net.state_dict(), "cfg": cfg,
+                        "phase": "F0-X", "frozen_for": "G1-X",
+                        "benchmark": args.benchmark, "seed": args.seed},
+                       args.ckpt)
+            print(f"[f0x] saved frozen base-flow checkpoint -> {args.ckpt}")
 
     # held-out source sample for evaluation (independent of training rows)
     eval_rows = load_rows(args.dataset, args.benchmark,
