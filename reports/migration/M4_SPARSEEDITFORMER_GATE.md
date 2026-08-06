@@ -109,7 +109,7 @@ Per-study anchored Spearman: 5U-A1 GSE217518 0.3862 (vs abs 0.3838), GSE114002 0
 - Feed the anchored 5U-A1 delta-Spearman gain (0.2971, beats ceiling) and the NDCG@10 0.834 reranker into the next effect-model / measured-neighborhood optimization phases. Address the sign-accuracy and top-10% enrichment gaps (0.51/0.43 and 0.13/0.16 vs 0.60/1.50) before claiming the effect-model gate. Transfer these to O0-X → F0-X → G0-X → G1-X → E0-X → X0-X.
 
 ## 15. COMMIT_SHA
-- `12d96cb7494f3632e365d1578b51b2557f2cca58` (commit message marked `GOAL-XEDITFLOW-MIGRATION-01`).
+- `3623625` (corrected-metric commit, message marked `GOAL-XEDITFLOW-MIGRATION-01`). See also `12d96cb` (M4 model / gate report).
 
 ## 16. MANIFEST_AND_HASHES
 - `artifacts/b0x/effect_dataset.jsonl` SHA-256: `f23a9fdd54a8ead90dccf793a073ccc6ed804a9b760a266c77b02e1fb1007ba1`.
