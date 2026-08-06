@@ -80,7 +80,7 @@
 - GSE246381 保持 restricted shard，final 前 ordinary loader 返回 0 行。
 
 ## 15. COMMIT_SHA
-- M2 commit：见下方 `## 16` 之后的 COMMIT（本报告提交后回填）。
+- M2 commit：`0895ece`（29 files changed, 6087 insertions）。
 
 ## 16. MANIFEST_AND_HASHES
 - xedit_v1_1 `SCHEMA_MANIFEST.json`：`11b14927e0497306ca6ae85526e122cf53bf0ab57d9dfaa85aa054a3c8c8bc8d`
