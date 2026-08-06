@@ -1,7 +1,7 @@
 {
   "contract_id": "mrna_xeditflow_goal_v1_1",
   "supersedes": "utr_editflow_goal_v3.1_benchmark_first",
-  "terminal_state": "DATA_BENCHMARK_READY_FOR_EFFECT_MODEL",
+  "terminal_state": "MIGRATION_READY_FOR_DATA_REBUILD",
   "date": "2026-08-06",
   "n_artifacts": 20,
   "artifacts": {
@@ -24,6 +24,6 @@
     "reports/migration/M1_CONTRACT_SUPERSESSION.md": "9cbf08d91db41b3dd415c966f5f0d7fde82b134241a47a962d4ceecab4ee90bd",
     "reports/migration/M2_SCHEMA_MIGRATION.md": "b1143d533712040c021301717be3750a99e2d958f5cfa5f8c37bf382da9cf188",
     "reports/migration/M3_BENCHMARK_REGISTRY.md": "a7a196b120cf202518149000aec72eed6f39af24c35d0cb521849360dd1d63cd",
-    "reports/migration/FINAL_MIGRATION_REPORT.md": "6e8bb61d39c6ec89553b69397ade2033cbcb755565d07e5aa879e9b00fdeb320"
+    "reports/migration/FINAL_MIGRATION_REPORT.md": "dd4679f0bb3410217499924cdf72fb9dc7ff4acc5d8046ba15691e78e4b4ad2f"
   }
 }

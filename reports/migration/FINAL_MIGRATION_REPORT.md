@@ -1,7 +1,7 @@
 # FINAL Migration Report — mRNA-EditFlow v3.1 → mRNA-XEditFlow v1.1
 
 - **Migration Goal:** `GOAL-XEDITFLOW-MIGRATION-01`
-- **Terminal state:** `DATA_BENCHMARK_READY_FOR_EFFECT_MODEL`
+- **Terminal state:** `MIGRATION_READY_FOR_DATA_REBUILD`
 - **UTC:** 2026-08-06
 - **Migration worktree:** `/home/cunyuliu/mrna_editflow_goal/worktrees/xeditflow_migration_20260806T024650Z`
 - **Migration branch:** `xeditflow-migration-20260806T024650Z`
@@ -50,7 +50,7 @@
 - Raw/provenance/hash: REUSE_AS_IS. Schemas/registry: REUSE_WITH_ADAPTER or versioned REBUILD. Governance/provenance/license/exposure/sealed/split/audit: RETAIN_EXACT (hash-bound). Model-engine: AUDIT_AND_REBIND_IN_F0_X.
 
 ## 11. GATE_STATUS
-- **Migration authority layer PASS**: `DATA_BENCHMARK_READY_FOR_EFFECT_MODEL`. Effect-model execution (B0-X → M4 → O0-X → F0-X → G0-X → G1-X → E0-X → X0-X) is a separate tracked thread.
+- **Migration authority layer PASS**: `MIGRATION_READY_FOR_DATA_REBUILD`. The contract supersession, schema/benchmark registries, asset roles and crosswalk are complete and verified. The data rebuild under the new schema/benchmark (qualified measured candidate pools) is the next gate; CDS-B1 stays DORMANT until qualified data is rebuilt. Effect-model execution (B0-X → M4 → O0-X → F0-X → G0-X → G1-X → E0-X → X0-X) is a separate tracked thread.
 
 ## 12. CLAIMS_UNLOCKED
 - None. Migration supersesses the scientific line but unlocks no new experimental claim.
@@ -59,7 +59,8 @@
 - L4 (real biological/therapeutic improvement) PROHIBITED. No wet lab. CDS-B1 not auto-unlocked. Old PASS not auto-inherited.
 
 ## 14. NEXT_PHASE_INPUTS
-- B0-X effect baseline ceiling on accepted EFFECT_PRIMARY assets; M4 SparseEditFormer; O0-X measured-space optimization; F0-X source-anchored legal Edit Flow; G0-X exact-guidance toy graph; G1-X integration; E0-X prereg + sealed final; X0-X 3'UTR/CDS transfer.
+- **Data rebuild gate**: rebuild qualified measured canonical pools under xedit_v1_1 schema/orthogonal axes and pass benchmark ingestion gates before claiming DATA_BENCHMARK_READY_FOR_EFFECT_MODEL.
+- Then B0-X effect baseline ceiling on accepted EFFECT_PRIMARY assets; M4 SparseEditFormer; O0-X measured-space optimization; F0-X source-anchored legal Edit Flow; G0-X exact-guidance toy graph; G1-X integration; E0-X prereg + sealed final; X0-X 3'UTR/CDS transfer.
 
 ## 15. COMMIT_SHA
 - M0 `caa30bb` · M1 `722935d`/`633f7e8` · M2 `0895ece`/`2641661` · M3 `187c95f`/`d09a621`.

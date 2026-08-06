@@ -17,7 +17,7 @@ REP = REPO_ROOT / "reports" / "migration"
 EXEC = REPO_ROOT / "docs" / "execution"
 
 NEW_CONTRACT_ID = "mrna_xeditflow_goal_v1_1"
-TERMINAL_STATE = "DATA_BENCHMARK_READY_FOR_EFFECT_MODEL"
+TERMINAL_STATE = "MIGRATION_READY_FOR_DATA_REBUILD"
 
 
 def _load_jsonl(p: Path):

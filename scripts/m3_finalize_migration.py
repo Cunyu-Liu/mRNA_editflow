@@ -27,7 +27,13 @@ CROSSWALK_CSV = EXEC / "old_to_new_contract_crosswalk.csv"
 
 NEW_CONTRACT_ID = "mrna_xeditflow_goal_v1_1"
 OLD_CONTRACT_ID = "utr_editflow_goal_v3.1_benchmark_first"
-TERMINAL_STATE = "DATA_BENCHMARK_READY_FOR_EFFECT_MODEL"
+# Honest terminal state after the M0-M3 migration authority layer: the contract
+# supersession, schema/benchmark registries and asset roles are complete, but the
+# data rebuild under the new schema/benchmark (and qualified measured candidate
+# pools) has NOT yet been executed/verified. CDS-B1 is DORMANT for exactly this
+# reason. Do NOT claim DATA_BENCHMARK_READY_FOR_EFFECT_MODEL until the rebuilt
+# canonical data passes the benchmark ingestion gates.
+TERMINAL_STATE = "MIGRATION_READY_FOR_DATA_REBUILD"
 
 
 def sha256(p: pathlib.Path) -> str:
@@ -217,7 +223,7 @@ def build_final_report() -> None:
 - Raw/provenance/hash: REUSE_AS_IS. Schemas/registry: REUSE_WITH_ADAPTER or versioned REBUILD. Governance/provenance/license/exposure/sealed/split/audit: RETAIN_EXACT (hash-bound). Model-engine: AUDIT_AND_REBIND_IN_F0_X.
 
 ## 11. GATE_STATUS
-- **Migration authority layer PASS**: `{TERMINAL_STATE}`. Effect-model execution (B0-X → M4 → O0-X → F0-X → G0-X → G1-X → E0-X → X0-X) is a separate tracked thread.
+- **Migration authority layer PASS**: `{TERMINAL_STATE}`. The contract supersession, schema/benchmark registries, asset roles and crosswalk are complete and verified. The data rebuild under the new schema/benchmark (qualified measured candidate pools) is the next gate; CDS-B1 stays DORMANT until qualified data is rebuilt. Effect-model execution (B0-X → M4 → O0-X → F0-X → G0-X → G1-X → E0-X → X0-X) is a separate tracked thread.
 
 ## 12. CLAIMS_UNLOCKED
 - None. Migration supersesses the scientific line but unlocks no new experimental claim.
@@ -226,7 +232,8 @@ def build_final_report() -> None:
 - L4 (real biological/therapeutic improvement) PROHIBITED. No wet lab. CDS-B1 not auto-unlocked. Old PASS not auto-inherited.
 
 ## 14. NEXT_PHASE_INPUTS
-- B0-X effect baseline ceiling on accepted EFFECT_PRIMARY assets; M4 SparseEditFormer; O0-X measured-space optimization; F0-X source-anchored legal Edit Flow; G0-X exact-guidance toy graph; G1-X integration; E0-X prereg + sealed final; X0-X 3'UTR/CDS transfer.
+- **Data rebuild gate**: rebuild qualified measured canonical pools under xedit_v1_1 schema/orthogonal axes and pass benchmark ingestion gates before claiming DATA_BENCHMARK_READY_FOR_EFFECT_MODEL.
+- Then B0-X effect baseline ceiling on accepted EFFECT_PRIMARY assets; M4 SparseEditFormer; O0-X measured-space optimization; F0-X source-anchored legal Edit Flow; G0-X exact-guidance toy graph; G1-X integration; E0-X prereg + sealed final; X0-X 3'UTR/CDS transfer.
 
 ## 15. COMMIT_SHA
 - M0 `caa30bb` · M1 `722935d`/`633f7e8` · M2 `0895ece`/`2641661` · M3 `187c95f`/`d09a621`.
