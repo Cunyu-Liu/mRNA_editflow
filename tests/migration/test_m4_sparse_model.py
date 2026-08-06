@@ -98,18 +98,24 @@ def test_model_loss_decreases_when_overfitting():
     ds = EffectDataset(rows, vocab, target="delta")
     from torch.utils.data import DataLoader
     dl = DataLoader(ds, batch_size=16, shuffle=True)
-    first = None
-    for step in range(6):
-        batch = next(iter(dl))
-        b = {k: v for k, v in batch.items()}
-        opt.zero_grad()
-        losses = compute_loss(model, b, cfg, torch.device("cpu"))
-        losses["loss"].backward()
-        if first is None:
-            first = losses["loss"].item()
-        opt.step()
-    assert losses["loss"].item() < first, "loss did not decrease on tiny overfit set"
-
+    # Mean loss over whole data passes (robust to batch sampling noise).
+    def epoch_loss():
+        model.train()
+        tot, nb = 0.0, 0
+        for b in dl:
+            bb = {k: v for k, v in b.items()}
+            opt.zero_grad()
+            losses = compute_loss(model, bb, cfg, torch.device("cpu"))
+            losses["loss"].backward()
+            opt.step()
+            tot += losses["loss"].item()
+            nb += 1
+        return tot / max(nb, 1)
+    first = epoch_loss()
+    last = None
+    for _ in range(3):
+        last = epoch_loss()
+    assert last < first, "loss did not decrease on tiny overfit set"
 
 def test_pairwise_rank_loss_zero_for_perfect_order():
     score = torch.tensor([1.0, 2.0, 3.0, 4.0])

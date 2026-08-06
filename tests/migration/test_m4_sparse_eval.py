@@ -37,8 +37,13 @@ def test_context_metrics_perfect():
     m = context_metrics(true, pred)
     assert m["delta_spearman"] == pytest.approx(1.0)
     assert m["sign_accuracy"] == 1.0
+    # top10_enrichment = mean(true_delta[pred_top])/mean(true_delta[true_top]);
+    # for a perfect ordering this equals 1.0 (predicted top == true top).
     assert m["top10_enrichment"] == pytest.approx(1.0)
-    assert m["top10pct_enrichment"] == pytest.approx(1.0)
+    # top10pct_enrichment is ENRICHMENT-OVER-RANDOM:
+    #   mean(true_delta[pred_top_10%]) / mean(true_delta[all]).
+    # For true=[1,2,3,4,5], top-10% = {5.0}, overall mean = 3.0 -> 5/3.
+    assert m["top10pct_enrichment"] == pytest.approx(5.0 / 3.0)
 
 
 def test_context_metrics_reversed():

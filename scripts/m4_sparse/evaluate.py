@@ -59,12 +59,17 @@ def context_metrics(true_delta, pred) -> dict:
         m["top10_enrichment"] = float(np.mean(true_delta[pred_top]) / denom) if denom != 0 else None
     else:
         m["top10_enrichment"] = None
-    # top-10% (percentile, gate metric)
+    # top-10% (percentile) ENRICHMENT-OVER-RANDOM (contract gate metric
+    #   §3.2 / §10): enrichment@q = mean(true_delta[pred_top_q]) / mean(true_delta[all]).
+    #   Values >1 mean the model concentrates more true effect in its predicted
+    #   top-10% than the random expectation.  This is the metric the pre-registered
+    #   gate threshold (>=1.50) refers to.  [The old pred_top/true_top ratio is
+    #   bounded by 1.0 and could never reach 1.50 -> definition bug, corrected.]
     kp = max(1, math.ceil(len(true_delta) * 0.10))
     pred_top = np.argsort(pred)[-kp:][::-1]
-    true_top = np.argsort(true_delta)[-kp:][::-1]
-    denom = float(np.mean(true_delta[true_top]))
-    m["top10pct_enrichment"] = float(np.mean(true_delta[pred_top]) / denom) if denom != 0 else None
+    overall = float(np.mean(true_delta))
+    m["top10pct_enrichment"] = (float(np.mean(true_delta[pred_top])) / overall
+                                if overall != 0 else None)
     return m
 
 
