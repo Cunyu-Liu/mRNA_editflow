@@ -1,0 +1,196 @@
+# =============================================================================
+# E0-X Pre-registration Protocol — mRNA-XEditFlow v1.1
+# GOAL-XEDITFLOW-MIGRATION-01
+#
+# Frozen BEFORE any sealed final access. This file binds the canonical data,
+# task/split registry, model aliases + checkpoint hashes, reward/beta,
+# calibration, primary metric family + Holm correction, seeds, evaluator
+# command/container, candidate/query/FLOP/time budget, output schema and the
+# fallback route. Nothing below may change after the ACCESS_INTENT is written.
+# =============================================================================
+
+contract_id: mrna_xeditflow_goal_v1_1
+phase: E0-X
+goal: GOAL-XEDITFLOW-MIGRATION-01
+preregistration_id: E0X_PREREG_20260807
+status: FROZEN
+
+# ---------------------------------------------------------------------------
+# 1. Canonical / data manifest (immutable, carried forward from B0-X / M4)
+# ---------------------------------------------------------------------------
+data:
+  effect_dataset:
+    path: artifacts/b0x/effect_dataset.jsonl
+    sha256: f23a9fdd54a8ead90dccf793a073ccc6ed804a9b760a266c77b02e1fb1007ba1
+    n_records: 106659
+    n_delta_defined: 103199
+  canonical_readonly: /home/cunyuliu/mrna_editflow_goal/mrna_editflow/data/d1_canonical_records.jsonl
+  split: S4            # leave-one-study-out (study_0 leakage)
+  primary_benchmarks: [5U-A1, 3U-A1]
+  primary_edit_budget: [1, 3, 5]
+  exploratory_edit_budget: [10]
+
+# ---------------------------------------------------------------------------
+# 2. Task / split registry (v4, frozen)
+# ---------------------------------------------------------------------------
+task_registry_ref: docs/execution/xeditflow_task_registry.yaml
+split_registry_ref: docs/execution/xeditflow_split_registry.yaml
+primary_tasks:
+  - T5_SOURCE_RELATIVE_EFFECT
+  - T5_MEASURED_NEIGHBORHOOD_OPTIMIZATION
+  - T5_FIXED_BUDGET_MULTI_STEP_OPTIMIZATION
+sealed_split: S6         # operationally sealed external, one_final_only
+
+# ---------------------------------------------------------------------------
+# 3. Model aliases + checkpoint hashes (frozen)
+# ---------------------------------------------------------------------------
+models:
+  frozen_base_flow:
+    alias: f0x_base_flow_5U-A1
+    path: artifacts/f0x/f0x_base_flow_5U-A1.pt
+    sha256: 268d10db16a17baa827a6e6ac0784e0086cb62e96225dc7fa8494b4a1719ef5e
+  frozen_critic:
+    type: SparseEditFormer
+    target: candidate_value
+    anchor_at_test: true
+    ckpt_dir: artifacts/m4_sparse/candval
+    checkpoints:
+      model_5U-A1__GSE114002.pt:
+        sha256: 6339f7fae0c6b175bdca8a98ce9272cb56a0921e6044893497c524263ff36e83
+      model_5U-A1__GSE217518.pt:
+        sha256: b07297e511e16d4aa389d2bc62ae7ea8594ea42e7bc8924ff80146bb1ffd9751
+      model_3U-A1__ENCSR854RUF.pt:
+        sha256: 7d7fdca6bd8d7cce8fec8d19a2e46dd152138acd7befb04307e70bd6b2d84290
+      model_3U-A1__GSE186455.pt:
+        sha256: a1d7f193068b95b35096c634a85cf580faac4015bcf3d021dca02e81cb9f91d3
+      model_3U-A1__GSE200304.pt:
+        sha256: 3ecbf5f48a9bbf1f180dd4f92a100e940c9e1786915357e3aa58a1007fa188d4
+      model_3U-A1__GSE232571.pt:
+        sha256: 1e656f610d82a66212987af1a9014cc4fe3b3d5014711e26b372de6b744238ab
+      model_3U-A1__GSE232572.pt:
+        sha256: b44db86bde2cc55e3ff70c267556345c3132a74b514bc9f0233ccf47aa5049eb
+      model_3U-A1__GSE261709.pt:
+        sha256: ad8cfc63a5d9e615eed55472e94c8335bad8200145d5dd0a26c59779be516c85
+      model_3U-A1__GSE298114.pt:
+        sha256: 0689205d9ce36d97fbc26d6818c6ca6207f8a9a8832411c369e7f8b971bcc20b
+  guidance_head:
+    alias: guidance_head
+    type: GuidanceRatioNet
+    hidden: 32
+    epochs: 3
+    trained_per_fold: true   # trained on each fold's held-in single-edit pairs
+
+# ---------------------------------------------------------------------------
+# 4. Reward / beta / calibration (frozen)
+# ---------------------------------------------------------------------------
+reward:
+  reward_source: frozen_critic_delta     # delta = cand_pred - MEASURED source
+  beta: 1.0
+  guidance_strategy_primary: rate_cfg     # the G1-X value axis (generation quality)
+  calibration: development_calibrated     # temperature / Platt done pre-freeze
+  ood_penalty: pre_registered_margin
+
+# ---------------------------------------------------------------------------
+# 5. Primary metric family + Holm correction (frozen)
+# ---------------------------------------------------------------------------
+metrics:
+  holm_family:
+    # Family-wise error-rate control across the primary hypotheses.
+    # k = number of primary hypotheses; alpha split by Holm-Bonferroni.
+    inference: HOLM_BONFERRONI
+    alpha: 0.05
+    hypotheses:
+      - id: H1_EFFECT_TRANSFER
+        metric: macro_delta_spearman
+        benchmark: 5U-A1
+        sealed_split: S6
+        direction: higher_is_better
+        null_hypothesis: "critic anchored delta has no monotone association with measured delta on sealed external"
+      - id: H2_GUIDANCE_VALUE
+        metric: generation_quality_mean_delta
+        strategy: rate_cfg
+        vs: no_guidance
+        direction: higher_is_better
+        null_hypothesis: "rate_cfg generation-quality mean_delta <= no_guidance on sealed external"
+      - id: H3_LEGALITY
+        metric: legality_rate
+        benchmark: 5U-A1
+        direction: higher_is_better
+        null_hypothesis: "guidance violates the legal edit graph on sealed external"
+    primary_metric_axes:
+      - macro_delta_spearman
+      - macro_sign_accuracy
+      - top10_enrichment
+      - ndcg_at_k
+      - normalized_regret
+      - generation_quality_mean_delta
+      - generation_quality_frac_beneficial
+      - legality_rate
+
+# ---------------------------------------------------------------------------
+# 6. GO / NO-GO thresholds (pre-registered, carried forward from G1-X)
+# ---------------------------------------------------------------------------
+go_nogo:
+  # Effect translation / generalization to the sealed external (L1/L2).
+  effect_gate:
+    macro_delta_spearman_ge: 0.25
+    macro_sign_accuracy_ge: 0.60
+    top10_enrichment_ge: 1.50
+    beat_strongest_nonfoundation_baseline: true   # beat abs_candidate on same sealed folds
+  # Guidance value axis (the G1-X generation-quality demonstration, carried forward).
+  guidance_gate:
+    primary_strategy: rate_cfg
+    vs: no_guidance
+    generation_quality_mean_delta_gt: 0.0        # rate_cfg > no_guidance in mean_delta
+    generation_quality_frac_beneficial_gt: 0.0   # rate_cfg > no_guidance in frac_beneficial
+    ndcg_gap_ge: 0.05                            # NDCG >= strongest matched baseline + 0.05
+    top10_recall_ge: 0.70
+    normalized_regret_le: 0.10
+  hard_constraints:
+    legality_ge: 1.00
+    length_preservation_ge: 1.00
+    budget_violation_le: 0.0
+  ood_margin:
+    degradation_margin: preregistered
+    fail_if_beyond: true
+
+# ---------------------------------------------------------------------------
+# 7. Seeds / failed-seed handling / evaluator / budget / output schema
+# ---------------------------------------------------------------------------
+execution:
+  seed: 42
+  failed_seed_handling:
+    - "failed seed is recorded and excluded; best-seed reporting is prohibited"
+    - "no seed is retried after a sealed final abort"
+  evaluator_command: "python -m scripts.e0x.run_e0x_final --dataset artifacts/b0x/effect_dataset.jsonl --prereg configs/e0x_preregistration_v1.yaml --restricted /home/cunyuliu/mrna_editflow_goal/restricted/v3_1_data_bench_closure_20260803/sealed_external/GSE246381 --gpu cuda:3"
+  container_or_env: editflow
+  gpu_policy:
+    permitted: [cuda:1, cuda:2, cuda:3]
+    forbidden: [cuda:4, "4"]
+    fallback: ""            # fail-closed if CUDA unavailable (no silent CPU)
+  budget:
+    candidate_budget: fixed_measured_pool
+    query_budget: fixed_measured_pool
+    forward_equivalents: recorded_per_strategy
+    wall_time: recorded_per_strategy
+  output_schema:
+    artifact: artifacts/e0x/e0x_final_results.json
+    schema_version: "1.0"
+    aggregate_only: true
+    row_level_labels_returned: false
+    fields:
+      - phase
+      - preregistration_id
+      - status
+      - sealed_access_state
+      - per_hypothesis
+      - holm_adjusted_pvalues
+      - go_nogo_verdict
+
+# ---------------------------------------------------------------------------
+# 8. Fallback route (frozen)
+# ---------------------------------------------------------------------------
+fallback:
+  - "data + critic + guidance all pass -> mRNA-XEditFlow main paper"
+  - "data + critic pass but Flow/guidance fails -> mRNA-EditBench + SparseEditFormer main paper"
+  - "critic only valid on random split -> stop generation line; return to data/pair/endpoint/leakage repair"
