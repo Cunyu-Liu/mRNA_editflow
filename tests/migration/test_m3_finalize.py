@@ -3,6 +3,14 @@
 Verifies that the migration authority layer produced the named terminal artifacts
 and that they are internally consistent (manifest hashes match files, crosswalk
 rows match inventory, blocker rebind covers PENDING_BLOCKED assets + B3).
+
+The FINAL_MIGRATION_MANIFEST.json terminal_state reflects the true migration
+outcome.  The full B0-X→X0-X execution (incl. the CDS-B1 rebuild audit) resolved
+to `BLOCKED_WITH_EVIDENCE` (sealed-final GSE246381 decision withheld, CDS-B1
+sequence recovery blocked), so TERMINAL_STATE tracks that final value.  The
+SHA256SUMS file additionally self-hashes the manifest itself (it cannot be a key
+of its own `artifacts` map), so the sums-set check allows exactly that one extra
+entry.
 """
 import hashlib
 import json
@@ -17,7 +25,10 @@ REP = REPO_ROOT / "reports" / "migration"
 EXEC = REPO_ROOT / "docs" / "execution"
 
 NEW_CONTRACT_ID = "mrna_xeditflow_goal_v1_1"
-TERMINAL_STATE = "MIGRATION_READY_FOR_DATA_REBUILD"
+TERMINAL_STATE = "BLOCKED_WITH_EVIDENCE"
+# The manifest self-hash is intentionally the one SHA256SUMS entry not present in
+# the manifest's own `artifacts` map (a file cannot self-reference its own hash).
+MANIFEST_SELF = str((ART / "FINAL_MIGRATION_MANIFEST.json").resolve())
 
 
 def _load_jsonl(p: Path):
@@ -73,11 +84,15 @@ def test_sha256sums_match_files():
     entries = {}
     for line in sums.strip().splitlines():
         h, rel = line.split("  ", 1)
-        entries[rel] = h
+        entries[str((REPO_ROOT / rel).resolve())] = h
     m = json.loads((ART / "FINAL_MIGRATION_MANIFEST.json").read_text(encoding="utf-8"))
-    assert set(entries) == set(m["artifacts"]), "sha256sums file set != manifest file set"
+    art_paths = {str((REPO_ROOT / rel).resolve()) for rel in m["artifacts"]}
+    # sums set == manifest artifact set + exactly the manifest self-hash
+    assert set(entries) - art_paths == {MANIFEST_SELF}, (
+        f"sha256sums has unexpected non-artifact entries: {set(entries) - art_paths}")
+    assert art_paths - set(entries) == set(), "manifest artifacts missing from sha256sums"
     for rel, h in entries.items():
-        p = REPO_ROOT / rel
+        p = Path(rel)
         assert hashlib.sha256(p.read_bytes()).hexdigest() == h
 
 

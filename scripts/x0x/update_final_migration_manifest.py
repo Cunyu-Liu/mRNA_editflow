@@ -31,7 +31,11 @@ man["report_note"] = (
     "BLOCKED_WITH_EVIDENCE after full migration execution (B0-X->X0-X incl. "
     "CDS-B1 rebuild audit). Sealed-final (GSE246381) decision and CDS-B1 "
     "sequence recovery remain the blockers for a GO/NO-GO declaration.")
-man["artifacts"]["reports/migration/FINAL_MIGRATION_REPORT.md"] = sha256_file(report)
+# Refresh every artifact hash from the current file state so the manifest is
+# internally consistent even if an artifact was updated since the M3 baseline
+# (e.g. xeditflow_benchmark_registry.yaml was revised by the X0-X CDS-B1 audit).
+for rel in man["artifacts"]:
+    man["artifacts"][rel] = sha256_file(WT / rel)
 
 man_path.write_text(json.dumps(man, indent=2, ensure_ascii=False) + "\n")
 
