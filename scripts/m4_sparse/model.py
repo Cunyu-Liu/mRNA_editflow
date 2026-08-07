@@ -68,23 +68,66 @@ class SparseEditFormer(nn.Module):
         self.sign_head = nn.Linear(d, 1)
         self.rank_head = nn.Linear(d, 1)
 
-    def _context_vec(self, src, cand, edit_feat, study_id, endpoint_id, bench_id):
+    @staticmethod
+    def _infer_trailing_padding_mask(x):
+        """Infer trailing padding for legacy callers that do not pass a mask.
+
+        Internal all-zero bases (for example an ``N``) remain content whenever
+        a later recognized nucleotide exists.  New dataset callers pass an
+        explicit mask and do not rely on this compatibility path.
+        """
+        valid = x.abs().sum(dim=-1) > 0
+        pos = torch.arange(x.size(1), device=x.device).unsqueeze(0)
+        last = torch.where(valid, pos, torch.full_like(pos, -1)).amax(dim=1)
+        mask = pos > last.unsqueeze(1)
+        # Transformer attention cannot consume a row whose every key is masked.
+        all_pad = mask.all(dim=1)
+        if all_pad.any():
+            mask = mask.clone()
+            mask[all_pad, 0] = False
+        return mask
+
+    @staticmethod
+    def _masked_pool(x, pad_mask):
+        valid = (~pad_mask).unsqueeze(-1)
+        denom = valid.sum(dim=1).clamp_min(1).to(x.dtype)
+        mean = (x * valid.to(x.dtype)).sum(dim=1) / denom
+        neg_inf = torch.finfo(x.dtype).min
+        maximum = x.masked_fill(pad_mask.unsqueeze(-1), neg_inf).max(dim=1).values
+        return torch.cat([mean, maximum], dim=-1)
+
+    def _context_vec(self, src, cand, edit_feat, study_id, endpoint_id, bench_id,
+                     src_pad_mask=None, cand_pad_mask=None):
         """Encode candidate relative to cached source -> context vector (B,d)."""
-        hs = self.stem(src.permute(0, 2, 1)).permute(0, 2, 1) + self.pos
-        hs = self.src_encoder(hs)  # cached source tokens (B,L,d)
-        hc = self.stem(cand.permute(0, 2, 1)).permute(0, 2, 1) + self.pos
-        hc = self.cand_encoder(hc)
-        cross, _ = self.cross_attn(hc, hs, hs)      # cand reads cached source
+        if src_pad_mask is None:
+            src_pad_mask = self._infer_trailing_padding_mask(src)
+        if cand_pad_mask is None:
+            cand_pad_mask = self._infer_trailing_padding_mask(cand)
+        src_pad_mask = src_pad_mask.to(device=src.device, dtype=torch.bool)
+        cand_pad_mask = cand_pad_mask.to(device=cand.device, dtype=torch.bool)
+        length = src.size(1)
+        if length > self.pos.size(1) or cand.size(1) != length:
+            raise ValueError("source/candidate length must match and fit MAX_SEQ_LEN")
+        pos = self.pos[:, :length]
+        hs = self.stem(src.permute(0, 2, 1)).permute(0, 2, 1) + pos
+        hs = self.src_encoder(hs, src_key_padding_mask=src_pad_mask)
+        hc = self.stem(cand.permute(0, 2, 1)).permute(0, 2, 1) + pos
+        hc = self.cand_encoder(hc, src_key_padding_mask=cand_pad_mask)
+        cross, _ = self.cross_attn(hc, hs, hs, key_padding_mask=src_pad_mask,
+                                   need_weights=False)
         hc = self.norm(hc + cross)
-        pooled = torch.cat([hc.mean(dim=1), hc.max(dim=1).values], dim=-1)
+        pooled = self._masked_pool(hc, cand_pad_mask)
         vec = self.pool_proj(pooled)
         ev = self.edit_mlp(edit_feat)
         ctx = (self.study_emb(study_id) + self.endpoint_emb(endpoint_id)
                + self.bench_emb(bench_id))
         return vec + ev + ctx
 
-    def forward(self, src, cand, edit_feat, study_id, endpoint_id, bench_id):
-        z = self._context_vec(src, cand, edit_feat, study_id, endpoint_id, bench_id)
+    def forward(self, src, cand, edit_feat, study_id, endpoint_id, bench_id,
+                src_pad_mask=None, cand_pad_mask=None):
+        z = self._context_vec(src, cand, edit_feat, study_id, endpoint_id, bench_id,
+                              src_pad_mask=src_pad_mask,
+                              cand_pad_mask=cand_pad_mask)
         mean = self.mean_head(z).squeeze(-1)
         logvar = self.logvar_head(z).squeeze(-1)
         sign = self.sign_head(z).squeeze(-1)
@@ -92,14 +135,16 @@ class SparseEditFormer(nn.Module):
         return {"mean": mean, "logvar": logvar, "sign": sign, "rank": rank}
 
     def predict_delta(self, src, cand, edit_feat, study_id, endpoint_id, bench_id,
-                      anchor=None):
+                      anchor=None, src_pad_mask=None, cand_pad_mask=None):
         """Return (delta_pred, sign_logit, rank_score).
 
         anchor: optional measured source_value (B,) used when the model was
         trained on candidate_value (TARGET="candidate_value").  If anchor given,
         delta = mean - anchor.
         """
-        out = self.forward(src, cand, edit_feat, study_id, endpoint_id, bench_id)
+        out = self.forward(src, cand, edit_feat, study_id, endpoint_id, bench_id,
+                           src_pad_mask=src_pad_mask,
+                           cand_pad_mask=cand_pad_mask)
         delta = out["mean"]
         if anchor is not None:
             delta = delta - anchor

@@ -304,7 +304,8 @@ def build_hypothesis(hid: str, metric: str, stat: float, pvalue: Optional[float]
 
 def permutation_pvalue(true_delta: "np.ndarray", pred: "np.ndarray",
                        contexts: List[str], n_perm: int = 2000,
-                       seed: int = 42) -> Optional[float]:
+                       seed: int = 42,
+                       groups: Optional[List[str]] = None) -> Optional[float]:
     """One-sided permutation p-value (positive macro Spearman association).
 
     Null: the order of predicted deltas is exchangeable with the measured deltas
@@ -321,9 +322,12 @@ def permutation_pvalue(true_delta: "np.ndarray", pred: "np.ndarray",
         return None
     rng = np.random.RandomState(seed)
     ctx_arr = np.asarray(contexts)
+    group_arr = np.asarray(groups) if groups is not None else None
+    if group_arr is not None and group_arr.shape != ctx_arr.shape:
+        raise ValueError("groups must align with contexts")
 
     def _macro_spearman(p):
-        rho = []
+        rho_by_study = {}
         for c in set(ctx_arr):
             idx = np.where(ctx_arr == c)[0]
             if len(idx) < 3:
@@ -333,18 +337,38 @@ def permutation_pvalue(true_delta: "np.ndarray", pred: "np.ndarray",
                 continue
             r, _ = spearmanr(a, b)
             if not np.isnan(r):
-                rho.append(r)
-        return float(np.mean(rho)) if rho else None
+                study = str(c).split("|", 1)[0]
+                rho_by_study.setdefault(study, []).append(float(r))
+        study_macro = [float(np.mean(values))
+                       for values in rho_by_study.values() if values]
+        return float(np.mean(study_macro)) if study_macro else None
 
     obs = _macro_spearman(pred)
     if obs is None:
         return None
     count = 0
+    permutable = False
+    if group_arr is not None:
+        permutable = any(
+            len(np.where(group_arr == group)[0]) >= 2
+            for group in set(group_arr)
+        )
+        if not permutable:
+            return None
     for _ in range(n_perm):
         p_perm = pred.copy()
-        for c in set(ctx_arr):
-            idx = np.where(ctx_arr == c)[0]
-            p_perm[idx] = rng.permutation(p_perm[idx])
+        if group_arr is None:
+            for c in set(ctx_arr):
+                idx = np.where(ctx_arr == c)[0]
+                p_perm[idx] = rng.permutation(p_perm[idx])
+        else:
+            # Candidate labels are exchangeable only within one conservative
+            # source/context cluster.  Singleton groups stay fixed and cannot
+            # manufacture row-level pseudo-replication significance.
+            for group in set(group_arr):
+                idx = np.where(group_arr == group)[0]
+                if len(idx) >= 2:
+                    p_perm[idx] = rng.permutation(p_perm[idx])
         pm = _macro_spearman(p_perm)
         if pm is not None and pm >= obs:
             count += 1
@@ -353,47 +377,220 @@ def permutation_pvalue(true_delta: "np.ndarray", pred: "np.ndarray",
 
 def verdict_from_aggregate(prereg: Dict, per_hypothesis: List[Dict],
                            holm_adj: List[Optional[float]]) -> Dict:
-    """Compute the pre-registered GO/NO-GO verdict from the aggregate stats."""
+    """Compute a fail-closed complete-family verdict.
+
+    ``GO`` and ``NO_GO`` are scientific decisions and are emitted only when
+    the exact ordered H1/H2/H3 family, every required scalar, the full Holm
+    vector, and every frozen threshold are structurally present.  Missing or
+    malformed decision inputs produce ``HOLD_REPAIR`` rather than a false
+    scientific decision.  Once the record is complete, any failed statistical,
+    effect, guidance, OOD, legality, length, or budget gate produces ``NO_GO``.
+    """
     gates = (prereg.get("go_nogo") or {})
     eg = gates.get("effect_gate") or {}
+    gg = gates.get("guidance_gate") or {}
     hc = gates.get("hard_constraints") or {}
-    stats = {h["id"]: h for h in per_hypothesis}
-    adj = {h["id"]: a for h, a in zip(per_hypothesis, holm_adj)}
+    expected_family = (
+        ("H1_EFFECT_TRANSFER", "macro_delta_spearman"),
+        ("H2_GUIDANCE_VALUE", "generation_quality_mean_delta"),
+        ("H3_LEGALITY", "legality_rate"),
+    )
+    prereg_family = tuple(
+        (h.get("id"), h.get("metric"))
+        for h in ((((prereg.get("metrics") or {}).get("holm_family") or {}).get(
+            "hypotheses")) or [])
+        if isinstance(h, dict)
+    )
+    observed_family = tuple(
+        (h.get("id"), h.get("metric"))
+        for h in per_hypothesis if isinstance(h, dict)
+    ) if isinstance(per_hypothesis, list) else ()
 
-    h1 = stats.get("H1_EFFECT_TRANSFER")
-    h3 = stats.get("H3_LEGALITY")
-    checks = {}
-    if h1 is not None:
-        checks["H1_macro_delta_spearman_ge"] = (
-            h1.get("stat") is not None
-            and h1["stat"] >= eg.get("macro_delta_spearman_ge", 0.25))
-        checks["H1_holm_significant"] = (adj.get("H1_EFFECT_TRANSFER") is not None
-                                         and adj["H1_EFFECT_TRANSFER"] <= 0.05)
-        # Full pre-registered effect gate: sign accuracy AND top-10% enrichment
-        # AND beat-the-strongest-nonfoundation-baseline must ALL hold, not just
-        # the spearman + Holm pair.  These stats are carried on the H1 aggregate
-        # by run_internal / the sealed evaluator.
-        checks["H1_macro_sign_accuracy_ge"] = (
-            h1.get("sign_accuracy") is not None
-            and h1["sign_accuracy"] >= eg.get("macro_sign_accuracy_ge", 0.60))
-        checks["H1_top10pct_enrichment_ge"] = (
-            h1.get("top10pct_enrichment") is not None
-            and h1["top10pct_enrichment"] >= eg.get("top10_enrichment_ge", 1.50))
-        if eg.get("beat_strongest_nonfoundation_baseline", False):
-            checks["H1_beat_abs_candidate"] = (
-                h1.get("stat") is not None and h1.get("abs_candidate_spearman") is not None
-                and h1["stat"] > h1["abs_candidate_spearman"])
-    if h3 is not None:
-        checks["H3_legality_ge_1"] = (h3.get("stat") is not None
-                                      and h3["stat"] >= hc.get("legality_ge", 1.0))
-    go = all(checks.values()) if checks else False
+    repair_reasons = []
+    if prereg_family != expected_family:
+        repair_reasons.append("preregistration_family_not_exact_H1_H2_H3")
+    if observed_family != expected_family:
+        repair_reasons.append("aggregate_family_not_exact_ordered_H1_H2_H3")
+    if not isinstance(holm_adj, list) or len(holm_adj) != len(expected_family):
+        repair_reasons.append("holm_vector_missing_or_wrong_length")
+
+    required_gates = {
+        "effect_gate": (
+            "macro_delta_spearman_ge", "macro_sign_accuracy_ge",
+            "top10_enrichment_ge", "beat_strongest_nonfoundation_baseline",
+        ),
+        "guidance_gate": (
+            "primary_strategy", "vs", "generation_quality_mean_delta_gt",
+            "generation_quality_frac_beneficial_gt", "ndcg_gap_ge",
+            "top10_recall_ge", "normalized_regret_le",
+        ),
+        "hard_constraints": (
+            "legality_ge", "length_preservation_ge", "budget_violation_le",
+        ),
+    }
+    for block_name, keys in required_gates.items():
+        block = gates.get(block_name)
+        if not isinstance(block, dict) or any(key not in block for key in keys):
+            repair_reasons.append("missing_" + block_name + "_threshold")
+    def finite_number(value: object) -> bool:
+        import math
+        return (isinstance(value, (int, float)) and not isinstance(value, bool)
+                and math.isfinite(float(value)))
+
+    numeric_gate_fields = (
+        (eg, "macro_delta_spearman_ge"),
+        (eg, "macro_sign_accuracy_ge"),
+        (eg, "top10_enrichment_ge"),
+        (gg, "generation_quality_mean_delta_gt"),
+        (gg, "generation_quality_frac_beneficial_gt"),
+        (gg, "ndcg_gap_ge"),
+        (gg, "top10_recall_ge"),
+        (gg, "normalized_regret_le"),
+        (hc, "legality_ge"),
+        (hc, "length_preservation_ge"),
+        (hc, "budget_violation_le"),
+    )
+    if any(key in block and not finite_number(block[key])
+           for block, key in numeric_gate_fields):
+        repair_reasons.append("invalid_frozen_gate_threshold_type")
+    if "beat_strongest_nonfoundation_baseline" in eg and (
+            eg["beat_strongest_nonfoundation_baseline"] is not True):
+        repair_reasons.append("invalid_effect_baseline_gate")
+    ood = gates.get("ood_margin")
+    if not isinstance(ood, dict) or ood.get("fail_if_beyond") is not True:
+        repair_reasons.append("invalid_ood_margin_gate")
+    alpha = (((prereg.get("metrics") or {}).get("holm_family") or {}).get("alpha"))
+    if (not isinstance(alpha, (int, float)) or isinstance(alpha, bool)
+            or not 0.0 < float(alpha) <= 1.0):
+        repair_reasons.append("invalid_holm_alpha")
+
+    required_evidence = {
+        "H1_EFFECT_TRANSFER": {
+            "stat", "sign_accuracy", "top10pct_enrichment",
+            "abs_candidate_spearman",
+            "top10pct_enrichment_definition_status",
+        },
+        "H2_GUIDANCE_VALUE": {
+            "stat", "generation_quality_mean_delta_difference",
+            "generation_quality_frac_beneficial_difference", "ndcg_gap",
+            "top10_recall", "normalized_regret", "ood_margin_pass",
+        },
+        "H3_LEGALITY": {
+            "stat", "length_preservation_rate", "budget_violation_count",
+        },
+    }
+    if observed_family == expected_family:
+        for hypothesis in per_hypothesis:
+            missing = required_evidence[hypothesis["id"]] - set(hypothesis)
+            if missing:
+                repair_reasons.append(
+                    "%s_missing_evidence_%s" %
+                    (hypothesis["id"], "_".join(sorted(missing))))
+        numeric_evidence = {
+            "H1_EFFECT_TRANSFER": (
+                "stat", "sign_accuracy", "top10pct_enrichment",
+                "abs_candidate_spearman",
+            ),
+            "H2_GUIDANCE_VALUE": (
+                "stat", "generation_quality_mean_delta_difference",
+                "generation_quality_frac_beneficial_difference", "ndcg_gap",
+                "top10_recall", "normalized_regret",
+            ),
+            "H3_LEGALITY": (
+                "stat", "length_preservation_rate", "budget_violation_count",
+            ),
+        }
+        for hypothesis in per_hypothesis:
+            fields = numeric_evidence[hypothesis["id"]]
+            if any(field in hypothesis and not finite_number(hypothesis[field])
+                   for field in fields):
+                repair_reasons.append(
+                    hypothesis["id"] + "_invalid_evidence_scalar")
+        h2_candidate = per_hypothesis[1]
+        if ("ood_margin_pass" in h2_candidate
+                and not isinstance(h2_candidate["ood_margin_pass"], bool)):
+            repair_reasons.append("H2_GUIDANCE_VALUE_invalid_evidence_ood_flag")
+
+    checks = {
+        "complete_frozen_hypothesis_family": not any(
+            reason in {
+                "preregistration_family_not_exact_H1_H2_H3",
+                "aggregate_family_not_exact_ordered_H1_H2_H3",
+            } for reason in repair_reasons),
+        "complete_holm_vector": "holm_vector_missing_or_wrong_length"
+        not in repair_reasons,
+        "complete_frozen_gate_configuration": not any(
+            reason.startswith("missing_") or reason.startswith("invalid_")
+            for reason in repair_reasons),
+        "complete_aggregate_evidence": not any(
+            "_missing_evidence_" in reason or "_invalid_evidence_" in reason
+            for reason in repair_reasons),
+    }
+    if repair_reasons:
+        verdict = "HOLD_REPAIR"
+    else:
+        stats = {h["id"]: h for h in per_hypothesis}
+        adj = {h["id"]: float(value)
+               for h, value in zip(per_hypothesis, holm_adj)
+               if isinstance(value, (int, float)) and not isinstance(value, bool)}
+        if len(adj) != len(expected_family) or any(
+                not 0.0 <= value <= 1.0 for value in adj.values()):
+            repair_reasons.append("holm_vector_contains_invalid_value")
+            checks["complete_holm_vector"] = False
+            verdict = "HOLD_REPAIR"
+        else:
+            h1 = stats["H1_EFFECT_TRANSFER"]
+            h2 = stats["H2_GUIDANCE_VALUE"]
+            h3 = stats["H3_LEGALITY"]
+            checks.update({
+                "H1_macro_delta_spearman_ge": (
+                    h1["stat"] >= eg["macro_delta_spearman_ge"]),
+                "H1_holm_significant": (
+                    adj["H1_EFFECT_TRANSFER"] <= float(alpha)),
+                "H1_macro_sign_accuracy_ge": (
+                    h1["sign_accuracy"] >= eg["macro_sign_accuracy_ge"]),
+                "H1_top10pct_enrichment_ge": (
+                    h1["top10pct_enrichment"] >= eg["top10_enrichment_ge"]),
+                "H1_enrichment_definition_preregistered_stable": (
+                    h1["top10pct_enrichment_definition_status"]
+                    == "PREREGISTERED_STABLE"),
+                "H1_beat_abs_candidate": (
+                    eg["beat_strongest_nonfoundation_baseline"] is True
+                    and h1["stat"] > h1["abs_candidate_spearman"]),
+                "H2_holm_significant": (
+                    adj["H2_GUIDANCE_VALUE"] <= float(alpha)),
+                "H2_generation_quality_mean_delta_gt": (
+                    h2["generation_quality_mean_delta_difference"]
+                    > gg["generation_quality_mean_delta_gt"]),
+                "H2_generation_quality_frac_beneficial_gt": (
+                    h2["generation_quality_frac_beneficial_difference"]
+                    > gg["generation_quality_frac_beneficial_gt"]),
+                "H2_ndcg_gap_ge": h2["ndcg_gap"] >= gg["ndcg_gap_ge"],
+                "H2_top10_recall_ge": (
+                    h2["top10_recall"] >= gg["top10_recall_ge"]),
+                "H2_normalized_regret_le": (
+                    h2["normalized_regret"] <= gg["normalized_regret_le"]),
+                "H2_ood_margin_pass": h2["ood_margin_pass"] is True,
+                "H3_holm_significant": (
+                    adj["H3_LEGALITY"] <= float(alpha)),
+                "H3_legality_ge": h3["stat"] >= hc["legality_ge"],
+                "H3_length_preservation_ge": (
+                    h3["length_preservation_rate"]
+                    >= hc["length_preservation_ge"]),
+                "H3_budget_violation_le": (
+                    h3["budget_violation_count"]
+                    <= hc["budget_violation_le"]),
+            })
+            verdict = "GO" if all(checks.values()) else "NO_GO"
     return {
-        "verdict": "GO" if go else "NO_GO",
+        "verdict": verdict,
         "checks": checks,
+        "repair_reasons": repair_reasons,
         "effect_gate": {k: v for k, v in eg.items() if k in
                         ("macro_delta_spearman_ge", "macro_sign_accuracy_ge",
                          "top10_enrichment_ge")},
         "hard_constraints": dict(hc),
+        "guidance_gate": dict(gg),
     }
 
 

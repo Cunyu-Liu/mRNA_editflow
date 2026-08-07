@@ -6,7 +6,9 @@ aggregation math.  These are the unit-testable, data-free cores; the full
 GPU/real-data orchestration lives in scripts/g1x/run_g1x.py.
 """
 import sys
+import subprocess
 from pathlib import Path
+from types import SimpleNamespace
 
 import numpy as np
 import pytest
@@ -21,7 +23,7 @@ from scripts.g1x.sampler import (  # noqa: E402
 from scripts.g1x.guidance import (  # noqa: E402
     GuidanceRatioNet, base_step_policy, first_order_step_policy,
     rate_cfg_step_policy, latent_cfg_step_policy, dgm_learned_step_policy,
-    POLICY_BUILDERS, _single_edit_rows,
+    POLICY_BUILDERS, _single_edit_rows, critic_scores_batch,
 )
 from scripts.f0x.flow import (  # noqa: E402
     LegalAction, EditFlowState, build_state, enumerate_legal_actions,
@@ -35,6 +37,15 @@ from scripts.f0x.flow import (  # noqa: E402
 
 def _state(seq="ACGUACGU", budget=1):
     return build_state(seq, [True] * len(seq), budget)
+
+
+def _r2_vocab():
+    from scripts.m4_sparse.dataset import UNKNOWN_CONTEXT
+    return {
+        "study": {"S1": 0, UNKNOWN_CONTEXT: 1},
+        "endpoint": {"ep_x": 0, UNKNOWN_CONTEXT: 1},
+        "benchmark": {"5U-A1": 0, UNKNOWN_CONTEXT: 1},
+    }
 
 
 def _dummy_base_policy(state, actions):
@@ -79,9 +90,94 @@ def test_single_edit_rows_filters_multiedit():
         {"edit_list": [{"op": "SUB", "pos": 0, "token": "A"},
                        {"op": "SUB", "pos": 2, "token": "C"}]},
         {"edit_list": [{"op": "SUB", "pos": 1, "token": "G"}]},
+        {"edit_list": [{"op": "SUB", "pos": 1, "token": "G"},
+                       {"op": "INS", "pos": 2, "token": "A"}]},
     ]
     kept = _single_edit_rows(rows)
     assert [r for r in kept] == [rows[0], rows[2]]
+
+
+def test_g1_critic_distal_edit_uses_shared_window_masks_and_unknown_ids():
+    src = "A" * 180
+    cand = src[:150] + "C" + src[151:]
+
+    class CaptureCritic:
+        cfg = SimpleNamespace(TARGET="delta")
+
+        def __init__(self):
+            self.call = None
+
+        def __call__(self, source, candidate, edit, study, endpoint, bench,
+                     src_pad_mask=None, cand_pad_mask=None):
+            self.call = {
+                "source": source.detach().clone(),
+                "candidate": candidate.detach().clone(),
+                "src_mask": src_pad_mask.detach().clone(),
+                "cand_mask": cand_pad_mask.detach().clone(),
+                "study": study.detach().clone(),
+                "endpoint": endpoint.detach().clone(),
+            }
+            zero = source[:, 0, 0] * 0.0
+            return {"mean": zero, "logvar": zero, "rank": zero}
+
+    critic = CaptureCritic()
+    out = critic_scores_batch(
+        critic, _r2_vocab(), torch.device("cpu"), src, [cand],
+        study="unseen_study", endpoint="unseen_endpoint", bench="5U-A1",
+        source_value=123.0,
+    )
+    call = critic.call
+    assert out["delta"].tolist() == [0.0]  # delta TARGET must not subtract anchor
+    assert call["source"].shape == (1, 100, 4)
+    assert call["candidate"].shape == (1, 100, 4)
+    assert torch.any(call["source"] != call["candidate"])
+    assert call["src_mask"].dtype == torch.bool
+    assert call["cand_mask"].dtype == torch.bool
+    assert not call["src_mask"].any() and not call["cand_mask"].any()
+    assert call["study"].item() == _r2_vocab()["study"]["__UNK__"]
+    assert call["endpoint"].item() == _r2_vocab()["endpoint"]["__UNK__"]
+
+
+def test_g1_candidate_value_critic_requires_and_subtracts_source_anchor():
+    class CandidateValueCritic:
+        cfg = SimpleNamespace(TARGET="candidate_value")
+
+        def __call__(self, src, cand, edit, study, endpoint, bench, **kwargs):
+            mean = torch.full((src.shape[0],), 3.5)
+            zero = mean * 0.0
+            return {"mean": mean, "logvar": zero, "rank": zero}
+
+    critic = CandidateValueCritic()
+    scores = critic_scores_batch(
+        critic, _r2_vocab(), torch.device("cpu"), "AAAA", ["ACAA"],
+        "S1", "ep_x", "5U-A1", source_value=2.0)
+    assert scores["delta"].tolist() == pytest.approx([1.5])
+    with pytest.raises(ValueError, match="requires a measured source_value"):
+        critic_scores_batch(
+            critic, _r2_vocab(), torch.device("cpu"), "AAAA", ["ACAA"],
+            "S1", "ep_x", "5U-A1", source_value=None)
+
+
+def test_g1_critic_refuses_vocab_without_reserved_unknown_even_for_known_ids():
+    legacy_vocab = {
+        "study": {"S1": 0}, "endpoint": {"ep_x": 0},
+        "benchmark": {"5U-A1": 0},
+    }
+    with pytest.raises(ValueError, match="reserved __UNK__"):
+        critic_scores_batch(
+            _DummyCritic(), legacy_vocab, torch.device("cpu"),
+            "AAAA", ["ACAA"], "S1", "ep_x", "5U-A1", None)
+
+
+def test_g1_runner_refuses_protected_output_before_dataset_read(tmp_path):
+    result = subprocess.run(
+        [sys.executable, str(REPO_ROOT / "scripts/g1x/run_g1x.py"),
+         "--dataset", str(tmp_path / "missing.jsonl"),
+         "--out-dir", str(tmp_path / "sealed_results")],
+        cwd=REPO_ROOT, capture_output=True, text=True, check=False,
+    )
+    assert result.returncode != 0
+    assert "ordinary-only ordinary output refuses protected" in result.stderr
 
 
 # ---------------------------------------------------------------------------
@@ -113,8 +209,8 @@ def test_first_order_guidance_shifts_mass_toward_high_effect():
     # guidance head that strongly prefers position 0
     class Head:
         def effects(self, vec):
-            e = np.zeros((1, 4, 4))
-            e[0, 0, :] = [3.0, 3.0, 3.0, 3.0]  # position 0 high effect
+            e = np.zeros((vec.shape[0], vec.shape[1], 4))
+            e[:, 0, :] = [3.0, 3.0, 3.0, 3.0]  # position 0 high effect
             return e
     net = _DummyNet()
     pol = first_order_step_policy(net, Head(), beta=2.0, device=None)
@@ -130,7 +226,7 @@ def test_rate_cfg_and_latent_cfg_return_dict_contract():
     acts = enumerate_legal_actions(st)
     net = _DummyNet()
     critic = _DummyCritic()
-    vocab = {"study": {}, "endpoint": {}, "benchmark": {}}
+    vocab = _r2_vocab()
     ctx = {"study": None, "endpoint": None, "bench": "5U-A1",
            "source_value": 1.0}
     for name, builder in [("rate_cfg", rate_cfg_step_policy),
@@ -145,7 +241,7 @@ def test_dgm_learned_has_no_base_logits():
     st = _state("ACGU")
     acts = enumerate_legal_actions(st)
     critic = _DummyCritic()
-    vocab = {"study": {}, "endpoint": {}, "benchmark": {}}
+    vocab = _r2_vocab()
     ctx = {"study": None, "endpoint": None, "bench": "5U-A1",
            "source_value": 1.0}
     pol = dgm_learned_step_policy(critic, vocab, beta=1.0, device=None, ctx=ctx)
@@ -290,6 +386,18 @@ def test_runner_candidate_edit_extracts_sub():
     assert R._candidate_edit(rec) == (3, "U")
 
 
+def test_runner_context_fallback_is_explicit_unknown_not_none():
+    from scripts.g1x import run_g1x as R
+    from scripts.m4_sparse.dataset import UNKNOWN_CONTEXT
+    ctx = R._ctx_for({}, "5U-A1")
+    assert ctx["study"] == UNKNOWN_CONTEXT
+    assert ctx["endpoint"] == UNKNOWN_CONTEXT
+    held = R._ctx_for({"study": "held", "endpoint": "ep"}, "5U-A1",
+                      force_unk_study=True)
+    assert held["study"] == UNKNOWN_CONTEXT
+    assert held["endpoint"] == "ep"
+
+
 def test_gtr_builder_policy_returns_dict_contract():
     """generate_then_rerank policy must return a dict (not a plain array) and
     base_logits must equal the base-flow guided logits.  Regression: the base
@@ -300,7 +408,7 @@ def test_gtr_builder_policy_returns_dict_contract():
     acts = enumerate_legal_actions(st)
     net = _DummyNet()
     critic = _DummyCritic()
-    vocab = {"study": {}, "endpoint": {}, "benchmark": {}}
+    vocab = _r2_vocab()
     ctx = {"study": None, "endpoint": None, "bench": "5U-A1",
            "source_value": 1.0}
     builder = R._gtr_builder(net, None, critic, vocab, beta=1.0,
@@ -312,6 +420,36 @@ def test_gtr_builder_policy_returns_dict_contract():
     # base flow is uniform -> base_logits are all-equal (uniform preference)
     bl = np.asarray(info["base_logits"])
     assert np.allclose(bl, bl[0])
+
+
+def test_gtr_builder_unknown_context_uses_reserved_embedding():
+    from scripts.g1x import run_g1x as R
+    from scripts.m4_sparse.dataset import UNKNOWN_CONTEXT
+
+    class CaptureCritic:
+        def __init__(self):
+            self.context_ids = []
+
+        def __call__(self, src, cand, ef, sid, eid, bid, **kwargs):
+            self.context_ids.append((sid.detach().clone(), eid.detach().clone()))
+            z = torch.zeros(src.shape[0])
+            return {"mean": z, "logvar": z, "rank": z}
+
+    critic = CaptureCritic()
+    vocab = {
+        "study": {"S1": 0, UNKNOWN_CONTEXT: 1},
+        "endpoint": {"ep": 0, UNKNOWN_CONTEXT: 1},
+        "benchmark": {"5U-A1": 0, UNKNOWN_CONTEXT: 1},
+    }
+    policy = R._gtr_builder(_DummyNet(), None, critic, vocab, beta=1.0,
+                            device=torch.device("cpu"),
+                            ctx={"study": None, "endpoint": None,
+                                 "bench": "5U-A1", "source_value": None})
+    state = _state("ACGU", budget=1)
+    policy(state, enumerate_legal_actions(state))
+    sid, eid = critic.context_ids[0]
+    assert torch.all(sid == 1)
+    assert torch.all(eid == 1)
 
 
 def test_generation_quality_returns_structure_and_respects_budget():
@@ -330,7 +468,7 @@ def test_generation_quality_returns_structure_and_respects_budget():
 
     builders = {"base": simple_builder, "guided": simple_builder}
     params = {"base_net": _DummyNet(), "head": None, "critic": _DummyCritic(),
-              "vocab": {"study": {}, "endpoint": {}, "benchmark": {}},
+              "vocab": _r2_vocab(),
               "beta": 1.0, "bench": "5U-A1"}
     sources = ["ACGUACGU", "GACGUACU"]
     res = R.evaluate_generation_quality(builders, params, torch.device("cpu"),
@@ -358,10 +496,10 @@ class _DummyNet:
 class _DummyCritic:
     """Minimal stand-in for the frozen SparseEditFormer critic."""
 
-    def __call__(self, src, cand, ef, sid, eid, bid):
+    def __call__(self, src, cand, ef, sid, eid, bid, **kwargs):
         B = src.shape[0]
         return {
-            "mean": torch.zeros(B, 1),
-            "logvar": torch.zeros(B, 1),
-            "rank": torch.zeros(B, 1),
+            "mean": torch.zeros(B),
+            "logvar": torch.zeros(B),
+            "rank": torch.zeros(B),
         }

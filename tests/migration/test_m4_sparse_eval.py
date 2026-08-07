@@ -4,13 +4,17 @@ from pathlib import Path
 
 import numpy as np
 import pytest
+import torch
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO_ROOT))
 
 from scripts.m4_sparse.evaluate import (  # noqa: E402
-    context_metrics, macro_metrics, abs_candidate_baseline,
+    context_metrics, macro_metrics, abs_candidate_baseline, predict_model,
+    predict_model_outputs,
 )
+from scripts.m4_sparse import config as C  # noqa: E402
+from scripts.m4_sparse.dataset import UNKNOWN_CONTEXT, build_vocab  # noqa: E402
 from scripts.m4_sparse.rerank import (  # noqa: E402
     ndcg_at_k, rerank_sources, top_decile_recall,
 )
@@ -19,12 +23,15 @@ from scripts.m4_sparse.train import build_folds  # noqa: E402
 
 def _rec(delta, study, source_id, endpoint="ep_x", benchmark="5U-A1"):
     s = "ACGUACGUACGUACGUACGUACGUACGUACGUACGUACGUACGUACGUACGUACGUACGUACGUACGU"
-    c = s[:10] + "G" + s[11:]
+    pos = 8 + int(abs(float(delta))) % 12
+    token = {"A": "C", "C": "G", "G": "U", "U": "A"}[s[pos]]
+    c = s[:pos] + token + s[pos + 1:]
     return {
         "delta": float(delta), "study": study, "benchmark": benchmark,
         "source_id": source_id, "endpoint": endpoint,
+        "context_id": "ctx",
         "source_sequence": s, "candidate_sequence": c,
-        "edit_list": [{"op": "SUB", "pos": 10, "token": "G"}],
+        "edit_list": [{"op": "SUB", "pos": pos, "token": token}],
         "source_value": 0.5,
         "candidate_value": float(delta) + 0.5,
     }
@@ -37,13 +44,10 @@ def test_context_metrics_perfect():
     m = context_metrics(true, pred)
     assert m["delta_spearman"] == pytest.approx(1.0)
     assert m["sign_accuracy"] == 1.0
-    # top10_enrichment = mean(true_delta[pred_top])/mean(true_delta[true_top]);
-    # for a perfect ordering this equals 1.0 (predicted top == true top).
-    assert m["top10_enrichment"] == pytest.approx(1.0)
-    # top10pct_enrichment is ENRICHMENT-OVER-RANDOM:
-    #   mean(true_delta[pred_top_10%]) / mean(true_delta[all]).
-    # For true=[1,2,3,4,5], top-10% = {5.0}, overall mean = 3.0 -> 5/3.
-    assert m["top10pct_enrichment"] == pytest.approx(5.0 / 3.0)
+    assert m["top10_enrichment"] is None  # k=10 covers this entire context
+    assert m["top10pct_enrichment"] is None  # frozen signed-ratio gate invalidated
+    assert m["top10pct_oracle_normalized_excess_gain"] == pytest.approx(1.0)
+    assert m["top10pct_enrichment_status"].startswith("HOLD_")
 
 
 def test_context_metrics_reversed():
@@ -51,6 +55,17 @@ def test_context_metrics_reversed():
     pred = np.array([5.0, 4.0, 3.0, 2.0, 1.0])
     m = context_metrics(true, pred)
     assert m["delta_spearman"] == pytest.approx(-1.0)
+    assert m["top10pct_oracle_normalized_excess_gain"] < 1.0
+
+
+def test_signed_top10pct_gain_is_order_monotone_for_negative_domain():
+    true = np.array([-1.0, -2.0, -3.0, -4.0, -5.0])
+    perfect = context_metrics(true, true)
+    reversed_ = context_metrics(true, true[::-1])
+    assert perfect["top10pct_oracle_normalized_excess_gain"] == pytest.approx(1.0)
+    assert (perfect["top10pct_oracle_normalized_excess_gain"]
+            > reversed_["top10pct_oracle_normalized_excess_gain"])
+    assert perfect["top10pct_enrichment"] is None
 
 
 def test_context_metrics_small_context_spearman_none():
@@ -103,6 +118,18 @@ def test_build_folds_keeps_benchmark_separate():
     assert all(r["benchmark"] == "5U-A1" for r in folds[0]["test"])
 
 
+def test_build_folds_excludes_source_sequence_alias_across_studies():
+    held = _rec(1.0, study="held", source_id="held_id")
+    alias = _rec(2.0, study="train", source_id="different_id")
+    distinct = _rec(3.0, study="train", source_id="distinct_id")
+    distinct["source_sequence"] = "U" * len(distinct["source_sequence"])
+    fold = next(f for f in build_folds([held, alias, distinct], "5U-A1")
+                if f["held_out_study"] == "held")
+    assert alias not in fold["train"]
+    assert distinct in fold["train"]
+    assert fold["n_train_excluded_source_overlap"] == 1
+
+
 # ---- reranker ----
 def test_ndcg_at_k_perfect_and_reversed():
     rel = np.array([5.0, 4.0, 3.0, 2.0, 1.0])
@@ -144,3 +171,69 @@ def test_abs_candidate_finite_and_uses_measured_source():
     pred = abs_candidate_baseline(train, test)
     assert pred.shape == (10,)
     assert np.all(np.isfinite(pred))
+
+
+def test_predict_model_routes_s4_study_to_trained_unknown_and_passes_masks():
+    rows = [_rec(1.0, study="held", source_id="a"),
+            _rec(-1.0, study="held", source_id="b")]
+    vocab = build_vocab(rows)
+    cfg = C.get_config()
+    cfg.N_STUDIES = len(vocab["study"])
+    cfg.N_ENDPOINTS = len(vocab["endpoint"])
+    cfg.N_BENCHMARKS = len(vocab["benchmark"])
+    cfg.SIGN_TEMPERATURE = 1.0
+    cfg.SIGN_DECISION_RULE = "sign_head_logit_ge_0_r2_prospective_v1"
+
+    class CaptureModel(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.study = None
+            self.masks = None
+
+        def forward(self, src, cand, edit, study, endpoint, bench,
+                    src_pad_mask=None, cand_pad_mask=None):
+            self.study = study.detach().clone()
+            self.masks = (src_pad_mask.detach().clone(),
+                          cand_pad_mask.detach().clone())
+            z = src[:, 0, 0] * 0.0
+            return {"mean": z, "logvar": z, "sign": z, "rank": z}
+
+    model = CaptureModel()
+    pred = predict_model(model, rows, vocab, cfg, torch.device("cpu"))
+    assert pred.shape == (2,)
+    assert torch.all(model.study == vocab["study"][UNKNOWN_CONTEXT])
+    assert model.masks[0].dtype == torch.bool
+    assert model.masks[1].dtype == torch.bool
+
+
+def test_reported_model_sign_accuracy_uses_sign_head_not_mean_head():
+    rows = [_rec(1.0, study="held", source_id="positive"),
+            _rec(-1.0, study="held", source_id="negative")]
+    vocab = build_vocab(rows)
+    cfg = C.get_config()
+    cfg.N_STUDIES = len(vocab["study"])
+    cfg.N_ENDPOINTS = len(vocab["endpoint"])
+    cfg.N_BENCHMARKS = len(vocab["benchmark"])
+    cfg.SIGN_TEMPERATURE = 2.0
+    cfg.SIGN_DECISION_RULE = "sign_head_logit_ge_0_r2_prospective_v1"
+
+    class OpposedHeads(torch.nn.Module):
+        def forward(self, src, cand, edit, study, endpoint, bench,
+                    src_pad_mask=None, cand_pad_mask=None):
+            # The regression mean gets both signs wrong.  The prospectively
+            # frozen sign head gets both right.
+            mean = torch.tensor([-1.0, 1.0], device=src.device)[:src.size(0)]
+            sign = torch.tensor([10.0, -10.0], device=src.device)[:src.size(0)]
+            zero = mean * 0.0
+            return {"mean": mean, "logvar": zero, "sign": sign, "rank": zero}
+
+    outputs = predict_model_outputs(
+        OpposedHeads(), rows, vocab, cfg, torch.device("cpu"))
+    true = np.asarray([row["delta"] for row in rows])
+    reported = context_metrics(
+        true, outputs["delta"], sign_prediction=outputs["sign_decision"],
+        sign_rule=outputs["sign_decision_rule"])
+    legacy_mean = context_metrics(true, outputs["delta"])
+    assert reported["sign_accuracy"] == 1.0
+    assert legacy_mean["sign_accuracy"] == 0.0
+    assert reported["sign_decision_rule"] == cfg.SIGN_DECISION_RULE

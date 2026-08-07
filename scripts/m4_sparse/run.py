@@ -10,6 +10,7 @@ silently run on CPU and claimed as GPU).
 from __future__ import annotations
 
 import argparse
+import copy
 import json
 import sys
 import time
@@ -18,23 +19,22 @@ from typing import Optional
 
 import numpy as np
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))  # repo/scripts
+sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # repo root
 
 from scripts.m4_sparse import config as C
 from scripts.m4_sparse.dataset import build_vocab
 from scripts.m4_sparse.evaluate import run_fold_evaluation, macro_over_folds, predict_model
 from scripts.m4_sparse.rerank import rerank_sources
-from scripts.m4_sparse.train import build_folds, train_fold, calibrate_sign_temperature
+from scripts.m4_sparse.train import (
+    build_folds, train_fold, calibrate_sign_temperature,
+    grouped_train_dev_split,
+)
+from scripts.m4_sparse.ordinary_io import assert_ordinary_path, load_ordinary_jsonl
+from scripts.m4_sparse.checkpoint import load_checkpoint, vocab_sha256
 
 
 def load_rows(path):
-    rows = []
-    with path.open(encoding="utf-8") as f:
-        for line in f:
-            r = json.loads(line)
-            if r.get("delta") is not None:
-                rows.append(r)
-    return rows
+    return load_ordinary_jsonl(path, require_delta=True)
 
 
 def select_device(cfg, override):
@@ -75,6 +75,7 @@ def main():
     ap.add_argument("--limit", type=int, default=None)
     ap.add_argument("--only-eval", action="store_true")
     args = ap.parse_args()
+    assert_ordinary_path(args.out_dir, purpose="ordinary output")
 
     cfg = C.get_config()
     if args.target:
@@ -86,11 +87,6 @@ def main():
     if args.limit:
         rows = rows[:args.limit]
     print("loaded %d delta-defined records" % len(rows))
-
-    vocab = build_vocab(rows)
-    cfg.N_STUDIES = len(vocab["study"])
-    cfg.N_ENDPOINTS = len(vocab["endpoint"])
-    cfg.N_BENCHMARKS = len(vocab["benchmark"])
 
     device, err = select_device(cfg, args.gpu)
     results = {
@@ -123,26 +119,30 @@ def main():
                                               "macro_top_decile_recall": None}})
                 continue
             ckpt = args.out_dir / ("model_%s__%s.pt" % (benchmark, fold["held_out_study"]))
+            fold_vocab = build_vocab(fold["train"])
+            fold_cfg = copy.deepcopy(cfg)
+            fold_cfg.N_STUDIES = len(fold_vocab["study"])
+            fold_cfg.N_ENDPOINTS = len(fold_vocab["endpoint"])
+            fold_cfg.N_BENCHMARKS = len(fold_vocab["benchmark"])
             t0 = time.time()
             if args.only_eval and ckpt.exists():
-                import torch
                 from scripts.m4_sparse.model import SparseEditFormer
-                model = SparseEditFormer(cfg).to(device)
-                sd = torch.load(ckpt, map_location=str(device))
+                sd = load_checkpoint(ckpt, device, expected_vocab=fold_vocab)
+                model_cfg = sd["cfg"]
+                model = SparseEditFormer(model_cfg).to(device)
                 model.load_state_dict(sd["state_dict"])
                 print("[" + benchmark + "/" + fold["held_out_study"] + "] loaded checkpoint")
             else:
-                model = train_fold(fold, cfg, vocab, device, out_path=ckpt)
+                model = train_fold(fold, fold_cfg, fold_vocab, device, out_path=ckpt)
+                model_cfg = fold_cfg
                 print("[" + benchmark + "/" + fold["held_out_study"] + "] trained in %.1fs train=%d test=%d"
                       % (time.time() - t0, len(fold["train"]), len(fold["test"])))
-            rng = np.random.RandomState(cfg.SEED)
-            trows = fold["train"]
-            n_dev = max(int(len(trows) * cfg.DEV_FRAC), 1)
-            dev_rows = [trows[i] for i in rng.permutation(len(trows))[:n_dev]]
-            T = calibrate_sign_temperature(model, dev_rows, vocab, cfg, device)
-            fe = run_fold_evaluation(model, fold, vocab, cfg, device)
+            T = float(getattr(model_cfg, "SIGN_TEMPERATURE", 1.0))
+            fe = run_fold_evaluation(model, fold, fold_vocab, model_cfg, device)
             fe["temperature"] = T
-            pred_test = predict_model(model, fold["test"], vocab, cfg, device)
+            fe["vocab_sha256"] = vocab_sha256(fold_vocab)
+            pred_test = predict_model(
+                model, fold["test"], fold_vocab, model_cfg, device)
             fe["rerank"] = rerank_sources(fold["test"], pred_test)
             fold_evals.append(fe)
 

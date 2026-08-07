@@ -41,6 +41,10 @@ from scripts.m4_sparse import config as C
 from scripts.m4_sparse.dataset import EffectDataset, build_vocab
 from scripts.m4_sparse.model import SparseEditFormer
 from scripts.m4_sparse.train import build_folds
+from scripts.m4_sparse.ordinary_io import (
+    assert_ordinary_path,
+    load_ordinary_jsonl,
+)
 
 DATASET = "artifacts/b0x/effect_dataset.jsonl"
 BENCH = "5U-A1"
@@ -67,14 +71,14 @@ def select_device(cfg, override):
     return None, "no permitted CUDA device"
 
 
-def load_critic(ckpt_path, device):
-    import torch
-    sd = torch.load(ckpt_path, map_location=str(device), weights_only=False)
+def load_critic(ckpt_path, device, expected_vocab=None):
+    from scripts.m4_sparse.checkpoint import load_checkpoint
+    sd = load_checkpoint(ckpt_path, device, expected_vocab=expected_vocab)
     ck = sd["cfg"]
     model = SparseEditFormer(ck).to(device)
     model.load_state_dict(sd["state_dict"])
     model.eval()
-    return model, ck
+    return model, ck, sd["vocab"]
 
 
 @torch.no_grad()
@@ -82,19 +86,22 @@ def predict_delta_and_logvar(model, test_rows, vocab, cfg, device):
     """Return per-row (delta_pred, predictive_variance=exp(logvar), true_delta)."""
     import torch
     from torch.utils.data import DataLoader
-    ds = EffectDataset(test_rows, vocab, target=cfg.TARGET)
+    ds = EffectDataset(test_rows, vocab, target=cfg.TARGET,
+                       force_unk_study=True)
     loader = DataLoader(ds, batch_size=BATCH_SIZE, shuffle=False, num_workers=0)
     preds, vars_, true_ = [], [], []
     for b in loader:
         bb = {k: v.to(device) for k, v in b.items()}
         out = model(bb["src"], bb["cand"], bb["edit"], bb["study"],
-                    bb["endpoint"], bb["bench"])
+                    bb["endpoint"], bb["bench"],
+                    src_pad_mask=bb["src_pad_mask"],
+                    cand_pad_mask=bb["cand_pad_mask"])
         delta = out["mean"].cpu().numpy()
         if cfg.TARGET == "candidate_value" and cfg.ANCHOR_AT_TEST:
             delta = delta - bb["source_value"].cpu().numpy()
         preds.append(delta)
         vars_.append(np.exp(out["logvar"].cpu().numpy()))
-        true_.append(bb["y"].cpu().numpy())
+        true_.append(bb["delta"].cpu().numpy())
     return (np.concatenate(preds), np.concatenate(vars_),
             np.concatenate(true_))
 
@@ -123,12 +130,8 @@ def run_frontier(args, cfg, device):
     torch.manual_seed(SEED)
     torch.cuda.manual_seed_all(SEED)
 
-    rows = []
-    with open(args.dataset) as f:
-        for line in f:
-            r = json.loads(line)
-            if r.get("delta") is not None:
-                rows.append(r)
+    rows = load_ordinary_jsonl(Path(args.dataset), require_delta=True)
+    assert_ordinary_path(args.out_dir, purpose="output")
     bench_rows = [r for r in rows if r["benchmark"] == BENCH]
     vocab = build_vocab(bench_rows)
     cfg.N_STUDIES = len(vocab["study"])
@@ -148,11 +151,12 @@ def run_frontier(args, cfg, device):
         if not ckpt.exists():
             print("[selective-dev] MISSING %s -> skip" % ckpt)
             continue
-        model, ck = load_critic(ckpt, device)
+        fold_vocab = build_vocab(fold["train"])
+        model, ck, checkpoint_vocab = load_critic(
+            ckpt, device, expected_vocab=fold_vocab)
         # honor the frozen critic's eval contract (TARGET/ANCHOR from checkpoint)
-        cfg.TARGET = getattr(ck, "TARGET", cfg.TARGET)
-        cfg.ANCHOR_AT_TEST = getattr(ck, "ANCHOR_AT_TEST", cfg.ANCHOR_AT_TEST)
-        pred, var, true = predict_delta_and_logvar(model, fold["test"], vocab, cfg, device)
+        pred, var, true = predict_delta_and_logvar(
+            model, fold["test"], checkpoint_vocab, ck, device)
 
         pf = {}
         for c in coverages:

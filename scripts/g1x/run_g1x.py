@@ -53,10 +53,12 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))  # repo root
 
 from scripts.m4_sparse import config as C
-from scripts.m4_sparse.dataset import build_vocab, one_hot
+from scripts.m4_sparse.dataset import build_vocab, one_hot, UNKNOWN_CONTEXT
 from scripts.m4_sparse.evaluate import predict_model
-from scripts.m4_sparse.o0x_search import rank_metrics
+from scripts.m4_sparse.o0x_search import _prepare_pool, pool_key, rank_metrics
 from scripts.m4_sparse.train import build_folds
+from scripts.m4_sparse.ordinary_io import assert_ordinary_path, load_ordinary_jsonl
+from scripts.m4_sparse.checkpoint import load_checkpoint
 from scripts.f0x.flow import (
     EditFlowState, build_state, enumerate_legal_actions, apply_action,
 )
@@ -90,13 +92,7 @@ def select_device(cfg, override):
 
 
 def load_rows(path):
-    rows = []
-    with path.open(encoding="utf-8") as f:
-        for line in f:
-            r = json.loads(line)
-            if r.get("delta") is not None:
-                rows.append(r)
-    return rows
+    return load_ordinary_jsonl(path, require_delta=True)
 
 
 def norm_seq(s):
@@ -114,27 +110,31 @@ def load_base_flow(ckpt_path, device):
     return net, cfg
 
 
-def load_critic(ckpt_path, device):
-    import torch
+def load_critic(ckpt_path, device, expected_vocab=None):
     from scripts.m4_sparse.model import SparseEditFormer
-    sd = torch.load(ckpt_path, map_location=str(device), weights_only=False)
+    sd = load_checkpoint(ckpt_path, device, expected_vocab=expected_vocab)
     cfg = sd["cfg"]
     model = SparseEditFormer(cfg).to(device)
     model.load_state_dict(sd["state_dict"])
     model.eval()
-    return model, cfg
+    return model, cfg, sd["vocab"]
 
 
 # ---------------------------------------------------------------------------
 # measured-neighborhood ranking for one source
 # ---------------------------------------------------------------------------
 
-def _ctx_for(record: dict, bench: str) -> dict:
-    """Biological context for critic conditioning (fall back to neutral ids)."""
+def _ctx_for(record: dict, bench: str, force_unk_study: bool = False) -> dict:
+    """Biological context with an explicit trained-UNK fallback.
+
+    ``force_unk_study`` is used for an S4 critic scoring its held-out study; the
+    globally allocated held-out-study embedding has no fold-training updates.
+    """
     return {
-        "study": record.get("study"),
-        "endpoint": record.get("endpoint"),
-        "bench": bench,
+        "study": (UNKNOWN_CONTEXT if force_unk_study
+                  else (record.get("study") or UNKNOWN_CONTEXT)),
+        "endpoint": record.get("endpoint") or UNKNOWN_CONTEXT,
+        "bench": bench or UNKNOWN_CONTEXT,
         "source_value": record.get("source_value"),
     }
 
@@ -157,7 +157,8 @@ def score_source_candidates(state, records, builders, params, device) -> Dict:
     `records`, plus the delta ground truth and per-strategy compute accounting.
     """
     strategies = {}
-    ctx = _ctx_for(records[0], params["bench"])
+    ctx = _ctx_for(records[0], params["bench"],
+                   force_unk_study=params.get("force_unk_study", False))
     for name, builder in builders.items():
         policy = builder(params["base_net"], params["head"], params["critic"],
                          params["vocab"], params["beta"], device, ctx)
@@ -189,7 +190,9 @@ def _strategy_candidate_score(name, policy, state, record, params, device, pref)
         # critic-predicted delta for the measured candidate
         sc = critic_scores_batch(
             params["critic"], params["vocab"], device, state.source_seq, [cand],
-            record.get("study"), record.get("endpoint"), params["bench"],
+            (UNKNOWN_CONTEXT if params.get("force_unk_study", False)
+             else (record.get("study") or UNKNOWN_CONTEXT)),
+            record.get("endpoint") or UNKNOWN_CONTEXT, params["bench"],
             record.get("source_value"))
         return float(sc["delta"][0])
     # first-step preference probability for the candidate's SUB edit
@@ -256,6 +259,7 @@ def main() -> int:
     ap.add_argument("--n-gen-sources", type=int, default=200,
                     help="how many sources to evaluate for generation quality")
     args = ap.parse_args()
+    assert_ordinary_path(args.out_dir, purpose="ordinary output")
 
     cfg = C.get_config()
     rows = load_rows(args.dataset)
@@ -299,6 +303,7 @@ def main() -> int:
         singleton = 0
         strategy_buckets = defaultdict(list)
         guidance_quantities = defaultdict(list)
+        qualified_generation_sources = []
 
         for fold in folds:
             held = fold["held_out_study"]
@@ -309,7 +314,9 @@ def main() -> int:
             if not ckpt.exists():
                 print("[g1x] MISSING critic ckpt %s -> skip fold %s" % (ckpt, held))
                 continue
-            critic, critic_cfg = load_critic(ckpt, device)
+            fold_vocab = build_vocab(train)
+            critic, critic_cfg, critic_vocab = load_critic(
+                ckpt, device, expected_vocab=fold_vocab)
             critic.eval()
             # train guidance head on THIS fold's single-edit measured pairs
             single_edits = _single_edit_count(train)
@@ -325,7 +332,8 @@ def main() -> int:
                   % (held, len(single_edits)))
 
             params = {"base_net": base_net, "head": head, "critic": critic,
-                      "vocab": vocab, "beta": args.beta, "bench": benchmark}
+                      "vocab": critic_vocab, "beta": args.beta, "bench": benchmark,
+                      "force_unk_study": True}
             builders = POLICY_BUILDERS
             # generate_then_rerank shares the base flow preference for
             # generation but ranks by critic delta (implemented in score fn);
@@ -333,22 +341,29 @@ def main() -> int:
             builders = dict(builders)
             builders["generate_then_rerank"] = _gtr_builder
 
-            # group test rows by source_id -> measured pool
+            # R1-safe endpoint/context-aware measured pools.  A source_id alone
+            # is not sufficient because it can repeat one candidate across
+            # endpoint observations.
             pools = defaultdict(list)
-            for r in test:
-                pools[r["source_id"]].append(r)
+            for row_index, r in enumerate(test):
+                key = pool_key(r)
+                if key is not None:
+                    pools[key].append((row_index, r))
             n_pool = 0
-            for sid, recs in pools.items():
+            for key, entries in pools.items():
                 all_sources += 1
-                if len(recs) < 2:
+                prepared = _prepare_pool(entries)
+                if prepared["status"] != "ELIGIBLE":
                     singleton += 1
                     continue
+                recs = [row for _, row in prepared["entries"]]
                 n_pool += 1
                 if n_pool > args.max_sources_per_study:
                     break
                 src_seq = norm_seq(recs[0]["source_sequence"])
                 if not src_seq:
                     continue
+                qualified_generation_sources.append(src_seq)
                 state = build_state(src_seq, [True] * len(src_seq), budget=1)
                 sc = score_source_candidates(state, recs, builders, params, device)
                 per_source = run_source_pool(sc["strategies"], sc["deltas"],
@@ -358,9 +373,10 @@ def main() -> int:
                 # record guidance quantities on a small trajectory sample
                 if len(guidance_quantities["_n"]) < 50:
                     for name, builder in builders.items():
-                        policy = builder(base_net, head, critic, vocab,
+                        policy = builder(base_net, head, critic, critic_vocab,
                                          args.beta, device,
-                                         _ctx_for(recs[0], benchmark))
+                                         _ctx_for(recs[0], benchmark,
+                                                  force_unk_study=True))
                         sampler = GuidedFlowSampler(policy, seed=args.seed)
                         out = sampler.sample(state)
                         if out["trajectory"]:
@@ -413,14 +429,10 @@ def main() -> int:
         # carry-forward requires: not re-ranking the measured pool, but whether
         # guidance changes the critic-judged quality of generated sequences).
         if args.n_gen_sources > 0:
-            gen_sources = []
-            for sid, recs in pools.items():
-                s = norm_seq(recs[0]["source_sequence"])
-                if not s:
-                    continue
-                gen_sources.append(s)
-                if len(gen_sources) >= args.n_gen_sources:
-                    break
+            # This remains a development-only value diagnostic.  Use only
+            # sources from R1-qualified pools from the final evaluated fold;
+            # formal study-macro G1 repair is outside R0--R2.
+            gen_sources = qualified_generation_sources[:args.n_gen_sources]
             results["benchmarks"][benchmark]["generation_quality"] = {
                 "budget": args.gen_budget,
                 "n_sources": len(gen_sources),
@@ -445,8 +457,8 @@ def main() -> int:
 
 def _single_edit_count(train_rows):
     return [r for r in train_rows
-            if len([e for e in r.get("edit_list", [])
-                    if e["op"] == "SUB"]) == 1]
+            if len(r.get("edit_list", [])) == 1
+            and r["edit_list"][0].get("op") == "SUB"]
 
 
 def _gtr_builder(base_net, head, critic, vocab, beta, device, ctx=None):
@@ -454,9 +466,12 @@ def _gtr_builder(base_net, head, critic, vocab, beta, device, ctx=None):
     from scripts.g1x.guidance import base_step_policy, _ctx
     base_policy = base_step_policy(base_net, device, ctx)
     c = _ctx(**(ctx or {}))
-    study = c["study"] if c["study"] in vocab["study"] else None
-    endpoint = c["endpoint"] if c["endpoint"] in vocab["endpoint"] else None
-    bench = c["bench"] if c["bench"] in vocab["benchmark"] else "5U-A1"
+    study = (c["study"] if c["study"] in vocab["study"]
+             else UNKNOWN_CONTEXT)
+    endpoint = (c["endpoint"] if c["endpoint"] in vocab["endpoint"]
+                else UNKNOWN_CONTEXT)
+    bench = (c["bench"] if c["bench"] in vocab["benchmark"]
+             else UNKNOWN_CONTEXT)
 
     def policy(state, actions):
         bl = np.asarray(base_policy(state, actions)["guided_logits"], dtype=float)
@@ -495,7 +510,8 @@ def evaluate_generation_quality(builders, params, device, sources, budget, seed)
     from scripts.g1x.guidance import critic_scores_batch
     res = {}
     bench = params["bench"]
-    ctx = {"study": None, "endpoint": None, "bench": bench, "source_value": None}
+    ctx = {"study": UNKNOWN_CONTEXT, "endpoint": UNKNOWN_CONTEXT,
+           "bench": bench, "source_value": None}
     for name, builder in builders.items():
         policy = builder(params["base_net"], params["head"], params["critic"],
                          params["vocab"], params["beta"], device, ctx)
@@ -507,10 +523,10 @@ def evaluate_generation_quality(builders, params, device, sources, budget, seed)
             final = out["final_seq"]
             sc = critic_scores_batch(params["critic"], params["vocab"], device,
                                      state.source_seq, [final],
-                                     None, None, bench, None)
+                                     UNKNOWN_CONTEXT, UNKNOWN_CONTEXT, bench, None)
             src = critic_scores_batch(params["critic"], params["vocab"], device,
                                       state.source_seq, [state.source_seq],
-                                      None, None, bench, None)
+                                      UNKNOWN_CONTEXT, UNKNOWN_CONTEXT, bench, None)
             deltas.append(float(np.asarray(sc["mean"]).item())
                           - float(np.asarray(src["mean"]).item()))
         d = np.asarray(deltas, dtype=float)

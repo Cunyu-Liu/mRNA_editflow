@@ -1,0 +1,190 @@
+schema_version: "1.0"
+repair_goal: GOAL-XEDITFLOW-R0-R2-REPAIR-20260807
+created_utc: "2026-08-07T11:22:39Z"
+base_commit: bbb71dcba6f1e1c9cb75a8a6653f1a4fe4a6ca0c
+source_binding: docs/contracts/xeditflow_v2_source_binding.yaml
+historical_decision_log: docs/execution/xeditflow_migration_decision_log.yaml
+historical_decision_log_sha256: 87c4631370d2e1ab826c4ad1955e5ba440a8c5efebdf0ad735bc1e82601378aa
+
+invariants:
+  sealed_analytic_member_access: FORBIDDEN_DURING_R0_R2
+  formal_sealed_evaluator_invocation: FORBIDDEN_DURING_R0_R2
+  original_m0_effect_gate_result: FAIL_RETAINED
+  sign_accuracy_threshold: 0.60
+  sign_gate_amendment: NOT_AUTHORIZED
+  old_artifact_overwrite: FORBIDDEN
+  unrelated_process_termination: FORBIDDEN
+  large_scale_training: OUT_OF_SCOPE
+  git_push: NOT_AUTHORIZED
+
+decisions:
+  - id: XE-REPAIR-DEC-001
+    dimension: user_authorization
+    decision: >-
+      Execute R0 through R2 in a new isolated worktree: governance and sealed
+      protection, ordinary-data grouping and metric repair, and deterministic
+      model-semantics/input/context repair.
+    status: AUTHORIZED_20260807
+
+  - id: XE-REPAIR-DEC-002
+    dimension: original_result_preservation
+    decision: >-
+      Preserve the ordinary E0-X NO_GO record and the original M0 sign failure.
+      Repair results receive new run IDs and cannot rewrite a historical PASS,
+      FAIL, artifact, threshold, split, or preregistration.
+    status: FROZEN
+
+  - id: XE-REPAIR-DEC-003
+    dimension: class_prior_interpretation
+    corrects_interpretation_of: XE-DEC-008
+    decision: >-
+      A majority-class prevalence near 0.52 is a naive baseline, not a
+      learnability ceiling.  The present result establishes only that the
+      evaluated model is near that baseline under the audited folds.
+    status: CORRECTION_WITHOUT_HISTORY_REWRITE
+
+  - id: XE-REPAIR-DEC-004
+    dimension: selective_prediction_evidence
+    corrects_interpretation_of: XE-DEC-008
+    decision: >-
+      The tracked machine-readable selective artifact evaluates the direct-
+      delta critic's log-variance frontier, not the candval critic used by the
+      formal ordinary E0-X gate.  Claims about additional confidence scores or
+      retrained sign heads remain unverified unless reproducible artifacts are
+      added.  No sign-gate amendment follows from this correction.
+    status: EVIDENCE_SCOPE_CORRECTION
+
+  - id: XE-REPAIR-DEC-005
+    dimension: data_readiness
+    decision: >-
+      Current data are DEVELOPMENT_DATASET_ASSEMBLED, not publication-grade
+      benchmark ready.  The prior strict grouping/split failure is not treated
+      as superseded until equivalent grouping atoms, assignments, provenance,
+      study dominance, endpoint separation, and edit-budget checks pass.
+    status: REPAIR_REQUIRED
+
+  - id: XE-REPAIR-DEC-006
+    dimension: measured_candidate_pools
+    decision: >-
+      Existing two-row pools that repeat one candidate across two endpoints are
+      invalid for listwise/reranking evidence.  Rebuilt pools must contain at
+      least two distinct candidates under one source, study, assay/context, and
+      endpoint identity, with provenance reviewed before publication use.
+    status: REPAIR_REQUIRED
+
+  - id: XE-REPAIR-DEC-007
+    dimension: sealed_runner
+    decision: >-
+      The unimplemented sealed sequence-level evaluator is a deterministic
+      blocker.  Formal execution stays disabled before any access intent or
+      reservation.  Only synthetic/ordinary no-side-effect preflight is allowed
+      in R0-R2.
+    status: HARD_DISABLED_PENDING_VERIFICATION
+
+  - id: XE-REPAIR-DEC-008
+    dimension: model_semantics
+    decision: >-
+      Repair candidate-value versus delta targets, within-source ranking,
+      delta-only inverse consistency, padding masks, edit visibility, and
+      unseen-context handling before interpreting model-family capability.
+    status: REPAIR_AUTHORIZED
+
+  - id: XE-REPAIR-DEC-009
+    dimension: effect_gate_authority
+    decision: >-
+      The 5-prime effect gate retains sign_accuracy >= 0.60 as a hard gate.
+      The omission of sign_accuracy from one minimal-config metric list is not
+      interpreted as permission to demote or remove that gate.  Any future
+      amendment must be prospective, versioned, and internally consistent
+      across the contract; R0-R2 makes no such amendment.
+    status: HARD_GATE_RETAINED
+
+  - id: XE-REPAIR-DEC-010
+    dimension: signed_enrichment_metric
+    decision: >-
+      The historical mean(true_delta in predicted top set) divided by
+      mean(true_delta overall) is not a stable enrichment metric on a signed
+      outcome domain: it can reverse ordering when the denominator is negative
+      and explode near zero.  Historical values remain preserved under their
+      legacy definition but cannot satisfy a publication or sealed-activation
+      gate.  A replacement must be versioned and prospectively preregistered.
+    status: HISTORICAL_ONLY_GATE_HOLD
+
+  - id: XE-REPAIR-DEC-011
+    dimension: sealed_activation
+    decision: >-
+      Formal sealed reservation requires exact canonical preregistration bytes,
+      a hash-bound ordinary-only GO manifest for the complete frozen H1-H3
+      family, matching R2 dataset/checkpoint/vocab/input schemas, a real
+      evaluator fixture hash, and a fresh UNSEALED state.  Partial ACCESS_INTENT
+      or RESERVED state is invalidated and never resumed by the ordinary runner.
+    status: FAIL_CLOSED_NOT_ACTIVATED
+
+  - id: XE-REPAIR-DEC-012
+    dimension: checkpoint_compatibility
+    decision: >-
+      Checkpoints created before the R2 edit-centred, explicit-mask, trained-UNK,
+      and prospective sign-decision contract are semantically incompatible.
+      Automatic migration or partial weight loading is forbidden; R2 requires
+      fresh ordinary-data training and re-freezing before evaluation.
+    status: R2_RETRAIN_REQUIRED
+
+  - id: XE-REPAIR-DEC-013
+    dimension: edit_encoding_coverage
+    decision: >-
+      R2 accepts non-empty, equal-length substitution-only pairs whose complete
+      edit span fits one shared window.  Out-of-range edits, indels, empty
+      sequences, and wider edit spans fail closed and must be counted before a
+      future multi-window architecture is authorized.
+    status: EXPLICIT_COVERAGE_BOUNDARY
+
+  - id: XE-REPAIR-DEC-014
+    dimension: downstream_compatibility
+    decision: >-
+      G1 critic scoring must share the R2 pair encoder, masks, and UNK mapping.
+      Existing generation-quality claims and X0 adapters are not treated as R2
+      compatible evidence; strategy-generation and X0 retraining remain NOT_RUN
+      in this repair because no GPU execution or scientific rerun is authorized.
+    status: DEVELOPMENT_ONLY_NOT_SCIENTIFICALLY_REEVALUATED
+
+  - id: XE-REPAIR-DEC-015
+    dimension: scientific_outcome
+    decision: >-
+      Passing deterministic R0-R2 regression tests establishes implementation
+      safety only.  It does not establish an effect-gate PASS, model improvement,
+      SOTA performance, sealed transfer, or publication readiness.  Those remain
+      NOT_RUN until new R2 ordinary training and independent grouped evaluation
+      are completed under a prospective metric and decision rule.
+    status: NOT_RUN_NOT_GO
+
+  - id: XE-REPAIR-DEC-016
+    dimension: ordinary_grouping_audit
+    evidence_artifact: >-
+      artifacts/repairs/GOAL-XEDITFLOW-R0-R2-REPAIR-20260807/
+      r1_ordinary_grouping_and_r2_input_audit_v3.json
+    decision: >-
+      All 103199 delta-defined ordinary rows lack a safe assay/context atom.
+      The repaired candidate-pool definition therefore yields zero eligible
+      publication-grade pools.  The 1630 endpoint-mixed legacy groups remain
+      invalid for O0/G1 headline claims and cannot be recovered by source_id.
+    status: PUBLICATION_GROUPING_NOT_QUALIFIED
+
+  - id: XE-REPAIR-DEC-017
+    dimension: r2_input_coverage
+    decision: >-
+      The current R2 equal-length SUB single-window schema represents 73024 of
+      103199 delta-defined rows (70.7604%).  The remaining 30175 comprise 15082
+      incomplete edit scripts, 13284 non-SUB scripts and 1809 unequal-length
+      pairs.  No row may be silently dropped; every future run must bind a
+      versioned inclusion/exclusion manifest and report coverage by study.
+    status: PARTIAL_COVERAGE_REQUIRES_MANIFEST_OR_ENCODER_REPAIR
+
+  - id: XE-REPAIR-DEC-018
+    dimension: r3_training_readiness
+    decision: >-
+      GSE232571, GSE261709 and GSE298114 have zero R2-compatible rows, so a
+      complete 3-prime S4 model claim is blocked.  A 5-prime ordinary pilot may
+      be proposed only after freezing its exact inclusion manifest, prospective
+      sign rule, stable enrichment definition, grouped inference and multi-seed
+      protocol.  R0-R2 itself starts no training.
+    status: R3_NOT_YET_AUTHORIZED_BY_THIS_RUN

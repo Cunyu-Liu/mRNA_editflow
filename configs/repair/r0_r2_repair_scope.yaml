@@ -1,0 +1,42 @@
+schema_version: "1.0"
+repair_goal: GOAL-XEDITFLOW-R0-R2-REPAIR-20260807
+base_commit: bbb71dcba6f1e1c9cb75a8a6653f1a4fe4a6ca0c
+source_binding: docs/contracts/xeditflow_v2_source_binding.yaml
+repair_decision_log: docs/execution/xeditflow_repair_decision_log.yaml
+historical_terminal_state: BLOCKED_WITH_EVIDENCE
+target_state: REPAIR_IMPLEMENTED_NOT_SCIENTIFIC_GO
+
+tracked_scope_globs:
+  - docs/contracts/xeditflow_v2_source_binding.yaml
+  - docs/execution/xeditflow_repair_decision_log.yaml
+  - docs/experiments/GOAL-XEDITFLOW-R0-R2-REPAIR-20260807.md
+  - configs/repair/*.yaml
+  - scripts/repair/*.py
+  - scripts/e0x/*.py
+  - scripts/m4_sparse/*.py
+  - scripts/g1x/*.py
+  - tests/migration/test_e0x.py
+  - tests/migration/test_m4_*.py
+  - tests/migration/test_g1x.py
+  - tests/migration/test_r0_*.py
+  - tests/migration/test_r1_*.py
+  - tests/migration/test_r2_*.py
+
+forbidden_input_tokens:
+  - gse246381
+  - sealed
+  - restricted
+
+ordinary_artifact_policy:
+  tracked_in_git: false
+  explicit_cli_allowlist_required: true
+  content_hash_required: true
+  member_rows_may_be_used: true
+  sealed_or_restricted_members_may_be_used: false
+
+execution_policy:
+  training_allowed: false
+  formal_sealed_evaluation_allowed: false
+  access_intent_allowed: false
+  reservation_allowed: false
+  git_push_allowed: false

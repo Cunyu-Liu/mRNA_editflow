@@ -1,0 +1,47 @@
+schema_version: "1.0"
+record_id: XEDITFLOW-V2-SOURCE-BINDING-20260807
+created_utc: "2026-08-07T11:22:39Z"
+status: ACTIVE_REPAIR_GOVERNANCE_OVERLAY
+
+# This record resolves identity, not scientific outcome.  It deliberately does
+# not promote the local proposal to an executable authority and does not amend
+# any metric or threshold after observing E0-X results.
+source_proposal:
+  display_name: mrna 最新合同-v2.md
+  original_path: /Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna 最新合同-v2.md
+  sha256: 9c79edd819e45551974bcfeb14a400dd504c55c0a7c869e456e638daf49f1c1e
+  lines: 2608
+  bytes: 69226
+  title_declared_version: v1.0
+  declared_status: PROPOSED_PUBLICATION_CONTRACT
+  authority_role: SOURCE_PROPOSAL_NOT_ACTIVE
+
+active_executable_authority:
+  contract_id: mrna_xeditflow_goal_v1_1
+  path: docs/contracts/mrna_xeditflow_goal_v1_1.md
+  sha256: fc9c1c882efbaa4c1e86f4da2e1be64e219755fb9c5941da4b4309793d3d8c2f
+  lines: 218
+  bytes: 12832
+  config_path: configs/mrna_xeditflow_contract_v1_1.yaml
+  config_sha256: b3be70e765fb8285996487815ee6a4494ca4cc7fb503dae2901b40a0382d83cf
+  authority_role: ACTIVE_EXECUTABLE_AUTHORITY
+
+relationship:
+  classification: DERIVED_NOT_BYTE_EQUIVALENT
+  source_hash_recorded_by: artifacts/migration/M0_INPUT_MANIFEST.json
+  complete_section_crosswalk_proven: false
+  omission_equivalence_proven: false
+  claim_equivalence_proven: false
+  executable_authority_count: 1
+
+fail_closed_interpretation:
+  rule: >-
+    Until a complete section crosswalk is reviewed, execution follows the
+    active executable authority and may additionally enforce stricter source
+    proposal constraints; an omission in the derivative never relaxes an
+    explicit source-proposal gate.
+  sign_accuracy_gate: RETAIN_0_60_ORIGINAL_FAILURE
+  metric_amendment: NOT_AUTHORIZED
+  sealed_final: PROHIBITED_UNTIL_RUNNER_AND_PROTOCOL_VERIFIED
+  prior_failures: IMMUTABLE
+  scientific_status: BLOCKED_WITH_EVIDENCE_REPAIR_AUTHORIZED

@@ -39,7 +39,13 @@ import torch
 import torch.nn as nn
 
 from scripts.m4_sparse.config import MAX_SEQ_LEN, NUC_ORDER
-from scripts.m4_sparse.dataset import edit_features, normalize, one_hot
+from scripts.m4_sparse.dataset import (
+    UNKNOWN_CONTEXT,
+    edit_features,
+    encode_pair,
+    normalize,
+    one_hot,
+)
 from scripts.f0x.flow import LegalAction, apply_action, enumerate_legal_actions
 
 G1_HIDDEN = 32
@@ -82,7 +88,8 @@ class GuidanceRatioNet(nn.Module):
 
 def _single_edit_rows(rows: List[dict]) -> List[dict]:
     return [r for r in rows
-            if len([e for e in r.get("edit_list", []) if e["op"] == "SUB"]) == 1]
+            if len(r.get("edit_list", [])) == 1
+            and r["edit_list"][0].get("op") == "SUB"]
 
 
 def train_guidance_head(train_rows: List[dict], device, hidden: int = G1_HIDDEN,
@@ -98,18 +105,25 @@ def train_guidance_head(train_rows: List[dict], device, hidden: int = G1_HIDDEN,
         raise RuntimeError("no single-edit measured rows available to train guidance head")
     net = GuidanceRatioNet(hidden).to(device)
     opt = torch.optim.Adam(net.parameters(), lr=lr)
-    srcs = np.stack([one_hot(r["source_sequence"]) for r in rows])
+    encoded = [
+        encode_pair(r["source_sequence"], r["candidate_sequence"],
+                    r.get("edit_list"))
+        for r in rows
+    ]
+    srcs = np.stack([item[0] for item in encoded])
     Y = np.zeros((len(rows), MAX_SEQ_LEN, len(NUC_ORDER)), dtype=np.float32)
     M = np.zeros((len(rows), MAX_SEQ_LEN, len(NUC_ORDER)), dtype=np.float32)
     for i, r in enumerate(rows):
+        window_start = encoded[i][4]
         s = normalize(r["source_sequence"])
         for e in r.get("edit_list", []):
             if e["op"] == "SUB":
                 pos = int(e["pos"])
                 tok = str(e["token"]).upper().replace("T", "U")
-                if pos < MAX_SEQ_LEN and tok in NUC_ORDER:
-                    Y[i, pos, NUC_ORDER.index(tok)] = float(r["delta"] or 0.0)
-                    M[i, pos, NUC_ORDER.index(tok)] = 1.0
+                local_pos = pos - window_start
+                if 0 <= local_pos < MAX_SEQ_LEN and tok in NUC_ORDER:
+                    Y[i, local_pos, NUC_ORDER.index(tok)] = float(r["delta"])
+                    M[i, local_pos, NUC_ORDER.index(tok)] = 1.0
     n = len(rows)
     rng = np.random.RandomState(0)
     net.train()
@@ -143,36 +157,71 @@ def critic_score(model, vocab, device, src_seq: str, cand_seq: str,
                  source_value: Optional[float]) -> Dict:
     """Frozen M4 critic score for a (source, candidate) pair.
 
-    Returns mean (candidate-value pred), logvar, rank, and delta = mean - source.
+    Returns mean-head output, logvar, rank, and delta under the checkpoint's
+    frozen TARGET semantics (direct for delta; measured-anchor subtraction for
+    candidate_value).
     """
-    src = torch.tensor(one_hot(src_seq)).unsqueeze(0).to(device)
-    cand = torch.tensor(one_hot(cand_seq)).unsqueeze(0).to(device)
-    # build edit list source->candidate (single-pass diff for the first edit)
-    ef = _edit_feat_for(src_seq, cand_seq)
-    ef = torch.tensor(ef).unsqueeze(0).to(device)
-    sid = torch.tensor([vocab["study"].get(study, 0)]).to(device)
-    eid = torch.tensor([vocab["endpoint"].get(endpoint, 0)]).to(device)
-    bid = torch.tensor([vocab["benchmark"].get(bench, 0)]).to(device)
+    edits = _edits_for(src_seq, cand_seq)
+    src_x, cand_x, src_mask, cand_mask, _ = encode_pair(
+        src_seq, cand_seq, edits)
+    src = torch.tensor(src_x).unsqueeze(0).to(device)
+    cand = torch.tensor(cand_x).unsqueeze(0).to(device)
+    ef = torch.tensor(edit_features(edits, max(len(normalize(src_seq)), 1))) \
+        .unsqueeze(0).to(device)
+    src_mask = torch.tensor(src_mask).unsqueeze(0).to(device)
+    cand_mask = torch.tensor(cand_mask).unsqueeze(0).to(device)
+    sid = torch.tensor([_context_id(vocab["study"], study, "study")]).to(device)
+    eid = torch.tensor([_context_id(vocab["endpoint"], endpoint, "endpoint")]).to(device)
+    bid = torch.tensor([_context_id(vocab["benchmark"], bench, "benchmark")]).to(device)
     with torch.no_grad():
-        out = model(src, cand, ef, sid, eid, bid)
+        out = model(src, cand, ef, sid, eid, bid,
+                    src_pad_mask=src_mask, cand_pad_mask=cand_mask)
     mean = float(out["mean"].item())
     lv = float(out["logvar"].item())
     rank = float(out["rank"].item())
-    delta = mean - source_value if source_value is not None else mean
+    delta = _delta_from_mean(model, mean, source_value)
     return {"mean": mean, "logvar": lv, "rank": rank, "delta": delta}
 
 
-def _edit_feat_for(src: str, cand: str) -> np.ndarray:
-    """Minimal edit list source->candidate (SUB-only, first differing bases)."""
+def _edits_for(src: str, cand: str) -> List[dict]:
+    """Canonical SUB edit list source->candidate for equal-length sequences."""
     edits = []
     s, c = normalize(src), normalize(cand)
+    if len(s) != len(c):
+        raise ValueError("R2 G1 critic supports equal-length SUB candidates only")
     for i in range(min(len(s), len(c))):
         if s[i] != c[i]:
             edits.append({"op": "SUB", "pos": i, "token": c[i]})
-    if len(c) > len(s):
-        for i in range(len(s), len(c)):
-            edits.append({"op": "SUB", "pos": i, "token": c[i]})
-    return edit_features(edits, max(len(s), 1))
+    return edits
+
+
+def _edit_feat_for(src: str, cand: str) -> np.ndarray:
+    edits = _edits_for(src, cand)
+    return edit_features(edits, max(len(normalize(src)), 1))
+
+
+def _context_id(mapping: Dict[str, int], value: Optional[str], name: str) -> int:
+    if UNKNOWN_CONTEXT not in mapping:
+        raise ValueError("R2 %s vocabulary has no reserved __UNK__ id" % name)
+    if value in mapping:
+        return int(mapping[value])
+    return int(mapping[UNKNOWN_CONTEXT])
+
+
+def _delta_from_mean(model, mean, source_value):
+    """Apply the checkpoint's frozen regression-target semantics exactly."""
+    target = getattr(getattr(model, "cfg", None), "TARGET", None)
+    if target == "candidate_value":
+        if source_value is None:
+            raise ValueError(
+                "candidate_value critic requires a measured source_value anchor"
+            )
+        return mean - source_value
+    if target in (None, "delta"):
+        # ``None`` is retained only for small test doubles; every production R2
+        # checkpoint is schema-validated and has an explicit TARGET.
+        return mean
+    raise ValueError("unsupported R2 critic TARGET %r" % target)
 
 
 def critic_scores_batch(critic, vocab, device, src_seq: str, cand_seqs: List[str],
@@ -180,24 +229,39 @@ def critic_scores_batch(critic, vocab, device, src_seq: str, cand_seqs: List[str
                         bench: str, source_value: Optional[float]) -> Dict:
     """Frozen critic scores for many candidate seqs from one source (one forward).
 
-    Returns dict of numpy arrays: mean, rank, logvar, delta (= mean - source).
+    Returns dict of numpy arrays: mean, rank, logvar, and TARGET-aware delta.
     """
     B = len(cand_seqs)
     if B == 0:
         return {"mean": np.zeros(0), "rank": np.zeros(0),
                 "logvar": np.zeros(0), "delta": np.zeros(0)}
-    src = torch.tensor(one_hot(src_seq)).unsqueeze(0).repeat(B, 1, 1).to(device)
-    cand = torch.stack([torch.tensor(one_hot(c)) for c in cand_seqs]).to(device)
-    ef = torch.stack([torch.tensor(_edit_feat_for(src_seq, c)) for c in cand_seqs]).to(device)
-    sid = torch.full((B,), vocab["study"].get(study, 0), dtype=torch.long, device=device)
-    eid = torch.full((B,), vocab["endpoint"].get(endpoint, 0), dtype=torch.long, device=device)
-    bid = torch.full((B,), vocab["benchmark"].get(bench, 0), dtype=torch.long, device=device)
+    encoded = []
+    edits_by_candidate = []
+    for candidate in cand_seqs:
+        edits = _edits_for(src_seq, candidate)
+        edits_by_candidate.append(edits)
+        encoded.append(encode_pair(src_seq, candidate, edits))
+    src = torch.tensor(np.stack([item[0] for item in encoded])).to(device)
+    cand = torch.tensor(np.stack([item[1] for item in encoded])).to(device)
+    src_mask = torch.tensor(np.stack([item[2] for item in encoded])).to(device)
+    cand_mask = torch.tensor(np.stack([item[3] for item in encoded])).to(device)
+    ef = torch.tensor(np.stack([
+        edit_features(edits, max(len(normalize(src_seq)), 1))
+        for edits in edits_by_candidate
+    ])).to(device)
+    sid = torch.full((B,), _context_id(vocab["study"], study, "study"),
+                     dtype=torch.long, device=device)
+    eid = torch.full((B,), _context_id(vocab["endpoint"], endpoint, "endpoint"),
+                     dtype=torch.long, device=device)
+    bid = torch.full((B,), _context_id(vocab["benchmark"], bench, "benchmark"),
+                     dtype=torch.long, device=device)
     with torch.no_grad():
-        out = critic(src, cand, ef, sid, eid, bid)
+        out = critic(src, cand, ef, sid, eid, bid,
+                     src_pad_mask=src_mask, cand_pad_mask=cand_mask)
     mean = out["mean"].cpu().numpy()
     rank = out["rank"].cpu().numpy()
     lv = out["logvar"].cpu().numpy()
-    delta = mean - source_value if source_value is not None else mean
+    delta = _delta_from_mean(critic, mean, source_value)
     return {"mean": mean, "rank": rank, "logvar": lv, "delta": delta}
 
 
@@ -228,17 +292,31 @@ def _guidance_head_effects(head, state, device):
     return eff
 
 
+def _guidance_head_action_effects(head, state, actions, device):
+    """Score every legal action in its own edit-centred source window."""
+    if not actions:
+        return np.zeros(0, dtype=float)
+    windows = []
+    local_positions = []
+    for action in actions:
+        candidate = apply_action(state, action).seq
+        edits = [{"op": "SUB", "pos": action.pos, "token": action.target_nt}]
+        src_x, _, _, _, start = encode_pair(state.seq, candidate, edits)
+        windows.append(src_x)
+        local_positions.append(action.pos - start)
+    effects = head.effects(torch.tensor(np.stack(windows)).to(device))
+    return np.asarray([
+        effects[i, local_positions[i], NUC_ORDER.index(action.target_nt)]
+        for i, action in enumerate(actions)
+    ], dtype=float)
+
+
 def first_order_step_policy(base_net, head, beta, device, ctx=None):
     """first_order: base + beta * guidance-head per-action effect."""
     def policy(state, actions):
         bl = np.asarray(base_net.policy_fn(state, actions), dtype=float)
-        eff = _guidance_head_effects(head, state, device)
-        gl = np.empty(len(actions), dtype=float)
-        for i, a in enumerate(actions):
-            if a.pos < eff.shape[0]:
-                gl[i] = bl[i] + beta * float(eff[a.pos, "ACGU".index(a.target_nt)])
-            else:
-                gl[i] = bl[i]
+        effects = _guidance_head_action_effects(head, state, actions, device)
+        gl = bl + beta * effects
         return {"guided_logits": gl, "base_logits": bl, "ratio": None,
                 "critic_mean": None, "critic_logvar": None}
     return policy
@@ -246,7 +324,8 @@ def first_order_step_policy(base_net, head, beta, device, ctx=None):
 
 def _ctx(**kw):
     """Default biological context (neutral ids) if a source has no provenance."""
-    return {"study": None, "endpoint": None, "bench": None,
+    return {"study": UNKNOWN_CONTEXT, "endpoint": UNKNOWN_CONTEXT,
+            "bench": UNKNOWN_CONTEXT,
             "source_value": None, **kw}
 
 
@@ -256,10 +335,12 @@ def _critic_reward_policy(base_net, critic, vocab, beta, device,
     critic rank head).  guided = base + beta * critic_reward_after_action.
     All legal actions' critic scores are computed in ONE batched forward."""
     c = _ctx(**(ctx or {}))
-    # resolve conditioning ids once (fall back to id 0 for unknowns)
-    study = c["study"] if c["study"] in vocab["study"] else None
-    endpoint = c["endpoint"] if c["endpoint"] in vocab["endpoint"] else None
-    bench = c["bench"] if c["bench"] in vocab["benchmark"] else "5U-A1"
+    # Resolve conditioning ids once; unseen contexts route only to the trained
+    # reserved UNK embedding.
+    study = c["study"] if c["study"] in vocab["study"] else UNKNOWN_CONTEXT
+    endpoint = (c["endpoint"] if c["endpoint"] in vocab["endpoint"]
+                else UNKNOWN_CONTEXT)
+    bench = c["bench"] if c["bench"] in vocab["benchmark"] else UNKNOWN_CONTEXT
 
     def policy(state, actions):
         bl = np.asarray(base_net.policy_fn(state, actions), dtype=float)
@@ -292,9 +373,10 @@ def dgm_learned_step_policy(critic, vocab, beta, device, ctx=None):
     NOT exact q/p1).  All legal actions' critic scores in one batched forward.
     """
     c = _ctx(**(ctx or {}))
-    study = c["study"] if c["study"] in vocab["study"] else None
-    endpoint = c["endpoint"] if c["endpoint"] in vocab["endpoint"] else None
-    bench = c["bench"] if c["bench"] in vocab["benchmark"] else "5U-A1"
+    study = c["study"] if c["study"] in vocab["study"] else UNKNOWN_CONTEXT
+    endpoint = (c["endpoint"] if c["endpoint"] in vocab["endpoint"]
+                else UNKNOWN_CONTEXT)
+    bench = c["bench"] if c["bench"] in vocab["benchmark"] else UNKNOWN_CONTEXT
 
     def policy(state, actions):
         cands = [apply_action(state, a).seq for a in actions]
