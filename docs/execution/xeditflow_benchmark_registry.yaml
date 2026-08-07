@@ -73,8 +73,24 @@ sub_benchmarks:
   evidence_grade: B1
   description: same-protein synonymous-codon family ranking (transfer).
   status: DORMANT
-  status_reason: No qualified B1 data accepted yet; GSE207584 is PENDING_BLOCKED legacy
-    CDS liability. Must not fabricate a PASS until sequence/family/label rebuild.
+  status_reason: >-
+    CDS-B1 rebuild audit (2026-08-07) recovered label+family only: 100 proteins,
+    578 variants, 97 rankable families, 6936 observations. Sequence recovery BLOCKED
+    (100/100 proteins share the same FASTA sequence set per group; reference FASTA
+    does not distinguish codon-scheme groups). Per-variant synonymous sequences NOT
+    recoverable -> CDS-B1 stays DORMANT_BLOCKED_ON_SEQUENCE. No fabricated PASS.
+    Audit artifacts: artifacts/x0x/cds_b1_rebuild_20260807/.
+  rebuild_audit:
+    phase: X0X-CDS-B1-REBUILD-AUDIT
+    accession: GSE207584
+    date_utc: 2026-08-07
+    n_proteins: 100
+    n_variants: 578
+    n_rankable_families: 97
+    n_observations: 6936
+    sequence_recovery: BLOCKED
+    cds_b1_status: DORMANT_BLOCKED_ON_SEQUENCE
+    out_dir: artifacts/x0x/cds_b1_rebuild_20260807
   asset_ids: []
   primary_tasks:
   - CDS_SYNONYMOUS_FAMILY_RANKING
