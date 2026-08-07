@@ -66,3 +66,29 @@ decisions:
       migration base = v3.1 authority worktree commit 1ec9842
       (docs/execution/GOAL_V3_DATA_BENCH_REVALIDATION_20260804.yaml)
     status: CONFIRMED_IN_M0
+  - id: XE-DEC-008
+    dimension: E0X_sign_accuracy_amendment_exploration
+    conflict: >
+      Ordinary internal test (E0X_PREREG_20260807) was NO_GO because
+      macro_sign_accuracy 0.510 < 0.60.  Asked whether a pre-unblinding T5
+      selective-prediction (abstain + coverage-risk) amendment could legally
+      raise sign accuracy and convert the decision to GO without wasting the
+      one-time GSE246381 sealed final access.
+    resolution: |
+      EXPLORED (DEV ONLY, no sealed access, no frozen threshold changed).
+      Ran selective/coverage-conditional sign-accuracy frontier on the frozen
+      delta critic + same S4 5U-A1 folds (scripts/e0x/selective_sign_dev.py).
+      Confidence sources tested: predictive variance (logvar) and prediction
+      magnitude |pred|.  Both have ~0 discriminative power for sign correctness
+      (Spearman with correctness: logvar 0.0155/0.0038; |pred| -0.021/-0.010),
+      and selective sign_accuracy stays capped at ~0.50-0.51 for every coverage
+      in {0.25..1.0}.  Root cause: the frozen critic learns no sign-confidence
+      signal for this source-relative effect problem (matches the class-prior
+      ceiling ~0.52 already shown by retraining).  Selective prediction is
+      therefore NOT a viable legal path on the current model.
+      DECISION: do NOT amend the pre-registration.  Accept the E0-X ordinary
+      internal test NO_GO as the honest outcome.  Keep terminal state
+      BLOCKED_WITH_EVIDENCE.  Do NOT consume the one-time GSE246381 sealed
+      final under a protocol known to be NO_GO.  No fabricated PASS; no
+      post-hoc threshold change; sign_accuracy stays a primary gate metric.
+    status: EXPLORED_AND_REJECTED_AMENDMENT_20260807
