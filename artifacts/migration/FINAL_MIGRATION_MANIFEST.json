@@ -1,8 +1,8 @@
 {
   "contract_id": "mrna_xeditflow_goal_v1_1",
   "supersedes": "utr_editflow_goal_v3.1_benchmark_first",
-  "terminal_state": "MIGRATION_READY_FOR_DATA_REBUILD",
-  "date": "2026-08-06",
+  "terminal_state": "BLOCKED_WITH_EVIDENCE",
+  "date": "2026-08-07",
   "n_artifacts": 20,
   "artifacts": {
     "docs/contracts/mrna_xeditflow_goal_v1_1.md": "fc9c1c882efbaa4c1e86f4da2e1be64e219755fb9c5941da4b4309793d3d8c2f",
@@ -24,6 +24,7 @@
     "reports/migration/M1_CONTRACT_SUPERSESSION.md": "9cbf08d91db41b3dd415c966f5f0d7fde82b134241a47a962d4ceecab4ee90bd",
     "reports/migration/M2_SCHEMA_MIGRATION.md": "b1143d533712040c021301717be3750a99e2d958f5cfa5f8c37bf382da9cf188",
     "reports/migration/M3_BENCHMARK_REGISTRY.md": "a7a196b120cf202518149000aec72eed6f39af24c35d0cb521849360dd1d63cd",
-    "reports/migration/FINAL_MIGRATION_REPORT.md": "a3172a57f52c957f6d80219ea5f69989623ddb59ceb7bb3d6f5a16460ef19332"
-  }
+    "reports/migration/FINAL_MIGRATION_REPORT.md": "a987d8c292c3700754f77052cdfe7315cf656ff2ca32818b5267a6e9fff84b92"
+  },
+  "report_note": "Terminal state updated from MIGRATION_READY_FOR_DATA_REBUILD to BLOCKED_WITH_EVIDENCE after full migration execution (B0-X->X0-X incl. CDS-B1 rebuild audit). Sealed-final (GSE246381) decision and CDS-B1 sequence recovery remain the blockers for a GO/NO-GO declaration."
 }
