@@ -40,15 +40,23 @@ from scripts.r3x.protocol import canonical_json, canonical_sha256  # noqa: E402
 
 
 SCHEMA_VERSION = (
-    "r3_phase0_mechanical_proposal_v3_presence_aware_exact_nested_replay"
+    "r3_phase0_mechanical_proposal_"
+    "v4_opaque_library_presence_aware_exact_nested_replay"
 )
 BINDING_SCHEMA_VERSION = (
     "r3_phase0_exact_input_binding_v3_presence_aware_manifest_replay"
 )
 OUTCOME_COMMITMENT_SCHEMA_VERSION = (
     "r3_phase0_outcome_free_inventory_commitment_"
-    "v3_presence_aware_exact_nested_replay"
+    "v4_opaque_library_presence_aware_exact_nested_replay"
 )
+CONTEXT_CANDIDATE_KEY_SCHEMA_VERSION = (
+    "r3_phase0_context_candidate_key_v2_opaque_library"
+)
+LIBRARY_VALUE_PROJECTION = (
+    "DOMAIN_SEPARATED_SHA256_HEX_OCTETS_V1_NO_RAW_LIBRARY_TEXT"
+)
+OPAQUE_LIBRARY_PREFIX = "OPAQUE_LIBRARY_STRATUM_V1:"
 ARTIFACT_ROLE = "R3_PHASE0_MECHANICAL_INVENTORY_PROPOSAL"
 STATUS = "PROPOSAL_NON_ACTIVE"
 PROPOSAL_FILE = "r3_phase0_mechanical_proposal.json"
@@ -277,6 +285,7 @@ PROPOSAL_LIMITATIONS = [
     "NO_READY_DATASET",
     "NO_SPLIT",
     "NO_TRAINING_CAPABILITY",
+    "NO_RAW_LIBRARY_TEXT",
 ]
 BINDING_CHECKS = {
     "effect_manifest_binds_effect_sha256": True,
@@ -295,9 +304,12 @@ BINDING_CHECKS = {
     "diff_ref_alt_presence_aware_independent_replay_audits_verified": True,
     "diff_ref_alt_materialized_dispositions_crosschecked": True,
     "diff_ref_alt_materialized_presence_crosschecked": True,
+    "library_values_projected_to_opaque_domain_separated_commitments": True,
 }
 INVENTORY_POLICY = {
-    "schema_version": "r3_phase0_outcome_free_inventory_policy_v1",
+    "schema_version": (
+        "r3_phase0_outcome_free_inventory_policy_v2_opaque_library"
+    ),
     "ordinary_only": True,
     "input_row_order_affects_inventory": False,
     "numeric_outcome_values_affect_inventory": False,
@@ -305,6 +317,7 @@ INVENTORY_POLICY = {
     "estimand_inference": "PROHIBITED",
     "relation_edge_inference": "PROHIBITED",
     "library_missing_policy": "PRESERVE_NULL_NO_IMPUTATION",
+    "library_value_projection": LIBRARY_VALUE_PROJECTION,
     "mrl_semantic_family": "RIBOSOME_LOADING_MRL",
     "split_construction": "PROHIBITED",
 }
@@ -603,14 +616,31 @@ def _category(value: object) -> str | None:
     if value is None:
         return None
     if isinstance(value, str):
-        text = value.strip()
-        return text or None
+        return value.strip() or None
     if isinstance(value, (bool, int, float)):
         return str(value)
     try:
         return canonical_json(value)
     except Exception:
         return str(value).strip() or None
+
+
+def _opaque_library_value(value: object) -> str | None:
+    """Project an ordinary library label without emitting its raw text.
+
+    The domain separator prevents a commitment from being reused as a generic
+    SHA-256 identity.  Hex octets are separated so the public token cannot be
+    mistaken for an A/C/G/T/U/N sequence by the protected-text validator.
+    """
+    category = _category(value)
+    if category is None:
+        return None
+    digest = hashlib.sha256(
+        ("R3_PHASE0_OPAQUE_LIBRARY_STRATUM_V1\0" + category).encode("utf-8")
+    ).hexdigest()
+    return OPAQUE_LIBRARY_PREFIX + "-".join(
+        digest[index:index + 2] for index in range(0, len(digest), 2)
+    )
 
 
 def _pair_hash(value: object) -> str | None:
@@ -735,7 +765,7 @@ def _increment_context(
 ) -> None:
     key_json = canonical_json(dict(key))
     candidate_sha = canonical_sha256(
-        {"schema_version": "r3_phase0_context_candidate_key_v1", **dict(key)}
+        {"schema_version": CONTEXT_CANDIDATE_KEY_SCHEMA_VERSION, **dict(key)}
     )
     connection.execute(
         """
@@ -818,6 +848,7 @@ def _context_inventory(
         "context_authority_created": False,
         "context_decision": "NONE",
         "library_missing_policy": "PRESERVE_NULL_NO_IMPUTATION",
+        "library_value_projection": LIBRARY_VALUE_PROJECTION,
         "candidate_count": len(candidates),
         "candidate_conflict_count": conflict_count,
         "missing_field_counts": {
@@ -1819,6 +1850,7 @@ def build_phase0_proposal(
                 key = {
                     field: _category(row.get(field)) for field in CONTEXT_KEY_FIELDS
                 }
+                key["library"] = _opaque_library_value(row.get("library"))
                 for field, value in key.items():
                     if value is None:
                         context_missing[field] += 1
@@ -2512,6 +2544,7 @@ def _validate_context_inventory(value: object) -> tuple[dict, int]:
             "context_authority_created",
             "context_decision",
             "library_missing_policy",
+            "library_value_projection",
             "candidate_count",
             "candidate_conflict_count",
             "missing_field_counts",
@@ -2525,6 +2558,7 @@ def _validate_context_inventory(value: object) -> tuple[dict, int]:
         or context["context_decision"] != "NONE"
         or context["library_missing_policy"]
         != "PRESERVE_NULL_NO_IMPUTATION"
+        or context["library_value_projection"] != LIBRARY_VALUE_PROJECTION
     ):
         _fail("context inventory attempted to exceed proposal scope")
     candidate_count = _require_nonnegative_int(
@@ -2576,7 +2610,7 @@ def _validate_context_inventory(value: object) -> tuple[dict, int]:
             _fail("context candidate SHA-256 must be text")
         _require_sha256(declared_sha, label="context candidate SHA-256")
         expected_sha = canonical_sha256(
-            {"schema_version": "r3_phase0_context_candidate_key_v1", **key}
+            {"schema_version": CONTEXT_CANDIDATE_KEY_SCHEMA_VERSION, **key}
         )
         if declared_sha != expected_sha:
             _fail("context candidate key SHA-256 is inconsistent")

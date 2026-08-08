@@ -16,6 +16,7 @@ sys.path.insert(0, str(REPO_ROOT))
 
 from scripts.repair.build_r3_phase0_proposal import (  # noqa: E402
     BINDING_SCHEMA_VERSION,
+    CONTEXT_CANDIDATE_KEY_SCHEMA_VERSION,
     D1_FILE_NAMES,
     DIFF_REF_ALT_AUDIT_FIELDS,
     DIFF_REF_ALT_AUDIT_SCHEMA_VERSION,
@@ -30,8 +31,10 @@ from scripts.repair.build_r3_phase0_proposal import (  # noqa: E402
     IMPLEMENTATION_BINDING_SCHEMA_VERSION,
     INPUT_PRESENCE_PROVENANCE_SCHEMA_VERSION,
     JSONL_D1_AUTHORITIES,
+    LIBRARY_VALUE_PROJECTION,
     MANIFEST_QUALIFICATION_STATUS,
     OUTCOME_COMMITMENT_SCHEMA_VERSION,
+    OPAQUE_LIBRARY_PREFIX,
     Phase0ProposalError,
     REQUIRED_DIFF_REF_ALT_POLICY_SHA256,
     SCHEMA_VERSION,
@@ -547,6 +550,7 @@ def _assert_no_raw_identity_values(proposal: dict) -> None:
         "group_pair_alpha",
         "group_source_shared",
         "assignment_pair_beta_source",
+        "designed_library",
         "AAAA",
         "CAAA",
     ):
@@ -581,7 +585,7 @@ def _forge_context_identity(proposal: dict) -> None:
     candidate["mechanical_key"]["library"] = "public pair_alpha"
     candidate["candidate_key_sha256"] = _json_sha(
         {
-            "schema_version": "r3_phase0_context_candidate_key_v1",
+            "schema_version": CONTEXT_CANDIDATE_KEY_SCHEMA_VERSION,
             **candidate["mechanical_key"],
         }
     )
@@ -609,7 +613,7 @@ def _forge_estimand_outcome_text(proposal: dict) -> None:
 def test_presence_aware_v4_contract_exactly_matches_upstream_builder():
     assert SCHEMA_VERSION == (
         "r3_phase0_mechanical_proposal_"
-        "v3_presence_aware_exact_nested_replay"
+        "v4_opaque_library_presence_aware_exact_nested_replay"
     )
     assert BINDING_SCHEMA_VERSION == (
         "r3_phase0_exact_input_binding_"
@@ -617,7 +621,7 @@ def test_presence_aware_v4_contract_exactly_matches_upstream_builder():
     )
     assert OUTCOME_COMMITMENT_SCHEMA_VERSION == (
         "r3_phase0_outcome_free_inventory_commitment_"
-        "v3_presence_aware_exact_nested_replay"
+        "v4_opaque_library_presence_aware_exact_nested_replay"
     )
     exact_pairs = (
         (
@@ -693,9 +697,21 @@ def test_builds_only_non_active_outcome_free_mechanical_proposal(tmp_path):
     assert proposal["context_candidate_inventory"][
         "library_missing_policy"
     ] == "PRESERVE_NULL_NO_IMPUTATION"
+    assert proposal["context_candidate_inventory"][
+        "library_value_projection"
+    ] == LIBRARY_VALUE_PROJECTION
     assert proposal["context_candidate_inventory"]["missing_field_counts"][
         "library"
     ] == 1
+    projected_libraries = {
+        item["mechanical_key"]["library"]
+        for item in proposal["context_candidate_inventory"]["candidates"]
+        if item["mechanical_key"]["library"] is not None
+    }
+    assert len(projected_libraries) == 1
+    projected_library = projected_libraries.pop()
+    assert projected_library.startswith(OPAQUE_LIBRARY_PREFIX)
+    assert "designed_library" not in projected_library
     mrl = next(
         item
         for item in proposal["estimand_review_queue"]
@@ -727,6 +743,41 @@ def test_builds_only_non_active_outcome_free_mechanical_proposal(tmp_path):
     }
     assert not {key.lower() for key, _ in _walk(proposal)} & prohibited_keys
     _assert_no_raw_identity_values(proposal)
+
+
+def test_sequence_like_library_is_projected_without_weakening_text_guard(
+    tmp_path,
+):
+    args = _fixture(tmp_path / "ordinary")
+    raw_library = "ACGTACGT_private_library"
+    rows = _read_jsonl(args["effect_path"])
+    rows[0]["library"] = raw_library
+    _write_jsonl(args["effect_path"], rows)
+    args["effect_sha256"] = _sha(args["effect_path"])
+    manifest = json.loads(
+        args["effect_manifest_path"].read_text(encoding="utf-8")
+    )
+    manifest["sha256"] = args["effect_sha256"]
+    _write_json(args["effect_manifest_path"], manifest)
+    args["effect_manifest_sha256"] = _sha(args["effect_manifest_path"])
+
+    proposal = _build(args)
+
+    digest = hashlib.sha256(
+        ("R3_PHASE0_OPAQUE_LIBRARY_STRATUM_V1\0" + raw_library).encode(
+            "utf-8"
+        )
+    ).hexdigest()
+    expected = OPAQUE_LIBRARY_PREFIX + "-".join(
+        digest[index:index + 2] for index in range(0, len(digest), 2)
+    )
+    projected = {
+        item["mechanical_key"]["library"]
+        for item in proposal["context_candidate_inventory"]["candidates"]
+    }
+    assert expected in projected
+    assert raw_library not in _canonical(proposal)
+    assert validate_phase0_proposal(proposal) == proposal
 
 
 def test_pair_status_uses_canonical_authority_and_missing_stays_unreviewed(
