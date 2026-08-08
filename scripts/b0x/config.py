@@ -59,12 +59,74 @@ DELTA_SPECS = {
         "alt_endpoint": "ep_log2FoldChange_Alt_HEK293FT",
         "ref_endpoint": "ep_log2FoldChange_Ref_HEK293FT",
         "benchmark": "3U-A1",
+        "join_policy": {
+            "schema_version": "diff_ref_alt_join_policy_v2_explicit_null_semantics",
+            "policy_id": (
+                "ENCSR854RUF_EXPLICIT_PAIRED_ENDPOINT_SCALE_"
+                "V2_EXPLICIT_NULL_SEMANTICS"
+            ),
+            "key_fields": ["context_id", "assay_context", "replicate"],
+            "context_match": "EXACT",
+            "context_required_non_null": True,
+            "assay_context_match": "EXACT",
+            "assay_context_null_policy": (
+                "ALLOW_EXACT_NULL_MECHANICAL_NO_ASSAY_CONTEXT_CLAIM"
+            ),
+            "replicate_match": "EXACT_CANONICAL_TOKEN_INCLUDING_NULL",
+            "replicate_field": "replicate",
+            "replicate_null_policy": (
+                "ALLOW_EXACT_NULL_NO_REPLICATE_CLAIM"
+            ),
+            "ref_allowed_raw_unit_tokens": [
+                "log2FoldChange_Ref_HEK293FT",
+            ],
+            "alt_allowed_raw_unit_tokens": [
+                "log2FoldChange_Alt_HEK293FT",
+            ],
+            "comparison_scale_id": (
+                "ENCSR854RUF_LOG2_FOLD_CHANGE_PAIRED_ASSAY_SCALE_V1"
+            ),
+            "raw_unit_semantics": (
+                "ENDPOINT_SPECIFIC_RAW_LABEL_TOKEN_NOT_PHYSICAL_UNIT"
+            ),
+        },
     },
     "GSE186455": {
         "type": "diff_ref_alt",
         "alt_endpoint": "ep_n2a_activity_alt_mean",
         "ref_endpoint": "ep_n2a_activity_ref_mean",
         "benchmark": "3U-A1",
+        "join_policy": {
+            "schema_version": "diff_ref_alt_join_policy_v2_explicit_null_semantics",
+            "policy_id": (
+                "GSE186455_EXPLICIT_PAIRED_ENDPOINT_SCALE_"
+                "V2_EXPLICIT_NULL_SEMANTICS"
+            ),
+            "key_fields": ["context_id", "assay_context", "replicate"],
+            "context_match": "EXACT",
+            "context_required_non_null": True,
+            "assay_context_match": "EXACT",
+            "assay_context_null_policy": (
+                "ALLOW_EXACT_NULL_MECHANICAL_NO_ASSAY_CONTEXT_CLAIM"
+            ),
+            "replicate_match": "EXACT_CANONICAL_TOKEN_INCLUDING_NULL",
+            "replicate_field": "replicate",
+            "replicate_null_policy": (
+                "ALLOW_EXACT_NULL_NO_REPLICATE_CLAIM"
+            ),
+            "ref_allowed_raw_unit_tokens": [
+                "n2a_activity_ref_mean",
+            ],
+            "alt_allowed_raw_unit_tokens": [
+                "n2a_activity_alt_mean",
+            ],
+            "comparison_scale_id": (
+                "GSE186455_N2A_ACTIVITY_PAIRED_ASSAY_SCALE_V1"
+            ),
+            "raw_unit_semantics": (
+                "ENDPOINT_SPECIFIC_RAW_LABEL_TOKEN_NOT_PHYSICAL_UNIT"
+            ),
+        },
     },
     "GSE200304": {
         "type": "diff_cand_src",
@@ -77,12 +139,74 @@ DELTA_SPECS = {
         "alt_endpoint": "ep_activity_HEK293_alt_mean",
         "ref_endpoint": "ep_activity_HEK293_ref_mean",
         "benchmark": "3U-A1",
+        "join_policy": {
+            "schema_version": "diff_ref_alt_join_policy_v2_explicit_null_semantics",
+            "policy_id": (
+                "GSE232571_EXPLICIT_PAIRED_ENDPOINT_SCALE_"
+                "V2_EXPLICIT_NULL_SEMANTICS"
+            ),
+            "key_fields": ["context_id", "assay_context", "replicate"],
+            "context_match": "EXACT",
+            "context_required_non_null": True,
+            "assay_context_match": "EXACT",
+            "assay_context_null_policy": (
+                "ALLOW_EXACT_NULL_MECHANICAL_NO_ASSAY_CONTEXT_CLAIM"
+            ),
+            "replicate_match": "EXACT_CANONICAL_TOKEN_INCLUDING_NULL",
+            "replicate_field": "replicate",
+            "replicate_null_policy": (
+                "ALLOW_EXACT_NULL_NO_REPLICATE_CLAIM"
+            ),
+            "ref_allowed_raw_unit_tokens": [
+                "activity_HEK293_ref_mean",
+            ],
+            "alt_allowed_raw_unit_tokens": [
+                "activity_HEK293_alt_mean",
+            ],
+            "comparison_scale_id": (
+                "GSE232571_HEK293_ACTIVITY_PAIRED_ASSAY_SCALE_V1"
+            ),
+            "raw_unit_semantics": (
+                "ENDPOINT_SPECIFIC_RAW_LABEL_TOKEN_NOT_PHYSICAL_UNIT"
+            ),
+        },
     },
     "GSE232572": {
         "type": "diff_ref_alt",
         "alt_endpoint": "ep_activity_alt_mean",
         "ref_endpoint": "ep_activity_ref_mean",
         "benchmark": "3U-A1",
+        "join_policy": {
+            "schema_version": "diff_ref_alt_join_policy_v2_explicit_null_semantics",
+            "policy_id": (
+                "GSE232572_EXPLICIT_PAIRED_ENDPOINT_SCALE_"
+                "V2_EXPLICIT_NULL_SEMANTICS"
+            ),
+            "key_fields": ["context_id", "assay_context", "replicate"],
+            "context_match": "EXACT",
+            "context_required_non_null": True,
+            "assay_context_match": "EXACT",
+            "assay_context_null_policy": (
+                "ALLOW_EXACT_NULL_MECHANICAL_NO_ASSAY_CONTEXT_CLAIM"
+            ),
+            "replicate_match": "EXACT_CANONICAL_TOKEN_INCLUDING_NULL",
+            "replicate_field": "replicate",
+            "replicate_null_policy": (
+                "ALLOW_EXACT_NULL_NO_REPLICATE_CLAIM"
+            ),
+            "ref_allowed_raw_unit_tokens": [
+                "activity_ref_mean",
+            ],
+            "alt_allowed_raw_unit_tokens": [
+                "activity_alt_mean",
+            ],
+            "comparison_scale_id": (
+                "GSE232572_ACTIVITY_PAIRED_ASSAY_SCALE_V1"
+            ),
+            "raw_unit_semantics": (
+                "ENDPOINT_SPECIFIC_RAW_LABEL_TOKEN_NOT_PHYSICAL_UNIT"
+            ),
+        },
     },
     "GSE261709": {
         "type": "log2fc",
