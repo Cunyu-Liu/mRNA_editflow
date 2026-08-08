@@ -763,6 +763,34 @@ def test_loader_namespaces_predeclared_hash_and_mints_self_verifiable_hash(
     assert B._replay_input_row_hash(loaded) == loaded["input_row_sha256"]
 
 
+def test_loader_ignores_nonfinite_observation_outside_requested_candidates(
+    tmp_path,
+):
+    active_sid = "GSE232572_X__cand"
+    inactive_sid = "GSE149487_X__cand"
+    active = _functional_observation(
+        active_sid, "ep_activity_ref_mean", 1.0
+    )
+    inactive = _functional_observation(
+        inactive_sid, "ep_inactive", float("nan")
+    )
+    for observation in (active, inactive):
+        observation.pop("input_presence_provenance")
+    path = tmp_path / "functional_observations.jsonl"
+    path.write_text(
+        "".join(json.dumps(row) + "\n" for row in (inactive, active)),
+        encoding="utf-8",
+    )
+
+    loaded = B.load_candidate_observations(
+        path, {"GSE232572": {active_sid}}
+    )
+
+    assert set(loaded) == {active_sid}
+    assert set(loaded[active_sid]) == {"ep_activity_ref_mean"}
+    assert loaded[active_sid]["ep_activity_ref_mean"][0]["value"] == 1.0
+
+
 @pytest.mark.parametrize(
     "reserved_field",
     [

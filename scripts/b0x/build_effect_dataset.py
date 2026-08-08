@@ -554,8 +554,6 @@ def load_candidate_observations(
                     "functional observation row %d predeclares reserved raw "
                     "input provenance fields" % line_number
                 )
-            raw_input_row_sha256 = _json_sha256(row)
-            raw_input_value = row.get("value")
             assert_ordinary_rows(
                 [row], purpose="functional observation input"
             )
@@ -568,6 +566,8 @@ def load_candidate_observations(
             study = _study_of(sid)
             if study not in cand_seq_ids or sid not in cand_seq_ids[study]:
                 continue
+            raw_input_row_sha256 = _json_sha256(row)
+            raw_input_value = row.get("value")
             endpoint = row.get("endpoint_id")
             if not isinstance(endpoint, str) or not endpoint:
                 raise ObservationConflictError(
