@@ -16,6 +16,9 @@ import build_effect_dataset as B  # noqa: E402
 import features as F  # noqa: E402
 
 
+_ABSENT = object()
+
+
 def _record(src="ACGUACGUACGUACGUACGUACGUACGUACGUACGUACGUACGUACGUACGUACGUACGUACGUACGU",
             cand="ACGUACGUACGUACGUACGUACGUACGUACGUACGUACGUACGUACGUACGUACGUACGUACGUACG",
             metadata=None, rid="X_rec"):
@@ -34,7 +37,7 @@ def _diff_ref_alt_spec(
     *,
     policy_id=(
         "SYNTHETIC_EXPLICIT_PAIRED_ENDPOINT_SCALE_"
-        "V2_EXPLICIT_NULL_SEMANTICS"
+        "V3_PRESENCE_AWARE_NULL_SEMANTICS"
     ),
     comparison_scale_id="SYNTHETIC_ACTIVITY_PAIRED_ASSAY_SCALE_V1",
 ):
@@ -45,20 +48,36 @@ def _diff_ref_alt_spec(
         "benchmark": "3U-A1",
         "join_policy": {
             "schema_version": (
-                "diff_ref_alt_join_policy_v2_explicit_null_semantics"
+                "diff_ref_alt_join_policy_v3_presence_aware_null_semantics"
             ),
             "policy_id": policy_id,
-            "key_fields": ["context_id", "assay_context", "replicate"],
+            "key_fields": [
+                "context_id", "assay_context",
+                "assay_context_input_presence", "replicate",
+                "replicate_input_presence",
+            ],
             "context_match": "EXACT",
             "context_required_non_null": True,
             "assay_context_match": "EXACT",
             "assay_context_null_policy": (
                 "ALLOW_EXACT_NULL_MECHANICAL_NO_ASSAY_CONTEXT_CLAIM"
             ),
+            "assay_context_absent_policy": (
+                "CANONICALIZE_TO_NULL_MECHANICAL_NO_ASSAY_CONTEXT_CLAIM"
+            ),
             "replicate_match": "EXACT_CANONICAL_TOKEN_INCLUDING_NULL",
             "replicate_field": "replicate",
             "replicate_null_policy": (
                 "ALLOW_EXACT_NULL_NO_REPLICATE_CLAIM"
+            ),
+            "replicate_absent_policy": (
+                "CANONICALIZE_TO_NULL_MECHANICAL_NO_REPLICATE_CLAIM"
+            ),
+            "presence_match": (
+                "EXACT_ABSENT_EXPLICIT_NULL_EXPLICIT_VALUE"
+            ),
+            "input_presence_provenance_schema_version": (
+                "functional_observation_input_presence_v1"
             ),
             "ref_allowed_raw_unit_tokens": [ref_endpoint],
             "alt_allowed_raw_unit_tokens": [alt_endpoint],
@@ -81,13 +100,30 @@ def _functional_observation(
     replicate=None,
     observation_id=None,
 ):
+    assay_presence = (
+        "ABSENT_CANONICALIZED_TO_NULL"
+        if assay_context is _ABSENT
+        else "EXPLICIT_NULL" if assay_context is None
+        else "EXPLICIT_VALUE"
+    )
+    replicate_presence = (
+        "ABSENT_CANONICALIZED_TO_NULL"
+        if replicate is _ABSENT
+        else "EXPLICIT_NULL" if replicate is None
+        else "EXPLICIT_VALUE"
+    )
     return {
         "observation_id": observation_id,
         "sequence_id": sequence_id,
         "endpoint_id": endpoint_id,
         "context_id": context_id,
-        "assay_context": assay_context,
-        "replicate": replicate,
+        "assay_context": None if assay_context is _ABSENT else assay_context,
+        "replicate": None if replicate is _ABSENT else replicate,
+        "input_presence_provenance": {
+            "schema_version": "functional_observation_input_presence_v1",
+            "assay_context": assay_presence,
+            "replicate": replicate_presence,
+        },
         "value": value,
         "unit": endpoint_id if unit is None else unit,
     }
@@ -142,6 +178,17 @@ def _replay_fixture_audit(spec, cand_values, materialized_pairs, records):
     )["GSE232572"]
 
 
+def _seal_synthetic_preserved_observation(observation):
+    raw = copy.deepcopy(observation)
+    presence = raw.pop("input_presence_provenance")
+    for field in ("assay_context", "replicate"):
+        if presence[field] == "ABSENT_CANONICALIZED_TO_NULL":
+            raw.pop(field)
+    observation["raw_input_row_sha256"] = B._json_sha256(raw)
+    observation[B.RAW_INPUT_VALUE_FIELD] = raw.get("value")
+    observation["input_row_sha256"] = B._json_sha256(observation)
+
+
 def test_delta_diff_cand_src_gse114002():
     rec = _record(src="ACGU" * 20, cand="ACGU" * 12 + "ACGU", metadata=None)
     rec["source_sequence"] = "ACGU" * 20
@@ -194,7 +241,7 @@ def test_diff_ref_alt_endpoint_units_map_to_registered_comparison_scale():
     ]
     assert out[0]["observation_join_key"]["replicate"] is None
     assert out[0]["replicate_pairing_status"] == (
-        "EXACT_NULL_SLOT_NO_REPLICATE_CLAIM"
+        "EXACT_EXPLICIT_NULL_NO_REPLICATE_CLAIM"
     )
 
 
@@ -286,7 +333,7 @@ def test_diff_ref_alt_exact_pairing_mismatch_never_derives_delta(
             if row["observation_join_key"]["replicate"] is None
         )
         assert null_slot["replicate_pairing_status"] == (
-            "EXACT_NULL_SLOT_NO_REPLICATE_CLAIM"
+            "EXACT_EXPLICIT_NULL_NO_REPLICATE_CLAIM"
         )
 
 
@@ -361,7 +408,7 @@ def test_all_four_diff_ref_alt_configs_bind_verified_raw_unit_tokens():
         "ENCSR854RUF": {
             "policy_id": (
                 "ENCSR854RUF_EXPLICIT_PAIRED_ENDPOINT_SCALE_"
-                "V2_EXPLICIT_NULL_SEMANTICS"
+                "V3_PRESENCE_AWARE_NULL_SEMANTICS"
             ),
             "ref_endpoint": "ep_log2FoldChange_Ref_HEK293FT",
             "alt_endpoint": "ep_log2FoldChange_Alt_HEK293FT",
@@ -372,7 +419,7 @@ def test_all_four_diff_ref_alt_configs_bind_verified_raw_unit_tokens():
         "GSE186455": {
             "policy_id": (
                 "GSE186455_EXPLICIT_PAIRED_ENDPOINT_SCALE_"
-                "V2_EXPLICIT_NULL_SEMANTICS"
+                "V3_PRESENCE_AWARE_NULL_SEMANTICS"
             ),
             "ref_endpoint": "ep_n2a_activity_ref_mean",
             "alt_endpoint": "ep_n2a_activity_alt_mean",
@@ -383,7 +430,7 @@ def test_all_four_diff_ref_alt_configs_bind_verified_raw_unit_tokens():
         "GSE232571": {
             "policy_id": (
                 "GSE232571_EXPLICIT_PAIRED_ENDPOINT_SCALE_"
-                "V2_EXPLICIT_NULL_SEMANTICS"
+                "V3_PRESENCE_AWARE_NULL_SEMANTICS"
             ),
             "ref_endpoint": "ep_activity_HEK293_ref_mean",
             "alt_endpoint": "ep_activity_HEK293_alt_mean",
@@ -394,7 +441,7 @@ def test_all_four_diff_ref_alt_configs_bind_verified_raw_unit_tokens():
         "GSE232572": {
             "policy_id": (
                 "GSE232572_EXPLICIT_PAIRED_ENDPOINT_SCALE_"
-                "V2_EXPLICIT_NULL_SEMANTICS"
+                "V3_PRESENCE_AWARE_NULL_SEMANTICS"
             ),
             "ref_endpoint": "ep_activity_ref_mean",
             "alt_endpoint": "ep_activity_alt_mean",
@@ -421,7 +468,7 @@ def test_all_four_diff_ref_alt_configs_bind_verified_raw_unit_tokens():
         spec = configured[study]
         policy = B.validate_diff_ref_alt_join_policy(spec)
         assert policy["schema_version"] == (
-            "diff_ref_alt_join_policy_v2_explicit_null_semantics"
+            "diff_ref_alt_join_policy_v3_presence_aware_null_semantics"
         )
         assert policy["policy_id"] == authority["policy_id"]
         assert spec["ref_endpoint"] == authority["ref_endpoint"]
@@ -434,7 +481,9 @@ def test_all_four_diff_ref_alt_configs_bind_verified_raw_unit_tokens():
         ]
         assert policy["comparison_scale_id"] == authority["scale"]
         assert policy["key_fields"] == [
-            "context_id", "assay_context", "replicate"
+            "context_id", "assay_context",
+            "assay_context_input_presence", "replicate",
+            "replicate_input_presence",
         ]
         assert policy["context_match"] == "EXACT"
         assert policy["context_required_non_null"] is True
@@ -442,12 +491,24 @@ def test_all_four_diff_ref_alt_configs_bind_verified_raw_unit_tokens():
         assert policy["assay_context_null_policy"] == (
             "ALLOW_EXACT_NULL_MECHANICAL_NO_ASSAY_CONTEXT_CLAIM"
         )
+        assert policy["assay_context_absent_policy"] == (
+            "CANONICALIZE_TO_NULL_MECHANICAL_NO_ASSAY_CONTEXT_CLAIM"
+        )
         assert policy["replicate_match"] == (
             "EXACT_CANONICAL_TOKEN_INCLUDING_NULL"
         )
         assert policy["replicate_field"] == "replicate"
         assert policy["replicate_null_policy"] == (
             "ALLOW_EXACT_NULL_NO_REPLICATE_CLAIM"
+        )
+        assert policy["replicate_absent_policy"] == (
+            "CANONICALIZE_TO_NULL_MECHANICAL_NO_REPLICATE_CLAIM"
+        )
+        assert policy["presence_match"] == (
+            "EXACT_ABSENT_EXPLICIT_NULL_EXPLICIT_VALUE"
+        )
+        assert policy["input_presence_provenance_schema_version"] == (
+            "functional_observation_input_presence_v1"
         )
         # Endpoint ids and raw unit labels are distinct authority fields.  The
         # builder must never infer one from an ``ep_`` prefix or suffix.
@@ -550,9 +611,11 @@ def test_replay_audit_reconstructs_evidence_and_exact_schema_keys():
 
     assert set(audit) == B.DIFF_REF_ALT_JOIN_AUDIT_KEYS
     assert audit["schema_version"] == (
-        "diff_ref_alt_join_audit_v3_independent_replay"
+        "diff_ref_alt_join_audit_v4_presence_aware_independent_replay"
     )
-    assert audit["verification_status"] == "INDEPENDENT_REPLAY_VERIFIED"
+    assert audit["verification_status"] == (
+        "PRESENCE_AWARE_INDEPENDENT_REPLAY_VERIFIED"
+    )
     assert audit["expected_input_side_group_multiset_sha256"] == (
         audit["consumed_output_side_group_multiset_sha256"]
     )
@@ -611,6 +674,7 @@ def test_replay_audit_rejects_coordinated_delta_and_value_tampering():
 @pytest.mark.parametrize(
     "tamper_kind", [
         "endpoint", "unit", "key", "hash", "observation_ids", "top_unit",
+        "presence",
     ],
 )
 def test_replay_audit_rejects_wrong_endpoint_unit_key_or_hash(tamper_kind):
@@ -634,8 +698,12 @@ def test_replay_audit_rejects_wrong_endpoint_unit_key_or_hash(tamper_kind):
         )
     elif tamper_kind == "observation_ids":
         row["observation_ids"] = ["forged_id"]
-    else:
+    elif tamper_kind == "top_unit":
         row["unit"] = "forged_common_unit"
+    else:
+        row["functional_observations"][0][
+            "input_presence_provenance"
+        ]["replicate"] = "ABSENT_CANONICALIZED_TO_NULL"
 
     with pytest.raises(B.DiffRefAltJoinPolicyError):
         _replay_fixture_audit(
@@ -652,7 +720,7 @@ def test_replay_rehash_rejects_content_tamper_with_declared_hash_unchanged(
     )
     for endpoint_rows in cand_values[sid].values():
         for observation in endpoint_rows:
-            observation["input_row_sha256"] = B._json_sha256(observation)
+            _seal_synthetic_preserved_observation(observation)
     records = B.derive_delta(
         study, spec, _record(), cand_values, {}, {}, sid
     )
@@ -679,6 +747,7 @@ def test_loader_namespaces_predeclared_hash_and_mints_self_verifiable_hash(
     observation = _functional_observation(
         sid, "ep_activity_ref_mean", 1.0
     )
+    observation.pop("input_presence_provenance")
     observation["input_row_sha256"] = B._json_sha256(observation)
     path = tmp_path / "functional_observations.jsonl"
     path.write_text(json.dumps(observation) + "\n", encoding="utf-8")
@@ -690,7 +759,31 @@ def test_loader_namespaces_predeclared_hash_and_mints_self_verifiable_hash(
     assert loaded["upstream_declared_input_row_sha256"] != (
         loaded["input_row_sha256"]
     )
+    assert loaded["raw_input_row_sha256"] == B._json_sha256(observation)
     assert B._replay_input_row_hash(loaded) == loaded["input_row_sha256"]
+
+
+@pytest.mark.parametrize(
+    "reserved_field",
+    [
+        "raw_input_row_sha256",
+        "raw_input_value_before_numeric_normalization",
+    ],
+)
+def test_loader_rejects_upstream_raw_input_provenance_namespace(
+    tmp_path, reserved_field,
+):
+    sid = "GSE232572_X__cand"
+    observation = _functional_observation(
+        sid, "ep_activity_ref_mean", 1.0
+    )
+    observation.pop("input_presence_provenance")
+    observation[reserved_field] = "upstream-must-not-claim-builder-provenance"
+    path = tmp_path / "functional_observations.jsonl"
+    path.write_text(json.dumps(observation) + "\n", encoding="utf-8")
+
+    with pytest.raises(B.ObservationConflictError, match="reserved raw"):
+        B.load_candidate_observations(path, {"GSE232572": {sid}})
 
 
 def test_replay_audit_rejects_wrong_ref_anchor_evidence():
@@ -786,10 +879,235 @@ def test_replay_audit_accounts_for_one_missing_both_row_per_pair():
     )
 
 
+def test_loader_canonicalizes_absent_fields_with_exact_presence_provenance(
+    tmp_path,
+):
+    sid = "GSE232572_X__cand"
+    absent = _functional_observation(
+        sid,
+        "ep_activity_ref_mean",
+        1.0,
+        assay_context=_ABSENT,
+        replicate=_ABSENT,
+        observation_id="ref_absent",
+    )
+    absent.pop("input_presence_provenance")
+    absent.pop("assay_context")
+    absent.pop("replicate")
+    explicit_null = _functional_observation(
+        sid,
+        "ep_activity_alt_mean",
+        10.0,
+        assay_context=None,
+        replicate=None,
+        observation_id="alt_null",
+    )
+    explicit_null.pop("input_presence_provenance")
+    raw_rows = [copy.deepcopy(absent), copy.deepcopy(explicit_null)]
+    path = tmp_path / "functional_observations.jsonl"
+    path.write_text(
+        "".join(json.dumps(row) + "\n" for row in raw_rows),
+        encoding="utf-8",
+    )
+
+    loaded = B.load_candidate_observations(
+        path, {"GSE232572": {sid}}
+    )[sid]
+    loaded_absent = loaded["ep_activity_ref_mean"][0]
+    loaded_null = loaded["ep_activity_alt_mean"][0]
+
+    assert loaded_absent["assay_context"] is None
+    assert loaded_absent["replicate"] is None
+    assert loaded_absent["input_presence_provenance"] == {
+        "schema_version": "functional_observation_input_presence_v1",
+        "assay_context": "ABSENT_CANONICALIZED_TO_NULL",
+        "replicate": "ABSENT_CANONICALIZED_TO_NULL",
+    }
+    assert loaded_null["input_presence_provenance"] == {
+        "schema_version": "functional_observation_input_presence_v1",
+        "assay_context": "EXPLICIT_NULL",
+        "replicate": "EXPLICIT_NULL",
+    }
+    assert loaded_absent["raw_input_row_sha256"] == B._json_sha256(
+        raw_rows[0]
+    )
+    assert loaded_null["raw_input_row_sha256"] == B._json_sha256(
+        raw_rows[1]
+    )
+    assert B._replay_input_row_hash(loaded_absent) == (
+        loaded_absent["input_row_sha256"]
+    )
+    assert B._replay_input_row_hash(loaded_null) == (
+        loaded_null["input_row_sha256"]
+    )
+
+
+def test_absent_to_absent_pairs_mechanically_without_claim(tmp_path):
+    sid = "GSE232572_X__cand"
+    spec = _diff_ref_alt_spec()
+    raw_rows = []
+    for endpoint, value in (
+        (spec["ref_endpoint"], 1.0),
+        (spec["alt_endpoint"], 10.0),
+    ):
+        row = _functional_observation(
+            sid,
+            endpoint,
+            value,
+            assay_context=_ABSENT,
+            replicate=_ABSENT,
+            observation_id=endpoint,
+        )
+        row.pop("input_presence_provenance")
+        row.pop("assay_context")
+        row.pop("replicate")
+        raw_rows.append(row)
+    path = tmp_path / "functional_observations.jsonl"
+    path.write_text(
+        "".join(json.dumps(row) + "\n" for row in raw_rows),
+        encoding="utf-8",
+    )
+    cand_values = B.load_candidate_observations(
+        path, {"GSE232572": {sid}}
+    )
+
+    records = B.derive_delta(
+        "GSE232572", spec, _record(), cand_values, {}, {}, sid
+    )
+    records[0]["pair_id"] = "pair_1"
+    audit = _replay_fixture_audit(
+        spec,
+        cand_values,
+        [{
+            "study": "GSE232572",
+            "pair_id": "pair_1",
+            "candidate_sequence_id": sid,
+        }],
+        records,
+    )
+
+    assert len(records) == 1
+    assert records[0]["delta"] == 9.0
+    assert records[0]["observation_join_key"][
+        "assay_context_input_presence"
+    ] == "ABSENT_CANONICALIZED_TO_NULL"
+    assert records[0]["observation_join_key"][
+        "replicate_input_presence"
+    ] == "ABSENT_CANONICALIZED_TO_NULL"
+    assert records[0]["replicate_pairing_status"] == (
+        "EXACT_ABSENT_CANONICALIZED_NULL_NO_REPLICATE_CLAIM"
+    )
+    assert audit["ref_assay_context_input_presence_group_counts"] == {
+        "ABSENT_CANONICALIZED_TO_NULL": 1
+    }
+    assert audit["alt_assay_context_input_presence_group_counts"] == {
+        "ABSENT_CANONICALIZED_TO_NULL": 1
+    }
+    assert audit["ref_replicate_input_presence_group_counts"] == {
+        "ABSENT_CANONICALIZED_TO_NULL": 1
+    }
+    assert audit["alt_replicate_input_presence_group_counts"] == {
+        "ABSENT_CANONICALIZED_TO_NULL": 1
+    }
+    assert sum(
+        audit["ref_assay_context_input_presence_group_counts"].values()
+    ) == audit["n_consumed_ref_observation_groups"]
+    assert sum(
+        audit["ref_replicate_input_presence_group_counts"].values()
+    ) == audit["n_consumed_ref_observation_groups"]
+    assert sum(
+        audit["alt_assay_context_input_presence_group_counts"].values()
+    ) == audit["n_consumed_alt_observation_groups"]
+    assert sum(
+        audit["alt_replicate_input_presence_group_counts"].values()
+    ) == audit["n_consumed_alt_observation_groups"]
+
+
+@pytest.mark.parametrize(
+    ("field", "expected_reason"),
+    [
+        (
+            "assay_context",
+            "REF_ALT_ASSAY_CONTEXT_INPUT_PRESENCE_MISMATCH",
+        ),
+        ("replicate", "REF_ALT_REPLICATE_INPUT_PRESENCE_MISMATCH"),
+    ],
+)
+def test_absent_and_explicit_null_presence_do_not_silently_merge(
+    field, expected_reason,
+):
+    sid = "GSE232572_X__cand"
+    spec = _diff_ref_alt_spec()
+    ref_kwargs = {"assay_context": None, "replicate": None}
+    alt_kwargs = {"assay_context": None, "replicate": None}
+    ref_kwargs[field] = _ABSENT
+    cand_values = {sid: {
+        spec["ref_endpoint"]: [_functional_observation(
+            sid, spec["ref_endpoint"], 1.0, **ref_kwargs,
+        )],
+        spec["alt_endpoint"]: [_functional_observation(
+            sid, spec["alt_endpoint"], 10.0, **alt_kwargs,
+        )],
+    }}
+
+    records = B.derive_delta(
+        "GSE232572", spec, _record(), cand_values, {}, {}, sid
+    )
+
+    assert len(records) == 2
+    assert all(row["delta"] is None for row in records)
+    assert {row["delta_unavailable_reason"] for row in records} == {
+        expected_reason
+    }
+
+
+def test_replay_rejects_missing_input_presence_provenance():
+    _, spec, _, cand_values, materialized_pairs, records = (
+        _paired_replay_fixture()
+    )
+    tampered = copy.deepcopy(records)
+    tampered[0]["functional_observations"][0].pop(
+        "input_presence_provenance"
+    )
+
+    with pytest.raises(B.DiffRefAltJoinPolicyError, match="presence"):
+        _replay_fixture_audit(
+            spec, cand_values, materialized_pairs, tampered
+        )
+
+
+def test_raw_input_hash_replay_rejects_coordinated_normalized_row_tamper(
+    tmp_path,
+):
+    sid = "GSE232572_X__cand"
+    raw = _functional_observation(
+        sid, "ep_activity_ref_mean", 1.0
+    )
+    raw.pop("input_presence_provenance")
+    path = tmp_path / "functional_observations.jsonl"
+    path.write_text(json.dumps(raw) + "\n", encoding="utf-8")
+    loaded = B.load_candidate_observations(
+        path, {"GSE232572": {sid}}
+    )[sid]["ep_activity_ref_mean"][0]
+    tampered = copy.deepcopy(loaded)
+    tampered["context_id"] = "coordinated_tamper"
+    normalized = dict(tampered)
+    normalized.pop("input_row_sha256")
+    tampered["input_row_sha256"] = B._json_sha256(normalized)
+
+    with pytest.raises(B.DiffRefAltJoinPolicyError, match="raw_input"):
+        B._replay_input_row_hash(tampered)
+
+
 def test_paired_join_uses_explicit_replicate_field_without_id_fallback():
     study, spec, sid, cand_values, materialized_pairs, records = (
         _paired_replay_fixture()
     )
+    for endpoint_rows in cand_values[sid].values():
+        endpoint_rows[0]["replicate"] = None
+        endpoint_rows[0]["input_presence_provenance"]["replicate"] = (
+            "ABSENT_CANONICALIZED_TO_NULL"
+        )
     cand_values[sid][spec["ref_endpoint"]][0]["replicate_id"] = "ref_id"
     cand_values[sid][spec["alt_endpoint"]][0]["replicate_id"] = "alt_id"
     records = B.derive_delta(
@@ -804,7 +1122,7 @@ def test_paired_join_uses_explicit_replicate_field_without_id_fallback():
     assert records[0]["delta"] == 9.0
     assert records[0]["replicate"] is None
     assert records[0]["replicate_pairing_status"] == (
-        "EXACT_NULL_SLOT_NO_REPLICATE_CLAIM"
+        "EXACT_ABSENT_CANONICALIZED_NULL_NO_REPLICATE_CLAIM"
     )
     assert audit["n_matched_groups"] == 1
 
@@ -813,6 +1131,9 @@ def test_paired_policy_allows_exact_null_assay_but_forbids_null_context():
     study, spec, sid, cand_values, _, _ = _paired_replay_fixture()
     for endpoint_rows in cand_values[sid].values():
         endpoint_rows[0]["assay_context"] = None
+        endpoint_rows[0]["input_presence_provenance"][
+            "assay_context"
+        ] = "EXPLICIT_NULL"
     matched = B.derive_delta(
         study, spec, _record(), cand_values, {}, {}, sid
     )
@@ -911,6 +1232,8 @@ def test_build_manifest_contains_per_study_join_policy_hash_and_counts(
             observation_id="alt_a",
         ),
     ]
+    for observation in observations:
+        observation.pop("input_presence_provenance")
     staging = tmp_path / "staging"
     staging.mkdir()
     (staging / "utr_edit_pairs.jsonl").write_text(
@@ -938,21 +1261,28 @@ def test_build_manifest_contains_per_study_join_policy_hash_and_counts(
     )
 
     assert manifest["manifest_version"] == (
-        "b0x_effect_dataset_manifest_v3_diff_ref_alt_replay"
+        "b0x_effect_dataset_manifest_v4_presence_aware_diff_ref_alt_replay"
     )
     assert manifest["manifest_version"] != "b0x_effect_dataset_manifest_v2"
     assert manifest["effect_dataset_schema_version"] == (
-        "b0x_effect_row_v3_diff_ref_alt_independent_replay"
+        "b0x_effect_row_v4_presence_aware_diff_ref_alt_replay"
     )
+    assert manifest["functional_observation_schema_version"] == (
+        "lossless_functional_observations_v2_input_presence"
+    )
+    assert manifest[
+        "functional_observation_input_presence_schema_version"
+    ] == "functional_observation_input_presence_v1"
     assert effect_row["effect_dataset_schema_version"] == (
         manifest["effect_dataset_schema_version"]
     )
     assert effect_row["qualification_status"] == (
-        "MECHANICAL_REPLAY_REQUIRES_MATCHING_V3_MANIFEST_SCIENTIFIC_HOLD"
+        "MECHANICAL_PRESENCE_REPLAY_REQUIRES_MATCHING_V4_MANIFEST_"
+        "SCIENTIFIC_HOLD"
     )
     assert manifest["qualification"] == {
         "status": (
-            "MECHANICAL_REPLAY_VERIFIED_WITH_MATCHING_V3_MANIFEST_"
+            "MECHANICAL_PRESENCE_REPLAY_VERIFIED_WITH_MATCHING_V4_MANIFEST_"
             "SCIENTIFIC_HOLD"
         ),
         "dataset_without_manifest": "NOT_QUALIFIED",
@@ -963,6 +1293,9 @@ def test_build_manifest_contains_per_study_join_policy_hash_and_counts(
     }
     binding = manifest["implementation_binding"]
     assert set(binding) == B.IMPLEMENTATION_BINDING_KEYS
+    assert binding["schema_version"] == (
+        "b0x_implementation_binding_v2_presence_aware"
+    )
     assert binding["build_effect_dataset_sha256"] == B.sha256_file(
         Path(B.__file__).resolve()
     )
@@ -979,12 +1312,17 @@ def test_build_manifest_contains_per_study_join_policy_hash_and_counts(
     assert binding["scientific_unit_authority_created"] is False
     assert binding["estimand_authority_created"] is False
     assert binding["diff_ref_alt_replay_audit_schema_version"] == (
-        "diff_ref_alt_join_audit_v3_independent_replay"
+        "diff_ref_alt_join_audit_v4_presence_aware_independent_replay"
+    )
+    assert binding["functional_observation_input_presence_schema_version"] == (
+        "functional_observation_input_presence_v1"
     )
     assert set(audit) == B.DIFF_REF_ALT_JOIN_AUDIT_KEYS
     assert audit["join_policy"] == policy
     assert audit["join_policy_sha256"] == B._json_sha256(policy)
-    assert audit["verification_status"] == "INDEPENDENT_REPLAY_VERIFIED"
+    assert audit["verification_status"] == (
+        "PRESENCE_AWARE_INDEPENDENT_REPLAY_VERIFIED"
+    )
     assert audit["n_materialized_pairs"] == 1
     assert audit["n_ref_observation_groups"] == 1
     assert audit["n_alt_observation_groups"] == 1
@@ -999,6 +1337,18 @@ def test_build_manifest_contains_per_study_join_policy_hash_and_counts(
     }
     assert audit["alt_raw_unit_token_group_counts"] == {
         "ep_activity_alt_mean": 1
+    }
+    assert audit["ref_assay_context_input_presence_group_counts"] == {
+        "EXPLICIT_VALUE": 1
+    }
+    assert audit["alt_assay_context_input_presence_group_counts"] == {
+        "EXPLICIT_VALUE": 1
+    }
+    assert audit["ref_replicate_input_presence_group_counts"] == {
+        "EXPLICIT_NULL": 1
+    }
+    assert audit["alt_replicate_input_presence_group_counts"] == {
+        "EXPLICIT_NULL": 1
     }
 
 

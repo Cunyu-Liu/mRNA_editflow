@@ -17,21 +17,29 @@ sys.path.insert(0, str(REPO_ROOT))
 from scripts.repair.build_r3_phase0_proposal import (  # noqa: E402
     BINDING_SCHEMA_VERSION,
     D1_FILE_NAMES,
+    DIFF_REF_ALT_AUDIT_FIELDS,
     DIFF_REF_ALT_AUDIT_SCHEMA_VERSION,
+    DIFF_REF_ALT_POLICY_FIELDS,
+    DIFF_REF_ALT_POLICY_SCHEMA_VERSION,
     EFFECT_DATASET_MANIFEST_VERSION,
     EFFECT_DATASET_SCHEMA_VERSION,
+    EFFECT_MANIFEST_FIELDS,
     EFFECT_QUALIFICATION_STATUS,
     FUNCTIONAL_OBSERVATION_SCHEMA_VERSION,
+    IMPLEMENTATION_BINDING_FIELDS,
     IMPLEMENTATION_BINDING_SCHEMA_VERSION,
+    INPUT_PRESENCE_PROVENANCE_SCHEMA_VERSION,
     JSONL_D1_AUTHORITIES,
     MANIFEST_QUALIFICATION_STATUS,
     OUTCOME_COMMITMENT_SCHEMA_VERSION,
     Phase0ProposalError,
     REQUIRED_DIFF_REF_ALT_POLICY_SHA256,
+    SCHEMA_VERSION,
     build_phase0_proposal,
     validate_phase0_proposal,
     write_phase0_proposal_exclusive,
 )
+from scripts.b0x import build_effect_dataset as b0x_builder  # noqa: E402
 from scripts.b0x import config as b0x_config  # noqa: E402
 
 
@@ -85,6 +93,42 @@ def _group_row(group_id: str, atom: str, members: list[str]) -> dict:
     }
 
 
+def _preserved_observation(raw_observation: dict) -> dict:
+    raw = copy.deepcopy(raw_observation)
+    raw_sha256 = _json_sha(raw)
+    preserved = copy.deepcopy(raw)
+    upstream_declared = preserved.pop("input_row_sha256", None)
+    if upstream_declared is not None:
+        preserved["upstream_declared_input_row_sha256"] = upstream_declared
+    presence = {
+        "schema_version": INPUT_PRESENCE_PROVENANCE_SCHEMA_VERSION,
+        "assay_context": (
+            "ABSENT_CANONICALIZED_TO_NULL"
+            if "assay_context" not in raw
+            else "EXPLICIT_NULL"
+            if raw["assay_context"] is None
+            else "EXPLICIT_VALUE"
+        ),
+        "replicate": (
+            "ABSENT_CANONICALIZED_TO_NULL"
+            if "replicate" not in raw
+            else "EXPLICIT_NULL"
+            if raw["replicate"] is None
+            else "EXPLICIT_VALUE"
+        ),
+    }
+    for field in ("assay_context", "replicate"):
+        preserved.setdefault(field, None)
+    preserved["input_presence_provenance"] = presence
+    preserved["raw_input_row_sha256"] = raw_sha256
+    preserved["raw_input_value_before_numeric_normalization"] = raw.get(
+        "value"
+    )
+    preserved["value"] = float(raw.get("value"))
+    preserved["input_row_sha256"] = _json_sha(preserved)
+    return preserved
+
+
 def _empty_diff_ref_alt_audits() -> dict:
     empty_multiset_sha = _json_sha([])
     audits = {}
@@ -95,7 +139,9 @@ def _empty_diff_ref_alt_audits() -> dict:
         assert _json_sha(policy) == expected_policy_sha
         audits[study] = {
             "schema_version": DIFF_REF_ALT_AUDIT_SCHEMA_VERSION,
-            "verification_status": "INDEPENDENT_REPLAY_VERIFIED",
+            "verification_status": (
+                "PRESENCE_AWARE_INDEPENDENT_REPLAY_VERIFIED"
+            ),
             "join_policy": policy,
             "join_policy_sha256": expected_policy_sha,
             "policy_id": policy["policy_id"],
@@ -121,6 +167,10 @@ def _empty_diff_ref_alt_audits() -> dict:
             "join_disposition_counts": {},
             "delta_unavailable_reason_counts": {},
             "replicate_pairing_status_counts": {},
+            "ref_assay_context_input_presence_group_counts": {},
+            "alt_assay_context_input_presence_group_counts": {},
+            "ref_replicate_input_presence_group_counts": {},
+            "alt_replicate_input_presence_group_counts": {},
             "ref_raw_unit_token_group_counts": {},
             "alt_raw_unit_token_group_counts": {},
             "expected_input_side_group_multiset_sha256": empty_multiset_sha,
@@ -153,6 +203,14 @@ def _effect_rows(*, reverse: bool = False, outcome_shift: float = 0.0) -> list[d
             "context_id": "legacy_context_a",
             "assay_context": "legacy_context_a",
             "unit": "MRL",
+            "functional_observations": [
+                _preserved_observation({
+                    "endpoint_id": "ep_rl",
+                    "assay_context": "legacy_context_a",
+                    "replicate": 1,
+                    "value": 3.0 + outcome_shift,
+                })
+            ],
             "source_sequence": "AAAA",
             "candidate_sequence": "CAAA",
             "edit_list": [{"pos": 0, "token": "C"}],
@@ -181,6 +239,14 @@ def _effect_rows(*, reverse: bool = False, outcome_shift: float = 0.0) -> list[d
             "context_id": "legacy_context_b",
             "assay_context": "legacy_context_c",
             "unit": "MRL",
+            "functional_observations": [
+                _preserved_observation({
+                    "endpoint_id": "ep_rl",
+                    "replicate": None,
+                    "value": str(4.0 - outcome_shift),
+                    "input_row_sha256": "a" * 64,
+                })
+            ],
             "source_sequence": "GGGG",
             "candidate_sequence": "UGGG",
             "edit_list": [{"op": "SUB", "pos": 0, "ref": "G", "alt": "U"}],
@@ -363,6 +429,9 @@ def _fixture(
             "functional_observation_schema_version": (
                 FUNCTIONAL_OBSERVATION_SCHEMA_VERSION
             ),
+            "functional_observation_input_presence_schema_version": (
+                INPUT_PRESENCE_PROVENANCE_SCHEMA_VERSION
+            ),
             "qualification": {
                 "status": MANIFEST_QUALIFICATION_STATUS,
                 "dataset_without_manifest": "NOT_QUALIFIED",
@@ -384,10 +453,13 @@ def _fixture(
                 "effect_dataset_schema_version": EFFECT_DATASET_SCHEMA_VERSION,
                 "manifest_version": EFFECT_DATASET_MANIFEST_VERSION,
                 "diff_ref_alt_join_policy_schema_version": (
-                    "diff_ref_alt_join_policy_v2_explicit_null_semantics"
+                    DIFF_REF_ALT_POLICY_SCHEMA_VERSION
                 ),
                 "diff_ref_alt_replay_audit_schema_version": (
                     DIFF_REF_ALT_AUDIT_SCHEMA_VERSION
+                ),
+                "functional_observation_input_presence_schema_version": (
+                    INPUT_PRESENCE_PROVENANCE_SCHEMA_VERSION
                 ),
                 "ordinary_only": True,
                 "scientific_unit_authority_created": False,
@@ -532,6 +604,76 @@ def _forge_estimand_outcome_text(proposal: dict) -> None:
     proposal["estimand_review_queue"].sort(
         key=lambda row: row["candidate_key_sha256"]
     )
+
+
+def test_presence_aware_v4_contract_exactly_matches_upstream_builder():
+    assert SCHEMA_VERSION == (
+        "r3_phase0_mechanical_proposal_"
+        "v3_presence_aware_exact_nested_replay"
+    )
+    assert BINDING_SCHEMA_VERSION == (
+        "r3_phase0_exact_input_binding_"
+        "v3_presence_aware_manifest_replay"
+    )
+    assert OUTCOME_COMMITMENT_SCHEMA_VERSION == (
+        "r3_phase0_outcome_free_inventory_commitment_"
+        "v3_presence_aware_exact_nested_replay"
+    )
+    exact_pairs = (
+        (
+            EFFECT_DATASET_MANIFEST_VERSION,
+            b0x_builder.EFFECT_DATASET_MANIFEST_VERSION,
+        ),
+        (EFFECT_DATASET_SCHEMA_VERSION, b0x_builder.EFFECT_DATASET_SCHEMA_VERSION),
+        (
+            FUNCTIONAL_OBSERVATION_SCHEMA_VERSION,
+            b0x_builder.OBSERVATION_SCHEMA_VERSION,
+        ),
+        (
+            INPUT_PRESENCE_PROVENANCE_SCHEMA_VERSION,
+            b0x_builder.INPUT_PRESENCE_PROVENANCE_SCHEMA_VERSION,
+        ),
+        (
+            IMPLEMENTATION_BINDING_SCHEMA_VERSION,
+            b0x_builder.IMPLEMENTATION_BINDING_SCHEMA_VERSION,
+        ),
+        (
+            EFFECT_QUALIFICATION_STATUS,
+            b0x_builder.EFFECT_ROW_QUALIFICATION_STATUS,
+        ),
+        (
+            MANIFEST_QUALIFICATION_STATUS,
+            b0x_builder.MANIFEST_QUALIFICATION_STATUS,
+        ),
+        (
+            DIFF_REF_ALT_POLICY_SCHEMA_VERSION,
+            b0x_builder.DIFF_REF_ALT_JOIN_POLICY_SCHEMA_VERSION,
+        ),
+        (
+            DIFF_REF_ALT_AUDIT_SCHEMA_VERSION,
+            b0x_builder.DIFF_REF_ALT_JOIN_AUDIT_SCHEMA_VERSION,
+        ),
+    )
+    assert all(local == upstream for local, upstream in exact_pairs)
+    assert IMPLEMENTATION_BINDING_FIELDS == (
+        b0x_builder.IMPLEMENTATION_BINDING_KEYS
+    )
+    assert len(IMPLEMENTATION_BINDING_FIELDS) == 15
+    assert DIFF_REF_ALT_POLICY_FIELDS == (
+        b0x_builder.DIFF_REF_ALT_JOIN_POLICY_KEYS
+    )
+    assert len(DIFF_REF_ALT_POLICY_FIELDS) == 18
+    assert DIFF_REF_ALT_AUDIT_FIELDS == (
+        b0x_builder.DIFF_REF_ALT_JOIN_AUDIT_KEYS
+    )
+    assert len(DIFF_REF_ALT_AUDIT_FIELDS) == 39
+    assert "functional_observation_input_presence_schema_version" in (
+        EFFECT_MANIFEST_FIELDS
+    )
+    assert REQUIRED_DIFF_REF_ALT_POLICY_SHA256 == {
+        study: _json_sha(b0x_config.DELTA_SPECS[study]["join_policy"])
+        for study in sorted(REQUIRED_DIFF_REF_ALT_POLICY_SHA256)
+    }
 
 
 def test_builds_only_non_active_outcome_free_mechanical_proposal(tmp_path):
@@ -948,9 +1090,19 @@ def test_rehashed_nested_capability_and_text_attacks_fail_closed(tmp_path):
             pytest.fail(f"rehashed nested attack was accepted: {label}")
 
 
-def test_old_proposal_v1_is_rejected_even_when_self_hash_is_recomputed(tmp_path):
+@pytest.mark.parametrize(
+    "old_schema",
+    [
+        "r3_phase0_mechanical_proposal_v1",
+        "r3_phase0_mechanical_proposal_v2_exact_nested_replay",
+    ],
+)
+def test_old_proposal_schema_is_rejected_even_when_self_hash_is_recomputed(
+    old_schema,
+    tmp_path,
+):
     proposal = _build(_fixture(tmp_path / "ordinary"))
-    proposal["schema_version"] = "r3_phase0_mechanical_proposal_v1"
+    proposal["schema_version"] = old_schema
     _rehash_forged_proposal(proposal)
     with pytest.raises(Phase0ProposalError, match="schema_version"):
         validate_phase0_proposal(proposal)
@@ -960,15 +1112,25 @@ def test_old_proposal_v1_is_rejected_even_when_self_hash_is_recomputed(tmp_path)
     "tamper",
     [
         "manifest_version_v2",
-        "effect_schema_old",
-        "functional_schema_old",
+        "manifest_version_v3",
+        "effect_schema_v3",
+        "functional_schema_v1",
+        "manifest_presence_schema_missing",
+        "manifest_presence_schema_old",
         "n_records_wrong",
         "n_records_bool",
         "n_records_negative",
         "missing_required_audit",
-        "audit_schema_old",
+        "policy_schema_v2",
+        "policy_presence_field_missing",
+        "audit_schema_v3",
+        "audit_verification_v3",
         "audit_policy_hash",
         "audit_conservation",
+        "audit_presence_map_missing",
+        "audit_presence_unknown_status",
+        "audit_presence_zero_entry",
+        "audit_presence_conservation",
         "qualification_status_old",
         "qualification_scientific_true",
         "qualification_training_true",
@@ -976,12 +1138,14 @@ def test_old_proposal_v1_is_rejected_even_when_self_hash_is_recomputed(tmp_path)
         "qualification_extra_key",
         "implementation_extra_key",
         "implementation_missing_key",
-        "implementation_schema_old",
+        "implementation_schema_v1",
+        "implementation_presence_missing",
+        "implementation_presence_old",
         "implementation_ordinary_integer",
         "manifest_extra_key",
     ],
 )
-def test_manifest_v3_schema_count_and_replay_audit_tamper_fail_closed(
+def test_manifest_v4_schema_presence_and_replay_audit_tamper_fail_closed(
     tamper,
     tmp_path,
 ):
@@ -991,10 +1155,24 @@ def test_manifest_v3_schema_count_and_replay_audit_tamper_fail_closed(
     )
     if tamper == "manifest_version_v2":
         manifest["manifest_version"] = "b0x_effect_dataset_manifest_v2"
-    elif tamper == "effect_schema_old":
-        manifest["effect_dataset_schema_version"] = "b0x_effect_row_v2"
-    elif tamper == "functional_schema_old":
-        manifest["functional_observation_schema_version"] = "lossy_v0"
+    elif tamper == "manifest_version_v3":
+        manifest["manifest_version"] = (
+            "b0x_effect_dataset_manifest_v3_diff_ref_alt_replay"
+        )
+    elif tamper == "effect_schema_v3":
+        manifest["effect_dataset_schema_version"] = (
+            "b0x_effect_row_v3_diff_ref_alt_independent_replay"
+        )
+    elif tamper == "functional_schema_v1":
+        manifest["functional_observation_schema_version"] = (
+            "lossless_functional_observations_v1"
+        )
+    elif tamper == "manifest_presence_schema_missing":
+        manifest.pop("functional_observation_input_presence_schema_version")
+    elif tamper == "manifest_presence_schema_old":
+        manifest[
+            "functional_observation_input_presence_schema_version"
+        ] = "functional_observation_input_presence_v0"
     elif tamper == "n_records_wrong":
         manifest["n_records"] += 1
     elif tamper == "n_records_bool":
@@ -1003,10 +1181,22 @@ def test_manifest_v3_schema_count_and_replay_audit_tamper_fail_closed(
         manifest["n_records"] = -1
     elif tamper == "missing_required_audit":
         manifest["diff_ref_alt_join_audits"].pop("GSE232572")
-    elif tamper == "audit_schema_old":
+    elif tamper == "policy_schema_v2":
+        manifest["diff_ref_alt_join_audits"]["GSE232572"]["join_policy"][
+            "schema_version"
+        ] = "diff_ref_alt_join_policy_v2_explicit_null_semantics"
+    elif tamper == "policy_presence_field_missing":
+        manifest["diff_ref_alt_join_audits"]["GSE232572"]["join_policy"].pop(
+            "presence_match"
+        )
+    elif tamper == "audit_schema_v3":
         manifest["diff_ref_alt_join_audits"]["GSE232572"][
             "schema_version"
-        ] = "diff_ref_alt_join_audit_v1"
+        ] = "diff_ref_alt_join_audit_v3_independent_replay"
+    elif tamper == "audit_verification_v3":
+        manifest["diff_ref_alt_join_audits"]["GSE232572"][
+            "verification_status"
+        ] = "INDEPENDENT_REPLAY_VERIFIED"
     elif tamper == "audit_policy_hash":
         manifest["diff_ref_alt_join_audits"]["GSE232572"][
             "join_policy_sha256"
@@ -1015,9 +1205,26 @@ def test_manifest_v3_schema_count_and_replay_audit_tamper_fail_closed(
         manifest["diff_ref_alt_join_audits"]["GSE232572"][
             "n_output_join_rows"
         ] = 1
+    elif tamper == "audit_presence_map_missing":
+        manifest["diff_ref_alt_join_audits"]["GSE232572"].pop(
+            "ref_assay_context_input_presence_group_counts"
+        )
+    elif tamper == "audit_presence_unknown_status":
+        manifest["diff_ref_alt_join_audits"]["GSE232572"][
+            "ref_assay_context_input_presence_group_counts"
+        ] = {"NOT_APPLICABLE_NO_OBSERVATION": 1}
+    elif tamper == "audit_presence_zero_entry":
+        manifest["diff_ref_alt_join_audits"]["GSE232572"][
+            "ref_assay_context_input_presence_group_counts"
+        ] = {"EXPLICIT_VALUE": 0}
+    elif tamper == "audit_presence_conservation":
+        manifest["diff_ref_alt_join_audits"]["GSE232572"][
+            "ref_assay_context_input_presence_group_counts"
+        ] = {"EXPLICIT_VALUE": 1}
     elif tamper == "qualification_status_old":
         manifest["qualification"]["status"] = (
-            "QUALIFIED_ONLY_WITH_MATCHING_V3_MANIFEST"
+            "MECHANICAL_REPLAY_VERIFIED_WITH_MATCHING_V3_MANIFEST_"
+            "SCIENTIFIC_HOLD"
         )
     elif tamper == "qualification_scientific_true":
         manifest["qualification"]["scientific_qualification"] = True
@@ -1031,10 +1238,18 @@ def test_manifest_v3_schema_count_and_replay_audit_tamper_fail_closed(
         manifest["implementation_binding"]["training_ready"] = False
     elif tamper == "implementation_missing_key":
         manifest["implementation_binding"].pop("estimand_authority_created")
-    elif tamper == "implementation_schema_old":
+    elif tamper == "implementation_schema_v1":
         manifest["implementation_binding"]["schema_version"] = (
-            "b0x_implementation_binding_v0"
+            "b0x_implementation_binding_v1"
         )
+    elif tamper == "implementation_presence_missing":
+        manifest["implementation_binding"].pop(
+            "functional_observation_input_presence_schema_version"
+        )
+    elif tamper == "implementation_presence_old":
+        manifest["implementation_binding"][
+            "functional_observation_input_presence_schema_version"
+        ] = "functional_observation_input_presence_v0"
     elif tamper == "implementation_ordinary_integer":
         manifest["implementation_binding"]["ordinary_only"] = 1
     elif tamper == "manifest_extra_key":
@@ -1051,7 +1266,9 @@ def test_manifest_v3_schema_count_and_replay_audit_tamper_fail_closed(
 def test_effect_row_v3_schema_tamper_fails_closed(tmp_path):
     args = _fixture(tmp_path / "ordinary")
     rows = _read_jsonl(args["effect_path"])
-    rows[0]["effect_dataset_schema_version"] = "b0x_effect_row_v2"
+    rows[0]["effect_dataset_schema_version"] = (
+        "b0x_effect_row_v3_diff_ref_alt_independent_replay"
+    )
     _write_jsonl(args["effect_path"], rows)
     args["effect_sha256"] = _sha(args["effect_path"])
     manifest = json.loads(
@@ -1068,7 +1285,9 @@ def test_effect_row_v3_schema_tamper_fails_closed(tmp_path):
 def test_effect_row_old_qualification_status_fails_closed(tmp_path):
     args = _fixture(tmp_path / "ordinary")
     rows = _read_jsonl(args["effect_path"])
-    rows[0]["qualification_status"] = "REQUIRES_MATCHING_V3_MANIFEST"
+    rows[0]["qualification_status"] = (
+        "MECHANICAL_REPLAY_REQUIRES_MATCHING_V3_MANIFEST_SCIENTIFIC_HOLD"
+    )
     _write_jsonl(args["effect_path"], rows)
     args["effect_sha256"] = _sha(args["effect_path"])
     manifest = json.loads(
@@ -1082,10 +1301,119 @@ def test_effect_row_old_qualification_status_fails_closed(tmp_path):
         _build(args)
 
 
-def test_materialized_diff_dispositions_are_crosschecked_without_outcomes(
+@pytest.mark.parametrize(
+    "tamper",
+    [
+        "row_functional_schema_v1",
+        "functional_observations_missing",
+        "presence_missing",
+        "presence_extra_key",
+        "presence_schema_old",
+        "presence_status_unknown",
+        "explicit_null_value_conflict",
+        "explicit_value_null_conflict",
+        "canonicalized_field_missing",
+    ],
+)
+def test_effect_observation_v2_presence_tamper_fails_closed(tamper, tmp_path):
+    args = _fixture(tmp_path / tamper)
+    rows = _read_jsonl(args["effect_path"])
+    observation = rows[0]["functional_observations"][0]
+    presence = observation["input_presence_provenance"]
+    if tamper == "row_functional_schema_v1":
+        rows[0]["functional_observation_schema_version"] = (
+            "lossless_functional_observations_v1"
+        )
+    elif tamper == "functional_observations_missing":
+        rows[0].pop("functional_observations")
+    elif tamper == "presence_missing":
+        observation.pop("input_presence_provenance")
+    elif tamper == "presence_extra_key":
+        presence["attacker_note"] = "presence upgraded"
+    elif tamper == "presence_schema_old":
+        presence["schema_version"] = "functional_observation_input_presence_v0"
+    elif tamper == "presence_status_unknown":
+        presence["assay_context"] = "INFERRED_VALUE"
+    elif tamper == "explicit_null_value_conflict":
+        presence["assay_context"] = "EXPLICIT_NULL"
+    elif tamper == "explicit_value_null_conflict":
+        observation["assay_context"] = None
+    elif tamper == "canonicalized_field_missing":
+        observation.pop("replicate")
+    else:  # pragma: no cover - parametrization is exact
+        raise AssertionError(tamper)
+    _write_jsonl(args["effect_path"], rows)
+    args["effect_sha256"] = _sha(args["effect_path"])
+    manifest = json.loads(
+        args["effect_manifest_path"].read_text(encoding="utf-8")
+    )
+    manifest["sha256"] = args["effect_sha256"]
+    _write_json(args["effect_manifest_path"], manifest)
+    args["effect_manifest_sha256"] = _sha(args["effect_manifest_path"])
+
+    with pytest.raises(Phase0ProposalError):
+        _build(args)
+
+
+@pytest.mark.parametrize(
+    ("tamper", "error"),
+    [
+        ("normalized_hash", "normalized content hash mismatch"),
+        ("raw_hash", "raw content hash mismatch"),
+    ],
+)
+def test_embedded_observation_hash_tamper_with_outer_rehash_fails_closed(
+    tamper,
+    error,
     tmp_path,
 ):
+    args = _fixture(tmp_path / tamper)
+    rows = _read_jsonl(args["effect_path"])
+    observation = rows[0]["functional_observations"][0]
+    if tamper == "normalized_hash":
+        observation["input_row_sha256"] = "0" * 64
+    elif tamper == "raw_hash":
+        observation["raw_input_row_sha256"] = "0" * 64
+        normalized = dict(observation)
+        normalized.pop("input_row_sha256")
+        observation["input_row_sha256"] = _json_sha(normalized)
+    else:  # pragma: no cover - parametrization is exact
+        raise AssertionError(tamper)
+    _write_jsonl(args["effect_path"], rows)
+    args["effect_sha256"] = _sha(args["effect_path"])
+    manifest = json.loads(
+        args["effect_manifest_path"].read_text(encoding="utf-8")
+    )
+    manifest["sha256"] = args["effect_sha256"]
+    _write_json(args["effect_manifest_path"], manifest)
+    args["effect_manifest_sha256"] = _sha(args["effect_manifest_path"])
+
+    with pytest.raises(Phase0ProposalError, match=error):
+        _build(args)
+
+
+def test_embedded_observation_extra_reserved_field_fails_closed(tmp_path):
     args = _fixture(tmp_path / "ordinary")
+    rows = _read_jsonl(args["effect_path"])
+    observation = rows[0]["functional_observations"][0]
+    observation["raw_input_attacker_note"] = "forged reserved provenance"
+    normalized = dict(observation)
+    normalized.pop("input_row_sha256")
+    observation["input_row_sha256"] = _json_sha(normalized)
+    _write_jsonl(args["effect_path"], rows)
+    args["effect_sha256"] = _sha(args["effect_path"])
+    manifest = json.loads(
+        args["effect_manifest_path"].read_text(encoding="utf-8")
+    )
+    manifest["sha256"] = args["effect_sha256"]
+    _write_json(args["effect_manifest_path"], manifest)
+    args["effect_manifest_sha256"] = _sha(args["effect_manifest_path"])
+
+    with pytest.raises(Phase0ProposalError, match="extra reserved"):
+        _build(args)
+
+
+def _configure_one_matched_presence_aware_diff(args: dict) -> tuple[list, dict]:
     rows = _read_jsonl(args["effect_path"])
     manifest = json.loads(
         args["effect_manifest_path"].read_text(encoding="utf-8")
@@ -1095,7 +1423,7 @@ def test_materialized_diff_dispositions_are_crosschecked_without_outcomes(
         {
             "study": "GSE232572",
             "diff_ref_alt_join_policy_schema_version": (
-                "diff_ref_alt_join_policy_v2_explicit_null_semantics"
+                DIFF_REF_ALT_POLICY_SCHEMA_VERSION
             ),
             "diff_ref_alt_join_policy_id": audit["policy_id"],
             "diff_ref_alt_join_policy_sha256": audit["join_policy_sha256"],
@@ -1103,6 +1431,14 @@ def test_materialized_diff_dispositions_are_crosschecked_without_outcomes(
             "diff_ref_alt_join_disposition": "MATCHED",
             "ref_observation_group_present": True,
             "alt_observation_group_present": True,
+            "observation_join_key": {
+                "context_id": "legacy_context_a",
+                "assay_context": "legacy_context_a",
+                "assay_context_input_presence": "EXPLICIT_VALUE",
+                "replicate": 1,
+                "replicate_input_presence": "EXPLICIT_VALUE",
+                "comparison_scale_id": audit["comparison_scale_id"],
+            },
         }
     )
     audit.update(
@@ -1120,6 +1456,18 @@ def test_materialized_diff_dispositions_are_crosschecked_without_outcomes(
             "n_derived_rows": 1,
             "expected_output_rows_from_group_conservation": 1,
             "join_disposition_counts": {"MATCHED": 1},
+            "ref_assay_context_input_presence_group_counts": {
+                "EXPLICIT_VALUE": 1
+            },
+            "alt_assay_context_input_presence_group_counts": {
+                "EXPLICIT_VALUE": 1
+            },
+            "ref_replicate_input_presence_group_counts": {
+                "EXPLICIT_VALUE": 1
+            },
+            "alt_replicate_input_presence_group_counts": {
+                "EXPLICIT_VALUE": 1
+            },
         }
     )
     _write_jsonl(args["effect_path"], rows)
@@ -1127,10 +1475,21 @@ def test_materialized_diff_dispositions_are_crosschecked_without_outcomes(
     manifest["sha256"] = args["effect_sha256"]
     _write_json(args["effect_manifest_path"], manifest)
     args["effect_manifest_sha256"] = _sha(args["effect_manifest_path"])
+    return rows, manifest
+
+
+def test_materialized_diff_dispositions_are_crosschecked_without_outcomes(
+    tmp_path,
+):
+    args = _fixture(tmp_path / "ordinary")
+    _, manifest = _configure_one_matched_presence_aware_diff(args)
 
     proposal = _build(args)
     assert proposal["binding_checks"][
         "diff_ref_alt_materialized_dispositions_crosschecked"
+    ] is True
+    assert proposal["binding_checks"][
+        "diff_ref_alt_materialized_presence_crosschecked"
     ] is True
 
     forged_manifest = copy.deepcopy(manifest)
@@ -1140,6 +1499,48 @@ def test_materialized_diff_dispositions_are_crosschecked_without_outcomes(
     _write_json(args["effect_manifest_path"], forged_manifest)
     args["effect_manifest_sha256"] = _sha(args["effect_manifest_path"])
     with pytest.raises(Phase0ProposalError, match="mechanical audit"):
+        _build(args)
+
+
+@pytest.mark.parametrize(
+    "tamper",
+    [
+        "join_key_missing_field",
+        "join_presence_unknown",
+        "join_presence_value_conflict",
+        "observation_presence_disagrees",
+        "audit_presence_map_disagrees",
+    ],
+)
+def test_materialized_diff_presence_tamper_fails_closed(tamper, tmp_path):
+    args = _fixture(tmp_path / tamper)
+    rows, manifest = _configure_one_matched_presence_aware_diff(args)
+    join_key = rows[0]["observation_join_key"]
+    if tamper == "join_key_missing_field":
+        join_key.pop("replicate_input_presence")
+    elif tamper == "join_presence_unknown":
+        join_key["assay_context_input_presence"] = "INFERRED_VALUE"
+    elif tamper == "join_presence_value_conflict":
+        join_key["assay_context_input_presence"] = "EXPLICIT_NULL"
+    elif tamper == "observation_presence_disagrees":
+        observation = rows[0]["functional_observations"][0]
+        observation["replicate"] = None
+        observation["input_presence_provenance"]["replicate"] = (
+            "EXPLICIT_NULL"
+        )
+    elif tamper == "audit_presence_map_disagrees":
+        manifest["diff_ref_alt_join_audits"]["GSE232572"][
+            "ref_assay_context_input_presence_group_counts"
+        ] = {"EXPLICIT_NULL": 1}
+    else:  # pragma: no cover - parametrization is exact
+        raise AssertionError(tamper)
+    _write_jsonl(args["effect_path"], rows)
+    args["effect_sha256"] = _sha(args["effect_path"])
+    manifest["sha256"] = args["effect_sha256"]
+    _write_json(args["effect_manifest_path"], manifest)
+    args["effect_manifest_sha256"] = _sha(args["effect_manifest_path"])
+
+    with pytest.raises(Phase0ProposalError):
         _build(args)
 
 

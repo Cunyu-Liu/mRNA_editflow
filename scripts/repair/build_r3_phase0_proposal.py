@@ -39,10 +39,15 @@ from scripts.r3x.artifact_io import (  # noqa: E402
 from scripts.r3x.protocol import canonical_json, canonical_sha256  # noqa: E402
 
 
-SCHEMA_VERSION = "r3_phase0_mechanical_proposal_v2_exact_nested_replay"
-BINDING_SCHEMA_VERSION = "r3_phase0_exact_input_binding_v2_manifest_replay"
+SCHEMA_VERSION = (
+    "r3_phase0_mechanical_proposal_v3_presence_aware_exact_nested_replay"
+)
+BINDING_SCHEMA_VERSION = (
+    "r3_phase0_exact_input_binding_v3_presence_aware_manifest_replay"
+)
 OUTCOME_COMMITMENT_SCHEMA_VERSION = (
-    "r3_phase0_outcome_free_inventory_commitment_v2_exact_nested_replay"
+    "r3_phase0_outcome_free_inventory_commitment_"
+    "v3_presence_aware_exact_nested_replay"
 )
 ARTIFACT_ROLE = "R3_PHASE0_MECHANICAL_INVENTORY_PROPOSAL"
 STATUS = "PROPOSAL_NON_ACTIVE"
@@ -53,18 +58,27 @@ RELATION_ACCEPTANCE_STATUS_ALLOWLIST = frozenset(
     {"CANDIDATE", "ACCEPTED", "AMBIGUOUS", "REJECTED"}
 )
 EFFECT_DATASET_MANIFEST_VERSION = (
-    "b0x_effect_dataset_manifest_v3_diff_ref_alt_replay"
+    "b0x_effect_dataset_manifest_v4_presence_aware_diff_ref_alt_replay"
 )
 EFFECT_DATASET_SCHEMA_VERSION = (
-    "b0x_effect_row_v3_diff_ref_alt_independent_replay"
+    "b0x_effect_row_v4_presence_aware_diff_ref_alt_replay"
 )
-FUNCTIONAL_OBSERVATION_SCHEMA_VERSION = "lossless_functional_observations_v1"
-IMPLEMENTATION_BINDING_SCHEMA_VERSION = "b0x_implementation_binding_v1"
+FUNCTIONAL_OBSERVATION_SCHEMA_VERSION = (
+    "lossless_functional_observations_v2_input_presence"
+)
+INPUT_PRESENCE_PROVENANCE_SCHEMA_VERSION = (
+    "functional_observation_input_presence_v1"
+)
+IMPLEMENTATION_BINDING_SCHEMA_VERSION = (
+    "b0x_implementation_binding_v2_presence_aware"
+)
 EFFECT_QUALIFICATION_STATUS = (
-    "MECHANICAL_REPLAY_REQUIRES_MATCHING_V3_MANIFEST_SCIENTIFIC_HOLD"
+    "MECHANICAL_PRESENCE_REPLAY_REQUIRES_MATCHING_V4_MANIFEST_"
+    "SCIENTIFIC_HOLD"
 )
 MANIFEST_QUALIFICATION_STATUS = (
-    "MECHANICAL_REPLAY_VERIFIED_WITH_MATCHING_V3_MANIFEST_SCIENTIFIC_HOLD"
+    "MECHANICAL_PRESENCE_REPLAY_VERIFIED_WITH_MATCHING_V4_MANIFEST_"
+    "SCIENTIFIC_HOLD"
 )
 IMPLEMENTATION_BINDING_FIELDS = {
     "schema_version",
@@ -78,6 +92,7 @@ IMPLEMENTATION_BINDING_FIELDS = {
     "manifest_version",
     "diff_ref_alt_join_policy_schema_version",
     "diff_ref_alt_replay_audit_schema_version",
+    "functional_observation_input_presence_schema_version",
     "ordinary_only",
     "scientific_unit_authority_created",
     "estimand_authority_created",
@@ -86,6 +101,7 @@ EFFECT_MANIFEST_FIELDS = {
     "manifest_version",
     "effect_dataset_schema_version",
     "functional_observation_schema_version",
+    "functional_observation_input_presence_schema_version",
     "qualification",
     "implementation_binding",
     "n_records",
@@ -100,16 +116,16 @@ EFFECT_MANIFEST_FIELDS = {
     "config",
 }
 DIFF_REF_ALT_POLICY_SCHEMA_VERSION = (
-    "diff_ref_alt_join_policy_v2_explicit_null_semantics"
+    "diff_ref_alt_join_policy_v3_presence_aware_null_semantics"
 )
 DIFF_REF_ALT_AUDIT_SCHEMA_VERSION = (
-    "diff_ref_alt_join_audit_v3_independent_replay"
+    "diff_ref_alt_join_audit_v4_presence_aware_independent_replay"
 )
 REQUIRED_DIFF_REF_ALT_POLICY_SHA256 = {
-    "ENCSR854RUF": "513d6568e9f211c90cbfd0cfe79d087d3a443e72e7d63f27303babf176a8fc85",
-    "GSE186455": "8dbce85b58ec86fbbeff8015df77c98bb9b9ccabfa9c4cddb4f055f1946467f0",
-    "GSE232571": "2e9df067fd860bd53ce4f9546145e7e5d1d55cb9a524a4fdcea64f6a6165a864",
-    "GSE232572": "6fd1785c94bf96928e583ced8dd7edc03cbba12db9f5feb8a555e3bf2cc6653c",
+    "ENCSR854RUF": "498a98cf4704ff5bd525f96ec97eb0af10a2141a4b376e222193c5a042667623",
+    "GSE186455": "18cfc10a93de15b582e4bf1a85824782cf999081530e79b42b90ea2eb575680f",
+    "GSE232571": "e5d935c3cfb26af4d821b50ad87de5c658f25491c7a66b9e58578c9040c9906a",
+    "GSE232572": "7443feffd250ab5cd04a4152aabfaa168322460c54f53f934c4fef1478ae0cdb",
 }
 DIFF_REF_ALT_POLICY_FIELDS = {
     "schema_version",
@@ -119,9 +135,13 @@ DIFF_REF_ALT_POLICY_FIELDS = {
     "context_required_non_null",
     "assay_context_match",
     "assay_context_null_policy",
+    "assay_context_absent_policy",
     "replicate_match",
     "replicate_field",
     "replicate_null_policy",
+    "replicate_absent_policy",
+    "presence_match",
+    "input_presence_provenance_schema_version",
     "ref_allowed_raw_unit_tokens",
     "alt_allowed_raw_unit_tokens",
     "comparison_scale_id",
@@ -155,6 +175,10 @@ DIFF_REF_ALT_AUDIT_FIELDS = {
     "join_disposition_counts",
     "delta_unavailable_reason_counts",
     "replicate_pairing_status_counts",
+    "ref_assay_context_input_presence_group_counts",
+    "alt_assay_context_input_presence_group_counts",
+    "ref_replicate_input_presence_group_counts",
+    "alt_replicate_input_presence_group_counts",
     "ref_raw_unit_token_group_counts",
     "alt_raw_unit_token_group_counts",
     "expected_input_side_group_multiset_sha256",
@@ -170,6 +194,39 @@ DIFF_REF_ALT_DISPOSITIONS = {
     "UNMATCHED_ALT_ONLY": (False, True),
     "MISSING_BOTH": (False, False),
 }
+INPUT_PRESENCE_STATUSES = {
+    "ABSENT_CANONICALIZED_TO_NULL",
+    "EXPLICIT_NULL",
+    "EXPLICIT_VALUE",
+}
+NOT_APPLICABLE_PRESENCE_STATUS = "NOT_APPLICABLE_NO_OBSERVATION"
+OBSERVATION_JOIN_KEY_FIELDS = {
+    "context_id",
+    "assay_context",
+    "assay_context_input_presence",
+    "replicate",
+    "replicate_input_presence",
+    "comparison_scale_id",
+}
+INPUT_PRESENCE_PROVENANCE_FIELDS = {
+    "schema_version",
+    "assay_context",
+    "replicate",
+}
+RAW_INPUT_VALUE_FIELD = "raw_input_value_before_numeric_normalization"
+EMBEDDED_OBSERVATION_RESERVED_FIELDS = {
+    "input_row_sha256",
+    "raw_input_row_sha256",
+    RAW_INPUT_VALUE_FIELD,
+    "input_presence_provenance",
+    "upstream_declared_input_row_sha256",
+}
+EMBEDDED_OBSERVATION_RESERVED_PREFIXES = (
+    "input_presence_",
+    "input_row_sha256",
+    "raw_input_",
+    "upstream_declared_input_",
+)
 
 D1_FILE_NAMES = {
     "utr_edit_pairs": "utr_edit_pairs.jsonl",
@@ -229,12 +286,15 @@ BINDING_CHECKS = {
     "grouping_atom_projection_exact_sha256_verified_separately": True,
     "all_inputs_exact_sha256_verified": True,
     "all_jsonl_inputs_streamed": True,
-    "effect_manifest_v3_exact_version_verified": True,
+    "effect_manifest_v4_exact_version_verified": True,
     "effect_manifest_effect_schema_verified": True,
     "effect_manifest_functional_observation_schema_verified": True,
+    "effect_manifest_functional_observation_input_presence_schema_verified": True,
     "effect_manifest_n_records_matches_effect_scan": True,
-    "diff_ref_alt_independent_replay_audits_verified": True,
+    "effect_rows_functional_observation_presence_verified": True,
+    "diff_ref_alt_presence_aware_independent_replay_audits_verified": True,
     "diff_ref_alt_materialized_dispositions_crosschecked": True,
+    "diff_ref_alt_materialized_presence_crosschecked": True,
 }
 INVENTORY_POLICY = {
     "schema_version": "r3_phase0_outcome_free_inventory_policy_v1",
@@ -1080,17 +1140,31 @@ def _validate_diff_ref_alt_policy(
     if (
         policy["schema_version"] != DIFF_REF_ALT_POLICY_SCHEMA_VERSION
         or policy["key_fields"]
-        != ["context_id", "assay_context", "replicate"]
+        != [
+            "context_id",
+            "assay_context",
+            "assay_context_input_presence",
+            "replicate",
+            "replicate_input_presence",
+        ]
         or policy["context_match"] != "EXACT"
         or policy["context_required_non_null"] is not True
         or policy["assay_context_match"] != "EXACT"
         or policy["assay_context_null_policy"]
         != "ALLOW_EXACT_NULL_MECHANICAL_NO_ASSAY_CONTEXT_CLAIM"
+        or policy["assay_context_absent_policy"]
+        != "CANONICALIZE_TO_NULL_MECHANICAL_NO_ASSAY_CONTEXT_CLAIM"
         or policy["replicate_match"]
         != "EXACT_CANONICAL_TOKEN_INCLUDING_NULL"
         or policy["replicate_field"] != "replicate"
         or policy["replicate_null_policy"]
         != "ALLOW_EXACT_NULL_NO_REPLICATE_CLAIM"
+        or policy["replicate_absent_policy"]
+        != "CANONICALIZE_TO_NULL_MECHANICAL_NO_REPLICATE_CLAIM"
+        or policy["presence_match"]
+        != "EXACT_ABSENT_EXPLICIT_NULL_EXPLICIT_VALUE"
+        or policy["input_presence_provenance_schema_version"]
+        != INPUT_PRESENCE_PROVENANCE_SCHEMA_VERSION
         or policy["raw_unit_semantics"]
         != "ENDPOINT_SPECIFIC_RAW_LABEL_TOKEN_NOT_PHYSICAL_UNIT"
     ):
@@ -1113,6 +1187,167 @@ def _validate_diff_ref_alt_policy(
     return policy
 
 
+def _validate_embedded_observation_hashes(
+    observation: Mapping,
+    *,
+    index: int,
+    presence: Mapping,
+) -> None:
+    extra_reserved = sorted(
+        key
+        for key in observation
+        if any(
+            key.startswith(prefix)
+            for prefix in EMBEDDED_OBSERVATION_RESERVED_PREFIXES
+        )
+        and key not in EMBEDDED_OBSERVATION_RESERVED_FIELDS
+    )
+    if extra_reserved:
+        _fail(f"effect observation {index} has extra reserved fields")
+    declared = observation.get("input_row_sha256")
+    raw_declared = observation.get("raw_input_row_sha256")
+    if type(declared) is not str or not _HEX64.fullmatch(declared):
+        _fail(f"effect observation {index} input_row_sha256 is not canonical")
+    if type(raw_declared) is not str or not _HEX64.fullmatch(raw_declared):
+        _fail(
+            f"effect observation {index} raw_input_row_sha256 is not canonical"
+        )
+    if RAW_INPUT_VALUE_FIELD not in observation:
+        _fail(f"effect observation {index} lacks raw input value provenance")
+    normalized = dict(observation)
+    normalized.pop("input_row_sha256")
+    try:
+        normalized_actual = canonical_sha256(normalized)
+    except (TypeError, ValueError, OverflowError) as exc:
+        raise Phase0ProposalError(
+            f"effect observation {index} normalized hash replay failed"
+        ) from exc
+    if normalized_actual != declared:
+        _fail(f"effect observation {index} normalized content hash mismatch")
+
+    reconstructed = dict(normalized)
+    reconstructed.pop("raw_input_row_sha256")
+    raw_value = reconstructed.pop(RAW_INPUT_VALUE_FIELD)
+    reconstructed.pop("input_presence_provenance")
+    reconstructed["value"] = raw_value
+    upstream_marker = object()
+    upstream_declared = reconstructed.pop(
+        "upstream_declared_input_row_sha256", upstream_marker
+    )
+    if upstream_declared is not upstream_marker:
+        reconstructed["input_row_sha256"] = upstream_declared
+    for field in ("assay_context", "replicate"):
+        if presence[field] == "ABSENT_CANONICALIZED_TO_NULL":
+            reconstructed.pop(field, None)
+    try:
+        raw_actual = canonical_sha256(reconstructed)
+    except (TypeError, ValueError, OverflowError) as exc:
+        raise Phase0ProposalError(
+            f"effect observation {index} raw hash replay failed"
+        ) from exc
+    if raw_actual != raw_declared:
+        _fail(f"effect observation {index} raw content hash mismatch")
+
+
+def _validate_effect_observation_presence(row: Mapping) -> list[tuple[str, str]]:
+    observations = row.get("functional_observations")
+    if type(observations) is not list:
+        _fail("effect row lacks functional_observations v2 evidence")
+    statuses: list[tuple[str, str]] = []
+    for index, observation in enumerate(observations):
+        if type(observation) is not dict:
+            _fail(f"effect observation {index} must be an object")
+        provenance = _expect_object(
+            observation.get("input_presence_provenance"),
+            INPUT_PRESENCE_PROVENANCE_FIELDS,
+            label=f"effect observation {index} input presence",
+        )
+        if (
+            provenance["schema_version"]
+            != INPUT_PRESENCE_PROVENANCE_SCHEMA_VERSION
+        ):
+            _fail("effect observation input-presence schema is stale")
+        row_statuses = []
+        for field in ("assay_context", "replicate"):
+            status = provenance[field]
+            if type(status) is not str or status not in INPUT_PRESENCE_STATUSES:
+                _fail(f"effect observation {field} presence is invalid")
+            if field not in observation:
+                _fail(f"effect observation lacks canonicalized {field}")
+            actual = observation[field]
+            if (
+                status == "EXPLICIT_VALUE" and actual is None
+            ) or (
+                status != "EXPLICIT_VALUE" and actual is not None
+            ):
+                _fail(f"effect observation {field} presence/value conflicts")
+            row_statuses.append(status)
+        _validate_embedded_observation_hashes(
+            observation,
+            index=index,
+            presence=provenance,
+        )
+        statuses.append((row_statuses[0], row_statuses[1]))
+    return statuses
+
+
+def _validate_effect_join_key_presence(
+    row: Mapping,
+    *,
+    comparison_scale_id: str,
+    ref_present: bool,
+    alt_present: bool,
+    observation_presence: Sequence[tuple[str, str]],
+) -> tuple[str, str]:
+    join_key = _expect_object(
+        row.get("observation_join_key"),
+        OBSERVATION_JOIN_KEY_FIELDS,
+        label="effect row observation_join_key",
+    )
+    if join_key["comparison_scale_id"] != comparison_scale_id:
+        _fail("effect row observation join key scale mismatch")
+    assay_status = join_key["assay_context_input_presence"]
+    replicate_status = join_key["replicate_input_presence"]
+    any_side = ref_present or alt_present
+    if any_side:
+        if (
+            type(assay_status) is not str
+            or assay_status not in INPUT_PRESENCE_STATUSES
+            or type(replicate_status) is not str
+            or replicate_status not in INPUT_PRESENCE_STATUSES
+        ):
+            _fail("effect row observation join key presence is invalid")
+        if join_key["context_id"] is None:
+            _fail("effect row presence-aware join context is null")
+        for field, status in (
+            ("assay_context", assay_status),
+            ("replicate", replicate_status),
+        ):
+            actual = join_key[field]
+            if (
+                status == "EXPLICIT_VALUE" and actual is None
+            ) or (
+                status != "EXPLICIT_VALUE" and actual is not None
+            ):
+                _fail(f"effect row join key {field} presence/value conflicts")
+        if not observation_presence or any(
+            pair != (assay_status, replicate_status)
+            for pair in observation_presence
+        ):
+            _fail("effect observations disagree with presence-aware join key")
+    else:
+        if (
+            assay_status != NOT_APPLICABLE_PRESENCE_STATUS
+            or replicate_status != NOT_APPLICABLE_PRESENCE_STATUS
+            or join_key["context_id"] is not None
+            or join_key["assay_context"] is not None
+            or join_key["replicate"] is not None
+            or observation_presence
+        ):
+            _fail("missing-both effect row has invented presence context")
+    return assay_status, replicate_status
+
+
 def _validate_diff_ref_alt_audit(
     value: object,
     *,
@@ -1126,9 +1361,13 @@ def _validate_diff_ref_alt_audit(
     )
     if (
         audit["schema_version"] != DIFF_REF_ALT_AUDIT_SCHEMA_VERSION
-        or audit["verification_status"] != "INDEPENDENT_REPLAY_VERIFIED"
+        or audit["verification_status"]
+        != "PRESENCE_AWARE_INDEPENDENT_REPLAY_VERIFIED"
     ):
-        _fail(f"effect manifest diff audit {study} is not v3 replay-verified")
+        _fail(
+            f"effect manifest diff audit {study} is not v4 "
+            "presence-aware replay-verified"
+        )
     policy = _validate_diff_ref_alt_policy(
         audit["join_policy"],
         study=study,
@@ -1178,6 +1417,21 @@ def _validate_diff_ref_alt_audit(
         _validate_nonnegative_count_map(
             audit[field], label=f"diff audit {study} {field}"
         )
+    presence_counts = {}
+    for field in (
+        "ref_assay_context_input_presence_group_counts",
+        "alt_assay_context_input_presence_group_counts",
+        "ref_replicate_input_presence_group_counts",
+        "alt_replicate_input_presence_group_counts",
+    ):
+        counts = _validate_nonnegative_count_map(
+            audit[field],
+            label=f"diff audit {study} {field}",
+            allowed_keys=INPUT_PRESENCE_STATUSES,
+        )
+        if any(count == 0 for count in counts.values()):
+            _fail(f"diff audit {study} {field} contains a zero entry")
+        presence_counts[field] = counts
     expected_dispositions = {
         "MATCHED": audit["n_matched_groups"],
         "UNMATCHED_REF_ONLY": audit["n_unmatched_ref_groups"],
@@ -1211,6 +1465,26 @@ def _validate_diff_ref_alt_audit(
         or audit["n_consumed_alt_observation_groups"]
         != audit["n_alt_observation_groups"]
         or audit["n_consumed_side_groups"] != audit["n_input_side_groups"]
+        or sum(
+            presence_counts[
+                "ref_assay_context_input_presence_group_counts"
+            ].values()
+        ) != audit["n_consumed_ref_observation_groups"]
+        or sum(
+            presence_counts[
+                "ref_replicate_input_presence_group_counts"
+            ].values()
+        ) != audit["n_consumed_ref_observation_groups"]
+        or sum(
+            presence_counts[
+                "alt_assay_context_input_presence_group_counts"
+            ].values()
+        ) != audit["n_consumed_alt_observation_groups"]
+        or sum(
+            presence_counts[
+                "alt_replicate_input_presence_group_counts"
+            ].values()
+        ) != audit["n_consumed_alt_observation_groups"]
         or audit["expected_output_rows_from_group_conservation"]
         != expected_output
         or audit["n_output_join_rows"] != expected_output
@@ -1243,13 +1517,18 @@ def _validate_diff_ref_alt_audit(
 
 def _validate_effect_manifest_contract(value: Mapping) -> tuple[int, dict]:
     if set(value) != EFFECT_MANIFEST_FIELDS:
-        _fail("effect manifest top-level fields are not exact v3 replay schema")
+        _fail(
+            "effect manifest top-level fields are not exact v4 "
+            "presence-aware replay schema"
+        )
     if (
         value["manifest_version"] != EFFECT_DATASET_MANIFEST_VERSION
         or value["effect_dataset_schema_version"]
         != EFFECT_DATASET_SCHEMA_VERSION
         or value["functional_observation_schema_version"]
         != FUNCTIONAL_OBSERVATION_SCHEMA_VERSION
+        or value["functional_observation_input_presence_schema_version"]
+        != INPUT_PRESENCE_PROVENANCE_SCHEMA_VERSION
     ):
         _fail("effect manifest has a stale schema version")
     n_records = _require_nonnegative_int(
@@ -1275,7 +1554,10 @@ def _validate_effect_manifest_contract(value: Mapping) -> tuple[int, dict]:
         "training_ready": False,
         "split_ready": False,
     }):
-        _fail("effect manifest qualification is not exact v3 replay-only")
+        _fail(
+            "effect manifest qualification is not exact v4 "
+            "presence-aware replay-only"
+        )
     implementation = _expect_object(
         value["implementation_binding"],
         IMPLEMENTATION_BINDING_FIELDS,
@@ -1292,6 +1574,9 @@ def _validate_effect_manifest_contract(value: Mapping) -> tuple[int, dict]:
         != DIFF_REF_ALT_POLICY_SCHEMA_VERSION
         or implementation["diff_ref_alt_replay_audit_schema_version"]
         != DIFF_REF_ALT_AUDIT_SCHEMA_VERSION
+        or implementation[
+            "functional_observation_input_presence_schema_version"
+        ] != INPUT_PRESENCE_PROVENANCE_SCHEMA_VERSION
         or implementation["ordinary_only"] is not True
         or implementation["scientific_unit_authority_created"] is not False
         or implementation["estimand_authority_created"] is not False
@@ -1420,6 +1705,18 @@ def build_phase0_proposal(
     diff_disposition_counts = {
         study: Counter() for study in REQUIRED_DIFF_REF_ALT_POLICY_SHA256
     }
+    diff_presence_counts = {
+        study: {
+            field: Counter()
+            for field in (
+                "ref_assay_context_input_presence_group_counts",
+                "alt_assay_context_input_presence_group_counts",
+                "ref_replicate_input_presence_group_counts",
+                "alt_replicate_input_presence_group_counts",
+            )
+        }
+        for study in REQUIRED_DIFF_REF_ALT_POLICY_SHA256
+    }
     input_stats: dict[str, dict] = {}
 
     with tempfile.TemporaryDirectory(prefix="r3_phase0_proposal_") as tmp_name:
@@ -1438,7 +1735,13 @@ def build_phase0_proposal(
                     or row.get("functional_observation_schema_version")
                     != FUNCTIONAL_OBSERVATION_SCHEMA_VERSION
                 ):
-                    _fail("effect row has a stale or unsafe v3 schema binding")
+                    _fail("effect row has a stale or unsafe v4 schema binding")
+                observation_presence = _validate_effect_observation_presence(
+                    row
+                )
+                counters["effect_observation_rows_presence_verified"] += len(
+                    observation_presence
+                )
                 study = _require_safe_text(
                     row.get("study"), label="effect row study"
                 )
@@ -1480,6 +1783,17 @@ def build_phase0_proposal(
                         _fail(
                             "diff_ref_alt effect row disposition/presence mismatch"
                         )
+                    assay_presence, replicate_presence = (
+                        _validate_effect_join_key_presence(
+                            row,
+                            comparison_scale_id=audit[
+                                "comparison_scale_id"
+                            ],
+                            ref_present=ref_present,
+                            alt_present=alt_present,
+                            observation_presence=observation_presence,
+                        )
+                    )
                     connection.execute(
                         "INSERT OR IGNORE INTO effect_diff_pairs VALUES (?, ?)",
                         (study, pair),
@@ -1488,6 +1802,20 @@ def build_phase0_proposal(
                     counters[f"diff_effect_rows:{study}"] += 1
                     counters[f"diff_ref_present:{study}"] += int(ref_present)
                     counters[f"diff_alt_present:{study}"] += int(alt_present)
+                    if ref_present:
+                        diff_presence_counts[study][
+                            "ref_assay_context_input_presence_group_counts"
+                        ][assay_presence] += 1
+                        diff_presence_counts[study][
+                            "ref_replicate_input_presence_group_counts"
+                        ][replicate_presence] += 1
+                    if alt_present:
+                        diff_presence_counts[study][
+                            "alt_assay_context_input_presence_group_counts"
+                        ][assay_presence] += 1
+                        diff_presence_counts[study][
+                            "alt_replicate_input_presence_group_counts"
+                        ][replicate_presence] += 1
                 key = {
                     field: _category(row.get(field)) for field in CONTEXT_KEY_FIELDS
                 }
@@ -1557,10 +1885,17 @@ def build_phase0_proposal(
                     != int(counters.get(f"diff_ref_present:{study}", 0))
                     or audit["n_consumed_alt_observation_groups"]
                     != int(counters.get(f"diff_alt_present:{study}", 0))
+                    or any(
+                        audit[field]
+                        != dict(sorted(counts.items()))
+                        for field, counts in diff_presence_counts[
+                            study
+                        ].items()
+                    )
                 ):
                     _fail(
                         "effect rows disagree with manifest diff_ref_alt "
-                        f"mechanical audit for {study}"
+                        f"presence-aware mechanical audit for {study}"
                     )
 
             def visit_pair(row: dict) -> None:

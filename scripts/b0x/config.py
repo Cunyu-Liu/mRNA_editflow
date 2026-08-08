@@ -60,22 +60,38 @@ DELTA_SPECS = {
         "ref_endpoint": "ep_log2FoldChange_Ref_HEK293FT",
         "benchmark": "3U-A1",
         "join_policy": {
-            "schema_version": "diff_ref_alt_join_policy_v2_explicit_null_semantics",
+            "schema_version": "diff_ref_alt_join_policy_v3_presence_aware_null_semantics",
             "policy_id": (
                 "ENCSR854RUF_EXPLICIT_PAIRED_ENDPOINT_SCALE_"
-                "V2_EXPLICIT_NULL_SEMANTICS"
+                "V3_PRESENCE_AWARE_NULL_SEMANTICS"
             ),
-            "key_fields": ["context_id", "assay_context", "replicate"],
+            "key_fields": [
+                "context_id", "assay_context",
+                "assay_context_input_presence", "replicate",
+                "replicate_input_presence",
+            ],
             "context_match": "EXACT",
             "context_required_non_null": True,
             "assay_context_match": "EXACT",
             "assay_context_null_policy": (
                 "ALLOW_EXACT_NULL_MECHANICAL_NO_ASSAY_CONTEXT_CLAIM"
             ),
+            "assay_context_absent_policy": (
+                "CANONICALIZE_TO_NULL_MECHANICAL_NO_ASSAY_CONTEXT_CLAIM"
+            ),
             "replicate_match": "EXACT_CANONICAL_TOKEN_INCLUDING_NULL",
             "replicate_field": "replicate",
             "replicate_null_policy": (
                 "ALLOW_EXACT_NULL_NO_REPLICATE_CLAIM"
+            ),
+            "replicate_absent_policy": (
+                "CANONICALIZE_TO_NULL_MECHANICAL_NO_REPLICATE_CLAIM"
+            ),
+            "presence_match": (
+                "EXACT_ABSENT_EXPLICIT_NULL_EXPLICIT_VALUE"
+            ),
+            "input_presence_provenance_schema_version": (
+                "functional_observation_input_presence_v1"
             ),
             "ref_allowed_raw_unit_tokens": [
                 "log2FoldChange_Ref_HEK293FT",
@@ -97,22 +113,38 @@ DELTA_SPECS = {
         "ref_endpoint": "ep_n2a_activity_ref_mean",
         "benchmark": "3U-A1",
         "join_policy": {
-            "schema_version": "diff_ref_alt_join_policy_v2_explicit_null_semantics",
+            "schema_version": "diff_ref_alt_join_policy_v3_presence_aware_null_semantics",
             "policy_id": (
                 "GSE186455_EXPLICIT_PAIRED_ENDPOINT_SCALE_"
-                "V2_EXPLICIT_NULL_SEMANTICS"
+                "V3_PRESENCE_AWARE_NULL_SEMANTICS"
             ),
-            "key_fields": ["context_id", "assay_context", "replicate"],
+            "key_fields": [
+                "context_id", "assay_context",
+                "assay_context_input_presence", "replicate",
+                "replicate_input_presence",
+            ],
             "context_match": "EXACT",
             "context_required_non_null": True,
             "assay_context_match": "EXACT",
             "assay_context_null_policy": (
                 "ALLOW_EXACT_NULL_MECHANICAL_NO_ASSAY_CONTEXT_CLAIM"
             ),
+            "assay_context_absent_policy": (
+                "CANONICALIZE_TO_NULL_MECHANICAL_NO_ASSAY_CONTEXT_CLAIM"
+            ),
             "replicate_match": "EXACT_CANONICAL_TOKEN_INCLUDING_NULL",
             "replicate_field": "replicate",
             "replicate_null_policy": (
                 "ALLOW_EXACT_NULL_NO_REPLICATE_CLAIM"
+            ),
+            "replicate_absent_policy": (
+                "CANONICALIZE_TO_NULL_MECHANICAL_NO_REPLICATE_CLAIM"
+            ),
+            "presence_match": (
+                "EXACT_ABSENT_EXPLICIT_NULL_EXPLICIT_VALUE"
+            ),
+            "input_presence_provenance_schema_version": (
+                "functional_observation_input_presence_v1"
             ),
             "ref_allowed_raw_unit_tokens": [
                 "n2a_activity_ref_mean",
@@ -140,22 +172,38 @@ DELTA_SPECS = {
         "ref_endpoint": "ep_activity_HEK293_ref_mean",
         "benchmark": "3U-A1",
         "join_policy": {
-            "schema_version": "diff_ref_alt_join_policy_v2_explicit_null_semantics",
+            "schema_version": "diff_ref_alt_join_policy_v3_presence_aware_null_semantics",
             "policy_id": (
                 "GSE232571_EXPLICIT_PAIRED_ENDPOINT_SCALE_"
-                "V2_EXPLICIT_NULL_SEMANTICS"
+                "V3_PRESENCE_AWARE_NULL_SEMANTICS"
             ),
-            "key_fields": ["context_id", "assay_context", "replicate"],
+            "key_fields": [
+                "context_id", "assay_context",
+                "assay_context_input_presence", "replicate",
+                "replicate_input_presence",
+            ],
             "context_match": "EXACT",
             "context_required_non_null": True,
             "assay_context_match": "EXACT",
             "assay_context_null_policy": (
                 "ALLOW_EXACT_NULL_MECHANICAL_NO_ASSAY_CONTEXT_CLAIM"
             ),
+            "assay_context_absent_policy": (
+                "CANONICALIZE_TO_NULL_MECHANICAL_NO_ASSAY_CONTEXT_CLAIM"
+            ),
             "replicate_match": "EXACT_CANONICAL_TOKEN_INCLUDING_NULL",
             "replicate_field": "replicate",
             "replicate_null_policy": (
                 "ALLOW_EXACT_NULL_NO_REPLICATE_CLAIM"
+            ),
+            "replicate_absent_policy": (
+                "CANONICALIZE_TO_NULL_MECHANICAL_NO_REPLICATE_CLAIM"
+            ),
+            "presence_match": (
+                "EXACT_ABSENT_EXPLICIT_NULL_EXPLICIT_VALUE"
+            ),
+            "input_presence_provenance_schema_version": (
+                "functional_observation_input_presence_v1"
             ),
             "ref_allowed_raw_unit_tokens": [
                 "activity_HEK293_ref_mean",
@@ -177,22 +225,38 @@ DELTA_SPECS = {
         "ref_endpoint": "ep_activity_ref_mean",
         "benchmark": "3U-A1",
         "join_policy": {
-            "schema_version": "diff_ref_alt_join_policy_v2_explicit_null_semantics",
+            "schema_version": "diff_ref_alt_join_policy_v3_presence_aware_null_semantics",
             "policy_id": (
                 "GSE232572_EXPLICIT_PAIRED_ENDPOINT_SCALE_"
-                "V2_EXPLICIT_NULL_SEMANTICS"
+                "V3_PRESENCE_AWARE_NULL_SEMANTICS"
             ),
-            "key_fields": ["context_id", "assay_context", "replicate"],
+            "key_fields": [
+                "context_id", "assay_context",
+                "assay_context_input_presence", "replicate",
+                "replicate_input_presence",
+            ],
             "context_match": "EXACT",
             "context_required_non_null": True,
             "assay_context_match": "EXACT",
             "assay_context_null_policy": (
                 "ALLOW_EXACT_NULL_MECHANICAL_NO_ASSAY_CONTEXT_CLAIM"
             ),
+            "assay_context_absent_policy": (
+                "CANONICALIZE_TO_NULL_MECHANICAL_NO_ASSAY_CONTEXT_CLAIM"
+            ),
             "replicate_match": "EXACT_CANONICAL_TOKEN_INCLUDING_NULL",
             "replicate_field": "replicate",
             "replicate_null_policy": (
                 "ALLOW_EXACT_NULL_NO_REPLICATE_CLAIM"
+            ),
+            "replicate_absent_policy": (
+                "CANONICALIZE_TO_NULL_MECHANICAL_NO_REPLICATE_CLAIM"
+            ),
+            "presence_match": (
+                "EXACT_ABSENT_EXPLICIT_NULL_EXPLICIT_VALUE"
+            ),
+            "input_presence_provenance_schema_version": (
+                "functional_observation_input_presence_v1"
             ),
             "ref_allowed_raw_unit_tokens": [
                 "activity_ref_mean",

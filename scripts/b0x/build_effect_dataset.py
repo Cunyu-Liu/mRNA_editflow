@@ -34,29 +34,53 @@ from scripts.m4_sparse.ordinary_io import (  # noqa: E402
 
 CAND_SUFFIX = "__cand"
 SRC_SUFFIX = "__src"
-OBSERVATION_SCHEMA_VERSION = "lossless_functional_observations_v1"
+OBSERVATION_SCHEMA_VERSION = (
+    "lossless_functional_observations_v2_input_presence"
+)
+INPUT_PRESENCE_PROVENANCE_SCHEMA_VERSION = (
+    "functional_observation_input_presence_v1"
+)
 EFFECT_DATASET_SCHEMA_VERSION = (
-    "b0x_effect_row_v3_diff_ref_alt_independent_replay"
+    "b0x_effect_row_v4_presence_aware_diff_ref_alt_replay"
 )
 EFFECT_DATASET_MANIFEST_VERSION = (
-    "b0x_effect_dataset_manifest_v3_diff_ref_alt_replay"
+    "b0x_effect_dataset_manifest_v4_presence_aware_diff_ref_alt_replay"
 )
-IMPLEMENTATION_BINDING_SCHEMA_VERSION = "b0x_implementation_binding_v1"
+IMPLEMENTATION_BINDING_SCHEMA_VERSION = (
+    "b0x_implementation_binding_v2_presence_aware"
+)
 EFFECT_ROW_QUALIFICATION_STATUS = (
-    "MECHANICAL_REPLAY_REQUIRES_MATCHING_V3_MANIFEST_SCIENTIFIC_HOLD"
+    "MECHANICAL_PRESENCE_REPLAY_REQUIRES_MATCHING_V4_MANIFEST_"
+    "SCIENTIFIC_HOLD"
 )
 MANIFEST_QUALIFICATION_STATUS = (
-    "MECHANICAL_REPLAY_VERIFIED_WITH_MATCHING_V3_MANIFEST_SCIENTIFIC_HOLD"
+    "MECHANICAL_PRESENCE_REPLAY_VERIFIED_WITH_MATCHING_V4_MANIFEST_"
+    "SCIENTIFIC_HOLD"
 )
 DIFF_REF_ALT_JOIN_POLICY_SCHEMA_VERSION = (
-    "diff_ref_alt_join_policy_v2_explicit_null_semantics"
+    "diff_ref_alt_join_policy_v3_presence_aware_null_semantics"
 )
 DIFF_REF_ALT_JOIN_AUDIT_SCHEMA_VERSION = (
-    "diff_ref_alt_join_audit_v3_independent_replay"
+    "diff_ref_alt_join_audit_v4_presence_aware_independent_replay"
 )
 DIFF_REF_ALT_JOIN_KEY_FIELDS = (
-    "context_id", "assay_context", "replicate",
+    "context_id",
+    "assay_context",
+    "assay_context_input_presence",
+    "replicate",
+    "replicate_input_presence",
 )
+INPUT_PRESENCE_STATUSES = {
+    "ABSENT_CANONICALIZED_TO_NULL",
+    "EXPLICIT_NULL",
+    "EXPLICIT_VALUE",
+}
+INPUT_PRESENCE_PROVENANCE_KEYS = {
+    "schema_version",
+    "assay_context",
+    "replicate",
+}
+RAW_INPUT_VALUE_FIELD = "raw_input_value_before_numeric_normalization"
 DIFF_REF_ALT_JOIN_POLICY_KEYS = {
     "schema_version",
     "policy_id",
@@ -65,9 +89,13 @@ DIFF_REF_ALT_JOIN_POLICY_KEYS = {
     "context_required_non_null",
     "assay_context_match",
     "assay_context_null_policy",
+    "assay_context_absent_policy",
     "replicate_match",
     "replicate_field",
     "replicate_null_policy",
+    "replicate_absent_policy",
+    "presence_match",
+    "input_presence_provenance_schema_version",
     "ref_allowed_raw_unit_tokens",
     "alt_allowed_raw_unit_tokens",
     "comparison_scale_id",
@@ -101,6 +129,10 @@ DIFF_REF_ALT_JOIN_AUDIT_KEYS = {
     "join_disposition_counts",
     "delta_unavailable_reason_counts",
     "replicate_pairing_status_counts",
+    "ref_assay_context_input_presence_group_counts",
+    "alt_assay_context_input_presence_group_counts",
+    "ref_replicate_input_presence_group_counts",
+    "alt_replicate_input_presence_group_counts",
     "ref_raw_unit_token_group_counts",
     "alt_raw_unit_token_group_counts",
     "expected_input_side_group_multiset_sha256",
@@ -122,6 +154,7 @@ IMPLEMENTATION_BINDING_KEYS = {
     "manifest_version",
     "diff_ref_alt_join_policy_schema_version",
     "diff_ref_alt_replay_audit_schema_version",
+    "functional_observation_input_presence_schema_version",
     "ordinary_only",
     "scientific_unit_authority_created",
     "estimand_authority_created",
@@ -295,8 +328,20 @@ def validate_diff_ref_alt_join_policy(spec: Mapping[str, Any]) -> dict:
         "assay_context_null_policy": (
             "ALLOW_EXACT_NULL_MECHANICAL_NO_ASSAY_CONTEXT_CLAIM"
         ),
+        "assay_context_absent_policy": (
+            "CANONICALIZE_TO_NULL_MECHANICAL_NO_ASSAY_CONTEXT_CLAIM"
+        ),
         "replicate_null_policy": (
             "ALLOW_EXACT_NULL_NO_REPLICATE_CLAIM"
+        ),
+        "replicate_absent_policy": (
+            "CANONICALIZE_TO_NULL_MECHANICAL_NO_REPLICATE_CLAIM"
+        ),
+        "presence_match": (
+            "EXACT_ABSENT_EXPLICIT_NULL_EXPLICIT_VALUE"
+        ),
+        "input_presence_provenance_schema_version": (
+            INPUT_PRESENCE_PROVENANCE_SCHEMA_VERSION
         ),
         "raw_unit_semantics": DIFF_REF_ALT_RAW_UNIT_SEMANTICS,
     }
@@ -441,6 +486,14 @@ def _replicate_token(row: Mapping[str, Any]) -> str:
     return _canonical_json(value)
 
 
+def _raw_input_presence_status(row: Mapping[str, Any], field: str) -> str:
+    if field not in row:
+        return "ABSENT_CANONICALIZED_TO_NULL"
+    if row[field] is None:
+        return "EXPLICIT_NULL"
+    return "EXPLICIT_VALUE"
+
+
 def _observation_slot(row: Mapping[str, Any]) -> Tuple[str, ...]:
     """Identity at which more than one numeric value is a hard conflict.
 
@@ -491,6 +544,18 @@ def load_candidate_observations(
                     "functional observation row %d uses the builder-reserved "
                     "upstream hash namespace" % line_number
                 )
+            if "input_presence_provenance" in row:
+                raise ObservationConflictError(
+                    "functional observation row %d predeclares the reserved "
+                    "input_presence_provenance field" % line_number
+                )
+            if "raw_input_row_sha256" in row or RAW_INPUT_VALUE_FIELD in row:
+                raise ObservationConflictError(
+                    "functional observation row %d predeclares reserved raw "
+                    "input provenance fields" % line_number
+                )
+            raw_input_row_sha256 = _json_sha256(row)
+            raw_input_value = row.get("value")
             assert_ordinary_rows(
                 [row], purpose="functional observation input"
             )
@@ -532,6 +597,19 @@ def load_candidate_observations(
                 preserved["upstream_declared_input_row_sha256"] = (
                     upstream_declared_hash
                 )
+            presence = {
+                "schema_version": INPUT_PRESENCE_PROVENANCE_SCHEMA_VERSION,
+                "assay_context": _raw_input_presence_status(
+                    row, "assay_context"
+                ),
+                "replicate": _raw_input_presence_status(row, "replicate"),
+            }
+            for field in ("assay_context", "replicate"):
+                if field not in preserved:
+                    preserved[field] = None
+            preserved["input_presence_provenance"] = presence
+            preserved["raw_input_row_sha256"] = raw_input_row_sha256
+            preserved[RAW_INPUT_VALUE_FIELD] = raw_input_value
             preserved["value"] = value
             # The declared identity is self-verifiable from the exact
             # normalized preserved row after removing this reserved field.
@@ -607,9 +685,66 @@ def _observation_groups(
     return resolved
 
 
+def _paired_input_presence(
+    row: Mapping[str, Any], policy: Mapping[str, Any],
+) -> Tuple[str, str]:
+    raw = row.get("input_presence_provenance")
+    if not isinstance(raw, Mapping) or set(raw) != (
+        INPUT_PRESENCE_PROVENANCE_KEYS
+    ):
+        raise DiffRefAltJoinPolicyError(
+            "paired observation lacks exact input-presence provenance"
+        )
+    if raw.get("schema_version") != policy[
+        "input_presence_provenance_schema_version"
+    ]:
+        raise DiffRefAltJoinPolicyError(
+            "paired observation input-presence schema mismatch"
+        )
+    statuses = []
+    for field in ("assay_context", "replicate"):
+        if field not in row:
+            raise DiffRefAltJoinPolicyError(
+                "paired preserved observation lacks canonicalized %s" % field
+            )
+        status = raw.get(field)
+        if status not in INPUT_PRESENCE_STATUSES:
+            raise DiffRefAltJoinPolicyError(
+                "paired observation has invalid %s presence" % field
+            )
+        value = row[field]
+        if status in {
+            "ABSENT_CANONICALIZED_TO_NULL", "EXPLICIT_NULL",
+        } and value is not None:
+            raise DiffRefAltJoinPolicyError(
+                "%s presence says null but value is explicit" % field
+            )
+        if status == "EXPLICIT_VALUE" and value is None:
+            raise DiffRefAltJoinPolicyError(
+                "%s presence says explicit value but value is null" % field
+            )
+        if status == "ABSENT_CANONICALIZED_TO_NULL":
+            expected_policy = (
+                policy["assay_context_absent_policy"]
+                if field == "assay_context"
+                else policy["replicate_absent_policy"]
+            )
+            required_policy = (
+                "CANONICALIZE_TO_NULL_MECHANICAL_NO_ASSAY_CONTEXT_CLAIM"
+                if field == "assay_context"
+                else "CANONICALIZE_TO_NULL_MECHANICAL_NO_REPLICATE_CLAIM"
+            )
+            if expected_policy != required_policy:
+                raise DiffRefAltJoinPolicyError(
+                    "%s absent-to-null is not authorized" % field
+                )
+        statuses.append(str(status))
+    return statuses[0], statuses[1]
+
+
 def _paired_observation_join_key(
     row: Mapping[str, Any], policy: Mapping[str, Any],
-) -> Tuple[str, str, str, str]:
+) -> Tuple[str, str, str, str, str, str]:
     """Return the exact paired key after explicit unit-scale qualification.
 
     The raw unit token is deliberately absent from this derived key because it
@@ -646,10 +781,13 @@ def _paired_observation_join_key(
         raise DiffRefAltJoinPolicyError(
             "null replicate is not allowed by paired policy"
         )
+    assay_presence, replicate_presence = _paired_input_presence(row, policy)
     return (
         _canonical_json(context_id),
         _canonical_json(assay_context),
+        assay_presence,
         _canonical_json(replicate),
+        replicate_presence,
         str(policy["comparison_scale_id"]),
     )
 
@@ -661,7 +799,7 @@ def _paired_observation_groups(
     *,
     side: str,
     policy: Mapping[str, Any],
-) -> Dict[Tuple[str, str, str, str], dict]:
+) -> Dict[Tuple[str, str, str, str, str, str], dict]:
     """Group one ref/alt side under an explicit raw-unit compatibility policy."""
     if side not in {"ref", "alt"}:
         raise DiffRefAltJoinPolicyError("paired observation side is invalid")
@@ -678,7 +816,9 @@ def _paired_observation_groups(
         )
     allowed_field = "%s_allowed_raw_unit_tokens" % side
     allowed = set(policy[allowed_field])
-    groups: Dict[Tuple[str, str, str, str], List[dict]] = defaultdict(list)
+    groups: Dict[
+        Tuple[str, str, str, str, str, str], List[dict]
+    ] = defaultdict(list)
     for row_index, raw_row in enumerate(raw):
         if not isinstance(raw_row, Mapping):
             raise DiffRefAltJoinPolicyError(
@@ -734,14 +874,21 @@ def _paired_observation_groups(
 
 def _unmatched_ref_alt_reason(
     side: str,
-    key: Tuple[str, str, str, str],
-    opposite_keys: Sequence[Tuple[str, str, str, str]],
+    key: Tuple[str, str, str, str, str, str],
+    opposite_keys: Sequence[Tuple[str, str, str, str, str, str]],
 ) -> str:
     """Classify one unpaired slot without relaxing exact pairing."""
     missing = "MISSING_ALT_ENDPOINT" if side == "ref" else "MISSING_REF_ENDPOINT"
     if not opposite_keys:
         return missing
-    context, assay_context, replicate_token, comparison_scale_id = key
+    (
+        context,
+        assay_context,
+        assay_presence,
+        replicate_token,
+        replicate_presence,
+        comparison_scale_id,
+    ) = key
     same_context = [item for item in opposite_keys if item[0] == context]
     if not same_context:
         return "REF_ALT_CONTEXT_ID_MISMATCH"
@@ -750,20 +897,47 @@ def _unmatched_ref_alt_reason(
     ]
     if not same_assay:
         return "REF_ALT_ASSAY_CONTEXT_MISMATCH"
+    same_assay_presence = [
+        item for item in same_assay if item[2] == assay_presence
+    ]
+    if not same_assay_presence:
+        return "REF_ALT_ASSAY_CONTEXT_INPUT_PRESENCE_MISMATCH"
     same_replicate = [
-        item for item in same_assay if item[2] == replicate_token
+        item for item in same_assay_presence if item[3] == replicate_token
     ]
     if not same_replicate:
         return "REF_ALT_REPLICATE_MISMATCH"
-    if not any(item[3] == comparison_scale_id for item in same_replicate):
+    same_replicate_presence = [
+        item for item in same_replicate if item[4] == replicate_presence
+    ]
+    if not same_replicate_presence:
+        return "REF_ALT_REPLICATE_INPUT_PRESENCE_MISMATCH"
+    if not any(
+        item[5] == comparison_scale_id
+        for item in same_replicate_presence
+    ):
         return "REF_ALT_COMPARISON_SCALE_MISMATCH"
     return missing
 
 
-def _replicate_pairing_status(replicate_token: str) -> str:
-    if replicate_token == "null":
-        return "EXACT_NULL_SLOT_NO_REPLICATE_CLAIM"
-    return "EXACT_EXPLICIT_REPLICATE_TOKEN"
+def _replicate_pairing_status(
+    replicate_token: str, replicate_presence: str,
+) -> str:
+    if replicate_token == "null" and replicate_presence == (
+        "ABSENT_CANONICALIZED_TO_NULL"
+    ):
+        return "EXACT_ABSENT_CANONICALIZED_NULL_NO_REPLICATE_CLAIM"
+    if replicate_token == "null" and replicate_presence == "EXPLICIT_NULL":
+        return "EXACT_EXPLICIT_NULL_NO_REPLICATE_CLAIM"
+    if replicate_token != "null" and replicate_presence == "EXPLICIT_VALUE":
+        return "EXACT_EXPLICIT_REPLICATE_VALUE"
+    if replicate_token == "null" and replicate_presence == (
+        "NOT_APPLICABLE_NO_OBSERVATION"
+    ):
+        return "NOT_APPLICABLE_NO_OBSERVATION"
+    raise DiffRefAltJoinPolicyError(
+        "replicate value/presence combination is invalid"
+    )
 
 
 def _normalize_sequence(value: Any) -> str:
@@ -1095,7 +1269,9 @@ def derive_delta(study: str, spec: dict, record: dict,
             (
                 "null",
                 "null",
+                "NOT_APPLICABLE_NO_OBSERVATION",
                 "null",
+                "NOT_APPLICABLE_NO_OBSERVATION",
                 policy["comparison_scale_id"],
             )
         ]
@@ -1162,18 +1338,20 @@ def derive_delta(study: str, spec: dict, record: dict,
             rec["observation_join_key"] = {
                 "context_id": json.loads(key[0]),
                 "assay_context": json.loads(key[1]),
-                "replicate": json.loads(key[2]),
-                "comparison_scale_id": key[3],
+                "assay_context_input_presence": key[2],
+                "replicate": json.loads(key[3]),
+                "replicate_input_presence": key[4],
+                "comparison_scale_id": key[5],
             }
             rec["replicate_pairing_status"] = (
-                _replicate_pairing_status(key[2])
+                _replicate_pairing_status(key[3], key[4])
             )
             observations = ref_group["rows"] + alt_group["rows"]
             _attach_observation_provenance(rec, observations)
             # Paired policy reads only the explicit ``replicate`` field.  Do
             # not let the generic provenance helper's legacy replicate_id
             # fallback promote a mechanical id into a replicate claim.
-            rec["replicate"] = json.loads(key[2])
+            rec["replicate"] = json.loads(key[3])
             anchor = _resolved_anchor(
                 study,
                 "FUNCTIONAL_REF_ENDPOINT",
@@ -1301,12 +1479,105 @@ def _replay_input_row_hash(row: Mapping[str, Any]) -> str:
         raise DiffRefAltJoinPolicyError(
             "functional observation content disagrees with input_row_sha256"
         )
+    raw_declared = row.get("raw_input_row_sha256")
+    if (
+        not isinstance(raw_declared, str)
+        or len(raw_declared) != 64
+        or any(char not in "0123456789abcdef" for char in raw_declared)
+        or RAW_INPUT_VALUE_FIELD not in row
+    ):
+        raise DiffRefAltJoinPolicyError(
+            "functional observation lacks canonical raw-input provenance"
+        )
+    presence = row.get("input_presence_provenance")
+    if not isinstance(presence, Mapping) or set(presence) != (
+        INPUT_PRESENCE_PROVENANCE_KEYS
+    ):
+        raise DiffRefAltJoinPolicyError(
+            "raw-input replay lacks exact presence provenance"
+        )
+    reconstructed = dict(row)
+    reconstructed.pop("input_row_sha256")
+    reconstructed.pop("raw_input_row_sha256")
+    raw_value = reconstructed.pop(RAW_INPUT_VALUE_FIELD)
+    reconstructed.pop("input_presence_provenance")
+    reconstructed["value"] = raw_value
+    upstream_hash = reconstructed.pop(
+        "upstream_declared_input_row_sha256", None
+    )
+    if upstream_hash is not None:
+        reconstructed["input_row_sha256"] = upstream_hash
+    for field in ("assay_context", "replicate"):
+        if presence[field] == "ABSENT_CANONICALIZED_TO_NULL":
+            reconstructed.pop(field, None)
+    if _json_sha256(reconstructed) != raw_declared:
+        raise DiffRefAltJoinPolicyError(
+            "preserved observation disagrees with raw_input_row_sha256"
+        )
     return declared
+
+
+def _replay_input_presence(
+    row: Mapping[str, Any], policy: Mapping[str, Any],
+) -> Tuple[str, str]:
+    provenance = row.get("input_presence_provenance")
+    if not isinstance(provenance, Mapping) or set(provenance) != (
+        INPUT_PRESENCE_PROVENANCE_KEYS
+    ):
+        raise DiffRefAltJoinPolicyError(
+            "replay observation lacks exact input-presence provenance"
+        )
+    if provenance.get("schema_version") != (
+        INPUT_PRESENCE_PROVENANCE_SCHEMA_VERSION
+    ) or provenance.get("schema_version") != policy[
+        "input_presence_provenance_schema_version"
+    ]:
+        raise DiffRefAltJoinPolicyError(
+            "replay input-presence schema mismatch"
+        )
+    statuses = []
+    for field in ("assay_context", "replicate"):
+        if field not in row:
+            raise DiffRefAltJoinPolicyError(
+                "replay preserved observation lacks canonicalized %s" % field
+            )
+        status = provenance.get(field)
+        if status not in INPUT_PRESENCE_STATUSES:
+            raise DiffRefAltJoinPolicyError(
+                "replay %s input-presence status is invalid" % field
+            )
+        if status in {
+            "ABSENT_CANONICALIZED_TO_NULL", "EXPLICIT_NULL",
+        } and row[field] is not None:
+            raise DiffRefAltJoinPolicyError(
+                "replay %s presence/value conflict" % field
+            )
+        if status == "EXPLICIT_VALUE" and row[field] is None:
+            raise DiffRefAltJoinPolicyError(
+                "replay %s explicit-value presence is null" % field
+            )
+        if status == "ABSENT_CANONICALIZED_TO_NULL":
+            actual_policy = (
+                policy["assay_context_absent_policy"]
+                if field == "assay_context"
+                else policy["replicate_absent_policy"]
+            )
+            required_policy = (
+                "CANONICALIZE_TO_NULL_MECHANICAL_NO_ASSAY_CONTEXT_CLAIM"
+                if field == "assay_context"
+                else "CANONICALIZE_TO_NULL_MECHANICAL_NO_REPLICATE_CLAIM"
+            )
+            if actual_policy != required_policy:
+                raise DiffRefAltJoinPolicyError(
+                    "replay %s absent-to-null policy mismatch" % field
+                )
+        statuses.append(str(status))
+    return statuses[0], statuses[1]
 
 
 def _replay_exact_join_key(
     row: Mapping[str, Any], policy: Mapping[str, Any],
-) -> Tuple[str, str, str, str]:
+) -> Tuple[str, str, str, str, str, str]:
     """Independently reconstruct the exact key without replicate_id fallback."""
     for field in ("context_id", "assay_context", "replicate"):
         if field not in row:
@@ -1338,10 +1609,13 @@ def _replay_exact_join_key(
         raise DiffRefAltJoinPolicyError(
             "replay policy does not allow a null replicate slot"
         )
+    assay_presence, replicate_presence = _replay_input_presence(row, policy)
     return (
         _canonical_json(context_id),
         _canonical_json(assay_context),
+        assay_presence,
         _canonical_json(replicate),
+        replicate_presence,
         policy["comparison_scale_id"],
     )
 
@@ -1353,7 +1627,7 @@ def _replay_side_groups(
     endpoint: str,
     side: str,
     policy: Mapping[str, Any],
-) -> Dict[Tuple[str, str, str, str], dict]:
+) -> Dict[Tuple[str, str, str, str, str, str], dict]:
     """Rebuild side groups independently from preserved observation evidence."""
     if side not in {"ref", "alt"}:
         raise DiffRefAltJoinPolicyError("replay side is invalid")
@@ -1364,7 +1638,9 @@ def _replay_side_groups(
             "replay observations must be a structured list"
         )
     allowed = set(policy["%s_allowed_raw_unit_tokens" % side])
-    grouped: Dict[Tuple[str, str, str, str], List[dict]] = defaultdict(list)
+    grouped: Dict[
+        Tuple[str, str, str, str, str, str], List[dict]
+    ] = defaultdict(list)
     for raw_row in rows:
         if not isinstance(raw_row, Mapping):
             raise DiffRefAltJoinPolicyError(
@@ -1425,8 +1701,8 @@ def _replay_side_groups(
 
 def _replay_unmatched_reason(
     side: str,
-    key: Tuple[str, str, str, str],
-    opposite_keys: Sequence[Tuple[str, str, str, str]],
+    key: Tuple[str, str, str, str, str, str],
+    opposite_keys: Sequence[Tuple[str, str, str, str, str, str]],
 ) -> str:
     """Independently classify an orphan without invoking derive logic."""
     if side not in {"ref", "alt"}:
@@ -1436,7 +1712,14 @@ def _replay_unmatched_reason(
             "MISSING_ALT_ENDPOINT" if side == "ref"
             else "MISSING_REF_ENDPOINT"
         )
-    context, assay_context, replicate, scale = key
+    (
+        context,
+        assay_context,
+        assay_presence,
+        replicate,
+        replicate_presence,
+        scale,
+    ) = key
     same_context = [item for item in opposite_keys if item[0] == context]
     if not same_context:
         return "REF_ALT_CONTEXT_ID_MISMATCH"
@@ -1445,12 +1728,22 @@ def _replay_unmatched_reason(
     ]
     if not same_assay:
         return "REF_ALT_ASSAY_CONTEXT_MISMATCH"
+    same_assay_presence = [
+        item for item in same_assay if item[2] == assay_presence
+    ]
+    if not same_assay_presence:
+        return "REF_ALT_ASSAY_CONTEXT_INPUT_PRESENCE_MISMATCH"
     same_replicate = [
-        item for item in same_assay if item[2] == replicate
+        item for item in same_assay_presence if item[3] == replicate
     ]
     if not same_replicate:
         return "REF_ALT_REPLICATE_MISMATCH"
-    if not any(item[3] == scale for item in same_replicate):
+    same_replicate_presence = [
+        item for item in same_replicate if item[4] == replicate_presence
+    ]
+    if not same_replicate_presence:
+        return "REF_ALT_REPLICATE_INPUT_PRESENCE_MISMATCH"
+    if not any(item[5] == scale for item in same_replicate_presence):
         return "REF_ALT_COMPARISON_SCALE_MISMATCH"
     return (
         "MISSING_ALT_ENDPOINT" if side == "ref"
@@ -1458,12 +1751,16 @@ def _replay_unmatched_reason(
     )
 
 
-def _join_key_object(key: Tuple[str, str, str, str]) -> dict:
+def _join_key_object(
+    key: Tuple[str, str, str, str, str, str],
+) -> dict:
     return {
         "context_id": json.loads(key[0]),
         "assay_context": json.loads(key[1]),
-        "replicate": json.loads(key[2]),
-        "comparison_scale_id": key[3],
+        "assay_context_input_presence": key[2],
+        "replicate": json.loads(key[3]),
+        "replicate_input_presence": key[4],
+        "comparison_scale_id": key[5],
     }
 
 
@@ -1474,7 +1771,7 @@ def _side_group_hash(
     candidate_id: str,
     side: str,
     endpoint: str,
-    key: Tuple[str, str, str, str],
+    key: Tuple[str, str, str, str, str, str],
     group: Mapping[str, Any],
 ) -> str:
     return _json_sha256({
@@ -1650,6 +1947,10 @@ def summarize_diff_ref_alt_join_audits(
         dispositions: Counter[str] = Counter()
         unavailable_reasons: Counter[str] = Counter()
         replicate_statuses: Counter[str] = Counter()
+        ref_assay_presence_counts: Counter[str] = Counter()
+        alt_assay_presence_counts: Counter[str] = Counter()
+        ref_replicate_presence_counts: Counter[str] = Counter()
+        alt_replicate_presence_counts: Counter[str] = Counter()
         ref_unit_tokens: Counter[str] = Counter()
         alt_unit_tokens: Counter[str] = Counter()
         consumed_ref_groups = 0
@@ -1673,7 +1974,7 @@ def summarize_diff_ref_alt_join_audits(
                 EFFECT_ROW_QUALIFICATION_STATUS
             ):
                 raise DiffRefAltJoinPolicyError(
-                    "effect output row does not require its v3 manifest"
+                    "effect output row does not require its v4 manifest"
                 )
             if row.get("functional_observation_schema_version") != (
                 OBSERVATION_SCHEMA_VERSION
@@ -1770,7 +2071,12 @@ def summarize_diff_ref_alt_join_audits(
             ref_key, ref_group = ref_item if ref_item else (None, None)
             alt_key, alt_group = alt_item if alt_item else (None, None)
             key = ref_key or alt_key or (
-                "null", "null", "null", policy["comparison_scale_id"]
+                "null",
+                "null",
+                "NOT_APPLICABLE_NO_OBSERVATION",
+                "null",
+                "NOT_APPLICABLE_NO_OBSERVATION",
+                policy["comparison_scale_id"],
             )
             expected_for_pair = expected_groups_by_pair[descriptor_key]
             if ref_present and alt_present:
@@ -1857,11 +2163,11 @@ def summarize_diff_ref_alt_join_audits(
                 raise DiffRefAltJoinPolicyError(
                     "observation_join_key disagrees with independent replay"
                 )
-            if row.get("replicate") != json.loads(key[2]):
+            if row.get("replicate") != json.loads(key[3]):
                 raise DiffRefAltJoinPolicyError(
                     "top-level replicate used a non-policy fallback"
                 )
-            replicate_status = _replicate_pairing_status(key[2])
+            replicate_status = _replicate_pairing_status(key[3], key[4])
             if row.get("replicate_pairing_status") != replicate_status:
                 raise DiffRefAltJoinPolicyError(
                     "replicate pairing status disagrees with replay"
@@ -1954,6 +2260,12 @@ def summarize_diff_ref_alt_join_audits(
                 if item is None:
                     continue
                 group_key, group = item
+                if side == "ref":
+                    ref_assay_presence_counts[group_key[2]] += 1
+                    ref_replicate_presence_counts[group_key[4]] += 1
+                else:
+                    alt_assay_presence_counts[group_key[2]] += 1
+                    alt_replicate_presence_counts[group_key[4]] += 1
                 consumed_side_hashes[_side_group_hash(
                     study=study,
                     pair_id=pair_id,
@@ -1989,6 +2301,18 @@ def summarize_diff_ref_alt_join_audits(
             raise DiffRefAltJoinPolicyError(
                 "missing-both output multiset does not equal materialized pairs"
             )
+        if (
+            sum(ref_assay_presence_counts.values()) != consumed_ref_groups
+            or sum(ref_replicate_presence_counts.values())
+            != consumed_ref_groups
+            or sum(alt_assay_presence_counts.values())
+            != consumed_alt_groups
+            or sum(alt_replicate_presence_counts.values())
+            != consumed_alt_groups
+        ):
+            raise DiffRefAltJoinPolicyError(
+                "side-specific presence counts fail group conservation"
+            )
         materialized_registry = {
             (item["pair_id"], item["candidate_sequence_id"])
             for item in descriptors
@@ -2021,7 +2345,9 @@ def summarize_diff_ref_alt_join_audits(
 
         audit = {
             "schema_version": DIFF_REF_ALT_JOIN_AUDIT_SCHEMA_VERSION,
-            "verification_status": "INDEPENDENT_REPLAY_VERIFIED",
+            "verification_status": (
+                "PRESENCE_AWARE_INDEPENDENT_REPLAY_VERIFIED"
+            ),
             "join_policy": policy,
             "join_policy_sha256": policy_sha256,
             "policy_id": policy["policy_id"],
@@ -2060,6 +2386,18 @@ def summarize_diff_ref_alt_join_audits(
             ),
             "replicate_pairing_status_counts": dict(
                 sorted(replicate_statuses.items())
+            ),
+            "ref_assay_context_input_presence_group_counts": dict(
+                sorted(ref_assay_presence_counts.items())
+            ),
+            "alt_assay_context_input_presence_group_counts": dict(
+                sorted(alt_assay_presence_counts.items())
+            ),
+            "ref_replicate_input_presence_group_counts": dict(
+                sorted(ref_replicate_presence_counts.items())
+            ),
+            "alt_replicate_input_presence_group_counts": dict(
+                sorted(alt_replicate_presence_counts.items())
             ),
             "ref_raw_unit_token_group_counts": dict(
                 sorted(ref_unit_tokens.items())
@@ -2227,6 +2565,9 @@ def build(out_dir: Path) -> dict:
         "diff_ref_alt_replay_audit_schema_version": (
             DIFF_REF_ALT_JOIN_AUDIT_SCHEMA_VERSION
         ),
+        "functional_observation_input_presence_schema_version": (
+            INPUT_PRESENCE_PROVENANCE_SCHEMA_VERSION
+        ),
         "ordinary_only": True,
         "scientific_unit_authority_created": False,
         "estimand_authority_created": False,
@@ -2240,6 +2581,9 @@ def build(out_dir: Path) -> dict:
         "manifest_version": EFFECT_DATASET_MANIFEST_VERSION,
         "effect_dataset_schema_version": EFFECT_DATASET_SCHEMA_VERSION,
         "functional_observation_schema_version": OBSERVATION_SCHEMA_VERSION,
+        "functional_observation_input_presence_schema_version": (
+            INPUT_PRESENCE_PROVENANCE_SCHEMA_VERSION
+        ),
         "qualification": {
             "status": MANIFEST_QUALIFICATION_STATUS,
             "dataset_without_manifest": "NOT_QUALIFIED",
