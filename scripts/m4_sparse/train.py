@@ -18,14 +18,25 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader, Sampler
+from scipy.stats import spearmanr
 
 from .checkpoint import build_checkpoint_payload
+from .config import (
+    CHECKPOINT_SELECTION_POLICY,
+    DEV_SIGN_ACCURACY_GATE,
+    RANK_PAIR_DEFINITION,
+    RANK_PUBLICATION_POLICY,
+    RANK_PUBLICATION_POLICY_STATUS,
+    RANK_SCORE_DEFINITION,
+)
 from .dataset import (
     EffectDataset,
     UNKNOWN_CONTEXT,
     normalize,
 )
-from .model import SparseEditFormer
+from .model import (
+    SparseEditFormer, calibrated_sign_probability, standardized_delta_logit,
+)
 
 
 def build_folds(rows: List[dict], benchmark: str, split: str = "S4") -> List[Dict]:
@@ -170,8 +181,12 @@ def rank_supervision_summary(dataset: EffectDataset) -> dict:
             for right in range(left + 1, len(values)):
                 informative_pairs += int(values[left] != values[right])
     return {
-        "eligible_rank_groups": len(by_group),
-        "informative_rank_pairs": informative_pairs,
+        "status": ("DEV_UNCALIBRATED_TIES" if informative_pairs > 0
+                   else "NOT_RUN_ZERO_QUALIFIED_PAIRS"),
+        "eligible_rank_group_count": len(by_group),
+        "qualified_rank_pair_count": informative_pairs,
+        "pair_definition": RANK_PAIR_DEFINITION,
+        "score_definition": RANK_SCORE_DEFINITION,
     }
 
 
@@ -202,10 +217,13 @@ def _pairwise_rank_loss(score: torch.Tensor, target: torch.Tensor,
             continue
         score_diff = score[left] - score[right]
         direction = torch.sign(target_diff[informative])
-        losses.append(F.relu(margin - direction * score_diff[informative]))
+        # Each biological pool is one supervision unit.  Mean within pool
+        # first so an m-candidate pool cannot dominate as O(m^2) pairs.
+        losses.append(
+            F.relu(margin - direction * score_diff[informative]).mean())
     if not losses:
         return score.sum() * 0.0
-    return torch.cat(losses).mean()
+    return torch.stack(losses).mean()
 
 
 def _drop_context(ids: torch.Tensor, unk_id: int, probability: float,
@@ -220,6 +238,16 @@ def _drop_context(ids: torch.Tensor, unk_id: int, probability: float,
         mask = mask.clone()
         mask[torch.randint(mask.numel(), (1,), device=ids.device)] = True
     return torch.where(mask, torch.full_like(ids, int(unk_id)), ids)
+
+
+def _predicted_delta(out: Dict[str, torch.Tensor], batch: Dict[str, torch.Tensor],
+                     cfg) -> torch.Tensor:
+    """Apply the frozen target/anchor semantics to the predicted mean."""
+    if cfg.TARGET == "delta":
+        return out["mean"]
+    if cfg.TARGET == "candidate_value":
+        return out["mean"] - batch["source_value"]
+    raise ValueError("unsupported regression TARGET %r" % cfg.TARGET)
 
 
 def compute_loss(model, batch, cfg, device) -> Dict[str, torch.Tensor]:
@@ -238,6 +266,11 @@ def compute_loss(model, batch, cfg, device) -> Dict[str, torch.Tensor]:
                 cand_pad_mask=batch.get("cand_pad_mask"))
     regression_target = batch["y"]
     delta = batch["delta"]
+    predicted_delta = _predicted_delta(out, batch, cfg)
+    # Sign classification may update mu but cannot win by shrinking sigma;
+    # uncertainty calibration remains on the NLL/calibration track.
+    detached_logvar = out["logvar"].detach()
+    sign_logit = standardized_delta_logit(predicted_delta, detached_logvar)
 
     # The mean head is trained once with a robust Huber objective.  The
     # variance calibration term uses a detached residual, so it trains log-var
@@ -253,10 +286,12 @@ def compute_loss(model, batch, cfg, device) -> Dict[str, torch.Tensor]:
     # head is trained on absolute candidate value.
     mask = delta != 0
     if mask.sum() > 0:
-        bce = F.binary_cross_entropy_with_logits(out["sign"][mask],
-                                                 batch["sign"][mask])
+        sign_probability = calibrated_sign_probability(
+            predicted_delta, detached_logvar, temperature=1.0)
+        bce = F.binary_cross_entropy(sign_probability[mask],
+                                     batch["sign"][mask])
     else:
-        bce = out["sign"].sum() * 0.0
+        bce = sign_logit.sum() * 0.0
 
     # Antisymmetry is defined only for a native delta model.  Absolute
     # candidate values are not antisymmetric under source/candidate reversal.
@@ -269,16 +304,19 @@ def compute_loss(model, batch, cfg, device) -> Dict[str, torch.Tensor]:
     else:
         consis = out["mean"].sum() * 0.0
 
-    # Ranking compares delta only among candidates of one source/study/endpoint.
+    # Ranking directly constrains predicted delta mean among candidates of one
+    # qualified source/study/endpoint/context pool.  There is no rank head.
     rank_mask = batch["rank_group_eligible"].bool()
     rank_loss = _pairwise_rank_loss(
-        out["rank"][rank_mask], delta[rank_mask], cfg.MARGIN, device,
+        predicted_delta[rank_mask], delta[rank_mask], cfg.MARGIN, device,
         groups=batch["source_group"][rank_mask],
     )
 
+    effective_rank_weight = float(getattr(
+        cfg, "EFFECTIVE_LAMBDA_RANK", 0.0))
     loss = (cfg.LAMBDA_MEAN * huber + cfg.LAMBDA_VAR * nll
             + cfg.LAMBDA_SIGN * bce + cfg.LAMBDA_CONSISTENCY * consis
-            + cfg.LAMBDA_RANK * rank_loss)
+            + effective_rank_weight * rank_loss)
     return {"loss": loss, "huber": huber, "nll": nll, "bce": bce,
             "consis": consis, "rank": rank_loss}
 
@@ -297,24 +335,266 @@ def _train_epoch(model, loader, opt, cfg, device) -> float:
     return tot / max(nb, 1)
 
 
+def _finite_number(value) -> bool:
+    return (isinstance(value, (int, float)) and not isinstance(value, bool)
+            and np.isfinite(float(value)))
+
+
 @torch.no_grad()
-def _eval_loss(model, loader, cfg, device, target_delta: bool) -> float:
+def evaluate_dev_selection_metrics(model, dev_rows, vocab, cfg, device,
+                                   epoch: int) -> dict:
+    """Study-then-endpoint-balanced metrics for the prospective selector.
+
+    Raw effects are never pooled across endpoints.  Metrics are computed in
+    each study/endpoint cell, macro-averaged over endpoints within study, then
+    macro-averaged over studies.  Every registered dev cell must be complete.
+    """
     model.eval()
-    tot, nb = 0.0, 0
+    ds = EffectDataset(dev_rows, vocab, target=cfg.TARGET)
+    loader = DataLoader(ds, batch_size=cfg.BATCH_SIZE, shuffle=False,
+                        num_workers=0)
+    pred_delta, true_delta, logvars = [], [], []
     for batch in loader:
         b = {k: v.to(device) for k, v in batch.items()}
         out = model(b["src"], b["cand"], b["edit"], b["study"], b["endpoint"],
                     b["bench"], src_pad_mask=b.get("src_pad_mask"),
                     cand_pad_mask=b.get("cand_pad_mask"))
-        y = b["y"]
-        mse = F.mse_loss(out["mean"], y)
-        tot += mse.item()
-        nb += 1
-    return tot / max(nb, 1)
+        pred_delta.append(_predicted_delta(out, b, cfg).cpu().numpy())
+        true_delta.append(b["delta"].cpu().numpy())
+        logvars.append(out["logvar"].clamp(-10.0, 10.0).cpu().numpy())
+    pred_delta = np.concatenate(pred_delta)
+    true_delta = np.concatenate(true_delta)
+    logvars = np.concatenate(logvars)
+    if len(pred_delta) != len(dev_rows):
+        raise RuntimeError("dev prediction rows do not align with dev metadata")
+
+    cell_keys = sorted({
+        (str(row.get("study") or ""), str(row.get("endpoint") or ""))
+        for row in dev_rows
+    })
+    per_study_endpoint = {}
+    for study, endpoint in cell_keys:
+        indices = np.asarray([
+            index for index, row in enumerate(dev_rows)
+            if (str(row.get("study") or "") == study
+                and str(row.get("endpoint") or "") == endpoint)
+        ], dtype=int)
+        truth = true_delta[indices]
+        pred = pred_delta[indices]
+        lv = logvars[indices]
+        nonzero = truth != 0
+        sign_accuracy = (
+            float(np.mean((pred[nonzero] >= 0.0) == (truth[nonzero] > 0.0)))
+            if nonzero.any() else None
+        )
+        spearman = None
+        if len(indices) >= 3 and np.std(truth) > 0 and np.std(pred) > 0:
+            value = spearmanr(pred, truth).statistic
+            if np.isfinite(value):
+                spearman = float(value)
+        nll_values = 0.5 * (np.exp(-lv) * (truth - pred) ** 2 + lv)
+        gaussian_nll = (
+            float(np.mean(nll_values))
+            if len(nll_values) and np.all(np.isfinite(nll_values)) else None
+        )
+        complete = all(_finite_number(value) for value in (
+            sign_accuracy, spearman, gaussian_nll
+        ))
+        per_study_endpoint[study + "|" + endpoint] = {
+            "study": study,
+            "endpoint": endpoint,
+            "n_rows": int(len(indices)),
+            "n_nonzero_sign": int(nonzero.sum()),
+            "sign_accuracy": sign_accuracy,
+            "delta_spearman": spearman,
+            "gaussian_nll": gaussian_nll,
+            "complete": complete,
+        }
+
+    complete_cells = [entry for entry in per_study_endpoint.values()
+                      if entry["complete"]]
+    coverage = (float(len(complete_cells) / len(per_study_endpoint))
+                if per_study_endpoint else 0.0)
+    per_study = {}
+    for study in sorted({key[0] for key in cell_keys}):
+        cells = [entry for entry in per_study_endpoint.values()
+                 if entry["study"] == study]
+        study_complete = bool(cells) and all(entry["complete"] for entry in cells)
+        per_study[study] = {
+            "n_endpoints": len(cells),
+            "complete": study_complete,
+            "endpoint_macro_sign_accuracy": (
+                float(np.mean([entry["sign_accuracy"] for entry in cells]))
+                if study_complete else None),
+            "endpoint_macro_delta_spearman": (
+                float(np.mean([entry["delta_spearman"] for entry in cells]))
+                if study_complete else None),
+        }
+    complete_studies = [entry for entry in per_study.values()
+                        if entry["complete"]]
+    metrics = {
+        "epoch": int(epoch),
+        "study_macro_endpoint_balanced_sign_accuracy": (
+            float(np.mean([entry["endpoint_macro_sign_accuracy"]
+                           for entry in complete_studies]))
+            if coverage == 1.0 else None
+        ),
+        "study_macro_endpoint_balanced_delta_spearman": (
+            float(np.mean([entry["endpoint_macro_delta_spearman"]
+                           for entry in complete_studies]))
+            if coverage == 1.0 else None
+        ),
+        "study_endpoint_coverage": coverage,
+        "coverage_denominator_status": "UNBOUND_DYNAMIC_DEV_ROWS",
+        "expected_membership_manifest_sha256": None,
+        "gaussian_nll_reporting_level": (
+            "STUDY_ENDPOINT_CELL_ONLY_NO_CROSS_ENDPOINT_AGGREGATION"),
+        "n_dev_studies": int(len(per_study)),
+        "n_complete_studies": int(len(complete_studies)),
+        "n_dev_study_endpoints": int(len(per_study_endpoint)),
+        "n_complete_study_endpoints": int(len(complete_cells)),
+        "n_dev_rows": int(len(dev_rows)),
+        "per_study": per_study,
+        "per_study_endpoint": per_study_endpoint,
+    }
+    metrics["status"] = (
+        "COMPLETE" if coverage == 1.0
+        else "INELIGIBLE_MISSING_STUDY_ENDPOINT_METRIC"
+    )
+    return metrics
+
+
+def checkpoint_selection_key(metrics: Dict) -> Optional[tuple]:
+    """Return the diagnostic key; raw endpoint NLL is report-only."""
+    required = (
+        "study_macro_endpoint_balanced_sign_accuracy",
+        "study_macro_endpoint_balanced_delta_spearman",
+        "study_endpoint_coverage", "epoch",
+    )
+    missing = [name for name in required if not _finite_number(metrics.get(name))]
+    if missing or float(metrics.get("study_endpoint_coverage", 0.0)) != 1.0:
+        raise ValueError(
+            "dev checkpoint candidate missing complete study/endpoint metrics: "
+            + ", ".join(missing or ["study_endpoint_coverage"])
+        )
+    sign = float(metrics["study_macro_endpoint_balanced_sign_accuracy"])
+    # Maximize sign then Spearman and prefer the earliest epoch.  Raw Gaussian
+    # NLL is never compared across endpoint scales.
+    return (
+        sign,
+        float(metrics["study_macro_endpoint_balanced_delta_spearman"]),
+        -int(metrics["epoch"]),
+    )
+
+
+def select_dev_checkpoint(history: List[Dict]) -> Dict:
+    """Always preserve a deterministic diagnostic state and full history."""
+    if not history:
+        raise RuntimeError("checkpoint selection requires dev metric history")
+    epochs = [entry.get("epoch") for entry in history]
+    if len(set(epochs)) != len(epochs):
+        raise RuntimeError("checkpoint selection history has duplicate epochs")
+    complete = []
+    invalid = []
+    for metrics in history:
+        try:
+            key = checkpoint_selection_key(metrics)
+        except ValueError as exc:
+            invalid.append((metrics.get("epoch"), str(exc)))
+            continue
+        complete.append((key, metrics))
+    if complete:
+        selected = max(complete, key=lambda item: item[0])[1]
+        selection_status = (
+            "DEV_DIAGNOSTIC_SIGN_GATE_MET"
+            if float(selected[
+                "study_macro_endpoint_balanced_sign_accuracy"])
+            >= DEV_SIGN_ACCURACY_GATE
+            else "HOLD_BELOW_SIGN_GATE"
+        )
+    else:
+        selected = min(history, key=lambda entry: int(entry.get("epoch", 0)))
+        selection_status = "NO_DEV_ADMISSIBLE_CHECKPOINT"
+    return {
+        "selected_epoch": int(selected["epoch"]),
+        "selected_metrics": selected,
+        "selection_status": selection_status,
+        "scientific_gate_status": "HOLD_EXPECTED_DENOMINATOR_NOT_BOUND",
+        "invalid_epoch_diagnostics": invalid,
+    }
+
+
+def build_rank_publication_qualification(rank_status: str,
+                                         evidence_hashes: Optional[Dict] = None,
+                                         observed: Optional[Dict] = None) -> dict:
+    """Build a fail-closed placeholder until an authority policy is frozen.
+
+    This code intentionally contains no active numeric publication thresholds.
+    Pair availability and even complete hashes remain development evidence;
+    official O0/G1 requires a future external, pre-training, hash-bound policy
+    artifact and an independent verifier added under a new schema.
+    """
+    hashes = {
+        "dataset_sha256": None,
+        "inclusion_manifest_sha256": None,
+        "context_source_crosswalk_sha256": None,
+        "endpoint_estimand_registry_sha256": None,
+        **(evidence_hashes or {}),
+    }
+    values = {
+        "independent_study_count": 0,
+        "qualified_pool_count": 0,
+        "endpoints_fully_nested_by_study": True,
+        "all_held_out_endpoints_have_training_support": False,
+        **(observed or {}),
+    }
+    valid_hash = lambda value: (
+        isinstance(value, str) and len(value) == 64
+        and all(char in "0123456789abcdef" for char in value)
+    )
+    diagnostics = {
+        "all_evidence_hashes_bound": all(valid_hash(value)
+                                          for value in hashes.values()),
+        "dev_rank_pairs_present_unqualified": rank_status
+        == "DEV_UNCALIBRATED_TIES",
+    }
+    return {
+        "policy": RANK_PUBLICATION_POLICY,
+        "policy_authority_status": RANK_PUBLICATION_POLICY_STATUS,
+        "external_authority_artifact_sha256": None,
+        "thresholds": None,
+        "evidence_hashes": hashes,
+        "observed": values,
+        "diagnostics_not_qualification_checks": diagnostics,
+        "status": "HOLD_REQUIRES_PREREGISTERED_RANK_QUALIFICATION_POLICY",
+    }
+
+
+def development_scope_from_qualification(qualification: Dict) -> dict:
+    observed = qualification["observed"]
+    study_count = int(observed["independent_study_count"])
+    nested = bool(observed["endpoints_fully_nested_by_study"])
+    held_endpoint_support = bool(
+        observed["all_held_out_endpoints_have_training_support"])
+    if study_count <= 2 and nested:
+        claim_status = "DEVELOPMENT_ONLY_TWO_STUDY_NESTED_ENDPOINTS"
+    elif not held_endpoint_support:
+        claim_status = "DEVELOPMENT_ONLY_UNSEEN_HELD_OUT_ENDPOINTS"
+    else:
+        claim_status = "DEVELOPMENT_ONLY_PENDING_PUBLICATION_QUALIFICATION"
+    return {
+        "independent_study_count": study_count,
+        "endpoints_fully_nested_by_study": nested,
+        "all_held_out_endpoints_have_training_support": held_endpoint_support,
+        "claim_status": claim_status,
+        "sign_gate_is_not_publication_unlock": True,
+    }
 
 
 def train_fold(fold: Dict, cfg, vocab: Dict, device, out_path: Optional[Path] = None,
-               seed: Optional[int] = None) -> SparseEditFormer:
+               seed: Optional[int] = None,
+               rank_publication_qualification: Optional[Dict] = None
+               ) -> SparseEditFormer:
     torch.manual_seed(int(seed if seed is not None else cfg.SEED))
     np.random.seed(int(seed if seed is not None else cfg.SEED))
     cfg.STUDY_UNK_ID = vocab["study"][UNKNOWN_CONTEXT]
@@ -329,52 +609,108 @@ def train_fold(fold: Dict, cfg, vocab: Dict, device, out_path: Optional[Path] = 
     tt, dev = grouped_train_dev_split(train_rows, cfg.DEV_FRAC, run_seed)
 
     train_ds = EffectDataset(tt, vocab, target=cfg.TARGET)
-    dev_ds = EffectDataset(dev, vocab, target=cfg.TARGET)
     train_loader = DataLoader(
         train_ds,
         batch_sampler=GroupBatchSampler(train_ds.source_group, cfg.BATCH_SIZE,
                                         run_seed),
         num_workers=0,
     )
-    dev_loader = DataLoader(dev_ds, batch_size=cfg.BATCH_SIZE, shuffle=False,
-                            num_workers=0)
-
     model = SparseEditFormer(cfg).to(device)
     opt = torch.optim.AdamW(model.parameters(), lr=cfg.LR, weight_decay=cfg.WEIGHT_DECAY)
 
     rank_summary = rank_supervision_summary(train_ds)
-    if cfg.LAMBDA_RANK > 0 and rank_summary["informative_rank_pairs"] == 0:
+    if rank_publication_qualification is None:
+        scope_rows = list(fold.get("train", [])) + list(fold.get("test", []))
+        studies = {str(row.get("study") or "") for row in scope_rows}
+        endpoint_studies = defaultdict(set)
+        for row in scope_rows:
+            endpoint_studies[str(row.get("endpoint") or "")].add(
+                str(row.get("study") or ""))
+        endpoints_nested = bool(endpoint_studies) and all(
+            len(owner_studies) == 1
+            for owner_studies in endpoint_studies.values()
+        )
+        rank_publication_qualification = build_rank_publication_qualification(
+            rank_summary["status"],
+            observed={
+                "independent_study_count": len(studies),
+                "endpoints_fully_nested_by_study": endpoints_nested,
+                "all_held_out_endpoints_have_training_support": (
+                    {str(row.get("endpoint") or "")
+                     for row in fold.get("test", [])}
+                    <= {str(row.get("endpoint") or "")
+                        for row in fold.get("train", [])}
+                ),
+            },
+        )
+    development_scope = development_scope_from_qualification(
+        rank_publication_qualification)
+    if (cfg.LAMBDA_RANK > 0
+            and rank_summary["qualified_rank_pair_count"] == 0):
         warnings.warn(
-            "R2 rank objective has no qualified informative pairs; mean/sign "
-            "training may proceed but rank evidence is NOT_RUN",
+            "R3-P0 rank objective has no qualified informative pairs; effect "
+            "training may proceed but every ranking/G1 consumer is blocked",
             RuntimeWarning,
         )
-    best_dev, best_state = float("inf"), None
-    for epoch in range(cfg.EPOCHS):
-        tr = _train_epoch(model, train_loader, opt, cfg, device)
-        dv = _eval_loss(model, dev_loader, cfg, device, target_delta=(cfg.TARGET == "delta"))
-        if dv < best_dev:
-            best_dev = dv
-            best_state = {k: v.detach().cpu().clone() for k, v in model.state_dict().items()}
-
-    if best_state is None:
-        raise RuntimeError(
-            "R2 training produced no finite dev-selected checkpoint state"
+    elif rank_summary["qualified_rank_pair_count"] > 0:
+        warnings.warn(
+            "rank pairs are development diagnostics with uncalibrated ties; "
+            "EFFECTIVE_LAMBDA_RANK=0 and no rank gradient is applied",
+            RuntimeWarning,
         )
+    history = []
+    states_by_epoch = {}
+    for epoch in range(cfg.EPOCHS):
+        _train_epoch(model, train_loader, opt, cfg, device)
+        metrics = evaluate_dev_selection_metrics(
+            model, dev, vocab, cfg, device, epoch=epoch)
+        history.append(metrics)
+        states_by_epoch[epoch] = {
+            key: value.detach().cpu().clone()
+            for key, value in model.state_dict().items()
+        }
+
+    selection_decision = select_dev_checkpoint(history)
+    selected_epoch = int(selection_decision["selected_epoch"])
+    best_state = states_by_epoch[selected_epoch]
     model.load_state_dict(best_state)
     cfg.SIGN_TEMPERATURE = calibrate_sign_temperature(
         model, dev, vocab, cfg, device)
-    cfg.SIGN_DECISION_RULE = "sign_head_logit_ge_0_r2_prospective_v1"
-    cfg.SIGN_CALIBRATION_METHOD = "temperature_scaling_grouped_dev_v1"
+    # Positive temperature calibrates probabilities only.  The hard decision
+    # remains predicted_delta_mean >= 0 and the 0.60 selection gate is frozen.
+    dev_selection = {
+        "policy": CHECKPOINT_SELECTION_POLICY,
+        "sign_accuracy_gate": DEV_SIGN_ACCURACY_GATE,
+        "selected_epoch": selected_epoch,
+        "selected_metrics": selection_decision["selected_metrics"],
+        "selection_status": selection_decision["selection_status"],
+        "scientific_gate_status": selection_decision[
+            "scientific_gate_status"],
+        "expected_membership_manifest_sha256": None,
+        "invalid_epoch_diagnostics": selection_decision[
+            "invalid_epoch_diagnostics"],
+        "history": history,
+    }
+    model.rank_supervision = dict(rank_summary)
+    model.rank_publication_qualification = dict(
+        rank_publication_qualification)
+    model.development_scope = dict(development_scope)
     if out_path is not None:
         out_path.parent.mkdir(parents=True, exist_ok=True)
         payload = build_checkpoint_payload(
-            best_state, cfg, fold["held_out_study"], vocab
+            best_state, cfg, fold["held_out_study"], vocab,
+            rank_supervision=rank_summary,
+            dev_selection=dev_selection,
+            rank_publication_qualification=rank_publication_qualification,
+            development_scope=development_scope,
         )
         payload["training_semantics"] = {
-            **rank_summary,
+            "rank_supervision": rank_summary,
             "dev_split": "grouped_source_alias_component_v1",
             "rank_batching": "group_preserving_v1",
+            "checkpoint_selection": dev_selection,
+            "rank_publication_qualification": rank_publication_qualification,
+            "development_scope": development_scope,
             "source_overlap_rows_excluded": int(
                 fold.get("n_train_excluded_source_overlap", 0)),
         }
@@ -398,7 +734,10 @@ def calibrate_sign_temperature(model, dev_rows, vocab, cfg, device) -> float:
                         cand_pad_mask=bb.get("cand_pad_mask"))
             mask = bb["delta"] != 0
             if mask.sum() > 0:
-                logits.append(out["sign"][mask].cpu())
+                predicted_delta = _predicted_delta(out, bb, cfg)
+                sign_logit = standardized_delta_logit(
+                    predicted_delta, out["logvar"])
+                logits.append(sign_logit[mask].cpu())
                 labels.append(bb["sign"][mask].float().cpu())
     if not logits:
         return 1.0
@@ -412,8 +751,11 @@ def calibrate_sign_temperature(model, dev_rows, vocab, cfg, device) -> float:
     def closure():
         opt.zero_grad()
         temperature = torch.exp(log_T).clamp(min=0.1, max=10.0)
-        loss = F.binary_cross_entropy_with_logits(
-            logits.to(device) / temperature, labels.to(device))
+        z = logits.to(device) / temperature
+        probability = 0.5 * (1.0 + torch.erf(z / (2.0 ** 0.5)))
+        eps = torch.finfo(probability.dtype).eps
+        loss = F.binary_cross_entropy(
+            probability.clamp(min=eps, max=1.0 - eps), labels.to(device))
         loss.backward()
         return loss
     opt.step(closure)

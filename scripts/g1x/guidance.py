@@ -16,8 +16,9 @@ Guidance policies (methods compared in G1-X):
                        expansion of the effect field).
   * rate_cfg         : base + beta * (frozen critic candidate delta), i.e.
                        classifier-free / rate CFG on the critic reward.
-  * latent_cfg       : base + beta * (frozen critic rank head) -- guidance on the
-                       critic's ranking signal.
+  * latent_cfg       : base + beta * frozen critic predicted delta mean.  R3-P0
+                       forbids an independent rank head, so this label is a
+                       compatibility alias with distinct policy accounting.
   * dgm_learned      : pure learned-ratio guidance (NO base flow): guided logits =
                        beta * (frozen critic candidate delta).  This is the
                        *learned/approximate rate guidance* (per G0-X wording
@@ -178,8 +179,8 @@ def critic_score(model, vocab, device, src_seq: str, cand_seq: str,
                     src_pad_mask=src_mask, cand_pad_mask=cand_mask)
     mean = float(out["mean"].item())
     lv = float(out["logvar"].item())
-    rank = float(out["rank"].item())
     delta = _delta_from_mean(model, mean, source_value)
+    rank = float(delta)
     return {"mean": mean, "logvar": lv, "rank": rank, "delta": delta}
 
 
@@ -259,9 +260,9 @@ def critic_scores_batch(critic, vocab, device, src_seq: str, cand_seqs: List[str
         out = critic(src, cand, ef, sid, eid, bid,
                      src_pad_mask=src_mask, cand_pad_mask=cand_mask)
     mean = out["mean"].cpu().numpy()
-    rank = out["rank"].cpu().numpy()
     lv = out["logvar"].cpu().numpy()
     delta = _delta_from_mean(critic, mean, source_value)
+    rank = np.asarray(delta)
     return {"mean": mean, "rank": rank, "logvar": lv, "delta": delta}
 
 
@@ -329,11 +330,49 @@ def _ctx(**kw):
             "source_value": None, **kw}
 
 
+def _require_qualified_rank_supervision(critic) -> None:
+    """Fail closed for G1 under the unfrozen R3-P0 rank policy.
+
+    Non-zero exact-delta pairs are useful development diagnostics, but ties,
+    sampling and publication coverage have no pre-registered authority in this
+    schema.  Consequently no in-process metadata can promote a critic to an
+    official G1 consumer.
+    """
+    metadata = getattr(critic, "rank_supervision", None)
+    if (not isinstance(metadata, dict)
+            or metadata.get("status") != "DEV_UNCALIBRATED_TIES"
+            or int(metadata.get("qualified_rank_pair_count", 0)) <= 0):
+        raise RuntimeError(
+            "G1 critic policy requires qualified within-pool rank supervision; "
+            "zero/unknown qualified pairs are effect-only and fail closed"
+        )
+    publication = getattr(critic, "rank_publication_qualification", None)
+    scope = getattr(critic, "development_scope", None)
+    if (not isinstance(publication, dict)
+            or publication.get("status") != (
+                "HOLD_REQUIRES_PREREGISTERED_RANK_QUALIFICATION_POLICY")
+            or not isinstance(scope, dict)
+            or not str(scope.get("claim_status", "")).startswith(
+                "DEVELOPMENT_ONLY_")):
+        raise RuntimeError(
+            "G1 rank metadata is incompatible with the fail-closed R3-P0 "
+            "publication schema"
+        )
+    raise RuntimeError(
+        "G1 is HOLD_REQUIRES_PREREGISTERED_RANK_QUALIFICATION_POLICY; "
+        "DEV_UNCALIBRATED_TIES pairs cannot unlock an official consumer"
+    )
+
+
 def _critic_reward_policy(base_net, critic, vocab, beta, device,
                           use_rank: bool, ctx):
-    """rate_cfg (use_rank=False, critic delta) or latent_cfg (use_rank=True,
-    critic rank head).  guided = base + beta * critic_reward_after_action.
-    All legal actions' critic scores are computed in ONE batched forward."""
+    """Critic guidance on predicted delta mean after rank qualification.
+
+    ``use_rank`` is retained only so the pre-registered strategy labels remain
+    stable.  Both branches consume the same predicted-delta score; no separate
+    rank head exists in R3-P0.
+    """
+    _require_qualified_rank_supervision(critic)
     c = _ctx(**(ctx or {}))
     # Resolve conditioning ids once; unseen contexts route only to the trained
     # reserved UNK embedding.
@@ -347,7 +386,7 @@ def _critic_reward_policy(base_net, critic, vocab, beta, device,
         cands = [apply_action(state, a).seq for a in actions]
         sc = critic_scores_batch(critic, vocab, device, state.source_seq, cands,
                                  study, endpoint, bench, c["source_value"])
-        reward = sc["rank"] if use_rank else sc["delta"]
+        reward = sc["delta"]
         gl = bl + beta * reward
         return {"guided_logits": gl, "base_logits": bl, "ratio": None,
                 "critic_mean": float(sc["mean"].mean()) if len(sc["mean"]) else None,
@@ -372,6 +411,7 @@ def dgm_learned_step_policy(critic, vocab, beta, device, ctx=None):
     approximate rate guidance (G0-X wording boundary: learned critic ratio,
     NOT exact q/p1).  All legal actions' critic scores in one batched forward.
     """
+    _require_qualified_rank_supervision(critic)
     c = _ctx(**(ctx or {}))
     study = c["study"] if c["study"] in vocab["study"] else UNKNOWN_CONTEXT
     endpoint = (c["endpoint"] if c["endpoint"] in vocab["endpoint"]

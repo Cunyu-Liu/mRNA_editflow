@@ -1,0 +1,57 @@
+{
+  "schema_version": "r3_endpoint_estimand_registry_v1",
+  "status": "PROPOSAL_NON_ACTIVE",
+  "registry_id": "R3-ENDPOINT-ESTIMAND-PROPOSAL-EXAMPLE",
+  "version": "proposal-only",
+  "frozen_at_utc": null,
+  "entries": [],
+  "required_entry_fields": [
+    "study",
+    "endpoint",
+    "raw_source_field",
+    "raw_candidate_field",
+    "raw_unit",
+    "direction",
+    "transform",
+    "valid_domain",
+    "role",
+    "replicate_policy",
+    "source_citation",
+    "source_evidence_sha256"
+  ],
+  "allowed_values": {
+    "direction": [
+      "HIGHER_IS_MORE_STABLE",
+      "LOWER_IS_MORE_STABLE",
+      "SIGNED_EFFECT_AS_REPORTED"
+    ],
+    "transform": [
+      "IDENTITY_DIFFERENCE",
+      "NATURAL_LOG_RATIO",
+      "DECAY_RATE_DIFFERENCE"
+    ],
+    "valid_domain": [
+      "FINITE",
+      "STRICTLY_POSITIVE"
+    ],
+    "role": [
+      "PRIMARY",
+      "SECONDARY_SENSITIVITY",
+      "DEVELOPMENT"
+    ],
+    "replicate_policy": [
+      "SINGLE_OBSERVATION_ONLY",
+      "PRESERVE_FOR_HIERARCHICAL_MODEL",
+      "PRE_REGISTERED_AGGREGATE_WITH_SE"
+    ]
+  },
+  "activation_requirements": [
+    "Replace PROPOSAL_NON_ACTIVE with FROZEN only after scientific review.",
+    "Bind exact registry bytes by SHA-256 before ordinary preparation.",
+    "Cite and hash the source defining endpoint unit, direction and estimand.",
+    "Do not infer log-ratio or decay-rate transforms from observed values.",
+    "PRIMARY must use IDENTITY_DIFFERENCE; log-ratio and decay-rate transforms are SECONDARY_SENSITIVITY only.",
+    "Multi-replicate primary use additionally requires a bound hierarchical model or pre-registered aggregate and SE implementation."
+  ],
+  "warning": "This file is documentation only. The R3 parser intentionally rejects it as non-frozen."
+}

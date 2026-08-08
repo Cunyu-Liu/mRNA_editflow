@@ -221,9 +221,7 @@ def test_first_order_guidance_shifts_mass_toward_high_effect():
     assert guided[pos0_idxs].sum() > 0.5  # dominated by high-effect position
 
 
-def test_rate_cfg_and_latent_cfg_return_dict_contract():
-    st = _state("ACGU")
-    acts = enumerate_legal_actions(st)
+def test_rate_cfg_and_latent_cfg_hold_without_preregistered_rank_policy():
     net = _DummyNet()
     critic = _DummyCritic()
     vocab = _r2_vocab()
@@ -231,23 +229,46 @@ def test_rate_cfg_and_latent_cfg_return_dict_contract():
            "source_value": 1.0}
     for name, builder in [("rate_cfg", rate_cfg_step_policy),
                           ("latent_cfg", latent_cfg_step_policy)]:
-        pol = builder(net, critic, vocab, beta=1.0, device=None, ctx=ctx)
-        info = pol(st, acts)
-        assert "guided_logits" in info and "base_logits" in info
-        assert len(info["guided_logits"]) == len(acts)
+        with pytest.raises(RuntimeError, match="HOLD_REQUIRES_PREREGISTERED"):
+            builder(net, critic, vocab, beta=1.0, device=None, ctx=ctx)
 
 
-def test_dgm_learned_has_no_base_logits():
-    st = _state("ACGU")
-    acts = enumerate_legal_actions(st)
+@pytest.mark.parametrize("builder", [
+    rate_cfg_step_policy, latent_cfg_step_policy, dgm_learned_step_policy,
+])
+def test_critic_driven_g1_policy_rejects_zero_rank_supervision(builder):
+    critic = _DummyCritic()
+    critic.rank_supervision = {
+        "status": "NOT_RUN_ZERO_QUALIFIED_PAIRS",
+        "qualified_rank_pair_count": 0,
+    }
+    kwargs = dict(vocab=_r2_vocab(), beta=1.0, device=None,
+                  ctx={"study": None, "endpoint": None, "bench": "5U-A1",
+                       "source_value": 1.0})
+    with pytest.raises(RuntimeError, match="effect-only and fail closed"):
+        if builder is dgm_learned_step_policy:
+            builder(critic, **kwargs)
+        else:
+            builder(_DummyNet(), critic, **kwargs)
+
+
+def test_g1_rejects_dev_pairs_under_unfrozen_publication_policy():
+    critic = _DummyCritic()
+    with pytest.raises(RuntimeError, match="HOLD_REQUIRES_PREREGISTERED"):
+        rate_cfg_step_policy(
+            _DummyNet(), critic, _r2_vocab(), beta=1.0, device=None,
+            ctx={"study": None, "endpoint": None, "bench": "5U-A1",
+                 "source_value": 1.0})
+
+
+def test_dgm_learned_holds_without_preregistered_rank_policy():
     critic = _DummyCritic()
     vocab = _r2_vocab()
     ctx = {"study": None, "endpoint": None, "bench": "5U-A1",
            "source_value": 1.0}
-    pol = dgm_learned_step_policy(critic, vocab, beta=1.0, device=None, ctx=ctx)
-    info = pol(st, acts)
-    assert info["base_logits"] is None
-    assert len(info["guided_logits"]) == len(acts)
+    with pytest.raises(RuntimeError, match="HOLD_REQUIRES_PREREGISTERED"):
+        dgm_learned_step_policy(
+            critic, vocab, beta=1.0, device=None, ctx=ctx)
 
 
 # ---------------------------------------------------------------------------
@@ -398,28 +419,16 @@ def test_runner_context_fallback_is_explicit_unknown_not_none():
     assert held["endpoint"] == "ep"
 
 
-def test_gtr_builder_policy_returns_dict_contract():
-    """generate_then_rerank policy must return a dict (not a plain array) and
-    base_logits must equal the base-flow guided logits.  Regression: the base
-    step policy returns a dict, so `np.asarray(base_policy(...))` raised
-    TypeError; we must read `["guided_logits"]`."""
+def test_gtr_builder_holds_without_preregistered_rank_policy():
     from scripts.g1x import run_g1x as R
-    st = _state("ACGU", budget=1)
-    acts = enumerate_legal_actions(st)
     net = _DummyNet()
     critic = _DummyCritic()
     vocab = _r2_vocab()
     ctx = {"study": None, "endpoint": None, "bench": "5U-A1",
            "source_value": 1.0}
-    builder = R._gtr_builder(net, None, critic, vocab, beta=1.0,
-                             device=torch.device("cpu"), ctx=ctx)
-    info = builder(st, acts)
-    assert isinstance(info, dict)
-    assert "guided_logits" in info and "base_logits" in info
-    assert len(info["guided_logits"]) == len(acts)
-    # base flow is uniform -> base_logits are all-equal (uniform preference)
-    bl = np.asarray(info["base_logits"])
-    assert np.allclose(bl, bl[0])
+    with pytest.raises(RuntimeError, match="HOLD_REQUIRES_PREREGISTERED"):
+        R._gtr_builder(net, None, critic, vocab, beta=1.0,
+                       device=torch.device("cpu"), ctx=ctx)
 
 
 def test_gtr_builder_unknown_context_uses_reserved_embedding():
@@ -427,6 +436,18 @@ def test_gtr_builder_unknown_context_uses_reserved_embedding():
     from scripts.m4_sparse.dataset import UNKNOWN_CONTEXT
 
     class CaptureCritic:
+        rank_supervision = {
+            "status": "DEV_UNCALIBRATED_TIES",
+            "qualified_rank_pair_count": 1,
+        }
+        rank_publication_qualification = {
+            "status": (
+                "HOLD_REQUIRES_PREREGISTERED_RANK_QUALIFICATION_POLICY"),
+        }
+        development_scope = {
+            "claim_status": "DEVELOPMENT_ONLY_PENDING_PUBLICATION_QUALIFICATION",
+        }
+
         def __init__(self):
             self.context_ids = []
 
@@ -441,15 +462,13 @@ def test_gtr_builder_unknown_context_uses_reserved_embedding():
         "endpoint": {"ep": 0, UNKNOWN_CONTEXT: 1},
         "benchmark": {"5U-A1": 0, UNKNOWN_CONTEXT: 1},
     }
-    policy = R._gtr_builder(_DummyNet(), None, critic, vocab, beta=1.0,
-                            device=torch.device("cpu"),
-                            ctx={"study": None, "endpoint": None,
-                                 "bench": "5U-A1", "source_value": None})
-    state = _state("ACGU", budget=1)
-    policy(state, enumerate_legal_actions(state))
-    sid, eid = critic.context_ids[0]
-    assert torch.all(sid == 1)
-    assert torch.all(eid == 1)
+    with pytest.raises(RuntimeError, match="HOLD_REQUIRES_PREREGISTERED"):
+        R._gtr_builder(
+            _DummyNet(), None, critic, vocab, beta=1.0,
+            device=torch.device("cpu"),
+            ctx={"study": None, "endpoint": None,
+                 "bench": "5U-A1", "source_value": None})
+    assert critic.context_ids == []
 
 
 def test_generation_quality_returns_structure_and_respects_budget():
@@ -495,6 +514,17 @@ class _DummyNet:
 
 class _DummyCritic:
     """Minimal stand-in for the frozen SparseEditFormer critic."""
+
+    rank_supervision = {
+        "status": "DEV_UNCALIBRATED_TIES",
+        "qualified_rank_pair_count": 1,
+    }
+    rank_publication_qualification = {
+        "status": "HOLD_REQUIRES_PREREGISTERED_RANK_QUALIFICATION_POLICY",
+    }
+    development_scope = {
+        "claim_status": "DEVELOPMENT_ONLY_PENDING_PUBLICATION_QUALIFICATION",
+    }
 
     def __call__(self, src, cand, ef, sid, eid, bid, **kwargs):
         B = src.shape[0]

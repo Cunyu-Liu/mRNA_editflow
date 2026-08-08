@@ -1,0 +1,210 @@
+schema_version: XEDITFLOW_CLAIM_MATRIX_V2_1_PROPOSAL_V1
+
+revision_authority:
+  status: PROPOSED_REDLINE_NOT_ACTIVE
+  parent_contract_path: /Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna 最新合同-v2.md
+  parent_contract_sha256: 9c79edd819e45551974bcfeb14a400dd504c55c0a7c869e456e638daf49f1c1e
+  parent_contract_authority_role: SOURCE_PROPOSAL_NOT_ACTIVE
+  current_active_executable_contract_path: docs/contracts/mrna_xeditflow_goal_v1_1.md
+  current_active_executable_contract_sha256: fc9c1c882efbaa4c1e86f4da2e1be64e219755fb9c5941da4b4309793d3d8c2f
+  current_active_executable_config_path: configs/mrna_xeditflow_contract_v1_1.yaml
+  current_active_executable_config_sha256: b3be70e765fb8285996487815ee6a4494ca4cc7fb503dae2901b40a0382d83cf
+  successor_must_explicitly_supersede_active_v1_1: true
+  active_contract_mutation: false
+  user_review_required_for_activation: true
+
+selected_route: BENCHMARK_CRITIC_ROUTE_A_THEN_B_ORDINARY_ONLY
+route_authorization_scope:
+  implementation: AUTHORIZED
+  ordinary_development: AUTHORIZED_AFTER_FROZEN_INPUT_PREFLIGHT
+  real_training_now: HOLD_INPUT_AUTHORITY
+  active_contract_replacement: NOT_AUTHORIZED
+  O0_G1_E0_unlock: NOT_AUTHORIZED
+
+effect_gate:
+  conjunctive: true
+  macro_delta_spearman: ">=0.25"
+  macro_sign_accuracy: ">=0.60"
+  stable_selection_metric: PASS_UNDER_FROZEN_NON_PATHOLOGICAL_DEFINITION
+  strongest_same_information_set_baseline_win: true
+  substitutions_prohibited:
+    - SIGN_AS_SECONDARY
+    - SELECTIVE_SIGN_FOR_FULL_PRIMARY_SIGN
+    - ABSTENTION_TO_HIDE_FAILURE
+    - BEST_SEED_OR_THRESHOLD_SELECTION
+    - SPEARMAN_OR_SELECTION_GAIN_FOR_SIGN
+    - SEALED_INFORMED_MODEL_OR_ROUTE_SELECTION
+
+sealed_policy:
+  development_access: PROHIBITED
+  primary_access: ONE_TIME_AFTER_ALL_ORDINARY_GATES_FROZEN
+  post_unblinding_retuning: PROHIBITED
+  post_unblinding_primary_reaccess: PROHIBITED
+  post_unblinding_exploration_label: POST_UNBLINDING_EXPLORATORY
+
+information_set_leaderboards:
+  - NO_ANCHOR_ZERO_PRIOR
+  - EDIT_ONLY
+  - CANDIDATE_ONLY
+  - PAIRED_SEQUENCE_NO_MEASURED_ANCHOR
+  - MEASURED_SOURCE_ANCHOR_ASSISTED
+  - FOUNDATION_EXPOSURE_STRATIFIED
+
+critic_candidates:
+  current_R2:
+    status: HISTORICAL_DIAGNOSTIC_ONLY
+    information_set: PAIRED_SEQUENCE_PLUS_STUDY_PROXY
+    contains_study_proxy: true
+    same_information_set_comparator_eligible: false
+    strongest_baseline_gate_eligible: false
+    exclusion_reason: CURRENT_IMPLEMENTATION_CONTAINS_STUDY_PROXY
+  R2_style_no_explicit_study_adaptation:
+    display_name: R2-style no-explicit-study cross-attention adaptation
+    status: DEVELOPMENT_DIAGNOSTIC_AFTER_INPUT_FREEZE
+    information_set: PAIRED_SEQUENCE_NO_MEASURED_ANCHOR
+    contains_explicit_study_id_input_or_embedding: false
+    semantic_study_proxy_exclusion_established: false
+    historical_r2_single_variable_ablation: false
+    same_information_set_comparator_eligibility: DEVELOPMENT_ONLY_PENDING_AUDITS
+    strongest_baseline_gate_eligibility: false
+    missing_qualification_evidence:
+      - FROZEN_HISTORICAL_R2_ARCHITECTURE_CROSSWALK
+      - HASH_BOUND_ENDPOINT_CONTEXT_REGION_TO_STUDY_PROXY_AUDIT
+      - SAME_FROZEN_ROWS_SPLIT_SEEDS_BUDGET_AND_FEATURE_ALLOWLIST
+  future_faithful_R2_no_study_comparator:
+    status: NOT_IMPLEMENTED
+    qualification_requirements:
+      - PRESERVE_ALL_PREREGISTERED_HISTORICAL_R2_MODULES_EXCEPT_STUDY_BRANCH
+      - FRESH_TRAINING_NO_HISTORICAL_CHECKPOINT_REUSE
+      - NO_EXPLICIT_STUDY_IN_PREDICTIVE_SCHEMA_VOCAB_EMBEDDING_CHECKPOINT_FORWARD_OR_INFERENCE_API
+      - SEMANTIC_STUDY_PROXY_AUDIT_PASS
+      - STUDY_ALLOWED_ONLY_FOR_OUTCOME_BLIND_SPLIT_BALANCING_STRATIFIED_EVALUATION_AND_AUDIT
+  A_exact_potential_difference:
+    status: AUTHORIZED_FOR_ORDINARY_DEVELOPMENT_AFTER_INPUT_FREEZE
+    required_strong_same_information_set_comparators:
+      - FULL_PAIR_UNRESTRICTED_SIAMESE
+    development_diagnostics_before_A:
+      - R2_STYLE_NO_EXPLICIT_STUDY_ADAPTATION
+    required_algebraic_diagnostic: A_PARAMETER_MATCHED_UNRESTRICTED_SIAMESE
+    low_rank_diagnostic_strongest_baseline_eligible: false
+  B_sparse_edit_set_additive:
+    status: AUTHORIZED_AFTER_A_AND_INPUT_FREEZE
+  B_sparse_edit_set_interaction:
+    status: NOT_RUN_UNLESS_ACTION_SUPPORT_PUBLICATION_QUALIFIED
+
+r2_same_information_set_comparator_policy: CURRENT_R2_STYLE_ADAPTATION_NOT_STRONGEST_BASELINE_ELIGIBLE
+
+bare_exact_label: PROHIBITED
+
+guidance_claim_axes:
+  relationship: ORTHOGONAL_ALL_THREE_REQUIRED
+  required_fields:
+    - computational_exactness
+    - target_epistemic_status
+    - method_provenance
+  computational_exactness:
+    allowed_values:
+      - EXACT_FINITE_ENUMERATION_RELATIVE_TO_DECLARED_TARGET
+      - EXACT_BY_THEOREM_IMPLEMENTATION_MATCH
+      - FIRST_ORDER_NUMERICAL_APPROXIMATION
+      - GENERAL_NUMERICAL_APPROXIMATION
+      - NOT_ESTABLISHED
+    does_not_assert:
+      - BIOLOGICAL_TARGET_VALIDITY
+      - METHOD_ORIGINALITY
+  target_epistemic_status:
+    allowed_values:
+      - DECLARED_FINITE_REFERENCE_TARGET
+      - DECLARED_MODEL_TARGET
+      - EMPIRICAL_ENDPOINT_TARGET_WITH_SAMPLING_UNCERTAINTY
+      - LEARNED_SURROGATE_WITHOUT_BIOLOGICAL_ERROR_BOUND
+      - BIOLOGICAL_OPTIMUM_NOT_IDENTIFIED
+    does_not_assert:
+      - COMPUTATIONAL_EXACTNESS
+      - METHOD_ORIGINALITY
+  method_provenance:
+    allowed_values:
+      - FINITE_STATE_REFERENCE_CALCULATION
+      - DGM_DOOB_DERIVED_ADAPTATION
+      - GENERATE_THEN_RERANK
+      - PROJECT_NEW_THEORY_AFTER_G0_PASS
+    does_not_assert:
+      - COMPUTATIONAL_EXACTNESS
+      - BIOLOGICAL_TARGET_VALIDITY
+
+claims:
+  BENCHMARK_CRITIC:
+    status: LOCKED_PENDING_ORDINARY_EVIDENCE
+    prerequisites:
+      - GO_DATA
+      - GO_EFFECT
+      - SIX_INFORMATION_SET_BASELINES_COMPLETE
+      - SOURCE_RELATION_COMPONENT_SPLIT_AUDIT_PASS
+    allowed_wording: provenance-controlled benchmark and winning source-conditioned effect critic
+
+  MEASURED_NEIGHBORHOOD_OPTIMIZATION:
+    status: LOCKED_PENDING_O0_HEADROOM_AND_RANK_POLICY
+    prerequisites:
+      - GO_EFFECT
+      - O0_HEADROOM_ESTABLISHED
+      - STABLE_SELECTION_METRIC_FROZEN
+      - PUBLICATION_RANK_POLICY_QUALIFIED
+    allowed_wording: measured-neighborhood ranking and search utility
+
+  C3_GUIDANCE_ADAPTATION:
+    status: LOCKED_PENDING_ORDINARY_EMPIRICAL_GATE
+    prerequisites:
+      - GO_EFFECT
+      - O0_HEADROOM_ESTABLISHED
+      - INDEPENDENT_EVALUATOR
+      - MATCHED_TOTAL_FORWARD_EQUIVALENTS
+      - MATCHED_WALL_TIME_FRONTIER
+      - ORDINARY_G1_EMPIRICAL_GATE_PASS
+    allowed_wording: DGM/Doob-derived learned rate guidance
+    disallowed_wording:
+      - novel exact guidance
+      - first exact biological edit-graph guidance
+      - exact real-mRNA guidance
+
+  C3_NEW_GUIDANCE_THEORY:
+    status: PROHIBITED_UNLESS_G0_NEW_THEORY_PASS
+    prerequisites:
+      - PRIOR_ART_NONTRIVIAL_DIFFERENCE
+      - FORMAL_NEW_THEOREM
+      - INDEPENDENT_PROOF_REVIEW
+      - INDEPENDENT_ACTUAL_RATE_CHECKER
+      - COMPLETE_COMPLEXITY_ACCOUNTING
+      - APPROXIMATION_ERROR_PROPAGATION_BOUND
+      - NO_FULL_TERMINAL_ENUMERATION_IN_SCALABILITY_CLAIM
+    allowed_wording: only the exact theorem statement with explicit assumptions
+
+guidance_artifact_defaults:
+  finite_toy_reference:
+    computational_exactness: EXACT_FINITE_ENUMERATION_RELATIVE_TO_DECLARED_TARGET
+    target_epistemic_status: DECLARED_FINITE_REFERENCE_TARGET
+    method_provenance: FINITE_STATE_REFERENCE_CALCULATION
+    claim_limit: REFERENCE_VERIFICATION_ONLY
+  learned_real_mrna:
+    computational_exactness: NOT_ESTABLISHED
+    target_epistemic_status: LEARNED_SURROGATE_WITHOUT_BIOLOGICAL_ERROR_BOUND
+    method_provenance: DGM_DOOB_DERIVED_ADAPTATION
+    claim_limit: NOT_EXACT_BIOLOGICAL_TARGET
+  first_order_learned_real_mrna:
+    computational_exactness: FIRST_ORDER_NUMERICAL_APPROXIMATION
+    target_epistemic_status: LEARNED_SURROGATE_WITHOUT_BIOLOGICAL_ERROR_BOUND
+    method_provenance: DGM_DOOB_DERIVED_ADAPTATION
+    claim_limit: EMPIRICAL_ADAPTATION_ONLY
+  critic_only_after_generation:
+    computational_exactness: NOT_ESTABLISHED
+    target_epistemic_status: LEARNED_SURROGATE_WITHOUT_BIOLOGICAL_ERROR_BOUND
+    method_provenance: GENERATE_THEN_RERANK
+    claim_limit: NOT_GUIDED_GENERATION
+
+activation:
+  status: NOT_ACTIVE
+  required_actions:
+    - USER_APPROVES_EXACT_REDLINE
+    - NEW_VERSIONED_CONTRACT_WITH_PARENT_LINEAGE
+    - CONTRACT_CLAIM_METRIC_PREREG_CONFIG_CONSISTENCY_AUDIT
+    - PRE_UNBLINDING_REVISION_TIMESTAMP_AND_HASHES
+    - INDEPENDENT_NO_GATE_LOWERING_REVIEW

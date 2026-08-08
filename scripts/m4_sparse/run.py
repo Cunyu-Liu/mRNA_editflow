@@ -23,8 +23,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # repo root
 
 from scripts.m4_sparse import config as C
 from scripts.m4_sparse.dataset import build_vocab
-from scripts.m4_sparse.evaluate import run_fold_evaluation, macro_over_folds, predict_model
-from scripts.m4_sparse.rerank import rerank_sources
+from scripts.m4_sparse.evaluate import run_fold_evaluation, macro_over_folds
 from scripts.m4_sparse.train import (
     build_folds, train_fold, calibrate_sign_temperature,
     grouped_train_dev_split,
@@ -131,6 +130,16 @@ def main():
                 model_cfg = sd["cfg"]
                 model = SparseEditFormer(model_cfg).to(device)
                 model.load_state_dict(sd["state_dict"])
+                model.rank_supervision = {
+                    "status": sd["rank_supervision_status"],
+                    "qualified_rank_pair_count": sd["qualified_rank_pair_count"],
+                    "eligible_rank_group_count": sd["eligible_rank_group_count"],
+                    "pair_definition": sd["rank_pair_definition"],
+                    "score_definition": sd["rank_score_definition"],
+                }
+                model.rank_publication_qualification = sd[
+                    "rank_publication_qualification"]
+                model.development_scope = sd["development_scope"]
                 print("[" + benchmark + "/" + fold["held_out_study"] + "] loaded checkpoint")
             else:
                 model = train_fold(fold, fold_cfg, fold_vocab, device, out_path=ckpt)
@@ -141,9 +150,36 @@ def main():
             fe = run_fold_evaluation(model, fold, fold_vocab, model_cfg, device)
             fe["temperature"] = T
             fe["vocab_sha256"] = vocab_sha256(fold_vocab)
-            pred_test = predict_model(
-                model, fold["test"], fold_vocab, model_cfg, device)
-            fe["rerank"] = rerank_sources(fold["test"], pred_test)
+            fe["development_scope"] = getattr(
+                model, "development_scope", {
+                    "claim_status": "DEVELOPMENT_ONLY_UNKNOWN_SCOPE"})
+            fe["rank_publication_qualification"] = getattr(
+                model, "rank_publication_qualification", {
+                    "status": "HOLD_MISSING_OR_FAILED_PUBLICATION_QUALIFICATION"})
+            fe["effect_gate_is_not_publication_unlock"] = True
+            rank_meta = getattr(model, "rank_supervision", {})
+            publication_meta = getattr(
+                model, "rank_publication_qualification", {})
+            development_scope = getattr(model, "development_scope", {})
+            # R3-P0 intentionally has no active numeric publication policy.
+            # Even non-zero development pairs therefore cannot make this
+            # branch executable.  Retain the metadata for audit, but never
+            # emit a post-hoc reranking result that looks official.
+            fe["rerank"] = {
+                "status": (
+                    "HOLD_REQUIRES_PREREGISTERED_RANK_QUALIFICATION_POLICY"),
+                "rank_supervision_status": rank_meta.get("status"),
+                "qualified_rank_pair_count": int(
+                    rank_meta.get("qualified_rank_pair_count", 0)),
+                "publication_qualification_status": publication_meta.get(
+                    "status"),
+                "development_claim_status": development_scope.get(
+                    "claim_status"),
+                "n_sources": 0,
+                "n_singleton_sources": 0,
+                "macro_ndcg_at_10": None,
+                "macro_top_decile_recall": None,
+            }
             fold_evals.append(fe)
 
         bench_res = {

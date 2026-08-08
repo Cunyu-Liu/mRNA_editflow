@@ -1,0 +1,44 @@
+{
+  "schema_version": "r3_route_authorization_v1",
+  "authorization_id": "R3-AB-ORDINARY-20260807",
+  "authorized_at_utc": "2026-08-07T15:18:22Z",
+  "authorization_source": "USER_MESSAGE_THIS_THREAD",
+  "status": "USER_AUTHORIZED_INPUTS_NOT_YET_QUALIFIED",
+  "selected_route": "BENCHMARK_CRITIC_ROUTE_A_THEN_B_ORDINARY_ONLY",
+  "authorized_sequence": [
+    "PUBLICATION_GRADE_STRONG_BASELINES",
+    "A_EXACT_POTENTIAL_DIFFERENCE",
+    "A_PARAMETER_MATCHED_UNRESTRICTED_CONTROL",
+    "B_SPARSE_EDIT_SET_ADDITIVE",
+    "B_SPARSE_EDIT_SET_INTERACTION_ONLY_IF_SEPARATELY_QUALIFIED"
+  ],
+  "code_implementation_authorized": true,
+  "ordinary_training_authorized_when_all_inputs_frozen": true,
+  "currently_ready_for_real_training": false,
+  "required_unclosed_inputs": [
+    "FROZEN_CONTEXT_SOURCE_CROSSWALK",
+    "FROZEN_ENDPOINT_ESTIMAND_REGISTRY",
+    "HASH_BOUND_R3_PRIMARY_READY_DATASET_AND_MANIFEST",
+    "HASH_BOUND_SOURCE_COMPONENT_SPLIT_MANIFEST",
+    "FROZEN_STABLE_TOP_SELECTION_METRIC_POLICY"
+  ],
+  "c3_redline": {
+    "draft_authorized": true,
+    "active_contract_mutation_authorized": false,
+    "proposed_positioning": "DGM_DOOB_DERIVED_LEGAL_EDIT_ADAPTATION",
+    "original_general_exact_guidance_claim": "REJECT_AS_ORIGINAL_GENERAL_THEORY"
+  },
+  "hard_boundaries": {
+    "ordinary_only": true,
+    "sealed_member_access": false,
+    "formal_sealed_evaluator": false,
+    "sign_accuracy_gate": 0.6,
+    "sign_gate_change_authorized": false,
+    "post_hoc_metric_threshold_seed_or_endpoint_selection": false,
+    "legacy_signed_ratio_enrichment": "PROHIBITED",
+    "top_selection_gate": "HOLD_PENDING_SEPARATE_PREREGISTRATION",
+    "o0_g1_unlock": false,
+    "authority_contract_overwrite": false
+  },
+  "user_authorization_text": "授权 benchmark + critic 路线：先做论文级强基线，再做 A→B ordinary-only；同时起草 C3 降级修订，将 exact guidance 定位为 DGM/Doob-derived adaptation，暂不访问 sealed、不降低 sign gate。"
+}

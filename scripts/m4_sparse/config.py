@@ -17,8 +17,28 @@ NUC_ORDER = "ACGU"
 NUC_TO_IDX = {ch: i for i, ch in enumerate(NUC_ORDER)}
 MAX_SEQ_LEN = 100
 EDIT_FEAT_DIM = 12
-CHECKPOINT_SCHEMA_VERSION = "m4_sparse_r2_v1"
+CHECKPOINT_SCHEMA_VERSION = "m4_sparse_r3_p0_v3"
 INPUT_SCHEMA_VERSION = "shared_edit_centered_window_with_padding_masks_v1"
+RANK_PAIR_DEFINITION = (
+    "within_source_study_endpoint_context_distinct_delta_all_pairs_v1"
+)
+RANK_SCORE_DEFINITION = "predicted_delta_mean_r3_p0_v1"
+SIGN_SCORE_DEFINITION = "predicted_delta_mean_over_sigma_r3_p0_v1"
+SIGN_DECISION_RULE = "predicted_delta_mean_ge_0_r3_p0_v1"
+SIGN_CALIBRATION_METHOD = (
+    "positive_temperature_probability_only_grouped_dev_r3_p0_v1"
+)
+CHECKPOINT_SELECTION_POLICY = (
+    "study_then_endpoint_balanced_sign_then_spearman_nll_report_only_r3_p0_v3"
+)
+ENDPOINT_HEAD_ROUTING = (
+    "hierarchical_endpoint_specific_heads_with_trained_unk_fallback_r3_p0_v1"
+)
+DEV_SIGN_ACCURACY_GATE = 0.60
+RANK_PUBLICATION_POLICY = (
+    "HOLD_REQUIRES_EXTERNAL_HASH_BOUND_PREREGISTERED_AUTHORITY_V1"
+)
+RANK_PUBLICATION_POLICY_STATUS = "UNFROZEN_NO_ACTIVE_NUMERIC_THRESHOLDS"
 
 # ---- split / seed ----
 PRIMARY_SPLIT = "S4"
@@ -49,6 +69,9 @@ LAMBDA_VAR = 0.5
 LAMBDA_SIGN = 0.5
 LAMBDA_CONSISTENCY = 0.25
 LAMBDA_RANK = 0.5
+# No publication-qualified pool/tie policy exists in this schema.  Pairwise
+# rank loss is computed for diagnostics but cannot update model parameters.
+EFFECTIVE_LAMBDA_RANK = 0.0
 
 # ---- target / honesty ----
 # TARGET selects the regression target.
@@ -77,11 +100,17 @@ def get_config() -> SimpleNamespace:
     cfg = SimpleNamespace()
     for k in ("NUC_ORDER", "NUC_TO_IDX", "MAX_SEQ_LEN", "EDIT_FEAT_DIM",
               "CHECKPOINT_SCHEMA_VERSION", "INPUT_SCHEMA_VERSION",
+              "RANK_PAIR_DEFINITION", "RANK_SCORE_DEFINITION",
+              "SIGN_SCORE_DEFINITION", "SIGN_DECISION_RULE",
+              "SIGN_CALIBRATION_METHOD", "CHECKPOINT_SELECTION_POLICY",
+              "ENDPOINT_HEAD_ROUTING", "DEV_SIGN_ACCURACY_GATE",
+              "RANK_PUBLICATION_POLICY", "RANK_PUBLICATION_POLICY_STATUS",
               "PRIMARY_SPLIT", "SECONDARY_SPLIT", "SEED", "HIDDEN_DIM", "NHEAD",
               "N_LAYERS", "DIM_FF", "CONV_KS", "DROP", "BATCH_SIZE", "LR",
               "EPOCHS", "DEV_FRAC", "WEIGHT_DECAY", "MARGIN", "HUBER_DELTA",
               "CONTEXT_DROPOUT", "LAMBDA_MEAN",
               "LAMBDA_VAR", "LAMBDA_SIGN", "LAMBDA_CONSISTENCY", "LAMBDA_RANK",
+              "EFFECTIVE_LAMBDA_RANK",
               "TARGET", "ANCHOR_AT_TEST", "CUDA_DEVICES", "FORBIDDEN_DEVICES", "DATASET", "OUT_DIR",
               "LIMIT", "MAX_TRAIN_CAP"):
         setattr(cfg, k, globals()[k])

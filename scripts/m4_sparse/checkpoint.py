@@ -1,4 +1,4 @@
-"""Versioned checkpoint helpers for the repaired R2 M4 model.
+"""Versioned checkpoint helpers for the R3-P0 M4 model.
 
 R2 adds a reserved unknown-context embedding and changes sequence
 preprocessing from prefix truncation to a shared edit-centred window.  A
@@ -15,11 +15,28 @@ from collections.abc import Mapping
 from pathlib import Path
 from typing import Dict, Optional
 
-from .config import CHECKPOINT_SCHEMA_VERSION, INPUT_SCHEMA_VERSION
+from .config import (
+    CHECKPOINT_SCHEMA_VERSION,
+    CHECKPOINT_SELECTION_POLICY,
+    DEV_SIGN_ACCURACY_GATE,
+    ENDPOINT_HEAD_ROUTING,
+    INPUT_SCHEMA_VERSION,
+    RANK_PAIR_DEFINITION,
+    RANK_PUBLICATION_POLICY,
+    RANK_PUBLICATION_POLICY_STATUS,
+    RANK_SCORE_DEFINITION,
+    SIGN_CALIBRATION_METHOD,
+    SIGN_DECISION_RULE,
+    SIGN_SCORE_DEFINITION,
+)
 
 
 class IncompatibleCheckpointError(RuntimeError):
-    """Raised when a checkpoint predates or disagrees with the R2 schema."""
+    """Raised when a checkpoint predates or disagrees with the R3-P0 schema."""
+
+
+class RankSupervisionUnavailableError(IncompatibleCheckpointError):
+    """Raised when a ranking/G1 consumer requests an effect-only checkpoint."""
 
 
 def vocab_sha256(vocab: Dict[str, Dict[str, int]]) -> str:
@@ -30,8 +47,12 @@ def vocab_sha256(vocab: Dict[str, Dict[str, int]]) -> str:
 
 
 def build_checkpoint_payload(state_dict, cfg, held_out_study: str,
-                             vocab: Dict[str, Dict[str, int]]) -> dict:
-    """Build the complete, self-describing R2 checkpoint payload."""
+                             vocab: Dict[str, Dict[str, int]],
+                             rank_supervision: Dict,
+                             dev_selection: Dict,
+                             rank_publication_qualification: Dict,
+                             development_scope: Dict) -> dict:
+    """Build the complete, self-describing R3-P0 checkpoint payload."""
     payload = {
         "checkpoint_schema_version": CHECKPOINT_SCHEMA_VERSION,
         "input_schema_version": INPUT_SCHEMA_VERSION,
@@ -40,6 +61,16 @@ def build_checkpoint_payload(state_dict, cfg, held_out_study: str,
         "held_out_study": held_out_study,
         "vocab": vocab,
         "vocab_sha256": vocab_sha256(vocab),
+        "rank_supervision_status": rank_supervision.get("status"),
+        "qualified_rank_pair_count": rank_supervision.get(
+            "qualified_rank_pair_count"),
+        "eligible_rank_group_count": rank_supervision.get(
+            "eligible_rank_group_count"),
+        "rank_pair_definition": rank_supervision.get("pair_definition"),
+        "rank_score_definition": rank_supervision.get("score_definition"),
+        "rank_publication_qualification": rank_publication_qualification,
+        "development_scope": development_scope,
+        "dev_selection": dev_selection,
     }
     return validate_checkpoint_payload(payload)
 
@@ -48,16 +79,16 @@ def validate_checkpoint_payload(payload: object,
                                 expected_vocab: Optional[Dict] = None) -> dict:
     """Validate schema and optional vocabulary identity, returning payload.
 
-    Missing schema fields are treated as a legacy R1-or-earlier checkpoint and
-    rejected.  This is intentionally not an automatic migration: the R2 UNK
-    embeddings and edit-centred preprocessing must be learned by retraining.
+    Missing schema fields are treated as a legacy checkpoint and rejected.
+    This is intentionally not an automatic migration: removal of independent
+    sign/rank heads and the R3-P0 selection policy require retraining.
     """
     if not isinstance(payload, dict):
         raise IncompatibleCheckpointError("M4 checkpoint payload is not a mapping")
     schema = payload.get("checkpoint_schema_version")
     if schema != CHECKPOINT_SCHEMA_VERSION:
         raise IncompatibleCheckpointError(
-            "incompatible M4 checkpoint schema %r; expected %r; retrain R2 "
+            "incompatible M4 checkpoint schema %r; expected %r; retrain R3-P0 "
             "instead of reusing a legacy checkpoint"
             % (schema, CHECKPOINT_SCHEMA_VERSION)
         )
@@ -67,22 +98,28 @@ def validate_checkpoint_payload(payload: object,
             "incompatible M4 input schema %r; expected %r"
             % (input_schema, INPUT_SCHEMA_VERSION)
         )
-    required = {"state_dict", "cfg", "held_out_study", "vocab", "vocab_sha256"}
+    required = {
+        "state_dict", "cfg", "held_out_study", "vocab", "vocab_sha256",
+        "rank_supervision_status", "qualified_rank_pair_count",
+        "eligible_rank_group_count", "rank_pair_definition",
+        "rank_score_definition", "rank_publication_qualification",
+        "development_scope", "dev_selection",
+    }
     missing = sorted(required - set(payload))
     if missing:
         raise IncompatibleCheckpointError(
-            "R2 M4 checkpoint missing fields: " + ", ".join(missing)
+            "R3-P0 M4 checkpoint missing fields: " + ", ".join(missing)
         )
     if not isinstance(payload["state_dict"], Mapping) or not payload["state_dict"]:
         raise IncompatibleCheckpointError(
-            "R2 M4 checkpoint state_dict is missing or empty"
+            "R3-P0 M4 checkpoint state_dict is missing or empty"
         )
     if not str(payload["held_out_study"] or "").strip():
         raise IncompatibleCheckpointError(
-            "R2 M4 checkpoint held_out_study is empty"
+            "R3-P0 M4 checkpoint held_out_study is empty"
         )
     if not isinstance(payload["vocab"], dict):
-        raise IncompatibleCheckpointError("R2 M4 checkpoint vocab is not a mapping")
+        raise IncompatibleCheckpointError("R3-P0 M4 checkpoint vocab is not a mapping")
     try:
         actual_vocab_sha = vocab_sha256(payload["vocab"])
     except (TypeError, ValueError, AttributeError) as exc:
@@ -97,9 +134,9 @@ def validate_checkpoint_payload(payload: object,
         )
     cfg = payload["cfg"]
     if getattr(cfg, "CHECKPOINT_SCHEMA_VERSION", None) != CHECKPOINT_SCHEMA_VERSION:
-        raise IncompatibleCheckpointError("checkpoint cfg is not bound to the R2 schema")
+        raise IncompatibleCheckpointError("checkpoint cfg is not bound to the R3-P0 schema")
     if getattr(cfg, "INPUT_SCHEMA_VERSION", None) != INPUT_SCHEMA_VERSION:
-        raise IncompatibleCheckpointError("checkpoint cfg is not bound to the R2 input schema")
+        raise IncompatibleCheckpointError("checkpoint cfg is not bound to the R3-P0 input schema")
     for namespace, cfg_field, state_key in (
         ("study", "N_STUDIES", "study_emb.weight"),
         ("endpoint", "N_ENDPOINTS", "endpoint_emb.weight"),
@@ -139,32 +176,382 @@ def validate_checkpoint_payload(payload: object,
             )
     if getattr(cfg, "MAX_SEQ_LEN", None) != 100 or getattr(cfg, "NUC_ORDER", None) != "ACGU":
         raise IncompatibleCheckpointError(
-            "checkpoint nucleotide/window contract differs from R2"
+            "checkpoint nucleotide/window contract differs from R3-P0"
         )
     if getattr(cfg, "TARGET", None) not in ("delta", "candidate_value"):
         raise IncompatibleCheckpointError(
-            "checkpoint regression TARGET is not supported by R2"
+            "checkpoint regression TARGET is not supported by R3-P0"
         )
     if (getattr(cfg, "TARGET", None) == "candidate_value"
             and getattr(cfg, "ANCHOR_AT_TEST", None) is not True):
         raise IncompatibleCheckpointError(
             "candidate_value checkpoint is missing the measured-anchor contract"
         )
-    if getattr(cfg, "SIGN_DECISION_RULE", None) != "sign_head_logit_ge_0_r2_prospective_v1":
-        raise IncompatibleCheckpointError("checkpoint sign-decision rule is not frozen R2")
-    if getattr(cfg, "SIGN_CALIBRATION_METHOD", None) != "temperature_scaling_grouped_dev_v1":
+    if getattr(cfg, "RANK_PAIR_DEFINITION", None) != RANK_PAIR_DEFINITION:
+        raise IncompatibleCheckpointError("checkpoint rank-pair definition is not frozen R3-P0")
+    if getattr(cfg, "ENDPOINT_HEAD_ROUTING", None) != ENDPOINT_HEAD_ROUTING:
         raise IncompatibleCheckpointError(
-            "checkpoint sign calibration method is not frozen R2"
+            "checkpoint endpoint head routing is not frozen hierarchical R3-P0"
+        )
+    if getattr(cfg, "RANK_SCORE_DEFINITION", None) != RANK_SCORE_DEFINITION:
+        raise IncompatibleCheckpointError("checkpoint rank score is not predicted delta mean")
+    if getattr(cfg, "SIGN_SCORE_DEFINITION", None) != SIGN_SCORE_DEFINITION:
+        raise IncompatibleCheckpointError("checkpoint sign score is not frozen mu/sigma")
+    if getattr(cfg, "SIGN_DECISION_RULE", None) != SIGN_DECISION_RULE:
+        raise IncompatibleCheckpointError("checkpoint sign-decision rule is not frozen R3-P0")
+    if getattr(cfg, "SIGN_CALIBRATION_METHOD", None) != SIGN_CALIBRATION_METHOD:
+        raise IncompatibleCheckpointError(
+            "checkpoint sign calibration method is not probability-only R3-P0"
+        )
+    if getattr(cfg, "CHECKPOINT_SELECTION_POLICY", None) != CHECKPOINT_SELECTION_POLICY:
+        raise IncompatibleCheckpointError(
+            "checkpoint selection policy is not frozen study-balanced R3-P0"
+        )
+    cfg_sign_gate = getattr(cfg, "DEV_SIGN_ACCURACY_GATE", None)
+    if (isinstance(cfg_sign_gate, bool)
+            or not isinstance(cfg_sign_gate, (int, float))
+            or not math.isfinite(float(cfg_sign_gate))
+            or float(cfg_sign_gate) != float(DEV_SIGN_ACCURACY_GATE)):
+        raise IncompatibleCheckpointError(
+            "checkpoint dev sign-accuracy gate differs from frozen 0.60"
         )
     temperature = getattr(cfg, "SIGN_TEMPERATURE", None)
     if (not isinstance(temperature, (int, float))
             or not math.isfinite(float(temperature)) or float(temperature) <= 0):
         raise IncompatibleCheckpointError("checkpoint sign temperature is invalid")
+    forbidden_heads = [
+        str(key) for key in payload["state_dict"]
+        if "rank_head" in str(key) or "sign_head" in str(key)
+    ]
+    if forbidden_heads:
+        raise IncompatibleCheckpointError(
+            "R3-P0 checkpoint contains forbidden independent sign/rank heads"
+        )
+    legacy_effect_heads = [
+        str(key) for key in payload["state_dict"]
+        if str(key).startswith("mean_head.")
+        or str(key).startswith("logvar_head.")
+    ]
+    if legacy_effect_heads:
+        raise IncompatibleCheckpointError(
+            "R3-P0 checkpoint contains pooled legacy effect heads"
+        )
+    endpoint_count = int(getattr(cfg, "N_ENDPOINTS", 0))
+    for prefix in ("mean_heads", "logvar_heads"):
+        indices = {
+            int(str(key).split(".")[1])
+            for key in payload["state_dict"]
+            if str(key).startswith(prefix + ".")
+            and len(str(key).split(".")) >= 3
+            and str(key).split(".")[1].isdigit()
+        }
+        if indices != set(range(endpoint_count)):
+            raise IncompatibleCheckpointError(
+                "checkpoint %s do not exactly match endpoint vocabulary" % prefix
+            )
+        for index in range(endpoint_count):
+            if (prefix + ".%d.weight" % index not in payload["state_dict"]
+                    or prefix + ".%d.bias" % index not in payload["state_dict"]):
+                raise IncompatibleCheckpointError(
+                    "checkpoint %s endpoint %d tensors are missing"
+                    % (prefix, index)
+                )
+    _validate_rank_supervision(payload)
+    _validate_rank_publication_qualification(payload)
+    _validate_development_scope(payload)
+    _validate_dev_selection(payload["dev_selection"])
     return payload
 
 
-def load_checkpoint(path: Path, device, expected_vocab: Optional[Dict] = None) -> dict:
+def _validate_rank_supervision(payload: Mapping) -> None:
+    count = payload.get("qualified_rank_pair_count")
+    groups = payload.get("eligible_rank_group_count")
+    if (isinstance(count, bool) or not isinstance(count, int) or count < 0
+            or isinstance(groups, bool) or not isinstance(groups, int)
+            or groups < 0):
+        raise IncompatibleCheckpointError(
+            "checkpoint qualified rank pair/group counts are invalid"
+        )
+    status = payload.get("rank_supervision_status")
+    expected_status = (
+        "DEV_UNCALIBRATED_TIES" if count > 0
+        else "NOT_RUN_ZERO_QUALIFIED_PAIRS"
+    )
+    if status != expected_status:
+        raise IncompatibleCheckpointError(
+            "checkpoint rank supervision status/count are inconsistent"
+        )
+    if payload.get("rank_pair_definition") != RANK_PAIR_DEFINITION:
+        raise IncompatibleCheckpointError(
+            "checkpoint qualified rank pair definition is incompatible"
+        )
+    if payload.get("rank_score_definition") != RANK_SCORE_DEFINITION:
+        raise IncompatibleCheckpointError(
+            "checkpoint rank score definition is incompatible"
+        )
+
+
+def _valid_sha256(value) -> bool:
+    return (isinstance(value, str) and len(value) == 64
+            and all(char in "0123456789abcdef" for char in value))
+
+
+def _validate_rank_publication_qualification(payload: Mapping) -> None:
+    qualification = payload.get("rank_publication_qualification")
+    if not isinstance(qualification, Mapping):
+        raise IncompatibleCheckpointError(
+            "checkpoint rank publication qualification is missing"
+        )
+    if qualification.get("policy") != RANK_PUBLICATION_POLICY:
+        raise IncompatibleCheckpointError(
+            "checkpoint rank publication policy is incompatible"
+        )
+    if qualification.get("policy_authority_status") != (
+            RANK_PUBLICATION_POLICY_STATUS):
+        raise IncompatibleCheckpointError(
+            "checkpoint rank publication policy authority is not explicit"
+        )
+    if qualification.get("external_authority_artifact_sha256") is not None:
+        raise IncompatibleCheckpointError(
+            "this schema cannot activate an external rank authority artifact"
+        )
+    if qualification.get("thresholds") is not None:
+        raise IncompatibleCheckpointError(
+            "this schema has no active rank publication thresholds"
+        )
+    hashes = qualification.get("evidence_hashes")
+    hash_names = (
+        "dataset_sha256", "inclusion_manifest_sha256",
+        "context_source_crosswalk_sha256",
+        "endpoint_estimand_registry_sha256",
+    )
+    if not isinstance(hashes, Mapping) or any(name not in hashes for name in hash_names):
+        raise IncompatibleCheckpointError(
+            "checkpoint rank publication evidence hash fields are incomplete"
+        )
+    invalid_nonempty_hashes = [
+        name for name in hash_names
+        if hashes.get(name) is not None and not _valid_sha256(hashes.get(name))
+    ]
+    if invalid_nonempty_hashes:
+        raise IncompatibleCheckpointError(
+            "checkpoint rank publication evidence hashes are invalid: "
+            + ", ".join(invalid_nonempty_hashes)
+        )
+    observed = qualification.get("observed")
+    if not isinstance(observed, Mapping):
+        raise IncompatibleCheckpointError(
+            "checkpoint rank publication observations are missing"
+        )
+    numeric_names = ("independent_study_count", "qualified_pool_count")
+    valid_numeric = all(
+        isinstance(observed.get(name), (int, float))
+        and not isinstance(observed.get(name), bool)
+        and math.isfinite(float(observed.get(name)))
+        for name in numeric_names
+    )
+    nested = observed.get("endpoints_fully_nested_by_study")
+    held_endpoint_support = observed.get(
+        "all_held_out_endpoints_have_training_support")
+    if (not valid_numeric or not isinstance(nested, bool)
+            or not isinstance(held_endpoint_support, bool)):
+        raise IncompatibleCheckpointError(
+            "checkpoint rank publication observations are invalid"
+        )
+    diagnostics = {
+        "all_evidence_hashes_bound": all(_valid_sha256(hashes.get(name))
+                                          for name in hash_names),
+        "dev_rank_pairs_present_unqualified": payload.get(
+            "rank_supervision_status") == "DEV_UNCALIBRATED_TIES",
+    }
+    if qualification.get("diagnostics_not_qualification_checks") != diagnostics:
+        raise IncompatibleCheckpointError(
+            "checkpoint rank diagnostics do not recompute from evidence"
+        )
+    if qualification.get("status") != (
+            "HOLD_REQUIRES_PREREGISTERED_RANK_QUALIFICATION_POLICY"):
+        raise IncompatibleCheckpointError(
+            "this schema must hold rank publication qualification"
+        )
+
+
+def _validate_development_scope(payload: Mapping) -> None:
+    scope = payload.get("development_scope")
+    if not isinstance(scope, Mapping):
+        raise IncompatibleCheckpointError("checkpoint development scope is missing")
+    study_count = scope.get("independent_study_count")
+    nested = scope.get("endpoints_fully_nested_by_study")
+    held_endpoint_support = scope.get(
+        "all_held_out_endpoints_have_training_support")
+    if (isinstance(study_count, bool) or not isinstance(study_count, int)
+            or study_count < 0 or not isinstance(nested, bool)
+            or not isinstance(held_endpoint_support, bool)):
+        raise IncompatibleCheckpointError("checkpoint development scope is invalid")
+    if study_count <= 2 and nested:
+        expected = "DEVELOPMENT_ONLY_TWO_STUDY_NESTED_ENDPOINTS"
+    elif not held_endpoint_support:
+        expected = "DEVELOPMENT_ONLY_UNSEEN_HELD_OUT_ENDPOINTS"
+    else:
+        expected = "DEVELOPMENT_ONLY_PENDING_PUBLICATION_QUALIFICATION"
+    if scope.get("claim_status") != expected:
+        raise IncompatibleCheckpointError(
+            "checkpoint development/publication claim status is inconsistent"
+        )
+
+
+def _validate_dev_selection(selection: object) -> None:
+    if not isinstance(selection, Mapping):
+        raise IncompatibleCheckpointError(
+            "checkpoint dev selection evidence is not a mapping"
+        )
+    if selection.get("policy") != CHECKPOINT_SELECTION_POLICY:
+        raise IncompatibleCheckpointError(
+            "checkpoint dev selection policy is incompatible"
+        )
+    if selection.get("sign_accuracy_gate") != DEV_SIGN_ACCURACY_GATE:
+        raise IncompatibleCheckpointError(
+            "checkpoint dev selection sign gate differs from frozen 0.60"
+        )
+    epoch = selection.get("selected_epoch")
+    if isinstance(epoch, bool) or not isinstance(epoch, int) or epoch < 0:
+        raise IncompatibleCheckpointError(
+            "checkpoint selected epoch is invalid"
+        )
+    metrics = selection.get("selected_metrics")
+    if not isinstance(metrics, Mapping):
+        raise IncompatibleCheckpointError(
+            "checkpoint selected dev metrics are missing"
+        )
+    selection_status = selection.get("selection_status")
+    allowed_statuses = {
+        "DEV_DIAGNOSTIC_SIGN_GATE_MET",
+        "HOLD_BELOW_SIGN_GATE",
+        "NO_DEV_ADMISSIBLE_CHECKPOINT",
+    }
+    if selection_status not in allowed_statuses:
+        raise IncompatibleCheckpointError(
+            "checkpoint dev selection status is invalid"
+        )
+    if selection.get("scientific_gate_status") != (
+            "HOLD_EXPECTED_DENOMINATOR_NOT_BOUND"):
+        raise IncompatibleCheckpointError(
+            "checkpoint dev selection must hold when the expected coverage "
+            "denominator is not hash-bound"
+        )
+    if selection.get("expected_membership_manifest_sha256") is not None:
+        raise IncompatibleCheckpointError(
+            "this schema cannot activate an expected-membership manifest"
+        )
+    if metrics.get("coverage_denominator_status") != (
+            "UNBOUND_DYNAMIC_DEV_ROWS"):
+        raise IncompatibleCheckpointError(
+            "checkpoint dev coverage denominator status is incompatible"
+        )
+    if metrics.get("expected_membership_manifest_sha256") is not None:
+        raise IncompatibleCheckpointError(
+            "selected metrics cannot claim a bound coverage denominator"
+        )
+    if metrics.get("gaussian_nll_reporting_level") != (
+            "STUDY_ENDPOINT_CELL_ONLY_NO_CROSS_ENDPOINT_AGGREGATION"):
+        raise IncompatibleCheckpointError(
+            "raw Gaussian NLL must remain a per-study/endpoint report metric"
+        )
+    cell_metrics = metrics.get("per_study_endpoint")
+    if not isinstance(cell_metrics, Mapping):
+        raise IncompatibleCheckpointError(
+            "checkpoint per-study/endpoint dev metrics are missing"
+        )
+    for cell_name, cell in cell_metrics.items():
+        if not isinstance(cell, Mapping) or "gaussian_nll" not in cell:
+            raise IncompatibleCheckpointError(
+                "checkpoint study/endpoint cell %s lacks Gaussian NLL"
+                % cell_name
+            )
+        nll = cell.get("gaussian_nll")
+        if (nll is not None and (
+                isinstance(nll, bool) or not isinstance(nll, (int, float))
+                or not math.isfinite(float(nll)))):
+            raise IncompatibleCheckpointError(
+                "checkpoint study/endpoint cell %s has invalid Gaussian NLL"
+                % cell_name
+            )
+
+    selected_epoch_in_metrics = metrics.get("epoch")
+    if selected_epoch_in_metrics != epoch:
+        raise IncompatibleCheckpointError(
+            "checkpoint selected epoch and selected metrics disagree"
+        )
+    history = selection.get("history")
+    if not isinstance(history, list) or not history:
+        raise IncompatibleCheckpointError(
+            "checkpoint dev metric history is missing"
+        )
+    if not any(isinstance(entry, Mapping) and entry.get("epoch") == epoch
+               for entry in history):
+        raise IncompatibleCheckpointError(
+            "checkpoint selected epoch is absent from dev history"
+        )
+
+    if selection_status == "NO_DEV_ADMISSIBLE_CHECKPOINT":
+        # A failed selector is still an auditable negative artifact.  It must
+        # never be relabelled as a scientific pass merely because a state was
+        # retained for replay.
+        return
+
+    required_metrics = (
+        "study_macro_endpoint_balanced_sign_accuracy",
+        "study_macro_endpoint_balanced_delta_spearman",
+        "study_endpoint_coverage",
+    )
+    for name in required_metrics:
+        value = metrics.get(name)
+        if (isinstance(value, bool) or not isinstance(value, (int, float))
+                or not math.isfinite(float(value))):
+            raise IncompatibleCheckpointError(
+                "checkpoint selected dev metric %s is missing/non-finite" % name
+            )
+    if float(metrics["study_endpoint_coverage"]) != 1.0:
+        raise IncompatibleCheckpointError(
+            "checkpoint selected diagnostic lacks complete observed-cell "
+            "metrics (not an expected-membership coverage claim)"
+        )
+    sign_accuracy = float(
+        metrics["study_macro_endpoint_balanced_sign_accuracy"])
+    if (selection_status == "DEV_DIAGNOSTIC_SIGN_GATE_MET"
+            and sign_accuracy < DEV_SIGN_ACCURACY_GATE):
+        raise IncompatibleCheckpointError(
+            "checkpoint sign-gate-met status is inconsistent"
+        )
+    if (selection_status == "HOLD_BELOW_SIGN_GATE"
+            and sign_accuracy >= DEV_SIGN_ACCURACY_GATE):
+        raise IncompatibleCheckpointError(
+            "checkpoint below-sign-gate status is inconsistent"
+        )
+
+
+def require_rank_supervision(payload: Mapping) -> Mapping:
+    """Fail closed before any official O0/G1 or publication ranking use."""
+    _validate_rank_supervision(payload)
+    _validate_rank_publication_qualification(payload)
+    _validate_development_scope(payload)
+    if (payload.get("rank_supervision_status") != "DEV_UNCALIBRATED_TIES"
+            or int(payload.get("qualified_rank_pair_count", 0)) <= 0):
+        raise RankSupervisionUnavailableError(
+            "ranking/G1 requires qualified within-pool rank pairs; checkpoint "
+            "is effect-only with zero qualified pairs"
+        )
+    raise RankSupervisionUnavailableError(
+        "official O0/G1 ranking is HOLD_REQUIRES_PREREGISTERED_RANK_"
+        "QUALIFICATION_POLICY; development pairs and sign gates cannot unlock it"
+    )
+
+
+def load_checkpoint(path: Path, device, expected_vocab: Optional[Dict] = None,
+                    require_rank: bool = False) -> dict:
     import torch
 
     payload = torch.load(Path(path), map_location=str(device), weights_only=False)
-    return validate_checkpoint_payload(payload, expected_vocab=expected_vocab)
+    payload = validate_checkpoint_payload(payload, expected_vocab=expected_vocab)
+    if require_rank:
+        require_rank_supervision(payload)
+    return payload

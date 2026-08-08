@@ -19,11 +19,13 @@ from scripts.m4_sparse.dataset import (  # noqa: E402
 from scripts.m4_sparse.model import SparseEditFormer  # noqa: E402
 from scripts.m4_sparse.checkpoint import (  # noqa: E402
     IncompatibleCheckpointError, build_checkpoint_payload, load_checkpoint,
-    validate_checkpoint_payload, vocab_sha256,
+    RankSupervisionUnavailableError, validate_checkpoint_payload, vocab_sha256,
 )
 from scripts.m4_sparse.train import (  # noqa: E402
     GroupBatchSampler, _pairwise_rank_loss, build_folds, compute_loss,
-    grouped_train_dev_split,
+    build_rank_publication_qualification,
+    development_scope_from_qualification, grouped_train_dev_split,
+    select_dev_checkpoint,
 )
 
 
@@ -229,6 +231,52 @@ def test_model_forward_shapes():
     assert out["rank"].shape == (1,)
 
 
+def test_endpoint_specific_effect_head_routes_gradient_to_one_estimand_only():
+    rows = [_rec(1.0, endpoint="ep_a", source_id="a"),
+            _rec(-1.0, endpoint="ep_b", source_id="b")]
+    cfg, vocab = _cfg(rows)
+    model = SparseEditFormer(cfg)
+    x = EffectDataset(rows, vocab)[0]
+    out = model(
+        x["src"].unsqueeze(0), x["cand"].unsqueeze(0),
+        x["edit"].unsqueeze(0), x["study"].unsqueeze(0),
+        x["endpoint"].unsqueeze(0), x["bench"].unsqueeze(0),
+        src_pad_mask=x["src_pad_mask"].unsqueeze(0),
+        cand_pad_mask=x["cand_pad_mask"].unsqueeze(0))
+    out["mean"].sum().backward()
+    selected = x["endpoint"].item()
+    assert model.mean_heads[selected].weight.grad is not None
+    for index, head in enumerate(model.mean_heads):
+        if index != selected:
+            assert head.weight.grad is None
+
+
+def test_endpoint_specific_effect_heads_route_mixed_batch_without_unused_gradients():
+    rows = [_rec(1.0, endpoint="ep_a", source_id="a"),
+            _rec(-1.0, endpoint="ep_b", source_id="b")]
+    cfg, vocab = _cfg(rows)
+    model = SparseEditFormer(cfg)
+    examples = [EffectDataset(rows, vocab)[index] for index in range(2)]
+
+    def stacked(field):
+        return torch.stack([example[field] for example in examples])
+
+    out = model(
+        stacked("src"), stacked("cand"), stacked("edit"),
+        stacked("study"), stacked("endpoint"), stacked("bench"),
+        src_pad_mask=stacked("src_pad_mask"),
+        cand_pad_mask=stacked("cand_pad_mask"))
+    (out["mean"].sum() + out["logvar"].sum()).backward()
+
+    used = set(stacked("endpoint").tolist())
+    for heads in (model.mean_heads, model.logvar_heads):
+        for index, head in enumerate(heads):
+            if index in used:
+                assert head.weight.grad is not None
+            else:
+                assert head.weight.grad is None
+
+
 def test_model_loss_decreases_when_overfitting():
     rows = _rows(64)
     cfg, vocab = _cfg(rows)
@@ -276,6 +324,18 @@ def test_pairwise_rank_loss_never_crosses_source_groups():
                                groups=together).item() == pytest.approx(0.5)
 
 
+def test_pairwise_rank_loss_macro_averages_biological_pools():
+    # The small reversed pool has loss 1.5.  The larger perfectly ordered pool
+    # has loss 0.0.  Pool-macro aggregation must therefore be 0.75 regardless
+    # of the large pool's O(m^2) pair count.
+    score = torch.tensor([1.0, 0.0, 0.0, 1.0, 2.0, 3.0])
+    target = torch.tensor([0.0, 1.0, 0.0, 1.0, 2.0, 3.0])
+    groups = torch.tensor([0, 0, 1, 1, 1, 1])
+    loss = _pairwise_rank_loss(
+        score, target, 0.5, torch.device("cpu"), groups=groups)
+    assert loss.item() == pytest.approx(0.75)
+
+
 def test_candidate_value_loss_uses_delta_sign_and_disables_inverse():
     rows = [_rec(1.0, source_id="a"), _rec(-1.0, source_id="b")]
     rows[0]["source_value"], rows[0]["candidate_value"] = 2.0, 3.0
@@ -291,9 +351,10 @@ def test_candidate_value_loss_uses_delta_sign_and_disables_inverse():
 
         def forward(self, src, cand, edit, study, endpoint, bench, **kwargs):
             self.calls += 1
-            z = src[:, 0, 0] * 0.0
-            logits = torch.tensor([10.0, -10.0], device=src.device)[:src.size(0)]
-            return {"mean": z, "logvar": z, "sign": logits, "rank": z}
+            mean = torch.tensor([3.0, 1.0], device=src.device)[:src.size(0)]
+            logvar = torch.full_like(mean, -10.0)
+            return {"mean": mean, "logvar": logvar,
+                    "sign": mean, "rank": mean}
 
     from torch.utils.data import DataLoader
     batch = next(iter(DataLoader(EffectDataset(rows, vocab,
@@ -304,6 +365,83 @@ def test_candidate_value_loss_uses_delta_sign_and_disables_inverse():
     assert losses["bce"].item() < 1e-3
     assert losses["consis"].item() == 0.0
     assert model.calls == 1
+
+
+def test_rank_loss_backpropagates_through_predicted_delta_mean_not_rank_head():
+    rows = [_rec(-1.0, source_id="shared"), _rec(1.0, source_id="shared")]
+    rows[1]["candidate_sequence"] = (
+        rows[1]["source_sequence"][:11] + "A"
+        + rows[1]["source_sequence"][12:]
+    )
+    rows[1]["edit_list"] = [{"op": "SUB", "pos": 11, "token": "A"}]
+    cfg, vocab = _cfg(rows)
+    cfg.TARGET = "candidate_value"
+    cfg.CONTEXT_DROPOUT = 0.0
+    cfg.LAMBDA_MEAN = 0.0
+    cfg.LAMBDA_VAR = 0.0
+    cfg.LAMBDA_SIGN = 0.0
+    cfg.LAMBDA_CONSISTENCY = 0.0
+    cfg.LAMBDA_RANK = 1.0
+    # Unit-test the differentiable primitive explicitly.  Production R3-P0
+    # keeps this at zero until a tie/pair policy is pre-registered.
+    cfg.EFFECTIVE_LAMBDA_RANK = 1.0
+
+    class MeanOnlyModel(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.mean = torch.nn.Parameter(torch.zeros(2))
+
+        def forward(self, src, cand, edit, study, endpoint, bench, **kwargs):
+            mean = self.mean[:src.size(0)]
+            zero = mean * 0.0
+            # A detached fake rank score must be ignored by compute_loss.
+            return {"mean": mean, "logvar": zero,
+                    "sign": zero, "rank": torch.zeros_like(mean).detach()}
+
+    from torch.utils.data import DataLoader
+    batch = next(iter(DataLoader(
+        EffectDataset(rows, vocab, target="candidate_value"), batch_size=2)))
+    model = MeanOnlyModel()
+    losses = compute_loss(model, batch, cfg, torch.device("cpu"))
+    losses["loss"].backward()
+    assert losses["rank"].item() > 0.0
+    assert model.mean.grad is not None
+    assert model.mean.grad[0].item() > 0.0
+    assert model.mean.grad[1].item() < 0.0
+
+
+def test_sign_auxiliary_loss_cannot_shrink_sigma_to_game_confidence():
+    rows = [_rec(1.0, source_id="positive"),
+            _rec(-1.0, source_id="negative")]
+    cfg, vocab = _cfg(rows)
+    cfg.TARGET = "delta"
+    cfg.CONTEXT_DROPOUT = 0.0
+    cfg.LAMBDA_MEAN = 0.0
+    cfg.LAMBDA_VAR = 0.0
+    cfg.LAMBDA_SIGN = 1.0
+    cfg.LAMBDA_CONSISTENCY = 0.0
+    cfg.LAMBDA_RANK = 0.0
+
+    class MeanVarianceModel(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.mean = torch.nn.Parameter(torch.zeros(2))
+            self.logvar = torch.nn.Parameter(torch.zeros(2))
+
+        def forward(self, src, cand, edit, study, endpoint, bench, **kwargs):
+            mean = self.mean[:src.size(0)]
+            logvar = self.logvar[:src.size(0)]
+            return {"mean": mean, "logvar": logvar,
+                    "sign": mean, "rank": mean}
+
+    from torch.utils.data import DataLoader
+    batch = next(iter(DataLoader(EffectDataset(rows, vocab), batch_size=2)))
+    model = MeanVarianceModel()
+    losses = compute_loss(model, batch, cfg, torch.device("cpu"))
+    losses["loss"].backward()
+    assert torch.any(model.mean.grad != 0)
+    assert model.logvar.grad is not None
+    assert torch.allclose(model.logvar.grad, torch.zeros_like(model.logvar.grad))
 
 
 def test_variance_nll_does_not_duplicate_mean_huber_gradient():
@@ -402,34 +540,127 @@ def test_group_batch_sampler_never_splits_oversized_rank_group():
         assert expected <= containing[0]
 
 
+def _dev_metrics(epoch, sign=0.70, spearman=0.20, nll=0.50,
+                 coverage=1.0):
+    return {
+        "epoch": epoch,
+        "study_macro_endpoint_balanced_sign_accuracy": sign,
+        "study_macro_endpoint_balanced_delta_spearman": spearman,
+        "study_endpoint_coverage": coverage,
+        "coverage_denominator_status": "UNBOUND_DYNAMIC_DEV_ROWS",
+        "expected_membership_manifest_sha256": None,
+        "gaussian_nll_reporting_level": (
+            "STUDY_ENDPOINT_CELL_ONLY_NO_CROSS_ENDPOINT_AGGREGATION"),
+        "per_study_endpoint": {
+            "S1|ep": {"gaussian_nll": nll},
+        },
+    }
+
+
+def test_study_balanced_selection_is_lexicographic_order_independent_and_tie_stable():
+    # Sign dominates Spearman; NLL is report-only and an exact tie resolves to
+    # the earlier epoch.
+    records = [
+        _dev_metrics(3, sign=0.70, spearman=0.99, nll=0.01),
+        _dev_metrics(2, sign=0.71, spearman=0.10, nll=2.00),
+        _dev_metrics(1, sign=0.71, spearman=0.10, nll=2.00),
+    ]
+    assert select_dev_checkpoint(records)["selected_epoch"] == 1
+    assert select_dev_checkpoint(
+        list(reversed(records)))["selected_epoch"] == 1
+
+
+def test_study_balanced_selection_preserves_negative_diagnostic_artifacts():
+    missing = _dev_metrics(0)
+    missing["study_macro_endpoint_balanced_delta_spearman"] = None
+    no_admissible = select_dev_checkpoint([missing])
+    assert no_admissible["selected_epoch"] == 0
+    assert no_admissible["selection_status"] == "NO_DEV_ADMISSIBLE_CHECKPOINT"
+    below = select_dev_checkpoint([_dev_metrics(0, sign=0.599999)])
+    assert below["selected_epoch"] == 0
+    assert below["selection_status"] == "HOLD_BELOW_SIGN_GATE"
+    assert below["scientific_gate_status"] == (
+        "HOLD_EXPECTED_DENOMINATOR_NOT_BOUND")
+
+
 # ---- versioned checkpoint boundary ----
-def _r2_checkpoint_payload():
+def _r3_checkpoint_payload(rank_pairs=1, bind_evidence=True):
     rows = [_rec(1.0)]
     cfg, vocab = _cfg(rows)
-    cfg.SIGN_DECISION_RULE = "sign_head_logit_ge_0_r2_prospective_v1"
     cfg.SIGN_TEMPERATURE = 1.25
-    cfg.SIGN_CALIBRATION_METHOD = "temperature_scaling_grouped_dev_v1"
     model = SparseEditFormer(cfg)
+    rank_supervision = {
+        "status": ("DEV_UNCALIBRATED_TIES" if rank_pairs else
+                   "NOT_RUN_ZERO_QUALIFIED_PAIRS"),
+        "qualified_rank_pair_count": int(rank_pairs),
+        "eligible_rank_group_count": int(bool(rank_pairs)),
+        "pair_definition": C.RANK_PAIR_DEFINITION,
+        "score_definition": C.RANK_SCORE_DEFINITION,
+    }
+    selected = _dev_metrics(0)
+    dev_selection = {
+        "policy": C.CHECKPOINT_SELECTION_POLICY,
+        "sign_accuracy_gate": C.DEV_SIGN_ACCURACY_GATE,
+        "selected_epoch": 0,
+        "selected_metrics": selected,
+        "selection_status": "DEV_DIAGNOSTIC_SIGN_GATE_MET",
+        "scientific_gate_status": "HOLD_EXPECTED_DENOMINATOR_NOT_BOUND",
+        "expected_membership_manifest_sha256": None,
+        "invalid_epoch_diagnostics": [],
+        "history": [selected],
+    }
+    evidence_hashes = None
+    observed = None
+    if bind_evidence:
+        evidence_hashes = {
+            "dataset_sha256": "a" * 64,
+            "inclusion_manifest_sha256": "b" * 64,
+            "context_source_crosswalk_sha256": "c" * 64,
+            "endpoint_estimand_registry_sha256": "d" * 64,
+        }
+        observed = {
+            "independent_study_count": 3,
+            "qualified_pool_count": 10,
+            "endpoints_fully_nested_by_study": False,
+            "all_held_out_endpoints_have_training_support": True,
+        }
+    qualification = build_rank_publication_qualification(
+        rank_supervision["status"], evidence_hashes=evidence_hashes,
+        observed=observed)
+    development_scope = development_scope_from_qualification(qualification)
     payload = build_checkpoint_payload(
-        model.state_dict(), cfg, held_out_study="held", vocab=vocab)
+        model.state_dict(), cfg, held_out_study="held", vocab=vocab,
+        rank_supervision=rank_supervision, dev_selection=dev_selection,
+        rank_publication_qualification=qualification,
+        development_scope=development_scope)
     return payload, vocab
 
 
-def test_r2_checkpoint_roundtrip_binds_schema_and_vocab_hash(tmp_path):
-    payload, vocab = _r2_checkpoint_payload()
+def test_r3_checkpoint_roundtrip_binds_schema_vocab_and_rank_evidence(tmp_path):
+    payload, vocab = _r3_checkpoint_payload()
     assert payload["vocab_sha256"] == vocab_sha256(vocab)
-    path = tmp_path / "r2.pt"
+    path = tmp_path / "r3.pt"
     torch.save(payload, path)
     loaded = load_checkpoint(path, torch.device("cpu"), expected_vocab=vocab)
     assert loaded["checkpoint_schema_version"] == C.CHECKPOINT_SCHEMA_VERSION
     assert loaded["input_schema_version"] == C.INPUT_SCHEMA_VERSION
+    assert loaded["qualified_rank_pair_count"] == 1
+    assert loaded["rank_supervision_status"] == "DEV_UNCALIBRATED_TIES"
+    assert loaded["rank_publication_qualification"]["status"] == (
+        "HOLD_REQUIRES_PREREGISTERED_RANK_QUALIFICATION_POLICY")
+    assert not any("rank_head" in key or "sign_head" in key
+                   for key in loaded["state_dict"])
 
 
 def test_legacy_checkpoint_and_schema_drift_are_rejected():
-    payload, _ = _r2_checkpoint_payload()
-    with pytest.raises(IncompatibleCheckpointError, match="legacy checkpoint"):
+    payload, _ = _r3_checkpoint_payload()
+    with pytest.raises(IncompatibleCheckpointError, match="checkpoint schema"):
         validate_checkpoint_payload({"state_dict": payload["state_dict"],
                                      "cfg": payload["cfg"]})
+    legacy_r2 = copy.deepcopy(payload)
+    legacy_r2["checkpoint_schema_version"] = "m4_sparse_r2_v1"
+    with pytest.raises(IncompatibleCheckpointError, match="checkpoint schema"):
+        validate_checkpoint_payload(legacy_r2)
     drift = copy.deepcopy(payload)
     drift["input_schema_version"] = "legacy_prefix_window"
     with pytest.raises(IncompatibleCheckpointError, match="input schema"):
@@ -437,7 +668,7 @@ def test_legacy_checkpoint_and_schema_drift_are_rejected():
 
 
 def test_checkpoint_rejects_vocab_hash_tampering_and_runtime_vocab_drift():
-    payload, vocab = _r2_checkpoint_payload()
+    payload, vocab = _r3_checkpoint_payload()
     tampered = copy.deepcopy(payload)
     tampered["vocab"]["study"]["injected"] = len(tampered["vocab"]["study"])
     with pytest.raises(IncompatibleCheckpointError, match="vocabulary hash"):
@@ -447,6 +678,56 @@ def test_checkpoint_rejects_vocab_hash_tampering_and_runtime_vocab_drift():
     runtime_vocab["study"] = {"different": 0, UNKNOWN_CONTEXT: 1}
     with pytest.raises(IncompatibleCheckpointError, match="runtime M4 vocabulary"):
         validate_checkpoint_payload(payload, expected_vocab=runtime_vocab)
+
+
+def test_zero_rank_checkpoint_is_valid_effect_only_but_rank_consumer_rejects(tmp_path):
+    payload, vocab = _r3_checkpoint_payload(rank_pairs=0)
+    assert validate_checkpoint_payload(payload)["rank_supervision_status"] == (
+        "NOT_RUN_ZERO_QUALIFIED_PAIRS"
+    )
+    path = tmp_path / "effect_only.pt"
+    torch.save(payload, path)
+    with pytest.raises(RankSupervisionUnavailableError,
+                       match="effect-only with zero qualified pairs"):
+        load_checkpoint(path, torch.device("cpu"), expected_vocab=vocab,
+                        require_rank=True)
+
+
+def test_dev_rank_pairs_cannot_unlock_publication_without_bound_evidence(tmp_path):
+    payload, vocab = _r3_checkpoint_payload(
+        rank_pairs=1, bind_evidence=False)
+    assert payload["rank_supervision_status"] == "DEV_UNCALIBRATED_TIES"
+    assert payload["rank_publication_qualification"]["status"].startswith(
+        "HOLD_")
+    path = tmp_path / "dev_only.pt"
+    torch.save(payload, path)
+    with pytest.raises(RankSupervisionUnavailableError,
+                       match="HOLD_REQUIRES_PREREGISTERED"):
+        load_checkpoint(path, torch.device("cpu"), expected_vocab=vocab,
+                        require_rank=True)
+
+
+def test_two_study_nested_endpoints_are_explicitly_development_only():
+    qualification = build_rank_publication_qualification(
+        "DEV_UNCALIBRATED_TIES",
+        evidence_hashes={
+            "dataset_sha256": "a" * 64,
+            "inclusion_manifest_sha256": "b" * 64,
+            "context_source_crosswalk_sha256": "c" * 64,
+            "endpoint_estimand_registry_sha256": "d" * 64,
+        },
+        observed={
+            "independent_study_count": 2,
+            "qualified_pool_count": 1000,
+            "endpoints_fully_nested_by_study": True,
+            "all_held_out_endpoints_have_training_support": False,
+        },
+    )
+    scope = development_scope_from_qualification(qualification)
+    assert qualification["status"].startswith("HOLD_")
+    assert scope["claim_status"] == (
+        "DEVELOPMENT_ONLY_TWO_STUDY_NESTED_ENDPOINTS")
+    assert scope["sign_gate_is_not_publication_unlock"] is True
 
 
 # ---- inverse consistency helper ----

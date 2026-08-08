@@ -1,0 +1,29 @@
+{
+  "schema_version": "r3_activation_manifest_v1",
+  "status": "PROPOSED_INPUT_BINDINGS_MISSING",
+  "mode": "ORDINARY_ONLY",
+  "claim_scope": "DEVELOPMENT_ONLY",
+  "route_authorization": {
+    "path": "r3_route_authorization_v1.json",
+    "sha256": "14974f88a6f421e9375ba9dcf39952b5383b8b4aea412d612c09c308762c1d1f",
+    "status": "FROZEN_USER_AUTHORIZATION"
+  },
+  "missing_authorities": [
+    "ready_dataset",
+    "inclusion_manifest",
+    "context_source_crosswalk",
+    "endpoint_estimand_registry",
+    "source_component_split_manifest",
+    "metric_zero_policy_registry_with_stable_selection_metric",
+    "model_optimizer_seed_config",
+    "analysis_code_tree_manifest",
+    "method_protocol",
+    "paired_strongest_baseline_comparison_policy"
+  ],
+  "authorities": {},
+  "currently_ready_for_real_training": false,
+  "sealed_access": false,
+  "downstream_unlock": false,
+  "active_contract_mutation": false,
+  "note": "This proposal must fail real preflight until every exact authority byte is frozen and hash-bound."
+}

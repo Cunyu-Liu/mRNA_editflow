@@ -9,7 +9,8 @@ Compared strategies (all respect the F0-X legal action graph):
   * no_guidance        : base FlowRateNet policy only.
   * first_order        : base + beta * guidance-head per-action effect.
   * rate_cfg           : base + beta * (frozen critic candidate delta).
-  * latent_cfg         : base + beta * (frozen critic rank head).
+  * latent_cfg         : base + beta * frozen predicted delta mean; R3-P0 has
+                         no independent rank head.
   * dgm_learned        : pure learned-ratio guidance (beta * critic delta), i.e.
                          the learned/approximate rate guidance (NOT exact q/p1;
                          per G0-X wording boundary).
@@ -112,10 +113,21 @@ def load_base_flow(ckpt_path, device):
 
 def load_critic(ckpt_path, device, expected_vocab=None):
     from scripts.m4_sparse.model import SparseEditFormer
-    sd = load_checkpoint(ckpt_path, device, expected_vocab=expected_vocab)
+    sd = load_checkpoint(ckpt_path, device, expected_vocab=expected_vocab,
+                         require_rank=True)
     cfg = sd["cfg"]
     model = SparseEditFormer(cfg).to(device)
     model.load_state_dict(sd["state_dict"])
+    model.rank_supervision = {
+        "status": sd["rank_supervision_status"],
+        "qualified_rank_pair_count": sd["qualified_rank_pair_count"],
+        "eligible_rank_group_count": sd["eligible_rank_group_count"],
+        "pair_definition": sd["rank_pair_definition"],
+        "score_definition": sd["rank_score_definition"],
+    }
+    model.rank_publication_qualification = sd[
+        "rank_publication_qualification"]
+    model.development_scope = sd["development_scope"]
     model.eval()
     return model, cfg, sd["vocab"]
 
@@ -463,7 +475,10 @@ def _single_edit_count(train_rows):
 
 def _gtr_builder(base_net, head, critic, vocab, beta, device, ctx=None):
     """generate_then_rerank: base flow generates, critic reranks by delta."""
-    from scripts.g1x.guidance import base_step_policy, _ctx
+    from scripts.g1x.guidance import (
+        _ctx, _require_qualified_rank_supervision, base_step_policy,
+    )
+    _require_qualified_rank_supervision(critic)
     base_policy = base_step_policy(base_net, device, ctx)
     c = _ctx(**(ctx or {}))
     study = (c["study"] if c["study"] in vocab["study"]
