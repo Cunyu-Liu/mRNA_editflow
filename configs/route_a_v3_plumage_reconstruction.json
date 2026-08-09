@@ -1,0 +1,161 @@
+{
+  "contract_id": "mrna_xeditflow_route_a_v3",
+  "schema_version": "3.0.0",
+  "protocol_id": "ROUTE_A_V3_GSE149487_PLUMAGE_PARTIAL_RECONSTRUCTION_V1",
+  "protocol_status": "PREFROZEN_BEFORE_REAL_RECONSTRUCTION_RESULTS",
+  "dataset_id": "GSE149487",
+  "study_group_id": "PLUMAGE_LIM_2021",
+  "independent_study_count": 1,
+  "scope": {
+    "ordinary_public_data_only": true,
+    "included_contexts": ["293T"],
+    "included_endpoints": ["TRANSCRIPT", "TRANSLATION_EFFICIENCY"],
+    "included_biological_replicates": [1, 2, 3],
+    "pc3_included": false,
+    "eighteen_geo_raw_count_tables_joined": false,
+    "published_significant_only_tables_used_for_membership": false,
+    "training_allowed": false,
+    "model_selection_allowed": false,
+    "qualification_allowed": false
+  },
+  "inputs": {
+    "moesm8": {
+      "filename": "41467_2021_24445_MOESM8_ESM.xlsx",
+      "sha256": "4af9002f743cfecc7c4e55f5435f0d1c6c1b39c7191444e4e9c2e2c357d2b24d",
+      "sheet": "6a 5' UTR sequences",
+      "header_sha256": "c88ccfd6e7d4d5910e75092119fa35198264f0bc5de4c513604504ccc56ee042"
+    },
+    "lim6c_293t": {
+      "filename": "Lim_et_al_Supp_Tbl_6c_293T.xlsx",
+      "sha256": "f991b39b85efce98fe752887a49052043c495ae81b6dfc5dfeded09013b591df",
+      "sheet": "Sheet1",
+      "header_sha256": "9cd3d648f639e02c0191659d8108f0a1e9794afc196566eb5dd8470e1400f203"
+    },
+    "header_canonicalization": {
+      "version": "XLSX_DENSE_HEADER_NFC_LF_COMPACT_JSON_V1",
+      "empty_physical_header_cell": "",
+      "unicode_normalization": "NFC",
+      "newline_normalization": "CRLF_OR_CR_TO_LF",
+      "json_ensure_ascii": false,
+      "json_separators": [",", ":"]
+    }
+  },
+  "paper_faithful_measurement_transform": {
+    "scope": "WITHIN_SAMPLE_BARCODE_MEASUREMENT_ONLY",
+    "input_value_scale": "PUBLISHED_LOG2_CPM_PER_BARCODE",
+    "published_source_axis": "SUPPLEMENTARY_FIGURE_8B_LOG2_CPM_PER_BARCODE",
+    "original_cpm_minimum_inclusive": 0.5,
+    "published_log2_cpm_minimum_inclusive": -1.0,
+    "pseudocount": null,
+    "transcript_ratio": "TOTALRNA_LOG2_CPM_MINUS_DNA_LOG2_CPM",
+    "translation_efficiency_ratio": "POLYSOME_LOG2_CPM_MINUS_TOTALRNA_LOG2_CPM",
+    "both_ratio_components_must_meet_threshold": true,
+    "component_filter": "BOTH_PUBLISHED_LOG2_CPM_COMPONENTS_GTE_NEGATIVE_ONE",
+    "values_below_published_log2_cpm_minimum_are_allowed": false,
+    "clipping_allowed": false,
+    "missing_is_zero": false
+  },
+  "route_a_companion_summary": {
+    "classification": "ROUTE_A_COMPANION_NOT_PAPER_TEST",
+    "barcode_role": "TECHNICAL_MEASUREMENT_UNIT_ONLY",
+    "biological_replicate_role": "INFERENCE_UNIT",
+    "within_arm_replicate_aggregation": "MEDIAN_OF_ELIGIBLE_BARCODE_LOG2_RATIOS",
+    "within_replicate_effect": "MUTANT_MEDIAN_MINUS_WT_MEDIAN",
+    "across_replicate_effect": "EQUAL_WEIGHT_MEAN_OF_THREE_REPLICATE_EFFECTS",
+    "standard_error": "SAMPLE_SD_OF_THREE_REPLICATE_EFFECTS_DIVIDED_BY_SQRT_3",
+    "required_biological_replicates": 3,
+    "minimum_eligible_barcodes_per_arm_per_endpoint_per_replicate": 20,
+    "coverage_floor_purpose": "TECHNICAL_MEDIAN_STABILITY_NOT_EFFECTIVE_N_OR_POWER",
+    "audit_only_sensitivity_floors": [10, 50],
+    "sensitivity_may_change_primary_eligibility": false,
+    "barcode_count_may_weight_replicates": false,
+    "barcode_count_may_increase_effective_n": false,
+    "barcode_count_may_define_standard_error": false
+  },
+  "companion_lineage": {
+    "barcode_long_table_required": true,
+    "raw_barcode_identifier_output_allowed": false,
+    "stable_barcode_sha256_required": true,
+    "eligible_and_excluded_observations_both_retained": true,
+    "exact_exclusion_reason_required": true,
+    "raw_row_locator_required": true,
+    "replicate_summary_required": true,
+    "development_companion_effect_summary_required": true,
+    "canonical_intervention_record_v3_materialized": false,
+    "all_outputs_sha256_bound": true
+  },
+  "description_universe": {
+    "included_mutant_description_regex": "^(?P<gene>[^_]+)_(?P<ref>[ACGT])_(?P<alt>[ACGT])_(?P<chrom>chr[^_]+)_(?P<start>[0-9]+)_(?P<end>[0-9]+)$",
+    "reference_wt_description_regex": "^(?P<gene>[^_]+)_WT_(?P<chrom>chr[^_]+)_(?P<start>[0-9]+)_(?P<end>[0-9]+)$",
+    "all_unique_descriptions_must_be_classified": true,
+    "allowed_classes": [
+      "INCLUDED_STRICT_SNV_MUTANT",
+      "REFERENCE_ONLY_STRICT_WT",
+      "REJECTED_UNADJUDICATED_DESCRIPTION"
+    ],
+    "unadjudicated_class_action": "REJECT_WITH_REASON_AND_RETAIN_BLOCKER",
+    "unadjudicated_blocker": "UNADJUDICATED_DESCRIPTION_CLASSES_EXCLUDED",
+    "successful_join_may_shrink_unique_description_denominator": false
+  },
+  "lim6c_block_semantics": {
+    "physical_data_rows": 179791,
+    "transcript_block": {
+      "excel_columns": "A:H",
+      "key_columns": ["description", "barcode"],
+      "present_key_rows": 179791
+    },
+    "translation_efficiency_block": {
+      "excel_columns": "J:Q",
+      "key_columns": ["description", "barcode"],
+      "present_key_rows": 152489,
+      "blank_tail_rows": 27302
+    },
+    "blocks_are_row_aligned": false,
+    "row_position_may_join_blocks": false,
+    "join_key": ["description", "barcode"],
+    "duplicate_key_rows_allowed_within_block": false,
+    "hashed_key_intersection": 151182,
+    "hashed_key_transcript_only": 28609,
+    "hashed_key_translation_efficiency_only": 1307,
+    "key_aligned_totalrna_all_three_replicates_exact_equal": 151182,
+    "key_aligned_totalrna_any_difference": 0,
+    "endpoint_uses_only_its_own_block": true,
+    "missing_key_in_endpoint_block_is_zero": false,
+    "outer_join_for_inventory_only": true
+  },
+  "moesm8_6a_universe": {
+    "all_physical_data_rows_must_be_classified": true,
+    "allowed_classes": [
+      "INCLUDED_STRICT_SNV_MUTANT_COORDINATE",
+      "REFERENCE_ONLY_STRICT_WT_COORDINATE",
+      "REJECTED_UNADJUDICATED_COORDINATE",
+      "REJECTED_EMPTY_ROW"
+    ],
+    "unadjudicated_coordinate_action": "REJECT_WITH_ROW_LOCATOR_HASH_AND_RETAIN_BLOCKER",
+    "unadjudicated_blocker": "UNADJUDICATED_6A_COORDINATE_CLASSES_EXCLUDED",
+    "successful_join_may_shrink_physical_row_denominator": false
+  },
+  "canonical_boundaries": {
+    "evidence_status": "BLOCKED_PENDING_PUBLIC_EVIDENCE",
+    "claim_status": "NOT_ESTABLISHED",
+    "data_role": "EXCLUDED",
+    "split_partition": "EXCLUDED",
+    "license_status": "UNKNOWN_BLOCKED",
+    "checkpoint_exposure_status": "AUDIT_PENDING",
+    "beneficial_direction": "HIGHER_IS_BETTER",
+    "endpoint_or_context_increases_independent_study_count": false,
+    "engineering_reconstruction_establishes_study_qualification": false
+  },
+  "unresolved_blockers": [
+    "PC3_AND_18_GEO_RAW_COUNT_TABLE_JOIN_NOT_INCLUDED",
+    "SUPPLEMENTS_NOT_LISTED_IN_CURRENT_P0_MANIFEST",
+    "LICENSE_AND_REDISTRIBUTION_NOT_CLOSED",
+    "CHECKPOINT_SPECIFIC_EXPOSURE_NOT_CLOSED",
+    "GROUP_LEAKAGE_AND_SPLIT_NOT_FROZEN",
+    "PAPER_NATIVE_MANN_WHITNEY_AND_MULTIPLE_TESTING_NOT_REPRODUCED",
+    "CANONICAL_INTERVENTION_RECORD_V3_NOT_MATERIALIZED",
+    "UNADJUDICATED_DESCRIPTION_CLASSES_EXCLUDED",
+    "UNADJUDICATED_6A_COORDINATE_CLASSES_EXCLUDED"
+  ],
+  "model_results_may_change_this_protocol": false
+}

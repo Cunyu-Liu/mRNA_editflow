@@ -98,6 +98,42 @@ artifact_lineage:
     qualified: false
     training_allowed: false
     model_selection_allowed: false
+  gse149487_reconstruction_attempt_003_failure:
+    path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE149487_RECONSTRUCTION_ATTEMPT_003_FAILURE.json
+    bytes: 2568
+    sha256: e05979690d92f463299698d5e78eaadfdcd3d05858a547bcd062f6245dcb7ba5
+    status: FAIL_CLOSED_BEFORE_OUTPUT_PUBLICATION
+    failure_type: NEGATIVE_VALUE_IN_DECLARED_CPM_INPUT
+    failed_output_id_terminalized: true
+    failure_deleted_or_concealed: false
+  gse149487_lim6c_scale_diagnostic_v1:
+    path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE149487_LIM6C_SCALE_DIAGNOSTIC_V1.json
+    bytes: 3860
+    sha256: 8a1551df2f603da7bdef11054bdeb322f380060256a1e997beca72a3bff0e41f
+    adjudication: PUBLISHED_LOG2_CPM_PER_BARCODE_NOT_LINEAR_CPM
+    official_data_corruption_established: false
+  gse149487_plumage_protocol:
+    path: configs/route_a_v3_plumage_reconstruction.json
+    sha256: a7dd048e55f3b71dd90597ac95993cbe4f643c35b5a6bbc38509ce0d2f0fcc4a
+    input_value_scale: PUBLISHED_LOG2_CPM_PER_BARCODE
+    original_cpm_minimum_inclusive: 0.5
+    published_log2_cpm_minimum_inclusive: -1.0
+    model_results_may_change_protocol: false
+  gse149487_plumage_reconstruction_v4:
+    path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE149487_PLUMAGE_293T_PARTIAL_RECONSTRUCTION_V4
+    bytes: 581230429
+    status: DEVELOPMENT_RECONSTRUCTED_NOT_QUALIFIED
+    sha256sums_sha256: 38d4c4fefd94fe5400c5dd5de2893efab4b039152f872b2ea67e1ed0ff65a000
+    report_sha256: c4b6ef08714cd640edaa1e698cc0c92d3c7702570265203b36de6bbc90ce58b6
+    success_record_path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE149487_RECONSTRUCTION_ATTEMPT_004_SUCCESS.json
+    success_record_sha256: c2d563cc09a14747e9d225766694c10922058cbb54c70fe084148409ff0cc0e4
+    public_inventory_gate_applied: true
+    canonical_record_count: 0
+    development_companion_effect_record_count: 204
+    paper_method_reproduced: false
+    qualified: false
+    training_allowed: false
+    model_selection_allowed: false
 
 dataset_boundary_summary:
   evidence_ref:
@@ -113,6 +149,28 @@ dataset_boundary_summary:
     provenance_reconciliation_status: PROVENANCE_RECONCILED_NOT_QUALIFIED
     current_valid_payload_sha256: 23bbd468ff6c6905f11e7dfdd7509601730e0f99c8ad2a78f37f3dfe99c31719
     stale_declared_and_quarantined_payload_sha256: d5baad2fcc6b59b572a1f3239bcf7910bd421fbbd4971f97b06671576ba7b0d7
+  GSE149487:
+    registry_qualification_status: AUDIT_PENDING
+    a1_inventory_qualification_status: BLOCKED_PENDING_PUBLIC_EVIDENCE
+    development_reconstruction_status: DEVELOPMENT_RECONSTRUCTED_NOT_QUALIFIED
+    input_value_scale: PUBLISHED_LOG2_CPM_PER_BARCODE
+    canonical_record_count: 0
+    development_companion_effect_record_count: 204
+    development_companion_nonnull_effect_record_count: 192
+    raw_barcode_plaintext_match_count_in_outputs: 0
+    qualified: false
+    training_allowed: false
+    model_selection_allowed: false
+    decisive_remaining_blockers:
+      - PC3_AND_18_GEO_RAW_COUNT_TABLE_JOIN_NOT_INCLUDED
+      - SUPPLEMENTS_NOT_LISTED_IN_CURRENT_P0_MANIFEST
+      - LICENSE_AND_REDISTRIBUTION_NOT_CLOSED
+      - CHECKPOINT_SPECIFIC_EXPOSURE_NOT_CLOSED
+      - GROUP_LEAKAGE_AND_SPLIT_NOT_FROZEN
+      - PAPER_NATIVE_MANN_WHITNEY_AND_MULTIPLE_TESTING_NOT_REPRODUCED
+      - CANONICAL_INTERVENTION_RECORD_V3_NOT_MATERIALIZED
+      - UNADJUDICATED_DESCRIPTION_CLASSES_EXCLUDED
+      - UNADJUDICATED_6A_COORDINATE_CLASSES_EXCLUDED
   three_utr_candidates:
     dataset_ids: [GSE217518, ENCSR854RUF, GSE200304, GSE232572, GSE186455]
     registry_qualification_status: AUDIT_PENDING
@@ -128,13 +186,24 @@ dataset_boundary_summary:
   qualified_a2_dense_neighborhoods: 0
 
 boundary_deviation:
-  count: 1
-  classification: NON_SENSITIVE_AGGREGATE_METADATA_BOUNDARY_DEVIATION
-  description: ONE_PROHIBITED_STUDY_AGGREGATE_METADATA_ITEM_WAS_INCIDENTALLY_DISPLAYED_FROM_AN_OLD_MIXED_SPLIT_SUMMARY
+  count: 4
+  classifications:
+    - NON_SENSITIVE_AGGREGATE_METADATA_BOUNDARY_DEVIATION
+    - NON_SENSITIVE_EXISTING_POLICY_TEXT_BOUNDARY_DEVIATION
+    - ORDINARY_PUBLIC_OLIGO_PREVIEW_BOUNDARY_DEVIATION
+    - NON_SENSITIVE_EXISTING_CODE_SYMBOL_BOUNDARY_DEVIATION_ADDENDUM
+  descriptions:
+    - ONE_PROHIBITED_STUDY_AGGREGATE_METADATA_ITEM_WAS_INCIDENTALLY_DISPLAYED_FROM_AN_OLD_MIXED_SPLIT_SUMMARY
+    - SEVERAL_EXISTING_REGISTRY_OR_HISTORICAL_POLICY_LINES_WERE_INCIDENTALLY_DISPLAYED_FROM_ORDINARY_WORKTREE_DOCUMENTATION
+    - FOUR_ORDINARY_PUBLIC_OLIGO_CELL_VALUES_WERE_INCIDENTALLY_DISPLAYED_DURING_A_COLUMN_TYPE_PREVIEW
+    - ONE_EXISTING_EXCLUDED_STUDY_TEST_FUNCTION_NAME_WAS_DISPLAYED_DURING_A_FINAL_ORDINARY_CODE_SYMBOL_LISTING
   inspection_stopped_after_detection: true
-  payload_contact: false
-  member_content_read: false
-  sequence_read: false
+  restricted_or_sealed_path_accessed: false
+  excluded_study_payload_contact: false
+  restricted_or_sealed_member_content_read: false
+  ordinary_public_oligo_cell_values_displayed: 4
+  ordinary_worktree_excluded_study_test_function_names_displayed: 1
+  restricted_or_sealed_sequence_read: false
   raw_label_read: false
   runner_invoked: false
   access_intent_written: false
@@ -142,9 +211,10 @@ boundary_deviation:
   used_in_a1_reasoning: false
   evidence_deleted_or_concealed: false
   gate_decision_affected: false
-  evidence_ref:
-    path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/BOUNDARY_DEVIATION.json
-    sha256: 5ec91b642792a0b6a85801fe623b7583dcf68777408851a6b1718f07728a48a0
+  evidence_manifest_ref:
+    path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/BOUNDARY_DEVIATIONS_MANIFEST.json
+    bytes: 2218
+    sha256: e6c1b79c037058d21be33e0103a1d9740feac7cb0651f13033a01e0f8ff4bd47
 
 power_prefreeze:
   source: ROOT_COMPANION_PROTOCOL_CHOICE_UNDER_CONTRACT_UNDERSPECIFICATION
@@ -180,6 +250,16 @@ verification:
     status: PASS
     passed: 17
     failed: 0
+  targeted_plumage_reconstruction_tests:
+    status: PASS
+    passed: 32
+    failed: 0
+  plumage_v4_bundle_sha256s: PASS
+  plumage_v4_exact_file_set: PASS
+  plumage_v4_public_inventory_gate: PASS
+  plumage_v4_report_semantics: PASS
+  plumage_v4_raw_barcode_leakage_scan: PASS
+  plumage_v4_barcode_hash_rows: 283680
   gap_inventory_v2_json_parse: PASS
   authority_yaml_parse: PASS
   qualification_protocol_json_parse: PASS
@@ -200,6 +280,6 @@ verification:
     reason: A1_GATE_BLOCKED_AND_NO_TRAINING_OR_EVALUATION_AUTHORIZED
   independent_review:
     status: COMPLETED_FINDINGS_APPLIED
-    scope: INTERIM_RECORD_STATUS_AND_CLAIM_BOUNDARIES
+    scope: INTERIM_RECORD_STATUS_CLAIM_BOUNDARIES_PLUMAGE_BLOCK_SEMANTICS_AND_LOG2_CPM_SCALE
 
-generated_at: "2026-08-10T04:08:29+08:00"
+generated_at: "2026-08-10T06:30:58+08:00"
