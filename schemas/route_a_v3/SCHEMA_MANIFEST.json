@@ -1,0 +1,50 @@
+{
+  "contract_id": "mrna_xeditflow_route_a_v3",
+  "manifest_version": "3.0.0",
+  "schema_count": 6,
+  "schema_version": "3.0.0",
+  "schemas": [
+    {
+      "$id": "https://github.com/Cunyu-Liu/mRNA_editflow/schemas/route_a_v3/canonical_intervention_record.schema.json",
+      "contract_id": "mrna_xeditflow_route_a_v3",
+      "filename": "canonical_intervention_record.schema.json",
+      "schema_version": "3.0.0",
+      "sha256": "5dc384d6c5714fb5834e83d8fafb51f712bbfcf7dfb632ad504f051b985af898"
+    },
+    {
+      "$id": "https://github.com/Cunyu-Liu/mRNA_editflow/schemas/route_a_v3/compute_ledger.schema.json",
+      "contract_id": "mrna_xeditflow_route_a_v3",
+      "filename": "compute_ledger.schema.json",
+      "schema_version": "3.0.0",
+      "sha256": "258b9e5ffbdca21f8d7b995799b25c6b326cfd46078e9ed0341ec2bae8ecba15"
+    },
+    {
+      "$id": "https://github.com/Cunyu-Liu/mRNA_editflow/schemas/route_a_v3/gate_record.schema.json",
+      "contract_id": "mrna_xeditflow_route_a_v3",
+      "filename": "gate_record.schema.json",
+      "schema_version": "3.0.0",
+      "sha256": "63261c4a73f03b918a85f43243972caee7e79d89405b37b0c3f109192988ae91"
+    },
+    {
+      "$id": "https://github.com/Cunyu-Liu/mRNA_editflow/schemas/route_a_v3/measured_candidate_pool.schema.json",
+      "contract_id": "mrna_xeditflow_route_a_v3",
+      "filename": "measured_candidate_pool.schema.json",
+      "schema_version": "3.0.0",
+      "sha256": "f6d04185dc2637c08181c93b5851de9e07a14c6555c7bad0c5ecc3d5541bc1e1"
+    },
+    {
+      "$id": "https://github.com/Cunyu-Liu/mRNA_editflow/schemas/route_a_v3/prediction_record.schema.json",
+      "contract_id": "mrna_xeditflow_route_a_v3",
+      "filename": "prediction_record.schema.json",
+      "schema_version": "3.0.0",
+      "sha256": "85bdd3a3f191846d8f03a44f1fd018150630e345228416750eab903126fe1dac"
+    },
+    {
+      "$id": "https://github.com/Cunyu-Liu/mRNA_editflow/schemas/route_a_v3/run_manifest.schema.json",
+      "contract_id": "mrna_xeditflow_route_a_v3",
+      "filename": "run_manifest.schema.json",
+      "schema_version": "3.0.0",
+      "sha256": "b5543530ad4c311e8b72100efed196dc780d01e2dfe34f3497a9c57204132ce1"
+    }
+  ]
+}

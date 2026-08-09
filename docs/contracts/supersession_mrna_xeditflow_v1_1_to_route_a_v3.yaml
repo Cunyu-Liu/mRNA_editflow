@@ -1,0 +1,133 @@
+schema_version: "1.0.0"
+supersession_id: MRNA_XEDITFLOW_ROUTE_A_V3_SUPERSESSION_20260810
+created_at: "2026-08-10T00:32:15+08:00"
+supersession_scope: FULL_SCIENTIFIC_AND_EXECUTION_AUTHORITY
+preservation_policy:
+  old_bytes_mutable: false
+  historical_results_mutable: false
+  historical_failures_mutable: false
+  evidence_status_rewrite_forbidden: true
+
+predecessors:
+  - record_id: LOCAL_PRE_V3_CONTRACT
+    contract_id: mrna_latest_contract_v2_local
+    path: /Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna 最新合同-v2.md
+    sha256: 9c79edd819e45551974bcfeb14a400dd504c55c0a7c869e456e638daf49f1c1e
+    bytes: 69226
+    lines: 2608
+    status: HISTORICAL_PRESERVED_OUTSIDE_REPOSITORY
+  - record_id: REMOTE_XEDITFLOW_V1_1_CONTRACT
+    contract_id: mrna_xeditflow_goal_v1_1
+    path: docs/contracts/mrna_xeditflow_goal_v1_1.md
+    sha256: fc9c1c882efbaa4c1e86f4da2e1be64e219755fb9c5941da4b4309793d3d8c2f
+    config_path: configs/mrna_xeditflow_contract_v1_1.yaml
+    config_sha256: b3be70e765fb8285996487815ee6a4494ca4cc7fb503dae2901b40a0382d83cf
+    claim_matrix_path: docs/execution/xeditflow_claim_matrix.yaml
+    claim_matrix_sha256: 6358c6caaeed58b44cf7c2f72a0038d299622e951fb65f4b9f8c516e1ad5b4b2
+    status: HISTORICAL_SUPERSEDED_PRESERVED
+  - record_id: LOCAL_PRE_V3_READINESS_AUDIT
+    document_id: mrna_v2_readiness_audit_20260807
+    original_path: /Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/归档/mrna v2 优化-ing.md
+    repository_copy_path: docs/contracts/history/mrna_v2_readiness_audit_20260807.md
+    sha256: a8eb4f49ede793a8eae2037db9f46f044056d37610ec92482666a8242a52fa30
+    bytes: 26065
+    lines: 575
+    status: HISTORICAL_SCIENTIFIC_AUDIT_PRESERVED_EXACT_BYTES
+  - record_id: REPOSITORY_V3_1_DERIVED_COPY
+    contract_id: utr_editflow_goal_v3_1_repository_copy
+    path: docs/contracts/utr_editflow_goal_v3_1.md
+    sha256: a7fda79fd6fea4d3020794e69cb966eb719ab8388406acc70b632f90d12a9cee
+    status: HISTORICAL_DERIVED_COPY_PRESERVED
+    caveat: >-
+      The repository copy is not byte-identical to the external v3.1 authority
+      hash declared by the v1.1 supersession record. The objects are recorded
+      separately and must not be silently conflated.
+  - record_id: DECLARED_EXTERNAL_V3_1_AUTHORITY
+    contract_id: utr_editflow_goal_v3.1_benchmark_first
+    path: external_authority_declared_by_predecessor
+    sha256: ecc6c635f112575db2f14309c869a378fc31df8fb76c01dda0b54b832b4f8946
+    status: HISTORICAL_DECLARED_BINDING_PRESERVED
+
+historical_gate_records:
+  - gate_id: M0_SCIENTIFIC_ORIGINAL
+    path: docs/contracts/history/mrna_v2_readiness_audit_20260807.md
+    sha256: a8eb4f49ede793a8eae2037db9f46f044056d37610ec92482666a8242a52fa30
+    status: ORIGINAL_M0_EFFECT_GATE_FAIL
+    repository_reported_status: ORIGINAL_M0_EFFECT_GATE_FAIL
+    decisive_evidence: macro_sign_accuracy_approximately_0.510_below_0.60
+    macro_sign_accuracy: 0.510
+    macro_sign_accuracy_value_semantics: APPROXIMATE_REPORTED
+    sign_accuracy_threshold: 0.60
+    o0_valid: false
+    g1_established: false
+    sealed_evaluator_implemented: false
+    associated_findings:
+      - MODEL_IMPLEMENTATION_DEFECTS_CONFIRMED
+      - O0_G1_RANKING_POOL_INVALID
+      - G1_PUBLICATION_EVIDENCE_NOT_ESTABLISHED
+      - SEALED_EVALUATOR_NOT_IMPLEMENTED_DO_NOT_RUN
+    v3_interpretation: HISTORICAL_SCIENTIFIC_FAILURE_PRESERVED_REPAIR_ROUTE_AVAILABLE
+    rerun_in_a0: false
+  - gate_id: M0_GOVERNANCE
+    path: reports/migration/M0_READONLY_AUDIT.md
+    sha256: 3f90fb6970d2ccc1e3933b6ef97b746a43c80aca85c9b1ac7a663d6242b31635
+    status: PASS_AUTHORITY_AUDIT_ONLY
+    repository_reported_status: PASS_AUTHORITY_AUDIT_ONLY
+    v3_interpretation: HISTORICAL_ENGINEERING_GOVERNANCE_ONLY
+    rerun_in_a0: false
+  - gate_id: O0
+    path: reports/migration/O0X_CLOSED_MEASURED_OPTIMIZATION_GATE.md
+    sha256: ebbd0d1ae55fe302ebf673f5dfbea2461bb2e72304c958c9509f840ee0736bf5
+    repository_reported_status: O0X_SEARCH_CEILING_ESTABLISHED_WITH_FLOW_HEADROOM_LIMITED
+    v3_interpretation: PRE_V3_DEVELOPMENT_ONLY_NOT_CANDIDATE_SPECIFIC_EVIDENCE
+    rerun_in_a0: false
+  - gate_id: G1
+    path: reports/migration/G1X_REAL_MRNA_GUIDANCE_GATE.md
+    sha256: f183c08990b6c12752ca0be5c20de371358c1eba10b40c2c720519385dec840b
+    repository_reported_status: G1X_REAL_MRNA_GUIDANCE_VALUE_DEMONSTRATED_WITH_RANKING_HEADROOM_LIMITED
+    v3_interpretation: PRE_V3_DEVELOPMENT_ONLY_SELF_SCORE_NOT_INDEPENDENT_EVIDENCE
+    rerun_in_a0: false
+  - gate_id: E0
+    path: reports/migration/E0X_PREREG_INTERNAL_GATE.md
+    sha256: 7ff4639764371b879b65b7fc100e03fe5e3da1216d584f8609e70fe78a6beedb
+    repository_reported_status: NO_GO
+    decisive_evidence: macro_sign_accuracy_0.510_below_0.60
+    sealed_final_status: NOT_EXECUTED
+    v3_interpretation: HISTORICAL_FAILURE_PRESERVED
+    rerun_in_a0: false
+  - gate_id: FINAL_MIGRATION
+    path: reports/migration/FINAL_MIGRATION_REPORT.md
+    sha256: a987d8c292c3700754f77052cdfe7315cf656ff2ca32818b5267a6e9fff84b92
+    repository_reported_status: BLOCKED_WITH_EVIDENCE
+    v3_interpretation: HISTORICAL_TERMINAL_STATE_PRESERVED
+    rerun_in_a0: false
+
+new_authority:
+  contract_id: mrna_xeditflow_route_a_v3
+  version: "3.0.0"
+  contract_path: docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md
+  contract_sha256: d1c031aecdec710495f6861b380785cccd64663ac4bd97b4f479d6fdf372ea07
+  config_path: configs/route_a_v3.yaml
+  config_sha256: e3486ba6ffba38b8a069c382460954929a5934398997355ab82d553dca05f455
+  base_commit: bbb71dcba6f1e1c9cb75a8a6653f1a4fe4a6ca0c
+  authority_bundle_commit_binding: docs/execution/route_a_v3_a0_activation.yaml
+  status: ACTIVE_AUTHORITATIVE_CONTRACT_PENDING_A0_ACCEPTANCE
+
+retained_governance:
+  - provenance
+  - license
+  - exposure
+  - split_and_leakage
+  - conservation_and_identity
+  - sealed_final_one_shot
+  - append_only_audit
+  - failure_evidence_preservation
+
+active_contract: mrna_xeditflow_route_a_v3
+active_contract_path: docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md
+active_contract_sha256: d1c031aecdec710495f6861b380785cccd64663ac4bd97b4f479d6fdf372ea07
+activation_rule: >-
+  The V3 authority becomes A0-accepted only when the schema/registry bundle
+  validates, the A0 gate record is PASS, the implementation commit is bound by
+  route_a_v3_a0_activation.yaml, and the task branch is pushed. None of these
+  engineering conditions establishes a scientific Route-A claim.

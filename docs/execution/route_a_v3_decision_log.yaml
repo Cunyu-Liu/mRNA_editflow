@@ -1,0 +1,220 @@
+schema_version: "1.0.0"
+contract_id: mrna_xeditflow_route_a_v3
+log_id: ROUTE_A_V3_DECISIONS
+append_only: true
+created_at: "2026-08-10T00:32:15+08:00"
+decisions:
+  - decision_id: V3-DEC-001
+    decision_type: DECISION
+    dimension: strategic_target
+    resolution: ROUTE_A_FULL_XEDITFLOW
+    status: FROZEN_USER_ONLY
+    effective_phase: A0
+    requires_user_authorization: true
+    sealed_contact: false
+    evidence_refs: [docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md]
+  - decision_id: V3-DEC-002
+    decision_type: DECISION
+    dimension: evidence_and_claim_separation
+    resolution: >-
+      Evidence status and claim status are independent. Engineering, smoke,
+      proxy, training-set, checkpoint, hash, or self-score evidence cannot be
+      promoted to a scientific claim without its frozen gate.
+    status: FROZEN
+    effective_phase: A0
+    requires_user_authorization: false
+    sealed_contact: false
+    evidence_refs: [docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md]
+  - decision_id: V3-DEC-003
+    decision_type: DECISION
+    dimension: data_and_claim_scope
+    resolution: PUBLIC_DATA_ONLY_NO_NEW_WETLAB_L4_PROHIBITED
+    status: FROZEN
+    effective_phase: A0
+    requires_user_authorization: true
+    sealed_contact: false
+    evidence_refs: [docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md]
+  - decision_id: V3-DEC-004
+    decision_type: DECISION
+    dimension: edit_budget
+    resolution: PRIMARY_K_1_3_5_SECONDARY_K_10
+    status: FROZEN
+    effective_phase: A0
+    requires_user_authorization: true
+    sealed_contact: false
+    evidence_refs: [docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md]
+  - decision_id: V3-DEC-005
+    decision_type: DECISION
+    dimension: ordinary_study_qualification
+    resolution: AT_LEAST_3_ORDINARY_STUDIES_WITH_AT_LEAST_2_A1_AND_1_A2
+    status: FROZEN
+    effective_phase: A1
+    requires_user_authorization: true
+    sealed_contact: false
+    evidence_refs: [docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md]
+  - decision_id: V3-DEC-006
+    decision_type: AMENDMENT
+    dimension: effect_uplift_metric
+    conflict: OLD_MEAN_RATIO_9_92_WAS_PATHOLOGICAL
+    resolution: TOP_10_PERCENT_ADDITIVE_UPLIFT_WITH_SOURCE_GROUP_BOOTSTRAP_CI_LOWER_GT_0
+    status: FROZEN_REPLACEMENT_WITH_HISTORY_PRESERVED
+    supersedes_decision_id: XE-DEC-008
+    effective_phase: A2
+    requires_user_authorization: true
+    sealed_contact: false
+    evidence_refs:
+      - docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md
+      - reports/migration/E0X_PREREG_INTERNAL_GATE.md
+    historical_values_preserved: ["0.1322", "9.92x"]
+  - decision_id: V3-DEC-007
+    decision_type: DECISION
+    dimension: secondary_region
+    resolution: THREE_UTR_PRIORITY_CDS_PARALLEL_AT_LEAST_ONE_TRANSFER_GATE_PASS
+    status: FROZEN
+    effective_phase: A1
+    requires_user_authorization: true
+    sealed_contact: false
+    evidence_refs: [docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md]
+  - decision_id: V3-DEC-008
+    decision_type: DECISION
+    dimension: innovation_boundary
+    resolution: >-
+      The contribution is identifiable public-intervention effect learning,
+      potential-consistent legal mRNA control, and independent measured-neighborhood
+      evaluation; no first-use claim is made for Doob or Edit Flow in biology.
+    status: FROZEN
+    effective_phase: A0
+    requires_user_authorization: false
+    sealed_contact: false
+    evidence_refs: [docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md]
+  - decision_id: V3-DEC-009
+    decision_type: DECISION
+    dimension: a0_authority_base
+    resolution: bbb71dcba6f1e1c9cb75a8a6653f1a4fe4a6ca0c
+    status: LIVE_CONFIRMED_20260810
+    effective_phase: A0
+    requires_user_authorization: false
+    sealed_contact: false
+    evidence_refs:
+      - docs/contracts/mrna_xeditflow_goal_v1_1.md
+      - docs/contracts/supersession_mrna_xeditflow_v1_1_to_route_a_v3.yaml
+  - decision_id: V3-DEC-010
+    decision_type: DECISION
+    dimension: pre_v3_routea_run
+    resolution: >-
+      Preserve artifacts/m4_routea_smoke and artifacts/m4_routea_v1 exactly as
+      found. No matching process was found in the A0 snapshot; because no
+      MANIFEST, STATUS, DONE, or REPORT exists, completion remains
+      UNKNOWN_NOT_ASSERTED. All outputs are PRE_V3_DEVELOPMENT_ONLY and are
+      ineligible for V3 gates, metric selection, candidate-specific effect,
+      or reversal of the original M0/E0 failures.
+    status: FROZEN_A0_CLASSIFICATION
+    effective_phase: A0
+    requires_user_authorization: false
+    sealed_contact: false
+    evidence_refs:
+      - docs/contracts/history/mrna_v2_readiness_audit_20260807.md
+      - artifacts/m4_routea_smoke/results.json
+      - artifacts/m4_routea_v1/results.json
+  - decision_id: V3-DEC-011
+    decision_type: DECISION
+    dimension: gpu_snapshot
+    resolution: >-
+      No GPU is treated as free or authorized in A0. All eight A100s had
+      resident processes; GPU 5 held another user's PepBenchmark process.
+      A0 is CPU-only authority/schema work and launches no parameter-learning run.
+    status: LIVE_CONFIRMED_20260810
+    effective_phase: A0
+    requires_user_authorization: false
+    sealed_contact: false
+    evidence_refs: [/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A0/A0_AUTHORITY_20260810T003215P0800_bbb71dc/PREFLIGHT.json]
+  - decision_id: V3-DEC-012
+    decision_type: DECISION
+    dimension: sealed_hard_disable
+    resolution: >-
+      GSE246381 is SEALED_EXTERNAL_FINAL_ONLY. A0-A9 may not write ACCESS_INTENT,
+      instantiate the real sealed access state, enter task activation, metric,
+      calibration, architecture/model selection, or training. A10 still requires
+      a separate explicit user authorization after A9 readiness PASS.
+    status: FROZEN
+    effective_phase: A0
+    requires_user_authorization: true
+    sealed_contact: false
+    evidence_refs: [docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md]
+  - decision_id: V3-DEC-013
+    decision_type: DECISION
+    dimension: commit_binding
+    resolution: >-
+      To avoid impossible self-reference, the authority bundle is committed first;
+      a second focused A0 activation record binds that immutable implementation
+      commit. The activation metadata commit does not alter contract thresholds.
+    status: FROZEN_IMPLEMENTATION_PROCEDURE
+    effective_phase: A0
+    requires_user_authorization: false
+    sealed_contact: false
+    evidence_refs: [docs/execution/route_a_v3_a0_activation.yaml]
+  - decision_id: V3-DEC-014
+    decision_type: DECISION
+    dimension: historical_m0_scientific_failure
+    resolution: >-
+      Preserve ORIGINAL_M0_EFFECT_GATE_FAIL separately from the migration M0
+      authority-audit PASS. The scientific failure is bound to the exact-byte
+      readiness audit with macro sign accuracy approximately 0.510 below 0.60,
+      invalid measured ranking pools, unestablished G1 publication evidence,
+      and an unimplemented sealed evaluator. It remains repairable evidence,
+      not a terminal change away from Route A.
+    status: FROZEN_HISTORICAL_FAILURE_BINDING
+    effective_phase: A0
+    requires_user_authorization: false
+    sealed_contact: false
+    evidence_refs:
+      - docs/contracts/history/mrna_v2_readiness_audit_20260807.md
+      - docs/contracts/supersession_mrna_xeditflow_v1_1_to_route_a_v3.yaml
+  - decision_id: V3-DEC-015
+    decision_type: DECISION
+    dimension: sealed_execution_freeze_hash_scope
+    resolution: >-
+      Break the otherwise impossible active-config to authorization-record to
+      execution-manifest to active-config hash cycle by freezing an independent
+      A9 effective execution configuration snapshot before authorization. The
+      snapshot contains execution settings but no authorization pointers or
+      toggles. The active config remains separately authority-bound and fail-closed;
+      the execution manifest binds the exact snapshot bytes, authority contract
+      SHA-256, schema version, all ordinary input/model/evaluator manifests, and
+      the one-shot authorized run identity.
+    status: FROZEN_A0_SECURITY_DESIGN
+    effective_phase: A0
+    requires_user_authorization: false
+    sealed_contact: false
+    evidence_refs:
+      - configs/route_a_v3.yaml
+      - scripts/route_a_v3/sealed_guard.py
+      - scripts/e0x/run_e0x_final.py
+  - decision_id: V3-DEC-016
+    decision_type: AMENDMENT
+    dimension: sealed_a0_phase_boundary
+    conflict: >-
+      The pre-authorization snapshot design in V3-DEC-015 was implemented too
+      early: the current sealed evaluator is still a deterministic aborting stub,
+      whereas the authority contract assigns no-stub execution freeze and
+      independent readiness review to A9.
+    resolution: >-
+      Supersede every latent success path in the A0 sealed guard with an
+      unconditional A0-A9 hard disable. No configuration toggle, authorization
+      record, readiness record, execution manifest, or synthetic positive fixture
+      can authorize the A0 runner. A9 must replace this guard only after the
+      evaluator has no stub, all ordinary gates pass, consumed assets and the full
+      runtime source/environment closure are frozen, aggregate output publication
+      is transactionally ordered before terminal completion, and an independent
+      readiness review passes. A10 still requires separate explicit user
+      authorization for the unique formal call.
+    status: FROZEN_A0_PHASE_BOUNDARY
+    supersedes_decision_id: V3-DEC-015
+    effective_phase: A0
+    requires_user_authorization: false
+    sealed_contact: false
+    evidence_refs:
+      - docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md
+      - configs/route_a_v3.yaml
+      - scripts/route_a_v3/sealed_guard.py
+      - scripts/e0x/run_e0x_final.py

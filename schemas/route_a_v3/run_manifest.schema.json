@@ -1,0 +1,586 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Cunyu-Liu/mRNA_editflow/schemas/route_a_v3/run_manifest.schema.json",
+  "title": "RunManifestV3",
+  "description": "Recoverable, hash-bound run record. Operational status is separate from scientific evidence and claim status.",
+  "contract_id": "mrna_xeditflow_route_a_v3",
+  "schema_version": "3.0.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_id",
+    "schema_version",
+    "task_id",
+    "run_id",
+    "parent_run_ids",
+    "phase_id",
+    "v3_contract_sha256",
+    "code_commit",
+    "dataset_hashes",
+    "split_sha256",
+    "config_sha256",
+    "checkpoint_sha256",
+    "seed",
+    "compute_class",
+    "parameter_updating",
+    "gpu",
+    "environment",
+    "command",
+    "outputs",
+    "run_status",
+    "evidence_status",
+    "claim_status",
+    "failure",
+    "recovery",
+    "started_at",
+    "ended_at"
+  ],
+  "properties": {
+    "contract_id": {"const": "mrna_xeditflow_route_a_v3"},
+    "schema_version": {"const": "3.0.0"},
+    "task_id": {"$ref": "#/$defs/nonEmptyString"},
+    "run_id": {"$ref": "#/$defs/nonEmptyString"},
+    "parent_run_ids": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/nonEmptyString"}},
+    "phase_id": {"enum": ["A0", "A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8", "A9", "A10"]},
+    "v3_contract_sha256": {"$ref": "#/$defs/sha256"},
+    "code_commit": {"type": "string", "pattern": "^[0-9a-f]{40,64}$"},
+    "dataset_hashes": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["dataset_id", "manifest_sha256"],
+        "properties": {
+          "dataset_id": {"$ref": "#/$defs/nonEmptyString"},
+          "manifest_sha256": {"$ref": "#/$defs/sha256"}
+        }
+      }
+    },
+    "split_sha256": {"$ref": "#/$defs/sha256"},
+    "config_sha256": {"$ref": "#/$defs/sha256"},
+    "checkpoint_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+    "seed": {"type": "integer", "minimum": 0},
+    "compute_class": {
+      "enum": [
+        "CPU_AUTHORITY",
+        "CPU_DATA",
+        "CPU_STATISTICS",
+        "CPU_HASH_GIT",
+        "CPU_SMALL_GRAPH_EXACT",
+        "CPU_NUMERICAL_CHECKER",
+        "CPU_UNIT_TEST",
+        "GPU_NEURAL_CRITIC_TRAIN",
+        "GPU_BASE_FLOW_TRAIN",
+        "GPU_GUIDANCE_VALUE_TRAIN",
+        "GPU_FOUNDATION_FINETUNE",
+        "GPU_VALIDATION"
+      ]
+    },
+    "parameter_updating": {"type": "boolean"},
+    "gpu": {"$ref": "#/$defs/gpu"},
+    "environment": {"$ref": "#/$defs/environment"},
+    "command": {"$ref": "#/$defs/command"},
+    "outputs": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/output"},
+      "uniqueItems": true
+    },
+    "run_status": {"$ref": "#/$defs/runStatus"},
+    "evidence_status": {"$ref": "#/$defs/evidenceStatus"},
+    "claim_status": {"$ref": "#/$defs/claimStatus"},
+    "failure": {"$ref": "#/$defs/failure"},
+    "recovery": {"$ref": "#/$defs/recovery"},
+    "started_at": {"type": "string", "format": "date-time"},
+    "ended_at": {"type": ["string", "null"], "format": "date-time"}
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "compute_class": {
+            "enum": [
+              "CPU_AUTHORITY",
+              "CPU_DATA",
+              "CPU_STATISTICS",
+              "CPU_HASH_GIT",
+              "CPU_SMALL_GRAPH_EXACT",
+              "CPU_NUMERICAL_CHECKER",
+              "CPU_UNIT_TEST"
+            ]
+          }
+        },
+        "required": ["compute_class"]
+      },
+      "then": {
+        "properties": {
+          "parameter_updating": {"const": false},
+          "gpu": {
+            "properties": {
+              "required": {"const": false},
+              "used": {"const": false}
+            }
+          }
+        },
+        "not": {"properties": {"claim_status": {"const": "ESTABLISHED"}}, "required": ["claim_status"]}
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "compute_class": {
+            "enum": [
+              "GPU_NEURAL_CRITIC_TRAIN",
+              "GPU_BASE_FLOW_TRAIN",
+              "GPU_GUIDANCE_VALUE_TRAIN",
+              "GPU_FOUNDATION_FINETUNE"
+            ]
+          }
+        },
+        "required": ["compute_class"]
+      },
+      "then": {
+        "properties": {
+          "parameter_updating": {"const": true},
+          "gpu": {
+            "properties": {
+              "required": {"const": true},
+              "cuda_fail_closed": {"const": true},
+              "silent_cpu_fallback": {"const": false}
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {"properties": {"compute_class": {"const": "GPU_VALIDATION"}}, "required": ["compute_class"]},
+      "then": {
+        "properties": {
+          "parameter_updating": {"const": false},
+          "gpu": {
+            "properties": {
+              "required": {"const": true},
+              "cuda_fail_closed": {"const": true},
+              "silent_cpu_fallback": {"const": false}
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {"properties": {"parameter_updating": {"const": true}}, "required": ["parameter_updating"]},
+      "then": {
+        "properties": {
+          "compute_class": {
+            "enum": [
+              "GPU_NEURAL_CRITIC_TRAIN",
+              "GPU_BASE_FLOW_TRAIN",
+              "GPU_GUIDANCE_VALUE_TRAIN",
+              "GPU_FOUNDATION_FINETUNE"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "compute_class": {
+            "enum": [
+              "GPU_NEURAL_CRITIC_TRAIN",
+              "GPU_BASE_FLOW_TRAIN",
+              "GPU_GUIDANCE_VALUE_TRAIN",
+              "GPU_FOUNDATION_FINETUNE",
+              "GPU_VALIDATION"
+            ]
+          }
+        },
+        "required": ["compute_class"]
+      },
+      "then": {
+        "properties": {
+          "run_status": {
+            "enum": [
+              "NOT_RUN",
+              "QUEUED",
+              "IN_PROGRESS",
+              "COMPLETED",
+              "FAIL_CLOSED",
+              "FAIL_CURRENT_PROTOCOL",
+              "FAIL_REPAIRABLE",
+              "BLOCKED_PENDING_PUBLIC_EVIDENCE",
+              "TERMINATED",
+              "TERMINATED_SAFELY_WITH_EVIDENCE"
+            ]
+          },
+          "gpu": {
+            "properties": {
+              "required": {"const": true},
+              "cuda_fail_closed": {"const": true},
+              "silent_cpu_fallback": {"const": false}
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "anyOf": [
+          {"properties": {"run_status": {"const": "COMPLETED"}}, "required": ["run_status"]},
+          {"properties": {"evidence_status": {"const": "PASS"}}, "required": ["evidence_status"]}
+        ]
+      },
+      "then": {
+        "properties": {
+          "run_status": {"const": "COMPLETED"},
+          "ended_at": {"type": "string", "format": "date-time"},
+          "outputs": {
+            "minItems": 1,
+            "items": {
+              "properties": {
+                "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+                "status": {"const": "COMPLETE"}
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "allOf": [
+          {
+            "properties": {
+              "compute_class": {
+                "enum": [
+                  "GPU_NEURAL_CRITIC_TRAIN",
+                  "GPU_BASE_FLOW_TRAIN",
+                  "GPU_GUIDANCE_VALUE_TRAIN",
+                  "GPU_FOUNDATION_FINETUNE",
+                  "GPU_VALIDATION"
+                ]
+              }
+            },
+            "required": ["compute_class"]
+          },
+          {
+            "properties": {"gpu": {"properties": {"used": {"const": true}}, "required": ["used"]}},
+            "required": ["gpu"]
+          }
+        ]
+      },
+      "then": {
+        "properties": {
+          "gpu": {
+            "properties": {
+              "required": {"const": true},
+              "uuid": {"type": "string", "minLength": 1},
+              "model": {"type": "string", "minLength": 1},
+              "device": {"type": "string", "pattern": "^cuda(:[0-9]+)?$"},
+              "driver_version": {"type": "string", "minLength": 1},
+              "cuda_version": {"type": "string", "minLength": 1},
+              "peak_vram_bytes": {"type": "integer", "minimum": 1}
+            }
+          },
+          "environment": {
+            "properties": {"pytorch_version": {"type": "string", "minLength": 1}}
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "allOf": [
+          {
+            "properties": {
+              "compute_class": {
+                "enum": [
+                  "GPU_NEURAL_CRITIC_TRAIN",
+                  "GPU_BASE_FLOW_TRAIN",
+                  "GPU_GUIDANCE_VALUE_TRAIN",
+                  "GPU_FOUNDATION_FINETUNE",
+                  "GPU_VALIDATION"
+                ]
+              }
+            },
+            "required": ["compute_class"]
+          },
+          {
+            "properties": {"gpu": {"properties": {"used": {"const": false}}, "required": ["used"]}},
+            "required": ["gpu"]
+          }
+        ]
+      },
+      "then": {
+        "properties": {
+          "gpu": {
+            "properties": {
+              "device": {"type": "null"},
+              "peak_vram_bytes": {"anyOf": [{"type": "null"}, {"const": 0}]}
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "allOf": [
+          {
+            "properties": {
+              "compute_class": {
+                "enum": [
+                  "GPU_NEURAL_CRITIC_TRAIN",
+                  "GPU_BASE_FLOW_TRAIN",
+                  "GPU_GUIDANCE_VALUE_TRAIN",
+                  "GPU_FOUNDATION_FINETUNE",
+                  "GPU_VALIDATION"
+                ]
+              }
+            },
+            "required": ["compute_class"]
+          },
+          {"properties": {"run_status": {"enum": ["NOT_RUN", "QUEUED"]}}, "required": ["run_status"]}
+        ]
+      },
+      "then": {
+        "properties": {
+          "gpu": {"properties": {"used": {"const": false}}},
+          "ended_at": {"type": "null"},
+          "failure": {"type": "null"},
+          "recovery": {"type": "null"}
+        }
+      }
+    },
+    {
+      "if": {
+        "allOf": [
+          {
+            "properties": {
+              "compute_class": {
+                "enum": [
+                  "GPU_NEURAL_CRITIC_TRAIN",
+                  "GPU_BASE_FLOW_TRAIN",
+                  "GPU_GUIDANCE_VALUE_TRAIN",
+                  "GPU_FOUNDATION_FINETUNE",
+                  "GPU_VALIDATION"
+                ]
+              }
+            },
+            "required": ["compute_class"]
+          },
+          {"properties": {"run_status": {"const": "IN_PROGRESS"}}, "required": ["run_status"]}
+        ]
+      },
+      "then": {
+        "properties": {
+          "gpu": {"properties": {"used": {"const": true}}},
+          "ended_at": {"type": "null"},
+          "failure": {"type": "null"},
+          "recovery": {"type": "null"}
+        }
+      }
+    },
+    {
+      "if": {
+        "allOf": [
+          {
+            "properties": {
+              "compute_class": {
+                "enum": [
+                  "GPU_NEURAL_CRITIC_TRAIN",
+                  "GPU_BASE_FLOW_TRAIN",
+                  "GPU_GUIDANCE_VALUE_TRAIN",
+                  "GPU_FOUNDATION_FINETUNE",
+                  "GPU_VALIDATION"
+                ]
+              }
+            },
+            "required": ["compute_class"]
+          },
+          {"properties": {"run_status": {"const": "COMPLETED"}}, "required": ["run_status"]}
+        ]
+      },
+      "then": {
+        "properties": {
+          "gpu": {"properties": {"used": {"const": true}}},
+          "failure": {"type": "null"},
+          "recovery": {"type": "null"}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "failure": {
+            "allOf": [
+              {"not": {"type": "null"}},
+              {
+                "properties": {"failure_type": {"enum": ["CUDA_UNAVAILABLE", "CPU_FALLBACK"]}},
+                "required": ["failure_type"]
+              }
+            ]
+          }
+        },
+        "required": ["failure"]
+      },
+      "then": {
+        "properties": {
+          "run_status": {"enum": ["FAIL_CLOSED", "TERMINATED", "TERMINATED_SAFELY_WITH_EVIDENCE"]},
+          "compute_class": {
+            "enum": [
+              "GPU_NEURAL_CRITIC_TRAIN",
+              "GPU_BASE_FLOW_TRAIN",
+              "GPU_GUIDANCE_VALUE_TRAIN",
+              "GPU_FOUNDATION_FINETUNE",
+              "GPU_VALIDATION"
+            ]
+          },
+          "gpu": {
+            "properties": {
+              "required": {"const": true},
+              "used": {"const": false},
+              "cuda_fail_closed": {"const": true},
+              "silent_cpu_fallback": {"const": false},
+              "device": {"type": "null"},
+              "peak_vram_bytes": {"anyOf": [{"type": "null"}, {"const": 0}]}
+            }
+          },
+          "failure": {
+            "properties": {
+              "failure_bundle_path": {"type": "string", "pattern": "^/", "minLength": 2},
+              "failure_bundle_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+            },
+            "required": ["failure_bundle_path", "failure_bundle_sha256"]
+          },
+          "recovery": {"not": {"type": "null"}},
+          "ended_at": {"type": "string", "format": "date-time"}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "run_status": {
+            "enum": [
+              "FAIL_CLOSED",
+              "FAIL_CURRENT_PROTOCOL",
+              "FAIL_REPAIRABLE",
+              "BLOCKED_PENDING_PUBLIC_EVIDENCE",
+              "TERMINATED",
+              "TERMINATED_SAFELY_WITH_EVIDENCE"
+            ]
+          }
+        },
+        "required": ["run_status"]
+      },
+      "then": {
+        "properties": {
+          "failure": {"not": {"type": "null"}},
+          "recovery": {"not": {"type": "null"}},
+          "ended_at": {"type": "string", "format": "date-time"}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"evidence_status": {"const": "PASS"}}, "required": ["evidence_status"]},
+      "then": {"properties": {"run_status": {"const": "COMPLETED"}}}
+    }
+  ],
+  "$defs": {
+    "nonEmptyString": {"type": "string", "minLength": 1},
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "runStatus": {
+      "enum": [
+        "NOT_RUN",
+        "QUEUED",
+        "IN_PROGRESS",
+        "COMPLETED",
+        "FAIL_CLOSED",
+        "FAIL_CURRENT_PROTOCOL",
+        "FAIL_REPAIRABLE",
+        "BLOCKED_PENDING_PUBLIC_EVIDENCE",
+        "TERMINATED_SAFELY_WITH_EVIDENCE",
+        "TERMINATED",
+        "IMPLEMENTATION_COMPLETE_DELIVERY_BLOCKED",
+        "PRE_V3_DEVELOPMENT_ONLY",
+        "CANCELLED_BY_AUTHORITY"
+      ]
+    },
+    "evidenceStatus": {"enum": ["NOT_RUN", "IN_PROGRESS", "PASS", "FAIL_CURRENT_PROTOCOL", "FAIL_REPAIRABLE", "BLOCKED_PENDING_PUBLIC_EVIDENCE", "TERMINATED_SAFELY_WITH_EVIDENCE"]},
+    "claimStatus": {"enum": ["NOT_ESTABLISHED", "ESTABLISHED", "INVALIDATED_CURRENT_FORMULATION", "PROHIBITED"]},
+    "gpu": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required", "used", "cuda_fail_closed", "silent_cpu_fallback", "uuid", "model", "device", "driver_version", "cuda_version", "peak_vram_bytes"],
+      "properties": {
+        "required": {"type": "boolean"},
+        "used": {"type": "boolean"},
+        "cuda_fail_closed": {"const": true},
+        "silent_cpu_fallback": {"const": false},
+        "uuid": {"type": ["string", "null"], "minLength": 1},
+        "model": {"type": ["string", "null"], "minLength": 1},
+        "device": {"type": ["string", "null"], "minLength": 1},
+        "driver_version": {"type": ["string", "null"], "minLength": 1},
+        "cuda_version": {"type": ["string", "null"], "minLength": 1},
+        "peak_vram_bytes": {"type": ["integer", "null"], "minimum": 0}
+      }
+    },
+    "environment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["os", "python_version", "pytorch_version", "package_lock_sha256", "git_dirty", "container_image"],
+      "properties": {
+        "os": {"$ref": "#/$defs/nonEmptyString"},
+        "python_version": {"$ref": "#/$defs/nonEmptyString"},
+        "pytorch_version": {"type": ["string", "null"], "minLength": 1},
+        "package_lock_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+        "git_dirty": {"type": "boolean"},
+        "container_image": {"type": ["string", "null"], "minLength": 1}
+      }
+    },
+    "command": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["executable", "argv", "working_directory"],
+      "properties": {
+        "executable": {"$ref": "#/$defs/nonEmptyString"},
+        "argv": {"type": "array", "items": {"type": "string"}},
+        "working_directory": {"type": "string", "pattern": "^/"}
+      }
+    },
+    "output": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["artifact_type", "absolute_path", "sha256", "status"],
+      "properties": {
+        "artifact_type": {"$ref": "#/$defs/nonEmptyString"},
+        "absolute_path": {"type": "string", "pattern": "^/"},
+        "sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+        "status": {"enum": ["PLANNED", "PARTIAL", "COMPLETE", "MISSING", "QUARANTINED"]}
+      }
+    },
+    "failure": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["failure_type", "detail", "failure_bundle_path", "failure_bundle_sha256", "last_valid_checkpoint_sha256"],
+      "properties": {
+        "failure_type": {"enum": ["DATA", "ESTIMAND", "CRITIC", "GRAPH", "THEORY", "EVALUATOR", "COMPUTE", "CUDA_UNAVAILABLE", "CPU_FALLBACK", "OOM", "NAN", "EXCEPTION", "AUTHORIZATION", "DELIVERY"]},
+        "detail": {"$ref": "#/$defs/nonEmptyString"},
+        "failure_bundle_path": {"type": "string", "pattern": "^/"},
+        "failure_bundle_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+        "last_valid_checkpoint_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "recovery": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["recovery_branch", "next_route_a_task_id", "hypothesis", "new_run_id_required"],
+      "properties": {
+        "recovery_branch": {"$ref": "#/$defs/nonEmptyString"},
+        "next_route_a_task_id": {"$ref": "#/$defs/nonEmptyString"},
+        "hypothesis": {"$ref": "#/$defs/nonEmptyString"},
+        "new_run_id_required": {"type": "boolean"}
+      }
+    }
+  }
+}

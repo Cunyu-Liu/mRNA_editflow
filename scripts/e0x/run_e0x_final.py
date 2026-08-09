@@ -28,28 +28,15 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-import time
-from collections import defaultdict
 from pathlib import Path
-from typing import Dict, List, Optional
-
-import numpy as np
+from typing import Dict, List
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))  # repo root
 
-from scripts.e0x import prereg
-from scripts.e0x.sealed import (
-    SealedAccessError, assert_no_row_level, build_aggregate, build_hypothesis,
-    permutation_pvalue, verdict_from_aggregate,
-)
-from scripts.e0x import sealed
-from scripts.m4_sparse import config as C
-from scripts.m4_sparse.dataset import build_vocab
-from scripts.m4_sparse.evaluate import (
-    context_metrics, macro_metrics, predict_model, run_fold_evaluation,
-    metric_context,
-)
-from scripts.m4_sparse.train import build_folds
+from scripts.route_a_v3.sealed_guard import assert_sealed_final_authorized
+
+
+SEALED_EVALUATOR_IMPLEMENTATION = "A0_STUB_HARD_DISABLED"
 
 
 # ---------------------------------------------------------------------------
@@ -102,6 +89,8 @@ def load_critic(ckpt_path, device):
 
 def effect_transfer_statistics(fold_evals: List[Dict]) -> Dict:
     """Aggregate H1 statistics across folds (macro + per-fold)."""
+    from scripts.m4_sparse.evaluate import macro_metrics
+
     cms = [cm for fe in fold_evals for cm in fe["model"]]
     m = macro_metrics(cms)
     m["per_study"] = {fe["held_out_study"]: macro_metrics(fe["model"])
@@ -137,6 +126,13 @@ def legality_report(trace: Dict) -> Dict:
 # ---------------------------------------------------------------------------
 
 def run_internal(prereg_, args, cfg, rows, vocab, device) -> Dict:
+    import numpy as np
+
+    from scripts.e0x import sealed
+    from scripts.e0x.sealed import build_hypothesis, permutation_pvalue, verdict_from_aggregate
+    from scripts.m4_sparse.evaluate import metric_context, predict_model, run_fold_evaluation
+    from scripts.m4_sparse.train import build_folds
+
     bench = "5U-A1"
     bench_rows = [r for r in rows if r["benchmark"] == bench]
     folds = build_folds(bench_rows, bench, split=cfg.PRIMARY_SPLIT)
@@ -198,6 +194,9 @@ def run_sealed_final(prereg_, args, cfg, rows, vocab, device) -> Dict:
     Enforces the sealed access protocol: ACCESS_INTENT -> RESERVE -> evaluate ->
     exactly one COMPLETION or ABORT.  An abort invalidates the v1 final.
     """
+    assert_sealed_final_authorized(args)
+    from scripts.e0x import sealed
+
     access_log = args.restricted / "ACCESS_LOG.jsonl"
     sm = sealed.SealedAccessState(access_log)
     if sm.state in (sealed.SealedAccessState.COMPLETED,
@@ -219,7 +218,7 @@ def run_sealed_final(prereg_, args, cfg, rows, vocab, device) -> Dict:
         # called here; the orchestrator only wires the protocol + aggregate.
         per_hypothesis = _evaluate_sealed_external(prereg_, args, cfg, rows, vocab, device)
         agg = sealed.build_aggregate(prereg_, per_hypothesis)
-        agg["go_nogo_verdict"] = verdict_from_aggregate(
+        agg["go_nogo_verdict"] = sealed.verdict_from_aggregate(
             prereg_, per_hypothesis, agg["holm_adjusted_pvalues"])
         sealed.assert_no_row_level(agg)
         result_sha = sealed.sha256_hex(
@@ -244,6 +243,8 @@ def _evaluate_sealed_external(prereg_, args, cfg, rows, vocab, device) -> List[D
     restricted measured store are available.  This orchestrator raises if the
     required raw sequence source is not present (fail-closed).
     """
+    from scripts.e0x import sealed
+
     raw_seq_dir = args.raw_seq_dir
     if not raw_seq_dir or not raw_seq_dir.exists():
         raise sealed.SealedAccessError(
@@ -274,6 +275,13 @@ def main() -> int:
     ap.add_argument("--seed", type=int, default=42)
     ap.add_argument("--gpu", default=None)
     args = ap.parse_args()
+
+    if args.mode == "sealed-final":
+        assert_sealed_final_authorized(args)
+
+    from scripts.e0x import prereg
+    from scripts.m4_sparse import config as C
+    from scripts.m4_sparse.dataset import build_vocab
 
     prereg_ = prereg.load_prereg(args.prereg)
     rep = prereg.validate(prereg_)

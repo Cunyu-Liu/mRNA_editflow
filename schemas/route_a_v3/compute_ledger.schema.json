@@ -1,0 +1,159 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Cunyu-Liu/mRNA_editflow/schemas/route_a_v3/compute_ledger.schema.json",
+  "title": "ComputeLedgerV3",
+  "description": "Matched-compute accounting across candidate, NFE, forward-equivalent, wall-time, VRAM and concurrency axes.",
+  "contract_id": "mrna_xeditflow_route_a_v3",
+  "schema_version": "3.0.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_id",
+    "schema_version",
+    "ledger_id",
+    "task_id",
+    "run_id",
+    "method_id",
+    "source_pool_id",
+    "source_pool_hash",
+    "legal_action_space_hash",
+    "candidate_budget",
+    "candidate_count",
+    "unique_candidate_count",
+    "unique_candidate_rate",
+    "query_count",
+    "generator_nfe",
+    "critic_forwards",
+    "guidance_forwards",
+    "reranker_forwards",
+    "other_forwards",
+    "total_forward_equivalents",
+    "forward_equivalent_rule",
+    "wall_time",
+    "peak_vram_bytes",
+    "gpu",
+    "concurrency",
+    "cold_start_included",
+    "amortized_cost_reported",
+    "seeds",
+    "hpo_budget",
+    "run_status"
+  ],
+  "properties": {
+    "contract_id": {"const": "mrna_xeditflow_route_a_v3"},
+    "schema_version": {"const": "3.0.0"},
+    "ledger_id": {"$ref": "#/$defs/nonEmptyString"},
+    "task_id": {"$ref": "#/$defs/nonEmptyString"},
+    "run_id": {"$ref": "#/$defs/nonEmptyString"},
+    "method_id": {"$ref": "#/$defs/nonEmptyString"},
+    "source_pool_id": {"$ref": "#/$defs/nonEmptyString"},
+    "source_pool_hash": {"$ref": "#/$defs/sha256"},
+    "legal_action_space_hash": {"$ref": "#/$defs/sha256"},
+    "candidate_budget": {"type": "integer", "minimum": 0},
+    "candidate_count": {"type": "integer", "minimum": 0},
+    "unique_candidate_count": {"type": "integer", "minimum": 0},
+    "unique_candidate_rate": {"type": "number", "minimum": 0, "maximum": 1},
+    "query_count": {"type": "integer", "minimum": 0},
+    "generator_nfe": {"type": "integer", "minimum": 0},
+    "critic_forwards": {"type": "integer", "minimum": 0},
+    "guidance_forwards": {"type": "integer", "minimum": 0},
+    "reranker_forwards": {"type": "integer", "minimum": 0},
+    "other_forwards": {"type": "integer", "minimum": 0},
+    "total_forward_equivalents": {"type": "number", "minimum": 0},
+    "forward_equivalent_rule": {"$ref": "#/$defs/forwardRule"},
+    "wall_time": {"$ref": "#/$defs/wallTime"},
+    "peak_vram_bytes": {"type": "integer", "minimum": 0},
+    "gpu": {"$ref": "#/$defs/gpu"},
+    "concurrency": {"$ref": "#/$defs/concurrency"},
+    "cold_start_included": {"type": "boolean"},
+    "amortized_cost_reported": {"type": "boolean"},
+    "seeds": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "integer", "minimum": 0}},
+    "hpo_budget": {"$ref": "#/$defs/hpoBudget"},
+    "run_status": {"$ref": "#/$defs/runStatus"},
+    "notes": {"type": ["string", "null"]}
+  },
+  "$defs": {
+    "nonEmptyString": {"type": "string", "minLength": 1},
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "runStatus": {"enum": ["NOT_RUN", "QUEUED", "IN_PROGRESS", "COMPLETED", "FAIL_CLOSED", "FAIL_CURRENT_PROTOCOL", "FAIL_REPAIRABLE", "BLOCKED_PENDING_PUBLIC_EVIDENCE", "TERMINATED_SAFELY_WITH_EVIDENCE", "IMPLEMENTATION_COMPLETE_DELIVERY_BLOCKED", "PRE_V3_DEVELOPMENT_ONLY", "CANCELLED_BY_AUTHORITY"]},
+    "forwardRule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["rule_id", "rule_sha256", "generator_weight", "critic_weight", "guidance_weight", "reranker_weight", "other_weight"],
+      "properties": {
+        "rule_id": {"$ref": "#/$defs/nonEmptyString"},
+        "rule_sha256": {"$ref": "#/$defs/sha256"},
+        "generator_weight": {"type": "number", "minimum": 0},
+        "critic_weight": {"type": "number", "minimum": 0},
+        "guidance_weight": {"type": "number", "minimum": 0},
+        "reranker_weight": {"type": "number", "minimum": 0},
+        "other_weight": {"type": "number", "minimum": 0}
+      }
+    },
+    "wallTime": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["total_seconds", "cold_start_seconds", "amortized_seconds", "measurement_method"],
+      "properties": {
+        "total_seconds": {"type": "number", "minimum": 0},
+        "cold_start_seconds": {"type": "number", "minimum": 0},
+        "amortized_seconds": {"type": "number", "minimum": 0},
+        "measurement_method": {"$ref": "#/$defs/nonEmptyString"}
+      }
+    },
+    "gpu": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["uuid", "model", "cohort_id", "device_index"],
+      "properties": {
+        "uuid": {"$ref": "#/$defs/nonEmptyString"},
+        "model": {"$ref": "#/$defs/nonEmptyString"},
+        "cohort_id": {"$ref": "#/$defs/nonEmptyString"},
+        "device_index": {"type": "integer", "minimum": 0}
+      }
+    },
+    "concurrency": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "process_count", "worker_count", "exclusive_gpu", "co_located_workloads", "conditions_sha256"],
+      "properties": {
+        "mode": {"enum": ["SERIAL", "PARALLEL_IDENTICAL", "PARALLEL_HETEROGENEOUS"]},
+        "process_count": {"type": "integer", "minimum": 1},
+        "worker_count": {"type": "integer", "minimum": 1},
+        "exclusive_gpu": {"type": "boolean"},
+        "co_located_workloads": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/nonEmptyString"}},
+        "conditions_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "hpoBudget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "trial_count",
+        "max_trials",
+        "budget_type",
+        "time_budget_seconds",
+        "forward_equivalent_budget",
+        "search_space_sha256"
+      ],
+      "properties": {
+        "trial_count": {"type": "integer", "minimum": 0},
+        "max_trials": {"type": "integer", "minimum": 1},
+        "budget_type": {"enum": ["MAX_TRIALS", "WALL_TIME_SECONDS", "FORWARD_EQUIVALENTS", "JOINT"]},
+        "time_budget_seconds": {"type": ["number", "null"], "exclusiveMinimum": 0},
+        "forward_equivalent_budget": {"type": ["number", "null"], "exclusiveMinimum": 0},
+        "search_space_sha256": {"$ref": "#/$defs/sha256"}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"budget_type": {"enum": ["WALL_TIME_SECONDS", "JOINT"]}}, "required": ["budget_type"]},
+          "then": {"properties": {"time_budget_seconds": {"type": "number", "exclusiveMinimum": 0}}}
+        },
+        {
+          "if": {"properties": {"budget_type": {"enum": ["FORWARD_EQUIVALENTS", "JOINT"]}}, "required": ["budget_type"]},
+          "then": {"properties": {"forward_equivalent_budget": {"type": "number", "exclusiveMinimum": 0}}}
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,268 @@
+# Route A V3 task definitions. Definitions do not imply task execution or success.
+contract_id: mrna_xeditflow_route_a_v3
+version: "3.0.0"
+schema_version: "3.0.0"
+status: ACTIVE_AUTHORITATIVE_CONTRACT
+registry_type: TASK_REGISTRY
+date: "2026-08-10"
+
+authority_ref:
+  config_path: configs/route_a_v3.yaml
+  goal_path: docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md
+  goal_sha256: d1c031aecdec710495f6861b380785cccd64663ac4bd97b4f479d6fdf372ea07
+
+expected_phase_ids: [A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10]
+expected_task_ids:
+  - T5_SOURCE_RELATIVE_EFFECT
+  - T5_SELECTIVE_EFFECT
+  - T5_MEASURED_NEIGHBORHOOD_OPTIMIZATION
+  - T5_FIXED_BUDGET_MULTI_STEP_OPTIMIZATION
+  - FLOW_BASE_LEGAL_CTMC
+  - EXACT_GUIDANCE_TOY_GRAPH
+  - EXACT_GUIDANCE_MATCHED_COMPUTE
+  - TRANSFER_3UTR
+  - TRANSFER_CDS
+  - SEALED_EXTERNAL_ADJUDICATION
+
+registry_closure:
+  phase_ids_must_equal_expected_phase_ids: true
+  task_ids_must_equal_expected_task_ids: true
+  task_ids_unique: true
+  every_task_must_have_split_assignment: true
+  every_phase_dependency_must_resolve: true
+  no_gate_pass_implied_by_definition: true
+
+phase_tasks:
+  - phase_id: A0
+    task_name: V3_AUTHORITY_AND_SITE_PROTECTION
+    risk: HIGH
+    depends_on: []
+    may_run_in_parallel_with: []
+    evidence_status: NOT_RUN
+    next_phase_hard_gate:
+      - SINGLE_ACTIVE_AUTHORITY
+      - LINEAGE_AND_SCHEMA_VALID
+      - DIRTY_CHECKOUT_ACTIVE_RUN_AND_SEALED_UNTOUCHED
+      - SEALED_RUNNER_HARD_DISABLED
+  - phase_id: A1
+    task_name: PUBLIC_DATA_QUALIFICATION
+    risk: HIGH
+    depends_on: [A0]
+    may_run_in_parallel_with: [A6]
+    evidence_status: NOT_RUN
+    next_phase_hard_gate:
+      - THREE_QUALIFIED_ORDINARY_STUDIES
+      - TWO_QUALIFIED_A1_STUDIES
+      - ONE_QUALIFIED_A2_DENSE_NEIGHBORHOOD
+      - IDENTIFIABLE_SOURCE_ENDPOINT_TRANSFORM_AND_GROUP
+  - phase_id: A2
+    task_name: BENCHMARK_METRIC_AND_EVALUATOR_FREEZE
+    risk: HIGH
+    depends_on: [A1]
+    may_run_in_parallel_with: [A6]
+    evidence_status: NOT_RUN
+    next_phase_hard_gate:
+      - UNTOUCHED_CONFIRMATORY_SET_OR_STRICT_NESTED_GROUP_CV
+      - ALL_METRICS_STATISTICS_AND_COMPUTE_BUDGET_PREFROZEN
+      - INDEPENDENT_EVALUATOR_FROZEN
+  - phase_id: A3
+    task_name: CRITIC_SEMANTICS_AND_SINGLE_SEED_PILOTS
+    risk: MEDIUM_HIGH
+    depends_on: [A2]
+    may_run_in_parallel_with: [A6]
+    evidence_status: NOT_RUN
+    next_phase_hard_gate:
+      - POSITIVE_INFORMATION_GAIN_EACH_QUALIFIED_STUDY
+      - SEMANTIC_AND_NEGATIVE_CONTROLS_COMPLETE
+      - COMPLETE_PREDICTION_ARTIFACT
+  - phase_id: A4
+    task_name: FIVE_SEED_CONFIRMATORY_CRITIC
+    risk: HIGH
+    depends_on: [A3]
+    may_run_in_parallel_with: [A6]
+    evidence_status: NOT_RUN
+    next_phase_hard_gate:
+      - COMPLETE_EFFECT_GATE
+      - FIVE_SEEDS_ALL_REPORTED
+      - NO_BEST_SEED_OR_OLD_METRIC_SELECTION
+  - phase_id: A5
+    task_name: MEASURED_NEIGHBORHOOD_AND_SEARCH_HEADROOM
+    risk: HIGH
+    depends_on: [A4]
+    may_run_in_parallel_with: [A6]
+    evidence_status: NOT_RUN
+    next_phase_hard_gate:
+      - DISTINCT_CANDIDATES_IN_EVERY_POOL
+      - SEARCH_HEADROOM_OR_DEFINED_LARGE_SPACE_AMORTIZATION_TASK
+  - phase_id: A6
+    task_name: THEORY_AND_BASE_LEGAL_FLOW
+    risk: HIGH
+    depends_on: [A0]
+    may_run_in_parallel_with: [A1, A2, A3, A4, A5]
+    evidence_status: NOT_RUN
+    next_phase_hard_gate:
+      - MATHEMATICAL_ASSUMPTIONS_RECORDED
+      - TOY_EXACTNESS_AND_BASE_RECOVERY
+      - HARD_LEGALITY_100_PERCENT
+  - phase_id: A7
+    task_name: MEASURED_MATCHED_COMPUTE_GUIDANCE
+    risk: HIGH
+    depends_on: [A5, A6]
+    may_run_in_parallel_with: []
+    evidence_status: NOT_RUN
+    next_phase_hard_gate:
+      - COMPLETE_GUIDANCE_AND_COST_GATES
+      - GUIDE_EVALUATOR_SEPARATION
+      - SEALED_UNTOUCHED
+  - phase_id: A8
+    task_name: SECONDARY_REGION_TRANSFER
+    risk: HIGH
+    depends_on: [A7]
+    may_run_in_parallel_with: []
+    evidence_status: NOT_RUN
+    next_phase_hard_gate:
+      - THREE_UTR_OR_CDS_TRANSFER_GATE_PASSES
+      - BOTH_SECONDARY_REGION_RESULTS_RETAINED
+  - phase_id: A9
+    task_name: SEALED_READINESS
+    risk: CRITICAL
+    depends_on: [A1, A2, A3, A4, A5, A6, A7, A8]
+    may_run_in_parallel_with: []
+    evidence_status: NOT_RUN
+    next_phase_hard_gate:
+      - ALL_ORDINARY_GATES_COMPLETE
+      - SYNTHETIC_AND_ORDINARY_MIRROR_DRY_RUNS_COMPLETE
+      - AGGREGATE_ONLY_NO_ACCESS_INTENT
+      - INDEPENDENT_COMPREHENSIVE_REVIEW
+      - EXPLICIT_USER_AUTHORIZATION_STILL_REQUIRED
+  - phase_id: A10
+    task_name: ONE_SHOT_SEALED_PAPER_AND_RELEASE
+    risk: CRITICAL
+    depends_on: [A9]
+    may_run_in_parallel_with: []
+    evidence_status: NOT_RUN
+    next_phase_hard_gate:
+      - EXPLICIT_USER_AUTHORIZATION
+      - ONE_SHOT_SEALED_COMPLETE
+      - COMPLETE_CLAIM_EVIDENCE_CELLS
+      - CLEAN_REPLAY_AND_FINAL_REVIEW
+
+benchmark_tracks:
+  - track_id: NATIVE_REPRODUCTION
+    definition: OFFICIAL_METHOD_ON_ORIGINAL_TASK_DATA_AND_METRIC
+  - track_id: COMMON_TASK_SYSTEM
+    definition: ADAPTABLE_METHODS_ON_SHARED_EDITBENCH_SPLIT_BUDGET_POOL_AND_EVALUATOR
+  - track_id: ARCH_CONTROLLED
+    definition: SHARED_BACKBONE_DATA_EXPOSURE_PARAMETER_BAND_SEEDS_HPO_GPU_AND_COMPUTE
+
+tasks:
+  - task_id: T5_SOURCE_RELATIVE_EFFECT
+    phase_owner: A4
+    task_kind: CRITIC_CONFIRMATORY
+    region_scope: 5UTR
+    estimand: SOURCE_RELATIVE_MEASURED_DELTA
+    primary_metrics: [MACRO_DELTA_SPEARMAN, MACRO_SIGN_ACCURACY, TOP_DECILE_ADDITIVE_UPLIFT]
+    ordinary_only: true
+    minimum_qualified_studies: 3
+    minimum_a1_studies: 2
+    seeds_required: 5
+    evidence_status: NOT_RUN
+    claim_status: NOT_ESTABLISHED
+  - task_id: T5_SELECTIVE_EFFECT
+    phase_owner: A4
+    task_kind: CRITIC_CONFIRMATORY
+    region_scope: 5UTR
+    estimand: COVERAGE_RISK_SELECTIVE_SOURCE_RELATIVE_EFFECT
+    primary_metrics: [CALIBRATION, COVERAGE_RISK, OOD_DEGRADATION, ABSTENTION]
+    ordinary_only: true
+    seeds_required: 5
+    evidence_status: NOT_RUN
+    claim_status: NOT_ESTABLISHED
+  - task_id: T5_MEASURED_NEIGHBORHOOD_OPTIMIZATION
+    phase_owner: A5
+    task_kind: MEASURED_POOL_OPTIMIZATION
+    region_scope: 5UTR
+    estimand: BEST_CANDIDATE_DISCOVERY_WITHIN_ACTUALLY_MEASURED_SOURCE_POOL
+    primary_metrics: [NDCG, TOP_DECILE_RECALL, NORMALIZED_REGRET, TOP_DECILE_ADDITIVE_UPLIFT]
+    minimum_distinct_candidates_per_ndcg_pool: 3
+    two_candidate_pool_use: PAIRWISE_ONLY
+    ordinary_only: true
+    evidence_status: NOT_RUN
+    claim_status: NOT_ESTABLISHED
+  - task_id: T5_FIXED_BUDGET_MULTI_STEP_OPTIMIZATION
+    phase_owner: A7
+    task_kind: MATCHED_COMPUTE_OPTIMIZATION
+    region_scope: 5UTR
+    estimand: LEGAL_SOURCE_ANCHORED_OPTIMIZATION_UNDER_FIXED_EDIT_BUDGET
+    primary_edit_budgets: [1, 3, 5]
+    secondary_edit_budgets: [10]
+    multi_edit_claim_requires_measured_support: true
+    primary_metrics: [NDCG, TOP_DECILE_RECALL, NORMALIZED_REGRET, QUALITY_COST_PARETO]
+    ordinary_only: true
+    evidence_status: NOT_RUN
+    claim_status: NOT_ESTABLISHED
+  - task_id: FLOW_BASE_LEGAL_CTMC
+    phase_owner: A6
+    task_kind: BASE_GENERATIVE_FLOW
+    region_scope: 5UTR
+    estimand: LEGAL_SOURCE_ANCHORED_BASE_PATH_DISTRIBUTION
+    primary_metrics: [LEGALITY, BUDGET_VIOLATIONS, BASE_RECOVERY, SUPPORT_COVERAGE]
+    ordinary_only: true
+    evidence_status: NOT_RUN
+    claim_status: NOT_ESTABLISHED
+  - task_id: EXACT_GUIDANCE_TOY_GRAPH
+    phase_owner: A6
+    task_kind: THEORY_NUMERICAL_FIXTURE
+    region_scope: SYNTHETIC_ENUMERABLE_GRAPH
+    estimand: FROZEN_BASE_TERMINAL_TILT_DOOB_OPERATOR_ACCURACY
+    primary_metrics: [RATE_RELATIVE_ERROR, TERMINAL_TV, PATH_PRODUCT_CONSISTENCY, TRANSITION_ALIAS_AGGREGATION]
+    cpu_exact_checker_allowed: true
+    learned_toy_network_requires_gpu: true
+    evidence_status: NOT_RUN
+    claim_status: NOT_ESTABLISHED
+  - task_id: EXACT_GUIDANCE_MATCHED_COMPUTE
+    phase_owner: A7
+    task_kind: GUIDANCE_CONFIRMATORY
+    region_scope: 5UTR
+    estimand: MEASURED_GUIDANCE_SUPERIORITY_UNDER_MATCHED_COMPUTE
+    primary_metrics: [NDCG_MARGIN, TOP_DECILE_RECALL, NORMALIZED_REGRET, FORWARD_EQUIVALENT_COST, WALL_TIME, PEAK_VRAM]
+    required_comparators: [NO_GUIDANCE, FIRST_ORDER_GUIDANCE, RATE_GUIDANCE, LATENT_CFG, TRUE_GENERATE_N_THEN_RERANK]
+    guide_evaluator_independence_required: true
+    ordinary_only: true
+    evidence_status: NOT_RUN
+    claim_status: NOT_ESTABLISHED
+  - task_id: TRANSFER_3UTR
+    phase_owner: A8
+    task_kind: REGION_TRANSFER
+    region_scope: 3UTR
+    estimand: REGION_SPECIFIC_TRANSFER_GAIN_OVER_SHARED_AND_FROM_SCRATCH
+    primary_metrics: [PAIRED_GROUP_BOOTSTRAP_PRIMARY_METRIC_DELTA]
+    priority: PRIMARY_SECONDARY_REGION
+    ordinary_only: true
+    evidence_status: NOT_RUN
+    claim_status: NOT_ESTABLISHED
+  - task_id: TRANSFER_CDS
+    phase_owner: A8
+    task_kind: REGION_TRANSFER
+    region_scope: CDS
+    estimand: SYNONYMOUS_FAMILY_RANKING_GAIN_OVER_HEURISTICS_EXTERNAL_AND_FROM_SCRATCH
+    primary_metrics: [FAMILY_NDCG, LISTWISE_IMPROVEMENT, PAIRED_GROUP_BOOTSTRAP_DELTA]
+    priority: PARALLEL_QUALIFICATION
+    ordinary_only: true
+    evidence_status: NOT_RUN
+    claim_status: NOT_ESTABLISHED
+  - task_id: SEALED_EXTERNAL_ADJUDICATION
+    phase_owner: A10
+    task_kind: ONE_SHOT_FINAL_EVALUATION
+    region_scope: 5UTR
+    estimand: PREREGISTERED_EXTERNAL_ADJUDICATION
+    dataset_id: GSE246381
+    split_id: S6
+    execution_enabled: false
+    authorized: false
+    access_intent_allowed: false
+    aggregate_only: true
+    max_evaluations: 1
+    explicit_user_authorization_required: true
+    evidence_status: NOT_RUN
+    claim_status: NOT_ESTABLISHED

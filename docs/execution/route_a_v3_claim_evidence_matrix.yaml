@@ -1,0 +1,225 @@
+# Route A V3 claim-to-evidence contract. No scientific claim is established at A0.
+contract_id: mrna_xeditflow_route_a_v3
+version: "3.0.0"
+schema_version: "3.0.0"
+status: ACTIVE_AUTHORITATIVE_CONTRACT
+registry_type: CLAIM_EVIDENCE_MATRIX
+date: "2026-08-10"
+
+authority_ref:
+  config_path: configs/route_a_v3.yaml
+  goal_path: docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md
+  goal_sha256: d1c031aecdec710495f6861b380785cccd64663ac4bd97b4f479d6fdf372ea07
+
+allowed_evidence_statuses:
+  - NOT_RUN
+  - IN_PROGRESS
+  - PASS
+  - FAIL_CURRENT_PROTOCOL
+  - FAIL_REPAIRABLE
+  - BLOCKED_PENDING_PUBLIC_EVIDENCE
+  - TERMINATED_SAFELY_WITH_EVIDENCE
+allowed_claim_statuses:
+  - NOT_ESTABLISHED
+  - ESTABLISHED
+  - INVALIDATED_CURRENT_FORMULATION
+  - PROHIBITED
+
+expected_claim_ids:
+  - L0_PUBLIC_INTERVENTION_BENCHMARK
+  - L1_SOURCE_RELATIVE_EFFECT
+  - L2_MEASURED_NEIGHBORHOOD_OPTIMIZATION
+  - L3_LEGAL_POTENTIAL_CONSISTENT_XEDITFLOW
+  - L3_MATCHED_COMPUTE_GUIDANCE
+  - L3_SECONDARY_REGION_TRANSFER
+  - L3_SEALED_EXTERNAL_ADJUDICATION
+  - ROUTE_A_ESTABLISHED
+  - L4_BIOLOGICAL_THERAPEUTIC
+
+matrix_rules:
+  claim_ids_must_equal_expected_claim_ids: true
+  claim_ids_unique: true
+  evidence_status_and_claim_status_are_distinct_fields: true
+  engineering_or_schema_pass_may_not_establish_scientific_claim: true
+  gpu_smoke_toy_exactness_checkpoint_hash_or_self_score_may_not_establish_route_a: true
+  every_reported_number_or_factual_claim_requires:
+    - EVIDENCE_ID
+    - ARTIFACT_HASH
+    - ANALYSIS_INTENT
+    - DENOMINATOR
+    - EVIDENCE_STATUS
+  empty_evidence_cells_imply_not_established: true
+  l4_claim_is_permanently_prohibited_in_v3: true
+
+claims:
+  - claim_id: L0_PUBLIC_INTERVENTION_BENCHMARK
+    claim: PUBLIC_TRACEABLE_MRNA_INTERVENTION_BENCHMARK_WITH_LEAKAGE_CONTROL
+    evidence_status: NOT_RUN
+    claim_status: NOT_ESTABLISHED
+    required_phase_ids: [A1, A2]
+    required_task_ids: []
+    required_evidence_types:
+      - THREE_QUALIFIED_ORDINARY_STUDIES
+      - TWO_QUALIFIED_A1_STUDIES
+      - ONE_QUALIFIED_A2_DENSE_NEIGHBORHOOD
+      - RAW_TO_CANONICAL_PROVENANCE
+      - PAPER_FAITHFUL_TRANSFORMS
+      - SOURCE_CANDIDATE_ENDPOINT_AND_GROUP_IDENTITY
+      - LICENSE_AND_EXPOSURE_AUDIT
+      - FROZEN_SPLITS_AND_ZERO_LEAKAGE
+      - EFFECTIVE_N_POWER_AND_CI_SIMULATION
+    evidence_cells: []
+    allowed_wording_when_not_established: DEVELOPMENT_BENCHMARK_DEFINITION_AND_QUALIFICATION_IN_PROGRESS
+    prohibited_wording_when_not_established: QUALIFIED_PUBLIC_INTERVENTION_BENCHMARK_COMPLETE
+  - claim_id: L1_SOURCE_RELATIVE_EFFECT
+    claim: CROSS_SOURCE_AND_STUDY_SOURCE_RELATIVE_EFFECT_IS_IDENTIFIABLE_AND_PREDICTABLE
+    evidence_status: NOT_RUN
+    claim_status: NOT_ESTABLISHED
+    required_phase_ids: [A3, A4]
+    required_task_ids: [T5_SOURCE_RELATIVE_EFFECT, T5_SELECTIVE_EFFECT]
+    required_evidence_types:
+      - PER_STUDY_THEN_EQUAL_STUDY_MACRO_RESULTS
+      - MACRO_DELTA_SPEARMAN_AT_LEAST_0_25
+      - MACRO_SIGN_ACCURACY_AT_LEAST_0_60
+      - TOP_DECILE_ADDITIVE_UPLIFT_SOURCE_GROUP_BOOTSTRAP_95CI_LOWER_GT_0
+      - NO_QUALIFIED_PRIMARY_STUDY_NEGATIVE_BEYOND_PREFROZEN_NOISE_MARGIN
+      - STRONGEST_MATCHED_EXECUTABLE_NONFOUNDATION_BASELINE_BEATEN
+      - ALL_FIVE_SEEDS
+      - CALIBRATION_OOD_COVERAGE_RISK_AND_ABSTENTION
+      - ANCHOR_CANDIDATE_PERMUTATION_AND_RESIDUAL_CONTROLS
+    evidence_cells: []
+    allowed_wording_when_not_established: DEVELOPMENT_EFFECT_MODEL_OR_NEGATIVE_CONTROL_RESULT
+    prohibited_wording_when_not_established: CANDIDATE_SPECIFIC_SOURCE_RELATIVE_EFFECT_ESTABLISHED
+  - claim_id: L2_MEASURED_NEIGHBORHOOD_OPTIMIZATION
+    claim: HIGH_VALUE_EDITS_ARE_DISCOVERED_WITHIN_REAL_MEASURED_CANDIDATE_NEIGHBORHOODS
+    evidence_status: NOT_RUN
+    claim_status: NOT_ESTABLISHED
+    required_phase_ids: [A5]
+    required_task_ids: [T5_MEASURED_NEIGHBORHOOD_OPTIMIZATION]
+    required_evidence_types:
+      - DISTINCT_CANDIDATE_SEQUENCES_IN_EVERY_POOL
+      - NDCG_POOLS_HAVE_AT_LEAST_THREE_DISTINCT_CANDIDATES
+      - SOURCE_LEVEL_NDCG_REGRET_RECALL_AND_ADDITIVE_UPLIFT
+      - EXACT_RANDOM_GREEDY_BEAM_GA_LOCAL_AND_RERANK_COMPARATORS
+      - MEASURABLE_SEARCH_HEADROOM_OR_DEFINED_AMORTIZATION_TASK
+      - MATCHED_COMPUTE_LEDGERS
+    evidence_cells: []
+    allowed_wording_when_not_established: MEASURED_SPACE_RANKING_NOT_ESTABLISHED
+    prohibited_wording_when_not_established: REAL_BIOLOGICAL_OPTIMIZATION_ESTABLISHED
+  - claim_id: L3_LEGAL_POTENTIAL_CONSISTENT_XEDITFLOW
+    claim: POTENTIAL_CONSISTENT_DOOB_CONTROL_IS_IMPLEMENTED_ON_A_LEGAL_BUDGETED_MRNA_EDIT_CTMC
+    evidence_status: NOT_RUN
+    claim_status: NOT_ESTABLISHED
+    required_phase_ids: [A6]
+    required_task_ids: [FLOW_BASE_LEGAL_CTMC, EXACT_GUIDANCE_TOY_GRAPH]
+    required_evidence_types:
+      - HARD_LEGALITY_100_PERCENT
+      - BUDGET_VIOLATIONS_ZERO
+      - TOY_RATE_RELATIVE_ERROR_AT_MOST_1E_MINUS_5
+      - TERMINAL_TV_WITHIN_PREREGISTERED_TOLERANCE
+      - PATH_PRODUCT_CONSISTENCY
+      - TRANSITION_ALIAS_AGGREGATION
+      - SUPPORT_STOP_AND_BUDGET_FIXTURES
+      - LEARNED_POTENTIAL_APPROXIMATION_ERROR
+    evidence_cells: []
+    allowed_wording_when_not_established: EDIT_FLOWS_DERIVED_DEVELOPMENT_IMPLEMENTATION
+    prohibited_wording_when_not_established:
+      - EXACT_XEDITFLOW_ESTABLISHED
+      - FIRST_DOOB_CONTROL_FOR_BIOLOGICAL_SEQUENCES
+  - claim_id: L3_MATCHED_COMPUTE_GUIDANCE
+    claim: XEDITFLOW_GUIDANCE_OUTPERFORMS_STRONG_SEARCH_GENERATION_AND_GUIDANCE_BASELINES_UNDER_MATCHED_COMPUTE
+    evidence_status: NOT_RUN
+    claim_status: NOT_ESTABLISHED
+    required_phase_ids: [A7]
+    required_task_ids: [T5_FIXED_BUDGET_MULTI_STEP_OPTIMIZATION, EXACT_GUIDANCE_MATCHED_COMPUTE]
+    required_evidence_types:
+      - NDCG_MARGIN_AT_LEAST_0_05
+      - TOP_DECILE_RECALL_AT_LEAST_0_70
+      - NORMALIZED_REGRET_AT_MOST_0_10
+      - MEASURED_LABEL_OR_TRULY_INDEPENDENT_EVALUATOR_REPRODUCTION
+      - OOD_WITHIN_PREFROZEN_DEGRADATION_MARGIN
+      - QUALITY_COST_PARETO_OUTWARD_SHIFT
+      - EQUAL_CANDIDATE_NFE_FORWARD_EQUIVALENT_WALL_TIME_AND_GPU_BUDGETS
+      - COMPLETE_COMPUTE_LEDGERS
+      - GUIDE_EVALUATOR_SEPARATION
+    evidence_cells: []
+    allowed_wording_when_not_established: GUIDANCE_DEVELOPMENT_OR_MATCHED_COMPUTE_EVALUATION_PENDING
+    prohibited_wording_when_not_established: GUIDANCE_SUPERIORITY_ESTABLISHED
+  - claim_id: L3_SECONDARY_REGION_TRANSFER
+    claim: ROUTE_A_TRANSFERS_WITH_STATISTICAL_SUPPORT_TO_AT_LEAST_ONE_SECONDARY_REGION
+    evidence_status: NOT_RUN
+    claim_status: NOT_ESTABLISHED
+    required_phase_ids: [A8]
+    required_task_ids: [TRANSFER_3UTR, TRANSFER_CDS]
+    required_evidence_types:
+      - THREE_UTR_PAIRED_GROUP_BOOTSTRAP_CI_LOWER_GT_0_OR_CDS_FAMILY_LEVEL_CI_LOWER_GT_0
+      - GENERIC_SHARED_MODEL_COMPARISON
+      - REGION_FROM_SCRATCH_COMPARISON
+      - CODON_HEURISTIC_AND_EXTERNAL_CDS_COMPARISON_WHEN_CDS
+      - BOTH_SECONDARY_REGION_RESULTS_RETAINED
+    evidence_cells: []
+    allowed_wording_when_not_established: SECONDARY_REGION_QUALIFICATION_OR_TRANSFER_NOT_ESTABLISHED
+    prohibited_wording_when_not_established: CROSS_REGION_TRANSFER_ESTABLISHED
+  - claim_id: L3_SEALED_EXTERNAL_ADJUDICATION
+    claim: ONE_SHOT_GSE246381_EXTERNAL_ADJUDICATION_MEETS_ALL_PREREGISTERED_THRESHOLDS
+    evidence_status: NOT_RUN
+    claim_status: NOT_ESTABLISHED
+    required_phase_ids: [A9, A10]
+    required_task_ids: [SEALED_EXTERNAL_ADJUDICATION]
+    required_evidence_types:
+      - A0_THROUGH_A9_COMPLETE
+      - SEALED_READINESS_REPORT
+      - EXPLICIT_USER_AUTHORIZATION_RECORD
+      - UNIQUE_FORMAL_CALL
+      - AGGREGATE_ONLY_RESULT
+      - PREREGISTERED_THRESHOLD_ADJUDICATION
+    evidence_cells: []
+    access_intent_allowed: false
+    execution_enabled: false
+    execution_authorized: false
+    allowed_wording_when_not_established: SEALED_EXTERNAL_FINAL_ONLY_NOT_ACCESSED
+    prohibited_wording_when_not_established: EXTERNAL_ADJUDICATION_PASSED
+  - claim_id: ROUTE_A_ESTABLISHED
+    claim: ROUTE_A_FULL_XEDITFLOW_IS_ESTABLISHED
+    evidence_status: NOT_RUN
+    claim_status: NOT_ESTABLISHED
+    required_phase_ids: [A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10]
+    required_task_ids:
+      - T5_SOURCE_RELATIVE_EFFECT
+      - T5_SELECTIVE_EFFECT
+      - T5_MEASURED_NEIGHBORHOOD_OPTIMIZATION
+      - T5_FIXED_BUDGET_MULTI_STEP_OPTIMIZATION
+      - FLOW_BASE_LEGAL_CTMC
+      - EXACT_GUIDANCE_TOY_GRAPH
+      - EXACT_GUIDANCE_MATCHED_COMPUTE
+      - TRANSFER_3UTR
+      - TRANSFER_CDS
+      - SEALED_EXTERNAL_ADJUDICATION
+    required_evidence_types:
+      - UNIQUE_V3_AUTHORITY_AND_LINEAGE
+      - THREE_QUALIFIED_ORDINARY_STUDIES_PLUS_SEALED
+      - COMPLETE_EFFECT_GATE
+      - REAL_MEASURED_CANDIDATE_POOLS_AND_SEARCH_HEADROOM
+      - LEGAL_BASE_FLOW_AND_THEORY_GATE
+      - INDEPENDENT_MEASURED_MATCHED_COMPUTE_GUIDANCE_SUPERIORITY
+      - AT_LEAST_ONE_SECONDARY_REGION_TRANSFER_GATE
+      - SEALED_PREREGISTERED_GATE
+      - ALL_CLAIMS_BOUND_TO_FROZEN_EVIDENCE
+      - CLEAN_REPLAY_AND_RELEASE_MANIFESTS
+    evidence_cells: []
+    allowed_wording_when_not_established: ROUTE_A_REMAINS_THE_IMMUTABLE_TARGET_BUT_IS_NOT_ESTABLISHED
+    prohibited_wording_when_not_established: ROUTE_A_ESTABLISHED
+  - claim_id: L4_BIOLOGICAL_THERAPEUTIC
+    claim: EXPERIMENTALLY_VALIDATED_HIGHER_PROTEIN_YIELD_OR_THERAPEUTIC_MRNA_IMPROVEMENT
+    evidence_status: NOT_RUN
+    claim_status: PROHIBITED
+    required_phase_ids: []
+    required_task_ids: []
+    required_evidence_types: [NEW_WET_LAB_EVIDENCE_OUTSIDE_V3_SCOPE]
+    evidence_cells: []
+    public_data_only_policy: true
+    new_wet_lab_allowed: false
+    allowed_wording_when_not_established: L4_CLAIM_IS_PROHIBITED_IN_ROUTE_A_V3
+    prohibited_wording_when_not_established:
+      - REAL_THERAPEUTIC_IMPROVEMENT
+      - EXPERIMENTALLY_VALIDATED_FUNCTIONAL_IMPROVEMENT

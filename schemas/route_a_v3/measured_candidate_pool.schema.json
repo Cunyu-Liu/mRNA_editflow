@@ -1,0 +1,167 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Cunyu-Liu/mRNA_editflow/schemas/route_a_v3/measured_candidate_pool.schema.json",
+  "title": "MeasuredCandidatePoolV3",
+  "description": "A measured pool contains distinct candidate sequences for one biological source, study, assay, context, endpoint and region. Different endpoints for one candidate never form a pool.",
+  "contract_id": "mrna_xeditflow_route_a_v3",
+  "schema_version": "3.0.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_id",
+    "schema_version",
+    "pool_id",
+    "evidence_status",
+    "claim_status",
+    "pool_type",
+    "biological_source_group_id",
+    "source_id",
+    "source_sequence",
+    "source_sequence_sha256",
+    "study_id",
+    "assay_id",
+    "context_id",
+    "endpoint_id",
+    "region",
+    "candidate_count",
+    "candidates",
+    "data_role",
+    "exposure_stratum",
+    "split_id",
+    "provenance",
+    "license"
+  ],
+  "properties": {
+    "contract_id": {"const": "mrna_xeditflow_route_a_v3"},
+    "schema_version": {"const": "3.0.0"},
+    "pool_id": {"$ref": "#/$defs/nonEmptyString"},
+    "evidence_status": {"$ref": "#/$defs/evidenceStatus"},
+    "claim_status": {"$ref": "#/$defs/claimStatus"},
+    "pool_type": {"enum": ["PAIRWISE_ONLY", "NDCG_ELIGIBLE", "DENSE_NEIGHBORHOOD"]},
+    "biological_source_group_id": {"$ref": "#/$defs/nonEmptyString"},
+    "source_id": {"$ref": "#/$defs/nonEmptyString"},
+    "source_sequence": {"$ref": "#/$defs/fullSequence"},
+    "source_sequence_sha256": {"$ref": "#/$defs/sha256"},
+    "study_id": {"$ref": "#/$defs/nonEmptyString"},
+    "assay_id": {"$ref": "#/$defs/nonEmptyString"},
+    "context_id": {"$ref": "#/$defs/nonEmptyString"},
+    "endpoint_id": {"$ref": "#/$defs/nonEmptyString"},
+    "region": {"enum": ["5UTR", "3UTR", "CDS", "OTHER"]},
+    "candidate_count": {"type": "integer", "minimum": 2},
+    "candidates": {
+      "type": "array",
+      "minItems": 2,
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/candidate"}
+    },
+    "data_role": {"enum": ["ORDINARY_A2_DENSE_NEIGHBORHOOD", "ORDINARY_DEVELOPMENT", "ORDINARY_CONFIRMATORY", "SEALED_EXTERNAL_FINAL_ONLY", "EXCLUDED"]},
+    "exposure_stratum": {"enum": ["UNTOUCHED", "UNKNOWN", "SEQUENCE_EXPOSED", "LABEL_EXPOSED", "TRAINING_EXPOSED", "DEVELOPMENT_ONLY", "SEALED_EXTERNAL_FINAL_ONLY"]},
+    "split_id": {"$ref": "#/$defs/nonEmptyString"},
+    "provenance": {"$ref": "#/$defs/provenance"},
+    "license": {"$ref": "#/$defs/license"},
+    "reject_reason": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["code", "detail"],
+      "properties": {
+        "code": {"$ref": "#/$defs/nonEmptyString"},
+        "detail": {"$ref": "#/$defs/nonEmptyString"}
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"pool_type": {"enum": ["NDCG_ELIGIBLE", "DENSE_NEIGHBORHOOD"]}}, "required": ["pool_type"]},
+      "then": {
+        "properties": {
+          "candidate_count": {"minimum": 3},
+          "candidates": {"minItems": 3}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"pool_type": {"const": "PAIRWISE_ONLY"}}, "required": ["pool_type"]},
+      "then": {
+        "properties": {
+          "candidate_count": {"const": 2},
+          "candidates": {"minItems": 2, "maxItems": 2}
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "nonEmptyString": {"type": "string", "minLength": 1},
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "fullSequence": {"type": "string", "pattern": "^[ACGUTN]+$", "minLength": 1},
+    "evidenceStatus": {"enum": ["NOT_RUN", "IN_PROGRESS", "PASS", "FAIL_CURRENT_PROTOCOL", "FAIL_REPAIRABLE", "BLOCKED_PENDING_PUBLIC_EVIDENCE", "TERMINATED_SAFELY_WITH_EVIDENCE"]},
+    "claimStatus": {"enum": ["NOT_ESTABLISHED", "ESTABLISHED", "INVALIDATED_CURRENT_FORMULATION", "PROHIBITED"]},
+    "edit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["position", "coordinate_system", "ref_base", "alt_base", "region"],
+      "properties": {
+        "position": {"type": "integer", "minimum": 0},
+        "coordinate_system": {"enum": ["ZERO_BASED_SOURCE", "ONE_BASED_SOURCE"]},
+        "ref_base": {"type": "string", "pattern": "^[ACGUTN]$"},
+        "alt_base": {"type": "string", "pattern": "^[ACGUTN]$"},
+        "region": {"enum": ["5UTR", "3UTR", "CDS", "OTHER"]}
+      }
+    },
+    "candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Candidate foreign keys must exactly equal the pool-level biological source, study, assay, context, endpoint and region; validate_measured_candidate_pool_record enforces that cross-record invariant.",
+      "required": [
+        "id",
+        "canonical_record_id",
+        "sequence",
+        "sequence_hash",
+        "edit_set",
+        "biological_source_group_id",
+        "study_id",
+        "assay_id",
+        "context_id",
+        "endpoint_id",
+        "region",
+        "measured_delta",
+        "standard_error"
+      ],
+      "properties": {
+        "id": {"$ref": "#/$defs/nonEmptyString"},
+        "canonical_record_id": {"$ref": "#/$defs/nonEmptyString"},
+        "sequence": {"$ref": "#/$defs/fullSequence"},
+        "sequence_hash": {"$ref": "#/$defs/sha256"},
+        "edit_set": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/edit"}},
+        "biological_source_group_id": {"$ref": "#/$defs/nonEmptyString"},
+        "study_id": {"$ref": "#/$defs/nonEmptyString"},
+        "assay_id": {"$ref": "#/$defs/nonEmptyString"},
+        "context_id": {"$ref": "#/$defs/nonEmptyString"},
+        "endpoint_id": {"$ref": "#/$defs/nonEmptyString"},
+        "region": {"enum": ["5UTR", "3UTR", "CDS", "OTHER"]},
+        "measured_delta": {"type": ["number", "null"]},
+        "standard_error": {"type": ["number", "null"], "minimum": 0}
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["dataset_id", "pool_builder_id", "input_manifest_sha256", "pool_builder_sha256"],
+      "properties": {
+        "dataset_id": {"$ref": "#/$defs/nonEmptyString"},
+        "pool_builder_id": {"$ref": "#/$defs/nonEmptyString"},
+        "input_manifest_sha256": {"$ref": "#/$defs/sha256"},
+        "pool_builder_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "license": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "redistribution_allowed"],
+      "properties": {
+        "status": {"enum": ["VERIFIED_PUBLIC", "VERIFIED_NONREDISTRIBUTABLE", "UNKNOWN_BLOCKED", "INCOMPATIBLE_REJECTED"]},
+        "redistribution_allowed": {"type": "boolean"},
+        "license_id": {"type": ["string", "null"], "minLength": 1}
+      }
+    }
+  }
+}

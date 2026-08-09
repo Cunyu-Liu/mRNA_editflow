@@ -1,0 +1,495 @@
+# Machine-executable authority companion for mRNA-XEditFlow Route A V3.
+# Scientific evidence is initialized conservatively; this file records no gate PASS.
+contract_id: mrna_xeditflow_route_a_v3
+version: "3.0.0"
+schema_version: "3.0.0"
+status: ACTIVE_AUTHORITATIVE_CONTRACT
+date: "2026-08-10"
+
+authority:
+  source_goal:
+    local_path: "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna v3.md"
+    sha256: d1c031aecdec710495f6861b380785cccd64663ac4bd97b4f479d6fdf372ea07
+    repository_path: docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md
+  active_contract_count_required: 1
+  authority_uniqueness_required: true
+  base_commit: bbb71dcba6f1e1c9cb75a8a6653f1a4fe4a6ca0c
+  git_remote: "git@github.com:Cunyu-Liu/mRNA_editflow.git"
+  isolated_worktree: /home/cunyuliu/mrna_editflow_goal/worktrees/routea_v3_a0_20260810
+  mnt_root: /mnt/cunyuliu/mrna_xeditflow_routea_v3
+  dirty_main_checkout_may_be_used_as_authority: false
+  untracked_route_a_code_may_be_used_as_authority: false
+
+registry_bundle:
+  task_registry: docs/execution/route_a_v3_task_registry.yaml
+  data_role_registry: docs/execution/route_a_v3_data_role_registry.yaml
+  baseline_registry: docs/execution/route_a_v3_baseline_registry.yaml
+  split_registry: docs/execution/route_a_v3_split_registry.yaml
+  task_split_matrix: docs/execution/route_a_v3_task_split_matrix.yaml
+  claim_evidence_matrix: docs/execution/route_a_v3_claim_evidence_matrix.yaml
+
+strategic_target:
+  value: ROUTE_A_FULL_XEDITFLOW
+  mutable: false
+  change_authority: USER_ONLY
+  route_b_or_c_may_replace_or_terminate_route_a: false
+  route_b_or_c_allowed_roles:
+    - INTERMEDIATE_PAPER
+    - DATA_ASSET
+    - NEGATIVE_RESULT_RESOURCE
+
+status_vocabularies:
+  evidence_status:
+    - NOT_RUN
+    - IN_PROGRESS
+    - PASS
+    - FAIL_CURRENT_PROTOCOL
+    - FAIL_REPAIRABLE
+    - BLOCKED_PENDING_PUBLIC_EVIDENCE
+    - TERMINATED_SAFELY_WITH_EVIDENCE
+  claim_status:
+    - NOT_ESTABLISHED
+    - ESTABLISHED
+    - INVALIDATED_CURRENT_FORMULATION
+  special_prohibited_claim_status: PROHIBITED
+
+scientific_scope:
+  data_policy: PUBLIC_DATA_ONLY
+  new_wet_lab_experiments_allowed: false
+  l4_biological_or_therapeutic_claim:
+    allowed: false
+    status: PROHIBITED
+    reason: NO_NEW_WET_LAB_EVIDENCE_IN_V3
+  innovation_axis:
+    - IDENTIFIABLE_EFFECT_LEARNING_FROM_PUBLIC_INTERVENTION_DATA
+    - POTENTIAL_CONSISTENT_LEGAL_MRNA_PRECISION_CONTROL
+    - INDEPENDENT_MEASURED_NEIGHBORHOOD_EVALUATION
+  prohibited_novelty_wording:
+    - FIRST_USE_OF_DOOB_FOR_BIOLOGICAL_SEQUENCE
+    - FIRST_USE_OF_EDIT_FLOW_FOR_BIOLOGICAL_SEQUENCE
+  ctmc_time_interpretation: ALGORITHMIC_GENERATION_OR_CONTROL_TIME_ONLY
+
+edit_budgets:
+  primary_5utr: [1, 3, 5]
+  secondary_efficiency_ood_stress: [10]
+  primary_position_reediting_allowed: false
+  event_count_must_equal_net_edit_count: true
+  multi_edit_biological_claim_requires_measured_support: true
+
+ordinary_data_minimum:
+  independent_nonsealed_studies: 3
+  a1_source_candidate_intervention_studies: 2
+  a2_dense_candidate_neighborhood_studies: 1
+  endpoints_may_count_as_independent_studies: false
+  ndcg_minimum_distinct_candidates_per_pool: 3
+  two_candidate_pool_use: PAIRWISE_EVALUATION_ONLY
+  power_target: 0.80
+  effective_n_rule: FREEZE_SOURCE_GROUP_REQUIREMENT_BEFORE_MODEL_RESULTS
+  if_insufficient: BLOCKED_PENDING_PUBLIC_EVIDENCE
+
+region_plan:
+  primary_region: 5UTR
+  secondary_priority: 3UTR
+  cds_qualification_runs_in_parallel: true
+  cds_blocker_may_delay_3utr_path: false
+  required_successful_secondary_regions: 1
+  accepted_secondary_regions: [3UTR, CDS]
+
+critic_contract:
+  name: EDIT_SET_CAUSAL_CONTRAST_CRITIC
+  fixed_prefix_truncation_allowed: false
+  every_edit_must_be_visible: true
+  required_fixtures:
+    - EDIT_AFTER_POSITION_100_VISIBLE
+    - VALID_MASK_PADDING_ATTENTION_POOLING
+    - SOURCE_EQUALS_CANDIDATE_MEAN_ZERO
+    - SOURCE_CANDIDATE_SWAP_MEAN_SIGN_FLIP
+    - UNKNOWN_CONTEXT
+    - CONTEXT_DROPOUT
+  primary_zero_shot_study_id_random_embedding_allowed: false
+  mean_delta_construction: ANTISYMMETRIC_PAIR_DIFFERENCE
+  multi_edit_model:
+    base: ADDITIVE_SINGLE_EDIT
+    interaction_residual: ENABLE_ONLY_WITH_REAL_MEASURED_SUPPORT
+    unsupported_k_gt_1_requires_increased_uncertainty_and_abstention: true
+  guidance_reward: CALIBRATED_LOWER_CONFIDENCE_BOUND
+  bare_critic_mean_as_guidance_reward_allowed: false
+  estimand_redesign_if_numeric_delta_nontransferable:
+    allowed_within_route_a: true
+    replacement: ASSAY_INVARIANT_LISTWISE_ENERGY_CRITIC
+    interpretation: SOURCE_NEIGHBORHOOD_RANKING_ONLY
+    absolute_cross_assay_biological_delta_wording_allowed: false
+
+flow_contract:
+  state_type: SOURCE_ANCHORED_ACYCLIC_SPARSE_EDIT_DAG
+  action_types: [SOURCE_BASE_TO_ALT_BASE, STOP]
+  repeated_position_edit_allowed_primary: false
+  terminal_causes_kept_distinct:
+    - EXPLICIT_STOP
+    - BUDGET_EXHAUSTED
+    - NO_LEGAL_ACTION
+    - NUMERICAL_FAILURE
+  support_floor_required_for_all_nonprohibited_legal_actions: true
+  hard_legality_before_rate_normalization: true
+  observable_transition_aliases_must_be_aggregated: true
+  final_guidance_operator: SCALAR_POTENTIAL_DOOB_RATE
+  unconstrained_independent_action_ratio_head_as_exact_method_allowed: false
+  exact_wording_scope: FROZEN_BASE_PATH_TERMINAL_TILT_SUPPORT_AND_STATE_DEFINITION
+  learned_potential_is_approximation: true
+  approximation_error_must_be_reported: true
+
+benchmark_contract:
+  tracks:
+    - NATIVE_REPRODUCTION
+    - COMMON_TASK_SYSTEM
+    - ARCH_CONTROLLED
+  same_common_task_requires:
+    - DATASET_AND_SPLIT
+    - EDIT_BUDGET
+    - CANDIDATE_POOL
+    - INDEPENDENT_EVALUATOR
+  arch_controlled_requires:
+    - BACKBONE
+    - DATA_EXPOSURE
+    - PARAMETER_BAND
+    - SEEDS
+    - HPO_BUDGET
+    - GPU_COHORT
+    - CANDIDATE_BUDGET
+    - FORWARD_EQUIVALENTS
+  nonrunnable_adjacent_method_status: PAPER_ONLY_TASK_MISMATCH
+
+success_gates:
+  critic_effect:
+    aggregation: PER_STUDY_THEN_EQUAL_STUDY_MACRO
+    macro_delta_spearman_min: 0.25
+    macro_sign_accuracy_min: 0.60
+    top_decile_additive_uplift:
+      definition: SELECTED_MEAN_DELTA_MINUS_RANDOM_SELECTION_MEAN_DELTA
+      bootstrap_unit: SOURCE_GROUP
+      confidence_level: 0.95
+      ci_lower_strictly_greater_than: 0.0
+    qualified_primary_study_negative_direction_rule: NO_NEGATIVE_BEYOND_PREFROZEN_REPLICATE_NOISE_EQUIVALENCE_MARGIN
+    strongest_matched_executable_nonfoundation_baseline_must_be_beaten: true
+    seeds_required: 5
+    best_seed_selection_allowed: false
+    required_controls:
+      - CALIBRATION
+      - OOD
+      - COVERAGE_RISK
+      - ANCHOR_ONLY
+      - CANDIDATE_PERMUTATION
+      - SOURCE_CONTEXT_RESIDUAL
+  flow_theory:
+    hard_legality_fraction: 1.0
+    budget_violations_max: 0
+    toy_exact_rate_relative_error_max: 1.0e-5
+    terminal_distribution_tv: WITHIN_PREREGISTERED_NUMERICAL_TOLERANCE
+    required_fixtures:
+      - PATH_PRODUCT_CONSISTENCY
+      - TRANSITION_ALIAS_AGGREGATION
+      - SUPPORT
+      - STOP
+      - BUDGET
+  guidance:
+    ndcg_margin_over_strongest_matched_baseline_min: 0.05
+    top_decile_recall_min: 0.70
+    normalized_regret_max: 0.10
+    reproduction_source: MEASURED_LABELS_OR_TRULY_INDEPENDENT_EVALUATOR
+    ood_rule: WITHIN_PREREGISTERED_DEGRADATION_MARGIN
+    quality_cost_pareto_requirement: SIGNIFICANT_OUTWARD_SHIFT_ON_AT_LEAST_ONE_PRIMARY_BUDGET_AXIS
+    all_other_cost_axes_must_be_reported: true
+  transfer:
+    three_utr:
+      comparator_set: [GENERIC_SHARED_MODEL, REGION_FROM_SCRATCH_BASELINE]
+      paired_group_bootstrap_ci_lower_strictly_greater_than: 0.0
+    cds:
+      comparator_set: [CODON_HEURISTICS, EXTERNAL_CDS_METHODS, REGION_FROM_SCRATCH_BASELINE]
+      paired_group_bootstrap_ci_lower_strictly_greater_than: 0.0
+    minimum_regions_passing: 1
+    failed_secondary_region_must_still_be_reported: true
+
+phase_plan:
+  - phase_id: A0
+    name: V3_AUTHORITY_AND_SITE_PROTECTION
+    depends_on: []
+    evidence_status: NOT_RUN
+    hard_gate:
+      - SINGLE_ACTIVE_AUTHORITY
+      - COMPLETE_LINEAGE_AND_VALID_SCHEMAS
+      - DIRTY_CHECKOUT_ACTIVE_RUN_AND_SEALED_UNTOUCHED
+      - SEALED_RUNNER_HARD_DISABLED
+  - phase_id: A1
+    name: PUBLIC_DATA_QUALIFICATION
+    depends_on: [A0]
+    evidence_status: NOT_RUN
+    hard_gate:
+      - THREE_QUALIFIED_ORDINARY_STUDIES
+      - AT_LEAST_TWO_QUALIFIED_A1_STUDIES
+      - AT_LEAST_ONE_QUALIFIED_A2_DENSE_NEIGHBORHOOD
+      - SOURCE_ENDPOINT_TRANSFORM_AND_GROUP_IDENTIFIABLE
+  - phase_id: A2
+    name: BENCHMARK_METRIC_AND_EVALUATOR_FREEZE
+    depends_on: [A1]
+    evidence_status: NOT_RUN
+    hard_gate:
+      - UNTOUCHED_ORDINARY_CONFIRMATORY_SET_OR_STRICT_NESTED_GROUP_CV
+      - METRICS_STATISTICS_SPLITS_AND_COMPUTE_BUDGET_PREFROZEN
+      - INDEPENDENT_EVALUATOR_FROZEN
+      - SEALED_DRY_RUN_SPEC_ONLY
+  - phase_id: A3
+    name: CRITIC_SEMANTICS_AND_SINGLE_SEED_PILOTS
+    depends_on: [A2]
+    evidence_status: NOT_RUN
+    hard_gate:
+      - POSITIVE_INFORMATION_GAIN_IN_EACH_QUALIFIED_STUDY
+      - ANCHOR_PERMUTATION_AND_RESIDUAL_CONTROLS_COMPLETE
+      - PREDICTION_ARTIFACT_COMPLETE
+  - phase_id: A4
+    name: FIVE_SEED_CONFIRMATORY_CRITIC
+    depends_on: [A3]
+    evidence_status: NOT_RUN
+    hard_gate:
+      - COMPLETE_CRITIC_EFFECT_GATE
+      - ALL_FIVE_SEEDS_REPORTED
+      - NO_BEST_SEED_OR_OLD_FOLD_OR_OLD_ENRICHMENT_SELECTION
+  - phase_id: A5
+    name: MEASURED_NEIGHBORHOOD_AND_SEARCH_HEADROOM
+    depends_on: [A4]
+    evidence_status: NOT_RUN
+    hard_gate:
+      - EVERY_POOL_CONTAINS_DISTINCT_CANDIDATE_SEQUENCES
+      - MEASURABLE_SEARCH_HEADROOM_OR_DEFINED_LARGE_SPACE_AMORTIZATION_TASK
+      - STRONG_SEARCH_AND_TRUE_GENERATE_THEN_RERANK_COMPARATORS_COMPLETE
+  - phase_id: A6
+    name: THEORY_AND_BASE_LEGAL_FLOW
+    depends_on: [A0]
+    may_run_in_parallel_with: [A1]
+    evidence_status: NOT_RUN
+    hard_gate:
+      - MATHEMATICAL_ASSUMPTIONS_RECORDED
+      - TOY_EXACTNESS_AND_BASE_RECOVERY_PASS
+      - HARD_LEGALITY_100_PERCENT
+      - SUPPORT_STOP_BUDGET_AND_ALIAS_FIXTURES_PASS
+  - phase_id: A7
+    name: MEASURED_MATCHED_COMPUTE_GUIDANCE
+    depends_on: [A5, A6]
+    evidence_status: NOT_RUN
+    hard_gate:
+      - GUIDANCE_QUALITY_GATE_COMPLETE
+      - MATCHED_COMPUTE_AND_COST_GATES_COMPLETE
+      - GUIDE_EVALUATOR_SEPARATION_VERIFIED
+      - SEALED_NOT_ACCESSED
+  - phase_id: A8
+    name: SECONDARY_REGION_TRANSFER
+    depends_on: [A7]
+    evidence_status: NOT_RUN
+    hard_gate:
+      - THREE_UTR_OR_CDS_TRANSFER_CI_GATE_PASSES
+      - BOTH_SECONDARY_REGION_RESULTS_RETAINED
+  - phase_id: A9
+    name: SEALED_READINESS
+    depends_on: [A1, A2, A3, A4, A5, A6, A7, A8]
+    evidence_status: NOT_RUN
+    hard_gate:
+      - ALL_ORDINARY_GATES_COMPLETE
+      - SYNTHETIC_AND_ORDINARY_MIRROR_DRY_RUNS_COMPLETE
+      - NO_ACCESS_INTENT_WRITTEN
+      - AGGREGATE_ONLY_OUTPUT_VERIFIED
+      - NO_STUBS_AND_COMPLETE_HASH_FREEZE
+      - INDEPENDENT_COMPREHENSIVE_REVIEW_COMPLETE
+      - EXPLICIT_USER_AUTHORIZATION_STILL_REQUIRED
+  - phase_id: A10
+    name: ONE_SHOT_SEALED_PAPER_AND_RELEASE
+    depends_on: [A9]
+    evidence_status: NOT_RUN
+    hard_gate:
+      - EXPLICIT_USER_AUTHORIZATION_FOR_UNIQUE_FORMAL_CALL
+      - ONE_SHOT_SEALED_EXECUTION_COMPLETE
+      - NO_SELECTIVE_RESULT_DELETION
+      - ALL_ROUTE_A_CLAIMS_HAVE_FROZEN_EVIDENCE_CELLS
+      - CLEAN_REPLAY_AND_FINAL_REVIEW_COMPLETE
+
+recovery_loop:
+  fixed_steps:
+    - FREEZE_ORIGINAL_RESULT_AND_FAILURE_BUNDLE
+    - CLASSIFY_DATA_ESTIMAND_CRITIC_GRAPH_THEORY_EVALUATOR_OR_COMPUTE_LAYER
+    - WRITE_NEW_FALSIFIABLE_ROUTE_A_HYPOTHESIS
+    - RUN_MINIMUM_REPAIR_PILOT_ON_ORDINARY_DEVELOPMENT_EVIDENCE_ONLY
+    - READJUDICATE_ON_UNCONTAMINATED_CONFIRMATORY_EVIDENCE
+    - RETAIN_ROUTE_A_AS_STRATEGIC_TARGET
+  prohibited:
+    - LOWER_GATE
+    - CHANGE_ENDPOINT_OR_SPLIT_TO_MANUFACTURE_SUCCESS
+    - RELABEL_SELECTED_TEST_AS_UNTOUCHED
+    - SELECT_BEST_SEED
+    - DELETE_STRONG_BASELINE
+    - SUBSTITUTE_CRITIC_SELF_SCORE_FOR_MEASURED_OR_INDEPENDENT_EVIDENCE
+    - REUSE_SEALED
+    - UNBOUNDED_HYPERPARAMETER_SWEEP_ON_SAME_FAILED_HYPOTHESIS
+  independent_review_after_same_failure_redesigns: 2
+
+verification_policy:
+  targeted_validation_by_artifact:
+    document_or_config: [SCHEMA, AUTHORITY_UNIQUENESS, CROSS_REFERENCE, CONFLICT_MARKER, GIT_DIFF_CHECK]
+    data: [PAPER_COUNTS, RAW_TO_CANONICAL_LINEAGE, SOURCE_CANDIDATE_DIFF, ENDPOINT_DIRECTION, GROUP_IDENTITY, LEAKAGE, LICENSE, REJECTED_TABLE]
+    critic: [SWAP_ANTISYMMETRY, IDENTITY_ZERO, PADDING_INVARIANCE, EDIT_AFTER_100, UNKNOWN_CONTEXT, TARGET_SEMANTICS, CANDIDATE_PERMUTATION, ANCHOR_ONLY, DETERMINISTIC_PREDICTIONS]
+    flow: [LEGAL_ACTIONS, BUDGET, STOP, TRANSITION_ALIAS, SUPPORT, PATH_CONSISTENCY, TOY_EXACT_DISTRIBUTION, TRAJECTORY_REPLAY]
+    evaluator: [GUIDE_EVALUATOR_CHECKPOINT_DATA_EXPOSURE_AND_ARCHITECTURE_SEPARATION, SEALED_IMPORT_FORBIDDEN]
+    operations: [CUDA_FAIL_CLOSED, OCCUPIED_GPU_REFUSAL, RESUME_BINDING, MANIFEST_COMPLETENESS, LARGE_FILE_SECRET_RESTRICTED_SCAN, PUSH_VERIFICATION]
+  full_validation_milestones: [A2, A4, A7, A9, A10]
+  repeat_identical_validation_on_unchanged_code: false
+
+gpu_policy:
+  formal_parameter_updates_require_cuda: true
+  parameter_updating_run_types:
+    - NEURAL_CRITIC
+    - BASE_FLOW
+    - GUIDANCE_OR_VALUE_NETWORK
+    - FOUNDATION_FINE_TUNE
+  cuda_unavailable_behavior: FAIL_CLOSED
+  silent_cpu_fallback_allowed: false
+  launch_record_required:
+    - GPU_UUID
+    - GPU_MODEL
+    - DRIVER
+    - CUDA_VERSION
+    - PYTORCH_VERSION
+    - DEVICE
+    - PEAK_VRAM
+  prelaunch_checks: [PID, OWNER, VRAM, UTILIZATION]
+  low_vram_implies_authorization_to_use_gpu: false
+  unrelated_process_preemption_allowed: false
+  cpu_allowed_for:
+    - DATA_PROCESSING
+    - STATISTICS
+    - HASHING
+    - GIT
+    - SMALL_GRAPH_EXACT_ENUMERATION
+    - INDEPENDENT_NUMERICAL_CHECKER
+    - ORDINARY_UNIT_TESTS
+  parameter_updating_toy_network_requires_gpu: true
+  monitoring_cadence:
+    startup_and_first_batch_sanity: true
+    first_checkpoint_or_minutes: "10-15"
+    stable_max_frequency_minutes: 30
+    event_driven_checks:
+      - CHECKPOINT
+      - VALIDATION
+      - OOM
+      - NAN
+      - PROCESS_EXIT
+      - COMPLETION
+    report_unchanged_state_repeatedly: false
+  failure_handling:
+    preserve_failure_bundle: true
+    preserve_last_valid_checkpoint: true
+    new_run_id_required_if_changed:
+      - BATCH_SIZE
+      - PRECISION
+      - OPTIMIZER
+      - EFFECTIVE_BATCH_SIZE
+      - DATA_VERSION
+
+sealed:
+  dataset_id: GSE246381
+  role: SEALED_EXTERNAL_FINAL_ONLY
+  phase: A10
+  guard_mode: A0_A9_UNCONDITIONAL_HARD_DISABLE
+  latent_authorization_path_allowed: false
+  evaluator_implementation_status: A0_STUB_HARD_DISABLED
+  a9_guard_replacement_required: true
+  a9_replacement_preconditions:
+    - ALL_ORDINARY_GATES_PASS
+    - SEALED_EVALUATOR_NO_STUB
+    - FULL_CONSUMED_ASSET_HASH_FREEZE
+    - FULL_RUNTIME_SOURCE_ENVIRONMENT_HASH_FREEZE
+    - TRANSACTIONAL_AGGREGATE_OUTPUT_BEFORE_COMPLETION
+    - INDEPENDENT_A9_READINESS_REVIEW_PASS
+    - SEPARATE_EXPLICIT_USER_AUTHORIZATION_FOR_A10
+  execution_enabled: false
+  execution_authorized: false
+  authorized: false
+  access_intent_allowed: false
+  ordinary_loader_returns_zero_rows: true
+  in_task_activation: false
+  in_metric_branch: false
+  in_calibration: false
+  in_model_selection: false
+  final_evaluator_count_max: 1
+  required_authorization_phase: A10
+  required_user_authorization: true
+  authorization_record_path: null
+  authorization_record_sha256: null
+  output:
+    aggregate_only: true
+    row_level_labels_returned: false
+  required_prior_phases: [A0, A1, A2, A3, A4, A5, A6, A7, A8, A9]
+  automatic_execution_by_this_plan_allowed: false
+  ordinary_activation_allowed: false
+  training_allowed: false
+  threshold_or_metric_setting_allowed: false
+  calibration_allowed: false
+  model_selection_allowed: false
+  architecture_selection_allowed: false
+  error_analysis_allowed_before_authorized_a10: false
+  dry_run_may_write_access_intent: false
+  custody_metadata_only_in_ordinary_registry: true
+
+historical_constraints:
+  old_contracts_and_results_byte_preserved: true
+  original_failure_conclusions_may_be_overturned_by_pre_v3_development: false
+  active_pre_v3_run:
+    observed_at: "2026-08-09T23:24:00+08:00"
+    classification: PRE_V3_DEVELOPMENT_ONLY
+    may_complete_naturally: true
+    stop_modify_or_migrate_allowed: false
+    high_frequency_monitoring_allowed: false
+    checkpoint_may_be_preserved: true
+    known_invalid_for_v3:
+      uses_candidate_value: true
+      max_seq_len: 100
+      uses_old_enrichment_metric: true
+    prohibited_uses:
+      - SET_V3_GATE
+      - SELECT_V3_METRIC
+      - CLAIM_CANDIDATE_SPECIFIC_EFFECT
+      - OVERTURN_ORIGINAL_M0_FAILURE
+  old_enrichment:
+    historical_top10_over_mean_ratio: 9.92
+    historical_value_also_retained: 0.1322
+    valid_v3_gate: false
+    replacement: TOP_DECILE_ADDITIVE_UPLIFT_WITH_SOURCE_GROUP_BOOTSTRAP
+
+artifact_policy:
+  mnt_layout:
+    raw: /mnt/cunyuliu/mrna_xeditflow_routea_v3/raw
+    processed: /mnt/cunyuliu/mrna_xeditflow_routea_v3/processed
+    weights: /mnt/cunyuliu/mrna_xeditflow_routea_v3/weights
+    runs: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs
+    cache: /mnt/cunyuliu/mrna_xeditflow_routea_v3/cache
+    legacy_pre_v3: /mnt/cunyuliu/mrna_xeditflow_routea_v3/legacy/pre_v3
+  prohibited_in_git:
+    - RAW_DATA
+    - FOUNDATION_WEIGHTS
+    - CHECKPOINTS
+    - FULL_PREDICTIONS
+    - FULL_LOGS
+    - LARGE_ARTIFACTS
+    - RESTRICTED_DATA
+  restricted_data_policy: ORIGINAL_ACL_CANONICAL_RESTRICTED_PATH_AND_NON_SENSITIVE_CUSTODY_POINTER_ONLY
+  accepted_task_commit_policy: FOCUSED_COMMIT_ON_CURRENT_ROUTE_A_TASK_BRANCH
+  automatic_main_push_or_merge_allowed: false
+  prepush_checks:
+    - SECRET_SCAN
+    - RESTRICTED_PATH_SCAN
+    - LARGE_BINARY_SCAN
+    - UNRELATED_DIFF_SCAN
+    - GIT_DIFF_CHECK
+  push_failure_status: IMPLEMENTATION_COMPLETE_DELIVERY_BLOCKED
+  hashing_scope:
+    - FIRST_IMPORT
+    - FREEZE
+    - TRANSFER
+    - FINAL_DELIVERY
+    - ANOMALY_INVESTIGATION

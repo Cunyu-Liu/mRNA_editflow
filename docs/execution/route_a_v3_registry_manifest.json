@@ -1,0 +1,88 @@
+{
+  "base_commit": "bbb71dcba6f1e1c9cb75a8a6653f1a4fe4a6ca0c",
+  "contract_id": "mrna_xeditflow_route_a_v3",
+  "contract_path": "docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md",
+  "contract_sha256": "d1c031aecdec710495f6861b380785cccd64663ac4bd97b4f479d6fdf372ea07",
+  "files": [
+    {
+      "path": "configs/route_a_v3.yaml",
+      "role": "EXECUTABLE_CONTRACT",
+      "sha256": "e3486ba6ffba38b8a069c382460954929a5934398997355ab82d553dca05f455"
+    },
+    {
+      "path": "docs/contracts/supersession_mrna_xeditflow_v1_1_to_route_a_v3.yaml",
+      "role": "SUPERSESSION_LINEAGE",
+      "sha256": "c80fd34567e52184bd8707064ed58a43db9fdb9223a28887781c98179c1dc155"
+    },
+    {
+      "path": "docs/contracts/history/mrna_v2_readiness_audit_20260807.md",
+      "role": "HISTORICAL_M0_SCIENTIFIC_FAILURE_EXACT_COPY",
+      "sha256": "a8eb4f49ede793a8eae2037db9f46f044056d37610ec92482666a8242a52fa30"
+    },
+    {
+      "path": "docs/execution/route_a_v3_baseline_registry.yaml",
+      "role": "BASELINE_REGISTRY",
+      "sha256": "a13b4937f1b307e0b4a037db9f3b52ebdfe6120e268fbcf4c42996836e4d729e"
+    },
+    {
+      "path": "docs/execution/route_a_v3_claim_evidence_matrix.yaml",
+      "role": "CLAIM_EVIDENCE_MATRIX",
+      "sha256": "35e3ecbd596193502da4e10c5a34c7dff92115308e3cd82123e044c4e0c9f857"
+    },
+    {
+      "path": "docs/execution/route_a_v3_data_role_registry.yaml",
+      "role": "DATA_ROLE_REGISTRY",
+      "sha256": "818eff8f7aae9a80bcb20f9e0dbe7581f4df323c34a13614f214a02c2f85ccea"
+    },
+    {
+      "path": "docs/execution/route_a_v3_decision_log.yaml",
+      "role": "DECISION_AND_AMENDMENT_LOG",
+      "sha256": "615b93c166cb732a5e3dab39e6a42ff4e1cf579a3b46ff19092e89f9d9d420ad"
+    },
+    {
+      "path": "docs/execution/route_a_v3_split_registry.yaml",
+      "role": "SPLIT_REGISTRY",
+      "sha256": "d336fdd0e5177c4ac6cc3addae3a7e2e768be2ceeb62526afa492f309593ffa3"
+    },
+    {
+      "path": "docs/execution/route_a_v3_task_registry.yaml",
+      "role": "TASK_AND_PHASE_REGISTRY",
+      "sha256": "d76a33561085c9d56cfd04d7ff5375e808b65569d5586e78125dee1e373f2946"
+    },
+    {
+      "path": "docs/execution/route_a_v3_task_split_matrix.yaml",
+      "role": "TASK_SPLIT_MATRIX",
+      "sha256": "b111161b5b8162086b160e21e96b991650baf451395fed9c9e606433bb0c980a"
+    },
+    {
+      "path": "schemas/route_a_v3/SCHEMA_MANIFEST.json",
+      "role": "PUBLIC_SCHEMA_MANIFEST",
+      "sha256": "14ca64459a78f49bf6d09fb1465c7bbd5e29f4bde6e3a4bcaed9e37c547ea5c9"
+    },
+    {
+      "path": "schemas/route_a_v3/SCHEMA_SHA256SUMS",
+      "role": "PUBLIC_SCHEMA_CHECKSUMS",
+      "sha256": "c0c845b58506df276aaa07b36ac5e3193b993e13365163bd55964ee3cb4bd114"
+    },
+    {
+      "path": "scripts/route_a_v3/sealed_guard.py",
+      "role": "SEALED_HARD_DISABLE_GUARD",
+      "sha256": "971d0b243de494396c89cac04b7eb1f6723d3f0505c3867378fc3709d5492d91"
+    },
+    {
+      "path": "scripts/e0x/run_e0x_final.py",
+      "role": "SEALED_RUNNER_GUARD_INTEGRATION",
+      "sha256": "5310db4697d1c464154c5b9275f28675163a3d2a5319c326c8c03d52cd39a1fe"
+    },
+    {
+      "path": "scripts/route_a_v3/validate_a0_bundle.py",
+      "role": "A0_STATIC_AND_SEMANTIC_VALIDATOR",
+      "sha256": "53ef7be9bb47bdb8ae6670496b10dc6ea728b1cbfe0630e8a1f133766041bd2a"
+    }
+  ],
+  "generated_at": "2026-08-10T02:56:20+08:00",
+  "manifest_status": "A0_PRECOMMIT_FREEZE",
+  "schema_version": "1.0.0",
+  "sealed_contact": false,
+  "version": "3.0.0"
+}

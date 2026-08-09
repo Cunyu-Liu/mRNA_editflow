@@ -1,0 +1,308 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Cunyu-Liu/mRNA_editflow/schemas/route_a_v3/canonical_intervention_record.schema.json",
+  "title": "CanonicalInterventionRecordV3",
+  "description": "Canonical, source-relative, paper-faithful public intervention record. Validation of this interface is not a scientific PASS.",
+  "contract_id": "mrna_xeditflow_route_a_v3",
+  "schema_version": "3.0.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_id",
+    "schema_version",
+    "record_id",
+    "evidence_status",
+    "claim_status",
+    "source",
+    "candidate",
+    "source_sequence",
+    "candidate_sequence",
+    "sequence_alphabet",
+    "edit_set",
+    "region",
+    "study",
+    "assay",
+    "context",
+    "endpoint",
+    "raw_measurement",
+    "paper_faithful_transform",
+    "delta",
+    "replicate",
+    "standard_error",
+    "biological_source_group_id",
+    "data_role",
+    "exposure",
+    "split",
+    "provenance",
+    "license",
+    "eligibility"
+  ],
+  "properties": {
+    "contract_id": {"const": "mrna_xeditflow_route_a_v3"},
+    "schema_version": {"const": "3.0.0"},
+    "record_id": {"$ref": "#/$defs/nonEmptyString"},
+    "evidence_status": {"$ref": "#/$defs/evidenceStatus"},
+    "claim_status": {"$ref": "#/$defs/claimStatus"},
+    "source": {"$ref": "#/$defs/sourceIdentity"},
+    "candidate": {"$ref": "#/$defs/candidateIdentity"},
+    "source_sequence": {"$ref": "#/$defs/fullSequence"},
+    "candidate_sequence": {"$ref": "#/$defs/fullSequence"},
+    "source_sequence_sha256": {"$ref": "#/$defs/sha256"},
+    "candidate_sequence_sha256": {"$ref": "#/$defs/sha256"},
+    "sequence_alphabet": {"enum": ["DNA", "RNA"]},
+    "edit_set": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/edit"},
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "edit_count": {"type": "integer", "minimum": 1},
+    "region": {"$ref": "#/$defs/region"},
+    "study": {"$ref": "#/$defs/study"},
+    "assay": {"$ref": "#/$defs/assay"},
+    "context": {"$ref": "#/$defs/context"},
+    "endpoint": {"$ref": "#/$defs/endpoint"},
+    "raw_measurement": {"$ref": "#/$defs/rawMeasurement"},
+    "paper_faithful_transform": {"$ref": "#/$defs/transform"},
+    "delta": {"type": ["number", "null"]},
+    "replicate": {"$ref": "#/$defs/replicate"},
+    "standard_error": {"type": ["number", "null"], "minimum": 0},
+    "biological_source_group_id": {"$ref": "#/$defs/nonEmptyString"},
+    "gene_group_id": {"type": ["string", "null"], "minLength": 1},
+    "data_role": {"$ref": "#/$defs/dataRole"},
+    "exposure": {"$ref": "#/$defs/exposure"},
+    "split": {"$ref": "#/$defs/split"},
+    "provenance": {"$ref": "#/$defs/provenance"},
+    "license": {"$ref": "#/$defs/license"},
+    "eligibility": {"$ref": "#/$defs/eligibility"}
+  },
+  "$defs": {
+    "nonEmptyString": {"type": "string", "minLength": 1},
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "fullSequence": {"type": "string", "pattern": "^[ACGUTN]+$", "minLength": 1},
+    "evidenceStatus": {
+      "enum": [
+        "NOT_RUN",
+        "IN_PROGRESS",
+        "PASS",
+        "FAIL_CURRENT_PROTOCOL",
+        "FAIL_REPAIRABLE",
+        "BLOCKED_PENDING_PUBLIC_EVIDENCE",
+        "TERMINATED_SAFELY_WITH_EVIDENCE"
+      ]
+    },
+    "claimStatus": {
+      "enum": ["NOT_ESTABLISHED", "ESTABLISHED", "INVALIDATED_CURRENT_FORMULATION", "PROHIBITED"]
+    },
+    "region": {"enum": ["5UTR", "3UTR", "CDS", "OTHER"]},
+    "sourceIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source_id", "sequence_id"],
+      "properties": {
+        "source_id": {"$ref": "#/$defs/nonEmptyString"},
+        "sequence_id": {"$ref": "#/$defs/nonEmptyString"},
+        "transcript_id": {"type": ["string", "null"], "minLength": 1},
+        "gene_id": {"type": ["string", "null"], "minLength": 1},
+        "locus_id": {"type": ["string", "null"], "minLength": 1},
+        "design_family_id": {"type": ["string", "null"], "minLength": 1}
+      }
+    },
+    "candidateIdentity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["candidate_id", "sequence_id"],
+      "properties": {
+        "candidate_id": {"$ref": "#/$defs/nonEmptyString"},
+        "sequence_id": {"$ref": "#/$defs/nonEmptyString"},
+        "design_id": {"type": ["string", "null"], "minLength": 1}
+      }
+    },
+    "edit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["edit_id", "position", "coordinate_system", "ref_base", "alt_base", "region"],
+      "properties": {
+        "edit_id": {"$ref": "#/$defs/nonEmptyString"},
+        "position": {"type": "integer", "minimum": 0},
+        "coordinate_system": {"enum": ["ZERO_BASED_SOURCE", "ONE_BASED_SOURCE"]},
+        "ref_base": {"type": "string", "pattern": "^[ACGUTN]$"},
+        "alt_base": {"type": "string", "pattern": "^[ACGUTN]$"},
+        "region": {"$ref": "#/$defs/region"},
+        "distance_from_region_start": {"type": ["integer", "null"]}
+      }
+    },
+    "study": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["study_id", "accession", "independent_study_group_id"],
+      "properties": {
+        "study_id": {"$ref": "#/$defs/nonEmptyString"},
+        "accession": {"$ref": "#/$defs/nonEmptyString"},
+        "independent_study_group_id": {"$ref": "#/$defs/nonEmptyString"},
+        "publication_doi": {"type": ["string", "null"], "minLength": 1}
+      }
+    },
+    "assay": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["assay_id", "assay_type"],
+      "properties": {
+        "assay_id": {"$ref": "#/$defs/nonEmptyString"},
+        "assay_type": {"$ref": "#/$defs/nonEmptyString"},
+        "protocol_version": {"type": ["string", "null"], "minLength": 1}
+      }
+    },
+    "context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["context_id", "observable_context"],
+      "properties": {
+        "context_id": {"$ref": "#/$defs/nonEmptyString"},
+        "observable_context": {"$ref": "#/$defs/nonEmptyString"},
+        "cell_type": {"type": ["string", "null"], "minLength": 1},
+        "condition": {"type": ["string", "null"], "minLength": 1}
+      }
+    },
+    "endpoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["endpoint_id", "endpoint_name", "beneficial_direction"],
+      "properties": {
+        "endpoint_id": {"$ref": "#/$defs/nonEmptyString"},
+        "endpoint_name": {"$ref": "#/$defs/nonEmptyString"},
+        "beneficial_direction": {"enum": ["HIGHER_IS_BETTER", "LOWER_IS_BETTER"]}
+      }
+    },
+    "rawMeasurement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "unit", "scale", "source_column"],
+      "properties": {
+        "value": {"type": ["number", "null"]},
+        "unit": {"$ref": "#/$defs/nonEmptyString"},
+        "scale": {"$ref": "#/$defs/nonEmptyString"},
+        "source_column": {"$ref": "#/$defs/nonEmptyString"},
+        "detection_limit": {"type": ["number", "null"]}
+      }
+    },
+    "transform": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["transform_id", "description", "version", "direction_verified", "implementation_sha256"],
+      "properties": {
+        "transform_id": {"$ref": "#/$defs/nonEmptyString"},
+        "description": {"$ref": "#/$defs/nonEmptyString"},
+        "version": {"$ref": "#/$defs/nonEmptyString"},
+        "direction_verified": {"type": "boolean"},
+        "implementation_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "replicate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["replicate_id", "replicate_group_id", "replicate_count"],
+      "properties": {
+        "replicate_id": {"$ref": "#/$defs/nonEmptyString"},
+        "replicate_group_id": {"$ref": "#/$defs/nonEmptyString"},
+        "replicate_count": {"type": "integer", "minimum": 1},
+        "aggregation_rule": {"type": ["string", "null"], "minLength": 1}
+      }
+    },
+    "dataRole": {
+      "enum": [
+        "ORDINARY_A1_INTERVENTION",
+        "ORDINARY_A2_DENSE_NEIGHBORHOOD",
+        "ORDINARY_DEVELOPMENT",
+        "ORDINARY_CONFIRMATORY",
+        "DEVELOPMENT_STRESS_ONLY",
+        "SEALED_EXTERNAL_FINAL_ONLY",
+        "REFERENCE_ONLY",
+        "EXCLUDED"
+      ]
+    },
+    "exposure": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["stratum", "label_exposed", "sequence_exposed", "audit_id"],
+      "properties": {
+        "stratum": {"enum": ["UNTOUCHED", "UNKNOWN", "SEQUENCE_EXPOSED", "LABEL_EXPOSED", "TRAINING_EXPOSED", "DEVELOPMENT_ONLY", "SEALED_EXTERNAL_FINAL_ONLY"]},
+        "label_exposed": {"type": "boolean"},
+        "sequence_exposed": {"type": "boolean"},
+        "audit_id": {"$ref": "#/$defs/nonEmptyString"}
+      }
+    },
+    "split": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["split_id", "partition", "leakage_audit_status"],
+      "properties": {
+        "split_id": {"$ref": "#/$defs/nonEmptyString"},
+        "partition": {"enum": ["DEVELOPMENT", "TRAIN", "CALIBRATION", "VALIDATION", "CONFIRMATORY", "SEALED_FINAL", "EXCLUDED"]},
+        "leakage_audit_status": {"enum": ["NOT_RUN", "PASS", "FAIL_CURRENT_PROTOCOL", "BLOCKED_PENDING_PUBLIC_EVIDENCE"]}
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["dataset_id", "asset_id", "source_uri", "source_file_sha256", "raw_record_locator", "lineage"],
+      "properties": {
+        "dataset_id": {"$ref": "#/$defs/nonEmptyString"},
+        "asset_id": {"$ref": "#/$defs/nonEmptyString"},
+        "source_uri": {"$ref": "#/$defs/nonEmptyString"},
+        "source_file_sha256": {"$ref": "#/$defs/sha256"},
+        "raw_record_locator": {"$ref": "#/$defs/nonEmptyString"},
+        "acquired_at": {"type": ["string", "null"], "format": "date-time"},
+        "lineage": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["step_id", "operation", "input_sha256", "output_sha256"],
+            "properties": {
+              "step_id": {"$ref": "#/$defs/nonEmptyString"},
+              "operation": {"$ref": "#/$defs/nonEmptyString"},
+              "input_sha256": {"$ref": "#/$defs/sha256"},
+              "output_sha256": {"$ref": "#/$defs/sha256"}
+            }
+          }
+        }
+      }
+    },
+    "license": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["license_id", "status", "redistribution_allowed", "verified_at"],
+      "properties": {
+        "license_id": {"$ref": "#/$defs/nonEmptyString"},
+        "license_name": {"type": ["string", "null"], "minLength": 1},
+        "license_uri": {"type": ["string", "null"], "minLength": 1},
+        "status": {"enum": ["VERIFIED_PUBLIC", "VERIFIED_NONREDISTRIBUTABLE", "UNKNOWN_BLOCKED", "INCOMPATIBLE_REJECTED"]},
+        "redistribution_allowed": {"type": "boolean"},
+        "verified_at": {"type": "string", "format": "date-time"}
+      }
+    },
+    "eligibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "reject_reason_code", "reject_reason_detail"],
+      "properties": {
+        "status": {"enum": ["QUALIFIED", "REJECTED", "PENDING_BLOCKED", "DEVELOPMENT_ONLY"]},
+        "reject_reason_code": {"type": ["string", "null"], "minLength": 1},
+        "reject_reason_detail": {"type": ["string", "null"], "minLength": 1}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"status": {"const": "REJECTED"}}, "required": ["status"]},
+          "then": {
+            "properties": {
+              "reject_reason_code": {"type": "string", "minLength": 1},
+              "reject_reason_detail": {"type": "string", "minLength": 1}
+            }
+          }
+        }
+      ]
+    }
+  }
+}

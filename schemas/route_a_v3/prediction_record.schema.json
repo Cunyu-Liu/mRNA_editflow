@@ -1,0 +1,121 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Cunyu-Liu/mRNA_editflow/schemas/route_a_v3/prediction_record.schema.json",
+  "title": "PredictionRecordV3",
+  "description": "Versioned source-relative effect prediction with calibrated uncertainty, OOD handling and abstention.",
+  "contract_id": "mrna_xeditflow_route_a_v3",
+  "schema_version": "3.0.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_id",
+    "schema_version",
+    "prediction_id",
+    "task_id",
+    "run_id",
+    "source_id",
+    "candidate_id",
+    "pool_id",
+    "mu_delta",
+    "uncertainty",
+    "predicted_sign",
+    "sign_probability",
+    "beneficial_probability",
+    "ranking_energy",
+    "ood",
+    "abstention",
+    "model_sha256",
+    "data_sha256",
+    "config_sha256",
+    "checkpoint_sha256",
+    "code_commit",
+    "exposure_stratum",
+    "evidence_status",
+    "claim_status"
+  ],
+  "properties": {
+    "contract_id": {"const": "mrna_xeditflow_route_a_v3"},
+    "schema_version": {"const": "3.0.0"},
+    "prediction_id": {"$ref": "#/$defs/nonEmptyString"},
+    "task_id": {"$ref": "#/$defs/nonEmptyString"},
+    "run_id": {"$ref": "#/$defs/nonEmptyString"},
+    "source_id": {"$ref": "#/$defs/nonEmptyString"},
+    "candidate_id": {"$ref": "#/$defs/nonEmptyString"},
+    "pool_id": {"type": ["string", "null"], "minLength": 1},
+    "study_id": {"type": ["string", "null"], "minLength": 1},
+    "assay_id": {"type": ["string", "null"], "minLength": 1},
+    "context_id": {"type": ["string", "null"], "minLength": 1},
+    "endpoint_id": {"type": ["string", "null"], "minLength": 1},
+    "mu_delta": {"type": "number", "description": "Predicted source-relative effect mean (mu_delta)."},
+    "uncertainty": {"$ref": "#/$defs/uncertainty"},
+    "predicted_sign": {"enum": ["BENEFICIAL", "NEUTRAL", "HARMFUL"]},
+    "sign_probability": {"type": "number", "minimum": 0, "maximum": 1},
+    "beneficial_probability": {"type": "number", "minimum": 0, "maximum": 1},
+    "ranking_energy": {"type": "number"},
+    "lower_confidence_bound": {"type": ["number", "null"]},
+    "ood": {"$ref": "#/$defs/ood"},
+    "abstention": {"$ref": "#/$defs/abstention"},
+    "model_sha256": {"$ref": "#/$defs/sha256"},
+    "data_sha256": {"$ref": "#/$defs/sha256"},
+    "config_sha256": {"$ref": "#/$defs/sha256"},
+    "checkpoint_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+    "code_commit": {"type": "string", "pattern": "^[0-9a-f]{40,64}$"},
+    "exposure_stratum": {"enum": ["UNTOUCHED", "UNKNOWN", "SEQUENCE_EXPOSED", "LABEL_EXPOSED", "TRAINING_EXPOSED", "DEVELOPMENT_ONLY", "SEALED_EXTERNAL_FINAL_ONLY"]},
+    "evidence_status": {"$ref": "#/$defs/evidenceStatus"},
+    "claim_status": {"$ref": "#/$defs/claimStatus"},
+    "created_at": {"type": "string", "format": "date-time"}
+  },
+  "$defs": {
+    "nonEmptyString": {"type": "string", "minLength": 1},
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "evidenceStatus": {"enum": ["NOT_RUN", "IN_PROGRESS", "PASS", "FAIL_CURRENT_PROTOCOL", "FAIL_REPAIRABLE", "BLOCKED_PENDING_PUBLIC_EVIDENCE", "TERMINATED_SAFELY_WITH_EVIDENCE"]},
+    "claimStatus": {"enum": ["NOT_ESTABLISHED", "ESTABLISHED", "INVALIDATED_CURRENT_FORMULATION", "PROHIBITED"]},
+    "uncertainty": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["aleatoric_std", "epistemic_std", "total_std", "method", "calibration_id"],
+      "properties": {
+        "aleatoric_std": {"type": "number", "minimum": 0},
+        "epistemic_std": {"type": "number", "minimum": 0},
+        "total_std": {"type": "number", "minimum": 0},
+        "method": {"$ref": "#/$defs/nonEmptyString"},
+        "calibration_id": {"$ref": "#/$defs/nonEmptyString"},
+        "confidence_level": {"type": "number", "exclusiveMinimum": 0, "exclusiveMaximum": 1},
+        "interval_lower": {"type": ["number", "null"]},
+        "interval_upper": {"type": ["number", "null"]}
+      }
+    },
+    "ood": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["is_ood", "score", "threshold", "method", "reason_codes"],
+      "properties": {
+        "is_ood": {"type": "boolean"},
+        "score": {"type": "number"},
+        "threshold": {"type": "number"},
+        "method": {"$ref": "#/$defs/nonEmptyString"},
+        "reason_codes": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/nonEmptyString"}}
+      }
+    },
+    "abstention": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["abstained", "reason", "policy_id"],
+      "properties": {
+        "abstained": {"type": "boolean"},
+        "reason": {"enum": ["NONE", "OOD", "UNCERTAINTY", "UNSUPPORTED_EDIT_COUNT", "UNSUPPORTED_CONTEXT", "MISSING_INPUT", "NUMERICAL_FAILURE", "POLICY_THRESHOLD"]},
+        "policy_id": {"$ref": "#/$defs/nonEmptyString"}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"abstained": {"const": false}}, "required": ["abstained"]},
+          "then": {"properties": {"reason": {"const": "NONE"}}}
+        },
+        {
+          "if": {"properties": {"abstained": {"const": true}}, "required": ["abstained"]},
+          "then": {"not": {"properties": {"reason": {"const": "NONE"}}, "required": ["reason"]}}
+        }
+      ]
+    }
+  }
+}

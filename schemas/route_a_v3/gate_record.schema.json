@@ -1,0 +1,278 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Cunyu-Liu/mRNA_editflow/schemas/route_a_v3/gate_record.schema.json",
+  "title": "GateRecordV3",
+  "description": "Preregistered gate adjudication with explicit inputs, analysis unit, study results, intervals, all seeds, failure evidence and sealed contact accounting.",
+  "contract_id": "mrna_xeditflow_route_a_v3",
+  "schema_version": "3.0.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_id",
+    "schema_version",
+    "gate_record_id",
+    "gate_id",
+    "gate_family",
+    "claim_eligible",
+    "task_id",
+    "phase_id",
+    "run_ids",
+    "inputs",
+    "statistical_unit",
+    "thresholds",
+    "per_study_results",
+    "aggregate_result",
+    "confidence_interval",
+    "seeds",
+    "decision",
+    "evidence_status",
+    "claim_status",
+    "failure_bundle",
+    "next_route_a_recovery_task",
+    "sealed_contact",
+    "adjudicated_at"
+  ],
+  "properties": {
+    "contract_id": {"const": "mrna_xeditflow_route_a_v3"},
+    "schema_version": {"const": "3.0.0"},
+    "gate_record_id": {"$ref": "#/$defs/nonEmptyString"},
+    "gate_id": {"$ref": "#/$defs/nonEmptyString"},
+    "gate_family": {"enum": ["AUTHORITY", "DATA_QUALIFICATION", "CRITIC_EFFECT", "MEASURED_NEIGHBORHOOD", "FLOW_THEORY", "GUIDANCE", "TRANSFER", "SEALED_ADJUDICATION", "RELEASE"]},
+    "claim_eligible": {"type": "boolean"},
+    "task_id": {"$ref": "#/$defs/nonEmptyString"},
+    "phase_id": {"enum": ["A0", "A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8", "A9", "A10"]},
+    "run_ids": {"type": "array", "minItems": 0, "uniqueItems": true, "items": {"$ref": "#/$defs/nonEmptyString"}},
+    "inputs": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/input"}},
+    "statistical_unit": {"$ref": "#/$defs/statisticalUnit"},
+    "thresholds": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"$ref": "#/$defs/threshold"}},
+    "per_study_results": {"type": "array", "minItems": 0, "uniqueItems": true, "items": {"$ref": "#/$defs/studyResult"}},
+    "aggregate_result": {"$ref": "#/$defs/estimate"},
+    "confidence_interval": {"$ref": "#/$defs/confidenceInterval"},
+    "seeds": {"type": "array", "minItems": 0, "uniqueItems": true, "items": {"type": "integer", "minimum": 0}},
+    "decision": {"enum": ["NOT_RUN", "PASS", "FAIL_CURRENT_PROTOCOL", "FAIL_REPAIRABLE", "BLOCKED_PENDING_PUBLIC_EVIDENCE", "TERMINATED_SAFELY_WITH_EVIDENCE"]},
+    "evidence_status": {"$ref": "#/$defs/evidenceStatus"},
+    "claim_status": {"$ref": "#/$defs/claimStatus"},
+    "failure_bundle": {"$ref": "#/$defs/failureBundle"},
+    "next_route_a_recovery_task": {"$ref": "#/$defs/recoveryTask"},
+    "sealed_contact": {"$ref": "#/$defs/sealedContact"},
+    "adjudicated_at": {"type": ["string", "null"], "format": "date-time"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"decision": {"const": "PASS"}}, "required": ["decision"]},
+      "then": {
+        "properties": {
+          "evidence_status": {"const": "PASS"},
+          "run_ids": {"minItems": 1},
+          "seeds": {"minItems": 1},
+          "per_study_results": {"minItems": 1}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"evidence_status": {"const": "PASS"}}, "required": ["evidence_status"]},
+      "then": {"properties": {"decision": {"const": "PASS"}}}
+    },
+    {
+      "if": {"properties": {"decision": {"const": "NOT_RUN"}}, "required": ["decision"]},
+      "then": {
+        "properties": {
+          "evidence_status": {"const": "NOT_RUN"},
+          "claim_eligible": {"const": false}
+        },
+        "not": {"properties": {"claim_status": {"const": "ESTABLISHED"}}, "required": ["claim_status"]}
+      }
+    },
+    {
+      "if": {"properties": {"claim_status": {"const": "ESTABLISHED"}}, "required": ["claim_status"]},
+      "then": {
+        "properties": {
+          "decision": {"const": "PASS"},
+          "evidence_status": {"const": "PASS"},
+          "claim_eligible": {"const": true}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"claim_eligible": {"const": true}}, "required": ["claim_eligible"]},
+      "then": {
+        "properties": {
+          "decision": {"const": "PASS"},
+          "evidence_status": {"const": "PASS"}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "decision": {
+            "enum": [
+              "FAIL_CURRENT_PROTOCOL",
+              "FAIL_REPAIRABLE",
+              "BLOCKED_PENDING_PUBLIC_EVIDENCE",
+              "TERMINATED_SAFELY_WITH_EVIDENCE"
+            ]
+          }
+        },
+        "required": ["decision"]
+      },
+      "then": {
+        "properties": {
+          "claim_eligible": {"const": false},
+          "failure_bundle": {"not": {"type": "null"}},
+          "next_route_a_recovery_task": {"not": {"type": "null"}}
+        },
+        "not": {"properties": {"claim_status": {"const": "ESTABLISHED"}}, "required": ["claim_status"]}
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "gate_family": {"const": "CRITIC_EFFECT"},
+          "decision": {"const": "PASS"}
+        },
+        "required": ["gate_family", "decision"]
+      },
+      "then": {
+        "properties": {
+          "per_study_results": {"minItems": 3},
+          "seeds": {"minItems": 5, "maxItems": 5, "uniqueItems": true}
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "nonEmptyString": {"type": "string", "minLength": 1},
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "evidenceStatus": {"enum": ["NOT_RUN", "IN_PROGRESS", "PASS", "FAIL_CURRENT_PROTOCOL", "FAIL_REPAIRABLE", "BLOCKED_PENDING_PUBLIC_EVIDENCE", "TERMINATED_SAFELY_WITH_EVIDENCE"]},
+    "claimStatus": {"enum": ["NOT_ESTABLISHED", "ESTABLISHED", "INVALIDATED_CURRENT_FORMULATION", "PROHIBITED"]},
+    "input": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["artifact_id", "artifact_type", "absolute_path", "sha256", "exposure_stratum"],
+      "properties": {
+        "artifact_id": {"$ref": "#/$defs/nonEmptyString"},
+        "artifact_type": {"$ref": "#/$defs/nonEmptyString"},
+        "absolute_path": {"type": "string", "pattern": "^/"},
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "exposure_stratum": {"enum": ["UNTOUCHED", "UNKNOWN", "SEQUENCE_EXPOSED", "LABEL_EXPOSED", "TRAINING_EXPOSED", "DEVELOPMENT_ONLY", "SEALED_EXTERNAL_FINAL_ONLY"]}
+      }
+    },
+    "statisticalUnit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["analysis_unit", "grouping_unit", "macro_aggregation", "bootstrap_unit", "effective_n"],
+      "properties": {
+        "analysis_unit": {"$ref": "#/$defs/nonEmptyString"},
+        "grouping_unit": {"$ref": "#/$defs/nonEmptyString"},
+        "macro_aggregation": {"enum": ["EQUAL_STUDY", "PRE_REGISTERED_WEIGHTED", "NOT_APPLICABLE"]},
+        "bootstrap_unit": {"$ref": "#/$defs/nonEmptyString"},
+        "effective_n": {"type": "integer", "minimum": 0}
+      }
+    },
+    "threshold": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["metric_id", "operator", "value", "margin", "preregistration_sha256"],
+      "properties": {
+        "metric_id": {"$ref": "#/$defs/nonEmptyString"},
+        "operator": {"enum": [">", ">=", "<", "<=", "==", "CI_LOWER_GT", "CI_UPPER_LT", "EQUIVALENT_WITHIN"]},
+        "value": {"type": "number"},
+        "margin": {"type": ["number", "null"], "minimum": 0},
+        "preregistration_sha256": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "estimate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["metric_id", "estimate", "sample_size"],
+      "properties": {
+        "metric_id": {"$ref": "#/$defs/nonEmptyString"},
+        "estimate": {"type": ["number", "null"]},
+        "sample_size": {"type": "integer", "minimum": 0}
+      }
+    },
+    "confidenceInterval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["method", "level", "lower", "upper", "bootstrap_seed_ids"],
+      "properties": {
+        "method": {"$ref": "#/$defs/nonEmptyString"},
+        "level": {"type": "number", "exclusiveMinimum": 0, "exclusiveMaximum": 1},
+        "lower": {"type": ["number", "null"]},
+        "upper": {"type": ["number", "null"]},
+        "bootstrap_seed_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "integer", "minimum": 0}}
+      }
+    },
+    "studyResult": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["study_id", "assay_id", "endpoint_id", "result", "confidence_interval", "decision"],
+      "properties": {
+        "study_id": {"$ref": "#/$defs/nonEmptyString"},
+        "assay_id": {"$ref": "#/$defs/nonEmptyString"},
+        "endpoint_id": {"$ref": "#/$defs/nonEmptyString"},
+        "result": {"$ref": "#/$defs/estimate"},
+        "confidence_interval": {"$ref": "#/$defs/confidenceInterval"},
+        "decision": {"enum": ["PASS", "FAIL_CURRENT_PROTOCOL", "FAIL_REPAIRABLE", "BLOCKED_PENDING_PUBLIC_EVIDENCE", "NOT_RUN"]}
+      }
+    },
+    "failureBundle": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["failure_layer", "absolute_path", "sha256", "preserved"],
+      "properties": {
+        "failure_layer": {"enum": ["DATA", "ESTIMAND", "CRITIC", "GRAPH", "THEORY", "EVALUATOR", "COMPUTE", "AUTHORITY", "SEALED"]},
+        "absolute_path": {"type": "string", "pattern": "^/"},
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "preserved": {"const": true}
+      }
+    },
+    "recoveryTask": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["task_id", "failure_layer", "falsifiable_hypothesis", "ordinary_evidence_only"],
+      "properties": {
+        "task_id": {"$ref": "#/$defs/nonEmptyString"},
+        "failure_layer": {"enum": ["DATA", "ESTIMAND", "CRITIC", "GRAPH", "THEORY", "EVALUATOR", "COMPUTE", "AUTHORITY", "SEALED"]},
+        "falsifiable_hypothesis": {"$ref": "#/$defs/nonEmptyString"},
+        "ordinary_evidence_only": {"const": true}
+      }
+    },
+    "sealedContact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["dataset_id", "contacted", "access_intent_written", "evaluation_count", "authorization_id", "aggregate_only", "row_level_labels_returned"],
+      "properties": {
+        "dataset_id": {"const": "GSE246381"},
+        "contacted": {"type": "boolean"},
+        "access_intent_written": {"type": "boolean"},
+        "evaluation_count": {"type": "integer", "minimum": 0, "maximum": 1},
+        "authorization_id": {"type": ["string", "null"], "minLength": 1},
+        "aggregate_only": {"const": true},
+        "row_level_labels_returned": {"const": false}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"contacted": {"const": false}}, "required": ["contacted"]},
+          "then": {
+            "properties": {
+              "access_intent_written": {"const": false},
+              "evaluation_count": {"const": 0},
+              "authorization_id": {"type": "null"}
+            }
+          }
+        },
+        {
+          "if": {"properties": {"contacted": {"const": true}}, "required": ["contacted"]},
+          "then": {
+            "properties": {
+              "evaluation_count": {"const": 1},
+              "authorization_id": {"type": "string", "minLength": 1}
+            }
+          }
+        }
+      ]
+    }
+  }
+}

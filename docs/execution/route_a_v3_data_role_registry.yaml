@@ -1,0 +1,285 @@
+# Route A V3 data-role registry. Every listed asset remains unqualified at A0.
+contract_id: mrna_xeditflow_route_a_v3
+version: "3.0.0"
+schema_version: "3.0.0"
+status: ACTIVE_AUTHORITATIVE_CONTRACT
+registry_type: DATA_ROLE_REGISTRY
+date: "2026-08-10"
+
+authority_ref:
+  config_path: configs/route_a_v3.yaml
+  goal_path: docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md
+  goal_sha256: d1c031aecdec710495f6861b380785cccd64663ac4bd97b4f479d6fdf372ea07
+
+data_policy:
+  public_data_only: true
+  new_wet_lab_allowed: false
+  audit_pending_assets_may_train_or_select_models: false
+  endpoint_or_assay_may_count_as_independent_study: false
+  ordinary_minimum_independent_studies: 3
+  ordinary_minimum_a1_studies: 2
+  ordinary_minimum_a2_dense_studies: 1
+
+allowed_qualification_statuses:
+  - AUDIT_PENDING
+  - QUALIFIED
+  - REJECTED_WITH_EVIDENCE
+  - BLOCKED_PENDING_PUBLIC_EVIDENCE
+
+expected_dataset_ids:
+  - GSE145046
+  - GSE114002
+  - GSE149487
+  - GSE217518
+  - GSE246381
+  - GSE200304
+  - ENCSR854RUF
+  - GSE232572
+  - GSE186455
+  - GSE207584
+
+ordinary_candidate_dataset_ids:
+  - GSE145046
+  - GSE114002
+  - GSE149487
+  - GSE217518
+  - GSE200304
+  - ENCSR854RUF
+  - GSE232572
+  - GSE186455
+  - GSE207584
+sealed_dataset_ids: [GSE246381]
+
+registry_closure:
+  dataset_ids_must_equal_expected_dataset_ids: true
+  dataset_ids_unique: true
+  every_current_dataset_qualification_status: AUDIT_PENDING
+  every_current_dataset_qualified: false
+  only_sealed_dataset_ids_may_have_sealed_role: true
+  no_current_training_role_may_be_active: true
+
+common_audit_requirements:
+  - PAPER_FAITHFUL_RAW_TO_CANONICAL_JOIN
+  - SOURCE_AND_CANDIDATE_IDENTITY
+  - FULL_SEQUENCE_AND_EDIT_SET
+  - REGION_STUDY_ASSAY_CONTEXT_AND_ENDPOINT
+  - ORIGINAL_UNIT_AND_PAPER_FAITHFUL_TRANSFORM
+  - DELTA_DIRECTION
+  - REPLICATE_AND_STANDARD_ERROR
+  - BIOLOGICAL_SOURCE_GROUP
+  - PROVENANCE_AND_CHECKSUM
+  - LICENSE_AND_REDISTRIBUTION
+  - FOUNDATION_EXPOSURE
+  - REJECT_REASON
+  - POST_DEDUP_EFFECTIVE_N
+
+datasets:
+  - dataset_id: GSE145046
+    aliases: []
+    region_candidate: [5UTR]
+    sealed: false
+    role: AUDIT_ONLY
+    qualification_status: AUDIT_PENDING
+    qualified: false
+    training_role: EXCLUDED_PENDING_QUALIFICATION
+    intended_role_if_qualified: A2_DENSE_PRETRAINING_AND_OPTIMIZATION_NEIGHBORHOOD
+    intended_evidence_grade_if_qualified: A2
+    mapping_status: OLIGO_READ_COUNT_ENDPOINT_JOIN_PENDING
+    allowed_current_uses: [PROVENANCE_AUDIT, PAPER_FAITHFUL_JOIN_RECONSTRUCTION]
+    forbidden_current_uses: [TRAINING, CALIBRATION, MODEL_SELECTION, CONFIRMATORY_EVALUATION, CLAIM_SUPPORT]
+    blocking_requirements:
+      - COMPLETE_OLIGO_READ_COUNT_ENDPOINT_LABEL_JOIN
+      - DISTINCT_CANDIDATE_AND_SOURCE_GROUP_AUDIT
+      - LICENSE_AND_EXPOSURE_AUDIT
+    evidence_status: NOT_RUN
+  - dataset_id: GSE114002
+    aliases: []
+    region_candidate: [5UTR]
+    sealed: false
+    role: AUDIT_ONLY
+    qualification_status: AUDIT_PENDING
+    qualified: false
+    training_role: EXCLUDED_PENDING_QUALIFICATION
+    intended_role_if_qualified:
+      random_library: A2_OR_ABSOLUTE_AUXILIARY
+      natural_subset: REBUILD_AND_ADJUDICATE_SEPARATELY
+    intended_evidence_grade_if_qualified: A2_CANDIDATE_OR_AUXILIARY
+    mapping_status: SUBSET_AND_BIOLOGICAL_GROUP_RECONSTRUCTION_PENDING
+    merge_rule: SAME_SHORT_SOURCE_MAY_MERGE_ONLY_IF_STUDY_ASSAY_ENDPOINT_LOCUS_TRANSCRIPT_AND_DESIGN_FAMILY_MATCH
+    known_related_sequence_exposure_label: SEQUENCE_EXPOSED
+    checkpoint_specific_foundation_exposure_status: AUDIT_PENDING
+    allowed_current_uses: [PROVENANCE_AUDIT, SUBSET_RECONSTRUCTION, FOUNDATION_EXPOSURE_AUDIT]
+    forbidden_current_uses: [TRAINING, CALIBRATION, MODEL_SELECTION, CONFIRMATORY_EVALUATION, CLAIM_SUPPORT]
+    blocking_requirements:
+      - RANDOM_LIBRARY_AND_NATURAL_SUBSET_SEPARATED
+      - BIOLOGICAL_GROUPS_RECONSTRUCTED
+      - CHECKPOINT_LEVEL_FOUNDATION_EXPOSURE_AUDIT
+      - LICENSE_AND_EFFECTIVE_N_AUDIT
+    evidence_status: NOT_RUN
+  - dataset_id: GSE149487
+    aliases: [PLUMAGE]
+    region_candidate: [5UTR]
+    sealed: false
+    role: AUDIT_ONLY
+    qualification_status: AUDIT_PENDING
+    qualified: false
+    training_role: EXCLUDED_PENDING_QUALIFICATION
+    intended_role_if_qualified: A1_ORDINARY_SOURCE_CANDIDATE_INTERVENTION
+    intended_evidence_grade_if_qualified: A1
+    mapping_status: GSE149487_PLUMAGE_MAPPING_PENDING
+    allowed_current_uses: [PROVENANCE_AUDIT, ACCESSION_TO_PLUMAGE_MAPPING_RECONSTRUCTION]
+    forbidden_current_uses: [TRAINING, CALIBRATION, MODEL_SELECTION, CONFIRMATORY_EVALUATION, CLAIM_SUPPORT]
+    blocking_requirements:
+      - ACCESSION_ASSET_AND_PAPER_LINEAGE_CLOSED
+      - SOURCE_CANDIDATE_ENDPOINT_JOIN_RECONSTRUCTED
+      - BIOLOGICAL_GROUP_LICENSE_AND_EXPOSURE_AUDITED
+    evidence_status: NOT_RUN
+  - dataset_id: GSE217518
+    aliases: []
+    region_candidate: [5UTR, 3UTR]
+    sealed: false
+    role: AUDIT_ONLY
+    qualification_status: AUDIT_PENDING
+    qualified: false
+    training_role: EXCLUDED_PENDING_QUALIFICATION
+    intended_role_if_qualified: A1_ORDINARY_REGION_SPECIFIC_INTERVENTION
+    intended_evidence_grade_if_qualified: A1
+    current_nonconfirmatory_role: DEVELOPMENT_OR_STRESS_ONLY_AFTER_LOADER_AUDIT
+    mapping_status: REGION_ENDPOINT_SCALE_CONTEXT_AND_GROUP_RECONSTRUCTION_PENDING
+    allowed_current_uses: [PROVENANCE_AUDIT, REGION_SPECIFIC_RECONSTRUCTION]
+    forbidden_current_uses: [TRAINING, CALIBRATION, MODEL_SELECTION, CONFIRMATORY_EVALUATION, CLAIM_SUPPORT]
+    blocking_requirements:
+      - FIVE_UTR_AND_THREE_UTR_SUBSETS_SEPARATED
+      - ENDPOINT_DIRECTION_AND_RAW_SCALE_VERIFIED
+      - OUTLIERS_AND_REPLICATES_AUDITED
+      - FULL_CONTEXT_RECONSTRUCTED
+      - BIOLOGICAL_GROUPS_LICENSE_AND_EXPOSURE_AUDITED
+    evidence_status: NOT_RUN
+  - dataset_id: GSE246381
+    aliases: []
+    region_candidate: [5UTR]
+    sealed: true
+    role: SEALED_EXTERNAL_FINAL_ONLY
+    qualification_status: AUDIT_PENDING
+    qualified: false
+    training_role: EXCLUDED_ALWAYS
+    all_training_roles_excluded: true
+    intended_evidence_grade_if_authorized_and_qualified: SEALED_EXTERNAL_ADJUDICATION
+    project_sequence_analytic_exposure: NONE_CONFIRMED
+    project_label_analytic_exposure: NONE_CONFIRMED
+    pipeline_sequence_materialization: PRESENT
+    pipeline_aggregate_label_materialization: PRESENT
+    external_foundation_model_overlap: UNKNOWN_PENDING_CHECKPOINT_AUDIT
+    future_role_is_policy_not_historical_exposure: true
+    execution_enabled: false
+    execution_authorized: false
+    access_intent_allowed: false
+    aggregate_only: true
+    allowed_current_uses: [NON_SENSITIVE_CUSTODY_METADATA_AUDIT, STATIC_RUNNER_GUARD_AUDIT]
+    forbidden_current_uses:
+      - ORDINARY_ACTIVATION
+      - TRAINING
+      - HYPERPARAMETER_SELECTION
+      - THRESHOLD_OR_METRIC_SELECTION
+      - CALIBRATION
+      - MODEL_SELECTION
+      - ARCHITECTURE_SELECTION
+      - ERROR_ANALYSIS
+      - ROW_LEVEL_LABEL_INSPECTION
+    blocking_requirements:
+      - A0_THROUGH_A9_ALL_PASS
+      - CHECKPOINT_LEVEL_FOUNDATION_OVERLAP_AUDIT
+      - SEALED_READINESS_REPORT
+      - EXPLICIT_USER_AUTHORIZATION_AT_A10
+    evidence_status: NOT_RUN
+  - dataset_id: GSE200304
+    aliases: []
+    region_candidate: [3UTR]
+    sealed: false
+    role: AUDIT_ONLY
+    qualification_status: AUDIT_PENDING
+    qualified: false
+    training_role: EXCLUDED_PENDING_QUALIFICATION
+    intended_role_if_qualified: THREE_UTR_A1_TRANSFER_CANDIDATE
+    intended_evidence_grade_if_qualified: A1_CANDIDATE
+    mapping_status: SERIES_MEMBER_SOURCE_CANDIDATE_MAPPING_PENDING
+    allowed_current_uses: [PROVENANCE_AUDIT, REGION_AND_MEMBER_MAPPING_RECONSTRUCTION]
+    forbidden_current_uses: [TRAINING, CALIBRATION, MODEL_SELECTION, CONFIRMATORY_EVALUATION, CLAIM_SUPPORT]
+    blocking_requirements:
+      - SERIES_MEMBER_MAPPING_CLOSED
+      - SOURCE_CANDIDATE_ENDPOINT_AND_CONTEXT_RECONSTRUCTED
+      - BIOLOGICAL_GROUP_LICENSE_AND_EXPOSURE_AUDITED
+    evidence_status: NOT_RUN
+  - dataset_id: ENCSR854RUF
+    aliases: []
+    region_candidate: [3UTR]
+    sealed: false
+    role: AUDIT_ONLY
+    qualification_status: AUDIT_PENDING
+    qualified: false
+    training_role: EXCLUDED_PENDING_QUALIFICATION
+    intended_role_if_qualified: THREE_UTR_A1_TRANSFER_CANDIDATE
+    intended_evidence_grade_if_qualified: A1_CANDIDATE
+    mapping_status: SOURCE_CANDIDATE_ENDPOINT_QUALIFICATION_PENDING
+    allowed_current_uses: [PROVENANCE_AUDIT, PAPER_FAITHFUL_RECONSTRUCTION]
+    forbidden_current_uses: [TRAINING, CALIBRATION, MODEL_SELECTION, CONFIRMATORY_EVALUATION, CLAIM_SUPPORT]
+    blocking_requirements:
+      - SOURCE_CANDIDATE_AND_ENDPOINT_DIRECTION_VERIFIED
+      - CONTEXT_REPLICATE_AND_GROUP_RECONSTRUCTED
+      - LICENSE_AND_EXPOSURE_AUDITED
+    evidence_status: NOT_RUN
+  - dataset_id: GSE232572
+    aliases: []
+    region_candidate: [3UTR]
+    sealed: false
+    role: AUDIT_ONLY
+    qualification_status: AUDIT_PENDING
+    qualified: false
+    training_role: EXCLUDED_PENDING_QUALIFICATION
+    intended_role_if_qualified: THREE_UTR_A1_TRANSFER_CANDIDATE
+    intended_evidence_grade_if_qualified: A1_CANDIDATE
+    mapping_status: SOURCE_CANDIDATE_ENDPOINT_QUALIFICATION_PENDING
+    allowed_current_uses: [PROVENANCE_AUDIT, PAPER_FAITHFUL_RECONSTRUCTION]
+    forbidden_current_uses: [TRAINING, CALIBRATION, MODEL_SELECTION, CONFIRMATORY_EVALUATION, CLAIM_SUPPORT]
+    blocking_requirements:
+      - SOURCE_CANDIDATE_AND_ENDPOINT_DIRECTION_VERIFIED
+      - CONTEXT_REPLICATE_AND_GROUP_RECONSTRUCTED
+      - LICENSE_AND_EXPOSURE_AUDITED
+    evidence_status: NOT_RUN
+  - dataset_id: GSE186455
+    aliases: []
+    region_candidate: [3UTR]
+    sealed: false
+    role: AUDIT_ONLY
+    qualification_status: AUDIT_PENDING
+    qualified: false
+    training_role: EXCLUDED_PENDING_QUALIFICATION
+    intended_role_if_qualified: THREE_UTR_A1_TRANSFER_CANDIDATE
+    intended_evidence_grade_if_qualified: A1_CANDIDATE
+    mapping_status: SOURCE_CANDIDATE_ENDPOINT_QUALIFICATION_PENDING
+    allowed_current_uses: [PROVENANCE_AUDIT, PAPER_FAITHFUL_RECONSTRUCTION]
+    forbidden_current_uses: [TRAINING, CALIBRATION, MODEL_SELECTION, CONFIRMATORY_EVALUATION, CLAIM_SUPPORT]
+    blocking_requirements:
+      - SOURCE_CANDIDATE_AND_ENDPOINT_DIRECTION_VERIFIED
+      - CONTEXT_REPLICATE_AND_GROUP_RECONSTRUCTED
+      - LICENSE_AND_EXPOSURE_AUDITED
+    evidence_status: NOT_RUN
+  - dataset_id: GSE207584
+    aliases: [ICODON]
+    region_candidate: [CDS]
+    sealed: false
+    role: AUDIT_ONLY
+    qualification_status: AUDIT_PENDING
+    qualified: false
+    training_role: EXCLUDED_PENDING_QUALIFICATION
+    intended_role_if_qualified: CDS_SYNONYMOUS_FAMILY_RANKING_TRANSFER
+    intended_evidence_grade_if_qualified: FAMILY_LEVEL_RANKING_CANDIDATE
+    mapping_status: SYNONYMOUS_SEQUENCE_FAMILY_LABEL_LINEAGE_PENDING
+    allowed_current_uses: [PROVENANCE_AUDIT, SYNONYMOUS_FAMILY_SEQUENCE_LABEL_RECONSTRUCTION]
+    forbidden_current_uses: [TRAINING, CALIBRATION, MODEL_SELECTION, CONFIRMATORY_EVALUATION, CLAIM_SUPPORT]
+    blocking_requirements:
+      - PER_VARIANT_SYNONYMOUS_SEQUENCES_RECOVERED
+      - PROTEIN_FAMILY_AND_LABEL_LINEAGE_CLOSED
+      - CODON_GRAPH_LEGALITY_AUDITED
+      - LICENSE_AND_EXPOSURE_AUDITED
+    evidence_status: NOT_RUN

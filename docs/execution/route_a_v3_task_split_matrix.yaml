@@ -1,0 +1,108 @@
+# Route A V3 task-to-split applicability and foreign-key closure.
+contract_id: mrna_xeditflow_route_a_v3
+version: "3.0.0"
+schema_version: "3.0.0"
+status: ACTIVE_AUTHORITATIVE_CONTRACT
+registry_type: TASK_SPLIT_MATRIX
+date: "2026-08-10"
+
+authority_ref:
+  config_path: configs/route_a_v3.yaml
+  task_registry_path: docs/execution/route_a_v3_task_registry.yaml
+  split_registry_path: docs/execution/route_a_v3_split_registry.yaml
+  goal_sha256: d1c031aecdec710495f6861b380785cccd64663ac4bd97b4f479d6fdf372ea07
+
+expected_task_ids:
+  - T5_SOURCE_RELATIVE_EFFECT
+  - T5_SELECTIVE_EFFECT
+  - T5_MEASURED_NEIGHBORHOOD_OPTIMIZATION
+  - T5_FIXED_BUDGET_MULTI_STEP_OPTIMIZATION
+  - FLOW_BASE_LEGAL_CTMC
+  - EXACT_GUIDANCE_TOY_GRAPH
+  - EXACT_GUIDANCE_MATCHED_COMPUTE
+  - TRANSFER_3UTR
+  - TRANSFER_CDS
+  - SEALED_EXTERNAL_ADJUDICATION
+expected_split_ids: [S1, S2, S3, S4, S5, S6, S7, S8, S9]
+
+registry_closure:
+  matrix_task_ids_must_equal_expected_task_ids: true
+  referenced_task_ids_must_exist_in_task_registry: true
+  referenced_split_ids_must_exist_in_split_registry: true
+  every_task_has_at_least_one_split: true
+  ordinary_tasks_may_not_reference_s6: true
+  sealed_task_may_reference_only_s6: true
+  toy_graph_task_may_reference_only_s9: true
+
+ordinary_task_ids:
+  - T5_SOURCE_RELATIVE_EFFECT
+  - T5_SELECTIVE_EFFECT
+  - T5_MEASURED_NEIGHBORHOOD_OPTIMIZATION
+  - T5_FIXED_BUDGET_MULTI_STEP_OPTIMIZATION
+  - FLOW_BASE_LEGAL_CTMC
+  - EXACT_GUIDANCE_TOY_GRAPH
+  - EXACT_GUIDANCE_MATCHED_COMPUTE
+  - TRANSFER_3UTR
+  - TRANSFER_CDS
+sealed_task_id: SEALED_EXTERNAL_ADJUDICATION
+
+matrix:
+  T5_SOURCE_RELATIVE_EFFECT: [S1, S2, S3, S4, S5]
+  T5_SELECTIVE_EFFECT: [S1, S2, S3, S4, S5]
+  T5_MEASURED_NEIGHBORHOOD_OPTIMIZATION: [S1, S2, S3, S4, S5, S8]
+  T5_FIXED_BUDGET_MULTI_STEP_OPTIMIZATION: [S1, S2, S3, S4, S5, S8]
+  FLOW_BASE_LEGAL_CTMC: [S1, S2, S3, S4, S5, S8]
+  EXACT_GUIDANCE_TOY_GRAPH: [S9]
+  EXACT_GUIDANCE_MATCHED_COMPUTE: [S1, S2, S3, S4, S5, S8]
+  TRANSFER_3UTR: [S4, S5]
+  TRANSFER_CDS: [S4, S7]
+  SEALED_EXTERNAL_ADJUDICATION: [S6]
+
+task_split_semantics:
+  T5_SOURCE_RELATIVE_EFFECT:
+    confirmatory_rule: NEW_ORDINARY_CONFIRMATORY_SET_OR_STRICT_NESTED_GROUP_CV
+    per_study_then_equal_study_macro: true
+  T5_SELECTIVE_EFFECT:
+    confirmatory_rule: SAME_FROZEN_PARTITIONS_AS_EFFECT_TASK
+    calibration_partition: ORDINARY_DEVELOPMENT_ONLY
+  T5_MEASURED_NEIGHBORHOOD_OPTIMIZATION:
+    minimum_distinct_candidates_for_ndcg: 3
+    pairwise_only_when_distinct_candidates: 2
+  T5_FIXED_BUDGET_MULTI_STEP_OPTIMIZATION:
+    primary_edit_budgets: [1, 3, 5]
+    secondary_edit_budgets: [10]
+    measured_multi_edit_support_required_for_biological_claim: true
+  FLOW_BASE_LEGAL_CTMC:
+    legal_action_space_shared_across_comparators: true
+  EXACT_GUIDANCE_TOY_GRAPH:
+    biological_claim_support_allowed: false
+  EXACT_GUIDANCE_MATCHED_COMPUTE:
+    guide_evaluator_separation_required: true
+    compute_ledger_required: true
+  TRANSFER_3UTR:
+    priority: FIRST_SECONDARY_REGION
+    comparison: [GENERIC_SHARED_MODEL, REGION_FROM_SCRATCH_BASELINE]
+  TRANSFER_CDS:
+    priority: PARALLEL_QUALIFICATION
+    comparison: [CODON_HEURISTICS, EXTERNAL_CDS_METHODS, REGION_FROM_SCRATCH_BASELINE]
+  SEALED_EXTERNAL_ADJUDICATION:
+    execution_enabled: false
+    execution_authorized: false
+    access_intent_allowed: false
+    required_authorization_phase: A10
+    required_user_authorization: true
+    final_evaluator_count_max: 1
+    output:
+      aggregate_only: true
+      row_level_labels_returned: false
+
+sealed_controls:
+  sealed_split_id: S6
+  sealed_dataset_id: GSE246381
+  ordinary_loader_returns_zero_rows: true
+  in_ordinary_task_activation: false
+  in_metric_branch: false
+  in_calibration: false
+  in_model_selection: false
+  in_architecture_selection: false
+  in_threshold_selection: false

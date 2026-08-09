@@ -1,0 +1,430 @@
+# Route A V3 baseline ladder. A literature mention is never an execution result.
+contract_id: mrna_xeditflow_route_a_v3
+version: "3.0.0"
+schema_version: "3.0.0"
+status: ACTIVE_AUTHORITATIVE_CONTRACT
+registry_type: BASELINE_REGISTRY
+date: "2026-08-10"
+
+authority_ref:
+  config_path: configs/route_a_v3.yaml
+  goal_path: docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md
+  goal_sha256: d1c031aecdec710495f6861b380785cccd64663ac4bd97b4f479d6fdf372ea07
+
+expected_categories:
+  - EFFECT_SANITY
+  - PAIRED_STANDARD
+  - FOUNDATION
+  - SEARCH
+  - GENERATION
+  - GUIDANCE
+  - MRNA_ADJACENT
+
+executable_status_vocabulary:
+  - INTERNAL_CONTROL_NOT_RUN
+  - NOT_AUDITED
+  - EXECUTABLE_VERIFIED_NOT_RUN
+  - EXECUTED
+  - PAPER_ONLY_TASK_MISMATCH
+  - BLOCKED_WITH_EVIDENCE
+
+expected_baseline_ids:
+  - MAJORITY_SIGN
+  - STUDY_SOURCE_MEAN
+  - ANCHOR_ONLY
+  - CANDIDATE_PERMUTATION_CONTROL
+  - SOURCE_CONTEXT_RESIDUAL
+  - POSITION_ONLY
+  - REF_TO_ALT_ONLY
+  - GC_MFE_MOTIF
+  - KMER_RIDGE
+  - XGBOOST
+  - CNN
+  - SMALL_TRANSFORMER
+  - ANCHORED_CNN
+  - SIAMESE_FULL_PAIR
+  - ABSOLUTE_MINUS_SOURCE
+  - ORDINAL_LISTWISE
+  - OPTIMUS_5_PRIME
+  - UTR_LM
+  - MRNA_BERT
+  - ORTHRUS
+  - MRNABENCH_REFERENCE
+  - EXACT_ENUMERATION
+  - RANDOM_LEGAL_SEARCH
+  - GREEDY_SEARCH
+  - BEAM_SEARCH
+  - GENETIC_ALGORITHM
+  - SIMULATED_ANNEALING_LOCAL_SEARCH
+  - TRUE_GENERATE_N_THEN_RERANK
+  - EDIT_FLOWS
+  - MASKED_DFM_DISCRETE_DIFFUSION
+  - FLEXFLOW
+  - NO_GUIDANCE
+  - FIRST_ORDER_GUIDANCE
+  - RATE_GUIDANCE
+  - LATENT_CFG
+  - DGM
+  - PCOMOLE
+  - FULL_XEDITFLOW
+  - RNADIFFUSION
+  - UTAILOR
+  - MRNAUTILUS
+  - T3PO_MRNA
+  - MRNA_GPT
+
+registry_closure:
+  baseline_ids_must_equal_expected_baseline_ids: true
+  category_set_must_equal_expected_categories: true
+  baseline_ids_unique: true
+  every_baseline_requires_executable_status: true
+  every_executed_baseline_requires_compute_ledger: true
+  paper_only_task_mismatch_may_not_be_reported_as_executed: true
+  no_result_status_implied_by_registry_membership: true
+
+compute_ledger_requirements:
+  schema: ComputeLedgerV3
+  required_for_every_executed_baseline: true
+  required_fields:
+    - CANDIDATE_COUNT
+    - UNIQUE_CANDIDATE_COUNT
+    - GENERATOR_NFE
+    - CRITIC_FORWARDS
+    - GUIDANCE_FORWARDS
+    - RERANKER_FORWARDS
+    - TOTAL_FORWARD_EQUIVALENTS
+    - WALL_TIME_SECONDS
+    - PEAK_VRAM_BYTES
+    - GPU_UUID
+    - GPU_MODEL
+    - CONCURRENT_PROCESS_CONDITIONS
+    - SOURCE_POOL_HASH
+    - LEGAL_ACTION_SPACE_HASH
+    - SEEDS
+    - HPO_TRIAL_COUNT_AND_BUDGET
+    - COLD_START_COST
+    - AMORTIZED_COST
+  optimization_fairness_requires_equal:
+    - CANDIDATE_BUDGET
+    - GENERATOR_NFE
+    - TOTAL_FORWARD_EQUIVALENTS
+    - WALL_TIME_BUDGET
+    - GPU_COHORT
+    - SOURCE_POOLS
+    - LEGAL_ACTION_SPACE
+    - SEEDS
+    - HPO_BUDGET
+  always_report:
+    - UNIQUE_CANDIDATE_RATE
+    - PEAK_VRAM
+    - COLD_START_COST
+    - AMORTIZED_COST
+
+baselines:
+  - baseline_id: MAJORITY_SIGN
+    category: EFFECT_SANITY
+    role: LABEL_PREVALENCE_SANITY
+    executable_status: INTERNAL_CONTROL_NOT_RUN
+    adapter_status: INTERNAL_DEFINITION_ONLY
+    compute_ledger_required_if_executed: true
+    evidence_status: NOT_RUN
+  - baseline_id: STUDY_SOURCE_MEAN
+    category: EFFECT_SANITY
+    role: STUDY_OR_SOURCE_MEAN_SANITY
+    executable_status: INTERNAL_CONTROL_NOT_RUN
+    adapter_status: INTERNAL_DEFINITION_ONLY
+    compute_ledger_required_if_executed: true
+    evidence_status: NOT_RUN
+  - baseline_id: ANCHOR_ONLY
+    category: EFFECT_SANITY
+    role: SOURCE_ANCHOR_ONLY_NEGATIVE_CONTROL
+    executable_status: INTERNAL_CONTROL_NOT_RUN
+    adapter_status: INTERNAL_DEFINITION_ONLY
+    compute_ledger_required_if_executed: true
+    evidence_status: NOT_RUN
+  - baseline_id: CANDIDATE_PERMUTATION_CONTROL
+    category: EFFECT_SANITY
+    role: CANDIDATE_SPECIFIC_INFORMATION_FALSIFICATION
+    executable_status: INTERNAL_CONTROL_NOT_RUN
+    adapter_status: INTERNAL_DEFINITION_ONLY
+    compute_ledger_required_if_executed: true
+    evidence_status: NOT_RUN
+  - baseline_id: SOURCE_CONTEXT_RESIDUAL
+    category: EFFECT_SANITY
+    role: SOURCE_AND_CONTEXT_RESIDUAL_CONTROL
+    executable_status: INTERNAL_CONTROL_NOT_RUN
+    adapter_status: INTERNAL_DEFINITION_ONLY
+    compute_ledger_required_if_executed: true
+    evidence_status: NOT_RUN
+  - baseline_id: POSITION_ONLY
+    category: EFFECT_SANITY
+    role: EDIT_POSITION_CONTROL
+    executable_status: INTERNAL_CONTROL_NOT_RUN
+    adapter_status: INTERNAL_DEFINITION_ONLY
+    compute_ledger_required_if_executed: true
+    evidence_status: NOT_RUN
+  - baseline_id: REF_TO_ALT_ONLY
+    category: EFFECT_SANITY
+    role: SUBSTITUTION_IDENTITY_CONTROL
+    executable_status: INTERNAL_CONTROL_NOT_RUN
+    adapter_status: INTERNAL_DEFINITION_ONLY
+    compute_ledger_required_if_executed: true
+    evidence_status: NOT_RUN
+  - baseline_id: GC_MFE_MOTIF
+    category: EFFECT_SANITY
+    role: HAND_ENGINEERED_SEQUENCE_PROXY_CONTROL
+    executable_status: INTERNAL_CONTROL_NOT_RUN
+    adapter_status: INTERNAL_DEFINITION_ONLY
+    compute_ledger_required_if_executed: true
+    evidence_status: NOT_RUN
+  - baseline_id: KMER_RIDGE
+    category: EFFECT_SANITY
+    role: SIMPLE_SEQUENCE_REGRESSION
+    executable_status: NOT_AUDITED
+    adapter_status: NOT_AUDITED
+    compute_ledger_required_if_executed: true
+    evidence_status: NOT_RUN
+  - baseline_id: XGBOOST
+    category: PAIRED_STANDARD
+    role: TABULAR_PAIRED_BASELINE
+    executable_status: NOT_AUDITED
+    adapter_status: NOT_AUDITED
+    compute_ledger_required_if_executed: true
+    evidence_status: NOT_RUN
+  - baseline_id: CNN
+    category: PAIRED_STANDARD
+    role: STANDARD_SEQUENCE_BASELINE
+    executable_status: NOT_AUDITED
+    adapter_status: NOT_AUDITED
+    compute_ledger_required_if_executed: true
+    evidence_status: NOT_RUN
+  - baseline_id: SMALL_TRANSFORMER
+    category: PAIRED_STANDARD
+    role: STANDARD_SEQUENCE_BASELINE
+    executable_status: NOT_AUDITED
+    adapter_status: NOT_AUDITED
+    compute_ledger_required_if_executed: true
+    evidence_status: NOT_RUN
+  - baseline_id: ANCHORED_CNN
+    category: PAIRED_STANDARD
+    role: SOURCE_ANCHORED_SEQUENCE_BASELINE
+    executable_status: NOT_AUDITED
+    adapter_status: NOT_AUDITED
+    compute_ledger_required_if_executed: true
+    evidence_status: NOT_RUN
+  - baseline_id: SIAMESE_FULL_PAIR
+    category: PAIRED_STANDARD
+    role: SOURCE_CANDIDATE_FULL_PAIR_BASELINE
+    executable_status: NOT_AUDITED
+    adapter_status: NOT_AUDITED
+    compute_ledger_required_if_executed: true
+    evidence_status: NOT_RUN
+  - baseline_id: ABSOLUTE_MINUS_SOURCE
+    category: PAIRED_STANDARD
+    role: ABSOLUTE_PROPERTY_DIFFERENCE_BASELINE
+    executable_status: NOT_AUDITED
+    adapter_status: NOT_AUDITED
+    compute_ledger_required_if_executed: true
+    evidence_status: NOT_RUN
+  - baseline_id: ORDINAL_LISTWISE
+    category: PAIRED_STANDARD
+    role: ASSAY_LOCAL_ORDINAL_OR_LISTWISE_BASELINE
+    executable_status: NOT_AUDITED
+    adapter_status: NOT_AUDITED
+    compute_ledger_required_if_executed: true
+    evidence_status: NOT_RUN
+  - baseline_id: OPTIMUS_5_PRIME
+    category: FOUNDATION
+    role: FIVE_UTR_FOUNDATION_BASELINE
+    executable_status: NOT_AUDITED
+    adapter_status: CHECKPOINT_AND_TASK_ADAPTER_AUDIT_PENDING
+    exposure_stratum: UNKNOWN_PENDING_CHECKPOINT_AUDIT
+    compute_ledger_required_if_executed: true
+    evidence_status: NOT_RUN
+  - baseline_id: UTR_LM
+    category: FOUNDATION
+    role: UTR_FOUNDATION_BASELINE
+    executable_status: NOT_AUDITED
+    adapter_status: CHECKPOINT_AND_TASK_ADAPTER_AUDIT_PENDING
+    exposure_stratum: UNKNOWN_PENDING_CHECKPOINT_AUDIT
+    compute_ledger_required_if_executed: true
+    evidence_status: NOT_RUN
+  - baseline_id: MRNA_BERT
+    category: FOUNDATION
+    role: MRNA_FOUNDATION_BASELINE
+    executable_status: NOT_AUDITED
+    adapter_status: CHECKPOINT_AND_TASK_ADAPTER_AUDIT_PENDING
+    exposure_stratum: UNKNOWN_PENDING_CHECKPOINT_AUDIT
+    compute_ledger_required_if_executed: true
+    evidence_status: NOT_RUN
+  - baseline_id: ORTHRUS
+    category: FOUNDATION
+    role: RNA_FOUNDATION_BASELINE_IF_APPLICABLE
+    executable_status: NOT_AUDITED
+    adapter_status: APPLICABILITY_AND_CHECKPOINT_AUDIT_PENDING
+    exposure_stratum: UNKNOWN_PENDING_CHECKPOINT_AUDIT
+    compute_ledger_required_if_executed: true
+    evidence_status: NOT_RUN
+  - baseline_id: MRNABENCH_REFERENCE
+    category: FOUNDATION
+    role: PROPERTY_OR_REPRESENTATION_BENCHMARK_REFERENCE
+    executable_status: PAPER_ONLY_TASK_MISMATCH
+    adapter_status: DOES_NOT_REPLACE_INTERVENTION_BENCHMARK
+    exposure_stratum: NOT_APPLICABLE_REFERENCE
+    compute_ledger_required_if_executed: true
+    evidence_status: NOT_RUN
+  - baseline_id: EXACT_ENUMERATION
+    category: SEARCH
+    role: EXACT_LEGAL_SEARCH_WHERE_ENUMERABLE
+    executable_status: NOT_AUDITED
+    adapter_status: LEGAL_GRAPH_ADAPTER_PENDING
+    compute_ledger_required_if_executed: true
+    evidence_status: NOT_RUN
+  - baseline_id: RANDOM_LEGAL_SEARCH
+    category: SEARCH
+    role: RANDOM_SEARCH_UNDER_IDENTICAL_LEGAL_ACTIONS
+    executable_status: NOT_AUDITED
+    adapter_status: LEGAL_GRAPH_ADAPTER_PENDING
+    compute_ledger_required_if_executed: true
+    evidence_status: NOT_RUN
+  - baseline_id: GREEDY_SEARCH
+    category: SEARCH
+    role: GREEDY_CRITIC_SEARCH
+    executable_status: NOT_AUDITED
+    adapter_status: LEGAL_GRAPH_ADAPTER_PENDING
+    compute_ledger_required_if_executed: true
+    evidence_status: NOT_RUN
+  - baseline_id: BEAM_SEARCH
+    category: SEARCH
+    role: BEAM_CRITIC_SEARCH
+    executable_status: NOT_AUDITED
+    adapter_status: LEGAL_GRAPH_ADAPTER_PENDING
+    compute_ledger_required_if_executed: true
+    evidence_status: NOT_RUN
+  - baseline_id: GENETIC_ALGORITHM
+    category: SEARCH
+    role: POPULATION_BASED_LEGAL_SEARCH
+    executable_status: NOT_AUDITED
+    adapter_status: LEGAL_GRAPH_ADAPTER_PENDING
+    compute_ledger_required_if_executed: true
+    evidence_status: NOT_RUN
+  - baseline_id: SIMULATED_ANNEALING_LOCAL_SEARCH
+    category: SEARCH
+    role: LOCAL_OR_ANNEALED_LEGAL_SEARCH
+    executable_status: NOT_AUDITED
+    adapter_status: LEGAL_GRAPH_ADAPTER_PENDING
+    compute_ledger_required_if_executed: true
+    evidence_status: NOT_RUN
+  - baseline_id: TRUE_GENERATE_N_THEN_RERANK
+    category: SEARCH
+    role: REAL_GENERATION_THEN_FROZEN_RERANK_COMPARATOR
+    executable_status: NOT_AUDITED
+    adapter_status: GENERATOR_AND_INDEPENDENT_RERANKER_AUDIT_PENDING
+    materialized_candidates_required: true
+    compute_ledger_required_if_executed: true
+    evidence_status: NOT_RUN
+  - baseline_id: EDIT_FLOWS
+    category: GENERATION
+    role: GENERIC_EDIT_FLOW_BASELINE
+    executable_status: NOT_AUDITED
+    adapter_status: COMMON_TASK_ADAPTER_PENDING
+    compute_ledger_required_if_executed: true
+    evidence_status: NOT_RUN
+  - baseline_id: MASKED_DFM_DISCRETE_DIFFUSION
+    category: GENERATION
+    role: MASKED_DISCRETE_FLOW_OR_DIFFUSION_BASELINE
+    executable_status: NOT_AUDITED
+    adapter_status: COMMON_TASK_ADAPTER_PENDING
+    compute_ledger_required_if_executed: true
+    evidence_status: NOT_RUN
+  - baseline_id: FLEXFLOW
+    category: GENERATION
+    role: FLEXIBLE_FLOW_BASELINE
+    executable_status: NOT_AUDITED
+    adapter_status: COMMON_TASK_ADAPTER_PENDING
+    compute_ledger_required_if_executed: true
+    evidence_status: NOT_RUN
+  - baseline_id: NO_GUIDANCE
+    category: GUIDANCE
+    role: UNGUIDED_BASE_FLOW_CONTROL
+    executable_status: NOT_AUDITED
+    adapter_status: BASE_FLOW_REQUIRED
+    compute_ledger_required_if_executed: true
+    evidence_status: NOT_RUN
+  - baseline_id: FIRST_ORDER_GUIDANCE
+    category: GUIDANCE
+    role: FIRST_ORDER_GUIDANCE_COMPARATOR
+    executable_status: NOT_AUDITED
+    adapter_status: COMMON_GUIDANCE_INTERFACE_PENDING
+    compute_ledger_required_if_executed: true
+    evidence_status: NOT_RUN
+  - baseline_id: RATE_GUIDANCE
+    category: GUIDANCE
+    role: RATE_GUIDANCE_COMPARATOR
+    executable_status: NOT_AUDITED
+    adapter_status: COMMON_GUIDANCE_INTERFACE_PENDING
+    compute_ledger_required_if_executed: true
+    evidence_status: NOT_RUN
+  - baseline_id: LATENT_CFG
+    category: GUIDANCE
+    role: LATENT_CLASSIFIER_FREE_GUIDANCE_COMPARATOR
+    executable_status: NOT_AUDITED
+    adapter_status: COMMON_GUIDANCE_INTERFACE_PENDING
+    compute_ledger_required_if_executed: true
+    evidence_status: NOT_RUN
+  - baseline_id: DGM
+    category: GUIDANCE
+    role: ADJACENT_GUIDANCE_METHOD
+    executable_status: NOT_AUDITED
+    adapter_status: PAPER_CODE_AND_COMMON_TASK_AUDIT_PENDING
+    compute_ledger_required_if_executed: true
+    evidence_status: NOT_RUN
+  - baseline_id: PCOMOLE
+    category: GUIDANCE
+    role: DOOB_CONTROLLED_BIOMOLECULAR_EDIT_FLOW_PRIOR_ART
+    executable_status: NOT_AUDITED
+    adapter_status: PAPER_CODE_AND_COMMON_TASK_AUDIT_PENDING
+    compute_ledger_required_if_executed: true
+    evidence_status: NOT_RUN
+  - baseline_id: FULL_XEDITFLOW
+    category: GUIDANCE
+    role: ROUTE_A_FULL_METHOD
+    executable_status: NOT_AUDITED
+    adapter_status: PROJECT_METHOD_NOT_YET_QUALIFIED
+    compute_ledger_required_if_executed: true
+    evidence_status: NOT_RUN
+  - baseline_id: RNADIFFUSION
+    category: MRNA_ADJACENT
+    role: MRNA_SPECIFIC_ADJACENT_SYSTEM
+    executable_status: PAPER_ONLY_TASK_MISMATCH
+    adapter_status: NO_VERIFIED_COMMON_SOURCE_EDIT_TASK_ADAPTER_AT_A0
+    compute_ledger_required_if_executed: true
+    evidence_status: NOT_RUN
+  - baseline_id: UTAILOR
+    category: MRNA_ADJACENT
+    role: MRNA_SPECIFIC_ADJACENT_SYSTEM
+    executable_status: PAPER_ONLY_TASK_MISMATCH
+    adapter_status: NO_VERIFIED_COMMON_SOURCE_EDIT_TASK_ADAPTER_AT_A0
+    compute_ledger_required_if_executed: true
+    evidence_status: NOT_RUN
+  - baseline_id: MRNAUTILUS
+    category: MRNA_ADJACENT
+    role: MRNA_SPECIFIC_ADJACENT_SYSTEM
+    executable_status: PAPER_ONLY_TASK_MISMATCH
+    adapter_status: NO_VERIFIED_COMMON_SOURCE_EDIT_TASK_ADAPTER_AT_A0
+    compute_ledger_required_if_executed: true
+    evidence_status: NOT_RUN
+  - baseline_id: T3PO_MRNA
+    category: MRNA_ADJACENT
+    role: MRNA_SPECIFIC_ADJACENT_SYSTEM
+    executable_status: PAPER_ONLY_TASK_MISMATCH
+    adapter_status: NO_VERIFIED_COMMON_SOURCE_EDIT_TASK_ADAPTER_AT_A0
+    compute_ledger_required_if_executed: true
+    evidence_status: NOT_RUN
+  - baseline_id: MRNA_GPT
+    category: MRNA_ADJACENT
+    role: MRNA_SPECIFIC_ADJACENT_SYSTEM
+    executable_status: PAPER_ONLY_TASK_MISMATCH
+    adapter_status: NO_VERIFIED_COMMON_SOURCE_EDIT_TASK_ADAPTER_AT_A0
+    compute_ledger_required_if_executed: true
+    evidence_status: NOT_RUN

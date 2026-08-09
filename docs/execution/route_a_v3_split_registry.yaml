@@ -1,0 +1,134 @@
+# Route A V3 split primitives. Splits are definitions until frozen and audited in A2.
+contract_id: mrna_xeditflow_route_a_v3
+version: "3.0.0"
+schema_version: "3.0.0"
+status: ACTIVE_AUTHORITATIVE_CONTRACT
+registry_type: SPLIT_REGISTRY
+date: "2026-08-10"
+
+authority_ref:
+  config_path: configs/route_a_v3.yaml
+  goal_path: docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md
+  goal_sha256: d1c031aecdec710495f6861b380785cccd64663ac4bd97b4f479d6fdf372ea07
+
+expected_split_ids: [S1, S2, S3, S4, S5, S6, S7, S8, S9]
+
+registry_closure:
+  split_ids_must_equal_expected_split_ids: true
+  split_ids_unique: true
+  every_split_evidence_status_initially_not_run: true
+  only_s6_may_be_sealed: true
+  s6_may_not_appear_in_ordinary_task_activation: true
+  s9_may_not_support_biological_claims: true
+
+global_split_rules:
+  freeze_phase: A2
+  split_membership_outcome_blind: true
+  random_edge_split_allowed: false
+  reverse_edge_cross_partition_count_max: 0
+  exact_candidate_cross_partition_count_max: 0
+  exact_source_cross_partition_count_max_when_source_disjoint: 0
+  gene_cross_partition_count_max_when_gene_disjoint: 0
+  sequence_cluster_cross_partition_count_max_when_cluster_disjoint: 0
+  study_cross_partition_count_max_when_study_disjoint: 0
+  context_cross_partition_count_max_when_context_disjoint: 0
+  protein_family_cross_partition_count_max_when_family_disjoint: 0
+  near_duplicate_and_kmer_similarity_must_be_reported: true
+  selected_test_may_be_relabelled_untouched: false
+  confirmatory_policy:
+    allowed:
+      - NEW_ORDINARY_CONFIRMATORY_SET_NOT_USED_FOR_SELECTION
+      - STRICT_NESTED_GROUP_CV
+    ordinary_calibration_partition: DEVELOPMENT_ONLY
+
+splits:
+  - split_id: S1
+    name: WITHIN_STUDY_SOURCE_DISJOINT
+    split_kind: ORDINARY_CONFIRMATORY_OR_NESTED_CV
+    partition_atoms: [BIOLOGICAL_SOURCE_GROUP]
+    sealed: false
+    frozen: false
+    evidence_status: NOT_RUN
+    required_zero_leakage: [EXACT_SOURCE, REVERSE_EDGE, EXACT_CANDIDATE]
+  - split_id: S2
+    name: GENE_DISJOINT
+    split_kind: ORDINARY_CONFIRMATORY_OR_NESTED_CV
+    partition_atoms: [GENE_GROUP]
+    sealed: false
+    frozen: false
+    evidence_status: NOT_RUN
+    required_zero_leakage: [GENE, REVERSE_EDGE, EXACT_CANDIDATE]
+  - split_id: S3
+    name: SEQUENCE_CLUSTER_DISJOINT
+    split_kind: ORDINARY_CONFIRMATORY_OR_NESTED_CV
+    partition_atoms: [SEQUENCE_CLUSTER]
+    sealed: false
+    frozen: false
+    evidence_status: NOT_RUN
+    required_zero_leakage: [SEQUENCE_CLUSTER, REVERSE_EDGE, EXACT_CANDIDATE]
+    required_similarity_reports: [NEAR_DUPLICATE, KMER_SIMILARITY]
+  - split_id: S4
+    name: LEAVE_ONE_STUDY_OUT
+    split_kind: ORDINARY_CROSS_STUDY
+    partition_atoms: [STUDY_GROUP]
+    sealed: false
+    frozen: false
+    evidence_status: NOT_RUN
+    required_zero_leakage: [STUDY, REVERSE_EDGE, EXACT_CANDIDATE]
+    endpoint_or_assay_may_define_a_new_study: false
+  - split_id: S5
+    name: CONTEXT_DISJOINT
+    split_kind: ORDINARY_CONTEXT_TRANSFER
+    partition_atoms: [CONTEXT_GROUP]
+    sealed: false
+    frozen: false
+    evidence_status: NOT_RUN
+    required_zero_leakage: [CONTEXT, REVERSE_EDGE, EXACT_CANDIDATE]
+  - split_id: S6
+    name: SEALED_EXTERNAL_ONE_SHOT
+    split_kind: SEALED_EXTERNAL_FINAL_ONLY
+    partition_atoms: [SEALED_OBJECT]
+    dataset_id: GSE246381
+    sealed: true
+    frozen: false
+    evidence_status: NOT_RUN
+    execution_enabled: false
+    execution_authorized: false
+    access_intent_allowed: false
+    ordinary_loader_returns_zero_rows: true
+    in_task_activation: false
+    in_metric_branch: false
+    in_calibration: false
+    in_model_selection: false
+    final_evaluator_count_max: 1
+    output:
+      aggregate_only: true
+      row_level_labels_returned: false
+    required_zero_leakage: [SEALED_TO_ORDINARY_OBJECT, SEALED_LABEL_TO_SELECTION]
+  - split_id: S7
+    name: PROTEIN_FAMILY_DISJOINT
+    split_kind: CDS_ORDINARY_TRANSFER
+    partition_atoms: [PROTEIN_FAMILY]
+    sealed: false
+    frozen: false
+    evidence_status: NOT_RUN
+    required_zero_leakage: [PROTEIN_FAMILY, EXACT_CANDIDATE]
+  - split_id: S8
+    name: DENSE_CANDIDATE_BLOCK_POSITION_MOTIF_HOLDOUT
+    split_kind: ORDINARY_DENSE_NEIGHBORHOOD
+    partition_atoms: [BIOLOGICAL_SOURCE_GROUP, CANDIDATE_BLOCK, EDIT_POSITION, MOTIF_FAMILY]
+    sealed: false
+    frozen: false
+    evidence_status: NOT_RUN
+    random_edge_split_allowed: false
+    required_zero_leakage: [BIOLOGICAL_SOURCE_GROUP, CANDIDATE_BLOCK, REVERSE_EDGE, EXACT_CANDIDATE]
+  - split_id: S9
+    name: SYNTHETIC_ENUMERABLE_TOY_GRAPH
+    split_kind: THEORY_NUMERICAL_FIXTURE_ONLY
+    partition_atoms: [TOY_GRAPH_INSTANCE]
+    sealed: false
+    frozen: false
+    evidence_status: NOT_RUN
+    biological_claim_support_allowed: false
+    learned_parameter_update_requires_gpu: true
+    cpu_exact_enumeration_allowed: true
