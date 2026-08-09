@@ -1,0 +1,82 @@
+schema_version: "1.0.0"
+contract_id: mrna_xeditflow_route_a_v3
+contract_version: "3.0.0"
+activation_id: ROUTE_A_V3_A0_ACTIVATION_20260810
+phase_id: A0
+record_status: ACTIVATION_METADATA_READY_FOR_COMMIT
+activation_effective_when:
+  - THIS_FILE_IS_COMMITTED
+  - BRANCH_IS_PUSHED_TO_ORIGIN
+  - REMOTE_BRANCH_HEAD_EQUALS_ACTIVATION_COMMIT
+
+authority:
+  contract_path: docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md
+  contract_sha256: d1c031aecdec710495f6861b380785cccd64663ac4bd97b4f479d6fdf372ea07
+  base_commit: bbb71dcba6f1e1c9cb75a8a6653f1a4fe4a6ca0c
+  implementation_commit: 89bc8df7aaa1796b734392607f3d3fa58a51d3b4
+  activation_commit_binding: COMMIT_CONTAINING_THIS_FILE
+  branch: routea-v3-a0-20260810
+  worktree: /home/cunyuliu/mrna_editflow_goal/worktrees/routea_v3_a0_20260810
+  run_root: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A0/A0_AUTHORITY_20260810T003215P0800_bbb71dc
+
+frozen_hashes:
+  config_sha256: e3486ba6ffba38b8a069c382460954929a5934398997355ab82d553dca05f455
+  supersession_sha256: c80fd34567e52184bd8707064ed58a43db9fdb9223a28887781c98179c1dc155
+  decision_log_sha256: 615b93c166cb732a5e3dab39e6a42ff4e1cf579a3b46ff19092e89f9d9d420ad
+  registry_manifest_sha256: d80997caec9fc1569b2481d6e70a79400d9b01c7aa7798d31b6d8bccdc6a28e6
+  public_schema_manifest_sha256: 14ca64459a78f49bf6d09fb1465c7bbd5e29f4bde6e3a4bcaed9e37c547ea5c9
+  public_schema_sums_sha256: c0c845b58506df276aaa07b36ac5e3193b993e13365163bd55964ee3cb4bd114
+  run_manifest_schema_sha256: b5543530ad4c311e8b72100efed196dc780d01e2dfe34f3497a9c57204132ce1
+  sealed_guard_sha256: 971d0b243de494396c89cac04b7eb1f6723d3f0505c3867378fc3709d5492d91
+  sealed_runner_sha256: 5310db4697d1c464154c5b9275f28675163a3d2a5319c326c8c03d52cd39a1fe
+  a0_validator_sha256: 53ef7be9bb47bdb8ae6670496b10dc6ea728b1cbfe0630e8a1f133766041bd2a
+
+acceptance_evidence:
+  static_validator:
+    issue_count: 0
+    scientific_claim: NOT_ASSERTED
+  targeted_tests:
+    command_scope:
+      - tests/route_a_v3
+      - tests/migration/test_e0x.py
+    passed: 82
+    failed: 0
+  independent_review: A0_IMPLEMENTATION_REVIEW_PASS
+  review_scope: A0_AUTHORITY_SCHEMA_SITE_PROTECTION_ONLY
+  staged_scope:
+    file_count: 30
+    unexpected_files: 0
+    binary_files: 0
+    files_over_1mb: 0
+    high_confidence_secret_hits: 0
+  whitespace_check:
+    all_nonhistorical_files: PASS
+    exact_byte_history_exception:
+      path: docs/contracts/history/mrna_v2_readiness_audit_20260807.md
+      sha256: a8eb4f49ede793a8eae2037db9f46f044056d37610ec92482666a8242a52fa30
+      reason: PRESERVE_ORIGINAL_MARKDOWN_HARD_BREAKS_AND_HISTORICAL_BYTES
+      reported_lines: [3, 4]
+
+sealed_boundary:
+  contact: false
+  access_intent_written: false
+  runner_invoked: false
+  guard_mode: A0_A9_UNCONDITIONAL_HARD_DISABLE
+  evaluator_implementation_status: A0_STUB_HARD_DISABLED
+  a9_readiness: NO
+  a10_user_authorization: ABSENT
+
+gate_status:
+  a0_authority_and_site_protection: PASS_ENGINEERING_EVIDENCE_PENDING_DELIVERY_CONFIRMATION
+  scientific_claim: NOT_ESTABLISHED
+  route_a_established: NOT_ESTABLISHED
+  l4_biological_or_therapeutic_claim: PROHIBITED
+  next_phase_after_delivery_confirmation: A1_ORDINARY_DATA_AUDIT_ONLY
+
+delivery:
+  push_required: true
+  remote: origin
+  remote_branch: routea-v3-a0-20260810
+  runtime_confirmation_path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A0/A0_AUTHORITY_20260810T003215P0800_bbb71dc/A0_ACCEPTANCE.json
+
+generated_at: "2026-08-10T03:09:21+08:00"
