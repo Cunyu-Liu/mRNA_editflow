@@ -1,0 +1,140 @@
+{
+  "contract_id": "mrna_xeditflow_route_a_v3",
+  "schema_version": "3.0.0",
+  "protocol_id": "ROUTE_A_V3_A1_QUALIFICATION_V1",
+  "status": "PREFROZEN_BEFORE_MODEL_RESULTS",
+  "authority": {
+    "contract_sha256": "d1c031aecdec710495f6861b380785cccd64663ac4bd97b4f479d6fdf372ea07",
+    "base_commit": "fd722d5fa3c2538fce742b8942b1fb48e782760b"
+  },
+  "scope": {
+    "public_data_only": true,
+    "included_dataset_ids": [
+      "GSE145046",
+      "GSE114002",
+      "GSE149487",
+      "GSE217518",
+      "GSE200304",
+      "ENCSR854RUF",
+      "GSE232572",
+      "GSE186455",
+      "GSE207584"
+    ],
+    "excluded_dataset_ids": [
+      "GSE246381"
+    ],
+    "forbidden_path_tokens": [
+      "gse246381",
+      "restricted",
+      "sealed_external",
+      "access_log"
+    ],
+    "training_allowed": false,
+    "model_selection_allowed": false
+  },
+  "gate": {
+    "minimum_independent_ordinary_studies": 3,
+    "minimum_qualified_a1_studies": 2,
+    "minimum_qualified_a2_dense_studies": 1,
+    "minimum_distinct_candidates_per_ndcg_pool": 3,
+    "two_candidate_pool_role": "PAIRWISE_ONLY",
+    "metadata_only_qualification_allowed": false,
+    "source_endpoint_transform_and_group_must_be_identifiable": true,
+    "leakage_must_be_zero": true
+  },
+  "power_prefreeze": {
+    "analysis_unit": "BIOLOGICAL_SOURCE_GROUP",
+    "bootstrap_unit": "BIOLOGICAL_SOURCE_GROUP",
+    "target_metric": "WITHIN_STUDY_SPEARMAN",
+    "minimum_effect_at_alternative": 0.25,
+    "alpha_two_sided": 0.05,
+    "target_power": 0.8,
+    "confidence_level": 0.95,
+    "maximum_ci_full_width": 0.3,
+    "simulation_seed": 20260810,
+    "bootstrap_resamples": 2000,
+    "simulation_trials": 1000,
+    "model_results_may_change_this_rule": false
+  },
+  "required_report_fields": [
+    "nominal_rows",
+    "distinct_candidates",
+    "biological_source_groups",
+    "gene_groups",
+    "study_groups",
+    "eligible_multi_candidate_pools",
+    "edit_count_strata",
+    "replicate_and_se_coverage",
+    "beneficial_and_noise_zone_balance",
+    "post_dedup_effective_n",
+    "foundation_exposure",
+    "license_and_redistribution_status"
+  ],
+  "study_rules": {
+    "GSE145046": {
+      "intended_grade": "A2_DENSE",
+      "region": "5UTR",
+      "required_recovery": "PAPER_FAITHFUL_30_SAMPLE_OLIGO_READ_COUNT_ENDPOINT_JOIN",
+      "legacy_single_input_record_may_qualify": false
+    },
+    "GSE114002": {
+      "intended_grade": "A1_NATURAL_AND_A2_RANDOM_AUXILIARY",
+      "region": "5UTR",
+      "required_recovery": "SEPARATE_RANDOM_AND_NATURAL_SUBSETS_AND_BIND_BIOLOGICAL_GROUPS",
+      "known_exposure": "SEQUENCE_EXPOSED"
+    },
+    "GSE149487": {
+      "intended_grade": "A1",
+      "region": "5UTR",
+      "required_recovery": "ACCESSION_ASSET_PAPER_AND_SOURCE_CANDIDATE_ENDPOINT_JOIN"
+    },
+    "GSE217518": {
+      "intended_grade": "A1",
+      "region": "5UTR_AND_3UTR_SEPARATE",
+      "required_recovery": "ENDPOINT_DIRECTION_RAW_SCALE_OUTLIER_REPLICATE_FULL_CONTEXT_AND_GROUP_AUDIT"
+    },
+    "GSE200304": {
+      "intended_grade": "A1",
+      "region": "3UTR",
+      "required_recovery": "SOURCE_CANDIDATE_ENDPOINT_CONTEXT_AND_GROUP_AUDIT"
+    },
+    "ENCSR854RUF": {
+      "intended_grade": "A1",
+      "region": "3UTR",
+      "required_recovery": "SOURCE_CANDIDATE_ENDPOINT_CONTEXT_AND_GROUP_AUDIT"
+    },
+    "GSE232572": {
+      "intended_grade": "A1",
+      "region": "3UTR",
+      "required_recovery": "SOURCE_CANDIDATE_ENDPOINT_CONTEXT_AND_GROUP_AUDIT"
+    },
+    "GSE186455": {
+      "intended_grade": "A1",
+      "region": "3UTR",
+      "required_recovery": "SOURCE_CANDIDATE_ENDPOINT_CONTEXT_AND_GROUP_AUDIT"
+    },
+    "GSE207584": {
+      "intended_grade": "A1_CDS_CANDIDATE",
+      "region": "CDS",
+      "required_recovery": "SYNONYMOUS_FAMILY_SEQUENCE_LABEL_AND_GROUP_LINEAGE"
+    }
+  },
+  "legacy_canonical_policy": {
+    "purpose": "GAP_INVENTORY_ONLY",
+    "may_train": false,
+    "may_select_models": false,
+    "may_establish_scientific_claim": false,
+    "may_auto_qualify_study": false,
+    "required_before_qualification": [
+      "V3_CANONICAL_RECORDS",
+      "PAPER_FAITHFUL_TRANSFORM",
+      "RAW_RECORD_LOCATORS_AND_HASH_LINEAGE",
+      "BIOLOGICAL_GROUP_BINDING",
+      "REPLICATE_OR_SE_AUDIT",
+      "FOUNDATION_EXPOSURE_AUDIT",
+      "LICENSE_AND_REDISTRIBUTION_AUDIT",
+      "GROUP_LEAKAGE_AUDIT",
+      "GROUP_POWER_SIMULATION"
+    ]
+  }
+}
