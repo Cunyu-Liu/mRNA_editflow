@@ -188,3 +188,23 @@ decisions:
       sign rule, stable enrichment definition, grouped inference and multi-seed
       protocol.  R0-R2 itself starts no training.
     status: R3_NOT_YET_AUTHORIZED_BY_THIS_RUN
+
+  - id: XE-REPAIR-DEC-019
+    dimension: r1_grouping_label_evidence
+    evidence_artifact: >-
+      reports/migration/R1_GROUPING_LABEL_EVIDENCE_20260809.md
+    decision: >-
+      R1 grouping/label evidence has been established.  GSE114002 provides a
+      mechanical source-group baseline (55,043 rows / 31,498 groups / 12,923
+      groups with >=2 distinct candidates / max 40) but lacks biological
+      provenance and is therefore provisional only.  GSE217518 stability
+      labels are unreliable at scale and extrema (12.1% of HEK deltas exceed
+      |delta|>1000, min -2,867,981; HEK/SH direction inconsistent; replicate
+      CV 0.16-0.66; scale differs 2-3 orders of magnitude from other studies).
+      GSE145046 endpoint labels are NOT_JOINABLE (endpoint_registry 0 entries;
+      absent from the effect dataset).  Publication-grade biological grouping
+      is NOT_QUALIFIED because biological_parent is missing (pair fraction
+      assigned 0.0664, i.e. 93.4% missing; gene only 40% assigned).  No
+      training is activated, no gate is demoted, and no sealed analytic labels
+      are consumed.
+    status: EVIDENCE_ESTABLISHED_ROUTE_C_READY
