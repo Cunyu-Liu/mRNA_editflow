@@ -20,13 +20,13 @@
     "a1_qualification_sha256": "1d348671de50c0fe8b155f8cc114d14a74360fe1a87f9d9bac5207ae794806c4"
   },
   "implementation_binding": {
-    "status": "UNKNOWN_NOT_ASSERTED",
+    "status": "BOUND",
     "repository_root_rule": "PROTOCOL_PATH_PARENT_PARENT",
-    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "implementation_commit": "23793caac7409ac9c8cdc56264be6180ed27da52",
     "qualifier_path": "scripts/route_a_v3/qualify_gse200304_a1.py",
-    "qualifier_blob_sha256": "UNKNOWN_NOT_ASSERTED",
+    "qualifier_blob_sha256": "5f445c3ca73f20970adf7c8c0823147ce78b1b067fdda19aa93926de660c783e",
     "test_path": "tests/route_a_v3/test_qualify_gse200304_a1.py",
-    "test_blob_sha256": "UNKNOWN_NOT_ASSERTED",
+    "test_blob_sha256": "3e6dfd2817d68e865c4a32257862600b10ac435c08246b4f8c6e812ff777c48f",
     "post_implementation_allowed_changed_paths": [
       "configs/route_a_v3_gse200304_a1_qualification.json"
     ],
@@ -426,8 +426,7 @@
     "CHECKPOINT_SPECIFIC_EXPOSURE_UNKNOWN_NOT_ASSERTED",
     "OUTCOME_BLIND_SPLIT_AND_POWER_NOT_FROZEN",
     "CANONICAL_V3_NOT_MATERIALIZED",
-    "REDISTRIBUTION_LOCATOR_HASH_AGGREGATE_ONLY_UNTIL_LICENSE_CLOSED",
-    "IMPLEMENTATION_BINDING_UNKNOWN_NOT_ASSERTED"
+    "REDISTRIBUTION_LOCATOR_HASH_AGGREGATE_ONLY_UNTIL_LICENSE_CLOSED"
   ],
   "output_contract": {
     "output_id": "ROUTE_A_V3_GSE200304_A1_BLOCKED_GAP_BUNDLE_V1",
