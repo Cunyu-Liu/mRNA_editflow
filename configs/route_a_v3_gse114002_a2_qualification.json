@@ -22,7 +22,7 @@
     "qualifier_sha256": "f34a71d4023e9b3bd77ff040c187fab5efed1e54e11fec6e049d90849e9b58d1",
     "focused_test_path": "tests/route_a_v3/test_qualify_gse114002_designed_a2.py",
     "focused_test_sha256": "f79dff78550b80c58b4da6e92c9b93a7b448642065b100ba4b2ee685dc50ffc7",
-    "implementation_commit": "UNKNOWN_NOT_ASSERTED"
+    "implementation_commit": "7ac501c8d8f5dcdc67f6c89f0889114e46680ff3"
   },
   "ordinary_public_asset_allowlist": [
     {
@@ -212,8 +212,7 @@
     "LICENSE_AND_REDISTRIBUTION_UNKNOWN_NOT_ASSERTED",
     "NEAR_DUPLICATE_SPLIT_NOT_RUN",
     "PREFROZEN_GROUP_POWER_NOT_RUN",
-    "OWNER_TECHNICAL_UNCERTAINTY_POLICY_UNKNOWN_NOT_ASSERTED",
-    "IMPLEMENTATION_COMMIT_UNKNOWN_NOT_ASSERTED"
+    "OWNER_TECHNICAL_UNCERTAINTY_POLICY_UNKNOWN_NOT_ASSERTED"
   ],
   "output_contract": {
     "aggregate_only_blocked_bundle": true,
