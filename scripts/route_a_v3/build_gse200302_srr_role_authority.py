@@ -31,7 +31,7 @@ from typing import Any, Callable, Mapping, Sequence
 SCHEMA_VERSION = "route_a_v3_gse200302_srr_role_authority.v1"
 PROTOCOL_ID = "ROUTE_A_V3_GSE200302_SRR_ROLE_AUTHORITY_V1"
 CANONICALIZATION = "CANONICAL_SORTED_UTF8_V1"
-PROTOCOL_CORE_SHA256 = "85e968565ab5b72af505b6ce29b12169c76d9858aa0a44d6c3c18c8e27e716ab"
+PROTOCOL_CORE_SHA256 = "d407504d42c390b32aaa0eff953c168b1e9cc4991afcd8530870144c78a1d526"
 TARGET_SERIES = "GSE200302"
 TARGET_BIOPROJECT = "PRJNA824033"
 
@@ -118,11 +118,10 @@ BIOSAMPLE_RE = re.compile(r"SAMN[0-9]+")
 SERIES_RE = re.compile(r"GSE[0-9]+")
 SOFT_RECORD_RE = re.compile(r"\^([A-Z]+)\s*=\s*(\S+)\s*")
 SOFT_FIELD_RE = re.compile(r"!([A-Za-z0-9_]+)\s*=\s*(.*)")
-ROLE_TITLE_RE = re.compile(
-    r"^(High[ _-]+Poly|Low[ _-]+Poly|pDNA|Total[ _-]+RNA)"
-    r"[ _-]+(?:rep(?:licate)?[ _-]*)?([1-6])$",
-    re.IGNORECASE,
+ROLE_TITLE_PATTERN = (
+    r"^(High_Poly|Low_Poly|pDNA|Total_RNA)_([1-6])_(S[0-9]+)$"
 )
+ROLE_TITLE_RE = re.compile(ROLE_TITLE_PATTERN)
 MAX_CONTRACT_BYTES = 256 * 1024
 MAX_SOFT_DECOMPRESSED_BYTES = 4 * 1024 * 1024
 MAX_PUBLICATION_MEMBER_BYTES = 4 * 1024 * 1024
@@ -319,6 +318,16 @@ EXPECTED_SOURCES = {
         "series_accession": TARGET_SERIES,
         "sra_relation_label": "SRA",
         "biosample_relation_label": "BioSample",
+        "sample_title_role_contract": {
+            "fullmatch_regex": ROLE_TITLE_PATTERN,
+            "technical_suffix_group": 3,
+            "technical_suffix_authority_parse_only": True,
+            "technical_suffix_creates_study": False,
+            "technical_suffix_creates_context": False,
+            "technical_suffix_creates_endpoint": False,
+            "technical_suffix_creates_label": False,
+            "technical_suffix_output_allowed": False,
+        },
     },
 }
 EXPECTED_JOIN_CONTRACT = {
@@ -1180,6 +1189,9 @@ def _normalize_title_role(title: str) -> tuple[str, int]:
     match = ROLE_TITLE_RE.fullmatch(title.strip())
     if match is None:
         raise MetadataError("GEO SOFT sample title is outside the exact four-family grid")
+    technical_suffix = match.group(3)
+    if re.fullmatch(r"S[0-9]+", technical_suffix) is None:
+        raise MetadataError("GEO SOFT sample title technical suffix is not exact")
     family_token = re.sub(r"[ _-]+", "_", match.group(1)).casefold()
     canonical = {
         "high_poly": "High_Poly",
@@ -1189,6 +1201,7 @@ def _normalize_title_role(title: str) -> tuple[str, int]:
     }.get(family_token)
     if canonical is None or canonical in FORBIDDEN_ALIASES:
         raise MetadataError("GEO SOFT sample title cannot be canonicalized exactly")
+    # The frozen technical suffix establishes parse shape only and is intentionally not returned.
     return canonical, int(match.group(2))
 
 

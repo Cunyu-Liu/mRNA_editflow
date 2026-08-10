@@ -67,12 +67,18 @@ def _soft_bytes(
     compressed: bool = True,
 ) -> bytes:
     lines = [f"^SERIES = {AUTHORITY.TARGET_SERIES}"]
-    for expected in sorted(
-        AUTHORITY.EXPECTED_JOIN_ROWS,
-        key=lambda row: int(row["geo_sample_accession"][3:]),
+    for synthetic_index, expected in enumerate(
+        sorted(
+            AUTHORITY.EXPECTED_JOIN_ROWS,
+            key=lambda row: int(row["geo_sample_accession"][3:]),
+        ),
+        start=1,
     ):
         gsm = expected["geo_sample_accession"]
-        title = f"{expected['measurement_family']}_rep{expected['replicate']}"
+        title = (
+            f"{expected['measurement_family']}_{expected['replicate']}"
+            f"_S{9000 + synthetic_index}"
+        )
         experiment = expected["experiment_accession"]
         biosample = expected["biosample_accession"]
         if title_overrides and gsm in title_overrides:
@@ -302,6 +308,51 @@ def test_unknown_protocol_core_and_two_exact_authority_tables() -> None:
     assert validation == AUTHORITY.EXPECTED_VALIDATION
 
 
+def test_all_24_synthetic_official_shape_titles_parse_without_suffix_output() -> None:
+    title_overrides = {
+        row["geo_sample_accession"]: (
+            f"{row['measurement_family']}_{row['replicate']}_S{7000 + index}"
+        )
+        for index, row in enumerate(AUTHORITY.EXPECTED_JOIN_ROWS, start=1)
+    }
+    rows, mapping_payload, join_payload, validation = AUTHORITY.derive_role_authority(
+        _runinfo_bytes(),
+        _soft_bytes(title_overrides=title_overrides),
+    )
+    assert rows == [dict(row) for row in AUTHORITY.EXPECTED_ROWS]
+    assert mapping_payload == AUTHORITY._expected_mapping_payload()
+    assert join_payload == AUTHORITY._expected_experiment_join_payload()
+    assert validation == AUTHORITY.EXPECTED_VALIDATION
+    assert all(
+        suffix.encode("ascii") not in mapping_payload + join_payload
+        for suffix in (f"S{7000 + index}" for index in range(1, 25))
+    )
+
+
+@pytest.mark.parametrize(
+    "invalid_title",
+    [
+        "High_Poly_1",
+        "High_Poly_1_lane7",
+        "High_Poly_1_S7001_S7002",
+    ],
+    ids=["missing-suffix", "arbitrary-suffix", "multiple-suffixes"],
+)
+def test_title_technical_suffix_grammar_fails_closed(invalid_title: str) -> None:
+    high_one = next(
+        row
+        for row in AUTHORITY.EXPECTED_JOIN_ROWS
+        if row["measurement_family"] == "High_Poly" and row["replicate"] == 1
+    )
+    with pytest.raises(AUTHORITY.MetadataError, match="outside the exact four-family grid"):
+        AUTHORITY.derive_role_authority(
+            _runinfo_bytes(),
+            _soft_bytes(
+                title_overrides={high_one["geo_sample_accession"]: invalid_title}
+            ),
+        )
+
+
 def test_runinfo_and_soft_must_independently_match_compiled_srx_authority() -> None:
     first = AUTHORITY.EXPECTED_JOIN_ROWS[0]
     with pytest.raises(AUTHORITY.MetadataError, match="RunInfo Experiment differs"):
@@ -334,8 +385,8 @@ def test_role_permutation_80s_alias_missing_and_nonunique_fail_closed() -> None:
             _runinfo_bytes(),
             _soft_bytes(
                 title_overrides={
-                    high_one["geo_sample_accession"]: "High_Poly_rep2",
-                    high_two["geo_sample_accession"]: "High_Poly_rep1",
+                    high_one["geo_sample_accession"]: "High_Poly_2_S7002",
+                    high_two["geo_sample_accession"]: "High_Poly_1_S7001",
                 }
             ),
         )
@@ -347,7 +398,7 @@ def test_role_permutation_80s_alias_missing_and_nonunique_fail_closed() -> None:
         AUTHORITY.derive_role_authority(
             _runinfo_bytes(),
             _soft_bytes(
-                title_overrides={pdna_one["geo_sample_accession"]: "80S_RNA_rep1"}
+                title_overrides={pdna_one["geo_sample_accession"]: "80S_RNA_1_S7001"}
             ),
         )
     first_run = AUTHORITY.EXPECTED_JOIN_ROWS[0]["run_accession"]
@@ -582,7 +633,7 @@ def test_gzip_bomb_concatenation_and_duplicate_soft_fields_fail_closed() -> None
         AUTHORITY._decode_soft(concatenated)
     first = AUTHORITY.EXPECTED_JOIN_ROWS[0]
     duplicate_title = (
-        f"!Sample_title = {first['measurement_family']}_rep{first['replicate']}"
+        f"!Sample_title = {first['measurement_family']}_{first['replicate']}_S7001"
     )
     with pytest.raises(AUTHORITY.MetadataError, match="not exactly singular"):
         AUTHORITY.derive_role_authority(
