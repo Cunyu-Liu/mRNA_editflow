@@ -10,6 +10,7 @@ import shutil
 import statistics
 import subprocess
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
 
 import pytest
@@ -354,6 +355,15 @@ def test_authority_protocol_and_additive_21_asset_manifest_are_closed() -> None:
     assert protocol["foundation_exposure"]["audit_status"] == "UNKNOWN_NOT_ASSERTED"
     assert protocol["canonical_v3"]["materialize_only_when_every_qualification_gate_passes"] is True
     assert protocol["scope"]["authority_update_allowed_by_qualifier"] is False
+    assert protocol["input_contract"][
+        "preopen_lstat_dev_ino_size_mtime_acceptance_authority"
+    ] is False
+    assert protocol["input_contract"]["verified_input_acceptance_authority"] == (
+        "O_NOFOLLOW_FSTAT_BEFORE_AFTER_SHA256_AND_BYTES"
+    )
+    assert protocol["input_contract"][
+        "same_descriptor_identity_and_size_must_remain_stable"
+    ] is True
     implementation_commit = protocol["authority"]["implementation_commit"]
     implementation_blocker = "IMPLEMENTATION_COMMIT_UNKNOWN_NOT_ASSERTED"
     if implementation_commit == "UNKNOWN_NOT_ASSERTED":
@@ -450,6 +460,163 @@ def test_authority_protocol_and_additive_21_asset_manifest_are_closed() -> None:
     assert protocol["output_contract"][
         "fallback_partial_directory_canonical_accepted"
     ] is False
+
+
+def test_verified_inputs_ignore_stale_preopen_metadata_but_bind_fd_hash_and_bytes(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    source = tmp_path / "stale_preopen_metadata.json"
+    payload = b'{"stable":"verified descriptor bytes"}\n'
+    source.write_bytes(payload)
+    expected_sha256 = hashlib.sha256(payload).hexdigest()
+    real_require_regular_file = QUAL._require_regular_file
+
+    def stale_metadata_after_real_path_guards(
+        path: Path,
+        *,
+        label: str,
+        suffix: str | None = None,
+    ) -> SimpleNamespace:
+        info = real_require_regular_file(path, label=label, suffix=suffix)
+        return SimpleNamespace(
+            st_mode=info.st_mode,
+            st_dev=info.st_dev + 101,
+            st_ino=info.st_ino + 103,
+            st_size=info.st_size + 107,
+            st_mtime_ns=info.st_mtime_ns + 109,
+        )
+
+    monkeypatch.setattr(
+        QUAL,
+        "_require_regular_file",
+        stale_metadata_after_real_path_guards,
+    )
+    observed, read_provenance = QUAL._read_verified_bytes(
+        source,
+        expected_sha256,
+        expected_bytes=len(payload),
+        label="stale pre-open JSON",
+        suffix=".json",
+    )
+    hash_provenance = QUAL._verify_file_hash(
+        source,
+        expected_sha256,
+        expected_bytes=len(payload),
+        label="stale pre-open hash-only input",
+        suffix=".json",
+    )
+    snapshot = tmp_path / "verified_snapshot.json"
+    snapshot_provenance = QUAL._snapshot_verified_file(
+        source,
+        snapshot,
+        expected_sha256,
+        expected_bytes=len(payload),
+        label="stale pre-open snapshot input",
+        suffix=".json",
+    )
+
+    assert observed == payload
+    assert snapshot.read_bytes() == payload
+    assert read_provenance["sha256"] == expected_sha256
+    assert hash_provenance == {
+        "sha256": expected_sha256,
+        "bytes": len(payload),
+        "filename": source.name,
+    }
+    assert snapshot_provenance["sha256"] == expected_sha256
+    assert snapshot.stat().st_mode & 0o777 == 0o400
+
+
+def test_verified_input_open_rejects_symlink_and_nonregular_paths(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    payload = b"verified bytes\n"
+    expected_sha256 = hashlib.sha256(payload).hexdigest()
+    source = tmp_path / "regular.txt"
+    source.write_bytes(payload)
+    symlink = tmp_path / "linked.txt"
+    symlink.symlink_to(source)
+    with pytest.raises(QUAL.ScopeViolation, match="symlink component"):
+        QUAL._read_verified_bytes(
+            symlink,
+            expected_sha256,
+            label="symlink verified input",
+        )
+
+    nonregular = tmp_path / "directory.txt"
+    nonregular.mkdir()
+    with pytest.raises(QUAL.QualificationError, match="regular file"):
+        QUAL._verify_file_hash(
+            nonregular,
+            expected_sha256,
+            label="nonregular verified input",
+        )
+
+    def bypass_only_preopen_metadata_guard(
+        _: Path,
+        *,
+        label: str,
+        suffix: str | None = None,
+    ) -> SimpleNamespace:
+        del label, suffix
+        return SimpleNamespace()
+
+    monkeypatch.setattr(
+        QUAL,
+        "_require_regular_file",
+        bypass_only_preopen_metadata_guard,
+    )
+    with pytest.raises(QUAL.QualificationError, match="without following symlinks"):
+        QUAL._read_verified_bytes(
+            symlink,
+            expected_sha256,
+            label="O_NOFOLLOW symlink verified input",
+        )
+    with pytest.raises(QUAL.QualificationError, match="opened descriptor is not a regular"):
+        QUAL._verify_file_hash(
+            nonregular,
+            expected_sha256,
+            label="fstat nonregular verified input",
+        )
+
+
+def test_verified_input_rejects_true_same_descriptor_mutation(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    source = tmp_path / "same_fd_mutation.bin"
+    payload = b"same descriptor original bytes\n"
+    source.write_bytes(payload)
+    original_inode = source.stat().st_ino
+    expected_sha256 = hashlib.sha256(payload).hexdigest()
+    real_read = QUAL.os.read
+    mutation_injected = False
+
+    def read_then_mutate_same_inode(descriptor: int, size: int) -> bytes:
+        nonlocal mutation_injected
+        block = real_read(descriptor, size)
+        if block and not mutation_injected:
+            mutation_injected = True
+            with source.open("ab", buffering=0) as handle:
+                handle.write(b"same-fd-mutation\n")
+                QUAL.os.fsync(handle.fileno())
+        return block
+
+    monkeypatch.setattr(QUAL.os, "read", read_then_mutate_same_inode)
+    with pytest.raises(
+        QUAL.QualificationError,
+        match="changed while its verified bytes were captured",
+    ):
+        QUAL._read_verified_bytes(
+            source,
+            expected_sha256,
+            expected_bytes=len(payload),
+            label="mutated same descriptor input",
+        )
+    assert mutation_injected is True
+    assert source.stat().st_ino == original_inode
 
 
 def test_benjamini_hochberg_is_monotone_in_sorted_p_value_order() -> None:
@@ -890,6 +1057,27 @@ def test_full_synthetic_run_uses_verified_snapshots_and_publishes_zero_canonical
     repo, data, protocol, asset_manifest = _fixture_repo_and_data(tmp_path)
     output = tmp_path / "blocked_bundle"
     raw_path = next(data.glob("*.txt.gz"))
+    real_require_regular_file = QUAL._require_regular_file
+    p0_stale_preopen_metadata_seen = False
+
+    def stale_only_for_p0_manifest_after_path_guards(
+        path: Path,
+        *,
+        label: str,
+        suffix: str | None = None,
+    ) -> Any:
+        nonlocal p0_stale_preopen_metadata_seen
+        info = real_require_regular_file(path, label=label, suffix=suffix)
+        if label != "P0 source manifest":
+            return info
+        p0_stale_preopen_metadata_seen = True
+        return SimpleNamespace(
+            st_mode=info.st_mode,
+            st_dev=info.st_dev + 211,
+            st_ino=info.st_ino + 223,
+            st_size=info.st_size + 227,
+            st_mtime_ns=info.st_mtime_ns + 229,
+        )
 
     def replace_original_paths_after_snapshot() -> None:
         protocol.write_bytes(b"{}\n")
@@ -910,6 +1098,11 @@ def test_full_synthetic_run_uses_verified_snapshots_and_publishes_zero_canonical
         "_POST_VERIFIED_INPUT_SNAPSHOT_HOOK",
         replace_original_paths_after_snapshot,
     )
+    monkeypatch.setattr(
+        QUAL,
+        "_require_regular_file",
+        stale_only_for_p0_manifest_after_path_guards,
+    )
     expected_protocol_sha256 = _sha256(protocol)
     report = QUAL.qualify_gse149487_plumage(
         repo_root=repo,
@@ -926,6 +1119,7 @@ def test_full_synthetic_run_uses_verified_snapshots_and_publishes_zero_canonical
     assert report["qualified"] is False
     assert report["canonical_record_count"] == 0
     assert report["candidate_canonical_record_count_before_gate"] == 4
+    assert p0_stale_preopen_metadata_seen is True
     assert report["publication"]["status"] == "PUBLISHED_DURABLE"
     assert report["publication"]["publication_mode"] == QUAL.PRIMARY_PUBLICATION_MODE
     assert report["publication"]["terminal_commit_marker_validated"] is True
@@ -942,6 +1136,11 @@ def test_full_synthetic_run_uses_verified_snapshots_and_publishes_zero_canonical
         "private_read_only_asset_snapshot_count": 21,
         "v4_helper_loaded_from_private_read_only_snapshot": True,
         "scientific_parser_original_path_reopen_after_verification": False,
+        "preopen_lstat_dev_ino_size_mtime_acceptance_authority": False,
+        "verified_input_acceptance_authority": (
+            "O_NOFOLLOW_FSTAT_BEFORE_AFTER_SHA256_AND_BYTES"
+        ),
+        "same_descriptor_identity_and_size_must_remain_stable": True,
         "snapshot_lifetime": "QUALIFICATION_PAYLOAD_BUILD_ONLY",
     }
     assert not (output / "canonical_intervention_records.jsonl").exists()

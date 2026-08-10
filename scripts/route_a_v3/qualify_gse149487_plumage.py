@@ -218,23 +218,16 @@ def _sha256_bytes(payload: bytes) -> str:
     return hashlib.sha256(payload).hexdigest()
 
 
-def _sha256_file(path: Path) -> tuple[str, int]:
-    digest = hashlib.sha256()
-    size = 0
-    with path.open("rb") as handle:
-        for block in iter(lambda: handle.read(1 << 20), b""):
-            digest.update(block)
-            size += len(block)
-    return digest.hexdigest(), size
-
-
 def _open_regular_readonly(
     path: Path,
     *,
     label: str,
     suffix: str | None = None,
 ) -> tuple[int, os.stat_result]:
-    initial = _require_regular_file(path, label=label, suffix=suffix)
+    # The pre-open lstat walk is a path/symlink/type guard, not byte-identity
+    # authority.  NFS attribute caches may make dev/ino/size/mtime stale even
+    # when the O_NOFOLLOW descriptor and its frozen content are correct.
+    _require_regular_file(path, label=label, suffix=suffix)
     flags = os.O_RDONLY | getattr(os, "O_CLOEXEC", 0) | getattr(os, "O_NOFOLLOW", 0)
     try:
         descriptor = os.open(path, flags)
@@ -244,20 +237,6 @@ def _open_regular_readonly(
         opened = os.fstat(descriptor)
         if not stat.S_ISREG(opened.st_mode):
             raise QualificationError(f"{label} opened descriptor is not a regular file")
-        initial_identity = (
-            initial.st_dev,
-            initial.st_ino,
-            initial.st_size,
-            initial.st_mtime_ns,
-        )
-        opened_identity = (
-            opened.st_dev,
-            opened.st_ino,
-            opened.st_size,
-            opened.st_mtime_ns,
-        )
-        if initial_identity != opened_identity:
-            raise QualificationError(f"{label} changed before its verified descriptor was opened")
     except Exception:
         os.close(descriptor)
         raise
@@ -266,25 +245,23 @@ def _open_regular_readonly(
 
 def _verify_descriptor_final_state(
     descriptor: int,
-    initial: os.stat_result,
+    opened: os.stat_result,
     observed_bytes: int,
     *,
     label: str,
 ) -> None:
     final = os.fstat(descriptor)
-    initial_identity = (
-        initial.st_dev,
-        initial.st_ino,
-        initial.st_size,
-        initial.st_mtime_ns,
+    opened_identity = (
+        opened.st_dev,
+        opened.st_ino,
+        opened.st_size,
     )
     final_identity = (
         final.st_dev,
         final.st_ino,
         final.st_size,
-        final.st_mtime_ns,
     )
-    if initial_identity != final_identity or observed_bytes != final.st_size:
+    if opened_identity != final_identity or observed_bytes != final.st_size:
         raise QualificationError(f"{label} changed while its verified bytes were captured")
 
 
@@ -319,7 +296,7 @@ def _read_verified_bytes(
     expected_bytes: int | None = None,
     suffix: str | None = None,
 ) -> tuple[bytes, dict[str, Any]]:
-    descriptor, initial = _open_regular_readonly(path, label=label, suffix=suffix)
+    descriptor, opened = _open_regular_readonly(path, label=label, suffix=suffix)
     digest = hashlib.sha256()
     payload = bytearray()
     try:
@@ -331,7 +308,7 @@ def _read_verified_bytes(
             payload.extend(block)
         _verify_descriptor_final_state(
             descriptor,
-            initial,
+            opened,
             len(payload),
             label=label,
         )
@@ -363,7 +340,7 @@ def _snapshot_verified_file(
     expected_bytes: int | None = None,
     suffix: str | None = None,
 ) -> dict[str, Any]:
-    source_descriptor, initial = _open_regular_readonly(
+    source_descriptor, opened = _open_regular_readonly(
         source,
         label=label,
         suffix=suffix,
@@ -389,7 +366,7 @@ def _snapshot_verified_file(
                 view = view[written:]
         _verify_descriptor_final_state(
             source_descriptor,
-            initial,
+            opened,
             observed_bytes,
             label=label,
         )
@@ -560,21 +537,38 @@ def _verify_file_hash(
     *,
     label: str,
     expected_bytes: int | None = None,
+    suffix: str | None = None,
 ) -> dict[str, Any]:
-    initial = _require_regular_file(path, label=label)
-    observed_sha256, observed_bytes = _sha256_file(path)
-    final = _require_regular_file(path, label=label)
-    initial_identity = (initial.st_dev, initial.st_ino, initial.st_size, initial.st_mtime_ns)
-    final_identity = (final.st_dev, final.st_ino, final.st_size, final.st_mtime_ns)
-    if initial_identity != final_identity or observed_bytes != final.st_size:
-        raise QualificationError(f"{label} changed while being hashed")
-    if observed_sha256 != _require_sha256(expected_sha256, label=f"{label} expected hash"):
-        raise QualificationError(f"{label} SHA-256 mismatch")
-    if expected_bytes is not None:
-        if isinstance(expected_bytes, bool) or not isinstance(expected_bytes, int) or expected_bytes < 0:
-            raise QualificationError(f"{label} expected bytes are invalid")
-        if observed_bytes != expected_bytes:
-            raise QualificationError(f"{label} byte count mismatch")
+    descriptor, opened = _open_regular_readonly(
+        path,
+        label=label,
+        suffix=suffix,
+    )
+    digest = hashlib.sha256()
+    observed_bytes = 0
+    try:
+        while True:
+            block = os.read(descriptor, 1 << 20)
+            if not block:
+                break
+            digest.update(block)
+            observed_bytes += len(block)
+        _verify_descriptor_final_state(
+            descriptor,
+            opened,
+            observed_bytes,
+            label=label,
+        )
+    finally:
+        os.close(descriptor)
+    observed_sha256 = digest.hexdigest()
+    _validate_observed_file(
+        observed_sha256=observed_sha256,
+        observed_bytes=observed_bytes,
+        expected_sha256=expected_sha256,
+        expected_bytes=expected_bytes,
+        label=label,
+    )
     return {"sha256": observed_sha256, "bytes": observed_bytes, "filename": path.name}
 
 
@@ -715,6 +709,12 @@ def _validate_protocol(document: Mapping[str, Any]) -> dict[str, Any]:
         ("cross_context_missing_is_zero", False),
         ("unexpected_regular_payload_action", "FAIL_CLOSED"),
         ("all_input_hashes_must_match_before_scientific_processing", True),
+        ("preopen_lstat_dev_ino_size_mtime_acceptance_authority", False),
+        (
+            "verified_input_acceptance_authority",
+            "O_NOFOLLOW_FSTAT_BEFORE_AFTER_SHA256_AND_BYTES",
+        ),
+        ("same_descriptor_identity_and_size_must_remain_stable", True),
     ):
         if not isinstance(inputs, Mapping) or key not in inputs:
             raise QualificationError(f"protocol.input_contract.{key} is missing")
@@ -3086,10 +3086,12 @@ def _verify_trust_roots(
             )
     running_script = _absolute_without_resolving(Path(__file__))
     _reject_forbidden_path(running_script, label="running qualifier source")
-    _require_regular_file(running_script, label="running qualifier source", suffix=".py")
-    running_hash, _ = _sha256_file(running_script)
-    if running_hash != authority["qualifier_sha256"]:
-        raise QualificationError("executing qualifier source differs from the bound qualifier")
+    _verify_file_hash(
+        running_script,
+        authority["qualifier_sha256"],
+        label="running qualifier source",
+        suffix=".py",
+    )
     git_binding = _verify_git_binding(
         repo_root,
         authority["implementation_commit"],
@@ -3335,6 +3337,11 @@ def _build_qualification_payloads(
         "private_read_only_asset_snapshot_count": len(resolved_assets),
         "v4_helper_loaded_from_private_read_only_snapshot": True,
         "scientific_parser_original_path_reopen_after_verification": False,
+        "preopen_lstat_dev_ino_size_mtime_acceptance_authority": False,
+        "verified_input_acceptance_authority": (
+            "O_NOFOLLOW_FSTAT_BEFORE_AFTER_SHA256_AND_BYTES"
+        ),
+        "same_descriptor_identity_and_size_must_remain_stable": True,
         "snapshot_lifetime": "QUALIFICATION_PAYLOAD_BUILD_ONLY",
     }
     effective_manifest = {

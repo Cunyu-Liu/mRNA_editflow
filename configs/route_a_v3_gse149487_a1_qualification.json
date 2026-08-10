@@ -25,10 +25,10 @@
     "v4_helper_path": "scripts/route_a_v3/reconstruct_gse149487_plumage.py",
     "v4_helper_sha256": "372d58a37de5d393bb9ef1a749ffc51c8835195f8f9d1f8c5f13bd718c2f336d",
     "qualifier_path": "scripts/route_a_v3/qualify_gse149487_plumage.py",
-    "qualifier_sha256": "e9abf8dbf6dff94c4b56a54ccdd2a26b762fab31b92e6903a932e58d9427fe85",
+    "qualifier_sha256": "698ef121b2ac003ce8bd7e3e2775f7e58c9b0b7126119c273dc3ad0614b8dad3",
     "focused_test_path": "tests/route_a_v3/test_qualify_gse149487_plumage.py",
-    "focused_test_sha256": "ab4207e657a7505edd4710992f4ac191808ed8fb2ed9792b0548e24fd6e17193",
-    "implementation_commit": "ef0dfa56ad5bd0049bb4e1410e10097af8e33f1a"
+    "focused_test_sha256": "53b7c474e4f45765612e5ec3e2443cb96eea03153b981ea5fadcef7af1f2b728",
+    "implementation_commit": "UNKNOWN_NOT_ASSERTED"
   },
   "scope": {
     "ordinary_public_data_only": true,
@@ -58,7 +58,10 @@
     "cross_context_missingness_allowed": true,
     "cross_context_missing_is_zero": false,
     "unexpected_regular_payload_action": "FAIL_CLOSED",
-    "all_input_hashes_must_match_before_scientific_processing": true
+    "all_input_hashes_must_match_before_scientific_processing": true,
+    "preopen_lstat_dev_ino_size_mtime_acceptance_authority": false,
+    "verified_input_acceptance_authority": "O_NOFOLLOW_FSTAT_BEFORE_AFTER_SHA256_AND_BYTES",
+    "same_descriptor_identity_and_size_must_remain_stable": true
   },
   "mapping": {
     "mapping_source_asset_id": "GSE149487_LIM6C_293T",
@@ -257,7 +260,8 @@
     "PAPER_NATIVE_MULTIPLE_TESTING_FAMILY_UNKNOWN_NOT_ASSERTED",
     "PUBLISHED_RESULT_CROSSCHECK_UNKNOWN_NOT_ASSERTED",
     "LICENSE_AND_REDISTRIBUTION_UNKNOWN_NOT_ASSERTED",
-    "CHECKPOINT_SPECIFIC_FOUNDATION_EXPOSURE_UNKNOWN_NOT_ASSERTED"
+    "CHECKPOINT_SPECIFIC_FOUNDATION_EXPOSURE_UNKNOWN_NOT_ASSERTED",
+    "IMPLEMENTATION_COMMIT_UNKNOWN_NOT_ASSERTED"
   ],
   "model_results_may_change_this_protocol": false
 }
