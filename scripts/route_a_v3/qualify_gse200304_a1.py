@@ -215,9 +215,12 @@ EXPECTED_DESIGN_CONTRACT = {
     "pair_multiplicity": "EXACTLY_ONE_WT_AND_ONE_MUTANT",
     "control_multiplicity": "EXACTLY_ONE_ROW_PER_CONTROL_ID",
     "sequence_column": "201bp",
-    "sequence_length": 201,
-    "sequence_alphabet": "ACGT",
-    "edit_rule": "EXACTLY_ONE_SNV",
+    "all_row_sequence_length": 201,
+    "paired_intervention_sequence_alphabet": "ACGT",
+    "paired_intervention_edit_rule": "EXACTLY_ONE_SNV",
+    "control_acgt_only_count": 25,
+    "control_non_acgt_count": 41,
+    "controls_excluded_from_source_candidate_geometry": True,
     "identity_rule": "ID_EQUALS_STRIP_WT_OR_MUTANT_SUFFIX_FROM_MERGED_ID",
 }
 
@@ -1344,6 +1347,8 @@ def _audit_design(payload: bytes, contract: Mapping[str, Any], *, label: str) ->
     controls: set[str] = set()
     merged_ids: set[str] = set()
     type_counts = {"WT": 0, "Mutant": 0, "Control": 0}
+    control_acgt_only_count = 0
+    control_non_acgt_count = 0
     identity_equal_count = 0
     for row in rows:
         if len(row) != len(header):
@@ -1356,8 +1361,8 @@ def _audit_design(payload: bytes, contract: Mapping[str, Any], *, label: str) ->
         merged_id = row[indices["merged_id"]]
         if not identifier or not merged_id:
             raise TableAuditError(f"{label} contains a missing ID or merged_id")
-        if len(sequence) != contract["sequence_length"] or SEQUENCE_RE.fullmatch(sequence) is None:
-            raise TableAuditError(f"{label} contains a non-201nt ACGT sequence")
+        if len(sequence) != contract["all_row_sequence_length"]:
+            raise TableAuditError(f"{label} contains a sequence with non-frozen length")
         if merged_id in merged_ids:
             raise TableAuditError(f"{label} contains a duplicate merged_id")
         merged_ids.add(merged_id)
@@ -1370,7 +1375,15 @@ def _audit_design(payload: bytes, contract: Mapping[str, Any], *, label: str) ->
             if suffix_type is not None or identifier in controls or identifier in pairs:
                 raise TableAuditError(f"{label} control identity or multiplicity is invalid")
             controls.add(identifier)
+            if SEQUENCE_RE.fullmatch(sequence) is None:
+                control_non_acgt_count += 1
+            else:
+                control_acgt_only_count += 1
             continue
+        if SEQUENCE_RE.fullmatch(sequence) is None:
+            raise TableAuditError(
+                f"{label} paired intervention contains a non-ACGT sequence"
+            )
         if suffix_type != row_type or identifier in controls:
             raise TableAuditError(f"{label} Type and merged_id suffix disagree")
         pair = pairs.setdefault(identifier, {})
@@ -1381,6 +1394,13 @@ def _audit_design(payload: bytes, contract: Mapping[str, Any], *, label: str) ->
         raise TableAuditError(f"{label} Type counts differ from the frozen counts")
     if len(pairs) != contract["unique_pair_count"] or len(controls) != contract["control_id_count"]:
         raise TableAuditError(f"{label} pair or control ID count differs from the frozen counts")
+    if (
+        control_acgt_only_count != contract["control_acgt_only_count"]
+        or control_non_acgt_count != contract["control_non_acgt_count"]
+    ):
+        raise TableAuditError(
+            f"{label} control ACGT/non-ACGT classification differs from the frozen counts"
+        )
     for pair in pairs.values():
         if set(pair) != {"WT", "Mutant"}:
             raise TableAuditError(f"{label} has a missing WT/Mutant pair member")
@@ -1417,7 +1437,15 @@ def _audit_design(payload: bytes, contract: Mapping[str, Any], *, label: str) ->
             **source_geometry,
             "unique_control_id_count": len(controls),
             "identity_equal_row_count": identity_equal_count,
-            "sequence_length": contract["sequence_length"],
+            "all_row_sequence_length": contract["all_row_sequence_length"],
+            "all_row_sequences_exact_length": True,
+            "pair_sequence_length": contract["all_row_sequence_length"],
+            "paired_intervention_sequences_acgt_only": True,
+            "control_acgt_only_count": control_acgt_only_count,
+            "control_non_acgt_count": control_non_acgt_count,
+            "controls_excluded_from_source_candidate_geometry": contract[
+                "controls_excluded_from_source_candidate_geometry"
+            ],
             "all_pairs_exactly_one_snv": True,
             "all_pairs_exactly_one_wt_one_mutant": True,
             "status": "PASS_MECHANICAL_DESIGN_AUDIT",
@@ -1852,7 +1880,13 @@ def _validate_mechanical_payload(value: Mapping[str, Any]) -> None:
         "ndcg_eligible_source_pool_count",
         "unique_control_id_count",
         "identity_equal_row_count",
-        "sequence_length",
+        "all_row_sequence_length",
+        "all_row_sequences_exact_length",
+        "pair_sequence_length",
+        "paired_intervention_sequences_acgt_only",
+        "control_acgt_only_count",
+        "control_non_acgt_count",
+        "controls_excluded_from_source_candidate_geometry",
         "all_pairs_exactly_one_snv",
         "all_pairs_exactly_one_wt_one_mutant",
         "status",
@@ -1873,7 +1907,13 @@ def _validate_mechanical_payload(value: Mapping[str, Any]) -> None:
             "ndcg_eligible_source_pool_count": 0,
             "unique_control_id_count": 66,
             "identity_equal_row_count": 13836,
-            "sequence_length": 201,
+            "all_row_sequence_length": 201,
+            "all_row_sequences_exact_length": True,
+            "pair_sequence_length": 201,
+            "paired_intervention_sequences_acgt_only": True,
+            "control_acgt_only_count": 25,
+            "control_non_acgt_count": 41,
+            "controls_excluded_from_source_candidate_geometry": True,
             "all_pairs_exactly_one_snv": True,
             "all_pairs_exactly_one_wt_one_mutant": True,
             "status": "PASS_MECHANICAL_DESIGN_AUDIT",

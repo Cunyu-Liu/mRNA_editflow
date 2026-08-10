@@ -207,9 +207,12 @@
       "pair_multiplicity": "EXACTLY_ONE_WT_AND_ONE_MUTANT",
       "control_multiplicity": "EXACTLY_ONE_ROW_PER_CONTROL_ID",
       "sequence_column": "201bp",
-      "sequence_length": 201,
-      "sequence_alphabet": "ACGT",
-      "edit_rule": "EXACTLY_ONE_SNV",
+      "all_row_sequence_length": 201,
+      "paired_intervention_sequence_alphabet": "ACGT",
+      "paired_intervention_edit_rule": "EXACTLY_ONE_SNV",
+      "control_acgt_only_count": 25,
+      "control_non_acgt_count": 41,
+      "controls_excluded_from_source_candidate_geometry": true,
       "identity_rule": "ID_EQUALS_STRIP_WT_OR_MUTANT_SUFFIX_FROM_MERGED_ID"
     },
     "processed": {

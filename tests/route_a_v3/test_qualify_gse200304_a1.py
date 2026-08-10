@@ -75,9 +75,29 @@ def _full_design_payload() -> bytes:
             ]
         for index in range(66):
             identifier = f"CONTROL{index:03d}"
-            yield [identifier, "Control", "A" * 201, "AAA", "TTT", "FULL", identifier]
+            sequence = "A" * 201 if index < 25 else "N" * 201
+            yield [identifier, "Control", sequence, "AAA", "TTT", "FULL", identifier]
 
     return _gzip_tsv(header, rows())
+
+
+def _tiny_design_contract(*, control_acgt_only: bool) -> dict[str, Any]:
+    contract = copy.deepcopy(QUALIFY.EXPECTED_DESIGN_CONTRACT)
+    contract.update(
+        row_count=3,
+        type_counts={"WT": 1, "Mutant": 1, "Control": 1},
+        unique_pair_count=1,
+        distinct_candidate_count=1,
+        distinct_wt_source_group_count=1,
+        singleton_source_pool_count=1,
+        two_candidate_source_pool_count=0,
+        three_or_more_candidate_source_pool_count=0,
+        ndcg_eligible_source_pool_count=0,
+        control_id_count=1,
+        control_acgt_only_count=int(control_acgt_only),
+        control_non_acgt_count=int(not control_acgt_only),
+    )
+    return contract
 
 
 def _full_processed_payload() -> bytes:
@@ -621,6 +641,15 @@ def test_exact_generated_headers_and_frozen_table_counts() -> None:
     assert QUALIFY.EXPECTED_DESIGN_CONTRACT["singleton_source_pool_count"] == 6879
     assert QUALIFY.EXPECTED_DESIGN_CONTRACT["two_candidate_source_pool_count"] == 3
     assert QUALIFY.EXPECTED_DESIGN_CONTRACT["ndcg_eligible_source_pool_count"] == 0
+    assert QUALIFY.EXPECTED_DESIGN_CONTRACT["all_row_sequence_length"] == 201
+    assert QUALIFY.EXPECTED_DESIGN_CONTRACT["control_acgt_only_count"] == 25
+    assert QUALIFY.EXPECTED_DESIGN_CONTRACT["control_non_acgt_count"] == 41
+    assert (
+        QUALIFY.EXPECTED_DESIGN_CONTRACT[
+            "controls_excluded_from_source_candidate_geometry"
+        ]
+        is True
+    )
     assert QUALIFY.EXPECTED_SMALL_CONTRACT["complete_pair_count"] == 6120
     assert QUALIFY.EXPECTED_IVT_CONTRACT["complete_pair_count"] == 6774
 
@@ -675,6 +704,21 @@ def test_full_aggregate_gap_run_exact_counts_manifest_attrition_no_raw_payload_a
     assert mechanical["primary_design"]["two_candidate_source_pool_count"] == 3
     assert mechanical["primary_design"]["three_or_more_candidate_source_pool_count"] == 0
     assert mechanical["primary_design"]["ndcg_eligible_source_pool_count"] == 0
+    assert mechanical["primary_design"]["all_row_sequence_length"] == 201
+    assert mechanical["primary_design"]["all_row_sequences_exact_length"] is True
+    assert mechanical["primary_design"]["pair_sequence_length"] == 201
+    assert (
+        mechanical["primary_design"]["paired_intervention_sequences_acgt_only"]
+        is True
+    )
+    assert mechanical["primary_design"]["control_acgt_only_count"] == 25
+    assert mechanical["primary_design"]["control_non_acgt_count"] == 41
+    assert (
+        mechanical["primary_design"][
+            "controls_excluded_from_source_candidate_geometry"
+        ]
+        is True
+    )
     assert mechanical["processed"]["row_count"] == 6772
     assert mechanical["processed"]["measurement_column_count"] == 60
     assert mechanical["processed"]["finite_nonmissing_numeric_cell_count"] == 406320
@@ -1017,7 +1061,7 @@ def test_design_duplicate_missing_pair_and_unknown_type_fail_closed(kind: str) -
         ["P0", "Mutant", mutant, "A", "T", "F", "P0_Mutant"],
         ["C0", "Control", wt, "A", "T", "F", "C0"],
     ]
-    contract = copy.deepcopy(QUALIFY.EXPECTED_DESIGN_CONTRACT)
+    contract = _tiny_design_contract(control_acgt_only=True)
     if kind == "duplicate":
         rows.insert(1, ["P0", "WT", wt, "A", "T", "F", "P0_WT"])
         contract.update(
@@ -1045,6 +1089,62 @@ def test_design_duplicate_missing_pair_and_unknown_type_fail_closed(kind: str) -
     payload = _gzip_tsv(contract["exact_header"], rows)
     with pytest.raises(QUALIFY.TableAuditError):
         QUALIFY._audit_design(payload, contract, label=f"{kind} design fixture")
+
+
+def test_design_non_acgt_controls_are_classified_and_excluded_from_pair_geometry() -> None:
+    wt, mutant = _sequence_pair(0)
+    rows = [
+        ["P0", "WT", wt, "A", "T", "F", "P0_WT"],
+        ["P0", "Mutant", mutant, "A", "T", "F", "P0_Mutant"],
+        ["C0", "Control", "N" * 201, "A", "T", "F", "C0"],
+    ]
+    contract = _tiny_design_contract(control_acgt_only=False)
+    state = QUALIFY._audit_design(
+        _gzip_tsv(contract["exact_header"], rows),
+        contract,
+        label="non-ACGT control fixture",
+    )
+    assert state.aggregate["all_row_sequences_exact_length"] is True
+    assert state.aggregate["paired_intervention_sequences_acgt_only"] is True
+    assert state.aggregate["control_acgt_only_count"] == 0
+    assert state.aggregate["control_non_acgt_count"] == 1
+    assert state.aggregate["controls_excluded_from_source_candidate_geometry"] is True
+    assert state.aggregate["distinct_candidate_count"] == 1
+    assert state.aggregate["distinct_wt_source_group_count"] == 1
+
+
+@pytest.mark.parametrize("row_index", [0, 1], ids=["WT", "Mutant"])
+def test_design_non_acgt_paired_intervention_fails_closed(row_index: int) -> None:
+    wt, mutant = _sequence_pair(0)
+    rows = [
+        ["P0", "WT", wt, "A", "T", "F", "P0_WT"],
+        ["P0", "Mutant", mutant, "A", "T", "F", "P0_Mutant"],
+        ["C0", "Control", "N" * 201, "A", "T", "F", "C0"],
+    ]
+    rows[row_index][2] = "N" + rows[row_index][2][1:]
+    contract = _tiny_design_contract(control_acgt_only=False)
+    with pytest.raises(QUALIFY.TableAuditError, match="paired intervention.*non-ACGT"):
+        QUALIFY._audit_design(
+            _gzip_tsv(contract["exact_header"], rows),
+            contract,
+            label="non-ACGT paired intervention fixture",
+        )
+
+
+def test_design_non_201nt_control_fails_closed() -> None:
+    wt, mutant = _sequence_pair(0)
+    rows = [
+        ["P0", "WT", wt, "A", "T", "F", "P0_WT"],
+        ["P0", "Mutant", mutant, "A", "T", "F", "P0_Mutant"],
+        ["C0", "Control", "N" * 200, "A", "T", "F", "C0"],
+    ]
+    contract = _tiny_design_contract(control_acgt_only=False)
+    with pytest.raises(QUALIFY.TableAuditError, match="non-frozen length"):
+        QUALIFY._audit_design(
+            _gzip_tsv(contract["exact_header"], rows),
+            contract,
+            label="non-201nt control fixture",
+        )
 
 
 @pytest.mark.parametrize("bad_value", ["", "nan", "inf", "not-a-number"])
