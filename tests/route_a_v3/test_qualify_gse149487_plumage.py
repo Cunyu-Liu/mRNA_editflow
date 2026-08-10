@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import errno
 import gzip
 import hashlib
 import importlib.util
@@ -231,6 +232,14 @@ def _minimal_bundle_payloads() -> dict[str, bytes]:
     }
 
 
+def _publication_run_metadata(suffix: str = "FALLBACK") -> dict[str, str]:
+    return {
+        "run_id": f"A1_{suffix}",
+        "execution_id": f"GSE149487_{suffix}",
+        "recorded_at": "2026-08-10T12:07:00+08:00",
+    }
+
+
 def _git(repo: Path, *args: str) -> str:
     return subprocess.run(
         ["git", "-C", str(repo), *args],
@@ -345,12 +354,98 @@ def test_authority_protocol_and_additive_21_asset_manifest_are_closed() -> None:
     assert protocol["foundation_exposure"]["audit_status"] == "UNKNOWN_NOT_ASSERTED"
     assert protocol["canonical_v3"]["materialize_only_when_every_qualification_gate_passes"] is True
     assert protocol["scope"]["authority_update_allowed_by_qualifier"] is False
-    assert protocol["output_contract"]["atomic_no_replace_kernel_primitive_required"] is True
+    assert protocol["authority"]["implementation_commit"] == "UNKNOWN_NOT_ASSERTED"
+    assert "IMPLEMENTATION_COMMIT_UNKNOWN_NOT_ASSERTED" in protocol[
+        "known_external_evidence_blockers"
+    ]
+    assert protocol["output_contract"]["primary_publication_mode"] == (
+        QUAL.PRIMARY_PUBLICATION_MODE
+    )
+    assert protocol["output_contract"]["atomic_no_replace_kernel_primitive_primary"] is True
+    assert protocol["output_contract"][
+        "primary_commit_marker_written_last_in_staging_before_atomic_rename"
+    ] is True
     assert protocol["output_contract"][
         "single_output_failure_transaction_claim_required"
     ] is True
     assert protocol["output_contract"][
         "transaction_claim_loser_failure_record_allowed"
+    ] is False
+    assert protocol["output_contract"]["directory_fsync_unsupported_errno_set"] == [
+        "ENOSYS",
+        "EINVAL",
+        "ENOTSUP",
+        "EOPNOTSUPP",
+    ]
+    assert protocol["output_contract"][
+        "transaction_claim_parent_directory_fsync_unsupported_action"
+    ] == "CONTINUE_WITH_FIXED_CAPABILITY_WARNING"
+    assert protocol["output_contract"][
+        "staging_directory_fsync_unsupported_action"
+    ] == "CONTINUE_WITH_FIXED_CAPABILITY_WARNING"
+    assert protocol["output_contract"]["staging_directory_fsync_other_error_action"] == (
+        "FAIL_CLOSED_BEFORE_PUBLICATION"
+    )
+    assert protocol["output_contract"][
+        "failure_record_post_commit_directory_fsync_error_action"
+    ] == "RETURN_FAILURE_WITH_DURABILITY_WARNING"
+    assert protocol["output_contract"]["atomic_no_replace_unsupported_errno_fallback"] == [
+        "ENOSYS",
+        "EINVAL",
+        "ENOTSUP",
+        "EOPNOTSUPP",
+    ]
+    assert protocol["output_contract"]["fallback_publication_mode"] == (
+        QUAL.FALLBACK_PUBLICATION_MODE
+    )
+    assert protocol["output_contract"]["fallback_atomic_mkdir_loser_status"] == (
+        "CONTENDED_NO_FAILURE_RECORD"
+    )
+    assert protocol["output_contract"]["fallback_bundle_file_write_mode"] == (
+        "O_EXCL_AND_FILE_FSYNC"
+    )
+    assert protocol["output_contract"]["fallback_required_terminal_metadata_files"] == [
+        QUAL.PUBLICATION_COMMIT_FILENAME
+    ]
+    assert protocol["output_contract"][
+        "required_terminal_metadata_files_all_publication_modes"
+    ] == [QUAL.PUBLICATION_COMMIT_FILENAME]
+    assert protocol["output_contract"][
+        "commit_marker_required_for_primary_and_fallback"
+    ] is True
+    assert protocol["output_contract"]["unmarked_output_directory_acceptance"] == (
+        "REJECT_AS_PARTIAL_NOT_COMMITTED"
+    )
+    assert protocol["output_contract"]["post_commit_marker_validation_retry_count"] == 1
+    assert protocol["output_contract"][
+        "post_commit_marker_validation_failure_status"
+    ] == "COMMITTED_NOT_ACCEPTED"
+    assert protocol["output_contract"][
+        "committed_not_accepted_failure_record_allowed"
+    ] is False
+    assert protocol["output_contract"][
+        "committed_not_accepted_canonical_accepted"
+    ] is False
+    assert protocol["output_contract"]["success_stdout_includes_publication_mode"] is True
+    assert protocol["output_contract"]["fallback_commit_marker_bindings"] == [
+        "run_id",
+        "execution_id",
+        "SHA256SUMS_SHA256",
+        "bundle_file_count",
+        "bundle_filename_set_sha256",
+        "final_output_directory_name_sha256",
+        "final_output_target_sha256",
+        "publication_mode",
+        "committed_true",
+    ]
+    assert protocol["output_contract"][
+        "fallback_commit_marker_validation_required_before_published_return"
+    ] is True
+    assert protocol["output_contract"][
+        "fallback_directory_and_parent_fsync_after_commit_marker"
+    ] is True
+    assert protocol["output_contract"][
+        "fallback_partial_directory_canonical_accepted"
     ] is False
 
 
@@ -829,6 +924,9 @@ def test_full_synthetic_run_uses_verified_snapshots_and_publishes_zero_canonical
     assert report["canonical_record_count"] == 0
     assert report["candidate_canonical_record_count_before_gate"] == 4
     assert report["publication"]["status"] == "PUBLISHED_DURABLE"
+    assert report["publication"]["publication_mode"] == QUAL.PRIMARY_PUBLICATION_MODE
+    assert report["publication"]["terminal_commit_marker_validated"] is True
+    assert report["publication"]["terminal_commit_marker_postcommit_revalidated"] is True
     assert report["authority"]["input_snapshot_lineage"] == {
         "small_json_mode": QUAL.VERIFIED_JSON_BYTES_MODE,
         "file_parser_mode": QUAL.PRIVATE_READ_ONLY_SNAPSHOT_MODE,
@@ -846,7 +944,7 @@ def test_full_synthetic_run_uses_verified_snapshots_and_publishes_zero_canonical
     assert not (output / "canonical_intervention_records.jsonl").exists()
     assert {
         path.name for path in output.iterdir()
-    } == set(QUAL.ALWAYS_OUTPUT_FILES)
+    } == set(QUAL.ALWAYS_OUTPUT_FILES) | {QUAL.PUBLICATION_COMMIT_FILENAME}
     assert "OUTCOME_BLIND_LONG_READ_MAPPING_PROVENANCE_UNKNOWN_NOT_ASSERTED" in report["blockers"]
     assert "PAPER_NATIVE_METHOD_SOURCE_UNKNOWN_NOT_ASSERTED" in report["blockers"]
     assert "LICENSE_AND_REDISTRIBUTION_UNKNOWN_NOT_ASSERTED" in report["blockers"]
@@ -879,7 +977,7 @@ def test_full_synthetic_run_uses_verified_snapshots_and_publishes_zero_canonical
     assert sums == {
         path.name: _sha256(path)
         for path in output.iterdir()
-        if path.name != "SHA256SUMS"
+        if path.name not in {"SHA256SUMS", QUAL.PUBLICATION_COMMIT_FILENAME}
     }
     with pytest.raises(QUAL.QualificationError, match="overwrite"):
         QUAL.qualify_gse149487_plumage(
@@ -914,10 +1012,533 @@ def test_atomic_no_replace_publication_does_not_replace_racing_empty_directory(
         create_competing_target_then_rename,
     )
     with pytest.raises(QUAL.QualificationError, match="no-replace publication"):
-        QUAL._publish_bundle(output, _minimal_bundle_payloads())
+        QUAL._publish_bundle(
+            output,
+            _minimal_bundle_payloads(),
+            run_metadata=_publication_run_metadata("PRIMARY_RACE"),
+        )
     assert output.is_dir()
     assert output.stat().st_ino == competing_inode["value"]
     assert list(output.iterdir()) == []
+
+
+def test_primary_publication_marker_is_last_hash_bound_and_required_offline(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    output = tmp_path / "primary_marker_bundle"
+    run_metadata = _publication_run_metadata("PRIMARY_MARKER")
+    staging_write_order: list[str] = []
+    real_write_exclusive = QUAL._write_exclusive
+
+    def record_staging_writes(path: Path, payload: bytes) -> None:
+        if path.parent.name.startswith(f".{output.name}.partial-staging-"):
+            staging_write_order.append(path.name)
+        real_write_exclusive(path, payload)
+
+    monkeypatch.setattr(QUAL, "_write_exclusive", record_staging_writes)
+    publication = QUAL._publish_bundle(
+        output,
+        _minimal_bundle_payloads(),
+        run_metadata=run_metadata,
+    )
+
+    assert publication["publication_mode"] == QUAL.PRIMARY_PUBLICATION_MODE
+    assert publication["terminal_commit_marker_validated"] is True
+    assert publication["terminal_commit_marker_postcommit_revalidated"] is True
+    assert staging_write_order[-1] == QUAL.PUBLICATION_COMMIT_FILENAME
+    assert staging_write_order.count(QUAL.PUBLICATION_COMMIT_FILENAME) == 1
+    assert set(staging_write_order[:-1]) == set(QUAL.ALWAYS_OUTPUT_FILES)
+    marker = QUAL._validate_publication_commit(
+        output,
+        expected_run_metadata=run_metadata,
+        expected_publication_mode=QUAL.PRIMARY_PUBLICATION_MODE,
+    )
+    assert marker["publication_mode"] == QUAL.PRIMARY_PUBLICATION_MODE
+    assert marker["sha256sums_sha256"] == _sha256(output / "SHA256SUMS")
+    (output / QUAL.PUBLICATION_COMMIT_FILENAME).unlink()
+    with pytest.raises(QUAL.QualificationError, match="publication commit marker"):
+        QUAL._validate_publication_commit(
+            output,
+            expected_run_metadata=run_metadata,
+            expected_publication_mode=QUAL.PRIMARY_PUBLICATION_MODE,
+        )
+
+
+def test_primary_pre_rename_staging_marker_is_never_consumer_accepted(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    output = tmp_path / "primary_pre_rename_crash_target"
+    run_metadata = _publication_run_metadata("PRIMARY_PRE_RENAME_CRASH")
+    captured_staging: list[Path] = []
+
+    def stop_after_staging_marker(source: Path, _: Path) -> list[str]:
+        captured_staging.append(source)
+        assert (source / QUAL.PUBLICATION_COMMIT_FILENAME).is_file()
+        raise QUAL.QualificationError("injected stop before primary rename")
+
+    monkeypatch.setattr(QUAL, "_rename_directory_noreplace", stop_after_staging_marker)
+    with pytest.raises(QUAL.QualificationError, match="stop before primary rename"):
+        QUAL._publish_bundle(
+            output,
+            _minimal_bundle_payloads(),
+            run_metadata=run_metadata,
+        )
+    assert not output.exists()
+    assert len(captured_staging) == 1
+    assert captured_staging[0].is_dir()
+    with pytest.raises(QUAL.QualificationError, match="directory-name hash mismatch"):
+        QUAL._validate_publication_commit(
+            captured_staging[0],
+            expected_run_metadata=run_metadata,
+            expected_publication_mode=QUAL.PRIMARY_PUBLICATION_MODE,
+        )
+
+
+def test_primary_post_commit_marker_loss_is_committed_not_accepted(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    output = tmp_path / "primary_marker_lost_after_commit"
+    failure = tmp_path / "PRIMARY_MARKER_LOST_FAILURE.json"
+    real_rename = QUAL._rename_directory_noreplace
+
+    def synthetic_payload_builder(**_: Any) -> tuple[dict[str, bytes], dict[str, Any]]:
+        return _minimal_bundle_payloads(), {
+            "qualification_status": "BLOCKED_PENDING_PUBLIC_EVIDENCE",
+            "qualified": False,
+            "canonical_record_count": 0,
+        }
+
+    def rename_then_remove_marker(source: Path, destination: Path) -> list[str]:
+        warnings = real_rename(source, destination)
+        (destination / QUAL.PUBLICATION_COMMIT_FILENAME).unlink()
+        return warnings
+
+    monkeypatch.setattr(QUAL, "_build_qualification_payloads", synthetic_payload_builder)
+    monkeypatch.setattr(QUAL, "_rename_directory_noreplace", rename_then_remove_marker)
+    result = QUAL.execute_qualification(
+        repo_root=tmp_path / "repo",
+        data_root=tmp_path / "data",
+        protocol_path=tmp_path / "protocol.json",
+        asset_manifest_path=tmp_path / "assets.json",
+        expected_protocol_sha256="a" * 64,
+        output_directory=output,
+        failure_record_path=failure,
+        run_id="A1_PRIMARY_MARKER_LOST",
+        execution_id="GSE149487_PRIMARY_MARKER_LOST",
+        recorded_at="2026-08-10T12:17:00+08:00",
+    )
+
+    assert result["kind"] == "COMMITTED_NOT_ACCEPTED"
+    committed = result["committed_not_accepted"]
+    assert committed["status"] == "COMMITTED_NOT_ACCEPTED"
+    assert committed["publication_mode"] == QUAL.PRIMARY_PUBLICATION_MODE
+    assert committed["directory_committed"] is True
+    assert committed["publication_accepted"] is False
+    assert committed["terminal_commit_marker_validated"] is False
+    assert committed["qualified"] is False
+    assert committed["canonical_accepted"] is False
+    assert committed["canonical_record_count"] == 0
+    assert committed["failure_record_materialized"] is False
+    assert output.is_dir()
+    assert not (output / QUAL.PUBLICATION_COMMIT_FILENAME).exists()
+    assert not failure.exists()
+    assert not QUAL._transaction_claim_path(output).exists()
+
+
+def test_primary_transient_final_marker_read_failure_retries_then_publishes_warning(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    output = tmp_path / "primary_marker_transient_read"
+    failure = tmp_path / "PRIMARY_MARKER_TRANSIENT_FAILURE.json"
+    real_validate = QUAL._validate_publication_commit
+    injected_count = 0
+
+    def synthetic_payload_builder(**_: Any) -> tuple[dict[str, bytes], dict[str, Any]]:
+        return _minimal_bundle_payloads(), {
+            "qualification_status": "BLOCKED_PENDING_PUBLIC_EVIDENCE",
+            "qualified": False,
+            "canonical_record_count": 0,
+        }
+
+    def fail_first_final_validation(
+        directory: Path,
+        **kwargs: Any,
+    ) -> dict[str, Any]:
+        nonlocal injected_count
+        if directory == output and injected_count == 0:
+            injected_count += 1
+            raise QUAL.QualificationError("injected transient final marker read failure")
+        return real_validate(directory, **kwargs)
+
+    monkeypatch.setattr(QUAL, "_build_qualification_payloads", synthetic_payload_builder)
+    monkeypatch.setattr(QUAL, "_validate_publication_commit", fail_first_final_validation)
+    result = QUAL.execute_qualification(
+        repo_root=tmp_path / "repo",
+        data_root=tmp_path / "data",
+        protocol_path=tmp_path / "protocol.json",
+        asset_manifest_path=tmp_path / "assets.json",
+        expected_protocol_sha256="a" * 64,
+        output_directory=output,
+        failure_record_path=failure,
+        run_id="A1_PRIMARY_MARKER_TRANSIENT",
+        execution_id="GSE149487_PRIMARY_MARKER_TRANSIENT",
+        recorded_at="2026-08-10T12:18:00+08:00",
+    )
+
+    assert injected_count == 1
+    assert result["kind"] == "BUNDLE"
+    publication = result["report"]["publication"]
+    assert publication["status"] == "PUBLISHED_WITH_POST_COMMIT_DURABILITY_WARNING"
+    assert publication["terminal_commit_marker_validated"] is True
+    assert publication["terminal_commit_marker_postcommit_revalidated"] is True
+    assert "POST_COMMIT_TERMINAL_MARKER_REVALIDATION_RETRY_REQUIRED" in publication[
+        "durability_warning_codes"
+    ]
+    assert QUAL._validate_publication_commit(
+        output,
+        expected_run_metadata={
+            "run_id": "A1_PRIMARY_MARKER_TRANSIENT",
+            "execution_id": "GSE149487_PRIMARY_MARKER_TRANSIENT",
+            "recorded_at": "2026-08-10T12:18:00+08:00",
+        },
+        expected_publication_mode=QUAL.PRIMARY_PUBLICATION_MODE,
+    )["committed"] is True
+    assert not failure.exists()
+
+
+def test_unsupported_atomic_rename_uses_validated_terminal_marker_written_last(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    output = tmp_path / "fallback_bundle"
+    run_metadata = _publication_run_metadata("FALLBACK_SUCCESS")
+    unsupported_errno = getattr(errno, "EOPNOTSUPP", errno.ENOTSUP)
+    write_order: list[str] = []
+    real_write_exclusive = QUAL._write_exclusive
+
+    def unsupported_atomic_rename(_: Path, __: Path) -> None:
+        raise QUAL.AtomicNoReplaceUnsupported(unsupported_errno)
+
+    def record_final_directory_writes(path: Path, payload: bytes) -> None:
+        if path.parent == output:
+            write_order.append(path.name)
+        real_write_exclusive(path, payload)
+
+    monkeypatch.setattr(QUAL, "_rename_directory_noreplace", unsupported_atomic_rename)
+    monkeypatch.setattr(QUAL, "_write_exclusive", record_final_directory_writes)
+    publication = QUAL._publish_bundle(
+        output,
+        _minimal_bundle_payloads(),
+        run_metadata=run_metadata,
+    )
+
+    assert publication["status"] == "PUBLISHED_DURABLE"
+    assert publication["publication_mode"] == QUAL.FALLBACK_PUBLICATION_MODE
+    assert publication["fallback_trigger_errno"] == unsupported_errno
+    assert publication["terminal_commit_marker_validated"] is True
+    assert publication["source_staging_preserved"] is True
+    assert write_order[-1] == QUAL.PUBLICATION_COMMIT_FILENAME
+    assert write_order.count(QUAL.PUBLICATION_COMMIT_FILENAME) == 1
+    assert set(write_order[:-1]) == set(QUAL.ALWAYS_OUTPUT_FILES)
+    assert {path.name for path in output.iterdir()} == (
+        set(QUAL.ALWAYS_OUTPUT_FILES) | {QUAL.PUBLICATION_COMMIT_FILENAME}
+    )
+    marker = QUAL._validate_publication_commit(
+        output,
+        expected_run_metadata=run_metadata,
+    )
+    assert marker["committed"] is True
+    assert marker["publication_mode"] == QUAL.FALLBACK_PUBLICATION_MODE
+    assert marker["bundle_file_count_excluding_commit_marker"] == len(
+        QUAL.ALWAYS_OUTPUT_FILES
+    )
+    assert marker["sha256sums_sha256"] == _sha256(output / "SHA256SUMS")
+    preserved_primary_staging = [
+        path
+        for path in tmp_path.iterdir()
+        if path.name.startswith(f".{output.name}.partial-staging-")
+    ]
+    assert len(preserved_primary_staging) == 1
+    with pytest.raises(QUAL.QualificationError, match="directory-name hash mismatch"):
+        QUAL._validate_publication_commit(
+            preserved_primary_staging[0],
+            expected_run_metadata=run_metadata,
+            expected_publication_mode=QUAL.PRIMARY_PUBLICATION_MODE,
+        )
+
+
+def test_fallback_mid_write_is_partial_without_marker_or_failure_record(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    output = tmp_path / "fallback_partial"
+    failure = tmp_path / "FALLBACK_PARTIAL_FAILURE.json"
+    real_write_exclusive = QUAL._write_exclusive
+
+    def synthetic_payload_builder(**_: Any) -> tuple[dict[str, bytes], dict[str, Any]]:
+        return _minimal_bundle_payloads(), {
+            "qualification_status": "BLOCKED_PENDING_PUBLIC_EVIDENCE",
+            "qualified": False,
+            "canonical_record_count": 0,
+        }
+
+    def unsupported_atomic_rename(_: Path, __: Path) -> None:
+        raise QUAL.AtomicNoReplaceUnsupported(errno.EINVAL)
+
+    def fail_during_final_directory_write(path: Path, payload: bytes) -> None:
+        if path.parent == output and path.name == "GROUP_POWER_AUDIT.json":
+            raise OSError("injected fallback member write failure")
+        real_write_exclusive(path, payload)
+
+    monkeypatch.setattr(QUAL, "_build_qualification_payloads", synthetic_payload_builder)
+    monkeypatch.setattr(QUAL, "_rename_directory_noreplace", unsupported_atomic_rename)
+    monkeypatch.setattr(QUAL, "_write_exclusive", fail_during_final_directory_write)
+    result = QUAL.execute_qualification(
+        repo_root=tmp_path / "repo",
+        data_root=tmp_path / "data",
+        protocol_path=tmp_path / "protocol.json",
+        asset_manifest_path=tmp_path / "assets.json",
+        expected_protocol_sha256="a" * 64,
+        output_directory=output,
+        failure_record_path=failure,
+        run_id="A1_FALLBACK_PARTIAL",
+        execution_id="GSE149487_FALLBACK_PARTIAL",
+        recorded_at="2026-08-10T12:08:00+08:00",
+    )
+
+    assert result["kind"] == "PARTIAL_NOT_COMMITTED"
+    assert result["partial"]["status"] == "PARTIAL_NOT_COMMITTED"
+    assert result["partial"]["publication_mode"] == QUAL.FALLBACK_PUBLICATION_MODE
+    assert result["partial"]["terminal_commit_marker_present"] is False
+    assert result["partial"]["terminal_commit_marker_validated"] is False
+    assert result["partial"]["canonical_accepted"] is False
+    assert result["partial"]["canonical_record_count"] == 0
+    assert result["partial"]["failure_record_materialized"] is False
+    assert result["partial"]["retry_requires_new_run_id"] is True
+    assert output.is_dir()
+    assert any(output.iterdir())
+    assert not (output / QUAL.PUBLICATION_COMMIT_FILENAME).exists()
+    assert not failure.exists()
+    assert not QUAL._transaction_claim_path(output).exists()
+
+
+def test_fallback_concurrent_final_mkdir_loser_is_contended_without_failure(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    output = tmp_path / "fallback_contended"
+    failure = tmp_path / "FALLBACK_CONTENDED_FAILURE.json"
+
+    def synthetic_payload_builder(**_: Any) -> tuple[dict[str, bytes], dict[str, Any]]:
+        return _minimal_bundle_payloads(), {
+            "qualification_status": "BLOCKED_PENDING_PUBLIC_EVIDENCE",
+            "qualified": False,
+            "canonical_record_count": 0,
+        }
+
+    def competitor_then_unsupported(_: Path, destination: Path) -> None:
+        destination.mkdir()
+        (destination / "COMPETING_OWNER").write_bytes(b"winner\n")
+        raise QUAL.AtomicNoReplaceUnsupported(errno.ENOSYS)
+
+    monkeypatch.setattr(QUAL, "_build_qualification_payloads", synthetic_payload_builder)
+    monkeypatch.setattr(QUAL, "_rename_directory_noreplace", competitor_then_unsupported)
+    result = QUAL.execute_qualification(
+        repo_root=tmp_path / "repo",
+        data_root=tmp_path / "data",
+        protocol_path=tmp_path / "protocol.json",
+        asset_manifest_path=tmp_path / "assets.json",
+        expected_protocol_sha256="a" * 64,
+        output_directory=output,
+        failure_record_path=failure,
+        run_id="A1_FALLBACK_CONTENDED",
+        execution_id="GSE149487_FALLBACK_CONTENDED",
+        recorded_at="2026-08-10T12:09:00+08:00",
+    )
+
+    assert result["kind"] == "CONTENDED"
+    assert result["contention"]["status"] == "OUTPUT_PUBLICATION_CONTENDED"
+    assert result["contention"]["failure_record_materialized"] is False
+    assert (output / "COMPETING_OWNER").read_bytes() == b"winner\n"
+    assert not (output / QUAL.PUBLICATION_COMMIT_FILENAME).exists()
+    assert not failure.exists()
+
+
+def test_fallback_commit_marker_hash_mismatch_is_rejected(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    output = tmp_path / "fallback_hash_mismatch"
+    run_metadata = _publication_run_metadata("FALLBACK_HASH_MISMATCH")
+
+    def unsupported_atomic_rename(_: Path, __: Path) -> None:
+        raise QUAL.AtomicNoReplaceUnsupported(errno.ENOTSUP)
+
+    monkeypatch.setattr(QUAL, "_rename_directory_noreplace", unsupported_atomic_rename)
+    publication = QUAL._publish_bundle(
+        output,
+        _minimal_bundle_payloads(),
+        run_metadata=run_metadata,
+    )
+    assert publication["terminal_commit_marker_validated"] is True
+    sums_path = output / "SHA256SUMS"
+    sums_path.write_bytes(sums_path.read_bytes() + b"tampered\n")
+    with pytest.raises(QUAL.QualificationError, match="SHA256SUMS hash mismatch"):
+        QUAL._validate_publication_commit(
+            output,
+            expected_run_metadata=run_metadata,
+        )
+
+
+def test_fallback_post_commit_fsync_failure_is_published_warning(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    output = tmp_path / "fallback_post_commit_warning"
+    failure = tmp_path / "FALLBACK_POST_COMMIT_FAILURE.json"
+    real_fsync_directory = QUAL._fsync_directory
+
+    def synthetic_payload_builder(**_: Any) -> tuple[dict[str, bytes], dict[str, Any]]:
+        return _minimal_bundle_payloads(), {
+            "qualification_status": "BLOCKED_PENDING_PUBLIC_EVIDENCE",
+            "qualified": False,
+            "canonical_record_count": 0,
+        }
+
+    def unsupported_atomic_rename(_: Path, __: Path) -> None:
+        raise QUAL.AtomicNoReplaceUnsupported(errno.EINVAL)
+
+    def fail_output_fsync_only_after_marker(path: Path) -> None:
+        if path == output and (output / QUAL.PUBLICATION_COMMIT_FILENAME).exists():
+            raise OSError("injected fallback post-commit fsync failure")
+        real_fsync_directory(path)
+
+    monkeypatch.setattr(QUAL, "_build_qualification_payloads", synthetic_payload_builder)
+    monkeypatch.setattr(QUAL, "_rename_directory_noreplace", unsupported_atomic_rename)
+    monkeypatch.setattr(QUAL, "_fsync_directory", fail_output_fsync_only_after_marker)
+    result = QUAL.execute_qualification(
+        repo_root=tmp_path / "repo",
+        data_root=tmp_path / "data",
+        protocol_path=tmp_path / "protocol.json",
+        asset_manifest_path=tmp_path / "assets.json",
+        expected_protocol_sha256="a" * 64,
+        output_directory=output,
+        failure_record_path=failure,
+        run_id="A1_FALLBACK_POST_COMMIT",
+        execution_id="GSE149487_FALLBACK_POST_COMMIT",
+        recorded_at="2026-08-10T12:10:00+08:00",
+    )
+
+    assert result["kind"] == "BUNDLE"
+    publication = result["report"]["publication"]
+    assert publication["status"] == "PUBLISHED_WITH_POST_COMMIT_DURABILITY_WARNING"
+    assert publication["publication_mode"] == QUAL.FALLBACK_PUBLICATION_MODE
+    assert publication["terminal_commit_marker_validated"] is True
+    assert "POST_COMMIT_OUTPUT_DIRECTORY_FSYNC_FAILED" in publication[
+        "durability_warning_codes"
+    ]
+    assert QUAL._validate_publication_commit(
+        output,
+        expected_run_metadata={
+            "run_id": "A1_FALLBACK_POST_COMMIT",
+            "execution_id": "GSE149487_FALLBACK_POST_COMMIT",
+            "recorded_at": "2026-08-10T12:10:00+08:00",
+        },
+    )["committed"] is True
+    assert not failure.exists()
+
+
+def test_fallback_rejects_nonapproved_errno_without_creating_final_directory(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    output = tmp_path / "fallback_nonapproved_errno"
+
+    def incorrectly_classified_atomic_error(_: Path, __: Path) -> None:
+        raise QUAL.AtomicNoReplaceUnsupported(errno.EACCES)
+
+    monkeypatch.setattr(
+        QUAL,
+        "_rename_directory_noreplace",
+        incorrectly_classified_atomic_error,
+    )
+    with pytest.raises(QUAL.QualificationError, match="non-approved errno"):
+        QUAL._publish_bundle(
+            output,
+            _minimal_bundle_payloads(),
+            run_metadata=_publication_run_metadata("FALLBACK_NONAPPROVED"),
+        )
+    assert not output.exists()
+
+
+def test_unsupported_staging_directory_fsync_still_reaches_marker_fallback(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    output = tmp_path / "fallback_after_staging_fsync_unsupported"
+    run_metadata = _publication_run_metadata("STAGING_FSYNC_UNSUPPORTED")
+    real_fsync_directory = QUAL._fsync_directory
+
+    def unsupported_staging_directory_fsync(path: Path) -> None:
+        if path.name.startswith(f".{output.name}.partial-staging-"):
+            raise OSError(errno.EINVAL, "staging directory fsync unsupported")
+        real_fsync_directory(path)
+
+    def unsupported_atomic_rename(_: Path, __: Path) -> None:
+        raise QUAL.AtomicNoReplaceUnsupported(errno.ENOTSUP)
+
+    monkeypatch.setattr(QUAL, "_fsync_directory", unsupported_staging_directory_fsync)
+    monkeypatch.setattr(QUAL, "_rename_directory_noreplace", unsupported_atomic_rename)
+    publication = QUAL._publish_bundle(
+        output,
+        _minimal_bundle_payloads(),
+        run_metadata=run_metadata,
+    )
+
+    assert publication["publication_mode"] == QUAL.FALLBACK_PUBLICATION_MODE
+    assert publication["terminal_commit_marker_validated"] is True
+    assert publication["status"] == "PUBLISHED_WITH_POST_COMMIT_DURABILITY_WARNING"
+    assert "PRECOMMIT_STAGING_DIRECTORY_FSYNC_UNSUPPORTED" in publication[
+        "durability_warning_codes"
+    ]
+    assert QUAL._validate_publication_commit(
+        output,
+        expected_run_metadata=run_metadata,
+    )["committed"] is True
+
+
+def test_nonapproved_staging_directory_fsync_error_fails_before_publication(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    output = tmp_path / "staging_fsync_hard_failure"
+    rename_called = False
+    real_fsync_directory = QUAL._fsync_directory
+
+    def hard_staging_directory_fsync_failure(path: Path) -> None:
+        if path.name.startswith(f".{output.name}.partial-staging-"):
+            raise OSError(errno.EIO, "staging directory fsync hard failure")
+        real_fsync_directory(path)
+
+    def must_not_attempt_rename(_: Path, __: Path) -> list[str]:
+        nonlocal rename_called
+        rename_called = True
+        return []
+
+    monkeypatch.setattr(QUAL, "_fsync_directory", hard_staging_directory_fsync_failure)
+    monkeypatch.setattr(QUAL, "_rename_directory_noreplace", must_not_attempt_rename)
+    with pytest.raises(QUAL.QualificationError, match="before atomic commit"):
+        QUAL._publish_bundle(
+            output,
+            _minimal_bundle_payloads(),
+            run_metadata=_publication_run_metadata("STAGING_FSYNC_HARD_FAILURE"),
+        )
+    assert rename_called is False
+    assert not output.exists()
 
 
 def test_post_commit_fsync_failure_returns_published_warning_without_failure_record(
@@ -964,6 +1585,429 @@ def test_post_commit_fsync_failure_returns_published_warning_without_failure_rec
     ]["durability_warning_codes"]
     assert output.is_dir()
     assert not failure.exists()
+
+
+def test_primary_post_commit_parent_descriptor_close_failure_is_published_warning(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    output = tmp_path / "primary_close_warning_bundle"
+    failure = tmp_path / "PRIMARY_CLOSE_WARNING_FAILURE.json"
+    real_open = QUAL.os.open
+    real_close = QUAL.os.close
+    publication_parent_descriptors: set[int] = set()
+
+    def synthetic_payload_builder(**_: Any) -> tuple[dict[str, bytes], dict[str, Any]]:
+        return _minimal_bundle_payloads(), {
+            "qualification_status": "BLOCKED_PENDING_PUBLIC_EVIDENCE",
+            "qualified": False,
+            "canonical_record_count": 0,
+        }
+
+    def track_publication_parent_open(
+        path: Path,
+        flags: int,
+        *args: Any,
+        **kwargs: Any,
+    ) -> int:
+        descriptor = real_open(path, flags, *args, **kwargs)
+        if (
+            Path(path) == output.parent
+            and flags & getattr(QUAL.os, "O_DIRECTORY", 0)
+        ):
+            publication_parent_descriptors.add(descriptor)
+        return descriptor
+
+    def close_then_report_error(descriptor: int) -> None:
+        real_close(descriptor)
+        if descriptor in publication_parent_descriptors:
+            publication_parent_descriptors.remove(descriptor)
+            raise OSError("injected post-commit parent descriptor close failure")
+
+    monkeypatch.setattr(QUAL, "_build_qualification_payloads", synthetic_payload_builder)
+    monkeypatch.setattr(QUAL.os, "open", track_publication_parent_open)
+    monkeypatch.setattr(QUAL.os, "close", close_then_report_error)
+    result = QUAL.execute_qualification(
+        repo_root=tmp_path / "repo",
+        data_root=tmp_path / "data",
+        protocol_path=tmp_path / "protocol.json",
+        asset_manifest_path=tmp_path / "assets.json",
+        expected_protocol_sha256="a" * 64,
+        output_directory=output,
+        failure_record_path=failure,
+        run_id="A1_PRIMARY_CLOSE_WARNING",
+        execution_id="GSE149487_PRIMARY_CLOSE_WARNING",
+        recorded_at="2026-08-10T12:11:00+08:00",
+    )
+
+    assert result["kind"] == "BUNDLE"
+    publication = result["report"]["publication"]
+    assert publication["publication_mode"] == QUAL.PRIMARY_PUBLICATION_MODE
+    assert publication["status"] == "PUBLISHED_WITH_POST_COMMIT_DURABILITY_WARNING"
+    assert "POST_COMMIT_PARENT_DIRECTORY_DESCRIPTOR_CLOSE_FAILED" in publication[
+        "durability_warning_codes"
+    ]
+    assert output.is_dir()
+    assert not failure.exists()
+
+
+def test_unsupported_claim_parent_fsync_is_warning_and_does_not_block_publication(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    output = tmp_path / "claim_fsync_unsupported_bundle"
+    failure = tmp_path / "CLAIM_FSYNC_UNSUPPORTED_FAILURE.json"
+    claim = QUAL._transaction_claim_path(output)
+    real_fsync_directory = QUAL._fsync_directory
+    injected = False
+
+    def synthetic_payload_builder(**_: Any) -> tuple[dict[str, bytes], dict[str, Any]]:
+        return _minimal_bundle_payloads(), {
+            "qualification_status": "BLOCKED_PENDING_PUBLIC_EVIDENCE",
+            "qualified": False,
+            "canonical_record_count": 0,
+        }
+
+    def unsupported_only_for_claim_acquisition(path: Path) -> None:
+        nonlocal injected
+        if not injected and path == output.parent and claim.exists():
+            injected = True
+            raise OSError(errno.EOPNOTSUPP, "claim parent fsync unsupported")
+        real_fsync_directory(path)
+
+    monkeypatch.setattr(QUAL, "_build_qualification_payloads", synthetic_payload_builder)
+    monkeypatch.setattr(QUAL, "_fsync_directory", unsupported_only_for_claim_acquisition)
+    result = QUAL.execute_qualification(
+        repo_root=tmp_path / "repo",
+        data_root=tmp_path / "data",
+        protocol_path=tmp_path / "protocol.json",
+        asset_manifest_path=tmp_path / "assets.json",
+        expected_protocol_sha256="a" * 64,
+        output_directory=output,
+        failure_record_path=failure,
+        run_id="A1_CLAIM_FSYNC_UNSUPPORTED",
+        execution_id="GSE149487_CLAIM_FSYNC_UNSUPPORTED",
+        recorded_at="2026-08-10T12:12:00+08:00",
+    )
+
+    assert injected is True
+    assert result["kind"] == "BUNDLE"
+    assert "TRANSACTION_CLAIM_PARENT_DIRECTORY_FSYNC_UNSUPPORTED" in result[
+        "report"
+    ]["publication"]["durability_warning_codes"]
+    assert result["report"]["publication"]["status"] == (
+        "PUBLISHED_WITH_POST_COMMIT_DURABILITY_WARNING"
+    )
+    assert output.is_dir()
+    assert not failure.exists()
+    assert not claim.exists()
+
+
+def test_nonapproved_claim_parent_fsync_error_fails_closed_before_build(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    output = tmp_path / "claim_fsync_hard_failure_bundle"
+    failure = tmp_path / "CLAIM_FSYNC_HARD_FAILURE.json"
+    claim = QUAL._transaction_claim_path(output)
+    build_called = False
+    real_fsync_directory = QUAL._fsync_directory
+
+    def must_not_build(**_: Any) -> tuple[dict[str, bytes], dict[str, Any]]:
+        nonlocal build_called
+        build_called = True
+        return _minimal_bundle_payloads(), {}
+
+    def hard_failure_only_for_claim_acquisition(path: Path) -> None:
+        if path == output.parent and claim.exists():
+            raise OSError(errno.EIO, "claim parent fsync hard failure")
+        real_fsync_directory(path)
+
+    monkeypatch.setattr(QUAL, "_build_qualification_payloads", must_not_build)
+    monkeypatch.setattr(QUAL, "_fsync_directory", hard_failure_only_for_claim_acquisition)
+    with pytest.raises(QUAL.QualificationError, match="durably acquired"):
+        QUAL.execute_qualification(
+            repo_root=tmp_path / "repo",
+            data_root=tmp_path / "data",
+            protocol_path=tmp_path / "protocol.json",
+            asset_manifest_path=tmp_path / "assets.json",
+            expected_protocol_sha256="a" * 64,
+            output_directory=output,
+            failure_record_path=failure,
+            run_id="A1_CLAIM_FSYNC_HARD_FAILURE",
+            execution_id="GSE149487_CLAIM_FSYNC_HARD_FAILURE",
+            recorded_at="2026-08-10T12:13:00+08:00",
+        )
+    assert build_called is False
+    assert not output.exists()
+    assert not failure.exists()
+    assert not claim.exists()
+
+
+def test_failure_record_parent_fsync_error_returns_failure_truth_with_warning(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    output = tmp_path / "failure_truth_output"
+    failure = tmp_path / "FAILURE_TRUTH.json"
+    real_fsync_directory = QUAL._fsync_directory
+
+    def fail_qualification(**_: Any) -> dict[str, Any]:
+        raise QUAL.QualificationError("injected pre-publication qualification failure")
+
+    def fail_directory_fsync_after_failure_commit(path: Path) -> None:
+        if path == failure.parent and failure.exists():
+            raise OSError(errno.EINVAL, "failure parent fsync unsupported")
+        real_fsync_directory(path)
+
+    monkeypatch.setattr(QUAL, "qualify_gse149487_plumage", fail_qualification)
+    monkeypatch.setattr(QUAL, "_fsync_directory", fail_directory_fsync_after_failure_commit)
+    result = QUAL.execute_qualification(
+        repo_root=tmp_path / "repo",
+        data_root=tmp_path / "data",
+        protocol_path=tmp_path / "protocol.json",
+        asset_manifest_path=tmp_path / "assets.json",
+        expected_protocol_sha256="a" * 64,
+        output_directory=output,
+        failure_record_path=failure,
+        run_id="A1_FAILURE_TRUTH",
+        execution_id="GSE149487_FAILURE_TRUTH",
+        recorded_at="2026-08-10T12:14:00+08:00",
+    )
+
+    assert result["kind"] == "FAILURE"
+    assert result["failure"]["status"] == (
+        "FAIL_CLOSED_BEFORE_SUCCESS_BUNDLE_PUBLICATION"
+    )
+    assert result["failure"]["failure_record_durability_warning_codes"] == [
+        "FAILURE_RECORD_PARENT_DIRECTORY_FSYNC_FAILED"
+    ]
+    assert failure.is_file()
+    assert json.loads(failure.read_text(encoding="utf-8"))["status"] == (
+        "FAIL_CLOSED_BEFORE_SUCCESS_BUNDLE_PUBLICATION"
+    )
+    assert not output.exists()
+
+
+def test_failure_record_post_fsync_descriptor_close_error_preserves_failure_truth(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    output = tmp_path / "failure_close_truth_output"
+    failure = tmp_path / "FAILURE_CLOSE_TRUTH.json"
+    real_open = QUAL.os.open
+    real_close = QUAL.os.close
+    failure_descriptors: set[int] = set()
+
+    def fail_qualification(**_: Any) -> dict[str, Any]:
+        raise QUAL.QualificationError("injected pre-publication qualification failure")
+
+    def track_failure_open(
+        path: Path,
+        flags: int,
+        *args: Any,
+        **kwargs: Any,
+    ) -> int:
+        descriptor = real_open(path, flags, *args, **kwargs)
+        if Path(path) == failure and flags & QUAL.os.O_EXCL:
+            failure_descriptors.add(descriptor)
+        return descriptor
+
+    def close_failure_after_real_close(descriptor: int) -> None:
+        real_close(descriptor)
+        if descriptor in failure_descriptors:
+            failure_descriptors.remove(descriptor)
+            raise OSError("injected failure-record descriptor close error")
+
+    monkeypatch.setattr(QUAL, "qualify_gse149487_plumage", fail_qualification)
+    monkeypatch.setattr(QUAL.os, "open", track_failure_open)
+    monkeypatch.setattr(QUAL.os, "close", close_failure_after_real_close)
+    result = QUAL.execute_qualification(
+        repo_root=tmp_path / "repo",
+        data_root=tmp_path / "data",
+        protocol_path=tmp_path / "protocol.json",
+        asset_manifest_path=tmp_path / "assets.json",
+        expected_protocol_sha256="a" * 64,
+        output_directory=output,
+        failure_record_path=failure,
+        run_id="A1_FAILURE_CLOSE_TRUTH",
+        execution_id="GSE149487_FAILURE_CLOSE_TRUTH",
+        recorded_at="2026-08-10T12:20:00+08:00",
+    )
+
+    assert result["kind"] == "FAILURE"
+    assert result["failure"]["canonical_record_count"] == 0
+    assert result["failure"]["failure_record_durability_warning_codes"] == [
+        "FAILURE_RECORD_DESCRIPTOR_CLOSE_FAILED"
+    ]
+    assert failure.is_file()
+    assert json.loads(failure.read_text(encoding="utf-8"))["status"] == (
+        "FAIL_CLOSED_BEFORE_SUCCESS_BUNDLE_PUBLICATION"
+    )
+    assert not output.exists()
+
+
+def test_main_failure_stdout_reports_persisted_truth_warning_counts(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    def synthetic_failure_result(**_: Any) -> dict[str, Any]:
+        return {
+            "kind": "FAILURE",
+            "failure": {
+                "status": "FAIL_CLOSED_BEFORE_SUCCESS_BUNDLE_PUBLICATION",
+                "failure_type": "QualificationError",
+                "failure_record_durability_warning_codes": [
+                    "FAILURE_RECORD_PARENT_DIRECTORY_FSYNC_FAILED"
+                ],
+                "transaction_claim_warning_codes": [
+                    "TRANSACTION_CLAIM_CLEANUP_DIRECTORY_FSYNC_FAILED"
+                ],
+            },
+        }
+
+    monkeypatch.setattr(QUAL, "execute_qualification", synthetic_failure_result)
+    exit_code = QUAL.main(
+        [
+            "--repo-root",
+            str(tmp_path / "repo"),
+            "--data-root",
+            str(tmp_path / "data"),
+            "--protocol",
+            str(tmp_path / "protocol.json"),
+            "--asset-manifest",
+            str(tmp_path / "assets.json"),
+            "--protocol-sha256",
+            "a" * 64,
+            "--output-dir",
+            str(tmp_path / "output"),
+            "--failure-record",
+            str(tmp_path / "FAILURE.json"),
+            "--run-id",
+            "A1_FAILURE_STDOUT",
+            "--execution-id",
+            "GSE149487_FAILURE_STDOUT",
+            "--recorded-at",
+            "2026-08-10T12:15:00+08:00",
+        ]
+    )
+    stdout = json.loads(capsys.readouterr().out)
+    assert exit_code == 2
+    assert stdout["status"] == "FAIL_CLOSED_BEFORE_SUCCESS_BUNDLE_PUBLICATION"
+    assert stdout["failure_record_durability_warning_count"] == 1
+    assert stdout["transaction_claim_warning_count"] == 1
+    assert stdout["durability_warning_count"] == 2
+    assert stdout["canonical_record_count"] == 0
+
+
+def test_main_bundle_stdout_includes_publication_mode(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    def synthetic_bundle_result(**_: Any) -> dict[str, Any]:
+        return {
+            "kind": "BUNDLE",
+            "report": {
+                "qualification_status": "BLOCKED_PENDING_PUBLIC_EVIDENCE",
+                "qualified": False,
+                "canonical_record_count": 0,
+                "qualified_independent_ordinary_study_count": 0,
+                "publication": {
+                    "publication_mode": QUAL.PRIMARY_PUBLICATION_MODE,
+                    "status": "PUBLISHED_DURABLE",
+                    "durability_warning_codes": [],
+                },
+            },
+        }
+
+    monkeypatch.setattr(QUAL, "execute_qualification", synthetic_bundle_result)
+    exit_code = QUAL.main(
+        [
+            "--repo-root",
+            str(tmp_path / "repo"),
+            "--data-root",
+            str(tmp_path / "data"),
+            "--protocol",
+            str(tmp_path / "protocol.json"),
+            "--asset-manifest",
+            str(tmp_path / "assets.json"),
+            "--protocol-sha256",
+            "a" * 64,
+            "--output-dir",
+            str(tmp_path / "output"),
+            "--failure-record",
+            str(tmp_path / "FAILURE.json"),
+            "--run-id",
+            "A1_BUNDLE_STDOUT",
+            "--execution-id",
+            "GSE149487_BUNDLE_STDOUT",
+            "--recorded-at",
+            "2026-08-10T12:16:00+08:00",
+        ]
+    )
+    stdout = json.loads(capsys.readouterr().out)
+    assert exit_code == 0
+    assert stdout["publication_mode"] == QUAL.PRIMARY_PUBLICATION_MODE
+    assert stdout["publication_status"] == "PUBLISHED_DURABLE"
+    assert stdout["canonical_record_count"] == 0
+
+
+def test_main_committed_not_accepted_is_nonzero_and_never_accepts_canonical(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    def synthetic_committed_not_accepted(**_: Any) -> dict[str, Any]:
+        return {
+            "kind": "COMMITTED_NOT_ACCEPTED",
+            "committed_not_accepted": {
+                "status": "COMMITTED_NOT_ACCEPTED",
+                "publication_mode": QUAL.PRIMARY_PUBLICATION_MODE,
+                "durability_warning_codes": [],
+                "transaction_claim_warning_codes": [],
+            },
+        }
+
+    monkeypatch.setattr(
+        QUAL,
+        "execute_qualification",
+        synthetic_committed_not_accepted,
+    )
+    exit_code = QUAL.main(
+        [
+            "--repo-root",
+            str(tmp_path / "repo"),
+            "--data-root",
+            str(tmp_path / "data"),
+            "--protocol",
+            str(tmp_path / "protocol.json"),
+            "--asset-manifest",
+            str(tmp_path / "assets.json"),
+            "--protocol-sha256",
+            "a" * 64,
+            "--output-dir",
+            str(tmp_path / "output"),
+            "--failure-record",
+            str(tmp_path / "FAILURE.json"),
+            "--run-id",
+            "A1_COMMITTED_NOT_ACCEPTED_STDOUT",
+            "--execution-id",
+            "GSE149487_COMMITTED_NOT_ACCEPTED_STDOUT",
+            "--recorded-at",
+            "2026-08-10T12:19:00+08:00",
+        ]
+    )
+    stdout = json.loads(capsys.readouterr().out)
+    assert exit_code == 5
+    assert stdout["status"] == "COMMITTED_NOT_ACCEPTED"
+    assert stdout["directory_committed"] is True
+    assert stdout["publication_accepted"] is False
+    assert stdout["qualified"] is False
+    assert stdout["canonical_accepted"] is False
+    assert stdout["canonical_record_count"] == 0
+    assert stdout["failure_record_materialized"] is False
 
 
 def test_execute_claim_loser_does_not_build_or_publish_failure(

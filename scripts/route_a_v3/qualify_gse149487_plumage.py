@@ -13,7 +13,9 @@ established from the public materials as UNKNOWN_NOT_ASSERTED.  Running this
 program with that protocol therefore produces an aggregate blocked bundle and
 zero canonical records.  Qualification requires a new, hash-bound protocol
 revision that supplies—not guesses—the missing mapping, paper-method, license,
-checkpoint-exposure, and implementation-commit evidence.
+and checkpoint-exposure evidence.  A staging revision whose implementation
+commit is still UNKNOWN_NOT_ASSERTED is likewise blocked until the ordinary
+two-stage implementation binding is completed.
 """
 from __future__ import annotations
 
@@ -101,6 +103,17 @@ ALWAYS_OUTPUT_FILES: tuple[str, ...] = (
     "SHA256SUMS",
 )
 CANONICAL_FILENAME = "canonical_intervention_records.jsonl"
+PUBLICATION_COMMIT_FILENAME = "PUBLICATION_COMMIT.json"
+PRIMARY_PUBLICATION_MODE = "KERNEL_ATOMIC_RENAME_NOREPLACE_V1"
+FALLBACK_PUBLICATION_MODE = "ATOMIC_MKDIR_TERMINAL_COMMIT_MARKER_V1"
+ATOMIC_NOREPLACE_UNSUPPORTED_ERRNOS = frozenset(
+    {
+        errno.ENOSYS,
+        errno.EINVAL,
+        getattr(errno, "ENOTSUP", errno.EINVAL),
+        getattr(errno, "EOPNOTSUPP", errno.EINVAL),
+    }
+)
 VERIFIED_JSON_BYTES_MODE = "PARSED_FROM_SINGLE_OPEN_VERIFIED_BYTES"
 PRIVATE_READ_ONLY_SNAPSHOT_MODE = (
     "PRIVATE_READ_ONLY_SNAPSHOT_FROM_SINGLE_OPEN_VERIFIED_DESCRIPTOR"
@@ -124,6 +137,54 @@ class ScopeViolation(QualificationError):
 
 class TransactionClaimContended(QualificationError):
     """Another execution owns the output/failure publication transaction."""
+
+
+class PublicationContended(QualificationError):
+    """A competing process already owns or materialized the final target."""
+
+
+class AtomicNoReplaceUnsupported(QualificationError):
+    """The kernel no-replace primitive returned an approved unsupported errno."""
+
+    def __init__(self, error_number: int) -> None:
+        self.error_number = int(error_number)
+        super().__init__(
+            f"atomic no-replace directory publication is unsupported (errno {error_number})"
+        )
+
+
+class PartialPublicationError(QualificationError):
+    """Fallback final directory exists without a valid terminal commit marker."""
+
+    def __init__(
+        self,
+        detail: str,
+        *,
+        unsupported_errno: int,
+        commit_marker_present: bool,
+    ) -> None:
+        self.unsupported_errno = int(unsupported_errno)
+        self.commit_marker_present = bool(commit_marker_present)
+        super().__init__(detail)
+
+
+class CommittedPublicationValidationError(QualificationError):
+    """An atomically committed directory failed terminal-marker acceptance."""
+
+    def __init__(
+        self,
+        detail: str,
+        *,
+        publication_mode: str,
+        durability_warning_codes: Sequence[str],
+    ) -> None:
+        self.publication_mode = publication_mode
+        self.durability_warning_codes = tuple(sorted(set(durability_warning_codes)))
+        super().__init__(detail)
+
+
+class ExclusiveWriteCommittedCloseError(QualificationError):
+    """An exclusive file was fully written/fsynced before descriptor close failed."""
 
 
 def _compact_json_bytes(value: Any) -> bytes:
@@ -925,11 +986,87 @@ def _validate_protocol(document: Mapping[str, Any]) -> dict[str, Any]:
         raise QualificationError("protocol output_contract must be an object")
     for key, expected in (
         ("exclusive_new_output_directory_required", True),
-        ("atomic_sibling_staging_then_rename", True),
-        ("atomic_no_replace_kernel_primitive_required", True),
+        ("primary_publication_mode", PRIMARY_PUBLICATION_MODE),
+        ("primary_atomic_sibling_staging_then_rename", True),
+        ("atomic_no_replace_kernel_primitive_primary", True),
+        (
+            "primary_commit_marker_written_last_in_staging_before_atomic_rename",
+            True,
+        ),
         ("single_output_failure_transaction_claim_required", True),
         ("transaction_claim_loser_failure_record_allowed", False),
-        ("unsupported_atomic_no_replace_action", "FAIL_CLOSED"),
+        (
+            "directory_fsync_unsupported_errno_set",
+            ["ENOSYS", "EINVAL", "ENOTSUP", "EOPNOTSUPP"],
+        ),
+        (
+            "transaction_claim_parent_directory_fsync_unsupported_action",
+            "CONTINUE_WITH_FIXED_CAPABILITY_WARNING",
+        ),
+        (
+            "staging_directory_fsync_unsupported_action",
+            "CONTINUE_WITH_FIXED_CAPABILITY_WARNING",
+        ),
+        (
+            "staging_directory_fsync_other_error_action",
+            "FAIL_CLOSED_BEFORE_PUBLICATION",
+        ),
+        (
+            "failure_record_post_commit_directory_fsync_error_action",
+            "RETURN_FAILURE_WITH_DURABILITY_WARNING",
+        ),
+        (
+            "atomic_no_replace_unsupported_errno_fallback",
+            ["ENOSYS", "EINVAL", "ENOTSUP", "EOPNOTSUPP"],
+        ),
+        ("fallback_publication_mode", FALLBACK_PUBLICATION_MODE),
+        ("fallback_atomic_exclusive_final_mkdir_required", True),
+        ("fallback_atomic_mkdir_loser_status", "CONTENDED_NO_FAILURE_RECORD"),
+        ("fallback_bundle_file_write_mode", "O_EXCL_AND_FILE_FSYNC"),
+        (
+            "fallback_required_terminal_metadata_files",
+            [PUBLICATION_COMMIT_FILENAME],
+        ),
+        (
+            "required_terminal_metadata_files_all_publication_modes",
+            [PUBLICATION_COMMIT_FILENAME],
+        ),
+        ("commit_marker_required_for_primary_and_fallback", True),
+        (
+            "unmarked_output_directory_acceptance",
+            "REJECT_AS_PARTIAL_NOT_COMMITTED",
+        ),
+        ("post_commit_marker_validation_retry_count", 1),
+        (
+            "post_commit_marker_validation_failure_status",
+            "COMMITTED_NOT_ACCEPTED",
+        ),
+        ("committed_not_accepted_failure_record_allowed", False),
+        ("committed_not_accepted_canonical_accepted", False),
+        ("fallback_commit_marker_schema_version", "1.0.0"),
+        (
+            "fallback_commit_marker_bindings",
+            [
+                "run_id",
+                "execution_id",
+                "SHA256SUMS_SHA256",
+                "bundle_file_count",
+                "bundle_filename_set_sha256",
+                "final_output_directory_name_sha256",
+                "final_output_target_sha256",
+                "publication_mode",
+                "committed_true",
+            ],
+        ),
+        ("fallback_commit_marker_written_last", True),
+        ("fallback_commit_marker_required_for_published_state", True),
+        ("fallback_commit_marker_validation_required_before_published_return", True),
+        ("fallback_directory_and_parent_fsync_after_commit_marker", True),
+        ("fallback_partial_directory_status", "PARTIAL_NOT_COMMITTED"),
+        ("fallback_partial_directory_must_be_preserved", True),
+        ("fallback_partial_directory_canonical_accepted", False),
+        ("fallback_retry_requires_new_run_id", True),
+        ("success_stdout_includes_publication_mode", True),
         (
             "post_commit_durability_error_action",
             "RETURN_PUBLISHED_WITH_EXPLICIT_WARNING",
@@ -3457,6 +3594,7 @@ def _build_qualification_payloads(
 
 def _write_exclusive(path: Path, payload: bytes) -> None:
     descriptor = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    file_fsynced = False
     try:
         view = memoryview(payload)
         while view:
@@ -3465,8 +3603,16 @@ def _write_exclusive(path: Path, payload: bytes) -> None:
                 raise QualificationError("exclusive output write made no progress")
             view = view[written:]
         os.fsync(descriptor)
+        file_fsynced = True
     finally:
-        os.close(descriptor)
+        try:
+            os.close(descriptor)
+        except OSError as exc:
+            if file_fsynced:
+                raise ExclusiveWriteCommittedCloseError(
+                    "exclusive file descriptor close failed after file fsync"
+                ) from exc
+            raise
 
 
 def _fsync_directory(path: Path) -> None:
@@ -3477,7 +3623,11 @@ def _fsync_directory(path: Path) -> None:
         os.close(descriptor)
 
 
-def _rename_directory_noreplace(source: Path, destination: Path) -> None:
+def _directory_fsync_is_explicitly_unsupported(exc: OSError) -> bool:
+    return exc.errno in ATOMIC_NOREPLACE_UNSUPPORTED_ERRNOS
+
+
+def _rename_directory_noreplace(source: Path, destination: Path) -> list[str]:
     if source.parent != destination.parent:
         raise QualificationError("atomic no-replace publication requires one parent directory")
     parent_flags = (
@@ -3489,6 +3639,9 @@ def _rename_directory_noreplace(source: Path, destination: Path) -> None:
         parent_descriptor = os.open(source.parent, parent_flags)
     except OSError as exc:
         raise QualificationError("publication parent directory could not be opened") from exc
+    operation_error: BaseException | None = None
+    operation_traceback: Any = None
+    committed = False
     try:
         libc = ctypes.CDLL(None, use_errno=True)
         source_name = os.fsencode(source.name)
@@ -3496,9 +3649,7 @@ def _rename_directory_noreplace(source: Path, destination: Path) -> None:
         if sys.platform.startswith("linux"):
             rename_function = getattr(libc, "renameat2", None)
             if rename_function is None:
-                raise QualificationError(
-                    "atomic no-replace directory publication is unsupported"
-                )
+                raise AtomicNoReplaceUnsupported(errno.ENOSYS)
             rename_function.argtypes = [
                 ctypes.c_int,
                 ctypes.c_char_p,
@@ -3517,9 +3668,7 @@ def _rename_directory_noreplace(source: Path, destination: Path) -> None:
         elif sys.platform == "darwin":
             rename_function = getattr(libc, "renameatx_np", None)
             if rename_function is None:
-                raise QualificationError(
-                    "atomic no-replace directory publication is unsupported"
-                )
+                raise AtomicNoReplaceUnsupported(errno.ENOSYS)
             rename_function.argtypes = [
                 ctypes.c_int,
                 ctypes.c_char_p,
@@ -3536,35 +3685,425 @@ def _rename_directory_noreplace(source: Path, destination: Path) -> None:
                 0x00000004,  # Darwin RENAME_EXCL
             )
         else:
-            raise QualificationError(
-                "atomic no-replace directory publication is unsupported"
-            )
+            raise AtomicNoReplaceUnsupported(errno.ENOSYS)
         if result != 0:
             error_number = ctypes.get_errno()
             if error_number in {errno.EEXIST, errno.ENOTEMPTY}:
-                raise QualificationError(
+                raise PublicationContended(
                     "final output appeared during atomic no-replace publication"
                 )
-            if error_number in {
-                errno.ENOSYS,
-                errno.EINVAL,
-                getattr(errno, "ENOTSUP", errno.EINVAL),
-                getattr(errno, "EOPNOTSUPP", errno.EINVAL),
-            }:
-                raise QualificationError(
-                    "atomic no-replace directory publication is unsupported"
-                )
+            if error_number in ATOMIC_NOREPLACE_UNSUPPORTED_ERRNOS:
+                raise AtomicNoReplaceUnsupported(error_number)
             raise QualificationError(
                 f"atomic no-replace directory publication failed with errno {error_number}"
             )
-    finally:
+        committed = True
+    except BaseException as exc:
+        operation_error = exc
+        operation_traceback = exc.__traceback__
+    close_error: OSError | None = None
+    try:
         os.close(parent_descriptor)
+    except OSError as exc:
+        close_error = exc
+    if operation_error is not None:
+        raise operation_error.with_traceback(operation_traceback)
+    if not committed:
+        raise QualificationError("atomic no-replace publication ended without commit")
+    if close_error is not None:
+        return ["POST_COMMIT_PARENT_DIRECTORY_DESCRIPTOR_CLOSE_FAILED"]
+    return []
+
+
+def _bundle_filename_set_sha256(names: Iterable[str]) -> str:
+    normalized = sorted(names)
+    if not normalized or len(normalized) != len(set(normalized)):
+        raise QualificationError("publication bundle filename set is empty or duplicated")
+    if any(Path(name).name != name or name in {"", PUBLICATION_COMMIT_FILENAME} for name in normalized):
+        raise QualificationError("publication bundle filename set is unsafe")
+    payload = (
+        "GSE149487_PUBLICATION_BUNDLE_FILENAME_SET_V1\n"
+        + "\n".join(normalized)
+        + "\n"
+    ).encode("utf-8")
+    return _sha256_bytes(payload)
+
+
+def _final_output_directory_name_sha256(name: str) -> str:
+    if not isinstance(name, str) or not name or Path(name).name != name:
+        raise QualificationError("final output directory name is unsafe")
+    return _sha256_bytes(
+        b"GSE149487_FINAL_OUTPUT_DIRECTORY_NAME_V1\n" + os.fsencode(name) + b"\n"
+    )
+
+
+def _final_output_target_sha256(path: Path) -> str:
+    absolute = _absolute_without_resolving(path)
+    return _sha256_bytes(
+        b"GSE149487_FINAL_OUTPUT_TARGET_V1\n" + os.fsencode(absolute) + b"\n"
+    )
+
+
+def _publication_commit_document(
+    *,
+    complete_payloads: Mapping[str, bytes],
+    run_metadata: Mapping[str, str],
+    publication_mode: str,
+    final_output_directory: Path,
+) -> dict[str, Any]:
+    if publication_mode not in {PRIMARY_PUBLICATION_MODE, FALLBACK_PUBLICATION_MODE}:
+        raise QualificationError("publication commit mode is not allowed")
+    metadata = _require_exact_keys(
+        run_metadata,
+        {"run_id", "execution_id", "recorded_at"},
+        label="publication run metadata",
+    )
+    validated_metadata = _validate_run_metadata(
+        run_id=metadata["run_id"],
+        execution_id=metadata["execution_id"],
+        recorded_at=metadata["recorded_at"],
+    )
+    names = set(complete_payloads)
+    if "SHA256SUMS" not in names or PUBLICATION_COMMIT_FILENAME in names:
+        raise QualificationError("publication bundle payload set cannot be committed")
+    return {
+        "schema_version": "1.0.0",
+        "record_type": "GSE149487_PLUMAGE_PUBLICATION_COMMIT",
+        "contract_id": CONTRACT_ID,
+        "protocol_id": PROTOCOL_ID,
+        "dataset_id": DATASET_ID,
+        "publication_mode": publication_mode,
+        "run_id": validated_metadata["run_id"],
+        "execution_id": validated_metadata["execution_id"],
+        "recorded_at": validated_metadata["recorded_at"],
+        "sha256sums_filename": "SHA256SUMS",
+        "sha256sums_sha256": _sha256_bytes(complete_payloads["SHA256SUMS"]),
+        "bundle_file_count_excluding_commit_marker": len(names),
+        "bundle_filename_set_sha256": _bundle_filename_set_sha256(names),
+        "final_output_directory_name_sha256": (
+            _final_output_directory_name_sha256(final_output_directory.name)
+        ),
+        "final_output_target_sha256": _final_output_target_sha256(
+            final_output_directory
+        ),
+        "committed": True,
+        "commit_marker_written_last": True,
+        "canonical_acceptance_requires_valid_commit_marker": True,
+    }
+
+
+def _read_publication_regular_file(path: Path, *, label: str) -> bytes:
+    flags = os.O_RDONLY | getattr(os, "O_CLOEXEC", 0) | getattr(os, "O_NOFOLLOW", 0)
+    try:
+        descriptor = os.open(path, flags)
+    except OSError as exc:
+        raise QualificationError(f"{label} could not be opened as a regular file") from exc
+    try:
+        if not stat.S_ISREG(os.fstat(descriptor).st_mode):
+            raise QualificationError(f"{label} is not a regular file")
+        chunks: list[bytes] = []
+        while True:
+            chunk = os.read(descriptor, 1 << 20)
+            if not chunk:
+                break
+            chunks.append(chunk)
+        return b"".join(chunks)
+    except OSError as exc:
+        raise QualificationError(f"{label} could not be read") from exc
+    finally:
+        os.close(descriptor)
+
+
+def _validate_publication_commit(
+    output_directory: Path,
+    *,
+    expected_run_metadata: Mapping[str, str] | None = None,
+    expected_publication_mode: str | None = None,
+    expected_final_output_target: Path | None = None,
+) -> dict[str, Any]:
+    try:
+        output_stat = output_directory.lstat()
+    except OSError as exc:
+        raise QualificationError("fallback publication directory is unavailable") from exc
+    if not stat.S_ISDIR(output_stat.st_mode):
+        raise QualificationError("fallback publication target is not a directory")
+
+    marker_path = output_directory / PUBLICATION_COMMIT_FILENAME
+    marker = _read_json_bytes(
+        _read_publication_regular_file(marker_path, label="publication commit marker"),
+        label="publication commit marker",
+    )
+    marker_keys = {
+        "schema_version",
+        "record_type",
+        "contract_id",
+        "protocol_id",
+        "dataset_id",
+        "publication_mode",
+        "run_id",
+        "execution_id",
+        "recorded_at",
+        "sha256sums_filename",
+        "sha256sums_sha256",
+        "bundle_file_count_excluding_commit_marker",
+        "bundle_filename_set_sha256",
+        "final_output_directory_name_sha256",
+        "final_output_target_sha256",
+        "committed",
+        "commit_marker_written_last",
+        "canonical_acceptance_requires_valid_commit_marker",
+    }
+    marker = dict(
+        _require_exact_keys(marker, marker_keys, label="publication commit marker")
+    )
+    for key, expected in (
+        ("schema_version", "1.0.0"),
+        ("record_type", "GSE149487_PLUMAGE_PUBLICATION_COMMIT"),
+        ("contract_id", CONTRACT_ID),
+        ("protocol_id", PROTOCOL_ID),
+        ("dataset_id", DATASET_ID),
+        ("sha256sums_filename", "SHA256SUMS"),
+        ("committed", True),
+        ("commit_marker_written_last", True),
+        ("canonical_acceptance_requires_valid_commit_marker", True),
+    ):
+        _require_exact_value(marker[key], expected, label=f"publication commit marker.{key}")
+    if marker["publication_mode"] not in {
+        PRIMARY_PUBLICATION_MODE,
+        FALLBACK_PUBLICATION_MODE,
+    }:
+        raise QualificationError("publication commit marker mode is not allowed")
+    if expected_publication_mode is not None:
+        if expected_publication_mode not in {
+            PRIMARY_PUBLICATION_MODE,
+            FALLBACK_PUBLICATION_MODE,
+        }:
+            raise QualificationError("expected publication mode is not allowed")
+        _require_exact_value(
+            marker["publication_mode"],
+            expected_publication_mode,
+            label="publication commit marker.publication_mode",
+        )
+    validated_metadata = _validate_run_metadata(
+        run_id=marker["run_id"],
+        execution_id=marker["execution_id"],
+        recorded_at=marker["recorded_at"],
+    )
+    for key, value in validated_metadata.items():
+        _require_exact_value(marker[key], value, label=f"publication commit marker.{key}")
+    if expected_run_metadata is not None:
+        expected = _require_exact_keys(
+            expected_run_metadata,
+            {"run_id", "execution_id", "recorded_at"},
+            label="expected publication run metadata",
+        )
+        expected = _validate_run_metadata(
+            run_id=expected["run_id"],
+            execution_id=expected["execution_id"],
+            recorded_at=expected["recorded_at"],
+        )
+        for key, value in expected.items():
+            _require_exact_value(marker[key], value, label=f"publication commit marker.{key}")
+
+    _require_sha256(marker["sha256sums_sha256"], label="publication SHA256SUMS SHA-256")
+    _require_sha256(
+        marker["bundle_filename_set_sha256"],
+        label="publication bundle filename-set SHA-256",
+    )
+    _require_sha256(
+        marker["final_output_directory_name_sha256"],
+        label="publication final output directory-name SHA-256",
+    )
+    _require_sha256(
+        marker["final_output_target_sha256"],
+        label="publication final output target SHA-256",
+    )
+    final_output_target = (
+        output_directory
+        if expected_final_output_target is None
+        else expected_final_output_target
+    )
+    if marker["final_output_directory_name_sha256"] != (
+        _final_output_directory_name_sha256(final_output_target.name)
+    ):
+        raise QualificationError(
+            "publication commit marker final output directory-name hash mismatch"
+        )
+    if marker["final_output_target_sha256"] != _final_output_target_sha256(
+        final_output_target
+    ):
+        raise QualificationError(
+            "publication commit marker final output target hash mismatch"
+        )
+    file_count = marker["bundle_file_count_excluding_commit_marker"]
+    if type(file_count) is not int or file_count <= 0:
+        raise QualificationError("publication bundle file count must be a positive integer")
+
+    try:
+        names = {entry.name for entry in output_directory.iterdir()}
+    except OSError as exc:
+        raise QualificationError("fallback publication directory could not be listed") from exc
+    if any(Path(name).name != name or not name for name in names):
+        raise QualificationError("fallback publication directory contains an unsafe filename")
+    if PUBLICATION_COMMIT_FILENAME not in names:
+        raise QualificationError("fallback publication commit marker is absent")
+    bundle_names = names - {PUBLICATION_COMMIT_FILENAME}
+    if len(bundle_names) != file_count:
+        raise QualificationError("publication commit marker bundle file count mismatch")
+    if _bundle_filename_set_sha256(bundle_names) != marker["bundle_filename_set_sha256"]:
+        raise QualificationError("publication commit marker bundle filename-set hash mismatch")
+
+    sums_payload = _read_publication_regular_file(
+        output_directory / "SHA256SUMS",
+        label="published SHA256SUMS",
+    )
+    if _sha256_bytes(sums_payload) != marker["sha256sums_sha256"]:
+        raise QualificationError("publication commit marker SHA256SUMS hash mismatch")
+    try:
+        sums_text = sums_payload.decode("ascii")
+    except UnicodeDecodeError as exc:
+        raise QualificationError("published SHA256SUMS is not ASCII") from exc
+    if not sums_text.endswith("\n") or "\r" in sums_text:
+        raise QualificationError("published SHA256SUMS has non-canonical line endings")
+    sum_lines = sums_text[:-1].split("\n")
+    if not sum_lines or any(not line for line in sum_lines):
+        raise QualificationError("published SHA256SUMS has an invalid line set")
+    declared_hashes: dict[str, str] = {}
+    for line in sum_lines:
+        if len(line) < 67 or line[64:66] != "  ":
+            raise QualificationError("published SHA256SUMS line is malformed")
+        digest, name = line[:64], line[66:]
+        _require_sha256(digest, label="published bundle member SHA-256")
+        if Path(name).name != name or not name or name in declared_hashes:
+            raise QualificationError("published SHA256SUMS filename is unsafe or duplicated")
+        declared_hashes[name] = digest
+    expected_member_names = bundle_names - {"SHA256SUMS"}
+    if set(declared_hashes) != expected_member_names:
+        raise QualificationError("published SHA256SUMS member set mismatch")
+    for name, expected_digest in declared_hashes.items():
+        payload = _read_publication_regular_file(
+            output_directory / name,
+            label="published bundle member",
+        )
+        if _sha256_bytes(payload) != expected_digest:
+            raise QualificationError("published bundle member SHA-256 mismatch")
+    try:
+        final_names = {entry.name for entry in output_directory.iterdir()}
+    except OSError as exc:
+        raise QualificationError("fallback publication directory final listing failed") from exc
+    if final_names != names:
+        raise QualificationError("fallback publication directory changed during validation")
+    return marker
+
+
+def _publish_bundle_with_terminal_marker(
+    *,
+    output_directory: Path,
+    complete_payloads: Mapping[str, bytes],
+    run_metadata: Mapping[str, str],
+    unsupported_errno: int,
+    source_staging: Path,
+    precommit_capability_warnings: Sequence[str],
+) -> dict[str, Any]:
+    if unsupported_errno not in ATOMIC_NOREPLACE_UNSUPPORTED_ERRNOS:
+        raise QualificationError("fallback requested for a non-approved errno")
+    commit_document = _publication_commit_document(
+        complete_payloads=complete_payloads,
+        run_metadata=run_metadata,
+        publication_mode=FALLBACK_PUBLICATION_MODE,
+        final_output_directory=output_directory,
+    )
+    try:
+        os.mkdir(output_directory, 0o700)
+    except FileExistsError as exc:
+        raise PublicationContended(
+            "final output appeared during atomic fallback directory creation"
+        ) from exc
+    except OSError as exc:
+        raise QualificationError("atomic fallback directory creation failed") from exc
+
+    marker_path = output_directory / PUBLICATION_COMMIT_FILENAME
+    commit_marker: dict[str, Any] | None = None
+    durability_warnings = list(precommit_capability_warnings)
+    try:
+        for name in sorted(complete_payloads):
+            if Path(name).name != name or name == PUBLICATION_COMMIT_FILENAME:
+                raise QualificationError("fallback output filename is unsafe")
+            _write_exclusive(output_directory / name, complete_payloads[name])
+        _write_exclusive(marker_path, _pretty_json_bytes(commit_document))
+        commit_marker = _validate_publication_commit(
+            output_directory,
+            expected_run_metadata=run_metadata,
+            expected_publication_mode=FALLBACK_PUBLICATION_MODE,
+        )
+    except Exception as exc:
+        try:
+            commit_marker = _validate_publication_commit(
+                output_directory,
+                expected_run_metadata=run_metadata,
+                expected_publication_mode=FALLBACK_PUBLICATION_MODE,
+            )
+        except Exception as validation_exc:
+            raise PartialPublicationError(
+                "fallback publication is PARTIAL_NOT_COMMITTED; terminal commit "
+                "marker is absent or invalid, the directory is preserved, and retry "
+                "requires a new run ID",
+                unsupported_errno=unsupported_errno,
+                commit_marker_present=marker_path.exists() or marker_path.is_symlink(),
+            ) from validation_exc
+        durability_warnings.append(
+            "POST_COMMIT_MARKER_WRITE_OR_VALIDATION_FINALIZATION_ERROR"
+        )
+
+    if commit_marker is None:
+        raise PartialPublicationError(
+            "fallback publication is PARTIAL_NOT_COMMITTED without a validated marker",
+            unsupported_errno=unsupported_errno,
+            commit_marker_present=marker_path.exists() or marker_path.is_symlink(),
+        )
+    try:
+        _fsync_directory(output_directory)
+    except OSError:
+        durability_warnings.append("POST_COMMIT_OUTPUT_DIRECTORY_FSYNC_FAILED")
+    try:
+        _fsync_directory(output_directory.parent)
+    except OSError:
+        durability_warnings.append("POST_COMMIT_PARENT_DIRECTORY_FSYNC_FAILED")
+    return {
+        "status": (
+            "PUBLISHED_WITH_POST_COMMIT_DURABILITY_WARNING"
+            if durability_warnings
+            else "PUBLISHED_DURABLE"
+        ),
+        "publication_mode": FALLBACK_PUBLICATION_MODE,
+        "directory_committed": True,
+        "atomic_no_replace": False,
+        "atomic_exclusive_final_mkdir": True,
+        "fallback_trigger_errno": unsupported_errno,
+        "terminal_commit_marker_filename": PUBLICATION_COMMIT_FILENAME,
+        "terminal_commit_marker_validated": True,
+        "terminal_commit_marker_postcommit_revalidated": True,
+        "bundle_file_count_excluding_commit_marker": commit_marker[
+            "bundle_file_count_excluding_commit_marker"
+        ],
+        "sha256sums_sha256": commit_marker["sha256sums_sha256"],
+        "partial_not_committed": False,
+        "source_staging_preserved": source_staging.exists(),
+        "durability_warning_codes": sorted(set(durability_warnings)),
+        "failure_record_allowed": False,
+    }
 
 
 def _publish_bundle(
     output_directory: Path,
     payloads: Mapping[str, bytes],
+    *,
+    run_metadata: Mapping[str, str] | None = None,
 ) -> dict[str, Any]:
+    if run_metadata is None:
+        raise QualificationError(
+            "publication requires validated run metadata for its terminal marker"
+        )
     expected = set(ALWAYS_OUTPUT_FILES) - {"SHA256SUMS"}
     allowed = expected | {CANONICAL_FILENAME}
     payload_names = set(payloads)
@@ -3576,9 +4115,7 @@ def _publish_bundle(
             dir=output_directory.parent,
         )
     )
-    committed = False
-    primary_error: Exception | None = None
-    durability_warnings: list[str] = []
+    precommit_capability_warnings: list[str] = []
     try:
         for name in sorted(payloads):
             if Path(name).name != name:
@@ -3588,35 +4125,96 @@ def _publish_bundle(
             f"{_sha256_bytes(payloads[name])}  {name}"
             for name in sorted(payloads)
         ]
-        _write_exclusive(staging / "SHA256SUMS", ("\n".join(sums) + "\n").encode("ascii"))
-        _fsync_directory(staging)
-        _rename_directory_noreplace(staging, output_directory)
-        committed = True
+        sums_payload = ("\n".join(sums) + "\n").encode("ascii")
+        _write_exclusive(staging / "SHA256SUMS", sums_payload)
+        complete_payloads = {**payloads, "SHA256SUMS": sums_payload}
+        primary_commit_document = _publication_commit_document(
+            complete_payloads=complete_payloads,
+            run_metadata=run_metadata,
+            publication_mode=PRIMARY_PUBLICATION_MODE,
+            final_output_directory=output_directory,
+        )
+        _write_exclusive(
+            staging / PUBLICATION_COMMIT_FILENAME,
+            _pretty_json_bytes(primary_commit_document),
+        )
+        _validate_publication_commit(
+            staging,
+            expected_run_metadata=run_metadata,
+            expected_publication_mode=PRIMARY_PUBLICATION_MODE,
+            expected_final_output_target=output_directory,
+        )
         try:
-            _fsync_directory(output_directory.parent)
-        except OSError:
-            durability_warnings.append("POST_COMMIT_PARENT_DIRECTORY_FSYNC_FAILED")
-    except Exception as exc:
-        primary_error = exc
-    if primary_error is not None:
-        if committed:
-            durability_warnings.append(
-                "POST_COMMIT_UNEXPECTED_PUBLICATION_FINALIZATION_ERROR"
+            _fsync_directory(staging)
+        except OSError as exc:
+            if not _directory_fsync_is_explicitly_unsupported(exc):
+                raise
+            precommit_capability_warnings.append(
+                "PRECOMMIT_STAGING_DIRECTORY_FSYNC_UNSUPPORTED"
             )
-        elif isinstance(primary_error, QualificationError):
-            raise primary_error
-        else:
-            raise QualificationError("bundle publication failed before atomic commit") from primary_error
-    if not committed:
-        raise QualificationError("bundle publication ended without an atomic commit")
+    except Exception as exc:
+        if isinstance(exc, QualificationError):
+            raise
+        raise QualificationError("bundle publication failed before atomic commit") from exc
+
+    try:
+        rename_warnings = _rename_directory_noreplace(staging, output_directory)
+    except AtomicNoReplaceUnsupported as exc:
+        return _publish_bundle_with_terminal_marker(
+            output_directory=output_directory,
+            complete_payloads=complete_payloads,
+            run_metadata=run_metadata,
+            unsupported_errno=exc.error_number,
+            source_staging=staging,
+            precommit_capability_warnings=precommit_capability_warnings,
+        )
+
+    durability_warnings = list(precommit_capability_warnings)
+    durability_warnings.extend(rename_warnings or [])
+    marker_postcommit_revalidated = False
+    marker_validation_error: Exception | None = None
+    for attempt in range(2):
+        try:
+            _validate_publication_commit(
+                output_directory,
+                expected_run_metadata=run_metadata,
+                expected_publication_mode=PRIMARY_PUBLICATION_MODE,
+            )
+        except Exception as exc:
+            marker_validation_error = exc
+            continue
+        if attempt == 1:
+            durability_warnings.append(
+                "POST_COMMIT_TERMINAL_MARKER_REVALIDATION_RETRY_REQUIRED"
+            )
+        marker_postcommit_revalidated = True
+        marker_validation_error = None
+        break
+    try:
+        _fsync_directory(output_directory.parent)
+    except OSError:
+        durability_warnings.append("POST_COMMIT_PARENT_DIRECTORY_FSYNC_FAILED")
+    if marker_validation_error is not None:
+        raise CommittedPublicationValidationError(
+            "atomically committed output failed terminal commit-marker validation "
+            "twice and is not accepted for qualification or canonical use",
+            publication_mode=PRIMARY_PUBLICATION_MODE,
+            durability_warning_codes=durability_warnings,
+        ) from marker_validation_error
     return {
         "status": (
             "PUBLISHED_WITH_POST_COMMIT_DURABILITY_WARNING"
             if durability_warnings
             else "PUBLISHED_DURABLE"
         ),
+        "publication_mode": PRIMARY_PUBLICATION_MODE,
         "directory_committed": True,
         "atomic_no_replace": True,
+        "atomic_exclusive_final_mkdir": False,
+        "terminal_commit_marker_filename": PUBLICATION_COMMIT_FILENAME,
+        "terminal_commit_marker_validated": True,
+        "terminal_commit_marker_postcommit_revalidated": marker_postcommit_revalidated,
+        "partial_not_committed": False,
         "durability_warning_codes": sorted(set(durability_warnings)),
         "failure_record_allowed": False,
     }
@@ -3630,7 +4228,7 @@ def _acquire_transaction_claim(
     *,
     output_directory: Path,
     failure_record_path: Path,
-) -> tuple[Path, int]:
+) -> tuple[Path, int, list[str]]:
     if failure_record_path.parent != output_directory.parent:
         raise QualificationError(
             "failure record must be an exclusive sibling of the output directory"
@@ -3641,6 +4239,7 @@ def _acquire_transaction_claim(
     _reject_forbidden_path(claim, label="qualification transaction claim")
     claim_created = False
     descriptor: int | None = None
+    capability_warnings: list[str] = []
     try:
         descriptor = os.open(
             claim,
@@ -3660,12 +4259,19 @@ def _acquire_transaction_claim(
                 raise QualificationError("transaction claim write made no progress")
             view = view[written:]
         os.fsync(descriptor)
-        _fsync_directory(claim.parent)
+        try:
+            _fsync_directory(claim.parent)
+        except OSError as exc:
+            if not _directory_fsync_is_explicitly_unsupported(exc):
+                raise
+            capability_warnings.append(
+                "TRANSACTION_CLAIM_PARENT_DIRECTORY_FSYNC_UNSUPPORTED"
+            )
     except FileExistsError as exc:
         raise TransactionClaimContended(
             "qualification transaction claim is already owned"
         ) from exc
-    except Exception:
+    except Exception as exc:
         if descriptor is not None:
             os.close(descriptor)
             descriptor = None
@@ -3674,10 +4280,14 @@ def _acquire_transaction_claim(
                 claim.unlink()
             except FileNotFoundError:
                 pass
-        raise
+        if isinstance(exc, QualificationError):
+            raise
+        raise QualificationError(
+            "transaction claim could not be durably acquired"
+        ) from exc
     if descriptor is None:
         raise QualificationError("transaction claim descriptor was not acquired")
-    return claim, descriptor
+    return claim, descriptor, capability_warnings
 
 
 def _release_transaction_claim(claim: Path, descriptor: int) -> list[str]:
@@ -3700,9 +4310,31 @@ def _release_transaction_claim(claim: Path, descriptor: int) -> list[str]:
     return warnings
 
 
-def _publish_failure_record(path: Path, payload: Mapping[str, Any]) -> None:
-    _write_exclusive(path, _pretty_json_bytes(payload))
-    _fsync_directory(path.parent)
+def _publish_failure_record(path: Path, payload: Mapping[str, Any]) -> list[str]:
+    failure_bytes = _pretty_json_bytes(payload)
+    warnings: list[str] = []
+    try:
+        _write_exclusive(path, failure_bytes)
+    except ExclusiveWriteCommittedCloseError as exc:
+        try:
+            verified_bytes = _read_publication_regular_file(
+                path,
+                label="committed failure record",
+            )
+        except QualificationError as verification_exc:
+            raise QualificationError(
+                "failure record close failed and committed bytes could not be verified"
+            ) from verification_exc
+        if verified_bytes != failure_bytes:
+            raise QualificationError(
+                "failure record close failed and committed bytes do not match"
+            ) from exc
+        warnings.append("FAILURE_RECORD_DESCRIPTOR_CLOSE_FAILED")
+    try:
+        _fsync_directory(path.parent)
+    except OSError:
+        warnings.append("FAILURE_RECORD_PARENT_DIRECTORY_FSYNC_FAILED")
+    return warnings
 
 
 def qualify_gse149487_plumage(
@@ -3751,7 +4383,11 @@ def qualify_gse149487_plumage(
             run_metadata=run_metadata,
             snapshot_root=snapshot_root,
         )
-    publication = _publish_bundle(paths["output directory"], payloads)
+    publication = _publish_bundle(
+        paths["output directory"],
+        payloads,
+        run_metadata=run_metadata,
+    )
     return {**report, "publication": publication}
 
 
@@ -3820,7 +4456,7 @@ def execute_qualification(
         }
 
     try:
-        claim, claim_descriptor = _acquire_transaction_claim(
+        claim, claim_descriptor, claim_acquisition_warnings = _acquire_transaction_claim(
             output_directory=output_path,
             failure_record_path=failure_path,
         )
@@ -3840,6 +4476,73 @@ def execute_qualification(
             qualification_kwargs["output_directory"] = output_path
             try:
                 report = qualify_gse149487_plumage(**qualification_kwargs)
+            except PublicationContended as exc:
+                result = contention(
+                    "OUTPUT_PUBLICATION_CONTENDED",
+                    f"{exc}; no failure record was published",
+                )
+            except PartialPublicationError as exc:
+                result = {
+                    "kind": "PARTIAL_NOT_COMMITTED",
+                    "partial": {
+                        "contract_id": CONTRACT_ID,
+                        "schema_version": "1.0.0",
+                        "record_type": (
+                            "GSE149487_PLUMAGE_FALLBACK_PARTIAL_NOT_COMMITTED"
+                        ),
+                        "dataset_id": DATASET_ID,
+                        "run_id": run_id,
+                        "execution_id": execution_id,
+                        "recorded_at": recorded_at,
+                        "status": "PARTIAL_NOT_COMMITTED",
+                        "publication_mode": FALLBACK_PUBLICATION_MODE,
+                        "fallback_trigger_errno": exc.unsupported_errno,
+                        "terminal_commit_marker_present": (
+                            exc.commit_marker_present
+                        ),
+                        "terminal_commit_marker_validated": False,
+                        "output_directory_preserved": True,
+                        "published": False,
+                        "qualified": False,
+                        "canonical_accepted": False,
+                        "canonical_record_count": 0,
+                        "failure_record_materialized": False,
+                        "retry_requires_new_run_id": True,
+                        "raw_member_identifiers_emitted": False,
+                        "raw_rows_emitted": False,
+                    },
+                }
+            except CommittedPublicationValidationError as exc:
+                result = {
+                    "kind": "COMMITTED_NOT_ACCEPTED",
+                    "committed_not_accepted": {
+                        "contract_id": CONTRACT_ID,
+                        "schema_version": "1.0.0",
+                        "record_type": (
+                            "GSE149487_PLUMAGE_COMMITTED_NOT_ACCEPTED"
+                        ),
+                        "dataset_id": DATASET_ID,
+                        "run_id": run_id,
+                        "execution_id": execution_id,
+                        "recorded_at": recorded_at,
+                        "status": "COMMITTED_NOT_ACCEPTED",
+                        "publication_mode": exc.publication_mode,
+                        "directory_committed": True,
+                        "output_directory_preserved": True,
+                        "publication_accepted": False,
+                        "terminal_commit_marker_validated": False,
+                        "qualified": False,
+                        "canonical_accepted": False,
+                        "canonical_record_count": 0,
+                        "failure_record_materialized": False,
+                        "retry_requires_new_run_id": True,
+                        "durability_warning_codes": list(
+                            exc.durability_warning_codes
+                        ),
+                        "raw_member_identifiers_emitted": False,
+                        "raw_rows_emitted": False,
+                    },
+                }
             except QualificationError as exc:
                 if output_path.exists() or output_path.is_symlink():
                     result = contention(
@@ -3848,7 +4551,14 @@ def execute_qualification(
                     )
                 else:
                     failure = failure_payload(type(exc).__name__, str(exc))
-                    _publish_failure_record(failure_path, failure)
+                    failure_record_warnings = _publish_failure_record(
+                        failure_path,
+                        failure,
+                    )
+                    if failure_record_warnings:
+                        failure["failure_record_durability_warning_codes"] = (
+                            failure_record_warnings
+                        )
                     result = {"kind": "FAILURE", "failure": failure}
             except Exception as exc:  # pragma: no cover - last-resort fail-closed boundary
                 if output_path.exists() or output_path.is_symlink():
@@ -3861,12 +4571,22 @@ def execute_qualification(
                         "UNEXPECTED_EXECUTION_ERROR",
                         type(exc).__name__,
                     )
-                    _publish_failure_record(failure_path, failure)
+                    failure_record_warnings = _publish_failure_record(
+                        failure_path,
+                        failure,
+                    )
+                    if failure_record_warnings:
+                        failure["failure_record_durability_warning_codes"] = (
+                            failure_record_warnings
+                        )
                     result = {"kind": "FAILURE", "failure": failure}
             else:
                 result = {"kind": "BUNDLE", "report": report}
     finally:
-        claim_warnings = _release_transaction_claim(claim, claim_descriptor)
+        claim_warnings = sorted(
+            set(claim_acquisition_warnings)
+            | set(_release_transaction_claim(claim, claim_descriptor))
+        )
 
     if claim_warnings:
         if result["kind"] == "BUNDLE":
@@ -3880,9 +4600,15 @@ def execute_qualification(
                 "report": {**result["report"], "publication": publication},
             }
         elif result["kind"] == "FAILURE":
-            result["failure"]["transaction_claim_cleanup_warning_codes"] = claim_warnings
+            result["failure"]["transaction_claim_warning_codes"] = claim_warnings
+        elif result["kind"] == "PARTIAL_NOT_COMMITTED":
+            result["partial"]["transaction_claim_warning_codes"] = claim_warnings
+        elif result["kind"] == "COMMITTED_NOT_ACCEPTED":
+            result["committed_not_accepted"][
+                "transaction_claim_warning_codes"
+            ] = claim_warnings
         else:
-            result["contention"]["transaction_claim_cleanup_warning_codes"] = claim_warnings
+            result["contention"]["transaction_claim_warning_codes"] = claim_warnings
     return result
 
 
@@ -3925,6 +4651,16 @@ def main(argv: Sequence[str] | None = None) -> int:
                     "failure_type": failure["failure_type"],
                     "qualified": False,
                     "canonical_record_count": 0,
+                    "failure_record_durability_warning_count": len(
+                        failure.get("failure_record_durability_warning_codes", [])
+                    ),
+                    "transaction_claim_warning_count": len(
+                        failure.get("transaction_claim_warning_codes", [])
+                    ),
+                    "durability_warning_count": len(
+                        failure.get("failure_record_durability_warning_codes", [])
+                    )
+                    + len(failure.get("transaction_claim_warning_codes", [])),
                 },
                 sort_keys=True,
             )
@@ -3945,6 +4681,48 @@ def main(argv: Sequence[str] | None = None) -> int:
             )
         )
         return 3
+    if result["kind"] == "PARTIAL_NOT_COMMITTED":
+        partial = result["partial"]
+        print(
+            json.dumps(
+                {
+                    "dataset_id": DATASET_ID,
+                    "status": partial["status"],
+                    "publication_mode": partial["publication_mode"],
+                    "published": False,
+                    "qualified": False,
+                    "canonical_accepted": False,
+                    "canonical_record_count": 0,
+                    "failure_record_materialized": False,
+                    "retry_requires_new_run_id": True,
+                },
+                sort_keys=True,
+            )
+        )
+        return 4
+    if result["kind"] == "COMMITTED_NOT_ACCEPTED":
+        committed = result["committed_not_accepted"]
+        print(
+            json.dumps(
+                {
+                    "dataset_id": DATASET_ID,
+                    "status": committed["status"],
+                    "publication_mode": committed["publication_mode"],
+                    "directory_committed": True,
+                    "publication_accepted": False,
+                    "qualified": False,
+                    "canonical_accepted": False,
+                    "canonical_record_count": 0,
+                    "failure_record_materialized": False,
+                    "durability_warning_count": len(
+                        committed["durability_warning_codes"]
+                    )
+                    + len(committed.get("transaction_claim_warning_codes", [])),
+                },
+                sort_keys=True,
+            )
+        )
+        return 5
     report = result["report"]
     print(
         json.dumps(
@@ -3956,6 +4734,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 "qualified_independent_ordinary_study_count": report[
                     "qualified_independent_ordinary_study_count"
                 ],
+                "publication_mode": report["publication"]["publication_mode"],
                 "publication_status": report["publication"]["status"],
                 "post_commit_durability_warning_count": len(
                     report["publication"]["durability_warning_codes"]
