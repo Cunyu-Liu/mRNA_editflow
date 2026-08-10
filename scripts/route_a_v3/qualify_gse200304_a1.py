@@ -527,7 +527,7 @@ class CommittedNotAcceptedError(PublicationError):
         self.durability_warnings = tuple(durability_warnings)
 
 
-FileIdentity = tuple[int, int, int, int, int, int]
+FileIdentity = tuple[int, int, int]
 DirectoryCoreIdentity = tuple[int, int, int]
 
 
@@ -931,10 +931,7 @@ def _file_identity(info: os.stat_result) -> FileIdentity:
     return (
         info.st_dev,
         info.st_ino,
-        info.st_mode,
         info.st_size,
-        info.st_mtime_ns,
-        info.st_ctime_ns,
     )
 
 
@@ -961,12 +958,18 @@ def _open_directory_no_symlinks(path: Path | str, *, label: str) -> DirectoryBin
                 next_descriptor = os.open(component, flags, dir_fd=descriptor)
             except OSError as exc:
                 raise ScopeViolation(f"{label} contains a symlink or non-directory") from exc
+            try:
+                opened_component = os.fstat(next_descriptor)
+                if not stat.S_ISDIR(opened_component.st_mode):
+                    raise ScopeViolation(f"{label} component is not a directory")
+            except Exception:
+                os.close(next_descriptor)
+                raise
             os.close(descriptor)
             descriptor = next_descriptor
         opened = os.fstat(descriptor)
-        observed = os.stat(absolute, follow_symlinks=False)
-        if not stat.S_ISDIR(opened.st_mode) or _file_identity(opened) != _file_identity(observed):
-            raise ScopeViolation(f"{label} directory identity changed while opening")
+        if not stat.S_ISDIR(opened.st_mode):
+            raise ScopeViolation(f"{label} opened descriptor is not a directory")
         return DirectoryBinding(
             path=absolute,
             fd=descriptor,
@@ -980,23 +983,25 @@ def _open_directory_no_symlinks(path: Path | str, *, label: str) -> DirectoryBin
 
 
 def _assert_directory_binding(binding: DirectoryBinding, *, full: bool = True) -> None:
+    # Descriptor fstat is the identity authority.  Reopening the lexical path
+    # with O_DIRECTORY|O_NOFOLLOW detects a genuine namespace replacement
+    # without comparing potentially stale NFS path-stat metadata.
+    del full
     descriptor_info = os.fstat(binding.fd)
+    if (
+        not stat.S_ISDIR(descriptor_info.st_mode)
+        or _directory_core_identity(descriptor_info) != binding.core_identity
+    ):
+        raise ScopeViolation(f"{binding.label} descriptor identity changed")
+    reopened = _open_directory_no_symlinks(
+        binding.path, label=f"{binding.label} namespace rebind"
+    )
     try:
-        path_info = os.stat(binding.path, follow_symlinks=False)
-    except FileNotFoundError as exc:
-        raise ScopeViolation(f"{binding.label} disappeared after verified snapshot") from exc
-    if not stat.S_ISDIR(path_info.st_mode):
-        raise ScopeViolation(f"{binding.label} is no longer a directory")
-    if full:
-        if _file_identity(descriptor_info) != binding.full_identity:
-            raise ScopeViolation(f"{binding.label} descriptor identity changed")
-        if _file_identity(path_info) != binding.full_identity:
-            raise ScopeViolation(f"{binding.label} path identity changed")
-    else:
-        if _directory_core_identity(descriptor_info) != binding.core_identity:
-            raise ScopeViolation(f"{binding.label} descriptor identity changed")
-        if _directory_core_identity(path_info) != binding.core_identity:
-            raise ScopeViolation(f"{binding.label} path identity changed")
+        reopened_info = os.fstat(reopened.fd)
+        if _directory_core_identity(reopened_info) != binding.core_identity:
+            raise ScopeViolation(f"{binding.label} namespace descriptor changed")
+    finally:
+        os.close(reopened.fd)
 
 
 def _open_relative_parent(root: DirectoryBinding, parts: Sequence[str], *, label: str) -> int:
@@ -1009,24 +1014,87 @@ def _open_relative_parent(root: DirectoryBinding, parts: Sequence[str], *, label
     )
     try:
         for component in parts:
-            before = os.stat(component, dir_fd=descriptor, follow_symlinks=False)
-            if stat.S_ISLNK(before.st_mode) or not stat.S_ISDIR(before.st_mode):
-                raise ScopeViolation(f"{label} parent component is not a non-symlink directory")
             try:
                 next_descriptor = os.open(component, flags, dir_fd=descriptor)
             except OSError as exc:
                 raise ScopeViolation(f"{label} parent component could not be opened safely") from exc
-            opened = os.fstat(next_descriptor)
-            after = os.stat(component, dir_fd=descriptor, follow_symlinks=False)
-            if _file_identity(before) != _file_identity(opened) or _file_identity(after) != _file_identity(opened):
+            try:
+                opened = os.fstat(next_descriptor)
+                if not stat.S_ISDIR(opened.st_mode):
+                    raise ScopeViolation(f"{label} parent descriptor is not a directory")
+            except Exception:
                 os.close(next_descriptor)
-                raise ScopeViolation(f"{label} parent identity changed while opening")
+                raise
             os.close(descriptor)
             descriptor = next_descriptor
         return descriptor
     except Exception:
         os.close(descriptor)
         raise
+
+
+def _open_regular_leaf_at(parent_fd: int, leaf: str, *, label: str) -> tuple[int, os.stat_result]:
+    flags = (
+        os.O_RDONLY
+        | getattr(os, "O_CLOEXEC", 0)
+        | getattr(os, "O_NOFOLLOW", 0)
+        | getattr(os, "O_NONBLOCK", 0)
+    )
+    try:
+        descriptor = os.open(leaf, flags, dir_fd=parent_fd)
+    except OSError as exc:
+        raise ScopeViolation(f"{label} could not be opened safely") from exc
+    try:
+        opened = os.fstat(descriptor)
+        if not stat.S_ISREG(opened.st_mode):
+            raise ScopeViolation(f"{label} opened descriptor is not a regular file")
+    except Exception:
+        os.close(descriptor)
+        raise
+    return descriptor, opened
+
+
+def _assert_leaf_descriptor_binding(
+    parent_fd: int,
+    leaf: str,
+    identity: FileIdentity,
+    *,
+    label: str,
+) -> None:
+    descriptor, reopened = _open_regular_leaf_at(parent_fd, leaf, label=label)
+    try:
+        if _file_identity(reopened) != identity:
+            raise ScopeViolation(f"{label} namespace descriptor binding changed")
+    finally:
+        os.close(descriptor)
+
+
+def _assert_directory_entry_descriptor_binding(
+    parent_fd: int,
+    component: str,
+    expected: os.stat_result,
+    *,
+    label: str,
+) -> None:
+    flags = (
+        os.O_RDONLY
+        | getattr(os, "O_CLOEXEC", 0)
+        | getattr(os, "O_DIRECTORY", 0)
+        | getattr(os, "O_NOFOLLOW", 0)
+    )
+    try:
+        descriptor = os.open(component, flags, dir_fd=parent_fd)
+    except OSError as exc:
+        raise ScopeViolation(f"{label} directory entry could not be reopened safely") from exc
+    try:
+        reopened = os.fstat(descriptor)
+        if (
+            not stat.S_ISDIR(reopened.st_mode)
+            or _directory_core_identity(reopened) != _directory_core_identity(expected)
+        ):
+            raise ScopeViolation(f"{label} directory descriptor binding changed")
+    finally:
+        os.close(descriptor)
 
 
 def _read_relative_verified_snapshot(
@@ -1041,27 +1109,9 @@ def _read_relative_verified_snapshot(
     parent_fd = _open_relative_parent(root, parts[:-1], label=label)
     leaf = parts[-1]
     try:
+        descriptor, opened = _open_regular_leaf_at(parent_fd, leaf, label=label)
         try:
-            before = os.stat(leaf, dir_fd=parent_fd, follow_symlinks=False)
-        except FileNotFoundError as exc:
-            raise QualificationError(f"{label} is missing") from exc
-        if stat.S_ISLNK(before.st_mode) or not stat.S_ISREG(before.st_mode):
-            raise ScopeViolation(f"{label} must be a non-symlink regular file")
-        flags = (
-            os.O_RDONLY
-            | getattr(os, "O_CLOEXEC", 0)
-            | getattr(os, "O_NOFOLLOW", 0)
-            | getattr(os, "O_NONBLOCK", 0)
-        )
-        try:
-            descriptor = os.open(leaf, flags, dir_fd=parent_fd)
-        except OSError as exc:
-            raise ScopeViolation(f"{label} could not be opened safely") from exc
-        try:
-            opened = os.fstat(descriptor)
             identity = _file_identity(opened)
-            if not stat.S_ISREG(opened.st_mode) or identity != _file_identity(before):
-                raise ScopeViolation(f"{label} identity changed while opening")
             digest = hashlib.sha256()
             chunks: list[bytes] = []
             while True:
@@ -1072,13 +1122,18 @@ def _read_relative_verified_snapshot(
                 chunks.append(block)
             payload = b"".join(chunks)
             final = os.fstat(descriptor)
-            after = os.stat(leaf, dir_fd=parent_fd, follow_symlinks=False)
-            if _file_identity(final) != identity or _file_identity(after) != identity:
+            if _file_identity(final) != identity:
                 raise ScopeViolation(f"{label} changed during descriptor capture")
-            if len(payload) != opened.st_size:
+            if len(payload) != opened.st_size or len(payload) != final.st_size:
                 raise ScopeViolation(f"{label} byte count changed during descriptor capture")
         finally:
             os.close(descriptor)
+        _assert_leaf_descriptor_binding(
+            parent_fd,
+            leaf,
+            identity,
+            label=f"{label} post-capture leaf",
+        )
     finally:
         os.close(parent_fd)
     observed_sha256 = digest.hexdigest()
@@ -1095,9 +1150,12 @@ def _assert_relative_identity(
     parts = _safe_relative_parts(relative_path, label=label)
     parent_fd = _open_relative_parent(root, parts[:-1], label=label)
     try:
-        info = os.stat(parts[-1], dir_fd=parent_fd, follow_symlinks=False)
-        if _file_identity(info) != identity or not stat.S_ISREG(info.st_mode):
-            raise ScopeViolation(f"{label} path identity changed after verified snapshot")
+        _assert_leaf_descriptor_binding(
+            parent_fd,
+            parts[-1],
+            identity,
+            label=f"{label} post-snapshot leaf",
+        )
     finally:
         os.close(parent_fd)
 
@@ -2339,18 +2397,11 @@ def _write_exclusive_at(
 
 def _read_output_member_at(directory_fd: int, name: str) -> bytes:
     _safe_output_name(name)
-    before = os.stat(name, dir_fd=directory_fd, follow_symlinks=False)
-    if stat.S_ISLNK(before.st_mode) or not stat.S_ISREG(before.st_mode):
-        raise PublicationError(f"published member {name} is not a regular file")
-    descriptor = os.open(
-        name,
-        os.O_RDONLY | getattr(os, "O_CLOEXEC", 0) | getattr(os, "O_NOFOLLOW", 0),
-        dir_fd=directory_fd,
+    descriptor, opened = _open_regular_leaf_at(
+        directory_fd, name, label=f"published member {name}"
     )
+    identity = _file_identity(opened)
     try:
-        opened = os.fstat(descriptor)
-        if _file_identity(opened) != _file_identity(before):
-            raise PublicationError(f"published member {name} identity changed while opening")
         chunks: list[bytes] = []
         while True:
             block = os.read(descriptor, 1 << 20)
@@ -2358,15 +2409,20 @@ def _read_output_member_at(directory_fd: int, name: str) -> bytes:
                 break
             chunks.append(block)
         final = os.fstat(descriptor)
-        after = os.stat(name, dir_fd=directory_fd, follow_symlinks=False)
-        if _file_identity(final) != _file_identity(opened) or _file_identity(after) != _file_identity(opened):
+        if _file_identity(final) != identity:
             raise PublicationError(f"published member {name} changed during validation")
         payload = b"".join(chunks)
-        if len(payload) != opened.st_size:
+        if len(payload) != opened.st_size or len(payload) != final.st_size:
             raise PublicationError(f"published member {name} byte count changed")
-        return payload
     finally:
         os.close(descriptor)
+    _assert_leaf_descriptor_binding(
+        directory_fd,
+        name,
+        identity,
+        label=f"published member {name} post-read leaf",
+    )
+    return payload
 
 
 def _publication_marker_document(
@@ -2551,11 +2607,12 @@ def _publish_closed_bundle(
             warnings.extend(_write_exclusive_at(output_fd, name, complete_payloads[name]))
         _publication_fault("precommit_output_fsync")
         os.fsync(output_fd)
-        namespace = os.stat(
-            output_directory.name, dir_fd=parent.fd, follow_symlinks=False
+        _assert_directory_entry_descriptor_binding(
+            parent.fd,
+            output_directory.name,
+            opened_output,
+            label="output namespace before terminal commit",
         )
-        if _directory_core_identity(namespace) != _directory_core_identity(opened_output):
-            raise PublicationError("output namespace changed before terminal commit")
         _publication_fault("precommit_parent_fsync")
         os.fsync(parent.fd)
         _assert_directory_binding(parent, full=False)
@@ -2586,15 +2643,12 @@ def _publish_closed_bundle(
                     output_directory=output_directory,
                 )
                 _publication_fault("post_marker_stat")
-                namespace = os.stat(
-                    output_directory.name, dir_fd=parent.fd, follow_symlinks=False
+                _assert_directory_entry_descriptor_binding(
+                    parent.fd,
+                    output_directory.name,
+                    opened_output,
+                    label="output namespace after terminal commit",
                 )
-                if _directory_core_identity(namespace) != _directory_core_identity(
-                    opened_output
-                ):
-                    raise PublicationError(
-                        "output namespace identity changed after terminal commit"
-                    )
                 _assert_directory_binding(parent, full=False)
                 accepted = True
                 break

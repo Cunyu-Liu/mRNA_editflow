@@ -830,6 +830,106 @@ def test_root_manifest_hash_drift_fails_before_manifest_parse(
     assert _read_json(output / "FAILURE_REPORT.json")["failure_code"] == "INPUT_INTEGRITY_FAILED"
 
 
+def test_verified_snapshot_ignores_stale_preopen_path_metadata(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root_path = tmp_path / "ordinary_root"
+    parent = root_path / "GSE200302"
+    parent.mkdir(parents=True)
+    payload = b"descriptor-authoritative-nfs-snapshot\n"
+    candidate = parent / "asset.bin"
+    candidate.write_bytes(payload)
+    binding = QUALIFY._open_directory_no_symlinks(
+        root_path, label="stale metadata fixture root"
+    )
+    path_stat_calls = 0
+
+    def stale_path_stat_must_not_be_identity_authority(
+        *args: Any, **kwargs: Any
+    ) -> object:
+        nonlocal path_stat_calls
+        del args, kwargs
+        path_stat_calls += 1
+        raise AssertionError("stale path-stat metadata was consulted")
+
+    monkeypatch.setattr(QUALIFY.os, "stat", stale_path_stat_must_not_be_identity_authority)
+    try:
+        captured, provenance, _ = QUALIFY._read_relative_verified_snapshot(
+            binding,
+            "GSE200302/asset.bin",
+            label="stale preopen metadata asset",
+            expected_sha256=_sha256(payload),
+            expected_bytes=len(payload),
+        )
+    finally:
+        os.close(binding.fd)
+    assert captured == payload
+    assert provenance == {"sha256": _sha256(payload), "bytes": len(payload)}
+    assert path_stat_calls == 0
+
+
+def test_intermediate_symlink_is_rejected_by_openat_directory_walk(
+    tmp_path: Path,
+) -> None:
+    root_path = tmp_path / "ordinary_root"
+    root_path.mkdir()
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    (outside / "asset.bin").write_bytes(b"outside\n")
+    (root_path / "linked_parent").symlink_to(outside, target_is_directory=True)
+    binding = QUALIFY._open_directory_no_symlinks(
+        root_path, label="intermediate symlink fixture root"
+    )
+    try:
+        with pytest.raises(QUALIFY.ScopeViolation, match="parent component"):
+            QUALIFY._read_relative_verified_snapshot(
+                binding,
+                "linked_parent/asset.bin",
+                label="intermediate symlink asset",
+            )
+    finally:
+        os.close(binding.fd)
+
+
+def test_leaf_replacement_during_capture_is_rejected_by_descriptor_rebind(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root_path = tmp_path / "ordinary_root"
+    root_path.mkdir()
+    payload = b"R" * (2 << 20)
+    candidate = root_path / "asset.bin"
+    displaced = root_path / "asset.original.bin"
+    candidate.write_bytes(payload)
+    binding = QUALIFY._open_directory_no_symlinks(
+        root_path, label="leaf replacement fixture root"
+    )
+    original_read = QUALIFY.os.read
+    replaced = False
+
+    def replace_leaf_after_first_read(descriptor: int, count: int) -> bytes:
+        nonlocal replaced
+        block = original_read(descriptor, count)
+        if block and not replaced:
+            replaced = True
+            candidate.rename(displaced)
+            candidate.write_bytes(payload)
+        return block
+
+    monkeypatch.setattr(QUALIFY.os, "read", replace_leaf_after_first_read)
+    try:
+        with pytest.raises(QUALIFY.ScopeViolation, match="descriptor binding changed"):
+            QUALIFY._read_relative_verified_snapshot(
+                binding,
+                "asset.bin",
+                label="leaf replacement asset",
+                expected_sha256=_sha256(payload),
+                expected_bytes=len(payload),
+            )
+    finally:
+        os.close(binding.fd)
+    assert replaced is True
+
+
 def test_symlink_asset_fails_closed_without_following_target(
     tmp_path: Path,
     full_fixture: Mapping[str, Any],
