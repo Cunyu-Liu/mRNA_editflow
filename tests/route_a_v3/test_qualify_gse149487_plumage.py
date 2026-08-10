@@ -25,6 +25,7 @@ ASSET_MANIFEST_PATH = ROOT / "configs" / "route_a_v3_gse149487_asset_manifest_v2
 PROTOCOL_PATH = ROOT / "configs" / "route_a_v3_gse149487_a1_qualification.json"
 CANONICAL_SCHEMA_PATH = ROOT / "schemas" / "route_a_v3" / "canonical_intervention_record.schema.json"
 A0_REGISTRY_PATH = ROOT / "docs" / "execution" / "route_a_v3_data_role_registry.yaml"
+DECISION_LOG_PATH = ROOT / "docs" / "execution" / "route_a_v3_decision_log.yaml"
 
 SPEC = importlib.util.spec_from_file_location("qualify_gse149487_plumage", MODULE_PATH)
 assert SPEC and SPEC.loader
@@ -155,10 +156,22 @@ def _fixture_repo_and_data(
     contract.write_text("fixture contract\n", encoding="utf-8")
     shutil.copy2(ROOT / "configs/route_a_v3_a1_qualification.json", repo / "configs/route_a_v3_a1_qualification.json")
     shutil.copy2(A0_REGISTRY_PATH, repo / "docs/execution/route_a_v3_data_role_registry.yaml")
+    shutil.copy2(DECISION_LOG_PATH, repo / "docs/execution/route_a_v3_decision_log.yaml")
     shutil.copy2(CANONICAL_SCHEMA_PATH, repo / "schemas/route_a_v3/canonical_intervention_record.schema.json")
     shutil.copy2(V4_PATH, repo / "scripts/route_a_v3/reconstruct_gse149487_plumage.py")
     shutil.copy2(MODULE_PATH, repo / "scripts/route_a_v3/qualify_gse149487_plumage.py")
     shutil.copy2(TEST_PATH, repo / "tests/route_a_v3/test_qualify_gse149487_plumage.py")
+    production_protocol = json.loads(PROTOCOL_PATH.read_text(encoding="utf-8"))
+    preflight_binding = production_protocol["stop_before_data_preflight_binding"]
+    for path_key in (
+        "external_evidence_config_path",
+        "preflight_script_path",
+        "preflight_test_path",
+    ):
+        relative = preflight_binding[path_key]
+        target = repo / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(ROOT / relative, target)
 
     moesm3 = data / "41467_2021_24445_MOESM3_ESM.xlsx"
     moesm8 = data / "41467_2021_24445_MOESM8_ESM.xlsx"
@@ -209,11 +222,12 @@ def _fixture_repo_and_data(
     fixture_asset_manifest = repo / "configs/route_a_v3_gse149487_asset_manifest_v2.json"
     _write_json(fixture_asset_manifest, asset_manifest)
 
-    protocol = json.loads(PROTOCOL_PATH.read_text(encoding="utf-8"))
+    protocol = production_protocol
     authority = protocol["authority"]
     authority["contract_sha256"] = _sha256(contract)
     authority["a1_qualification_sha256"] = _sha256(repo / authority["a1_qualification_path"])
     authority["data_role_registry_sha256"] = _sha256(repo / authority["data_role_registry_path"])
+    authority["decision_log_sha256"] = _sha256(repo / authority["decision_log_path"])
     authority["canonical_schema_sha256"] = _sha256(repo / authority["canonical_schema_path"])
     authority["asset_manifest_sha256"] = _sha256(fixture_asset_manifest)
     authority["v4_helper_sha256"] = _sha256(repo / authority["v4_helper_path"])
@@ -265,7 +279,14 @@ def _commit(repo: Path, message: str) -> str:
     return _git(repo, "rev-parse", "HEAD")
 
 
-def _git_binding_fixture(tmp_path: Path) -> dict[str, Any]:
+def _git_binding_fixture(
+    tmp_path: Path,
+    *,
+    bound: bool = True,
+    binding_extra_path: bool = False,
+    binding_extra_config_change: bool = False,
+    implementation_wrong_unknown: bool = False,
+) -> dict[str, Any]:
     repo = tmp_path / "git_binding_repo"
     repo.mkdir()
     _git(repo, "init")
@@ -274,10 +295,12 @@ def _git_binding_fixture(tmp_path: Path) -> dict[str, Any]:
 
     contract = repo / "docs/goals/contract.md"
     registry = repo / "docs/execution/registry.yaml"
+    decision_log = repo / "docs/execution/decision_log.yaml"
     contract.parent.mkdir(parents=True)
     registry.parent.mkdir(parents=True)
     contract.write_text("active contract\n", encoding="utf-8")
     registry.write_text("active registry\n", encoding="utf-8")
+    decision_log.write_text("active decisions\n", encoding="utf-8")
     active = _commit(repo, "active authority")
 
     qualifier = repo / "scripts/qualifier.py"
@@ -286,21 +309,57 @@ def _git_binding_fixture(tmp_path: Path) -> dict[str, Any]:
     focused_test.parent.mkdir(parents=True)
     qualifier.write_text("print('qualifier')\n", encoding="utf-8")
     focused_test.write_text("def test_fixture(): pass\n", encoding="utf-8")
+    qualifier_config = repo / QUAL.QUALIFIER_CONFIG_PATH
+    qualifier_config.parent.mkdir(parents=True)
+    implementation_config = {
+        "protocol_id": QUAL.PROTOCOL_ID,
+        "authority": {"implementation_commit": "UNKNOWN_NOT_ASSERTED"},
+        "stop_before_data_preflight_binding": {
+            "status": "UNKNOWN_NOT_ASSERTED",
+            "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+        },
+        "current_gate_contract": {"qualified": False},
+    }
+    if implementation_wrong_unknown:
+        implementation_config["stop_before_data_preflight_binding"]["status"] = (
+            "BOUND"
+        )
+    _write_json(qualifier_config, implementation_config)
     implementation = _commit(repo, "implementation")
+    binding = None
+    if bound:
+        binding_config = json.loads(json.dumps(implementation_config))
+        binding_config["authority"]["implementation_commit"] = implementation
+        binding_config["stop_before_data_preflight_binding"]["status"] = "BOUND"
+        binding_config["stop_before_data_preflight_binding"][
+            "implementation_commit"
+        ] = implementation
+        if binding_extra_config_change:
+            binding_config["current_gate_contract"]["qualified"] = True
+        _write_json(qualifier_config, binding_config)
+        if binding_extra_path:
+            (repo / "binding_extra.txt").write_text(
+                "impermissible B-side path\n",
+                encoding="utf-8",
+            )
+        binding = _commit(repo, "bind qualifier config")
     return {
         "repo": repo,
         "accepted": accepted,
         "active": active,
         "implementation": implementation,
+        "binding": binding,
         "authority_files": (
             ("docs/goals/contract.md", _sha256(contract)),
             ("docs/execution/registry.yaml", _sha256(registry)),
+            ("docs/execution/decision_log.yaml", _sha256(decision_log)),
         ),
         "implementation_files": (
             ("scripts/qualifier.py", _sha256(qualifier)),
             ("tests/test_qualifier.py", _sha256(focused_test)),
         ),
         "qualifier": qualifier,
+        "qualifier_config": qualifier_config,
     }
 
 
@@ -329,9 +388,19 @@ def test_authority_protocol_and_additive_21_asset_manifest_are_closed() -> None:
     }
     assert protocol["authority"]["asset_manifest_sha256"] == _sha256(ASSET_MANIFEST_PATH)
     assert protocol["authority"]["initial_contract_sha256"] == "d1c031aecdec710495f6861b380785cccd64663ac4bd97b4f479d6fdf372ea07"
-    assert protocol["authority"]["contract_sha256"] == "3ba224de6277edd67387913cf1c83a5e1344e0ad44ef196db07d0772b45c4d79"
-    assert protocol["authority"]["active_authority_commit"] == "d078060c81114687db5068902a5aad5d9bedbee6"
-    assert protocol["authority"]["active_amendment_decision_ids"] == ["V3-DEC-017"]
+    assert protocol["authority"]["contract_sha256"] == "cbac4c3dcba8f1b8df95d8edad52d19e3c126d1c865d0cc423537c754cc90982"
+    assert protocol["authority"]["data_role_registry_sha256"] == "746439ef5d88d8167176d19e9c675746fdc78984a66f6f123f77f6ec49523030"
+    assert protocol["authority"]["active_authority_commit"] == "d328bf04c394d4960ac11058e079c063e09280af"
+    assert protocol["authority"]["active_amendment_decision_ids"] == [
+        "V3-DEC-017",
+        "V3-DEC-018",
+    ]
+    assert protocol["authority"]["decision_log_path"] == (
+        "docs/execution/route_a_v3_decision_log.yaml"
+    )
+    assert protocol["authority"]["decision_log_sha256"] == _sha256(
+        DECISION_LOG_PATH
+    )
     assert protocol["authority"]["v4_helper_sha256"] == _sha256(V4_PATH)
     assert protocol["authority"]["qualifier_sha256"] == _sha256(MODULE_PATH)
     assert protocol["authority"]["focused_test_sha256"] == _sha256(TEST_PATH)
@@ -364,13 +433,26 @@ def test_authority_protocol_and_additive_21_asset_manifest_are_closed() -> None:
     assert protocol["input_contract"][
         "same_descriptor_identity_and_size_must_remain_stable"
     ] is True
-    implementation_commit = protocol["authority"]["implementation_commit"]
-    implementation_blocker = "IMPLEMENTATION_COMMIT_UNKNOWN_NOT_ASSERTED"
-    if implementation_commit == "UNKNOWN_NOT_ASSERTED":
-        assert implementation_blocker in protocol["known_external_evidence_blockers"]
-    else:
-        assert QUAL.COMMIT_RE.fullmatch(implementation_commit)
-        assert implementation_blocker not in protocol["known_external_evidence_blockers"]
+    assert protocol["authority"]["implementation_commit"] == "UNKNOWN_NOT_ASSERTED"
+    assert protocol["known_external_evidence_blockers"] == list(
+        QUAL.EXPECTED_EXTERNAL_EVIDENCE_BLOCKERS
+    )
+    assert protocol["current_gate_contract"] == dict(
+        QUAL.EXPECTED_CURRENT_GATE_CONTRACT
+    )
+    preflight_binding = protocol["stop_before_data_preflight_binding"]
+    assert preflight_binding["binding_scheme"] == QUAL.STOP_BEFORE_DATA_BINDING_SCHEME
+    assert preflight_binding["status"] == "UNKNOWN_NOT_ASSERTED"
+    assert preflight_binding["implementation_commit"] == "UNKNOWN_NOT_ASSERTED"
+    assert preflight_binding["external_evidence_config_path"] == (
+        QUAL.STOP_BEFORE_DATA_EVIDENCE_CONFIG_PATH
+    )
+    assert preflight_binding["preflight_script_path"] == (
+        QUAL.STOP_BEFORE_DATA_PREFLIGHT_SCRIPT_PATH
+    )
+    assert preflight_binding["preflight_test_path"] == (
+        QUAL.STOP_BEFORE_DATA_PREFLIGHT_TEST_PATH
+    )
     assert protocol["output_contract"]["primary_publication_mode"] == (
         QUAL.PRIMARY_PUBLICATION_MODE
     )
@@ -460,6 +542,24 @@ def test_authority_protocol_and_additive_21_asset_manifest_are_closed() -> None:
     assert protocol["output_contract"][
         "fallback_partial_directory_canonical_accepted"
     ] is False
+
+
+def test_config_only_bound_state_removes_only_implementation_blockers() -> None:
+    protocol = json.loads(PROTOCOL_PATH.read_text(encoding="utf-8"))
+    implementation_commit = "1" * 40
+    protocol["authority"]["implementation_commit"] = implementation_commit
+    preflight_binding = protocol["stop_before_data_preflight_binding"]
+    preflight_binding["status"] = "BOUND"
+    preflight_binding["implementation_commit"] = implementation_commit
+
+    validated = QUAL._validate_protocol(protocol)
+    assert QUAL._pre_data_evidence_blockers(
+        protocol=validated,
+        git_binding={"status": "PASS"},
+    ) == list(QUAL.EXPECTED_EXTERNAL_EVIDENCE_BLOCKERS)
+    assert validated["current_gate_contract"] == dict(
+        QUAL.EXPECTED_CURRENT_GATE_CONTRACT
+    )
 
 
 def test_verified_inputs_ignore_stale_preopen_metadata_but_bind_fd_hash_and_bytes(
@@ -641,10 +741,130 @@ def test_git_binding_verifies_authority_chain_blobs_and_clean_implementation(
     )
     assert result["status"] == "PASS"
     assert result["accepted_a0_is_ancestor_of_active_authority"] is True
+    assert result["active_authority_is_ancestor_of_head"] is True
     assert result["active_authority_is_ancestor_of_implementation"] is True
     assert result["active_authority_file_hashes_match"] is True
     assert result["implementation_file_hashes_match"] is True
+    assert result["qualifier_binding_commit"] == fixture["binding"]
+    assert result["binding_commit_is_direct_nonmerge_child"] is True
+    assert result["binding_commit_changed_only_qualifier_config"] is True
+    assert result["implementation_config_unknown_scalars_verified"] is True
+    assert result["binding_config_exact_three_scalar_transition"] is True
+    assert result["current_config_equals_head_blob"] is True
+    assert result["head_config_equals_binding_blob"] is True
+    assert len(result["qualifier_nonbinding_core_sha256"]) == 64
     assert result["worktree_clean"] is True
+
+
+def test_unknown_implementation_still_verifies_decision_log_authority_blob(
+    tmp_path: Path,
+) -> None:
+    fixture = _git_binding_fixture(tmp_path, bound=False)
+    result = QUAL._verify_git_binding(
+        fixture["repo"],
+        "UNKNOWN_NOT_ASSERTED",
+        accepted_a0_base_commit=fixture["accepted"],
+        active_authority_commit=fixture["active"],
+        authority_files=fixture["authority_files"],
+        implementation_files=fixture["implementation_files"],
+    )
+    assert result["status"] == "UNKNOWN_NOT_ASSERTED"
+    assert result["accepted_a0_is_ancestor_of_active_authority"] is True
+    assert result["active_authority_is_ancestor_of_head"] is True
+    assert result["active_authority_file_hashes_match"] is True
+    assert result["implementation_file_hashes_match"] is None
+    assert result["qualifier_binding_commit"] is None
+    assert result["current_config_equals_head_blob"] is True
+    assert result["head_config_equals_binding_blob"] is None
+    assert len(result["qualifier_nonbinding_core_sha256"]) == 64
+    assert result["worktree_clean"] is True
+
+
+def test_git_binding_rejects_non_unknown_implementation_config(tmp_path: Path) -> None:
+    fixture = _git_binding_fixture(
+        tmp_path,
+        implementation_wrong_unknown=True,
+    )
+    with pytest.raises(
+        QUAL.QualificationError,
+        match="all three UNKNOWN_NOT_ASSERTED implementation scalars",
+    ):
+        QUAL._verify_git_binding(
+            fixture["repo"],
+            fixture["implementation"],
+            accepted_a0_base_commit=fixture["accepted"],
+            active_authority_commit=fixture["active"],
+            authority_files=fixture["authority_files"],
+            implementation_files=fixture["implementation_files"],
+        )
+
+
+def test_git_binding_rejects_b_with_an_extra_changed_path(tmp_path: Path) -> None:
+    fixture = _git_binding_fixture(tmp_path, binding_extra_path=True)
+    with pytest.raises(QUAL.QualificationError, match="change only the qualifier config"):
+        QUAL._verify_git_binding(
+            fixture["repo"],
+            fixture["implementation"],
+            accepted_a0_base_commit=fixture["accepted"],
+            active_authority_commit=fixture["active"],
+            authority_files=fixture["authority_files"],
+            implementation_files=fixture["implementation_files"],
+        )
+
+
+def test_git_binding_rejects_b_with_an_extra_config_change(tmp_path: Path) -> None:
+    fixture = _git_binding_fixture(tmp_path, binding_extra_config_change=True)
+    with pytest.raises(QUAL.QualificationError, match="beyond the three allowed scalars"):
+        QUAL._verify_git_binding(
+            fixture["repo"],
+            fixture["implementation"],
+            accepted_a0_base_commit=fixture["accepted"],
+            active_authority_commit=fixture["active"],
+            authority_files=fixture["authority_files"],
+            implementation_files=fixture["implementation_files"],
+        )
+
+
+def test_git_binding_rejects_current_config_changed_after_b(tmp_path: Path) -> None:
+    fixture = _git_binding_fixture(tmp_path)
+    current = json.loads(fixture["qualifier_config"].read_text(encoding="utf-8"))
+    current["current_gate_contract"]["qualified"] = True
+    _write_json(fixture["qualifier_config"], current)
+    _commit(fixture["repo"], "impermissible qualifier drift after B")
+    with pytest.raises(
+        QUAL.QualificationError,
+        match="executing HEAD qualifier config differs from the first exact B binding blob",
+    ):
+        QUAL._verify_git_binding(
+            fixture["repo"],
+            fixture["implementation"],
+            accepted_a0_base_commit=fixture["accepted"],
+            active_authority_commit=fixture["active"],
+            authority_files=fixture["authority_files"],
+            implementation_files=fixture["implementation_files"],
+        )
+
+
+def test_rehashed_decision_log_drift_cannot_bypass_active_authority_blob(
+    tmp_path: Path,
+) -> None:
+    fixture = _git_binding_fixture(tmp_path, bound=False)
+    decision_path = fixture["repo"] / "docs/execution/decision_log.yaml"
+    decision_path.write_text("rehashed semantic drift\n", encoding="utf-8")
+    rehashed_authority_files = (
+        fixture["authority_files"][0],
+        fixture["authority_files"][1],
+        ("docs/execution/decision_log.yaml", _sha256(decision_path)),
+    )
+    with pytest.raises(QUAL.QualificationError, match="active authority file hash"):
+        QUAL._verify_git_binding(
+            fixture["repo"],
+            "UNKNOWN_NOT_ASSERTED",
+            accepted_a0_base_commit=fixture["accepted"],
+            active_authority_commit=fixture["active"],
+            authority_files=rehashed_authority_files,
+            implementation_files=fixture["implementation_files"],
+        )
 
 
 def test_git_binding_rejects_nonancestor_authority(tmp_path: Path) -> None:
@@ -654,7 +874,7 @@ def test_git_binding_rejects_nonancestor_authority(tmp_path: Path) -> None:
     (repo / "sibling.txt").write_text("sibling authority\n", encoding="utf-8")
     sibling = _commit(repo, "sibling authority")
     _git(repo, "checkout", "--detach", fixture["implementation"])
-    with pytest.raises(QUAL.QualificationError, match="active authority to implementation"):
+    with pytest.raises(QUAL.QualificationError, match="active authority to executing HEAD"):
         QUAL._verify_git_binding(
             repo,
             fixture["implementation"],
@@ -1050,7 +1270,81 @@ def test_nonredistributable_is_the_only_blocker_for_full_sequence_canonical() ->
     assert blockers == ["CANONICAL_SEQUENCE_REDISTRIBUTION_NOT_ALLOWED"]
 
 
-def test_full_synthetic_run_uses_verified_snapshots_and_publishes_zero_canonical(
+def test_production_unknown_protocol_fails_before_any_data_root_access(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    missing_data_root = tmp_path / "must_not_be_accessed"
+    output = tmp_path / "must_not_be_published"
+    observed_authority_paths: list[tuple[str, str]] = []
+    observed_implementation_paths: list[tuple[str, str]] = []
+
+    def verified_authority_but_unknown_implementation(
+        _repo_root: Path,
+        implementation_commit: str,
+        *,
+        accepted_a0_base_commit: str,
+        active_authority_commit: str,
+        authority_files: tuple[tuple[str, str], ...],
+        implementation_files: tuple[tuple[str, str], ...],
+        qualifier_config_path: str,
+    ) -> dict[str, Any]:
+        del accepted_a0_base_commit, active_authority_commit
+        assert implementation_commit == "UNKNOWN_NOT_ASSERTED"
+        assert qualifier_config_path == QUAL.QUALIFIER_CONFIG_PATH
+        observed_authority_paths.extend(authority_files)
+        observed_implementation_paths.extend(implementation_files)
+        return {"status": "UNKNOWN_NOT_ASSERTED"}
+
+    def data_access_is_forbidden(*_args: Any, **_kwargs: Any) -> Any:
+        pytest.fail("data resolution ran despite the frozen UNKNOWN pre-data gate")
+
+    monkeypatch.setattr(
+        QUAL,
+        "_verify_git_binding",
+        verified_authority_but_unknown_implementation,
+    )
+    monkeypatch.setattr(QUAL, "_resolve_and_verify_assets", data_access_is_forbidden)
+
+    with pytest.raises(
+        QUAL.QualificationError,
+        match="pre-data evidence gate blocked before data-root access",
+    ) as error:
+        QUAL.qualify_gse149487_plumage(
+            repo_root=ROOT,
+            data_root=missing_data_root,
+            protocol_path=PROTOCOL_PATH,
+            asset_manifest_path=ASSET_MANIFEST_PATH,
+            expected_protocol_sha256=_sha256(PROTOCOL_PATH),
+            output_directory=output,
+            run_id="A1_PRODUCTION_UNKNOWN",
+            execution_id="GSE149487_PRODUCTION_UNKNOWN",
+            recorded_at="2026-08-11T00:56:05+08:00",
+        )
+    assert not missing_data_root.exists()
+    assert not output.exists()
+    assert ("docs/execution/route_a_v3_decision_log.yaml", _sha256(DECISION_LOG_PATH)) in (
+        observed_authority_paths
+    )
+    detail = str(error.value)
+    assert "IMPLEMENTATION_COMMIT_UNKNOWN_NOT_ASSERTED" in detail
+    assert QUAL.STOP_BEFORE_DATA_IMPLEMENTATION_BLOCKER in detail
+    for blocker in QUAL.EXPECTED_EXTERNAL_EVIDENCE_BLOCKERS:
+        assert blocker in detail
+    preflight_binding = json.loads(PROTOCOL_PATH.read_text(encoding="utf-8"))[
+        "stop_before_data_preflight_binding"
+    ]
+    for path_key, hash_key in (
+        ("external_evidence_config_path", "external_evidence_config_sha256"),
+        ("preflight_script_path", "preflight_script_sha256"),
+        ("preflight_test_path", "preflight_test_sha256"),
+    ):
+        assert (preflight_binding[path_key], preflight_binding[hash_key]) in (
+            observed_implementation_paths
+        )
+
+
+def test_post_evidence_synthetic_path_uses_verified_snapshots_and_publishes_zero_canonical(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -1097,6 +1391,12 @@ def test_full_synthetic_run_uses_verified_snapshots_and_publishes_zero_canonical
         QUAL,
         "_POST_VERIFIED_INPUT_SNAPSHOT_HOOK",
         replace_original_paths_after_snapshot,
+    )
+    monkeypatch.setattr(QUAL, "_verify_git_binding", lambda *_args, **_kwargs: {"status": "PASS"})
+    monkeypatch.setattr(
+        QUAL,
+        "_pre_data_evidence_blockers",
+        lambda **_kwargs: [],
     )
     monkeypatch.setattr(
         QUAL,
@@ -2309,11 +2609,18 @@ def test_execute_requires_failure_record_to_be_output_sibling(tmp_path: Path) ->
 
 def test_unclassified_raw_key_blocks_canonical_without_identifier_leakage(
     tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     secret_extra_key = "UNCLASSIFIED_RAW_SECRET_SENTINEL"
     repo, data, protocol, asset_manifest = _fixture_repo_and_data(
         tmp_path,
         extra_raw_keys_by_context={"PC3": (secret_extra_key,)},
+    )
+    monkeypatch.setattr(QUAL, "_verify_git_binding", lambda *_args, **_kwargs: {"status": "PASS"})
+    monkeypatch.setattr(
+        QUAL,
+        "_pre_data_evidence_blockers",
+        lambda **_kwargs: [],
     )
     output = tmp_path / "raw_key_blocked_bundle"
     report = QUAL.qualify_gse149487_plumage(

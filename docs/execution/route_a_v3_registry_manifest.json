@@ -87,6 +87,41 @@
       "sha256": "5310db4697d1c464154c5b9275f28675163a3d2a5319c326c8c03d52cd39a1fe"
     },
     {
+      "path": "configs/route_a_v3_gse149487_asset_manifest_v2.json",
+      "role": "GSE149487_PLUMAGE_21_ASSET_MANIFEST",
+      "sha256": "7105125e686f3bc6e99152b1cd86230aa6225d1a86cad1f8d7968aa99675a878"
+    },
+    {
+      "path": "scripts/route_a_v3/reconstruct_gse149487_plumage.py",
+      "role": "GSE149487_PLUMAGE_V4_HELPER",
+      "sha256": "372d58a37de5d393bb9ef1a749ffc51c8835195f8f9d1f8c5f13bd718c2f336d"
+    },
+    {
+      "path": "scripts/route_a_v3/qualify_gse149487_plumage.py",
+      "role": "GSE149487_PLUMAGE_FULL_A1_QUALIFIER",
+      "sha256": "15f162d9f687c740e592be405ea50ff6af30a2cd572970722ade287bf18ade1a"
+    },
+    {
+      "path": "tests/route_a_v3/test_qualify_gse149487_plumage.py",
+      "role": "GSE149487_PLUMAGE_FULL_A1_FOCUSED_TEST",
+      "sha256": "fc8e2147d4aee480d7ff12b38b0b036ee8e65dec8be6ecf5d9a6b893f2a28fb9"
+    },
+    {
+      "path": "configs/route_a_v3_gse149487_external_evidence_roots_v1.json",
+      "role": "GSE149487_PLUMAGE_EXTERNAL_EVIDENCE_ROOTS",
+      "sha256": "d25a978c4603e180ca20534f3ba8b78c321e21c01fdf94c88b9ab65a0ed7ed8b"
+    },
+    {
+      "path": "scripts/route_a_v3/preflight_gse149487_full_a1.py",
+      "role": "GSE149487_PLUMAGE_STOP_BEFORE_DATA_PREFLIGHT",
+      "sha256": "a4178cf60803b0e93cd6fa6a1f39dd2837ce20f5b0e74bb0c4f4ef5e5c1a48bb"
+    },
+    {
+      "path": "tests/route_a_v3/test_preflight_gse149487_full_a1.py",
+      "role": "GSE149487_PLUMAGE_STOP_BEFORE_DATA_PREFLIGHT_TEST",
+      "sha256": "21173517b6c70000c7c704408573364467e1028d8a48de699d9d00274aa05c5c"
+    },
+    {
       "path": "scripts/route_a_v3/build_gse200302_srr_role_authority.py",
       "role": "GSE200302_OFFICIAL_ROLE_AUTHORITY_BUILDER",
       "sha256": "b057e4346fa9473a6da29d5f229761f2d65e76db7b510ba6477bd40dbe49183c"
@@ -99,18 +134,18 @@
     {
       "path": "tests/route_a_v3/test_a0_integrity_guards.py",
       "role": "A0_AUTHORITY_INTEGRITY_GUARD_TEST",
-      "sha256": "6404e24d645d4c078536c4df254bf1b509648bad21bf846f079b2c1e55aa8837"
+      "sha256": "9e3cca25cce5e638a3faf9bccfa688c53a10366fe5e5f7b2b2e0c9eacd8e5658"
     },
     {
       "path": "scripts/route_a_v3/validate_a0_bundle.py",
       "role": "A0_STATIC_AND_SEMANTIC_VALIDATOR",
-      "sha256": "705b30f4ed2c4ac74f97355058c256fff0a200afe3f56a3c0296f5efa99eee00"
+      "sha256": "6f22ba3b5917d4b36d5654e86edb856fd8e20795493ccf7a73c72218754a6822"
     }
   ],
   "initial_generated_at": "2026-08-10T10:10:05+08:00",
-  "generated_at": "2026-08-10T23:11:00+08:00",
-  "updated_at": "2026-08-10T23:11:00+08:00",
-  "manifest_status": "A1_GSE200302_ROLE_AUTHORITY_REBIND",
+  "generated_at": "2026-08-11T00:56:05+08:00",
+  "updated_at": "2026-08-11T00:56:05+08:00",
+  "manifest_status": "A1_PLUMAGE_DEC018_MECHANICAL_REBIND",
   "schema_version": "1.0.0",
   "sealed_contact": false,
   "version": "3.0.0"

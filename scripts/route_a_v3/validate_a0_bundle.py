@@ -68,6 +68,91 @@ GSE200302_ROLE_BINDING_ACTIVATION_RULE = (
 )
 GSE200302_ROLE_MEASUREMENT_FAMILIES = ["High_Poly", "Low_Poly", "pDNA", "Total_RNA"]
 GSE200302_ROLE_REPLICATES = [1, 2, 3, 4, 5, 6]
+GSE149487_PLUMAGE_PROTOCOL_PATH = "configs/route_a_v3_gse149487_a1_qualification.json"
+GSE149487_PLUMAGE_ASSET_MANIFEST_PATH = (
+    "configs/route_a_v3_gse149487_asset_manifest_v2.json"
+)
+GSE149487_PLUMAGE_HELPER_PATH = (
+    "scripts/route_a_v3/reconstruct_gse149487_plumage.py"
+)
+GSE149487_PLUMAGE_QUALIFIER_PATH = (
+    "scripts/route_a_v3/qualify_gse149487_plumage.py"
+)
+GSE149487_PLUMAGE_TEST_PATH = (
+    "tests/route_a_v3/test_qualify_gse149487_plumage.py"
+)
+GSE149487_PLUMAGE_PREFLIGHT_CONFIG_PATH = (
+    "configs/route_a_v3_gse149487_external_evidence_roots_v1.json"
+)
+GSE149487_PLUMAGE_PREFLIGHT_SCRIPT_PATH = (
+    "scripts/route_a_v3/preflight_gse149487_full_a1.py"
+)
+GSE149487_PLUMAGE_PREFLIGHT_TEST_PATH = (
+    "tests/route_a_v3/test_preflight_gse149487_full_a1.py"
+)
+GSE149487_PLUMAGE_ASSET_MANIFEST_SHA256 = (
+    "7105125e686f3bc6e99152b1cd86230aa6225d1a86cad1f8d7968aa99675a878"
+)
+GSE149487_PLUMAGE_HELPER_SHA256 = (
+    "372d58a37de5d393bb9ef1a749ffc51c8835195f8f9d1f8c5f13bd718c2f336d"
+)
+GSE149487_PLUMAGE_QUALIFIER_SHA256 = (
+    "15f162d9f687c740e592be405ea50ff6af30a2cd572970722ade287bf18ade1a"
+)
+GSE149487_PLUMAGE_TEST_SHA256 = (
+    "fc8e2147d4aee480d7ff12b38b0b036ee8e65dec8be6ecf5d9a6b893f2a28fb9"
+)
+GSE149487_PLUMAGE_PREFLIGHT_CONFIG_SHA256 = (
+    "d25a978c4603e180ca20534f3ba8b78c321e21c01fdf94c88b9ab65a0ed7ed8b"
+)
+GSE149487_PLUMAGE_PREFLIGHT_SCRIPT_SHA256 = (
+    "a4178cf60803b0e93cd6fa6a1f39dd2837ce20f5b0e74bb0c4f4ef5e5c1a48bb"
+)
+GSE149487_PLUMAGE_PREFLIGHT_TEST_SHA256 = (
+    "21173517b6c70000c7c704408573364467e1028d8a48de699d9d00274aa05c5c"
+)
+GSE149487_PLUMAGE_ACTIVE_AUTHORITY_COMMIT = (
+    "d328bf04c394d4960ac11058e079c063e09280af"
+)
+GSE149487_PLUMAGE_EXTERNAL_BLOCKERS = [
+    "OUTCOME_BLIND_LONG_READ_MAPPING_PROVENANCE_UNKNOWN_NOT_ASSERTED",
+    "PAPER_NATIVE_METHOD_SOURCE_UNKNOWN_NOT_ASSERTED",
+    "PAPER_NATIVE_MULTIPLE_TESTING_FAMILY_UNKNOWN_NOT_ASSERTED",
+    "PUBLISHED_RESULT_CROSSCHECK_UNKNOWN_NOT_ASSERTED",
+    "LICENSE_AND_REDISTRIBUTION_UNKNOWN_NOT_ASSERTED",
+    "CHECKPOINT_SPECIFIC_FOUNDATION_EXPOSURE_UNKNOWN_NOT_ASSERTED",
+]
+GSE149487_PLUMAGE_CURRENT_GATE_CONTRACT = {
+    "qualification_status": "BLOCKED_PENDING_PUBLIC_EVIDENCE",
+    "qualified": False,
+    "training_allowed": False,
+    "model_selection_allowed": False,
+    "ordinary_study_contribution": 0,
+    "a1_study_contribution": 0,
+    "true_a2_study_contribution": 0,
+    "canonical_record_count": 0,
+    "next_phase_authorized": False,
+}
+GSE149487_PLUMAGE_QUALIFICATION_GATES = [
+    "AUTHORITY_AND_CODE_TRUST_ROOTS",
+    "EXACT_21_ASSET_MANIFEST_AND_PAYLOAD_INTEGRITY",
+    "EXACT_18_TABLE_CONTEXT_ASSAY_REPLICATE_GRID",
+    "WITHIN_CONTEXT_KEY_SET_ALIGNMENT_AND_MISSING_NOT_ZERO",
+    "OUTCOME_BLIND_STRICT_SOURCE_CANDIDATE_MAPPING",
+    "PAPER_NATIVE_TRANSFORM_TEST_AND_MULTIPLE_TESTING_REPRODUCTION",
+    "THREE_BIOLOGICAL_REPLICATES_AND_ROUTE_A_SE",
+    "CANONICAL_V3_SCHEMA_AND_HASH_LINEAGE",
+    "LICENSE_AND_REDISTRIBUTION_AUDIT",
+    "CHECKPOINT_SPECIFIC_FOUNDATION_EXPOSURE_AUDIT",
+    "GROUP_AND_SEQUENCE_CLUSTER_LEAKAGE_AUDIT",
+    "PREFROZEN_GROUP_POWER_SIMULATION",
+]
+GSE149487_PLUMAGE_NONBINDING_CORE_SHA256 = (
+    "fa2f69f518f82ba815c1013655789c5dfd80235ceec7e809510bee93855e0aea"
+)
+GSE149487_PLUMAGE_PREFLIGHT_BINDING_SCHEME = (
+    "CONFIG_ONLY_POST_IMPLEMENTATION_BINDING_V1"
+)
 
 REGISTRY_PATHS = {
     "task": "docs/execution/route_a_v3_task_registry.yaml",
@@ -293,6 +378,25 @@ EXPECTED_REGISTRY_MANIFEST_PATH_ROLES = (
     (SCHEMA_SUMS, "PUBLIC_SCHEMA_CHECKSUMS"),
     (SEALED_GUARD_PATH, "SEALED_HARD_DISABLE_GUARD"),
     (SEALED_RUNNER_PATH, "SEALED_RUNNER_GUARD_INTEGRATION"),
+    (
+        GSE149487_PLUMAGE_ASSET_MANIFEST_PATH,
+        "GSE149487_PLUMAGE_21_ASSET_MANIFEST",
+    ),
+    (GSE149487_PLUMAGE_HELPER_PATH, "GSE149487_PLUMAGE_V4_HELPER"),
+    (GSE149487_PLUMAGE_QUALIFIER_PATH, "GSE149487_PLUMAGE_FULL_A1_QUALIFIER"),
+    (GSE149487_PLUMAGE_TEST_PATH, "GSE149487_PLUMAGE_FULL_A1_FOCUSED_TEST"),
+    (
+        GSE149487_PLUMAGE_PREFLIGHT_CONFIG_PATH,
+        "GSE149487_PLUMAGE_EXTERNAL_EVIDENCE_ROOTS",
+    ),
+    (
+        GSE149487_PLUMAGE_PREFLIGHT_SCRIPT_PATH,
+        "GSE149487_PLUMAGE_STOP_BEFORE_DATA_PREFLIGHT",
+    ),
+    (
+        GSE149487_PLUMAGE_PREFLIGHT_TEST_PATH,
+        "GSE149487_PLUMAGE_STOP_BEFORE_DATA_PREFLIGHT_TEST",
+    ),
     (GSE200302_ROLE_BUILDER_PATH, "GSE200302_OFFICIAL_ROLE_AUTHORITY_BUILDER"),
     (GSE200302_ROLE_TEST_PATH, "GSE200302_OFFICIAL_ROLE_AUTHORITY_FOCUSED_TEST"),
     (INTEGRITY_GUARD_TEST_PATH, "A0_AUTHORITY_INTEGRITY_GUARD_TEST"),
@@ -387,6 +491,14 @@ def required_bundle_paths() -> tuple[str, ...]:
         SEALED_GUARD_PATH,
         SEALED_RUNNER_PATH,
         A1_INTERIM_PATH,
+        GSE149487_PLUMAGE_PROTOCOL_PATH,
+        GSE149487_PLUMAGE_ASSET_MANIFEST_PATH,
+        GSE149487_PLUMAGE_HELPER_PATH,
+        GSE149487_PLUMAGE_QUALIFIER_PATH,
+        GSE149487_PLUMAGE_TEST_PATH,
+        GSE149487_PLUMAGE_PREFLIGHT_CONFIG_PATH,
+        GSE149487_PLUMAGE_PREFLIGHT_SCRIPT_PATH,
+        GSE149487_PLUMAGE_PREFLIGHT_TEST_PATH,
         GSE200302_ROLE_CONFIG_PATH,
         GSE200302_ROLE_BUILDER_PATH,
         GSE200302_ROLE_TEST_PATH,
@@ -744,7 +856,7 @@ def validate_registry_manifest(repo_root: Path) -> list[Issue]:
         "contract_sha256": SOURCE_CONTRACT_SHA256,
         "active_amendment_decision_ids": ["V3-DEC-017", "V3-DEC-018"],
         "base_commit": "bbb71dcba6f1e1c9cb75a8a6653f1a4fe4a6ca0c",
-        "manifest_status": "A1_GSE200302_ROLE_AUTHORITY_REBIND",
+        "manifest_status": "A1_PLUMAGE_DEC018_MECHANICAL_REBIND",
         "initial_generated_at": "2026-08-10T10:10:05+08:00",
         "sealed_contact": False,
     }
@@ -1513,6 +1625,487 @@ def _expect_closed_mapping(
         )
     for key, value in expected.items():
         _expect(mapping, key, value, path, issues, code)
+
+
+def _gse149487_plumage_nonbinding_core_sha256(protocol: Mapping[str, Any]) -> str:
+    """Hash the full protocol after normalizing only the three permitted I/B scalars."""
+
+    normalized = json.loads(json.dumps(protocol))
+    authority = normalized.get("authority")
+    binding = normalized.get("stop_before_data_preflight_binding")
+    if not isinstance(authority, dict) or not isinstance(binding, dict):
+        raise ValueError("protocol lacks the two implementation binding objects")
+    authority["implementation_commit"] = "UNKNOWN_NOT_ASSERTED"
+    binding["status"] = "UNKNOWN_NOT_ASSERTED"
+    binding["implementation_commit"] = "UNKNOWN_NOT_ASSERTED"
+    return sha256_bytes(
+        json.dumps(
+            normalized,
+            ensure_ascii=True,
+            allow_nan=False,
+            separators=(",", ":"),
+            sort_keys=True,
+        ).encode("utf-8")
+    )
+
+
+def validate_gse149487_plumage_protocol(repo_root: Path) -> list[Issue]:
+    """Freeze the PLUMAGE pre-data boundary without hashing its dynamic protocol."""
+
+    issues: list[Issue] = []
+    path = GSE149487_PLUMAGE_PROTOCOL_PATH
+
+    def reject_constant(value: str) -> None:
+        raise ValueError(f"non-finite JSON constant {value!r}")
+
+    def unique_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+        result: dict[str, Any] = {}
+        for key, value in pairs:
+            if key in result:
+                raise ValueError(f"duplicate JSON key {key!r}")
+            result[key] = value
+        return result
+
+    try:
+        protocol = json.loads(
+            _read_bytes(repo_root, path).decode("utf-8"),
+            object_pairs_hook=unique_object,
+            parse_constant=reject_constant,
+        )
+    except (FileNotFoundError, UnicodeDecodeError, ValueError, RecursionError) as exc:
+        _issue(
+            issues,
+            "GSE149487_PLUMAGE_PROTOCOL_LOAD",
+            path,
+            f"protocol must be duplicate-free finite UTF-8 JSON: {exc}",
+        )
+        return issues
+    if type(protocol) is not dict:
+        _issue(
+            issues,
+            "GSE149487_PLUMAGE_PROTOCOL_SHAPE",
+            path,
+            "protocol root must be an object",
+        )
+        return issues
+
+    expected_top_keys = {
+        "contract_id",
+        "schema_version",
+        "protocol_id",
+        "protocol_status",
+        "dataset_id",
+        "dataset_alias",
+        "study_group_id",
+        "independent_study_count",
+        "authority",
+        "scope",
+        "input_contract",
+        "mapping",
+        "paper_faithful_measurement_transform",
+        "route_a_companion_summary",
+        "canonical_v3",
+        "license_and_redistribution",
+        "foundation_exposure",
+        "split_and_leakage",
+        "power_prefreeze",
+        "stop_before_data_preflight_binding",
+        "current_gate_contract",
+        "qualification_gates",
+        "output_contract",
+        "known_external_evidence_blockers",
+        "model_results_may_change_this_protocol",
+    }
+    if set(protocol) != expected_top_keys:
+        _issue(
+            issues,
+            "GSE149487_PLUMAGE_PROTOCOL_SHAPE",
+            path,
+            f"top-level keys must be exactly {sorted(expected_top_keys)!r}",
+        )
+    expected_metadata = {
+        "contract_id": CONTRACT_ID,
+        "schema_version": VERSION,
+        "protocol_id": "ROUTE_A_V3_GSE149487_PLUMAGE_FULL_A1_QUALIFICATION_V1",
+        "protocol_status": "PREFROZEN_FAIL_CLOSED_BEFORE_FULL_RAW_JOIN_RESULTS",
+        "dataset_id": "GSE149487",
+        "dataset_alias": "PLUMAGE",
+        "study_group_id": "PLUMAGE_LIM_2021",
+        "independent_study_count": 1,
+        "model_results_may_change_this_protocol": False,
+    }
+    for key, value in expected_metadata.items():
+        _expect(
+            protocol,
+            key,
+            value,
+            path,
+            issues,
+            "GSE149487_PLUMAGE_PROTOCOL_METADATA",
+        )
+
+    authority = protocol.get("authority")
+    expected_authority = {
+        "contract_path": GOAL_PATH,
+        "initial_contract_sha256": "d1c031aecdec710495f6861b380785cccd64663ac4bd97b4f479d6fdf372ea07",
+        "contract_sha256": SOURCE_CONTRACT_SHA256,
+        "accepted_a0_base_commit": "fd722d5fa3c2538fce742b8942b1fb48e782760b",
+        "active_authority_commit": GSE149487_PLUMAGE_ACTIVE_AUTHORITY_COMMIT,
+        "active_amendment_decision_ids": ["V3-DEC-017", "V3-DEC-018"],
+        "a1_qualification_path": "configs/route_a_v3_a1_qualification.json",
+        "a1_qualification_sha256": "1d348671de50c0fe8b155f8cc114d14a74360fe1a87f9d9bac5207ae794806c4",
+        "data_role_registry_path": REGISTRY_PATHS["data"],
+        "data_role_registry_sha256": "746439ef5d88d8167176d19e9c675746fdc78984a66f6f123f77f6ec49523030",
+        "decision_log_path": DECISION_LOG_PATH,
+        "decision_log_sha256": "a5b041fab24d9a4309603a085fa3fcab936d69a899285bfa752689a2ee5fd4fd",
+        "canonical_schema_path": "schemas/route_a_v3/canonical_intervention_record.schema.json",
+        "canonical_schema_sha256": "5dc384d6c5714fb5834e83d8fafb51f712bbfcf7dfb632ad504f051b985af898",
+        "asset_manifest_path": GSE149487_PLUMAGE_ASSET_MANIFEST_PATH,
+        "asset_manifest_sha256": GSE149487_PLUMAGE_ASSET_MANIFEST_SHA256,
+        "v4_helper_path": GSE149487_PLUMAGE_HELPER_PATH,
+        "v4_helper_sha256": GSE149487_PLUMAGE_HELPER_SHA256,
+        "qualifier_path": GSE149487_PLUMAGE_QUALIFIER_PATH,
+        "qualifier_sha256": GSE149487_PLUMAGE_QUALIFIER_SHA256,
+        "focused_test_path": GSE149487_PLUMAGE_TEST_PATH,
+        "focused_test_sha256": GSE149487_PLUMAGE_TEST_SHA256,
+    }
+    expected_authority_keys = set(expected_authority) | {"implementation_commit"}
+    if not isinstance(authority, Mapping) or set(authority) != expected_authority_keys:
+        _issue(
+            issues,
+            "GSE149487_PLUMAGE_PROTOCOL_AUTHORITY",
+            path,
+            f"authority keys must be exactly {sorted(expected_authority_keys)!r}",
+        )
+    else:
+        for key, value in expected_authority.items():
+            _expect(
+                authority,
+                key,
+                value,
+                path,
+                issues,
+                "GSE149487_PLUMAGE_PROTOCOL_AUTHORITY",
+            )
+        implementation = authority.get("implementation_commit")
+        if implementation != "UNKNOWN_NOT_ASSERTED" and not (
+            isinstance(implementation, str)
+            and len(implementation) == 40
+            and all(ch in "0123456789abcdef" for ch in implementation)
+        ):
+            _issue(
+                issues,
+                "GSE149487_PLUMAGE_PROTOCOL_AUTHORITY",
+                path,
+                "implementation_commit must be UNKNOWN_NOT_ASSERTED or a full lowercase object ID",
+            )
+
+        for path_key, hash_key in (
+            ("contract_path", "contract_sha256"),
+            ("a1_qualification_path", "a1_qualification_sha256"),
+            ("data_role_registry_path", "data_role_registry_sha256"),
+            ("decision_log_path", "decision_log_sha256"),
+            ("canonical_schema_path", "canonical_schema_sha256"),
+            ("asset_manifest_path", "asset_manifest_sha256"),
+            ("v4_helper_path", "v4_helper_sha256"),
+            ("qualifier_path", "qualifier_sha256"),
+            ("focused_test_path", "focused_test_sha256"),
+        ):
+            relative = authority[path_key]
+            try:
+                actual = sha256_bytes(_read_bytes(repo_root, relative))
+            except (FileNotFoundError, ValueError) as exc:
+                _issue(
+                    issues,
+                    "GSE149487_PLUMAGE_PROTOCOL_AUTHORITY",
+                    str(relative),
+                    str(exc),
+                )
+                continue
+            if actual != authority[hash_key]:
+                _issue(
+                    issues,
+                    "GSE149487_PLUMAGE_PROTOCOL_AUTHORITY",
+                    str(relative),
+                    f"current hash {actual} must match protocol {hash_key} {authority[hash_key]}",
+                )
+
+    scope = protocol.get("scope")
+    if not isinstance(scope, Mapping):
+        _issue(issues, "GSE149487_PLUMAGE_PROTOCOL_GATES", path, "scope must be a mapping")
+    else:
+        for key, expected in (
+            ("ordinary_public_data_only", True),
+            ("training_allowed", False),
+            ("model_selection_allowed", False),
+            ("authority_update_allowed_by_qualifier", False),
+        ):
+            _expect(
+                scope,
+                key,
+                expected,
+                path,
+                issues,
+                "GSE149487_PLUMAGE_PROTOCOL_GATES",
+            )
+
+    mapping = protocol.get("mapping")
+    if not isinstance(mapping, Mapping):
+        _issue(issues, "GSE149487_PLUMAGE_PROTOCOL_EVIDENCE", path, "mapping must be a mapping")
+    else:
+        _expect(
+            mapping,
+            "outcome_blind_mapping_evidence_status",
+            "UNKNOWN_NOT_ASSERTED",
+            path,
+            issues,
+            "GSE149487_PLUMAGE_PROTOCOL_EVIDENCE",
+        )
+        _expect(
+            mapping,
+            "membership_may_depend_on_measured_effect_or_significance",
+            False,
+            path,
+            issues,
+            "GSE149487_PLUMAGE_PROTOCOL_MAPPING",
+        )
+
+    transform = protocol.get("paper_faithful_measurement_transform")
+    if not isinstance(transform, Mapping):
+        _issue(issues, "GSE149487_PLUMAGE_PROTOCOL_EVIDENCE", path, "paper transform must be a mapping")
+    else:
+        for key in (
+            "method_source_status",
+            "multiple_testing_family_status",
+            "published_result_crosscheck_status",
+        ):
+            _expect(
+                transform,
+                key,
+                "UNKNOWN_NOT_ASSERTED",
+                path,
+                issues,
+                "GSE149487_PLUMAGE_PROTOCOL_EVIDENCE",
+            )
+
+    license_audit = protocol.get("license_and_redistribution")
+    if not isinstance(license_audit, Mapping):
+        _issue(issues, "GSE149487_PLUMAGE_PROTOCOL_EVIDENCE", path, "license audit must be a mapping")
+    else:
+        for key, expected in (
+            ("audit_status", "UNKNOWN_NOT_ASSERTED"),
+            ("unknown_status_blocks_qualification", True),
+            ("license_id", "UNKNOWN_NOT_ASSERTED"),
+            ("verified_at", "UNKNOWN_NOT_ASSERTED"),
+        ):
+            _expect(
+                license_audit,
+                key,
+                expected,
+                path,
+                issues,
+                "GSE149487_PLUMAGE_PROTOCOL_EVIDENCE",
+            )
+
+    exposure = protocol.get("foundation_exposure")
+    if not isinstance(exposure, Mapping):
+        _issue(issues, "GSE149487_PLUMAGE_PROTOCOL_EVIDENCE", path, "foundation exposure must be a mapping")
+    else:
+        for key, expected in (
+            ("audit_status", "UNKNOWN_NOT_ASSERTED"),
+            ("checkpoint_id", "UNKNOWN_NOT_ASSERTED"),
+            ("checkpoint_sha256", "UNKNOWN_NOT_ASSERTED"),
+            ("stratum", "DEVELOPMENT_ONLY"),
+            ("sequence_exposed", True),
+            ("label_exposed", True),
+            ("audit_id", "UNKNOWN_NOT_ASSERTED"),
+            ("unknown_checkpoint_blocks_qualification", True),
+        ):
+            _expect(
+                exposure,
+                key,
+                expected,
+                path,
+                issues,
+                "GSE149487_PLUMAGE_PROTOCOL_EVIDENCE",
+            )
+
+    canonical = protocol.get("canonical_v3")
+    if not isinstance(canonical, Mapping):
+        _issue(
+            issues,
+            "GSE149487_PLUMAGE_PROTOCOL_CANONICAL",
+            path,
+            "canonical_v3 must be a mapping",
+        )
+    else:
+        _expect(
+            canonical,
+            "materialize_only_when_every_qualification_gate_passes",
+            True,
+            path,
+            issues,
+            "GSE149487_PLUMAGE_PROTOCOL_CANONICAL",
+        )
+
+    preflight_binding = protocol.get("stop_before_data_preflight_binding")
+    expected_preflight_keys = {
+        "binding_scheme",
+        "status",
+        "implementation_commit",
+        "external_evidence_config_path",
+        "external_evidence_config_sha256",
+        "preflight_script_path",
+        "preflight_script_sha256",
+        "preflight_test_path",
+        "preflight_test_sha256",
+    }
+    if not isinstance(preflight_binding, Mapping) or set(preflight_binding) != expected_preflight_keys:
+        _issue(
+            issues,
+            "GSE149487_PLUMAGE_PREFLIGHT_BINDING",
+            path,
+            f"stop_before_data_preflight_binding keys must be exactly {sorted(expected_preflight_keys)!r}",
+        )
+    else:
+        _expect(
+            preflight_binding,
+            "binding_scheme",
+            GSE149487_PLUMAGE_PREFLIGHT_BINDING_SCHEME,
+            path,
+            issues,
+            "GSE149487_PLUMAGE_PREFLIGHT_BINDING",
+        )
+        status = preflight_binding.get("status")
+        implementation = preflight_binding.get("implementation_commit")
+        qualifier_implementation = (
+            authority.get("implementation_commit") if isinstance(authority, Mapping) else None
+        )
+        if status == "UNKNOWN_NOT_ASSERTED":
+            if (
+                implementation != "UNKNOWN_NOT_ASSERTED"
+                or qualifier_implementation != "UNKNOWN_NOT_ASSERTED"
+            ):
+                _issue(
+                    issues,
+                    "GSE149487_PLUMAGE_PREFLIGHT_BINDING",
+                    path,
+                    "UNKNOWN preflight binding requires UNKNOWN commit and UNKNOWN qualifier implementation",
+                )
+        elif status == "BOUND":
+            if not (
+                isinstance(implementation, str)
+                and len(implementation) == 40
+                and all(ch in "0123456789abcdef" for ch in implementation)
+                and qualifier_implementation == implementation
+            ):
+                _issue(
+                    issues,
+                    "GSE149487_PLUMAGE_PREFLIGHT_BINDING",
+                    path,
+                    "BOUND preflight binding requires one full lowercase qualifier/preflight implementation commit",
+                )
+        else:
+            _issue(
+                issues,
+                "GSE149487_PLUMAGE_PREFLIGHT_BINDING",
+                path,
+                "preflight binding status must be UNKNOWN_NOT_ASSERTED or BOUND",
+            )
+
+        for path_key, hash_key, expected_path, expected_hash in (
+            (
+                "external_evidence_config_path",
+                "external_evidence_config_sha256",
+                GSE149487_PLUMAGE_PREFLIGHT_CONFIG_PATH,
+                GSE149487_PLUMAGE_PREFLIGHT_CONFIG_SHA256,
+            ),
+            (
+                "preflight_script_path",
+                "preflight_script_sha256",
+                GSE149487_PLUMAGE_PREFLIGHT_SCRIPT_PATH,
+                GSE149487_PLUMAGE_PREFLIGHT_SCRIPT_SHA256,
+            ),
+            (
+                "preflight_test_path",
+                "preflight_test_sha256",
+                GSE149487_PLUMAGE_PREFLIGHT_TEST_PATH,
+                GSE149487_PLUMAGE_PREFLIGHT_TEST_SHA256,
+            ),
+        ):
+            relative = preflight_binding.get(path_key)
+            declared = preflight_binding.get(hash_key)
+            if relative != expected_path or declared != expected_hash:
+                _issue(
+                    issues,
+                    "GSE149487_PLUMAGE_PREFLIGHT_BINDING",
+                    path,
+                    f"{path_key}/{hash_key} must be the frozen repository path and SHA256",
+                )
+                continue
+            try:
+                actual = sha256_bytes(_read_bytes(repo_root, relative))
+            except (FileNotFoundError, ValueError) as exc:
+                _issue(
+                    issues,
+                    "GSE149487_PLUMAGE_PREFLIGHT_BINDING",
+                    relative,
+                    str(exc),
+                )
+                continue
+            if actual != declared:
+                _issue(
+                    issues,
+                    "GSE149487_PLUMAGE_PREFLIGHT_BINDING",
+                    relative,
+                    f"current hash {actual} must match declared {hash_key} {declared}",
+                )
+
+    gate = protocol.get("current_gate_contract")
+    if not isinstance(gate, Mapping):
+        _issue(issues, "GSE149487_PLUMAGE_PROTOCOL_GATES", path, "current_gate_contract must be a mapping")
+    else:
+        _expect_closed_mapping(
+            gate,
+            GSE149487_PLUMAGE_CURRENT_GATE_CONTRACT,
+            path,
+            issues,
+            "GSE149487_PLUMAGE_PROTOCOL_GATES",
+        )
+    _expect(
+        protocol,
+        "qualification_gates",
+        GSE149487_PLUMAGE_QUALIFICATION_GATES,
+        path,
+        issues,
+        "GSE149487_PLUMAGE_PROTOCOL_QUALIFICATION_GATES",
+    )
+    _expect(
+        protocol,
+        "known_external_evidence_blockers",
+        GSE149487_PLUMAGE_EXTERNAL_BLOCKERS,
+        path,
+        issues,
+        "GSE149487_PLUMAGE_PROTOCOL_EVIDENCE",
+    )
+    try:
+        observed_core_sha256 = _gse149487_plumage_nonbinding_core_sha256(protocol)
+    except (TypeError, ValueError) as exc:
+        _issue(
+            issues,
+            "GSE149487_PLUMAGE_PROTOCOL_NONBINDING_CORE",
+            path,
+            f"non-binding core could not be canonicalized: {exc}",
+        )
+    else:
+        if observed_core_sha256 != GSE149487_PLUMAGE_NONBINDING_CORE_SHA256:
+            _issue(
+                issues,
+                "GSE149487_PLUMAGE_PROTOCOL_NONBINDING_CORE",
+                path,
+                "full qualifier semantics changed outside the three permitted I/B scalars",
+            )
+    return issues
 
 
 def validate_gse200302_role_protocol(repo_root: Path) -> list[Issue]:
@@ -4519,6 +5112,7 @@ def validate_bundle(repo_root: Path) -> list[Issue]:
     issues = validate_required_files(repo_root)
     issues.extend(validate_schema_manifest(repo_root))
     issues.extend(validate_registry_manifest(repo_root))
+    issues.extend(validate_gse149487_plumage_protocol(repo_root))
     issues.extend(validate_gse200302_role_protocol(repo_root))
     issues.extend(validate_python_static_safety(repo_root))
     issues.extend(validate_runner_and_guard_ast(repo_root))

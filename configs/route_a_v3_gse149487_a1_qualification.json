@@ -10,14 +10,16 @@
   "authority": {
     "contract_path": "docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md",
     "initial_contract_sha256": "d1c031aecdec710495f6861b380785cccd64663ac4bd97b4f479d6fdf372ea07",
-    "contract_sha256": "3ba224de6277edd67387913cf1c83a5e1344e0ad44ef196db07d0772b45c4d79",
+    "contract_sha256": "cbac4c3dcba8f1b8df95d8edad52d19e3c126d1c865d0cc423537c754cc90982",
     "accepted_a0_base_commit": "fd722d5fa3c2538fce742b8942b1fb48e782760b",
-    "active_authority_commit": "d078060c81114687db5068902a5aad5d9bedbee6",
-    "active_amendment_decision_ids": ["V3-DEC-017"],
+    "active_authority_commit": "d328bf04c394d4960ac11058e079c063e09280af",
+    "active_amendment_decision_ids": ["V3-DEC-017", "V3-DEC-018"],
     "a1_qualification_path": "configs/route_a_v3_a1_qualification.json",
     "a1_qualification_sha256": "1d348671de50c0fe8b155f8cc114d14a74360fe1a87f9d9bac5207ae794806c4",
     "data_role_registry_path": "docs/execution/route_a_v3_data_role_registry.yaml",
-    "data_role_registry_sha256": "03a805c6441f0778225f9a8ec10feeadba23f572cd9ea7b234903384e6a902bf",
+    "data_role_registry_sha256": "746439ef5d88d8167176d19e9c675746fdc78984a66f6f123f77f6ec49523030",
+    "decision_log_path": "docs/execution/route_a_v3_decision_log.yaml",
+    "decision_log_sha256": "a5b041fab24d9a4309603a085fa3fcab936d69a899285bfa752689a2ee5fd4fd",
     "canonical_schema_path": "schemas/route_a_v3/canonical_intervention_record.schema.json",
     "canonical_schema_sha256": "5dc384d6c5714fb5834e83d8fafb51f712bbfcf7dfb632ad504f051b985af898",
     "asset_manifest_path": "configs/route_a_v3_gse149487_asset_manifest_v2.json",
@@ -25,10 +27,10 @@
     "v4_helper_path": "scripts/route_a_v3/reconstruct_gse149487_plumage.py",
     "v4_helper_sha256": "372d58a37de5d393bb9ef1a749ffc51c8835195f8f9d1f8c5f13bd718c2f336d",
     "qualifier_path": "scripts/route_a_v3/qualify_gse149487_plumage.py",
-    "qualifier_sha256": "698ef121b2ac003ce8bd7e3e2775f7e58c9b0b7126119c273dc3ad0614b8dad3",
+    "qualifier_sha256": "15f162d9f687c740e592be405ea50ff6af30a2cd572970722ade287bf18ade1a",
     "focused_test_path": "tests/route_a_v3/test_qualify_gse149487_plumage.py",
-    "focused_test_sha256": "53b7c474e4f45765612e5ec3e2443cb96eea03153b981ea5fadcef7af1f2b728",
-    "implementation_commit": "c38b4ad748e6594bb8504ae3d66271a4acd21fb4"
+    "focused_test_sha256": "fc8e2147d4aee480d7ff12b38b0b036ee8e65dec8be6ecf5d9a6b893f2a28fb9",
+    "implementation_commit": "UNKNOWN_NOT_ASSERTED"
   },
   "scope": {
     "ordinary_public_data_only": true,
@@ -182,6 +184,28 @@
     "bootstrap_resamples": 2000,
     "simulation_trials": 1000,
     "model_results_may_change_this_rule": false
+  },
+  "stop_before_data_preflight_binding": {
+    "binding_scheme": "CONFIG_ONLY_POST_IMPLEMENTATION_BINDING_V1",
+    "status": "UNKNOWN_NOT_ASSERTED",
+    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "external_evidence_config_path": "configs/route_a_v3_gse149487_external_evidence_roots_v1.json",
+    "external_evidence_config_sha256": "d25a978c4603e180ca20534f3ba8b78c321e21c01fdf94c88b9ab65a0ed7ed8b",
+    "preflight_script_path": "scripts/route_a_v3/preflight_gse149487_full_a1.py",
+    "preflight_script_sha256": "a4178cf60803b0e93cd6fa6a1f39dd2837ce20f5b0e74bb0c4f4ef5e5c1a48bb",
+    "preflight_test_path": "tests/route_a_v3/test_preflight_gse149487_full_a1.py",
+    "preflight_test_sha256": "21173517b6c70000c7c704408573364467e1028d8a48de699d9d00274aa05c5c"
+  },
+  "current_gate_contract": {
+    "qualification_status": "BLOCKED_PENDING_PUBLIC_EVIDENCE",
+    "qualified": false,
+    "training_allowed": false,
+    "model_selection_allowed": false,
+    "ordinary_study_contribution": 0,
+    "a1_study_contribution": 0,
+    "true_a2_study_contribution": 0,
+    "canonical_record_count": 0,
+    "next_phase_authorized": false
   },
   "qualification_gates": [
     "AUTHORITY_AND_CODE_TRUST_ROOTS",

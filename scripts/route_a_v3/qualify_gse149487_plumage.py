@@ -10,12 +10,13 @@ CanonicalInterventionRecordV3 only when every pre-frozen gate passes.
 
 The committed protocol deliberately leaves evidence that was not uniquely
 established from the public materials as UNKNOWN_NOT_ASSERTED.  Running this
-program with that protocol therefore produces an aggregate blocked bundle and
-zero canonical records.  Qualification requires a new, hash-bound protocol
-revision that supplies—not guesses—the missing mapping, paper-method, license,
-and checkpoint-exposure evidence.  A staging revision whose implementation
-commit is still UNKNOWN_NOT_ASSERTED is likewise blocked until the ordinary
-two-stage implementation binding is completed.
+program with that protocol therefore fails before any data-root access and
+cannot produce a qualification bundle or canonical records.  Qualification
+requires a new, hash-bound protocol revision that supplies—not guesses—the
+missing mapping, paper-method, license, and checkpoint-exposure evidence.  A
+staging revision whose implementation commit is still UNKNOWN_NOT_ASSERTED is
+likewise blocked until the ordinary two-stage implementation binding is
+completed.
 """
 from __future__ import annotations
 
@@ -53,6 +54,7 @@ DATASET_ALIAS = "PLUMAGE"
 STUDY_GROUP_ID = "PLUMAGE_LIM_2021"
 PROTOCOL_ID = "ROUTE_A_V3_GSE149487_PLUMAGE_FULL_A1_QUALIFICATION_V1"
 PROTOCOL_STATUS = "PREFROZEN_FAIL_CLOSED_BEFORE_FULL_RAW_JOIN_RESULTS"
+QUALIFIER_CONFIG_PATH = "configs/route_a_v3_gse149487_a1_qualification.json"
 ASSET_MANIFEST_ID = "ROUTE_A_V3_GSE149487_ADDITIVE_ASSET_MANIFEST_V2"
 QUALIFICATION_STATUS = "QUALIFIED_A1_ORDINARY"
 BLOCKED_STATUS = "BLOCKED_PENDING_PUBLIC_EVIDENCE"
@@ -119,6 +121,42 @@ PRIVATE_READ_ONLY_SNAPSHOT_MODE = (
     "PRIVATE_READ_ONLY_SNAPSHOT_FROM_SINGLE_OPEN_VERIFIED_DESCRIPTOR"
 )
 RAW_KEY_CLASSIFICATION_HASH_DOMAIN = "GSE149487_RAW_KEY_CLASSIFICATION_V1"
+EXPECTED_ACTIVE_AMENDMENT_DECISION_IDS: tuple[str, ...] = (
+    "V3-DEC-017",
+    "V3-DEC-018",
+)
+EXPECTED_EXTERNAL_EVIDENCE_BLOCKERS: tuple[str, ...] = (
+    "OUTCOME_BLIND_LONG_READ_MAPPING_PROVENANCE_UNKNOWN_NOT_ASSERTED",
+    "PAPER_NATIVE_METHOD_SOURCE_UNKNOWN_NOT_ASSERTED",
+    "PAPER_NATIVE_MULTIPLE_TESTING_FAMILY_UNKNOWN_NOT_ASSERTED",
+    "PUBLISHED_RESULT_CROSSCHECK_UNKNOWN_NOT_ASSERTED",
+    "LICENSE_AND_REDISTRIBUTION_UNKNOWN_NOT_ASSERTED",
+    "CHECKPOINT_SPECIFIC_FOUNDATION_EXPOSURE_UNKNOWN_NOT_ASSERTED",
+)
+EXPECTED_CURRENT_GATE_CONTRACT: Mapping[str, Any] = {
+    "qualification_status": BLOCKED_STATUS,
+    "qualified": False,
+    "training_allowed": False,
+    "model_selection_allowed": False,
+    "ordinary_study_contribution": 0,
+    "a1_study_contribution": 0,
+    "true_a2_study_contribution": 0,
+    "canonical_record_count": 0,
+    "next_phase_authorized": False,
+}
+STOP_BEFORE_DATA_BINDING_SCHEME = "CONFIG_ONLY_POST_IMPLEMENTATION_BINDING_V1"
+STOP_BEFORE_DATA_IMPLEMENTATION_BLOCKER = (
+    "STOP_BEFORE_DATA_PREFLIGHT_IMPLEMENTATION_COMMIT_UNKNOWN_NOT_ASSERTED"
+)
+STOP_BEFORE_DATA_EVIDENCE_CONFIG_PATH = (
+    "configs/route_a_v3_gse149487_external_evidence_roots_v1.json"
+)
+STOP_BEFORE_DATA_PREFLIGHT_SCRIPT_PATH = (
+    "scripts/route_a_v3/preflight_gse149487_full_a1.py"
+)
+STOP_BEFORE_DATA_PREFLIGHT_TEST_PATH = (
+    "tests/route_a_v3/test_preflight_gse149487_full_a1.py"
+)
 
 # Test-only injection point.  Production execution leaves this as None.  The
 # focused regression suite uses it to replace original paths after every
@@ -195,6 +233,22 @@ def _compact_json_bytes(value: Any) -> bytes:
         separators=(",", ":"),
         sort_keys=True,
     ).encode("utf-8")
+
+
+def _qualifier_nonbinding_core_sha256(config: Mapping[str, Any]) -> str:
+    """Digest every qualifier field after normalizing only the three I/B scalars."""
+
+    normalized = json.loads(json.dumps(config))
+    authority = normalized.get("authority")
+    binding = normalized.get("stop_before_data_preflight_binding")
+    if not isinstance(authority, dict) or not isinstance(binding, dict):
+        raise QualificationError(
+            "qualifier config lacks the two implementation binding objects"
+        )
+    authority["implementation_commit"] = "UNKNOWN_NOT_ASSERTED"
+    binding["status"] = "UNKNOWN_NOT_ASSERTED"
+    binding["implementation_commit"] = "UNKNOWN_NOT_ASSERTED"
+    return _sha256_bytes(_compact_json_bytes(normalized))
 
 
 def _pretty_json_bytes(value: Any) -> bytes:
@@ -593,6 +647,8 @@ def _validate_protocol(document: Mapping[str, Any]) -> dict[str, Any]:
         "foundation_exposure",
         "split_and_leakage",
         "power_prefreeze",
+        "stop_before_data_preflight_binding",
+        "current_gate_contract",
         "qualification_gates",
         "output_contract",
         "known_external_evidence_blockers",
@@ -623,6 +679,8 @@ def _validate_protocol(document: Mapping[str, Any]) -> dict[str, Any]:
         "a1_qualification_sha256",
         "data_role_registry_path",
         "data_role_registry_sha256",
+        "decision_log_path",
+        "decision_log_sha256",
         "canonical_schema_path",
         "canonical_schema_sha256",
         "asset_manifest_path",
@@ -641,6 +699,7 @@ def _validate_protocol(document: Mapping[str, Any]) -> dict[str, Any]:
         "contract_sha256",
         "a1_qualification_sha256",
         "data_role_registry_sha256",
+        "decision_log_sha256",
         "canonical_schema_sha256",
         "asset_manifest_sha256",
         "v4_helper_sha256",
@@ -652,6 +711,7 @@ def _validate_protocol(document: Mapping[str, Any]) -> dict[str, Any]:
         "contract_path",
         "a1_qualification_path",
         "data_role_registry_path",
+        "decision_log_path",
         "canonical_schema_path",
         "asset_manifest_path",
         "v4_helper_path",
@@ -666,7 +726,7 @@ def _validate_protocol(document: Mapping[str, Any]) -> dict[str, Any]:
         raise QualificationError("active authority commit must be a full commit hash")
     _require_exact_value(
         authority["active_amendment_decision_ids"],
-        ["V3-DEC-017"],
+        list(EXPECTED_ACTIVE_AMENDMENT_DECISION_IDS),
         label="protocol.authority.active_amendment_decision_ids",
     )
     if authority["implementation_commit"] != "UNKNOWN_NOT_ASSERTED" and not COMMIT_RE.fullmatch(
@@ -981,6 +1041,83 @@ def _validate_protocol(document: Mapping[str, Any]) -> dict[str, Any]:
             raise QualificationError(f"protocol power_prefreeze is missing {key}")
         _require_exact_value(power[key], expected, label=f"protocol power.{key}")
 
+    preflight_binding = _require_exact_keys(
+        document["stop_before_data_preflight_binding"],
+        {
+            "binding_scheme",
+            "status",
+            "implementation_commit",
+            "external_evidence_config_path",
+            "external_evidence_config_sha256",
+            "preflight_script_path",
+            "preflight_script_sha256",
+            "preflight_test_path",
+            "preflight_test_sha256",
+        },
+        label="protocol.stop_before_data_preflight_binding",
+    )
+    _require_exact_value(
+        preflight_binding["binding_scheme"],
+        STOP_BEFORE_DATA_BINDING_SCHEME,
+        label="protocol pre-data binding scheme",
+    )
+    for key, expected in (
+        ("external_evidence_config_path", STOP_BEFORE_DATA_EVIDENCE_CONFIG_PATH),
+        ("preflight_script_path", STOP_BEFORE_DATA_PREFLIGHT_SCRIPT_PATH),
+        ("preflight_test_path", STOP_BEFORE_DATA_PREFLIGHT_TEST_PATH),
+    ):
+        _require_exact_value(
+            preflight_binding[key],
+            expected,
+            label=f"protocol pre-data binding {key}",
+        )
+    for key in (
+        "external_evidence_config_sha256",
+        "preflight_script_sha256",
+        "preflight_test_sha256",
+    ):
+        _require_sha256(
+            preflight_binding[key],
+            label=f"protocol pre-data binding {key}",
+        )
+    if preflight_binding["status"] == "UNKNOWN_NOT_ASSERTED":
+        _require_exact_value(
+            preflight_binding["implementation_commit"],
+            "UNKNOWN_NOT_ASSERTED",
+            label="protocol pre-data UNKNOWN implementation commit",
+        )
+        _require_exact_value(
+            authority["implementation_commit"],
+            "UNKNOWN_NOT_ASSERTED",
+            label="protocol UNKNOWN qualifier implementation commit",
+        )
+    elif preflight_binding["status"] == "BOUND":
+        if not COMMIT_RE.fullmatch(str(preflight_binding["implementation_commit"])):
+            raise QualificationError(
+                "protocol BOUND pre-data implementation commit must be a full commit hash"
+            )
+        _require_exact_value(
+            preflight_binding["implementation_commit"],
+            authority["implementation_commit"],
+            label="protocol BOUND qualifier/pre-data implementation commit equality",
+        )
+    else:
+        raise QualificationError(
+            "protocol pre-data binding status must be UNKNOWN_NOT_ASSERTED or BOUND"
+        )
+
+    current_gate = _require_exact_keys(
+        document["current_gate_contract"],
+        set(EXPECTED_CURRENT_GATE_CONTRACT),
+        label="protocol.current_gate_contract",
+    )
+    for key, expected in EXPECTED_CURRENT_GATE_CONTRACT.items():
+        _require_exact_value(
+            current_gate[key],
+            expected,
+            label=f"protocol.current_gate_contract.{key}",
+        )
+
     output_contract = document["output_contract"]
     if not isinstance(output_contract, Mapping):
         raise QualificationError("protocol output_contract must be an object")
@@ -1103,15 +1240,11 @@ def _validate_protocol(document: Mapping[str, Any]) -> dict[str, Any]:
     _require_exact_value(
         document["qualification_gates"], expected_gates, label="protocol qualification_gates"
     )
-    if not isinstance(document["known_external_evidence_blockers"], list) or any(
-        not isinstance(value, str) or not value
-        for value in document["known_external_evidence_blockers"]
-    ):
-        raise QualificationError("known external blockers must be a list")
-    if len(set(document["known_external_evidence_blockers"])) != len(
-        document["known_external_evidence_blockers"]
-    ):
-        raise QualificationError("known external blockers must be unique")
+    _require_exact_value(
+        document["known_external_evidence_blockers"],
+        list(EXPECTED_EXTERNAL_EVIDENCE_BLOCKERS),
+        label="protocol known external evidence blockers",
+    )
     return dict(document)
 
 
@@ -2592,21 +2725,13 @@ def _verify_git_binding(
     active_authority_commit: str,
     authority_files: Sequence[tuple[str, str]],
     implementation_files: Sequence[tuple[str, str]],
+    qualifier_config_path: str = QUALIFIER_CONFIG_PATH,
 ) -> dict[str, Any]:
-    if implementation_commit == "UNKNOWN_NOT_ASSERTED":
-        return {
-            "status": "UNKNOWN_NOT_ASSERTED",
-            "accepted_a0_base_commit": accepted_a0_base_commit,
-            "active_authority_commit": active_authority_commit,
-            "implementation_commit": implementation_commit,
-            "observed_head": None,
-            "accepted_a0_is_ancestor_of_active_authority": None,
-            "active_authority_is_ancestor_of_implementation": None,
-            "implementation_commit_is_ancestor_of_head": None,
-            "active_authority_file_hashes_match": None,
-            "implementation_file_hashes_match": None,
-            "worktree_clean": None,
-        }
+    qualifier_path = _safe_relative_path(
+        repo_root,
+        qualifier_config_path,
+        label="qualifier config Git binding path",
+    )
 
     def require_ancestor(older: str, newer: str, *, label: str) -> None:
         result = subprocess.run(
@@ -2619,6 +2744,17 @@ def _verify_git_binding(
         if result.returncode != 0:
             raise QualificationError(f"{label} ancestry is not satisfied")
 
+    def git_bytes(commit: str, relative_path: str, *, label: str) -> bytes:
+        try:
+            return subprocess.run(
+                ["git", "-C", str(repo_root), "show", f"{commit}:{relative_path}"],
+                check=True,
+                capture_output=True,
+                timeout=30,
+            ).stdout
+        except (OSError, subprocess.SubprocessError) as exc:
+            raise QualificationError(f"{label} Git blob could not be read") from exc
+
     def require_blob_hashes(
         commit: str,
         files: Sequence[tuple[str, str]],
@@ -2626,17 +2762,29 @@ def _verify_git_binding(
         label: str,
     ) -> None:
         for relative_path, expected_sha256 in files:
-            blob = subprocess.run(
-                ["git", "-C", str(repo_root), "show", f"{commit}:{relative_path}"],
-                check=True,
-                capture_output=True,
-                timeout=30,
-            ).stdout
+            blob = git_bytes(commit, relative_path, label=label)
             if _sha256_bytes(blob) != _require_sha256(
                 expected_sha256,
                 label=f"{label} blob expected hash",
             ):
                 raise QualificationError(f"{label} file hash differs at its bound commit")
+
+    def require_unknown_config(config: Mapping[str, Any], *, label: str) -> None:
+        authority = config.get("authority")
+        binding = config.get("stop_before_data_preflight_binding")
+        if not isinstance(authority, Mapping) or not isinstance(binding, Mapping):
+            raise QualificationError(f"{label} lacks the two implementation binding objects")
+        expected = {
+            "authority.implementation_commit": authority.get("implementation_commit"),
+            "stop_before_data_preflight_binding.status": binding.get("status"),
+            "stop_before_data_preflight_binding.implementation_commit": binding.get(
+                "implementation_commit"
+            ),
+        }
+        if any(value != "UNKNOWN_NOT_ASSERTED" for value in expected.values()):
+            raise QualificationError(
+                f"{label} must retain all three UNKNOWN_NOT_ASSERTED implementation scalars"
+            )
 
     try:
         observed_head = subprocess.run(
@@ -2653,24 +2801,177 @@ def _verify_git_binding(
         )
         require_ancestor(
             active_authority_commit,
-            implementation_commit,
-            label="active authority to implementation",
-        )
-        require_ancestor(
-            implementation_commit,
             observed_head,
-            label="implementation to executing HEAD",
+            label="active authority to executing HEAD",
         )
         require_blob_hashes(
             active_authority_commit,
             authority_files,
             label="active authority",
         )
-        require_blob_hashes(
-            implementation_commit,
-            implementation_files,
-            label="implementation",
+        head_config_blob = git_bytes(
+            observed_head,
+            qualifier_config_path,
+            label="executing HEAD qualifier config",
         )
+        current_config_blob, _current_config_provenance = _read_verified_bytes(
+            qualifier_path,
+            _sha256_bytes(head_config_blob),
+            label="current qualifier config bound to executing HEAD",
+            expected_bytes=len(head_config_blob),
+            suffix=".json",
+        )
+        if current_config_blob != head_config_blob:
+            raise QualificationError(
+                "current qualifier config is not the exact executing HEAD blob"
+            )
+        head_config = _read_json_bytes(
+            head_config_blob,
+            label="executing HEAD qualifier config",
+        )
+        nonbinding_core_sha256 = _qualifier_nonbinding_core_sha256(head_config)
+        binding_commit: str | None = None
+        if implementation_commit != "UNKNOWN_NOT_ASSERTED":
+            require_ancestor(
+                active_authority_commit,
+                implementation_commit,
+                label="active authority to implementation",
+            )
+            require_ancestor(
+                implementation_commit,
+                observed_head,
+                label="implementation to executing HEAD",
+            )
+            require_blob_hashes(
+                implementation_commit,
+                implementation_files,
+                label="implementation",
+            )
+            implementation_config_blob = git_bytes(
+                implementation_commit,
+                qualifier_config_path,
+                label="implementation qualifier config",
+            )
+            implementation_config = _read_json_bytes(
+                implementation_config_blob,
+                label="implementation qualifier config",
+            )
+            require_unknown_config(
+                implementation_config,
+                label="implementation qualifier config",
+            )
+            descendants = subprocess.run(
+                [
+                    "git",
+                    "-C",
+                    str(repo_root),
+                    "rev-list",
+                    "--first-parent",
+                    "--reverse",
+                    f"{implementation_commit}..{observed_head}",
+                ],
+                check=True,
+                capture_output=True,
+                text=True,
+                timeout=15,
+            ).stdout.splitlines()
+            if not descendants:
+                raise QualificationError(
+                    "qualifier B binding commit is absent after the implementation commit"
+                )
+            binding_commit = descendants[0]
+            parent_line = subprocess.run(
+                [
+                    "git",
+                    "-C",
+                    str(repo_root),
+                    "rev-list",
+                    "--parents",
+                    "-n",
+                    "1",
+                    binding_commit,
+                ],
+                check=True,
+                capture_output=True,
+                text=True,
+                timeout=15,
+            ).stdout.split()
+            if len(parent_line) != 2 or parent_line[1] != implementation_commit:
+                raise QualificationError(
+                    "qualifier B binding commit must be a direct non-merge child of I"
+                )
+            changed_paths = {
+                relative
+                for relative in subprocess.run(
+                    [
+                        "git",
+                        "-C",
+                        str(repo_root),
+                        "diff-tree",
+                        "--no-commit-id",
+                        "--name-only",
+                        "-r",
+                        binding_commit,
+                    ],
+                    check=True,
+                    capture_output=True,
+                    text=True,
+                    timeout=15,
+                ).stdout.splitlines()
+                if relative
+            }
+            if changed_paths != {qualifier_config_path}:
+                raise QualificationError(
+                    "qualifier B binding commit must change only the qualifier config"
+                )
+            binding_config_blob = git_bytes(
+                binding_commit,
+                qualifier_config_path,
+                label="qualifier B binding config",
+            )
+            binding_config = _read_json_bytes(
+                binding_config_blob,
+                label="qualifier B binding config",
+            )
+            expected_binding_config = json.loads(json.dumps(implementation_config))
+            expected_binding_config["authority"]["implementation_commit"] = (
+                implementation_commit
+            )
+            expected_binding_config["stop_before_data_preflight_binding"]["status"] = (
+                "BOUND"
+            )
+            expected_binding_config["stop_before_data_preflight_binding"][
+                "implementation_commit"
+            ] = implementation_commit
+            if binding_config != expected_binding_config:
+                raise QualificationError(
+                    "qualifier B binding config changed content beyond the three allowed scalars"
+                )
+            if head_config_blob != binding_config_blob:
+                raise QualificationError(
+                    "executing HEAD qualifier config differs from the first exact B binding blob"
+                )
+            if current_config_blob != binding_config_blob:
+                raise QualificationError(
+                    "current qualifier config differs from the first exact B binding blob"
+                )
+            implementation_core_sha256 = _qualifier_nonbinding_core_sha256(
+                implementation_config
+            )
+            binding_core_sha256 = _qualifier_nonbinding_core_sha256(binding_config)
+            if not (
+                implementation_core_sha256
+                == binding_core_sha256
+                == nonbinding_core_sha256
+            ):
+                raise QualificationError(
+                    "qualifier I/B/current non-binding core digests differ"
+                )
+        else:
+            require_unknown_config(
+                head_config,
+                label="unbound executing HEAD qualifier config",
+            )
         porcelain = subprocess.run(
             ["git", "-C", str(repo_root), "status", "--porcelain", "--untracked-files=all"],
             check=True,
@@ -2682,6 +2983,25 @@ def _verify_git_binding(
         raise QualificationError("repository binding could not be verified") from exc
     if porcelain:
         raise QualificationError("repository worktree is not clean during qualification")
+    if implementation_commit == "UNKNOWN_NOT_ASSERTED":
+        return {
+            "status": "UNKNOWN_NOT_ASSERTED",
+            "accepted_a0_base_commit": accepted_a0_base_commit,
+            "active_authority_commit": active_authority_commit,
+            "implementation_commit": implementation_commit,
+            "observed_head": observed_head,
+            "accepted_a0_is_ancestor_of_active_authority": True,
+            "active_authority_is_ancestor_of_head": True,
+            "active_authority_is_ancestor_of_implementation": None,
+            "implementation_commit_is_ancestor_of_head": None,
+            "active_authority_file_hashes_match": True,
+            "implementation_file_hashes_match": None,
+            "qualifier_binding_commit": None,
+            "current_config_equals_head_blob": True,
+            "head_config_equals_binding_blob": None,
+            "qualifier_nonbinding_core_sha256": nonbinding_core_sha256,
+            "worktree_clean": True,
+        }
     return {
         "status": "PASS",
         "accepted_a0_base_commit": accepted_a0_base_commit,
@@ -2689,10 +3009,19 @@ def _verify_git_binding(
         "implementation_commit": implementation_commit,
         "observed_head": observed_head,
         "accepted_a0_is_ancestor_of_active_authority": True,
+        "active_authority_is_ancestor_of_head": True,
         "active_authority_is_ancestor_of_implementation": True,
         "implementation_commit_is_ancestor_of_head": True,
         "active_authority_file_hashes_match": True,
         "implementation_file_hashes_match": True,
+        "qualifier_binding_commit": binding_commit,
+        "binding_commit_is_direct_nonmerge_child": True,
+        "binding_commit_changed_only_qualifier_config": True,
+        "implementation_config_unknown_scalars_verified": True,
+        "binding_config_exact_three_scalar_transition": True,
+        "current_config_equals_head_blob": True,
+        "head_config_equals_binding_blob": True,
+        "qualifier_nonbinding_core_sha256": nonbinding_core_sha256,
         "worktree_clean": True,
     }
 
@@ -3032,6 +3361,7 @@ def _verify_trust_roots(
         "contract": "contract_path",
         "a1_qualification": "a1_qualification_path",
         "data_role_registry": "data_role_registry_path",
+        "decision_log": "decision_log_path",
         "canonical_schema": "canonical_schema_path",
         "asset_manifest": "asset_manifest_path",
         "v4_helper": "v4_helper_path",
@@ -3042,14 +3372,34 @@ def _verify_trust_roots(
         "contract": "contract_sha256",
         "a1_qualification": "a1_qualification_sha256",
         "data_role_registry": "data_role_registry_sha256",
+        "decision_log": "decision_log_sha256",
         "canonical_schema": "canonical_schema_sha256",
         "asset_manifest": "asset_manifest_sha256",
         "v4_helper": "v4_helper_sha256",
         "qualifier": "qualifier_sha256",
         "focused_test": "focused_test_sha256",
     }
+    preflight_binding = protocol["stop_before_data_preflight_binding"]
+    path_fields.update(
+        {
+            "preflight_evidence_config": "external_evidence_config_path",
+            "preflight_implementation_script": "preflight_script_path",
+            "preflight_implementation_test": "preflight_test_path",
+        }
+    )
+    hash_fields.update(
+        {
+            "preflight_evidence_config": "external_evidence_config_sha256",
+            "preflight_implementation_script": "preflight_script_sha256",
+            "preflight_implementation_test": "preflight_test_sha256",
+        }
+    )
     paths = {
-        label: _safe_relative_path(repo_root, authority[field], label=f"authority {label} path")
+        label: _safe_relative_path(
+            repo_root,
+            (preflight_binding if label.startswith("preflight_") else authority)[field],
+            label=f"authority {label} path",
+        )
         for label, field in path_fields.items()
     }
     if paths["asset_manifest"] != explicit_asset_manifest_path:
@@ -3061,7 +3411,9 @@ def _verify_trust_roots(
         if label in {"asset_manifest", "canonical_schema"}:
             payload, provenance[label] = _read_verified_bytes(
                 path,
-                authority[hash_fields[label]],
+                (preflight_binding if label.startswith("preflight_") else authority)[
+                    hash_fields[label]
+                ],
                 label=f"authority {label}",
             )
             verified_documents[label] = _read_json_bytes(
@@ -3079,9 +3431,10 @@ def _verify_trust_roots(
             )
             parser_paths[label] = parser_path
         else:
+            binding = preflight_binding if label.startswith("preflight_") else authority
             provenance[label] = _verify_file_hash(
                 path,
-                authority[hash_fields[label]],
+                binding[hash_fields[label]],
                 label=f"authority {label}",
             )
     running_script = _absolute_without_resolving(Path(__file__))
@@ -3103,11 +3456,28 @@ def _verify_trust_roots(
                 authority["data_role_registry_path"],
                 authority["data_role_registry_sha256"],
             ),
+            (
+                authority["decision_log_path"],
+                authority["decision_log_sha256"],
+            ),
         ),
         implementation_files=(
             (authority["qualifier_path"], authority["qualifier_sha256"]),
             (authority["focused_test_path"], authority["focused_test_sha256"]),
+            (
+                preflight_binding["external_evidence_config_path"],
+                preflight_binding["external_evidence_config_sha256"],
+            ),
+            (
+                preflight_binding["preflight_script_path"],
+                preflight_binding["preflight_script_sha256"],
+            ),
+            (
+                preflight_binding["preflight_test_path"],
+                preflight_binding["preflight_test_sha256"],
+            ),
         ),
+        qualifier_config_path=QUALIFIER_CONFIG_PATH,
     )
     return provenance, parser_paths, verified_documents, git_binding
 
@@ -3165,6 +3535,22 @@ def _qualification_blockers(
     if int(raw_key_reconciliation["mapping_key_absent_from_both_contexts_count"]) != 0:
         blockers.add("MAPPING_KEYS_ABSENT_FROM_BOTH_CONTEXTS_NOT_ZERO")
     return sorted(blockers)
+
+
+def _pre_data_evidence_blockers(
+    *,
+    protocol: Mapping[str, Any],
+    git_binding: Mapping[str, Any],
+) -> list[str]:
+    """Return frozen blockers that must stop execution before data-root access."""
+
+    blockers: list[str] = []
+    if git_binding.get("status") != "PASS":
+        blockers.insert(0, "IMPLEMENTATION_COMMIT_UNKNOWN_NOT_ASSERTED")
+    if protocol["stop_before_data_preflight_binding"]["status"] != "BOUND":
+        blockers.append(STOP_BEFORE_DATA_IMPLEMENTATION_BLOCKER)
+    blockers.extend(protocol["known_external_evidence_blockers"])
+    return blockers
 
 
 def _raw_bundle_sha256(resolved_assets: Sequence[Mapping[str, Any]]) -> str:
@@ -3296,7 +3682,15 @@ def _build_qualification_payloads(
     snapshot_root: Path,
 ) -> tuple[dict[str, bytes], dict[str, Any]]:
     _require_directory(repo_root, label="repository root")
-    _require_directory(data_root, label="public data root")
+    expected_protocol_path = _safe_relative_path(
+        repo_root,
+        QUALIFIER_CONFIG_PATH,
+        label="authoritative qualifier config path",
+    )
+    if _absolute_without_resolving(protocol_path) != expected_protocol_path:
+        raise QualificationError(
+            "qualification protocol must be the authoritative repository qualifier config"
+        )
     _require_regular_file(protocol_path, label="qualification protocol", suffix=".json")
     _require_regular_file(asset_manifest_path, label="asset manifest", suffix=".json")
 
@@ -3315,6 +3709,16 @@ def _build_qualification_payloads(
         explicit_asset_manifest_path=asset_manifest_path,
         snapshot_root=snapshot_root,
     )
+    pre_data_blockers = _pre_data_evidence_blockers(
+        protocol=protocol,
+        git_binding=git_binding,
+    )
+    if pre_data_blockers:
+        raise QualificationError(
+            "pre-data evidence gate blocked before data-root access: "
+            + ",".join(pre_data_blockers)
+        )
+    _require_directory(data_root, label="public data root")
     asset_manifest = _validate_asset_manifest(trust_documents["asset_manifest"])
     p0_manifest_path = data_root / asset_manifest["source_manifest"]["filename"]
     resolved_assets, asset_paths, p0_provenance = _resolve_and_verify_assets(

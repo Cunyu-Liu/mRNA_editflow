@@ -6,6 +6,7 @@ import json
 import shutil
 from copy import deepcopy
 
+import pytest
 import yaml
 
 
@@ -979,6 +980,187 @@ def test_synchronized_manifest_rehash_cannot_hide_role_protocol_core_mutation(
     assert "GSE200302_ROLE_PROTOCOL_MODEL_SELECTION_FIELD" in codes
 
 
+def test_gse149487_plumage_protocol_is_dynamic_but_semantically_closed(
+    validator,
+    repo_root,
+):
+    manifest_paths = {
+        path for path, _role in validator.EXPECTED_REGISTRY_MANIFEST_PATH_ROLES
+    }
+    assert validator.GSE149487_PLUMAGE_PROTOCOL_PATH in validator.required_bundle_paths()
+    assert validator.GSE149487_PLUMAGE_PROTOCOL_PATH not in manifest_paths
+    for immutable_path in (
+        validator.GSE149487_PLUMAGE_ASSET_MANIFEST_PATH,
+        validator.GSE149487_PLUMAGE_HELPER_PATH,
+        validator.GSE149487_PLUMAGE_QUALIFIER_PATH,
+        validator.GSE149487_PLUMAGE_TEST_PATH,
+        validator.GSE149487_PLUMAGE_PREFLIGHT_CONFIG_PATH,
+        validator.GSE149487_PLUMAGE_PREFLIGHT_SCRIPT_PATH,
+        validator.GSE149487_PLUMAGE_PREFLIGHT_TEST_PATH,
+    ):
+        assert immutable_path in manifest_paths
+
+    assert validator.validate_gse149487_plumage_protocol(repo_root) == []
+    protocol = validator._load_json(
+        repo_root,
+        validator.GSE149487_PLUMAGE_PROTOCOL_PATH,
+    )
+    assert protocol["authority"]["active_authority_commit"] == (
+        validator.GSE149487_PLUMAGE_ACTIVE_AUTHORITY_COMMIT
+    )
+    assert protocol["authority"]["active_amendment_decision_ids"] == [
+        "V3-DEC-017",
+        "V3-DEC-018",
+    ]
+    assert protocol["known_external_evidence_blockers"] == (
+        validator.GSE149487_PLUMAGE_EXTERNAL_BLOCKERS
+    )
+    assert protocol["current_gate_contract"] == (
+        validator.GSE149487_PLUMAGE_CURRENT_GATE_CONTRACT
+    )
+    assert validator._gse149487_plumage_nonbinding_core_sha256(protocol) == (
+        validator.GSE149487_PLUMAGE_NONBINDING_CORE_SHA256
+    )
+    preflight_binding = protocol["stop_before_data_preflight_binding"]
+    assert preflight_binding["binding_scheme"] == (
+        validator.GSE149487_PLUMAGE_PREFLIGHT_BINDING_SCHEME
+    )
+    assert preflight_binding["status"] == "UNKNOWN_NOT_ASSERTED"
+    assert preflight_binding["implementation_commit"] == "UNKNOWN_NOT_ASSERTED"
+    assert preflight_binding["external_evidence_config_sha256"] == (
+        validator.GSE149487_PLUMAGE_PREFLIGHT_CONFIG_SHA256
+    )
+    assert preflight_binding["preflight_script_sha256"] == (
+        validator.GSE149487_PLUMAGE_PREFLIGHT_SCRIPT_SHA256
+    )
+    assert preflight_binding["preflight_test_sha256"] == (
+        validator.GSE149487_PLUMAGE_PREFLIGHT_TEST_SHA256
+    )
+
+
+def test_synchronized_manifest_rehash_cannot_hide_plumage_gate_or_authority_drift(
+    validator,
+    repo_root,
+    tmp_path,
+):
+    case_root = tmp_path / "plumage_protocol_semantic_mutation"
+    manifest = _copy_manifest_bundle(validator, repo_root, case_root)
+    assert all(
+        row["path"] != validator.GSE149487_PLUMAGE_PROTOCOL_PATH
+        for row in manifest["files"]
+    )
+
+    protocol_path = case_root / validator.GSE149487_PLUMAGE_PROTOCOL_PATH
+    protocol = json.loads(protocol_path.read_text(encoding="utf-8"))
+    protocol["authority"]["active_amendment_decision_ids"] = ["V3-DEC-017"]
+    protocol["current_gate_contract"]["qualified"] = True
+    protocol["current_gate_contract"]["ordinary_study_contribution"] = 1
+    protocol["known_external_evidence_blockers"].pop()
+    preflight_path = case_root / validator.GSE149487_PLUMAGE_PREFLIGHT_CONFIG_PATH
+    preflight = json.loads(preflight_path.read_text(encoding="utf-8"))
+    preflight["protocol_status"] = "SYNCHRONIZED_REHASH_DRIFT"
+    preflight_path.write_text(
+        json.dumps(preflight, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
+    protocol["stop_before_data_preflight_binding"][
+        "external_evidence_config_sha256"
+    ] = validator.sha256_file(preflight_path)
+    protocol_path.write_text(
+        json.dumps(protocol, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
+    for row in manifest["files"]:
+        row["sha256"] = validator.sha256_file(case_root / row["path"])
+    manifest_path = case_root / validator.REGISTRY_MANIFEST_PATH
+    manifest_path.write_text(
+        json.dumps(manifest, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
+
+    codes = _codes(validator.validate_bundle(case_root))
+    assert "REGISTRY_MANIFEST_HASH_MISMATCH" not in codes
+    assert "GSE149487_PLUMAGE_PROTOCOL_AUTHORITY" in codes
+    assert "GSE149487_PLUMAGE_PROTOCOL_EVIDENCE" in codes
+    assert "GSE149487_PLUMAGE_PROTOCOL_GATES" in codes
+    assert "GSE149487_PLUMAGE_PREFLIGHT_BINDING" in codes
+
+
+def test_plumage_static_core_allows_only_the_three_b_binding_scalars(
+    validator,
+    repo_root,
+    tmp_path,
+):
+    case_root = tmp_path / "plumage_exact_b_scalars"
+    _copy_manifest_bundle(validator, repo_root, case_root)
+    a1_contract_relative = "configs/route_a_v3_a1_qualification.json"
+    (case_root / a1_contract_relative).parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy2(repo_root / a1_contract_relative, case_root / a1_contract_relative)
+    protocol_path = case_root / validator.GSE149487_PLUMAGE_PROTOCOL_PATH
+    protocol = json.loads(protocol_path.read_text(encoding="utf-8"))
+    implementation_commit = "1" * 40
+    protocol["authority"]["implementation_commit"] = implementation_commit
+    protocol["stop_before_data_preflight_binding"]["status"] = "BOUND"
+    protocol["stop_before_data_preflight_binding"][
+        "implementation_commit"
+    ] = implementation_commit
+    protocol_path.write_text(
+        json.dumps(protocol, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
+
+    assert validator.validate_gse149487_plumage_protocol(case_root) == []
+
+
+@pytest.mark.parametrize(
+    ("mutation", "expected_code"),
+    [
+        ("canonical_materialization_bypass", "GSE149487_PLUMAGE_PROTOCOL_CANONICAL"),
+        ("outcome_dependent_mapping", "GSE149487_PLUMAGE_PROTOCOL_MAPPING"),
+        ("empty_qualification_gates", "GSE149487_PLUMAGE_PROTOCOL_QUALIFICATION_GATES"),
+    ],
+)
+def test_synchronized_rehash_cannot_hide_plumage_core_semantic_bypass(
+    validator,
+    repo_root,
+    tmp_path,
+    mutation,
+    expected_code,
+):
+    case_root = tmp_path / mutation
+    manifest = _copy_manifest_bundle(validator, repo_root, case_root)
+    protocol_path = case_root / validator.GSE149487_PLUMAGE_PROTOCOL_PATH
+    protocol = json.loads(protocol_path.read_text(encoding="utf-8"))
+    if mutation == "canonical_materialization_bypass":
+        protocol["canonical_v3"][
+            "materialize_only_when_every_qualification_gate_passes"
+        ] = False
+    elif mutation == "outcome_dependent_mapping":
+        protocol["mapping"][
+            "membership_may_depend_on_measured_effect_or_significance"
+        ] = True
+    elif mutation == "empty_qualification_gates":
+        protocol["qualification_gates"] = []
+    else:  # pragma: no cover - closed parametrization guard
+        raise AssertionError(mutation)
+    protocol_path.write_text(
+        json.dumps(protocol, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
+    for row in manifest["files"]:
+        row["sha256"] = validator.sha256_file(case_root / row["path"])
+    manifest_path = case_root / validator.REGISTRY_MANIFEST_PATH
+    manifest_path.write_text(
+        json.dumps(manifest, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
+
+    codes = _codes(validator.validate_bundle(case_root))
+    assert "REGISTRY_MANIFEST_HASH_MISMATCH" not in codes
+    assert expected_code in codes
+    assert "GSE149487_PLUMAGE_PROTOCOL_NONBINDING_CORE" in codes
+
+
 def test_scheme_a_data_roles_cannot_restore_gse145046_as_true_a2(
     validator,
     repo_root,
@@ -1250,7 +1432,7 @@ def test_registry_manifest_detects_every_listed_hash_drift(validator, tmp_path, 
         "contract_sha256": goal_hash,
         "active_amendment_decision_ids": ["V3-DEC-017", "V3-DEC-018"],
         "base_commit": "bbb71dcba6f1e1c9cb75a8a6653f1a4fe4a6ca0c",
-        "manifest_status": "A1_GSE200302_ROLE_AUTHORITY_REBIND",
+        "manifest_status": "A1_PLUMAGE_DEC018_MECHANICAL_REBIND",
         "initial_generated_at": "2026-08-10T10:10:05+08:00",
         "generated_at": "2026-08-10T10:41:50+08:00",
         "updated_at": "2026-08-10T10:41:50+08:00",
