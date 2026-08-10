@@ -106,6 +106,13 @@ def _production_protocol() -> dict[str, object]:
 
 def _fixture_protocol(payload: bytes) -> dict[str, object]:
     protocol = _production_protocol()
+    # Synthetic integration fixtures live outside a Git worktree.  Keep their
+    # implementation state explicitly unresolved; the dedicated temporary-Git
+    # tests below exercise the fully bound production branch.
+    protocol["authority"]["implementation_commit"] = "UNKNOWN_NOT_ASSERTED"  # type: ignore[index]
+    blockers = protocol["known_blockers"]  # type: ignore[assignment]
+    if QUALIFY.IMPLEMENTATION_BLOCKER not in blockers:
+        blockers.append(QUALIFY.IMPLEMENTATION_BLOCKER)
     source = protocol["ordinary_public_asset_allowlist"][0]  # type: ignore[index]
     source["compressed_sha256"] = hashlib.sha256(payload).hexdigest()
     source["compressed_bytes"] = len(payload)

@@ -21,7 +21,7 @@
     "qualifier_path": "scripts/route_a_v3/qualify_gse114002_designed_a2.py",
     "qualifier_sha256": "f34a71d4023e9b3bd77ff040c187fab5efed1e54e11fec6e049d90849e9b58d1",
     "focused_test_path": "tests/route_a_v3/test_qualify_gse114002_designed_a2.py",
-    "focused_test_sha256": "a2074c2c0f8b1740f50b8ba063778124f049d73c1266c3ecc6e0011f34b8ee15",
+    "focused_test_sha256": "f79dff78550b80c58b4da6e92c9b93a7b448642065b100ba4b2ee685dc50ffc7",
     "implementation_commit": "UNKNOWN_NOT_ASSERTED"
   },
   "ordinary_public_asset_allowlist": [
@@ -206,14 +206,14 @@
     "model_results_may_change_rule": false
   },
   "known_blockers": [
-    "IMPLEMENTATION_COMMIT_UNKNOWN_NOT_ASSERTED",
     "MOTHER_INFO1_INFO2_INFO3_MATCH_SCORE_ID_AUTHORITY_UNKNOWN_NOT_ASSERTED",
     "FULL_25NT_PREFIX_REPORTER_RNA_CHEMISTRY_UNKNOWN_NOT_ASSERTED",
     "CHECKPOINT_SPECIFIC_EXPOSURE_UNKNOWN_NOT_ASSERTED",
     "LICENSE_AND_REDISTRIBUTION_UNKNOWN_NOT_ASSERTED",
     "NEAR_DUPLICATE_SPLIT_NOT_RUN",
     "PREFROZEN_GROUP_POWER_NOT_RUN",
-    "OWNER_TECHNICAL_UNCERTAINTY_POLICY_UNKNOWN_NOT_ASSERTED"
+    "OWNER_TECHNICAL_UNCERTAINTY_POLICY_UNKNOWN_NOT_ASSERTED",
+    "IMPLEMENTATION_COMMIT_UNKNOWN_NOT_ASSERTED"
   ],
   "output_contract": {
     "aggregate_only_blocked_bundle": true,
