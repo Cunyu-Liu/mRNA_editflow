@@ -1,0 +1,483 @@
+{
+  "contract_id": "mrna_xeditflow_route_a_v3",
+  "schema_version": "3.0.0",
+  "protocol_id": "ROUTE_A_V3_GSE200304_A1_AGGREGATE_GAP_QUALIFICATION_V1",
+  "protocol_status": "GO_QUALIFICATION_ONLY",
+  "activation_status": "NO_GO_ACTIVATION_NOW",
+  "qualification_status": "BLOCKED_NOT_QUALIFIED",
+  "dataset_id": "GSE200304",
+  "study_group_id": "GSE200304_SUPERSERIES_ONE_STUDY",
+  "authority": {
+    "contract_path": "docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md",
+    "contract_sha256": "3ba224de6277edd67387913cf1c83a5e1344e0ad44ef196db07d0772b45c4d79",
+    "active_authority_commit": "d078060c81114687db5068902a5aad5d9bedbee6",
+    "staging_parent_head": "76cf61cddf0e8a0fb9d9055d9384ef55057d6f86",
+    "data_role_registry_path": "docs/execution/route_a_v3_data_role_registry.yaml",
+    "data_role_registry_sha256": "03a805c6441f0778225f9a8ec10feeadba23f572cd9ea7b234903384e6a902bf",
+    "decision_log_path": "docs/execution/route_a_v3_decision_log.yaml",
+    "decision_log_sha256": "fc177d710c3a737e860b7a2326bbdabd1e698bc9eea5838cecc362df519d2766",
+    "a1_qualification_path": "configs/route_a_v3_a1_qualification.json",
+    "a1_qualification_sha256": "1d348671de50c0fe8b155f8cc114d14a74360fe1a87f9d9bac5207ae794806c4"
+  },
+  "implementation_binding": {
+    "status": "UNKNOWN_NOT_ASSERTED",
+    "repository_root_rule": "PROTOCOL_PATH_PARENT_PARENT",
+    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "qualifier_path": "scripts/route_a_v3/qualify_gse200304_a1.py",
+    "qualifier_blob_sha256": "UNKNOWN_NOT_ASSERTED",
+    "test_path": "tests/route_a_v3/test_qualify_gse200304_a1.py",
+    "test_blob_sha256": "UNKNOWN_NOT_ASSERTED",
+    "post_implementation_allowed_changed_paths": [
+      "configs/route_a_v3_gse200304_a1_qualification.json"
+    ],
+    "current_head_must_strictly_descend": true,
+    "active_authority_must_be_ancestor": true,
+    "clean_worktree_required": true,
+    "running_script_must_match_qualifier_blob": true
+  },
+  "a1_gate": {
+    "required_qualified_ordinary_studies": 3,
+    "required_qualified_a1_intervention_studies": 2,
+    "required_qualified_true_a2_dense_studies": 1,
+    "current_qualified_ordinary_studies": 0,
+    "current_qualified_a1_intervention_studies": 0,
+    "current_qualified_true_a2_dense_studies": 0,
+    "this_protocol_ordinary_study_contribution": 0,
+    "this_protocol_a1_study_contribution": 0,
+    "this_protocol_true_a2_study_contribution": 0,
+    "gate_pass": false
+  },
+  "scope": {
+    "ordinary_public_data_only": true,
+    "region": "3UTR",
+    "member_accessions": [
+      "GSE200304",
+      "GSE200302",
+      "GSE200303",
+      "GSE217530"
+    ],
+    "maximum_independent_study_count": 1,
+    "endpoint_or_member_accession_increases_study_count": false,
+    "primary_accession": "GSE200302",
+    "primary_measurement_families": [
+      "High_Poly",
+      "Low_Poly",
+      "Total_RNA"
+    ],
+    "primary_alleles": [
+      "WT",
+      "Mutant"
+    ],
+    "primary_replicates": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "qc_auxiliary_measurement_families": [
+      "80S_RNA",
+      "pDNA",
+      "GSE200303_SMALL_PLASMID_FREQ",
+      "GSE217530_IVT_TIMECOURSE"
+    ],
+    "legacy_freq_is_endpoint": false,
+    "paper_native_raw_xtail_replay_status": "NOT_RUN",
+    "qualified": false,
+    "training_allowed": false,
+    "model_selection_allowed": false,
+    "canonical_materialization_allowed": false,
+    "canonical_record_count": 0,
+    "raw_rows_or_row_keys_may_be_output": false
+  },
+  "input_contract": {
+    "data_root": "/mnt/cunyuliu/mrna_editflow_p0/GSE200304",
+    "forbidden_path_tokens": [
+      "GSE246381",
+      "access_log",
+      "sealed",
+      "restricted",
+      "sealed_external"
+    ],
+    "manifest_relative_path": "manifest.json",
+    "manifest_expected_bytes": 1115,
+    "manifest_expected_sha256": "4a9a0b162f0731df6a5c15441b8984505e2ebaee260ad4e46f62636621125a8c",
+    "manifest_expected_current_entry_count": 2,
+    "manifest_full_superseries_binding_status": "INCOMPLETE_NOT_TRUSTED_AS_COMPLETE",
+    "unique_input_asset_count": 6,
+    "same_descriptor_verified_snapshot_required": true,
+    "root_to_leaf_o_nofollow_required": true,
+    "all_input_hashes_and_sizes_required_before_parsing": true,
+    "network_access_allowed": false,
+    "input_writes_allowed": false,
+    "assets": [
+      {
+        "asset_id": "GSE200302_DESIGN",
+        "accession": "GSE200302",
+        "relative_path": "GSE200302/GSE200302_Twist_Oligo_Order_with_merged_ids.txt.gz",
+        "bytes": 1091787,
+        "sha256": "06b78231dcf02e6d42bc0abaf919d419630a6e1dd33d04ebe841ff03aa0e5f1f",
+        "format": "GZIP_TSV",
+        "role": "PRIMARY_DESIGN"
+      },
+      {
+        "asset_id": "GSE200302_PROCESSED",
+        "accession": "GSE200302",
+        "relative_path": "GSE200302/GSE200302_log2_cpm_counts_all_samples.txt.gz",
+        "bytes": 2843042,
+        "sha256": "ed93162f9540676138cfba05af2841c90619ac4335eb55ee3d956a3cd8aace3c",
+        "format": "GZIP_TSV",
+        "role": "PRIMARY_PROCESSED_COMPANION"
+      },
+      {
+        "asset_id": "GSE200303_RAW_TAR",
+        "accession": "GSE200303",
+        "relative_path": "GSE200303/GSE200303_RAW.tar",
+        "bytes": 1187840,
+        "sha256": "ff761e86c682cce13e95bea89951f98d167d3dc13d875e89825e97f366bc7617",
+        "format": "TAR",
+        "role": "AUXILIARY_ARCHIVE_BYTE_EQUIVALENCE"
+      },
+      {
+        "asset_id": "GSE200303_DESIGN",
+        "accession": "GSE200303",
+        "relative_path": "GSE200303/GSM6030637_Twist_Oligo_Order_with_merged_ids.txt.gz",
+        "bytes": 1091788,
+        "sha256": "cc8c1b69f87e669bb45cdc34257e489352dad4659d193d9a9e29166a6e7d2d75",
+        "format": "GZIP_TSV",
+        "role": "AUXILIARY_DESIGN_QC"
+      },
+      {
+        "asset_id": "GSE200303_SMALL_PLASMID",
+        "accession": "GSE200303",
+        "relative_path": "GSE200303/GSM6030637_log2_cpm_small_seq_on_plasmid.txt.gz",
+        "bytes": 86041,
+        "sha256": "54bc28cd55959d8b4ddfab4d2ea7126654256fe115fbcc363d141d9ff5d9a216",
+        "format": "GZIP_TSV",
+        "role": "AUXILIARY_QC_ONLY_LEGACY_FREQ"
+      },
+      {
+        "asset_id": "GSE217530_IVT",
+        "accession": "GSE217530",
+        "relative_path": "GSE217530/GSE217530_log2_cpm_IVT_librray_April2022.txt.gz",
+        "bytes": 3114235,
+        "sha256": "570edec59bdfcbe56d34f221700dc0e5a3d419561c5f693d2c9d705d26ecf320",
+        "format": "GZIP_TSV",
+        "role": "AUXILIARY_QC_ONLY_IVT"
+      }
+    ],
+    "tar_member_equivalence": [
+      {
+        "member_name": "GSM6030637_Twist_Oligo_Order_with_merged_ids.txt.gz",
+        "direct_asset_id": "GSE200303_DESIGN"
+      },
+      {
+        "member_name": "GSM6030637_log2_cpm_small_seq_on_plasmid.txt.gz",
+        "direct_asset_id": "GSE200303_SMALL_PLASMID"
+      }
+    ],
+    "tar_members_count_as_additional_unique_assets": false
+  },
+  "table_contract": {
+    "design": {
+      "exact_header": [
+        "ID",
+        "Type",
+        "201bp",
+        "5' End",
+        "3'End",
+        "Full_Oligo",
+        "merged_id"
+      ],
+      "row_count": 13836,
+      "type_counts": {
+        "WT": 6885,
+        "Mutant": 6885,
+        "Control": 66
+      },
+      "unique_pair_count": 6885,
+      "distinct_candidate_count": 6885,
+      "distinct_wt_source_group_count": 6882,
+      "singleton_source_pool_count": 6879,
+      "two_candidate_source_pool_count": 3,
+      "three_or_more_candidate_source_pool_count": 0,
+      "ndcg_eligible_source_pool_count": 0,
+      "control_id_count": 66,
+      "pair_multiplicity": "EXACTLY_ONE_WT_AND_ONE_MUTANT",
+      "control_multiplicity": "EXACTLY_ONE_ROW_PER_CONTROL_ID",
+      "sequence_column": "201bp",
+      "sequence_length": 201,
+      "sequence_alphabet": "ACGT",
+      "edit_rule": "EXACTLY_ONE_SNV",
+      "identity_rule": "ID_EQUALS_STRIP_WT_OR_MUTANT_SUFFIX_FROM_MERGED_ID"
+    },
+    "processed": {
+      "key_column": "barcode",
+      "allele_order": [
+        "WT",
+        "Mutant"
+      ],
+      "measurement_family_order": [
+        "80S_RNA",
+        "High_Poly",
+        "Low_Poly",
+        "pDNA",
+        "Total_RNA"
+      ],
+      "sample_numbers_by_family": {
+        "80S_RNA": [2, 6, 10, 14, 18, 22],
+        "High_Poly": [4, 8, 12, 16, 20, 24],
+        "Low_Poly": [3, 7, 11, 15, 19, 23],
+        "pDNA": [25, 26, 27, 28, 29, 30],
+        "Total_RNA": [1, 5, 9, 13, 17, 21]
+      },
+      "replicates": [1, 2, 3, 4, 5, 6],
+      "row_count": 6772,
+      "measurement_column_count": 60,
+      "all_values_finite_and_nonmissing": true,
+      "unique_key_required": true,
+      "exact_design_pair_join_required": true,
+      "outcome_blind_attrition_count": 113,
+      "freq_column_allowed": false
+    },
+    "small_plasmid": {
+      "exact_header": [
+        "Barcode",
+        "Freq"
+      ],
+      "row_count": 12704,
+      "complete_pair_count": 6120,
+      "wt_only_pair_count": 192,
+      "mutant_only_pair_count": 225,
+      "neither_pair_count": 348,
+      "control_row_count": 47,
+      "unique_barcode_required": true,
+      "all_numeric_values_finite_and_nonmissing": true,
+      "role": "AUXILIARY_QC_ONLY_NOT_ENDPOINT"
+    },
+    "ivt": {
+      "key_column": "ids",
+      "timepoint_order": [
+        "12hr",
+        "1hr",
+        "24hr",
+        "3hr",
+        "6hr"
+      ],
+      "sample_numbers_by_timepoint": {
+        "12hr": [43, 44, 45, 46, 47, 48],
+        "1hr": [25, 26, 27, 28, 29, 30],
+        "24hr": [49, 50, 51, 52, 53, 54],
+        "3hr": [31, 32, 33, 34, 35, 36],
+        "6hr": [37, 38, 39, 40, 41, 42]
+      },
+      "replicates": [1, 2, 3, 4, 5, 6],
+      "row_count": 13548,
+      "complete_pair_count": 6774,
+      "wt_only_pair_count": 0,
+      "mutant_only_pair_count": 0,
+      "missing_both_pair_count": 111,
+      "control_row_count": 0,
+      "measurement_column_count": 30,
+      "unique_key_required": true,
+      "all_values_finite_and_nonmissing": true,
+      "role": "AUXILIARY_QC_ONLY_NOT_ENDPOINT"
+    }
+  },
+  "paper_and_external_evidence": {
+    "pmc_id": "PMC10540565",
+    "pubmed_id": "37516102",
+    "paper_native_raw_xtail_replay_status": "NOT_RUN",
+    "author_notebook_wt_df_mut_df_status": "UNDEFINED_VARIABLES",
+    "author_notebook_descriptive_mutant_rep3_status": "ERRONEOUSLY_REUSES_REP2",
+    "author_notebook_code_copy_allowed": false,
+    "sam_to_count_lineage_status": "ABSENT",
+    "checkpoint_specific_exposure_status": "UNKNOWN_NOT_ASSERTED",
+    "outcome_blind_split_and_power_status": "NOT_FROZEN",
+    "precomputed_gap_evidence_only": {
+      "s3_mutation_unique_barcodes": 6772,
+      "s3_comparison_count": 2,
+      "s3_comparisons": [
+        "HighPoly:RNA",
+        "TotalPoly:RNA"
+      ],
+      "s3_complete_stats_high_poly": 6538,
+      "s3_complete_stats_total_poly": 6547,
+      "s3_gene_nonmissing_rows": 13544,
+      "s3_unique_genes": 1947,
+      "companion_total_poly_spearman": 0.9556,
+      "companion_total_poly_sign_agreement": 0.9462,
+      "companion_high_poly_spearman": 0.9329,
+      "companion_high_poly_sign_agreement": 0.9351,
+      "companion_se_finite_positive_count": 6772,
+      "status": "EVIDENCE_ONLY_NOT_A_PAPER_NATIVE_REPLAY_PASS"
+    },
+    "license_evidence": {
+      "pmc_oa_api_declaration": "CC BY",
+      "zenodo_code_archive_license_metadata": "other-open",
+      "repository_explicit_license_file_status": "ABSENT",
+      "artifact_specific_code_license_status": "UNKNOWN_FAIL_CLOSED"
+    },
+    "public_asset_bundle_lineage": {
+      "bundle_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE200304/GSE200304_PUBLIC_ASSETS_20260810T143731P0800",
+      "acquisition_manifest_sha256": "8318990d9e3b6a0e6265bf9d1e8bc20f56f0ecfd994e83d279e733258642100c",
+      "sha256sums_sha256": "20da85cd34f0574829392b5de1d7c48cc9782219847f56ccc07dffd579d79f15",
+      "publication_commit_sha256": "4742508195f28bf8c7ab1f7cb8bb0b68c32304f31b19c8f8979d098fa75786a5",
+      "status": "PRESENT_IN_SEPARATE_COMMITTED_BUNDLE_NOT_INTEGRATED"
+    },
+    "ena_fastq_manifest_bundle_lineage": {
+      "bundle_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE200304/GSE200304_ENA_FASTQ_MANIFEST_20260810T145631P0800",
+      "canonical_tsv_sha256": "22cd317d961d07036cb2dad19555b5c2423671c33a76badeb7b325847ee68d7b",
+      "source_tsv_sha256": "c4a0b6152ec2a3480f280d8498345196d5095ec54967525463fa81961f0f4ea1",
+      "summary_sha256": "f92f944c825a255f3f1fb50f48cbf0e701980b7895101c1a2a6699d4b190e1e4",
+      "terminal_marker_sha256": "d3eed4a9408543c77f47aa2a0d8cff59ebfe863c1e3c2d0bb2324d7910d6014b",
+      "official_metadata_and_object_lengths_status": "VERIFIED_48_OBJECTS",
+      "fastq_body_download_count": 0,
+      "fastq_md5_local_recomputation_status": "NOT_RUN",
+      "used_by_current_qualifier": false,
+      "status": "PRESENT_IN_SEPARATE_COMMITTED_BUNDLE_NOT_CONSUMED"
+    }
+  },
+  "a1_master_report_contract": {
+    "required_report_fields": [
+      "nominal_rows",
+      "distinct_candidates",
+      "biological_source_groups",
+      "gene_groups",
+      "study_groups",
+      "eligible_multi_candidate_pools",
+      "edit_count_strata",
+      "replicate_and_se_coverage",
+      "beneficial_and_noise_zone_balance",
+      "post_dedup_effective_n",
+      "foundation_exposure",
+      "license_and_redistribution_status"
+    ],
+    "study_recovery_method": "SOURCE_CANDIDATE_ENDPOINT_CONTEXT_AND_GROUP_AUDIT",
+    "metadata_only_recovery_allowed": false,
+    "minimum_ndcg_pool_size": 3,
+    "two_candidate_pool_use": "PAIRWISE_ONLY",
+    "unknown_status_is_hard_block": true
+  },
+  "expected_future_assets": [
+    {
+      "asset_id": "PMC_TABLE_S2",
+      "locator": "https://pmc-oa-opendata.s3.amazonaws.com/PMC10540565.1/NIHMS1928233-supplement-3.csv",
+      "filename": "NIHMS1928233-supplement-3.csv",
+      "bytes": 7323186,
+      "sha256": "812f3c983cb7c4f473200741ffd6d73bcab911c9e354934542e018e7b0cf8a6d",
+      "shape_rows": 13850,
+      "shape_columns": 6,
+      "exact_header": [
+        "ID",
+        "Type",
+        "201bp",
+        "5' End",
+        "3'End",
+        "Full_Oligo"
+      ],
+      "production_server_status": "PRESENT_IN_SEPARATE_COMMITTED_BUNDLE",
+      "used_by_current_qualifier": false
+    },
+    {
+      "asset_id": "PMC_TABLE_S3",
+      "locator": "https://pmc-oa-opendata.s3.amazonaws.com/PMC10540565.1/NIHMS1928233-supplement-4.xlsx",
+      "filename": "NIHMS1928233-supplement-4.xlsx",
+      "bytes": 864791,
+      "sha256": "ec2aab60fcb0be87f2bcc1b1a5a1f786b23bb429edc9851a4034a3e8983dfa08",
+      "sheets": [
+        {
+          "name": "S2A_Polysome_MPRA_Mut_Stats",
+          "shape_rows": 13544,
+          "shape_columns": 7
+        },
+        {
+          "name": "S2B_Poly_MPRA_Control_Stats",
+          "shape_rows": 29,
+          "shape_columns": 13
+        }
+      ],
+      "join_rule": "S3_BARCODE_EQUALS_DESIGN_ID",
+      "production_server_status": "PRESENT_IN_SEPARATE_COMMITTED_BUNDLE",
+      "used_by_current_qualifier": false
+    },
+    {
+      "asset_id": "ZENODO_CODE_ARCHIVE_V1_2",
+      "locator": "https://doi.org/10.5281/zenodo.8007705",
+      "filename": "slschuster/3UTRMutationalMPRA-v1.2.zip",
+      "bytes": 46209,
+      "provider_md5": "e20ae1ffbd05a5882fe7b3bb7c4700ca",
+      "independent_sha256": "1c1b1979c1d5bd7fefa54e80a59f982228d0f1498eb0cff2883b753ee5eb0ae4",
+      "contains_data": false,
+      "explicit_code_license_status": "UNKNOWN_NOT_ASSERTED",
+      "production_server_status": "PRESENT_IN_SEPARATE_COMMITTED_BUNDLE",
+      "used_by_current_qualifier": false
+    }
+  ],
+  "unresolved_blockers": [
+    "CURRENT_MANIFEST_NOT_BOUND_TO_FULL_SUPERSERIES",
+    "FASTQ_CONTENT_INTEGRITY_NOT_VERIFIED",
+    "RAW_COUNTS_ABSENT",
+    "PUBLIC_ASSETS_ACQUIRED_NOT_INTEGRATED_IN_CURRENT_GAP_QUALIFIER",
+    "ZENODO_EXPLICIT_CODE_LICENSE_UNKNOWN",
+    "PAPER_NATIVE_RAW_XTAIL_REPLAY_NOT_RUN",
+    "SAM_TO_COUNT_LINEAGE_ABSENT",
+    "CHECKPOINT_SPECIFIC_EXPOSURE_UNKNOWN_NOT_ASSERTED",
+    "OUTCOME_BLIND_SPLIT_AND_POWER_NOT_FROZEN",
+    "CANONICAL_V3_NOT_MATERIALIZED",
+    "REDISTRIBUTION_LOCATOR_HASH_AGGREGATE_ONLY_UNTIL_LICENSE_CLOSED",
+    "IMPLEMENTATION_BINDING_UNKNOWN_NOT_ASSERTED"
+  ],
+  "output_contract": {
+    "output_id": "ROUTE_A_V3_GSE200304_A1_BLOCKED_GAP_BUNDLE_V1",
+    "aggregate_only": true,
+    "closed_schema_required": true,
+    "success_outcome": "ENGINEERING_SUCCESS_BLOCKED_NOT_QUALIFIED",
+    "failure_outcome": "FAIL_CLOSED",
+    "success_and_failure_mutually_exclusive": true,
+    "success_files": [
+      "INPUT_INTEGRITY_AUDIT.json",
+      "MECHANICAL_AUDIT.json",
+      "QUALIFICATION_REPORT.json",
+      "SHA256SUMS"
+    ],
+    "failure_files": [
+      "FAILURE_REPORT.json",
+      "SHA256SUMS"
+    ],
+    "terminal_marker": "PUBLICATION_COMMIT.json",
+    "terminal_marker_written_last": true,
+    "terminal_marker_binds_absolute_target_and_basename": true,
+    "publication_state_enum": [
+      "PARTIAL_PRECOMMIT",
+      "COMMITTED_NOT_ACCEPTED",
+      "COMMITTED_WITH_DURABILITY_WARNING",
+      "COMMITTED_ACCEPTED"
+    ],
+    "directory_creation_mode": "ATOMIC_EXCLUSIVE_MKDIR",
+    "member_write_mode": "O_EXCL_FILE_FSYNC",
+    "no_overwrite": true,
+    "canonical_or_row_level_output_path": "HARD_DISABLED_NOT_IMPLEMENTED",
+    "allowed_output_information_classes": [
+      "FIXED_PROTOCOL_ENUM",
+      "AGGREGATE_COUNT",
+      "BOOLEAN",
+      "SHA256",
+      "BYTE_COUNT",
+      "PUBLIC_LOCATOR",
+      "ACCESSION",
+      "FIXED_EVIDENCE_STATUS"
+    ],
+    "disallowed_output_information_classes": [
+      "ROW_ID",
+      "BARCODE",
+      "SEQUENCE",
+      "RAW_ROW",
+      "MEASUREMENT_VALUE",
+      "LABEL",
+      "CANONICAL_RECORD"
+    ]
+  },
+  "model_results_may_change_this_protocol": false
+}
