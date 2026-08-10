@@ -17,13 +17,13 @@
     "staging_parent_head": "4eac98feb35da3ad83891a3a966dc069cbd19e99"
   },
   "implementation_binding": {
-    "status": "UNKNOWN_NOT_ASSERTED",
+    "status": "BOUND",
     "repository_root_rule": "PROTOCOL_PATH_PARENT_PARENT",
-    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "implementation_commit": "84fc6932de32fe0de8e5ddf540e14dee62a2b723",
     "qualifier_path": "scripts/route_a_v3/qualify_gse200304_published_endpoint_a1.py",
-    "qualifier_blob_sha256": "UNKNOWN_NOT_ASSERTED",
+    "qualifier_blob_sha256": "687268524c7426eb4d3d450e71d13c7c478372162e0c084ffe90c8bb12764308",
     "test_path": "tests/route_a_v3/test_qualify_gse200304_published_endpoint_a1.py",
-    "test_blob_sha256": "UNKNOWN_NOT_ASSERTED",
+    "test_blob_sha256": "173cad716fbdb2590e82ea54a91776ef61e7ab9eb7b596b694b5aa8609d44ad0",
     "post_implementation_allowed_changed_paths": [
       "configs/route_a_v3_gse200304_published_endpoint_a1.json"
     ],
@@ -411,7 +411,6 @@
     "OUTCOME_BLIND_SPLIT_AND_LEAKAGE_POLICY_NOT_FROZEN",
     "POWER_AND_CONFIDENCE_INTERVAL_ADEQUACY_NOT_ESTABLISHED",
     "CANONICAL_REPORTED_ENDPOINT_SEMANTICS_NOT_ADJUDICATED",
-    "ROW_LEVEL_REPLICATE_AND_STANDARD_ERROR_ADJUDICATION_NOT_CLOSED",
-    "IMPLEMENTATION_BINDING_UNKNOWN_NOT_ASSERTED"
+    "ROW_LEVEL_REPLICATE_AND_STANDARD_ERROR_ADJUDICATION_NOT_CLOSED"
   ]
 }
