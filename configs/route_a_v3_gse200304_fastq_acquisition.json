@@ -11,11 +11,11 @@
     "staging_parent_head": "76cf61cddf0e8a0fb9d9055d9384ef55057d6f86"
   },
   "implementation_binding": {
-    "status": "UNKNOWN_NOT_ASSERTED",
+    "status": "BOUND",
     "binding_mode": "TWO_COMMIT_NON_SELF_REFERENTIAL",
-    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "implementation_commit": "7683cad77250fcb986d83a903d3e94b2eaea75de",
     "implementation_script_repo_path": "scripts/route_a_v3/acquire_gse200304_fastq.py",
-    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_script_sha256": "1b0d1c5db7e32475fb835cadb5d1805415447a490a1a83840bcb6e8518fa6340",
     "protocol_repo_path": "configs/route_a_v3_gse200304_fastq_acquisition.json",
     "binding_requirements": [
       "IMPLEMENTATION_COMMIT_IS_ANCESTOR_OF_CURRENT_HEAD",
