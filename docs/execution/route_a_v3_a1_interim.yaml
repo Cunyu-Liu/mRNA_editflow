@@ -431,6 +431,127 @@ artifact_lineage:
       - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_GAP_QUALIFICATION_20260810T163429P0800_46c608b/SHA256SUMS
         bytes: 273
         sha256: f5c3bf069bb22878ee0b99d51810571d3b00bb37e03c3da0ff43138a650a0914
+  gse200304_raw_replay_preflight_attempt_001_failure:
+    path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_RAW_REPLAY_PREFLIGHT_20260810T202615P0800_534882a
+    execution_outcome: FAIL_CLOSED
+    status: FAIL_CLOSED
+    failure_code: REFERENCE_AGGREGATE_INVALID
+    aggregate_only: true
+    raw_payload_included: false
+    ordinary_study_contribution: 0
+    a1_study_contribution: 0
+    true_a2_study_contribution: 0
+    canonical_record_count: 0
+    qualified: false
+    phase_complete: false
+    training_started: false
+    model_selection_started: false
+    training_allowed: false
+    model_selection_allowed: false
+    next_phase_authorized: false
+    success_bundle_published: false
+    terminal_marker_written_last: true
+    preserved_without_overwrite: true
+    files:
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_RAW_REPLAY_PREFLIGHT_20260810T202615P0800_534882a/FAILURE.json
+        bytes: 599
+        sha256: 80ad8eb024184eabfdfad84587377b08c2ecdef8edb3a18d74344f1c6724a92e
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_RAW_REPLAY_PREFLIGHT_20260810T202615P0800_534882a/SHA256SUMS
+        bytes: 79
+        sha256: 82df59e4abcbfd09e6c79efacfd75990bd212f7bc3efaedce4253ffc18d1342d
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_RAW_REPLAY_PREFLIGHT_20260810T202615P0800_534882a/PUBLICATION_COMMIT.json
+        bytes: 1104
+        sha256: 5e9ce0a7403f186199ef59ce167db2cfb6c7c04e199231a174ee1e812821dd30
+  gse200304_raw_replay_preflight_v1:
+    path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_RAW_REPLAY_PREFLIGHT_20260810T205200P0800_19376c0
+    target_subseries_accession: GSE200302
+    superseries_accession: GSE200304
+    execution_outcome: BLOCKED_PRE_EXECUTION_WITH_EVIDENCE
+    status: BLOCKED_PRE_EXECUTION_WITH_EVIDENCE
+    aggregate_only: true
+    hard_unknown_blocker_count: 17
+    hard_unknown_blockers:
+      - EXACT_SRR_SAMPLE_ROLES_UNKNOWN
+      - CONTROL_REFERENCE_U_TO_T_NORMALIZATION_UNKNOWN
+      - SAM_TO_COUNT_PAIRED_HANDLING_UNKNOWN
+      - SAM_TO_COUNT_MULTIMAP_POLICY_UNKNOWN
+      - SAM_TO_COUNT_FLAG_POLICY_UNKNOWN
+      - SAM_TO_COUNT_MAPQ_POLICY_UNKNOWN
+      - SAM_TO_COUNT_DUPLICATE_POLICY_UNKNOWN
+      - SAM_TO_COUNT_IDENTICAL_REFERENCE_TIE_POLICY_UNKNOWN
+      - XTAIL_6772_INCLUSION_POLICY_UNKNOWN
+      - PAPER_6892_VS_AUDIT_6885_DENOMINATOR_CONFLICT_UNRESOLVED
+      - EDGER_EXACT_VERSION_UNKNOWN
+      - DESEQ2_EXACT_VERSION_UNKNOWN
+      - XTAIL_DEPENDENCY_LOCK_UNKNOWN
+      - XTAIL_RNG_SEED_AND_STATE_UNKNOWN
+      - PRJNA824033_VS_GSE200304_PRJNA824026_IDENTITY_CONFLICT_UNKNOWN
+      - AUTHOR_CODE_REDISTRIBUTION_PERMISSION_UNKNOWN
+      - RAW_FASTQ_REDISTRIBUTION_PERMISSION_UNKNOWN
+    fastq_body_read_count_by_preflight: 0
+    ordinary_study_contribution: 0
+    a1_study_contribution: 0
+    true_a2_study_contribution: 0
+    canonical_record_count: 0
+    qualified: false
+    phase_complete: false
+    training_started: false
+    model_selection_started: false
+    training_allowed: false
+    model_selection_allowed: false
+    next_phase_authorized: false
+    outer_git_binding:
+      implementation_commit: c0b72723cb923a880741ca1b82166e777dcbe928
+      binding_commit: 19376c077afaae51e184dd5e833255ad5b1e98c6
+      head_commit: 19376c077afaae51e184dd5e833255ad5b1e98c6
+      origin_head_commit: 19376c077afaae51e184dd5e833255ad5b1e98c6
+      protocol_config_sha256: 99c70338e7ad8eaa2a6f0d8525bfb2f58ee7d99ba43245b8a146935b52c3fa28
+      production_script_sha256: b79b99d62c91c47c180dfd4bd5b57e2b599e5486d38e4825093fc4efbd22e91d
+      focused_test_sha256: 541b2434fcab1e0b082fd09a200e544b9029724b7c2f16c82f4593a085a6125f
+      protocol_core_sha256: 88762faebad2d3dda93066861166248cb77ec1494a02bef5103a6aeb88d31e31
+      implementation_commit_is_ancestor_of_binding_commit: true
+      implementation_to_binding_diff_is_config_only: true
+      declared_hashes_match_binding_commit_blobs: true
+      worktree_and_index_clean: true
+    reference_aggregate_truth:
+      record_count: 13836
+      type_counts:
+        Control: 66
+        Mutant: 6885
+        WT: 6885
+      unique_sequence_count: 13832
+      identical_sequence_group_count: 4
+      strict_250_acgt_record_count: 13824
+      u_containing_record_count: 12
+      u_containing_record_count_by_type:
+        Control: 12
+        Mutant: 0
+        WT: 0
+      u_base_count: 596
+      u_base_count_by_type:
+        Control: 596
+        Mutant: 0
+        WT: 0
+      primary_wt_mutant_record_count: 13770
+      primary_wt_mutant_strict_250_acgt_record_count: 13770
+      primary_wt_mutant_all_strict_250_acgt: true
+      u_to_t_normalization_applied: false
+      control_row_exclusion_applied: false
+    claim_boundary: AGGREGATE_ONLY_P0_PREFLIGHT_NOT_COUNT_REPLAY_XTAIL_REPLAY_QUALIFICATION_TRAINING_OR_PHASE_UNLOCK
+    targeted_test_status: PASS
+    targeted_test_passed: 57
+    targeted_test_failed: 0
+    terminal_marker_written_last: true
+    files:
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_RAW_REPLAY_PREFLIGHT_20260810T205200P0800_19376c0/PREFLIGHT.json
+        bytes: 6907
+        sha256: 8b592b816b5c981a774e2d58364b424271eb28d2c3e4a16a300dac2f926e0f4f
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_RAW_REPLAY_PREFLIGHT_20260810T205200P0800_19376c0/SHA256SUMS
+        bytes: 81
+        sha256: 410398cb558115e41f6332d03f0acfde4ba43162a1dc1944d8205fe3b6ffdeae
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_RAW_REPLAY_PREFLIGHT_20260810T205200P0800_19376c0/PUBLICATION_COMMIT.json
+        bytes: 1156
+        sha256: dde5847660e34d90cedcf38f69c619c2a8ba8f8470ddacdded3f7a290e5837b1
 
 dataset_boundary_summary:
   evidence_ref:
@@ -529,6 +650,10 @@ dataset_boundary_summary:
     paper_native_raw_xtail_replay_status: NOT_RUN
     fastq_acquisition_status: COMMITTED_TRANSPORT_INTEGRITY_VERIFIED
     fastq_independent_consumer_status: ALREADY_COMMITTED_VERIFIED
+    raw_replay_preflight_status: BLOCKED_PRE_EXECUTION_WITH_EVIDENCE
+    raw_replay_preflight_hard_unknown_blocker_count: 17
+    raw_replay_preflight_fastq_body_read_count: 0
+    raw_replay_preflight_changes_qualification_gate: false
     sam_to_oligo_count_reconstruction_status: UNKNOWN_NOT_ASSERTED
     acquisition_changes_qualification_gate: false
     source_grouping_status: SEQUENCE_EQUALITY_PROXY_NOT_BIOLOGICALLY_FROZEN
@@ -616,6 +741,10 @@ claim_boundaries:
   gse200304_transport_integrity_is_paper_native_count_replay: false
   gse200304_sequence_proxy_groups_are_biological_source_groups: false
   gse200304_precomputed_aggregate_evidence_is_paper_native_xtail_replay: false
+  gse200304_raw_replay_preflight_is_study_qualification: false
+  gse200304_raw_replay_preflight_is_paper_native_count_replay: false
+  gse200304_raw_replay_preflight_is_paper_native_xtail_replay: false
+  gse200304_raw_replay_preflight_resolves_control_u_policy: false
   a1_phase_complete: false
   route_a_established: false
 
@@ -636,6 +765,12 @@ verification:
     status: PASS
     passed: 60
     failed: 0
+  targeted_gse200304_raw_replay_preflight_tests:
+    status: PASS
+    passed: 57
+    failed: 0
+  gse200304_raw_replay_preflight_failure_bundle_validation: PASS
+  gse200304_raw_replay_preflight_final_bundle_validation: PASS
   gse200304_final_bundle_validation: PASS
   gse200304_final_bundle_default_consumer_validation: PASS
   gse200304_closed_report_schema: PASS
@@ -677,7 +812,7 @@ verification:
     scope: INTERIM_RECORD_STATUS_CLAIM_BOUNDARIES_PLUMAGE_BLOCK_SEMANTICS_AND_LOG2_CPM_SCALE
 
 initial_generated_at: "2026-08-10T06:30:58+08:00"
-generated_at: "2026-08-10T19:20:00+08:00"
-updated_at: "2026-08-10T19:20:00+08:00"
+generated_at: "2026-08-10T20:58:30+08:00"
+updated_at: "2026-08-10T20:58:30+08:00"
 updated_for_decision_id: V3-DEC-017
-latest_evidence_update_id: GSE200304_FASTQ_CONSUMER_VERIFY_20260810T191502P0800_e24d722
+latest_evidence_update_id: GSE200304_RAW_REPLAY_PREFLIGHT_20260810T205200P0800_19376c0

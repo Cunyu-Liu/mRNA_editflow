@@ -63,6 +63,22 @@ def _validate_rehashed_interim_bypass(
     return codes
 
 
+def _validate_manifest_mutation(
+    validator,
+    repo_root,
+    case_root,
+    mutate,
+):
+    manifest = _copy_manifest_bundle(validator, repo_root, case_root)
+    mutate(manifest)
+    manifest_path = case_root / validator.REGISTRY_MANIFEST_PATH
+    manifest_path.write_text(
+        json.dumps(manifest, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    return _codes(validator.validate_registry_manifest(case_root))
+
+
 def test_decision_log_requires_all_ids_and_historical_m0_decision(validator, repo_root):
     decision_log = validator._load_yaml(repo_root, validator.DECISION_LOG_PATH)
     assert validator.validate_decision_log(decision_log) == []
@@ -230,6 +246,7 @@ def test_a1_interim_gse200304_blocked_counts_and_lineage_are_fail_closed(
         "canonical_intervention_record_count": 1,
         "ordinary_gate_contribution": 1,
         "acquisition_changes_qualification_gate": True,
+        "raw_replay_preflight_changes_qualification_gate": True,
     }
     for key, value in summary_mutations.items():
         bypass = deepcopy(interim)
@@ -264,6 +281,26 @@ def test_a1_interim_gse200304_blocked_counts_and_lineage_are_fail_closed(
     codes = _codes(validator.validate_a1_interim_lineage(repo_root, ena_body_bypass))
     assert "A1_INTERIM_GSE200304_LINEAGE" in codes
 
+    raw_preflight_bypass = deepcopy(interim)
+    raw_preflight = raw_preflight_bypass["artifact_lineage"][
+        "gse200304_raw_replay_preflight_v1"
+    ]
+    raw_preflight["qualified"] = True
+    raw_preflight["hard_unknown_blockers"].pop()
+    raw_preflight["reference_aggregate_truth"]["u_to_t_normalization_applied"] = True
+    codes = _codes(
+        validator.validate_a1_interim_lineage(repo_root, raw_preflight_bypass)
+    )
+    assert "A1_INTERIM_GSE200304_LINEAGE" in codes
+
+    omitted_failure = deepcopy(interim)
+    omitted_failure["artifact_lineage"].pop(
+        "gse200304_raw_replay_preflight_attempt_001_failure"
+    )
+    codes = _codes(validator.validate_a1_interim_lineage(repo_root, omitted_failure))
+    assert "A1_INTERIM_LINEAGE_ID_SET" in codes
+    assert "A1_INTERIM_GSE200304_LINEAGE_ID_SET" in codes
+
 
 def test_rehashed_gse200304_interim_cannot_bypass_semantic_closure(
     validator,
@@ -277,6 +314,7 @@ def test_rehashed_gse200304_interim_cannot_bypass_semantic_closure(
         "canonical_intervention_record_count": 1,
         "ordinary_gate_contribution": 1,
         "acquisition_changes_qualification_gate": True,
+        "raw_replay_preflight_changes_qualification_gate": True,
     }
     for key, value in summary_mutations.items():
         def mutate_summary(interim, key=key, value=value):
@@ -390,6 +428,8 @@ def test_rehashed_gse200304_interim_cannot_bypass_semantic_closure(
         "gse200304_gap_qualification_attempt_002_failure",
         "gse200304_gap_qualification_attempt_003_failure",
         "gse200304_gap_qualification_v1",
+        "gse200304_raw_replay_preflight_attempt_001_failure",
+        "gse200304_raw_replay_preflight_v1",
     )
     for lineage_id in closed_lineage_ids:
         def mutate_member(interim, lineage_id=lineage_id):
@@ -476,6 +516,104 @@ def test_rehashed_gse200304_interim_cannot_bypass_semantic_closure(
     )
     assert "A1_INTERIM_GSE200304_LINEAGE" in codes
 
+    def mutate_raw_preflight_upgrade(interim):
+        preflight = interim["artifact_lineage"]["gse200304_raw_replay_preflight_v1"]
+        preflight["status"] = "QUALIFIED"
+        preflight["ordinary_study_contribution"] = 1
+        preflight["qualified"] = True
+        preflight["phase_complete"] = True
+        preflight["training_started"] = True
+        preflight["model_selection_started"] = True
+        preflight["training_allowed"] = True
+        preflight["model_selection_allowed"] = True
+        preflight["next_phase_authorized"] = True
+
+    codes = _validate_rehashed_interim_bypass(
+        validator,
+        repo_root,
+        tmp_path / "raw_preflight_upgrade",
+        monkeypatch,
+        mutate_raw_preflight_upgrade,
+    )
+    assert "A1_INTERIM_GSE200304_LINEAGE" in codes
+
+    def mutate_raw_preflight_blockers(interim):
+        preflight = interim["artifact_lineage"]["gse200304_raw_replay_preflight_v1"]
+        preflight["hard_unknown_blockers"].pop()
+        preflight["hard_unknown_blocker_count"] = 16
+
+    codes = _validate_rehashed_interim_bypass(
+        validator,
+        repo_root,
+        tmp_path / "raw_preflight_blocker_reduction",
+        monkeypatch,
+        mutate_raw_preflight_blockers,
+    )
+    assert "A1_INTERIM_GSE200304_LINEAGE" in codes
+
+    def mutate_raw_preflight_control_u_truth(interim):
+        aggregate = interim["artifact_lineage"]["gse200304_raw_replay_preflight_v1"][
+            "reference_aggregate_truth"
+        ]
+        aggregate["u_to_t_normalization_applied"] = True
+        aggregate["control_row_exclusion_applied"] = True
+
+    codes = _validate_rehashed_interim_bypass(
+        validator,
+        repo_root,
+        tmp_path / "raw_preflight_control_u_drift",
+        monkeypatch,
+        mutate_raw_preflight_control_u_truth,
+    )
+    assert "A1_INTERIM_GSE200304_LINEAGE" in codes
+
+    def mutate_raw_preflight_type_confusion(interim):
+        preflight = interim["artifact_lineage"]["gse200304_raw_replay_preflight_v1"]
+        preflight["hard_unknown_blocker_count"] = True
+        preflight["fastq_body_read_count_by_preflight"] = False
+        preflight["phase_complete"] = 0
+
+    codes = _validate_rehashed_interim_bypass(
+        validator,
+        repo_root,
+        tmp_path / "raw_preflight_type_confusion",
+        monkeypatch,
+        mutate_raw_preflight_type_confusion,
+    )
+    assert "A1_INTERIM_GSE200304_LINEAGE" in codes
+
+    def mutate_raw_preflight_claim(interim):
+        interim["claim_boundaries"][
+            "gse200304_raw_replay_preflight_is_study_qualification"
+        ] = True
+        interim["claim_boundaries"][
+            "gse200304_raw_replay_preflight_resolves_control_u_policy"
+        ] = True
+
+    codes = _validate_rehashed_interim_bypass(
+        validator,
+        repo_root,
+        tmp_path / "raw_preflight_claim_upgrade",
+        monkeypatch,
+        mutate_raw_preflight_claim,
+    )
+    assert "A1_INTERIM_CLAIMS" in codes
+
+    def omit_raw_preflight_failure(interim):
+        interim["artifact_lineage"].pop(
+            "gse200304_raw_replay_preflight_attempt_001_failure"
+        )
+
+    codes = _validate_rehashed_interim_bypass(
+        validator,
+        repo_root,
+        tmp_path / "raw_preflight_failure_omission",
+        monkeypatch,
+        omit_raw_preflight_failure,
+    )
+    assert "A1_INTERIM_LINEAGE_ID_SET" in codes
+    assert "A1_INTERIM_GSE200304_LINEAGE_ID_SET" in codes
+
     def add_nonterminal_fastq_lineage(interim):
         interim["artifact_lineage"]["gse200304_fastq_acquisition_in_progress"] = {
             "path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE200304/GSE200304_FASTQ_ACQUISITION_IN_PROGRESS",
@@ -490,6 +628,104 @@ def test_rehashed_gse200304_interim_cannot_bypass_semantic_closure(
         add_nonterminal_fastq_lineage,
     )
     assert "A1_INTERIM_GSE200304_LINEAGE_ID_SET" in codes
+
+    def mutate_boundary_payload_contact(interim):
+        boundary = interim["boundary_deviation"]
+        boundary["restricted_or_sealed_member_content_read"] = True
+        boundary["raw_label_read"] = True
+        boundary["used_in_a1_reasoning"] = True
+        boundary["payload"] = {"prohibited_member": "injected"}
+
+    codes = _validate_rehashed_interim_bypass(
+        validator,
+        repo_root,
+        tmp_path / "boundary_payload_contact",
+        monkeypatch,
+        mutate_boundary_payload_contact,
+    )
+    assert "A1_INTERIM_BOUNDARY_DEVIATION" in codes
+
+    def mutate_post_hoc_power(interim):
+        power = interim["power_prefreeze"]
+        power["status"] = "POST_HOC_AFTER_MODEL_RESULTS"
+        power["model_results_may_change_this_rule"] = True
+        power["selected_under_contract_underspecification"] = False
+
+    codes = _validate_rehashed_interim_bypass(
+        validator,
+        repo_root,
+        tmp_path / "post_hoc_power",
+        monkeypatch,
+        mutate_post_hoc_power,
+    )
+    assert "A1_INTERIM_POWER_PREFREEZE" in codes
+
+    def fake_full_repository_pass(interim):
+        interim["verification"]["full_repository_tests"] = {
+            "status": "PASS",
+            "passed": 999,
+            "failed": 0,
+        }
+
+    codes = _validate_rehashed_interim_bypass(
+        validator,
+        repo_root,
+        tmp_path / "fake_full_repository_pass",
+        monkeypatch,
+        fake_full_repository_pass,
+    )
+    assert "A1_INTERIM_VERIFICATION" in codes
+
+    def mutate_non_gse_lineage_and_inject_payload(interim):
+        reconstruction = interim["artifact_lineage"][
+            "gse149487_plumage_reconstruction_v4"
+        ]
+        reconstruction["status"] = "IN_PROGRESS"
+        reconstruction["raw_payload"] = {"sequence": "ACGT"}
+
+    codes = _validate_rehashed_interim_bypass(
+        validator,
+        repo_root,
+        tmp_path / "non_gse_lineage_payload",
+        monkeypatch,
+        mutate_non_gse_lineage_and_inject_payload,
+    )
+    assert "A1_INTERIM_LINEAGE" in codes
+
+    def mutate_outer_git_binding(interim):
+        binding = interim["artifact_lineage"][
+            "gse200304_raw_replay_preflight_v1"
+        ]["outer_git_binding"]
+        binding["binding_commit"] = "0" * 40
+        binding["protocol_config_sha256"] = "0" * 64
+        binding["worktree_and_index_clean"] = 1
+
+    codes = _validate_rehashed_interim_bypass(
+        validator,
+        repo_root,
+        tmp_path / "outer_git_binding_drift",
+        monkeypatch,
+        mutate_outer_git_binding,
+    )
+    assert "A1_INTERIM_GSE200304_LINEAGE" in codes
+
+    def mutate_targeted_passed_count(interim):
+        interim["artifact_lineage"]["gse200304_raw_replay_preflight_v1"][
+            "targeted_test_passed"
+        ] = 58
+        interim["verification"][
+            "targeted_gse200304_raw_replay_preflight_tests"
+        ]["passed"] = 58
+
+    codes = _validate_rehashed_interim_bypass(
+        validator,
+        repo_root,
+        tmp_path / "targeted_passed_drift",
+        monkeypatch,
+        mutate_targeted_passed_count,
+    )
+    assert "A1_INTERIM_GSE200304_LINEAGE" in codes
+    assert "A1_INTERIM_VERIFICATION" in codes
 
 
 def test_scheme_a_data_roles_cannot_restore_gse145046_as_true_a2(
@@ -659,12 +895,20 @@ def test_registry_manifest_detects_every_listed_hash_drift(validator, tmp_path, 
     goal_path.write_bytes(goal_bytes)
 
     entries = []
-    for index, relative in enumerate(sorted(validator.MANDATORY_REGISTRY_MANIFEST_PATHS)):
+    for index, (relative, role) in enumerate(
+        validator.EXPECTED_REGISTRY_MANIFEST_PATH_ROLES
+    ):
         path = tmp_path / relative
         path.parent.mkdir(parents=True, exist_ok=True)
         data = f"fixture-{index}-{relative}\n".encode("utf-8")
         path.write_bytes(data)
-        entries.append({"path": relative, "role": "FIXTURE", "sha256": validator.sha256_bytes(data)})
+        entries.append(
+            {
+                "path": relative,
+                "role": role,
+                "sha256": validator.sha256_bytes(data),
+            }
+        )
     interim_path = tmp_path / validator.A1_INTERIM_PATH
     interim_path.write_text(
         yaml.safe_dump({"updated_at": "2026-08-10T10:33:39+08:00"}),
@@ -695,6 +939,81 @@ def test_registry_manifest_detects_every_listed_hash_drift(validator, tmp_path, 
     config_path = tmp_path / validator.CONFIG_PATH
     config_path.write_bytes(config_path.read_bytes() + b"drift")
     assert "REGISTRY_MANIFEST_HASH_MISMATCH" in _codes(validator.validate_registry_manifest(tmp_path))
+
+
+def test_registry_manifest_shape_and_types_are_closed(
+    validator,
+    repo_root,
+    tmp_path,
+):
+    def mutate_role(manifest):
+        manifest["files"][0]["role"] = "UNREGISTERED_ROLE"
+
+    codes = _validate_manifest_mutation(
+        validator,
+        repo_root,
+        tmp_path / "role",
+        mutate_role,
+    )
+    assert "REGISTRY_MANIFEST_HASH_MISMATCH" not in codes
+    assert "REGISTRY_MANIFEST_CLOSURE" in codes
+
+    extra_root = tmp_path / "extra_entry"
+
+    def append_extra_path(manifest):
+        manifest["files"].append(
+            {
+                "path": validator.GOAL_PATH,
+                "role": "ACTIVE_CONTRACT",
+                "sha256": validator.sha256_file(extra_root / validator.GOAL_PATH),
+            }
+        )
+
+    codes = _validate_manifest_mutation(
+        validator,
+        repo_root,
+        extra_root,
+        append_extra_path,
+    )
+    assert "REGISTRY_MANIFEST_HASH_MISMATCH" not in codes
+    assert "REGISTRY_MANIFEST_CLOSURE" in codes
+    assert "REGISTRY_MANIFEST_COVERAGE" in codes
+
+    def add_top_level_key(manifest):
+        manifest["unregistered_metadata"] = "bypass"
+
+    codes = _validate_manifest_mutation(
+        validator,
+        repo_root,
+        tmp_path / "top_key",
+        add_top_level_key,
+    )
+    assert "REGISTRY_MANIFEST_HASH_MISMATCH" not in codes
+    assert "REGISTRY_MANIFEST_CLOSURE" in codes
+
+    def add_entry_key(manifest):
+        manifest["files"][0]["qualification_override"] = True
+
+    codes = _validate_manifest_mutation(
+        validator,
+        repo_root,
+        tmp_path / "entry_key",
+        add_entry_key,
+    )
+    assert "REGISTRY_MANIFEST_HASH_MISMATCH" not in codes
+    assert "REGISTRY_MANIFEST_CLOSURE" in codes
+
+    def confuse_sealed_contact_type(manifest):
+        manifest["sealed_contact"] = 0
+
+    codes = _validate_manifest_mutation(
+        validator,
+        repo_root,
+        tmp_path / "sealed_contact_int",
+        confuse_sealed_contact_type,
+    )
+    assert "REGISTRY_MANIFEST_HASH_MISMATCH" not in codes
+    assert "REGISTRY_MANIFEST_METADATA" in codes
 
 
 def test_registry_manifest_cannot_predate_the_a1_interim_it_hashes(
