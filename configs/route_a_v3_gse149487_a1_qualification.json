@@ -28,7 +28,7 @@
     "qualifier_sha256": "698ef121b2ac003ce8bd7e3e2775f7e58c9b0b7126119c273dc3ad0614b8dad3",
     "focused_test_path": "tests/route_a_v3/test_qualify_gse149487_plumage.py",
     "focused_test_sha256": "53b7c474e4f45765612e5ec3e2443cb96eea03153b981ea5fadcef7af1f2b728",
-    "implementation_commit": "UNKNOWN_NOT_ASSERTED"
+    "implementation_commit": "c38b4ad748e6594bb8504ae3d66271a4acd21fb4"
   },
   "scope": {
     "ordinary_public_data_only": true,
@@ -260,8 +260,7 @@
     "PAPER_NATIVE_MULTIPLE_TESTING_FAMILY_UNKNOWN_NOT_ASSERTED",
     "PUBLISHED_RESULT_CROSSCHECK_UNKNOWN_NOT_ASSERTED",
     "LICENSE_AND_REDISTRIBUTION_UNKNOWN_NOT_ASSERTED",
-    "CHECKPOINT_SPECIFIC_FOUNDATION_EXPOSURE_UNKNOWN_NOT_ASSERTED",
-    "IMPLEMENTATION_COMMIT_UNKNOWN_NOT_ASSERTED"
+    "CHECKPOINT_SPECIFIC_FOUNDATION_EXPOSURE_UNKNOWN_NOT_ASSERTED"
   ],
   "model_results_may_change_this_protocol": false
 }
