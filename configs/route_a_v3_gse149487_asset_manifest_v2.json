@@ -1,0 +1,324 @@
+{
+  "contract_id": "mrna_xeditflow_route_a_v3",
+  "schema_version": "1.0.0",
+  "manifest_id": "ROUTE_A_V3_GSE149487_ADDITIVE_ASSET_MANIFEST_V2",
+  "manifest_status": "PREFROZEN_ADDITIVE_TRUST_ROOT_BEFORE_FULL_QUALIFICATION",
+  "dataset_id": "GSE149487",
+  "dataset_alias": "PLUMAGE",
+  "expected_asset_count": 21,
+  "source_manifest": {
+    "filename": "manifest.json",
+    "sha256": "2f67f1e712ebe749e413481ddf99d0da64920dfcadd6ce15c78dd0a039219242",
+    "expected_declared_file_count": 18,
+    "role": "HASH_BOUND_P0_GEO_RAW_COUNT_MANIFEST",
+    "preserve_without_modification": true
+  },
+  "inventory_policy": {
+    "mode": "ADDITIVE_OVER_HASH_BOUND_P0_MANIFEST",
+    "geo_raw_assets_resolve_only_from_source_manifest": true,
+    "geo_raw_asset_sha256_and_bytes_inherited_only_after_unique_slot_resolution": true,
+    "supplement_assets_are_directly_sha256_bound": true,
+    "unexpected_regular_payload_action": "FAIL_CLOSED",
+    "duplicate_logical_slot_action": "FAIL_CLOSED",
+    "missing_logical_slot_action": "FAIL_CLOSED",
+    "missing_is_zero": false,
+    "raw_identifier_output_allowed": false
+  },
+  "assets": [
+    {
+      "asset_id": "GSE149487_GEO_PC3_DNA_REP1",
+      "asset_kind": "GEO_RAW_COUNT",
+      "context": "PC3",
+      "assay": "DNA",
+      "biological_replicate": 1,
+      "resolution": {
+        "mode": "UNIQUE_CASEFOLD_FILENAME_TOKEN_MATCH_IN_HASH_BOUND_P0_MANIFEST",
+        "required_tokens": ["pc3", "dna"],
+        "replicate_regex": "(?:^|[^0-9])rep(?:licate)?[_ .-]?1(?:[^0-9]|$)"
+      },
+      "format": {"compression": "gzip", "delimiter": "TAB", "column_count": 2, "key_column_index": 0, "count_column_index": 1, "count_type": "NONNEGATIVE_INTEGER"},
+      "license": {"status": "UNKNOWN_NOT_ASSERTED", "redistribution_allowed": null}
+    },
+    {
+      "asset_id": "GSE149487_GEO_PC3_DNA_REP2",
+      "asset_kind": "GEO_RAW_COUNT",
+      "context": "PC3",
+      "assay": "DNA",
+      "biological_replicate": 2,
+      "resolution": {
+        "mode": "UNIQUE_CASEFOLD_FILENAME_TOKEN_MATCH_IN_HASH_BOUND_P0_MANIFEST",
+        "required_tokens": ["pc3", "dna"],
+        "replicate_regex": "(?:^|[^0-9])rep(?:licate)?[_ .-]?2(?:[^0-9]|$)"
+      },
+      "format": {"compression": "gzip", "delimiter": "TAB", "column_count": 2, "key_column_index": 0, "count_column_index": 1, "count_type": "NONNEGATIVE_INTEGER"},
+      "license": {"status": "UNKNOWN_NOT_ASSERTED", "redistribution_allowed": null}
+    },
+    {
+      "asset_id": "GSE149487_GEO_PC3_DNA_REP3",
+      "asset_kind": "GEO_RAW_COUNT",
+      "context": "PC3",
+      "assay": "DNA",
+      "biological_replicate": 3,
+      "resolution": {
+        "mode": "UNIQUE_CASEFOLD_FILENAME_TOKEN_MATCH_IN_HASH_BOUND_P0_MANIFEST",
+        "required_tokens": ["pc3", "dna"],
+        "replicate_regex": "(?:^|[^0-9])rep(?:licate)?[_ .-]?3(?:[^0-9]|$)"
+      },
+      "format": {"compression": "gzip", "delimiter": "TAB", "column_count": 2, "key_column_index": 0, "count_column_index": 1, "count_type": "NONNEGATIVE_INTEGER"},
+      "license": {"status": "UNKNOWN_NOT_ASSERTED", "redistribution_allowed": null}
+    },
+    {
+      "asset_id": "GSE149487_GEO_PC3_POLYSOME_REP1",
+      "asset_kind": "GEO_RAW_COUNT",
+      "context": "PC3",
+      "assay": "POLYSOME",
+      "biological_replicate": 1,
+      "resolution": {
+        "mode": "UNIQUE_CASEFOLD_FILENAME_TOKEN_MATCH_IN_HASH_BOUND_P0_MANIFEST",
+        "required_tokens": ["pc3", "polysome"],
+        "replicate_regex": "(?:^|[^0-9])rep(?:licate)?[_ .-]?1(?:[^0-9]|$)"
+      },
+      "format": {"compression": "gzip", "delimiter": "TAB", "column_count": 2, "key_column_index": 0, "count_column_index": 1, "count_type": "NONNEGATIVE_INTEGER"},
+      "license": {"status": "UNKNOWN_NOT_ASSERTED", "redistribution_allowed": null}
+    },
+    {
+      "asset_id": "GSE149487_GEO_PC3_POLYSOME_REP2",
+      "asset_kind": "GEO_RAW_COUNT",
+      "context": "PC3",
+      "assay": "POLYSOME",
+      "biological_replicate": 2,
+      "resolution": {
+        "mode": "UNIQUE_CASEFOLD_FILENAME_TOKEN_MATCH_IN_HASH_BOUND_P0_MANIFEST",
+        "required_tokens": ["pc3", "polysome"],
+        "replicate_regex": "(?:^|[^0-9])rep(?:licate)?[_ .-]?2(?:[^0-9]|$)"
+      },
+      "format": {"compression": "gzip", "delimiter": "TAB", "column_count": 2, "key_column_index": 0, "count_column_index": 1, "count_type": "NONNEGATIVE_INTEGER"},
+      "license": {"status": "UNKNOWN_NOT_ASSERTED", "redistribution_allowed": null}
+    },
+    {
+      "asset_id": "GSE149487_GEO_PC3_POLYSOME_REP3",
+      "asset_kind": "GEO_RAW_COUNT",
+      "context": "PC3",
+      "assay": "POLYSOME",
+      "biological_replicate": 3,
+      "resolution": {
+        "mode": "UNIQUE_CASEFOLD_FILENAME_TOKEN_MATCH_IN_HASH_BOUND_P0_MANIFEST",
+        "required_tokens": ["pc3", "polysome"],
+        "replicate_regex": "(?:^|[^0-9])rep(?:licate)?[_ .-]?3(?:[^0-9]|$)"
+      },
+      "format": {"compression": "gzip", "delimiter": "TAB", "column_count": 2, "key_column_index": 0, "count_column_index": 1, "count_type": "NONNEGATIVE_INTEGER"},
+      "license": {"status": "UNKNOWN_NOT_ASSERTED", "redistribution_allowed": null}
+    },
+    {
+      "asset_id": "GSE149487_GEO_PC3_TOTALRNA_REP1",
+      "asset_kind": "GEO_RAW_COUNT",
+      "context": "PC3",
+      "assay": "TOTALRNA",
+      "biological_replicate": 1,
+      "resolution": {
+        "mode": "UNIQUE_CASEFOLD_FILENAME_TOKEN_MATCH_IN_HASH_BOUND_P0_MANIFEST",
+        "required_tokens": ["pc3", "totalrna"],
+        "replicate_regex": "(?:^|[^0-9])rep(?:licate)?[_ .-]?1(?:[^0-9]|$)"
+      },
+      "format": {"compression": "gzip", "delimiter": "TAB", "column_count": 2, "key_column_index": 0, "count_column_index": 1, "count_type": "NONNEGATIVE_INTEGER"},
+      "license": {"status": "UNKNOWN_NOT_ASSERTED", "redistribution_allowed": null}
+    },
+    {
+      "asset_id": "GSE149487_GEO_PC3_TOTALRNA_REP2",
+      "asset_kind": "GEO_RAW_COUNT",
+      "context": "PC3",
+      "assay": "TOTALRNA",
+      "biological_replicate": 2,
+      "resolution": {
+        "mode": "UNIQUE_CASEFOLD_FILENAME_TOKEN_MATCH_IN_HASH_BOUND_P0_MANIFEST",
+        "required_tokens": ["pc3", "totalrna"],
+        "replicate_regex": "(?:^|[^0-9])rep(?:licate)?[_ .-]?2(?:[^0-9]|$)"
+      },
+      "format": {"compression": "gzip", "delimiter": "TAB", "column_count": 2, "key_column_index": 0, "count_column_index": 1, "count_type": "NONNEGATIVE_INTEGER"},
+      "license": {"status": "UNKNOWN_NOT_ASSERTED", "redistribution_allowed": null}
+    },
+    {
+      "asset_id": "GSE149487_GEO_PC3_TOTALRNA_REP3",
+      "asset_kind": "GEO_RAW_COUNT",
+      "context": "PC3",
+      "assay": "TOTALRNA",
+      "biological_replicate": 3,
+      "resolution": {
+        "mode": "UNIQUE_CASEFOLD_FILENAME_TOKEN_MATCH_IN_HASH_BOUND_P0_MANIFEST",
+        "required_tokens": ["pc3", "totalrna"],
+        "replicate_regex": "(?:^|[^0-9])rep(?:licate)?[_ .-]?3(?:[^0-9]|$)"
+      },
+      "format": {"compression": "gzip", "delimiter": "TAB", "column_count": 2, "key_column_index": 0, "count_column_index": 1, "count_type": "NONNEGATIVE_INTEGER"},
+      "license": {"status": "UNKNOWN_NOT_ASSERTED", "redistribution_allowed": null}
+    },
+    {
+      "asset_id": "GSE149487_GEO_293T_DNA_REP1",
+      "asset_kind": "GEO_RAW_COUNT",
+      "context": "293T",
+      "assay": "DNA",
+      "biological_replicate": 1,
+      "resolution": {
+        "mode": "UNIQUE_CASEFOLD_FILENAME_TOKEN_MATCH_IN_HASH_BOUND_P0_MANIFEST",
+        "required_tokens": ["293t", "dna"],
+        "replicate_regex": "(?:^|[^0-9])rep(?:licate)?[_ .-]?1(?:[^0-9]|$)"
+      },
+      "format": {"compression": "gzip", "delimiter": "TAB", "column_count": 2, "key_column_index": 0, "count_column_index": 1, "count_type": "NONNEGATIVE_INTEGER"},
+      "license": {"status": "UNKNOWN_NOT_ASSERTED", "redistribution_allowed": null}
+    },
+    {
+      "asset_id": "GSE149487_GEO_293T_DNA_REP2",
+      "asset_kind": "GEO_RAW_COUNT",
+      "context": "293T",
+      "assay": "DNA",
+      "biological_replicate": 2,
+      "resolution": {
+        "mode": "UNIQUE_CASEFOLD_FILENAME_TOKEN_MATCH_IN_HASH_BOUND_P0_MANIFEST",
+        "required_tokens": ["293t", "dna"],
+        "replicate_regex": "(?:^|[^0-9])rep(?:licate)?[_ .-]?2(?:[^0-9]|$)"
+      },
+      "format": {"compression": "gzip", "delimiter": "TAB", "column_count": 2, "key_column_index": 0, "count_column_index": 1, "count_type": "NONNEGATIVE_INTEGER"},
+      "license": {"status": "UNKNOWN_NOT_ASSERTED", "redistribution_allowed": null}
+    },
+    {
+      "asset_id": "GSE149487_GEO_293T_DNA_REP3",
+      "asset_kind": "GEO_RAW_COUNT",
+      "context": "293T",
+      "assay": "DNA",
+      "biological_replicate": 3,
+      "resolution": {
+        "mode": "UNIQUE_CASEFOLD_FILENAME_TOKEN_MATCH_IN_HASH_BOUND_P0_MANIFEST",
+        "required_tokens": ["293t", "dna"],
+        "replicate_regex": "(?:^|[^0-9])rep(?:licate)?[_ .-]?3(?:[^0-9]|$)"
+      },
+      "format": {"compression": "gzip", "delimiter": "TAB", "column_count": 2, "key_column_index": 0, "count_column_index": 1, "count_type": "NONNEGATIVE_INTEGER"},
+      "license": {"status": "UNKNOWN_NOT_ASSERTED", "redistribution_allowed": null}
+    },
+    {
+      "asset_id": "GSE149487_GEO_293T_POLYSOME_REP1",
+      "asset_kind": "GEO_RAW_COUNT",
+      "context": "293T",
+      "assay": "POLYSOME",
+      "biological_replicate": 1,
+      "resolution": {
+        "mode": "UNIQUE_CASEFOLD_FILENAME_TOKEN_MATCH_IN_HASH_BOUND_P0_MANIFEST",
+        "required_tokens": ["293t", "polysome"],
+        "replicate_regex": "(?:^|[^0-9])rep(?:licate)?[_ .-]?1(?:[^0-9]|$)"
+      },
+      "format": {"compression": "gzip", "delimiter": "TAB", "column_count": 2, "key_column_index": 0, "count_column_index": 1, "count_type": "NONNEGATIVE_INTEGER"},
+      "license": {"status": "UNKNOWN_NOT_ASSERTED", "redistribution_allowed": null}
+    },
+    {
+      "asset_id": "GSE149487_GEO_293T_POLYSOME_REP2",
+      "asset_kind": "GEO_RAW_COUNT",
+      "context": "293T",
+      "assay": "POLYSOME",
+      "biological_replicate": 2,
+      "resolution": {
+        "mode": "UNIQUE_CASEFOLD_FILENAME_TOKEN_MATCH_IN_HASH_BOUND_P0_MANIFEST",
+        "required_tokens": ["293t", "polysome"],
+        "replicate_regex": "(?:^|[^0-9])rep(?:licate)?[_ .-]?2(?:[^0-9]|$)"
+      },
+      "format": {"compression": "gzip", "delimiter": "TAB", "column_count": 2, "key_column_index": 0, "count_column_index": 1, "count_type": "NONNEGATIVE_INTEGER"},
+      "license": {"status": "UNKNOWN_NOT_ASSERTED", "redistribution_allowed": null}
+    },
+    {
+      "asset_id": "GSE149487_GEO_293T_POLYSOME_REP3",
+      "asset_kind": "GEO_RAW_COUNT",
+      "context": "293T",
+      "assay": "POLYSOME",
+      "biological_replicate": 3,
+      "resolution": {
+        "mode": "UNIQUE_CASEFOLD_FILENAME_TOKEN_MATCH_IN_HASH_BOUND_P0_MANIFEST",
+        "required_tokens": ["293t", "polysome"],
+        "replicate_regex": "(?:^|[^0-9])rep(?:licate)?[_ .-]?3(?:[^0-9]|$)"
+      },
+      "format": {"compression": "gzip", "delimiter": "TAB", "column_count": 2, "key_column_index": 0, "count_column_index": 1, "count_type": "NONNEGATIVE_INTEGER"},
+      "license": {"status": "UNKNOWN_NOT_ASSERTED", "redistribution_allowed": null}
+    },
+    {
+      "asset_id": "GSE149487_GEO_293T_TOTALRNA_REP1",
+      "asset_kind": "GEO_RAW_COUNT",
+      "context": "293T",
+      "assay": "TOTALRNA",
+      "biological_replicate": 1,
+      "resolution": {
+        "mode": "UNIQUE_CASEFOLD_FILENAME_TOKEN_MATCH_IN_HASH_BOUND_P0_MANIFEST",
+        "required_tokens": ["293t", "totalrna"],
+        "replicate_regex": "(?:^|[^0-9])rep(?:licate)?[_ .-]?1(?:[^0-9]|$)"
+      },
+      "format": {"compression": "gzip", "delimiter": "TAB", "column_count": 2, "key_column_index": 0, "count_column_index": 1, "count_type": "NONNEGATIVE_INTEGER"},
+      "license": {"status": "UNKNOWN_NOT_ASSERTED", "redistribution_allowed": null}
+    },
+    {
+      "asset_id": "GSE149487_GEO_293T_TOTALRNA_REP2",
+      "asset_kind": "GEO_RAW_COUNT",
+      "context": "293T",
+      "assay": "TOTALRNA",
+      "biological_replicate": 2,
+      "resolution": {
+        "mode": "UNIQUE_CASEFOLD_FILENAME_TOKEN_MATCH_IN_HASH_BOUND_P0_MANIFEST",
+        "required_tokens": ["293t", "totalrna"],
+        "replicate_regex": "(?:^|[^0-9])rep(?:licate)?[_ .-]?2(?:[^0-9]|$)"
+      },
+      "format": {"compression": "gzip", "delimiter": "TAB", "column_count": 2, "key_column_index": 0, "count_column_index": 1, "count_type": "NONNEGATIVE_INTEGER"},
+      "license": {"status": "UNKNOWN_NOT_ASSERTED", "redistribution_allowed": null}
+    },
+    {
+      "asset_id": "GSE149487_GEO_293T_TOTALRNA_REP3",
+      "asset_kind": "GEO_RAW_COUNT",
+      "context": "293T",
+      "assay": "TOTALRNA",
+      "biological_replicate": 3,
+      "resolution": {
+        "mode": "UNIQUE_CASEFOLD_FILENAME_TOKEN_MATCH_IN_HASH_BOUND_P0_MANIFEST",
+        "required_tokens": ["293t", "totalrna"],
+        "replicate_regex": "(?:^|[^0-9])rep(?:licate)?[_ .-]?3(?:[^0-9]|$)"
+      },
+      "format": {"compression": "gzip", "delimiter": "TAB", "column_count": 2, "key_column_index": 0, "count_column_index": 1, "count_type": "NONNEGATIVE_INTEGER"},
+      "license": {"status": "UNKNOWN_NOT_ASSERTED", "redistribution_allowed": null}
+    },
+    {
+      "asset_id": "GSE149487_MOESM3",
+      "asset_kind": "SUPPLEMENT_WORKBOOK",
+      "filename": "41467_2021_24445_MOESM3_ESM.xlsx",
+      "bytes": 6818772,
+      "sha256": "c78942d7d5254bb734cca511a9be4005d4768e1fe25f98975f0c12d88eec40cf",
+      "source_uri": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8270899/bin/41467_2021_24445_MOESM3_ESM.xlsx",
+      "role": "PAPER_NATIVE_RESULT_REFERENCE_ONLY_NOT_MEMBERSHIP_SELECTION",
+      "license": {"status": "UNKNOWN_NOT_ASSERTED", "redistribution_allowed": null}
+    },
+    {
+      "asset_id": "GSE149487_MOESM8",
+      "asset_kind": "SUPPLEMENT_WORKBOOK",
+      "filename": "41467_2021_24445_MOESM8_ESM.xlsx",
+      "bytes": 18932748,
+      "sha256": "4af9002f743cfecc7c4e55f5435f0d1c6c1b39c7191444e4e9c2e2c357d2b24d",
+      "source_uri": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8270899/bin/41467_2021_24445_MOESM8_ESM.xlsx",
+      "role": "FULL_LENGTH_SEQUENCE_AND_PAPER_SUPPLEMENT_LINEAGE",
+      "workbook_contract": {
+        "sequence_sheet": "6a 5' UTR sequences",
+        "sequence_header_sha256": "c88ccfd6e7d4d5910e75092119fa35198264f0bc5de4c513604504ccc56ee042"
+      },
+      "license": {"status": "UNKNOWN_NOT_ASSERTED", "redistribution_allowed": null}
+    },
+    {
+      "asset_id": "GSE149487_LIM6C_293T",
+      "asset_kind": "SUPPLEMENT_WORKBOOK",
+      "filename": "Lim_et_al_Supp_Tbl_6c_293T.xlsx",
+      "bytes": 20698902,
+      "sha256": "f991b39b85efce98fe752887a49052043c495ae81b6dfc5dfeded09013b591df",
+      "source_uri": "https://raw.githubusercontent.com/sonali-bioc/Lim-5utr-Paper/d613b541d192d6c502a1ef8849c27e801a7fbfb9/data/Lim_et_al_Supp_Tbl_6c_293T.xlsx",
+      "source_commit": "d613b541d192d6c502a1ef8849c27e801a7fbfb9",
+      "source_blob_git_sha1": "2d4bae738074a1d1bffbafc5ec39da1dff679807",
+      "source_commit_author_date": "2024-06-17T19:25:39Z",
+      "role": "OUTCOME_BLIND_MEMBER_TO_DESCRIPTION_MAPPING_CANDIDATE_AND_293T_CROSSCHECK",
+      "workbook_contract": {
+        "mapping_sheet": "Sheet1",
+        "mapping_header_sha256": "9cd3d648f639e02c0191659d8108f0a1e9794afc196566eb5dd8470e1400f203",
+        "description_column_index": 0,
+        "member_key_column_index": 1
+      },
+      "license": {"status": "UNKNOWN_NOT_ASSERTED", "redistribution_allowed": null}
+    }
+  ]
+}
