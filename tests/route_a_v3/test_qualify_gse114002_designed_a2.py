@@ -1,14 +1,17 @@
 from __future__ import annotations
 
 import csv
+import errno
 import gzip
 import hashlib
 import importlib.util
 import io
 import json
 import os
+import stat
 import subprocess
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -219,6 +222,34 @@ def test_production_protocol_is_immutable_blocked_true_a2_candidate() -> None:
     assert protocol["data_role"] == "A2_RECOVERY_CANDIDATE_NOT_QUALIFIED"
     assert protocol["scope"]["training_allowed"] is False
     assert protocol["claim_boundary"]["canonical_record_count"] == 0
+    assert protocol["authority"]["implementation_commit"] == "UNKNOWN_NOT_ASSERTED"
+    assert QUALIFY.IMPLEMENTATION_BLOCKER in protocol["known_blockers"]
+    assert protocol["authority"]["qualifier_sha256"] == _file_sha256(MODULE_PATH)
+    assert protocol["authority"]["focused_test_sha256"] == _file_sha256(Path(__file__))
+    output_contract = protocol["output_contract"]
+    assert output_contract["output_id"] == QUALIFY.OUTPUT_ID
+    assert output_contract["primary_publication_mode"] == (
+        QUALIFY.PRIMARY_PUBLICATION_MODE
+    )
+    assert output_contract["fallback_publication_mode"] == (
+        QUALIFY.FALLBACK_PUBLICATION_MODE
+    )
+    assert output_contract["atomic_no_replace_unsupported_errno_fallback"] == list(
+        QUALIFY.ATOMIC_NOREPLACE_UNSUPPORTED_ERRNO_NAMES
+    )
+    assert output_contract["required_terminal_metadata_files_all_publication_modes"] == [
+        QUALIFY.PUBLICATION_COMMIT_FILENAME
+    ]
+    assert output_contract["commit_marker_written_last"] is True
+    assert output_contract[
+        "commit_marker_validation_required_before_published_return"
+    ] is True
+    assert output_contract["fallback_pre_marker_failure_status"] == (
+        "PARTIAL_NOT_COMMITTED"
+    )
+    assert output_contract["fallback_post_marker_validation_failure_status"] == (
+        "COMMITTED_NOT_ACCEPTED"
+    )
 
 
 def test_git_binding_enforces_full_ancestry_blobs_head_and_clean_worktree(
@@ -395,6 +426,19 @@ def test_unknown_gates_publish_aggregate_blocked_bundle_with_zero_canonical(
 ) -> None:
     protocol_path, source, _, _ = _write_integration_fixture(tmp_path, monkeypatch)
     output = tmp_path / "blocked-bundle"
+    staging_write_order: list[str] = []
+    original_write = QUALIFY._write_exclusive
+
+    def tracked_write(
+        path: Path, payload: bytes, *, directory_descriptor: int | None = None
+    ) -> None:
+        if path.parent.name.startswith(f".{output.name}.staging-"):
+            staging_write_order.append(path.name)
+        original_write(
+            path, payload, directory_descriptor=directory_descriptor
+        )
+
+    monkeypatch.setattr(QUALIFY, "_write_exclusive", tracked_write)
     result = QUALIFY.qualify_gse114002_designed_a2(
         protocol_path=protocol_path,
         protocol_sha256=_file_sha256(protocol_path),
@@ -410,7 +454,31 @@ def test_unknown_gates_publish_aggregate_blocked_bundle_with_zero_canonical(
     assert report["training_allowed"] is False
     assert report["canonical_materialization_allowed"] is False
     assert report["canonical_record_count"] == 0
-    assert set(path.name for path in output.iterdir()) == set(QUALIFY.ALWAYS_OUTPUT_FILES)
+    assert set(path.name for path in output.iterdir()) == (
+        set(QUALIFY.ALWAYS_OUTPUT_FILES) | {QUALIFY.PUBLICATION_COMMIT_FILENAME}
+    )
+    marker = bundle[QUALIFY.PUBLICATION_COMMIT_FILENAME]
+    assert result["publication_mode"] == QUALIFY.PRIMARY_PUBLICATION_MODE
+    assert result["terminal_commit_marker_validated"] is True
+    assert marker["protocol_id"] == QUALIFY.PROTOCOL_ID
+    assert marker["output_id"] == QUALIFY.OUTPUT_ID
+    assert marker["publication_mode"] == QUALIFY.PRIMARY_PUBLICATION_MODE
+    assert marker["bundle_member_names"] == sorted(QUALIFY.ALWAYS_OUTPUT_FILES)
+    assert marker["bundle_file_count_excluding_commit_marker"] == len(
+        QUALIFY.ALWAYS_OUTPUT_FILES
+    )
+    assert marker["final_output_directory_name_sha256"] == (
+        QUALIFY._final_output_directory_name_sha256(output.name)
+    )
+    assert marker["final_output_target_sha256"] == (
+        QUALIFY._final_output_target_sha256(output)
+    )
+    assert marker["committed"] is True
+    assert staging_write_order[-1] == QUALIFY.PUBLICATION_COMMIT_FILENAME
+    assert staging_write_order.count(QUALIFY.PUBLICATION_COMMIT_FILENAME) == 1
+    QUALIFY._validate_publication_commit(
+        output, expected_publication_mode=QUALIFY.PRIMARY_PUBLICATION_MODE
+    )
     assert not (output / "canonical_intervention_records.jsonl").exists()
 
 
@@ -511,6 +579,104 @@ def test_forbidden_scope_is_rejected_before_any_read(
         )
 
 
+def test_verified_snapshot_accepts_descriptor_bytes_despite_stale_preopen_lstat(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    source = tmp_path / "ordinary-public.bin"
+    payload = b"descriptor-bytes-are-the-trust-root\n"
+    source.write_bytes(payload)
+    observed = source.stat()
+    stale = SimpleNamespace(
+        st_mode=stat.S_IFREG | 0o640,
+        st_dev=observed.st_dev,
+        st_ino=observed.st_ino + 101,
+        st_size=observed.st_size + 17,
+        st_mtime_ns=observed.st_mtime_ns - 1,
+        st_ctime_ns=observed.st_ctime_ns - 1,
+    )
+    original_lstat = Path.lstat
+
+    def stale_lstat(path: Path) -> object:
+        if path == source:
+            return stale
+        return original_lstat(path)
+
+    monkeypatch.setattr(Path, "lstat", stale_lstat)
+    captured, provenance = QUALIFY._read_regular_verified_snapshot(
+        source,
+        label="ordinary public stale-lstat fixture",
+        expected_sha256=hashlib.sha256(payload).hexdigest(),
+        expected_bytes=len(payload),
+    )
+    assert captured == payload
+    assert provenance["sha256"] == hashlib.sha256(payload).hexdigest()
+    assert provenance["bytes"] == len(payload)
+
+
+@pytest.mark.parametrize("kind", ["symlink", "directory"])
+def test_verified_snapshot_rejects_symlink_and_nonregular_targets(
+    tmp_path: Path, kind: str
+) -> None:
+    target = tmp_path / "target.bin"
+    target.write_bytes(b"ordinary-public\n")
+    candidate = tmp_path / "candidate.bin"
+    if kind == "symlink":
+        candidate.symlink_to(target)
+    else:
+        candidate.mkdir()
+    with pytest.raises(QUALIFY.QualificationError):
+        QUALIFY._read_regular_verified_snapshot(
+            candidate, label=f"{kind} fixture"
+        )
+
+
+def test_verified_snapshot_rejects_intermediate_symlink_before_payload_read(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    real_parent = tmp_path / "real-parent"
+    real_parent.mkdir()
+    target = real_parent / "ordinary-public.bin"
+    target.write_bytes(b"must-not-be-read-through-an-intermediate-symlink\n")
+    linked_parent = tmp_path / "linked-parent"
+    linked_parent.symlink_to(real_parent, target_is_directory=True)
+
+    def forbidden_payload_read(*_: object) -> bytes:
+        raise AssertionError("payload read occurred through an intermediate symlink")
+
+    monkeypatch.setattr(QUALIFY.os, "read", forbidden_payload_read)
+    with pytest.raises(QUALIFY.QualificationError, match="parent path contains a symlink"):
+        QUALIFY._read_regular_verified_snapshot(
+            linked_parent / target.name,
+            label="intermediate-symlink ordinary-public fixture",
+        )
+
+
+def test_verified_snapshot_rejects_same_descriptor_mutation(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    source = tmp_path / "mutating.bin"
+    source.write_bytes(b"A" * (2 << 20))
+    original_read = QUALIFY.os.read
+    mutated = False
+
+    def read_then_mutate(descriptor: int, amount: int) -> bytes:
+        nonlocal mutated
+        block = original_read(descriptor, amount)
+        if block and not mutated:
+            mutated = True
+            with source.open("ab") as handle:
+                handle.write(b"MUTATION")
+                handle.flush()
+                os.fsync(handle.fileno())
+        return block
+
+    monkeypatch.setattr(QUALIFY.os, "read", read_then_mutate)
+    with pytest.raises(QUALIFY.QualificationError, match="changed during descriptor"):
+        QUALIFY._read_regular_verified_snapshot(
+            source, label="mutating ordinary-public fixture"
+        )
+
+
 def test_verified_compressed_snapshot_closes_path_replacement_toctou(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -582,6 +748,394 @@ def test_atomic_publish_race_is_explicitly_contended(
     assert (output / "winner.txt").read_text(encoding="utf-8") == "winner\n"
 
 
+def test_primary_namespace_replacement_after_rename_is_not_accepted_as_published(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    protocol_path, source, _, _ = _write_integration_fixture(tmp_path, monkeypatch)
+    output = tmp_path / "primary-namespace-target"
+    displaced = tmp_path / "primary-namespace-displaced"
+    original_validate = QUALIFY._validate_publication_commit
+    replaced = False
+
+    def replace_final_namespace_before_descriptor_validation(
+        output_directory: Path, **kwargs: object
+    ) -> dict[str, object]:
+        nonlocal replaced
+        if output_directory == output and not replaced:
+            replaced = True
+            output.rename(displaced)
+            output.mkdir()
+        return original_validate(output_directory, **kwargs)
+
+    monkeypatch.setattr(
+        QUALIFY,
+        "_validate_publication_commit",
+        replace_final_namespace_before_descriptor_validation,
+    )
+    with pytest.raises(
+        QUALIFY.CommittedPublicationValidationError,
+        match="namespace entry",
+    ):
+        QUALIFY.qualify_gse114002_designed_a2(
+            protocol_path=protocol_path,
+            protocol_sha256=_file_sha256(protocol_path),
+            source_path=source,
+            output_directory=output,
+        )
+    assert replaced is True
+    assert output.is_dir()
+    assert list(output.iterdir()) == []
+    assert (displaced / QUALIFY.PUBLICATION_COMMIT_FILENAME).is_file()
+
+
+def test_primary_parent_path_replacement_is_not_accepted_as_published(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    protocol_path, source, _, _ = _write_integration_fixture(tmp_path, monkeypatch)
+    output = tmp_path / "primary-parent-target"
+    displaced_parent = tmp_path.parent / f"{tmp_path.name}-displaced-parent"
+    original_identity_check = QUALIFY._require_directory_entry_identity
+    replaced = False
+
+    def replace_parent_before_final_identity_check(**kwargs: object) -> None:
+        nonlocal replaced
+        if kwargs.get("label") == "published final output" and not replaced:
+            replaced = True
+            tmp_path.rename(displaced_parent)
+            tmp_path.mkdir()
+            (tmp_path / output.name).mkdir()
+        original_identity_check(**kwargs)
+
+    monkeypatch.setattr(
+        QUALIFY,
+        "_require_directory_entry_identity",
+        replace_parent_before_final_identity_check,
+    )
+    with pytest.raises(
+        QUALIFY.CommittedPublicationValidationError,
+        match="absolute final output namespace entry",
+    ):
+        QUALIFY.qualify_gse114002_designed_a2(
+            protocol_path=protocol_path,
+            protocol_sha256=_file_sha256(protocol_path),
+            source_path=source,
+            output_directory=output,
+        )
+    assert replaced is True
+    assert output.is_dir()
+    assert list(output.iterdir()) == []
+    displaced_output = displaced_parent / output.name
+    assert (displaced_output / QUALIFY.PUBLICATION_COMMIT_FILENAME).is_file()
+
+
+def test_explicitly_unsupported_rename_uses_exact_terminal_marker_fallback(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    protocol_path, source, _, _ = _write_integration_fixture(tmp_path, monkeypatch)
+    output = tmp_path / "fallback-success"
+    write_order: list[str] = []
+    original_write = QUALIFY._write_exclusive
+
+    def unsupported_rename(*_: object) -> None:
+        raise QUALIFY.AtomicNoReplaceUnsupported(errno.EOPNOTSUPP)
+
+    def tracked_write(
+        path: Path, payload: bytes, *, directory_descriptor: int | None = None
+    ) -> None:
+        if path.parent == output:
+            write_order.append(path.name)
+        original_write(
+            path, payload, directory_descriptor=directory_descriptor
+        )
+
+    monkeypatch.setattr(QUALIFY, "_rename_directory_noreplace", unsupported_rename)
+    monkeypatch.setattr(QUALIFY, "_write_exclusive", tracked_write)
+    result = QUALIFY.qualify_gse114002_designed_a2(
+        protocol_path=protocol_path,
+        protocol_sha256=_file_sha256(protocol_path),
+        source_path=source,
+        output_directory=output,
+    )
+    assert result["kind"] == "PUBLISHED"
+    assert result["published"] is True
+    assert result["publication_mode"] == QUALIFY.FALLBACK_PUBLICATION_MODE
+    assert result["atomic_no_replace"] is False
+    assert result["atomic_exclusive_final_mkdir"] is True
+    assert result["terminal_commit_marker_validated"] is True
+    assert write_order[-1] == QUALIFY.PUBLICATION_COMMIT_FILENAME
+    assert write_order.count(QUALIFY.PUBLICATION_COMMIT_FILENAME) == 1
+    assert set(path.name for path in output.iterdir()) == (
+        set(QUALIFY.ALWAYS_OUTPUT_FILES) | {QUALIFY.PUBLICATION_COMMIT_FILENAME}
+    )
+    marker = json.loads(
+        (output / QUALIFY.PUBLICATION_COMMIT_FILENAME).read_text(encoding="utf-8")
+    )
+    assert marker["protocol_id"] == QUALIFY.PROTOCOL_ID
+    assert marker["output_id"] == QUALIFY.OUTPUT_ID
+    assert marker["publication_mode"] == QUALIFY.FALLBACK_PUBLICATION_MODE
+    assert marker["bundle_file_count_excluding_commit_marker"] == len(
+        QUALIFY.ALWAYS_OUTPUT_FILES
+    )
+    assert marker["bundle_member_names"] == sorted(QUALIFY.ALWAYS_OUTPUT_FILES)
+    assert marker["final_output_directory_name_sha256"] == (
+        QUALIFY._final_output_directory_name_sha256(output.name)
+    )
+    assert marker["final_output_target_sha256"] == (
+        QUALIFY._final_output_target_sha256(output)
+    )
+    assert marker["sha256sums_sha256"] == hashlib.sha256(
+        (output / "SHA256SUMS").read_bytes()
+    ).hexdigest()
+    assert marker["committed"] is True
+    QUALIFY._validate_publication_commit(
+        output, expected_publication_mode=QUALIFY.FALLBACK_PUBLICATION_MODE
+    )
+    retained_staging = list(tmp_path.glob(f".{output.name}.staging-*"))
+    assert len(retained_staging) == 1
+    with pytest.raises(
+        QUALIFY.QualificationError, match="final output directory-name hash"
+    ):
+        QUALIFY._validate_publication_commit(
+            retained_staging[0],
+            expected_publication_mode=QUALIFY.PRIMARY_PUBLICATION_MODE,
+        )
+
+
+def test_fallback_midwrite_failure_preserves_uncommitted_directory_without_marker(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    protocol_path, source, _, _ = _write_integration_fixture(tmp_path, monkeypatch)
+    output = tmp_path / "fallback-midwrite"
+    original_write = QUALIFY._write_exclusive
+
+    def unsupported_rename(*_: object) -> None:
+        raise QUALIFY.AtomicNoReplaceUnsupported(errno.EINVAL)
+
+    def fail_second_member(
+        path: Path, payload: bytes, *, directory_descriptor: int | None = None
+    ) -> None:
+        if path.parent == output and path.name == "POOL_GEOMETRY_AUDIT.json":
+            raise OSError(errno.EIO, "injected fallback member write failure")
+        original_write(
+            path, payload, directory_descriptor=directory_descriptor
+        )
+
+    monkeypatch.setattr(QUALIFY, "_rename_directory_noreplace", unsupported_rename)
+    monkeypatch.setattr(QUALIFY, "_write_exclusive", fail_second_member)
+    with pytest.raises(QUALIFY.PartialPublicationError, match="PARTIAL_NOT_COMMITTED"):
+        QUALIFY.qualify_gse114002_designed_a2(
+            protocol_path=protocol_path,
+            protocol_sha256=_file_sha256(protocol_path),
+            source_path=source,
+            output_directory=output,
+        )
+    assert output.is_dir()
+    assert (output / "MEASUREMENT_UNCERTAINTY_AUDIT.json").is_file()
+    assert not (output / QUALIFY.PUBLICATION_COMMIT_FILENAME).exists()
+    with pytest.raises(QUALIFY.QualificationError):
+        QUALIFY._validate_publication_commit(
+            output, expected_publication_mode=QUALIFY.FALLBACK_PUBLICATION_MODE
+        )
+
+
+def test_fallback_fsynced_marker_with_persistent_validation_failure_is_committed_not_accepted(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    protocol_path, source, _, _ = _write_integration_fixture(tmp_path, monkeypatch)
+    output = tmp_path / "fallback-committed-not-accepted"
+    original_validate = QUALIFY._validate_publication_commit
+
+    def unsupported_rename(*_: object) -> None:
+        raise QUALIFY.AtomicNoReplaceUnsupported(errno.EINVAL)
+
+    def persistent_final_validation_failure(
+        output_directory: Path, **kwargs: object
+    ) -> dict[str, object]:
+        if output_directory == output:
+            raise QUALIFY.QualificationError("injected persistent marker validation failure")
+        return original_validate(output_directory, **kwargs)
+
+    monkeypatch.setattr(QUALIFY, "_rename_directory_noreplace", unsupported_rename)
+    monkeypatch.setattr(
+        QUALIFY, "_validate_publication_commit", persistent_final_validation_failure
+    )
+    with pytest.raises(
+        QUALIFY.CommittedPublicationValidationError,
+        match="COMMITTED_NOT_ACCEPTED",
+    ):
+        QUALIFY.qualify_gse114002_designed_a2(
+            protocol_path=protocol_path,
+            protocol_sha256=_file_sha256(protocol_path),
+            source_path=source,
+            output_directory=output,
+        )
+    assert output.is_dir()
+    assert (output / QUALIFY.PUBLICATION_COMMIT_FILENAME).is_file()
+
+
+def test_fallback_namespace_replacement_cannot_redirect_descriptor_anchored_writes(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    protocol_path, source, _, _ = _write_integration_fixture(tmp_path, monkeypatch)
+    output = tmp_path / "fallback-namespace-target"
+    displaced = tmp_path / "fallback-namespace-displaced"
+    original_write = QUALIFY._write_exclusive
+    replaced = False
+
+    def unsupported_rename(*_: object) -> None:
+        raise QUALIFY.AtomicNoReplaceUnsupported(errno.EOPNOTSUPP)
+
+    def replace_namespace_then_write(
+        path: Path, payload: bytes, *, directory_descriptor: int | None = None
+    ) -> None:
+        nonlocal replaced
+        if path.parent == output and not replaced:
+            replaced = True
+            output.rename(displaced)
+            output.mkdir()
+        original_write(
+            path, payload, directory_descriptor=directory_descriptor
+        )
+
+    monkeypatch.setattr(QUALIFY, "_rename_directory_noreplace", unsupported_rename)
+    monkeypatch.setattr(QUALIFY, "_write_exclusive", replace_namespace_then_write)
+    with pytest.raises(
+        QUALIFY.CommittedPublicationValidationError,
+        match="namespace entry",
+    ):
+        QUALIFY.qualify_gse114002_designed_a2(
+            protocol_path=protocol_path,
+            protocol_sha256=_file_sha256(protocol_path),
+            source_path=source,
+            output_directory=output,
+        )
+    assert replaced is True
+    assert output.is_dir()
+    assert list(output.iterdir()) == []
+    assert (displaced / QUALIFY.PUBLICATION_COMMIT_FILENAME).is_file()
+    assert set(path.name for path in displaced.iterdir()) == (
+        set(QUALIFY.ALWAYS_OUTPUT_FILES) | {QUALIFY.PUBLICATION_COMMIT_FILENAME}
+    )
+
+
+def test_fallback_atomic_mkdir_contention_is_explicit_and_preserves_winner(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    protocol_path, source, _, _ = _write_integration_fixture(tmp_path, monkeypatch)
+    output = tmp_path / "fallback-contention"
+    output.mkdir()
+    sentinel = output / "winner.txt"
+    sentinel.write_text("winner\n", encoding="utf-8")
+
+    def unsupported_rename(*_: object) -> None:
+        raise QUALIFY.AtomicNoReplaceUnsupported(errno.ENOSYS)
+
+    monkeypatch.setattr(QUALIFY, "_rename_directory_noreplace", unsupported_rename)
+    result = QUALIFY.qualify_gse114002_designed_a2(
+        protocol_path=protocol_path,
+        protocol_sha256=_file_sha256(protocol_path),
+        source_path=source,
+        output_directory=output,
+    )
+    assert result["kind"] == "CONTENDED"
+    assert result["published"] is False
+    assert result["publication_mode"] == QUALIFY.FALLBACK_PUBLICATION_MODE
+    assert result["contention_status"] == "ATOMIC_FALLBACK_MKDIR_CONTENDED"
+    assert list(output.iterdir()) == [sentinel]
+    assert sentinel.read_text(encoding="utf-8") == "winner\n"
+
+
+def test_nonunsupported_rename_error_never_enters_atomic_mkdir_fallback(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    protocol_path, source, _, _ = _write_integration_fixture(tmp_path, monkeypatch)
+    output = tmp_path / "no-fallback-for-eio"
+
+    def hard_rename_failure(*_: object) -> None:
+        raise QUALIFY.QualificationError("atomic no-replace failed with errno EIO")
+
+    def forbidden_fallback(**_: object) -> dict[str, object]:
+        raise AssertionError("non-unsupported rename error entered fallback")
+
+    monkeypatch.setattr(QUALIFY, "_rename_directory_noreplace", hard_rename_failure)
+    monkeypatch.setattr(
+        QUALIFY, "_publish_bundle_with_terminal_marker", forbidden_fallback
+    )
+    with pytest.raises(QUALIFY.QualificationError, match="errno EIO"):
+        QUALIFY.qualify_gse114002_designed_a2(
+            protocol_path=protocol_path,
+            protocol_sha256=_file_sha256(protocol_path),
+            source_path=source,
+            output_directory=output,
+        )
+    assert not output.exists()
+
+
+def test_publication_marker_validation_rejects_member_hash_mismatch(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    protocol_path, source, _, _ = _write_integration_fixture(tmp_path, monkeypatch)
+    output = tmp_path / "fallback-tamper"
+
+    def unsupported_rename(*_: object) -> None:
+        raise QUALIFY.AtomicNoReplaceUnsupported(errno.EOPNOTSUPP)
+
+    monkeypatch.setattr(QUALIFY, "_rename_directory_noreplace", unsupported_rename)
+    result = QUALIFY.qualify_gse114002_designed_a2(
+        protocol_path=protocol_path,
+        protocol_sha256=_file_sha256(protocol_path),
+        source_path=source,
+        output_directory=output,
+    )
+    assert result["published"] is True
+    report_path = output / "QUALIFICATION_REPORT.json"
+    report_path.write_bytes(report_path.read_bytes() + b" ")
+    with pytest.raises(QUALIFY.QualificationError, match="member SHA-256 mismatch"):
+        QUALIFY._validate_publication_commit(
+            output, expected_publication_mode=QUALIFY.FALLBACK_PUBLICATION_MODE
+        )
+
+
+def test_fallback_capability_and_post_marker_fsync_failures_are_published_warnings(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    protocol_path, source, _, _ = _write_integration_fixture(tmp_path, monkeypatch)
+    output = tmp_path / "fallback-fsync-warnings"
+    original_fsync_directory = QUALIFY._fsync_directory
+
+    def unsupported_rename(*_: object) -> None:
+        raise QUALIFY.AtomicNoReplaceUnsupported(errno.EINVAL)
+
+    def injected_directory_fsync(
+        path: Path, *, directory_descriptor: int | None = None
+    ) -> None:
+        if path.name.startswith(f".{output.name}.staging-"):
+            raise OSError(errno.EINVAL, "directory fsync unsupported")
+        if path == output:
+            assert (output / QUALIFY.PUBLICATION_COMMIT_FILENAME).is_file()
+            raise OSError(errno.EIO, "post-marker output fsync failure")
+        original_fsync_directory(
+            path, directory_descriptor=directory_descriptor
+        )
+
+    monkeypatch.setattr(QUALIFY, "_rename_directory_noreplace", unsupported_rename)
+    monkeypatch.setattr(QUALIFY, "_fsync_directory", injected_directory_fsync)
+    result = QUALIFY.qualify_gse114002_designed_a2(
+        protocol_path=protocol_path,
+        protocol_sha256=_file_sha256(protocol_path),
+        source_path=source,
+        output_directory=output,
+    )
+    assert result["kind"] == "PUBLISHED"
+    assert result["published"] is True
+    assert result["publication_mode"] == QUALIFY.FALLBACK_PUBLICATION_MODE
+    assert result["terminal_commit_marker_validated"] is True
+    assert result["durability_warning_codes"] == [
+        "POST_COMMIT_OUTPUT_DIRECTORY_FSYNC_FAILED",
+        "PRECOMMIT_STAGING_DIRECTORY_FSYNC_UNSUPPORTED",
+    ]
+
+
 def test_publication_parent_fd_is_opened_before_commit_and_not_reopened_after(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -591,8 +1145,10 @@ def test_publication_parent_fd_is_opened_before_commit_and_not_reopened_after(
     original_rename = QUALIFY._rename_directory_noreplace
     parent_fds: list[int] = []
 
-    def tracked_open(path: object, flags: int, mode: int = 0o777) -> int:
-        fd = original_open(path, flags, mode)
+    def tracked_open(
+        path: object, flags: int, mode: int = 0o777, *, dir_fd: int | None = None
+    ) -> int:
+        fd = original_open(path, flags, mode, dir_fd=dir_fd)
         if Path(path) == tmp_path:
             parent_fds.append(fd)
         return fd
@@ -622,8 +1178,10 @@ def test_post_commit_parent_fsync_failure_returns_published_warning(
     original_fsync = QUALIFY.os.fsync
     parent_fd: list[int] = []
 
-    def tracked_open(path: object, flags: int, mode: int = 0o777) -> int:
-        fd = original_open(path, flags, mode)
+    def tracked_open(
+        path: object, flags: int, mode: int = 0o777, *, dir_fd: int | None = None
+    ) -> int:
+        fd = original_open(path, flags, mode, dir_fd=dir_fd)
         if Path(path) == tmp_path:
             parent_fd[:] = [fd]
         return fd
@@ -658,8 +1216,10 @@ def test_post_commit_parent_close_failure_returns_published_warning(
     original_close = QUALIFY.os.close
     parent_fd: list[int] = []
 
-    def tracked_open(path: object, flags: int, mode: int = 0o777) -> int:
-        fd = original_open(path, flags, mode)
+    def tracked_open(
+        path: object, flags: int, mode: int = 0o777, *, dir_fd: int | None = None
+    ) -> int:
+        fd = original_open(path, flags, mode, dir_fd=dir_fd)
         if Path(path) == tmp_path:
             parent_fd[:] = [fd]
         return fd

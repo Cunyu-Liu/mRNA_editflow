@@ -66,6 +66,21 @@ ALWAYS_OUTPUT_FILES: tuple[str, ...] = (
     "QUALIFICATION_REPORT.json",
     "SHA256SUMS",
 )
+OUTPUT_ID = "ROUTE_A_V3_GSE114002_DESIGNED_A2_BLOCKED_BUNDLE_V1"
+PUBLICATION_COMMIT_FILENAME = "PUBLICATION_COMMIT.json"
+PRIMARY_PUBLICATION_MODE = "KERNEL_ATOMIC_RENAME_NOREPLACE_V1"
+FALLBACK_PUBLICATION_MODE = "ATOMIC_MKDIR_TERMINAL_COMMIT_MARKER_V1"
+ATOMIC_NOREPLACE_UNSUPPORTED_ERRNO_NAMES: tuple[str, ...] = (
+    "ENOSYS", "EINVAL", "ENOTSUP", "EOPNOTSUPP",
+)
+ATOMIC_NOREPLACE_UNSUPPORTED_ERRNOS = frozenset(
+    {
+        errno.ENOSYS,
+        errno.EINVAL,
+        getattr(errno, "ENOTSUP", errno.EINVAL),
+        getattr(errno, "EOPNOTSUPP", errno.EINVAL),
+    }
+)
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 COMMIT_RE = re.compile(r"^[0-9a-f]{40}$")
 DNA_RE = re.compile(r"^[ACGT]+$")
@@ -115,6 +130,29 @@ class PublicationContention(QualificationError):
     """Another writer won the atomic no-replace output publication race."""
 
 
+class AtomicNoReplaceUnsupported(QualificationError):
+    """The primary kernel primitive returned an explicitly approved errno."""
+
+    def __init__(self, error_number: int) -> None:
+        self.error_number = int(error_number)
+        super().__init__(
+            "atomic no-replace directory publication is unsupported "
+            f"(errno {self.error_number})"
+        )
+
+
+class PartialPublicationError(QualificationError):
+    """The fallback directory exists but has no exact terminal commit marker."""
+
+    def __init__(self, detail: str, *, unsupported_errno: int) -> None:
+        self.unsupported_errno = int(unsupported_errno)
+        super().__init__(detail)
+
+
+class CommittedPublicationValidationError(QualificationError):
+    """A renamed directory exists but is not accepted as a published bundle."""
+
+
 def _compact_json_bytes(value: Any) -> bytes:
     return json.dumps(
         value, ensure_ascii=True, allow_nan=False, sort_keys=True, separators=(",", ":")
@@ -161,7 +199,13 @@ def _preflight_paths_before_read(
     resolved = tuple(path.resolve(strict=False) for path, _ in raw)
     for path, (_, label) in zip(resolved, raw):
         _reject_forbidden_path(path, label=label)
-    return resolved  # type: ignore[return-value]
+    # Resolve only for the second forbidden-scope gate.  Returning a lexical
+    # absolute path preserves the final path component for O_NOFOLLOW; a
+    # symlink must never be silently converted into its regular-file target.
+    lexical_absolute = tuple(
+        Path(os.path.abspath(os.fspath(path))) for path, _ in raw
+    )
+    return lexical_absolute  # type: ignore[return-value]
 
 
 def _require_regular_file(path: Path, *, label: str) -> os.stat_result:
@@ -174,6 +218,62 @@ def _require_regular_file(path: Path, *, label: str) -> os.stat_result:
     return info
 
 
+def _open_without_symlink_components(
+    path: Path,
+    *,
+    final_flags: int,
+    label: str,
+) -> int:
+    """Open an absolute path while rejecting symlinks in every component."""
+    nofollow = getattr(os, "O_NOFOLLOW", None)
+    if nofollow is None:
+        raise QualificationError(f"{label} cannot be opened without O_NOFOLLOW")
+    absolute = Path(os.path.abspath(os.fspath(path)))
+    parts = absolute.parts
+    if len(parts) < 2 or parts[0] != os.sep:
+        raise QualificationError(f"{label} path is not an absolute file path")
+    directory_flags = (
+        os.O_RDONLY
+        | getattr(os, "O_CLOEXEC", 0)
+        | getattr(os, "O_DIRECTORY", 0)
+        | nofollow
+    )
+    try:
+        directory_descriptor = os.open(os.sep, directory_flags)
+    except OSError as exc:
+        raise QualificationError(f"{label} root directory could not be opened") from exc
+    try:
+        for component in parts[1:-1]:
+            try:
+                next_descriptor = os.open(
+                    component,
+                    directory_flags,
+                    dir_fd=directory_descriptor,
+                )
+            except OSError as exc:
+                raise QualificationError(
+                    f"{label} parent path contains a symlink or non-directory"
+                ) from exc
+            try:
+                if not stat.S_ISDIR(os.fstat(next_descriptor).st_mode):
+                    raise QualificationError(f"{label} parent is not a directory")
+            except Exception:
+                os.close(next_descriptor)
+                raise
+            os.close(directory_descriptor)
+            directory_descriptor = next_descriptor
+        try:
+            return os.open(
+                parts[-1],
+                final_flags | nofollow,
+                dir_fd=directory_descriptor,
+            )
+        except OSError as exc:
+            raise QualificationError(f"{label} could not be opened safely") from exc
+    finally:
+        os.close(directory_descriptor)
+
+
 def _read_regular_verified_snapshot(
     path: Path,
     *,
@@ -181,21 +281,27 @@ def _read_regular_verified_snapshot(
     expected_sha256: str | None = None,
     expected_bytes: int | None = None,
 ) -> tuple[bytes, dict[str, Any]]:
-    initial = _require_regular_file(path, label=label)
-    flags = os.O_RDONLY | getattr(os, "O_CLOEXEC", 0) | getattr(os, "O_NOFOLLOW", 0)
-    try:
-        descriptor = os.open(path, flags)
-    except OSError as exc:
-        raise QualificationError(f"{label} could not be opened safely") from exc
+    flags = (
+        os.O_RDONLY
+        | getattr(os, "O_CLOEXEC", 0)
+        | getattr(os, "O_NONBLOCK", 0)
+    )
+    descriptor = _open_without_symlink_components(
+        path, final_flags=flags, label=label
+    )
     digest = hashlib.sha256()
     payload = bytearray()
     try:
         opened = os.fstat(descriptor)
         identity = lambda value: (
-            value.st_dev, value.st_ino, value.st_size, value.st_mtime_ns
+            value.st_dev,
+            value.st_ino,
+            value.st_size,
+            value.st_mtime_ns,
+            value.st_ctime_ns,
         )
-        if identity(initial) != identity(opened) or not stat.S_ISREG(opened.st_mode):
-            raise QualificationError(f"{label} changed before descriptor capture")
+        if not stat.S_ISREG(opened.st_mode):
+            raise QualificationError(f"{label} must be a regular file")
         while True:
             block = os.read(descriptor, 1 << 20)
             if not block:
@@ -203,7 +309,11 @@ def _read_regular_verified_snapshot(
             digest.update(block)
             payload.extend(block)
         final = os.fstat(descriptor)
-        if identity(opened) != identity(final) or len(payload) != final.st_size:
+        if (
+            identity(opened) != identity(final)
+            or len(payload) != opened.st_size
+            or len(payload) != final.st_size
+        ):
             raise QualificationError(f"{label} changed during descriptor capture")
     finally:
         os.close(descriptor)
@@ -545,7 +655,24 @@ def _validate_protocol(document: Mapping[str, Any]) -> None:
         {
             "aggregate_only_blocked_bundle", "forbidden_output_fields",
             "always_materialized_files", "conditional_success_only_private_canonical_path",
-            "atomic_no_overwrite_publish_required",
+            "atomic_no_overwrite_publish_required", "output_id",
+            "primary_publication_mode",
+            "atomic_no_replace_unsupported_errno_fallback",
+            "fallback_publication_mode",
+            "fallback_atomic_exclusive_final_mkdir_required",
+            "fallback_atomic_mkdir_loser_status",
+            "fallback_bundle_file_write_mode",
+            "required_terminal_metadata_files_all_publication_modes",
+            "commit_marker_written_last", "commit_marker_bindings",
+            "commit_marker_validation_required_before_published_return",
+            "unmarked_or_mismatched_output_status",
+            "fallback_pre_marker_failure_status",
+            "fallback_post_marker_validation_failure_status",
+            "fallback_partial_directory_must_be_preserved",
+            "post_commit_durability_error_action",
+            "directory_fsync_unsupported_errno_set",
+            "precommit_staging_directory_fsync_unsupported_action",
+            "precommit_staging_directory_fsync_other_error_action",
         },
         label="protocol output_contract",
     )
@@ -562,6 +689,46 @@ def _validate_protocol(document: Mapping[str, Any]) -> None:
         "aggregate_only_blocked_bundle": True,
         "conditional_success_only_private_canonical_path": "HARD_DISABLED_NOT_IMPLEMENTED",
         "atomic_no_overwrite_publish_required": True,
+        "output_id": OUTPUT_ID,
+        "primary_publication_mode": PRIMARY_PUBLICATION_MODE,
+        "atomic_no_replace_unsupported_errno_fallback": list(
+            ATOMIC_NOREPLACE_UNSUPPORTED_ERRNO_NAMES
+        ),
+        "fallback_publication_mode": FALLBACK_PUBLICATION_MODE,
+        "fallback_atomic_exclusive_final_mkdir_required": True,
+        "fallback_atomic_mkdir_loser_status": "CONTENDED",
+        "fallback_bundle_file_write_mode": "O_EXCL_AND_FILE_FSYNC",
+        "required_terminal_metadata_files_all_publication_modes": [
+            PUBLICATION_COMMIT_FILENAME
+        ],
+        "commit_marker_written_last": True,
+        "commit_marker_bindings": [
+            "protocol_id", "output_id", "SHA256SUMS_SHA256",
+            "bundle_file_count", "bundle_member_names",
+            "final_output_directory_name_sha256", "final_output_target_sha256",
+            "publication_mode", "committed_true",
+        ],
+        "commit_marker_validation_required_before_published_return": True,
+        "unmarked_or_mismatched_output_status": (
+            "PARTIAL_NOT_COMMITTED_OR_COMMITTED_NOT_ACCEPTED"
+        ),
+        "fallback_pre_marker_failure_status": "PARTIAL_NOT_COMMITTED",
+        "fallback_post_marker_validation_failure_status": (
+            "COMMITTED_NOT_ACCEPTED"
+        ),
+        "fallback_partial_directory_must_be_preserved": True,
+        "post_commit_durability_error_action": (
+            "RETURN_PUBLISHED_WITH_EXPLICIT_WARNING"
+        ),
+        "directory_fsync_unsupported_errno_set": list(
+            ATOMIC_NOREPLACE_UNSUPPORTED_ERRNO_NAMES
+        ),
+        "precommit_staging_directory_fsync_unsupported_action": (
+            "CONTINUE_WITH_EXPLICIT_CAPABILITY_WARNING"
+        ),
+        "precommit_staging_directory_fsync_other_error_action": (
+            "FAIL_CLOSED_BEFORE_PUBLICATION"
+        ),
     }.items():
         _require_exact(
             output_contract.get(key), expected, label=f"protocol output_contract.{key}"
@@ -1036,17 +1203,122 @@ def _validate_closed_output_payloads(payloads: Mapping[str, Any]) -> None:
         _assert_aggregate_safe(value)
 
 
-def _write_exclusive(path: Path, payload: bytes) -> None:
+def _write_exclusive(
+    path: Path,
+    payload: bytes,
+    *,
+    directory_descriptor: int | None = None,
+) -> None:
     flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_CLOEXEC", 0)
-    descriptor = os.open(path, flags, 0o640)
+    if directory_descriptor is None:
+        descriptor = os.open(path, flags, 0o640)
+    else:
+        if Path(path).name != path.name or path.name in {"", ".", ".."}:
+            raise QualificationError("descriptor-relative output filename is unsafe")
+        descriptor = os.open(path.name, flags, 0o640, dir_fd=directory_descriptor)
     try:
         view = memoryview(payload)
         while view:
             written = os.write(descriptor, view)
+            if written <= 0:
+                raise QualificationError("exclusive output write made no progress")
             view = view[written:]
         os.fsync(descriptor)
     finally:
         os.close(descriptor)
+
+
+def _open_directory_at(
+    parent_descriptor: int, name: str, *, label: str
+) -> int:
+    if not isinstance(name, str) or not name or Path(name).name != name:
+        raise QualificationError(f"{label} name is unsafe")
+    nofollow = getattr(os, "O_NOFOLLOW", None)
+    if nofollow is None:
+        raise QualificationError(f"{label} requires O_NOFOLLOW")
+    try:
+        descriptor = os.open(
+            name,
+            os.O_RDONLY
+            | getattr(os, "O_CLOEXEC", 0)
+            | getattr(os, "O_DIRECTORY", 0)
+            | nofollow,
+            dir_fd=parent_descriptor,
+        )
+    except OSError as exc:
+        raise QualificationError(f"{label} could not be opened safely") from exc
+    if not stat.S_ISDIR(os.fstat(descriptor).st_mode):
+        os.close(descriptor)
+        raise QualificationError(f"{label} is not a directory")
+    return descriptor
+
+
+def _require_directory_entry_identity(
+    *,
+    parent_descriptor: int,
+    name: str,
+    expected_descriptor: int,
+    label: str,
+) -> None:
+    observed_descriptor = _open_directory_at(
+        parent_descriptor, name, label=f"{label} namespace entry"
+    )
+    try:
+        expected = os.fstat(expected_descriptor)
+        observed = os.fstat(observed_descriptor)
+        if (expected.st_dev, expected.st_ino) != (observed.st_dev, observed.st_ino):
+            raise QualificationError(f"{label} namespace entry identity changed")
+    finally:
+        os.close(observed_descriptor)
+
+
+def _require_absolute_directory_identity(
+    *, path: Path, expected_descriptor: int, label: str
+) -> None:
+    observed_descriptor = _open_without_symlink_components(
+        path,
+        final_flags=(
+            os.O_RDONLY
+            | getattr(os, "O_CLOEXEC", 0)
+            | getattr(os, "O_DIRECTORY", 0)
+        ),
+        label=f"{label} absolute target",
+    )
+    try:
+        expected = os.fstat(expected_descriptor)
+        observed = os.fstat(observed_descriptor)
+        if (expected.st_dev, expected.st_ino) != (observed.st_dev, observed.st_ino):
+            raise QualificationError(f"{label} absolute target identity changed")
+    finally:
+        os.close(observed_descriptor)
+
+
+def _fsync_directory(
+    path: Path, *, directory_descriptor: int | None = None
+) -> None:
+    owns_descriptor = directory_descriptor is None
+    if directory_descriptor is None:
+        nofollow = getattr(os, "O_NOFOLLOW", None)
+        if nofollow is None:
+            raise QualificationError("directory fsync requires O_NOFOLLOW")
+        directory_descriptor = os.open(
+            path,
+            os.O_RDONLY
+            | getattr(os, "O_CLOEXEC", 0)
+            | getattr(os, "O_DIRECTORY", 0)
+            | nofollow,
+        )
+    try:
+        if not stat.S_ISDIR(os.fstat(directory_descriptor).st_mode):
+            raise QualificationError("directory fsync target is not a directory")
+        os.fsync(directory_descriptor)
+    finally:
+        if owns_descriptor:
+            os.close(directory_descriptor)
+
+
+def _directory_fsync_is_explicitly_unsupported(exc: OSError) -> bool:
+    return exc.errno in ATOMIC_NOREPLACE_UNSUPPORTED_ERRNOS
 
 
 def _rename_directory_noreplace(
@@ -1057,12 +1329,34 @@ def _rename_directory_noreplace(
     libc = ctypes.CDLL(None, use_errno=True)
     source_bytes = os.fsencode(source.name)
     target_bytes = os.fsencode(target.name)
-    if sys.platform.startswith("linux") and hasattr(libc, "renameat2"):
-        result = libc.renameat2(
+    if sys.platform.startswith("linux"):
+        rename_function = getattr(libc, "renameat2", None)
+        if rename_function is None:
+            raise AtomicNoReplaceUnsupported(errno.ENOSYS)
+        rename_function.argtypes = [
+            ctypes.c_int,
+            ctypes.c_char_p,
+            ctypes.c_int,
+            ctypes.c_char_p,
+            ctypes.c_uint,
+        ]
+        rename_function.restype = ctypes.c_int
+        result = rename_function(
             parent_descriptor, source_bytes, parent_descriptor, target_bytes, 1
         )
-    elif sys.platform == "darwin" and hasattr(libc, "renameatx_np"):
-        result = libc.renameatx_np(
+    elif sys.platform == "darwin":
+        rename_function = getattr(libc, "renameatx_np", None)
+        if rename_function is None:
+            raise AtomicNoReplaceUnsupported(errno.ENOSYS)
+        rename_function.argtypes = [
+            ctypes.c_int,
+            ctypes.c_char_p,
+            ctypes.c_int,
+            ctypes.c_char_p,
+            ctypes.c_uint,
+        ]
+        rename_function.restype = ctypes.c_int
+        result = rename_function(
             parent_descriptor,
             source_bytes,
             parent_descriptor,
@@ -1070,12 +1364,450 @@ def _rename_directory_noreplace(
             0x00000004,
         )
     else:
-        raise QualificationError("atomic kernel no-replace directory publish is unsupported")
+        raise AtomicNoReplaceUnsupported(errno.ENOSYS)
     if result != 0:
         error = ctypes.get_errno()
         if error in {errno.EEXIST, errno.ENOTEMPTY}:
             raise PublicationContention(f"atomic output publication contended: {target}")
+        if error in ATOMIC_NOREPLACE_UNSUPPORTED_ERRNOS:
+            raise AtomicNoReplaceUnsupported(error)
         raise QualificationError(f"atomic no-replace publish failed with errno {error}")
+
+
+def _bundle_filename_set_sha256(names: Iterable[str]) -> str:
+    normalized = sorted(names)
+    if not normalized or len(normalized) != len(set(normalized)):
+        raise QualificationError("publication bundle filename set is empty or duplicated")
+    if any(
+        Path(name).name != name or name in {"", PUBLICATION_COMMIT_FILENAME}
+        for name in normalized
+    ):
+        raise QualificationError("publication bundle filename set is unsafe")
+    payload = (
+        "GSE114002_DESIGNED_A2_PUBLICATION_BUNDLE_FILENAME_SET_V1\n"
+        + "\n".join(normalized)
+        + "\n"
+    ).encode("utf-8")
+    return _sha256_bytes(payload)
+
+
+def _absolute_without_resolving(path: Path) -> Path:
+    return Path(os.path.abspath(os.fspath(path)))
+
+
+def _final_output_directory_name_sha256(name: str) -> str:
+    if not isinstance(name, str) or not name or Path(name).name != name:
+        raise QualificationError("final output directory name is unsafe")
+    return _sha256_bytes(
+        b"GSE114002_DESIGNED_A2_FINAL_OUTPUT_DIRECTORY_NAME_V1\n"
+        + os.fsencode(name)
+        + b"\n"
+    )
+
+
+def _final_output_target_sha256(path: Path) -> str:
+    absolute = _absolute_without_resolving(path)
+    return _sha256_bytes(
+        b"GSE114002_DESIGNED_A2_FINAL_OUTPUT_TARGET_V1\n"
+        + os.fsencode(absolute)
+        + b"\n"
+    )
+
+
+def _publication_commit_document(
+    *,
+    complete_payloads: Mapping[str, bytes],
+    publication_mode: str,
+    final_output_directory: Path,
+) -> dict[str, Any]:
+    if publication_mode not in {PRIMARY_PUBLICATION_MODE, FALLBACK_PUBLICATION_MODE}:
+        raise QualificationError("publication commit mode is not allowed")
+    names = set(complete_payloads)
+    if names != set(ALWAYS_OUTPUT_FILES):
+        raise QualificationError("publication commit member set violates the closed contract")
+    return {
+        "schema_version": "1.0.0",
+        "record_type": "GSE114002_DESIGNED_A2_PUBLICATION_COMMIT",
+        "contract_id": CONTRACT_ID,
+        "protocol_id": PROTOCOL_ID,
+        "dataset_id": DATASET_ID,
+        "output_id": OUTPUT_ID,
+        "publication_mode": publication_mode,
+        "sha256sums_filename": "SHA256SUMS",
+        "sha256sums_sha256": _sha256_bytes(complete_payloads["SHA256SUMS"]),
+        "bundle_file_count_excluding_commit_marker": len(names),
+        "bundle_member_names": sorted(names),
+        "bundle_filename_set_sha256": _bundle_filename_set_sha256(names),
+        "final_output_directory_name_sha256": (
+            _final_output_directory_name_sha256(final_output_directory.name)
+        ),
+        "final_output_target_sha256": _final_output_target_sha256(
+            final_output_directory
+        ),
+        "committed": True,
+        "commit_marker_written_last": True,
+        "aggregate_acceptance_requires_valid_commit_marker": True,
+    }
+
+
+def _read_publication_regular_file(
+    path: Path,
+    *,
+    label: str,
+    directory_descriptor: int | None = None,
+) -> bytes:
+    if directory_descriptor is None:
+        payload, _ = _read_regular_verified_snapshot(path, label=label)
+        return payload
+    nofollow = getattr(os, "O_NOFOLLOW", None)
+    if nofollow is None:
+        raise QualificationError(f"{label} requires O_NOFOLLOW")
+    try:
+        descriptor = os.open(
+            path.name,
+            os.O_RDONLY
+            | getattr(os, "O_CLOEXEC", 0)
+            | getattr(os, "O_NONBLOCK", 0)
+            | nofollow,
+            dir_fd=directory_descriptor,
+        )
+    except OSError as exc:
+        raise QualificationError(f"{label} could not be opened safely") from exc
+    try:
+        opened = os.fstat(descriptor)
+        if not stat.S_ISREG(opened.st_mode):
+            raise QualificationError(f"{label} must be a regular file")
+        chunks: list[bytes] = []
+        while True:
+            block = os.read(descriptor, 1 << 20)
+            if not block:
+                break
+            chunks.append(block)
+        payload = b"".join(chunks)
+        final = os.fstat(descriptor)
+        identity = lambda value: (
+            value.st_dev,
+            value.st_ino,
+            value.st_size,
+            value.st_mtime_ns,
+            value.st_ctime_ns,
+        )
+        if (
+            identity(opened) != identity(final)
+            or len(payload) != opened.st_size
+            or len(payload) != final.st_size
+        ):
+            raise QualificationError(f"{label} changed during descriptor capture")
+        return payload
+    except OSError as exc:
+        raise QualificationError(f"{label} could not be read safely") from exc
+    finally:
+        os.close(descriptor)
+
+
+def _validate_publication_commit(
+    output_directory: Path,
+    *,
+    expected_publication_mode: str,
+    expected_final_output_target: Path | None = None,
+    directory_descriptor: int | None = None,
+) -> dict[str, Any]:
+    if expected_publication_mode not in {
+        PRIMARY_PUBLICATION_MODE,
+        FALLBACK_PUBLICATION_MODE,
+    }:
+        raise QualificationError("expected publication mode is not allowed")
+    owns_descriptor = directory_descriptor is None
+    if directory_descriptor is None:
+        nofollow = getattr(os, "O_NOFOLLOW", None)
+        if nofollow is None:
+            raise QualificationError("publication validation requires O_NOFOLLOW")
+        try:
+            directory_descriptor = os.open(
+                output_directory,
+                os.O_RDONLY
+                | getattr(os, "O_CLOEXEC", 0)
+                | getattr(os, "O_DIRECTORY", 0)
+                | nofollow,
+            )
+        except OSError as exc:
+            raise QualificationError(
+                "publication directory could not be opened safely"
+            ) from exc
+    try:
+        if not stat.S_ISDIR(os.fstat(directory_descriptor).st_mode):
+            raise QualificationError("publication target is not a directory")
+        marker_bytes = _read_publication_regular_file(
+            output_directory / PUBLICATION_COMMIT_FILENAME,
+            label="publication commit marker",
+            directory_descriptor=directory_descriptor,
+        )
+        try:
+            marker = json.loads(marker_bytes.decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise QualificationError(
+                "publication commit marker is not valid UTF-8 JSON"
+            ) from exc
+        if not isinstance(marker, Mapping):
+            raise QualificationError("publication commit marker root must be an object")
+        marker = dict(marker)
+        _require_closed_keys(
+            marker,
+            {
+                "schema_version", "record_type", "contract_id", "protocol_id",
+                "dataset_id", "output_id", "publication_mode",
+                "sha256sums_filename", "sha256sums_sha256",
+                "bundle_file_count_excluding_commit_marker", "bundle_member_names",
+                "bundle_filename_set_sha256",
+                "final_output_directory_name_sha256", "final_output_target_sha256",
+                "committed", "commit_marker_written_last",
+                "aggregate_acceptance_requires_valid_commit_marker",
+            },
+            label="publication commit marker",
+        )
+        for key, expected in {
+            "schema_version": "1.0.0",
+            "record_type": "GSE114002_DESIGNED_A2_PUBLICATION_COMMIT",
+            "contract_id": CONTRACT_ID,
+            "protocol_id": PROTOCOL_ID,
+            "dataset_id": DATASET_ID,
+            "output_id": OUTPUT_ID,
+            "publication_mode": expected_publication_mode,
+            "sha256sums_filename": "SHA256SUMS",
+            "bundle_file_count_excluding_commit_marker": len(ALWAYS_OUTPUT_FILES),
+            "bundle_member_names": sorted(ALWAYS_OUTPUT_FILES),
+            "bundle_filename_set_sha256": _bundle_filename_set_sha256(
+                ALWAYS_OUTPUT_FILES
+            ),
+            "committed": True,
+            "commit_marker_written_last": True,
+            "aggregate_acceptance_requires_valid_commit_marker": True,
+        }.items():
+            _require_exact(
+                marker.get(key), expected, label=f"publication commit marker.{key}"
+            )
+        if not SHA256_RE.fullmatch(str(marker.get("sha256sums_sha256", ""))):
+            raise QualificationError(
+                "publication commit marker SHA256SUMS hash is invalid"
+            )
+        for key in (
+            "final_output_directory_name_sha256",
+            "final_output_target_sha256",
+        ):
+            if not SHA256_RE.fullmatch(str(marker.get(key, ""))):
+                raise QualificationError(f"publication commit marker {key} is invalid")
+        final_output_target = (
+            output_directory
+            if expected_final_output_target is None
+            else expected_final_output_target
+        )
+        _require_exact(
+            marker["final_output_directory_name_sha256"],
+            _final_output_directory_name_sha256(final_output_target.name),
+            label="publication commit marker final output directory-name hash",
+        )
+        _require_exact(
+            marker["final_output_target_sha256"],
+            _final_output_target_sha256(final_output_target),
+            label="publication commit marker final output target hash",
+        )
+
+        try:
+            names = set(os.listdir(directory_descriptor))
+        except OSError as exc:
+            raise QualificationError("publication directory could not be listed") from exc
+        expected_names = set(ALWAYS_OUTPUT_FILES) | {PUBLICATION_COMMIT_FILENAME}
+        if names != expected_names:
+            raise QualificationError("publication directory member names are not exact")
+        sums_payload = _read_publication_regular_file(
+            output_directory / "SHA256SUMS",
+            label="published SHA256SUMS",
+            directory_descriptor=directory_descriptor,
+        )
+        if _sha256_bytes(sums_payload) != marker["sha256sums_sha256"]:
+            raise QualificationError(
+                "publication commit marker SHA256SUMS hash mismatch"
+            )
+        try:
+            sums_text = sums_payload.decode("ascii")
+        except UnicodeDecodeError as exc:
+            raise QualificationError("published SHA256SUMS is not ASCII") from exc
+        if not sums_text.endswith("\n") or "\r" in sums_text:
+            raise QualificationError(
+                "published SHA256SUMS has non-canonical line endings"
+            )
+        lines = sums_text[:-1].split("\n")
+        if not lines or any(not line for line in lines):
+            raise QualificationError("published SHA256SUMS has an invalid line set")
+        declared: dict[str, str] = {}
+        for line in lines:
+            if len(line) < 67 or line[64:66] != "  ":
+                raise QualificationError("published SHA256SUMS line is malformed")
+            digest, name = line[:64], line[66:]
+            if not SHA256_RE.fullmatch(digest):
+                raise QualificationError("published bundle member SHA-256 is invalid")
+            if Path(name).name != name or not name or name in declared:
+                raise QualificationError(
+                    "published SHA256SUMS filename is unsafe or duplicated"
+                )
+            declared[name] = digest
+        expected_declared_names = set(ALWAYS_OUTPUT_FILES) - {"SHA256SUMS"}
+        if set(declared) != expected_declared_names:
+            raise QualificationError("published SHA256SUMS member set mismatch")
+        for name, expected_digest in declared.items():
+            member = _read_publication_regular_file(
+                output_directory / name,
+                label="published bundle member",
+                directory_descriptor=directory_descriptor,
+            )
+            if _sha256_bytes(member) != expected_digest:
+                raise QualificationError("published bundle member SHA-256 mismatch")
+        try:
+            final_names = set(os.listdir(directory_descriptor))
+        except OSError as exc:
+            raise QualificationError(
+                "publication directory final listing failed"
+            ) from exc
+        if final_names != names:
+            raise QualificationError("publication directory changed during validation")
+        return marker
+    finally:
+        if owns_descriptor:
+            os.close(directory_descriptor)
+
+
+def _publish_bundle_with_terminal_marker(
+    *,
+    output: Path,
+    complete_payloads: Mapping[str, bytes],
+    unsupported_errno: int,
+    source_staging: Path,
+    parent_descriptor: int,
+    precommit_capability_warnings: Sequence[str],
+) -> tuple[dict[str, Any], int]:
+    if unsupported_errno not in ATOMIC_NOREPLACE_UNSUPPORTED_ERRNOS:
+        raise QualificationError("fallback requested for a non-approved errno")
+    try:
+        os.mkdir(output.name, 0o700, dir_fd=parent_descriptor)
+    except FileExistsError as exc:
+        raise PublicationContention(
+            f"atomic fallback output publication contended: {output}"
+        ) from exc
+    except OSError as exc:
+        raise QualificationError("atomic fallback directory creation failed") from exc
+
+    try:
+        output_descriptor = _open_directory_at(
+            parent_descriptor,
+            output.name,
+            label="fallback final output directory",
+        )
+    except Exception:
+        raise
+    marker_path = output / PUBLICATION_COMMIT_FILENAME
+    commit_document = _publication_commit_document(
+        complete_payloads=complete_payloads,
+        publication_mode=FALLBACK_PUBLICATION_MODE,
+        final_output_directory=output,
+    )
+    marker: dict[str, Any] | None = None
+    marker_write_completed = False
+    durability_warnings = list(precommit_capability_warnings)
+    try:
+        for name in sorted(complete_payloads):
+            if Path(name).name != name or name == PUBLICATION_COMMIT_FILENAME:
+                raise QualificationError("fallback output filename is unsafe")
+            _write_exclusive(
+                output / name,
+                complete_payloads[name],
+                directory_descriptor=output_descriptor,
+            )
+        # This is the only operation that can establish the fallback terminal
+        # state, so it must remain strictly after every fsynced member write.
+        _write_exclusive(
+            marker_path,
+            _pretty_json_bytes(commit_document),
+            directory_descriptor=output_descriptor,
+        )
+        marker_write_completed = True
+        marker = _validate_publication_commit(
+            output,
+            expected_publication_mode=FALLBACK_PUBLICATION_MODE,
+            directory_descriptor=output_descriptor,
+        )
+    except Exception:
+        try:
+            marker = _validate_publication_commit(
+                output,
+                expected_publication_mode=FALLBACK_PUBLICATION_MODE,
+                directory_descriptor=output_descriptor,
+            )
+        except Exception as validation_exc:
+            try:
+                os.close(output_descriptor)
+            except OSError:
+                pass
+            if marker_write_completed:
+                raise CommittedPublicationValidationError(
+                    "fallback terminal marker was file-fsynced but failed exact "
+                    "validation twice; output is COMMITTED_NOT_ACCEPTED"
+                ) from validation_exc
+            raise PartialPublicationError(
+                "fallback publication is PARTIAL_NOT_COMMITTED; its directory is "
+                "preserved and no published result may be returned",
+                unsupported_errno=unsupported_errno,
+            ) from validation_exc
+        durability_warnings.append(
+            "POST_COMMIT_MARKER_WRITE_OR_VALIDATION_FINALIZATION_ERROR"
+        )
+    if marker is None:
+        try:
+            os.close(output_descriptor)
+        except OSError:
+            pass
+        raise PartialPublicationError(
+            "fallback publication lacks an exact terminal commit marker",
+            unsupported_errno=unsupported_errno,
+        )
+    try:
+        _fsync_directory(output, directory_descriptor=output_descriptor)
+    except Exception:
+        durability_warnings.append("POST_COMMIT_OUTPUT_DIRECTORY_FSYNC_FAILED")
+    try:
+        _require_directory_entry_identity(
+            parent_descriptor=parent_descriptor,
+            name=output.name,
+            expected_descriptor=output_descriptor,
+            label="fallback final output",
+        )
+    except Exception as exc:
+        try:
+            os.close(output_descriptor)
+        except OSError:
+            pass
+        raise CommittedPublicationValidationError(
+            "fallback marker is exact but the final namespace entry no longer "
+            "refers to the atomically created directory"
+        ) from exc
+    return (
+        {
+            "kind": "PUBLISHED",
+            "published": True,
+            "output": str(output),
+            "file_count": len(ALWAYS_OUTPUT_FILES) + 1,
+            "atomic_no_replace": False,
+            "publication_mode": FALLBACK_PUBLICATION_MODE,
+            "fallback_trigger_errno": unsupported_errno,
+            "atomic_exclusive_final_mkdir": True,
+            "terminal_commit_marker_filename": PUBLICATION_COMMIT_FILENAME,
+            "terminal_commit_marker_validated": True,
+            "partial_not_committed": False,
+            "source_staging_preserved": source_staging.exists(),
+            "contention_status": None,
+            "durability_warning_codes": sorted(set(durability_warnings)),
+        },
+        output_descriptor,
+    )
 
 
 def _publish_blocked_bundle(
@@ -1083,41 +1815,163 @@ def _publish_blocked_bundle(
     payloads: Mapping[str, Any],
 ) -> dict[str, Any]:
     parent = output.parent
-    try:
-        parent_info = parent.lstat()
-    except FileNotFoundError as exc:
-        raise QualificationError("output parent directory is missing") from exc
-    if stat.S_ISLNK(parent_info.st_mode) or not stat.S_ISDIR(parent_info.st_mode):
-        raise QualificationError("output parent must be a non-symlink directory")
     _validate_closed_output_payloads(payloads)
-    staging = Path(tempfile.mkdtemp(prefix=f".{output.name}.staging-", dir=parent))
-    rendered: dict[str, bytes] = {}
-    for name, value in payloads.items():
-        rendered[name] = _pretty_json_bytes(value)
-    for name, payload in rendered.items():
-        _write_exclusive(staging / name, payload)
-    sums = "".join(
-        f"{_sha256_bytes(rendered[name])}  {name}\n" for name in sorted(rendered)
-    ).encode("ascii")
-    _write_exclusive(staging / "SHA256SUMS", sums)
-    directory_descriptor = os.open(staging, os.O_RDONLY | getattr(os, "O_DIRECTORY", 0))
-    try:
-        os.fsync(directory_descriptor)
-    finally:
-        os.close(directory_descriptor)
     parent_flags = (
-        os.O_RDONLY | getattr(os, "O_CLOEXEC", 0) | getattr(os, "O_DIRECTORY", 0)
+        os.O_RDONLY
+        | getattr(os, "O_CLOEXEC", 0)
+        | getattr(os, "O_DIRECTORY", 0)
+        | getattr(os, "O_NOFOLLOW", 0)
     )
     try:
         parent_descriptor = os.open(parent, parent_flags)
     except OSError as exc:
         raise QualificationError("publication parent could not be opened before commit") from exc
-    committed = False
+    try:
+        if not stat.S_ISDIR(os.fstat(parent_descriptor).st_mode):
+            raise QualificationError("publication parent is not a directory")
+    except Exception:
+        try:
+            os.close(parent_descriptor)
+        except OSError:
+            pass
+        raise
+    try:
+        staging = Path(
+            tempfile.mkdtemp(prefix=f".{output.name}.staging-", dir=parent)
+        )
+        staging_descriptor = _open_directory_at(
+            parent_descriptor, staging.name, label="publication staging directory"
+        )
+    except Exception:
+        try:
+            os.close(parent_descriptor)
+        except OSError:
+            pass
+        raise
+    try:
+        rendered = {
+            name: _pretty_json_bytes(value) for name, value in payloads.items()
+        }
+        for name, payload in rendered.items():
+            _write_exclusive(
+                staging / name,
+                payload,
+                directory_descriptor=staging_descriptor,
+            )
+        sums = "".join(
+            f"{_sha256_bytes(rendered[name])}  {name}\n"
+            for name in sorted(rendered)
+        ).encode("ascii")
+        _write_exclusive(
+            staging / "SHA256SUMS",
+            sums,
+            directory_descriptor=staging_descriptor,
+        )
+        complete_payloads = {**rendered, "SHA256SUMS": sums}
+        primary_commit_document = _publication_commit_document(
+            complete_payloads=complete_payloads,
+            publication_mode=PRIMARY_PUBLICATION_MODE,
+            final_output_directory=output,
+        )
+        # The terminal marker is deliberately written last in primary staging too.
+        _write_exclusive(
+            staging / PUBLICATION_COMMIT_FILENAME,
+            _pretty_json_bytes(primary_commit_document),
+            directory_descriptor=staging_descriptor,
+        )
+        _validate_publication_commit(
+            staging,
+            expected_publication_mode=PRIMARY_PUBLICATION_MODE,
+            expected_final_output_target=output,
+            directory_descriptor=staging_descriptor,
+        )
+        capability_warnings: list[str] = []
+        try:
+            _fsync_directory(
+                staging, directory_descriptor=staging_descriptor
+            )
+        except OSError as exc:
+            if not _directory_fsync_is_explicitly_unsupported(exc):
+                raise QualificationError(
+                    "staging directory fsync failed before publication"
+                ) from exc
+            capability_warnings.append(
+                "PRECOMMIT_STAGING_DIRECTORY_FSYNC_UNSUPPORTED"
+            )
+        _require_directory_entry_identity(
+            parent_descriptor=parent_descriptor,
+            name=staging.name,
+            expected_descriptor=staging_descriptor,
+            label="primary staging",
+        )
+    except Exception:
+        try:
+            os.close(staging_descriptor)
+        except OSError:
+            pass
+        try:
+            os.close(parent_descriptor)
+        except OSError:
+            pass
+        raise
+
+    publication: dict[str, Any]
+    committed_descriptor: int | None = None
     try:
         try:
             _rename_directory_noreplace(staging, output, parent_descriptor)
-            committed = True
+        except AtomicNoReplaceUnsupported as exc:
+            try:
+                publication, committed_descriptor = (
+                    _publish_bundle_with_terminal_marker(
+                    output=output,
+                    complete_payloads=complete_payloads,
+                    unsupported_errno=exc.error_number,
+                    source_staging=staging,
+                    parent_descriptor=parent_descriptor,
+                    precommit_capability_warnings=capability_warnings,
+                )
+                )
+                try:
+                    os.close(staging_descriptor)
+                except OSError:
+                    publication["durability_warning_codes"].append(
+                        "POST_COMMIT_SOURCE_STAGING_DESCRIPTOR_CLOSE_FAILED"
+                    )
+            except PublicationContention:
+                try:
+                    os.close(staging_descriptor)
+                except OSError:
+                    pass
+                try:
+                    os.close(parent_descriptor)
+                except OSError:
+                    pass
+                return {
+                    "kind": "CONTENDED",
+                    "published": False,
+                    "output": str(output),
+                    "file_count": 0,
+                    "atomic_no_replace": False,
+                    "publication_mode": FALLBACK_PUBLICATION_MODE,
+                    "contention_status": "ATOMIC_FALLBACK_MKDIR_CONTENDED",
+                    "durability_warning_codes": [],
+                }
+            except Exception:
+                try:
+                    os.close(staging_descriptor)
+                except OSError:
+                    pass
+                try:
+                    os.close(parent_descriptor)
+                except OSError:
+                    pass
+                raise
         except PublicationContention:
+            try:
+                os.close(staging_descriptor)
+            except OSError:
+                pass
             try:
                 os.close(parent_descriptor)
             except OSError:
@@ -1128,49 +1982,119 @@ def _publish_blocked_bundle(
                 "output": str(output),
                 "file_count": 0,
                 "atomic_no_replace": True,
+                "publication_mode": PRIMARY_PUBLICATION_MODE,
                 "contention_status": "ATOMIC_NO_REPLACE_CONTENDED",
                 "durability_warning_codes": [],
             }
         except Exception:
             try:
+                os.close(staging_descriptor)
+            except OSError:
+                pass
+            try:
                 os.close(parent_descriptor)
             except OSError:
                 pass
             raise
-        durability_warnings: list[str] = []
+        else:
+            committed_descriptor = staging_descriptor
+            validation_error: Exception | None = None
+            marker_validated = False
+            primary_warnings = list(capability_warnings)
+            for attempt in range(2):
+                try:
+                    _validate_publication_commit(
+                        output,
+                        expected_publication_mode=PRIMARY_PUBLICATION_MODE,
+                        directory_descriptor=committed_descriptor,
+                    )
+                except Exception as exc:
+                    validation_error = exc
+                    continue
+                marker_validated = True
+                validation_error = None
+                if attempt == 1:
+                    primary_warnings.append(
+                        "POST_COMMIT_TERMINAL_MARKER_REVALIDATION_RETRY_REQUIRED"
+                    )
+                break
+            if not marker_validated:
+                try:
+                    os.close(committed_descriptor)
+                except OSError:
+                    pass
+                try:
+                    os.fsync(parent_descriptor)
+                except OSError:
+                    pass
+                try:
+                    os.close(parent_descriptor)
+                except OSError:
+                    pass
+                raise CommittedPublicationValidationError(
+                    "atomically renamed output failed exact terminal commit-marker "
+                    "validation and is not accepted as published"
+                ) from validation_error
+            publication = {
+                "kind": "PUBLISHED",
+                "published": True,
+                "output": str(output),
+                "file_count": len(ALWAYS_OUTPUT_FILES) + 1,
+                "atomic_no_replace": True,
+                "publication_mode": PRIMARY_PUBLICATION_MODE,
+                "atomic_exclusive_final_mkdir": False,
+                "terminal_commit_marker_filename": PUBLICATION_COMMIT_FILENAME,
+                "terminal_commit_marker_validated": True,
+                "partial_not_committed": False,
+                "source_staging_preserved": False,
+                "contention_status": None,
+                "durability_warning_codes": sorted(set(primary_warnings)),
+            }
+        assert committed_descriptor is not None
+        durability_warnings = list(publication["durability_warning_codes"])
         try:
             os.fsync(parent_descriptor)
         except Exception:
             durability_warnings.append("POST_COMMIT_PARENT_DIRECTORY_FSYNC_FAILED")
         try:
+            _require_directory_entry_identity(
+                parent_descriptor=parent_descriptor,
+                name=output.name,
+                expected_descriptor=committed_descriptor,
+                label="published final output",
+            )
+            _require_absolute_directory_identity(
+                path=output,
+                expected_descriptor=committed_descriptor,
+                label="published final output",
+            )
+        except Exception as exc:
+            try:
+                os.close(committed_descriptor)
+            except OSError:
+                pass
+            try:
+                os.close(parent_descriptor)
+            except OSError:
+                pass
+            raise CommittedPublicationValidationError(
+                "terminal marker is exact but the held-parent or absolute final "
+                "output namespace entry changed before the published return"
+            ) from exc
+        try:
+            os.close(committed_descriptor)
+        except Exception:
+            durability_warnings.append(
+                "POST_COMMIT_OUTPUT_DIRECTORY_DESCRIPTOR_CLOSE_FAILED"
+            )
+        try:
             os.close(parent_descriptor)
         except Exception:
             durability_warnings.append("POST_COMMIT_PARENT_DIRECTORY_CLOSE_FAILED")
+        publication["durability_warning_codes"] = sorted(set(durability_warnings))
+        return publication
     except Exception:
-        if committed:
-            # This branch is intentionally defensive: no post-commit exception
-            # may be converted into a pre-commit failure or a zero-output claim.
-            return {
-                "kind": "PUBLISHED",
-                "published": True,
-                "output": str(output),
-                "file_count": len(ALWAYS_OUTPUT_FILES),
-                "atomic_no_replace": True,
-                "contention_status": None,
-                "durability_warning_codes": [
-                    "POST_COMMIT_UNEXPECTED_FINALIZATION_ERROR"
-                ],
-            }
         raise
-    return {
-        "kind": "PUBLISHED",
-        "published": True,
-        "output": str(output),
-        "file_count": len(ALWAYS_OUTPUT_FILES),
-        "atomic_no_replace": True,
-        "contention_status": None,
-        "durability_warning_codes": sorted(set(durability_warnings)),
-    }
 
 
 def qualify_gse114002_designed_a2(

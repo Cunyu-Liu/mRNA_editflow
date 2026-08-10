@@ -19,10 +19,10 @@
     "data_role_registry_path": "docs/execution/route_a_v3_data_role_registry.yaml",
     "data_role_registry_sha256": "03a805c6441f0778225f9a8ec10feeadba23f572cd9ea7b234903384e6a902bf",
     "qualifier_path": "scripts/route_a_v3/qualify_gse114002_designed_a2.py",
-    "qualifier_sha256": "f34a71d4023e9b3bd77ff040c187fab5efed1e54e11fec6e049d90849e9b58d1",
+    "qualifier_sha256": "4c7b782523bcc12024050ec5c1c2d2e78ae39bede15b7d45db4401d5d977b045",
     "focused_test_path": "tests/route_a_v3/test_qualify_gse114002_designed_a2.py",
-    "focused_test_sha256": "f79dff78550b80c58b4da6e92c9b93a7b448642065b100ba4b2ee685dc50ffc7",
-    "implementation_commit": "7ac501c8d8f5dcdc67f6c89f0889114e46680ff3"
+    "focused_test_sha256": "ca6b2155d466f7cfccd4b0cd19c8e6ec82075ea5f33867d9299ef72120ed3753",
+    "implementation_commit": "UNKNOWN_NOT_ASSERTED"
   },
   "ordinary_public_asset_allowlist": [
     {
@@ -212,7 +212,8 @@
     "LICENSE_AND_REDISTRIBUTION_UNKNOWN_NOT_ASSERTED",
     "NEAR_DUPLICATE_SPLIT_NOT_RUN",
     "PREFROZEN_GROUP_POWER_NOT_RUN",
-    "OWNER_TECHNICAL_UNCERTAINTY_POLICY_UNKNOWN_NOT_ASSERTED"
+    "OWNER_TECHNICAL_UNCERTAINTY_POLICY_UNKNOWN_NOT_ASSERTED",
+    "IMPLEMENTATION_COMMIT_UNKNOWN_NOT_ASSERTED"
   ],
   "output_contract": {
     "aggregate_only_blocked_bundle": true,
@@ -235,7 +236,48 @@
       "SHA256SUMS"
     ],
     "conditional_success_only_private_canonical_path": "HARD_DISABLED_NOT_IMPLEMENTED",
-    "atomic_no_overwrite_publish_required": true
+    "atomic_no_overwrite_publish_required": true,
+    "output_id": "ROUTE_A_V3_GSE114002_DESIGNED_A2_BLOCKED_BUNDLE_V1",
+    "primary_publication_mode": "KERNEL_ATOMIC_RENAME_NOREPLACE_V1",
+    "atomic_no_replace_unsupported_errno_fallback": [
+      "ENOSYS",
+      "EINVAL",
+      "ENOTSUP",
+      "EOPNOTSUPP"
+    ],
+    "fallback_publication_mode": "ATOMIC_MKDIR_TERMINAL_COMMIT_MARKER_V1",
+    "fallback_atomic_exclusive_final_mkdir_required": true,
+    "fallback_atomic_mkdir_loser_status": "CONTENDED",
+    "fallback_bundle_file_write_mode": "O_EXCL_AND_FILE_FSYNC",
+    "required_terminal_metadata_files_all_publication_modes": [
+      "PUBLICATION_COMMIT.json"
+    ],
+    "commit_marker_written_last": true,
+    "commit_marker_bindings": [
+      "protocol_id",
+      "output_id",
+      "SHA256SUMS_SHA256",
+      "bundle_file_count",
+      "bundle_member_names",
+      "final_output_directory_name_sha256",
+      "final_output_target_sha256",
+      "publication_mode",
+      "committed_true"
+    ],
+    "commit_marker_validation_required_before_published_return": true,
+    "unmarked_or_mismatched_output_status": "PARTIAL_NOT_COMMITTED_OR_COMMITTED_NOT_ACCEPTED",
+    "fallback_pre_marker_failure_status": "PARTIAL_NOT_COMMITTED",
+    "fallback_post_marker_validation_failure_status": "COMMITTED_NOT_ACCEPTED",
+    "fallback_partial_directory_must_be_preserved": true,
+    "post_commit_durability_error_action": "RETURN_PUBLISHED_WITH_EXPLICIT_WARNING",
+    "directory_fsync_unsupported_errno_set": [
+      "ENOSYS",
+      "EINVAL",
+      "ENOTSUP",
+      "EOPNOTSUPP"
+    ],
+    "precommit_staging_directory_fsync_unsupported_action": "CONTINUE_WITH_EXPLICIT_CAPABILITY_WARNING",
+    "precommit_staging_directory_fsync_other_error_action": "FAIL_CLOSED_BEFORE_PUBLICATION"
   },
   "model_results_may_change_this_protocol": false
 }
