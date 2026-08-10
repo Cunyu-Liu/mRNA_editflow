@@ -37,7 +37,7 @@ SUPERSESSION_PATH = "docs/contracts/supersession_mrna_xeditflow_v1_1_to_route_a_
 DECISION_LOG_PATH = "docs/execution/route_a_v3_decision_log.yaml"
 REGISTRY_MANIFEST_PATH = "docs/execution/route_a_v3_registry_manifest.json"
 A1_INTERIM_PATH = "docs/execution/route_a_v3_a1_interim.yaml"
-EXPECTED_A1_INTERIM_SHA256 = "e441ee0321b4947edff7d24a4c6fae67aece926be64d334c4f45a5de4d2c98d5"
+EXPECTED_A1_INTERIM_SHA256 = "7cd736404cab41d833fd21846098e45ff3bd60ef7615de7452b875e3ed4206d6"
 SCIENTIFIC_M0_HISTORY_PATH = "docs/contracts/history/mrna_v2_readiness_audit_20260807.md"
 SCIENTIFIC_M0_HISTORY_SHA256 = "a8eb4f49ede793a8eae2037db9f46f044056d37610ec92482666a8242a52fa30"
 SEALED_GUARD_PATH = "scripts/route_a_v3/sealed_guard.py"
@@ -46,6 +46,15 @@ VALIDATOR_PATH = "scripts/route_a_v3/validate_a0_bundle.py"
 GSE200302_ROLE_CONFIG_PATH = "configs/route_a_v3_gse200302_srr_role_authority.json"
 GSE200302_ROLE_BUILDER_PATH = "scripts/route_a_v3/build_gse200302_srr_role_authority.py"
 GSE200302_ROLE_TEST_PATH = "tests/route_a_v3/test_gse200302_srr_role_authority.py"
+GSE200304_PUBLISHED_ENDPOINT_CONFIG_PATH = (
+    "configs/route_a_v3_gse200304_published_endpoint_a1.json"
+)
+GSE200304_PUBLISHED_ENDPOINT_SCRIPT_PATH = (
+    "scripts/route_a_v3/qualify_gse200304_published_endpoint_a1.py"
+)
+GSE200304_PUBLISHED_ENDPOINT_TEST_PATH = (
+    "tests/route_a_v3/test_qualify_gse200304_published_endpoint_a1.py"
+)
 INTEGRITY_GUARD_TEST_PATH = "tests/route_a_v3/test_a0_integrity_guards.py"
 GSE200302_ROLE_ARTIFACT_ROOT = (
     "/mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE200302/"
@@ -68,6 +77,167 @@ GSE200302_ROLE_BINDING_ACTIVATION_RULE = (
 )
 GSE200302_ROLE_MEASUREMENT_FAMILIES = ["High_Poly", "Low_Poly", "pDNA", "Total_RNA"]
 GSE200302_ROLE_REPLICATES = [1, 2, 3, 4, 5, 6]
+GSE200304_PUBLISHED_ENDPOINT_ARTIFACT_ID = (
+    "GSE200304_PUBLISHED_ENDPOINT_A1_20260811T044050+0800_d06bb99"
+)
+GSE200304_PUBLISHED_ENDPOINT_ARTIFACT_ROOT = (
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/"
+    "A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/"
+    f"{GSE200304_PUBLISHED_ENDPOINT_ARTIFACT_ID}"
+)
+GSE200304_PUBLISHED_ENDPOINT_BLOCKERS = [
+    "OWNER_POLICY_FOR_PUBLISHED_ENDPOINT_USE_NOT_FROZEN",
+    "CHECKPOINT_SPECIFIC_ENDPOINT_USE_NOT_CLEARED",
+    "BIOLOGICAL_SOURCE_GROUP_AUTHORITY_NOT_CLOSED",
+    "CURRENT_AUTHORITY_80S_BLOCKER_SCOPE_NOT_ROUTED_FOR_PUBLISHED_ENDPOINT_REUSE",
+    "OUTCOME_BLIND_SPLIT_AND_LEAKAGE_POLICY_NOT_FROZEN",
+    "POWER_AND_CONFIDENCE_INTERVAL_ADEQUACY_NOT_ESTABLISHED",
+    "CANONICAL_REPORTED_ENDPOINT_SEMANTICS_NOT_ADJUDICATED",
+    "ROW_LEVEL_REPLICATE_AND_STANDARD_ERROR_ADJUDICATION_NOT_CLOSED",
+]
+GSE200304_PUBLISHED_ENDPOINT_EXPECTED_RECORD = {
+    "artifact_id": GSE200304_PUBLISHED_ENDPOINT_ARTIFACT_ID,
+    "path": GSE200304_PUBLISHED_ENDPOINT_ARTIFACT_ROOT,
+    "dataset_id": "GSE200304",
+    "record_type": "PUBLISHED_ENDPOINT_AGGREGATE_EVIDENCE",
+    "evidence_role": "AGGREGATE_AUDIT_ONLY_PENDING_OWNER_POLICY",
+    "publication_state": "COMMITTED_ACCEPTED",
+    "execution_outcome": "ENGINEERING_SUCCESS_IMMUTABLY_BLOCKED",
+    "qualification_status": "BLOCKED_NOT_QUALIFIED",
+    "accepted": True,
+    "committed": True,
+    "postcommit_warning_codes": [],
+    "independent_consumer_validation_status": "PASS",
+    "terminal_marker_written_last": True,
+    "no_acceptance_critical_read_after_commit": True,
+    "publication_closure": {
+        "actual_directory_member_count": 5,
+        "terminal_marker_declared_member_count_excluding_marker": 4,
+        "terminal_marker_declared_member_names": [
+            "INPUT_INTEGRITY_AUDIT.json",
+            "PUBLISHED_ENDPOINT_AUDIT.json",
+            "QUALIFICATION_REPORT.json",
+            "SHA256SUMS",
+        ],
+        "sha256sums_listed_payload_count": 3,
+        "sha256sums_listed_payload_names": [
+            "INPUT_INTEGRITY_AUDIT.json",
+            "PUBLISHED_ENDPOINT_AUDIT.json",
+            "QUALIFICATION_REPORT.json",
+        ],
+    },
+    "remote_authority": {
+        "branch": "routea-v3-a1-20260810",
+        "head_commit": "d06bb991ca9c9052671ee5c5ad7d92dfb69b0189",
+        "origin_head_commit": "d06bb991ca9c9052671ee5c5ad7d92dfb69b0189",
+        "worktree_and_index_clean": True,
+    },
+    "implementation_binding": {
+        "status": "PASS_BOUND_IMPLEMENTATION",
+        "implementation_commit": "84fc6932de32fe0de8e5ddf540e14dee62a2b723",
+        "binding_commit": "d06bb991ca9c9052671ee5c5ad7d92dfb69b0189",
+        "implementation_to_binding_diff_is_config_only": True,
+        "protocol_config_path": GSE200304_PUBLISHED_ENDPOINT_CONFIG_PATH,
+        "protocol_config_sha256": "92fc3a3859f7a8949ace67fa4b03a14e8ad102eb257d4f95cace01ea535b41af",
+        "production_script_path": GSE200304_PUBLISHED_ENDPOINT_SCRIPT_PATH,
+        "production_script_sha256": "687268524c7426eb4d3d450e71d13c7c478372162e0c084ffe90c8bb12764308",
+        "focused_test_path": GSE200304_PUBLISHED_ENDPOINT_TEST_PATH,
+        "focused_test_sha256": "173cad716fbdb2590e82ea54a91776ef61e7ab9eb7b596b694b5aa8609d44ad0",
+    },
+    "gate_snapshot": {
+        "ordinary_study_contribution": 0,
+        "a1_intervention_study_contribution": 0,
+        "true_a2_dense_study_contribution": 0,
+        "qualified": False,
+        "training_allowed": False,
+        "model_selection_allowed": False,
+        "next_phase_authorized": False,
+        "canonical_record_count": 0,
+    },
+    "access_and_materialization_boundary": {
+        "raw_reads_or_alignments_opened": False,
+        "raw_fastq_body_read_count": 0,
+        "raw_replay_run_count": 0,
+        "paper_native_xtail_replay_run_count": 0,
+        "gpu_work_started": False,
+        "row_level_payload_included": False,
+        "row_identifier_payload_included": False,
+        "sequence_payload_included": False,
+        "effect_value_payload_included": False,
+        "gene_payload_included": False,
+        "barcode_payload_included": False,
+        "annotation_label_payload_included": False,
+        "canonical_read_count": 0,
+        "canonical_write_count": 0,
+    },
+    "mechanical_aggregates": {
+        "table_s2": {
+            "raw_row_count": 13850,
+            "unique_content_row_count": 13836,
+            "exact_duplicate_excess_row_count": 14,
+            "duplicated_pair_id_count": 7,
+            "deduplicated_pair_count": 6885,
+            "deduplicated_control_count": 66,
+            "central_single_snv_pair_count": 6885,
+            "design_orientation_counts": {
+                "forward": 3497,
+                "reverse_complement": 3388,
+                "unresolved": 0,
+            },
+        },
+        "table_s3": {
+            "primary_data_row_count": 13544,
+            "primary_pair_key_count": 6772,
+            "total_poly_complete_pair_count": 6547,
+            "total_poly_na_pair_count": 225,
+            "high_poly_complete_pair_count": 6538,
+            "high_poly_na_pair_count": 234,
+            "table_s2_absent_from_table_s3_pair_count": 113,
+            "post_dedup_primary_attrition_count": 338,
+            "both_comparisons_complete_pair_count": 6538,
+            "primary_only_complete_pair_count": 9,
+            "secondary_only_complete_pair_count": 0,
+            "neither_comparison_complete_pair_count": 225,
+            "joined_orientation_counts": {
+                "forward": 3451,
+                "reverse_complement": 3321,
+                "unresolved": 0,
+            },
+            "control_sheet_data_cell_read_count": 0,
+            "translation_formula_cell_count": 13544,
+            "translation_cached_string_cell_count": 13544,
+            "translation_cached_values_role": "DESCRIPTIVE_ONLY_NOT_MEMBERSHIP_OR_GATE",
+        },
+        "endpoint_boundary": {
+            "primary_complete_distinct_wt_201nt_proxy_group_count": 6544,
+            "singleton_proxy_group_count": 6541,
+            "two_candidate_proxy_group_count": 3,
+            "biological_source_group_authority_closed": False,
+            "study_level_reported_biological_replicate_count": 6,
+            "row_level_effective_replicate_count": None,
+            "standard_error": None,
+            "power_effective_n": None,
+            "true_a2_dense_pool_count": 0,
+            "true_a2_dense_candidate_count": 0,
+        },
+    },
+    "unresolved_blockers": GSE200304_PUBLISHED_ENDPOINT_BLOCKERS,
+    "runtime_sync_status": "PENDING_NO_EVT_037",
+}
+GSE200304_PUBLISHED_ENDPOINT_EXPECTED_FILES = [
+    {
+        "path": f"{GSE200304_PUBLISHED_ENDPOINT_ARTIFACT_ROOT}/{name}",
+        "bytes": size,
+        "sha256": digest,
+    }
+    for name, size, digest in (
+        ("INPUT_INTEGRITY_AUDIT.json", 3610, "e87723673dfea6dca654b670d1c05f331f240a53d52d81d1207fbfc50d9a4fe8"),
+        ("PUBLISHED_ENDPOINT_AUDIT.json", 4981, "d849da8cc29a2a4419c85d69e5084736b6b41b03cac90263aa2620be3fe3acc7"),
+        ("QUALIFICATION_REPORT.json", 2095, "006db8da47dc2bbc0c313a156ae16ab79a3f6aebe324d37806820ac9240b100d"),
+        ("SHA256SUMS", 281, "e1720881f8bcfaaea1fef613dd4ee059c08da1bbd11bafc32a8fccdea0a43515"),
+        ("PUBLICATION_COMMIT.json", 973, "f1e5d0752bcc12db0b0eaabe0e75efdb6f2c48dfba4c3bae6bff99a302194cfc"),
+    )
+]
 GSE149487_PLUMAGE_PROTOCOL_PATH = "configs/route_a_v3_gse149487_a1_qualification.json"
 GSE149487_PLUMAGE_ASSET_MANIFEST_PATH = (
     "configs/route_a_v3_gse149487_asset_manifest_v2.json"
@@ -423,6 +593,18 @@ EXPECTED_REGISTRY_MANIFEST_PATH_ROLES = (
     ),
     (GSE200302_ROLE_BUILDER_PATH, "GSE200302_OFFICIAL_ROLE_AUTHORITY_BUILDER"),
     (GSE200302_ROLE_TEST_PATH, "GSE200302_OFFICIAL_ROLE_AUTHORITY_FOCUSED_TEST"),
+    (
+        GSE200304_PUBLISHED_ENDPOINT_CONFIG_PATH,
+        "GSE200304_PUBLISHED_ENDPOINT_A1_PROTOCOL",
+    ),
+    (
+        GSE200304_PUBLISHED_ENDPOINT_SCRIPT_PATH,
+        "GSE200304_PUBLISHED_ENDPOINT_A1_QUALIFIER",
+    ),
+    (
+        GSE200304_PUBLISHED_ENDPOINT_TEST_PATH,
+        "GSE200304_PUBLISHED_ENDPOINT_A1_FOCUSED_TEST",
+    ),
     (INTEGRITY_GUARD_TEST_PATH, "A0_AUTHORITY_INTEGRITY_GUARD_TEST"),
     (VALIDATOR_PATH, "A0_STATIC_AND_SEMANTIC_VALIDATOR"),
 )
@@ -526,6 +708,9 @@ def required_bundle_paths() -> tuple[str, ...]:
         GSE200302_ROLE_CONFIG_PATH,
         GSE200302_ROLE_BUILDER_PATH,
         GSE200302_ROLE_TEST_PATH,
+        GSE200304_PUBLISHED_ENDPOINT_CONFIG_PATH,
+        GSE200304_PUBLISHED_ENDPOINT_SCRIPT_PATH,
+        GSE200304_PUBLISHED_ENDPOINT_TEST_PATH,
         INTEGRITY_GUARD_TEST_PATH,
         *REGISTRY_PATHS.values(),
         *(f"{SCHEMA_DIR}/{name}" for name in SCHEMA_FILES),
@@ -880,11 +1065,13 @@ def validate_registry_manifest(repo_root: Path) -> list[Issue]:
         "contract_sha256": SOURCE_CONTRACT_SHA256,
         "active_amendment_decision_ids": ["V3-DEC-017", "V3-DEC-018"],
         "base_commit": "bbb71dcba6f1e1c9cb75a8a6653f1a4fe4a6ca0c",
-        "manifest_status": "A1_PLUMAGE_METADATA_ONLY_PREFLIGHT_LEDGER_INTEGRATED",
+        "manifest_status": "A1_GSE200304_PUBLISHED_ENDPOINT_EVIDENCE_LEDGER_INTEGRATED",
         "initial_generated_at": "2026-08-10T10:10:05+08:00",
+        "generated_at": "2026-08-11T04:48:30+08:00",
+        "updated_at": "2026-08-11T04:48:30+08:00",
         "sealed_contact": False,
     }
-    expected_top_keys = set(expected_static_top) | {"files", "generated_at", "updated_at"}
+    expected_top_keys = set(expected_static_top) | {"files"}
     if type(manifest) is not dict or set(manifest) != expected_top_keys:
         _issue(
             issues,
@@ -2651,6 +2838,7 @@ def validate_a1_interim_lineage(
             "gse200304_raw_replay_preflight_attempt_001_failure",
             "gse200304_raw_replay_preflight_v1",
             "gse200302_srr_role_authority_v1",
+            "gse200304_published_endpoint_a1_v1",
         }
         if set(lineage) != expected_all_lineage_ids:
             _issue(
@@ -3253,6 +3441,7 @@ def validate_a1_interim_lineage(
                 "next_phase_authorized": False,
                 "terminal_marker_written_last": True,
             },
+            "gse200304_published_endpoint_a1_v1": GSE200304_PUBLISHED_ENDPOINT_EXPECTED_RECORD,
         }
         expected_relevant_lineage_ids = set(expected_gse200304_lineage)
         observed_relevant_lineage_ids: set[str] = set()
@@ -3399,6 +3588,7 @@ def validate_a1_interim_lineage(
                     ("PUBLICATION_COMMIT.json", 2106, "35e8884db5b8e5734300e391715b87304766dbb8e4f888bf51ead5be8b5f83b3"),
                 ),
             ),
+            "gse200304_published_endpoint_a1_v1": GSE200304_PUBLISHED_ENDPOINT_EXPECTED_FILES,
         }
         for lineage_id, expected_fields in expected_gse200304_lineage.items():
             record = lineage.get(lineage_id)
@@ -3438,6 +3628,37 @@ def validate_a1_interim_lineage(
                     issues,
                     "A1_INTERIM_GSE200304_CLOSED_FILES",
                 )
+        for relative, expected_sha256 in (
+            (
+                GSE200304_PUBLISHED_ENDPOINT_CONFIG_PATH,
+                "92fc3a3859f7a8949ace67fa4b03a14e8ad102eb257d4f95cace01ea535b41af",
+            ),
+            (
+                GSE200304_PUBLISHED_ENDPOINT_SCRIPT_PATH,
+                "687268524c7426eb4d3d450e71d13c7c478372162e0c084ffe90c8bb12764308",
+            ),
+            (
+                GSE200304_PUBLISHED_ENDPOINT_TEST_PATH,
+                "173cad716fbdb2590e82ea54a91776ef61e7ab9eb7b596b694b5aa8609d44ad0",
+            ),
+        ):
+            try:
+                actual_sha256 = sha256_bytes(_read_bytes(repo_root, relative))
+            except (FileNotFoundError, ValueError) as exc:
+                _issue(
+                    issues,
+                    "A1_INTERIM_GSE200304_PUBLISHED_ENDPOINT_BINDING",
+                    relative,
+                    str(exc),
+                )
+            else:
+                if actual_sha256 != expected_sha256:
+                    _issue(
+                        issues,
+                        "A1_INTERIM_GSE200304_PUBLISHED_ENDPOINT_BINDING",
+                        relative,
+                        f"current bytes hash {actual_sha256} must remain {expected_sha256}",
+                    )
 
     summary = interim.get("dataset_boundary_summary")
     if not isinstance(summary, Mapping):
@@ -3661,6 +3882,29 @@ def validate_a1_interim_lineage(
                     "changes_qualification_gate": False,
                     "runtime_sync_status": "PENDING_NO_EVT_035",
                 },
+                "published_endpoint_evidence": {
+                    "artifact_lineage_id": "gse200304_published_endpoint_a1_v1",
+                    "publication_state": "COMMITTED_ACCEPTED",
+                    "execution_outcome": "ENGINEERING_SUCCESS_IMMUTABLY_BLOCKED",
+                    "independent_consumer_validation_status": "PASS",
+                    "evidence_role": "AGGREGATE_AUDIT_ONLY_PENDING_OWNER_POLICY",
+                    "primary_membership_pair_count": 6772,
+                    "primary_finite_effect_pair_count": 6547,
+                    "table_s2_absent_from_table_s3_pair_count": 113,
+                    "primary_total_attrition_count": 338,
+                    "primary_complete_distinct_wt_201nt_proxy_group_count": 6544,
+                    "blocker_count": 8,
+                    "ordinary_study_contribution": 0,
+                    "a1_intervention_study_contribution": 0,
+                    "true_a2_dense_study_contribution": 0,
+                    "canonical_record_count": 0,
+                    "qualified": False,
+                    "training_allowed": False,
+                    "model_selection_allowed": False,
+                    "next_phase_authorized": False,
+                    "changes_qualification_gate": False,
+                    "runtime_sync_status": "PENDING_NO_EVT_037",
+                },
                 "sam_to_oligo_count_reconstruction_status": "UNKNOWN_NOT_ASSERTED",
                 "acquisition_changes_qualification_gate": False,
                 "source_grouping_status": "SEQUENCE_EQUALITY_PROXY_NOT_BIOLOGICALLY_FROZEN",
@@ -3879,6 +4123,13 @@ def validate_a1_interim_lineage(
                 "gse200304_terminal_marker": "PASS",
                 "gse200304_failure_bundles_preserved": "PASS",
                 "gse200304_ena_manifest_closed_metadata_validation": "PASS",
+                "gse200304_published_endpoint_bundle_validation": "PASS",
+                "gse200304_published_endpoint_independent_consumer_validation": "PASS",
+                "gse200304_published_endpoint_exact_file_set": "PASS",
+                "gse200304_published_endpoint_sha256s": "PASS",
+                "gse200304_published_endpoint_terminal_marker": "PASS",
+                "gse200304_published_endpoint_gate_unchanged": "PASS",
+                "gse200304_published_endpoint_producer_blob_binding": "PASS",
                 "gse145046_closed_report_schema": "PASS",
                 "gse145046_payload_integrity": "PASS",
                 "gse145046_rpm_validation": "PASS",
@@ -3926,13 +4177,20 @@ def validate_a1_interim_lineage(
     _expect(
         interim,
         "latest_evidence_update_id",
-        GSE149487_PLUMAGE_PREFLIGHT_ARTIFACT_ID,
+        GSE200304_PUBLISHED_ENDPOINT_ARTIFACT_ID,
         path,
         issues,
         "A1_INTERIM_TIME",
     )
     generated = interim.get("generated_at")
     updated = interim.get("updated_at")
+    if generated != "2026-08-11T04:48:00+08:00" or updated != "2026-08-11T04:48:00+08:00":
+        _issue(
+            issues,
+            "A1_INTERIM_TIME",
+            path,
+            "generated_at and updated_at must remain the exact published-endpoint ledger timestamp",
+        )
     if generated != updated:
         _issue(issues, "A1_INTERIM_TIME", path, "generated_at and updated_at must identify the same amended record bytes")
     try:
@@ -3943,6 +4201,7 @@ def validate_a1_interim_lineage(
         raw_preflight_dt = datetime.fromisoformat("2026-08-10T20:52:00+08:00")
         role_authority_dt = datetime.fromisoformat("2026-08-10T23:03:15+08:00")
         gse149487_preflight_dt = datetime.fromisoformat("2026-08-11T02:14:39+08:00")
+        gse200304_published_endpoint_dt = datetime.fromisoformat("2026-08-11T04:40:50+08:00")
     except ValueError:
         _issue(issues, "A1_INTERIM_TIME", path, "updated_at must be an ISO-8601 timestamp with offset")
     else:
@@ -3953,6 +4212,7 @@ def validate_a1_interim_lineage(
             or updated_dt < raw_preflight_dt
             or updated_dt < role_authority_dt
             or updated_dt < gse149487_preflight_dt
+            or updated_dt < gse200304_published_endpoint_dt
         ):
             _issue(
                 issues,

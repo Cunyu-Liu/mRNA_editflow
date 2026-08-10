@@ -991,6 +991,218 @@ def test_rehashed_gse200302_role_authority_cannot_bypass_exact_semantics(
     assert "A1_INTERIM_GSE200304_LINEAGE_ID_SET" in codes
 
 
+def test_published_endpoint_lineage_is_exact_and_rehash_resistant(
+    validator,
+    repo_root,
+    tmp_path,
+    monkeypatch,
+):
+    interim = validator._load_yaml(repo_root, validator.A1_INTERIM_PATH)
+    assert validator.validate_a1_interim_lineage(repo_root, interim) == []
+    node = interim["artifact_lineage"]["gse200304_published_endpoint_a1_v1"]
+    assert node == {
+        **validator.GSE200304_PUBLISHED_ENDPOINT_EXPECTED_RECORD,
+        "files": validator.GSE200304_PUBLISHED_ENDPOINT_EXPECTED_FILES,
+    }
+
+    def tamper_blocker_order(interim):
+        interim["artifact_lineage"]["gse200304_published_endpoint_a1_v1"][
+            "unresolved_blockers"
+        ].reverse()
+
+    codes = _validate_rehashed_interim_bypass(
+        validator,
+        repo_root,
+        tmp_path / "published_endpoint_blocker_order",
+        monkeypatch,
+        tamper_blocker_order,
+    )
+    assert "A1_INTERIM_GSE200304_LINEAGE" in codes
+
+    def clear_blockers_and_upgrade_gate(interim):
+        node = interim["artifact_lineage"]["gse200304_published_endpoint_a1_v1"]
+        node["unresolved_blockers"] = []
+        node["gate_snapshot"]["ordinary_study_contribution"] = 1
+        node["gate_snapshot"]["a1_intervention_study_contribution"] = 1
+        node["gate_snapshot"]["true_a2_dense_study_contribution"] = 1
+        node["gate_snapshot"]["canonical_record_count"] = 1
+        node["gate_snapshot"]["qualified"] = True
+        node["gate_snapshot"]["training_allowed"] = True
+        node["gate_snapshot"]["model_selection_allowed"] = True
+        node["gate_snapshot"]["next_phase_authorized"] = True
+
+    codes = _validate_rehashed_interim_bypass(
+        validator,
+        repo_root,
+        tmp_path / "published_endpoint_cleared_blockers_and_gate_upgrade",
+        monkeypatch,
+        clear_blockers_and_upgrade_gate,
+    )
+    assert "A1_INTERIM_GSE200304_LINEAGE" in codes
+
+    def tamper_counts_and_types(interim):
+        node = interim["artifact_lineage"]["gse200304_published_endpoint_a1_v1"]
+        node["mechanical_aggregates"]["table_s2"]["raw_row_count"] = True
+        node["mechanical_aggregates"]["table_s3"][
+            "primary_pair_key_count"
+        ] = 6773
+        node["mechanical_aggregates"]["endpoint_boundary"][
+            "standard_error"
+        ] = 0
+
+    codes = _validate_rehashed_interim_bypass(
+        validator,
+        repo_root,
+        tmp_path / "published_endpoint_counts",
+        monkeypatch,
+        tamper_counts_and_types,
+    )
+    assert "A1_INTERIM_GSE200304_LINEAGE" in codes
+
+    def tamper_implementation_binding(interim):
+        binding = interim["artifact_lineage"]["gse200304_published_endpoint_a1_v1"][
+            "implementation_binding"
+        ]
+        binding["implementation_commit"] = "0" * 40
+        binding["binding_commit"] = "1" * 40
+        binding["protocol_config_sha256"] = "2" * 64
+        binding["production_script_path"] = "scripts/route_a_v3/replacement.py"
+
+    codes = _validate_rehashed_interim_bypass(
+        validator,
+        repo_root,
+        tmp_path / "published_endpoint_binding",
+        monkeypatch,
+        tamper_implementation_binding,
+    )
+    assert "A1_INTERIM_GSE200304_LINEAGE" in codes
+
+    def tamper_zero_false_gates(interim):
+        node = interim["artifact_lineage"]["gse200304_published_endpoint_a1_v1"]
+        node["gate_snapshot"]["ordinary_study_contribution"] = False
+        node["gate_snapshot"]["qualified"] = 0
+        node["gate_snapshot"]["training_allowed"] = True
+        node["access_and_materialization_boundary"]["canonical_write_count"] = False
+        node["access_and_materialization_boundary"]["row_level_payload_included"] = 0
+
+    codes = _validate_rehashed_interim_bypass(
+        validator,
+        repo_root,
+        tmp_path / "published_endpoint_zero_false",
+        monkeypatch,
+        tamper_zero_false_gates,
+    )
+    assert "A1_INTERIM_GSE200304_LINEAGE" in codes
+
+    def tamper_member_triple(interim):
+        member = interim["artifact_lineage"]["gse200304_published_endpoint_a1_v1"][
+            "files"
+        ][0]
+        member["path"] = member["path"].replace(
+            "INPUT_INTEGRITY_AUDIT.json", "INPUT_INTEGRITY_AUDIT_REHASHED.json"
+        )
+        member["bytes"] += 1
+        member["sha256"] = "3" * 64
+
+    codes = _validate_rehashed_interim_bypass(
+        validator,
+        repo_root,
+        tmp_path / "published_endpoint_member",
+        monkeypatch,
+        tamper_member_triple,
+    )
+    assert "A1_INTERIM_GSE200304_CLOSED_FILES" in codes
+
+    def delete_terminal_member(interim):
+        files = interim["artifact_lineage"]["gse200304_published_endpoint_a1_v1"][
+            "files"
+        ]
+        files[:] = [
+            member
+            for member in files
+            if not member["path"].endswith("/PUBLICATION_COMMIT.json")
+        ]
+
+    codes = _validate_rehashed_interim_bypass(
+        validator,
+        repo_root,
+        tmp_path / "published_endpoint_terminal_member_deleted",
+        monkeypatch,
+        delete_terminal_member,
+    )
+    assert "A1_INTERIM_GSE200304_CLOSED_FILES" in codes
+
+    def drift_terminal_member(interim):
+        terminal = interim["artifact_lineage"][
+            "gse200304_published_endpoint_a1_v1"
+        ]["files"][-1]
+        terminal["bytes"] = 974
+        terminal["sha256"] = "4" * 64
+
+    codes = _validate_rehashed_interim_bypass(
+        validator,
+        repo_root,
+        tmp_path / "published_endpoint_terminal_member_drift",
+        monkeypatch,
+        drift_terminal_member,
+    )
+    assert "A1_INTERIM_GSE200304_CLOSED_FILES" in codes
+
+    def tamper_summary(interim):
+        current = interim["dataset_boundary_summary"]["GSE200304"][
+            "published_endpoint_evidence"
+        ]
+        current["blocker_count"] = 7
+        current["qualified"] = True
+        current["runtime_sync_status"] = "EVT-037"
+
+    codes = _validate_rehashed_interim_bypass(
+        validator,
+        repo_root,
+        tmp_path / "published_endpoint_summary",
+        monkeypatch,
+        tamper_summary,
+    )
+    assert "A1_INTERIM_GSE200304" in codes
+
+    def add_extra_lineage(interim):
+        interim["artifact_lineage"]["gse200304_published_endpoint_in_progress"] = {
+            "dataset_id": "GSE200304",
+            "status": "IN_PROGRESS",
+        }
+
+    codes = _validate_rehashed_interim_bypass(
+        validator,
+        repo_root,
+        tmp_path / "published_endpoint_extra_lineage",
+        monkeypatch,
+        add_extra_lineage,
+    )
+    assert "A1_INTERIM_LINEAGE_ID_SET" in codes
+    assert "A1_INTERIM_GSE200304_LINEAGE_ID_SET" in codes
+
+
+def test_published_endpoint_producer_rehash_cannot_bypass_frozen_binding(
+    validator,
+    repo_root,
+    tmp_path,
+):
+    manifest = _copy_manifest_bundle(validator, repo_root, tmp_path)
+    protocol_path = tmp_path / validator.GSE200304_PUBLISHED_ENDPOINT_CONFIG_PATH
+    protocol_path.write_bytes(protocol_path.read_bytes() + b"\n")
+    next(
+        row
+        for row in manifest["files"]
+        if row["path"] == validator.GSE200304_PUBLISHED_ENDPOINT_CONFIG_PATH
+    )["sha256"] = validator.sha256_file(protocol_path)
+    manifest_path = tmp_path / validator.REGISTRY_MANIFEST_PATH
+    manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+
+    codes = _codes(validator.validate_bundle(tmp_path))
+    assert "REGISTRY_MANIFEST_HASH_MISMATCH" not in codes
+    assert "A1_INTERIM_GSE200304_PUBLISHED_ENDPOINT_BINDING" in codes
+
+
 def test_gse200302_role_protocol_core_and_dynamic_binding_are_separate(
     validator,
     repo_root,
@@ -1131,8 +1343,13 @@ def test_gse149487_plumage_protocol_is_dynamic_but_semantically_closed(
     assert preflight_binding["binding_scheme"] == (
         validator.GSE149487_PLUMAGE_PREFLIGHT_BINDING_SCHEME
     )
-    assert preflight_binding["status"] == "UNKNOWN_NOT_ASSERTED"
-    assert preflight_binding["implementation_commit"] == "UNKNOWN_NOT_ASSERTED"
+    assert preflight_binding["status"] in {"UNKNOWN_NOT_ASSERTED", "BOUND"}
+    if preflight_binding["status"] == "UNKNOWN_NOT_ASSERTED":
+        assert preflight_binding["implementation_commit"] == "UNKNOWN_NOT_ASSERTED"
+    else:
+        assert preflight_binding["implementation_commit"] == (
+            "d10a42a564ecac2af048b39c05cbc863ebdacd02"
+        )
     assert preflight_binding["external_evidence_config_sha256"] == (
         validator.GSE149487_PLUMAGE_PREFLIGHT_CONFIG_SHA256
     )
@@ -1538,10 +1755,10 @@ def test_registry_manifest_detects_every_listed_hash_drift(validator, tmp_path, 
         "contract_sha256": goal_hash,
         "active_amendment_decision_ids": ["V3-DEC-017", "V3-DEC-018"],
         "base_commit": "bbb71dcba6f1e1c9cb75a8a6653f1a4fe4a6ca0c",
-        "manifest_status": "A1_PLUMAGE_METADATA_ONLY_PREFLIGHT_LEDGER_INTEGRATED",
+        "manifest_status": "A1_GSE200304_PUBLISHED_ENDPOINT_EVIDENCE_LEDGER_INTEGRATED",
         "initial_generated_at": "2026-08-10T10:10:05+08:00",
-        "generated_at": "2026-08-10T10:41:50+08:00",
-        "updated_at": "2026-08-10T10:41:50+08:00",
+        "generated_at": "2026-08-11T04:48:30+08:00",
+        "updated_at": "2026-08-11T04:48:30+08:00",
         "sealed_contact": False,
         "files": entries,
     }

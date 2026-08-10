@@ -49,7 +49,7 @@
     {
       "path": "docs/execution/route_a_v3_a1_interim.yaml",
       "role": "A1_ACTIVE_INTERIM_RECORD",
-      "sha256": "e441ee0321b4947edff7d24a4c6fae67aece926be64d334c4f45a5de4d2c98d5"
+      "sha256": "7cd736404cab41d833fd21846098e45ff3bd60ef7615de7452b875e3ed4206d6"
     },
     {
       "path": "docs/execution/route_a_v3_split_registry.yaml",
@@ -132,20 +132,35 @@
       "sha256": "4548d6622a1df852cdd9bf1ae3caabeed837474dfc3c57984674a2a77ef580ca"
     },
     {
+      "path": "configs/route_a_v3_gse200304_published_endpoint_a1.json",
+      "role": "GSE200304_PUBLISHED_ENDPOINT_A1_PROTOCOL",
+      "sha256": "92fc3a3859f7a8949ace67fa4b03a14e8ad102eb257d4f95cace01ea535b41af"
+    },
+    {
+      "path": "scripts/route_a_v3/qualify_gse200304_published_endpoint_a1.py",
+      "role": "GSE200304_PUBLISHED_ENDPOINT_A1_QUALIFIER",
+      "sha256": "687268524c7426eb4d3d450e71d13c7c478372162e0c084ffe90c8bb12764308"
+    },
+    {
+      "path": "tests/route_a_v3/test_qualify_gse200304_published_endpoint_a1.py",
+      "role": "GSE200304_PUBLISHED_ENDPOINT_A1_FOCUSED_TEST",
+      "sha256": "173cad716fbdb2590e82ea54a91776ef61e7ab9eb7b596b694b5aa8609d44ad0"
+    },
+    {
       "path": "tests/route_a_v3/test_a0_integrity_guards.py",
       "role": "A0_AUTHORITY_INTEGRITY_GUARD_TEST",
-      "sha256": "4702887a304936d5060f09612960356b089931205f9f3dbd2d075eddcdad9eaa"
+      "sha256": "8a5e16a8e6764e139bdc5fd3d933ec297e9c645869f5a2a18b014aae3b17e50e"
     },
     {
       "path": "scripts/route_a_v3/validate_a0_bundle.py",
       "role": "A0_STATIC_AND_SEMANTIC_VALIDATOR",
-      "sha256": "dfe10a694d398af4e6b30d2f0dc93c7b71511739a6c377ca8bc8dea8a4b2bf28"
+      "sha256": "dc905057ef1189a705b85a5084ce00d7316fd5e22b1d58ffc21fe0bebdefa18a"
     }
   ],
   "initial_generated_at": "2026-08-10T10:10:05+08:00",
-  "generated_at": "2026-08-11T02:23:30+08:00",
-  "updated_at": "2026-08-11T02:23:30+08:00",
-  "manifest_status": "A1_PLUMAGE_METADATA_ONLY_PREFLIGHT_LEDGER_INTEGRATED",
+  "generated_at": "2026-08-11T04:48:30+08:00",
+  "updated_at": "2026-08-11T04:48:30+08:00",
+  "manifest_status": "A1_GSE200304_PUBLISHED_ENDPOINT_EVIDENCE_LEDGER_INTEGRATED",
   "schema_version": "1.0.0",
   "sealed_contact": false,
   "version": "3.0.0"
