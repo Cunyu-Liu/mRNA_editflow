@@ -8,8 +8,8 @@
   "event_name": "GSE149487_METADATA_ONLY_STOP_BEFORE_DATA_PREFLIGHT_SYNCED_STUDY_QUALIFICATION_STILL_BLOCKED",
   "implementation_binding": {
     "binding_scheme": "CONFIG_ONLY_POST_IMPLEMENTATION_BINDING_V1",
-    "status": "UNKNOWN_NOT_ASSERTED",
-    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "status": "BOUND",
+    "implementation_commit": "b570be3c3fbbb5ae35295ef58ce3e56ba0e93b69",
     "base_commit": "aeecf0f043a94f2e5a738807c6d13d92f16e129f",
     "implementation_script_path": "scripts/route_a_v3/gse149487_stop_before_data_runtime_sync.py",
     "implementation_script_sha256": "6dd5f0c4a4e510d2ab8daf1070996e28d7d099c527284a672f26a3b61b6d70a8",
