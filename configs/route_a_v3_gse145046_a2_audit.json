@@ -1,0 +1,463 @@
+{
+  "contract_id": "mrna_xeditflow_route_a_v3",
+  "schema_version": "3.0.0",
+  "protocol_id": "ROUTE_A_V3_GSE145046_A2_QUALIFICATION_AUDIT_V1",
+  "protocol_status": "FROZEN_AFTER_AGGREGATE_PREFLIGHT_BEFORE_FORMAL_VERSIONED_AUDIT_AND_MODEL_RESULTS",
+  "dataset_id": "GSE145046",
+  "authority": {
+    "contract_sha256": "d1c031aecdec710495f6861b380785cccd64663ac4bd97b4f479d6fdf372ea07",
+    "base_commit": "fd722d5fa3c2538fce742b8942b1fb48e782760b"
+  },
+  "scope": {
+    "ordinary_public_data_only": true,
+    "forbidden_path_tokens": [
+      "gse246381",
+      "restricted",
+      "sealed_external",
+      "access_log"
+    ],
+    "training_allowed": false,
+    "model_selection_allowed": false,
+    "qualification_allowed": false,
+    "canonical_intervention_records_allowed": false,
+    "measured_candidate_pools_allowed": false,
+    "network_access_allowed": false
+  },
+  "science_authority": {
+    "version_of_record": {
+      "doi": "10.1038/s41594-020-0465-x",
+      "url": "https://doi.org/10.1038/s41594-020-0465-x"
+    },
+    "preprint": {
+      "doi": "10.1101/2020.03.13.990887",
+      "url": "https://doi.org/10.1101/2020.03.13.990887"
+    },
+    "geo": {
+      "accession": "GSE145046",
+      "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE145046"
+    },
+    "supplementary_table_1": {
+      "url": "https://media.springernature.com/original/springer-static/esm/art%3A10.1038%2Fs41594-020-0465-x/MediaObjects/41594_2020_465_MOESM3_ESM.xlsx",
+      "bytes": 14024,
+      "sha256": "4e33a6e351c3096dd708296807b6def84a347dba891e0401207ce4b0912de9ba",
+      "local_p0_input": false,
+      "authority_scope": "PRIMER_LEVEL_ONLY"
+    },
+    "geo_family_soft": {
+      "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE145nnn/GSE145046/soft/GSE145046_family.soft.gz",
+      "bytes": 5308,
+      "sha256": "f0e158e6899cfa7fb8731a4e290c7c08c64f13fbde79e9ac4eab1494d601ba75",
+      "local_p0_input": false,
+      "authority_scope": "PUBLIC_METADATA_ONLY"
+    }
+  },
+  "inputs": {
+    "p0_manifest": {
+      "filename": "manifest.json",
+      "sha256": "539b47a2962f4d875c8b16162d87d98f20082f659ce0e4b54ae6b5b61e681a22",
+      "required_top_level_keys": [
+        "accession",
+        "files",
+        "provider",
+        "retrieved_at_utc",
+        "skipped",
+        "source_url"
+      ],
+      "required_file_entry_keys": [
+        "bytes",
+        "downloaded",
+        "expected_bytes",
+        "name",
+        "sha256",
+        "url"
+      ],
+      "file_count": 30
+    },
+    "row_schema": {
+      "compression": "GZIP",
+      "encoding": "UTF-8",
+      "delimiter": "TAB",
+      "header_present": false,
+      "exact_column_count": 3,
+      "columns": [
+        {
+          "position": 1,
+          "name": "random_n10",
+          "valid_pattern": "^[ACGT]{10}$"
+        },
+        {
+          "position": 2,
+          "name": "count",
+          "constraint": "NONNEGATIVE_INTEGER"
+        },
+        {
+          "position": 3,
+          "name": "rpm",
+          "constraint": "FINITE_NONNEGATIVE_NUMBER"
+        }
+      ]
+    },
+    "rpm_definition": {
+      "formula": "count / total_reads_in_file * 1000000",
+      "source": "GEO_SAMPLE_METADATA",
+      "absolute_tolerance": 1e-06,
+      "relative_tolerance": 1e-09,
+      "mismatch_is_reported_not_imputed": true
+    },
+    "samples": [
+      {
+        "order": 1,
+        "gsm_accession": "GSM4305122",
+        "filename": "GSM4305122_1_read_count_Randomly_synthesized_oligos.txt.gz",
+        "sample_group": "INPUT_LIBRARY",
+        "condition": "RANDOMLY_SYNTHESIZED_OLIGOS",
+        "replicate": 1
+      },
+      {
+        "order": 2,
+        "gsm_accession": "GSM4546416",
+        "filename": "GSM4546416_read_count_Randomly_synthesized_oligos_rep2.txt.gz",
+        "sample_group": "INPUT_LIBRARY",
+        "condition": "RANDOMLY_SYNTHESIZED_OLIGOS",
+        "replicate": 2
+      },
+      {
+        "order": 3,
+        "gsm_accession": "GSM4305123",
+        "filename": "GSM4305123_2_read_count_In_vivo_Monosome_rep1.txt.gz",
+        "sample_group": "IN_VIVO_RIBOSOME_FRACTION",
+        "condition": "MONOSOME",
+        "replicate": 1
+      },
+      {
+        "order": 4,
+        "gsm_accession": "GSM4305124",
+        "filename": "GSM4305124_3_read_count_In_vivo_Polysome_rep1.txt.gz",
+        "sample_group": "IN_VIVO_RIBOSOME_FRACTION",
+        "condition": "POLYSOME",
+        "replicate": 1
+      },
+      {
+        "order": 5,
+        "gsm_accession": "GSM4305125",
+        "filename": "GSM4305125_4_read_count_In_vivo_Monosome_rep2.txt.gz",
+        "sample_group": "IN_VIVO_RIBOSOME_FRACTION",
+        "condition": "MONOSOME",
+        "replicate": 2
+      },
+      {
+        "order": 6,
+        "gsm_accession": "GSM4305126",
+        "filename": "GSM4305126_5_read_count_In_vivo_Polysome_rep2.txt.gz",
+        "sample_group": "IN_VIVO_RIBOSOME_FRACTION",
+        "condition": "POLYSOME",
+        "replicate": 2
+      },
+      {
+        "order": 7,
+        "gsm_accession": "GSM4305127",
+        "filename": "GSM4305127_6_read_count_In_vivo_Ribosome_free_rep1.txt.gz",
+        "sample_group": "IN_VIVO_RIBOSOME_FREE",
+        "condition": "RIBOSOME_FREE",
+        "replicate": 1
+      },
+      {
+        "order": 8,
+        "gsm_accession": "GSM4305128",
+        "filename": "GSM4305128_7_read_count_In_vivo_Ribosome_free_rep2.txt.gz",
+        "sample_group": "IN_VIVO_RIBOSOME_FREE",
+        "condition": "RIBOSOME_FREE",
+        "replicate": 2
+      },
+      {
+        "order": 9,
+        "gsm_accession": "GSM4305129",
+        "filename": "GSM4305129_8_read_count_Non_functional_cap_Ribosome_free.txt.gz",
+        "sample_group": "NON_FUNCTIONAL_CAP_RIBOSOME_FRACTION",
+        "condition": "RIBOSOME_FREE",
+        "replicate": null
+      },
+      {
+        "order": 10,
+        "gsm_accession": "GSM4305130",
+        "filename": "GSM4305130_9_read_count_Non_functional_cap_Ribosome_bound.txt.gz",
+        "sample_group": "NON_FUNCTIONAL_CAP_RIBOSOME_FRACTION",
+        "condition": "RIBOSOME_BOUND",
+        "replicate": null
+      },
+      {
+        "order": 11,
+        "gsm_accession": "GSM4305131",
+        "filename": "GSM4305131_10_read_count_In_vivo_Gating_25D_low_rep1.txt.gz",
+        "sample_group": "IN_VIVO_FACS_GATE",
+        "condition": "25D_LOW",
+        "replicate": 1
+      },
+      {
+        "order": 12,
+        "gsm_accession": "GSM4305132",
+        "filename": "GSM4305132_11_read_count_In_vivo_Gating_25D_high_rep1.txt.gz",
+        "sample_group": "IN_VIVO_FACS_GATE",
+        "condition": "25D_HIGH",
+        "replicate": 1
+      },
+      {
+        "order": 13,
+        "gsm_accession": "GSM4305133",
+        "filename": "GSM4305133_12_read_count_In_vivo_Gating_GFP_low_rep1.txt.gz",
+        "sample_group": "IN_VIVO_FACS_GATE",
+        "condition": "GFP_LOW",
+        "replicate": 1
+      },
+      {
+        "order": 14,
+        "gsm_accession": "GSM4305134",
+        "filename": "GSM4305134_13_read_count_In_vivo_Gating_GFP_high_rep1.txt.gz",
+        "sample_group": "IN_VIVO_FACS_GATE",
+        "condition": "GFP_HIGH",
+        "replicate": 1
+      },
+      {
+        "order": 15,
+        "gsm_accession": "GSM4305135",
+        "filename": "GSM4305135_14_read_count_In_vivo_Gating_25D_low_rep2.txt.gz",
+        "sample_group": "IN_VIVO_FACS_GATE",
+        "condition": "25D_LOW",
+        "replicate": 2
+      },
+      {
+        "order": 16,
+        "gsm_accession": "GSM4305136",
+        "filename": "GSM4305136_15_read_count_In_vivo_Gating_25D_high_rep2.txt.gz",
+        "sample_group": "IN_VIVO_FACS_GATE",
+        "condition": "25D_HIGH",
+        "replicate": 2
+      },
+      {
+        "order": 17,
+        "gsm_accession": "GSM4305137",
+        "filename": "GSM4305137_16_read_count_In_vivo_Gating_GFP_low_rep2.txt.gz",
+        "sample_group": "IN_VIVO_FACS_GATE",
+        "condition": "GFP_LOW",
+        "replicate": 2
+      },
+      {
+        "order": 18,
+        "gsm_accession": "GSM4305138",
+        "filename": "GSM4305138_17_read_count_In_vivo_Gating_GFP_high_rep2.txt.gz",
+        "sample_group": "IN_VIVO_FACS_GATE",
+        "condition": "GFP_HIGH",
+        "replicate": 2
+      },
+      {
+        "order": 19,
+        "gsm_accession": "GSM4305139",
+        "filename": "GSM4305139_18_read_count_In_vivo_Half_life_2h_rep1.txt.gz",
+        "sample_group": "IN_VIVO_HALF_LIFE",
+        "condition": "2H",
+        "replicate": 1
+      },
+      {
+        "order": 20,
+        "gsm_accession": "GSM4305140",
+        "filename": "GSM4305140_19_read_count_In_vivo_Half_life_5h_rep1.txt.gz",
+        "sample_group": "IN_VIVO_HALF_LIFE",
+        "condition": "5H",
+        "replicate": 1
+      },
+      {
+        "order": 21,
+        "gsm_accession": "GSM4305141",
+        "filename": "GSM4305141_20_read_count_In_vivo_Half_life_2h_rep2.txt.gz",
+        "sample_group": "IN_VIVO_HALF_LIFE",
+        "condition": "2H",
+        "replicate": 2
+      },
+      {
+        "order": 22,
+        "gsm_accession": "GSM4305142",
+        "filename": "GSM4305142_21_read_count_In_vivo_Half_life_5h_rep2.txt.gz",
+        "sample_group": "IN_VIVO_HALF_LIFE",
+        "condition": "5H",
+        "replicate": 2
+      },
+      {
+        "order": 23,
+        "gsm_accession": "GSM4305143",
+        "filename": "GSM4305143_22_read_count_In_vitro_Half_life_0min.txt.gz",
+        "sample_group": "IN_VITRO_HALF_LIFE",
+        "condition": "0MIN",
+        "replicate": null
+      },
+      {
+        "order": 24,
+        "gsm_accession": "GSM4305144",
+        "filename": "GSM4305144_23_read_count_In_vitro_Half_life_10min.txt.gz",
+        "sample_group": "IN_VITRO_HALF_LIFE",
+        "condition": "10MIN",
+        "replicate": null
+      },
+      {
+        "order": 25,
+        "gsm_accession": "GSM4305145",
+        "filename": "GSM4305145_24_read_count_In_vitro_Half_life_30min.txt.gz",
+        "sample_group": "IN_VITRO_HALF_LIFE",
+        "condition": "30MIN",
+        "replicate": null
+      },
+      {
+        "order": 26,
+        "gsm_accession": "GSM4305146",
+        "filename": "GSM4305146_25_read_count_In_vitro_Half_life_60min.txt.gz",
+        "sample_group": "IN_VITRO_HALF_LIFE",
+        "condition": "60MIN",
+        "replicate": null
+      },
+      {
+        "order": 27,
+        "gsm_accession": "GSM4305147",
+        "filename": "GSM4305147_26_read_count_Non_functional_cap_in_vivo_half_life_2h_rep1.txt.gz",
+        "sample_group": "NON_FUNCTIONAL_CAP_IN_VIVO_HALF_LIFE",
+        "condition": "2H",
+        "replicate": 1
+      },
+      {
+        "order": 28,
+        "gsm_accession": "GSM4305148",
+        "filename": "GSM4305148_27_read_count_Non_functional_cap_in_vivo_half_life_5h_rep1.txt.gz",
+        "sample_group": "NON_FUNCTIONAL_CAP_IN_VIVO_HALF_LIFE",
+        "condition": "5H",
+        "replicate": 1
+      },
+      {
+        "order": 29,
+        "gsm_accession": "GSM4305149",
+        "filename": "GSM4305149_28_read_count_Non_functional_cap_in_vivo_half_life_2h_rep2.txt.gz",
+        "sample_group": "NON_FUNCTIONAL_CAP_IN_VIVO_HALF_LIFE",
+        "condition": "2H",
+        "replicate": 2
+      },
+      {
+        "order": 30,
+        "gsm_accession": "GSM4305150",
+        "filename": "GSM4305150_29_read_count_Non_functional_cap_in_vivo_half_life_5h_rep2.txt.gz",
+        "sample_group": "NON_FUNCTIONAL_CAP_IN_VIVO_HALF_LIFE",
+        "condition": "5H",
+        "replicate": 2
+      }
+    ]
+  },
+  "source_anchor": {
+    "n10_locus_status": "CLOSED_AT_PRIMER_LEVEL",
+    "full_reporter_anchor_status": "NOT_CLOSED",
+    "canonical_source_hash": null,
+    "interpretation": "PUBLIC_PRIMER_COORDINATES_CLOSE_THE_RANDOM_N10_INSERTION_LOCUS_BUT_NOT_THE_COMPLETE_REPORTER_OR_SOURCE_SEQUENCE"
+  },
+  "endpoint_semantics": {
+    "raw_columns": {
+      "column_2": "COUNT",
+      "column_3": "RPM_COUNT_DIVIDED_BY_TOTAL_READS_TIMES_ONE_MILLION",
+      "status": "POSITIONAL_SEMANTICS_CLOSED_BY_GEO"
+    },
+    "monosome_polysome": {
+      "paper_formula": "log2(RPM_MONOSOME / RPM_POLYSOME)",
+      "aggregation_scope": "REPLICATE_LOCAL",
+      "execution_status": "KNOWN_FORMULA_NOT_EXECUTED",
+      "zero_and_pseudocount_rule": "UNKNOWN_NOT_ASSERTED"
+    },
+    "functional_cap_ribosome_free_bound": {
+      "bound_construction_status": "NOT_RECOVERED",
+      "endpoint_status": "BLOCKED_NOT_MATERIALIZED"
+    },
+    "non_functional_cap_apppg_ribosome_free_bound": {
+      "available_pair_count": 1,
+      "paper_use": "PRIMARILY_AGGREGATED_MOTIF_ANALYSIS",
+      "per_variant_endpoint_status": "BLOCKED_NOT_MATERIALIZED"
+    },
+    "facs": {
+      "weighted_gate_mean_constants": ["fH", "fNEG"],
+      "constants_status": "NOT_RECOVERED",
+      "endpoint_status": "BLOCKED_NOT_MATERIALIZED"
+    },
+    "in_vivo_half_life": {
+      "baseline_status": "NOT_RECOVERED",
+      "replicate_aggregation_status": "NOT_RECOVERED",
+      "endpoint_status": "BLOCKED_NOT_MATERIALIZED"
+    },
+    "in_vitro_half_life": {
+      "public_method_status": "DESCRIBED",
+      "replicate_and_standard_error_status": "NOT_IDENTIFIABLE",
+      "endpoint_status": "BLOCKED_NOT_MATERIALIZED"
+    },
+    "any_endpoint_materialized_by_this_audit": false,
+    "absent_key_semantics": "MISSING_NOT_ZERO"
+  },
+  "qualification_boundary": {
+    "classification": "CONDITIONALLY_RECOVERABLE_AS_ABSOLUTE_AUXILIARY",
+    "a2_status": "NOT_TRUE_A2_FIXED_REPORTER_ABSOLUTE_AUXILIARY",
+    "qualified": false,
+    "training_allowed": false,
+    "model_selection_allowed": false,
+    "canonical_intervention_records_materialized": false,
+    "measured_candidate_pools_materialized": false,
+    "endpoint_values_materialized": false,
+    "data_semantics": "FIXED_SCAFFOLD_ABSOLUTE_OUTCOMES_NOT_DIRECT_SOURCE_TO_CANDIDATE_INTERVENTIONS",
+    "license": {
+      "status": "UNKNOWN_BLOCKED",
+      "redistribution_allowed": false
+    },
+    "foundation_exposure": {
+      "checkpoint_specific_status": "UNKNOWN_NOT_ASSERTED",
+      "project_engineering_consumption": "CONFIRMED",
+      "independent_holdout_eligibility": false
+    }
+  },
+  "unresolved_blockers": [
+    "FULL_REPORTER_SOURCE_ANCHOR_NOT_IDENTIFIABLE",
+    "FACS_GATE_CONSTANTS_NOT_RECOVERED",
+    "IN_VIVO_HALF_LIFE_BASELINE_AND_AGGREGATION_NOT_RECOVERED",
+    "IN_VITRO_REPLICATE_AND_SE_NOT_IDENTIFIABLE",
+    "LICENSE_AND_REDISTRIBUTION_NOT_BOUND",
+    "CHECKPOINT_SPECIFIC_EXPOSURE_NOT_CLOSED",
+    "DENSE_SPLIT_AND_HAMMING_MOAT_NOT_FROZEN",
+    "ABSOLUTE_OUTCOME_NOT_DIRECT_SOURCE_CANDIDATE_INTERVENTION",
+    "TRUE_A2_NOT_QUALIFIED"
+  ],
+  "aggregate_preflight_evidence": {
+    "evidence_status": "READ_ONLY_AGGREGATE_PREFLIGHT_COMPLETED",
+    "formal_versioned_audit_status": "NOT_RUN",
+    "constitutes_formal_acceptance": false,
+    "formal_reconciliation_required": true,
+    "observed_aggregates": {
+      "total_rows": 30695604,
+      "valid_key_rows": 30669416,
+      "invalid_key_rows": 26188,
+      "input_union": 1048331,
+      "input_intersection": 1033228,
+      "all_30_union": 1048576,
+      "all_30_intersection": 679150
+    }
+  },
+  "execution_binding_policy": {
+    "repo_root_required": true,
+    "git_head_must_equal_code_commit": true,
+    "git_worktree_must_be_clean": true,
+    "protocol_script_test_must_match_head_bytes": true,
+    "test_sha256_must_match_actual_bytes": true,
+    "canonical_protocol_sha256_hardcoded_in_auditor": true
+  },
+  "output_policy": {
+    "aggregate_only": true,
+    "raw_sequence_output_allowed": false,
+    "raw_row_output_allowed": false,
+    "raw_label_output_allowed": false,
+    "determinism": "DETERMINISTIC_GIVEN_FIXED_EXPLICIT_PARAMETERS",
+    "single_json_file": true,
+    "hidden_sibling_staging": true,
+    "fsync_before_publish": true,
+    "no_replace_publish": true,
+    "formal_output_name": "AUDIT_EXECUTION_ID_DOT_JSON",
+    "self_hash": "NOT_APPLICABLE_BOUND_BY_OUTER_RUN_MANIFEST_OR_LEDGER"
+  },
+  "model_results_may_change_this_protocol": false
+}
