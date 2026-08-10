@@ -67,7 +67,9 @@ EXPECTED_POOL_COUNT = 959
 EXPECTED_CANDIDATE_COUNT = 3_899
 EXPECTED_DISTANCE_COUNTS = {"1": 2_925, "2": 870, "3": 104}
 EXPECTED_POOL_WITH_DISTANCE_3_COUNT = 91
-EXPECTED_DISTANCE_5_COUNT = 0
+EXPECTED_INCLUDED_DISTANCE_5_ROW_COUNT = 81
+EXPECTED_ELIGIBLE_DISTANCE_5_UTR_HASH_COUNT = 4
+EXPECTED_ELIGIBLE_POOL_WITH_DISTANCE_5_COUNT = 4
 ENDPOINT_TOLERANCE = 5e-11
 NORMALIZED_SUM_TOLERANCE = 5e-11
 RAW_TOTAL_TOLERANCE = 1e-9
@@ -110,6 +112,7 @@ CONDITIONAL_BLOCKERS = frozenset(
         "MALFORMED_INCLUDED_ROWS_PRESENT",
         "PROVISIONAL_POOL_GEOMETRY_RECONCILIATION_MISMATCH",
         "HAMMING_DISTANCE_DISTRIBUTION_RECONCILIATION_MISMATCH",
+        "K5_CLAIM_BOUNDARY_SCOPE_RECONCILIATION_MISMATCH",
     }
 )
 ALL_BLOCKERS = frozenset(BASE_BLOCKERS) | {
@@ -149,7 +152,7 @@ EXPECTED_AUTHORITY = {
     "decision_log_path": "docs/execution/route_a_v3_decision_log.yaml",
     "decision_log_sha256": "a5b041fab24d9a4309603a085fa3fcab936d69a899285bfa752689a2ee5fd4fd",
     "active_authority_commit": "d328bf04c394d4960ac11058e079c063e09280af",
-    "staging_parent_head": "27664dff52577602f707c7d5f135feea0f34a8f2",
+    "staging_parent_head": "998d030a51737bfa1e27580efe8b89e22ae39149",
 }
 IMPLEMENTATION_BINDING_UNKNOWN = {
     "status": "UNKNOWN_NOT_ASSERTED",
@@ -576,8 +579,19 @@ def _expected_pool_contract() -> dict[str, Any]:
         "expected_pool_with_hamming_distance_3_candidate_count": (
             EXPECTED_POOL_WITH_DISTANCE_3_COUNT
         ),
-        "expected_hamming_distance_5_candidate_count": EXPECTED_DISTANCE_5_COUNT,
-        "k5_role": "CLAIM_BOUNDARY_ONLY_NOT_QUALIFICATION_OR_TRUE_A2_EVIDENCE",
+        "expected_included_valid_designed_false_hamming_distance_5_row_count": (
+            EXPECTED_INCLUDED_DISTANCE_5_ROW_COUNT
+        ),
+        "expected_eligible_pool_distinct_hamming_distance_5_utr_hash_count": (
+            EXPECTED_ELIGIBLE_DISTANCE_5_UTR_HASH_COUNT
+        ),
+        "expected_eligible_pool_with_hamming_distance_5_count": (
+            EXPECTED_ELIGIBLE_POOL_WITH_DISTANCE_5_COUNT
+        ),
+        "k5_role": (
+            "CLAIM_BOUNDARY_ONLY_AFTER_K1_TO_K3_ELIGIBILITY_NOT_ELIGIBILITY_"
+            "QUALIFICATION_OR_TRUE_A2_EVIDENCE"
+        ),
         "expected_counts_are_field_or_source_authority": False,
         "raw_id_collision_role": (
             "AGGREGATE_COLLISION_AUDIT_ONLY_NOT_AUTOMATIC_BLOCKER"
@@ -1050,6 +1064,7 @@ def _analyze_verified_source(
         lambda: {
             "identity_rows": 0,
             "candidates": {},
+            "distance_5_utr_hashes": set(),
             "rule_record_count": 0,
             "library": "",
         }
@@ -1066,7 +1081,7 @@ def _analyze_verified_source(
     out_of_scope_count = 0
     raw_id_missing_count = 0
     included_raw_id_missing_count = 0
-    hamming_distance_5_count = 0
+    included_valid_designed_false_distance_5_row_count = 0
 
     normalized_sum_match_count = 0
     endpoint_match_count = 0
@@ -1129,7 +1144,7 @@ def _analyze_verified_source(
                     else math.inf
                 )
                 raw_total_residual = abs(raw_total - math.fsum(raw_counts))
-                if two_stage_global_totals_valid and stored_r_total > 0:
+                if two_stage_global_totals_valid:
                     globally_normalized = tuple(
                         count / global_total
                         for count, global_total in zip(
@@ -1137,42 +1152,44 @@ def _analyze_verified_source(
                         )
                     )
                     reconstructed_r_total = math.fsum(globally_normalized)
-                    two_stage_r_total_residual = abs(
-                        reconstructed_r_total - stored_r_total
-                    )
-                    reconstructed_stored_fractions = tuple(
-                        value / stored_r_total for value in globally_normalized
-                    )
-                    two_stage_vector_residual = max(
-                        abs(observed - reconstructed)
-                        for observed, reconstructed in zip(
-                            normalized, reconstructed_stored_fractions
+                    if reconstructed_r_total > 0:
+                        two_stage_r_total_residual = abs(
+                            reconstructed_r_total - stored_r_total
                         )
-                    )
-                    max_two_stage_r_total_residual = max(
-                        max_two_stage_r_total_residual,
-                        two_stage_r_total_residual,
-                    )
-                    max_two_stage_stored_fraction_vector_residual = max(
-                        max_two_stage_stored_fraction_vector_residual,
-                        two_stage_vector_residual,
-                    )
-                    two_stage_r_total_match_count += (
-                        two_stage_r_total_residual
-                        <= float(
-                            endpoint_contract[
-                                "two_stage_r_total_absolute_tolerance"
-                            ]
+                        reconstructed_stored_fractions = tuple(
+                            value / reconstructed_r_total
+                            for value in globally_normalized
                         )
-                    )
-                    two_stage_stored_fraction_vector_match_count += (
-                        two_stage_vector_residual
-                        <= float(
-                            endpoint_contract[
-                                "two_stage_stored_fraction_vector_absolute_tolerance"
-                            ]
+                        two_stage_vector_residual = max(
+                            abs(observed - reconstructed)
+                            for observed, reconstructed in zip(
+                                normalized, reconstructed_stored_fractions
+                            )
                         )
-                    )
+                        max_two_stage_r_total_residual = max(
+                            max_two_stage_r_total_residual,
+                            two_stage_r_total_residual,
+                        )
+                        max_two_stage_stored_fraction_vector_residual = max(
+                            max_two_stage_stored_fraction_vector_residual,
+                            two_stage_vector_residual,
+                        )
+                        two_stage_r_total_match_count += (
+                            two_stage_r_total_residual
+                            <= float(
+                                endpoint_contract[
+                                    "two_stage_r_total_absolute_tolerance"
+                                ]
+                            )
+                        )
+                        two_stage_stored_fraction_vector_match_count += (
+                            two_stage_vector_residual
+                            <= float(
+                                endpoint_contract[
+                                    "two_stage_stored_fraction_vector_absolute_tolerance"
+                                ]
+                            )
+                        )
                 max_normalized_sum_residual = max(
                     max_normalized_sum_residual, sum_residual
                 )
@@ -1234,7 +1251,10 @@ def _analyze_verified_source(
             else:
                 out_of_scope_count += 1
                 if designed is False and distance == 5:
-                    hamming_distance_5_count += 1
+                    included_valid_designed_false_distance_5_row_count += 1
+                    pool["distance_5_utr_hashes"].add(
+                        _sha256_bytes(utr.encode("ascii"))
+                    )
     except (UnicodeDecodeError, csv.Error, OSError, EOFError) as exc:
         raise InputIntegrityError("source CSV stream is malformed") from exc
     finally:
@@ -1290,6 +1310,12 @@ def _analyze_verified_source(
         )
         for distance in (1, 2, 3)
     }
+    eligible_distance_5_utr_hash_count = sum(
+        len(value["distance_5_utr_hashes"]) for value in eligible.values()
+    )
+    eligible_pool_with_distance_5_count = sum(
+        bool(value["distance_5_utr_hashes"]) for value in eligible.values()
+    )
     eligible_rule_record_count = sum(
         value["rule_record_count"] for value in eligible.values()
     )
@@ -1491,8 +1517,26 @@ def _analyze_verified_source(
         == dict(pool_contract["expected_pool_with_hamming_distance_candidate_counts"])
         and pool_with_distance_3_count
         == int(pool_contract["expected_pool_with_hamming_distance_3_candidate_count"])
-        and hamming_distance_5_count
-        == int(pool_contract["expected_hamming_distance_5_candidate_count"])
+    )
+    k5_scope_match = (
+        included_valid_designed_false_distance_5_row_count
+        == int(
+            pool_contract[
+                "expected_included_valid_designed_false_hamming_distance_5_row_count"
+            ]
+        )
+        and eligible_distance_5_utr_hash_count
+        == int(
+            pool_contract[
+                "expected_eligible_pool_distinct_hamming_distance_5_utr_hash_count"
+            ]
+        )
+        and eligible_pool_with_distance_5_count
+        == int(
+            pool_contract[
+                "expected_eligible_pool_with_hamming_distance_5_count"
+            ]
+        )
     )
 
     if not row_count_match:
@@ -1513,6 +1557,8 @@ def _analyze_verified_source(
         blockers.add("PROVISIONAL_POOL_GEOMETRY_RECONCILIATION_MISMATCH")
     if not distance_match:
         blockers.add("HAMMING_DISTANCE_DISTRIBUTION_RECONCILIATION_MISMATCH")
+    if not k5_scope_match:
+        blockers.add("K5_CLAIM_BOUNDARY_SCOPE_RECONCILIATION_MISMATCH")
 
     input_audit = {
         "dataset_id": DATASET_ID,
@@ -1601,7 +1647,10 @@ def _analyze_verified_source(
         "dataset_id": DATASET_ID,
         "status": (
             "PASS_PROVISIONAL_GEOMETRY_MATCH_NOT_AUTHORITY"
-            if geometry_count_match and distance_match and malformed_included_count == 0
+            if geometry_count_match
+            and distance_match
+            and k5_scope_match
+            and malformed_included_count == 0
             else "FAIL_PROVISIONAL_GEOMETRY_OR_MALFORMED_ROWS"
         ),
         "included_library_record_count": included_count,
@@ -1618,8 +1667,19 @@ def _analyze_verified_source(
         "hamming_distance_candidate_counts": distance_counts_closed,
         "pool_with_hamming_distance_candidate_counts": pool_with_distance_counts,
         "pool_with_hamming_distance_3_candidate_count": pool_with_distance_3_count,
-        "hamming_distance_5_candidate_count_observed": hamming_distance_5_count,
-        "k5_role": "CLAIM_BOUNDARY_ONLY_NOT_QUALIFICATION_OR_TRUE_A2_EVIDENCE",
+        "included_valid_designed_false_hamming_distance_5_row_count": (
+            included_valid_designed_false_distance_5_row_count
+        ),
+        "eligible_pool_distinct_hamming_distance_5_utr_hash_count": (
+            eligible_distance_5_utr_hash_count
+        ),
+        "eligible_pool_with_hamming_distance_5_count": (
+            eligible_pool_with_distance_5_count
+        ),
+        "k5_role": (
+            "CLAIM_BOUNDARY_ONLY_AFTER_K1_TO_K3_ELIGIBILITY_NOT_ELIGIBILITY_"
+            "QUALIFICATION_OR_TRUE_A2_EVIDENCE"
+        ),
         "raw_identifier_collision_distinct_token_count": raw_id_collision_value_count,
         "raw_identifier_collision_record_count": raw_id_collision_record_count,
         "raw_identifier_nonblank_distinct_token_count": len(raw_id_counts),
@@ -1740,7 +1800,9 @@ def _validate_closed_output_payloads(payloads: Mapping[str, Any]) -> None:
             "hamming_distance_candidate_counts",
             "pool_with_hamming_distance_candidate_counts",
             "pool_with_hamming_distance_3_candidate_count",
-            "hamming_distance_5_candidate_count_observed", "k5_role",
+            "included_valid_designed_false_hamming_distance_5_row_count",
+            "eligible_pool_distinct_hamming_distance_5_utr_hash_count",
+            "eligible_pool_with_hamming_distance_5_count", "k5_role",
             "raw_identifier_collision_distinct_token_count",
             "raw_identifier_collision_record_count",
             "raw_identifier_nonblank_distinct_token_count",
@@ -1840,6 +1902,19 @@ def _validate_closed_output_payloads(payloads: Mapping[str, Any]) -> None:
         raise PublicationError("geometry output privacy boundary drifted")
     if geometry_audit.get("true_a2_dense_pool_count") != 0:
         raise PublicationError("geometry output cannot establish true A2")
+    for key in (
+        "included_valid_designed_false_hamming_distance_5_row_count",
+        "eligible_pool_distinct_hamming_distance_5_utr_hash_count",
+        "eligible_pool_with_hamming_distance_5_count",
+    ):
+        value = geometry_audit.get(key)
+        if not isinstance(value, int) or isinstance(value, bool) or value < 0:
+            raise PublicationError(f"geometry K5 aggregate {key} is invalid")
+    if geometry_audit.get("k5_role") != (
+        "CLAIM_BOUNDARY_ONLY_AFTER_K1_TO_K3_ELIGIBILITY_NOT_ELIGIBILITY_"
+        "QUALIFICATION_OR_TRUE_A2_EVIDENCE"
+    ):
+        raise PublicationError("geometry K5 claim-boundary role drifted")
     for key in (
         "hamming_distance_candidate_counts",
         "pool_with_hamming_distance_candidate_counts",

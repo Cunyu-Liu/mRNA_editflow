@@ -38,7 +38,16 @@ CANDIDATES = (
     "CGCCGGTTAACCGGTTAACCGGTTAA",
     "CGTCGGTTAACCGGTTAACCGGTTAA",
 )
+OTHER_MOTHER = "TTGGCCAATTGGCCAATTGGCCAATT"
 SECRET_ID = "secret-raw-id-collision-7f3a"
+
+
+def _mutate_positions(sequence: str, positions: tuple[int, ...]) -> str:
+    replacements = {"A": "C", "C": "A", "G": "A", "T": "A"}
+    mutated = list(sequence)
+    for position in positions:
+        mutated[position] = replacements[mutated[position]]
+    return "".join(mutated)
 
 
 def _production_protocol() -> dict[str, object]:
@@ -161,6 +170,10 @@ def _fixture_protocol(
     expected_malformed: int = 0,
     expected_out_of_scope: int = 0,
     expected_noneligible_rule_records: int = 0,
+    expected_provisional_pool_count: int = 1,
+    expected_k5_rows: int = 0,
+    expected_eligible_k5_hashes: int = 0,
+    expected_eligible_k5_pools: int = 0,
 ) -> dict[str, object]:
     protocol = _production_protocol()
     row_count = len(rows)
@@ -190,7 +203,7 @@ def _fixture_protocol(
     pool["expected_included_library_record_count"] = included
     pool["expected_malformed_included_record_count"] = expected_malformed
     pool["expected_valid_out_of_rule_included_record_count"] = expected_out_of_scope
-    pool["expected_provisional_source_pool_count"] = 1
+    pool["expected_provisional_source_pool_count"] = expected_provisional_pool_count
     pool["expected_valid_rule_record_count_in_noneligible_pools"] = (
         expected_noneligible_rule_records
     )
@@ -205,7 +218,15 @@ def _fixture_protocol(
         "3": 1,
     }
     pool["expected_pool_with_hamming_distance_3_candidate_count"] = 1
-    pool["expected_hamming_distance_5_candidate_count"] = 0
+    pool[
+        "expected_included_valid_designed_false_hamming_distance_5_row_count"
+    ] = expected_k5_rows
+    pool[
+        "expected_eligible_pool_distinct_hamming_distance_5_utr_hash_count"
+    ] = expected_eligible_k5_hashes
+    pool["expected_eligible_pool_with_hamming_distance_5_count"] = (
+        expected_eligible_k5_pools
+    )
     pool["expected_global_raw_id_audit"] = _raw_id_expected(rows, included_only=False)
     pool["expected_included_scope_raw_id_audit"] = _raw_id_expected(
         rows, included_only=True
@@ -349,6 +370,13 @@ def test_production_protocol_freezes_correct_endpoint_and_exact_aggregates() -> 
         "2": 574,
         "3": 91,
     }
+    assert pool[
+        "expected_included_valid_designed_false_hamming_distance_5_row_count"
+    ] == 81
+    assert pool[
+        "expected_eligible_pool_distinct_hamming_distance_5_utr_hash_count"
+    ] == 4
+    assert pool["expected_eligible_pool_with_hamming_distance_5_count"] == 4
     assert boundary["status"] == AUDIT.MECHANICAL_STATUS
     assert boundary["qualified"] is False
     assert boundary["ordinary_study_contribution"] == 0
@@ -462,8 +490,96 @@ def test_two_stage_global_normalization_mismatch_is_a_mechanical_blocker() -> No
     protocol = _fixture_protocol(rows)
     _input, endpoint, _geometry, blockers = _analyze(rows, protocol=protocol)
     assert endpoint["two_stage_r_total_match_count"] == 3
-    assert endpoint["two_stage_stored_fraction_vector_match_count"] == 3
+    assert endpoint["two_stage_stored_fraction_vector_match_count"] == 4
     assert "TWO_STAGE_GLOBAL_NORMALIZATION_RECONCILIATION_MISMATCH" in blockers
+
+
+def test_k5_claim_boundary_scope_is_closed_deduplicated_and_nonqualifying() -> None:
+    eligible_k5_a = _mutate_positions(MOTHER, (0, 1, 2, 3, 4))
+    eligible_k5_b = _mutate_positions(MOTHER, (0, 1, 2, 3, 5))
+    noneligible_k5 = _mutate_positions(OTHER_MOTHER, (0, 1, 2, 3, 4))
+    rows = _base_rows()
+    rows.extend(
+        [
+            _row(
+                utr=eligible_k5_a,
+                designed=False,
+                raw_id="eligible-k5-a-first",
+                first_index="k5-index-a-first",
+            ),
+            _row(
+                utr=eligible_k5_a,
+                designed=False,
+                raw_id="eligible-k5-a-duplicate",
+                first_index="k5-index-a-duplicate",
+            ),
+            _row(
+                utr=eligible_k5_b,
+                designed=False,
+                raw_id="eligible-k5-b",
+                first_index="k5-index-b",
+            ),
+            _row(
+                utr=noneligible_k5,
+                mother=OTHER_MOTHER,
+                designed=False,
+                raw_id="noneligible-k5",
+                first_index="k5-index-noneligible",
+            ),
+        ]
+    )
+    _retune_two_stage_cohort(rows)
+    protocol = _fixture_protocol(
+        rows,
+        expected_out_of_scope=4,
+        expected_provisional_pool_count=2,
+        expected_k5_rows=4,
+        expected_eligible_k5_hashes=2,
+        expected_eligible_k5_pools=1,
+    )
+    _input, _endpoint, geometry, blockers = _analyze(rows, protocol=protocol)
+    assert geometry[
+        "included_valid_designed_false_hamming_distance_5_row_count"
+    ] == 4
+    assert geometry[
+        "eligible_pool_distinct_hamming_distance_5_utr_hash_count"
+    ] == 2
+    assert geometry["eligible_pool_with_hamming_distance_5_count"] == 1
+    assert geometry["provisional_source_pool_count"] == 2
+    assert geometry["eligible_provisional_pool_count"] == 1
+    assert geometry["eligible_provisional_distinct_candidate_count"] == 3
+    assert geometry["hamming_distance_candidate_counts"] == {
+        "1": 1,
+        "2": 1,
+        "3": 1,
+    }
+    assert not set(blockers) & AUDIT.CONDITIONAL_BLOCKERS
+
+    rendered = json.dumps(geometry, sort_keys=True)
+    for sequence in (eligible_k5_a, eligible_k5_b, noneligible_k5):
+        assert sequence not in rendered
+        assert hashlib.sha256(sequence.encode("ascii")).hexdigest() not in rendered
+    eligible_source_key = AUDIT._provisional_source_key(
+        MOTHER,
+        "human_utrs",
+        protocol["pool_geometry_contract"]["fixed_assay_id"],
+        protocol["pool_geometry_contract"]["fixed_context_id"],
+        protocol["pool_geometry_contract"]["fixed_endpoint_id"],
+    )
+    assert eligible_source_key not in rendered
+    AUDIT._assert_aggregate_safe(geometry)
+
+    mismatch_protocol = copy.deepcopy(protocol)
+    mismatch_protocol["pool_geometry_contract"][
+        "expected_eligible_pool_distinct_hamming_distance_5_utr_hash_count"
+    ] = 3
+    _input, _endpoint, mismatch_geometry, mismatch_blockers = _analyze(
+        rows, protocol=mismatch_protocol
+    )
+    assert mismatch_geometry["eligible_provisional_pool_count"] == 1
+    assert set(mismatch_blockers) & AUDIT.CONDITIONAL_BLOCKERS == {
+        "K5_CLAIM_BOUNDARY_SCOPE_RECONCILIATION_MISMATCH"
+    }
 
 
 def test_global_raw_id_collisions_are_aggregate_boundary_not_automatic_blocker() -> None:
