@@ -30,7 +30,7 @@
     "qualifier_sha256": "15f162d9f687c740e592be405ea50ff6af30a2cd572970722ade287bf18ade1a",
     "focused_test_path": "tests/route_a_v3/test_qualify_gse149487_plumage.py",
     "focused_test_sha256": "fc8e2147d4aee480d7ff12b38b0b036ee8e65dec8be6ecf5d9a6b893f2a28fb9",
-    "implementation_commit": "UNKNOWN_NOT_ASSERTED"
+    "implementation_commit": "d10a42a564ecac2af048b39c05cbc863ebdacd02"
   },
   "scope": {
     "ordinary_public_data_only": true,
@@ -187,8 +187,8 @@
   },
   "stop_before_data_preflight_binding": {
     "binding_scheme": "CONFIG_ONLY_POST_IMPLEMENTATION_BINDING_V1",
-    "status": "UNKNOWN_NOT_ASSERTED",
-    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "status": "BOUND",
+    "implementation_commit": "d10a42a564ecac2af048b39c05cbc863ebdacd02",
     "external_evidence_config_path": "configs/route_a_v3_gse149487_external_evidence_roots_v1.json",
     "external_evidence_config_sha256": "d25a978c4603e180ca20534f3ba8b78c321e21c01fdf94c88b9ab65a0ed7ed8b",
     "preflight_script_path": "scripts/route_a_v3/preflight_gse149487_full_a1.py",
