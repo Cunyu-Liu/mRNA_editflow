@@ -213,7 +213,14 @@
       "control_acgt_only_count": 25,
       "control_non_acgt_count": 41,
       "controls_excluded_from_source_candidate_geometry": true,
-      "identity_rule": "ID_EQUALS_STRIP_WT_OR_MUTANT_SUFFIX_FROM_MERGED_ID"
+      "pair_identity_rule": "WT_MUTANT_ID_EQUALS_STRIP_TYPED_SUFFIX_FROM_MERGED_ID",
+      "pair_id_equals_stripped_merged_id_count": 13770,
+      "control_identity_rule": "CONTROL_ID_AND_UNSUFFIXED_MERGED_ID_ARE_INDEPENDENT_UNIQUE_NONEMPTY_FIELDS",
+      "control_id_equals_merged_id_count": 0,
+      "control_id_differs_merged_id_count": 66,
+      "control_id_merged_id_set_intersection_count": 0,
+      "controls_have_independent_unsuffixed_merged_ids": true,
+      "control_auxiliary_join_key_source": "UNSUFFIXED_CONTROL_MERGED_ID"
     },
     "processed": {
       "key_column": "barcode",

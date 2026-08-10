@@ -75,8 +75,17 @@ def _full_design_payload() -> bytes:
             ]
         for index in range(66):
             identifier = f"CONTROL{index:03d}"
+            auxiliary_key = f"CONTROL_AUX{index:03d}"
             sequence = "A" * 201 if index < 25 else "N" * 201
-            yield [identifier, "Control", sequence, "AAA", "TTT", "FULL", identifier]
+            yield [
+                identifier,
+                "Control",
+                sequence,
+                "AAA",
+                "TTT",
+                "FULL",
+                auxiliary_key,
+            ]
 
     return _gzip_tsv(header, rows())
 
@@ -96,6 +105,10 @@ def _tiny_design_contract(*, control_acgt_only: bool) -> dict[str, Any]:
         control_id_count=1,
         control_acgt_only_count=int(control_acgt_only),
         control_non_acgt_count=int(not control_acgt_only),
+        pair_id_equals_stripped_merged_id_count=2,
+        control_id_equals_merged_id_count=0,
+        control_id_differs_merged_id_count=1,
+        control_id_merged_id_set_intersection_count=0,
     )
     return contract
 
@@ -121,7 +134,7 @@ def _full_small_payload() -> bytes:
         for index in range(6312, 6537):
             yield [f"PAIR{index:05d}_Mutant", "1"]
         for index in range(47):
-            yield [f"CONTROL{index:03d}", "1"]
+            yield [f"CONTROL_AUX{index:03d}", "1"]
 
     return _gzip_tsv(["Barcode", "Freq"], rows())
 
@@ -646,6 +659,24 @@ def test_exact_generated_headers_and_frozen_table_counts() -> None:
     assert QUALIFY.EXPECTED_DESIGN_CONTRACT["control_non_acgt_count"] == 41
     assert (
         QUALIFY.EXPECTED_DESIGN_CONTRACT[
+            "pair_id_equals_stripped_merged_id_count"
+        ]
+        == 13770
+    )
+    assert QUALIFY.EXPECTED_DESIGN_CONTRACT["control_id_equals_merged_id_count"] == 0
+    assert QUALIFY.EXPECTED_DESIGN_CONTRACT["control_id_differs_merged_id_count"] == 66
+    assert (
+        QUALIFY.EXPECTED_DESIGN_CONTRACT[
+            "control_id_merged_id_set_intersection_count"
+        ]
+        == 0
+    )
+    assert (
+        QUALIFY.EXPECTED_DESIGN_CONTRACT["control_auxiliary_join_key_source"]
+        == "UNSUFFIXED_CONTROL_MERGED_ID"
+    )
+    assert (
+        QUALIFY.EXPECTED_DESIGN_CONTRACT[
             "controls_excluded_from_source_candidate_geometry"
         ]
         is True
@@ -714,6 +745,28 @@ def test_full_aggregate_gap_run_exact_counts_manifest_attrition_no_raw_payload_a
     assert mechanical["primary_design"]["control_acgt_only_count"] == 25
     assert mechanical["primary_design"]["control_non_acgt_count"] == 41
     assert (
+        mechanical["primary_design"]["pair_id_equals_stripped_merged_id_count"]
+        == 13770
+    )
+    assert mechanical["primary_design"]["control_id_equals_merged_id_count"] == 0
+    assert mechanical["primary_design"]["control_id_differs_merged_id_count"] == 66
+    assert (
+        mechanical["primary_design"][
+            "control_id_merged_id_set_intersection_count"
+        ]
+        == 0
+    )
+    assert (
+        mechanical["primary_design"][
+            "controls_have_independent_unsuffixed_merged_ids"
+        ]
+        is True
+    )
+    assert (
+        mechanical["primary_design"]["control_auxiliary_join_key_source"]
+        == "UNSUFFIXED_CONTROL_MERGED_ID"
+    )
+    assert (
         mechanical["primary_design"][
             "controls_excluded_from_source_candidate_geometry"
         ]
@@ -735,6 +788,22 @@ def test_full_aggregate_gap_run_exact_counts_manifest_attrition_no_raw_payload_a
     assert mechanical["ivt"]["complete_pair_count"] == 6774
     assert mechanical["ivt"]["missing_both_pair_count"] == 111
     assert mechanical["join_audit"]["three_modal_auxiliary_join_pair_count"] == 6120
+    assert (
+        mechanical["join_audit"][
+            "gse200302_gse200303_control_auxiliary_key_sets_equal"
+        ]
+        is True
+    )
+    assert mechanical["join_audit"]["small_plasmid_unsuffixed_control_key_count"] == 47
+    assert mechanical["join_audit"]["small_plasmid_control_id_join_count"] == 0
+    assert (
+        mechanical["join_audit"]["small_plasmid_control_auxiliary_key_join_count"]
+        == 47
+    )
+    assert (
+        mechanical["join_audit"]["small_plasmid_unmatched_unsuffixed_key_count"]
+        == 0
+    )
     assert mechanical["scope_audit"]["maximum_independent_study_count"] == 1
     assert report["qualified"] is False
     assert report["ordinary_study_contribution"] == 0
@@ -1059,7 +1128,7 @@ def test_design_duplicate_missing_pair_and_unknown_type_fail_closed(kind: str) -
     rows = [
         ["P0", "WT", wt, "A", "T", "F", "P0_WT"],
         ["P0", "Mutant", mutant, "A", "T", "F", "P0_Mutant"],
-        ["C0", "Control", wt, "A", "T", "F", "C0"],
+        ["C0", "Control", wt, "A", "T", "F", "MC0"],
     ]
     contract = _tiny_design_contract(control_acgt_only=True)
     if kind == "duplicate":
@@ -1096,7 +1165,7 @@ def test_design_non_acgt_controls_are_classified_and_excluded_from_pair_geometry
     rows = [
         ["P0", "WT", wt, "A", "T", "F", "P0_WT"],
         ["P0", "Mutant", mutant, "A", "T", "F", "P0_Mutant"],
-        ["C0", "Control", "N" * 201, "A", "T", "F", "C0"],
+        ["C0", "Control", "N" * 201, "A", "T", "F", "MC0"],
     ]
     contract = _tiny_design_contract(control_acgt_only=False)
     state = QUALIFY._audit_design(
@@ -1108,6 +1177,16 @@ def test_design_non_acgt_controls_are_classified_and_excluded_from_pair_geometry
     assert state.aggregate["paired_intervention_sequences_acgt_only"] is True
     assert state.aggregate["control_acgt_only_count"] == 0
     assert state.aggregate["control_non_acgt_count"] == 1
+    assert state.aggregate["pair_id_equals_stripped_merged_id_count"] == 2
+    assert state.aggregate["control_id_equals_merged_id_count"] == 0
+    assert state.aggregate["control_id_differs_merged_id_count"] == 1
+    assert state.aggregate["control_id_merged_id_set_intersection_count"] == 0
+    assert state.aggregate["controls_have_independent_unsuffixed_merged_ids"] is True
+    assert state.aggregate["control_auxiliary_join_key_source"] == (
+        "UNSUFFIXED_CONTROL_MERGED_ID"
+    )
+    assert state.control_ids == {"C0"}
+    assert state.control_auxiliary_keys == {"MC0"}
     assert state.aggregate["controls_excluded_from_source_candidate_geometry"] is True
     assert state.aggregate["distinct_candidate_count"] == 1
     assert state.aggregate["distinct_wt_source_group_count"] == 1
@@ -1119,7 +1198,7 @@ def test_design_non_acgt_paired_intervention_fails_closed(row_index: int) -> Non
     rows = [
         ["P0", "WT", wt, "A", "T", "F", "P0_WT"],
         ["P0", "Mutant", mutant, "A", "T", "F", "P0_Mutant"],
-        ["C0", "Control", "N" * 201, "A", "T", "F", "C0"],
+        ["C0", "Control", "N" * 201, "A", "T", "F", "MC0"],
     ]
     rows[row_index][2] = "N" + rows[row_index][2][1:]
     contract = _tiny_design_contract(control_acgt_only=False)
@@ -1131,12 +1210,91 @@ def test_design_non_acgt_paired_intervention_fails_closed(row_index: int) -> Non
         )
 
 
+@pytest.mark.parametrize("row_index", [0, 1], ids=["WT", "Mutant"])
+def test_design_pair_id_mismatch_still_fails_closed(row_index: int) -> None:
+    wt, mutant = _sequence_pair(0)
+    rows = [
+        ["P0", "WT", wt, "A", "T", "F", "P0_WT"],
+        ["P0", "Mutant", mutant, "A", "T", "F", "P0_Mutant"],
+        ["C0", "Control", "N" * 201, "A", "T", "F", "MC0"],
+    ]
+    rows[row_index][6] = f"WRONG_{rows[row_index][1]}"
+    contract = _tiny_design_contract(control_acgt_only=False)
+    with pytest.raises(
+        QUALIFY.TableAuditError,
+        match="paired intervention violates ID == strip_suffix",
+    ):
+        QUALIFY._audit_design(
+            _gzip_tsv(contract["exact_header"], rows),
+            contract,
+            label="pair identity mismatch fixture",
+        )
+
+
+@pytest.mark.parametrize(
+    ("kind", "error_match"),
+    [
+        ("duplicate_merged_id", "duplicate merged_id"),
+        ("empty_merged_id", "missing ID or merged_id"),
+        ("suffixed_merged_id", "control identity"),
+        ("merged_id_equals_id", "control ID/merged_id independence"),
+        ("duplicate_control_id", "control identity"),
+        ("empty_control_id", "missing ID or merged_id"),
+    ],
+)
+def test_design_invalid_control_identity_fails_closed(
+    kind: str, error_match: str
+) -> None:
+    wt, mutant = _sequence_pair(0)
+    rows = [
+        ["P0", "WT", wt, "A", "T", "F", "P0_WT"],
+        ["P0", "Mutant", mutant, "A", "T", "F", "P0_Mutant"],
+        ["C0", "Control", "N" * 201, "A", "T", "F", "MC0"],
+    ]
+    contract = _tiny_design_contract(control_acgt_only=False)
+    if kind in {"duplicate_merged_id", "duplicate_control_id"}:
+        second_id = "C1" if kind == "duplicate_merged_id" else "C0"
+        second_merged_id = "MC0" if kind == "duplicate_merged_id" else "MC1"
+        rows.append(
+            [
+                second_id,
+                "Control",
+                "N" * 201,
+                "A",
+                "T",
+                "F",
+                second_merged_id,
+            ]
+        )
+        contract.update(
+            row_count=4,
+            type_counts={"WT": 1, "Mutant": 1, "Control": 2},
+            control_id_count=2,
+            control_non_acgt_count=2,
+            control_id_differs_merged_id_count=2,
+        )
+    elif kind == "empty_merged_id":
+        rows[2][6] = ""
+    elif kind == "suffixed_merged_id":
+        rows[2][6] = "MC0_WT"
+    elif kind == "merged_id_equals_id":
+        rows[2][6] = "C0"
+    else:
+        rows[2][0] = ""
+    with pytest.raises(QUALIFY.TableAuditError, match=error_match):
+        QUALIFY._audit_design(
+            _gzip_tsv(contract["exact_header"], rows),
+            contract,
+            label=f"invalid control identity {kind} fixture",
+        )
+
+
 def test_design_non_201nt_control_fails_closed() -> None:
     wt, mutant = _sequence_pair(0)
     rows = [
         ["P0", "WT", wt, "A", "T", "F", "P0_WT"],
         ["P0", "Mutant", mutant, "A", "T", "F", "P0_Mutant"],
-        ["C0", "Control", "N" * 200, "A", "T", "F", "C0"],
+        ["C0", "Control", "N" * 200, "A", "T", "F", "MC0"],
     ]
     contract = _tiny_design_contract(control_acgt_only=False)
     with pytest.raises(QUALIFY.TableAuditError, match="non-frozen length"):

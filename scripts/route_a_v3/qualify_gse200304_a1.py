@@ -221,7 +221,14 @@ EXPECTED_DESIGN_CONTRACT = {
     "control_acgt_only_count": 25,
     "control_non_acgt_count": 41,
     "controls_excluded_from_source_candidate_geometry": True,
-    "identity_rule": "ID_EQUALS_STRIP_WT_OR_MUTANT_SUFFIX_FROM_MERGED_ID",
+    "pair_identity_rule": "WT_MUTANT_ID_EQUALS_STRIP_TYPED_SUFFIX_FROM_MERGED_ID",
+    "pair_id_equals_stripped_merged_id_count": 13770,
+    "control_identity_rule": "CONTROL_ID_AND_UNSUFFIXED_MERGED_ID_ARE_INDEPENDENT_UNIQUE_NONEMPTY_FIELDS",
+    "control_id_equals_merged_id_count": 0,
+    "control_id_differs_merged_id_count": 66,
+    "control_id_merged_id_set_intersection_count": 0,
+    "controls_have_independent_unsuffixed_merged_ids": True,
+    "control_auxiliary_join_key_source": "UNSUFFIXED_CONTROL_MERGED_ID",
 }
 
 EXPECTED_PROCESSED_CONTRACT = {
@@ -547,6 +554,7 @@ class DirectoryBinding:
 class DesignState:
     pair_sequences: dict[str, dict[str, str]]
     control_ids: set[str]
+    control_auxiliary_keys: set[str]
     merged_ids: set[str]
     aggregate: dict[str, Any]
 
@@ -554,7 +562,7 @@ class DesignState:
 @dataclass
 class AuxiliaryArmState:
     arms_by_pair: dict[str, set[str]]
-    control_ids: set[str]
+    control_auxiliary_keys: set[str]
     complete_pair_ids: set[str]
     aggregate: dict[str, Any]
 
@@ -1345,11 +1353,14 @@ def _audit_design(payload: bytes, contract: Mapping[str, Any], *, label: str) ->
     indices = {name: index for index, name in enumerate(header)}
     pairs: dict[str, dict[str, str]] = {}
     controls: set[str] = set()
+    control_auxiliary_keys: set[str] = set()
     merged_ids: set[str] = set()
     type_counts = {"WT": 0, "Mutant": 0, "Control": 0}
     control_acgt_only_count = 0
     control_non_acgt_count = 0
-    identity_equal_count = 0
+    pair_id_equals_stripped_merged_id_count = 0
+    control_id_equals_merged_id_count = 0
+    control_id_differs_merged_id_count = 0
     for row in rows:
         if len(row) != len(header):
             raise TableAuditError(f"{label} contains a ragged row")
@@ -1367,19 +1378,26 @@ def _audit_design(payload: bytes, contract: Mapping[str, Any], *, label: str) ->
             raise TableAuditError(f"{label} contains a duplicate merged_id")
         merged_ids.add(merged_id)
         base, suffix_type = strip_design_suffix(merged_id)
-        if base != identifier:
-            raise TableAuditError(f"{label} violates ID == strip_suffix(merged_id)")
-        identity_equal_count += 1
         type_counts[row_type] += 1
         if row_type == "Control":
             if suffix_type is not None or identifier in controls or identifier in pairs:
                 raise TableAuditError(f"{label} control identity or multiplicity is invalid")
             controls.add(identifier)
+            control_auxiliary_keys.add(merged_id)
+            if identifier == merged_id:
+                control_id_equals_merged_id_count += 1
+            else:
+                control_id_differs_merged_id_count += 1
             if SEQUENCE_RE.fullmatch(sequence) is None:
                 control_non_acgt_count += 1
             else:
                 control_acgt_only_count += 1
             continue
+        if base != identifier:
+            raise TableAuditError(
+                f"{label} paired intervention violates ID == strip_suffix(merged_id)"
+            )
+        pair_id_equals_stripped_merged_id_count += 1
         if SEQUENCE_RE.fullmatch(sequence) is None:
             raise TableAuditError(
                 f"{label} paired intervention contains a non-ACGT sequence"
@@ -1400,6 +1418,32 @@ def _audit_design(payload: bytes, contract: Mapping[str, Any], *, label: str) ->
     ):
         raise TableAuditError(
             f"{label} control ACGT/non-ACGT classification differs from the frozen counts"
+        )
+    if (
+        pair_id_equals_stripped_merged_id_count
+        != contract["pair_id_equals_stripped_merged_id_count"]
+    ):
+        raise TableAuditError(
+            f"{label} pair ID/merged_id authority count differs from the frozen count"
+        )
+    if (
+        control_id_equals_merged_id_count
+        != contract["control_id_equals_merged_id_count"]
+        or control_id_differs_merged_id_count
+        != contract["control_id_differs_merged_id_count"]
+    ):
+        raise TableAuditError(
+            f"{label} control ID/merged_id independence differs from the frozen counts"
+        )
+    control_id_merged_id_set_intersection_count = len(
+        controls & control_auxiliary_keys
+    )
+    if (
+        control_id_merged_id_set_intersection_count
+        != contract["control_id_merged_id_set_intersection_count"]
+    ):
+        raise TableAuditError(
+            f"{label} control ID/merged_id set intersection differs from the frozen count"
         )
     for pair in pairs.values():
         if set(pair) != {"WT", "Mutant"}:
@@ -1427,6 +1471,7 @@ def _audit_design(payload: bytes, contract: Mapping[str, Any], *, label: str) ->
     return DesignState(
         pair_sequences=pairs,
         control_ids=controls,
+        control_auxiliary_keys=control_auxiliary_keys,
         merged_ids=merged_ids,
         aggregate={
             "row_count": len(rows),
@@ -1436,7 +1481,18 @@ def _audit_design(payload: bytes, contract: Mapping[str, Any], *, label: str) ->
             "unique_pair_count": len(pairs),
             **source_geometry,
             "unique_control_id_count": len(controls),
-            "identity_equal_row_count": identity_equal_count,
+            "pair_id_equals_stripped_merged_id_count": (
+                pair_id_equals_stripped_merged_id_count
+            ),
+            "control_id_equals_merged_id_count": control_id_equals_merged_id_count,
+            "control_id_differs_merged_id_count": control_id_differs_merged_id_count,
+            "control_id_merged_id_set_intersection_count": (
+                control_id_merged_id_set_intersection_count
+            ),
+            "controls_have_independent_unsuffixed_merged_ids": True,
+            "control_auxiliary_join_key_source": contract[
+                "control_auxiliary_join_key_source"
+            ],
             "all_row_sequence_length": contract["all_row_sequence_length"],
             "all_row_sequences_exact_length": True,
             "pair_sequence_length": contract["all_row_sequence_length"],
@@ -1523,7 +1579,7 @@ def _audit_processed(
 def _normalize_auxiliary_key(
     value: str,
     design_pair_ids: set[str],
-    design_control_ids: set[str],
+    design_control_auxiliary_keys: set[str],
     *,
     label: str,
 ) -> tuple[str, str | None]:
@@ -1531,8 +1587,10 @@ def _normalize_auxiliary_key(
         raise TableAuditError(f"{label} contains a missing key")
     base, allele = strip_design_suffix(value)
     if allele is None:
-        if value not in design_control_ids:
-            raise TableAuditError(f"{label} unsuffixed key is not a frozen control")
+        if value not in design_control_auxiliary_keys:
+            raise TableAuditError(
+                f"{label} unsuffixed key is not a frozen control auxiliary key"
+            )
         return value, None
     if base not in design_pair_ids:
         raise TableAuditError(f"{label} allele key does not map to a frozen design pair")
@@ -1543,7 +1601,7 @@ def _audit_small_plasmid(
     payload: bytes,
     contract: Mapping[str, Any],
     design_pair_ids: set[str],
-    design_control_ids: set[str],
+    design_control_auxiliary_keys: set[str],
     *,
     label: str,
 ) -> AuxiliaryArmState:
@@ -1563,7 +1621,7 @@ def _audit_small_plasmid(
             raise TableAuditError(f"{label} contains a duplicate Barcode")
         raw_keys.add(key)
         base, allele = _normalize_auxiliary_key(
-            key, design_pair_ids, design_control_ids, label=label
+            key, design_pair_ids, design_control_auxiliary_keys, label=label
         )
         if allele is None:
             controls.add(base)
@@ -1590,7 +1648,7 @@ def _audit_small_plasmid(
     aggregate = {
         "row_count": len(rows),
         "unique_barcode_count": len(raw_keys),
-        "unique_design_id_join_count": len(set(arms) | controls),
+        "unique_design_join_key_count": len(set(arms) | controls),
         **exact_counts,
         "finite_nonmissing_numeric_cell_count": len(rows),
         "legacy_freq_column_present": True,
@@ -1605,7 +1663,7 @@ def _audit_ivt(
     payload: bytes,
     contract: Mapping[str, Any],
     design_pair_ids: set[str],
-    design_control_ids: set[str],
+    design_control_auxiliary_keys: set[str],
     *,
     label: str,
 ) -> AuxiliaryArmState:
@@ -1626,7 +1684,7 @@ def _audit_ivt(
             raise TableAuditError(f"{label} contains a duplicate ids value")
         raw_keys.add(key)
         base, allele = _normalize_auxiliary_key(
-            key, design_pair_ids, design_control_ids, label=label
+            key, design_pair_ids, design_control_auxiliary_keys, label=label
         )
         if allele is None:
             controls.add(base)
@@ -1655,7 +1713,7 @@ def _audit_ivt(
     aggregate = {
         "row_count": len(rows),
         "unique_id_count": len(raw_keys),
-        "unique_design_id_join_count": len(set(arms) | controls),
+        "unique_design_join_key_count": len(set(arms) | controls),
         **exact_counts,
         "measurement_column_count": len(header) - 1,
         "finite_nonmissing_numeric_cell_count": numeric_cells,
@@ -1879,7 +1937,12 @@ def _validate_mechanical_payload(value: Mapping[str, Any]) -> None:
         "three_or_more_candidate_source_pool_count",
         "ndcg_eligible_source_pool_count",
         "unique_control_id_count",
-        "identity_equal_row_count",
+        "pair_id_equals_stripped_merged_id_count",
+        "control_id_equals_merged_id_count",
+        "control_id_differs_merged_id_count",
+        "control_id_merged_id_set_intersection_count",
+        "controls_have_independent_unsuffixed_merged_ids",
+        "control_auxiliary_join_key_source",
         "all_row_sequence_length",
         "all_row_sequences_exact_length",
         "pair_sequence_length",
@@ -1906,7 +1969,12 @@ def _validate_mechanical_payload(value: Mapping[str, Any]) -> None:
             "three_or_more_candidate_source_pool_count": 0,
             "ndcg_eligible_source_pool_count": 0,
             "unique_control_id_count": 66,
-            "identity_equal_row_count": 13836,
+            "pair_id_equals_stripped_merged_id_count": 13770,
+            "control_id_equals_merged_id_count": 0,
+            "control_id_differs_merged_id_count": 66,
+            "control_id_merged_id_set_intersection_count": 0,
+            "controls_have_independent_unsuffixed_merged_ids": True,
+            "control_auxiliary_join_key_source": "UNSUFFIXED_CONTROL_MERGED_ID",
             "all_row_sequence_length": 201,
             "all_row_sequences_exact_length": True,
             "pair_sequence_length": 201,
@@ -1962,7 +2030,7 @@ def _validate_mechanical_payload(value: Mapping[str, Any]) -> None:
         {
             "row_count",
             "unique_barcode_count",
-            "unique_design_id_join_count",
+            "unique_design_join_key_count",
             "complete_pair_count",
             "wt_only_pair_count",
             "mutant_only_pair_count",
@@ -1979,7 +2047,7 @@ def _validate_mechanical_payload(value: Mapping[str, Any]) -> None:
     expected_small = {
         "row_count": 12704,
         "unique_barcode_count": 12704,
-        "unique_design_id_join_count": 6584,
+        "unique_design_join_key_count": 6584,
         "complete_pair_count": 6120,
         "wt_only_pair_count": 192,
         "mutant_only_pair_count": 225,
@@ -1998,7 +2066,7 @@ def _validate_mechanical_payload(value: Mapping[str, Any]) -> None:
         {
             "row_count",
             "unique_id_count",
-            "unique_design_id_join_count",
+            "unique_design_join_key_count",
             "complete_pair_count",
             "wt_only_pair_count",
             "mutant_only_pair_count",
@@ -2014,7 +2082,7 @@ def _validate_mechanical_payload(value: Mapping[str, Any]) -> None:
     expected_ivt = {
         "row_count": 13548,
         "unique_id_count": 13548,
-        "unique_design_id_join_count": 6774,
+        "unique_design_join_key_count": 6774,
         "complete_pair_count": 6774,
         "wt_only_pair_count": 0,
         "mutant_only_pair_count": 0,
@@ -2032,11 +2100,16 @@ def _validate_mechanical_payload(value: Mapping[str, Any]) -> None:
         {
             "gse200302_gse200303_design_pair_key_sets_equal",
             "gse200302_gse200303_control_id_sets_equal",
+            "gse200302_gse200303_control_auxiliary_key_sets_equal",
             "processed_barcode_equals_design_id_count",
-            "design_id_equals_strip_suffix_merged_id_row_count",
+            "pair_id_equals_stripped_merged_id_count",
             "processed_outcome_blind_attrition_count",
-            "small_plasmid_design_join_id_count",
-            "ivt_design_join_id_count",
+            "small_plasmid_design_join_key_count",
+            "ivt_design_join_key_count",
+            "small_plasmid_unsuffixed_control_key_count",
+            "small_plasmid_control_id_join_count",
+            "small_plasmid_control_auxiliary_key_join_count",
+            "small_plasmid_unmatched_unsuffixed_key_count",
             "three_modal_auxiliary_join_pair_count",
             "three_modal_join_role",
         },
@@ -2045,16 +2118,21 @@ def _validate_mechanical_payload(value: Mapping[str, Any]) -> None:
     for key, expected in {
         "gse200302_gse200303_design_pair_key_sets_equal": True,
         "gse200302_gse200303_control_id_sets_equal": True,
+        "gse200302_gse200303_control_auxiliary_key_sets_equal": True,
         "processed_barcode_equals_design_id_count": 6772,
-        "design_id_equals_strip_suffix_merged_id_row_count": 13836,
+        "pair_id_equals_stripped_merged_id_count": 13770,
         "processed_outcome_blind_attrition_count": 113,
+        "small_plasmid_unsuffixed_control_key_count": 47,
+        "small_plasmid_control_id_join_count": 0,
+        "small_plasmid_control_auxiliary_key_join_count": 47,
+        "small_plasmid_unmatched_unsuffixed_key_count": 0,
         "three_modal_join_role": "AUXILIARY_QC_ONLY_NOT_PRIMARY_ENDPOINT",
     }.items():
         if join[key] != expected:
             raise PublicationError(f"mechanical join {key} is invalid")
     for key, expected in {
-        "small_plasmid_design_join_id_count": 6584,
-        "ivt_design_join_id_count": 6774,
+        "small_plasmid_design_join_key_count": 6584,
+        "ivt_design_join_key_count": 6774,
         "three_modal_auxiliary_join_pair_count": 6120,
     }.items():
         if join[key] != expected:
@@ -2813,6 +2891,10 @@ def _build_success_payloads(
         raise TableAuditError("GSE200302 and GSE200303 design pair-key sets differ")
     if primary_design.control_ids != auxiliary_design.control_ids:
         raise TableAuditError("GSE200302 and GSE200303 design control-ID sets differ")
+    if primary_design.control_auxiliary_keys != auxiliary_design.control_auxiliary_keys:
+        raise TableAuditError(
+            "GSE200302 and GSE200303 design control auxiliary-key sets differ"
+        )
     processed_ids, processed_audit = _audit_processed(
         asset_payloads["GSE200302_PROCESSED"],
         table["processed"],
@@ -2823,14 +2905,14 @@ def _build_success_payloads(
         asset_payloads["GSE200303_SMALL_PLASMID"],
         table["small_plasmid"],
         primary_pair_ids,
-        primary_design.control_ids,
+        primary_design.control_auxiliary_keys,
         label="GSE200303 small-plasmid auxiliary table",
     )
     ivt_state = _audit_ivt(
         asset_payloads["GSE217530_IVT"],
         table["ivt"],
         primary_pair_ids,
-        primary_design.control_ids,
+        primary_design.control_auxiliary_keys,
         label="GSE217530 IVT auxiliary table",
     )
     assets = []
@@ -2880,14 +2962,31 @@ def _build_success_payloads(
         "join_audit": {
             "gse200302_gse200303_design_pair_key_sets_equal": True,
             "gse200302_gse200303_control_id_sets_equal": True,
+            "gse200302_gse200303_control_auxiliary_key_sets_equal": True,
             "processed_barcode_equals_design_id_count": len(processed_ids),
-            "design_id_equals_strip_suffix_merged_id_row_count": primary_design.aggregate["identity_equal_row_count"],
+            "pair_id_equals_stripped_merged_id_count": primary_design.aggregate[
+                "pair_id_equals_stripped_merged_id_count"
+            ],
             "processed_outcome_blind_attrition_count": len(primary_pair_ids - processed_ids),
-            "small_plasmid_design_join_id_count": len(
-                set(small_state.arms_by_pair) | small_state.control_ids
+            "small_plasmid_design_join_key_count": len(
+                set(small_state.arms_by_pair) | small_state.control_auxiliary_keys
             ),
-            "ivt_design_join_id_count": len(
-                set(ivt_state.arms_by_pair) | ivt_state.control_ids
+            "ivt_design_join_key_count": len(
+                set(ivt_state.arms_by_pair) | ivt_state.control_auxiliary_keys
+            ),
+            "small_plasmid_unsuffixed_control_key_count": len(
+                small_state.control_auxiliary_keys
+            ),
+            "small_plasmid_control_id_join_count": len(
+                small_state.control_auxiliary_keys & primary_design.control_ids
+            ),
+            "small_plasmid_control_auxiliary_key_join_count": len(
+                small_state.control_auxiliary_keys
+                & primary_design.control_auxiliary_keys
+            ),
+            "small_plasmid_unmatched_unsuffixed_key_count": len(
+                small_state.control_auxiliary_keys
+                - primary_design.control_auxiliary_keys
             ),
             "three_modal_auxiliary_join_pair_count": len(
                 processed_ids
