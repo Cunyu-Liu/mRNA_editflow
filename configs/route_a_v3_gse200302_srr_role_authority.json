@@ -9,13 +9,13 @@
     "compiled_core_projection_required": true
   },
   "implementation_binding": {
-    "status": "UNKNOWN_NOT_ASSERTED",
+    "status": "BOUND",
     "binding_mode": "TWO_COMMIT_CONFIG_ONLY_NON_SELF_REFERENTIAL_V1",
-    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "implementation_commit": "346fb7e94552a4a7a20732730f954ae7bffb0ae8",
     "implementation_script_repo_path": "scripts/route_a_v3/build_gse200302_srr_role_authority.py",
-    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_script_sha256": "562bf1a9cf2dba1ef4812bdc9bddf879d0471c661326fded1ad8b73fa04ef27a",
     "implementation_test_repo_path": "tests/route_a_v3/test_gse200302_srr_role_authority.py",
-    "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_test_sha256": "fa405aa4ed53cdb5c7cfcd1ed51c1f347dca987a91132143f6352f21ace772a3",
     "protocol_repo_path": "configs/route_a_v3_gse200302_srr_role_authority.json",
     "activation_rule": "Commit this UNKNOWN protocol with the implementation script and test, then create exactly one separate config-only binding commit that changes only implementation_binding.status, implementation_commit, implementation_script_sha256, and implementation_test_sha256. Runtime fails before official-source or output access until that binding exists."
   },
