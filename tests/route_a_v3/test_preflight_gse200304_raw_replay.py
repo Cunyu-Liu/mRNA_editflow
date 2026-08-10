@@ -34,7 +34,12 @@ EXPECTED_RUNS = tuple(
 def _protocol() -> tuple[dict[str, Any], dict[str, Any]]:
     protocol, provenance = PREFLIGHT.load_protocol(CONFIG)
     assert provenance["core_projection_sha256"] == PREFLIGHT.PROTOCOL_CORE_SHA256
-    assert provenance["binding_status"] == "UNKNOWN_NOT_ASSERTED"
+    if provenance["binding_status"] == "BOUND":
+        assert protocol["implementation_binding"]["production_script_sha256"] == hashlib.sha256(
+            SCRIPT.read_bytes()
+        ).hexdigest()
+    else:
+        assert provenance["binding_status"] == "UNKNOWN_NOT_ASSERTED"
     return protocol, provenance
 
 
@@ -63,6 +68,17 @@ def _bound_protocol(root: Path, *, script_bytes: bytes | None = None) -> tuple[P
     binding["production_script_sha256"] = hashlib.sha256(script_bytes).hexdigest()
     binding["hard_blocker"] = None
     protocol["hard_unknown_blockers"] = list(PREFLIGHT.NON_BINDING_HARD_BLOCKERS)
+    return _write_protocol(root, protocol), protocol
+
+
+def _unknown_protocol(root: Path) -> tuple[Path, dict[str, Any]]:
+    protocol = json.loads(CONFIG.read_text(encoding="utf-8"))
+    binding = protocol["implementation_binding"]
+    binding["status"] = "UNKNOWN_NOT_ASSERTED"
+    binding["production_implementation_commit"] = "UNKNOWN_NOT_ASSERTED"
+    binding["production_script_sha256"] = "UNKNOWN_NOT_ASSERTED"
+    binding["hard_blocker"] = "PRODUCTION_IMPLEMENTATION_BINDING_UNKNOWN"
+    protocol["hard_unknown_blockers"] = list(PREFLIGHT.EXPECTED_HARD_BLOCKERS)
     return _write_protocol(root, protocol), protocol
 
 
@@ -110,7 +126,20 @@ def _count_policy() -> dict[str, Any]:
 
 
 def _success_document() -> dict[str, Any]:
-    protocol, provenance = _protocol()
+    protocol = json.loads(CONFIG.read_text(encoding="utf-8"))
+    binding = protocol["implementation_binding"]
+    binding["status"] = "BOUND"
+    binding["production_implementation_commit"] = "a" * 40
+    binding["production_script_sha256"] = hashlib.sha256(SCRIPT.read_bytes()).hexdigest()
+    binding["hard_blocker"] = None
+    protocol["hard_unknown_blockers"] = list(PREFLIGHT.NON_BINDING_HARD_BLOCKERS)
+    assert PREFLIGHT._validate_protocol(protocol) == "BOUND"
+    provenance = {
+        "full_file_sha256_observed": hashlib.sha256(PREFLIGHT._json_bytes(protocol)).hexdigest(),
+        "core_projection_sha256": PREFLIGHT.PROTOCOL_CORE_SHA256,
+        "canonicalization": PREFLIGHT.CANONICALIZATION,
+        "binding_status": "BOUND",
+    }
     return PREFLIGHT._build_preflight_document(
         protocol,
         provenance,
@@ -202,23 +231,27 @@ def _dna(index: int) -> str:
 
 
 def test_protocol_trust_unknown_to_bound_projection_and_config_only_binding(tmp_path: Path) -> None:
-    unknown, unknown_provenance = _protocol()
-    bound_path, bound = _bound_protocol(tmp_path / "mirror")
+    bound_path, bound = _bound_protocol(tmp_path / "bound-mirror")
     bound_value, bound_provenance = PREFLIGHT.load_protocol(bound_path)
+    unknown_path, unknown = _unknown_protocol(tmp_path / "unknown-mirror")
+    unknown_value, unknown_provenance = PREFLIGHT.load_protocol(unknown_path)
 
-    unknown_raw = hashlib.sha256(CONFIG.read_bytes()).hexdigest()
     bound_raw = hashlib.sha256(bound_path.read_bytes()).hexdigest()
-    assert unknown_raw != bound_raw
+    unknown_raw = hashlib.sha256(unknown_path.read_bytes()).hexdigest()
+    assert bound_raw != unknown_raw
     assert unknown_provenance["core_projection_sha256"] == bound_provenance[
         "core_projection_sha256"
     ] == PREFLIGHT.PROTOCOL_CORE_SHA256
     assert PREFLIGHT._canonical_protocol_projection(unknown) == PREFLIGHT._canonical_protocol_projection(
         bound
     )
-    assert bound_value["implementation_binding"]["production_script_sha256"] == hashlib.sha256(
+    assert bound_value == bound
+    assert bound["implementation_binding"]["production_script_sha256"] == hashlib.sha256(
         SCRIPT.read_bytes()
     ).hexdigest()
+    assert unknown_value["implementation_binding"]["status"] == "UNKNOWN_NOT_ASSERTED"
     assert bound_provenance["binding_status"] == "BOUND"
+    assert unknown_provenance["binding_status"] == "UNKNOWN_NOT_ASSERTED"
     assert len(unknown["hard_unknown_blockers"]) == 17
     assert len(bound["hard_unknown_blockers"]) == 16
 
@@ -226,22 +259,22 @@ def test_protocol_trust_unknown_to_bound_projection_and_config_only_binding(tmp_
 def test_binding_half_states_extra_keys_paths_and_wrong_source_hash_are_rejected(
     tmp_path: Path,
 ) -> None:
-    unknown = json.loads(CONFIG.read_text(encoding="utf-8"))
+    _, bound = _bound_protocol(tmp_path / "invalid-base")
     invalid_values: list[dict[str, Any]] = []
 
-    half = copy.deepcopy(unknown)
-    half["implementation_binding"]["status"] = "BOUND"
+    half = copy.deepcopy(bound)
+    half["implementation_binding"]["status"] = "UNKNOWN_NOT_ASSERTED"
     invalid_values.append(half)
 
-    extra = copy.deepcopy(unknown)
+    extra = copy.deepcopy(bound)
     extra["implementation_binding"]["unexpected"] = False
     invalid_values.append(extra)
 
-    path_drift = copy.deepcopy(unknown)
+    path_drift = copy.deepcopy(bound)
     path_drift["implementation_binding"]["script_repo_path"] = "scripts/other.py"
     invalid_values.append(path_drift)
 
-    reordered = copy.deepcopy(unknown)
+    reordered = copy.deepcopy(bound)
     reordered["hard_unknown_blockers"] = list(reversed(reordered["hard_unknown_blockers"]))
     invalid_values.append(reordered)
 
@@ -289,6 +322,17 @@ def test_protocol_json_excessive_nesting_is_a_controlled_error(tmp_path: Path) -
         PREFLIGHT.load_protocol(path)
 
 
+def test_parser_accepted_projection_recursion_is_a_controlled_protocol_error() -> None:
+    protocol = json.loads(CONFIG.read_text(encoding="utf-8"))
+    nested: Any = "leaf"
+    for _ in range(992):
+        nested = [nested]
+    protocol["claim_boundary"] = nested
+    assert PREFLIGHT._validate_protocol(protocol) in {"BOUND", "UNKNOWN_NOT_ASSERTED"}
+    with pytest.raises(PREFLIGHT.ProtocolError, match="canonical projection"):
+        PREFLIGHT._canonical_protocol_projection(protocol)
+
+
 @pytest.mark.parametrize(
     "mutation",
     [
@@ -324,8 +368,14 @@ def test_production_unknown_binding_publishes_before_any_adapter_or_candidate_re
     monkeypatch.setattr(PREFLIGHT, "_default_reference_audit", forbidden)
     monkeypatch.setattr(PREFLIGHT.HashPinnedLazySource, "verify", forbidden)
 
+    unknown_path, _ = _unknown_protocol(tmp_path / "synthetic-unknown")
     output = tmp_path / "unknown_failure"
-    result = PREFLIGHT.run_preflight(protocol_path=CONFIG, output_directory=output)
+    result = PREFLIGHT.run_preflight(
+        protocol_path=unknown_path,
+        output_directory=output,
+        acquisition_directory=tmp_path / "GSE246381" / "must-not-be-inspected",
+        reference_source=tmp_path / "GSE246381" / "must-not-be-inspected.tsv.gz",
+    )
     assert calls == []
     assert result["status"] == PREFLIGHT.FAILURE_OUTCOME
     assert result["write_trace"] == [
@@ -341,12 +391,15 @@ def test_production_unknown_binding_publishes_before_any_adapter_or_candidate_re
 
 def test_production_interface_has_no_external_or_observer_callbacks(tmp_path: Path) -> None:
     signature = inspect.signature(PREFLIGHT.run_preflight)
-    assert list(signature.parameters) == ["protocol_path", "output_directory"]
+    assert list(signature.parameters) == [
+        "protocol_path",
+        "output_directory",
+        "acquisition_directory",
+        "reference_source",
+    ]
     for keyword in (
         "acquisition_adapter",
         "reference_adapter",
-        "acquisition_directory",
-        "reference_source",
         "sample_sheet_document",
         "count_policy_document",
         "write_observer",
@@ -359,6 +412,142 @@ def test_production_interface_has_no_external_or_observer_callbacks(tmp_path: Pa
             )
     parser_signature = inspect.signature(PREFLIGHT._parse_args)
     assert list(parser_signature.parameters) == ["argv"]
+
+
+def test_bound_input_authorities_are_lexically_isolated(tmp_path: Path) -> None:
+    protocol_path, _ = _bound_protocol(tmp_path / "authority-repository")
+    acquisition = tmp_path / "acquisition-authority"
+    reference = tmp_path / "reference-authority.tsv.gz"
+    with pytest.raises(PREFLIGHT.ScopeViolation, match="nested"):
+        PREFLIGHT._bound_input_paths_before_read(
+            acquisition,
+            reference,
+            protocol_path=protocol_path,
+            output_directory=acquisition / "nested-output",
+        )
+    with pytest.raises(PREFLIGHT.ScopeViolation, match="nested"):
+        PREFLIGHT._bound_input_paths_before_read(
+            acquisition,
+            reference,
+            protocol_path=protocol_path,
+            output_directory=protocol_path.parent.parent / "repository-output",
+        )
+    with pytest.raises(PREFLIGHT.ScopeViolation, match="parent traversal"):
+        PREFLIGHT._bound_input_paths_before_read(
+            acquisition / ".." / "other",
+            reference,
+            protocol_path=protocol_path,
+            output_directory=tmp_path / "safe-output",
+        )
+
+
+def test_production_bound_reads_only_closed_aggregates_and_publishes_blocked(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    acquisition = tmp_path / "committed-acquisition"
+    reference = tmp_path / "hash-pinned-design.tsv.gz"
+    output = tmp_path / "bound-blocked"
+    bound_path, bound_protocol = _bound_protocol(tmp_path / "production-bound")
+    calls: list[str] = []
+
+    class SourceTrust:
+        def __init__(self, label: str) -> None:
+            self.label = label
+
+        def verify(self) -> str:
+            calls.append(f"{self.label}-source-hash")
+            return "0" * 64
+
+    acquisition_source = SourceTrust("acquisition")
+    reference_source_trust = SourceTrust("reference")
+
+    def source_bindings(
+        protocol_path: Path, protocol: Mapping[str, Any]
+    ) -> tuple[SourceTrust, SourceTrust]:
+        assert protocol_path == bound_path
+        assert protocol["implementation_binding"]["status"] == "BOUND"
+        calls.append("source-bindings")
+        return acquisition_source, reference_source_trust
+
+    def acquisition_audit(path: Path, source: SourceTrust) -> dict[str, Any]:
+        assert path == acquisition
+        assert source is acquisition_source
+        calls.append("acquisition-metadata")
+        return dict(PREFLIGHT.EXPECTED_ACQUISITION_AUDIT)
+
+    def reference_audit(
+        path: Path, source: SourceTrust, protocol: Mapping[str, Any]
+    ) -> dict[str, Any]:
+        assert path == reference
+        assert source is reference_source_trust
+        assert protocol["reference_contract"]["identifier_output_allowed"] is False
+        calls.append("reference-aggregate")
+        return dict(PREFLIGHT.EXPECTED_REFERENCE_AUDIT)
+
+    monkeypatch.setattr(PREFLIGHT, "_default_source_bindings", source_bindings)
+    monkeypatch.setattr(PREFLIGHT, "_default_acquisition_audit", acquisition_audit)
+    monkeypatch.setattr(PREFLIGHT, "_default_reference_audit", reference_audit)
+    result = PREFLIGHT.run_preflight(
+        protocol_path=bound_path,
+        output_directory=output,
+        acquisition_directory=acquisition,
+        reference_source=reference,
+    )
+    assert calls == [
+        "source-bindings",
+        "acquisition-source-hash",
+        "reference-source-hash",
+        "acquisition-metadata",
+        "reference-aggregate",
+    ]
+    assert result["status"] == PREFLIGHT.BLOCKED_OUTCOME
+    assert result["write_trace"][-1] == PREFLIGHT.PUBLICATION_MARKER_FILENAME
+    document = _read_json(output / PREFLIGHT.PREFLIGHT_FILENAME)
+    assert document["protocol_full_file_sha256_observed"] == hashlib.sha256(
+        bound_path.read_bytes()
+    ).hexdigest()
+    assert document["protocol_core_sha256"] == PREFLIGHT.PROTOCOL_CORE_SHA256
+    assert document["implementation_binding_audit"] == PREFLIGHT.audit_implementation_binding(
+        bound_protocol
+    )
+    assert document["implementation_binding_audit"][
+        "commit_object_verified_by_preflight"
+    ] is False
+    assert document["implementation_binding_audit"][
+        "script_bytes_sha256_verified_by_preflight"
+    ] is True
+    assert document["hard_unknown_blockers"] == list(PREFLIGHT.NON_BINDING_HARD_BLOCKERS)
+    assert len(document["hard_unknown_blockers"]) == 16
+    assert document["gate_truth"] == PREFLIGHT.EXPECTED_GATE_TRUTH
+    assert document["sample_sheet_audit"] == PREFLIGHT._not_provided_sample_sheet_audit()
+    assert document["count_policy_audit"] == PREFLIGHT._not_provided_count_policy_audit()
+    assert PREFLIGHT.validate_published_bundle(output)["accepted"] is True
+
+    failure_output = tmp_path / "bound-failure"
+    calls.clear()
+
+    def acquisition_failure(path: Path, source: SourceTrust) -> dict[str, Any]:
+        calls.append("acquisition-failure")
+        raise PREFLIGHT.AcquisitionError("synthetic committed metadata tamper")
+
+    monkeypatch.setattr(PREFLIGHT, "_default_acquisition_audit", acquisition_failure)
+    failure = PREFLIGHT.run_preflight(
+        protocol_path=bound_path,
+        output_directory=failure_output,
+        acquisition_directory=acquisition,
+        reference_source=reference,
+    )
+    assert calls == [
+        "source-bindings",
+        "acquisition-source-hash",
+        "reference-source-hash",
+        "acquisition-failure",
+    ]
+    assert failure["status"] == PREFLIGHT.FAILURE_OUTCOME
+    assert _read_json(failure_output / PREFLIGHT.FAILURE_FILENAME)["failure_code"] == (
+        "ACQUISITION_ATTESTATION_INVALID"
+    )
+    assert not (failure_output / PREFLIGHT.PREFLIGHT_FILENAME).exists()
 
 
 def test_failure_payload_factory_and_consumer_are_exact_type_strict(tmp_path: Path) -> None:
@@ -653,10 +842,20 @@ def test_author_argv_is_exact_ordered_and_permanently_inert() -> None:
     assert all(value is False for value in protocol["execution_policy"].values())
 
 
-def test_all_seventeen_blockers_xtail_unknowns_and_denominator_conflict_are_frozen() -> None:
-    protocol, _ = _protocol()
-    assert protocol["hard_unknown_blockers"] == list(PREFLIGHT.EXPECTED_HARD_BLOCKERS)
-    assert len(protocol["hard_unknown_blockers"]) == len(set(protocol["hard_unknown_blockers"])) == 17
+def test_bound_sixteen_and_unknown_seventeen_blockers_preserve_scientific_unknowns(
+    tmp_path: Path,
+) -> None:
+    bound_path, bound_value = _bound_protocol(tmp_path / "blocker-bound")
+    protocol, _ = PREFLIGHT.load_protocol(bound_path)
+    assert protocol == bound_value
+    assert protocol["hard_unknown_blockers"] == list(PREFLIGHT.NON_BINDING_HARD_BLOCKERS)
+    assert len(protocol["hard_unknown_blockers"]) == len(set(protocol["hard_unknown_blockers"])) == 16
+    unknown_path, unknown_value = _unknown_protocol(tmp_path / "blocker-unknown")
+    loaded_unknown, _ = PREFLIGHT.load_protocol(unknown_path)
+    assert loaded_unknown == unknown_value
+    assert loaded_unknown["hard_unknown_blockers"] == list(PREFLIGHT.EXPECTED_HARD_BLOCKERS)
+    assert len(loaded_unknown["hard_unknown_blockers"]) == 17
+    assert "PRODUCTION_IMPLEMENTATION_BINDING_UNKNOWN" not in protocol["hard_unknown_blockers"]
     required = {
         "EXACT_SRR_SAMPLE_ROLES_UNKNOWN",
         "SAM_TO_COUNT_PAIRED_HANDLING_UNKNOWN",
@@ -1031,9 +1230,20 @@ def test_fifo_leafs_fail_fast_and_descriptor_close_errors_stay_controlled(
 def test_committed_config_json_parses_and_hashes_are_reportable() -> None:
     protocol = json.loads(CONFIG.read_text(encoding="utf-8"))
     assert type(protocol) is dict
-    assert hashlib.sha256(CONFIG.read_bytes()).hexdigest() == (
-        "4fe57314f51203836527bfdfe0c38f04e75df167cfef5d3fa5468597078b3d68"
-    )
+    loaded, provenance = PREFLIGHT.load_protocol(CONFIG)
+    assert loaded == protocol
+    assert provenance["full_file_sha256_observed"] == hashlib.sha256(CONFIG.read_bytes()).hexdigest()
+    if provenance["binding_status"] == "BOUND":
+        assert protocol["implementation_binding"]["production_script_sha256"] == hashlib.sha256(
+            SCRIPT.read_bytes()
+        ).hexdigest()
+        assert protocol["hard_unknown_blockers"] == list(PREFLIGHT.NON_BINDING_HARD_BLOCKERS)
+    else:
+        assert provenance["binding_status"] == "UNKNOWN_NOT_ASSERTED"
+        assert protocol["implementation_binding"]["production_script_sha256"] == (
+            "UNKNOWN_NOT_ASSERTED"
+        )
+        assert protocol["hard_unknown_blockers"] == list(PREFLIGHT.EXPECTED_HARD_BLOCKERS)
     assert PREFLIGHT.PROTOCOL_CORE_SHA256 == (
         "381a65d3070eef00bd4b73a8936fd779a999c2a890c221802fdea772b48a24de"
     )

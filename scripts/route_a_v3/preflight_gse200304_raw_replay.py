@@ -3,9 +3,10 @@
 
 The production entry point has no acquisition, reference, candidate-document,
 or publication callback interface.  While the implementation binding is
-UNKNOWN it publishes one closed failure and returns.  Lower-level aggregate
-validators and publication primitives exist for synthetic verification only;
-there is permanently no aligner, SAM-to-count, R, or xTail executor here.
+UNKNOWN it publishes one closed failure without inspecting external inputs.
+When BOUND it reads only committed acquisition metadata and a hash-pinned
+reference design to publish aggregate blocked evidence; there is permanently
+no aligner, SAM-to-count, R, or xTail executor here.
 """
 
 from __future__ import annotations
@@ -797,17 +798,20 @@ def _validate_protocol(protocol: Any) -> str:
 
 
 def _canonical_protocol_projection(protocol: Mapping[str, Any]) -> bytes:
-    copied = json.loads(json.dumps(protocol, allow_nan=False))
-    binding = copied["implementation_binding"]
-    binding["status"] = "<BINDING_STATUS>"
-    binding["production_implementation_commit"] = "<IMPLEMENTATION_COMMIT>"
-    binding["production_script_sha256"] = "<IMPLEMENTATION_SCRIPT_SHA256>"
-    binding["hard_blocker"] = "<BINDING_HARD_BLOCKER>"
-    copied["hard_unknown_blockers"] = [
-        "<IMPLEMENTATION_BINDING_BLOCKER_SLOT>",
-        *NON_BINDING_HARD_BLOCKERS,
-    ]
-    return _json_bytes(copied, pretty=False)
+    try:
+        copied = json.loads(json.dumps(protocol, allow_nan=False))
+        binding = copied["implementation_binding"]
+        binding["status"] = "<BINDING_STATUS>"
+        binding["production_implementation_commit"] = "<IMPLEMENTATION_COMMIT>"
+        binding["production_script_sha256"] = "<IMPLEMENTATION_SCRIPT_SHA256>"
+        binding["hard_blocker"] = "<BINDING_HARD_BLOCKER>"
+        copied["hard_unknown_blockers"] = [
+            "<IMPLEMENTATION_BINDING_BLOCKER_SLOT>",
+            *NON_BINDING_HARD_BLOCKERS,
+        ]
+        return _json_bytes(copied, pretty=False)
+    except (RecursionError, ValueError, TypeError, KeyError, PublicationError) as exc:
+        raise ProtocolError("protocol canonical projection could not be constructed safely") from exc
 
 
 def load_protocol(path: Path | str) -> tuple[dict[str, Any], dict[str, Any]]:
@@ -849,15 +853,24 @@ def load_protocol(path: Path | str) -> tuple[dict[str, Any], dict[str, Any]]:
 
 def audit_implementation_binding(protocol: Mapping[str, Any]) -> dict[str, Any]:
     status = _validate_binding(protocol["implementation_binding"])
+    binding = protocol["implementation_binding"]
     if status == "UNKNOWN_NOT_ASSERTED":
         return {
             "status": "UNKNOWN_NOT_ASSERTED",
+            "production_implementation_commit": "UNKNOWN_NOT_ASSERTED",
+            "production_script_sha256": "UNKNOWN_NOT_ASSERTED",
+            "commit_object_verified_by_preflight": False,
+            "script_bytes_sha256_verified_by_preflight": False,
             "production_bound": False,
             "hard_blocker_present": True,
             "external_input_read_before_binding_audit": False,
         }
     return {
         "status": "BOUND",
+        "production_implementation_commit": binding["production_implementation_commit"],
+        "production_script_sha256": binding["production_script_sha256"],
+        "commit_object_verified_by_preflight": False,
+        "script_bytes_sha256_verified_by_preflight": True,
         "production_bound": True,
         "hard_blocker_present": False,
         "external_input_read_before_binding_audit": False,
@@ -1388,6 +1401,25 @@ def _build_preflight_document(
     sample_sheet_audit: Mapping[str, Any],
     count_policy_audit: Mapping[str, Any],
 ) -> dict[str, Any]:
+    if not _strict_equal(binding_audit, audit_implementation_binding(protocol)):
+        raise PublicationError("preflight binding audit does not match the loaded protocol")
+    if type(protocol_provenance) is not dict or set(protocol_provenance) != {
+        "full_file_sha256_observed",
+        "core_projection_sha256",
+        "canonicalization",
+        "binding_status",
+    }:
+        raise PublicationError("preflight protocol provenance schema is not exact")
+    if not _strict_equal(protocol_provenance.get("binding_status"), "BOUND"):
+        raise PublicationError("preflight protocol provenance is not BOUND")
+    if not _strict_equal(
+        protocol_provenance.get("core_projection_sha256"),
+        PROTOCOL_CORE_SHA256,
+    ) or not _strict_equal(protocol_provenance.get("canonicalization"), CANONICALIZATION):
+        raise PublicationError("preflight protocol provenance trust root is not exact")
+    full_protocol_sha256 = protocol_provenance.get("full_file_sha256_observed")
+    if type(full_protocol_sha256) is not str or SHA256_RE.fullmatch(full_protocol_sha256) is None:
+        raise PublicationError("preflight protocol provenance full SHA-256 is not exact")
     document = {
         "schema_version": SCHEMA_VERSION,
         "protocol_id": PROTOCOL_ID,
@@ -1395,6 +1427,9 @@ def _build_preflight_document(
         "superseries_accession": "GSE200304",
         "execution_outcome": BLOCKED_OUTCOME,
         "status": BLOCKED_OUTCOME,
+        "protocol_full_file_sha256_observed": protocol_provenance[
+            "full_file_sha256_observed"
+        ],
         "protocol_core_sha256": protocol_provenance["core_projection_sha256"],
         "implementation_binding_audit": dict(binding_audit),
         "acquisition_audit": dict(acquisition_audit),
@@ -1420,6 +1455,7 @@ def _validate_preflight_document(value: Any) -> None:
         "superseries_accession",
         "execution_outcome",
         "status",
+        "protocol_full_file_sha256_observed",
         "protocol_core_sha256",
         "implementation_binding_audit",
         "acquisition_audit",
@@ -1443,20 +1479,62 @@ def _validate_preflight_document(value: Any) -> None:
         "execution_outcome": BLOCKED_OUTCOME,
         "status": BLOCKED_OUTCOME,
         "protocol_core_sha256": PROTOCOL_CORE_SHA256,
-        "implementation_binding_audit": {
-            "status": "UNKNOWN_NOT_ASSERTED",
-            "production_bound": False,
-            "hard_blocker_present": True,
-            "external_input_read_before_binding_audit": False,
-        },
         "confirmed_method": _confirmed_method(),
-        "hard_unknown_blockers": list(EXPECTED_HARD_BLOCKERS),
         "execution_policy": EXPECTED_EXECUTION_POLICY,
         "gate_truth": EXPECTED_GATE_TRUTH,
     }
     for key, expected in fixed.items():
         if not _strict_equal(value.get(key), expected):
             raise PublicationError(f"preflight {key} is not exact and type-strict")
+    full_sha256 = value.get("protocol_full_file_sha256_observed")
+    if type(full_sha256) is not str or SHA256_RE.fullmatch(full_sha256) is None:
+        raise PublicationError("preflight observed full protocol SHA-256 is not exact")
+    binding_audit = value.get("implementation_binding_audit")
+    expected_binding_keys = {
+        "status",
+        "production_implementation_commit",
+        "production_script_sha256",
+        "commit_object_verified_by_preflight",
+        "script_bytes_sha256_verified_by_preflight",
+        "production_bound",
+        "hard_blocker_present",
+        "external_input_read_before_binding_audit",
+    }
+    if type(binding_audit) is not dict or set(binding_audit) != expected_binding_keys:
+        raise PublicationError("preflight implementation binding audit schema is not exact")
+    if not _strict_equal(
+        {
+            "status": binding_audit.get("status"),
+            "commit_object_verified_by_preflight": binding_audit.get(
+                "commit_object_verified_by_preflight"
+            ),
+            "script_bytes_sha256_verified_by_preflight": binding_audit.get(
+                "script_bytes_sha256_verified_by_preflight"
+            ),
+            "production_bound": binding_audit.get("production_bound"),
+            "hard_blocker_present": binding_audit.get("hard_blocker_present"),
+            "external_input_read_before_binding_audit": binding_audit.get(
+                "external_input_read_before_binding_audit"
+            ),
+        },
+        {
+            "status": "BOUND",
+            "commit_object_verified_by_preflight": False,
+            "script_bytes_sha256_verified_by_preflight": True,
+            "production_bound": True,
+            "hard_blocker_present": False,
+            "external_input_read_before_binding_audit": False,
+        },
+    ):
+        raise PublicationError("preflight implementation binding audit truth is not exact")
+    implementation_commit = binding_audit.get("production_implementation_commit")
+    implementation_sha256 = binding_audit.get("production_script_sha256")
+    if type(implementation_commit) is not str or COMMIT_RE.fullmatch(implementation_commit) is None:
+        raise PublicationError("preflight implementation commit is not exact")
+    if type(implementation_sha256) is not str or SHA256_RE.fullmatch(implementation_sha256) is None:
+        raise PublicationError("preflight implementation script SHA-256 is not exact")
+    if not _strict_equal(value.get("hard_unknown_blockers"), list(NON_BINDING_HARD_BLOCKERS)):
+        raise PublicationError("preflight BOUND hard blocker list is not exact")
     validate_acquisition_audit(value["acquisition_audit"])
     validate_reference_audit(value["reference_audit"])
     _validate_sample_audit(value["sample_sheet_audit"])
@@ -2097,6 +2175,8 @@ def _production_paths_before_read(
         _reject_forbidden_path(path, label=label)
     protocol = _absolute_without_resolving(protocol_path)
     output = _absolute_without_resolving(output_directory)
+    if ".." in protocol.parts or ".." in output.parts:
+        raise ScopeViolation("production path contains parent traversal")
     _reject_forbidden_path(protocol, label="absolute protocol path")
     _reject_forbidden_path(output, label="absolute output directory")
     _safe_basename(output.name, label="output directory basename")
@@ -2105,18 +2185,57 @@ def _production_paths_before_read(
     return protocol, output
 
 
+def _bound_input_paths_before_read(
+    acquisition_directory: Path | str | None,
+    reference_source: Path | str | None,
+    *,
+    protocol_path: Path,
+    output_directory: Path,
+) -> tuple[Path, Path]:
+    if acquisition_directory is None or reference_source is None:
+        raise ScopeViolation("BOUND metadata-only preflight inputs are required")
+    for value, label in (
+        (acquisition_directory, "acquisition directory"),
+        (reference_source, "reference source"),
+    ):
+        if not isinstance(value, (str, os.PathLike)):
+            raise ScopeViolation(f"{label} is not path-like")
+        _reject_forbidden_path(value, label=label)
+    acquisition = _absolute_without_resolving(acquisition_directory)
+    reference = _absolute_without_resolving(reference_source)
+    if ".." in acquisition.parts or ".." in reference.parts:
+        raise ScopeViolation("BOUND metadata-only preflight input contains parent traversal")
+    _reject_forbidden_path(acquisition, label="absolute acquisition directory")
+    _reject_forbidden_path(reference, label="absolute reference source")
+    if len({protocol_path, output_directory, acquisition, reference}) != 4:
+        raise ScopeViolation("BOUND metadata-only preflight paths overlap")
+    repository_root = protocol_path.parent.parent
+    isolated_pairs = (
+        (output_directory, acquisition),
+        (output_directory, reference),
+        (output_directory, repository_root),
+        (acquisition, reference),
+    )
+    for left, right in isolated_pairs:
+        if left in right.parents or right in left.parents:
+            raise ScopeViolation("BOUND metadata-only preflight authority paths are nested")
+    return acquisition, reference
+
+
 def run_preflight(
     *,
     protocol_path: Path | str,
     output_directory: Path | str,
+    acquisition_directory: Path | str | None = None,
+    reference_source: Path | str | None = None,
 ) -> dict[str, Any]:
-    """Production entry: UNKNOWN binding immediately emits one closed failure."""
+    """Run only UNKNOWN failure or BOUND aggregate-metadata P0 preflight."""
 
     protocol_path, output_directory = _production_paths_before_read(
         protocol_path,
         output_directory,
     )
-    protocol, _ = load_protocol(protocol_path)
+    protocol, provenance = load_protocol(protocol_path)
     binding = audit_implementation_binding(protocol)
     if binding["status"] == "UNKNOWN_NOT_ASSERTED":
         return _publish_closed_bundle(
@@ -2124,13 +2243,63 @@ def run_preflight(
             _failure_payload("PRODUCTION_IMPLEMENTATION_BINDING_UNKNOWN"),
             outcome=FAILURE_OUTCOME,
         )
-    raise ProtocolError("BOUND production execution is not part of this P0-only scaffold")
+    try:
+        acquisition_directory, reference_source = _bound_input_paths_before_read(
+            acquisition_directory,
+            reference_source,
+            protocol_path=protocol_path,
+            output_directory=output_directory,
+        )
+        acquisition_source, reference_adapter_source = _default_source_bindings(
+            protocol_path,
+            protocol,
+        )
+        # Close both source-code trust roots before either data authority is read.
+        acquisition_source.verify()
+        reference_adapter_source.verify()
+        acquisition_audit = _default_acquisition_audit(
+            acquisition_directory,
+            acquisition_source,
+        )
+        reference_audit = _default_reference_audit(
+            reference_source,
+            reference_adapter_source,
+            protocol,
+        )
+        document = _build_preflight_document(
+            protocol,
+            provenance,
+            binding,
+            acquisition_audit,
+            reference_audit,
+            _not_provided_sample_sheet_audit(),
+            _not_provided_count_policy_audit(),
+        )
+    except PreflightError as exc:
+        failure_code = exc.code if exc.code in VALID_FAILURE_CODES else "PUBLICATION_FAILED"
+        return _publish_closed_bundle(
+            output_directory,
+            _failure_payload(failure_code),
+            outcome=FAILURE_OUTCOME,
+        )
+    return _publish_closed_bundle(
+        output_directory,
+        document,
+        outcome=BLOCKED_OUTCOME,
+    )
 
 
 def _parse_args(argv: Sequence[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--protocol", type=Path, required=True)
     parser.add_argument("--output-directory", type=Path, required=True)
+    parser.add_argument(
+        "--acquisition-dir",
+        "--acquisition-directory",
+        dest="acquisition_directory",
+        type=Path,
+    )
+    parser.add_argument("--reference", "--reference-source", dest="reference_source", type=Path)
     return parser.parse_args(argv)
 
 
@@ -2140,6 +2309,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         result = run_preflight(
             protocol_path=args.protocol,
             output_directory=args.output_directory,
+            acquisition_directory=args.acquisition_directory,
+            reference_source=args.reference_source,
         )
     except PreflightError as exc:
         print(json.dumps({"status": FAILURE_OUTCOME, "failure_code": exc.code}, sort_keys=True))
