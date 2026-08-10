@@ -34,7 +34,7 @@ SCHEMA_VERSION = "route_a_v3_gse200304_raw_replay_preflight.v1"
 PROTOCOL_ID = "ROUTE_A_V3_GSE200304_RAW_REPLAY_PREFLIGHT_V1"
 PROTOCOL_BASENAME = "route_a_v3_gse200304_raw_replay.json"
 PROTOCOL_CORE_SHA256 = (
-    "381a65d3070eef00bd4b73a8936fd779a999c2a890c221802fdea772b48a24de"
+    "88762faebad2d3dda93066861166248cb77ec1494a02bef5103a6aeb88d31e31"
 )
 CANONICALIZATION = "CANONICAL_SORTED_UTF8_V1"
 
@@ -52,6 +52,30 @@ EXPECTED_REFERENCE_RECORDS = 13_836
 EXPECTED_REFERENCE_UNIQUE = 13_832
 EXPECTED_IDENTICAL_REFERENCE_GROUPS = 4
 EXPECTED_REFERENCE_LENGTH = 250
+EXPECTED_REFERENCE_TYPE_COUNTS = {
+    "Control": 66,
+    "Mutant": 6_885,
+    "WT": 6_885,
+}
+EXPECTED_REFERENCE_STRICT_250_ACGT = 13_824
+EXPECTED_REFERENCE_STRICT_250_ACGT_BY_TYPE = {
+    "Control": 54,
+    "Mutant": 6_885,
+    "WT": 6_885,
+}
+EXPECTED_REFERENCE_U_CONTAINING_RECORDS = 12
+EXPECTED_REFERENCE_U_CONTAINING_BY_TYPE = {
+    "Control": 12,
+    "Mutant": 0,
+    "WT": 0,
+}
+EXPECTED_REFERENCE_U_BASES = 596
+EXPECTED_REFERENCE_U_BASES_BY_TYPE = {
+    "Control": 596,
+    "Mutant": 0,
+    "WT": 0,
+}
+EXPECTED_PRIMARY_REFERENCE_RECORDS = 13_770
 EXPECTED_RUN_SET_SHA256 = (
     "c70266fc865a13fea4915fcbab66afbadad069fcb1e5439300e73a61dedd9ea5"
 )
@@ -72,6 +96,12 @@ EXPECTED_ACQUISITION_CLAIM = (
     "the exact 48-file ENA manifest only. It does not establish count "
     "reconstruction, xTail replay, A1 qualification, training authorization, "
     "model performance, or a scientific conclusion."
+)
+EXPECTED_CLAIM_BOUNDARY = (
+    "This aggregate-only P0 artifact records confirmed method facts and unresolved prerequisites. "
+    "It reports control-reference U observations without U-to-T normalization or control exclusion. "
+    "It permanently performs no alignment, SAM-to-count conversion, xTail analysis, qualification, "
+    "canonicalization, training, model selection, or phase unlock."
 )
 
 EXPECTED_BUILD_ARGV_TEMPLATE = (
@@ -98,6 +128,7 @@ EXPECTED_ALIGNMENT_ARGV_TEMPLATE = (
 EXPECTED_HARD_BLOCKERS = (
     "PRODUCTION_IMPLEMENTATION_BINDING_UNKNOWN",
     "EXACT_SRR_SAMPLE_ROLES_UNKNOWN",
+    "CONTROL_REFERENCE_U_TO_T_NORMALIZATION_UNKNOWN",
     "SAM_TO_COUNT_PAIRED_HANDLING_UNKNOWN",
     "SAM_TO_COUNT_MULTIMAP_POLICY_UNKNOWN",
     "SAM_TO_COUNT_FLAG_POLICY_UNKNOWN",
@@ -220,13 +251,27 @@ EXPECTED_ACQUISITION_AUDIT = {
     "fastq_body_read_count_by_preflight": 0,
 }
 EXPECTED_REFERENCE_AUDIT = {
-    "status": "PASS_EXACT_REFERENCE_AGGREGATE",
+    "status": "EXACT_REFERENCE_AGGREGATE_OBSERVED_WITH_CONTROL_URACIL_POLICY_UNRESOLVED",
     "record_count": EXPECTED_REFERENCE_RECORDS,
+    "type_counts": EXPECTED_REFERENCE_TYPE_COUNTS,
     "unique_sequence_count": EXPECTED_REFERENCE_UNIQUE,
     "identical_sequence_group_count": EXPECTED_IDENTICAL_REFERENCE_GROUPS,
     "sequence_length": EXPECTED_REFERENCE_LENGTH,
-    "acgt_only": True,
-    "normalized_uppercase": True,
+    "exact_length_record_count": EXPECTED_REFERENCE_RECORDS,
+    "all_rows_exact_length_250": True,
+    "observed_sequence_alphabet": "ACGTU",
+    "strict_250_acgt_record_count": EXPECTED_REFERENCE_STRICT_250_ACGT,
+    "strict_250_acgt_record_count_by_type": EXPECTED_REFERENCE_STRICT_250_ACGT_BY_TYPE,
+    "u_containing_record_count": EXPECTED_REFERENCE_U_CONTAINING_RECORDS,
+    "u_containing_record_count_by_type": EXPECTED_REFERENCE_U_CONTAINING_BY_TYPE,
+    "u_base_count": EXPECTED_REFERENCE_U_BASES,
+    "u_base_count_by_type": EXPECTED_REFERENCE_U_BASES_BY_TYPE,
+    "primary_wt_mutant_record_count": EXPECTED_PRIMARY_REFERENCE_RECORDS,
+    "primary_wt_mutant_strict_250_acgt_record_count": EXPECTED_PRIMARY_REFERENCE_RECORDS,
+    "primary_wt_mutant_all_strict_250_acgt": True,
+    "normalization_policy_applied": "UPPERCASE_ONLY",
+    "u_to_t_normalization_applied": False,
+    "control_row_exclusion_applied": False,
     "identifier_output_count": 0,
     "sequence_output_count": 0,
 }
@@ -237,6 +282,7 @@ RUN_RE = re.compile(r"SRR[0-9]{8}")
 FASTQ_MEMBER_RE = re.compile(r"(SRR[0-9]{8})_([12])\.fastq\.gz")
 TRANSFER_MEMBER_RE = re.compile(r"(SRR[0-9]{8})_([12])\.fastq\.gz\.transfer\.json")
 ACGT_250_RE = re.compile(r"[ACGT]{250}")
+ACGTU_250_RE = re.compile(r"[ACGTU]{250}")
 SAFE_BASENAME_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9._-]{0,127}")
 FORBIDDEN_PATH_TOKENS = (
     "gse246381",
@@ -648,6 +694,7 @@ def _validate_protocol(protocol: Any) -> str:
         ("target_subseries_accession", "GSE200302"),
         ("superseries_accession", "GSE200304"),
         ("ordinary_public_data_only", True),
+        ("claim_boundary", EXPECTED_CLAIM_BOUNDARY),
     ):
         _require_strict(protocol.get(key), expected, label=key)
     expected_trust = {
@@ -716,19 +763,46 @@ def _validate_protocol(protocol: Any) -> str:
         _require_strict(acquisition.get(key), expected, label=f"acquisition {key}")
 
     reference = protocol.get("reference_contract")
-    if type(reference) is not dict:
-        raise ProtocolError("reference contract must be an object")
-    for key, expected in (
-        ("expected_record_count", EXPECTED_REFERENCE_RECORDS),
-        ("expected_unique_sequence_count", EXPECTED_REFERENCE_UNIQUE),
-        ("expected_identical_sequence_group_count", EXPECTED_IDENTICAL_REFERENCE_GROUPS),
-        ("expected_sequence_length", EXPECTED_REFERENCE_LENGTH),
-        ("expected_sequence_alphabet", "ACGT"),
-        ("identifier_output_allowed", False),
-        ("sequence_output_allowed", False),
-        ("identical_reference_multimap_tie_status", "UNKNOWN_NOT_ASSERTED"),
-    ):
-        _require_strict(reference.get(key), expected, label=f"reference {key}")
+    _require_strict(
+        reference,
+        {
+            "source_asset_role": "GSE200302_PRIMARY_DESIGN",
+            "source_asset_bytes": 1_091_787,
+            "source_asset_sha256": "06b78231dcf02e6d42bc0abaf919d419630a6e1dd33d04ebe841ff03aa0e5f1f",
+            "source_format": "GZIP_TSV",
+            "type_column": "Type",
+            "sequence_column": "Full_Oligo",
+            "author_normalization": "UPPERCASE_ONLY",
+            "expected_record_count": EXPECTED_REFERENCE_RECORDS,
+            "expected_type_counts": EXPECTED_REFERENCE_TYPE_COUNTS,
+            "expected_unique_sequence_count": EXPECTED_REFERENCE_UNIQUE,
+            "expected_identical_sequence_group_count": EXPECTED_IDENTICAL_REFERENCE_GROUPS,
+            "expected_sequence_length": EXPECTED_REFERENCE_LENGTH,
+            "expected_all_rows_exact_length_250": True,
+            "expected_observed_sequence_alphabet": "ACGTU",
+            "expected_strict_250_acgt_record_count": EXPECTED_REFERENCE_STRICT_250_ACGT,
+            "expected_strict_250_acgt_record_count_by_type": (
+                EXPECTED_REFERENCE_STRICT_250_ACGT_BY_TYPE
+            ),
+            "expected_u_containing_record_count": EXPECTED_REFERENCE_U_CONTAINING_RECORDS,
+            "expected_u_containing_record_count_by_type": (
+                EXPECTED_REFERENCE_U_CONTAINING_BY_TYPE
+            ),
+            "expected_u_base_count": EXPECTED_REFERENCE_U_BASES,
+            "expected_u_base_count_by_type": EXPECTED_REFERENCE_U_BASES_BY_TYPE,
+            "primary_types": ["WT", "Mutant"],
+            "expected_primary_record_count": EXPECTED_PRIMARY_REFERENCE_RECORDS,
+            "expected_primary_strict_250_acgt_record_count": EXPECTED_PRIMARY_REFERENCE_RECORDS,
+            "expected_primary_sequence_alphabet": "ACGT",
+            "preflight_u_to_t_normalization_allowed": False,
+            "preflight_control_row_exclusion_allowed": False,
+            "downstream_control_u_to_t_normalization_policy_status": "UNKNOWN_NOT_ASSERTED",
+            "identifier_output_allowed": False,
+            "sequence_output_allowed": False,
+            "identical_reference_multimap_tie_status": "UNKNOWN_NOT_ASSERTED",
+        },
+        label="reference contract",
+    )
 
     method = protocol.get("author_method_contract")
     if type(method) is not dict:
@@ -1046,25 +1120,71 @@ def _default_acquisition_audit(
     return dict(EXPECTED_ACQUISITION_AUDIT)
 
 
-def audit_reference_records(records: Iterable[str]) -> dict[str, Any]:
+def audit_reference_records(records: Iterable[tuple[str, str]]) -> dict[str, Any]:
     counts: Counter[str] = Counter()
+    type_counts: Counter[str] = Counter()
+    strict_acgt_by_type = {row_type: 0 for row_type in EXPECTED_REFERENCE_TYPE_COUNTS}
+    u_containing_by_type = {row_type: 0 for row_type in EXPECTED_REFERENCE_TYPE_COUNTS}
+    u_bases_by_type = {row_type: 0 for row_type in EXPECTED_REFERENCE_TYPE_COUNTS}
+    observed_alphabet: set[str] = set()
     record_count = 0
-    for raw_sequence in records:
+    exact_length_record_count = 0
+    strict_acgt_record_count = 0
+    u_containing_record_count = 0
+    u_base_count = 0
+    for record in records:
+        if type(record) is not tuple or len(record) != 2:
+            raise ReferenceAuditError("reference audit input row is not an exact Type/Full_Oligo pair")
+        row_type, raw_sequence = record
+        if type(row_type) is not str or row_type not in EXPECTED_REFERENCE_TYPE_COUNTS:
+            raise ReferenceAuditError("reference contains an unrecognized or non-string Type")
         if type(raw_sequence) is not str:
             raise ReferenceAuditError("reference contains a non-string Full_Oligo")
         sequence = raw_sequence.upper()
-        if ACGT_250_RE.fullmatch(sequence) is None:
-            raise ReferenceAuditError("reference contains a non-250nt-ACGT Full_Oligo")
+        if ACGTU_250_RE.fullmatch(sequence) is None:
+            raise ReferenceAuditError("reference contains a Full_Oligo outside the exact 250nt ACGTU scope")
         counts[sequence] += 1
+        type_counts[row_type] += 1
+        observed_alphabet.update(sequence)
         record_count += 1
+        exact_length_record_count += 1
+        if ACGT_250_RE.fullmatch(sequence) is not None:
+            strict_acgt_record_count += 1
+            strict_acgt_by_type[row_type] += 1
+        u_count = sequence.count("U")
+        if u_count:
+            u_containing_record_count += 1
+            u_containing_by_type[row_type] += 1
+            u_base_count += u_count
+            u_bases_by_type[row_type] += u_count
+    primary_record_count = type_counts["WT"] + type_counts["Mutant"]
+    primary_strict_acgt_record_count = strict_acgt_by_type["WT"] + strict_acgt_by_type["Mutant"]
     audit = {
-        "status": "PASS_EXACT_REFERENCE_AGGREGATE",
+        "status": "EXACT_REFERENCE_AGGREGATE_OBSERVED_WITH_CONTROL_URACIL_POLICY_UNRESOLVED",
         "record_count": record_count,
+        "type_counts": {
+            row_type: type_counts[row_type] for row_type in EXPECTED_REFERENCE_TYPE_COUNTS
+        },
         "unique_sequence_count": len(counts),
         "identical_sequence_group_count": sum(count > 1 for count in counts.values()),
         "sequence_length": EXPECTED_REFERENCE_LENGTH,
-        "acgt_only": True,
-        "normalized_uppercase": True,
+        "exact_length_record_count": exact_length_record_count,
+        "all_rows_exact_length_250": exact_length_record_count == record_count,
+        "observed_sequence_alphabet": "".join(sorted(observed_alphabet)),
+        "strict_250_acgt_record_count": strict_acgt_record_count,
+        "strict_250_acgt_record_count_by_type": strict_acgt_by_type,
+        "u_containing_record_count": u_containing_record_count,
+        "u_containing_record_count_by_type": u_containing_by_type,
+        "u_base_count": u_base_count,
+        "u_base_count_by_type": u_bases_by_type,
+        "primary_wt_mutant_record_count": primary_record_count,
+        "primary_wt_mutant_strict_250_acgt_record_count": primary_strict_acgt_record_count,
+        "primary_wt_mutant_all_strict_250_acgt": (
+            primary_record_count == primary_strict_acgt_record_count
+        ),
+        "normalization_policy_applied": "UPPERCASE_ONLY",
+        "u_to_t_normalization_applied": False,
+        "control_row_exclusion_applied": False,
         "identifier_output_count": 0,
         "sequence_output_count": 0,
     }
@@ -1106,10 +1226,11 @@ def _default_reference_audit(
     if len(rows) != EXPECTED_REFERENCE_RECORDS or any(len(row) != len(header) for row in rows):
         raise ReferenceAuditError("reference design row geometry is not exact")
     try:
+        type_index = header.index(contract["type_column"])
         sequence_index = header.index(contract["sequence_column"])
     except ValueError as exc:
-        raise ReferenceAuditError("reference design lacks Full_Oligo") from exc
-    return audit_reference_records(row[sequence_index] for row in rows)
+        raise ReferenceAuditError("reference design lacks Type or Full_Oligo") from exc
+    return audit_reference_records((row[type_index], row[sequence_index]) for row in rows)
 
 
 def _default_source_bindings(
@@ -1141,7 +1262,7 @@ def validate_acquisition_audit(value: Any) -> dict[str, Any]:
 def validate_reference_audit(value: Any) -> dict[str, Any]:
     if not _strict_equal(value, EXPECTED_REFERENCE_AUDIT):
         raise ReferenceAuditError("reference aggregate is not exact and type-strict")
-    return dict(EXPECTED_REFERENCE_AUDIT)
+    return json.loads(json.dumps(EXPECTED_REFERENCE_AUDIT, allow_nan=False))
 
 
 def validate_sample_sheet(document: Any, protocol: Mapping[str, Any]) -> dict[str, Any]:
@@ -1403,6 +1524,7 @@ def _build_preflight_document(
 ) -> dict[str, Any]:
     if not _strict_equal(binding_audit, audit_implementation_binding(protocol)):
         raise PublicationError("preflight binding audit does not match the loaded protocol")
+    closed_reference_audit = validate_reference_audit(reference_audit)
     if type(protocol_provenance) is not dict or set(protocol_provenance) != {
         "full_file_sha256_observed",
         "core_projection_sha256",
@@ -1433,7 +1555,7 @@ def _build_preflight_document(
         "protocol_core_sha256": protocol_provenance["core_projection_sha256"],
         "implementation_binding_audit": dict(binding_audit),
         "acquisition_audit": dict(acquisition_audit),
-        "reference_audit": dict(reference_audit),
+        "reference_audit": closed_reference_audit,
         "sample_sheet_audit": dict(sample_sheet_audit),
         "count_policy_audit": dict(count_policy_audit),
         "confirmed_method": _confirmed_method(),
@@ -1567,11 +1689,7 @@ def _validate_preflight_document(value: Any) -> None:
         raise PublicationError("audited denominator evidence is not exact")
     if discrepancy.get("must_not_collapse_to_single_attrition_count") is not True:
         raise PublicationError("denominator separation truth is not exact")
-    if type(value.get("claim_boundary")) is not str or value["claim_boundary"] != (
-        "This aggregate-only P0 artifact records confirmed method facts and unresolved prerequisites. "
-        "It permanently performs no alignment, SAM-to-count conversion, xTail analysis, qualification, "
-        "canonicalization, training, model selection, or phase unlock."
-    ):
+    if not _strict_equal(value.get("claim_boundary"), EXPECTED_CLAIM_BOUNDARY):
         raise PublicationError("preflight claim boundary is not exact")
     _assert_json_tree(value, label="preflight document")
 

@@ -145,7 +145,7 @@ def _success_document() -> dict[str, Any]:
         provenance,
         PREFLIGHT.audit_implementation_binding(protocol),
         dict(PREFLIGHT.EXPECTED_ACQUISITION_AUDIT),
-        dict(PREFLIGHT.EXPECTED_REFERENCE_AUDIT),
+        copy.deepcopy(PREFLIGHT.EXPECTED_REFERENCE_AUDIT),
         PREFLIGHT._not_provided_sample_sheet_audit(),
         PREFLIGHT._not_provided_count_policy_audit(),
     )
@@ -230,6 +230,20 @@ def _dna(index: int) -> str:
     return "".join(encoded) + "A" * (250 - len(encoded))
 
 
+def _reference_records() -> list[tuple[str, str]]:
+    records = [
+        *(('WT', _dna(index).lower()) for index in range(6_885)),
+        *(('Mutant', _dna(index).lower()) for index in range(6_885, 13_770)),
+        *(('Control', _dna(index).lower()) for index in range(13_770, 13_820)),
+    ]
+    records.extend(("Control", records[index][1]) for index in range(4))
+    for index in range(12):
+        u_count = 50 if index < 11 else 46
+        sequence = _dna(13_820 + index).lower()
+        records.append(("Control", sequence[:-u_count] + "u" * u_count))
+    return records
+
+
 def test_protocol_trust_unknown_to_bound_projection_and_config_only_binding(tmp_path: Path) -> None:
     bound_path, bound = _bound_protocol(tmp_path / "bound-mirror")
     bound_value, bound_provenance = PREFLIGHT.load_protocol(bound_path)
@@ -252,8 +266,8 @@ def test_protocol_trust_unknown_to_bound_projection_and_config_only_binding(tmp_
     assert unknown_value["implementation_binding"]["status"] == "UNKNOWN_NOT_ASSERTED"
     assert bound_provenance["binding_status"] == "BOUND"
     assert unknown_provenance["binding_status"] == "UNKNOWN_NOT_ASSERTED"
-    assert len(unknown["hard_unknown_blockers"]) == 17
-    assert len(bound["hard_unknown_blockers"]) == 16
+    assert len(unknown["hard_unknown_blockers"]) == 18
+    assert len(bound["hard_unknown_blockers"]) == 17
 
 
 def test_binding_half_states_extra_keys_paths_and_wrong_source_hash_are_rejected(
@@ -322,13 +336,12 @@ def test_protocol_json_excessive_nesting_is_a_controlled_error(tmp_path: Path) -
         PREFLIGHT.load_protocol(path)
 
 
-def test_parser_accepted_projection_recursion_is_a_controlled_protocol_error() -> None:
+def test_projection_recursion_is_a_controlled_protocol_error() -> None:
     protocol = json.loads(CONFIG.read_text(encoding="utf-8"))
     nested: Any = "leaf"
     for _ in range(992):
         nested = [nested]
     protocol["claim_boundary"] = nested
-    assert PREFLIGHT._validate_protocol(protocol) in {"BOUND", "UNKNOWN_NOT_ASSERTED"}
     with pytest.raises(PREFLIGHT.ProtocolError, match="canonical projection"):
         PREFLIGHT._canonical_protocol_projection(protocol)
 
@@ -340,6 +353,10 @@ def test_parser_accepted_projection_recursion_is_a_controlled_protocol_error() -
         lambda value: value["denominator_discrepancy"]["paper_reported"].pop("attrition_count"),
         lambda value: value["denominator_discrepancy"]["paper_reported"].__setitem__(
             "attrition_count", 120.0
+        ),
+        lambda value: value["reference_contract"].__setitem__("unexpected", False),
+        lambda value: value["reference_contract"]["expected_type_counts"].__setitem__(
+            "Control", 66.0
         ),
         lambda value: value["sample_sheet_contract"].__setitem__("unexpected", False),
     ],
@@ -517,7 +534,7 @@ def test_production_bound_reads_only_closed_aggregates_and_publishes_blocked(
         "script_bytes_sha256_verified_by_preflight"
     ] is True
     assert document["hard_unknown_blockers"] == list(PREFLIGHT.NON_BINDING_HARD_BLOCKERS)
-    assert len(document["hard_unknown_blockers"]) == 16
+    assert len(document["hard_unknown_blockers"]) == 17
     assert document["gate_truth"] == PREFLIGHT.EXPECTED_GATE_TRUTH
     assert document["sample_sheet_audit"] == PREFLIGHT._not_provided_sample_sheet_audit()
     assert document["count_policy_audit"] == PREFLIGHT._not_provided_count_policy_audit()
@@ -600,6 +617,10 @@ def test_failure_payload_factory_and_consumer_are_exact_type_strict(tmp_path: Pa
         lambda value: value["implementation_binding_audit"].__setitem__("run", "SRR99999999"),
         lambda value: value["acquisition_audit"].__setitem__("run_ids", ["SRR99999999"]),
         lambda value: value["reference_audit"].__setitem__("sequence", "ACGTACGT"),
+        lambda value: value["reference_audit"]["type_counts"].__setitem__("Control", True),
+        lambda value: value["reference_audit"]["u_base_count_by_type"].__setitem__(
+            "identifier", "control-secret"
+        ),
         lambda value: value["sample_sheet_audit"].__setitem__("extra", False),
         lambda value: value["count_policy_audit"].__setitem__("extra", 0),
         lambda value: value["count_policy_audit"].__setitem__("required_flag_count", 999),
@@ -718,15 +739,43 @@ def test_acquisition_marker_rejects_missing_extra_order_type_and_wrong_run_pair(
 
 
 def test_default_reference_audit_and_aggregate_are_exact_identifier_free(tmp_path: Path) -> None:
-    unique = [_dna(index).lower() for index in range(13_832)]
-    records = [*unique, unique[0], unique[1], unique[2], unique[3]]
+    records = _reference_records()
     aggregate = PREFLIGHT.audit_reference_records(records)
     assert aggregate == PREFLIGHT.EXPECTED_REFERENCE_AUDIT
+    assert (
+        aggregate["record_count"],
+        aggregate["exact_length_record_count"],
+        aggregate["unique_sequence_count"],
+        aggregate["identical_sequence_group_count"],
+        aggregate["sequence_length"],
+        aggregate["observed_sequence_alphabet"],
+    ) == (13_836, 13_836, 13_832, 4, 250, "ACGTU")
+    assert aggregate["all_rows_exact_length_250"] is True
+    assert aggregate["type_counts"] == {"Control": 66, "Mutant": 6_885, "WT": 6_885}
+    assert aggregate["strict_250_acgt_record_count"] == 13_824
+    assert aggregate["u_containing_record_count"] == 12
+    assert aggregate["u_base_count"] == 596
+    assert aggregate["u_containing_record_count_by_type"] == {
+        "Control": 12,
+        "Mutant": 0,
+        "WT": 0,
+    }
+    assert aggregate["u_base_count_by_type"] == {"Control": 596, "Mutant": 0, "WT": 0}
+    assert aggregate["primary_wt_mutant_record_count"] == 13_770
+    assert aggregate["primary_wt_mutant_strict_250_acgt_record_count"] == 13_770
+    assert aggregate["primary_wt_mutant_all_strict_250_acgt"] is True
+    assert aggregate["u_to_t_normalization_applied"] is False
+    assert aggregate["control_row_exclusion_applied"] is False
     encoded = json.dumps(aggregate, sort_keys=True)
-    assert unique[0] not in encoded
+    assert records[0][1] not in encoded
+    assert records[0][1].upper() not in encoded
+    assert records[-1][1] not in encoded
+    assert records[-1][1].upper() not in encoded
+    assert "row-0" not in encoded
 
-    tsv = "identifier\tFull_Oligo\n" + "".join(
-        f"row-{index}\t{sequence}\n" for index, sequence in enumerate(records)
+    tsv = "identifier\tType\tFull_Oligo\n" + "".join(
+        f"row-{index}\t{row_type}\t{sequence}\n"
+        for index, (row_type, sequence) in enumerate(records)
     )
     compressed = gzip.compress(tsv.encode("utf-8"), mtime=0)
     reference_path = tmp_path / "design.tsv.gz"
@@ -746,6 +795,43 @@ def test_default_reference_audit_and_aggregate_are_exact_identifier_free(tmp_pat
     ) == PREFLIGHT.EXPECTED_REFERENCE_AUDIT
 
 
+def test_reference_aggregate_rejects_plus_minus_one_type_and_normalization_drift() -> None:
+    records = _reference_records()
+    plus_one = [*records, ("Control", _dna(20_000).lower())]
+    minus_one = records[:-1]
+
+    type_drift = list(records)
+    type_drift[0] = ("Control", type_drift[0][1])
+
+    u_type_swap = list(records)
+    wt_type, wt_sequence = u_type_swap[0]
+    control_type, control_u_sequence = u_type_swap[-1]
+    u_type_swap[0] = (control_type, wt_sequence)
+    u_type_swap[-1] = (wt_type, control_u_sequence)
+
+    u_minus_one = list(records)
+    row_type, sequence = u_minus_one[-1]
+    u_minus_one[-1] = (row_type, sequence[:-1] + "a")
+
+    u_plus_one = list(records)
+    row_type, sequence = u_plus_one[-1]
+    u_plus_one[-1] = (row_type, sequence[:-47] + "u" + sequence[-46:])
+
+    u_to_t = [(row_type, sequence.replace("u", "t")) for row_type, sequence in records]
+
+    for invalid in (
+        plus_one,
+        minus_one,
+        type_drift,
+        u_type_swap,
+        u_minus_one,
+        u_plus_one,
+        u_to_t,
+    ):
+        with pytest.raises(PREFLIGHT.ReferenceAuditError):
+            PREFLIGHT.audit_reference_records(invalid)
+
+
 def test_reference_corrupt_deflate_and_oversized_csv_field_are_controlled(
     tmp_path: Path,
 ) -> None:
@@ -754,7 +840,10 @@ def test_reference_corrupt_deflate_and_oversized_csv_field_are_controlled(
     protocol, _ = _protocol()
     payloads = (
         b"\x1f\x8b\x08\x00\x00\x00\x00\x00\x00\x03garbage-garbage",
-        gzip.compress(("Full_Oligo\n" + "A" * 200_000 + "\n").encode("ascii"), mtime=0),
+        gzip.compress(
+            ("Type\tFull_Oligo\nControl\t" + "A" * 200_000 + "\n").encode("ascii"),
+            mtime=0,
+        ),
     )
     for index, payload in enumerate(payloads):
         reference = tmp_path / f"invalid-{index}.tsv.gz"
@@ -842,22 +931,23 @@ def test_author_argv_is_exact_ordered_and_permanently_inert() -> None:
     assert all(value is False for value in protocol["execution_policy"].values())
 
 
-def test_bound_sixteen_and_unknown_seventeen_blockers_preserve_scientific_unknowns(
+def test_bound_seventeen_and_unknown_eighteen_blockers_preserve_scientific_unknowns(
     tmp_path: Path,
 ) -> None:
     bound_path, bound_value = _bound_protocol(tmp_path / "blocker-bound")
     protocol, _ = PREFLIGHT.load_protocol(bound_path)
     assert protocol == bound_value
     assert protocol["hard_unknown_blockers"] == list(PREFLIGHT.NON_BINDING_HARD_BLOCKERS)
-    assert len(protocol["hard_unknown_blockers"]) == len(set(protocol["hard_unknown_blockers"])) == 16
+    assert len(protocol["hard_unknown_blockers"]) == len(set(protocol["hard_unknown_blockers"])) == 17
     unknown_path, unknown_value = _unknown_protocol(tmp_path / "blocker-unknown")
     loaded_unknown, _ = PREFLIGHT.load_protocol(unknown_path)
     assert loaded_unknown == unknown_value
     assert loaded_unknown["hard_unknown_blockers"] == list(PREFLIGHT.EXPECTED_HARD_BLOCKERS)
-    assert len(loaded_unknown["hard_unknown_blockers"]) == 17
+    assert len(loaded_unknown["hard_unknown_blockers"]) == 18
     assert "PRODUCTION_IMPLEMENTATION_BINDING_UNKNOWN" not in protocol["hard_unknown_blockers"]
     required = {
         "EXACT_SRR_SAMPLE_ROLES_UNKNOWN",
+        "CONTROL_REFERENCE_U_TO_T_NORMALIZATION_UNKNOWN",
         "SAM_TO_COUNT_PAIRED_HANDLING_UNKNOWN",
         "SAM_TO_COUNT_MULTIMAP_POLICY_UNKNOWN",
         "SAM_TO_COUNT_FLAG_POLICY_UNKNOWN",
@@ -1245,5 +1335,5 @@ def test_committed_config_json_parses_and_hashes_are_reportable() -> None:
         )
         assert protocol["hard_unknown_blockers"] == list(PREFLIGHT.EXPECTED_HARD_BLOCKERS)
     assert PREFLIGHT.PROTOCOL_CORE_SHA256 == (
-        "381a65d3070eef00bd4b73a8936fd779a999c2a890c221802fdea772b48a24de"
+        "88762faebad2d3dda93066861166248cb77ec1494a02bef5103a6aeb88d31e31"
     )

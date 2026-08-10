@@ -21,12 +21,12 @@
   "ordinary_public_data_only": true,
   "implementation_binding": {
     "binding_scheme": "CONFIG_ONLY_POST_IMPLEMENTATION_BINDING_V1",
-    "status": "BOUND",
-    "production_implementation_commit": "eb83ed15ff49f19353af3d30e7547d2de0423c02",
-    "production_script_sha256": "f4bbcec60f287aee50358e1816de02b87fb5079dc33aac6b3b76d6afa12d91a9",
+    "status": "UNKNOWN_NOT_ASSERTED",
+    "production_implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "production_script_sha256": "UNKNOWN_NOT_ASSERTED",
     "script_repo_path": "scripts/route_a_v3/preflight_gse200304_raw_replay.py",
     "test_repo_path": "tests/route_a_v3/test_preflight_gse200304_raw_replay.py",
-    "hard_blocker": null
+    "hard_blocker": "PRODUCTION_IMPLEMENTATION_BINDING_UNKNOWN"
   },
   "adapter_bindings": {
     "acquisition": {
@@ -76,13 +76,48 @@
     "source_asset_bytes": 1091787,
     "source_asset_sha256": "06b78231dcf02e6d42bc0abaf919d419630a6e1dd33d04ebe841ff03aa0e5f1f",
     "source_format": "GZIP_TSV",
+    "type_column": "Type",
     "sequence_column": "Full_Oligo",
     "author_normalization": "UPPERCASE_ONLY",
     "expected_record_count": 13836,
+    "expected_type_counts": {
+      "Control": 66,
+      "Mutant": 6885,
+      "WT": 6885
+    },
     "expected_unique_sequence_count": 13832,
     "expected_identical_sequence_group_count": 4,
     "expected_sequence_length": 250,
-    "expected_sequence_alphabet": "ACGT",
+    "expected_all_rows_exact_length_250": true,
+    "expected_observed_sequence_alphabet": "ACGTU",
+    "expected_strict_250_acgt_record_count": 13824,
+    "expected_strict_250_acgt_record_count_by_type": {
+      "Control": 54,
+      "Mutant": 6885,
+      "WT": 6885
+    },
+    "expected_u_containing_record_count": 12,
+    "expected_u_containing_record_count_by_type": {
+      "Control": 12,
+      "Mutant": 0,
+      "WT": 0
+    },
+    "expected_u_base_count": 596,
+    "expected_u_base_count_by_type": {
+      "Control": 596,
+      "Mutant": 0,
+      "WT": 0
+    },
+    "primary_types": [
+      "WT",
+      "Mutant"
+    ],
+    "expected_primary_record_count": 13770,
+    "expected_primary_strict_250_acgt_record_count": 13770,
+    "expected_primary_sequence_alphabet": "ACGT",
+    "preflight_u_to_t_normalization_allowed": false,
+    "preflight_control_row_exclusion_allowed": false,
+    "downstream_control_u_to_t_normalization_policy_status": "UNKNOWN_NOT_ASSERTED",
     "identifier_output_allowed": false,
     "sequence_output_allowed": false,
     "identical_reference_multimap_tie_status": "UNKNOWN_NOT_ASSERTED"
@@ -205,7 +240,9 @@
     "must_not_collapse_to_single_attrition_count": true
   },
   "hard_unknown_blockers": [
+    "PRODUCTION_IMPLEMENTATION_BINDING_UNKNOWN",
     "EXACT_SRR_SAMPLE_ROLES_UNKNOWN",
+    "CONTROL_REFERENCE_U_TO_T_NORMALIZATION_UNKNOWN",
     "SAM_TO_COUNT_PAIRED_HANDLING_UNKNOWN",
     "SAM_TO_COUNT_MULTIMAP_POLICY_UNKNOWN",
     "SAM_TO_COUNT_FLAG_POLICY_UNKNOWN",
@@ -290,5 +327,5 @@
     "run_identifier_list_allowed": false,
     "sequence_allowed": false
   },
-  "claim_boundary": "This aggregate-only P0 artifact records confirmed method facts and unresolved prerequisites. It permanently performs no alignment, SAM-to-count conversion, xTail analysis, qualification, canonicalization, training, model selection, or phase unlock."
+  "claim_boundary": "This aggregate-only P0 artifact records confirmed method facts and unresolved prerequisites. It reports control-reference U observations without U-to-T normalization or control exclusion. It permanently performs no alignment, SAM-to-count conversion, xTail analysis, qualification, canonicalization, training, model selection, or phase unlock."
 }
