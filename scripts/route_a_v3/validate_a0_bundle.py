@@ -37,7 +37,7 @@ SUPERSESSION_PATH = "docs/contracts/supersession_mrna_xeditflow_v1_1_to_route_a_
 DECISION_LOG_PATH = "docs/execution/route_a_v3_decision_log.yaml"
 REGISTRY_MANIFEST_PATH = "docs/execution/route_a_v3_registry_manifest.json"
 A1_INTERIM_PATH = "docs/execution/route_a_v3_a1_interim.yaml"
-EXPECTED_A1_INTERIM_SHA256 = "9537002671e99f7abc937af68640280f53e309113e1a888e79a53025c2ca874b"
+EXPECTED_A1_INTERIM_SHA256 = "6a6f9f78e521facd97dc177c2c877deb6939cdc43d9e07d13e155e325bcb91f5"
 SCIENTIFIC_M0_HISTORY_PATH = "docs/contracts/history/mrna_v2_readiness_audit_20260807.md"
 SCIENTIFIC_M0_HISTORY_SHA256 = "a8eb4f49ede793a8eae2037db9f46f044056d37610ec92482666a8242a52fa30"
 SEALED_GUARD_PATH = "scripts/route_a_v3/sealed_guard.py"
@@ -1274,6 +1274,10 @@ def validate_a1_interim_lineage(
             "metadata_only_qualification_allowed": False,
             "training_allowed": False,
             "model_selection_allowed": False,
+            "raw_sequence_or_label_payload_embedded": False,
+            "record_contains_row_or_member_payload": False,
+            "record_contains_sequence_values": False,
+            "record_contains_raw_label_values": False,
             "training_started": False,
             "gpu_work_started": False,
             "model_selection_started": False,
@@ -1296,12 +1300,249 @@ def validate_a1_interim_lineage(
             "required_a1_studies": 2,
             "qualified_a2_dense_studies": 0,
             "required_a2_dense_studies": 1,
+            "metadata_only_qualification_count": 0,
             "phase_complete": False,
             "next_phase_authorized": False,
             "a2_training_authorized": False,
         }
         for key, value in expected_gate.items():
             _expect(gate, key, value, path, issues, "A1_INTERIM_GATE")
+
+    lineage = interim.get("artifact_lineage")
+    if not isinstance(lineage, Mapping):
+        _issue(issues, "A1_INTERIM_GSE200304_LINEAGE", path, "artifact_lineage must be a mapping")
+    else:
+        expected_gse200304_lineage = {
+            "a1_public_qualifiers_sync_v1": {
+                "path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/A1_PUBLIC_QUALIFIERS_SYNC_V1.json",
+                "sha256": "22eac457a5ccea5272b9e1b9ff4ded845c79c89449209f28d9aaa510f2ab59f5",
+                "event_id": "A1-EVT-031",
+                "qualified_independent_ordinary_studies": 0,
+                "qualified_a1_studies": 0,
+                "qualified_a2_dense_studies": 0,
+                "training_started": False,
+                "next_phase_authorized": False,
+            },
+            "gse200304_public_asset_bundle": {
+                "path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE200304/GSE200304_PUBLIC_ASSETS_20260810T143731P0800",
+                "acquisition_manifest_sha256": "8318990d9e3b6a0e6265bf9d1e8bc20f56f0ecfd994e83d279e733258642100c",
+                "sha256sums_sha256": "20da85cd34f0574829392b5de1d7c48cc9782219847f56ccc07dffd579d79f15",
+                "terminal_marker_sha256": "4742508195f28bf8c7ab1f7cb8bb0b68c32304f31b19c8f8979d098fa75786a5",
+                "status": "PRESENT_IN_SEPARATE_COMMITTED_BUNDLE_NOT_INTEGRATED",
+                "used_by_current_qualifier": False,
+            },
+            "gse200304_ena_fastq_manifest_bundle": {
+                "path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE200304/GSE200304_ENA_FASTQ_MANIFEST_20260810T145631P0800",
+                "canonical_tsv_sha256": "22cd317d961d07036cb2dad19555b5c2423671c33a76badeb7b325847ee68d7b",
+                "summary_sha256": "f92f944c825a255f3f1fb50f48cbf0e701980b7895101c1a2a6699d4b190e1e4",
+                "terminal_marker_sha256": "d3eed4a9408543c77f47aa2a0d8cff59ebfe863c1e3c2d0bb2324d7910d6014b",
+                "official_run_count": 24,
+                "paired_fastq_object_count": 48,
+                "declared_total_fastq_bytes": 12738938976,
+                "fastq_body_download_count": 0,
+                "fastq_md5_local_recomputation_status": "NOT_RUN",
+                "official_metadata_and_object_lengths_status": "VERIFIED_48_OBJECTS",
+                "metadata_only": True,
+                "contains_fastq_body_payload": False,
+                "status": "PRESENT_IN_SEPARATE_COMMITTED_BUNDLE_NOT_CONSUMED",
+                "used_by_current_qualifier": False,
+            },
+            "gse200304_qualifier_protocol": {
+                "path": "configs/route_a_v3_gse200304_a1_qualification.json",
+                "sha256": "0c7328735edbeed90ae04d5032b268c3b92c71e03031aa040bc03c2743b9e0a7",
+                "qualifier_path": "scripts/route_a_v3/qualify_gse200304_a1.py",
+                "qualifier_sha256": "49950a460079924d5e5b98b7a49bf2dc378a1cf82cba633d19b2bff0b52c9944",
+                "focused_test_path": "tests/route_a_v3/test_qualify_gse200304_a1.py",
+                "focused_test_sha256": "b21b0f497b4e2b9857b70d4ff83f2287a12b4f0944080f40fb24721682b15269",
+                "implementation_commit": "b9697ef82ccb30f1d76a2baed1b3207f9ea056a6",
+                "binding_commit": "46c608b219590cf844060a85ba0983bcf4c5a471",
+                "qualification_execution_commit": "46c608b219590cf844060a85ba0983bcf4c5a471",
+                "implementation_binding_status": "BOUND",
+            },
+            "gse200304_gap_qualification_attempt_001_failure": {
+                "path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_GAP_QUALIFICATION_20260810T155024P0800_bf14584",
+                "bundled_status": "FAIL_CLOSED_BEFORE_SUCCESS_BUNDLE_PUBLICATION",
+                "failure_report_bytes": 578,
+                "failure_report_sha256": "248cdea9742d449ad3f5735b99cf2842477afa713d58733daa69b68ed1039bbf",
+                "sha256sums_bytes": 86,
+                "sha256sums_sha256": "c92383cd6b5e4426314aca7c6eecefcee9e26c87856c8f76d52677af10dd86da",
+                "terminal_marker_bytes": 870,
+                "terminal_marker_sha256": "55371492c30cfffd90bf091f229b34e54f17a99229ec23c2be8ed4d7bfbb9f7d",
+                "preserved_without_overwrite": True,
+                "diagnostic_reason": "NFS_STALE_PREOPEN_PARENT_METADATA_FALSE_REJECTION",
+                "diagnostic_reason_provenance": "READ_ONLY_DIAGNOSTIC_REPLAY_NOT_BUNDLE_CLAIM",
+            },
+            "gse200304_gap_qualification_attempt_002_failure": {
+                "path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_GAP_QUALIFICATION_20260810T160803P0800_841b275",
+                "bundled_status": "FAIL_CLOSED_BEFORE_SUCCESS_BUNDLE_PUBLICATION",
+                "failure_report_bytes": 574,
+                "failure_report_sha256": "fa8ae6fe50f8b2a493322b9c3902e2800e3fe5065caa6a4008a7f7cd2cf3b31f",
+                "sha256sums_bytes": 86,
+                "sha256sums_sha256": "c9a1321f6e93fe5992de45171084d916fb74a18aebd51690d3fcedf264abb18c",
+                "terminal_marker_bytes": 870,
+                "terminal_marker_sha256": "6b580898a8d0260e964d791bb472b6b8dabc300aa0459ec92179002e0dc3f4f2",
+                "preserved_without_overwrite": True,
+                "diagnostic_reason": "CONTROL_NON_ACGT_ROWS_INCORRECTLY_SUBJECTED_TO_PAIR_ALPHABET_GATE",
+                "diagnostic_aggregate_control_non_acgt_count": 41,
+                "diagnostic_reason_provenance": "READ_ONLY_DIAGNOSTIC_REPLAY_NOT_BUNDLE_CLAIM",
+            },
+            "gse200304_gap_qualification_attempt_003_failure": {
+                "path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_GAP_QUALIFICATION_20260810T162027P0800_8bb2106",
+                "bundled_status": "FAIL_CLOSED_BEFORE_SUCCESS_BUNDLE_PUBLICATION",
+                "failure_report_bytes": 574,
+                "failure_report_sha256": "fa8ae6fe50f8b2a493322b9c3902e2800e3fe5065caa6a4008a7f7cd2cf3b31f",
+                "sha256sums_bytes": 86,
+                "sha256sums_sha256": "c9a1321f6e93fe5992de45171084d916fb74a18aebd51690d3fcedf264abb18c",
+                "terminal_marker_bytes": 870,
+                "terminal_marker_sha256": "24c6ae6890c0a061627b10a1207b9c0ba268d50c74a2a300e8527c3c30c5b764",
+                "preserved_without_overwrite": True,
+                "diagnostic_reason": "CONTROL_ID_INCORRECTLY_REQUIRED_TO_EQUAL_INDEPENDENT_CONTROL_MERGED_ID",
+                "diagnostic_reason_provenance": "READ_ONLY_DIAGNOSTIC_REPLAY_NOT_BUNDLE_CLAIM",
+            },
+            "gse200304_gap_qualification_v1": {
+                "path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_GAP_QUALIFICATION_20260810T163429P0800_46c608b",
+                "execution_outcome": "ENGINEERING_SUCCESS_BLOCKED_NOT_QUALIFIED",
+                "qualification_status": "BLOCKED_NOT_QUALIFIED",
+                "sha256sums_sha256": "f5c3bf069bb22878ee0b99d51810571d3b00bb37e03c3da0ff43138a650a0914",
+                "qualification_report_sha256": "f2aaa99443c1df2eba30698ba46574974189102b8f65d0712286f56a85ea7e3f",
+                "input_integrity_audit_sha256": "712451293571250ac196df8a190ab9ee82dc0729db59ef6aa61655c47e136cb3",
+                "mechanical_audit_sha256": "142c88fa6e6db0ba73431cf0fd790e85f179a10612c906ad1ce651b9e4695ec9",
+                "terminal_marker_sha256": "803042c2af9e72e4355e6decb25c3a349d03d961d987633a337fff41e3b58d1e",
+                "aggregate_only": True,
+                "ordinary_study_contribution": 0,
+                "a1_study_contribution": 0,
+                "true_a2_study_contribution": 0,
+                "canonical_record_count": 0,
+                "qualified": False,
+                "training_allowed": False,
+                "model_selection_allowed": False,
+            },
+        }
+        expected_relevant_lineage_ids = set(expected_gse200304_lineage)
+        observed_relevant_lineage_ids: set[str] = set()
+        for lineage_id, record in lineage.items():
+            if not isinstance(lineage_id, str):
+                continue
+            record_path = record.get("path", "") if isinstance(record, Mapping) else ""
+            record_dataset = record.get("dataset_id") if isinstance(record, Mapping) else None
+            if (
+                lineage_id == "a1_public_qualifiers_sync_v1"
+                or lineage_id.startswith("gse200304_")
+                or record_dataset == "GSE200304"
+                or "gse200304" in str(record_path).lower()
+            ):
+                observed_relevant_lineage_ids.add(lineage_id)
+        if observed_relevant_lineage_ids != expected_relevant_lineage_ids:
+            _issue(
+                issues,
+                "A1_INTERIM_GSE200304_LINEAGE_ID_SET",
+                path,
+                "GSE200304 lineage IDs must be exactly the closed accepted set; "
+                f"got {sorted(observed_relevant_lineage_ids)!r}, "
+                f"expected {sorted(expected_relevant_lineage_ids)!r}",
+            )
+
+        def _closed_files(
+            root: str,
+            members: Sequence[tuple[str, int, str]],
+        ) -> list[dict[str, Any]]:
+            return [
+                {"path": f"{root}/{name}", "bytes": size, "sha256": digest}
+                for name, size, digest in members
+            ]
+
+        public_root = "/mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE200304/GSE200304_PUBLIC_ASSETS_20260810T143731P0800"
+        ena_root = "/mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE200304/GSE200304_ENA_FASTQ_MANIFEST_20260810T145631P0800"
+        failure_001_root = "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_GAP_QUALIFICATION_20260810T155024P0800_bf14584"
+        failure_002_root = "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_GAP_QUALIFICATION_20260810T160803P0800_841b275"
+        failure_003_root = "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_GAP_QUALIFICATION_20260810T162027P0800_8bb2106"
+        final_root = "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_GAP_QUALIFICATION_20260810T163429P0800_46c608b"
+        expected_closed_files = {
+            "gse200304_public_asset_bundle": _closed_files(
+                public_root,
+                (
+                    ("ASSET_ACQUISITION_MANIFEST.json", 6426, "8318990d9e3b6a0e6265bf9d1e8bc20f56f0ecfd994e83d279e733258642100c"),
+                    ("NCBI_PRJNA824033_RUNINFO.csv", 12042, "34bcedafebc41ee9ccd79483f331b62f2443df31d12691abc0a961a7201848f4"),
+                    ("NIHMS1928233-supplement-3.csv", 7323186, "812f3c983cb7c4f473200741ffd6d73bcab911c9e354934542e018e7b0cf8a6d"),
+                    ("NIHMS1928233-supplement-4.xlsx", 864791, "ec2aab60fcb0be87f2bcc1b1a5a1f786b23bb429edc9851a4034a3e8983dfa08"),
+                    ("PUBLICATION_COMMIT.json", 1095, "4742508195f28bf8c7ab1f7cb8bb0b68c32304f31b19c8f8979d098fa75786a5"),
+                    ("SHA256SUMS", 491, "20da85cd34f0574829392b5de1d7c48cc9782219847f56ccc07dffd579d79f15"),
+                    ("slschuster_3UTRMutationalMPRA-v1.2.zip", 46209, "1c1b1979c1d5bd7fefa54e80a59f982228d0f1498eb0cff2883b753ee5eb0ae4"),
+                ),
+            ),
+            "gse200304_ena_fastq_manifest_bundle": _closed_files(
+                ena_root,
+                (
+                    ("ENA_PRJNA824033_FASTQ_FILES.canonical.tsv", 10388, "22cd317d961d07036cb2dad19555b5c2423671c33a76badeb7b325847ee68d7b"),
+                    ("ENA_PRJNA824033_FASTQ_FILE_REPORT.source.tsv", 5998, "c4a0b6152ec2a3480f280d8498345196d5095ec54967525463fa81961f0f4ea1"),
+                    ("MANIFEST_SUMMARY.json", 3135, "f92f944c825a255f3f1fb50f48cbf0e701980b7895101c1a2a6699d4b190e1e4"),
+                    ("PUBLICATION_COMMIT.json", 1578, "d3eed4a9408543c77f47aa2a0d8cff59ebfe863c1e3c2d0bb2324d7910d6014b"),
+                    ("SHA256SUMS", 307, "5217d3bd5494908d1886c6a00719014f4726ab3b61efde43184c2e475c6fdc78"),
+                ),
+            ),
+            "gse200304_gap_qualification_attempt_001_failure": _closed_files(
+                failure_001_root,
+                (
+                    ("FAILURE_REPORT.json", 578, "248cdea9742d449ad3f5735b99cf2842477afa713d58733daa69b68ed1039bbf"),
+                    ("PUBLICATION_COMMIT.json", 870, "55371492c30cfffd90bf091f229b34e54f17a99229ec23c2be8ed4d7bfbb9f7d"),
+                    ("SHA256SUMS", 86, "c92383cd6b5e4426314aca7c6eecefcee9e26c87856c8f76d52677af10dd86da"),
+                ),
+            ),
+            "gse200304_gap_qualification_attempt_002_failure": _closed_files(
+                failure_002_root,
+                (
+                    ("FAILURE_REPORT.json", 574, "fa8ae6fe50f8b2a493322b9c3902e2800e3fe5065caa6a4008a7f7cd2cf3b31f"),
+                    ("PUBLICATION_COMMIT.json", 870, "6b580898a8d0260e964d791bb472b6b8dabc300aa0459ec92179002e0dc3f4f2"),
+                    ("SHA256SUMS", 86, "c9a1321f6e93fe5992de45171084d916fb74a18aebd51690d3fcedf264abb18c"),
+                ),
+            ),
+            "gse200304_gap_qualification_attempt_003_failure": _closed_files(
+                failure_003_root,
+                (
+                    ("FAILURE_REPORT.json", 574, "fa8ae6fe50f8b2a493322b9c3902e2800e3fe5065caa6a4008a7f7cd2cf3b31f"),
+                    ("PUBLICATION_COMMIT.json", 870, "24c6ae6890c0a061627b10a1207b9c0ba268d50c74a2a300e8527c3c30c5b764"),
+                    ("SHA256SUMS", 86, "c9a1321f6e93fe5992de45171084d916fb74a18aebd51690d3fcedf264abb18c"),
+                ),
+            ),
+            "gse200304_gap_qualification_v1": _closed_files(
+                final_root,
+                (
+                    ("INPUT_INTEGRITY_AUDIT.json", 3476, "712451293571250ac196df8a190ab9ee82dc0729db59ef6aa61655c47e136cb3"),
+                    ("MECHANICAL_AUDIT.json", 5345, "142c88fa6e6db0ba73431cf0fd790e85f179a10612c906ad1ce651b9e4695ec9"),
+                    ("PUBLICATION_COMMIT.json", 969, "803042c2af9e72e4355e6decb25c3a349d03d961d987633a337fff41e3b58d1e"),
+                    ("QUALIFICATION_REPORT.json", 8080, "f2aaa99443c1df2eba30698ba46574974189102b8f65d0712286f56a85ea7e3f"),
+                    ("SHA256SUMS", 273, "f5c3bf069bb22878ee0b99d51810571d3b00bb37e03c3da0ff43138a650a0914"),
+                ),
+            ),
+        }
+        for lineage_id, expected_fields in expected_gse200304_lineage.items():
+            record = lineage.get(lineage_id)
+            if not isinstance(record, Mapping):
+                _issue(
+                    issues,
+                    "A1_INTERIM_GSE200304_LINEAGE",
+                    path,
+                    f"{lineage_id} must be a mapping",
+                )
+                continue
+            for key, value in expected_fields.items():
+                _expect(
+                    record,
+                    key,
+                    value,
+                    path,
+                    issues,
+                    "A1_INTERIM_GSE200304_LINEAGE",
+                )
+            if lineage_id in expected_closed_files:
+                _expect(
+                    record,
+                    "files",
+                    expected_closed_files[lineage_id],
+                    path,
+                    issues,
+                    "A1_INTERIM_GSE200304_CLOSED_FILES",
+                )
 
     summary = interim.get("dataset_boundary_summary")
     if not isinstance(summary, Mapping):
@@ -1343,6 +1584,42 @@ def validate_a1_interim_lineage(
             }
             for key, value in expected_gse114002.items():
                 _expect(gse114002, key, value, path, issues, "A1_INTERIM_GSE114002")
+        gse200304 = summary.get("GSE200304")
+        if not isinstance(gse200304, Mapping):
+            _issue(issues, "A1_INTERIM_GSE200304", path, "GSE200304 boundary must be a mapping")
+        else:
+            expected_gse200304 = {
+                "registry_qualification_status": "AUDIT_PENDING",
+                "a1_inventory_qualification_status": "BLOCKED_PENDING_PUBLIC_EVIDENCE",
+                "qualification_execution_outcome": "ENGINEERING_SUCCESS_BLOCKED_NOT_QUALIFIED",
+                "qualification_status": "BLOCKED_NOT_QUALIFIED",
+                "ordinary_gate_contribution": 0,
+                "a1_gate_contribution": 0,
+                "true_a2_gate_contribution": 0,
+                "nominal_intervention_pair_count": 6885,
+                "distinct_candidate_count": 6885,
+                "source_sequence_proxy_group_count": 6882,
+                "singleton_source_pool_count": 6879,
+                "two_candidate_source_pool_count": 3,
+                "three_or_more_candidate_source_pool_count": 0,
+                "ndcg_eligible_source_pool_count": 0,
+                "processed_pair_count": 6772,
+                "outcome_blind_attrition_count": 113,
+                "small_plasmid_complete_pair_count": 6120,
+                "ivt_complete_pair_count": 6774,
+                "all_pairs_exactly_one_snv": True,
+                "controls_excluded_from_source_candidate_geometry": True,
+                "paper_native_raw_xtail_replay_status": "NOT_RUN",
+                "source_grouping_status": "SEQUENCE_EQUALITY_PROXY_NOT_BIOLOGICALLY_FROZEN",
+                "license_and_redistribution_status": "UNKNOWN_NOT_ASSERTED",
+                "checkpoint_specific_foundation_exposure_status": "UNKNOWN_NOT_ASSERTED",
+                "canonical_intervention_record_count": 0,
+                "qualified": False,
+                "training_allowed": False,
+                "model_selection_allowed": False,
+            }
+            for key, value in expected_gse200304.items():
+                _expect(gse200304, key, value, path, issues, "A1_INTERIM_GSE200304")
         _expect(summary, "qualified_a2_dense_neighborhoods", 0, path, issues, "A1_INTERIM_DATASET_BOUNDARY")
 
     claims = interim.get("claim_boundaries")
@@ -1352,6 +1629,9 @@ def validate_a1_interim_lineage(
         expected_claims = {
             "gse145046_formal_audit_execution_is_study_qualification": False,
             "gse145046_fixed_scaffold_absolute_auxiliary_is_true_a2": False,
+            "gse200304_engineering_success_is_study_qualification": False,
+            "gse200304_sequence_proxy_groups_are_biological_source_groups": False,
+            "gse200304_precomputed_aggregate_evidence_is_paper_native_xtail_replay": False,
             "a1_phase_complete": False,
             "route_a_established": False,
         }

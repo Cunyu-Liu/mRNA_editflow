@@ -35,6 +35,34 @@ def _copy_manifest_bundle(validator, repo_root, tmp_path):
     return manifest
 
 
+def _validate_rehashed_interim_bypass(
+    validator,
+    repo_root,
+    case_root,
+    monkeypatch,
+    mutate,
+):
+    manifest = _copy_manifest_bundle(validator, repo_root, case_root)
+    interim_path = case_root / validator.A1_INTERIM_PATH
+    interim = yaml.safe_load(interim_path.read_text(encoding="utf-8"))
+    mutate(interim)
+    interim_path.write_text(yaml.safe_dump(interim, sort_keys=False), encoding="utf-8")
+    interim_hash = validator.sha256_file(interim_path)
+    monkeypatch.setattr(validator, "EXPECTED_A1_INTERIM_SHA256", interim_hash)
+
+    entry = next(
+        row for row in manifest["files"] if row["path"] == validator.A1_INTERIM_PATH
+    )
+    entry["sha256"] = interim_hash
+    manifest_path = case_root / validator.REGISTRY_MANIFEST_PATH
+    manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+
+    codes = _codes(validator.validate_bundle(case_root))
+    assert "A1_INTERIM_CANONICAL_HASH" not in codes
+    assert "REGISTRY_MANIFEST_HASH_MISMATCH" not in codes
+    return codes
+
+
 def test_decision_log_requires_all_ids_and_historical_m0_decision(validator, repo_root):
     decision_log = validator._load_yaml(repo_root, validator.DECISION_LOG_PATH)
     assert validator.validate_decision_log(decision_log) == []
@@ -187,6 +215,181 @@ def test_a1_interim_semantics_and_rehashed_manifest_cannot_grant_a1(
     assert "REGISTRY_MANIFEST_HASH_MISMATCH" not in codes
     assert "A1_INTERIM_CANONICAL_HASH" in codes
     assert "A1_INTERIM_GATE" in codes
+
+
+def test_a1_interim_gse200304_blocked_counts_and_lineage_are_fail_closed(
+    validator,
+    repo_root,
+):
+    interim = validator._load_yaml(repo_root, validator.A1_INTERIM_PATH)
+    assert validator.validate_a1_interim_lineage(repo_root, interim) == []
+
+    summary_mutations = {
+        "qualified": True,
+        "training_allowed": True,
+        "canonical_intervention_record_count": 1,
+        "ordinary_gate_contribution": 1,
+    }
+    for key, value in summary_mutations.items():
+        bypass = deepcopy(interim)
+        bypass["dataset_boundary_summary"]["GSE200304"][key] = value
+        codes = _codes(validator.validate_a1_interim_lineage(repo_root, bypass))
+        assert "A1_INTERIM_GSE200304" in codes, key
+
+    lineage_count_bypass = deepcopy(interim)
+    final_bundle = lineage_count_bypass["artifact_lineage"][
+        "gse200304_gap_qualification_v1"
+    ]
+    final_bundle["a1_study_contribution"] = 1
+    final_bundle["canonical_record_count"] = 1
+    codes = _codes(
+        validator.validate_a1_interim_lineage(repo_root, lineage_count_bypass)
+    )
+    assert "A1_INTERIM_GSE200304_LINEAGE" in codes
+
+    lineage_hash_bypass = deepcopy(interim)
+    lineage_hash_bypass["artifact_lineage"]["gse200304_gap_qualification_v1"][
+        "terminal_marker_sha256"
+    ] = "0" * 64
+    codes = _codes(
+        validator.validate_a1_interim_lineage(repo_root, lineage_hash_bypass)
+    )
+    assert "A1_INTERIM_GSE200304_LINEAGE" in codes
+
+    ena_body_bypass = deepcopy(interim)
+    ena_body_bypass["artifact_lineage"]["gse200304_ena_fastq_manifest_bundle"][
+        "fastq_body_download_count"
+    ] = 48
+    codes = _codes(validator.validate_a1_interim_lineage(repo_root, ena_body_bypass))
+    assert "A1_INTERIM_GSE200304_LINEAGE" in codes
+
+
+def test_rehashed_gse200304_interim_cannot_bypass_semantic_closure(
+    validator,
+    repo_root,
+    tmp_path,
+    monkeypatch,
+):
+    summary_mutations = {
+        "qualified": True,
+        "training_allowed": True,
+        "canonical_intervention_record_count": 1,
+        "ordinary_gate_contribution": 1,
+    }
+    for key, value in summary_mutations.items():
+        def mutate_summary(interim, key=key, value=value):
+            interim["dataset_boundary_summary"]["GSE200304"][key] = value
+
+        codes = _validate_rehashed_interim_bypass(
+            validator,
+            repo_root,
+            tmp_path / f"summary_{key}",
+            monkeypatch,
+            mutate_summary,
+        )
+        assert "A1_INTERIM_GSE200304" in codes, key
+
+    for key in (
+        "raw_sequence_or_label_payload_embedded",
+        "record_contains_row_or_member_payload",
+        "record_contains_sequence_values",
+        "record_contains_raw_label_values",
+    ):
+        def mutate_scope(interim, key=key):
+            interim["scope"][key] = True
+
+        codes = _validate_rehashed_interim_bypass(
+            validator,
+            repo_root,
+            tmp_path / f"scope_{key}",
+            monkeypatch,
+            mutate_scope,
+        )
+        assert "A1_INTERIM_SCOPE" in codes, key
+
+    def mutate_metadata_gate(interim):
+        interim["gate_snapshot"]["metadata_only_qualification_count"] = 1
+
+    codes = _validate_rehashed_interim_bypass(
+        validator,
+        repo_root,
+        tmp_path / "metadata_gate",
+        monkeypatch,
+        mutate_metadata_gate,
+    )
+    assert "A1_INTERIM_GATE" in codes
+
+    closed_lineage_ids = (
+        "gse200304_public_asset_bundle",
+        "gse200304_ena_fastq_manifest_bundle",
+        "gse200304_gap_qualification_attempt_001_failure",
+        "gse200304_gap_qualification_attempt_002_failure",
+        "gse200304_gap_qualification_attempt_003_failure",
+        "gse200304_gap_qualification_v1",
+    )
+    for lineage_id in closed_lineage_ids:
+        def mutate_member(interim, lineage_id=lineage_id):
+            interim["artifact_lineage"][lineage_id]["files"][0]["bytes"] += 1
+
+        codes = _validate_rehashed_interim_bypass(
+            validator,
+            repo_root,
+            tmp_path / f"member_{lineage_id}",
+            monkeypatch,
+            mutate_member,
+        )
+        assert "A1_INTERIM_GSE200304_CLOSED_FILES" in codes, lineage_id
+
+    def mutate_failure_semantics(interim):
+        failure = interim["artifact_lineage"][
+            "gse200304_gap_qualification_attempt_001_failure"
+        ]
+        failure["bundled_status"] = "IN_PROGRESS"
+        failure["failure_report_bytes"] += 1
+        failure["sha256sums_bytes"] += 1
+        failure["terminal_marker_bytes"] += 1
+
+    codes = _validate_rehashed_interim_bypass(
+        validator,
+        repo_root,
+        tmp_path / "failure_semantics",
+        monkeypatch,
+        mutate_failure_semantics,
+    )
+    assert "A1_INTERIM_GSE200304_LINEAGE" in codes
+
+    def mutate_ena_semantics(interim):
+        ena = interim["artifact_lineage"]["gse200304_ena_fastq_manifest_bundle"]
+        ena["status"] = "IN_PROGRESS"
+        ena["official_metadata_and_object_lengths_status"] = "NOT_VERIFIED"
+        ena["metadata_only"] = False
+        ena["contains_fastq_body_payload"] = True
+        ena["fastq_body_download_count"] = 48
+        ena["used_by_current_qualifier"] = True
+
+    codes = _validate_rehashed_interim_bypass(
+        validator,
+        repo_root,
+        tmp_path / "ena_semantics",
+        monkeypatch,
+        mutate_ena_semantics,
+    )
+    assert "A1_INTERIM_GSE200304_LINEAGE" in codes
+
+    def add_nonterminal_fastq_lineage(interim):
+        interim["artifact_lineage"]["gse200304_fastq_acquisition_in_progress"] = {
+            "path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE200304/GSE200304_FASTQ_ACQUISITION_IN_PROGRESS",
+            "status": "IN_PROGRESS",
+        }
+
+    codes = _validate_rehashed_interim_bypass(
+        validator,
+        repo_root,
+        tmp_path / "extra_nonterminal_lineage",
+        monkeypatch,
+        add_nonterminal_fastq_lineage,
+    )
+    assert "A1_INTERIM_GSE200304_LINEAGE_ID_SET" in codes
 
 
 def test_scheme_a_data_roles_cannot_restore_gse145046_as_true_a2(

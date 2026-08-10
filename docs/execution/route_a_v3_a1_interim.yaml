@@ -171,6 +171,190 @@ artifact_lineage:
     qualified: false
     training_allowed: false
     model_selection_allowed: false
+  a1_public_qualifiers_sync_v1:
+    path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/A1_PUBLIC_QUALIFIERS_SYNC_V1.json
+    sha256: 22eac457a5ccea5272b9e1b9ff4ded845c79c89449209f28d9aaa510f2ab59f5
+    event_id: A1-EVT-031
+    event_at: "2026-08-10T13:26:47+08:00"
+    lineage_role: PRIOR_PUBLIC_QUALIFIER_EVIDENCE_SYNC_WITH_GATE_UNCHANGED
+    qualified_independent_ordinary_studies: 0
+    qualified_a1_studies: 0
+    qualified_a2_dense_studies: 0
+    training_started: false
+    next_phase_authorized: false
+  gse200304_public_asset_bundle:
+    path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE200304/GSE200304_PUBLIC_ASSETS_20260810T143731P0800
+    acquisition_manifest_sha256: 8318990d9e3b6a0e6265bf9d1e8bc20f56f0ecfd994e83d279e733258642100c
+    sha256sums_sha256: 20da85cd34f0574829392b5de1d7c48cc9782219847f56ccc07dffd579d79f15
+    terminal_marker_sha256: 4742508195f28bf8c7ab1f7cb8bb0b68c32304f31b19c8f8979d098fa75786a5
+    status: PRESENT_IN_SEPARATE_COMMITTED_BUNDLE_NOT_INTEGRATED
+    used_by_current_qualifier: false
+    files:
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE200304/GSE200304_PUBLIC_ASSETS_20260810T143731P0800/ASSET_ACQUISITION_MANIFEST.json
+        bytes: 6426
+        sha256: 8318990d9e3b6a0e6265bf9d1e8bc20f56f0ecfd994e83d279e733258642100c
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE200304/GSE200304_PUBLIC_ASSETS_20260810T143731P0800/NCBI_PRJNA824033_RUNINFO.csv
+        bytes: 12042
+        sha256: 34bcedafebc41ee9ccd79483f331b62f2443df31d12691abc0a961a7201848f4
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE200304/GSE200304_PUBLIC_ASSETS_20260810T143731P0800/NIHMS1928233-supplement-3.csv
+        bytes: 7323186
+        sha256: 812f3c983cb7c4f473200741ffd6d73bcab911c9e354934542e018e7b0cf8a6d
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE200304/GSE200304_PUBLIC_ASSETS_20260810T143731P0800/NIHMS1928233-supplement-4.xlsx
+        bytes: 864791
+        sha256: ec2aab60fcb0be87f2bcc1b1a5a1f786b23bb429edc9851a4034a3e8983dfa08
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE200304/GSE200304_PUBLIC_ASSETS_20260810T143731P0800/PUBLICATION_COMMIT.json
+        bytes: 1095
+        sha256: 4742508195f28bf8c7ab1f7cb8bb0b68c32304f31b19c8f8979d098fa75786a5
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE200304/GSE200304_PUBLIC_ASSETS_20260810T143731P0800/SHA256SUMS
+        bytes: 491
+        sha256: 20da85cd34f0574829392b5de1d7c48cc9782219847f56ccc07dffd579d79f15
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE200304/GSE200304_PUBLIC_ASSETS_20260810T143731P0800/slschuster_3UTRMutationalMPRA-v1.2.zip
+        bytes: 46209
+        sha256: 1c1b1979c1d5bd7fefa54e80a59f982228d0f1498eb0cff2883b753ee5eb0ae4
+  gse200304_ena_fastq_manifest_bundle:
+    path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE200304/GSE200304_ENA_FASTQ_MANIFEST_20260810T145631P0800
+    canonical_tsv_sha256: 22cd317d961d07036cb2dad19555b5c2423671c33a76badeb7b325847ee68d7b
+    summary_sha256: f92f944c825a255f3f1fb50f48cbf0e701980b7895101c1a2a6699d4b190e1e4
+    terminal_marker_sha256: d3eed4a9408543c77f47aa2a0d8cff59ebfe863c1e3c2d0bb2324d7910d6014b
+    official_run_count: 24
+    paired_fastq_object_count: 48
+    declared_total_fastq_bytes: 12738938976
+    fastq_body_download_count: 0
+    fastq_md5_local_recomputation_status: NOT_RUN
+    official_metadata_and_object_lengths_status: VERIFIED_48_OBJECTS
+    metadata_only: true
+    contains_fastq_body_payload: false
+    status: PRESENT_IN_SEPARATE_COMMITTED_BUNDLE_NOT_CONSUMED
+    used_by_current_qualifier: false
+    files:
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE200304/GSE200304_ENA_FASTQ_MANIFEST_20260810T145631P0800/ENA_PRJNA824033_FASTQ_FILES.canonical.tsv
+        bytes: 10388
+        sha256: 22cd317d961d07036cb2dad19555b5c2423671c33a76badeb7b325847ee68d7b
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE200304/GSE200304_ENA_FASTQ_MANIFEST_20260810T145631P0800/ENA_PRJNA824033_FASTQ_FILE_REPORT.source.tsv
+        bytes: 5998
+        sha256: c4a0b6152ec2a3480f280d8498345196d5095ec54967525463fa81961f0f4ea1
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE200304/GSE200304_ENA_FASTQ_MANIFEST_20260810T145631P0800/MANIFEST_SUMMARY.json
+        bytes: 3135
+        sha256: f92f944c825a255f3f1fb50f48cbf0e701980b7895101c1a2a6699d4b190e1e4
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE200304/GSE200304_ENA_FASTQ_MANIFEST_20260810T145631P0800/PUBLICATION_COMMIT.json
+        bytes: 1578
+        sha256: d3eed4a9408543c77f47aa2a0d8cff59ebfe863c1e3c2d0bb2324d7910d6014b
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE200304/GSE200304_ENA_FASTQ_MANIFEST_20260810T145631P0800/SHA256SUMS
+        bytes: 307
+        sha256: 5217d3bd5494908d1886c6a00719014f4726ab3b61efde43184c2e475c6fdc78
+  gse200304_qualifier_protocol:
+    path: configs/route_a_v3_gse200304_a1_qualification.json
+    sha256: 0c7328735edbeed90ae04d5032b268c3b92c71e03031aa040bc03c2743b9e0a7
+    qualifier_path: scripts/route_a_v3/qualify_gse200304_a1.py
+    qualifier_sha256: 49950a460079924d5e5b98b7a49bf2dc378a1cf82cba633d19b2bff0b52c9944
+    focused_test_path: tests/route_a_v3/test_qualify_gse200304_a1.py
+    focused_test_sha256: b21b0f497b4e2b9857b70d4ff83f2287a12b4f0944080f40fb24721682b15269
+    implementation_commit: b9697ef82ccb30f1d76a2baed1b3207f9ea056a6
+    binding_commit: 46c608b219590cf844060a85ba0983bcf4c5a471
+    qualification_execution_commit: 46c608b219590cf844060a85ba0983bcf4c5a471
+    implementation_binding_status: BOUND
+    canonical_protocol_trust_root_closed: true
+    model_results_may_change_protocol: false
+  gse200304_gap_qualification_attempt_001_failure:
+    path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_GAP_QUALIFICATION_20260810T155024P0800_bf14584
+    bundled_status: FAIL_CLOSED_BEFORE_SUCCESS_BUNDLE_PUBLICATION
+    failure_report_bytes: 578
+    failure_report_sha256: 248cdea9742d449ad3f5735b99cf2842477afa713d58733daa69b68ed1039bbf
+    sha256sums_bytes: 86
+    sha256sums_sha256: c92383cd6b5e4426314aca7c6eecefcee9e26c87856c8f76d52677af10dd86da
+    terminal_marker_bytes: 870
+    terminal_marker_sha256: 55371492c30cfffd90bf091f229b34e54f17a99229ec23c2be8ed4d7bfbb9f7d
+    preserved_without_overwrite: true
+    diagnostic_reason: NFS_STALE_PREOPEN_PARENT_METADATA_FALSE_REJECTION
+    diagnostic_reason_provenance: READ_ONLY_DIAGNOSTIC_REPLAY_NOT_BUNDLE_CLAIM
+    files:
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_GAP_QUALIFICATION_20260810T155024P0800_bf14584/FAILURE_REPORT.json
+        bytes: 578
+        sha256: 248cdea9742d449ad3f5735b99cf2842477afa713d58733daa69b68ed1039bbf
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_GAP_QUALIFICATION_20260810T155024P0800_bf14584/PUBLICATION_COMMIT.json
+        bytes: 870
+        sha256: 55371492c30cfffd90bf091f229b34e54f17a99229ec23c2be8ed4d7bfbb9f7d
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_GAP_QUALIFICATION_20260810T155024P0800_bf14584/SHA256SUMS
+        bytes: 86
+        sha256: c92383cd6b5e4426314aca7c6eecefcee9e26c87856c8f76d52677af10dd86da
+  gse200304_gap_qualification_attempt_002_failure:
+    path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_GAP_QUALIFICATION_20260810T160803P0800_841b275
+    bundled_status: FAIL_CLOSED_BEFORE_SUCCESS_BUNDLE_PUBLICATION
+    failure_report_bytes: 574
+    failure_report_sha256: fa8ae6fe50f8b2a493322b9c3902e2800e3fe5065caa6a4008a7f7cd2cf3b31f
+    sha256sums_bytes: 86
+    sha256sums_sha256: c9a1321f6e93fe5992de45171084d916fb74a18aebd51690d3fcedf264abb18c
+    terminal_marker_bytes: 870
+    terminal_marker_sha256: 6b580898a8d0260e964d791bb472b6b8dabc300aa0459ec92179002e0dc3f4f2
+    preserved_without_overwrite: true
+    diagnostic_reason: CONTROL_NON_ACGT_ROWS_INCORRECTLY_SUBJECTED_TO_PAIR_ALPHABET_GATE
+    diagnostic_aggregate_control_non_acgt_count: 41
+    diagnostic_reason_provenance: READ_ONLY_DIAGNOSTIC_REPLAY_NOT_BUNDLE_CLAIM
+    files:
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_GAP_QUALIFICATION_20260810T160803P0800_841b275/FAILURE_REPORT.json
+        bytes: 574
+        sha256: fa8ae6fe50f8b2a493322b9c3902e2800e3fe5065caa6a4008a7f7cd2cf3b31f
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_GAP_QUALIFICATION_20260810T160803P0800_841b275/PUBLICATION_COMMIT.json
+        bytes: 870
+        sha256: 6b580898a8d0260e964d791bb472b6b8dabc300aa0459ec92179002e0dc3f4f2
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_GAP_QUALIFICATION_20260810T160803P0800_841b275/SHA256SUMS
+        bytes: 86
+        sha256: c9a1321f6e93fe5992de45171084d916fb74a18aebd51690d3fcedf264abb18c
+  gse200304_gap_qualification_attempt_003_failure:
+    path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_GAP_QUALIFICATION_20260810T162027P0800_8bb2106
+    bundled_status: FAIL_CLOSED_BEFORE_SUCCESS_BUNDLE_PUBLICATION
+    failure_report_bytes: 574
+    failure_report_sha256: fa8ae6fe50f8b2a493322b9c3902e2800e3fe5065caa6a4008a7f7cd2cf3b31f
+    sha256sums_bytes: 86
+    sha256sums_sha256: c9a1321f6e93fe5992de45171084d916fb74a18aebd51690d3fcedf264abb18c
+    terminal_marker_bytes: 870
+    terminal_marker_sha256: 24c6ae6890c0a061627b10a1207b9c0ba268d50c74a2a300e8527c3c30c5b764
+    preserved_without_overwrite: true
+    diagnostic_reason: CONTROL_ID_INCORRECTLY_REQUIRED_TO_EQUAL_INDEPENDENT_CONTROL_MERGED_ID
+    diagnostic_reason_provenance: READ_ONLY_DIAGNOSTIC_REPLAY_NOT_BUNDLE_CLAIM
+    files:
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_GAP_QUALIFICATION_20260810T162027P0800_8bb2106/FAILURE_REPORT.json
+        bytes: 574
+        sha256: fa8ae6fe50f8b2a493322b9c3902e2800e3fe5065caa6a4008a7f7cd2cf3b31f
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_GAP_QUALIFICATION_20260810T162027P0800_8bb2106/PUBLICATION_COMMIT.json
+        bytes: 870
+        sha256: 24c6ae6890c0a061627b10a1207b9c0ba268d50c74a2a300e8527c3c30c5b764
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_GAP_QUALIFICATION_20260810T162027P0800_8bb2106/SHA256SUMS
+        bytes: 86
+        sha256: c9a1321f6e93fe5992de45171084d916fb74a18aebd51690d3fcedf264abb18c
+  gse200304_gap_qualification_v1:
+    path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_GAP_QUALIFICATION_20260810T163429P0800_46c608b
+    execution_outcome: ENGINEERING_SUCCESS_BLOCKED_NOT_QUALIFIED
+    qualification_status: BLOCKED_NOT_QUALIFIED
+    sha256sums_sha256: f5c3bf069bb22878ee0b99d51810571d3b00bb37e03c3da0ff43138a650a0914
+    qualification_report_sha256: f2aaa99443c1df2eba30698ba46574974189102b8f65d0712286f56a85ea7e3f
+    input_integrity_audit_sha256: 712451293571250ac196df8a190ab9ee82dc0729db59ef6aa61655c47e136cb3
+    mechanical_audit_sha256: 142c88fa6e6db0ba73431cf0fd790e85f179a10612c906ad1ce651b9e4695ec9
+    terminal_marker_sha256: 803042c2af9e72e4355e6decb25c3a349d03d961d987633a337fff41e3b58d1e
+    aggregate_only: true
+    ordinary_study_contribution: 0
+    a1_study_contribution: 0
+    true_a2_study_contribution: 0
+    canonical_record_count: 0
+    qualified: false
+    training_allowed: false
+    model_selection_allowed: false
+    files:
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_GAP_QUALIFICATION_20260810T163429P0800_46c608b/INPUT_INTEGRITY_AUDIT.json
+        bytes: 3476
+        sha256: 712451293571250ac196df8a190ab9ee82dc0729db59ef6aa61655c47e136cb3
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_GAP_QUALIFICATION_20260810T163429P0800_46c608b/MECHANICAL_AUDIT.json
+        bytes: 5345
+        sha256: 142c88fa6e6db0ba73431cf0fd790e85f179a10612c906ad1ce651b9e4695ec9
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_GAP_QUALIFICATION_20260810T163429P0800_46c608b/PUBLICATION_COMMIT.json
+        bytes: 969
+        sha256: 803042c2af9e72e4355e6decb25c3a349d03d961d987633a337fff41e3b58d1e
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_GAP_QUALIFICATION_20260810T163429P0800_46c608b/QUALIFICATION_REPORT.json
+        bytes: 8080
+        sha256: f2aaa99443c1df2eba30698ba46574974189102b8f65d0712286f56a85ea7e3f
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_GAP_QUALIFICATION_20260810T163429P0800_46c608b/SHA256SUMS
+        bytes: 273
+        sha256: f5c3bf069bb22878ee0b99d51810571d3b00bb37e03c3da0ff43138a650a0914
 
 dataset_boundary_summary:
   evidence_ref:
@@ -245,6 +429,35 @@ dataset_boundary_summary:
       - DENSE_SPLIT_AND_HAMMING_MOAT_NOT_FROZEN
       - ABSOLUTE_OUTCOME_NOT_DIRECT_SOURCE_CANDIDATE_INTERVENTION
       - TRUE_A2_NOT_QUALIFIED
+  GSE200304:
+    registry_qualification_status: AUDIT_PENDING
+    a1_inventory_qualification_status: BLOCKED_PENDING_PUBLIC_EVIDENCE
+    qualification_execution_outcome: ENGINEERING_SUCCESS_BLOCKED_NOT_QUALIFIED
+    qualification_status: BLOCKED_NOT_QUALIFIED
+    ordinary_gate_contribution: 0
+    a1_gate_contribution: 0
+    true_a2_gate_contribution: 0
+    nominal_intervention_pair_count: 6885
+    distinct_candidate_count: 6885
+    source_sequence_proxy_group_count: 6882
+    singleton_source_pool_count: 6879
+    two_candidate_source_pool_count: 3
+    three_or_more_candidate_source_pool_count: 0
+    ndcg_eligible_source_pool_count: 0
+    processed_pair_count: 6772
+    outcome_blind_attrition_count: 113
+    small_plasmid_complete_pair_count: 6120
+    ivt_complete_pair_count: 6774
+    all_pairs_exactly_one_snv: true
+    controls_excluded_from_source_candidate_geometry: true
+    paper_native_raw_xtail_replay_status: NOT_RUN
+    source_grouping_status: SEQUENCE_EQUALITY_PROXY_NOT_BIOLOGICALLY_FROZEN
+    license_and_redistribution_status: UNKNOWN_NOT_ASSERTED
+    checkpoint_specific_foundation_exposure_status: UNKNOWN_NOT_ASSERTED
+    canonical_intervention_record_count: 0
+    qualified: false
+    training_allowed: false
+    model_selection_allowed: false
   three_utr_candidates:
     dataset_ids: [GSE217518, ENCSR854RUF, GSE200304, GSE232572, GSE186455]
     registry_qualification_status: AUDIT_PENDING
@@ -318,6 +531,9 @@ claim_boundaries:
   smoke_or_proxy_result_may_be_final_scientific_conclusion: false
   gse145046_formal_audit_execution_is_study_qualification: false
   gse145046_fixed_scaffold_absolute_auxiliary_is_true_a2: false
+  gse200304_engineering_success_is_study_qualification: false
+  gse200304_sequence_proxy_groups_are_biological_source_groups: false
+  gse200304_precomputed_aggregate_evidence_is_paper_native_xtail_replay: false
   a1_phase_complete: false
   route_a_established: false
 
@@ -334,6 +550,18 @@ verification:
     status: PASS
     passed: 59
     failed: 0
+  targeted_gse200304_a1_qualification_tests:
+    status: PASS
+    passed: 60
+    failed: 0
+  gse200304_final_bundle_validation: PASS
+  gse200304_final_bundle_default_consumer_validation: PASS
+  gse200304_closed_report_schema: PASS
+  gse200304_exact_file_set: PASS
+  gse200304_sha256s: PASS
+  gse200304_terminal_marker: PASS
+  gse200304_failure_bundles_preserved: PASS
+  gse200304_ena_manifest_closed_metadata_validation: PASS
   gse145046_closed_report_schema: PASS
   gse145046_payload_integrity: PASS
   gse145046_rpm_validation: PASS
@@ -367,6 +595,6 @@ verification:
     scope: INTERIM_RECORD_STATUS_CLAIM_BOUNDARIES_PLUMAGE_BLOCK_SEMANTICS_AND_LOG2_CPM_SCALE
 
 initial_generated_at: "2026-08-10T06:30:58+08:00"
-generated_at: "2026-08-10T10:33:39+08:00"
-updated_at: "2026-08-10T10:33:39+08:00"
+generated_at: "2026-08-10T17:05:00+08:00"
+updated_at: "2026-08-10T17:05:00+08:00"
 updated_for_decision_id: V3-DEC-017
