@@ -16,13 +16,13 @@
     "staging_parent_head": "27664dff52577602f707c7d5f135feea0f34a8f2"
   },
   "implementation_binding": {
-    "status": "UNKNOWN_NOT_ASSERTED",
+    "status": "BOUND",
     "repository_root_rule": "PROTOCOL_PATH_PARENT_PARENT",
-    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "implementation_commit": "78b06434a9b94eaf5149dff7f6bb6b2d58e76ade",
     "qualifier_path": "scripts/route_a_v3/audit_gse114002_endpoint_geometry_reconciliation_v2.py",
-    "qualifier_blob_sha256": "UNKNOWN_NOT_ASSERTED",
+    "qualifier_blob_sha256": "29a510e0471803ce189fc3c66f6a0b1ad0d6c19b14db2f1e51cedff846ee40da",
     "test_path": "tests/route_a_v3/test_audit_gse114002_endpoint_geometry_reconciliation_v2.py",
-    "test_blob_sha256": "UNKNOWN_NOT_ASSERTED",
+    "test_blob_sha256": "973cce10449341df8f3d95a798789a224a797095e37118a1af43d723bd8a1d0e",
     "implementation_commit_must_be_direct_child": true,
     "implementation_changed_paths": [
       "configs/route_a_v3_gse114002_endpoint_geometry_reconciliation_v2.json",
@@ -291,8 +291,7 @@
     "LICENSE_AND_REDISTRIBUTION_RIGHTS_UNKNOWN_NOT_ASSERTED",
     "NEAR_DUPLICATE_SPLIT_AND_LEAKAGE_AUDIT_NOT_RUN",
     "PREFROZEN_GROUP_POWER_NOT_RUN",
-    "OWNER_UNCERTAINTY_POLICY_UNKNOWN_NOT_ASSERTED",
-    "IMPLEMENTATION_BINDING_UNKNOWN_NOT_ASSERTED"
+    "OWNER_UNCERTAINTY_POLICY_UNKNOWN_NOT_ASSERTED"
   ],
   "publication_contract": {
     "output_id": "ROUTE_A_V3_GSE114002_ENDPOINT_GEOMETRY_RECONCILIATION_V2_BUNDLE",
