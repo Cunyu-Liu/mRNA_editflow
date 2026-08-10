@@ -9,7 +9,7 @@ date: "2026-08-10"
 authority_ref:
   config_path: configs/route_a_v3.yaml
   goal_path: docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md
-  goal_sha256: d1c031aecdec710495f6861b380785cccd64663ac4bd97b4f479d6fdf372ea07
+  goal_sha256: 3ba224de6277edd67387913cf1c83a5e1344e0ad44ef196db07d0772b45c4d79
 
 data_policy:
   public_data_only: true
@@ -39,7 +39,6 @@ expected_dataset_ids:
   - GSE207584
 
 ordinary_candidate_dataset_ids:
-  - GSE145046
   - GSE114002
   - GSE149487
   - GSE217518
@@ -48,6 +47,8 @@ ordinary_candidate_dataset_ids:
   - GSE232572
   - GSE186455
   - GSE207584
+absolute_auxiliary_dataset_ids: [GSE145046]
+true_a2_recovery_candidate_dataset_ids: [GSE114002]
 sealed_dataset_ids: [GSE246381]
 
 registry_closure:
@@ -80,17 +81,30 @@ datasets:
     sealed: false
     role: AUDIT_ONLY
     qualification_status: AUDIT_PENDING
+    true_a2_qualification_status: REJECTED_WITH_EVIDENCE
     qualified: false
     training_role: EXCLUDED_PENDING_QUALIFICATION
-    intended_role_if_qualified: A2_DENSE_PRETRAINING_AND_OPTIMIZATION_NEIGHBORHOOD
-    intended_evidence_grade_if_qualified: A2
-    mapping_status: OLIGO_READ_COUNT_ENDPOINT_JOIN_PENDING
-    allowed_current_uses: [PROVENANCE_AUDIT, PAPER_FAITHFUL_JOIN_RECONSTRUCTION]
+    intended_role_if_qualified: ABSOLUTE_AUXILIARY_FIXED_REPORTER_LANDSCAPE
+    intended_evidence_grade_if_qualified: AUXILIARY_ONLY_NOT_A1_OR_A2
+    ordinary_gate_contribution: 0
+    a1_gate_contribution: 0
+    true_a2_gate_contribution: 0
+    source_relative_confirmatory_evidence_allowed: false
+    mapping_status: FIXED_REPORTER_ABSOLUTE_LANDSCAPE_AUDITED_SOURCE_RELATIVE_NEIGHBORHOOD_NOT_IDENTIFIABLE
+    allowed_current_uses: [PROVENANCE_AUDIT, STRUCTURAL_AND_PAPER_METHOD_AUDIT, AUXILIARY_QUALIFICATION_RECOVERY]
+    future_allowed_uses_if_auxiliary_qualified: [FIXED_SCAFFOLD_ABSOLUTE_PRETRAINING, DEVELOPMENT_ONLY]
     forbidden_current_uses: [TRAINING, CALIBRATION, MODEL_SELECTION, CONFIRMATORY_EVALUATION, CLAIM_SUPPORT]
+    permanently_forbidden_gate_uses: [ORDINARY_STUDY_GATE_CREDIT, A1_GATE_CREDIT, TRUE_A2_GATE_CREDIT, SOURCE_RELATIVE_CONFIRMATORY_EVIDENCE]
     blocking_requirements:
-      - COMPLETE_OLIGO_READ_COUNT_ENDPOINT_LABEL_JOIN
-      - DISTINCT_CANDIDATE_AND_SOURCE_GROUP_AUDIT
-      - LICENSE_AND_EXPOSURE_AUDIT
+      - PAPER_FAITHFUL_ENDPOINTS_FOR_AUXILIARY_USE_CLOSED
+      - FULL_REPORTER_CONTEXT_OR_EXPLICIT_FIXED_SCAFFOLD_SCOPE_BOUND
+      - LICENSE_AND_CHECKPOINT_EXPOSURE_AUDITED
+      - AUXILIARY_ONLY_SPLIT_AND_HAMMING_MOAT_FROZEN
+    true_a2_reject_reasons:
+      - ONE_FIXED_REPORTER_SCAFFOLD_IS_NOT_MULTIPLE_BIOLOGICAL_SOURCES
+      - ABSOLUTE_OUTCOMES_ARE_NOT_DIRECT_SOURCE_RELATIVE_INTERVENTIONS
+      - STRICT_SOURCE_GROUP_DISJOINT_EVALUATION_IS_NOT_IDENTIFIABLE_WITHIN_THIS_STUDY
+    true_a2_evidence_status: FAIL_CURRENT_PROTOCOL
     evidence_status: NOT_RUN
   - dataset_id: GSE114002
     aliases: []
@@ -101,20 +115,26 @@ datasets:
     qualified: false
     training_role: EXCLUDED_PENDING_QUALIFICATION
     intended_role_if_qualified:
-      random_library: A2_OR_ABSOLUTE_AUXILIARY
+      designed_library: A2_SOURCE_ANCHORED_RECOVERY_CANDIDATE
+      random_library: ABSOLUTE_AUXILIARY
       natural_subset: REBUILD_AND_ADJUDICATE_SEPARATELY
-    intended_evidence_grade_if_qualified: A2_CANDIDATE_OR_AUXILIARY
+    intended_evidence_grade_if_qualified: A2_RECOVERY_CANDIDATE_OR_AUXILIARY
+    true_a2_qualification_status: AUDIT_PENDING
     mapping_status: SUBSET_AND_BIOLOGICAL_GROUP_RECONSTRUCTION_PENDING
     merge_rule: SAME_SHORT_SOURCE_MAY_MERGE_ONLY_IF_STUDY_ASSAY_ENDPOINT_LOCUS_TRANSCRIPT_AND_DESIGN_FAMILY_MATCH
     known_related_sequence_exposure_label: SEQUENCE_EXPOSED
     checkpoint_specific_foundation_exposure_status: AUDIT_PENDING
-    allowed_current_uses: [PROVENANCE_AUDIT, SUBSET_RECONSTRUCTION, FOUNDATION_EXPOSURE_AUDIT]
+    future_use_boundary_if_qualified: WITHIN_ASSAY_DEVELOPMENT_AND_OPTIMIZATION_ONLY_SEQUENCE_EXPOSED
+    fallback_if_designed_library_not_qualifiable: NEW_GENUINE_PUBLIC_A2_STUDY_REQUIRED
+    allowed_current_uses: [PROVENANCE_AUDIT, SUBSET_RECONSTRUCTION, DESIGNED_LIBRARY_A2_RECOVERY_AUDIT, FOUNDATION_EXPOSURE_AUDIT]
     forbidden_current_uses: [TRAINING, CALIBRATION, MODEL_SELECTION, CONFIRMATORY_EVALUATION, CLAIM_SUPPORT]
     blocking_requirements:
       - RANDOM_LIBRARY_AND_NATURAL_SUBSET_SEPARATED
-      - BIOLOGICAL_GROUPS_RECONSTRUCTED
+      - DESIGNED_LIBRARY_FIELD_AUTHORITY_CLOSED
+      - MOTHER_SOURCE_ANCHORS_AND_MULTI_CANDIDATE_POOLS_RECONSTRUCTED
+      - REPLICATE_AND_STANDARD_ERROR_AUDITED
       - CHECKPOINT_LEVEL_FOUNDATION_EXPOSURE_AUDIT
-      - LICENSE_AND_EFFECTIVE_N_AUDIT
+      - LICENSE_EFFECTIVE_N_AND_LEAKAGE_AUDIT
     evidence_status: NOT_RUN
   - dataset_id: GSE149487
     aliases: [PLUMAGE]

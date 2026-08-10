@@ -19,6 +19,7 @@ import hashlib
 import json
 import sys
 from dataclasses import asdict, dataclass
+from datetime import datetime
 from pathlib import Path, PurePosixPath
 from typing import Any, Iterable, Mapping, Sequence
 
@@ -29,12 +30,14 @@ CONTRACT_ID = "mrna_xeditflow_route_a_v3"
 VERSION = "3.0.0"
 CONFIG_STATUS = "ACTIVE_AUTHORITATIVE_CONTRACT"
 SOURCE_CONTRACT_PATH = "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna v3.md"
-SOURCE_CONTRACT_SHA256 = "d1c031aecdec710495f6861b380785cccd64663ac4bd97b4f479d6fdf372ea07"
+SOURCE_CONTRACT_SHA256 = "3ba224de6277edd67387913cf1c83a5e1344e0ad44ef196db07d0772b45c4d79"
 GOAL_PATH = "docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md"
 CONFIG_PATH = "configs/route_a_v3.yaml"
 SUPERSESSION_PATH = "docs/contracts/supersession_mrna_xeditflow_v1_1_to_route_a_v3.yaml"
 DECISION_LOG_PATH = "docs/execution/route_a_v3_decision_log.yaml"
 REGISTRY_MANIFEST_PATH = "docs/execution/route_a_v3_registry_manifest.json"
+A1_INTERIM_PATH = "docs/execution/route_a_v3_a1_interim.yaml"
+EXPECTED_A1_INTERIM_SHA256 = "9537002671e99f7abc937af68640280f53e309113e1a888e79a53025c2ca874b"
 SCIENTIFIC_M0_HISTORY_PATH = "docs/contracts/history/mrna_v2_readiness_audit_20260807.md"
 SCIENTIFIC_M0_HISTORY_SHA256 = "a8eb4f49ede793a8eae2037db9f46f044056d37610ec92482666a8242a52fa30"
 SEALED_GUARD_PATH = "scripts/route_a_v3/sealed_guard.py"
@@ -202,7 +205,7 @@ EXPECTED_HISTORICAL_GATE_BINDINGS = {
     "FINAL_MIGRATION": ("reports/migration/FINAL_MIGRATION_REPORT.md", "a987d8c292c3700754f77052cdfe7315cf656ff2ca32818b5267a6e9fff84b92"),
 }
 
-EXPECTED_DECISION_IDS = tuple(f"V3-DEC-{index:03d}" for index in range(1, 17))
+EXPECTED_DECISION_IDS = tuple(f"V3-DEC-{index:03d}" for index in range(1, 18))
 EXPECTED_DECISION_DIMENSIONS = {
     "V3-DEC-001": "strategic_target",
     "V3-DEC-002": "evidence_and_claim_separation",
@@ -220,6 +223,30 @@ EXPECTED_DECISION_DIMENSIONS = {
     "V3-DEC-014": "historical_m0_scientific_failure",
     "V3-DEC-015": "sealed_execution_freeze_hash_scope",
     "V3-DEC-016": "sealed_a0_phase_boundary",
+    "V3-DEC-017": "gse145046_true_a2_role_and_a2_recovery",
+}
+
+# Canonical per-entry digests make the accepted prefix genuinely append-only.
+# A future DEC-018 requires an explicit validator update; rewriting any accepted
+# DEC-001..017 entry while merely refreshing the registry manifest is rejected.
+EXPECTED_DECISION_ENTRY_SHA256 = {
+    "V3-DEC-001": "e00b87c7cd529b452ef6db96f982adfd419c3cf289f02d8795abaf09dae966f3",
+    "V3-DEC-002": "bc5c0e6d1a68bf45e16529470b9c173b1fbbccab3789cc5a27e3033ee70590b1",
+    "V3-DEC-003": "a3e45e7d4c382d63a092ccf3fff5cc23aa6d938be3d9a99a22663a5bd04e3fec",
+    "V3-DEC-004": "b53d20748e285180b54a98a9710610d8798bbd52caae8966565c76e9367d76d4",
+    "V3-DEC-005": "725509630b39c8f03c5927b0c8516553d6fdf815a25fa109da35836c364c0e2b",
+    "V3-DEC-006": "1eefe8f30ae2bcbd62e7962ee56c41360b4682f1ad83b4c1a8af0213478ad7a3",
+    "V3-DEC-007": "cf7ce474d29d9c6634e406a0cba48dec07ce08376f2161845c2b689726a00bbb",
+    "V3-DEC-008": "01e115b916046d69090a328b442f1964410bf3159d0cc5980afe87bffaa15066",
+    "V3-DEC-009": "8ab88b659376600fe361b77b2c80a50125a1fae882fac74b423f5cbbff7ee8f7",
+    "V3-DEC-010": "e38ce6235048acef73a5d9826739b8665d482a7c3dc5541f8380160a5111dded",
+    "V3-DEC-011": "853210b83267563c4d1b01fd0ceb2b6f1c6cba5e9bf606847748aa1085e7fb95",
+    "V3-DEC-012": "2ccb85bd983353fd98874aab1faa1d677f352a52d0ac487ff02679a86b6d61ad",
+    "V3-DEC-013": "02f22c2f09a8de22b8f9a4419b5b8fe877003db50b24d93af23317c92447e255",
+    "V3-DEC-014": "92d27a394d258d8e189e378ca25e9ad7adc3f2a396bf2649d1981d1c20062e85",
+    "V3-DEC-015": "2d45d836c04b39365df6528ad1972826af8a6595fcb0cc3e9568ecd9adcf56c2",
+    "V3-DEC-016": "b980d623ca9de3439ef050fb1f6b0dd59ceeacf8c66b3b94bb7aade211380dca",
+    "V3-DEC-017": "d3f4799501b4d0abb63c91105c4f46c5e3246bea9da708c813a1de7c30f3b11a",
 }
 
 MANDATORY_REGISTRY_MANIFEST_PATHS = {
@@ -233,6 +260,7 @@ MANDATORY_REGISTRY_MANIFEST_PATHS = {
     SEALED_GUARD_PATH,
     SEALED_RUNNER_PATH,
     VALIDATOR_PATH,
+    A1_INTERIM_PATH,
 }
 
 PUBLIC_PREFIXES = {"configs", "docs", "reports", "schemas", "scripts", "tests"}
@@ -319,6 +347,7 @@ def required_bundle_paths() -> tuple[str, ...]:
         SCIENTIFIC_M0_HISTORY_PATH,
         SEALED_GUARD_PATH,
         SEALED_RUNNER_PATH,
+        A1_INTERIM_PATH,
         *REGISTRY_PATHS.values(),
         *(f"{SCHEMA_DIR}/{name}" for name in SCHEMA_FILES),
         SCHEMA_MANIFEST,
@@ -645,9 +674,14 @@ def validate_registry_manifest(repo_root: Path) -> list[Issue]:
     expected_top = {
         "contract_id": CONTRACT_ID,
         "version": VERSION,
+        "schema_version": "1.0.0",
         "contract_path": GOAL_PATH,
+        "initial_contract_sha256": "d1c031aecdec710495f6861b380785cccd64663ac4bd97b4f479d6fdf372ea07",
         "contract_sha256": SOURCE_CONTRACT_SHA256,
+        "active_amendment_decision_ids": ["V3-DEC-017"],
         "base_commit": "bbb71dcba6f1e1c9cb75a8a6653f1a4fe4a6ca0c",
+        "manifest_status": "A1_SCHEME_A_AUTHORITY_REBIND",
+        "initial_generated_at": "2026-08-10T10:10:05+08:00",
         "sealed_contact": False,
     }
     for key, value in expected_top.items():
@@ -696,6 +730,29 @@ def validate_registry_manifest(repo_root: Path) -> list[Issue]:
             _issue(issues, "REGISTRY_MANIFEST_CONTRACT_HASH", GOAL_PATH, "top-level contract hash does not match contract bytes")
     except (FileNotFoundError, ValueError) as exc:
         _issue(issues, "REGISTRY_MANIFEST_CONTRACT_MISSING", GOAL_PATH, str(exc))
+
+    generated_at = manifest.get("generated_at")
+    updated_at = manifest.get("updated_at")
+    if generated_at != updated_at:
+        _issue(issues, "REGISTRY_MANIFEST_TIME", REGISTRY_MANIFEST_PATH, "generated_at and updated_at must identify the same amended manifest bytes")
+    try:
+        manifest_updated = datetime.fromisoformat(str(updated_at))
+        if manifest_updated.utcoffset() is None:
+            raise ValueError("manifest updated_at has no UTC offset")
+        interim = _load_yaml(repo_root, A1_INTERIM_PATH)
+        interim_updated = datetime.fromisoformat(str(interim.get("updated_at")))
+        if interim_updated.utcoffset() is None:
+            raise ValueError("A1 interim updated_at has no UTC offset")
+    except (FileNotFoundError, ValueError, yaml.YAMLError) as exc:
+        _issue(issues, "REGISTRY_MANIFEST_TIME", REGISTRY_MANIFEST_PATH, f"cannot validate causal timestamps: {exc}")
+    else:
+        if manifest_updated < interim_updated:
+            _issue(
+                issues,
+                "REGISTRY_MANIFEST_TIME",
+                REGISTRY_MANIFEST_PATH,
+                "manifest updated_at must not predate the A1 interim bytes it hashes",
+            )
     return issues
 
 
@@ -703,10 +760,24 @@ def validate_decision_log(decision_log: Mapping[str, Any]) -> list[Issue]:
     """Freeze required A0 decisions independently of the manifest hash."""
 
     issues: list[Issue] = []
-    if decision_log.get("contract_id") != CONTRACT_ID:
-        _issue(issues, "DECISION_LOG_CONTRACT", DECISION_LOG_PATH, f"contract_id must be {CONTRACT_ID}")
-    if decision_log.get("append_only") is not True:
-        _issue(issues, "DECISION_LOG_APPEND_ONLY", DECISION_LOG_PATH, "append_only must be true")
+    expected_metadata = {
+        "schema_version": "1.0.0",
+        "contract_id": CONTRACT_ID,
+        "log_id": "ROUTE_A_V3_DECISIONS",
+        "append_only": True,
+        "created_at": "2026-08-10T00:32:15+08:00",
+    }
+    for key, value in expected_metadata.items():
+        if decision_log.get(key) != value:
+            _issue(issues, "DECISION_LOG_METADATA", DECISION_LOG_PATH, f"{key} must remain {value!r}")
+    expected_top_level = {*expected_metadata, "decisions"}
+    if set(decision_log) != expected_top_level:
+        _issue(
+            issues,
+            "DECISION_LOG_TOP_LEVEL_SHAPE",
+            DECISION_LOG_PATH,
+            f"top-level keys must be exactly {sorted(expected_top_level)!r}",
+        )
     raw = decision_log.get("decisions")
     if not isinstance(raw, list):
         _issue(issues, "DECISION_LOG_ENTRIES", DECISION_LOG_PATH, "decisions must be a list")
@@ -719,11 +790,29 @@ def validate_decision_log(decision_log: Mapping[str, Any]) -> list[Issue]:
     if len(decisions) != len(raw):
         _issue(issues, "DECISION_LOG_DUPLICATE_OR_INVALID", DECISION_LOG_PATH, "decision IDs must be unique strings")
     if set(decisions) != set(EXPECTED_DECISION_IDS):
-        _issue(issues, "DECISION_LOG_ID_CLOSURE", DECISION_LOG_PATH, "decision IDs must be exactly V3-DEC-001 through V3-DEC-016")
+        _issue(issues, "DECISION_LOG_ID_CLOSURE", DECISION_LOG_PATH, "decision IDs must be exactly V3-DEC-001 through V3-DEC-017")
+    ordered_ids = [entry.get("decision_id") if isinstance(entry, Mapping) else None for entry in raw]
+    if ordered_ids != list(EXPECTED_DECISION_IDS):
+        _issue(issues, "DECISION_LOG_ORDER", DECISION_LOG_PATH, "accepted decision prefix must remain in exact DEC-001 through DEC-017 order")
     for decision_id, dimension in EXPECTED_DECISION_DIMENSIONS.items():
         entry = decisions.get(decision_id)
         if not isinstance(entry, Mapping):
             continue
+        canonical = json.dumps(
+            dict(entry),
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        ).encode("utf-8")
+        actual_digest = sha256_bytes(canonical)
+        expected_digest = EXPECTED_DECISION_ENTRY_SHA256[decision_id]
+        if actual_digest != expected_digest:
+            _issue(
+                issues,
+                "DECISION_LOG_ENTRY_DRIFT",
+                DECISION_LOG_PATH,
+                f"{decision_id} canonical digest {actual_digest} does not match accepted prefix {expected_digest}",
+            )
         if entry.get("dimension") != dimension:
             _issue(issues, "DECISION_LOG_DIMENSION", DECISION_LOG_PATH, f"{decision_id}.dimension must be {dimension!r}")
         if entry.get("sealed_contact") is not False:
@@ -766,6 +855,21 @@ def validate_decision_log(decision_log: Mapping[str, Any]) -> list[Issue]:
             "synthetic positive fixture",
             "A9 must replace this guard only after",
             "A10 still requires separate explicit user authorization",
+        ),
+        "V3-DEC-017": (
+            "user-authorized Scheme A",
+            "ABSOLUTE_AUXILIARY_ONLY",
+            "TRUE_A2_NOT_QUALIFIED",
+            "zero contribution",
+            "A2_RECOVERY_CANDIDATE_NOT_QUALIFIED",
+            "SEQUENCE_EXPOSED",
+            "at least three ordinary studies",
+            "at least two A1",
+            "at least one genuine source-anchored true A2",
+            "new genuine public A2 study is required",
+            "no qualified count",
+            "no GPU training",
+            "no claim",
         ),
     }
     for decision_id, tokens in required_resolution_tokens.items():
@@ -828,6 +932,123 @@ def validate_decision_log(decision_log: Mapping[str, Any]) -> list[Issue]:
         }
         if not isinstance(evidence_refs, list) or set(evidence_refs) != expected_refs:
             _issue(issues, "DECISION_LOG_A0_PHASE_BOUNDARY_EVIDENCE", DECISION_LOG_PATH, f"V3-DEC-016 evidence_refs must be exactly {sorted(expected_refs)!r}")
+
+    role_amendment = decisions.get("V3-DEC-017")
+    if isinstance(role_amendment, Mapping):
+        expected_role_fields = {
+            "decision_type": "AMENDMENT",
+            "dimension": "gse145046_true_a2_role_and_a2_recovery",
+            "status": "FROZEN_USER_AUTHORIZED_A1_ROLE_AMENDMENT",
+            "effective_phase": "A1",
+            "requires_user_authorization": True,
+            "user_authorization_status": "GRANTED",
+            "preserves_decision_ids": ["V3-DEC-005"],
+            "sealed_contact": False,
+        }
+        for key, value in expected_role_fields.items():
+            if role_amendment.get(key) != value:
+                _issue(issues, "DECISION_LOG_A1_ROLE_AMENDMENT", DECISION_LOG_PATH, f"V3-DEC-017.{key} must remain {value!r}")
+        evidence_refs = role_amendment.get("evidence_refs")
+        required_refs = {
+            GOAL_PATH,
+            REGISTRY_PATHS["data"],
+            "configs/route_a_v3_gse145046_a2_audit.json",
+        }
+        if not isinstance(evidence_refs, list) or not required_refs <= set(evidence_refs):
+            _issue(issues, "DECISION_LOG_A1_ROLE_AMENDMENT_EVIDENCE", DECISION_LOG_PATH, f"V3-DEC-017 evidence_refs must include {sorted(required_refs)!r}")
+    return issues
+
+
+def validate_scheme_a_data_roles(data_registry: Mapping[str, Any]) -> list[Issue]:
+    """Freeze the user-authorized A1 Scheme-A role correction."""
+
+    issues: list[Issue] = []
+    path = REGISTRY_PATHS["data"]
+    policy = data_registry.get("data_policy")
+    expected_policy = {
+        "ordinary_minimum_independent_studies": 3,
+        "ordinary_minimum_a1_studies": 2,
+        "ordinary_minimum_a2_dense_studies": 1,
+    }
+    if not isinstance(policy, Mapping):
+        _issue(issues, "SCHEME_A_DATA_POLICY", path, "data_policy mapping is required")
+    else:
+        for key, value in expected_policy.items():
+            if policy.get(key) != value:
+                _issue(issues, "SCHEME_A_GATE_PRESERVATION", path, f"data_policy.{key} must remain {value!r}")
+
+    expected_ordinary = {
+        "GSE114002",
+        "GSE149487",
+        "GSE217518",
+        "GSE200304",
+        "ENCSR854RUF",
+        "GSE232572",
+        "GSE186455",
+        "GSE207584",
+    }
+    ordinary = data_registry.get("ordinary_candidate_dataset_ids")
+    if not isinstance(ordinary, list) or set(ordinary) != expected_ordinary or len(ordinary) != len(expected_ordinary):
+        _issue(issues, "SCHEME_A_ORDINARY_CANDIDATES", path, "ordinary candidates must exclude GSE145046 and preserve the other eight candidates")
+    if data_registry.get("absolute_auxiliary_dataset_ids") != ["GSE145046"]:
+        _issue(issues, "SCHEME_A_ABSOLUTE_AUXILIARY", path, "absolute_auxiliary_dataset_ids must be exactly [GSE145046]")
+    if data_registry.get("true_a2_recovery_candidate_dataset_ids") != ["GSE114002"]:
+        _issue(issues, "SCHEME_A_TRUE_A2_RECOVERY", path, "true_a2_recovery_candidate_dataset_ids must be exactly [GSE114002]")
+
+    rows = data_registry.get("datasets")
+    by_id = {
+        row.get("dataset_id"): row
+        for row in rows
+        if isinstance(rows, list) and isinstance(row, Mapping) and isinstance(row.get("dataset_id"), str)
+    } if isinstance(rows, list) else {}
+    gse145046 = by_id.get("GSE145046")
+    expected_gse145046 = {
+        "role": "AUDIT_ONLY",
+        "qualification_status": "AUDIT_PENDING",
+        "true_a2_qualification_status": "REJECTED_WITH_EVIDENCE",
+        "qualified": False,
+        "training_role": "EXCLUDED_PENDING_QUALIFICATION",
+        "intended_role_if_qualified": "ABSOLUTE_AUXILIARY_FIXED_REPORTER_LANDSCAPE",
+        "intended_evidence_grade_if_qualified": "AUXILIARY_ONLY_NOT_A1_OR_A2",
+        "ordinary_gate_contribution": 0,
+        "a1_gate_contribution": 0,
+        "true_a2_gate_contribution": 0,
+        "source_relative_confirmatory_evidence_allowed": False,
+        "true_a2_evidence_status": "FAIL_CURRENT_PROTOCOL",
+    }
+    if not isinstance(gse145046, Mapping):
+        _issue(issues, "SCHEME_A_GSE145046_MISSING", path, "GSE145046 data-role row is required")
+    else:
+        for key, value in expected_gse145046.items():
+            if gse145046.get(key) != value:
+                _issue(issues, "SCHEME_A_GSE145046_ROLE", path, f"GSE145046.{key} must remain {value!r}")
+        expected_permanent_forbidden = {
+            "ORDINARY_STUDY_GATE_CREDIT",
+            "A1_GATE_CREDIT",
+            "TRUE_A2_GATE_CREDIT",
+            "SOURCE_RELATIVE_CONFIRMATORY_EVIDENCE",
+        }
+        if set(gse145046.get("permanently_forbidden_gate_uses", [])) != expected_permanent_forbidden:
+            _issue(issues, "SCHEME_A_GSE145046_FORBIDDEN", path, "GSE145046 gate and confirmatory prohibitions must remain closed")
+
+    gse114002 = by_id.get("GSE114002")
+    if not isinstance(gse114002, Mapping):
+        _issue(issues, "SCHEME_A_GSE114002_MISSING", path, "GSE114002 data-role row is required")
+    else:
+        intended = gse114002.get("intended_role_if_qualified")
+        if not isinstance(intended, Mapping) or intended.get("designed_library") != "A2_SOURCE_ANCHORED_RECOVERY_CANDIDATE":
+            _issue(issues, "SCHEME_A_GSE114002_RECOVERY_ROLE", path, "GSE114002 designed library must remain an A2 source-anchored recovery candidate")
+        expected_gse114002 = {
+            "qualified": False,
+            "training_role": "EXCLUDED_PENDING_QUALIFICATION",
+            "true_a2_qualification_status": "AUDIT_PENDING",
+            "known_related_sequence_exposure_label": "SEQUENCE_EXPOSED",
+            "future_use_boundary_if_qualified": "WITHIN_ASSAY_DEVELOPMENT_AND_OPTIMIZATION_ONLY_SEQUENCE_EXPOSED",
+            "fallback_if_designed_library_not_qualifiable": "NEW_GENUINE_PUBLIC_A2_STUDY_REQUIRED",
+        }
+        for key, value in expected_gse114002.items():
+            if gse114002.get(key) != value:
+                _issue(issues, "SCHEME_A_GSE114002_BOUNDARY", path, f"GSE114002.{key} must remain {value!r}")
     return issues
 
 
@@ -956,6 +1177,8 @@ def validate_registry_closure(
             if claim_status is not None and claim_status not in CLAIM_STATUSES:
                 _issue(issues, "UNKNOWN_CLAIM_STATUS", path, f"{claim_status!r} is outside the frozen vocabulary")
 
+    issues.extend(validate_scheme_a_data_roles(registries["data"]))
+
     return issues
 
 
@@ -976,6 +1199,181 @@ def _mapping_entry(entries: Any, id_key: str, wanted: str) -> Mapping[str, Any] 
 def _expect(mapping: Mapping[str, Any], key: str, value: Any, path: str, issues: list[Issue], code: str) -> None:
     if key not in mapping or mapping.get(key) != value:
         _issue(issues, code, path, f"{key} must be {value!r}; got {mapping.get(key)!r}")
+
+
+def validate_a1_interim_lineage(
+    repo_root: Path,
+    interim: Mapping[str, Any],
+) -> list[Issue]:
+    """Bind the active A1 blocked record to Scheme A without granting a gate."""
+
+    issues: list[Issue] = []
+    path = A1_INTERIM_PATH
+    try:
+        actual_interim_hash = sha256_bytes(_read_bytes(repo_root, path))
+    except (FileNotFoundError, ValueError) as exc:
+        _issue(issues, "A1_INTERIM_UNREADABLE", path, str(exc))
+        actual_interim_hash = None
+    if actual_interim_hash is not None and actual_interim_hash != EXPECTED_A1_INTERIM_SHA256:
+        _issue(
+            issues,
+            "A1_INTERIM_CANONICAL_HASH",
+            path,
+            f"active interim hash {actual_interim_hash} must remain {EXPECTED_A1_INTERIM_SHA256}",
+        )
+
+    expected_top = {
+        "schema_version": "1.0.0",
+        "contract_id": CONTRACT_ID,
+        "contract_version": VERSION,
+        "record_id": "ROUTE_A_V3_A1_INTERIM_20260810",
+        "record_type": "A1_PUBLIC_DATA_QUALIFICATION_INTERIM",
+        "phase_id": "A1",
+        "record_status": "INTERIM_BLOCKED_NOT_PHASE_COMPLETE",
+    }
+    for key, value in expected_top.items():
+        _expect(interim, key, value, path, issues, "A1_INTERIM_METADATA")
+
+    authority = interim.get("authority")
+    if not isinstance(authority, Mapping):
+        _issue(issues, "A1_INTERIM_AUTHORITY", path, "authority must be a mapping")
+    else:
+        expected_authority = {
+            "contract_path": GOAL_PATH,
+            "initial_contract_sha256": "d1c031aecdec710495f6861b380785cccd64663ac4bd97b4f479d6fdf372ea07",
+            "contract_sha256": SOURCE_CONTRACT_SHA256,
+            "active_amendment_decision_ids": ["V3-DEC-017"],
+            "data_role_registry_path": REGISTRY_PATHS["data"],
+            "claim_evidence_matrix_path": REGISTRY_PATHS["claim"],
+            "data_role_authority_remains": REGISTRY_PATHS["data"],
+            "this_record_changes_dataset_qualification": False,
+        }
+        for key, value in expected_authority.items():
+            _expect(authority, key, value, path, issues, "A1_INTERIM_AUTHORITY")
+        for hash_key, relative in (
+            ("data_role_registry_sha256", REGISTRY_PATHS["data"]),
+            ("claim_evidence_matrix_sha256", REGISTRY_PATHS["claim"]),
+        ):
+            try:
+                actual = sha256_bytes(_read_bytes(repo_root, relative))
+            except (FileNotFoundError, ValueError) as exc:
+                _issue(issues, "A1_INTERIM_AUTHORITY_FILE", relative, str(exc))
+            else:
+                _expect(authority, hash_key, actual, path, issues, "A1_INTERIM_AUTHORITY_HASH")
+
+    scope = interim.get("scope")
+    if not isinstance(scope, Mapping):
+        _issue(issues, "A1_INTERIM_SCOPE", path, "scope must be a mapping")
+    else:
+        expected_scope = {
+            "ordinary_public_data_only": True,
+            "absolute_auxiliary_dataset_ids": ["GSE145046"],
+            "true_a2_recovery_candidate_dataset_ids": ["GSE114002"],
+            "scheme_a_changes_qualified_counts": False,
+            "excluded_dataset_ids": ["GSE246381"],
+            "metadata_only_qualification_allowed": False,
+            "training_allowed": False,
+            "model_selection_allowed": False,
+            "training_started": False,
+            "gpu_work_started": False,
+            "model_selection_started": False,
+            "sealed_evaluation_count": 0,
+        }
+        for key, value in expected_scope.items():
+            _expect(scope, key, value, path, issues, "A1_INTERIM_SCOPE")
+
+    gate = interim.get("gate_snapshot")
+    if not isinstance(gate, Mapping):
+        _issue(issues, "A1_INTERIM_GATE", path, "gate_snapshot must be a mapping")
+    else:
+        expected_gate = {
+            "decision": "BLOCKED_PENDING_PUBLIC_EVIDENCE",
+            "evidence_status": "BLOCKED_PENDING_PUBLIC_EVIDENCE",
+            "scientific_claim_status": "NOT_ESTABLISHED",
+            "qualified_independent_ordinary_studies": 0,
+            "required_independent_ordinary_studies": 3,
+            "qualified_a1_studies": 0,
+            "required_a1_studies": 2,
+            "qualified_a2_dense_studies": 0,
+            "required_a2_dense_studies": 1,
+            "phase_complete": False,
+            "next_phase_authorized": False,
+            "a2_training_authorized": False,
+        }
+        for key, value in expected_gate.items():
+            _expect(gate, key, value, path, issues, "A1_INTERIM_GATE")
+
+    summary = interim.get("dataset_boundary_summary")
+    if not isinstance(summary, Mapping):
+        _issue(issues, "A1_INTERIM_DATASET_BOUNDARY", path, "dataset_boundary_summary must be a mapping")
+    else:
+        gse145046 = summary.get("GSE145046")
+        if not isinstance(gse145046, Mapping):
+            _issue(issues, "A1_INTERIM_GSE145046", path, "GSE145046 boundary must be a mapping")
+        else:
+            expected_gse145046 = {
+                "registry_qualification_status": "AUDIT_PENDING",
+                "true_a2_qualification_status": "REJECTED_WITH_EVIDENCE",
+                "classification": "CONDITIONALLY_RECOVERABLE_AS_ABSOLUTE_AUXILIARY",
+                "a2_status": "NOT_TRUE_A2_FIXED_REPORTER_ABSOLUTE_AUXILIARY",
+                "scheme_a_role": "ABSOLUTE_AUXILIARY_ONLY",
+                "ordinary_gate_contribution": 0,
+                "a1_gate_contribution": 0,
+                "true_a2_gate_contribution": 0,
+                "source_relative_confirmatory_evidence_allowed": False,
+                "canonical_intervention_record_count": 0,
+                "measured_candidate_pool_count": 0,
+                "qualified": False,
+                "training_allowed": False,
+                "model_selection_allowed": False,
+            }
+            for key, value in expected_gse145046.items():
+                _expect(gse145046, key, value, path, issues, "A1_INTERIM_GSE145046")
+        gse114002 = summary.get("GSE114002")
+        if not isinstance(gse114002, Mapping):
+            _issue(issues, "A1_INTERIM_GSE114002", path, "GSE114002 boundary must be a mapping")
+        else:
+            expected_gse114002 = {
+                "registry_qualification_status": "AUDIT_PENDING",
+                "scheme_a_role": "A2_RECOVERY_CANDIDATE_NOT_QUALIFIED",
+                "known_related_sequence_exposure_label": "SEQUENCE_EXPOSED",
+                "future_use_boundary_if_qualified": "WITHIN_ASSAY_DEVELOPMENT_AND_OPTIMIZATION_ONLY_SEQUENCE_EXPOSED",
+                "fallback_if_not_qualifiable": "NEW_GENUINE_PUBLIC_A2_STUDY_REQUIRED",
+                "qualified": False,
+            }
+            for key, value in expected_gse114002.items():
+                _expect(gse114002, key, value, path, issues, "A1_INTERIM_GSE114002")
+        _expect(summary, "qualified_a2_dense_neighborhoods", 0, path, issues, "A1_INTERIM_DATASET_BOUNDARY")
+
+    claims = interim.get("claim_boundaries")
+    if not isinstance(claims, Mapping):
+        _issue(issues, "A1_INTERIM_CLAIMS", path, "claim_boundaries must be a mapping")
+    else:
+        expected_claims = {
+            "gse145046_formal_audit_execution_is_study_qualification": False,
+            "gse145046_fixed_scaffold_absolute_auxiliary_is_true_a2": False,
+            "a1_phase_complete": False,
+            "route_a_established": False,
+        }
+        for key, value in expected_claims.items():
+            _expect(claims, key, value, path, issues, "A1_INTERIM_CLAIMS")
+
+    _expect(interim, "initial_generated_at", "2026-08-10T06:30:58+08:00", path, issues, "A1_INTERIM_TIME")
+    _expect(interim, "updated_for_decision_id", "V3-DEC-017", path, issues, "A1_INTERIM_TIME")
+    generated = interim.get("generated_at")
+    updated = interim.get("updated_at")
+    if generated != updated:
+        _issue(issues, "A1_INTERIM_TIME", path, "generated_at and updated_at must identify the same amended record bytes")
+    try:
+        updated_dt = datetime.fromisoformat(str(updated))
+        audit_dt = datetime.fromisoformat("2026-08-10T08:43:13+08:00")
+        amendment_dt = datetime.fromisoformat("2026-08-10T10:10:05+08:00")
+    except ValueError:
+        _issue(issues, "A1_INTERIM_TIME", path, "updated_at must be an ISO-8601 timestamp with offset")
+    else:
+        if updated_dt < audit_dt or updated_dt < amendment_dt:
+            _issue(issues, "A1_INTERIM_TIME", path, "updated_at must follow both the formal audit and DEC-017 authorization")
+    return issues
 
 
 def validate_sealed_hard_disable(
@@ -2351,6 +2749,12 @@ def validate_bundle(repo_root: Path) -> list[Issue]:
         _issue(issues, "DECISION_LOG_LOAD", DECISION_LOG_PATH, str(exc))
     else:
         issues.extend(validate_decision_log(decision_log))
+    try:
+        a1_interim = _load_yaml(repo_root, A1_INTERIM_PATH)
+    except (FileNotFoundError, ValueError, yaml.YAMLError) as exc:
+        _issue(issues, "A1_INTERIM_LOAD", A1_INTERIM_PATH, str(exc))
+    else:
+        issues.extend(validate_a1_interim_lineage(repo_root, a1_interim))
     issues.extend(validate_registry_closure(config, registries))
     issues.extend(validate_sealed_hard_disable(config, registries))
     issues.extend(validate_l4_and_pre_v3(config, supersession, registries["claim"]))

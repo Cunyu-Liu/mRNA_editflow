@@ -8,11 +8,13 @@ record_status: INTERIM_BLOCKED_NOT_PHASE_COMPLETE
 
 authority:
   contract_path: docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md
-  contract_sha256: d1c031aecdec710495f6861b380785cccd64663ac4bd97b4f479d6fdf372ea07
+  initial_contract_sha256: d1c031aecdec710495f6861b380785cccd64663ac4bd97b4f479d6fdf372ea07
+  contract_sha256: 3ba224de6277edd67387913cf1c83a5e1344e0ad44ef196db07d0772b45c4d79
+  active_amendment_decision_ids: [V3-DEC-017]
   data_role_registry_path: docs/execution/route_a_v3_data_role_registry.yaml
-  data_role_registry_sha256: 818eff8f7aae9a80bcb20f9e0dbe7581f4df323c34a13614f214a02c2f85ccea
+  data_role_registry_sha256: 03a805c6441f0778225f9a8ec10feeadba23f572cd9ea7b234903384e6a902bf
   claim_evidence_matrix_path: docs/execution/route_a_v3_claim_evidence_matrix.yaml
-  claim_evidence_matrix_sha256: 35e3ecbd596193502da4e10c5a34c7dff92115308e3cd82123e044c4e0c9f857
+  claim_evidence_matrix_sha256: ba93693381fe20cf85ac826d48ed8977072e56e2f5abc1fbbb08a60f570af530
   accepted_a0_activation_commit: fd722d5fa3c2538fce742b8942b1fb48e782760b
   branch: routea-v3-a1-20260810
   worktree: /home/cunyuliu/mrna_editflow_goal/worktrees/routea_v3_a1_20260810
@@ -33,6 +35,9 @@ scope:
     - GSE232572
     - GSE186455
     - GSE207584
+  absolute_auxiliary_dataset_ids: [GSE145046]
+  true_a2_recovery_candidate_dataset_ids: [GSE114002]
+  scheme_a_changes_qualified_counts: false
   excluded_dataset_ids: [GSE246381]
   legacy_canonical_purpose: GAP_INVENTORY_ONLY
   metadata_only_qualification_allowed: false
@@ -174,6 +179,10 @@ dataset_boundary_summary:
   GSE114002:
     registry_qualification_status: AUDIT_PENDING
     a1_inventory_qualification_status: BLOCKED_PENDING_PUBLIC_EVIDENCE
+    scheme_a_role: A2_RECOVERY_CANDIDATE_NOT_QUALIFIED
+    known_related_sequence_exposure_label: SEQUENCE_EXPOSED
+    future_use_boundary_if_qualified: WITHIN_ASSAY_DEVELOPMENT_AND_OPTIMIZATION_ONLY_SEQUENCE_EXPOSED
+    fallback_if_not_qualifiable: NEW_GENUINE_PUBLIC_A2_STUDY_REQUIRED
     qualified: false
     p0_manifest_status: INCOMPLETE_BLOCKED
     defect: STALE_MANIFEST_HASH_DEFECT
@@ -205,6 +214,7 @@ dataset_boundary_summary:
       - UNADJUDICATED_6A_COORDINATE_CLASSES_EXCLUDED
   GSE145046:
     registry_qualification_status: AUDIT_PENDING
+    true_a2_qualification_status: REJECTED_WITH_EVIDENCE
     a1_inventory_qualification_status: BLOCKED_PENDING_PUBLIC_EVIDENCE
     formal_audit_execution_status: COMPLETED
     payload_integrity_status: PASS
@@ -212,6 +222,11 @@ dataset_boundary_summary:
     aggregate_reconciliation_status: MATCH
     classification: CONDITIONALLY_RECOVERABLE_AS_ABSOLUTE_AUXILIARY
     a2_status: NOT_TRUE_A2_FIXED_REPORTER_ABSOLUTE_AUXILIARY
+    scheme_a_role: ABSOLUTE_AUXILIARY_ONLY
+    ordinary_gate_contribution: 0
+    a1_gate_contribution: 0
+    true_a2_gate_contribution: 0
+    source_relative_confirmatory_evidence_allowed: false
     data_semantics: FIXED_SCAFFOLD_ABSOLUTE_OUTCOMES_NOT_DIRECT_SOURCE_TO_CANDIDATE_INTERVENTIONS
     full_reporter_anchor_status: NOT_CLOSED
     n10_locus_status: CLOSED_AT_PRIMER_LEVEL
@@ -351,4 +366,7 @@ verification:
     status: COMPLETED_FINDINGS_APPLIED
     scope: INTERIM_RECORD_STATUS_CLAIM_BOUNDARIES_PLUMAGE_BLOCK_SEMANTICS_AND_LOG2_CPM_SCALE
 
-generated_at: "2026-08-10T06:30:58+08:00"
+initial_generated_at: "2026-08-10T06:30:58+08:00"
+generated_at: "2026-08-10T10:33:39+08:00"
+updated_at: "2026-08-10T10:33:39+08:00"
+updated_for_decision_id: V3-DEC-017

@@ -9,7 +9,7 @@ date: "2026-08-10"
 authority_ref:
   config_path: configs/route_a_v3.yaml
   goal_path: docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md
-  goal_sha256: d1c031aecdec710495f6861b380785cccd64663ac4bd97b4f479d6fdf372ea07
+  goal_sha256: 3ba224de6277edd67387913cf1c83a5e1344e0ad44ef196db07d0772b45c4d79
 
 allowed_evidence_statuses:
   - NOT_RUN

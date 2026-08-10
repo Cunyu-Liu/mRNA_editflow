@@ -2,17 +2,19 @@
   "base_commit": "bbb71dcba6f1e1c9cb75a8a6653f1a4fe4a6ca0c",
   "contract_id": "mrna_xeditflow_route_a_v3",
   "contract_path": "docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md",
-  "contract_sha256": "d1c031aecdec710495f6861b380785cccd64663ac4bd97b4f479d6fdf372ea07",
+  "initial_contract_sha256": "d1c031aecdec710495f6861b380785cccd64663ac4bd97b4f479d6fdf372ea07",
+  "contract_sha256": "3ba224de6277edd67387913cf1c83a5e1344e0ad44ef196db07d0772b45c4d79",
+  "active_amendment_decision_ids": ["V3-DEC-017"],
   "files": [
     {
       "path": "configs/route_a_v3.yaml",
       "role": "EXECUTABLE_CONTRACT",
-      "sha256": "e3486ba6ffba38b8a069c382460954929a5934398997355ab82d553dca05f455"
+      "sha256": "9672c01f7481597da9380b270787174baab18c6eaeaa503f082f67f589970303"
     },
     {
       "path": "docs/contracts/supersession_mrna_xeditflow_v1_1_to_route_a_v3.yaml",
       "role": "SUPERSESSION_LINEAGE",
-      "sha256": "c80fd34567e52184bd8707064ed58a43db9fdb9223a28887781c98179c1dc155"
+      "sha256": "2d9080400d0e74cc1f5e774c25340158539851665441dada56ac16464a18619a"
     },
     {
       "path": "docs/contracts/history/mrna_v2_readiness_audit_20260807.md",
@@ -22,37 +24,42 @@
     {
       "path": "docs/execution/route_a_v3_baseline_registry.yaml",
       "role": "BASELINE_REGISTRY",
-      "sha256": "a13b4937f1b307e0b4a037db9f3b52ebdfe6120e268fbcf4c42996836e4d729e"
+      "sha256": "1e7f4c6a7a969398ed3e7ae44ec26793f41214261a27ef7e2bf2b7c37a6cb63a"
     },
     {
       "path": "docs/execution/route_a_v3_claim_evidence_matrix.yaml",
       "role": "CLAIM_EVIDENCE_MATRIX",
-      "sha256": "35e3ecbd596193502da4e10c5a34c7dff92115308e3cd82123e044c4e0c9f857"
+      "sha256": "ba93693381fe20cf85ac826d48ed8977072e56e2f5abc1fbbb08a60f570af530"
     },
     {
       "path": "docs/execution/route_a_v3_data_role_registry.yaml",
       "role": "DATA_ROLE_REGISTRY",
-      "sha256": "818eff8f7aae9a80bcb20f9e0dbe7581f4df323c34a13614f214a02c2f85ccea"
+      "sha256": "03a805c6441f0778225f9a8ec10feeadba23f572cd9ea7b234903384e6a902bf"
     },
     {
       "path": "docs/execution/route_a_v3_decision_log.yaml",
       "role": "DECISION_AND_AMENDMENT_LOG",
-      "sha256": "615b93c166cb732a5e3dab39e6a42ff4e1cf579a3b46ff19092e89f9d9d420ad"
+      "sha256": "fc177d710c3a737e860b7a2326bbdabd1e698bc9eea5838cecc362df519d2766"
+    },
+    {
+      "path": "docs/execution/route_a_v3_a1_interim.yaml",
+      "role": "A1_ACTIVE_INTERIM_RECORD",
+      "sha256": "9537002671e99f7abc937af68640280f53e309113e1a888e79a53025c2ca874b"
     },
     {
       "path": "docs/execution/route_a_v3_split_registry.yaml",
       "role": "SPLIT_REGISTRY",
-      "sha256": "d336fdd0e5177c4ac6cc3addae3a7e2e768be2ceeb62526afa492f309593ffa3"
+      "sha256": "3baebc375186a40d3216c5bedf50070227b446ac6f0846289dff5b8c4f226954"
     },
     {
       "path": "docs/execution/route_a_v3_task_registry.yaml",
       "role": "TASK_AND_PHASE_REGISTRY",
-      "sha256": "d76a33561085c9d56cfd04d7ff5375e808b65569d5586e78125dee1e373f2946"
+      "sha256": "cadce2095367ea9e45f12a8354fc916087edfb965d2151a7a64394399c273008"
     },
     {
       "path": "docs/execution/route_a_v3_task_split_matrix.yaml",
       "role": "TASK_SPLIT_MATRIX",
-      "sha256": "b111161b5b8162086b160e21e96b991650baf451395fed9c9e606433bb0c980a"
+      "sha256": "918cc76603d6f9aa99ab25230d636e89d1f58e216348100db29ec1e9d16c8f48"
     },
     {
       "path": "schemas/route_a_v3/SCHEMA_MANIFEST.json",
@@ -77,11 +84,13 @@
     {
       "path": "scripts/route_a_v3/validate_a0_bundle.py",
       "role": "A0_STATIC_AND_SEMANTIC_VALIDATOR",
-      "sha256": "53ef7be9bb47bdb8ae6670496b10dc6ea728b1cbfe0630e8a1f133766041bd2a"
+      "sha256": "bfc9ef9659eeda10beb1d7874691ce7491e816162614baa931b4bd4acda744c0"
     }
   ],
-  "generated_at": "2026-08-10T02:56:20+08:00",
-  "manifest_status": "A0_PRECOMMIT_FREEZE",
+  "initial_generated_at": "2026-08-10T10:10:05+08:00",
+  "generated_at": "2026-08-10T10:41:50+08:00",
+  "updated_at": "2026-08-10T10:41:50+08:00",
+  "manifest_status": "A1_SCHEME_A_AUTHORITY_REBIND",
   "schema_version": "1.0.0",
   "sealed_contact": false,
   "version": "3.0.0"

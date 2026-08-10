@@ -44,6 +44,15 @@ claim_status:
 - 3′UTR/CDS 至少一个 secondary region 必须取得有统计支持的迁移收益；优先推进 3′UTR，CDS 数据与 synonymous-codon graph 资格审计并行进行。
 - 创新主轴固定为“公开干预数据上的可识别效应学习 + 势函数一致的 legal mRNA 精确控制 + 真实 measured-neighborhood 独立评测”，不声称“首次把 Doob 或 Edit Flow 用于生物序列”。
 
+### A1 方案 A 数据角色修订（用户授权，2026-08-10）
+
+本修订纠正一个已被公开数据结构和可识别性审计证伪的数据角色假设，不改变 Route A 战略目标，也不降低任何 gate：
+
+- `GSE145046` 固定为 `ABSOLUTE_AUXILIARY_ONLY / TRUE_A2_NOT_QUALIFIED`。它是一个固定 reporter scaffold、一个 N10 可变位点上的 absolute outcome landscape，不是可识别的 source-relative intervention neighborhood；不计入 ordinary、A1 或 true-A2 gate，也不得作为 source-relative confirmatory evidence。只有另行闭合 paper-faithful endpoint、license、checkpoint exposure 和 auxiliary-only split 后，才可用于 fixed-scaffold absolute pretraining/development。
+- `GSE114002` designed library 固定为 `A2_RECOVERY_CANDIDATE_NOT_QUALIFIED`。当前只授权 source/mother anchor、candidate pool、replicate/SE、license、checkpoint exposure 和 leakage 的正式恢复与资格审计；已知相关序列暴露标记保持 `SEQUENCE_EXPOSED`，即使未来通过，也仅限 within-assay development/optimization 边界，不能提前计入 gate 或冒充独立 confirmatory evidence。
+- A1 hard gate 原样保持：至少 3 个 qualified ordinary studies、至少 2 个 A1、至少 1 个真正 source-anchored true A2。当前 qualified 计数不因本修订增加，A2 GPU 训练仍未授权。
+- 若 `GSE114002` 的字段 authority、source anchor、multi-candidate pool、replicate/SE、license、checkpoint exposure 或 leakage 无法闭合，则必须引入新的 genuine public A2 study；不得退回用 GSE145046 的百万 rows、Hamming proxy 或同一 scaffold 的 absolute outcomes填补 true-A2 gate。
+
 ### 当前活动任务的保护
 
 截至 2026-08-09 23:24 CST，迁移 worktree 的 `scripts/m4_routea/` 正在 GPU 5 上执行一个 pre-V3 development run。该任务：
@@ -135,8 +144,8 @@ V3 必须完整记录本轮讨论的所有决策、理由和拒绝项，包括�
 
 优先裁定：
 
-- `GSE145046`：完成 oligo–read count–endpoint label 的 paper-faithful join 后作为 A2 dense pretraining/optimization neighborhood；未通过前保持 `RAW_PRESENT_JOIN_BLOCKED`。
-- `GSE114002`：随机库作为 A2/absolute auxiliary；natural subset 单独重建。相同短 source sequence 只有在 study、assay、endpoint、locus/transcript/design family 一致后才能合并。UTR-LM 等相关结果标记为 `SEQUENCE_EXPOSED`。
+- `GSE145046`：保持 `ABSOLUTE_AUXILIARY_ONLY / TRUE_A2_NOT_QUALIFIED`；不计入 ordinary、A1 或 true-A2 gate，不承担 source-relative confirmatory evidence。只有 auxiliary-specific endpoint、license、checkpoint exposure 和 split 全部通过后，才可用于 fixed-scaffold absolute pretraining/development。
+- `GSE114002`：designed library 作为 `A2_RECOVERY_CANDIDATE_NOT_QUALIFIED`，优先恢复 mother/source anchor、同 assay candidate pools、replicate/SE、license、checkpoint exposure 与 leakage；random library 只作 absolute auxiliary，natural subset 单独重建。相同短 source sequence 只有在 study、assay、endpoint、locus/transcript/design family 一致后才能合并；所有相关结果保持 `SEQUENCE_EXPOSED`，资格通过前不得训练或计入 gate。若该恢复路线失败，必须引入新的 genuine public A2 study。
 - `GSE149487/PLUMAGE`：优先恢复为 A1 ordinary intervention study。
 - `GSE217518`：完成 endpoint direction、raw scale、异常值、replicate、full-context reconstruction 和 biological grouping 前只作 development/stress；资格通过后才可进入三个 ordinary studies 的 confirmatory 集合。
 - `GSE246381`：保持 sealed；不用于训练、调参、阈值、metric、calibration 或 architecture selection。
@@ -328,7 +337,7 @@ Transfer：
 | 阶段 | 风险 | 主要工作与交付 | 进入下一阶段的硬门槛 |
 |---|---:|---|---|
 | A0：V3 authority 与现场保护，1–2 天 | 高 | 创建隔离 worktree/branch；写入 V3、YAML、decision/amendment log；登记旧合同、旧 failures 和 active pre-V3 run；sealed runner保持 hard disable；首次 focused commit/push | 单一 authority、lineage/schema valid；不触碰脏 checkout、活动任务和 sealed |
-| A1：公开数据 qualification，2–4 周 | 高 | paper-faithful D0/D1；恢复 GSE145046 join、GSE114002 biological groups、PLUMAGE、GSE217518 raw scale；3′UTR/CDS 并行资格审计；license/exposure/effective-N 表 | 至少 3 ordinary studies、≥2 A1、≥1 A2；source/endpoint/transform/group 可识别；否则保持 public-evidence blocker |
+| A1：公开数据 qualification，2–4 周 | 高 | paper-faithful D0/D1；冻结 GSE145046 absolute-auxiliary 边界；恢复 GSE114002 designed-library true-A2 candidate、PLUMAGE、GSE217518 raw scale；3′UTR/CDS 并行资格审计；license/exposure/effective-N 表 | 至少 3 ordinary studies、≥2 A1、≥1 source-anchored true A2；source/endpoint/transform/group 可识别；否则保持 public-evidence blocker |
 | A2：benchmark/metric/evaluator 冻结，1 周 | 高 | canonical pools、splits、leakage、top-q additive uplift、noise margins、confirmatory set/nested CV、independent evaluator、compute budget、sealed dry-run spec | 新 ordinary confirmatory set未参与选择，或严格 nested group CV；所有 metrics/statistics 前瞻冻结 |
 | A3：critic 语义修复与单种子 GPU pilots，2–3 周 | 中高 | 实现 A1/A2 critic；semantic fixtures；anchor/permutation/residual controls；同预算 baseline ladder；完整 prediction artifact | 每个 qualified study 均有正向信息增益；未胜 anchor-only/强基线则冻结 failure bundle并进入 critic/estimand recovery |
 | A4：五种子 confirmatory critic，2–3 周 | 高 | 五 seeds、study macro、group bootstrap、calibration、OOD、abstention、foundation exposure ladder | 完整 effect gate通过；不得用 best seed、旧 folds 或病态 enrichment |

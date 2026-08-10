@@ -218,3 +218,40 @@ decisions:
       - configs/route_a_v3.yaml
       - scripts/route_a_v3/sealed_guard.py
       - scripts/e0x/run_e0x_final.py
+  - decision_id: V3-DEC-017
+    decision_type: AMENDMENT
+    dimension: gse145046_true_a2_role_and_a2_recovery
+    conflict: >-
+      The original A1 plan expected GSE145046 to become a true A2 dense
+      source-relative neighborhood after a paper-faithful join. Public-data
+      structure and identifiability audits instead show one fixed reporter
+      scaffold with absolute outcomes, not multiple biological sources or
+      directly measured source-to-candidate intervention edges.
+    resolution: >-
+      Apply user-authorized Scheme A. Classify GSE145046 as
+      ABSOLUTE_AUXILIARY_ONLY and TRUE_A2_NOT_QUALIFIED, with zero contribution
+      to the ordinary-study, A1, or true-A2 gates and no source-relative
+      confirmatory use. It may enter fixed-scaffold absolute
+      pretraining/development only after a separate auxiliary qualification
+      closes paper-faithful endpoints, license, checkpoint exposure, and split.
+      Designate the GSE114002 designed library as
+      A2_RECOVERY_CANDIDATE_NOT_QUALIFIED with SEQUENCE_EXPOSED and a
+      within-assay development/optimization boundary; it remains excluded from
+      training and every gate until source anchors, multi-candidate pools,
+      replicate/SE, license, checkpoint exposure, and leakage all pass. Preserve
+      the frozen requirement of at least three ordinary studies, at least two A1,
+      and at least one genuine source-anchored true A2. If GSE114002 cannot be
+      qualified, a new genuine public A2 study is required. This amendment changes
+      no qualified count, authorizes no GPU training, and establishes no claim.
+    status: FROZEN_USER_AUTHORIZED_A1_ROLE_AMENDMENT
+    effective_phase: A1
+    requires_user_authorization: true
+    user_authorization_status: GRANTED
+    user_authorization_received_at: "2026-08-10T10:10:05+08:00"
+    preserves_decision_ids: [V3-DEC-005]
+    sealed_contact: false
+    evidence_refs:
+      - docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md
+      - docs/execution/route_a_v3_data_role_registry.yaml
+      - configs/route_a_v3_gse145046_a2_audit.json
+      - /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE145046_A2_FORMAL_AUDIT_V1_20260810T084313P0800.json

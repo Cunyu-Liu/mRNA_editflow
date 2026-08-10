@@ -6,6 +6,8 @@ import json
 import shutil
 from copy import deepcopy
 
+import yaml
+
 
 def _codes(issues):
     return {issue.code for issue in issues}
@@ -19,6 +21,18 @@ def _copy_runner_and_guard(validator, repo_root, tmp_path):
     shutil.copy2(repo_root / validator.SEALED_RUNNER_PATH, runner_target)
     shutil.copy2(repo_root / validator.SEALED_GUARD_PATH, guard_target)
     return runner_target, guard_target
+
+
+def _copy_manifest_bundle(validator, repo_root, tmp_path):
+    manifest = validator._load_json(repo_root, validator.REGISTRY_MANIFEST_PATH)
+    paths = set(validator.required_bundle_paths())
+    paths.update(row["path"] for row in manifest["files"])
+    for relative in sorted(paths):
+        source = repo_root / relative
+        target = tmp_path / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, target)
+    return manifest
 
 
 def test_decision_log_requires_all_ids_and_historical_m0_decision(validator, repo_root):
@@ -68,6 +82,137 @@ def test_decision_016_superseding_a0_boundary_is_frozen(validator, repo_root):
     assert "DECISION_LOG_A0_PHASE_BOUNDARY" in codes
     assert "DECISION_LOG_A0_PHASE_BOUNDARY_EVIDENCE" in codes
     assert "DECISION_LOG_KEY_DECISION" in codes
+
+
+def test_decision_017_user_authorized_data_role_amendment_is_frozen(
+    validator,
+    repo_root,
+):
+    decision_log = validator._load_yaml(repo_root, validator.DECISION_LOG_PATH)
+    assert validator.validate_decision_log(decision_log) == []
+
+    bypass = deepcopy(decision_log)
+    decision = next(row for row in bypass["decisions"] if row["decision_id"] == "V3-DEC-017")
+    decision["status"] = "MUTABLE"
+    decision["user_authorization_status"] = "NOT_GRANTED"
+    decision["preserves_decision_ids"] = []
+    decision["sealed_contact"] = True
+    decision["resolution"] = decision["resolution"].replace(
+        "zero contribution",
+        "counts as a qualified true A2",
+    )
+    decision["evidence_refs"].remove(validator.REGISTRY_PATHS["data"])
+    codes = _codes(validator.validate_decision_log(bypass))
+    assert "DECISION_LOG_A1_ROLE_AMENDMENT" in codes
+    assert "DECISION_LOG_A1_ROLE_AMENDMENT_EVIDENCE" in codes
+    assert "DECISION_LOG_KEY_DECISION" in codes
+
+
+def test_decision_prefix_digest_rejects_conflicting_semantics_and_old_entry_drift(
+    validator,
+    repo_root,
+):
+    decision_log = validator._load_yaml(repo_root, validator.DECISION_LOG_PATH)
+    assert validator.validate_decision_log(decision_log) == []
+
+    contradictory = deepcopy(decision_log)
+    decision = next(row for row in contradictory["decisions"] if row["decision_id"] == "V3-DEC-017")
+    decision["resolution"] += (
+        " Notwithstanding the foregoing, GSE145046 is now QUALIFIED_TRUE_A2 "
+        "and contributes one true-A2 gate credit."
+    )
+    codes = _codes(validator.validate_decision_log(contradictory))
+    assert "DECISION_LOG_ENTRY_DRIFT" in codes
+
+    historical = deepcopy(decision_log)
+    historical["decisions"][0]["status"] = "REWRITTEN_AFTER_ACCEPTANCE"
+    codes = _codes(validator.validate_decision_log(historical))
+    assert "DECISION_LOG_ENTRY_DRIFT" in codes
+
+
+def test_rehashed_manifest_cannot_bypass_decision_prefix_digest(
+    validator,
+    repo_root,
+    tmp_path,
+):
+    manifest = _copy_manifest_bundle(validator, repo_root, tmp_path)
+    decision_path = tmp_path / validator.DECISION_LOG_PATH
+    decision_log = yaml.safe_load(decision_path.read_text(encoding="utf-8"))
+    decision = next(row for row in decision_log["decisions"] if row["decision_id"] == "V3-DEC-017")
+    decision["resolution"] += (
+        " Notwithstanding the foregoing, GSE145046 is now QUALIFIED_TRUE_A2 "
+        "and contributes one true-A2 gate credit."
+    )
+    decision_path.write_text(yaml.safe_dump(decision_log, sort_keys=False), encoding="utf-8")
+    entry = next(row for row in manifest["files"] if row["path"] == validator.DECISION_LOG_PATH)
+    entry["sha256"] = validator.sha256_file(decision_path)
+    manifest_path = tmp_path / validator.REGISTRY_MANIFEST_PATH
+    manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+
+    codes = _codes(validator.validate_bundle(tmp_path))
+    assert "REGISTRY_MANIFEST_HASH_MISMATCH" not in codes
+    assert "DECISION_LOG_ENTRY_DRIFT" in codes
+
+
+def test_a1_interim_semantics_and_rehashed_manifest_cannot_grant_a1(
+    validator,
+    repo_root,
+    tmp_path,
+):
+    interim = validator._load_yaml(repo_root, validator.A1_INTERIM_PATH)
+    assert validator.validate_a1_interim_lineage(repo_root, interim) == []
+
+    bypass = deepcopy(interim)
+    bypass["scope"]["training_allowed"] = True
+    bypass["gate_snapshot"]["qualified_a2_dense_studies"] = 1
+    bypass["gate_snapshot"]["phase_complete"] = True
+    bypass["gate_snapshot"]["next_phase_authorized"] = True
+    bypass["dataset_boundary_summary"]["GSE145046"]["true_a2_gate_contribution"] = 1
+    bypass["claim_boundaries"]["a1_phase_complete"] = True
+    codes = _codes(validator.validate_a1_interim_lineage(repo_root, bypass))
+    assert "A1_INTERIM_SCOPE" in codes
+    assert "A1_INTERIM_GATE" in codes
+    assert "A1_INTERIM_GSE145046" in codes
+    assert "A1_INTERIM_CLAIMS" in codes
+
+    manifest = _copy_manifest_bundle(validator, repo_root, tmp_path)
+    interim_path = tmp_path / validator.A1_INTERIM_PATH
+    interim_path.write_text(yaml.safe_dump(bypass, sort_keys=False), encoding="utf-8")
+    entry = next(row for row in manifest["files"] if row["path"] == validator.A1_INTERIM_PATH)
+    entry["sha256"] = validator.sha256_file(interim_path)
+    manifest_path = tmp_path / validator.REGISTRY_MANIFEST_PATH
+    manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+
+    codes = _codes(validator.validate_bundle(tmp_path))
+    assert "REGISTRY_MANIFEST_HASH_MISMATCH" not in codes
+    assert "A1_INTERIM_CANONICAL_HASH" in codes
+    assert "A1_INTERIM_GATE" in codes
+
+
+def test_scheme_a_data_roles_cannot_restore_gse145046_as_true_a2(
+    validator,
+    repo_root,
+):
+    registry = validator._load_yaml(repo_root, validator.REGISTRY_PATHS["data"])
+    assert validator.validate_scheme_a_data_roles(registry) == []
+
+    bypass = deepcopy(registry)
+    bypass["ordinary_candidate_dataset_ids"].append("GSE145046")
+    gse145046 = next(row for row in bypass["datasets"] if row["dataset_id"] == "GSE145046")
+    gse145046["true_a2_qualification_status"] = "QUALIFIED"
+    gse145046["true_a2_gate_contribution"] = 1
+    gse145046["source_relative_confirmatory_evidence_allowed"] = True
+    gse145046["permanently_forbidden_gate_uses"] = []
+    gse114002 = next(row for row in bypass["datasets"] if row["dataset_id"] == "GSE114002")
+    gse114002["known_related_sequence_exposure_label"] = "UNEXPOSED"
+    gse114002["fallback_if_designed_library_not_qualifiable"] = "LOWER_TRUE_A2_GATE"
+    bypass["data_policy"]["ordinary_minimum_a2_dense_studies"] = 0
+    codes = _codes(validator.validate_scheme_a_data_roles(bypass))
+    assert "SCHEME_A_GATE_PRESERVATION" in codes
+    assert "SCHEME_A_ORDINARY_CANDIDATES" in codes
+    assert "SCHEME_A_GSE145046_ROLE" in codes
+    assert "SCHEME_A_GSE145046_FORBIDDEN" in codes
+    assert "SCHEME_A_GSE114002_BOUNDARY" in codes
 
 
 def test_supersession_config_and_m0_scientific_failure_are_bound(validator, repo_root, bundle_documents):
@@ -217,12 +362,25 @@ def test_registry_manifest_detects_every_listed_hash_drift(validator, tmp_path, 
         data = f"fixture-{index}-{relative}\n".encode("utf-8")
         path.write_bytes(data)
         entries.append({"path": relative, "role": "FIXTURE", "sha256": validator.sha256_bytes(data)})
+    interim_path = tmp_path / validator.A1_INTERIM_PATH
+    interim_path.write_text(
+        yaml.safe_dump({"updated_at": "2026-08-10T10:33:39+08:00"}),
+        encoding="utf-8",
+    )
+    next(row for row in entries if row["path"] == validator.A1_INTERIM_PATH)["sha256"] = validator.sha256_file(interim_path)
     manifest = {
         "contract_id": validator.CONTRACT_ID,
         "version": validator.VERSION,
+        "schema_version": "1.0.0",
         "contract_path": validator.GOAL_PATH,
+        "initial_contract_sha256": "d1c031aecdec710495f6861b380785cccd64663ac4bd97b4f479d6fdf372ea07",
         "contract_sha256": goal_hash,
+        "active_amendment_decision_ids": ["V3-DEC-017"],
         "base_commit": "bbb71dcba6f1e1c9cb75a8a6653f1a4fe4a6ca0c",
+        "manifest_status": "A1_SCHEME_A_AUTHORITY_REBIND",
+        "initial_generated_at": "2026-08-10T10:10:05+08:00",
+        "generated_at": "2026-08-10T10:41:50+08:00",
+        "updated_at": "2026-08-10T10:41:50+08:00",
         "sealed_contact": False,
         "files": entries,
     }
@@ -234,3 +392,18 @@ def test_registry_manifest_detects_every_listed_hash_drift(validator, tmp_path, 
     config_path = tmp_path / validator.CONFIG_PATH
     config_path.write_bytes(config_path.read_bytes() + b"drift")
     assert "REGISTRY_MANIFEST_HASH_MISMATCH" in _codes(validator.validate_registry_manifest(tmp_path))
+
+
+def test_registry_manifest_cannot_predate_the_a1_interim_it_hashes(
+    validator,
+    repo_root,
+    tmp_path,
+):
+    manifest = _copy_manifest_bundle(validator, repo_root, tmp_path)
+    manifest["generated_at"] = "2026-08-10T10:10:05+08:00"
+    manifest["updated_at"] = "2026-08-10T10:10:05+08:00"
+    manifest_path = tmp_path / validator.REGISTRY_MANIFEST_PATH
+    manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+
+    codes = _codes(validator.validate_registry_manifest(tmp_path))
+    assert "REGISTRY_MANIFEST_TIME" in codes
