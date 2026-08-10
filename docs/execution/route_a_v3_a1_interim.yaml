@@ -139,6 +139,137 @@ artifact_lineage:
     qualified: false
     training_allowed: false
     model_selection_allowed: false
+  gse149487_full_a1_stop_before_data_preflight_v1:
+    artifact_id: GSE149487_FULL_A1_STOP_BEFORE_DATA_PREFLIGHT_20260810T181439Z_aeecf0f
+    path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE149487_FULL_A1_STOP_BEFORE_DATA_PREFLIGHT_20260810T181439Z_aeecf0f.json
+    bytes: 7218
+    sha256: c1d649c9470c7962dd3a0c1a0ebe3c771dbe7b066d5cc4ad91bcd45b19d9417d
+    schema_version: route_a_v3_gse149487_stop_before_data_preflight.v1
+    protocol_id: ROUTE_A_V3_GSE149487_STOP_BEFORE_DATA_PREFLIGHT_V1
+    dataset_id: GSE149487
+    recorded_at_utc: "2026-08-10T18:14:39Z"
+    outcome: NOT_READY_FOR_STUDY_QUALIFICATION
+    ready_for_study_qualification: false
+    authority_audit:
+      status: PASS_CONFIG_ONLY_BINDING_VERIFIED
+      accepted_a0_base_commit: fd722d5fa3c2538fce742b8942b1fb48e782760b
+      active_authority_commit: d328bf04c394d4960ac11058e079c063e09280af
+      active_amendment_decision_ids: [V3-DEC-017, V3-DEC-018]
+      implementation_commit: d10a42a564ecac2af048b39c05cbc863ebdacd02
+      binding_commit: aeecf0f043a94f2e5a738807c6d13d92f16e129f
+      git_head: aeecf0f043a94f2e5a738807c6d13d92f16e129f
+      origin_branch_head: aeecf0f043a94f2e5a738807c6d13d92f16e129f
+      branch: routea-v3-a1-20260810
+      git_clean: true
+      binding_scheme: CONFIG_ONLY_POST_IMPLEMENTATION_BINDING_V1
+      qualifier_authority_implementation_commit: d10a42a564ecac2af048b39c05cbc863ebdacd02
+      qualifier_config_sha256: 893ed3b1eea194472b2ae3b5a975dc29c37c2a970e940420ef0e2e455780f04f
+      qualifier_code_sha256:
+        qualifier_script: 15f162d9f687c740e592be405ea50ff6af30a2cd572970722ade287bf18ade1a
+        qualifier_test: fc8e2147d4aee480d7ff12b38b0b036ee8e65dec8be6ecf5d9a6b893f2a28fb9
+      preflight_blob_sha256:
+        external_evidence_config: d25a978c4603e180ca20534f3ba8b78c321e21c01fdf94c88b9ab65a0ed7ed8b
+        preflight_script: a4178cf60803b0e93cd6fa6a1f39dd2837ce20f5b0e74bb0c4f4ef5e5c1a48bb
+        preflight_test: 21173517b6c70000c7c704408573364467e1028d8a48de699d9d00274aa05c5c
+      authority_sha256:
+        asset_manifest: 7105125e686f3bc6e99152b1cd86230aa6225d1a86cad1f8d7968aa99675a878
+        contract: cbac4c3dcba8f1b8df95d8edad52d19e3c126d1c865d0cc423537c754cc90982
+        data_role_registry: 746439ef5d88d8167176d19e9c675746fdc78984a66f6f123f77f6ec49523030
+        decision_log: a5b041fab24d9a4309603a085fa3fcab936d69a899285bfa752689a2ee5fd4fd
+        raw_asset_registry: b27356ef790b3296ef0c535da7f3aeabd6812f364809017905a2375d7405f3d7
+    inventory_audit:
+      status: PASS_METADATA_ONLY_STOP_BEFORE_DATA
+      entry_count: 22
+      payload_asset_count: 21
+      geo_raw_count: 18
+      supplement_count: 3
+      manifest_count: 1
+      filename_set_sha256: 2763a8e4347b47ba1980730a5abb5cf48797e27f01ff2f906e1a441657fa271d
+      name_size_binding_sha256: d44f9018b4b8ecd560eb89bd3e82cfd86366054dd135b6545002997cee6896c2
+      total_lstat_bytes: 70038944
+      hash_reverification: NOT_RUN_STOP_BEFORE_DATA
+      manifest_open_count: 0
+      payload_hash_count: 0
+      payload_open_count: 0
+      scientific_processing_count: 0
+    environment_audit:
+      status: PASS_PREFLIGHT_ENVIRONMENT_ONLY
+      output_absent: true
+      failure_absent: true
+      claim_absent: true
+    external_evidence_audit:
+      exact_public_description_to_barcode_map: BLOCKED
+      pre_outcome_mapping_timing: BLOCKED
+      long_read_identity_method_status: VERIFIED_METHOD_SURFACE_ONLY
+      paper_exact_executable_method_source: BLOCKED
+      mann_whitney_implementation: BLOCKED
+      fdr_family_definition: BLOCKED
+      published_190_vs_180_status: AUTHOR_ADJUDICATION_REQUIRED
+      all_21_assets_license_status: BLOCKED
+      foundation_checkpoint_family_count: 4
+      foundation_exact_overlap_closed_count: 0
+      foundation_near_duplicate_closed_count: 0
+      foundation_label_exposure_closed_count: 0
+    counters:
+      canonical_record_count: 0
+      manifest_open_count: 0
+      model_selection_run_count: 0
+      payload_hash_count: 0
+      payload_open_count: 0
+      qualifier_execution_count: 0
+      scientific_processing_count: 0
+      training_run_count: 0
+    gate_truth:
+      ordinary_study_contribution: 0
+      a1_study_contribution: 0
+      true_a2_study_contribution: 0
+      canonical_record_count: 0
+      qualified: false
+      ready_for_study_qualification: false
+      training_allowed: false
+      model_selection_allowed: false
+      next_phase_authorized: false
+    blockers:
+      - CHECKPOINT_SPECIFIC_FOUNDATION_EXPOSURE_UNKNOWN_NOT_ASSERTED
+      - LICENSE_AND_REDISTRIBUTION_UNKNOWN_NOT_ASSERTED
+      - OUTCOME_BLIND_LONG_READ_MAPPING_PROVENANCE_UNKNOWN_NOT_ASSERTED
+      - PAPER_NATIVE_METHOD_NOT_REPRODUCED
+      - PAPER_NATIVE_METHOD_SOURCE_UNKNOWN_NOT_ASSERTED
+      - PAPER_NATIVE_MULTIPLE_TESTING_FAMILY_UNKNOWN_NOT_ASSERTED
+      - PREFROZEN_GROUP_POWER_OR_CI_GATE_FAILED
+      - PUBLISHED_RESULT_CROSSCHECK_UNKNOWN_NOT_ASSERTED
+      - RAW_KEY_UNCLASSIFIED_OUTCOME_BLIND_RECONCILIATION_NOT_ZERO
+      - UNADJUDICATED_OR_AMBIGUOUS_MAPPING_ROWS_PRESENT
+      - UNADJUDICATED_SEQUENCE_UNIVERSE_CLASSES_PRESENT
+    historical_r4_closure:
+      bundle_path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_GSE149487_PLUMAGE_FULL_QUAL_20260810T131156P0800_a859166_R4
+      status: BLOCKED_PENDING_PUBLIC_EVIDENCE
+      exact_blockers:
+        - CHECKPOINT_SPECIFIC_FOUNDATION_EXPOSURE_UNKNOWN_NOT_ASSERTED
+        - LICENSE_AND_REDISTRIBUTION_UNKNOWN_NOT_ASSERTED
+        - OUTCOME_BLIND_LONG_READ_MAPPING_PROVENANCE_UNKNOWN_NOT_ASSERTED
+        - PAPER_NATIVE_METHOD_NOT_REPRODUCED
+        - PAPER_NATIVE_METHOD_SOURCE_UNKNOWN_NOT_ASSERTED
+        - PAPER_NATIVE_MULTIPLE_TESTING_FAMILY_UNKNOWN_NOT_ASSERTED
+        - PREFROZEN_GROUP_POWER_OR_CI_GATE_FAILED
+        - PUBLISHED_RESULT_CROSSCHECK_UNKNOWN_NOT_ASSERTED
+        - RAW_KEY_UNCLASSIFIED_OUTCOME_BLIND_RECONCILIATION_NOT_ZERO
+        - UNADJUDICATED_OR_AMBIGUOUS_MAPPING_ROWS_PRESENT
+        - UNADJUDICATED_SEQUENCE_UNIVERSE_CLASSES_PRESENT
+      qualification_report_sha256: 19df844b55ef7b8dbf53ba3044a51132bdea1f0d1dfa6809a720a2a83a7030b3
+      sha256sums_sha256: c72c63c2090052657beaa797e3ba3196200f8cbc3e9c5a97cf1a4a04a4db3631
+      publication_commit_sha256: 3149001644cf1b21db74021b12ca1e887977a9d0d13deff3b2f57b18e4b64ca4
+      reference_only_not_reopened: true
+      rerun_is_qualification_path: false
+    protocol_provenance:
+      path: /home/cunyuliu/mrna_editflow_goal/worktrees/routea_v3_a1_20260810/configs/route_a_v3_gse149487_external_evidence_roots_v1.json
+      bytes: 14255
+      sha256: d25a978c4603e180ca20534f3ba8b78c321e21c01fdf94c88b9ab65a0ed7ed8b
+      binding_model: IMMUTABLE_STATIC_BLOB_BOUND_FROM_QUALIFIER_CONFIG
+    claim_boundary: This stop-before-data preflight may verify repository authority, environment readiness, and descriptor-bound filenames and sizes only. It never opens or hashes the manifest or any of the 21 data payloads, never executes the qualifier, and never establishes study qualification, training permission, model-selection permission, checkpoint-specific foundation exposure, or a scientific claim.
+    metadata_only: true
+    changes_qualification_gate: false
+    establishes_scientific_claim: false
   gse145046_a2_audit_protocol:
     path: configs/route_a_v3_gse145046_a2_audit.json
     sha256: 666c9ee86033a05a006171df963fa3d96b68430d9a9d4e817789e255b28b300d
@@ -647,6 +778,30 @@ dataset_boundary_summary:
     development_companion_effect_record_count: 204
     development_companion_nonnull_effect_record_count: 192
     raw_barcode_plaintext_match_count_in_outputs: 0
+    stop_before_data_preflight:
+      artifact_lineage_id: gse149487_full_a1_stop_before_data_preflight_v1
+      authority_status: PASS_CONFIG_ONLY_BINDING_VERIFIED
+      inventory_status: PASS_METADATA_ONLY_STOP_BEFORE_DATA
+      outcome: NOT_READY_FOR_STUDY_QUALIFICATION
+      blocker_count: 11
+      manifest_open_count: 0
+      payload_hash_count: 0
+      payload_open_count: 0
+      scientific_processing_count: 0
+      qualifier_execution_count: 0
+      training_run_count: 0
+      model_selection_run_count: 0
+      canonical_record_count: 0
+      ordinary_study_contribution: 0
+      a1_study_contribution: 0
+      true_a2_study_contribution: 0
+      qualified: false
+      ready_for_study_qualification: false
+      training_allowed: false
+      model_selection_allowed: false
+      next_phase_authorized: false
+      changes_qualification_gate: false
+      historical_r4_reopened: false
     qualified: false
     training_allowed: false
     model_selection_allowed: false
@@ -839,6 +994,11 @@ claim_boundaries:
   gse200302_srr_role_authority_is_study_qualification: false
   gse200302_srr_role_authority_authorizes_training_or_model_selection: false
   gse200302_pdna_may_substitute_for_80s_rna: false
+  gse149487_stop_before_data_preflight_is_study_qualification: false
+  gse149487_metadata_inventory_is_payload_integrity: false
+  gse149487_stop_before_data_preflight_authorizes_training_or_model_selection: false
+  gse149487_stop_before_data_preflight_establishes_scientific_claim: false
+  gse149487_stop_before_data_preflight_reopens_historical_r4: false
   a1_phase_complete: false
   route_a_established: false
 
@@ -851,6 +1011,13 @@ verification:
     status: PASS
     passed: 32
     failed: 0
+  targeted_gse149487_stop_before_data_preflight_tests:
+    status: PASS
+    passed: 17
+    failed: 0
+  gse149487_stop_before_data_preflight_json_parse: PASS
+  gse149487_stop_before_data_preflight_sha256_verified: true
+  gse149487_stop_before_data_preflight_closed_metadata_semantics: PASS
   targeted_gse145046_a2_audit_tests:
     status: PASS
     passed: 59
@@ -906,7 +1073,7 @@ verification:
     scope: INTERIM_RECORD_STATUS_CLAIM_BOUNDARIES_PLUMAGE_BLOCK_SEMANTICS_AND_LOG2_CPM_SCALE
 
 initial_generated_at: "2026-08-10T06:30:58+08:00"
-generated_at: "2026-08-10T23:10:00+08:00"
-updated_at: "2026-08-10T23:10:00+08:00"
+generated_at: "2026-08-11T02:23:00+08:00"
+updated_at: "2026-08-11T02:23:00+08:00"
 updated_for_decision_id: V3-DEC-018
-latest_evidence_update_id: GSE200302_SRR_ROLE_AUTHORITY_20260810T230315P0800_e3b724d
+latest_evidence_update_id: GSE149487_FULL_A1_STOP_BEFORE_DATA_PREFLIGHT_20260810T181439Z_aeecf0f

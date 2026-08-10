@@ -37,7 +37,7 @@ SUPERSESSION_PATH = "docs/contracts/supersession_mrna_xeditflow_v1_1_to_route_a_
 DECISION_LOG_PATH = "docs/execution/route_a_v3_decision_log.yaml"
 REGISTRY_MANIFEST_PATH = "docs/execution/route_a_v3_registry_manifest.json"
 A1_INTERIM_PATH = "docs/execution/route_a_v3_a1_interim.yaml"
-EXPECTED_A1_INTERIM_SHA256 = "90a5deb6143453c45d37b3e5601388e1eb51065645235a1264fc7b8cae591e64"
+EXPECTED_A1_INTERIM_SHA256 = "e441ee0321b4947edff7d24a4c6fae67aece926be64d334c4f45a5de4d2c98d5"
 SCIENTIFIC_M0_HISTORY_PATH = "docs/contracts/history/mrna_v2_readiness_audit_20260807.md"
 SCIENTIFIC_M0_HISTORY_SHA256 = "a8eb4f49ede793a8eae2037db9f46f044056d37610ec92482666a8242a52fa30"
 SEALED_GUARD_PATH = "scripts/route_a_v3/sealed_guard.py"
@@ -111,6 +111,30 @@ GSE149487_PLUMAGE_PREFLIGHT_SCRIPT_SHA256 = (
 GSE149487_PLUMAGE_PREFLIGHT_TEST_SHA256 = (
     "21173517b6c70000c7c704408573364467e1028d8a48de699d9d00274aa05c5c"
 )
+GSE149487_PLUMAGE_PREFLIGHT_ARTIFACT_ID = (
+    "GSE149487_FULL_A1_STOP_BEFORE_DATA_PREFLIGHT_20260810T181439Z_aeecf0f"
+)
+GSE149487_PLUMAGE_PREFLIGHT_ARTIFACT_PATH = (
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/"
+    "A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/"
+    f"{GSE149487_PLUMAGE_PREFLIGHT_ARTIFACT_ID}.json"
+)
+GSE149487_PLUMAGE_PREFLIGHT_ARTIFACT_SHA256 = (
+    "c1d649c9470c7962dd3a0c1a0ebe3c771dbe7b066d5cc4ad91bcd45b19d9417d"
+)
+GSE149487_PLUMAGE_PREFLIGHT_BLOCKERS = [
+    "CHECKPOINT_SPECIFIC_FOUNDATION_EXPOSURE_UNKNOWN_NOT_ASSERTED",
+    "LICENSE_AND_REDISTRIBUTION_UNKNOWN_NOT_ASSERTED",
+    "OUTCOME_BLIND_LONG_READ_MAPPING_PROVENANCE_UNKNOWN_NOT_ASSERTED",
+    "PAPER_NATIVE_METHOD_NOT_REPRODUCED",
+    "PAPER_NATIVE_METHOD_SOURCE_UNKNOWN_NOT_ASSERTED",
+    "PAPER_NATIVE_MULTIPLE_TESTING_FAMILY_UNKNOWN_NOT_ASSERTED",
+    "PREFROZEN_GROUP_POWER_OR_CI_GATE_FAILED",
+    "PUBLISHED_RESULT_CROSSCHECK_UNKNOWN_NOT_ASSERTED",
+    "RAW_KEY_UNCLASSIFIED_OUTCOME_BLIND_RECONCILIATION_NOT_ZERO",
+    "UNADJUDICATED_OR_AMBIGUOUS_MAPPING_ROWS_PRESENT",
+    "UNADJUDICATED_SEQUENCE_UNIVERSE_CLASSES_PRESENT",
+]
 GSE149487_PLUMAGE_ACTIVE_AUTHORITY_COMMIT = (
     "d328bf04c394d4960ac11058e079c063e09280af"
 )
@@ -856,7 +880,7 @@ def validate_registry_manifest(repo_root: Path) -> list[Issue]:
         "contract_sha256": SOURCE_CONTRACT_SHA256,
         "active_amendment_decision_ids": ["V3-DEC-017", "V3-DEC-018"],
         "base_commit": "bbb71dcba6f1e1c9cb75a8a6653f1a4fe4a6ca0c",
-        "manifest_status": "A1_PLUMAGE_DEC018_MECHANICAL_REBIND",
+        "manifest_status": "A1_PLUMAGE_METADATA_ONLY_PREFLIGHT_LEDGER_INTEGRATED",
         "initial_generated_at": "2026-08-10T10:10:05+08:00",
         "sealed_contact": False,
     }
@@ -2611,6 +2635,7 @@ def validate_a1_interim_lineage(
             "gse149487_lim6c_scale_diagnostic_v1",
             "gse149487_plumage_protocol",
             "gse149487_plumage_reconstruction_v4",
+            "gse149487_full_a1_stop_before_data_preflight_v1",
             "gse145046_a2_audit_protocol",
             "gse145046_a2_formal_audit_v1",
             "a1_public_qualifiers_sync_v1",
@@ -2766,6 +2791,150 @@ def validate_a1_interim_lineage(
                 path,
                 issues,
                 "A1_INTERIM_LINEAGE",
+            )
+        gse149487_preflight = lineage.get(
+            "gse149487_full_a1_stop_before_data_preflight_v1"
+        )
+        if not isinstance(gse149487_preflight, Mapping):
+            _issue(
+                issues,
+                "A1_INTERIM_GSE149487_PREFLIGHT",
+                path,
+                "gse149487_full_a1_stop_before_data_preflight_v1 must be a mapping",
+            )
+        else:
+            _expect_closed_mapping(
+                gse149487_preflight,
+                {
+                    "artifact_id": GSE149487_PLUMAGE_PREFLIGHT_ARTIFACT_ID,
+                    "path": GSE149487_PLUMAGE_PREFLIGHT_ARTIFACT_PATH,
+                    "bytes": 7218,
+                    "sha256": GSE149487_PLUMAGE_PREFLIGHT_ARTIFACT_SHA256,
+                    "schema_version": "route_a_v3_gse149487_stop_before_data_preflight.v1",
+                    "protocol_id": "ROUTE_A_V3_GSE149487_STOP_BEFORE_DATA_PREFLIGHT_V1",
+                    "dataset_id": "GSE149487",
+                    "recorded_at_utc": "2026-08-10T18:14:39Z",
+                    "outcome": "NOT_READY_FOR_STUDY_QUALIFICATION",
+                    "ready_for_study_qualification": False,
+                    "authority_audit": {
+                        "status": "PASS_CONFIG_ONLY_BINDING_VERIFIED",
+                        "accepted_a0_base_commit": "fd722d5fa3c2538fce742b8942b1fb48e782760b",
+                        "active_authority_commit": GSE149487_PLUMAGE_ACTIVE_AUTHORITY_COMMIT,
+                        "active_amendment_decision_ids": ["V3-DEC-017", "V3-DEC-018"],
+                        "implementation_commit": "d10a42a564ecac2af048b39c05cbc863ebdacd02",
+                        "binding_commit": "aeecf0f043a94f2e5a738807c6d13d92f16e129f",
+                        "git_head": "aeecf0f043a94f2e5a738807c6d13d92f16e129f",
+                        "origin_branch_head": "aeecf0f043a94f2e5a738807c6d13d92f16e129f",
+                        "branch": "routea-v3-a1-20260810",
+                        "git_clean": True,
+                        "binding_scheme": "CONFIG_ONLY_POST_IMPLEMENTATION_BINDING_V1",
+                        "qualifier_authority_implementation_commit": "d10a42a564ecac2af048b39c05cbc863ebdacd02",
+                        "qualifier_config_sha256": "893ed3b1eea194472b2ae3b5a975dc29c37c2a970e940420ef0e2e455780f04f",
+                        "qualifier_code_sha256": {
+                            "qualifier_script": GSE149487_PLUMAGE_QUALIFIER_SHA256,
+                            "qualifier_test": GSE149487_PLUMAGE_TEST_SHA256,
+                        },
+                        "preflight_blob_sha256": {
+                            "external_evidence_config": GSE149487_PLUMAGE_PREFLIGHT_CONFIG_SHA256,
+                            "preflight_script": GSE149487_PLUMAGE_PREFLIGHT_SCRIPT_SHA256,
+                            "preflight_test": GSE149487_PLUMAGE_PREFLIGHT_TEST_SHA256,
+                        },
+                        "authority_sha256": {
+                            "asset_manifest": GSE149487_PLUMAGE_ASSET_MANIFEST_SHA256,
+                            "contract": SOURCE_CONTRACT_SHA256,
+                            "data_role_registry": "746439ef5d88d8167176d19e9c675746fdc78984a66f6f123f77f6ec49523030",
+                            "decision_log": "a5b041fab24d9a4309603a085fa3fcab936d69a899285bfa752689a2ee5fd4fd",
+                            "raw_asset_registry": "b27356ef790b3296ef0c535da7f3aeabd6812f364809017905a2375d7405f3d7",
+                        },
+                    },
+                    "inventory_audit": {
+                        "status": "PASS_METADATA_ONLY_STOP_BEFORE_DATA",
+                        "entry_count": 22,
+                        "payload_asset_count": 21,
+                        "geo_raw_count": 18,
+                        "supplement_count": 3,
+                        "manifest_count": 1,
+                        "filename_set_sha256": "2763a8e4347b47ba1980730a5abb5cf48797e27f01ff2f906e1a441657fa271d",
+                        "name_size_binding_sha256": "d44f9018b4b8ecd560eb89bd3e82cfd86366054dd135b6545002997cee6896c2",
+                        "total_lstat_bytes": 70038944,
+                        "hash_reverification": "NOT_RUN_STOP_BEFORE_DATA",
+                        "manifest_open_count": 0,
+                        "payload_hash_count": 0,
+                        "payload_open_count": 0,
+                        "scientific_processing_count": 0,
+                    },
+                    "environment_audit": {
+                        "status": "PASS_PREFLIGHT_ENVIRONMENT_ONLY",
+                        "output_absent": True,
+                        "failure_absent": True,
+                        "claim_absent": True,
+                    },
+                    "external_evidence_audit": {
+                        "exact_public_description_to_barcode_map": "BLOCKED",
+                        "pre_outcome_mapping_timing": "BLOCKED",
+                        "long_read_identity_method_status": "VERIFIED_METHOD_SURFACE_ONLY",
+                        "paper_exact_executable_method_source": "BLOCKED",
+                        "mann_whitney_implementation": "BLOCKED",
+                        "fdr_family_definition": "BLOCKED",
+                        "published_190_vs_180_status": "AUTHOR_ADJUDICATION_REQUIRED",
+                        "all_21_assets_license_status": "BLOCKED",
+                        "foundation_checkpoint_family_count": 4,
+                        "foundation_exact_overlap_closed_count": 0,
+                        "foundation_near_duplicate_closed_count": 0,
+                        "foundation_label_exposure_closed_count": 0,
+                    },
+                    "counters": {
+                        "canonical_record_count": 0,
+                        "manifest_open_count": 0,
+                        "model_selection_run_count": 0,
+                        "payload_hash_count": 0,
+                        "payload_open_count": 0,
+                        "qualifier_execution_count": 0,
+                        "scientific_processing_count": 0,
+                        "training_run_count": 0,
+                    },
+                    "gate_truth": {
+                        "ordinary_study_contribution": 0,
+                        "a1_study_contribution": 0,
+                        "true_a2_study_contribution": 0,
+                        "canonical_record_count": 0,
+                        "qualified": False,
+                        "ready_for_study_qualification": False,
+                        "training_allowed": False,
+                        "model_selection_allowed": False,
+                        "next_phase_authorized": False,
+                    },
+                    "blockers": GSE149487_PLUMAGE_PREFLIGHT_BLOCKERS,
+                    "historical_r4_closure": {
+                        "bundle_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_GSE149487_PLUMAGE_FULL_QUAL_20260810T131156P0800_a859166_R4",
+                        "status": "BLOCKED_PENDING_PUBLIC_EVIDENCE",
+                        "exact_blockers": GSE149487_PLUMAGE_PREFLIGHT_BLOCKERS,
+                        "qualification_report_sha256": "19df844b55ef7b8dbf53ba3044a51132bdea1f0d1dfa6809a720a2a83a7030b3",
+                        "sha256sums_sha256": "c72c63c2090052657beaa797e3ba3196200f8cbc3e9c5a97cf1a4a04a4db3631",
+                        "publication_commit_sha256": "3149001644cf1b21db74021b12ca1e887977a9d0d13deff3b2f57b18e4b64ca4",
+                        "reference_only_not_reopened": True,
+                        "rerun_is_qualification_path": False,
+                    },
+                    "protocol_provenance": {
+                        "path": "/home/cunyuliu/mrna_editflow_goal/worktrees/routea_v3_a1_20260810/configs/route_a_v3_gse149487_external_evidence_roots_v1.json",
+                        "bytes": 14255,
+                        "sha256": GSE149487_PLUMAGE_PREFLIGHT_CONFIG_SHA256,
+                        "binding_model": "IMMUTABLE_STATIC_BLOB_BOUND_FROM_QUALIFIER_CONFIG",
+                    },
+                    "claim_boundary": (
+                        "This stop-before-data preflight may verify repository authority, environment readiness, "
+                        "and descriptor-bound filenames and sizes only. It never opens or hashes the manifest or "
+                        "any of the 21 data payloads, never executes the qualifier, and never establishes study "
+                        "qualification, training permission, model-selection permission, checkpoint-specific "
+                        "foundation exposure, or a scientific claim."
+                    ),
+                    "metadata_only": True,
+                    "changes_qualification_gate": False,
+                    "establishes_scientific_claim": False,
+                },
+                path,
+                issues,
+                "A1_INTERIM_GSE149487_PREFLIGHT",
             )
         raw_preflight_blockers = [
             "EXACT_SRR_SAMPLE_ROLES_UNKNOWN",
@@ -3390,6 +3559,31 @@ def validate_a1_interim_lineage(
                 "development_companion_effect_record_count": 204,
                 "development_companion_nonnull_effect_record_count": 192,
                 "raw_barcode_plaintext_match_count_in_outputs": 0,
+                "stop_before_data_preflight": {
+                    "artifact_lineage_id": "gse149487_full_a1_stop_before_data_preflight_v1",
+                    "authority_status": "PASS_CONFIG_ONLY_BINDING_VERIFIED",
+                    "inventory_status": "PASS_METADATA_ONLY_STOP_BEFORE_DATA",
+                    "outcome": "NOT_READY_FOR_STUDY_QUALIFICATION",
+                    "blocker_count": 11,
+                    "manifest_open_count": 0,
+                    "payload_hash_count": 0,
+                    "payload_open_count": 0,
+                    "scientific_processing_count": 0,
+                    "qualifier_execution_count": 0,
+                    "training_run_count": 0,
+                    "model_selection_run_count": 0,
+                    "canonical_record_count": 0,
+                    "ordinary_study_contribution": 0,
+                    "a1_study_contribution": 0,
+                    "true_a2_study_contribution": 0,
+                    "qualified": False,
+                    "ready_for_study_qualification": False,
+                    "training_allowed": False,
+                    "model_selection_allowed": False,
+                    "next_phase_authorized": False,
+                    "changes_qualification_gate": False,
+                    "historical_r4_reopened": False,
+                },
                 "qualified": False,
                 "training_allowed": False,
                 "model_selection_allowed": False,
@@ -3638,6 +3832,11 @@ def validate_a1_interim_lineage(
             "gse200302_srr_role_authority_is_study_qualification": False,
             "gse200302_srr_role_authority_authorizes_training_or_model_selection": False,
             "gse200302_pdna_may_substitute_for_80s_rna": False,
+            "gse149487_stop_before_data_preflight_is_study_qualification": False,
+            "gse149487_metadata_inventory_is_payload_integrity": False,
+            "gse149487_stop_before_data_preflight_authorizes_training_or_model_selection": False,
+            "gse149487_stop_before_data_preflight_establishes_scientific_claim": False,
+            "gse149487_stop_before_data_preflight_reopens_historical_r4": False,
             "a1_phase_complete": False,
             "route_a_established": False,
         }
@@ -3659,6 +3858,14 @@ def validate_a1_interim_lineage(
             {
                 "targeted_a1_tests": {"status": "PASS", "passed": 17, "failed": 0},
                 "targeted_plumage_reconstruction_tests": {"status": "PASS", "passed": 32, "failed": 0},
+                "targeted_gse149487_stop_before_data_preflight_tests": {
+                    "status": "PASS",
+                    "passed": 17,
+                    "failed": 0,
+                },
+                "gse149487_stop_before_data_preflight_json_parse": "PASS",
+                "gse149487_stop_before_data_preflight_sha256_verified": True,
+                "gse149487_stop_before_data_preflight_closed_metadata_semantics": "PASS",
                 "targeted_gse145046_a2_audit_tests": {"status": "PASS", "passed": 59, "failed": 0},
                 "targeted_gse200304_a1_qualification_tests": {"status": "PASS", "passed": 60, "failed": 0},
                 "targeted_gse200304_raw_replay_preflight_tests": {"status": "PASS", "passed": 57, "failed": 0},
@@ -3719,7 +3926,7 @@ def validate_a1_interim_lineage(
     _expect(
         interim,
         "latest_evidence_update_id",
-        "GSE200302_SRR_ROLE_AUTHORITY_20260810T230315P0800_e3b724d",
+        GSE149487_PLUMAGE_PREFLIGHT_ARTIFACT_ID,
         path,
         issues,
         "A1_INTERIM_TIME",
@@ -3735,6 +3942,7 @@ def validate_a1_interim_lineage(
         acquisition_dt = datetime.fromisoformat("2026-08-10T19:15:02+08:00")
         raw_preflight_dt = datetime.fromisoformat("2026-08-10T20:52:00+08:00")
         role_authority_dt = datetime.fromisoformat("2026-08-10T23:03:15+08:00")
+        gse149487_preflight_dt = datetime.fromisoformat("2026-08-11T02:14:39+08:00")
     except ValueError:
         _issue(issues, "A1_INTERIM_TIME", path, "updated_at must be an ISO-8601 timestamp with offset")
     else:
@@ -3744,12 +3952,13 @@ def validate_a1_interim_lineage(
             or updated_dt < acquisition_dt
             or updated_dt < raw_preflight_dt
             or updated_dt < role_authority_dt
+            or updated_dt < gse149487_preflight_dt
         ):
             _issue(
                 issues,
                 "A1_INTERIM_TIME",
                 path,
-                "updated_at must follow the formal audit, DEC-017 authorization, FASTQ consumer evidence, raw-replay preflight, and GSE200302 role-authority bundle",
+                "updated_at must follow the formal audit, DEC-017 authorization, FASTQ consumer evidence, raw-replay preflight, GSE200302 role-authority bundle, and GSE149487 stop-before-data preflight",
             )
     return issues
 

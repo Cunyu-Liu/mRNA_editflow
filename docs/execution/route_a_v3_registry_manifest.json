@@ -49,7 +49,7 @@
     {
       "path": "docs/execution/route_a_v3_a1_interim.yaml",
       "role": "A1_ACTIVE_INTERIM_RECORD",
-      "sha256": "90a5deb6143453c45d37b3e5601388e1eb51065645235a1264fc7b8cae591e64"
+      "sha256": "e441ee0321b4947edff7d24a4c6fae67aece926be64d334c4f45a5de4d2c98d5"
     },
     {
       "path": "docs/execution/route_a_v3_split_registry.yaml",
@@ -134,18 +134,18 @@
     {
       "path": "tests/route_a_v3/test_a0_integrity_guards.py",
       "role": "A0_AUTHORITY_INTEGRITY_GUARD_TEST",
-      "sha256": "9e3cca25cce5e638a3faf9bccfa688c53a10366fe5e5f7b2b2e0c9eacd8e5658"
+      "sha256": "4702887a304936d5060f09612960356b089931205f9f3dbd2d075eddcdad9eaa"
     },
     {
       "path": "scripts/route_a_v3/validate_a0_bundle.py",
       "role": "A0_STATIC_AND_SEMANTIC_VALIDATOR",
-      "sha256": "6f22ba3b5917d4b36d5654e86edb856fd8e20795493ccf7a73c72218754a6822"
+      "sha256": "dfe10a694d398af4e6b30d2f0dc93c7b71511739a6c377ca8bc8dea8a4b2bf28"
     }
   ],
   "initial_generated_at": "2026-08-10T10:10:05+08:00",
-  "generated_at": "2026-08-11T00:56:05+08:00",
-  "updated_at": "2026-08-11T00:56:05+08:00",
-  "manifest_status": "A1_PLUMAGE_DEC018_MECHANICAL_REBIND",
+  "generated_at": "2026-08-11T02:23:30+08:00",
+  "updated_at": "2026-08-11T02:23:30+08:00",
+  "manifest_status": "A1_PLUMAGE_METADATA_ONLY_PREFLIGHT_LEDGER_INTEGRATED",
   "schema_version": "1.0.0",
   "sealed_contact": false,
   "version": "3.0.0"

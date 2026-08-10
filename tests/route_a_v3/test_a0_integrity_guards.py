@@ -354,6 +354,112 @@ def test_a1_interim_gse200304_blocked_counts_and_lineage_are_fail_closed(
     assert "A1_INTERIM_GSE200304_LINEAGE_ID_SET" in codes
 
 
+def test_gse149487_stop_before_data_preflight_ledger_is_exact_and_rehash_safe(
+    validator,
+    repo_root,
+    tmp_path,
+    monkeypatch,
+):
+    interim = validator._load_yaml(repo_root, validator.A1_INTERIM_PATH)
+    assert validator.validate_a1_interim_lineage(repo_root, interim) == []
+
+    lineage = interim["artifact_lineage"]
+    preflight = lineage["gse149487_full_a1_stop_before_data_preflight_v1"]
+    assert preflight["artifact_id"] == validator.GSE149487_PLUMAGE_PREFLIGHT_ARTIFACT_ID
+    assert preflight["path"] == validator.GSE149487_PLUMAGE_PREFLIGHT_ARTIFACT_PATH
+    assert preflight["bytes"] == 7218
+    assert preflight["sha256"] == validator.GSE149487_PLUMAGE_PREFLIGHT_ARTIFACT_SHA256
+    assert preflight["blockers"] == validator.GSE149487_PLUMAGE_PREFLIGHT_BLOCKERS
+    assert preflight["historical_r4_closure"]["reference_only_not_reopened"] is True
+    assert preflight["gate_truth"]["qualified"] is False
+    assert preflight["counters"]["payload_open_count"] == 0
+    assert "gse149487_plumage_reconstruction_v4" in lineage
+    assert "gse149487_reconstruction_attempt_003_failure" in lineage
+
+    summary = interim["dataset_boundary_summary"]["GSE149487"]
+    assert summary["stop_before_data_preflight"] == {
+        "artifact_lineage_id": "gse149487_full_a1_stop_before_data_preflight_v1",
+        "authority_status": "PASS_CONFIG_ONLY_BINDING_VERIFIED",
+        "inventory_status": "PASS_METADATA_ONLY_STOP_BEFORE_DATA",
+        "outcome": "NOT_READY_FOR_STUDY_QUALIFICATION",
+        "blocker_count": 11,
+        "manifest_open_count": 0,
+        "payload_hash_count": 0,
+        "payload_open_count": 0,
+        "scientific_processing_count": 0,
+        "qualifier_execution_count": 0,
+        "training_run_count": 0,
+        "model_selection_run_count": 0,
+        "canonical_record_count": 0,
+        "ordinary_study_contribution": 0,
+        "a1_study_contribution": 0,
+        "true_a2_study_contribution": 0,
+        "qualified": False,
+        "ready_for_study_qualification": False,
+        "training_allowed": False,
+        "model_selection_allowed": False,
+        "next_phase_authorized": False,
+        "changes_qualification_gate": False,
+        "historical_r4_reopened": False,
+    }
+
+    def upgrade_metadata_pass(interim):
+        record = interim["artifact_lineage"][
+            "gse149487_full_a1_stop_before_data_preflight_v1"
+        ]
+        record["inventory_audit"]["status"] = "PASS_PAYLOAD_INTEGRITY"
+        record["counters"]["payload_open_count"] = 1
+        record["gate_truth"]["qualified"] = True
+
+    codes = _validate_rehashed_interim_bypass(
+        validator,
+        repo_root,
+        tmp_path / "metadata_pass_upgrade",
+        monkeypatch,
+        upgrade_metadata_pass,
+    )
+    assert "A1_INTERIM_GSE149487_PREFLIGHT" in codes
+
+    def rewrite_blockers_and_reopen_r4(interim):
+        record = interim["artifact_lineage"][
+            "gse149487_full_a1_stop_before_data_preflight_v1"
+        ]
+        record["blockers"].pop()
+        record["historical_r4_closure"]["exact_blockers"].pop()
+        record["historical_r4_closure"]["reference_only_not_reopened"] = False
+        record["historical_r4_closure"]["rerun_is_qualification_path"] = True
+
+    codes = _validate_rehashed_interim_bypass(
+        validator,
+        repo_root,
+        tmp_path / "blocker_and_r4_rewrite",
+        monkeypatch,
+        rewrite_blockers_and_reopen_r4,
+    )
+    assert "A1_INTERIM_GSE149487_PREFLIGHT" in codes
+
+    def upgrade_summary_and_claim(interim):
+        summary = interim["dataset_boundary_summary"]["GSE149487"][
+            "stop_before_data_preflight"
+        ]
+        summary["changes_qualification_gate"] = True
+        summary["ordinary_study_contribution"] = 1
+        summary["qualified"] = True
+        interim["claim_boundaries"][
+            "gse149487_stop_before_data_preflight_is_study_qualification"
+        ] = True
+
+    codes = _validate_rehashed_interim_bypass(
+        validator,
+        repo_root,
+        tmp_path / "summary_and_claim_upgrade",
+        monkeypatch,
+        upgrade_summary_and_claim,
+    )
+    assert "A1_INTERIM_GSE149487" in codes
+    assert "A1_INTERIM_CLAIMS" in codes
+
+
 def test_rehashed_gse200304_interim_cannot_bypass_semantic_closure(
     validator,
     repo_root,
@@ -1432,7 +1538,7 @@ def test_registry_manifest_detects_every_listed_hash_drift(validator, tmp_path, 
         "contract_sha256": goal_hash,
         "active_amendment_decision_ids": ["V3-DEC-017", "V3-DEC-018"],
         "base_commit": "bbb71dcba6f1e1c9cb75a8a6653f1a4fe4a6ca0c",
-        "manifest_status": "A1_PLUMAGE_DEC018_MECHANICAL_REBIND",
+        "manifest_status": "A1_PLUMAGE_METADATA_ONLY_PREFLIGHT_LEDGER_INTEGRATED",
         "initial_generated_at": "2026-08-10T10:10:05+08:00",
         "generated_at": "2026-08-10T10:41:50+08:00",
         "updated_at": "2026-08-10T10:41:50+08:00",
