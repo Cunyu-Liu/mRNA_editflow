@@ -1,0 +1,417 @@
+{
+  "contract_id": "mrna_xeditflow_route_a_v3",
+  "schema_version": "3.0.0",
+  "protocol_id": "ROUTE_A_V3_GSE200304_PUBLISHED_ENDPOINT_A1_V1",
+  "protocol_status": "GO_AGGREGATE_AUDIT_ONLY",
+  "activation_status": "NO_GO_ACTIVATION",
+  "qualification_status": "BLOCKED_NOT_QUALIFIED",
+  "dataset_id": "GSE200304",
+  "authority": {
+    "contract_path": "docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md",
+    "contract_sha256": "cbac4c3dcba8f1b8df95d8edad52d19e3c126d1c865d0cc423537c754cc90982",
+    "data_role_registry_path": "docs/execution/route_a_v3_data_role_registry.yaml",
+    "data_role_registry_sha256": "746439ef5d88d8167176d19e9c675746fdc78984a66f6f123f77f6ec49523030",
+    "decision_log_path": "docs/execution/route_a_v3_decision_log.yaml",
+    "decision_log_sha256": "a5b041fab24d9a4309603a085fa3fcab936d69a899285bfa752689a2ee5fd4fd",
+    "active_authority_commit": "d328bf04c394d4960ac11058e079c063e09280af",
+    "staging_parent_head": "4eac98feb35da3ad83891a3a966dc069cbd19e99"
+  },
+  "implementation_binding": {
+    "status": "UNKNOWN_NOT_ASSERTED",
+    "repository_root_rule": "PROTOCOL_PATH_PARENT_PARENT",
+    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "qualifier_path": "scripts/route_a_v3/qualify_gse200304_published_endpoint_a1.py",
+    "qualifier_blob_sha256": "UNKNOWN_NOT_ASSERTED",
+    "test_path": "tests/route_a_v3/test_qualify_gse200304_published_endpoint_a1.py",
+    "test_blob_sha256": "UNKNOWN_NOT_ASSERTED",
+    "post_implementation_allowed_changed_paths": [
+      "configs/route_a_v3_gse200304_published_endpoint_a1.json"
+    ],
+    "binding_commit_must_be_direct_child": true,
+    "current_head_must_strictly_descend": true,
+    "active_authority_must_be_ancestor": true,
+    "clean_worktree_required": true,
+    "running_script_must_match_qualifier_blob": true
+  },
+  "decision_neutral_boundary": {
+    "immutable_for_this_protocol": true,
+    "qualified": false,
+    "ordinary_study_contribution": 0,
+    "a1_intervention_study_contribution": 0,
+    "true_a2_dense_study_contribution": 0,
+    "canonical_record_count": 0,
+    "canonical_materialization_allowed": false,
+    "training_allowed": false,
+    "model_selection_allowed": false,
+    "next_phase_authorized": false,
+    "owner_policy_decision_made": false,
+    "checkpoint_specific_use_cleared": false
+  },
+  "scope": {
+    "ordinary_public_data_only": true,
+    "region": "3UTR",
+    "maximum_independent_study_count": 1,
+    "published_endpoint_evidence_role": "AGGREGATE_AUDIT_ONLY_PENDING_OWNER_POLICY",
+    "official_table_asset_count": 2,
+    "raw_fastq_allowed": false,
+    "sam_bam_cram_allowed": false,
+    "raw_replay_allowed": false,
+    "zenodo_code_execution_allowed": false,
+    "network_access_allowed": false,
+    "input_writes_allowed": false,
+    "significance_filtering_allowed_for_membership": false,
+    "row_level_output_allowed": false,
+    "sequence_output_allowed": false,
+    "barcode_output_allowed": false,
+    "annotation_label_output_allowed": false,
+    "row_identifier_output_allowed": false
+  },
+  "input_contract": {
+    "data_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE200304/GSE200304_PUBLIC_ASSETS_20260810T143731P0800",
+    "forbidden_path_tokens": [
+      "GSE246381",
+      "access_log",
+      "sealed",
+      "restricted",
+      "FASTQ",
+      "raw_replay",
+      "Zenodo",
+      ".sam",
+      ".bam",
+      ".cram"
+    ],
+    "same_descriptor_verified_snapshot_required": true,
+    "root_to_leaf_o_nofollow_required": true,
+    "single_link_regular_files_required": true,
+    "all_input_hashes_and_sizes_required_before_parsing": true,
+    "source_bundle_member_count": 7,
+    "parsed_scientific_asset_ids": [
+      "PMC10540565_TABLE_S2",
+      "PMC10540565_TABLE_S3"
+    ],
+    "source_bundle_members": [
+      {
+        "asset_id": "SOURCE_BUNDLE_MANIFEST",
+        "role": "SOURCE_BUNDLE_CLOSURE_METADATA",
+        "relative_path": "ASSET_ACQUISITION_MANIFEST.json",
+        "format": "JSON",
+        "bytes": 6426,
+        "sha256": "8318990d9e3b6a0e6265bf9d1e8bc20f56f0ecfd994e83d279e733258642100c",
+        "parsed_for_endpoint_statistics": false
+      },
+      {
+        "asset_id": "NCBI_PRJNA824033_RUNINFO",
+        "role": "SOURCE_BUNDLE_CLOSURE_PROVENANCE_ONLY",
+        "relative_path": "NCBI_PRJNA824033_RUNINFO.csv",
+        "format": "CSV_OPAQUE_NOT_PARSED",
+        "bytes": 12042,
+        "sha256": "34bcedafebc41ee9ccd79483f331b62f2443df31d12691abc0a961a7201848f4",
+        "parsed_for_endpoint_statistics": false
+      },
+      {
+        "asset_id": "PMC10540565_TABLE_S2",
+        "role": "OFFICIAL_PUBLISHED_DESIGN_PAIR_GEOMETRY_ONLY",
+        "relative_path": "NIHMS1928233-supplement-3.csv",
+        "source_uri": "https://pmc-oa-opendata.s3.amazonaws.com/PMC10540565.1/NIHMS1928233-supplement-3.csv",
+        "source_authority": "NCBI_PMC_OA_OPEN_DATA",
+        "format": "CSV_UTF8",
+        "bytes": 7323186,
+        "sha256": "812f3c983cb7c4f473200741ffd6d73bcab911c9e354934542e018e7b0cf8a6d",
+        "parsed_for_endpoint_statistics": true
+      },
+      {
+        "asset_id": "PMC10540565_TABLE_S3",
+        "role": "OFFICIAL_PUBLISHED_XTAIL_ENDPOINT_AGGREGATES_ONLY",
+        "relative_path": "NIHMS1928233-supplement-4.xlsx",
+        "source_uri": "https://pmc-oa-opendata.s3.amazonaws.com/PMC10540565.1/NIHMS1928233-supplement-4.xlsx",
+        "source_authority": "NCBI_PMC_OA_OPEN_DATA",
+        "format": "XLSX_STATIC_VALUES",
+        "bytes": 864791,
+        "sha256": "ec2aab60fcb0be87f2bcc1b1a5a1f786b23bb429edc9851a4034a3e8983dfa08",
+        "parsed_for_endpoint_statistics": true
+      },
+      {
+        "asset_id": "SOURCE_BUNDLE_PUBLICATION_COMMIT",
+        "role": "SOURCE_BUNDLE_TERMINAL_COMMIT_METADATA",
+        "relative_path": "PUBLICATION_COMMIT.json",
+        "format": "JSON",
+        "bytes": 1095,
+        "sha256": "4742508195f28bf8c7ab1f7cb8bb0b68c32304f31b19c8f8979d098fa75786a5",
+        "parsed_for_endpoint_statistics": false
+      },
+      {
+        "asset_id": "SOURCE_BUNDLE_SHA256SUMS",
+        "role": "SOURCE_BUNDLE_CHECKSUM_METADATA",
+        "relative_path": "SHA256SUMS",
+        "format": "SHA256SUMS",
+        "bytes": 491,
+        "sha256": "20da85cd34f0574829392b5de1d7c48cc9782219847f56ccc07dffd579d79f15",
+        "parsed_for_endpoint_statistics": false
+      },
+      {
+        "asset_id": "ZENODO_8007705_V1_2",
+        "role": "SOURCE_BUNDLE_CLOSURE_OPAQUE_NEVER_EXECUTED",
+        "relative_path": "slschuster_3UTRMutationalMPRA-v1.2.zip",
+        "format": "ZIP_OPAQUE_HASH_ONLY_NOT_PARSED",
+        "bytes": 46209,
+        "sha256": "1c1b1979c1d5bd7fefa54e80a59f982228d0f1498eb0cff2883b753ee5eb0ae4",
+        "parsed_for_endpoint_statistics": false
+      }
+    ],
+    "source_bundle_closure": {
+      "exact_member_names": [
+        "ASSET_ACQUISITION_MANIFEST.json",
+        "NCBI_PRJNA824033_RUNINFO.csv",
+        "NIHMS1928233-supplement-3.csv",
+        "NIHMS1928233-supplement-4.xlsx",
+        "PUBLICATION_COMMIT.json",
+        "SHA256SUMS",
+        "slschuster_3UTRMutationalMPRA-v1.2.zip"
+      ],
+      "source_manifest_asset_count": 4,
+      "source_checksum_entry_count": 5,
+      "source_terminal_marker_committed": true,
+      "source_terminal_marker_written_last": true,
+      "opaque_zenodo_archive_container_parsed": false,
+      "opaque_zenodo_code_executed": false
+    }
+  },
+  "table_contract": {
+    "table_s2": {
+      "asset_id": "PMC10540565_TABLE_S2",
+      "exact_header": [
+        "ID",
+        "Type",
+        "201bp",
+        "5' End",
+        "3'End",
+        "Full_Oligo"
+      ],
+      "canonical_compact_header_json_sha256": "8342cace9a613739f9e1e112b1f7fe446def48589e03f45feb6418b2ce8d3412",
+      "raw_row_count": 13850,
+      "unique_content_row_count": 13836,
+      "duplicate_extra_row_count": 14,
+      "duplicated_content_group_count": 14,
+      "duplicated_content_multiplicity": 2,
+      "duplicated_pair_count": 7,
+      "raw_type_counts": {
+        "Control": 66,
+        "Mutant": 6892,
+        "WT": 6892
+      },
+      "deduplicated_type_counts": {
+        "Control": 66,
+        "Mutant": 6885,
+        "WT": 6885
+      },
+      "raw_id_row_multiplicity_counts": {
+        "1": 66,
+        "2": 6878,
+        "4": 7
+      },
+      "deduplicated_pair_count": 6885,
+      "deduplicated_control_count": 66,
+      "pair_rule": "EXACTLY_ONE_WT_AND_ONE_MUTANT_AFTER_EXACT_FULL_ROW_DEDUPLICATION",
+      "duplicate_pair_rule": "EXACTLY_SEVEN_PAIR_KEYS_HAVE_TWO_IDENTICAL_COPIES_OF_EACH_ARM",
+      "paired_window_length": 201,
+      "central_zero_based_index": 100,
+      "paired_alphabet": "ACGT",
+      "paired_edit_rule": "EXACTLY_ONE_CENTRAL_SNV",
+      "central_base_change_counts": {
+        "A>C": 238,
+        "A>G": 673,
+        "A>T": 371,
+        "C>A": 636,
+        "C>G": 281,
+        "C>T": 1261,
+        "G>A": 1151,
+        "G>C": 288,
+        "G>T": 701,
+        "T>A": 350,
+        "T>C": 669,
+        "T>G": 266
+      },
+      "pair_id_grammar": "^[^:]+:[1-9][0-9]*_[ACGT]-[ACGT]$",
+      "pair_id_grammar_match_count": 6885,
+      "all_pair_orientation_counts": {
+        "FORWARD": 3497,
+        "REVERSE_COMPLEMENT": 3388,
+        "UNRESOLVED": 0
+      },
+      "distinct_candidate_count": 6885,
+      "distinct_wt_201nt_proxy_count": 6882,
+      "wt_201nt_proxy_pool_size_counts": {
+        "1": 6879,
+        "2": 3
+      },
+      "three_or_more_candidate_wt_201nt_proxy_pool_count": 0,
+      "true_a2_dense_pool_count": 0
+    },
+    "table_s3": {
+      "asset_id": "PMC10540565_TABLE_S3",
+      "exact_sheet_names": [
+        "S2A_Polysome_MPRA_Mut_Stats",
+        "S2B_Poly_MPRA_Control_Stats"
+      ],
+      "primary_sheet": {
+        "name": "S2A_Polysome_MPRA_Mut_Stats",
+        "exact_header": [
+          "barcode",
+          "Gene",
+          "Comparison",
+          "xtail_log2FC_TE",
+          "xtail_pvalue",
+          "xtail_FDR",
+          "Translation_Sig"
+        ],
+        "canonical_compact_header_json_sha256": "d204a821928cb76b2fbc29201d3bcd103e6f4d3fa9cc526bd669604d74ef2ea5",
+        "data_row_count": 13544,
+        "pair_key_count": 6772,
+        "comparison_row_counts": {
+          "HighPoly:RNA": 6772,
+          "TotalPoly:RNA": 6772
+        },
+        "comparison_count_per_pair": 2,
+        "distinct_gene_annotation_count": 1947,
+        "comparison_gene_annotation_must_agree": true,
+        "statistics_columns": [
+          "xtail_log2FC_TE",
+          "xtail_pvalue",
+          "xtail_FDR"
+        ],
+        "statistics_missing_token": "NA",
+        "statistics_must_be_all_finite_or_all_na_per_row": true,
+        "finite_statistic_rows": {
+          "HighPoly:RNA": 6538,
+          "TotalPoly:RNA": 6547
+        },
+        "na_statistic_rows": {
+          "HighPoly:RNA": 234,
+          "TotalPoly:RNA": 225
+        },
+        "both_comparisons_finite_pair_count": 6538,
+        "primary_only_finite_pair_count": 9,
+        "secondary_only_finite_pair_count": 0,
+        "neither_comparison_finite_pair_count": 225,
+        "significant_rows": {
+          "HighPoly:RNA": 58,
+          "TotalPoly:RNA": 174
+        },
+        "nonsignificant_rows": {
+          "HighPoly:RNA": 6714,
+          "TotalPoly:RNA": 6598
+        },
+        "cell_type_counts": {
+          "key_annotation_comparison_string_each": 13544,
+          "statistic_numeric_each": 13085,
+          "statistic_na_string_each": 459,
+          "translation_formula": 13544,
+          "translation_cached_string": 13544
+        },
+        "translation_formula_execution_allowed": false,
+        "cached_translation_counts_role": "DESCRIPTIVE_ONLY_NOT_MEMBERSHIP_OR_GATE",
+        "cached_translation_values_used_for_gate": false,
+        "cached_translation_values_used_for_membership": false,
+        "membership_rule": "ALL_PAIR_KEYS_BEFORE_TRANSLATION_SIGNIFICANCE"
+      },
+      "control_sheet": {
+        "name": "S2B_Poly_MPRA_Control_Stats",
+        "exact_header": [
+          "barcode",
+          "TE_1",
+          "TE_2",
+          "TE_3",
+          "TE_4",
+          "TE_5",
+          "TE_6",
+          "Txn_1",
+          "Txn_2",
+          "Txn_3",
+          "Txn_4",
+          "Txn_5",
+          "Txn_6"
+        ],
+        "canonical_compact_header_json_sha256": "9008ea2fd8533da367e9dacad56f7089130574eea3b9829dc3fce2a76ad5d292",
+        "data_row_count": 29,
+        "data_access_policy": "HEADER_AND_DIMENSIONS_ONLY",
+        "data_cells_must_not_be_read": true,
+        "finite_measurement_count": 343,
+        "measurement_counts_role": "FROZEN_DESCRIPTIVE_ONLY_NOT_READ_OR_GATE",
+        "na_measurement_count": 5,
+        "role": "OPAQUE_CONTROL_ONLY_EXCLUDED_FROM_MUTATION_ENDPOINT_AND_QUALIFICATION_COUNTS"
+      },
+      "join": {
+        "table_s2_pair_count": 6885,
+        "table_s3_pair_count": 6772,
+        "joined_pair_count": 6772,
+        "table_s2_absent_from_table_s3_count": 113,
+        "table_s3_not_in_table_s2_count": 0,
+        "joined_pair_orientation_counts": {
+          "FORWARD": 3451,
+          "REVERSE_COMPLEMENT": 3321,
+          "UNRESOLVED": 0
+        }
+      }
+    }
+  },
+  "endpoint_boundary": {
+    "primary_endpoint_id": "TOTAL_POLYSOME_TRANSLATION_EFFICIENCY",
+    "primary_comparison_value": "TotalPoly:RNA",
+    "primary_membership_pair_count": 6772,
+    "primary_finite_effect_pair_count": 6547,
+    "primary_absent_pair_count": 113,
+    "primary_na_pair_count": 225,
+    "primary_total_attrition_count": 338,
+    "attrition_equation": "6885_MINUS_113_MINUS_225_EQUALS_6547",
+    "primary_complete_distinct_wt_201nt_proxy_group_count": 6544,
+    "primary_complete_wt_201nt_proxy_pool_size_counts": {
+      "1": 6541,
+      "2": 3
+    },
+    "wt_201nt_grouping_authority": false,
+    "wt_201nt_grouping_proxy_only": true,
+    "biological_source_group_authority_closed": false,
+    "membership_selected_by_significance": false,
+    "study_level_reported_biological_replicate_count": 6,
+    "row_level_effective_replicate_count": null,
+    "row_level_effective_replicate_count_status": "NOT_REPORTED",
+    "standard_error": null,
+    "standard_error_status": "NOT_REPORTED_IN_TABLE_S3_NOT_DERIVABLE_FROM_PUBLISHED_TABLE",
+    "power_effective_n": null,
+    "power_effective_n_status": "NOT_ESTABLISHED",
+    "effect_geometry": "PAIRWISE_WT_VS_SINGLE_MUTANT_ONLY",
+    "true_a2_dense_candidate_count": 0,
+    "published_endpoint_is_not_raw_replay": true,
+    "published_endpoint_is_not_canonical_materialization": true
+  },
+  "publication_contract": {
+    "output_id": "ROUTE_A_V3_GSE200304_PUBLISHED_ENDPOINT_A1_BLOCKED_BUNDLE_V1",
+    "success_json_files": [
+      "INPUT_INTEGRITY_AUDIT.json",
+      "PUBLISHED_ENDPOINT_AUDIT.json",
+      "QUALIFICATION_REPORT.json"
+    ],
+    "failure_json_files": [
+      "FAILURE_REPORT.json"
+    ],
+    "checksum_file": "SHA256SUMS",
+    "terminal_marker": "PUBLICATION_COMMIT.json",
+    "terminal_marker_written_last": true,
+    "terminal_publication_operation": "FSYNCED_STAGED_HARDLINK_NO_REPLACE",
+    "acceptance_critical_reads_after_terminal_visibility": false,
+    "exclusive_no_overwrite": true,
+    "aggregate_only": true,
+    "raw_rows_or_row_keys_may_be_output": false
+  },
+  "unresolved_blockers": [
+    "OWNER_POLICY_FOR_PUBLISHED_ENDPOINT_USE_NOT_FROZEN",
+    "CHECKPOINT_SPECIFIC_ENDPOINT_USE_NOT_CLEARED",
+    "BIOLOGICAL_SOURCE_GROUP_AUTHORITY_NOT_CLOSED",
+    "CURRENT_AUTHORITY_80S_BLOCKER_SCOPE_NOT_ROUTED_FOR_PUBLISHED_ENDPOINT_REUSE",
+    "OUTCOME_BLIND_SPLIT_AND_LEAKAGE_POLICY_NOT_FROZEN",
+    "POWER_AND_CONFIDENCE_INTERVAL_ADEQUACY_NOT_ESTABLISHED",
+    "CANONICAL_REPORTED_ENDPOINT_SEMANTICS_NOT_ADJUDICATED",
+    "ROW_LEVEL_REPLICATE_AND_STANDARD_ERROR_ADJUDICATION_NOT_CLOSED",
+    "IMPLEMENTATION_BINDING_UNKNOWN_NOT_ASSERTED"
+  ]
+}
