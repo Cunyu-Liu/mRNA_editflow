@@ -1,0 +1,242 @@
+{
+  "contract_id": "mrna_xeditflow_route_a_v3",
+  "schema_version": "3.0.0",
+  "protocol_id": "ROUTE_A_V3_GSE114002_DESIGNED_TRUE_A2_GAP_QUALIFICATION_V1",
+  "protocol_status": "PREFROZEN_FAIL_CLOSED_GAP_QUALIFIER_NOT_QUALIFIED",
+  "dataset_id": "GSE114002",
+  "study_group_id": "GSE114002_SAMPLE_2019_DESIGNED_LIBRARY",
+  "data_role": "A2_RECOVERY_CANDIDATE_NOT_QUALIFIED",
+  "authority": {
+    "contract_path": "docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md",
+    "contract_sha256": "3ba224de6277edd67387913cf1c83a5e1344e0ad44ef196db07d0772b45c4d79",
+    "accepted_a0_base_commit": "fd722d5fa3c2538fce742b8942b1fb48e782760b",
+    "active_authority_commit": "d078060c81114687db5068902a5aad5d9bedbee6",
+    "active_amendment_decision_ids": [
+      "V3-DEC-017"
+    ],
+    "a1_qualification_path": "configs/route_a_v3_a1_qualification.json",
+    "a1_qualification_sha256": "1d348671de50c0fe8b155f8cc114d14a74360fe1a87f9d9bac5207ae794806c4",
+    "data_role_registry_path": "docs/execution/route_a_v3_data_role_registry.yaml",
+    "data_role_registry_sha256": "03a805c6441f0778225f9a8ec10feeadba23f572cd9ea7b234903384e6a902bf",
+    "qualifier_path": "scripts/route_a_v3/qualify_gse114002_designed_a2.py",
+    "qualifier_sha256": "f34a71d4023e9b3bd77ff040c187fab5efed1e54e11fec6e049d90849e9b58d1",
+    "focused_test_path": "tests/route_a_v3/test_qualify_gse114002_designed_a2.py",
+    "focused_test_sha256": "a2074c2c0f8b1740f50b8ba063778124f049d73c1266c3ecc6e0011f34b8ee15",
+    "implementation_commit": "UNKNOWN_NOT_ASSERTED"
+  },
+  "ordinary_public_asset_allowlist": [
+    {
+      "accession": "GSM3130443",
+      "basename": "GSM3130443_designed_library.csv.gz",
+      "compressed_sha256": "b72ac298cb0f4d21f911d330c0def06f8d94f15d9f8cc22f3a50ae87a7ef7ee5",
+      "compressed_bytes": 17332142,
+      "compression": "gzip",
+      "encoding": "utf-8",
+      "delimiter": ",",
+      "exact_header": [
+        "",
+        "utr",
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "10",
+        "11",
+        "12",
+        "13",
+        "total",
+        "r0",
+        "r1",
+        "r2",
+        "r3",
+        "r4",
+        "r5",
+        "r6",
+        "r7",
+        "r8",
+        "r9",
+        "r10",
+        "r11",
+        "r12",
+        "r13",
+        "r_total",
+        "rl",
+        "id",
+        "info1",
+        "info2",
+        "info3",
+        "info4",
+        "library",
+        "mother",
+        "designed",
+        "match_score"
+      ]
+    }
+  ],
+  "scope": {
+    "ordinary_public_data_only": true,
+    "region": "5UTR",
+    "included_libraries": [
+      "human_utrs",
+      "snv"
+    ],
+    "assay_id": "SAMPLE_2019_POLYSOME_FRACTIONATION",
+    "context_id": "SAMPLE_2019_DESIGNED_LIBRARY_CONTEXT_UNRESOLVED",
+    "endpoint_id": "MEAN_RIBOSOME_LOAD",
+    "info4_may_define_context": false,
+    "training_allowed": false,
+    "model_selection_allowed": false,
+    "canonical_materialization_allowed": false
+  },
+  "provisional_pool_rule": {
+    "status": "PROVISIONAL_POOL_GEOMETRY_PENDING_FIELD_AUTHORITY",
+    "source_key_fields": [
+      "mother",
+      "library",
+      "FIXED_ASSAY_ID",
+      "FIXED_CONTEXT_ID",
+      "FIXED_ENDPOINT_ID"
+    ],
+    "identity_rule": "utr_equals_mother_and_designed_true",
+    "edited_rule": "designed_false_and_equal_length_hamming_distance_1_to_3",
+    "exact_identity_count_per_pool": 1,
+    "minimum_distinct_edited_candidates_per_pool": 3,
+    "id_must_be_globally_unique": true,
+    "expected_pool_count": 959,
+    "expected_distinct_candidate_count": 3899,
+    "expected_counts_are_authority": false,
+    "reconciliation_action": "MISMATCH_BLOCKS_AND_MATCH_REMAINS_PROVISIONAL"
+  },
+  "measurement": {
+    "paper_endpoint_column": "rl",
+    "fraction_count_columns": [
+      "0",
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6",
+      "7",
+      "8",
+      "9",
+      "10",
+      "11",
+      "12",
+      "13"
+    ],
+    "fraction_weights": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13
+    ],
+    "fraction_count_derived_value_role": "TECHNICAL_RECONCILIATION_DIAGNOSTIC_ONLY",
+    "biological_replicate_status": "ABSENT_BY_DESIGN",
+    "paper_standard_error_status": "ABSENT",
+    "technical_fraction_uncertainty_may_be_derived": true,
+    "technical_fraction_uncertainty_is_biological_standard_error": false,
+    "owner_uncertainty_policy_status": "UNKNOWN_NOT_ASSERTED"
+  },
+  "field_authority": {
+    "mother": "UNKNOWN_NOT_ASSERTED",
+    "info1": "UNKNOWN_NOT_ASSERTED",
+    "info2": "UNKNOWN_NOT_ASSERTED",
+    "info3": "UNKNOWN_NOT_ASSERTED",
+    "match_score": "UNKNOWN_NOT_ASSERTED",
+    "id": "UNKNOWN_NOT_ASSERTED"
+  },
+  "construct_context": {
+    "full_25nt_prefix_status": "UNKNOWN_NOT_ASSERTED",
+    "reporter_identity_status": "UNKNOWN_NOT_ASSERTED",
+    "rna_chemistry_status": "UNKNOWN_NOT_ASSERTED",
+    "unknown_context_blocks_true_a2": true
+  },
+  "foundation_exposure": {
+    "sequence_exposed": true,
+    "checkpoint_id": "UNKNOWN_NOT_ASSERTED",
+    "checkpoint_sha256": "UNKNOWN_NOT_ASSERTED",
+    "checkpoint_specific_audit_status": "UNKNOWN_NOT_ASSERTED",
+    "unknown_checkpoint_blocks_true_a2": true
+  },
+  "license_and_redistribution": {
+    "audit_status": "UNKNOWN_NOT_ASSERTED",
+    "license_id": "UNKNOWN_NOT_ASSERTED",
+    "canonical_sequence_redistribution_allowed": false,
+    "unknown_license_blocks_true_a2": true
+  },
+  "split_and_leakage": {
+    "assignment_inputs": [
+      "source_key_sha256",
+      "library",
+      "fixed_assay_id",
+      "fixed_context_id"
+    ],
+    "outcome_or_rl_used_for_assignment": false,
+    "near_duplicate_sequence_cluster_audit": "NOT_RUN",
+    "partition_role": "DEVELOPMENT_ONLY"
+  },
+  "claim_boundary": {
+    "k5_dense_pool_count_observed": 0,
+    "k5_dense_pool_count_role": "CLAIM_BOUNDARY_ONLY_NOT_A1_HARD_BLOCKER",
+    "true_a2_status": "NOT_QUALIFIED",
+    "scientific_claim_status": "NOT_ESTABLISHED",
+    "canonical_record_count": 0
+  },
+  "power_prefreeze": {
+    "analysis_unit": "SOURCE_POOL",
+    "bootstrap_unit": "SOURCE_POOL",
+    "status": "NOT_RUN",
+    "model_results_may_change_rule": false
+  },
+  "known_blockers": [
+    "IMPLEMENTATION_COMMIT_UNKNOWN_NOT_ASSERTED",
+    "MOTHER_INFO1_INFO2_INFO3_MATCH_SCORE_ID_AUTHORITY_UNKNOWN_NOT_ASSERTED",
+    "FULL_25NT_PREFIX_REPORTER_RNA_CHEMISTRY_UNKNOWN_NOT_ASSERTED",
+    "CHECKPOINT_SPECIFIC_EXPOSURE_UNKNOWN_NOT_ASSERTED",
+    "LICENSE_AND_REDISTRIBUTION_UNKNOWN_NOT_ASSERTED",
+    "NEAR_DUPLICATE_SPLIT_NOT_RUN",
+    "PREFROZEN_GROUP_POWER_NOT_RUN",
+    "OWNER_TECHNICAL_UNCERTAINTY_POLICY_UNKNOWN_NOT_ASSERTED"
+  ],
+  "output_contract": {
+    "aggregate_only_blocked_bundle": true,
+    "forbidden_output_fields": [
+      "sequence",
+      "utr",
+      "mother",
+      "raw_row",
+      "info1",
+      "info2",
+      "info3",
+      "info4",
+      "match_score",
+      "id"
+    ],
+    "always_materialized_files": [
+      "POOL_GEOMETRY_AUDIT.json",
+      "MEASUREMENT_UNCERTAINTY_AUDIT.json",
+      "QUALIFICATION_REPORT.json",
+      "SHA256SUMS"
+    ],
+    "conditional_success_only_private_canonical_path": "HARD_DISABLED_NOT_IMPLEMENTED",
+    "atomic_no_overwrite_publish_required": true
+  },
+  "model_results_may_change_this_protocol": false
+}
