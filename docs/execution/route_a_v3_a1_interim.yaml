@@ -134,6 +134,38 @@ artifact_lineage:
     qualified: false
     training_allowed: false
     model_selection_allowed: false
+  gse145046_a2_audit_protocol:
+    path: configs/route_a_v3_gse145046_a2_audit.json
+    sha256: 666c9ee86033a05a006171df963fa3d96b68430d9a9d4e817789e255b28b300d
+    auditor_path: scripts/route_a_v3/audit_gse145046_a2.py
+    auditor_sha256: 9a6751f1a8dd17acde0330ffb85e8f083ab6a40d5c4391bf8e48806a831b32f2
+    focused_test_path: tests/route_a_v3/test_audit_gse145046_a2.py
+    focused_test_sha256: 2cfdf82aee025b7f793b59d3c90a1c55c6477ef8a3971b3c86cc69cad2606275
+    implementation_commit: 00aaa01b8376126ed71fc6c34f599fcf0b841a56
+    canonical_protocol_trust_root_closed: true
+    model_results_may_change_protocol: false
+  gse145046_a2_formal_audit_v1:
+    audit_execution_id: GSE145046_A2_FORMAL_AUDIT_V1_20260810T084313P0800
+    path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE145046_A2_FORMAL_AUDIT_V1_20260810T084313P0800.json
+    bytes: 56208
+    sha256: e383711cd9ae88d83ad8f34575db4f0db4c9c1077cbda54420248b8da75ab836
+    log_path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE145046_A2_FORMAL_AUDIT_V1_20260810T084313P0800.log
+    log_bytes: 427
+    log_sha256: 9aa4930ce201a82ac899bb88ee48add5854b2c1b03f4f3c256ad9d04d311fe3b
+    audit_execution_status: COMPLETED
+    payload_integrity_status: PASS
+    rpm_validation_status: PASS
+    aggregate_reconciliation_status: MATCH
+    dataset_qualification_status: NOT_QUALIFIED
+    recoverability_status: CONDITIONALLY_RECOVERABLE_AS_ABSOLUTE_AUXILIARY
+    a2_status: NOT_TRUE_A2_FIXED_REPORTER_ABSOLUTE_AUXILIARY
+    canonical_intervention_record_count: 0
+    measured_candidate_pool_count: 0
+    endpoint_values_materialized: false
+    paper_method_reproduced: false
+    qualified: false
+    training_allowed: false
+    model_selection_allowed: false
 
 dataset_boundary_summary:
   evidence_ref:
@@ -171,6 +203,33 @@ dataset_boundary_summary:
       - CANONICAL_INTERVENTION_RECORD_V3_NOT_MATERIALIZED
       - UNADJUDICATED_DESCRIPTION_CLASSES_EXCLUDED
       - UNADJUDICATED_6A_COORDINATE_CLASSES_EXCLUDED
+  GSE145046:
+    registry_qualification_status: AUDIT_PENDING
+    a1_inventory_qualification_status: BLOCKED_PENDING_PUBLIC_EVIDENCE
+    formal_audit_execution_status: COMPLETED
+    payload_integrity_status: PASS
+    rpm_validation_status: PASS
+    aggregate_reconciliation_status: MATCH
+    classification: CONDITIONALLY_RECOVERABLE_AS_ABSOLUTE_AUXILIARY
+    a2_status: NOT_TRUE_A2_FIXED_REPORTER_ABSOLUTE_AUXILIARY
+    data_semantics: FIXED_SCAFFOLD_ABSOLUTE_OUTCOMES_NOT_DIRECT_SOURCE_TO_CANDIDATE_INTERVENTIONS
+    full_reporter_anchor_status: NOT_CLOSED
+    n10_locus_status: CLOSED_AT_PRIMER_LEVEL
+    canonical_intervention_record_count: 0
+    measured_candidate_pool_count: 0
+    qualified: false
+    training_allowed: false
+    model_selection_allowed: false
+    decisive_remaining_blockers:
+      - FULL_REPORTER_SOURCE_ANCHOR_NOT_IDENTIFIABLE
+      - FACS_GATE_CONSTANTS_NOT_RECOVERED
+      - IN_VIVO_HALF_LIFE_BASELINE_AND_AGGREGATION_NOT_RECOVERED
+      - IN_VITRO_REPLICATE_AND_SE_NOT_IDENTIFIABLE
+      - LICENSE_AND_REDISTRIBUTION_NOT_BOUND
+      - CHECKPOINT_SPECIFIC_EXPOSURE_NOT_CLOSED
+      - DENSE_SPLIT_AND_HAMMING_MOAT_NOT_FROZEN
+      - ABSOLUTE_OUTCOME_NOT_DIRECT_SOURCE_CANDIDATE_INTERVENTION
+      - TRUE_A2_NOT_QUALIFIED
   three_utr_candidates:
     dataset_ids: [GSE217518, ENCSR854RUF, GSE200304, GSE232572, GSE186455]
     registry_qualification_status: AUDIT_PENDING
@@ -242,6 +301,8 @@ claim_boundaries:
   endpoint_assay_region_or_replicate_increases_study_count: false
   engineering_tests_establish_scientific_claim: false
   smoke_or_proxy_result_may_be_final_scientific_conclusion: false
+  gse145046_formal_audit_execution_is_study_qualification: false
+  gse145046_fixed_scaffold_absolute_auxiliary_is_true_a2: false
   a1_phase_complete: false
   route_a_established: false
 
@@ -254,6 +315,14 @@ verification:
     status: PASS
     passed: 32
     failed: 0
+  targeted_gse145046_a2_audit_tests:
+    status: PASS
+    passed: 59
+    failed: 0
+  gse145046_closed_report_schema: PASS
+  gse145046_payload_integrity: PASS
+  gse145046_rpm_validation: PASS
+  gse145046_aggregate_reconciliation: MATCH
   plumage_v4_bundle_sha256s: PASS
   plumage_v4_exact_file_set: PASS
   plumage_v4_public_inventory_gate: PASS
