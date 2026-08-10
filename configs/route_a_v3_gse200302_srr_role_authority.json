@@ -1,0 +1,507 @@
+{
+  "schema_version": "route_a_v3_gse200302_srr_role_authority.v1",
+  "protocol_id": "ROUTE_A_V3_GSE200302_SRR_ROLE_AUTHORITY_V1",
+  "protocol_trust": {
+    "canonicalization": "CANONICAL_SORTED_UTF8_V1",
+    "core_projection_excluded_top_level_keys": [
+      "implementation_binding"
+    ],
+    "compiled_core_projection_required": true
+  },
+  "implementation_binding": {
+    "status": "UNKNOWN_NOT_ASSERTED",
+    "binding_mode": "TWO_COMMIT_CONFIG_ONLY_NON_SELF_REFERENTIAL_V1",
+    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "implementation_script_repo_path": "scripts/route_a_v3/build_gse200302_srr_role_authority.py",
+    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_test_repo_path": "tests/route_a_v3/test_gse200302_srr_role_authority.py",
+    "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
+    "protocol_repo_path": "configs/route_a_v3_gse200302_srr_role_authority.json",
+    "activation_rule": "Commit this UNKNOWN protocol with the implementation script and test, then create exactly one separate config-only binding commit that changes only implementation_binding.status, implementation_commit, implementation_script_sha256, and implementation_test_sha256. Runtime fails before official-source or output access until that binding exists."
+  },
+  "scope": {
+    "target_series_accession": "GSE200302",
+    "bioproject_accession": "PRJNA824033",
+    "authority_level": "OFFICIAL_METADATA_ROLE_AUTHORITY_ONLY",
+    "ordinary_public_metadata_only": true
+  },
+  "sources": {
+    "runinfo": {
+      "source_kind": "NCBI_SRA_RUNINFO",
+      "format": "CSV",
+      "expected_bytes": 12042,
+      "expected_sha256": "34bcedafebc41ee9ccd79483f331b62f2443df31d12691abc0a961a7201848f4",
+      "required_columns": [
+        "Run",
+        "Experiment",
+        "LibraryName",
+        "BioProject",
+        "BioSample",
+        "SampleName"
+      ]
+    },
+    "geo_soft": {
+      "source_kind": "NCBI_GEO_FAMILY_SOFT",
+      "format": "GEO_SOFT_UTF8_OR_GZIP_BY_MAGIC",
+      "expected_bytes": 4699,
+      "expected_sha256": "6df39a3406fe1bdf5a37345fee5605510ca1086fbce54d5aeeb934b562bb7d2e",
+      "series_accession": "GSE200302",
+      "sra_relation_label": "SRA",
+      "biosample_relation_label": "BioSample"
+    }
+  },
+  "join_contract": {
+    "expected_row_count": 24,
+    "require_exact_24_of_24_join": true,
+    "require_runinfo_experiment_equals_soft_sra_relation": true,
+    "unique_accession_classes": [
+      "run_accession",
+      "geo_sample_accession",
+      "biosample_accession",
+      "experiment_accession"
+    ]
+  },
+  "mapping_contract": {
+    "columns": [
+      "run_accession",
+      "geo_sample_accession",
+      "biosample_accession",
+      "measurement_family",
+      "replicate"
+    ],
+    "sort": "RUN_ACCESSION_NUMERIC_ASC",
+    "line_ending": "LF",
+    "allowed_measurement_families": [
+      "High_Poly",
+      "Low_Poly",
+      "pDNA",
+      "Total_RNA"
+    ],
+    "replicates": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
+    "forbidden_family_aliases": [
+      "80S_RNA"
+    ],
+    "expected_bytes": 1200,
+    "expected_sha256": "f69fa9af134b421439a2a90c09c75cb300e2e833de143d829bafe4ef7a1d094d",
+    "expected_rows": [
+      {
+        "run_accession": "SRR18656742",
+        "geo_sample_accession": "GSM6030631",
+        "biosample_accession": "SAMN27381260",
+        "measurement_family": "Total_RNA",
+        "replicate": 1
+      },
+      {
+        "run_accession": "SRR18656743",
+        "geo_sample_accession": "GSM6030630",
+        "biosample_accession": "SAMN27381261",
+        "measurement_family": "pDNA",
+        "replicate": 6
+      },
+      {
+        "run_accession": "SRR18656744",
+        "geo_sample_accession": "GSM6030629",
+        "biosample_accession": "SAMN27381262",
+        "measurement_family": "pDNA",
+        "replicate": 5
+      },
+      {
+        "run_accession": "SRR18656745",
+        "geo_sample_accession": "GSM6030628",
+        "biosample_accession": "SAMN27381263",
+        "measurement_family": "pDNA",
+        "replicate": 4
+      },
+      {
+        "run_accession": "SRR18656746",
+        "geo_sample_accession": "GSM6030627",
+        "biosample_accession": "SAMN27381264",
+        "measurement_family": "pDNA",
+        "replicate": 3
+      },
+      {
+        "run_accession": "SRR18656747",
+        "geo_sample_accession": "GSM6030626",
+        "biosample_accession": "SAMN27381265",
+        "measurement_family": "pDNA",
+        "replicate": 2
+      },
+      {
+        "run_accession": "SRR18656748",
+        "geo_sample_accession": "GSM6030625",
+        "biosample_accession": "SAMN27381266",
+        "measurement_family": "pDNA",
+        "replicate": 1
+      },
+      {
+        "run_accession": "SRR18656749",
+        "geo_sample_accession": "GSM6030624",
+        "biosample_accession": "SAMN27381267",
+        "measurement_family": "Low_Poly",
+        "replicate": 6
+      },
+      {
+        "run_accession": "SRR18656750",
+        "geo_sample_accession": "GSM6030623",
+        "biosample_accession": "SAMN27381268",
+        "measurement_family": "Low_Poly",
+        "replicate": 5
+      },
+      {
+        "run_accession": "SRR18656751",
+        "geo_sample_accession": "GSM6030622",
+        "biosample_accession": "SAMN27381269",
+        "measurement_family": "Low_Poly",
+        "replicate": 4
+      },
+      {
+        "run_accession": "SRR18656752",
+        "geo_sample_accession": "GSM6030621",
+        "biosample_accession": "SAMN27381270",
+        "measurement_family": "Low_Poly",
+        "replicate": 3
+      },
+      {
+        "run_accession": "SRR18656753",
+        "geo_sample_accession": "GSM6030620",
+        "biosample_accession": "SAMN27381271",
+        "measurement_family": "Low_Poly",
+        "replicate": 2
+      },
+      {
+        "run_accession": "SRR18656754",
+        "geo_sample_accession": "GSM6030619",
+        "biosample_accession": "SAMN27381272",
+        "measurement_family": "Low_Poly",
+        "replicate": 1
+      },
+      {
+        "run_accession": "SRR18656755",
+        "geo_sample_accession": "GSM6030618",
+        "biosample_accession": "SAMN27381273",
+        "measurement_family": "High_Poly",
+        "replicate": 6
+      },
+      {
+        "run_accession": "SRR18656756",
+        "geo_sample_accession": "GSM6030617",
+        "biosample_accession": "SAMN27381274",
+        "measurement_family": "High_Poly",
+        "replicate": 5
+      },
+      {
+        "run_accession": "SRR18656757",
+        "geo_sample_accession": "GSM6030616",
+        "biosample_accession": "SAMN27381275",
+        "measurement_family": "High_Poly",
+        "replicate": 4
+      },
+      {
+        "run_accession": "SRR18656758",
+        "geo_sample_accession": "GSM6030615",
+        "biosample_accession": "SAMN27381276",
+        "measurement_family": "High_Poly",
+        "replicate": 3
+      },
+      {
+        "run_accession": "SRR18656759",
+        "geo_sample_accession": "GSM6030614",
+        "biosample_accession": "SAMN27381277",
+        "measurement_family": "High_Poly",
+        "replicate": 2
+      },
+      {
+        "run_accession": "SRR18656760",
+        "geo_sample_accession": "GSM6030613",
+        "biosample_accession": "SAMN27381278",
+        "measurement_family": "High_Poly",
+        "replicate": 1
+      },
+      {
+        "run_accession": "SRR18656766",
+        "geo_sample_accession": "GSM6030636",
+        "biosample_accession": "SAMN27381255",
+        "measurement_family": "Total_RNA",
+        "replicate": 6
+      },
+      {
+        "run_accession": "SRR18656767",
+        "geo_sample_accession": "GSM6030635",
+        "biosample_accession": "SAMN27381256",
+        "measurement_family": "Total_RNA",
+        "replicate": 5
+      },
+      {
+        "run_accession": "SRR18656768",
+        "geo_sample_accession": "GSM6030634",
+        "biosample_accession": "SAMN27381257",
+        "measurement_family": "Total_RNA",
+        "replicate": 4
+      },
+      {
+        "run_accession": "SRR18656769",
+        "geo_sample_accession": "GSM6030633",
+        "biosample_accession": "SAMN27381258",
+        "measurement_family": "Total_RNA",
+        "replicate": 3
+      },
+      {
+        "run_accession": "SRR18656770",
+        "geo_sample_accession": "GSM6030632",
+        "biosample_accession": "SAMN27381259",
+        "measurement_family": "Total_RNA",
+        "replicate": 2
+      }
+    ]
+  },
+  "experiment_join_contract": {
+    "columns": [
+      "run_accession",
+      "geo_sample_accession",
+      "biosample_accession",
+      "experiment_accession",
+      "measurement_family",
+      "replicate"
+    ],
+    "sort": "RUN_ACCESSION_NUMERIC_ASC",
+    "line_ending": "LF",
+    "expected_bytes": 1509,
+    "expected_sha256": "6684f3d1fde3666ac4bf07ff0aa29bd9b47240b5d6708fd8483aaa1d88a64ae4",
+    "expected_rows": [
+      {
+        "run_accession": "SRR18656742",
+        "geo_sample_accession": "GSM6030631",
+        "biosample_accession": "SAMN27381260",
+        "experiment_accession": "SRX14759769",
+        "measurement_family": "Total_RNA",
+        "replicate": 1
+      },
+      {
+        "run_accession": "SRR18656743",
+        "geo_sample_accession": "GSM6030630",
+        "biosample_accession": "SAMN27381261",
+        "experiment_accession": "SRX14759768",
+        "measurement_family": "pDNA",
+        "replicate": 6
+      },
+      {
+        "run_accession": "SRR18656744",
+        "geo_sample_accession": "GSM6030629",
+        "biosample_accession": "SAMN27381262",
+        "experiment_accession": "SRX14759767",
+        "measurement_family": "pDNA",
+        "replicate": 5
+      },
+      {
+        "run_accession": "SRR18656745",
+        "geo_sample_accession": "GSM6030628",
+        "biosample_accession": "SAMN27381263",
+        "experiment_accession": "SRX14759766",
+        "measurement_family": "pDNA",
+        "replicate": 4
+      },
+      {
+        "run_accession": "SRR18656746",
+        "geo_sample_accession": "GSM6030627",
+        "biosample_accession": "SAMN27381264",
+        "experiment_accession": "SRX14759765",
+        "measurement_family": "pDNA",
+        "replicate": 3
+      },
+      {
+        "run_accession": "SRR18656747",
+        "geo_sample_accession": "GSM6030626",
+        "biosample_accession": "SAMN27381265",
+        "experiment_accession": "SRX14759764",
+        "measurement_family": "pDNA",
+        "replicate": 2
+      },
+      {
+        "run_accession": "SRR18656748",
+        "geo_sample_accession": "GSM6030625",
+        "biosample_accession": "SAMN27381266",
+        "experiment_accession": "SRX14759763",
+        "measurement_family": "pDNA",
+        "replicate": 1
+      },
+      {
+        "run_accession": "SRR18656749",
+        "geo_sample_accession": "GSM6030624",
+        "biosample_accession": "SAMN27381267",
+        "experiment_accession": "SRX14759762",
+        "measurement_family": "Low_Poly",
+        "replicate": 6
+      },
+      {
+        "run_accession": "SRR18656750",
+        "geo_sample_accession": "GSM6030623",
+        "biosample_accession": "SAMN27381268",
+        "experiment_accession": "SRX14759761",
+        "measurement_family": "Low_Poly",
+        "replicate": 5
+      },
+      {
+        "run_accession": "SRR18656751",
+        "geo_sample_accession": "GSM6030622",
+        "biosample_accession": "SAMN27381269",
+        "experiment_accession": "SRX14759760",
+        "measurement_family": "Low_Poly",
+        "replicate": 4
+      },
+      {
+        "run_accession": "SRR18656752",
+        "geo_sample_accession": "GSM6030621",
+        "biosample_accession": "SAMN27381270",
+        "experiment_accession": "SRX14759759",
+        "measurement_family": "Low_Poly",
+        "replicate": 3
+      },
+      {
+        "run_accession": "SRR18656753",
+        "geo_sample_accession": "GSM6030620",
+        "biosample_accession": "SAMN27381271",
+        "experiment_accession": "SRX14759758",
+        "measurement_family": "Low_Poly",
+        "replicate": 2
+      },
+      {
+        "run_accession": "SRR18656754",
+        "geo_sample_accession": "GSM6030619",
+        "biosample_accession": "SAMN27381272",
+        "experiment_accession": "SRX14759757",
+        "measurement_family": "Low_Poly",
+        "replicate": 1
+      },
+      {
+        "run_accession": "SRR18656755",
+        "geo_sample_accession": "GSM6030618",
+        "biosample_accession": "SAMN27381273",
+        "experiment_accession": "SRX14759756",
+        "measurement_family": "High_Poly",
+        "replicate": 6
+      },
+      {
+        "run_accession": "SRR18656756",
+        "geo_sample_accession": "GSM6030617",
+        "biosample_accession": "SAMN27381274",
+        "experiment_accession": "SRX14759755",
+        "measurement_family": "High_Poly",
+        "replicate": 5
+      },
+      {
+        "run_accession": "SRR18656757",
+        "geo_sample_accession": "GSM6030616",
+        "biosample_accession": "SAMN27381275",
+        "experiment_accession": "SRX14759754",
+        "measurement_family": "High_Poly",
+        "replicate": 4
+      },
+      {
+        "run_accession": "SRR18656758",
+        "geo_sample_accession": "GSM6030615",
+        "biosample_accession": "SAMN27381276",
+        "experiment_accession": "SRX14759753",
+        "measurement_family": "High_Poly",
+        "replicate": 3
+      },
+      {
+        "run_accession": "SRR18656759",
+        "geo_sample_accession": "GSM6030614",
+        "biosample_accession": "SAMN27381277",
+        "experiment_accession": "SRX14759752",
+        "measurement_family": "High_Poly",
+        "replicate": 2
+      },
+      {
+        "run_accession": "SRR18656760",
+        "geo_sample_accession": "GSM6030613",
+        "biosample_accession": "SAMN27381278",
+        "experiment_accession": "SRX14759751",
+        "measurement_family": "High_Poly",
+        "replicate": 1
+      },
+      {
+        "run_accession": "SRR18656766",
+        "geo_sample_accession": "GSM6030636",
+        "biosample_accession": "SAMN27381255",
+        "experiment_accession": "SRX14759745",
+        "measurement_family": "Total_RNA",
+        "replicate": 6
+      },
+      {
+        "run_accession": "SRR18656767",
+        "geo_sample_accession": "GSM6030635",
+        "biosample_accession": "SAMN27381256",
+        "experiment_accession": "SRX14759744",
+        "measurement_family": "Total_RNA",
+        "replicate": 5
+      },
+      {
+        "run_accession": "SRR18656768",
+        "geo_sample_accession": "GSM6030634",
+        "biosample_accession": "SAMN27381257",
+        "experiment_accession": "SRX14759743",
+        "measurement_family": "Total_RNA",
+        "replicate": 4
+      },
+      {
+        "run_accession": "SRR18656769",
+        "geo_sample_accession": "GSM6030633",
+        "biosample_accession": "SAMN27381258",
+        "experiment_accession": "SRX14759742",
+        "measurement_family": "Total_RNA",
+        "replicate": 3
+      },
+      {
+        "run_accession": "SRR18656770",
+        "geo_sample_accession": "GSM6030632",
+        "biosample_accession": "SAMN27381259",
+        "experiment_accession": "SRX14759741",
+        "measurement_family": "Total_RNA",
+        "replicate": 2
+      }
+    ]
+  },
+  "publication": {
+    "mapping_filename": "GSE200302_SRR_ROLE_AUTHORITY.tsv",
+    "experiment_join_filename": "GSE200302_SRR_SRX_ROLE_JOIN_AUTHORITY.tsv",
+    "provenance_filename": "ROLE_AUTHORITY.json",
+    "checksums_filename": "SHA256SUMS",
+    "terminal_marker_filename": "PUBLICATION_COMMIT.json",
+    "atomic_terminal_marker_written_last": true,
+    "no_overwrite": true
+  },
+  "gate_contract": {
+    "role_authority_status": "EXACT_OFFICIAL_SRR_ROLE_AUTHORITY_CLOSED",
+    "raw_replay_role_grid_status": "CONFLICT_WITH_CURRENT_80S_EXPECTATION",
+    "qualified": false,
+    "training_authorized": false,
+    "ordinary_study_contribution": 0,
+    "a1_study_contribution": 0,
+    "true_a2_study_contribution": 0,
+    "canonical_record_count": 0,
+    "next_phase_authorized": false
+  },
+  "execution_policy": {
+    "network_access_allowed": false,
+    "subprocess_allowed": false,
+    "fixed_argv_read_only_git_subprocess_allowed": true,
+    "git_binary": "/usr/bin/git",
+    "fastq_body_read_allowed": false,
+    "sequence_output_allowed": false,
+    "barcode_output_allowed": false,
+    "training_label_output_allowed": false,
+    "qualification_allowed": false,
+    "canonical_materialization_allowed": false,
+    "training_allowed": false,
+    "next_phase_unlock_allowed": false
+  },
+  "claim_boundary": "This artifact closes only the exact 24-run official SRR/GSM/BioSample role authority for GSE200302 and PRJNA824033. It does not establish raw replay, A1 qualification, canonical materialization, training authorization, model performance, or any scientific result."
+}
