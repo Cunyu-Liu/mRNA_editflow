@@ -354,10 +354,13 @@ def test_authority_protocol_and_additive_21_asset_manifest_are_closed() -> None:
     assert protocol["foundation_exposure"]["audit_status"] == "UNKNOWN_NOT_ASSERTED"
     assert protocol["canonical_v3"]["materialize_only_when_every_qualification_gate_passes"] is True
     assert protocol["scope"]["authority_update_allowed_by_qualifier"] is False
-    assert protocol["authority"]["implementation_commit"] == "UNKNOWN_NOT_ASSERTED"
-    assert "IMPLEMENTATION_COMMIT_UNKNOWN_NOT_ASSERTED" in protocol[
-        "known_external_evidence_blockers"
-    ]
+    implementation_commit = protocol["authority"]["implementation_commit"]
+    implementation_blocker = "IMPLEMENTATION_COMMIT_UNKNOWN_NOT_ASSERTED"
+    if implementation_commit == "UNKNOWN_NOT_ASSERTED":
+        assert implementation_blocker in protocol["known_external_evidence_blockers"]
+    else:
+        assert QUAL.COMMIT_RE.fullmatch(implementation_commit)
+        assert implementation_blocker not in protocol["known_external_evidence_blockers"]
     assert protocol["output_contract"]["primary_publication_mode"] == (
         QUAL.PRIMARY_PUBLICATION_MODE
     )
