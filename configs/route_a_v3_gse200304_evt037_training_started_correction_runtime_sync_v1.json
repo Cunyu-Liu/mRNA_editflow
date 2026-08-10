@@ -9,12 +9,12 @@
   "correction_type": "APPEND_ONLY_SEMANTIC_COMPLETION_NO_TRUTH_CHANGE",
   "implementation_binding": {
     "binding_scheme": "CONFIG_ONLY_POST_IMPLEMENTATION_BINDING_V1",
-    "status": "UNKNOWN_NOT_ASSERTED",
-    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "status": "BOUND",
+    "implementation_commit": "dc3612d17345aea09ac634fbb5adc6940108e7db",
     "implementation_script_path": "scripts/route_a_v3/gse200304_evt037_training_started_correction_runtime_sync.py",
-    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_script_sha256": "b0cf5e2836abecec4880c8f43462c978e644ded465bca32b623cb72d70e1ebd6",
     "implementation_test_path": "tests/route_a_v3/test_gse200304_evt037_training_started_correction_runtime_sync.py",
-    "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_test_sha256": "a7a5aa4a85d689434a612500594a3b139f790745595c627cd6270c0cf7d35668",
     "compiled_core_sha256": "a1cb4b783f253fa2ee7565ad23785cfe27afe9702dc5600b85e33a1b9e6f5e9b",
     "unknown_to_bound_scalar_paths": [
       "implementation_binding.status",
