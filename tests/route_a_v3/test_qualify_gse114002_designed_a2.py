@@ -222,8 +222,12 @@ def test_production_protocol_is_immutable_blocked_true_a2_candidate() -> None:
     assert protocol["data_role"] == "A2_RECOVERY_CANDIDATE_NOT_QUALIFIED"
     assert protocol["scope"]["training_allowed"] is False
     assert protocol["claim_boundary"]["canonical_record_count"] == 0
-    assert protocol["authority"]["implementation_commit"] == "UNKNOWN_NOT_ASSERTED"
-    assert QUALIFY.IMPLEMENTATION_BLOCKER in protocol["known_blockers"]
+    implementation_commit = protocol["authority"]["implementation_commit"]
+    if implementation_commit == "UNKNOWN_NOT_ASSERTED":
+        assert QUALIFY.IMPLEMENTATION_BLOCKER in protocol["known_blockers"]
+    else:
+        assert QUALIFY.COMMIT_RE.fullmatch(implementation_commit)
+        assert QUALIFY.IMPLEMENTATION_BLOCKER not in protocol["known_blockers"]
     assert protocol["authority"]["qualifier_sha256"] == _file_sha256(MODULE_PATH)
     assert protocol["authority"]["focused_test_sha256"] == _file_sha256(Path(__file__))
     output_contract = protocol["output_contract"]

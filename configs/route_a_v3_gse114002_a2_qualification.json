@@ -21,7 +21,7 @@
     "qualifier_path": "scripts/route_a_v3/qualify_gse114002_designed_a2.py",
     "qualifier_sha256": "4c7b782523bcc12024050ec5c1c2d2e78ae39bede15b7d45db4401d5d977b045",
     "focused_test_path": "tests/route_a_v3/test_qualify_gse114002_designed_a2.py",
-    "focused_test_sha256": "ca6b2155d466f7cfccd4b0cd19c8e6ec82075ea5f33867d9299ef72120ed3753",
+    "focused_test_sha256": "616bb2ee61c8200e89caf1b3694c95ceb71266b7f5768487b2e781c4e01bd87e",
     "implementation_commit": "UNKNOWN_NOT_ASSERTED"
   },
   "ordinary_public_asset_allowlist": [
