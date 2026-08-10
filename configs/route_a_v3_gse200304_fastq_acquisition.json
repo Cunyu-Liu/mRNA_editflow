@@ -1,0 +1,205 @@
+{
+  "schema_version": "route_a_v3_gse200304_fastq_acquisition.v1",
+  "protocol_id": "ROUTE_A_V3_GSE200304_ENA_FASTQ_ACQUISITION_V1",
+  "protocol_status": "ACQUISITION_ONLY_NOT_QUALIFICATION",
+  "dataset_accession": "GSE200304",
+  "bioproject_accession": "PRJNA824033",
+  "authority": {
+    "contract_path": "docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md",
+    "contract_sha256": "3ba224de6277edd67387913cf1c83a5e1344e0ad44ef196db07d0772b45c4d79",
+    "active_authority_commit": "d078060c81114687db5068902a5aad5d9bedbee6",
+    "staging_parent_head": "76cf61cddf0e8a0fb9d9055d9384ef55057d6f86"
+  },
+  "implementation_binding": {
+    "status": "UNKNOWN_NOT_ASSERTED",
+    "binding_mode": "TWO_COMMIT_NON_SELF_REFERENTIAL",
+    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "implementation_script_repo_path": "scripts/route_a_v3/acquire_gse200304_fastq.py",
+    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
+    "protocol_repo_path": "configs/route_a_v3_gse200304_fastq_acquisition.json",
+    "binding_requirements": [
+      "IMPLEMENTATION_COMMIT_IS_ANCESTOR_OF_CURRENT_HEAD",
+      "IMPLEMENTATION_COMMIT_SCRIPT_HASH_MATCHES",
+      "CURRENT_HEAD_SCRIPT_HASH_MATCHES",
+      "CURRENT_HEAD_PROTOCOL_BYTES_MATCH_WORKTREE",
+      "SCRIPT_AND_PROTOCOL_WORKTREE_AND_INDEX_CLEAN"
+    ],
+    "activation_rule": "After the implementation files are committed, a separate binding-only commit must replace UNKNOWN_NOT_ASSERTED with that ancestor commit and its script SHA256. Runtime acquisition fails closed until then."
+  },
+  "input_authority": {
+    "bundle_directory": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE200304/GSE200304_ENA_FASTQ_MANIFEST_20260810T145631P0800",
+    "bundle_basename": "GSE200304_ENA_FASTQ_MANIFEST_20260810T145631P0800",
+    "terminal_marker": {
+      "filename": "PUBLICATION_COMMIT.json",
+      "bytes": 1578,
+      "sha256": "d3eed4a9408543c77f47aa2a0d8cff59ebfe863c1e3c2d0bb2324d7910d6014b",
+      "record_type": "GSE200304_ENA_FASTQ_MANIFEST_PUBLICATION_COMMIT",
+      "publication_status": "MANIFEST_COMMITTED_FASTQ_NOT_DOWNLOADED"
+    },
+    "canonical_manifest": {
+      "filename": "ENA_PRJNA824033_FASTQ_FILES.canonical.tsv",
+      "bytes": 10388,
+      "sha256": "22cd317d961d07036cb2dad19555b5c2423671c33a76badeb7b325847ee68d7b",
+      "exact_header": [
+        "run_accession",
+        "mate",
+        "fastq_https",
+        "fastq_ftp",
+        "fastq_bytes",
+        "repository_md5"
+      ],
+      "exact_row_count": 48,
+      "exact_run_count": 24,
+      "mates_per_run": [1, 2],
+      "total_fastq_bytes": 12738938976,
+      "expected_run_accessions": [
+        "SRR18656742",
+        "SRR18656743",
+        "SRR18656744",
+        "SRR18656745",
+        "SRR18656746",
+        "SRR18656747",
+        "SRR18656748",
+        "SRR18656749",
+        "SRR18656750",
+        "SRR18656751",
+        "SRR18656752",
+        "SRR18656753",
+        "SRR18656754",
+        "SRR18656755",
+        "SRR18656756",
+        "SRR18656757",
+        "SRR18656758",
+        "SRR18656759",
+        "SRR18656760",
+        "SRR18656766",
+        "SRR18656767",
+        "SRR18656768",
+        "SRR18656769",
+        "SRR18656770"
+      ]
+    },
+    "manifest_summary": {
+      "filename": "MANIFEST_SUMMARY.json",
+      "bytes": 3135,
+      "sha256": "f92f944c825a255f3f1fb50f48cbf0e701980b7895101c1a2a6699d4b190e1e4"
+    },
+    "source_file_report": {
+      "filename": "ENA_PRJNA824033_FASTQ_FILE_REPORT.source.tsv",
+      "bytes": 5998,
+      "sha256": "c4a0b6152ec2a3480f280d8498345196d5095ec54967525463fa81961f0f4ea1"
+    },
+    "source_sha256sums": {
+      "filename": "SHA256SUMS",
+      "bytes": 307,
+      "sha256": "5217d3bd5494908d1886c6a00719014f4726ab3b61efde43184c2e475c6fdc78"
+    }
+  },
+  "download_policy": {
+    "network_protocol": "HTTPS_ONLY",
+    "official_host_allowlist": [
+      "ftp.sra.ebi.ac.uk"
+    ],
+    "redirects_allowed": false,
+    "environment_proxy_allowed": false,
+    "url_query_allowed": false,
+    "url_fragment_allowed": false,
+    "content_encoding_allowed": false,
+    "default_workers": 2,
+    "maximum_workers": 2,
+    "request_timeout_seconds": 120,
+    "stream_chunk_bytes": 8388608,
+    "shell_allowed": false,
+    "fixed_argv_read_only_git_subprocess_allowed": true,
+    "git_binary": "/usr/bin/git",
+    "transport_retries_per_execution": 0
+  },
+  "capacity_gate": {
+    "required_before_any_network_request": true,
+    "available_bytes_source": "FSTATVFS_F_BAVAIL_TIMES_F_FRSIZE",
+    "remaining_bytes_use_only_exact_bound_partial_sizes_and_reverified_completed_files": true,
+    "minimum_safety_margin_bytes": 2147483648,
+    "safety_margin_basis_points_of_remaining": 500,
+    "failure_action": "FAIL_CLOSED_BEFORE_NETWORK_KEEP_STATUS",
+    "record_required_and_available_bytes": true
+  },
+  "resume_contract": {
+    "enabled_only_with_explicit_resume_flag": true,
+    "partial_suffix": ".part",
+    "immutable_transfer_binding_suffix": ".transfer.json",
+    "binding_fields": [
+      "manifest_sha256",
+      "source_terminal_marker_sha256",
+      "run_accession",
+      "mate",
+      "filename",
+      "url",
+      "expected_bytes",
+      "repository_md5"
+    ],
+    "resume_requires_exact_binding": true,
+    "resume_requires_http_206": true,
+    "resume_requires_exact_content_range": true,
+    "resume_requires_exact_remaining_content_length": true,
+    "final_md5_and_byte_verification_required_after_resume": true,
+    "unbound_or_ambiguous_partial_action": "FAIL_CLOSED_KEEP_EVIDENCE"
+  },
+  "output_contract": {
+    "base_directory": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE200304",
+    "subdirectory_basename_regex": "^GSE200304_FASTQ_ACQUISITION_[A-Za-z0-9][A-Za-z0-9._-]{7,95}$",
+    "first_execution_requires_nonexistent_subdirectory": true,
+    "resume_requires_existing_uncommitted_subdirectory": true,
+    "root_to_leaf_o_nofollow_required": true,
+    "never_overwrite_completed_fastq": true,
+    "final_fastq_filename_rule": "{run_accession}_{mate}.fastq.gz",
+    "acquisition_binding_filename": "ACQUISITION_BINDING.json",
+    "progress_status_filename": "ACQUISITION_PROGRESS.json",
+    "final_status_filename": "ACQUISITION_STATUS.json",
+    "maximum_progress_status_bytes": 8388608,
+    "maximum_attempt_history_entries": 128,
+    "integrity_manifest_filename": "FASTQ_INTEGRITY_MANIFEST.json",
+    "sha256sums_filename": "SHA256SUMS",
+    "lock_filename": "ACQUISITION_LOCK",
+    "terminal_marker_filename": "PUBLICATION_COMMIT.json",
+    "terminal_marker_written_last": true,
+    "terminal_marker_requires_verified_files": 48,
+    "derived_publication_members_reused_only_when_exact": true,
+    "operational_members_not_in_terminal_member_set": [
+      "ACQUISITION_PROGRESS.json",
+      "ACQUISITION_LOCK"
+    ]
+  },
+  "concurrency_truth": {
+    "mechanism": "SINGLE_HOST_ADVISORY_FLOCK_ON_O_NOFOLLOW_REGULAR_FILE",
+    "fresh_output_uniqueness": "PARENT_DIRFD_MKDIR_NONEXISTENT",
+    "cross_host_exclusion": "NOT_ESTABLISHED",
+    "allowed_execution_scope": "ONE_HOST_ONLY",
+    "claim_boundary": "The lock proves same-host exclusion only. Do not run this acquisition directory concurrently from another host."
+  },
+  "integrity_gate": {
+    "required_verified_file_count": 48,
+    "required_verified_run_count": 24,
+    "required_verified_total_bytes": 12738938976,
+    "per_file_exact_bytes_required": true,
+    "per_file_ena_repository_md5_required": true,
+    "per_file_local_sha256_required": true,
+    "failure_publication_status": "FAILED_NOT_COMMITTED",
+    "success_publication_status": "FASTQ_ACQUISITION_COMMITTED",
+    "qualified_study_contribution": 0,
+    "training_allowed": false,
+    "next_phase_authorized": false
+  },
+  "scope_guard": {
+    "forbidden_path_tokens_case_insensitive": [
+      "GSE246381",
+      "sealed",
+      "restricted",
+      "access_log"
+    ],
+    "gpu_allowed": false,
+    "training_allowed": false,
+    "canonical_materialization_allowed": false,
+    "raw_fastq_acquisition_only": true
+  },
+  "claim_boundary": "A terminal commit proves only that all 48 ENA FASTQ objects were downloaded and locally verified against the exact committed ENA manifest by byte count and repository MD5, with local SHA256 recorded. It does not establish count reconstruction, xTail replay, A1 qualification, training authorization, model performance, or a scientific conclusion."
+}
