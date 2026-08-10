@@ -9,7 +9,7 @@ date: "2026-08-10"
 authority_ref:
   config_path: configs/route_a_v3.yaml
   goal_path: docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md
-  goal_sha256: 3ba224de6277edd67387913cf1c83a5e1344e0ad44ef196db07d0772b45c4d79
+  goal_sha256: cbac4c3dcba8f1b8df95d8edad52d19e3c126d1c865d0cc423537c754cc90982
 
 expected_phase_ids: [A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10]
 expected_task_ids:

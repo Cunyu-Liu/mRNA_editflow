@@ -255,3 +255,55 @@ decisions:
       - docs/execution/route_a_v3_data_role_registry.yaml
       - configs/route_a_v3_gse145046_a2_audit.json
       - /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE145046_A2_FORMAL_AUDIT_V1_20260810T084313P0800.json
+  - decision_id: V3-DEC-018
+    decision_type: AMENDMENT
+    dimension: gse200302_official_srr_role_authority_and_raw_replay_boundary
+    conflict: >-
+      The accepted GSE200304 raw-replay preflight correctly preserved
+      EXACT_SRR_SAMPLE_ROLES_UNKNOWN and the PRJNA824033 versus PRJNA824026
+      identity conflict as historical blockers. Newly published official
+      GSE200302/PRJNA824033 metadata now closes the exact 24-run SRR role map,
+      but its role grid contains pDNA rather than the 80S_RNA family required by
+      the current replay expectation.
+    resolution: >-
+      Accept the COMMITTED_AND_ACCEPTED GSE200302 official metadata bundle as
+      EXACT_OFFICIAL_SRR_ROLE_AUTHORITY_CLOSED for the 24-run grid High_Poly,
+      Low_Poly, pDNA, and Total_RNA, each with replicates 1 through 6. Close the
+      current EXACT_SRR_SAMPLE_ROLES_UNKNOWN state without rewriting the earlier
+      terminal preflight or its exact 17 historical blockers. The official grid
+      contains no 80S_RNA, pDNA != 80S_RNA, and therefore establishes an explicit
+      PRJNA824033 role-grid conflict with the current 80S expectation plus an
+      open REQUIRED_80S_ROLE_AUTHORITY_ABSENT blocker. Keep GSE200304 as the ordinary-study
+      unit and GSE200302 only as its primary subseries authority. This is metadata
+      role closure, not raw count or xTail replay, study qualification, canonical
+      materialization, training, model selection, phase unlock, or scientific
+      evidence. Ordinary, A1, and true-A2 contributions remain 0/0/0;
+      qualified=false, canonical record count remains 0, and training, model
+      selection, and next phase remain unauthorized. Runtime sync remains
+      PENDING_NO_EVT_035 and this amendment does not create EVT-035.
+    status: FROZEN_A1_OFFICIAL_METADATA_ROLE_AUTHORITY
+    effective_phase: A1
+    requires_user_authorization: false
+    accepted_at: "2026-08-10T23:10:00+08:00"
+    preserves_decision_ids: [V3-DEC-005, V3-DEC-017]
+    artifact_root: /mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE200302/GSE200302_SRR_ROLE_AUTHORITY_20260810T230315P0800_e3b724d
+    publication_status: COMMITTED_AND_ACCEPTED
+    role_authority_status: EXACT_OFFICIAL_SRR_ROLE_AUTHORITY_CLOSED
+    prior_blocker: EXACT_SRR_SAMPLE_ROLES_UNKNOWN
+    prior_blocker_status: CLOSED
+    replacement_blocker: REQUIRED_80S_ROLE_AUTHORITY_ABSENT
+    replacement_blocker_status: OPEN
+    role_grid_status: CONFLICT_WITH_CURRENT_80S_EXPECTATION
+    pdna_may_substitute_for_80s_rna: false
+    bundle_digest: d3da1868158f0bb740d1e3ef2a84fa204d0ff492a2f841ff46d11396ddc8b430
+    implementation_commit: d042d7c1706a80821a19b78334985441bcf6eb86
+    binding_commit: e3b724d00a9e5263b99475b9744fc0bb68a3ab67
+    independent_consumer_status: ACCEPTED
+    runtime_sync_status: PENDING_NO_EVT_035
+    sealed_contact: false
+    evidence_refs:
+      - docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md
+      - docs/execution/route_a_v3_data_role_registry.yaml
+      - configs/route_a_v3_gse200302_srr_role_authority.json
+      - /mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE200302/GSE200302_SRR_ROLE_AUTHORITY_20260810T230315P0800_e3b724d/ROLE_AUTHORITY.json
+      - /mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE200302/GSE200302_SRR_ROLE_AUTHORITY_20260810T230315P0800_e3b724d/PUBLICATION_COMMIT.json

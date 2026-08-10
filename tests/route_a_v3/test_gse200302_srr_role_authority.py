@@ -198,6 +198,29 @@ def _load_module(path: Path, name: str) -> types.ModuleType:
     return module
 
 
+def _canonical_unknown_protocol() -> dict[str, Any]:
+    protocol = json.loads(CONFIG.read_text(encoding="utf-8"))
+    protocol["implementation_binding"] = AUTHORITY._expected_unknown_binding()
+    return protocol
+
+
+def _canonical_unknown_protocol_bytes() -> bytes:
+    return (
+        json.dumps(
+            _canonical_unknown_protocol(),
+            indent=2,
+            ensure_ascii=False,
+        )
+        + "\n"
+    ).encode("utf-8")
+
+
+def _write_unknown_protocol(path: Path) -> Path:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_bytes(_canonical_unknown_protocol_bytes())
+    return path
+
+
 def _make_two_commit_repo(
     root: Path,
     *,
@@ -214,10 +237,10 @@ def _make_two_commit_repo(
     for destination, source in (
         (script_path, SCRIPT),
         (test_path, TEST),
-        (protocol_path, CONFIG),
     ):
         destination.parent.mkdir(parents=True, exist_ok=True)
         destination.write_bytes(source.read_bytes())
+    _write_unknown_protocol(protocol_path)
     _git_bytes(repo, ("init", "-q"))
     _git_bytes(repo, ("add", "--", AUTHORITY.SCRIPT_REPO_PATH, AUTHORITY.TEST_REPO_PATH, AUTHORITY.PROTOCOL_REPO_PATH))
     _git_bytes(repo, ("commit", "-q", "-m", "implementation"))
@@ -288,8 +311,9 @@ def _verify_case(case: Mapping[str, Any]) -> dict[str, Any]:
     )
 
 
-def test_unknown_protocol_core_and_two_exact_authority_tables() -> None:
-    protocol, provenance, _ = AUTHORITY.load_contract(CONFIG)
+def test_unknown_protocol_core_and_two_exact_authority_tables(tmp_path: Path) -> None:
+    unknown_protocol_path = _write_unknown_protocol(tmp_path / "unknown-protocol.json")
+    protocol, provenance, _ = AUTHORITY.load_contract(unknown_protocol_path)
     rows, mapping_payload, join_payload, validation = _derived()
 
     assert provenance["binding_status"] == "UNKNOWN_NOT_ASSERTED"
@@ -306,6 +330,30 @@ def test_unknown_protocol_core_and_two_exact_authority_tables() -> None:
     assert b"\r" not in mapping_payload + join_payload
     assert b"80S_RNA" not in mapping_payload + join_payload
     assert validation == AUTHORITY.EXPECTED_VALIDATION
+
+
+def test_production_protocol_is_bound_and_matches_current_implementation() -> None:
+    protocol, provenance, _ = AUTHORITY.load_contract(CONFIG)
+    binding = protocol["implementation_binding"]
+    unknown = AUTHORITY._expected_unknown_binding()
+
+    assert provenance["binding_status"] == "BOUND"
+    assert provenance["core_projection_sha256"] == AUTHORITY.PROTOCOL_CORE_SHA256
+    assert AUTHORITY._canonical_protocol_projection(protocol) == AUTHORITY._expected_core_contract()
+    assert set(binding) == set(unknown)
+    for key in (
+        "binding_mode",
+        "implementation_script_repo_path",
+        "implementation_test_repo_path",
+        "protocol_repo_path",
+        "activation_rule",
+    ):
+        assert binding[key] == unknown[key]
+    assert len(binding["implementation_commit"]) == 40
+    assert set(binding["implementation_commit"]) <= set("0123456789abcdef")
+    assert binding["implementation_script_sha256"] == hashlib.sha256(SCRIPT.read_bytes()).hexdigest()
+    assert binding["implementation_test_sha256"] == hashlib.sha256(TEST.read_bytes()).hexdigest()
+    assert "model_selection_allowed" not in protocol["gate_contract"]
 
 
 def test_all_24_synthetic_official_shape_titles_parse_without_suffix_output() -> None:
@@ -442,9 +490,10 @@ def test_unknown_binding_fails_before_git_official_source_or_output(
     monkeypatch.setattr(AUTHORITY, "verify_implementation_binding", forbidden)
     monkeypatch.setattr(AUTHORITY, "publish_authority", forbidden)
     output = tmp_path / "must-not-exist"
+    unknown_protocol_path = _write_unknown_protocol(tmp_path / "unknown-protocol.json")
     with pytest.raises(AUTHORITY.ImplementationBindingUnknown):
         AUTHORITY.build_role_authority(
-            protocol_path=CONFIG,
+            protocol_path=unknown_protocol_path,
             runinfo_path=tmp_path / "not-read-runinfo.csv",
             geo_soft_path=tmp_path / "not-read.soft.gz",
             output_directory=output,

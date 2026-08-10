@@ -107,10 +107,10 @@ new_authority:
   version: "3.0.0"
   contract_path: docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md
   initial_contract_sha256: d1c031aecdec710495f6861b380785cccd64663ac4bd97b4f479d6fdf372ea07
-  contract_sha256: 3ba224de6277edd67387913cf1c83a5e1344e0ad44ef196db07d0772b45c4d79
-  active_amendment_decision_ids: [V3-DEC-017]
+  contract_sha256: cbac4c3dcba8f1b8df95d8edad52d19e3c126d1c865d0cc423537c754cc90982
+  active_amendment_decision_ids: [V3-DEC-017, V3-DEC-018]
   config_path: configs/route_a_v3.yaml
-  config_sha256: 9672c01f7481597da9380b270787174baab18c6eaeaa503f082f67f589970303
+  config_sha256: 5f99ee9d4518cf538b1062f15f7c86d4469d3e26e2a7996545f76bf6b110514d
   base_commit: bbb71dcba6f1e1c9cb75a8a6653f1a4fe4a6ca0c
   authority_bundle_commit_binding: docs/execution/route_a_v3_a0_activation.yaml
   status: ACTIVE_AUTHORITATIVE_CONTRACT_PENDING_A0_ACCEPTANCE
@@ -128,8 +128,8 @@ retained_governance:
 active_contract: mrna_xeditflow_route_a_v3
 active_contract_path: docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md
 initial_active_contract_sha256: d1c031aecdec710495f6861b380785cccd64663ac4bd97b4f479d6fdf372ea07
-active_contract_sha256: 3ba224de6277edd67387913cf1c83a5e1344e0ad44ef196db07d0772b45c4d79
-active_contract_amendment_decision_ids: [V3-DEC-017]
+active_contract_sha256: cbac4c3dcba8f1b8df95d8edad52d19e3c126d1c865d0cc423537c754cc90982
+active_contract_amendment_decision_ids: [V3-DEC-017, V3-DEC-018]
 activation_rule: >-
   The V3 authority becomes A0-accepted only when the schema/registry bundle
   validates, the A0 gate record is PASS, the implementation commit is bound by

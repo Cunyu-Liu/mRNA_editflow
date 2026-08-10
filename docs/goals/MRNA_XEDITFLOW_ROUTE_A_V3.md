@@ -53,6 +53,13 @@ claim_status:
 - A1 hard gate 原样保持：至少 3 个 qualified ordinary studies、至少 2 个 A1、至少 1 个真正 source-anchored true A2。当前 qualified 计数不因本修订增加，A2 GPU 训练仍未授权。
 - 若 `GSE114002` 的字段 authority、source anchor、multi-candidate pool、replicate/SE、license、checkpoint exposure 或 leakage 无法闭合，则必须引入新的 genuine public A2 study；不得退回用 GSE145046 的百万 rows、Hamming proxy 或同一 scaffold 的 absolute outcomes填补 true-A2 gate。
 
+### A1 GSE200302 官方 metadata 角色 authority 修订（2026-08-10）
+
+- 接受 `GSE200302_SRR_ROLE_AUTHORITY_20260810T230315P0800_e3b724d` 为 `COMMITTED_AND_ACCEPTED / EXACT_OFFICIAL_SRR_ROLE_AUTHORITY_CLOSED`。该 authority 仅闭合 `GSE200302 / PRJNA824033` 的 24 个官方 SRR/GSM/BioSample 角色映射：`High_Poly`、`Low_Poly`、`pDNA`、`Total_RNA` 四个 measurement family，每个 family 严格包含 replicate 1–6。
+- 官方 grid 不含 `80S_RNA`，且 `pDNA != 80S_RNA`。因此历史 preflight 中的 `EXACT_SRR_SAMPLE_ROLES_UNKNOWN` 在当前 authority 下已闭合，但不能将它误写为 raw replay 已可执行；其 successor truth 是 `PRJNA824033` 官方 role grid 与当前 `80S` 预期冲突，且所需 `80S` raw authority 缺失。
+- `GSE200304` 仍是 ordinary-study 单元，`GSE200302` 仅作为其 primary subseries authority，不新增独立 study 或 gate credit。本 metadata closure 不是 raw count/xTail replay、study qualification 或 canonical materialization；ordinary/A1/true-A2 贡献仍为 0/0/0，`qualified=false`，training/model selection/next phase 均不授权，canonical record 仍为 0。
+- 远端实现与 binding commits `d042d7c1706a80821a19b78334985441bcf6eb86` / `e3b724d00a9e5263b99475b9744fc0bb68a3ab67` 已 push 且 clean，consumer 已独立接受该 bundle；A1 活动 runtime 同步仍为 `PENDING_NO_EVT_035`，本修订不得预造 `EVT-035`。
+
 ### 当前活动任务的保护
 
 截至 2026-08-09 23:24 CST，迁移 worktree 的 `scripts/m4_routea/` 正在 GPU 5 上执行一个 pre-V3 development run。该任务：

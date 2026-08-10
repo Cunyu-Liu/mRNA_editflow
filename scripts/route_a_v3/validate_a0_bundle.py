@@ -30,19 +30,44 @@ CONTRACT_ID = "mrna_xeditflow_route_a_v3"
 VERSION = "3.0.0"
 CONFIG_STATUS = "ACTIVE_AUTHORITATIVE_CONTRACT"
 SOURCE_CONTRACT_PATH = "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna v3.md"
-SOURCE_CONTRACT_SHA256 = "3ba224de6277edd67387913cf1c83a5e1344e0ad44ef196db07d0772b45c4d79"
+SOURCE_CONTRACT_SHA256 = "cbac4c3dcba8f1b8df95d8edad52d19e3c126d1c865d0cc423537c754cc90982"
 GOAL_PATH = "docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md"
 CONFIG_PATH = "configs/route_a_v3.yaml"
 SUPERSESSION_PATH = "docs/contracts/supersession_mrna_xeditflow_v1_1_to_route_a_v3.yaml"
 DECISION_LOG_PATH = "docs/execution/route_a_v3_decision_log.yaml"
 REGISTRY_MANIFEST_PATH = "docs/execution/route_a_v3_registry_manifest.json"
 A1_INTERIM_PATH = "docs/execution/route_a_v3_a1_interim.yaml"
-EXPECTED_A1_INTERIM_SHA256 = "ffecd2558adc6d1230ed60515d288570601186f5e8998963f61d177e3e81ba57"
+EXPECTED_A1_INTERIM_SHA256 = "90a5deb6143453c45d37b3e5601388e1eb51065645235a1264fc7b8cae591e64"
 SCIENTIFIC_M0_HISTORY_PATH = "docs/contracts/history/mrna_v2_readiness_audit_20260807.md"
 SCIENTIFIC_M0_HISTORY_SHA256 = "a8eb4f49ede793a8eae2037db9f46f044056d37610ec92482666a8242a52fa30"
 SEALED_GUARD_PATH = "scripts/route_a_v3/sealed_guard.py"
 SEALED_RUNNER_PATH = "scripts/e0x/run_e0x_final.py"
 VALIDATOR_PATH = "scripts/route_a_v3/validate_a0_bundle.py"
+GSE200302_ROLE_CONFIG_PATH = "configs/route_a_v3_gse200302_srr_role_authority.json"
+GSE200302_ROLE_BUILDER_PATH = "scripts/route_a_v3/build_gse200302_srr_role_authority.py"
+GSE200302_ROLE_TEST_PATH = "tests/route_a_v3/test_gse200302_srr_role_authority.py"
+INTEGRITY_GUARD_TEST_PATH = "tests/route_a_v3/test_a0_integrity_guards.py"
+GSE200302_ROLE_ARTIFACT_ROOT = (
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE200302/"
+    "GSE200302_SRR_ROLE_AUTHORITY_20260810T230315P0800_e3b724d"
+)
+GSE200302_ROLE_BUNDLE_DIGEST = (
+    "d3da1868158f0bb740d1e3ef2a84fa204d0ff492a2f841ff46d11396ddc8b430"
+)
+GSE200302_ROLE_PROTOCOL_CORE_SHA256 = (
+    "d407504d42c390b32aaa0eff953c168b1e9cc4991afcd8530870144c78a1d526"
+)
+GSE200302_ROLE_PROTOCOL_SCHEMA = "route_a_v3_gse200302_srr_role_authority.v1"
+GSE200302_ROLE_PROTOCOL_ID = "ROUTE_A_V3_GSE200302_SRR_ROLE_AUTHORITY_V1"
+GSE200302_ROLE_BINDING_MODE = "TWO_COMMIT_CONFIG_ONLY_NON_SELF_REFERENTIAL_V1"
+GSE200302_ROLE_BINDING_ACTIVATION_RULE = (
+    "Commit this UNKNOWN protocol with the implementation script and test, then create exactly "
+    "one separate config-only binding commit that changes only implementation_binding.status, "
+    "implementation_commit, implementation_script_sha256, and implementation_test_sha256. Runtime "
+    "fails before official-source or output access until that binding exists."
+)
+GSE200302_ROLE_MEASUREMENT_FAMILIES = ["High_Poly", "Low_Poly", "pDNA", "Total_RNA"]
+GSE200302_ROLE_REPLICATES = [1, 2, 3, 4, 5, 6]
 
 REGISTRY_PATHS = {
     "task": "docs/execution/route_a_v3_task_registry.yaml",
@@ -205,7 +230,7 @@ EXPECTED_HISTORICAL_GATE_BINDINGS = {
     "FINAL_MIGRATION": ("reports/migration/FINAL_MIGRATION_REPORT.md", "a987d8c292c3700754f77052cdfe7315cf656ff2ca32818b5267a6e9fff84b92"),
 }
 
-EXPECTED_DECISION_IDS = tuple(f"V3-DEC-{index:03d}" for index in range(1, 18))
+EXPECTED_DECISION_IDS = tuple(f"V3-DEC-{index:03d}" for index in range(1, 19))
 EXPECTED_DECISION_DIMENSIONS = {
     "V3-DEC-001": "strategic_target",
     "V3-DEC-002": "evidence_and_claim_separation",
@@ -224,11 +249,12 @@ EXPECTED_DECISION_DIMENSIONS = {
     "V3-DEC-015": "sealed_execution_freeze_hash_scope",
     "V3-DEC-016": "sealed_a0_phase_boundary",
     "V3-DEC-017": "gse145046_true_a2_role_and_a2_recovery",
+    "V3-DEC-018": "gse200302_official_srr_role_authority_and_raw_replay_boundary",
 }
 
 # Canonical per-entry digests make the accepted prefix genuinely append-only.
-# A future DEC-018 requires an explicit validator update; rewriting any accepted
-# DEC-001..017 entry while merely refreshing the registry manifest is rejected.
+# A future DEC-019 requires an explicit validator update; rewriting any accepted
+# DEC-001..018 entry while merely refreshing the registry manifest is rejected.
 EXPECTED_DECISION_ENTRY_SHA256 = {
     "V3-DEC-001": "e00b87c7cd529b452ef6db96f982adfd419c3cf289f02d8795abaf09dae966f3",
     "V3-DEC-002": "bc5c0e6d1a68bf45e16529470b9c173b1fbbccab3789cc5a27e3033ee70590b1",
@@ -247,9 +273,11 @@ EXPECTED_DECISION_ENTRY_SHA256 = {
     "V3-DEC-015": "2d45d836c04b39365df6528ad1972826af8a6595fcb0cc3e9568ecd9adcf56c2",
     "V3-DEC-016": "b980d623ca9de3439ef050fb1f6b0dd59ceeacf8c66b3b94bb7aade211380dca",
     "V3-DEC-017": "d3f4799501b4d0abb63c91105c4f46c5e3246bea9da708c813a1de7c30f3b11a",
+    "V3-DEC-018": "c49c04371b02e4f66a42fa33670d8b164d40ad012c0db50b5f16fbaee0b539e4",
 }
 
 EXPECTED_REGISTRY_MANIFEST_PATH_ROLES = (
+    (GOAL_PATH, "ACTIVE_AMENDED_CONTRACT"),
     (CONFIG_PATH, "EXECUTABLE_CONTRACT"),
     (SUPERSESSION_PATH, "SUPERSESSION_LINEAGE"),
     (SCIENTIFIC_M0_HISTORY_PATH, "HISTORICAL_M0_SCIENTIFIC_FAILURE_EXACT_COPY"),
@@ -265,6 +293,9 @@ EXPECTED_REGISTRY_MANIFEST_PATH_ROLES = (
     (SCHEMA_SUMS, "PUBLIC_SCHEMA_CHECKSUMS"),
     (SEALED_GUARD_PATH, "SEALED_HARD_DISABLE_GUARD"),
     (SEALED_RUNNER_PATH, "SEALED_RUNNER_GUARD_INTEGRATION"),
+    (GSE200302_ROLE_BUILDER_PATH, "GSE200302_OFFICIAL_ROLE_AUTHORITY_BUILDER"),
+    (GSE200302_ROLE_TEST_PATH, "GSE200302_OFFICIAL_ROLE_AUTHORITY_FOCUSED_TEST"),
+    (INTEGRITY_GUARD_TEST_PATH, "A0_AUTHORITY_INTEGRITY_GUARD_TEST"),
     (VALIDATOR_PATH, "A0_STATIC_AND_SEMANTIC_VALIDATOR"),
 )
 MANDATORY_REGISTRY_MANIFEST_PATHS = frozenset(
@@ -356,6 +387,10 @@ def required_bundle_paths() -> tuple[str, ...]:
         SEALED_GUARD_PATH,
         SEALED_RUNNER_PATH,
         A1_INTERIM_PATH,
+        GSE200302_ROLE_CONFIG_PATH,
+        GSE200302_ROLE_BUILDER_PATH,
+        GSE200302_ROLE_TEST_PATH,
+        INTEGRITY_GUARD_TEST_PATH,
         *REGISTRY_PATHS.values(),
         *(f"{SCHEMA_DIR}/{name}" for name in SCHEMA_FILES),
         SCHEMA_MANIFEST,
@@ -537,6 +572,13 @@ def validate_contract_authority(
                 _issue(issues, "SOURCE_GOAL_BINDING_MISMATCH", CONFIG_PATH, f"authority.source_goal.{key} must be {value!r}")
     if not isinstance(authority, Mapping) or authority.get("active_contract_count_required") != 1 or authority.get("authority_uniqueness_required") is not True:
         _issue(issues, "AUTHORITY_UNIQUENESS_POLICY", CONFIG_PATH, "exactly one active contract must be required")
+    if not isinstance(authority, Mapping) or authority.get("active_amendment_decision_ids") != ["V3-DEC-017", "V3-DEC-018"]:
+        _issue(
+            issues,
+            "AUTHORITY_ACTIVE_AMENDMENT_LINEAGE",
+            CONFIG_PATH,
+            "authority.active_amendment_decision_ids must be exactly [V3-DEC-017, V3-DEC-018]",
+        )
 
     try:
         goal_hash = sha256_bytes(_read_bytes(repo_root, GOAL_PATH))
@@ -554,6 +596,13 @@ def validate_contract_authority(
         _issue(issues, "SUPERSESSION_ACTIVE_PATH", SUPERSESSION_PATH, f"active_contract_path must be {GOAL_PATH}")
     if supersession.get("active_contract_sha256") != SOURCE_CONTRACT_SHA256:
         _issue(issues, "SUPERSESSION_ACTIVE_HASH", SUPERSESSION_PATH, "active contract hash is not frozen V3 hash")
+    if supersession.get("active_contract_amendment_decision_ids") != ["V3-DEC-017", "V3-DEC-018"]:
+        _issue(
+            issues,
+            "SUPERSESSION_ACTIVE_AMENDMENT_LINEAGE",
+            SUPERSESSION_PATH,
+            "active contract amendment lineage must be exactly [V3-DEC-017, V3-DEC-018]",
+        )
     new_authority = supersession.get("new_authority")
     if not isinstance(new_authority, Mapping):
         _issue(issues, "SUPERSESSION_NEW_AUTHORITY", SUPERSESSION_PATH, "new_authority mapping is required")
@@ -568,6 +617,13 @@ def validate_contract_authority(
         for key, value in expected_new.items():
             if str(new_authority.get(key)) != value:
                 _issue(issues, "SUPERSESSION_NEW_AUTHORITY", SUPERSESSION_PATH, f"new_authority.{key} must be {value!r}")
+        if new_authority.get("active_amendment_decision_ids") != ["V3-DEC-017", "V3-DEC-018"]:
+            _issue(
+                issues,
+                "SUPERSESSION_NEW_AUTHORITY",
+                SUPERSESSION_PATH,
+                "new_authority.active_amendment_decision_ids must be exactly [V3-DEC-017, V3-DEC-018]",
+            )
         actual_config_sha256 = sha256_bytes(_read_bytes(repo_root, CONFIG_PATH))
         if new_authority.get("config_sha256") != actual_config_sha256:
             _issue(
@@ -686,9 +742,9 @@ def validate_registry_manifest(repo_root: Path) -> list[Issue]:
         "contract_path": GOAL_PATH,
         "initial_contract_sha256": "d1c031aecdec710495f6861b380785cccd64663ac4bd97b4f479d6fdf372ea07",
         "contract_sha256": SOURCE_CONTRACT_SHA256,
-        "active_amendment_decision_ids": ["V3-DEC-017"],
+        "active_amendment_decision_ids": ["V3-DEC-017", "V3-DEC-018"],
         "base_commit": "bbb71dcba6f1e1c9cb75a8a6653f1a4fe4a6ca0c",
-        "manifest_status": "A1_SCHEME_A_AUTHORITY_REBIND",
+        "manifest_status": "A1_GSE200302_ROLE_AUTHORITY_REBIND",
         "initial_generated_at": "2026-08-10T10:10:05+08:00",
         "sealed_contact": False,
     }
@@ -843,10 +899,10 @@ def validate_decision_log(decision_log: Mapping[str, Any]) -> list[Issue]:
     if len(decisions) != len(raw):
         _issue(issues, "DECISION_LOG_DUPLICATE_OR_INVALID", DECISION_LOG_PATH, "decision IDs must be unique strings")
     if set(decisions) != set(EXPECTED_DECISION_IDS):
-        _issue(issues, "DECISION_LOG_ID_CLOSURE", DECISION_LOG_PATH, "decision IDs must be exactly V3-DEC-001 through V3-DEC-017")
+        _issue(issues, "DECISION_LOG_ID_CLOSURE", DECISION_LOG_PATH, "decision IDs must be exactly V3-DEC-001 through V3-DEC-018")
     ordered_ids = [entry.get("decision_id") if isinstance(entry, Mapping) else None for entry in raw]
     if ordered_ids != list(EXPECTED_DECISION_IDS):
-        _issue(issues, "DECISION_LOG_ORDER", DECISION_LOG_PATH, "accepted decision prefix must remain in exact DEC-001 through DEC-017 order")
+        _issue(issues, "DECISION_LOG_ORDER", DECISION_LOG_PATH, "accepted decision prefix must remain in exact DEC-001 through DEC-018 order")
     for decision_id, dimension in EXPECTED_DECISION_DIMENSIONS.items():
         entry = decisions.get(decision_id)
         if not isinstance(entry, Mapping):
@@ -923,6 +979,25 @@ def validate_decision_log(decision_log: Mapping[str, Any]) -> list[Issue]:
             "no qualified count",
             "no GPU training",
             "no claim",
+        ),
+        "V3-DEC-018": (
+            "COMMITTED_AND_ACCEPTED",
+            "EXACT_OFFICIAL_SRR_ROLE_AUTHORITY_CLOSED",
+            "24-run grid",
+            "High_Poly",
+            "Low_Poly",
+            "pDNA",
+            "Total_RNA",
+            "EXACT_SRR_SAMPLE_ROLES_UNKNOWN",
+            "17 historical blockers",
+            "no 80S_RNA",
+            "pDNA != 80S_RNA",
+            "REQUIRED_80S_ROLE_AUTHORITY_ABSENT",
+            "0/0/0",
+            "qualified=false",
+            "canonical record count remains 0",
+            "PENDING_NO_EVT_035",
+            "does not create EVT-035",
         ),
     }
     for decision_id, tokens in required_resolution_tokens.items():
@@ -1009,6 +1084,55 @@ def validate_decision_log(decision_log: Mapping[str, Any]) -> list[Issue]:
         }
         if not isinstance(evidence_refs, list) or not required_refs <= set(evidence_refs):
             _issue(issues, "DECISION_LOG_A1_ROLE_AMENDMENT_EVIDENCE", DECISION_LOG_PATH, f"V3-DEC-017 evidence_refs must include {sorted(required_refs)!r}")
+    official_role_authority = decisions.get("V3-DEC-018")
+    if isinstance(official_role_authority, Mapping):
+        expected_role_authority_fields = {
+            "decision_type": "AMENDMENT",
+            "dimension": "gse200302_official_srr_role_authority_and_raw_replay_boundary",
+            "status": "FROZEN_A1_OFFICIAL_METADATA_ROLE_AUTHORITY",
+            "effective_phase": "A1",
+            "requires_user_authorization": False,
+            "accepted_at": "2026-08-10T23:10:00+08:00",
+            "preserves_decision_ids": ["V3-DEC-005", "V3-DEC-017"],
+            "artifact_root": GSE200302_ROLE_ARTIFACT_ROOT,
+            "publication_status": "COMMITTED_AND_ACCEPTED",
+            "role_authority_status": "EXACT_OFFICIAL_SRR_ROLE_AUTHORITY_CLOSED",
+            "prior_blocker": "EXACT_SRR_SAMPLE_ROLES_UNKNOWN",
+            "prior_blocker_status": "CLOSED",
+            "replacement_blocker": "REQUIRED_80S_ROLE_AUTHORITY_ABSENT",
+            "replacement_blocker_status": "OPEN",
+            "role_grid_status": "CONFLICT_WITH_CURRENT_80S_EXPECTATION",
+            "pdna_may_substitute_for_80s_rna": False,
+            "bundle_digest": GSE200302_ROLE_BUNDLE_DIGEST,
+            "implementation_commit": "d042d7c1706a80821a19b78334985441bcf6eb86",
+            "binding_commit": "e3b724d00a9e5263b99475b9744fc0bb68a3ab67",
+            "independent_consumer_status": "ACCEPTED",
+            "runtime_sync_status": "PENDING_NO_EVT_035",
+            "sealed_contact": False,
+        }
+        for key, value in expected_role_authority_fields.items():
+            if not _json_type_strict_equal(official_role_authority.get(key), value):
+                _issue(
+                    issues,
+                    "DECISION_LOG_GSE200302_ROLE_AUTHORITY",
+                    DECISION_LOG_PATH,
+                    f"V3-DEC-018.{key} must remain {value!r}",
+                )
+        evidence_refs = official_role_authority.get("evidence_refs")
+        required_refs = {
+            GOAL_PATH,
+            REGISTRY_PATHS["data"],
+            GSE200302_ROLE_CONFIG_PATH,
+            f"{GSE200302_ROLE_ARTIFACT_ROOT}/ROLE_AUTHORITY.json",
+            f"{GSE200302_ROLE_ARTIFACT_ROOT}/PUBLICATION_COMMIT.json",
+        }
+        if not isinstance(evidence_refs, list) or set(evidence_refs) != required_refs:
+            _issue(
+                issues,
+                "DECISION_LOG_GSE200302_ROLE_AUTHORITY_EVIDENCE",
+                DECISION_LOG_PATH,
+                f"V3-DEC-018 evidence_refs must be exactly {sorted(required_refs)!r}",
+            )
     return issues
 
 
@@ -1102,6 +1226,105 @@ def validate_scheme_a_data_roles(data_registry: Mapping[str, Any]) -> list[Issue
         for key, value in expected_gse114002.items():
             if gse114002.get(key) != value:
                 _issue(issues, "SCHEME_A_GSE114002_BOUNDARY", path, f"GSE114002.{key} must remain {value!r}")
+
+    if "GSE200302" in by_id:
+        _issue(
+            issues,
+            "SCHEME_A_GSE200302_NOT_NEW_STUDY",
+            path,
+            "GSE200302 is a GSE200304 primary subseries authority, not a new dataset/study row",
+        )
+    gse200304 = by_id.get("GSE200304")
+    if not isinstance(gse200304, Mapping):
+        _issue(issues, "SCHEME_A_GSE200304_MISSING", path, "GSE200304 data-role row is required")
+    else:
+        expected_gse200304 = {
+            "role": "AUDIT_ONLY",
+            "qualification_status": "AUDIT_PENDING",
+            "qualified": False,
+            "training_role": "EXCLUDED_PENDING_QUALIFICATION",
+            "mapping_status": "SERIES_MEMBER_SOURCE_CANDIDATE_MAPPING_PENDING",
+            "primary_subseries_accession": "GSE200302",
+            "role_authority_runtime_sync_status": "PENDING_NO_EVT_035",
+            "role_authority_changes_dataset_qualification": False,
+            "ordinary_gate_contribution": 0,
+            "a1_gate_contribution": 0,
+            "true_a2_gate_contribution": 0,
+            "canonical_record_count": 0,
+            "training_allowed": False,
+            "model_selection_allowed": False,
+            "next_phase_authorized": False,
+            "role_authority_evidence_status": "PASS",
+            "evidence_status": "NOT_RUN",
+        }
+        for key, value in expected_gse200304.items():
+            if not _json_type_strict_equal(gse200304.get(key), value):
+                _issue(
+                    issues,
+                    "SCHEME_A_GSE200304_ROLE_AUTHORITY",
+                    path,
+                    f"GSE200304.{key} must remain {value!r}",
+                )
+        official = gse200304.get("official_srr_role_authority")
+        if not isinstance(official, Mapping):
+            _issue(
+                issues,
+                "SCHEME_A_GSE200304_ROLE_AUTHORITY",
+                path,
+                "GSE200304.official_srr_role_authority must be a mapping",
+            )
+        else:
+            _expect_closed_mapping(
+                official,
+                {
+                    "status": "EXACT_OFFICIAL_SRR_ROLE_AUTHORITY_CLOSED",
+                    "authority_level": "OFFICIAL_METADATA_ROLE_AUTHORITY_ONLY",
+                    "target_series_accession": "GSE200302",
+                    "bioproject_accession": "PRJNA824033",
+                    "publication_status": "COMMITTED_AND_ACCEPTED",
+                    "mapping_row_count": 24,
+                    "experiment_join_row_count": 24,
+                    "measurement_families": ["High_Poly", "Low_Poly", "pDNA", "Total_RNA"],
+                    "replicates": [1, 2, 3, 4, 5, 6],
+                    "forbidden_80s_alias_count": 0,
+                    "artifact_path": GSE200302_ROLE_ARTIFACT_ROOT,
+                    "bundle_digest": GSE200302_ROLE_BUNDLE_DIGEST,
+                },
+                path,
+                issues,
+                "SCHEME_A_GSE200304_ROLE_AUTHORITY",
+            )
+        raw_role = gse200304.get("raw_replay_role_authority")
+        if not isinstance(raw_role, Mapping):
+            _issue(
+                issues,
+                "SCHEME_A_GSE200304_ROLE_AUTHORITY",
+                path,
+                "GSE200304.raw_replay_role_authority must be a mapping",
+            )
+        else:
+            _expect_closed_mapping(
+                raw_role,
+                {
+                    "prior_blocker": "EXACT_SRR_SAMPLE_ROLES_UNKNOWN",
+                    "prior_blocker_status": "CLOSED",
+                    "replacement_blocker": "REQUIRED_80S_ROLE_AUTHORITY_ABSENT",
+                    "replacement_blocker_status": "OPEN",
+                    "role_grid_status": "CONFLICT_WITH_CURRENT_80S_EXPECTATION",
+                    "pdna_may_substitute_for_80s_rna": False,
+                },
+                path,
+                issues,
+                "SCHEME_A_GSE200304_ROLE_AUTHORITY",
+            )
+        blockers = gse200304.get("blocking_requirements")
+        if not isinstance(blockers, list) or "REQUIRED_80S_ROLE_AUTHORITY_ABSENT" not in blockers:
+            _issue(
+                issues,
+                "SCHEME_A_GSE200304_ROLE_AUTHORITY",
+                path,
+                "GSE200304 must preserve the open REQUIRED_80S_ROLE_AUTHORITY_ABSENT blocker",
+            )
     return issues
 
 
@@ -1292,6 +1515,328 @@ def _expect_closed_mapping(
         _expect(mapping, key, value, path, issues, code)
 
 
+def validate_gse200302_role_protocol(repo_root: Path) -> list[Issue]:
+    """Validate the mutable binding separately from the immutable v1 protocol core."""
+
+    issues: list[Issue] = []
+    path = GSE200302_ROLE_CONFIG_PATH
+
+    def reject_constant(value: str) -> None:
+        raise ValueError(f"non-finite JSON constant {value!r}")
+
+    def unique_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+        result: dict[str, Any] = {}
+        for key, value in pairs:
+            if key in result:
+                raise ValueError(f"duplicate JSON key {key!r}")
+            result[key] = value
+        return result
+
+    try:
+        payload = _read_bytes(repo_root, path)
+        protocol = json.loads(
+            payload.decode("utf-8"),
+            object_pairs_hook=unique_object,
+            parse_constant=reject_constant,
+        )
+    except (FileNotFoundError, UnicodeDecodeError, ValueError, RecursionError) as exc:
+        _issue(
+            issues,
+            "GSE200302_ROLE_PROTOCOL_LOAD",
+            path,
+            f"role protocol must be duplicate-free finite UTF-8 JSON: {exc}",
+        )
+        return issues
+    if type(protocol) is not dict:
+        _issue(
+            issues,
+            "GSE200302_ROLE_PROTOCOL_SHAPE",
+            path,
+            "role protocol root must be an object",
+        )
+        return issues
+
+    expected_top_keys = {
+        "schema_version",
+        "protocol_id",
+        "protocol_trust",
+        "implementation_binding",
+        "scope",
+        "sources",
+        "join_contract",
+        "mapping_contract",
+        "experiment_join_contract",
+        "publication",
+        "gate_contract",
+        "execution_policy",
+        "claim_boundary",
+    }
+    if set(protocol) != expected_top_keys:
+        _issue(
+            issues,
+            "GSE200302_ROLE_PROTOCOL_SHAPE",
+            path,
+            f"top-level keys must be exactly {sorted(expected_top_keys)!r}",
+        )
+
+    core = {key: value for key, value in protocol.items() if key != "implementation_binding"}
+    try:
+        canonical_core = json.dumps(
+            core,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+            allow_nan=False,
+        ).encode("utf-8")
+    except (TypeError, ValueError, RecursionError) as exc:
+        _issue(
+            issues,
+            "GSE200302_ROLE_PROTOCOL_CORE",
+            path,
+            f"non-binding core is not canonically serializable: {exc}",
+        )
+    else:
+        observed_core_hash = sha256_bytes(canonical_core)
+        if observed_core_hash != GSE200302_ROLE_PROTOCOL_CORE_SHA256:
+            _issue(
+                issues,
+                "GSE200302_ROLE_PROTOCOL_CORE",
+                path,
+                f"non-binding core hash {observed_core_hash} must remain {GSE200302_ROLE_PROTOCOL_CORE_SHA256}",
+            )
+
+    if protocol.get("schema_version") != GSE200302_ROLE_PROTOCOL_SCHEMA:
+        _issue(
+            issues,
+            "GSE200302_ROLE_PROTOCOL_SEMANTICS",
+            path,
+            f"schema_version must remain {GSE200302_ROLE_PROTOCOL_SCHEMA!r}",
+        )
+    if protocol.get("protocol_id") != GSE200302_ROLE_PROTOCOL_ID:
+        _issue(
+            issues,
+            "GSE200302_ROLE_PROTOCOL_SEMANTICS",
+            path,
+            f"protocol_id must remain {GSE200302_ROLE_PROTOCOL_ID!r}",
+        )
+
+    trust = protocol.get("protocol_trust")
+    if not isinstance(trust, Mapping):
+        _issue(issues, "GSE200302_ROLE_PROTOCOL_SEMANTICS", path, "protocol_trust must be a mapping")
+    else:
+        _expect_closed_mapping(
+            trust,
+            {
+                "canonicalization": "CANONICAL_SORTED_UTF8_V1",
+                "core_projection_excluded_top_level_keys": ["implementation_binding"],
+                "compiled_core_projection_required": True,
+            },
+            path,
+            issues,
+            "GSE200302_ROLE_PROTOCOL_SEMANTICS",
+        )
+
+    scope = protocol.get("scope")
+    if not isinstance(scope, Mapping):
+        _issue(issues, "GSE200302_ROLE_PROTOCOL_SEMANTICS", path, "scope must be a mapping")
+    else:
+        _expect_closed_mapping(
+            scope,
+            {
+                "target_series_accession": "GSE200302",
+                "bioproject_accession": "PRJNA824033",
+                "authority_level": "OFFICIAL_METADATA_ROLE_AUTHORITY_ONLY",
+                "ordinary_public_metadata_only": True,
+            },
+            path,
+            issues,
+            "GSE200302_ROLE_PROTOCOL_SEMANTICS",
+        )
+
+    mapping = protocol.get("mapping_contract")
+    if not isinstance(mapping, Mapping):
+        _issue(issues, "GSE200302_ROLE_PROTOCOL_GRID", path, "mapping_contract must be a mapping")
+    else:
+        for key, expected in (
+            ("allowed_measurement_families", GSE200302_ROLE_MEASUREMENT_FAMILIES),
+            ("replicates", GSE200302_ROLE_REPLICATES),
+            ("forbidden_family_aliases", ["80S_RNA"]),
+        ):
+            _expect(mapping, key, expected, path, issues, "GSE200302_ROLE_PROTOCOL_GRID")
+        rows = mapping.get("expected_rows")
+        observed_grid: list[tuple[Any, Any]] = []
+        if isinstance(rows, list):
+            for row in rows:
+                if isinstance(row, Mapping):
+                    observed_grid.append((row.get("measurement_family"), row.get("replicate")))
+        expected_grid = {
+            (family, replicate)
+            for family in GSE200302_ROLE_MEASUREMENT_FAMILIES
+            for replicate in GSE200302_ROLE_REPLICATES
+        }
+        if len(observed_grid) != 24 or len(set(observed_grid)) != 24 or set(observed_grid) != expected_grid:
+            _issue(
+                issues,
+                "GSE200302_ROLE_PROTOCOL_GRID",
+                path,
+                "expected_rows must contain exactly the four official families by replicates 1 through 6",
+            )
+
+    gate = protocol.get("gate_contract")
+    if not isinstance(gate, Mapping):
+        _issue(issues, "GSE200302_ROLE_PROTOCOL_GATES", path, "gate_contract must be a mapping")
+    else:
+        _expect_closed_mapping(
+            gate,
+            {
+                "role_authority_status": "EXACT_OFFICIAL_SRR_ROLE_AUTHORITY_CLOSED",
+                "raw_replay_role_grid_status": "CONFLICT_WITH_CURRENT_80S_EXPECTATION",
+                "qualified": False,
+                "training_authorized": False,
+                "ordinary_study_contribution": 0,
+                "a1_study_contribution": 0,
+                "true_a2_study_contribution": 0,
+                "canonical_record_count": 0,
+                "next_phase_authorized": False,
+            },
+            path,
+            issues,
+            "GSE200302_ROLE_PROTOCOL_GATES",
+        )
+
+    execution = protocol.get("execution_policy")
+    if not isinstance(execution, Mapping):
+        _issue(issues, "GSE200302_ROLE_PROTOCOL_GATES", path, "execution_policy must be a mapping")
+    else:
+        _expect_closed_mapping(
+            execution,
+            {
+                "network_access_allowed": False,
+                "subprocess_allowed": False,
+                "fixed_argv_read_only_git_subprocess_allowed": True,
+                "git_binary": "/usr/bin/git",
+                "fastq_body_read_allowed": False,
+                "sequence_output_allowed": False,
+                "barcode_output_allowed": False,
+                "training_label_output_allowed": False,
+                "qualification_allowed": False,
+                "canonical_materialization_allowed": False,
+                "training_allowed": False,
+                "next_phase_unlock_allowed": False,
+            },
+            path,
+            issues,
+            "GSE200302_ROLE_PROTOCOL_GATES",
+        )
+
+    def contains_key(value: Any, wanted: str) -> bool:
+        if isinstance(value, Mapping):
+            return wanted in value or any(contains_key(child, wanted) for child in value.values())
+        if isinstance(value, list):
+            return any(contains_key(child, wanted) for child in value)
+        return False
+
+    if contains_key(core, "model_selection_allowed"):
+        _issue(
+            issues,
+            "GSE200302_ROLE_PROTOCOL_MODEL_SELECTION_FIELD",
+            path,
+            "the published v1 core must not gain a model_selection_allowed field; outer ledger authority fails it closed",
+        )
+    if contains_key(core, "pdna_may_substitute_for_80s_rna"):
+        _issue(
+            issues,
+            "GSE200302_ROLE_PROTOCOL_80S_BOUNDARY",
+            path,
+            "the closed v1 core may not encode a pDNA-to-80S substitution field",
+        )
+
+    binding = protocol.get("implementation_binding")
+    expected_binding_keys = {
+        "status",
+        "binding_mode",
+        "implementation_commit",
+        "implementation_script_repo_path",
+        "implementation_script_sha256",
+        "implementation_test_repo_path",
+        "implementation_test_sha256",
+        "protocol_repo_path",
+        "activation_rule",
+    }
+    if not isinstance(binding, Mapping) or set(binding) != expected_binding_keys:
+        _issue(
+            issues,
+            "GSE200302_ROLE_PROTOCOL_BINDING",
+            path,
+            f"implementation_binding keys must be exactly {sorted(expected_binding_keys)!r}",
+        )
+        return issues
+    expected_fixed_binding = {
+        "binding_mode": GSE200302_ROLE_BINDING_MODE,
+        "implementation_script_repo_path": GSE200302_ROLE_BUILDER_PATH,
+        "implementation_test_repo_path": GSE200302_ROLE_TEST_PATH,
+        "protocol_repo_path": GSE200302_ROLE_CONFIG_PATH,
+        "activation_rule": GSE200302_ROLE_BINDING_ACTIVATION_RULE,
+    }
+    for key, expected in expected_fixed_binding.items():
+        if not _json_type_strict_equal(binding.get(key), expected):
+            _issue(
+                issues,
+                "GSE200302_ROLE_PROTOCOL_BINDING",
+                path,
+                f"implementation_binding.{key} must remain {expected!r}",
+            )
+
+    if binding.get("status") != "BOUND":
+        _issue(
+            issues,
+            "GSE200302_ROLE_PROTOCOL_BINDING",
+            path,
+            "production implementation_binding.status must be BOUND",
+        )
+        return issues
+
+    commit = binding.get("implementation_commit")
+    if not isinstance(commit, str) or len(commit) != 40 or any(ch not in "0123456789abcdef" for ch in commit):
+        _issue(
+            issues,
+            "GSE200302_ROLE_PROTOCOL_BINDING",
+            path,
+            "BOUND implementation_commit must be a full lowercase object ID",
+        )
+    for binding_key, repo_path in (
+        ("implementation_script_sha256", GSE200302_ROLE_BUILDER_PATH),
+        ("implementation_test_sha256", GSE200302_ROLE_TEST_PATH),
+    ):
+        declared = binding.get(binding_key)
+        if not _is_sha256(declared):
+            _issue(
+                issues,
+                "GSE200302_ROLE_PROTOCOL_BINDING",
+                path,
+                f"BOUND {binding_key} must be a lowercase SHA256",
+            )
+            continue
+        try:
+            actual = sha256_bytes(_read_bytes(repo_root, repo_path))
+        except (FileNotFoundError, ValueError) as exc:
+            _issue(
+                issues,
+                "GSE200302_ROLE_PROTOCOL_BINDING",
+                repo_path,
+                str(exc),
+            )
+            continue
+        if declared != actual:
+            _issue(
+                issues,
+                "GSE200302_ROLE_PROTOCOL_BINDING",
+                repo_path,
+                f"current bytes hash {actual} must match bound {binding_key} {declared}",
+            )
+    return issues
+
+
 def validate_a1_interim_lineage(
     repo_root: Path,
     interim: Mapping[str, Any],
@@ -1363,7 +1908,7 @@ def validate_a1_interim_lineage(
             "contract_path": GOAL_PATH,
             "initial_contract_sha256": "d1c031aecdec710495f6861b380785cccd64663ac4bd97b4f479d6fdf372ea07",
             "contract_sha256": SOURCE_CONTRACT_SHA256,
-            "active_amendment_decision_ids": ["V3-DEC-017"],
+            "active_amendment_decision_ids": ["V3-DEC-017", "V3-DEC-018"],
             "data_role_registry_path": REGISTRY_PATHS["data"],
             "claim_evidence_matrix_path": REGISTRY_PATHS["claim"],
             "accepted_a0_activation_commit": "fd722d5fa3c2538fce742b8942b1fb48e782760b",
@@ -1487,6 +2032,7 @@ def validate_a1_interim_lineage(
             "gse200304_gap_qualification_v1",
             "gse200304_raw_replay_preflight_attempt_001_failure",
             "gse200304_raw_replay_preflight_v1",
+            "gse200302_srr_role_authority_v1",
         }
         if set(lineage) != expected_all_lineage_ids:
             _issue(
@@ -1893,6 +2439,58 @@ def validate_a1_interim_lineage(
                 "targeted_test_failed": 0,
                 "terminal_marker_written_last": True,
             },
+            "gse200302_srr_role_authority_v1": {
+                "path": GSE200302_ROLE_ARTIFACT_ROOT,
+                "dataset_id": "GSE200304",
+                "target_subseries_accession": "GSE200302",
+                "bioproject_accession": "PRJNA824033",
+                "record_type": "OFFICIAL_SRR_ROLE_AUTHORITY",
+                "authority_level": "OFFICIAL_METADATA_ROLE_AUTHORITY_ONLY",
+                "publication_status": "COMMITTED_AND_ACCEPTED",
+                "status": "EXACT_OFFICIAL_SRR_ROLE_AUTHORITY_CLOSED",
+                "bundle_digest": GSE200302_ROLE_BUNDLE_DIGEST,
+                "mapping_row_count": 24,
+                "experiment_join_row_count": 24,
+                "measurement_families": ["High_Poly", "Low_Poly", "pDNA", "Total_RNA"],
+                "replicates": [1, 2, 3, 4, 5, 6],
+                "forbidden_80s_alias_count": 0,
+                "prior_blocker": "EXACT_SRR_SAMPLE_ROLES_UNKNOWN",
+                "prior_blocker_status": "CLOSED",
+                "replacement_blocker": "REQUIRED_80S_ROLE_AUTHORITY_ABSENT",
+                "replacement_blocker_status": "OPEN",
+                "role_grid_status": "CONFLICT_WITH_CURRENT_80S_EXPECTATION",
+                "pdna_may_substitute_for_80s_rna": False,
+                "current_effective_raw_replay_blocker_count": 17,
+                "publication_producer_protocol_config_path": GSE200302_ROLE_CONFIG_PATH,
+                "publication_producer_protocol_config_sha256": "c39335b50bf9832f336ca62fdf839351c58f5fa050eaf36c62f050171cbf24b2",
+                "publication_producer_script_path": GSE200302_ROLE_BUILDER_PATH,
+                "publication_producer_script_sha256": "b057e4346fa9473a6da29d5f229761f2d65e76db7b510ba6477bd40dbe49183c",
+                "publication_producer_focused_test_path": GSE200302_ROLE_TEST_PATH,
+                "publication_producer_focused_test_sha256": "346e239c6628388b31ef3f8ea55b295f66347811a86fb28ddbdd6f268d894edd",
+                "publication_producer_protocol_core_sha256": GSE200302_ROLE_PROTOCOL_CORE_SHA256,
+                "artifact_intrinsic_model_selection_field_present": False,
+                "artifact_intrinsic_model_selection_status": "NOT_ENCODED_FAIL_CLOSED",
+                "implementation_commit": "d042d7c1706a80821a19b78334985441bcf6eb86",
+                "binding_commit": "e3b724d00a9e5263b99475b9744fc0bb68a3ab67",
+                "implementation_to_binding_diff_is_config_only": True,
+                "commits_pushed_clean": True,
+                "independent_consumer_status": "ACCEPTED",
+                "runtime_sync_status": "PENDING_NO_EVT_035",
+                "metadata_only": True,
+                "fastq_body_read_count": 0,
+                "contains_sequence_values": False,
+                "contains_fastq_body_payload": False,
+                "contains_raw_label_values": False,
+                "ordinary_study_contribution": 0,
+                "a1_study_contribution": 0,
+                "true_a2_study_contribution": 0,
+                "canonical_record_count": 0,
+                "qualified": False,
+                "training_authorized": False,
+                "model_selection_allowed": False,
+                "next_phase_authorized": False,
+                "terminal_marker_written_last": True,
+            },
         }
         expected_relevant_lineage_ids = set(expected_gse200304_lineage)
         observed_relevant_lineage_ids: set[str] = set()
@@ -1937,6 +2535,7 @@ def validate_a1_interim_lineage(
         final_root = "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_GAP_QUALIFICATION_20260810T163429P0800_46c608b"
         raw_preflight_failure_root = "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_RAW_REPLAY_PREFLIGHT_20260810T202615P0800_534882a"
         raw_preflight_final_root = "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_RAW_REPLAY_PREFLIGHT_20260810T205200P0800_19376c0"
+        role_authority_root = GSE200302_ROLE_ARTIFACT_ROOT
         expected_closed_files = {
             "gse200304_public_asset_bundle": _closed_files(
                 public_root,
@@ -2026,6 +2625,16 @@ def validate_a1_interim_lineage(
                     ("PREFLIGHT.json", 6907, "8b592b816b5c981a774e2d58364b424271eb28d2c3e4a16a300dac2f926e0f4f"),
                     ("SHA256SUMS", 81, "410398cb558115e41f6332d03f0acfde4ba43162a1dc1944d8205fe3b6ffdeae"),
                     ("PUBLICATION_COMMIT.json", 1156, "dde5847660e34d90cedcf38f69c619c2a8ba8f8470ddacdded3f7a290e5837b1"),
+                ),
+            ),
+            "gse200302_srr_role_authority_v1": _closed_files(
+                role_authority_root,
+                (
+                    ("GSE200302_SRR_ROLE_AUTHORITY.tsv", 1200, "f69fa9af134b421439a2a90c09c75cb300e2e833de143d829bafe4ef7a1d094d"),
+                    ("GSE200302_SRR_SRX_ROLE_JOIN_AUTHORITY.tsv", 1509, "6684f3d1fde3666ac4bf07ff0aa29bd9b47240b5d6708fd8483aaa1d88a64ae4"),
+                    ("ROLE_AUTHORITY.json", 4100, "4623dd996c927525aa4dbee6dc7b9bd0e87c0d5628ac65811f15affd67777dbc"),
+                    ("SHA256SUMS", 293, "909d3ed6c15dea632622229aa3bae9840575000a8caf30e39165c1029ecfdec4"),
+                    ("PUBLICATION_COMMIT.json", 2106, "35e8884db5b8e5734300e391715b87304766dbb8e4f888bf51ead5be8b5f83b3"),
                 ),
             ),
         }
@@ -2242,6 +2851,29 @@ def validate_a1_interim_lineage(
                 "raw_replay_preflight_hard_unknown_blocker_count": 17,
                 "raw_replay_preflight_fastq_body_read_count": 0,
                 "raw_replay_preflight_changes_qualification_gate": False,
+                "primary_subseries_role_authority": {
+                    "target_subseries_accession": "GSE200302",
+                    "bioproject_accession": "PRJNA824033",
+                    "publication_status": "COMMITTED_AND_ACCEPTED",
+                    "status": "EXACT_OFFICIAL_SRR_ROLE_AUTHORITY_CLOSED",
+                    "artifact_path": GSE200302_ROLE_ARTIFACT_ROOT,
+                    "bundle_digest": GSE200302_ROLE_BUNDLE_DIGEST,
+                    "mapping_row_count": 24,
+                    "experiment_join_row_count": 24,
+                    "measurement_families": ["High_Poly", "Low_Poly", "pDNA", "Total_RNA"],
+                    "replicates": [1, 2, 3, 4, 5, 6],
+                    "forbidden_80s_alias_count": 0,
+                    "prior_blocker": "EXACT_SRR_SAMPLE_ROLES_UNKNOWN",
+                    "prior_blocker_status": "CLOSED",
+                    "historical_preflight_blocker_list_preserved": True,
+                    "replacement_blocker": "REQUIRED_80S_ROLE_AUTHORITY_ABSENT",
+                    "replacement_blocker_status": "OPEN",
+                    "role_grid_status": "CONFLICT_WITH_CURRENT_80S_EXPECTATION",
+                    "pdna_may_substitute_for_80s_rna": False,
+                    "current_effective_raw_replay_blocker_count": 17,
+                    "changes_qualification_gate": False,
+                    "runtime_sync_status": "PENDING_NO_EVT_035",
+                },
                 "sam_to_oligo_count_reconstruction_status": "UNKNOWN_NOT_ASSERTED",
                 "acquisition_changes_qualification_gate": False,
                 "source_grouping_status": "SEQUENCE_EQUALITY_PROXY_NOT_BIOLOGICALLY_FROZEN",
@@ -2251,6 +2883,7 @@ def validate_a1_interim_lineage(
                 "qualified": False,
                 "training_allowed": False,
                 "model_selection_allowed": False,
+                "next_phase_authorized": False,
             }
             _expect_closed_mapping(
                 gse200304,
@@ -2408,6 +3041,10 @@ def validate_a1_interim_lineage(
             "gse200304_raw_replay_preflight_is_paper_native_count_replay": False,
             "gse200304_raw_replay_preflight_is_paper_native_xtail_replay": False,
             "gse200304_raw_replay_preflight_resolves_control_u_policy": False,
+            "gse200302_srr_role_authority_is_raw_replay": False,
+            "gse200302_srr_role_authority_is_study_qualification": False,
+            "gse200302_srr_role_authority_authorizes_training_or_model_selection": False,
+            "gse200302_pdna_may_substitute_for_80s_rna": False,
             "a1_phase_complete": False,
             "route_a_established": False,
         }
@@ -2485,11 +3122,11 @@ def validate_a1_interim_lineage(
         )
 
     _expect(interim, "initial_generated_at", "2026-08-10T06:30:58+08:00", path, issues, "A1_INTERIM_TIME")
-    _expect(interim, "updated_for_decision_id", "V3-DEC-017", path, issues, "A1_INTERIM_TIME")
+    _expect(interim, "updated_for_decision_id", "V3-DEC-018", path, issues, "A1_INTERIM_TIME")
     _expect(
         interim,
         "latest_evidence_update_id",
-        "GSE200304_RAW_REPLAY_PREFLIGHT_20260810T205200P0800_19376c0",
+        "GSE200302_SRR_ROLE_AUTHORITY_20260810T230315P0800_e3b724d",
         path,
         issues,
         "A1_INTERIM_TIME",
@@ -2504,6 +3141,7 @@ def validate_a1_interim_lineage(
         amendment_dt = datetime.fromisoformat("2026-08-10T10:10:05+08:00")
         acquisition_dt = datetime.fromisoformat("2026-08-10T19:15:02+08:00")
         raw_preflight_dt = datetime.fromisoformat("2026-08-10T20:52:00+08:00")
+        role_authority_dt = datetime.fromisoformat("2026-08-10T23:03:15+08:00")
     except ValueError:
         _issue(issues, "A1_INTERIM_TIME", path, "updated_at must be an ISO-8601 timestamp with offset")
     else:
@@ -2512,12 +3150,13 @@ def validate_a1_interim_lineage(
             or updated_dt < amendment_dt
             or updated_dt < acquisition_dt
             or updated_dt < raw_preflight_dt
+            or updated_dt < role_authority_dt
         ):
             _issue(
                 issues,
                 "A1_INTERIM_TIME",
                 path,
-                "updated_at must follow the formal audit, DEC-017 authorization, FASTQ consumer evidence, and raw-replay preflight bundle",
+                "updated_at must follow the formal audit, DEC-017 authorization, FASTQ consumer evidence, raw-replay preflight, and GSE200302 role-authority bundle",
             )
     return issues
 
@@ -3880,6 +4519,7 @@ def validate_bundle(repo_root: Path) -> list[Issue]:
     issues = validate_required_files(repo_root)
     issues.extend(validate_schema_manifest(repo_root))
     issues.extend(validate_registry_manifest(repo_root))
+    issues.extend(validate_gse200302_role_protocol(repo_root))
     issues.extend(validate_python_static_safety(repo_root))
     issues.extend(validate_runner_and_guard_ast(repo_root))
     issues.extend(scan_conflict_markers(repo_root))

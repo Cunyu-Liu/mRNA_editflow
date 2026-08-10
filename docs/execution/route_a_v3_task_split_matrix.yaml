@@ -10,7 +10,7 @@ authority_ref:
   config_path: configs/route_a_v3.yaml
   task_registry_path: docs/execution/route_a_v3_task_registry.yaml
   split_registry_path: docs/execution/route_a_v3_split_registry.yaml
-  goal_sha256: 3ba224de6277edd67387913cf1c83a5e1344e0ad44ef196db07d0772b45c4d79
+  goal_sha256: cbac4c3dcba8f1b8df95d8edad52d19e3c126d1c865d0cc423537c754cc90982
 
 expected_task_ids:
   - T5_SOURCE_RELATIVE_EFFECT

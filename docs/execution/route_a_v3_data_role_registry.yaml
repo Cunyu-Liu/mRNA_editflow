@@ -9,7 +9,7 @@ date: "2026-08-10"
 authority_ref:
   config_path: configs/route_a_v3.yaml
   goal_path: docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md
-  goal_sha256: 3ba224de6277edd67387913cf1c83a5e1344e0ad44ef196db07d0772b45c4d79
+  goal_sha256: cbac4c3dcba8f1b8df95d8edad52d19e3c126d1c865d0cc423537c754cc90982
 
 data_policy:
   public_data_only: true
@@ -223,12 +223,44 @@ datasets:
     intended_role_if_qualified: THREE_UTR_A1_TRANSFER_CANDIDATE
     intended_evidence_grade_if_qualified: A1_CANDIDATE
     mapping_status: SERIES_MEMBER_SOURCE_CANDIDATE_MAPPING_PENDING
-    allowed_current_uses: [PROVENANCE_AUDIT, REGION_AND_MEMBER_MAPPING_RECONSTRUCTION]
+    primary_subseries_accession: GSE200302
+    official_srr_role_authority:
+      status: EXACT_OFFICIAL_SRR_ROLE_AUTHORITY_CLOSED
+      authority_level: OFFICIAL_METADATA_ROLE_AUTHORITY_ONLY
+      target_series_accession: GSE200302
+      bioproject_accession: PRJNA824033
+      publication_status: COMMITTED_AND_ACCEPTED
+      mapping_row_count: 24
+      experiment_join_row_count: 24
+      measurement_families: [High_Poly, Low_Poly, pDNA, Total_RNA]
+      replicates: [1, 2, 3, 4, 5, 6]
+      forbidden_80s_alias_count: 0
+      artifact_path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE200302/GSE200302_SRR_ROLE_AUTHORITY_20260810T230315P0800_e3b724d
+      bundle_digest: d3da1868158f0bb740d1e3ef2a84fa204d0ff492a2f841ff46d11396ddc8b430
+    raw_replay_role_authority:
+      prior_blocker: EXACT_SRR_SAMPLE_ROLES_UNKNOWN
+      prior_blocker_status: CLOSED
+      replacement_blocker: REQUIRED_80S_ROLE_AUTHORITY_ABSENT
+      replacement_blocker_status: OPEN
+      role_grid_status: CONFLICT_WITH_CURRENT_80S_EXPECTATION
+      pdna_may_substitute_for_80s_rna: false
+    role_authority_runtime_sync_status: PENDING_NO_EVT_035
+    role_authority_changes_dataset_qualification: false
+    ordinary_gate_contribution: 0
+    a1_gate_contribution: 0
+    true_a2_gate_contribution: 0
+    canonical_record_count: 0
+    training_allowed: false
+    model_selection_allowed: false
+    next_phase_authorized: false
+    allowed_current_uses: [PROVENANCE_AUDIT, OFFICIAL_METADATA_ROLE_AUTHORITY_AUDIT, REGION_AND_MEMBER_MAPPING_RECONSTRUCTION]
     forbidden_current_uses: [TRAINING, CALIBRATION, MODEL_SELECTION, CONFIRMATORY_EVALUATION, CLAIM_SUPPORT]
     blocking_requirements:
       - SERIES_MEMBER_MAPPING_CLOSED
+      - REQUIRED_80S_ROLE_AUTHORITY_ABSENT
       - SOURCE_CANDIDATE_ENDPOINT_AND_CONTEXT_RECONSTRUCTED
       - BIOLOGICAL_GROUP_LICENSE_AND_EXPOSURE_AUDITED
+    role_authority_evidence_status: PASS
     evidence_status: NOT_RUN
   - dataset_id: ENCSR854RUF
     aliases: []

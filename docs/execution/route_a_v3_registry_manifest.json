@@ -3,18 +3,23 @@
   "contract_id": "mrna_xeditflow_route_a_v3",
   "contract_path": "docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md",
   "initial_contract_sha256": "d1c031aecdec710495f6861b380785cccd64663ac4bd97b4f479d6fdf372ea07",
-  "contract_sha256": "3ba224de6277edd67387913cf1c83a5e1344e0ad44ef196db07d0772b45c4d79",
-  "active_amendment_decision_ids": ["V3-DEC-017"],
+  "contract_sha256": "cbac4c3dcba8f1b8df95d8edad52d19e3c126d1c865d0cc423537c754cc90982",
+  "active_amendment_decision_ids": ["V3-DEC-017", "V3-DEC-018"],
   "files": [
+    {
+      "path": "docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md",
+      "role": "ACTIVE_AMENDED_CONTRACT",
+      "sha256": "cbac4c3dcba8f1b8df95d8edad52d19e3c126d1c865d0cc423537c754cc90982"
+    },
     {
       "path": "configs/route_a_v3.yaml",
       "role": "EXECUTABLE_CONTRACT",
-      "sha256": "9672c01f7481597da9380b270787174baab18c6eaeaa503f082f67f589970303"
+      "sha256": "5f99ee9d4518cf538b1062f15f7c86d4469d3e26e2a7996545f76bf6b110514d"
     },
     {
       "path": "docs/contracts/supersession_mrna_xeditflow_v1_1_to_route_a_v3.yaml",
       "role": "SUPERSESSION_LINEAGE",
-      "sha256": "2d9080400d0e74cc1f5e774c25340158539851665441dada56ac16464a18619a"
+      "sha256": "6762f1316c82f1089cb085296d2f3bdb924c775f29d8a55de28b412ee015b6fa"
     },
     {
       "path": "docs/contracts/history/mrna_v2_readiness_audit_20260807.md",
@@ -24,42 +29,42 @@
     {
       "path": "docs/execution/route_a_v3_baseline_registry.yaml",
       "role": "BASELINE_REGISTRY",
-      "sha256": "1e7f4c6a7a969398ed3e7ae44ec26793f41214261a27ef7e2bf2b7c37a6cb63a"
+      "sha256": "fb47324918b4cdd24a441e0c89909e4956b1f6a83ae64ef359af0bcc1a9371bf"
     },
     {
       "path": "docs/execution/route_a_v3_claim_evidence_matrix.yaml",
       "role": "CLAIM_EVIDENCE_MATRIX",
-      "sha256": "ba93693381fe20cf85ac826d48ed8977072e56e2f5abc1fbbb08a60f570af530"
+      "sha256": "f382434e950e25121302a2c812c5193c430d637e41a00d1a91b1e7eba9baadd3"
     },
     {
       "path": "docs/execution/route_a_v3_data_role_registry.yaml",
       "role": "DATA_ROLE_REGISTRY",
-      "sha256": "03a805c6441f0778225f9a8ec10feeadba23f572cd9ea7b234903384e6a902bf"
+      "sha256": "746439ef5d88d8167176d19e9c675746fdc78984a66f6f123f77f6ec49523030"
     },
     {
       "path": "docs/execution/route_a_v3_decision_log.yaml",
       "role": "DECISION_AND_AMENDMENT_LOG",
-      "sha256": "fc177d710c3a737e860b7a2326bbdabd1e698bc9eea5838cecc362df519d2766"
+      "sha256": "a5b041fab24d9a4309603a085fa3fcab936d69a899285bfa752689a2ee5fd4fd"
     },
     {
       "path": "docs/execution/route_a_v3_a1_interim.yaml",
       "role": "A1_ACTIVE_INTERIM_RECORD",
-      "sha256": "ffecd2558adc6d1230ed60515d288570601186f5e8998963f61d177e3e81ba57"
+      "sha256": "90a5deb6143453c45d37b3e5601388e1eb51065645235a1264fc7b8cae591e64"
     },
     {
       "path": "docs/execution/route_a_v3_split_registry.yaml",
       "role": "SPLIT_REGISTRY",
-      "sha256": "3baebc375186a40d3216c5bedf50070227b446ac6f0846289dff5b8c4f226954"
+      "sha256": "8d6910d05dc020a37cf8aea3d54bce87302f29255b69ab124b7d761898760259"
     },
     {
       "path": "docs/execution/route_a_v3_task_registry.yaml",
       "role": "TASK_AND_PHASE_REGISTRY",
-      "sha256": "cadce2095367ea9e45f12a8354fc916087edfb965d2151a7a64394399c273008"
+      "sha256": "be645fbb4d7ee4ba8301d4109cfdda00804a849b6dc15b0d978c0ed709ca866e"
     },
     {
       "path": "docs/execution/route_a_v3_task_split_matrix.yaml",
       "role": "TASK_SPLIT_MATRIX",
-      "sha256": "918cc76603d6f9aa99ab25230d636e89d1f58e216348100db29ec1e9d16c8f48"
+      "sha256": "da8a97dbb90e28dad18276ca71ece16668a38df64c4680a9e96b563bfd64d1bd"
     },
     {
       "path": "schemas/route_a_v3/SCHEMA_MANIFEST.json",
@@ -82,15 +87,30 @@
       "sha256": "5310db4697d1c464154c5b9275f28675163a3d2a5319c326c8c03d52cd39a1fe"
     },
     {
+      "path": "scripts/route_a_v3/build_gse200302_srr_role_authority.py",
+      "role": "GSE200302_OFFICIAL_ROLE_AUTHORITY_BUILDER",
+      "sha256": "b057e4346fa9473a6da29d5f229761f2d65e76db7b510ba6477bd40dbe49183c"
+    },
+    {
+      "path": "tests/route_a_v3/test_gse200302_srr_role_authority.py",
+      "role": "GSE200302_OFFICIAL_ROLE_AUTHORITY_FOCUSED_TEST",
+      "sha256": "4548d6622a1df852cdd9bf1ae3caabeed837474dfc3c57984674a2a77ef580ca"
+    },
+    {
+      "path": "tests/route_a_v3/test_a0_integrity_guards.py",
+      "role": "A0_AUTHORITY_INTEGRITY_GUARD_TEST",
+      "sha256": "6404e24d645d4c078536c4df254bf1b509648bad21bf846f079b2c1e55aa8837"
+    },
+    {
       "path": "scripts/route_a_v3/validate_a0_bundle.py",
       "role": "A0_STATIC_AND_SEMANTIC_VALIDATOR",
-      "sha256": "c7a1f3dec18d6ef6b74ac60b488fdeedeb8f5dd2744f5162b3fee4acf239e01c"
+      "sha256": "705b30f4ed2c4ac74f97355058c256fff0a200afe3f56a3c0296f5efa99eee00"
     }
   ],
   "initial_generated_at": "2026-08-10T10:10:05+08:00",
-  "generated_at": "2026-08-10T21:38:00+08:00",
-  "updated_at": "2026-08-10T21:38:00+08:00",
-  "manifest_status": "A1_SCHEME_A_AUTHORITY_REBIND",
+  "generated_at": "2026-08-10T23:11:00+08:00",
+  "updated_at": "2026-08-10T23:11:00+08:00",
+  "manifest_status": "A1_GSE200302_ROLE_AUTHORITY_REBIND",
   "schema_version": "1.0.0",
   "sealed_contact": false,
   "version": "3.0.0"

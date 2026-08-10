@@ -8,10 +8,10 @@ date: "2026-08-10"
 
 authority:
   initial_source_goal_sha256: d1c031aecdec710495f6861b380785cccd64663ac4bd97b4f479d6fdf372ea07
-  active_amendment_decision_ids: [V3-DEC-017]
+  active_amendment_decision_ids: [V3-DEC-017, V3-DEC-018]
   source_goal:
     local_path: "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna v3.md"
-    sha256: 3ba224de6277edd67387913cf1c83a5e1344e0ad44ef196db07d0772b45c4d79
+    sha256: cbac4c3dcba8f1b8df95d8edad52d19e3c126d1c865d0cc423537c754cc90982
     repository_path: docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md
   active_contract_count_required: 1
   authority_uniqueness_required: true

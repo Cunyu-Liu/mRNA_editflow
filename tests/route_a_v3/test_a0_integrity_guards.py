@@ -152,6 +152,32 @@ def test_decision_017_user_authorized_data_role_amendment_is_frozen(
     assert "DECISION_LOG_KEY_DECISION" in codes
 
 
+def test_decision_018_official_role_authority_and_raw_replay_boundary_is_frozen(
+    validator,
+    repo_root,
+):
+    decision_log = validator._load_yaml(repo_root, validator.DECISION_LOG_PATH)
+    assert validator.validate_decision_log(decision_log) == []
+
+    bypass = deepcopy(decision_log)
+    decision = next(row for row in bypass["decisions"] if row["decision_id"] == "V3-DEC-018")
+    decision["dimension"] = "gse200302_qualification"
+    decision["status"] = "QUALIFIED"
+    decision["role_authority_status"] = "RAW_REPLAY_CLOSED"
+    decision["prior_blocker_status"] = "OPEN"
+    decision["replacement_blocker"] = "NONE"
+    decision["replacement_blocker_status"] = "CLOSED"
+    decision["role_grid_status"] = "MATCH"
+    decision["pdna_may_substitute_for_80s_rna"] = True
+    decision["runtime_sync_status"] = "EVT-035"
+    decision["evidence_refs"].remove(validator.GSE200302_ROLE_CONFIG_PATH)
+    codes = _codes(validator.validate_decision_log(bypass))
+    assert "DECISION_LOG_ENTRY_DRIFT" in codes
+    assert "DECISION_LOG_DIMENSION" in codes
+    assert "DECISION_LOG_GSE200302_ROLE_AUTHORITY" in codes
+    assert "DECISION_LOG_GSE200302_ROLE_AUTHORITY_EVIDENCE" in codes
+
+
 def test_decision_prefix_digest_rejects_conflicting_semantics_and_old_entry_drift(
     validator,
     repo_root,
@@ -196,6 +222,31 @@ def test_rehashed_manifest_cannot_bypass_decision_prefix_digest(
     codes = _codes(validator.validate_bundle(tmp_path))
     assert "REGISTRY_MANIFEST_HASH_MISMATCH" not in codes
     assert "DECISION_LOG_ENTRY_DRIFT" in codes
+
+
+def test_rehashed_manifest_cannot_bypass_decision_018_role_boundary(
+    validator,
+    repo_root,
+    tmp_path,
+):
+    manifest = _copy_manifest_bundle(validator, repo_root, tmp_path)
+    decision_path = tmp_path / validator.DECISION_LOG_PATH
+    decision_log = yaml.safe_load(decision_path.read_text(encoding="utf-8"))
+    decision = next(row for row in decision_log["decisions"] if row["decision_id"] == "V3-DEC-018")
+    decision["replacement_blocker"] = "NONE"
+    decision["replacement_blocker_status"] = "CLOSED"
+    decision["pdna_may_substitute_for_80s_rna"] = True
+    decision["resolution"] += " pDNA is treated as 80S_RNA and raw replay is now qualified."
+    decision_path.write_text(yaml.safe_dump(decision_log, sort_keys=False), encoding="utf-8")
+    entry = next(row for row in manifest["files"] if row["path"] == validator.DECISION_LOG_PATH)
+    entry["sha256"] = validator.sha256_file(decision_path)
+    manifest_path = tmp_path / validator.REGISTRY_MANIFEST_PATH
+    manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+
+    codes = _codes(validator.validate_bundle(tmp_path))
+    assert "REGISTRY_MANIFEST_HASH_MISMATCH" not in codes
+    assert "DECISION_LOG_ENTRY_DRIFT" in codes
+    assert "DECISION_LOG_GSE200302_ROLE_AUTHORITY" in codes
 
 
 def test_a1_interim_semantics_and_rehashed_manifest_cannot_grant_a1(
@@ -430,6 +481,7 @@ def test_rehashed_gse200304_interim_cannot_bypass_semantic_closure(
         "gse200304_gap_qualification_v1",
         "gse200304_raw_replay_preflight_attempt_001_failure",
         "gse200304_raw_replay_preflight_v1",
+        "gse200302_srr_role_authority_v1",
     )
     for lineage_id in closed_lineage_ids:
         def mutate_member(interim, lineage_id=lineage_id):
@@ -728,6 +780,205 @@ def test_rehashed_gse200304_interim_cannot_bypass_semantic_closure(
     assert "A1_INTERIM_VERIFICATION" in codes
 
 
+def test_gse200302_role_authority_lineage_is_exact_and_fail_closed(
+    validator,
+    repo_root,
+):
+    interim = validator._load_yaml(repo_root, validator.A1_INTERIM_PATH)
+    assert validator.validate_a1_interim_lineage(repo_root, interim) == []
+
+    semantic_bypass = deepcopy(interim)
+    role = semantic_bypass["artifact_lineage"]["gse200302_srr_role_authority_v1"]
+    role["status"] = "RAW_REPLAY_CLOSED"
+    role["mapping_row_count"] = 25
+    role["measurement_families"] = ["High_Poly", "Low_Poly", "80S_RNA", "Total_RNA"]
+    role["replacement_blocker_status"] = "CLOSED"
+    role["pdna_may_substitute_for_80s_rna"] = True
+    role["artifact_intrinsic_model_selection_field_present"] = True
+    role["artifact_intrinsic_model_selection_status"] = "ENCODED_ALLOWED"
+    role["qualified"] = True
+    role["training_authorized"] = True
+    role["next_phase_authorized"] = True
+    codes = _codes(validator.validate_a1_interim_lineage(repo_root, semantic_bypass))
+    assert "A1_INTERIM_GSE200304_LINEAGE" in codes
+
+    member_bypass = deepcopy(interim)
+    member_bypass["artifact_lineage"]["gse200302_srr_role_authority_v1"]["files"][0]["bytes"] += 1
+    codes = _codes(validator.validate_a1_interim_lineage(repo_root, member_bypass))
+    assert "A1_INTERIM_GSE200304_CLOSED_FILES" in codes
+
+    extra_member = deepcopy(interim)
+    extra_member["artifact_lineage"]["gse200302_srr_role_authority_v1"]["files"].append(
+        {
+            "path": f"{validator.GSE200302_ROLE_ARTIFACT_ROOT}/IN_PROGRESS.json",
+            "bytes": 2,
+            "sha256": "0" * 64,
+        }
+    )
+    codes = _codes(validator.validate_a1_interim_lineage(repo_root, extra_member))
+    assert "A1_INTERIM_GSE200304_CLOSED_FILES" in codes
+
+    omitted = deepcopy(interim)
+    omitted["artifact_lineage"].pop("gse200302_srr_role_authority_v1")
+    codes = _codes(validator.validate_a1_interim_lineage(repo_root, omitted))
+    assert "A1_INTERIM_LINEAGE_ID_SET" in codes
+    assert "A1_INTERIM_GSE200304_LINEAGE_ID_SET" in codes
+
+    stale_summary = deepcopy(interim)
+    current = stale_summary["dataset_boundary_summary"]["GSE200304"][
+        "primary_subseries_role_authority"
+    ]
+    current["prior_blocker_status"] = "OPEN"
+    current["replacement_blocker_status"] = "CLOSED"
+    current["pdna_may_substitute_for_80s_rna"] = True
+    stale_summary["dataset_boundary_summary"]["GSE200304"]["next_phase_authorized"] = True
+    codes = _codes(validator.validate_a1_interim_lineage(repo_root, stale_summary))
+    assert "A1_INTERIM_GSE200304" in codes
+
+
+def test_rehashed_gse200302_role_authority_cannot_bypass_exact_semantics(
+    validator,
+    repo_root,
+    tmp_path,
+    monkeypatch,
+):
+    def mutate_role_and_rehash(interim):
+        role = interim["artifact_lineage"]["gse200302_srr_role_authority_v1"]
+        role["bundle_digest"] = "0" * 64
+        role["files"][0]["sha256"] = "1" * 64
+        role["replacement_blocker"] = "NONE"
+        role["replacement_blocker_status"] = "CLOSED"
+        role["pdna_may_substitute_for_80s_rna"] = True
+        role["qualified"] = True
+        role["training_authorized"] = True
+        interim["dataset_boundary_summary"]["GSE200304"][
+            "primary_subseries_role_authority"
+        ]["bundle_digest"] = "0" * 64
+
+    codes = _validate_rehashed_interim_bypass(
+        validator,
+        repo_root,
+        tmp_path / "synchronized_role_rehash",
+        monkeypatch,
+        mutate_role_and_rehash,
+    )
+    assert "A1_INTERIM_GSE200304_LINEAGE" in codes
+    assert "A1_INTERIM_GSE200304_CLOSED_FILES" in codes
+    assert "A1_INTERIM_GSE200304" in codes
+
+    def add_nonterminal_role_lineage(interim):
+        interim["artifact_lineage"]["gse200302_srr_role_authority_in_progress"] = {
+            "path": f"{validator.GSE200302_ROLE_ARTIFACT_ROOT}_IN_PROGRESS",
+            "dataset_id": "GSE200304",
+            "status": "IN_PROGRESS",
+        }
+
+    codes = _validate_rehashed_interim_bypass(
+        validator,
+        repo_root,
+        tmp_path / "extra_role_lineage",
+        monkeypatch,
+        add_nonterminal_role_lineage,
+    )
+    assert "A1_INTERIM_LINEAGE_ID_SET" in codes
+    assert "A1_INTERIM_GSE200304_LINEAGE_ID_SET" in codes
+
+
+def test_gse200302_role_protocol_core_and_dynamic_binding_are_separate(
+    validator,
+    repo_root,
+    tmp_path,
+):
+    manifest_paths = {
+        path for path, _role in validator.EXPECTED_REGISTRY_MANIFEST_PATH_ROLES
+    }
+    assert validator.GSE200302_ROLE_CONFIG_PATH in validator.required_bundle_paths()
+    assert validator.GSE200302_ROLE_CONFIG_PATH not in manifest_paths
+
+    issues = validator.validate_gse200302_role_protocol(repo_root)
+    non_binding_issues = [
+        issue
+        for issue in issues
+        if issue.code != "GSE200302_ROLE_PROTOCOL_BINDING"
+    ]
+    assert non_binding_issues == []
+    protocol = validator._load_json(repo_root, validator.GSE200302_ROLE_CONFIG_PATH)
+    if protocol["implementation_binding"]["status"] == "UNKNOWN_NOT_ASSERTED":
+        assert _codes(issues) == {"GSE200302_ROLE_PROTOCOL_BINDING"}
+    else:
+        assert issues == []
+
+    bound_root = tmp_path / "synthetic_bound_protocol"
+    for relative in (
+        validator.GSE200302_ROLE_CONFIG_PATH,
+        validator.GSE200302_ROLE_BUILDER_PATH,
+        validator.GSE200302_ROLE_TEST_PATH,
+    ):
+        source = repo_root / relative
+        target = bound_root / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, target)
+    bound_path = bound_root / validator.GSE200302_ROLE_CONFIG_PATH
+    bound = json.loads(bound_path.read_text(encoding="utf-8"))
+    binding = bound["implementation_binding"]
+    binding["status"] = "BOUND"
+    binding["implementation_commit"] = "1" * 40
+    binding["implementation_script_sha256"] = validator.sha256_file(
+        bound_root / validator.GSE200302_ROLE_BUILDER_PATH
+    )
+    binding["implementation_test_sha256"] = validator.sha256_file(
+        bound_root / validator.GSE200302_ROLE_TEST_PATH
+    )
+    bound_path.write_text(
+        json.dumps(bound, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
+    assert validator.validate_gse200302_role_protocol(bound_root) == []
+
+    binding["implementation_test_sha256"] = "0" * 64
+    bound_path.write_text(
+        json.dumps(bound, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
+    assert "GSE200302_ROLE_PROTOCOL_BINDING" in _codes(
+        validator.validate_gse200302_role_protocol(bound_root)
+    )
+
+
+def test_synchronized_manifest_rehash_cannot_hide_role_protocol_core_mutation(
+    validator,
+    repo_root,
+    tmp_path,
+):
+    case_root = tmp_path / "role_protocol_core_mutation"
+    manifest = _copy_manifest_bundle(validator, repo_root, case_root)
+    assert all(
+        row["path"] != validator.GSE200302_ROLE_CONFIG_PATH
+        for row in manifest["files"]
+    )
+
+    protocol_path = case_root / validator.GSE200302_ROLE_CONFIG_PATH
+    protocol = json.loads(protocol_path.read_text(encoding="utf-8"))
+    protocol["gate_contract"]["model_selection_allowed"] = True
+    protocol_path.write_text(
+        json.dumps(protocol, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
+    for row in manifest["files"]:
+        row["sha256"] = validator.sha256_file(case_root / row["path"])
+    manifest_path = case_root / validator.REGISTRY_MANIFEST_PATH
+    manifest_path.write_text(
+        json.dumps(manifest, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
+
+    codes = _codes(validator.validate_bundle(case_root))
+    assert "REGISTRY_MANIFEST_HASH_MISMATCH" not in codes
+    assert "GSE200302_ROLE_PROTOCOL_CORE" in codes
+    assert "GSE200302_ROLE_PROTOCOL_GATES" in codes
+    assert "GSE200302_ROLE_PROTOCOL_MODEL_SELECTION_FIELD" in codes
+
+
 def test_scheme_a_data_roles_cannot_restore_gse145046_as_true_a2(
     validator,
     repo_root,
@@ -752,6 +1003,77 @@ def test_scheme_a_data_roles_cannot_restore_gse145046_as_true_a2(
     assert "SCHEME_A_GSE145046_ROLE" in codes
     assert "SCHEME_A_GSE145046_FORBIDDEN" in codes
     assert "SCHEME_A_GSE114002_BOUNDARY" in codes
+
+
+def test_scheme_a_gse200304_official_role_authority_cannot_unlock_replay(
+    validator,
+    repo_root,
+):
+    registry = validator._load_yaml(repo_root, validator.REGISTRY_PATHS["data"])
+    assert validator.validate_scheme_a_data_roles(registry) == []
+
+    bypass = deepcopy(registry)
+    gse200304 = next(row for row in bypass["datasets"] if row["dataset_id"] == "GSE200304")
+    official = gse200304["official_srr_role_authority"]
+    official["measurement_families"] = ["High_Poly", "Low_Poly", "80S_RNA", "Total_RNA"]
+    official["mapping_row_count"] = 25
+    official["bundle_digest"] = "0" * 64
+    raw_role = gse200304["raw_replay_role_authority"]
+    raw_role["prior_blocker_status"] = "OPEN"
+    raw_role["replacement_blocker_status"] = "CLOSED"
+    raw_role["role_grid_status"] = "MATCH"
+    raw_role["pdna_may_substitute_for_80s_rna"] = True
+    gse200304["qualified"] = True
+    gse200304["training_allowed"] = True
+    gse200304["model_selection_allowed"] = True
+    gse200304["next_phase_authorized"] = True
+    gse200304["ordinary_gate_contribution"] = 1
+    gse200304["blocking_requirements"].remove("REQUIRED_80S_ROLE_AUTHORITY_ABSENT")
+    codes = _codes(validator.validate_scheme_a_data_roles(bypass))
+    assert "SCHEME_A_GSE200304_ROLE_AUTHORITY" in codes
+
+    new_study = deepcopy(registry)
+    new_study["datasets"].append({"dataset_id": "GSE200302"})
+    codes = _codes(validator.validate_scheme_a_data_roles(new_study))
+    assert "SCHEME_A_GSE200302_NOT_NEW_STUDY" in codes
+
+
+def test_rehashed_registry_cannot_relabel_pdna_as_80s_or_close_successor_blocker(
+    validator,
+    repo_root,
+    tmp_path,
+):
+    manifest = _copy_manifest_bundle(validator, repo_root, tmp_path)
+    registry_path = tmp_path / validator.REGISTRY_PATHS["data"]
+    registry = yaml.safe_load(registry_path.read_text(encoding="utf-8"))
+    gse200304 = next(row for row in registry["datasets"] if row["dataset_id"] == "GSE200304")
+    gse200304["official_srr_role_authority"]["measurement_families"] = [
+        "High_Poly",
+        "Low_Poly",
+        "80S_RNA",
+        "Total_RNA",
+    ]
+    gse200304["raw_replay_role_authority"]["replacement_blocker_status"] = "CLOSED"
+    gse200304["raw_replay_role_authority"]["pdna_may_substitute_for_80s_rna"] = True
+    gse200304["qualified"] = True
+    gse200304["training_allowed"] = True
+    registry_path.write_text(yaml.safe_dump(registry, sort_keys=False), encoding="utf-8")
+    entry = next(row for row in manifest["files"] if row["path"] == validator.REGISTRY_PATHS["data"])
+    entry["sha256"] = validator.sha256_file(registry_path)
+    interim_path = tmp_path / validator.A1_INTERIM_PATH
+    interim = yaml.safe_load(interim_path.read_text(encoding="utf-8"))
+    interim["authority"]["data_role_registry_sha256"] = entry["sha256"]
+    interim_path.write_text(yaml.safe_dump(interim, sort_keys=False), encoding="utf-8")
+    interim_hash = validator.sha256_file(interim_path)
+    next(row for row in manifest["files"] if row["path"] == validator.A1_INTERIM_PATH)[
+        "sha256"
+    ] = interim_hash
+    manifest_path = tmp_path / validator.REGISTRY_MANIFEST_PATH
+    manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+
+    codes = _codes(validator.validate_bundle(tmp_path))
+    assert "REGISTRY_MANIFEST_HASH_MISMATCH" not in codes
+    assert "SCHEME_A_GSE200304_ROLE_AUTHORITY" in codes
 
 
 def test_supersession_config_and_m0_scientific_failure_are_bound(validator, repo_root, bundle_documents):
@@ -900,7 +1222,11 @@ def test_registry_manifest_detects_every_listed_hash_drift(validator, tmp_path, 
     ):
         path = tmp_path / relative
         path.parent.mkdir(parents=True, exist_ok=True)
-        data = f"fixture-{index}-{relative}\n".encode("utf-8")
+        data = (
+            goal_bytes
+            if relative == validator.GOAL_PATH
+            else f"fixture-{index}-{relative}\n".encode("utf-8")
+        )
         path.write_bytes(data)
         entries.append(
             {
@@ -922,9 +1248,9 @@ def test_registry_manifest_detects_every_listed_hash_drift(validator, tmp_path, 
         "contract_path": validator.GOAL_PATH,
         "initial_contract_sha256": "d1c031aecdec710495f6861b380785cccd64663ac4bd97b4f479d6fdf372ea07",
         "contract_sha256": goal_hash,
-        "active_amendment_decision_ids": ["V3-DEC-017"],
+        "active_amendment_decision_ids": ["V3-DEC-017", "V3-DEC-018"],
         "base_commit": "bbb71dcba6f1e1c9cb75a8a6653f1a4fe4a6ca0c",
-        "manifest_status": "A1_SCHEME_A_AUTHORITY_REBIND",
+        "manifest_status": "A1_GSE200302_ROLE_AUTHORITY_REBIND",
         "initial_generated_at": "2026-08-10T10:10:05+08:00",
         "generated_at": "2026-08-10T10:41:50+08:00",
         "updated_at": "2026-08-10T10:41:50+08:00",
@@ -961,11 +1287,15 @@ def test_registry_manifest_shape_and_types_are_closed(
     extra_root = tmp_path / "extra_entry"
 
     def append_extra_path(manifest):
+        relative = "docs/execution/unregistered_authority.yaml"
+        target = extra_root / relative
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text("unregistered: true\n", encoding="utf-8")
         manifest["files"].append(
             {
-                "path": validator.GOAL_PATH,
+                "path": relative,
                 "role": "ACTIVE_CONTRACT",
-                "sha256": validator.sha256_file(extra_root / validator.GOAL_PATH),
+                "sha256": validator.sha256_file(target),
             }
         )
 

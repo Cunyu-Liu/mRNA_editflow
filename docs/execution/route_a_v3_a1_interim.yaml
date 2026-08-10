@@ -9,12 +9,12 @@ record_status: INTERIM_BLOCKED_NOT_PHASE_COMPLETE
 authority:
   contract_path: docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md
   initial_contract_sha256: d1c031aecdec710495f6861b380785cccd64663ac4bd97b4f479d6fdf372ea07
-  contract_sha256: 3ba224de6277edd67387913cf1c83a5e1344e0ad44ef196db07d0772b45c4d79
-  active_amendment_decision_ids: [V3-DEC-017]
+  contract_sha256: cbac4c3dcba8f1b8df95d8edad52d19e3c126d1c865d0cc423537c754cc90982
+  active_amendment_decision_ids: [V3-DEC-017, V3-DEC-018]
   data_role_registry_path: docs/execution/route_a_v3_data_role_registry.yaml
-  data_role_registry_sha256: 03a805c6441f0778225f9a8ec10feeadba23f572cd9ea7b234903384e6a902bf
+  data_role_registry_sha256: 746439ef5d88d8167176d19e9c675746fdc78984a66f6f123f77f6ec49523030
   claim_evidence_matrix_path: docs/execution/route_a_v3_claim_evidence_matrix.yaml
-  claim_evidence_matrix_sha256: ba93693381fe20cf85ac826d48ed8977072e56e2f5abc1fbbb08a60f570af530
+  claim_evidence_matrix_sha256: f382434e950e25121302a2c812c5193c430d637e41a00d1a91b1e7eba9baadd3
   accepted_a0_activation_commit: fd722d5fa3c2538fce742b8942b1fb48e782760b
   branch: routea-v3-a1-20260810
   worktree: /home/cunyuliu/mrna_editflow_goal/worktrees/routea_v3_a1_20260810
@@ -552,6 +552,73 @@ artifact_lineage:
       - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_RAW_REPLAY_PREFLIGHT_20260810T205200P0800_19376c0/PUBLICATION_COMMIT.json
         bytes: 1156
         sha256: dde5847660e34d90cedcf38f69c619c2a8ba8f8470ddacdded3f7a290e5837b1
+  gse200302_srr_role_authority_v1:
+    path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE200302/GSE200302_SRR_ROLE_AUTHORITY_20260810T230315P0800_e3b724d
+    dataset_id: GSE200304
+    target_subseries_accession: GSE200302
+    bioproject_accession: PRJNA824033
+    record_type: OFFICIAL_SRR_ROLE_AUTHORITY
+    authority_level: OFFICIAL_METADATA_ROLE_AUTHORITY_ONLY
+    publication_status: COMMITTED_AND_ACCEPTED
+    status: EXACT_OFFICIAL_SRR_ROLE_AUTHORITY_CLOSED
+    bundle_digest: d3da1868158f0bb740d1e3ef2a84fa204d0ff492a2f841ff46d11396ddc8b430
+    mapping_row_count: 24
+    experiment_join_row_count: 24
+    measurement_families: [High_Poly, Low_Poly, pDNA, Total_RNA]
+    replicates: [1, 2, 3, 4, 5, 6]
+    forbidden_80s_alias_count: 0
+    prior_blocker: EXACT_SRR_SAMPLE_ROLES_UNKNOWN
+    prior_blocker_status: CLOSED
+    replacement_blocker: REQUIRED_80S_ROLE_AUTHORITY_ABSENT
+    replacement_blocker_status: OPEN
+    role_grid_status: CONFLICT_WITH_CURRENT_80S_EXPECTATION
+    pdna_may_substitute_for_80s_rna: false
+    current_effective_raw_replay_blocker_count: 17
+    publication_producer_protocol_config_path: configs/route_a_v3_gse200302_srr_role_authority.json
+    publication_producer_protocol_config_sha256: c39335b50bf9832f336ca62fdf839351c58f5fa050eaf36c62f050171cbf24b2
+    publication_producer_script_path: scripts/route_a_v3/build_gse200302_srr_role_authority.py
+    publication_producer_script_sha256: b057e4346fa9473a6da29d5f229761f2d65e76db7b510ba6477bd40dbe49183c
+    publication_producer_focused_test_path: tests/route_a_v3/test_gse200302_srr_role_authority.py
+    publication_producer_focused_test_sha256: 346e239c6628388b31ef3f8ea55b295f66347811a86fb28ddbdd6f268d894edd
+    publication_producer_protocol_core_sha256: d407504d42c390b32aaa0eff953c168b1e9cc4991afcd8530870144c78a1d526
+    artifact_intrinsic_model_selection_field_present: false
+    artifact_intrinsic_model_selection_status: NOT_ENCODED_FAIL_CLOSED
+    implementation_commit: d042d7c1706a80821a19b78334985441bcf6eb86
+    binding_commit: e3b724d00a9e5263b99475b9744fc0bb68a3ab67
+    implementation_to_binding_diff_is_config_only: true
+    commits_pushed_clean: true
+    independent_consumer_status: ACCEPTED
+    runtime_sync_status: PENDING_NO_EVT_035
+    metadata_only: true
+    fastq_body_read_count: 0
+    contains_sequence_values: false
+    contains_fastq_body_payload: false
+    contains_raw_label_values: false
+    ordinary_study_contribution: 0
+    a1_study_contribution: 0
+    true_a2_study_contribution: 0
+    canonical_record_count: 0
+    qualified: false
+    training_authorized: false
+    model_selection_allowed: false
+    next_phase_authorized: false
+    terminal_marker_written_last: true
+    files:
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE200302/GSE200302_SRR_ROLE_AUTHORITY_20260810T230315P0800_e3b724d/GSE200302_SRR_ROLE_AUTHORITY.tsv
+        bytes: 1200
+        sha256: f69fa9af134b421439a2a90c09c75cb300e2e833de143d829bafe4ef7a1d094d
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE200302/GSE200302_SRR_ROLE_AUTHORITY_20260810T230315P0800_e3b724d/GSE200302_SRR_SRX_ROLE_JOIN_AUTHORITY.tsv
+        bytes: 1509
+        sha256: 6684f3d1fde3666ac4bf07ff0aa29bd9b47240b5d6708fd8483aaa1d88a64ae4
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE200302/GSE200302_SRR_ROLE_AUTHORITY_20260810T230315P0800_e3b724d/ROLE_AUTHORITY.json
+        bytes: 4100
+        sha256: 4623dd996c927525aa4dbee6dc7b9bd0e87c0d5628ac65811f15affd67777dbc
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE200302/GSE200302_SRR_ROLE_AUTHORITY_20260810T230315P0800_e3b724d/SHA256SUMS
+        bytes: 293
+        sha256: 909d3ed6c15dea632622229aa3bae9840575000a8caf30e39165c1029ecfdec4
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE200302/GSE200302_SRR_ROLE_AUTHORITY_20260810T230315P0800_e3b724d/PUBLICATION_COMMIT.json
+        bytes: 2106
+        sha256: 35e8884db5b8e5734300e391715b87304766dbb8e4f888bf51ead5be8b5f83b3
 
 dataset_boundary_summary:
   evidence_ref:
@@ -654,6 +721,28 @@ dataset_boundary_summary:
     raw_replay_preflight_hard_unknown_blocker_count: 17
     raw_replay_preflight_fastq_body_read_count: 0
     raw_replay_preflight_changes_qualification_gate: false
+    primary_subseries_role_authority:
+      target_subseries_accession: GSE200302
+      bioproject_accession: PRJNA824033
+      publication_status: COMMITTED_AND_ACCEPTED
+      status: EXACT_OFFICIAL_SRR_ROLE_AUTHORITY_CLOSED
+      artifact_path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE200302/GSE200302_SRR_ROLE_AUTHORITY_20260810T230315P0800_e3b724d
+      bundle_digest: d3da1868158f0bb740d1e3ef2a84fa204d0ff492a2f841ff46d11396ddc8b430
+      mapping_row_count: 24
+      experiment_join_row_count: 24
+      measurement_families: [High_Poly, Low_Poly, pDNA, Total_RNA]
+      replicates: [1, 2, 3, 4, 5, 6]
+      forbidden_80s_alias_count: 0
+      prior_blocker: EXACT_SRR_SAMPLE_ROLES_UNKNOWN
+      prior_blocker_status: CLOSED
+      historical_preflight_blocker_list_preserved: true
+      replacement_blocker: REQUIRED_80S_ROLE_AUTHORITY_ABSENT
+      replacement_blocker_status: OPEN
+      role_grid_status: CONFLICT_WITH_CURRENT_80S_EXPECTATION
+      pdna_may_substitute_for_80s_rna: false
+      current_effective_raw_replay_blocker_count: 17
+      changes_qualification_gate: false
+      runtime_sync_status: PENDING_NO_EVT_035
     sam_to_oligo_count_reconstruction_status: UNKNOWN_NOT_ASSERTED
     acquisition_changes_qualification_gate: false
     source_grouping_status: SEQUENCE_EQUALITY_PROXY_NOT_BIOLOGICALLY_FROZEN
@@ -663,6 +752,7 @@ dataset_boundary_summary:
     qualified: false
     training_allowed: false
     model_selection_allowed: false
+    next_phase_authorized: false
   three_utr_candidates:
     dataset_ids: [GSE217518, ENCSR854RUF, GSE200304, GSE232572, GSE186455]
     registry_qualification_status: AUDIT_PENDING
@@ -745,6 +835,10 @@ claim_boundaries:
   gse200304_raw_replay_preflight_is_paper_native_count_replay: false
   gse200304_raw_replay_preflight_is_paper_native_xtail_replay: false
   gse200304_raw_replay_preflight_resolves_control_u_policy: false
+  gse200302_srr_role_authority_is_raw_replay: false
+  gse200302_srr_role_authority_is_study_qualification: false
+  gse200302_srr_role_authority_authorizes_training_or_model_selection: false
+  gse200302_pdna_may_substitute_for_80s_rna: false
   a1_phase_complete: false
   route_a_established: false
 
@@ -812,7 +906,7 @@ verification:
     scope: INTERIM_RECORD_STATUS_CLAIM_BOUNDARIES_PLUMAGE_BLOCK_SEMANTICS_AND_LOG2_CPM_SCALE
 
 initial_generated_at: "2026-08-10T06:30:58+08:00"
-generated_at: "2026-08-10T20:58:30+08:00"
-updated_at: "2026-08-10T20:58:30+08:00"
-updated_for_decision_id: V3-DEC-017
-latest_evidence_update_id: GSE200304_RAW_REPLAY_PREFLIGHT_20260810T205200P0800_19376c0
+generated_at: "2026-08-10T23:10:00+08:00"
+updated_at: "2026-08-10T23:10:00+08:00"
+updated_for_decision_id: V3-DEC-018
+latest_evidence_update_id: GSE200302_SRR_ROLE_AUTHORITY_20260810T230315P0800_e3b724d
