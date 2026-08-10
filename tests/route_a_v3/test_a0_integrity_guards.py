@@ -229,6 +229,7 @@ def test_a1_interim_gse200304_blocked_counts_and_lineage_are_fail_closed(
         "training_allowed": True,
         "canonical_intervention_record_count": 1,
         "ordinary_gate_contribution": 1,
+        "acquisition_changes_qualification_gate": True,
     }
     for key, value in summary_mutations.items():
         bypass = deepcopy(interim)
@@ -275,6 +276,7 @@ def test_rehashed_gse200304_interim_cannot_bypass_semantic_closure(
         "training_allowed": True,
         "canonical_intervention_record_count": 1,
         "ordinary_gate_contribution": 1,
+        "acquisition_changes_qualification_gate": True,
     }
     for key, value in summary_mutations.items():
         def mutate_summary(interim, key=key, value=value):
@@ -319,9 +321,71 @@ def test_rehashed_gse200304_interim_cannot_bypass_semantic_closure(
     )
     assert "A1_INTERIM_GATE" in codes
 
+    def inject_unknown_fastq_gate_fields(interim):
+        acquisition = interim["artifact_lineage"]["gse200304_fastq_acquisition_v1"]
+        acquisition["qualification_status"] = "QUALIFIED"
+        acquisition["gate_credit_override"] = 1
+
+    codes = _validate_rehashed_interim_bypass(
+        validator,
+        repo_root,
+        tmp_path / "fastq_unknown_gate_fields",
+        monkeypatch,
+        inject_unknown_fastq_gate_fields,
+    )
+    assert "A1_INTERIM_GSE200304_LINEAGE_KEYS" in codes
+
+    def mutate_unvalidated_study_summaries(interim):
+        interim["dataset_boundary_summary"]["GSE149487"]["qualified"] = True
+        interim["dataset_boundary_summary"]["GSE149487"]["training_allowed"] = True
+        interim["dataset_boundary_summary"]["three_utr_candidates"][
+            "qualified_studies"
+        ] = 3
+        interim["dataset_boundary_summary"]["three_utr_candidates"][
+            "transfer_claim_status"
+        ] = "ESTABLISHED"
+
+    codes = _validate_rehashed_interim_bypass(
+        validator,
+        repo_root,
+        tmp_path / "other_study_summary_upgrade",
+        monkeypatch,
+        mutate_unvalidated_study_summaries,
+    )
+    assert "A1_INTERIM_GSE149487" in codes
+    assert "A1_INTERIM_THREE_UTR" in codes
+
+    def inject_excluded_dataset_into_scope(interim):
+        interim["scope"]["included_dataset_ids"].append("GSE246381")
+
+    codes = _validate_rehashed_interim_bypass(
+        validator,
+        repo_root,
+        tmp_path / "excluded_dataset_scope_injection",
+        monkeypatch,
+        inject_excluded_dataset_into_scope,
+    )
+    assert "A1_INTERIM_SCOPE" in codes
+
+    def mutate_bool_to_int(interim):
+        interim["gate_snapshot"]["next_phase_authorized"] = 0
+        interim["dataset_boundary_summary"]["GSE200304"]["qualified"] = 0
+
+    codes = _validate_rehashed_interim_bypass(
+        validator,
+        repo_root,
+        tmp_path / "bool_int_type_confusion",
+        monkeypatch,
+        mutate_bool_to_int,
+    )
+    assert "A1_INTERIM_GATE" in codes
+    assert "A1_INTERIM_GSE200304" in codes
+
     closed_lineage_ids = (
         "gse200304_public_asset_bundle",
         "gse200304_ena_fastq_manifest_bundle",
+        "gse200304_fastq_acquisition_v1",
+        "gse200304_fastq_independent_consumer_verification_v1",
         "gse200304_gap_qualification_attempt_001_failure",
         "gse200304_gap_qualification_attempt_002_failure",
         "gse200304_gap_qualification_attempt_003_failure",
@@ -355,6 +419,42 @@ def test_rehashed_gse200304_interim_cannot_bypass_semantic_closure(
         tmp_path / "failure_semantics",
         monkeypatch,
         mutate_failure_semantics,
+    )
+    assert "A1_INTERIM_GSE200304_LINEAGE" in codes
+
+    def mutate_fastq_acquisition_semantics(interim):
+        acquisition = interim["artifact_lineage"]["gse200304_fastq_acquisition_v1"]
+        acquisition["paper_native_count_reconstruction_status"] = "PASS"
+        acquisition["ordinary_study_contribution"] = 1
+        acquisition["qualified"] = True
+        acquisition["training_allowed"] = True
+        acquisition["next_phase_authorized"] = True
+
+    codes = _validate_rehashed_interim_bypass(
+        validator,
+        repo_root,
+        tmp_path / "fastq_acquisition_semantics",
+        monkeypatch,
+        mutate_fastq_acquisition_semantics,
+    )
+    assert "A1_INTERIM_GSE200304_LINEAGE" in codes
+
+    def mutate_fastq_consumer_semantics(interim):
+        consumer = interim["artifact_lineage"][
+            "gse200304_fastq_independent_consumer_verification_v1"
+        ]
+        consumer["first_descendant_head_attempt_status"] = "PASS"
+        consumer["acceptance_scope"] = "A1_DATA_QUALIFICATION"
+        consumer["a1_study_contribution"] = 1
+        consumer["qualified"] = True
+        consumer["model_selection_allowed"] = True
+
+    codes = _validate_rehashed_interim_bypass(
+        validator,
+        repo_root,
+        tmp_path / "fastq_consumer_semantics",
+        monkeypatch,
+        mutate_fastq_consumer_semantics,
     )
     assert "A1_INTERIM_GSE200304_LINEAGE" in codes
 

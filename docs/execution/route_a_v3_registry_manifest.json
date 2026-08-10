@@ -44,7 +44,7 @@
     {
       "path": "docs/execution/route_a_v3_a1_interim.yaml",
       "role": "A1_ACTIVE_INTERIM_RECORD",
-      "sha256": "6a6f9f78e521facd97dc177c2c877deb6939cdc43d9e07d13e155e325bcb91f5"
+      "sha256": "66b996c800af176fb04492396bba7fd7bf7cd15d20c8aa79744dafecefb27a5d"
     },
     {
       "path": "docs/execution/route_a_v3_split_registry.yaml",
@@ -84,12 +84,12 @@
     {
       "path": "scripts/route_a_v3/validate_a0_bundle.py",
       "role": "A0_STATIC_AND_SEMANTIC_VALIDATOR",
-      "sha256": "18afa6a92f324ec193af9e0f8371a1cafdcbf41c6019c6be8143f0c460e3a228"
+      "sha256": "3bb4f2fc9db6f4d4cc640b65bafdf326cbe598c2adabf824ffd0f9c29f2acebb"
     }
   ],
   "initial_generated_at": "2026-08-10T10:10:05+08:00",
-  "generated_at": "2026-08-10T17:06:00+08:00",
-  "updated_at": "2026-08-10T17:06:00+08:00",
+  "generated_at": "2026-08-10T19:47:11+08:00",
+  "updated_at": "2026-08-10T19:47:11+08:00",
   "manifest_status": "A1_SCHEME_A_AUTHORITY_REBIND",
   "schema_version": "1.0.0",
   "sealed_contact": false,

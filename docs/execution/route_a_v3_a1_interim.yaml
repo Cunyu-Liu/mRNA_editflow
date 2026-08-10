@@ -242,6 +242,82 @@ artifact_lineage:
       - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE200304/GSE200304_ENA_FASTQ_MANIFEST_20260810T145631P0800/SHA256SUMS
         bytes: 307
         sha256: 5217d3bd5494908d1886c6a00719014f4726ab3b61efde43184c2e475c6fdc78
+  gse200304_fastq_acquisition_v1:
+    path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE200304/GSE200304_FASTQ_ACQUISITION_20260810T165023P0800_e24d722
+    target_subseries_accession: GSE200302
+    superseries_accession: GSE200304
+    bioproject_accession: PRJNA824033
+    publication_status: FASTQ_ACQUISITION_COMMITTED
+    implementation_commit: 7683cad77250fcb986d83a903d3e94b2eaea75de
+    binding_commit: e24d7225aecf098e7cddaa7a246e8bfea1a0730d
+    implementation_script_sha256: 1b0d1c5db7e32475fb835cadb5d1805415447a490a1a83840bcb6e8518fa6340
+    protocol_sha256: e589a9ceccd469ee22eaddcf2f4f05e10a2a66c138a38ba30ee6795435d8f96a
+    terminal_marker_sha256: c0956cc8ce3e038ecc735a079fd53869376d5e6db42e46246f036446e03222ca
+    verified_file_count: 48
+    verified_run_count: 24
+    verified_total_bytes: 12738938976
+    repository_md5_verified_count: 48
+    local_sha256_recorded_count: 48
+    terminal_member_set_count_excluding_marker_and_operational_files: 100
+    raw_fastq_body_present: true
+    aggregate_only_ledger_entry: true
+    paper_native_count_reconstruction_status: NOT_RUN
+    paper_native_xtail_replay_status: NOT_RUN
+    ordinary_study_contribution: 0
+    a1_study_contribution: 0
+    true_a2_study_contribution: 0
+    qualified: false
+    training_allowed: false
+    model_selection_allowed: false
+    next_phase_authorized: false
+    files:
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE200304/GSE200304_FASTQ_ACQUISITION_20260810T165023P0800_e24d722/ACQUISITION_BINDING.json
+        bytes: 1584
+        sha256: 3d0681caaf864f18c9ae482b38e9e19a8cd09f0c326a76f3780623df84ab16cb
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE200304/GSE200304_FASTQ_ACQUISITION_20260810T165023P0800_e24d722/ACQUISITION_STATUS.json
+        bytes: 1418
+        sha256: 178708ad6f6d9de91b8c89aba63359822b274330d4050b574170eaec234ed4fd
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE200304/GSE200304_FASTQ_ACQUISITION_20260810T165023P0800_e24d722/FASTQ_INTEGRITY_MANIFEST.json
+        bytes: 20339
+        sha256: 87417e078dc6f47bec5404430a69ca72f18c03066ae2e24300d3a0642fbce167
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE200304/GSE200304_FASTQ_ACQUISITION_20260810T165023P0800_e24d722/PUBLICATION_COMMIT.json
+        bytes: 15875
+        sha256: c0956cc8ce3e038ecc735a079fd53869376d5e6db42e46246f036446e03222ca
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE200304/GSE200304_FASTQ_ACQUISITION_20260810T165023P0800_e24d722/SHA256SUMS
+        bytes: 9493
+        sha256: c20fb56dd116817db1aa1868da318e8ef4c038a9828d50004f88560e1b6cee3d
+  gse200304_fastq_independent_consumer_verification_v1:
+    path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_FASTQ_CONSUMER_VERIFY_20260810T191502P0800_e24d722
+    publication_status: INDEPENDENT_CONSUMER_VERIFICATION_COMMITTED
+    first_descendant_head_attempt_status: FAIL_CLOSED_REPLAY_ENVIRONMENT_BINDING_MISMATCH
+    first_descendant_head: 28cd2f132d022fea6ac43e1f89d6673d02a9c97d
+    exact_producer_binding_attempt_status: ALREADY_COMMITTED_VERIFIED
+    exact_producer_binding_head: e24d7225aecf098e7cddaa7a246e8bfea1a0730d
+    producer_terminal_marker_sha256: c0956cc8ce3e038ecc735a079fd53869376d5e6db42e46246f036446e03222ca
+    verified_file_count: 48
+    verified_run_count: 24
+    verified_total_bytes: 12738938976
+    repository_md5_verified_count: 48
+    local_sha256_verified_count: 48
+    terminal_member_closure_verified: true
+    acceptance_scope: TRANSPORT_AND_ACQUISITION_INTEGRITY_ONLY
+    ordinary_study_contribution: 0
+    a1_study_contribution: 0
+    true_a2_study_contribution: 0
+    qualified: false
+    training_allowed: false
+    model_selection_allowed: false
+    next_phase_authorized: false
+    files:
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_FASTQ_CONSUMER_VERIFY_20260810T191502P0800_e24d722/VERIFICATION_RECORD.json
+        bytes: 5539
+        sha256: d316cfa617348457ba1f6a15c284c599a0b422dae85ea3f810cb5476806fb58e
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_FASTQ_CONSUMER_VERIFY_20260810T191502P0800_e24d722/PUBLICATION_COMMIT.json
+        bytes: 1472
+        sha256: 0189119470a9379c97b16533857e6c2f67dad6472509dd25247490e809f29e30
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_FASTQ_CONSUMER_VERIFY_20260810T191502P0800_e24d722/SHA256SUMS
+        bytes: 91
+        sha256: 968b11b3691b552d567d7461bf970871a7d120c231576df923ee28818c239b25
   gse200304_qualifier_protocol:
     path: configs/route_a_v3_gse200304_a1_qualification.json
     sha256: 0c7328735edbeed90ae04d5032b268c3b92c71e03031aa040bc03c2743b9e0a7
@@ -451,6 +527,10 @@ dataset_boundary_summary:
     all_pairs_exactly_one_snv: true
     controls_excluded_from_source_candidate_geometry: true
     paper_native_raw_xtail_replay_status: NOT_RUN
+    fastq_acquisition_status: COMMITTED_TRANSPORT_INTEGRITY_VERIFIED
+    fastq_independent_consumer_status: ALREADY_COMMITTED_VERIFIED
+    sam_to_oligo_count_reconstruction_status: UNKNOWN_NOT_ASSERTED
+    acquisition_changes_qualification_gate: false
     source_grouping_status: SEQUENCE_EQUALITY_PROXY_NOT_BIOLOGICALLY_FROZEN
     license_and_redistribution_status: UNKNOWN_NOT_ASSERTED
     checkpoint_specific_foundation_exposure_status: UNKNOWN_NOT_ASSERTED
@@ -532,6 +612,8 @@ claim_boundaries:
   gse145046_formal_audit_execution_is_study_qualification: false
   gse145046_fixed_scaffold_absolute_auxiliary_is_true_a2: false
   gse200304_engineering_success_is_study_qualification: false
+  gse200304_fastq_acquisition_is_study_qualification: false
+  gse200304_transport_integrity_is_paper_native_count_replay: false
   gse200304_sequence_proxy_groups_are_biological_source_groups: false
   gse200304_precomputed_aggregate_evidence_is_paper_native_xtail_replay: false
   a1_phase_complete: false
@@ -595,6 +677,7 @@ verification:
     scope: INTERIM_RECORD_STATUS_CLAIM_BOUNDARIES_PLUMAGE_BLOCK_SEMANTICS_AND_LOG2_CPM_SCALE
 
 initial_generated_at: "2026-08-10T06:30:58+08:00"
-generated_at: "2026-08-10T17:05:00+08:00"
-updated_at: "2026-08-10T17:05:00+08:00"
+generated_at: "2026-08-10T19:20:00+08:00"
+updated_at: "2026-08-10T19:20:00+08:00"
 updated_for_decision_id: V3-DEC-017
+latest_evidence_update_id: GSE200304_FASTQ_CONSUMER_VERIFY_20260810T191502P0800_e24d722

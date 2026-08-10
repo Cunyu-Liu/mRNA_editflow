@@ -37,7 +37,7 @@ SUPERSESSION_PATH = "docs/contracts/supersession_mrna_xeditflow_v1_1_to_route_a_
 DECISION_LOG_PATH = "docs/execution/route_a_v3_decision_log.yaml"
 REGISTRY_MANIFEST_PATH = "docs/execution/route_a_v3_registry_manifest.json"
 A1_INTERIM_PATH = "docs/execution/route_a_v3_a1_interim.yaml"
-EXPECTED_A1_INTERIM_SHA256 = "6a6f9f78e521facd97dc177c2c877deb6939cdc43d9e07d13e155e325bcb91f5"
+EXPECTED_A1_INTERIM_SHA256 = "66b996c800af176fb04492396bba7fd7bf7cd15d20c8aa79744dafecefb27a5d"
 SCIENTIFIC_M0_HISTORY_PATH = "docs/contracts/history/mrna_v2_readiness_audit_20260807.md"
 SCIENTIFIC_M0_HISTORY_SHA256 = "a8eb4f49ede793a8eae2037db9f46f044056d37610ec92482666a8242a52fa30"
 SEALED_GUARD_PATH = "scripts/route_a_v3/sealed_guard.py"
@@ -1196,9 +1196,47 @@ def _mapping_entry(entries: Any, id_key: str, wanted: str) -> Mapping[str, Any] 
     return None
 
 
+def _json_type_strict_equal(observed: Any, expected: Any) -> bool:
+    """Compare JSON-compatible values without Python's bool/int coercion."""
+
+    if type(observed) is not type(expected):
+        return False
+    if isinstance(expected, Mapping):
+        return set(observed) == set(expected) and all(
+            _json_type_strict_equal(observed[key], value)
+            for key, value in expected.items()
+        )
+    if isinstance(expected, list):
+        return len(observed) == len(expected) and all(
+            _json_type_strict_equal(left, right)
+            for left, right in zip(observed, expected)
+        )
+    return observed == expected
+
+
 def _expect(mapping: Mapping[str, Any], key: str, value: Any, path: str, issues: list[Issue], code: str) -> None:
-    if key not in mapping or mapping.get(key) != value:
+    if key not in mapping or not _json_type_strict_equal(mapping.get(key), value):
         _issue(issues, code, path, f"{key} must be {value!r}; got {mapping.get(key)!r}")
+
+
+def _expect_closed_mapping(
+    mapping: Mapping[str, Any],
+    expected: Mapping[str, Any],
+    path: str,
+    issues: list[Issue],
+    code: str,
+) -> None:
+    observed_keys = set(mapping)
+    expected_keys = set(expected)
+    if observed_keys != expected_keys:
+        _issue(
+            issues,
+            code,
+            path,
+            f"mapping keys must be exactly {sorted(expected_keys)!r}; got {sorted(observed_keys)!r}",
+        )
+    for key, value in expected.items():
+        _expect(mapping, key, value, path, issues, code)
 
 
 def validate_a1_interim_lineage(
@@ -1233,6 +1271,36 @@ def validate_a1_interim_lineage(
     }
     for key, value in expected_top.items():
         _expect(interim, key, value, path, issues, "A1_INTERIM_METADATA")
+    expected_top_keys = {
+        "schema_version",
+        "contract_id",
+        "contract_version",
+        "record_id",
+        "record_type",
+        "phase_id",
+        "record_status",
+        "authority",
+        "scope",
+        "gate_snapshot",
+        "artifact_lineage",
+        "dataset_boundary_summary",
+        "boundary_deviation",
+        "power_prefreeze",
+        "claim_boundaries",
+        "verification",
+        "initial_generated_at",
+        "generated_at",
+        "updated_at",
+        "updated_for_decision_id",
+        "latest_evidence_update_id",
+    }
+    if set(interim) != expected_top_keys:
+        _issue(
+            issues,
+            "A1_INTERIM_METADATA",
+            path,
+            f"top-level keys must be exactly {sorted(expected_top_keys)!r}",
+        )
 
     authority = interim.get("authority")
     if not isinstance(authority, Mapping):
@@ -1245,6 +1313,11 @@ def validate_a1_interim_lineage(
             "active_amendment_decision_ids": ["V3-DEC-017"],
             "data_role_registry_path": REGISTRY_PATHS["data"],
             "claim_evidence_matrix_path": REGISTRY_PATHS["claim"],
+            "accepted_a0_activation_commit": "fd722d5fa3c2538fce742b8942b1fb48e782760b",
+            "branch": "routea-v3-a1-20260810",
+            "worktree": "/home/cunyuliu/mrna_editflow_goal/worktrees/routea_v3_a1_20260810",
+            "run_id": "A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5",
+            "run_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5",
             "data_role_authority_remains": REGISTRY_PATHS["data"],
             "this_record_changes_dataset_qualification": False,
         }
@@ -1260,6 +1333,17 @@ def validate_a1_interim_lineage(
                 _issue(issues, "A1_INTERIM_AUTHORITY_FILE", relative, str(exc))
             else:
                 _expect(authority, hash_key, actual, path, issues, "A1_INTERIM_AUTHORITY_HASH")
+        expected_authority_keys = set(expected_authority) | {
+            "data_role_registry_sha256",
+            "claim_evidence_matrix_sha256",
+        }
+        if set(authority) != expected_authority_keys:
+            _issue(
+                issues,
+                "A1_INTERIM_AUTHORITY",
+                path,
+                f"authority keys must be exactly {sorted(expected_authority_keys)!r}",
+            )
 
     scope = interim.get("scope")
     if not isinstance(scope, Mapping):
@@ -1267,10 +1351,22 @@ def validate_a1_interim_lineage(
     else:
         expected_scope = {
             "ordinary_public_data_only": True,
+            "included_dataset_ids": [
+                "GSE145046",
+                "GSE114002",
+                "GSE149487",
+                "GSE217518",
+                "GSE200304",
+                "ENCSR854RUF",
+                "GSE232572",
+                "GSE186455",
+                "GSE207584",
+            ],
             "absolute_auxiliary_dataset_ids": ["GSE145046"],
             "true_a2_recovery_candidate_dataset_ids": ["GSE114002"],
             "scheme_a_changes_qualified_counts": False,
             "excluded_dataset_ids": ["GSE246381"],
+            "legacy_canonical_purpose": "GAP_INVENTORY_ONLY",
             "metadata_only_qualification_allowed": False,
             "training_allowed": False,
             "model_selection_allowed": False,
@@ -1283,8 +1379,9 @@ def validate_a1_interim_lineage(
             "model_selection_started": False,
             "sealed_evaluation_count": 0,
         }
-        for key, value in expected_scope.items():
-            _expect(scope, key, value, path, issues, "A1_INTERIM_SCOPE")
+        _expect_closed_mapping(
+            scope, expected_scope, path, issues, "A1_INTERIM_SCOPE"
+        )
 
     gate = interim.get("gate_snapshot")
     if not isinstance(gate, Mapping):
@@ -1305,18 +1402,51 @@ def validate_a1_interim_lineage(
             "next_phase_authorized": False,
             "a2_training_authorized": False,
         }
-        for key, value in expected_gate.items():
-            _expect(gate, key, value, path, issues, "A1_INTERIM_GATE")
+        _expect_closed_mapping(
+            gate, expected_gate, path, issues, "A1_INTERIM_GATE"
+        )
 
     lineage = interim.get("artifact_lineage")
     if not isinstance(lineage, Mapping):
         _issue(issues, "A1_INTERIM_GSE200304_LINEAGE", path, "artifact_lineage must be a mapping")
     else:
+        expected_all_lineage_ids = {
+            "protocol",
+            "collector",
+            "legacy_gap_inventory_v1",
+            "legacy_gap_inventory_v2",
+            "gse114002_manifest_reconciliation_v1",
+            "gse149487_reconstruction_attempt_003_failure",
+            "gse149487_lim6c_scale_diagnostic_v1",
+            "gse149487_plumage_protocol",
+            "gse149487_plumage_reconstruction_v4",
+            "gse145046_a2_audit_protocol",
+            "gse145046_a2_formal_audit_v1",
+            "a1_public_qualifiers_sync_v1",
+            "gse200304_public_asset_bundle",
+            "gse200304_ena_fastq_manifest_bundle",
+            "gse200304_fastq_acquisition_v1",
+            "gse200304_fastq_independent_consumer_verification_v1",
+            "gse200304_qualifier_protocol",
+            "gse200304_gap_qualification_attempt_001_failure",
+            "gse200304_gap_qualification_attempt_002_failure",
+            "gse200304_gap_qualification_attempt_003_failure",
+            "gse200304_gap_qualification_v1",
+        }
+        if set(lineage) != expected_all_lineage_ids:
+            _issue(
+                issues,
+                "A1_INTERIM_LINEAGE_ID_SET",
+                path,
+                "artifact lineage IDs must remain the exact accepted closed set",
+            )
         expected_gse200304_lineage = {
             "a1_public_qualifiers_sync_v1": {
                 "path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/A1_PUBLIC_QUALIFIERS_SYNC_V1.json",
                 "sha256": "22eac457a5ccea5272b9e1b9ff4ded845c79c89449209f28d9aaa510f2ab59f5",
                 "event_id": "A1-EVT-031",
+                "event_at": "2026-08-10T13:26:47+08:00",
+                "lineage_role": "PRIOR_PUBLIC_QUALIFIER_EVIDENCE_SYNC_WITH_GATE_UNCHANGED",
                 "qualified_independent_ordinary_studies": 0,
                 "qualified_a1_studies": 0,
                 "qualified_a2_dense_studies": 0,
@@ -1347,6 +1477,58 @@ def validate_a1_interim_lineage(
                 "status": "PRESENT_IN_SEPARATE_COMMITTED_BUNDLE_NOT_CONSUMED",
                 "used_by_current_qualifier": False,
             },
+            "gse200304_fastq_acquisition_v1": {
+                "path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE200304/GSE200304_FASTQ_ACQUISITION_20260810T165023P0800_e24d722",
+                "target_subseries_accession": "GSE200302",
+                "superseries_accession": "GSE200304",
+                "bioproject_accession": "PRJNA824033",
+                "publication_status": "FASTQ_ACQUISITION_COMMITTED",
+                "implementation_commit": "7683cad77250fcb986d83a903d3e94b2eaea75de",
+                "binding_commit": "e24d7225aecf098e7cddaa7a246e8bfea1a0730d",
+                "implementation_script_sha256": "1b0d1c5db7e32475fb835cadb5d1805415447a490a1a83840bcb6e8518fa6340",
+                "protocol_sha256": "e589a9ceccd469ee22eaddcf2f4f05e10a2a66c138a38ba30ee6795435d8f96a",
+                "terminal_marker_sha256": "c0956cc8ce3e038ecc735a079fd53869376d5e6db42e46246f036446e03222ca",
+                "verified_file_count": 48,
+                "verified_run_count": 24,
+                "verified_total_bytes": 12738938976,
+                "repository_md5_verified_count": 48,
+                "local_sha256_recorded_count": 48,
+                "terminal_member_set_count_excluding_marker_and_operational_files": 100,
+                "raw_fastq_body_present": True,
+                "aggregate_only_ledger_entry": True,
+                "paper_native_count_reconstruction_status": "NOT_RUN",
+                "paper_native_xtail_replay_status": "NOT_RUN",
+                "ordinary_study_contribution": 0,
+                "a1_study_contribution": 0,
+                "true_a2_study_contribution": 0,
+                "qualified": False,
+                "training_allowed": False,
+                "model_selection_allowed": False,
+                "next_phase_authorized": False,
+            },
+            "gse200304_fastq_independent_consumer_verification_v1": {
+                "path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_FASTQ_CONSUMER_VERIFY_20260810T191502P0800_e24d722",
+                "publication_status": "INDEPENDENT_CONSUMER_VERIFICATION_COMMITTED",
+                "first_descendant_head_attempt_status": "FAIL_CLOSED_REPLAY_ENVIRONMENT_BINDING_MISMATCH",
+                "first_descendant_head": "28cd2f132d022fea6ac43e1f89d6673d02a9c97d",
+                "exact_producer_binding_attempt_status": "ALREADY_COMMITTED_VERIFIED",
+                "exact_producer_binding_head": "e24d7225aecf098e7cddaa7a246e8bfea1a0730d",
+                "producer_terminal_marker_sha256": "c0956cc8ce3e038ecc735a079fd53869376d5e6db42e46246f036446e03222ca",
+                "verified_file_count": 48,
+                "verified_run_count": 24,
+                "verified_total_bytes": 12738938976,
+                "repository_md5_verified_count": 48,
+                "local_sha256_verified_count": 48,
+                "terminal_member_closure_verified": True,
+                "acceptance_scope": "TRANSPORT_AND_ACQUISITION_INTEGRITY_ONLY",
+                "ordinary_study_contribution": 0,
+                "a1_study_contribution": 0,
+                "true_a2_study_contribution": 0,
+                "qualified": False,
+                "training_allowed": False,
+                "model_selection_allowed": False,
+                "next_phase_authorized": False,
+            },
             "gse200304_qualifier_protocol": {
                 "path": "configs/route_a_v3_gse200304_a1_qualification.json",
                 "sha256": "0c7328735edbeed90ae04d5032b268c3b92c71e03031aa040bc03c2743b9e0a7",
@@ -1358,6 +1540,8 @@ def validate_a1_interim_lineage(
                 "binding_commit": "46c608b219590cf844060a85ba0983bcf4c5a471",
                 "qualification_execution_commit": "46c608b219590cf844060a85ba0983bcf4c5a471",
                 "implementation_binding_status": "BOUND",
+                "canonical_protocol_trust_root_closed": True,
+                "model_results_may_change_protocol": False,
             },
             "gse200304_gap_qualification_attempt_001_failure": {
                 "path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_GAP_QUALIFICATION_20260810T155024P0800_bf14584",
@@ -1453,6 +1637,8 @@ def validate_a1_interim_lineage(
 
         public_root = "/mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE200304/GSE200304_PUBLIC_ASSETS_20260810T143731P0800"
         ena_root = "/mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE200304/GSE200304_ENA_FASTQ_MANIFEST_20260810T145631P0800"
+        fastq_root = "/mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE200304/GSE200304_FASTQ_ACQUISITION_20260810T165023P0800_e24d722"
+        consumer_root = "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_FASTQ_CONSUMER_VERIFY_20260810T191502P0800_e24d722"
         failure_001_root = "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_GAP_QUALIFICATION_20260810T155024P0800_bf14584"
         failure_002_root = "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_GAP_QUALIFICATION_20260810T160803P0800_841b275"
         failure_003_root = "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_GAP_QUALIFICATION_20260810T162027P0800_8bb2106"
@@ -1478,6 +1664,24 @@ def validate_a1_interim_lineage(
                     ("MANIFEST_SUMMARY.json", 3135, "f92f944c825a255f3f1fb50f48cbf0e701980b7895101c1a2a6699d4b190e1e4"),
                     ("PUBLICATION_COMMIT.json", 1578, "d3eed4a9408543c77f47aa2a0d8cff59ebfe863c1e3c2d0bb2324d7910d6014b"),
                     ("SHA256SUMS", 307, "5217d3bd5494908d1886c6a00719014f4726ab3b61efde43184c2e475c6fdc78"),
+                ),
+            ),
+            "gse200304_fastq_acquisition_v1": _closed_files(
+                fastq_root,
+                (
+                    ("ACQUISITION_BINDING.json", 1584, "3d0681caaf864f18c9ae482b38e9e19a8cd09f0c326a76f3780623df84ab16cb"),
+                    ("ACQUISITION_STATUS.json", 1418, "178708ad6f6d9de91b8c89aba63359822b274330d4050b574170eaec234ed4fd"),
+                    ("FASTQ_INTEGRITY_MANIFEST.json", 20339, "87417e078dc6f47bec5404430a69ca72f18c03066ae2e24300d3a0642fbce167"),
+                    ("PUBLICATION_COMMIT.json", 15875, "c0956cc8ce3e038ecc735a079fd53869376d5e6db42e46246f036446e03222ca"),
+                    ("SHA256SUMS", 9493, "c20fb56dd116817db1aa1868da318e8ef4c038a9828d50004f88560e1b6cee3d"),
+                ),
+            ),
+            "gse200304_fastq_independent_consumer_verification_v1": _closed_files(
+                consumer_root,
+                (
+                    ("VERIFICATION_RECORD.json", 5539, "d316cfa617348457ba1f6a15c284c599a0b422dae85ea3f810cb5476806fb58e"),
+                    ("PUBLICATION_COMMIT.json", 1472, "0189119470a9379c97b16533857e6c2f67dad6472509dd25247490e809f29e30"),
+                    ("SHA256SUMS", 91, "968b11b3691b552d567d7461bf970871a7d120c231576df923ee28818c239b25"),
                 ),
             ),
             "gse200304_gap_qualification_attempt_001_failure": _closed_files(
@@ -1525,6 +1729,16 @@ def validate_a1_interim_lineage(
                     f"{lineage_id} must be a mapping",
                 )
                 continue
+            expected_record_keys = set(expected_fields)
+            if lineage_id in expected_closed_files:
+                expected_record_keys.add("files")
+            if set(record) != expected_record_keys:
+                _issue(
+                    issues,
+                    "A1_INTERIM_GSE200304_LINEAGE_KEYS",
+                    path,
+                    f"{lineage_id} keys must be exactly {sorted(expected_record_keys)!r}",
+                )
             for key, value in expected_fields.items():
                 _expect(
                     record,
@@ -1548,6 +1762,37 @@ def validate_a1_interim_lineage(
     if not isinstance(summary, Mapping):
         _issue(issues, "A1_INTERIM_DATASET_BOUNDARY", path, "dataset_boundary_summary must be a mapping")
     else:
+        expected_summary_keys = {
+            "evidence_ref",
+            "GSE114002",
+            "GSE149487",
+            "GSE145046",
+            "GSE200304",
+            "three_utr_candidates",
+            "GSE207584",
+            "qualified_a2_dense_neighborhoods",
+        }
+        if set(summary) != expected_summary_keys:
+            _issue(
+                issues,
+                "A1_INTERIM_DATASET_BOUNDARY",
+                path,
+                "dataset boundary keys must remain the exact accepted set",
+            )
+        evidence_ref = summary.get("evidence_ref")
+        if not isinstance(evidence_ref, Mapping):
+            _issue(issues, "A1_INTERIM_DATASET_BOUNDARY", path, "evidence_ref must be a mapping")
+        else:
+            _expect_closed_mapping(
+                evidence_ref,
+                {
+                    "path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/A1_LEGACY_GAP_INVENTORY_V2.json",
+                    "sha256": "d1b371fd350f910a6de38e27c50a30f9c97c660085382f0ac384ac9ecdc0fdff",
+                },
+                path,
+                issues,
+                "A1_INTERIM_DATASET_BOUNDARY",
+            )
         gse145046 = summary.get("GSE145046")
         if not isinstance(gse145046, Mapping):
             _issue(issues, "A1_INTERIM_GSE145046", path, "GSE145046 boundary must be a mapping")
@@ -1567,9 +1812,33 @@ def validate_a1_interim_lineage(
                 "qualified": False,
                 "training_allowed": False,
                 "model_selection_allowed": False,
+                "a1_inventory_qualification_status": "BLOCKED_PENDING_PUBLIC_EVIDENCE",
+                "formal_audit_execution_status": "COMPLETED",
+                "payload_integrity_status": "PASS",
+                "rpm_validation_status": "PASS",
+                "aggregate_reconciliation_status": "MATCH",
+                "data_semantics": "FIXED_SCAFFOLD_ABSOLUTE_OUTCOMES_NOT_DIRECT_SOURCE_TO_CANDIDATE_INTERVENTIONS",
+                "full_reporter_anchor_status": "NOT_CLOSED",
+                "n10_locus_status": "CLOSED_AT_PRIMER_LEVEL",
+                "decisive_remaining_blockers": [
+                    "FULL_REPORTER_SOURCE_ANCHOR_NOT_IDENTIFIABLE",
+                    "FACS_GATE_CONSTANTS_NOT_RECOVERED",
+                    "IN_VIVO_HALF_LIFE_BASELINE_AND_AGGREGATION_NOT_RECOVERED",
+                    "IN_VITRO_REPLICATE_AND_SE_NOT_IDENTIFIABLE",
+                    "LICENSE_AND_REDISTRIBUTION_NOT_BOUND",
+                    "CHECKPOINT_SPECIFIC_EXPOSURE_NOT_CLOSED",
+                    "DENSE_SPLIT_AND_HAMMING_MOAT_NOT_FROZEN",
+                    "ABSOLUTE_OUTCOME_NOT_DIRECT_SOURCE_CANDIDATE_INTERVENTION",
+                    "TRUE_A2_NOT_QUALIFIED",
+                ],
             }
-            for key, value in expected_gse145046.items():
-                _expect(gse145046, key, value, path, issues, "A1_INTERIM_GSE145046")
+            _expect_closed_mapping(
+                gse145046,
+                expected_gse145046,
+                path,
+                issues,
+                "A1_INTERIM_GSE145046",
+            )
         gse114002 = summary.get("GSE114002")
         if not isinstance(gse114002, Mapping):
             _issue(issues, "A1_INTERIM_GSE114002", path, "GSE114002 boundary must be a mapping")
@@ -1581,9 +1850,56 @@ def validate_a1_interim_lineage(
                 "future_use_boundary_if_qualified": "WITHIN_ASSAY_DEVELOPMENT_AND_OPTIMIZATION_ONLY_SEQUENCE_EXPOSED",
                 "fallback_if_not_qualifiable": "NEW_GENUINE_PUBLIC_A2_STUDY_REQUIRED",
                 "qualified": False,
+                "a1_inventory_qualification_status": "BLOCKED_PENDING_PUBLIC_EVIDENCE",
+                "p0_manifest_status": "INCOMPLETE_BLOCKED",
+                "defect": "STALE_MANIFEST_HASH_DEFECT",
+                "declared_file_hash_mismatch_count": 1,
+                "provenance_reconciliation_status": "PROVENANCE_RECONCILED_NOT_QUALIFIED",
+                "current_valid_payload_sha256": "23bbd468ff6c6905f11e7dfdd7509601730e0f99c8ad2a78f37f3dfe99c31719",
+                "stale_declared_and_quarantined_payload_sha256": "d5baad2fcc6b59b572a1f3239bcf7910bd421fbbd4971f97b06671576ba7b0d7",
             }
-            for key, value in expected_gse114002.items():
-                _expect(gse114002, key, value, path, issues, "A1_INTERIM_GSE114002")
+            _expect_closed_mapping(
+                gse114002,
+                expected_gse114002,
+                path,
+                issues,
+                "A1_INTERIM_GSE114002",
+            )
+        gse149487 = summary.get("GSE149487")
+        if not isinstance(gse149487, Mapping):
+            _issue(issues, "A1_INTERIM_GSE149487", path, "GSE149487 boundary must be a mapping")
+        else:
+            expected_gse149487 = {
+                "registry_qualification_status": "AUDIT_PENDING",
+                "a1_inventory_qualification_status": "BLOCKED_PENDING_PUBLIC_EVIDENCE",
+                "development_reconstruction_status": "DEVELOPMENT_RECONSTRUCTED_NOT_QUALIFIED",
+                "input_value_scale": "PUBLISHED_LOG2_CPM_PER_BARCODE",
+                "canonical_record_count": 0,
+                "development_companion_effect_record_count": 204,
+                "development_companion_nonnull_effect_record_count": 192,
+                "raw_barcode_plaintext_match_count_in_outputs": 0,
+                "qualified": False,
+                "training_allowed": False,
+                "model_selection_allowed": False,
+                "decisive_remaining_blockers": [
+                    "PC3_AND_18_GEO_RAW_COUNT_TABLE_JOIN_NOT_INCLUDED",
+                    "SUPPLEMENTS_NOT_LISTED_IN_CURRENT_P0_MANIFEST",
+                    "LICENSE_AND_REDISTRIBUTION_NOT_CLOSED",
+                    "CHECKPOINT_SPECIFIC_EXPOSURE_NOT_CLOSED",
+                    "GROUP_LEAKAGE_AND_SPLIT_NOT_FROZEN",
+                    "PAPER_NATIVE_MANN_WHITNEY_AND_MULTIPLE_TESTING_NOT_REPRODUCED",
+                    "CANONICAL_INTERVENTION_RECORD_V3_NOT_MATERIALIZED",
+                    "UNADJUDICATED_DESCRIPTION_CLASSES_EXCLUDED",
+                    "UNADJUDICATED_6A_COORDINATE_CLASSES_EXCLUDED",
+                ],
+            }
+            _expect_closed_mapping(
+                gse149487,
+                expected_gse149487,
+                path,
+                issues,
+                "A1_INTERIM_GSE149487",
+            )
         gse200304 = summary.get("GSE200304")
         if not isinstance(gse200304, Mapping):
             _issue(issues, "A1_INTERIM_GSE200304", path, "GSE200304 boundary must be a mapping")
@@ -1610,6 +1926,10 @@ def validate_a1_interim_lineage(
                 "all_pairs_exactly_one_snv": True,
                 "controls_excluded_from_source_candidate_geometry": True,
                 "paper_native_raw_xtail_replay_status": "NOT_RUN",
+                "fastq_acquisition_status": "COMMITTED_TRANSPORT_INTEGRITY_VERIFIED",
+                "fastq_independent_consumer_status": "ALREADY_COMMITTED_VERIFIED",
+                "sam_to_oligo_count_reconstruction_status": "UNKNOWN_NOT_ASSERTED",
+                "acquisition_changes_qualification_gate": False,
                 "source_grouping_status": "SEQUENCE_EQUALITY_PROXY_NOT_BIOLOGICALLY_FROZEN",
                 "license_and_redistribution_status": "UNKNOWN_NOT_ASSERTED",
                 "checkpoint_specific_foundation_exposure_status": "UNKNOWN_NOT_ASSERTED",
@@ -1618,8 +1938,53 @@ def validate_a1_interim_lineage(
                 "training_allowed": False,
                 "model_selection_allowed": False,
             }
-            for key, value in expected_gse200304.items():
-                _expect(gse200304, key, value, path, issues, "A1_INTERIM_GSE200304")
+            _expect_closed_mapping(
+                gse200304,
+                expected_gse200304,
+                path,
+                issues,
+                "A1_INTERIM_GSE200304",
+            )
+        three_utr = summary.get("three_utr_candidates")
+        if not isinstance(three_utr, Mapping):
+            _issue(issues, "A1_INTERIM_THREE_UTR", path, "three_utr_candidates must be a mapping")
+        else:
+            _expect_closed_mapping(
+                three_utr,
+                {
+                    "dataset_ids": [
+                        "GSE217518",
+                        "ENCSR854RUF",
+                        "GSE200304",
+                        "GSE232572",
+                        "GSE186455",
+                    ],
+                    "registry_qualification_status": "AUDIT_PENDING",
+                    "a1_inventory_qualification_status": "BLOCKED_PENDING_PUBLIC_EVIDENCE",
+                    "qualified_studies": 0,
+                    "transfer_claim_status": "NOT_ESTABLISHED",
+                },
+                path,
+                issues,
+                "A1_INTERIM_THREE_UTR",
+            )
+        gse207584 = summary.get("GSE207584")
+        if not isinstance(gse207584, Mapping):
+            _issue(issues, "A1_INTERIM_GSE207584", path, "GSE207584 boundary must be a mapping")
+        else:
+            _expect_closed_mapping(
+                gse207584,
+                {
+                    "registry_qualification_status": "AUDIT_PENDING",
+                    "a1_inventory_qualification_status": "BLOCKED_PENDING_PUBLIC_EVIDENCE",
+                    "v3_per_variant_sequence_recovery_status": "BLOCKED_PENDING_PUBLIC_EVIDENCE",
+                    "required_recovery": "SYNONYMOUS_FAMILY_SEQUENCE_LABEL_AND_GROUP_LINEAGE",
+                    "qualified": False,
+                },
+                path,
+                issues,
+                "A1_INTERIM_GSE207584",
+            )
         _expect(summary, "qualified_a2_dense_neighborhoods", 0, path, issues, "A1_INTERIM_DATASET_BOUNDARY")
 
     claims = interim.get("claim_boundaries")
@@ -1627,19 +1992,36 @@ def validate_a1_interim_lineage(
         _issue(issues, "A1_INTERIM_CLAIMS", path, "claim_boundaries must be a mapping")
     else:
         expected_claims = {
+            "gap_inventory_is_data_freeze": False,
+            "provenance_reconciliation_is_study_qualification": False,
+            "metadata_or_row_mass_establishes_effective_n": False,
+            "endpoint_assay_region_or_replicate_increases_study_count": False,
+            "engineering_tests_establish_scientific_claim": False,
+            "smoke_or_proxy_result_may_be_final_scientific_conclusion": False,
             "gse145046_formal_audit_execution_is_study_qualification": False,
             "gse145046_fixed_scaffold_absolute_auxiliary_is_true_a2": False,
             "gse200304_engineering_success_is_study_qualification": False,
+            "gse200304_fastq_acquisition_is_study_qualification": False,
+            "gse200304_transport_integrity_is_paper_native_count_replay": False,
             "gse200304_sequence_proxy_groups_are_biological_source_groups": False,
             "gse200304_precomputed_aggregate_evidence_is_paper_native_xtail_replay": False,
             "a1_phase_complete": False,
             "route_a_established": False,
         }
-        for key, value in expected_claims.items():
-            _expect(claims, key, value, path, issues, "A1_INTERIM_CLAIMS")
+        _expect_closed_mapping(
+            claims, expected_claims, path, issues, "A1_INTERIM_CLAIMS"
+        )
 
     _expect(interim, "initial_generated_at", "2026-08-10T06:30:58+08:00", path, issues, "A1_INTERIM_TIME")
     _expect(interim, "updated_for_decision_id", "V3-DEC-017", path, issues, "A1_INTERIM_TIME")
+    _expect(
+        interim,
+        "latest_evidence_update_id",
+        "GSE200304_FASTQ_CONSUMER_VERIFY_20260810T191502P0800_e24d722",
+        path,
+        issues,
+        "A1_INTERIM_TIME",
+    )
     generated = interim.get("generated_at")
     updated = interim.get("updated_at")
     if generated != updated:
@@ -1648,11 +2030,12 @@ def validate_a1_interim_lineage(
         updated_dt = datetime.fromisoformat(str(updated))
         audit_dt = datetime.fromisoformat("2026-08-10T08:43:13+08:00")
         amendment_dt = datetime.fromisoformat("2026-08-10T10:10:05+08:00")
+        acquisition_dt = datetime.fromisoformat("2026-08-10T19:15:02+08:00")
     except ValueError:
         _issue(issues, "A1_INTERIM_TIME", path, "updated_at must be an ISO-8601 timestamp with offset")
     else:
-        if updated_dt < audit_dt or updated_dt < amendment_dt:
-            _issue(issues, "A1_INTERIM_TIME", path, "updated_at must follow both the formal audit and DEC-017 authorization")
+        if updated_dt < audit_dt or updated_dt < amendment_dt or updated_dt < acquisition_dt:
+            _issue(issues, "A1_INTERIM_TIME", path, "updated_at must follow the formal audit, DEC-017 authorization, and FASTQ consumer evidence")
     return issues
 
 
