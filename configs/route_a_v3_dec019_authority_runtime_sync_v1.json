@@ -1,0 +1,278 @@
+{
+  "schema_version": "route_a_v3_dec019_authority_runtime_sync.v1",
+  "protocol_id": "ROUTE_A_V3_DEC019_AUTHORITY_RUNTIME_SYNC_V1",
+  "contract_id": "mrna_xeditflow_route_a_v3",
+  "phase_id": "A1",
+  "event_id": "A1-EVT-040",
+  "event_name": "DEC019_AUTHORITY_AND_GSE114002_PUBLIC_GAP_LINEAGE_SYNCED_GATE_UNCHANGED",
+  "sync_type": "APPEND_ONLY_AUTHORITY_REGISTRATION_NO_GATE_CHANGE",
+  "implementation_binding": {
+    "binding_scheme": "CONFIG_ONLY_POST_IMPLEMENTATION_BINDING_V1",
+    "status": "UNKNOWN_NOT_ASSERTED",
+    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "implementation_script_path": "scripts/route_a_v3/dec019_authority_runtime_sync.py",
+    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_test_path": "tests/route_a_v3/test_dec019_authority_runtime_sync.py",
+    "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
+    "compiled_core_sha256": "636bb6e23e645a8e3dc7029111a929b300a47880a2ed5cf086433f13e2e7ca65",
+    "unknown_to_bound_scalar_paths": [
+      "implementation_binding.status",
+      "implementation_binding.implementation_commit",
+      "implementation_binding.implementation_script_sha256",
+      "implementation_binding.implementation_test_sha256"
+    ]
+  },
+  "repository_authority": {
+    "production_repo_root": "/home/cunyuliu/mrna_editflow_goal/worktrees/routea_v3_a1_20260810",
+    "branch": "routea-v3-a1-20260810",
+    "base_commit": "78827501c7efcef28550b04876c98206d94d4808",
+    "base_commit_expected_parent": "d54de63605a2df51e91262c99218684a80cb6515",
+    "implementation_commit_expected_parent": "78827501c7efcef28550b04876c98206d94d4808",
+    "binding_commit_expected_parent": "IMPLEMENTATION_COMMIT_FROM_BINDING",
+    "implementation_commit_exact_changed_paths": [
+      "configs/route_a_v3_dec019_authority_runtime_sync_v1.json",
+      "scripts/route_a_v3/dec019_authority_runtime_sync.py",
+      "tests/route_a_v3/test_dec019_authority_runtime_sync.py"
+    ],
+    "binding_commit_exact_changed_paths": [
+      "configs/route_a_v3_dec019_authority_runtime_sync_v1.json"
+    ]
+  },
+  "dec019_authority": {
+    "decision_id": "V3-DEC-019",
+    "approval_itself_qualifies_any_study": false,
+    "qualified_independent_ordinary_studies": 0,
+    "qualified_a1_studies": 0,
+    "qualified_a2_dense_studies": 0,
+    "canonical_intervention_record_count": 0,
+    "authority_files": [
+      {
+        "role": "AUTHORITATIVE_CONTRACT",
+        "path": "docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md",
+        "sha256": "cbac4c3dcba8f1b8df95d8edad52d19e3c126d1c865d0cc423537c754cc90982"
+      },
+      {
+        "role": "STATIC_VALIDATOR",
+        "path": "scripts/route_a_v3/validate_a0_bundle.py",
+        "sha256": "d1313fd4bdf5de8f8f08db1337e5017089cab5448a68446b9aa27a18e4950386"
+      },
+      {
+        "role": "REGISTRY_MANIFEST",
+        "path": "docs/execution/route_a_v3_registry_manifest.json",
+        "sha256": "7cab782ca5c7658f97ece895ebb96c5dca7f243936887830f03f8195ed4b9273"
+      },
+      {
+        "role": "A1_INTERIM",
+        "path": "docs/execution/route_a_v3_a1_interim.yaml",
+        "sha256": "64a41d3168df9cc80181e8865f2512f14f2aa8877f8b4574c90ea87363bf5b02"
+      },
+      {
+        "role": "DEC019_AMENDMENT",
+        "path": "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec019.yaml",
+        "sha256": "8c82e564398f0735fe4976f875fe91f053937b05044e5232e237694a2b36e1ca"
+      },
+      {
+        "role": "DECISION_LOG",
+        "path": "docs/execution/route_a_v3_decision_log.yaml",
+        "sha256": "b537a2ce19e4bb8b099f05df4ba383b56b8957cbc7be0b5954c9c11d741eb23b"
+      },
+      {
+        "role": "DATA_ROLE_REGISTRY",
+        "path": "docs/execution/route_a_v3_data_role_registry.yaml",
+        "sha256": "4d14ebd1a6adc04a344165f775df8586ef9f8f0461fdcac08649d0644d9956f2"
+      },
+      {
+        "role": "SPLIT_REGISTRY",
+        "path": "docs/execution/route_a_v3_split_registry.yaml",
+        "sha256": "2764d471c09a27da889b690cac317ac582bf9f25b79b6a34ac491f2e0b434929"
+      },
+      {
+        "role": "TASK_REGISTRY",
+        "path": "docs/execution/route_a_v3_task_registry.yaml",
+        "sha256": "6c6659ef0e9ddbbbba002f77d39d388dbdacc7b383e98ebb30a1580d590d85b4"
+      },
+      {
+        "role": "TASK_SPLIT_MATRIX",
+        "path": "docs/execution/route_a_v3_task_split_matrix.yaml",
+        "sha256": "dd340bcfb291138b862c5858daa28910c44689299647b468aedcc48b3d90b534"
+      },
+      {
+        "role": "CLAIM_EVIDENCE_MATRIX",
+        "path": "docs/execution/route_a_v3_claim_evidence_matrix.yaml",
+        "sha256": "25b62c17320032c764f986892647d4548065cac3a6d42414f96737da3fb3cbad"
+      },
+      {
+        "role": "A1_QUALIFICATION_REGISTRY",
+        "path": "configs/route_a_v3_a1_qualification.json",
+        "sha256": "fe3f7736c1f64b362ebda683ca571fc1a84e1fff36aed3a9ae67272665ba2343"
+      }
+    ]
+  },
+  "runtime_authority": {
+    "historical_outer_runtime_authority": {
+      "code_commit": "28cd2f132d022fea6ac43e1f89d6673d02a9c97d",
+      "active_authority_commit": "d078060c81114687db5068902a5aad5d9bedbee6"
+    },
+    "current_contract_authority": {
+      "implementation_commit": "d54de63605a2df51e91262c99218684a80cb6515",
+      "binding_commit": "78827501c7efcef28550b04876c98206d94d4808",
+      "scope": "DEC019_AUTHORITY_AND_SUCCESSOR_ADJUDICATOR_BINDING",
+      "active_amendment_decision_ids": [
+        "V3-DEC-017",
+        "V3-DEC-018",
+        "V3-DEC-019"
+      ]
+    }
+  },
+  "legacy_gse114002_public_gap": {
+    "dataset_id": "GSE114002",
+    "artifact_lineage_id": "gse114002_public_authority_gap_audit_v1",
+    "source_role": "REPOSITORY_AGGREGATE_AUDIT_AUTHORITY_BLOB_PRE_DEC019",
+    "audit_path": "docs/execution/gse114002_public_authority_gap_audit_v1.json",
+    "audit_bytes": 24861,
+    "audit_sha256": "3be184767bd297f2b50deff2b056e30e2229b970e9bbf0a9c3e5656e3147821f",
+    "audit_record_id": "GSE114002_PUBLIC_AUTHORITY_GAP_AUDIT_V1",
+    "audit_status": "PUBLIC_AUTHORITY_GAPS_AUDITED_NOT_QUALIFIED",
+    "audited_at": "2026-08-11T10:24:16+08:00",
+    "introduced_commit": "ad1c57b9255c3066510b08e7a4cf0bd571006811",
+    "runtime_snapshot_name": "GSE114002_PUBLIC_AUTHORITY_GAP_AUDIT_V1_REPOSITORY_BLOB_SNAPSHOT.json",
+    "runtime_snapshot_role": "IMMUTABLE_EXACT_PRE_DEC019_AGGREGATE_AUDIT_RUNTIME_REGISTRATION_NO_QUALIFICATION",
+    "interim_path": "docs/execution/route_a_v3_a1_interim.yaml",
+    "interim_sha256": "64a41d3168df9cc80181e8865f2512f14f2aa8877f8b4574c90ea87363bf5b02",
+    "historical_failed_attempt_lineage_id": "gse114002_endpoint_geometry_reconciliation_v2_attempt_001_failure",
+    "current_mechanical_closure_lineage_id": "gse114002_endpoint_geometry_reconciliation_v2_attempt_002_mechanical_closure",
+    "predecessor_runtime_event_id": "A1-EVT-039",
+    "source_runtime_sync_status": "PENDING_NO_EVT_040",
+    "evt040_registration_status": "REGISTERED_HASH_BOUND_NO_SOURCE_REWRITE",
+    "source_authority_file_rewritten": false,
+    "scientific_state_changed": false,
+    "new_science_blocker_closed_count": 0,
+    "new_scientific_output_contribution_count": 0,
+    "new_runtime_audit_snapshot_count": 1
+  },
+  "runtime": {
+    "run_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5",
+    "allowed_prepared_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/staging/runtime_sync/A1",
+    "predecessor_event_id": "A1-EVT-039",
+    "predecessor_event_count": 39,
+    "predecessor_manifest_output_count": 122,
+    "successor_event_id": "A1-EVT-040",
+    "successor_event_count": 40,
+    "successor_manifest_output_count": 127,
+    "mutable_publish_order": [
+      "STATUS.json",
+      "RUN_MANIFEST.json",
+      "EVENT_LOG.jsonl"
+    ],
+    "allowed_mutable_states": [
+      [
+        "OLD_EXACT",
+        "OLD_EXACT",
+        "OLD_EXACT"
+      ],
+      [
+        "NEW_EXACT",
+        "OLD_EXACT",
+        "OLD_EXACT"
+      ],
+      [
+        "NEW_EXACT",
+        "NEW_EXACT",
+        "OLD_EXACT"
+      ],
+      [
+        "NEW_EXACT",
+        "NEW_EXACT",
+        "NEW_EXACT"
+      ]
+    ],
+    "predecessor_mutables": {
+      "STATUS.json": {
+        "bytes": 21042,
+        "sha256": "a94fedccd0b19801b2d82dff55063bf0b03740ecb351628bc26e3e1c440d8376",
+        "snapshot_name": "STATUS_PRE_DEC019_AUTHORITY_RUNTIME_SYNC_V1.json"
+      },
+      "RUN_MANIFEST.json": {
+        "bytes": 50117,
+        "sha256": "4669f52f2ac1946f91f6121a80a310025c8f6825162bffb0f19ee472e5394d86",
+        "snapshot_name": "RUN_MANIFEST_PRE_DEC019_AUTHORITY_RUNTIME_SYNC_V1.json"
+      },
+      "EVENT_LOG.jsonl": {
+        "bytes": 51402,
+        "sha256": "6e82f992616fbd503b1ea79c5fd200910fbbe79361fdabf5714e11e93c4241cb",
+        "snapshot_name": "EVENT_LOG_PRE_DEC019_AUTHORITY_RUNTIME_SYNC_V1.jsonl"
+      }
+    },
+    "predecessor_tail_event": {
+      "event_id": "A1-EVT-039",
+      "bytes": 6104,
+      "sha256": "a878458c70d2a6b9dd08d3448f0ccb1c89372831238e198b9025ba94b0e32994",
+      "training_started_key_present": true,
+      "training_started": false
+    },
+    "sync_name": "A1_DEC019_AUTHORITY_RUNTIME_SYNC_V1.json",
+    "output_delta_count": 5,
+    "forbidden_runtime_path_tokens": [
+      "GSE246381",
+      "/restricted/",
+      "/sealed_external/",
+      "FASTQ",
+      "raw_replay",
+      "adjudicate_"
+    ]
+  },
+  "successor_invariants": {
+    "run_status": "IN_PROGRESS",
+    "evidence_status": "BLOCKED_PENDING_PUBLIC_EVIDENCE",
+    "gate_status": "A1_BLOCKED_PENDING_PUBLIC_EVIDENCE",
+    "scientific_claim_status": "NOT_ESTABLISHED",
+    "qualified_independent_ordinary_studies": 0,
+    "qualified_a1_studies": 0,
+    "qualified_a2_dense_studies": 0,
+    "metadata_only_qualification_count": 0,
+    "ordinary_study_contribution": 0,
+    "a1_study_contribution": 0,
+    "true_a2_study_contribution": 0,
+    "canonical_intervention_record_count": 0,
+    "qualified": false,
+    "dec019_approval_is_study_qualification": false,
+    "training_started": false,
+    "training_allowed": false,
+    "training_authorized": false,
+    "model_selection_allowed": false,
+    "next_phase_authorized": false
+  },
+  "access_and_materialization_boundary": {
+    "adjudicator_execution_count": 0,
+    "adjudicator_artifact_read_count": 0,
+    "external_evidence_source_read_count": 0,
+    "runtime_evidence_payload_read_count": 0,
+    "real_row_level_data_opened": false,
+    "raw_reads_or_alignments_opened": false,
+    "raw_fastq_body_read_count": 0,
+    "restricted_or_sealed_path_accessed": false,
+    "restricted_or_sealed_payload_contact": false,
+    "gse246381_contact": false,
+    "repository_authority_blob_hash_revalidation_count": 13,
+    "runtime_mutable_predecessor_read_count": 3,
+    "predecessor_snapshot_count": 3,
+    "runtime_sync_record_count": 1,
+    "new_runtime_output_count": 5,
+    "canonical_read_count": 0,
+    "canonical_write_count": 0,
+    "qualifier_execution_count": 0,
+    "training_run_count": 0,
+    "model_selection_run_count": 0,
+    "gpu_work_started": false
+  },
+  "publication_policy": {
+    "immutable_no_overwrite": true,
+    "mutable_order_recoverable": true,
+    "event_is_last_mutable_commit": true,
+    "post_commit_error_truth": "COMMITTED_WITH_WARNINGS_REQUIRES_IDEMPOTENT_RETRY",
+    "immutable_temp_unlink_failure_truth": "COMMITTED_REQUIRES_MANUAL_TEMP_ADJUDICATION",
+    "sync_references_successor_hashes": false,
+    "successors_reference_sync_hash": true,
+    "self_hash": "NOT_APPLICABLE_BOUND_BY_OUTER_RUN_MANIFEST"
+  }
+}
