@@ -64,6 +64,52 @@ def _validate_rehashed_interim_bypass(
     return codes
 
 
+def _validate_rehashed_gse114002_public_gap_audit_bypass(
+    validator,
+    repo_root,
+    case_root,
+    monkeypatch,
+    mutate,
+):
+    """Rehash audit, interim, and manifest while leaving validator semantics fixed."""
+
+    manifest = _copy_manifest_bundle(validator, repo_root, case_root)
+    audit_path = case_root / validator.GSE114002_PUBLIC_AUTHORITY_GAP_AUDIT_PATH
+    audit = json.loads(audit_path.read_text(encoding="utf-8"))
+    mutate(audit)
+    audit_path.write_text(json.dumps(audit, indent=2) + "\n", encoding="utf-8")
+    audit_hash = validator.sha256_file(audit_path)
+
+    interim_path = case_root / validator.A1_INTERIM_PATH
+    interim = yaml.safe_load(interim_path.read_text(encoding="utf-8"))
+    lineage = interim["artifact_lineage"][
+        validator.GSE114002_PUBLIC_AUTHORITY_GAP_AUDIT_LINEAGE_ID
+    ]
+    lineage["bytes"] = audit_path.stat().st_size
+    lineage["sha256"] = audit_hash
+    interim_path.write_text(yaml.safe_dump(interim, sort_keys=False), encoding="utf-8")
+    interim_hash = validator.sha256_file(interim_path)
+    monkeypatch.setattr(validator, "EXPECTED_A1_INTERIM_SHA256", interim_hash)
+
+    next(
+        row
+        for row in manifest["files"]
+        if row["path"] == validator.GSE114002_PUBLIC_AUTHORITY_GAP_AUDIT_PATH
+    )["sha256"] = audit_hash
+    next(
+        row
+        for row in manifest["files"]
+        if row["path"] == validator.A1_INTERIM_PATH
+    )["sha256"] = interim_hash
+    manifest_path = case_root / validator.REGISTRY_MANIFEST_PATH
+    manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+
+    codes = _codes(validator.validate_bundle(case_root))
+    assert "REGISTRY_MANIFEST_HASH_MISMATCH" not in codes
+    assert "A1_INTERIM_CANONICAL_HASH" not in codes
+    return codes
+
+
 def _validate_manifest_mutation(
     validator,
     repo_root,
@@ -1166,6 +1212,243 @@ def test_gse114002_endpoint_geometry_producer_rehash_cannot_bypass_binding(
     assert "A1_INTERIM_GSE114002_ENDPOINT_GEOMETRY_BINDING" in codes
 
 
+def test_gse114002_public_authority_gap_audit_is_exact_aggregate_only_and_blocked(
+    validator,
+    repo_root,
+):
+    assert validator.validate_gse114002_public_authority_gap_audit(repo_root) == []
+    audit = validator._load_json(
+        repo_root,
+        validator.GSE114002_PUBLIC_AUTHORITY_GAP_AUDIT_PATH,
+    )
+    assert audit["status"] == "PUBLIC_AUTHORITY_GAPS_AUDITED_NOT_QUALIFIED"
+    assert audit["scope_attestation"] == {
+        "ordinary_public_sources_only": True,
+        "aggregate_only": True,
+        "ordinary_locator_metadata_only": True,
+        "sequence_values_included": False,
+        "row_identifier_values_included": False,
+        "raw_label_values_included": False,
+        "per_member_hashes_included": False,
+        "model_weight_hashes_included": False,
+        "real_row_level_payload_opened": False,
+        "model_weight_payload_opened": False,
+        "restricted_or_sealed_contact": False,
+        "gse246381_contact": False,
+        "qualifier_execution_count": 0,
+        "training_run_count": 0,
+        "gpu_work_count": 0,
+        "model_selection_run_count": 0,
+        "canonical_materialization_count": 0,
+    }
+    closure = audit["closure_and_remaining_evidence"]
+    assert closure["science_blockers_closed_by_this_audit"] == []
+    assert closure["remaining_science_blockers"] == (
+        validator.GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_002_BLOCKERS
+    )
+    assert audit["gate_snapshot"] == {
+        "qualified_independent_ordinary_studies": 0,
+        "qualified_a1_studies": 0,
+        "qualified_true_a2_dense_studies": 0,
+        "canonical_record_count": 0,
+        "qualified": False,
+        "scientific_claim_status": "NOT_ESTABLISHED",
+        "phase_complete": False,
+        "training_allowed": False,
+        "model_selection_allowed": False,
+        "next_phase_authorized": False,
+    }
+
+    checkpoints = {
+        row["checkpoint_family"]: row
+        for row in audit["checkpoint_family_exposure"]
+    }
+    assert set(checkpoints) == {"OPTIMUS_5PRIME", "UTR_LM", "MRNABERT", "ORTHRUS"}
+    for row in checkpoints.values():
+        assert row["checkpoint_specific_exposure_status"] == "UNKNOWN_NOT_ASSERTED"
+        assert row["near_duplicate_exposure_status"] == "NOT_RUN"
+        assert row["overall_blocker_status"] == "OPEN"
+    assert checkpoints["OPTIMUS_5PRIME"]["accession_exposure_status"] == (
+        "EXPOSED_ACCESSION_LEVEL_NOT_CHECKPOINT_SPECIFIC"
+    )
+    assert checkpoints["UTR_LM"]["accession_exposure_status"] == (
+        "EXPOSED_ACCESSION_LEVEL_NOT_CHECKPOINT_SPECIFIC"
+    )
+    for family in ("MRNABERT", "ORTHRUS"):
+        assert checkpoints[family]["accession_exposure_status"] == (
+            "NOT_DECLARED_DOES_NOT_ESTABLISH_ABSENCE"
+        )
+
+
+def test_gse114002_public_gap_synchronized_rehash_cannot_upgrade_exposure_or_gate(
+    validator,
+    repo_root,
+    tmp_path,
+    monkeypatch,
+):
+    def mutate(audit):
+        audit["checkpoint_family_exposure"][0][
+            "checkpoint_specific_exposure_status"
+        ] = "UNTOUCHED"
+        audit["checkpoint_family_exposure"][1][
+            "near_duplicate_exposure_status"
+        ] = "ZERO"
+        audit["checkpoint_family_exposure"][2][
+            "accession_exposure_status"
+        ] = "ABSENT"
+        audit["closure_and_remaining_evidence"][
+            "science_blockers_closed_by_this_audit"
+        ] = list(audit["closure_and_remaining_evidence"]["remaining_science_blockers"])
+        audit["closure_and_remaining_evidence"]["remaining_science_blockers"] = []
+        audit["gate_snapshot"]["qualified_true_a2_dense_studies"] = 1
+        audit["gate_snapshot"]["canonical_record_count"] = 1
+        audit["gate_snapshot"]["qualified"] = True
+        audit["gate_snapshot"]["training_allowed"] = True
+
+    codes = _validate_rehashed_gse114002_public_gap_audit_bypass(
+        validator,
+        repo_root,
+        tmp_path / "public_gap_exposure_gate_rehash",
+        monkeypatch,
+        mutate,
+    )
+    assert "GSE114002_PUBLIC_GAP_AUDIT_CANONICAL_HASH" in codes
+    assert "GSE114002_PUBLIC_GAP_AUDIT_CHECKPOINTS" in codes
+    assert "GSE114002_PUBLIC_GAP_AUDIT_EXPOSURE_BYPASS" in codes
+    assert "GSE114002_PUBLIC_GAP_AUDIT_BLOCKERS" in codes
+    assert "GSE114002_PUBLIC_GAP_AUDIT_GATE" in codes
+    assert "A1_INTERIM_LINEAGE" in codes
+
+
+def test_gse114002_public_gap_synchronized_rehash_cannot_promote_inference_or_license(
+    validator,
+    repo_root,
+    tmp_path,
+    monkeypatch,
+):
+    def mutate(audit):
+        mother = next(
+            row
+            for row in audit["field_and_source_claims"]
+            if row["claim_id"] == "MOTHER_AND_MATCH_SCORE_SEMANTICS"
+        )
+        mother["evidence_status"] = "CONFIRMED"
+        audit["merge_authority_claims"][
+            "mother_and_match_score_may_be_used_as_join_authority"
+        ] = True
+        chemistry = next(
+            row
+            for row in audit["construct_and_chemistry_claims"]
+            if row["claim_id"] == "DESIGNED_SAMPLE_RNA_CHEMISTRY"
+        )
+        chemistry["evidence_status"] = "CONFIRMED"
+        chemistry["finding"] = "UNMODIFIED_U_CONFIRMED"
+        data_license = next(
+            row
+            for row in audit["license_claims"]
+            if row["claim_id"] == "GSE114002_DATA_REDISTRIBUTION_RIGHTS"
+        )
+        data_license["evidence_status"] = "CONFIRMED"
+        data_license["finding"] = "GPL_3_0"
+
+    codes = _validate_rehashed_gse114002_public_gap_audit_bypass(
+        validator,
+        repo_root,
+        tmp_path / "public_gap_inference_license_rehash",
+        monkeypatch,
+        mutate,
+    )
+    assert "GSE114002_PUBLIC_GAP_AUDIT_FIELD_CLAIMS" in codes
+    assert "GSE114002_PUBLIC_GAP_AUDIT_MERGE" in codes
+    assert "GSE114002_PUBLIC_GAP_AUDIT_CONSTRUCT" in codes
+    assert "GSE114002_PUBLIC_GAP_AUDIT_LICENSE" in codes
+
+
+def test_gse114002_public_gap_recursive_privacy_scan_rejects_payload_fields(
+    validator,
+    repo_root,
+    tmp_path,
+    monkeypatch,
+):
+    def mutate(audit):
+        audit["source_registry"][0]["ordinary_locator_metadata"]["row_id"] = (
+            "private-row"
+        )
+        audit["checkpoint_family_exposure"][0]["model_weight_sha256"] = "0" * 64
+        audit["license_claims"][0]["sequence"] = "ACGT" * 8
+
+    codes = _validate_rehashed_gse114002_public_gap_audit_bypass(
+        validator,
+        repo_root,
+        tmp_path / "public_gap_privacy_rehash",
+        monkeypatch,
+        mutate,
+    )
+    assert "GSE114002_PUBLIC_GAP_AUDIT_PRIVACY" in codes
+    assert "GSE114002_PUBLIC_GAP_AUDIT_SOURCE_REGISTRY" in codes
+    assert "GSE114002_PUBLIC_GAP_AUDIT_CHECKPOINTS" in codes
+    assert "GSE114002_PUBLIC_GAP_AUDIT_LICENSE" in codes
+
+
+def test_gse114002_public_gap_type_strict_and_runtime_event_boundary(
+    validator,
+    repo_root,
+    tmp_path,
+    monkeypatch,
+):
+    def mutate(audit):
+        audit["scope_attestation"]["aggregate_only"] = 1
+        audit["gate_snapshot"]["qualified"] = 0
+        audit["lineage"]["runtime_sync_status"] = "EVT-040"
+        audit["lineage"]["predecessor_runtime_event_id"] = "A1-EVT-040"
+
+    codes = _validate_rehashed_gse114002_public_gap_audit_bypass(
+        validator,
+        repo_root,
+        tmp_path / "public_gap_type_runtime_rehash",
+        monkeypatch,
+        mutate,
+    )
+    assert "GSE114002_PUBLIC_GAP_AUDIT_SCOPE" in codes
+    assert "GSE114002_PUBLIC_GAP_AUDIT_GATE" in codes
+    assert "GSE114002_PUBLIC_GAP_AUDIT_LINEAGE" in codes
+
+
+def test_gse114002_public_gap_interim_summary_cannot_upgrade_or_fake_evt040(
+    validator,
+    repo_root,
+    tmp_path,
+    monkeypatch,
+):
+    def mutate(interim):
+        lineage = interim["artifact_lineage"][
+            validator.GSE114002_PUBLIC_AUTHORITY_GAP_AUDIT_LINEAGE_ID
+        ]
+        lineage["science_blockers_closed_by_this_audit"] = list(
+            lineage["unresolved_blockers"]
+        )
+        lineage["unresolved_blockers"] = []
+        lineage["gate_snapshot"]["qualified"] = True
+        lineage["runtime_sync_status"] = "EVT-040"
+        summary = interim["dataset_boundary_summary"]["GSE114002"][
+            "public_authority_gap_audit"
+        ]
+        summary["science_blockers_closed_count"] = 7
+        summary["qualified"] = True
+        summary["training_allowed"] = True
+        summary["runtime_sync_status"] = "EVT-040"
+
+    codes = _validate_rehashed_interim_bypass(
+        validator,
+        repo_root,
+        tmp_path / "public_gap_interim_upgrade",
+        monkeypatch,
+        mutate,
+    )
+    assert "A1_INTERIM_LINEAGE" in codes
+    assert "A1_INTERIM_GSE114002" in codes
+
+
 def test_published_endpoint_lineage_is_exact_and_rehash_resistant(
     validator,
     repo_root,
@@ -1930,10 +2213,10 @@ def test_registry_manifest_detects_every_listed_hash_drift(validator, tmp_path, 
         "contract_sha256": goal_hash,
         "active_amendment_decision_ids": ["V3-DEC-017", "V3-DEC-018"],
         "base_commit": "bbb71dcba6f1e1c9cb75a8a6653f1a4fe4a6ca0c",
-        "manifest_status": "A1_GSE114002_ENDPOINT_GEOMETRY_EVIDENCE_LEDGER_INTEGRATED",
+        "manifest_status": "A1_GSE114002_PUBLIC_AUTHORITY_GAP_AUDIT_INTEGRATED",
         "initial_generated_at": "2026-08-10T10:10:05+08:00",
-        "generated_at": "2026-08-11T08:23:37+08:00",
-        "updated_at": "2026-08-11T08:23:37+08:00",
+        "generated_at": "2026-08-11T10:24:16+08:00",
+        "updated_at": "2026-08-11T10:24:16+08:00",
         "sealed_contact": False,
         "files": entries,
     }

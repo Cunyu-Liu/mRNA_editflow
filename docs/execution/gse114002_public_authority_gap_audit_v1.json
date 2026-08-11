@@ -1,0 +1,558 @@
+{
+  "schema_version": "route_a_v3_gse114002_public_authority_gap_audit.v1",
+  "record_id": "GSE114002_PUBLIC_AUTHORITY_GAP_AUDIT_V1",
+  "record_type": "PUBLIC_AUTHORITY_GAP_AUDIT_AGGREGATE_ONLY",
+  "dataset_id": "GSE114002",
+  "status": "PUBLIC_AUTHORITY_GAPS_AUDITED_NOT_QUALIFIED",
+  "audited_at": "2026-08-11T10:24:16+08:00",
+  "authority": {
+    "contract_path": "docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md",
+    "contract_sha256": "cbac4c3dcba8f1b8df95d8edad52d19e3c126d1c865d0cc423537c754cc90982",
+    "baseline_registry_path": "docs/execution/route_a_v3_baseline_registry.yaml",
+    "baseline_registry_sha256": "fb47324918b4cdd24a441e0c89909e4956b1f6a83ae64ef359af0bcc1a9371bf",
+    "data_role_registry_path": "docs/execution/route_a_v3_data_role_registry.yaml",
+    "data_role_registry_sha256": "746439ef5d88d8167176d19e9c675746fdc78984a66f6f123f77f6ec49523030",
+    "interim_base_path": "docs/execution/route_a_v3_a1_interim.yaml",
+    "interim_base_sha256": "acadf7c36ba0a7601d1b610b664f7455dd1cce4878f05e17ce9b95b78810e464",
+    "active_amendment_decision_ids": [
+      "V3-DEC-017",
+      "V3-DEC-018"
+    ],
+    "repository_base_commit": "0fbec21589d424be7dda01610f9c540df959b4ee"
+  },
+  "lineage": {
+    "historical_failed_attempt_lineage_id": "gse114002_endpoint_geometry_reconciliation_v2_attempt_001_failure",
+    "current_mechanical_closure_lineage_id": "gse114002_endpoint_geometry_reconciliation_v2_attempt_002_mechanical_closure",
+    "predecessor_runtime_event_id": "A1-EVT-039",
+    "predecessor_runtime_event_name": "GSE114002_ENDPOINT_GEOMETRY_RECONCILIATION_V2_ATTEMPT_LINEAGE_SYNCED_GATE_UNCHANGED",
+    "runtime_sync_status": "PENDING_NO_EVT_040"
+  },
+  "scope_attestation": {
+    "ordinary_public_sources_only": true,
+    "aggregate_only": true,
+    "ordinary_locator_metadata_only": true,
+    "sequence_values_included": false,
+    "row_identifier_values_included": false,
+    "raw_label_values_included": false,
+    "per_member_hashes_included": false,
+    "model_weight_hashes_included": false,
+    "real_row_level_payload_opened": false,
+    "model_weight_payload_opened": false,
+    "restricted_or_sealed_contact": false,
+    "gse246381_contact": false,
+    "qualifier_execution_count": 0,
+    "training_run_count": 0,
+    "gpu_work_count": 0,
+    "model_selection_run_count": 0,
+    "canonical_materialization_count": 0
+  },
+  "source_registry": [
+    {
+      "source_id": "GEO_SERIES_GSE114002",
+      "source_type": "PRIMARY_PUBLIC_SERIES_RECORD",
+      "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE114002",
+      "immutable_revision": null,
+      "ordinary_locator_metadata": {
+        "accession": "GSE114002"
+      },
+      "authority_scope": "SERIES_SAMPLE_DESIGN_AND_REPLICATE_CONTEXT"
+    },
+    {
+      "source_id": "GEO_DESIGNED_SAMPLE_GSM3130443",
+      "source_type": "PRIMARY_PUBLIC_SAMPLE_RECORD",
+      "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM3130443",
+      "immutable_revision": null,
+      "ordinary_locator_metadata": {
+        "accession": "GSM3130443",
+        "sample_role": "DESIGNED_LIBRARY"
+      },
+      "authority_scope": "DESIGNED_SAMPLE_AND_PROCESSED_ASSET_LOCATOR"
+    },
+    {
+      "source_id": "GEO_DESIGNED_LIBRARY_CSV",
+      "source_type": "PRIMARY_PUBLIC_PROCESSED_ASSET_LOCATOR",
+      "url": "https://ftp.ncbi.nlm.nih.gov/geo/samples/GSM3130nnn/GSM3130443/suppl/GSM3130443_designed_library.csv.gz",
+      "immutable_revision": null,
+      "ordinary_locator_metadata": {
+        "content_length_bytes": 17332142,
+        "last_modified": "2018-05-03T16:09:43Z",
+        "official_checksum_status": "NOT_PROVIDED"
+      },
+      "authority_scope": "ASSET_LOCATION_AND_TRANSPORT_METADATA_ONLY"
+    },
+    {
+      "source_id": "PRIMARY_ARTICLE_PMC7100133",
+      "source_type": "PRIMARY_RESEARCH_ARTICLE",
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC7100133/",
+      "immutable_revision": null,
+      "ordinary_locator_metadata": {
+        "doi": "10.1038/s41587-019-0164-5",
+        "pmcid": "PMC7100133"
+      },
+      "authority_scope": "DESIGN_CONSTRUCT_ASSAY_AND_SOURCE_RULES"
+    },
+    {
+      "source_id": "PRIMARY_ARTICLE_NATURE",
+      "source_type": "PUBLISHER_RECORD",
+      "url": "https://www.nature.com/articles/s41587-019-0164-5",
+      "immutable_revision": null,
+      "ordinary_locator_metadata": {
+        "doi": "10.1038/s41587-019-0164-5"
+      },
+      "authority_scope": "PUBLISHER_IDENTITY_AND_SUPPLEMENT_POINTER"
+    },
+    {
+      "source_id": "AUTHOR_REPOSITORY_IMMUTABLE_COMMIT",
+      "source_type": "AUTHOR_CODE_REPOSITORY",
+      "url": "https://github.com/pjsample/human_5utr_modeling/tree/d53df410c7fb3fcd4bc4541bd7e8c6dc52b66fbe",
+      "immutable_revision": "d53df410c7fb3fcd4bc4541bd7e8c6dc52b66fbe",
+      "ordinary_locator_metadata": {
+        "repository": "pjsample/human_5utr_modeling"
+      },
+      "authority_scope": "AUTHOR_CODE_AND_SAVED_MODEL_FAMILY_SURFACE"
+    },
+    {
+      "source_id": "AUTHOR_NOTEBOOK_IMMUTABLE_COMMIT",
+      "source_type": "AUTHOR_ANALYSIS_NOTEBOOK",
+      "url": "https://github.com/pjsample/human_5utr_modeling/blob/d53df410c7fb3fcd4bc4541bd7e8c6dc52b66fbe/human_5utrs/human_utr_modeling.ipynb",
+      "immutable_revision": "d53df410c7fb3fcd4bc4541bd7e8c6dc52b66fbe",
+      "ordinary_locator_metadata": {
+        "repository_relative_path": "human_5utrs/human_utr_modeling.ipynb"
+      },
+      "authority_scope": "FIELD_AND_MODEL_USE_DOCUMENTATION_SURFACE"
+    },
+    {
+      "source_id": "AUTHOR_CODE_LICENSE_IMMUTABLE_COMMIT",
+      "source_type": "AUTHOR_CODE_LICENSE",
+      "url": "https://github.com/pjsample/human_5utr_modeling/blob/d53df410c7fb3fcd4bc4541bd7e8c6dc52b66fbe/LICENSE",
+      "immutable_revision": "d53df410c7fb3fcd4bc4541bd7e8c6dc52b66fbe",
+      "ordinary_locator_metadata": {
+        "license_id": "GPL-3.0"
+      },
+      "authority_scope": "AUTHOR_CODE_ONLY_NOT_GEO_DATA"
+    },
+    {
+      "source_id": "GEO_RIGHTS_DISCLAIMER",
+      "source_type": "REPOSITORY_RIGHTS_POLICY",
+      "url": "https://www.ncbi.nlm.nih.gov/geo/info/disclaimer.html",
+      "immutable_revision": null,
+      "ordinary_locator_metadata": {
+        "repository": "NCBI_GEO"
+      },
+      "authority_scope": "GENERAL_GEO_ACCESS_AND_SUBMITTER_IP_CAVEAT"
+    },
+    {
+      "source_id": "UTR_LM_PRIMARY_ARTICLE",
+      "source_type": "PRIMARY_RESEARCH_ARTICLE",
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC11155392/",
+      "immutable_revision": null,
+      "ordinary_locator_metadata": {
+        "pmcid": "PMC11155392"
+      },
+      "authority_scope": "UTR_LM_TRAINING_AND_TASK_DISCLOSURE_SURFACE"
+    },
+    {
+      "source_id": "UTR_LM_HUGGINGFACE_EXACT_REVISION_README",
+      "source_type": "PUBLIC_MODEL_CARD_AT_IMMUTABLE_REVISION",
+      "url": "https://huggingface.co/multimolecule/utrlm-mrl/blob/79e23de069449e659696b5210f833c28ddd0de50/README.md",
+      "immutable_revision": "79e23de069449e659696b5210f833c28ddd0de50",
+      "ordinary_locator_metadata": {
+        "model_id": "multimolecule/utrlm-mrl"
+      },
+      "authority_scope": "MODEL_CARD_DISCLOSURE_ONLY_NOT_MEMBERSHIP_AUDIT"
+    },
+    {
+      "source_id": "MRNABERT_PRIMARY_ARTICLE",
+      "source_type": "PRIMARY_RESEARCH_ARTICLE",
+      "url": "https://www.nature.com/articles/s41467-025-65340-8",
+      "immutable_revision": null,
+      "ordinary_locator_metadata": {
+        "article_id": "s41467-025-65340-8"
+      },
+      "authority_scope": "MRNABERT_PRETRAIN_AND_DOWNSTREAM_TASK_DISCLOSURE_SURFACE"
+    },
+    {
+      "source_id": "MRNABERT_HUGGINGFACE_EXACT_REVISION",
+      "source_type": "PUBLIC_MODEL_REPOSITORY_AT_IMMUTABLE_REVISION",
+      "url": "https://huggingface.co/YYLY66/mRNABERT/tree/a1eb7df25804d23f08646e1cb996b234d7208a40",
+      "immutable_revision": "a1eb7df25804d23f08646e1cb996b234d7208a40",
+      "ordinary_locator_metadata": {
+        "model_id": "YYLY66/mRNABERT"
+      },
+      "authority_scope": "MODEL_REPOSITORY_DISCLOSURE_ONLY_NOT_MEMBERSHIP_AUDIT"
+    },
+    {
+      "source_id": "ORTHRUS_PRIMARY_ARTICLE",
+      "source_type": "PRIMARY_RESEARCH_ARTICLE",
+      "url": "https://www.nature.com/articles/s41592-026-03064-3",
+      "immutable_revision": null,
+      "ordinary_locator_metadata": {
+        "article_id": "s41592-026-03064-3"
+      },
+      "authority_scope": "ORTHRUS_INPUT_CONTEXT_AND_TASK_DISCLOSURE_SURFACE"
+    },
+    {
+      "source_id": "ORTHRUS_HUGGINGFACE_CANDIDATE_FAMILY",
+      "source_type": "PUBLIC_MODEL_REPOSITORY_FAMILY_LOCATOR",
+      "url": "https://huggingface.co/quietflamingo/orthrus-base-4-track",
+      "immutable_revision": null,
+      "ordinary_locator_metadata": {
+        "model_id": "quietflamingo/orthrus-base-4-track"
+      },
+      "authority_scope": "CANDIDATE_FAMILY_LOCATOR_ONLY_NOT_ROUTE_A_BINDING"
+    },
+    {
+      "source_id": "GEO_RANDOM_CHEMISTRY_SAMPLE_EXAMPLES",
+      "source_type": "PRIMARY_PUBLIC_SAMPLE_SET_LOCATORS",
+      "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE114002",
+      "immutable_revision": null,
+      "ordinary_locator_metadata": {
+        "example_accessions": [
+          "GSM3130435",
+          "GSM3130437",
+          "GSM3130439"
+        ],
+        "conditions": [
+          "RANDOM_U",
+          "RANDOM_PSI",
+          "RANDOM_M1PSI"
+        ],
+        "second_replicate_authority": "SERIES_RECORD"
+      },
+      "authority_scope": "RANDOM_LIBRARY_CHEMISTRY_AND_REPLICATE_CONTEXT_ONLY"
+    }
+  ],
+  "field_and_source_claims": [
+    {
+      "claim_id": "FIELD_HEADER_PRESENT",
+      "evidence_status": "CONFIRMED",
+      "finding": "THE_42_PUBLISHED_FIELD_NAMES_EXIST",
+      "does_not_establish": "FIELD_VALUE_SEMANTICS_OR_ROW_LEVEL_AUTHORITY",
+      "minimum_external_evidence_still_required": "AUTHOR_FIELD_DICTIONARY_WITH_VALUE_DOMAINS"
+    },
+    {
+      "claim_id": "LIBRARY_FIELD_SEMANTICS",
+      "evidence_status": "CONFIRMED_PARTIAL",
+      "finding": "SUBLIBRARY_OR_DESIGN_FAMILY_CONTEXT_ONLY",
+      "does_not_establish": "RNA_CHEMISTRY_OR_COMPLETE_DESIGN_DOMAIN",
+      "minimum_external_evidence_still_required": "COMPLETE_DESIGN_FAMILY_MANIFEST"
+    },
+    {
+      "claim_id": "DESIGNED_FIELD_SEMANTICS",
+      "evidence_status": "CONFIRMED",
+      "finding": "INTENDED_DESIGN_EXACT_MATCH_FLAG",
+      "does_not_establish": "GENETIC_ALGORITHM_FAMILY_MEMBERSHIP",
+      "minimum_external_evidence_still_required": "NONE_FOR_THIS_NARROW_BOOLEAN_SEMANTIC"
+    },
+    {
+      "claim_id": "INFO4_FIELD_SEMANTICS",
+      "evidence_status": "CONFIRMED_PARTIAL",
+      "finding": "HUMAN_OR_VARIANT_COMMON_REFERENCE_VERSUS_VARIANT_CONTEXT",
+      "does_not_establish": "COMPLETE_FIELD_DOMAIN_OR_ROW_LEVEL_JOIN_AUTHORITY",
+      "minimum_external_evidence_still_required": "AUTHOR_FIELD_DICTIONARY_AND_SOURCE_CROSSWALK"
+    },
+    {
+      "claim_id": "INFO1_INFO2_INFO3_FIELD_SEMANTICS",
+      "evidence_status": "UNKNOWN_NOT_ASSERTED",
+      "finding": "NO_PRIMARY_PUBLIC_DICTIONARY_LOCATED",
+      "does_not_establish": "ANY_BIOLOGICAL_OR_DESIGN_SEMANTIC",
+      "minimum_external_evidence_still_required": "AUTHOR_FIELD_DICTIONARY"
+    },
+    {
+      "claim_id": "MOTHER_AND_MATCH_SCORE_SEMANTICS",
+      "evidence_status": "REASONED_INFERENCE",
+      "finding": "LIKELY_PARENT_OR_MATCHING_CONTEXT",
+      "does_not_establish": "EXECUTABLE_PARENT_JOIN_OR_MATCHING_ALGORITHM",
+      "minimum_external_evidence_still_required": "AUTHOR_MATCHING_ALGORITHM_AND_VALIDATED_CROSSWALK"
+    },
+    {
+      "claim_id": "ID_FIELD_AUTHORITY",
+      "evidence_status": "UNKNOWN_NOT_ASSERTED",
+      "finding": "NAMESPACE_AND_UNIQUENESS_NOT_PUBLICLY_DEFINED",
+      "does_not_establish": "STABLE_ROW_IDENTITY_OR_CROSS_ASSET_JOIN",
+      "minimum_external_evidence_still_required": "AUTHOR_NAMESPACE_AND_UNIQUENESS_SPECIFICATION"
+    },
+    {
+      "claim_id": "SAMPLE_AUTHORITY",
+      "evidence_status": "CONFIRMED",
+      "finding": "GEO_SERIES_AND_SAMPLE_RECORDS_BIND_ASSAY_CONDITION_CONTEXT",
+      "does_not_establish": "ROW_LEVEL_SOURCE_OR_CHEMISTRY_FOR_DESIGNED_LIBRARY",
+      "minimum_external_evidence_still_required": "ROW_LEVEL_CROSSWALK_AND_DESIGNED_SAMPLE_CHEMISTRY_AUTHORITY"
+    },
+    {
+      "claim_id": "HUMAN_SOURCE_RULE",
+      "evidence_status": "CONFIRMED_PARTIAL",
+      "finding": "ENSEMBL_BIOMART_ANNOTATED_TIS_UPSTREAM_WINDOW",
+      "does_not_establish": "ENSEMBL_RELEASE_GENOME_BUILD_OR_EXACT_QUERY",
+      "minimum_external_evidence_still_required": "IMMUTABLE_RELEASE_BUILD_QUERY_AND_SOURCE_SNAPSHOT"
+    },
+    {
+      "claim_id": "VARIANT_SOURCE_RULE",
+      "evidence_status": "CONFIRMED_PARTIAL",
+      "finding": "CLINVAR_VARIANTS_IN_SELECTED_REGIONS",
+      "does_not_establish": "CLINVAR_RELEASE_GENOME_BUILD_OR_SOURCE_CHECKSUM",
+      "minimum_external_evidence_still_required": "IMMUTABLE_RELEASE_BUILD_AND_SOURCE_SNAPSHOT"
+    },
+    {
+      "claim_id": "LOCUS_TRANSCRIPT_PARENT_MATCH_AUTHORITY",
+      "evidence_status": "UNKNOWN_NOT_ASSERTED",
+      "finding": "NO_EXECUTABLE_PUBLIC_CROSSWALK_LOCATED",
+      "does_not_establish": "BIOLOGICAL_SOURCE_GROUP_OR_PARENT_CHILD_MEMBERSHIP",
+      "minimum_external_evidence_still_required": "AUTHOR_VALIDATED_ROW_CROSSWALK"
+    },
+    {
+      "claim_id": "DESIGN_FAMILY_AUTHORITY",
+      "evidence_status": "CONFIRMED_PARTIAL",
+      "finding": "HIGH_LEVEL_DESIGN_FAMILY_DESCRIPTIONS_EXIST",
+      "does_not_establish": "COMPLETE_ROW_LEVEL_FAMILY_MEMBERSHIP",
+      "minimum_external_evidence_still_required": "COMPLETE_DESIGN_FAMILY_MANIFEST"
+    }
+  ],
+  "merge_authority_claims": {
+    "status": "UNKNOWN_NOT_ASSERTED",
+    "public_field_dictionary_found": false,
+    "public_executable_matching_algorithm_found": false,
+    "public_row_crosswalk_found": false,
+    "mother_and_match_score_may_be_used_as_join_authority": false,
+    "reasoned_inference_may_be_promoted_to_confirmed": false,
+    "minimum_external_evidence_still_required": [
+      "AUTHOR_FIELD_DICTIONARY",
+      "AUTHOR_MATCHING_ALGORITHM",
+      "VALIDATED_ROW_CROSSWALK",
+      "IMMUTABLE_SOURCE_SNAPSHOTS"
+    ]
+  },
+  "construct_and_chemistry_claims": [
+    {
+      "claim_id": "DESIGNED_POOL_CONSTRUCT_CHAIN",
+      "evidence_status": "CONFIRMED",
+      "finding": "DESIGNED_POOL_FIXED_25NT_PREFIX_EGFP_REPORTER_T7_IVT_CAP_POLYA_HEK293T_POLYSOME_CHAIN",
+      "does_not_establish": "ROW_LEVEL_CONSTRUCT_SEQUENCE_OR_DESIGNED_SAMPLE_RNA_CHEMISTRY",
+      "minimum_external_evidence_still_required": "ACCESSION_SPECIFIC_CONSTRUCT_AND_CHEMISTRY_AUTHORITY"
+    },
+    {
+      "claim_id": "DESIGNED_SAMPLE_RNA_CHEMISTRY",
+      "evidence_status": "UNKNOWN_NOT_ASSERTED",
+      "finding": "NO_PRIMARY_PUBLIC_EXPLICIT_CHEMISTRY_DECLARATION_LOCATED_FOR_GSM3130443",
+      "does_not_establish": "UNMODIFIED_U_CHEMISTRY",
+      "minimum_external_evidence_still_required": "AUTHOR_OR_ACCESSION_SPECIFIC_CHEMISTRY_DECLARATION"
+    },
+    {
+      "claim_id": "DESIGNED_SAMPLE_UNMODIFIED_U",
+      "evidence_status": "REASONED_INFERENCE",
+      "finding": "DEFAULT_UNMODIFIED_U_IS_PLAUSIBLE_FROM_CONTEXT_ONLY",
+      "does_not_establish": "CONFIRMED_DESIGNED_SAMPLE_CHEMISTRY",
+      "minimum_external_evidence_still_required": "AUTHOR_OR_ACCESSION_SPECIFIC_CHEMISTRY_DECLARATION"
+    },
+    {
+      "claim_id": "RANDOM_LIBRARY_CHEMISTRY_SPLIT",
+      "evidence_status": "CONFIRMED",
+      "finding": "RANDOM_U_PSI_M1PSI_SAMPLES_AND_MODIFIED_UTP_SUBSTITUTION_ARE_DECLARED",
+      "does_not_establish": "DESIGNED_SAMPLE_CHEMISTRY",
+      "minimum_external_evidence_still_required": "NONE_FOR_RANDOM_SAMPLE_LEVEL_CLASSIFICATION"
+    },
+    {
+      "claim_id": "DESIGNED_CSV_ROW_LEVEL_CHEMISTRY_DISTINGUISHABILITY",
+      "evidence_status": "CONFIRMED",
+      "finding": "FALSE",
+      "does_not_establish": "ANY_ROW_LEVEL_CHEMISTRY_ASSIGNMENT",
+      "minimum_external_evidence_still_required": "EXTERNAL_ACCESSION_LEVEL_DESIGNED_SAMPLE_CHEMISTRY_AUTHORITY"
+    }
+  ],
+  "license_claims": [
+    {
+      "claim_id": "AUTHOR_CODE_LICENSE",
+      "evidence_status": "CONFIRMED",
+      "finding": "GPL_3_0_AT_IMMUTABLE_AUTHOR_REPOSITORY_COMMIT",
+      "does_not_establish": "GEO_DATA_LICENSE_OR_REDISTRIBUTION_RIGHTS",
+      "minimum_external_evidence_still_required": "NONE_FOR_CODE_ONLY"
+    },
+    {
+      "claim_id": "GEO_GENERAL_ACCESS_POLICY",
+      "evidence_status": "CONFIRMED_PARTIAL",
+      "finding": "PUBLIC_NCBI_ACCESS_WITH_SUBMITTER_IP_CAVEAT",
+      "does_not_establish": "ACCESSION_SPECIFIC_SPDX_OR_REDISTRIBUTION_PERMISSION",
+      "minimum_external_evidence_still_required": "ACCESSION_SPECIFIC_DATA_RIGHTS_STATEMENT"
+    },
+    {
+      "claim_id": "GSE114002_DATA_REDISTRIBUTION_RIGHTS",
+      "evidence_status": "UNKNOWN_NOT_ASSERTED",
+      "finding": "NO_ACCESSION_SPECIFIC_DATA_LICENSE_LOCATED",
+      "does_not_establish": "RIGHT_TO_REDISTRIBUTE_RAW_OR_DERIVED_DATA",
+      "minimum_external_evidence_still_required": "ACCESSION_SPECIFIC_DATA_LICENSE_OR_RIGHTSHOLDER_PERMISSION"
+    },
+    {
+      "claim_id": "GPL_PROPAGATION_TO_GEO_DATA",
+      "evidence_status": "CONFIRMED",
+      "finding": "GPL_CODE_LICENSE_DOES_NOT_AUTOMATICALLY_PROPAGATE_TO_GEO_DATA",
+      "does_not_establish": "ANY_GEO_DATA_REDISTRIBUTION_RIGHT",
+      "minimum_external_evidence_still_required": "ACCESSION_SPECIFIC_DATA_LICENSE_OR_RIGHTSHOLDER_PERMISSION"
+    }
+  ],
+  "checkpoint_family_exposure": [
+    {
+      "checkpoint_family": "OPTIMUS_5PRIME",
+      "route_a_binding_status": "UNBOUND_FAMILY_NAME_ONLY",
+      "ordinary_locator": null,
+      "public_candidate_locator": "pjsample/human_5utr_modeling@saved_models",
+      "public_candidate_variants": [
+        "MAIN",
+        "RETRAINED",
+        "EVOLUTION"
+      ],
+      "public_revision": "d53df410c7fb3fcd4bc4541bd7e8c6dc52b66fbe",
+      "head_semantics_status": "CHECKPOINT_DEPENDENT_NOT_CLOSED",
+      "accession_exposure_status": "EXPOSED_ACCESSION_LEVEL_NOT_CHECKPOINT_SPECIFIC",
+      "checkpoint_specific_exposure_status": "UNKNOWN_NOT_ASSERTED",
+      "near_duplicate_exposure_status": "NOT_RUN",
+      "label_exposure_status": "CHECKPOINT_DEPENDENT_NOT_CLOSED",
+      "overall_blocker_status": "OPEN"
+    },
+    {
+      "checkpoint_family": "UTR_LM",
+      "route_a_binding_status": "UNBOUND_CURRENT_WITH_LEGACY_EXACT_SNAPSHOT_LOCATOR",
+      "ordinary_locator": "/home/cunyuliu/.cache/huggingface/hub/models--multimolecule--utrlm-mrl/snapshots/79e23de069449e659696b5210f833c28ddd0de50",
+      "public_candidate_locator": "multimolecule/utrlm-mrl",
+      "public_candidate_variants": [
+        "multimolecule/utrlm-mrl",
+        "multimolecule/utrlm-te_el"
+      ],
+      "public_revision": "79e23de069449e659696b5210f833c28ddd0de50",
+      "head_semantics_status": "CHECKPOINT_DEPENDENT_NOT_CLOSED",
+      "accession_exposure_status": "EXPOSED_ACCESSION_LEVEL_NOT_CHECKPOINT_SPECIFIC",
+      "checkpoint_specific_exposure_status": "UNKNOWN_NOT_ASSERTED",
+      "near_duplicate_exposure_status": "NOT_RUN",
+      "label_exposure_status": "CHECKPOINT_DEPENDENT_NOT_CLOSED",
+      "overall_blocker_status": "OPEN"
+    },
+    {
+      "checkpoint_family": "MRNABERT",
+      "route_a_binding_status": "UNBOUND",
+      "ordinary_locator": "/home/cunyuliu/.cache/huggingface/hub/models--YYLY66--mRNABERT/refs/main",
+      "public_candidate_locator": "YYLY66/mRNABERT",
+      "public_candidate_variants": [
+        "YYLY66/mRNABERT"
+      ],
+      "public_revision": "a1eb7df25804d23f08646e1cb996b234d7208a40",
+      "head_semantics_status": "NOT_DECLARED_FOR_BASE_CHECKPOINT_DOWNSTREAM_FINE_TUNING_EXISTS",
+      "accession_exposure_status": "NOT_DECLARED_DOES_NOT_ESTABLISH_ABSENCE",
+      "checkpoint_specific_exposure_status": "UNKNOWN_NOT_ASSERTED",
+      "near_duplicate_exposure_status": "NOT_RUN",
+      "label_exposure_status": "NOT_DECLARED_DOES_NOT_ESTABLISH_ABSENCE",
+      "overall_blocker_status": "OPEN"
+    },
+    {
+      "checkpoint_family": "ORTHRUS",
+      "route_a_binding_status": "UNBOUND_APPLICABILITY_PENDING",
+      "ordinary_locator": null,
+      "public_candidate_locator": "quietflamingo/orthrus-base-4-track",
+      "public_candidate_variants": [
+        "quietflamingo/orthrus-base-4-track",
+        "quietflamingo/orthrus-large-4-track",
+        "quietflamingo/orthrus-large-6-track"
+      ],
+      "public_revision": null,
+      "head_semantics_status": "FULL_MATURE_RNA_INPUT_SHORT_5UTR_REPORTER_ADAPTER_PENDING",
+      "accession_exposure_status": "NOT_DECLARED_DOES_NOT_ESTABLISH_ABSENCE",
+      "checkpoint_specific_exposure_status": "UNKNOWN_NOT_ASSERTED",
+      "near_duplicate_exposure_status": "NOT_RUN",
+      "label_exposure_status": "NOT_DECLARED_DOES_NOT_ESTABLISH_ABSENCE",
+      "overall_blocker_status": "OPEN"
+    }
+  ],
+  "checkpoint_audit_rules": {
+    "checkpoint_specific_minimum_identity": [
+      "MODEL_ID",
+      "IMMUTABLE_REVISION",
+      "HEAD_SEMANTICS"
+    ],
+    "revision_is_artifact_digest": false,
+    "artifact_digest_is_training_membership_audit": false,
+    "not_declared_establishes_absence": false,
+    "untouched_or_zero_without_complete_member_audit_allowed": false,
+    "label_exposure_scope": [
+      "PRETRAIN",
+      "FINE_TUNE",
+      "HEAD_TRAINING",
+      "MODEL_SELECTION"
+    ],
+    "near_duplicate_audit_minimum_prefreeze": [
+      "NORMALIZATION",
+      "COMPARISON_UNIT",
+      "METRIC",
+      "THRESHOLD"
+    ]
+  },
+  "closure_and_remaining_evidence": {
+    "engineering_items_closed_by_this_audit": [
+      "PUBLIC_AUTHORITY_EVIDENCE_SEARCH_AND_GAP_CLASSIFICATION_COMPLETED"
+    ],
+    "science_blockers_closed_by_this_audit": [],
+    "historical_mechanical_blockers_closed_before_this_audit": [
+      "TWO_STAGE_GLOBAL_NORMALIZATION_RECONCILIATION_MISMATCH",
+      "HAMMING_DISTANCE_DISTRIBUTION_RECONCILIATION_MISMATCH"
+    ],
+    "remaining_science_blockers": [
+      "CHECKPOINT_SPECIFIC_EXPOSURE_UNKNOWN_NOT_ASSERTED",
+      "FIELD_AND_BIOLOGICAL_SOURCE_AUTHORITY_UNKNOWN_NOT_ASSERTED",
+      "FULL_CONSTRUCT_PREFIX_REPORTER_RNA_CHEMISTRY_UNKNOWN_NOT_ASSERTED",
+      "LICENSE_AND_REDISTRIBUTION_RIGHTS_UNKNOWN_NOT_ASSERTED",
+      "NEAR_DUPLICATE_SPLIT_AND_LEAKAGE_AUDIT_NOT_RUN",
+      "OWNER_UNCERTAINTY_POLICY_UNKNOWN_NOT_ASSERTED",
+      "PREFROZEN_GROUP_POWER_NOT_RUN"
+    ],
+    "field_authority_subblockers": [
+      "B_FIELD_DICTIONARY",
+      "B_MATCHING_ALGORITHM",
+      "B_SOURCE_SNAPSHOT",
+      "B_ROW_CROSSWALK",
+      "B_COMPLETE_DESIGN_FAMILY_MANIFEST",
+      "B_DESIGNED_SAMPLE_CHEMISTRY",
+      "B_DATA_LICENSE",
+      "B_IMMUTABLE_DATA_HASH"
+    ],
+    "minimum_external_evidence_by_science_blocker": [
+      {
+        "blocker": "CHECKPOINT_SPECIFIC_EXPOSURE_UNKNOWN_NOT_ASSERTED",
+        "minimum_external_evidence": "SELECTED_MODEL_ID_IMMUTABLE_REVISION_HEAD_SEMANTICS_COMPLETE_VERSION_MATCHED_MEMBERSHIP_AND_PREFROZEN_NEAR_DUPLICATE_AUDIT"
+      },
+      {
+        "blocker": "FIELD_AND_BIOLOGICAL_SOURCE_AUTHORITY_UNKNOWN_NOT_ASSERTED",
+        "minimum_external_evidence": "AUTHOR_FIELD_DICTIONARY_MATCHING_ALGORITHM_IMMUTABLE_SOURCE_SNAPSHOTS_VALIDATED_ROW_CROSSWALK_AND_COMPLETE_DESIGN_FAMILY_MANIFEST"
+      },
+      {
+        "blocker": "FULL_CONSTRUCT_PREFIX_REPORTER_RNA_CHEMISTRY_UNKNOWN_NOT_ASSERTED",
+        "minimum_external_evidence": "ACCESSION_SPECIFIC_DESIGNED_SAMPLE_CONSTRUCT_PREFIX_REPORTER_CHAIN_AND_RNA_CHEMISTRY_AUTHORITY"
+      },
+      {
+        "blocker": "LICENSE_AND_REDISTRIBUTION_RIGHTS_UNKNOWN_NOT_ASSERTED",
+        "minimum_external_evidence": "ACCESSION_SPECIFIC_DATA_LICENSE_OR_RIGHTSHOLDER_PERMISSION_FOR_INTENDED_DERIVED_ARTIFACT_USE"
+      },
+      {
+        "blocker": "NEAR_DUPLICATE_SPLIT_AND_LEAKAGE_AUDIT_NOT_RUN",
+        "minimum_external_evidence": "OUTCOME_BLIND_PREFROZEN_GROUP_AND_NEAR_DUPLICATE_AUDIT_AFTER_SOURCE_GROUP_AUTHORITY_CLOSES"
+      },
+      {
+        "blocker": "OWNER_UNCERTAINTY_POLICY_UNKNOWN_NOT_ASSERTED",
+        "minimum_external_evidence": "OWNER_APPROVED_APPEND_ONLY_DECISION_LOG_ENTRY"
+      },
+      {
+        "blocker": "PREFROZEN_GROUP_POWER_NOT_RUN",
+        "minimum_external_evidence": "OUTCOME_BLIND_POWER_AND_CONFIDENCE_INTERVAL_AUDIT_ON_AUTHORIZED_BIOLOGICAL_SOURCE_GROUPS"
+      }
+    ]
+  },
+  "gate_snapshot": {
+    "qualified_independent_ordinary_studies": 0,
+    "qualified_a1_studies": 0,
+    "qualified_true_a2_dense_studies": 0,
+    "canonical_record_count": 0,
+    "qualified": false,
+    "scientific_claim_status": "NOT_ESTABLISHED",
+    "phase_complete": false,
+    "training_allowed": false,
+    "model_selection_allowed": false,
+    "next_phase_authorized": false
+  },
+  "claim_boundary": "This aggregate-only audit records which public authority statements are confirmed, inferred, or still unknown. It closes only completion of the public evidence search and gap classification engineering item. It does not close any of the seven scientific blockers, qualify GSE114002, establish a true-A2 claim, create canonical records, authorize training or model selection, or assert checkpoint exact or near-duplicate non-exposure."
+}

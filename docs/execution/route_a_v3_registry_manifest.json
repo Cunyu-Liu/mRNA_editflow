@@ -49,7 +49,7 @@
     {
       "path": "docs/execution/route_a_v3_a1_interim.yaml",
       "role": "A1_ACTIVE_INTERIM_RECORD",
-      "sha256": "acadf7c36ba0a7601d1b610b664f7455dd1cce4878f05e17ce9b95b78810e464"
+      "sha256": "e62eda12c1a396fb1be1f0c08f595423f3365c4fe6da2703dab04267c3f1594e"
     },
     {
       "path": "docs/execution/route_a_v3_split_registry.yaml",
@@ -162,20 +162,25 @@
       "sha256": "8a0b04b3305f50fb1685ab310efaead15a1e3f4ca5eae4abb01d7f44a9d7be29"
     },
     {
+      "path": "docs/execution/gse114002_public_authority_gap_audit_v1.json",
+      "role": "GSE114002_PUBLIC_AUTHORITY_GAP_AUDIT_AGGREGATE_EVIDENCE",
+      "sha256": "3be184767bd297f2b50deff2b056e30e2229b970e9bbf0a9c3e5656e3147821f"
+    },
+    {
       "path": "tests/route_a_v3/test_a0_integrity_guards.py",
       "role": "A0_AUTHORITY_INTEGRITY_GUARD_TEST",
-      "sha256": "d9c261312e06c029e8767d1804cb2be868efa4d1b620652db700b5d55e34f92d"
+      "sha256": "40c445729cf7ce55bca02efe1639e87ecc9e6666e9761ae3fb167fede48f4bf4"
     },
     {
       "path": "scripts/route_a_v3/validate_a0_bundle.py",
       "role": "A0_STATIC_AND_SEMANTIC_VALIDATOR",
-      "sha256": "c533f922160de499a81b6531ec9f7ab4b670fe466d5d78c5be0f05e422ca9650"
+      "sha256": "90a5af1f00712d588cad3952820b6fc3bc3bb04a13b68e477fb5fa54d83aad65"
     }
   ],
   "initial_generated_at": "2026-08-10T10:10:05+08:00",
-  "generated_at": "2026-08-11T08:23:37+08:00",
-  "updated_at": "2026-08-11T08:23:37+08:00",
-  "manifest_status": "A1_GSE114002_ENDPOINT_GEOMETRY_EVIDENCE_LEDGER_INTEGRATED",
+  "generated_at": "2026-08-11T10:24:16+08:00",
+  "updated_at": "2026-08-11T10:24:16+08:00",
+  "manifest_status": "A1_GSE114002_PUBLIC_AUTHORITY_GAP_AUDIT_INTEGRATED",
   "schema_version": "1.0.0",
   "sealed_contact": false,
   "version": "3.0.0"

@@ -255,6 +255,53 @@ artifact_lineage:
       - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE114002_ENDPOINT_GEOMETRY_RECONCILIATION_V2_20260811T075711P0800_a148c73/PUBLICATION_COMMIT.json
         bytes: 1172
         sha256: 522568111b68fc68508dfb2cc82b48121c3f890a7a479ef3510fada56e38663a
+  gse114002_public_authority_gap_audit_v1:
+    path: docs/execution/gse114002_public_authority_gap_audit_v1.json
+    bytes: 24861
+    sha256: 3be184767bd297f2b50deff2b056e30e2229b970e9bbf0a9c3e5656e3147821f
+    dataset_id: GSE114002
+    record_id: GSE114002_PUBLIC_AUTHORITY_GAP_AUDIT_V1
+    record_type: PUBLIC_AUTHORITY_GAP_AUDIT_AGGREGATE_ONLY
+    evidence_role: PUBLIC_AUTHORITY_SEARCH_AND_GAP_CLASSIFICATION_ONLY
+    status: PUBLIC_AUTHORITY_GAPS_AUDITED_NOT_QUALIFIED
+    audited_at: "2026-08-11T10:24:16+08:00"
+    endpoint_attempt_lineage_ids_preserved:
+      - gse114002_endpoint_geometry_reconciliation_v2_attempt_001_failure
+      - gse114002_endpoint_geometry_reconciliation_v2_attempt_002_mechanical_closure
+    predecessor_runtime_event_id: A1-EVT-039
+    predecessor_runtime_event_name: GSE114002_ENDPOINT_GEOMETRY_RECONCILIATION_V2_ATTEMPT_LINEAGE_SYNCED_GATE_UNCHANGED
+    source_registry_count: 16
+    field_and_source_claim_count: 12
+    construct_and_chemistry_claim_count: 5
+    license_claim_count: 4
+    checkpoint_family_count: 4
+    engineering_items_closed_by_this_audit:
+      - PUBLIC_AUTHORITY_EVIDENCE_SEARCH_AND_GAP_CLASSIFICATION_COMPLETED
+    science_blockers_closed_by_this_audit: []
+    blocker_count: 7
+    unresolved_blockers:
+      - CHECKPOINT_SPECIFIC_EXPOSURE_UNKNOWN_NOT_ASSERTED
+      - FIELD_AND_BIOLOGICAL_SOURCE_AUTHORITY_UNKNOWN_NOT_ASSERTED
+      - FULL_CONSTRUCT_PREFIX_REPORTER_RNA_CHEMISTRY_UNKNOWN_NOT_ASSERTED
+      - LICENSE_AND_REDISTRIBUTION_RIGHTS_UNKNOWN_NOT_ASSERTED
+      - NEAR_DUPLICATE_SPLIT_AND_LEAKAGE_AUDIT_NOT_RUN
+      - OWNER_UNCERTAINTY_POLICY_UNKNOWN_NOT_ASSERTED
+      - PREFROZEN_GROUP_POWER_NOT_RUN
+    gate_snapshot:
+      ordinary_study_contribution: 0
+      a1_intervention_study_contribution: 0
+      true_a2_dense_study_contribution: 0
+      canonical_record_count: 0
+      qualified: false
+      scientific_claim_status: NOT_ESTABLISHED
+      training_allowed: false
+      model_selection_allowed: false
+      next_phase_authorized: false
+    aggregate_only: true
+    row_or_sequence_payload_included: false
+    per_member_or_model_weight_hash_included: false
+    restricted_or_sealed_contact: false
+    runtime_sync_status: PENDING_NO_EVT_040
   gse149487_reconstruction_attempt_003_failure:
     path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE149487_RECONSTRUCTION_ATTEMPT_003_FAILURE.json
     bytes: 2568
@@ -1092,6 +1139,30 @@ dataset_boundary_summary:
       model_selection_allowed: false
       next_phase_authorized: false
       runtime_sync_status: PENDING_NO_EVT_039
+    public_authority_gap_audit:
+      artifact_lineage_id: gse114002_public_authority_gap_audit_v1
+      record_id: GSE114002_PUBLIC_AUTHORITY_GAP_AUDIT_V1
+      status: PUBLIC_AUTHORITY_GAPS_AUDITED_NOT_QUALIFIED
+      engineering_item_closed: PUBLIC_AUTHORITY_EVIDENCE_SEARCH_AND_GAP_CLASSIFICATION_COMPLETED
+      science_blockers_closed_count: 0
+      decisive_remaining_blocker_count: 7
+      checkpoint_family_count: 4
+      accession_level_exposed_family_count: 2
+      not_declared_without_absence_family_count: 2
+      checkpoint_specific_exposure_closed_count: 0
+      near_duplicate_exposure_audit_completed_count: 0
+      designed_sample_chemistry_status: UNKNOWN_NOT_ASSERTED
+      data_redistribution_rights_status: UNKNOWN_NOT_ASSERTED
+      predecessor_runtime_event_id: A1-EVT-039
+      ordinary_study_contribution: 0
+      a1_intervention_study_contribution: 0
+      true_a2_dense_study_contribution: 0
+      canonical_record_count: 0
+      qualified: false
+      training_allowed: false
+      model_selection_allowed: false
+      next_phase_authorized: false
+      runtime_sync_status: PENDING_NO_EVT_040
   GSE149487:
     registry_qualification_status: AUDIT_PENDING
     a1_inventory_qualification_status: BLOCKED_PENDING_PUBLIC_EVIDENCE
@@ -1332,6 +1403,11 @@ claim_boundaries:
   gse114002_mechanical_reconciliation_is_study_qualification: false
   gse114002_provisional_pool_or_candidate_counts_are_effective_n: false
   gse114002_mechanical_reconciliation_authorizes_training_or_model_selection: false
+  gse114002_public_authority_gap_audit_is_study_qualification: false
+  gse114002_public_authority_gap_audit_closes_any_science_blocker: false
+  gse114002_accession_level_exposure_is_checkpoint_specific_exposure: false
+  gse114002_checkpoint_not_declared_establishes_absence: false
+  gse114002_author_code_gpl_licenses_geo_data: false
   gse200304_engineering_success_is_study_qualification: false
   gse200304_fastq_acquisition_is_study_qualification: false
   gse200304_transport_integrity_is_paper_native_count_replay: false
@@ -1398,6 +1474,9 @@ verification:
   gse200304_published_endpoint_terminal_marker: PASS
   gse200304_published_endpoint_gate_unchanged: PASS
   gse200304_published_endpoint_producer_blob_binding: PASS
+  gse114002_public_authority_gap_audit_json_parse: PASS
+  gse114002_public_authority_gap_audit_closed_semantics: PASS
+  gse114002_public_authority_gap_audit_recursive_privacy_scan: PASS
   gse145046_closed_report_schema: PASS
   gse145046_payload_integrity: PASS
   gse145046_rpm_validation: PASS
@@ -1431,7 +1510,7 @@ verification:
     scope: INTERIM_RECORD_STATUS_CLAIM_BOUNDARIES_PLUMAGE_BLOCK_SEMANTICS_AND_LOG2_CPM_SCALE
 
 initial_generated_at: "2026-08-10T06:30:58+08:00"
-generated_at: "2026-08-11T08:16:56+08:00"
-updated_at: "2026-08-11T08:16:56+08:00"
+generated_at: "2026-08-11T10:24:16+08:00"
+updated_at: "2026-08-11T10:24:16+08:00"
 updated_for_decision_id: V3-DEC-018
-latest_evidence_update_id: GSE114002_ENDPOINT_GEOMETRY_RECONCILIATION_V2_20260811T075711P0800_a148c73
+latest_evidence_update_id: GSE114002_PUBLIC_AUTHORITY_GAP_AUDIT_V1

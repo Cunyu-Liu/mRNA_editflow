@@ -37,7 +37,19 @@ SUPERSESSION_PATH = "docs/contracts/supersession_mrna_xeditflow_v1_1_to_route_a_
 DECISION_LOG_PATH = "docs/execution/route_a_v3_decision_log.yaml"
 REGISTRY_MANIFEST_PATH = "docs/execution/route_a_v3_registry_manifest.json"
 A1_INTERIM_PATH = "docs/execution/route_a_v3_a1_interim.yaml"
-EXPECTED_A1_INTERIM_SHA256 = "acadf7c36ba0a7601d1b610b664f7455dd1cce4878f05e17ce9b95b78810e464"
+EXPECTED_A1_INTERIM_SHA256 = "e62eda12c1a396fb1be1f0c08f595423f3365c4fe6da2703dab04267c3f1594e"
+GSE114002_PUBLIC_AUTHORITY_GAP_AUDIT_PATH = (
+    "docs/execution/gse114002_public_authority_gap_audit_v1.json"
+)
+GSE114002_PUBLIC_AUTHORITY_GAP_AUDIT_SHA256 = (
+    "3be184767bd297f2b50deff2b056e30e2229b970e9bbf0a9c3e5656e3147821f"
+)
+GSE114002_PUBLIC_AUTHORITY_GAP_AUDIT_STATUS = (
+    "PUBLIC_AUTHORITY_GAPS_AUDITED_NOT_QUALIFIED"
+)
+GSE114002_PUBLIC_AUTHORITY_GAP_AUDIT_LINEAGE_ID = (
+    "gse114002_public_authority_gap_audit_v1"
+)
 SCIENTIFIC_M0_HISTORY_PATH = "docs/contracts/history/mrna_v2_readiness_audit_20260807.md"
 SCIENTIFIC_M0_HISTORY_SHA256 = "a8eb4f49ede793a8eae2037db9f46f044056d37610ec92482666a8242a52fa30"
 SEALED_GUARD_PATH = "scripts/route_a_v3/sealed_guard.py"
@@ -310,6 +322,50 @@ GSE114002_ENDPOINT_GEOMETRY_CLOSED_BLOCKERS = [
     "TWO_STAGE_GLOBAL_NORMALIZATION_RECONCILIATION_MISMATCH",
     "HAMMING_DISTANCE_DISTRIBUTION_RECONCILIATION_MISMATCH",
 ]
+GSE114002_PUBLIC_AUTHORITY_GAP_AUDIT_EXPECTED_RECORD = {
+    "path": GSE114002_PUBLIC_AUTHORITY_GAP_AUDIT_PATH,
+    "bytes": 24861,
+    "sha256": GSE114002_PUBLIC_AUTHORITY_GAP_AUDIT_SHA256,
+    "dataset_id": "GSE114002",
+    "record_id": "GSE114002_PUBLIC_AUTHORITY_GAP_AUDIT_V1",
+    "record_type": "PUBLIC_AUTHORITY_GAP_AUDIT_AGGREGATE_ONLY",
+    "evidence_role": "PUBLIC_AUTHORITY_SEARCH_AND_GAP_CLASSIFICATION_ONLY",
+    "status": GSE114002_PUBLIC_AUTHORITY_GAP_AUDIT_STATUS,
+    "audited_at": "2026-08-11T10:24:16+08:00",
+    "endpoint_attempt_lineage_ids_preserved": [
+        GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_001_LINEAGE_ID,
+        GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_002_LINEAGE_ID,
+    ],
+    "predecessor_runtime_event_id": "A1-EVT-039",
+    "predecessor_runtime_event_name": "GSE114002_ENDPOINT_GEOMETRY_RECONCILIATION_V2_ATTEMPT_LINEAGE_SYNCED_GATE_UNCHANGED",
+    "source_registry_count": 16,
+    "field_and_source_claim_count": 12,
+    "construct_and_chemistry_claim_count": 5,
+    "license_claim_count": 4,
+    "checkpoint_family_count": 4,
+    "engineering_items_closed_by_this_audit": [
+        "PUBLIC_AUTHORITY_EVIDENCE_SEARCH_AND_GAP_CLASSIFICATION_COMPLETED"
+    ],
+    "science_blockers_closed_by_this_audit": [],
+    "blocker_count": 7,
+    "unresolved_blockers": GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_002_BLOCKERS,
+    "gate_snapshot": {
+        "ordinary_study_contribution": 0,
+        "a1_intervention_study_contribution": 0,
+        "true_a2_dense_study_contribution": 0,
+        "canonical_record_count": 0,
+        "qualified": False,
+        "scientific_claim_status": "NOT_ESTABLISHED",
+        "training_allowed": False,
+        "model_selection_allowed": False,
+        "next_phase_authorized": False,
+    },
+    "aggregate_only": True,
+    "row_or_sequence_payload_included": False,
+    "per_member_or_model_weight_hash_included": False,
+    "restricted_or_sealed_contact": False,
+    "runtime_sync_status": "PENDING_NO_EVT_040",
+}
 GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_001_EXPECTED_RECORD = {
     "artifact_id": GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_001_ARTIFACT_ID,
     "path": GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_001_ROOT,
@@ -790,6 +846,10 @@ EXPECTED_REGISTRY_MANIFEST_PATH_ROLES = (
         GSE114002_ENDPOINT_GEOMETRY_TEST_PATH,
         "GSE114002_ENDPOINT_GEOMETRY_RECONCILIATION_V2_FOCUSED_TEST",
     ),
+    (
+        GSE114002_PUBLIC_AUTHORITY_GAP_AUDIT_PATH,
+        "GSE114002_PUBLIC_AUTHORITY_GAP_AUDIT_AGGREGATE_EVIDENCE",
+    ),
     (INTEGRITY_GUARD_TEST_PATH, "A0_AUTHORITY_INTEGRITY_GUARD_TEST"),
     (VALIDATOR_PATH, "A0_STATIC_AND_SEMANTIC_VALIDATOR"),
 )
@@ -1234,6 +1294,555 @@ def validate_contract_authority(
     return issues
 
 
+def validate_gse114002_public_authority_gap_audit(repo_root: Path) -> list[Issue]:
+    """Freeze the aggregate-only public-authority gap audit without granting a gate."""
+
+    issues: list[Issue] = []
+    path = GSE114002_PUBLIC_AUTHORITY_GAP_AUDIT_PATH
+    try:
+        raw = _read_bytes(repo_root, path)
+        audit = json.loads(raw.decode("utf-8"))
+    except (FileNotFoundError, UnicodeDecodeError, ValueError, json.JSONDecodeError) as exc:
+        _issue(issues, "GSE114002_PUBLIC_GAP_AUDIT_UNREADABLE", path, str(exc))
+        return issues
+
+    actual_sha256 = sha256_bytes(raw)
+    if actual_sha256 != GSE114002_PUBLIC_AUTHORITY_GAP_AUDIT_SHA256:
+        _issue(
+            issues,
+            "GSE114002_PUBLIC_GAP_AUDIT_CANONICAL_HASH",
+            path,
+            f"audit hash {actual_sha256} must remain {GSE114002_PUBLIC_AUTHORITY_GAP_AUDIT_SHA256}",
+        )
+    expected_top_keys = {
+        "schema_version",
+        "record_id",
+        "record_type",
+        "dataset_id",
+        "status",
+        "audited_at",
+        "authority",
+        "lineage",
+        "scope_attestation",
+        "source_registry",
+        "field_and_source_claims",
+        "merge_authority_claims",
+        "construct_and_chemistry_claims",
+        "license_claims",
+        "checkpoint_family_exposure",
+        "checkpoint_audit_rules",
+        "closure_and_remaining_evidence",
+        "gate_snapshot",
+        "claim_boundary",
+    }
+    if type(audit) is not dict or set(audit) != expected_top_keys:
+        _issue(
+            issues,
+            "GSE114002_PUBLIC_GAP_AUDIT_CLOSURE",
+            path,
+            f"top-level keys must be exactly {sorted(expected_top_keys)!r}",
+        )
+        if not isinstance(audit, Mapping):
+            return issues
+
+    for key, value in {
+        "schema_version": "route_a_v3_gse114002_public_authority_gap_audit.v1",
+        "record_id": "GSE114002_PUBLIC_AUTHORITY_GAP_AUDIT_V1",
+        "record_type": "PUBLIC_AUTHORITY_GAP_AUDIT_AGGREGATE_ONLY",
+        "dataset_id": "GSE114002",
+        "status": GSE114002_PUBLIC_AUTHORITY_GAP_AUDIT_STATUS,
+        "audited_at": "2026-08-11T10:24:16+08:00",
+    }.items():
+        _expect(audit, key, value, path, issues, "GSE114002_PUBLIC_GAP_AUDIT_METADATA")
+
+    expected_authority = {
+        "contract_path": GOAL_PATH,
+        "contract_sha256": SOURCE_CONTRACT_SHA256,
+        "baseline_registry_path": REGISTRY_PATHS["baseline"],
+        "baseline_registry_sha256": "fb47324918b4cdd24a441e0c89909e4956b1f6a83ae64ef359af0bcc1a9371bf",
+        "data_role_registry_path": REGISTRY_PATHS["data"],
+        "data_role_registry_sha256": "746439ef5d88d8167176d19e9c675746fdc78984a66f6f123f77f6ec49523030",
+        "interim_base_path": A1_INTERIM_PATH,
+        "interim_base_sha256": "acadf7c36ba0a7601d1b610b664f7455dd1cce4878f05e17ce9b95b78810e464",
+        "active_amendment_decision_ids": ["V3-DEC-017", "V3-DEC-018"],
+        "repository_base_commit": "0fbec21589d424be7dda01610f9c540df959b4ee",
+    }
+    authority = audit.get("authority")
+    if not isinstance(authority, Mapping):
+        _issue(issues, "GSE114002_PUBLIC_GAP_AUDIT_AUTHORITY", path, "authority must be a mapping")
+    else:
+        _expect_closed_mapping(
+            authority,
+            expected_authority,
+            path,
+            issues,
+            "GSE114002_PUBLIC_GAP_AUDIT_AUTHORITY",
+        )
+
+    expected_lineage = {
+        "historical_failed_attempt_lineage_id": GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_001_LINEAGE_ID,
+        "current_mechanical_closure_lineage_id": GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_002_LINEAGE_ID,
+        "predecessor_runtime_event_id": "A1-EVT-039",
+        "predecessor_runtime_event_name": "GSE114002_ENDPOINT_GEOMETRY_RECONCILIATION_V2_ATTEMPT_LINEAGE_SYNCED_GATE_UNCHANGED",
+        "runtime_sync_status": "PENDING_NO_EVT_040",
+    }
+    lineage = audit.get("lineage")
+    if not isinstance(lineage, Mapping):
+        _issue(issues, "GSE114002_PUBLIC_GAP_AUDIT_LINEAGE", path, "lineage must be a mapping")
+    else:
+        _expect_closed_mapping(
+            lineage,
+            expected_lineage,
+            path,
+            issues,
+            "GSE114002_PUBLIC_GAP_AUDIT_LINEAGE",
+        )
+
+    expected_scope = {
+        "ordinary_public_sources_only": True,
+        "aggregate_only": True,
+        "ordinary_locator_metadata_only": True,
+        "sequence_values_included": False,
+        "row_identifier_values_included": False,
+        "raw_label_values_included": False,
+        "per_member_hashes_included": False,
+        "model_weight_hashes_included": False,
+        "real_row_level_payload_opened": False,
+        "model_weight_payload_opened": False,
+        "restricted_or_sealed_contact": False,
+        "gse246381_contact": False,
+        "qualifier_execution_count": 0,
+        "training_run_count": 0,
+        "gpu_work_count": 0,
+        "model_selection_run_count": 0,
+        "canonical_materialization_count": 0,
+    }
+    scope = audit.get("scope_attestation")
+    if not isinstance(scope, Mapping):
+        _issue(issues, "GSE114002_PUBLIC_GAP_AUDIT_SCOPE", path, "scope_attestation must be a mapping")
+    else:
+        _expect_closed_mapping(
+            scope,
+            expected_scope,
+            path,
+            issues,
+            "GSE114002_PUBLIC_GAP_AUDIT_SCOPE",
+        )
+
+    expected_sources = [
+        {
+            "source_id": "GEO_SERIES_GSE114002",
+            "source_type": "PRIMARY_PUBLIC_SERIES_RECORD",
+            "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE114002",
+            "immutable_revision": None,
+            "ordinary_locator_metadata": {"accession": "GSE114002"},
+            "authority_scope": "SERIES_SAMPLE_DESIGN_AND_REPLICATE_CONTEXT",
+        },
+        {
+            "source_id": "GEO_DESIGNED_SAMPLE_GSM3130443",
+            "source_type": "PRIMARY_PUBLIC_SAMPLE_RECORD",
+            "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM3130443",
+            "immutable_revision": None,
+            "ordinary_locator_metadata": {
+                "accession": "GSM3130443",
+                "sample_role": "DESIGNED_LIBRARY",
+            },
+            "authority_scope": "DESIGNED_SAMPLE_AND_PROCESSED_ASSET_LOCATOR",
+        },
+        {
+            "source_id": "GEO_DESIGNED_LIBRARY_CSV",
+            "source_type": "PRIMARY_PUBLIC_PROCESSED_ASSET_LOCATOR",
+            "url": "https://ftp.ncbi.nlm.nih.gov/geo/samples/GSM3130nnn/GSM3130443/suppl/GSM3130443_designed_library.csv.gz",
+            "immutable_revision": None,
+            "ordinary_locator_metadata": {
+                "content_length_bytes": 17332142,
+                "last_modified": "2018-05-03T16:09:43Z",
+                "official_checksum_status": "NOT_PROVIDED",
+            },
+            "authority_scope": "ASSET_LOCATION_AND_TRANSPORT_METADATA_ONLY",
+        },
+        {
+            "source_id": "PRIMARY_ARTICLE_PMC7100133",
+            "source_type": "PRIMARY_RESEARCH_ARTICLE",
+            "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC7100133/",
+            "immutable_revision": None,
+            "ordinary_locator_metadata": {
+                "doi": "10.1038/s41587-019-0164-5",
+                "pmcid": "PMC7100133",
+            },
+            "authority_scope": "DESIGN_CONSTRUCT_ASSAY_AND_SOURCE_RULES",
+        },
+        {
+            "source_id": "PRIMARY_ARTICLE_NATURE",
+            "source_type": "PUBLISHER_RECORD",
+            "url": "https://www.nature.com/articles/s41587-019-0164-5",
+            "immutable_revision": None,
+            "ordinary_locator_metadata": {"doi": "10.1038/s41587-019-0164-5"},
+            "authority_scope": "PUBLISHER_IDENTITY_AND_SUPPLEMENT_POINTER",
+        },
+        {
+            "source_id": "AUTHOR_REPOSITORY_IMMUTABLE_COMMIT",
+            "source_type": "AUTHOR_CODE_REPOSITORY",
+            "url": "https://github.com/pjsample/human_5utr_modeling/tree/d53df410c7fb3fcd4bc4541bd7e8c6dc52b66fbe",
+            "immutable_revision": "d53df410c7fb3fcd4bc4541bd7e8c6dc52b66fbe",
+            "ordinary_locator_metadata": {"repository": "pjsample/human_5utr_modeling"},
+            "authority_scope": "AUTHOR_CODE_AND_SAVED_MODEL_FAMILY_SURFACE",
+        },
+        {
+            "source_id": "AUTHOR_NOTEBOOK_IMMUTABLE_COMMIT",
+            "source_type": "AUTHOR_ANALYSIS_NOTEBOOK",
+            "url": "https://github.com/pjsample/human_5utr_modeling/blob/d53df410c7fb3fcd4bc4541bd7e8c6dc52b66fbe/human_5utrs/human_utr_modeling.ipynb",
+            "immutable_revision": "d53df410c7fb3fcd4bc4541bd7e8c6dc52b66fbe",
+            "ordinary_locator_metadata": {
+                "repository_relative_path": "human_5utrs/human_utr_modeling.ipynb"
+            },
+            "authority_scope": "FIELD_AND_MODEL_USE_DOCUMENTATION_SURFACE",
+        },
+        {
+            "source_id": "AUTHOR_CODE_LICENSE_IMMUTABLE_COMMIT",
+            "source_type": "AUTHOR_CODE_LICENSE",
+            "url": "https://github.com/pjsample/human_5utr_modeling/blob/d53df410c7fb3fcd4bc4541bd7e8c6dc52b66fbe/LICENSE",
+            "immutable_revision": "d53df410c7fb3fcd4bc4541bd7e8c6dc52b66fbe",
+            "ordinary_locator_metadata": {"license_id": "GPL-3.0"},
+            "authority_scope": "AUTHOR_CODE_ONLY_NOT_GEO_DATA",
+        },
+        {
+            "source_id": "GEO_RIGHTS_DISCLAIMER",
+            "source_type": "REPOSITORY_RIGHTS_POLICY",
+            "url": "https://www.ncbi.nlm.nih.gov/geo/info/disclaimer.html",
+            "immutable_revision": None,
+            "ordinary_locator_metadata": {"repository": "NCBI_GEO"},
+            "authority_scope": "GENERAL_GEO_ACCESS_AND_SUBMITTER_IP_CAVEAT",
+        },
+        {
+            "source_id": "UTR_LM_PRIMARY_ARTICLE",
+            "source_type": "PRIMARY_RESEARCH_ARTICLE",
+            "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC11155392/",
+            "immutable_revision": None,
+            "ordinary_locator_metadata": {"pmcid": "PMC11155392"},
+            "authority_scope": "UTR_LM_TRAINING_AND_TASK_DISCLOSURE_SURFACE",
+        },
+        {
+            "source_id": "UTR_LM_HUGGINGFACE_EXACT_REVISION_README",
+            "source_type": "PUBLIC_MODEL_CARD_AT_IMMUTABLE_REVISION",
+            "url": "https://huggingface.co/multimolecule/utrlm-mrl/blob/79e23de069449e659696b5210f833c28ddd0de50/README.md",
+            "immutable_revision": "79e23de069449e659696b5210f833c28ddd0de50",
+            "ordinary_locator_metadata": {"model_id": "multimolecule/utrlm-mrl"},
+            "authority_scope": "MODEL_CARD_DISCLOSURE_ONLY_NOT_MEMBERSHIP_AUDIT",
+        },
+        {
+            "source_id": "MRNABERT_PRIMARY_ARTICLE",
+            "source_type": "PRIMARY_RESEARCH_ARTICLE",
+            "url": "https://www.nature.com/articles/s41467-025-65340-8",
+            "immutable_revision": None,
+            "ordinary_locator_metadata": {"article_id": "s41467-025-65340-8"},
+            "authority_scope": "MRNABERT_PRETRAIN_AND_DOWNSTREAM_TASK_DISCLOSURE_SURFACE",
+        },
+        {
+            "source_id": "MRNABERT_HUGGINGFACE_EXACT_REVISION",
+            "source_type": "PUBLIC_MODEL_REPOSITORY_AT_IMMUTABLE_REVISION",
+            "url": "https://huggingface.co/YYLY66/mRNABERT/tree/a1eb7df25804d23f08646e1cb996b234d7208a40",
+            "immutable_revision": "a1eb7df25804d23f08646e1cb996b234d7208a40",
+            "ordinary_locator_metadata": {"model_id": "YYLY66/mRNABERT"},
+            "authority_scope": "MODEL_REPOSITORY_DISCLOSURE_ONLY_NOT_MEMBERSHIP_AUDIT",
+        },
+        {
+            "source_id": "ORTHRUS_PRIMARY_ARTICLE",
+            "source_type": "PRIMARY_RESEARCH_ARTICLE",
+            "url": "https://www.nature.com/articles/s41592-026-03064-3",
+            "immutable_revision": None,
+            "ordinary_locator_metadata": {"article_id": "s41592-026-03064-3"},
+            "authority_scope": "ORTHRUS_INPUT_CONTEXT_AND_TASK_DISCLOSURE_SURFACE",
+        },
+        {
+            "source_id": "ORTHRUS_HUGGINGFACE_CANDIDATE_FAMILY",
+            "source_type": "PUBLIC_MODEL_REPOSITORY_FAMILY_LOCATOR",
+            "url": "https://huggingface.co/quietflamingo/orthrus-base-4-track",
+            "immutable_revision": None,
+            "ordinary_locator_metadata": {
+                "model_id": "quietflamingo/orthrus-base-4-track"
+            },
+            "authority_scope": "CANDIDATE_FAMILY_LOCATOR_ONLY_NOT_ROUTE_A_BINDING",
+        },
+        {
+            "source_id": "GEO_RANDOM_CHEMISTRY_SAMPLE_EXAMPLES",
+            "source_type": "PRIMARY_PUBLIC_SAMPLE_SET_LOCATORS",
+            "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE114002",
+            "immutable_revision": None,
+            "ordinary_locator_metadata": {
+                "example_accessions": ["GSM3130435", "GSM3130437", "GSM3130439"],
+                "conditions": ["RANDOM_U", "RANDOM_PSI", "RANDOM_M1PSI"],
+                "second_replicate_authority": "SERIES_RECORD",
+            },
+            "authority_scope": "RANDOM_LIBRARY_CHEMISTRY_AND_REPLICATE_CONTEXT_ONLY",
+        },
+    ]
+    if not _json_type_strict_equal(audit.get("source_registry"), expected_sources):
+        _issue(
+            issues,
+            "GSE114002_PUBLIC_GAP_AUDIT_SOURCE_REGISTRY",
+            path,
+            "source_registry must preserve the exact public URL, immutable-revision, and ordinary-locator registry",
+        )
+
+    def expected_claims(rows: Sequence[tuple[str, str, str, str, str]]) -> list[dict[str, str]]:
+        return [
+            {
+                "claim_id": claim_id,
+                "evidence_status": status,
+                "finding": finding,
+                "does_not_establish": boundary,
+                "minimum_external_evidence_still_required": evidence,
+            }
+            for claim_id, status, finding, boundary, evidence in rows
+        ]
+
+    expected_field_claims = expected_claims(
+        [
+            ("FIELD_HEADER_PRESENT", "CONFIRMED", "THE_42_PUBLISHED_FIELD_NAMES_EXIST", "FIELD_VALUE_SEMANTICS_OR_ROW_LEVEL_AUTHORITY", "AUTHOR_FIELD_DICTIONARY_WITH_VALUE_DOMAINS"),
+            ("LIBRARY_FIELD_SEMANTICS", "CONFIRMED_PARTIAL", "SUBLIBRARY_OR_DESIGN_FAMILY_CONTEXT_ONLY", "RNA_CHEMISTRY_OR_COMPLETE_DESIGN_DOMAIN", "COMPLETE_DESIGN_FAMILY_MANIFEST"),
+            ("DESIGNED_FIELD_SEMANTICS", "CONFIRMED", "INTENDED_DESIGN_EXACT_MATCH_FLAG", "GENETIC_ALGORITHM_FAMILY_MEMBERSHIP", "NONE_FOR_THIS_NARROW_BOOLEAN_SEMANTIC"),
+            ("INFO4_FIELD_SEMANTICS", "CONFIRMED_PARTIAL", "HUMAN_OR_VARIANT_COMMON_REFERENCE_VERSUS_VARIANT_CONTEXT", "COMPLETE_FIELD_DOMAIN_OR_ROW_LEVEL_JOIN_AUTHORITY", "AUTHOR_FIELD_DICTIONARY_AND_SOURCE_CROSSWALK"),
+            ("INFO1_INFO2_INFO3_FIELD_SEMANTICS", "UNKNOWN_NOT_ASSERTED", "NO_PRIMARY_PUBLIC_DICTIONARY_LOCATED", "ANY_BIOLOGICAL_OR_DESIGN_SEMANTIC", "AUTHOR_FIELD_DICTIONARY"),
+            ("MOTHER_AND_MATCH_SCORE_SEMANTICS", "REASONED_INFERENCE", "LIKELY_PARENT_OR_MATCHING_CONTEXT", "EXECUTABLE_PARENT_JOIN_OR_MATCHING_ALGORITHM", "AUTHOR_MATCHING_ALGORITHM_AND_VALIDATED_CROSSWALK"),
+            ("ID_FIELD_AUTHORITY", "UNKNOWN_NOT_ASSERTED", "NAMESPACE_AND_UNIQUENESS_NOT_PUBLICLY_DEFINED", "STABLE_ROW_IDENTITY_OR_CROSS_ASSET_JOIN", "AUTHOR_NAMESPACE_AND_UNIQUENESS_SPECIFICATION"),
+            ("SAMPLE_AUTHORITY", "CONFIRMED", "GEO_SERIES_AND_SAMPLE_RECORDS_BIND_ASSAY_CONDITION_CONTEXT", "ROW_LEVEL_SOURCE_OR_CHEMISTRY_FOR_DESIGNED_LIBRARY", "ROW_LEVEL_CROSSWALK_AND_DESIGNED_SAMPLE_CHEMISTRY_AUTHORITY"),
+            ("HUMAN_SOURCE_RULE", "CONFIRMED_PARTIAL", "ENSEMBL_BIOMART_ANNOTATED_TIS_UPSTREAM_WINDOW", "ENSEMBL_RELEASE_GENOME_BUILD_OR_EXACT_QUERY", "IMMUTABLE_RELEASE_BUILD_QUERY_AND_SOURCE_SNAPSHOT"),
+            ("VARIANT_SOURCE_RULE", "CONFIRMED_PARTIAL", "CLINVAR_VARIANTS_IN_SELECTED_REGIONS", "CLINVAR_RELEASE_GENOME_BUILD_OR_SOURCE_CHECKSUM", "IMMUTABLE_RELEASE_BUILD_AND_SOURCE_SNAPSHOT"),
+            ("LOCUS_TRANSCRIPT_PARENT_MATCH_AUTHORITY", "UNKNOWN_NOT_ASSERTED", "NO_EXECUTABLE_PUBLIC_CROSSWALK_LOCATED", "BIOLOGICAL_SOURCE_GROUP_OR_PARENT_CHILD_MEMBERSHIP", "AUTHOR_VALIDATED_ROW_CROSSWALK"),
+            ("DESIGN_FAMILY_AUTHORITY", "CONFIRMED_PARTIAL", "HIGH_LEVEL_DESIGN_FAMILY_DESCRIPTIONS_EXIST", "COMPLETE_ROW_LEVEL_FAMILY_MEMBERSHIP", "COMPLETE_DESIGN_FAMILY_MANIFEST"),
+        ]
+    )
+    if not _json_type_strict_equal(audit.get("field_and_source_claims"), expected_field_claims):
+        _issue(issues, "GSE114002_PUBLIC_GAP_AUDIT_FIELD_CLAIMS", path, "field/source claims must preserve exact CONFIRMED, REASONED_INFERENCE, and UNKNOWN_NOT_ASSERTED boundaries")
+
+    expected_merge = {
+        "status": "UNKNOWN_NOT_ASSERTED",
+        "public_field_dictionary_found": False,
+        "public_executable_matching_algorithm_found": False,
+        "public_row_crosswalk_found": False,
+        "mother_and_match_score_may_be_used_as_join_authority": False,
+        "reasoned_inference_may_be_promoted_to_confirmed": False,
+        "minimum_external_evidence_still_required": [
+            "AUTHOR_FIELD_DICTIONARY",
+            "AUTHOR_MATCHING_ALGORITHM",
+            "VALIDATED_ROW_CROSSWALK",
+            "IMMUTABLE_SOURCE_SNAPSHOTS",
+        ],
+    }
+    if not _json_type_strict_equal(audit.get("merge_authority_claims"), expected_merge):
+        _issue(issues, "GSE114002_PUBLIC_GAP_AUDIT_MERGE", path, "merge authority must remain unknown and may not promote inferred fields into join authority")
+
+    expected_construct_claims = expected_claims(
+        [
+            ("DESIGNED_POOL_CONSTRUCT_CHAIN", "CONFIRMED", "DESIGNED_POOL_FIXED_25NT_PREFIX_EGFP_REPORTER_T7_IVT_CAP_POLYA_HEK293T_POLYSOME_CHAIN", "ROW_LEVEL_CONSTRUCT_SEQUENCE_OR_DESIGNED_SAMPLE_RNA_CHEMISTRY", "ACCESSION_SPECIFIC_CONSTRUCT_AND_CHEMISTRY_AUTHORITY"),
+            ("DESIGNED_SAMPLE_RNA_CHEMISTRY", "UNKNOWN_NOT_ASSERTED", "NO_PRIMARY_PUBLIC_EXPLICIT_CHEMISTRY_DECLARATION_LOCATED_FOR_GSM3130443", "UNMODIFIED_U_CHEMISTRY", "AUTHOR_OR_ACCESSION_SPECIFIC_CHEMISTRY_DECLARATION"),
+            ("DESIGNED_SAMPLE_UNMODIFIED_U", "REASONED_INFERENCE", "DEFAULT_UNMODIFIED_U_IS_PLAUSIBLE_FROM_CONTEXT_ONLY", "CONFIRMED_DESIGNED_SAMPLE_CHEMISTRY", "AUTHOR_OR_ACCESSION_SPECIFIC_CHEMISTRY_DECLARATION"),
+            ("RANDOM_LIBRARY_CHEMISTRY_SPLIT", "CONFIRMED", "RANDOM_U_PSI_M1PSI_SAMPLES_AND_MODIFIED_UTP_SUBSTITUTION_ARE_DECLARED", "DESIGNED_SAMPLE_CHEMISTRY", "NONE_FOR_RANDOM_SAMPLE_LEVEL_CLASSIFICATION"),
+            ("DESIGNED_CSV_ROW_LEVEL_CHEMISTRY_DISTINGUISHABILITY", "CONFIRMED", "FALSE", "ANY_ROW_LEVEL_CHEMISTRY_ASSIGNMENT", "EXTERNAL_ACCESSION_LEVEL_DESIGNED_SAMPLE_CHEMISTRY_AUTHORITY"),
+        ]
+    )
+    if not _json_type_strict_equal(audit.get("construct_and_chemistry_claims"), expected_construct_claims):
+        _issue(issues, "GSE114002_PUBLIC_GAP_AUDIT_CONSTRUCT", path, "construct and chemistry claims must preserve the designed-sample chemistry unknown")
+
+    expected_license_claims = expected_claims(
+        [
+            ("AUTHOR_CODE_LICENSE", "CONFIRMED", "GPL_3_0_AT_IMMUTABLE_AUTHOR_REPOSITORY_COMMIT", "GEO_DATA_LICENSE_OR_REDISTRIBUTION_RIGHTS", "NONE_FOR_CODE_ONLY"),
+            ("GEO_GENERAL_ACCESS_POLICY", "CONFIRMED_PARTIAL", "PUBLIC_NCBI_ACCESS_WITH_SUBMITTER_IP_CAVEAT", "ACCESSION_SPECIFIC_SPDX_OR_REDISTRIBUTION_PERMISSION", "ACCESSION_SPECIFIC_DATA_RIGHTS_STATEMENT"),
+            ("GSE114002_DATA_REDISTRIBUTION_RIGHTS", "UNKNOWN_NOT_ASSERTED", "NO_ACCESSION_SPECIFIC_DATA_LICENSE_LOCATED", "RIGHT_TO_REDISTRIBUTE_RAW_OR_DERIVED_DATA", "ACCESSION_SPECIFIC_DATA_LICENSE_OR_RIGHTSHOLDER_PERMISSION"),
+            ("GPL_PROPAGATION_TO_GEO_DATA", "CONFIRMED", "GPL_CODE_LICENSE_DOES_NOT_AUTOMATICALLY_PROPAGATE_TO_GEO_DATA", "ANY_GEO_DATA_REDISTRIBUTION_RIGHT", "ACCESSION_SPECIFIC_DATA_LICENSE_OR_RIGHTSHOLDER_PERMISSION"),
+        ]
+    )
+    if not _json_type_strict_equal(audit.get("license_claims"), expected_license_claims):
+        _issue(issues, "GSE114002_PUBLIC_GAP_AUDIT_LICENSE", path, "code GPL and GEO data redistribution authority must remain distinct")
+
+    expected_checkpoints = [
+        {
+            "checkpoint_family": "OPTIMUS_5PRIME",
+            "route_a_binding_status": "UNBOUND_FAMILY_NAME_ONLY",
+            "ordinary_locator": None,
+            "public_candidate_locator": "pjsample/human_5utr_modeling@saved_models",
+            "public_candidate_variants": ["MAIN", "RETRAINED", "EVOLUTION"],
+            "public_revision": "d53df410c7fb3fcd4bc4541bd7e8c6dc52b66fbe",
+            "head_semantics_status": "CHECKPOINT_DEPENDENT_NOT_CLOSED",
+            "accession_exposure_status": "EXPOSED_ACCESSION_LEVEL_NOT_CHECKPOINT_SPECIFIC",
+            "checkpoint_specific_exposure_status": "UNKNOWN_NOT_ASSERTED",
+            "near_duplicate_exposure_status": "NOT_RUN",
+            "label_exposure_status": "CHECKPOINT_DEPENDENT_NOT_CLOSED",
+            "overall_blocker_status": "OPEN",
+        },
+        {
+            "checkpoint_family": "UTR_LM",
+            "route_a_binding_status": "UNBOUND_CURRENT_WITH_LEGACY_EXACT_SNAPSHOT_LOCATOR",
+            "ordinary_locator": "/home/cunyuliu/.cache/huggingface/hub/models--multimolecule--utrlm-mrl/snapshots/79e23de069449e659696b5210f833c28ddd0de50",
+            "public_candidate_locator": "multimolecule/utrlm-mrl",
+            "public_candidate_variants": [
+                "multimolecule/utrlm-mrl",
+                "multimolecule/utrlm-te_el",
+            ],
+            "public_revision": "79e23de069449e659696b5210f833c28ddd0de50",
+            "head_semantics_status": "CHECKPOINT_DEPENDENT_NOT_CLOSED",
+            "accession_exposure_status": "EXPOSED_ACCESSION_LEVEL_NOT_CHECKPOINT_SPECIFIC",
+            "checkpoint_specific_exposure_status": "UNKNOWN_NOT_ASSERTED",
+            "near_duplicate_exposure_status": "NOT_RUN",
+            "label_exposure_status": "CHECKPOINT_DEPENDENT_NOT_CLOSED",
+            "overall_blocker_status": "OPEN",
+        },
+        {
+            "checkpoint_family": "MRNABERT",
+            "route_a_binding_status": "UNBOUND",
+            "ordinary_locator": "/home/cunyuliu/.cache/huggingface/hub/models--YYLY66--mRNABERT/refs/main",
+            "public_candidate_locator": "YYLY66/mRNABERT",
+            "public_candidate_variants": ["YYLY66/mRNABERT"],
+            "public_revision": "a1eb7df25804d23f08646e1cb996b234d7208a40",
+            "head_semantics_status": "NOT_DECLARED_FOR_BASE_CHECKPOINT_DOWNSTREAM_FINE_TUNING_EXISTS",
+            "accession_exposure_status": "NOT_DECLARED_DOES_NOT_ESTABLISH_ABSENCE",
+            "checkpoint_specific_exposure_status": "UNKNOWN_NOT_ASSERTED",
+            "near_duplicate_exposure_status": "NOT_RUN",
+            "label_exposure_status": "NOT_DECLARED_DOES_NOT_ESTABLISH_ABSENCE",
+            "overall_blocker_status": "OPEN",
+        },
+        {
+            "checkpoint_family": "ORTHRUS",
+            "route_a_binding_status": "UNBOUND_APPLICABILITY_PENDING",
+            "ordinary_locator": None,
+            "public_candidate_locator": "quietflamingo/orthrus-base-4-track",
+            "public_candidate_variants": [
+                "quietflamingo/orthrus-base-4-track",
+                "quietflamingo/orthrus-large-4-track",
+                "quietflamingo/orthrus-large-6-track",
+            ],
+            "public_revision": None,
+            "head_semantics_status": "FULL_MATURE_RNA_INPUT_SHORT_5UTR_REPORTER_ADAPTER_PENDING",
+            "accession_exposure_status": "NOT_DECLARED_DOES_NOT_ESTABLISH_ABSENCE",
+            "checkpoint_specific_exposure_status": "UNKNOWN_NOT_ASSERTED",
+            "near_duplicate_exposure_status": "NOT_RUN",
+            "label_exposure_status": "NOT_DECLARED_DOES_NOT_ESTABLISH_ABSENCE",
+            "overall_blocker_status": "OPEN",
+        },
+    ]
+    checkpoints = audit.get("checkpoint_family_exposure")
+    if not _json_type_strict_equal(checkpoints, expected_checkpoints):
+        _issue(issues, "GSE114002_PUBLIC_GAP_AUDIT_CHECKPOINTS", path, "four checkpoint rows must preserve accession-level versus checkpoint-specific uncertainty")
+    if isinstance(checkpoints, list):
+        forbidden_exposure_assertions = {"UNTOUCHED", "ZERO", "UNEXPOSED", "ABSENT", "PASS"}
+        for index, row in enumerate(checkpoints):
+            if not isinstance(row, Mapping):
+                continue
+            exact = row.get("checkpoint_specific_exposure_status")
+            near = row.get("near_duplicate_exposure_status")
+            if exact in forbidden_exposure_assertions or near in forbidden_exposure_assertions:
+                _issue(issues, "GSE114002_PUBLIC_GAP_AUDIT_EXPOSURE_BYPASS", path, f"checkpoint row {index} may not assert {exact!r}/{near!r} without a complete version-matched audit")
+
+    expected_checkpoint_rules = {
+        "checkpoint_specific_minimum_identity": ["MODEL_ID", "IMMUTABLE_REVISION", "HEAD_SEMANTICS"],
+        "revision_is_artifact_digest": False,
+        "artifact_digest_is_training_membership_audit": False,
+        "not_declared_establishes_absence": False,
+        "untouched_or_zero_without_complete_member_audit_allowed": False,
+        "label_exposure_scope": ["PRETRAIN", "FINE_TUNE", "HEAD_TRAINING", "MODEL_SELECTION"],
+        "near_duplicate_audit_minimum_prefreeze": ["NORMALIZATION", "COMPARISON_UNIT", "METRIC", "THRESHOLD"],
+    }
+    if not _json_type_strict_equal(audit.get("checkpoint_audit_rules"), expected_checkpoint_rules):
+        _issue(issues, "GSE114002_PUBLIC_GAP_AUDIT_CHECKPOINT_RULES", path, "checkpoint audit rules must remain exact and fail closed")
+
+    expected_minimum_evidence = [
+        {"blocker": "CHECKPOINT_SPECIFIC_EXPOSURE_UNKNOWN_NOT_ASSERTED", "minimum_external_evidence": "SELECTED_MODEL_ID_IMMUTABLE_REVISION_HEAD_SEMANTICS_COMPLETE_VERSION_MATCHED_MEMBERSHIP_AND_PREFROZEN_NEAR_DUPLICATE_AUDIT"},
+        {"blocker": "FIELD_AND_BIOLOGICAL_SOURCE_AUTHORITY_UNKNOWN_NOT_ASSERTED", "minimum_external_evidence": "AUTHOR_FIELD_DICTIONARY_MATCHING_ALGORITHM_IMMUTABLE_SOURCE_SNAPSHOTS_VALIDATED_ROW_CROSSWALK_AND_COMPLETE_DESIGN_FAMILY_MANIFEST"},
+        {"blocker": "FULL_CONSTRUCT_PREFIX_REPORTER_RNA_CHEMISTRY_UNKNOWN_NOT_ASSERTED", "minimum_external_evidence": "ACCESSION_SPECIFIC_DESIGNED_SAMPLE_CONSTRUCT_PREFIX_REPORTER_CHAIN_AND_RNA_CHEMISTRY_AUTHORITY"},
+        {"blocker": "LICENSE_AND_REDISTRIBUTION_RIGHTS_UNKNOWN_NOT_ASSERTED", "minimum_external_evidence": "ACCESSION_SPECIFIC_DATA_LICENSE_OR_RIGHTSHOLDER_PERMISSION_FOR_INTENDED_DERIVED_ARTIFACT_USE"},
+        {"blocker": "NEAR_DUPLICATE_SPLIT_AND_LEAKAGE_AUDIT_NOT_RUN", "minimum_external_evidence": "OUTCOME_BLIND_PREFROZEN_GROUP_AND_NEAR_DUPLICATE_AUDIT_AFTER_SOURCE_GROUP_AUTHORITY_CLOSES"},
+        {"blocker": "OWNER_UNCERTAINTY_POLICY_UNKNOWN_NOT_ASSERTED", "minimum_external_evidence": "OWNER_APPROVED_APPEND_ONLY_DECISION_LOG_ENTRY"},
+        {"blocker": "PREFROZEN_GROUP_POWER_NOT_RUN", "minimum_external_evidence": "OUTCOME_BLIND_POWER_AND_CONFIDENCE_INTERVAL_AUDIT_ON_AUTHORIZED_BIOLOGICAL_SOURCE_GROUPS"},
+    ]
+    expected_closure = {
+        "engineering_items_closed_by_this_audit": ["PUBLIC_AUTHORITY_EVIDENCE_SEARCH_AND_GAP_CLASSIFICATION_COMPLETED"],
+        "science_blockers_closed_by_this_audit": [],
+        "historical_mechanical_blockers_closed_before_this_audit": GSE114002_ENDPOINT_GEOMETRY_CLOSED_BLOCKERS,
+        "remaining_science_blockers": GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_002_BLOCKERS,
+        "field_authority_subblockers": [
+            "B_FIELD_DICTIONARY",
+            "B_MATCHING_ALGORITHM",
+            "B_SOURCE_SNAPSHOT",
+            "B_ROW_CROSSWALK",
+            "B_COMPLETE_DESIGN_FAMILY_MANIFEST",
+            "B_DESIGNED_SAMPLE_CHEMISTRY",
+            "B_DATA_LICENSE",
+            "B_IMMUTABLE_DATA_HASH",
+        ],
+        "minimum_external_evidence_by_science_blocker": expected_minimum_evidence,
+    }
+    if not _json_type_strict_equal(audit.get("closure_and_remaining_evidence"), expected_closure):
+        _issue(issues, "GSE114002_PUBLIC_GAP_AUDIT_BLOCKERS", path, "the audit may close only its engineering search item and must retain all seven scientific blockers")
+
+    expected_gate = {
+        "qualified_independent_ordinary_studies": 0,
+        "qualified_a1_studies": 0,
+        "qualified_true_a2_dense_studies": 0,
+        "canonical_record_count": 0,
+        "qualified": False,
+        "scientific_claim_status": "NOT_ESTABLISHED",
+        "phase_complete": False,
+        "training_allowed": False,
+        "model_selection_allowed": False,
+        "next_phase_authorized": False,
+    }
+    gate = audit.get("gate_snapshot")
+    if not isinstance(gate, Mapping):
+        _issue(issues, "GSE114002_PUBLIC_GAP_AUDIT_GATE", path, "gate_snapshot must be a mapping")
+    else:
+        _expect_closed_mapping(gate, expected_gate, path, issues, "GSE114002_PUBLIC_GAP_AUDIT_GATE")
+
+    expected_boundary = (
+        "This aggregate-only audit records which public authority statements are confirmed, inferred, or still unknown. "
+        "It closes only completion of the public evidence search and gap classification engineering item. It does not close "
+        "any of the seven scientific blockers, qualify GSE114002, establish a true-A2 claim, create canonical records, "
+        "authorize training or model selection, or assert checkpoint exact or near-duplicate non-exposure."
+    )
+    _expect(audit, "claim_boundary", expected_boundary, path, issues, "GSE114002_PUBLIC_GAP_AUDIT_CLAIM_BOUNDARY")
+
+    forbidden_keys = {
+        "sequence",
+        "sequences",
+        "sequence_value",
+        "sequence_hash",
+        "sequence_sha256",
+        "row_id",
+        "row_ids",
+        "row_identifier",
+        "row_identifiers",
+        "label_value",
+        "label_values",
+        "effect_value",
+        "effect_values",
+        "member_hash",
+        "member_hashes",
+        "member_sha256",
+        "model_weight_hash",
+        "model_weight_sha256",
+        "checkpoint_sha256",
+        "weight_sha256",
+    }
+
+    def scan_private_values(node: Any, json_path: str) -> None:
+        if isinstance(node, Mapping):
+            for key, value in node.items():
+                normalized = str(key).lower()
+                if normalized in forbidden_keys:
+                    _issue(issues, "GSE114002_PUBLIC_GAP_AUDIT_PRIVACY", path, f"forbidden payload-bearing key at {json_path}.{key}")
+                scan_private_values(value, f"{json_path}.{key}")
+        elif isinstance(node, list):
+            for index, value in enumerate(node):
+                scan_private_values(value, f"{json_path}[{index}]")
+        elif isinstance(node, str):
+            compact = node.upper().replace(" ", "").replace("-", "").replace("_", "")
+            if len(compact) >= 20 and set(compact) <= set("ACGTUN"):
+                _issue(issues, "GSE114002_PUBLIC_GAP_AUDIT_PRIVACY", path, f"sequence-like value is forbidden at {json_path}")
+
+    scan_private_values(audit, "$")
+    return issues
+
+
 def validate_registry_manifest(repo_root: Path) -> list[Issue]:
     """Verify every public bundle hash listed by the A0 registry manifest."""
 
@@ -1253,10 +1862,10 @@ def validate_registry_manifest(repo_root: Path) -> list[Issue]:
         "contract_sha256": SOURCE_CONTRACT_SHA256,
         "active_amendment_decision_ids": ["V3-DEC-017", "V3-DEC-018"],
         "base_commit": "bbb71dcba6f1e1c9cb75a8a6653f1a4fe4a6ca0c",
-        "manifest_status": "A1_GSE114002_ENDPOINT_GEOMETRY_EVIDENCE_LEDGER_INTEGRATED",
+        "manifest_status": "A1_GSE114002_PUBLIC_AUTHORITY_GAP_AUDIT_INTEGRATED",
         "initial_generated_at": "2026-08-10T10:10:05+08:00",
-        "generated_at": "2026-08-11T08:23:37+08:00",
-        "updated_at": "2026-08-11T08:23:37+08:00",
+        "generated_at": "2026-08-11T10:24:16+08:00",
+        "updated_at": "2026-08-11T10:24:16+08:00",
         "sealed_contact": False,
     }
     expected_top_keys = set(expected_static_top) | {"files"}
@@ -3008,6 +3617,7 @@ def validate_a1_interim_lineage(
             "gse114002_manifest_reconciliation_v1",
             GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_001_LINEAGE_ID,
             GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_002_LINEAGE_ID,
+            GSE114002_PUBLIC_AUTHORITY_GAP_AUDIT_LINEAGE_ID,
             "gse149487_reconstruction_attempt_003_failure",
             "gse149487_lim6c_scale_diagnostic_v1",
             "gse149487_plumage_protocol",
@@ -3086,6 +3696,9 @@ def validate_a1_interim_lineage(
                 **GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_002_EXPECTED_RECORD,
                 "files": GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_002_EXPECTED_FILES,
             },
+            GSE114002_PUBLIC_AUTHORITY_GAP_AUDIT_LINEAGE_ID: (
+                GSE114002_PUBLIC_AUTHORITY_GAP_AUDIT_EXPECTED_RECORD
+            ),
             "gse149487_reconstruction_attempt_003_failure": {
                 "path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE149487_RECONSTRUCTION_ATTEMPT_003_FAILURE.json",
                 "bytes": 2568,
@@ -4045,6 +4658,31 @@ def validate_a1_interim_lineage(
                     "next_phase_authorized": False,
                     "runtime_sync_status": "PENDING_NO_EVT_039",
                 },
+                "public_authority_gap_audit": {
+                    "artifact_lineage_id": GSE114002_PUBLIC_AUTHORITY_GAP_AUDIT_LINEAGE_ID,
+                    "record_id": "GSE114002_PUBLIC_AUTHORITY_GAP_AUDIT_V1",
+                    "status": GSE114002_PUBLIC_AUTHORITY_GAP_AUDIT_STATUS,
+                    "engineering_item_closed": "PUBLIC_AUTHORITY_EVIDENCE_SEARCH_AND_GAP_CLASSIFICATION_COMPLETED",
+                    "science_blockers_closed_count": 0,
+                    "decisive_remaining_blocker_count": 7,
+                    "checkpoint_family_count": 4,
+                    "accession_level_exposed_family_count": 2,
+                    "not_declared_without_absence_family_count": 2,
+                    "checkpoint_specific_exposure_closed_count": 0,
+                    "near_duplicate_exposure_audit_completed_count": 0,
+                    "designed_sample_chemistry_status": "UNKNOWN_NOT_ASSERTED",
+                    "data_redistribution_rights_status": "UNKNOWN_NOT_ASSERTED",
+                    "predecessor_runtime_event_id": "A1-EVT-039",
+                    "ordinary_study_contribution": 0,
+                    "a1_intervention_study_contribution": 0,
+                    "true_a2_dense_study_contribution": 0,
+                    "canonical_record_count": 0,
+                    "qualified": False,
+                    "training_allowed": False,
+                    "model_selection_allowed": False,
+                    "next_phase_authorized": False,
+                    "runtime_sync_status": "PENDING_NO_EVT_040",
+                },
             }
             _expect_closed_mapping(
                 gse114002,
@@ -4355,6 +4993,11 @@ def validate_a1_interim_lineage(
             "gse114002_mechanical_reconciliation_is_study_qualification": False,
             "gse114002_provisional_pool_or_candidate_counts_are_effective_n": False,
             "gse114002_mechanical_reconciliation_authorizes_training_or_model_selection": False,
+            "gse114002_public_authority_gap_audit_is_study_qualification": False,
+            "gse114002_public_authority_gap_audit_closes_any_science_blocker": False,
+            "gse114002_accession_level_exposure_is_checkpoint_specific_exposure": False,
+            "gse114002_checkpoint_not_declared_establishes_absence": False,
+            "gse114002_author_code_gpl_licenses_geo_data": False,
             "gse200304_engineering_success_is_study_qualification": False,
             "gse200304_fastq_acquisition_is_study_qualification": False,
             "gse200304_transport_integrity_is_paper_native_count_replay": False,
@@ -4422,6 +5065,9 @@ def validate_a1_interim_lineage(
                 "gse200304_published_endpoint_terminal_marker": "PASS",
                 "gse200304_published_endpoint_gate_unchanged": "PASS",
                 "gse200304_published_endpoint_producer_blob_binding": "PASS",
+                "gse114002_public_authority_gap_audit_json_parse": "PASS",
+                "gse114002_public_authority_gap_audit_closed_semantics": "PASS",
+                "gse114002_public_authority_gap_audit_recursive_privacy_scan": "PASS",
                 "gse145046_closed_report_schema": "PASS",
                 "gse145046_payload_integrity": "PASS",
                 "gse145046_rpm_validation": "PASS",
@@ -4469,19 +5115,19 @@ def validate_a1_interim_lineage(
     _expect(
         interim,
         "latest_evidence_update_id",
-        GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_002_ARTIFACT_ID,
+        "GSE114002_PUBLIC_AUTHORITY_GAP_AUDIT_V1",
         path,
         issues,
         "A1_INTERIM_TIME",
     )
     generated = interim.get("generated_at")
     updated = interim.get("updated_at")
-    if generated != "2026-08-11T08:16:56+08:00" or updated != "2026-08-11T08:16:56+08:00":
+    if generated != "2026-08-11T10:24:16+08:00" or updated != "2026-08-11T10:24:16+08:00":
         _issue(
             issues,
             "A1_INTERIM_TIME",
             path,
-            "generated_at and updated_at must remain the exact GSE114002 endpoint-geometry ledger timestamp",
+            "generated_at and updated_at must remain the exact GSE114002 public-authority gap-audit ledger timestamp",
         )
     if generated != updated:
         _issue(issues, "A1_INTERIM_TIME", path, "generated_at and updated_at must identify the same amended record bytes")
@@ -4495,6 +5141,7 @@ def validate_a1_interim_lineage(
         gse149487_preflight_dt = datetime.fromisoformat("2026-08-11T02:14:39+08:00")
         gse200304_published_endpoint_dt = datetime.fromisoformat("2026-08-11T04:40:50+08:00")
         gse114002_endpoint_geometry_dt = datetime.fromisoformat("2026-08-11T07:57:11+08:00")
+        gse114002_public_gap_audit_dt = datetime.fromisoformat("2026-08-11T10:24:16+08:00")
     except ValueError:
         _issue(issues, "A1_INTERIM_TIME", path, "updated_at must be an ISO-8601 timestamp with offset")
     else:
@@ -4507,12 +5154,13 @@ def validate_a1_interim_lineage(
             or updated_dt < gse149487_preflight_dt
             or updated_dt < gse200304_published_endpoint_dt
             or updated_dt < gse114002_endpoint_geometry_dt
+            or updated_dt < gse114002_public_gap_audit_dt
         ):
             _issue(
                 issues,
                 "A1_INTERIM_TIME",
                 path,
-                "updated_at must follow the formal audit, DEC-017 authorization, FASTQ consumer evidence, raw-replay preflight, GSE200302 role-authority bundle, GSE149487 stop-before-data preflight, GSE200304 published-endpoint evidence, and GSE114002 endpoint-geometry reconciliation",
+                "updated_at must follow the formal audit, DEC-017 authorization, FASTQ consumer evidence, raw-replay preflight, GSE200302 role-authority bundle, GSE149487 stop-before-data preflight, GSE200304 published-endpoint evidence, GSE114002 endpoint-geometry reconciliation, and GSE114002 public-authority gap audit",
             )
     return issues
 
@@ -5875,6 +6523,7 @@ def validate_bundle(repo_root: Path) -> list[Issue]:
     issues = validate_required_files(repo_root)
     issues.extend(validate_schema_manifest(repo_root))
     issues.extend(validate_registry_manifest(repo_root))
+    issues.extend(validate_gse114002_public_authority_gap_audit(repo_root))
     issues.extend(validate_gse149487_plumage_protocol(repo_root))
     issues.extend(validate_gse200302_role_protocol(repo_root))
     issues.extend(validate_python_static_safety(repo_root))
