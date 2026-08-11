@@ -7,13 +7,13 @@
   "decision_id": "V3-DEC-019",
   "implementation_binding": {
     "binding_scheme": "CONFIG_ONLY_POST_IMPLEMENTATION_BINDING_V1",
-    "status": "UNKNOWN_NOT_ASSERTED",
+    "status": "BOUND",
     "blocker_if_unbound": "IMPLEMENTATION_BINDING_UNKNOWN_NOT_ASSERTED",
-    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "implementation_commit": "08f10e1e6a4194eca4f3cd78c31ff191597a4e41",
     "implementation_script_path": "scripts/route_a_v3/produce_gse200304_dec019_canonical_row_lineage_gate.py",
-    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_script_sha256": "dec18294c9313d67b6423a5bcc3bdd914f1197976d7d75939077fa48a3ec5670",
     "implementation_test_path": "tests/route_a_v3/test_produce_gse200304_dec019_canonical_row_lineage_gate.py",
-    "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_test_sha256": "c962aa14388783c71a64554db1b1811c2118e51e7d6d73d86f14578e07d67925",
     "config_core_sha256": "95c09f919454e7ad3f096bbae1d72395d0912c216037862b5a38cb8fd3bdba45",
     "unknown_to_bound_scalar_paths": [
       "implementation_binding.status",
