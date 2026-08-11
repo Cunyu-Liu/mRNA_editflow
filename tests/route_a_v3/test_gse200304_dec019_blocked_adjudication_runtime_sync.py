@@ -231,6 +231,8 @@ def make_context(
         "predecessor_ledger_commit": config["repository_authority"]["predecessor_ledger"]["commit"],
         "initial_runtime_implementation_commit": config["repository_authority"]["historical_runtime_publisher_lifecycle"]["initial_implementation_commit"],
         "initial_runtime_binding_commit": config["repository_authority"]["historical_runtime_publisher_lifecycle"]["initial_binding_commit"],
+        "repair_runtime_implementation_commit": config["repository_authority"]["historical_runtime_publisher_lifecycle"]["repair_implementation_commit"],
+        "repair_runtime_binding_commit": config["repository_authority"]["historical_runtime_publisher_lifecycle"]["repair_binding_commit"],
         "negative_nfs_binding_commit": config["repository_authority"]["negative_producer_lifecycle"]["nfs_binding_commit"],
         "adjudicator_descriptor_commit": config["repository_authority"]["adjudicator_lifecycle"]["descriptor_commit"],
     }
@@ -271,16 +273,20 @@ def test_static_disk_i_or_b_form_freezes_delta16_exact8_exact4_and_only_expected
     ledger = authority["predecessor_ledger"]
     assert ledger["status"] == "BOUND"
     assert ledger["commit"] == "f465dd03ae792b98c0604b1d225cd2df37d28f9e"
-    assert authority["base_commit"] == authority["current_pre_runtime_sync_head"] == "1dc7da6300dfd192d69656fe63d582fe8f71da48"
+    assert authority["base_commit"] == authority["current_pre_runtime_sync_head"] == "4b544c7b8e95efc658c3c9336898a8c1898c4c94"
     publisher = authority["historical_runtime_publisher_lifecycle"]
     assert (
         publisher["predecessor_ledger_commit"],
         publisher["initial_implementation_commit"],
         publisher["initial_binding_commit"],
+        publisher["repair_implementation_commit"],
+        publisher["repair_binding_commit"],
     ) == (
         "f465dd03ae792b98c0604b1d225cd2df37d28f9e",
         "9acdefc4a410e03827532b359ec245d8a6cb76df",
         "1dc7da6300dfd192d69656fe63d582fe8f71da48",
+        "83fe7027a30acc83063262ad2c69c5cf80417ca5",
+        "4b544c7b8e95efc658c3c9336898a8c1898c4c94",
     )
     assert [item["sha256"] for item in ledger["frozen_blobs"]] == [
         "552f705445a36df99a5ae071c85625c729ad2f69f0a375bb7b3118c3b400e16c",
@@ -403,9 +409,9 @@ def test_unknown_bindings_stop_before_repository_runtime_or_source_access(
 
 @pytest.mark.parametrize(
     "mode",
-    ["positive", "dirty", "parent_drift", "path_drift", "runtime_history_drift", "negative_drift", "adjudicator_drift", "ledger_drift", "current_drift", "lineage_drift", "i_type_drift"],
+    ["positive", "dirty", "parent_drift", "path_drift", "runtime_history_drift", "negative_drift", "adjudicator_drift", "ledger_drift", "current_drift", "b5_d2_interposed", "b4_not_ancestor", "old_wrong_d2_parent_b4", "i_type_drift"],
 )
-def test_repo_audit_proves_historical_negative_adjudicator_d2_ledger_i1_b1_and_repair_i2_b2(
+def test_repo_audit_proves_production_dag_runtime_i1_b1_i2_b2_and_repair_i3_b3(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, mode: str
 ) -> None:
     config = bind_config()
@@ -447,6 +453,8 @@ def test_repo_audit_proves_historical_negative_adjudicator_d2_ledger_i1_b1_and_r
 
     add_three(publisher["initial_implementation_commit"], publisher["initial_implementation_blobs"], publisher, "runtime-i1")
     add_three(publisher["initial_binding_commit"], publisher["initial_binding_blobs"], publisher, "runtime-b1")
+    add_three(publisher["repair_implementation_commit"], publisher["repair_implementation_blobs"], publisher, "runtime-i2")
+    add_three(publisher["repair_binding_commit"], publisher["repair_binding_blobs"], publisher, "runtime-b2")
     add_three(negative["initial_implementation_commit"], negative["initial_implementation_blobs"], negative, "negative-initial-i")
     add_three(negative["initial_binding_commit"], negative["initial_binding_blobs"], negative, "negative-initial-b")
     add_three(negative["nfs_implementation_commit"], negative["nfs_implementation_blobs"], negative, "negative-nfs-i")
@@ -461,7 +469,11 @@ def test_repo_audit_proves_historical_negative_adjudicator_d2_ledger_i1_b1_and_r
         payload = f"ledger:{item['path']}\n".encode()
         ledger_payloads[item["path"]] = payload
         digest_overrides[payload] = item["sha256"]
-        for commit in (ledger["commit"], publisher["initial_implementation_commit"], base, implementation, head):
+        for commit in (
+            ledger["commit"], publisher["initial_implementation_commit"],
+            publisher["initial_binding_commit"], publisher["repair_implementation_commit"],
+            base, implementation, head,
+        ):
             blob_payloads[(commit, item["path"])] = payload
     real_sha256 = runtime_sync.sha256
     monkeypatch.setattr(runtime_sync, "sha256", lambda payload: digest_overrides.get(payload, real_sha256(payload)))
@@ -469,18 +481,31 @@ def test_repo_audit_proves_historical_negative_adjudicator_d2_ledger_i1_b1_and_r
     parent_map = {
         head: implementation,
         implementation: base,
-        base: publisher["initial_implementation_commit"],
+        base: publisher["repair_implementation_commit"],
+        publisher["repair_implementation_commit"]: publisher["initial_binding_commit"],
         publisher["initial_implementation_commit"]: ledger["commit"],
+        publisher["initial_binding_commit"]: publisher["initial_implementation_commit"],
         ledger["commit"]: ledger["expected_parent"],
+        negative["current_descriptor_commit"]: negative["nfs_binding_commit"],
+        negative["initial_implementation_commit"]: adjudicator["binding_commit"],
         negative["initial_binding_commit"]: negative["initial_implementation_commit"],
         negative["nfs_implementation_commit"]: negative["initial_binding_commit"],
         negative["nfs_binding_commit"]: negative["nfs_implementation_commit"],
         adjudicator["binding_commit"]: adjudicator["implementation_commit"],
-        adjudicator["descriptor_commit"]: adjudicator["binding_commit"],
     }
+    if mode == "b5_d2_interposed":
+        interposed = "e" * 40
+        parent_map[negative["current_descriptor_commit"]] = interposed
+        parent_map[interposed] = negative["nfs_binding_commit"]
+    elif mode == "b4_not_ancestor":
+        parent_map[negative["initial_implementation_commit"]] = "e" * 40
+    elif mode == "old_wrong_d2_parent_b4":
+        parent_map[negative["current_descriptor_commit"]] = adjudicator["binding_commit"]
     changed_paths = {
         ledger["commit"]: ledger["commit_exact_changed_paths"],
         publisher["initial_implementation_commit"]: publisher["implementation_commit_exact_changed_paths"],
+        publisher["initial_binding_commit"]: publisher["binding_commit_exact_changed_paths"],
+        publisher["repair_implementation_commit"]: publisher["implementation_commit_exact_changed_paths"],
         base: publisher["binding_commit_exact_changed_paths"],
         implementation: authority["implementation_commit_exact_changed_paths"],
         head: authority["binding_commit_exact_changed_paths"],
@@ -513,9 +538,19 @@ def test_repo_audit_proves_historical_negative_adjudicator_d2_ledger_i1_b1_and_r
         if len(args) == 2 and args[0] == "rev-parse":
             return f"{args[1]}\n".encode()
         if args[:2] == ("merge-base", "--is-ancestor"):
-            if mode == "lineage_drift" and args[2] == negative["nfs_binding_commit"]:
-                raise runtime_sync.AuthorityError("synthetic ancestry failure")
-            return b""
+            ancestor, descendant = args[2], args[3]
+            current = descendant
+            seen: set[str] = set()
+            while current not in seen:
+                if current == ancestor:
+                    return b""
+                seen.add(current)
+                if current not in parent_map:
+                    break
+                current = parent_map[current]
+            raise runtime_sync.AuthorityError(
+                f"synthetic non-ancestor: {ancestor} !<= {descendant}"
+            )
         raise AssertionError(args)
 
     def fake_blob(_repo: Path, commit: str, path: str) -> bytes:
@@ -557,10 +592,6 @@ def test_repo_audit_proves_historical_negative_adjudicator_d2_ledger_i1_b1_and_r
             return runtime_test
         if relative in ledger_payloads:
             return ledger_payloads[relative]
-        if relative in (negative["config_path"], negative["script_path"], negative["test_path"]):
-            return blob_payloads[(head, relative)]
-        if relative in (adjudicator["config_path"], adjudicator["script_path"], adjudicator["test_path"]):
-            return blob_payloads[(head, relative)]
         raise AssertionError(relative)
 
     monkeypatch.setattr(runtime_sync, "_run_git", fake_git)
@@ -573,7 +604,9 @@ def test_repo_audit_proves_historical_negative_adjudicator_d2_ledger_i1_b1_and_r
         assert result["adjudicator_descriptor_commit"] == adjudicator["descriptor_commit"]
         assert result["predecessor_ledger_commit"] == ledger["commit"]
         assert result["initial_runtime_implementation_commit"] == publisher["initial_implementation_commit"]
-        assert result["initial_runtime_binding_commit"] == base
+        assert result["initial_runtime_binding_commit"] == publisher["initial_binding_commit"]
+        assert result["repair_runtime_implementation_commit"] == publisher["repair_implementation_commit"]
+        assert result["repair_runtime_binding_commit"] == base
     else:
         with pytest.raises(runtime_sync.RuntimeSyncError):
             runtime_sync.audit_repo_authority(repo, config, config_payload)

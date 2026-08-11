@@ -461,10 +461,10 @@ def validate_static_config(config: dict[str, Any]) -> None:
     )
     _expect_exact(authority["production_repo_root"], str(PRODUCTION_REPO_ROOT), label="repository root")
     _expect_exact(authority["branch"], "routea-v3-a1-20260810", label="repository branch")
-    _expect_exact(authority["base_commit"], "1dc7da6300dfd192d69656fe63d582fe8f71da48", label="repair base/runtime B1")
-    _expect_exact(authority["current_pre_runtime_sync_head"], authority["base_commit"], label="repair pre-I head/runtime B1")
-    _expect_exact(authority["base_commit_expected_parent"], "9acdefc4a410e03827532b359ec245d8a6cb76df", label="repair base parent/runtime I1")
-    _expect_exact(authority["implementation_commit_expected_parent"], "INITIAL_RUNTIME_BINDING_COMMIT_FROM_LIFECYCLE", label="repair I2 parent rule")
+    _expect_exact(authority["base_commit"], "4b544c7b8e95efc658c3c9336898a8c1898c4c94", label="repair base/runtime B2")
+    _expect_exact(authority["current_pre_runtime_sync_head"], authority["base_commit"], label="repair pre-I3 head/runtime B2")
+    _expect_exact(authority["base_commit_expected_parent"], "83fe7027a30acc83063262ad2c69c5cf80417ca5", label="repair base parent/runtime I2")
+    _expect_exact(authority["implementation_commit_expected_parent"], "REPAIR_RUNTIME_BINDING_COMMIT_FROM_LIFECYCLE", label="repair I3 parent rule")
     _expect_exact(authority["binding_commit_expected_parent"], "IMPLEMENTATION_COMMIT_FROM_BINDING", label="runtime B parent rule")
     _expect_exact(authority["implementation_commit_exact_changed_paths"], sorted([CONFIG_REPO_PATH, SCRIPT_REPO_PATH, TEST_REPO_PATH]), label="runtime I paths")
     _expect_exact(authority["binding_commit_exact_changed_paths"], [CONFIG_REPO_PATH], label="runtime B paths")
@@ -518,8 +518,10 @@ def validate_static_config(config: dict[str, Any]) -> None:
         authority["historical_runtime_publisher_lifecycle"],
         {
             "predecessor_ledger_commit", "initial_implementation_commit",
-            "initial_binding_commit", "config_path", "script_path", "test_path",
+            "initial_binding_commit", "repair_implementation_commit",
+            "repair_binding_commit", "config_path", "script_path", "test_path",
             "initial_implementation_blobs", "initial_binding_blobs",
+            "repair_implementation_blobs", "repair_binding_blobs",
             "implementation_commit_exact_changed_paths",
             "binding_commit_exact_changed_paths",
         },
@@ -530,13 +532,16 @@ def validate_static_config(config: dict[str, Any]) -> None:
             key: publisher[key]
             for key in (
                 "predecessor_ledger_commit", "initial_implementation_commit",
-                "initial_binding_commit", "config_path", "script_path", "test_path",
+                "initial_binding_commit", "repair_implementation_commit",
+                "repair_binding_commit", "config_path", "script_path", "test_path",
             )
         },
         {
             "predecessor_ledger_commit": "f465dd03ae792b98c0604b1d225cd2df37d28f9e",
             "initial_implementation_commit": "9acdefc4a410e03827532b359ec245d8a6cb76df",
             "initial_binding_commit": "1dc7da6300dfd192d69656fe63d582fe8f71da48",
+            "repair_implementation_commit": "83fe7027a30acc83063262ad2c69c5cf80417ca5",
+            "repair_binding_commit": "4b544c7b8e95efc658c3c9336898a8c1898c4c94",
             "config_path": CONFIG_REPO_PATH,
             "script_path": SCRIPT_REPO_PATH,
             "test_path": TEST_REPO_PATH,
@@ -553,6 +558,16 @@ def validate_static_config(config: dict[str, Any]) -> None:
             "config_sha256": "0dc02a9122686d08ca4eee071f4e966b5ae51c9afc6ad29d3bf530dd9ae74921",
             "script_sha256": "fcbe15c4ea0fd7ef5a049c71f388b242757fa59e17f15f9ea22f9d5def353530",
             "test_sha256": "93633d61cc9bd10d5003f2b29d4ab1d15f1a6b2ab8f3674a0c2617351c8bed64",
+        },
+        "repair_implementation_blobs": {
+            "config_sha256": "9a4164d3e3e7a99970ceb237992d076fc648932f78497584dc15c1cfcd3fbc18",
+            "script_sha256": "52e17db1f647738f5677c97e06c056d00e07316c786796c81fa9e77e35842392",
+            "test_sha256": "91b85b8630c13a68c1dfa37987c8c3d643e4cad7fbc82c3e739caa2741d089d4",
+        },
+        "repair_binding_blobs": {
+            "config_sha256": "895990bd015b64fb5ae65fe75ea67460d555a30e194c01600d960cd5270e8cda",
+            "script_sha256": "52e17db1f647738f5677c97e06c056d00e07316c786796c81fa9e77e35842392",
+            "test_sha256": "91b85b8630c13a68c1dfa37987c8c3d643e4cad7fbc82c3e739caa2741d089d4",
         },
     }.items():
         _expect_typed_exact(publisher[key], expected, label=f"historical runtime {key}")
@@ -871,7 +886,7 @@ def validate_static_config(config: dict[str, Any]) -> None:
 
 
 def validate_bound_config(config: dict[str, Any]) -> None:
-    """Require the frozen history and the repair runtime I2/config-only-B2."""
+    """Require the frozen history and the repair runtime I3/config-only-B3."""
 
     validate_static_config(config)
     binding = config["implementation_binding"]
@@ -883,7 +898,7 @@ def validate_bound_config(config: dict[str, Any]) -> None:
     implementation = _expect_hex(binding["implementation_commit"], HEX40, label="implementation commit")
     base = _expect_hex(authority["base_commit"], HEX40, label="base commit")
     if implementation == base:
-        raise BindingError("runtime-sync repair implementation did not advance from B1 base")
+        raise BindingError("runtime-sync repair implementation did not advance from B2 base")
 
 
 def load_bound_config(config_path: Path, *, production: bool) -> tuple[dict[str, Any], bytes]:
@@ -988,26 +1003,34 @@ def audit_repo_authority(
         raise AuthorityError("worktree or index is dirty")
 
     # Runtime publisher history and repair:
-    # ledger -> I1 -> config-only B1/base -> I2 -> config-only B2/current.
+    # ledger -> I1 -> B1 -> I2 -> B2/base -> I3 -> config-only B3/current.
     ledger_commit = ledger["commit"]
     initial_implementation = publisher["initial_implementation_commit"]
     initial_binding = publisher["initial_binding_commit"]
+    repair_implementation = publisher["repair_implementation_commit"]
+    repair_binding = publisher["repair_binding_commit"]
     _expect_exact(publisher["predecessor_ledger_commit"], ledger_commit, label="runtime I1 ledger")
-    _expect_exact(base, initial_binding, label="repair base/runtime B1")
-    _expect_exact(authority["current_pre_runtime_sync_head"], base, label="repair pre-I2 head")
-    _expect_parent(repo_root, head, implementation, label="runtime B2 parent")
-    _expect_parent(repo_root, implementation, base, label="runtime I2 parent")
-    _expect_parent(repo_root, base, initial_implementation, label="runtime B1 parent")
+    _expect_exact(base, repair_binding, label="repair base/runtime B2")
+    _expect_exact(authority["current_pre_runtime_sync_head"], base, label="repair pre-I3 head")
+    _expect_parent(repo_root, head, implementation, label="runtime B3 parent")
+    _expect_parent(repo_root, implementation, base, label="runtime I3 parent")
+    _expect_parent(repo_root, base, repair_implementation, label="runtime B2 parent")
+    _expect_parent(repo_root, repair_implementation, initial_binding, label="runtime I2 parent")
+    _expect_parent(repo_root, initial_binding, initial_implementation, label="runtime B1 parent")
     _expect_parent(repo_root, initial_implementation, ledger_commit, label="runtime I1 parent")
     _expect_parent(repo_root, ledger_commit, ledger["expected_parent"], label="ledger/D2 parent")
     _expect_exact(_paths_changed_by_commit(repo_root, ledger_commit), ledger["commit_exact_changed_paths"], label="ledger changed paths")
     _expect_exact(_paths_changed_by_commit(repo_root, initial_implementation), publisher["implementation_commit_exact_changed_paths"], label="runtime I1 changed paths")
     _expect_exact(_paths_changed_by_commit(repo_root, initial_binding), publisher["binding_commit_exact_changed_paths"], label="runtime B1 changed paths")
-    _expect_exact(_paths_changed_by_commit(repo_root, implementation), authority["implementation_commit_exact_changed_paths"], label="runtime I2 changed paths")
-    _expect_exact(_paths_changed_by_commit(repo_root, head), authority["binding_commit_exact_changed_paths"], label="runtime B2 changed paths")
+    _expect_exact(_paths_changed_by_commit(repo_root, repair_implementation), publisher["implementation_commit_exact_changed_paths"], label="runtime I2 changed paths")
+    _expect_exact(_paths_changed_by_commit(repo_root, repair_binding), publisher["binding_commit_exact_changed_paths"], label="runtime B2 changed paths")
+    _expect_exact(_paths_changed_by_commit(repo_root, implementation), authority["implementation_commit_exact_changed_paths"], label="runtime I3 changed paths")
+    _expect_exact(_paths_changed_by_commit(repo_root, head), authority["binding_commit_exact_changed_paths"], label="runtime B3 changed paths")
     for commit, blob_key, label in (
         (initial_implementation, "initial_implementation_blobs", "runtime I1"),
         (initial_binding, "initial_binding_blobs", "runtime B1"),
+        (repair_implementation, "repair_implementation_blobs", "runtime I2"),
+        (repair_binding, "repair_binding_blobs", "runtime B2"),
     ):
         _verify_three_blobs(
             repo_root,
@@ -1044,11 +1067,14 @@ def audit_repo_authority(
         path, digest = item["path"], item["sha256"]
         if any(
             sha256(_git_blob(repo_root, commit, path)) != digest
-            for commit in (ledger_commit, initial_implementation, initial_binding, implementation, head)
+            for commit in (
+                ledger_commit, initial_implementation, initial_binding,
+                repair_implementation, repair_binding, implementation, head,
+            )
         ) or sha256(read_regular_path(repo_root / path)) != digest:
             raise AuthorityError(f"predecessor ledger blob drift: {path}")
 
-    # Historical negative producer: initial I/B -> NFS-safe I/B, then ancestor of D2.
+    # Historical negative producer: initial I/B -> NFS-safe I/B -> direct-child D2.
     initial_i = negative["initial_implementation_commit"]
     initial_b = negative["initial_binding_commit"]
     nfs_i = negative["nfs_implementation_commit"]
@@ -1057,7 +1083,7 @@ def audit_repo_authority(
     _expect_parent(repo_root, initial_b, initial_i, label="negative initial B parent")
     _expect_parent(repo_root, nfs_i, initial_b, label="negative NFS I parent")
     _expect_parent(repo_root, nfs_b, nfs_i, label="negative NFS B parent")
-    _expect_ancestor(repo_root, nfs_b, d2, label="negative B to D2")
+    _expect_parent(repo_root, d2, nfs_b, label="negative D2 parent")
     _expect_ancestor(repo_root, d2, ledger_commit, label="D2 to ledger")
     _expect_ancestor(repo_root, ledger_commit, base, label="ledger to repair base")
     for commit, expected_paths, label in (
@@ -1085,12 +1111,12 @@ def audit_repo_authority(
             label=label,
         )
 
-    # Historical/current adjudicator I4 -> B4 -> config-only descriptor D2.
+    # Historical/current adjudicator I4 -> B4, with B4 an ancestor of D2.
     adjudicator_i = adjudicator["implementation_commit"]
     adjudicator_b = adjudicator["binding_commit"]
     adjudicator_d2 = adjudicator["descriptor_commit"]
     _expect_parent(repo_root, adjudicator_b, adjudicator_i, label="adjudicator B4 parent")
-    _expect_parent(repo_root, adjudicator_d2, adjudicator_b, label="adjudicator D2 parent")
+    _expect_ancestor(repo_root, adjudicator_b, adjudicator_d2, label="adjudicator B4 to D2")
     _expect_exact(_paths_changed_by_commit(repo_root, adjudicator_i), adjudicator["implementation_commit_exact_changed_paths"], label="adjudicator I4 paths")
     _expect_exact(_paths_changed_by_commit(repo_root, adjudicator_b), adjudicator["binding_and_descriptor_commit_exact_changed_paths"], label="adjudicator B4 paths")
     _expect_exact(_paths_changed_by_commit(repo_root, adjudicator_d2), adjudicator["binding_and_descriptor_commit_exact_changed_paths"], label="adjudicator D2 paths")
@@ -1111,7 +1137,7 @@ def audit_repo_authority(
         )
 
     return {
-        "status": "PASS_HISTORICAL_NEGATIVE_ADJUDICATOR_AND_RUNTIME_I1_B1_LIFECYCLES_CURRENT_D2_DESCENDANT_AND_REPAIR_I2_TO_CONFIG_ONLY_B2",
+        "status": "PASS_STRICT_LINEAR_DAG_HISTORICAL_RUNTIME_I1_B1_I2_B2_AND_REPAIR_I3_TO_CONFIG_ONLY_B3",
         "binding_commit": head,
         "head_commit": head,
         "origin_branch_head_commit": origin,
@@ -1121,11 +1147,13 @@ def audit_repo_authority(
         "predecessor_ledger_commit": ledger["commit"],
         "initial_runtime_implementation_commit": initial_implementation,
         "initial_runtime_binding_commit": initial_binding,
+        "repair_runtime_implementation_commit": repair_implementation,
+        "repair_runtime_binding_commit": repair_binding,
         "negative_nfs_binding_commit": nfs_b,
         "adjudicator_descriptor_commit": adjudicator_d2,
         "historical_negative_blob_check_count": 18,
         "adjudicator_blob_check_count": 12,
-        "historical_runtime_blob_check_count": 6,
+        "historical_runtime_blob_check_count": 12,
         "ledger_blob_check_count": 4,
     }
 
@@ -1871,6 +1899,8 @@ def _load_runtime_context(
             "predecessor_ledger_commit",
             "initial_runtime_implementation_commit",
             "initial_runtime_binding_commit",
+            "repair_runtime_implementation_commit",
+            "repair_runtime_binding_commit",
             "negative_nfs_binding_commit",
             "adjudicator_descriptor_commit",
         }

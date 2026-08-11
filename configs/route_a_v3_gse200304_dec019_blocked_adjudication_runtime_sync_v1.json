@@ -8,13 +8,13 @@
   "sync_type": "APPEND_ONLY_NEGATIVE_EVIDENCE_AND_BLOCKED_ADJUDICATION_REGISTRATION_NO_GATE_CHANGE",
   "implementation_binding": {
     "binding_scheme": "CONFIG_ONLY_POST_IMPLEMENTATION_BINDING_V1",
-    "status": "BOUND",
-    "implementation_commit": "83fe7027a30acc83063262ad2c69c5cf80417ca5",
+    "status": "UNKNOWN_NOT_ASSERTED",
+    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
     "implementation_script_path": "scripts/route_a_v3/gse200304_dec019_blocked_adjudication_runtime_sync.py",
-    "implementation_script_sha256": "52e17db1f647738f5677c97e06c056d00e07316c786796c81fa9e77e35842392",
+    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
     "implementation_test_path": "tests/route_a_v3/test_gse200304_dec019_blocked_adjudication_runtime_sync.py",
-    "implementation_test_sha256": "91b85b8630c13a68c1dfa37987c8c3d643e4cad7fbc82c3e739caa2741d089d4",
-    "compiled_core_sha256": "0ed333a0ec6acfa0429df8260cdceefd83aa72261e226895c39c81fd7cc17be2",
+    "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
+    "compiled_core_sha256": "048b95321db62986985443aa0ce5c2159e59dcecbabc1c90dade2cd6c93a5879",
     "unknown_to_bound_scalar_paths": [
       "implementation_binding.status",
       "implementation_binding.implementation_commit",
@@ -25,10 +25,10 @@
   "repository_authority": {
     "production_repo_root": "/home/cunyuliu/mrna_editflow_goal/worktrees/routea_v3_a1_20260810",
     "branch": "routea-v3-a1-20260810",
-    "base_commit": "1dc7da6300dfd192d69656fe63d582fe8f71da48",
-    "current_pre_runtime_sync_head": "1dc7da6300dfd192d69656fe63d582fe8f71da48",
-    "base_commit_expected_parent": "9acdefc4a410e03827532b359ec245d8a6cb76df",
-    "implementation_commit_expected_parent": "INITIAL_RUNTIME_BINDING_COMMIT_FROM_LIFECYCLE",
+    "base_commit": "4b544c7b8e95efc658c3c9336898a8c1898c4c94",
+    "current_pre_runtime_sync_head": "4b544c7b8e95efc658c3c9336898a8c1898c4c94",
+    "base_commit_expected_parent": "83fe7027a30acc83063262ad2c69c5cf80417ca5",
+    "implementation_commit_expected_parent": "REPAIR_RUNTIME_BINDING_COMMIT_FROM_LIFECYCLE",
     "binding_commit_expected_parent": "IMPLEMENTATION_COMMIT_FROM_BINDING",
     "implementation_commit_exact_changed_paths": [
       "configs/route_a_v3_gse200304_dec019_blocked_adjudication_runtime_sync_v1.json",
@@ -83,6 +83,8 @@
       "predecessor_ledger_commit": "f465dd03ae792b98c0604b1d225cd2df37d28f9e",
       "initial_implementation_commit": "9acdefc4a410e03827532b359ec245d8a6cb76df",
       "initial_binding_commit": "1dc7da6300dfd192d69656fe63d582fe8f71da48",
+      "repair_implementation_commit": "83fe7027a30acc83063262ad2c69c5cf80417ca5",
+      "repair_binding_commit": "4b544c7b8e95efc658c3c9336898a8c1898c4c94",
       "config_path": "configs/route_a_v3_gse200304_dec019_blocked_adjudication_runtime_sync_v1.json",
       "script_path": "scripts/route_a_v3/gse200304_dec019_blocked_adjudication_runtime_sync.py",
       "test_path": "tests/route_a_v3/test_gse200304_dec019_blocked_adjudication_runtime_sync.py",
@@ -95,6 +97,16 @@
         "config_sha256": "0dc02a9122686d08ca4eee071f4e966b5ae51c9afc6ad29d3bf530dd9ae74921",
         "script_sha256": "fcbe15c4ea0fd7ef5a049c71f388b242757fa59e17f15f9ea22f9d5def353530",
         "test_sha256": "93633d61cc9bd10d5003f2b29d4ab1d15f1a6b2ab8f3674a0c2617351c8bed64"
+      },
+      "repair_implementation_blobs": {
+        "config_sha256": "9a4164d3e3e7a99970ceb237992d076fc648932f78497584dc15c1cfcd3fbc18",
+        "script_sha256": "52e17db1f647738f5677c97e06c056d00e07316c786796c81fa9e77e35842392",
+        "test_sha256": "91b85b8630c13a68c1dfa37987c8c3d643e4cad7fbc82c3e739caa2741d089d4"
+      },
+      "repair_binding_blobs": {
+        "config_sha256": "895990bd015b64fb5ae65fe75ea67460d555a30e194c01600d960cd5270e8cda",
+        "script_sha256": "52e17db1f647738f5677c97e06c056d00e07316c786796c81fa9e77e35842392",
+        "test_sha256": "91b85b8630c13a68c1dfa37987c8c3d643e4cad7fbc82c3e739caa2741d089d4"
       },
       "implementation_commit_exact_changed_paths": [
         "configs/route_a_v3_gse200304_dec019_blocked_adjudication_runtime_sync_v1.json",
