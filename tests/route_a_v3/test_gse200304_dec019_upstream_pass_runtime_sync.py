@@ -92,7 +92,7 @@ def synthetic_sources(config: dict[str, Any]) -> dict[str, dict[str, bytes]]:
         "GSE200302_log2_cpm_counts_all_samples.txt.gz": b"synthetic-gzip-aggregate-matrix-body-never-decode-rows\n",
         "GSE200304_UPSTREAM_AUTHORITY_VIABILITY_AUDIT.json": runtime_sync.json_bytes(
             {
-                "schema_version": "1.0.0",
+                "schema_version": runtime_sync.UPSTREAM_AUTHORITY_AUDIT_SCHEMA_VERSION,
                 "record_type": "GSE200304_UPSTREAM_SOURCE_AUTHORITY_VIABILITY_AUDIT_V1",
                 "protocol_id": upstream_spec["protocol_id"],
                 "contract_id": config["contract_id"],
@@ -649,14 +649,14 @@ def test_exact20_output_delta_uses_ledger_order_and_registers_exact16_in_place()
     [
         "positive",
         "dirty",
-        "i2_parent",
-        "i2_paths",
-        "i2_blob",
+        "i3_parent",
+        "i3_paths",
+        "i3_blob",
         "i_transition",
         "ancestor",
     ],
 )
-def test_repo_audit_proves_d3_ledger_i1_i2_config_only_b2(
+def test_repo_audit_proves_d3_ledger_i1_i2_b2_i3_config_only_b3(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, mode: str
 ) -> None:
     config = bind_config()
@@ -673,38 +673,71 @@ def test_repo_audit_proves_d3_ledger_i1_i2_config_only_b2(
     upstream = authority["upstream_authority_producer_lifecycle"]
     pass_pack = authority["upstream_pass_gate_producer_lifecycle"]
     adjudicator = authority["adjudicator_lifecycle"]
-    implementation = binding["implementation_commit"]
+    runtime_i3 = binding["implementation_commit"]
     historical_i1 = runtime_sync.HISTORICAL_RUNTIME_I1_COMMIT
+    historical_i2 = runtime_sync.HISTORICAL_RUNTIME_I2_COMMIT
+    historical_b2 = runtime_sync.HISTORICAL_RUNTIME_B2_COMMIT
     head = "c" * 40
     config_payload = runtime_sync.json_bytes(config)
     i_config = runtime_sync.expected_unknown_i_config(config)
     if mode == "i_transition":
         i_config["successor_invariants"]["training_allowed"] = 0
     i_payload = runtime_sync.json_bytes(i_config)
+    historical_b2_config = copy.deepcopy(i_config)
+    historical_b2_config["implementation_binding"].update(
+        {
+            "status": "BOUND",
+            "implementation_commit": historical_i2,
+            "implementation_script_sha256": runtime_sync.HISTORICAL_RUNTIME_I2_BLOBS[
+                runtime_sync.SCRIPT_REPO_PATH
+            ],
+            "implementation_test_sha256": runtime_sync.HISTORICAL_RUNTIME_I2_BLOBS[
+                runtime_sync.TEST_REPO_PATH
+            ],
+        }
+    )
+    historical_b2_payload = runtime_sync.json_bytes(historical_b2_config)
     runtime_script = b"synthetic EVT042 runtime script\n"
     runtime_test = b"synthetic EVT042 runtime test\n"
     historical_i1_script = b"frozen historical EVT042 runtime I1 script\n"
     historical_i1_test = b"frozen historical EVT042 runtime I1 test\n"
+    historical_i2_script = b"frozen historical EVT042 runtime I2 script\n"
+    historical_i2_test = b"frozen historical EVT042 runtime I2 test\n"
 
     blobs: dict[tuple[str, str], bytes] = {
         (head, runtime_sync.CONFIG_REPO_PATH): config_payload,
-        (implementation, runtime_sync.CONFIG_REPO_PATH): i_payload,
+        (runtime_i3, runtime_sync.CONFIG_REPO_PATH): i_payload,
+        (historical_b2, runtime_sync.CONFIG_REPO_PATH): historical_b2_payload,
+        (historical_i2, runtime_sync.CONFIG_REPO_PATH): i_payload,
         (historical_i1, runtime_sync.CONFIG_REPO_PATH): i_payload,
         (head, runtime_sync.SCRIPT_REPO_PATH): runtime_script,
-        (implementation, runtime_sync.SCRIPT_REPO_PATH): runtime_script,
+        (runtime_i3, runtime_sync.SCRIPT_REPO_PATH): runtime_script,
+        (historical_b2, runtime_sync.SCRIPT_REPO_PATH): historical_i2_script,
+        (historical_i2, runtime_sync.SCRIPT_REPO_PATH): historical_i2_script,
         (historical_i1, runtime_sync.SCRIPT_REPO_PATH): historical_i1_script,
         (head, runtime_sync.TEST_REPO_PATH): runtime_test,
-        (implementation, runtime_sync.TEST_REPO_PATH): runtime_test,
+        (runtime_i3, runtime_sync.TEST_REPO_PATH): runtime_test,
+        (historical_b2, runtime_sync.TEST_REPO_PATH): historical_i2_test,
+        (historical_i2, runtime_sync.TEST_REPO_PATH): historical_i2_test,
         (historical_i1, runtime_sync.TEST_REPO_PATH): historical_i1_test,
     }
     digest_overrides: dict[bytes, str] = {
         i_payload: runtime_sync.HISTORICAL_RUNTIME_I1_BLOBS[runtime_sync.CONFIG_REPO_PATH],
+        historical_b2_payload: runtime_sync.HISTORICAL_RUNTIME_B2_BLOBS[
+            runtime_sync.CONFIG_REPO_PATH
+        ],
         runtime_script: binding["implementation_script_sha256"],
         runtime_test: binding["implementation_test_sha256"],
         historical_i1_script: runtime_sync.HISTORICAL_RUNTIME_I1_BLOBS[
             runtime_sync.SCRIPT_REPO_PATH
         ],
         historical_i1_test: runtime_sync.HISTORICAL_RUNTIME_I1_BLOBS[
+            runtime_sync.TEST_REPO_PATH
+        ],
+        historical_i2_script: runtime_sync.HISTORICAL_RUNTIME_I2_BLOBS[
+            runtime_sync.SCRIPT_REPO_PATH
+        ],
+        historical_i2_test: runtime_sync.HISTORICAL_RUNTIME_I2_BLOBS[
             runtime_sync.TEST_REPO_PATH
         ],
     }
@@ -717,7 +750,14 @@ def test_repo_audit_proves_d3_ledger_i1_i2_config_only_b2(
         payload = f"ledger:{item['path']}\n".encode()
         digest_overrides[payload] = item["sha256"]
         worktree_payloads[item["path"]] = payload
-        for commit in (ledger["commit"], historical_i1, implementation, head):
+        for commit in (
+            ledger["commit"],
+            historical_i1,
+            historical_i2,
+            historical_b2,
+            runtime_i3,
+            head,
+        ):
             blobs[(commit, item["path"])] = payload
 
     for lifecycle, blob_key, label in (
@@ -747,8 +787,10 @@ def test_repo_audit_proves_d3_ledger_i1_i2_config_only_b2(
         lambda payload: digest_overrides.get(payload, real_sha256(payload)),
     )
     parent_map = {
-        head: implementation,
-        implementation: historical_i1,
+        head: runtime_i3,
+        runtime_i3: historical_b2,
+        historical_b2: historical_i2,
+        historical_i2: historical_i1,
         historical_i1: ledger["commit"],
         ledger["commit"]: adjudicator["descriptor_commit"],
         adjudicator["descriptor_commit"]: pass_pack["binding_commit"],
@@ -756,7 +798,9 @@ def test_repo_audit_proves_d3_ledger_i1_i2_config_only_b2(
     changed_paths = {
         ledger["commit"]: ledger["commit_exact_changed_paths"],
         historical_i1: authority["implementation_commit_exact_changed_paths"],
-        implementation: runtime_sync.RUNTIME_I2_EXACT_CHANGED_PATHS,
+        historical_i2: runtime_sync.RUNTIME_I2_EXACT_CHANGED_PATHS,
+        historical_b2: authority["binding_commit_exact_changed_paths"],
+        runtime_i3: runtime_sync.RUNTIME_I3_EXACT_CHANGED_PATHS,
         head: authority["binding_commit_exact_changed_paths"],
         upstream["binding_commit"]: [upstream["config_path"]],
         pass_pack["binding_commit"]: [pass_pack["config_path"]],
@@ -781,7 +825,7 @@ def test_repo_audit_proves_d3_ledger_i1_i2_config_only_b2(
         if len(args) == 2 and args[0] == "rev-parse" and args[1].endswith("^"):
             child = args[1][:-1]
             parent = parent_map[child]
-            if mode == "i2_parent" and child == implementation:
+            if mode == "i3_parent" and child == runtime_i3:
                 parent = "d" * 40
             return f"{parent}\n".encode()
         if len(args) == 2 and args[0] == "rev-parse":
@@ -795,13 +839,13 @@ def test_repo_audit_proves_d3_ledger_i1_i2_config_only_b2(
 
     def fake_blob(_repo: Path, commit: str, path: str) -> bytes:
         payload = blobs[(commit, path)]
-        if mode == "i2_blob" and commit == implementation and path == runtime_sync.SCRIPT_REPO_PATH:
+        if mode == "i3_blob" and commit == runtime_i3 and path == runtime_sync.SCRIPT_REPO_PATH:
             return payload + b"drift"
         return payload
 
     def fake_paths(_repo: Path, commit: str) -> list[str]:
         result = list(changed_paths[commit])
-        if mode == "i2_paths" and commit == implementation:
+        if mode == "i3_paths" and commit == runtime_i3:
             result.append("unexpected")
         return sorted(result)
 
@@ -815,14 +859,19 @@ def test_repo_audit_proves_d3_ledger_i1_i2_config_only_b2(
     if mode == "positive":
         result = runtime_sync.audit_repo_authority(repo, config, config_payload)
         assert result["status"] == (
-            "PASS_STRICT_LINEAR_DAG_D3_LEDGER_RUNTIME_I1_I2_CONFIG_ONLY_B2"
+            "PASS_STRICT_LINEAR_DAG_D3_LEDGER_RUNTIME_I1_I2_B2_I3_CONFIG_ONLY_B3"
         )
         assert result["predecessor_ledger_commit"] == ledger["commit"]
         assert result["historical_runtime_i1_commit"] == historical_i1
-        assert result["runtime_i2_commit"] == implementation
+        assert result["historical_runtime_i2_commit"] == historical_i2
+        assert result["historical_runtime_b2_commit"] == historical_b2
+        assert result["runtime_i3_commit"] == runtime_i3
         assert result["ledger_blob_check_count"] == 4
         assert result["historical_runtime_i1_blob_check_count"] == 3
+        assert result["historical_runtime_i2_blob_check_count"] == 3
+        assert result["historical_runtime_b2_blob_check_count"] == 3
         assert result["runtime_i2_changed_path_count"] == 2
+        assert result["runtime_i3_changed_path_count"] == 3
         assert result["producer_and_adjudicator_blob_check_count"] == 18
     else:
         with pytest.raises(runtime_sync.RuntimeSyncError):
@@ -852,6 +901,42 @@ def test_exact16_terminal_closure_hashes_compressed_matrix_without_decoding_rows
     matrix = "GSE200302_log2_cpm_counts_all_samples.txt.gz"
     sources[runtime_sync.UPSTREAM_AUTHORITY_KEY][matrix] += b"drift"
     with pytest.raises(runtime_sync.PublicationError, match="bytes or SHA-256 drift"):
+        runtime_sync.validate_registered_bundles(config, payload_overrides=sources)
+
+
+def test_upstream_authority_audit_schema_is_exact() -> None:
+    config = bind_config()
+    sources = synthetic_sources(config)
+    selected = runtime_sync.validate_registered_bundles(config, payload_overrides=sources)
+    assert selected[runtime_sync.UPSTREAM_AUTHORITY_KEY]["member_count"] == 6
+
+    upstream = sources[runtime_sync.UPSTREAM_AUTHORITY_KEY]
+    audit_name = "GSE200304_UPSTREAM_AUTHORITY_VIABILITY_AUDIT.json"
+    audit = runtime_sync.load_json(upstream[audit_name], label="synthetic upstream audit")
+    audit["schema_version"] = "1.0.0"
+    upstream[audit_name] = runtime_sync.json_bytes(audit)
+    content_names = (
+        "PMC10540565_EUROPE_PMC_FULLTEXT.xml",
+        "GSE200302_family.soft.gz",
+        "GSE200302_log2_cpm_counts_all_samples.txt.gz",
+        audit_name,
+    )
+    upstream["SHA256SUMS"] = "".join(
+        f"{runtime_sync.sha256(upstream[name])}  {name}\n"
+        for name in sorted(content_names)
+    ).encode("ascii")
+    marker = runtime_sync.load_json(
+        upstream["PUBLICATION_COMMIT.json"], label="synthetic upstream marker"
+    )
+    marker["sha256sums_sha256"] = runtime_sync.sha256(upstream["SHA256SUMS"])
+    upstream["PUBLICATION_COMMIT.json"] = runtime_sync.json_bytes(marker)
+    update_member_identities(config, runtime_sync.UPSTREAM_AUTHORITY_KEY, upstream)
+    refresh_core(config)
+
+    with pytest.raises(
+        runtime_sync.PublicationError,
+        match="upstream authority audit schema_version drift",
+    ):
         runtime_sync.validate_registered_bundles(config, payload_overrides=sources)
 
 

@@ -56,6 +56,9 @@ UPSTREAM_AUTHORITY_KEY = "upstream_authority"
 UPSTREAM_PASS_PACK_KEY = "upstream_pass_gate_pack"
 ADJUDICATION_KEY = "updated_blocked_adjudication"
 SOURCE_KEYS = (UPSTREAM_AUTHORITY_KEY, UPSTREAM_PASS_PACK_KEY, ADJUDICATION_KEY)
+UPSTREAM_AUTHORITY_AUDIT_SCHEMA_VERSION = (
+    "route_a_v3_gse200304_upstream_authority_viability.v1"
+)
 SOURCE_MEMBER_OUTPUT_ORDER = (
     (UPSTREAM_AUTHORITY_KEY, "PMC10540565_EUROPE_PMC_FULLTEXT.xml"),
     (UPSTREAM_AUTHORITY_KEY, "GSE200302_family.soft.gz"),
@@ -141,7 +144,22 @@ HISTORICAL_RUNTIME_I1_BLOBS = {
     SCRIPT_REPO_PATH: "53189353aaa618c33384e24b568facc6c9840cc21f25552239ad12b44b8efb06",
     TEST_REPO_PATH: "b8d1f658639e24f6acf85863dc2976e583aa7b10ba5df83989e99c5353994148",
 }
+HISTORICAL_RUNTIME_I2_COMMIT = "134042edcc973e4bf92011dc15dbd7ca9aa183f0"
+HISTORICAL_RUNTIME_I2_BLOBS = {
+    CONFIG_REPO_PATH: "ec15f4f5e2da6da54511d54f42151bcfc9d04d03309f290c4f5a558a7a36bbd6",
+    SCRIPT_REPO_PATH: "b02cee7cc35bb073f6f3998a324cf9c2710779c2ff123d8a2b35c0c857078e90",
+    TEST_REPO_PATH: "2a950200f16b51203e7481dad6abba7c1f200fe8d57732d823e383b98d8f3b96",
+}
+HISTORICAL_RUNTIME_B2_COMMIT = "1553e392eda9e5c059b6c35f619002a51eac468f"
+HISTORICAL_RUNTIME_B2_BLOBS = {
+    CONFIG_REPO_PATH: "0a7cd48cf44fa92d204298e6404d572ce902fe359a3041ad0c7d008b351c85ab",
+    SCRIPT_REPO_PATH: HISTORICAL_RUNTIME_I2_BLOBS[SCRIPT_REPO_PATH],
+    TEST_REPO_PATH: HISTORICAL_RUNTIME_I2_BLOBS[TEST_REPO_PATH],
+}
 RUNTIME_I2_EXACT_CHANGED_PATHS = sorted([SCRIPT_REPO_PATH, TEST_REPO_PATH])
+RUNTIME_I3_EXACT_CHANGED_PATHS = sorted(
+    [CONFIG_REPO_PATH, SCRIPT_REPO_PATH, TEST_REPO_PATH]
+)
 EXPECTED_SOURCE_MEMBERS = {
     UPSTREAM_AUTHORITY_KEY: {
         "PMC10540565_EUROPE_PMC_FULLTEXT.xml": ("A1_GSE200304_UPSTREAM_AUTHORITY_EUROPE_PMC_FULLTEXT", 298763, "4fe53c9ea58b5268b1014c0ef4b18cfbd7b5b3764f4c82542c065cb0aff5a7f0"),
@@ -871,7 +889,7 @@ def _verify_three_blobs(
 def audit_repo_authority(
     repo_root: Path, config: dict[str, Any], config_payload: bytes
 ) -> dict[str, Any]:
-    """Prove D3 -> ledger -> frozen I1 -> script/test-only I2 -> config-only B2."""
+    """Prove ledger -> I1 -> I2 -> B2 -> exact3 I3 -> config-only B3."""
 
     if lexical_absolute(repo_root) != PRODUCTION_REPO_ROOT or repo_root.is_symlink() or not repo_root.is_dir():
         raise AuthorityError("production repository root drift")
@@ -882,8 +900,10 @@ def audit_repo_authority(
     upstream = authority["upstream_authority_producer_lifecycle"]
     pass_pack = authority["upstream_pass_gate_producer_lifecycle"]
     adjudicator = authority["adjudicator_lifecycle"]
-    implementation = binding["implementation_commit"]
+    runtime_i3 = binding["implementation_commit"]
     historical_i1 = HISTORICAL_RUNTIME_I1_COMMIT
+    historical_i2 = HISTORICAL_RUNTIME_I2_COMMIT
+    historical_b2 = HISTORICAL_RUNTIME_B2_COMMIT
     ledger_commit = ledger["commit"]
     d3 = adjudicator["descriptor_commit"]
     branch = authority["branch"]
@@ -898,51 +918,99 @@ def audit_repo_authority(
 
     _expect_exact(authority["base_commit"], ledger_commit, label="runtime base/ledger")
     _expect_exact(authority["current_pre_runtime_sync_head"], ledger_commit, label="pre-runtime head/ledger")
-    _expect_parent(repo_root, head, implementation, label="runtime B2 parent/I2")
-    _expect_parent(repo_root, implementation, historical_i1, label="runtime I2 parent/I1")
+    _expect_parent(repo_root, head, runtime_i3, label="runtime B3 parent/I3")
+    _expect_parent(repo_root, runtime_i3, historical_b2, label="runtime I3 parent/B2")
+    _expect_parent(repo_root, historical_b2, historical_i2, label="historical runtime B2 parent/I2")
+    _expect_parent(repo_root, historical_i2, historical_i1, label="historical runtime I2 parent/I1")
     _expect_parent(repo_root, historical_i1, ledger_commit, label="historical runtime I1 parent/ledger")
     _expect_parent(repo_root, ledger_commit, d3, label="ledger parent")
     _expect_parent(repo_root, d3, pass_pack["binding_commit"], label="D3/pass-pack B parent")
     _expect_ancestor(repo_root, upstream["binding_commit"], pass_pack["binding_commit"], label="upstream producer to PASS producer")
     _expect_exact(_paths_changed_by_commit(repo_root, ledger_commit), ledger["commit_exact_changed_paths"], label="ledger exact4 paths")
     _expect_exact(_paths_changed_by_commit(repo_root, historical_i1), authority["implementation_commit_exact_changed_paths"], label="historical runtime I1 exact3 paths")
-    _expect_exact(_paths_changed_by_commit(repo_root, implementation), RUNTIME_I2_EXACT_CHANGED_PATHS, label="runtime I2 script/test-only paths")
-    _expect_exact(_paths_changed_by_commit(repo_root, head), authority["binding_commit_exact_changed_paths"], label="runtime B2 config-only path")
+    _expect_exact(_paths_changed_by_commit(repo_root, historical_i2), RUNTIME_I2_EXACT_CHANGED_PATHS, label="historical runtime I2 script/test-only paths")
+    _expect_exact(_paths_changed_by_commit(repo_root, historical_b2), authority["binding_commit_exact_changed_paths"], label="historical runtime B2 config-only path")
+    _expect_exact(_paths_changed_by_commit(repo_root, runtime_i3), RUNTIME_I3_EXACT_CHANGED_PATHS, label="runtime I3 exact3 paths")
+    _expect_exact(_paths_changed_by_commit(repo_root, head), authority["binding_commit_exact_changed_paths"], label="runtime B3 config-only path")
     _expect_exact(_paths_changed_by_commit(repo_root, upstream["binding_commit"]), [upstream["config_path"]], label="upstream producer B path")
     _expect_exact(_paths_changed_by_commit(repo_root, pass_pack["binding_commit"]), [pass_pack["config_path"]], label="PASS producer B path")
     _expect_exact(_paths_changed_by_commit(repo_root, d3), [adjudicator["config_path"]], label="D3 path")
 
     if _git_blob(repo_root, head, CONFIG_REPO_PATH) != config_payload:
-        raise AuthorityError("runtime B2 config blob drift")
-    historical_i1_payloads = {
-        path: _git_blob(repo_root, historical_i1, path)
-        for path in HISTORICAL_RUNTIME_I1_BLOBS
-    }
-    for path, digest in HISTORICAL_RUNTIME_I1_BLOBS.items():
-        if sha256(historical_i1_payloads[path]) != digest:
-            raise AuthorityError(f"historical runtime I1 blob drift: {path}")
-    i2_config_payload = _git_blob(repo_root, implementation, CONFIG_REPO_PATH)
-    if i2_config_payload != historical_i1_payloads[CONFIG_REPO_PATH]:
-        raise AuthorityError("runtime I2 rewrote the frozen UNKNOWN I1 config")
-    i_config = load_json(i2_config_payload, label="shared runtime I1/I2 UNKNOWN config")
+        raise AuthorityError("runtime B3 config blob drift")
+    historical_runtime_payloads: dict[str, dict[str, bytes]] = {}
+    for label, commit, expected_blobs in (
+        ("I1", historical_i1, HISTORICAL_RUNTIME_I1_BLOBS),
+        ("I2", historical_i2, HISTORICAL_RUNTIME_I2_BLOBS),
+        ("B2", historical_b2, HISTORICAL_RUNTIME_B2_BLOBS),
+    ):
+        payloads = {
+            path: _git_blob(repo_root, commit, path) for path in expected_blobs
+        }
+        for path, digest in expected_blobs.items():
+            if sha256(payloads[path]) != digest:
+                raise AuthorityError(f"historical runtime {label} blob drift: {path}")
+        historical_runtime_payloads[label] = payloads
+
+    shared_unknown_config_payload = historical_runtime_payloads["I1"][CONFIG_REPO_PATH]
+    if historical_runtime_payloads["I2"][CONFIG_REPO_PATH] != shared_unknown_config_payload:
+        raise AuthorityError("historical runtime I2 rewrote the frozen UNKNOWN I1 config")
+    i3_config_payload = _git_blob(repo_root, runtime_i3, CONFIG_REPO_PATH)
+    if i3_config_payload != shared_unknown_config_payload:
+        raise AuthorityError("runtime I3 config is not the exact frozen UNKNOWN config")
+    i3_config = load_json(i3_config_payload, label="shared runtime I1/I2/I3 UNKNOWN config")
     try:
-        _expect_typed_exact(i_config, expected_unknown_i_config(config), label="runtime I1/I2/B2 transition")
-        _expect_typed_exact(compiled_core_projection(i_config), compiled_core_projection(config), label="runtime I1/I2/B2 core")
+        _expect_typed_exact(i3_config, expected_unknown_i_config(config), label="runtime I3/B3 transition")
+        _expect_typed_exact(compiled_core_projection(i3_config), compiled_core_projection(config), label="runtime I3/B3 core")
     except RuntimeSyncError as exc:
-        raise AuthorityError("runtime I1/I2/B2 config transition drift") from exc
+        raise AuthorityError("runtime I3/B3 config transition drift") from exc
+
+    historical_b2_config = load_json(
+        historical_runtime_payloads["B2"][CONFIG_REPO_PATH],
+        label="historical runtime B2 config",
+    )
+    expected_b2_config = expected_unknown_i_config(config)
+    expected_b2_config["implementation_binding"].update(
+        {
+            "status": "BOUND",
+            "implementation_commit": historical_i2,
+            "implementation_script_sha256": HISTORICAL_RUNTIME_I2_BLOBS[
+                SCRIPT_REPO_PATH
+            ],
+            "implementation_test_sha256": HISTORICAL_RUNTIME_I2_BLOBS[
+                TEST_REPO_PATH
+            ],
+        }
+    )
+    try:
+        _expect_typed_exact(
+            historical_b2_config,
+            expected_b2_config,
+            label="historical runtime I2/B2 exact-four transition",
+        )
+    except RuntimeSyncError as exc:
+        raise AuthorityError("historical runtime B2 config transition drift") from exc
+
     for path, digest in (
         (SCRIPT_REPO_PATH, binding["implementation_script_sha256"]),
         (TEST_REPO_PATH, binding["implementation_test_sha256"]),
     ):
-        for commit in (implementation, head):
+        for commit in (runtime_i3, head):
             if sha256(_git_blob(repo_root, commit, path)) != digest:
-                raise AuthorityError(f"runtime I2/B2 implementation blob drift: {path}")
+                raise AuthorityError(f"runtime I3/B3 implementation blob drift: {path}")
         if sha256(read_regular_path(repo_root / path)) != digest:
             raise AuthorityError(f"runtime worktree implementation blob drift: {path}")
 
     for item in ledger["frozen_blobs"]:
         path, digest = item["path"], item["sha256"]
-        for commit in (ledger_commit, historical_i1, implementation, head):
+        for commit in (
+            ledger_commit,
+            historical_i1,
+            historical_i2,
+            historical_b2,
+            runtime_i3,
+            head,
+        ):
             if sha256(_git_blob(repo_root, commit, path)) != digest:
                 raise AuthorityError(f"ledger blob drift: {path}")
         if sha256(read_regular_path(repo_root / path)) != digest:
@@ -967,22 +1035,27 @@ def audit_repo_authority(
             )
 
     return {
-        "status": "PASS_STRICT_LINEAR_DAG_D3_LEDGER_RUNTIME_I1_I2_CONFIG_ONLY_B2",
+        "status": "PASS_STRICT_LINEAR_DAG_D3_LEDGER_RUNTIME_I1_I2_B2_I3_CONFIG_ONLY_B3",
         "binding_commit": head,
         "head_commit": head,
         "origin_branch_head_commit": origin,
         "config_sha256": sha256(config_payload),
         "base_commit": ledger_commit,
-        "implementation_commit": implementation,
+        "implementation_commit": runtime_i3,
         "historical_runtime_i1_commit": historical_i1,
-        "runtime_i2_commit": implementation,
+        "historical_runtime_i2_commit": historical_i2,
+        "historical_runtime_b2_commit": historical_b2,
+        "runtime_i3_commit": runtime_i3,
         "predecessor_ledger_commit": ledger_commit,
         "upstream_authority_binding_commit": upstream["binding_commit"],
         "upstream_pass_gate_binding_commit": pass_pack["binding_commit"],
         "adjudicator_descriptor_commit": d3,
         "ledger_blob_check_count": 4,
         "historical_runtime_i1_blob_check_count": 3,
+        "historical_runtime_i2_blob_check_count": 3,
+        "historical_runtime_b2_blob_check_count": 3,
         "runtime_i2_changed_path_count": 2,
+        "runtime_i3_changed_path_count": 3,
         "producer_and_adjudicator_blob_check_count": 18,
     }
 
@@ -1046,7 +1119,7 @@ def _validate_upstream_authority_bundle(
         label="upstream authority closed audit",
     )
     for key, expected in {
-        "schema_version": "1.0.0",
+        "schema_version": UPSTREAM_AUTHORITY_AUDIT_SCHEMA_VERSION,
         "record_type": "GSE200304_UPSTREAM_SOURCE_AUTHORITY_VIABILITY_AUDIT_V1",
         "protocol_id": spec["protocol_id"],
         "contract_id": config["contract_id"],
