@@ -59,7 +59,7 @@
     {
       "path": "docs/execution/route_a_v3_a1_interim.yaml",
       "role": "A1_ACTIVE_INTERIM_RECORD",
-      "sha256": "64a41d3168df9cc80181e8865f2512f14f2aa8877f8b4574c90ea87363bf5b02"
+      "sha256": "552f705445a36df99a5ae071c85625c729ad2f69f0a375bb7b3118c3b400e16c"
     },
     {
       "path": "docs/execution/route_a_v3_split_registry.yaml",
@@ -197,20 +197,60 @@
       "sha256": "a153c54c9b7fff228d4702e52e2cc9521afcbe14bfb5658fbc1b8fe96ae74c09"
     },
     {
+      "path": "scripts/route_a_v3/adjudicate_gse200304_dec019_reported_endpoint_a1_v3.py",
+      "role": "GSE200304_DEC019_REPORTED_ENDPOINT_A1_V3_ADJUDICATOR",
+      "sha256": "9cd4411fcb02e1feed913b799296351e38ab9071b9506611318645e41b8dbbfe"
+    },
+    {
+      "path": "tests/route_a_v3/test_adjudicate_gse200304_dec019_reported_endpoint_a1_v3.py",
+      "role": "GSE200304_DEC019_REPORTED_ENDPOINT_A1_V3_FOCUSED_TEST",
+      "sha256": "8e7b188cfa2e5015fa307acad980f9ff2f45145943384fcadb50d67b1263e1db"
+    },
+    {
+      "path": "configs/route_a_v3_gse200304_dec019_canonical_row_lineage_gate_v1.json",
+      "role": "GSE200304_DEC019_CANONICAL_ROW_LINEAGE_GATE_PROTOCOL",
+      "sha256": "0904495aec2acd6470f3d827ab926bfa94b17ccf146e268df927c6515e38f527"
+    },
+    {
+      "path": "scripts/route_a_v3/produce_gse200304_dec019_canonical_row_lineage_gate.py",
+      "role": "GSE200304_DEC019_CANONICAL_ROW_LINEAGE_GATE_PRODUCER",
+      "sha256": "72f946063754b49fbc309465a1a44dac0c9b531eae6713e43ad4702cdbdbfe52"
+    },
+    {
+      "path": "tests/route_a_v3/test_produce_gse200304_dec019_canonical_row_lineage_gate.py",
+      "role": "GSE200304_DEC019_CANONICAL_ROW_LINEAGE_GATE_FOCUSED_TEST",
+      "sha256": "829bc7c70552b8c1aa53d7f7fc06592c1228a0bafe949d431fc419af38afc0e4"
+    },
+    {
+      "path": "configs/route_a_v3_gse200304_dec019_negative_gate_pack_v1.json",
+      "role": "GSE200304_DEC019_NEGATIVE_GATE_PACK_PROTOCOL",
+      "sha256": "fea1c56d21dc848b535c876b31799eb6ccca48ecf9c4d8a58a7dbc7f7187297e"
+    },
+    {
+      "path": "scripts/route_a_v3/produce_gse200304_dec019_negative_gate_pack.py",
+      "role": "GSE200304_DEC019_NEGATIVE_GATE_PACK_PRODUCER",
+      "sha256": "3716ccf6492b067c374fde38f58d7b46e878dec7c58192b94030e05161e33205"
+    },
+    {
+      "path": "tests/route_a_v3/test_produce_gse200304_dec019_negative_gate_pack.py",
+      "role": "GSE200304_DEC019_NEGATIVE_GATE_PACK_FOCUSED_TEST",
+      "sha256": "5523d3a1b5216963bd3793ba9ec3f8cf15d9a01867192ddf1eae32ac0e327948"
+    },
+    {
       "path": "tests/route_a_v3/test_a0_integrity_guards.py",
       "role": "A0_AUTHORITY_INTEGRITY_GUARD_TEST",
-      "sha256": "a331b591a3e261eac3c440557b51118905db3010d05d785dba4c91726463c0f4"
+      "sha256": "76a78ec060060feff243366ab93bd6a721096d1847b197f2ff4da6518d3625f5"
     },
     {
       "path": "scripts/route_a_v3/validate_a0_bundle.py",
       "role": "A0_STATIC_AND_SEMANTIC_VALIDATOR",
-      "sha256": "d1313fd4bdf5de8f8f08db1337e5017089cab5448a68446b9aa27a18e4950386"
+      "sha256": "cb7f278e1daed071ea691c7c1817e800c94a46982915348b8f678656ea99b528"
     }
   ],
   "initial_generated_at": "2026-08-10T10:10:05+08:00",
-  "generated_at": "2026-08-11T12:19:34+08:00",
-  "updated_at": "2026-08-11T12:19:34+08:00",
-  "manifest_status": "A1_DEC019_AUTHORITY_AND_SUCCESSOR_ADJUDICATORS_INTEGRATED",
+  "generated_at": "2026-08-11T20:35:15+08:00",
+  "updated_at": "2026-08-11T20:35:15+08:00",
+  "manifest_status": "A1_DEC019_GSE200304_POST_ADJUDICATION_LEDGER_REGISTERED",
   "schema_version": "1.0.0",
   "sealed_contact": false,
   "version": "3.0.0"

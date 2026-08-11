@@ -2200,6 +2200,125 @@ def test_dec019_successor_static_leaf_synchronized_manifest_rehash_is_rejected(
     assert "DEC019_SUCCESSOR_STATIC_LEAF_DRIFT" in codes
 
 
+def test_gse200304_dec019_post_adjudication_registration_is_closed(
+    validator,
+    repo_root,
+):
+    manifest = validator._load_json(repo_root, validator.REGISTRY_MANIFEST_PATH)
+    manifest_paths = {row["path"] for row in manifest["files"]}
+    static_paths = set(
+        validator.GSE200304_DEC019_POST_ADJUDICATION_STATIC_LEAF_SHA256
+    )
+
+    assert len(static_paths) == 8
+    assert static_paths.issubset(manifest_paths)
+    assert validator.GSE200304_DEC019_V3_CONFIG_PATH not in manifest_paths
+    assert (
+        validator.validate_gse200304_dec019_post_adjudication_registration(
+            repo_root
+        )
+        == []
+    )
+
+    config_path = repo_root / validator.GSE200304_DEC019_V3_CONFIG_PATH
+    config = json.loads(config_path.read_text(encoding="utf-8"))
+    assert validator.sha256_file(config_path) == validator.GSE200304_DEC019_V3_CONFIG_SHA256
+    assert (
+        validator._gse200304_dec019_v3_config_core_sha256(config)
+        == validator.GSE200304_DEC019_V3_CONFIG_CORE_SHA256
+    )
+    assert (
+        validator._gse200304_dec019_v3_descriptor_set_sha256(config)
+        == validator.GSE200304_DEC019_V3_DESCRIPTOR_SET_SHA256
+    )
+
+
+def test_gse200304_dec019_post_adjudication_dynamic_and_static_drift_fail_closed(
+    validator,
+    repo_root,
+    tmp_path,
+):
+    dynamic_root = tmp_path / "dynamic"
+    _copy_manifest_bundle(validator, repo_root, dynamic_root)
+    config_path = dynamic_root / validator.GSE200304_DEC019_V3_CONFIG_PATH
+    config = json.loads(config_path.read_text(encoding="utf-8"))
+    config["evidence_descriptor_bindings"]["descriptor_set_sha256"] = "0" * 64
+    config_path.write_text(json.dumps(config, indent=2) + "\n", encoding="utf-8")
+    codes = _codes(
+        validator.validate_gse200304_dec019_post_adjudication_registration(
+            dynamic_root
+        )
+    )
+    assert "GSE200304_DEC019_V3_DYNAMIC_CONFIG" in codes
+    assert "GSE200304_DEC019_V3_DESCRIPTOR_BINDING" in codes
+    assert "GSE200304_DEC019_POST_ADJUDICATION_DAG" not in codes
+
+    static_root = tmp_path / "static"
+    manifest = _copy_manifest_bundle(validator, repo_root, static_root)
+    relative = validator.GSE200304_DEC019_LINEAGE_SCRIPT_PATH
+    leaf_path = static_root / relative
+    leaf_path.write_bytes(leaf_path.read_bytes() + b"\n# synchronized drift\n")
+    next(row for row in manifest["files"] if row["path"] == relative)[
+        "sha256"
+    ] = validator.sha256_file(leaf_path)
+    manifest_path = static_root / validator.REGISTRY_MANIFEST_PATH
+    manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+    codes = _codes(validator.validate_bundle(static_root))
+    assert "REGISTRY_MANIFEST_HASH_MISMATCH" not in codes
+    assert "GSE200304_DEC019_POST_ADJUDICATION_STATIC_LEAF" in codes
+
+
+def test_gse200304_dec019_post_adjudication_interim_rehash_cannot_unlock(
+    validator,
+    repo_root,
+    tmp_path,
+    monkeypatch,
+):
+    def materialize_positive_input(interim):
+        current = interim["dec019_current_disposition"][
+            "gse200304_published_processed_endpoint"
+        ]
+        current["canonical_record_count"] = 6547
+        current["canonical_materialization_allowed"] = True
+        summary = interim["dataset_boundary_summary"]["GSE200304"][
+            "dec019_post_adjudication"
+        ]
+        summary["canonical_record_count"] = 6547
+        summary["canonical_materialization_allowed"] = True
+
+    codes = _validate_rehashed_interim_bypass(
+        validator,
+        repo_root,
+        tmp_path / "materialize_positive_input",
+        monkeypatch,
+        materialize_positive_input,
+    )
+    assert "A1_INTERIM_DEC019_GSE200304" in codes
+    assert "A1_INTERIM_GSE200304" in codes
+
+    def drop_repaired_producer_and_change_member(interim):
+        lineage = interim["artifact_lineage"]
+        lineage[validator.GSE200304_DEC019_LINEAGE_GATE_LINEAGE_ID][
+            "producer_lineage"
+        ].pop("repair_binding_commit")
+        lineage[validator.GSE200304_DEC019_NEGATIVE_GATE_PACK_LINEAGE_ID][
+            "files"
+        ][0]["sha256"] = "0" * 64
+        lineage[validator.GSE200304_DEC019_ADJUDICATION_LINEAGE_ID][
+            "input_status_counts"
+        ]["PASS"] = 2
+
+    codes = _validate_rehashed_interim_bypass(
+        validator,
+        repo_root,
+        tmp_path / "lineage_and_counts",
+        monkeypatch,
+        drop_repaired_producer_and_change_member,
+    )
+    assert "A1_INTERIM_GSE200304_CLOSED_FILES" in codes
+    assert "A1_INTERIM_GSE200304_LINEAGE" in codes
+
+
 def test_dec019_authority_synchronized_rehash_cannot_relax_routes(
     validator,
     repo_root,
@@ -2572,10 +2691,10 @@ def test_registry_manifest_detects_every_listed_hash_drift(validator, tmp_path, 
         "contract_sha256": goal_hash,
         "active_amendment_decision_ids": validator.ACTIVE_AMENDMENT_DECISION_IDS,
         "base_commit": "bbb71dcba6f1e1c9cb75a8a6653f1a4fe4a6ca0c",
-        "manifest_status": "A1_DEC019_AUTHORITY_AND_SUCCESSOR_ADJUDICATORS_INTEGRATED",
+        "manifest_status": "A1_DEC019_GSE200304_POST_ADJUDICATION_LEDGER_REGISTERED",
         "initial_generated_at": "2026-08-10T10:10:05+08:00",
-        "generated_at": "2026-08-11T12:19:34+08:00",
-        "updated_at": "2026-08-11T12:19:34+08:00",
+        "generated_at": validator.GSE200304_DEC019_POST_ADJUDICATION_MANIFEST_AT,
+        "updated_at": validator.GSE200304_DEC019_POST_ADJUDICATION_MANIFEST_AT,
         "sealed_contact": False,
         "files": entries,
     }

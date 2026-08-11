@@ -111,7 +111,7 @@ dec019_current_disposition:
       - PREFROZEN_GROUP_POWER_NOT_RUN
   gse200304_published_processed_endpoint:
     owner_primary_route_policy_status: CLOSED_BY_V3_DEC_019
-    current_status: NOT_QUALIFIED
+    current_status: BLOCKED_DEC019_REPORTED_ENDPOINT_A1_EVIDENCE_INCOMPLETE
     ordinary_study_unit: GSE200304_SUPERSERIES_ONE_STUDY
     maximum_independent_ordinary_study_contribution_if_qualified: 1
     maximum_a1_study_contribution_if_qualified: 1
@@ -120,16 +120,31 @@ dec019_current_disposition:
     primary_measurement_route_if_qualified: AUTHOR_PUBLISHED_PROCESSED_ENDPOINT
     raw_replay_role: REPRODUCIBILITY_AUXILIARY
     required_80s_role_authority_is_primary_route_blocker: false
-    current_blocker_count: 8
+    current_blocker_count: 7
     current_blockers:
-      - CHECKPOINT_SPECIFIC_EXPOSURE_UNKNOWN_NOT_ASSERTED
-      - BIOLOGICAL_GROUP_AUTHORITY_NOT_CLOSED
-      - OUTCOME_BLIND_SPLIT_AND_LEAKAGE_NOT_FROZEN
-      - GROUP_POWER_AND_CI_NOT_RUN
-      - CANONICAL_ENDPOINT_DIRECTION_AND_SEMANTICS_NOT_CLOSED
-      - ROW_LEVEL_REPLICATE_OR_STANDARD_ERROR_NOT_CLOSED
-      - LICENSE_AND_REDISTRIBUTION_RIGHTS_UNKNOWN_NOT_ASSERTED
-      - ROW_LOCATOR_AND_MULTI_ASSET_LINEAGE_NOT_CLOSED
+      - BIOLOGICAL_GROUP_AUTHORITY_NOT_PASS
+      - CANONICAL_REPORTED_ENDPOINT_SEMANTICS_NOT_PASS
+      - CHECKPOINT_SPECIFIC_EXPOSURE_NOT_PASS
+      - LICENSE_RIGHTS_NOT_PASS
+      - OUTCOME_BLIND_SPLIT_LEAKAGE_NOT_PASS
+      - PREFROZEN_POWER_PRECISION_NOT_PASS
+      - ROW_REPLICATE_OR_VALID_SE_NOT_PASS
+    input_gate_count: 8
+    input_status_counts:
+      PASS: 1
+      BLOCKED: 3
+      UNKNOWN_NOT_ASSERTED: 2
+      NOT_RUN: 2
+    ordinary_study_contribution: 0
+    a1_study_contribution: 0
+    true_a2_study_contribution: 0
+    positive_input_canonical_record_count: 6547
+    canonical_record_count: 0
+    qualified: false
+    canonical_materialization_allowed: false
+    training_allowed: false
+    model_selection_allowed: false
+    next_phase_authorized: false
   split_freeze_boundary:
     a1_freezes: [SOURCE_AUTHORITY, BIOLOGICAL_SOURCE_GROUP_ASSIGNMENT, NEAR_DUPLICATE_GRAPH, SPLIT_SALT]
     a1_freeze_status: NOT_FROZEN
@@ -1222,6 +1237,144 @@ artifact_lineage:
       - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE200304_PUBLISHED_ENDPOINT_A1_20260811T044050+0800_d06bb99/PUBLICATION_COMMIT.json
         bytes: 973
         sha256: f1e5d0752bcc12db0b0eaabe0e75efdb6f2c48dfba4c3bae6bff99a302194cfc
+  gse200304_dec019_canonical_row_lineage_gate_v1:
+    path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/DEC019_GATE_EVIDENCE_V1/GSE200304_DEC019_CANONICAL_ROW_LOCATOR_MULTI_ASSET_LINEAGE_GATE.json
+    dataset_id: GSE200304
+    decision_id: V3-DEC-019
+    gate_id: CANONICAL_ROW_LOCATOR_MULTI_ASSET_LINEAGE
+    status: PASS
+    accepted: true
+    aggregate_only: true
+    bytes: 4367
+    sha256: ecdd5a59cfba6aa3307d4e0bd6becbf4d8e88817ab05b524f9c1e1e1f215dd59
+    positive_input_fact:
+      canonical_record_count: 6547
+    positive_input_fact_is_not_final_qualification_or_materialization: true
+    producer_lineage:
+      initial_implementation_commit: 08f10e1e6a4194eca4f3cd78c31ff191597a4e41
+      initial_binding_commit: de35ce44d7744b89c8b52291343d9f1d6ea674a0
+      repair_implementation_commit: b700e43178b44c4fa925d45466e5c8e4ba823f83
+      repair_binding_commit: c764c721b364e19916ba66698552eee86563dbfe
+      config_path: configs/route_a_v3_gse200304_dec019_canonical_row_lineage_gate_v1.json
+      config_sha256: 0904495aec2acd6470f3d827ab926bfa94b17ccf146e268df927c6515e38f527
+      script_path: scripts/route_a_v3/produce_gse200304_dec019_canonical_row_lineage_gate.py
+      script_sha256: 72f946063754b49fbc309465a1a44dac0c9b531eae6713e43ad4702cdbdbfe52
+      focused_test_path: tests/route_a_v3/test_produce_gse200304_dec019_canonical_row_lineage_gate.py
+      focused_test_sha256: 829bc7c70552b8c1aa53d7f7fc06592c1228a0bafe949d431fc419af38afc0e4
+  gse200304_dec019_negative_gate_pack_v1:
+    path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE200304_DEC019_NEGATIVE_GATE_PACK_V1
+    dataset_id: GSE200304
+    decision_id: V3-DEC-019
+    status: COMMITTED_ACCEPTED_EXACT8
+    aggregate_only: true
+    gate_record_count: 7
+    exact_member_count: 8
+    gate_status_counts:
+      BLOCKED: 3
+      UNKNOWN_NOT_ASSERTED: 2
+      NOT_RUN: 2
+    producer_lineage:
+      initial_implementation_commit: 01f3f818937c97d9804b94413f54d3e654e35120
+      initial_binding_commit: a677454ec78ad5df4a5880444b0764d42676025a
+      repair_implementation_commit: 8da6abaeddfadeca5542b997e7c0ba6501c1f1f7
+      repair_binding_commit: 981f001d6290cbc1b9b48a55d8e51a963e45d785
+      config_path: configs/route_a_v3_gse200304_dec019_negative_gate_pack_v1.json
+      config_sha256: fea1c56d21dc848b535c876b31799eb6ccca48ecf9c4d8a58a7dbc7f7187297e
+      script_path: scripts/route_a_v3/produce_gse200304_dec019_negative_gate_pack.py
+      script_sha256: 3716ccf6492b067c374fde38f58d7b46e878dec7c58192b94030e05161e33205
+      focused_test_path: tests/route_a_v3/test_produce_gse200304_dec019_negative_gate_pack.py
+      focused_test_sha256: 5523d3a1b5216963bd3793ba9ec3f8cf15d9a01867192ddf1eae32ac0e327948
+    files:
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE200304_DEC019_NEGATIVE_GATE_PACK_V1/GSE200304_DEC019_BIOLOGICAL_GROUP_AUTHORITY_GATE.json
+        bytes: 3921
+        sha256: 2db95ec41d5e76a77d17104076c5823f5cc1f8646260964e92166f0faf440950
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE200304_DEC019_NEGATIVE_GATE_PACK_V1/GSE200304_DEC019_CANONICAL_REPORTED_ENDPOINT_SEMANTICS_GATE.json
+        bytes: 4022
+        sha256: a2b4dd52f0fbe4cd31324d4b760b9fee104f719d67d4f6834b6c1ea3adffaf9e
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE200304_DEC019_NEGATIVE_GATE_PACK_V1/GSE200304_DEC019_CHECKPOINT_SPECIFIC_EXPOSURE_GATE.json
+        bytes: 3997
+        sha256: 33b659a86eb8058adad922649b3c89a78ad65a61014826cd3ab28f1c4a6214f9
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE200304_DEC019_NEGATIVE_GATE_PACK_V1/GSE200304_DEC019_LICENSE_RIGHTS_GATE.json
+        bytes: 3919
+        sha256: 7556db47e8b3ec9cdc0a7d795161cf4ded8679d0c04644005a475753c482aa28
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE200304_DEC019_NEGATIVE_GATE_PACK_V1/GSE200304_DEC019_OUTCOME_BLIND_SPLIT_LEAKAGE_GATE.json
+        bytes: 4004
+        sha256: b3be463eb502b5b8a2b171ea763cffa8eba1449bf2c380aa3d16435733e35821
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE200304_DEC019_NEGATIVE_GATE_PACK_V1/GSE200304_DEC019_PREFROZEN_POWER_PRECISION_GATE.json
+        bytes: 3908
+        sha256: 817165a2e9ea2e01efae2374a606334375b9ec3afafae665fefacf0c6779fc95
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE200304_DEC019_NEGATIVE_GATE_PACK_V1/GSE200304_DEC019_ROW_REPLICATE_OR_VALID_SE_GATE.json
+        bytes: 3977
+        sha256: 235683969801d375a59a0bde56af2a448afd2a56cd5224cbede1320c2c15026b
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE200304_DEC019_NEGATIVE_GATE_PACK_V1/PUBLICATION_COMMIT.json
+        bytes: 1256
+        sha256: bf2cad9cfdc3b6dfc537bc0bf302ad79e332c5cf5d341e8dfd7fa64675b423c4
+  gse200304_dec019_reported_endpoint_a1_adjudication_v3:
+    path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_DEC019_REPORTED_ENDPOINT_A1_ADJUDICATION_V3
+    dataset_id: GSE200304
+    decision_id: V3-DEC-019
+    status: BLOCKED_DEC019_REPORTED_ENDPOINT_A1_EVIDENCE_INCOMPLETE
+    publication_state: COMMITTED_ACCEPTED
+    aggregate_only: true
+    input_gate_count: 8
+    input_status_counts:
+      PASS: 1
+      BLOCKED: 3
+      UNKNOWN_NOT_ASSERTED: 2
+      NOT_RUN: 2
+    blocker_count: 7
+    blockers:
+      - BIOLOGICAL_GROUP_AUTHORITY_NOT_PASS
+      - CANONICAL_REPORTED_ENDPOINT_SEMANTICS_NOT_PASS
+      - CHECKPOINT_SPECIFIC_EXPOSURE_NOT_PASS
+      - LICENSE_RIGHTS_NOT_PASS
+      - OUTCOME_BLIND_SPLIT_LEAKAGE_NOT_PASS
+      - PREFROZEN_POWER_PRECISION_NOT_PASS
+      - ROW_REPLICATE_OR_VALID_SE_NOT_PASS
+    ordinary_study_contribution: 0
+    a1_study_contribution: 0
+    true_a2_study_contribution: 0
+    positive_input_canonical_record_count: 6547
+    canonical_record_count: 0
+    positive_input_fact_is_not_final_canonical_materialization: true
+    qualified: false
+    canonical_materialization_allowed: false
+    training_allowed: false
+    model_selection_allowed: false
+    next_phase_authorized: false
+    dynamic_config:
+      path: configs/route_a_v3_gse200304_dec019_reported_endpoint_a1_activation_v3.json
+      sha256: 88fa21a08df60935f3d2d1bf44c6573889c22c110021146acf241fd92d6b5a13
+      config_core_sha256: 13394ac6a9b9ec6e6241d0d9b1048ecfa5c90874c7447991fc2a8248a574c170
+      descriptor_set_sha256: 14223d0193e4b3a4a3c1d98a5894849dd429e6eed021ff98e6697e73ac286a40
+      exact_full_sha_in_static_manifest: false
+    consumer_lineage:
+      historical_implementation_commit: 4e200ed4048d5b112c6ac324d2376e8de1441419
+      historical_binding_commit: e495c7ec5b6f00f14a18a4ffe0c5a6f2173bf2d8
+      commitment_schema_implementation_commit: 86d16c181fc9deaf83597da9c1523e4fea9c7493
+      commitment_schema_binding_commit: 0ad41b93eb3e145f5c509a0c2ec94988e147ac97
+      descriptor_d1_commit: c61f3d06ab6cfbc54ff562738d95ba902865b54f
+      predecessor_i3_commit: e829464d6ea1953b7a859ba5506946b9cb8e6384
+      implementation_i4_commit: 6d103877bbfb8e1196bfc22890bb239dcb87c3c8
+      binding_b4_commit: 6c42d8e1d75f70906afb7cde5704669b2c8ab6f7
+      descriptor_d2_commit: c278f29a18b7858c85686fcec3857a992fd07d5f
+      script_path: scripts/route_a_v3/adjudicate_gse200304_dec019_reported_endpoint_a1_v3.py
+      script_sha256: 9cd4411fcb02e1feed913b799296351e38ab9071b9506611318645e41b8dbbfe
+      focused_test_path: tests/route_a_v3/test_adjudicate_gse200304_dec019_reported_endpoint_a1_v3.py
+      focused_test_sha256: 8e7b188cfa2e5015fa307acad980f9ff2f45145943384fcadb50d67b1263e1db
+    files:
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_DEC019_REPORTED_ENDPOINT_A1_ADJUDICATION_V3/ADJUDICATION_REPORT.json
+        bytes: 2486
+        sha256: 62d2391bc61533f0374195605ba2a1e4ba3385f997b233087632f53901ae2de3
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_DEC019_REPORTED_ENDPOINT_A1_ADJUDICATION_V3/INPUT_EVIDENCE_AUDIT.json
+        bytes: 3005
+        sha256: d84763040507e34f9c5913075ee306b4432a75389560bdeb85c9b6ba088809e6
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_DEC019_REPORTED_ENDPOINT_A1_ADJUDICATION_V3/SHA256SUMS
+        bytes: 183
+        sha256: f856f14508db876aec3438a069d2aa0aacc92989153a33a05d54b59b4d256477
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_DEC019_REPORTED_ENDPOINT_A1_ADJUDICATION_V3/PUBLICATION_COMMIT.json
+        bytes: 1055
+        sha256: 6fb7c07c493ace456d4c4918fdc270986796c32e73e23f6901e34352d4bdf310
 
 dataset_boundary_summary:
   evidence_ref:
@@ -1454,6 +1607,36 @@ dataset_boundary_summary:
     license_and_redistribution_status: UNKNOWN_NOT_ASSERTED
     checkpoint_specific_foundation_exposure_status: UNKNOWN_NOT_ASSERTED
     canonical_intervention_record_count: 0
+    dec019_post_adjudication:
+      artifact_lineage_id: gse200304_dec019_reported_endpoint_a1_adjudication_v3
+      status: BLOCKED
+      adjudication_status: BLOCKED_DEC019_REPORTED_ENDPOINT_A1_EVIDENCE_INCOMPLETE
+      input_gate_count: 8
+      input_status_counts:
+        PASS: 1
+        BLOCKED: 3
+        UNKNOWN_NOT_ASSERTED: 2
+        NOT_RUN: 2
+      blocker_count: 7
+      blockers:
+        - BIOLOGICAL_GROUP_AUTHORITY_NOT_PASS
+        - CANONICAL_REPORTED_ENDPOINT_SEMANTICS_NOT_PASS
+        - CHECKPOINT_SPECIFIC_EXPOSURE_NOT_PASS
+        - LICENSE_RIGHTS_NOT_PASS
+        - OUTCOME_BLIND_SPLIT_LEAKAGE_NOT_PASS
+        - PREFROZEN_POWER_PRECISION_NOT_PASS
+        - ROW_REPLICATE_OR_VALID_SE_NOT_PASS
+      ordinary_study_contribution: 0
+      a1_study_contribution: 0
+      true_a2_study_contribution: 0
+      positive_input_canonical_record_count: 6547
+      canonical_record_count: 0
+      positive_input_fact_is_not_final_canonical_materialization: true
+      qualified: false
+      canonical_materialization_allowed: false
+      training_allowed: false
+      model_selection_allowed: false
+      next_phase_authorized: false
     qualified: false
     training_allowed: false
     model_selection_allowed: false
@@ -1671,8 +1854,8 @@ verification:
     scope: INTERIM_RECORD_STATUS_CLAIM_BOUNDARIES_PLUMAGE_BLOCK_SEMANTICS_AND_LOG2_CPM_SCALE
 
 initial_generated_at: "2026-08-10T06:30:58+08:00"
-generated_at: "2026-08-11T12:19:34+08:00"
-updated_at: "2026-08-11T12:19:34+08:00"
+generated_at: "2026-08-11T20:32:48+08:00"
+updated_at: "2026-08-11T20:32:48+08:00"
 updated_for_decision_id: V3-DEC-019
 latest_authority_update_id: V3-DEC-019
-latest_evidence_update_id: GSE114002_PUBLIC_AUTHORITY_GAP_AUDIT_V1
+latest_evidence_update_id: GSE200304_DEC019_REPORTED_ENDPOINT_A1_ADJUDICATION_V3

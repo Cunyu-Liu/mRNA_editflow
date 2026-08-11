@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import argparse
 import ast
+import copy
 import hashlib
 import json
 import sys
@@ -39,7 +40,9 @@ DEC019_AMENDMENT_PATH = "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec
 DECISION_LOG_PATH = "docs/execution/route_a_v3_decision_log.yaml"
 REGISTRY_MANIFEST_PATH = "docs/execution/route_a_v3_registry_manifest.json"
 A1_INTERIM_PATH = "docs/execution/route_a_v3_a1_interim.yaml"
-EXPECTED_A1_INTERIM_SHA256 = "64a41d3168df9cc80181e8865f2512f14f2aa8877f8b4574c90ea87363bf5b02"
+EXPECTED_A1_INTERIM_SHA256 = "552f705445a36df99a5ae071c85625c729ad2f69f0a375bb7b3118c3b400e16c"
+GSE200304_DEC019_POST_ADJUDICATION_LEDGER_AT = "2026-08-11T20:32:48+08:00"
+GSE200304_DEC019_POST_ADJUDICATION_MANIFEST_AT = "2026-08-11T20:35:15+08:00"
 ACTIVE_AMENDMENT_DECISION_IDS = ["V3-DEC-017", "V3-DEC-018", "V3-DEC-019"]
 DEC019_LEAF_AUTHORITY_SHA256 = {
     DEC019_AMENDMENT_PATH: "8c82e564398f0735fe4976f875fe91f053937b05044e5232e237694a2b36e1ca",
@@ -99,10 +102,97 @@ GSE114002_DEC019_SUCCESSOR_LINEAGE_ID = (
 GSE200304_DEC019_SUCCESSOR_LINEAGE_ID = (
     "gse200304_dec019_reported_endpoint_a1_successor_adjudicator_v2"
 )
+GSE200304_DEC019_V3_CONFIG_PATH = (
+    "configs/route_a_v3_gse200304_dec019_reported_endpoint_a1_activation_v3.json"
+)
+GSE200304_DEC019_V3_SCRIPT_PATH = (
+    "scripts/route_a_v3/adjudicate_gse200304_dec019_reported_endpoint_a1_v3.py"
+)
+GSE200304_DEC019_V3_TEST_PATH = (
+    "tests/route_a_v3/test_adjudicate_gse200304_dec019_reported_endpoint_a1_v3.py"
+)
+GSE200304_DEC019_LINEAGE_CONFIG_PATH = (
+    "configs/route_a_v3_gse200304_dec019_canonical_row_lineage_gate_v1.json"
+)
+GSE200304_DEC019_LINEAGE_SCRIPT_PATH = (
+    "scripts/route_a_v3/produce_gse200304_dec019_canonical_row_lineage_gate.py"
+)
+GSE200304_DEC019_LINEAGE_TEST_PATH = (
+    "tests/route_a_v3/test_produce_gse200304_dec019_canonical_row_lineage_gate.py"
+)
+GSE200304_DEC019_NEGATIVE_CONFIG_PATH = (
+    "configs/route_a_v3_gse200304_dec019_negative_gate_pack_v1.json"
+)
+GSE200304_DEC019_NEGATIVE_SCRIPT_PATH = (
+    "scripts/route_a_v3/produce_gse200304_dec019_negative_gate_pack.py"
+)
+GSE200304_DEC019_NEGATIVE_TEST_PATH = (
+    "tests/route_a_v3/test_produce_gse200304_dec019_negative_gate_pack.py"
+)
+GSE200304_DEC019_V3_CONFIG_SHA256 = (
+    "88fa21a08df60935f3d2d1bf44c6573889c22c110021146acf241fd92d6b5a13"
+)
+GSE200304_DEC019_V3_CONFIG_CORE_SHA256 = (
+    "13394ac6a9b9ec6e6241d0d9b1048ecfa5c90874c7447991fc2a8248a574c170"
+)
+GSE200304_DEC019_V3_DESCRIPTOR_SET_SHA256 = (
+    "14223d0193e4b3a4a3c1d98a5894849dd429e6eed021ff98e6697e73ac286a40"
+)
+GSE200304_DEC019_POST_ADJUDICATION_STATIC_LEAF_SHA256 = {
+    GSE200304_DEC019_V3_SCRIPT_PATH: (
+        "9cd4411fcb02e1feed913b799296351e38ab9071b9506611318645e41b8dbbfe"
+    ),
+    GSE200304_DEC019_V3_TEST_PATH: (
+        "8e7b188cfa2e5015fa307acad980f9ff2f45145943384fcadb50d67b1263e1db"
+    ),
+    GSE200304_DEC019_LINEAGE_CONFIG_PATH: (
+        "0904495aec2acd6470f3d827ab926bfa94b17ccf146e268df927c6515e38f527"
+    ),
+    GSE200304_DEC019_LINEAGE_SCRIPT_PATH: (
+        "72f946063754b49fbc309465a1a44dac0c9b531eae6713e43ad4702cdbdbfe52"
+    ),
+    GSE200304_DEC019_LINEAGE_TEST_PATH: (
+        "829bc7c70552b8c1aa53d7f7fc06592c1228a0bafe949d431fc419af38afc0e4"
+    ),
+    GSE200304_DEC019_NEGATIVE_CONFIG_PATH: (
+        "fea1c56d21dc848b535c876b31799eb6ccca48ecf9c4d8a58a7dbc7f7187297e"
+    ),
+    GSE200304_DEC019_NEGATIVE_SCRIPT_PATH: (
+        "3716ccf6492b067c374fde38f58d7b46e878dec7c58192b94030e05161e33205"
+    ),
+    GSE200304_DEC019_NEGATIVE_TEST_PATH: (
+        "5523d3a1b5216963bd3793ba9ec3f8cf15d9a01867192ddf1eae32ac0e327948"
+    ),
+}
+GSE200304_DEC019_LINEAGE_GATE_LINEAGE_ID = (
+    "gse200304_dec019_canonical_row_lineage_gate_v1"
+)
+GSE200304_DEC019_NEGATIVE_GATE_PACK_LINEAGE_ID = (
+    "gse200304_dec019_negative_gate_pack_v1"
+)
+GSE200304_DEC019_ADJUDICATION_LINEAGE_ID = (
+    "gse200304_dec019_reported_endpoint_a1_adjudication_v3"
+)
+GSE200304_DEC019_POST_ADJUDICATION_BLOCKERS = [
+    "BIOLOGICAL_GROUP_AUTHORITY_NOT_PASS",
+    "CANONICAL_REPORTED_ENDPOINT_SEMANTICS_NOT_PASS",
+    "CHECKPOINT_SPECIFIC_EXPOSURE_NOT_PASS",
+    "LICENSE_RIGHTS_NOT_PASS",
+    "OUTCOME_BLIND_SPLIT_LEAKAGE_NOT_PASS",
+    "PREFROZEN_POWER_PRECISION_NOT_PASS",
+    "ROW_REPLICATE_OR_VALID_SE_NOT_PASS",
+]
+GSE200304_DEC019_POST_ADJUDICATION_INPUT_STATUS_COUNTS = {
+    "PASS": 1,
+    "BLOCKED": 3,
+    "UNKNOWN_NOT_ASSERTED": 2,
+    "NOT_RUN": 2,
+}
 DEC019_SUCCESSOR_DYNAMIC_CONFIG_PATHS = frozenset(
     {
         GSE114002_DEC019_SUCCESSOR_CONFIG_PATH,
         GSE200304_DEC019_SUCCESSOR_CONFIG_PATH,
+        GSE200304_DEC019_V3_CONFIG_PATH,
     }
 )
 GSE114002_PUBLIC_AUTHORITY_GAP_AUDIT_PATH = (
@@ -937,6 +1027,38 @@ EXPECTED_REGISTRY_MANIFEST_PATH_ROLES = (
         GSE200304_DEC019_SUCCESSOR_TEST_PATH,
         "GSE200304_DEC019_REPORTED_ENDPOINT_A1_SUCCESSOR_FOCUSED_TEST",
     ),
+    (
+        GSE200304_DEC019_V3_SCRIPT_PATH,
+        "GSE200304_DEC019_REPORTED_ENDPOINT_A1_V3_ADJUDICATOR",
+    ),
+    (
+        GSE200304_DEC019_V3_TEST_PATH,
+        "GSE200304_DEC019_REPORTED_ENDPOINT_A1_V3_FOCUSED_TEST",
+    ),
+    (
+        GSE200304_DEC019_LINEAGE_CONFIG_PATH,
+        "GSE200304_DEC019_CANONICAL_ROW_LINEAGE_GATE_PROTOCOL",
+    ),
+    (
+        GSE200304_DEC019_LINEAGE_SCRIPT_PATH,
+        "GSE200304_DEC019_CANONICAL_ROW_LINEAGE_GATE_PRODUCER",
+    ),
+    (
+        GSE200304_DEC019_LINEAGE_TEST_PATH,
+        "GSE200304_DEC019_CANONICAL_ROW_LINEAGE_GATE_FOCUSED_TEST",
+    ),
+    (
+        GSE200304_DEC019_NEGATIVE_CONFIG_PATH,
+        "GSE200304_DEC019_NEGATIVE_GATE_PACK_PROTOCOL",
+    ),
+    (
+        GSE200304_DEC019_NEGATIVE_SCRIPT_PATH,
+        "GSE200304_DEC019_NEGATIVE_GATE_PACK_PRODUCER",
+    ),
+    (
+        GSE200304_DEC019_NEGATIVE_TEST_PATH,
+        "GSE200304_DEC019_NEGATIVE_GATE_PACK_FOCUSED_TEST",
+    ),
     (INTEGRITY_GUARD_TEST_PATH, "A0_AUTHORITY_INTEGRITY_GUARD_TEST"),
     (VALIDATOR_PATH, "A0_STATIC_AND_SEMANTIC_VALIDATOR"),
 )
@@ -1054,6 +1176,8 @@ def required_bundle_paths() -> tuple[str, ...]:
         GSE200304_DEC019_SUCCESSOR_CONFIG_PATH,
         GSE200304_DEC019_SUCCESSOR_SCRIPT_PATH,
         GSE200304_DEC019_SUCCESSOR_TEST_PATH,
+        GSE200304_DEC019_V3_CONFIG_PATH,
+        *GSE200304_DEC019_POST_ADJUDICATION_STATIC_LEAF_SHA256,
         INTEGRITY_GUARD_TEST_PATH,
         *REGISTRY_PATHS.values(),
         *(f"{SCHEMA_DIR}/{name}" for name in SCHEMA_FILES),
@@ -1987,10 +2111,10 @@ def validate_registry_manifest(repo_root: Path) -> list[Issue]:
         "contract_sha256": SOURCE_CONTRACT_SHA256,
         "active_amendment_decision_ids": ACTIVE_AMENDMENT_DECISION_IDS,
         "base_commit": "bbb71dcba6f1e1c9cb75a8a6653f1a4fe4a6ca0c",
-        "manifest_status": "A1_DEC019_AUTHORITY_AND_SUCCESSOR_ADJUDICATORS_INTEGRATED",
+        "manifest_status": "A1_DEC019_GSE200304_POST_ADJUDICATION_LEDGER_REGISTERED",
         "initial_generated_at": "2026-08-10T10:10:05+08:00",
-        "generated_at": "2026-08-11T12:19:34+08:00",
-        "updated_at": "2026-08-11T12:19:34+08:00",
+        "generated_at": GSE200304_DEC019_POST_ADJUDICATION_MANIFEST_AT,
+        "updated_at": GSE200304_DEC019_POST_ADJUDICATION_MANIFEST_AT,
         "sealed_contact": False,
     }
     expected_top_keys = set(expected_static_top) | {"files"}
@@ -3381,6 +3505,226 @@ def _is_lower_hex(value: Any, length: int) -> bool:
     )
 
 
+def _gse200304_dec019_v3_config_core_sha256(config: Mapping[str, Any]) -> str:
+    """Derive the v3 science core while excluding I/B and descriptor values."""
+
+    projection = copy.deepcopy(dict(config))
+    projection.pop("implementation_binding", None)
+    descriptors = projection.get("evidence_descriptor_bindings")
+    if type(descriptors) is dict:
+        slots = descriptors.get("slots")
+        projection["evidence_descriptor_bindings"] = {
+            "binding_scheme": descriptors.get("binding_scheme"),
+            "dynamic_scalar_suffixes": descriptors.get("dynamic_scalar_suffixes"),
+            "all_descriptors_required_before_any_input_open": descriptors.get(
+                "all_descriptors_required_before_any_input_open"
+            ),
+            "slots": [
+                {"slot_id": slot.get("slot_id")}
+                for slot in slots
+            ]
+            if type(slots) is list
+            else slots,
+        }
+    payload = (
+        json.dumps(
+            projection,
+            ensure_ascii=True,
+            allow_nan=False,
+            sort_keys=True,
+            indent=2,
+        )
+        + "\n"
+    ).encode("utf-8")
+    return sha256_bytes(payload)
+
+
+def _gse200304_dec019_v3_descriptor_set_sha256(
+    config: Mapping[str, Any],
+) -> str:
+    descriptors = copy.deepcopy(dict(config["evidence_descriptor_bindings"]))
+    descriptors.pop("descriptor_set_sha256", None)
+    payload = (
+        json.dumps(
+            descriptors,
+            ensure_ascii=True,
+            allow_nan=False,
+            sort_keys=True,
+            indent=2,
+        )
+        + "\n"
+    ).encode("utf-8")
+    return sha256_bytes(payload)
+
+
+def validate_gse200304_dec019_post_adjudication_registration(
+    repo_root: Path,
+) -> list[Issue]:
+    """Bind the stable v3 leaves and dynamic D2 config without a manifest cycle."""
+
+    issues: list[Issue] = []
+    for relative, expected_sha256 in (
+        GSE200304_DEC019_POST_ADJUDICATION_STATIC_LEAF_SHA256.items()
+    ):
+        try:
+            actual_sha256 = sha256_bytes(_read_bytes(repo_root, relative))
+        except (FileNotFoundError, ValueError) as exc:
+            _issue(
+                issues,
+                "GSE200304_DEC019_POST_ADJUDICATION_STATIC_LEAF",
+                relative,
+                str(exc),
+            )
+        else:
+            if actual_sha256 != expected_sha256:
+                _issue(
+                    issues,
+                    "GSE200304_DEC019_POST_ADJUDICATION_STATIC_LEAF",
+                    relative,
+                    f"current bytes hash {actual_sha256} must remain {expected_sha256}",
+                )
+
+    try:
+        config_bytes = _read_bytes(repo_root, GSE200304_DEC019_V3_CONFIG_PATH)
+        config = _load_json(repo_root, GSE200304_DEC019_V3_CONFIG_PATH)
+    except (FileNotFoundError, ValueError, json.JSONDecodeError) as exc:
+        _issue(
+            issues,
+            "GSE200304_DEC019_V3_DYNAMIC_CONFIG",
+            GSE200304_DEC019_V3_CONFIG_PATH,
+            str(exc),
+        )
+        return issues
+
+    actual_config_sha256 = sha256_bytes(config_bytes)
+    if actual_config_sha256 != GSE200304_DEC019_V3_CONFIG_SHA256:
+        _issue(
+            issues,
+            "GSE200304_DEC019_V3_DYNAMIC_CONFIG",
+            GSE200304_DEC019_V3_CONFIG_PATH,
+            f"current full SHA {actual_config_sha256} must remain {GSE200304_DEC019_V3_CONFIG_SHA256}",
+        )
+    try:
+        actual_core_sha256 = _gse200304_dec019_v3_config_core_sha256(config)
+        actual_descriptor_sha256 = _gse200304_dec019_v3_descriptor_set_sha256(
+            config
+        )
+    except (KeyError, TypeError, ValueError) as exc:
+        _issue(
+            issues,
+            "GSE200304_DEC019_V3_DYNAMIC_CONFIG",
+            GSE200304_DEC019_V3_CONFIG_PATH,
+            f"cannot derive core/descriptor projections: {exc}",
+        )
+        return issues
+
+    binding = config.get("implementation_binding")
+    descriptors = config.get("evidence_descriptor_bindings")
+    expected_binding_fields = {
+        "status": "BOUND",
+        "implementation_commit": "6d103877bbfb8e1196bfc22890bb239dcb87c3c8",
+        "implementation_script_path": GSE200304_DEC019_V3_SCRIPT_PATH,
+        "implementation_script_sha256": GSE200304_DEC019_POST_ADJUDICATION_STATIC_LEAF_SHA256[
+            GSE200304_DEC019_V3_SCRIPT_PATH
+        ],
+        "implementation_test_path": GSE200304_DEC019_V3_TEST_PATH,
+        "implementation_test_sha256": GSE200304_DEC019_POST_ADJUDICATION_STATIC_LEAF_SHA256[
+            GSE200304_DEC019_V3_TEST_PATH
+        ],
+        "config_core_sha256": GSE200304_DEC019_V3_CONFIG_CORE_SHA256,
+    }
+    if not isinstance(binding, Mapping):
+        _issue(
+            issues,
+            "GSE200304_DEC019_V3_CORE_BINDING",
+            GSE200304_DEC019_V3_CONFIG_PATH,
+            "implementation_binding must be a mapping",
+        )
+    else:
+        for key, value in expected_binding_fields.items():
+            _expect(
+                binding,
+                key,
+                value,
+                GSE200304_DEC019_V3_CONFIG_PATH,
+                issues,
+                "GSE200304_DEC019_V3_CORE_BINDING",
+            )
+    if actual_core_sha256 != GSE200304_DEC019_V3_CONFIG_CORE_SHA256:
+        _issue(
+            issues,
+            "GSE200304_DEC019_V3_CORE_BINDING",
+            GSE200304_DEC019_V3_CONFIG_PATH,
+            f"derived core {actual_core_sha256} must remain {GSE200304_DEC019_V3_CONFIG_CORE_SHA256}",
+        )
+    if not isinstance(descriptors, Mapping):
+        _issue(
+            issues,
+            "GSE200304_DEC019_V3_DESCRIPTOR_BINDING",
+            GSE200304_DEC019_V3_CONFIG_PATH,
+            "evidence_descriptor_bindings must be a mapping",
+        )
+    else:
+        _expect(
+            descriptors,
+            "status",
+            "BOUND",
+            GSE200304_DEC019_V3_CONFIG_PATH,
+            issues,
+            "GSE200304_DEC019_V3_DESCRIPTOR_BINDING",
+        )
+        _expect(
+            descriptors,
+            "descriptor_set_sha256",
+            GSE200304_DEC019_V3_DESCRIPTOR_SET_SHA256,
+            GSE200304_DEC019_V3_CONFIG_PATH,
+            issues,
+            "GSE200304_DEC019_V3_DESCRIPTOR_BINDING",
+        )
+    if actual_descriptor_sha256 != GSE200304_DEC019_V3_DESCRIPTOR_SET_SHA256:
+        _issue(
+            issues,
+            "GSE200304_DEC019_V3_DESCRIPTOR_BINDING",
+            GSE200304_DEC019_V3_CONFIG_PATH,
+            f"derived descriptor set {actual_descriptor_sha256} must remain {GSE200304_DEC019_V3_DESCRIPTOR_SET_SHA256}",
+        )
+
+    try:
+        manifest = _load_json(repo_root, REGISTRY_MANIFEST_PATH)
+    except (FileNotFoundError, ValueError, json.JSONDecodeError) as exc:
+        _issue(
+            issues,
+            "GSE200304_DEC019_POST_ADJUDICATION_DAG",
+            REGISTRY_MANIFEST_PATH,
+            str(exc),
+        )
+    else:
+        entries = manifest.get("files")
+        manifest_paths = {
+            entry.get("path")
+            for entry in entries
+            if type(entries) is list and type(entry) is dict
+        } if type(entries) is list else set()
+        expected_static_paths = set(
+            GSE200304_DEC019_POST_ADJUDICATION_STATIC_LEAF_SHA256
+        )
+        if GSE200304_DEC019_V3_CONFIG_PATH in manifest_paths:
+            _issue(
+                issues,
+                "GSE200304_DEC019_POST_ADJUDICATION_DAG",
+                REGISTRY_MANIFEST_PATH,
+                "dynamic D2 config must remain outside the static manifest",
+            )
+        if not expected_static_paths.issubset(manifest_paths):
+            _issue(
+                issues,
+                "GSE200304_DEC019_POST_ADJUDICATION_DAG",
+                REGISTRY_MANIFEST_PATH,
+                "all eight stable post-adjudication leaves must be statically registered",
+            )
+    return issues
+
+
 def validate_dec019_successor_adjudicators(repo_root: Path) -> list[Issue]:
     """Validate stable scientific cores without creating an I-to-B hash cycle.
 
@@ -4756,9 +5100,10 @@ def validate_a1_interim_lineage(
         if not isinstance(gse200304_current, Mapping):
             _issue(issues, "A1_INTERIM_DEC019_GSE200304", path, "current GSE200304 disposition must be a mapping")
         else:
-            for key, value in {
+            expected_gse200304_current = {
                 "owner_primary_route_policy_status": "CLOSED_BY_V3_DEC_019",
-                "current_status": "NOT_QUALIFIED",
+                "current_status": "BLOCKED_DEC019_REPORTED_ENDPOINT_A1_EVIDENCE_INCOMPLETE",
+                "ordinary_study_unit": "GSE200304_SUPERSERIES_ONE_STUDY",
                 "maximum_independent_ordinary_study_contribution_if_qualified": 1,
                 "maximum_a1_study_contribution_if_qualified": 1,
                 "maximum_true_a2_dense_study_contribution_if_qualified": 0,
@@ -4766,9 +5111,28 @@ def validate_a1_interim_lineage(
                 "primary_measurement_route_if_qualified": "AUTHOR_PUBLISHED_PROCESSED_ENDPOINT",
                 "raw_replay_role": "REPRODUCIBILITY_AUXILIARY",
                 "required_80s_role_authority_is_primary_route_blocker": False,
-                "current_blocker_count": 8,
-            }.items():
-                _expect(gse200304_current, key, value, path, issues, "A1_INTERIM_DEC019_GSE200304")
+                "current_blocker_count": 7,
+                "current_blockers": GSE200304_DEC019_POST_ADJUDICATION_BLOCKERS,
+                "input_gate_count": 8,
+                "input_status_counts": GSE200304_DEC019_POST_ADJUDICATION_INPUT_STATUS_COUNTS,
+                "ordinary_study_contribution": 0,
+                "a1_study_contribution": 0,
+                "true_a2_study_contribution": 0,
+                "positive_input_canonical_record_count": 6547,
+                "canonical_record_count": 0,
+                "qualified": False,
+                "canonical_materialization_allowed": False,
+                "training_allowed": False,
+                "model_selection_allowed": False,
+                "next_phase_authorized": False,
+            }
+            _expect_closed_mapping(
+                gse200304_current,
+                expected_gse200304_current,
+                path,
+                issues,
+                "A1_INTERIM_DEC019_GSE200304",
+            )
 
     lineage = interim.get("artifact_lineage")
     if not isinstance(lineage, Mapping):
@@ -4806,6 +5170,9 @@ def validate_a1_interim_lineage(
             "gse200304_raw_replay_preflight_v1",
             "gse200302_srr_role_authority_v1",
             "gse200304_published_endpoint_a1_v1",
+            GSE200304_DEC019_LINEAGE_GATE_LINEAGE_ID,
+            GSE200304_DEC019_NEGATIVE_GATE_PACK_LINEAGE_ID,
+            GSE200304_DEC019_ADJUDICATION_LINEAGE_ID,
         }
         if set(lineage) != expected_all_lineage_ids:
             _issue(
@@ -5289,6 +5656,130 @@ def validate_a1_interim_lineage(
                 "model_selection_allowed": False,
                 "next_phase_authorized": False,
             },
+            GSE200304_DEC019_LINEAGE_GATE_LINEAGE_ID: {
+                "path": (
+                    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/"
+                    "A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/"
+                    "DEC019_GATE_EVIDENCE_V1/"
+                    "GSE200304_DEC019_CANONICAL_ROW_LOCATOR_MULTI_ASSET_LINEAGE_GATE.json"
+                ),
+                "dataset_id": "GSE200304",
+                "decision_id": "V3-DEC-019",
+                "gate_id": "CANONICAL_ROW_LOCATOR_MULTI_ASSET_LINEAGE",
+                "status": "PASS",
+                "accepted": True,
+                "aggregate_only": True,
+                "bytes": 4367,
+                "sha256": "ecdd5a59cfba6aa3307d4e0bd6becbf4d8e88817ab05b524f9c1e1e1f215dd59",
+                "positive_input_fact": {"canonical_record_count": 6547},
+                "positive_input_fact_is_not_final_qualification_or_materialization": True,
+                "producer_lineage": {
+                    "initial_implementation_commit": "08f10e1e6a4194eca4f3cd78c31ff191597a4e41",
+                    "initial_binding_commit": "de35ce44d7744b89c8b52291343d9f1d6ea674a0",
+                    "repair_implementation_commit": "b700e43178b44c4fa925d45466e5c8e4ba823f83",
+                    "repair_binding_commit": "c764c721b364e19916ba66698552eee86563dbfe",
+                    "config_path": GSE200304_DEC019_LINEAGE_CONFIG_PATH,
+                    "config_sha256": GSE200304_DEC019_POST_ADJUDICATION_STATIC_LEAF_SHA256[
+                        GSE200304_DEC019_LINEAGE_CONFIG_PATH
+                    ],
+                    "script_path": GSE200304_DEC019_LINEAGE_SCRIPT_PATH,
+                    "script_sha256": GSE200304_DEC019_POST_ADJUDICATION_STATIC_LEAF_SHA256[
+                        GSE200304_DEC019_LINEAGE_SCRIPT_PATH
+                    ],
+                    "focused_test_path": GSE200304_DEC019_LINEAGE_TEST_PATH,
+                    "focused_test_sha256": GSE200304_DEC019_POST_ADJUDICATION_STATIC_LEAF_SHA256[
+                        GSE200304_DEC019_LINEAGE_TEST_PATH
+                    ],
+                },
+            },
+            GSE200304_DEC019_NEGATIVE_GATE_PACK_LINEAGE_ID: {
+                "path": (
+                    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/"
+                    "A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/"
+                    "GSE200304_DEC019_NEGATIVE_GATE_PACK_V1"
+                ),
+                "dataset_id": "GSE200304",
+                "decision_id": "V3-DEC-019",
+                "status": "COMMITTED_ACCEPTED_EXACT8",
+                "aggregate_only": True,
+                "gate_record_count": 7,
+                "exact_member_count": 8,
+                "gate_status_counts": {
+                    "BLOCKED": 3,
+                    "UNKNOWN_NOT_ASSERTED": 2,
+                    "NOT_RUN": 2,
+                },
+                "producer_lineage": {
+                    "initial_implementation_commit": "01f3f818937c97d9804b94413f54d3e654e35120",
+                    "initial_binding_commit": "a677454ec78ad5df4a5880444b0764d42676025a",
+                    "repair_implementation_commit": "8da6abaeddfadeca5542b997e7c0ba6501c1f1f7",
+                    "repair_binding_commit": "981f001d6290cbc1b9b48a55d8e51a963e45d785",
+                    "config_path": GSE200304_DEC019_NEGATIVE_CONFIG_PATH,
+                    "config_sha256": GSE200304_DEC019_POST_ADJUDICATION_STATIC_LEAF_SHA256[
+                        GSE200304_DEC019_NEGATIVE_CONFIG_PATH
+                    ],
+                    "script_path": GSE200304_DEC019_NEGATIVE_SCRIPT_PATH,
+                    "script_sha256": GSE200304_DEC019_POST_ADJUDICATION_STATIC_LEAF_SHA256[
+                        GSE200304_DEC019_NEGATIVE_SCRIPT_PATH
+                    ],
+                    "focused_test_path": GSE200304_DEC019_NEGATIVE_TEST_PATH,
+                    "focused_test_sha256": GSE200304_DEC019_POST_ADJUDICATION_STATIC_LEAF_SHA256[
+                        GSE200304_DEC019_NEGATIVE_TEST_PATH
+                    ],
+                },
+            },
+            GSE200304_DEC019_ADJUDICATION_LINEAGE_ID: {
+                "path": (
+                    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/"
+                    "GSE200304_DEC019_REPORTED_ENDPOINT_A1_ADJUDICATION_V3"
+                ),
+                "dataset_id": "GSE200304",
+                "decision_id": "V3-DEC-019",
+                "status": "BLOCKED_DEC019_REPORTED_ENDPOINT_A1_EVIDENCE_INCOMPLETE",
+                "publication_state": "COMMITTED_ACCEPTED",
+                "aggregate_only": True,
+                "input_gate_count": 8,
+                "input_status_counts": GSE200304_DEC019_POST_ADJUDICATION_INPUT_STATUS_COUNTS,
+                "blocker_count": 7,
+                "blockers": GSE200304_DEC019_POST_ADJUDICATION_BLOCKERS,
+                "ordinary_study_contribution": 0,
+                "a1_study_contribution": 0,
+                "true_a2_study_contribution": 0,
+                "positive_input_canonical_record_count": 6547,
+                "canonical_record_count": 0,
+                "positive_input_fact_is_not_final_canonical_materialization": True,
+                "qualified": False,
+                "canonical_materialization_allowed": False,
+                "training_allowed": False,
+                "model_selection_allowed": False,
+                "next_phase_authorized": False,
+                "dynamic_config": {
+                    "path": GSE200304_DEC019_V3_CONFIG_PATH,
+                    "sha256": GSE200304_DEC019_V3_CONFIG_SHA256,
+                    "config_core_sha256": GSE200304_DEC019_V3_CONFIG_CORE_SHA256,
+                    "descriptor_set_sha256": GSE200304_DEC019_V3_DESCRIPTOR_SET_SHA256,
+                    "exact_full_sha_in_static_manifest": False,
+                },
+                "consumer_lineage": {
+                    "historical_implementation_commit": "4e200ed4048d5b112c6ac324d2376e8de1441419",
+                    "historical_binding_commit": "e495c7ec5b6f00f14a18a4ffe0c5a6f2173bf2d8",
+                    "commitment_schema_implementation_commit": "86d16c181fc9deaf83597da9c1523e4fea9c7493",
+                    "commitment_schema_binding_commit": "0ad41b93eb3e145f5c509a0c2ec94988e147ac97",
+                    "descriptor_d1_commit": "c61f3d06ab6cfbc54ff562738d95ba902865b54f",
+                    "predecessor_i3_commit": "e829464d6ea1953b7a859ba5506946b9cb8e6384",
+                    "implementation_i4_commit": "6d103877bbfb8e1196bfc22890bb239dcb87c3c8",
+                    "binding_b4_commit": "6c42d8e1d75f70906afb7cde5704669b2c8ab6f7",
+                    "descriptor_d2_commit": "c278f29a18b7858c85686fcec3857a992fd07d5f",
+                    "script_path": GSE200304_DEC019_V3_SCRIPT_PATH,
+                    "script_sha256": GSE200304_DEC019_POST_ADJUDICATION_STATIC_LEAF_SHA256[
+                        GSE200304_DEC019_V3_SCRIPT_PATH
+                    ],
+                    "focused_test_path": GSE200304_DEC019_V3_TEST_PATH,
+                    "focused_test_sha256": GSE200304_DEC019_POST_ADJUDICATION_STATIC_LEAF_SHA256[
+                        GSE200304_DEC019_V3_TEST_PATH
+                    ],
+                },
+            },
             "a1_public_qualifiers_sync_v1": {
                 "path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/A1_PUBLIC_QUALIFIERS_SYNC_V1.json",
                 "sha256": "22eac457a5ccea5272b9e1b9ff4ded845c79c89449209f28d9aaa510f2ab59f5",
@@ -5598,6 +6089,15 @@ def validate_a1_interim_lineage(
         raw_preflight_failure_root = "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_RAW_REPLAY_PREFLIGHT_20260810T202615P0800_534882a"
         raw_preflight_final_root = "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_RAW_REPLAY_PREFLIGHT_20260810T205200P0800_19376c0"
         role_authority_root = GSE200302_ROLE_ARTIFACT_ROOT
+        negative_gate_root = (
+            "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/"
+            "A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/"
+            "GSE200304_DEC019_NEGATIVE_GATE_PACK_V1"
+        )
+        adjudication_v3_root = (
+            "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/"
+            "GSE200304_DEC019_REPORTED_ENDPOINT_A1_ADJUDICATION_V3"
+        )
         expected_closed_files = {
             "gse200304_public_asset_bundle": _closed_files(
                 public_root,
@@ -5700,6 +6200,76 @@ def validate_a1_interim_lineage(
                 ),
             ),
             "gse200304_published_endpoint_a1_v1": GSE200304_PUBLISHED_ENDPOINT_EXPECTED_FILES,
+            GSE200304_DEC019_NEGATIVE_GATE_PACK_LINEAGE_ID: _closed_files(
+                negative_gate_root,
+                (
+                    (
+                        "GSE200304_DEC019_BIOLOGICAL_GROUP_AUTHORITY_GATE.json",
+                        3921,
+                        "2db95ec41d5e76a77d17104076c5823f5cc1f8646260964e92166f0faf440950",
+                    ),
+                    (
+                        "GSE200304_DEC019_CANONICAL_REPORTED_ENDPOINT_SEMANTICS_GATE.json",
+                        4022,
+                        "a2b4dd52f0fbe4cd31324d4b760b9fee104f719d67d4f6834b6c1ea3adffaf9e",
+                    ),
+                    (
+                        "GSE200304_DEC019_CHECKPOINT_SPECIFIC_EXPOSURE_GATE.json",
+                        3997,
+                        "33b659a86eb8058adad922649b3c89a78ad65a61014826cd3ab28f1c4a6214f9",
+                    ),
+                    (
+                        "GSE200304_DEC019_LICENSE_RIGHTS_GATE.json",
+                        3919,
+                        "7556db47e8b3ec9cdc0a7d795161cf4ded8679d0c04644005a475753c482aa28",
+                    ),
+                    (
+                        "GSE200304_DEC019_OUTCOME_BLIND_SPLIT_LEAKAGE_GATE.json",
+                        4004,
+                        "b3be463eb502b5b8a2b171ea763cffa8eba1449bf2c380aa3d16435733e35821",
+                    ),
+                    (
+                        "GSE200304_DEC019_PREFROZEN_POWER_PRECISION_GATE.json",
+                        3908,
+                        "817165a2e9ea2e01efae2374a606334375b9ec3afafae665fefacf0c6779fc95",
+                    ),
+                    (
+                        "GSE200304_DEC019_ROW_REPLICATE_OR_VALID_SE_GATE.json",
+                        3977,
+                        "235683969801d375a59a0bde56af2a448afd2a56cd5224cbede1320c2c15026b",
+                    ),
+                    (
+                        "PUBLICATION_COMMIT.json",
+                        1256,
+                        "bf2cad9cfdc3b6dfc537bc0bf302ad79e332c5cf5d341e8dfd7fa64675b423c4",
+                    ),
+                ),
+            ),
+            GSE200304_DEC019_ADJUDICATION_LINEAGE_ID: _closed_files(
+                adjudication_v3_root,
+                (
+                    (
+                        "ADJUDICATION_REPORT.json",
+                        2486,
+                        "62d2391bc61533f0374195605ba2a1e4ba3385f997b233087632f53901ae2de3",
+                    ),
+                    (
+                        "INPUT_EVIDENCE_AUDIT.json",
+                        3005,
+                        "d84763040507e34f9c5913075ee306b4432a75389560bdeb85c9b6ba088809e6",
+                    ),
+                    (
+                        "SHA256SUMS",
+                        183,
+                        "f856f14508db876aec3438a069d2aa0aacc92989153a33a05d54b59b4d256477",
+                    ),
+                    (
+                        "PUBLICATION_COMMIT.json",
+                        1055,
+                        "6fb7c07c493ace456d4c4918fdc270986796c32e73e23f6901e34352d4bdf310",
+                    ),
+                ),
+            ),
         }
         for lineage_id, expected_fields in expected_gse200304_lineage.items():
             record = lineage.get(lineage_id)
@@ -6071,6 +6641,26 @@ def validate_a1_interim_lineage(
                 "license_and_redistribution_status": "UNKNOWN_NOT_ASSERTED",
                 "checkpoint_specific_foundation_exposure_status": "UNKNOWN_NOT_ASSERTED",
                 "canonical_intervention_record_count": 0,
+                "dec019_post_adjudication": {
+                    "artifact_lineage_id": GSE200304_DEC019_ADJUDICATION_LINEAGE_ID,
+                    "status": "BLOCKED",
+                    "adjudication_status": "BLOCKED_DEC019_REPORTED_ENDPOINT_A1_EVIDENCE_INCOMPLETE",
+                    "input_gate_count": 8,
+                    "input_status_counts": GSE200304_DEC019_POST_ADJUDICATION_INPUT_STATUS_COUNTS,
+                    "blocker_count": 7,
+                    "blockers": GSE200304_DEC019_POST_ADJUDICATION_BLOCKERS,
+                    "ordinary_study_contribution": 0,
+                    "a1_study_contribution": 0,
+                    "true_a2_study_contribution": 0,
+                    "positive_input_canonical_record_count": 6547,
+                    "canonical_record_count": 0,
+                    "positive_input_fact_is_not_final_canonical_materialization": True,
+                    "qualified": False,
+                    "canonical_materialization_allowed": False,
+                    "training_allowed": False,
+                    "model_selection_allowed": False,
+                    "next_phase_authorized": False,
+                },
                 "qualified": False,
                 "training_allowed": False,
                 "model_selection_allowed": False,
@@ -6382,19 +6972,22 @@ def validate_a1_interim_lineage(
     _expect(
         interim,
         "latest_evidence_update_id",
-        "GSE114002_PUBLIC_AUTHORITY_GAP_AUDIT_V1",
+        "GSE200304_DEC019_REPORTED_ENDPOINT_A1_ADJUDICATION_V3",
         path,
         issues,
         "A1_INTERIM_TIME",
     )
     generated = interim.get("generated_at")
     updated = interim.get("updated_at")
-    if generated != "2026-08-11T12:19:34+08:00" or updated != "2026-08-11T12:19:34+08:00":
+    if (
+        generated != GSE200304_DEC019_POST_ADJUDICATION_LEDGER_AT
+        or updated != GSE200304_DEC019_POST_ADJUDICATION_LEDGER_AT
+    ):
         _issue(
             issues,
             "A1_INTERIM_TIME",
             path,
-            "generated_at and updated_at must remain the exact DEC-019 successor-integration ledger timestamp",
+            "generated_at and updated_at must remain the exact GSE200304 DEC-019 post-adjudication ledger timestamp",
         )
     if generated != updated:
         _issue(issues, "A1_INTERIM_TIME", path, "generated_at and updated_at must identify the same amended record bytes")
@@ -6411,6 +7004,9 @@ def validate_a1_interim_lineage(
         gse114002_public_gap_audit_dt = datetime.fromisoformat("2026-08-11T10:24:16+08:00")
         dec019_authorization_dt = datetime.fromisoformat("2026-08-11T10:42:53+08:00")
         dec019_successor_integration_dt = datetime.fromisoformat("2026-08-11T12:19:34+08:00")
+        gse200304_positive_lineage_gate_dt = datetime.fromisoformat("2026-08-11T18:09:26+08:00")
+        gse200304_negative_gate_pack_dt = datetime.fromisoformat("2026-08-11T19:42:43+08:00")
+        gse200304_adjudication_v3_dt = datetime.fromisoformat("2026-08-11T19:50:38+08:00")
     except ValueError:
         _issue(issues, "A1_INTERIM_TIME", path, "updated_at must be an ISO-8601 timestamp with offset")
     else:
@@ -6426,12 +7022,15 @@ def validate_a1_interim_lineage(
             or updated_dt < gse114002_public_gap_audit_dt
             or updated_dt < dec019_authorization_dt
             or updated_dt < dec019_successor_integration_dt
+            or updated_dt < gse200304_positive_lineage_gate_dt
+            or updated_dt < gse200304_negative_gate_pack_dt
+            or updated_dt < gse200304_adjudication_v3_dt
         ):
             _issue(
                 issues,
                 "A1_INTERIM_TIME",
                 path,
-                "updated_at must follow all preserved evidence events, DEC-019 owner authorization, and the DEC-019 successor-adjudicator integration",
+                "updated_at must follow all preserved evidence events, DEC-019 owner authorization, successor integration, and GSE200304 post-adjudication artifacts",
             )
     return issues
 
@@ -7798,6 +8397,9 @@ def validate_bundle(repo_root: Path) -> list[Issue]:
     issues.extend(validate_gse149487_plumage_protocol(repo_root))
     issues.extend(validate_gse200302_role_protocol(repo_root))
     issues.extend(validate_dec019_successor_adjudicators(repo_root))
+    issues.extend(
+        validate_gse200304_dec019_post_adjudication_registration(repo_root)
+    )
     issues.extend(validate_python_static_safety(repo_root))
     issues.extend(validate_runner_and_guard_ast(repo_root))
     issues.extend(scan_conflict_markers(repo_root))
