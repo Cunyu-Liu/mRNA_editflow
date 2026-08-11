@@ -53,7 +53,7 @@ PRODUCTION_REPO_ROOT = Path(
 )
 PRODUCTION_CONFIG_PATH = PRODUCTION_REPO_ROOT / CONFIG_REPO_PATH
 BRANCH = "routea-v3-a1-20260810"
-IMPLEMENTATION_BASE_COMMIT = "0ad41b93eb3e145f5c509a0c2ec94988e147ac97"
+IMPLEMENTATION_BASE_COMMIT = "de35ce44d7744b89c8b52291343d9f1d6ea674a0"
 EXPECTED_I_PATHS = [CONFIG_REPO_PATH, SCRIPT_REPO_PATH, TEST_REPO_PATH]
 EXPECTED_B_PATHS = [CONFIG_REPO_PATH]
 AUTHORITY_GIT_MODE = "100644"
@@ -76,7 +76,7 @@ OUTPUT_BASENAME = (
 )
 UNKNOWN = "UNKNOWN_NOT_ASSERTED"
 RAW_REPLAY_ROLE = "REPRODUCIBILITY_AUXILIARY_NOT_QUALIFICATION_PREREQUISITE"
-FROZEN_CONFIG_CORE_SHA256 = "95c09f919454e7ad3f096bbae1d72395d0912c216037862b5a38cb8fd3bdba45"
+FROZEN_CONFIG_CORE_SHA256 = "5ea2f2dd32f19d4d64a441188c26b80444c0cb89e465d37d348a8b65ae358f2d"
 
 HEX40 = re.compile(r"^[0-9a-f]{40}$")
 HEX64 = re.compile(r"^[0-9a-f]{64}$")
@@ -1928,6 +1928,144 @@ def _tag_attributes(tag: XmlLexicalTag, *, label: str) -> dict[str, str]:
     return attributes
 
 
+XML_QNAME_BYTES_RE = re.compile(
+    rb"[A-Za-z_][A-Za-z0-9_.-]*(?::[A-Za-z_][A-Za-z0-9_.-]*)?"
+)
+X14AC_NAMESPACE_URI = (
+    b"http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac"
+)
+SPREADSHEETML_NAMESPACE_URI = (
+    b"http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+)
+ROW_DESCENT_RE = re.compile(rb"^(?:0(?:\.[0-9]{1,4})?|1(?:\.0{1,4})?)$")
+
+
+def _lexical_tag_attributes(
+    tag: XmlLexicalTag,
+    *,
+    label: str,
+) -> dict[str, bytes]:
+    """Parse start-tag attributes without resolving or materializing subtrees."""
+
+    if tag.kind not in {"start", "empty"}:
+        raise TableAuditError(f"{label} is not an opening XML tag")
+    body = tag.raw[1:-1]
+    if tag.kind == "empty":
+        body = body.rstrip()
+        if not body.endswith(b"/"):
+            raise TableAuditError(f"{label} empty XML tag is malformed")
+        body = body[:-1].rstrip()
+    name = XML_QNAME_BYTES_RE.match(body)
+    if name is None or name.group().decode("ascii") != tag.qualified_name:
+        raise TableAuditError(f"{label} XML tag name geometry is invalid")
+    position = name.end()
+    whitespace = b" \t\r\n"
+    attributes: dict[str, bytes] = {}
+    while position < len(body):
+        before_whitespace = position
+        while position < len(body) and body[position] in whitespace:
+            position += 1
+        if position == len(body):
+            break
+        if position == before_whitespace:
+            raise TableAuditError(f"{label} XML attributes lack a separator")
+        match = XML_QNAME_BYTES_RE.match(body, position)
+        if match is None:
+            raise TableAuditError(f"{label} XML attribute name is invalid")
+        qualified_name = match.group().decode("ascii")
+        position = match.end()
+        while position < len(body) and body[position] in whitespace:
+            position += 1
+        if position >= len(body) or body[position] != 0x3D:
+            raise TableAuditError(f"{label} XML attribute lacks equals")
+        position += 1
+        while position < len(body) and body[position] in whitespace:
+            position += 1
+        if position >= len(body) or body[position] not in {0x22, 0x27}:
+            raise TableAuditError(f"{label} XML attribute is not quoted")
+        quote = body[position]
+        position += 1
+        value_end = body.find(bytes((quote,)), position)
+        if value_end < 0:
+            raise TableAuditError(f"{label} XML attribute quote is unterminated")
+        value = body[position:value_end]
+        if b"<" in value:
+            raise TableAuditError(f"{label} XML attribute contains raw markup")
+        if qualified_name in attributes:
+            raise TableAuditError(f"{label} duplicates an XML attribute")
+        attributes[qualified_name] = value
+        position = value_end + 1
+    return attributes
+
+
+def _worksheet_has_official_x14ac_namespace(
+    payload: bytes,
+    *,
+    label: str,
+) -> bool:
+    official_x14ac_namespace: bool | None = None
+    for tag in _iter_xml_tags(payload, label=label):
+        if tag.kind not in {"start", "empty"}:
+            continue
+        if official_x14ac_namespace is None:
+            if tag.qualified_name != "worksheet" or tag.kind != "start":
+                raise TableAuditError(f"{label} root element differs")
+            attributes = _lexical_tag_attributes(tag, label=f"{label} root")
+            if attributes.get("xmlns") != SPREADSHEETML_NAMESPACE_URI:
+                raise TableAuditError(f"{label} default namespace binding differs")
+            namespace = attributes.get("xmlns:x14ac")
+            if namespace is None:
+                official_x14ac_namespace = False
+            elif namespace == X14AC_NAMESPACE_URI:
+                official_x14ac_namespace = True
+            else:
+                raise TableAuditError(f"{label} x14ac namespace binding differs")
+            continue
+        # Reject even same-value redeclarations below the root.  This closed
+        # rule keeps every unprefixed row in SpreadsheetML and every
+        # x14ac:dyDescent attribute in the official x14ac namespace without
+        # interpreting descendant element content.
+        if b"xmlns" not in tag.raw:
+            continue
+        attributes = _lexical_tag_attributes(tag, label=f"{label} descendant")
+        if "xmlns" in attributes or "xmlns:x14ac" in attributes:
+            raise TableAuditError(
+                f"{label} descendant worksheet namespace declaration is forbidden"
+            )
+    if official_x14ac_namespace is None:
+        raise TableAuditError(f"{label} root element is absent")
+    return official_x14ac_namespace
+
+
+def _closed_worksheet_row_number(
+    tag: XmlLexicalTag,
+    *,
+    label: str,
+    official_x14ac_namespace: bool,
+    expected_span: str,
+) -> int:
+    if tag.qualified_name != "row":
+        raise TableAuditError(f"{label} row namespace/prefix differs")
+    attributes = _lexical_tag_attributes(tag, label=label)
+    names = set(attributes)
+    if names == {"r"}:
+        if official_x14ac_namespace:
+            raise TableAuditError(f"{label} official row attributes are incomplete")
+    elif names == {"r", "spans", "x14ac:dyDescent"}:
+        if not official_x14ac_namespace:
+            raise TableAuditError(f"{label} uses an unbound x14ac attribute")
+        if attributes["spans"] != expected_span.encode("ascii"):
+            raise TableAuditError(f"{label} span geometry differs")
+        if ROW_DESCENT_RE.fullmatch(attributes["x14ac:dyDescent"]) is None:
+            raise TableAuditError(f"{label} descent geometry is invalid")
+    else:
+        raise TableAuditError(f"{label} attribute set differs from closed profiles")
+    raw_row = attributes["r"]
+    if re.fullmatch(rb"[1-9][0-9]*", raw_row) is None:
+        raise TableAuditError(f"{label} row number is invalid")
+    return int(raw_row)
+
+
 def _cell_ref(tag: XmlLexicalTag) -> tuple[str, int]:
     reference = _tag_attributes(tag, label="XLSX cell").get("r")
     match = CELL_REF_RE.fullmatch(reference or "")
@@ -2048,13 +2186,17 @@ def _extract_primary_tokens(
     rows: list[PrimaryTokenRow] = []
     shared_usage: dict[int, set[str]] = defaultdict(set)
     _assert_xml_balanced(payload, label="primary worksheet")
+    official_x14ac_namespace = _worksheet_has_official_x14ac_namespace(
+        payload,
+        label="primary worksheet",
+    )
     for row_span in _xml_element_spans(payload, "row", label="primary worksheet"):
-        raw_row = _tag_attributes(
-            row_span.start_tag, label="primary worksheet row"
-        ).get("r")
-        if raw_row is None or not raw_row.isdigit():
-            raise TableAuditError("primary worksheet row number is invalid")
-        current_row = int(raw_row)
+        current_row = _closed_worksheet_row_number(
+            row_span.start_tag,
+            label="primary worksheet row",
+            official_x14ac_namespace=official_x14ac_namespace,
+            expected_span="1:7",
+        )
         current_cells: dict[str, StringToken] = {}
         seen_columns: set[str] = set()
         for cell_span in _xml_element_spans(
@@ -2170,10 +2312,17 @@ def _extract_control_header(
     expected = {str(value) for value in columns}
     header: dict[str, StringToken] = {}
     shared_usage: dict[int, set[str]] = defaultdict(set)
+    official_x14ac_namespace = _worksheet_has_official_x14ac_namespace(
+        payload,
+        label="control worksheet prefix",
+    )
     row_spans = list(_xml_element_spans(payload, "row", label="control worksheet prefix"))
-    if len(row_spans) != 1 or _tag_attributes(
-        row_spans[0].start_tag, label="control header row"
-    ).get("r") != "1":
+    if len(row_spans) != 1 or _closed_worksheet_row_number(
+        row_spans[0].start_tag,
+        label="control header row",
+        official_x14ac_namespace=official_x14ac_namespace,
+        expected_span=f"1:{width}",
+    ) != 1:
         raise TableAuditError("control worksheet header row differs")
     for cell_span in _xml_element_spans(
         payload,

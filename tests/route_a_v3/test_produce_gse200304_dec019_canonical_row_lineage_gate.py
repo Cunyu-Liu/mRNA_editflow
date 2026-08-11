@@ -8,6 +8,7 @@ import io
 import inspect
 import json
 import os
+import re
 import sys
 import zipfile
 from pathlib import Path
@@ -170,6 +171,7 @@ def make_s3(
     primary_mixed: bool = False,
     bad_header: bool = False,
     significance_label: str = "Significant",
+    official_row_geometry: bool = False,
 ) -> bytes:
     workbook = Workbook()
     primary = workbook.active
@@ -191,7 +193,39 @@ def make_s3(
     stream = io.BytesIO()
     workbook.save(stream)
     workbook.close()
-    return stream.getvalue()
+    payload = stream.getvalue()
+    return add_official_row_geometry(payload) if official_row_geometry else payload
+
+
+def add_official_row_geometry(payload: bytes) -> bytes:
+    source = io.BytesIO(payload)
+    target = io.BytesIO()
+    with zipfile.ZipFile(source, "r") as incoming, zipfile.ZipFile(target, "w") as outgoing:
+        for info in incoming.infolist():
+            member = incoming.read(info.filename)
+            if info.filename in {
+                "xl/worksheets/sheet1.xml",
+                "xl/worksheets/sheet2.xml",
+            }:
+                width = 7 if info.filename.endswith("sheet1.xml") else 13
+                member = member.replace(
+                    b'<worksheet xmlns="http://schemas.openxmlformats.org/'
+                    b'spreadsheetml/2006/main">',
+                    b'<worksheet xmlns="http://schemas.openxmlformats.org/'
+                    b'spreadsheetml/2006/main" xmlns:x14ac="'
+                    + producer.X14AC_NAMESPACE_URI
+                    + b'">',
+                    1,
+                )
+                member = re.sub(
+                    rb'<row r="([1-9][0-9]*)">',
+                    rb'<row r="\1" spans="1:'
+                    + str(width).encode("ascii")
+                    + rb'" x14ac:dyDescent="0.25">',
+                    member,
+                )
+            outgoing.writestr(info, member)
+    return target.getvalue()
 
 
 def tiny_locator_contract() -> dict:
@@ -409,7 +443,7 @@ def test_frozen_config_supports_exact_i_or_b_lifecycle_state():
         V3_BOUND_CONFIG_SHA256
     )
     assert config["repository_authority"]["implementation_base_commit"] == (
-        "0ad41b93eb3e145f5c509a0c2ec94988e147ac97"
+        "de35ce44d7744b89c8b52291343d9f1d6ea674a0"
     )
     assert len(config["source_contract"]["members"]) == 7
     assert config["repository_authority"]["authority_file_git_mode"] == "100644"
@@ -613,7 +647,11 @@ def test_s3_poison_values_never_reach_selected_element_or_control_full_reader(
     monkeypatch.setattr(producer, "_selected_element", guarded_selected)
     monkeypatch.setattr(producer, "_xlsx_read_member", guarded_member)
     monkeypatch.setattr(producer, "_xlsx_read_through_first_row", guarded_prefix)
-    producer.audit_tables(make_s2(), make_s3(), tiny_locator_contract())
+    producer.audit_tables(
+        make_s2(),
+        make_s3(official_row_geometry=True),
+        tiny_locator_contract(),
+    )
     assert selected_payloads
     assert prefix_calls == ["xl/worksheets/sheet2.xml"]
 
@@ -630,6 +668,117 @@ def test_s3_poison_values_never_reach_selected_element_or_control_full_reader(
     assert token.kind == "NUMERIC_PRESENT"
     assert ".text" not in inspect.getsource(producer._statistic_token)
     assert "ET." not in inspect.getsource(producer._extract_primary_tokens)
+    assert "ET." not in inspect.getsource(producer._closed_worksheet_row_number)
+
+
+def _opening_row_tag(payload: bytes):
+    return next(
+        tag
+        for tag in producer._iter_xml_tags(payload, label="structural row fixture")
+        if tag.local_name == "row" and tag.kind in {"start", "empty"}
+    )
+
+
+def test_official_row_attribute_geometry_is_accepted_without_value_materialization():
+    worksheet = (
+        b'<worksheet xmlns="http://schemas.openxmlformats.org/'
+        b'spreadsheetml/2006/main" xmlns:x14ac="'
+        + producer.X14AC_NAMESPACE_URI
+        + b'"><sheetData><row x14ac:dyDescent="0.25" r="1" '
+        b'spans="1:7"></row></sheetData></worksheet>'
+    )
+    assert producer._worksheet_has_official_x14ac_namespace(
+        worksheet,
+        label="structural worksheet fixture",
+    ) is True
+    assert producer._closed_worksheet_row_number(
+        _opening_row_tag(worksheet),
+        label="structural row fixture",
+        official_x14ac_namespace=True,
+        expected_span="1:7",
+    ) == 1
+    assert ".text" not in inspect.getsource(producer._closed_worksheet_row_number)
+    assert "ET." not in inspect.getsource(producer._lexical_tag_attributes)
+
+
+@pytest.mark.parametrize(
+    ("raw_tag", "official_namespace"),
+    [
+        (b'<row r="1" spans="1:7" x14ac:dyDescent="0.25" extra="x"/>', True),
+        (b'<row r="1" r="2"/>', False),
+        (b'<row r=\"1\" illegal?="x"/>', False),
+        (b'<row r="1" spans="1:8" x14ac:dyDescent="0.25"/>', True),
+        (b'<row r="1" spans="1:7" x14ac:dyDescent="1.25"/>', True),
+        (b'<row r="1" spans="1:7" x14ac:dyDescent="0.25"/>', False),
+        (b'<row r="1"/>', True),
+        (b'<evil:row r="1"/>', False),
+    ],
+)
+def test_row_attribute_geometry_rejects_extra_duplicate_illegal_or_unbound_forms(
+    raw_tag,
+    official_namespace,
+):
+    with pytest.raises(producer.TableAuditError):
+        producer._closed_worksheet_row_number(
+            _opening_row_tag(raw_tag),
+            label="structural row fixture",
+            official_x14ac_namespace=official_namespace,
+            expected_span="1:7",
+        )
+
+
+def test_wrong_official_row_namespace_binding_fails_closed():
+    worksheet = (
+        b'<worksheet xmlns="http://schemas.openxmlformats.org/'
+        b'spreadsheetml/2006/main" xmlns:x14ac="urn:not-the-official-binding">'
+        b'<sheetData><row r="1" spans="1:7" '
+        b'x14ac:dyDescent="0.25"/></sheetData></worksheet>'
+    )
+    with pytest.raises(producer.TableAuditError, match="namespace binding differs"):
+        producer._worksheet_has_official_x14ac_namespace(
+            worksheet,
+            label="structural worksheet fixture",
+        )
+
+
+def test_wrong_default_worksheet_namespace_binding_fails_closed():
+    worksheet = (
+        b'<worksheet xmlns="urn:not-spreadsheetml"><sheetData>'
+        b'<row r="1"/></sheetData></worksheet>'
+    )
+    with pytest.raises(producer.TableAuditError, match="default namespace binding differs"):
+        producer._worksheet_has_official_x14ac_namespace(
+            worksheet,
+            label="structural worksheet fixture",
+        )
+
+
+@pytest.mark.parametrize(
+    "declaration",
+    [
+        b'xmlns="urn:rebound-default"',
+        b'xmlns:x14ac="urn:rebound-x14ac"',
+    ],
+)
+def test_descendant_default_or_x14ac_namespace_rebinding_fails_closed(declaration):
+    worksheet = (
+        b'<worksheet xmlns="'
+        + producer.SPREADSHEETML_NAMESPACE_URI
+        + b'" xmlns:x14ac="'
+        + producer.X14AC_NAMESPACE_URI
+        + b'"><sheetData '
+        + declaration
+        + b'><row r="1" spans="1:7" x14ac:dyDescent="0.25"/>'
+        b'</sheetData></worksheet>'
+    )
+    with pytest.raises(
+        producer.TableAuditError,
+        match="descendant worksheet namespace declaration is forbidden",
+    ):
+        producer._worksheet_has_official_x14ac_namespace(
+            worksheet,
+            label="structural worksheet fixture",
+        )
 
 
 def test_primary_xml_never_slices_forbidden_or_numeric_cell_payloads():
