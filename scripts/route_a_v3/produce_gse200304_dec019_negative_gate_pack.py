@@ -9,11 +9,13 @@ record before publication.
 
 Production is deliberately two-commit bound.  An UNKNOWN implementation
 binding stops before the consumer authority is opened and before the output
-path is inspected.  Publication builds a same-parent temporary directory,
-fsyncs every member and the directory, and uses an OS no-replace directory
-rename.  The final directory therefore appears atomically with exactly seven
-JSON members.  An existing byte-identical directory is idempotent; every other
-existing target is preserved and rejected.
+path is inspected.  Publication writes seven records plus a deterministic
+terminal commit marker.  The primary path uses an OS no-replace directory
+rename.  On an explicitly approved unsupported-primitive errno, the NFS-safe
+fallback atomically creates the final directory and writes the marker last.
+Only an exact eight-member directory with an exact marker is published.  An
+unmarked partial directory is preserved and can be completed only through the
+explicit recovery flag.
 """
 from __future__ import annotations
 
@@ -220,6 +222,25 @@ GATE_SPECS = [
     },
 ]
 MEMBER_NAMES = tuple(sorted(spec["allowed_basename"] for spec in GATE_SPECS))
+PUBLICATION_COMMIT_FILENAME = "PUBLICATION_COMMIT.json"
+PUBLICATION_COMMIT_SCHEMA_VERSION = "1.0.0"
+PUBLICATION_COMMIT_RECORD_TYPE = (
+    "GSE200304_DEC019_NEGATIVE_GATE_PACK_PUBLICATION_COMMIT_V1"
+)
+PRIMARY_PUBLICATION_MODE = "ATOMIC_EXCLUSIVE_DIRECTORY_RENAME_NOREPLACE_V1"
+FALLBACK_PUBLICATION_MODE = "ATOMIC_MKDIR_TERMINAL_COMMIT_MARKER_V1"
+ATOMIC_NOREPLACE_UNSUPPORTED_ERRNO_NAMES = (
+    "EINVAL",
+    "ENOSYS",
+    "ENOTSUP",
+    "EOPNOTSUPP",
+)
+ATOMIC_NOREPLACE_UNSUPPORTED_ERRNOS = frozenset(
+    getattr(errno, name)
+    for name in ATOMIC_NOREPLACE_UNSUPPORTED_ERRNO_NAMES
+    if hasattr(errno, name)
+)
+PUBLISHED_MEMBER_NAMES = tuple(sorted((*MEMBER_NAMES, PUBLICATION_COMMIT_FILENAME)))
 FORBIDDEN_OUTPUT_KEY_TOKENS = {
     "barcode",
     "candidate_id",
@@ -334,10 +355,28 @@ EXPECTED_RECORD_POLICY_KEYS = {
 }
 EXPECTED_OUTPUT_KEYS = {
     "trusted_final_directory",
-    "publication_mode",
+    "primary_publication_mode",
+    "fallback_publication_mode",
+    "atomic_no_replace_unsupported_errno_names",
     "record_count",
     "exact_member_names",
+    "exact_published_member_names",
     "descriptor_binding_scope",
+    "descriptor_binder_must_validate_exact8_before_consuming_exact7",
+    "terminal_commit_marker_filename",
+    "terminal_commit_marker_schema_version",
+    "terminal_commit_marker_record_type",
+    "terminal_commit_marker_written_last",
+    "terminal_commit_marker_is_only_acceptance_point",
+    "record_file_fsync_before_marker_required",
+    "commit_marker_file_fsync_required",
+    "final_directory_fsync_after_marker_required",
+    "parent_directory_fsync_after_marker_required",
+    "post_fsync_reopen_exact8_required",
+    "partial_recovery_mode",
+    "partial_recovery_requires_current_euid_owner",
+    "partial_without_marker_recoverable_only_if_exact_record_subset",
+    "partial_with_marker_is_never_auto_repaired",
     "existing_exact_is_idempotent",
     "overwrite_allowed",
     "partial_temp_directory_is_not_publication",
@@ -379,6 +418,17 @@ class PublicationStateError(PublicationError):
     def __init__(self, message: str, *, publication_state: str) -> None:
         super().__init__(message)
         self.publication_state = publication_state
+
+
+class AtomicNoReplaceUnsupported(PublicationError):
+    """The kernel/filesystem rejected the frozen no-replace primitive."""
+
+    def __init__(self, error_number: int) -> None:
+        super().__init__(
+            "atomic no-replace directory rename is unsupported "
+            f"(errno={error_number})"
+        )
+        self.error_number = error_number
 
 
 FaultInjector = Callable[[str], None]
@@ -784,12 +834,49 @@ def validate_static_config(config: Mapping[str, Any]) -> None:
         EXPECTED_OUTPUT_KEYS,
         label="output contract",
     )
-    _expect(output["publication_mode"], "ATOMIC_EXCLUSIVE_DIRECTORY_RENAME_NOREPLACE_V1", label="publication mode")
+    _expect(
+        output["primary_publication_mode"],
+        PRIMARY_PUBLICATION_MODE,
+        label="primary publication mode",
+    )
+    _expect(
+        output["fallback_publication_mode"],
+        FALLBACK_PUBLICATION_MODE,
+        label="fallback publication mode",
+    )
+    _expect(
+        output["atomic_no_replace_unsupported_errno_names"],
+        list(ATOMIC_NOREPLACE_UNSUPPORTED_ERRNO_NAMES),
+        label="atomic no-replace unsupported errno names",
+    )
     _expect(output["record_count"], 7, label="record count")
     _expect(output["exact_member_names"], list(MEMBER_NAMES), label="exact output names")
+    _expect(
+        output["exact_published_member_names"],
+        list(PUBLISHED_MEMBER_NAMES),
+        label="exact published output names",
+    )
     _expect(output["descriptor_binding_scope"], "SEVEN_GATE_JSON_FILES_ONLY", label="descriptor scope")
+    for key, expected in {
+        "terminal_commit_marker_filename": PUBLICATION_COMMIT_FILENAME,
+        "terminal_commit_marker_schema_version": PUBLICATION_COMMIT_SCHEMA_VERSION,
+        "terminal_commit_marker_record_type": PUBLICATION_COMMIT_RECORD_TYPE,
+        "partial_recovery_mode": "EXPLICIT_CLI_FLAG_ONLY",
+    }.items():
+        _expect(output[key], expected, label=f"output contract {key}")
     _expect(set(output["forbidden_output_key_tokens"]), FORBIDDEN_OUTPUT_KEY_TOKENS, label="forbidden output keys")
     for key, expected in {
+        "terminal_commit_marker_written_last": True,
+        "terminal_commit_marker_is_only_acceptance_point": True,
+        "descriptor_binder_must_validate_exact8_before_consuming_exact7": True,
+        "record_file_fsync_before_marker_required": True,
+        "commit_marker_file_fsync_required": True,
+        "final_directory_fsync_after_marker_required": True,
+        "parent_directory_fsync_after_marker_required": True,
+        "post_fsync_reopen_exact8_required": True,
+        "partial_recovery_requires_current_euid_owner": True,
+        "partial_without_marker_recoverable_only_if_exact_record_subset": True,
+        "partial_with_marker_is_never_auto_repaired": True,
         "existing_exact_is_idempotent": True,
         "overwrite_allowed": False,
         "partial_temp_directory_is_not_publication": True,
@@ -1744,38 +1831,227 @@ def _native_rename_noreplace(parent_fd: int, old_name: str, new_name: str) -> No
         function.restype = ctypes.c_int
         result = function(parent_fd, old, parent_fd, new, 0x00000004)  # RENAME_EXCL
     else:
-        raise PublicationError("atomic no-replace directory rename is unavailable")
+        raise AtomicNoReplaceUnsupported(errno.ENOSYS)
     if result == 0:
         return
     error_number = ctypes.get_errno()
     if error_number in {errno.EEXIST, errno.ENOTEMPTY}:
         raise FileExistsError(error_number, os.strerror(error_number), new_name)
+    if error_number in ATOMIC_NOREPLACE_UNSUPPORTED_ERRNOS:
+        raise AtomicNoReplaceUnsupported(error_number)
     raise OSError(error_number, os.strerror(error_number), new_name)
 
 
-def _inspect_exact_directory_at(
+def _gate_payload_set_sha256(payloads: Mapping[str, bytes]) -> str:
+    if tuple(sorted(payloads)) != MEMBER_NAMES:
+        raise PublicationError("commit marker payload set is not the exact seven records")
+    digest = hashlib.sha256()
+    digest.update(b"GSE200304_DEC019_NEGATIVE_GATE_PAYLOAD_SET_V1\n")
+    for name in MEMBER_NAMES:
+        encoded_name = os.fsencode(name)
+        digest.update(str(len(encoded_name)).encode("ascii"))
+        digest.update(b":")
+        digest.update(encoded_name)
+        digest.update(b"\0")
+        digest.update(sha256(payloads[name]).encode("ascii"))
+        digest.update(b"\n")
+    return digest.hexdigest()
+
+
+def _final_output_directory_name_sha256(name: str) -> str:
+    if not name or Path(name).name != name:
+        raise PublicationError("final output directory basename is unsafe")
+    return sha256(
+        b"GSE200304_DEC019_NEGATIVE_GATE_FINAL_DIRECTORY_NAME_V1\n"
+        + os.fsencode(name)
+        + b"\n"
+    )
+
+
+def _final_output_target_sha256(output: Path) -> str:
+    if not output.is_absolute():
+        raise PublicationError("final output target is not absolute")
+    return sha256(
+        b"GSE200304_DEC019_NEGATIVE_GATE_FINAL_TARGET_V1\n"
+        + os.fsencode(output)
+        + b"\n"
+    )
+
+
+def publication_commit_bytes(
+    output: Path,
+    payloads: Mapping[str, bytes],
+    publication_mode: str,
+) -> bytes:
+    """Return the exact deterministic eighth member for ``output``."""
+
+    if publication_mode not in {PRIMARY_PUBLICATION_MODE, FALLBACK_PUBLICATION_MODE}:
+        raise PublicationError("publication commit marker mode is outside the closed enum")
+    return json_bytes(
+        {
+            "schema_version": PUBLICATION_COMMIT_SCHEMA_VERSION,
+            "record_type": PUBLICATION_COMMIT_RECORD_TYPE,
+            "contract_id": CONTRACT_ID,
+            "protocol_id": PROTOCOL_ID,
+            "dataset_id": DATASET_ID,
+            "decision_id": DECISION_ID,
+            "publication_mode": publication_mode,
+            "gate_record_count": len(MEMBER_NAMES),
+            "gate_record_names": list(MEMBER_NAMES),
+            "gate_payload_set_sha256": _gate_payload_set_sha256(payloads),
+            "final_output_directory_name_sha256": (
+                _final_output_directory_name_sha256(output.name)
+            ),
+            "final_output_target_sha256": _final_output_target_sha256(output),
+            "descriptor_binding_scope": "SEVEN_GATE_JSON_FILES_ONLY",
+            "committed": True,
+            "commit_marker_written_last": True,
+        }
+    )
+
+
+def _fsync_regular_at(directory_fd: int, name: str, *, label: str) -> None:
+    descriptor = os.open(
+        name,
+        os.O_RDONLY | getattr(os, "O_CLOEXEC", 0) | getattr(os, "O_NOFOLLOW", 0),
+        dir_fd=directory_fd,
+    )
+    try:
+        metadata = os.fstat(descriptor)
+        if not stat.S_ISREG(metadata.st_mode) or metadata.st_nlink != 1:
+            raise ScopeViolation(f"{label} is not a single-link regular file")
+        os.fsync(descriptor)
+    finally:
+        os.close(descriptor)
+
+
+def _inspect_committed_directory_at(
     parent_fd: int,
     name: str,
+    output: Path,
     expected: Mapping[str, bytes],
-) -> tuple[int, int]:
+    *,
+    expected_modes: Sequence[str] = (
+        PRIMARY_PUBLICATION_MODE,
+        FALLBACK_PUBLICATION_MODE,
+    ),
+) -> tuple[tuple[int, int], str]:
     directory_fd = _open_child_directory(parent_fd, name, label="final output")
     try:
         _assert_named_directory_identity(parent_fd, name, directory_fd, label="final output")
         names = sorted(os.listdir(directory_fd))
-        if names != sorted(expected):
+        if names != list(PUBLISHED_MEMBER_NAMES):
             raise PartialPublicationError(
-                "existing final directory is partial or has extra members; overwrite refused"
+                "final directory is not exact8 committed; overwrite refused"
             )
-        for member in names:
+        for member in MEMBER_NAMES:
             observed = _read_regular_at(directory_fd, member, label=f"final member {member}")
             if observed != expected[member]:
                 raise PublicationError(
                     f"existing final member differs; overwrite refused: {member}"
                 )
+        marker = _read_regular_at(
+            directory_fd,
+            PUBLICATION_COMMIT_FILENAME,
+            label="publication commit marker",
+        )
+        matched_mode: str | None = None
+        for mode in expected_modes:
+            if marker == publication_commit_bytes(output, expected, mode):
+                matched_mode = mode
+                break
+        if matched_mode is None:
+            raise PartialPublicationError(
+                "publication commit marker is early, invalid, or for another target"
+            )
         _assert_named_directory_identity(parent_fd, name, directory_fd, label="final output")
-        return _directory_identity(directory_fd)
+        return _directory_identity(directory_fd), matched_mode
     finally:
         os.close(directory_fd)
+
+
+def validate_committed_publication(
+    output: Path,
+    payloads: Mapping[str, bytes],
+    *,
+    expected_parent_identity: tuple[int, int] | None = None,
+    expected_modes: Sequence[str] = (
+        PRIMARY_PUBLICATION_MODE,
+        FALLBACK_PUBLICATION_MODE,
+    ),
+) -> dict[str, Any]:
+    """Validate, durably sync, reopen, and revalidate the exact8 publication.
+
+    This is the acceptance primitive intended for the downstream descriptor
+    binder.  Merely observing the marker pathname is never sufficient.
+    """
+
+    if tuple(sorted(payloads)) != MEMBER_NAMES:
+        raise PublicationError("publication inspector expected the exact seven records")
+    parent_fd = _open_directory_root_to_leaf(output.parent, label="publication parent")
+    try:
+        parent_identity = _directory_identity(parent_fd)
+        if (
+            expected_parent_identity is not None
+            and parent_identity != expected_parent_identity
+        ):
+            raise PublicationError("publication parent identity changed")
+        identity, mode = _inspect_committed_directory_at(
+            parent_fd,
+            output.name,
+            output,
+            payloads,
+            expected_modes=expected_modes,
+        )
+        directory_fd = _open_child_directory(
+            parent_fd, output.name, label="committed final output"
+        )
+        try:
+            if _directory_identity(directory_fd) != identity:
+                raise PublicationError("committed final directory identity changed")
+            for member in PUBLISHED_MEMBER_NAMES:
+                _fsync_regular_at(
+                    directory_fd,
+                    member,
+                    label=f"committed member {member}",
+                )
+            os.fsync(directory_fd)
+            _assert_named_directory_identity(
+                parent_fd,
+                output.name,
+                directory_fd,
+                label="committed final output",
+            )
+        finally:
+            os.close(directory_fd)
+        os.fsync(parent_fd)
+    finally:
+        os.close(parent_fd)
+
+    reopened_parent = _open_matching_canonical_directory(
+        output.parent,
+        parent_identity,
+        label="publication parent post-fsync",
+    )
+    try:
+        reopened_identity, reopened_mode = _inspect_committed_directory_at(
+            reopened_parent,
+            output.name,
+            output,
+            payloads,
+            expected_modes=expected_modes,
+        )
+        if reopened_identity != identity or reopened_mode != mode:
+            raise PublicationError("committed publication changed after fsync/reopen")
+    finally:
+        os.close(reopened_parent)
+    return {
+        "directory_identity": identity,
+        "publication_mode": mode,
+        "exact_member_names": list(PUBLISHED_MEMBER_NAMES),
+        "descriptor_member_names": list(MEMBER_NAMES),
+        "terminal_commit_marker_validated": True,
+    }
 
 
 def _cleanup_unpublished_temp(
@@ -1896,12 +2172,290 @@ def _rename_error_state(
     return "AMBIGUOUS_RENAME_STATE"
 
 
+def _validate_recoverable_partial_at(
+    parent_fd: int,
+    final_name: str,
+    payloads: Mapping[str, bytes],
+) -> tuple[int, set[str]]:
+    """Pin and validate an unmarked exact subset; return its open descriptor."""
+
+    directory_fd = _open_child_directory(
+        parent_fd, final_name, label="partial final output"
+    )
+    try:
+        _assert_named_directory_identity(
+            parent_fd,
+            final_name,
+            directory_fd,
+            label="partial final output",
+        )
+        metadata = os.fstat(directory_fd)
+        if metadata.st_uid != os.geteuid():
+            raise ScopeViolation(
+                "partial recovery requires a final directory owned by the current euid"
+            )
+        names = set(os.listdir(directory_fd))
+        if PUBLICATION_COMMIT_FILENAME in names:
+            raise PartialPublicationError(
+                "partial final contains an early or invalid commit marker; manual recovery required"
+            )
+        unknown = names - set(MEMBER_NAMES)
+        if unknown:
+            raise PartialPublicationError(
+                "partial final contains an unexpected member; manual recovery required"
+            )
+        for name in sorted(names):
+            observed = _read_regular_at(
+                directory_fd,
+                name,
+                label=f"partial final member {name}",
+            )
+            if observed != payloads[name]:
+                raise PartialPublicationError(
+                    f"partial final member differs; manual recovery required: {name}"
+                )
+        _assert_named_directory_identity(
+            parent_fd,
+            final_name,
+            directory_fd,
+            label="partial final output",
+        )
+        return directory_fd, names
+    except Exception:
+        os.close(directory_fd)
+        raise
+
+
+def _write_missing_record_or_validate_race(
+    directory_fd: int,
+    name: str,
+    payload: bytes,
+) -> None:
+    try:
+        _write_exclusive_regular_at(directory_fd, name, payload)
+    except FileExistsError:
+        observed = _read_regular_at(
+            directory_fd,
+            name,
+            label=f"concurrent fallback member {name}",
+        )
+        if observed != payload:
+            raise PartialPublicationError(
+                f"concurrent fallback member differs; overwrite refused: {name}"
+            )
+
+
+def _publish_with_terminal_marker_fallback(
+    output: Path,
+    payloads: Mapping[str, bytes],
+    *,
+    expected_parent_identity: tuple[int, int],
+    recover_partial: bool,
+    create_if_absent: bool,
+    fault_injector: FaultInjector | None,
+) -> str:
+    """NFS-safe exact8 publication using mkdir exclusivity and marker-last."""
+
+    parent_fd = _open_matching_canonical_directory(
+        output.parent,
+        expected_parent_identity,
+        label="fallback publication parent",
+    )
+    directory_fd = -1
+    created = False
+    marker_write_completed = False
+    try:
+        try:
+            directory_fd = _open_child_directory(
+                parent_fd, output.name, label="fallback final output"
+            )
+        except PublicationError as open_error:
+            try:
+                os.stat(output.name, dir_fd=parent_fd, follow_symlinks=False)
+            except FileNotFoundError:
+                if not create_if_absent:
+                    raise PublicationStateError(
+                        "contended final target disappeared; publication state is ambiguous",
+                        publication_state="AMBIGUOUS_FINAL_CONTENTION_STATE",
+                    ) from open_error
+                try:
+                    os.mkdir(output.name, 0o750, dir_fd=parent_fd)
+                    created = True
+                except FileExistsError:
+                    pass
+                except OSError as exc:
+                    raise PublicationError(
+                        "atomic fallback final-directory creation failed"
+                    ) from exc
+                directory_fd = _open_child_directory(
+                    parent_fd, output.name, label="fallback final output"
+                )
+            else:
+                raise
+
+        final_identity = _directory_identity(directory_fd)
+        _assert_named_directory_identity(
+            parent_fd,
+            output.name,
+            directory_fd,
+            label="fallback final output",
+        )
+
+        names = set(os.listdir(directory_fd))
+        if PUBLICATION_COMMIT_FILENAME in names:
+            os.close(directory_fd)
+            directory_fd = -1
+            committed = validate_committed_publication(
+                output,
+                payloads,
+                expected_parent_identity=expected_parent_identity,
+            )
+            if committed["directory_identity"] != final_identity:
+                raise PublicationError("existing committed final identity changed")
+            return "EXISTING_EXACT"
+
+        os.close(directory_fd)
+        directory_fd = -1
+        directory_fd, present = _validate_recoverable_partial_at(
+            parent_fd,
+            output.name,
+            payloads,
+        )
+        if _directory_identity(directory_fd) != final_identity:
+            raise PublicationError("partial final identity changed before recovery")
+        if not created and not recover_partial:
+            raise PartialPublicationError(
+                "publication state is PARTIAL_NOT_COMMITTED; exact-subset recovery "
+                "requires explicit --recover-partial and the directory is preserved"
+            )
+        if created:
+            os.fsync(parent_fd)
+
+        for name in MEMBER_NAMES:
+            if name not in present:
+                _write_missing_record_or_validate_race(
+                    directory_fd,
+                    name,
+                    payloads[name],
+                )
+                if fault_injector is not None:
+                    fault_injector(f"after_fallback_write:{name}")
+        names = set(os.listdir(directory_fd))
+        if PUBLICATION_COMMIT_FILENAME in names:
+            os.close(directory_fd)
+            directory_fd = -1
+            committed = validate_committed_publication(
+                output,
+                payloads,
+                expected_parent_identity=expected_parent_identity,
+                expected_modes=(FALLBACK_PUBLICATION_MODE,),
+            )
+            if committed["directory_identity"] != final_identity:
+                raise PublicationError(
+                    "concurrently committed fallback final identity changed"
+                )
+            return "EXISTING_EXACT"
+        if names != set(MEMBER_NAMES):
+            raise PartialPublicationError(
+                "fallback final is not the exact seven-record pre-marker set"
+            )
+        for name in MEMBER_NAMES:
+            observed = _read_regular_at(
+                directory_fd,
+                name,
+                label=f"fallback final member {name}",
+            )
+            if observed != payloads[name]:
+                raise PartialPublicationError(
+                    f"fallback final member differs before marker: {name}"
+                )
+        os.fsync(directory_fd)
+        _assert_named_directory_identity(
+            parent_fd,
+            output.name,
+            directory_fd,
+            label="fallback final output pre-marker",
+        )
+
+        marker_payload = publication_commit_bytes(
+            output,
+            payloads,
+            FALLBACK_PUBLICATION_MODE,
+        )
+        try:
+            _write_exclusive_regular_at(
+                directory_fd,
+                PUBLICATION_COMMIT_FILENAME,
+                marker_payload,
+            )
+            marker_write_completed = True
+        except FileExistsError:
+            observed_marker = _read_regular_at(
+                directory_fd,
+                PUBLICATION_COMMIT_FILENAME,
+                label="concurrent publication commit marker",
+            )
+            if observed_marker != marker_payload:
+                raise PartialPublicationError(
+                    "concurrent publication commit marker differs; manual recovery required"
+                )
+            marker_write_completed = True
+        if fault_injector is not None:
+            fault_injector("after_fallback_marker")
+        try:
+            os.fsync(directory_fd)
+            os.fsync(parent_fd)
+            _assert_named_directory_identity(
+                parent_fd,
+                output.name,
+                directory_fd,
+                label="fallback final output post-marker",
+            )
+        except Exception as exc:
+            raise PublicationStateError(
+                "exact fallback marker exists but durability/identity is unverified",
+                publication_state="COMMIT_MARKER_EXACT_DURABILITY_UNVERIFIED",
+            ) from exc
+        os.close(directory_fd)
+        directory_fd = -1
+        committed = validate_committed_publication(
+            output,
+            payloads,
+            expected_parent_identity=expected_parent_identity,
+            expected_modes=(FALLBACK_PUBLICATION_MODE,),
+        )
+        if committed["directory_identity"] != final_identity:
+            raise PublicationStateError(
+                "fallback final identity changed after commit-marker validation",
+                publication_state="COMMITTED_UNVERIFIED",
+            )
+        return "PUBLISHED_FALLBACK" if created else "RECOVERED_PARTIAL_FALLBACK"
+    except PublicationStateError:
+        raise
+    except (PartialPublicationError, ScopeViolation):
+        raise
+    except Exception as exc:
+        state = (
+            "COMMIT_MARKER_PRESENT_NOT_ACCEPTED"
+            if marker_write_completed
+            else "PARTIAL_NOT_COMMITTED"
+        )
+        raise PartialPublicationError(
+            f"fallback publication state is {state}; final directory is preserved"
+        ) from exc
+    finally:
+        if directory_fd >= 0:
+            os.close(directory_fd)
+        os.close(parent_fd)
+
+
 def publish_records(
     output: Path,
     payloads: Mapping[str, bytes],
     *,
     production: bool,
     config: Mapping[str, Any],
+    recover_partial: bool = False,
     fault_injector: FaultInjector | None = None,
 ) -> str:
     if tuple(sorted(payloads)) != MEMBER_NAMES:
@@ -1922,6 +2476,7 @@ def publish_records(
     temp_identity: tuple[int, int] | None = None
     temp_active = False
     renamed = False
+    fallback_attempted = False
     try:
         try:
             os.mkdir(temp_name, 0o750, dir_fd=parent_fd)
@@ -1937,6 +2492,14 @@ def publish_records(
                 fault_injector(f"after_write:{name}")
         if sorted(os.listdir(temp_fd)) != sorted(payloads):
             raise PublicationError("temp directory member set differs")
+        os.fsync(temp_fd)
+        _write_exclusive_regular_at(
+            temp_fd,
+            PUBLICATION_COMMIT_FILENAME,
+            publication_commit_bytes(output, payloads, PRIMARY_PUBLICATION_MODE),
+        )
+        if sorted(os.listdir(temp_fd)) != list(PUBLISHED_MEMBER_NAMES):
+            raise PublicationError("primary temp is not the exact8 marker-last set")
         os.fsync(temp_fd)
         os.fsync(parent_fd)
         _assert_named_directory_identity(parent_fd, temp_name, temp_fd, label="publication temp")
@@ -1958,7 +2521,7 @@ def publish_records(
                 parent_identity,
                 temp_name,
                 temp_identity,
-                MEMBER_NAMES,
+                PUBLISHED_MEMBER_NAMES,
             ):
                 # Cleanup already refused because canonical identity could not
                 # be proven.  Preserve the original temp; never make a second
@@ -1968,28 +2531,48 @@ def publish_records(
                     f"final target exists and unpublished temp cleanup failed: {temp_name}"
                 )
             temp_active = False
-            reopened_parent = _open_directory_root_to_leaf(
-                output.parent, label="existing output parent"
+            return _publish_with_terminal_marker_fallback(
+                output,
+                payloads,
+                expected_parent_identity=parent_identity,
+                recover_partial=recover_partial,
+                create_if_absent=False,
+                fault_injector=fault_injector,
             )
-            try:
-                if _directory_identity(reopened_parent) != parent_identity:
-                    raise PartialPublicationError(
-                        "existing output parent identity changed"
-                    )
-                _inspect_exact_directory_at(reopened_parent, output.name, payloads)
-            finally:
-                os.close(reopened_parent)
-            final_parent = _open_directory_root_to_leaf(
-                output.parent, label="existing output parent final check"
+        except AtomicNoReplaceUnsupported as exc:
+            if temp_identity is None:
+                raise PublicationStateError(
+                    "rename fallback requested before temp identity was known",
+                    publication_state="AMBIGUOUS_RENAME_STATE",
+                ) from exc
+            state = _rename_error_state(parent_fd, temp_name, output.name, temp_identity)
+            if state != "NOT_COMMITTED_TEMP_PRESENT":
+                temp_active = False
+                raise PublicationStateError(
+                    "unsupported atomic rename returned an unsafe state; fallback refused; "
+                    f"publication state is {state}",
+                    publication_state=state,
+                ) from exc
+            fallback_attempted = True
+            fallback_status = _publish_with_terminal_marker_fallback(
+                output,
+                payloads,
+                expected_parent_identity=parent_identity,
+                recover_partial=recover_partial,
+                create_if_absent=True,
+                fault_injector=fault_injector,
             )
-            try:
-                if _directory_identity(final_parent) != parent_identity:
-                    raise PartialPublicationError(
-                        "existing output parent identity changed after inspection"
-                    )
-            finally:
-                os.close(final_parent)
-            return "EXISTING_EXACT"
+            cleaned = _cleanup_unpublished_temp(
+                output.parent,
+                parent_identity,
+                temp_name,
+                temp_identity,
+                PUBLISHED_MEMBER_NAMES,
+            )
+            temp_active = False
+            if not cleaned:
+                return f"{fallback_status}_COMMITTED_EXACT_SOURCE_TEMP_PRESERVED"
+            return fallback_status
         except OSError as exc:
             if temp_identity is None:
                 raise PublicationStateError(
@@ -2003,38 +2586,37 @@ def publish_records(
                     parent_identity,
                     temp_name,
                     temp_identity,
-                    MEMBER_NAMES,
+                    PUBLISHED_MEMBER_NAMES,
                 )
                 if not cleaned:
                     state = "NOT_COMMITTED_TEMP_PRESERVED"
                     temp_active = False
                 else:
+                    state = "NOT_COMMITTED_TEMP_REMOVED"
                     temp_active = False
+            else:
+                # Ambiguous or possibly committed states must be preserved for
+                # explicit recovery; never attempt pathname-based cleanup.
+                temp_active = False
             raise PublicationStateError(
                 f"atomic rename failed; publication state is {state}",
                 publication_state=state,
             ) from exc
 
-        os.fsync(parent_fd)
         if fault_injector is not None:
             fault_injector("after_atomic_rename")
-        observed_identity = _inspect_exact_directory_at(parent_fd, output.name, payloads)
-        if observed_identity != temp_identity:
+        committed = validate_committed_publication(
+            output,
+            payloads,
+            expected_parent_identity=parent_identity,
+            expected_modes=(PRIMARY_PUBLICATION_MODE,),
+        )
+        if committed["directory_identity"] != temp_identity:
             raise PublicationStateError(
                 "final directory identity differs after successful atomic rename",
                 publication_state="COMMITTED_UNVERIFIED",
             )
-        reopened_parent = _open_directory_root_to_leaf(output.parent, label="output parent")
-        try:
-            if _directory_identity(reopened_parent) != parent_identity:
-                raise PublicationStateError(
-                    "output parent identity changed after commit",
-                    publication_state="COMMITTED_UNVERIFIED",
-                )
-            _inspect_exact_directory_at(reopened_parent, output.name, payloads)
-        finally:
-            os.close(reopened_parent)
-        return "PUBLISHED"
+        return "PUBLISHED_PRIMARY"
     except Exception as exc:
         if renamed:
             state = "COMMITTED_UNVERIFIED"
@@ -2045,12 +2627,14 @@ def publish_records(
                     parent_identity,
                     label="output parent post-commit recovery",
                 )
-                observed_identity = _inspect_exact_directory_at(
-                    canonical_parent,
-                    output.name,
+                os.close(canonical_parent)
+                canonical_parent = -1
+                committed = validate_committed_publication(
+                    output,
                     payloads,
+                    expected_parent_identity=parent_identity,
                 )
-                if observed_identity == temp_identity:
+                if committed["directory_identity"] == temp_identity:
                     state = "COMMITTED_EXACT"
             except Exception:
                 pass
@@ -2069,11 +2653,15 @@ def publish_records(
                 parent_identity,
                 temp_name,
                 temp_identity,
-                MEMBER_NAMES,
+                PUBLISHED_MEMBER_NAMES,
             )
             if not cleaned:
                 raise PartialPublicationError(
                     f"not committed; unpublished temp preserved: {temp_name}"
+                ) from exc
+            if fallback_attempted and isinstance(exc, PartialPublicationError):
+                raise PartialPublicationError(
+                    f"{exc}; source temp was safely removed"
                 ) from exc
         raise
     finally:
@@ -2088,6 +2676,7 @@ def produce(
     *,
     production: bool,
     repo: Path,
+    recover_partial: bool = False,
     fault_injector: FaultInjector | None = None,
 ) -> dict[str, Any]:
     """Validate binding first, then consumer authority, then publish."""
@@ -2118,6 +2707,7 @@ def produce(
         payloads,
         production=production,
         config=config,
+        recover_partial=recover_partial,
         fault_injector=fault_injector,
     )
     return {
@@ -2125,6 +2715,7 @@ def produce(
         "dataset_id": DATASET_ID,
         "decision_id": DECISION_ID,
         "publication_status": publication_status,
+        "partial_recovery_requested": recover_partial,
         "final_directory": os.fspath(output),
         "record_count": len(payloads),
         "member_names": sorted(payloads),
@@ -2158,11 +2749,21 @@ def main(argv: Sequence[str] | None = None) -> int:
     parser.add_argument("--output", type=Path)
     parser.add_argument("--validate-authority", action="store_true")
     parser.add_argument(
+        "--recover-partial",
+        action="store_true",
+        help=(
+            "explicitly complete an owner-matched, unmarked, byte-exact subset; "
+            "never repairs an early/invalid marker or an unexpected member"
+        ),
+    )
+    parser.add_argument(
         "--non-production",
         action="store_true",
         help="development-only mode; production is the default",
     )
     arguments = parser.parse_args(argv)
+    if arguments.validate_authority and arguments.recover_partial:
+        parser.error("--recover-partial cannot be combined with --validate-authority")
     production = not arguments.non_production
     config_path = arguments.config.resolve()
     if production and config_path != PRODUCTION_CONFIG_PATH:
@@ -2209,6 +2810,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         arguments.output,
         production=production,
         repo=repo,
+        recover_partial=arguments.recover_partial,
     )
     print(json.dumps(result, sort_keys=True))
     return 0

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import errno
 import importlib.util
 import json
 import os
@@ -965,7 +966,10 @@ def test_verified_consumer_config_tamper_is_rejected(tmp_path: Path) -> None:
         PRODUCER._load_verified_consumer(config, repo=repo)
 
 
-def test_publish_is_atomic_exact_and_idempotent(tmp_path: Path) -> None:
+def test_publish_is_atomic_exact_and_idempotent(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     config, _consumer, _module, payloads, _repo = _records(tmp_path)
     output = tmp_path / "final-pack"
     assert (
@@ -975,9 +979,11 @@ def test_publish_is_atomic_exact_and_idempotent(tmp_path: Path) -> None:
             production=False,
             config=config,
         )
-        == "PUBLISHED"
+        == "PUBLISHED_PRIMARY"
     )
-    assert sorted(path.name for path in output.iterdir()) == sorted(payloads)
+    assert sorted(path.name for path in output.iterdir()) == list(
+        PRODUCER.PUBLISHED_MEMBER_NAMES
+    )
     for name, expected in payloads.items():
         path = output / name
         assert path.is_file()
@@ -991,6 +997,65 @@ def test_publish_is_atomic_exact_and_idempotent(tmp_path: Path) -> None:
             config=config,
         )
         == "EXISTING_EXACT"
+    )
+    marker = output / PRODUCER.PUBLICATION_COMMIT_FILENAME
+    assert marker.read_bytes() == PRODUCER.publication_commit_bytes(
+        output,
+        payloads,
+        PRODUCER.PRIMARY_PUBLICATION_MODE,
+    )
+    inspected = PRODUCER.validate_committed_publication(output, payloads)
+    assert inspected["descriptor_member_names"] == list(PRODUCER.MEMBER_NAMES)
+
+    fallback_output = tmp_path / "fallback-pack"
+
+    def unsupported_noreplace(
+        _parent_fd: int,
+        _old_name: str,
+        _new_name: str,
+    ) -> None:
+        raise PRODUCER.AtomicNoReplaceUnsupported(errno.EINVAL)
+
+    with monkeypatch.context() as context:
+        context.setattr(PRODUCER, "_native_rename_noreplace", unsupported_noreplace)
+        assert PRODUCER.publish_records(
+            fallback_output,
+            payloads,
+            production=False,
+            config=config,
+        ) == "PUBLISHED_FALLBACK"
+    assert sorted(path.name for path in fallback_output.iterdir()) == list(
+        PRODUCER.PUBLISHED_MEMBER_NAMES
+    )
+    assert (
+        fallback_output / PRODUCER.PUBLICATION_COMMIT_FILENAME
+    ).read_bytes() == PRODUCER.publication_commit_bytes(
+        fallback_output,
+        payloads,
+        PRODUCER.FALLBACK_PUBLICATION_MODE,
+    )
+
+    partial_output = tmp_path / "recoverable-partial-pack"
+    partial_output.mkdir()
+    first_name = PRODUCER.MEMBER_NAMES[0]
+    (partial_output / first_name).write_bytes(payloads[first_name])
+    with pytest.raises(PRODUCER.PartialPublicationError, match="--recover-partial"):
+        PRODUCER.publish_records(
+            partial_output,
+            payloads,
+            production=False,
+            config=config,
+        )
+    assert sorted(path.name for path in partial_output.iterdir()) == [first_name]
+    assert PRODUCER.publish_records(
+        partial_output,
+        payloads,
+        production=False,
+        config=config,
+        recover_partial=True,
+    ) == "RECOVERED_PARTIAL_FALLBACK"
+    assert sorted(path.name for path in partial_output.iterdir()) == list(
+        PRODUCER.PUBLISHED_MEMBER_NAMES
     )
 
 
@@ -1093,7 +1158,7 @@ def test_existing_exact_never_uses_a_renamed_parent_descriptor(
         payloads,
         production=False,
         config=config,
-    ) == "PUBLISHED"
+    ) == "PUBLISHED_PRIMARY"
 
     def parent_replace_then_exists(
         _parent_fd: int,
@@ -1194,6 +1259,28 @@ def test_existing_partial_or_different_target_is_never_overwritten(
         )
     assert sentinel.read_bytes() == b"preserve-me"
     assert sorted(path.name for path in output.iterdir()) == ["sentinel.txt"]
+
+    early_marker_output = tmp_path / "early-marker-pack"
+    early_marker_output.mkdir()
+    first_name = PRODUCER.MEMBER_NAMES[0]
+    (early_marker_output / first_name).write_bytes(payloads[first_name])
+    early_marker = early_marker_output / PRODUCER.PUBLICATION_COMMIT_FILENAME
+    early_marker.write_bytes(b"{\"committed\":true}\n")
+    with pytest.raises(
+        PRODUCER.PartialPublicationError,
+        match="exact8|marker",
+    ):
+        PRODUCER.publish_records(
+            early_marker_output,
+            payloads,
+            production=False,
+            config=config,
+            recover_partial=True,
+        )
+    assert early_marker.read_bytes() == b"{\"committed\":true}\n"
+    assert sorted(path.name for path in early_marker_output.iterdir()) == sorted(
+        [first_name, PRODUCER.PUBLICATION_COMMIT_FILENAME]
+    )
 
 
 def test_symlink_parent_and_hardlinked_member_are_rejected(tmp_path: Path) -> None:
