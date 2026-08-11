@@ -317,8 +317,8 @@
   },
   "evidence_descriptor_bindings": {
     "binding_scheme": "DESCENDANT_CONFIG_ONLY_DESCRIPTOR_BINDING_V1",
-    "status": "UNBOUND",
-    "descriptor_set_sha256": "5daa7a681c09e963f5aaea5b6cbe21bccc618fc033dbeca539b3a578a1a60cd3",
+    "status": "PARTIALLY_BOUND",
+    "descriptor_set_sha256": "079dd5d91df1b6efde42c8277406b16edc99b2ac7181923a529767a8eb97f348",
     "dynamic_scalar_suffixes": [
       "absolute_path",
       "sha256",
@@ -328,9 +328,9 @@
     "slots": [
       {
         "slot_id": "CANONICAL_ROW_LOCATOR_MULTI_ASSET_LINEAGE",
-        "absolute_path": "UNKNOWN_NOT_ASSERTED",
-        "sha256": "UNKNOWN_NOT_ASSERTED",
-        "bytes": "UNKNOWN_NOT_ASSERTED"
+        "absolute_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/DEC019_GATE_EVIDENCE_V1/GSE200304_DEC019_CANONICAL_ROW_LOCATOR_MULTI_ASSET_LINEAGE_GATE.json",
+        "sha256": "ecdd5a59cfba6aa3307d4e0bd6becbf4d8e88817ab05b524f9c1e1e1f215dd59",
+        "bytes": 4367
       },
       {
         "slot_id": "CANONICAL_REPORTED_ENDPOINT_SEMANTICS",
