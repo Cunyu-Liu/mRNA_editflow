@@ -8,12 +8,12 @@
   "sync_type": "APPEND_ONLY_UPSTREAM_AUTHORITY_PASS_GATES_AND_UPDATED_BLOCKED_ADJUDICATION_REGISTRATION_NO_QUALIFICATION_GATE_CHANGE",
   "implementation_binding": {
     "binding_scheme": "CONFIG_ONLY_POST_IMPLEMENTATION_BINDING_V1",
-    "status": "UNKNOWN_NOT_ASSERTED",
-    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "status": "BOUND",
+    "implementation_commit": "134042edcc973e4bf92011dc15dbd7ca9aa183f0",
     "implementation_script_path": "scripts/route_a_v3/gse200304_dec019_upstream_pass_runtime_sync.py",
-    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_script_sha256": "b02cee7cc35bb073f6f3998a324cf9c2710779c2ff123d8a2b35c0c857078e90",
     "implementation_test_path": "tests/route_a_v3/test_gse200304_dec019_upstream_pass_runtime_sync.py",
-    "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_test_sha256": "2a950200f16b51203e7481dad6abba7c1f200fe8d57732d823e383b98d8f3b96",
     "compiled_core_sha256": "f6350812e9cf777e60866b10d16cb8fb3fae2b2f961c82c99da641e62690ec40",
     "unknown_to_bound_scalar_paths": [
       "implementation_binding.status",
