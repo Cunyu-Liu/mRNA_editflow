@@ -36,7 +36,7 @@ EXPECTED_IMPLEMENTATION_FILES = {
 }
 FROZEN_CONFIG_CORE_SHA256_BY_PATH = {
     GSE200304_CONFIG_REPO_PATH: (
-        "14aba30da13f2bbad9debca74b9f3c8a8aaae1e5249347a8c1d35eda364a4f50"
+        "bca69bd05c094575bfa860b5492f019810c2845abe9218d7030444821f357a0b"
     ),
 }
 FROZEN_CONFIG_CORE_SHA256 = FROZEN_CONFIG_CORE_SHA256_BY_PATH[CONFIG_REPO_PATH]
@@ -193,11 +193,38 @@ HISTORICAL_BINDING_COMMIT = "e495c7ec5b6f00f14a18a4ffe0c5a6f2173bf2d8"
 HISTORICAL_CONFIG_CORE_SHA256 = (
     "f4bfde594ce2aa4dbf7d6a9f0cd1607ac1b214a4659089a59258ba0039bb2ff9"
 )
-REPAIR_BASE_COMMIT = HISTORICAL_BINDING_COMMIT
 HISTORICAL_FROZEN_BLOBS = {
     CONFIG_REPO_PATH: "8ec603142f05d4212610d8745e554626cda37f176d3b2d32c1ca8b934ad89fa8",
     SCRIPT_REPO_PATH: "d7205d67c00e94e3355097d411621f3c380a73f7efda07d7efac65ed2dcbe56d",
     TEST_REPO_PATH: "5f0eee60dfdaa8201d36a5e560c0c59027c93d28692a419e383df2d747d060e0",
+}
+PREDECESSOR_D1_PARENT_COMMIT = "c764c721b364e19916ba66698552eee86563dbfe"
+PREDECESSOR_D1_COMMIT = "c61f3d06ab6cfbc54ff562738d95ba902865b54f"
+REPAIR_BASE_COMMIT = PREDECESSOR_D1_COMMIT
+PREDECESSOR_D1_IMPLEMENTATION_COMMIT = "86d16c181fc9deaf83597da9c1523e4fea9c7493"
+PREDECESSOR_D1_CONFIG_CORE_SHA256 = (
+    "14aba30da13f2bbad9debca74b9f3c8a8aaae1e5249347a8c1d35eda364a4f50"
+)
+PREDECESSOR_D1_PARENT_CONFIG_SHA256 = (
+    "8c88eb6c708fa309ff0c87a0f64fce1bb205a0212b35a85ad3fb3505e8d7613b"
+)
+PREDECESSOR_D1_DESCRIPTOR_SET_SHA256 = (
+    "079dd5d91df1b6efde42c8277406b16edc99b2ac7181923a529767a8eb97f348"
+)
+PREDECESSOR_D1_EXACT_CHANGED_PATHS = [CONFIG_REPO_PATH]
+PREDECESSOR_D1_SEMANTIC_DIFF_PATHS = frozenset(
+    {
+        "evidence_descriptor_bindings.descriptor_set_sha256",
+        "evidence_descriptor_bindings.slots[0].absolute_path",
+        "evidence_descriptor_bindings.slots[0].bytes",
+        "evidence_descriptor_bindings.slots[0].sha256",
+        "evidence_descriptor_bindings.status",
+    }
+)
+PREDECESSOR_D1_FROZEN_BLOBS = {
+    CONFIG_REPO_PATH: "955747ffa55cad93c6fbe7950f9ffa89997c5597bdad8add66877e2e1f08b981",
+    SCRIPT_REPO_PATH: "90e840b721e5d07d4437d429d5b42f5a91fc262e560b3b331095db65dbb18fa6",
+    TEST_REPO_PATH: "ca0d5221748aaecc10b31edb691f8244a0fe2b94cf67ae9a8f493ac8d3f75ca5",
 }
 PRIVACY_KEYS = {
     "contains_row_level_payload",
@@ -746,6 +773,7 @@ def validate_static_config(config: Mapping[str, Any]) -> None:
             "implementation_commit_exact_changed_paths",
             "binding_commit_exact_changed_paths",
             "historical_dec019_binding",
+            "predecessor_descriptor_binding",
             "descendant_policy",
         },
         label="repository authority",
@@ -788,6 +816,62 @@ def validate_static_config(config: Mapping[str, Any]) -> None:
         item.get("path"): item.get("sha256") for item in frozen_blobs if type(item) is dict
     } != HISTORICAL_FROZEN_BLOBS:
         raise AdjudicationError("historical successor blob registry differs")
+    predecessor = _expect_exact_keys(
+        repository["predecessor_descriptor_binding"],
+        {
+            "parent_commit",
+            "descriptor_commit",
+            "science_core_sha256",
+            "parent_config_sha256",
+            "descriptor_set_sha256",
+            "descriptor_commit_exact_changed_paths",
+            "descriptor_semantic_diff_paths",
+            "frozen_descriptor_commit_blobs",
+        },
+        label="predecessor D1 descriptor binding",
+    )
+    _expect_exact(
+        predecessor["parent_commit"],
+        PREDECESSOR_D1_PARENT_COMMIT,
+        label="predecessor D1 parent",
+    )
+    _expect_exact(
+        predecessor["descriptor_commit"],
+        PREDECESSOR_D1_COMMIT,
+        label="predecessor D1 commit",
+    )
+    _expect_exact(
+        predecessor["science_core_sha256"],
+        PREDECESSOR_D1_CONFIG_CORE_SHA256,
+        label="predecessor D1 science core",
+    )
+    _expect_exact(
+        predecessor["parent_config_sha256"],
+        PREDECESSOR_D1_PARENT_CONFIG_SHA256,
+        label="predecessor D1 parent config SHA",
+    )
+    _expect_exact(
+        predecessor["descriptor_set_sha256"],
+        PREDECESSOR_D1_DESCRIPTOR_SET_SHA256,
+        label="predecessor D1 descriptor-set SHA",
+    )
+    _expect_exact(
+        predecessor["descriptor_commit_exact_changed_paths"],
+        PREDECESSOR_D1_EXACT_CHANGED_PATHS,
+        label="predecessor D1 changed paths",
+    )
+    _expect_exact(
+        predecessor["descriptor_semantic_diff_paths"],
+        sorted(PREDECESSOR_D1_SEMANTIC_DIFF_PATHS),
+        label="predecessor D1 semantic diff paths",
+    )
+    predecessor_blobs = predecessor["frozen_descriptor_commit_blobs"]
+    if type(predecessor_blobs) is not list or {
+        item.get("path"): item.get("sha256")
+        for item in predecessor_blobs
+        if type(item) is dict
+    } != PREDECESSOR_D1_FROZEN_BLOBS:
+        raise AdjudicationError("predecessor D1 blob registry differs")
     _expect_exact(
         repository["descendant_policy"],
         {
@@ -1215,6 +1299,104 @@ def _validate_historical_chain_and_blobs(repo: Path, head: str) -> None:
         raise BindingError("historical DEC019 v3 bound implementation differs")
 
 
+def _validate_predecessor_d1_descriptor_binding(repo: Path) -> dict[str, Any]:
+    """Prove the exact config-only D1 transition that anchors successor I3."""
+
+    _require_single_parent(
+        repo,
+        PREDECESSOR_D1_COMMIT,
+        PREDECESSOR_D1_PARENT_COMMIT,
+        label="predecessor D1 descriptor binding",
+    )
+    if _commit_changed_paths(repo, PREDECESSOR_D1_COMMIT) != (
+        PREDECESSOR_D1_EXACT_CHANGED_PATHS
+    ):
+        raise BindingError("predecessor D1 is not the exact config-only commit")
+
+    parent_payload = _verify_commit_blob(
+        repo,
+        PREDECESSOR_D1_PARENT_COMMIT,
+        CONFIG_REPO_PATH,
+        PREDECESSOR_D1_PARENT_CONFIG_SHA256,
+    )
+    d1_payloads = {
+        path: _verify_commit_blob(
+            repo,
+            PREDECESSOR_D1_COMMIT,
+            path,
+            expected_sha,
+        )
+        for path, expected_sha in PREDECESSOR_D1_FROZEN_BLOBS.items()
+    }
+    parent_config = strict_json(parent_payload, label="predecessor D1 parent config")
+    d1_config = strict_json(
+        d1_payloads[CONFIG_REPO_PATH],
+        label="predecessor D1 descriptor config",
+    )
+    for value, label in (
+        (parent_config, "predecessor D1 parent"),
+        (d1_config, "predecessor D1 descriptor"),
+    ):
+        if set(value) != EXPECTED_CONFIG_TOP_KEYS:
+            raise BindingError(f"{label} config top-level schema differs")
+        binding = value.get("implementation_binding")
+        if type(binding) is not dict or set(binding) != EXPECTED_IMPLEMENTATION_BINDING_KEYS:
+            raise BindingError(f"{label} implementation binding schema differs")
+        if (
+            binding.get("status") != "BOUND"
+            or binding.get("implementation_commit")
+            != PREDECESSOR_D1_IMPLEMENTATION_COMMIT
+            or binding.get("implementation_script_sha256")
+            != PREDECESSOR_D1_FROZEN_BLOBS[SCRIPT_REPO_PATH]
+            or binding.get("implementation_test_sha256")
+            != PREDECESSOR_D1_FROZEN_BLOBS[TEST_REPO_PATH]
+            or binding.get("config_core_sha256")
+            != PREDECESSOR_D1_CONFIG_CORE_SHA256
+            or config_core_sha256(value) != PREDECESSOR_D1_CONFIG_CORE_SHA256
+        ):
+            raise BindingError(f"{label} implementation or science core differs")
+
+    if parent_config["implementation_binding"] != d1_config["implementation_binding"]:
+        raise BindingError("predecessor D1 changed the implementation binding")
+    differences = _semantic_diff_paths(parent_config, d1_config)
+    if differences != PREDECESSOR_D1_SEMANTIC_DIFF_PATHS:
+        raise BindingError(
+            "predecessor D1 semantic diff is not the exact five-scalar allowlist"
+        )
+    parent_descriptors = parent_config.get("evidence_descriptor_bindings")
+    d1_descriptors = d1_config.get("evidence_descriptor_bindings")
+    if (
+        type(parent_descriptors) is not dict
+        or parent_descriptors.get("status") != "UNBOUND"
+        or descriptor_set_sha256(parent_config)
+        != parent_descriptors.get("descriptor_set_sha256")
+    ):
+        raise BindingError("predecessor D1 parent descriptor state differs")
+    if (
+        type(d1_descriptors) is not dict
+        or d1_descriptors.get("status") != "PARTIALLY_BOUND"
+        or d1_descriptors.get("descriptor_set_sha256")
+        != PREDECESSOR_D1_DESCRIPTOR_SET_SHA256
+        or descriptor_set_sha256(d1_config)
+        != PREDECESSOR_D1_DESCRIPTOR_SET_SHA256
+        or _derived_descriptor_status(d1_config) != "PARTIALLY_BOUND"
+    ):
+        raise BindingError("predecessor D1 descriptor state differs")
+    return d1_config
+
+
+def _require_successor_i_preserves_d1_descriptors(
+    i_config: Mapping[str, Any],
+    d1_config: Mapping[str, Any],
+) -> None:
+    """Keep the successor I descriptor lifecycle byte-semantically at D1."""
+
+    if i_config.get("evidence_descriptor_bindings") != d1_config.get(
+        "evidence_descriptor_bindings"
+    ):
+        raise BindingError("successor I descriptor binding drifted from predecessor D1")
+
+
 def _validate_post_binding_descriptor_history(
     repo: Path,
     binding_commit: str,
@@ -1284,6 +1466,7 @@ def validate_production_authority(config: Mapping[str, Any]) -> dict[str, Any]:
     if _git(repo, "rev-parse", f"refs/remotes/origin/{branch}") != head:
         raise BindingError("origin tracking ref is not current HEAD")
     _validate_historical_chain_and_blobs(repo, head)
+    predecessor_d1_config = _validate_predecessor_d1_descriptor_binding(repo)
 
     expected_i_paths = config["repository_authority"][
         "implementation_commit_exact_changed_paths"
@@ -1303,6 +1486,7 @@ def validate_production_authority(config: Mapping[str, Any]) -> dict[str, Any]:
         )
         if _commit_changed_paths(repo, implementation) != expected_i_paths:
             raise BindingError("repair I is not the exact three-file implementation commit")
+        _require_successor_i_preserves_d1_descriptors(config, predecessor_d1_config)
     else:
         implementation = binding["implementation_commit"]
         lifecycle_state = "REPAIR_B_BOUND_OR_DESCRIPTOR_DESCENDANT"
@@ -1347,6 +1531,11 @@ def validate_production_authority(config: Mapping[str, Any]) -> dict[str, Any]:
                 _git_bytes(repo, "show", f"{binding_commit}:{config_path}"),
                 label=f"repair-B config {config_path}",
             )
+            if config_path == CONFIG_REPO_PATH:
+                _require_successor_i_preserves_d1_descriptors(
+                    i_config,
+                    predecessor_d1_config,
+                )
             _validate_i_to_b_config_pair(
                 i_config,
                 b_config,
