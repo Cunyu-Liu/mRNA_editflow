@@ -1,0 +1,268 @@
+{
+  "schema_version": "route_a_v3_gse114002_endpoint_geometry_reconciliation_v2_runtime_sync.v1",
+  "protocol_id": "ROUTE_A_V3_GSE114002_ENDPOINT_GEOMETRY_RECONCILIATION_V2_RUNTIME_SYNC_V1",
+  "contract_id": "mrna_xeditflow_route_a_v3",
+  "phase_id": "A1",
+  "dataset_id": "GSE114002",
+  "event_id": "A1-EVT-039",
+  "event_name": "GSE114002_ENDPOINT_GEOMETRY_RECONCILIATION_V2_ATTEMPT_LINEAGE_SYNCED_GATE_UNCHANGED",
+  "sync_type": "APPEND_ONLY_ATTEMPT_LINEAGE_REGISTRATION_NO_GATE_CHANGE",
+  "implementation_binding": {
+    "binding_scheme": "CONFIG_ONLY_POST_IMPLEMENTATION_BINDING_V1",
+    "status": "UNKNOWN_NOT_ASSERTED",
+    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "implementation_script_path": "scripts/route_a_v3/gse114002_endpoint_geometry_reconciliation_v2_runtime_sync.py",
+    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_test_path": "tests/route_a_v3/test_gse114002_endpoint_geometry_reconciliation_v2_runtime_sync.py",
+    "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
+    "compiled_core_sha256": "137fcf4e67ffa9a09a8e3f5c7ff8ec2529c2dd67cab8228f38e11c6b63329e93",
+    "unknown_to_bound_scalar_paths": [
+      "implementation_binding.status",
+      "implementation_binding.implementation_commit",
+      "implementation_binding.implementation_script_sha256",
+      "implementation_binding.implementation_test_sha256"
+    ]
+  },
+  "repository_authority": {
+    "production_repo_root": "/home/cunyuliu/mrna_editflow_goal/worktrees/routea_v3_a1_20260810",
+    "branch": "routea-v3-a1-20260810",
+    "base_commit": "f42df04cd44bdfa8c17b08b88bc0e1082fc1bf4b",
+    "base_commit_expected_parent": "a148c737101ed8d0e24209233b86a55e2710633e",
+    "implementation_commit_expected_parent": "f42df04cd44bdfa8c17b08b88bc0e1082fc1bf4b",
+    "binding_commit_expected_parent": "IMPLEMENTATION_COMMIT_FROM_BINDING",
+    "implementation_commit_exact_changed_paths": [
+      "configs/route_a_v3_gse114002_endpoint_geometry_reconciliation_v2_runtime_sync_v1.json",
+      "scripts/route_a_v3/gse114002_endpoint_geometry_reconciliation_v2_runtime_sync.py",
+      "tests/route_a_v3/test_gse114002_endpoint_geometry_reconciliation_v2_runtime_sync.py"
+    ],
+    "binding_commit_exact_changed_paths": [
+      "configs/route_a_v3_gse114002_endpoint_geometry_reconciliation_v2_runtime_sync_v1.json"
+    ],
+    "gse114002_v2_attempt_commit_lineage": [
+      {
+        "attempt_id": "ATTEMPT_1_FAILED_PRESERVED",
+        "implementation_commit": "78b06434a9b94eaf5149dff7f6bb6b2d58e76ade",
+        "binding_commit": "998d030a51737bfa1e27580efe8b89e22ae39149"
+      },
+      {
+        "attempt_id": "ATTEMPT_2_CURRENT",
+        "implementation_commit": "1543f09e74643a9a36b89742c7a1cc458b6b0d56",
+        "binding_commit": "a148c737101ed8d0e24209233b86a55e2710633e"
+      }
+    ]
+  },
+  "runtime": {
+    "run_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5",
+    "allowed_prepared_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/staging/runtime_sync/A1",
+    "predecessor_event_id": "A1-EVT-038",
+    "predecessor_event_count": 38,
+    "predecessor_manifest_output_count": 106,
+    "successor_event_id": "A1-EVT-039",
+    "successor_event_count": 39,
+    "successor_manifest_output_count": 122,
+    "mutable_publish_order": [
+      "STATUS.json",
+      "RUN_MANIFEST.json",
+      "EVENT_LOG.jsonl"
+    ],
+    "allowed_mutable_states": [
+      [
+        "OLD_EXACT",
+        "OLD_EXACT",
+        "OLD_EXACT"
+      ],
+      [
+        "NEW_EXACT",
+        "OLD_EXACT",
+        "OLD_EXACT"
+      ],
+      [
+        "NEW_EXACT",
+        "NEW_EXACT",
+        "OLD_EXACT"
+      ],
+      [
+        "NEW_EXACT",
+        "NEW_EXACT",
+        "NEW_EXACT"
+      ]
+    ],
+    "predecessor_mutables": {
+      "STATUS.json": {
+        "bytes": 20114,
+        "sha256": "80f0b7a987afa27d6be500c7177e03405dd5602c350cf5ff99ed7ecbe0f9def4",
+        "snapshot_name": "STATUS_PRE_GSE114002_ENDPOINT_GEOMETRY_RECONCILIATION_V2_RUNTIME_SYNC_V1.json"
+      },
+      "RUN_MANIFEST.json": {
+        "bytes": 43342,
+        "sha256": "389f6efeb10af0a6d9d9907736d668c016bc913682b879391f853761a514adfd",
+        "snapshot_name": "RUN_MANIFEST_PRE_GSE114002_ENDPOINT_GEOMETRY_RECONCILIATION_V2_RUNTIME_SYNC_V1.json"
+      },
+      "EVENT_LOG.jsonl": {
+        "bytes": 45298,
+        "sha256": "fcfb4155191548f228fe823552641906a2abedc9321401da1822e9a1bdf9b496",
+        "snapshot_name": "EVENT_LOG_PRE_GSE114002_ENDPOINT_GEOMETRY_RECONCILIATION_V2_RUNTIME_SYNC_V1.jsonl"
+      }
+    },
+    "predecessor_tail_event": {
+      "event_id": "A1-EVT-038",
+      "sha256": "f532c7ade9f60898bd993739c779326d2c6990def17760c92395029c5684b423",
+      "training_started_key_present": true,
+      "training_started": false
+    },
+    "attempts": [
+      {
+        "attempt_id": "ATTEMPT_1_FAILED_PRESERVED",
+        "run_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE114002_ENDPOINT_GEOMETRY_RECONCILIATION_V2_20260811T073353P0800_998d030",
+        "status": "MECHANICAL_RECONCILIATION_FAILED_NOT_QUALIFIED",
+        "implementation_commit": "78b06434a9b94eaf5149dff7f6bb6b2d58e76ade",
+        "binding_commit": "998d030a51737bfa1e27580efe8b89e22ae39149",
+        "members": {
+          "INPUT_INTEGRITY_AUDIT.json": {
+            "bytes": 640,
+            "sha256": "d01377c1e05bc85beafba4893a05255e7f590c9518a8ee069fca607131d1b80b"
+          },
+          "ENDPOINT_RECONCILIATION_AUDIT.json": {
+            "bytes": 1907,
+            "sha256": "bd5f89751fa69d61aa124e7424c04f78ce75ce3cfab16145c5f47ef7799b38b9"
+          },
+          "POOL_GEOMETRY_RECONCILIATION_AUDIT.json": {
+            "bytes": 2250,
+            "sha256": "f4910ba655433076ddc44085770ef2d36df6169d2668030bcfbcb7372a46acc3"
+          },
+          "QUALIFICATION_REPORT.json": {
+            "bytes": 2450,
+            "sha256": "7f5269866be96deab3e41099181c53294f73e4e14c6a4138968a3e578b3c89d0"
+          },
+          "SHA256SUMS": {
+            "bytes": 392,
+            "sha256": "a7556e12c26c062698ffa0b03407ae521dc8238dfd5437820a5451674ee06d0e"
+          },
+          "PUBLICATION_COMMIT.json": {
+            "bytes": 1174,
+            "sha256": "07e17411b32c630b25e66f23212a65939c6d259a5fa554a260cc03505346bddf"
+          }
+        }
+      },
+      {
+        "attempt_id": "ATTEMPT_2_CURRENT",
+        "run_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE114002_ENDPOINT_GEOMETRY_RECONCILIATION_V2_20260811T075711P0800_a148c73",
+        "status": "MECHANICAL_ENDPOINT_RECONCILED_NOT_QUALIFIED",
+        "implementation_commit": "1543f09e74643a9a36b89742c7a1cc458b6b0d56",
+        "binding_commit": "a148c737101ed8d0e24209233b86a55e2710633e",
+        "members": {
+          "INPUT_INTEGRITY_AUDIT.json": {
+            "bytes": 640,
+            "sha256": "d01377c1e05bc85beafba4893a05255e7f590c9518a8ee069fca607131d1b80b"
+          },
+          "ENDPOINT_RECONCILIATION_AUDIT.json": {
+            "bytes": 1910,
+            "sha256": "0d515639174ad0f1daa6dd9e46197984bd3fa43b769023a2d6d1cc2ea0d1e641"
+          },
+          "POOL_GEOMETRY_RECONCILIATION_AUDIT.json": {
+            "bytes": 2423,
+            "sha256": "40a7cef042e4b4f8db4d6db4be469a64fefad94d55f43ff54fbca2a580b23d21"
+          },
+          "QUALIFICATION_REPORT.json": {
+            "bytes": 2325,
+            "sha256": "34c2cc0c861286f8e22bf1ba4026d5f754254ffb1bd10a4b989a9546e874a9c3"
+          },
+          "SHA256SUMS": {
+            "bytes": 392,
+            "sha256": "9fbd4970a3974786cd246715dfef029bd0ad87718b4eff48266d355b003ef9f0"
+          },
+          "PUBLICATION_COMMIT.json": {
+            "bytes": 1172,
+            "sha256": "522568111b68fc68508dfb2cc82b48121c3f890a7a479ef3510fada56e38663a"
+          }
+        }
+      }
+    ],
+    "sync_name": "A1_GSE114002_ENDPOINT_GEOMETRY_RECONCILIATION_V2_RUNTIME_SYNC_V1.json",
+    "output_delta_count": 16,
+    "forbidden_path_tokens": [
+      "GSE246381",
+      "/restricted/",
+      "/sealed_external/",
+      "FASTQ",
+      "raw_replay"
+    ]
+  },
+  "attempt_lineage_truth": {
+    "attempt_count": 2,
+    "current_attempt_id": "ATTEMPT_2_CURRENT",
+    "failed_attempt_preserved": true,
+    "current_mechanical_status": "MECHANICAL_ENDPOINT_RECONCILED_NOT_QUALIFIED",
+    "qualification_changed": false,
+    "gate_changed": false,
+    "historical_attempt_rewritten": false
+  },
+  "unresolved_blockers": [
+    "CHECKPOINT_SPECIFIC_EXPOSURE_UNKNOWN_NOT_ASSERTED",
+    "FIELD_AND_BIOLOGICAL_SOURCE_AUTHORITY_UNKNOWN_NOT_ASSERTED",
+    "FULL_CONSTRUCT_PREFIX_REPORTER_RNA_CHEMISTRY_UNKNOWN_NOT_ASSERTED",
+    "LICENSE_AND_REDISTRIBUTION_RIGHTS_UNKNOWN_NOT_ASSERTED",
+    "NEAR_DUPLICATE_SPLIT_AND_LEAKAGE_AUDIT_NOT_RUN",
+    "OWNER_UNCERTAINTY_POLICY_UNKNOWN_NOT_ASSERTED",
+    "PREFROZEN_GROUP_POWER_NOT_RUN"
+  ],
+  "successor_invariants": {
+    "run_status": "IN_PROGRESS",
+    "evidence_status": "BLOCKED_PENDING_PUBLIC_EVIDENCE",
+    "gate_status": "A1_BLOCKED_PENDING_PUBLIC_EVIDENCE",
+    "scientific_claim_status": "NOT_ESTABLISHED",
+    "qualified_independent_ordinary_studies": 0,
+    "qualified_a1_studies": 0,
+    "qualified_a2_dense_studies": 0,
+    "metadata_only_qualification_count": 0,
+    "ordinary_study_contribution": 0,
+    "a1_study_contribution": 0,
+    "true_a2_study_contribution": 0,
+    "canonical_intervention_record_count": 0,
+    "qualified": false,
+    "training_started": false,
+    "training_allowed": false,
+    "training_authorized": false,
+    "model_selection_allowed": false,
+    "next_phase_authorized": false
+  },
+  "historical_runtime_authority": {
+    "code_commit": "28cd2f132d022fea6ac43e1f89d6673d02a9c97d",
+    "active_authority_commit": "d078060c81114687db5068902a5aad5d9bedbee6"
+  },
+  "access_and_materialization_boundary": {
+    "real_row_level_data_opened": false,
+    "raw_reads_or_alignments_opened": false,
+    "raw_fastq_body_read_count": 0,
+    "raw_replay_run_count": 0,
+    "paper_native_xtail_replay_run_count": 0,
+    "gpu_work_started": false,
+    "aggregate_reconciliation_artifact_body_opened": true,
+    "aggregate_reconciliation_artifact_registration_count": 12,
+    "row_level_payload_included": false,
+    "row_identifier_payload_included": false,
+    "row_key_payload_included": false,
+    "sequence_payload_included": false,
+    "effect_value_payload_included": false,
+    "gene_payload_included": false,
+    "barcode_payload_included": false,
+    "annotation_label_payload_included": false,
+    "restricted_or_sealed_path_accessed": false,
+    "restricted_or_sealed_payload_contact": false,
+    "canonical_read_count": 0,
+    "canonical_write_count": 0,
+    "qualifier_execution_count": 0,
+    "training_run_count": 0,
+    "model_selection_run_count": 0
+  },
+  "publication_policy": {
+    "immutable_no_overwrite": true,
+    "mutable_order_recoverable": true,
+    "event_is_last_mutable_commit": true,
+    "post_commit_error_truth": "COMMITTED_WITH_WARNINGS_REQUIRES_IDEMPOTENT_RETRY",
+    "immutable_temp_unlink_failure_truth": "COMMITTED_REQUIRES_MANUAL_TEMP_ADJUDICATION",
+    "sync_references_successor_hashes": false,
+    "successors_reference_sync_hash": true,
+    "self_hash": "NOT_APPLICABLE_BOUND_BY_OUTER_RUN_MANIFEST"
+  }
+}
