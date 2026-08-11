@@ -135,6 +135,13 @@ PREDECESSOR_LEDGER_UNKNOWN_TO_BOUND_PATHS = (
     "repository_authority.predecessor_ledger.frozen_blobs[2].sha256",
     "repository_authority.predecessor_ledger.frozen_blobs[3].sha256",
 )
+HISTORICAL_RUNTIME_I1_COMMIT = "0bca29b958a6b5b7f65422812960ffaf53542d3a"
+HISTORICAL_RUNTIME_I1_BLOBS = {
+    CONFIG_REPO_PATH: "ec15f4f5e2da6da54511d54f42151bcfc9d04d03309f290c4f5a558a7a36bbd6",
+    SCRIPT_REPO_PATH: "53189353aaa618c33384e24b568facc6c9840cc21f25552239ad12b44b8efb06",
+    TEST_REPO_PATH: "b8d1f658639e24f6acf85863dc2976e583aa7b10ba5df83989e99c5353994148",
+}
+RUNTIME_I2_EXACT_CHANGED_PATHS = sorted([SCRIPT_REPO_PATH, TEST_REPO_PATH])
 EXPECTED_SOURCE_MEMBERS = {
     UPSTREAM_AUTHORITY_KEY: {
         "PMC10540565_EUROPE_PMC_FULLTEXT.xml": ("A1_GSE200304_UPSTREAM_AUTHORITY_EUROPE_PMC_FULLTEXT", 298763, "4fe53c9ea58b5268b1014c0ef4b18cfbd7b5b3764f4c82542c065cb0aff5a7f0"),
@@ -524,9 +531,9 @@ def validate_static_config(config: dict[str, Any]) -> None:
     _expect_exact(authority["production_repo_root"], str(PRODUCTION_REPO_ROOT), label="repository root")
     _expect_exact(authority["branch"], "routea-v3-a1-20260810", label="repository branch")
     _expect_exact(authority["base_commit_expected_parent"], PREDECESSOR_LEDGER_PARENT, label="ledger parent/D3")
-    _expect_exact(authority["implementation_commit_expected_parent"], "PREDECESSOR_LEDGER_COMMIT_FROM_CONFIG", label="runtime I parent rule")
+    _expect_exact(authority["implementation_commit_expected_parent"], "PREDECESSOR_LEDGER_COMMIT_FROM_CONFIG", label="historical runtime I1 parent rule")
     _expect_exact(authority["binding_commit_expected_parent"], "IMPLEMENTATION_COMMIT_FROM_BINDING", label="runtime B parent rule")
-    _expect_exact(authority["implementation_commit_exact_changed_paths"], sorted([CONFIG_REPO_PATH, SCRIPT_REPO_PATH, TEST_REPO_PATH]), label="runtime I paths")
+    _expect_exact(authority["implementation_commit_exact_changed_paths"], sorted([CONFIG_REPO_PATH, SCRIPT_REPO_PATH, TEST_REPO_PATH]), label="historical runtime I1 exact3 paths")
     _expect_exact(authority["binding_commit_exact_changed_paths"], [CONFIG_REPO_PATH], label="runtime B paths")
 
     ledger = authority["predecessor_ledger"]
@@ -864,7 +871,7 @@ def _verify_three_blobs(
 def audit_repo_authority(
     repo_root: Path, config: dict[str, Any], config_payload: bytes
 ) -> dict[str, Any]:
-    """Prove D3 -> exact4 ledger -> runtime exact3 I -> config-only B."""
+    """Prove D3 -> ledger -> frozen I1 -> script/test-only I2 -> config-only B2."""
 
     if lexical_absolute(repo_root) != PRODUCTION_REPO_ROOT or repo_root.is_symlink() or not repo_root.is_dir():
         raise AuthorityError("production repository root drift")
@@ -876,6 +883,7 @@ def audit_repo_authority(
     pass_pack = authority["upstream_pass_gate_producer_lifecycle"]
     adjudicator = authority["adjudicator_lifecycle"]
     implementation = binding["implementation_commit"]
+    historical_i1 = HISTORICAL_RUNTIME_I1_COMMIT
     ledger_commit = ledger["commit"]
     d3 = adjudicator["descriptor_commit"]
     branch = authority["branch"]
@@ -890,39 +898,51 @@ def audit_repo_authority(
 
     _expect_exact(authority["base_commit"], ledger_commit, label="runtime base/ledger")
     _expect_exact(authority["current_pre_runtime_sync_head"], ledger_commit, label="pre-runtime head/ledger")
-    _expect_parent(repo_root, head, implementation, label="runtime B parent")
-    _expect_parent(repo_root, implementation, ledger_commit, label="runtime I parent")
+    _expect_parent(repo_root, head, implementation, label="runtime B2 parent/I2")
+    _expect_parent(repo_root, implementation, historical_i1, label="runtime I2 parent/I1")
+    _expect_parent(repo_root, historical_i1, ledger_commit, label="historical runtime I1 parent/ledger")
     _expect_parent(repo_root, ledger_commit, d3, label="ledger parent")
     _expect_parent(repo_root, d3, pass_pack["binding_commit"], label="D3/pass-pack B parent")
     _expect_ancestor(repo_root, upstream["binding_commit"], pass_pack["binding_commit"], label="upstream producer to PASS producer")
     _expect_exact(_paths_changed_by_commit(repo_root, ledger_commit), ledger["commit_exact_changed_paths"], label="ledger exact4 paths")
-    _expect_exact(_paths_changed_by_commit(repo_root, implementation), authority["implementation_commit_exact_changed_paths"], label="runtime I exact3 paths")
-    _expect_exact(_paths_changed_by_commit(repo_root, head), authority["binding_commit_exact_changed_paths"], label="runtime B config-only path")
+    _expect_exact(_paths_changed_by_commit(repo_root, historical_i1), authority["implementation_commit_exact_changed_paths"], label="historical runtime I1 exact3 paths")
+    _expect_exact(_paths_changed_by_commit(repo_root, implementation), RUNTIME_I2_EXACT_CHANGED_PATHS, label="runtime I2 script/test-only paths")
+    _expect_exact(_paths_changed_by_commit(repo_root, head), authority["binding_commit_exact_changed_paths"], label="runtime B2 config-only path")
     _expect_exact(_paths_changed_by_commit(repo_root, upstream["binding_commit"]), [upstream["config_path"]], label="upstream producer B path")
     _expect_exact(_paths_changed_by_commit(repo_root, pass_pack["binding_commit"]), [pass_pack["config_path"]], label="PASS producer B path")
     _expect_exact(_paths_changed_by_commit(repo_root, d3), [adjudicator["config_path"]], label="D3 path")
 
     if _git_blob(repo_root, head, CONFIG_REPO_PATH) != config_payload:
-        raise AuthorityError("runtime B config blob drift")
-    i_config = load_json(_git_blob(repo_root, implementation, CONFIG_REPO_PATH), label="runtime I config")
+        raise AuthorityError("runtime B2 config blob drift")
+    historical_i1_payloads = {
+        path: _git_blob(repo_root, historical_i1, path)
+        for path in HISTORICAL_RUNTIME_I1_BLOBS
+    }
+    for path, digest in HISTORICAL_RUNTIME_I1_BLOBS.items():
+        if sha256(historical_i1_payloads[path]) != digest:
+            raise AuthorityError(f"historical runtime I1 blob drift: {path}")
+    i2_config_payload = _git_blob(repo_root, implementation, CONFIG_REPO_PATH)
+    if i2_config_payload != historical_i1_payloads[CONFIG_REPO_PATH]:
+        raise AuthorityError("runtime I2 rewrote the frozen UNKNOWN I1 config")
+    i_config = load_json(i2_config_payload, label="shared runtime I1/I2 UNKNOWN config")
     try:
-        _expect_typed_exact(i_config, expected_unknown_i_config(config), label="runtime I/B transition")
-        _expect_typed_exact(compiled_core_projection(i_config), compiled_core_projection(config), label="runtime I/B core")
+        _expect_typed_exact(i_config, expected_unknown_i_config(config), label="runtime I1/I2/B2 transition")
+        _expect_typed_exact(compiled_core_projection(i_config), compiled_core_projection(config), label="runtime I1/I2/B2 core")
     except RuntimeSyncError as exc:
-        raise AuthorityError("runtime I/B config transition drift") from exc
+        raise AuthorityError("runtime I1/I2/B2 config transition drift") from exc
     for path, digest in (
         (SCRIPT_REPO_PATH, binding["implementation_script_sha256"]),
         (TEST_REPO_PATH, binding["implementation_test_sha256"]),
     ):
         for commit in (implementation, head):
             if sha256(_git_blob(repo_root, commit, path)) != digest:
-                raise AuthorityError(f"runtime implementation blob drift: {path}")
+                raise AuthorityError(f"runtime I2/B2 implementation blob drift: {path}")
         if sha256(read_regular_path(repo_root / path)) != digest:
             raise AuthorityError(f"runtime worktree implementation blob drift: {path}")
 
     for item in ledger["frozen_blobs"]:
         path, digest = item["path"], item["sha256"]
-        for commit in (ledger_commit, implementation, head):
+        for commit in (ledger_commit, historical_i1, implementation, head):
             if sha256(_git_blob(repo_root, commit, path)) != digest:
                 raise AuthorityError(f"ledger blob drift: {path}")
         if sha256(read_regular_path(repo_root / path)) != digest:
@@ -947,18 +967,22 @@ def audit_repo_authority(
             )
 
     return {
-        "status": "PASS_STRICT_LINEAR_DAG_D3_LEDGER_RUNTIME_I_CONFIG_ONLY_B",
+        "status": "PASS_STRICT_LINEAR_DAG_D3_LEDGER_RUNTIME_I1_I2_CONFIG_ONLY_B2",
         "binding_commit": head,
         "head_commit": head,
         "origin_branch_head_commit": origin,
         "config_sha256": sha256(config_payload),
         "base_commit": ledger_commit,
         "implementation_commit": implementation,
+        "historical_runtime_i1_commit": historical_i1,
+        "runtime_i2_commit": implementation,
         "predecessor_ledger_commit": ledger_commit,
         "upstream_authority_binding_commit": upstream["binding_commit"],
         "upstream_pass_gate_binding_commit": pass_pack["binding_commit"],
         "adjudicator_descriptor_commit": d3,
         "ledger_blob_check_count": 4,
+        "historical_runtime_i1_blob_check_count": 3,
+        "runtime_i2_changed_path_count": 2,
         "producer_and_adjudicator_blob_check_count": 18,
     }
 

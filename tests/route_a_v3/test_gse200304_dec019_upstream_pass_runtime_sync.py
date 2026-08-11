@@ -459,12 +459,27 @@ def tree_bytes(root: Path) -> dict[str, bytes]:
 
 
 def test_static_config_closes_final_ledger_types_core_and_i_to_b() -> None:
-    config = read_config()
-    runtime_sync.validate_static_config(config)
-    assert config["implementation_binding"]["compiled_core_sha256"] == runtime_sync.compiled_core_sha256(
-        config
+    disk_config = read_config()
+    runtime_sync.validate_static_config(disk_config)
+    disk_binding = disk_config["implementation_binding"]
+    assert disk_binding["compiled_core_sha256"] == runtime_sync.compiled_core_sha256(
+        disk_config
     )
-    ledger = config["repository_authority"]["predecessor_ledger"]
+    if runtime_sync._binding_values_are_unknown(disk_binding):
+        with pytest.raises(runtime_sync.BindingError, match="implementation is not BOUND"):
+            runtime_sync.validate_bound_config(disk_config)
+    else:
+        runtime_sync.validate_bound_config(disk_config)
+        assert disk_binding["status"] == "BOUND"
+        assert runtime_sync.HEX40.fullmatch(disk_binding["implementation_commit"])
+        assert disk_binding["implementation_script_sha256"] == runtime_sync.sha256(
+            SCRIPT_PATH.read_bytes()
+        )
+        assert disk_binding["implementation_test_sha256"] == runtime_sync.sha256(
+            Path(__file__).read_bytes()
+        )
+
+    ledger = disk_config["repository_authority"]["predecessor_ledger"]
     assert ledger["commit"] == "ef2666e7a3e224f2043e7c647e10a4b8cadf01e8"
     assert ledger["expected_parent"] == "8084a1e2b68eaf84bd4befb2f232759d7540b97c"
     assert [item["sha256"] for item in ledger["frozen_blobs"]] == [
@@ -483,36 +498,49 @@ def test_static_config_closes_final_ledger_types_core_and_i_to_b() -> None:
             "gse200304_dec019_reported_endpoint_a1_adjudication_v3_upstream_pass_gate_pack_v1"
         ),
     }
-    assert [len(config["registered_evidence"][key]["members"]) for key in runtime_sync.SOURCE_KEYS] == [
+    assert [len(disk_config["registered_evidence"][key]["members"]) for key in runtime_sync.SOURCE_KEYS] == [
         6,
         6,
         4,
     ]
-    assert config["runtime"]["allowed_mutable_states"] == [
+    assert disk_config["runtime"]["allowed_mutable_states"] == [
         ["OLD_EXACT", "OLD_EXACT", "OLD_EXACT"],
         ["NEW_EXACT", "OLD_EXACT", "OLD_EXACT"],
         ["NEW_EXACT", "NEW_EXACT", "OLD_EXACT"],
         ["NEW_EXACT", "NEW_EXACT", "NEW_EXACT"],
     ]
-    with pytest.raises(runtime_sync.BindingError, match="implementation is not BOUND"):
-        runtime_sync.validate_bound_config(config)
-    bound = bind_config(config)
-    runtime_sync.validate_bound_config(bound)
-    assert runtime_sync.expected_unknown_i_config(bound) == normalize_i_config(bound)
-    assert runtime_sync.compiled_core_projection(bound) == runtime_sync.compiled_core_projection(config)
 
-    partial = normalize_i_config(config)
+    i_config = normalize_i_config(disk_config)
+    runtime_sync.validate_static_config(i_config)
+    with pytest.raises(runtime_sync.BindingError, match="implementation is not BOUND"):
+        runtime_sync.validate_bound_config(i_config)
+    bound = bind_config(i_config)
+    runtime_sync.validate_bound_config(bound)
+    changed_binding_paths = [
+        f"implementation_binding.{key}"
+        for key in i_config["implementation_binding"]
+        if i_config["implementation_binding"][key] != bound["implementation_binding"][key]
+    ]
+    assert changed_binding_paths == i_config["implementation_binding"][
+        "unknown_to_bound_scalar_paths"
+    ]
+    assert runtime_sync.expected_unknown_i_config(bound) == i_config
+    assert runtime_sync.compiled_core_projection(bound) == runtime_sync.compiled_core_projection(
+        i_config
+    ) == runtime_sync.compiled_core_projection(disk_config)
+
+    partial = copy.deepcopy(i_config)
     partial["implementation_binding"]["status"] = "BOUND"
     with pytest.raises(runtime_sync.BindingError, match="partially known"):
         runtime_sync.validate_static_config(partial)
 
-    wrong_type = bind_config(config)
+    wrong_type = bind_config(i_config)
     wrong_type["successor_invariants"]["training_allowed"] = 0
     refresh_core(wrong_type)
     with pytest.raises(runtime_sync.RuntimeSyncError):
         runtime_sync.validate_static_config(wrong_type)
 
-    wrong_artifact_type = bind_config(config)
+    wrong_artifact_type = bind_config(i_config)
     wrong_artifact_type["registered_evidence"][runtime_sync.UPSTREAM_AUTHORITY_KEY]["members"][0][
         "artifact_type"
     ] = False
@@ -618,9 +646,17 @@ def test_exact20_output_delta_uses_ledger_order_and_registers_exact16_in_place()
 
 @pytest.mark.parametrize(
     "mode",
-    ["positive", "dirty", "parent", "paths", "blob", "i_transition", "ancestor"],
+    [
+        "positive",
+        "dirty",
+        "i2_parent",
+        "i2_paths",
+        "i2_blob",
+        "i_transition",
+        "ancestor",
+    ],
 )
-def test_repo_audit_proves_d3_ledger_runtime_i_config_only_b(
+def test_repo_audit_proves_d3_ledger_i1_i2_config_only_b2(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, mode: str
 ) -> None:
     config = bind_config()
@@ -638,6 +674,7 @@ def test_repo_audit_proves_d3_ledger_runtime_i_config_only_b(
     pass_pack = authority["upstream_pass_gate_producer_lifecycle"]
     adjudicator = authority["adjudicator_lifecycle"]
     implementation = binding["implementation_commit"]
+    historical_i1 = runtime_sync.HISTORICAL_RUNTIME_I1_COMMIT
     head = "c" * 40
     config_payload = runtime_sync.json_bytes(config)
     i_config = runtime_sync.expected_unknown_i_config(config)
@@ -646,18 +683,30 @@ def test_repo_audit_proves_d3_ledger_runtime_i_config_only_b(
     i_payload = runtime_sync.json_bytes(i_config)
     runtime_script = b"synthetic EVT042 runtime script\n"
     runtime_test = b"synthetic EVT042 runtime test\n"
+    historical_i1_script = b"frozen historical EVT042 runtime I1 script\n"
+    historical_i1_test = b"frozen historical EVT042 runtime I1 test\n"
 
     blobs: dict[tuple[str, str], bytes] = {
         (head, runtime_sync.CONFIG_REPO_PATH): config_payload,
         (implementation, runtime_sync.CONFIG_REPO_PATH): i_payload,
+        (historical_i1, runtime_sync.CONFIG_REPO_PATH): i_payload,
         (head, runtime_sync.SCRIPT_REPO_PATH): runtime_script,
         (implementation, runtime_sync.SCRIPT_REPO_PATH): runtime_script,
+        (historical_i1, runtime_sync.SCRIPT_REPO_PATH): historical_i1_script,
         (head, runtime_sync.TEST_REPO_PATH): runtime_test,
         (implementation, runtime_sync.TEST_REPO_PATH): runtime_test,
+        (historical_i1, runtime_sync.TEST_REPO_PATH): historical_i1_test,
     }
     digest_overrides: dict[bytes, str] = {
+        i_payload: runtime_sync.HISTORICAL_RUNTIME_I1_BLOBS[runtime_sync.CONFIG_REPO_PATH],
         runtime_script: binding["implementation_script_sha256"],
         runtime_test: binding["implementation_test_sha256"],
+        historical_i1_script: runtime_sync.HISTORICAL_RUNTIME_I1_BLOBS[
+            runtime_sync.SCRIPT_REPO_PATH
+        ],
+        historical_i1_test: runtime_sync.HISTORICAL_RUNTIME_I1_BLOBS[
+            runtime_sync.TEST_REPO_PATH
+        ],
     }
     worktree_payloads: dict[str, bytes] = {
         runtime_sync.SCRIPT_REPO_PATH: runtime_script,
@@ -668,7 +717,7 @@ def test_repo_audit_proves_d3_ledger_runtime_i_config_only_b(
         payload = f"ledger:{item['path']}\n".encode()
         digest_overrides[payload] = item["sha256"]
         worktree_payloads[item["path"]] = payload
-        for commit in (ledger["commit"], implementation, head):
+        for commit in (ledger["commit"], historical_i1, implementation, head):
             blobs[(commit, item["path"])] = payload
 
     for lifecycle, blob_key, label in (
@@ -699,13 +748,15 @@ def test_repo_audit_proves_d3_ledger_runtime_i_config_only_b(
     )
     parent_map = {
         head: implementation,
-        implementation: ledger["commit"],
+        implementation: historical_i1,
+        historical_i1: ledger["commit"],
         ledger["commit"]: adjudicator["descriptor_commit"],
         adjudicator["descriptor_commit"]: pass_pack["binding_commit"],
     }
     changed_paths = {
         ledger["commit"]: ledger["commit_exact_changed_paths"],
-        implementation: authority["implementation_commit_exact_changed_paths"],
+        historical_i1: authority["implementation_commit_exact_changed_paths"],
+        implementation: runtime_sync.RUNTIME_I2_EXACT_CHANGED_PATHS,
         head: authority["binding_commit_exact_changed_paths"],
         upstream["binding_commit"]: [upstream["config_path"]],
         pass_pack["binding_commit"]: [pass_pack["config_path"]],
@@ -730,7 +781,7 @@ def test_repo_audit_proves_d3_ledger_runtime_i_config_only_b(
         if len(args) == 2 and args[0] == "rev-parse" and args[1].endswith("^"):
             child = args[1][:-1]
             parent = parent_map[child]
-            if mode == "parent" and child == implementation:
+            if mode == "i2_parent" and child == implementation:
                 parent = "d" * 40
             return f"{parent}\n".encode()
         if len(args) == 2 and args[0] == "rev-parse":
@@ -744,15 +795,13 @@ def test_repo_audit_proves_d3_ledger_runtime_i_config_only_b(
 
     def fake_blob(_repo: Path, commit: str, path: str) -> bytes:
         payload = blobs[(commit, path)]
-        if mode == "blob" and commit == ledger["commit"] and path == ledger["frozen_blobs"][0][
-            "path"
-        ]:
+        if mode == "i2_blob" and commit == implementation and path == runtime_sync.SCRIPT_REPO_PATH:
             return payload + b"drift"
         return payload
 
     def fake_paths(_repo: Path, commit: str) -> list[str]:
         result = list(changed_paths[commit])
-        if mode == "paths" and commit == implementation:
+        if mode == "i2_paths" and commit == implementation:
             result.append("unexpected")
         return sorted(result)
 
@@ -765,9 +814,15 @@ def test_repo_audit_proves_d3_ledger_runtime_i_config_only_b(
     monkeypatch.setattr(runtime_sync, "read_regular_path", fake_read)
     if mode == "positive":
         result = runtime_sync.audit_repo_authority(repo, config, config_payload)
-        assert result["status"] == "PASS_STRICT_LINEAR_DAG_D3_LEDGER_RUNTIME_I_CONFIG_ONLY_B"
+        assert result["status"] == (
+            "PASS_STRICT_LINEAR_DAG_D3_LEDGER_RUNTIME_I1_I2_CONFIG_ONLY_B2"
+        )
         assert result["predecessor_ledger_commit"] == ledger["commit"]
+        assert result["historical_runtime_i1_commit"] == historical_i1
+        assert result["runtime_i2_commit"] == implementation
         assert result["ledger_blob_check_count"] == 4
+        assert result["historical_runtime_i1_blob_check_count"] == 3
+        assert result["runtime_i2_changed_path_count"] == 2
         assert result["producer_and_adjudicator_blob_check_count"] == 18
     else:
         with pytest.raises(runtime_sync.RuntimeSyncError):
