@@ -61,8 +61,22 @@ def frozen_config() -> dict[str, Any]:
     return json.loads(CONFIG.read_text(encoding="utf-8"))
 
 
-def bound_config(config: dict[str, Any] | None = None) -> dict[str, Any]:
+def exact_unknown_i(config: dict[str, Any] | None = None) -> dict[str, Any]:
     result = copy.deepcopy(config or frozen_config())
+    result["implementation_binding"].update(
+        {
+            "status": producer.UNKNOWN,
+            "implementation_commit": producer.UNKNOWN,
+            "implementation_script_sha256": producer.UNKNOWN,
+            "implementation_test_sha256": producer.UNKNOWN,
+        }
+    )
+    producer.validate_static_config(result)
+    return result
+
+
+def bound_config(config: dict[str, Any] | None = None) -> dict[str, Any]:
+    result = exact_unknown_i(config)
     result["implementation_binding"].update(
         {
             "status": producer.BOUND,
@@ -369,19 +383,22 @@ def publication_case(
     return config, binding, dummy_predecessor(s3), open_url
 
 
-def test_frozen_config_is_exact_unknown_and_exact6() -> None:
+def test_disk_config_preserves_exact6_and_append_only_history() -> None:
     config = frozen_config()
     producer.validate_static_config(config)
     binding = config["implementation_binding"]
-    assert {
-        binding["status"],
-        binding["implementation_commit"],
-        binding["implementation_script_sha256"],
-        binding["implementation_test_sha256"],
-    } == {producer.UNKNOWN}
-    assert config["repository_authority"]["implementation_base_commit"] == (
+    assert binding["status"] in {producer.UNKNOWN, producer.BOUND}
+    repository = config["repository_authority"]
+    assert repository["historical_base0_commit"] == (
         "0b95ac77a44644e57cc4d0bfb31a9154238fdca6"
     )
+    assert repository["historical_i1_commit"] == (
+        "9844246dd4b3874a9ecfcf03a233278c5d3a02e0"
+    )
+    assert repository["implementation_repair_base_commit"] == (
+        "9844246dd4b3874a9ecfcf03a233278c5d3a02e0"
+    )
+    assert repository["historical_i1_blobs"] == producer.HISTORICAL_I1_BLOBS
     assert config["output_contract"]["exact_member_names"] == [
         "PMC10540565_EUROPE_PMC_FULLTEXT.xml",
         "GSE200302_family.soft.gz",
@@ -457,10 +474,36 @@ def test_frozen_config_is_exact_unknown_and_exact6() -> None:
     assert decision["next_phase_authorized"] is False
 
 
+def test_disk_i2_or_b2_lifecycle_and_synthetic_pair_regression() -> None:
+    disk = frozen_config()
+    producer.validate_static_config(disk)
+    unknown_i2 = exact_unknown_i(disk)
+    disk_binding = disk["implementation_binding"]
+    if disk_binding["status"] == producer.UNKNOWN:
+        assert disk == unknown_i2
+    else:
+        producer.validate_i_to_b_config_pair(
+            unknown_i2,
+            disk,
+            implementation_commit=disk_binding["implementation_commit"],
+            script_sha256=disk_binding["implementation_script_sha256"],
+            test_sha256=disk_binding["implementation_test_sha256"],
+        )
+
+    synthetic_b2 = bound_config(unknown_i2)
+    producer.validate_i_to_b_config_pair(
+        unknown_i2,
+        synthetic_b2,
+        implementation_commit="1" * 40,
+        script_sha256="2" * 64,
+        test_sha256="3" * 64,
+    )
+
+
 def test_i_to_b_exact_four_scalars_and_unknown_stops_before_output(
     tmp_path: Path,
 ) -> None:
-    unknown = frozen_config()
+    unknown = exact_unknown_i()
     bound = bound_config(unknown)
     producer.validate_i_to_b_config_pair(
         unknown,
@@ -692,6 +735,44 @@ def test_canonical_entrypoints_and_worktree_files_fail_closed(
             collect=True,
             label="drifted test",
         )
+
+
+def test_wrong_i2_parent_is_rejected(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    implementation = "c" * 40
+
+    def wrong_parent_git(_repo: Path, *arguments: str) -> str:
+        assert arguments == (
+            "rev-list",
+            "--parents",
+            "-n",
+            "1",
+            implementation,
+        )
+        return f"{implementation} {'d' * 40}"
+
+    monkeypatch.setattr(producer, "_git", wrong_parent_git)
+    with pytest.raises(producer.BindingError, match="required direct child"):
+        producer._validate_i2_implementation_commit(tmp_path, implementation)
+
+
+def test_historical_i1_blob_drift_is_rejected(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(producer, "_single_parent", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(
+        producer,
+        "_changed_paths",
+        lambda _repo, _commit: sorted(producer.EXPECTED_I_PATHS),
+    )
+    monkeypatch.setattr(
+        producer,
+        "_git_blob",
+        lambda _repo, _commit, _path, _expected_sha256=None: b"wrong-history",
+    )
+    with pytest.raises(producer.BindingError, match="historical pushed I1 blob"):
+        producer._validate_historical_i1_authority(tmp_path)
 
 
 def test_closed_preterminal_member_replacement_is_preserved_not_committed(

@@ -70,16 +70,35 @@ PRODUCTION_REPO_ROOT = Path(
 PRODUCTION_CONFIG_PATH = PRODUCTION_REPO_ROOT / CONFIG_REPO_PATH
 PRODUCTION_SCRIPT_PATH = PRODUCTION_REPO_ROOT / SCRIPT_REPO_PATH
 BRANCH = "routea-v3-a1-20260810"
-IMPLEMENTATION_BASE_COMMIT = "0b95ac77a44644e57cc4d0bfb31a9154238fdca6"
+HISTORICAL_BASE0_COMMIT = "0b95ac77a44644e57cc4d0bfb31a9154238fdca6"
+HISTORICAL_I1_COMMIT = "9844246dd4b3874a9ecfcf03a233278c5d3a02e0"
+IMPLEMENTATION_REPAIR_BASE_COMMIT = HISTORICAL_I1_COMMIT
 EXPECTED_I_PATHS = [CONFIG_REPO_PATH, SCRIPT_REPO_PATH, TEST_REPO_PATH]
 EXPECTED_B_PATHS = [CONFIG_REPO_PATH]
+HISTORICAL_I1_BLOBS = [
+    {
+        "path": CONFIG_REPO_PATH,
+        "bytes": 17_434,
+        "sha256": "f5e750c393afc814b770170ee25b5c201ad29b9c4846ef0d41d97cc0ed110127",
+    },
+    {
+        "path": SCRIPT_REPO_PATH,
+        "bytes": 103_141,
+        "sha256": "a1802c22a72fc4af825223baf35d000908941c992cd68d848fa10b0564185e7f",
+    },
+    {
+        "path": TEST_REPO_PATH,
+        "bytes": 32_244,
+        "sha256": "0e319f7747a90e73673d5f288960a4a3837f9f0cba71c77316a8d9fbf8c4f1db",
+    },
+]
 I_TO_B_SCALAR_PATHS = [
     "implementation_binding.status",
     "implementation_binding.implementation_commit",
     "implementation_binding.implementation_script_sha256",
     "implementation_binding.implementation_test_sha256",
 ]
-FROZEN_CONFIG_CORE_SHA256 = "d02928ce40f4a77f356cba47929b96d6b07cd8f4c0f9facb3a4156887719f15f"
+FROZEN_CONFIG_CORE_SHA256 = "49388c339dad75107149911ceb0fa078ec2ff0729951442a4aa034ba82c90cba"
 
 JATS_CONFIG_KEY = "europe_pmc_jats"
 SOFT_CONFIG_KEY = "gse200302_soft_gz"
@@ -380,8 +399,28 @@ def validate_static_config(config: Mapping[str, Any]) -> None:
         raise ConfigError("production repository root differs")
     if repository.get("branch") != BRANCH:
         raise ConfigError("production branch differs")
-    if repository.get("implementation_base_commit") != IMPLEMENTATION_BASE_COMMIT:
-        raise ConfigError("implementation base differs")
+    if repository.get("lifecycle_scheme") != "APPEND_ONLY_BASE0_I1_I2_B2_V1":
+        raise ConfigError("repository lifecycle scheme differs")
+    if repository.get("historical_i1_status") != "PUSHED_FROZEN_PRE_REPAIR":
+        raise ConfigError("historical I1 status differs")
+    if repository.get("historical_base0_commit") != HISTORICAL_BASE0_COMMIT:
+        raise ConfigError("historical base0 differs")
+    if repository.get("historical_i1_commit") != HISTORICAL_I1_COMMIT:
+        raise ConfigError("historical I1 commit differs")
+    if repository.get("historical_i1_expected_parent") != HISTORICAL_BASE0_COMMIT:
+        raise ConfigError("historical I1 parent differs")
+    if repository.get("historical_i1_exact_changed_paths") != EXPECTED_I_PATHS:
+        raise ConfigError("historical I1 changed-path contract differs")
+    if repository.get("historical_i1_blobs") != HISTORICAL_I1_BLOBS:
+        raise ConfigError("historical I1 blob authority differs")
+    if repository.get("implementation_repair_base_commit") != (
+        IMPLEMENTATION_REPAIR_BASE_COMMIT
+    ):
+        raise ConfigError("implementation repair base differs")
+    if repository.get("implementation_commit_expected_parent") != (
+        IMPLEMENTATION_REPAIR_BASE_COMMIT
+    ):
+        raise ConfigError("I2 expected parent differs")
     if repository.get("implementation_commit_exact_changed_paths") != EXPECTED_I_PATHS:
         raise ConfigError("implementation changed-path contract differs")
     if repository.get("binding_commit_exact_changed_paths") != EXPECTED_B_PATHS:
@@ -577,6 +616,43 @@ def _git_blob(repo: Path, commit: str, path: str, expected_sha256: str | None = 
     return payload
 
 
+def _validate_historical_i1_authority(repo: Path) -> dict[str, bytes]:
+    _single_parent(
+        repo,
+        HISTORICAL_I1_COMMIT,
+        HISTORICAL_BASE0_COMMIT,
+        label="historical pushed I1 commit",
+    )
+    if _changed_paths(repo, HISTORICAL_I1_COMMIT) != sorted(EXPECTED_I_PATHS):
+        raise BindingError("historical pushed I1 changed-path set differs")
+    blobs: dict[str, bytes] = {}
+    for spec in HISTORICAL_I1_BLOBS:
+        path = str(spec["path"])
+        payload = _git_blob(
+            repo,
+            HISTORICAL_I1_COMMIT,
+            path,
+            str(spec["sha256"]),
+        )
+        if len(payload) != spec["bytes"] or sha256(payload) != spec["sha256"]:
+            raise BindingError(f"historical pushed I1 blob differs: {path}")
+        blobs[path] = payload
+    return blobs
+
+
+def _validate_i2_implementation_commit(repo: Path, implementation: str) -> None:
+    if HEX40.fullmatch(implementation) is None or implementation == HISTORICAL_I1_COMMIT:
+        raise BindingError("I2 implementation commit identity is invalid")
+    _single_parent(
+        repo,
+        implementation,
+        IMPLEMENTATION_REPAIR_BASE_COMMIT,
+        label="append-only I2 repair implementation commit",
+    )
+    if _changed_paths(repo, implementation) != sorted(EXPECTED_I_PATHS):
+        raise BindingError("I2 repair implementation changed-path set differs")
+
+
 def validate_production_authority(
     config: Mapping[str, Any],
     config_payload: bytes,
@@ -610,15 +686,9 @@ def validate_production_authority(
     if _git(repo, "rev-parse", "@{upstream}") != head:
         raise BindingError("production HEAD is not exactly pushed upstream")
 
+    _validate_historical_i1_authority(repo)
     implementation = binding["implementation_commit"]
-    _single_parent(
-        repo,
-        implementation,
-        IMPLEMENTATION_BASE_COMMIT,
-        label="producer implementation commit",
-    )
-    if _changed_paths(repo, implementation) != sorted(EXPECTED_I_PATHS):
-        raise BindingError("producer implementation changed-path set differs")
+    _validate_i2_implementation_commit(repo, implementation)
     _single_parent(repo, head, implementation, label="producer binding commit")
     if _changed_paths(repo, head) != EXPECTED_B_PATHS:
         raise BindingError("producer binding commit is not exact config-only")
@@ -660,6 +730,9 @@ def validate_production_authority(
             raise BindingError(f"canonical worktree bytes differ from HEAD: {path}")
     return {
         "status": "PASS_BOUND_IMPLEMENTATION",
+        "historical_base0_commit": HISTORICAL_BASE0_COMMIT,
+        "historical_i1_commit": HISTORICAL_I1_COMMIT,
+        "implementation_repair_base_commit": IMPLEMENTATION_REPAIR_BASE_COMMIT,
         "implementation_commit": implementation,
         "binding_commit": head,
         "implementation_script_sha256": binding["implementation_script_sha256"],

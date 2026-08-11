@@ -15,7 +15,7 @@
     "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
     "implementation_test_path": "tests/route_a_v3/test_produce_gse200304_upstream_authority_viability.py",
     "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
-    "config_core_sha256": "d02928ce40f4a77f356cba47929b96d6b07cd8f4c0f9facb3a4156887719f15f",
+    "config_core_sha256": "49388c339dad75107149911ceb0fa078ec2ff0729951442a4aa034ba82c90cba",
     "unknown_to_bound_scalar_paths": [
       "implementation_binding.status",
       "implementation_binding.implementation_commit",
@@ -26,8 +26,35 @@
   "repository_authority": {
     "production_repo_root": "/home/cunyuliu/mrna_editflow_goal/worktrees/routea_v3_a1_20260810",
     "branch": "routea-v3-a1-20260810",
-    "implementation_base_commit": "0b95ac77a44644e57cc4d0bfb31a9154238fdca6",
-    "implementation_commit_expected_parent": "0b95ac77a44644e57cc4d0bfb31a9154238fdca6",
+    "lifecycle_scheme": "APPEND_ONLY_BASE0_I1_I2_B2_V1",
+    "historical_i1_status": "PUSHED_FROZEN_PRE_REPAIR",
+    "historical_base0_commit": "0b95ac77a44644e57cc4d0bfb31a9154238fdca6",
+    "historical_i1_commit": "9844246dd4b3874a9ecfcf03a233278c5d3a02e0",
+    "historical_i1_expected_parent": "0b95ac77a44644e57cc4d0bfb31a9154238fdca6",
+    "historical_i1_exact_changed_paths": [
+      "configs/route_a_v3_gse200304_upstream_authority_viability_v1.json",
+      "scripts/route_a_v3/produce_gse200304_upstream_authority_viability.py",
+      "tests/route_a_v3/test_produce_gse200304_upstream_authority_viability.py"
+    ],
+    "historical_i1_blobs": [
+      {
+        "path": "configs/route_a_v3_gse200304_upstream_authority_viability_v1.json",
+        "bytes": 17434,
+        "sha256": "f5e750c393afc814b770170ee25b5c201ad29b9c4846ef0d41d97cc0ed110127"
+      },
+      {
+        "path": "scripts/route_a_v3/produce_gse200304_upstream_authority_viability.py",
+        "bytes": 103141,
+        "sha256": "a1802c22a72fc4af825223baf35d000908941c992cd68d848fa10b0564185e7f"
+      },
+      {
+        "path": "tests/route_a_v3/test_produce_gse200304_upstream_authority_viability.py",
+        "bytes": 32244,
+        "sha256": "0e319f7747a90e73673d5f288960a4a3837f9f0cba71c77316a8d9fbf8c4f1db"
+      }
+    ],
+    "implementation_repair_base_commit": "9844246dd4b3874a9ecfcf03a233278c5d3a02e0",
+    "implementation_commit_expected_parent": "9844246dd4b3874a9ecfcf03a233278c5d3a02e0",
     "implementation_commit_exact_changed_paths": [
       "configs/route_a_v3_gse200304_upstream_authority_viability_v1.json",
       "scripts/route_a_v3/produce_gse200304_upstream_authority_viability.py",
