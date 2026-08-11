@@ -1,0 +1,256 @@
+{
+  "schema_version": "route_a_v3_gse114002_dec019_true_a2_activation.v2",
+  "protocol_id": "ROUTE_A_V3_GSE114002_DEC019_TRUE_A2_ACTIVATION_V2",
+  "contract_id": "mrna_xeditflow_route_a_v3",
+  "phase_id": "A1",
+  "dataset_id": "GSE114002",
+  "decision_id": "V3-DEC-019",
+  "implementation_binding": {
+    "binding_scheme": "CONFIG_ONLY_POST_IMPLEMENTATION_BINDING_V1",
+    "status": "UNKNOWN_NOT_ASSERTED",
+    "blocker_if_unbound": "IMPLEMENTATION_BINDING_UNKNOWN_NOT_ASSERTED",
+    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "implementation_script_path": "scripts/route_a_v3/adjudicate_gse114002_dec019_true_a2.py",
+    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_test_path": "tests/route_a_v3/test_adjudicate_gse114002_dec019_true_a2.py",
+    "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
+    "config_core_sha256": "1c3e4a7aa412e245f6f4680677db60b8241d7873fa126756791bdb0b58f9233a",
+    "unknown_to_bound_scalar_paths": [
+      "implementation_binding.status",
+      "implementation_binding.implementation_commit",
+      "implementation_binding.implementation_script_sha256",
+      "implementation_binding.implementation_test_sha256"
+    ]
+  },
+  "repository_authority": {
+    "production_repo_root": "/home/cunyuliu/mrna_editflow_goal/worktrees/routea_v3_a1_20260810",
+    "branch": "routea-v3-a1-20260810",
+    "base_commit": "ad1c57b9255c3066510b08e7a4cf0bd571006811",
+    "implementation_commit_expected_parent": "ad1c57b9255c3066510b08e7a4cf0bd571006811",
+    "binding_commit_expected_parent": "IMPLEMENTATION_COMMIT_FROM_BINDING",
+    "implementation_commit_required_paths": [
+      "configs/route_a_v3_gse114002_dec019_true_a2_activation_v2.json",
+      "scripts/route_a_v3/adjudicate_gse114002_dec019_true_a2.py",
+      "tests/route_a_v3/test_adjudicate_gse114002_dec019_true_a2.py"
+    ],
+    "binding_commit_exact_changed_paths": [
+      "configs/route_a_v3_gse114002_dec019_true_a2_activation_v2.json",
+      "configs/route_a_v3_gse200304_dec019_reported_endpoint_a1_activation_v2.json"
+    ]
+  },
+  "core_authority": {
+    "status": "BOUND",
+    "root_contract_path": "docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md",
+    "root_contract_sha256": "cbac4c3dcba8f1b8df95d8edad52d19e3c126d1c865d0cc423537c754cc90982",
+    "amendment_path": "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec019.yaml",
+    "amendment_sha256": "8c82e564398f0735fe4976f875fe91f053937b05044e5232e237694a2b36e1ca",
+    "decision_log_path": "docs/execution/route_a_v3_decision_log.yaml",
+    "decision_log_sha256": "b537a2ce19e4bb8b099f05df4ba383b56b8957cbc7be0b5954c9c11d741eb23b",
+    "data_role_registry_path": "docs/execution/route_a_v3_data_role_registry.yaml",
+    "data_role_registry_sha256": "4d14ebd1a6adc04a344165f775df8586ef9f8f0461fdcac08649d0644d9956f2",
+    "split_registry_path": "docs/execution/route_a_v3_split_registry.yaml",
+    "split_registry_sha256": "2764d471c09a27da889b690cac317ac582bf9f25b79b6a34ac491f2e0b434929",
+    "task_registry_path": "docs/execution/route_a_v3_task_registry.yaml",
+    "task_registry_sha256": "6c6659ef0e9ddbbbba002f77d39d388dbdacc7b383e98ebb30a1580d590d85b4",
+    "task_split_matrix_path": "docs/execution/route_a_v3_task_split_matrix.yaml",
+    "task_split_matrix_sha256": "dd340bcfb291138b862c5858daa28910c44689299647b468aedcc48b3d90b534",
+    "claim_evidence_matrix_path": "docs/execution/route_a_v3_claim_evidence_matrix.yaml",
+    "claim_evidence_matrix_sha256": "25b62c17320032c764f986892647d4548065cac3a6d42414f96737da3fb3cbad",
+    "a1_qualification_path": "configs/route_a_v3_a1_qualification.json",
+    "a1_qualification_sha256": "fe3f7736c1f64b362ebda683ca571fc1a84e1fff36aed3a9ae67272665ba2343",
+    "forbidden_cyclic_dependencies": [
+      "docs/execution/route_a_v3_a1_interim.yaml",
+      "docs/execution/route_a_v3_registry_manifest.json",
+      "scripts/route_a_v3/validate_a0_bundle.py"
+    ]
+  },
+  "policy_boundary": {
+    "single_gsm_allowed": true,
+    "biological_replicate_status": "ABSENT_BY_DESIGN",
+    "paper_standard_error_status": "ABSENT",
+    "technical_uncertainty_role": "DIAGNOSTIC_ONLY_NEVER_BIOLOGICAL_STANDARD_ERROR",
+    "technical_uncertainty_prohibited_uses": [
+      "BIOLOGICAL_STANDARD_ERROR",
+      "POWER",
+      "CONFIDENCE_INTERVAL",
+      "EQUIVALENCE",
+      "CONFIRMATORY_EVIDENCE",
+      "GENERALIZATION_EVIDENCE"
+    ],
+    "success_role": "TRUE_A2_WITHIN_ASSAY_DEVELOPMENT_AND_OPTIMIZATION_ONLY",
+    "study_counting_unit": "DATASET",
+    "maximum_study_contribution_per_dataset": 1,
+    "gsm_pool_subseries_modality_endpoint_replicate_may_multiply_study_count": false,
+    "ordinary_gate_contribution_on_success": 1,
+    "a1_gate_contribution_on_success": 0,
+    "true_a2_gate_contribution_on_success": 1,
+    "confirmatory_contribution_on_success": 0,
+    "generalization_contribution_on_success": 0,
+    "k5_role": "CLAIM_BOUNDARY_ONLY_NOT_QUALIFICATION_GATE",
+    "eligible_edit_distances": [
+      1,
+      2,
+      3
+    ],
+    "primary_reporting_k_values": [
+      1,
+      3
+    ],
+    "global_reporting_k_values": [
+      1,
+      3,
+      5
+    ],
+    "minimum_source_anchored_candidate_neighborhood_k": 3,
+    "power_analysis_unit": "BIOLOGICAL_SOURCE_GROUP",
+    "power_bootstrap_unit": "BIOLOGICAL_SOURCE_GROUP",
+    "minimum_power": 0.8,
+    "maximum_full_confidence_interval_width": 0.3,
+    "raw_or_row_level_payload_consumption_allowed": false,
+    "training_allowed_by_this_adjudicator": false,
+    "model_selection_allowed_by_this_adjudicator": false,
+    "next_phase_allowed_by_this_adjudicator": false
+  },
+  "current_external_state": {
+    "status": "BLOCKED_DEC019_TRUE_A2_EVIDENCE_INCOMPLETE",
+    "qualified": false,
+    "ordinary_study_contribution": 0,
+    "a1_study_contribution": 0,
+    "true_a2_study_contribution": 0,
+    "confirmatory_contribution": 0,
+    "generalization_contribution": 0,
+    "canonical_record_count": 0,
+    "canonical_materialization_allowed": false,
+    "training_allowed": false,
+    "model_selection_allowed": false,
+    "next_phase_authorized": false,
+    "scientific_claim_status": "NOT_ESTABLISHED",
+    "unresolved_blockers": [
+      "SOURCE_FIELD_AUTHORITY_EVIDENCE_UNKNOWN_NOT_ASSERTED",
+      "CONSTRUCT_RNA_CHEMISTRY_EVIDENCE_UNKNOWN_NOT_ASSERTED",
+      "CHECKPOINT_SPECIFIC_EXPOSURE_EVIDENCE_UNKNOWN_NOT_ASSERTED",
+      "LICENSE_RIGHTS_EVIDENCE_UNKNOWN_NOT_ASSERTED",
+      "OUTCOME_BLIND_SPLIT_LEAKAGE_EVIDENCE_UNKNOWN_NOT_ASSERTED",
+      "PREFROZEN_POWER_PRECISION_EVIDENCE_UNKNOWN_NOT_ASSERTED"
+    ]
+  },
+  "evidence_contract": {
+    "all_inputs_must_be_hash_bound_accepted_aggregate_json": true,
+    "all_descriptors_must_be_bound_before_any_input_open": true,
+    "root_to_leaf_symlink_rejection_required": true,
+    "single_link_regular_file_required": true,
+    "same_descriptor_verified_snapshot_required": true,
+    "extra_json_keys_rejected": true,
+    "row_level_payload_forbidden": true,
+    "forbidden_path_tokens": [
+      "GSE246381",
+      "/restricted/",
+      "/sealed/",
+      "/sealed_external/",
+      "access_log",
+      "FASTQ",
+      "raw_replay",
+      ".sam",
+      ".bam",
+      ".cram"
+    ],
+    "slots": [
+      {
+        "slot_id": "MECHANICAL_ENDPOINT_GEOMETRY",
+        "allowed_basename": "QUALIFICATION_REPORT.json",
+        "absolute_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE114002_ENDPOINT_GEOMETRY_RECONCILIATION_V2_20260811T075711P0800_a148c73/QUALIFICATION_REPORT.json",
+        "sha256": "34c2cc0c861286f8e22bf1ba4026d5f754254ffb1bd10a4b989a9546e874a9c3",
+        "bytes": 2325,
+        "blocker_if_unbound": "MECHANICAL_ENDPOINT_GEOMETRY_EVIDENCE_UNKNOWN_NOT_ASSERTED",
+        "blocker_if_not_pass": "MECHANICAL_ENDPOINT_GEOMETRY_NOT_ACCEPTED"
+      },
+      {
+        "slot_id": "SOURCE_FIELD_AUTHORITY",
+        "allowed_basename": "GSE114002_DEC019_SOURCE_FIELD_AUTHORITY_GATE.json",
+        "absolute_path": "UNKNOWN_NOT_ASSERTED",
+        "sha256": "UNKNOWN_NOT_ASSERTED",
+        "bytes": "UNKNOWN_NOT_ASSERTED",
+        "blocker_if_unbound": "SOURCE_FIELD_AUTHORITY_EVIDENCE_UNKNOWN_NOT_ASSERTED",
+        "blocker_if_not_pass": "SOURCE_FIELD_AUTHORITY_NOT_PASS"
+      },
+      {
+        "slot_id": "CONSTRUCT_RNA_CHEMISTRY",
+        "allowed_basename": "GSE114002_DEC019_CONSTRUCT_RNA_CHEMISTRY_GATE.json",
+        "absolute_path": "UNKNOWN_NOT_ASSERTED",
+        "sha256": "UNKNOWN_NOT_ASSERTED",
+        "bytes": "UNKNOWN_NOT_ASSERTED",
+        "blocker_if_unbound": "CONSTRUCT_RNA_CHEMISTRY_EVIDENCE_UNKNOWN_NOT_ASSERTED",
+        "blocker_if_not_pass": "CONSTRUCT_RNA_CHEMISTRY_NOT_PASS"
+      },
+      {
+        "slot_id": "CHECKPOINT_SPECIFIC_EXPOSURE",
+        "allowed_basename": "GSE114002_DEC019_CHECKPOINT_SPECIFIC_EXPOSURE_GATE.json",
+        "absolute_path": "UNKNOWN_NOT_ASSERTED",
+        "sha256": "UNKNOWN_NOT_ASSERTED",
+        "bytes": "UNKNOWN_NOT_ASSERTED",
+        "blocker_if_unbound": "CHECKPOINT_SPECIFIC_EXPOSURE_EVIDENCE_UNKNOWN_NOT_ASSERTED",
+        "blocker_if_not_pass": "CHECKPOINT_SPECIFIC_EXPOSURE_NOT_PASS"
+      },
+      {
+        "slot_id": "LICENSE_RIGHTS",
+        "allowed_basename": "GSE114002_DEC019_LICENSE_RIGHTS_GATE.json",
+        "absolute_path": "UNKNOWN_NOT_ASSERTED",
+        "sha256": "UNKNOWN_NOT_ASSERTED",
+        "bytes": "UNKNOWN_NOT_ASSERTED",
+        "blocker_if_unbound": "LICENSE_RIGHTS_EVIDENCE_UNKNOWN_NOT_ASSERTED",
+        "blocker_if_not_pass": "LICENSE_RIGHTS_NOT_PASS"
+      },
+      {
+        "slot_id": "OUTCOME_BLIND_SPLIT_LEAKAGE",
+        "allowed_basename": "GSE114002_DEC019_OUTCOME_BLIND_SPLIT_LEAKAGE_GATE.json",
+        "absolute_path": "UNKNOWN_NOT_ASSERTED",
+        "sha256": "UNKNOWN_NOT_ASSERTED",
+        "bytes": "UNKNOWN_NOT_ASSERTED",
+        "blocker_if_unbound": "OUTCOME_BLIND_SPLIT_LEAKAGE_EVIDENCE_UNKNOWN_NOT_ASSERTED",
+        "blocker_if_not_pass": "OUTCOME_BLIND_SPLIT_LEAKAGE_NOT_PASS"
+      },
+      {
+        "slot_id": "PREFROZEN_POWER_PRECISION",
+        "allowed_basename": "GSE114002_DEC019_PREFROZEN_POWER_PRECISION_GATE.json",
+        "absolute_path": "UNKNOWN_NOT_ASSERTED",
+        "sha256": "UNKNOWN_NOT_ASSERTED",
+        "bytes": "UNKNOWN_NOT_ASSERTED",
+        "blocker_if_unbound": "PREFROZEN_POWER_PRECISION_EVIDENCE_UNKNOWN_NOT_ASSERTED",
+        "blocker_if_not_pass": "PREFROZEN_POWER_PRECISION_NOT_PASS"
+      }
+    ]
+  },
+  "output_contract": {
+    "output_id": "ROUTE_A_V3_GSE114002_DEC019_TRUE_A2_ADJUDICATION_BUNDLE_V2",
+    "blocked_status": "BLOCKED_DEC019_TRUE_A2_EVIDENCE_INCOMPLETE",
+    "success_status": "PASS_DEC019_TRUE_A2_ACTIVATED_WITHIN_ASSAY_DEVELOPMENT_ONLY",
+    "aggregate_only": true,
+    "member_names_excluding_commit_marker": [
+      "ADJUDICATION_REPORT.json",
+      "INPUT_EVIDENCE_AUDIT.json",
+      "SHA256SUMS"
+    ],
+    "terminal_commit_marker": "PUBLICATION_COMMIT.json",
+    "publication_mode": "ATOMIC_EXCLUSIVE_DIRECTORY_TERMINAL_COMMIT_MARKER_V1",
+    "commit_marker_written_last": true,
+    "existing_exact_is_idempotent": true,
+    "overwrite_allowed": false,
+    "partial_publication_is_never_accepted": true,
+    "forbidden_output_keys": [
+      "sequence",
+      "utr",
+      "mother",
+      "row_id",
+      "row_ids",
+      "barcode",
+      "source_id",
+      "candidate_id",
+      "raw_row",
+      "raw_label",
+      "raw_effect",
+      "effect_value",
+      "member_identifiers",
+      "member_hashes"
+    ]
+  }
+}

@@ -126,6 +126,57 @@ def _validate_manifest_mutation(
     return _codes(validator.validate_registry_manifest(case_root))
 
 
+def _validate_rehashed_dec019_leaf_bypass(
+    validator,
+    repo_root,
+    case_root,
+    monkeypatch,
+    relative,
+    mutate,
+):
+    """Rehash a DEC-019 leaf, interim reference, and manifest as one bypass."""
+
+    manifest = _copy_manifest_bundle(validator, repo_root, case_root)
+    leaf_path = case_root / relative
+    if leaf_path.suffix == ".json":
+        leaf = json.loads(leaf_path.read_text(encoding="utf-8"))
+        mutate(leaf)
+        leaf_path.write_text(json.dumps(leaf, indent=2) + "\n", encoding="utf-8")
+    else:
+        leaf = yaml.safe_load(leaf_path.read_text(encoding="utf-8"))
+        mutate(leaf)
+        leaf_path.write_text(yaml.safe_dump(leaf, sort_keys=False), encoding="utf-8")
+    leaf_sha256 = validator.sha256_file(leaf_path)
+    next(row for row in manifest["files"] if row["path"] == relative)[
+        "sha256"
+    ] = leaf_sha256
+
+    interim_path = case_root / validator.A1_INTERIM_PATH
+    interim = yaml.safe_load(interim_path.read_text(encoding="utf-8"))
+    interim_hash_keys = {
+        validator.DEC019_AMENDMENT_PATH: "dec019_amendment_sha256",
+        validator.DECISION_LOG_PATH: "decision_log_sha256",
+        validator.REGISTRY_PATHS["data"]: "data_role_registry_sha256",
+        validator.REGISTRY_PATHS["claim"]: "claim_evidence_matrix_sha256",
+    }
+    hash_key = interim_hash_keys.get(relative)
+    if hash_key is not None:
+        interim["authority"][hash_key] = leaf_sha256
+    interim_path.write_text(yaml.safe_dump(interim, sort_keys=False), encoding="utf-8")
+    interim_sha256 = validator.sha256_file(interim_path)
+    monkeypatch.setattr(validator, "EXPECTED_A1_INTERIM_SHA256", interim_sha256)
+    next(
+        row for row in manifest["files"] if row["path"] == validator.A1_INTERIM_PATH
+    )["sha256"] = interim_sha256
+
+    manifest_path = case_root / validator.REGISTRY_MANIFEST_PATH
+    manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+    codes = _codes(validator.validate_bundle(case_root))
+    assert "REGISTRY_MANIFEST_HASH_MISMATCH" not in codes
+    assert "A1_INTERIM_CANONICAL_HASH" not in codes
+    return codes
+
+
 def test_decision_log_requires_all_ids_and_historical_m0_decision(validator, repo_root):
     decision_log = validator._load_yaml(repo_root, validator.DECISION_LOG_PATH)
     assert validator.validate_decision_log(decision_log) == []
@@ -223,6 +274,26 @@ def test_decision_018_official_role_authority_and_raw_replay_boundary_is_frozen(
     assert "DECISION_LOG_DIMENSION" in codes
     assert "DECISION_LOG_GSE200302_ROLE_AUTHORITY" in codes
     assert "DECISION_LOG_GSE200302_ROLE_AUTHORITY_EVIDENCE" in codes
+
+
+def test_decision_019_user_authorized_measurement_and_split_authority_is_frozen(
+    validator,
+    repo_root,
+):
+    decision_log = validator._load_yaml(repo_root, validator.DECISION_LOG_PATH)
+    assert validator.validate_decision_log(decision_log) == []
+
+    bypass = deepcopy(decision_log)
+    decision = next(row for row in bypass["decisions"] if row["decision_id"] == "V3-DEC-019")
+    decision["status"] = "MUTABLE"
+    decision["user_authorization_status"] = "NOT_GRANTED"
+    decision["current_qualified_counts"]["ordinary"] = 1
+    decision["training_allowed"] = True
+    decision["sealed_contact"] = True
+    decision["resolution"] += " K2 is dropped and K5 now receives qualification credit."
+    codes = _codes(validator.validate_decision_log(bypass))
+    assert "DECISION_LOG_ENTRY_DRIFT" in codes
+    assert "DECISION_LOG_DEC019" in codes
 
 
 def test_decision_prefix_digest_rejects_conflicting_semantics_and_old_entry_drift(
@@ -1942,6 +2013,295 @@ def test_synchronized_rehash_cannot_hide_plumage_core_semantic_bypass(
     assert "GSE149487_PLUMAGE_PROTOCOL_NONBINDING_CORE" in codes
 
 
+def test_dec019_successor_configs_use_stable_cores_without_manifest_cycle(
+    validator,
+    repo_root,
+):
+    manifest = validator._load_json(repo_root, validator.REGISTRY_MANIFEST_PATH)
+    manifest_paths = {row["path"] for row in manifest["files"]}
+    assert validator.DEC019_SUCCESSOR_DYNAMIC_CONFIG_PATHS.isdisjoint(manifest_paths)
+    for static_path in (
+        validator.GSE114002_DEC019_SUCCESSOR_SCRIPT_PATH,
+        validator.GSE114002_DEC019_SUCCESSOR_TEST_PATH,
+        validator.GSE200304_DEC019_SUCCESSOR_SCRIPT_PATH,
+        validator.GSE200304_DEC019_SUCCESSOR_TEST_PATH,
+    ):
+        assert static_path in manifest_paths
+
+    assert validator.validate_dec019_successor_adjudicators(repo_root) == []
+    expected = (
+        (
+            validator.GSE114002_DEC019_SUCCESSOR_CONFIG_PATH,
+            validator.GSE114002_DEC019_SUCCESSOR_INITIAL_I_SHA256,
+            validator.GSE114002_DEC019_SUCCESSOR_CORE_SHA256,
+        ),
+        (
+            validator.GSE200304_DEC019_SUCCESSOR_CONFIG_PATH,
+            validator.GSE200304_DEC019_SUCCESSOR_INITIAL_I_SHA256,
+            validator.GSE200304_DEC019_SUCCESSOR_CORE_SHA256,
+        ),
+    )
+    for relative, initial_sha256, core_sha256 in expected:
+        path = repo_root / relative
+        config = json.loads(path.read_text(encoding="utf-8"))
+        assert validator.sha256_file(path) == initial_sha256
+        assert validator._dec019_successor_core_sha256(config) == core_sha256
+        assert config["implementation_binding"]["config_core_sha256"] == core_sha256
+        assert config["current_external_state"]["qualified"] is False
+        assert config["current_external_state"]["canonical_record_count"] == 0
+
+
+def test_dec019_successor_config_only_i_to_b_preserves_stable_core(
+    validator,
+    repo_root,
+    tmp_path,
+):
+    _copy_manifest_bundle(validator, repo_root, tmp_path)
+    config_path = tmp_path / validator.GSE114002_DEC019_SUCCESSOR_CONFIG_PATH
+    config = json.loads(config_path.read_text(encoding="utf-8"))
+    initial_core = validator._dec019_successor_core_sha256(config)
+    binding = config["implementation_binding"]
+    binding["status"] = "BOUND"
+    binding["implementation_commit"] = "a" * 40
+    binding["implementation_script_sha256"] = (
+        validator.GSE114002_DEC019_SUCCESSOR_SCRIPT_SHA256
+    )
+    binding["implementation_test_sha256"] = (
+        validator.GSE114002_DEC019_SUCCESSOR_TEST_SHA256
+    )
+    config_path.write_text(json.dumps(config, indent=2) + "\n", encoding="utf-8")
+
+    assert validator._dec019_successor_core_sha256(config) == initial_core
+    assert validator.validate_dec019_successor_adjudicators(tmp_path) == []
+
+
+@pytest.mark.parametrize(
+    ("dataset_id", "mutation"),
+    [
+        ("GSE114002", "drop_k2"),
+        ("GSE114002", "promote_k5"),
+        ("GSE114002", "technical_uncertainty_supports_power"),
+        ("GSE114002", "multiply_studies"),
+        ("GSE114002", "power_bool"),
+        ("GSE200304", "raw_replay_primary"),
+        ("GSE200304", "multiply_studies"),
+        ("GSE200304", "waive_rights"),
+    ],
+)
+def test_dec019_successor_synchronized_core_rehash_cannot_change_policy(
+    validator,
+    repo_root,
+    tmp_path,
+    dataset_id,
+    mutation,
+):
+    case_root = tmp_path / f"{dataset_id}_{mutation}"
+    _copy_manifest_bundle(validator, repo_root, case_root)
+    relative = (
+        validator.GSE114002_DEC019_SUCCESSOR_CONFIG_PATH
+        if dataset_id == "GSE114002"
+        else validator.GSE200304_DEC019_SUCCESSOR_CONFIG_PATH
+    )
+    path = case_root / relative
+    config = json.loads(path.read_text(encoding="utf-8"))
+    policy = config["policy_boundary"]
+    if mutation == "drop_k2":
+        policy["eligible_edit_distances"] = [1, 3]
+    elif mutation == "promote_k5":
+        policy["k5_role"] = "QUALIFICATION_GATE"
+    elif mutation == "technical_uncertainty_supports_power":
+        policy["technical_uncertainty_prohibited_uses"].remove("POWER")
+    elif mutation == "multiply_studies":
+        policy["maximum_study_contribution_per_dataset"] = 2
+        policy["gsm_pool_subseries_modality_endpoint_replicate_may_multiply_study_count"] = True
+    elif mutation == "power_bool":
+        policy["minimum_power"] = True
+    elif mutation == "raw_replay_primary":
+        policy["raw_replay_role"] = "PRIMARY_MEASUREMENT_ROUTE"
+    elif mutation == "waive_rights":
+        policy["rights_required"] = False
+    else:  # pragma: no cover - the parameter table is closed above
+        raise AssertionError(mutation)
+    config["implementation_binding"]["config_core_sha256"] = (
+        validator._dec019_successor_core_sha256(config)
+    )
+    path.write_text(json.dumps(config, indent=2) + "\n", encoding="utf-8")
+
+    codes = _codes(validator.validate_dec019_successor_adjudicators(case_root))
+    assert "DEC019_SUCCESSOR_CORE_DRIFT" in codes
+
+
+def test_dec019_successor_partial_binding_and_fake_gate_are_rejected(
+    validator,
+    repo_root,
+    tmp_path,
+):
+    _copy_manifest_bundle(validator, repo_root, tmp_path)
+    config_path = tmp_path / validator.GSE200304_DEC019_SUCCESSOR_CONFIG_PATH
+    config = json.loads(config_path.read_text(encoding="utf-8"))
+    config["implementation_binding"]["status"] = "BOUND"
+    current = config["current_external_state"]
+    current["qualified"] = True
+    current["ordinary_study_contribution"] = 1
+    current["a1_study_contribution"] = 1
+    current["canonical_record_count"] = 1
+    config_path.write_text(json.dumps(config, indent=2) + "\n", encoding="utf-8")
+
+    codes = _codes(validator.validate_dec019_successor_adjudicators(tmp_path))
+    assert "DEC019_SUCCESSOR_BINDING" in codes
+    assert "DEC019_SUCCESSOR_CORE_DRIFT" in codes
+    assert "DEC019_SUCCESSOR_CURRENT_STATE" in codes
+
+
+def test_dec019_successor_config_cannot_be_added_to_static_manifest(
+    validator,
+    repo_root,
+    tmp_path,
+):
+    case_root = tmp_path / "manifest_cycle"
+
+    def add_dynamic_config(manifest):
+        relative = validator.GSE114002_DEC019_SUCCESSOR_CONFIG_PATH
+        manifest["files"].append(
+            {
+                "path": relative,
+                "role": "DYNAMIC_CONFIG_EXACT_HASH",
+                "sha256": validator.sha256_file(case_root / relative),
+            }
+        )
+
+    codes = _validate_manifest_mutation(
+        validator,
+        repo_root,
+        case_root,
+        add_dynamic_config,
+    )
+    assert "REGISTRY_MANIFEST_HASH_MISMATCH" not in codes
+    assert "DEC019_SUCCESSOR_MANIFEST_CYCLE" in codes
+
+
+def test_dec019_successor_static_leaf_synchronized_manifest_rehash_is_rejected(
+    validator,
+    repo_root,
+    tmp_path,
+):
+    manifest = _copy_manifest_bundle(validator, repo_root, tmp_path)
+    relative = validator.GSE114002_DEC019_SUCCESSOR_SCRIPT_PATH
+    script_path = tmp_path / relative
+    script_path.write_bytes(script_path.read_bytes() + b"\n# synchronized drift\n")
+    next(row for row in manifest["files"] if row["path"] == relative)[
+        "sha256"
+    ] = validator.sha256_file(script_path)
+    manifest_path = tmp_path / validator.REGISTRY_MANIFEST_PATH
+    manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+
+    codes = _codes(validator.validate_bundle(tmp_path))
+    assert "REGISTRY_MANIFEST_HASH_MISMATCH" not in codes
+    assert "DEC019_SUCCESSOR_STATIC_LEAF_DRIFT" in codes
+
+
+def test_dec019_authority_synchronized_rehash_cannot_relax_routes(
+    validator,
+    repo_root,
+    tmp_path,
+    monkeypatch,
+):
+    def mutate(amendment):
+        gse114002 = amendment["gse114002_designed_library_true_a2_route"]
+        gse114002["technical_fraction_uncertainty"]["may_support_power"] = True
+        gse114002["candidate_hamming_distance_eligibility_if_qualified"] = [1, 3]
+        gse114002["maximum_independent_ordinary_study_contribution_if_qualified"] = 2
+        gse114002["k5_role"] = "QUALIFICATION_GATE"
+        gse200304 = amendment["gse200304_published_processed_endpoint_a1_route"]
+        gse200304["raw_replay_role"] = "PRIMARY_MEASUREMENT_ROUTE"
+        gse200304["maximum_independent_ordinary_study_contribution_if_qualified"] = 2
+        amendment["uncertainty_and_power_authority"]["target_power_minimum"] = True
+        amendment["split_freeze_boundary"]["a1_freeze_required"] = [
+            "FINAL_BENCHMARK_MEMBERSHIP"
+        ]
+        amendment["split_freeze_boundary"]["a2_freeze_required"] = [
+            "SOURCE_AUTHORITY"
+        ]
+        amendment["nonwaivable_authority"][
+            "global_replicate_or_standard_error_relaxation_allowed"
+        ] = True
+        amendment["nonwaivable_authority"][
+            "gse149487_three_biological_replicates_and_route_a_se_gate_changed"
+        ] = True
+        amendment["nonwaivable_authority"][
+            "other_dataset_specific_stricter_replicate_or_standard_error_gates_changed"
+        ] = True
+
+    codes = _validate_rehashed_dec019_leaf_bypass(
+        validator,
+        repo_root,
+        tmp_path,
+        monkeypatch,
+        validator.DEC019_AMENDMENT_PATH,
+        mutate,
+    )
+    assert "DEC019_LEAF_AUTHORITY_DRIFT" in codes
+    assert "DEC019_GSE114002_ROUTE" in codes
+    assert "DEC019_GSE200304_ROUTE" in codes
+    assert "DEC019_AMENDMENT_SEMANTICS" in codes
+
+
+def test_dec019_data_role_synchronized_rehash_cannot_globalize_absence_route(
+    validator,
+    repo_root,
+    tmp_path,
+    monkeypatch,
+):
+    def mutate(registry):
+        requirements = registry["common_audit_requirements"]
+        requirements[requirements.index(
+            "REPLICATE_AND_STANDARD_ERROR_OR_DATASET_SCOPED_ABSENCE_ADJUDICATION"
+        )] = "REPLICATE_OR_STANDARD_ERROR"
+        gse114002 = next(
+            row for row in registry["datasets"] if row["dataset_id"] == "GSE114002"
+        )
+        gse114002["dec019_conditional_true_a2_route"][
+            "replicate_and_standard_error_absence_adjudication_may_apply_to_other_datasets"
+        ] = True
+
+    codes = _validate_rehashed_dec019_leaf_bypass(
+        validator,
+        repo_root,
+        tmp_path,
+        monkeypatch,
+        validator.REGISTRY_PATHS["data"],
+        mutate,
+    )
+    assert "DEC019_LEAF_AUTHORITY_DRIFT" in codes
+    assert "DEC019_DATASET_SCOPED_UNCERTAINTY" in codes
+
+
+def test_dec019_interim_successor_lineage_cannot_fake_qualification(
+    validator,
+    repo_root,
+    tmp_path,
+    monkeypatch,
+):
+    def mutate(interim):
+        lineage = interim["artifact_lineage"][
+            validator.GSE114002_DEC019_SUCCESSOR_LINEAGE_ID
+        ]
+        lineage["current_qualified"] = True
+        lineage["current_ordinary_study_contribution"] = 2
+        lineage["current_true_a2_dense_study_contribution"] = 2
+        lineage["current_canonical_record_count"] = 1
+        lineage["training_allowed"] = True
+
+    codes = _validate_rehashed_interim_bypass(
+        validator,
+        repo_root,
+        tmp_path,
+        monkeypatch,
+        mutate,
+    )
+    assert "A1_INTERIM_LINEAGE" in codes
+
+
 def test_scheme_a_data_roles_cannot_restore_gse145046_as_true_a2(
     validator,
     repo_root,
@@ -1991,7 +2351,6 @@ def test_scheme_a_gse200304_official_role_authority_cannot_unlock_replay(
     gse200304["model_selection_allowed"] = True
     gse200304["next_phase_authorized"] = True
     gse200304["ordinary_gate_contribution"] = 1
-    gse200304["blocking_requirements"].remove("REQUIRED_80S_ROLE_AUTHORITY_ABSENT")
     codes = _codes(validator.validate_scheme_a_data_roles(bypass))
     assert "SCHEME_A_GSE200304_ROLE_AUTHORITY" in codes
 
@@ -2211,12 +2570,12 @@ def test_registry_manifest_detects_every_listed_hash_drift(validator, tmp_path, 
         "contract_path": validator.GOAL_PATH,
         "initial_contract_sha256": "d1c031aecdec710495f6861b380785cccd64663ac4bd97b4f479d6fdf372ea07",
         "contract_sha256": goal_hash,
-        "active_amendment_decision_ids": ["V3-DEC-017", "V3-DEC-018"],
+        "active_amendment_decision_ids": validator.ACTIVE_AMENDMENT_DECISION_IDS,
         "base_commit": "bbb71dcba6f1e1c9cb75a8a6653f1a4fe4a6ca0c",
-        "manifest_status": "A1_GSE114002_PUBLIC_AUTHORITY_GAP_AUDIT_INTEGRATED",
+        "manifest_status": "A1_DEC019_AUTHORITY_AND_SUCCESSOR_ADJUDICATORS_INTEGRATED",
         "initial_generated_at": "2026-08-10T10:10:05+08:00",
-        "generated_at": "2026-08-11T10:24:16+08:00",
-        "updated_at": "2026-08-11T10:24:16+08:00",
+        "generated_at": "2026-08-11T12:19:34+08:00",
+        "updated_at": "2026-08-11T12:19:34+08:00",
         "sealed_contact": False,
         "files": entries,
     }

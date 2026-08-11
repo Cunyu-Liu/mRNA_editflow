@@ -10,6 +10,8 @@ authority_ref:
   config_path: configs/route_a_v3.yaml
   goal_path: docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md
   goal_sha256: cbac4c3dcba8f1b8df95d8edad52d19e3c126d1c865d0cc423537c754cc90982
+  active_amendment_decision_ids: [V3-DEC-017, V3-DEC-018, V3-DEC-019]
+  dec019_amendment_path: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec019.yaml
 
 allowed_evidence_statuses:
   - NOT_RUN
@@ -51,6 +53,45 @@ matrix_rules:
   empty_evidence_cells_imply_not_established: true
   l4_claim_is_permanently_prohibited_in_v3: true
 
+dec019_claim_boundaries:
+  gse114002_designed_library:
+    ordinary_study_unit: GSE114002_ONE_STUDY
+    maximum_independent_ordinary_study_contribution_if_qualified: 1
+    gsm_library_pool_or_candidate_may_count_as_independent_study: false
+    true_a2_gate_credit_if_all_nonwaivable_gates_pass: 1
+    allowed_scope_if_qualified: [WITHIN_ASSAY_DEVELOPMENT, WITHIN_ASSAY_OPTIMIZATION]
+    confirmatory_contribution: 0
+    generalization_contribution: 0
+    technical_fraction_uncertainty:
+      use_scope: QC_AND_WITHIN_ASSAY_TECHNICAL_DIAGNOSTIC_ONLY
+      may_support_biological_standard_error: false
+      may_support_power: false
+      may_support_confidence_interval: false
+      may_support_equivalence: false
+      may_support_confirmatory_claim: false
+      may_support_generalization_claim: false
+      may_substitute_for_biological_standard_error: false
+    candidate_hamming_distance_eligibility_if_qualified: [1, 2, 3]
+    contract_primary_budget_reporting_if_qualified: [1, 3]
+    global_contract_primary_edit_budgets_retained: [1, 3, 5]
+    k5_qualification_credit: 0
+  gse200304:
+    ordinary_study_unit: GSE200304_SUPERSERIES_ONE_STUDY
+    maximum_independent_ordinary_study_contribution_if_qualified: 1
+    maximum_a1_study_contribution_if_qualified: 1
+    maximum_true_a2_dense_study_contribution_if_qualified: 0
+    superseries_subseries_modality_endpoint_or_replicate_may_count_as_independent_study: false
+    author_published_processed_endpoint_may_be_primary_a1_measurement_route: true
+    raw_replay_role: REPRODUCIBILITY_AUXILIARY
+    processed_endpoint_engineering_success_is_qualification: false
+  checkpoint_specific_exposure_may_be_waived: false
+  license_or_redistribution_rights_may_be_waived: false
+  uncertainty_routes_are_dataset_scoped_only: true
+  global_replicate_or_standard_error_relaxation_allowed: false
+  gse149487_three_biological_replicates_and_route_a_se_gate_changed: false
+  other_dataset_specific_stricter_replicate_or_standard_error_gates_changed: false
+  decision_alone_establishes_any_claim: false
+
 claims:
   - claim_id: L0_PUBLIC_INTERVENTION_BENCHMARK
     claim: PUBLIC_TRACEABLE_MRNA_INTERVENTION_BENCHMARK_WITH_LEAKAGE_CONTROL
@@ -62,12 +103,14 @@ claims:
       - THREE_QUALIFIED_ORDINARY_STUDIES
       - TWO_QUALIFIED_A1_STUDIES
       - ONE_QUALIFIED_A2_DENSE_NEIGHBORHOOD
-      - RAW_TO_CANONICAL_PROVENANCE
+      - AUTHORIZED_PRIMARY_MEASUREMENT_ROUTE_WITH_ROW_LEVEL_MULTI_ASSET_LINEAGE
       - PAPER_FAITHFUL_TRANSFORMS
       - SOURCE_CANDIDATE_ENDPOINT_AND_GROUP_IDENTITY
       - LICENSE_AND_EXPOSURE_AUDIT
-      - FROZEN_SPLITS_AND_ZERO_LEAKAGE
-      - EFFECTIVE_N_POWER_AND_CI_SIMULATION
+      - A1_SOURCE_GROUP_NEAR_DUPLICATE_GRAPH_AND_SALT_FROZEN_WITH_ZERO_LEAKAGE
+      - A2_FINAL_BENCHMARK_MEMBERSHIP_FROZEN
+      - EFFECTIVE_N_GROUP_POWER_AT_LEAST_0_80
+      - FULL_CI_WIDTH_AT_MOST_0_30
     evidence_cells: []
     allowed_wording_when_not_established: DEVELOPMENT_BENCHMARK_DEFINITION_AND_QUALIFICATION_IN_PROGRESS
     prohibited_wording_when_not_established: QUALIFIED_PUBLIC_INTERVENTION_BENCHMARK_COMPLETE

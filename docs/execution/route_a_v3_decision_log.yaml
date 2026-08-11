@@ -307,3 +307,69 @@ decisions:
       - configs/route_a_v3_gse200302_srr_role_authority.json
       - /mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE200302/GSE200302_SRR_ROLE_AUTHORITY_20260810T230315P0800_e3b724d/ROLE_AUTHORITY.json
       - /mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE200302/GSE200302_SRR_ROLE_AUTHORITY_20260810T230315P0800_e3b724d/PUBLICATION_COMMIT.json
+  - decision_id: V3-DEC-019
+    decision_type: AMENDMENT
+    dimension: a1_measurement_uncertainty_split_and_claim_boundary
+    conflict: >-
+      The active authority left the owner uncertainty policy unresolved for the
+      single-GSM GSE114002 designed library, treated GSE200304 raw replay as a
+      prerequisite even though an author-published processed endpoint exists,
+      placed all split freezing in A2, and recorded the 0.30 full-CI-width
+      threshold only as a discussion-open companion choice.
+    resolution: >-
+      Apply the user-authorized DEC-019 package without changing the root
+      contract bytes or the frozen 3/2/1 gate. GSE114002 may contribute at most
+      one true-A2 dense study only after every nonwaivable source, construct,
+      checkpoint-specific exposure, rights, A1 split/leakage, power >= 0.80,
+      and full CI width <= 0.30 gate passes, despite a single GSM, no biological
+      replicate, and paper biological SE=null. Its qualified scope is limited to
+      within-assay development/optimization; confirmatory and generalization
+      contributions remain zero, and technical uncertainty is restricted to QC
+      and within-assay technical diagnostics and cannot support biological SE,
+      power, CI, equivalence, confirmatory, or generalization claims. Candidate
+      Hamming distances 1, 2, and 3 remain eligible; contract primary budget
+      reporting for this study uses K in {1,3}; the global primary list
+      [1,3,5] remains unchanged; and K5 is claim-boundary-only with no
+      qualification credit. If qualified, GSE114002 is one study and can
+      contribute at most ordinary=1, A1=0, true-A2=1; GSMs, libraries, pools,
+      and candidates cannot be split into additional studies. For GSE200304,
+      the author-published processed
+      endpoint becomes the conditional A1 primary measurement route and raw
+      replay becomes reproducibility auxiliary, while row-level multi-asset
+      lineage, endpoint direction/scale/semantics, biological group,
+      replicate-or-valid-SE, rights, checkpoint-specific exposure, A1
+      split/leakage, power >= 0.80, and full CI width <= 0.30 remain
+      nonwaivable. If qualified, GSE200304 is one superseries study and can
+      contribute at most ordinary=1, A1=1, true-A2=0; subseries, modalities,
+      endpoints, and replicates cannot be counted as separate studies. A1
+      freezes source authority, biological groups,
+      near-duplicate graph, and split salt and must pass zero-leakage audit; A2
+      freezes final benchmark membership. Checkpoint-specific exposure and
+      license/redistribution rights cannot be waived. Both uncertainty routes are
+      dataset-scoped and create no global replicate/SE relaxation; in particular,
+      the GSE149487 three-biological-replicate and Route-A SE gate and every
+      other dataset-specific stricter gate remain unchanged. This decision qualifies no
+      study, creates no canonical record, authorizes no training/model selection,
+      and establishes no scientific claim.
+    status: FROZEN_USER_AUTHORIZED_A1_QUALIFICATION_POLICY
+    effective_phase: A1
+    requires_user_authorization: true
+    user_authorization_status: GRANTED
+    user_authorization_received_at: "2026-08-11T10:42:53+08:00"
+    preserves_decision_ids: [V3-DEC-005, V3-DEC-017, V3-DEC-018]
+    accepted_prefix_preserved_through: V3-DEC-018
+    amendment_path: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec019.yaml
+    current_qualified_counts: {ordinary: 0, a1: 0, true_a2: 0, canonical_records: 0}
+    training_allowed: false
+    model_selection_allowed: false
+    next_phase_authorized: false
+    scientific_claim_status: NOT_ESTABLISHED
+    sealed_contact: false
+    evidence_refs:
+      - docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md
+      - docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec019.yaml
+      - configs/route_a_v3_a1_qualification.json
+      - docs/execution/route_a_v3_data_role_registry.yaml
+      - docs/execution/route_a_v3_split_registry.yaml
+      - docs/execution/route_a_v3_task_registry.yaml
+      - docs/execution/route_a_v3_claim_evidence_matrix.yaml

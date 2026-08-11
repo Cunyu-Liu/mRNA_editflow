@@ -8,7 +8,9 @@ date: "2026-08-10"
 
 authority:
   initial_source_goal_sha256: d1c031aecdec710495f6861b380785cccd64663ac4bd97b4f479d6fdf372ea07
-  active_amendment_decision_ids: [V3-DEC-017, V3-DEC-018]
+  active_amendment_decision_ids: [V3-DEC-017, V3-DEC-018, V3-DEC-019]
+  active_amendment_paths:
+    V3-DEC-019: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec019.yaml
   source_goal:
     local_path: "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna v3.md"
     sha256: cbac4c3dcba8f1b8df95d8edad52d19e3c126d1c865d0cc423537c754cc90982
@@ -86,8 +88,68 @@ ordinary_data_minimum:
   ndcg_minimum_distinct_candidates_per_pool: 3
   two_candidate_pool_use: PAIRWISE_EVALUATION_ONLY
   power_target: 0.80
+  confidence_level: 0.95
+  full_ci_width_definition: UPPER_MINUS_LOWER
+  maximum_full_ci_width: 0.30
   effective_n_rule: FREEZE_SOURCE_GROUP_REQUIREMENT_BEFORE_MODEL_RESULTS
   if_insufficient: BLOCKED_PENDING_PUBLIC_EVIDENCE
+
+a1_qualification_authority:
+  current_qualified_counts: {ordinary: 0, a1: 0, true_a2: 0, canonical_records: 0}
+  split_freeze_boundary:
+    a1_freezes: [SOURCE_AUTHORITY, BIOLOGICAL_SOURCE_GROUP_ASSIGNMENT, NEAR_DUPLICATE_GRAPH, SPLIT_SALT]
+    a1_zero_leakage_audit_required: true
+    a2_freezes: [FINAL_BENCHMARK_MEMBERSHIP]
+    current_a1_freeze_status: NOT_FROZEN
+    current_a1_zero_leakage_audit_status: NOT_RUN
+    current_a2_final_membership_status: NOT_FROZEN
+  gse114002_designed_library:
+    current_status: NOT_QUALIFIED
+    ordinary_study_unit: GSE114002_ONE_STUDY
+    maximum_independent_ordinary_study_contribution_if_qualified: 1
+    maximum_a1_study_contribution_if_qualified: 0
+    maximum_true_a2_dense_study_contribution_if_qualified: 1
+    gsm_library_pool_or_candidate_may_count_as_independent_study: false
+    allowed_scope_if_qualified: [WITHIN_ASSAY_DEVELOPMENT, WITHIN_ASSAY_OPTIMIZATION]
+    confirmatory_contribution: 0
+    generalization_contribution: 0
+    biological_replicate_status_may_remain: ABSENT_BY_DESIGN
+    paper_biological_standard_error_may_remain: null
+    replicate_and_standard_error_absence_adjudication_scope: GSE114002_DESIGNED_LIBRARY_ONLY
+    replicate_and_standard_error_absence_adjudication_may_apply_to_other_datasets: false
+    technical_fraction_uncertainty:
+      use_scope: QC_AND_WITHIN_ASSAY_TECHNICAL_DIAGNOSTIC_ONLY
+      may_support_biological_standard_error: false
+      may_support_power: false
+      may_support_confidence_interval: false
+      may_support_equivalence: false
+      may_support_confirmatory_claim: false
+      may_support_generalization_claim: false
+      may_substitute_for_biological_standard_error: false
+    candidate_hamming_distance_eligibility_if_qualified: [1, 2, 3]
+    contract_primary_budget_reporting_if_qualified: [1, 3]
+    global_contract_primary_edit_budgets_retained: [1, 3, 5]
+    k5_role: CLAIM_BOUNDARY_ONLY_NOT_QUALIFICATION_CREDIT
+    all_nonwaivable_gates_must_pass: true
+  gse200304:
+    current_status: NOT_QUALIFIED
+    ordinary_study_unit: GSE200304_SUPERSERIES_ONE_STUDY
+    maximum_independent_ordinary_study_contribution_if_qualified: 1
+    maximum_a1_study_contribution_if_qualified: 1
+    maximum_true_a2_dense_study_contribution_if_qualified: 0
+    superseries_subseries_modality_endpoint_or_replicate_may_count_as_independent_study: false
+    primary_measurement_route_if_qualified: AUTHOR_PUBLISHED_PROCESSED_ENDPOINT
+    raw_replay_role: REPRODUCIBILITY_AUXILIARY
+    raw_replay_completion_required_for_primary_a1_measurement_route: false
+    all_nonwaivable_gates_must_pass: true
+  checkpoint_specific_exposure_may_be_waived: false
+  license_or_redistribution_rights_may_be_waived: false
+  uncertainty_routes_are_dataset_scoped_only: true
+  global_replicate_or_standard_error_relaxation_allowed: false
+  gse149487_three_biological_replicates_and_route_a_se_gate_changed: false
+  other_dataset_specific_stricter_replicate_or_standard_error_gates_changed: false
+  decision_alone_qualifies_any_study: false
+  decision_alone_authorizes_training_or_model_selection: false
 
 region_plan:
   primary_region: 5UTR
@@ -230,12 +292,17 @@ phase_plan:
       - AT_LEAST_TWO_QUALIFIED_A1_STUDIES
       - AT_LEAST_ONE_QUALIFIED_A2_DENSE_NEIGHBORHOOD
       - SOURCE_ENDPOINT_TRANSFORM_AND_GROUP_IDENTIFIABLE
+      - SOURCE_GROUP_NEAR_DUPLICATE_GRAPH_AND_SPLIT_SALT_FROZEN
+      - ZERO_QUALIFICATION_LEAKAGE_AUDIT_PASS
+      - GROUP_POWER_AT_LEAST_0_80_AND_FULL_CI_WIDTH_AT_MOST_0_30
+      - CHECKPOINT_SPECIFIC_EXPOSURE_AND_RIGHTS_CLOSED
   - phase_id: A2
     name: BENCHMARK_METRIC_AND_EVALUATOR_FREEZE
     depends_on: [A1]
     evidence_status: NOT_RUN
     hard_gate:
       - UNTOUCHED_ORDINARY_CONFIRMATORY_SET_OR_STRICT_NESTED_GROUP_CV
+      - FINAL_BENCHMARK_MEMBERSHIP_FROZEN
       - METRICS_STATISTICS_SPLITS_AND_COMPUTE_BUDGET_PREFROZEN
       - INDEPENDENT_EVALUATOR_FROZEN
       - SEALED_DRY_RUN_SPEC_ONLY

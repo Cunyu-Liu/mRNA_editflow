@@ -10,11 +10,15 @@ authority:
   contract_path: docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md
   initial_contract_sha256: d1c031aecdec710495f6861b380785cccd64663ac4bd97b4f479d6fdf372ea07
   contract_sha256: cbac4c3dcba8f1b8df95d8edad52d19e3c126d1c865d0cc423537c754cc90982
-  active_amendment_decision_ids: [V3-DEC-017, V3-DEC-018]
+  active_amendment_decision_ids: [V3-DEC-017, V3-DEC-018, V3-DEC-019]
+  dec019_amendment_path: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec019.yaml
+  dec019_amendment_sha256: 8c82e564398f0735fe4976f875fe91f053937b05044e5232e237694a2b36e1ca
+  decision_log_path: docs/execution/route_a_v3_decision_log.yaml
+  decision_log_sha256: b537a2ce19e4bb8b099f05df4ba383b56b8957cbc7be0b5954c9c11d741eb23b
   data_role_registry_path: docs/execution/route_a_v3_data_role_registry.yaml
-  data_role_registry_sha256: 746439ef5d88d8167176d19e9c675746fdc78984a66f6f123f77f6ec49523030
+  data_role_registry_sha256: 4d14ebd1a6adc04a344165f775df8586ef9f8f0461fdcac08649d0644d9956f2
   claim_evidence_matrix_path: docs/execution/route_a_v3_claim_evidence_matrix.yaml
-  claim_evidence_matrix_sha256: f382434e950e25121302a2c812c5193c430d637e41a00d1a91b1e7eba9baadd3
+  claim_evidence_matrix_sha256: 25b62c17320032c764f986892647d4548065cac3a6d42414f96737da3fb3cbad
   accepted_a0_activation_commit: fd722d5fa3c2538fce742b8942b1fb48e782760b
   branch: routea-v3-a1-20260810
   worktree: /home/cunyuliu/mrna_editflow_goal/worktrees/routea_v3_a1_20260810
@@ -67,11 +71,141 @@ gate_snapshot:
   next_phase_authorized: false
   a2_training_authorized: false
 
+dec019_current_disposition:
+  decision_id: V3-DEC-019
+  status: FROZEN_USER_AUTHORIZED_A1_QUALIFICATION_POLICY
+  authority_only_not_study_qualification: true
+  changes_historical_gse114002_attempt_or_audit_bytes: false
+  changes_historical_gse200304_published_endpoint_bundle_bytes: false
+  gse114002_designed_library:
+    owner_uncertainty_policy_status: CLOSED_BY_V3_DEC_019
+    current_status: NOT_QUALIFIED
+    ordinary_study_unit: GSE114002_ONE_STUDY
+    maximum_independent_ordinary_study_contribution_if_qualified: 1
+    maximum_a1_study_contribution_if_qualified: 0
+    maximum_true_a2_dense_study_contribution_if_qualified: 1
+    gsm_library_pool_or_candidate_may_count_as_independent_study: false
+    candidate_hamming_distance_eligibility_if_qualified: [1, 2, 3]
+    contract_primary_budget_reporting_if_qualified: [1, 3]
+    global_contract_primary_edit_budgets_retained: [1, 3, 5]
+    k5_role: CLAIM_BOUNDARY_ONLY_NOT_QUALIFICATION_CREDIT
+    allowed_scope_if_qualified: [WITHIN_ASSAY_DEVELOPMENT, WITHIN_ASSAY_OPTIMIZATION]
+    confirmatory_contribution: 0
+    generalization_contribution: 0
+    technical_fraction_uncertainty:
+      use_scope: QC_AND_WITHIN_ASSAY_TECHNICAL_DIAGNOSTIC_ONLY
+      may_support_biological_standard_error: false
+      may_support_power: false
+      may_support_confidence_interval: false
+      may_support_equivalence: false
+      may_support_confirmatory_claim: false
+      may_support_generalization_claim: false
+      may_substitute_for_biological_standard_error: false
+    current_blocker_count: 6
+    current_blockers:
+      - CHECKPOINT_SPECIFIC_EXPOSURE_UNKNOWN_NOT_ASSERTED
+      - FIELD_AND_BIOLOGICAL_SOURCE_AUTHORITY_UNKNOWN_NOT_ASSERTED
+      - FULL_CONSTRUCT_PREFIX_REPORTER_RNA_CHEMISTRY_UNKNOWN_NOT_ASSERTED
+      - LICENSE_AND_REDISTRIBUTION_RIGHTS_UNKNOWN_NOT_ASSERTED
+      - NEAR_DUPLICATE_SPLIT_AND_LEAKAGE_AUDIT_NOT_RUN
+      - PREFROZEN_GROUP_POWER_NOT_RUN
+  gse200304_published_processed_endpoint:
+    owner_primary_route_policy_status: CLOSED_BY_V3_DEC_019
+    current_status: NOT_QUALIFIED
+    ordinary_study_unit: GSE200304_SUPERSERIES_ONE_STUDY
+    maximum_independent_ordinary_study_contribution_if_qualified: 1
+    maximum_a1_study_contribution_if_qualified: 1
+    maximum_true_a2_dense_study_contribution_if_qualified: 0
+    superseries_subseries_modality_endpoint_or_replicate_may_count_as_independent_study: false
+    primary_measurement_route_if_qualified: AUTHOR_PUBLISHED_PROCESSED_ENDPOINT
+    raw_replay_role: REPRODUCIBILITY_AUXILIARY
+    required_80s_role_authority_is_primary_route_blocker: false
+    current_blocker_count: 8
+    current_blockers:
+      - CHECKPOINT_SPECIFIC_EXPOSURE_UNKNOWN_NOT_ASSERTED
+      - BIOLOGICAL_GROUP_AUTHORITY_NOT_CLOSED
+      - OUTCOME_BLIND_SPLIT_AND_LEAKAGE_NOT_FROZEN
+      - GROUP_POWER_AND_CI_NOT_RUN
+      - CANONICAL_ENDPOINT_DIRECTION_AND_SEMANTICS_NOT_CLOSED
+      - ROW_LEVEL_REPLICATE_OR_STANDARD_ERROR_NOT_CLOSED
+      - LICENSE_AND_REDISTRIBUTION_RIGHTS_UNKNOWN_NOT_ASSERTED
+      - ROW_LOCATOR_AND_MULTI_ASSET_LINEAGE_NOT_CLOSED
+  split_freeze_boundary:
+    a1_freezes: [SOURCE_AUTHORITY, BIOLOGICAL_SOURCE_GROUP_ASSIGNMENT, NEAR_DUPLICATE_GRAPH, SPLIT_SALT]
+    a1_freeze_status: NOT_FROZEN
+    a1_zero_leakage_audit_status: NOT_RUN
+    a2_freezes: [FINAL_BENCHMARK_MEMBERSHIP]
+    a2_final_membership_status: NOT_FROZEN
+  uncertainty_and_power:
+    target_power_minimum: 0.80
+    confidence_level: 0.95
+    full_ci_width_definition: UPPER_MINUS_LOWER
+    maximum_full_ci_width: 0.30
+    model_results_may_change_thresholds: false
+    uncertainty_routes_are_dataset_scoped_only: true
+    global_replicate_or_standard_error_relaxation_allowed: false
+    gse149487_three_biological_replicates_and_route_a_se_gate_changed: false
+  gate_snapshot:
+    qualified_independent_ordinary_studies: 0
+    qualified_a1_studies: 0
+    qualified_true_a2_dense_studies: 0
+    canonical_record_count: 0
+    phase_complete: false
+    training_allowed: false
+    model_selection_allowed: false
+    next_phase_authorized: false
+    scientific_claim_status: NOT_ESTABLISHED
+  runtime_sync_status: PENDING_NO_RUNTIME_EVENT
+
 artifact_lineage:
   protocol:
     path: configs/route_a_v3_a1_qualification.json
-    sha256: 1d348671de50c0fe8b155f8cc114d14a74360fe1a87f9d9bac5207ae794806c4
+    sha256: fe3f7736c1f64b362ebda683ca571fc1a84e1fff36aed3a9ae67272665ba2343
     status: PREFROZEN_BEFORE_MODEL_RESULTS
+  gse114002_dec019_true_a2_successor_adjudicator_v2:
+    dataset_id: GSE114002
+    decision_id: V3-DEC-019
+    config_path: configs/route_a_v3_gse114002_dec019_true_a2_activation_v2.json
+    initial_i_config_sha256: 329461331a0a5d47f94dcafef502482f1416ffa37ef9d91cc0f70a9ed912513b
+    stable_core_projection_sha256: 1c3e4a7aa412e245f6f4680677db60b8241d7873fa126756791bdb0b58f9233a
+    implementation_binding_lifecycle: UNKNOWN_TO_CONFIG_ONLY_BOUND
+    initial_implementation_binding_status: UNKNOWN_NOT_ASSERTED
+    dynamic_config_full_sha_in_static_manifest: false
+    script_path: scripts/route_a_v3/adjudicate_gse114002_dec019_true_a2.py
+    script_sha256: 20b1d6e7824921d31ea6a0ab5ecac93707ae3acf2789b11019574813e33c1b6c
+    focused_test_path: tests/route_a_v3/test_adjudicate_gse114002_dec019_true_a2.py
+    focused_test_sha256: a1ae6e73ee4f9a44f5de6db9ff09be175ecd1648fc592ff2c9f073a7184302ee
+    authority_only_not_study_qualification: true
+    current_qualified: false
+    current_ordinary_study_contribution: 0
+    current_a1_study_contribution: 0
+    current_true_a2_dense_study_contribution: 0
+    current_canonical_record_count: 0
+    training_allowed: false
+    model_selection_allowed: false
+    next_phase_authorized: false
+  gse200304_dec019_reported_endpoint_a1_successor_adjudicator_v2:
+    dataset_id: GSE200304
+    decision_id: V3-DEC-019
+    config_path: configs/route_a_v3_gse200304_dec019_reported_endpoint_a1_activation_v2.json
+    initial_i_config_sha256: d5f616c6802599bf803f351c817abbe87c91a79a0c98d39f737274fd7e21e1c1
+    stable_core_projection_sha256: 6cbc215d38adf3b3d15de314f674b2ae02b2f1a1a733cb4dec3d75d8f9480943
+    implementation_binding_lifecycle: UNKNOWN_TO_CONFIG_ONLY_BOUND
+    initial_implementation_binding_status: UNKNOWN_NOT_ASSERTED
+    dynamic_config_full_sha_in_static_manifest: false
+    script_path: scripts/route_a_v3/adjudicate_gse200304_dec019_reported_endpoint_a1.py
+    script_sha256: 7ad39104d6fc908a23c538932a4ad9249e24131c383ce088f7010657d1c8191b
+    focused_test_path: tests/route_a_v3/test_adjudicate_gse200304_dec019_reported_endpoint_a1.py
+    focused_test_sha256: a153c54c9b7fff228d4702e52e2cc9521afcbe14bfb5658fbc1b8fe96ae74c09
+    authority_only_not_study_qualification: true
+    current_qualified: false
+    current_ordinary_study_contribution: 0
+    current_a1_study_contribution: 0
+    current_true_a2_dense_study_contribution: 0
+    current_canonical_record_count: 0
+    training_allowed: false
+    model_selection_allowed: false
+    next_phase_authorized: false
   collector:
     path: scripts/route_a_v3/audit_a1_public_data.py
     sha256: f5070e6cf6a884e6960654b03fab90f1aa5e1fe2508ee51aef46afce4d4da8ba
@@ -1373,8 +1507,8 @@ boundary_deviation:
     sha256: e6c1b79c037058d21be33e0103a1d9740feac7cb0651f13033a01e0f8ff4bd47
 
 power_prefreeze:
-  source: ROOT_COMPANION_PROTOCOL_CHOICE_UNDER_CONTRACT_UNDERSPECIFICATION
-  contract_amendment: false
+  source: V3_DEC_019_USER_AUTHORIZED_ROOT_AUTHORITY_COMPANION
+  contract_amendment: true
   status: PREFROZEN_BEFORE_MODEL_RESULTS
   model_results_may_change_this_rule: false
   analysis_and_bootstrap_unit: BIOLOGICAL_SOURCE_GROUP
@@ -1384,12 +1518,12 @@ power_prefreeze:
   target_power: 0.80
   confidence_level: 0.95
   maximum_ci_full_width: 0.30
-  contract_specifies_target_ci_full_width: false
-  selected_under_contract_underspecification: true
+  contract_specifies_target_ci_full_width: true
+  selected_under_contract_underspecification: false
   simulation_seed: 20260810
   bootstrap_resamples: 2000
   simulation_trials: 1000
-  user_discussion_open: true
+  user_discussion_open: false
 
 claim_boundaries:
   gap_inventory_is_data_freeze: false
@@ -1408,11 +1542,20 @@ claim_boundaries:
   gse114002_accession_level_exposure_is_checkpoint_specific_exposure: false
   gse114002_checkpoint_not_declared_establishes_absence: false
   gse114002_author_code_gpl_licenses_geo_data: false
+  dec019_authority_decision_is_gse114002_study_qualification: false
+  gse114002_technical_fraction_uncertainty_is_biological_standard_error: false
+  gse114002_technical_fraction_uncertainty_may_support_power_ci_equivalence_confirmatory_or_generalization: false
+  gse114002_k2_candidate_hamming_distance_may_be_dropped: false
+  gse114002_k5_may_receive_qualification_credit: false
+  gse114002_gsm_library_pool_or_candidate_may_count_as_independent_study: false
   gse200304_engineering_success_is_study_qualification: false
   gse200304_fastq_acquisition_is_study_qualification: false
   gse200304_transport_integrity_is_paper_native_count_replay: false
   gse200304_sequence_proxy_groups_are_biological_source_groups: false
   gse200304_precomputed_aggregate_evidence_is_paper_native_xtail_replay: false
+  dec019_authority_decision_is_gse200304_study_qualification: false
+  gse200304_published_endpoint_engineering_success_is_study_qualification: false
+  gse200304_subseries_modality_endpoint_or_replicate_may_count_as_independent_study: false
   gse200304_raw_replay_preflight_is_study_qualification: false
   gse200304_raw_replay_preflight_is_paper_native_count_replay: false
   gse200304_raw_replay_preflight_is_paper_native_xtail_replay: false
@@ -1426,10 +1569,28 @@ claim_boundaries:
   gse149487_stop_before_data_preflight_authorizes_training_or_model_selection: false
   gse149487_stop_before_data_preflight_establishes_scientific_claim: false
   gse149487_stop_before_data_preflight_reopens_historical_r4: false
+  dec019_creates_global_replicate_or_standard_error_relaxation: false
+  dec019_changes_gse149487_three_biological_replicates_and_route_a_se_gate: false
+  dec019_allows_checkpoint_specific_exposure_or_rights_waiver: false
+  dec019_a1_authority_freeze_is_final_benchmark_membership_freeze: false
   a1_phase_complete: false
   route_a_established: false
 
 verification:
+  targeted_dec019_successor_adjudicator_tests:
+    status: PASS
+    initial_i_state:
+      status: PASS
+      passed: 60
+      failed: 0
+    synthetic_bound_state:
+      status: PASS
+      passed: 60
+      failed: 0
+  dec019_successor_json_parse: PASS
+  dec019_successor_python_compile: PASS
+  dec019_successor_stable_core_projection_sha256_verified: true
+  dec019_successor_initial_i_binding_fail_closed_before_evidence_or_output: true
   targeted_a1_tests:
     status: PASS
     passed: 17
@@ -1510,7 +1671,8 @@ verification:
     scope: INTERIM_RECORD_STATUS_CLAIM_BOUNDARIES_PLUMAGE_BLOCK_SEMANTICS_AND_LOG2_CPM_SCALE
 
 initial_generated_at: "2026-08-10T06:30:58+08:00"
-generated_at: "2026-08-11T10:24:16+08:00"
-updated_at: "2026-08-11T10:24:16+08:00"
-updated_for_decision_id: V3-DEC-018
+generated_at: "2026-08-11T12:19:34+08:00"
+updated_at: "2026-08-11T12:19:34+08:00"
+updated_for_decision_id: V3-DEC-019
+latest_authority_update_id: V3-DEC-019
 latest_evidence_update_id: GSE114002_PUBLIC_AUTHORITY_GAP_AUDIT_V1

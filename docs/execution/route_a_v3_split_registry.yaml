@@ -1,4 +1,5 @@
-# Route A V3 split primitives. Splits are definitions until frozen and audited in A2.
+# Route A V3 split primitives. A1 qualification freezes identity/group/graph/salt
+# and zero-leakage evidence; A2 freezes final benchmark membership.
 contract_id: mrna_xeditflow_route_a_v3
 version: "3.0.0"
 schema_version: "3.0.0"
@@ -10,6 +11,8 @@ authority_ref:
   config_path: configs/route_a_v3.yaml
   goal_path: docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md
   goal_sha256: cbac4c3dcba8f1b8df95d8edad52d19e3c126d1c865d0cc423537c754cc90982
+  active_amendment_decision_ids: [V3-DEC-017, V3-DEC-018, V3-DEC-019]
+  dec019_amendment_path: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec019.yaml
 
 expected_split_ids: [S1, S2, S3, S4, S5, S6, S7, S8, S9]
 
@@ -22,7 +25,18 @@ registry_closure:
   s9_may_not_support_biological_claims: true
 
 global_split_rules:
-  freeze_phase: A2
+  freeze_phase: STAGED_A1_QUALIFICATION_A2_FINAL_MEMBERSHIP
+  a1_qualification_freeze_phase: A1
+  a1_qualification_freeze_required:
+    - SOURCE_AUTHORITY
+    - BIOLOGICAL_SOURCE_GROUP_ASSIGNMENT
+    - NEAR_DUPLICATE_GRAPH
+    - SPLIT_SALT
+  a1_zero_leakage_audit_required: true
+  a1_current_freeze_status: NOT_FROZEN
+  a1_current_zero_leakage_audit_status: NOT_RUN
+  a2_final_benchmark_membership_freeze_phase: A2
+  a2_current_final_benchmark_membership_status: NOT_FROZEN
   split_membership_outcome_blind: true
   random_edge_split_allowed: false
   reverse_edge_cross_partition_count_max: 0

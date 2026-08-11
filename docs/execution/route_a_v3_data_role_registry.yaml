@@ -10,6 +10,8 @@ authority_ref:
   config_path: configs/route_a_v3.yaml
   goal_path: docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md
   goal_sha256: cbac4c3dcba8f1b8df95d8edad52d19e3c126d1c865d0cc423537c754cc90982
+  active_amendment_decision_ids: [V3-DEC-017, V3-DEC-018, V3-DEC-019]
+  dec019_amendment_path: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec019.yaml
 
 data_policy:
   public_data_only: true
@@ -19,6 +21,12 @@ data_policy:
   ordinary_minimum_independent_studies: 3
   ordinary_minimum_a1_studies: 2
   ordinary_minimum_a2_dense_studies: 1
+  target_power_minimum: 0.80
+  maximum_full_ci_width: 0.30
+  uncertainty_routes_are_dataset_scoped_only: true
+  global_replicate_or_standard_error_relaxation_allowed: false
+  gse149487_three_biological_replicates_and_route_a_se_gate_changed: false
+  other_dataset_specific_stricter_replicate_or_standard_error_gates_changed: false
 
 allowed_qualification_statuses:
   - AUDIT_PENDING
@@ -60,19 +68,20 @@ registry_closure:
   no_current_training_role_may_be_active: true
 
 common_audit_requirements:
-  - PAPER_FAITHFUL_RAW_TO_CANONICAL_JOIN
+  - AUTHORIZED_PRIMARY_MEASUREMENT_ROUTE_WITH_ROW_LEVEL_LINEAGE
   - SOURCE_AND_CANDIDATE_IDENTITY
   - FULL_SEQUENCE_AND_EDIT_SET
   - REGION_STUDY_ASSAY_CONTEXT_AND_ENDPOINT
   - ORIGINAL_UNIT_AND_PAPER_FAITHFUL_TRANSFORM
   - DELTA_DIRECTION
-  - REPLICATE_AND_STANDARD_ERROR
+  - REPLICATE_AND_STANDARD_ERROR_OR_DATASET_SCOPED_ABSENCE_ADJUDICATION
   - BIOLOGICAL_SOURCE_GROUP
   - PROVENANCE_AND_CHECKSUM
   - LICENSE_AND_REDISTRIBUTION
   - FOUNDATION_EXPOSURE
   - REJECT_REASON
   - POST_DEDUP_EFFECTIVE_N
+  - PREFROZEN_GROUP_POWER_AND_FULL_CI_WIDTH
 
 datasets:
   - dataset_id: GSE145046
@@ -126,15 +135,55 @@ datasets:
     checkpoint_specific_foundation_exposure_status: AUDIT_PENDING
     future_use_boundary_if_qualified: WITHIN_ASSAY_DEVELOPMENT_AND_OPTIMIZATION_ONLY_SEQUENCE_EXPOSED
     fallback_if_designed_library_not_qualifiable: NEW_GENUINE_PUBLIC_A2_STUDY_REQUIRED
+    dec019_owner_uncertainty_policy_status: CLOSED_BY_V3_DEC_019
+    dec019_conditional_true_a2_route:
+      current_status: NOT_QUALIFIED
+      subset: DESIGNED_LIBRARY_GSM3130443
+      single_gsm_allowed_if_all_nonwaivable_gates_pass: true
+      biological_replicate_status_may_remain: ABSENT_BY_DESIGN
+      paper_biological_standard_error_may_remain: null
+      replicate_and_standard_error_absence_adjudication_scope: GSE114002_DESIGNED_LIBRARY_ONLY
+      replicate_and_standard_error_absence_adjudication_may_apply_to_other_datasets: false
+      ordinary_study_unit: GSE114002_ONE_STUDY
+      maximum_independent_ordinary_study_contribution_if_qualified: 1
+      gsm_library_pool_or_candidate_may_count_as_independent_study: false
+      technical_fraction_uncertainty:
+        use_scope: QC_AND_WITHIN_ASSAY_TECHNICAL_DIAGNOSTIC_ONLY
+        may_support_biological_standard_error: false
+        may_support_power: false
+        may_support_confidence_interval: false
+        may_support_equivalence: false
+        may_support_confirmatory_claim: false
+        may_support_generalization_claim: false
+        may_substitute_for_biological_standard_error: false
+      maximum_true_a2_dense_study_contribution_if_qualified: 1
+      eligible_claim_scope_if_qualified: [WITHIN_ASSAY_DEVELOPMENT, WITHIN_ASSAY_OPTIMIZATION]
+      confirmatory_contribution: 0
+      generalization_contribution: 0
+      candidate_hamming_distance_eligibility_if_qualified: [1, 2, 3]
+      contract_primary_budget_reporting_if_qualified: [1, 3]
+      global_contract_primary_edit_budgets_retained: [1, 3, 5]
+      k5_role: CLAIM_BOUNDARY_ONLY_NOT_QUALIFICATION_CREDIT
+      power_target_minimum: 0.80
+      maximum_full_ci_width: 0.30
+      exposure_or_rights_waiver_allowed: false
+    current_dec019_blocker_count: 6
+    current_dec019_blockers:
+      - CHECKPOINT_SPECIFIC_EXPOSURE_UNKNOWN_NOT_ASSERTED
+      - FIELD_AND_BIOLOGICAL_SOURCE_AUTHORITY_UNKNOWN_NOT_ASSERTED
+      - FULL_CONSTRUCT_PREFIX_REPORTER_RNA_CHEMISTRY_UNKNOWN_NOT_ASSERTED
+      - LICENSE_AND_REDISTRIBUTION_RIGHTS_UNKNOWN_NOT_ASSERTED
+      - NEAR_DUPLICATE_SPLIT_AND_LEAKAGE_AUDIT_NOT_RUN
+      - PREFROZEN_GROUP_POWER_NOT_RUN
     allowed_current_uses: [PROVENANCE_AUDIT, SUBSET_RECONSTRUCTION, DESIGNED_LIBRARY_A2_RECOVERY_AUDIT, FOUNDATION_EXPOSURE_AUDIT]
     forbidden_current_uses: [TRAINING, CALIBRATION, MODEL_SELECTION, CONFIRMATORY_EVALUATION, CLAIM_SUPPORT]
     blocking_requirements:
-      - RANDOM_LIBRARY_AND_NATURAL_SUBSET_SEPARATED
-      - DESIGNED_LIBRARY_FIELD_AUTHORITY_CLOSED
-      - MOTHER_SOURCE_ANCHORS_AND_MULTI_CANDIDATE_POOLS_RECONSTRUCTED
-      - REPLICATE_AND_STANDARD_ERROR_AUDITED
-      - CHECKPOINT_LEVEL_FOUNDATION_EXPOSURE_AUDIT
-      - LICENSE_EFFECTIVE_N_AND_LEAKAGE_AUDIT
+      - FIELD_AND_BIOLOGICAL_SOURCE_AUTHORITY_CLOSED
+      - FULL_CONSTRUCT_PREFIX_REPORTER_AND_RNA_CHEMISTRY_CLOSED
+      - CHECKPOINT_SPECIFIC_EXPOSURE_CLOSED
+      - LICENSE_AND_REDISTRIBUTION_RIGHTS_CLOSED
+      - A1_SOURCE_GROUP_NEAR_DUPLICATE_GRAPH_AND_SALT_FROZEN_WITH_ZERO_LEAKAGE
+      - PREFROZEN_GROUP_POWER_AT_LEAST_0_80_AND_FULL_CI_WIDTH_AT_MOST_0_30
     evidence_status: NOT_RUN
   - dataset_id: GSE149487
     aliases: [PLUMAGE]
@@ -244,6 +293,32 @@ datasets:
       replacement_blocker_status: OPEN
       role_grid_status: CONFLICT_WITH_CURRENT_80S_EXPECTATION
       pdna_may_substitute_for_80s_rna: false
+    dec019_primary_measurement_route:
+      current_status: NOT_QUALIFIED
+      conditional_a1_eligibility: true
+      ordinary_study_unit: GSE200304_SUPERSERIES_ONE_STUDY
+      maximum_independent_ordinary_study_contribution_if_qualified: 1
+      maximum_a1_study_contribution_if_qualified: 1
+      maximum_true_a2_dense_study_contribution_if_qualified: 0
+      superseries_subseries_modality_endpoint_or_replicate_may_count_as_independent_study: false
+      primary_measurement_route_if_qualified: AUTHOR_PUBLISHED_PROCESSED_ENDPOINT
+      raw_replay_role: REPRODUCIBILITY_AUXILIARY
+      raw_replay_completion_required_for_primary_a1_measurement_route: false
+      owner_primary_route_policy_status: CLOSED_BY_V3_DEC_019
+      required_80s_role_authority_is_primary_route_blocker: false
+      checkpoint_specific_exposure_or_rights_waiver_allowed: false
+      power_target_minimum: 0.80
+      maximum_full_ci_width: 0.30
+      current_blocker_count: 8
+      current_blockers:
+        - CHECKPOINT_SPECIFIC_EXPOSURE_UNKNOWN_NOT_ASSERTED
+        - BIOLOGICAL_GROUP_AUTHORITY_NOT_CLOSED
+        - OUTCOME_BLIND_SPLIT_AND_LEAKAGE_NOT_FROZEN
+        - GROUP_POWER_AND_CI_NOT_RUN
+        - CANONICAL_ENDPOINT_DIRECTION_AND_SEMANTICS_NOT_CLOSED
+        - ROW_LEVEL_REPLICATE_OR_STANDARD_ERROR_NOT_CLOSED
+        - LICENSE_AND_REDISTRIBUTION_RIGHTS_UNKNOWN_NOT_ASSERTED
+        - ROW_LOCATOR_AND_MULTI_ASSET_LINEAGE_NOT_CLOSED
     role_authority_runtime_sync_status: PENDING_NO_EVT_035
     role_authority_changes_dataset_qualification: false
     ordinary_gate_contribution: 0
@@ -253,13 +328,17 @@ datasets:
     training_allowed: false
     model_selection_allowed: false
     next_phase_authorized: false
-    allowed_current_uses: [PROVENANCE_AUDIT, OFFICIAL_METADATA_ROLE_AUTHORITY_AUDIT, REGION_AND_MEMBER_MAPPING_RECONSTRUCTION]
+    allowed_current_uses: [PROVENANCE_AUDIT, OFFICIAL_METADATA_ROLE_AUTHORITY_AUDIT, PUBLISHED_PROCESSED_ENDPOINT_PRIMARY_ROUTE_QUALIFICATION, REGION_AND_MEMBER_MAPPING_RECONSTRUCTION]
     forbidden_current_uses: [TRAINING, CALIBRATION, MODEL_SELECTION, CONFIRMATORY_EVALUATION, CLAIM_SUPPORT]
     blocking_requirements:
-      - SERIES_MEMBER_MAPPING_CLOSED
-      - REQUIRED_80S_ROLE_AUTHORITY_ABSENT
-      - SOURCE_CANDIDATE_ENDPOINT_AND_CONTEXT_RECONSTRUCTED
-      - BIOLOGICAL_GROUP_LICENSE_AND_EXPOSURE_AUDITED
+      - ROW_LEVEL_MULTI_ASSET_LINEAGE_AND_LOCATORS_CLOSED
+      - ENDPOINT_DIRECTION_SCALE_AND_SEMANTICS_CLOSED
+      - BIOLOGICAL_SOURCE_GROUP_AUTHORITY_CLOSED
+      - REPLICATE_OR_VALID_STANDARD_ERROR_CLOSED
+      - LICENSE_AND_REDISTRIBUTION_RIGHTS_CLOSED
+      - CHECKPOINT_SPECIFIC_EXPOSURE_CLOSED
+      - A1_SOURCE_GROUP_NEAR_DUPLICATE_GRAPH_AND_SALT_FROZEN_WITH_ZERO_LEAKAGE
+      - PREFROZEN_GROUP_POWER_AT_LEAST_0_80_AND_FULL_CI_WIDTH_AT_MOST_0_30
     role_authority_evidence_status: PASS
     evidence_status: NOT_RUN
   - dataset_id: ENCSR854RUF
