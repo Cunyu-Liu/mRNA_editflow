@@ -284,7 +284,8 @@ def test_static_current_and_synthetic_i_b_freeze_successor_chain_and_truth() -> 
     ADJ.validate_static_config(config_b)
     assert config_i["repository_authority"]["base_commit"] == ADJ.REPAIR_BASE_COMMIT
     assert config_i["repository_authority"]["implementation_commit_expected_parent"] == ADJ.REPAIR_BASE_COMMIT
-    assert ADJ.REPAIR_BASE_COMMIT == ADJ.PREDECESSOR_D1_COMMIT
+    assert ADJ.REPAIR_BASE_COMMIT == ADJ.PREDECESSOR_I3_COMMIT
+    assert ADJ.PREDECESSOR_I3_PARENT_COMMIT == ADJ.PREDECESSOR_D1_COMMIT
     assert ADJ.REPAIR_BASE_COMMIT != ADJ.HISTORICAL_BINDING_COMMIT
     assert ADJ.BINDING_CONFIG_REPO_PATHS == (ADJ.CONFIG_REPO_PATH,)
     assert ADJ.EXPECTED_IMPLEMENTATION_FILES == {
@@ -318,6 +319,20 @@ def test_static_current_and_synthetic_i_b_freeze_successor_chain_and_truth() -> 
         item["path"]: item["sha256"]
         for item in predecessor["frozen_descriptor_commit_blobs"]
     } == ADJ.PREDECESSOR_D1_FROZEN_BLOBS
+    predecessor_i3 = config_i["repository_authority"][
+        "predecessor_implementation_successor"
+    ]
+    assert predecessor_i3["parent_commit"] == ADJ.PREDECESSOR_I3_PARENT_COMMIT
+    assert predecessor_i3["implementation_commit"] == ADJ.PREDECESSOR_I3_COMMIT
+    assert predecessor_i3["science_core_sha256"] == ADJ.PREDECESSOR_I3_CONFIG_CORE_SHA256
+    assert predecessor_i3["descriptor_set_sha256"] == ADJ.PREDECESSOR_I3_DESCRIPTOR_SET_SHA256
+    assert predecessor_i3["implementation_commit_exact_changed_paths"] == (
+        ADJ.PREDECESSOR_I3_EXACT_CHANGED_PATHS
+    )
+    assert {
+        item["path"]: item["sha256"]
+        for item in predecessor_i3["frozen_implementation_commit_blobs"]
+    } == ADJ.PREDECESSOR_I3_FROZEN_BLOBS
     assert current_config["evidence_contract"]["evidence_schema_version"] == ADJ.EVIDENCE_SCHEMA_VERSION
     assert ADJ.EVIDENCE_SCHEMA_VERSION.endswith(".v3")
     assert ADJ.EVIDENCE_RECORD_TYPE.endswith("_V3")
@@ -327,9 +342,18 @@ def test_static_current_and_synthetic_i_b_freeze_successor_chain_and_truth() -> 
     assert state["training_allowed"] is state["model_selection_allowed"] is state["next_phase_authorized"] is False
 
 
-def test_successor_i_seed_preserves_exact_d1_partial_descriptor_state() -> None:
-    config = json.loads(CONFIG.read_text(encoding="utf-8"))
-    binding = config["implementation_binding"]
+def test_current_disk_i_or_b_preserves_exact_d1_partial_descriptor_state() -> None:
+    current = json.loads(CONFIG.read_text(encoding="utf-8"))
+    ADJ.validate_static_config(current)
+    current_binding = current["implementation_binding"]
+    if current_binding["status"] == "BOUND":
+        ADJ.validate_implementation_binding(current)
+    else:
+        assert current_binding["status"] == ADJ.UNKNOWN
+
+    config_i = unknown_implementation(current)
+    ADJ.validate_static_config(config_i)
+    binding = config_i["implementation_binding"]
     assert binding["status"] == ADJ.UNKNOWN
     assert {
         binding[key]
@@ -339,10 +363,10 @@ def test_successor_i_seed_preserves_exact_d1_partial_descriptor_state() -> None:
             "implementation_test_sha256",
         )
     } == {ADJ.UNKNOWN}
-    descriptors = config["evidence_descriptor_bindings"]
+    descriptors = config_i["evidence_descriptor_bindings"]
     assert descriptors["status"] == "PARTIALLY_BOUND"
     assert descriptors["descriptor_set_sha256"] == ADJ.PREDECESSOR_D1_DESCRIPTOR_SET_SHA256
-    assert ADJ.descriptor_set_sha256(config) == ADJ.PREDECESSOR_D1_DESCRIPTOR_SET_SHA256
+    assert ADJ.descriptor_set_sha256(config_i) == ADJ.PREDECESSOR_D1_DESCRIPTOR_SET_SHA256
     assert descriptors["slots"][0] == {
         "slot_id": "CANONICAL_ROW_LOCATOR_MULTI_ASSET_LINEAGE",
         "absolute_path": (
@@ -355,6 +379,25 @@ def test_successor_i_seed_preserves_exact_d1_partial_descriptor_state() -> None:
         "bytes": 4367,
     }
     assert all(ADJ._descriptor_slot_unbound(slot) for slot in descriptors["slots"][1:])
+
+    if current_binding["status"] == "BOUND":
+        config_b = bind_implementation(
+            config_i,
+            implementation_commit=current_binding["implementation_commit"],
+            script_sha256=current_binding["implementation_script_sha256"],
+            test_sha256=current_binding["implementation_test_sha256"],
+        )
+        assert config_b == current
+    else:
+        config_b = bind_implementation(config_i)
+    ADJ.validate_static_config(config_b)
+    ADJ._validate_i_to_b_config_pair(
+        config_i,
+        config_b,
+        config_path=ADJ.CONFIG_REPO_PATH,
+        implementation_commit=config_b["implementation_binding"]["implementation_commit"],
+    )
+    assert config_b["evidence_descriptor_bindings"] == descriptors
 
 
 def test_other_seven_gate_semantics_are_unchanged_under_v3_record_identity() -> None:
@@ -1167,7 +1210,9 @@ def _authority_fixture(
     drift_predecessor_blob: bool = False,
     invalid_predecessor_changed_paths: bool = False,
     invalid_predecessor_semantic_diff: bool = False,
+    bound_predecessor_i3: bool = False,
     drift_successor_i_descriptor: bool = False,
+    drift_successor_i_core_authority: bool = False,
 ) -> tuple[dict[str, Any], dict[str, str]]:
     repo = tmp_path / f"repo-{lifecycle}"
     repo.mkdir()
@@ -1183,6 +1228,8 @@ def _authority_fixture(
     historical_test_payload = b"synthetic historical G200 v3 test\n"
     predecessor_script_payload = b"synthetic predecessor D1 script\n"
     predecessor_test_payload = b"synthetic predecessor D1 test\n"
+    predecessor_i3_script_payload = b"synthetic predecessor I3 script\n"
+    predecessor_i3_test_payload = b"synthetic predecessor I3 test\n"
 
     config_i = unknown_implementation(read_config())
     core_pairs = (
@@ -1237,6 +1284,7 @@ def _authority_fixture(
     predecessor_parent_config = copy.deepcopy(config_i)
     predecessor_repository = predecessor_parent_config["repository_authority"]
     predecessor_repository.pop("predecessor_descriptor_binding")
+    predecessor_repository.pop("predecessor_implementation_successor")
     predecessor_repository["base_commit"] = ADJ.HISTORICAL_BINDING_COMMIT
     predecessor_repository["implementation_commit_expected_parent"] = (
         ADJ.HISTORICAL_BINDING_COMMIT
@@ -1298,6 +1346,59 @@ def _authority_fixture(
             ],
         }
     )
+
+    predecessor_i3_config = unknown_implementation(config_i)
+    predecessor_i3_repository = predecessor_i3_config["repository_authority"]
+    predecessor_i3_repository.pop("predecessor_implementation_successor")
+    predecessor_i3_repository["base_commit"] = ADJ.PREDECESSOR_I3_PARENT_COMMIT
+    predecessor_i3_repository["implementation_commit_expected_parent"] = (
+        ADJ.PREDECESSOR_I3_PARENT_COMMIT
+    )
+    predecessor_i3_config["evidence_descriptor_bindings"] = copy.deepcopy(
+        predecessor_d1_config["evidence_descriptor_bindings"]
+    )
+    if bound_predecessor_i3:
+        predecessor_i3_config["implementation_binding"].update(
+            {
+                "status": "BOUND",
+                "implementation_commit": "d" * 40,
+                "implementation_script_sha256": ADJ.sha256(
+                    predecessor_i3_script_payload
+                ),
+                "implementation_test_sha256": ADJ.sha256(
+                    predecessor_i3_test_payload
+                ),
+            }
+        )
+    predecessor_i3_core = ADJ.config_core_sha256(predecessor_i3_config)
+    predecessor_i3_config["implementation_binding"]["config_core_sha256"] = (
+        predecessor_i3_core
+    )
+    predecessor_i3_blobs = {
+        ADJ.CONFIG_REPO_PATH: ADJ.json_bytes(predecessor_i3_config),
+        ADJ.SCRIPT_REPO_PATH: predecessor_i3_script_payload,
+        ADJ.TEST_REPO_PATH: predecessor_i3_test_payload,
+    }
+    predecessor_i3_frozen = {
+        path: ADJ.sha256(payload) for path, payload in predecessor_i3_blobs.items()
+    }
+    repository["predecessor_implementation_successor"].update(
+        {
+            "science_core_sha256": predecessor_i3_core,
+            "descriptor_set_sha256": predecessor_i3_config[
+                "evidence_descriptor_bindings"
+            ]["descriptor_set_sha256"],
+            "frozen_implementation_commit_blobs": [
+                {"path": path, "sha256": digest}
+                for path, digest in predecessor_i3_frozen.items()
+            ],
+        }
+    )
+    if drift_successor_i_core_authority:
+        authority_path = core_authority["root_contract_path"]
+        authority_payload = b"synthetic synchronized successor-I core drift\n"
+        (repo / authority_path).write_bytes(authority_payload)
+        core_authority["root_contract_sha256"] = ADJ.sha256(authority_payload)
     if drift_successor_i_descriptor:
         successor_descriptors = config_i["evidence_descriptor_bindings"]
         successor_descriptors["slots"][1].update(
@@ -1332,6 +1433,13 @@ def _authority_fixture(
         "PREDECESSOR_D1_DESCRIPTOR_SET_SHA256",
         predecessor_d1_config["evidence_descriptor_bindings"]["descriptor_set_sha256"],
     )
+    monkeypatch.setattr(ADJ, "PREDECESSOR_I3_FROZEN_BLOBS", predecessor_i3_frozen)
+    monkeypatch.setattr(ADJ, "PREDECESSOR_I3_CONFIG_CORE_SHA256", predecessor_i3_core)
+    monkeypatch.setattr(
+        ADJ,
+        "PREDECESSOR_I3_DESCRIPTOR_SET_SHA256",
+        predecessor_i3_config["evidence_descriptor_bindings"]["descriptor_set_sha256"],
+    )
     synthetic_core_map = {
         ADJ.GSE200304_CONFIG_REPO_PATH: config_i["implementation_binding"]["config_core_sha256"],
     }
@@ -1359,6 +1467,7 @@ def _authority_fixture(
             f"{ADJ.HISTORICAL_IMPLEMENTATION_COMMIT}^": ADJ.HISTORICAL_BASE_COMMIT,
             f"{ADJ.HISTORICAL_BINDING_COMMIT}^": ADJ.HISTORICAL_IMPLEMENTATION_COMMIT,
             f"{ADJ.PREDECESSOR_D1_COMMIT}^": ADJ.PREDECESSOR_D1_PARENT_COMMIT,
+            f"{ADJ.PREDECESSOR_I3_COMMIT}^": ADJ.PREDECESSOR_I3_PARENT_COMMIT,
             f"{implementation}^": repair_base,
             f"{binding_commit}^": implementation,
             f"{descendant}^": binding_commit,
@@ -1379,6 +1488,8 @@ def _authority_fixture(
                 if invalid_predecessor_changed_paths:
                     return f"{ADJ.CONFIG_REPO_PATH}\n{ADJ.SCRIPT_REPO_PATH}"
                 return ADJ.CONFIG_REPO_PATH
+            if commit == ADJ.PREDECESSOR_I3_COMMIT:
+                return "\n".join(ADJ.PREDECESSOR_I3_EXACT_CHANGED_PATHS)
             if commit == binding_commit:
                 return "\n".join(ADJ.BINDING_CONFIG_REPO_PATHS)
             if commit == descendant:
@@ -1389,6 +1500,7 @@ def _authority_fixture(
                 ADJ.HISTORICAL_IMPLEMENTATION_COMMIT: ADJ.HISTORICAL_BASE_COMMIT,
                 ADJ.HISTORICAL_BINDING_COMMIT: ADJ.HISTORICAL_IMPLEMENTATION_COMMIT,
                 ADJ.PREDECESSOR_D1_COMMIT: ADJ.PREDECESSOR_D1_PARENT_COMMIT,
+                ADJ.PREDECESSOR_I3_COMMIT: ADJ.PREDECESSOR_I3_PARENT_COMMIT,
                 implementation: repair_base,
                 binding_commit: implementation,
                 descendant: binding_commit,
@@ -1414,6 +1526,8 @@ def _authority_fixture(
             if drift_predecessor_blob:
                 return predecessor_blobs[path] + b"drift"
             return predecessor_blobs[path]
+        if commit == ADJ.PREDECESSOR_I3_COMMIT and path in predecessor_i3_blobs:
+            return predecessor_i3_blobs[path]
         if path == ADJ.CONFIG_REPO_PATH:
             return ADJ.json_bytes(config_i if commit == implementation else config_b)
         payloads = {
@@ -1478,6 +1592,17 @@ def test_production_authority_rejects_frozen_historical_blob_drift(
     with pytest.raises(ADJ.BindingError, match="SHA differs|drifted"):
         ADJ.validate_production_authority(config)
 
+    bound_i3_root = tmp_path / "synchronized-bound-i3"
+    bound_i3_root.mkdir()
+    bound_i3_config, _ = _authority_fixture(
+        bound_i3_root,
+        monkeypatch,
+        lifecycle="B_DESCENDANT",
+        bound_predecessor_i3=True,
+    )
+    with pytest.raises(ADJ.BindingError, match="not exact UNKNOWN"):
+        ADJ.validate_production_authority(bound_i3_config)
+
 
 @pytest.mark.parametrize(
     ("drift_predecessor_blob", "invalid_predecessor_changed_paths", "match"),
@@ -1532,3 +1657,14 @@ def test_production_authority_rejects_synchronized_successor_i_descriptor_drift(
     )
     with pytest.raises(ADJ.BindingError, match="descriptor binding drifted"):
         ADJ.validate_production_authority(config)
+
+    core_drift_root = tmp_path / "synchronized-core-authority-drift"
+    core_drift_root.mkdir()
+    core_drift_config, _ = _authority_fixture(
+        core_drift_root,
+        monkeypatch,
+        lifecycle=lifecycle,
+        drift_successor_i_core_authority=True,
+    )
+    with pytest.raises(ADJ.BindingError, match="exact allowlist"):
+        ADJ.validate_production_authority(core_drift_config)

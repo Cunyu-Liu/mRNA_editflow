@@ -36,7 +36,7 @@ EXPECTED_IMPLEMENTATION_FILES = {
 }
 FROZEN_CONFIG_CORE_SHA256_BY_PATH = {
     GSE200304_CONFIG_REPO_PATH: (
-        "bca69bd05c094575bfa860b5492f019810c2845abe9218d7030444821f357a0b"
+        "13394ac6a9b9ec6e6241d0d9b1048ecfa5c90874c7447991fc2a8248a574c170"
     ),
 }
 FROZEN_CONFIG_CORE_SHA256 = FROZEN_CONFIG_CORE_SHA256_BY_PATH[CONFIG_REPO_PATH]
@@ -200,7 +200,6 @@ HISTORICAL_FROZEN_BLOBS = {
 }
 PREDECESSOR_D1_PARENT_COMMIT = "c764c721b364e19916ba66698552eee86563dbfe"
 PREDECESSOR_D1_COMMIT = "c61f3d06ab6cfbc54ff562738d95ba902865b54f"
-REPAIR_BASE_COMMIT = PREDECESSOR_D1_COMMIT
 PREDECESSOR_D1_IMPLEMENTATION_COMMIT = "86d16c181fc9deaf83597da9c1523e4fea9c7493"
 PREDECESSOR_D1_CONFIG_CORE_SHA256 = (
     "14aba30da13f2bbad9debca74b9f3c8a8aaae1e5249347a8c1d35eda364a4f50"
@@ -226,6 +225,29 @@ PREDECESSOR_D1_FROZEN_BLOBS = {
     SCRIPT_REPO_PATH: "90e840b721e5d07d4437d429d5b42f5a91fc262e560b3b331095db65dbb18fa6",
     TEST_REPO_PATH: "ca0d5221748aaecc10b31edb691f8244a0fe2b94cf67ae9a8f493ac8d3f75ca5",
 }
+PREDECESSOR_I3_PARENT_COMMIT = PREDECESSOR_D1_COMMIT
+PREDECESSOR_I3_COMMIT = "e829464d6ea1953b7a859ba5506946b9cb8e6384"
+REPAIR_BASE_COMMIT = PREDECESSOR_I3_COMMIT
+PREDECESSOR_I3_CONFIG_CORE_SHA256 = (
+    "bca69bd05c094575bfa860b5492f019810c2845abe9218d7030444821f357a0b"
+)
+PREDECESSOR_I3_DESCRIPTOR_SET_SHA256 = PREDECESSOR_D1_DESCRIPTOR_SET_SHA256
+PREDECESSOR_I3_EXACT_CHANGED_PATHS = sorted(
+    (CONFIG_REPO_PATH, SCRIPT_REPO_PATH, TEST_REPO_PATH)
+)
+PREDECESSOR_I3_FROZEN_BLOBS = {
+    CONFIG_REPO_PATH: "b9c5948f23a6fdb8d250c65ed370f72fdf4fa8c08f5038169b5dff5584568a26",
+    SCRIPT_REPO_PATH: "7ef3e14c7298d04cf03fcf4b86f1a71f87a7917fa1b8d3ef826de9262e3d1295",
+    TEST_REPO_PATH: "611ba1788b82b28e5a5390537672a211c128e309ab82095286545c61ed075a96",
+}
+EXPECTED_PREDECESSOR_I3_TO_I4_DIFF_PATHS = frozenset(
+    {
+        "implementation_binding.config_core_sha256",
+        "repository_authority.base_commit",
+        "repository_authority.implementation_commit_expected_parent",
+        "repository_authority.predecessor_implementation_successor",
+    }
+)
 PRIVACY_KEYS = {
     "contains_row_level_payload",
     "contains_sequence",
@@ -774,6 +796,7 @@ def validate_static_config(config: Mapping[str, Any]) -> None:
             "binding_commit_exact_changed_paths",
             "historical_dec019_binding",
             "predecessor_descriptor_binding",
+            "predecessor_implementation_successor",
             "descendant_policy",
         },
         label="repository authority",
@@ -872,6 +895,50 @@ def validate_static_config(config: Mapping[str, Any]) -> None:
         if type(item) is dict
     } != PREDECESSOR_D1_FROZEN_BLOBS:
         raise AdjudicationError("predecessor D1 blob registry differs")
+    predecessor_i3 = _expect_exact_keys(
+        repository["predecessor_implementation_successor"],
+        {
+            "parent_commit",
+            "implementation_commit",
+            "science_core_sha256",
+            "descriptor_set_sha256",
+            "implementation_commit_exact_changed_paths",
+            "frozen_implementation_commit_blobs",
+        },
+        label="predecessor I3 implementation successor",
+    )
+    _expect_exact(
+        predecessor_i3["parent_commit"],
+        PREDECESSOR_I3_PARENT_COMMIT,
+        label="predecessor I3 parent",
+    )
+    _expect_exact(
+        predecessor_i3["implementation_commit"],
+        PREDECESSOR_I3_COMMIT,
+        label="predecessor I3 commit",
+    )
+    _expect_exact(
+        predecessor_i3["science_core_sha256"],
+        PREDECESSOR_I3_CONFIG_CORE_SHA256,
+        label="predecessor I3 science core",
+    )
+    _expect_exact(
+        predecessor_i3["descriptor_set_sha256"],
+        PREDECESSOR_I3_DESCRIPTOR_SET_SHA256,
+        label="predecessor I3 descriptor-set SHA",
+    )
+    _expect_exact(
+        predecessor_i3["implementation_commit_exact_changed_paths"],
+        PREDECESSOR_I3_EXACT_CHANGED_PATHS,
+        label="predecessor I3 changed paths",
+    )
+    predecessor_i3_blobs = predecessor_i3["frozen_implementation_commit_blobs"]
+    if type(predecessor_i3_blobs) is not list or {
+        item.get("path"): item.get("sha256")
+        for item in predecessor_i3_blobs
+        if type(item) is dict
+    } != PREDECESSOR_I3_FROZEN_BLOBS:
+        raise AdjudicationError("predecessor I3 blob registry differs")
     _expect_exact(
         repository["descendant_policy"],
         {
@@ -1385,16 +1452,92 @@ def _validate_predecessor_d1_descriptor_binding(repo: Path) -> dict[str, Any]:
     return d1_config
 
 
-def _require_successor_i_preserves_d1_descriptors(
-    i_config: Mapping[str, Any],
+def _validate_predecessor_i3_implementation_successor(
+    repo: Path,
     d1_config: Mapping[str, Any],
-) -> None:
-    """Keep the successor I descriptor lifecycle byte-semantically at D1."""
+) -> dict[str, Any]:
+    """Prove the exact UNKNOWN implementation successor used as I4 base."""
 
-    if i_config.get("evidence_descriptor_bindings") != d1_config.get(
+    _require_single_parent(
+        repo,
+        PREDECESSOR_I3_COMMIT,
+        PREDECESSOR_I3_PARENT_COMMIT,
+        label="predecessor I3 implementation successor",
+    )
+    if _commit_changed_paths(repo, PREDECESSOR_I3_COMMIT) != (
+        PREDECESSOR_I3_EXACT_CHANGED_PATHS
+    ):
+        raise BindingError("predecessor I3 is not the exact three-file commit")
+    i3_payloads = {
+        path: _verify_commit_blob(
+            repo,
+            PREDECESSOR_I3_COMMIT,
+            path,
+            expected_sha,
+        )
+        for path, expected_sha in PREDECESSOR_I3_FROZEN_BLOBS.items()
+    }
+    i3_config = strict_json(
+        i3_payloads[CONFIG_REPO_PATH],
+        label="predecessor I3 implementation config",
+    )
+    if set(i3_config) != EXPECTED_CONFIG_TOP_KEYS:
+        raise BindingError("predecessor I3 config top-level schema differs")
+    binding = i3_config.get("implementation_binding")
+    if type(binding) is not dict or set(binding) != EXPECTED_IMPLEMENTATION_BINDING_KEYS:
+        raise BindingError("predecessor I3 implementation binding schema differs")
+    if binding.get("status") != UNKNOWN or any(
+        binding.get(key) != UNKNOWN
+        for key in (
+            "implementation_commit",
+            "implementation_script_sha256",
+            "implementation_test_sha256",
+        )
+    ):
+        raise BindingError("predecessor I3 implementation binding is not exact UNKNOWN")
+    if (
+        binding.get("config_core_sha256") != PREDECESSOR_I3_CONFIG_CORE_SHA256
+        or config_core_sha256(i3_config) != PREDECESSOR_I3_CONFIG_CORE_SHA256
+    ):
+        raise BindingError("predecessor I3 science core differs")
+    descriptors = i3_config.get("evidence_descriptor_bindings")
+    if (
+        descriptors != d1_config.get("evidence_descriptor_bindings")
+        or type(descriptors) is not dict
+        or descriptors.get("descriptor_set_sha256")
+        != PREDECESSOR_I3_DESCRIPTOR_SET_SHA256
+        or descriptor_set_sha256(i3_config)
+        != PREDECESSOR_I3_DESCRIPTOR_SET_SHA256
+    ):
+        raise BindingError("predecessor I3 descriptor binding drifted from D1")
+    repository = i3_config.get("repository_authority")
+    if (
+        type(repository) is not dict
+        or repository.get("base_commit") != PREDECESSOR_I3_PARENT_COMMIT
+        or repository.get("implementation_commit_expected_parent")
+        != PREDECESSOR_I3_PARENT_COMMIT
+        or repository.get("implementation_commit_exact_changed_paths")
+        != PREDECESSOR_I3_EXACT_CHANGED_PATHS
+    ):
+        raise BindingError("predecessor I3 repository authority differs")
+    return i3_config
+
+
+def _validate_successor_i_transition_from_predecessor(
+    i_config: Mapping[str, Any],
+    predecessor_config: Mapping[str, Any],
+) -> None:
+    """Allow only the four closed authority changes from predecessor to I."""
+
+    if i_config.get("evidence_descriptor_bindings") != predecessor_config.get(
         "evidence_descriptor_bindings"
     ):
-        raise BindingError("successor I descriptor binding drifted from predecessor D1")
+        raise BindingError("successor I descriptor binding drifted from predecessor")
+    differences = _semantic_diff_paths(predecessor_config, i_config)
+    if differences != EXPECTED_PREDECESSOR_I3_TO_I4_DIFF_PATHS:
+        raise BindingError(
+            "predecessor-I3-to-successor-I4 semantic diff is not the exact allowlist"
+        )
 
 
 def _validate_post_binding_descriptor_history(
@@ -1467,6 +1610,10 @@ def validate_production_authority(config: Mapping[str, Any]) -> dict[str, Any]:
         raise BindingError("origin tracking ref is not current HEAD")
     _validate_historical_chain_and_blobs(repo, head)
     predecessor_d1_config = _validate_predecessor_d1_descriptor_binding(repo)
+    predecessor_i3_config = _validate_predecessor_i3_implementation_successor(
+        repo,
+        predecessor_d1_config,
+    )
 
     expected_i_paths = config["repository_authority"][
         "implementation_commit_exact_changed_paths"
@@ -1486,7 +1633,10 @@ def validate_production_authority(config: Mapping[str, Any]) -> dict[str, Any]:
         )
         if _commit_changed_paths(repo, implementation) != expected_i_paths:
             raise BindingError("repair I is not the exact three-file implementation commit")
-        _require_successor_i_preserves_d1_descriptors(config, predecessor_d1_config)
+        _validate_successor_i_transition_from_predecessor(
+            config,
+            predecessor_i3_config,
+        )
     else:
         implementation = binding["implementation_commit"]
         lifecycle_state = "REPAIR_B_BOUND_OR_DESCRIPTOR_DESCENDANT"
@@ -1532,9 +1682,9 @@ def validate_production_authority(config: Mapping[str, Any]) -> dict[str, Any]:
                 label=f"repair-B config {config_path}",
             )
             if config_path == CONFIG_REPO_PATH:
-                _require_successor_i_preserves_d1_descriptors(
+                _validate_successor_i_transition_from_predecessor(
                     i_config,
-                    predecessor_d1_config,
+                    predecessor_i3_config,
                 )
             _validate_i_to_b_config_pair(
                 i_config,
