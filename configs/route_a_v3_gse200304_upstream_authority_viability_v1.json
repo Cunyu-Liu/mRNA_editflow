@@ -8,13 +8,13 @@
   "mode": "AUDIT_ONLY_NO_GATE_CHANGE",
   "implementation_binding": {
     "binding_scheme": "CONFIG_ONLY_POST_IMPLEMENTATION_BINDING_V1",
-    "status": "UNKNOWN_NOT_ASSERTED",
+    "status": "BOUND",
     "blocker_if_unbound": "IMPLEMENTATION_BINDING_UNKNOWN_NOT_ASSERTED",
-    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "implementation_commit": "7e29c13ca778ffa27f3725f4bd1ea270630db044",
     "implementation_script_path": "scripts/route_a_v3/produce_gse200304_upstream_authority_viability.py",
-    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_script_sha256": "525635da3d84183e325a17f00fc7cece1517acbd9ce317c2cc4e26a4ba38f03d",
     "implementation_test_path": "tests/route_a_v3/test_produce_gse200304_upstream_authority_viability.py",
-    "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_test_sha256": "78bca039152874a09dd6a31a0789b712c72b45e60cb9e99e72391809a1bd7035",
     "config_core_sha256": "49388c339dad75107149911ceb0fa078ec2ff0729951442a4aa034ba82c90cba",
     "unknown_to_bound_scalar_paths": [
       "implementation_binding.status",
