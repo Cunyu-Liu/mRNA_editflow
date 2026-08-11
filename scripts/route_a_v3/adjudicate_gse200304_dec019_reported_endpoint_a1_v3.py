@@ -26,30 +26,17 @@ from typing import Any, Callable, Mapping, Sequence
 CONFIG_REPO_PATH = "configs/route_a_v3_gse200304_dec019_reported_endpoint_a1_activation_v3.json"
 SCRIPT_REPO_PATH = "scripts/route_a_v3/adjudicate_gse200304_dec019_reported_endpoint_a1_v3.py"
 TEST_REPO_PATH = "tests/route_a_v3/test_adjudicate_gse200304_dec019_reported_endpoint_a1_v3.py"
-GSE114002_CONFIG_REPO_PATH = (
-    "configs/route_a_v3_gse114002_dec019_true_a2_activation_v3.json"
-)
 GSE200304_CONFIG_REPO_PATH = CONFIG_REPO_PATH
-BINDING_CONFIG_REPO_PATHS = (
-    GSE114002_CONFIG_REPO_PATH,
-    GSE200304_CONFIG_REPO_PATH,
-)
+BINDING_CONFIG_REPO_PATHS = (GSE200304_CONFIG_REPO_PATH,)
 EXPECTED_IMPLEMENTATION_FILES = {
-    GSE114002_CONFIG_REPO_PATH: (
-        "scripts/route_a_v3/adjudicate_gse114002_dec019_true_a2_v3.py",
-        "tests/route_a_v3/test_adjudicate_gse114002_dec019_true_a2_v3.py",
-    ),
     GSE200304_CONFIG_REPO_PATH: (
         SCRIPT_REPO_PATH,
         TEST_REPO_PATH,
     ),
 }
 FROZEN_CONFIG_CORE_SHA256_BY_PATH = {
-    GSE114002_CONFIG_REPO_PATH: (
-        "6a2955a9c76edbff45aa79c8c71cf3262cbfc631472b345845b5a612a909d67d"
-    ),
     GSE200304_CONFIG_REPO_PATH: (
-        "f4bfde594ce2aa4dbf7d6a9f0cd1607ac1b214a4659089a59258ba0039bb2ff9"
+        "14aba30da13f2bbad9debca74b9f3c8a8aaae1e5249347a8c1d35eda364a4f50"
     ),
 }
 FROZEN_CONFIG_CORE_SHA256 = FROZEN_CONFIG_CORE_SHA256_BY_PATH[CONFIG_REPO_PATH]
@@ -98,8 +85,11 @@ CONTRACT_ID = "mrna_xeditflow_route_a_v3"
 DATASET_ID = "GSE200304"
 DECISION_ID = "V3-DEC-019"
 PROTOCOL_ID = "ROUTE_A_V3_GSE200304_DEC019_REPORTED_ENDPOINT_A1_ACTIVATION_V3"
-EVIDENCE_SCHEMA_VERSION = "route_a_v3_dec019_aggregate_gate_evidence.v2"
-EVIDENCE_RECORD_TYPE = "ROUTE_A_V3_DEC019_ACCEPTED_AGGREGATE_GATE_EVIDENCE_V2"
+EVIDENCE_SCHEMA_VERSION = "route_a_v3_dec019_aggregate_gate_evidence.v3"
+EVIDENCE_RECORD_TYPE = "ROUTE_A_V3_DEC019_ACCEPTED_AGGREGATE_GATE_EVIDENCE_V3"
+LOCATOR_LINEAGE_COMMITMENT_ALGORITHM = (
+    "ROUTE_A_V3_GSE200304_LOCATOR_MERKLE_V1"
+)
 HEX40 = re.compile(r"^[0-9a-f]{40}$")
 HEX64 = re.compile(r"^[0-9a-f]{64}$")
 DNA_LIKE = re.compile(r"^[ACGTUNacgtun]{20,}$")
@@ -197,17 +187,17 @@ DESCRIPTOR_BINDING_KEYS = {
 DESCRIPTOR_SLOT_KEYS = {"slot_id", "absolute_path", "sha256", "bytes"}
 NEGATIVE_EVIDENCE_STATUSES = {UNKNOWN, "NOT_RUN", "BLOCKED"}
 REASON_CODE = re.compile(r"^[A-Z][A-Z0-9_]*$")
-HISTORICAL_BASE_COMMIT = "ad1c57b9255c3066510b08e7a4cf0bd571006811"
-HISTORICAL_IMPLEMENTATION_COMMIT = "d54de63605a2df51e91262c99218684a80cb6515"
-HISTORICAL_BINDING_COMMIT = "78827501c7efcef28550b04876c98206d94d4808"
-REPAIR_BASE_COMMIT = "139c4e8d9749ae93ed90924bb527127cf2bbf553"
+HISTORICAL_BASE_COMMIT = "139c4e8d9749ae93ed90924bb527127cf2bbf553"
+HISTORICAL_IMPLEMENTATION_COMMIT = "4e200ed4048d5b112c6ac324d2376e8de1441419"
+HISTORICAL_BINDING_COMMIT = "e495c7ec5b6f00f14a18a4ffe0c5a6f2173bf2d8"
+HISTORICAL_CONFIG_CORE_SHA256 = (
+    "f4bfde594ce2aa4dbf7d6a9f0cd1607ac1b214a4659089a59258ba0039bb2ff9"
+)
+REPAIR_BASE_COMMIT = HISTORICAL_BINDING_COMMIT
 HISTORICAL_FROZEN_BLOBS = {
-    "configs/route_a_v3_gse114002_dec019_true_a2_activation_v2.json": "5d659f25c42b9828842948b8c734d083efbf23575b72e5ebf135dda725451017",
-    "configs/route_a_v3_gse200304_dec019_reported_endpoint_a1_activation_v2.json": "9d017f364274bf05f9172f1e0b36753614f56a27edd608caf8069b6c162d6422",
-    "scripts/route_a_v3/adjudicate_gse114002_dec019_true_a2.py": "20b1d6e7824921d31ea6a0ab5ecac93707ae3acf2789b11019574813e33c1b6c",
-    "scripts/route_a_v3/adjudicate_gse200304_dec019_reported_endpoint_a1.py": "7ad39104d6fc908a23c538932a4ad9249e24131c383ce088f7010657d1c8191b",
-    "tests/route_a_v3/test_adjudicate_gse114002_dec019_true_a2.py": "a1ae6e73ee4f9a44f5de6db9ff09be175ecd1648fc592ff2c9f073a7184302ee",
-    "tests/route_a_v3/test_adjudicate_gse200304_dec019_reported_endpoint_a1.py": "a153c54c9b7fff228d4702e52e2cc9521afcbe14bfb5658fbc1b8fe96ae74c09",
+    CONFIG_REPO_PATH: "8ec603142f05d4212610d8745e554626cda37f176d3b2d32c1ca8b934ad89fa8",
+    SCRIPT_REPO_PATH: "d7205d67c00e94e3355097d411621f3c380a73f7efda07d7efac65ed2dcbe56d",
+    TEST_REPO_PATH: "5f0eee60dfdaa8201d36a5e560c0c59027c93d28692a419e383df2d747d060e0",
 }
 PRIVACY_KEYS = {
     "contains_row_level_payload",
@@ -223,6 +213,8 @@ FACT_KEYS = {
         "table_s3_hash_bound",
         "s2_s3_join_rule_frozen",
         "multi_asset_lineage_closed",
+        "locator_lineage_commitment_algorithm",
+        "locator_lineage_merkle_root_sha256",
         "canonical_record_count",
         "processed_pair_count",
         "raw_replay_role",
@@ -499,7 +491,7 @@ def _validate_i_to_b_config_pair(
     config_path: str,
     implementation_commit: str,
 ) -> None:
-    """Prove one parent-I config changed only through the four allowed B scalars."""
+    """Prove parent-I changed only through the four allowed B scalars."""
 
     if config_path not in EXPECTED_IMPLEMENTATION_FILES:
         raise BindingError("I-to-B config path is outside the closed pair")
@@ -651,6 +643,16 @@ def _assert_no_private_material(value: Any, forbidden_keys: set[str], *, label: 
         for key, child in value.items():
             if key.casefold() in forbidden_keys:
                 raise AdjudicationError(f"{label} contains forbidden key: {key}")
+            # This one closed fact is an aggregate, domain-separated Merkle
+            # root.  A valid digest can lexically resemble a DNA string (for
+            # example, 64 lowercase "a" bytes), but it is neither a leaf nor
+            # a source-member hash and carries no row value.
+            if (
+                key == "locator_lineage_merkle_root_sha256"
+                and type(child) is str
+                and HEX64.fullmatch(child) is not None
+            ):
+                continue
             _assert_no_private_material(child, forbidden_keys, label=label)
     elif type(value) is list:
         for child in value:
@@ -764,12 +766,23 @@ def validate_static_config(config: Mapping[str, Any]) -> None:
     historical = repository["historical_dec019_binding"]
     _expect_exact_keys(
         historical,
-        {"base_commit", "implementation_commit", "binding_commit", "frozen_successor_blobs"},
+        {
+            "base_commit",
+            "implementation_commit",
+            "binding_commit",
+            "science_core_sha256",
+            "frozen_successor_blobs",
+        },
         label="historical DEC019 binding",
     )
     _expect_exact(historical["base_commit"], HISTORICAL_BASE_COMMIT, label="historical base")
     _expect_exact(historical["implementation_commit"], HISTORICAL_IMPLEMENTATION_COMMIT, label="historical I")
     _expect_exact(historical["binding_commit"], HISTORICAL_BINDING_COMMIT, label="historical B")
+    _expect_exact(
+        historical["science_core_sha256"],
+        HISTORICAL_CONFIG_CORE_SHA256,
+        label="historical science core",
+    )
     frozen_blobs = historical["frozen_successor_blobs"]
     if type(frozen_blobs) is not list or {
         item.get("path"): item.get("sha256") for item in frozen_blobs if type(item) is dict
@@ -995,7 +1008,7 @@ def validate_static_config(config: Mapping[str, Any]) -> None:
             "contract_id": CONTRACT_ID,
             "decision_id": DECISION_ID,
             "protocol_id": PROTOCOL_ID,
-            "rule": "CONFIG_HASH_BOUND_ACCEPTED_AGGREGATE_GATE_RECORD_V2",
+            "rule": "CONFIG_HASH_BOUND_ACCEPTED_AGGREGATE_GATE_RECORD_V3",
         },
         label="acceptance authority",
     )
@@ -1163,14 +1176,43 @@ def _validate_historical_chain_and_blobs(repo: Path, head: str) -> None:
         HISTORICAL_IMPLEMENTATION_COMMIT,
         label="historical DEC019 binding",
     )
-    _require_ancestor(repo, HISTORICAL_BINDING_COMMIT, REPAIR_BASE_COMMIT, label="historical-to-B40")
+    _require_ancestor(
+        repo,
+        HISTORICAL_BINDING_COMMIT,
+        REPAIR_BASE_COMMIT,
+        label="historical-v3-to-successor-base",
+    )
     _require_ancestor(repo, HISTORICAL_BINDING_COMMIT, head, label="historical-to-current")
-    _require_ancestor(repo, REPAIR_BASE_COMMIT, head, label="B40-to-current")
-    for path, expected_sha in HISTORICAL_FROZEN_BLOBS.items():
-        historical = _verify_commit_blob(repo, HISTORICAL_BINDING_COMMIT, path, expected_sha)
-        current = _verify_commit_blob(repo, head, path, expected_sha)
-        if current != historical:
-            raise BindingError(f"historical successor blob drifted: {path}")
+    _require_ancestor(repo, REPAIR_BASE_COMMIT, head, label="successor-base-to-current")
+    historical_payloads = {
+        path: _verify_commit_blob(
+            repo,
+            HISTORICAL_BINDING_COMMIT,
+            path,
+            expected_sha,
+        )
+        for path, expected_sha in HISTORICAL_FROZEN_BLOBS.items()
+    }
+    historical_config = strict_json(
+        historical_payloads[CONFIG_REPO_PATH],
+        label="historical DEC019 v3 bound config",
+    )
+    historical_binding = historical_config.get("implementation_binding")
+    if type(historical_binding) is not dict:
+        raise BindingError("historical DEC019 v3 implementation binding is absent")
+    if (
+        historical_binding.get("status") != "BOUND"
+        or historical_binding.get("implementation_commit")
+        != HISTORICAL_IMPLEMENTATION_COMMIT
+        or historical_binding.get("implementation_script_sha256")
+        != HISTORICAL_FROZEN_BLOBS[SCRIPT_REPO_PATH]
+        or historical_binding.get("implementation_test_sha256")
+        != HISTORICAL_FROZEN_BLOBS[TEST_REPO_PATH]
+        or historical_binding.get("config_core_sha256")
+        != HISTORICAL_CONFIG_CORE_SHA256
+        or config_core_sha256(historical_config) != HISTORICAL_CONFIG_CORE_SHA256
+    ):
+        raise BindingError("historical DEC019 v3 bound implementation differs")
 
 
 def _validate_post_binding_descriptor_history(
@@ -1222,7 +1264,7 @@ def _validate_post_binding_descriptor_history(
 
 
 def validate_production_authority(config: Mapping[str, Any]) -> dict[str, Any]:
-    """Prove historical DEC019, B40 -> repair I -> B, and descendants.
+    """Prove historical DEC019 v3, successor I -> B, and descendants.
 
     UNKNOWN I-state is accepted only by this authority-only validator.  Actual
     adjudication separately requires a BOUND implementation before it can
@@ -1260,7 +1302,7 @@ def validate_production_authority(config: Mapping[str, Any]) -> dict[str, Any]:
             label="repair I",
         )
         if _commit_changed_paths(repo, implementation) != expected_i_paths:
-            raise BindingError("repair I is not the exact six-file implementation commit")
+            raise BindingError("repair I is not the exact three-file implementation commit")
     else:
         implementation = binding["implementation_commit"]
         lifecycle_state = "REPAIR_B_BOUND_OR_DESCRIPTOR_DESCENDANT"
@@ -1271,7 +1313,7 @@ def validate_production_authority(config: Mapping[str, Any]) -> dict[str, Any]:
             label="repair I",
         )
         if _commit_changed_paths(repo, implementation) != expected_i_paths:
-            raise BindingError("repair I is not the exact six-file implementation commit")
+            raise BindingError("repair I is not the exact three-file implementation commit")
         _require_ancestor(repo, implementation, head, label="repair-I-to-current")
         successors = [
             line
@@ -1294,7 +1336,7 @@ def validate_production_authority(config: Mapping[str, Any]) -> dict[str, Any]:
             label="repair B",
         )
         if _commit_changed_paths(repo, binding_commit) != list(BINDING_CONFIG_REPO_PATHS):
-            raise BindingError("repair B is not the exact two-config-only binding commit")
+            raise BindingError("repair B is not the exact config-only binding commit")
 
         for config_path in BINDING_CONFIG_REPO_PATHS:
             i_config = strict_json(
@@ -1457,12 +1499,24 @@ def _validate_fact_types(slot_id: str, facts: Mapping[str, Any]) -> None:
         for key in {"canonical_record_count", "processed_pair_count"}:
             _expect_int(facts[key], label=f"{slot_id} {key}", minimum=0)
             boolean_keys.remove(key)
+        if (
+            facts["locator_lineage_commitment_algorithm"]
+            != LOCATOR_LINEAGE_COMMITMENT_ALGORITHM
+        ):
+            raise AdjudicationError("locator lineage commitment algorithm differs")
+        merkle_root = facts["locator_lineage_merkle_root_sha256"]
+        if type(merkle_root) is not str or HEX64.fullmatch(merkle_root) is None:
+            raise AdjudicationError(
+                "locator lineage Merkle root must be a lowercase SHA-256 digest"
+            )
         if facts["raw_replay_role"] != "REPRODUCIBILITY_AUXILIARY_NOT_QUALIFICATION_PREREQUISITE":
             raise AdjudicationError("raw replay role differs from DEC-019")
         if facts["raw_replay_status"] not in {"NOT_RUN", "PASS_INDEPENDENT_REPRODUCTION"}:
             raise AdjudicationError("raw replay status is outside the closed enum")
         boolean_keys.remove("raw_replay_role")
         boolean_keys.remove("raw_replay_status")
+        boolean_keys.remove("locator_lineage_commitment_algorithm")
+        boolean_keys.remove("locator_lineage_merkle_root_sha256")
     elif slot_id == "CHECKPOINT_SPECIFIC_EXPOSURE":
         _expect_int(facts["audited_checkpoint_count"], label="audited checkpoint count", minimum=0)
         boolean_keys.remove("audited_checkpoint_count")
@@ -1537,7 +1591,6 @@ def _validate_gate_record(payload: bytes, slot: Mapping[str, Any], config: Mappi
         _expect_exact(record[key], expected, label=f"{label} {key}")
     if record["status"] not in {"PASS", *NEGATIVE_EVIDENCE_STATUSES}:
         raise AdjudicationError(f"{label} status is outside the closed enum")
-    _validate_privacy(record, config, label=label)
     _validate_provenance(record, config, label=label)
     required_fact_keys = sorted(FACT_KEYS[slot["slot_id"]])
     if record["status"] == "PASS":
@@ -1565,6 +1618,7 @@ def _validate_gate_record(payload: bytes, slot: Mapping[str, Any], config: Mappi
             or any(type(reason) is not str or REASON_CODE.fullmatch(reason) is None for reason in reasons)
         ):
             raise AdjudicationError(f"{label} negative reason codes are not closed/sorted/unique")
+    _validate_privacy(record, config, label=label)
     return record
 
 
@@ -1583,6 +1637,11 @@ def _slot_gate_pass(slot_id: str, facts: Mapping[str, Any]) -> bool:
             )
             and facts["canonical_record_count"] >= 1
             and facts["processed_pair_count"] >= facts["canonical_record_count"]
+            and facts["locator_lineage_commitment_algorithm"]
+            == LOCATOR_LINEAGE_COMMITMENT_ALGORITHM
+            and type(facts["locator_lineage_merkle_root_sha256"]) is str
+            and HEX64.fullmatch(facts["locator_lineage_merkle_root_sha256"])
+            is not None
             and facts["raw_replay_role"] == "REPRODUCIBILITY_AUXILIARY_NOT_QUALIFICATION_PREREQUISITE"
         )
     if slot_id == "CANONICAL_REPORTED_ENDPOINT_SEMANTICS":

@@ -13,7 +13,6 @@ import pytest
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / "scripts/route_a_v3/adjudicate_gse200304_dec019_reported_endpoint_a1_v3.py"
 CONFIG = ROOT / "configs/route_a_v3_gse200304_dec019_reported_endpoint_a1_activation_v3.json"
-G114_CONFIG = ROOT / "configs/route_a_v3_gse114002_dec019_true_a2_activation_v3.json"
 SPEC = importlib.util.spec_from_file_location("gse200304_dec019_adjudicator_v3", SCRIPT)
 assert SPEC is not None and SPEC.loader is not None
 ADJ = importlib.util.module_from_spec(SPEC)
@@ -43,10 +42,6 @@ def _read_test_config(path: Path) -> dict[str, Any]:
 
 def read_config() -> dict[str, Any]:
     return _read_test_config(CONFIG)
-
-
-def read_g114_config() -> dict[str, Any]:
-    return _read_test_config(G114_CONFIG)
 
 
 def bind_implementation(
@@ -132,6 +127,10 @@ def passing_facts() -> dict[str, dict[str, Any]]:
             "table_s3_hash_bound": True,
             "s2_s3_join_rule_frozen": True,
             "multi_asset_lineage_closed": True,
+            "locator_lineage_commitment_algorithm": (
+                ADJ.LOCATOR_LINEAGE_COMMITMENT_ALGORITHM
+            ),
+            "locator_lineage_merkle_root_sha256": "a" * 64,
             "canonical_record_count": 6120,
             "processed_pair_count": 6772,
             "raw_replay_role": "REPRODUCIBILITY_AUXILIARY_NOT_QUALIFICATION_PREREQUISITE",
@@ -259,7 +258,7 @@ def read_report(output: Path) -> dict[str, Any]:
     return json.loads((output / "ADJUDICATION_REPORT.json").read_text(encoding="utf-8"))
 
 
-def test_static_current_and_synthetic_i_b_freeze_b40_historical_chain_and_truth() -> None:
+def test_static_current_and_synthetic_i_b_freeze_successor_chain_and_truth() -> None:
     current_config = read_config()
     ADJ.validate_static_config(current_config)
     current_binding = current_config["implementation_binding"]
@@ -285,17 +284,111 @@ def test_static_current_and_synthetic_i_b_freeze_b40_historical_chain_and_truth(
     ADJ.validate_static_config(config_b)
     assert config_i["repository_authority"]["base_commit"] == ADJ.REPAIR_BASE_COMMIT
     assert config_i["repository_authority"]["implementation_commit_expected_parent"] == ADJ.REPAIR_BASE_COMMIT
+    assert ADJ.REPAIR_BASE_COMMIT == ADJ.HISTORICAL_BINDING_COMMIT
+    assert ADJ.BINDING_CONFIG_REPO_PATHS == (ADJ.CONFIG_REPO_PATH,)
+    assert ADJ.EXPECTED_IMPLEMENTATION_FILES == {
+        ADJ.CONFIG_REPO_PATH: (ADJ.SCRIPT_REPO_PATH, ADJ.TEST_REPO_PATH)
+    }
+    assert config_i["repository_authority"][
+        "implementation_commit_exact_changed_paths"
+    ] == [ADJ.CONFIG_REPO_PATH, ADJ.SCRIPT_REPO_PATH, ADJ.TEST_REPO_PATH]
+    assert config_i["repository_authority"][
+        "binding_commit_exact_changed_paths"
+    ] == [ADJ.CONFIG_REPO_PATH]
     historical = config_i["repository_authority"]["historical_dec019_binding"]
     assert (historical["base_commit"], historical["implementation_commit"], historical["binding_commit"]) == (
         ADJ.HISTORICAL_BASE_COMMIT,
         ADJ.HISTORICAL_IMPLEMENTATION_COMMIT,
         ADJ.HISTORICAL_BINDING_COMMIT,
     )
+    assert historical["science_core_sha256"] == ADJ.HISTORICAL_CONFIG_CORE_SHA256
     assert {item["path"]: item["sha256"] for item in historical["frozen_successor_blobs"]} == ADJ.HISTORICAL_FROZEN_BLOBS
+    assert current_config["evidence_contract"]["evidence_schema_version"] == ADJ.EVIDENCE_SCHEMA_VERSION
+    assert ADJ.EVIDENCE_SCHEMA_VERSION.endswith(".v3")
+    assert ADJ.EVIDENCE_RECORD_TYPE.endswith("_V3")
     state = config_i["current_external_state"]
     assert len(state["unresolved_blockers"]) == 8
     assert (state["qualified"], state["ordinary_study_contribution"], state["a1_study_contribution"], state["true_a2_study_contribution"], state["canonical_record_count"]) == (False, 0, 0, 0, 0)
     assert state["training_allowed"] is state["model_selection_allowed"] is state["next_phase_authorized"] is False
+
+
+def test_other_seven_gate_semantics_are_unchanged_under_v3_record_identity() -> None:
+    expected_fact_keys = {
+        "CANONICAL_REPORTED_ENDPOINT_SEMANTICS": {
+            "author_published_processed_endpoint_is_primary",
+            "endpoint_id_frozen",
+            "endpoint_direction_frozen",
+            "endpoint_scale_frozen",
+            "contrast_and_transform_frozen",
+            "paper_faithful_mapping_closed",
+        },
+        "BIOLOGICAL_GROUP_AUTHORITY": {
+            "biological_group_id_frozen",
+            "study_unit_is_gse200304",
+            "gse200302_is_subseries_not_independent_study",
+            "group_mapping_hash_bound",
+        },
+        "ROW_REPLICATE_OR_VALID_SE": {
+            "replicate_or_valid_standard_error_present",
+            "replicate_count_or_effective_n_frozen",
+            "standard_error_semantics_frozen",
+            "technical_uncertainty_not_substituted_for_biological_se",
+        },
+        "CHECKPOINT_SPECIFIC_EXPOSURE": {
+            "checkpoint_ids_and_revisions_frozen",
+            "checkpoint_artifact_digests_bound",
+            "exact_member_exposure_audit_pass",
+            "near_duplicate_exposure_audit_pass",
+            "audited_checkpoint_count",
+        },
+        "LICENSE_RIGHTS": {
+            "rights_source_authority_closed",
+            "qualification_use_allowed",
+            "private_canonical_materialization_allowed",
+            "redistribution_scope",
+        },
+        "OUTCOME_BLIND_SPLIT_LEAKAGE": {
+            "a1_source_graph_frozen",
+            "a1_group_graph_frozen",
+            "a1_near_duplicate_graph_frozen",
+            "split_salt_hash_bound",
+            "outcome_blind_assignment",
+            "leakage_audit_pass",
+            "final_benchmark_membership_deferred_to_a2",
+        },
+        "PREFROZEN_POWER_PRECISION": {
+            "analysis_unit",
+            "bootstrap_unit",
+            "observed_power",
+            "full_confidence_interval_width",
+            "prefrozen_before_model_results",
+        },
+    }
+    assert {slot_id: ADJ.FACT_KEYS[slot_id] for slot_id in ADJ.SLOT_IDS[1:]} == (
+        expected_fact_keys
+    )
+
+    config = bind_implementation()
+    facts = passing_facts()
+    for slot_id in ADJ.SLOT_IDS[1:]:
+        ADJ._validate_fact_types(slot_id, facts[slot_id])
+        assert ADJ._slot_gate_pass(slot_id, facts[slot_id]) is True
+        record_v3 = gate_record(config, slot_id, facts=facts[slot_id])
+        record_v2_identity = copy.deepcopy(record_v3)
+        record_v2_identity["schema_version"] = (
+            "route_a_v3_dec019_aggregate_gate_evidence.v2"
+        )
+        record_v2_identity["record_type"] = (
+            "ROUTE_A_V3_DEC019_ACCEPTED_AGGREGATE_GATE_EVIDENCE_V2"
+        )
+        record_v2_identity["provenance"]["acceptance_authority"]["rule"] = (
+            "CONFIG_HASH_BOUND_ACCEPTED_AGGREGATE_GATE_RECORD_V2"
+        )
+        assert ADJ._semantic_diff_paths(record_v2_identity, record_v3) == {
+            "schema_version",
+            "record_type",
+            "provenance.acceptance_authority.rule",
+        }
 
 
 def test_i_to_b_changes_exactly_four_binding_scalars() -> None:
@@ -308,29 +401,6 @@ def test_i_to_b_changes_exactly_four_binding_scalars() -> None:
         implementation_commit=SYNTHETIC_IMPLEMENTATION_COMMIT,
     )
     assert ADJ._semantic_diff_paths(config_i, config_b) == set(ADJ.EXPECTED_I_TO_B_SCALAR_PATHS)
-
-
-def test_shared_g114_i_to_b_rejects_science_change_even_after_core_rehash() -> None:
-    g114_i = unknown_implementation(read_g114_config())
-    g114_b = bind_implementation(g114_i)
-    ADJ._validate_i_to_b_config_pair(
-        g114_i,
-        g114_b,
-        config_path=ADJ.GSE114002_CONFIG_REPO_PATH,
-        implementation_commit=SYNTHETIC_IMPLEMENTATION_COMMIT,
-    )
-
-    forged_i = copy.deepcopy(g114_i)
-    forged_i["policy_boundary"]["minimum_power"] = 0.91
-    refresh_science_core(forged_i)
-    forged_b = bind_implementation(forged_i)
-    with pytest.raises(ADJ.BindingError, match="compiled authority"):
-        ADJ._validate_i_to_b_config_pair(
-            forged_i,
-            forged_b,
-            config_path=ADJ.GSE114002_CONFIG_REPO_PATH,
-            implementation_commit=SYNTHETIC_IMPLEMENTATION_COMMIT,
-        )
 
 
 def test_descriptor_values_do_not_change_science_core_but_science_rehash_forgery_fails() -> None:
@@ -431,17 +501,104 @@ def test_negative_numeric_zero_cannot_masquerade_as_unknown(tmp_path: Path) -> N
         ADJ.adjudicate(config, tmp_path / "out")
 
 
-def test_negative_unknown_fields_and_reason_codes_are_exact(tmp_path: Path) -> None:
+def test_negative_unknown_fields_include_commitment_keys_and_are_exact(
+    tmp_path: Path,
+) -> None:
     config = bind_implementation()
     slot_id = ADJ.SLOT_IDS[0]
-    materialize_evidence(
+    paths = materialize_evidence(
         tmp_path / "evidence",
         config,
         statuses={slot_id: "NOT_RUN"},
-        record_updates={slot_id: {"unknown_fields": [], "reason_codes": []}},
     )
-    with pytest.raises(ADJ.AdjudicationError, match="unknown fields|reason codes"):
+    path = paths[slot_id]
+    record = json.loads(path.read_text())
+    assert record["unknown_fields"] == sorted(ADJ.FACT_KEYS[slot_id])
+    assert {
+        "locator_lineage_commitment_algorithm",
+        "locator_lineage_merkle_root_sha256",
+    }.issubset(record["unknown_fields"])
+
+    record["unknown_fields"].remove("locator_lineage_merkle_root_sha256")
+    payload = ADJ.json_bytes(record)
+    path.write_bytes(payload)
+    descriptor = config["evidence_descriptor_bindings"]["slots"][0]
+    descriptor.update({"sha256": ADJ.sha256(payload), "bytes": len(payload)})
+    refresh_descriptor_hash(config)
+    with pytest.raises(ADJ.AdjudicationError, match="negative unknown fields"):
         ADJ.adjudicate(config, tmp_path / "out")
+
+
+def test_lineage_pass_requires_commitment_root_and_fixed_algorithm(
+    tmp_path: Path,
+) -> None:
+    slot_id = ADJ.SLOT_IDS[0]
+
+    missing_config = bind_implementation()
+    missing_facts = passing_facts()[slot_id]
+    missing_facts.pop("locator_lineage_merkle_root_sha256")
+    materialize_evidence(
+        tmp_path / "missing-evidence",
+        missing_config,
+        record_updates={slot_id: {"facts": missing_facts}},
+    )
+    with pytest.raises(ADJ.AdjudicationError, match="facts keys differ"):
+        ADJ.adjudicate(missing_config, tmp_path / "missing-out")
+
+    nonhex_config = bind_implementation()
+    materialize_evidence(
+        tmp_path / "nonhex-evidence",
+        nonhex_config,
+        fact_updates={
+            slot_id: {"locator_lineage_merkle_root_sha256": "A" * 64}
+        },
+    )
+    with pytest.raises(ADJ.AdjudicationError, match="lowercase SHA-256"):
+        ADJ.adjudicate(nonhex_config, tmp_path / "nonhex-out")
+
+    wrong_algorithm_config = bind_implementation()
+    paths = materialize_evidence(
+        tmp_path / "algorithm-evidence",
+        wrong_algorithm_config,
+        fact_updates={
+            slot_id: {"locator_lineage_commitment_algorithm": "UNSCOPED_MERKLE_V1"}
+        },
+    )
+    descriptor = wrong_algorithm_config["evidence_descriptor_bindings"]["slots"][0]
+    payload = paths[slot_id].read_bytes()
+    assert descriptor["sha256"] == ADJ.sha256(payload)
+    assert wrong_algorithm_config["evidence_descriptor_bindings"][
+        "descriptor_set_sha256"
+    ] == ADJ.descriptor_set_sha256(wrong_algorithm_config)
+    with pytest.raises(ADJ.AdjudicationError, match="commitment algorithm differs"):
+        ADJ.adjudicate(wrong_algorithm_config, tmp_path / "algorithm-out")
+
+
+def test_merkle_root_changes_canonical_gate_bytes_without_member_or_row_payload() -> None:
+    config = bind_implementation()
+    slot_id = ADJ.SLOT_IDS[0]
+    facts_a = passing_facts()[slot_id]
+    facts_b = copy.deepcopy(facts_a)
+    facts_b["locator_lineage_merkle_root_sha256"] = "b" * 64
+    record_a = gate_record(config, slot_id, facts=facts_a)
+    record_b = gate_record(config, slot_id, facts=facts_b)
+    payload_a = ADJ.json_bytes(record_a)
+    payload_b = ADJ.json_bytes(record_b)
+
+    assert ADJ._semantic_diff_paths(record_a, record_b) == {
+        "facts.locator_lineage_merkle_root_sha256"
+    }
+    assert payload_a != payload_b
+    assert ADJ.sha256(payload_a) != ADJ.sha256(payload_b)
+    assert record_a["facts"]["locator_lineage_merkle_root_sha256"] == "a" * 64
+    assert record_a["privacy"] == privacy()
+    assert not {
+        "table_s2_sha256",
+        "table_s3_sha256",
+        "locator_leaf_sha256s",
+        "member_hashes",
+        "row_values",
+    }.intersection(record_a["facts"])
 
 
 def test_missing_or_nonexact_predecessor_provenance_is_rejected(tmp_path: Path) -> None:
@@ -476,6 +633,34 @@ def test_copied_predecessor_target_identity_cannot_self_prove(tmp_path: Path) ->
         },
     )
     with pytest.raises(ADJ.AdjudicationError, match="source target identity"):
+        ADJ.adjudicate(config, tmp_path / "out")
+
+
+def test_v2_acceptance_rule_is_rejected_even_after_synchronized_rehash(
+    tmp_path: Path,
+) -> None:
+    config = bind_implementation()
+    slot_id = "CANONICAL_REPORTED_ENDPOINT_SEMANTICS"
+    forged_provenance = provenance(config)
+    forged_provenance["acceptance_authority"]["rule"] = (
+        "CONFIG_HASH_BOUND_ACCEPTED_AGGREGATE_GATE_RECORD_V2"
+    )
+    paths = materialize_evidence(
+        tmp_path / "evidence",
+        config,
+        record_updates={slot_id: {"provenance": forged_provenance}},
+    )
+    descriptor = next(
+        item
+        for item in config["evidence_descriptor_bindings"]["slots"]
+        if item["slot_id"] == slot_id
+    )
+    payload = paths[slot_id].read_bytes()
+    assert descriptor["sha256"] == ADJ.sha256(payload)
+    assert config["evidence_descriptor_bindings"]["descriptor_set_sha256"] == (
+        ADJ.descriptor_set_sha256(config)
+    )
+    with pytest.raises(ADJ.AdjudicationError, match="acceptance authority"):
         ADJ.adjudicate(config, tmp_path / "out")
 
 
@@ -926,15 +1111,12 @@ def _authority_fixture(
     binding_commit = SYNTHETIC_BINDING_COMMIT
     descendant = SYNTHETIC_DESCENDANT_COMMIT
     head = implementation if lifecycle == "I" else descendant
-    script_payload = b"synthetic G200 v3 script\n"
-    test_payload = b"synthetic G200 v3 test\n"
-    g114_script = b"synthetic G114 v3 script\n"
-    g114_test = b"synthetic G114 v3 test\n"
-    old_blobs = {path: f"historical:{path}\n".encode() for path in ADJ.HISTORICAL_FROZEN_BLOBS}
-    frozen = {path: ADJ.sha256(payload) for path, payload in old_blobs.items()}
+    script_payload = b"synthetic successor G200 script\n"
+    test_payload = b"synthetic successor G200 test\n"
+    historical_script_payload = b"synthetic historical G200 v3 script\n"
+    historical_test_payload = b"synthetic historical G200 v3 test\n"
 
     config_i = unknown_implementation(read_config())
-    g114_i = unknown_implementation(read_g114_config())
     core_pairs = (
         ("root_contract_path", "root_contract_sha256"),
         ("amendment_path", "amendment_sha256"),
@@ -946,22 +1128,44 @@ def _authority_fixture(
         ("claim_evidence_matrix_path", "claim_evidence_matrix_sha256"),
         ("a1_qualification_path", "a1_qualification_sha256"),
     )
-    for candidate in (config_i, g114_i):
-        candidate_repository = candidate["repository_authority"]
-        candidate_repository["production_repo_root"] = str(repo)
-        candidate_repository["historical_dec019_binding"]["frozen_successor_blobs"] = [
-            {"path": path, "sha256": digest} for path, digest in frozen.items()
-        ]
-        core_authority = candidate["core_authority"]
-        for path_key, digest_key in core_pairs:
-            relative_path = core_authority[path_key]
-            payload = f"synthetic core authority: {relative_path}\n".encode()
-            target = repo / relative_path
-            target.parent.mkdir(parents=True, exist_ok=True)
-            target.write_bytes(payload)
-            core_authority[digest_key] = ADJ.sha256(payload)
-        refresh_science_core(candidate)
     repository = config_i["repository_authority"]
+    repository["production_repo_root"] = str(repo)
+    core_authority = config_i["core_authority"]
+    for path_key, digest_key in core_pairs:
+        relative_path = core_authority[path_key]
+        payload = f"synthetic core authority: {relative_path}\n".encode()
+        target = repo / relative_path
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_bytes(payload)
+        core_authority[digest_key] = ADJ.sha256(payload)
+
+    historical_config = copy.deepcopy(config_i)
+    historical_config["implementation_binding"].update(
+        {
+            "status": "BOUND",
+            "implementation_commit": ADJ.HISTORICAL_IMPLEMENTATION_COMMIT,
+            "implementation_script_sha256": ADJ.sha256(historical_script_payload),
+            "implementation_test_sha256": ADJ.sha256(historical_test_payload),
+        }
+    )
+    historical_core = ADJ.config_core_sha256(historical_config)
+    historical_config["implementation_binding"]["config_core_sha256"] = historical_core
+    old_blobs = {
+        ADJ.CONFIG_REPO_PATH: ADJ.json_bytes(historical_config),
+        ADJ.SCRIPT_REPO_PATH: historical_script_payload,
+        ADJ.TEST_REPO_PATH: historical_test_payload,
+    }
+    frozen = {path: ADJ.sha256(payload) for path, payload in old_blobs.items()}
+    repository["historical_dec019_binding"].update(
+        {
+            "science_core_sha256": historical_core,
+            "frozen_successor_blobs": [
+                {"path": path, "sha256": digest}
+                for path, digest in frozen.items()
+            ],
+        }
+    )
+    refresh_science_core(config_i)
     config_b = bind_implementation(
         config_i,
         implementation_commit=implementation,
@@ -970,17 +1174,10 @@ def _authority_fixture(
     )
     config_current = config_i if lifecycle == "I" else config_b
 
-    g114_b = bind_implementation(
-        g114_i,
-        implementation_commit=implementation,
-        script_sha256=ADJ.sha256(g114_script),
-        test_sha256=ADJ.sha256(g114_test),
-    )
-
     monkeypatch.setattr(ADJ, "PRODUCTION_REPO_ROOT", repo)
     monkeypatch.setattr(ADJ, "HISTORICAL_FROZEN_BLOBS", frozen)
+    monkeypatch.setattr(ADJ, "HISTORICAL_CONFIG_CORE_SHA256", historical_core)
     synthetic_core_map = {
-        ADJ.GSE114002_CONFIG_REPO_PATH: g114_i["implementation_binding"]["config_core_sha256"],
         ADJ.GSE200304_CONFIG_REPO_PATH: config_i["implementation_binding"]["config_core_sha256"],
     }
     monkeypatch.setattr(ADJ, "FROZEN_CONFIG_CORE_SHA256_BY_PATH", synthetic_core_map)
@@ -992,10 +1189,6 @@ def _authority_fixture(
     current_path = repo / ADJ.CONFIG_REPO_PATH
     current_path.parent.mkdir(parents=True, exist_ok=True)
     current_path.write_bytes(ADJ.json_bytes(config_current))
-    g114_current = g114_i if lifecycle == "I" else g114_b
-    g114_current_path = repo / ADJ.GSE114002_CONFIG_REPO_PATH
-    g114_current_path.parent.mkdir(parents=True, exist_ok=True)
-    g114_current_path.write_bytes(ADJ.json_bytes(g114_current))
     expected_i_paths = repository["implementation_commit_exact_changed_paths"]
 
     def fake_git(_repo: Path, *args: str) -> str:
@@ -1050,19 +1243,15 @@ def _authority_fixture(
     def fake_git_bytes(_repo: Path, *args: str) -> bytes:
         assert args[0] == "show"
         commit, path = args[1].split(":", 1)
-        if path in old_blobs:
-            if drift_old_blob and commit == head:
+        if commit == ADJ.HISTORICAL_BINDING_COMMIT and path in old_blobs:
+            if drift_old_blob:
                 return old_blobs[path] + b"drift"
             return old_blobs[path]
         if path == ADJ.CONFIG_REPO_PATH:
             return ADJ.json_bytes(config_i if commit == implementation else config_b)
-        if path == ADJ.GSE114002_CONFIG_REPO_PATH:
-            return ADJ.json_bytes(g114_i if commit == implementation else g114_b)
         payloads = {
             ADJ.SCRIPT_REPO_PATH: script_payload,
             ADJ.TEST_REPO_PATH: test_payload,
-            ADJ.EXPECTED_IMPLEMENTATION_FILES[ADJ.GSE114002_CONFIG_REPO_PATH][0]: g114_script,
-            ADJ.EXPECTED_IMPLEMENTATION_FILES[ADJ.GSE114002_CONFIG_REPO_PATH][1]: g114_test,
         }
         return payloads[path]
 
