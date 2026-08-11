@@ -37,7 +37,7 @@ SUPERSESSION_PATH = "docs/contracts/supersession_mrna_xeditflow_v1_1_to_route_a_
 DECISION_LOG_PATH = "docs/execution/route_a_v3_decision_log.yaml"
 REGISTRY_MANIFEST_PATH = "docs/execution/route_a_v3_registry_manifest.json"
 A1_INTERIM_PATH = "docs/execution/route_a_v3_a1_interim.yaml"
-EXPECTED_A1_INTERIM_SHA256 = "7cd736404cab41d833fd21846098e45ff3bd60ef7615de7452b875e3ed4206d6"
+EXPECTED_A1_INTERIM_SHA256 = "acadf7c36ba0a7601d1b610b664f7455dd1cce4878f05e17ce9b95b78810e464"
 SCIENTIFIC_M0_HISTORY_PATH = "docs/contracts/history/mrna_v2_readiness_audit_20260807.md"
 SCIENTIFIC_M0_HISTORY_SHA256 = "a8eb4f49ede793a8eae2037db9f46f044056d37610ec92482666a8242a52fa30"
 SEALED_GUARD_PATH = "scripts/route_a_v3/sealed_guard.py"
@@ -236,6 +236,179 @@ GSE200304_PUBLISHED_ENDPOINT_EXPECTED_FILES = [
         ("QUALIFICATION_REPORT.json", 2095, "006db8da47dc2bbc0c313a156ae16ab79a3f6aebe324d37806820ac9240b100d"),
         ("SHA256SUMS", 281, "e1720881f8bcfaaea1fef613dd4ee059c08da1bbd11bafc32a8fccdea0a43515"),
         ("PUBLICATION_COMMIT.json", 973, "f1e5d0752bcc12db0b0eaabe0e75efdb6f2c48dfba4c3bae6bff99a302194cfc"),
+    )
+]
+GSE114002_ENDPOINT_GEOMETRY_CONFIG_PATH = (
+    "configs/route_a_v3_gse114002_endpoint_geometry_reconciliation_v2.json"
+)
+GSE114002_ENDPOINT_GEOMETRY_SCRIPT_PATH = (
+    "scripts/route_a_v3/audit_gse114002_endpoint_geometry_reconciliation_v2.py"
+)
+GSE114002_ENDPOINT_GEOMETRY_TEST_PATH = (
+    "tests/route_a_v3/test_audit_gse114002_endpoint_geometry_reconciliation_v2.py"
+)
+GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_001_LINEAGE_ID = (
+    "gse114002_endpoint_geometry_reconciliation_v2_attempt_001_failure"
+)
+GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_002_LINEAGE_ID = (
+    "gse114002_endpoint_geometry_reconciliation_v2_attempt_002_mechanical_closure"
+)
+GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_001_ARTIFACT_ID = (
+    "GSE114002_ENDPOINT_GEOMETRY_RECONCILIATION_V2_20260811T073353P0800_998d030"
+)
+GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_002_ARTIFACT_ID = (
+    "GSE114002_ENDPOINT_GEOMETRY_RECONCILIATION_V2_20260811T075711P0800_a148c73"
+)
+GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_001_ROOT = (
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/"
+    f"{GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_001_ARTIFACT_ID}"
+)
+GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_002_ROOT = (
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/"
+    f"{GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_002_ARTIFACT_ID}"
+)
+GSE114002_ENDPOINT_GEOMETRY_SOURCE = {
+    "path": "/mnt/cunyuliu/mrna_editflow_p0/GSE114002/GSM3130443_designed_library.csv.gz",
+    "bytes": 17332142,
+    "sha256": "b72ac298cb0f4d21f911d330c0def06f8d94f15d9f8cc22f3a50ae87a7ef7ee5",
+    "aggregate_only": True,
+    "row_or_sequence_payload_included": False,
+}
+GSE114002_ENDPOINT_GEOMETRY_ZERO_GATE = {
+    "ordinary_study_contribution": 0,
+    "a1_intervention_study_contribution": 0,
+    "true_a2_dense_study_contribution": 0,
+    "canonical_record_count": 0,
+    "qualified": False,
+    "true_a2_claim_established": False,
+    "training_allowed": False,
+    "model_selection_allowed": False,
+    "next_phase_authorized": False,
+    "canonical_materialization_allowed": False,
+}
+GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_001_BLOCKERS = [
+    "CHECKPOINT_SPECIFIC_EXPOSURE_UNKNOWN_NOT_ASSERTED",
+    "FIELD_AND_BIOLOGICAL_SOURCE_AUTHORITY_UNKNOWN_NOT_ASSERTED",
+    "FULL_CONSTRUCT_PREFIX_REPORTER_RNA_CHEMISTRY_UNKNOWN_NOT_ASSERTED",
+    "HAMMING_DISTANCE_DISTRIBUTION_RECONCILIATION_MISMATCH",
+    "LICENSE_AND_REDISTRIBUTION_RIGHTS_UNKNOWN_NOT_ASSERTED",
+    "NEAR_DUPLICATE_SPLIT_AND_LEAKAGE_AUDIT_NOT_RUN",
+    "OWNER_UNCERTAINTY_POLICY_UNKNOWN_NOT_ASSERTED",
+    "PREFROZEN_GROUP_POWER_NOT_RUN",
+    "TWO_STAGE_GLOBAL_NORMALIZATION_RECONCILIATION_MISMATCH",
+]
+GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_002_BLOCKERS = [
+    "CHECKPOINT_SPECIFIC_EXPOSURE_UNKNOWN_NOT_ASSERTED",
+    "FIELD_AND_BIOLOGICAL_SOURCE_AUTHORITY_UNKNOWN_NOT_ASSERTED",
+    "FULL_CONSTRUCT_PREFIX_REPORTER_RNA_CHEMISTRY_UNKNOWN_NOT_ASSERTED",
+    "LICENSE_AND_REDISTRIBUTION_RIGHTS_UNKNOWN_NOT_ASSERTED",
+    "NEAR_DUPLICATE_SPLIT_AND_LEAKAGE_AUDIT_NOT_RUN",
+    "OWNER_UNCERTAINTY_POLICY_UNKNOWN_NOT_ASSERTED",
+    "PREFROZEN_GROUP_POWER_NOT_RUN",
+]
+GSE114002_ENDPOINT_GEOMETRY_CLOSED_BLOCKERS = [
+    "TWO_STAGE_GLOBAL_NORMALIZATION_RECONCILIATION_MISMATCH",
+    "HAMMING_DISTANCE_DISTRIBUTION_RECONCILIATION_MISMATCH",
+]
+GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_001_EXPECTED_RECORD = {
+    "artifact_id": GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_001_ARTIFACT_ID,
+    "path": GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_001_ROOT,
+    "recorded_at": "2026-08-11T07:33:53+08:00",
+    "dataset_id": "GSE114002",
+    "record_type": "ENDPOINT_GEOMETRY_RECONCILIATION_AGGREGATE_EVIDENCE",
+    "evidence_role": "HISTORICAL_FAILED_MECHANICAL_RECONCILIATION_PRESERVED",
+    "publication_state": "COMMITTED_ACCEPTED",
+    "status": "MECHANICAL_RECONCILIATION_FAILED_NOT_QUALIFIED",
+    "is_current": False,
+    "failure_preserved": True,
+    "superseded_by_lineage_id": GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_002_LINEAGE_ID,
+    "implementation_binding": {
+        "status": "PASS_BOUND_IMPLEMENTATION",
+        "implementation_commit": "78b06434a9b94eaf5149dff7f6bb6b2d58e76ade",
+        "binding_commit": "998d030a51737bfa1e27580efe8b89e22ae39149",
+        "implementation_to_binding_diff_is_config_only": True,
+        "protocol_config_path": GSE114002_ENDPOINT_GEOMETRY_CONFIG_PATH,
+        "protocol_config_bytes": 12936,
+        "protocol_config_sha256": "1fe9eaaba3790b91da8b92612050c71c52125f6fe18c2a7815fd398a680650f1",
+        "production_script_path": GSE114002_ENDPOINT_GEOMETRY_SCRIPT_PATH,
+        "production_script_sha256": "29a510e0471803ce189fc3c66f6a0b1ad0d6c19b14db2f1e51cedff846ee40da",
+        "focused_test_path": GSE114002_ENDPOINT_GEOMETRY_TEST_PATH,
+        "focused_test_sha256": "973cce10449341df8f3d95a798789a224a797095e37118a1af43d723bd8a1d0e",
+    },
+    "source_provenance": GSE114002_ENDPOINT_GEOMETRY_SOURCE,
+    "gate_snapshot": GSE114002_ENDPOINT_GEOMETRY_ZERO_GATE,
+    "blocker_count": 9,
+    "unresolved_blockers": GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_001_BLOCKERS,
+    "runtime_sync_status": "PENDING_NO_EVT_039",
+    "terminal_marker_written_last": True,
+}
+GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_002_EXPECTED_RECORD = {
+    "artifact_id": GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_002_ARTIFACT_ID,
+    "path": GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_002_ROOT,
+    "recorded_at": "2026-08-11T07:57:11+08:00",
+    "dataset_id": "GSE114002",
+    "record_type": "ENDPOINT_GEOMETRY_RECONCILIATION_AGGREGATE_EVIDENCE",
+    "evidence_role": "CURRENT_MECHANICAL_CLOSURE_NOT_STUDY_QUALIFICATION",
+    "publication_state": "COMMITTED_ACCEPTED",
+    "status": "MECHANICAL_ENDPOINT_RECONCILED_NOT_QUALIFIED",
+    "is_current": True,
+    "previous_attempt_lineage_id": GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_001_LINEAGE_ID,
+    "previous_failure_preserved": True,
+    "implementation_binding": {
+        "status": "PASS_BOUND_IMPLEMENTATION",
+        "implementation_commit": "1543f09e74643a9a36b89742c7a1cc458b6b0d56",
+        "binding_commit": "a148c737101ed8d0e24209233b86a55e2710633e",
+        "implementation_to_binding_diff_is_config_only": True,
+        "protocol_config_path": GSE114002_ENDPOINT_GEOMETRY_CONFIG_PATH,
+        "protocol_config_bytes": 13139,
+        "protocol_config_sha256": "560c19c3cf6d2e41f8b05978584ce884dd2beb824cdca9392a597ff406120ff8",
+        "production_script_path": GSE114002_ENDPOINT_GEOMETRY_SCRIPT_PATH,
+        "production_script_sha256": "46e41b387357da0deae7139ac675638075cbae4fc24ac5c9583e969adfa8308d",
+        "focused_test_path": GSE114002_ENDPOINT_GEOMETRY_TEST_PATH,
+        "focused_test_sha256": "8a0b04b3305f50fb1685ab310efaead15a1e3f4ca5eae4abb01d7f44a9d7be29",
+    },
+    "source_provenance": GSE114002_ENDPOINT_GEOMETRY_SOURCE,
+    "gate_snapshot": GSE114002_ENDPOINT_GEOMETRY_ZERO_GATE,
+    "mechanical_diagnostics": {
+        "eligible_provisional_pool_count": 959,
+        "eligible_provisional_distinct_candidate_count": 3899,
+        "diagnostic_only_not_effective_n": True,
+        "diagnostic_only_not_study_count": True,
+    },
+    "mechanically_closed_from_attempt_001": GSE114002_ENDPOINT_GEOMETRY_CLOSED_BLOCKERS,
+    "blocker_count": 7,
+    "unresolved_blockers": GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_002_BLOCKERS,
+    "runtime_sync_status": "PENDING_NO_EVT_039",
+    "terminal_marker_written_last": True,
+}
+GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_001_EXPECTED_FILES = [
+    {
+        "path": f"{GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_001_ROOT}/{name}",
+        "bytes": size,
+        "sha256": digest,
+    }
+    for name, size, digest in (
+        ("INPUT_INTEGRITY_AUDIT.json", 640, "d01377c1e05bc85beafba4893a05255e7f590c9518a8ee069fca607131d1b80b"),
+        ("ENDPOINT_RECONCILIATION_AUDIT.json", 1907, "bd5f89751fa69d61aa124e7424c04f78ce75ce3cfab16145c5f47ef7799b38b9"),
+        ("POOL_GEOMETRY_RECONCILIATION_AUDIT.json", 2250, "f4910ba655433076ddc44085770ef2d36df6169d2668030bcfbcb7372a46acc3"),
+        ("QUALIFICATION_REPORT.json", 2450, "7f5269866be96deab3e41099181c53294f73e4e14c6a4138968a3e578b3c89d0"),
+        ("SHA256SUMS", 392, "a7556e12c26c062698ffa0b03407ae521dc8238dfd5437820a5451674ee06d0e"),
+        ("PUBLICATION_COMMIT.json", 1174, "07e17411b32c630b25e66f23212a65939c6d259a5fa554a260cc03505346bddf"),
+    )
+]
+GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_002_EXPECTED_FILES = [
+    {
+        "path": f"{GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_002_ROOT}/{name}",
+        "bytes": size,
+        "sha256": digest,
+    }
+    for name, size, digest in (
+        ("INPUT_INTEGRITY_AUDIT.json", 640, "d01377c1e05bc85beafba4893a05255e7f590c9518a8ee069fca607131d1b80b"),
+        ("ENDPOINT_RECONCILIATION_AUDIT.json", 1910, "0d515639174ad0f1daa6dd9e46197984bd3fa43b769023a2d6d1cc2ea0d1e641"),
+        ("POOL_GEOMETRY_RECONCILIATION_AUDIT.json", 2423, "40a7cef042e4b4f8db4d6db4be469a64fefad94d55f43ff54fbca2a580b23d21"),
+        ("QUALIFICATION_REPORT.json", 2325, "34c2cc0c861286f8e22bf1ba4026d5f754254ffb1bd10a4b989a9546e874a9c3"),
+        ("SHA256SUMS", 392, "9fbd4970a3974786cd246715dfef029bd0ad87718b4eff48266d355b003ef9f0"),
+        ("PUBLICATION_COMMIT.json", 1172, "522568111b68fc68508dfb2cc82b48121c3f890a7a479ef3510fada56e38663a"),
     )
 ]
 GSE149487_PLUMAGE_PROTOCOL_PATH = "configs/route_a_v3_gse149487_a1_qualification.json"
@@ -605,6 +778,18 @@ EXPECTED_REGISTRY_MANIFEST_PATH_ROLES = (
         GSE200304_PUBLISHED_ENDPOINT_TEST_PATH,
         "GSE200304_PUBLISHED_ENDPOINT_A1_FOCUSED_TEST",
     ),
+    (
+        GSE114002_ENDPOINT_GEOMETRY_CONFIG_PATH,
+        "GSE114002_ENDPOINT_GEOMETRY_RECONCILIATION_V2_PROTOCOL",
+    ),
+    (
+        GSE114002_ENDPOINT_GEOMETRY_SCRIPT_PATH,
+        "GSE114002_ENDPOINT_GEOMETRY_RECONCILIATION_V2_AUDITOR",
+    ),
+    (
+        GSE114002_ENDPOINT_GEOMETRY_TEST_PATH,
+        "GSE114002_ENDPOINT_GEOMETRY_RECONCILIATION_V2_FOCUSED_TEST",
+    ),
     (INTEGRITY_GUARD_TEST_PATH, "A0_AUTHORITY_INTEGRITY_GUARD_TEST"),
     (VALIDATOR_PATH, "A0_STATIC_AND_SEMANTIC_VALIDATOR"),
 )
@@ -711,6 +896,9 @@ def required_bundle_paths() -> tuple[str, ...]:
         GSE200304_PUBLISHED_ENDPOINT_CONFIG_PATH,
         GSE200304_PUBLISHED_ENDPOINT_SCRIPT_PATH,
         GSE200304_PUBLISHED_ENDPOINT_TEST_PATH,
+        GSE114002_ENDPOINT_GEOMETRY_CONFIG_PATH,
+        GSE114002_ENDPOINT_GEOMETRY_SCRIPT_PATH,
+        GSE114002_ENDPOINT_GEOMETRY_TEST_PATH,
         INTEGRITY_GUARD_TEST_PATH,
         *REGISTRY_PATHS.values(),
         *(f"{SCHEMA_DIR}/{name}" for name in SCHEMA_FILES),
@@ -1065,10 +1253,10 @@ def validate_registry_manifest(repo_root: Path) -> list[Issue]:
         "contract_sha256": SOURCE_CONTRACT_SHA256,
         "active_amendment_decision_ids": ["V3-DEC-017", "V3-DEC-018"],
         "base_commit": "bbb71dcba6f1e1c9cb75a8a6653f1a4fe4a6ca0c",
-        "manifest_status": "A1_GSE200304_PUBLISHED_ENDPOINT_EVIDENCE_LEDGER_INTEGRATED",
+        "manifest_status": "A1_GSE114002_ENDPOINT_GEOMETRY_EVIDENCE_LEDGER_INTEGRATED",
         "initial_generated_at": "2026-08-10T10:10:05+08:00",
-        "generated_at": "2026-08-11T04:48:30+08:00",
-        "updated_at": "2026-08-11T04:48:30+08:00",
+        "generated_at": "2026-08-11T08:23:37+08:00",
+        "updated_at": "2026-08-11T08:23:37+08:00",
         "sealed_contact": False,
     }
     expected_top_keys = set(expected_static_top) | {"files"}
@@ -2818,6 +3006,8 @@ def validate_a1_interim_lineage(
             "legacy_gap_inventory_v1",
             "legacy_gap_inventory_v2",
             "gse114002_manifest_reconciliation_v1",
+            GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_001_LINEAGE_ID,
+            GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_002_LINEAGE_ID,
             "gse149487_reconstruction_attempt_003_failure",
             "gse149487_lim6c_scale_diagnostic_v1",
             "gse149487_plumage_protocol",
@@ -2887,6 +3077,14 @@ def validate_a1_interim_lineage(
                 "qualified": False,
                 "training_allowed": False,
                 "model_selection_allowed": False,
+            },
+            GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_001_LINEAGE_ID: {
+                **GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_001_EXPECTED_RECORD,
+                "files": GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_001_EXPECTED_FILES,
+            },
+            GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_002_LINEAGE_ID: {
+                **GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_002_EXPECTED_RECORD,
+                "files": GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_002_EXPECTED_FILES,
             },
             "gse149487_reconstruction_attempt_003_failure": {
                 "path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE149487_RECONSTRUCTION_ATTEMPT_003_FAILURE.json",
@@ -2980,6 +3178,70 @@ def validate_a1_interim_lineage(
                 issues,
                 "A1_INTERIM_LINEAGE",
             )
+        attempt_001 = lineage.get(
+            GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_001_LINEAGE_ID
+        )
+        attempt_002 = lineage.get(
+            GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_002_LINEAGE_ID
+        )
+        if isinstance(attempt_001, Mapping) and isinstance(attempt_002, Mapping):
+            prior = attempt_001.get("unresolved_blockers")
+            current = attempt_002.get("unresolved_blockers")
+            if not (
+                type(prior) is list
+                and type(current) is list
+                and set(prior) - set(current)
+                == set(GSE114002_ENDPOINT_GEOMETRY_CLOSED_BLOCKERS)
+                and set(current).issubset(set(prior))
+            ):
+                _issue(
+                    issues,
+                    "A1_INTERIM_GSE114002_ENDPOINT_GEOMETRY_HISTORY",
+                    path,
+                    "attempt 002 may close exactly the two frozen mechanical blockers and may not rewrite the preserved attempt 001 blocker set",
+                )
+        for relative, expected_sha256, expected_bytes in (
+            (
+                GSE114002_ENDPOINT_GEOMETRY_CONFIG_PATH,
+                "560c19c3cf6d2e41f8b05978584ce884dd2beb824cdca9392a597ff406120ff8",
+                13139,
+            ),
+            (
+                GSE114002_ENDPOINT_GEOMETRY_SCRIPT_PATH,
+                "46e41b387357da0deae7139ac675638075cbae4fc24ac5c9583e969adfa8308d",
+                None,
+            ),
+            (
+                GSE114002_ENDPOINT_GEOMETRY_TEST_PATH,
+                "8a0b04b3305f50fb1685ab310efaead15a1e3f4ca5eae4abb01d7f44a9d7be29",
+                None,
+            ),
+        ):
+            try:
+                payload = _read_bytes(repo_root, relative)
+            except (FileNotFoundError, ValueError) as exc:
+                _issue(
+                    issues,
+                    "A1_INTERIM_GSE114002_ENDPOINT_GEOMETRY_BINDING",
+                    relative,
+                    str(exc),
+                )
+                continue
+            actual_sha256 = sha256_bytes(payload)
+            if actual_sha256 != expected_sha256:
+                _issue(
+                    issues,
+                    "A1_INTERIM_GSE114002_ENDPOINT_GEOMETRY_BINDING",
+                    relative,
+                    f"current bytes hash {actual_sha256} must remain {expected_sha256}",
+                )
+            if expected_bytes is not None and len(payload) != expected_bytes:
+                _issue(
+                    issues,
+                    "A1_INTERIM_GSE114002_ENDPOINT_GEOMETRY_BINDING",
+                    relative,
+                    f"current byte count {len(payload)} must remain {expected_bytes}",
+                )
         gse149487_preflight = lineage.get(
             "gse149487_full_a1_stop_before_data_preflight_v1"
         )
@@ -3759,6 +4021,30 @@ def validate_a1_interim_lineage(
                 "provenance_reconciliation_status": "PROVENANCE_RECONCILED_NOT_QUALIFIED",
                 "current_valid_payload_sha256": "23bbd468ff6c6905f11e7dfdd7509601730e0f99c8ad2a78f37f3dfe99c31719",
                 "stale_declared_and_quarantined_payload_sha256": "d5baad2fcc6b59b572a1f3239bcf7910bd421fbbd4971f97b06671576ba7b0d7",
+                "endpoint_geometry_reconciliation": {
+                    "current_artifact_lineage_id": GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_002_LINEAGE_ID,
+                    "current_artifact_id": GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_002_ARTIFACT_ID,
+                    "current_status": "MECHANICAL_ENDPOINT_RECONCILED_NOT_QUALIFIED",
+                    "previous_failure_artifact_lineage_id": GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_001_LINEAGE_ID,
+                    "previous_failure_preserved": True,
+                    "mechanical_closure_only": True,
+                    "mechanically_closed_from_previous_attempt": GSE114002_ENDPOINT_GEOMETRY_CLOSED_BLOCKERS,
+                    "eligible_provisional_pool_count": 959,
+                    "eligible_provisional_distinct_candidate_count": 3899,
+                    "provisional_counts_are_diagnostic_only": True,
+                    "blocker_count": 7,
+                    "decisive_remaining_blockers": GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_002_BLOCKERS,
+                    "ordinary_study_contribution": 0,
+                    "a1_intervention_study_contribution": 0,
+                    "true_a2_dense_study_contribution": 0,
+                    "canonical_record_count": 0,
+                    "qualified": False,
+                    "true_a2_claim_established": False,
+                    "training_allowed": False,
+                    "model_selection_allowed": False,
+                    "next_phase_authorized": False,
+                    "runtime_sync_status": "PENDING_NO_EVT_039",
+                },
             }
             _expect_closed_mapping(
                 gse114002,
@@ -3977,18 +4263,20 @@ def validate_a1_interim_lineage(
         _expect_closed_mapping(
             boundary_deviation,
             {
-                "count": 4,
+                "count": 5,
                 "classifications": [
                     "NON_SENSITIVE_AGGREGATE_METADATA_BOUNDARY_DEVIATION",
                     "NON_SENSITIVE_EXISTING_POLICY_TEXT_BOUNDARY_DEVIATION",
                     "ORDINARY_PUBLIC_OLIGO_PREVIEW_BOUNDARY_DEVIATION",
                     "NON_SENSITIVE_EXISTING_CODE_SYMBOL_BOUNDARY_DEVIATION_ADDENDUM",
+                    "NON_SENSITIVE_PUBLIC_EXCLUDED_POLICY_LINE_BOUNDARY_DEVIATION_ADDENDUM",
                 ],
                 "descriptions": [
                     "ONE_PROHIBITED_STUDY_AGGREGATE_METADATA_ITEM_WAS_INCIDENTALLY_DISPLAYED_FROM_AN_OLD_MIXED_SPLIT_SUMMARY",
                     "SEVERAL_EXISTING_REGISTRY_OR_HISTORICAL_POLICY_LINES_WERE_INCIDENTALLY_DISPLAYED_FROM_ORDINARY_WORKTREE_DOCUMENTATION",
                     "FOUR_ORDINARY_PUBLIC_OLIGO_CELL_VALUES_WERE_INCIDENTALLY_DISPLAYED_DURING_A_COLUMN_TYPE_PREVIEW",
                     "ONE_EXISTING_EXCLUDED_STUDY_TEST_FUNCTION_NAME_WAS_DISPLAYED_DURING_A_FINAL_ORDINARY_CODE_SYMBOL_LISTING",
+                    "ONE_NON_SENSITIVE_PUBLIC_EXCLUDED_DATASET_POLICY_LINE_WAS_INCIDENTALLY_DISPLAYED_DURING_PUBLIC_CONFIG_REVIEW",
                 ],
                 "inspection_stopped_after_detection": True,
                 "restricted_or_sealed_path_accessed": False,
@@ -3996,6 +4284,7 @@ def validate_a1_interim_lineage(
                 "restricted_or_sealed_member_content_read": False,
                 "ordinary_public_oligo_cell_values_displayed": 4,
                 "ordinary_worktree_excluded_study_test_function_names_displayed": 1,
+                "ordinary_public_excluded_dataset_policy_lines_displayed": 1,
                 "restricted_or_sealed_sequence_read": False,
                 "raw_label_read": False,
                 "runner_invoked": False,
@@ -4063,6 +4352,9 @@ def validate_a1_interim_lineage(
             "smoke_or_proxy_result_may_be_final_scientific_conclusion": False,
             "gse145046_formal_audit_execution_is_study_qualification": False,
             "gse145046_fixed_scaffold_absolute_auxiliary_is_true_a2": False,
+            "gse114002_mechanical_reconciliation_is_study_qualification": False,
+            "gse114002_provisional_pool_or_candidate_counts_are_effective_n": False,
+            "gse114002_mechanical_reconciliation_authorizes_training_or_model_selection": False,
             "gse200304_engineering_success_is_study_qualification": False,
             "gse200304_fastq_acquisition_is_study_qualification": False,
             "gse200304_transport_integrity_is_paper_native_count_replay": False,
@@ -4177,19 +4469,19 @@ def validate_a1_interim_lineage(
     _expect(
         interim,
         "latest_evidence_update_id",
-        GSE200304_PUBLISHED_ENDPOINT_ARTIFACT_ID,
+        GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_002_ARTIFACT_ID,
         path,
         issues,
         "A1_INTERIM_TIME",
     )
     generated = interim.get("generated_at")
     updated = interim.get("updated_at")
-    if generated != "2026-08-11T04:48:00+08:00" or updated != "2026-08-11T04:48:00+08:00":
+    if generated != "2026-08-11T08:16:56+08:00" or updated != "2026-08-11T08:16:56+08:00":
         _issue(
             issues,
             "A1_INTERIM_TIME",
             path,
-            "generated_at and updated_at must remain the exact published-endpoint ledger timestamp",
+            "generated_at and updated_at must remain the exact GSE114002 endpoint-geometry ledger timestamp",
         )
     if generated != updated:
         _issue(issues, "A1_INTERIM_TIME", path, "generated_at and updated_at must identify the same amended record bytes")
@@ -4202,6 +4494,7 @@ def validate_a1_interim_lineage(
         role_authority_dt = datetime.fromisoformat("2026-08-10T23:03:15+08:00")
         gse149487_preflight_dt = datetime.fromisoformat("2026-08-11T02:14:39+08:00")
         gse200304_published_endpoint_dt = datetime.fromisoformat("2026-08-11T04:40:50+08:00")
+        gse114002_endpoint_geometry_dt = datetime.fromisoformat("2026-08-11T07:57:11+08:00")
     except ValueError:
         _issue(issues, "A1_INTERIM_TIME", path, "updated_at must be an ISO-8601 timestamp with offset")
     else:
@@ -4213,12 +4506,13 @@ def validate_a1_interim_lineage(
             or updated_dt < role_authority_dt
             or updated_dt < gse149487_preflight_dt
             or updated_dt < gse200304_published_endpoint_dt
+            or updated_dt < gse114002_endpoint_geometry_dt
         ):
             _issue(
                 issues,
                 "A1_INTERIM_TIME",
                 path,
-                "updated_at must follow the formal audit, DEC-017 authorization, FASTQ consumer evidence, raw-replay preflight, GSE200302 role-authority bundle, and GSE149487 stop-before-data preflight",
+                "updated_at must follow the formal audit, DEC-017 authorization, FASTQ consumer evidence, raw-replay preflight, GSE200302 role-authority bundle, GSE149487 stop-before-data preflight, GSE200304 published-endpoint evidence, and GSE114002 endpoint-geometry reconciliation",
             )
     return issues
 

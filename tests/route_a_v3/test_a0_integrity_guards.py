@@ -991,6 +991,181 @@ def test_rehashed_gse200302_role_authority_cannot_bypass_exact_semantics(
     assert "A1_INTERIM_GSE200304_LINEAGE_ID_SET" in codes
 
 
+def test_gse114002_endpoint_geometry_lineage_is_exact_and_rehash_resistant(
+    validator,
+    repo_root,
+    tmp_path,
+    monkeypatch,
+):
+    interim = validator._load_yaml(repo_root, validator.A1_INTERIM_PATH)
+    assert validator.validate_a1_interim_lineage(repo_root, interim) == []
+    attempt_001 = interim["artifact_lineage"][
+        validator.GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_001_LINEAGE_ID
+    ]
+    attempt_002 = interim["artifact_lineage"][
+        validator.GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_002_LINEAGE_ID
+    ]
+    assert attempt_001 == {
+        **validator.GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_001_EXPECTED_RECORD,
+        "files": validator.GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_001_EXPECTED_FILES,
+    }
+    assert attempt_002 == {
+        **validator.GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_002_EXPECTED_RECORD,
+        "files": validator.GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_002_EXPECTED_FILES,
+    }
+    assert set(attempt_001["unresolved_blockers"]) - set(
+        attempt_002["unresolved_blockers"]
+    ) == set(validator.GSE114002_ENDPOINT_GEOMETRY_CLOSED_BLOCKERS)
+
+    def rewrite_historical_failure(interim):
+        failure = interim["artifact_lineage"][
+            validator.GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_001_LINEAGE_ID
+        ]
+        failure["status"] = "MECHANICAL_ENDPOINT_RECONCILED_NOT_QUALIFIED"
+        failure["failure_preserved"] = False
+        failure["unresolved_blockers"] = list(
+            validator.GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_002_BLOCKERS
+        )
+
+    codes = _validate_rehashed_interim_bypass(
+        validator,
+        repo_root,
+        tmp_path / "gse114002_rewritten_failure",
+        monkeypatch,
+        rewrite_historical_failure,
+    )
+    assert "A1_INTERIM_LINEAGE" in codes
+    assert "A1_INTERIM_GSE114002_ENDPOINT_GEOMETRY_HISTORY" in codes
+
+    def upgrade_current_gate_and_counts(interim):
+        current = interim["artifact_lineage"][
+            validator.GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_002_LINEAGE_ID
+        ]
+        current["gate_snapshot"]["ordinary_study_contribution"] = 1
+        current["gate_snapshot"]["a1_intervention_study_contribution"] = 1
+        current["gate_snapshot"]["true_a2_dense_study_contribution"] = 1
+        current["gate_snapshot"]["canonical_record_count"] = 1
+        current["gate_snapshot"]["qualified"] = True
+        current["gate_snapshot"]["training_allowed"] = True
+        current["gate_snapshot"]["model_selection_allowed"] = True
+        current["mechanical_diagnostics"][
+            "eligible_provisional_pool_count"
+        ] = True
+        current["mechanical_diagnostics"][
+            "diagnostic_only_not_effective_n"
+        ] = 1
+
+    codes = _validate_rehashed_interim_bypass(
+        validator,
+        repo_root,
+        tmp_path / "gse114002_gate_and_type_upgrade",
+        monkeypatch,
+        upgrade_current_gate_and_counts,
+    )
+    assert "A1_INTERIM_LINEAGE" in codes
+
+    def tamper_attempt_member_triples(interim):
+        for lineage_id in (
+            validator.GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_001_LINEAGE_ID,
+            validator.GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_002_LINEAGE_ID,
+        ):
+            member = interim["artifact_lineage"][lineage_id]["files"][0]
+            member["bytes"] += 1
+            member["sha256"] = "0" * 64
+
+    codes = _validate_rehashed_interim_bypass(
+        validator,
+        repo_root,
+        tmp_path / "gse114002_member_triples",
+        monkeypatch,
+        tamper_attempt_member_triples,
+    )
+    assert "A1_INTERIM_LINEAGE" in codes
+
+    def tamper_current_summary_and_runtime(interim):
+        current = interim["dataset_boundary_summary"]["GSE114002"][
+            "endpoint_geometry_reconciliation"
+        ]
+        current["current_artifact_lineage_id"] = (
+            validator.GSE114002_ENDPOINT_GEOMETRY_ATTEMPT_001_LINEAGE_ID
+        )
+        current["blocker_count"] = 0
+        current["qualified"] = True
+        current["runtime_sync_status"] = "EVT-039"
+
+    codes = _validate_rehashed_interim_bypass(
+        validator,
+        repo_root,
+        tmp_path / "gse114002_summary_and_runtime",
+        monkeypatch,
+        tamper_current_summary_and_runtime,
+    )
+    assert "A1_INTERIM_GSE114002" in codes
+
+    def hide_public_boundary_deviation(interim):
+        boundary = interim["boundary_deviation"]
+        boundary["count"] = 4
+        boundary["classifications"].pop()
+        boundary["descriptions"].pop()
+        boundary["ordinary_public_excluded_dataset_policy_lines_displayed"] = 0
+
+    codes = _validate_rehashed_interim_bypass(
+        validator,
+        repo_root,
+        tmp_path / "gse114002_boundary_deviation_hidden",
+        monkeypatch,
+        hide_public_boundary_deviation,
+    )
+    assert "A1_INTERIM_BOUNDARY_DEVIATION" in codes
+
+    def add_unregistered_gse114002_lineage(interim):
+        interim["artifact_lineage"][
+            "gse114002_endpoint_geometry_reconciliation_v2_attempt_003"
+        ] = {
+            "dataset_id": "GSE114002",
+            "status": "QUALIFIED",
+        }
+
+    codes = _validate_rehashed_interim_bypass(
+        validator,
+        repo_root,
+        tmp_path / "gse114002_extra_lineage",
+        monkeypatch,
+        add_unregistered_gse114002_lineage,
+    )
+    assert "A1_INTERIM_LINEAGE_ID_SET" in codes
+
+
+def test_gse114002_endpoint_geometry_producer_rehash_cannot_bypass_binding(
+    validator,
+    repo_root,
+    tmp_path,
+):
+    manifest = _copy_manifest_bundle(validator, repo_root, tmp_path)
+    producer_paths = {
+        validator.GSE114002_ENDPOINT_GEOMETRY_CONFIG_PATH,
+        validator.GSE114002_ENDPOINT_GEOMETRY_SCRIPT_PATH,
+        validator.GSE114002_ENDPOINT_GEOMETRY_TEST_PATH,
+    }
+    assert producer_paths.issubset(
+        {path for path, _role in validator.EXPECTED_REGISTRY_MANIFEST_PATH_ROLES}
+    )
+
+    config_path = tmp_path / validator.GSE114002_ENDPOINT_GEOMETRY_CONFIG_PATH
+    config_path.write_bytes(config_path.read_bytes() + b"\n")
+    next(
+        row
+        for row in manifest["files"]
+        if row["path"] == validator.GSE114002_ENDPOINT_GEOMETRY_CONFIG_PATH
+    )["sha256"] = validator.sha256_file(config_path)
+    manifest_path = tmp_path / validator.REGISTRY_MANIFEST_PATH
+    manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+
+    codes = _codes(validator.validate_bundle(tmp_path))
+    assert "REGISTRY_MANIFEST_HASH_MISMATCH" not in codes
+    assert "A1_INTERIM_GSE114002_ENDPOINT_GEOMETRY_BINDING" in codes
+
+
 def test_published_endpoint_lineage_is_exact_and_rehash_resistant(
     validator,
     repo_root,
@@ -1755,10 +1930,10 @@ def test_registry_manifest_detects_every_listed_hash_drift(validator, tmp_path, 
         "contract_sha256": goal_hash,
         "active_amendment_decision_ids": ["V3-DEC-017", "V3-DEC-018"],
         "base_commit": "bbb71dcba6f1e1c9cb75a8a6653f1a4fe4a6ca0c",
-        "manifest_status": "A1_GSE200304_PUBLISHED_ENDPOINT_EVIDENCE_LEDGER_INTEGRATED",
+        "manifest_status": "A1_GSE114002_ENDPOINT_GEOMETRY_EVIDENCE_LEDGER_INTEGRATED",
         "initial_generated_at": "2026-08-10T10:10:05+08:00",
-        "generated_at": "2026-08-11T04:48:30+08:00",
-        "updated_at": "2026-08-11T04:48:30+08:00",
+        "generated_at": "2026-08-11T08:23:37+08:00",
+        "updated_at": "2026-08-11T08:23:37+08:00",
         "sealed_contact": False,
         "files": entries,
     }

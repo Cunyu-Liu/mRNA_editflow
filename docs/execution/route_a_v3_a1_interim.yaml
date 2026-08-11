@@ -103,6 +103,158 @@ artifact_lineage:
     qualified: false
     training_allowed: false
     model_selection_allowed: false
+  gse114002_endpoint_geometry_reconciliation_v2_attempt_001_failure:
+    artifact_id: GSE114002_ENDPOINT_GEOMETRY_RECONCILIATION_V2_20260811T073353P0800_998d030
+    path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE114002_ENDPOINT_GEOMETRY_RECONCILIATION_V2_20260811T073353P0800_998d030
+    recorded_at: "2026-08-11T07:33:53+08:00"
+    dataset_id: GSE114002
+    record_type: ENDPOINT_GEOMETRY_RECONCILIATION_AGGREGATE_EVIDENCE
+    evidence_role: HISTORICAL_FAILED_MECHANICAL_RECONCILIATION_PRESERVED
+    publication_state: COMMITTED_ACCEPTED
+    status: MECHANICAL_RECONCILIATION_FAILED_NOT_QUALIFIED
+    is_current: false
+    failure_preserved: true
+    superseded_by_lineage_id: gse114002_endpoint_geometry_reconciliation_v2_attempt_002_mechanical_closure
+    implementation_binding:
+      status: PASS_BOUND_IMPLEMENTATION
+      implementation_commit: 78b06434a9b94eaf5149dff7f6bb6b2d58e76ade
+      binding_commit: 998d030a51737bfa1e27580efe8b89e22ae39149
+      implementation_to_binding_diff_is_config_only: true
+      protocol_config_path: configs/route_a_v3_gse114002_endpoint_geometry_reconciliation_v2.json
+      protocol_config_bytes: 12936
+      protocol_config_sha256: 1fe9eaaba3790b91da8b92612050c71c52125f6fe18c2a7815fd398a680650f1
+      production_script_path: scripts/route_a_v3/audit_gse114002_endpoint_geometry_reconciliation_v2.py
+      production_script_sha256: 29a510e0471803ce189fc3c66f6a0b1ad0d6c19b14db2f1e51cedff846ee40da
+      focused_test_path: tests/route_a_v3/test_audit_gse114002_endpoint_geometry_reconciliation_v2.py
+      focused_test_sha256: 973cce10449341df8f3d95a798789a224a797095e37118a1af43d723bd8a1d0e
+    source_provenance:
+      path: /mnt/cunyuliu/mrna_editflow_p0/GSE114002/GSM3130443_designed_library.csv.gz
+      bytes: 17332142
+      sha256: b72ac298cb0f4d21f911d330c0def06f8d94f15d9f8cc22f3a50ae87a7ef7ee5
+      aggregate_only: true
+      row_or_sequence_payload_included: false
+    gate_snapshot:
+      ordinary_study_contribution: 0
+      a1_intervention_study_contribution: 0
+      true_a2_dense_study_contribution: 0
+      canonical_record_count: 0
+      qualified: false
+      true_a2_claim_established: false
+      training_allowed: false
+      model_selection_allowed: false
+      next_phase_authorized: false
+      canonical_materialization_allowed: false
+    blocker_count: 9
+    unresolved_blockers:
+      - CHECKPOINT_SPECIFIC_EXPOSURE_UNKNOWN_NOT_ASSERTED
+      - FIELD_AND_BIOLOGICAL_SOURCE_AUTHORITY_UNKNOWN_NOT_ASSERTED
+      - FULL_CONSTRUCT_PREFIX_REPORTER_RNA_CHEMISTRY_UNKNOWN_NOT_ASSERTED
+      - HAMMING_DISTANCE_DISTRIBUTION_RECONCILIATION_MISMATCH
+      - LICENSE_AND_REDISTRIBUTION_RIGHTS_UNKNOWN_NOT_ASSERTED
+      - NEAR_DUPLICATE_SPLIT_AND_LEAKAGE_AUDIT_NOT_RUN
+      - OWNER_UNCERTAINTY_POLICY_UNKNOWN_NOT_ASSERTED
+      - PREFROZEN_GROUP_POWER_NOT_RUN
+      - TWO_STAGE_GLOBAL_NORMALIZATION_RECONCILIATION_MISMATCH
+    runtime_sync_status: PENDING_NO_EVT_039
+    terminal_marker_written_last: true
+    files:
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE114002_ENDPOINT_GEOMETRY_RECONCILIATION_V2_20260811T073353P0800_998d030/INPUT_INTEGRITY_AUDIT.json
+        bytes: 640
+        sha256: d01377c1e05bc85beafba4893a05255e7f590c9518a8ee069fca607131d1b80b
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE114002_ENDPOINT_GEOMETRY_RECONCILIATION_V2_20260811T073353P0800_998d030/ENDPOINT_RECONCILIATION_AUDIT.json
+        bytes: 1907
+        sha256: bd5f89751fa69d61aa124e7424c04f78ce75ce3cfab16145c5f47ef7799b38b9
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE114002_ENDPOINT_GEOMETRY_RECONCILIATION_V2_20260811T073353P0800_998d030/POOL_GEOMETRY_RECONCILIATION_AUDIT.json
+        bytes: 2250
+        sha256: f4910ba655433076ddc44085770ef2d36df6169d2668030bcfbcb7372a46acc3
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE114002_ENDPOINT_GEOMETRY_RECONCILIATION_V2_20260811T073353P0800_998d030/QUALIFICATION_REPORT.json
+        bytes: 2450
+        sha256: 7f5269866be96deab3e41099181c53294f73e4e14c6a4138968a3e578b3c89d0
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE114002_ENDPOINT_GEOMETRY_RECONCILIATION_V2_20260811T073353P0800_998d030/SHA256SUMS
+        bytes: 392
+        sha256: a7556e12c26c062698ffa0b03407ae521dc8238dfd5437820a5451674ee06d0e
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE114002_ENDPOINT_GEOMETRY_RECONCILIATION_V2_20260811T073353P0800_998d030/PUBLICATION_COMMIT.json
+        bytes: 1174
+        sha256: 07e17411b32c630b25e66f23212a65939c6d259a5fa554a260cc03505346bddf
+  gse114002_endpoint_geometry_reconciliation_v2_attempt_002_mechanical_closure:
+    artifact_id: GSE114002_ENDPOINT_GEOMETRY_RECONCILIATION_V2_20260811T075711P0800_a148c73
+    path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE114002_ENDPOINT_GEOMETRY_RECONCILIATION_V2_20260811T075711P0800_a148c73
+    recorded_at: "2026-08-11T07:57:11+08:00"
+    dataset_id: GSE114002
+    record_type: ENDPOINT_GEOMETRY_RECONCILIATION_AGGREGATE_EVIDENCE
+    evidence_role: CURRENT_MECHANICAL_CLOSURE_NOT_STUDY_QUALIFICATION
+    publication_state: COMMITTED_ACCEPTED
+    status: MECHANICAL_ENDPOINT_RECONCILED_NOT_QUALIFIED
+    is_current: true
+    previous_attempt_lineage_id: gse114002_endpoint_geometry_reconciliation_v2_attempt_001_failure
+    previous_failure_preserved: true
+    implementation_binding:
+      status: PASS_BOUND_IMPLEMENTATION
+      implementation_commit: 1543f09e74643a9a36b89742c7a1cc458b6b0d56
+      binding_commit: a148c737101ed8d0e24209233b86a55e2710633e
+      implementation_to_binding_diff_is_config_only: true
+      protocol_config_path: configs/route_a_v3_gse114002_endpoint_geometry_reconciliation_v2.json
+      protocol_config_bytes: 13139
+      protocol_config_sha256: 560c19c3cf6d2e41f8b05978584ce884dd2beb824cdca9392a597ff406120ff8
+      production_script_path: scripts/route_a_v3/audit_gse114002_endpoint_geometry_reconciliation_v2.py
+      production_script_sha256: 46e41b387357da0deae7139ac675638075cbae4fc24ac5c9583e969adfa8308d
+      focused_test_path: tests/route_a_v3/test_audit_gse114002_endpoint_geometry_reconciliation_v2.py
+      focused_test_sha256: 8a0b04b3305f50fb1685ab310efaead15a1e3f4ca5eae4abb01d7f44a9d7be29
+    source_provenance:
+      path: /mnt/cunyuliu/mrna_editflow_p0/GSE114002/GSM3130443_designed_library.csv.gz
+      bytes: 17332142
+      sha256: b72ac298cb0f4d21f911d330c0def06f8d94f15d9f8cc22f3a50ae87a7ef7ee5
+      aggregate_only: true
+      row_or_sequence_payload_included: false
+    gate_snapshot:
+      ordinary_study_contribution: 0
+      a1_intervention_study_contribution: 0
+      true_a2_dense_study_contribution: 0
+      canonical_record_count: 0
+      qualified: false
+      true_a2_claim_established: false
+      training_allowed: false
+      model_selection_allowed: false
+      next_phase_authorized: false
+      canonical_materialization_allowed: false
+    mechanical_diagnostics:
+      eligible_provisional_pool_count: 959
+      eligible_provisional_distinct_candidate_count: 3899
+      diagnostic_only_not_effective_n: true
+      diagnostic_only_not_study_count: true
+    mechanically_closed_from_attempt_001:
+      - TWO_STAGE_GLOBAL_NORMALIZATION_RECONCILIATION_MISMATCH
+      - HAMMING_DISTANCE_DISTRIBUTION_RECONCILIATION_MISMATCH
+    blocker_count: 7
+    unresolved_blockers:
+      - CHECKPOINT_SPECIFIC_EXPOSURE_UNKNOWN_NOT_ASSERTED
+      - FIELD_AND_BIOLOGICAL_SOURCE_AUTHORITY_UNKNOWN_NOT_ASSERTED
+      - FULL_CONSTRUCT_PREFIX_REPORTER_RNA_CHEMISTRY_UNKNOWN_NOT_ASSERTED
+      - LICENSE_AND_REDISTRIBUTION_RIGHTS_UNKNOWN_NOT_ASSERTED
+      - NEAR_DUPLICATE_SPLIT_AND_LEAKAGE_AUDIT_NOT_RUN
+      - OWNER_UNCERTAINTY_POLICY_UNKNOWN_NOT_ASSERTED
+      - PREFROZEN_GROUP_POWER_NOT_RUN
+    runtime_sync_status: PENDING_NO_EVT_039
+    terminal_marker_written_last: true
+    files:
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE114002_ENDPOINT_GEOMETRY_RECONCILIATION_V2_20260811T075711P0800_a148c73/INPUT_INTEGRITY_AUDIT.json
+        bytes: 640
+        sha256: d01377c1e05bc85beafba4893a05255e7f590c9518a8ee069fca607131d1b80b
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE114002_ENDPOINT_GEOMETRY_RECONCILIATION_V2_20260811T075711P0800_a148c73/ENDPOINT_RECONCILIATION_AUDIT.json
+        bytes: 1910
+        sha256: 0d515639174ad0f1daa6dd9e46197984bd3fa43b769023a2d6d1cc2ea0d1e641
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE114002_ENDPOINT_GEOMETRY_RECONCILIATION_V2_20260811T075711P0800_a148c73/POOL_GEOMETRY_RECONCILIATION_AUDIT.json
+        bytes: 2423
+        sha256: 40a7cef042e4b4f8db4d6db4be469a64fefad94d55f43ff54fbca2a580b23d21
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE114002_ENDPOINT_GEOMETRY_RECONCILIATION_V2_20260811T075711P0800_a148c73/QUALIFICATION_REPORT.json
+        bytes: 2325
+        sha256: 34c2cc0c861286f8e22bf1ba4026d5f754254ffb1bd10a4b989a9546e874a9c3
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE114002_ENDPOINT_GEOMETRY_RECONCILIATION_V2_20260811T075711P0800_a148c73/SHA256SUMS
+        bytes: 392
+        sha256: 9fbd4970a3974786cd246715dfef029bd0ad87718b4eff48266d355b003ef9f0
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE114002_ENDPOINT_GEOMETRY_RECONCILIATION_V2_20260811T075711P0800_a148c73/PUBLICATION_COMMIT.json
+        bytes: 1172
+        sha256: 522568111b68fc68508dfb2cc82b48121c3f890a7a479ef3510fada56e38663a
   gse149487_reconstruction_attempt_003_failure:
     path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE149487_RECONSTRUCTION_ATTEMPT_003_FAILURE.json
     bytes: 2568
@@ -908,6 +1060,38 @@ dataset_boundary_summary:
     provenance_reconciliation_status: PROVENANCE_RECONCILED_NOT_QUALIFIED
     current_valid_payload_sha256: 23bbd468ff6c6905f11e7dfdd7509601730e0f99c8ad2a78f37f3dfe99c31719
     stale_declared_and_quarantined_payload_sha256: d5baad2fcc6b59b572a1f3239bcf7910bd421fbbd4971f97b06671576ba7b0d7
+    endpoint_geometry_reconciliation:
+      current_artifact_lineage_id: gse114002_endpoint_geometry_reconciliation_v2_attempt_002_mechanical_closure
+      current_artifact_id: GSE114002_ENDPOINT_GEOMETRY_RECONCILIATION_V2_20260811T075711P0800_a148c73
+      current_status: MECHANICAL_ENDPOINT_RECONCILED_NOT_QUALIFIED
+      previous_failure_artifact_lineage_id: gse114002_endpoint_geometry_reconciliation_v2_attempt_001_failure
+      previous_failure_preserved: true
+      mechanical_closure_only: true
+      mechanically_closed_from_previous_attempt:
+        - TWO_STAGE_GLOBAL_NORMALIZATION_RECONCILIATION_MISMATCH
+        - HAMMING_DISTANCE_DISTRIBUTION_RECONCILIATION_MISMATCH
+      eligible_provisional_pool_count: 959
+      eligible_provisional_distinct_candidate_count: 3899
+      provisional_counts_are_diagnostic_only: true
+      blocker_count: 7
+      decisive_remaining_blockers:
+        - CHECKPOINT_SPECIFIC_EXPOSURE_UNKNOWN_NOT_ASSERTED
+        - FIELD_AND_BIOLOGICAL_SOURCE_AUTHORITY_UNKNOWN_NOT_ASSERTED
+        - FULL_CONSTRUCT_PREFIX_REPORTER_RNA_CHEMISTRY_UNKNOWN_NOT_ASSERTED
+        - LICENSE_AND_REDISTRIBUTION_RIGHTS_UNKNOWN_NOT_ASSERTED
+        - NEAR_DUPLICATE_SPLIT_AND_LEAKAGE_AUDIT_NOT_RUN
+        - OWNER_UNCERTAINTY_POLICY_UNKNOWN_NOT_ASSERTED
+        - PREFROZEN_GROUP_POWER_NOT_RUN
+      ordinary_study_contribution: 0
+      a1_intervention_study_contribution: 0
+      true_a2_dense_study_contribution: 0
+      canonical_record_count: 0
+      qualified: false
+      true_a2_claim_established: false
+      training_allowed: false
+      model_selection_allowed: false
+      next_phase_authorized: false
+      runtime_sync_status: PENDING_NO_EVT_039
   GSE149487:
     registry_qualification_status: AUDIT_PENDING
     a1_inventory_qualification_status: BLOCKED_PENDING_PUBLIC_EVIDENCE
@@ -1084,23 +1268,26 @@ dataset_boundary_summary:
   qualified_a2_dense_neighborhoods: 0
 
 boundary_deviation:
-  count: 4
+  count: 5
   classifications:
     - NON_SENSITIVE_AGGREGATE_METADATA_BOUNDARY_DEVIATION
     - NON_SENSITIVE_EXISTING_POLICY_TEXT_BOUNDARY_DEVIATION
     - ORDINARY_PUBLIC_OLIGO_PREVIEW_BOUNDARY_DEVIATION
     - NON_SENSITIVE_EXISTING_CODE_SYMBOL_BOUNDARY_DEVIATION_ADDENDUM
+    - NON_SENSITIVE_PUBLIC_EXCLUDED_POLICY_LINE_BOUNDARY_DEVIATION_ADDENDUM
   descriptions:
     - ONE_PROHIBITED_STUDY_AGGREGATE_METADATA_ITEM_WAS_INCIDENTALLY_DISPLAYED_FROM_AN_OLD_MIXED_SPLIT_SUMMARY
     - SEVERAL_EXISTING_REGISTRY_OR_HISTORICAL_POLICY_LINES_WERE_INCIDENTALLY_DISPLAYED_FROM_ORDINARY_WORKTREE_DOCUMENTATION
     - FOUR_ORDINARY_PUBLIC_OLIGO_CELL_VALUES_WERE_INCIDENTALLY_DISPLAYED_DURING_A_COLUMN_TYPE_PREVIEW
     - ONE_EXISTING_EXCLUDED_STUDY_TEST_FUNCTION_NAME_WAS_DISPLAYED_DURING_A_FINAL_ORDINARY_CODE_SYMBOL_LISTING
+    - ONE_NON_SENSITIVE_PUBLIC_EXCLUDED_DATASET_POLICY_LINE_WAS_INCIDENTALLY_DISPLAYED_DURING_PUBLIC_CONFIG_REVIEW
   inspection_stopped_after_detection: true
   restricted_or_sealed_path_accessed: false
   excluded_study_payload_contact: false
   restricted_or_sealed_member_content_read: false
   ordinary_public_oligo_cell_values_displayed: 4
   ordinary_worktree_excluded_study_test_function_names_displayed: 1
+  ordinary_public_excluded_dataset_policy_lines_displayed: 1
   restricted_or_sealed_sequence_read: false
   raw_label_read: false
   runner_invoked: false
@@ -1142,6 +1329,9 @@ claim_boundaries:
   smoke_or_proxy_result_may_be_final_scientific_conclusion: false
   gse145046_formal_audit_execution_is_study_qualification: false
   gse145046_fixed_scaffold_absolute_auxiliary_is_true_a2: false
+  gse114002_mechanical_reconciliation_is_study_qualification: false
+  gse114002_provisional_pool_or_candidate_counts_are_effective_n: false
+  gse114002_mechanical_reconciliation_authorizes_training_or_model_selection: false
   gse200304_engineering_success_is_study_qualification: false
   gse200304_fastq_acquisition_is_study_qualification: false
   gse200304_transport_integrity_is_paper_native_count_replay: false
@@ -1241,7 +1431,7 @@ verification:
     scope: INTERIM_RECORD_STATUS_CLAIM_BOUNDARIES_PLUMAGE_BLOCK_SEMANTICS_AND_LOG2_CPM_SCALE
 
 initial_generated_at: "2026-08-10T06:30:58+08:00"
-generated_at: "2026-08-11T04:48:00+08:00"
-updated_at: "2026-08-11T04:48:00+08:00"
+generated_at: "2026-08-11T08:16:56+08:00"
+updated_at: "2026-08-11T08:16:56+08:00"
 updated_for_decision_id: V3-DEC-018
-latest_evidence_update_id: GSE200304_PUBLISHED_ENDPOINT_A1_20260811T044050+0800_d06bb99
+latest_evidence_update_id: GSE114002_ENDPOINT_GEOMETRY_RECONCILIATION_V2_20260811T075711P0800_a148c73

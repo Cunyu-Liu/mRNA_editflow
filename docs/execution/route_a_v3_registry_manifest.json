@@ -49,7 +49,7 @@
     {
       "path": "docs/execution/route_a_v3_a1_interim.yaml",
       "role": "A1_ACTIVE_INTERIM_RECORD",
-      "sha256": "7cd736404cab41d833fd21846098e45ff3bd60ef7615de7452b875e3ed4206d6"
+      "sha256": "acadf7c36ba0a7601d1b610b664f7455dd1cce4878f05e17ce9b95b78810e464"
     },
     {
       "path": "docs/execution/route_a_v3_split_registry.yaml",
@@ -147,20 +147,35 @@
       "sha256": "173cad716fbdb2590e82ea54a91776ef61e7ab9eb7b596b694b5aa8609d44ad0"
     },
     {
+      "path": "configs/route_a_v3_gse114002_endpoint_geometry_reconciliation_v2.json",
+      "role": "GSE114002_ENDPOINT_GEOMETRY_RECONCILIATION_V2_PROTOCOL",
+      "sha256": "560c19c3cf6d2e41f8b05978584ce884dd2beb824cdca9392a597ff406120ff8"
+    },
+    {
+      "path": "scripts/route_a_v3/audit_gse114002_endpoint_geometry_reconciliation_v2.py",
+      "role": "GSE114002_ENDPOINT_GEOMETRY_RECONCILIATION_V2_AUDITOR",
+      "sha256": "46e41b387357da0deae7139ac675638075cbae4fc24ac5c9583e969adfa8308d"
+    },
+    {
+      "path": "tests/route_a_v3/test_audit_gse114002_endpoint_geometry_reconciliation_v2.py",
+      "role": "GSE114002_ENDPOINT_GEOMETRY_RECONCILIATION_V2_FOCUSED_TEST",
+      "sha256": "8a0b04b3305f50fb1685ab310efaead15a1e3f4ca5eae4abb01d7f44a9d7be29"
+    },
+    {
       "path": "tests/route_a_v3/test_a0_integrity_guards.py",
       "role": "A0_AUTHORITY_INTEGRITY_GUARD_TEST",
-      "sha256": "8a5e16a8e6764e139bdc5fd3d933ec297e9c645869f5a2a18b014aae3b17e50e"
+      "sha256": "d9c261312e06c029e8767d1804cb2be868efa4d1b620652db700b5d55e34f92d"
     },
     {
       "path": "scripts/route_a_v3/validate_a0_bundle.py",
       "role": "A0_STATIC_AND_SEMANTIC_VALIDATOR",
-      "sha256": "dc905057ef1189a705b85a5084ce00d7316fd5e22b1d58ffc21fe0bebdefa18a"
+      "sha256": "c533f922160de499a81b6531ec9f7ab4b670fe466d5d78c5be0f05e422ca9650"
     }
   ],
   "initial_generated_at": "2026-08-10T10:10:05+08:00",
-  "generated_at": "2026-08-11T04:48:30+08:00",
-  "updated_at": "2026-08-11T04:48:30+08:00",
-  "manifest_status": "A1_GSE200304_PUBLISHED_ENDPOINT_EVIDENCE_LEDGER_INTEGRATED",
+  "generated_at": "2026-08-11T08:23:37+08:00",
+  "updated_at": "2026-08-11T08:23:37+08:00",
+  "manifest_status": "A1_GSE114002_ENDPOINT_GEOMETRY_EVIDENCE_LEDGER_INTEGRATED",
   "schema_version": "1.0.0",
   "sealed_contact": false,
   "version": "3.0.0"
