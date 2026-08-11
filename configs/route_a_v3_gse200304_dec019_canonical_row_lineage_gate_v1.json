@@ -1,0 +1,398 @@
+{
+  "schema_version": "route_a_v3_gse200304_dec019_canonical_row_lineage_gate.v1",
+  "protocol_id": "ROUTE_A_V3_GSE200304_DEC019_CANONICAL_ROW_LINEAGE_GATE_V1",
+  "contract_id": "mrna_xeditflow_route_a_v3",
+  "phase_id": "A1",
+  "dataset_id": "GSE200304",
+  "decision_id": "V3-DEC-019",
+  "implementation_binding": {
+    "binding_scheme": "CONFIG_ONLY_POST_IMPLEMENTATION_BINDING_V1",
+    "status": "UNKNOWN_NOT_ASSERTED",
+    "blocker_if_unbound": "IMPLEMENTATION_BINDING_UNKNOWN_NOT_ASSERTED",
+    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "implementation_script_path": "scripts/route_a_v3/produce_gse200304_dec019_canonical_row_lineage_gate.py",
+    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_test_path": "tests/route_a_v3/test_produce_gse200304_dec019_canonical_row_lineage_gate.py",
+    "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
+    "config_core_sha256": "95c09f919454e7ad3f096bbae1d72395d0912c216037862b5a38cb8fd3bdba45",
+    "unknown_to_bound_scalar_paths": [
+      "implementation_binding.status",
+      "implementation_binding.implementation_commit",
+      "implementation_binding.implementation_script_sha256",
+      "implementation_binding.implementation_test_sha256"
+    ]
+  },
+  "repository_authority": {
+    "production_repo_root": "/home/cunyuliu/mrna_editflow_goal/worktrees/routea_v3_a1_20260810",
+    "branch": "routea-v3-a1-20260810",
+    "implementation_base_commit": "0ad41b93eb3e145f5c509a0c2ec94988e147ac97",
+    "implementation_commit_expected_parent": "0ad41b93eb3e145f5c509a0c2ec94988e147ac97",
+    "implementation_commit_exact_changed_paths": [
+      "configs/route_a_v3_gse200304_dec019_canonical_row_lineage_gate_v1.json",
+      "scripts/route_a_v3/produce_gse200304_dec019_canonical_row_lineage_gate.py",
+      "tests/route_a_v3/test_produce_gse200304_dec019_canonical_row_lineage_gate.py"
+    ],
+    "binding_commit_expected_parent": "IMPLEMENTATION_COMMIT_FROM_BINDING",
+    "binding_commit_exact_changed_paths": [
+      "configs/route_a_v3_gse200304_dec019_canonical_row_lineage_gate_v1.json"
+    ],
+    "authority_file_git_mode": "100644",
+    "worktree_authority_files_must_be_regular_single_link": true,
+    "worktree_authority_files_must_be_root_to_leaf_nofollow": true,
+    "current_head_must_be_clean_pushed_descendant_of_binding": true,
+    "bound_implementation_blobs_must_not_drift": true,
+    "bound_config_must_not_drift_after_binding": true
+  },
+  "authority_inputs": {
+    "dec019_gse200304_v3": {
+      "config_path": "configs/route_a_v3_gse200304_dec019_reported_endpoint_a1_activation_v3.json",
+      "config_sha256": "8c88eb6c708fa309ff0c87a0f64fce1bb205a0212b35a85ad3fb3505e8d7613b",
+      "implementation_script_path": "scripts/route_a_v3/adjudicate_gse200304_dec019_reported_endpoint_a1_v3.py",
+      "implementation_script_sha256": "90e840b721e5d07d4437d429d5b42f5a91fc262e560b3b331095db65dbb18fa6",
+      "implementation_test_path": "tests/route_a_v3/test_adjudicate_gse200304_dec019_reported_endpoint_a1_v3.py",
+      "implementation_test_sha256": "ca0d5221748aaecc10b31edb691f8244a0fe2b94cf67ae9a8f493ac8d3f75ca5",
+      "science_core_sha256": "14aba30da13f2bbad9debca74b9f3c8a8aaae1e5249347a8c1d35eda364a4f50"
+    },
+    "published_endpoint_qualifier": {
+      "config_path": "configs/route_a_v3_gse200304_published_endpoint_a1.json",
+      "config_sha256": "92fc3a3859f7a8949ace67fa4b03a14e8ad102eb257d4f95cace01ea535b41af",
+      "implementation_script_path": "scripts/route_a_v3/qualify_gse200304_published_endpoint_a1.py",
+      "implementation_script_sha256": "687268524c7426eb4d3d450e71d13c7c478372162e0c084ffe90c8bb12764308",
+      "implementation_test_path": "tests/route_a_v3/test_qualify_gse200304_published_endpoint_a1.py",
+      "implementation_test_sha256": "173cad716fbdb2590e82ea54a91776ef61e7ab9eb7b596b694b5aa8609d44ad0"
+    },
+    "required_predecessor_authority": {
+      "authority_type": "GSE200304_PUBLISHED_ENDPOINT_BUNDLE_V1",
+      "bundle_id": "ROUTE_A_V3_GSE200304_PUBLISHED_ENDPOINT_A1_BUNDLE_V1",
+      "run_root_relative_bundle_path": "GSE200304_PUBLISHED_ENDPOINT_A1_20260811T044050+0800_d06bb99",
+      "trusted_absolute_bundle_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE200304_PUBLISHED_ENDPOINT_A1_20260811T044050+0800_d06bb99",
+      "terminal_marker_final_output_target_sha256": "bdb3f54f2aaf0f3f2b090563d712bbebb77ec2ca6de1c8e5f93a126690061a8f",
+      "runtime_lineage_authority": {
+        "event_id": "A1-EVT-037",
+        "protocol_id": "ROUTE_A_V3_GSE200304_PUBLISHED_ENDPOINT_RUNTIME_SYNC_V1",
+        "implementation_commit": "8c0376470a36c4e3496f401b8e45c829712dcc34",
+        "binding_commit": "8e8b4eb41a3367b7d6cbc9513e91518b3e86f930",
+        "implementation_script_sha256": "1a8c41502d18cf56885af9e830a320a361c138cfaa93c257bbea2d22b1eff38b",
+        "implementation_test_sha256": "7e9f30238ec60709761e55bc892ea43bc0e0fcd9c8a1dadfe5d2c7d0f198f530",
+        "compiled_core_sha256": "ae3bd1400f34dfab25bf6b7305b99944c75d5dfbbc8b6973c923e573522bc35d",
+        "bound_config_path": "configs/route_a_v3_gse200304_published_endpoint_runtime_sync_v1.json",
+        "bound_config_sha256": "1880c718443339b95ded247a276152678cf49cfedb6eae24e76ba8d224e40b7b"
+      },
+      "members": [
+        {
+          "name": "INPUT_INTEGRITY_AUDIT.json",
+          "bytes": 3610,
+          "sha256": "e87723673dfea6dca654b670d1c05f331f240a53d52d81d1207fbfc50d9a4fe8"
+        },
+        {
+          "name": "PUBLISHED_ENDPOINT_AUDIT.json",
+          "bytes": 4981,
+          "sha256": "d849da8cc29a2a4419c85d69e5084736b6b41b03cac90263aa2620be3fe3acc7"
+        },
+        {
+          "name": "QUALIFICATION_REPORT.json",
+          "bytes": 2095,
+          "sha256": "006db8da47dc2bbc0c313a156ae16ab79a3f6aebe324d37806820ac9240b100d"
+        },
+        {
+          "name": "SHA256SUMS",
+          "bytes": 281,
+          "sha256": "e1720881f8bcfaaea1fef613dd4ee059c08da1bbd11bafc32a8fccdea0a43515"
+        },
+        {
+          "name": "PUBLICATION_COMMIT.json",
+          "bytes": 973,
+          "sha256": "f1e5d0752bcc12db0b0eaabe0e75efdb6f2c48dfba4c3bae6bff99a302194cfc"
+        }
+      ]
+    },
+    "acceptance_authority": {
+      "contract_id": "mrna_xeditflow_route_a_v3",
+      "decision_id": "V3-DEC-019",
+      "protocol_id": "ROUTE_A_V3_GSE200304_DEC019_REPORTED_ENDPOINT_A1_ACTIVATION_V3",
+        "rule": "CONFIG_HASH_BOUND_ACCEPTED_AGGREGATE_GATE_RECORD_V3"
+    }
+  },
+  "source_contract": {
+    "ordinary_public_only": true,
+    "data_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE200304/GSE200304_PUBLIC_ASSETS_20260810T143731P0800",
+    "exact_member_names": [
+      "ASSET_ACQUISITION_MANIFEST.json",
+      "NCBI_PRJNA824033_RUNINFO.csv",
+      "NIHMS1928233-supplement-3.csv",
+      "NIHMS1928233-supplement-4.xlsx",
+      "PUBLICATION_COMMIT.json",
+      "SHA256SUMS",
+      "slschuster_3UTRMutationalMPRA-v1.2.zip"
+    ],
+    "readable_asset_ids": [
+      "PMC10540565_TABLE_S2",
+      "PMC10540565_TABLE_S3"
+    ],
+    "non_scientific_members_are_streamed_hash_only": true,
+    "members": [
+      {
+        "asset_id": "SOURCE_BUNDLE_MANIFEST",
+        "relative_path": "ASSET_ACQUISITION_MANIFEST.json",
+        "bytes": 6426,
+        "sha256": "8318990d9e3b6a0e6265bf9d1e8bc20f56f0ecfd994e83d279e733258642100c",
+        "read_policy": "VERIFIED_SAME_FD_STREAMED_HASH_ONLY_DO_NOT_DECODE"
+      },
+      {
+        "asset_id": "NCBI_PRJNA824033_RUNINFO",
+        "relative_path": "NCBI_PRJNA824033_RUNINFO.csv",
+        "bytes": 12042,
+        "sha256": "34bcedafebc41ee9ccd79483f331b62f2443df31d12691abc0a961a7201848f4",
+        "read_policy": "VERIFIED_SAME_FD_STREAMED_HASH_ONLY_DO_NOT_DECODE"
+      },
+      {
+        "asset_id": "PMC10540565_TABLE_S2",
+        "relative_path": "NIHMS1928233-supplement-3.csv",
+        "bytes": 7323186,
+        "sha256": "812f3c983cb7c4f473200741ffd6d73bcab911c9e354934542e018e7b0cf8a6d",
+        "read_policy": "VERIFIED_SAME_FD_SELECTIVE_PARSE"
+      },
+      {
+        "asset_id": "PMC10540565_TABLE_S3",
+        "relative_path": "NIHMS1928233-supplement-4.xlsx",
+        "bytes": 864791,
+        "sha256": "ec2aab60fcb0be87f2bcc1b1a5a1f786b23bb429edc9851a4034a3e8983dfa08",
+        "read_policy": "VERIFIED_SAME_FD_SELECTIVE_PARSE"
+      },
+      {
+        "asset_id": "SOURCE_BUNDLE_PUBLICATION_COMMIT",
+        "relative_path": "PUBLICATION_COMMIT.json",
+        "bytes": 1095,
+        "sha256": "4742508195f28bf8c7ab1f7cb8bb0b68c32304f31b19c8f8979d098fa75786a5",
+        "read_policy": "VERIFIED_SAME_FD_STREAMED_HASH_ONLY_DO_NOT_DECODE"
+      },
+      {
+        "asset_id": "SOURCE_BUNDLE_SHA256SUMS",
+        "relative_path": "SHA256SUMS",
+        "bytes": 491,
+        "sha256": "20da85cd34f0574829392b5de1d7c48cc9782219847f56ccc07dffd579d79f15",
+        "read_policy": "VERIFIED_SAME_FD_STREAMED_HASH_ONLY_DO_NOT_DECODE"
+      },
+      {
+        "asset_id": "ZENODO_8007705_V1_2",
+        "relative_path": "slschuster_3UTRMutationalMPRA-v1.2.zip",
+        "bytes": 46209,
+        "sha256": "1c1b1979c1d5bd7fefa54e80a59f982228d0f1498eb0cff2883b753ee5eb0ae4",
+        "read_policy": "VERIFIED_SAME_FD_STREAMED_HASH_ONLY_DO_NOT_DECODE"
+      }
+    ],
+    "root_to_leaf_o_nofollow_required": true,
+    "single_link_regular_file_required": true,
+    "same_descriptor_verified_snapshot_required": true,
+    "exact_directory_membership_required": true,
+    "forbidden_path_tokens": [
+      "GSE246381",
+      "access_log",
+      "restricted",
+      "sealed",
+      "FASTQ",
+      "raw_replay",
+      "Zenodo",
+      ".sam",
+      ".bam",
+      ".cram"
+    ]
+  },
+  "locator_contract": {
+    "algorithm_id": "ROUTE_A_V3_GSE200304_LOCATOR_MERKLE_V1",
+    "join_key_domain": "route-a-v3/gse200304/dec019/join-key/v1",
+    "locator_domain": "route-a-v3/gse200304/dec019/canonical-row-locator/v1",
+    "s2_physical_row_domain": "route-a-v3/gse200304/dec019/s2-physical-row/v1",
+    "s2_pair_arm_domain": "route-a-v3/gse200304/dec019/s2-pair-arm/v1",
+    "s3_physical_row_domain": "route-a-v3/gse200304/dec019/s3-physical-row/v1",
+    "pair_lineage_domain": "route-a-v3/gse200304/dec019/pair-lineage/v1",
+    "merkle_leaf_domain": "route-a-v3/gse200304/dec019/merkle-leaf/v1",
+    "merkle_node_domain": "route-a-v3/gse200304/dec019/merkle-node/v1",
+    "merkle_root_domain": "route-a-v3/gse200304/dec019/merkle-root/v1",
+    "locator_fields": [
+      "dataset_id",
+      "table_s3_pair_key",
+      "primary_comparison"
+    ],
+    "locator_is_orientation_neutral": true,
+    "merkle_rule": {
+      "leaf_order": "UNSIGNED_BYTE_LEXICOGRAPHIC",
+      "odd_node_rule": "DUPLICATE_LAST",
+      "root_binds_original_leaf_count": true,
+      "leaf_or_member_digests_may_be_persisted": false
+    },
+    "primary_comparison": "TotalPoly:RNA",
+    "comparison_allowlist": [
+      "HighPoly:RNA",
+      "TotalPoly:RNA"
+    ],
+    "membership_rule": "ALL_FINITE_TOTALPOLY_PAIRS_BEFORE_ANY_SIGNIFICANCE_LABEL",
+    "significance_or_cached_translation_may_affect_membership": false,
+    "table_s2": {
+      "exact_header": [
+        "ID",
+        "Type",
+        "201bp",
+        "5' End",
+        "3'End",
+        "Full_Oligo"
+      ],
+      "canonical_compact_header_json_sha256": "8342cace9a613739f9e1e112b1f7fe446def48589e03f45feb6418b2ce8d3412",
+      "raw_row_count": 13850,
+      "unique_content_row_count": 13836,
+      "duplicate_extra_row_count": 14,
+      "duplicated_content_group_count": 14,
+      "duplicated_content_multiplicity": 2,
+      "duplicated_pair_count": 7,
+      "raw_type_counts": {
+        "Control": 66,
+        "Mutant": 6892,
+        "WT": 6892
+      },
+      "deduplicated_type_counts": {
+        "Control": 66,
+        "Mutant": 6885,
+        "WT": 6885
+      },
+      "raw_id_row_multiplicity_counts": {
+        "1": 66,
+        "2": 6878,
+        "4": 7
+      },
+      "deduplicated_pair_count": 6885,
+      "deduplicated_control_count": 66,
+      "pair_id_grammar": "^[^:]+:[1-9][0-9]*_[ACGT]-[ACGT]$",
+      "pair_rule": "EXACTLY_ONE_WT_AND_ONE_MUTANT_AFTER_EXACT_FULL_ROW_DEDUPLICATION"
+    },
+    "table_s3": {
+      "exact_sheet_names": [
+        "S2A_Polysome_MPRA_Mut_Stats",
+        "S2B_Poly_MPRA_Control_Stats"
+      ],
+      "primary_sheet_name": "S2A_Polysome_MPRA_Mut_Stats",
+      "primary_exact_header": [
+        "barcode",
+        "Gene",
+        "Comparison",
+        "xtail_log2FC_TE",
+        "xtail_pvalue",
+        "xtail_FDR",
+        "Translation_Sig"
+      ],
+      "primary_header_sha256": "d204a821928cb76b2fbc29201d3bcd103e6f4d3fa9cc526bd669604d74ef2ea5",
+      "primary_data_row_count": 13544,
+      "pair_key_count": 6772,
+      "comparison_row_counts": {
+        "HighPoly:RNA": 6772,
+        "TotalPoly:RNA": 6772
+      },
+      "comparison_count_per_pair": 2,
+      "finite_statistic_rows": {
+        "HighPoly:RNA": 6538,
+        "TotalPoly:RNA": 6547
+      },
+      "na_statistic_rows": {
+        "HighPoly:RNA": 234,
+        "TotalPoly:RNA": 225
+      },
+      "both_comparisons_finite_pair_count": 6538,
+      "primary_only_finite_pair_count": 9,
+      "secondary_only_finite_pair_count": 0,
+      "neither_comparison_finite_pair_count": 225,
+      "statistics_missing_token": "NA",
+      "statistics_must_be_all_numeric_present_or_all_exact_na": true,
+      "control_sheet_name": "S2B_Poly_MPRA_Control_Stats",
+      "control_exact_header": [
+        "barcode",
+        "TE_1",
+        "TE_2",
+        "TE_3",
+        "TE_4",
+        "TE_5",
+        "TE_6",
+        "Txn_1",
+        "Txn_2",
+        "Txn_3",
+        "Txn_4",
+        "Txn_5",
+        "Txn_6"
+      ],
+      "control_header_sha256": "9008ea2fd8533da367e9dacad56f7089130574eea3b9829dc3fce2a76ad5d292",
+      "control_data_row_count": 29,
+      "control_data_access_policy": "DIMENSION_AND_HEADER_ONLY_DO_NOT_READ_DATA_CELLS"
+    },
+    "join": {
+      "table_s2_pair_count": 6885,
+      "table_s3_pair_count": 6772,
+      "joined_pair_count": 6772,
+      "table_s2_absent_from_table_s3_count": 113,
+      "table_s3_not_in_table_s2_count": 0,
+      "s3_pair_set_must_be_subset_of_s2": true,
+      "each_s3_pair_must_join_exactly_one_s2_pair": true
+    },
+    "processed_pair_count": 6772,
+    "canonical_record_count": 6547,
+    "primary_na_pair_count": 225,
+    "raw_replay_role": "REPRODUCIBILITY_AUXILIARY_NOT_QUALIFICATION_PREREQUISITE",
+    "raw_replay_status": "NOT_RUN",
+    "independent_raw_reproduction_claimed": false
+  },
+  "output_contract": {
+    "evidence_schema_version": "route_a_v3_dec019_aggregate_gate_evidence.v3",
+    "record_type": "ROUTE_A_V3_DEC019_ACCEPTED_AGGREGATE_GATE_EVIDENCE_V3",
+    "gate_id": "CANONICAL_ROW_LOCATOR_MULTI_ASSET_LINEAGE",
+    "allowed_basename": "GSE200304_DEC019_CANONICAL_ROW_LOCATOR_MULTI_ASSET_LINEAGE_GATE.json",
+    "trusted_output_parent": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5",
+    "output_subdirectory": "DEC019_GATE_EVIDENCE_V1",
+    "single_final_file_only": true,
+    "publication_mode": "FSYNCED_STAGED_HARDLINK_NO_REPLACE_SINGLE_FILE_V1",
+    "exclusive_no_overwrite": true,
+    "existing_exact_is_idempotent": true,
+    "partial_or_ambiguous_publication_is_never_accepted": true,
+    "final_file_nlink_must_equal_one": true,
+    "aggregate_only": true,
+    "privacy": {
+      "contains_row_level_payload": false,
+      "contains_sequence": false,
+      "contains_row_identifier": false,
+      "contains_raw_label_or_effect": false,
+      "contains_member_identifiers_or_hashes": false
+    },
+    "forbidden_output_keys": [
+      "sequence",
+      "utr",
+      "row_id",
+      "row_ids",
+      "barcode",
+      "gene",
+      "effect",
+      "effect_value",
+      "p",
+      "pvalue",
+      "fdr",
+      "label",
+      "raw_row",
+      "raw_label",
+      "raw_effect",
+      "source_id",
+      "candidate_id",
+      "member_identifiers",
+      "member_hashes"
+    ],
+    "pass_fact_keys": [
+      "canonical_record_count",
+      "deterministic_row_locator_frozen",
+      "independent_raw_reproduction_claimed",
+      "locator_lineage_commitment_algorithm",
+      "locator_lineage_merkle_root_sha256",
+      "multi_asset_lineage_closed",
+      "processed_pair_count",
+      "raw_replay_role",
+      "raw_replay_status",
+      "s2_s3_join_rule_frozen",
+      "table_s2_hash_bound",
+      "table_s3_hash_bound"
+    ],
+    "raw_or_row_level_payload_may_be_persisted": false
+  }
+}
