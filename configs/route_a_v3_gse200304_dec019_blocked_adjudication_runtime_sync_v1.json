@@ -8,12 +8,12 @@
   "sync_type": "APPEND_ONLY_NEGATIVE_EVIDENCE_AND_BLOCKED_ADJUDICATION_REGISTRATION_NO_GATE_CHANGE",
   "implementation_binding": {
     "binding_scheme": "CONFIG_ONLY_POST_IMPLEMENTATION_BINDING_V1",
-    "status": "UNKNOWN_NOT_ASSERTED",
-    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "status": "BOUND",
+    "implementation_commit": "9acdefc4a410e03827532b359ec245d8a6cb76df",
     "implementation_script_path": "scripts/route_a_v3/gse200304_dec019_blocked_adjudication_runtime_sync.py",
-    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_script_sha256": "fcbe15c4ea0fd7ef5a049c71f388b242757fa59e17f15f9ea22f9d5def353530",
     "implementation_test_path": "tests/route_a_v3/test_gse200304_dec019_blocked_adjudication_runtime_sync.py",
-    "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_test_sha256": "93633d61cc9bd10d5003f2b29d4ab1d15f1a6b2ab8f3674a0c2617351c8bed64",
     "compiled_core_sha256": "58cdbf025b7b51b004edbde10be1668323fc1305320d7ee3d339e44ff1d60fa3",
     "unknown_to_bound_scalar_paths": [
       "implementation_binding.status",
