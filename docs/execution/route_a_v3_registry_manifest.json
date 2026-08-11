@@ -59,7 +59,7 @@
     {
       "path": "docs/execution/route_a_v3_a1_interim.yaml",
       "role": "A1_ACTIVE_INTERIM_RECORD",
-      "sha256": "552f705445a36df99a5ae071c85625c729ad2f69f0a375bb7b3118c3b400e16c"
+      "sha256": "b1aceb1cf3d7dc2de4b77270045949659de64f70d7bc677e084b67c176a8beb1"
     },
     {
       "path": "docs/execution/route_a_v3_split_registry.yaml",
@@ -237,20 +237,50 @@
       "sha256": "5523d3a1b5216963bd3793ba9ec3f8cf15d9a01867192ddf1eae32ac0e327948"
     },
     {
+      "path": "configs/route_a_v3_gse200304_upstream_authority_viability_v1.json",
+      "role": "GSE200304_UPSTREAM_AUTHORITY_VIABILITY_PROTOCOL",
+      "sha256": "c52688866026122488f1d8eef8d0bffebf864b99d78ddcc40c39a26221da76a1"
+    },
+    {
+      "path": "scripts/route_a_v3/produce_gse200304_upstream_authority_viability.py",
+      "role": "GSE200304_UPSTREAM_AUTHORITY_VIABILITY_PRODUCER",
+      "sha256": "525635da3d84183e325a17f00fc7cece1517acbd9ce317c2cc4e26a4ba38f03d"
+    },
+    {
+      "path": "tests/route_a_v3/test_produce_gse200304_upstream_authority_viability.py",
+      "role": "GSE200304_UPSTREAM_AUTHORITY_VIABILITY_FOCUSED_TEST",
+      "sha256": "78bca039152874a09dd6a31a0789b712c72b45e60cb9e99e72391809a1bd7035"
+    },
+    {
+      "path": "configs/route_a_v3_gse200304_dec019_upstream_pass_gate_pack_v1.json",
+      "role": "GSE200304_DEC019_UPSTREAM_PASS_GATE_PACK_PROTOCOL",
+      "sha256": "a241837bbd68a3c7321bfd96f1b3acf975cdc602762468b5ead161835778a7ae"
+    },
+    {
+      "path": "scripts/route_a_v3/produce_gse200304_dec019_upstream_pass_gate_pack.py",
+      "role": "GSE200304_DEC019_UPSTREAM_PASS_GATE_PACK_PRODUCER",
+      "sha256": "b7ba11974f20472e77111a8f385d2595ad6600bd23d2fd5f969cfa8a91ed459a"
+    },
+    {
+      "path": "tests/route_a_v3/test_produce_gse200304_dec019_upstream_pass_gate_pack.py",
+      "role": "GSE200304_DEC019_UPSTREAM_PASS_GATE_PACK_FOCUSED_TEST",
+      "sha256": "9e36b125589a38c7e264d15762d1f55af4264b02feb10b7db5e904dd0151dcbe"
+    },
+    {
       "path": "tests/route_a_v3/test_a0_integrity_guards.py",
       "role": "A0_AUTHORITY_INTEGRITY_GUARD_TEST",
-      "sha256": "76a78ec060060feff243366ab93bd6a721096d1847b197f2ff4da6518d3625f5"
+      "sha256": "b35f0e3e22eebb19a03f0a8bff42b658a6561aa54e5f56c8231ea0ef2d6a9920"
     },
     {
       "path": "scripts/route_a_v3/validate_a0_bundle.py",
       "role": "A0_STATIC_AND_SEMANTIC_VALIDATOR",
-      "sha256": "cb7f278e1daed071ea691c7c1817e800c94a46982915348b8f678656ea99b528"
+      "sha256": "f087235353a53574e63b969c1e06c110572c07244063e551bb1e98dd7b612028"
     }
   ],
   "initial_generated_at": "2026-08-10T10:10:05+08:00",
-  "generated_at": "2026-08-11T20:35:15+08:00",
-  "updated_at": "2026-08-11T20:35:15+08:00",
-  "manifest_status": "A1_DEC019_GSE200304_POST_ADJUDICATION_LEDGER_REGISTERED",
+  "generated_at": "2026-08-12T01:49:12+08:00",
+  "updated_at": "2026-08-12T01:49:12+08:00",
+  "manifest_status": "A1_DEC019_GSE200304_UPSTREAM_PASS_POST_ADJUDICATION_LEDGER_REGISTERED_PENDING_EVT042",
   "schema_version": "1.0.0",
   "sealed_contact": false,
   "version": "3.0.0"

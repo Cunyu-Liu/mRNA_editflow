@@ -40,9 +40,10 @@ DEC019_AMENDMENT_PATH = "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec
 DECISION_LOG_PATH = "docs/execution/route_a_v3_decision_log.yaml"
 REGISTRY_MANIFEST_PATH = "docs/execution/route_a_v3_registry_manifest.json"
 A1_INTERIM_PATH = "docs/execution/route_a_v3_a1_interim.yaml"
-EXPECTED_A1_INTERIM_SHA256 = "552f705445a36df99a5ae071c85625c729ad2f69f0a375bb7b3118c3b400e16c"
+EXPECTED_A1_INTERIM_SHA256 = "b1aceb1cf3d7dc2de4b77270045949659de64f70d7bc677e084b67c176a8beb1"
 GSE200304_DEC019_POST_ADJUDICATION_LEDGER_AT = "2026-08-11T20:32:48+08:00"
-GSE200304_DEC019_POST_ADJUDICATION_MANIFEST_AT = "2026-08-11T20:35:15+08:00"
+GSE200304_DEC019_UPSTREAM_PASS_LEDGER_AT = "2026-08-12T01:49:11+08:00"
+GSE200304_DEC019_UPSTREAM_PASS_MANIFEST_AT = "2026-08-12T01:49:12+08:00"
 ACTIVE_AMENDMENT_DECISION_IDS = ["V3-DEC-017", "V3-DEC-018", "V3-DEC-019"]
 DEC019_LEAF_AUTHORITY_SHA256 = {
     DEC019_AMENDMENT_PATH: "8c82e564398f0735fe4976f875fe91f053937b05044e5232e237694a2b36e1ca",
@@ -129,14 +130,38 @@ GSE200304_DEC019_NEGATIVE_SCRIPT_PATH = (
 GSE200304_DEC019_NEGATIVE_TEST_PATH = (
     "tests/route_a_v3/test_produce_gse200304_dec019_negative_gate_pack.py"
 )
-GSE200304_DEC019_V3_CONFIG_SHA256 = (
+GSE200304_UPSTREAM_AUTHORITY_CONFIG_PATH = (
+    "configs/route_a_v3_gse200304_upstream_authority_viability_v1.json"
+)
+GSE200304_UPSTREAM_AUTHORITY_SCRIPT_PATH = (
+    "scripts/route_a_v3/produce_gse200304_upstream_authority_viability.py"
+)
+GSE200304_UPSTREAM_AUTHORITY_TEST_PATH = (
+    "tests/route_a_v3/test_produce_gse200304_upstream_authority_viability.py"
+)
+GSE200304_DEC019_UPSTREAM_PASS_CONFIG_PATH = (
+    "configs/route_a_v3_gse200304_dec019_upstream_pass_gate_pack_v1.json"
+)
+GSE200304_DEC019_UPSTREAM_PASS_SCRIPT_PATH = (
+    "scripts/route_a_v3/produce_gse200304_dec019_upstream_pass_gate_pack.py"
+)
+GSE200304_DEC019_UPSTREAM_PASS_TEST_PATH = (
+    "tests/route_a_v3/test_produce_gse200304_dec019_upstream_pass_gate_pack.py"
+)
+GSE200304_DEC019_V3_HISTORICAL_D2_CONFIG_SHA256 = (
     "88fa21a08df60935f3d2d1bf44c6573889c22c110021146acf241fd92d6b5a13"
+)
+GSE200304_DEC019_V3_HISTORICAL_D2_DESCRIPTOR_SET_SHA256 = (
+    "14223d0193e4b3a4a3c1d98a5894849dd429e6eed021ff98e6697e73ac286a40"
+)
+GSE200304_DEC019_V3_CONFIG_SHA256 = (
+    "e7040fedd6e7217d402c36597c177f08fdf4921c55aced7379a1580c33c31891"
 )
 GSE200304_DEC019_V3_CONFIG_CORE_SHA256 = (
     "13394ac6a9b9ec6e6241d0d9b1048ecfa5c90874c7447991fc2a8248a574c170"
 )
 GSE200304_DEC019_V3_DESCRIPTOR_SET_SHA256 = (
-    "14223d0193e4b3a4a3c1d98a5894849dd429e6eed021ff98e6697e73ac286a40"
+    "97e2d5ca135f2e5668ef513de0247d5973481f6532f99beac9e9d8d9a828148b"
 )
 GSE200304_DEC019_POST_ADJUDICATION_STATIC_LEAF_SHA256 = {
     GSE200304_DEC019_V3_SCRIPT_PATH: (
@@ -163,6 +188,24 @@ GSE200304_DEC019_POST_ADJUDICATION_STATIC_LEAF_SHA256 = {
     GSE200304_DEC019_NEGATIVE_TEST_PATH: (
         "5523d3a1b5216963bd3793ba9ec3f8cf15d9a01867192ddf1eae32ac0e327948"
     ),
+    GSE200304_UPSTREAM_AUTHORITY_CONFIG_PATH: (
+        "c52688866026122488f1d8eef8d0bffebf864b99d78ddcc40c39a26221da76a1"
+    ),
+    GSE200304_UPSTREAM_AUTHORITY_SCRIPT_PATH: (
+        "525635da3d84183e325a17f00fc7cece1517acbd9ce317c2cc4e26a4ba38f03d"
+    ),
+    GSE200304_UPSTREAM_AUTHORITY_TEST_PATH: (
+        "78bca039152874a09dd6a31a0789b712c72b45e60cb9e99e72391809a1bd7035"
+    ),
+    GSE200304_DEC019_UPSTREAM_PASS_CONFIG_PATH: (
+        "a241837bbd68a3c7321bfd96f1b3acf975cdc602762468b5ead161835778a7ae"
+    ),
+    GSE200304_DEC019_UPSTREAM_PASS_SCRIPT_PATH: (
+        "b7ba11974f20472e77111a8f385d2595ad6600bd23d2fd5f969cfa8a91ed459a"
+    ),
+    GSE200304_DEC019_UPSTREAM_PASS_TEST_PATH: (
+        "9e36b125589a38c7e264d15762d1f55af4264b02feb10b7db5e904dd0151dcbe"
+    ),
 }
 GSE200304_DEC019_LINEAGE_GATE_LINEAGE_ID = (
     "gse200304_dec019_canonical_row_lineage_gate_v1"
@@ -172,6 +215,15 @@ GSE200304_DEC019_NEGATIVE_GATE_PACK_LINEAGE_ID = (
 )
 GSE200304_DEC019_ADJUDICATION_LINEAGE_ID = (
     "gse200304_dec019_reported_endpoint_a1_adjudication_v3"
+)
+GSE200304_UPSTREAM_AUTHORITY_LINEAGE_ID = (
+    "gse200304_upstream_authority_viability_v1"
+)
+GSE200304_DEC019_UPSTREAM_PASS_GATE_PACK_LINEAGE_ID = (
+    "gse200304_dec019_upstream_pass_gate_pack_v1"
+)
+GSE200304_DEC019_UPSTREAM_PASS_ADJUDICATION_LINEAGE_ID = (
+    "gse200304_dec019_reported_endpoint_a1_adjudication_v3_upstream_pass_gate_pack_v1"
 )
 GSE200304_DEC019_POST_ADJUDICATION_BLOCKERS = [
     "BIOLOGICAL_GROUP_AUTHORITY_NOT_PASS",
@@ -186,6 +238,18 @@ GSE200304_DEC019_POST_ADJUDICATION_INPUT_STATUS_COUNTS = {
     "PASS": 1,
     "BLOCKED": 3,
     "UNKNOWN_NOT_ASSERTED": 2,
+    "NOT_RUN": 2,
+}
+GSE200304_DEC019_UPSTREAM_PASS_BLOCKERS = [
+    "BIOLOGICAL_GROUP_AUTHORITY_NOT_PASS",
+    "CHECKPOINT_SPECIFIC_EXPOSURE_NOT_PASS",
+    "OUTCOME_BLIND_SPLIT_LEAKAGE_NOT_PASS",
+    "PREFROZEN_POWER_PRECISION_NOT_PASS",
+]
+GSE200304_DEC019_UPSTREAM_PASS_INPUT_STATUS_COUNTS = {
+    "PASS": 4,
+    "BLOCKED": 1,
+    "UNKNOWN_NOT_ASSERTED": 1,
     "NOT_RUN": 2,
 }
 DEC019_SUCCESSOR_DYNAMIC_CONFIG_PATHS = frozenset(
@@ -1058,6 +1122,30 @@ EXPECTED_REGISTRY_MANIFEST_PATH_ROLES = (
     (
         GSE200304_DEC019_NEGATIVE_TEST_PATH,
         "GSE200304_DEC019_NEGATIVE_GATE_PACK_FOCUSED_TEST",
+    ),
+    (
+        GSE200304_UPSTREAM_AUTHORITY_CONFIG_PATH,
+        "GSE200304_UPSTREAM_AUTHORITY_VIABILITY_PROTOCOL",
+    ),
+    (
+        GSE200304_UPSTREAM_AUTHORITY_SCRIPT_PATH,
+        "GSE200304_UPSTREAM_AUTHORITY_VIABILITY_PRODUCER",
+    ),
+    (
+        GSE200304_UPSTREAM_AUTHORITY_TEST_PATH,
+        "GSE200304_UPSTREAM_AUTHORITY_VIABILITY_FOCUSED_TEST",
+    ),
+    (
+        GSE200304_DEC019_UPSTREAM_PASS_CONFIG_PATH,
+        "GSE200304_DEC019_UPSTREAM_PASS_GATE_PACK_PROTOCOL",
+    ),
+    (
+        GSE200304_DEC019_UPSTREAM_PASS_SCRIPT_PATH,
+        "GSE200304_DEC019_UPSTREAM_PASS_GATE_PACK_PRODUCER",
+    ),
+    (
+        GSE200304_DEC019_UPSTREAM_PASS_TEST_PATH,
+        "GSE200304_DEC019_UPSTREAM_PASS_GATE_PACK_FOCUSED_TEST",
     ),
     (INTEGRITY_GUARD_TEST_PATH, "A0_AUTHORITY_INTEGRITY_GUARD_TEST"),
     (VALIDATOR_PATH, "A0_STATIC_AND_SEMANTIC_VALIDATOR"),
@@ -2111,10 +2199,10 @@ def validate_registry_manifest(repo_root: Path) -> list[Issue]:
         "contract_sha256": SOURCE_CONTRACT_SHA256,
         "active_amendment_decision_ids": ACTIVE_AMENDMENT_DECISION_IDS,
         "base_commit": "bbb71dcba6f1e1c9cb75a8a6653f1a4fe4a6ca0c",
-        "manifest_status": "A1_DEC019_GSE200304_POST_ADJUDICATION_LEDGER_REGISTERED",
+        "manifest_status": "A1_DEC019_GSE200304_UPSTREAM_PASS_POST_ADJUDICATION_LEDGER_REGISTERED_PENDING_EVT042",
         "initial_generated_at": "2026-08-10T10:10:05+08:00",
-        "generated_at": GSE200304_DEC019_POST_ADJUDICATION_MANIFEST_AT,
-        "updated_at": GSE200304_DEC019_POST_ADJUDICATION_MANIFEST_AT,
+        "generated_at": GSE200304_DEC019_UPSTREAM_PASS_MANIFEST_AT,
+        "updated_at": GSE200304_DEC019_UPSTREAM_PASS_MANIFEST_AT,
         "sealed_contact": False,
     }
     expected_top_keys = set(expected_static_top) | {"files"}
@@ -3560,7 +3648,7 @@ def _gse200304_dec019_v3_descriptor_set_sha256(
 def validate_gse200304_dec019_post_adjudication_registration(
     repo_root: Path,
 ) -> list[Issue]:
-    """Bind the stable v3 leaves and dynamic D2 config without a manifest cycle."""
+    """Bind preserved plus upstream-pass leaves and the dynamic D3 config."""
 
     issues: list[Issue] = []
     for relative, expected_sha256 in (
@@ -3720,7 +3808,7 @@ def validate_gse200304_dec019_post_adjudication_registration(
                 issues,
                 "GSE200304_DEC019_POST_ADJUDICATION_DAG",
                 REGISTRY_MANIFEST_PATH,
-                "all eight stable post-adjudication leaves must be statically registered",
+                "all fourteen preserved and upstream-pass leaves must be statically registered",
             )
     return issues
 
@@ -5057,7 +5145,7 @@ def validate_a1_interim_lineage(
                 "next_phase_authorized": False,
                 "scientific_claim_status": "NOT_ESTABLISHED",
             },
-            "runtime_sync_status": "PENDING_NO_RUNTIME_EVENT",
+            "runtime_sync_status": "PENDING_NO_EVT_042",
         }.items():
             _expect(dec019_disposition, key, value, path, issues, "A1_INTERIM_DEC019")
         gse114002_current = dec019_disposition.get("gse114002_designed_library")
@@ -5111,10 +5199,10 @@ def validate_a1_interim_lineage(
                 "primary_measurement_route_if_qualified": "AUTHOR_PUBLISHED_PROCESSED_ENDPOINT",
                 "raw_replay_role": "REPRODUCIBILITY_AUXILIARY",
                 "required_80s_role_authority_is_primary_route_blocker": False,
-                "current_blocker_count": 7,
-                "current_blockers": GSE200304_DEC019_POST_ADJUDICATION_BLOCKERS,
+                "current_blocker_count": 4,
+                "current_blockers": GSE200304_DEC019_UPSTREAM_PASS_BLOCKERS,
                 "input_gate_count": 8,
-                "input_status_counts": GSE200304_DEC019_POST_ADJUDICATION_INPUT_STATUS_COUNTS,
+                "input_status_counts": GSE200304_DEC019_UPSTREAM_PASS_INPUT_STATUS_COUNTS,
                 "ordinary_study_contribution": 0,
                 "a1_study_contribution": 0,
                 "true_a2_study_contribution": 0,
@@ -5125,6 +5213,9 @@ def validate_a1_interim_lineage(
                 "training_allowed": False,
                 "model_selection_allowed": False,
                 "next_phase_authorized": False,
+                "predecessor_runtime_event_id": "A1-EVT-041",
+                "expected_next_runtime_event_id": "A1-EVT-042",
+                "runtime_sync_status": "PENDING_NO_EVT_042",
             }
             _expect_closed_mapping(
                 gse200304_current,
@@ -5173,6 +5264,9 @@ def validate_a1_interim_lineage(
             GSE200304_DEC019_LINEAGE_GATE_LINEAGE_ID,
             GSE200304_DEC019_NEGATIVE_GATE_PACK_LINEAGE_ID,
             GSE200304_DEC019_ADJUDICATION_LINEAGE_ID,
+            GSE200304_UPSTREAM_AUTHORITY_LINEAGE_ID,
+            GSE200304_DEC019_UPSTREAM_PASS_GATE_PACK_LINEAGE_ID,
+            GSE200304_DEC019_UPSTREAM_PASS_ADJUDICATION_LINEAGE_ID,
         }
         if set(lineage) != expected_all_lineage_ids:
             _issue(
@@ -5755,9 +5849,9 @@ def validate_a1_interim_lineage(
                 "next_phase_authorized": False,
                 "dynamic_config": {
                     "path": GSE200304_DEC019_V3_CONFIG_PATH,
-                    "sha256": GSE200304_DEC019_V3_CONFIG_SHA256,
+                    "sha256": GSE200304_DEC019_V3_HISTORICAL_D2_CONFIG_SHA256,
                     "config_core_sha256": GSE200304_DEC019_V3_CONFIG_CORE_SHA256,
-                    "descriptor_set_sha256": GSE200304_DEC019_V3_DESCRIPTOR_SET_SHA256,
+                    "descriptor_set_sha256": GSE200304_DEC019_V3_HISTORICAL_D2_DESCRIPTOR_SET_SHA256,
                     "exact_full_sha_in_static_manifest": False,
                 },
                 "consumer_lineage": {
@@ -5779,6 +5873,163 @@ def validate_a1_interim_lineage(
                         GSE200304_DEC019_V3_TEST_PATH
                     ],
                 },
+            },
+            GSE200304_UPSTREAM_AUTHORITY_LINEAGE_ID: {
+                "path": (
+                    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/"
+                    "A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/"
+                    "GSE200304_UPSTREAM_AUTHORITY_VIABILITY_V1"
+                ),
+                "dataset_id": "GSE200304",
+                "decision_id": "V3-DEC-019",
+                "status": "COMMITTED_ACCEPTED_EXACT6",
+                "evidence_role": "PUBLIC_UPSTREAM_AUTHORITY_AND_VIABILITY_ONLY",
+                "exact_member_count": 6,
+                "final_target_sha256": "ad9b64166586813d86c99de49589fff565dbe24eb48d7d6aeb07808fb390dfaa",
+                "endpoint_semantics_supported": True,
+                "biological_replicate_branch_supported": True,
+                "biological_replicate_count": 6,
+                "standard_error_status": "ABSENT_NOT_DERIVED_NOT_USED",
+                "rights_scope": "PRIVATE_CANONICAL_ONLY",
+                "public_redistribution_authorized": False,
+                "qualified": False,
+                "ordinary_study_contribution": 0,
+                "a1_study_contribution": 0,
+                "true_a2_study_contribution": 0,
+                "canonical_record_count": 0,
+                "training_allowed": False,
+                "model_selection_allowed": False,
+                "next_phase_authorized": False,
+                "producer_lineage": {
+                    "base_commit": "0b95ac77a44644e57cc4d0bfb31a9154238fdca6",
+                    "initial_implementation_commit": "9844246dd4b3874a9ecfcf03a233278c5d3a02e0",
+                    "repair_implementation_commit": "7e29c13ca778ffa27f3725f4bd1ea270630db044",
+                    "binding_commit": "9c313d2793880edd2a4355ec3781e045cae27252",
+                    "binding_diff_is_config_only": True,
+                    "config_path": GSE200304_UPSTREAM_AUTHORITY_CONFIG_PATH,
+                    "config_sha256": GSE200304_DEC019_POST_ADJUDICATION_STATIC_LEAF_SHA256[
+                        GSE200304_UPSTREAM_AUTHORITY_CONFIG_PATH
+                    ],
+                    "script_path": GSE200304_UPSTREAM_AUTHORITY_SCRIPT_PATH,
+                    "script_sha256": GSE200304_DEC019_POST_ADJUDICATION_STATIC_LEAF_SHA256[
+                        GSE200304_UPSTREAM_AUTHORITY_SCRIPT_PATH
+                    ],
+                    "focused_test_path": GSE200304_UPSTREAM_AUTHORITY_TEST_PATH,
+                    "focused_test_sha256": GSE200304_DEC019_POST_ADJUDICATION_STATIC_LEAF_SHA256[
+                        GSE200304_UPSTREAM_AUTHORITY_TEST_PATH
+                    ],
+                },
+                "predecessor_runtime_event_id": "A1-EVT-041",
+                "expected_next_runtime_event_id": "A1-EVT-042",
+                "runtime_sync_status": "PENDING_NO_EVT_042",
+            },
+            GSE200304_DEC019_UPSTREAM_PASS_GATE_PACK_LINEAGE_ID: {
+                "path": (
+                    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/"
+                    "A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/"
+                    "GSE200304_DEC019_UPSTREAM_PASS_GATE_PACK_V1"
+                ),
+                "dataset_id": "GSE200304",
+                "decision_id": "V3-DEC-019",
+                "status": "COMMITTED_ACCEPTED_EXACT6",
+                "aggregate_only": True,
+                "gate_record_count": 3,
+                "exact_member_count": 6,
+                "gate_status_counts": {"PASS": 3},
+                "pass_slot_ids": [1, 3, 5],
+                "pass_gate_ids": [
+                    "CANONICAL_REPORTED_ENDPOINT_SEMANTICS",
+                    "ROW_REPLICATE_OR_VALID_SE",
+                    "LICENSE_RIGHTS",
+                ],
+                "rights_scope": "PRIVATE_CANONICAL_ONLY",
+                "public_redistribution_authorized": False,
+                "qualified": False,
+                "ordinary_study_contribution": 0,
+                "a1_study_contribution": 0,
+                "true_a2_study_contribution": 0,
+                "canonical_record_count": 0,
+                "training_allowed": False,
+                "model_selection_allowed": False,
+                "next_phase_authorized": False,
+                "producer_lineage": {
+                    "initial_implementation_commit": "82ee5213e8c41e9d5decc2e423525bf8da858d32",
+                    "binding_commit": "ae4813a11b7e65e3aa118178f5d0e3d850cb73b8",
+                    "binding_diff_is_config_only": True,
+                    "config_path": GSE200304_DEC019_UPSTREAM_PASS_CONFIG_PATH,
+                    "config_sha256": GSE200304_DEC019_POST_ADJUDICATION_STATIC_LEAF_SHA256[
+                        GSE200304_DEC019_UPSTREAM_PASS_CONFIG_PATH
+                    ],
+                    "script_path": GSE200304_DEC019_UPSTREAM_PASS_SCRIPT_PATH,
+                    "script_sha256": GSE200304_DEC019_POST_ADJUDICATION_STATIC_LEAF_SHA256[
+                        GSE200304_DEC019_UPSTREAM_PASS_SCRIPT_PATH
+                    ],
+                    "focused_test_path": GSE200304_DEC019_UPSTREAM_PASS_TEST_PATH,
+                    "focused_test_sha256": GSE200304_DEC019_POST_ADJUDICATION_STATIC_LEAF_SHA256[
+                        GSE200304_DEC019_UPSTREAM_PASS_TEST_PATH
+                    ],
+                },
+                "predecessor_runtime_event_id": "A1-EVT-041",
+                "expected_next_runtime_event_id": "A1-EVT-042",
+                "runtime_sync_status": "PENDING_NO_EVT_042",
+            },
+            GSE200304_DEC019_UPSTREAM_PASS_ADJUDICATION_LINEAGE_ID: {
+                "path": (
+                    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/"
+                    "GSE200304_DEC019_REPORTED_ENDPOINT_A1_ADJUDICATION_V3_"
+                    "UPSTREAM_PASS_GATE_PACK_V1"
+                ),
+                "dataset_id": "GSE200304",
+                "decision_id": "V3-DEC-019",
+                "status": "BLOCKED_DEC019_REPORTED_ENDPOINT_A1_EVIDENCE_INCOMPLETE",
+                "publication_state": "COMMITTED_ACCEPTED",
+                "aggregate_only": True,
+                "historical_predecessor_adjudication_lineage_id": GSE200304_DEC019_ADJUDICATION_LINEAGE_ID,
+                "input_gate_count": 8,
+                "pass_slot_ids": [0, 1, 3, 5],
+                "input_status_counts": GSE200304_DEC019_UPSTREAM_PASS_INPUT_STATUS_COUNTS,
+                "blocker_count": 4,
+                "blockers": GSE200304_DEC019_UPSTREAM_PASS_BLOCKERS,
+                "ordinary_study_contribution": 0,
+                "a1_study_contribution": 0,
+                "true_a2_study_contribution": 0,
+                "positive_input_canonical_record_count": 6547,
+                "canonical_record_count": 0,
+                "positive_input_fact_is_not_final_canonical_materialization": True,
+                "qualified": False,
+                "independent_reproduction_established": False,
+                "canonical_materialization_allowed": False,
+                "training_allowed": False,
+                "model_selection_allowed": False,
+                "next_phase_authorized": False,
+                "dynamic_config": {
+                    "path": GSE200304_DEC019_V3_CONFIG_PATH,
+                    "sha256": GSE200304_DEC019_V3_CONFIG_SHA256,
+                    "config_core_sha256": GSE200304_DEC019_V3_CONFIG_CORE_SHA256,
+                    "descriptor_set_sha256": GSE200304_DEC019_V3_DESCRIPTOR_SET_SHA256,
+                    "exact_full_sha_in_static_manifest": False,
+                },
+                "consumer_lineage": {
+                    "descriptor_d2_commit": "c278f29a18b7858c85686fcec3857a992fd07d5f",
+                    "upstream_authority_binding_commit": "9c313d2793880edd2a4355ec3781e045cae27252",
+                    "upstream_pass_implementation_commit": "82ee5213e8c41e9d5decc2e423525bf8da858d32",
+                    "upstream_pass_binding_commit": "ae4813a11b7e65e3aa118178f5d0e3d850cb73b8",
+                    "descriptor_d3_commit": "8084a1e2b68eaf84bd4befb2f232759d7540b97c",
+                    "descriptor_d3_parent_commit": "ae4813a11b7e65e3aa118178f5d0e3d850cb73b8",
+                    "descriptor_d3_diff_is_exactly_one_config_path": True,
+                    "script_path": GSE200304_DEC019_V3_SCRIPT_PATH,
+                    "script_sha256": GSE200304_DEC019_POST_ADJUDICATION_STATIC_LEAF_SHA256[
+                        GSE200304_DEC019_V3_SCRIPT_PATH
+                    ],
+                    "focused_test_path": GSE200304_DEC019_V3_TEST_PATH,
+                    "focused_test_sha256": GSE200304_DEC019_POST_ADJUDICATION_STATIC_LEAF_SHA256[
+                        GSE200304_DEC019_V3_TEST_PATH
+                    ],
+                },
+                "predecessor_runtime_event_id": "A1-EVT-041",
+                "expected_next_runtime_event_id": "A1-EVT-042",
+                "runtime_sync_status": "PENDING_NO_EVT_042",
+                "runtime_evidence_payload_read_count": 0,
             },
             "a1_public_qualifiers_sync_v1": {
                 "path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/A1_PUBLIC_QUALIFIERS_SYNC_V1.json",
@@ -6098,6 +6349,21 @@ def validate_a1_interim_lineage(
             "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/"
             "GSE200304_DEC019_REPORTED_ENDPOINT_A1_ADJUDICATION_V3"
         )
+        upstream_authority_root = (
+            "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/"
+            "A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/"
+            "GSE200304_UPSTREAM_AUTHORITY_VIABILITY_V1"
+        )
+        upstream_pass_gate_root = (
+            "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/"
+            "A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/"
+            "GSE200304_DEC019_UPSTREAM_PASS_GATE_PACK_V1"
+        )
+        upstream_pass_adjudication_root = (
+            "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/"
+            "GSE200304_DEC019_REPORTED_ENDPOINT_A1_ADJUDICATION_V3_"
+            "UPSTREAM_PASS_GATE_PACK_V1"
+        )
         expected_closed_files = {
             "gse200304_public_asset_bundle": _closed_files(
                 public_root,
@@ -6267,6 +6533,101 @@ def validate_a1_interim_lineage(
                         "PUBLICATION_COMMIT.json",
                         1055,
                         "6fb7c07c493ace456d4c4918fdc270986796c32e73e23f6901e34352d4bdf310",
+                    ),
+                ),
+            ),
+            GSE200304_UPSTREAM_AUTHORITY_LINEAGE_ID: _closed_files(
+                upstream_authority_root,
+                (
+                    (
+                        "PMC10540565_EUROPE_PMC_FULLTEXT.xml",
+                        298763,
+                        "4fe53c9ea58b5268b1014c0ef4b18cfbd7b5b3764f4c82542c065cb0aff5a7f0",
+                    ),
+                    (
+                        "GSE200302_family.soft.gz",
+                        4699,
+                        "6df39a3406fe1bdf5a37345fee5605510ca1086fbce54d5aeeb934b562bb7d2e",
+                    ),
+                    (
+                        "GSE200302_log2_cpm_counts_all_samples.txt.gz",
+                        2843042,
+                        "ed93162f9540676138cfba05af2841c90619ac4335eb55ee3d956a3cd8aace3c",
+                    ),
+                    (
+                        "GSE200304_UPSTREAM_AUTHORITY_VIABILITY_AUDIT.json",
+                        10427,
+                        "997101dda5cbe3cf5a97bcfe9dda07150d11552decc159a2bc3cb96d9ebd0e45",
+                    ),
+                    (
+                        "SHA256SUMS",
+                        420,
+                        "5f00d0d75ef8f12de5ed903a2c599498e5a6717f13a32b95d3f33765522ba371",
+                    ),
+                    (
+                        "PUBLICATION_COMMIT.json",
+                        1031,
+                        "1dc26e885964bb15a2fad1ebb18e4ebf89fdf888e08e4b02058f396b2a4db664",
+                    ),
+                ),
+            ),
+            GSE200304_DEC019_UPSTREAM_PASS_GATE_PACK_LINEAGE_ID: _closed_files(
+                upstream_pass_gate_root,
+                (
+                    (
+                        "GSE200304_DEC019_CANONICAL_REPORTED_ENDPOINT_SEMANTICS_GATE.json",
+                        3988,
+                        "6603803960b747126a5b6dfb7d56bf124d36144fa87667098813ccae2fe41ba3",
+                    ),
+                    (
+                        "GSE200304_DEC019_ROW_REPLICATE_OR_VALID_SE_GATE.json",
+                        3944,
+                        "dc0a08a1a6b389fcd4c982a7e52ad34ebc9cf67563482c6adc84a7c2c51b3d0f",
+                    ),
+                    (
+                        "GSE200304_DEC019_LICENSE_RIGHTS_GATE.json",
+                        3905,
+                        "08cb30aeac3b6e1e989e0d379b0b51c83a7fcbea6f4a3bb0501b4529d3a5192c",
+                    ),
+                    (
+                        "GSE200304_DEC019_UPSTREAM_PASS_GATE_PACK_AUDIT.json",
+                        2171,
+                        "bdfc4d8c7cf941e28e545cf70b33ac12cf0ca7fae02914b95c15bef46fef7cf2",
+                    ),
+                    (
+                        "SHA256SUMS",
+                        476,
+                        "91cee112a8daa4fb562c76fe6a579146a9f1e7495785cbd24131c1032e6761c2",
+                    ),
+                    (
+                        "PUBLICATION_COMMIT.json",
+                        1362,
+                        "f22e074f049db71e20fac05b58dad17953232b4d651aee460c3a3c27b3a185a3",
+                    ),
+                ),
+            ),
+            GSE200304_DEC019_UPSTREAM_PASS_ADJUDICATION_LINEAGE_ID: _closed_files(
+                upstream_pass_adjudication_root,
+                (
+                    (
+                        "ADJUDICATION_REPORT.json",
+                        2359,
+                        "cc1423d84add812380641998c4e36e7096c10eaaaf74ed12c3b781b45fc4cece",
+                    ),
+                    (
+                        "INPUT_EVIDENCE_AUDIT.json",
+                        2983,
+                        "72d836ecb373fd3841c9c3f91b6777172d979831bea7042c9a3da30f16040352",
+                    ),
+                    (
+                        "SHA256SUMS",
+                        183,
+                        "bff424c43fd392148a2d8417b171f325badb9adae1b2366010de4cfaca887dc6",
+                    ),
+                    (
+                        "PUBLICATION_COMMIT.json",
+                        1055,
+                        "b4094b0621d50a18fe5ab64d1662b4ee95cfdd93c572e25f111e9b53d2586b42",
                     ),
                 ),
             ),
@@ -6638,17 +6999,39 @@ def validate_a1_interim_lineage(
                 "sam_to_oligo_count_reconstruction_status": "UNKNOWN_NOT_ASSERTED",
                 "acquisition_changes_qualification_gate": False,
                 "source_grouping_status": "SEQUENCE_EQUALITY_PROXY_NOT_BIOLOGICALLY_FROZEN",
-                "license_and_redistribution_status": "UNKNOWN_NOT_ASSERTED",
+                "license_and_redistribution_status": "PRIVATE_CANONICAL_ONLY",
                 "checkpoint_specific_foundation_exposure_status": "UNKNOWN_NOT_ASSERTED",
                 "canonical_intervention_record_count": 0,
+                "upstream_authority_viability": {
+                    "artifact_lineage_id": GSE200304_UPSTREAM_AUTHORITY_LINEAGE_ID,
+                    "status": "COMMITTED_ACCEPTED_EXACT6",
+                    "endpoint_semantics_supported": True,
+                    "biological_replicate_branch_supported": True,
+                    "biological_replicate_count": 6,
+                    "standard_error_status": "ABSENT_NOT_DERIVED_NOT_USED",
+                    "rights_scope": "PRIVATE_CANONICAL_ONLY",
+                    "public_redistribution_authorized": False,
+                    "changes_study_qualification": False,
+                    "runtime_sync_status": "PENDING_NO_EVT_042",
+                },
+                "upstream_pass_gate_pack": {
+                    "artifact_lineage_id": GSE200304_DEC019_UPSTREAM_PASS_GATE_PACK_LINEAGE_ID,
+                    "status": "COMMITTED_ACCEPTED_EXACT6",
+                    "pass_slot_ids": [1, 3, 5],
+                    "gate_status_counts": {"PASS": 3},
+                    "changes_study_qualification": False,
+                    "runtime_sync_status": "PENDING_NO_EVT_042",
+                },
                 "dec019_post_adjudication": {
-                    "artifact_lineage_id": GSE200304_DEC019_ADJUDICATION_LINEAGE_ID,
+                    "artifact_lineage_id": GSE200304_DEC019_UPSTREAM_PASS_ADJUDICATION_LINEAGE_ID,
+                    "historical_predecessor_artifact_lineage_id": GSE200304_DEC019_ADJUDICATION_LINEAGE_ID,
                     "status": "BLOCKED",
                     "adjudication_status": "BLOCKED_DEC019_REPORTED_ENDPOINT_A1_EVIDENCE_INCOMPLETE",
                     "input_gate_count": 8,
-                    "input_status_counts": GSE200304_DEC019_POST_ADJUDICATION_INPUT_STATUS_COUNTS,
-                    "blocker_count": 7,
-                    "blockers": GSE200304_DEC019_POST_ADJUDICATION_BLOCKERS,
+                    "pass_slot_ids": [0, 1, 3, 5],
+                    "input_status_counts": GSE200304_DEC019_UPSTREAM_PASS_INPUT_STATUS_COUNTS,
+                    "blocker_count": 4,
+                    "blockers": GSE200304_DEC019_UPSTREAM_PASS_BLOCKERS,
                     "ordinary_study_contribution": 0,
                     "a1_study_contribution": 0,
                     "true_a2_study_contribution": 0,
@@ -6656,10 +7039,14 @@ def validate_a1_interim_lineage(
                     "canonical_record_count": 0,
                     "positive_input_fact_is_not_final_canonical_materialization": True,
                     "qualified": False,
+                    "independent_reproduction_established": False,
                     "canonical_materialization_allowed": False,
                     "training_allowed": False,
                     "model_selection_allowed": False,
                     "next_phase_authorized": False,
+                    "predecessor_runtime_event_id": "A1-EVT-041",
+                    "expected_next_runtime_event_id": "A1-EVT-042",
+                    "runtime_sync_status": "PENDING_NO_EVT_042",
                 },
                 "qualified": False,
                 "training_allowed": False,
@@ -6838,6 +7225,10 @@ def validate_a1_interim_lineage(
             "dec019_authority_decision_is_gse200304_study_qualification": False,
             "gse200304_published_endpoint_engineering_success_is_study_qualification": False,
             "gse200304_subseries_modality_endpoint_or_replicate_may_count_as_independent_study": False,
+            "gse200304_upstream_authority_viability_pack_is_study_qualification": False,
+            "gse200304_three_upstream_pass_gates_are_complete_study_qualification": False,
+            "gse200304_six_biological_replicates_are_six_independent_studies": False,
+            "gse200304_private_canonical_rights_authorize_public_redistribution": False,
             "gse200304_raw_replay_preflight_is_study_qualification": False,
             "gse200304_raw_replay_preflight_is_paper_native_count_replay": False,
             "gse200304_raw_replay_preflight_is_paper_native_xtail_replay": False,
@@ -6940,6 +7331,14 @@ def validate_a1_interim_lineage(
                 "qualification_protocol_sha256_verified": True,
                 "legacy_gap_inventory_v2_sha256_verified": True,
                 "run_manifest_draft7_compatibility_errors": 0,
+                "targeted_gse200304_upstream_pass_ledger_tests": {
+                    "status": "PASS",
+                    "scope": "CURRENT_DYNAMIC_BINDING_APPEND_ONLY_LINEAGE_EXACT_MEMBER_DESCRIPTORS_AND_FAIL_CLOSED_COUNTS",
+                },
+                "gse200304_upstream_authority_exact6_descriptor_registration": "PASS",
+                "gse200304_upstream_pass_gate_pack_exact6_descriptor_registration": "PASS",
+                "gse200304_upstream_pass_adjudication_exact4_descriptor_registration": "PASS",
+                "gse200304_upstream_pass_current_dynamic_config_binding": "PASS",
                 "full_repository_tests": {
                     "status": "NOT_RUN",
                     "reason": "INTERIM_TARGETED_MODULE_SCOPE",
@@ -6960,6 +7359,10 @@ def validate_a1_interim_lineage(
                     "status": "COMPLETED_FINDINGS_APPLIED",
                     "scope": "INTERIM_RECORD_STATUS_CLAIM_BOUNDARIES_PLUMAGE_BLOCK_SEMANTICS_AND_LOG2_CPM_SCALE",
                 },
+                "upstream_pass_ledger_independent_review": {
+                    "status": "NOT_RUN",
+                    "reason": "FOUR_FILE_APPEND_ONLY_LOW_TO_MEDIUM_RISK_BATCH_SELF_CHECKED_UNDER_GLOBAL_LIGHTWEIGHT_POLICY",
+                },
             },
             path,
             issues,
@@ -6972,7 +7375,7 @@ def validate_a1_interim_lineage(
     _expect(
         interim,
         "latest_evidence_update_id",
-        "GSE200304_DEC019_REPORTED_ENDPOINT_A1_ADJUDICATION_V3",
+        "GSE200304_DEC019_REPORTED_ENDPOINT_A1_ADJUDICATION_V3_UPSTREAM_PASS_GATE_PACK_V1",
         path,
         issues,
         "A1_INTERIM_TIME",
@@ -6980,14 +7383,14 @@ def validate_a1_interim_lineage(
     generated = interim.get("generated_at")
     updated = interim.get("updated_at")
     if (
-        generated != GSE200304_DEC019_POST_ADJUDICATION_LEDGER_AT
-        or updated != GSE200304_DEC019_POST_ADJUDICATION_LEDGER_AT
+        generated != GSE200304_DEC019_UPSTREAM_PASS_LEDGER_AT
+        or updated != GSE200304_DEC019_UPSTREAM_PASS_LEDGER_AT
     ):
         _issue(
             issues,
             "A1_INTERIM_TIME",
             path,
-            "generated_at and updated_at must remain the exact GSE200304 DEC-019 post-adjudication ledger timestamp",
+            "generated_at and updated_at must remain the exact GSE200304 DEC-019 upstream-pass ledger timestamp",
         )
     if generated != updated:
         _issue(issues, "A1_INTERIM_TIME", path, "generated_at and updated_at must identify the same amended record bytes")
