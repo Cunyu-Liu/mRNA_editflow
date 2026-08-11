@@ -374,7 +374,7 @@
   "evidence_descriptor_bindings": {
     "binding_scheme": "DESCENDANT_CONFIG_ONLY_DESCRIPTOR_BINDING_V1",
     "status": "BOUND",
-    "descriptor_set_sha256": "14223d0193e4b3a4a3c1d98a5894849dd429e6eed021ff98e6697e73ac286a40",
+    "descriptor_set_sha256": "97e2d5ca135f2e5668ef513de0247d5973481f6532f99beac9e9d8d9a828148b",
     "dynamic_scalar_suffixes": [
       "absolute_path",
       "sha256",
@@ -390,9 +390,9 @@
       },
       {
         "slot_id": "CANONICAL_REPORTED_ENDPOINT_SEMANTICS",
-        "absolute_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE200304_DEC019_NEGATIVE_GATE_PACK_V1/GSE200304_DEC019_CANONICAL_REPORTED_ENDPOINT_SEMANTICS_GATE.json",
-        "sha256": "a2b4dd52f0fbe4cd31324d4b760b9fee104f719d67d4f6834b6c1ea3adffaf9e",
-        "bytes": 4022
+        "absolute_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE200304_DEC019_UPSTREAM_PASS_GATE_PACK_V1/GSE200304_DEC019_CANONICAL_REPORTED_ENDPOINT_SEMANTICS_GATE.json",
+        "sha256": "6603803960b747126a5b6dfb7d56bf124d36144fa87667098813ccae2fe41ba3",
+        "bytes": 3988
       },
       {
         "slot_id": "BIOLOGICAL_GROUP_AUTHORITY",
@@ -402,9 +402,9 @@
       },
       {
         "slot_id": "ROW_REPLICATE_OR_VALID_SE",
-        "absolute_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE200304_DEC019_NEGATIVE_GATE_PACK_V1/GSE200304_DEC019_ROW_REPLICATE_OR_VALID_SE_GATE.json",
-        "sha256": "235683969801d375a59a0bde56af2a448afd2a56cd5224cbede1320c2c15026b",
-        "bytes": 3977
+        "absolute_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE200304_DEC019_UPSTREAM_PASS_GATE_PACK_V1/GSE200304_DEC019_ROW_REPLICATE_OR_VALID_SE_GATE.json",
+        "sha256": "dc0a08a1a6b389fcd4c982a7e52ad34ebc9cf67563482c6adc84a7c2c51b3d0f",
+        "bytes": 3944
       },
       {
         "slot_id": "CHECKPOINT_SPECIFIC_EXPOSURE",
@@ -414,9 +414,9 @@
       },
       {
         "slot_id": "LICENSE_RIGHTS",
-        "absolute_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE200304_DEC019_NEGATIVE_GATE_PACK_V1/GSE200304_DEC019_LICENSE_RIGHTS_GATE.json",
-        "sha256": "7556db47e8b3ec9cdc0a7d795161cf4ded8679d0c04644005a475753c482aa28",
-        "bytes": 3919
+        "absolute_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE200304_DEC019_UPSTREAM_PASS_GATE_PACK_V1/GSE200304_DEC019_LICENSE_RIGHTS_GATE.json",
+        "sha256": "08cb30aeac3b6e1e989e0d379b0b51c83a7fcbea6f4a3bb0501b4529d3a5192c",
+        "bytes": 3905
       },
       {
         "slot_id": "OUTCOME_BLIND_SPLIT_LEAKAGE",
