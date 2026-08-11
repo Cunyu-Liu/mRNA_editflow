@@ -373,8 +373,6 @@ def _binding_values_are_unknown(binding: Mapping[str, Any]) -> bool:
 def _ledger_binding_values(authority: Mapping[str, Any]) -> list[Any]:
     ledger = authority["predecessor_ledger"]
     return [
-        authority.get("base_commit"),
-        authority.get("current_pre_runtime_sync_head"),
         ledger.get("status"),
         ledger.get("commit"),
         *(item.get("sha256") for item in ledger.get("frozen_blobs", [])),
@@ -383,7 +381,7 @@ def _ledger_binding_values(authority: Mapping[str, Any]) -> list[Any]:
 
 def _ledger_values_are_unknown(authority: Mapping[str, Any]) -> bool:
     values = _ledger_binding_values(authority)
-    return len(values) == 8 and all(value == UNKNOWN for value in values)
+    return len(values) == 6 and all(value == UNKNOWN for value in values)
 
 
 def validate_static_config(config: dict[str, Any]) -> None:
@@ -456,14 +454,17 @@ def validate_static_config(config: dict[str, Any]) -> None:
             "implementation_commit_expected_parent", "binding_commit_expected_parent",
             "implementation_commit_exact_changed_paths",
             "binding_commit_exact_changed_paths", "predecessor_ledger",
+            "historical_runtime_publisher_lifecycle",
             "negative_producer_lifecycle", "adjudicator_lifecycle",
         },
         label="repository authority",
     )
     _expect_exact(authority["production_repo_root"], str(PRODUCTION_REPO_ROOT), label="repository root")
     _expect_exact(authority["branch"], "routea-v3-a1-20260810", label="repository branch")
-    _expect_exact(authority["base_commit_expected_parent"], "c278f29a18b7858c85686fcec3857a992fd07d5f", label="ledger parent D2")
-    _expect_exact(authority["implementation_commit_expected_parent"], "PREDECESSOR_LEDGER_COMMIT_FROM_BINDING", label="runtime I parent rule")
+    _expect_exact(authority["base_commit"], "1dc7da6300dfd192d69656fe63d582fe8f71da48", label="repair base/runtime B1")
+    _expect_exact(authority["current_pre_runtime_sync_head"], authority["base_commit"], label="repair pre-I head/runtime B1")
+    _expect_exact(authority["base_commit_expected_parent"], "9acdefc4a410e03827532b359ec245d8a6cb76df", label="repair base parent/runtime I1")
+    _expect_exact(authority["implementation_commit_expected_parent"], "INITIAL_RUNTIME_BINDING_COMMIT_FROM_LIFECYCLE", label="repair I2 parent rule")
     _expect_exact(authority["binding_commit_expected_parent"], "IMPLEMENTATION_COMMIT_FROM_BINDING", label="runtime B parent rule")
     _expect_exact(authority["implementation_commit_exact_changed_paths"], sorted([CONFIG_REPO_PATH, SCRIPT_REPO_PATH, TEST_REPO_PATH]), label="runtime I paths")
     _expect_exact(authority["binding_commit_exact_changed_paths"], [CONFIG_REPO_PATH], label="runtime B paths")
@@ -505,17 +506,66 @@ def validate_static_config(config: dict[str, Any]) -> None:
     if not isinstance(blobs, list) or [item.get("path") for item in blobs] != ledger_paths:
         raise BindingError("ledger frozen blob path closure drift")
     ledger_values = _ledger_binding_values(authority)
-    if all(value == UNKNOWN for value in ledger_values):
-        pass
-    elif any(value == UNKNOWN for value in ledger_values):
-        raise BindingError("predecessor ledger binding is partial")
-    else:
-        _expect_exact(ledger["status"], "BOUND", label="ledger status")
-        ledger_commit = _expect_hex(ledger["commit"], HEX40, label="ledger commit")
-        _expect_exact(authority["base_commit"], ledger_commit, label="runtime base/ledger commit")
-        _expect_exact(authority["current_pre_runtime_sync_head"], ledger_commit, label="pre-runtime head/ledger commit")
-        for item in blobs:
-            _expect_hex(item["sha256"], HEX64, label=f"ledger blob {item['path']}")
+    if any(value == UNKNOWN for value in ledger_values):
+        raise BindingError("predecessor ledger authority is not fully BOUND")
+    _expect_exact(ledger["status"], "BOUND", label="ledger status")
+    ledger_commit = _expect_hex(ledger["commit"], HEX40, label="ledger commit")
+    _expect_exact(ledger_commit, "f465dd03ae792b98c0604b1d225cd2df37d28f9e", label="frozen predecessor ledger commit")
+    for item in blobs:
+        _expect_hex(item["sha256"], HEX64, label=f"ledger blob {item['path']}")
+
+    publisher = _expect_keys(
+        authority["historical_runtime_publisher_lifecycle"],
+        {
+            "predecessor_ledger_commit", "initial_implementation_commit",
+            "initial_binding_commit", "config_path", "script_path", "test_path",
+            "initial_implementation_blobs", "initial_binding_blobs",
+            "implementation_commit_exact_changed_paths",
+            "binding_commit_exact_changed_paths",
+        },
+        label="historical runtime publisher lifecycle",
+    )
+    _expect_typed_exact(
+        {
+            key: publisher[key]
+            for key in (
+                "predecessor_ledger_commit", "initial_implementation_commit",
+                "initial_binding_commit", "config_path", "script_path", "test_path",
+            )
+        },
+        {
+            "predecessor_ledger_commit": "f465dd03ae792b98c0604b1d225cd2df37d28f9e",
+            "initial_implementation_commit": "9acdefc4a410e03827532b359ec245d8a6cb76df",
+            "initial_binding_commit": "1dc7da6300dfd192d69656fe63d582fe8f71da48",
+            "config_path": CONFIG_REPO_PATH,
+            "script_path": SCRIPT_REPO_PATH,
+            "test_path": TEST_REPO_PATH,
+        },
+        label="historical runtime publisher identity",
+    )
+    for key, expected in {
+        "initial_implementation_blobs": {
+            "config_sha256": "7fd790fd4d841c771a9324dfb665555d5a93e8d2d66011d4751e3802621f0fd7",
+            "script_sha256": "fcbe15c4ea0fd7ef5a049c71f388b242757fa59e17f15f9ea22f9d5def353530",
+            "test_sha256": "93633d61cc9bd10d5003f2b29d4ab1d15f1a6b2ab8f3674a0c2617351c8bed64",
+        },
+        "initial_binding_blobs": {
+            "config_sha256": "0dc02a9122686d08ca4eee071f4e966b5ae51c9afc6ad29d3bf530dd9ae74921",
+            "script_sha256": "fcbe15c4ea0fd7ef5a049c71f388b242757fa59e17f15f9ea22f9d5def353530",
+            "test_sha256": "93633d61cc9bd10d5003f2b29d4ab1d15f1a6b2ab8f3674a0c2617351c8bed64",
+        },
+    }.items():
+        _expect_typed_exact(publisher[key], expected, label=f"historical runtime {key}")
+    _expect_exact(
+        publisher["implementation_commit_exact_changed_paths"],
+        authority["implementation_commit_exact_changed_paths"],
+        label="historical runtime I1 paths",
+    )
+    _expect_exact(
+        publisher["binding_commit_exact_changed_paths"],
+        authority["binding_commit_exact_changed_paths"],
+        label="historical runtime B1 paths",
+    )
 
     negative = _expect_keys(
         authority["negative_producer_lifecycle"],
@@ -821,7 +871,7 @@ def validate_static_config(config: dict[str, Any]) -> None:
 
 
 def validate_bound_config(config: dict[str, Any]) -> None:
-    """Require a frozen predecessor ledger and the runtime I/config-only-B."""
+    """Require the frozen history and the repair runtime I2/config-only-B2."""
 
     validate_static_config(config)
     binding = config["implementation_binding"]
@@ -833,7 +883,7 @@ def validate_bound_config(config: dict[str, Any]) -> None:
     implementation = _expect_hex(binding["implementation_commit"], HEX40, label="implementation commit")
     base = _expect_hex(authority["base_commit"], HEX40, label="base commit")
     if implementation == base:
-        raise BindingError("runtime-sync implementation did not advance from ledger base")
+        raise BindingError("runtime-sync repair implementation did not advance from B1 base")
 
 
 def load_bound_config(config_path: Path, *, production: bool) -> tuple[dict[str, Any], bytes]:
@@ -922,6 +972,7 @@ def audit_repo_authority(
     binding = config["implementation_binding"]
     authority = config["repository_authority"]
     ledger = authority["predecessor_ledger"]
+    publisher = authority["historical_runtime_publisher_lifecycle"]
     negative = authority["negative_producer_lifecycle"]
     adjudicator = authority["adjudicator_lifecycle"]
     implementation = binding["implementation_commit"]
@@ -936,15 +987,37 @@ def audit_repo_authority(
     if _run_git(repo_root, "status", "--porcelain=v1", "--untracked-files=all") != b"":
         raise AuthorityError("worktree or index is dirty")
 
-    # Current runtime publisher: predecessor-ledger base -> I -> config-only B.
-    _expect_exact(base, ledger["commit"], label="runtime base/ledger commit")
-    _expect_exact(authority["current_pre_runtime_sync_head"], base, label="pre-runtime head")
-    _expect_parent(repo_root, head, implementation, label="runtime B parent")
-    _expect_parent(repo_root, implementation, base, label="runtime I parent")
-    _expect_parent(repo_root, base, ledger["expected_parent"], label="ledger/D2 parent")
-    _expect_exact(_paths_changed_by_commit(repo_root, base), ledger["commit_exact_changed_paths"], label="ledger changed paths")
-    _expect_exact(_paths_changed_by_commit(repo_root, implementation), authority["implementation_commit_exact_changed_paths"], label="runtime I changed paths")
-    _expect_exact(_paths_changed_by_commit(repo_root, head), authority["binding_commit_exact_changed_paths"], label="runtime B changed paths")
+    # Runtime publisher history and repair:
+    # ledger -> I1 -> config-only B1/base -> I2 -> config-only B2/current.
+    ledger_commit = ledger["commit"]
+    initial_implementation = publisher["initial_implementation_commit"]
+    initial_binding = publisher["initial_binding_commit"]
+    _expect_exact(publisher["predecessor_ledger_commit"], ledger_commit, label="runtime I1 ledger")
+    _expect_exact(base, initial_binding, label="repair base/runtime B1")
+    _expect_exact(authority["current_pre_runtime_sync_head"], base, label="repair pre-I2 head")
+    _expect_parent(repo_root, head, implementation, label="runtime B2 parent")
+    _expect_parent(repo_root, implementation, base, label="runtime I2 parent")
+    _expect_parent(repo_root, base, initial_implementation, label="runtime B1 parent")
+    _expect_parent(repo_root, initial_implementation, ledger_commit, label="runtime I1 parent")
+    _expect_parent(repo_root, ledger_commit, ledger["expected_parent"], label="ledger/D2 parent")
+    _expect_exact(_paths_changed_by_commit(repo_root, ledger_commit), ledger["commit_exact_changed_paths"], label="ledger changed paths")
+    _expect_exact(_paths_changed_by_commit(repo_root, initial_implementation), publisher["implementation_commit_exact_changed_paths"], label="runtime I1 changed paths")
+    _expect_exact(_paths_changed_by_commit(repo_root, initial_binding), publisher["binding_commit_exact_changed_paths"], label="runtime B1 changed paths")
+    _expect_exact(_paths_changed_by_commit(repo_root, implementation), authority["implementation_commit_exact_changed_paths"], label="runtime I2 changed paths")
+    _expect_exact(_paths_changed_by_commit(repo_root, head), authority["binding_commit_exact_changed_paths"], label="runtime B2 changed paths")
+    for commit, blob_key, label in (
+        (initial_implementation, "initial_implementation_blobs", "runtime I1"),
+        (initial_binding, "initial_binding_blobs", "runtime B1"),
+    ):
+        _verify_three_blobs(
+            repo_root,
+            commit=commit,
+            config_path=publisher["config_path"],
+            script_path=publisher["script_path"],
+            test_path=publisher["test_path"],
+            expected=publisher[blob_key],
+            label=label,
+        )
     if _git_blob(repo_root, head, CONFIG_REPO_PATH) != config_payload:
         raise AuthorityError("runtime B config blob drift")
     i_config = load_json(
@@ -969,7 +1042,10 @@ def audit_repo_authority(
             raise AuthorityError(f"runtime implementation blob drift: {path}")
     for item in ledger["frozen_blobs"]:
         path, digest = item["path"], item["sha256"]
-        if sha256(_git_blob(repo_root, base, path)) != digest or sha256(_git_blob(repo_root, implementation, path)) != digest or sha256(_git_blob(repo_root, head, path)) != digest or sha256(read_regular_path(repo_root / path)) != digest:
+        if any(
+            sha256(_git_blob(repo_root, commit, path)) != digest
+            for commit in (ledger_commit, initial_implementation, initial_binding, implementation, head)
+        ) or sha256(read_regular_path(repo_root / path)) != digest:
             raise AuthorityError(f"predecessor ledger blob drift: {path}")
 
     # Historical negative producer: initial I/B -> NFS-safe I/B, then ancestor of D2.
@@ -982,7 +1058,8 @@ def audit_repo_authority(
     _expect_parent(repo_root, nfs_i, initial_b, label="negative NFS I parent")
     _expect_parent(repo_root, nfs_b, nfs_i, label="negative NFS B parent")
     _expect_ancestor(repo_root, nfs_b, d2, label="negative B to D2")
-    _expect_ancestor(repo_root, d2, base, label="D2 to ledger")
+    _expect_ancestor(repo_root, d2, ledger_commit, label="D2 to ledger")
+    _expect_ancestor(repo_root, ledger_commit, base, label="ledger to repair base")
     for commit, expected_paths, label in (
         (initial_i, negative["implementation_commit_exact_changed_paths"], "negative initial I paths"),
         (initial_b, negative["binding_commit_exact_changed_paths"], "negative initial B paths"),
@@ -1034,7 +1111,7 @@ def audit_repo_authority(
         )
 
     return {
-        "status": "PASS_HISTORICAL_NEGATIVE_AND_ADJUDICATOR_LIFECYCLES_CURRENT_D2_DESCENDANT_AND_RUNTIME_I_TO_CONFIG_ONLY_B",
+        "status": "PASS_HISTORICAL_NEGATIVE_ADJUDICATOR_AND_RUNTIME_I1_B1_LIFECYCLES_CURRENT_D2_DESCENDANT_AND_REPAIR_I2_TO_CONFIG_ONLY_B2",
         "binding_commit": head,
         "head_commit": head,
         "origin_branch_head_commit": origin,
@@ -1042,10 +1119,13 @@ def audit_repo_authority(
         "base_commit": base,
         "implementation_commit": implementation,
         "predecessor_ledger_commit": ledger["commit"],
+        "initial_runtime_implementation_commit": initial_implementation,
+        "initial_runtime_binding_commit": initial_binding,
         "negative_nfs_binding_commit": nfs_b,
         "adjudicator_descriptor_commit": adjudicator_d2,
         "historical_negative_blob_check_count": 18,
         "adjudicator_blob_check_count": 12,
+        "historical_runtime_blob_check_count": 6,
         "ledger_blob_check_count": 4,
     }
 
@@ -1789,6 +1869,8 @@ def _load_runtime_context(
             "base_commit",
             "implementation_commit",
             "predecessor_ledger_commit",
+            "initial_runtime_implementation_commit",
+            "initial_runtime_binding_commit",
             "negative_nfs_binding_commit",
             "adjudicator_descriptor_commit",
         }

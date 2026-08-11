@@ -27,30 +27,21 @@ def refresh_core(config: dict[str, Any]) -> None:
     config["implementation_binding"]["compiled_core_sha256"] = runtime_sync.compiled_core_sha256(config)
 
 
-def bind_config(config: dict[str, Any] | None = None) -> dict[str, Any]:
+def normalize_i_config(config: dict[str, Any] | None = None) -> dict[str, Any]:
     value = copy.deepcopy(config if config is not None else read_config())
-    authority = value["repository_authority"]
-    ledger = authority["predecessor_ledger"]
-    ledger_commit = "a" * 40
-    authority["base_commit"] = ledger_commit
-    authority["current_pre_runtime_sync_head"] = ledger_commit
-    ledger["status"] = "BOUND"
-    ledger["commit"] = ledger_commit
-    for index, item in enumerate(ledger["frozen_blobs"], start=1):
-        item["sha256"] = f"{index:064x}"
+    for key in ("status", "implementation_commit", "implementation_script_sha256", "implementation_test_sha256"):
+        value["implementation_binding"][key] = runtime_sync.UNKNOWN
+    return value
+
+
+def bind_config(config: dict[str, Any] | None = None) -> dict[str, Any]:
+    value = normalize_i_config(config)
     binding = value["implementation_binding"]
     binding["status"] = "BOUND"
     binding["implementation_commit"] = "b" * 40
     binding["implementation_script_sha256"] = runtime_sync.sha256(b"synthetic runtime script\n")
     binding["implementation_test_sha256"] = runtime_sync.sha256(b"synthetic runtime test\n")
     refresh_core(value)
-    return value
-
-
-def unknown_implementation(config: dict[str, Any]) -> dict[str, Any]:
-    value = copy.deepcopy(config)
-    for key in ("status", "implementation_commit", "implementation_script_sha256", "implementation_test_sha256"):
-        value["implementation_binding"][key] = runtime_sync.UNKNOWN
     return value
 
 
@@ -238,6 +229,8 @@ def make_context(
         "base_commit": config["repository_authority"]["base_commit"],
         "implementation_commit": config["implementation_binding"]["implementation_commit"],
         "predecessor_ledger_commit": config["repository_authority"]["predecessor_ledger"]["commit"],
+        "initial_runtime_implementation_commit": config["repository_authority"]["historical_runtime_publisher_lifecycle"]["initial_implementation_commit"],
+        "initial_runtime_binding_commit": config["repository_authority"]["historical_runtime_publisher_lifecycle"]["initial_binding_commit"],
         "negative_nfs_binding_commit": config["repository_authority"]["negative_producer_lifecycle"]["nfs_binding_commit"],
         "adjudicator_descriptor_commit": config["repository_authority"]["adjudicator_lifecycle"]["descriptor_commit"],
     }
@@ -269,14 +262,26 @@ def tree_bytes(root: Path) -> dict[str, bytes]:
     return {item.name: item.read_bytes() for item in root.iterdir() if item.is_file() and not item.is_symlink()}
 
 
-def test_static_i_form_freezes_delta16_exact8_exact4_and_only_expected_placeholders() -> None:
-    config = read_config()
+def test_static_disk_i_or_b_form_freezes_delta16_exact8_exact4_and_only_expected_placeholders() -> None:
+    disk_config = read_config()
+    runtime_sync.validate_static_config(disk_config)
+    config = normalize_i_config(disk_config)
     runtime_sync.validate_static_config(config)
-    assert config["implementation_binding"]["status"] == runtime_sync.UNKNOWN
     authority = config["repository_authority"]
     ledger = authority["predecessor_ledger"]
     assert ledger["status"] == "BOUND"
-    assert authority["base_commit"] == authority["current_pre_runtime_sync_head"] == ledger["commit"] == "f465dd03ae792b98c0604b1d225cd2df37d28f9e"
+    assert ledger["commit"] == "f465dd03ae792b98c0604b1d225cd2df37d28f9e"
+    assert authority["base_commit"] == authority["current_pre_runtime_sync_head"] == "1dc7da6300dfd192d69656fe63d582fe8f71da48"
+    publisher = authority["historical_runtime_publisher_lifecycle"]
+    assert (
+        publisher["predecessor_ledger_commit"],
+        publisher["initial_implementation_commit"],
+        publisher["initial_binding_commit"],
+    ) == (
+        "f465dd03ae792b98c0604b1d225cd2df37d28f9e",
+        "9acdefc4a410e03827532b359ec245d8a6cb76df",
+        "1dc7da6300dfd192d69656fe63d582fe8f71da48",
+    )
     assert [item["sha256"] for item in ledger["frozen_blobs"]] == [
         "552f705445a36df99a5ae071c85625c729ad2f69f0a375bb7b3118c3b400e16c",
         "9548ccfc7150b8b6381a58f19bd6ed39638b70869d776efdb36a3f725d7bffed",
@@ -295,8 +300,27 @@ def test_static_i_form_freezes_delta16_exact8_exact4_and_only_expected_placehold
         runtime_sync.validate_bound_config(config)
     bound = bind_config(config)
     runtime_sync.validate_bound_config(bound)
-    assert runtime_sync.expected_unknown_i_config(bound) == unknown_implementation(bound)
-    assert runtime_sync.compiled_core_projection(bound) == runtime_sync.compiled_core_projection(unknown_implementation(bound))
+    assert runtime_sync.expected_unknown_i_config(bound) == normalize_i_config(bound)
+    assert runtime_sync.compiled_core_projection(bound) == runtime_sync.compiled_core_projection(normalize_i_config(bound))
+    if runtime_sync._binding_values_are_unknown(disk_config["implementation_binding"]):
+        with pytest.raises(runtime_sync.BindingError, match="implementation is not BOUND"):
+            runtime_sync.validate_bound_config(disk_config)
+    else:
+        runtime_sync.validate_bound_config(disk_config)
+
+
+def test_disk_i_b_lifecycle_normalizes_exactly_four_binding_scalars() -> None:
+    disk_config = read_config()
+    i_config = normalize_i_config(disk_config)
+    b_config = bind_config(i_config)
+    runtime_sync.validate_static_config(i_config)
+    runtime_sync.validate_bound_config(b_config)
+    changed = []
+    for key in i_config["implementation_binding"]:
+        if i_config["implementation_binding"][key] != b_config["implementation_binding"][key]:
+            changed.append(f"implementation_binding.{key}")
+    assert changed == i_config["implementation_binding"]["unknown_to_bound_scalar_paths"]
+    assert runtime_sync.compiled_core_projection(i_config) == runtime_sync.compiled_core_projection(b_config)
 
 
 @pytest.mark.parametrize(
@@ -370,7 +394,7 @@ def test_unknown_bindings_stop_before_repository_runtime_or_source_access(
             prepared_directory=tmp_path / "prepared",
             recorded_at="2026-08-11T12:00:00+08:00",
             production=False,
-            config_override=read_config(),
+            config_override=normalize_i_config(read_config()),
             repo_root=tmp_path / "repo",
             run_root_override=tmp_path / "run",
         )
@@ -379,9 +403,9 @@ def test_unknown_bindings_stop_before_repository_runtime_or_source_access(
 
 @pytest.mark.parametrize(
     "mode",
-    ["positive", "dirty", "parent_drift", "path_drift", "negative_drift", "adjudicator_drift", "ledger_drift", "current_drift", "lineage_drift", "i_type_drift"],
+    ["positive", "dirty", "parent_drift", "path_drift", "runtime_history_drift", "negative_drift", "adjudicator_drift", "ledger_drift", "current_drift", "lineage_drift", "i_type_drift"],
 )
-def test_repo_audit_proves_historical_negative_adjudicator_d2_ledger_and_runtime_i_b(
+def test_repo_audit_proves_historical_negative_adjudicator_d2_ledger_i1_b1_and_repair_i2_b2(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, mode: str
 ) -> None:
     config = bind_config()
@@ -393,6 +417,7 @@ def test_repo_audit_proves_historical_negative_adjudicator_d2_ledger_and_runtime
     refresh_core(config)
     binding = config["implementation_binding"]
     ledger = authority["predecessor_ledger"]
+    publisher = authority["historical_runtime_publisher_lifecycle"]
     negative = authority["negative_producer_lifecycle"]
     adjudicator = authority["adjudicator_lifecycle"]
     base = authority["base_commit"]
@@ -420,6 +445,8 @@ def test_repo_audit_proves_historical_negative_adjudicator_d2_ledger_and_runtime
             blob_payloads[(commit, paths[path_key])] = payload
             digest_overrides[payload] = spec[digest_key]
 
+    add_three(publisher["initial_implementation_commit"], publisher["initial_implementation_blobs"], publisher, "runtime-i1")
+    add_three(publisher["initial_binding_commit"], publisher["initial_binding_blobs"], publisher, "runtime-b1")
     add_three(negative["initial_implementation_commit"], negative["initial_implementation_blobs"], negative, "negative-initial-i")
     add_three(negative["initial_binding_commit"], negative["initial_binding_blobs"], negative, "negative-initial-b")
     add_three(negative["nfs_implementation_commit"], negative["nfs_implementation_blobs"], negative, "negative-nfs-i")
@@ -434,7 +461,7 @@ def test_repo_audit_proves_historical_negative_adjudicator_d2_ledger_and_runtime
         payload = f"ledger:{item['path']}\n".encode()
         ledger_payloads[item["path"]] = payload
         digest_overrides[payload] = item["sha256"]
-        for commit in (base, implementation, head):
+        for commit in (ledger["commit"], publisher["initial_implementation_commit"], base, implementation, head):
             blob_payloads[(commit, item["path"])] = payload
     real_sha256 = runtime_sync.sha256
     monkeypatch.setattr(runtime_sync, "sha256", lambda payload: digest_overrides.get(payload, real_sha256(payload)))
@@ -442,7 +469,9 @@ def test_repo_audit_proves_historical_negative_adjudicator_d2_ledger_and_runtime
     parent_map = {
         head: implementation,
         implementation: base,
-        base: ledger["expected_parent"],
+        base: publisher["initial_implementation_commit"],
+        publisher["initial_implementation_commit"]: ledger["commit"],
+        ledger["commit"]: ledger["expected_parent"],
         negative["initial_binding_commit"]: negative["initial_implementation_commit"],
         negative["nfs_implementation_commit"]: negative["initial_binding_commit"],
         negative["nfs_binding_commit"]: negative["nfs_implementation_commit"],
@@ -450,7 +479,9 @@ def test_repo_audit_proves_historical_negative_adjudicator_d2_ledger_and_runtime
         adjudicator["descriptor_commit"]: adjudicator["binding_commit"],
     }
     changed_paths = {
-        base: ledger["commit_exact_changed_paths"],
+        ledger["commit"]: ledger["commit_exact_changed_paths"],
+        publisher["initial_implementation_commit"]: publisher["implementation_commit_exact_changed_paths"],
+        base: publisher["binding_commit_exact_changed_paths"],
         implementation: authority["implementation_commit_exact_changed_paths"],
         head: authority["binding_commit_exact_changed_paths"],
         negative["initial_implementation_commit"]: negative["implementation_commit_exact_changed_paths"],
@@ -489,17 +520,24 @@ def test_repo_audit_proves_historical_negative_adjudicator_d2_ledger_and_runtime
 
     def fake_blob(_repo: Path, commit: str, path: str) -> bytes:
         if path == runtime_sync.CONFIG_REPO_PATH:
-            return config_payload if commit == head else i_payload
+            if commit == head:
+                return config_payload
+            if commit == implementation:
+                return i_payload
+            payload = blob_payloads[(commit, path)]
+            if mode == "runtime_history_drift" and commit == base:
+                return payload + b"drift"
+            return payload
         if path == runtime_sync.SCRIPT_REPO_PATH:
-            return runtime_script
+            return runtime_script if commit in (implementation, head) else blob_payloads[(commit, path)]
         if path == runtime_sync.TEST_REPO_PATH:
-            return runtime_test
+            return runtime_test if commit in (implementation, head) else blob_payloads[(commit, path)]
         payload = blob_payloads[(commit, path)]
         if mode == "negative_drift" and commit == negative["nfs_implementation_commit"] and path == negative["config_path"]:
             return payload + b"drift"
         if mode == "adjudicator_drift" and commit == adjudicator["descriptor_commit"] and path == adjudicator["config_path"]:
             return payload + b"drift"
-        if mode == "ledger_drift" and commit == base and path == ledger["frozen_blobs"][0]["path"]:
+        if mode == "ledger_drift" and commit == ledger["commit"] and path == ledger["frozen_blobs"][0]["path"]:
             return payload + b"drift"
         if mode == "current_drift" and commit == head and path == adjudicator["config_path"]:
             return payload + b"drift"
@@ -533,7 +571,9 @@ def test_repo_audit_proves_historical_negative_adjudicator_d2_ledger_and_runtime
         result = runtime_sync.audit_repo_authority(repo, config, config_payload)
         assert result["negative_nfs_binding_commit"] == negative["nfs_binding_commit"]
         assert result["adjudicator_descriptor_commit"] == adjudicator["descriptor_commit"]
-        assert result["predecessor_ledger_commit"] == base
+        assert result["predecessor_ledger_commit"] == ledger["commit"]
+        assert result["initial_runtime_implementation_commit"] == publisher["initial_implementation_commit"]
+        assert result["initial_runtime_binding_commit"] == base
     else:
         with pytest.raises(runtime_sync.RuntimeSyncError):
             runtime_sync.audit_repo_authority(repo, config, config_payload)
