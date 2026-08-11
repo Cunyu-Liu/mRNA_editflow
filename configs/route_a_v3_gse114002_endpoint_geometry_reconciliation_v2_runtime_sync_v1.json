@@ -9,12 +9,12 @@
   "sync_type": "APPEND_ONLY_ATTEMPT_LINEAGE_REGISTRATION_NO_GATE_CHANGE",
   "implementation_binding": {
     "binding_scheme": "CONFIG_ONLY_POST_IMPLEMENTATION_BINDING_V1",
-    "status": "UNKNOWN_NOT_ASSERTED",
-    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "status": "BOUND",
+    "implementation_commit": "55fdfb01dd64b9657be68b76862933f71d9fff49",
     "implementation_script_path": "scripts/route_a_v3/gse114002_endpoint_geometry_reconciliation_v2_runtime_sync.py",
-    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_script_sha256": "2e68e6240c2f6a294d5dcc351863dadb825651121cc27bbea7132b741b54da73",
     "implementation_test_path": "tests/route_a_v3/test_gse114002_endpoint_geometry_reconciliation_v2_runtime_sync.py",
-    "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_test_sha256": "fafad8f95efb8bdfe2d3842de046d4466aaf78a0558e7b91aa8020f423e3811d",
     "compiled_core_sha256": "137fcf4e67ffa9a09a8e3f5c7ff8ec2529c2dd67cab8228f38e11c6b63329e93",
     "unknown_to_bound_scalar_paths": [
       "implementation_binding.status",
