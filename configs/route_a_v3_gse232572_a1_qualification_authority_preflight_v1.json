@@ -1,0 +1,269 @@
+{
+  "schema_version": "route_a_v3_gse232572_a1_qualification_authority_preflight.v1",
+  "protocol_id": "GSE232572_A1_QUALIFICATION_AUTHORITY_PREFLIGHT_V1",
+  "contract_id": "mrna_xeditflow_route_a_v3",
+  "phase_id": "A1",
+  "dataset_id": "GSE232572",
+  "protocol_status": "PREFLIGHT_ONLY_AGGREGATE_ONLY_STOP_BEFORE_ROW_ACCESS",
+  "implementation_binding": {
+    "binding_scheme": "CONFIG_ONLY_POST_IMPLEMENTATION_BINDING_V1",
+    "status": "UNKNOWN_NOT_ASSERTED",
+    "base_commit": "13baa39e87406b5bc81b7e236cee637f694bfd0f",
+    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "implementation_script_path": "scripts/route_a_v3/preflight_gse232572_a1_qualification_authority.py",
+    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_test_path": "tests/route_a_v3/test_preflight_gse232572_a1_qualification_authority.py",
+    "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
+    "unknown_to_bound_scalar_paths": [
+      "implementation_binding.status",
+      "implementation_binding.implementation_commit",
+      "implementation_binding.implementation_script_sha256",
+      "implementation_binding.implementation_test_sha256"
+    ],
+    "implementation_commit_exact_changed_paths": [
+      "configs/route_a_v3_gse232572_a1_qualification_authority_preflight_v1.json",
+      "scripts/route_a_v3/preflight_gse232572_a1_qualification_authority.py",
+      "tests/route_a_v3/test_preflight_gse232572_a1_qualification_authority.py"
+    ],
+    "binding_commit_exact_changed_paths": [
+      "configs/route_a_v3_gse232572_a1_qualification_authority_preflight_v1.json"
+    ],
+    "activation_rule": "I must be the direct child of base_commit and change exact3. B must be the direct child of I and change config-only, replacing only the four UNKNOWN_NOT_ASSERTED binding scalars. Until B is valid, stop before authority, materialization-report, or output I/O."
+  },
+  "authority_inputs": [
+    {
+      "path": "docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md",
+      "sha256": "cbac4c3dcba8f1b8df95d8edad52d19e3c126d1c865d0cc423537c754cc90982",
+      "role": "SOLE_CURRENT_CONTRACT"
+    },
+    {
+      "path": "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec019.yaml",
+      "sha256": "8c82e564398f0735fe4976f875fe91f053937b05044e5232e237694a2b36e1ca",
+      "role": "DEC019_FROZEN_USER_AUTHORIZED_A1_QUALIFICATION_POLICY"
+    },
+    {
+      "path": "configs/route_a_v3_a1_qualification.json",
+      "sha256": "fe3f7736c1f64b362ebda683ca571fc1a84e1fff36aed3a9ae67272665ba2343",
+      "role": "CURRENT_A1_QUALIFICATION_AUTHORITY"
+    },
+    {
+      "path": "docs/execution/route_a_v3_data_role_registry.yaml",
+      "sha256": "4d14ebd1a6adc04a344165f775df8586ef9f8f0461fdcac08649d0644d9956f2",
+      "role": "CURRENT_DATA_ROLE_REGISTRY"
+    },
+    {
+      "path": "docs/execution/route_a_v3_split_registry.yaml",
+      "sha256": "2764d471c09a27da889b690cac317ac582bf9f25b79b6a34ac491f2e0b434929",
+      "role": "CURRENT_SPLIT_REGISTRY"
+    }
+  ],
+  "materialization_report_identity": {
+    "absolute_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE232572/GSE232572_DEVELOPMENT_V3_MATERIALIZATION_20260812T234243P0800/GSE232572_DEVELOPMENT_V3_MATERIALIZATION_REPORT.json",
+    "bytes": 3601,
+    "sha256": "007a70b9b43b71cbc21b2614473126e53ab760df824ac9d95cb14304cc647ef3",
+    "role": "PUBLIC_AGGREGATE_ONLY_DEVELOPMENT_MATERIALIZATION_REPORT"
+  },
+  "registered_public_ledger_facts": {
+    "runtime_event_id": "A1-EVT-048",
+    "runtime_event_name": "GSE232572_DEVELOPMENT_V3_MATERIALIZATION_REGISTERED_QUALIFICATION_GATE_UNCHANGED",
+    "publication_status": "PUBLISHED_VERIFIED",
+    "runtime_output_count_after": 203,
+    "outer_recovery_gate_summary": {
+      "PASS": 7,
+      "UNKNOWN_NOT_ASSERTED": 1
+    },
+    "outer_recovery_summary_is_dataset_qualification": false,
+    "outer_recovery_unknown_is_the_only_qualification_blocker": false,
+    "primary_measurement_route": "AUTHOR_PUBLISHED_PRIMARY_ENDPOINT",
+    "paper_faithful_transform": "LN_FOLD_CHANGE",
+    "public_raw_locator_and_lineage_status": "REGISTERED_PUBLIC_LINEAGE_EXACT",
+    "development_reconstruction_status": "DEVELOPMENT_PASS_NOT_CANONICAL",
+    "sequence_exposure": "SEQUENCE_EXPOSED",
+    "label_exposure": "LABEL_EXPOSED",
+    "untouched_confirmatory": false,
+    "public_replicate_count": 3,
+    "primary_label_standard_error": null
+  },
+  "frozen_materialization_facts": {
+    "status": "DEVELOPMENT_V3_MATERIALIZED_NOT_QUALIFIED",
+    "scientific_disposition": "SCHEMA_VALID_DEVELOPMENT_ONLY_NOT_CANONICALLY_QUALIFIED",
+    "published_universe_row_count": 11929,
+    "accepted_pair_complete_raw_endpoint_count": 8068,
+    "rejected_published_row_count": 3861,
+    "schema_valid_development_record_count": 8068,
+    "canonical_record_count": 0,
+    "contribution": {
+      "ordinary": 0,
+      "a1": 0,
+      "true_a2": 0
+    },
+    "qualified": false,
+    "training_allowed": false,
+    "model_selection_allowed": false,
+    "next_phase_allowed": false,
+    "license_boundary": {
+      "private_derivative_use_fact": "VERIFIED_PRIVATE_DERIVATIVE_USE_ALLOWED",
+      "public_redistribution_status": "UNKNOWN_NOT_ASSERTED_SUBMITTER_IP_CAVEAT",
+      "redistribution_allowed": false,
+      "row_license_status": "UNKNOWN_BLOCKED"
+    }
+  },
+  "registered_aggregate_passes": [
+    {
+      "gate_id": "AUTHORIZED_PRIMARY_MEASUREMENT_AND_PAPER_FAITHFUL_LNFC",
+      "status": "PASS_FROM_REGISTERED_AGGREGATE",
+      "scope": "DEVELOPMENT_EVIDENCE_ONLY_NOT_QUALIFICATION"
+    },
+    {
+      "gate_id": "PUBLIC_RAW_LOCATOR_AND_LINEAGE",
+      "status": "PASS_FROM_REGISTERED_AGGREGATE",
+      "scope": "REGISTERED_PUBLIC_LINEAGE_ONLY"
+    },
+    {
+      "gate_id": "SOURCE_CANDIDATE_CONTEXT_GROUP_RECONSTRUCTION",
+      "status": "PASS_FROM_REGISTERED_AGGREGATE",
+      "scope": "DEVELOPMENT_PASS_NOT_CANONICAL"
+    }
+  ],
+  "qualification_blockers": [
+    {
+      "gate_id": "DATASET_SPECIFIC_QUALIFICATION_AUTHORITY_AND_CONSUMER_USER_APPROVAL",
+      "status": "MISSING_EXTERNAL_AUTHORITY"
+    },
+    {
+      "gate_id": "OWNER_PROJECT_USE_AND_EXPOSURE_ATTESTATION",
+      "status": "MISSING_EXTERNAL_AUTHORITY"
+    },
+    {
+      "gate_id": "CHECKPOINT_SPECIFIC_EXACT_AND_NEAR_EXPOSURE_AUDIT",
+      "status": "UNKNOWN_NOT_ASSERTED"
+    },
+    {
+      "gate_id": "ASSET_LEVEL_QUALIFICATION_USE_RIGHTS_AND_RELEASE_SCOPE",
+      "status": "UNKNOWN_BLOCKED",
+      "private_derivative_use_is_qualification_use_grant": false,
+      "recommended_future_scope": "PRIVATE_CANONICAL_ONLY",
+      "recommended_future_scope_approved": false
+    },
+    {
+      "gate_id": "EXECUTABLE_BIOLOGICAL_SOURCE_GROUP_AUTHORITY",
+      "status": "NOT_CLOSED"
+    },
+    {
+      "gate_id": "REPLICATE_OR_VALID_STANDARD_ERROR",
+      "status": "NOT_CLOSED",
+      "public_replicate_count": 3,
+      "primary_label_standard_error": null
+    },
+    {
+      "gate_id": "ELIGIBLE_MULTI_CANDIDATE_POOLS",
+      "status": "UNKNOWN_NOT_ASSERTED",
+      "accepted_pair_count_establishes_at_least_three_candidate_pools": false
+    },
+    {
+      "gate_id": "A1_GROUP_SPLIT_NEAR_DUPLICATE_GRAPH_SALT_AND_ZERO_LEAKAGE",
+      "status": "NOT_RUN"
+    },
+    {
+      "gate_id": "PREFROZEN_GROUP_EFFECTIVE_N_POWER_AND_FULL_CI_WIDTH",
+      "status": "NOT_RUN"
+    },
+    {
+      "gate_id": "REQUIRED_QUALIFICATION_REPORT_FIELDS",
+      "status": "INCOMPLETE"
+    },
+    {
+      "gate_id": "V3_CANONICAL_ADMISSION",
+      "status": "BLOCKED"
+    },
+    {
+      "gate_id": "FINAL_CANONICAL_QUALIFIER_AND_ADJUDICATION",
+      "status": "NOT_RUN"
+    }
+  ],
+  "minimum_external_authority_requests": [
+    {
+      "request_id": "CHECKPOINT_SPECIFIC_EXPOSURE_AUTHORITY",
+      "required_scope": "EXACT_CHECKPOINT_SET_MODEL_REVISION_WEIGHTS_AND_EXACT_PLUS_NEAR_EXPOSURE_AUDIT"
+    },
+    {
+      "request_id": "ASSET_LEVEL_QUALIFICATION_USE_RIGHTS",
+      "required_scope": "QUALIFICATION_USE_AND_RELEASE_SCOPE"
+    },
+    {
+      "request_id": "PRIMARY_ENDPOINT_UNCERTAINTY_AUTHORITY",
+      "required_scope": "REQUIRED_IF_PUBLIC_REPLICATES_CANNOT_ESTABLISH_PRIMARY_LABEL_UNCERTAINTY"
+    },
+    {
+      "request_id": "USER_APPROVAL_FOR_DATASET_SPECIFIC_QUALIFICATION_AUTHORITY",
+      "required_scope": "GSE232572_SPECIFIC_AUTHORITY_AND_CONSUMER_APPROVAL"
+    }
+  ],
+  "required_qualification_report_fields": {
+    "available_registered_aggregate_fields": [
+      "nominal_rows"
+    ],
+    "accepted_pair_count_is_not_candidate_pool_eligibility": true,
+    "missing_or_not_qualification_grade": [
+      "distinct_candidates",
+      "biological_source_groups",
+      "gene_groups",
+      "study_groups",
+      "eligible_multi_candidate_pools",
+      "edit_count_strata",
+      "replicate_and_se_coverage",
+      "beneficial_and_noise_zone_balance",
+      "post_dedup_effective_n",
+      "foundation_exposure",
+      "license_and_redistribution_status",
+      "full_ci_width"
+    ]
+  },
+  "future_contribution_boundary": {
+    "maximum_if_fully_qualified": {
+      "ordinary": 1,
+      "a1": 1,
+      "true_a2": 0
+    },
+    "authorization_status": "NOT_AUTHORIZED",
+    "current_contribution": {
+      "ordinary": 0,
+      "a1": 0,
+      "true_a2": 0
+    }
+  },
+  "input_contract": {
+    "aggregate_only": true,
+    "allowed_authority_inputs_exactly": [
+      "SOLE_CURRENT_CONTRACT",
+      "DEC019_FROZEN_USER_AUTHORIZED_A1_QUALIFICATION_POLICY",
+      "CURRENT_A1_QUALIFICATION_AUTHORITY",
+      "CURRENT_DATA_ROLE_REGISTRY",
+      "CURRENT_SPLIT_REGISTRY",
+      "PUBLIC_AGGREGATE_ONLY_DEVELOPMENT_MATERIALIZATION_REPORT",
+      "REGISTERED_PUBLIC_LEDGER_FACTS"
+    ],
+    "row_records_allowed": false,
+    "sequence_values_allowed": false,
+    "effect_values_allowed": false,
+    "training_allowed": false,
+    "model_selection_allowed": false,
+    "split_execution_allowed": false,
+    "power_execution_allowed": false,
+    "canonical_materialization_allowed": false,
+    "qualifier_execution_allowed": false
+  },
+  "output_contract": {
+    "filename": "GSE232572_A1_QUALIFICATION_AUTHORITY_PREFLIGHT.json",
+    "single_public_aggregate_output_only": true,
+    "exclusive_new_output_directory_required": true,
+    "overall_decision": "BLOCKED_MISSING_EXTERNAL_AUTHORITY",
+    "terminal_status": "STOP_BEFORE_PRIVATE_ROW_ACCESS_AND_CANONICAL_MATERIALIZATION",
+    "qualified": false,
+    "canonical_record_count": 0,
+    "training_allowed": false,
+    "model_selection_allowed": false,
+    "next_phase_allowed": false
+  },
+  "claim_boundary": "This preflight verifies only registered aggregate development facts and identifies the exact missing qualification authority. Schema-valid development materialization is not qualification. It does not authorize row access, canonical admission, split or power execution, training, model selection, a next phase, or a scientific claim."
+}
