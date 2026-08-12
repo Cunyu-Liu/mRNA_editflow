@@ -7,13 +7,13 @@
   "decision_id": "V3-DEC-019",
   "implementation_binding": {
     "binding_scheme": "CONFIG_ONLY_POST_IMPLEMENTATION_BINDING_V1",
-    "status": "UNKNOWN_NOT_ASSERTED",
+    "status": "BOUND",
     "blocker_if_unbound": "CHECKPOINT_EXPOSURE_FAIL_RECORD_IMPLEMENTATION_BINDING_UNKNOWN_NOT_ASSERTED",
-    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "implementation_commit": "5de083e19b6090c045854900532f68247d8b59c6",
     "implementation_script_path": "scripts/route_a_v3/produce_gse200304_dec019_checkpoint_exposure_fail_current_protocol.py",
-    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_script_sha256": "29973bf92e82bb4ca60ac3895c59878961bd60aefef11f722c5575f27e6c605c",
     "implementation_test_path": "tests/route_a_v3/test_produce_gse200304_dec019_checkpoint_exposure_fail_current_protocol.py",
-    "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_test_sha256": "6348fbc31efbb01cefbc4bde4b87cc15345f6bdaa98265692f83ab5e5fe6fd49",
     "config_core_sha256": "bc1ad21127d5686c36a106d3119ccf7fd67fc92bcc71394378da83e81b5b47f4",
     "unknown_to_bound_scalar_paths": [
       "implementation_binding.status",
