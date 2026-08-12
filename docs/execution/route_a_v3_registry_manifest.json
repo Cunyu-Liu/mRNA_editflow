@@ -59,7 +59,7 @@
     {
       "path": "docs/execution/route_a_v3_a1_interim.yaml",
       "role": "A1_ACTIVE_INTERIM_RECORD",
-      "sha256": "7498c4fe6f1e63d2df9c9e2da08feff62e45c43647962d653875eb40ba2f868d"
+      "sha256": "19ecee23d267a82744e4a21d74b6eb6d32e6589525d90c137d1e34f3d9ce319d"
     },
     {
       "path": "docs/execution/route_a_v3_split_registry.yaml",
@@ -372,20 +372,35 @@
       "sha256": "9976a0c9650c0d8b5552bd2ed13c1fe850325828bab10dfff5092e7b8fc920ef"
     },
     {
+      "path": "configs/route_a_v3_gse232572_development_v3_materialization_v1.json",
+      "role": "GSE232572_DEVELOPMENT_V3_MATERIALIZATION_CONFIG",
+      "sha256": "b7b72f4ebc588a45a60debd910fbd669802e02f2a606d5acfab415c17ee6d4c3"
+    },
+    {
+      "path": "scripts/route_a_v3/materialize_gse232572_development_v3.py",
+      "role": "GSE232572_DEVELOPMENT_V3_MATERIALIZER",
+      "sha256": "b608844c3e5ca38037904a050c9312fc8ec2615d7b48d3126eceed31bec126a3"
+    },
+    {
+      "path": "tests/route_a_v3/test_materialize_gse232572_development_v3.py",
+      "role": "GSE232572_DEVELOPMENT_V3_MATERIALIZATION_FOCUSED_TEST",
+      "sha256": "2907e91da60d1ec58282e36ffb0149b69b54e3981fab9a6c9f0d49339a383ea5"
+    },
+    {
       "path": "tests/route_a_v3/test_a0_integrity_guards.py",
       "role": "A0_AUTHORITY_INTEGRITY_GUARD_TEST",
-      "sha256": "10379c502afa010dc8dd2b550fe7085f9240110de02c170f2f5963f766dc5ee8"
+      "sha256": "8bbe2de98b972c395e027b0561a0f3904b3fe2e64903b6df31a9abcfac529c8c"
     },
     {
       "path": "scripts/route_a_v3/validate_a0_bundle.py",
       "role": "A0_STATIC_AND_SEMANTIC_VALIDATOR",
-      "sha256": "4313db7f5d7651be5fda93dd70eed318354115985a0b19ba010dd5cb262061cd"
+      "sha256": "a690126c1945764b93f196c2e864934c0cf96002f5e323439a6b03775a53eb7c"
     }
   ],
   "initial_generated_at": "2026-08-10T10:10:05+08:00",
-  "generated_at": "2026-08-12T22:08:56+08:00",
-  "updated_at": "2026-08-12T22:08:56+08:00",
-  "manifest_status": "A1_GSE232572_PUBLIC_RECOVERY_AUDIT_LEDGER_REGISTERED_PENDING_EVT047",
+  "generated_at": "2026-08-12T23:55:01+08:00",
+  "updated_at": "2026-08-12T23:55:01+08:00",
+  "manifest_status": "A1_GSE232572_DEVELOPMENT_V3_MATERIALIZATION_LEDGER_REGISTERED_PENDING_EVT048",
   "schema_version": "1.0.0",
   "sealed_contact": false,
   "version": "3.0.0"

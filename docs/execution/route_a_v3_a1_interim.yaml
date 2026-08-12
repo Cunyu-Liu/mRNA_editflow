@@ -167,7 +167,7 @@ dec019_current_disposition:
     model_selection_allowed: false
     next_phase_authorized: false
     scientific_claim_status: NOT_ESTABLISHED
-  runtime_sync_status: PENDING_NO_EVT_047
+  runtime_sync_status: PENDING_NO_EVT_048
 
 artifact_lineage:
   protocol:
@@ -726,8 +726,103 @@ artifact_lineage:
       focused_test_sha256: 9976a0c9650c0d8b5552bd2ed13c1fe850325828bab10dfff5092e7b8fc920ef
     predecessor_runtime_event_id: A1-EVT-046
     expected_next_runtime_event_id: A1-EVT-047
-    runtime_sync_status: PENDING_NO_EVT_047
+    runtime_sync_status: SYNCED_EVT_047
     artifact_payload_read_count_for_ledger: 0
+  gse232572_development_v3_materialization_attempt_001_failure:
+    path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE232572/GSE232572_DEVELOPMENT_V3_MATERIALIZATION_20260812T233151P0800/GSE232572_DEVELOPMENT_V3_MATERIALIZATION_REPORT.json
+    bytes: 1415
+    sha256: 97367fc5cb84bf0b9d6d4bc90d23aacb29ca0cbe91b06b888abb31d54b317fa7
+    dataset_id: GSE232572
+    schema_version: "1.0.0"
+    artifact_type: GSE232572_DEVELOPMENT_V3_MATERIALIZATION_ATTEMPT_001_FAIL_CLOSED_EVIDENCE
+    status: STOP_BEFORE_DEVELOPMENT_V3_ROW_PRODUCTION
+    scientific_disposition: NOT_QUALIFIED
+    aggregate_only: true
+    failure_gate: RECOVERY_AUTHORITY
+    failure_code: MATERIALIZER_INPUTS_DIVERGE_FROM_RECOVERY_CONFIG
+    schema_valid_development_record_count: 0
+    canonical_record_count: 0
+    qualified: false
+    ordinary_study_contribution: 0
+    a1_study_contribution: 0
+    true_a2_study_contribution: 0
+    training_allowed: false
+    model_selection_allowed: false
+    next_phase_allowed: false
+    failed_attempt_preserved: true
+    historical_attempt_rewritten: false
+    superseded_for_current_execution_by_lineage_id: gse232572_development_v3_materialization_v1
+    producer_lineage:
+      implementation_i2_commit: 5619dc39622de7f97f63811d51a0e04bdf668e48
+      binding_b2_commit: 89db6313c6331e767ac5074170e7ff5b3cab8e3e
+      implementation_exact_changed_paths:
+        - scripts/route_a_v3/materialize_gse232572_development_v3.py
+        - tests/route_a_v3/test_materialize_gse232572_development_v3.py
+      binding_exact_changed_paths:
+        - configs/route_a_v3_gse232572_development_v3_materialization_v1.json
+      binding_diff_is_config_only: true
+    predecessor_runtime_event_id: A1-EVT-047
+    expected_next_runtime_event_id: A1-EVT-048
+    runtime_sync_status: PENDING_NO_EVT_048
+    artifact_payload_read_count_for_ledger: 0
+    private_jsonl_read_count_for_ledger: 0
+    private_jsonl_registered_artifact_count: 0
+  gse232572_development_v3_materialization_v1:
+    path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE232572/GSE232572_DEVELOPMENT_V3_MATERIALIZATION_20260812T234243P0800/GSE232572_DEVELOPMENT_V3_MATERIALIZATION_REPORT.json
+    bytes: 3601
+    sha256: 007a70b9b43b71cbc21b2614473126e53ab760df824ac9d95cb14304cc647ef3
+    dataset_id: GSE232572
+    schema_version: "1.0.0"
+    artifact_type: GSE232572_DEVELOPMENT_V3_MATERIALIZATION_REPORT_AGGREGATE_ONLY
+    status: DEVELOPMENT_V3_MATERIALIZED_NOT_QUALIFIED
+    scientific_disposition: SCHEMA_VALID_DEVELOPMENT_ONLY_NOT_CANONICALLY_QUALIFIED
+    aggregate_only: true
+    published_universe_row_count: 11929
+    schema_valid_development_record_count: 8068
+    rejected_published_row_count: 3861
+    rejection_reason_counts:
+      NO_UNIQUE_SEQUENCE_PAIR: 3404
+      AMBIGUOUS_DISTINCT_SEQUENCE_PAIRS: 457
+    canonical_materialization_allowed: false
+    canonical_record_count: 0
+    qualified: false
+    ordinary_study_contribution: 0
+    a1_study_contribution: 0
+    true_a2_study_contribution: 0
+    public_redistribution_status: UNKNOWN_NOT_ASSERTED_SUBMITTER_IP_CAVEAT
+    row_license_status: UNKNOWN_BLOCKED
+    redistribution_allowed: false
+    training_allowed: false
+    model_selection_allowed: false
+    next_phase_allowed: false
+    failed_attempt_lineage_id: gse232572_development_v3_materialization_attempt_001_failure
+    failed_attempt_preserved: true
+    historical_attempt_rewritten: false
+    producer_lineage:
+      implementation_i3_commit: e923d7b992293ca7bb5889bf3c0b3bc6ce750e03
+      binding_b3_commit: b982275c25b7158a5a543a5e0c9fd23728fa0961
+      implementation_exact_changed_paths:
+        - configs/route_a_v3_gse232572_development_v3_materialization_v1.json
+        - scripts/route_a_v3/materialize_gse232572_development_v3.py
+        - tests/route_a_v3/test_materialize_gse232572_development_v3.py
+      binding_exact_changed_paths:
+        - configs/route_a_v3_gse232572_development_v3_materialization_v1.json
+      binding_diff_is_config_only: true
+      config_path: configs/route_a_v3_gse232572_development_v3_materialization_v1.json
+      config_bytes: 9484
+      config_sha256: b7b72f4ebc588a45a60debd910fbd669802e02f2a606d5acfab415c17ee6d4c3
+      script_path: scripts/route_a_v3/materialize_gse232572_development_v3.py
+      script_bytes: 55522
+      script_sha256: b608844c3e5ca38037904a050c9312fc8ec2615d7b48d3126eceed31bec126a3
+      focused_test_path: tests/route_a_v3/test_materialize_gse232572_development_v3.py
+      focused_test_bytes: 31585
+      focused_test_sha256: 2907e91da60d1ec58282e36ffb0149b69b54e3981fab9a6c9f0d49339a383ea5
+    predecessor_runtime_event_id: A1-EVT-047
+    expected_next_runtime_event_id: A1-EVT-048
+    runtime_sync_status: PENDING_NO_EVT_048
+    artifact_payload_read_count_for_ledger: 0
+    private_jsonl_read_count_for_ledger: 0
+    private_jsonl_registered_artifact_count: 0
   gse145046_a2_audit_protocol:
     path: configs/route_a_v3_gse145046_a2_audit.json
     sha256: 666c9ee86033a05a006171df963fa3d96b68430d9a9d4e817789e255b28b300d
@@ -2076,7 +2171,39 @@ dataset_boundary_summary:
       changes_qualification_gate: false
       predecessor_runtime_event_id: A1-EVT-046
       expected_next_runtime_event_id: A1-EVT-047
-      runtime_sync_status: PENDING_NO_EVT_047
+      runtime_sync_status: SYNCED_EVT_047
+    development_v3_materialization:
+      failed_attempt_artifact_lineage_id: gse232572_development_v3_materialization_attempt_001_failure
+      current_artifact_lineage_id: gse232572_development_v3_materialization_v1
+      artifact_type: GSE232572_DEVELOPMENT_V3_MATERIALIZATION_REPORT_AGGREGATE_ONLY
+      status: DEVELOPMENT_V3_MATERIALIZED_NOT_QUALIFIED
+      scientific_disposition: SCHEMA_VALID_DEVELOPMENT_ONLY_NOT_CANONICALLY_QUALIFIED
+      failed_attempt_preserved: true
+      historical_attempt_rewritten: false
+      published_universe_row_count: 11929
+      schema_valid_development_record_count: 8068
+      rejected_published_row_count: 3861
+      rejection_reason_counts:
+        NO_UNIQUE_SEQUENCE_PAIR: 3404
+        AMBIGUOUS_DISTINCT_SEQUENCE_PAIRS: 457
+      canonical_materialization_allowed: false
+      canonical_record_count: 0
+      qualified: false
+      ordinary_study_contribution: 0
+      a1_study_contribution: 0
+      true_a2_study_contribution: 0
+      public_redistribution_status: UNKNOWN_NOT_ASSERTED_SUBMITTER_IP_CAVEAT
+      row_license_status: UNKNOWN_BLOCKED
+      redistribution_allowed: false
+      training_allowed: false
+      model_selection_allowed: false
+      next_phase_allowed: false
+      private_jsonl_read_count: 0
+      private_jsonl_registered_artifact_count: 0
+      changes_qualification_gate: false
+      predecessor_runtime_event_id: A1-EVT-047
+      expected_next_runtime_event_id: A1-EVT-048
+      runtime_sync_status: PENDING_NO_EVT_048
     qualified: false
     training_allowed: false
     model_selection_allowed: false
@@ -2412,6 +2539,10 @@ claim_boundaries:
   gse217518_stop_authorizes_row_level_production_training_model_selection_or_next_phase: false
   gse232572_public_recovery_audit_is_study_qualification: false
   gse232572_development_reconstruction_record_count_is_canonical_record_count: false
+  gse232572_development_v3_schema_valid_record_count_is_canonical_record_count: false
+  gse232572_development_v3_materialization_authorizes_training_model_selection_or_next_phase: false
+  gse232572_private_derivative_use_authorizes_public_redistribution: false
+  gse232572_private_jsonl_is_registered_public_artifact: false
   dec019_creates_global_replicate_or_standard_error_relaxation: false
   dec019_changes_gse149487_three_biological_replicates_and_route_a_se_gate: false
   dec019_allows_checkpoint_specific_exposure_or_rights_waiver: false
@@ -2523,10 +2654,16 @@ verification:
   gse217518_public_authority_preflight_dynamic_runtime_config_cycle_policy: PASS
   targeted_gse232572_post_recovery_ledger_tests:
     status: PASS
-    scope: ONE_AGGREGATE_AUDIT_REPORT_THREE_STATIC_PRODUCER_LEAVES_EVT046_SETTLED_EVT047_PENDING
+    scope: ONE_AGGREGATE_AUDIT_REPORT_THREE_STATIC_PRODUCER_LEAVES_EVT047_SETTLED
   gse232572_public_recovery_audit_artifact_registration: PASS
   gse232572_public_recovery_audit_three_static_leaf_registration: PASS
   gse232572_public_recovery_audit_dynamic_runtime_config_cycle_policy: PASS
+  targeted_gse232572_development_v3_materialization_ledger_tests:
+    status: PASS
+    scope: TWO_PUBLIC_AGGREGATE_REPORTS_THREE_STATIC_PRODUCER_LEAVES_EVT047_SETTLED_EVT048_PENDING
+  gse232572_development_v3_materialization_artifact_registration: PASS
+  gse232572_development_v3_materialization_three_static_leaf_registration: PASS
+  gse232572_development_v3_private_jsonl_excluded: PASS
   full_repository_tests:
     status: NOT_RUN
     reason: INTERIM_TARGETED_MODULE_SCOPE
@@ -2554,10 +2691,13 @@ verification:
   gse232572_post_recovery_ledger_independent_review:
     status: NOT_RUN
     reason: FOUR_FILE_APPEND_ONLY_LOW_TO_MEDIUM_RISK_BATCH_SELF_CHECKED_UNDER_GLOBAL_LIGHTWEIGHT_POLICY
+  gse232572_development_v3_materialization_ledger_independent_review:
+    status: NOT_RUN
+    reason: FOUR_FILE_APPEND_ONLY_LOW_TO_MEDIUM_RISK_BATCH_SELF_CHECKED_UNDER_GLOBAL_LIGHTWEIGHT_POLICY
 
 initial_generated_at: "2026-08-10T06:30:58+08:00"
-generated_at: "2026-08-12T22:08:55+08:00"
-updated_at: "2026-08-12T22:08:55+08:00"
+generated_at: "2026-08-12T23:55:00+08:00"
+updated_at: "2026-08-12T23:55:00+08:00"
 updated_for_decision_id: V3-DEC-019
 latest_authority_update_id: V3-DEC-019
-latest_evidence_update_id: GSE232572_PUBLIC_RECOVERY_AUDIT_V1
+latest_evidence_update_id: GSE232572_DEVELOPMENT_V3_MATERIALIZATION_V1

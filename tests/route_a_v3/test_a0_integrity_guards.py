@@ -2376,7 +2376,8 @@ def test_gse217518_public_authority_preflight_registration_is_closed(
     )
     assert validator.REGISTRY_MANIFEST_PATH not in manifest_paths
     assert manifest["manifest_status"] == (
-        "A1_GSE232572_PUBLIC_RECOVERY_AUDIT_LEDGER_REGISTERED_PENDING_EVT047"
+        "A1_GSE232572_DEVELOPMENT_V3_MATERIALIZATION_"
+        "LEDGER_REGISTERED_PENDING_EVT048"
     )
     assert (
         validator.validate_gse217518_public_authority_preflight_registration(
@@ -2440,7 +2441,7 @@ def test_gse217518_public_authority_preflight_registration_is_closed(
     assert gate["qualified_a2_dense_studies"] == 0
     assert gate["next_phase_authorized"] is False
     assert interim["dec019_current_disposition"]["runtime_sync_status"] == (
-        "PENDING_NO_EVT_047"
+        "PENDING_NO_EVT_048"
     )
     assert lineage[validator.GSE200304_CHECKPOINT_EXPOSURE_FAIL_LINEAGE_ID][
         "runtime_sync_status"
@@ -2563,7 +2564,7 @@ def test_gse232572_public_recovery_audit_registration_is_closed(
     assert record["next_phase_authorized"] is False
     assert record["predecessor_runtime_event_id"] == "A1-EVT-046"
     assert record["expected_next_runtime_event_id"] == "A1-EVT-047"
-    assert record["runtime_sync_status"] == "PENDING_NO_EVT_047"
+    assert record["runtime_sync_status"] == "SYNCED_EVT_047"
     assert "binding_commit" not in record["producer_lineage"]
     assert record["producer_lineage"]["config_inspected_predecessor_is_binding_commit"] is False
 
@@ -2578,9 +2579,10 @@ def test_gse232572_public_recovery_audit_registration_is_closed(
     assert interim["artifact_lineage"][
         validator.GSE217518_PUBLIC_AUTHORITY_PREFLIGHT_LINEAGE_ID
     ]["runtime_sync_status"] == "SYNCED_EVT_046"
-    assert interim["dec019_current_disposition"]["runtime_sync_status"] == "PENDING_NO_EVT_047"
-    assert ".private.jsonl" not in json.dumps(interim)
-    assert ".private.jsonl" not in json.dumps(manifest)
+    assert interim["dec019_current_disposition"]["runtime_sync_status"] == "PENDING_NO_EVT_048"
+    assert not any(
+        row["path"].endswith(".private.jsonl") for row in manifest["files"]
+    )
 
     static_root = tmp_path / "static_drift"
     static_manifest = _copy_manifest_bundle(validator, repo_root, static_root)
@@ -2637,6 +2639,223 @@ def test_gse232572_public_recovery_audit_registration_is_closed(
         tmp_path / "qualification_bypass",
         monkeypatch,
         forge_qualification,
+    )
+    assert "A1_INTERIM_LINEAGE" in codes
+    assert "A1_INTERIM_GSE232572" in codes
+
+
+def test_gse232572_development_v3_materialization_registration_is_closed(
+    validator,
+    repo_root,
+    tmp_path,
+    monkeypatch,
+):
+    manifest = validator._load_json(repo_root, validator.REGISTRY_MANIFEST_PATH)
+    manifest_paths = {row["path"] for row in manifest["files"]}
+    static_paths = set(
+        validator.GSE232572_DEVELOPMENT_V3_MATERIALIZATION_STATIC_LEAF_SHA256
+    )
+
+    assert len(static_paths) == 3
+    assert static_paths.issubset(manifest_paths)
+    assert (
+        validator.GSE232572_DEVELOPMENT_V3_MATERIALIZATION_RUNTIME_CONFIG_PATH
+        not in manifest_paths
+    )
+    assert validator.REGISTRY_MANIFEST_PATH not in manifest_paths
+    assert not any(path.endswith(".private.jsonl") for path in manifest_paths)
+    assert (
+        validator.validate_gse232572_development_v3_materialization_registration(
+            repo_root
+        )
+        == []
+    )
+
+    interim = validator._load_yaml(repo_root, validator.A1_INTERIM_PATH)
+    lineage = interim["artifact_lineage"]
+    failure = lineage[
+        validator.GSE232572_DEVELOPMENT_V3_MATERIALIZATION_FAILURE_LINEAGE_ID
+    ]
+    success = lineage[validator.GSE232572_DEVELOPMENT_V3_MATERIALIZATION_LINEAGE_ID]
+
+    assert failure["artifact_type"] == (
+        "GSE232572_DEVELOPMENT_V3_MATERIALIZATION_"
+        "ATTEMPT_001_FAIL_CLOSED_EVIDENCE"
+    )
+    assert failure["status"] == "STOP_BEFORE_DEVELOPMENT_V3_ROW_PRODUCTION"
+    assert failure["failure_gate"] == "RECOVERY_AUTHORITY"
+    assert failure["failure_code"] == (
+        "MATERIALIZER_INPUTS_DIVERGE_FROM_RECOVERY_CONFIG"
+    )
+    assert failure["schema_valid_development_record_count"] == 0
+    assert failure["canonical_record_count"] == 0
+    assert failure["qualified"] is False
+    assert failure["failed_attempt_preserved"] is True
+    assert failure["historical_attempt_rewritten"] is False
+    assert failure["superseded_for_current_execution_by_lineage_id"] == (
+        validator.GSE232572_DEVELOPMENT_V3_MATERIALIZATION_LINEAGE_ID
+    )
+    assert failure["producer_lineage"]["implementation_i2_commit"] == (
+        "5619dc39622de7f97f63811d51a0e04bdf668e48"
+    )
+    assert failure["producer_lineage"]["binding_b2_commit"] == (
+        "89db6313c6331e767ac5074170e7ff5b3cab8e3e"
+    )
+    assert failure["producer_lineage"]["implementation_exact_changed_paths"] == [
+        validator.GSE232572_DEVELOPMENT_V3_MATERIALIZATION_SCRIPT_PATH,
+        validator.GSE232572_DEVELOPMENT_V3_MATERIALIZATION_TEST_PATH,
+    ]
+    assert "script_sha256" not in failure["producer_lineage"]
+    assert "config_sha256" not in failure["producer_lineage"]
+
+    assert success["artifact_type"] == (
+        "GSE232572_DEVELOPMENT_V3_MATERIALIZATION_REPORT_AGGREGATE_ONLY"
+    )
+    assert success["status"] == "DEVELOPMENT_V3_MATERIALIZED_NOT_QUALIFIED"
+    assert success["scientific_disposition"] == (
+        "SCHEMA_VALID_DEVELOPMENT_ONLY_NOT_CANONICALLY_QUALIFIED"
+    )
+    assert success["published_universe_row_count"] == 11929
+    assert success["schema_valid_development_record_count"] == 8068
+    assert success["rejected_published_row_count"] == 3861
+    assert success["rejection_reason_counts"] == {
+        "NO_UNIQUE_SEQUENCE_PAIR": 3404,
+        "AMBIGUOUS_DISTINCT_SEQUENCE_PAIRS": 457,
+    }
+    assert success["canonical_materialization_allowed"] is False
+    assert success["canonical_record_count"] == 0
+    assert success["qualified"] is False
+    assert success["ordinary_study_contribution"] == 0
+    assert success["a1_study_contribution"] == 0
+    assert success["true_a2_study_contribution"] == 0
+    assert success["public_redistribution_status"] == (
+        "UNKNOWN_NOT_ASSERTED_SUBMITTER_IP_CAVEAT"
+    )
+    assert success["row_license_status"] == "UNKNOWN_BLOCKED"
+    assert success["redistribution_allowed"] is False
+    assert success["training_allowed"] is False
+    assert success["model_selection_allowed"] is False
+    assert success["next_phase_allowed"] is False
+    assert success["failed_attempt_lineage_id"] == (
+        validator.GSE232572_DEVELOPMENT_V3_MATERIALIZATION_FAILURE_LINEAGE_ID
+    )
+    assert success["producer_lineage"]["implementation_i3_commit"] == (
+        "e923d7b992293ca7bb5889bf3c0b3bc6ce750e03"
+    )
+    assert success["producer_lineage"]["binding_b3_commit"] == (
+        "b982275c25b7158a5a543a5e0c9fd23728fa0961"
+    )
+    assert success["producer_lineage"]["config_bytes"] == 9484
+    assert success["producer_lineage"]["script_bytes"] == 55522
+    assert success["producer_lineage"]["focused_test_bytes"] == 31585
+    assert failure["runtime_sync_status"] == "PENDING_NO_EVT_048"
+    assert success["runtime_sync_status"] == "PENDING_NO_EVT_048"
+    assert failure["private_jsonl_read_count_for_ledger"] == 0
+    assert failure["private_jsonl_registered_artifact_count"] == 0
+    assert success["private_jsonl_read_count_for_ledger"] == 0
+    assert success["private_jsonl_registered_artifact_count"] == 0
+
+    summary = interim["dataset_boundary_summary"]["GSE232572"]
+    materialization = summary["development_v3_materialization"]
+    assert materialization["failed_attempt_artifact_lineage_id"] == (
+        validator.GSE232572_DEVELOPMENT_V3_MATERIALIZATION_FAILURE_LINEAGE_ID
+    )
+    assert materialization["current_artifact_lineage_id"] == (
+        validator.GSE232572_DEVELOPMENT_V3_MATERIALIZATION_LINEAGE_ID
+    )
+    assert materialization["schema_valid_development_record_count"] == 8068
+    assert materialization["canonical_record_count"] == 0
+    assert materialization["changes_qualification_gate"] is False
+    assert materialization["runtime_sync_status"] == "PENDING_NO_EVT_048"
+    assert summary["qualified"] is False
+    assert summary["training_allowed"] is False
+    assert summary["model_selection_allowed"] is False
+    assert summary["next_phase_authorized"] is False
+    assert lineage[validator.GSE232572_PUBLIC_RECOVERY_AUDIT_LINEAGE_ID][
+        "runtime_sync_status"
+    ] == "SYNCED_EVT_047"
+    assert interim["dec019_current_disposition"]["runtime_sync_status"] == (
+        "PENDING_NO_EVT_048"
+    )
+
+    static_root = tmp_path / "materializer_static_drift"
+    static_manifest = _copy_manifest_bundle(validator, repo_root, static_root)
+    relative = validator.GSE232572_DEVELOPMENT_V3_MATERIALIZATION_SCRIPT_PATH
+    static_leaf = static_root / relative
+    static_leaf.write_bytes(static_leaf.read_bytes() + b"\n# synchronized drift\n")
+    next(row for row in static_manifest["files"] if row["path"] == relative)[
+        "sha256"
+    ] = validator.sha256_file(static_leaf)
+    (static_root / validator.REGISTRY_MANIFEST_PATH).write_text(
+        json.dumps(static_manifest, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    codes = _codes(
+        validator.validate_gse232572_development_v3_materialization_registration(
+            static_root
+        )
+    )
+    assert "GSE232572_DEVELOPMENT_V3_MATERIALIZATION_STATIC_LEAF" in codes
+
+    dynamic_root = tmp_path / "materializer_dynamic_cycle"
+    dynamic_manifest = _copy_manifest_bundle(validator, repo_root, dynamic_root)
+    dynamic_manifest["files"].append(
+        {
+            "path": validator.GSE232572_DEVELOPMENT_V3_MATERIALIZATION_RUNTIME_CONFIG_PATH,
+            "role": "FORBIDDEN_DYNAMIC_EVT048_CONFIG",
+            "sha256": "0" * 64,
+        }
+    )
+    (dynamic_root / validator.REGISTRY_MANIFEST_PATH).write_text(
+        json.dumps(dynamic_manifest, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    codes = _codes(
+        validator.validate_gse232572_development_v3_materialization_registration(
+            dynamic_root
+        )
+    )
+    assert "GSE232572_DEVELOPMENT_V3_MATERIALIZATION_MANIFEST_DAG" in codes
+
+    private_root = tmp_path / "private_jsonl_registration"
+    private_manifest = _copy_manifest_bundle(validator, repo_root, private_root)
+    private_manifest["files"].append(
+        {
+            "path": "reports/development_v3_records.private.jsonl",
+            "role": "FORBIDDEN_PRIVATE_ROW_ARTIFACT",
+            "sha256": "0" * 64,
+        }
+    )
+    (private_root / validator.REGISTRY_MANIFEST_PATH).write_text(
+        json.dumps(private_manifest, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    codes = _codes(
+        validator.validate_gse232572_development_v3_materialization_registration(
+            private_root
+        )
+    )
+    assert "GSE232572_DEVELOPMENT_V3_PRIVATE_JSONL_EXCLUDED" in codes
+
+    def forge_canonical_unlock(document):
+        node = document["artifact_lineage"][
+            validator.GSE232572_DEVELOPMENT_V3_MATERIALIZATION_LINEAGE_ID
+        ]
+        node["canonical_record_count"] = 8068
+        node["qualified"] = True
+        node["redistribution_allowed"] = True
+        node["training_allowed"] = True
+        boundary = document["dataset_boundary_summary"]["GSE232572"]
+        boundary["development_v3_materialization"]["canonical_record_count"] = 8068
+        boundary["development_v3_materialization"]["qualified"] = True
+        boundary["qualified"] = True
+
+    codes = _validate_rehashed_interim_bypass(
+        validator,
+        repo_root,
+        tmp_path / "materialization_unlock",
+        monkeypatch,
+        forge_canonical_unlock,
     )
     assert "A1_INTERIM_LINEAGE" in codes
     assert "A1_INTERIM_GSE232572" in codes
@@ -3141,10 +3360,10 @@ def test_registry_manifest_detects_every_listed_hash_drift(validator, tmp_path, 
         "contract_sha256": goal_hash,
         "active_amendment_decision_ids": validator.ACTIVE_AMENDMENT_DECISION_IDS,
         "base_commit": "bbb71dcba6f1e1c9cb75a8a6653f1a4fe4a6ca0c",
-        "manifest_status": "A1_DEC019_GSE200304_GROUP_SPLIT_POWER_D6_ONE_BLOCKER_LEDGER_REGISTERED_PENDING_EVT044",
+        "manifest_status": "A1_GSE232572_DEVELOPMENT_V3_MATERIALIZATION_LEDGER_REGISTERED_PENDING_EVT048",
         "initial_generated_at": "2026-08-10T10:10:05+08:00",
-        "generated_at": validator.GSE200304_DEC019_ONE_BLOCKER_MANIFEST_AT,
-        "updated_at": validator.GSE200304_DEC019_ONE_BLOCKER_MANIFEST_AT,
+        "generated_at": validator.GSE232572_DEVELOPMENT_V3_MATERIALIZATION_MANIFEST_AT,
+        "updated_at": validator.GSE232572_DEVELOPMENT_V3_MATERIALIZATION_MANIFEST_AT,
         "sealed_contact": False,
         "files": entries,
     }
