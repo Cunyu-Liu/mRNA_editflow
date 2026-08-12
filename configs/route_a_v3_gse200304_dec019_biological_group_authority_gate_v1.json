@@ -6,13 +6,24 @@
   "dataset_id": "GSE200304",
   "decision_id": "V3-DEC-019",
   "implementation_binding": {
-    "status": "BOUND",
-    "implementation_commit": "d0085574c4da8f4d83987b1a9e8018bfdb8131d3",
-    "implementation_script_sha256": "1927b15f94236dcbd0b395b6ebc42690296bd5e782c37a0d407d34b9f4590733",
-    "implementation_test_sha256": "4b9652f2749dcf8cb74b3ce39fb297ef876154a71fcad6e64a1eb3e9719619f7",
+    "status": "UNKNOWN_NOT_ASSERTED",
+    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
     "consumer_upgrade_binding_commit": "4262eb87595ea8481ade0c6ba16bf7507539dcb8",
     "consumer_upgrade_config_sha256": "ee92d7702b0778af86d049b2726ccb6686e3b84cc56847e879a7d132d62b7ad4",
     "consumer_upgrade_script_sha256": "0d59a415116f6a88ea8c3434cc9d63c0b54fda9b512089621e669d227f522251"
+  },
+  "repository_authority": {
+    "implementation_base_commit": "d725fd5ae4fd8d66f339c3d400210f02ead69bc4",
+    "implementation_commit_exact_changed_paths": [
+      "configs/route_a_v3_gse200304_dec019_biological_group_authority_gate_v1.json",
+      "scripts/route_a_v3/produce_gse200304_dec019_biological_group_authority_gate.py",
+      "tests/route_a_v3/test_produce_gse200304_dec019_biological_group_authority_gate.py"
+    ],
+    "binding_commit_exact_changed_paths": [
+      "configs/route_a_v3_gse200304_dec019_biological_group_authority_gate_v1.json"
+    ]
   },
   "source_authority": {
     "data_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE200304/GSE200304_PUBLIC_ASSETS_20260810T143731P0800",
@@ -53,12 +64,15 @@
       "AUTHOR_LOCUS_TOKEN",
       "CANONICAL_DECIMAL_POSITION",
       "REFERENCE_ALLELE",
-      "ORIENTATION_NORMALIZED_WT201"
+      "ORIENTATION_NORMALIZED_WT201_DIGEST"
     ],
+    "normalized_wt201_digest_algorithm": "SHA256",
     "alternate_allele_in_group_key": false,
     "expected_canonical_locator_count": 6547,
     "observed_group_count_must_be_hardcoded": false,
-    "mapping_commitment_algorithm": "ROUTE_A_V3_GSE200304_GROUP_MAPPING_COMMITMENT_V1"
+    "mapping_commitment_algorithm": "DOMAIN_SEPARATED_LENGTH_PREFIXED_SHA256_LEAF_SORT_ODD_DUPLICATE",
+    "mapping_commitment_leaf_domain": "route-a-v3/gse200304/dec019/biological-group-mapping-leaf/v1",
+    "mapping_commitment_parent_domain": "route-a-v3/gse200304/dec019/biological-group-mapping-parent/v1"
   },
   "consumer_contract": {
     "config_path": "configs/route_a_v3_gse200304_dec019_reported_endpoint_a1_activation_v3.json",

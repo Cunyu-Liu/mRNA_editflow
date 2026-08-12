@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-import copy
+import hashlib
 import importlib.util
 import io
 import json
+import struct
 import zipfile
 from collections import Counter
 from pathlib import Path
@@ -29,6 +30,17 @@ CONFIGURED_PUBLIC_ASSETS = Path(
 )
 PUBLIC_ASSETS = CONFIGURED_PUBLIC_ASSETS if CONFIGURED_PUBLIC_ASSETS.is_dir() else (
     WORK / "gse200304_public_assets_20260810T143731P0800"
+)
+UPSTREAM_GROUP_KEY_FIELDS = (
+    "GSE200304_STUDY",
+    "GSE200302_SUBSERIES",
+    "AUTHOR_LOCUS_TOKEN",
+    "CANONICAL_DECIMAL_POSITION",
+    "REFERENCE_ALLELE",
+    "ORIENTATION_NORMALIZED_WT201_DIGEST",
+)
+UPSTREAM_MAPPING_COMMITMENT = (
+    "DOMAIN_SEPARATED_LENGTH_PREFIXED_SHA256_LEAF_SORT_ODD_DUPLICATE"
 )
 
 
@@ -74,7 +86,7 @@ def _consumer_config() -> dict[str, Any]:
     return config
 
 
-def _authority_payloads(config: dict[str, Any]) -> tuple[bytes, bytes]:
+def _authority_payloads() -> tuple[bytes, bytes]:
     upstream = {
         "schema_version": "route_a_v3_gse200304_upstream_authority_viability.v1",
         "dataset_id": PRODUCER.DATASET_ID,
@@ -85,9 +97,8 @@ def _authority_payloads(config: dict[str, Any]) -> tuple[bytes, bytes]:
         },
         "biological_group_authority": {
             "alternate_allele_in_group_key": False,
-            "repair_route_group_key_fields": copy.deepcopy(
-                config["mapping_contract"]["group_key_fields"]
-            ),
+            "repair_route_group_key_fields": list(UPSTREAM_GROUP_KEY_FIELDS),
+            "repair_route_commitment": UPSTREAM_MAPPING_COMMITMENT,
         },
     }
     lineage = {
@@ -101,6 +112,35 @@ def _authority_payloads(config: dict[str, Any]) -> tuple[bytes, bytes]:
         },
     }
     return PRODUCER.json_bytes(upstream), PRODUCER.json_bytes(lineage)
+
+
+def _expected_mapping_root(mapping: dict[str, Any]) -> str:
+    def domain_hash(domain: bytes, parts: tuple[bytes, ...]) -> bytes:
+        framed = b"".join(
+            struct.pack(">Q", len(part)) + part for part in (domain, *parts)
+        )
+        return hashlib.sha256(framed).digest()
+
+    leaf_domain = mapping["mapping_commitment_leaf_domain"].encode("ascii")
+    parent_domain = mapping["mapping_commitment_parent_domain"].encode("ascii")
+    level = sorted(
+        domain_hash(
+            leaf_domain,
+            (
+                entry["canonical_locator"].encode("ascii"),
+                entry["biological_group_id"].encode("ascii"),
+            ),
+        )
+        for entry in mapping["mappings"]
+    )
+    while len(level) > 1:
+        if len(level) % 2:
+            level.append(level[-1])
+        level = [
+            domain_hash(parent_domain, (level[index], level[index + 1]))
+            for index in range(0, len(level), 2)
+        ]
+    return level[0].hex()
 
 
 def _minimal_s3_xlsx() -> bytes:
@@ -217,11 +257,30 @@ def test_standard_library_s3_parser_preserves_finite_totalpoly_membership() -> N
     assert "openpyxl" not in SCRIPT.read_text(encoding="utf-8")
 
 
+def test_upstream_fixture_independently_freezes_group_key_and_commitment() -> None:
+    upstream_payload, lineage_payload = _authority_payloads()
+    upstream = json.loads(upstream_payload)
+    prior = upstream["biological_group_authority"]
+    assert prior["repair_route_group_key_fields"] == list(UPSTREAM_GROUP_KEY_FIELDS)
+    assert prior["repair_route_commitment"] == UPSTREAM_MAPPING_COMMITMENT
+
+    drifted_config = _producer_config()
+    drifted_config["mapping_contract"]["group_key_fields"][-1] = (
+        "ORIENTATION_NORMALIZED_WT201"
+    )
+    with pytest.raises(PRODUCER.ProducerError, match="group key differs"):
+        PRODUCER.validate_authorities(
+            upstream,
+            json.loads(lineage_payload),
+            drifted_config,
+        )
+
+
 @pytest.fixture(scope="module")
 def real_result(tmp_path_factory: pytest.TempPathFactory) -> dict[str, Any]:
     root = tmp_path_factory.mktemp("g200-group-real")
     config = _producer_config()
-    upstream, lineage = _authority_payloads(config)
+    upstream, lineage = _authority_payloads()
     upstream_path = root / "upstream.json"
     lineage_path = root / "lineage.json"
     upstream_path.write_bytes(upstream)
@@ -268,10 +327,19 @@ def test_real_data_observed_counts_and_mapping_commitment(real_result: dict[str,
         "FORWARD": 3336,
         "REVERSE_COMPLEMENT": 3211,
     }
+    assert mapping["mapping_commitment_algorithm"] == UPSTREAM_MAPPING_COMMITMENT
+    assert mapping["mapping_commitment_leaf_domain"] == (
+        real_result["config"]["mapping_contract"]["mapping_commitment_leaf_domain"]
+    )
+    assert mapping["mapping_commitment_parent_domain"] == (
+        real_result["config"]["mapping_contract"]["mapping_commitment_parent_domain"]
+    )
     mapping_payload = real_result["payloads"][
         real_result["config"]["output_contract"]["private_mapping_basename"]
     ]
-    commitment = PRODUCER.sha256(mapping_payload)
+    commitment = _expected_mapping_root(mapping)
+    assert mapping["mapping_commitment_sha256"] == commitment
+    assert commitment != PRODUCER.sha256(mapping_payload)
     assert audit["mapping_commitment_sha256"] == commitment
     assert real_result["gate"]["provenance"][PRODUCER.MAPPING_COMMITMENT_KEY] == commitment
 
@@ -309,8 +377,15 @@ def test_alternate_allele_is_excluded_from_group_key() -> None:
         },
     }
     mapping, audit = PRODUCER.build_mapping(pairs, set(pairs), config)
+    normalized_digest = PRODUCER.sha256(wt.encode("ascii"))
+    expected_group_id = PRODUCER.biological_group_id(
+        "GSE200304", "GSE200302", "chr1", "42", "C", normalized_digest
+    )
     assert mapping["record_count"] == 2
     assert mapping["group_count"] == 1
+    assert {item["biological_group_id"] for item in mapping["mappings"]} == {
+        expected_group_id
+    }
     assert audit["group_size_histogram"] == {"2": 1}
     assert audit["alternate_allele_in_group_key"] is False
 

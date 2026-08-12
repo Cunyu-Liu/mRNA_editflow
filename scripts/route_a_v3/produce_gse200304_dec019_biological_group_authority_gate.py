@@ -41,6 +41,33 @@ PUBLICATION_COMMIT_SCHEMA = (
 JOIN_KEY_DOMAIN = b"route-a-v3/gse200304/dec019/join-key/v1"
 LOCATOR_DOMAIN = b"route-a-v3/gse200304/dec019/canonical-row-locator/v1"
 GROUP_ID_DOMAIN = b"route-a-v3/gse200304/dec019/biological-group-id/v1"
+IMPLEMENTATION_BASE_COMMIT = "d725fd5ae4fd8d66f339c3d400210f02ead69bc4"
+CONFIG_REPO_PATH = (
+    "configs/route_a_v3_gse200304_dec019_biological_group_authority_gate_v1.json"
+)
+SCRIPT_REPO_PATH = (
+    "scripts/route_a_v3/produce_gse200304_dec019_biological_group_authority_gate.py"
+)
+TEST_REPO_PATH = (
+    "tests/route_a_v3/test_produce_gse200304_dec019_biological_group_authority_gate.py"
+)
+EXPECTED_GROUP_KEY_FIELDS = [
+    "GSE200304_STUDY",
+    "GSE200302_SUBSERIES",
+    "AUTHOR_LOCUS_TOKEN",
+    "CANONICAL_DECIMAL_POSITION",
+    "REFERENCE_ALLELE",
+    "ORIENTATION_NORMALIZED_WT201_DIGEST",
+]
+MAPPING_COMMITMENT_ALGORITHM = (
+    "DOMAIN_SEPARATED_LENGTH_PREFIXED_SHA256_LEAF_SORT_ODD_DUPLICATE"
+)
+MAPPING_COMMITMENT_LEAF_DOMAIN = (
+    "route-a-v3/gse200304/dec019/biological-group-mapping-leaf/v1"
+)
+MAPPING_COMMITMENT_PARENT_DOMAIN = (
+    "route-a-v3/gse200304/dec019/biological-group-mapping-parent/v1"
+)
 HEX40 = re.compile(r"^[0-9a-f]{40}$")
 HEX64 = re.compile(r"^[0-9a-f]{64}$")
 DNA201 = re.compile(r"^[ACGT]{201}$")
@@ -101,14 +128,22 @@ def reverse_complement(sequence: str) -> str:
     return sequence.translate(str.maketrans("ACGT", "TGCA"))[::-1]
 
 
+def normalized_wt201_digest(normalized_wt201: str) -> str:
+    if DNA201.fullmatch(normalized_wt201) is None:
+        raise ProducerError("orientation-normalized WT201 is not exact DNA201")
+    return sha256(normalized_wt201.encode("ascii"))
+
+
 def biological_group_id(
     study: str,
     subseries: str,
     chromosome: str,
     position: str,
     reference: str,
-    normalized_wt201: str,
+    normalized_wt201_sha256: str,
 ) -> str:
+    if HEX64.fullmatch(normalized_wt201_sha256) is None:
+        raise ProducerError("orientation-normalized WT201 digest is not HEX64")
     return _domain_hash(
         GROUP_ID_DOMAIN,
         (
@@ -117,9 +152,38 @@ def biological_group_id(
             chromosome.encode("utf-8"),
             position.encode("ascii"),
             reference.encode("ascii"),
-            normalized_wt201.encode("ascii"),
+            normalized_wt201_sha256.encode("ascii"),
         ),
     ).hex()
+
+
+def biological_group_mapping_commitment(
+    entries: Sequence[Mapping[str, str]],
+    config: Mapping[str, Any],
+) -> str:
+    mapping = config["mapping_contract"]
+    leaf_domain = mapping["mapping_commitment_leaf_domain"].encode("ascii")
+    parent_domain = mapping["mapping_commitment_parent_domain"].encode("ascii")
+    level = sorted(
+        _domain_hash(
+            leaf_domain,
+            (
+                entry["canonical_locator"].encode("ascii"),
+                entry["biological_group_id"].encode("ascii"),
+            ),
+        )
+        for entry in entries
+    )
+    if not level:
+        raise ProducerError("biological-group mapping is empty")
+    while len(level) > 1:
+        if len(level) % 2:
+            level.append(level[-1])
+        level = [
+            _domain_hash(parent_domain, (level[index], level[index + 1]))
+            for index in range(0, len(level), 2)
+        ]
+    return level[0].hex()
 
 
 def _bound_source(path: Path, spec: Mapping[str, Any], *, label: str) -> bytes:
@@ -149,6 +213,19 @@ def validate_static_config(config: Mapping[str, Any]) -> None:
     mapping = config["mapping_contract"]
     if mapping["study_id"] != DATASET_ID or mapping["subseries_id"] != "GSE200302":
         raise ProducerError("study/subseries authority differs")
+    if mapping["group_key_fields"] != EXPECTED_GROUP_KEY_FIELDS:
+        raise ProducerError("biological-group key fields differ")
+    if mapping["normalized_wt201_digest_algorithm"] != "SHA256":
+        raise ProducerError("orientation-normalized WT201 digest algorithm differs")
+    if mapping["mapping_commitment_algorithm"] != MAPPING_COMMITMENT_ALGORITHM:
+        raise ProducerError("mapping commitment algorithm differs")
+    if mapping["mapping_commitment_leaf_domain"] != MAPPING_COMMITMENT_LEAF_DOMAIN:
+        raise ProducerError("mapping commitment leaf domain differs")
+    if (
+        mapping["mapping_commitment_parent_domain"]
+        != MAPPING_COMMITMENT_PARENT_DOMAIN
+    ):
+        raise ProducerError("mapping commitment parent domain differs")
     if mapping["alternate_allele_in_group_key"] is not False:
         raise ProducerError("alternate allele entered the group key")
     if mapping["observed_group_count_must_be_hardcoded"] is not False:
@@ -161,6 +238,17 @@ def validate_static_config(config: Mapping[str, Any]) -> None:
         MAPPING_COMMITMENT_KEY
     ):
         raise ProducerError("consumer commitment key differs")
+    repository = config["repository_authority"]
+    if repository["implementation_base_commit"] != IMPLEMENTATION_BASE_COMMIT:
+        raise ProducerError("producer implementation base differs")
+    if repository["implementation_commit_exact_changed_paths"] != [
+        CONFIG_REPO_PATH,
+        SCRIPT_REPO_PATH,
+        TEST_REPO_PATH,
+    ]:
+        raise ProducerError("producer implementation path set differs")
+    if repository["binding_commit_exact_changed_paths"] != [CONFIG_REPO_PATH]:
+        raise ProducerError("producer binding path set differs")
     output = config["output_contract"]
     data_member_names = [
         output["private_mapping_basename"],
@@ -229,6 +317,10 @@ def validate_authorities(
         "group_key_fields"
     ]:
         raise ProducerError("upstream repair-route group key differs")
+    if prior.get("repair_route_commitment") != config["mapping_contract"][
+        "mapping_commitment_algorithm"
+    ]:
+        raise ProducerError("upstream repair-route mapping commitment differs")
     facts = lineage.get("facts")
     if (
         lineage.get("status") != PASS
@@ -471,13 +563,14 @@ def build_mapping(
             orientations["REVERSE_COMPLEMENT"] += 1
         else:
             raise ProducerError("WT201 cannot be oriented to the author reference allele")
+        normalized_digest = normalized_wt201_digest(normalized)
         group_id = biological_group_id(
             study,
             subseries,
             pair["chromosome"],
             pair["position"],
             reference,
-            normalized,
+            normalized_digest,
         )
         locator = canonical_locator(pair_id)
         if locator in seen_locators:
@@ -491,6 +584,8 @@ def build_mapping(
     multi = [members for members in groups.values() if len(members) > 1]
     if any(len({alternate for alternate, _locator in members}) != len(members) for members in multi):
         raise ProducerError("a multi-candidate group does not preserve distinct alternates")
+    sorted_entries = sorted(entries, key=lambda item: item["canonical_locator"])
+    mapping_commitment = biological_group_mapping_commitment(sorted_entries, config)
     private_mapping = {
         "schema_version": "route_a_v3_gse200304_private_biological_group_mapping.v1",
         "dataset_id": DATASET_ID,
@@ -498,11 +593,17 @@ def build_mapping(
         "mapping_commitment_algorithm": config["mapping_contract"][
             "mapping_commitment_algorithm"
         ],
+        "mapping_commitment_leaf_domain": config["mapping_contract"][
+            "mapping_commitment_leaf_domain"
+        ],
+        "mapping_commitment_parent_domain": config["mapping_contract"][
+            "mapping_commitment_parent_domain"
+        ],
+        "mapping_commitment_sha256": mapping_commitment,
         "record_count": len(entries),
         "group_count": len(groups),
-        "mappings": sorted(entries, key=lambda item: item["canonical_locator"]),
+        "mappings": sorted_entries,
     }
-    mapping_payload = json_bytes(private_mapping)
     audit = {
         "schema_version": "route_a_v3_gse200304_biological_group_mapping_audit.v1",
         "record_type": "GSE200304_AUTHOR_ANCHORED_BIOLOGICAL_GROUP_MAPPING_AUDIT_V1",
@@ -521,7 +622,7 @@ def build_mapping(
         "multi_candidate_groups_have_distinct_alternates": True,
         "orientation_counts": dict(sorted(orientations.items())),
         "alternate_allele_in_group_key": False,
-        "mapping_commitment_sha256": sha256(mapping_payload),
+        "mapping_commitment_sha256": mapping_commitment,
         "raw_id_sequence_gene_effect_persisted": False,
     }
     return private_mapping, audit
@@ -636,7 +737,7 @@ def produce(
     consumer_module = _load_module(consumer_script_path)
     gate = build_gate_record(
         config,
-        sha256(private_payload),
+        private_mapping["mapping_commitment_sha256"],
         consumer_config,
     )
     gate_payload = json_bytes(gate)
