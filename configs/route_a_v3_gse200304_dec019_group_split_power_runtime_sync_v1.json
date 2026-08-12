@@ -1,0 +1,228 @@
+{
+  "schema_version": "route_a_v3_gse200304_dec019_group_split_power_runtime_sync.v1",
+  "protocol_id": "ROUTE_A_V3_GSE200304_DEC019_GROUP_SPLIT_POWER_PASS_AND_D6_RUNTIME_SYNC_V1",
+  "contract_id": "mrna_xeditflow_route_a_v3",
+  "phase_id": "A1",
+  "dataset_id": "GSE200304",
+  "decision_id": "V3-DEC-019",
+  "event_id": "A1-EVT-044",
+  "event_name": "GSE200304_DEC019_GROUP_SPLIT_POWER_PASS_AND_D6_ONE_BLOCKER_ADJUDICATION_SYNCED_QUALIFICATION_GATE_UNCHANGED",
+  "implementation_binding": {
+    "status": "UNKNOWN_NOT_ASSERTED",
+    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "implementation_script_path": "scripts/route_a_v3/gse200304_dec019_group_split_power_runtime_sync.py",
+    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_test_path": "tests/route_a_v3/test_gse200304_dec019_group_split_power_runtime_sync.py",
+    "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
+    "compiled_core_sha256": "5da1afbf26778e508b650fba7fc456a3f05525ca4a0a561b1881d013d46b1f6a"
+  },
+  "repository_authority": {
+    "production_repo_root": "/home/cunyuliu/mrna_editflow_goal/worktrees/routea_v3_a1_20260810",
+    "branch": "routea-v3-a1-20260810",
+    "implementation_exact_changed_paths": [
+      "configs/route_a_v3_gse200304_dec019_group_split_power_runtime_sync_v1.json",
+      "scripts/route_a_v3/gse200304_dec019_group_split_power_runtime_sync.py",
+      "tests/route_a_v3/test_gse200304_dec019_group_split_power_runtime_sync.py"
+    ],
+    "binding_exact_changed_paths": [
+      "configs/route_a_v3_gse200304_dec019_group_split_power_runtime_sync_v1.json"
+    ],
+    "predecessor_ledger": {
+      "status": "BOUND",
+      "commit": "5a40b78c9a2cbf1a2a5b19726cab5dc950beef30",
+      "integration_id": "GSE200304_DEC019_GROUP_SPLIT_POWER_PASS_AND_D6_ONE_BLOCKER_LEDGER_V1",
+      "frozen_blobs": [
+        {
+          "path": "docs/execution/route_a_v3_a1_interim.yaml",
+          "sha256": "d92fd5383fd37a7ad6f75a431885ee15c339821420015b3fcdb91c7a86f26614"
+        },
+        {
+          "path": "docs/execution/route_a_v3_registry_manifest.json",
+          "sha256": "fe448325d2310bd9fbdf30d03ba449521625a8e82f2e85ede51c40f054e75bd2"
+        },
+        {
+          "path": "scripts/route_a_v3/validate_a0_bundle.py",
+          "sha256": "c240a650f71c25f8147cdbeaad906df1876ca6cb0049c2edf5d10393d62531f5"
+        },
+        {
+          "path": "tests/route_a_v3/test_a0_integrity_guards.py",
+          "sha256": "0208aec0147731564047b56ea9e00cb6825e575ece77a1ae51655c5401b7d0eb"
+        }
+      ]
+    }
+  },
+  "registered_artifacts": [
+    {
+      "absolute_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE200304_DEC019_BIOLOGICAL_GROUP_AUTHORITY_GATE_V1/GSE200304_DEC019_BIOLOGICAL_GROUP_MAPPING_PRIVATE.json",
+      "artifact_type": "PRIVATE_BIOLOGICAL_GROUP_MAPPING",
+      "bytes": 1336202,
+      "sha256": "33abf14479671e264c3fbd8bae58e350d132d5c8f1cfdc65d766b1668b8f0229"
+    },
+    {
+      "absolute_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE200304_DEC019_BIOLOGICAL_GROUP_AUTHORITY_GATE_V1/GSE200304_DEC019_BIOLOGICAL_GROUP_MAPPING_AUDIT.json",
+      "artifact_type": "BIOLOGICAL_GROUP_MAPPING_AUDIT",
+      "bytes": 1232,
+      "sha256": "dc1cb607ba28e1cc34cd76bf6543c4394887302c745597033ef6dc7f338eb177"
+    },
+    {
+      "absolute_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE200304_DEC019_BIOLOGICAL_GROUP_AUTHORITY_GATE_V1/GSE200304_DEC019_BIOLOGICAL_GROUP_AUTHORITY_GATE.json",
+      "artifact_type": "ACCEPTED_AGGREGATE_GATE_EVIDENCE",
+      "bytes": 4013,
+      "sha256": "bbcc1f93f47190c7070755d8e892c07d43959985fee32f4f4ec3911fe6f7993b"
+    },
+    {
+      "absolute_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE200304_DEC019_BIOLOGICAL_GROUP_AUTHORITY_GATE_V1/PUBLICATION_COMMIT.json",
+      "artifact_type": "PUBLICATION_COMMIT_MARKER",
+      "bytes": 693,
+      "sha256": "7ba6701c48fe0c6abf9be2cee22b58c95aeaf594123fe89db6d6339af07b156f"
+    },
+    {
+      "absolute_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE200304_DEC019_OUTCOME_BLIND_SPLIT_LEAKAGE_GATE_V1/GSE200304_DEC019_SPLIT_ASSIGNMENT_PRIVATE.json",
+      "artifact_type": "PRIVATE_SPLIT_ASSIGNMENT",
+      "bytes": 2094877,
+      "sha256": "1e330df0fb34fcf860003389f380efae3969522dbf65755ee0d8081a50b3dbca"
+    },
+    {
+      "absolute_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE200304_DEC019_OUTCOME_BLIND_SPLIT_LEAKAGE_GATE_V1/GSE200304_DEC019_SPLIT_LEAKAGE_AUDIT.json",
+      "artifact_type": "SPLIT_LEAKAGE_AUDIT",
+      "bytes": 5566,
+      "sha256": "32780f6192a03133804b2b5518c2cd2df9a3e005cee0ba7c9cd6f9c10b0a9584"
+    },
+    {
+      "absolute_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE200304_DEC019_OUTCOME_BLIND_SPLIT_LEAKAGE_GATE_V1/GSE200304_DEC019_OUTCOME_BLIND_SPLIT_LEAKAGE_GATE.json",
+      "artifact_type": "ACCEPTED_AGGREGATE_GATE_EVIDENCE",
+      "bytes": 4120,
+      "sha256": "8db5cb2d12c775be561c04049a381d6541502bd2fefeda12a981b65be240adf7"
+    },
+    {
+      "absolute_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE200304_DEC019_OUTCOME_BLIND_SPLIT_LEAKAGE_GATE_V1/PUBLICATION_COMMIT.json",
+      "artifact_type": "PUBLICATION_COMMIT_MARKER",
+      "bytes": 664,
+      "sha256": "e0de4928b9127c58d5c90fa09a05d92afb379cf7ee9ff31ece1158042b208caa"
+    },
+    {
+      "absolute_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE200304_DEC019_PREFROZEN_POWER_PRECISION_GATE_V1/GSE200304_DEC019_PREFROZEN_POWER_PRECISION_AUDIT.json",
+      "artifact_type": "PREFROZEN_POWER_PRECISION_PLANNING_AUDIT",
+      "bytes": 1782,
+      "sha256": "874321a1a044e0f151c6c081482524758115e8bd9d6f03807ac685cee5e365ed"
+    },
+    {
+      "absolute_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE200304_DEC019_PREFROZEN_POWER_PRECISION_GATE_V1/GSE200304_DEC019_PREFROZEN_POWER_PRECISION_GATE.json",
+      "artifact_type": "ACCEPTED_AGGREGATE_GATE_EVIDENCE",
+      "bytes": 4535,
+      "sha256": "2432e1dfae92639e92060510aa2d9a413664d9b2d78f3655781d8e6bb8d27811"
+    },
+    {
+      "absolute_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_DEC019_REPORTED_ENDPOINT_A1_ADJUDICATION_V3_GROUP_SPLIT_POWER_PASS_D6/ADJUDICATION_REPORT.json",
+      "artifact_type": "ADJUDICATION_REPORT",
+      "bytes": 2230,
+      "sha256": "966a12e3ac44587bd6f4949d022fdc4b7de5e9cef4fd777f7348382a5a41ff73"
+    },
+    {
+      "absolute_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_DEC019_REPORTED_ENDPOINT_A1_ADJUDICATION_V3_GROUP_SPLIT_POWER_PASS_D6/INPUT_EVIDENCE_AUDIT.json",
+      "artifact_type": "INPUT_EVIDENCE_AUDIT",
+      "bytes": 2974,
+      "sha256": "3ce0496b5c49fa0ca82c0b0af66b7ce18de3939a7f56b7cd77a03f295604f1fe"
+    },
+    {
+      "absolute_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_DEC019_REPORTED_ENDPOINT_A1_ADJUDICATION_V3_GROUP_SPLIT_POWER_PASS_D6/SHA256SUMS",
+      "artifact_type": "SHA256SUMS",
+      "bytes": 183,
+      "sha256": "9b6f9f1e9042a28d9af267e2af33d2c1991898c7afca824542d9491b540ebc7f"
+    },
+    {
+      "absolute_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_DEC019_REPORTED_ENDPOINT_A1_ADJUDICATION_V3_GROUP_SPLIT_POWER_PASS_D6/PUBLICATION_COMMIT.json",
+      "artifact_type": "PUBLICATION_COMMIT_MARKER",
+      "bytes": 1055,
+      "sha256": "c96530cf37ff0eed803adf24bfde6e6db0058ddf8264c63acf1ff95700a32ca4"
+    }
+  ],
+  "runtime": {
+    "run_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5",
+    "allowed_prepared_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/staging/runtime_sync/A1",
+    "predecessor_event_id": "A1-EVT-043",
+    "predecessor_event_count": 43,
+    "successor_event_id": "A1-EVT-044",
+    "successor_event_count": 44,
+    "predecessor_manifest_output_count": 163,
+    "successor_manifest_output_count": 181,
+    "predecessor_mutables": {
+      "STATUS.json": {
+        "bytes": 25768,
+        "sha256": "f8dbdbb6721b674aaf909e0ce99855bf318a6986dd969432343ce656f1d50f37",
+        "snapshot_name": "STATUS_PRE_GSE200304_DEC019_GROUP_SPLIT_POWER_RUNTIME_SYNC_V1.json"
+      },
+      "RUN_MANIFEST.json": {
+        "bytes": 66861,
+        "sha256": "6a8c4a02ea46f6872ace31922b42aa18b961ededa7bb916a7cc231050ca1737c",
+        "snapshot_name": "RUN_MANIFEST_PRE_GSE200304_DEC019_GROUP_SPLIT_POWER_RUNTIME_SYNC_V1.json"
+      },
+      "EVENT_LOG.jsonl": {
+        "bytes": 64098,
+        "sha256": "da6a8ce0c9cf32d1d9886c8b4a2cd1693268c2a24bd5b8106612fdc285802c17",
+        "snapshot_name": "EVENT_LOG_PRE_GSE200304_DEC019_GROUP_SPLIT_POWER_RUNTIME_SYNC_V1.jsonl"
+      }
+    },
+    "predecessor_tail": {
+      "event_id": "A1-EVT-043",
+      "decision_id": "V3-DEC-019",
+      "bytes": 2801,
+      "sha256": "eda234fa591cce782761a5eb1b3b93578eeadf2467efd6ebfb5663a105a59aa6"
+    },
+    "sync_name": "A1_GSE200304_DEC019_GROUP_SPLIT_POWER_PASS_AND_D6_RUNTIME_SYNC_V1.json",
+    "output_delta_count": 18,
+    "immutable_publish_order": [
+      "STATUS_PRE_GSE200304_DEC019_GROUP_SPLIT_POWER_RUNTIME_SYNC_V1.json",
+      "RUN_MANIFEST_PRE_GSE200304_DEC019_GROUP_SPLIT_POWER_RUNTIME_SYNC_V1.json",
+      "EVENT_LOG_PRE_GSE200304_DEC019_GROUP_SPLIT_POWER_RUNTIME_SYNC_V1.jsonl",
+      "A1_GSE200304_DEC019_GROUP_SPLIT_POWER_PASS_AND_D6_RUNTIME_SYNC_V1.json"
+    ],
+    "mutable_publish_order": [
+      "STATUS.json",
+      "RUN_MANIFEST.json",
+      "EVENT_LOG.jsonl"
+    ]
+  },
+  "successor_scientific_state": {
+    "input_status_counts": {
+      "PASS": 7,
+      "BLOCKED": 0,
+      "UNKNOWN_NOT_ASSERTED": 1,
+      "NOT_RUN": 0
+    },
+    "unresolved_blockers": [
+      "CHECKPOINT_SPECIFIC_EXPOSURE_NOT_PASS"
+    ],
+    "ordinary_study_contribution": 0,
+    "a1_study_contribution": 0,
+    "true_a2_study_contribution": 0,
+    "canonical_intervention_record_count": 0,
+    "canonical_materialization_allowed": false,
+    "qualified": false,
+    "training_started": false,
+    "training_allowed": false,
+    "training_authorized": false,
+    "model_selection_allowed": false,
+    "next_phase_authorized": false,
+    "scientific_claim_status": "NOT_ESTABLISHED"
+  },
+  "access_boundary": {
+    "registered_artifact_count": 14,
+    "registered_artifact_metadata_validation_count": 14,
+    "registered_artifact_body_parse_count": 0,
+    "private_mapping_or_assignment_content_inspected": false,
+    "canonical_materialization_count": 0,
+    "training_run_count": 0,
+    "model_selection_run_count": 0,
+    "restricted_or_sealed_path_accessed": false,
+    "gse246381_contact": false
+  },
+  "publication_policy": {
+    "registered_artifacts_remain_in_place": true,
+    "predecessor_snapshots_are_immutable_runtime_outputs": true,
+    "sync_record_is_immutable_runtime_output": true,
+    "mutables_commit_after_all_immutables": true,
+    "event_is_last_commit": true,
+    "supported_recovery": "EXACT_PUBLICATION_PREFIX_ONLY"
+  }
+}
