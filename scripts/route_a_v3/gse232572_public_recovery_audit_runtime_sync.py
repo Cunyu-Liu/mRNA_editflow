@@ -7,10 +7,10 @@ parsing the JSON body. The only other immutable outputs are the three
 predecessor snapshots and one sync record.  Mutable runtime files commit in the
 order STATUS, RUN_MANIFEST, EVENT_LOG, with EVENT_LOG as the commit point.
 
-The staging candidate leaves the L commit/four blob hashes and the four
-implementation-binding scalars UNKNOWN_NOT_ASSERTED. Every entry point fails
-closed until L is frozen, I is its direct exact3 child, and config-only B is the
-direct child of I. Production then proves L -> I -> B, clean
+The frozen I1 candidate is the direct exact3 child of L and leaves the four
+implementation-binding scalars UNKNOWN_NOT_ASSERTED.  This append-only I2
+changes only the publisher and its focused test.  Config-only B2 then binds I2.
+Production proves L -> frozen exact3 I1 -> exact2 I2 -> config-only B2, clean
 HEAD/upstream/origin equality, and frozen blobs before report, prepared-output,
 or runtime I/O.
 """
@@ -38,6 +38,13 @@ MUTABLE_NAMES = ("STATUS.json", "RUN_MANIFEST.json", "EVENT_LOG.jsonl")
 SCRIPT_REPO_PATH = "scripts/route_a_v3/gse232572_public_recovery_audit_runtime_sync.py"
 TEST_REPO_PATH = "tests/route_a_v3/test_gse232572_public_recovery_audit_runtime_sync.py"
 CONFIG_REPO_PATH = "configs/route_a_v3_gse232572_public_recovery_audit_runtime_sync_v1.json"
+FROZEN_I1_COMMIT = "c1b607a70333421d85e90658e56f21160d695f25"
+FROZEN_I1_BLOB_SHA256 = {
+    CONFIG_REPO_PATH: "dc1762a9f094b985135fda02966ee5a85fa26098f2664a6d571eafd290b757fc",
+    SCRIPT_REPO_PATH: "bfe8b2ad399968aa4550df842d8d3125deb05e2cfa651dd29759d95a2b39e077",
+    TEST_REPO_PATH: "02b51d1c4e75c76ca0f6f1473618289f4346b0ae78e34228977998fd9d9b426a",
+}
+I2_EXACT_CHANGED_PATHS = [SCRIPT_REPO_PATH, TEST_REPO_PATH]
 PRODUCTION_CONFIG_PATH = Path(__file__).resolve().parents[2] / CONFIG_REPO_PATH
 PRODUCTION_REPO_ROOT = Path(
     "/home/cunyuliu/mrna_editflow_goal/worktrees/routea_v3_a1_20260810"
@@ -694,7 +701,7 @@ def load_bound_config(config_path: Path = PRODUCTION_CONFIG_PATH) -> dict[str, A
     return load_config(config_path, require_bound=True)
 
 
-def expected_unknown_i_config(bound_config: dict[str, Any]) -> dict[str, Any]:
+def expected_unknown_i2_config(bound_config: dict[str, Any]) -> dict[str, Any]:
     expected = copy.deepcopy(bound_config)
     for key in (
         "status",
@@ -755,7 +762,7 @@ def _read_repo_file(repo_root: Path, path: str) -> bytes:
 def audit_production_repository_authority(
     config: dict[str, Any], config_payload: bytes
 ) -> dict[str, Any]:
-    """Prove the exact pushed, clean L -> exact3 I -> config-only B chain."""
+    """Prove the pushed, clean L -> frozen I1 -> exact2 I2 -> B2 chain."""
 
     validate_bound_config(config)
     authority = config["repository_authority"]
@@ -763,7 +770,7 @@ def audit_production_repository_authority(
     ledger = authority["predecessor_ledger"]
     repo_root = Path(authority["production_repo_root"])
     branch = authority["branch"]
-    implementation_commit = binding["implementation_commit"]
+    implementation_i2_commit = binding["implementation_commit"]
     ledger_commit = ledger["commit"]
 
     head = _run_git(repo_root, "rev-parse", "HEAD").decode("utf-8").strip()
@@ -788,23 +795,32 @@ def audit_production_repository_authority(
     ) != b"":
         raise AuthorityError("production worktree or index is dirty")
 
-    binding_parent = _run_git(repo_root, "rev-parse", f"{head}^").decode(
+    binding_b2_parent = _run_git(repo_root, "rev-parse", f"{head}^").decode(
         "utf-8"
     ).strip()
-    implementation_parent = _run_git(
-        repo_root, "rev-parse", f"{implementation_commit}^"
+    implementation_i2_parent = _run_git(
+        repo_root, "rev-parse", f"{implementation_i2_commit}^"
     ).decode("utf-8").strip()
-    _expect(binding_parent, implementation_commit, label="B parent/I")
-    _expect(implementation_parent, ledger_commit, label="I parent/L")
+    frozen_i1_parent = _run_git(
+        repo_root, "rev-parse", f"{FROZEN_I1_COMMIT}^"
+    ).decode("utf-8").strip()
+    _expect(binding_b2_parent, implementation_i2_commit, label="B2 parent/I2")
+    _expect(implementation_i2_parent, FROZEN_I1_COMMIT, label="I2 parent/I1")
+    _expect(frozen_i1_parent, ledger_commit, label="I1 parent/L")
     _expect(
         _changed_paths(repo_root, head),
         sorted(authority["binding_exact_changed_paths"]),
-        label="B exact config-only paths",
+        label="B2 exact config-only paths",
     )
     _expect(
-        _changed_paths(repo_root, implementation_commit),
+        _changed_paths(repo_root, implementation_i2_commit),
+        sorted(I2_EXACT_CHANGED_PATHS),
+        label="I2 exact script/test paths",
+    )
+    _expect(
+        _changed_paths(repo_root, FROZEN_I1_COMMIT),
         sorted(authority["implementation_exact_changed_paths"]),
-        label="I exact config/script/test paths",
+        label="I1 exact config/script/test paths",
     )
     _expect(
         _changed_paths(repo_root, ledger_commit),
@@ -822,12 +838,22 @@ def audit_production_repository_authority(
         if sha256(_read_repo_file(repo_root, path)) != digest:
             raise AuthorityError(f"worktree frozen ledger blob drift: {path}")
 
-    i_config = load_json(
-        _git_blob(repo_root, implementation_commit, CONFIG_REPO_PATH),
-        label="implementation I config",
-    )
-    if not _typed_equal(i_config, expected_unknown_i_config(config)):
-        raise AuthorityError("I config is not the exact four-scalar UNKNOWN form")
+    frozen_i1_payloads = {
+        path: _git_blob(repo_root, FROZEN_I1_COMMIT, path)
+        for path in (CONFIG_REPO_PATH, SCRIPT_REPO_PATH, TEST_REPO_PATH)
+    }
+    for path, digest in FROZEN_I1_BLOB_SHA256.items():
+        if sha256(frozen_i1_payloads[path]) != digest:
+            raise AuthorityError(f"frozen I1 blob drift: {path}")
+
+    expected_unknown_i2_payload = json_bytes(expected_unknown_i2_config(config))
+    if frozen_i1_payloads[CONFIG_REPO_PATH] != expected_unknown_i2_payload:
+        raise AuthorityError("frozen I1 config is not the exact four-scalar UNKNOWN form")
+    if (
+        _git_blob(repo_root, implementation_i2_commit, CONFIG_REPO_PATH)
+        != frozen_i1_payloads[CONFIG_REPO_PATH]
+    ):
+        raise AuthorityError("I2 config differs from the frozen I1 config")
 
     if _git_blob(repo_root, head, CONFIG_REPO_PATH) != config_payload:
         raise AuthorityError("B config Git blob differs from the supplied production config")
@@ -839,8 +865,8 @@ def audit_production_repository_authority(
         (TEST_REPO_PATH, binding["implementation_test_sha256"]),
     ):
         for commit, label in (
-            (implementation_commit, "I"),
-            (head, "B"),
+            (implementation_i2_commit, "I2"),
+            (head, "B2"),
         ):
             if sha256(_git_blob(repo_root, commit, path)) != digest:
                 raise AuthorityError(f"{label} implementation blob drift: {path}")
@@ -852,10 +878,11 @@ def audit_production_repository_authority(
         _expect(core, compiled_core_sha256(config), label="production compiled core")
 
     return {
-        "status": "PASS_EXACT_L_TO_I_TO_CONFIG_ONLY_B",
+        "status": "PASS_EXACT_L_TO_FROZEN_I1_TO_EXACT2_I2_TO_CONFIG_ONLY_B2",
         "ledger_commit": ledger_commit,
-        "implementation_i_commit": implementation_commit,
-        "binding_b_commit": head,
+        "frozen_i1_commit": FROZEN_I1_COMMIT,
+        "implementation_i2_commit": implementation_i2_commit,
+        "binding_b2_commit": head,
         "head_commit": head,
         "upstream_head_commit": upstream_head,
         "origin_branch_head_commit": origin_head,
