@@ -1,0 +1,161 @@
+{
+  "schema_version": "route_a_v3_gse149487_public_asset_acquisition.v1",
+  "protocol_id": "GSE149487_PUBLIC_ASSET_ACQUISITION_V1",
+  "protocol_status": "ACQUISITION_ONLY_STOPPED_WITH_PUBLIC_EVIDENCE_BLOCKER",
+  "contract_id": "mrna_xeditflow_route_a_v3",
+  "phase_id": "A1",
+  "dataset_id": "GSE149487",
+  "dataset_alias": "PLUMAGE",
+  "implementation_binding": {
+    "binding_scheme": "CONFIG_ONLY_POST_IMPLEMENTATION_BINDING_V1",
+    "status": "UNKNOWN_NOT_ASSERTED",
+    "base_commit": "d87631b16501072b45bef3016bdbaf00c87cc59f",
+    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "implementation_script_path": "scripts/route_a_v3/acquire_gse149487_public_assets.py",
+    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_test_path": "tests/route_a_v3/test_acquire_gse149487_public_assets.py",
+    "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_changed_paths": [
+      "configs/route_a_v3_gse149487_public_asset_acquisition_v1.json",
+      "scripts/route_a_v3/acquire_gse149487_public_assets.py",
+      "tests/route_a_v3/test_acquire_gse149487_public_assets.py"
+    ],
+    "binding_commit_allowed_changed_paths": [
+      "configs/route_a_v3_gse149487_public_asset_acquisition_v1.json"
+    ],
+    "unknown_to_bound_scalar_paths": [
+      "implementation_binding.status",
+      "implementation_binding.implementation_commit",
+      "implementation_binding.implementation_script_sha256",
+      "implementation_binding.implementation_test_sha256"
+    ],
+    "activation_rule": "The implementation commit I must be the direct child of base_commit and change exactly the config, producer, and focused test. The binding commit B must be the direct child of I and change only this config, replacing the four UNKNOWN_NOT_ASSERTED scalar values. Acquisition stops before metadata-authority access, output creation, or network access until B is valid."
+  },
+  "metadata_authorities": {
+    "repository_root_rule": "PROTOCOL_PATH_PARENT_PARENT",
+    "asset_manifest": {
+      "path": "configs/route_a_v3_gse149487_asset_manifest_v2.json",
+      "bytes": 15458,
+      "sha256": "7105125e686f3bc6e99152b1cd86230aa6225d1a86cad1f8d7968aa99675a878"
+    },
+    "external_evidence_roots": {
+      "path": "configs/route_a_v3_gse149487_external_evidence_roots_v1.json",
+      "bytes": 14255,
+      "sha256": "d25a978c4603e180ca20534f3ba8b78c321e21c01fdf94c88b9ab65a0ed7ed8b"
+    },
+    "a1_qualification": {
+      "path": "configs/route_a_v3_gse149487_a1_qualification.json",
+      "bytes": 15146,
+      "sha256": "893ed3b1eea194472b2ae3b5a975dc29c37c2a970e940420ef0e2e455780f04f"
+    },
+    "historical_r4_effective_asset_manifest": {
+      "path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_GSE149487_PLUMAGE_FULL_QUAL_20260810T131156P0800_a859166_R4/ASSET_MANIFEST_EFFECTIVE.json",
+      "bytes": 18355,
+      "sha256": "f035494964b48a29440306164ca467674aaf76adac8f8c6b526da14ffa71c2de",
+      "reuse_policy": "FROZEN_AGGREGATE_EXACT21_ACQUISITION_AUTHORITY_ONLY",
+      "payload_reopen_allowed": false
+    }
+  },
+  "asset_contract": {
+    "asset_specification_source": "HISTORICAL_R4_ASSET_MANIFEST_EFFECTIVE_ONLY",
+    "expected_asset_count": 21,
+    "expected_geo_raw_count": 18,
+    "expected_supplement_count": 3,
+    "expected_total_payload_bytes": 70032274,
+    "required_asset_fields": [
+      "asset_id",
+      "asset_kind",
+      "filename",
+      "bytes",
+      "sha256",
+      "source_uri"
+    ],
+    "per_asset_exact_bytes_required": true,
+    "per_asset_exact_sha256_required": true,
+    "payload_parse_allowed": false,
+    "row_sequence_effect_read_allowed": false,
+    "qualifier_execution_allowed": false,
+    "model_download_allowed": false,
+    "scientific_processing_allowed": false
+  },
+  "download_policy": {
+    "network_protocol": "HTTPS_ONLY",
+    "source_uri_must_equal_frozen_r4_value": true,
+    "request_timeout_seconds": 120,
+    "stream_chunk_bytes": 1048576,
+    "transport_retries_per_execution": 0,
+    "partial_suffix": ".part",
+    "failed_partial_retained": true,
+    "completed_asset_overwrite_allowed": false
+  },
+  "output_contract": {
+    "base_directory": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE149487",
+    "subdirectory_basename_regex": "^GSE149487_PUBLIC_ASSETS_[A-Za-z0-9][A-Za-z0-9._-]{7,95}$",
+    "first_execution_requires_nonexistent_subdirectory": true,
+    "report_filename": "GSE149487_PUBLIC_ASSET_ACQUISITION_V1.json",
+    "single_aggregate_report_only": true,
+    "sha256sums_file_written": false,
+    "terminal_marker_written": false
+  },
+  "confirmed_public_evidence": {
+    "historical_r4_exact21_integrity": {
+      "status": "CONFIRMED",
+      "all_input_hashes_verified": true,
+      "asset_count": 21,
+      "geo_raw_count": 18,
+      "supplement_count": 3
+    },
+    "license_and_redistribution": {
+      "paper_and_moesm3_moesm8_license": "CC_BY_4_0_CONFIRMED_FOR_PAPER_AND_PAPER_SUPPLEMENTS_ONLY",
+      "geo_raw_18": "PRIVATE_CANONICAL_LOCATOR_HASH_USE_ONLY_NO_DATA_SPECIFIC_REDISTRIBUTION_GRANT",
+      "lim6c_github_blob": "NO_EXPLICIT_LICENSE_CONFIRMED"
+    },
+    "paper_jats_method_surface": {
+      "status": "CONFIRMED_METHOD_SURFACE_ONLY",
+      "original_cpm_minimum_inclusive": 0.5,
+      "test_sidedness": "TWO_SIDED",
+      "test_family": "MANN_WHITNEY_U",
+      "reported_r_call": "wilcox.test",
+      "multiple_testing_adjustment": "FDR",
+      "significance_rule": "FDR_LT_0.1"
+    }
+  },
+  "unknown_not_asserted": {
+    "paper_native_exact_multiple_testing_family": "UNKNOWN_NOT_ASSERTED",
+    "published_190_vs_unique_pair_180_adjudication": "UNKNOWN_NOT_ASSERTED",
+    "long_read_description_to_barcode_public_authority": "UNKNOWN_NOT_ASSERTED",
+    "long_read_mapping_pre_outcome_timing": "UNKNOWN_NOT_ASSERTED",
+    "checkpoint_specific_sequence_near_duplicate_and_label_exposure": "UNKNOWN_NOT_ASSERTED"
+  },
+  "retained_blockers": [
+    "CHECKPOINT_SPECIFIC_FOUNDATION_EXPOSURE_UNKNOWN_NOT_ASSERTED",
+    "GEO_RAW_DATA_SPECIFIC_REDISTRIBUTION_GRANT_ABSENT_PRIVATE_LOCATOR_HASH_ONLY",
+    "LIM6C_EXPLICIT_LICENSE_ABSENT",
+    "OUTCOME_BLIND_LONG_READ_DESCRIPTION_TO_BARCODE_AUTHORITY_UNKNOWN_NOT_ASSERTED",
+    "OUTCOME_BLIND_LONG_READ_MAPPING_PRE_OUTCOME_TIMING_UNKNOWN_NOT_ASSERTED",
+    "PAPER_NATIVE_METHOD_NOT_REPRODUCED",
+    "PAPER_NATIVE_EXACT_MULTIPLE_TESTING_FAMILY_UNKNOWN_NOT_ASSERTED",
+    "PREFROZEN_GROUP_POWER_OR_CI_GATE_FAILED",
+    "PUBLISHED_190_VS_UNIQUE_PAIR_180_ADJUDICATION_UNKNOWN_NOT_ASSERTED",
+    "RAW_KEY_UNCLASSIFIED_OUTCOME_BLIND_RECONCILIATION_NOT_ZERO",
+    "UNADJUDICATED_OR_AMBIGUOUS_MAPPING_ROWS_PRESENT",
+    "UNADJUDICATED_SEQUENCE_UNIVERSE_CLASSES_PRESENT"
+  ],
+  "terminal_truth": {
+    "status_after_exact21_acquisition": "STOPPED_WITH_PUBLIC_EVIDENCE_BLOCKER",
+    "asset_integrity_may_be_confirmed": true,
+    "ready_for_full_qualifier_input": false,
+    "ready_for_study_qualification": false,
+    "qualified": false,
+    "canonical_record_count": 0,
+    "ordinary_study_contribution": 0,
+    "a1_study_contribution": 0,
+    "true_a2_study_contribution": 0,
+    "training_allowed": false,
+    "model_selection_allowed": false,
+    "next_phase_authorized": false,
+    "qualifier_invoked": false,
+    "model_downloaded": false
+  },
+  "claim_boundary": "Successful execution proves only that the 18 GEO raw-count objects and three supplement workbooks were restored from the exact HTTPS locators frozen in the historical R4 aggregate and that each new file matched its frozen byte count and SHA-256. The payloads are not parsed. GEO objects remain private locator/hash-only material, Lim6c remains without an explicit license, the listed mapping, paper-method-family, 190-versus-180, power, and checkpoint-exposure blockers remain open, the full qualifier is not invoked, and no canonical record, qualification, training permission, model-selection permission, next-phase authorization, or scientific claim is produced."
+}
