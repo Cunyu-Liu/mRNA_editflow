@@ -8,12 +8,12 @@
   "event_id": "A1-EVT-044",
   "event_name": "GSE200304_DEC019_GROUP_SPLIT_POWER_PASS_AND_D6_ONE_BLOCKER_ADJUDICATION_SYNCED_QUALIFICATION_GATE_UNCHANGED",
   "implementation_binding": {
-    "status": "UNKNOWN_NOT_ASSERTED",
-    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "status": "BOUND",
+    "implementation_commit": "87f5c041ae072cd2730f779b2b7e745def836df3",
     "implementation_script_path": "scripts/route_a_v3/gse200304_dec019_group_split_power_runtime_sync.py",
-    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_script_sha256": "866414d7b5742f4b301a4d82b257377d7e54f5bb80d2aec73947cfd5e9f69f8b",
     "implementation_test_path": "tests/route_a_v3/test_gse200304_dec019_group_split_power_runtime_sync.py",
-    "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_test_sha256": "67c28160aa4463b73ecc87c30ce4541aabe5a5aa8216806ae41323c17c4bf88d",
     "compiled_core_sha256": "6b381a66c132b81abf44fba81f5e957311e909fa57374ea2c0c48f67742fd4c8"
   },
   "repository_authority": {
