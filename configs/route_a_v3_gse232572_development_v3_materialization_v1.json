@@ -8,12 +8,12 @@
   "study_id": "GSE232572",
   "implementation_binding": {
     "binding_scheme": "CONFIG_ONLY_POST_IMPLEMENTATION_BINDING_V1",
-    "status": "UNKNOWN_NOT_ASSERTED",
-    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "status": "BOUND",
+    "implementation_commit": "e923d7b992293ca7bb5889bf3c0b3bc6ce750e03",
     "implementation_script_path": "scripts/route_a_v3/materialize_gse232572_development_v3.py",
-    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_script_sha256": "b608844c3e5ca38037904a050c9312fc8ec2615d7b48d3126eceed31bec126a3",
     "implementation_test_path": "tests/route_a_v3/test_materialize_gse232572_development_v3.py",
-    "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_test_sha256": "2907e91da60d1ec58282e36ffb0149b69b54e3981fab9a6c9f0d49339a383ea5",
     "unknown_to_bound_scalar_paths": [
       "implementation_binding.status",
       "implementation_binding.implementation_commit",
