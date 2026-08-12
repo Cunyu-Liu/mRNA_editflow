@@ -26,7 +26,7 @@ SPEC.loader.exec_module(runtime_sync)
 
 
 def read_disk_config() -> dict[str, Any]:
-    return json.loads(CONFIG_PATH.read_text())
+    return runtime_sync.load_config(CONFIG_PATH, require_bound=False)
 
 
 def normalized_unknown_implementation_config() -> dict[str, Any]:
@@ -199,26 +199,33 @@ def install_fake_repository_authority(
     *,
     mode: str = "valid",
 ) -> bytes:
-    """Install deterministic exact4 L -> exact3 I -> config-only B."""
+    """Install deterministic L -> frozen I1 -> exact2 I2 -> config-only B2."""
 
     ledger_commit = config["repository_authority"]["predecessor_ledger"]["commit"]
-    implementation_commit = "1" * 40
-    binding_commit = "b" * 40
-    script_payload = b"bound I EVT049 runtime publisher\n"
-    test_payload = b"bound I EVT049 focused test\n"
+    frozen_i1_commit = runtime_sync.FROZEN_I1_COMMIT
+    implementation_i2_commit = "1" * 40
+    binding_b2_commit = "b" * 40
+    frozen_i1_script_payload = b"frozen I1 EVT049 runtime publisher\n"
+    frozen_i1_test_payload = b"frozen I1 EVT049 focused test\n"
+    i2_script_payload = b"bound I2 EVT049 runtime publisher\n"
+    i2_test_payload = b"bound I2 EVT049 focused test\n"
     binding = config["implementation_binding"]
     binding.update(
         {
             "status": "BOUND",
-            "implementation_commit": implementation_commit,
-            "implementation_script_sha256": hashlib.sha256(script_payload).hexdigest(),
-            "implementation_test_sha256": hashlib.sha256(test_payload).hexdigest(),
+            "implementation_commit": implementation_i2_commit,
+            "implementation_script_sha256": hashlib.sha256(
+                i2_script_payload
+            ).hexdigest(),
+            "implementation_test_sha256": hashlib.sha256(
+                i2_test_payload
+            ).hexdigest(),
         }
     )
     binding["compiled_core_sha256"] = runtime_sync.compiled_core_sha256(config)
     config_payload = runtime_sync.json_bytes(config)
-    i_config_payload = runtime_sync.json_bytes(
-        runtime_sync.expected_unknown_i_config(config)
+    frozen_i1_config_payload = runtime_sync.json_bytes(
+        runtime_sync.expected_unknown_i2_config(config)
     )
 
     ledger_payloads = {
@@ -234,6 +241,19 @@ def install_fake_repository_authority(
             config["repository_authority"]["predecessor_ledger"]["frozen_blobs"],
         )
     }
+    digest_overrides.update(
+        {
+            frozen_i1_config_payload: runtime_sync.FROZEN_I1_BLOB_SHA256[
+                runtime_sync.CONFIG_REPO_PATH
+            ],
+            frozen_i1_script_payload: runtime_sync.FROZEN_I1_BLOB_SHA256[
+                runtime_sync.SCRIPT_REPO_PATH
+            ],
+            frozen_i1_test_payload: runtime_sync.FROZEN_I1_BLOB_SHA256[
+                runtime_sync.TEST_REPO_PATH
+            ],
+        }
+    )
     real_sha256 = runtime_sync.sha256
 
     def fake_sha256(payload: bytes) -> str:
@@ -245,18 +265,20 @@ def install_fake_repository_authority(
                 "exact_changed_paths"
             ]
         ),
-        implementation_commit: list(
+        frozen_i1_commit: list(
             config["repository_authority"]["implementation_exact_changed_paths"]
         ),
-        binding_commit: list(
+        implementation_i2_commit: list(runtime_sync.I2_EXACT_CHANGED_PATHS),
+        binding_b2_commit: list(
             config["repository_authority"]["binding_exact_changed_paths"]
         ),
     }
-    if mode in {"L_paths", "I_paths", "B_paths"}:
+    if mode in {"L_paths", "I1_paths", "I2_paths", "B2_paths"}:
         commit = {
             "L_paths": ledger_commit,
-            "I_paths": implementation_commit,
-            "B_paths": binding_commit,
+            "I1_paths": frozen_i1_commit,
+            "I2_paths": implementation_i2_commit,
+            "B2_paths": binding_b2_commit,
         }[mode]
         changed_paths[commit].append("unexpected/path")
 
@@ -266,39 +288,48 @@ def install_fake_repository_authority(
             for path, payload in ledger_payloads.items()
         },
         **{
-            (binding_commit, path): payload
+            (binding_b2_commit, path): payload
             for path, payload in ledger_payloads.items()
         },
-        (implementation_commit, runtime_sync.CONFIG_REPO_PATH): i_config_payload,
-        (implementation_commit, runtime_sync.SCRIPT_REPO_PATH): script_payload,
-        (implementation_commit, runtime_sync.TEST_REPO_PATH): test_payload,
-        (binding_commit, runtime_sync.CONFIG_REPO_PATH): config_payload,
-        (binding_commit, runtime_sync.SCRIPT_REPO_PATH): script_payload,
-        (binding_commit, runtime_sync.TEST_REPO_PATH): test_payload,
+        (frozen_i1_commit, runtime_sync.CONFIG_REPO_PATH): frozen_i1_config_payload,
+        (frozen_i1_commit, runtime_sync.SCRIPT_REPO_PATH): frozen_i1_script_payload,
+        (frozen_i1_commit, runtime_sync.TEST_REPO_PATH): frozen_i1_test_payload,
+        (implementation_i2_commit, runtime_sync.CONFIG_REPO_PATH): (
+            frozen_i1_config_payload
+        ),
+        (implementation_i2_commit, runtime_sync.SCRIPT_REPO_PATH): i2_script_payload,
+        (implementation_i2_commit, runtime_sync.TEST_REPO_PATH): i2_test_payload,
+        (binding_b2_commit, runtime_sync.CONFIG_REPO_PATH): config_payload,
+        (binding_b2_commit, runtime_sync.SCRIPT_REPO_PATH): i2_script_payload,
+        (binding_b2_commit, runtime_sync.TEST_REPO_PATH): i2_test_payload,
     }
-    if mode == "I_config":
-        blobs[(implementation_commit, runtime_sync.CONFIG_REPO_PATH)] += b"drift"
+    if mode == "I1_config_hash":
+        blobs[(frozen_i1_commit, runtime_sync.CONFIG_REPO_PATH)] += b"drift"
+    if mode == "I1_script_hash":
+        blobs[(frozen_i1_commit, runtime_sync.SCRIPT_REPO_PATH)] += b"drift"
+    if mode == "I2_config":
+        blobs[(implementation_i2_commit, runtime_sync.CONFIG_REPO_PATH)] += b"drift"
     if mode == "script_hash":
-        blobs[(implementation_commit, runtime_sync.SCRIPT_REPO_PATH)] += b"drift"
+        blobs[(implementation_i2_commit, runtime_sync.SCRIPT_REPO_PATH)] += b"drift"
     if mode == "current_ledger_blob":
         first_path = config["repository_authority"]["predecessor_ledger"][
             "frozen_blobs"
         ][0]["path"]
-        blobs[(binding_commit, first_path)] += b"drift"
+        blobs[(binding_b2_commit, first_path)] += b"drift"
 
     def fake_git(_repo: Path, *arguments: str) -> bytes:
         branch = config["repository_authority"]["branch"]
         if arguments == ("rev-parse", "HEAD"):
-            return f"{binding_commit}\n".encode()
+            return f"{binding_b2_commit}\n".encode()
         if arguments == ("rev-parse", "@{upstream}"):
-            observed = "c" * 40 if mode == "upstream" else binding_commit
+            observed = "c" * 40 if mode == "upstream" else binding_b2_commit
             return f"{observed}\n".encode()
         if arguments == (
             "rev-parse",
             "--verify",
             f"refs/remotes/origin/{branch}",
         ):
-            observed = "d" * 40 if mode == "origin" else binding_commit
+            observed = "d" * 40 if mode == "origin" else binding_b2_commit
             return f"{observed}\n".encode()
         if arguments == ("rev-parse", "--abbrev-ref", "HEAD"):
             return f"{branch}\n".encode()
@@ -306,10 +337,13 @@ def install_fake_repository_authority(
             return f"origin/{branch}\n".encode()
         if arguments == ("status", "--porcelain=v1", "--untracked-files=all"):
             return b" M dirty\n" if mode == "dirty" else b""
-        if arguments == ("rev-parse", f"{binding_commit}^"):
-            return f"{implementation_commit}\n".encode()
-        if arguments == ("rev-parse", f"{implementation_commit}^"):
-            parent = "e" * 40 if mode == "I_parent" else ledger_commit
+        if arguments == ("rev-parse", f"{binding_b2_commit}^"):
+            return f"{implementation_i2_commit}\n".encode()
+        if arguments == ("rev-parse", f"{implementation_i2_commit}^"):
+            parent = "e" * 40 if mode == "I2_parent" else frozen_i1_commit
+            return f"{parent}\n".encode()
+        if arguments == ("rev-parse", f"{frozen_i1_commit}^"):
+            parent = "e" * 40 if mode == "I1_parent" else ledger_commit
             return f"{parent}\n".encode()
         if arguments[:4] == (
             "diff-tree",
@@ -325,8 +359,8 @@ def install_fake_repository_authority(
 
     worktree_payloads = {
         runtime_sync.CONFIG_REPO_PATH: config_payload,
-        runtime_sync.SCRIPT_REPO_PATH: script_payload,
-        runtime_sync.TEST_REPO_PATH: test_payload,
+        runtime_sync.SCRIPT_REPO_PATH: i2_script_payload,
+        runtime_sync.TEST_REPO_PATH: i2_test_payload,
         **ledger_payloads,
     }
     if mode == "current_ledger_blob":
@@ -343,9 +377,8 @@ def install_fake_repository_authority(
     )
     return config_payload
 
-def test_disk_bound_l_unknown_i_is_exact_and_delta5() -> None:
+def test_disk_i_or_b_is_exact_and_delta5() -> None:
     config = read_disk_config()
-    runtime_sync.validate_static_config(config)
     ledger = config["repository_authority"]["predecessor_ledger"]
     assert not runtime_sync._ledger_values_are_unknown(ledger)
     assert ledger["status"] == "BOUND"
@@ -359,7 +392,19 @@ def test_disk_bound_l_unknown_i_is_exact_and_delta5() -> None:
     )
     assert ledger["registered_lineage_ids"] == runtime_sync.LEDGER_LINEAGE_IDS
     binding = config["implementation_binding"]
-    assert runtime_sync._binding_values_are_unknown(binding)
+    binding_is_unknown = runtime_sync._binding_values_are_unknown(binding)
+    binding_is_bound = binding["status"] == "BOUND" and all(
+        binding[key] != runtime_sync.UNKNOWN
+        for key in (
+            "implementation_commit",
+            "implementation_script_sha256",
+            "implementation_test_sha256",
+        )
+    )
+    assert binding_is_unknown or binding_is_bound
+    assert normalized_unknown_implementation_config() == (
+        runtime_sync.expected_unknown_i2_config(config)
+    )
     assert binding["compiled_core_sha256"] == runtime_sync.compiled_core_sha256(config)
     assert config["registered_artifacts"] == runtime_sync.REGISTERED_ARTIFACTS
     assert [
@@ -406,6 +451,24 @@ def test_disk_bound_l_unknown_i_is_exact_and_delta5() -> None:
         not item["absolute_path"].endswith(".jsonl")
         for item in config["registered_artifacts"]
     )
+
+
+def test_temporary_bound_b_disk_loads_from_i_or_b(tmp_path: Path) -> None:
+    unknown_i2 = normalized_unknown_implementation_config()
+    bound_b2 = copy.deepcopy(unknown_i2)
+    bound_b2["implementation_binding"].update(
+        {
+            "status": "BOUND",
+            "implementation_commit": "1" * 40,
+            "implementation_script_sha256": "2" * 64,
+            "implementation_test_sha256": "3" * 64,
+        }
+    )
+    bound_path = tmp_path / CONFIG_PATH.name
+    bound_path.write_bytes(runtime_sync.json_bytes(bound_b2))
+    loaded = runtime_sync.load_bound_config(bound_path)
+    assert loaded == bound_b2
+    assert runtime_sync.expected_unknown_i2_config(loaded) == unknown_i2
 
 
 def test_ledger_unknown_group_cannot_be_partially_backfilled() -> None:
@@ -635,19 +698,20 @@ def test_immutables_first_prefix_recovery_and_idempotent_retry(
     ) == 49
 
 
-def test_production_authority_accepts_exact_l_i_b(
+def test_production_authority_accepts_exact_l_i1_i2_b2(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     config = bound_config()
     config_payload = install_fake_repository_authority(monkeypatch, config)
     result = runtime_sync.audit_production_repository_authority(config, config_payload)
     assert result == {
-        "status": "PASS_EXACT_L_TO_I_TO_CONFIG_ONLY_B",
+        "status": "PASS_EXACT_L_TO_FROZEN_I1_TO_EXACT2_I2_TO_CONFIG_ONLY_B2",
         "ledger_commit": config["repository_authority"]["predecessor_ledger"][
             "commit"
         ],
-        "implementation_i_commit": "1" * 40,
-        "binding_b_commit": "b" * 40,
+        "frozen_i1_commit": runtime_sync.FROZEN_I1_COMMIT,
+        "implementation_i2_commit": "1" * 40,
+        "binding_b2_commit": "b" * 40,
         "head_commit": "b" * 40,
         "upstream_head_commit": "b" * 40,
         "origin_branch_head_commit": "b" * 40,
@@ -662,10 +726,14 @@ def test_production_authority_accepts_exact_l_i_b(
         "upstream",
         "origin",
         "L_paths",
-        "I_paths",
-        "B_paths",
-        "I_parent",
-        "I_config",
+        "I1_paths",
+        "I2_paths",
+        "B2_paths",
+        "I1_parent",
+        "I2_parent",
+        "I1_config_hash",
+        "I1_script_hash",
+        "I2_config",
         "script_hash",
         "current_ledger_blob",
     ],
