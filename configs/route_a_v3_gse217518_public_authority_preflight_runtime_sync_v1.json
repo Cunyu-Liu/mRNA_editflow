@@ -11,12 +11,12 @@
   "event_name": "GSE217518_PUBLIC_AUTHORITY_PREFLIGHT_REGISTERED_QUALIFICATION_GATE_UNCHANGED",
   "implementation_binding": {
     "binding_scheme": "CONFIG_ONLY_POST_IMPLEMENTATION_BINDING_V1",
-    "status": "UNKNOWN_NOT_ASSERTED",
-    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "status": "BOUND",
+    "implementation_commit": "a42731afb3432b9e662dce4c4095c736d71754b2",
     "implementation_script_path": "scripts/route_a_v3/gse217518_public_authority_preflight_runtime_sync.py",
-    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_script_sha256": "c3eb4f9ff78f0f7b1573e2db95b0209f241e46950f1d1ca011f055a4fc8f8113",
     "implementation_test_path": "tests/route_a_v3/test_gse217518_public_authority_preflight_runtime_sync.py",
-    "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_test_sha256": "a7ea2e51d92ec02191e6615584bccd0da3c36e23327d5949d602aad1ad58e1ca",
     "compiled_core_sha256": "4cb98c8815b82a3539b1802be684f0732056d49405da366d068c0b613b46d8f6",
     "unknown_to_bound_scalar_paths": [
       "implementation_binding.status",
