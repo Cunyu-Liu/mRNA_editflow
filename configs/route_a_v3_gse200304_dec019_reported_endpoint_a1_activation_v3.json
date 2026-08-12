@@ -7,14 +7,14 @@
   "decision_id": "V3-DEC-019",
   "implementation_binding": {
     "binding_scheme": "CONFIG_ONLY_POST_IMPLEMENTATION_BINDING_V1",
-    "status": "BOUND",
+    "status": "UNKNOWN_NOT_ASSERTED",
     "blocker_if_unbound": "IMPLEMENTATION_BINDING_UNKNOWN_NOT_ASSERTED",
-    "implementation_commit": "6d103877bbfb8e1196bfc22890bb239dcb87c3c8",
+    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
     "implementation_script_path": "scripts/route_a_v3/adjudicate_gse200304_dec019_reported_endpoint_a1_v3.py",
-    "implementation_script_sha256": "9cd4411fcb02e1feed913b799296351e38ab9071b9506611318645e41b8dbbfe",
+    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
     "implementation_test_path": "tests/route_a_v3/test_adjudicate_gse200304_dec019_reported_endpoint_a1_v3.py",
-    "implementation_test_sha256": "8e7b188cfa2e5015fa307acad980f9ff2f45145943384fcadb50d67b1263e1db",
-    "config_core_sha256": "13394ac6a9b9ec6e6241d0d9b1048ecfa5c90874c7447991fc2a8248a574c170",
+    "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
+    "config_core_sha256": "c0cf7852f3a081d5bed329cf4670dc067118e3b1161fbcb0b0713a2de819c71b",
     "unknown_to_bound_scalar_paths": [
       "implementation_binding.status",
       "implementation_binding.implementation_commit",
@@ -25,8 +25,8 @@
   "repository_authority": {
     "production_repo_root": "/home/cunyuliu/mrna_editflow_goal/worktrees/routea_v3_a1_20260810",
     "branch": "routea-v3-a1-20260810",
-    "base_commit": "e829464d6ea1953b7a859ba5506946b9cb8e6384",
-    "implementation_commit_expected_parent": "e829464d6ea1953b7a859ba5506946b9cb8e6384",
+    "base_commit": "f4922af6dfcd6e8b63064fe8d819edb3971da1fb",
+    "implementation_commit_expected_parent": "f4922af6dfcd6e8b63064fe8d819edb3971da1fb",
     "binding_commit_expected_parent": "IMPLEMENTATION_COMMIT_FROM_BINDING",
     "implementation_commit_exact_changed_paths": [
       "configs/route_a_v3_gse200304_dec019_reported_endpoint_a1_activation_v3.json",
@@ -328,6 +328,7 @@
       "producer_protocol_id_required": true,
       "producer_commit_required": true,
       "producer_script_sha256_required": true,
+      "biological_group_pass_requires_mapping_commitment_sha256": true,
       "source_bundle_id_must_equal_required_predecessor": true,
       "source_bundle_root_or_target_sha256_required": true,
       "predecessor_members_must_equal_required_predecessor": true,

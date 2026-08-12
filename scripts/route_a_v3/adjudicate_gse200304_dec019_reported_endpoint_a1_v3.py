@@ -36,7 +36,7 @@ EXPECTED_IMPLEMENTATION_FILES = {
 }
 FROZEN_CONFIG_CORE_SHA256_BY_PATH = {
     GSE200304_CONFIG_REPO_PATH: (
-        "13394ac6a9b9ec6e6241d0d9b1048ecfa5c90874c7447991fc2a8248a574c170"
+        "c0cf7852f3a081d5bed329cf4670dc067118e3b1161fbcb0b0713a2de819c71b"
     ),
 }
 FROZEN_CONFIG_CORE_SHA256 = FROZEN_CONFIG_CORE_SHA256_BY_PATH[CONFIG_REPO_PATH]
@@ -87,6 +87,7 @@ DECISION_ID = "V3-DEC-019"
 PROTOCOL_ID = "ROUTE_A_V3_GSE200304_DEC019_REPORTED_ENDPOINT_A1_ACTIVATION_V3"
 EVIDENCE_SCHEMA_VERSION = "route_a_v3_dec019_aggregate_gate_evidence.v3"
 EVIDENCE_RECORD_TYPE = "ROUTE_A_V3_DEC019_ACCEPTED_AGGREGATE_GATE_EVIDENCE_V3"
+GROUP_MAPPING_COMMITMENT_KEY = "group_mapping_commitment_sha256"
 LOCATOR_LINEAGE_COMMITMENT_ALGORITHM = (
     "ROUTE_A_V3_GSE200304_LOCATOR_MERKLE_V1"
 )
@@ -227,7 +228,7 @@ PREDECESSOR_D1_FROZEN_BLOBS = {
 }
 PREDECESSOR_I3_PARENT_COMMIT = PREDECESSOR_D1_COMMIT
 PREDECESSOR_I3_COMMIT = "e829464d6ea1953b7a859ba5506946b9cb8e6384"
-REPAIR_BASE_COMMIT = PREDECESSOR_I3_COMMIT
+REPAIR_BASE_COMMIT = "f4922af6dfcd6e8b63064fe8d819edb3971da1fb"
 PREDECESSOR_I3_CONFIG_CORE_SHA256 = (
     "bca69bd05c094575bfa860b5492f019810c2845abe9218d7030444821f357a0b"
 )
@@ -240,12 +241,19 @@ PREDECESSOR_I3_FROZEN_BLOBS = {
     SCRIPT_REPO_PATH: "7ef3e14c7298d04cf03fcf4b86f1a71f87a7917fa1b8d3ef826de9262e3d1295",
     TEST_REPO_PATH: "611ba1788b82b28e5a5390537672a211c128e309ab82095286545c61ed075a96",
 }
-EXPECTED_PREDECESSOR_I3_TO_I4_DIFF_PATHS = frozenset(
+EXPECTED_BASE_TO_I_DIFF_PATHS = frozenset(
     {
         "implementation_binding.config_core_sha256",
+        "implementation_binding.implementation_commit",
+        "implementation_binding.implementation_script_sha256",
+        "implementation_binding.implementation_test_sha256",
+        "implementation_binding.status",
+        (
+            "evidence_contract.gate_record_provenance_contract."
+            "biological_group_pass_requires_mapping_commitment_sha256"
+        ),
         "repository_authority.base_commit",
         "repository_authority.implementation_commit_expected_parent",
-        "repository_authority.predecessor_implementation_successor",
     }
 )
 PRIVACY_KEYS = {
@@ -1145,7 +1153,9 @@ def validate_static_config(config: Mapping[str, Any]) -> None:
         provenance_contract,
         {
             "required", "producer_protocol_id_required", "producer_commit_required",
-            "producer_script_sha256_required", "source_bundle_id_must_equal_required_predecessor",
+            "producer_script_sha256_required",
+            "biological_group_pass_requires_mapping_commitment_sha256",
+            "source_bundle_id_must_equal_required_predecessor",
             "source_bundle_root_or_target_sha256_required",
             "predecessor_members_must_equal_required_predecessor", "acceptance_authority",
         },
@@ -1523,20 +1533,20 @@ def _validate_predecessor_i3_implementation_successor(
     return i3_config
 
 
-def _validate_successor_i_transition_from_predecessor(
+def _validate_successor_i_transition_from_base(
     i_config: Mapping[str, Any],
-    predecessor_config: Mapping[str, Any],
+    base_config: Mapping[str, Any],
 ) -> None:
-    """Allow only the four closed authority changes from predecessor to I."""
+    """Allow only this upgrade's requirement and lifecycle changes from f492."""
 
-    if i_config.get("evidence_descriptor_bindings") != predecessor_config.get(
+    if i_config.get("evidence_descriptor_bindings") != base_config.get(
         "evidence_descriptor_bindings"
     ):
-        raise BindingError("successor I descriptor binding drifted from predecessor")
-    differences = _semantic_diff_paths(predecessor_config, i_config)
-    if differences != EXPECTED_PREDECESSOR_I3_TO_I4_DIFF_PATHS:
+        raise BindingError("successor I descriptor binding drifted from f492 base")
+    differences = _semantic_diff_paths(base_config, i_config)
+    if differences != EXPECTED_BASE_TO_I_DIFF_PATHS:
         raise BindingError(
-            "predecessor-I3-to-successor-I4 semantic diff is not the exact allowlist"
+            "f492-to-successor-I semantic diff is not the exact allowlist"
         )
 
 
@@ -1589,7 +1599,7 @@ def _validate_post_binding_descriptor_history(
 
 
 def validate_production_authority(config: Mapping[str, Any]) -> dict[str, Any]:
-    """Prove historical DEC019 v3, successor I -> B, and descendants.
+    """Prove the f492 base, exact-three-file I, config-only B, and descendants.
 
     UNKNOWN I-state is accepted only by this authority-only validator.  Actual
     adjudication separately requires a BOUND implementation before it can
@@ -1608,12 +1618,13 @@ def validate_production_authority(config: Mapping[str, Any]) -> dict[str, Any]:
         raise BindingError("production worktree is not clean")
     if _git(repo, "rev-parse", f"refs/remotes/origin/{branch}") != head:
         raise BindingError("origin tracking ref is not current HEAD")
-    _validate_historical_chain_and_blobs(repo, head)
-    predecessor_d1_config = _validate_predecessor_d1_descriptor_binding(repo)
-    predecessor_i3_config = _validate_predecessor_i3_implementation_successor(
-        repo,
-        predecessor_d1_config,
+    _require_ancestor(repo, REPAIR_BASE_COMMIT, head, label="f492-base-to-current")
+    base_config = strict_json(
+        _git_bytes(repo, "show", f"{REPAIR_BASE_COMMIT}:{CONFIG_REPO_PATH}"),
+        label="f492 consumer config",
     )
+    if set(base_config) != EXPECTED_CONFIG_TOP_KEYS:
+        raise BindingError("f492 consumer config top-level schema differs")
 
     expected_i_paths = config["repository_authority"][
         "implementation_commit_exact_changed_paths"
@@ -1633,9 +1644,9 @@ def validate_production_authority(config: Mapping[str, Any]) -> dict[str, Any]:
         )
         if _commit_changed_paths(repo, implementation) != expected_i_paths:
             raise BindingError("repair I is not the exact three-file implementation commit")
-        _validate_successor_i_transition_from_predecessor(
+        _validate_successor_i_transition_from_base(
             config,
-            predecessor_i3_config,
+            base_config,
         )
     else:
         implementation = binding["implementation_commit"]
@@ -1682,9 +1693,9 @@ def validate_production_authority(config: Mapping[str, Any]) -> dict[str, Any]:
                 label=f"repair-B config {config_path}",
             )
             if config_path == CONFIG_REPO_PATH:
-                _validate_successor_i_transition_from_predecessor(
+                _validate_successor_i_transition_from_base(
                     i_config,
-                    predecessor_i3_config,
+                    base_config,
                 )
             _validate_i_to_b_config_pair(
                 i_config,
@@ -1879,8 +1890,27 @@ def _validate_fact_types(slot_id: str, facts: Mapping[str, Any]) -> None:
         _expect_bool(facts[key], label=f"{slot_id} {key}")
 
 
-def _validate_provenance(record: Mapping[str, Any], config: Mapping[str, Any], *, label: str) -> None:
-    provenance = _expect_exact_keys(record["provenance"], PROVENANCE_KEYS, label=f"{label} provenance")
+def _validate_provenance(
+    record: Mapping[str, Any],
+    config: Mapping[str, Any],
+    *,
+    label: str,
+    slot_id: str,
+) -> None:
+    required_keys = set(PROVENANCE_KEYS)
+    if slot_id == "BIOLOGICAL_GROUP_AUTHORITY" and record["status"] == "PASS":
+        required_keys.add(GROUP_MAPPING_COMMITMENT_KEY)
+    provenance = _expect_exact_keys(
+        record["provenance"],
+        required_keys,
+        label=f"{label} provenance",
+    )
+    if GROUP_MAPPING_COMMITMENT_KEY in required_keys:
+        commitment = provenance[GROUP_MAPPING_COMMITMENT_KEY]
+        if type(commitment) is not str or HEX64.fullmatch(commitment) is None:
+            raise AdjudicationError(
+                f"{label} biological-group mapping commitment is not bound"
+            )
     if type(provenance["producer_protocol_id"]) is not str or not provenance["producer_protocol_id"]:
         raise AdjudicationError(f"{label} producer protocol is absent")
     if HEX40.fullmatch(str(provenance["producer_commit"])) is None:
@@ -1930,7 +1960,12 @@ def _validate_gate_record(payload: bytes, slot: Mapping[str, Any], config: Mappi
         _expect_exact(record[key], expected, label=f"{label} {key}")
     if record["status"] not in {"PASS", *NEGATIVE_EVIDENCE_STATUSES}:
         raise AdjudicationError(f"{label} status is outside the closed enum")
-    _validate_provenance(record, config, label=label)
+    _validate_provenance(
+        record,
+        config,
+        label=label,
+        slot_id=slot["slot_id"],
+    )
     required_fact_keys = sorted(FACT_KEYS[slot["slot_id"]])
     if record["status"] == "PASS":
         facts = _expect_exact_keys(
