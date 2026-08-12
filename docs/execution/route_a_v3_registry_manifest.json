@@ -59,7 +59,7 @@
     {
       "path": "docs/execution/route_a_v3_a1_interim.yaml",
       "role": "A1_ACTIVE_INTERIM_RECORD",
-      "sha256": "b1aceb1cf3d7dc2de4b77270045949659de64f70d7bc677e084b67c176a8beb1"
+      "sha256": "d92fd5383fd37a7ad6f75a431885ee15c339821420015b3fcdb91c7a86f26614"
     },
     {
       "path": "docs/execution/route_a_v3_split_registry.yaml",
@@ -199,12 +199,12 @@
     {
       "path": "scripts/route_a_v3/adjudicate_gse200304_dec019_reported_endpoint_a1_v3.py",
       "role": "GSE200304_DEC019_REPORTED_ENDPOINT_A1_V3_ADJUDICATOR",
-      "sha256": "9cd4411fcb02e1feed913b799296351e38ab9071b9506611318645e41b8dbbfe"
+      "sha256": "7b79ca1a5fff8bd2640234fe30bdbf39533c52e73aa21a93341ed7ee8e34db53"
     },
     {
       "path": "tests/route_a_v3/test_adjudicate_gse200304_dec019_reported_endpoint_a1_v3.py",
       "role": "GSE200304_DEC019_REPORTED_ENDPOINT_A1_V3_FOCUSED_TEST",
-      "sha256": "8e7b188cfa2e5015fa307acad980f9ff2f45145943384fcadb50d67b1263e1db"
+      "sha256": "a985a94c8258ea58dc7d83103050284aed41dcc4c2dcf997253367d0e6b1a1cf"
     },
     {
       "path": "configs/route_a_v3_gse200304_dec019_canonical_row_lineage_gate_v1.json",
@@ -267,20 +267,65 @@
       "sha256": "9e36b125589a38c7e264d15762d1f55af4264b02feb10b7db5e904dd0151dcbe"
     },
     {
+      "path": "configs/route_a_v3_gse200304_dec019_biological_group_authority_gate_v1.json",
+      "role": "GSE200304_DEC019_BIOLOGICAL_GROUP_AUTHORITY_GATE_PROTOCOL",
+      "sha256": "cdeb3e82656d727c0eb942299b32755aab4382a612911739df17546e464220dc"
+    },
+    {
+      "path": "scripts/route_a_v3/produce_gse200304_dec019_biological_group_authority_gate.py",
+      "role": "GSE200304_DEC019_BIOLOGICAL_GROUP_AUTHORITY_GATE_PRODUCER",
+      "sha256": "c718bee3bedf782f1afe2d653f8a082b9770ed236349350e4ce473995ff35052"
+    },
+    {
+      "path": "tests/route_a_v3/test_produce_gse200304_dec019_biological_group_authority_gate.py",
+      "role": "GSE200304_DEC019_BIOLOGICAL_GROUP_AUTHORITY_GATE_FOCUSED_TEST",
+      "sha256": "d2db133af013546b4c5d02edd53253190e6c24341012a688eb86a9b24395320b"
+    },
+    {
+      "path": "configs/route_a_v3_gse200304_dec019_outcome_blind_split_leakage_gate_v1.json",
+      "role": "GSE200304_DEC019_OUTCOME_BLIND_SPLIT_LEAKAGE_GATE_PROTOCOL",
+      "sha256": "fb8450e384c68d97413e89b11645fd81af1518f62a7fd18dc7c4aca1063fa45e"
+    },
+    {
+      "path": "scripts/route_a_v3/produce_gse200304_dec019_outcome_blind_split_leakage_gate.py",
+      "role": "GSE200304_DEC019_OUTCOME_BLIND_SPLIT_LEAKAGE_GATE_PRODUCER",
+      "sha256": "f8e0705576487edcfe724fa466c6990ee77d0b2946b6607e1cb87f08aa6fcda6"
+    },
+    {
+      "path": "tests/route_a_v3/test_produce_gse200304_dec019_outcome_blind_split_leakage_gate.py",
+      "role": "GSE200304_DEC019_OUTCOME_BLIND_SPLIT_LEAKAGE_GATE_FOCUSED_TEST",
+      "sha256": "2068ce3dcde68b68b9f8cd99c1d4b39165ff8beb735a30cd9ba7c232d528c27d"
+    },
+    {
+      "path": "configs/route_a_v3_gse200304_dec019_prefrozen_power_precision_gate_v1.json",
+      "role": "GSE200304_DEC019_PREFROZEN_POWER_PRECISION_GATE_PROTOCOL",
+      "sha256": "5daf682d0e5688968d51873dbd99886b34e47d011bdff9eb5b33baa496b40a42"
+    },
+    {
+      "path": "scripts/route_a_v3/produce_gse200304_dec019_prefrozen_power_precision_gate.py",
+      "role": "GSE200304_DEC019_PREFROZEN_POWER_PRECISION_GATE_PRODUCER",
+      "sha256": "e312e4393daf67e18029ef55b454c54f2ac4c08806a967cc3025187beacd469f"
+    },
+    {
+      "path": "tests/route_a_v3/test_produce_gse200304_dec019_prefrozen_power_precision_gate.py",
+      "role": "GSE200304_DEC019_PREFROZEN_POWER_PRECISION_GATE_FOCUSED_TEST",
+      "sha256": "e41f7b7a516dfb8d9a93530b44229d4da5e4ed6feb007c6e3564581528da5171"
+    },
+    {
       "path": "tests/route_a_v3/test_a0_integrity_guards.py",
       "role": "A0_AUTHORITY_INTEGRITY_GUARD_TEST",
-      "sha256": "b35f0e3e22eebb19a03f0a8bff42b658a6561aa54e5f56c8231ea0ef2d6a9920"
+      "sha256": "0208aec0147731564047b56ea9e00cb6825e575ece77a1ae51655c5401b7d0eb"
     },
     {
       "path": "scripts/route_a_v3/validate_a0_bundle.py",
       "role": "A0_STATIC_AND_SEMANTIC_VALIDATOR",
-      "sha256": "f087235353a53574e63b969c1e06c110572c07244063e551bb1e98dd7b612028"
+      "sha256": "c240a650f71c25f8147cdbeaad906df1876ca6cb0049c2edf5d10393d62531f5"
     }
   ],
   "initial_generated_at": "2026-08-10T10:10:05+08:00",
-  "generated_at": "2026-08-12T01:49:12+08:00",
-  "updated_at": "2026-08-12T01:49:12+08:00",
-  "manifest_status": "A1_DEC019_GSE200304_UPSTREAM_PASS_POST_ADJUDICATION_LEDGER_REGISTERED_PENDING_EVT042",
+  "generated_at": "2026-08-12T16:09:53+08:00",
+  "updated_at": "2026-08-12T16:09:53+08:00",
+  "manifest_status": "A1_DEC019_GSE200304_GROUP_SPLIT_POWER_D6_ONE_BLOCKER_LEDGER_REGISTERED_PENDING_EVT044",
   "schema_version": "1.0.0",
   "sealed_contact": false,
   "version": "3.0.0"

@@ -2200,7 +2200,7 @@ def test_dec019_successor_static_leaf_synchronized_manifest_rehash_is_rejected(
     assert "DEC019_SUCCESSOR_STATIC_LEAF_DRIFT" in codes
 
 
-def test_gse200304_dec019_post_adjudication_registration_is_closed(
+def test_gse200304_dec019_one_blocker_registration_is_closed(
     validator,
     repo_root,
 ):
@@ -2210,7 +2210,7 @@ def test_gse200304_dec019_post_adjudication_registration_is_closed(
         validator.GSE200304_DEC019_POST_ADJUDICATION_STATIC_LEAF_SHA256
     )
 
-    assert len(static_paths) == 14
+    assert len(static_paths) == 23
     assert static_paths.issubset(manifest_paths)
     assert validator.GSE200304_DEC019_V3_CONFIG_PATH not in manifest_paths
     assert (
@@ -2235,26 +2235,43 @@ def test_gse200304_dec019_post_adjudication_registration_is_closed(
     interim = validator._load_yaml(repo_root, validator.A1_INTERIM_PATH)
     lineage = interim["artifact_lineage"]
     historical = lineage[validator.GSE200304_DEC019_ADJUDICATION_LINEAGE_ID]
-    current = lineage[
+    upstream_pass = lineage[
         validator.GSE200304_DEC019_UPSTREAM_PASS_ADJUDICATION_LINEAGE_ID
     ]
+    current = lineage[validator.GSE200304_DEC019_ONE_BLOCKER_ADJUDICATION_LINEAGE_ID]
     assert historical["input_status_counts"] == {
         "PASS": 1,
         "BLOCKED": 3,
         "UNKNOWN_NOT_ASSERTED": 2,
         "NOT_RUN": 2,
     }
-    assert current["historical_predecessor_adjudication_lineage_id"] == (
-        validator.GSE200304_DEC019_ADJUDICATION_LINEAGE_ID
-    )
-    assert current["pass_slot_ids"] == [0, 1, 3, 5]
-    assert current["input_status_counts"] == (
+    assert upstream_pass["input_status_counts"] == (
         validator.GSE200304_DEC019_UPSTREAM_PASS_INPUT_STATUS_COUNTS
     )
-    assert current["blockers"] == validator.GSE200304_DEC019_UPSTREAM_PASS_BLOCKERS
-    assert current["runtime_sync_status"] == "PENDING_NO_EVT_042"
+    assert current["historical_predecessor_adjudication_lineage_id"] == (
+        validator.GSE200304_DEC019_UPSTREAM_PASS_ADJUDICATION_LINEAGE_ID
+    )
+    assert current["pass_slot_ids"] == validator.GSE200304_DEC019_ONE_BLOCKER_PASS_SLOT_IDS
+    assert current["input_status_counts"] == (
+        validator.GSE200304_DEC019_ONE_BLOCKER_INPUT_STATUS_COUNTS
+    )
+    assert current["blockers"] == validator.GSE200304_DEC019_ONE_BLOCKER_BLOCKERS
+    assert current["ordinary_study_contribution"] == 0
+    assert current["a1_study_contribution"] == 0
+    assert current["true_a2_study_contribution"] == 0
+    assert current["canonical_record_count"] == 0
+    assert current["qualified"] is False
+    assert current["canonical_materialization_allowed"] is False
+    assert current["training_allowed"] is False
+    assert current["model_selection_allowed"] is False
+    assert current["next_phase_authorized"] is False
+    assert current["power_evidence_is_planning_only"] is True
+    assert current["runtime_sync_status"] == "PENDING_NO_EVT_044"
     assert len(lineage[validator.GSE200304_UPSTREAM_AUTHORITY_LINEAGE_ID]["files"]) == 6
     assert len(lineage[validator.GSE200304_DEC019_UPSTREAM_PASS_GATE_PACK_LINEAGE_ID]["files"]) == 6
+    assert len(lineage[validator.GSE200304_DEC019_GROUP_LINEAGE_ID]["files"]) == 4
+    assert len(lineage[validator.GSE200304_DEC019_SPLIT_LINEAGE_ID]["files"]) == 4
+    assert len(lineage[validator.GSE200304_DEC019_POWER_LINEAGE_ID]["files"]) == 2
     assert len(current["files"]) == 4
 
 
@@ -2280,7 +2297,7 @@ def test_gse200304_dec019_post_adjudication_dynamic_and_static_drift_fail_closed
 
     static_root = tmp_path / "static"
     manifest = _copy_manifest_bundle(validator, repo_root, static_root)
-    relative = validator.GSE200304_DEC019_UPSTREAM_PASS_SCRIPT_PATH
+    relative = validator.GSE200304_DEC019_POWER_SCRIPT_PATH
     leaf_path = static_root / relative
     leaf_path.write_bytes(leaf_path.read_bytes() + b"\n# synchronized drift\n")
     next(row for row in manifest["files"] if row["path"] == relative)[
@@ -2321,30 +2338,21 @@ def test_gse200304_dec019_post_adjudication_interim_rehash_cannot_unlock(
     assert "A1_INTERIM_DEC019_GSE200304" in codes
     assert "A1_INTERIM_GSE200304" in codes
 
-    def drop_repaired_producer_and_change_member(interim):
+    def change_settled_member_and_one_blocker_counts(interim):
         lineage = interim["artifact_lineage"]
-        lineage[validator.GSE200304_DEC019_LINEAGE_GATE_LINEAGE_ID][
-            "producer_lineage"
-        ].pop("repair_binding_commit")
-        lineage[validator.GSE200304_DEC019_NEGATIVE_GATE_PACK_LINEAGE_ID][
+        lineage[validator.GSE200304_DEC019_GROUP_LINEAGE_ID][
             "files"
         ][0]["sha256"] = "0" * 64
-        lineage[validator.GSE200304_DEC019_ADJUDICATION_LINEAGE_ID][
-            "input_status_counts"
-        ]["PASS"] = 2
-        lineage[validator.GSE200304_UPSTREAM_AUTHORITY_LINEAGE_ID]["files"][0][
-            "sha256"
-        ] = "0" * 64
         lineage[
-            validator.GSE200304_DEC019_UPSTREAM_PASS_ADJUDICATION_LINEAGE_ID
-        ]["input_status_counts"]["PASS"] = 5
+            validator.GSE200304_DEC019_ONE_BLOCKER_ADJUDICATION_LINEAGE_ID
+        ]["input_status_counts"]["PASS"] = 6
 
     codes = _validate_rehashed_interim_bypass(
         validator,
         repo_root,
         tmp_path / "lineage_and_counts",
         monkeypatch,
-        drop_repaired_producer_and_change_member,
+        change_settled_member_and_one_blocker_counts,
     )
     assert "A1_INTERIM_GSE200304_CLOSED_FILES" in codes
     assert "A1_INTERIM_GSE200304_LINEAGE" in codes
@@ -2722,10 +2730,10 @@ def test_registry_manifest_detects_every_listed_hash_drift(validator, tmp_path, 
         "contract_sha256": goal_hash,
         "active_amendment_decision_ids": validator.ACTIVE_AMENDMENT_DECISION_IDS,
         "base_commit": "bbb71dcba6f1e1c9cb75a8a6653f1a4fe4a6ca0c",
-        "manifest_status": "A1_DEC019_GSE200304_UPSTREAM_PASS_POST_ADJUDICATION_LEDGER_REGISTERED_PENDING_EVT042",
+        "manifest_status": "A1_DEC019_GSE200304_GROUP_SPLIT_POWER_D6_ONE_BLOCKER_LEDGER_REGISTERED_PENDING_EVT044",
         "initial_generated_at": "2026-08-10T10:10:05+08:00",
-        "generated_at": validator.GSE200304_DEC019_UPSTREAM_PASS_MANIFEST_AT,
-        "updated_at": validator.GSE200304_DEC019_UPSTREAM_PASS_MANIFEST_AT,
+        "generated_at": validator.GSE200304_DEC019_ONE_BLOCKER_MANIFEST_AT,
+        "updated_at": validator.GSE200304_DEC019_ONE_BLOCKER_MANIFEST_AT,
         "sealed_contact": False,
         "files": entries,
     }

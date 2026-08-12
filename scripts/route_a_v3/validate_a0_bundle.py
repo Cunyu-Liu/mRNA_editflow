@@ -40,10 +40,9 @@ DEC019_AMENDMENT_PATH = "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec
 DECISION_LOG_PATH = "docs/execution/route_a_v3_decision_log.yaml"
 REGISTRY_MANIFEST_PATH = "docs/execution/route_a_v3_registry_manifest.json"
 A1_INTERIM_PATH = "docs/execution/route_a_v3_a1_interim.yaml"
-EXPECTED_A1_INTERIM_SHA256 = "b1aceb1cf3d7dc2de4b77270045949659de64f70d7bc677e084b67c176a8beb1"
-GSE200304_DEC019_POST_ADJUDICATION_LEDGER_AT = "2026-08-11T20:32:48+08:00"
-GSE200304_DEC019_UPSTREAM_PASS_LEDGER_AT = "2026-08-12T01:49:11+08:00"
-GSE200304_DEC019_UPSTREAM_PASS_MANIFEST_AT = "2026-08-12T01:49:12+08:00"
+EXPECTED_A1_INTERIM_SHA256 = "d92fd5383fd37a7ad6f75a431885ee15c339821420015b3fcdb91c7a86f26614"
+GSE200304_DEC019_ONE_BLOCKER_LEDGER_AT = "2026-08-12T16:09:52+08:00"
+GSE200304_DEC019_ONE_BLOCKER_MANIFEST_AT = "2026-08-12T16:09:53+08:00"
 ACTIVE_AMENDMENT_DECISION_IDS = ["V3-DEC-017", "V3-DEC-018", "V3-DEC-019"]
 DEC019_LEAF_AUTHORITY_SHA256 = {
     DEC019_AMENDMENT_PATH: "8c82e564398f0735fe4976f875fe91f053937b05044e5232e237694a2b36e1ca",
@@ -154,21 +153,63 @@ GSE200304_DEC019_V3_HISTORICAL_D2_CONFIG_SHA256 = (
 GSE200304_DEC019_V3_HISTORICAL_D2_DESCRIPTOR_SET_SHA256 = (
     "14223d0193e4b3a4a3c1d98a5894849dd429e6eed021ff98e6697e73ac286a40"
 )
-GSE200304_DEC019_V3_CONFIG_SHA256 = (
-    "e7040fedd6e7217d402c36597c177f08fdf4921c55aced7379a1580c33c31891"
-)
-GSE200304_DEC019_V3_CONFIG_CORE_SHA256 = (
+GSE200304_DEC019_V3_HISTORICAL_CORE_SHA256 = (
     "13394ac6a9b9ec6e6241d0d9b1048ecfa5c90874c7447991fc2a8248a574c170"
 )
-GSE200304_DEC019_V3_DESCRIPTOR_SET_SHA256 = (
+GSE200304_DEC019_V3_HISTORICAL_D3_CONFIG_SHA256 = (
+    "e7040fedd6e7217d402c36597c177f08fdf4921c55aced7379a1580c33c31891"
+)
+GSE200304_DEC019_V3_HISTORICAL_D3_DESCRIPTOR_SET_SHA256 = (
     "97e2d5ca135f2e5668ef513de0247d5973481f6532f99beac9e9d8d9a828148b"
+)
+GSE200304_DEC019_V3_CONFIG_SHA256 = (
+    "0716e4f1a96280d7e33858df037e05d975119a82ff36ee6794f5ffac1c92bb44"
+)
+GSE200304_DEC019_V3_CONFIG_CORE_SHA256 = (
+    "f2a3c59dddd047dd7f211926042d4da7120929e538234a97cd72041573bd0172"
+)
+GSE200304_DEC019_V3_DESCRIPTOR_SET_SHA256 = (
+    "ef59cf8279848858f038bbc6ec6c194481661cacf3de271425517e018bb4e1cb"
+)
+GSE200304_DEC019_V3_HISTORICAL_SCRIPT_SHA256 = (
+    "9cd4411fcb02e1feed913b799296351e38ab9071b9506611318645e41b8dbbfe"
+)
+GSE200304_DEC019_V3_HISTORICAL_TEST_SHA256 = (
+    "8e7b188cfa2e5015fa307acad980f9ff2f45145943384fcadb50d67b1263e1db"
+)
+GSE200304_DEC019_GROUP_CONFIG_PATH = (
+    "configs/route_a_v3_gse200304_dec019_biological_group_authority_gate_v1.json"
+)
+GSE200304_DEC019_GROUP_SCRIPT_PATH = (
+    "scripts/route_a_v3/produce_gse200304_dec019_biological_group_authority_gate.py"
+)
+GSE200304_DEC019_GROUP_TEST_PATH = (
+    "tests/route_a_v3/test_produce_gse200304_dec019_biological_group_authority_gate.py"
+)
+GSE200304_DEC019_SPLIT_CONFIG_PATH = (
+    "configs/route_a_v3_gse200304_dec019_outcome_blind_split_leakage_gate_v1.json"
+)
+GSE200304_DEC019_SPLIT_SCRIPT_PATH = (
+    "scripts/route_a_v3/produce_gse200304_dec019_outcome_blind_split_leakage_gate.py"
+)
+GSE200304_DEC019_SPLIT_TEST_PATH = (
+    "tests/route_a_v3/test_produce_gse200304_dec019_outcome_blind_split_leakage_gate.py"
+)
+GSE200304_DEC019_POWER_CONFIG_PATH = (
+    "configs/route_a_v3_gse200304_dec019_prefrozen_power_precision_gate_v1.json"
+)
+GSE200304_DEC019_POWER_SCRIPT_PATH = (
+    "scripts/route_a_v3/produce_gse200304_dec019_prefrozen_power_precision_gate.py"
+)
+GSE200304_DEC019_POWER_TEST_PATH = (
+    "tests/route_a_v3/test_produce_gse200304_dec019_prefrozen_power_precision_gate.py"
 )
 GSE200304_DEC019_POST_ADJUDICATION_STATIC_LEAF_SHA256 = {
     GSE200304_DEC019_V3_SCRIPT_PATH: (
-        "9cd4411fcb02e1feed913b799296351e38ab9071b9506611318645e41b8dbbfe"
+        "7b79ca1a5fff8bd2640234fe30bdbf39533c52e73aa21a93341ed7ee8e34db53"
     ),
     GSE200304_DEC019_V3_TEST_PATH: (
-        "8e7b188cfa2e5015fa307acad980f9ff2f45145943384fcadb50d67b1263e1db"
+        "a985a94c8258ea58dc7d83103050284aed41dcc4c2dcf997253367d0e6b1a1cf"
     ),
     GSE200304_DEC019_LINEAGE_CONFIG_PATH: (
         "0904495aec2acd6470f3d827ab926bfa94b17ccf146e268df927c6515e38f527"
@@ -206,6 +247,33 @@ GSE200304_DEC019_POST_ADJUDICATION_STATIC_LEAF_SHA256 = {
     GSE200304_DEC019_UPSTREAM_PASS_TEST_PATH: (
         "9e36b125589a38c7e264d15762d1f55af4264b02feb10b7db5e904dd0151dcbe"
     ),
+    GSE200304_DEC019_GROUP_CONFIG_PATH: (
+        "cdeb3e82656d727c0eb942299b32755aab4382a612911739df17546e464220dc"
+    ),
+    GSE200304_DEC019_GROUP_SCRIPT_PATH: (
+        "c718bee3bedf782f1afe2d653f8a082b9770ed236349350e4ce473995ff35052"
+    ),
+    GSE200304_DEC019_GROUP_TEST_PATH: (
+        "d2db133af013546b4c5d02edd53253190e6c24341012a688eb86a9b24395320b"
+    ),
+    GSE200304_DEC019_SPLIT_CONFIG_PATH: (
+        "fb8450e384c68d97413e89b11645fd81af1518f62a7fd18dc7c4aca1063fa45e"
+    ),
+    GSE200304_DEC019_SPLIT_SCRIPT_PATH: (
+        "f8e0705576487edcfe724fa466c6990ee77d0b2946b6607e1cb87f08aa6fcda6"
+    ),
+    GSE200304_DEC019_SPLIT_TEST_PATH: (
+        "2068ce3dcde68b68b9f8cd99c1d4b39165ff8beb735a30cd9ba7c232d528c27d"
+    ),
+    GSE200304_DEC019_POWER_CONFIG_PATH: (
+        "5daf682d0e5688968d51873dbd99886b34e47d011bdff9eb5b33baa496b40a42"
+    ),
+    GSE200304_DEC019_POWER_SCRIPT_PATH: (
+        "e312e4393daf67e18029ef55b454c54f2ac4c08806a967cc3025187beacd469f"
+    ),
+    GSE200304_DEC019_POWER_TEST_PATH: (
+        "e41f7b7a516dfb8d9a93530b44229d4da5e4ed6feb007c6e3564581528da5171"
+    ),
 }
 GSE200304_DEC019_LINEAGE_GATE_LINEAGE_ID = (
     "gse200304_dec019_canonical_row_lineage_gate_v1"
@@ -224,6 +292,18 @@ GSE200304_DEC019_UPSTREAM_PASS_GATE_PACK_LINEAGE_ID = (
 )
 GSE200304_DEC019_UPSTREAM_PASS_ADJUDICATION_LINEAGE_ID = (
     "gse200304_dec019_reported_endpoint_a1_adjudication_v3_upstream_pass_gate_pack_v1"
+)
+GSE200304_DEC019_GROUP_LINEAGE_ID = (
+    "gse200304_dec019_biological_group_authority_gate_v1"
+)
+GSE200304_DEC019_SPLIT_LINEAGE_ID = (
+    "gse200304_dec019_outcome_blind_split_leakage_gate_v1"
+)
+GSE200304_DEC019_POWER_LINEAGE_ID = (
+    "gse200304_dec019_prefrozen_power_precision_gate_v1"
+)
+GSE200304_DEC019_ONE_BLOCKER_ADJUDICATION_LINEAGE_ID = (
+    "gse200304_dec019_reported_endpoint_a1_adjudication_v3_group_split_power_pass_d6"
 )
 GSE200304_DEC019_POST_ADJUDICATION_BLOCKERS = [
     "BIOLOGICAL_GROUP_AUTHORITY_NOT_PASS",
@@ -252,6 +332,16 @@ GSE200304_DEC019_UPSTREAM_PASS_INPUT_STATUS_COUNTS = {
     "UNKNOWN_NOT_ASSERTED": 1,
     "NOT_RUN": 2,
 }
+GSE200304_DEC019_ONE_BLOCKER_BLOCKERS = [
+    "CHECKPOINT_SPECIFIC_EXPOSURE_NOT_PASS",
+]
+GSE200304_DEC019_ONE_BLOCKER_INPUT_STATUS_COUNTS = {
+    "PASS": 7,
+    "BLOCKED": 0,
+    "UNKNOWN_NOT_ASSERTED": 1,
+    "NOT_RUN": 0,
+}
+GSE200304_DEC019_ONE_BLOCKER_PASS_SLOT_IDS = [0, 1, 2, 3, 5, 6, 7]
 DEC019_SUCCESSOR_DYNAMIC_CONFIG_PATHS = frozenset(
     {
         GSE114002_DEC019_SUCCESSOR_CONFIG_PATH,
@@ -1146,6 +1236,42 @@ EXPECTED_REGISTRY_MANIFEST_PATH_ROLES = (
     (
         GSE200304_DEC019_UPSTREAM_PASS_TEST_PATH,
         "GSE200304_DEC019_UPSTREAM_PASS_GATE_PACK_FOCUSED_TEST",
+    ),
+    (
+        GSE200304_DEC019_GROUP_CONFIG_PATH,
+        "GSE200304_DEC019_BIOLOGICAL_GROUP_AUTHORITY_GATE_PROTOCOL",
+    ),
+    (
+        GSE200304_DEC019_GROUP_SCRIPT_PATH,
+        "GSE200304_DEC019_BIOLOGICAL_GROUP_AUTHORITY_GATE_PRODUCER",
+    ),
+    (
+        GSE200304_DEC019_GROUP_TEST_PATH,
+        "GSE200304_DEC019_BIOLOGICAL_GROUP_AUTHORITY_GATE_FOCUSED_TEST",
+    ),
+    (
+        GSE200304_DEC019_SPLIT_CONFIG_PATH,
+        "GSE200304_DEC019_OUTCOME_BLIND_SPLIT_LEAKAGE_GATE_PROTOCOL",
+    ),
+    (
+        GSE200304_DEC019_SPLIT_SCRIPT_PATH,
+        "GSE200304_DEC019_OUTCOME_BLIND_SPLIT_LEAKAGE_GATE_PRODUCER",
+    ),
+    (
+        GSE200304_DEC019_SPLIT_TEST_PATH,
+        "GSE200304_DEC019_OUTCOME_BLIND_SPLIT_LEAKAGE_GATE_FOCUSED_TEST",
+    ),
+    (
+        GSE200304_DEC019_POWER_CONFIG_PATH,
+        "GSE200304_DEC019_PREFROZEN_POWER_PRECISION_GATE_PROTOCOL",
+    ),
+    (
+        GSE200304_DEC019_POWER_SCRIPT_PATH,
+        "GSE200304_DEC019_PREFROZEN_POWER_PRECISION_GATE_PRODUCER",
+    ),
+    (
+        GSE200304_DEC019_POWER_TEST_PATH,
+        "GSE200304_DEC019_PREFROZEN_POWER_PRECISION_GATE_FOCUSED_TEST",
     ),
     (INTEGRITY_GUARD_TEST_PATH, "A0_AUTHORITY_INTEGRITY_GUARD_TEST"),
     (VALIDATOR_PATH, "A0_STATIC_AND_SEMANTIC_VALIDATOR"),
@@ -2199,10 +2325,10 @@ def validate_registry_manifest(repo_root: Path) -> list[Issue]:
         "contract_sha256": SOURCE_CONTRACT_SHA256,
         "active_amendment_decision_ids": ACTIVE_AMENDMENT_DECISION_IDS,
         "base_commit": "bbb71dcba6f1e1c9cb75a8a6653f1a4fe4a6ca0c",
-        "manifest_status": "A1_DEC019_GSE200304_UPSTREAM_PASS_POST_ADJUDICATION_LEDGER_REGISTERED_PENDING_EVT042",
+        "manifest_status": "A1_DEC019_GSE200304_GROUP_SPLIT_POWER_D6_ONE_BLOCKER_LEDGER_REGISTERED_PENDING_EVT044",
         "initial_generated_at": "2026-08-10T10:10:05+08:00",
-        "generated_at": GSE200304_DEC019_UPSTREAM_PASS_MANIFEST_AT,
-        "updated_at": GSE200304_DEC019_UPSTREAM_PASS_MANIFEST_AT,
+        "generated_at": GSE200304_DEC019_ONE_BLOCKER_MANIFEST_AT,
+        "updated_at": GSE200304_DEC019_ONE_BLOCKER_MANIFEST_AT,
         "sealed_contact": False,
     }
     expected_top_keys = set(expected_static_top) | {"files"}
@@ -3648,7 +3774,7 @@ def _gse200304_dec019_v3_descriptor_set_sha256(
 def validate_gse200304_dec019_post_adjudication_registration(
     repo_root: Path,
 ) -> list[Issue]:
-    """Bind preserved plus upstream-pass leaves and the dynamic D3 config."""
+    """Bind current static leaves and the dynamic one-blocker D6 config."""
 
     issues: list[Issue] = []
     for relative, expected_sha256 in (
@@ -3710,7 +3836,6 @@ def validate_gse200304_dec019_post_adjudication_registration(
     descriptors = config.get("evidence_descriptor_bindings")
     expected_binding_fields = {
         "status": "BOUND",
-        "implementation_commit": "6d103877bbfb8e1196bfc22890bb239dcb87c3c8",
         "implementation_script_path": GSE200304_DEC019_V3_SCRIPT_PATH,
         "implementation_script_sha256": GSE200304_DEC019_POST_ADJUDICATION_STATIC_LEAF_SHA256[
             GSE200304_DEC019_V3_SCRIPT_PATH
@@ -3801,14 +3926,14 @@ def validate_gse200304_dec019_post_adjudication_registration(
                 issues,
                 "GSE200304_DEC019_POST_ADJUDICATION_DAG",
                 REGISTRY_MANIFEST_PATH,
-                "dynamic D2 config must remain outside the static manifest",
+                "dynamic D6 config must remain outside the static manifest",
             )
         if not expected_static_paths.issubset(manifest_paths):
             _issue(
                 issues,
                 "GSE200304_DEC019_POST_ADJUDICATION_DAG",
                 REGISTRY_MANIFEST_PATH,
-                "all fourteen preserved and upstream-pass leaves must be statically registered",
+                "all twenty-three current static leaves must be registered",
             )
     return issues
 
@@ -5119,8 +5244,8 @@ def validate_a1_interim_lineage(
             "changes_historical_gse200304_published_endpoint_bundle_bytes": False,
             "split_freeze_boundary": {
                 "a1_freezes": ["SOURCE_AUTHORITY", "BIOLOGICAL_SOURCE_GROUP_ASSIGNMENT", "NEAR_DUPLICATE_GRAPH", "SPLIT_SALT"],
-                "a1_freeze_status": "NOT_FROZEN",
-                "a1_zero_leakage_audit_status": "NOT_RUN",
+                "a1_freeze_status": "FROZEN",
+                "a1_zero_leakage_audit_status": "PASS",
                 "a2_freezes": ["FINAL_BENCHMARK_MEMBERSHIP"],
                 "a2_final_membership_status": "NOT_FROZEN",
             },
@@ -5199,10 +5324,10 @@ def validate_a1_interim_lineage(
                 "primary_measurement_route_if_qualified": "AUTHOR_PUBLISHED_PROCESSED_ENDPOINT",
                 "raw_replay_role": "REPRODUCIBILITY_AUXILIARY",
                 "required_80s_role_authority_is_primary_route_blocker": False,
-                "current_blocker_count": 4,
-                "current_blockers": GSE200304_DEC019_UPSTREAM_PASS_BLOCKERS,
+                "current_blocker_count": 1,
+                "current_blockers": GSE200304_DEC019_ONE_BLOCKER_BLOCKERS,
                 "input_gate_count": 8,
-                "input_status_counts": GSE200304_DEC019_UPSTREAM_PASS_INPUT_STATUS_COUNTS,
+                "input_status_counts": GSE200304_DEC019_ONE_BLOCKER_INPUT_STATUS_COUNTS,
                 "ordinary_study_contribution": 0,
                 "a1_study_contribution": 0,
                 "true_a2_study_contribution": 0,
@@ -5213,9 +5338,9 @@ def validate_a1_interim_lineage(
                 "training_allowed": False,
                 "model_selection_allowed": False,
                 "next_phase_authorized": False,
-                "predecessor_runtime_event_id": "A1-EVT-041",
-                "expected_next_runtime_event_id": "A1-EVT-042",
-                "runtime_sync_status": "PENDING_NO_EVT_042",
+                "predecessor_runtime_event_id": "A1-EVT-043",
+                "expected_next_runtime_event_id": "A1-EVT-044",
+                "runtime_sync_status": "PENDING_NO_EVT_044",
             }
             _expect_closed_mapping(
                 gse200304_current,
@@ -5267,6 +5392,10 @@ def validate_a1_interim_lineage(
             GSE200304_UPSTREAM_AUTHORITY_LINEAGE_ID,
             GSE200304_DEC019_UPSTREAM_PASS_GATE_PACK_LINEAGE_ID,
             GSE200304_DEC019_UPSTREAM_PASS_ADJUDICATION_LINEAGE_ID,
+            GSE200304_DEC019_GROUP_LINEAGE_ID,
+            GSE200304_DEC019_SPLIT_LINEAGE_ID,
+            GSE200304_DEC019_POWER_LINEAGE_ID,
+            GSE200304_DEC019_ONE_BLOCKER_ADJUDICATION_LINEAGE_ID,
         }
         if set(lineage) != expected_all_lineage_ids:
             _issue(
@@ -5850,7 +5979,7 @@ def validate_a1_interim_lineage(
                 "dynamic_config": {
                     "path": GSE200304_DEC019_V3_CONFIG_PATH,
                     "sha256": GSE200304_DEC019_V3_HISTORICAL_D2_CONFIG_SHA256,
-                    "config_core_sha256": GSE200304_DEC019_V3_CONFIG_CORE_SHA256,
+                    "config_core_sha256": GSE200304_DEC019_V3_HISTORICAL_CORE_SHA256,
                     "descriptor_set_sha256": GSE200304_DEC019_V3_HISTORICAL_D2_DESCRIPTOR_SET_SHA256,
                     "exact_full_sha_in_static_manifest": False,
                 },
@@ -5865,13 +5994,9 @@ def validate_a1_interim_lineage(
                     "binding_b4_commit": "6c42d8e1d75f70906afb7cde5704669b2c8ab6f7",
                     "descriptor_d2_commit": "c278f29a18b7858c85686fcec3857a992fd07d5f",
                     "script_path": GSE200304_DEC019_V3_SCRIPT_PATH,
-                    "script_sha256": GSE200304_DEC019_POST_ADJUDICATION_STATIC_LEAF_SHA256[
-                        GSE200304_DEC019_V3_SCRIPT_PATH
-                    ],
+                    "script_sha256": GSE200304_DEC019_V3_HISTORICAL_SCRIPT_SHA256,
                     "focused_test_path": GSE200304_DEC019_V3_TEST_PATH,
-                    "focused_test_sha256": GSE200304_DEC019_POST_ADJUDICATION_STATIC_LEAF_SHA256[
-                        GSE200304_DEC019_V3_TEST_PATH
-                    ],
+                    "focused_test_sha256": GSE200304_DEC019_V3_HISTORICAL_TEST_SHA256,
                 },
             },
             GSE200304_UPSTREAM_AUTHORITY_LINEAGE_ID: {
@@ -6004,9 +6129,9 @@ def validate_a1_interim_lineage(
                 "next_phase_authorized": False,
                 "dynamic_config": {
                     "path": GSE200304_DEC019_V3_CONFIG_PATH,
-                    "sha256": GSE200304_DEC019_V3_CONFIG_SHA256,
-                    "config_core_sha256": GSE200304_DEC019_V3_CONFIG_CORE_SHA256,
-                    "descriptor_set_sha256": GSE200304_DEC019_V3_DESCRIPTOR_SET_SHA256,
+                    "sha256": GSE200304_DEC019_V3_HISTORICAL_D3_CONFIG_SHA256,
+                    "config_core_sha256": GSE200304_DEC019_V3_HISTORICAL_CORE_SHA256,
+                    "descriptor_set_sha256": GSE200304_DEC019_V3_HISTORICAL_D3_DESCRIPTOR_SET_SHA256,
                     "exact_full_sha_in_static_manifest": False,
                 },
                 "consumer_lineage": {
@@ -6018,6 +6143,179 @@ def validate_a1_interim_lineage(
                     "descriptor_d3_parent_commit": "ae4813a11b7e65e3aa118178f5d0e3d850cb73b8",
                     "descriptor_d3_diff_is_exactly_one_config_path": True,
                     "script_path": GSE200304_DEC019_V3_SCRIPT_PATH,
+                    "script_sha256": GSE200304_DEC019_V3_HISTORICAL_SCRIPT_SHA256,
+                    "focused_test_path": GSE200304_DEC019_V3_TEST_PATH,
+                    "focused_test_sha256": GSE200304_DEC019_V3_HISTORICAL_TEST_SHA256,
+                },
+                "predecessor_runtime_event_id": "A1-EVT-041",
+                "expected_next_runtime_event_id": "A1-EVT-042",
+                "runtime_sync_status": "PENDING_NO_EVT_042",
+                "runtime_evidence_payload_read_count": 0,
+            },
+            GSE200304_DEC019_GROUP_LINEAGE_ID: {
+                "path": (
+                    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/"
+                    "A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/"
+                    "GSE200304_DEC019_BIOLOGICAL_GROUP_AUTHORITY_GATE_V1"
+                ),
+                "dataset_id": "GSE200304",
+                "decision_id": "V3-DEC-019",
+                "status": "PASS",
+                "publication_state": "COMMITTED_EXACT",
+                "aggregate_only": True,
+                "exact_member_count": 4,
+                "private_member_count": 1,
+                "private_member_payload_read_count": 0,
+                "biological_group_count": 6544,
+                "changes_study_qualification": False,
+                "producer_lineage": {
+                    "config_path": GSE200304_DEC019_GROUP_CONFIG_PATH,
+                    "config_sha256": GSE200304_DEC019_POST_ADJUDICATION_STATIC_LEAF_SHA256[
+                        GSE200304_DEC019_GROUP_CONFIG_PATH
+                    ],
+                    "script_path": GSE200304_DEC019_GROUP_SCRIPT_PATH,
+                    "script_sha256": GSE200304_DEC019_POST_ADJUDICATION_STATIC_LEAF_SHA256[
+                        GSE200304_DEC019_GROUP_SCRIPT_PATH
+                    ],
+                    "focused_test_path": GSE200304_DEC019_GROUP_TEST_PATH,
+                    "focused_test_sha256": GSE200304_DEC019_POST_ADJUDICATION_STATIC_LEAF_SHA256[
+                        GSE200304_DEC019_GROUP_TEST_PATH
+                    ],
+                },
+                "predecessor_runtime_event_id": "A1-EVT-043",
+                "expected_next_runtime_event_id": "A1-EVT-044",
+                "runtime_sync_status": "PENDING_NO_EVT_044",
+            },
+            GSE200304_DEC019_SPLIT_LINEAGE_ID: {
+                "path": (
+                    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/"
+                    "A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/"
+                    "GSE200304_DEC019_OUTCOME_BLIND_SPLIT_LEAKAGE_GATE_V1"
+                ),
+                "dataset_id": "GSE200304",
+                "decision_id": "V3-DEC-019",
+                "status": "PASS",
+                "publication_state": "COMMITTED_EXACT",
+                "aggregate_only": True,
+                "exact_member_count": 4,
+                "private_member_count": 1,
+                "private_member_payload_read_count": 0,
+                "record_count": 6547,
+                "biological_group_count": 6544,
+                "connected_component_count": 1936,
+                "maximum_component_size": 26,
+                "outer_group_counts": [1309, 1309, 1309, 1309, 1308],
+                "cross_fold_component_leakage_count": 0,
+                "cross_fold_gene_leakage_count": 0,
+                "cross_fold_hamming_leakage_count": 0,
+                "cross_fold_jaccard_leakage_count": 0,
+                "outcome_column_read_count": 0,
+                "changes_study_qualification": False,
+                "producer_lineage": {
+                    "config_path": GSE200304_DEC019_SPLIT_CONFIG_PATH,
+                    "config_sha256": GSE200304_DEC019_POST_ADJUDICATION_STATIC_LEAF_SHA256[
+                        GSE200304_DEC019_SPLIT_CONFIG_PATH
+                    ],
+                    "script_path": GSE200304_DEC019_SPLIT_SCRIPT_PATH,
+                    "script_sha256": GSE200304_DEC019_POST_ADJUDICATION_STATIC_LEAF_SHA256[
+                        GSE200304_DEC019_SPLIT_SCRIPT_PATH
+                    ],
+                    "focused_test_path": GSE200304_DEC019_SPLIT_TEST_PATH,
+                    "focused_test_sha256": GSE200304_DEC019_POST_ADJUDICATION_STATIC_LEAF_SHA256[
+                        GSE200304_DEC019_SPLIT_TEST_PATH
+                    ],
+                },
+                "predecessor_runtime_event_id": "A1-EVT-043",
+                "expected_next_runtime_event_id": "A1-EVT-044",
+                "runtime_sync_status": "PENDING_NO_EVT_044",
+            },
+            GSE200304_DEC019_POWER_LINEAGE_ID: {
+                "path": (
+                    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/"
+                    "A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/"
+                    "GSE200304_DEC019_PREFROZEN_POWER_PRECISION_GATE_V1"
+                ),
+                "dataset_id": "GSE200304",
+                "decision_id": "V3-DEC-019",
+                "status": "PASS",
+                "publication_state": "COMMITTED_EXACT",
+                "aggregate_only": True,
+                "exact_member_count": 2,
+                "planning_only": True,
+                "observed_model_results_used": False,
+                "a2_final_membership_used": False,
+                "planning_unit": "BIOLOGICAL_SOURCE_GROUP",
+                "planning_group_count": 6544,
+                "target_spearman_rho": 0.25,
+                "two_sided_alpha": 0.05,
+                "estimated_design_power": 1.0,
+                "planned_full_ci_width": 0.04613579821079131,
+                "target_power_minimum": 0.8,
+                "maximum_full_ci_width": 0.3,
+                "working_distribution_assumption": "MONOTONIC_TRANSFORMATION_OF_BIVARIATE_NORMAL_AT_PREFROZEN_SPEARMAN_RHO",
+                "changes_study_qualification": False,
+                "producer_lineage": {
+                    "config_path": GSE200304_DEC019_POWER_CONFIG_PATH,
+                    "config_sha256": GSE200304_DEC019_POST_ADJUDICATION_STATIC_LEAF_SHA256[
+                        GSE200304_DEC019_POWER_CONFIG_PATH
+                    ],
+                    "script_path": GSE200304_DEC019_POWER_SCRIPT_PATH,
+                    "script_sha256": GSE200304_DEC019_POST_ADJUDICATION_STATIC_LEAF_SHA256[
+                        GSE200304_DEC019_POWER_SCRIPT_PATH
+                    ],
+                    "focused_test_path": GSE200304_DEC019_POWER_TEST_PATH,
+                    "focused_test_sha256": GSE200304_DEC019_POST_ADJUDICATION_STATIC_LEAF_SHA256[
+                        GSE200304_DEC019_POWER_TEST_PATH
+                    ],
+                },
+                "predecessor_runtime_event_id": "A1-EVT-043",
+                "expected_next_runtime_event_id": "A1-EVT-044",
+                "runtime_sync_status": "PENDING_NO_EVT_044",
+            },
+            GSE200304_DEC019_ONE_BLOCKER_ADJUDICATION_LINEAGE_ID: {
+                "path": (
+                    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/"
+                    "GSE200304_DEC019_REPORTED_ENDPOINT_A1_ADJUDICATION_V3_"
+                    "GROUP_SPLIT_POWER_PASS_D6"
+                ),
+                "dataset_id": "GSE200304",
+                "decision_id": "V3-DEC-019",
+                "status": "BLOCKED_DEC019_REPORTED_ENDPOINT_A1_EVIDENCE_INCOMPLETE",
+                "publication_state": "COMMITTED_EXACT",
+                "aggregate_only": True,
+                "historical_predecessor_adjudication_lineage_id": GSE200304_DEC019_UPSTREAM_PASS_ADJUDICATION_LINEAGE_ID,
+                "settled_gate_lineage_ids": [
+                    GSE200304_DEC019_GROUP_LINEAGE_ID,
+                    GSE200304_DEC019_SPLIT_LINEAGE_ID,
+                    GSE200304_DEC019_POWER_LINEAGE_ID,
+                ],
+                "input_gate_count": 8,
+                "pass_slot_ids": GSE200304_DEC019_ONE_BLOCKER_PASS_SLOT_IDS,
+                "input_status_counts": GSE200304_DEC019_ONE_BLOCKER_INPUT_STATUS_COUNTS,
+                "blocker_count": 1,
+                "blockers": GSE200304_DEC019_ONE_BLOCKER_BLOCKERS,
+                "ordinary_study_contribution": 0,
+                "a1_study_contribution": 0,
+                "true_a2_study_contribution": 0,
+                "positive_input_canonical_record_count": 6547,
+                "canonical_record_count": 0,
+                "positive_input_fact_is_not_final_canonical_materialization": True,
+                "qualified": False,
+                "independent_reproduction_established": False,
+                "canonical_materialization_allowed": False,
+                "training_allowed": False,
+                "model_selection_allowed": False,
+                "next_phase_authorized": False,
+                "power_evidence_is_planning_only": True,
+                "dynamic_config": {
+                    "path": GSE200304_DEC019_V3_CONFIG_PATH,
+                    "sha256": GSE200304_DEC019_V3_CONFIG_SHA256,
+                    "config_core_sha256": GSE200304_DEC019_V3_CONFIG_CORE_SHA256,
+                    "descriptor_set_sha256": GSE200304_DEC019_V3_DESCRIPTOR_SET_SHA256,
+                    "exact_full_sha_in_static_manifest": False,
+                },
+                "consumer_lineage": {
+                    "script_path": GSE200304_DEC019_V3_SCRIPT_PATH,
                     "script_sha256": GSE200304_DEC019_POST_ADJUDICATION_STATIC_LEAF_SHA256[
                         GSE200304_DEC019_V3_SCRIPT_PATH
                     ],
@@ -6026,9 +6324,9 @@ def validate_a1_interim_lineage(
                         GSE200304_DEC019_V3_TEST_PATH
                     ],
                 },
-                "predecessor_runtime_event_id": "A1-EVT-041",
-                "expected_next_runtime_event_id": "A1-EVT-042",
-                "runtime_sync_status": "PENDING_NO_EVT_042",
+                "predecessor_runtime_event_id": "A1-EVT-043",
+                "expected_next_runtime_event_id": "A1-EVT-044",
+                "runtime_sync_status": "PENDING_NO_EVT_044",
                 "runtime_evidence_payload_read_count": 0,
             },
             "a1_public_qualifiers_sync_v1": {
@@ -6364,6 +6662,26 @@ def validate_a1_interim_lineage(
             "GSE200304_DEC019_REPORTED_ENDPOINT_A1_ADJUDICATION_V3_"
             "UPSTREAM_PASS_GATE_PACK_V1"
         )
+        group_gate_root = (
+            "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/"
+            "A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/"
+            "GSE200304_DEC019_BIOLOGICAL_GROUP_AUTHORITY_GATE_V1"
+        )
+        split_gate_root = (
+            "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/"
+            "A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/"
+            "GSE200304_DEC019_OUTCOME_BLIND_SPLIT_LEAKAGE_GATE_V1"
+        )
+        power_gate_root = (
+            "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/"
+            "A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/"
+            "GSE200304_DEC019_PREFROZEN_POWER_PRECISION_GATE_V1"
+        )
+        one_blocker_adjudication_root = (
+            "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/"
+            "GSE200304_DEC019_REPORTED_ENDPOINT_A1_ADJUDICATION_V3_"
+            "GROUP_SPLIT_POWER_PASS_D6"
+        )
         expected_closed_files = {
             "gse200304_public_asset_bundle": _closed_files(
                 public_root,
@@ -6628,6 +6946,96 @@ def validate_a1_interim_lineage(
                         "PUBLICATION_COMMIT.json",
                         1055,
                         "b4094b0621d50a18fe5ab64d1662b4ee95cfdd93c572e25f111e9b53d2586b42",
+                    ),
+                ),
+            ),
+            GSE200304_DEC019_GROUP_LINEAGE_ID: _closed_files(
+                group_gate_root,
+                (
+                    (
+                        "GSE200304_DEC019_BIOLOGICAL_GROUP_MAPPING_PRIVATE.json",
+                        1336202,
+                        "33abf14479671e264c3fbd8bae58e350d132d5c8f1cfdc65d766b1668b8f0229",
+                    ),
+                    (
+                        "GSE200304_DEC019_BIOLOGICAL_GROUP_MAPPING_AUDIT.json",
+                        1232,
+                        "dc1cb607ba28e1cc34cd76bf6543c4394887302c745597033ef6dc7f338eb177",
+                    ),
+                    (
+                        "GSE200304_DEC019_BIOLOGICAL_GROUP_AUTHORITY_GATE.json",
+                        4013,
+                        "bbcc1f93f47190c7070755d8e892c07d43959985fee32f4f4ec3911fe6f7993b",
+                    ),
+                    (
+                        "PUBLICATION_COMMIT.json",
+                        693,
+                        "7ba6701c48fe0c6abf9be2cee22b58c95aeaf594123fe89db6d6339af07b156f",
+                    ),
+                ),
+            ),
+            GSE200304_DEC019_SPLIT_LINEAGE_ID: _closed_files(
+                split_gate_root,
+                (
+                    (
+                        "GSE200304_DEC019_SPLIT_ASSIGNMENT_PRIVATE.json",
+                        2094877,
+                        "1e330df0fb34fcf860003389f380efae3969522dbf65755ee0d8081a50b3dbca",
+                    ),
+                    (
+                        "GSE200304_DEC019_SPLIT_LEAKAGE_AUDIT.json",
+                        5566,
+                        "32780f6192a03133804b2b5518c2cd2df9a3e005cee0ba7c9cd6f9c10b0a9584",
+                    ),
+                    (
+                        "GSE200304_DEC019_OUTCOME_BLIND_SPLIT_LEAKAGE_GATE.json",
+                        4120,
+                        "8db5cb2d12c775be561c04049a381d6541502bd2fefeda12a981b65be240adf7",
+                    ),
+                    (
+                        "PUBLICATION_COMMIT.json",
+                        664,
+                        "e0de4928b9127c58d5c90fa09a05d92afb379cf7ee9ff31ece1158042b208caa",
+                    ),
+                ),
+            ),
+            GSE200304_DEC019_POWER_LINEAGE_ID: _closed_files(
+                power_gate_root,
+                (
+                    (
+                        "GSE200304_DEC019_PREFROZEN_POWER_PRECISION_AUDIT.json",
+                        1782,
+                        "874321a1a044e0f151c6c081482524758115e8bd9d6f03807ac685cee5e365ed",
+                    ),
+                    (
+                        "GSE200304_DEC019_PREFROZEN_POWER_PRECISION_GATE.json",
+                        4535,
+                        "2432e1dfae92639e92060510aa2d9a413664d9b2d78f3655781d8e6bb8d27811",
+                    ),
+                ),
+            ),
+            GSE200304_DEC019_ONE_BLOCKER_ADJUDICATION_LINEAGE_ID: _closed_files(
+                one_blocker_adjudication_root,
+                (
+                    (
+                        "ADJUDICATION_REPORT.json",
+                        2230,
+                        "966a12e3ac44587bd6f4949d022fdc4b7de5e9cef4fd777f7348382a5a41ff73",
+                    ),
+                    (
+                        "INPUT_EVIDENCE_AUDIT.json",
+                        2974,
+                        "3ce0496b5c49fa0ca82c0b0af66b7ce18de3939a7f56b7cd77a03f295604f1fe",
+                    ),
+                    (
+                        "SHA256SUMS",
+                        183,
+                        "9b6f9f1e9042a28d9af267e2af33d2c1991898c7afca824542d9491b540ebc7f",
+                    ),
+                    (
+                        "PUBLICATION_COMMIT.json",
+                        1055,
+                        "c96530cf37ff0eed803adf24bfde6e6db0058ddf8264c63acf1ff95700a32ca4",
                     ),
                 ),
             ),
@@ -6998,9 +7406,9 @@ def validate_a1_interim_lineage(
                 },
                 "sam_to_oligo_count_reconstruction_status": "UNKNOWN_NOT_ASSERTED",
                 "acquisition_changes_qualification_gate": False,
-                "source_grouping_status": "SEQUENCE_EQUALITY_PROXY_NOT_BIOLOGICALLY_FROZEN",
+                "source_grouping_status": "BIOLOGICAL_GROUP_AUTHORITY_PASS",
                 "license_and_redistribution_status": "PRIVATE_CANONICAL_ONLY",
-                "checkpoint_specific_foundation_exposure_status": "UNKNOWN_NOT_ASSERTED",
+                "checkpoint_specific_foundation_exposure_status": "NOT_PASS",
                 "canonical_intervention_record_count": 0,
                 "upstream_authority_viability": {
                     "artifact_lineage_id": GSE200304_UPSTREAM_AUTHORITY_LINEAGE_ID,
@@ -7022,16 +7430,41 @@ def validate_a1_interim_lineage(
                     "changes_study_qualification": False,
                     "runtime_sync_status": "PENDING_NO_EVT_042",
                 },
+                "biological_group_authority_gate": {
+                    "artifact_lineage_id": GSE200304_DEC019_GROUP_LINEAGE_ID,
+                    "status": "PASS",
+                    "biological_group_count": 6544,
+                    "changes_study_qualification": False,
+                    "runtime_sync_status": "PENDING_NO_EVT_044",
+                },
+                "outcome_blind_split_leakage_gate": {
+                    "artifact_lineage_id": GSE200304_DEC019_SPLIT_LINEAGE_ID,
+                    "status": "PASS",
+                    "connected_component_count": 1936,
+                    "cross_fold_leakage_count": 0,
+                    "outcome_column_read_count": 0,
+                    "changes_study_qualification": False,
+                    "runtime_sync_status": "PENDING_NO_EVT_044",
+                },
+                "prefrozen_power_precision_gate": {
+                    "artifact_lineage_id": GSE200304_DEC019_POWER_LINEAGE_ID,
+                    "status": "PASS",
+                    "planning_only": True,
+                    "observed_model_results_used": False,
+                    "a2_final_membership_used": False,
+                    "changes_study_qualification": False,
+                    "runtime_sync_status": "PENDING_NO_EVT_044",
+                },
                 "dec019_post_adjudication": {
-                    "artifact_lineage_id": GSE200304_DEC019_UPSTREAM_PASS_ADJUDICATION_LINEAGE_ID,
-                    "historical_predecessor_artifact_lineage_id": GSE200304_DEC019_ADJUDICATION_LINEAGE_ID,
+                    "artifact_lineage_id": GSE200304_DEC019_ONE_BLOCKER_ADJUDICATION_LINEAGE_ID,
+                    "historical_predecessor_artifact_lineage_id": GSE200304_DEC019_UPSTREAM_PASS_ADJUDICATION_LINEAGE_ID,
                     "status": "BLOCKED",
                     "adjudication_status": "BLOCKED_DEC019_REPORTED_ENDPOINT_A1_EVIDENCE_INCOMPLETE",
                     "input_gate_count": 8,
-                    "pass_slot_ids": [0, 1, 3, 5],
-                    "input_status_counts": GSE200304_DEC019_UPSTREAM_PASS_INPUT_STATUS_COUNTS,
-                    "blocker_count": 4,
-                    "blockers": GSE200304_DEC019_UPSTREAM_PASS_BLOCKERS,
+                    "pass_slot_ids": GSE200304_DEC019_ONE_BLOCKER_PASS_SLOT_IDS,
+                    "input_status_counts": GSE200304_DEC019_ONE_BLOCKER_INPUT_STATUS_COUNTS,
+                    "blocker_count": 1,
+                    "blockers": GSE200304_DEC019_ONE_BLOCKER_BLOCKERS,
                     "ordinary_study_contribution": 0,
                     "a1_study_contribution": 0,
                     "true_a2_study_contribution": 0,
@@ -7044,9 +7477,10 @@ def validate_a1_interim_lineage(
                     "training_allowed": False,
                     "model_selection_allowed": False,
                     "next_phase_authorized": False,
-                    "predecessor_runtime_event_id": "A1-EVT-041",
-                    "expected_next_runtime_event_id": "A1-EVT-042",
-                    "runtime_sync_status": "PENDING_NO_EVT_042",
+                    "power_evidence_is_planning_only": True,
+                    "predecessor_runtime_event_id": "A1-EVT-043",
+                    "expected_next_runtime_event_id": "A1-EVT-044",
+                    "runtime_sync_status": "PENDING_NO_EVT_044",
                 },
                 "qualified": False,
                 "training_allowed": False,
@@ -7331,14 +7765,18 @@ def validate_a1_interim_lineage(
                 "qualification_protocol_sha256_verified": True,
                 "legacy_gap_inventory_v2_sha256_verified": True,
                 "run_manifest_draft7_compatibility_errors": 0,
-                "targeted_gse200304_upstream_pass_ledger_tests": {
+                "targeted_gse200304_one_blocker_ledger_tests": {
                     "status": "PASS",
-                    "scope": "CURRENT_DYNAMIC_BINDING_APPEND_ONLY_LINEAGE_EXACT_MEMBER_DESCRIPTORS_AND_FAIL_CLOSED_COUNTS",
+                    "scope": "CURRENT_D6_BINDING_FOUR_SETTLED_LINEAGE_NODES_EXACT14_AND_ONE_BLOCKER_COUNTS",
                 },
                 "gse200304_upstream_authority_exact6_descriptor_registration": "PASS",
                 "gse200304_upstream_pass_gate_pack_exact6_descriptor_registration": "PASS",
                 "gse200304_upstream_pass_adjudication_exact4_descriptor_registration": "PASS",
-                "gse200304_upstream_pass_current_dynamic_config_binding": "PASS",
+                "gse200304_biological_group_exact4_descriptor_registration": "PASS",
+                "gse200304_outcome_blind_split_exact4_descriptor_registration": "PASS",
+                "gse200304_prefrozen_power_exact2_descriptor_registration": "PASS",
+                "gse200304_one_blocker_adjudication_exact4_descriptor_registration": "PASS",
+                "gse200304_one_blocker_current_dynamic_config_binding": "PASS",
                 "full_repository_tests": {
                     "status": "NOT_RUN",
                     "reason": "INTERIM_TARGETED_MODULE_SCOPE",
@@ -7359,7 +7797,7 @@ def validate_a1_interim_lineage(
                     "status": "COMPLETED_FINDINGS_APPLIED",
                     "scope": "INTERIM_RECORD_STATUS_CLAIM_BOUNDARIES_PLUMAGE_BLOCK_SEMANTICS_AND_LOG2_CPM_SCALE",
                 },
-                "upstream_pass_ledger_independent_review": {
+                "one_blocker_ledger_independent_review": {
                     "status": "NOT_RUN",
                     "reason": "FOUR_FILE_APPEND_ONLY_LOW_TO_MEDIUM_RISK_BATCH_SELF_CHECKED_UNDER_GLOBAL_LIGHTWEIGHT_POLICY",
                 },
@@ -7375,7 +7813,7 @@ def validate_a1_interim_lineage(
     _expect(
         interim,
         "latest_evidence_update_id",
-        "GSE200304_DEC019_REPORTED_ENDPOINT_A1_ADJUDICATION_V3_UPSTREAM_PASS_GATE_PACK_V1",
+        "GSE200304_DEC019_REPORTED_ENDPOINT_A1_ADJUDICATION_V3_GROUP_SPLIT_POWER_PASS_D6",
         path,
         issues,
         "A1_INTERIM_TIME",
@@ -7383,14 +7821,14 @@ def validate_a1_interim_lineage(
     generated = interim.get("generated_at")
     updated = interim.get("updated_at")
     if (
-        generated != GSE200304_DEC019_UPSTREAM_PASS_LEDGER_AT
-        or updated != GSE200304_DEC019_UPSTREAM_PASS_LEDGER_AT
+        generated != GSE200304_DEC019_ONE_BLOCKER_LEDGER_AT
+        or updated != GSE200304_DEC019_ONE_BLOCKER_LEDGER_AT
     ):
         _issue(
             issues,
             "A1_INTERIM_TIME",
             path,
-            "generated_at and updated_at must remain the exact GSE200304 DEC-019 upstream-pass ledger timestamp",
+            "generated_at and updated_at must remain the exact GSE200304 DEC-019 one-blocker ledger timestamp",
         )
     if generated != updated:
         _issue(issues, "A1_INTERIM_TIME", path, "generated_at and updated_at must identify the same amended record bytes")

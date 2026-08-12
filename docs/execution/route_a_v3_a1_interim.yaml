@@ -120,18 +120,15 @@ dec019_current_disposition:
     primary_measurement_route_if_qualified: AUTHOR_PUBLISHED_PROCESSED_ENDPOINT
     raw_replay_role: REPRODUCIBILITY_AUXILIARY
     required_80s_role_authority_is_primary_route_blocker: false
-    current_blocker_count: 4
+    current_blocker_count: 1
     current_blockers:
-      - BIOLOGICAL_GROUP_AUTHORITY_NOT_PASS
       - CHECKPOINT_SPECIFIC_EXPOSURE_NOT_PASS
-      - OUTCOME_BLIND_SPLIT_LEAKAGE_NOT_PASS
-      - PREFROZEN_POWER_PRECISION_NOT_PASS
     input_gate_count: 8
     input_status_counts:
-      PASS: 4
-      BLOCKED: 1
+      PASS: 7
+      BLOCKED: 0
       UNKNOWN_NOT_ASSERTED: 1
-      NOT_RUN: 2
+      NOT_RUN: 0
     ordinary_study_contribution: 0
     a1_study_contribution: 0
     true_a2_study_contribution: 0
@@ -142,13 +139,13 @@ dec019_current_disposition:
     training_allowed: false
     model_selection_allowed: false
     next_phase_authorized: false
-    predecessor_runtime_event_id: A1-EVT-041
-    expected_next_runtime_event_id: A1-EVT-042
-    runtime_sync_status: PENDING_NO_EVT_042
+    predecessor_runtime_event_id: A1-EVT-043
+    expected_next_runtime_event_id: A1-EVT-044
+    runtime_sync_status: PENDING_NO_EVT_044
   split_freeze_boundary:
     a1_freezes: [SOURCE_AUTHORITY, BIOLOGICAL_SOURCE_GROUP_ASSIGNMENT, NEAR_DUPLICATE_GRAPH, SPLIT_SALT]
-    a1_freeze_status: NOT_FROZEN
-    a1_zero_leakage_audit_status: NOT_RUN
+    a1_freeze_status: FROZEN
+    a1_zero_leakage_audit_status: PASS
     a2_freezes: [FINAL_BENCHMARK_MEMBERSHIP]
     a2_final_membership_status: NOT_FROZEN
   uncertainty_and_power:
@@ -1556,6 +1553,186 @@ artifact_lineage:
       - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_DEC019_REPORTED_ENDPOINT_A1_ADJUDICATION_V3_UPSTREAM_PASS_GATE_PACK_V1/PUBLICATION_COMMIT.json
         bytes: 1055
         sha256: b4094b0621d50a18fe5ab64d1662b4ee95cfdd93c572e25f111e9b53d2586b42
+  gse200304_dec019_biological_group_authority_gate_v1:
+    path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE200304_DEC019_BIOLOGICAL_GROUP_AUTHORITY_GATE_V1
+    dataset_id: GSE200304
+    decision_id: V3-DEC-019
+    status: PASS
+    publication_state: COMMITTED_EXACT
+    aggregate_only: true
+    exact_member_count: 4
+    private_member_count: 1
+    private_member_payload_read_count: 0
+    biological_group_count: 6544
+    changes_study_qualification: false
+    producer_lineage:
+      config_path: configs/route_a_v3_gse200304_dec019_biological_group_authority_gate_v1.json
+      config_sha256: cdeb3e82656d727c0eb942299b32755aab4382a612911739df17546e464220dc
+      script_path: scripts/route_a_v3/produce_gse200304_dec019_biological_group_authority_gate.py
+      script_sha256: c718bee3bedf782f1afe2d653f8a082b9770ed236349350e4ce473995ff35052
+      focused_test_path: tests/route_a_v3/test_produce_gse200304_dec019_biological_group_authority_gate.py
+      focused_test_sha256: d2db133af013546b4c5d02edd53253190e6c24341012a688eb86a9b24395320b
+    predecessor_runtime_event_id: A1-EVT-043
+    expected_next_runtime_event_id: A1-EVT-044
+    runtime_sync_status: PENDING_NO_EVT_044
+    files:
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE200304_DEC019_BIOLOGICAL_GROUP_AUTHORITY_GATE_V1/GSE200304_DEC019_BIOLOGICAL_GROUP_MAPPING_PRIVATE.json
+        bytes: 1336202
+        sha256: 33abf14479671e264c3fbd8bae58e350d132d5c8f1cfdc65d766b1668b8f0229
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE200304_DEC019_BIOLOGICAL_GROUP_AUTHORITY_GATE_V1/GSE200304_DEC019_BIOLOGICAL_GROUP_MAPPING_AUDIT.json
+        bytes: 1232
+        sha256: dc1cb607ba28e1cc34cd76bf6543c4394887302c745597033ef6dc7f338eb177
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE200304_DEC019_BIOLOGICAL_GROUP_AUTHORITY_GATE_V1/GSE200304_DEC019_BIOLOGICAL_GROUP_AUTHORITY_GATE.json
+        bytes: 4013
+        sha256: bbcc1f93f47190c7070755d8e892c07d43959985fee32f4f4ec3911fe6f7993b
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE200304_DEC019_BIOLOGICAL_GROUP_AUTHORITY_GATE_V1/PUBLICATION_COMMIT.json
+        bytes: 693
+        sha256: 7ba6701c48fe0c6abf9be2cee22b58c95aeaf594123fe89db6d6339af07b156f
+  gse200304_dec019_outcome_blind_split_leakage_gate_v1:
+    path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE200304_DEC019_OUTCOME_BLIND_SPLIT_LEAKAGE_GATE_V1
+    dataset_id: GSE200304
+    decision_id: V3-DEC-019
+    status: PASS
+    publication_state: COMMITTED_EXACT
+    aggregate_only: true
+    exact_member_count: 4
+    private_member_count: 1
+    private_member_payload_read_count: 0
+    record_count: 6547
+    biological_group_count: 6544
+    connected_component_count: 1936
+    maximum_component_size: 26
+    outer_group_counts: [1309, 1309, 1309, 1309, 1308]
+    cross_fold_component_leakage_count: 0
+    cross_fold_gene_leakage_count: 0
+    cross_fold_hamming_leakage_count: 0
+    cross_fold_jaccard_leakage_count: 0
+    outcome_column_read_count: 0
+    changes_study_qualification: false
+    producer_lineage:
+      config_path: configs/route_a_v3_gse200304_dec019_outcome_blind_split_leakage_gate_v1.json
+      config_sha256: fb8450e384c68d97413e89b11645fd81af1518f62a7fd18dc7c4aca1063fa45e
+      script_path: scripts/route_a_v3/produce_gse200304_dec019_outcome_blind_split_leakage_gate.py
+      script_sha256: f8e0705576487edcfe724fa466c6990ee77d0b2946b6607e1cb87f08aa6fcda6
+      focused_test_path: tests/route_a_v3/test_produce_gse200304_dec019_outcome_blind_split_leakage_gate.py
+      focused_test_sha256: 2068ce3dcde68b68b9f8cd99c1d4b39165ff8beb735a30cd9ba7c232d528c27d
+    predecessor_runtime_event_id: A1-EVT-043
+    expected_next_runtime_event_id: A1-EVT-044
+    runtime_sync_status: PENDING_NO_EVT_044
+    files:
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE200304_DEC019_OUTCOME_BLIND_SPLIT_LEAKAGE_GATE_V1/GSE200304_DEC019_SPLIT_ASSIGNMENT_PRIVATE.json
+        bytes: 2094877
+        sha256: 1e330df0fb34fcf860003389f380efae3969522dbf65755ee0d8081a50b3dbca
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE200304_DEC019_OUTCOME_BLIND_SPLIT_LEAKAGE_GATE_V1/GSE200304_DEC019_SPLIT_LEAKAGE_AUDIT.json
+        bytes: 5566
+        sha256: 32780f6192a03133804b2b5518c2cd2df9a3e005cee0ba7c9cd6f9c10b0a9584
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE200304_DEC019_OUTCOME_BLIND_SPLIT_LEAKAGE_GATE_V1/GSE200304_DEC019_OUTCOME_BLIND_SPLIT_LEAKAGE_GATE.json
+        bytes: 4120
+        sha256: 8db5cb2d12c775be561c04049a381d6541502bd2fefeda12a981b65be240adf7
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE200304_DEC019_OUTCOME_BLIND_SPLIT_LEAKAGE_GATE_V1/PUBLICATION_COMMIT.json
+        bytes: 664
+        sha256: e0de4928b9127c58d5c90fa09a05d92afb379cf7ee9ff31ece1158042b208caa
+  gse200304_dec019_prefrozen_power_precision_gate_v1:
+    path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE200304_DEC019_PREFROZEN_POWER_PRECISION_GATE_V1
+    dataset_id: GSE200304
+    decision_id: V3-DEC-019
+    status: PASS
+    publication_state: COMMITTED_EXACT
+    aggregate_only: true
+    exact_member_count: 2
+    planning_only: true
+    observed_model_results_used: false
+    a2_final_membership_used: false
+    planning_unit: BIOLOGICAL_SOURCE_GROUP
+    planning_group_count: 6544
+    target_spearman_rho: 0.25
+    two_sided_alpha: 0.05
+    estimated_design_power: 1.0
+    planned_full_ci_width: 0.04613579821079131
+    target_power_minimum: 0.8
+    maximum_full_ci_width: 0.3
+    working_distribution_assumption: MONOTONIC_TRANSFORMATION_OF_BIVARIATE_NORMAL_AT_PREFROZEN_SPEARMAN_RHO
+    changes_study_qualification: false
+    producer_lineage:
+      config_path: configs/route_a_v3_gse200304_dec019_prefrozen_power_precision_gate_v1.json
+      config_sha256: 5daf682d0e5688968d51873dbd99886b34e47d011bdff9eb5b33baa496b40a42
+      script_path: scripts/route_a_v3/produce_gse200304_dec019_prefrozen_power_precision_gate.py
+      script_sha256: e312e4393daf67e18029ef55b454c54f2ac4c08806a967cc3025187beacd469f
+      focused_test_path: tests/route_a_v3/test_produce_gse200304_dec019_prefrozen_power_precision_gate.py
+      focused_test_sha256: e41f7b7a516dfb8d9a93530b44229d4da5e4ed6feb007c6e3564581528da5171
+    predecessor_runtime_event_id: A1-EVT-043
+    expected_next_runtime_event_id: A1-EVT-044
+    runtime_sync_status: PENDING_NO_EVT_044
+    files:
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE200304_DEC019_PREFROZEN_POWER_PRECISION_GATE_V1/GSE200304_DEC019_PREFROZEN_POWER_PRECISION_AUDIT.json
+        bytes: 1782
+        sha256: 874321a1a044e0f151c6c081482524758115e8bd9d6f03807ac685cee5e365ed
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE200304_DEC019_PREFROZEN_POWER_PRECISION_GATE_V1/GSE200304_DEC019_PREFROZEN_POWER_PRECISION_GATE.json
+        bytes: 4535
+        sha256: 2432e1dfae92639e92060510aa2d9a413664d9b2d78f3655781d8e6bb8d27811
+  gse200304_dec019_reported_endpoint_a1_adjudication_v3_group_split_power_pass_d6:
+    path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_DEC019_REPORTED_ENDPOINT_A1_ADJUDICATION_V3_GROUP_SPLIT_POWER_PASS_D6
+    dataset_id: GSE200304
+    decision_id: V3-DEC-019
+    status: BLOCKED_DEC019_REPORTED_ENDPOINT_A1_EVIDENCE_INCOMPLETE
+    publication_state: COMMITTED_EXACT
+    aggregate_only: true
+    historical_predecessor_adjudication_lineage_id: gse200304_dec019_reported_endpoint_a1_adjudication_v3_upstream_pass_gate_pack_v1
+    settled_gate_lineage_ids:
+      - gse200304_dec019_biological_group_authority_gate_v1
+      - gse200304_dec019_outcome_blind_split_leakage_gate_v1
+      - gse200304_dec019_prefrozen_power_precision_gate_v1
+    input_gate_count: 8
+    pass_slot_ids: [0, 1, 2, 3, 5, 6, 7]
+    input_status_counts:
+      PASS: 7
+      BLOCKED: 0
+      UNKNOWN_NOT_ASSERTED: 1
+      NOT_RUN: 0
+    blocker_count: 1
+    blockers:
+      - CHECKPOINT_SPECIFIC_EXPOSURE_NOT_PASS
+    ordinary_study_contribution: 0
+    a1_study_contribution: 0
+    true_a2_study_contribution: 0
+    positive_input_canonical_record_count: 6547
+    canonical_record_count: 0
+    positive_input_fact_is_not_final_canonical_materialization: true
+    qualified: false
+    independent_reproduction_established: false
+    canonical_materialization_allowed: false
+    training_allowed: false
+    model_selection_allowed: false
+    next_phase_authorized: false
+    power_evidence_is_planning_only: true
+    dynamic_config:
+      path: configs/route_a_v3_gse200304_dec019_reported_endpoint_a1_activation_v3.json
+      sha256: 0716e4f1a96280d7e33858df037e05d975119a82ff36ee6794f5ffac1c92bb44
+      config_core_sha256: f2a3c59dddd047dd7f211926042d4da7120929e538234a97cd72041573bd0172
+      descriptor_set_sha256: ef59cf8279848858f038bbc6ec6c194481661cacf3de271425517e018bb4e1cb
+      exact_full_sha_in_static_manifest: false
+    consumer_lineage:
+      script_path: scripts/route_a_v3/adjudicate_gse200304_dec019_reported_endpoint_a1_v3.py
+      script_sha256: 7b79ca1a5fff8bd2640234fe30bdbf39533c52e73aa21a93341ed7ee8e34db53
+      focused_test_path: tests/route_a_v3/test_adjudicate_gse200304_dec019_reported_endpoint_a1_v3.py
+      focused_test_sha256: a985a94c8258ea58dc7d83103050284aed41dcc4c2dcf997253367d0e6b1a1cf
+    predecessor_runtime_event_id: A1-EVT-043
+    expected_next_runtime_event_id: A1-EVT-044
+    runtime_sync_status: PENDING_NO_EVT_044
+    runtime_evidence_payload_read_count: 0
+    files:
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_DEC019_REPORTED_ENDPOINT_A1_ADJUDICATION_V3_GROUP_SPLIT_POWER_PASS_D6/ADJUDICATION_REPORT.json
+        bytes: 2230
+        sha256: 966a12e3ac44587bd6f4949d022fdc4b7de5e9cef4fd777f7348382a5a41ff73
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_DEC019_REPORTED_ENDPOINT_A1_ADJUDICATION_V3_GROUP_SPLIT_POWER_PASS_D6/INPUT_EVIDENCE_AUDIT.json
+        bytes: 2974
+        sha256: 3ce0496b5c49fa0ca82c0b0af66b7ce18de3939a7f56b7cd77a03f295604f1fe
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_DEC019_REPORTED_ENDPOINT_A1_ADJUDICATION_V3_GROUP_SPLIT_POWER_PASS_D6/SHA256SUMS
+        bytes: 183
+        sha256: 9b6f9f1e9042a28d9af267e2af33d2c1991898c7afca824542d9491b540ebc7f
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_DEC019_REPORTED_ENDPOINT_A1_ADJUDICATION_V3_GROUP_SPLIT_POWER_PASS_D6/PUBLICATION_COMMIT.json
+        bytes: 1055
+        sha256: c96530cf37ff0eed803adf24bfde6e6db0058ddf8264c63acf1ff95700a32ca4
 
 dataset_boundary_summary:
   evidence_ref:
@@ -1784,9 +1961,9 @@ dataset_boundary_summary:
       runtime_sync_status: PENDING_NO_EVT_037
     sam_to_oligo_count_reconstruction_status: UNKNOWN_NOT_ASSERTED
     acquisition_changes_qualification_gate: false
-    source_grouping_status: SEQUENCE_EQUALITY_PROXY_NOT_BIOLOGICALLY_FROZEN
+    source_grouping_status: BIOLOGICAL_GROUP_AUTHORITY_PASS
     license_and_redistribution_status: PRIVATE_CANONICAL_ONLY
-    checkpoint_specific_foundation_exposure_status: UNKNOWN_NOT_ASSERTED
+    checkpoint_specific_foundation_exposure_status: NOT_PASS
     canonical_intervention_record_count: 0
     upstream_authority_viability:
       artifact_lineage_id: gse200304_upstream_authority_viability_v1
@@ -1807,24 +1984,43 @@ dataset_boundary_summary:
         PASS: 3
       changes_study_qualification: false
       runtime_sync_status: PENDING_NO_EVT_042
+    biological_group_authority_gate:
+      artifact_lineage_id: gse200304_dec019_biological_group_authority_gate_v1
+      status: PASS
+      biological_group_count: 6544
+      changes_study_qualification: false
+      runtime_sync_status: PENDING_NO_EVT_044
+    outcome_blind_split_leakage_gate:
+      artifact_lineage_id: gse200304_dec019_outcome_blind_split_leakage_gate_v1
+      status: PASS
+      connected_component_count: 1936
+      cross_fold_leakage_count: 0
+      outcome_column_read_count: 0
+      changes_study_qualification: false
+      runtime_sync_status: PENDING_NO_EVT_044
+    prefrozen_power_precision_gate:
+      artifact_lineage_id: gse200304_dec019_prefrozen_power_precision_gate_v1
+      status: PASS
+      planning_only: true
+      observed_model_results_used: false
+      a2_final_membership_used: false
+      changes_study_qualification: false
+      runtime_sync_status: PENDING_NO_EVT_044
     dec019_post_adjudication:
-      artifact_lineage_id: gse200304_dec019_reported_endpoint_a1_adjudication_v3_upstream_pass_gate_pack_v1
-      historical_predecessor_artifact_lineage_id: gse200304_dec019_reported_endpoint_a1_adjudication_v3
+      artifact_lineage_id: gse200304_dec019_reported_endpoint_a1_adjudication_v3_group_split_power_pass_d6
+      historical_predecessor_artifact_lineage_id: gse200304_dec019_reported_endpoint_a1_adjudication_v3_upstream_pass_gate_pack_v1
       status: BLOCKED
       adjudication_status: BLOCKED_DEC019_REPORTED_ENDPOINT_A1_EVIDENCE_INCOMPLETE
       input_gate_count: 8
-      pass_slot_ids: [0, 1, 3, 5]
+      pass_slot_ids: [0, 1, 2, 3, 5, 6, 7]
       input_status_counts:
-        PASS: 4
-        BLOCKED: 1
+        PASS: 7
+        BLOCKED: 0
         UNKNOWN_NOT_ASSERTED: 1
-        NOT_RUN: 2
-      blocker_count: 4
+        NOT_RUN: 0
+      blocker_count: 1
       blockers:
-        - BIOLOGICAL_GROUP_AUTHORITY_NOT_PASS
         - CHECKPOINT_SPECIFIC_EXPOSURE_NOT_PASS
-        - OUTCOME_BLIND_SPLIT_LEAKAGE_NOT_PASS
-        - PREFROZEN_POWER_PRECISION_NOT_PASS
       ordinary_study_contribution: 0
       a1_study_contribution: 0
       true_a2_study_contribution: 0
@@ -1837,9 +2033,10 @@ dataset_boundary_summary:
       training_allowed: false
       model_selection_allowed: false
       next_phase_authorized: false
-      predecessor_runtime_event_id: A1-EVT-041
-      expected_next_runtime_event_id: A1-EVT-042
-      runtime_sync_status: PENDING_NO_EVT_042
+      power_evidence_is_planning_only: true
+      predecessor_runtime_event_id: A1-EVT-043
+      expected_next_runtime_event_id: A1-EVT-044
+      runtime_sync_status: PENDING_NO_EVT_044
     qualified: false
     training_allowed: false
     model_selection_allowed: false
@@ -2044,13 +2241,17 @@ verification:
   qualification_protocol_sha256_verified: true
   legacy_gap_inventory_v2_sha256_verified: true
   run_manifest_draft7_compatibility_errors: 0
-  targeted_gse200304_upstream_pass_ledger_tests:
+  targeted_gse200304_one_blocker_ledger_tests:
     status: PASS
-    scope: CURRENT_DYNAMIC_BINDING_APPEND_ONLY_LINEAGE_EXACT_MEMBER_DESCRIPTORS_AND_FAIL_CLOSED_COUNTS
+    scope: CURRENT_D6_BINDING_FOUR_SETTLED_LINEAGE_NODES_EXACT14_AND_ONE_BLOCKER_COUNTS
   gse200304_upstream_authority_exact6_descriptor_registration: PASS
   gse200304_upstream_pass_gate_pack_exact6_descriptor_registration: PASS
   gse200304_upstream_pass_adjudication_exact4_descriptor_registration: PASS
-  gse200304_upstream_pass_current_dynamic_config_binding: PASS
+  gse200304_biological_group_exact4_descriptor_registration: PASS
+  gse200304_outcome_blind_split_exact4_descriptor_registration: PASS
+  gse200304_prefrozen_power_exact2_descriptor_registration: PASS
+  gse200304_one_blocker_adjudication_exact4_descriptor_registration: PASS
+  gse200304_one_blocker_current_dynamic_config_binding: PASS
   full_repository_tests:
     status: NOT_RUN
     reason: INTERIM_TARGETED_MODULE_SCOPE
@@ -2066,13 +2267,13 @@ verification:
   independent_review:
     status: COMPLETED_FINDINGS_APPLIED
     scope: INTERIM_RECORD_STATUS_CLAIM_BOUNDARIES_PLUMAGE_BLOCK_SEMANTICS_AND_LOG2_CPM_SCALE
-  upstream_pass_ledger_independent_review:
+  one_blocker_ledger_independent_review:
     status: NOT_RUN
     reason: FOUR_FILE_APPEND_ONLY_LOW_TO_MEDIUM_RISK_BATCH_SELF_CHECKED_UNDER_GLOBAL_LIGHTWEIGHT_POLICY
 
 initial_generated_at: "2026-08-10T06:30:58+08:00"
-generated_at: "2026-08-12T01:49:11+08:00"
-updated_at: "2026-08-12T01:49:11+08:00"
+generated_at: "2026-08-12T16:09:52+08:00"
+updated_at: "2026-08-12T16:09:52+08:00"
 updated_for_decision_id: V3-DEC-019
 latest_authority_update_id: V3-DEC-019
-latest_evidence_update_id: GSE200304_DEC019_REPORTED_ENDPOINT_A1_ADJUDICATION_V3_UPSTREAM_PASS_GATE_PACK_V1
+latest_evidence_update_id: GSE200304_DEC019_REPORTED_ENDPOINT_A1_ADJUDICATION_V3_GROUP_SPLIT_POWER_PASS_D6
