@@ -40,7 +40,7 @@ DEC019_AMENDMENT_PATH = "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec
 DECISION_LOG_PATH = "docs/execution/route_a_v3_decision_log.yaml"
 REGISTRY_MANIFEST_PATH = "docs/execution/route_a_v3_registry_manifest.json"
 A1_INTERIM_PATH = "docs/execution/route_a_v3_a1_interim.yaml"
-EXPECTED_A1_INTERIM_SHA256 = "19ecee23d267a82744e4a21d74b6eb6d32e6589525d90c137d1e34f3d9ce319d"
+EXPECTED_A1_INTERIM_SHA256 = "ec27d07f7240584380b8a74f7be78ed3f951405703a9c65b383e3928ff69df89"
 GSE200304_DEC019_ONE_BLOCKER_LEDGER_AT = "2026-08-12T16:09:52+08:00"
 GSE200304_DEC019_ONE_BLOCKER_MANIFEST_AT = "2026-08-12T16:09:53+08:00"
 POST_FAIL_ACQUISITION_LEDGER_AT = "2026-08-12T19:30:00+08:00"
@@ -57,6 +57,15 @@ GSE232572_DEVELOPMENT_V3_MATERIALIZATION_MANIFEST_AT = (
 )
 GSE232572_DEVELOPMENT_V3_MATERIALIZATION_EVIDENCE_UPDATE_ID = (
     "GSE232572_DEVELOPMENT_V3_MATERIALIZATION_V1"
+)
+GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_LEDGER_AT = (
+    "2026-08-13T01:03:09+08:00"
+)
+GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_MANIFEST_AT = (
+    "2026-08-13T01:03:10+08:00"
+)
+GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_EVIDENCE_UPDATE_ID = (
+    "GSE232572_A1_QUALIFICATION_AUTHORITY_PREFLIGHT_V1"
 )
 ACTIVE_AMENDMENT_DECISION_IDS = ["V3-DEC-017", "V3-DEC-018", "V3-DEC-019"]
 DEC019_LEAF_AUTHORITY_SHA256 = {
@@ -276,6 +285,18 @@ GSE232572_DEVELOPMENT_V3_MATERIALIZATION_TEST_PATH = (
 GSE232572_DEVELOPMENT_V3_MATERIALIZATION_RUNTIME_CONFIG_PATH = (
     "configs/route_a_v3_gse232572_development_v3_materialization_runtime_sync_v1.json"
 )
+GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_CONFIG_PATH = (
+    "configs/route_a_v3_gse232572_a1_qualification_authority_preflight_v1.json"
+)
+GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_SCRIPT_PATH = (
+    "scripts/route_a_v3/preflight_gse232572_a1_qualification_authority.py"
+)
+GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_TEST_PATH = (
+    "tests/route_a_v3/test_preflight_gse232572_a1_qualification_authority.py"
+)
+GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_RUNTIME_CONFIG_PATH = (
+    "configs/route_a_v3_gse232572_a1_qualification_authority_preflight_runtime_sync_v1.json"
+)
 POST_FAIL_ACQUISITION_STATIC_LEAF_SHA256 = {
     GSE200304_CHECKPOINT_EXPOSURE_FAIL_CONFIG_PATH: (
         "0759e68b26a927e4acfebc55ac74541363122924734b4f75a55da2a931687404"
@@ -327,6 +348,17 @@ GSE232572_DEVELOPMENT_V3_MATERIALIZATION_STATIC_LEAF_SHA256 = {
     ),
     GSE232572_DEVELOPMENT_V3_MATERIALIZATION_TEST_PATH: (
         "2907e91da60d1ec58282e36ffb0149b69b54e3981fab9a6c9f0d49339a383ea5"
+    ),
+}
+GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_STATIC_LEAF_SHA256 = {
+    GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_CONFIG_PATH: (
+        "84ba2f629a29cea349ce47313fff6d8f209aa60769ebf19769c1ed42e4c31106"
+    ),
+    GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_SCRIPT_PATH: (
+        "a2abaf57f72813b4d4a08abab275d88cf85332cd106fe324892cb02c2a1ea9ba"
+    ),
+    GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_TEST_PATH: (
+        "2fcb96317f3b27b42f9274d297bac1427e4b19ee2ab5cb1bdfe18de417327732"
     ),
 }
 GSE200304_DEC019_POST_ADJUDICATION_STATIC_LEAF_SHA256 = {
@@ -448,6 +480,28 @@ GSE232572_DEVELOPMENT_V3_MATERIALIZATION_FAILURE_LINEAGE_ID = (
 GSE232572_DEVELOPMENT_V3_MATERIALIZATION_LINEAGE_ID = (
     "gse232572_development_v3_materialization_v1"
 )
+GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_LINEAGE_ID = (
+    "gse232572_a1_qualification_authority_preflight_v1"
+)
+GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_PASSES = [
+    "AUTHORIZED_PRIMARY_MEASUREMENT_AND_PAPER_FAITHFUL_LNFC",
+    "PUBLIC_RAW_LOCATOR_AND_LINEAGE",
+    "SOURCE_CANDIDATE_CONTEXT_GROUP_RECONSTRUCTION",
+]
+GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_BLOCKERS = {
+    "DATASET_SPECIFIC_QUALIFICATION_AUTHORITY_AND_CONSUMER_USER_APPROVAL": "MISSING_EXTERNAL_AUTHORITY",
+    "OWNER_PROJECT_USE_AND_EXPOSURE_ATTESTATION": "MISSING_EXTERNAL_AUTHORITY",
+    "CHECKPOINT_SPECIFIC_EXACT_AND_NEAR_EXPOSURE_AUDIT": "UNKNOWN_NOT_ASSERTED",
+    "ASSET_LEVEL_QUALIFICATION_USE_RIGHTS_AND_RELEASE_SCOPE": "UNKNOWN_BLOCKED",
+    "EXECUTABLE_BIOLOGICAL_SOURCE_GROUP_AUTHORITY": "NOT_CLOSED",
+    "REPLICATE_OR_VALID_STANDARD_ERROR": "NOT_CLOSED",
+    "ELIGIBLE_MULTI_CANDIDATE_POOLS": "UNKNOWN_NOT_ASSERTED",
+    "A1_GROUP_SPLIT_NEAR_DUPLICATE_GRAPH_SALT_AND_ZERO_LEAKAGE": "NOT_RUN",
+    "PREFROZEN_GROUP_EFFECTIVE_N_POWER_AND_FULL_CI_WIDTH": "NOT_RUN",
+    "REQUIRED_QUALIFICATION_REPORT_FIELDS": "INCOMPLETE",
+    "V3_CANONICAL_ADMISSION": "BLOCKED",
+    "FINAL_CANONICAL_QUALIFIER_AND_ADJUDICATION": "NOT_RUN",
+}
 GSE200304_DEC019_POST_ADJUDICATION_BLOCKERS = [
     "BIOLOGICAL_GROUP_AUTHORITY_NOT_PASS",
     "CANONICAL_REPORTED_ENDPOINT_SEMANTICS_NOT_PASS",
@@ -1476,6 +1530,18 @@ EXPECTED_REGISTRY_MANIFEST_PATH_ROLES = (
         GSE232572_DEVELOPMENT_V3_MATERIALIZATION_TEST_PATH,
         "GSE232572_DEVELOPMENT_V3_MATERIALIZATION_FOCUSED_TEST",
     ),
+    (
+        GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_CONFIG_PATH,
+        "GSE232572_A1_QUALIFICATION_AUTHORITY_PREFLIGHT_CONFIG",
+    ),
+    (
+        GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_SCRIPT_PATH,
+        "GSE232572_A1_QUALIFICATION_AUTHORITY_PREFLIGHT_PRODUCER",
+    ),
+    (
+        GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_TEST_PATH,
+        "GSE232572_A1_QUALIFICATION_AUTHORITY_PREFLIGHT_FOCUSED_TEST",
+    ),
     (INTEGRITY_GUARD_TEST_PATH, "A0_AUTHORITY_INTEGRITY_GUARD_TEST"),
     (VALIDATOR_PATH, "A0_STATIC_AND_SEMANTIC_VALIDATOR"),
 )
@@ -1599,6 +1665,7 @@ def required_bundle_paths() -> tuple[str, ...]:
         *GSE217518_PUBLIC_AUTHORITY_PREFLIGHT_STATIC_LEAF_SHA256,
         *GSE232572_PUBLIC_RECOVERY_AUDIT_STATIC_LEAF_SHA256,
         *GSE232572_DEVELOPMENT_V3_MATERIALIZATION_STATIC_LEAF_SHA256,
+        *GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_STATIC_LEAF_SHA256,
         INTEGRITY_GUARD_TEST_PATH,
         *REGISTRY_PATHS.values(),
         *(f"{SCHEMA_DIR}/{name}" for name in SCHEMA_FILES),
@@ -2532,10 +2599,10 @@ def validate_registry_manifest(repo_root: Path) -> list[Issue]:
         "contract_sha256": SOURCE_CONTRACT_SHA256,
         "active_amendment_decision_ids": ACTIVE_AMENDMENT_DECISION_IDS,
         "base_commit": "bbb71dcba6f1e1c9cb75a8a6653f1a4fe4a6ca0c",
-        "manifest_status": "A1_GSE232572_DEVELOPMENT_V3_MATERIALIZATION_LEDGER_REGISTERED_PENDING_EVT048",
+        "manifest_status": "A1_GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_LEDGER_REGISTERED_PENDING_EVT049",
         "initial_generated_at": "2026-08-10T10:10:05+08:00",
-        "generated_at": GSE232572_DEVELOPMENT_V3_MATERIALIZATION_MANIFEST_AT,
-        "updated_at": GSE232572_DEVELOPMENT_V3_MATERIALIZATION_MANIFEST_AT,
+        "generated_at": GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_MANIFEST_AT,
+        "updated_at": GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_MANIFEST_AT,
         "sealed_contact": False,
     }
     expected_top_keys = set(expected_static_top) | {"files"}
@@ -4711,6 +4778,83 @@ def validate_gse232572_development_v3_materialization_registration(
     return issues
 
 
+def validate_gse232572_qualification_authority_preflight_registration(
+    repo_root: Path,
+) -> list[Issue]:
+    """Freeze the aggregate-only preflight exact3 and keep EVT049 dynamic."""
+
+    issues: list[Issue] = []
+    for relative, expected_sha256 in (
+        GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_STATIC_LEAF_SHA256.items()
+    ):
+        try:
+            actual_sha256 = sha256_bytes(_read_bytes(repo_root, relative))
+        except (FileNotFoundError, ValueError) as exc:
+            _issue(
+                issues,
+                "GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_STATIC_LEAF",
+                relative,
+                str(exc),
+            )
+            continue
+        if actual_sha256 != expected_sha256:
+            _issue(
+                issues,
+                "GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_STATIC_LEAF",
+                relative,
+                f"current bytes hash {actual_sha256} must remain {expected_sha256}",
+            )
+
+    try:
+        manifest = _load_json(repo_root, REGISTRY_MANIFEST_PATH)
+    except (FileNotFoundError, ValueError, json.JSONDecodeError) as exc:
+        _issue(
+            issues,
+            "GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_MANIFEST_DAG",
+            REGISTRY_MANIFEST_PATH,
+            str(exc),
+        )
+    else:
+        entries = manifest.get("files")
+        manifest_paths = {
+            entry.get("path")
+            for entry in entries
+            if isinstance(entries, list) and isinstance(entry, Mapping)
+        }
+        expected_static_paths = set(
+            GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_STATIC_LEAF_SHA256
+        )
+        if not expected_static_paths.issubset(manifest_paths):
+            _issue(
+                issues,
+                "GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_MANIFEST_DAG",
+                REGISTRY_MANIFEST_PATH,
+                "the preflight config, script, and focused test must be exact-hashed by the static manifest",
+            )
+        forbidden_paths = {
+            GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_RUNTIME_CONFIG_PATH,
+            REGISTRY_MANIFEST_PATH,
+        }
+        if manifest_paths & forbidden_paths:
+            _issue(
+                issues,
+                "GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_MANIFEST_DAG",
+                REGISTRY_MANIFEST_PATH,
+                "the dynamic EVT049 config and registry output must not enter the static manifest",
+            )
+        if any(
+            isinstance(relative, str) and relative.endswith(".private.jsonl")
+            for relative in manifest_paths
+        ):
+            _issue(
+                issues,
+                "GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_PRIVATE_ROW_EXCLUDED",
+                REGISTRY_MANIFEST_PATH,
+                "private row JSONL must not be registered by the aggregate-only preflight ledger",
+            )
+    return issues
+
+
 def _gse149487_plumage_nonbinding_core_sha256(protocol: Mapping[str, Any]) -> str:
     """Hash the full protocol after normalizing only the three permitted I/B scalars."""
 
@@ -5752,7 +5896,7 @@ def validate_a1_interim_lineage(
                 "next_phase_authorized": False,
                 "scientific_claim_status": "NOT_ESTABLISHED",
             },
-            "runtime_sync_status": "PENDING_NO_EVT_048",
+            "runtime_sync_status": "PENDING_NO_EVT_049",
         }.items():
             _expect(dec019_disposition, key, value, path, issues, "A1_INTERIM_DEC019")
         gse114002_current = dec019_disposition.get("gse114002_designed_library")
@@ -5857,6 +6001,7 @@ def validate_a1_interim_lineage(
             GSE232572_PUBLIC_RECOVERY_AUDIT_LINEAGE_ID,
             GSE232572_DEVELOPMENT_V3_MATERIALIZATION_FAILURE_LINEAGE_ID,
             GSE232572_DEVELOPMENT_V3_MATERIALIZATION_LINEAGE_ID,
+            GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_LINEAGE_ID,
             "gse145046_a2_audit_protocol",
             "gse145046_a2_formal_audit_v1",
             "a1_public_qualifiers_sync_v1",
@@ -6256,7 +6401,7 @@ def validate_a1_interim_lineage(
                 },
                 "predecessor_runtime_event_id": "A1-EVT-047",
                 "expected_next_runtime_event_id": "A1-EVT-048",
-                "runtime_sync_status": "PENDING_NO_EVT_048",
+                "runtime_sync_status": "SYNCED_EVT_048",
                 "artifact_payload_read_count_for_ledger": 0,
                 "private_jsonl_read_count_for_ledger": 0,
                 "private_jsonl_registered_artifact_count": 0,
@@ -6327,9 +6472,94 @@ def validate_a1_interim_lineage(
                 },
                 "predecessor_runtime_event_id": "A1-EVT-047",
                 "expected_next_runtime_event_id": "A1-EVT-048",
-                "runtime_sync_status": "PENDING_NO_EVT_048",
+                "runtime_sync_status": "SYNCED_EVT_048",
                 "artifact_payload_read_count_for_ledger": 0,
                 "private_jsonl_read_count_for_ledger": 0,
+                "private_jsonl_registered_artifact_count": 0,
+            },
+            GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_LINEAGE_ID: {
+                "path": (
+                    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE232572/"
+                    "GSE232572_A1_QUALIFICATION_AUTHORITY_PREFLIGHT_20260813T010116P0800/"
+                    "GSE232572_A1_QUALIFICATION_AUTHORITY_PREFLIGHT.json"
+                ),
+                "bytes": 9586,
+                "sha256": "00776c808cfa3e9ba2cfdb92b866c5f7c1bc92ea3818d17687cb9a8521b30d71",
+                "dataset_id": "GSE232572",
+                "schema_version": "route_a_v3_gse232572_a1_qualification_authority_preflight.v1",
+                "artifact_type": "GSE232572_A1_QUALIFICATION_AUTHORITY_PREFLIGHT_AGGREGATE_ONLY",
+                "protocol_id": "GSE232572_A1_QUALIFICATION_AUTHORITY_PREFLIGHT_V1",
+                "overall_decision": "BLOCKED_MISSING_EXTERNAL_AUTHORITY",
+                "terminal_status": "STOP_BEFORE_PRIVATE_ROW_ACCESS_AND_CANONICAL_MATERIALIZATION",
+                "aggregate_only": True,
+                "registered_aggregate_pass_count": 3,
+                "registered_aggregate_passes": GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_PASSES,
+                "open_qualification_blocker_count": 12,
+                "qualification_blocker_statuses": GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_BLOCKERS,
+                "published_universe_row_count": 11929,
+                "schema_valid_development_record_count": 8068,
+                "rejected_published_row_count": 3861,
+                "public_replicate_count": 3,
+                "primary_label_standard_error": None,
+                "checkpoint_specific_exposure": "UNKNOWN_NOT_ASSERTED",
+                "sequence_exposure": "SEQUENCE_EXPOSED",
+                "label_exposure": "LABEL_EXPOSED",
+                "untouched_confirmatory": False,
+                "public_redistribution_status": "UNKNOWN_NOT_ASSERTED_SUBMITTER_IP_CAVEAT",
+                "row_license_status": "UNKNOWN_BLOCKED",
+                "redistribution_allowed": False,
+                "recommended_future_scope": "PRIVATE_CANONICAL_ONLY",
+                "recommended_future_scope_approved": False,
+                "future_contribution_authorization_status": "NOT_AUTHORIZED",
+                "maximum_ordinary_study_contribution_if_fully_qualified": 1,
+                "maximum_a1_study_contribution_if_fully_qualified": 1,
+                "maximum_true_a2_study_contribution_if_fully_qualified": 0,
+                "canonical_record_count": 0,
+                "qualified": False,
+                "ordinary_study_contribution": 0,
+                "a1_study_contribution": 0,
+                "true_a2_study_contribution": 0,
+                "training_allowed": False,
+                "model_selection_allowed": False,
+                "next_phase_allowed": False,
+                "scientific_claim_status": "NOT_ESTABLISHED",
+                "producer_lineage": {
+                    "base_commit": "13baa39e87406b5bc81b7e236cee637f694bfd0f",
+                    "initial_implementation_commit": "cb10350681a1f4fd7dbe5322d671d618d77aaebf",
+                    "lifecycle_repair_implementation_commit": "8ee914723b0d97d8ca07bab9ae7aaa1114e049dd",
+                    "binding_commit": "d0778b92c1b90456a84bce60c7b7c3e039bc1ff5",
+                    "initial_implementation_exact_changed_paths": [
+                        GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_CONFIG_PATH,
+                        GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_SCRIPT_PATH,
+                        GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_TEST_PATH,
+                    ],
+                    "lifecycle_repair_exact_changed_paths": [
+                        GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_SCRIPT_PATH,
+                        GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_TEST_PATH,
+                    ],
+                    "binding_exact_changed_paths": [
+                        GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_CONFIG_PATH,
+                    ],
+                    "binding_diff_is_config_only": True,
+                    "remote_head_at_registration": "d0778b92c1b90456a84bce60c7b7c3e039bc1ff5",
+                    "config_path": GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_CONFIG_PATH,
+                    "config_sha256": GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_STATIC_LEAF_SHA256[
+                        GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_CONFIG_PATH
+                    ],
+                    "script_path": GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_SCRIPT_PATH,
+                    "script_sha256": GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_STATIC_LEAF_SHA256[
+                        GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_SCRIPT_PATH
+                    ],
+                    "focused_test_path": GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_TEST_PATH,
+                    "focused_test_sha256": GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_STATIC_LEAF_SHA256[
+                        GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_TEST_PATH
+                    ],
+                },
+                "predecessor_runtime_event_id": "A1-EVT-048",
+                "expected_next_runtime_event_id": "A1-EVT-049",
+                "runtime_sync_status": "PENDING_NO_EVT_049",
+                "artifact_payload_read_count_for_ledger": 0,
+                "private_row_artifact_read_count_for_ledger": 0,
                 "private_jsonl_registered_artifact_count": 0,
             },
         }
@@ -8271,7 +8501,37 @@ def validate_a1_interim_lineage(
                     "changes_qualification_gate": False,
                     "predecessor_runtime_event_id": "A1-EVT-047",
                     "expected_next_runtime_event_id": "A1-EVT-048",
-                    "runtime_sync_status": "PENDING_NO_EVT_048",
+                    "runtime_sync_status": "SYNCED_EVT_048",
+                },
+                "qualification_authority_preflight": {
+                    "artifact_lineage_id": GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_LINEAGE_ID,
+                    "artifact_type": "GSE232572_A1_QUALIFICATION_AUTHORITY_PREFLIGHT_AGGREGATE_ONLY",
+                    "protocol_id": "GSE232572_A1_QUALIFICATION_AUTHORITY_PREFLIGHT_V1",
+                    "overall_decision": "BLOCKED_MISSING_EXTERNAL_AUTHORITY",
+                    "terminal_status": "STOP_BEFORE_PRIVATE_ROW_ACCESS_AND_CANONICAL_MATERIALIZATION",
+                    "aggregate_only": True,
+                    "registered_aggregate_pass_count": 3,
+                    "open_qualification_blocker_count": 12,
+                    "published_universe_row_count": 11929,
+                    "schema_valid_development_record_count": 8068,
+                    "canonical_record_count": 0,
+                    "qualified": False,
+                    "ordinary_study_contribution": 0,
+                    "a1_study_contribution": 0,
+                    "true_a2_study_contribution": 0,
+                    "checkpoint_specific_exposure": "UNKNOWN_NOT_ASSERTED",
+                    "public_redistribution_status": "UNKNOWN_NOT_ASSERTED_SUBMITTER_IP_CAVEAT",
+                    "row_license_status": "UNKNOWN_BLOCKED",
+                    "recommended_future_scope": "PRIVATE_CANONICAL_ONLY",
+                    "recommended_future_scope_approved": False,
+                    "future_contribution_authorization_status": "NOT_AUTHORIZED",
+                    "training_allowed": False,
+                    "model_selection_allowed": False,
+                    "next_phase_allowed": False,
+                    "changes_qualification_gate": False,
+                    "predecessor_runtime_event_id": "A1-EVT-048",
+                    "expected_next_runtime_event_id": "A1-EVT-049",
+                    "runtime_sync_status": "PENDING_NO_EVT_049",
                 },
                 "qualified": False,
                 "training_allowed": False,
@@ -8790,11 +9050,18 @@ def validate_a1_interim_lineage(
                 "gse232572_public_recovery_audit_dynamic_runtime_config_cycle_policy": "PASS",
                 "targeted_gse232572_development_v3_materialization_ledger_tests": {
                     "status": "PASS",
-                    "scope": "TWO_PUBLIC_AGGREGATE_REPORTS_THREE_STATIC_PRODUCER_LEAVES_EVT047_SETTLED_EVT048_PENDING",
+                    "scope": "TWO_PUBLIC_AGGREGATE_REPORTS_THREE_STATIC_PRODUCER_LEAVES_EVT048_SETTLED",
                 },
                 "gse232572_development_v3_materialization_artifact_registration": "PASS",
                 "gse232572_development_v3_materialization_three_static_leaf_registration": "PASS",
                 "gse232572_development_v3_private_jsonl_excluded": "PASS",
+                "targeted_gse232572_qualification_authority_preflight_ledger_tests": {
+                    "status": "PASS",
+                    "scope": "ONE_PUBLIC_AGGREGATE_STOP_REPORT_THREE_STATIC_PRODUCER_LEAVES_EVT048_SETTLED_EVT049_PENDING",
+                },
+                "gse232572_qualification_authority_preflight_artifact_registration": "PASS",
+                "gse232572_qualification_authority_preflight_three_static_leaf_registration": "PASS",
+                "gse232572_qualification_authority_preflight_private_row_excluded": "PASS",
                 "full_repository_tests": {
                     "status": "NOT_RUN",
                     "reason": "INTERIM_TARGETED_MODULE_SCOPE",
@@ -8835,6 +9102,10 @@ def validate_a1_interim_lineage(
                     "status": "NOT_RUN",
                     "reason": "FOUR_FILE_APPEND_ONLY_LOW_TO_MEDIUM_RISK_BATCH_SELF_CHECKED_UNDER_GLOBAL_LIGHTWEIGHT_POLICY",
                 },
+                "gse232572_qualification_authority_preflight_ledger_independent_review": {
+                    "status": "NOT_RUN",
+                    "reason": "FOUR_FILE_APPEND_ONLY_LOW_TO_MEDIUM_RISK_BATCH_SELF_CHECKED_UNDER_GLOBAL_LIGHTWEIGHT_POLICY",
+                },
             },
             path,
             issues,
@@ -8847,7 +9118,7 @@ def validate_a1_interim_lineage(
     _expect(
         interim,
         "latest_evidence_update_id",
-        GSE232572_DEVELOPMENT_V3_MATERIALIZATION_EVIDENCE_UPDATE_ID,
+        GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_EVIDENCE_UPDATE_ID,
         path,
         issues,
         "A1_INTERIM_TIME",
@@ -8855,14 +9126,14 @@ def validate_a1_interim_lineage(
     generated = interim.get("generated_at")
     updated = interim.get("updated_at")
     if (
-        generated != GSE232572_DEVELOPMENT_V3_MATERIALIZATION_LEDGER_AT
-        or updated != GSE232572_DEVELOPMENT_V3_MATERIALIZATION_LEDGER_AT
+        generated != GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_LEDGER_AT
+        or updated != GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_LEDGER_AT
     ):
         _issue(
             issues,
             "A1_INTERIM_TIME",
             path,
-            "generated_at and updated_at must remain the exact GSE232572 development V3 materialization ledger timestamp",
+            "generated_at and updated_at must remain the exact GSE232572 qualification-authority preflight ledger timestamp",
         )
     if generated != updated:
         _issue(issues, "A1_INTERIM_TIME", path, "generated_at and updated_at must identify the same amended record bytes")
@@ -8894,6 +9165,9 @@ def validate_a1_interim_lineage(
         gse232572_development_v3_materialization_dt = datetime.fromisoformat(
             "2026-08-12T23:42:43+08:00"
         )
+        gse232572_qualification_authority_preflight_dt = datetime.fromisoformat(
+            "2026-08-13T01:01:33+08:00"
+        )
     except ValueError:
         _issue(issues, "A1_INTERIM_TIME", path, "updated_at must be an ISO-8601 timestamp with offset")
     else:
@@ -8916,12 +9190,13 @@ def validate_a1_interim_lineage(
             or updated_dt < gse217518_public_authority_preflight_dt
             or updated_dt < gse232572_public_recovery_audit_dt
             or updated_dt < gse232572_development_v3_materialization_dt
+            or updated_dt < gse232572_qualification_authority_preflight_dt
         ):
             _issue(
                 issues,
                 "A1_INTERIM_TIME",
                 path,
-                "updated_at must follow all preserved evidence events, DEC-019 owner authorization, successor integration, GSE200304 post-adjudication artifacts, GSE149487 exact21 acquisition, the GSE217518 public-authority preflight, the GSE232572 public-recovery audit, and the GSE232572 development V3 materialization",
+                "updated_at must follow all preserved evidence events, DEC-019 owner authorization, successor integration, GSE200304 post-adjudication artifacts, GSE149487 exact21 acquisition, the GSE217518 public-authority preflight, the GSE232572 public-recovery audit, the GSE232572 development V3 materialization, and the GSE232572 qualification-authority preflight",
             )
     return issues
 
@@ -10298,6 +10573,11 @@ def validate_bundle(repo_root: Path) -> list[Issue]:
     issues.extend(validate_gse232572_public_recovery_audit_registration(repo_root))
     issues.extend(
         validate_gse232572_development_v3_materialization_registration(repo_root)
+    )
+    issues.extend(
+        validate_gse232572_qualification_authority_preflight_registration(
+            repo_root
+        )
     )
     issues.extend(validate_python_static_safety(repo_root))
     issues.extend(validate_runner_and_guard_ast(repo_root))

@@ -59,7 +59,7 @@
     {
       "path": "docs/execution/route_a_v3_a1_interim.yaml",
       "role": "A1_ACTIVE_INTERIM_RECORD",
-      "sha256": "19ecee23d267a82744e4a21d74b6eb6d32e6589525d90c137d1e34f3d9ce319d"
+      "sha256": "ec27d07f7240584380b8a74f7be78ed3f951405703a9c65b383e3928ff69df89"
     },
     {
       "path": "docs/execution/route_a_v3_split_registry.yaml",
@@ -387,20 +387,35 @@
       "sha256": "2907e91da60d1ec58282e36ffb0149b69b54e3981fab9a6c9f0d49339a383ea5"
     },
     {
+      "path": "configs/route_a_v3_gse232572_a1_qualification_authority_preflight_v1.json",
+      "role": "GSE232572_A1_QUALIFICATION_AUTHORITY_PREFLIGHT_CONFIG",
+      "sha256": "84ba2f629a29cea349ce47313fff6d8f209aa60769ebf19769c1ed42e4c31106"
+    },
+    {
+      "path": "scripts/route_a_v3/preflight_gse232572_a1_qualification_authority.py",
+      "role": "GSE232572_A1_QUALIFICATION_AUTHORITY_PREFLIGHT_PRODUCER",
+      "sha256": "a2abaf57f72813b4d4a08abab275d88cf85332cd106fe324892cb02c2a1ea9ba"
+    },
+    {
+      "path": "tests/route_a_v3/test_preflight_gse232572_a1_qualification_authority.py",
+      "role": "GSE232572_A1_QUALIFICATION_AUTHORITY_PREFLIGHT_FOCUSED_TEST",
+      "sha256": "2fcb96317f3b27b42f9274d297bac1427e4b19ee2ab5cb1bdfe18de417327732"
+    },
+    {
       "path": "tests/route_a_v3/test_a0_integrity_guards.py",
       "role": "A0_AUTHORITY_INTEGRITY_GUARD_TEST",
-      "sha256": "8bbe2de98b972c395e027b0561a0f3904b3fe2e64903b6df31a9abcfac529c8c"
+      "sha256": "8ff50be6677e33594f5b1a156bfca2bb9d0daa0e5a56b33af60c691128d83eee"
     },
     {
       "path": "scripts/route_a_v3/validate_a0_bundle.py",
       "role": "A0_STATIC_AND_SEMANTIC_VALIDATOR",
-      "sha256": "a690126c1945764b93f196c2e864934c0cf96002f5e323439a6b03775a53eb7c"
+      "sha256": "f25e9c7de0aecc83ce5f1faad6c24ba4e8635da5e0a16a3096245406d4474cf1"
     }
   ],
   "initial_generated_at": "2026-08-10T10:10:05+08:00",
-  "generated_at": "2026-08-12T23:55:01+08:00",
-  "updated_at": "2026-08-12T23:55:01+08:00",
-  "manifest_status": "A1_GSE232572_DEVELOPMENT_V3_MATERIALIZATION_LEDGER_REGISTERED_PENDING_EVT048",
+  "generated_at": "2026-08-13T01:03:10+08:00",
+  "updated_at": "2026-08-13T01:03:10+08:00",
+  "manifest_status": "A1_GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_LEDGER_REGISTERED_PENDING_EVT049",
   "schema_version": "1.0.0",
   "sealed_contact": false,
   "version": "3.0.0"

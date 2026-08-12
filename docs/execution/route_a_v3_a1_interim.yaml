@@ -167,7 +167,7 @@ dec019_current_disposition:
     model_selection_allowed: false
     next_phase_authorized: false
     scientific_claim_status: NOT_ESTABLISHED
-  runtime_sync_status: PENDING_NO_EVT_048
+  runtime_sync_status: PENDING_NO_EVT_049
 
 artifact_lineage:
   protocol:
@@ -763,7 +763,7 @@ artifact_lineage:
       binding_diff_is_config_only: true
     predecessor_runtime_event_id: A1-EVT-047
     expected_next_runtime_event_id: A1-EVT-048
-    runtime_sync_status: PENDING_NO_EVT_048
+    runtime_sync_status: SYNCED_EVT_048
     artifact_payload_read_count_for_ledger: 0
     private_jsonl_read_count_for_ledger: 0
     private_jsonl_registered_artifact_count: 0
@@ -819,9 +819,94 @@ artifact_lineage:
       focused_test_sha256: 2907e91da60d1ec58282e36ffb0149b69b54e3981fab9a6c9f0d49339a383ea5
     predecessor_runtime_event_id: A1-EVT-047
     expected_next_runtime_event_id: A1-EVT-048
-    runtime_sync_status: PENDING_NO_EVT_048
+    runtime_sync_status: SYNCED_EVT_048
     artifact_payload_read_count_for_ledger: 0
     private_jsonl_read_count_for_ledger: 0
+    private_jsonl_registered_artifact_count: 0
+  gse232572_a1_qualification_authority_preflight_v1:
+    path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE232572/GSE232572_A1_QUALIFICATION_AUTHORITY_PREFLIGHT_20260813T010116P0800/GSE232572_A1_QUALIFICATION_AUTHORITY_PREFLIGHT.json
+    bytes: 9586
+    sha256: 00776c808cfa3e9ba2cfdb92b866c5f7c1bc92ea3818d17687cb9a8521b30d71
+    dataset_id: GSE232572
+    schema_version: route_a_v3_gse232572_a1_qualification_authority_preflight.v1
+    artifact_type: GSE232572_A1_QUALIFICATION_AUTHORITY_PREFLIGHT_AGGREGATE_ONLY
+    protocol_id: GSE232572_A1_QUALIFICATION_AUTHORITY_PREFLIGHT_V1
+    overall_decision: BLOCKED_MISSING_EXTERNAL_AUTHORITY
+    terminal_status: STOP_BEFORE_PRIVATE_ROW_ACCESS_AND_CANONICAL_MATERIALIZATION
+    aggregate_only: true
+    registered_aggregate_pass_count: 3
+    registered_aggregate_passes:
+      - AUTHORIZED_PRIMARY_MEASUREMENT_AND_PAPER_FAITHFUL_LNFC
+      - PUBLIC_RAW_LOCATOR_AND_LINEAGE
+      - SOURCE_CANDIDATE_CONTEXT_GROUP_RECONSTRUCTION
+    open_qualification_blocker_count: 12
+    qualification_blocker_statuses:
+      DATASET_SPECIFIC_QUALIFICATION_AUTHORITY_AND_CONSUMER_USER_APPROVAL: MISSING_EXTERNAL_AUTHORITY
+      OWNER_PROJECT_USE_AND_EXPOSURE_ATTESTATION: MISSING_EXTERNAL_AUTHORITY
+      CHECKPOINT_SPECIFIC_EXACT_AND_NEAR_EXPOSURE_AUDIT: UNKNOWN_NOT_ASSERTED
+      ASSET_LEVEL_QUALIFICATION_USE_RIGHTS_AND_RELEASE_SCOPE: UNKNOWN_BLOCKED
+      EXECUTABLE_BIOLOGICAL_SOURCE_GROUP_AUTHORITY: NOT_CLOSED
+      REPLICATE_OR_VALID_STANDARD_ERROR: NOT_CLOSED
+      ELIGIBLE_MULTI_CANDIDATE_POOLS: UNKNOWN_NOT_ASSERTED
+      A1_GROUP_SPLIT_NEAR_DUPLICATE_GRAPH_SALT_AND_ZERO_LEAKAGE: NOT_RUN
+      PREFROZEN_GROUP_EFFECTIVE_N_POWER_AND_FULL_CI_WIDTH: NOT_RUN
+      REQUIRED_QUALIFICATION_REPORT_FIELDS: INCOMPLETE
+      V3_CANONICAL_ADMISSION: BLOCKED
+      FINAL_CANONICAL_QUALIFIER_AND_ADJUDICATION: NOT_RUN
+    published_universe_row_count: 11929
+    schema_valid_development_record_count: 8068
+    rejected_published_row_count: 3861
+    public_replicate_count: 3
+    primary_label_standard_error: null
+    checkpoint_specific_exposure: UNKNOWN_NOT_ASSERTED
+    sequence_exposure: SEQUENCE_EXPOSED
+    label_exposure: LABEL_EXPOSED
+    untouched_confirmatory: false
+    public_redistribution_status: UNKNOWN_NOT_ASSERTED_SUBMITTER_IP_CAVEAT
+    row_license_status: UNKNOWN_BLOCKED
+    redistribution_allowed: false
+    recommended_future_scope: PRIVATE_CANONICAL_ONLY
+    recommended_future_scope_approved: false
+    future_contribution_authorization_status: NOT_AUTHORIZED
+    maximum_ordinary_study_contribution_if_fully_qualified: 1
+    maximum_a1_study_contribution_if_fully_qualified: 1
+    maximum_true_a2_study_contribution_if_fully_qualified: 0
+    canonical_record_count: 0
+    qualified: false
+    ordinary_study_contribution: 0
+    a1_study_contribution: 0
+    true_a2_study_contribution: 0
+    training_allowed: false
+    model_selection_allowed: false
+    next_phase_allowed: false
+    scientific_claim_status: NOT_ESTABLISHED
+    producer_lineage:
+      base_commit: 13baa39e87406b5bc81b7e236cee637f694bfd0f
+      initial_implementation_commit: cb10350681a1f4fd7dbe5322d671d618d77aaebf
+      lifecycle_repair_implementation_commit: 8ee914723b0d97d8ca07bab9ae7aaa1114e049dd
+      binding_commit: d0778b92c1b90456a84bce60c7b7c3e039bc1ff5
+      initial_implementation_exact_changed_paths:
+        - configs/route_a_v3_gse232572_a1_qualification_authority_preflight_v1.json
+        - scripts/route_a_v3/preflight_gse232572_a1_qualification_authority.py
+        - tests/route_a_v3/test_preflight_gse232572_a1_qualification_authority.py
+      lifecycle_repair_exact_changed_paths:
+        - scripts/route_a_v3/preflight_gse232572_a1_qualification_authority.py
+        - tests/route_a_v3/test_preflight_gse232572_a1_qualification_authority.py
+      binding_exact_changed_paths:
+        - configs/route_a_v3_gse232572_a1_qualification_authority_preflight_v1.json
+      binding_diff_is_config_only: true
+      remote_head_at_registration: d0778b92c1b90456a84bce60c7b7c3e039bc1ff5
+      config_path: configs/route_a_v3_gse232572_a1_qualification_authority_preflight_v1.json
+      config_sha256: 84ba2f629a29cea349ce47313fff6d8f209aa60769ebf19769c1ed42e4c31106
+      script_path: scripts/route_a_v3/preflight_gse232572_a1_qualification_authority.py
+      script_sha256: a2abaf57f72813b4d4a08abab275d88cf85332cd106fe324892cb02c2a1ea9ba
+      focused_test_path: tests/route_a_v3/test_preflight_gse232572_a1_qualification_authority.py
+      focused_test_sha256: 2fcb96317f3b27b42f9274d297bac1427e4b19ee2ab5cb1bdfe18de417327732
+    predecessor_runtime_event_id: A1-EVT-048
+    expected_next_runtime_event_id: A1-EVT-049
+    runtime_sync_status: PENDING_NO_EVT_049
+    artifact_payload_read_count_for_ledger: 0
+    private_row_artifact_read_count_for_ledger: 0
     private_jsonl_registered_artifact_count: 0
   gse145046_a2_audit_protocol:
     path: configs/route_a_v3_gse145046_a2_audit.json
@@ -2203,7 +2288,36 @@ dataset_boundary_summary:
       changes_qualification_gate: false
       predecessor_runtime_event_id: A1-EVT-047
       expected_next_runtime_event_id: A1-EVT-048
-      runtime_sync_status: PENDING_NO_EVT_048
+      runtime_sync_status: SYNCED_EVT_048
+    qualification_authority_preflight:
+      artifact_lineage_id: gse232572_a1_qualification_authority_preflight_v1
+      artifact_type: GSE232572_A1_QUALIFICATION_AUTHORITY_PREFLIGHT_AGGREGATE_ONLY
+      protocol_id: GSE232572_A1_QUALIFICATION_AUTHORITY_PREFLIGHT_V1
+      overall_decision: BLOCKED_MISSING_EXTERNAL_AUTHORITY
+      terminal_status: STOP_BEFORE_PRIVATE_ROW_ACCESS_AND_CANONICAL_MATERIALIZATION
+      aggregate_only: true
+      registered_aggregate_pass_count: 3
+      open_qualification_blocker_count: 12
+      published_universe_row_count: 11929
+      schema_valid_development_record_count: 8068
+      canonical_record_count: 0
+      qualified: false
+      ordinary_study_contribution: 0
+      a1_study_contribution: 0
+      true_a2_study_contribution: 0
+      checkpoint_specific_exposure: UNKNOWN_NOT_ASSERTED
+      public_redistribution_status: UNKNOWN_NOT_ASSERTED_SUBMITTER_IP_CAVEAT
+      row_license_status: UNKNOWN_BLOCKED
+      recommended_future_scope: PRIVATE_CANONICAL_ONLY
+      recommended_future_scope_approved: false
+      future_contribution_authorization_status: NOT_AUTHORIZED
+      training_allowed: false
+      model_selection_allowed: false
+      next_phase_allowed: false
+      changes_qualification_gate: false
+      predecessor_runtime_event_id: A1-EVT-048
+      expected_next_runtime_event_id: A1-EVT-049
+      runtime_sync_status: PENDING_NO_EVT_049
     qualified: false
     training_allowed: false
     model_selection_allowed: false
@@ -2660,10 +2774,16 @@ verification:
   gse232572_public_recovery_audit_dynamic_runtime_config_cycle_policy: PASS
   targeted_gse232572_development_v3_materialization_ledger_tests:
     status: PASS
-    scope: TWO_PUBLIC_AGGREGATE_REPORTS_THREE_STATIC_PRODUCER_LEAVES_EVT047_SETTLED_EVT048_PENDING
+    scope: TWO_PUBLIC_AGGREGATE_REPORTS_THREE_STATIC_PRODUCER_LEAVES_EVT048_SETTLED
   gse232572_development_v3_materialization_artifact_registration: PASS
   gse232572_development_v3_materialization_three_static_leaf_registration: PASS
   gse232572_development_v3_private_jsonl_excluded: PASS
+  targeted_gse232572_qualification_authority_preflight_ledger_tests:
+    status: PASS
+    scope: ONE_PUBLIC_AGGREGATE_STOP_REPORT_THREE_STATIC_PRODUCER_LEAVES_EVT048_SETTLED_EVT049_PENDING
+  gse232572_qualification_authority_preflight_artifact_registration: PASS
+  gse232572_qualification_authority_preflight_three_static_leaf_registration: PASS
+  gse232572_qualification_authority_preflight_private_row_excluded: PASS
   full_repository_tests:
     status: NOT_RUN
     reason: INTERIM_TARGETED_MODULE_SCOPE
@@ -2694,10 +2814,13 @@ verification:
   gse232572_development_v3_materialization_ledger_independent_review:
     status: NOT_RUN
     reason: FOUR_FILE_APPEND_ONLY_LOW_TO_MEDIUM_RISK_BATCH_SELF_CHECKED_UNDER_GLOBAL_LIGHTWEIGHT_POLICY
+  gse232572_qualification_authority_preflight_ledger_independent_review:
+    status: NOT_RUN
+    reason: FOUR_FILE_APPEND_ONLY_LOW_TO_MEDIUM_RISK_BATCH_SELF_CHECKED_UNDER_GLOBAL_LIGHTWEIGHT_POLICY
 
 initial_generated_at: "2026-08-10T06:30:58+08:00"
-generated_at: "2026-08-12T23:55:00+08:00"
-updated_at: "2026-08-12T23:55:00+08:00"
+generated_at: "2026-08-13T01:03:09+08:00"
+updated_at: "2026-08-13T01:03:09+08:00"
 updated_for_decision_id: V3-DEC-019
 latest_authority_update_id: V3-DEC-019
-latest_evidence_update_id: GSE232572_DEVELOPMENT_V3_MATERIALIZATION_V1
+latest_evidence_update_id: GSE232572_A1_QUALIFICATION_AUTHORITY_PREFLIGHT_V1

@@ -2376,8 +2376,8 @@ def test_gse217518_public_authority_preflight_registration_is_closed(
     )
     assert validator.REGISTRY_MANIFEST_PATH not in manifest_paths
     assert manifest["manifest_status"] == (
-        "A1_GSE232572_DEVELOPMENT_V3_MATERIALIZATION_"
-        "LEDGER_REGISTERED_PENDING_EVT048"
+        "A1_GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_"
+        "LEDGER_REGISTERED_PENDING_EVT049"
     )
     assert (
         validator.validate_gse217518_public_authority_preflight_registration(
@@ -2441,7 +2441,7 @@ def test_gse217518_public_authority_preflight_registration_is_closed(
     assert gate["qualified_a2_dense_studies"] == 0
     assert gate["next_phase_authorized"] is False
     assert interim["dec019_current_disposition"]["runtime_sync_status"] == (
-        "PENDING_NO_EVT_048"
+        "PENDING_NO_EVT_049"
     )
     assert lineage[validator.GSE200304_CHECKPOINT_EXPOSURE_FAIL_LINEAGE_ID][
         "runtime_sync_status"
@@ -2579,7 +2579,7 @@ def test_gse232572_public_recovery_audit_registration_is_closed(
     assert interim["artifact_lineage"][
         validator.GSE217518_PUBLIC_AUTHORITY_PREFLIGHT_LINEAGE_ID
     ]["runtime_sync_status"] == "SYNCED_EVT_046"
-    assert interim["dec019_current_disposition"]["runtime_sync_status"] == "PENDING_NO_EVT_048"
+    assert interim["dec019_current_disposition"]["runtime_sync_status"] == "PENDING_NO_EVT_049"
     assert not any(
         row["path"].endswith(".private.jsonl") for row in manifest["files"]
     )
@@ -2748,8 +2748,8 @@ def test_gse232572_development_v3_materialization_registration_is_closed(
     assert success["producer_lineage"]["config_bytes"] == 9484
     assert success["producer_lineage"]["script_bytes"] == 55522
     assert success["producer_lineage"]["focused_test_bytes"] == 31585
-    assert failure["runtime_sync_status"] == "PENDING_NO_EVT_048"
-    assert success["runtime_sync_status"] == "PENDING_NO_EVT_048"
+    assert failure["runtime_sync_status"] == "SYNCED_EVT_048"
+    assert success["runtime_sync_status"] == "SYNCED_EVT_048"
     assert failure["private_jsonl_read_count_for_ledger"] == 0
     assert failure["private_jsonl_registered_artifact_count"] == 0
     assert success["private_jsonl_read_count_for_ledger"] == 0
@@ -2766,7 +2766,7 @@ def test_gse232572_development_v3_materialization_registration_is_closed(
     assert materialization["schema_valid_development_record_count"] == 8068
     assert materialization["canonical_record_count"] == 0
     assert materialization["changes_qualification_gate"] is False
-    assert materialization["runtime_sync_status"] == "PENDING_NO_EVT_048"
+    assert materialization["runtime_sync_status"] == "SYNCED_EVT_048"
     assert summary["qualified"] is False
     assert summary["training_allowed"] is False
     assert summary["model_selection_allowed"] is False
@@ -2775,7 +2775,7 @@ def test_gse232572_development_v3_materialization_registration_is_closed(
         "runtime_sync_status"
     ] == "SYNCED_EVT_047"
     assert interim["dec019_current_disposition"]["runtime_sync_status"] == (
-        "PENDING_NO_EVT_048"
+        "PENDING_NO_EVT_049"
     )
 
     static_root = tmp_path / "materializer_static_drift"
@@ -2856,6 +2856,187 @@ def test_gse232572_development_v3_materialization_registration_is_closed(
         tmp_path / "materialization_unlock",
         monkeypatch,
         forge_canonical_unlock,
+    )
+    assert "A1_INTERIM_LINEAGE" in codes
+    assert "A1_INTERIM_GSE232572" in codes
+
+
+def test_gse232572_qualification_authority_preflight_registration_is_closed(
+    validator,
+    repo_root,
+    tmp_path,
+    monkeypatch,
+):
+    manifest = validator._load_json(repo_root, validator.REGISTRY_MANIFEST_PATH)
+    manifest_paths = {row["path"] for row in manifest["files"]}
+    static_paths = set(
+        validator.GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_STATIC_LEAF_SHA256
+    )
+
+    assert len(static_paths) == 3
+    assert static_paths.issubset(manifest_paths)
+    assert (
+        validator.GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_RUNTIME_CONFIG_PATH
+        not in manifest_paths
+    )
+    assert validator.REGISTRY_MANIFEST_PATH not in manifest_paths
+    assert not any(path.endswith(".private.jsonl") for path in manifest_paths)
+    assert (
+        validator.validate_gse232572_qualification_authority_preflight_registration(
+            repo_root
+        )
+        == []
+    )
+
+    interim = validator._load_yaml(repo_root, validator.A1_INTERIM_PATH)
+    lineage = interim["artifact_lineage"]
+    record = lineage[
+        validator.GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_LINEAGE_ID
+    ]
+    assert record["path"] == (
+        "/mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE232572/"
+        "GSE232572_A1_QUALIFICATION_AUTHORITY_PREFLIGHT_20260813T010116P0800/"
+        "GSE232572_A1_QUALIFICATION_AUTHORITY_PREFLIGHT.json"
+    )
+    assert record["bytes"] == 9586
+    assert record["sha256"] == (
+        "00776c808cfa3e9ba2cfdb92b866c5f7c1bc92ea3818d17687cb9a8521b30d71"
+    )
+    assert record["artifact_type"] == (
+        "GSE232572_A1_QUALIFICATION_AUTHORITY_PREFLIGHT_AGGREGATE_ONLY"
+    )
+    assert record["overall_decision"] == "BLOCKED_MISSING_EXTERNAL_AUTHORITY"
+    assert record["terminal_status"] == (
+        "STOP_BEFORE_PRIVATE_ROW_ACCESS_AND_CANONICAL_MATERIALIZATION"
+    )
+    assert record["registered_aggregate_pass_count"] == 3
+    assert record["registered_aggregate_passes"] == (
+        validator.GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_PASSES
+    )
+    assert record["open_qualification_blocker_count"] == 12
+    assert record["qualification_blocker_statuses"] == (
+        validator.GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_BLOCKERS
+    )
+    assert record["schema_valid_development_record_count"] == 8068
+    assert record["public_replicate_count"] == 3
+    assert record["primary_label_standard_error"] is None
+    assert record["checkpoint_specific_exposure"] == "UNKNOWN_NOT_ASSERTED"
+    assert record["untouched_confirmatory"] is False
+    assert record["recommended_future_scope"] == "PRIVATE_CANONICAL_ONLY"
+    assert record["recommended_future_scope_approved"] is False
+    assert record["future_contribution_authorization_status"] == "NOT_AUTHORIZED"
+    assert record["canonical_record_count"] == 0
+    assert record["ordinary_study_contribution"] == 0
+    assert record["a1_study_contribution"] == 0
+    assert record["true_a2_study_contribution"] == 0
+    assert record["qualified"] is False
+    assert record["training_allowed"] is False
+    assert record["model_selection_allowed"] is False
+    assert record["next_phase_allowed"] is False
+    assert record["private_row_artifact_read_count_for_ledger"] == 0
+    assert record["private_jsonl_registered_artifact_count"] == 0
+    assert record["predecessor_runtime_event_id"] == "A1-EVT-048"
+    assert record["expected_next_runtime_event_id"] == "A1-EVT-049"
+    assert record["runtime_sync_status"] == "PENDING_NO_EVT_049"
+
+    producer = record["producer_lineage"]
+    assert producer["base_commit"] == "13baa39e87406b5bc81b7e236cee637f694bfd0f"
+    assert producer["initial_implementation_commit"] == (
+        "cb10350681a1f4fd7dbe5322d671d618d77aaebf"
+    )
+    assert producer["lifecycle_repair_implementation_commit"] == (
+        "8ee914723b0d97d8ca07bab9ae7aaa1114e049dd"
+    )
+    assert producer["binding_commit"] == "d0778b92c1b90456a84bce60c7b7c3e039bc1ff5"
+    assert producer["binding_diff_is_config_only"] is True
+    assert producer["config_sha256"] == (
+        validator.GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_STATIC_LEAF_SHA256[
+            validator.GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_CONFIG_PATH
+        ]
+    )
+
+    assert lineage[
+        validator.GSE232572_DEVELOPMENT_V3_MATERIALIZATION_FAILURE_LINEAGE_ID
+    ]["runtime_sync_status"] == "SYNCED_EVT_048"
+    assert lineage[
+        validator.GSE232572_DEVELOPMENT_V3_MATERIALIZATION_LINEAGE_ID
+    ]["runtime_sync_status"] == "SYNCED_EVT_048"
+    summary = interim["dataset_boundary_summary"]["GSE232572"]
+    preflight = summary["qualification_authority_preflight"]
+    assert preflight["artifact_lineage_id"] == (
+        validator.GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_LINEAGE_ID
+    )
+    assert preflight["registered_aggregate_pass_count"] == 3
+    assert preflight["open_qualification_blocker_count"] == 12
+    assert preflight["canonical_record_count"] == 0
+    assert preflight["changes_qualification_gate"] is False
+    assert preflight["runtime_sync_status"] == "PENDING_NO_EVT_049"
+    assert summary["qualified"] is False
+    assert summary["training_allowed"] is False
+    assert summary["model_selection_allowed"] is False
+    assert summary["next_phase_authorized"] is False
+    assert interim["dec019_current_disposition"]["runtime_sync_status"] == (
+        "PENDING_NO_EVT_049"
+    )
+
+    static_root = tmp_path / "qualification_preflight_static_drift"
+    static_manifest = _copy_manifest_bundle(validator, repo_root, static_root)
+    relative = validator.GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_SCRIPT_PATH
+    static_leaf = static_root / relative
+    static_leaf.write_bytes(static_leaf.read_bytes() + b"\n# synchronized drift\n")
+    next(row for row in static_manifest["files"] if row["path"] == relative)[
+        "sha256"
+    ] = validator.sha256_file(static_leaf)
+    (static_root / validator.REGISTRY_MANIFEST_PATH).write_text(
+        json.dumps(static_manifest, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    codes = _codes(
+        validator.validate_gse232572_qualification_authority_preflight_registration(
+            static_root
+        )
+    )
+    assert "GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_STATIC_LEAF" in codes
+
+    dynamic_root = tmp_path / "qualification_preflight_dynamic_cycle"
+    dynamic_manifest = _copy_manifest_bundle(validator, repo_root, dynamic_root)
+    dynamic_manifest["files"].append(
+        {
+            "path": validator.GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_RUNTIME_CONFIG_PATH,
+            "role": "FORBIDDEN_DYNAMIC_EVT049_CONFIG",
+            "sha256": "0" * 64,
+        }
+    )
+    (dynamic_root / validator.REGISTRY_MANIFEST_PATH).write_text(
+        json.dumps(dynamic_manifest, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    codes = _codes(
+        validator.validate_gse232572_qualification_authority_preflight_registration(
+            dynamic_root
+        )
+    )
+    assert "GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_MANIFEST_DAG" in codes
+
+    def forge_qualification_unlock(document):
+        node = document["artifact_lineage"][
+            validator.GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_LINEAGE_ID
+        ]
+        node["overall_decision"] = "QUALIFIED"
+        node["open_qualification_blocker_count"] = 0
+        node["canonical_record_count"] = 8068
+        node["qualified"] = True
+        node["training_allowed"] = True
+        boundary = document["dataset_boundary_summary"]["GSE232572"]
+        boundary["qualification_authority_preflight"]["qualified"] = True
+        boundary["qualified"] = True
+
+    codes = _validate_rehashed_interim_bypass(
+        validator,
+        repo_root,
+        tmp_path / "qualification_preflight_unlock",
+        monkeypatch,
+        forge_qualification_unlock,
     )
     assert "A1_INTERIM_LINEAGE" in codes
     assert "A1_INTERIM_GSE232572" in codes
@@ -3360,10 +3541,10 @@ def test_registry_manifest_detects_every_listed_hash_drift(validator, tmp_path, 
         "contract_sha256": goal_hash,
         "active_amendment_decision_ids": validator.ACTIVE_AMENDMENT_DECISION_IDS,
         "base_commit": "bbb71dcba6f1e1c9cb75a8a6653f1a4fe4a6ca0c",
-        "manifest_status": "A1_GSE232572_DEVELOPMENT_V3_MATERIALIZATION_LEDGER_REGISTERED_PENDING_EVT048",
+        "manifest_status": "A1_GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_LEDGER_REGISTERED_PENDING_EVT049",
         "initial_generated_at": "2026-08-10T10:10:05+08:00",
-        "generated_at": validator.GSE232572_DEVELOPMENT_V3_MATERIALIZATION_MANIFEST_AT,
-        "updated_at": validator.GSE232572_DEVELOPMENT_V3_MATERIALIZATION_MANIFEST_AT,
+        "generated_at": validator.GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_MANIFEST_AT,
+        "updated_at": validator.GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_MANIFEST_AT,
         "sealed_contact": False,
         "files": entries,
     }
