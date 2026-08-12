@@ -1,0 +1,227 @@
+{
+  "schema_version": "route_a_v3_gse200304_gse149487_public_evidence_runtime_sync.v1",
+  "protocol_id": "ROUTE_A_V3_GSE200304_GSE149487_PUBLIC_EVIDENCE_RUNTIME_SYNC_V1",
+  "contract_id": "mrna_xeditflow_route_a_v3",
+  "phase_id": "A1",
+  "dataset_ids": [
+    "GSE200304",
+    "GSE149487"
+  ],
+  "decision_id": "V3-DEC-019",
+  "event_id": "A1-EVT-045",
+  "event_name": "GSE200304_GSE149487_PUBLIC_EVIDENCE_REGISTERED_QUALIFICATION_GATE_UNCHANGED",
+  "implementation_binding": {
+    "binding_scheme": "CONFIG_ONLY_POST_IMPLEMENTATION_BINDING_V1",
+    "status": "UNKNOWN_NOT_ASSERTED",
+    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "implementation_script_path": "scripts/route_a_v3/gse200304_gse149487_public_evidence_runtime_sync.py",
+    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_test_path": "tests/route_a_v3/test_gse200304_gse149487_public_evidence_runtime_sync.py",
+    "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
+    "compiled_core_sha256": "bbe53275efa6d533b8a4dd6a925689fa193e2bb68aed288f57d5781e9f24c8ff",
+    "unknown_to_bound_scalar_paths": [
+      "implementation_binding.status",
+      "implementation_binding.implementation_commit",
+      "implementation_binding.implementation_script_sha256",
+      "implementation_binding.implementation_test_sha256"
+    ],
+    "activation_rule": "I is the direct child of the frozen exact4 ledger commit and changes exactly this config, script, and focused test with four UNKNOWN_NOT_ASSERTED binding scalars. B is the direct child of I and changes only those four config scalars. B, HEAD, upstream, and origin must be equal and clean before evidence, prepared-output, or runtime access."
+  },
+  "repository_authority": {
+    "production_repo_root": "/home/cunyuliu/mrna_editflow_goal/worktrees/routea_v3_a1_20260810",
+    "branch": "routea-v3-a1-20260810",
+    "implementation_exact_changed_paths": [
+      "configs/route_a_v3_gse200304_gse149487_public_evidence_runtime_sync_v1.json",
+      "scripts/route_a_v3/gse200304_gse149487_public_evidence_runtime_sync.py",
+      "tests/route_a_v3/test_gse200304_gse149487_public_evidence_runtime_sync.py"
+    ],
+    "binding_exact_changed_paths": [
+      "configs/route_a_v3_gse200304_gse149487_public_evidence_runtime_sync_v1.json"
+    ],
+    "predecessor_ledger": {
+      "status": "BOUND",
+      "commit": "56e0a39c77cd828eff52cd48cb36ffc880737de0",
+      "integration_id": "GSE200304_CHECKPOINT_EXPOSURE_FAIL_AND_GSE149487_PUBLIC_ASSET_ACQUISITION_V1",
+      "manifest_status": "A1_POST_FAIL_ACQUISITION_LEDGER_REGISTERED_PENDING_EVT045",
+      "registered_lineage_ids": [
+        "gse200304_dec019_checkpoint_exposure_fail_current_protocol_v1",
+        "gse149487_public_asset_acquisition_v1"
+      ],
+      "exact_changed_paths": [
+        "docs/execution/route_a_v3_a1_interim.yaml",
+        "docs/execution/route_a_v3_registry_manifest.json",
+        "scripts/route_a_v3/validate_a0_bundle.py",
+        "tests/route_a_v3/test_a0_integrity_guards.py"
+      ],
+      "frozen_blobs": [
+        {
+          "path": "docs/execution/route_a_v3_a1_interim.yaml",
+          "sha256": "539413c13d2da6e10a4c065b3e4bb06d472095bcab63a50b4636d1e4633992f3"
+        },
+        {
+          "path": "docs/execution/route_a_v3_registry_manifest.json",
+          "sha256": "ad0370edc0bef7baff4127a75170fc93199959d22632c822076f5af53bdf01d3"
+        },
+        {
+          "path": "scripts/route_a_v3/validate_a0_bundle.py",
+          "sha256": "b99c5c1107ab6e17e2291d64f045265713fb5cbb6d77b8bd7ffff1b9ccde4124"
+        },
+        {
+          "path": "tests/route_a_v3/test_a0_integrity_guards.py",
+          "sha256": "86a7e4edbcb844df59465612178eaeb29a6c439f505098fbae47fabfbbd86856"
+        }
+      ]
+    }
+  },
+  "registered_artifacts": [
+    {
+      "lineage_id": "gse200304_dec019_checkpoint_exposure_fail_current_protocol_v1",
+      "name": "GSE200304_DEC019_CHECKPOINT_EXPOSURE_FAIL_CURRENT_PROTOCOL.json",
+      "artifact_type": "GSE200304_DEC019_CHECKPOINT_EXPOSURE_FAIL_CURRENT_PROTOCOL_AGGREGATE_ONLY_V1",
+      "absolute_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE200304_DEC019_CHECKPOINT_EXPOSURE_FAIL_CURRENT_PROTOCOL.json",
+      "bytes": 10391,
+      "sha256": "f2e111cd9c3c02726cf47e43220b371bbdd0fac9295f39043a9bc8a7b781da6c"
+    },
+    {
+      "lineage_id": "gse149487_public_asset_acquisition_v1",
+      "name": "GSE149487_PUBLIC_ASSET_ACQUISITION_V1.json",
+      "artifact_type": "GSE149487_PUBLIC_ASSET_ACQUISITION_V1",
+      "absolute_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE149487/GSE149487_PUBLIC_ASSETS_20260812T184152P0800/GSE149487_PUBLIC_ASSET_ACQUISITION_V1.json",
+      "bytes": 22790,
+      "sha256": "0da2680906c5246d7d472632983d47b67223d55d63e11b5f44f9890574088242"
+    }
+  ],
+  "runtime": {
+    "run_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5",
+    "allowed_prepared_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/staging/runtime_sync/A1",
+    "predecessor_event_id": "A1-EVT-044",
+    "predecessor_event_count": 44,
+    "successor_event_id": "A1-EVT-045",
+    "successor_event_count": 45,
+    "predecessor_manifest_output_count": 181,
+    "successor_manifest_output_count": 187,
+    "predecessor_mutables": {
+      "STATUS.json": {
+        "bytes": 26346,
+        "sha256": "484ea9270f4e3ad72c69e50123683000eed361de5fa680882545a8ba863df5a0",
+        "snapshot_name": "STATUS_PRE_GSE200304_GSE149487_PUBLIC_EVIDENCE_RUNTIME_SYNC_V1.json"
+      },
+      "RUN_MANIFEST.json": {
+        "bytes": 74414,
+        "sha256": "640b9524e91493646bfbb74e281072ffa3caf3ad2d660d16e448dc5c9bffab05",
+        "snapshot_name": "RUN_MANIFEST_PRE_GSE200304_GSE149487_PUBLIC_EVIDENCE_RUNTIME_SYNC_V1.json"
+      },
+      "EVENT_LOG.jsonl": {
+        "bytes": 66169,
+        "sha256": "1237333ce1a530a3dfb8da6009a1d126bc7a6990e1f4ef05a34919f7f47b83fa",
+        "snapshot_name": "EVENT_LOG_PRE_GSE200304_GSE149487_PUBLIC_EVIDENCE_RUNTIME_SYNC_V1.jsonl"
+      }
+    },
+    "predecessor_tail": {
+      "event_id": "A1-EVT-044",
+      "decision_id": "V3-DEC-019",
+      "bytes": 2071,
+      "sha256": "5024299524b98c9c2ca0e5ccb40a5c4ba887c2ce73cbfa407c42030bb10766d2"
+    },
+    "sync_name": "A1_GSE200304_GSE149487_PUBLIC_EVIDENCE_RUNTIME_SYNC_V1.json",
+    "output_delta_count": 6,
+    "immutable_publish_order": [
+      "STATUS_PRE_GSE200304_GSE149487_PUBLIC_EVIDENCE_RUNTIME_SYNC_V1.json",
+      "RUN_MANIFEST_PRE_GSE200304_GSE149487_PUBLIC_EVIDENCE_RUNTIME_SYNC_V1.json",
+      "EVENT_LOG_PRE_GSE200304_GSE149487_PUBLIC_EVIDENCE_RUNTIME_SYNC_V1.jsonl",
+      "A1_GSE200304_GSE149487_PUBLIC_EVIDENCE_RUNTIME_SYNC_V1.json"
+    ],
+    "mutable_publish_order": [
+      "STATUS.json",
+      "RUN_MANIFEST.json",
+      "EVENT_LOG.jsonl"
+    ]
+  },
+  "successor_scientific_state": {
+    "input_status_counts": {
+      "PASS": 7,
+      "BLOCKED": 0,
+      "UNKNOWN_NOT_ASSERTED": 1,
+      "NOT_RUN": 0
+    },
+    "unresolved_blockers": [
+      "CHECKPOINT_SPECIFIC_EXPOSURE_NOT_PASS"
+    ],
+    "ordinary_study_contribution": 0,
+    "a1_study_contribution": 0,
+    "true_a2_study_contribution": 0,
+    "canonical_intervention_record_count": 0,
+    "canonical_materialization_allowed": false,
+    "qualified": false,
+    "training_started": false,
+    "training_allowed": false,
+    "training_authorized": false,
+    "model_selection_allowed": false,
+    "next_phase_authorized": false,
+    "scientific_claim_status": "NOT_ESTABLISHED"
+  },
+  "registered_evidence_truth": {
+    "gse200304_checkpoint_exposure": {
+      "status": "FAIL_CURRENT_PROTOCOL",
+      "current_exposure_gate_status": "UNKNOWN_NOT_ASSERTED",
+      "exact_blocker": "CHECKPOINT_SPECIFIC_EXPOSURE_NOT_PASS",
+      "qualified": false,
+      "canonical_record_count": 0,
+      "training_allowed": false,
+      "model_selection_allowed": false,
+      "next_phase_authorized": false
+    },
+    "gse149487_public_asset_acquisition": {
+      "status": "STOPPED_WITH_PUBLIC_EVIDENCE_BLOCKER",
+      "acquisition_status": "EXACT_21_ASSETS_ACQUIRED_AND_INTEGRITY_VERIFIED",
+      "asset_count": 21,
+      "integrity_confirmed": true,
+      "ready_for_full_qualifier_input": false,
+      "ready_for_study_qualification": false,
+      "qualified": false,
+      "ordinary_study_contribution": 0,
+      "a1_study_contribution": 0,
+      "true_a2_study_contribution": 0,
+      "canonical_record_count": 0,
+      "training_allowed": false,
+      "model_selection_allowed": false,
+      "next_phase_authorized": false
+    }
+  },
+  "outer_a1_state": {
+    "run_status": "IN_PROGRESS",
+    "evidence_status": "BLOCKED_PENDING_PUBLIC_EVIDENCE",
+    "gate_status": "A1_BLOCKED_PENDING_PUBLIC_EVIDENCE",
+    "qualified_ordinary_studies": 0,
+    "qualified_a1_studies": 0,
+    "qualified_a2_dense_studies": 0,
+    "metadata_only_qualification_count": 0,
+    "qualified": false,
+    "training_started": false,
+    "training_allowed": false,
+    "training_authorized": false,
+    "model_selection_allowed": false,
+    "next_phase_authorized": false
+  },
+  "access_boundary": {
+    "registered_artifact_count": 2,
+    "registered_artifact_exact_byte_validation_count": 2,
+    "registered_artifact_body_parse_count": 0,
+    "registered_artifact_payload_field_read_count": 0,
+    "registered_artifacts_copied": false,
+    "canonical_materialization_count": 0,
+    "training_run_count": 0,
+    "model_selection_run_count": 0,
+    "restricted_or_sealed_path_accessed": false,
+    "gse246381_contact": false
+  },
+  "publication_policy": {
+    "registered_artifacts_remain_in_place": true,
+    "registered_artifact_order_is_ledger_lineage_order": true,
+    "predecessor_snapshots_are_immutable_runtime_outputs": true,
+    "sync_record_is_immutable_runtime_output": true,
+    "mutables_commit_after_all_immutables": true,
+    "event_is_last_commit": true,
+    "supported_recovery": "EXACT_PUBLICATION_PREFIX_ONLY"
+  }
+}
