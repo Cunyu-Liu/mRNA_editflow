@@ -1,0 +1,59 @@
+{
+  "schema_version": "route_a_v3_gse200304_dec019_prefrozen_power_precision_gate.v1",
+  "protocol_id": "ROUTE_A_V3_GSE200304_DEC019_PREFROZEN_POWER_PRECISION_GATE_V1",
+  "contract_id": "mrna_xeditflow_route_a_v3",
+  "phase_id": "A1",
+  "dataset_id": "GSE200304",
+  "decision_id": "V3-DEC-019",
+  "implementation_binding": {
+    "status": "UNKNOWN_NOT_ASSERTED",
+    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
+    "consumer_upgrade_binding_commit": "4b6ec0595bc1ae3473f8e804a1abe70c9208d6fc",
+    "consumer_upgrade_config_sha256": "c31b523debee2e19475faafb70df0876f2517bb19e388fb2196f0e967bc25209",
+    "consumer_upgrade_script_sha256": "7b79ca1a5fff8bd2640234fe30bdbf39533c52e73aa21a93341ed7ee8e34db53"
+  },
+  "repository_authority": {
+    "implementation_base_commit": "4b6ec0595bc1ae3473f8e804a1abe70c9208d6fc",
+    "implementation_commit_exact_changed_paths": [
+      "configs/route_a_v3_gse200304_dec019_prefrozen_power_precision_gate_v1.json",
+      "scripts/route_a_v3/produce_gse200304_dec019_prefrozen_power_precision_gate.py",
+      "tests/route_a_v3/test_produce_gse200304_dec019_prefrozen_power_precision_gate.py"
+    ],
+    "binding_commit_exact_changed_paths": [
+      "configs/route_a_v3_gse200304_dec019_prefrozen_power_precision_gate_v1.json"
+    ]
+  },
+  "source_authority": {
+    "split_aggregate_audit_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE200304_DEC019_OUTCOME_BLIND_SPLIT_LEAKAGE_GATE_V1/GSE200304_DEC019_SPLIT_LEAKAGE_AUDIT.json",
+    "split_pass_gate_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE200304_DEC019_OUTCOME_BLIND_SPLIT_LEAKAGE_GATE_V1/GSE200304_DEC019_OUTCOME_BLIND_SPLIT_LEAKAGE_GATE.json",
+    "a1_qualification_config_path": "configs/route_a_v3_a1_qualification.json"
+  },
+  "calculation_contract": {
+    "analysis_unit": "BIOLOGICAL_SOURCE_GROUP",
+    "bootstrap_unit": "BIOLOGICAL_SOURCE_GROUP",
+    "evaluation_population": "A1_ELIGIBLE_OUTCOME_BLIND_OUTER_OOF_GROUPS_NOT_A2_FINAL_MEMBERSHIP",
+    "target_metric": "WITHIN_STUDY_SPEARMAN",
+    "alternative_spearman_rho": 0.25,
+    "two_sided_alpha": 0.05,
+    "target_power": 0.8,
+    "confidence_level": 0.95,
+    "maximum_full_confidence_interval_width": 0.3,
+    "power_method": "BONETT_WRIGHT_FISHER_Z_ASYMPTOTIC_TWO_SIDED_SPEARMAN",
+    "confidence_interval_method": "BONETT_WRIGHT_FISHER_Z_SPEARMAN_AT_PREFROZEN_ALTERNATIVE",
+    "working_distribution_assumption": "MONOTONIC_TRANSFORMATION_OF_BIVARIATE_NORMAL_AT_PREFROZEN_SPEARMAN_RHO",
+    "prefrozen_before_model_results": true
+  },
+  "consumer_contract": {
+    "config_path": "configs/route_a_v3_gse200304_dec019_reported_endpoint_a1_activation_v3.json",
+    "script_path": "scripts/route_a_v3/adjudicate_gse200304_dec019_reported_endpoint_a1_v3.py",
+    "gate_id": "PREFROZEN_POWER_PRECISION"
+  },
+  "output_contract": {
+    "audit_basename": "GSE200304_DEC019_PREFROZEN_POWER_PRECISION_AUDIT.json",
+    "gate_basename": "GSE200304_DEC019_PREFROZEN_POWER_PRECISION_GATE.json",
+    "aggregate_only": true,
+    "publication_requires_consumer_acceptance": true
+  }
+}
