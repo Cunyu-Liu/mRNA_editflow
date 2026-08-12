@@ -7,8 +7,8 @@
   "event_name": "DEC019_ACTIVE_AUTHORITY_RUNTIME_METADATA_REPAIRED_NO_SCIENCE_CHANGE",
   "decision_id": "V3-DEC-019",
   "implementation_binding": {
-    "status": "UNKNOWN_NOT_ASSERTED",
-    "implementation_commit": "UNKNOWN_NOT_ASSERTED"
+    "status": "BOUND",
+    "implementation_commit": "a9c0a468779b7157e4c554acf3a7fa963c422544"
   },
   "repository_authority": {
     "branch": "routea-v3-a1-20260810",
