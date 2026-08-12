@@ -46,6 +46,22 @@ EXPECTED_EXACT3 = (
     "scripts/route_a_v3/preflight_gse232572_a1_qualification_authority.py",
     "tests/route_a_v3/test_preflight_gse232572_a1_qualification_authority.py",
 )
+EXPECTED_I2_EXACT2 = EXPECTED_EXACT3[1:]
+EXPECTED_B2_CONFIG_ONLY = (EXPECTED_EXACT3[0],)
+
+FROZEN_BASE_COMMIT = "13baa39e87406b5bc81b7e236cee637f694bfd0f"
+FROZEN_I1_COMMIT = "cb10350681a1f4fd7dbe5322d671d618d77aaebf"
+FROZEN_I1_SHA256 = {
+    EXPECTED_EXACT3[0]: (
+        "b23738c72a2ff479cd16b65893ec773989efc5d4ab0d2ffeaef1cb0e11f640bd"
+    ),
+    EXPECTED_EXACT3[1]: (
+        "689ef8fe6b75782eb92fae6ddf1bbaff6a81a0894a83caa68e133d205f93f37f"
+    ),
+    EXPECTED_EXACT3[2]: (
+        "7b3eb71bdc9d71acc9b4356b9fb0e976154b23f728f76dcbc549dbbaf4e6d86f"
+    ),
+}
 
 EXPECTED_AUTHORITIES = (
     (
@@ -228,7 +244,7 @@ def _validate_protocol(protocol: Mapping[str, Any]) -> None:
         binding,
         {
             "binding_scheme": "CONFIG_ONLY_POST_IMPLEMENTATION_BINDING_V1",
-            "base_commit": "13baa39e87406b5bc81b7e236cee637f694bfd0f",
+            "base_commit": FROZEN_BASE_COMMIT,
             "implementation_script_path": EXPECTED_EXACT3[1],
             "implementation_test_path": EXPECTED_EXACT3[2],
             "unknown_to_bound_scalar_paths": [
@@ -484,6 +500,21 @@ def _run_git(repo_root: Path, *args: str) -> str:
     return completed.stdout.strip()
 
 
+def _git_blob_bytes(repo_root: Path, commit: str, relative_path: str) -> bytes:
+    try:
+        completed = subprocess.run(
+            ["git", "-C", str(repo_root), "show", f"{commit}:{relative_path}"],
+            check=False,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+    except OSError as exc:
+        raise ProtocolError("git is unavailable for binding blob audit") from exc
+    if completed.returncode != 0:
+        raise ProtocolError("git binding blob audit failed")
+    return completed.stdout
+
+
 def _normalise_binding(protocol: Mapping[str, Any]) -> dict[str, Any]:
     result = copy.deepcopy(dict(protocol))
     binding = result["implementation_binding"]
@@ -525,7 +556,7 @@ def _default_binding_auditor(
             error_type=ProtocolError,
         )
         if _sha256(working_payload) != binding[sha_key]:
-            raise ProtocolError(f"working {relative_path} hash differs from I binding")
+            raise ProtocolError(f"working {relative_path} hash differs from I2 binding")
         working_payloads[relative_path] = working_payload
 
     binding_commit = _run_git(repo_root, "rev-parse", "HEAD")
@@ -538,14 +569,27 @@ def _default_binding_auditor(
     if tracked_status:
         raise ProtocolError("tracked worktree or index is not clean")
 
-    implementation_commit = str(binding["implementation_commit"])
+    lifecycle_repair_commit = str(binding["implementation_commit"])
     base_commit = str(binding["base_commit"])
-    if _run_git(repo_root, "rev-parse", f"{binding_commit}^") != implementation_commit:
-        raise ProtocolError("B is not the direct child of I")
-    if _run_git(repo_root, "rev-parse", f"{implementation_commit}^") != base_commit:
-        raise ProtocolError("I is not the direct child of the frozen base")
+    if base_commit != FROZEN_BASE_COMMIT:
+        raise ProtocolError("bound base differs from the frozen base")
+    if (
+        _run_git(repo_root, "rev-parse", f"{binding_commit}^")
+        != lifecycle_repair_commit
+    ):
+        raise ProtocolError("B2 is not the direct child of I2")
+    if (
+        _run_git(repo_root, "rev-parse", f"{lifecycle_repair_commit}^")
+        != FROZEN_I1_COMMIT
+    ):
+        raise ProtocolError("I2 is not the direct child of the frozen I1")
+    if (
+        _run_git(repo_root, "rev-parse", f"{FROZEN_I1_COMMIT}^")
+        != FROZEN_BASE_COMMIT
+    ):
+        raise ProtocolError("frozen I1 is not the direct child of the frozen base")
 
-    implementation_paths = tuple(
+    i1_paths = tuple(
         line
         for line in _run_git(
             repo_root,
@@ -553,12 +597,26 @@ def _default_binding_auditor(
             "--no-commit-id",
             "--name-only",
             "-r",
-            implementation_commit,
+            FROZEN_I1_COMMIT,
         ).splitlines()
         if line
     )
-    if implementation_paths != EXPECTED_EXACT3:
-        raise ProtocolError("I changed paths other than exact3")
+    if i1_paths != EXPECTED_EXACT3:
+        raise ProtocolError("frozen I1 changed paths other than exact3")
+    i2_paths = tuple(
+        line
+        for line in _run_git(
+            repo_root,
+            "diff-tree",
+            "--no-commit-id",
+            "--name-only",
+            "-r",
+            lifecycle_repair_commit,
+        ).splitlines()
+        if line
+    )
+    if i2_paths != EXPECTED_I2_EXACT2:
+        raise ProtocolError("I2 changed paths other than script and focused test")
     binding_paths = tuple(
         line
         for line in _run_git(
@@ -571,53 +629,63 @@ def _default_binding_auditor(
         ).splitlines()
         if line
     )
-    if binding_paths != (EXPECTED_EXACT3[0],):
-        raise ProtocolError("B is not config-only")
+    if binding_paths != EXPECTED_B2_CONFIG_ONLY:
+        raise ProtocolError("B2 is not config-only")
 
-    head_protocol_payload = _run_git(
-        repo_root, "show", f"{binding_commit}:{EXPECTED_EXACT3[0]}"
-    ).encode("utf-8")
-    if not head_protocol_payload.endswith(b"\n"):
-        head_protocol_payload += b"\n"
-    if head_protocol_payload != protocol_payload:
-        raise ProtocolError("working protocol bytes differ from B")
-    implementation_protocol = _json_object(
-        _run_git(
-            repo_root, "show", f"{implementation_commit}:{EXPECTED_EXACT3[0]}"
-        ).encode("utf-8"),
-        label="I protocol",
+    i1_payloads = {
+        relative_path: _git_blob_bytes(repo_root, FROZEN_I1_COMMIT, relative_path)
+        for relative_path in EXPECTED_EXACT3
+    }
+    for relative_path, expected_sha256 in FROZEN_I1_SHA256.items():
+        if _sha256(i1_payloads[relative_path]) != expected_sha256:
+            raise ProtocolError(f"frozen I1 blob identity differs: {relative_path}")
+
+    i2_protocol_payload = _git_blob_bytes(
+        repo_root, lifecycle_repair_commit, EXPECTED_EXACT3[0]
     )
-    _validate_protocol(implementation_protocol)
-    if _normalise_binding(implementation_protocol) != _normalise_binding(protocol):
-        raise ProtocolError("B changed protocol semantics beyond the four scalars")
+    if i2_protocol_payload != i1_payloads[EXPECTED_EXACT3[0]]:
+        raise ProtocolError("I2 changed the frozen UNKNOWN-I1 protocol bytes")
+    if _sha256(i2_protocol_payload) != FROZEN_I1_SHA256[EXPECTED_EXACT3[0]]:
+        raise ProtocolError("I2 protocol identity differs from frozen UNKNOWN-I1")
+
+    head_protocol_payload = _git_blob_bytes(
+        repo_root, binding_commit, EXPECTED_EXACT3[0]
+    )
+    if head_protocol_payload != protocol_payload:
+        raise ProtocolError("working protocol bytes differ from B2")
+    i2_protocol = _json_object(
+        i2_protocol_payload,
+        label="I2 protocol",
+    )
+    _validate_protocol(i2_protocol)
+    i2_binding = i2_protocol["implementation_binding"]
+    if any(i2_binding.get(field) != UNKNOWN for field in UNKNOWN_BINDING_SCALARS):
+        raise ProtocolError("I2 protocol did not preserve all four UNKNOWN scalars")
+    if _normalise_binding(i2_protocol) != _normalise_binding(protocol):
+        raise ProtocolError("B2 changed protocol semantics beyond the four scalars")
 
     for path_key, sha_key in (
         ("implementation_script_path", "implementation_script_sha256"),
         ("implementation_test_path", "implementation_test_sha256"),
     ):
         relative_path = str(binding[path_key])
-        implementation_payload = _run_git(
-            repo_root, "show", f"{implementation_commit}:{relative_path}"
-        ).encode("utf-8")
-        if not implementation_payload.endswith(b"\n"):
-            implementation_payload += b"\n"
-        if _sha256(implementation_payload) != binding[sha_key]:
-            raise ProtocolError(f"{relative_path} hash differs from I binding")
-        head_payload = _run_git(
-            repo_root, "show", f"{binding_commit}:{relative_path}"
-        ).encode("utf-8")
-        if not head_payload.endswith(b"\n"):
-            head_payload += b"\n"
-        if head_payload != implementation_payload:
-            raise ProtocolError(f"{relative_path} changed in B")
+        i2_payload = _git_blob_bytes(
+            repo_root, lifecycle_repair_commit, relative_path
+        )
+        if _sha256(i2_payload) != binding[sha_key]:
+            raise ProtocolError(f"{relative_path} hash differs from I2 binding")
+        head_payload = _git_blob_bytes(repo_root, binding_commit, relative_path)
+        if head_payload != i2_payload:
+            raise ProtocolError(f"{relative_path} changed in B2")
         working_payload = working_payloads[relative_path]
-        if working_payload != implementation_payload:
-            raise ProtocolError(f"working {relative_path} bytes differ from I")
+        if working_payload != i2_payload:
+            raise ProtocolError(f"working {relative_path} bytes differ from I2")
 
     return {
-        "status": "BOUND_CONFIG_ONLY_LIFECYCLE_VERIFIED",
+        "status": "BOUND_I1_I2_CONFIG_ONLY_B2_LIFECYCLE_VERIFIED",
         "base_commit": base_commit,
-        "implementation_commit": implementation_commit,
+        "initial_implementation_commit": FROZEN_I1_COMMIT,
+        "implementation_commit": lifecycle_repair_commit,
         "binding_commit": binding_commit,
     }
 

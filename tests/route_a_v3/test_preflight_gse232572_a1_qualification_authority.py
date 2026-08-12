@@ -30,14 +30,29 @@ sys.modules[SPEC.name] = PREFLIGHT
 SPEC.loader.exec_module(PREFLIGHT)
 
 
-def _protocol() -> dict[str, object]:
-    protocol = json.loads(PROTOCOL_PATH.read_text(encoding="utf-8"))
+def _disk_protocol(path: Path = PROTOCOL_PATH) -> dict[str, object]:
+    protocol = json.loads(path.read_text(encoding="utf-8"))
     PREFLIGHT._validate_protocol(protocol)
     return protocol
 
 
+def _synthetic_i_protocol(
+    disk_protocol: dict[str, object] | None = None,
+) -> dict[str, object]:
+    protocol = copy.deepcopy(disk_protocol or _disk_protocol())
+    binding = protocol["implementation_binding"]
+    for field in PREFLIGHT.UNKNOWN_BINDING_SCALARS:
+        binding[field] = PREFLIGHT.UNKNOWN
+    PREFLIGHT._validate_protocol(protocol)
+    return protocol
+
+
+def _protocol() -> dict[str, object]:
+    return _synthetic_i_protocol()
+
+
 def _bound_protocol() -> dict[str, object]:
-    protocol = copy.deepcopy(_protocol())
+    protocol = _synthetic_i_protocol()
     binding = protocol["implementation_binding"]
     binding["status"] = PREFLIGHT.BOUND
     binding["implementation_commit"] = "1" * 40
@@ -149,7 +164,7 @@ def _execute_fixture(tmp_path: Path, *, output_name: str = "out") -> dict[str, o
 def test_protocol_freezes_exact3_unknown_i_and_exact_public_inputs() -> None:
     protocol = _protocol()
     binding = protocol["implementation_binding"]
-    assert binding["base_commit"] == "13baa39e87406b5bc81b7e236cee637f694bfd0f"
+    assert binding["base_commit"] == PREFLIGHT.FROZEN_BASE_COMMIT
     assert [binding[field] for field in PREFLIGHT.UNKNOWN_BINDING_SCALARS] == [
         PREFLIGHT.UNKNOWN
     ] * 4
@@ -171,6 +186,26 @@ def test_protocol_freezes_exact3_unknown_i_and_exact_public_inputs() -> None:
     ] == 203
 
 
+def test_disk_i_or_b_normalizes_only_the_four_binding_scalars(tmp_path: Path) -> None:
+    disk_protocol = _disk_protocol()
+    synthetic_i = _synthetic_i_protocol(disk_protocol)
+    assert PREFLIGHT._normalise_binding(disk_protocol) == synthetic_i
+    assert [
+        synthetic_i["implementation_binding"][field]
+        for field in PREFLIGHT.UNKNOWN_BINDING_SCALARS
+    ] == [PREFLIGHT.UNKNOWN] * 4
+
+    temporary_b_path = _write_protocol(tmp_path / "repo", _bound_protocol())
+    temporary_b = _disk_protocol(temporary_b_path)
+    temporary_i = _synthetic_i_protocol(temporary_b)
+    assert temporary_b["implementation_binding"]["status"] == PREFLIGHT.BOUND
+    assert PREFLIGHT._normalise_binding(temporary_b) == temporary_i
+    assert [
+        temporary_i["implementation_binding"][field]
+        for field in PREFLIGHT.UNKNOWN_BINDING_SCALARS
+    ] == [PREFLIGHT.UNKNOWN] * 4
+
+
 def test_unknown_i_stops_before_authority_report_or_output_io(tmp_path: Path) -> None:
     calls = {"authority": 0, "report": 0}
 
@@ -182,12 +217,14 @@ def test_unknown_i_stops_before_authority_report_or_output_io(tmp_path: Path) ->
         calls["report"] += 1
         raise AssertionError("report I/O must not occur")
 
+    repo_root = tmp_path / "repo"
+    protocol_path = _write_protocol(repo_root, _synthetic_i_protocol())
     output_dir = tmp_path / "must-not-exist"
     with pytest.raises(PREFLIGHT.BindingNotFrozen, match="config-only-B"):
         PREFLIGHT.execute(
-            PROTOCOL_PATH,
+            protocol_path,
             output_dir,
-            repo_root=tmp_path,
+            repo_root=repo_root,
             authority_auditor=forbidden_authority,
             materialization_loader=forbidden_report,
         )
@@ -395,10 +432,129 @@ def test_lifecycle_accepts_only_coherent_unknown_i_or_bound_b() -> None:
         PREFLIGHT._validate_protocol(extra_change)
 
 
+def test_production_binding_accepts_fixed_i1_i2_b2_chain(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo_root = tmp_path / "repo"
+    i1_protocol = _synthetic_i_protocol()
+    i1_payload = (json.dumps(i1_protocol, indent=2) + "\n").encode("utf-8")
+    assert PREFLIGHT._sha256(i1_payload) == PREFLIGHT.FROZEN_I1_SHA256[
+        PREFLIGHT.EXPECTED_EXACT3[0]
+    ]
+
+    i2_commit = "4" * 40
+    b2_commit = "5" * 40
+    i2_script_payload = MODULE_PATH.read_bytes()
+    i2_test_payload = Path(__file__).read_bytes()
+    b2_protocol = copy.deepcopy(i1_protocol)
+    binding = b2_protocol["implementation_binding"]
+    binding["status"] = PREFLIGHT.BOUND
+    binding["implementation_commit"] = i2_commit
+    binding["implementation_script_sha256"] = PREFLIGHT._sha256(i2_script_payload)
+    binding["implementation_test_sha256"] = PREFLIGHT._sha256(i2_test_payload)
+    protocol_path = _write_protocol(repo_root, b2_protocol)
+    b2_payload = protocol_path.read_bytes()
+
+    working_script_path = repo_root / PREFLIGHT.EXPECTED_EXACT3[1]
+    working_test_path = repo_root / PREFLIGHT.EXPECTED_EXACT3[2]
+    working_script_path.parent.mkdir(parents=True, exist_ok=True)
+    working_test_path.parent.mkdir(parents=True, exist_ok=True)
+    working_script_path.write_bytes(i2_script_payload)
+    working_test_path.write_bytes(i2_test_payload)
+
+    command_results = {
+        ("rev-parse", "HEAD"): b2_commit,
+        ("rev-parse", "@{upstream}"): b2_commit,
+        ("status", "--porcelain=v1", "--untracked-files=no"): "",
+        ("rev-parse", f"{b2_commit}^"): i2_commit,
+        ("rev-parse", f"{i2_commit}^"): PREFLIGHT.FROZEN_I1_COMMIT,
+        ("rev-parse", f"{PREFLIGHT.FROZEN_I1_COMMIT}^"): (
+            PREFLIGHT.FROZEN_BASE_COMMIT
+        ),
+        (
+            "diff-tree",
+            "--no-commit-id",
+            "--name-only",
+            "-r",
+            PREFLIGHT.FROZEN_I1_COMMIT,
+        ): "\n".join(PREFLIGHT.EXPECTED_EXACT3),
+        (
+            "diff-tree",
+            "--no-commit-id",
+            "--name-only",
+            "-r",
+            i2_commit,
+        ): "\n".join(PREFLIGHT.EXPECTED_I2_EXACT2),
+        (
+            "diff-tree",
+            "--no-commit-id",
+            "--name-only",
+            "-r",
+            b2_commit,
+        ): PREFLIGHT.EXPECTED_EXACT3[0],
+    }
+
+    def fake_run_git(root: Path, *args: str) -> str:
+        assert root == repo_root
+        return command_results[args]
+
+    historical_i1_script = b"FROZEN_I1_SCRIPT_BLOB"
+    historical_i1_test = b"FROZEN_I1_TEST_BLOB"
+    blob_results = {
+        (PREFLIGHT.FROZEN_I1_COMMIT, PREFLIGHT.EXPECTED_EXACT3[0]): i1_payload,
+        (
+            PREFLIGHT.FROZEN_I1_COMMIT,
+            PREFLIGHT.EXPECTED_EXACT3[1],
+        ): historical_i1_script,
+        (
+            PREFLIGHT.FROZEN_I1_COMMIT,
+            PREFLIGHT.EXPECTED_EXACT3[2],
+        ): historical_i1_test,
+        (i2_commit, PREFLIGHT.EXPECTED_EXACT3[0]): i1_payload,
+        (i2_commit, PREFLIGHT.EXPECTED_EXACT3[1]): i2_script_payload,
+        (i2_commit, PREFLIGHT.EXPECTED_EXACT3[2]): i2_test_payload,
+        (b2_commit, PREFLIGHT.EXPECTED_EXACT3[0]): b2_payload,
+        (b2_commit, PREFLIGHT.EXPECTED_EXACT3[1]): i2_script_payload,
+        (b2_commit, PREFLIGHT.EXPECTED_EXACT3[2]): i2_test_payload,
+    }
+
+    def fake_git_blob_bytes(root: Path, commit: str, path: str) -> bytes:
+        assert root == repo_root
+        return blob_results[(commit, path)]
+
+    real_sha256 = PREFLIGHT._sha256
+
+    def fake_sha256(payload: bytes) -> str:
+        if payload == historical_i1_script:
+            return PREFLIGHT.FROZEN_I1_SHA256[PREFLIGHT.EXPECTED_EXACT3[1]]
+        if payload == historical_i1_test:
+            return PREFLIGHT.FROZEN_I1_SHA256[PREFLIGHT.EXPECTED_EXACT3[2]]
+        return real_sha256(payload)
+
+    monkeypatch.setattr(PREFLIGHT, "__file__", str(working_script_path))
+    monkeypatch.setattr(PREFLIGHT, "_run_git", fake_run_git)
+    monkeypatch.setattr(PREFLIGHT, "_git_blob_bytes", fake_git_blob_bytes)
+    monkeypatch.setattr(PREFLIGHT, "_sha256", fake_sha256)
+
+    result = PREFLIGHT._default_binding_auditor(
+        b2_protocol,
+        protocol_path,
+        b2_payload,
+        repo_root,
+    )
+    assert result == {
+        "status": "BOUND_I1_I2_CONFIG_ONLY_B2_LIFECYCLE_VERIFIED",
+        "base_commit": PREFLIGHT.FROZEN_BASE_COMMIT,
+        "initial_implementation_commit": PREFLIGHT.FROZEN_I1_COMMIT,
+        "implementation_commit": i2_commit,
+        "binding_commit": b2_commit,
+    }
+
+
 @pytest.mark.parametrize(
     ("failure_mode", "error_match"),
     [
-        ("DIRTY_SCRIPT", "working .* hash differs from I binding"),
+        ("DIRTY_SCRIPT", "working .* hash differs from I2 binding"),
         ("HEAD_NOT_UPSTREAM", "HEAD differs from the configured upstream"),
     ],
 )
