@@ -376,7 +376,7 @@
   "evidence_descriptor_bindings": {
     "binding_scheme": "DESCENDANT_CONFIG_ONLY_DESCRIPTOR_BINDING_V1",
     "status": "BOUND",
-    "descriptor_set_sha256": "21400db80d5cf0a46787c4f86765aec440047901e108fb04e8b63c74e49fefe6",
+    "descriptor_set_sha256": "0facd71684dddc18f77589e9d76fff7e411ef20dfe73fdc6027381cf3c8a429a",
     "dynamic_scalar_suffixes": [
       "absolute_path",
       "sha256",
@@ -422,9 +422,9 @@
       },
       {
         "slot_id": "OUTCOME_BLIND_SPLIT_LEAKAGE",
-        "absolute_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE200304_DEC019_NEGATIVE_GATE_PACK_V1/GSE200304_DEC019_OUTCOME_BLIND_SPLIT_LEAKAGE_GATE.json",
-        "sha256": "b3be463eb502b5b8a2b171ea763cffa8eba1449bf2c380aa3d16435733e35821",
-        "bytes": 4004
+        "absolute_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE200304_DEC019_OUTCOME_BLIND_SPLIT_LEAKAGE_GATE_V1/GSE200304_DEC019_OUTCOME_BLIND_SPLIT_LEAKAGE_GATE.json",
+        "sha256": "8db5cb2d12c775be561c04049a381d6541502bd2fefeda12a981b65be240adf7",
+        "bytes": 4120
       },
       {
         "slot_id": "PREFROZEN_POWER_PRECISION",
