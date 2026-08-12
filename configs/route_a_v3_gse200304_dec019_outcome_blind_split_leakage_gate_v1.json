@@ -1,0 +1,163 @@
+{
+  "schema_version": "route_a_v3_gse200304_dec019_outcome_blind_split_leakage_gate.v1",
+  "protocol_id": "ROUTE_A_V3_GSE200304_DEC019_OUTCOME_BLIND_SPLIT_LEAKAGE_GATE_V1",
+  "contract_id": "mrna_xeditflow_route_a_v3",
+  "phase_id": "A1",
+  "dataset_id": "GSE200304",
+  "decision_id": "V3-DEC-019",
+  "implementation_binding": {
+    "status": "UNKNOWN_NOT_ASSERTED",
+    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
+    "consumer_upgrade_binding_commit": "b732d36b7bd34e913d73b1d58c60d5bde50940ac",
+    "consumer_upgrade_config_sha256": "4827a390864298fd93393a8940fb0787766b6a9f8076302cf7d6d8da72dca4c1",
+    "consumer_upgrade_script_sha256": "f6eed605af44b13a3861cd703586a5df484bdef53aed480c7dc7e628cc870d7e"
+  },
+  "repository_authority": {
+    "implementation_base_commit": "b732d36b7bd34e913d73b1d58c60d5bde50940ac",
+    "implementation_commit_exact_changed_paths": [
+      "configs/route_a_v3_gse200304_dec019_outcome_blind_split_leakage_gate_v1.json",
+      "scripts/route_a_v3/produce_gse200304_dec019_outcome_blind_split_leakage_gate.py",
+      "tests/route_a_v3/test_produce_gse200304_dec019_outcome_blind_split_leakage_gate.py"
+    ],
+    "binding_commit_exact_changed_paths": [
+      "configs/route_a_v3_gse200304_dec019_outcome_blind_split_leakage_gate_v1.json"
+    ]
+  },
+  "source_authority": {
+    "public_data_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE200304/GSE200304_PUBLIC_ASSETS_20260810T143731P0800",
+    "table_s2": {
+      "relative_path": "NIHMS1928233-supplement-3.csv",
+      "bytes": 7323186,
+      "sha256": "812f3c983cb7c4f473200741ffd6d73bcab911c9e354934542e018e7b0cf8a6d"
+    },
+    "table_s3": {
+      "relative_path": "NIHMS1928233-supplement-4.xlsx",
+      "bytes": 864791,
+      "sha256": "ec2aab60fcb0be87f2bcc1b1a5a1f786b23bb429edc9851a4034a3e8983dfa08"
+    },
+    "biological_group_publication": {
+      "absolute_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE200304_DEC019_BIOLOGICAL_GROUP_AUTHORITY_GATE_V1",
+      "members": [
+        {
+          "name": "GSE200304_DEC019_BIOLOGICAL_GROUP_MAPPING_PRIVATE.json",
+          "bytes": 1336202,
+          "sha256": "33abf14479671e264c3fbd8bae58e350d132d5c8f1cfdc65d766b1668b8f0229"
+        },
+        {
+          "name": "GSE200304_DEC019_BIOLOGICAL_GROUP_MAPPING_AUDIT.json",
+          "bytes": 1232,
+          "sha256": "dc1cb607ba28e1cc34cd76bf6543c4394887302c745597033ef6dc7f338eb177"
+        },
+        {
+          "name": "GSE200304_DEC019_BIOLOGICAL_GROUP_AUTHORITY_GATE.json",
+          "bytes": 4013,
+          "sha256": "bbcc1f93f47190c7070755d8e892c07d43959985fee32f4f4ec3911fe6f7993b"
+        },
+        {
+          "name": "PUBLICATION_COMMIT.json",
+          "bytes": 693,
+          "sha256": "7ba6701c48fe0c6abf9be2cee22b58c95aeaf594123fe89db6d6339af07b156f"
+        }
+      ],
+      "mapping_commitment_sha256": "1900fa1085043aea9ff1aa96469ce6c8ae1795c7febf814eba04a2d3a259ff59",
+      "record_count": 6547,
+      "biological_group_count": 6544
+    }
+  },
+  "split_contract": {
+    "universe": "6547_ACCEPTED_CANONICAL_FINITE_TOTALPOLY_RECORDS_PREMODEL_ENDPOINT_AVAILABILITY",
+    "universe_is_not_a2_final_membership": true,
+    "outcome_columns_read": [],
+    "forbidden_outcome_columns": [
+      "xtail_log2FC_TE",
+      "xtail_pvalue",
+      "xtail_FDR",
+      "Translation_Sig"
+    ],
+    "study_id": "GSE200304",
+    "study_is_partition_scope_not_graph_edge": true,
+    "node_id": "BIOLOGICAL_GROUP_ID",
+    "pair_id_grammar": "^(?P<chromosome>[^:]+):(?P<position>[1-9][0-9]*)_(?P<reference>[ACGT])-(?P<alternate>[ACGT])$",
+    "wt_window_length": 201,
+    "reference_index_zero_based": 100,
+    "gene_rule": "TABLE_S3_EXACT_GENE_TOKEN_EQUAL_IN_BOTH_COMPARISONS",
+    "edge_rules": [
+      "EXACT_GENE_TOKEN",
+      "ORIENTATION_NORMALIZED_WT201_HAMMING_LE_10",
+      "CANONICAL_15MER_SET_JACCARD_GE_0_80"
+    ],
+    "hamming_max_distance": 10,
+    "hamming_candidate_fixed_block_count": 11,
+    "kmer_length": 15,
+    "jaccard_threshold_numerator": 4,
+    "jaccard_threshold_denominator": 5,
+    "components_are_indivisible_fold_atoms": true,
+    "split_method": "STRICT_NESTED_GROUP_CV",
+    "outer_fold_count": 5,
+    "inner_fold_count": 4,
+    "split_salt": "GSE200304_DEC019_A1_SPLIT_V1",
+    "component_order": "GROUP_COUNT_DESC_THEN_SHA256_SALT_NUL_COMPONENT_ID_ASC",
+    "fold_choice": "CURRENT_GROUP_COUNT_ASC_THEN_FOLD_INDEX_ASC",
+    "assignment_commitment_algorithm": "DOMAIN_SEPARATED_LENGTH_PREFIXED_SHA256_LEAF_SORT_ODD_DUPLICATE",
+    "assignment_commitment_leaf_domain": "route-a-v3/gse200304/dec019/split-assignment-leaf/v1",
+    "assignment_commitment_parent_domain": "route-a-v3/gse200304/dec019/split-assignment-parent/v1"
+  },
+  "consumer_contract": {
+    "config_path": "configs/route_a_v3_gse200304_dec019_reported_endpoint_a1_activation_v3.json",
+    "script_path": "scripts/route_a_v3/adjudicate_gse200304_dec019_reported_endpoint_a1_v3.py",
+    "gate_id": "OUTCOME_BLIND_SPLIT_LEAKAGE",
+    "assignment_commitment_provenance_key": "split_assignment_commitment_sha256",
+    "facts": {
+      "a1_source_graph_frozen": true,
+      "a1_group_graph_frozen": true,
+      "a1_near_duplicate_graph_frozen": true,
+      "split_salt_hash_bound": true,
+      "outcome_blind_assignment": true,
+      "leakage_audit_pass": true,
+      "final_benchmark_membership_deferred_to_a2": true
+    }
+  },
+  "pass_conditions": {
+    "all_6547_records_mapped_to_6544_frozen_groups": true,
+    "all_outer_folds_nonempty": true,
+    "all_outer_train_inner_folds_nonempty": true,
+    "all_required_cross_fold_leakage_counts_zero": true,
+    "salt_or_threshold_retry_allowed": false
+  },
+  "output_contract": {
+    "private_assignment_basename": "GSE200304_DEC019_SPLIT_ASSIGNMENT_PRIVATE.json",
+    "aggregate_audit_basename": "GSE200304_DEC019_SPLIT_LEAKAGE_AUDIT.json",
+    "allowed_gate_basename": "GSE200304_DEC019_OUTCOME_BLIND_SPLIT_LEAKAGE_GATE.json",
+    "data_member_names": [
+      "GSE200304_DEC019_SPLIT_ASSIGNMENT_PRIVATE.json",
+      "GSE200304_DEC019_SPLIT_LEAKAGE_AUDIT.json",
+      "GSE200304_DEC019_OUTCOME_BLIND_SPLIT_LEAKAGE_GATE.json"
+    ],
+    "terminal_commit_marker": "PUBLICATION_COMMIT.json",
+    "exact_final_member_names": [
+      "GSE200304_DEC019_SPLIT_ASSIGNMENT_PRIVATE.json",
+      "GSE200304_DEC019_SPLIT_LEAKAGE_AUDIT.json",
+      "GSE200304_DEC019_OUTCOME_BLIND_SPLIT_LEAKAGE_GATE.json",
+      "PUBLICATION_COMMIT.json"
+    ],
+    "commit_marker_written_last": true,
+    "existing_exact_is_idempotent": true,
+    "partial_or_mismatched_publication_requires_manual_intervention": true,
+    "automatic_recovery": false,
+    "aggregate_forbidden_keys": [
+      "biological_group_id",
+      "component_id",
+      "canonical_locator",
+      "pair_id",
+      "gene",
+      "gene_token",
+      "sequence",
+      "wt201",
+      "effect",
+      "pvalue",
+      "fdr"
+    ]
+  }
+}
