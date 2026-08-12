@@ -12,12 +12,12 @@
   "event_name": "GSE200304_GSE149487_PUBLIC_EVIDENCE_REGISTERED_QUALIFICATION_GATE_UNCHANGED",
   "implementation_binding": {
     "binding_scheme": "CONFIG_ONLY_POST_IMPLEMENTATION_BINDING_V1",
-    "status": "UNKNOWN_NOT_ASSERTED",
-    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "status": "BOUND",
+    "implementation_commit": "23c41e8359c0502a692a7778f0a2d63dd61f3d44",
     "implementation_script_path": "scripts/route_a_v3/gse200304_gse149487_public_evidence_runtime_sync.py",
-    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_script_sha256": "17c724abecc2c1e38c731f571f543002e101e730fe901089e4189eafeb13caea",
     "implementation_test_path": "tests/route_a_v3/test_gse200304_gse149487_public_evidence_runtime_sync.py",
-    "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_test_sha256": "c60b63e118b0ee4bcfd695e1c8fe870143af715bf2d381904fa8e1ad3bb1ed33",
     "compiled_core_sha256": "bbe53275efa6d533b8a4dd6a925689fa193e2bb68aed288f57d5781e9f24c8ff",
     "unknown_to_bound_scalar_paths": [
       "implementation_binding.status",
