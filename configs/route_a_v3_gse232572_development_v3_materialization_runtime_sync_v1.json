@@ -11,12 +11,12 @@
   "event_name": "GSE232572_DEVELOPMENT_V3_MATERIALIZATION_REGISTERED_QUALIFICATION_GATE_UNCHANGED",
   "implementation_binding": {
     "binding_scheme": "CONFIG_ONLY_POST_IMPLEMENTATION_BINDING_V1",
-    "status": "UNKNOWN_NOT_ASSERTED",
-    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "status": "BOUND",
+    "implementation_commit": "2e094f5f0503cb0f544fd60fbe07c3b800e1af03",
     "implementation_script_path": "scripts/route_a_v3/gse232572_development_v3_materialization_runtime_sync.py",
-    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_script_sha256": "83fd8f13ca1b5b9e36a568f9cd6770e46bc6f03a75e073e6e513b29a4ba11fa5",
     "implementation_test_path": "tests/route_a_v3/test_gse232572_development_v3_materialization_runtime_sync.py",
-    "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_test_sha256": "0706bb82a2a54450a9b704970dccf7fb79d330bd10c4604e78f6040e80d84c5d",
     "compiled_core_sha256": "6504e1e8b3a9f19c255c3619c58db8e2845c12568db43436d6f2738e7c64970e",
     "unknown_to_bound_scalar_paths": [
       "implementation_binding.status",
