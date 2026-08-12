@@ -375,8 +375,8 @@
   },
   "evidence_descriptor_bindings": {
     "binding_scheme": "DESCENDANT_CONFIG_ONLY_DESCRIPTOR_BINDING_V1",
-    "status": "PARTIALLY_BOUND",
-    "descriptor_set_sha256": "5b35c4eae3fd66a2853a5936b9455dee9b161e227ac6034f76db2197f4531cd3",
+    "status": "BOUND",
+    "descriptor_set_sha256": "ef59cf8279848858f038bbc6ec6c194481661cacf3de271425517e018bb4e1cb",
     "dynamic_scalar_suffixes": [
       "absolute_path",
       "sha256",
@@ -428,9 +428,9 @@
       },
       {
         "slot_id": "PREFROZEN_POWER_PRECISION",
-        "absolute_path": "UNKNOWN_NOT_ASSERTED",
-        "sha256": "UNKNOWN_NOT_ASSERTED",
-        "bytes": "UNKNOWN_NOT_ASSERTED"
+        "absolute_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE200304_DEC019_PREFROZEN_POWER_PRECISION_GATE_V1/GSE200304_DEC019_PREFROZEN_POWER_PRECISION_GATE.json",
+        "sha256": "2432e1dfae92639e92060510aa2d9a413664d9b2d78f3655781d8e6bb8d27811",
+        "bytes": 4535
       }
     ]
   }
