@@ -1,0 +1,198 @@
+{
+  "schema_version": "1.0.0",
+  "protocol_id": "ROUTE_A_V3_GSE232572_DEVELOPMENT_V3_MATERIALIZATION_V1",
+  "protocol_status": "CONFIG_ONLY_IMPLEMENTATION_BINDING_REQUIRED",
+  "contract_id": "mrna_xeditflow_route_a_v3",
+  "phase_id": "A1",
+  "dataset_id": "GSE232572",
+  "study_id": "GSE232572",
+  "implementation_binding": {
+    "binding_scheme": "CONFIG_ONLY_POST_IMPLEMENTATION_BINDING_V1",
+    "status": "UNKNOWN_NOT_ASSERTED",
+    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "implementation_script_path": "scripts/route_a_v3/materialize_gse232572_development_v3.py",
+    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_test_path": "tests/route_a_v3/test_materialize_gse232572_development_v3.py",
+    "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
+    "unknown_to_bound_scalar_paths": [
+      "implementation_binding.status",
+      "implementation_binding.implementation_commit",
+      "implementation_binding.implementation_script_sha256",
+      "implementation_binding.implementation_test_sha256"
+    ]
+  },
+  "repository_authority": {
+    "production_repo_root": "/home/cunyuliu/mrna_editflow_goal/worktrees/routea_v3_a1_20260810",
+    "branch": "routea-v3-a1-20260810",
+    "base_commit": "aa396dbdeac083c9f88df62877ff7cbcb7e0d318",
+    "implementation_exact_changed_paths": [
+      "configs/route_a_v3_gse232572_development_v3_materialization_v1.json",
+      "scripts/route_a_v3/materialize_gse232572_development_v3.py",
+      "tests/route_a_v3/test_materialize_gse232572_development_v3.py"
+    ],
+    "binding_exact_changed_paths": [
+      "configs/route_a_v3_gse232572_development_v3_materialization_v1.json"
+    ],
+    "frozen_authority_blobs": [
+      {
+        "role": "RECOVERY_CONFIG",
+        "path": "configs/route_a_v3_gse232572_a1_recovery_v1.json",
+        "git_blob_oid": "5cefcc0adba55ae7756b96345e26088de2d31cd3",
+        "sha256": "43519e11111fea141bbaa7b0eccaf0c4ed023155cdd02597aad426001132e826"
+      },
+      {
+        "role": "RECOVERY_SCRIPT",
+        "path": "scripts/route_a_v3/recover_gse232572_a1.py",
+        "git_blob_oid": "1c0949f7380c74e334a34a402eff31ec85fcf22f",
+        "sha256": "22a4487758bb2da9a7aaacea332124339a65f9c8a63f22de4538551ab139903c"
+      },
+      {
+        "role": "GENERIC_FASTA_HELPER",
+        "path": "d1_staging/scripts/d1/reconstruct_gse232572_sequences.py",
+        "git_blob_oid": "48dc03d69fee564132cc80bd0b2dd4cf9eabfe69",
+        "sha256": "cbd78d857abc85551acbe36e60266da247426152aae16412b4a6fa475f3155e8"
+      },
+      {
+        "role": "CANONICAL_V3_SCHEMA",
+        "path": "schemas/route_a_v3/canonical_intervention_record.schema.json",
+        "git_blob_oid": "11b56879afb5ac8019a9cfeb7c3f00fe8bdd5bca",
+        "sha256": "5dc384d6c5714fb5834e83d8fafb51f712bbfcf7dfb632ad504f051b985af898"
+      }
+    ]
+  },
+  "inputs": {
+    "fasta_by_subpool": {
+      "1": {
+        "filename": "GSE232572_C4Sp1.fasta.gz",
+        "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE232nnn/GSE232572/suppl/GSE232572_C4Sp1.fasta.gz",
+        "bytes": 459691,
+        "sha256": "1c8908215d187ab73ac73dbedd2bf586af5105192aa9e5f5a3ea24b479a04cf8"
+      },
+      "2": {
+        "filename": "GSE232572_C4Sp2.fasta.gz",
+        "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE232nnn/GSE232572/suppl/GSE232572_C4Sp2.fasta.gz",
+        "bytes": 459212,
+        "sha256": "aded1c42dac44c7f6320d7cbd14e39737d75c5acab64fdd84de2b9c403cdbe03"
+      },
+      "3": {
+        "filename": "GSE232572_C4Sp3.fasta.gz",
+        "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE232nnn/GSE232572/suppl/GSE232572_C4Sp3.fasta.gz",
+        "bytes": 483778,
+        "sha256": "3e0203f48da7ecc98f9d04a07dd3122548919d7f273756f8e073fb9d559184eb"
+      }
+    },
+    "raw_tar": {
+      "filename": "GSE232572_RAW.tar",
+      "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE232nnn/GSE232572/suppl/GSE232572_RAW.tar",
+      "bytes": 1607680,
+      "sha256": "93afe7c213a2560e52ddb8918a8094b898112b28d5bf64b44279667956f6e5b1"
+    },
+    "published_results": {
+      "filename": "41467_2024_46795_MOESM4_ESM.xlsx",
+      "url": "https://media.springernature.com/original/springer-static/esm/art%3A10.1038%2Fs41467-024-46795-7/MediaObjects/41467_2024_46795_MOESM4_ESM.xlsx",
+      "bytes": 5135110,
+      "sha256": "d2bdcafb68ae388f84da125d283dc0282cdc81545d704baf81730d7fd613f782"
+    }
+  },
+  "public_recovery_report": {
+    "absolute_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE232572/GSE232572_A1_PUBLIC_RECOVERY_AUDIT_20260812T215745P0800/GSE232572_A1_RECOVERY_REPORT.json",
+    "bytes": 3041,
+    "sha256": "0542feabf00496eb3c353df82abe61048c2b95b9bceb4b0429ebc668cc99dbbd",
+    "public_aggregate_only": true,
+    "private_row_artifacts_consumed": false,
+    "expected": {
+      "status": "DEVELOPMENT_PRIVATE_RECONSTRUCTION_COMPLETE_NOT_QUALIFIED",
+      "recorded_at": "2026-08-12T21:57:45+08:00",
+      "published_universe_row_count": 11929,
+      "accepted_pair_count": 8068,
+      "rejected_published_row_count": 3861,
+      "rejection_reason_counts": {
+        "NO_UNIQUE_SEQUENCE_PAIR": 3404,
+        "AMBIGUOUS_DISTINCT_SEQUENCE_PAIRS": 457
+      },
+      "accepted_pair_complete_raw_endpoint_count": 8068,
+      "accepted_pair_incomplete_raw_endpoint_count": 0,
+      "development_reconstruction_record_count": 8068,
+      "raw_auxiliary_defined_pair_count": 8068,
+      "raw_auxiliary_zero_undefined_pair_count": 0,
+      "qualified": false,
+      "contribution": {
+        "ordinary": 0,
+        "a1": 0,
+        "true_a2": 0
+      },
+      "training_allowed": false,
+      "model_selection_allowed": false,
+      "next_phase_allowed": false,
+      "gates": [
+        {"gate": "CONFIG", "status": "PASS", "code": "SCIENTIFIC_CONTRACT_FROZEN"},
+        {"gate": "INPUTS", "status": "PASS", "code": "EXACT_FIVE_PUBLIC_INPUTS_PRESENT"},
+        {"gate": "HELPER", "status": "PASS", "code": "TRACKED_GENERIC_HELPER_REUSED"},
+        {"gate": "FASTA", "status": "PASS", "code": "THREE_FASTAS_PARSED_BY_GENERIC_HELPER"},
+        {"gate": "MATRICES", "status": "PASS", "code": "EXACT_18_RAW_MATRICES_PARSED"},
+        {"gate": "PAIRING", "status": "PASS", "code": "SHEET_5_UNIVERSE_MAPPED_BY_UNIQUE_HAMMING_ONE_PAIR"},
+        {"gate": "MATRICES", "status": "PASS", "code": "ALL_ACCEPTED_PAIRS_HAVE_12_REQUIRED_RAW_ENDPOINTS"},
+        {"gate": "PUBLISHED_RESULTS", "status": "PASS", "code": "OFFICIAL_MOESM4_LNFC_PRIMARY_LABEL_CLOSED"},
+        {"gate": "ENDPOINT", "status": "PASS", "code": "PUBLISHED_LNFC_PRIMARY_RAW_DIRECTION_AUXILIARY_ONLY"},
+        {"gate": "GROUPING", "status": "PASS", "code": "GENE_PLUS_SOURCE_CONTEXT_CLUSTER_FROZEN"},
+        {"gate": "RIGHTS", "status": "PASS", "code": "PRIVATE_DERIVATIVE_USE_VERIFIED"}
+      ]
+    }
+  },
+  "materialization_contract": {
+    "published_sheet_name": "Sheet 5",
+    "published_header_row_1_based": 4,
+    "published_lnfc_column": "lnFC",
+    "published_lnfc_scale": "NATURAL_LOG_RELATIVE_ACTIVITY_ALT_OVER_REF",
+    "published_lnfc_is_primary_label": true,
+    "published_row_number_must_be_retained": true,
+    "required_published_universe_row_count": 11929,
+    "required_development_record_count": 8068,
+    "required_rejection_reason_counts": {
+      "NO_UNIQUE_SEQUENCE_PAIR": 3404,
+      "AMBIGUOUS_DISTINCT_SEQUENCE_PAIRS": 457
+    },
+    "required_complete_raw_endpoint_pair_count": 8068,
+    "required_incomplete_raw_endpoint_pair_count": 0,
+    "required_raw_auxiliary_defined_pair_count": 8068,
+    "required_raw_auxiliary_zero_undefined_pair_count": 0,
+    "canonical_schema_title": "CanonicalInterventionRecordV3",
+    "canonical_schema_version": "3.0.0",
+    "canonical_schema_draft": "https://json-schema.org/draft/2020-12/schema",
+    "required_validator_class": "Draft202012Validator",
+    "row_contract": {
+      "evidence_status": "BLOCKED_PENDING_PUBLIC_EVIDENCE",
+      "claim_status": "NOT_ESTABLISHED",
+      "data_role": "ORDINARY_DEVELOPMENT",
+      "eligibility_status": "DEVELOPMENT_ONLY",
+      "exposure_stratum": "DEVELOPMENT_ONLY",
+      "sequence_exposed": true,
+      "label_exposed": true,
+      "exposure_audit_id": "UNKNOWN_NOT_ASSERTED",
+      "split_partition": "DEVELOPMENT",
+      "leakage_audit_status": "NOT_RUN",
+      "replicate_count": 3,
+      "standard_error": null,
+      "study_independent_group_id": "GSE232573",
+      "cell_line": "HeLa",
+      "license_status": "UNKNOWN_BLOCKED",
+      "redistribution_allowed": false,
+      "license_verified_at_source": "PUBLIC_RECOVERY_REPORT_RECORDED_AT_STATUS_OBSERVATION_NOT_A_LICENSE_GRANT"
+    },
+    "private_derivative_use_fact_aggregate_only": "VERIFIED_PRIVATE_DERIVATIVE_USE_ALLOWED",
+    "public_redistribution_status": "UNKNOWN_NOT_ASSERTED_SUBMITTER_IP_CAVEAT",
+    "canonical_qualification_allowed": false,
+    "canonical_study_contribution_allowed": false,
+    "training_allowed": false,
+    "model_selection_allowed": false,
+    "next_phase_allowed": false
+  },
+  "outputs": {
+    "private_records_filename": "development_v3_records.private.jsonl",
+    "public_report_filename": "GSE232572_DEVELOPMENT_V3_MATERIALIZATION_REPORT.json",
+    "success_status": "DEVELOPMENT_V3_MATERIALIZED_NOT_QUALIFIED",
+    "stop_status": "STOP_BEFORE_DEVELOPMENT_V3_ROW_PRODUCTION",
+    "success_exact_output_count": 2,
+    "failure_exact_output_count": 1
+  }
+}
