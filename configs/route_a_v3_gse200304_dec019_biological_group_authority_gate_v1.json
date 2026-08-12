@@ -6,10 +6,10 @@
   "dataset_id": "GSE200304",
   "decision_id": "V3-DEC-019",
   "implementation_binding": {
-    "status": "UNKNOWN_NOT_ASSERTED",
-    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
-    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
-    "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
+    "status": "BOUND",
+    "implementation_commit": "d0085574c4da8f4d83987b1a9e8018bfdb8131d3",
+    "implementation_script_sha256": "1927b15f94236dcbd0b395b6ebc42690296bd5e782c37a0d407d34b9f4590733",
+    "implementation_test_sha256": "4b9652f2749dcf8cb74b3ce39fb297ef876154a71fcad6e64a1eb3e9719619f7",
     "consumer_upgrade_binding_commit": "4262eb87595ea8481ade0c6ba16bf7507539dcb8",
     "consumer_upgrade_config_sha256": "ee92d7702b0778af86d049b2726ccb6686e3b84cc56847e879a7d132d62b7ad4",
     "consumer_upgrade_script_sha256": "0d59a415116f6a88ea8c3434cc9d63c0b54fda9b512089621e669d227f522251"
