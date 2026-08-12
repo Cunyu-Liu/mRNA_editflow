@@ -1,0 +1,286 @@
+{
+  "schema_version": "route_a_v3_gse200304_dec019_checkpoint_exposure_fail_current_protocol.v1",
+  "protocol_id": "ROUTE_A_V3_GSE200304_DEC019_CHECKPOINT_EXPOSURE_FAIL_CURRENT_PROTOCOL_V1",
+  "contract_id": "mrna_xeditflow_route_a_v3",
+  "phase_id": "A1",
+  "dataset_id": "GSE200304",
+  "decision_id": "V3-DEC-019",
+  "implementation_binding": {
+    "binding_scheme": "CONFIG_ONLY_POST_IMPLEMENTATION_BINDING_V1",
+    "status": "UNKNOWN_NOT_ASSERTED",
+    "blocker_if_unbound": "CHECKPOINT_EXPOSURE_FAIL_RECORD_IMPLEMENTATION_BINDING_UNKNOWN_NOT_ASSERTED",
+    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "implementation_script_path": "scripts/route_a_v3/produce_gse200304_dec019_checkpoint_exposure_fail_current_protocol.py",
+    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_test_path": "tests/route_a_v3/test_produce_gse200304_dec019_checkpoint_exposure_fail_current_protocol.py",
+    "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
+    "config_core_sha256": "bc1ad21127d5686c36a106d3119ccf7fd67fc92bcc71394378da83e81b5b47f4",
+    "unknown_to_bound_scalar_paths": [
+      "implementation_binding.status",
+      "implementation_binding.implementation_commit",
+      "implementation_binding.implementation_script_sha256",
+      "implementation_binding.implementation_test_sha256"
+    ]
+  },
+  "repository_authority": {
+    "production_repo_root": "/home/cunyuliu/mrna_editflow_goal/worktrees/routea_v3_a1_20260810",
+    "branch": "routea-v3-a1-20260810",
+    "lifecycle_scheme": "UNKNOWN_I_TO_CONFIG_ONLY_B_V1",
+    "implementation_commit_exact_changed_paths": [
+      "configs/route_a_v3_gse200304_dec019_checkpoint_exposure_fail_current_protocol_v1.json",
+      "scripts/route_a_v3/produce_gse200304_dec019_checkpoint_exposure_fail_current_protocol.py",
+      "tests/route_a_v3/test_produce_gse200304_dec019_checkpoint_exposure_fail_current_protocol.py"
+    ],
+    "binding_commit_exact_changed_paths": [
+      "configs/route_a_v3_gse200304_dec019_checkpoint_exposure_fail_current_protocol_v1.json"
+    ]
+  },
+  "evidence_taxonomy": {
+    "confirmed_fact": "EXPLICIT_PRIMARY_SOURCE_TASK_OR_INTERFACE_FACT_AND_DIRECT_EXECUTION_COUNT",
+    "reasoned_inference": "PROJECT_TASK_MATCH_JUDGMENT_FROM_CONFIRMED_SOURCE_FACTS",
+    "unknown_not_asserted": "CHECKPOINT_SPECIFIC_EXPOSURE_FACT_NOT_ESTABLISHED_WITHOUT_AN_AUDITED_CHECKPOINT",
+    "reasoned_inference_may_be_promoted_to_confirmed": false,
+    "unknown_may_be_encoded_as_not_applicable": false
+  },
+  "target_task": {
+    "evidence_class": "CONFIRMED_FACT",
+    "task_id": "GSE200304_REPORTED_TOTALPOLY_EFFECT_REGRESSION",
+    "dataset_id": "GSE200304",
+    "reported_endpoint": "TotalPoly",
+    "required_candidate_interface": "EXECUTABLE_GSE200304_TOTALPOLY_REGRESSION_HEAD"
+  },
+  "official_primary_sources": [
+    {
+      "source_id": "GSE200304_PRIMARY_ARTICLE",
+      "source_type": "PRIMARY_RESEARCH_ARTICLE",
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC10540565/",
+      "authority_scope": "GSE200304_REPORTED_TOTALPOLY_TARGET_CONTEXT"
+    },
+    {
+      "source_id": "OPTIMUS_PRIMARY_ARTICLE",
+      "source_type": "PRIMARY_RESEARCH_ARTICLE",
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC7100133/",
+      "authority_scope": "OPTIMUS_5PRIME_INPUT_TARGET_AND_GSE114002_CONTEXT"
+    },
+    {
+      "source_id": "GSE114002_GEO_SERIES",
+      "source_type": "PRIMARY_PUBLIC_SERIES_RECORD",
+      "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE114002",
+      "authority_scope": "OPTIMUS_5PRIME_MRL_DATASET_IDENTITY"
+    },
+    {
+      "source_id": "UTR_LM_PRIMARY_ARTICLE",
+      "source_type": "PRIMARY_RESEARCH_ARTICLE",
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC11155392/",
+      "authority_scope": "UTR_LM_INPUT_TARGET_AND_PUBLIC_HEAD_SURFACE"
+    },
+    {
+      "source_id": "MRNABERT_PRIMARY_ARTICLE",
+      "source_type": "PRIMARY_RESEARCH_ARTICLE",
+      "url": "https://www.nature.com/articles/s41467-025-65340-8",
+      "authority_scope": "MRNABERT_PRETRAINING_INTERFACE_AND_DOWNSTREAM_TASK_SURFACE"
+    },
+    {
+      "source_id": "ORTHRUS_PRIMARY_ARTICLE",
+      "source_type": "PRIMARY_RESEARCH_ARTICLE",
+      "url": "https://www.nature.com/articles/s41592-026-03064-3",
+      "authority_scope": "ORTHRUS_MATURE_RNA_SCOPE_AND_MODEL_INTERFACE"
+    },
+    {
+      "source_id": "ORTHRUS_AUTHOR_CODE",
+      "source_type": "AUTHOR_CODE_REPOSITORY",
+      "url": "https://github.com/bowang-lab/Orthrus",
+      "authority_scope": "ORTHRUS_INFERENCE_INTERFACE_AND_INPUT_LIMITATIONS"
+    }
+  ],
+  "candidate_task_reviews": [
+    {
+      "candidate_family": "OPTIMUS_5PRIME",
+      "confirmed_source_facts": [
+        {
+          "fact_id": "PRIMARY_MODEL_TASK_IS_5PRIME_UTR_TO_MEAN_RIBOSOME_LOADING",
+          "evidence_class": "CONFIRMED_FACT",
+          "source_ids": [
+            "OPTIMUS_PRIMARY_ARTICLE"
+          ]
+        },
+        {
+          "fact_id": "PRIMARY_MRL_DATASET_IS_GSE114002",
+          "evidence_class": "CONFIRMED_FACT",
+          "source_ids": [
+            "OPTIMUS_PRIMARY_ARTICLE",
+            "GSE114002_GEO_SERIES"
+          ]
+        }
+      ],
+      "task_match_assessment": {
+        "status": "PAPER_ONLY_TASK_MISMATCH",
+        "evidence_class": "REASONED_INFERENCE",
+        "reason": "MRL_HEAD_IS_NOT_A_GSE200304_REPORTED_TOTALPOLY_EFFECT_REGRESSION_HEAD"
+      },
+      "current_public_executable_checkpoint_selected": false
+    },
+    {
+      "candidate_family": "UTR_LM",
+      "confirmed_source_facts": [
+        {
+          "fact_id": "PRIMARY_INPUT_IS_FIXED_100_BP_5PRIME_UTR_FOR_TE_TRAINING",
+          "evidence_class": "CONFIRMED_FACT",
+          "source_ids": [
+            "UTR_LM_PRIMARY_ARTICLE"
+          ]
+        },
+        {
+          "fact_id": "PRIMARY_TE_TARGET_IS_RIBO_SEQ_RPKM_DIVIDED_BY_RNA_SEQ_RPKM",
+          "evidence_class": "CONFIRMED_FACT",
+          "source_ids": [
+            "UTR_LM_PRIMARY_ARTICLE"
+          ]
+        },
+        {
+          "fact_id": "PRIMARY_PUBLIC_SURFACE_DOES_NOT_IDENTIFY_ONE_CANONICAL_GSE200304_TOTALPOLY_REGRESSION_HEAD",
+          "evidence_class": "CONFIRMED_FACT",
+          "source_ids": [
+            "UTR_LM_PRIMARY_ARTICLE"
+          ]
+        }
+      ],
+      "task_match_assessment": {
+        "status": "PAPER_ONLY_TASK_MISMATCH",
+        "evidence_class": "REASONED_INFERENCE",
+        "reason": "TE_AND_EL_HEADS_DO_NOT_ESTABLISH_AN_EXECUTABLE_GSE200304_TOTALPOLY_REGRESSION_HEAD"
+      },
+      "current_public_executable_checkpoint_selected": false
+    },
+    {
+      "candidate_family": "MRNABERT",
+      "confirmed_source_facts": [
+        {
+          "fact_id": "PRIMARY_PRETRAINING_INTERFACE_IS_MASKED_LANGUAGE_MODELING_AND_FEATURE_REPRESENTATION",
+          "evidence_class": "CONFIRMED_FACT",
+          "source_ids": [
+            "MRNABERT_PRIMARY_ARTICLE"
+          ]
+        },
+        {
+          "fact_id": "PRIMARY_PUBLIC_SURFACE_DOES_NOT_IDENTIFY_A_TOTALPOLY_REGRESSION_HEAD",
+          "evidence_class": "CONFIRMED_FACT",
+          "source_ids": [
+            "MRNABERT_PRIMARY_ARTICLE"
+          ]
+        }
+      ],
+      "task_match_assessment": {
+        "status": "PAPER_ONLY_TASK_MISMATCH",
+        "evidence_class": "REASONED_INFERENCE",
+        "reason": "MLM_OR_FEATURE_OUTPUT_IS_NOT_AN_EXECUTABLE_GSE200304_TOTALPOLY_REGRESSION_HEAD"
+      },
+      "current_public_executable_checkpoint_selected": false
+    },
+    {
+      "candidate_family": "ORTHRUS",
+      "confirmed_source_facts": [
+        {
+          "fact_id": "PRIMARY_MODEL_SCOPE_IS_FULL_MATURE_RNA",
+          "evidence_class": "CONFIRMED_FACT",
+          "source_ids": [
+            "ORTHRUS_PRIMARY_ARTICLE",
+            "ORTHRUS_AUTHOR_CODE"
+          ]
+        },
+        {
+          "fact_id": "PRIMARY_INTERFACE_TREATS_INCOMPLETE_FRAGMENTS_AS_OUT_OF_DISTRIBUTION",
+          "evidence_class": "CONFIRMED_FACT",
+          "source_ids": [
+            "ORTHRUS_AUTHOR_CODE"
+          ]
+        },
+        {
+          "fact_id": "PRIMARY_CHECKPOINT_INTERFACE_RETURNS_REPRESENTATIONS_OR_MLM_LOGITS_ONLY",
+          "evidence_class": "CONFIRMED_FACT",
+          "source_ids": [
+            "ORTHRUS_PRIMARY_ARTICLE",
+            "ORTHRUS_AUTHOR_CODE"
+          ]
+        }
+      ],
+      "task_match_assessment": {
+        "status": "PAPER_ONLY_TASK_MISMATCH",
+        "evidence_class": "REASONED_INFERENCE",
+        "reason": "FULL_MATURE_RNA_REPRESENTATIONS_OR_MLM_LOGITS_DO_NOT_ESTABLISH_AN_EXECUTABLE_GSE200304_TOTALPOLY_REGRESSION_HEAD"
+      },
+      "current_public_executable_checkpoint_selected": false
+    }
+  ],
+  "checkpoint_set_freeze": {
+    "freeze_status": "FROZEN_CURRENT_PUBLIC_EXECUTABLE_FOUNDATION_CHECKPOINT_SET",
+    "selection_basis_evidence_class": "REASONED_INFERENCE",
+    "considered_candidate_family_count": 4,
+    "task_mismatch_candidate_family_count": 4,
+    "current_public_executable_foundation_checkpoint_ids": [],
+    "current_public_executable_foundation_checkpoint_count": 0,
+    "audited_checkpoint_count": 0
+  },
+  "current_protocol": {
+    "gate_id": "CHECKPOINT_SPECIFIC_EXPOSURE",
+    "nonwaivable": true,
+    "required_true_fact_fields": [
+      "checkpoint_ids_and_revisions_frozen",
+      "checkpoint_artifact_digests_bound",
+      "exact_member_exposure_audit_pass",
+      "near_duplicate_exposure_audit_pass"
+    ],
+    "minimum_audited_checkpoint_count_for_pass": 1,
+    "observed_audited_checkpoint_count": 0,
+    "empty_checkpoint_set_can_pass": false,
+    "pass_under_current_protocol": false,
+    "evidence_record_status": "FAIL_CURRENT_PROTOCOL"
+  },
+  "gate_and_authorization_projection": {
+    "current_exposure_gate": {
+      "gate_id": "CHECKPOINT_SPECIFIC_EXPOSURE",
+      "status": "UNKNOWN_NOT_ASSERTED",
+      "facts": null,
+      "unknown_fields": [
+        "audited_checkpoint_count",
+        "checkpoint_artifact_digests_bound",
+        "checkpoint_ids_and_revisions_frozen",
+        "exact_member_exposure_audit_pass",
+        "near_duplicate_exposure_audit_pass"
+      ],
+      "exact_blocker": "CHECKPOINT_SPECIFIC_EXPOSURE_NOT_PASS"
+    },
+    "qualified": false,
+    "scientific_claim_status": "NOT_ESTABLISHED",
+    "training_allowed": false,
+    "model_selection_allowed": false,
+    "next_phase_authorized": false
+  },
+  "execution_boundary": {
+    "aggregate_only": true,
+    "ordinary_public_source_locators_only": true,
+    "dataset_payload_opened": false,
+    "sequence_payload_opened": false,
+    "row_level_payload_opened": false,
+    "checkpoint_weights_downloaded": false,
+    "checkpoint_artifact_payload_opened": false,
+    "model_execution_count": 0,
+    "exact_member_exposure_audit_status": "NOT_RUN",
+    "near_duplicate_exposure_audit_status": "NOT_RUN",
+    "training_run_count": 0,
+    "model_selection_run_count": 0,
+    "restricted_or_sealed_contact": false,
+    "gse246381_contact": false
+  },
+  "claim_boundary": "This aggregate-only record freezes a current-protocol stop: four public candidate families are task mismatches, the current public executable foundation checkpoint set and audited checkpoint count are both zero, and the current nonwaivable protocol therefore cannot pass. It does not replace the current UNKNOWN_NOT_ASSERTED exposure gate, assert checkpoint exposure or non-exposure, create a not-applicable branch, amend DEC-019, alter activation or adjudicator logic, qualify GSE200304, establish a scientific claim, or authorize training, model selection, or the next phase.",
+  "output_contract": {
+    "allowed_basename": "GSE200304_DEC019_CHECKPOINT_EXPOSURE_FAIL_CURRENT_PROTOCOL.json",
+    "record_type": "GSE200304_DEC019_CHECKPOINT_EXPOSURE_FAIL_CURRENT_PROTOCOL_AGGREGATE_ONLY_V1",
+    "aggregate_only": true,
+    "single_json_record": true,
+    "consumer_gate_record_emitted": false,
+    "amendment_modified": false,
+    "activation_modified": false,
+    "adjudicator_modified": false
+  }
+}
