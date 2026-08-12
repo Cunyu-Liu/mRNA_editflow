@@ -1,0 +1,108 @@
+{
+  "schema_version": "route_a_v3_gse200304_dec019_biological_group_authority_gate.v1",
+  "protocol_id": "ROUTE_A_V3_GSE200304_DEC019_BIOLOGICAL_GROUP_AUTHORITY_GATE_V1",
+  "contract_id": "mrna_xeditflow_route_a_v3",
+  "phase_id": "A1",
+  "dataset_id": "GSE200304",
+  "decision_id": "V3-DEC-019",
+  "implementation_binding": {
+    "status": "UNKNOWN_NOT_ASSERTED",
+    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
+    "consumer_upgrade_binding_commit": "4262eb87595ea8481ade0c6ba16bf7507539dcb8",
+    "consumer_upgrade_config_sha256": "ee92d7702b0778af86d049b2726ccb6686e3b84cc56847e879a7d132d62b7ad4",
+    "consumer_upgrade_script_sha256": "0d59a415116f6a88ea8c3434cc9d63c0b54fda9b512089621e669d227f522251"
+  },
+  "source_authority": {
+    "data_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE200304/GSE200304_PUBLIC_ASSETS_20260810T143731P0800",
+    "table_s2": {
+      "relative_path": "NIHMS1928233-supplement-3.csv",
+      "bytes": 7323186,
+      "sha256": "812f3c983cb7c4f473200741ffd6d73bcab911c9e354934542e018e7b0cf8a6d"
+    },
+    "table_s3": {
+      "relative_path": "NIHMS1928233-supplement-4.xlsx",
+      "bytes": 864791,
+      "sha256": "ec2aab60fcb0be87f2bcc1b1a5a1f786b23bb429edc9851a4034a3e8983dfa08"
+    },
+    "upstream_audit": {
+      "absolute_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE200304_UPSTREAM_AUTHORITY_VIABILITY_V1/GSE200304_UPSTREAM_AUTHORITY_VIABILITY_AUDIT.json",
+      "bytes": 10427,
+      "sha256": "997101dda5cbe3cf5a97bcfe9dda07150d11552decc159a2bc3cb96d9ebd0e45"
+    },
+    "canonical_lineage_gate": {
+      "absolute_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/DEC019_GATE_EVIDENCE_V1/GSE200304_DEC019_CANONICAL_ROW_LOCATOR_MULTI_ASSET_LINEAGE_GATE.json",
+      "bytes": 4367,
+      "sha256": "ecdd5a59cfba6aa3307d4e0bd6becbf4d8e88817ab05b524f9c1e1e1f215dd59"
+    }
+  },
+  "mapping_contract": {
+    "study_id": "GSE200304",
+    "subseries_id": "GSE200302",
+    "pair_id_grammar": "^(?P<chromosome>[^:]+):(?P<position>[1-9][0-9]*)_(?P<reference>[ACGT])-(?P<alternate>[ACGT])$",
+    "primary_comparison": "TotalPoly:RNA",
+    "membership_rule": "ALL_FINITE_TOTALPOLY_PAIRS_FROM_ACCEPTED_CANONICAL_LINEAGE_GATE",
+    "wt_window_length": 201,
+    "reference_index_zero_based": 100,
+    "forward_rule": "WT201_CENTER_EQUALS_AUTHOR_REFERENCE_KEEP_ORIENTATION",
+    "reverse_rule": "WT201_CENTER_COMPLEMENT_EQUALS_AUTHOR_REFERENCE_REVERSE_COMPLEMENT",
+    "group_key_fields": [
+      "GSE200304_STUDY",
+      "GSE200302_SUBSERIES",
+      "AUTHOR_LOCUS_TOKEN",
+      "CANONICAL_DECIMAL_POSITION",
+      "REFERENCE_ALLELE",
+      "ORIENTATION_NORMALIZED_WT201"
+    ],
+    "alternate_allele_in_group_key": false,
+    "expected_canonical_locator_count": 6547,
+    "observed_group_count_must_be_hardcoded": false,
+    "mapping_commitment_algorithm": "ROUTE_A_V3_GSE200304_GROUP_MAPPING_COMMITMENT_V1"
+  },
+  "consumer_contract": {
+    "config_path": "configs/route_a_v3_gse200304_dec019_reported_endpoint_a1_activation_v3.json",
+    "script_path": "scripts/route_a_v3/adjudicate_gse200304_dec019_reported_endpoint_a1_v3.py",
+    "gate_id": "BIOLOGICAL_GROUP_AUTHORITY",
+    "mapping_commitment_provenance_key": "group_mapping_commitment_sha256",
+    "facts": {
+      "biological_group_id_frozen": true,
+      "study_unit_is_gse200304": true,
+      "gse200302_is_subseries_not_independent_study": true,
+      "group_mapping_hash_bound": true
+    }
+  },
+  "output_contract": {
+    "allowed_basename": "GSE200304_DEC019_BIOLOGICAL_GROUP_AUTHORITY_GATE.json",
+    "aggregate_only": true,
+    "private_mapping_basename": "GSE200304_DEC019_BIOLOGICAL_GROUP_MAPPING_PRIVATE.json",
+    "aggregate_audit_basename": "GSE200304_DEC019_BIOLOGICAL_GROUP_MAPPING_AUDIT.json",
+    "data_member_names": [
+      "GSE200304_DEC019_BIOLOGICAL_GROUP_MAPPING_PRIVATE.json",
+      "GSE200304_DEC019_BIOLOGICAL_GROUP_MAPPING_AUDIT.json",
+      "GSE200304_DEC019_BIOLOGICAL_GROUP_AUTHORITY_GATE.json"
+    ],
+    "terminal_commit_marker": "PUBLICATION_COMMIT.json",
+    "exact_final_member_names": [
+      "GSE200304_DEC019_BIOLOGICAL_GROUP_MAPPING_PRIVATE.json",
+      "GSE200304_DEC019_BIOLOGICAL_GROUP_MAPPING_AUDIT.json",
+      "GSE200304_DEC019_BIOLOGICAL_GROUP_AUTHORITY_GATE.json",
+      "PUBLICATION_COMMIT.json"
+    ],
+    "commit_marker_written_last": true,
+    "existing_exact_is_idempotent": true,
+    "partial_or_mismatched_publication_requires_manual_intervention": true,
+    "automatic_recovery": false,
+    "forbidden_gate_keys": [
+      "row_id",
+      "row_ids",
+      "sequence",
+      "gene",
+      "effect",
+      "effect_value",
+      "raw_effect",
+      "member_identifiers",
+      "member_hashes"
+    ]
+  }
+}
