@@ -36,7 +36,7 @@ EXPECTED_IMPLEMENTATION_FILES = {
 }
 FROZEN_CONFIG_CORE_SHA256_BY_PATH = {
     GSE200304_CONFIG_REPO_PATH: (
-        "c0cf7852f3a081d5bed329cf4670dc067118e3b1161fbcb0b0713a2de819c71b"
+        "070425afe987c409a06a538a2e9430648ee6bb1f222379c0f9b139c2cd014c5f"
     ),
 }
 FROZEN_CONFIG_CORE_SHA256 = FROZEN_CONFIG_CORE_SHA256_BY_PATH[CONFIG_REPO_PATH]
@@ -88,6 +88,7 @@ PROTOCOL_ID = "ROUTE_A_V3_GSE200304_DEC019_REPORTED_ENDPOINT_A1_ACTIVATION_V3"
 EVIDENCE_SCHEMA_VERSION = "route_a_v3_dec019_aggregate_gate_evidence.v3"
 EVIDENCE_RECORD_TYPE = "ROUTE_A_V3_DEC019_ACCEPTED_AGGREGATE_GATE_EVIDENCE_V3"
 GROUP_MAPPING_COMMITMENT_KEY = "group_mapping_commitment_sha256"
+SPLIT_ASSIGNMENT_COMMITMENT_KEY = "split_assignment_commitment_sha256"
 LOCATOR_LINEAGE_COMMITMENT_ALGORITHM = (
     "ROUTE_A_V3_GSE200304_LOCATOR_MERKLE_V1"
 )
@@ -228,7 +229,7 @@ PREDECESSOR_D1_FROZEN_BLOBS = {
 }
 PREDECESSOR_I3_PARENT_COMMIT = PREDECESSOR_D1_COMMIT
 PREDECESSOR_I3_COMMIT = "e829464d6ea1953b7a859ba5506946b9cb8e6384"
-REPAIR_BASE_COMMIT = "f4922af6dfcd6e8b63064fe8d819edb3971da1fb"
+REPAIR_BASE_COMMIT = "2e0570ec11df3dbd59a23cfa05ec4eb4aed208c5"
 PREDECESSOR_I3_CONFIG_CORE_SHA256 = (
     "bca69bd05c094575bfa860b5492f019810c2845abe9218d7030444821f357a0b"
 )
@@ -250,7 +251,7 @@ EXPECTED_BASE_TO_I_DIFF_PATHS = frozenset(
         "implementation_binding.status",
         (
             "evidence_contract.gate_record_provenance_contract."
-            "biological_group_pass_requires_mapping_commitment_sha256"
+            "outcome_blind_split_pass_requires_assignment_commitment_sha256"
         ),
         "repository_authority.base_commit",
         "repository_authority.implementation_commit_expected_parent",
@@ -1155,6 +1156,7 @@ def validate_static_config(config: Mapping[str, Any]) -> None:
             "required", "producer_protocol_id_required", "producer_commit_required",
             "producer_script_sha256_required",
             "biological_group_pass_requires_mapping_commitment_sha256",
+            "outcome_blind_split_pass_requires_assignment_commitment_sha256",
             "source_bundle_id_must_equal_required_predecessor",
             "source_bundle_root_or_target_sha256_required",
             "predecessor_members_must_equal_required_predecessor", "acceptance_authority",
@@ -1537,16 +1539,16 @@ def _validate_successor_i_transition_from_base(
     i_config: Mapping[str, Any],
     base_config: Mapping[str, Any],
 ) -> None:
-    """Allow only this upgrade's requirement and lifecycle changes from f492."""
+    """Allow only this upgrade's requirement and lifecycle changes from 2e0570e."""
 
     if i_config.get("evidence_descriptor_bindings") != base_config.get(
         "evidence_descriptor_bindings"
     ):
-        raise BindingError("successor I descriptor binding drifted from f492 base")
+        raise BindingError("successor I descriptor binding drifted from 2e0570e base")
     differences = _semantic_diff_paths(base_config, i_config)
     if differences != EXPECTED_BASE_TO_I_DIFF_PATHS:
         raise BindingError(
-            "f492-to-successor-I semantic diff is not the exact allowlist"
+            "2e0570e-to-successor-I semantic diff is not the exact allowlist"
         )
 
 
@@ -1599,7 +1601,7 @@ def _validate_post_binding_descriptor_history(
 
 
 def validate_production_authority(config: Mapping[str, Any]) -> dict[str, Any]:
-    """Prove the f492 base, exact-three-file I, config-only B, and descendants.
+    """Prove the 2e0570e base, exact-three-file I, config-only B, and descendants.
 
     UNKNOWN I-state is accepted only by this authority-only validator.  Actual
     adjudication separately requires a BOUND implementation before it can
@@ -1618,13 +1620,13 @@ def validate_production_authority(config: Mapping[str, Any]) -> dict[str, Any]:
         raise BindingError("production worktree is not clean")
     if _git(repo, "rev-parse", f"refs/remotes/origin/{branch}") != head:
         raise BindingError("origin tracking ref is not current HEAD")
-    _require_ancestor(repo, REPAIR_BASE_COMMIT, head, label="f492-base-to-current")
+    _require_ancestor(repo, REPAIR_BASE_COMMIT, head, label="2e0570e-base-to-current")
     base_config = strict_json(
         _git_bytes(repo, "show", f"{REPAIR_BASE_COMMIT}:{CONFIG_REPO_PATH}"),
-        label="f492 consumer config",
+        label="2e0570e consumer config",
     )
     if set(base_config) != EXPECTED_CONFIG_TOP_KEYS:
-        raise BindingError("f492 consumer config top-level schema differs")
+        raise BindingError("2e0570e consumer config top-level schema differs")
 
     expected_i_paths = config["repository_authority"][
         "implementation_commit_exact_changed_paths"
@@ -1900,6 +1902,8 @@ def _validate_provenance(
     required_keys = set(PROVENANCE_KEYS)
     if slot_id == "BIOLOGICAL_GROUP_AUTHORITY" and record["status"] == "PASS":
         required_keys.add(GROUP_MAPPING_COMMITMENT_KEY)
+    if slot_id == "OUTCOME_BLIND_SPLIT_LEAKAGE" and record["status"] == "PASS":
+        required_keys.add(SPLIT_ASSIGNMENT_COMMITMENT_KEY)
     provenance = _expect_exact_keys(
         record["provenance"],
         required_keys,
@@ -1910,6 +1914,12 @@ def _validate_provenance(
         if type(commitment) is not str or HEX64.fullmatch(commitment) is None:
             raise AdjudicationError(
                 f"{label} biological-group mapping commitment is not bound"
+            )
+    if SPLIT_ASSIGNMENT_COMMITMENT_KEY in required_keys:
+        commitment = provenance[SPLIT_ASSIGNMENT_COMMITMENT_KEY]
+        if type(commitment) is not str or HEX64.fullmatch(commitment) is None:
+            raise AdjudicationError(
+                f"{label} split-assignment commitment is not bound"
             )
     if type(provenance["producer_protocol_id"]) is not str or not provenance["producer_protocol_id"]:
         raise AdjudicationError(f"{label} producer protocol is absent")

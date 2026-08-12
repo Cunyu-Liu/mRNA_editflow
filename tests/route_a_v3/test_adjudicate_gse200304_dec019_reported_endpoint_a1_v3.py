@@ -215,6 +215,8 @@ def gate_record(
     }
     if is_pass and slot_id == "BIOLOGICAL_GROUP_AUTHORITY":
         record["provenance"][ADJ.GROUP_MAPPING_COMMITMENT_KEY] = "b" * 64
+    if is_pass and slot_id == "OUTCOME_BLIND_SPLIT_LEAKAGE":
+        record["provenance"][ADJ.SPLIT_ASSIGNMENT_COMMITMENT_KEY] = "1" * 64
     return record
 
 
@@ -340,7 +342,45 @@ def test_commitment_must_be_hex64_and_is_forbidden_on_other_slots() -> None:
         ADJ._validate_gate_record(ADJ.json_bytes(other), endpoint_slot, config)
 
 
-def test_static_current_and_synthetic_i_b_freeze_f492_successor_chain_and_truth() -> None:
+def test_split_negative_record_keeps_exact_seven_key_provenance() -> None:
+    config = bind_implementation()
+    slot = _evidence_slot(config, "OUTCOME_BLIND_SPLIT_LEAKAGE")
+    record = gate_record(config, "OUTCOME_BLIND_SPLIT_LEAKAGE", status="NOT_RUN")
+    assert set(record["provenance"]) == ADJ.PROVENANCE_KEYS
+    accepted = ADJ._validate_gate_record(ADJ.json_bytes(record), slot, config)
+    assert accepted["status"] == "NOT_RUN"
+
+
+def test_split_pass_requires_exact_hex64_assignment_commitment() -> None:
+    config = bind_implementation()
+    ADJ.validate_static_config(config)
+    assert config["evidence_contract"]["gate_record_provenance_contract"][
+        "outcome_blind_split_pass_requires_assignment_commitment_sha256"
+    ] is True
+    slot = _evidence_slot(config, "OUTCOME_BLIND_SPLIT_LEAKAGE")
+    record = gate_record(
+        config,
+        "OUTCOME_BLIND_SPLIT_LEAKAGE",
+        facts=passing_facts()["OUTCOME_BLIND_SPLIT_LEAKAGE"],
+    )
+    assert set(record["provenance"]) == (
+        ADJ.PROVENANCE_KEYS | {ADJ.SPLIT_ASSIGNMENT_COMMITMENT_KEY}
+    )
+    accepted = ADJ._validate_gate_record(ADJ.json_bytes(record), slot, config)
+    assert ADJ._slot_gate_pass(slot["slot_id"], accepted["facts"]) is True
+
+    missing = copy.deepcopy(record)
+    missing["provenance"].pop(ADJ.SPLIT_ASSIGNMENT_COMMITMENT_KEY)
+    with pytest.raises(ADJ.AdjudicationError, match="provenance.*keys differ"):
+        ADJ._validate_gate_record(ADJ.json_bytes(missing), slot, config)
+
+    malformed = copy.deepcopy(record)
+    malformed["provenance"][ADJ.SPLIT_ASSIGNMENT_COMMITMENT_KEY] = "not-a-digest"
+    with pytest.raises(ADJ.AdjudicationError, match="split-assignment commitment"):
+        ADJ._validate_gate_record(ADJ.json_bytes(malformed), slot, config)
+
+
+def test_static_current_and_synthetic_i_b_freeze_2e0570e_successor_chain_and_truth() -> None:
     current_config = read_config()
     ADJ.validate_static_config(current_config)
     current_binding = current_config["implementation_binding"]
@@ -366,7 +406,7 @@ def test_static_current_and_synthetic_i_b_freeze_f492_successor_chain_and_truth(
     ADJ.validate_static_config(config_b)
     assert config_i["repository_authority"]["base_commit"] == ADJ.REPAIR_BASE_COMMIT
     assert config_i["repository_authority"]["implementation_commit_expected_parent"] == ADJ.REPAIR_BASE_COMMIT
-    assert ADJ.REPAIR_BASE_COMMIT == "f4922af6dfcd6e8b63064fe8d819edb3971da1fb"
+    assert ADJ.REPAIR_BASE_COMMIT == "2e0570ec11df3dbd59a23cfa05ec4eb4aed208c5"
     assert ADJ.REPAIR_BASE_COMMIT != ADJ.HISTORICAL_BINDING_COMMIT
     assert ADJ.BINDING_CONFIG_REPO_PATHS == (ADJ.CONFIG_REPO_PATH,)
     assert ADJ.EXPECTED_IMPLEMENTATION_FILES == {
@@ -1333,12 +1373,12 @@ def _authority_fixture(
     )
     base_config["repository_authority"].update(
         {
-            "base_commit": ADJ.PREDECESSOR_I3_COMMIT,
-            "implementation_commit_expected_parent": ADJ.PREDECESSOR_I3_COMMIT,
+            "base_commit": "f4922af6dfcd6e8b63064fe8d819edb3971da1fb",
+            "implementation_commit_expected_parent": "f4922af6dfcd6e8b63064fe8d819edb3971da1fb",
         }
     )
     base_config["evidence_contract"]["gate_record_provenance_contract"].pop(
-        "biological_group_pass_requires_mapping_commitment_sha256"
+        "outcome_blind_split_pass_requires_assignment_commitment_sha256"
     )
     base_config["implementation_binding"]["config_core_sha256"] = (
         ADJ.config_core_sha256(base_config)
@@ -1472,7 +1512,7 @@ def test_production_authority_supports_exact_i_and_bound_descendant_lifecycle(
         assert result["current_head"] == commits["head"]
 
 
-def test_production_authority_rejects_nonancestor_f492_base(
+def test_production_authority_rejects_nonancestor_2e0570e_base(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
