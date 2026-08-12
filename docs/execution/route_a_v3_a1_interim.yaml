@@ -141,7 +141,7 @@ dec019_current_disposition:
     next_phase_authorized: false
     predecessor_runtime_event_id: A1-EVT-044
     expected_next_runtime_event_id: A1-EVT-045
-    runtime_sync_status: PENDING_NO_EVT_045
+    runtime_sync_status: SYNCED_EVT_045
   split_freeze_boundary:
     a1_freezes: [SOURCE_AUTHORITY, BIOLOGICAL_SOURCE_GROUP_ASSIGNMENT, NEAR_DUPLICATE_GRAPH, SPLIT_SALT]
     a1_freeze_status: FROZEN
@@ -167,7 +167,7 @@ dec019_current_disposition:
     model_selection_allowed: false
     next_phase_authorized: false
     scientific_claim_status: NOT_ESTABLISHED
-  runtime_sync_status: PENDING_NO_EVT_045
+  runtime_sync_status: PENDING_NO_EVT_046
 
 artifact_lineage:
   protocol:
@@ -650,7 +650,41 @@ artifact_lineage:
       focused_test_sha256: 9dec87f0e1d3148a0d13132ed4cd2af37cb7c96110b557fd4e2c064a78cb103f
     predecessor_runtime_event_id: A1-EVT-044
     expected_next_runtime_event_id: A1-EVT-045
-    runtime_sync_status: PENDING_NO_EVT_045
+    runtime_sync_status: SYNCED_EVT_045
+    artifact_payload_read_count_for_ledger: 0
+  gse217518_public_authority_preflight_v1:
+    path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE217518/GSE217518_PUBLIC_AUTHORITY_PREFLIGHT_20260812T201139P0800/GSE217518_PUBLIC_AUTHORITY_PREFLIGHT_V1.json
+    bytes: 6517
+    sha256: 4e43db6030ee0839edb011a35858ba52177a719be23b3cae1774b5aac58ac1c9
+    dataset_id: GSE217518
+    schema_version: route_a_v3_gse217518_public_authority_preflight.v1
+    record_type: PUBLIC_AUTHORITY_PREFLIGHT_AGGREGATE_ONLY
+    status: STOP_BEFORE_ORDINARY_PUBLIC_ROW_LEVEL_PRODUCER
+    aggregate_only: true
+    ready_for_ordinary_public_row_level_producer: false
+    qualified: false
+    canonical_record_count: 0
+    ordinary_study_contribution: 0
+    a1_study_contribution: 0
+    true_a2_study_contribution: 0
+    training_allowed: false
+    model_selection_allowed: false
+    next_phase_authorized: false
+    scientific_claim_status: NOT_ESTABLISHED
+    producer_lineage:
+      implementation_commit: a0e8bd7c751f94e116546d6164ec2de4faeae924
+      binding_commit: bcdbd5e0735e950be92cee557785d5f72d2013e9
+      binding_diff_is_config_only: true
+      remote_head_at_registration: bcdbd5e0735e950be92cee557785d5f72d2013e9
+      config_path: configs/route_a_v3_gse217518_public_authority_preflight_v1.json
+      config_sha256: e85c4c49d35d0f7a2e6167eb4dc5dd1a12ee7e4f19638532e5500506da174398
+      script_path: scripts/route_a_v3/preflight_gse217518_public_authority.py
+      script_sha256: b21540baca568156470a50d07989052a1c97357546bc339c5b90e8791f36080d
+      focused_test_path: tests/route_a_v3/test_preflight_gse217518_public_authority.py
+      focused_test_sha256: ba192586174dccff21b83055608a9f9623fbf48d3b64deeb6768eb4055d69421
+    predecessor_runtime_event_id: A1-EVT-045
+    expected_next_runtime_event_id: A1-EVT-046
+    runtime_sync_status: PENDING_NO_EVT_046
     artifact_payload_read_count_for_ledger: 0
   gse145046_a2_audit_protocol:
     path: configs/route_a_v3_gse145046_a2_audit.json
@@ -1804,7 +1838,7 @@ artifact_lineage:
       focused_test_sha256: 6348fbc31efbb01cefbc4bde4b87cc15345f6bdaa98265692f83ab5e5fe6fd49
     predecessor_runtime_event_id: A1-EVT-044
     expected_next_runtime_event_id: A1-EVT-045
-    runtime_sync_status: PENDING_NO_EVT_045
+    runtime_sync_status: SYNCED_EVT_045
     artifact_payload_read_count_for_ledger: 0
 
 dataset_boundary_summary:
@@ -1935,7 +1969,7 @@ dataset_boundary_summary:
       changes_qualification_gate: false
       predecessor_runtime_event_id: A1-EVT-044
       expected_next_runtime_event_id: A1-EVT-045
-      runtime_sync_status: PENDING_NO_EVT_045
+      runtime_sync_status: SYNCED_EVT_045
     qualified: false
     training_allowed: false
     model_selection_allowed: false
@@ -1949,6 +1983,29 @@ dataset_boundary_summary:
       - CANONICAL_INTERVENTION_RECORD_V3_NOT_MATERIALIZED
       - UNADJUDICATED_DESCRIPTION_CLASSES_EXCLUDED
       - UNADJUDICATED_6A_COORDINATE_CLASSES_EXCLUDED
+  GSE217518:
+    registry_qualification_status: AUDIT_PENDING
+    a1_inventory_qualification_status: BLOCKED_PENDING_PUBLIC_EVIDENCE
+    public_authority_preflight:
+      artifact_lineage_id: gse217518_public_authority_preflight_v1
+      status: STOP_BEFORE_ORDINARY_PUBLIC_ROW_LEVEL_PRODUCER
+      ready_for_ordinary_public_row_level_producer: false
+      qualified: false
+      canonical_record_count: 0
+      ordinary_study_contribution: 0
+      a1_study_contribution: 0
+      true_a2_study_contribution: 0
+      training_allowed: false
+      model_selection_allowed: false
+      next_phase_authorized: false
+      changes_qualification_gate: false
+      predecessor_runtime_event_id: A1-EVT-045
+      expected_next_runtime_event_id: A1-EVT-046
+      runtime_sync_status: PENDING_NO_EVT_046
+    qualified: false
+    training_allowed: false
+    model_selection_allowed: false
+    next_phase_authorized: false
   GSE145046:
     registry_qualification_status: AUDIT_PENDING
     true_a2_qualification_status: REJECTED_WITH_EVIDENCE
@@ -2153,7 +2210,7 @@ dataset_boundary_summary:
       changes_qualification_gate: false
       predecessor_runtime_event_id: A1-EVT-044
       expected_next_runtime_event_id: A1-EVT-045
-      runtime_sync_status: PENDING_NO_EVT_045
+      runtime_sync_status: SYNCED_EVT_045
     qualified: false
     training_allowed: false
     model_selection_allowed: false
@@ -2276,6 +2333,8 @@ claim_boundaries:
   gse149487_stop_before_data_preflight_reopens_historical_r4: false
   gse149487_exact21_acquisition_is_study_qualification: false
   gse149487_exact21_acquisition_authorizes_training_model_selection_or_next_phase: false
+  gse217518_public_authority_preflight_is_study_qualification: false
+  gse217518_stop_authorizes_row_level_production_training_model_selection_or_next_phase: false
   dec019_creates_global_replicate_or_standard_error_relaxation: false
   dec019_changes_gse149487_three_biological_replicates_and_route_a_se_gate: false
   dec019_allows_checkpoint_specific_exposure_or_rights_waiver: false
@@ -2374,11 +2433,17 @@ verification:
   gse200304_one_blocker_current_dynamic_config_binding: PASS
   targeted_post_fail_acquisition_ledger_tests:
     status: PASS
-    scope: TWO_AGGREGATE_EVIDENCE_RECORDS_SIX_STATIC_PRODUCER_LEAVES_EVT044_SETTLED_EVT045_PENDING
+    scope: TWO_AGGREGATE_EVIDENCE_RECORDS_SIX_STATIC_PRODUCER_LEAVES_EVT045_SETTLED
   gse200304_checkpoint_exposure_fail_current_protocol_artifact_registration: PASS
   gse149487_public_asset_acquisition_exact21_artifact_registration: PASS
   post_fail_acquisition_six_static_leaf_registration: PASS
   post_fail_acquisition_dynamic_output_cycle_policy: PASS
+  targeted_gse217518_registration_ledger_tests:
+    status: PASS
+    scope: ONE_AGGREGATE_STOP_REPORT_THREE_STATIC_PRODUCER_LEAVES_EVT045_SETTLED_EVT046_PENDING
+  gse217518_public_authority_preflight_artifact_registration: PASS
+  gse217518_public_authority_preflight_three_static_leaf_registration: PASS
+  gse217518_public_authority_preflight_dynamic_runtime_config_cycle_policy: PASS
   full_repository_tests:
     status: NOT_RUN
     reason: INTERIM_TARGETED_MODULE_SCOPE
@@ -2400,10 +2465,13 @@ verification:
   post_fail_acquisition_ledger_independent_review:
     status: NOT_RUN
     reason: FOUR_FILE_APPEND_ONLY_LOW_TO_MEDIUM_RISK_BATCH_SELF_CHECKED_UNDER_GLOBAL_LIGHTWEIGHT_POLICY
+  gse217518_registration_ledger_independent_review:
+    status: NOT_RUN
+    reason: FOUR_FILE_APPEND_ONLY_LOW_TO_MEDIUM_RISK_BATCH_SELF_CHECKED_UNDER_GLOBAL_LIGHTWEIGHT_POLICY
 
 initial_generated_at: "2026-08-10T06:30:58+08:00"
-generated_at: "2026-08-12T19:30:00+08:00"
-updated_at: "2026-08-12T19:30:00+08:00"
+generated_at: "2026-08-12T20:24:15+08:00"
+updated_at: "2026-08-12T20:24:15+08:00"
 updated_for_decision_id: V3-DEC-019
 latest_authority_update_id: V3-DEC-019
-latest_evidence_update_id: GSE200304_CHECKPOINT_EXPOSURE_FAIL_AND_GSE149487_PUBLIC_ASSET_ACQUISITION_V1
+latest_evidence_update_id: GSE217518_PUBLIC_AUTHORITY_PREFLIGHT_V1

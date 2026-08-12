@@ -2311,7 +2311,7 @@ def test_post_fail_acquisition_registration_is_closed(
     assert exposure["next_phase_authorized"] is False
     assert exposure["predecessor_runtime_event_id"] == "A1-EVT-044"
     assert exposure["expected_next_runtime_event_id"] == "A1-EVT-045"
-    assert exposure["runtime_sync_status"] == "PENDING_NO_EVT_045"
+    assert exposure["runtime_sync_status"] == "SYNCED_EVT_045"
 
     assert acquisition["status"] == "STOPPED_WITH_PUBLIC_EVIDENCE_BLOCKER"
     assert acquisition["acquisition_status"] == (
@@ -2332,7 +2332,7 @@ def test_post_fail_acquisition_registration_is_closed(
     assert acquisition["next_phase_authorized"] is False
     assert acquisition["predecessor_runtime_event_id"] == "A1-EVT-044"
     assert acquisition["expected_next_runtime_event_id"] == "A1-EVT-045"
-    assert acquisition["runtime_sync_status"] == "PENDING_NO_EVT_045"
+    assert acquisition["runtime_sync_status"] == "SYNCED_EVT_045"
 
     current = interim["dec019_current_disposition"][
         "gse200304_published_processed_endpoint"
@@ -2356,6 +2356,167 @@ def test_post_fail_acquisition_registration_is_closed(
         validator.GSE200304_DEC019_ONE_BLOCKER_ADJUDICATION_LINEAGE_ID,
     ):
         assert lineage[lineage_id]["runtime_sync_status"] == "SYNCED_EVT_044"
+
+
+def test_gse217518_public_authority_preflight_registration_is_closed(
+    validator,
+    repo_root,
+):
+    manifest = validator._load_json(repo_root, validator.REGISTRY_MANIFEST_PATH)
+    manifest_paths = {row["path"] for row in manifest["files"]}
+    static_paths = set(
+        validator.GSE217518_PUBLIC_AUTHORITY_PREFLIGHT_STATIC_LEAF_SHA256
+    )
+
+    assert len(static_paths) == 3
+    assert static_paths.issubset(manifest_paths)
+    assert (
+        validator.GSE217518_PUBLIC_AUTHORITY_PREFLIGHT_RUNTIME_CONFIG_PATH
+        not in manifest_paths
+    )
+    assert validator.REGISTRY_MANIFEST_PATH not in manifest_paths
+    assert manifest["manifest_status"] == (
+        "A1_GSE217518_PUBLIC_AUTHORITY_PREFLIGHT_LEDGER_REGISTERED_PENDING_EVT046"
+    )
+    assert (
+        validator.validate_gse217518_public_authority_preflight_registration(
+            repo_root
+        )
+        == []
+    )
+
+    interim = validator._load_yaml(repo_root, validator.A1_INTERIM_PATH)
+    lineage = interim["artifact_lineage"]
+    record = lineage[validator.GSE217518_PUBLIC_AUTHORITY_PREFLIGHT_LINEAGE_ID]
+    assert record["status"] == "STOP_BEFORE_ORDINARY_PUBLIC_ROW_LEVEL_PRODUCER"
+    assert record["ready_for_ordinary_public_row_level_producer"] is False
+    assert record["bytes"] == 6517
+    assert record["sha256"] == (
+        "4e43db6030ee0839edb011a35858ba52177a719be23b3cae1774b5aac58ac1c9"
+    )
+    assert record["qualified"] is False
+    assert record["canonical_record_count"] == 0
+    assert record["ordinary_study_contribution"] == 0
+    assert record["a1_study_contribution"] == 0
+    assert record["true_a2_study_contribution"] == 0
+    assert record["training_allowed"] is False
+    assert record["model_selection_allowed"] is False
+    assert record["next_phase_authorized"] is False
+    assert record["predecessor_runtime_event_id"] == "A1-EVT-045"
+    assert record["expected_next_runtime_event_id"] == "A1-EVT-046"
+    assert record["runtime_sync_status"] == "PENDING_NO_EVT_046"
+    assert record["producer_lineage"] == {
+        "implementation_commit": "a0e8bd7c751f94e116546d6164ec2de4faeae924",
+        "binding_commit": "bcdbd5e0735e950be92cee557785d5f72d2013e9",
+        "binding_diff_is_config_only": True,
+        "remote_head_at_registration": "bcdbd5e0735e950be92cee557785d5f72d2013e9",
+        "config_path": validator.GSE217518_PUBLIC_AUTHORITY_PREFLIGHT_CONFIG_PATH,
+        "config_sha256": validator.GSE217518_PUBLIC_AUTHORITY_PREFLIGHT_STATIC_LEAF_SHA256[
+            validator.GSE217518_PUBLIC_AUTHORITY_PREFLIGHT_CONFIG_PATH
+        ],
+        "script_path": validator.GSE217518_PUBLIC_AUTHORITY_PREFLIGHT_SCRIPT_PATH,
+        "script_sha256": validator.GSE217518_PUBLIC_AUTHORITY_PREFLIGHT_STATIC_LEAF_SHA256[
+            validator.GSE217518_PUBLIC_AUTHORITY_PREFLIGHT_SCRIPT_PATH
+        ],
+        "focused_test_path": validator.GSE217518_PUBLIC_AUTHORITY_PREFLIGHT_TEST_PATH,
+        "focused_test_sha256": validator.GSE217518_PUBLIC_AUTHORITY_PREFLIGHT_STATIC_LEAF_SHA256[
+            validator.GSE217518_PUBLIC_AUTHORITY_PREFLIGHT_TEST_PATH
+        ],
+    }
+
+    summary = interim["dataset_boundary_summary"]["GSE217518"]
+    assert summary["public_authority_preflight"]["artifact_lineage_id"] == (
+        validator.GSE217518_PUBLIC_AUTHORITY_PREFLIGHT_LINEAGE_ID
+    )
+    assert summary["public_authority_preflight"]["changes_qualification_gate"] is False
+    assert summary["qualified"] is False
+    assert summary["training_allowed"] is False
+    assert summary["model_selection_allowed"] is False
+    assert summary["next_phase_authorized"] is False
+
+    gate = interim["gate_snapshot"]
+    assert gate["qualified_independent_ordinary_studies"] == 0
+    assert gate["qualified_a1_studies"] == 0
+    assert gate["qualified_a2_dense_studies"] == 0
+    assert gate["next_phase_authorized"] is False
+    assert interim["dec019_current_disposition"]["runtime_sync_status"] == (
+        "PENDING_NO_EVT_046"
+    )
+    assert lineage[validator.GSE200304_CHECKPOINT_EXPOSURE_FAIL_LINEAGE_ID][
+        "runtime_sync_status"
+    ] == "SYNCED_EVT_045"
+    assert lineage[validator.GSE149487_PUBLIC_ASSET_ACQUISITION_LINEAGE_ID][
+        "runtime_sync_status"
+    ] == "SYNCED_EVT_045"
+
+
+def test_gse217518_static_drift_dynamic_cycle_and_unlock_fail_closed(
+    validator,
+    repo_root,
+    tmp_path,
+    monkeypatch,
+):
+    static_root = tmp_path / "static"
+    manifest = _copy_manifest_bundle(validator, repo_root, static_root)
+    relative = validator.GSE217518_PUBLIC_AUTHORITY_PREFLIGHT_SCRIPT_PATH
+    leaf_path = static_root / relative
+    leaf_path.write_bytes(leaf_path.read_bytes() + b"\n# synchronized drift\n")
+    next(row for row in manifest["files"] if row["path"] == relative)[
+        "sha256"
+    ] = validator.sha256_file(leaf_path)
+    manifest_path = static_root / validator.REGISTRY_MANIFEST_PATH
+    manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+
+    codes = _codes(validator.validate_bundle(static_root))
+    assert "REGISTRY_MANIFEST_HASH_MISMATCH" not in codes
+    assert "GSE217518_PUBLIC_AUTHORITY_PREFLIGHT_STATIC_LEAF" in codes
+
+    dynamic_root = tmp_path / "dynamic_cycle"
+    dynamic_manifest = _copy_manifest_bundle(validator, repo_root, dynamic_root)
+    dynamic_manifest["files"].append(
+        {
+            "path": validator.GSE217518_PUBLIC_AUTHORITY_PREFLIGHT_RUNTIME_CONFIG_PATH,
+            "role": "FORBIDDEN_DYNAMIC_EVT046_CONFIG",
+            "sha256": "0" * 64,
+        }
+    )
+    dynamic_manifest_path = dynamic_root / validator.REGISTRY_MANIFEST_PATH
+    dynamic_manifest_path.write_text(
+        json.dumps(dynamic_manifest, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    codes = _codes(
+        validator.validate_gse217518_public_authority_preflight_registration(
+            dynamic_root
+        )
+    )
+    assert "GSE217518_PUBLIC_AUTHORITY_PREFLIGHT_MANIFEST_DAG" in codes
+
+    def forge_unlock(interim):
+        record = interim["artifact_lineage"][
+            validator.GSE217518_PUBLIC_AUTHORITY_PREFLIGHT_LINEAGE_ID
+        ]
+        record["status"] = "READY_FOR_ORDINARY_PUBLIC_ROW_LEVEL_PRODUCER"
+        record["ready_for_ordinary_public_row_level_producer"] = True
+        record["qualified"] = True
+        summary = interim["dataset_boundary_summary"]["GSE217518"]
+        summary["public_authority_preflight"]["status"] = (
+            "READY_FOR_ORDINARY_PUBLIC_ROW_LEVEL_PRODUCER"
+        )
+        summary["public_authority_preflight"][
+            "ready_for_ordinary_public_row_level_producer"
+        ] = True
+        summary["qualified"] = True
+
+    codes = _validate_rehashed_interim_bypass(
+        validator,
+        repo_root,
+        tmp_path / "interim_unlock",
+        monkeypatch,
+        forge_unlock,
+    )
+    assert "A1_INTERIM_LINEAGE" in codes
+    assert "A1_INTERIM_GSE217518" in codes
 
 
 def test_post_fail_acquisition_drift_and_interim_unlock_fail_closed(

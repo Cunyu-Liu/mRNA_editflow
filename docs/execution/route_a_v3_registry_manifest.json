@@ -59,7 +59,7 @@
     {
       "path": "docs/execution/route_a_v3_a1_interim.yaml",
       "role": "A1_ACTIVE_INTERIM_RECORD",
-      "sha256": "539413c13d2da6e10a4c065b3e4bb06d472095bcab63a50b4636d1e4633992f3"
+      "sha256": "9e72e82e7b8a941fd2e3066a33c4e3ce7fc733134e62776e273c40b1b118fb9e"
     },
     {
       "path": "docs/execution/route_a_v3_split_registry.yaml",
@@ -342,20 +342,35 @@
       "sha256": "9dec87f0e1d3148a0d13132ed4cd2af37cb7c96110b557fd4e2c064a78cb103f"
     },
     {
+      "path": "configs/route_a_v3_gse217518_public_authority_preflight_v1.json",
+      "role": "GSE217518_PUBLIC_AUTHORITY_PREFLIGHT_CONFIG",
+      "sha256": "e85c4c49d35d0f7a2e6167eb4dc5dd1a12ee7e4f19638532e5500506da174398"
+    },
+    {
+      "path": "scripts/route_a_v3/preflight_gse217518_public_authority.py",
+      "role": "GSE217518_PUBLIC_AUTHORITY_PREFLIGHT_PRODUCER",
+      "sha256": "b21540baca568156470a50d07989052a1c97357546bc339c5b90e8791f36080d"
+    },
+    {
+      "path": "tests/route_a_v3/test_preflight_gse217518_public_authority.py",
+      "role": "GSE217518_PUBLIC_AUTHORITY_PREFLIGHT_FOCUSED_TEST",
+      "sha256": "ba192586174dccff21b83055608a9f9623fbf48d3b64deeb6768eb4055d69421"
+    },
+    {
       "path": "tests/route_a_v3/test_a0_integrity_guards.py",
       "role": "A0_AUTHORITY_INTEGRITY_GUARD_TEST",
-      "sha256": "86a7e4edbcb844df59465612178eaeb29a6c439f505098fbae47fabfbbd86856"
+      "sha256": "ee812cbe3aed15ad0d22187e872b8fbfe8449469b5c5818d7e46458cc51c3c04"
     },
     {
       "path": "scripts/route_a_v3/validate_a0_bundle.py",
       "role": "A0_STATIC_AND_SEMANTIC_VALIDATOR",
-      "sha256": "b99c5c1107ab6e17e2291d64f045265713fb5cbb6d77b8bd7ffff1b9ccde4124"
+      "sha256": "edb940cbb46e9e54fb8267a29f0b5d48020be933defb96a3b3de89f673f18f98"
     }
   ],
   "initial_generated_at": "2026-08-10T10:10:05+08:00",
-  "generated_at": "2026-08-12T19:30:01+08:00",
-  "updated_at": "2026-08-12T19:30:01+08:00",
-  "manifest_status": "A1_POST_FAIL_ACQUISITION_LEDGER_REGISTERED_PENDING_EVT045",
+  "generated_at": "2026-08-12T20:24:16+08:00",
+  "updated_at": "2026-08-12T20:24:16+08:00",
+  "manifest_status": "A1_GSE217518_PUBLIC_AUTHORITY_PREFLIGHT_LEDGER_REGISTERED_PENDING_EVT046",
   "schema_version": "1.0.0",
   "sealed_contact": false,
   "version": "3.0.0"
