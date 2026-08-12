@@ -1,0 +1,98 @@
+{
+  "schema_version": "route_a_v3_dec019_active_authority_runtime_metadata_repair.v1",
+  "protocol_id": "ROUTE_A_V3_DEC019_ACTIVE_AUTHORITY_RUNTIME_METADATA_REPAIR_V1",
+  "contract_id": "mrna_xeditflow_route_a_v3",
+  "phase_id": "A1",
+  "event_id": "A1-EVT-043",
+  "event_name": "DEC019_ACTIVE_AUTHORITY_RUNTIME_METADATA_REPAIRED_NO_SCIENCE_CHANGE",
+  "decision_id": "V3-DEC-019",
+  "implementation_binding": {
+    "status": "UNKNOWN_NOT_ASSERTED",
+    "implementation_commit": "UNKNOWN_NOT_ASSERTED"
+  },
+  "repository_authority": {
+    "branch": "routea-v3-a1-20260810",
+    "base_commit": "f32b78af89034e897861ba1334c192c93f9b3d20",
+    "implementation_exact_changed_paths": [
+      "configs/route_a_v3_dec019_active_authority_runtime_metadata_repair_v1.json",
+      "scripts/route_a_v3/dec019_active_authority_runtime_metadata_repair.py",
+      "tests/route_a_v3/test_dec019_active_authority_runtime_metadata_repair.py"
+    ],
+    "binding_exact_changed_paths": [
+      "configs/route_a_v3_dec019_active_authority_runtime_metadata_repair_v1.json"
+    ]
+  },
+  "runtime": {
+    "run_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5",
+    "allowed_prepared_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/staging/runtime_sync/A1",
+    "authority_sync_name": "A1_DEC019_AUTHORITY_RUNTIME_SYNC_V1.json",
+    "predecessor_event_id": "A1-EVT-042",
+    "predecessor_event_count": 42,
+    "successor_event_id": "A1-EVT-043",
+    "successor_event_count": 43,
+    "predecessor_manifest_output_count": 163,
+    "successor_manifest_output_count": 163,
+    "mutable_publish_order": [
+      "STATUS.json",
+      "RUN_MANIFEST.json",
+      "EVENT_LOG.jsonl"
+    ]
+  },
+  "predecessor_metadata_truth": {
+    "status_active_amendment_decision_ids": [
+      "V3-DEC-017",
+      "V3-DEC-018"
+    ],
+    "manifest_active_amendment_decision_ids": [
+      "V3-DEC-017",
+      "V3-DEC-018"
+    ],
+    "manifest_current_contract_authority": {
+      "implementation_commit": "b19d582fec6edbbb5cfd1688e4d96ed8e9c420c8",
+      "binding_commit": "d328bf04c394d4960ac11058e079c063e09280af",
+      "scope": "V3_DEC_018_GSE200302_ROLE_BOUNDARY_ONLY_NOT_RUNTIME_EXECUTION_CODE"
+    },
+    "outer_active_authority_commit": "d078060c81114687db5068902a5aad5d9bedbee6"
+  },
+  "desired_active_authority": {
+    "implementation_commit": "d54de63605a2df51e91262c99218684a80cb6515",
+    "binding_commit": "78827501c7efcef28550b04876c98206d94d4808",
+    "scope": "DEC019_AUTHORITY_AND_SUCCESSOR_ADJUDICATOR_BINDING",
+    "active_amendment_decision_ids": [
+      "V3-DEC-017",
+      "V3-DEC-018",
+      "V3-DEC-019"
+    ]
+  },
+  "unchanged_scientific_truth": {
+    "input_status_counts": {
+      "PASS": 4,
+      "BLOCKED": 1,
+      "UNKNOWN_NOT_ASSERTED": 1,
+      "NOT_RUN": 2
+    },
+    "unresolved_blockers": [
+      "BIOLOGICAL_GROUP_AUTHORITY_NOT_PASS",
+      "CHECKPOINT_SPECIFIC_EXPOSURE_NOT_PASS",
+      "OUTCOME_BLIND_SPLIT_LEAKAGE_NOT_PASS",
+      "PREFROZEN_POWER_PRECISION_NOT_PASS"
+    ],
+    "ordinary_study_contribution": 0,
+    "a1_study_contribution": 0,
+    "true_a2_study_contribution": 0,
+    "canonical_intervention_record_count": 0,
+    "qualified": false,
+    "training_started": false,
+    "training_allowed": false,
+    "training_authorized": false,
+    "model_selection_allowed": false,
+    "next_phase_authorized": false,
+    "scientific_claim_status": "NOT_ESTABLISHED"
+  },
+  "publication_policy": {
+    "manifest_outputs_unchanged": true,
+    "prepared_pre_state_snapshots_are_not_runtime_outputs": true,
+    "event_is_append_only_repair_record": true,
+    "event_is_last_mutable_commit": true
+  }
+}
