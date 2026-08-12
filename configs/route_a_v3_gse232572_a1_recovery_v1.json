@@ -1,0 +1,184 @@
+{
+  "schema_version": "1.0.0",
+  "protocol_id": "ROUTE_A_V3_GSE232572_PUBLIC_RECOVERY_AUDIT_V1",
+  "protocol_status": "REAL_PUBLIC_ASSETS_BOUND_DEVELOPMENT_AUDIT_NOT_EXECUTED",
+  "dataset_id": "GSE232572",
+  "study_id": "GSE232572",
+  "region": "3UTR",
+  "authority": {
+    "inspected_head": "99b1fc1ffd65f1a1e45b4390d6d7ab32bdd0d06e",
+    "contract_path": "docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md",
+    "registry_path": "docs/execution/route_a_v3_data_role_registry.yaml",
+    "a1_qualification_path": "configs/route_a_v3_a1_qualification.json",
+    "generic_helper_path": "d1_staging/scripts/d1/reconstruct_gse232572_sequences.py",
+    "geo_series_relation": {
+      "subject": "GSE232572",
+      "relation": "SUBSERIES_OF",
+      "object": "GSE232573",
+      "authority_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE232573",
+      "independent_study_count_delta": 0
+    }
+  },
+  "scope": {
+    "ordinary_public_inputs_only": true,
+    "registry_role": "AUDIT_ONLY",
+    "registry_qualification_status": "AUDIT_PENDING",
+    "qualified": false,
+    "candidate_role": "PUBLIC_RECOVERY_AUDIT_ONLY",
+    "independent_study_count": 1,
+    "subpools_are_independent_studies": false,
+    "replicates_are_independent_studies": false,
+    "ordinary_study_contribution_if_all_gates_pass": 0,
+    "a1_study_contribution_if_all_gates_pass": 0,
+    "true_a2_study_contribution": 0,
+    "development_record_release_mode": "PRIVATE_RECONSTRUCTION_ONLY_NOT_CANONICAL",
+    "canonical_materialization_allowed": false,
+    "training_allowed": false,
+    "model_selection_allowed": false,
+    "next_phase_allowed": false
+  },
+  "inputs": {
+    "fasta_by_subpool": {
+      "1": {
+        "filename": "GSE232572_C4Sp1.fasta.gz",
+        "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE232nnn/GSE232572/suppl/GSE232572_C4Sp1.fasta.gz",
+        "bytes": 459691,
+        "sha256": "1c8908215d187ab73ac73dbedd2bf586af5105192aa9e5f5a3ea24b479a04cf8"
+      },
+      "2": {
+        "filename": "GSE232572_C4Sp2.fasta.gz",
+        "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE232nnn/GSE232572/suppl/GSE232572_C4Sp2.fasta.gz",
+        "bytes": 459212,
+        "sha256": "aded1c42dac44c7f6320d7cbd14e39737d75c5acab64fdd84de2b9c403cdbe03"
+      },
+      "3": {
+        "filename": "GSE232572_C4Sp3.fasta.gz",
+        "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE232nnn/GSE232572/suppl/GSE232572_C4Sp3.fasta.gz",
+        "bytes": 483778,
+        "sha256": "3e0203f48da7ecc98f9d04a07dd3122548919d7f273756f8e073fb9d559184eb"
+      }
+    },
+    "raw_tar": {
+      "filename": "GSE232572_RAW.tar",
+      "url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE232nnn/GSE232572/suppl/GSE232572_RAW.tar",
+      "bytes": 1607680,
+      "sha256": "93afe7c213a2560e52ddb8918a8094b898112b28d5bf64b44279667956f6e5b1"
+    },
+    "published_results": {
+      "filename": "41467_2024_46795_MOESM4_ESM.xlsx",
+      "url": "https://media.springernature.com/original/springer-static/esm/art%3A10.1038%2Fs41467-024-46795-7/MediaObjects/41467_2024_46795_MOESM4_ESM.xlsx",
+      "bytes": 5135110,
+      "sha256": "d2bdcafb68ae388f84da125d283dc0282cdc81545d704baf81730d7fd613f782",
+      "authority_role": "FULL_PUBLISHED_RESULT_JOIN_AUTHORITY_NOT_A_SUBSET"
+    }
+  },
+  "pairing": {
+    "universe": "UNIQUE_OFFICIAL_SHEET_5_ROWS",
+    "header_allele_rule": "USE_FASTA_HEADER_ALLELES_AS_WRITTEN_NEVER_COMPLEMENT_RC",
+    "sequence_normalization": "TRACKED_HELPER_ORIENTATION_NORMALIZED_165NT_INSERT",
+    "hamming_neighbor_prefilter_fields": ["gene", "strand", "orientation"],
+    "hamming_neighbor_rule": "EXACTLY_ONE_REFERENCE_AT_DISTANCE_ONE_PER_ALTERNATE",
+    "published_key_source": "SELECTED_REFERENCE_CHR_GENE_STRAND_REF_HEADER_ALLELE_PLUS_ALT_HEADER_ALLELE",
+    "distinct_sequence_pair_identity": ["normalized_reference_insert", "normalized_alternate_insert"],
+    "accepted_rule": "EXACTLY_ONE_PHYSICAL_PAIR_AND_ONE_DISTINCT_SEQUENCE_PAIR_PER_SHEET_5_KEY",
+    "expected_counts": {
+      "published_universe": 11929,
+      "accepted": 8068,
+      "NO_UNIQUE_SEQUENCE_PAIR": 3404,
+      "AMBIGUOUS_DISTINCT_SEQUENCE_PAIRS": 457
+    }
+  },
+  "matrix_contract": {
+    "subpools": [1, 2, 3],
+    "molecules": ["DNA", "RNA"],
+    "biological_replicates": [1, 2, 3],
+    "required_matrix_count_per_subpool": 6,
+    "required_total_matrix_count": 18,
+    "member_name_regex": "(?:^|.*/)GSM[0-9]+_C4Sp([123])([DR])([123])\\.txt\\.gz$",
+    "matrix_header": ["gene", "count"],
+    "matrix_identifier": "EXACT_FASTA_HEADER",
+    "matrix_values": "PUBLIC_ARCHIVE_COUNTS_AS_PROVIDED_NO_EXTRA_NORMALIZATION",
+    "full_fasta_matrix_identifier_set_equality_required": false,
+    "accepted_pair_endpoint_contract": "REF_AND_ALT_PRESENT_IN_DNA_RNA_X_THREE_REPLICATES_OF_SELECTED_REFERENCE_SUBPOOL",
+    "required_endpoint_count_per_accepted_pair": 12,
+    "expected_complete_accepted_pair_count": 8068,
+    "missing_endpoint_policy": "STRUCTURAL_STOP_NEVER_IMPUTE_ZERO",
+    "finite_nonnegative_counts_required": true
+  },
+  "endpoint": {
+    "activity_definition": "A=RNA/DNA",
+    "label_name": "ln_activity_ratio_alt_over_ref",
+    "primary_label_source": "MOESM4_OFFICIAL_PUBLISHED_RELATIVE_ACTIVITY_LNFC",
+    "raw_auxiliary_replicate_formula": "ln[(RNA_alt/DNA_alt)/(RNA_ref/DNA_ref)]",
+    "direction": "POSITIVE_MEANS_ALT_HAS_HIGHER_RNA_PER_DNA_THAN_REF",
+    "pseudocount": null,
+    "zero_count_policy": "MARK_AUXILIARY_ZERO_COUNT_ENDPOINT_UNDEFINED_NO_PSEUDOCOUNT_AND_KEEP_PUBLISHED_LABEL",
+    "raw_auxiliary_summary": "ARITHMETIC_MEAN_OF_THREE_LOG_RATIOS_ONLY_WHEN_ALL_THREE_ARE_DEFINED",
+    "raw_auxiliary_may_replace_primary_label": false,
+    "unpublished_standard_error_may_be_claimed": false,
+    "mpranalyze_role": "INFERENTIAL_SIGNIFICANCE_CROSSCHECK_ONLY_NOT_LABEL"
+  },
+  "published_result_contract": {
+    "sheet_name": "Sheet 5",
+    "sheet_semantics": "ALL_COSMIC_SOMATIC_MUTATIONS_TESTED_WITH_MAPUTR_IN_HELA",
+    "header_row_1_based": 4,
+    "columns": {
+      "chromosome_position": {
+        "columns": ["chromosome", "position (hg19, 1-based)"],
+        "separator": ":"
+      },
+      "gene": "gene",
+      "gene_strand": "gene_strand",
+      "reference_allele": "ref",
+      "alternate_allele": "alt",
+      "cell_line": null,
+      "published_ln_activity": "lnFC",
+      "mpranalyze_fdr": "FDR"
+    },
+    "required_cell_line": "HeLa",
+    "cell_line_authority": "EXACT_SHEET_5_SEMANTICS_NOT_A_ROW_COLUMN",
+    "join_key": [
+      "chromosome_position",
+      "gene",
+      "gene_strand",
+      "reference_allele",
+      "alternate_allele"
+    ],
+    "fasta_and_sheet_key_set_equality_required": false,
+    "duplicate_join_keys_allowed": false,
+    "published_ln_activity_is_primary_label": true,
+    "raw_auxiliary_direction_role": "DIAGNOSTIC_ONLY_NOT_AN_ELIGIBILITY_GATE",
+    "mpranalyze_fdr_range": [0.0, 1.0]
+  },
+  "grouping": {
+    "source_context_cluster_fields": [
+      "source",
+      "chromosome_position",
+      "strand",
+      "orientation",
+      "reference_insert"
+    ],
+    "source_group_definition": "gene + source_context_cluster",
+    "split_or_bootstrap_execution": "NOT_ALLOWED_AUDIT_ONLY",
+    "subpool_not_an_independent_group": true,
+    "biological_replicate_not_an_independent_group": true
+  },
+  "rights": {
+    "article_license": "CC_BY_4_0",
+    "article_rights_url": "https://www.nature.com/articles/s41467-024-46795-7#rightslink",
+    "geo_disclaimer_url": "https://www.ncbi.nlm.nih.gov/geo/info/disclaimer.html",
+    "public_retrieval_routes_confirmed": true,
+    "asset_level_private_derivative_use_status": "VERIFIED_PRIVATE_DERIVATIVE_USE_ALLOWED",
+    "required_status_for_private_development_reconstruction": "VERIFIED_PRIVATE_DERIVATIVE_USE_ALLOWED",
+    "private_derivative_use_decision": "ALLOWED_FOR_PRIVATE_RESEARCH_USE_FROM_PUBLIC_GEO_AND_CC_BY_4_0_ARTICLE_SUPPLEMENT_AUTHORITIES",
+    "public_redistribution_status": "UNKNOWN_NOT_ASSERTED_SUBMITTER_IP_CAVEAT",
+    "unknown_or_unusable_policy": "STOP_WHOLE_RUN"
+  },
+  "outputs": {
+    "aggregate_report_filename": "GSE232572_A1_RECOVERY_REPORT.json",
+    "development_reconstruction_private_filename": "development_reconstruction_records.private.jsonl",
+    "rejection_aggregates_private_filename": "rejection_aggregates.private.jsonl",
+    "stop_status": "STOP_BEFORE_DEVELOPMENT_RECONSTRUCTION_ROW_PRODUCTION",
+    "success_status": "DEVELOPMENT_PRIVATE_RECONSTRUCTION_COMPLETE_NOT_QUALIFIED"
+  }
+}
