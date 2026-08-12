@@ -28,6 +28,7 @@ DATASET_ID = "GSE232572"
 STUDY_ID = "GSE232572"
 INDEPENDENT_STUDY_GROUP_ID = "GSE232573"
 BASE_COMMIT = "aa396dbdeac083c9f88df62877ff7cbcb7e0d318"
+PRODUCTION_AUTHORITY_COMMIT = "b69b9932a5e170f97d2e6fe1e3b9442bdf31f5db"
 HEX40 = "0123456789abcdef"
 HEX64 = "0123456789abcdef"
 UNKNOWN = "UNKNOWN_NOT_ASSERTED"
@@ -53,10 +54,11 @@ SCRIPT_RELATIVE_PATH = (
 TEST_RELATIVE_PATH = (
     "tests/route_a_v3/test_materialize_gse232572_development_v3.py"
 )
-EXPECTED_I_PATHS = sorted(
+EXPECTED_I1_PATHS = sorted(
     [CONFIG_RELATIVE_PATH, SCRIPT_RELATIVE_PATH, TEST_RELATIVE_PATH]
 )
-EXPECTED_B_PATHS = [CONFIG_RELATIVE_PATH]
+EXPECTED_I2_PATHS = sorted([SCRIPT_RELATIVE_PATH, TEST_RELATIVE_PATH])
+EXPECTED_B2_PATHS = [CONFIG_RELATIVE_PATH]
 EXPECTED_BINDING_SCALARS = sorted(
     [
         "implementation_binding.status",
@@ -235,9 +237,9 @@ def _validate_config(config: Mapping[str, Any]) -> None:
     )
     if repository.get("base_commit") != BASE_COMMIT:
         _stop("CONFIG", "BASE_COMMIT_NOT_FROZEN")
-    if repository.get("implementation_exact_changed_paths") != EXPECTED_I_PATHS:
+    if repository.get("implementation_exact_changed_paths") != EXPECTED_I1_PATHS:
         _stop("CONFIG", "IMPLEMENTATION_PATH_SET_NOT_FROZEN")
-    if repository.get("binding_exact_changed_paths") != EXPECTED_B_PATHS:
+    if repository.get("binding_exact_changed_paths") != EXPECTED_B2_PATHS:
         _stop("CONFIG", "BINDING_PATH_SET_NOT_FROZEN")
     if not isinstance(repository.get("production_repo_root"), str) or not str(
         repository["production_repo_root"]
@@ -416,16 +418,34 @@ def _audit_repository(
 
     head = _git(resolved_repo, "rev-parse", "HEAD")
     if _git(resolved_repo, "rev-parse", f"{head}^") != implementation_commit:
-        _stop("REPOSITORY_AUTHORITY", "BINDING_COMMIT_NOT_DIRECT_CHILD_OF_I")
-    if _git(resolved_repo, "rev-parse", f"{implementation_commit}^") != BASE_COMMIT:
-        _stop("REPOSITORY_AUTHORITY", "IMPLEMENTATION_COMMIT_NOT_DIRECT_CHILD_OF_BASE")
-    if _changed_paths(resolved_repo, str(implementation_commit)) != EXPECTED_I_PATHS:
-        _stop("REPOSITORY_AUTHORITY", "IMPLEMENTATION_COMMIT_NOT_EXACT3")
-    if _changed_paths(resolved_repo, head) != EXPECTED_B_PATHS:
+        _stop("REPOSITORY_AUTHORITY", "B2_NOT_DIRECT_CHILD_OF_I2")
+    if (
+        _git(resolved_repo, "rev-parse", f"{implementation_commit}^")
+        != PRODUCTION_AUTHORITY_COMMIT
+    ):
+        _stop("REPOSITORY_AUTHORITY", "I2_NOT_DIRECT_CHILD_OF_I1")
+    if (
+        _git(resolved_repo, "rev-parse", f"{PRODUCTION_AUTHORITY_COMMIT}^")
+        != BASE_COMMIT
+    ):
+        _stop("REPOSITORY_AUTHORITY", "I1_NOT_DIRECT_CHILD_OF_BASE")
+    if _changed_paths(resolved_repo, PRODUCTION_AUTHORITY_COMMIT) != EXPECTED_I1_PATHS:
+        _stop("REPOSITORY_AUTHORITY", "I1_NOT_EXACT3")
+    if _changed_paths(resolved_repo, str(implementation_commit)) != EXPECTED_I2_PATHS:
+        _stop("REPOSITORY_AUTHORITY", "I2_NOT_EXACT2")
+    if _changed_paths(resolved_repo, head) != EXPECTED_B2_PATHS:
         _stop("REPOSITORY_AUTHORITY", "BINDING_COMMIT_NOT_CONFIG_ONLY")
 
+    config_i1_payload = _git_blob(
+        resolved_repo, PRODUCTION_AUTHORITY_COMMIT, CONFIG_RELATIVE_PATH
+    )
+    config_i2_payload = _git_blob(
+        resolved_repo, str(implementation_commit), CONFIG_RELATIVE_PATH
+    )
+    if config_i2_payload != config_i1_payload:
+        _stop("REPOSITORY_AUTHORITY", "I2_CHANGED_I1_CONFIG")
     config_i = _read_json_bytes(
-        _git_blob(resolved_repo, str(implementation_commit), CONFIG_RELATIVE_PATH),
+        config_i2_payload,
         "REPOSITORY_AUTHORITY",
         "IMPLEMENTATION_CONFIG_NOT_JSON",
     )
@@ -472,15 +492,17 @@ def _audit_repository(
         )
         role = str(item["role"])
         path = str(item["path"])
-        if _git(resolved_repo, "rev-parse", f"{BASE_COMMIT}:{path}") != item[
-            "git_blob_oid"
-        ]:
-            _stop("REPOSITORY_AUTHORITY", "BASE_AUTHORITY_GIT_BLOB_DRIFT")
+        if _git(
+            resolved_repo,
+            "rev-parse",
+            f"{PRODUCTION_AUTHORITY_COMMIT}:{path}",
+        ) != item["git_blob_oid"]:
+            _stop("REPOSITORY_AUTHORITY", "I1_AUTHORITY_GIT_BLOB_DRIFT")
         if _git(resolved_repo, "rev-parse", f"HEAD:{path}") != item["git_blob_oid"]:
             _stop("REPOSITORY_AUTHORITY", "CURRENT_AUTHORITY_GIT_BLOB_DRIFT")
-        payload = _git_blob(resolved_repo, BASE_COMMIT, path)
+        payload = _git_blob(resolved_repo, PRODUCTION_AUTHORITY_COMMIT, path)
         if _sha256(payload) != item["sha256"]:
-            _stop("REPOSITORY_AUTHORITY", "BASE_AUTHORITY_SHA256_DRIFT")
+            _stop("REPOSITORY_AUTHORITY", "I1_AUTHORITY_SHA256_DRIFT")
         try:
             if (resolved_repo / PurePosixPath(path)).read_bytes() != payload:
                 _stop("REPOSITORY_AUTHORITY", "WORKING_AUTHORITY_BLOB_DRIFT")

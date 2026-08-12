@@ -55,6 +55,12 @@ SCHEMA_SOURCE = (
 )
 RECORDED_AT = "2026-08-12T23:00:00+08:00"
 RECOVERY_RECORDED_AT = "2026-08-12T21:57:45+08:00"
+BINDING_SCALARS = (
+    "status",
+    "implementation_commit",
+    "implementation_script_sha256",
+    "implementation_test_sha256",
+)
 
 
 def _load_materializer():
@@ -89,6 +95,34 @@ def _write_json(path: Path, value: object) -> None:
     path.write_text(
         json.dumps(value, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
+
+
+def _normalized_unbound_config(config: dict) -> dict:
+    normalized = copy.deepcopy(config)
+    binding = normalized["implementation_binding"]
+    for scalar in BINDING_SCALARS:
+        binding[scalar] = "UNKNOWN_NOT_ASSERTED"
+    return normalized
+
+
+def _validate_disk_binding_and_normalize(config: dict) -> dict:
+    binding = config["implementation_binding"]
+    if binding["status"] == "UNKNOWN_NOT_ASSERTED":
+        assert all(
+            binding[scalar] == "UNKNOWN_NOT_ASSERTED"
+            for scalar in BINDING_SCALARS
+        )
+    else:
+        assert binding["status"] == "BOUND"
+        assert len(binding["implementation_commit"]) == 40
+        assert set(binding["implementation_commit"]) <= set("0123456789abcdef")
+        for scalar in (
+            "implementation_script_sha256",
+            "implementation_test_sha256",
+        ):
+            assert len(binding[scalar]) == 64
+            assert set(binding[scalar]) <= set("0123456789abcdef")
+    return _normalized_unbound_config(config)
 
 
 def _column_name(index: int) -> str:
@@ -370,7 +404,9 @@ def _bind_fake_repository(tmp_path: Path, monkeypatch) -> dict[str, object]:
     }.items():
         monkeypatch.setattr(MAT, name, value)
 
-    config = json.loads(CONFIG.read_text(encoding="utf-8"))
+    config = _normalized_unbound_config(
+        json.loads(CONFIG.read_text(encoding="utf-8"))
+    )
     config["repository_authority"].update(
         {
             "production_repo_root": str(repo.resolve()),
@@ -420,13 +456,23 @@ def _bind_fake_repository(tmp_path: Path, monkeypatch) -> dict[str, object]:
     _write_json(config_path, config)
     script_path.parent.mkdir(parents=True, exist_ok=True)
     test_path.parent.mkdir(parents=True, exist_ok=True)
+    script_path.write_bytes(SCRIPT.read_bytes() + b"\n# synthetic I1 predecessor\n")
+    test_path.write_bytes(Path(__file__).read_bytes() + b"\n# synthetic I1 predecessor\n")
+    _git(repo, "add", ".")
+    _git(repo, "commit", "-q", "-m", "frozen exact3 implementation I1")
+    production_authority_commit = _git(repo, "rev-parse", "HEAD")
+    monkeypatch.setattr(
+        MAT, "PRODUCTION_AUTHORITY_COMMIT", production_authority_commit
+    )
+
     shutil.copyfile(SCRIPT, script_path)
     shutil.copyfile(Path(__file__), test_path)
-    _git(repo, "add", ".")
-    _git(repo, "commit", "-q", "-m", "exact3 implementation I")
+    _git(repo, "add", MAT.SCRIPT_RELATIVE_PATH, MAT.TEST_RELATIVE_PATH)
+    _git(repo, "commit", "-q", "-m", "dynamic exact2 implementation I2")
     implementation_commit = _git(repo, "rev-parse", "HEAD")
 
-    config["implementation_binding"].update(
+    bound_config = copy.deepcopy(config)
+    bound_config["implementation_binding"].update(
         {
             "status": "BOUND",
             "implementation_commit": implementation_commit,
@@ -434,9 +480,9 @@ def _bind_fake_repository(tmp_path: Path, monkeypatch) -> dict[str, object]:
             "implementation_test_sha256": _sha256(test_path),
         }
     )
-    _write_json(config_path, config)
+    _write_json(config_path, bound_config)
     _git(repo, "add", MAT.CONFIG_RELATIVE_PATH)
-    _git(repo, "commit", "-q", "-m", "config-only binding B")
+    _git(repo, "commit", "-q", "-m", "config-only binding B2")
     assert not _git(repo, "status", "--porcelain")
     return {
         "repo": repo,
@@ -444,6 +490,7 @@ def _bind_fake_repository(tmp_path: Path, monkeypatch) -> dict[str, object]:
         "assets": assets,
         "public_report": recovery_report_path,
         "schema": schema_path,
+        "production_authority_commit": production_authority_commit,
         "implementation_commit": implementation_commit,
     }
 
@@ -469,20 +516,17 @@ def _run_bound(tmp_path: Path, monkeypatch) -> tuple[int, dict, Path, dict]:
     return code, report, output, bound
 
 
-def test_disk_config_freezes_official_counts_no_credit_and_unbound_exact3() -> None:
-    config = json.loads(CONFIG.read_text(encoding="utf-8"))
+def test_disk_config_freezes_official_counts_no_credit_and_valid_i_or_b(
+    tmp_path: Path,
+) -> None:
+    disk_config = json.loads(CONFIG.read_text(encoding="utf-8"))
+    config = _validate_disk_binding_and_normalize(disk_config)
     assert config["repository_authority"]["base_commit"] == (
         "aa396dbdeac083c9f88df62877ff7cbcb7e0d318"
     )
-    assert config["implementation_binding"]["status"] == "UNKNOWN_NOT_ASSERTED"
-    assert config["implementation_binding"]["implementation_commit"] == (
-        "UNKNOWN_NOT_ASSERTED"
-    )
-    assert config["implementation_binding"]["implementation_script_sha256"] == (
-        "UNKNOWN_NOT_ASSERTED"
-    )
-    assert config["implementation_binding"]["implementation_test_sha256"] == (
-        "UNKNOWN_NOT_ASSERTED"
+    assert all(
+        config["implementation_binding"][scalar] == "UNKNOWN_NOT_ASSERTED"
+        for scalar in BINDING_SCALARS
     )
     contract = config["materialization_contract"]
     assert contract["required_published_universe_row_count"] == 11929
@@ -496,6 +540,21 @@ def test_disk_config_freezes_official_counts_no_credit_and_unbound_exact3() -> N
     assert contract["canonical_qualification_allowed"] is False
     assert contract["training_allowed"] is False
     assert config["public_recovery_report"]["private_row_artifacts_consumed"] is False
+
+    temporary_bound = copy.deepcopy(config)
+    temporary_bound["implementation_binding"].update(
+        {
+            "status": "BOUND",
+            "implementation_commit": "1" * 40,
+            "implementation_script_sha256": "2" * 64,
+            "implementation_test_sha256": "3" * 64,
+        }
+    )
+    temporary_bound_path = tmp_path / "bound-config-node.json"
+    _write_json(temporary_bound_path, temporary_bound)
+    assert _validate_disk_binding_and_normalize(
+        json.loads(temporary_bound_path.read_text(encoding="utf-8"))
+    ) == config
 
 
 def test_schema_valid_development_rows_preserve_mapping_provenance_and_no_credit(
