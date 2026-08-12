@@ -36,7 +36,7 @@ EXPECTED_IMPLEMENTATION_FILES = {
 }
 FROZEN_CONFIG_CORE_SHA256_BY_PATH = {
     GSE200304_CONFIG_REPO_PATH: (
-        "070425afe987c409a06a538a2e9430648ee6bb1f222379c0f9b139c2cd014c5f"
+        "f2a3c59dddd047dd7f211926042d4da7120929e538234a97cd72041573bd0172"
     ),
 }
 FROZEN_CONFIG_CORE_SHA256 = FROZEN_CONFIG_CORE_SHA256_BY_PATH[CONFIG_REPO_PATH]
@@ -89,6 +89,18 @@ EVIDENCE_SCHEMA_VERSION = "route_a_v3_dec019_aggregate_gate_evidence.v3"
 EVIDENCE_RECORD_TYPE = "ROUTE_A_V3_DEC019_ACCEPTED_AGGREGATE_GATE_EVIDENCE_V3"
 GROUP_MAPPING_COMMITMENT_KEY = "group_mapping_commitment_sha256"
 SPLIT_ASSIGNMENT_COMMITMENT_KEY = "split_assignment_commitment_sha256"
+POWER_ANALYSIS_UNIT = "BIOLOGICAL_SOURCE_GROUP"
+POWER_EVALUATION_POPULATION = (
+    "A1_ELIGIBLE_OUTCOME_BLIND_OUTER_OOF_GROUPS_NOT_A2_FINAL_MEMBERSHIP"
+)
+POWER_TARGET_METRIC = "WITHIN_STUDY_SPEARMAN"
+POWER_METHOD = "BONETT_WRIGHT_FISHER_Z_ASYMPTOTIC_TWO_SIDED_SPEARMAN"
+POWER_CI_METHOD = (
+    "BONETT_WRIGHT_FISHER_Z_SPEARMAN_AT_PREFROZEN_ALTERNATIVE"
+)
+POWER_WORKING_DISTRIBUTION_ASSUMPTION = (
+    "MONOTONIC_TRANSFORMATION_OF_BIVARIATE_NORMAL_AT_PREFROZEN_SPEARMAN_RHO"
+)
 LOCATOR_LINEAGE_COMMITMENT_ALGORITHM = (
     "ROUTE_A_V3_GSE200304_LOCATOR_MERKLE_V1"
 )
@@ -229,7 +241,7 @@ PREDECESSOR_D1_FROZEN_BLOBS = {
 }
 PREDECESSOR_I3_PARENT_COMMIT = PREDECESSOR_D1_COMMIT
 PREDECESSOR_I3_COMMIT = "e829464d6ea1953b7a859ba5506946b9cb8e6384"
-REPAIR_BASE_COMMIT = "2e0570ec11df3dbd59a23cfa05ec4eb4aed208c5"
+REPAIR_BASE_COMMIT = "f56bdf22f9f9021addb741951aab1d488ef1be6c"
 PREDECESSOR_I3_CONFIG_CORE_SHA256 = (
     "bca69bd05c094575bfa860b5492f019810c2845abe9218d7030444821f357a0b"
 )
@@ -244,15 +256,16 @@ PREDECESSOR_I3_FROZEN_BLOBS = {
 }
 EXPECTED_BASE_TO_I_DIFF_PATHS = frozenset(
     {
-        "implementation_binding.config_core_sha256",
         "implementation_binding.implementation_commit",
         "implementation_binding.implementation_script_sha256",
         "implementation_binding.implementation_test_sha256",
         "implementation_binding.status",
-        (
-            "evidence_contract.gate_record_provenance_contract."
-            "outcome_blind_split_pass_requires_assignment_commitment_sha256"
-        ),
+        "implementation_binding.config_core_sha256",
+        "evidence_descriptor_bindings.descriptor_set_sha256",
+        "evidence_descriptor_bindings.slots[7].absolute_path",
+        "evidence_descriptor_bindings.slots[7].bytes",
+        "evidence_descriptor_bindings.slots[7].sha256",
+        "evidence_descriptor_bindings.status",
         "repository_authority.base_commit",
         "repository_authority.implementation_commit_expected_parent",
     }
@@ -324,8 +337,17 @@ FACT_KEYS = {
     "PREFROZEN_POWER_PRECISION": {
         "analysis_unit",
         "bootstrap_unit",
-        "observed_power",
-        "full_confidence_interval_width",
+        "evaluation_population",
+        "evaluation_group_count",
+        "target_metric",
+        "alternative_spearman_rho",
+        "two_sided_alpha",
+        "power_method",
+        "working_distribution_assumption",
+        "estimated_design_power",
+        "confidence_level",
+        "confidence_interval_method",
+        "planned_full_confidence_interval_width",
         "prefrozen_before_model_results",
     },
 }
@@ -1539,16 +1561,12 @@ def _validate_successor_i_transition_from_base(
     i_config: Mapping[str, Any],
     base_config: Mapping[str, Any],
 ) -> None:
-    """Allow only this upgrade's requirement and lifecycle changes from 2e0570e."""
+    """Allow only this upgrade's semantic and lifecycle changes from the base."""
 
-    if i_config.get("evidence_descriptor_bindings") != base_config.get(
-        "evidence_descriptor_bindings"
-    ):
-        raise BindingError("successor I descriptor binding drifted from 2e0570e base")
     differences = _semantic_diff_paths(base_config, i_config)
     if differences != EXPECTED_BASE_TO_I_DIFF_PATHS:
         raise BindingError(
-            "2e0570e-to-successor-I semantic diff is not the exact allowlist"
+            "base-to-successor-I semantic diff is not the exact allowlist"
         )
 
 
@@ -1620,7 +1638,7 @@ def validate_production_authority(config: Mapping[str, Any]) -> dict[str, Any]:
         raise BindingError("production worktree is not clean")
     if _git(repo, "rev-parse", f"refs/remotes/origin/{branch}") != head:
         raise BindingError("origin tracking ref is not current HEAD")
-    _require_ancestor(repo, REPAIR_BASE_COMMIT, head, label="2e0570e-base-to-current")
+    _require_ancestor(repo, REPAIR_BASE_COMMIT, head, label="repair-base-to-current")
     base_config = strict_json(
         _git_bytes(repo, "show", f"{REPAIR_BASE_COMMIT}:{CONFIG_REPO_PATH}"),
         label="2e0570e consumer config",
@@ -1877,17 +1895,59 @@ def _validate_fact_types(slot_id: str, facts: Mapping[str, Any]) -> None:
             raise AdjudicationError("LICENSE_RIGHTS redistribution_scope is outside the closed enum")
         boolean_keys.remove("redistribution_scope")
     elif slot_id == "PREFROZEN_POWER_PRECISION":
-        observed_power = _expect_number(facts["observed_power"], label="observed power")
-        full_width = _expect_number(
-            facts["full_confidence_interval_width"], label="full CI width"
+        estimated_power = _expect_number(
+            facts["estimated_design_power"], label="estimated design power"
         )
-        if not 0.0 <= observed_power <= 1.0:
-            raise AdjudicationError("observed power must lie in [0, 1]")
+        full_width = _expect_number(
+            facts["planned_full_confidence_interval_width"],
+            label="planned full CI width",
+        )
+        alternative = _expect_number(
+            facts["alternative_spearman_rho"], label="alternative Spearman rho"
+        )
+        alpha = _expect_number(facts["two_sided_alpha"], label="two-sided alpha")
+        confidence = _expect_number(
+            facts["confidence_level"], label="confidence level"
+        )
+        _expect_int(
+            facts["evaluation_group_count"], label="evaluation group count", minimum=4
+        )
+        if not 0.0 <= estimated_power <= 1.0:
+            raise AdjudicationError("estimated design power must lie in [0, 1]")
         if full_width < 0.0:
-            raise AdjudicationError("full CI width must be non-negative")
-        if facts["analysis_unit"] != "BIOLOGICAL_GROUP" or facts["bootstrap_unit"] != "BIOLOGICAL_GROUP":
-            raise AdjudicationError("power analysis/bootstrap unit differs")
-        boolean_keys -= {"analysis_unit", "bootstrap_unit", "observed_power", "full_confidence_interval_width"}
+            raise AdjudicationError("planned full CI width must be non-negative")
+        if not -1.0 < alternative < 1.0:
+            raise AdjudicationError("alternative Spearman rho must lie in (-1, 1)")
+        if not 0.0 < alpha < 1.0 or not 0.0 < confidence < 1.0:
+            raise AdjudicationError("power probability parameter is outside (0, 1)")
+        for key, expected in {
+            "analysis_unit": POWER_ANALYSIS_UNIT,
+            "bootstrap_unit": POWER_ANALYSIS_UNIT,
+            "evaluation_population": POWER_EVALUATION_POPULATION,
+            "target_metric": POWER_TARGET_METRIC,
+            "power_method": POWER_METHOD,
+            "working_distribution_assumption": (
+                POWER_WORKING_DISTRIBUTION_ASSUMPTION
+            ),
+            "confidence_interval_method": POWER_CI_METHOD,
+        }.items():
+            if facts[key] != expected:
+                raise AdjudicationError(f"power {key} differs")
+        boolean_keys -= {
+            "analysis_unit",
+            "bootstrap_unit",
+            "evaluation_population",
+            "evaluation_group_count",
+            "target_metric",
+            "alternative_spearman_rho",
+            "two_sided_alpha",
+            "power_method",
+            "working_distribution_assumption",
+            "estimated_design_power",
+            "confidence_level",
+            "confidence_interval_method",
+            "planned_full_confidence_interval_width",
+        }
     for key in boolean_keys:
         _expect_bool(facts[key], label=f"{slot_id} {key}")
 
@@ -2057,8 +2117,14 @@ def _slot_gate_pass(slot_id: str, facts: Mapping[str, Any]) -> bool:
         return all(value is True for value in facts.values())
     if slot_id == "PREFROZEN_POWER_PRECISION":
         return (
-            facts["analysis_unit"] == "BIOLOGICAL_GROUP"
-            and facts["bootstrap_unit"] == "BIOLOGICAL_GROUP"
+            facts["analysis_unit"] == POWER_ANALYSIS_UNIT
+            and facts["bootstrap_unit"] == POWER_ANALYSIS_UNIT
+            and facts["evaluation_population"] == POWER_EVALUATION_POPULATION
+            and facts["target_metric"] == POWER_TARGET_METRIC
+            and facts["power_method"] == POWER_METHOD
+            and facts["working_distribution_assumption"]
+            == POWER_WORKING_DISTRIBUTION_ASSUMPTION
+            and facts["confidence_interval_method"] == POWER_CI_METHOD
             and facts["prefrozen_before_model_results"] is True
         )
     raise AdjudicationError(f"unknown gate slot: {slot_id}")
@@ -2088,9 +2154,9 @@ def _evaluate(records: Mapping[str, Mapping[str, Any]], config: Mapping[str, Any
     power_record = records["PREFROZEN_POWER_PRECISION"]
     if power_record["status"] == "PASS":
         power = power_record["facts"]
-        if float(power["observed_power"]) < 0.8:
+        if float(power["estimated_design_power"]) < 0.8:
             blockers.append("POWER_LT_0_80")
-        if float(power["full_confidence_interval_width"]) > 0.3:
+        if float(power["planned_full_confidence_interval_width"]) > 0.3:
             blockers.append("FULL_CI_WIDTH_GT_0_30")
     blockers = sorted(set(blockers))
     if not set(blockers).issubset(GATE_BLOCKERS):

@@ -180,10 +180,21 @@ def passing_facts() -> dict[str, dict[str, Any]]:
             "final_benchmark_membership_deferred_to_a2": True,
         },
         "PREFROZEN_POWER_PRECISION": {
-            "analysis_unit": "BIOLOGICAL_GROUP",
-            "bootstrap_unit": "BIOLOGICAL_GROUP",
-            "observed_power": 0.8,
-            "full_confidence_interval_width": 0.3,
+            "analysis_unit": ADJ.POWER_ANALYSIS_UNIT,
+            "bootstrap_unit": ADJ.POWER_ANALYSIS_UNIT,
+            "evaluation_population": ADJ.POWER_EVALUATION_POPULATION,
+            "evaluation_group_count": 6544,
+            "target_metric": ADJ.POWER_TARGET_METRIC,
+            "alternative_spearman_rho": 0.25,
+            "two_sided_alpha": 0.05,
+            "power_method": ADJ.POWER_METHOD,
+            "working_distribution_assumption": (
+                ADJ.POWER_WORKING_DISTRIBUTION_ASSUMPTION
+            ),
+            "estimated_design_power": 1.0,
+            "confidence_level": 0.95,
+            "confidence_interval_method": ADJ.POWER_CI_METHOD,
+            "planned_full_confidence_interval_width": 0.04613579821079131,
             "prefrozen_before_model_results": True,
         },
     }
@@ -380,7 +391,7 @@ def test_split_pass_requires_exact_hex64_assignment_commitment() -> None:
         ADJ._validate_gate_record(ADJ.json_bytes(malformed), slot, config)
 
 
-def test_static_current_and_synthetic_i_b_freeze_2e0570e_successor_chain_and_truth() -> None:
+def test_static_current_and_synthetic_i_b_freeze_current_successor_chain_and_truth() -> None:
     current_config = read_config()
     ADJ.validate_static_config(current_config)
     current_binding = current_config["implementation_binding"]
@@ -406,7 +417,7 @@ def test_static_current_and_synthetic_i_b_freeze_2e0570e_successor_chain_and_tru
     ADJ.validate_static_config(config_b)
     assert config_i["repository_authority"]["base_commit"] == ADJ.REPAIR_BASE_COMMIT
     assert config_i["repository_authority"]["implementation_commit_expected_parent"] == ADJ.REPAIR_BASE_COMMIT
-    assert ADJ.REPAIR_BASE_COMMIT == "2e0570ec11df3dbd59a23cfa05ec4eb4aed208c5"
+    assert ADJ.REPAIR_BASE_COMMIT == "f56bdf22f9f9021addb741951aab1d488ef1be6c"
     assert ADJ.REPAIR_BASE_COMMIT != ADJ.HISTORICAL_BINDING_COMMIT
     assert ADJ.BINDING_CONFIG_REPO_PATHS == (ADJ.CONFIG_REPO_PATH,)
     assert ADJ.EXPECTED_IMPLEMENTATION_FILES == {
@@ -427,7 +438,7 @@ def test_static_current_and_synthetic_i_b_freeze_2e0570e_successor_chain_and_tru
     assert state["training_allowed"] is state["model_selection_allowed"] is state["next_phase_authorized"] is False
 
 
-def test_current_disk_i_or_b_preserves_current_bound_descriptor_state() -> None:
+def test_current_disk_i_or_b_unbinds_only_power_descriptor() -> None:
     current = json.loads(CONFIG.read_text(encoding="utf-8"))
     ADJ.validate_static_config(current)
     current_binding = current["implementation_binding"]
@@ -449,10 +460,13 @@ def test_current_disk_i_or_b_preserves_current_bound_descriptor_state() -> None:
         )
     } == {ADJ.UNKNOWN}
     descriptors = config_i["evidence_descriptor_bindings"]
-    assert descriptors["status"] == "BOUND"
+    assert descriptors["status"] == "PARTIALLY_BOUND"
     assert descriptors["descriptor_set_sha256"] == ADJ.descriptor_set_sha256(config_i)
-    assert ADJ._derived_descriptor_status(config_i) == "BOUND"
-    assert all(ADJ._descriptor_slot_bound(slot) for slot in descriptors["slots"])
+    assert ADJ._derived_descriptor_status(config_i) == "PARTIALLY_BOUND"
+    assert all(
+        ADJ._descriptor_slot_bound(slot) for slot in descriptors["slots"][:7]
+    )
+    assert ADJ._descriptor_slot_unbound(descriptors["slots"][7])
 
     if current_binding["status"] == "BOUND":
         config_b = bind_implementation(
@@ -521,8 +535,17 @@ def test_other_seven_gate_semantics_are_unchanged_under_v3_record_identity() -> 
         "PREFROZEN_POWER_PRECISION": {
             "analysis_unit",
             "bootstrap_unit",
-            "observed_power",
-            "full_confidence_interval_width",
+            "evaluation_population",
+            "evaluation_group_count",
+            "target_metric",
+            "alternative_spearman_rho",
+            "two_sided_alpha",
+            "power_method",
+            "working_distribution_assumption",
+            "estimated_design_power",
+            "confidence_level",
+            "confidence_interval_method",
+            "planned_full_confidence_interval_width",
             "prefrozen_before_model_results",
         },
     }
@@ -877,8 +900,8 @@ def test_all_eight_pass_qualifies_one_dataset_only_and_binds_output_authority(tm
 @pytest.mark.parametrize(
     ("updates", "blocker"),
     [
-        ({"observed_power": 0.799}, "POWER_LT_0_80"),
-        ({"full_confidence_interval_width": 0.301}, "FULL_CI_WIDTH_GT_0_30"),
+        ({"estimated_design_power": 0.799}, "POWER_LT_0_80"),
+        ({"planned_full_confidence_interval_width": 0.301}, "FULL_CI_WIDTH_GT_0_30"),
     ],
 )
 def test_power_and_precision_thresholds_remain_separate(
@@ -900,9 +923,9 @@ def test_power_and_precision_thresholds_remain_separate(
 @pytest.mark.parametrize(
     ("updates", "message"),
     [
-        ({"observed_power": 1.5}, "observed power"),
-        ({"observed_power": -0.1}, "observed power"),
-        ({"full_confidence_interval_width": -0.2}, "CI width"),
+        ({"estimated_design_power": 1.5}, "estimated design power"),
+        ({"estimated_design_power": -0.1}, "estimated design power"),
+        ({"planned_full_confidence_interval_width": -0.2}, "CI width"),
     ],
 )
 def test_power_and_precision_impossible_domains_are_rejected(
@@ -1168,7 +1191,7 @@ def test_inspector_recomputes_bound_evidence_and_rejects_fully_rehashed_false_su
         tmp_path / "evidence",
         config,
         fact_updates={
-            "PREFROZEN_POWER_PRECISION": {"observed_power": 0.79},
+            "PREFROZEN_POWER_PRECISION": {"estimated_design_power": 0.79},
         },
     )
     authority = ADJ._synthetic_authority_provenance(config)
@@ -1362,24 +1385,38 @@ def _authority_fixture(
     base_config["implementation_binding"].update(
         {
             "status": "BOUND",
-            "implementation_commit": "6d103877bbfb8e1196bfc22890bb239dcb87c3c8",
+            "implementation_commit": "47c03f341d36bfa58fbbaa3977aa7081cbac52ad",
             "implementation_script_sha256": (
-                "9cd4411fcb02e1feed913b799296351e38ab9071b9506611318645e41b8dbbfe"
+                "f6eed605af44b13a3861cd703586a5df484bdef53aed480c7dc7e628cc870d7e"
             ),
             "implementation_test_sha256": (
-                "8e7b188cfa2e5015fa307acad980f9ff2f45145943384fcadb50d67b1263e1db"
+                "7896fd2f2d6111420c7cda7f04d39e67e26d3a7a5e4c1d90932eaa2fe3784558"
             ),
         }
     )
     base_config["repository_authority"].update(
         {
-            "base_commit": "f4922af6dfcd6e8b63064fe8d819edb3971da1fb",
-            "implementation_commit_expected_parent": "f4922af6dfcd6e8b63064fe8d819edb3971da1fb",
+            "base_commit": "2e0570ec11df3dbd59a23cfa05ec4eb4aed208c5",
+            "implementation_commit_expected_parent": "2e0570ec11df3dbd59a23cfa05ec4eb4aed208c5",
         }
     )
-    base_config["evidence_contract"]["gate_record_provenance_contract"].pop(
-        "outcome_blind_split_pass_requires_assignment_commitment_sha256"
+    base_power_descriptor = base_config["evidence_descriptor_bindings"]["slots"][7]
+    base_power_descriptor.update(
+        {
+            "absolute_path": (
+                "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/"
+                "A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/"
+                "GSE200304_DEC019_NEGATIVE_GATE_PACK_V1/"
+                "GSE200304_DEC019_PREFROZEN_POWER_PRECISION_GATE.json"
+            ),
+            "sha256": (
+                "817165a2e9ea2e01efae2374a606334375b9ec3afafae665fefacf0c6779fc95"
+            ),
+            "bytes": 3908,
+        }
     )
+    base_config["evidence_descriptor_bindings"]["status"] = "BOUND"
+    refresh_descriptor_hash(base_config)
     base_config["implementation_binding"]["config_core_sha256"] = (
         ADJ.config_core_sha256(base_config)
     )
@@ -1563,7 +1600,7 @@ def test_production_authority_rejects_synchronized_successor_i_descriptor_drift(
         lifecycle=lifecycle,
         drift_successor_i_descriptor=True,
     )
-    with pytest.raises(ADJ.BindingError, match="descriptor binding drifted"):
+    with pytest.raises(ADJ.BindingError, match="exact allowlist"):
         ADJ.validate_production_authority(config)
 
     core_drift_root = tmp_path / "synchronized-core-authority-drift"
