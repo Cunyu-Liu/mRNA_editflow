@@ -7,13 +7,13 @@
   "protocol_status": "PREFLIGHT_ONLY_STOP_BEFORE_PAYLOAD",
   "implementation_binding": {
     "binding_scheme": "CONFIG_ONLY_POST_IMPLEMENTATION_BINDING_V1",
-    "status": "UNKNOWN_NOT_ASSERTED",
+    "status": "BOUND",
     "base_commit": "7b9a9531d44a8398153cc3900bb738e92730af99",
-    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "implementation_commit": "a0e8bd7c751f94e116546d6164ec2de4faeae924",
     "implementation_script_path": "scripts/route_a_v3/preflight_gse217518_public_authority.py",
-    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_script_sha256": "b21540baca568156470a50d07989052a1c97357546bc339c5b90e8791f36080d",
     "implementation_test_path": "tests/route_a_v3/test_preflight_gse217518_public_authority.py",
-    "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_test_sha256": "ba192586174dccff21b83055608a9f9623fbf48d3b64deeb6768eb4055d69421",
     "unknown_to_bound_scalar_paths": [
       "implementation_binding.status",
       "implementation_binding.implementation_commit",
