@@ -2266,13 +2266,140 @@ def test_gse200304_dec019_one_blocker_registration_is_closed(
     assert current["model_selection_allowed"] is False
     assert current["next_phase_authorized"] is False
     assert current["power_evidence_is_planning_only"] is True
-    assert current["runtime_sync_status"] == "PENDING_NO_EVT_044"
+    assert current["runtime_sync_status"] == "SYNCED_EVT_044"
     assert len(lineage[validator.GSE200304_UPSTREAM_AUTHORITY_LINEAGE_ID]["files"]) == 6
     assert len(lineage[validator.GSE200304_DEC019_UPSTREAM_PASS_GATE_PACK_LINEAGE_ID]["files"]) == 6
     assert len(lineage[validator.GSE200304_DEC019_GROUP_LINEAGE_ID]["files"]) == 4
     assert len(lineage[validator.GSE200304_DEC019_SPLIT_LINEAGE_ID]["files"]) == 4
     assert len(lineage[validator.GSE200304_DEC019_POWER_LINEAGE_ID]["files"]) == 2
     assert len(current["files"]) == 4
+
+
+def test_post_fail_acquisition_registration_is_closed(
+    validator,
+    repo_root,
+):
+    manifest = validator._load_json(repo_root, validator.REGISTRY_MANIFEST_PATH)
+    manifest_paths = {row["path"] for row in manifest["files"]}
+    static_paths = set(validator.POST_FAIL_ACQUISITION_STATIC_LEAF_SHA256)
+
+    assert len(static_paths) == 6
+    assert static_paths.issubset(manifest_paths)
+    assert not (
+        {
+            validator.GSE200304_CHECKPOINT_EXPOSURE_FAIL_CONFIG_PATH,
+            validator.GSE149487_PUBLIC_ASSET_ACQUISITION_CONFIG_PATH,
+        }
+        & validator.DEC019_SUCCESSOR_DYNAMIC_CONFIG_PATHS
+    )
+    assert validator.REGISTRY_MANIFEST_PATH not in manifest_paths
+    assert validator.validate_post_fail_acquisition_registration(repo_root) == []
+
+    interim = validator._load_yaml(repo_root, validator.A1_INTERIM_PATH)
+    lineage = interim["artifact_lineage"]
+    exposure = lineage[validator.GSE200304_CHECKPOINT_EXPOSURE_FAIL_LINEAGE_ID]
+    acquisition = lineage[validator.GSE149487_PUBLIC_ASSET_ACQUISITION_LINEAGE_ID]
+
+    assert exposure["status"] == "FAIL_CURRENT_PROTOCOL"
+    assert exposure["current_exposure_gate_status"] == "UNKNOWN_NOT_ASSERTED"
+    assert exposure["exact_blocker"] == "CHECKPOINT_SPECIFIC_EXPOSURE_NOT_PASS"
+    assert exposure["current_public_executable_foundation_checkpoint_count"] == 0
+    assert exposure["audited_checkpoint_count"] == 0
+    assert exposure["qualified"] is False
+    assert exposure["training_allowed"] is False
+    assert exposure["model_selection_allowed"] is False
+    assert exposure["next_phase_authorized"] is False
+    assert exposure["predecessor_runtime_event_id"] == "A1-EVT-044"
+    assert exposure["expected_next_runtime_event_id"] == "A1-EVT-045"
+    assert exposure["runtime_sync_status"] == "PENDING_NO_EVT_045"
+
+    assert acquisition["status"] == "STOPPED_WITH_PUBLIC_EVIDENCE_BLOCKER"
+    assert acquisition["acquisition_status"] == (
+        "EXACT_21_ASSETS_ACQUIRED_AND_INTEGRITY_VERIFIED"
+    )
+    assert (
+        acquisition["asset_count"],
+        acquisition["geo_raw_count"],
+        acquisition["supplement_count"],
+        acquisition["total_verified_bytes"],
+    ) == (21, 18, 3, 70032274)
+    assert acquisition["ready_for_full_qualifier_input"] is False
+    assert acquisition["ready_for_study_qualification"] is False
+    assert acquisition["qualified"] is False
+    assert acquisition["canonical_record_count"] == 0
+    assert acquisition["training_allowed"] is False
+    assert acquisition["model_selection_allowed"] is False
+    assert acquisition["next_phase_authorized"] is False
+    assert acquisition["predecessor_runtime_event_id"] == "A1-EVT-044"
+    assert acquisition["expected_next_runtime_event_id"] == "A1-EVT-045"
+    assert acquisition["runtime_sync_status"] == "PENDING_NO_EVT_045"
+
+    current = interim["dec019_current_disposition"][
+        "gse200304_published_processed_endpoint"
+    ]
+    assert current["input_status_counts"] == {
+        "PASS": 7,
+        "BLOCKED": 0,
+        "UNKNOWN_NOT_ASSERTED": 1,
+        "NOT_RUN": 0,
+    }
+    assert current["current_blockers"] == ["CHECKPOINT_SPECIFIC_EXPOSURE_NOT_PASS"]
+    assert current["qualified"] is False
+    assert current["training_allowed"] is False
+    assert current["model_selection_allowed"] is False
+    assert current["next_phase_authorized"] is False
+
+    for lineage_id in (
+        validator.GSE200304_DEC019_GROUP_LINEAGE_ID,
+        validator.GSE200304_DEC019_SPLIT_LINEAGE_ID,
+        validator.GSE200304_DEC019_POWER_LINEAGE_ID,
+        validator.GSE200304_DEC019_ONE_BLOCKER_ADJUDICATION_LINEAGE_ID,
+    ):
+        assert lineage[lineage_id]["runtime_sync_status"] == "SYNCED_EVT_044"
+
+
+def test_post_fail_acquisition_drift_and_interim_unlock_fail_closed(
+    validator,
+    repo_root,
+    tmp_path,
+    monkeypatch,
+):
+    static_root = tmp_path / "static"
+    manifest = _copy_manifest_bundle(validator, repo_root, static_root)
+    relative = validator.GSE149487_PUBLIC_ASSET_ACQUISITION_SCRIPT_PATH
+    leaf_path = static_root / relative
+    leaf_path.write_bytes(leaf_path.read_bytes() + b"\n# synchronized drift\n")
+    next(row for row in manifest["files"] if row["path"] == relative)[
+        "sha256"
+    ] = validator.sha256_file(leaf_path)
+    manifest_path = static_root / validator.REGISTRY_MANIFEST_PATH
+    manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+
+    codes = _codes(validator.validate_bundle(static_root))
+    assert "REGISTRY_MANIFEST_HASH_MISMATCH" not in codes
+    assert "POST_FAIL_ACQUISITION_STATIC_LEAF" in codes
+
+    def forge_unlock(interim):
+        exposure = interim["artifact_lineage"][
+            validator.GSE200304_CHECKPOINT_EXPOSURE_FAIL_LINEAGE_ID
+        ]
+        exposure["current_exposure_gate_status"] = "PASS"
+        exposure["qualified"] = True
+        acquisition = interim["artifact_lineage"][
+            validator.GSE149487_PUBLIC_ASSET_ACQUISITION_LINEAGE_ID
+        ]
+        acquisition["ready_for_study_qualification"] = True
+        acquisition["qualified"] = True
+
+    codes = _validate_rehashed_interim_bypass(
+        validator,
+        repo_root,
+        tmp_path / "interim_unlock",
+        monkeypatch,
+        forge_unlock,
+    )
+    assert "A1_INTERIM_LINEAGE" in codes
+    assert "A1_INTERIM_GSE200304_LINEAGE" in codes
 
 
 def test_gse200304_dec019_post_adjudication_dynamic_and_static_drift_fail_closed(

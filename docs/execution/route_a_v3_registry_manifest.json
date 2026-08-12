@@ -59,7 +59,7 @@
     {
       "path": "docs/execution/route_a_v3_a1_interim.yaml",
       "role": "A1_ACTIVE_INTERIM_RECORD",
-      "sha256": "d92fd5383fd37a7ad6f75a431885ee15c339821420015b3fcdb91c7a86f26614"
+      "sha256": "539413c13d2da6e10a4c065b3e4bb06d472095bcab63a50b4636d1e4633992f3"
     },
     {
       "path": "docs/execution/route_a_v3_split_registry.yaml",
@@ -312,20 +312,50 @@
       "sha256": "e41f7b7a516dfb8d9a93530b44229d4da5e4ed6feb007c6e3564581528da5171"
     },
     {
+      "path": "configs/route_a_v3_gse200304_dec019_checkpoint_exposure_fail_current_protocol_v1.json",
+      "role": "GSE200304_CHECKPOINT_EXPOSURE_FAIL_CURRENT_PROTOCOL_CONFIG",
+      "sha256": "0759e68b26a927e4acfebc55ac74541363122924734b4f75a55da2a931687404"
+    },
+    {
+      "path": "scripts/route_a_v3/produce_gse200304_dec019_checkpoint_exposure_fail_current_protocol.py",
+      "role": "GSE200304_CHECKPOINT_EXPOSURE_FAIL_CURRENT_PROTOCOL_PRODUCER",
+      "sha256": "29973bf92e82bb4ca60ac3895c59878961bd60aefef11f722c5575f27e6c605c"
+    },
+    {
+      "path": "tests/route_a_v3/test_produce_gse200304_dec019_checkpoint_exposure_fail_current_protocol.py",
+      "role": "GSE200304_CHECKPOINT_EXPOSURE_FAIL_CURRENT_PROTOCOL_FOCUSED_TEST",
+      "sha256": "6348fbc31efbb01cefbc4bde4b87cc15345f6bdaa98265692f83ab5e5fe6fd49"
+    },
+    {
+      "path": "configs/route_a_v3_gse149487_public_asset_acquisition_v1.json",
+      "role": "GSE149487_PUBLIC_ASSET_ACQUISITION_CONFIG",
+      "sha256": "14e3e1b1f0b2711f340f8d9098e5bdbd8415cbf9bd4a2ad75f284da8f0d4d4da"
+    },
+    {
+      "path": "scripts/route_a_v3/acquire_gse149487_public_assets.py",
+      "role": "GSE149487_PUBLIC_ASSET_ACQUISITION_PRODUCER",
+      "sha256": "f14a7571a1e9681b69fb38fda8c9c5ecd322f73f85d8a704d1eb31ad391a1bf9"
+    },
+    {
+      "path": "tests/route_a_v3/test_acquire_gse149487_public_assets.py",
+      "role": "GSE149487_PUBLIC_ASSET_ACQUISITION_FOCUSED_TEST",
+      "sha256": "9dec87f0e1d3148a0d13132ed4cd2af37cb7c96110b557fd4e2c064a78cb103f"
+    },
+    {
       "path": "tests/route_a_v3/test_a0_integrity_guards.py",
       "role": "A0_AUTHORITY_INTEGRITY_GUARD_TEST",
-      "sha256": "0208aec0147731564047b56ea9e00cb6825e575ece77a1ae51655c5401b7d0eb"
+      "sha256": "86a7e4edbcb844df59465612178eaeb29a6c439f505098fbae47fabfbbd86856"
     },
     {
       "path": "scripts/route_a_v3/validate_a0_bundle.py",
       "role": "A0_STATIC_AND_SEMANTIC_VALIDATOR",
-      "sha256": "c240a650f71c25f8147cdbeaad906df1876ca6cb0049c2edf5d10393d62531f5"
+      "sha256": "b99c5c1107ab6e17e2291d64f045265713fb5cbb6d77b8bd7ffff1b9ccde4124"
     }
   ],
   "initial_generated_at": "2026-08-10T10:10:05+08:00",
-  "generated_at": "2026-08-12T16:09:53+08:00",
-  "updated_at": "2026-08-12T16:09:53+08:00",
-  "manifest_status": "A1_DEC019_GSE200304_GROUP_SPLIT_POWER_D6_ONE_BLOCKER_LEDGER_REGISTERED_PENDING_EVT044",
+  "generated_at": "2026-08-12T19:30:01+08:00",
+  "updated_at": "2026-08-12T19:30:01+08:00",
+  "manifest_status": "A1_POST_FAIL_ACQUISITION_LEDGER_REGISTERED_PENDING_EVT045",
   "schema_version": "1.0.0",
   "sealed_contact": false,
   "version": "3.0.0"
