@@ -11,12 +11,12 @@
   "event_name": "GSE232572_PUBLIC_RECOVERY_AUDIT_REGISTERED_QUALIFICATION_GATE_UNCHANGED",
   "implementation_binding": {
     "binding_scheme": "CONFIG_ONLY_POST_IMPLEMENTATION_BINDING_V1",
-    "status": "UNKNOWN_NOT_ASSERTED",
-    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "status": "BOUND",
+    "implementation_commit": "86f8f5bf40eeaaf140fa991c89fd963347194ae2",
     "implementation_script_path": "scripts/route_a_v3/gse232572_public_recovery_audit_runtime_sync.py",
-    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_script_sha256": "f2eb433c8097173cbb64b90b41073643b959ea61f9425f7c587fb0717e8f22de",
     "implementation_test_path": "tests/route_a_v3/test_gse232572_public_recovery_audit_runtime_sync.py",
-    "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_test_sha256": "84b7a71eb025867cc52c5a5b20645d4543693c9c0d7844cb0e2746b508b43bb3",
     "compiled_core_sha256": "24779ee3ed03068022bd5c5678142fbf3df735de3db2af85a9f193aad33a9815",
     "unknown_to_bound_scalar_paths": [
       "implementation_binding.status",
