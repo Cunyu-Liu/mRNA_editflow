@@ -110,7 +110,7 @@ def _fixture_tree(tmp_path: Path) -> tuple[Path, Path, MemoryTransport, dict[str
     configs.mkdir(parents=True)
     protocol = _normalized_i_protocol(_production_protocol())
 
-    payloads: dict[str, bytes] = {}
+    download_payloads: dict[str, bytes] = {}
     r4_assets: list[dict[str, object]] = []
     manifest_assets: list[dict[str, object]] = []
     for context in ("PC3", "293T"):
@@ -120,7 +120,7 @@ def _fixture_tree(tmp_path: Path) -> tuple[Path, Path, MemoryTransport, dict[str
                 filename = f"{asset_id}.txt.gz"
                 url = f"https://example.test/{filename}"
                 payload = f"fixture:{asset_id}".encode("ascii")
-                payloads[url] = payload
+                download_payloads[url] = payload
                 r4_assets.append(
                     {
                         "asset_id": asset_id,
@@ -149,17 +149,31 @@ def _fixture_tree(tmp_path: Path) -> tuple[Path, Path, MemoryTransport, dict[str
         ("GSE149487_MOESM8", "41467_2021_24445_MOESM8_ESM.xlsx"),
         ("GSE149487_LIM6C_293T", "Lim_et_al_Supp_Tbl_6c_293T.xlsx"),
     )
+    replacement_by_id = {
+        record["asset_id"]: record
+        for record in ACQUIRE.EXPECTED_LOCATOR_REPLACEMENTS
+    }
     for asset_id, filename in supplement_rows:
-        url = f"https://example.test/{filename}"
+        replacement = replacement_by_id.get(asset_id)
+        authority_url = (
+            replacement["frozen_authority_source_uri"]
+            if replacement is not None
+            else f"https://example.test/{filename}"
+        )
+        resolved_url = (
+            replacement["resolved_current_official_source_uri"]
+            if replacement is not None
+            else authority_url
+        )
         payload = f"fixture:{asset_id}".encode("ascii")
-        payloads[url] = payload
+        download_payloads[resolved_url] = payload
         record = {
             "asset_id": asset_id,
             "asset_kind": "SUPPLEMENT_WORKBOOK",
             "filename": filename,
             "bytes": len(payload),
             "sha256": _sha256(payload),
-            "source_uri": url,
+            "source_uri": authority_url,
         }
         r4_assets.append(record)
         manifest_assets.append(dict(record))
@@ -235,14 +249,19 @@ def _fixture_tree(tmp_path: Path) -> tuple[Path, Path, MemoryTransport, dict[str
         path=str(r4_path), bytes=r4_bytes, sha256=r4_sha
     )
     protocol["asset_contract"]["expected_total_payload_bytes"] = sum(
-        len(payload) for payload in payloads.values()
+        len(payload) for payload in download_payloads.values()
     )
     output_base = tmp_path / "data" / "A1" / "GSE149487"
     protocol["output_contract"]["base_directory"] = str(output_base)
     protocol_path = configs / ACQUIRE.PROTOCOL_BASENAME
     protocol_path.write_bytes(_json_bytes(protocol))
     output = output_base / "GSE149487_PUBLIC_ASSETS_20260812T120000Z"
-    return protocol_path, output, MemoryTransport(payloads), payloads
+    return (
+        protocol_path,
+        output,
+        MemoryTransport(download_payloads),
+        download_payloads,
+    )
 
 
 def _fixture_binding(
@@ -300,8 +319,9 @@ def test_production_protocol_freezes_exact_authorities_and_honest_stop() -> None
     assert protocol["output_contract"]["terminal_marker_written"] is False
     assert protocol["terminal_truth"] == ACQUIRE.EXPECTED_TERMINAL_TRUTH
     assert protocol["implementation_binding"]["base_commit"] == (
-        "d87631b16501072b45bef3016bdbaf00c87cc59f"
+        "b39da87060e7794351a373aaf3bb66892a6b36b3"
     )
+    assert protocol["download_policy"] == ACQUIRE.EXPECTED_DOWNLOAD_POLICY
     assert set(protocol["unknown_not_asserted"].values()) == {
         "UNKNOWN_NOT_ASSERTED"
     }
@@ -380,6 +400,29 @@ def test_exact21_acquisition_writes_assets_and_one_stopped_aggregate(
         "canonical_record_count": 0,
     }
     assert len(report["retained_blockers"]) == len(ACQUIRE.EXPECTED_RETAINED_BLOCKERS)
+    report_by_id = {record["asset_id"]: record for record in report["assets"]}
+    for replacement in ACQUIRE.EXPECTED_LOCATOR_REPLACEMENTS:
+        record = report_by_id[replacement["asset_id"]]
+        assert record["authority_source_uri"] == replacement[
+            "frozen_authority_source_uri"
+        ]
+        assert record["resolved_current_official_source_uri"] == replacement[
+            "resolved_current_official_source_uri"
+        ]
+        assert record["official_locator_replacement_applied"] is True
+        assert replacement["resolved_current_official_source_uri"] in transport.opened
+        assert replacement["frozen_authority_source_uri"] not in transport.opened
+    unchanged = [
+        record
+        for record in report["assets"]
+        if not record["official_locator_replacement_applied"]
+    ]
+    assert len(unchanged) == 19
+    assert all(
+        record["authority_source_uri"]
+        == record["resolved_current_official_source_uri"]
+        for record in unchanged
+    )
 
     expected_names = {
         Path(url).name for url in payloads
@@ -392,6 +435,39 @@ def test_exact21_acquisition_writes_assets_and_one_stopped_aggregate(
     assert written_report == report
     assert not (output / "SHA256SUMS").exists()
     assert not (output / "PUBLICATION_COMMIT.json").exists()
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    ("WRONG_OLD_LOCATOR", "WRONG_CURRENT_LOCATOR", "THIRD_ASSET_REPLACEMENT"),
+)
+def test_closed_locator_policy_rejects_wrong_or_expanded_mapping(
+    mutation: str,
+) -> None:
+    protocol = _normalized_i_protocol(_production_protocol())
+    replacements = protocol["download_policy"][
+        "closed_official_locator_replacements"
+    ]
+    if mutation == "WRONG_OLD_LOCATOR":
+        replacements[0]["frozen_authority_source_uri"] += ".wrong"
+    elif mutation == "WRONG_CURRENT_LOCATOR":
+        replacements[1]["resolved_current_official_source_uri"] += ".wrong"
+    else:
+        replacements.append(
+            {
+                "asset_id": "GSE149487_LIM6C_293T",
+                "frozen_authority_source_uri": (
+                    "https://raw.githubusercontent.com/sonali-bioc/Lim-5utr-Paper/"
+                    "d613b541d192d6c502a1ef8849c27e801a7fbfb9/data/"
+                    "Lim_et_al_Supp_Tbl_6c_293T.xlsx"
+                ),
+                "resolved_current_official_source_uri": (
+                    "https://example.test/Lim_et_al_Supp_Tbl_6c_293T.xlsx"
+                ),
+            }
+        )
+    with pytest.raises(ACQUIRE.ProtocolError, match="closed two-locator repair"):
+        ACQUIRE._validate_protocol(protocol)
 
 
 def test_download_hash_mismatch_retains_part_and_never_writes_report(

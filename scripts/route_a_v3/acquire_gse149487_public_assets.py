@@ -4,8 +4,10 @@
 This producer consumes metadata only: three repository JSON authorities and
 the historical R4 ``ASSET_MANIFEST_EFFECTIVE.json`` aggregate.  It downloads
 the exact 18 GEO raw-count objects plus MOESM3, MOESM8, and Lim6c without
-parsing their contents.  Every new file must match the R4 byte count and
-SHA-256 before it is renamed from ``.part`` to its final basename.
+parsing their contents.  The R4 locator must remain exact; only MOESM3 and
+MOESM8 may resolve through their closed current official-publisher locators.
+Every new file must match the R4 byte count and SHA-256 before it is renamed
+from ``.part`` to its final basename.
 
 The sole metadata output is one aggregate acquisition report.  Even after all
 21 files pass integrity verification, that report remains
@@ -39,12 +41,51 @@ PROTOCOL_ID = "GSE149487_PUBLIC_ASSET_ACQUISITION_V1"
 PROTOCOL_BASENAME = "route_a_v3_gse149487_public_asset_acquisition_v1.json"
 REPORT_FILENAME = "GSE149487_PUBLIC_ASSET_ACQUISITION_V1.json"
 DATASET_ID = "GSE149487"
+EXPECTED_BASE_COMMIT = "b39da87060e7794351a373aaf3bb66892a6b36b3"
 
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 COMMIT_RE = re.compile(r"^[0-9a-f]{40}$")
 OUTPUT_BASENAME_RE = re.compile(
     r"^GSE149487_PUBLIC_ASSETS_[A-Za-z0-9][A-Za-z0-9._-]{7,95}$"
 )
+EXPECTED_LOCATOR_REPLACEMENTS = [
+    {
+        "asset_id": "GSE149487_MOESM3",
+        "frozen_authority_source_uri": (
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC8270899/bin/"
+            "41467_2021_24445_MOESM3_ESM.xlsx"
+        ),
+        "resolved_current_official_source_uri": (
+            "https://static-content.springer.com/esm/"
+            "art%3A10.1038%2Fs41467-021-24445-6/MediaObjects/"
+            "41467_2021_24445_MOESM3_ESM.xlsx"
+        ),
+    },
+    {
+        "asset_id": "GSE149487_MOESM8",
+        "frozen_authority_source_uri": (
+            "https://pmc.ncbi.nlm.nih.gov/articles/PMC8270899/bin/"
+            "41467_2021_24445_MOESM8_ESM.xlsx"
+        ),
+        "resolved_current_official_source_uri": (
+            "https://static-content.springer.com/esm/"
+            "art%3A10.1038%2Fs41467-021-24445-6/MediaObjects/"
+            "41467_2021_24445_MOESM8_ESM.xlsx"
+        ),
+    },
+]
+EXPECTED_DOWNLOAD_POLICY = {
+    "network_protocol": "HTTPS_ONLY",
+    "source_uri_must_equal_frozen_r4_value": True,
+    "closed_official_locator_replacements": EXPECTED_LOCATOR_REPLACEMENTS,
+    "unlisted_asset_locator_action": "USE_FROZEN_R4_SOURCE_URI_UNCHANGED",
+    "request_timeout_seconds": 120,
+    "stream_chunk_bytes": 1_048_576,
+    "transport_retries_per_execution": 0,
+    "partial_suffix": ".part",
+    "failed_partial_retained": True,
+    "completed_asset_overwrite_allowed": False,
+}
 
 EXPECTED_BINDING_KEYS = frozenset(
     {
@@ -152,7 +193,7 @@ class DownloadTransport(Protocol):
 
 
 class UrllibTransport:
-    """Read the exact HTTPS locator frozen in R4 using the standard library."""
+    """Read the exact resolved HTTPS locator using the standard library."""
 
     def open(self, url: str, *, timeout_seconds: int) -> HTTPResponse:
         request = urllib.request.Request(
@@ -268,8 +309,8 @@ def _validate_protocol(protocol: Mapping[str, Any]) -> None:
         raise ProtocolError("implementation_binding schema differs from the frozen lifecycle")
     if binding.get("binding_scheme") != "CONFIG_ONLY_POST_IMPLEMENTATION_BINDING_V1":
         raise ProtocolError("implementation binding scheme is not config-only-B")
-    if COMMIT_RE.fullmatch(str(binding.get("base_commit"))) is None:
-        raise ProtocolError("base commit is invalid")
+    if binding.get("base_commit") != EXPECTED_BASE_COMMIT:
+        raise ProtocolError("base commit differs from the append-only I2 parent")
     if binding.get("status") not in {"UNKNOWN_NOT_ASSERTED", "BOUND"}:
         raise ProtocolError("implementation binding status is outside the closed enum")
     if binding.get("status") == "UNKNOWN_NOT_ASSERTED":
@@ -372,6 +413,8 @@ def _validate_protocol(protocol: Mapping[str, Any]) -> None:
         raise ProtocolError("license and redistribution truth differs from the evidence")
     if set(unknown.values()) != {"UNKNOWN_NOT_ASSERTED"}:
         raise ProtocolError("unclosed evidence must remain UNKNOWN_NOT_ASSERTED")
+    if protocol.get("download_policy") != EXPECTED_DOWNLOAD_POLICY:
+        raise ProtocolError("download policy differs from the closed two-locator repair")
 
 
 def _run_git(repo_root: Path, *args: str, check: bool = True) -> bytes:
@@ -731,8 +774,36 @@ def _validate_output_path(protocol: Mapping[str, Any], output_directory: Path) -
     return output
 
 
+def _resolve_download_plan(
+    assets: Sequence[AssetSpec], download_policy: Mapping[str, Any]
+) -> list[tuple[AssetSpec, str]]:
+    replacements = {
+        str(record["asset_id"]): record
+        for record in download_policy["closed_official_locator_replacements"]
+    }
+    plan: list[tuple[AssetSpec, str]] = []
+    applied: set[str] = set()
+    for asset in assets:
+        replacement = replacements.get(asset.asset_id)
+        if replacement is None:
+            plan.append((asset, asset.source_uri))
+            continue
+        if asset.source_uri != replacement["frozen_authority_source_uri"]:
+            raise AuthorityError(
+                f"frozen authority locator differs for {asset.asset_id}"
+            )
+        plan.append(
+            (asset, str(replacement["resolved_current_official_source_uri"]))
+        )
+        applied.add(asset.asset_id)
+    if applied != set(replacements):
+        raise AuthorityError("closed locator replacement asset set is not exact")
+    return plan
+
+
 def _download_one(
     asset: AssetSpec,
+    resolved_source_uri: str,
     output_directory: Path,
     *,
     transport: DownloadTransport,
@@ -747,7 +818,7 @@ def _download_one(
     digest = hashlib.sha256()
     observed_bytes = 0
     try:
-        response = transport.open(asset.source_uri, timeout_seconds=timeout_seconds)
+        response = transport.open(resolved_source_uri, timeout_seconds=timeout_seconds)
         with closing(response), partial_path.open("xb") as output:
             while True:
                 block = response.read(chunk_bytes)
@@ -786,7 +857,11 @@ def _download_one(
         "filename": asset.filename,
         "bytes": observed_bytes,
         "sha256": observed_sha256,
-        "source_uri": asset.source_uri,
+        "authority_source_uri": asset.source_uri,
+        "resolved_current_official_source_uri": resolved_source_uri,
+        "official_locator_replacement_applied": (
+            resolved_source_uri != asset.source_uri
+        ),
         "integrity_status": "EXACT_BYTES_AND_SHA256_VERIFIED",
         "payload_parsed": False,
     }
@@ -840,6 +915,8 @@ def execute(
     repo_root = protocol_path.parent.parent
     documents, authority_records = _load_authorities(protocol, repo_root)
     assets = _validate_authorities(protocol, documents)
+    download = protocol["download_policy"]
+    download_plan = _resolve_download_plan(assets, download)
 
     try:
         output.parent.mkdir(parents=True, exist_ok=True)
@@ -847,17 +924,17 @@ def execute(
     except OSError as exc:
         raise OutputScopeError("exclusive output directory could not be created") from exc
 
-    download = protocol["download_policy"]
     selected_transport = transport or UrllibTransport()
     verified_assets = [
         _download_one(
             asset,
+            resolved_source_uri,
             output,
             transport=selected_transport,
             timeout_seconds=int(download["request_timeout_seconds"]),
             chunk_bytes=int(download["stream_chunk_bytes"]),
         )
-        for asset in assets
+        for asset, resolved_source_uri in download_plan
     ]
     for record in verified_assets:
         record["license_and_redistribution_class"] = _license_class(

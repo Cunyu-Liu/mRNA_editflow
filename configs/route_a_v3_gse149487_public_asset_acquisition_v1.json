@@ -8,13 +8,13 @@
   "dataset_alias": "PLUMAGE",
   "implementation_binding": {
     "binding_scheme": "CONFIG_ONLY_POST_IMPLEMENTATION_BINDING_V1",
-    "status": "BOUND",
-    "base_commit": "d87631b16501072b45bef3016bdbaf00c87cc59f",
-    "implementation_commit": "e169da17fc7d917bd8a5cc965c32b04d262668de",
+    "status": "UNKNOWN_NOT_ASSERTED",
+    "base_commit": "b39da87060e7794351a373aaf3bb66892a6b36b3",
+    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
     "implementation_script_path": "scripts/route_a_v3/acquire_gse149487_public_assets.py",
-    "implementation_script_sha256": "e4972d146f1edc470f78db91ac70a503b22766cc84cff811ffa2958cd12af06a",
+    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
     "implementation_test_path": "tests/route_a_v3/test_acquire_gse149487_public_assets.py",
-    "implementation_test_sha256": "e66fedc837dc4c23a8fc530b937bd277b5b7082f944d78ff6f999484f8428fc8",
+    "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
     "implementation_changed_paths": [
       "configs/route_a_v3_gse149487_public_asset_acquisition_v1.json",
       "scripts/route_a_v3/acquire_gse149487_public_assets.py",
@@ -29,7 +29,7 @@
       "implementation_binding.implementation_script_sha256",
       "implementation_binding.implementation_test_sha256"
     ],
-    "activation_rule": "The implementation commit I must be the direct child of base_commit and change exactly the config, producer, and focused test. The binding commit B must be the direct child of I and change only this config, replacing the four UNKNOWN_NOT_ASSERTED scalar values. Acquisition stops before metadata-authority access, output creation, or network access until B is valid."
+    "activation_rule": "The append-only locator repair implementation commit I2 must be the direct child of base_commit and change exactly the config, producer, and focused test. The binding commit B2 must be the direct child of I2 and change only this config, replacing the four UNKNOWN_NOT_ASSERTED scalar values. Acquisition stops before metadata-authority access, output creation, or network access until B2 is valid."
   },
   "metadata_authorities": {
     "repository_root_rule": "PROTOCOL_PATH_PARENT_PARENT",
@@ -81,6 +81,19 @@
   "download_policy": {
     "network_protocol": "HTTPS_ONLY",
     "source_uri_must_equal_frozen_r4_value": true,
+    "closed_official_locator_replacements": [
+      {
+        "asset_id": "GSE149487_MOESM3",
+        "frozen_authority_source_uri": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8270899/bin/41467_2021_24445_MOESM3_ESM.xlsx",
+        "resolved_current_official_source_uri": "https://static-content.springer.com/esm/art%3A10.1038%2Fs41467-021-24445-6/MediaObjects/41467_2021_24445_MOESM3_ESM.xlsx"
+      },
+      {
+        "asset_id": "GSE149487_MOESM8",
+        "frozen_authority_source_uri": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8270899/bin/41467_2021_24445_MOESM8_ESM.xlsx",
+        "resolved_current_official_source_uri": "https://static-content.springer.com/esm/art%3A10.1038%2Fs41467-021-24445-6/MediaObjects/41467_2021_24445_MOESM8_ESM.xlsx"
+      }
+    ],
+    "unlisted_asset_locator_action": "USE_FROZEN_R4_SOURCE_URI_UNCHANGED",
     "request_timeout_seconds": 120,
     "stream_chunk_bytes": 1048576,
     "transport_retries_per_execution": 0,
@@ -157,5 +170,5 @@
     "qualifier_invoked": false,
     "model_downloaded": false
   },
-  "claim_boundary": "Successful execution proves only that the 18 GEO raw-count objects and three supplement workbooks were restored from the exact HTTPS locators frozen in the historical R4 aggregate and that each new file matched its frozen byte count and SHA-256. The payloads are not parsed. GEO objects remain private locator/hash-only material, Lim6c remains without an explicit license, the listed mapping, paper-method-family, 190-versus-180, power, and checkpoint-exposure blockers remain open, the full qualifier is not invoked, and no canonical record, qualification, training permission, model-selection permission, next-phase authorization, or scientific claim is produced."
+  "claim_boundary": "Successful execution proves only that the 18 GEO raw-count objects and three supplement workbooks were restored from the exact historical R4 authority locators, except that the two frozen PMC supplement locators were resolved through their exact closed replacements at the current official publisher host, and that each new file matched its R4 byte count and SHA-256. The payloads are not parsed. GEO objects remain private locator/hash-only material, Lim6c remains without an explicit license, the listed mapping, paper-method-family, 190-versus-180, power, and checkpoint-exposure blockers remain open, the full qualifier is not invoked, and no canonical record, qualification, training permission, model-selection permission, next-phase authorization, or scientific claim is produced."
 }
