@@ -375,7 +375,7 @@
   "evidence_descriptor_bindings": {
     "binding_scheme": "DESCENDANT_CONFIG_ONLY_DESCRIPTOR_BINDING_V1",
     "status": "BOUND",
-    "descriptor_set_sha256": "97e2d5ca135f2e5668ef513de0247d5973481f6532f99beac9e9d8d9a828148b",
+    "descriptor_set_sha256": "21400db80d5cf0a46787c4f86765aec440047901e108fb04e8b63c74e49fefe6",
     "dynamic_scalar_suffixes": [
       "absolute_path",
       "sha256",
@@ -397,9 +397,9 @@
       },
       {
         "slot_id": "BIOLOGICAL_GROUP_AUTHORITY",
-        "absolute_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE200304_DEC019_NEGATIVE_GATE_PACK_V1/GSE200304_DEC019_BIOLOGICAL_GROUP_AUTHORITY_GATE.json",
-        "sha256": "2db95ec41d5e76a77d17104076c5823f5cc1f8646260964e92166f0faf440950",
-        "bytes": 3921
+        "absolute_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE200304_DEC019_BIOLOGICAL_GROUP_AUTHORITY_GATE_V1/GSE200304_DEC019_BIOLOGICAL_GROUP_AUTHORITY_GATE.json",
+        "sha256": "bbcc1f93f47190c7070755d8e892c07d43959985fee32f4f4ec3911fe6f7993b",
+        "bytes": 4013
       },
       {
         "slot_id": "ROW_REPLICATE_OR_VALID_SE",
