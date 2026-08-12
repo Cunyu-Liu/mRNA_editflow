@@ -14,6 +14,7 @@ import zipfile
 from pathlib import Path
 from xml.sax.saxutils import escape
 
+import pytest
 from jsonschema import FormatChecker, validators
 
 
@@ -55,6 +56,9 @@ SCHEMA_SOURCE = (
 )
 RECORDED_AT = "2026-08-12T23:00:00+08:00"
 RECOVERY_RECORDED_AT = "2026-08-12T21:57:45+08:00"
+PUBLISHED_RESULT_AUTHORITY_ROLE = (
+    "FULL_PUBLISHED_RESULT_JOIN_AUTHORITY_NOT_A_SUBSET"
+)
 BINDING_SCALARS = (
     "status",
     "implementation_commit",
@@ -347,7 +351,11 @@ def _synthetic_report() -> dict[str, object]:
     }
 
 
-def _bind_fake_repository(tmp_path: Path, monkeypatch) -> dict[str, object]:
+def _bind_fake_repository(
+    tmp_path: Path,
+    monkeypatch,
+    materializer_authority_role: str | None = PUBLISHED_RESULT_AUTHORITY_ROLE,
+) -> dict[str, object]:
     assets = _write_assets(tmp_path / "assets")
     recovery_report_path = tmp_path / "public" / "GSE232572_A1_RECOVERY_REPORT.json"
     _write_json(recovery_report_path, _synthetic_report())
@@ -404,17 +412,17 @@ def _bind_fake_repository(tmp_path: Path, monkeypatch) -> dict[str, object]:
     }.items():
         monkeypatch.setattr(MAT, name, value)
 
-    config = _normalized_unbound_config(
+    config_i3 = _normalized_unbound_config(
         json.loads(CONFIG.read_text(encoding="utf-8"))
     )
-    config["repository_authority"].update(
+    config_i3["repository_authority"].update(
         {
             "production_repo_root": str(repo.resolve()),
             "branch": "routea-v3-test",
             "base_commit": base_commit,
         }
     )
-    for item in config["repository_authority"]["frozen_authority_blobs"]:
+    for item in config_i3["repository_authority"]["frozen_authority_blobs"]:
         path = item["path"]
         item["git_blob_oid"] = _git(repo, "rev-parse", f"{base_commit}:{path}")
         item["sha256"] = hashlib.sha256(
@@ -424,17 +432,22 @@ def _bind_fake_repository(tmp_path: Path, monkeypatch) -> dict[str, object]:
                 check=True,
             ).stdout
         ).hexdigest()
-    config["inputs"] = copy.deepcopy(recovery_config["inputs"])
-    expected_report = config["public_recovery_report"]["expected"]
+    config_i3["inputs"] = copy.deepcopy(recovery_config["inputs"])
+    published_results_contract = config_i3["inputs"]["published_results"]
+    if materializer_authority_role is None:
+        published_results_contract.pop("authority_role", None)
+    else:
+        published_results_contract["authority_role"] = materializer_authority_role
+    expected_report = config_i3["public_recovery_report"]["expected"]
     expected_report.update(_synthetic_report())
-    config["public_recovery_report"].update(
+    config_i3["public_recovery_report"].update(
         {
             "absolute_path": str(recovery_report_path.resolve()),
             "bytes": recovery_report_path.stat().st_size,
             "sha256": _sha256(recovery_report_path),
         }
     )
-    contract = config["materialization_contract"]
+    contract = config_i3["materialization_contract"]
     contract.update(
         {
             "required_published_universe_row_count": 3,
@@ -453,7 +466,9 @@ def _bind_fake_repository(tmp_path: Path, monkeypatch) -> dict[str, object]:
     config_path = repo / MAT.CONFIG_RELATIVE_PATH
     script_path = repo / MAT.SCRIPT_RELATIVE_PATH
     test_path = repo / MAT.TEST_RELATIVE_PATH
-    _write_json(config_path, config)
+    config_i1 = copy.deepcopy(config_i3)
+    config_i1["inputs"]["published_results"].pop("authority_role", None)
+    _write_json(config_path, config_i1)
     script_path.parent.mkdir(parents=True, exist_ok=True)
     test_path.parent.mkdir(parents=True, exist_ok=True)
     script_path.write_bytes(SCRIPT.read_bytes() + b"\n# synthetic I1 predecessor\n")
@@ -465,14 +480,43 @@ def _bind_fake_repository(tmp_path: Path, monkeypatch) -> dict[str, object]:
         MAT, "PRODUCTION_AUTHORITY_COMMIT", production_authority_commit
     )
 
+    script_path.write_bytes(SCRIPT.read_bytes() + b"\n# synthetic I2 predecessor\n")
+    test_path.write_bytes(Path(__file__).read_bytes() + b"\n# synthetic I2 predecessor\n")
+    _git(repo, "add", MAT.SCRIPT_RELATIVE_PATH, MAT.TEST_RELATIVE_PATH)
+    _git(repo, "commit", "-q", "-m", "historical exact2 implementation I2")
+    historical_i2_commit = _git(repo, "rev-parse", "HEAD")
+    monkeypatch.setattr(MAT, "HISTORICAL_I2_COMMIT", historical_i2_commit)
+
+    config_b2 = copy.deepcopy(config_i1)
+    config_b2["implementation_binding"].update(
+        {
+            "status": "BOUND",
+            "implementation_commit": historical_i2_commit,
+            "implementation_script_sha256": _sha256(script_path),
+            "implementation_test_sha256": _sha256(test_path),
+        }
+    )
+    _write_json(config_path, config_b2)
+    _git(repo, "add", MAT.CONFIG_RELATIVE_PATH)
+    _git(repo, "commit", "-q", "-m", "historical config-only binding B2")
+    historical_b2_commit = _git(repo, "rev-parse", "HEAD")
+    monkeypatch.setattr(MAT, "HISTORICAL_B2_COMMIT", historical_b2_commit)
+
+    _write_json(config_path, config_i3)
     shutil.copyfile(SCRIPT, script_path)
     shutil.copyfile(Path(__file__), test_path)
-    _git(repo, "add", MAT.SCRIPT_RELATIVE_PATH, MAT.TEST_RELATIVE_PATH)
-    _git(repo, "commit", "-q", "-m", "dynamic exact2 implementation I2")
+    _git(
+        repo,
+        "add",
+        MAT.CONFIG_RELATIVE_PATH,
+        MAT.SCRIPT_RELATIVE_PATH,
+        MAT.TEST_RELATIVE_PATH,
+    )
+    _git(repo, "commit", "-q", "-m", "dynamic exact3 implementation I3")
     implementation_commit = _git(repo, "rev-parse", "HEAD")
 
-    bound_config = copy.deepcopy(config)
-    bound_config["implementation_binding"].update(
+    config_b3 = copy.deepcopy(config_i3)
+    config_b3["implementation_binding"].update(
         {
             "status": "BOUND",
             "implementation_commit": implementation_commit,
@@ -480,9 +524,9 @@ def _bind_fake_repository(tmp_path: Path, monkeypatch) -> dict[str, object]:
             "implementation_test_sha256": _sha256(test_path),
         }
     )
-    _write_json(config_path, bound_config)
+    _write_json(config_path, config_b3)
     _git(repo, "add", MAT.CONFIG_RELATIVE_PATH)
-    _git(repo, "commit", "-q", "-m", "config-only binding B2")
+    _git(repo, "commit", "-q", "-m", "config-only binding B3")
     assert not _git(repo, "status", "--porcelain")
     return {
         "repo": repo,
@@ -491,6 +535,8 @@ def _bind_fake_repository(tmp_path: Path, monkeypatch) -> dict[str, object]:
         "public_report": recovery_report_path,
         "schema": schema_path,
         "production_authority_commit": production_authority_commit,
+        "historical_i2_commit": historical_i2_commit,
+        "historical_b2_commit": historical_b2_commit,
         "implementation_commit": implementation_commit,
     }
 
@@ -524,6 +570,15 @@ def test_disk_config_freezes_official_counts_no_credit_and_valid_i_or_b(
     assert config["repository_authority"]["base_commit"] == (
         "aa396dbdeac083c9f88df62877ff7cbcb7e0d318"
     )
+    assert MAT.PRODUCTION_AUTHORITY_COMMIT == (
+        "b69b9932a5e170f97d2e6fe1e3b9442bdf31f5db"
+    )
+    assert MAT.HISTORICAL_I2_COMMIT == (
+        "5619dc39622de7f97f63811d51a0e04bdf668e48"
+    )
+    assert MAT.HISTORICAL_B2_COMMIT == (
+        "89db6313c6331e767ac5074170e7ff5b3cab8e3e"
+    )
     assert all(
         config["implementation_binding"][scalar] == "UNKNOWN_NOT_ASSERTED"
         for scalar in BINDING_SCALARS
@@ -540,6 +595,9 @@ def test_disk_config_freezes_official_counts_no_credit_and_valid_i_or_b(
     assert contract["canonical_qualification_allowed"] is False
     assert contract["training_allowed"] is False
     assert config["public_recovery_report"]["private_row_artifacts_consumed"] is False
+    assert config["inputs"]["published_results"]["authority_role"] == (
+        PUBLISHED_RESULT_AUTHORITY_ROLE
+    )
 
     temporary_bound = copy.deepcopy(config)
     temporary_bound["implementation_binding"].update(
@@ -555,6 +613,60 @@ def test_disk_config_freezes_official_counts_no_credit_and_valid_i_or_b(
     assert _validate_disk_binding_and_normalize(
         json.loads(temporary_bound_path.read_text(encoding="utf-8"))
     ) == config
+
+
+@pytest.mark.parametrize(
+    ("authority_role", "expected_gate", "expected_code"),
+    [
+        (
+            None,
+            "REPOSITORY_AUTHORITY",
+            "I3_CONFIG_CHANGE_SET_NOT_FROZEN",
+        ),
+        (
+            "WRONG_PUBLISHED_RESULT_AUTHORITY_ROLE",
+            "RECOVERY_AUTHORITY",
+            "MATERIALIZER_INPUTS_DIVERGE_FROM_RECOVERY_CONFIG",
+        ),
+    ],
+)
+def test_missing_or_wrong_published_result_authority_role_stops_before_rows(
+    tmp_path: Path,
+    monkeypatch,
+    authority_role: str | None,
+    expected_gate: str,
+    expected_code: str,
+) -> None:
+    bound = _bind_fake_repository(
+        tmp_path,
+        monkeypatch,
+        materializer_authority_role=authority_role,
+    )
+    assets = bound["assets"]
+    output = tmp_path / "output"
+    code, stopped = MAT.materialize(
+        repo_root=bound["repo"],
+        config_path=bound["config"],
+        fasta_paths={
+            1: assets["fasta1"],
+            2: assets["fasta2"],
+            3: assets["fasta3"],
+        },
+        raw_tar=assets["raw_tar"],
+        published_results=assets["supplement"],
+        public_recovery_report=bound["public_report"],
+        output_dir=output,
+        recorded_at=RECORDED_AT,
+    )
+    assert code == 2
+    assert {path.name for path in output.iterdir()} == {
+        "GSE232572_DEVELOPMENT_V3_MATERIALIZATION_REPORT.json"
+    }
+    assert stopped["gates"][-1] == {
+        "gate": expected_gate,
+        "status": "FAIL",
+        "code": expected_code,
+    }
 
 
 def test_schema_valid_development_rows_preserve_mapping_provenance_and_no_credit(

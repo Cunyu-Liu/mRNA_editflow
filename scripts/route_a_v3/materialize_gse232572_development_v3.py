@@ -29,6 +29,8 @@ STUDY_ID = "GSE232572"
 INDEPENDENT_STUDY_GROUP_ID = "GSE232573"
 BASE_COMMIT = "aa396dbdeac083c9f88df62877ff7cbcb7e0d318"
 PRODUCTION_AUTHORITY_COMMIT = "b69b9932a5e170f97d2e6fe1e3b9442bdf31f5db"
+HISTORICAL_I2_COMMIT = "5619dc39622de7f97f63811d51a0e04bdf668e48"
+HISTORICAL_B2_COMMIT = "89db6313c6331e767ac5074170e7ff5b3cab8e3e"
 HEX40 = "0123456789abcdef"
 HEX64 = "0123456789abcdef"
 UNKNOWN = "UNKNOWN_NOT_ASSERTED"
@@ -59,6 +61,8 @@ EXPECTED_I1_PATHS = sorted(
 )
 EXPECTED_I2_PATHS = sorted([SCRIPT_RELATIVE_PATH, TEST_RELATIVE_PATH])
 EXPECTED_B2_PATHS = [CONFIG_RELATIVE_PATH]
+EXPECTED_I3_PATHS = EXPECTED_I1_PATHS
+EXPECTED_B3_PATHS = EXPECTED_B2_PATHS
 EXPECTED_BINDING_SCALARS = sorted(
     [
         "implementation_binding.status",
@@ -66,6 +70,9 @@ EXPECTED_BINDING_SCALARS = sorted(
         "implementation_binding.implementation_script_sha256",
         "implementation_binding.implementation_test_sha256",
     ]
+)
+EXPECTED_I3_CONFIG_DIFFERENCES = sorted(
+    EXPECTED_BINDING_SCALARS + ["inputs.published_results.authority_role"]
 )
 EXPECTED_AUTHORITY_ROLES = {
     "RECOVERY_CONFIG": "configs/route_a_v3_gse232572_a1_recovery_v1.json",
@@ -237,9 +244,9 @@ def _validate_config(config: Mapping[str, Any]) -> None:
     )
     if repository.get("base_commit") != BASE_COMMIT:
         _stop("CONFIG", "BASE_COMMIT_NOT_FROZEN")
-    if repository.get("implementation_exact_changed_paths") != EXPECTED_I1_PATHS:
+    if repository.get("implementation_exact_changed_paths") != EXPECTED_I3_PATHS:
         _stop("CONFIG", "IMPLEMENTATION_PATH_SET_NOT_FROZEN")
-    if repository.get("binding_exact_changed_paths") != EXPECTED_B2_PATHS:
+    if repository.get("binding_exact_changed_paths") != EXPECTED_B3_PATHS:
         _stop("CONFIG", "BINDING_PATH_SET_NOT_FROZEN")
     if not isinstance(repository.get("production_repo_root"), str) or not str(
         repository["production_repo_root"]
@@ -418,9 +425,19 @@ def _audit_repository(
 
     head = _git(resolved_repo, "rev-parse", "HEAD")
     if _git(resolved_repo, "rev-parse", f"{head}^") != implementation_commit:
-        _stop("REPOSITORY_AUTHORITY", "B2_NOT_DIRECT_CHILD_OF_I2")
+        _stop("REPOSITORY_AUTHORITY", "B3_NOT_DIRECT_CHILD_OF_I3")
     if (
         _git(resolved_repo, "rev-parse", f"{implementation_commit}^")
+        != HISTORICAL_B2_COMMIT
+    ):
+        _stop("REPOSITORY_AUTHORITY", "I3_NOT_DIRECT_CHILD_OF_B2")
+    if (
+        _git(resolved_repo, "rev-parse", f"{HISTORICAL_B2_COMMIT}^")
+        != HISTORICAL_I2_COMMIT
+    ):
+        _stop("REPOSITORY_AUTHORITY", "B2_NOT_DIRECT_CHILD_OF_I2")
+    if (
+        _git(resolved_repo, "rev-parse", f"{HISTORICAL_I2_COMMIT}^")
         != PRODUCTION_AUTHORITY_COMMIT
     ):
         _stop("REPOSITORY_AUTHORITY", "I2_NOT_DIRECT_CHILD_OF_I1")
@@ -431,31 +448,32 @@ def _audit_repository(
         _stop("REPOSITORY_AUTHORITY", "I1_NOT_DIRECT_CHILD_OF_BASE")
     if _changed_paths(resolved_repo, PRODUCTION_AUTHORITY_COMMIT) != EXPECTED_I1_PATHS:
         _stop("REPOSITORY_AUTHORITY", "I1_NOT_EXACT3")
-    if _changed_paths(resolved_repo, str(implementation_commit)) != EXPECTED_I2_PATHS:
+    if _changed_paths(resolved_repo, HISTORICAL_I2_COMMIT) != EXPECTED_I2_PATHS:
         _stop("REPOSITORY_AUTHORITY", "I2_NOT_EXACT2")
-    if _changed_paths(resolved_repo, head) != EXPECTED_B2_PATHS:
-        _stop("REPOSITORY_AUTHORITY", "BINDING_COMMIT_NOT_CONFIG_ONLY")
+    if _changed_paths(resolved_repo, HISTORICAL_B2_COMMIT) != EXPECTED_B2_PATHS:
+        _stop("REPOSITORY_AUTHORITY", "B2_NOT_CONFIG_ONLY")
+    if _changed_paths(resolved_repo, str(implementation_commit)) != EXPECTED_I3_PATHS:
+        _stop("REPOSITORY_AUTHORITY", "I3_NOT_EXACT3")
+    if _changed_paths(resolved_repo, head) != EXPECTED_B3_PATHS:
+        _stop("REPOSITORY_AUTHORITY", "B3_NOT_CONFIG_ONLY")
 
     config_i1_payload = _git_blob(
         resolved_repo, PRODUCTION_AUTHORITY_COMMIT, CONFIG_RELATIVE_PATH
     )
     config_i2_payload = _git_blob(
-        resolved_repo, str(implementation_commit), CONFIG_RELATIVE_PATH
+        resolved_repo, HISTORICAL_I2_COMMIT, CONFIG_RELATIVE_PATH
     )
     if config_i2_payload != config_i1_payload:
         _stop("REPOSITORY_AUTHORITY", "I2_CHANGED_I1_CONFIG")
-    config_i = _read_json_bytes(
+    config_i2 = _read_json_bytes(
         config_i2_payload,
         "REPOSITORY_AUTHORITY",
-        "IMPLEMENTATION_CONFIG_NOT_JSON",
+        "I2_CONFIG_NOT_JSON",
     )
-    differences = sorted(_leaf_differences(config_i, config))
-    if differences != EXPECTED_BINDING_SCALARS:
-        _stop("REPOSITORY_AUTHORITY", "BINDING_COMMIT_CHANGED_NON_BINDING_SCALAR")
-    binding_i = _mapping(
-        config_i.get("implementation_binding"),
+    binding_i2 = _mapping(
+        config_i2.get("implementation_binding"),
         "REPOSITORY_AUTHORITY",
-        "IMPLEMENTATION_CONFIG_BINDING_NOT_OBJECT",
+        "I2_CONFIG_BINDING_NOT_OBJECT",
     )
     for scalar in (
         "status",
@@ -463,8 +481,73 @@ def _audit_repository(
         "implementation_script_sha256",
         "implementation_test_sha256",
     ):
-        if binding_i.get(scalar) != UNKNOWN:
-            _stop("REPOSITORY_AUTHORITY", "IMPLEMENTATION_CONFIG_NOT_UNBOUND")
+        if binding_i2.get(scalar) != UNKNOWN:
+            _stop("REPOSITORY_AUTHORITY", "I2_CONFIG_NOT_UNBOUND")
+
+    config_b2 = _read_json_bytes(
+        _git_blob(resolved_repo, HISTORICAL_B2_COMMIT, CONFIG_RELATIVE_PATH),
+        "REPOSITORY_AUTHORITY",
+        "B2_CONFIG_NOT_JSON",
+    )
+    if sorted(_leaf_differences(config_i2, config_b2)) != EXPECTED_BINDING_SCALARS:
+        _stop("REPOSITORY_AUTHORITY", "B2_CHANGED_NON_BINDING_SCALAR")
+    binding_b2 = _mapping(
+        config_b2.get("implementation_binding"),
+        "REPOSITORY_AUTHORITY",
+        "B2_CONFIG_BINDING_NOT_OBJECT",
+    )
+    if (
+        binding_b2.get("status") != BOUND
+        or binding_b2.get("implementation_commit") != HISTORICAL_I2_COMMIT
+    ):
+        _stop("REPOSITORY_AUTHORITY", "B2_NOT_BOUND_TO_I2")
+    for path_key, sha_key in (
+        ("implementation_script_path", "implementation_script_sha256"),
+        ("implementation_test_path", "implementation_test_sha256"),
+    ):
+        historical_payload = _git_blob(
+            resolved_repo, HISTORICAL_I2_COMMIT, str(binding_b2[path_key])
+        )
+        if _sha256(historical_payload) != binding_b2.get(sha_key):
+            _stop("REPOSITORY_AUTHORITY", "B2_I2_BLOB_SHA256_MISMATCH")
+
+    published_b2 = _mapping(
+        _mapping(
+            config_b2.get("inputs"),
+            "REPOSITORY_AUTHORITY",
+            "B2_INPUTS_NOT_OBJECT",
+        ).get("published_results"),
+        "REPOSITORY_AUTHORITY",
+        "B2_PUBLISHED_RESULTS_NOT_OBJECT",
+    )
+    if "authority_role" in published_b2:
+        _stop("REPOSITORY_AUTHORITY", "B2_AUTHORITY_ROLE_HISTORY_NOT_FROZEN")
+
+    config_i3 = _read_json_bytes(
+        _git_blob(resolved_repo, str(implementation_commit), CONFIG_RELATIVE_PATH),
+        "REPOSITORY_AUTHORITY",
+        "I3_CONFIG_NOT_JSON",
+    )
+    if (
+        sorted(_leaf_differences(config_b2, config_i3))
+        != EXPECTED_I3_CONFIG_DIFFERENCES
+    ):
+        _stop("REPOSITORY_AUTHORITY", "I3_CONFIG_CHANGE_SET_NOT_FROZEN")
+    binding_i3 = _mapping(
+        config_i3.get("implementation_binding"),
+        "REPOSITORY_AUTHORITY",
+        "I3_CONFIG_BINDING_NOT_OBJECT",
+    )
+    for scalar in (
+        "status",
+        "implementation_commit",
+        "implementation_script_sha256",
+        "implementation_test_sha256",
+    ):
+        if binding_i3.get(scalar) != UNKNOWN:
+            _stop("REPOSITORY_AUTHORITY", "I3_CONFIG_NOT_UNBOUND")
+    if sorted(_leaf_differences(config_i3, config)) != EXPECTED_BINDING_SCALARS:
+        _stop("REPOSITORY_AUTHORITY", "B3_CHANGED_NON_BINDING_SCALAR")
 
     for path_key, sha_key in (
         ("implementation_script_path", "implementation_script_sha256"),
@@ -998,7 +1081,10 @@ def materialize(
             _gate(
                 "REPOSITORY_AUTHORITY",
                 "PASS",
-                "BASE_EXACT3_I_CONFIG_ONLY_B_AND_FROZEN_AUTHORITIES_BOUND",
+                (
+                    "BASE_I1_EXACT3_I2_EXACT2_B2_CONFIG_ONLY_"
+                    "I3_EXACT3_B3_CONFIG_ONLY_AND_FROZEN_AUTHORITIES_BOUND"
+                ),
             )
         )
 

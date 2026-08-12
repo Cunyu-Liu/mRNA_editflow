@@ -8,12 +8,12 @@
   "study_id": "GSE232572",
   "implementation_binding": {
     "binding_scheme": "CONFIG_ONLY_POST_IMPLEMENTATION_BINDING_V1",
-    "status": "BOUND",
-    "implementation_commit": "5619dc39622de7f97f63811d51a0e04bdf668e48",
+    "status": "UNKNOWN_NOT_ASSERTED",
+    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
     "implementation_script_path": "scripts/route_a_v3/materialize_gse232572_development_v3.py",
-    "implementation_script_sha256": "9d1f4a9442a503b5cc1f52f7e2a9f277c95047f7c1f71a808a368c456184dc96",
+    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
     "implementation_test_path": "tests/route_a_v3/test_materialize_gse232572_development_v3.py",
-    "implementation_test_sha256": "81ffdba562427d8619e6ab76950a91c120fd53f5ca58b10dff165a6fdc63ced1",
+    "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
     "unknown_to_bound_scalar_paths": [
       "implementation_binding.status",
       "implementation_binding.implementation_commit",
@@ -91,7 +91,8 @@
       "filename": "41467_2024_46795_MOESM4_ESM.xlsx",
       "url": "https://media.springernature.com/original/springer-static/esm/art%3A10.1038%2Fs41467-024-46795-7/MediaObjects/41467_2024_46795_MOESM4_ESM.xlsx",
       "bytes": 5135110,
-      "sha256": "d2bdcafb68ae388f84da125d283dc0282cdc81545d704baf81730d7fd613f782"
+      "sha256": "d2bdcafb68ae388f84da125d283dc0282cdc81545d704baf81730d7fd613f782",
+      "authority_role": "FULL_PUBLISHED_RESULT_JOIN_AUTHORITY_NOT_A_SUBSET"
     }
   },
   "public_recovery_report": {
