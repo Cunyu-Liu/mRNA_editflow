@@ -40,7 +40,7 @@ DEC019_AMENDMENT_PATH = "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec
 DECISION_LOG_PATH = "docs/execution/route_a_v3_decision_log.yaml"
 REGISTRY_MANIFEST_PATH = "docs/execution/route_a_v3_registry_manifest.json"
 A1_INTERIM_PATH = "docs/execution/route_a_v3_a1_interim.yaml"
-EXPECTED_A1_INTERIM_SHA256 = "9e72e82e7b8a941fd2e3066a33c4e3ce7fc733134e62776e273c40b1b118fb9e"
+EXPECTED_A1_INTERIM_SHA256 = "7498c4fe6f1e63d2df9c9e2da08feff62e45c43647962d653875eb40ba2f868d"
 GSE200304_DEC019_ONE_BLOCKER_LEDGER_AT = "2026-08-12T16:09:52+08:00"
 GSE200304_DEC019_ONE_BLOCKER_MANIFEST_AT = "2026-08-12T16:09:53+08:00"
 POST_FAIL_ACQUISITION_LEDGER_AT = "2026-08-12T19:30:00+08:00"
@@ -49,10 +49,10 @@ POST_FAIL_ACQUISITION_EVIDENCE_UPDATE_ID = (
     "GSE200304_CHECKPOINT_EXPOSURE_FAIL_AND_"
     "GSE149487_PUBLIC_ASSET_ACQUISITION_V1"
 )
-GSE217518_REGISTRATION_LEDGER_AT = "2026-08-12T20:24:15+08:00"
-GSE217518_REGISTRATION_MANIFEST_AT = "2026-08-12T20:24:16+08:00"
-GSE217518_REGISTRATION_EVIDENCE_UPDATE_ID = (
-    "GSE217518_PUBLIC_AUTHORITY_PREFLIGHT_V1"
+GSE232572_POST_RECOVERY_LEDGER_AT = "2026-08-12T22:08:55+08:00"
+GSE232572_POST_RECOVERY_MANIFEST_AT = "2026-08-12T22:08:56+08:00"
+GSE232572_POST_RECOVERY_EVIDENCE_UPDATE_ID = (
+    "GSE232572_PUBLIC_RECOVERY_AUDIT_V1"
 )
 ACTIVE_AMENDMENT_DECISION_IDS = ["V3-DEC-017", "V3-DEC-018", "V3-DEC-019"]
 DEC019_LEAF_AUTHORITY_SHA256 = {
@@ -248,6 +248,18 @@ GSE217518_PUBLIC_AUTHORITY_PREFLIGHT_TEST_PATH = (
 GSE217518_PUBLIC_AUTHORITY_PREFLIGHT_RUNTIME_CONFIG_PATH = (
     "configs/route_a_v3_gse217518_public_authority_preflight_runtime_sync_v1.json"
 )
+GSE232572_PUBLIC_RECOVERY_AUDIT_CONFIG_PATH = (
+    "configs/route_a_v3_gse232572_a1_recovery_v1.json"
+)
+GSE232572_PUBLIC_RECOVERY_AUDIT_SCRIPT_PATH = (
+    "scripts/route_a_v3/recover_gse232572_a1.py"
+)
+GSE232572_PUBLIC_RECOVERY_AUDIT_TEST_PATH = (
+    "tests/route_a_v3/test_recover_gse232572_a1.py"
+)
+GSE232572_PUBLIC_RECOVERY_AUDIT_RUNTIME_CONFIG_PATH = (
+    "configs/route_a_v3_gse232572_public_recovery_audit_runtime_sync_v1.json"
+)
 POST_FAIL_ACQUISITION_STATIC_LEAF_SHA256 = {
     GSE200304_CHECKPOINT_EXPOSURE_FAIL_CONFIG_PATH: (
         "0759e68b26a927e4acfebc55ac74541363122924734b4f75a55da2a931687404"
@@ -277,6 +289,17 @@ GSE217518_PUBLIC_AUTHORITY_PREFLIGHT_STATIC_LEAF_SHA256 = {
     ),
     GSE217518_PUBLIC_AUTHORITY_PREFLIGHT_TEST_PATH: (
         "ba192586174dccff21b83055608a9f9623fbf48d3b64deeb6768eb4055d69421"
+    ),
+}
+GSE232572_PUBLIC_RECOVERY_AUDIT_STATIC_LEAF_SHA256 = {
+    GSE232572_PUBLIC_RECOVERY_AUDIT_CONFIG_PATH: (
+        "43519e11111fea141bbaa7b0eccaf0c4ed023155cdd02597aad426001132e826"
+    ),
+    GSE232572_PUBLIC_RECOVERY_AUDIT_SCRIPT_PATH: (
+        "22a4487758bb2da9a7aaacea332124339a65f9c8a63f22de4538551ab139903c"
+    ),
+    GSE232572_PUBLIC_RECOVERY_AUDIT_TEST_PATH: (
+        "9976a0c9650c0d8b5552bd2ed13c1fe850325828bab10dfff5092e7b8fc920ef"
     ),
 }
 GSE200304_DEC019_POST_ADJUDICATION_STATIC_LEAF_SHA256 = {
@@ -388,6 +411,9 @@ GSE149487_PUBLIC_ASSET_ACQUISITION_LINEAGE_ID = (
 )
 GSE217518_PUBLIC_AUTHORITY_PREFLIGHT_LINEAGE_ID = (
     "gse217518_public_authority_preflight_v1"
+)
+GSE232572_PUBLIC_RECOVERY_AUDIT_LINEAGE_ID = (
+    "gse232572_public_recovery_audit_v1"
 )
 GSE200304_DEC019_POST_ADJUDICATION_BLOCKERS = [
     "BIOLOGICAL_GROUP_AUTHORITY_NOT_PASS",
@@ -1393,6 +1419,18 @@ EXPECTED_REGISTRY_MANIFEST_PATH_ROLES = (
         GSE217518_PUBLIC_AUTHORITY_PREFLIGHT_TEST_PATH,
         "GSE217518_PUBLIC_AUTHORITY_PREFLIGHT_FOCUSED_TEST",
     ),
+    (
+        GSE232572_PUBLIC_RECOVERY_AUDIT_CONFIG_PATH,
+        "GSE232572_PUBLIC_RECOVERY_AUDIT_CONFIG",
+    ),
+    (
+        GSE232572_PUBLIC_RECOVERY_AUDIT_SCRIPT_PATH,
+        "GSE232572_PUBLIC_RECOVERY_AUDIT_PRODUCER",
+    ),
+    (
+        GSE232572_PUBLIC_RECOVERY_AUDIT_TEST_PATH,
+        "GSE232572_PUBLIC_RECOVERY_AUDIT_FOCUSED_TEST",
+    ),
     (INTEGRITY_GUARD_TEST_PATH, "A0_AUTHORITY_INTEGRITY_GUARD_TEST"),
     (VALIDATOR_PATH, "A0_STATIC_AND_SEMANTIC_VALIDATOR"),
 )
@@ -1514,6 +1552,7 @@ def required_bundle_paths() -> tuple[str, ...]:
         *GSE200304_DEC019_POST_ADJUDICATION_STATIC_LEAF_SHA256,
         *POST_FAIL_ACQUISITION_STATIC_LEAF_SHA256,
         *GSE217518_PUBLIC_AUTHORITY_PREFLIGHT_STATIC_LEAF_SHA256,
+        *GSE232572_PUBLIC_RECOVERY_AUDIT_STATIC_LEAF_SHA256,
         INTEGRITY_GUARD_TEST_PATH,
         *REGISTRY_PATHS.values(),
         *(f"{SCHEMA_DIR}/{name}" for name in SCHEMA_FILES),
@@ -2447,10 +2486,10 @@ def validate_registry_manifest(repo_root: Path) -> list[Issue]:
         "contract_sha256": SOURCE_CONTRACT_SHA256,
         "active_amendment_decision_ids": ACTIVE_AMENDMENT_DECISION_IDS,
         "base_commit": "bbb71dcba6f1e1c9cb75a8a6653f1a4fe4a6ca0c",
-        "manifest_status": "A1_GSE217518_PUBLIC_AUTHORITY_PREFLIGHT_LEDGER_REGISTERED_PENDING_EVT046",
+        "manifest_status": "A1_GSE232572_PUBLIC_RECOVERY_AUDIT_LEDGER_REGISTERED_PENDING_EVT047",
         "initial_generated_at": "2026-08-10T10:10:05+08:00",
-        "generated_at": GSE217518_REGISTRATION_MANIFEST_AT,
-        "updated_at": GSE217518_REGISTRATION_MANIFEST_AT,
+        "generated_at": GSE232572_POST_RECOVERY_MANIFEST_AT,
+        "updated_at": GSE232572_POST_RECOVERY_MANIFEST_AT,
         "sealed_contact": False,
     }
     expected_top_keys = set(expected_static_top) | {"files"}
@@ -4479,6 +4518,76 @@ def validate_gse217518_public_authority_preflight_registration(
     return issues
 
 
+def validate_gse232572_public_recovery_audit_registration(
+    repo_root: Path,
+) -> list[Issue]:
+    """Freeze the audit producer exact3 while leaving the EVT047 config dynamic."""
+
+    issues: list[Issue] = []
+    for relative, expected_sha256 in (
+        GSE232572_PUBLIC_RECOVERY_AUDIT_STATIC_LEAF_SHA256.items()
+    ):
+        try:
+            actual_sha256 = sha256_bytes(_read_bytes(repo_root, relative))
+        except (FileNotFoundError, ValueError) as exc:
+            _issue(
+                issues,
+                "GSE232572_PUBLIC_RECOVERY_AUDIT_STATIC_LEAF",
+                relative,
+                str(exc),
+            )
+            continue
+        if actual_sha256 != expected_sha256:
+            _issue(
+                issues,
+                "GSE232572_PUBLIC_RECOVERY_AUDIT_STATIC_LEAF",
+                relative,
+                f"current bytes hash {actual_sha256} must remain {expected_sha256}",
+            )
+
+    try:
+        manifest = _load_json(repo_root, REGISTRY_MANIFEST_PATH)
+    except (FileNotFoundError, ValueError, json.JSONDecodeError) as exc:
+        _issue(
+            issues,
+            "GSE232572_PUBLIC_RECOVERY_AUDIT_MANIFEST_DAG",
+            REGISTRY_MANIFEST_PATH,
+            str(exc),
+        )
+    else:
+        entries = manifest.get("files")
+        manifest_paths = {
+            entry.get("path")
+            for entry in entries
+            if isinstance(entries, list) and isinstance(entry, Mapping)
+        }
+        expected_static_paths = set(
+            GSE232572_PUBLIC_RECOVERY_AUDIT_STATIC_LEAF_SHA256
+        )
+        if not expected_static_paths.issubset(manifest_paths):
+            _issue(
+                issues,
+                "GSE232572_PUBLIC_RECOVERY_AUDIT_MANIFEST_DAG",
+                REGISTRY_MANIFEST_PATH,
+                "the producer config, script, and focused test must be exact-hashed by the static manifest",
+            )
+        if GSE232572_PUBLIC_RECOVERY_AUDIT_RUNTIME_CONFIG_PATH in manifest_paths:
+            _issue(
+                issues,
+                "GSE232572_PUBLIC_RECOVERY_AUDIT_MANIFEST_DAG",
+                REGISTRY_MANIFEST_PATH,
+                "the dynamic EVT047 runtime config must not enter the static manifest",
+            )
+        if REGISTRY_MANIFEST_PATH in manifest_paths:
+            _issue(
+                issues,
+                "GSE232572_PUBLIC_RECOVERY_AUDIT_MANIFEST_DAG",
+                REGISTRY_MANIFEST_PATH,
+                "the dynamic registry output must not hash itself",
+            )
+    return issues
+
+
 def _gse149487_plumage_nonbinding_core_sha256(protocol: Mapping[str, Any]) -> str:
     """Hash the full protocol after normalizing only the three permitted I/B scalars."""
 
@@ -5520,7 +5629,7 @@ def validate_a1_interim_lineage(
                 "next_phase_authorized": False,
                 "scientific_claim_status": "NOT_ESTABLISHED",
             },
-            "runtime_sync_status": "PENDING_NO_EVT_046",
+            "runtime_sync_status": "PENDING_NO_EVT_047",
         }.items():
             _expect(dec019_disposition, key, value, path, issues, "A1_INTERIM_DEC019")
         gse114002_current = dec019_disposition.get("gse114002_designed_library")
@@ -5622,6 +5731,7 @@ def validate_a1_interim_lineage(
             "gse149487_full_a1_stop_before_data_preflight_v1",
             GSE149487_PUBLIC_ASSET_ACQUISITION_LINEAGE_ID,
             GSE217518_PUBLIC_AUTHORITY_PREFLIGHT_LINEAGE_ID,
+            GSE232572_PUBLIC_RECOVERY_AUDIT_LINEAGE_ID,
             "gse145046_a2_audit_protocol",
             "gse145046_a2_formal_audit_v1",
             "a1_public_qualifiers_sync_v1",
@@ -5921,7 +6031,62 @@ def validate_a1_interim_lineage(
                 },
                 "predecessor_runtime_event_id": "A1-EVT-045",
                 "expected_next_runtime_event_id": "A1-EVT-046",
-                "runtime_sync_status": "PENDING_NO_EVT_046",
+                "runtime_sync_status": "SYNCED_EVT_046",
+                "artifact_payload_read_count_for_ledger": 0,
+            },
+            GSE232572_PUBLIC_RECOVERY_AUDIT_LINEAGE_ID: {
+                "path": (
+                    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE232572/"
+                    "GSE232572_A1_PUBLIC_RECOVERY_AUDIT_20260812T215745P0800/"
+                    "GSE232572_A1_RECOVERY_REPORT.json"
+                ),
+                "bytes": 3041,
+                "sha256": "0542feabf00496eb3c353df82abe61048c2b95b9bceb4b0429ebc668cc99dbbd",
+                "dataset_id": "GSE232572",
+                "schema_version": "1.0.0",
+                "artifact_type": "GSE232572_PUBLIC_RECOVERY_AUDIT_AGGREGATE_ONLY",
+                "status": "DEVELOPMENT_PRIVATE_RECONSTRUCTION_COMPLETE_NOT_QUALIFIED",
+                "registry_role": "AUDIT_ONLY",
+                "qualification_status": "AUDIT_PENDING",
+                "aggregate_only": True,
+                "published_universe_row_count": 11929,
+                "accepted_pair_count": 8068,
+                "rejected_published_row_count": 3861,
+                "rejection_reason_counts": {
+                    "NO_UNIQUE_SEQUENCE_PAIR": 3404,
+                    "AMBIGUOUS_DISTINCT_SEQUENCE_PAIRS": 457,
+                },
+                "development_reconstruction_record_count": 8068,
+                "canonical_materialization_allowed": False,
+                "canonical_record_count": 0,
+                "qualified": False,
+                "ordinary_study_contribution": 0,
+                "a1_study_contribution": 0,
+                "true_a2_study_contribution": 0,
+                "training_allowed": False,
+                "model_selection_allowed": False,
+                "next_phase_authorized": False,
+                "scientific_claim_status": "NOT_ESTABLISHED",
+                "producer_lineage": {
+                    "implementation_commit": "4d04c8729a4e5596782c19cee332bcb3beaf2031",
+                    "config_inspected_predecessor_commit": "99b1fc1ffd65f1a1e45b4390d6d7ab32bdd0d06e",
+                    "config_inspected_predecessor_is_binding_commit": False,
+                    "config_path": GSE232572_PUBLIC_RECOVERY_AUDIT_CONFIG_PATH,
+                    "config_sha256": GSE232572_PUBLIC_RECOVERY_AUDIT_STATIC_LEAF_SHA256[
+                        GSE232572_PUBLIC_RECOVERY_AUDIT_CONFIG_PATH
+                    ],
+                    "script_path": GSE232572_PUBLIC_RECOVERY_AUDIT_SCRIPT_PATH,
+                    "script_sha256": GSE232572_PUBLIC_RECOVERY_AUDIT_STATIC_LEAF_SHA256[
+                        GSE232572_PUBLIC_RECOVERY_AUDIT_SCRIPT_PATH
+                    ],
+                    "focused_test_path": GSE232572_PUBLIC_RECOVERY_AUDIT_TEST_PATH,
+                    "focused_test_sha256": GSE232572_PUBLIC_RECOVERY_AUDIT_STATIC_LEAF_SHA256[
+                        GSE232572_PUBLIC_RECOVERY_AUDIT_TEST_PATH
+                    ],
+                },
+                "predecessor_runtime_event_id": "A1-EVT-046",
+                "expected_next_runtime_event_id": "A1-EVT-047",
+                "runtime_sync_status": "PENDING_NO_EVT_047",
                 "artifact_payload_read_count_for_ledger": 0,
             },
         }
@@ -7518,6 +7683,7 @@ def validate_a1_interim_lineage(
             "GSE114002",
             "GSE149487",
             "GSE217518",
+            "GSE232572",
             "GSE145046",
             "GSE200304",
             "three_utr_candidates",
@@ -7776,7 +7942,7 @@ def validate_a1_interim_lineage(
                     "changes_qualification_gate": False,
                     "predecessor_runtime_event_id": "A1-EVT-045",
                     "expected_next_runtime_event_id": "A1-EVT-046",
-                    "runtime_sync_status": "PENDING_NO_EVT_046",
+                    "runtime_sync_status": "SYNCED_EVT_046",
                 },
                 "qualified": False,
                 "training_allowed": False,
@@ -7789,6 +7955,58 @@ def validate_a1_interim_lineage(
                 path,
                 issues,
                 "A1_INTERIM_GSE217518",
+            )
+        gse232572 = summary.get("GSE232572")
+        if not isinstance(gse232572, Mapping):
+            _issue(
+                issues,
+                "A1_INTERIM_GSE232572",
+                path,
+                "GSE232572 boundary must be a mapping",
+            )
+        else:
+            expected_gse232572 = {
+                "registry_qualification_status": "AUDIT_PENDING",
+                "a1_inventory_qualification_status": "BLOCKED_PENDING_PUBLIC_EVIDENCE",
+                "public_recovery_audit": {
+                    "artifact_lineage_id": GSE232572_PUBLIC_RECOVERY_AUDIT_LINEAGE_ID,
+                    "artifact_type": "GSE232572_PUBLIC_RECOVERY_AUDIT_AGGREGATE_ONLY",
+                    "status": "DEVELOPMENT_PRIVATE_RECONSTRUCTION_COMPLETE_NOT_QUALIFIED",
+                    "registry_role": "AUDIT_ONLY",
+                    "qualification_status": "AUDIT_PENDING",
+                    "published_universe_row_count": 11929,
+                    "accepted_pair_count": 8068,
+                    "rejected_published_row_count": 3861,
+                    "rejection_reason_counts": {
+                        "NO_UNIQUE_SEQUENCE_PAIR": 3404,
+                        "AMBIGUOUS_DISTINCT_SEQUENCE_PAIRS": 457,
+                    },
+                    "development_reconstruction_record_count": 8068,
+                    "canonical_materialization_allowed": False,
+                    "canonical_record_count": 0,
+                    "qualified": False,
+                    "ordinary_study_contribution": 0,
+                    "a1_study_contribution": 0,
+                    "true_a2_study_contribution": 0,
+                    "training_allowed": False,
+                    "model_selection_allowed": False,
+                    "next_phase_authorized": False,
+                    "changes_qualification_gate": False,
+                    "predecessor_runtime_event_id": "A1-EVT-046",
+                    "expected_next_runtime_event_id": "A1-EVT-047",
+                    "runtime_sync_status": "PENDING_NO_EVT_047",
+                },
+                "qualified": False,
+                "training_allowed": False,
+                "model_selection_allowed": False,
+                "next_phase_authorized": False,
+            }
+            _expect_closed_mapping(
+                gse232572,
+                expected_gse232572,
+                path,
+                issues,
+                "A1_INTERIM_GSE232572",
             )
         gse200304 = summary.get("GSE200304")
         if not isinstance(gse200304, Mapping):
@@ -8164,6 +8382,8 @@ def validate_a1_interim_lineage(
             "gse149487_exact21_acquisition_authorizes_training_model_selection_or_next_phase": False,
             "gse217518_public_authority_preflight_is_study_qualification": False,
             "gse217518_stop_authorizes_row_level_production_training_model_selection_or_next_phase": False,
+            "gse232572_public_recovery_audit_is_study_qualification": False,
+            "gse232572_development_reconstruction_record_count_is_canonical_record_count": False,
             "dec019_creates_global_replicate_or_standard_error_relaxation": False,
             "dec019_changes_gse149487_three_biological_replicates_and_route_a_se_gate": False,
             "dec019_allows_checkpoint_specific_exposure_or_rights_waiver": False,
@@ -8275,11 +8495,18 @@ def validate_a1_interim_lineage(
                 "post_fail_acquisition_dynamic_output_cycle_policy": "PASS",
                 "targeted_gse217518_registration_ledger_tests": {
                     "status": "PASS",
-                    "scope": "ONE_AGGREGATE_STOP_REPORT_THREE_STATIC_PRODUCER_LEAVES_EVT045_SETTLED_EVT046_PENDING",
+                    "scope": "ONE_AGGREGATE_STOP_REPORT_THREE_STATIC_PRODUCER_LEAVES_EVT046_SETTLED",
                 },
                 "gse217518_public_authority_preflight_artifact_registration": "PASS",
                 "gse217518_public_authority_preflight_three_static_leaf_registration": "PASS",
                 "gse217518_public_authority_preflight_dynamic_runtime_config_cycle_policy": "PASS",
+                "targeted_gse232572_post_recovery_ledger_tests": {
+                    "status": "PASS",
+                    "scope": "ONE_AGGREGATE_AUDIT_REPORT_THREE_STATIC_PRODUCER_LEAVES_EVT046_SETTLED_EVT047_PENDING",
+                },
+                "gse232572_public_recovery_audit_artifact_registration": "PASS",
+                "gse232572_public_recovery_audit_three_static_leaf_registration": "PASS",
+                "gse232572_public_recovery_audit_dynamic_runtime_config_cycle_policy": "PASS",
                 "full_repository_tests": {
                     "status": "NOT_RUN",
                     "reason": "INTERIM_TARGETED_MODULE_SCOPE",
@@ -8312,6 +8539,10 @@ def validate_a1_interim_lineage(
                     "status": "NOT_RUN",
                     "reason": "FOUR_FILE_APPEND_ONLY_LOW_TO_MEDIUM_RISK_BATCH_SELF_CHECKED_UNDER_GLOBAL_LIGHTWEIGHT_POLICY",
                 },
+                "gse232572_post_recovery_ledger_independent_review": {
+                    "status": "NOT_RUN",
+                    "reason": "FOUR_FILE_APPEND_ONLY_LOW_TO_MEDIUM_RISK_BATCH_SELF_CHECKED_UNDER_GLOBAL_LIGHTWEIGHT_POLICY",
+                },
             },
             path,
             issues,
@@ -8324,7 +8555,7 @@ def validate_a1_interim_lineage(
     _expect(
         interim,
         "latest_evidence_update_id",
-        GSE217518_REGISTRATION_EVIDENCE_UPDATE_ID,
+        GSE232572_POST_RECOVERY_EVIDENCE_UPDATE_ID,
         path,
         issues,
         "A1_INTERIM_TIME",
@@ -8332,14 +8563,14 @@ def validate_a1_interim_lineage(
     generated = interim.get("generated_at")
     updated = interim.get("updated_at")
     if (
-        generated != GSE217518_REGISTRATION_LEDGER_AT
-        or updated != GSE217518_REGISTRATION_LEDGER_AT
+        generated != GSE232572_POST_RECOVERY_LEDGER_AT
+        or updated != GSE232572_POST_RECOVERY_LEDGER_AT
     ):
         _issue(
             issues,
             "A1_INTERIM_TIME",
             path,
-            "generated_at and updated_at must remain the exact GSE217518 registration ledger timestamp",
+            "generated_at and updated_at must remain the exact GSE232572 post-recovery ledger timestamp",
         )
     if generated != updated:
         _issue(issues, "A1_INTERIM_TIME", path, "generated_at and updated_at must identify the same amended record bytes")
@@ -8365,6 +8596,9 @@ def validate_a1_interim_lineage(
         gse217518_public_authority_preflight_dt = datetime.fromisoformat(
             "2026-08-12T20:11:39+08:00"
         )
+        gse232572_public_recovery_audit_dt = datetime.fromisoformat(
+            "2026-08-12T21:57:45+08:00"
+        )
     except ValueError:
         _issue(issues, "A1_INTERIM_TIME", path, "updated_at must be an ISO-8601 timestamp with offset")
     else:
@@ -8385,12 +8619,13 @@ def validate_a1_interim_lineage(
             or updated_dt < gse200304_adjudication_v3_dt
             or updated_dt < gse149487_public_asset_acquisition_dt
             or updated_dt < gse217518_public_authority_preflight_dt
+            or updated_dt < gse232572_public_recovery_audit_dt
         ):
             _issue(
                 issues,
                 "A1_INTERIM_TIME",
                 path,
-                "updated_at must follow all preserved evidence events, DEC-019 owner authorization, successor integration, GSE200304 post-adjudication artifacts, GSE149487 exact21 acquisition, and the GSE217518 public-authority preflight",
+                "updated_at must follow all preserved evidence events, DEC-019 owner authorization, successor integration, GSE200304 post-adjudication artifacts, GSE149487 exact21 acquisition, the GSE217518 public-authority preflight, and the GSE232572 public-recovery audit",
             )
     return issues
 
@@ -9764,6 +9999,7 @@ def validate_bundle(repo_root: Path) -> list[Issue]:
     issues.extend(
         validate_gse217518_public_authority_preflight_registration(repo_root)
     )
+    issues.extend(validate_gse232572_public_recovery_audit_registration(repo_root))
     issues.extend(validate_python_static_safety(repo_root))
     issues.extend(validate_runner_and_guard_ast(repo_root))
     issues.extend(scan_conflict_markers(repo_root))

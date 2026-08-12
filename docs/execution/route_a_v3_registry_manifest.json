@@ -59,7 +59,7 @@
     {
       "path": "docs/execution/route_a_v3_a1_interim.yaml",
       "role": "A1_ACTIVE_INTERIM_RECORD",
-      "sha256": "9e72e82e7b8a941fd2e3066a33c4e3ce7fc733134e62776e273c40b1b118fb9e"
+      "sha256": "7498c4fe6f1e63d2df9c9e2da08feff62e45c43647962d653875eb40ba2f868d"
     },
     {
       "path": "docs/execution/route_a_v3_split_registry.yaml",
@@ -357,20 +357,35 @@
       "sha256": "ba192586174dccff21b83055608a9f9623fbf48d3b64deeb6768eb4055d69421"
     },
     {
+      "path": "configs/route_a_v3_gse232572_a1_recovery_v1.json",
+      "role": "GSE232572_PUBLIC_RECOVERY_AUDIT_CONFIG",
+      "sha256": "43519e11111fea141bbaa7b0eccaf0c4ed023155cdd02597aad426001132e826"
+    },
+    {
+      "path": "scripts/route_a_v3/recover_gse232572_a1.py",
+      "role": "GSE232572_PUBLIC_RECOVERY_AUDIT_PRODUCER",
+      "sha256": "22a4487758bb2da9a7aaacea332124339a65f9c8a63f22de4538551ab139903c"
+    },
+    {
+      "path": "tests/route_a_v3/test_recover_gse232572_a1.py",
+      "role": "GSE232572_PUBLIC_RECOVERY_AUDIT_FOCUSED_TEST",
+      "sha256": "9976a0c9650c0d8b5552bd2ed13c1fe850325828bab10dfff5092e7b8fc920ef"
+    },
+    {
       "path": "tests/route_a_v3/test_a0_integrity_guards.py",
       "role": "A0_AUTHORITY_INTEGRITY_GUARD_TEST",
-      "sha256": "ee812cbe3aed15ad0d22187e872b8fbfe8449469b5c5818d7e46458cc51c3c04"
+      "sha256": "10379c502afa010dc8dd2b550fe7085f9240110de02c170f2f5963f766dc5ee8"
     },
     {
       "path": "scripts/route_a_v3/validate_a0_bundle.py",
       "role": "A0_STATIC_AND_SEMANTIC_VALIDATOR",
-      "sha256": "edb940cbb46e9e54fb8267a29f0b5d48020be933defb96a3b3de89f673f18f98"
+      "sha256": "4313db7f5d7651be5fda93dd70eed318354115985a0b19ba010dd5cb262061cd"
     }
   ],
   "initial_generated_at": "2026-08-10T10:10:05+08:00",
-  "generated_at": "2026-08-12T20:24:16+08:00",
-  "updated_at": "2026-08-12T20:24:16+08:00",
-  "manifest_status": "A1_GSE217518_PUBLIC_AUTHORITY_PREFLIGHT_LEDGER_REGISTERED_PENDING_EVT046",
+  "generated_at": "2026-08-12T22:08:56+08:00",
+  "updated_at": "2026-08-12T22:08:56+08:00",
+  "manifest_status": "A1_GSE232572_PUBLIC_RECOVERY_AUDIT_LEDGER_REGISTERED_PENDING_EVT047",
   "schema_version": "1.0.0",
   "sealed_contact": false,
   "version": "3.0.0"

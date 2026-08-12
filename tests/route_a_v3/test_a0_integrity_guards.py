@@ -2376,7 +2376,7 @@ def test_gse217518_public_authority_preflight_registration_is_closed(
     )
     assert validator.REGISTRY_MANIFEST_PATH not in manifest_paths
     assert manifest["manifest_status"] == (
-        "A1_GSE217518_PUBLIC_AUTHORITY_PREFLIGHT_LEDGER_REGISTERED_PENDING_EVT046"
+        "A1_GSE232572_PUBLIC_RECOVERY_AUDIT_LEDGER_REGISTERED_PENDING_EVT047"
     )
     assert (
         validator.validate_gse217518_public_authority_preflight_registration(
@@ -2404,7 +2404,7 @@ def test_gse217518_public_authority_preflight_registration_is_closed(
     assert record["next_phase_authorized"] is False
     assert record["predecessor_runtime_event_id"] == "A1-EVT-045"
     assert record["expected_next_runtime_event_id"] == "A1-EVT-046"
-    assert record["runtime_sync_status"] == "PENDING_NO_EVT_046"
+    assert record["runtime_sync_status"] == "SYNCED_EVT_046"
     assert record["producer_lineage"] == {
         "implementation_commit": "a0e8bd7c751f94e116546d6164ec2de4faeae924",
         "binding_commit": "bcdbd5e0735e950be92cee557785d5f72d2013e9",
@@ -2440,7 +2440,7 @@ def test_gse217518_public_authority_preflight_registration_is_closed(
     assert gate["qualified_a2_dense_studies"] == 0
     assert gate["next_phase_authorized"] is False
     assert interim["dec019_current_disposition"]["runtime_sync_status"] == (
-        "PENDING_NO_EVT_046"
+        "PENDING_NO_EVT_047"
     )
     assert lineage[validator.GSE200304_CHECKPOINT_EXPOSURE_FAIL_LINEAGE_ID][
         "runtime_sync_status"
@@ -2517,6 +2517,129 @@ def test_gse217518_static_drift_dynamic_cycle_and_unlock_fail_closed(
     )
     assert "A1_INTERIM_LINEAGE" in codes
     assert "A1_INTERIM_GSE217518" in codes
+
+
+def test_gse232572_public_recovery_audit_registration_is_closed(
+    validator,
+    repo_root,
+    tmp_path,
+    monkeypatch,
+):
+    manifest = validator._load_json(repo_root, validator.REGISTRY_MANIFEST_PATH)
+    manifest_paths = {row["path"] for row in manifest["files"]}
+    static_paths = set(validator.GSE232572_PUBLIC_RECOVERY_AUDIT_STATIC_LEAF_SHA256)
+
+    assert len(static_paths) == 3
+    assert static_paths.issubset(manifest_paths)
+    assert validator.GSE232572_PUBLIC_RECOVERY_AUDIT_RUNTIME_CONFIG_PATH not in manifest_paths
+    assert validator.REGISTRY_MANIFEST_PATH not in manifest_paths
+    assert validator.validate_gse232572_public_recovery_audit_registration(repo_root) == []
+
+    interim = validator._load_yaml(repo_root, validator.A1_INTERIM_PATH)
+    record = interim["artifact_lineage"][
+        validator.GSE232572_PUBLIC_RECOVERY_AUDIT_LINEAGE_ID
+    ]
+    assert record["artifact_type"] == "GSE232572_PUBLIC_RECOVERY_AUDIT_AGGREGATE_ONLY"
+    assert record["status"] == "DEVELOPMENT_PRIVATE_RECONSTRUCTION_COMPLETE_NOT_QUALIFIED"
+    assert record["registry_role"] == "AUDIT_ONLY"
+    assert record["qualification_status"] == "AUDIT_PENDING"
+    assert record["aggregate_only"] is True
+    assert record["published_universe_row_count"] == 11929
+    assert record["accepted_pair_count"] == 8068
+    assert record["rejected_published_row_count"] == 3861
+    assert record["rejection_reason_counts"] == {
+        "NO_UNIQUE_SEQUENCE_PAIR": 3404,
+        "AMBIGUOUS_DISTINCT_SEQUENCE_PAIRS": 457,
+    }
+    assert record["development_reconstruction_record_count"] == 8068
+    assert record["canonical_materialization_allowed"] is False
+    assert record["canonical_record_count"] == 0
+    assert record["qualified"] is False
+    assert record["ordinary_study_contribution"] == 0
+    assert record["a1_study_contribution"] == 0
+    assert record["true_a2_study_contribution"] == 0
+    assert record["training_allowed"] is False
+    assert record["model_selection_allowed"] is False
+    assert record["next_phase_authorized"] is False
+    assert record["predecessor_runtime_event_id"] == "A1-EVT-046"
+    assert record["expected_next_runtime_event_id"] == "A1-EVT-047"
+    assert record["runtime_sync_status"] == "PENDING_NO_EVT_047"
+    assert "binding_commit" not in record["producer_lineage"]
+    assert record["producer_lineage"]["config_inspected_predecessor_is_binding_commit"] is False
+
+    summary = interim["dataset_boundary_summary"]["GSE232572"]
+    audit = summary["public_recovery_audit"]
+    assert audit["artifact_lineage_id"] == validator.GSE232572_PUBLIC_RECOVERY_AUDIT_LINEAGE_ID
+    assert audit["changes_qualification_gate"] is False
+    assert summary["qualified"] is False
+    assert summary["training_allowed"] is False
+    assert summary["model_selection_allowed"] is False
+    assert summary["next_phase_authorized"] is False
+    assert interim["artifact_lineage"][
+        validator.GSE217518_PUBLIC_AUTHORITY_PREFLIGHT_LINEAGE_ID
+    ]["runtime_sync_status"] == "SYNCED_EVT_046"
+    assert interim["dec019_current_disposition"]["runtime_sync_status"] == "PENDING_NO_EVT_047"
+    assert ".private.jsonl" not in json.dumps(interim)
+    assert ".private.jsonl" not in json.dumps(manifest)
+
+    static_root = tmp_path / "static_drift"
+    static_manifest = _copy_manifest_bundle(validator, repo_root, static_root)
+    relative = validator.GSE232572_PUBLIC_RECOVERY_AUDIT_SCRIPT_PATH
+    static_leaf = static_root / relative
+    static_leaf.write_bytes(static_leaf.read_bytes() + b"\n# synchronized drift\n")
+    next(row for row in static_manifest["files"] if row["path"] == relative)[
+        "sha256"
+    ] = validator.sha256_file(static_leaf)
+    (static_root / validator.REGISTRY_MANIFEST_PATH).write_text(
+        json.dumps(static_manifest, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    codes = _codes(
+        validator.validate_gse232572_public_recovery_audit_registration(
+            static_root
+        )
+    )
+    assert "GSE232572_PUBLIC_RECOVERY_AUDIT_STATIC_LEAF" in codes
+
+    dynamic_root = tmp_path / "dynamic_cycle"
+    dynamic_manifest = _copy_manifest_bundle(validator, repo_root, dynamic_root)
+    dynamic_manifest["files"].append(
+        {
+            "path": validator.GSE232572_PUBLIC_RECOVERY_AUDIT_RUNTIME_CONFIG_PATH,
+            "role": "FORBIDDEN_DYNAMIC_EVT047_CONFIG",
+            "sha256": "0" * 64,
+        }
+    )
+    (dynamic_root / validator.REGISTRY_MANIFEST_PATH).write_text(
+        json.dumps(dynamic_manifest, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    codes = _codes(
+        validator.validate_gse232572_public_recovery_audit_registration(
+            dynamic_root
+        )
+    )
+    assert "GSE232572_PUBLIC_RECOVERY_AUDIT_MANIFEST_DAG" in codes
+
+    def forge_qualification(document):
+        node = document["artifact_lineage"][
+            validator.GSE232572_PUBLIC_RECOVERY_AUDIT_LINEAGE_ID
+        ]
+        node["canonical_record_count"] = 8068
+        node["qualified"] = True
+        boundary = document["dataset_boundary_summary"]["GSE232572"]
+        boundary["public_recovery_audit"]["canonical_record_count"] = 8068
+        boundary["qualified"] = True
+
+    codes = _validate_rehashed_interim_bypass(
+        validator,
+        repo_root,
+        tmp_path / "qualification_bypass",
+        monkeypatch,
+        forge_qualification,
+    )
+    assert "A1_INTERIM_LINEAGE" in codes
+    assert "A1_INTERIM_GSE232572" in codes
 
 
 def test_post_fail_acquisition_drift_and_interim_unlock_fail_closed(
