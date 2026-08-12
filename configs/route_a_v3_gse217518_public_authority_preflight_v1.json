@@ -1,0 +1,247 @@
+{
+  "schema_version": "route_a_v3_gse217518_public_authority_preflight.v1",
+  "protocol_id": "GSE217518_PUBLIC_AUTHORITY_PREFLIGHT_V1",
+  "contract_id": "mrna_xeditflow_route_a_v3",
+  "phase_id": "A1",
+  "dataset_id": "GSE217518",
+  "protocol_status": "PREFLIGHT_ONLY_STOP_BEFORE_PAYLOAD",
+  "implementation_binding": {
+    "binding_scheme": "CONFIG_ONLY_POST_IMPLEMENTATION_BINDING_V1",
+    "status": "UNKNOWN_NOT_ASSERTED",
+    "base_commit": "7b9a9531d44a8398153cc3900bb738e92730af99",
+    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "implementation_script_path": "scripts/route_a_v3/preflight_gse217518_public_authority.py",
+    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_test_path": "tests/route_a_v3/test_preflight_gse217518_public_authority.py",
+    "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
+    "unknown_to_bound_scalar_paths": [
+      "implementation_binding.status",
+      "implementation_binding.implementation_commit",
+      "implementation_binding.implementation_script_sha256",
+      "implementation_binding.implementation_test_sha256"
+    ],
+    "implementation_commit_exact_changed_paths": [
+      "configs/route_a_v3_gse217518_public_authority_preflight_v1.json",
+      "scripts/route_a_v3/preflight_gse217518_public_authority.py",
+      "tests/route_a_v3/test_preflight_gse217518_public_authority.py"
+    ],
+    "binding_commit_exact_changed_paths": [
+      "configs/route_a_v3_gse217518_public_authority_preflight_v1.json"
+    ],
+    "activation_rule": "The implementation commit I must be the direct child of base_commit and change exactly the config, producer, and focused test. The binding commit B must be the direct child of I and change only this config, replacing only the four UNKNOWN_NOT_ASSERTED binding scalars. Before I is created, ledger integration may mechanically replace base_commit with the actual clean parent; no base-drift framework is introduced. Until B is valid, execution stops before metadata input, network access, or output creation."
+  },
+  "repository_authority": {
+    "production_repo_root": "/home/cunyuliu/mrna_editflow_goal/worktrees/routea_v3_a1_20260810",
+    "branch": "routea-v3-a1-20260810",
+    "candidate_base_commit": "7b9a9531d44a8398153cc3900bb738e92730af99",
+    "candidate_base_observed_clean": true,
+    "authority_files": [
+      {
+        "path": "docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md",
+        "sha256_at_candidate_base": "cbac4c3dcba8f1b8df95d8edad52d19e3c126d1c865d0cc423537c754cc90982",
+        "role": "CURRENT_CONTRACT"
+      },
+      {
+        "path": "docs/execution/route_a_v3_data_role_registry.yaml",
+        "sha256_at_candidate_base": "4d14ebd1a6adc04a344165f775df8586ef9f8f0461fdcac08649d0644d9956f2",
+        "role": "CURRENT_DATA_ROLE_REGISTRY"
+      },
+      {
+        "path": "d1_staging/scripts/d1/reconstruct_gse217518_sequences.py",
+        "sha256_at_candidate_base": "0198b1d05abf57e7d30ab4337a727cb538fb73fa9cc0996bcf4d7b42d88ad236",
+        "role": "EXISTING_RECONSTRUCTION_REVIEW_ONLY_NOT_EXECUTED"
+      },
+      {
+        "path": "d1_staging/tests/test_reconstruct_gse217518.py",
+        "sha256_at_candidate_base": "e98c2a70ed2d2b2dadf35087a443db771c159ebf8d794bbe1d769c441fd6c7d3",
+        "role": "EXISTING_UNIT_TEST_REVIEW_ONLY_NOT_RERUN"
+      }
+    ]
+  },
+  "official_public_authorities": [
+    {
+      "authority_id": "NCBI_GEO_GSE217518",
+      "authority_type": "PRIMARY_PUBLIC_SERIES_METADATA_AND_FILE_LISTING",
+      "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE217518",
+      "authority_scope": [
+        "ACCESSION_AND_STUDY_IDENTITY",
+        "CELL_REGION_TIMEPOINT_REPLICATE_SAMPLE_LIST",
+        "FOUR_PROCESSED_ASSET_LOCATORS",
+        "RAW_COUNT_AND_TIME_COURSE_DESIGN"
+      ]
+    },
+    {
+      "authority_id": "ELIFE_97682_VERSION_OF_RECORD",
+      "authority_type": "PRIMARY_PUBLISHER_ARTICLE",
+      "url": "https://elifesciences.org/articles/97682",
+      "doi": "10.7554/eLife.97682.3",
+      "authority_scope": [
+        "ASSAY_AND_CONSTRUCT_DESIGN",
+        "ENDPOINT_FORMULA_DIRECTION_AND_SCALE",
+        "HALF_LIFE_QC",
+        "REPLICATE_AUTHORITY",
+        "SUPPLEMENT_LOCATOR"
+      ]
+    },
+    {
+      "authority_id": "ELIFE_97682_SUPPLEMENTARY_FILE_1",
+      "authority_type": "PRIMARY_PUBLISHER_SUPPLEMENT_LOCATOR_NOT_OPENED_BY_PREFLIGHT",
+      "url": "https://cdn.elifesciences.org/articles/97682/elife-97682-supp1-v1.xlsx",
+      "authority_scope": [
+        "VARIANT_METADATA_AND_REPORTED_MPRA_RESULT_HEADER_CANDIDATE"
+      ]
+    },
+    {
+      "authority_id": "NCBI_REFSEQ_NUCCORE",
+      "authority_type": "PRIMARY_PUBLIC_TRANSCRIPT_RECORD_FAMILY",
+      "url_template": "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=nuccore&id={accession_version}&rettype=gb&retmode=text",
+      "authority_scope": [
+        "TRANSCRIPT_ACCESSION_VERSION",
+        "REFERENCE_TRANSCRIPT_SEQUENCE",
+        "CDS_AND_UTR_BOUNDARIES"
+      ]
+    }
+  ],
+  "official_processed_assets": [
+    {
+      "asset_id": "GSE217518_HEK_U3_RAW",
+      "filename": "GSE217518_HEK_U3_Raw.csv.gz",
+      "locator": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE217nnn/GSE217518/suppl/GSE217518_HEK_U3_Raw.csv.gz",
+      "cell_line": "HEK293T",
+      "region": "3UTR",
+      "measurement_surface": "AMPLICON_READ_COUNTS_BY_TIMEPOINT_AND_REPLICATE"
+    },
+    {
+      "asset_id": "GSE217518_HEK_U5_RAW",
+      "filename": "GSE217518_HEK_U5_Raw.csv.gz",
+      "locator": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE217nnn/GSE217518/suppl/GSE217518_HEK_U5_Raw.csv.gz",
+      "cell_line": "HEK293T",
+      "region": "5UTR",
+      "measurement_surface": "AMPLICON_READ_COUNTS_BY_TIMEPOINT_AND_REPLICATE"
+    },
+    {
+      "asset_id": "GSE217518_SH_U3_RAW",
+      "filename": "GSE217518_SH_U3_Raw.csv.gz",
+      "locator": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE217nnn/GSE217518/suppl/GSE217518_SH_U3_Raw.csv.gz",
+      "cell_line": "SH-SY5Y",
+      "region": "3UTR",
+      "measurement_surface": "AMPLICON_READ_COUNTS_BY_TIMEPOINT_AND_REPLICATE"
+    },
+    {
+      "asset_id": "GSE217518_SH_U5_RAW",
+      "filename": "GSE217518_SH_U5_Raw.csv.gz",
+      "locator": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE217nnn/GSE217518/suppl/GSE217518_SH_U5_Raw.csv.gz",
+      "cell_line": "SH-SY5Y",
+      "region": "5UTR",
+      "measurement_surface": "AMPLICON_READ_COUNTS_BY_TIMEPOINT_AND_REPLICATE"
+    }
+  ],
+  "endpoint_authority": {
+    "status": "PASS",
+    "endpoint_identity": "RNA_HALF_LIFE_T1_2",
+    "endpoint_unit": "MINUTES",
+    "direction": "HIGHER_T1_2_IS_MORE_STABLE",
+    "raw_measurement_scale": "NONNEGATIVE_AMPLICON_READ_COUNT_AT_EACH_TIMEPOINT_AND_EXPERIMENTAL_REPLICATE",
+    "normalization": "EACH_COUNT_NORMALIZED_BY_MEAN_COUNT_AT_FIRST_TIMEPOINT",
+    "decay_model": "LN_C_T_OVER_C_T0_EQUALS_NEGATIVE_LAMBDA_TIMES_T_PLUS_ERROR",
+    "derived_endpoint": "T1_2_EQUALS_LN_2_OVER_LAMBDA",
+    "effect_orientation": "MUTANT_MINUS_OR_LOG_RATIO_TO_MATCHED_WT_POSITIVE_MEANS_MORE_STABLE",
+    "half_life_qc": {
+      "r_squared_strictly_greater_than": 0.5,
+      "mean_squared_error_strictly_less_than": 1.0
+    }
+  },
+  "author_defined_outlier_policy": {
+    "status": "BLOCKED",
+    "public_statement": "For the downstream novel 7-mer analysis, half-life was log2 transformed and extreme values were filtered out.",
+    "executable_threshold_or_membership_rule": null,
+    "applies_unambiguously_to_ordinary_row_level_effect_production": false,
+    "row_value_inference_allowed": false,
+    "blocker": "AUTHOR_DEFINED_OUTLIER_POLICY_NOT_EXECUTABLE_FROM_PUBLIC_AUTHORITY"
+  },
+  "replicate_authority": {
+    "status": "PASS",
+    "replicate_unit": "INDEPENDENT_EXPERIMENT",
+    "replicate_count_per_cell_region": 3,
+    "HEK293T_timepoints_minutes": [30, 75, 120],
+    "SH-SY5Y_timepoints_minutes": [20, 40, 60],
+    "required_row_mapping_fields": [
+      "cell_line",
+      "utr_region",
+      "experimental_replicate",
+      "timepoint_minutes"
+    ]
+  },
+  "biological_grouping_authority": {
+    "status": "BLOCKED",
+    "sample_level_fields_confirmed": [
+      "cell_line",
+      "utr_region",
+      "experimental_replicate",
+      "timepoint_minutes"
+    ],
+    "required_source_level_fields": [
+      "variant_pair_id",
+      "transcript_accession_version",
+      "gene_or_locus_id",
+      "exact_wt_assayed_fragment_identity",
+      "exact_mutant_assayed_fragment_identity"
+    ],
+    "executable_source_group_definition": null,
+    "blocker": "ROW_LEVEL_SOURCE_AND_BIOLOGICAL_GROUP_CROSSWALK_NOT_PUBLICLY_CLOSED"
+  },
+  "full_context_reconstruction_authority": {
+    "status": "BLOCKED",
+    "measured_construct_context": "A_115_BP_UTR_FRAGMENT_CENTERED_ON_THE_VARIANT_UNLESS_NEAR_A_UTR_BOUNDARY_WITH_UTR_SPECIFIC_PRIMERS_AND_EGFP_REPORTER_CONTEXT",
+    "required_public_assets": [
+      "ELIFE_97682_SUPPLEMENTARY_FILE_1_HEADER_AND_FIELD_DICTIONARY",
+      "VERSIONED_NCBI_REFSEQ_TRANSCRIPT_RECORD_PER_VARIANT",
+      "AUTHORITATIVE_VARIANT_TO_TRANSCRIPT_AND_UTR_REGION_CROSSWALK",
+      "AUTHORITATIVE_115_BP_BOUNDARY_WINDOW_AND_WT_MUTANT_CONSTRUCT_RULE"
+    ],
+    "existing_reconstruction_observation": "CURRENT_D1_SCRIPT_EXTRACTS_THE_ENTIRE_REFSEQ_5UTR_OR_3UTR_AND_DOES_NOT_RECONSTRUCT_THE_MEASURED_115_BP_REPORTER_FRAGMENT",
+    "existing_reconstruction_may_be_run_by_this_preflight": false,
+    "blocker": "MEASURED_115_BP_CONSTRUCT_AND_SOURCE_CONTEXT_NOT_EXECUTABLY_RECONSTRUCTED"
+  },
+  "input_contract": {
+    "supported_modes": [
+      "LIVE_OFFICIAL_METADATA_AND_FILE_LISTING",
+      "EXISTING_OFFICIAL_PUBLIC_AUTHORITY_AGGREGATE_ONLY"
+    ],
+    "existing_aggregate_schema_version": "route_a_v3_gse217518_public_authority_observation.v1",
+    "allowed_evidence_surfaces": [
+      "OFFICIAL_SERIES_METADATA",
+      "OFFICIAL_FILE_LISTING",
+      "OFFICIAL_PUBLISHER_METHOD_METADATA",
+      "HEADER_NAMES_ONLY",
+      "EXISTING_AGGREGATE_ONLY"
+    ],
+    "row_values_allowed": false,
+    "sequence_values_allowed": false,
+    "effect_values_allowed": false,
+    "raw_processed_asset_download_allowed": false,
+    "raw_processed_asset_open_allowed": false,
+    "restricted_or_sealed_allowed": false,
+    "GSE246381_allowed": false
+  },
+  "output_contract": {
+    "filename": "GSE217518_PUBLIC_AUTHORITY_PREFLIGHT_V1.json",
+    "single_aggregate_output_only": true,
+    "row_records_included": false,
+    "sequence_values_included": false,
+    "effect_values_included": false,
+    "qualified_field_must_remain_false": true,
+    "training_or_model_work_must_remain_false": true
+  },
+  "current_authority_assessment": {
+    "official_asset_listing": "PASS",
+    "endpoint_identity_direction_raw_scale": "PASS",
+    "author_defined_outlier_policy": "BLOCKED",
+    "replicate_authority": "PASS",
+    "biological_grouping_fields": "BLOCKED",
+    "full_context_reconstruction": "BLOCKED",
+    "ready_for_ordinary_public_row_level_producer": false,
+    "terminal_status": "STOP_BEFORE_ORDINARY_PUBLIC_ROW_LEVEL_PRODUCER"
+  },
+  "claim_boundary": "A PASS from this preflight means only that a later ordinary-public row-level producer may be written from public authority. It never establishes dataset qualification, canonical intervention records, training permission, model-selection permission, next-phase authorization, or a scientific claim. A STOP preserves the exact missing public-authority gates without inferring rules from row values or contacting restricted or sealed material."
+}
