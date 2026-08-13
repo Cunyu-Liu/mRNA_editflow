@@ -106,6 +106,37 @@ AUTHORITY_FILES = [
 ]
 AUTHORITY_PATHS = [item["path"] for item in AUTHORITY_FILES]
 IMPLEMENTATION_PATHS = [CONFIG_REPO_PATH, SCRIPT_REPO_PATH, TEST_REPO_PATH]
+# The first implementation commit is frozen in the already-pushed chain.  The
+# next implementation commit is intentionally dynamic: it is the direct child
+# that moves the corrected lifecycle config, repaired publisher, and focused
+# test together. It remains UNKNOWN and is bound only in the final config-only
+# B2 commit.
+I1_COMMIT = "4606ec30e74610485ef1ba158c25d8b626d4ae1a"
+I1_CONFIG_BYTES = 12042
+I1_CONFIG_SHA256 = "f45db39f3e1df251c5f0fd430b7e9e2467e8b5ba838dd04d79458e6ef65c4471"
+I1_SCRIPT_SHA256 = "03bbef4de6f80f314a3ebc7c13307bf18b2294ee70953870cf08e0531eebc05e"
+I1_TEST_SHA256 = "da42ac3160ea2518746d8b40d1d964c41f82214903f627d1e4e3f5a65528ca71"
+I2_CHANGED_PATHS = list(IMPLEMENTATION_PATHS)
+ACTIVATION_RULE = (
+    "A is the exact14 DEC020 authority commit. Frozen I1 is the direct child of A "
+    "and changed exactly this config, script, and focused test with all four "
+    "implementation-binding scalars UNKNOWN_NOT_ASSERTED. I2 must be the direct "
+    "child of I1, change exactly this config, script, and focused test, retain "
+    "those four scalars as UNKNOWN_NOT_ASSERTED, and correct the append-only "
+    "lifecycle contract. B2 must be the direct child of I2, change only this "
+    "config, and bind exactly those four scalars. Production requires clean HEAD "
+    "equal to upstream and origin at B2 before any prepared or runtime I/O."
+)
+INITIAL_IMPLEMENTATION = {
+    "status": "FROZEN_PUSHED_I1",
+    "commit": I1_COMMIT,
+    "expected_parent": AUTHORITY_COMMIT,
+    "exact_changed_paths": list(IMPLEMENTATION_PATHS),
+    "config_bytes": I1_CONFIG_BYTES,
+    "config_sha256": I1_CONFIG_SHA256,
+    "script_sha256": I1_SCRIPT_SHA256,
+    "test_sha256": I1_TEST_SHA256,
+}
 ACTIVE_DECISION_IDS = ["V3-DEC-017", "V3-DEC-018", "V3-DEC-019", "V3-DEC-020"]
 
 DEC020_AUTHORITY = {
@@ -506,8 +537,7 @@ def validate_static_config(config: dict[str, Any]) -> None:
         ],
         label="four scalar paths",
     )
-    if not isinstance(binding["activation_rule"], str) or not binding["activation_rule"]:
-        raise BindingError("binding activation rule is absent")
+    _expect(binding["activation_rule"], ACTIVATION_RULE, label="binding activation rule")
     if any(
         binding.get(key) == UNKNOWN
         for key in (
@@ -539,6 +569,7 @@ def validate_static_config(config: dict[str, Any]) -> None:
             "authority_snapshot_status",
             "authority_exact_changed_paths",
             "authority_files",
+            "initial_implementation",
             "implementation_exact_changed_paths",
             "binding_exact_changed_paths",
         },
@@ -555,8 +586,13 @@ def validate_static_config(config: dict[str, Any]) -> None:
     )
     _expect(authority["authority_exact_changed_paths"], AUTHORITY_PATHS, label="A exact14")
     _expect(authority["authority_files"], AUTHORITY_FILES, label="A exact14 identities")
-    _expect(authority["implementation_exact_changed_paths"], IMPLEMENTATION_PATHS, label="I exact3")
-    _expect(authority["binding_exact_changed_paths"], [CONFIG_REPO_PATH], label="B exact1")
+    _expect(
+        authority["initial_implementation"],
+        INITIAL_IMPLEMENTATION,
+        label="frozen I1 authority",
+    )
+    _expect(authority["implementation_exact_changed_paths"], I2_CHANGED_PATHS, label="I2 exact3")
+    _expect(authority["binding_exact_changed_paths"], [CONFIG_REPO_PATH], label="B2 exact1")
 
     _expect(config["dec020_authority"], DEC020_AUTHORITY, label="DEC020 authority")
     _expect(
@@ -676,7 +712,15 @@ def _read_repo_file(repo_root: Path, path: str) -> bytes:
 def audit_production_repository_authority(
     config: dict[str, Any], config_payload: bytes
 ) -> dict[str, Any]:
-    """Prove clean exact14 A -> exact3 UNKNOWN I -> config-only B before runtime I/O."""
+    """Prove clean A -> frozen I1 -> dynamic I2 -> config-only B2.
+
+    I1 is the already-pushed exact3 implementation with the obsolete three-stage
+    lifecycle declaration. I2 is its exact3 successor: config, publisher, and
+    focused test move together, while the four binding scalars remain UNKNOWN.
+    B2 is the direct child of I2 and changes only those four config scalars to
+    bind I2 and its implementation blob digests. All of this is checked before
+    any prepared-directory or runtime I/O.
+    """
 
     validate_bound_config(config)
     authority = config["repository_authority"]
@@ -706,20 +750,19 @@ def audit_production_repository_authority(
     implementation_parent = _run_git(
         repo_root, "rev-parse", f"{implementation_commit}^"
     ).decode().strip()
+    i1_parent = _run_git(repo_root, "rev-parse", f"{I1_COMMIT}^").decode().strip()
     authority_parent = _run_git(repo_root, "rev-parse", f"{authority_commit}^").decode().strip()
-    _expect(binding_parent, implementation_commit, label="B parent/I")
-    _expect(implementation_parent, authority_commit, label="I parent/A")
+    _expect(binding_parent, implementation_commit, label="B2 parent/I2")
+    _expect(implementation_parent, I1_COMMIT, label="I2 parent/I1")
+    _expect(i1_parent, authority_commit, label="I1 parent/A")
     _expect(authority_parent, AUTHORITY_PARENT, label="A parent")
     _expect(
         _changed_paths(repo_root, authority_commit),
         sorted(AUTHORITY_PATHS),
         label="A exact14 changed paths",
     )
-    _expect(
-        _changed_paths(repo_root, implementation_commit),
-        sorted(IMPLEMENTATION_PATHS),
-        label="I exact3 changed paths",
-    )
+    _expect(_changed_paths(repo_root, I1_COMMIT), sorted(IMPLEMENTATION_PATHS), label="I1 exact3 changed paths")
+    _expect(_changed_paths(repo_root, implementation_commit), sorted(I2_CHANGED_PATHS), label="I2 exact3 changed paths")
     _expect(
         _changed_paths(repo_root, head),
         [CONFIG_REPO_PATH],
@@ -730,27 +773,43 @@ def audit_production_repository_authority(
         path = item["path"]
         for payload, label in (
             (_git_blob(repo_root, authority_commit, path), "A"),
+            (_git_blob(repo_root, I1_COMMIT, path), "I1"),
+            (_git_blob(repo_root, implementation_commit, path), "I2"),
             (_git_blob(repo_root, head, path), "B"),
             (_read_repo_file(repo_root, path), "worktree"),
         ):
             if len(payload) != item["bytes"] or sha256(payload) != item["sha256"]:
                 raise AuthorityError(f"{label} DEC020 authority blob drift: {path}")
 
-    expected_i_payload = json_bytes(expected_unknown_i_config(config))
-    if _git_blob(repo_root, implementation_commit, CONFIG_REPO_PATH) != expected_i_payload:
-        raise AuthorityError("I config is not the exact four-scalar UNKNOWN form")
+    i1_config_payload = _git_blob(repo_root, I1_COMMIT, CONFIG_REPO_PATH)
+    if len(i1_config_payload) != I1_CONFIG_BYTES or sha256(i1_config_payload) != I1_CONFIG_SHA256:
+        raise AuthorityError("frozen I1 config identity drift")
+    i1_config = load_json(i1_config_payload, label="frozen I1 config")
+    if not _binding_values_are_unknown(i1_config.get("implementation_binding", {})):
+        raise AuthorityError("frozen I1 config is not the exact four-scalar UNKNOWN form")
+    expected_i2_payload = json_bytes(expected_unknown_i_config(config))
+    if _git_blob(repo_root, implementation_commit, CONFIG_REPO_PATH) != expected_i2_payload:
+        raise AuthorityError("I2 config is not the current exact UNKNOWN implementation form")
     if _git_blob(repo_root, head, CONFIG_REPO_PATH) != config_payload:
-        raise AuthorityError("B config Git blob differs from supplied production config")
+        raise AuthorityError("B2 config Git blob differs from supplied production config")
     if _read_repo_file(repo_root, CONFIG_REPO_PATH) != config_payload:
         raise AuthorityError("worktree config differs from supplied production config")
 
+    frozen_i1_digests = {
+        SCRIPT_REPO_PATH: I1_SCRIPT_SHA256,
+        TEST_REPO_PATH: I1_TEST_SHA256,
+    }
+    for path, digest in frozen_i1_digests.items():
+        payload = _git_blob(repo_root, I1_COMMIT, path)
+        if sha256(payload) != digest:
+            raise AuthorityError(f"I1 implementation blob drift: {path}")
     for path, digest in (
         (SCRIPT_REPO_PATH, binding["implementation_script_sha256"]),
         (TEST_REPO_PATH, binding["implementation_test_sha256"]),
     ):
         for payload, label in (
-            (_git_blob(repo_root, implementation_commit, path), "I"),
-            (_git_blob(repo_root, head, path), "B"),
+            (_git_blob(repo_root, implementation_commit, path), "I2"),
+            (_git_blob(repo_root, head, path), "B2"),
             (_read_repo_file(repo_root, path), "worktree"),
         ):
             if sha256(payload) != digest:
@@ -762,8 +821,9 @@ def audit_production_repository_authority(
         label="production compiled core",
     )
     return {
-        "status": "PASS_EXACT_A_TO_I_TO_CONFIG_ONLY_B",
+        "status": "PASS_EXACT_A_TO_I1_TO_I2_TO_CONFIG_ONLY_B2",
         "authority_commit": authority_commit,
+        "i1_commit": I1_COMMIT,
         "implementation_commit": implementation_commit,
         "binding_commit": head,
         "head_commit": head,

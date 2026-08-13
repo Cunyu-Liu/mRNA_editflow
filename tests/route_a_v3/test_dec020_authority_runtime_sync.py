@@ -47,6 +47,24 @@ def bound_config() -> dict[str, Any]:
     return config
 
 
+def assert_disk_protocol_state(
+    config: dict[str, Any],
+    *,
+    config_payload: bytes,
+    script_payload: bytes,
+    test_payload: bytes,
+) -> None:
+    runtime_sync.validate_static_config(config)
+    assert config_payload == runtime_sync.json_bytes(config)
+    binding = config["implementation_binding"]
+    if runtime_sync._binding_values_are_unknown(binding):
+        pass
+    else:
+        assert binding["status"] == "BOUND"
+        assert runtime_sync.sha256(script_payload) == binding["implementation_script_sha256"]
+        assert runtime_sync.sha256(test_payload) == binding["implementation_test_sha256"]
+
+
 def predecessor_payloads(config: dict[str, Any]) -> dict[str, bytes]:
     scientific = config["successor_scientific_state"]
     runtime_science = {
@@ -153,10 +171,13 @@ def install_fake_repository_authority(
     mode: str = "valid",
 ) -> bytes:
     authority_commit = runtime_sync.AUTHORITY_COMMIT
-    implementation_commit = "1" * 40
+    i1_commit = runtime_sync.I1_COMMIT
+    implementation_commit = "1" * 40  # dynamic I2
     binding_commit = "b" * 40
-    script_payload = b"DEC020 authority runtime publisher\n"
-    test_payload = b"DEC020 authority runtime focused test\n"
+    i1_script_payload = b"DEC020 authority runtime publisher I1\n"
+    i1_test_payload = b"DEC020 authority runtime focused test I1\n"
+    script_payload = b"DEC020 authority runtime publisher I2 repaired\n"
+    test_payload = b"DEC020 authority runtime focused test I2 repaired\n"
     binding = config["implementation_binding"]
     binding.update(
         {
@@ -167,10 +188,24 @@ def install_fake_repository_authority(
         }
     )
     config_payload = runtime_sync.json_bytes(config)
-    i_payload = runtime_sync.json_bytes(runtime_sync.expected_unknown_i_config(config))
+    i2_payload = runtime_sync.json_bytes(runtime_sync.expected_unknown_i_config(config))
+    i1_document = {
+        "implementation_binding": {
+            "status": runtime_sync.UNKNOWN,
+            "implementation_commit": runtime_sync.UNKNOWN,
+            "implementation_script_sha256": runtime_sync.UNKNOWN,
+            "implementation_test_sha256": runtime_sync.UNKNOWN,
+        }
+    }
+    i1_prefix = runtime_sync.json_bytes(i1_document)
+    assert len(i1_prefix) < runtime_sync.I1_CONFIG_BYTES
+    i1_payload = i1_prefix + b" " * (runtime_sync.I1_CONFIG_BYTES - len(i1_prefix))
 
     authority_payloads: dict[str, bytes] = {}
     digest_overrides: dict[bytes, str] = {}
+    digest_overrides[i1_script_payload] = runtime_sync.I1_SCRIPT_SHA256
+    digest_overrides[i1_test_payload] = runtime_sync.I1_TEST_SHA256
+    digest_overrides[i1_payload] = runtime_sync.I1_CONFIG_SHA256
     for index, item in enumerate(runtime_sync.AUTHORITY_FILES):
         seed = f"DEC020 authority blob {index}\n".encode()
         payload = (seed * (item["bytes"] // len(seed) + 1))[: item["bytes"]]
@@ -183,13 +218,15 @@ def install_fake_repository_authority(
 
     changed_paths = {
         authority_commit: list(runtime_sync.AUTHORITY_PATHS),
-        implementation_commit: list(runtime_sync.IMPLEMENTATION_PATHS),
+        i1_commit: list(runtime_sync.IMPLEMENTATION_PATHS),
+        implementation_commit: list(runtime_sync.I2_CHANGED_PATHS),
         binding_commit: [runtime_sync.CONFIG_REPO_PATH],
     }
-    if mode in {"A_paths", "I_paths", "B_paths"}:
+    if mode in {"A_paths", "I1_paths", "I2_paths", "B_paths"}:
         commit = {
             "A_paths": authority_commit,
-            "I_paths": implementation_commit,
+            "I1_paths": i1_commit,
+            "I2_paths": implementation_commit,
             "B_paths": binding_commit,
         }[mode]
         changed_paths[commit].append("unexpected/path")
@@ -200,9 +237,19 @@ def install_fake_repository_authority(
             for path, payload in authority_payloads.items()
         },
         **{
+            (i1_commit, path): payload for path, payload in authority_payloads.items()
+        },
+        **{
+            (implementation_commit, path): payload
+            for path, payload in authority_payloads.items()
+        },
+        **{
             (binding_commit, path): payload for path, payload in authority_payloads.items()
         },
-        (implementation_commit, runtime_sync.CONFIG_REPO_PATH): i_payload,
+        (i1_commit, runtime_sync.CONFIG_REPO_PATH): i1_payload,
+        (i1_commit, runtime_sync.SCRIPT_REPO_PATH): i1_script_payload,
+        (i1_commit, runtime_sync.TEST_REPO_PATH): i1_test_payload,
+        (implementation_commit, runtime_sync.CONFIG_REPO_PATH): i2_payload,
         (implementation_commit, runtime_sync.SCRIPT_REPO_PATH): script_payload,
         (implementation_commit, runtime_sync.TEST_REPO_PATH): test_payload,
         (binding_commit, runtime_sync.CONFIG_REPO_PATH): config_payload,
@@ -216,9 +263,13 @@ def install_fake_repository_authority(
         first = runtime_sync.AUTHORITY_PATHS[0]
         blobs[(binding_commit, first)] = blobs[(binding_commit, first)][:-1] + b"x"
     if mode == "I_config":
+        blobs[(i1_commit, runtime_sync.CONFIG_REPO_PATH)] += b"drift"
+    if mode == "I2_config":
         blobs[(implementation_commit, runtime_sync.CONFIG_REPO_PATH)] += b"drift"
     if mode == "script_hash":
         blobs[(implementation_commit, runtime_sync.SCRIPT_REPO_PATH)] += b"drift"
+    if mode == "I1_script_hash":
+        blobs[(i1_commit, runtime_sync.SCRIPT_REPO_PATH)] += b"drift"
 
     def fake_git(_repo: Path, *arguments: str) -> bytes:
         branch = config["repository_authority"]["branch"]
@@ -244,7 +295,10 @@ def install_fake_repository_authority(
             parent = "e" * 40 if mode == "B_parent" else implementation_commit
             return f"{parent}\n".encode()
         if arguments == ("rev-parse", f"{implementation_commit}^"):
-            parent = "e" * 40 if mode == "I_parent" else authority_commit
+            parent = "e" * 40 if mode == "I_parent" else i1_commit
+            return f"{parent}\n".encode()
+        if arguments == ("rev-parse", f"{i1_commit}^"):
+            parent = "e" * 40 if mode == "I1_parent" else authority_commit
             return f"{parent}\n".encode()
         if arguments == ("rev-parse", f"{authority_commit}^"):
             parent = "e" * 40 if mode == "A_parent" else runtime_sync.AUTHORITY_PARENT
@@ -282,8 +336,12 @@ def install_fake_repository_authority(
 
 def test_static_config_core_and_frozen_candidates_are_exact() -> None:
     config = read_disk_config()
-    assert CONFIG_PATH.read_bytes() == runtime_sync.json_bytes(config)
-    assert runtime_sync._binding_values_are_unknown(config["implementation_binding"])
+    assert_disk_protocol_state(
+        config,
+        config_payload=CONFIG_PATH.read_bytes(),
+        script_payload=SCRIPT_PATH.read_bytes(),
+        test_payload=Path(__file__).read_bytes(),
+    )
     assert config["implementation_binding"]["compiled_core_sha256"] == (
         runtime_sync.compiled_core_sha256(config)
     )
@@ -292,6 +350,10 @@ def test_static_config_core_and_frozen_candidates_are_exact() -> None:
         runtime_sync.AUTHORITY_PARENT
     )
     assert config["repository_authority"]["authority_files"] == runtime_sync.AUTHORITY_FILES
+    assert config["repository_authority"]["initial_implementation"] == (
+        runtime_sync.INITIAL_IMPLEMENTATION
+    )
+    assert config["implementation_binding"]["activation_rule"] == runtime_sync.ACTIVATION_RULE
     assert config["registered_artifacts"] == []
     assert config["runtime"]["predecessor_event_count"] == 49
     assert config["runtime"]["successor_event_count"] == 50
@@ -304,9 +366,23 @@ def test_static_config_core_and_frozen_candidates_are_exact() -> None:
 
 def test_config_only_bound_form_loads_and_partial_binding_is_rejected(tmp_path: Path) -> None:
     bound = bound_config()
+    script_payload = b"future I2 script"
+    test_payload = b"future I2 test"
+    bound["implementation_binding"].update(
+        {
+            "implementation_script_sha256": runtime_sync.sha256(script_payload),
+            "implementation_test_sha256": runtime_sync.sha256(test_payload),
+        }
+    )
     bound_path = tmp_path / CONFIG_PATH.name
     bound_path.write_bytes(runtime_sync.json_bytes(bound))
     assert runtime_sync.load_bound_config(bound_path) == bound
+    assert_disk_protocol_state(
+        bound,
+        config_payload=bound_path.read_bytes(),
+        script_payload=script_payload,
+        test_payload=test_payload,
+    )
     partial = unknown_i_config()
     partial["implementation_binding"]["status"] = "BOUND"
     with pytest.raises(runtime_sync.BindingError, match="partially known"):
@@ -374,8 +450,9 @@ def test_production_authority_accepts_exact_a_i_b(
     payload = install_fake_repository_authority(monkeypatch, config)
     result = runtime_sync.audit_production_repository_authority(config, payload)
     assert result == {
-        "status": "PASS_EXACT_A_TO_I_TO_CONFIG_ONLY_B",
+        "status": "PASS_EXACT_A_TO_I1_TO_I2_TO_CONFIG_ONLY_B2",
         "authority_commit": runtime_sync.AUTHORITY_COMMIT,
+        "i1_commit": runtime_sync.I1_COMMIT,
         "implementation_commit": "1" * 40,
         "binding_commit": "b" * 40,
         "head_commit": "b" * 40,
@@ -394,14 +471,18 @@ def test_production_authority_accepts_exact_a_i_b(
         "origin",
         "A_parent",
         "I_parent",
+        "I1_parent",
         "B_parent",
         "A_paths",
-        "I_paths",
+        "I1_paths",
+        "I2_paths",
         "B_paths",
         "A_blob",
         "current_A_blob",
         "I_config",
+        "I2_config",
         "script_hash",
+        "I1_script_hash",
     ],
 )
 def test_production_authority_drift_is_rejected(

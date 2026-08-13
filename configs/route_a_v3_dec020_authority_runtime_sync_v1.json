@@ -18,14 +18,14 @@
     "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
     "implementation_test_path": "tests/route_a_v3/test_dec020_authority_runtime_sync.py",
     "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
-    "compiled_core_sha256": "3c844c0af9346c00c86ef91202666e8b4ab00ac435da6022a74ba096aca80dc4",
+    "compiled_core_sha256": "891b99f633c214e4d92e4244a60e50f34b883776af755b7bd870572bee41badf",
     "unknown_to_bound_scalar_paths": [
       "implementation_binding.status",
       "implementation_binding.implementation_commit",
       "implementation_binding.implementation_script_sha256",
       "implementation_binding.implementation_test_sha256"
     ],
-    "activation_rule": "A is the exact14 DEC020 authority commit. I must be the direct child of A, change exactly this config, script, and focused test, and retain all four implementation-binding scalars as UNKNOWN_NOT_ASSERTED. B must be the direct child of I, change only this config, and bind exactly those four scalars. Production requires clean HEAD equal to upstream and origin at B before any prepared or runtime I/O."
+    "activation_rule": "A is the exact14 DEC020 authority commit. Frozen I1 is the direct child of A and changed exactly this config, script, and focused test with all four implementation-binding scalars UNKNOWN_NOT_ASSERTED. I2 must be the direct child of I1, change exactly this config, script, and focused test, retain those four scalars as UNKNOWN_NOT_ASSERTED, and correct the append-only lifecycle contract. B2 must be the direct child of I2, change only this config, and bind exactly those four scalars. Production requires clean HEAD equal to upstream and origin at B2 before any prepared or runtime I/O."
   },
   "repository_authority": {
     "production_repo_root": "/home/cunyuliu/mrna_editflow_goal/worktrees/routea_v3_a1_20260810",
@@ -121,6 +121,20 @@
         "sha256": "b3a1ea125a2264c88db422f5796aca0fcbafa85b5c5be5a3ed08c53bb9d5846c"
       }
     ],
+    "initial_implementation": {
+      "status": "FROZEN_PUSHED_I1",
+      "commit": "4606ec30e74610485ef1ba158c25d8b626d4ae1a",
+      "expected_parent": "d0611622f304d2d621a35b190922ac593a3b8788",
+      "exact_changed_paths": [
+        "configs/route_a_v3_dec020_authority_runtime_sync_v1.json",
+        "scripts/route_a_v3/dec020_authority_runtime_sync.py",
+        "tests/route_a_v3/test_dec020_authority_runtime_sync.py"
+      ],
+      "config_bytes": 12042,
+      "config_sha256": "f45db39f3e1df251c5f0fd430b7e9e2467e8b5ba838dd04d79458e6ef65c4471",
+      "script_sha256": "03bbef4de6f80f314a3ebc7c13307bf18b2294ee70953870cf08e0531eebc05e",
+      "test_sha256": "da42ac3160ea2518746d8b40d1d964c41f82214903f627d1e4e3f5a65528ca71"
+    },
     "implementation_exact_changed_paths": [
       "configs/route_a_v3_dec020_authority_runtime_sync_v1.json",
       "scripts/route_a_v3/dec020_authority_runtime_sync.py",
