@@ -10,9 +10,10 @@ authority_ref:
   config_path: configs/route_a_v3.yaml
   goal_path: docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md
   goal_sha256: cbac4c3dcba8f1b8df95d8edad52d19e3c126d1c865d0cc423537c754cc90982
-  active_amendment_decision_ids: [V3-DEC-017, V3-DEC-018, V3-DEC-019, V3-DEC-020]
+  active_amendment_decision_ids: [V3-DEC-017, V3-DEC-018, V3-DEC-019, V3-DEC-020, V3-DEC-021]
   dec019_amendment_path: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec019.yaml
   dec020_amendment_path: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec020.yaml
+  dec021_amendment_path: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec021.yaml
 
 data_policy:
   public_data_only: true
@@ -46,6 +47,7 @@ expected_dataset_ids:
   - GSE232572
   - GSE186455
   - GSE207584
+  - GSE256185
 
 ordinary_candidate_dataset_ids:
   - GSE114002
@@ -448,4 +450,52 @@ datasets:
       - PROTEIN_FAMILY_AND_LABEL_LINEAGE_CLOSED
       - CODON_GRAPH_LEGALITY_AUDITED
       - LICENSE_AND_EXPOSURE_AUDITED
+    evidence_status: NOT_RUN
+  - dataset_id: GSE256185
+    aliases: [PRJNA1078388]
+    region_candidate: [5UTR]
+    sealed: false
+    role: AUDIT_ONLY
+    qualification_status: AUDIT_PENDING
+    qualified: false
+    training_role: EXCLUDED_PENDING_QUALIFICATION
+    intended_role: PUBLIC_IDENTIFIER_AND_POOL_GEOMETRY_PREFLIGHT_ONLY
+    preflight_candidate_only_not_counting: true
+    mapping_status: PUBLIC_IDENTIFIER_ROLE_CONTEXT_AND_AGGREGATE_POOL_GEOMETRY_PREFLIGHT_AUTHORIZED_NOT_RUN
+    allowed_current_uses:
+      - OFFICIAL_PUBLIC_IDENTIFIER_ROLE_CONTEXT_AGGREGATE_AUDIT
+      - AGGREGATE_POOL_GEOMETRY_PREFLIGHT
+    forbidden_current_uses:
+      - ROW_OUTPUT
+      - SEQUENCE_OUTPUT
+      - EFFECT_OUTPUT
+      - EDIT_BUDGET_EVALUATION
+      - TRUE_A2_STATUS_EVALUATION
+      - QUALIFICATION
+      - CANONICAL_MATERIALIZATION
+      - TRAINING
+      - CALIBRATION
+      - MODEL_SELECTION
+      - NEXT_PHASE
+      - CONFIRMATORY_EVALUATION
+      - CLAIM_SUPPORT
+    allowed_input_field_classes_exactly: [IDENTIFIER, ROLE, CONTEXT]
+    allowed_output_class: AGGREGATE_POOL_GEOMETRY_ONLY
+    sequence_evaluation: OUT_OF_SCOPE_NOT_EVALUATED
+    edit_budget_evaluation: OUT_OF_SCOPE_NOT_EVALUATED
+    effect_evaluation: OUT_OF_SCOPE_NOT_EVALUATED
+    true_a2_status_evaluation: OUT_OF_SCOPE_NOT_EVALUATED
+    qualification_evaluation: OUT_OF_SCOPE_NOT_EVALUATED
+    ordinary_gate_contribution: 0
+    a1_gate_contribution: 0
+    true_a2_gate_contribution: 0
+    canonical_record_count: 0
+    row_output_allowed: false
+    sequence_output_allowed: false
+    effect_output_allowed: false
+    training_allowed: false
+    gpu_work_allowed: false
+    model_selection_allowed: false
+    next_phase_authorized: false
+    sealed_contact_allowed: false
     evidence_status: NOT_RUN

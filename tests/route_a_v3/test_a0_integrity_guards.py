@@ -306,6 +306,115 @@ def test_dec020_manifest_rejects_unregistered_v4_path(
     assert "REGISTRY_MANIFEST_CLOSURE" in codes
 
 
+def test_dec021_authority_is_public_aggregate_geometry_only_and_preserves_evt051(
+    validator,
+    repo_root,
+):
+    config, _, registries = validator.load_bundle_documents(repo_root)
+    assert validator.validate_dec021_authority(repo_root, config, registries) == []
+
+    amendment = validator._load_yaml(repo_root, validator.DEC021_AMENDMENT_PATH)
+    assert amendment["scope"] == {
+        "dataset_id": "GSE256185",
+        "role": "PUBLIC_IDENTIFIER_AND_POOL_GEOMETRY_PREFLIGHT_ONLY",
+        "authority_surface": "ORDINARY_PUBLIC_ONLY",
+        "allowed_input_field_classes_exactly": ["IDENTIFIER", "ROLE", "CONTEXT"],
+        "allowed_output_class": "AGGREGATE_POOL_GEOMETRY_ONLY",
+        "row_output_allowed": False,
+        "sequence_output_allowed": False,
+        "effect_output_allowed": False,
+        "private_or_restricted_input_allowed": False,
+        "sealed_contact_allowed": False,
+    }
+    for field in (
+        "sequence_evaluation",
+        "edit_budget_evaluation",
+        "effect_evaluation",
+        "true_a2_status_evaluation",
+        "qualification_evaluation",
+    ):
+        assert amendment["preflight_semantics"][field] == "OUT_OF_SCOPE_NOT_EVALUATED"
+    assert amendment["authorization_projection"] == {
+        "changes_current_qualified_counts": False,
+        "current_qualified_independent_ordinary_studies": 1,
+        "current_qualified_a1_studies": 1,
+        "current_qualified_true_a2_dense_studies": 0,
+        "current_canonical_record_count": 6547,
+        "gse256185_ordinary_study_contribution": 0,
+        "gse256185_a1_study_contribution": 0,
+        "gse256185_true_a2_dense_study_contribution": 0,
+        "gse256185_canonical_record_count": 0,
+        "phase_complete": False,
+        "training_allowed": False,
+        "gpu_work_allowed": False,
+        "model_selection_allowed": False,
+        "next_phase_authorized": False,
+        "qualifier_execution_allowed": False,
+        "canonical_materialization_allowed": False,
+        "scientific_claim_status": "NOT_ESTABLISHED",
+    }
+    data = registries["data"]
+    assert "GSE256185" not in data["ordinary_candidate_dataset_ids"]
+    assert "GSE256185" not in data["true_a2_recovery_candidate_dataset_ids"]
+    interim = validator._load_yaml(repo_root, validator.A1_INTERIM_PATH)
+    current = interim["dec021_current_disposition"]
+    assert current["latest_settled_runtime_event_id"] == "A1-EVT-051"
+    assert current["settled_runtime_event_changed"] is False
+    assert current["current_qualified_counts"] == {
+        "ordinary": 1,
+        "a1": 1,
+        "true_a2": 0,
+        "canonical_records": 6547,
+    }
+    assert current["gse256185_contribution"] == {
+        "ordinary": 0,
+        "a1": 0,
+        "true_a2": 0,
+        "canonical_records": 0,
+    }
+
+
+def test_dec021_cannot_promote_preflight_to_qualification_or_training(
+    validator,
+    repo_root,
+    tmp_path,
+):
+    _copy_manifest_bundle(validator, repo_root, tmp_path)
+
+    qualification_path = tmp_path / validator.A1_QUALIFICATION_CONFIG_PATH
+    qualification = json.loads(qualification_path.read_text(encoding="utf-8"))
+    qualification["scope"]["included_dataset_ids"].append("GSE256185")
+    qualification["dec021_public_identifier_and_pool_geometry_preflight_authority"]["qualification_allowed"] = True
+    qualification["dec021_public_identifier_and_pool_geometry_preflight_authority"]["training_allowed"] = True
+    qualification_path.write_text(json.dumps(qualification, indent=2) + "\n", encoding="utf-8")
+
+    config_path = tmp_path / validator.CONFIG_PATH
+    config = yaml.safe_load(config_path.read_text(encoding="utf-8"))
+    config["a1_qualification_authority"]["gse256185_public_identifier_and_pool_geometry_preflight"]["sequence_evaluation"] = "PASS"
+    config_path.write_text(yaml.safe_dump(config, sort_keys=False), encoding="utf-8")
+
+    data_path = tmp_path / validator.REGISTRY_PATHS["data"]
+    data = yaml.safe_load(data_path.read_text(encoding="utf-8"))
+    data["ordinary_candidate_dataset_ids"].append("GSE256185")
+    row = next(item for item in data["datasets"] if item["dataset_id"] == "GSE256185")
+    row["qualified"] = True
+    row["ordinary_gate_contribution"] = 1
+    data_path.write_text(yaml.safe_dump(data, sort_keys=False), encoding="utf-8")
+
+    mutated_config, _, mutated_registries = validator.load_bundle_documents(tmp_path)
+    codes = _codes(
+        validator.validate_dec021_authority(
+            tmp_path,
+            mutated_config,
+            mutated_registries,
+        )
+    )
+    assert "DEC021_A1_SCOPE" in codes
+    assert "DEC021_A1_POLICY" in codes
+    assert "DEC021_ROOT_POLICY" in codes
+    assert "DEC021_DATA_ROLE" in codes
+
+
 def test_decision_log_requires_all_ids_and_historical_m0_decision(validator, repo_root):
     decision_log = validator._load_yaml(repo_root, validator.DECISION_LOG_PATH)
     assert validator.validate_decision_log(decision_log) == []

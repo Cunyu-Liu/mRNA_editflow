@@ -4,7 +4,7 @@
   "contract_path": "docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md",
   "initial_contract_sha256": "d1c031aecdec710495f6861b380785cccd64663ac4bd97b4f479d6fdf372ea07",
   "contract_sha256": "cbac4c3dcba8f1b8df95d8edad52d19e3c126d1c865d0cc423537c754cc90982",
-  "active_amendment_decision_ids": ["V3-DEC-017", "V3-DEC-018", "V3-DEC-019", "V3-DEC-020"],
+  "active_amendment_decision_ids": ["V3-DEC-017", "V3-DEC-018", "V3-DEC-019", "V3-DEC-020", "V3-DEC-021"],
   "files": [
     {
       "path": "docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md",
@@ -14,7 +14,7 @@
     {
       "path": "configs/route_a_v3.yaml",
       "role": "EXECUTABLE_CONTRACT",
-      "sha256": "c908ac57b7c9667398f616a0ccf7101b41451b80bf169e768131844d3b63a678"
+      "sha256": "c9d685d6d300f0bcb5287401ce70ead3fedee940653d843290c94e3e3060b58f"
     },
     {
       "path": "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec019.yaml",
@@ -27,14 +27,19 @@
       "sha256": "0cfbe6e35c2c7f3b19756b8aee41dc91b2a8f05b249a5b6e9cacf90185c56026"
     },
     {
+      "path": "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec021.yaml",
+      "role": "DEC021_APPEND_ONLY_AUTHORITY_AMENDMENT",
+      "sha256": "2a7b05e40434398b1d39396280ca019f48164fbb70b5b6058123bc653c400d3d"
+    },
+    {
       "path": "configs/route_a_v3_a1_qualification.json",
       "role": "A1_QUALIFICATION_ROOT_PROTOCOL",
-      "sha256": "ac1ed9e78bf88d916f5599e3a2e75e79df1504c16ba108a12f7e28cfd3da2e20"
+      "sha256": "9344feca31c315ae273487347cc5275cb2433261838ea997035021a907a3cb8a"
     },
     {
       "path": "docs/contracts/supersession_mrna_xeditflow_v1_1_to_route_a_v3.yaml",
       "role": "SUPERSESSION_LINEAGE",
-      "sha256": "d7c0559742a44b4f0b6f8c941e734da52359c2733ba759ec2acd8ca40b07e62d"
+      "sha256": "50b1811f8331c1ed76c69c31f29b55a6a659d37d4591b7711d0b0ae9beec43a0"
     },
     {
       "path": "docs/contracts/history/mrna_v2_readiness_audit_20260807.md",
@@ -54,17 +59,17 @@
     {
       "path": "docs/execution/route_a_v3_data_role_registry.yaml",
       "role": "DATA_ROLE_REGISTRY",
-      "sha256": "d06bfcfb8d265153a44d270c7bc40e5dd462a5e3bdde631d91519c7d7e394852"
+      "sha256": "3579249154309a828f193c18785a9d6d9f4b325780cffbc014c2bf524b5b47d6"
     },
     {
       "path": "docs/execution/route_a_v3_decision_log.yaml",
       "role": "DECISION_AND_AMENDMENT_LOG",
-      "sha256": "1332e789758a11687d3bcbbe95e0a5c7e852694e25ed90563d280006d94caced"
+      "sha256": "874d83156e337cc613b3df9f57bbd10f19a2585ffefbeb3e52d99aca696bc7ac"
     },
     {
       "path": "docs/execution/route_a_v3_a1_interim.yaml",
       "role": "A1_ACTIVE_INTERIM_RECORD",
-      "sha256": "5fcefdffba6178521b1b0765c417f92e34a3396a5a65e1fa831045adf7f9c055"
+      "sha256": "84b1067df43bb4a75b4de9868a5ab92a04286815418c140d9b21bab0e58739fc"
     },
     {
       "path": "docs/execution/route_a_v3_a6_interim.yaml",
@@ -459,18 +464,18 @@
     {
       "path": "tests/route_a_v3/test_a0_integrity_guards.py",
       "role": "A0_AUTHORITY_INTEGRITY_GUARD_TEST",
-      "sha256": "ae9e4440cd544fa8ebf7d5e5452a80e3543ab02f0f2d3bbf3fd95b5d0440dc81"
+      "sha256": "ba6d8ca6ebb569e2094da74f798a07c9a523562f9f633bd43c2f2b2e50bf844e"
     },
     {
       "path": "scripts/route_a_v3/validate_a0_bundle.py",
       "role": "A0_STATIC_AND_SEMANTIC_VALIDATOR",
-      "sha256": "b0389fe3d19626ea62db5ab3dc39f1d998a99c8e1500a2b822139ecf19a14b3c"
+      "sha256": "478f1013bdd1a689728d594ee017c51e70b14c5efcaabf5151ab373e3f3ca36a"
     }
   ],
   "initial_generated_at": "2026-08-10T10:10:05+08:00",
-  "generated_at": "2026-08-13T18:55:01+08:00",
-  "updated_at": "2026-08-13T18:55:01+08:00",
-  "manifest_status": "A6_CPU_EXACT_AND_GILLESPIE_PARTIAL_EVIDENCE_REGISTERED_A6_IN_PROGRESS_L3_NOT_ESTABLISHED_A7_NOT_RUN",
+  "generated_at": "2026-08-13T19:50:01+08:00",
+  "updated_at": "2026-08-13T19:50:01+08:00",
+  "manifest_status": "DEC021_GSE256185_PUBLIC_IDENTIFIER_AND_POOL_GEOMETRY_PREFLIGHT_ONLY_REGISTERED_EVT051_SETTLED_A6_IN_PROGRESS_L3_NOT_ESTABLISHED_A7_NOT_RUN",
   "schema_version": "1.0.0",
   "sealed_contact": false,
   "version": "3.0.0"
