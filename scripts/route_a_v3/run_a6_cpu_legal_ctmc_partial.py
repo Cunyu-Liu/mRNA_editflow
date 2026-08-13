@@ -30,6 +30,8 @@ EXACT_IMPLEMENTATION_PATHS = (CONFIG_REPO_PATH, SCRIPT_REPO_PATH, TEST_REPO_PATH
 PRODUCTION_CONFIG_PATH = Path(__file__).resolve().parents[2] / CONFIG_REPO_PATH
 UNKNOWN = "UNKNOWN_NOT_ASSERTED"
 FROZEN_BASE_COMMIT = "a28bf3c67cf538a8754fde8505635b2ef2c3d68b"
+INITIAL_IMPLEMENTATION_COMMIT = "b5d729a1c75eb756ecf4f06fb8d073f7db394e46"
+INITIAL_BINDING_COMMIT = "edb261f2065eeab601c2464fc669426b6d329b8b"
 GOAL_SHA256 = "cbac4c3dcba8f1b8df95d8edad52d19e3c126d1c865d0cc423537c754cc90982"
 ACTIVE_CONFIG_SHA256 = "c908ac57b7c9667398f616a0ccf7101b41451b80bf169e768131844d3b63a678"
 OUTPUT_NAMES = (
@@ -181,6 +183,16 @@ def validate_static_config(config: Mapping[str, Any]) -> None:
     _expect(authority["active_config_sha256"], ACTIVE_CONFIG_SHA256, label="active config SHA")
     _expect(authority["frozen_base_commit"], FROZEN_BASE_COMMIT, label="frozen base")
     _expect(authority["required_remote"], "origin", label="remote")
+    _expect(
+        authority["prior_implementation_lifecycle"],
+        {
+            "initial_implementation_commit": INITIAL_IMPLEMENTATION_COMMIT,
+            "initial_binding_commit": INITIAL_BINDING_COMMIT,
+            "initial_implementation_exact_changed_paths": list(EXACT_IMPLEMENTATION_PATHS),
+            "initial_binding_exact_changed_paths": [CONFIG_REPO_PATH],
+        },
+        label="prior implementation lifecycle",
+    )
     dependencies = authority["dependency_leaves"]
     expected_dependencies = {
         "configs/route_a_v3_a6_cpu_exact_absorbing_dag_v1.json": "84e9a3f21ac6293faa167eb08eb40e8886bfe43daaa374b2c7613fbc9baecab8",
@@ -637,6 +649,15 @@ def _git_config(repo: Path, commit: str) -> dict[str, Any]:
     return load_json_bytes(_git_bytes(repo, "show", f"{commit}:{CONFIG_REPO_PATH}"), label=f"{commit}:config")
 
 
+def expected_initial_i_config(current: Mapping[str, Any]) -> dict[str, Any]:
+    expected = candidate_i_config(current)
+    authority = expected.get("authority")
+    if not isinstance(authority, dict):
+        raise ConfigError("authority is not an object")
+    authority.pop("prior_implementation_lifecycle", None)
+    return expected
+
+
 def _validate_active_authority(repo: Path, config: Mapping[str, Any]) -> None:
     authority = config["authority"]
     for path_key, sha_key in (("goal_path", "goal_sha256"), ("active_config_path", "active_config_sha256")):
@@ -675,22 +696,39 @@ def validate_production_authority(config: Mapping[str, Any], *, repo_root: Path 
 
     implementation = config["implementation_binding"]["implementation_commit"]
     if _git_text(repo, "rev-parse", f"{head}^") != implementation:
-        raise AuthorityError("binding B is not the direct child of implementation I")
-    if _git_text(repo, "rev-parse", f"{implementation}^") != FROZEN_BASE_COMMIT:
-        raise AuthorityError("implementation I is not the direct child of the frozen base")
+        raise AuthorityError("binding B2 is not the direct child of implementation I2")
+    if _git_text(repo, "rev-parse", f"{implementation}^") != INITIAL_BINDING_COMMIT:
+        raise AuthorityError("implementation I2 is not the direct child of binding B1")
+    if _git_text(repo, "rev-parse", f"{INITIAL_BINDING_COMMIT}^") != INITIAL_IMPLEMENTATION_COMMIT:
+        raise AuthorityError("binding B1 is not the direct child of implementation I1")
+    if _git_text(repo, "rev-parse", f"{INITIAL_IMPLEMENTATION_COMMIT}^") != FROZEN_BASE_COMMIT:
+        raise AuthorityError("implementation I1 is not the direct child of the frozen base")
+    if _changed_paths(repo, INITIAL_IMPLEMENTATION_COMMIT) != sorted(EXACT_IMPLEMENTATION_PATHS):
+        raise AuthorityError("implementation I1 changed-path set is not exact3")
+    if _changed_paths(repo, INITIAL_BINDING_COMMIT) != [CONFIG_REPO_PATH]:
+        raise AuthorityError("binding B1 changed-path set is not config-only")
     if _changed_paths(repo, implementation) != sorted(EXACT_IMPLEMENTATION_PATHS):
-        raise AuthorityError("implementation I changed-path set is not exact3")
+        raise AuthorityError("implementation I2 changed-path set is not exact3")
     if _changed_paths(repo, head) != [CONFIG_REPO_PATH]:
-        raise AuthorityError("binding B changed-path set is not config-only")
+        raise AuthorityError("binding B2 changed-path set is not config-only")
 
+    i1_config = _git_config(repo, INITIAL_IMPLEMENTATION_COMMIT)
+    b1_config = _git_config(repo, INITIAL_BINDING_COMMIT)
     i_config = _git_config(repo, implementation)
     b_config = _git_config(repo, head)
     validate_static_config(i_config)
     validate_static_config(b_config)
+    if i1_config != expected_initial_i_config(i_config):
+        raise AuthorityError("implementation I1 config differs from the frozen pre-repair candidate")
+    if candidate_i_config(b1_config) != i1_config:
+        raise AuthorityError("binding B1 differs from implementation I1 outside four binding scalars")
+    b1_binding = b1_config.get("implementation_binding", {})
+    if b1_binding.get("status") != "BOUND" or b1_binding.get("implementation_commit") != INITIAL_IMPLEMENTATION_COMMIT:
+        raise AuthorityError("binding B1 does not bind implementation I1")
     if _binding_mode(i_config) != "UNKNOWN" or candidate_i_config(b_config) != i_config:
-        raise AuthorityError("I/B config lifecycle differs outside four binding scalars")
+        raise AuthorityError("I2/B2 config lifecycle differs outside four binding scalars")
     if b_config != dict(config) or b_config["implementation_binding"]["implementation_commit"] != implementation:
-        raise AuthorityError("worktree binding config does not name its implementation I")
+        raise AuthorityError("worktree binding config does not name implementation I2")
     if load_config(repo / CONFIG_REPO_PATH) != b_config:
         raise AuthorityError("worktree config differs from binding B")
 
@@ -706,6 +744,20 @@ def validate_production_authority(config: Mapping[str, Any], *, repo_root: Path 
         )
         if any(sha256(payload) != expected for payload in payloads):
             raise AuthorityError(f"bound implementation leaf drift: {path}")
+
+    for path, key in (
+        (SCRIPT_REPO_PATH, "implementation_script_sha256"),
+        (TEST_REPO_PATH, "implementation_test_sha256"),
+    ):
+        expected = b1_binding.get(key)
+        if not isinstance(expected, str) or not SHA256_RE.fullmatch(expected):
+            raise AuthorityError(f"binding B1 lacks a valid initial leaf SHA: {path}")
+        payloads = (
+            _git_bytes(repo, "show", f"{INITIAL_IMPLEMENTATION_COMMIT}:{path}"),
+            _git_bytes(repo, "show", f"{INITIAL_BINDING_COMMIT}:{path}"),
+        )
+        if any(sha256(payload) != expected for payload in payloads):
+            raise AuthorityError(f"initial I1/B1 implementation leaf drift: {path}")
 
     for path, expected in config["authority"]["dependency_leaves"].items():
         payloads = (

@@ -6,10 +6,10 @@
   "run_scope": "SYNTHETIC_NONLEARNED_CPU_GILLESPIE_BASE_RECOVERY",
   "production_python": "/home/cunyuliu/miniconda3/envs/editflow/bin/python",
   "implementation_binding": {
-    "status": "BOUND",
-    "implementation_commit": "b5d729a1c75eb756ecf4f06fb8d073f7db394e46",
-    "implementation_script_sha256": "b598bec73329d53c83aaab45f67101552222617ba8f9fb0957dd1488135958a3",
-    "implementation_test_sha256": "bec64d6f275d82babd6355a32be130b80c5905e22d4bb095cb0fbdacbfde4213"
+    "status": "UNKNOWN_NOT_ASSERTED",
+    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED"
   },
   "authority": {
     "goal_path": "docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md",
@@ -18,6 +18,18 @@
     "active_config_sha256": "c908ac57b7c9667398f616a0ccf7101b41451b80bf169e768131844d3b63a678",
     "required_remote": "origin",
     "frozen_base_commit": "a28bf3c67cf538a8754fde8505635b2ef2c3d68b",
+    "prior_implementation_lifecycle": {
+      "initial_implementation_commit": "b5d729a1c75eb756ecf4f06fb8d073f7db394e46",
+      "initial_binding_commit": "edb261f2065eeab601c2464fc669426b6d329b8b",
+      "initial_implementation_exact_changed_paths": [
+        "configs/route_a_v3_a6_cpu_legal_ctmc_partial_v1.json",
+        "scripts/route_a_v3/run_a6_cpu_legal_ctmc_partial.py",
+        "tests/route_a_v3/test_a6_cpu_legal_ctmc_partial.py"
+      ],
+      "initial_binding_exact_changed_paths": [
+        "configs/route_a_v3_a6_cpu_legal_ctmc_partial_v1.json"
+      ]
+    },
     "dependency_leaves": {
       "configs/route_a_v3_a6_cpu_exact_absorbing_dag_v1.json": "84e9a3f21ac6293faa167eb08eb40e8886bfe43daaa374b2c7613fbc9baecab8",
       "scripts/route_a_v3/run_a6_cpu_exact_absorbing_dag.py": "4cc0e10784c218cf4fa18ede1280cb84e1b7daf2553db4d82e0ee88f71e0f7c8"

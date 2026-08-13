@@ -50,8 +50,10 @@ def passed_suite() -> dict[str, Any]:
 
 def test_static_contract_step_holding_time_alias_and_replay() -> None:
     frozen = config()
-    assert a6._binding_mode(frozen) == "UNKNOWN"
-    a6.validate_static_config(frozen)
+    assert a6._binding_mode(frozen) in {"UNKNOWN", "BOUND"}
+    candidate = a6.candidate_i_config(frozen)
+    assert a6._binding_mode(candidate) == "UNKNOWN"
+    a6.validate_static_config(candidate)
     kernel, kernel_config = a6.load_kernel(REPO_ROOT, frozen)
     case = next(item for item in kernel_config["fixed_cases"] if item["case_id"] == "L2_B2")
     initial = kernel.initial_state(case, kernel_config)
@@ -169,7 +171,7 @@ def test_nonproduction_atomic_exact3_is_aggregate_only(
 
 
 def test_unknown_binding_stops_before_git_output_and_numerics(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
-    frozen = config()
+    frozen = a6.candidate_i_config(config())
     monkeypatch.setattr(a6, "_git_bytes", lambda *_args: (_ for _ in ()).throw(AssertionError("Git must not run")))
     monkeypatch.setattr(
         a6,
@@ -194,6 +196,7 @@ def test_unknown_binding_stops_before_git_output_and_numerics(monkeypatch: pytes
 
 def _fake_git_payloads(repo: Path, frozen: dict[str, Any]) -> dict[tuple[str, ...], bytes]:
     candidate = a6.candidate_i_config(frozen)
+    initial_candidate = a6.expected_initial_i_config(candidate)
     for path in (
         a6.CONFIG_REPO_PATH,
         a6.SCRIPT_REPO_PATH,
@@ -210,6 +213,13 @@ def _fake_git_payloads(repo: Path, frozen: dict[str, Any]) -> dict[tuple[str, ..
             target.write_bytes((REPO_ROOT / path).read_bytes())
     script = (repo / a6.SCRIPT_REPO_PATH).read_bytes()
     test = (repo / a6.TEST_REPO_PATH).read_bytes()
+    initial_bound = copy.deepcopy(initial_candidate)
+    initial_bound["implementation_binding"] = {
+        "status": "BOUND",
+        "implementation_commit": a6.INITIAL_IMPLEMENTATION_COMMIT,
+        "implementation_script_sha256": a6.sha256(script),
+        "implementation_test_sha256": a6.sha256(test),
+    }
     result = {
         ("rev-parse", "--show-toplevel"): f"{repo}\n".encode(),
         ("status", "--porcelain"): b"",
@@ -219,17 +229,31 @@ def _fake_git_payloads(repo: Path, frozen: dict[str, Any]) -> dict[tuple[str, ..
         ("rev-parse", f"refs/remotes/origin/{BRANCH}"): f"{B_COMMIT}\n".encode(),
         ("rev-parse", "--symbolic-full-name", "@{u}"): f"refs/remotes/origin/{BRANCH}\n".encode(),
         ("rev-parse", f"{B_COMMIT}^"): f"{I_COMMIT}\n".encode(),
-        ("rev-parse", f"{I_COMMIT}^"): f"{a6.FROZEN_BASE_COMMIT}\n".encode(),
+        ("rev-parse", f"{I_COMMIT}^"): f"{a6.INITIAL_BINDING_COMMIT}\n".encode(),
+        ("rev-parse", f"{a6.INITIAL_BINDING_COMMIT}^"): f"{a6.INITIAL_IMPLEMENTATION_COMMIT}\n".encode(),
+        ("rev-parse", f"{a6.INITIAL_IMPLEMENTATION_COMMIT}^"): f"{a6.FROZEN_BASE_COMMIT}\n".encode(),
+        ("diff-tree", "--no-commit-id", "--name-only", "-r", a6.INITIAL_IMPLEMENTATION_COMMIT): (
+            "\n".join(a6.EXACT_IMPLEMENTATION_PATHS) + "\n"
+        ).encode(),
+        ("diff-tree", "--no-commit-id", "--name-only", "-r", a6.INITIAL_BINDING_COMMIT): (
+            a6.CONFIG_REPO_PATH + "\n"
+        ).encode(),
         ("diff-tree", "--no-commit-id", "--name-only", "-r", I_COMMIT): (
             "\n".join(a6.EXACT_IMPLEMENTATION_PATHS) + "\n"
         ).encode(),
         ("diff-tree", "--no-commit-id", "--name-only", "-r", B_COMMIT): (a6.CONFIG_REPO_PATH + "\n").encode(),
         ("show", f"{I_COMMIT}:{a6.CONFIG_REPO_PATH}"): a6.json_bytes(candidate),
         ("show", f"{B_COMMIT}:{a6.CONFIG_REPO_PATH}"): a6.json_bytes(frozen),
+        ("show", f"{a6.INITIAL_IMPLEMENTATION_COMMIT}:{a6.CONFIG_REPO_PATH}"): a6.json_bytes(initial_candidate),
+        ("show", f"{a6.INITIAL_BINDING_COMMIT}:{a6.CONFIG_REPO_PATH}"): a6.json_bytes(initial_bound),
         ("show", f"{I_COMMIT}:{a6.SCRIPT_REPO_PATH}"): script,
         ("show", f"{B_COMMIT}:{a6.SCRIPT_REPO_PATH}"): script,
+        ("show", f"{a6.INITIAL_IMPLEMENTATION_COMMIT}:{a6.SCRIPT_REPO_PATH}"): script,
+        ("show", f"{a6.INITIAL_BINDING_COMMIT}:{a6.SCRIPT_REPO_PATH}"): script,
         ("show", f"{I_COMMIT}:{a6.TEST_REPO_PATH}"): test,
         ("show", f"{B_COMMIT}:{a6.TEST_REPO_PATH}"): test,
+        ("show", f"{a6.INITIAL_IMPLEMENTATION_COMMIT}:{a6.TEST_REPO_PATH}"): test,
+        ("show", f"{a6.INITIAL_BINDING_COMMIT}:{a6.TEST_REPO_PATH}"): test,
     }
     for path in frozen["authority"]["dependency_leaves"]:
         payload = (repo / path).read_bytes()
@@ -251,5 +275,5 @@ def test_production_authority_exact_base_i_b_and_dependency_blobs(monkeypatch: p
     assert observed["binding_commit"] == B_COMMIT
 
     payloads[("rev-parse", f"{I_COMMIT}^")] = ("3" * 40 + "\n").encode()
-    with pytest.raises(a6.AuthorityError, match="frozen base"):
+    with pytest.raises(a6.AuthorityError, match="binding B1"):
         a6.validate_production_authority(frozen, repo_root=tmp_path)
