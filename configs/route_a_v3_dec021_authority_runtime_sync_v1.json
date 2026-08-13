@@ -11,7 +11,7 @@
   "event_name": "DEC021_GSE256185_PUBLIC_PREFLIGHT_AUTHORITY_REGISTERED_RUNTIME_GATES_UNCHANGED",
   "sync_type": "APPEND_ONLY_AUTHORITY_ONLY_REGISTRATION_NO_SCIENTIFIC_STATE_CHANGE",
   "implementation_binding": {
-    "binding_scheme": "CONFIG_ONLY_POST_IMPLEMENTATION_BINDING_V1",
+    "binding_scheme": "APPEND_ONLY_I1_EXACT3_THEN_I2_EXACT3_CONFIG_ONLY_B2_V1",
     "status": "UNKNOWN_NOT_ASSERTED",
     "implementation_commit": "UNKNOWN_NOT_ASSERTED",
     "implementation_script_path": "scripts/route_a_v3/dec021_authority_runtime_sync.py",
@@ -32,7 +32,7 @@
     "binding_commit_exact_changed_paths": [
       "configs/route_a_v3_dec021_authority_runtime_sync_v1.json"
     ],
-    "activation_rule": "A is the final exact10 DEC021 authority-and-ledger commit and must be the direct child of 8fedda9a84e6df9706aee1520bf5adee8f58c840. I must be the direct exact3 child of A with the authority commit and all exact10 byte identities frozen while the four implementation-binding scalars remain UNKNOWN_NOT_ASSERTED. B must be the direct config-only child of I and bind only those four scalars. Production requires clean HEAD equal to upstream and origin at B before any prepared or runtime I/O."
+    "activation_rule": "A is the final exact10 DEC021 authority-and-ledger commit and direct child of 8fedda9a84e6df9706aee1520bf5adee8f58c840. Frozen I1 is the direct exact3 child of A. Repair I2 must be the direct exact3 child of I1 and retain the four implementation-binding scalars as UNKNOWN_NOT_ASSERTED. B2 must be the direct config-only child of I2 and bind only those four scalars. Production requires clean HEAD equal to upstream and origin at B2 before any prepared or runtime I/O."
   },
   "repository_authority": {
     "production_repo_root": "/home/cunyuliu/mrna_editflow_goal/worktrees/routea_v3_a1_20260810",
@@ -104,6 +104,20 @@
         "sha256": "ba6d8ca6ebb569e2094da74f798a07c9a523562f9f633bd43c2f2b2e50bf844e"
       }
     ],
+    "predecessor_implementation_i1": {
+      "commit": "2bd38ecf99002bb9583417adb2883375109d2759",
+      "expected_parent": "1ee575799a4b3289f9b7d684b4b31885dde0bd50",
+      "exact_changed_paths": [
+        "configs/route_a_v3_dec021_authority_runtime_sync_v1.json",
+        "scripts/route_a_v3/dec021_authority_runtime_sync.py",
+        "tests/route_a_v3/test_dec021_authority_runtime_sync.py"
+      ],
+      "blob_sha256_by_path": {
+        "configs/route_a_v3_dec021_authority_runtime_sync_v1.json": "00932333233a6a2e88c240b3c0e3a73a0398bca0b125b7af6efde38d0cdf7330",
+        "scripts/route_a_v3/dec021_authority_runtime_sync.py": "9728d555b799b6b9d6aabfb136693d256779493deceebcd536f9b6a02eb4e3be",
+        "tests/route_a_v3/test_dec021_authority_runtime_sync.py": "c7e01030b930b4afbd63b7c47fce3fee812fbecbc15d16b76938aa34011ba21e"
+      }
+    },
     "implementation_exact_changed_paths": [
       "configs/route_a_v3_dec021_authority_runtime_sync_v1.json",
       "scripts/route_a_v3/dec021_authority_runtime_sync.py",

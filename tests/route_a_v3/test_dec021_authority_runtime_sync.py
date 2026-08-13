@@ -32,6 +32,13 @@ def _assert_disk_lifecycle(
     assert RUNTIME_SYNC._authority_binding_state(config["repository_authority"]) == (
         "BOUND"
     )
+    i1 = config["repository_authority"]["predecessor_implementation_i1"]
+    assert i1 == {
+        "commit": RUNTIME_SYNC.I1_COMMIT,
+        "expected_parent": config["repository_authority"]["authority_commit"],
+        "exact_changed_paths": RUNTIME_SYNC.IMPLEMENTATION_PATHS,
+        "blob_sha256_by_path": RUNTIME_SYNC.I1_BLOB_SHA256_BY_PATH,
+    }
     binding = config["implementation_binding"]
     assert binding["implementation_commit_exact_changed_paths"] == (
         RUNTIME_SYNC.IMPLEMENTATION_PATHS
@@ -54,7 +61,7 @@ def _assert_disk_lifecycle(
     assert hashlib.sha256(test_path.read_bytes()).hexdigest() == (
         binding["implementation_test_sha256"]
     )
-    i_config = RUNTIME_SYNC.expected_unknown_i_config(config)
+    i_config = RUNTIME_SYNC.expected_unknown_i2_config(config)
     RUNTIME_SYNC.validate_static_config(i_config)
     assert [
         i_config["implementation_binding"][field]
@@ -73,7 +80,7 @@ def _assert_disk_lifecycle(
 
 
 def _bound_config() -> dict[str, Any]:
-    config = copy.deepcopy(_disk_config())
+    config = _unknown_config()
     config["implementation_binding"].update(
         {
             "status": RUNTIME_SYNC.BOUND,
@@ -82,6 +89,12 @@ def _bound_config() -> dict[str, Any]:
             "implementation_test_sha256": "4" * 64,
         }
     )
+    RUNTIME_SYNC.validate_static_config(config)
+    return config
+
+
+def _unknown_config() -> dict[str, Any]:
+    config = RUNTIME_SYNC.expected_unknown_i2_config(copy.deepcopy(_disk_config()))
     RUNTIME_SYNC.validate_static_config(config)
     return config
 
@@ -223,9 +236,13 @@ def _install_fake_repository(
     config: dict[str, Any],
     *,
     drift_authority_paths: bool = False,
+    drift_i1_blob: bool = False,
 ) -> bytes:
     authority_commit = config["repository_authority"]["authority_commit"]
-    implementation_commit = "2" * 40
+    i1_commit = config["repository_authority"]["predecessor_implementation_i1"][
+        "commit"
+    ]
+    implementation_commit = "6" * 40
     binding_commit = "b" * 40
     script_payload = b"DEC021 authority runtime sync producer I\n"
     test_payload = b"DEC021 authority runtime sync focused test I\n"
@@ -241,7 +258,7 @@ def _install_fake_repository(
     RUNTIME_SYNC.validate_static_config(config)
     config_payload = RUNTIME_SYNC.json_bytes(config)
     i_payload = RUNTIME_SYNC.json_bytes(
-        RUNTIME_SYNC.expected_unknown_i_config(config)
+        RUNTIME_SYNC.expected_unknown_i2_config(config)
     )
 
     authority_payloads: dict[str, bytes] = {}
@@ -251,6 +268,14 @@ def _install_fake_repository(
         payload = (seed * (item["bytes"] // len(seed) + 1))[: item["bytes"]]
         authority_payloads[item["path"]] = payload
         digest_overrides[payload] = item["sha256"]
+    i1_payloads = {
+        relative: f"frozen I1 blob {index} for {relative}\n".encode()
+        for index, relative in enumerate(RUNTIME_SYNC.IMPLEMENTATION_PATHS)
+    }
+    for relative, payload in i1_payloads.items():
+        digest_overrides[payload] = RUNTIME_SYNC.I1_BLOB_SHA256_BY_PATH[relative]
+    if drift_i1_blob:
+        i1_payloads[RUNTIME_SYNC.CONFIG_REPO_PATH] += b"drift"
     real_sha256 = RUNTIME_SYNC.sha256
 
     def fake_sha256(payload: bytes) -> str:
@@ -258,6 +283,7 @@ def _install_fake_repository(
 
     changed = {
         authority_commit: list(RUNTIME_SYNC.AUTHORITY_PATHS),
+        i1_commit: list(RUNTIME_SYNC.IMPLEMENTATION_PATHS),
         implementation_commit: list(RUNTIME_SYNC.IMPLEMENTATION_PATHS),
         binding_commit: [RUNTIME_SYNC.CONFIG_REPO_PATH],
     }
@@ -271,6 +297,10 @@ def _install_fake_repository(
         **{
             (binding_commit, relative): payload
             for relative, payload in authority_payloads.items()
+        },
+        **{
+            (i1_commit, relative): payload
+            for relative, payload in i1_payloads.items()
         },
         (implementation_commit, RUNTIME_SYNC.CONFIG_REPO_PATH): i_payload,
         (implementation_commit, RUNTIME_SYNC.SCRIPT_REPO_PATH): script_payload,
@@ -298,6 +328,8 @@ def _install_fake_repository(
         if arguments == ("rev-parse", f"{binding_commit}^"):
             return f"{implementation_commit}\n".encode()
         if arguments == ("rev-parse", f"{implementation_commit}^"):
+            return f"{i1_commit}\n".encode()
+        if arguments == ("rev-parse", f"{i1_commit}^"):
             return f"{authority_commit}\n".encode()
         if arguments == ("rev-parse", f"{authority_commit}^"):
             return f"{RUNTIME_SYNC.AUTHORITY_PARENT}\n".encode()
@@ -352,8 +384,8 @@ def test_disk_config_is_strict_real_i_or_b_with_exact10_authority_bound() -> Non
 def test_synthetic_bound_disk_config_hashes_and_normalises_to_i(
     tmp_path: Path,
 ) -> None:
-    script_payload = b"DEC021 runtime implementation exact3 I\n"
-    test_payload = b"DEC021 runtime focused test exact3 I\n"
+    script_payload = b"DEC021 runtime implementation exact3 I2\n"
+    test_payload = b"DEC021 runtime focused test exact3 I2\n"
     script_path = tmp_path / "runtime_sync.py"
     test_path = tmp_path / "test_runtime_sync.py"
     config_path = tmp_path / CONFIG_PATH.name
@@ -378,17 +410,17 @@ def test_synthetic_bound_disk_config_hashes_and_normalises_to_i(
 
 
 def test_partial_implementation_or_authority_binding_is_rejected() -> None:
-    config = _disk_config()
+    config = _unknown_config()
     config["implementation_binding"]["status"] = RUNTIME_SYNC.BOUND
     with pytest.raises(RUNTIME_SYNC.BindingError, match="BOUND implementation"):
         RUNTIME_SYNC.validate_static_config(config)
 
-    config = _disk_config()
+    config = _unknown_config()
     config["implementation_binding"]["implementation_commit"] = "2" * 40
     with pytest.raises(RUNTIME_SYNC.BindingError, match="partially known"):
         RUNTIME_SYNC.validate_static_config(config)
 
-    config = _disk_config()
+    config = _unknown_config()
     config["repository_authority"]["authority_files"][0]["sha256"] = (
         RUNTIME_SYNC.UNKNOWN
     )
@@ -412,18 +444,21 @@ def test_unknown_exact3_i_stops_before_git_runtime_or_prepared_io(
         RUNTIME_SYNC._context(
             CONFIG_PATH,
             production=False,
-            config_override=_disk_config(),
+            config_override=_unknown_config(),
         )
     assert calls == []
 
 
-def test_repository_a_exact10_i_exact3_b_config_only_is_audited(
+def test_repository_a_i1_i2_b2_lifecycle_is_audited(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     config = _bound_config()
     payload = _install_fake_repository(monkeypatch, config)
     audit = RUNTIME_SYNC.audit_production_repository_authority(config, payload)
-    assert audit["status"] == "PASS_EXACT10_A_EXACT3_I_CONFIG_ONLY_B"
+    assert audit["status"] == (
+        "PASS_EXACT10_A_I1_EXACT3_I2_EXACT3_CONFIG_ONLY_B2"
+    )
+    assert audit["predecessor_implementation_i1_commit"] == RUNTIME_SYNC.I1_COMMIT
     assert audit["authority_blob_count"] == 10
     assert audit["worktree_and_index_clean"] is True
 
@@ -436,6 +471,15 @@ def test_repository_authority_path_drift_is_rejected(
         monkeypatch, config, drift_authority_paths=True
     )
     with pytest.raises(RUNTIME_SYNC.RuntimeSyncError, match="A exact10 drift"):
+        RUNTIME_SYNC.audit_production_repository_authority(config, payload)
+
+
+def test_repository_i1_blob_drift_is_rejected(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    config = _bound_config()
+    payload = _install_fake_repository(monkeypatch, config, drift_i1_blob=True)
+    with pytest.raises(RUNTIME_SYNC.RuntimeSyncError, match="I1 blob identity"):
         RUNTIME_SYNC.audit_production_repository_authority(config, payload)
 
 

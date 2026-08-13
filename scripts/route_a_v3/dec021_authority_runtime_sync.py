@@ -40,6 +40,7 @@ PRODUCTION_REPO_ROOT = Path(
 )
 BRANCH = "routea-v3-a1-20260810"
 AUTHORITY_PARENT = "8fedda9a84e6df9706aee1520bf5adee8f58c840"
+I1_COMMIT = "2bd38ecf99002bb9583417adb2883375109d2759"
 HEX40 = re.compile(r"^[0-9a-f]{40}$")
 HEX64 = re.compile(r"^[0-9a-f]{64}$")
 FaultInjector = Callable[[str], None]
@@ -56,6 +57,11 @@ AUTHORITY_PATHS = [
     "scripts/route_a_v3/validate_a0_bundle.py",
     "tests/route_a_v3/test_a0_integrity_guards.py",
 ]
+I1_BLOB_SHA256_BY_PATH = {
+    CONFIG_REPO_PATH: "00932333233a6a2e88c240b3c0e3a73a0398bca0b125b7af6efde38d0cdf7330",
+    SCRIPT_REPO_PATH: "9728d555b799b6b9d6aabfb136693d256779493deceebcd536f9b6a02eb4e3be",
+    TEST_REPO_PATH: "c7e01030b930b4afbd63b7c47fce3fee812fbecbc15d16b76938aa34011ba21e",
+}
 ACTIVE_DECISION_IDS = [
     "V3-DEC-017",
     "V3-DEC-018",
@@ -462,7 +468,7 @@ def validate_static_config(config: dict[str, Any]) -> None:
     )
     _expect(
         binding["binding_scheme"],
-        "CONFIG_ONLY_POST_IMPLEMENTATION_BINDING_V1",
+        "APPEND_ONLY_I1_EXACT3_THEN_I2_EXACT3_CONFIG_ONLY_B2_V1",
         label="binding scheme",
     )
     _expect(binding["implementation_script_path"], SCRIPT_REPO_PATH, label="script path")
@@ -494,6 +500,7 @@ def validate_static_config(config: dict[str, Any]) -> None:
             "authority_commit",
             "authority_exact_changed_paths",
             "authority_files",
+            "predecessor_implementation_i1",
             "implementation_exact_changed_paths",
             "binding_exact_changed_paths",
         },
@@ -511,6 +518,24 @@ def validate_static_config(config: dict[str, Any]) -> None:
         [item.get("path") for item in authority["authority_files"]],
         AUTHORITY_PATHS,
         label="A file order",
+    )
+    i1 = _expect_keys(
+        authority["predecessor_implementation_i1"],
+        {
+            "commit",
+            "expected_parent",
+            "exact_changed_paths",
+            "blob_sha256_by_path",
+        },
+        label="predecessor implementation I1",
+    )
+    _expect(i1["commit"], I1_COMMIT, label="I1 commit")
+    _expect(i1["expected_parent"], authority["authority_commit"], label="I1 parent/A")
+    _expect(i1["exact_changed_paths"], IMPLEMENTATION_PATHS, label="I1 exact3")
+    _expect(
+        i1["blob_sha256_by_path"],
+        I1_BLOB_SHA256_BY_PATH,
+        label="I1 exact3 blob identities",
     )
     _expect(
         authority["implementation_exact_changed_paths"],
@@ -562,7 +587,7 @@ def load_bound_config(config_path: Path = PRODUCTION_CONFIG_PATH) -> dict[str, A
     return load_config(config_path, require_bound=True)
 
 
-def expected_unknown_i_config(bound_config: Mapping[str, Any]) -> dict[str, Any]:
+def expected_unknown_i2_config(bound_config: Mapping[str, Any]) -> dict[str, Any]:
     result = copy.deepcopy(dict(bound_config))
     for field in UNKNOWN_BINDING_FIELDS:
         result["implementation_binding"][field] = UNKNOWN
@@ -610,7 +635,7 @@ def _read_repo_file(repo_root: Path, relative_path: str) -> bytes:
 def audit_production_repository_authority(
     config: dict[str, Any], config_payload: bytes
 ) -> dict[str, Any]:
-    """Prove exact10 A -> exact3 I -> config-only B before runtime I/O."""
+    """Prove exact10 A -> exact3 I1 -> exact3 I2 -> config-only B2."""
 
     validate_static_config(config)
     if _implementation_binding_state(config["implementation_binding"]) != "BOUND":
@@ -623,7 +648,8 @@ def audit_production_repository_authority(
     repo_root = Path(authority["production_repo_root"])
     branch = authority["branch"]
     authority_commit = authority["authority_commit"]
-    implementation_commit = binding["implementation_commit"]
+    i1_commit = authority["predecessor_implementation_i1"]["commit"]
+    i2_commit = binding["implementation_commit"]
 
     head = _run_git(repo_root, "rev-parse", "HEAD").decode().strip()
     upstream = _run_git(repo_root, "rev-parse", "@{upstream}").decode().strip()
@@ -652,15 +678,20 @@ def audit_production_repository_authority(
 
     _expect(
         _run_git(repo_root, "rev-parse", f"{head}^").decode().strip(),
-        implementation_commit,
-        label="B parent/I",
+        i2_commit,
+        label="B2 parent/I2",
     )
     _expect(
-        _run_git(repo_root, "rev-parse", f"{implementation_commit}^")
+        _run_git(repo_root, "rev-parse", f"{i2_commit}^")
         .decode()
         .strip(),
+        i1_commit,
+        label="I2 parent/I1",
+    )
+    _expect(
+        _run_git(repo_root, "rev-parse", f"{i1_commit}^").decode().strip(),
         authority_commit,
-        label="I parent/A",
+        label="I1 parent/A",
     )
     _expect(
         _run_git(repo_root, "rev-parse", f"{authority_commit}^").decode().strip(),
@@ -669,11 +700,23 @@ def audit_production_repository_authority(
     )
     _expect(_changed_paths(repo_root, authority_commit), sorted(AUTHORITY_PATHS), label="A exact10")
     _expect(
-        _changed_paths(repo_root, implementation_commit),
+        _changed_paths(repo_root, i1_commit),
         sorted(IMPLEMENTATION_PATHS),
-        label="I exact3",
+        label="I1 exact3",
     )
-    _expect(_changed_paths(repo_root, head), [CONFIG_REPO_PATH], label="B config-only")
+    _expect(
+        _changed_paths(repo_root, i2_commit),
+        sorted(IMPLEMENTATION_PATHS),
+        label="I2 exact3",
+    )
+    _expect(_changed_paths(repo_root, head), [CONFIG_REPO_PATH], label="B2 config-only")
+
+    for relative, expected_sha256 in I1_BLOB_SHA256_BY_PATH.items():
+        _expect(
+            sha256(_git_blob(repo_root, i1_commit, relative)),
+            expected_sha256,
+            label=f"I1 blob identity {relative}",
+        )
 
     for item in authority["authority_files"]:
         relative = item["path"]
@@ -681,36 +724,41 @@ def audit_production_repository_authority(
         if len(a_blob) != item["bytes"] or sha256(a_blob) != item["sha256"]:
             raise AuthorityError("authority exact10 blob identity differs")
         if _git_blob(repo_root, head, relative) != a_blob:
-            raise AuthorityError("authority exact10 blob did not persist through I/B")
+            raise AuthorityError("authority exact10 blob did not persist through I1/I2/B2")
         if _read_repo_file(repo_root, relative) != a_blob:
             raise AuthorityError("working authority file differs from bound A")
 
     i_config = load_json(
-        _git_blob(repo_root, implementation_commit, CONFIG_REPO_PATH),
-        label="I config",
+        _git_blob(repo_root, i2_commit, CONFIG_REPO_PATH),
+        label="I2 config",
     )
-    _expect(i_config, expected_unknown_i_config(config), label="I unknown config")
-    script_blob = _git_blob(repo_root, implementation_commit, SCRIPT_REPO_PATH)
-    test_blob = _git_blob(repo_root, implementation_commit, TEST_REPO_PATH)
+    _expect(i_config, expected_unknown_i2_config(config), label="I2 unknown config")
+    script_blob = _git_blob(repo_root, i2_commit, SCRIPT_REPO_PATH)
+    test_blob = _git_blob(repo_root, i2_commit, TEST_REPO_PATH)
     _expect(
         sha256(script_blob),
         binding["implementation_script_sha256"],
-        label="I script SHA-256",
+        label="I2 script SHA-256",
     )
     _expect(
         sha256(test_blob),
         binding["implementation_test_sha256"],
-        label="I test SHA-256",
+        label="I2 test SHA-256",
     )
-    _expect(_git_blob(repo_root, head, CONFIG_REPO_PATH), config_payload, label="B config blob")
+    _expect(
+        _git_blob(repo_root, head, CONFIG_REPO_PATH),
+        config_payload,
+        label="B2 config blob",
+    )
     _expect(_read_repo_file(repo_root, CONFIG_REPO_PATH), config_payload, label="working config")
     _expect(_read_repo_file(repo_root, SCRIPT_REPO_PATH), script_blob, label="working script")
     _expect(_read_repo_file(repo_root, TEST_REPO_PATH), test_blob, label="working test")
 
     return {
-        "status": "PASS_EXACT10_A_EXACT3_I_CONFIG_ONLY_B",
+        "status": "PASS_EXACT10_A_I1_EXACT3_I2_EXACT3_CONFIG_ONLY_B2",
         "authority_commit": authority_commit,
-        "implementation_commit": implementation_commit,
+        "predecessor_implementation_i1_commit": i1_commit,
+        "implementation_commit": i2_commit,
         "binding_commit": head,
         "head_commit": head,
         "upstream_head_commit": upstream,
@@ -1045,6 +1093,9 @@ def build_successors(
     audit = authority_audit or {
         "status": "SYNTHETIC_FIXTURE_NOT_PRODUCTION",
         "authority_commit": config["repository_authority"]["authority_commit"],
+        "predecessor_implementation_i1_commit": config["repository_authority"][
+            "predecessor_implementation_i1"
+        ]["commit"],
         "implementation_commit": config["implementation_binding"][
             "implementation_commit"
         ],
