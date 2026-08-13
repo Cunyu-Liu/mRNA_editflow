@@ -38,7 +38,7 @@ authority:
   run_id: A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5
   run_root: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5
   data_role_authority_remains: docs/execution/route_a_v3_data_role_registry.yaml
-  this_record_changes_dataset_qualification: false
+  this_record_changes_dataset_qualification: true
 
 scope:
   ordinary_public_data_only: true
@@ -54,7 +54,7 @@ scope:
     - GSE207584
   absolute_auxiliary_dataset_ids: [GSE145046]
   true_a2_recovery_candidate_dataset_ids: [GSE114002]
-  scheme_a_changes_qualified_counts: false
+  scheme_a_changes_qualified_counts: true
   excluded_dataset_ids: [GSE246381]
   legacy_canonical_purpose: GAP_INVENTORY_ONLY
   metadata_only_qualification_allowed: false
@@ -73,9 +73,9 @@ gate_snapshot:
   decision: BLOCKED_PENDING_PUBLIC_EVIDENCE
   evidence_status: BLOCKED_PENDING_PUBLIC_EVIDENCE
   scientific_claim_status: NOT_ESTABLISHED
-  qualified_independent_ordinary_studies: 0
+  qualified_independent_ordinary_studies: 1
   required_independent_ordinary_studies: 3
-  qualified_a1_studies: 0
+  qualified_a1_studies: 1
   required_a1_studies: 2
   qualified_a2_dense_studies: 0
   required_a2_dense_studies: 1
@@ -188,7 +188,7 @@ dec020_current_disposition:
   authority_only_not_study_qualification: true
   dataset_id: GSE200304
   selected_route: SCRATCH_ONLY_NO_FOUNDATION_NO_EXTERNAL_LEARNED_INPUTS
-  selected_route_status: FROZEN_AUTHORIZED_NOT_YET_ADJUDICATED
+  selected_route_status: PASS_DEC020_SCRATCH_ROUTE_SCOPED_REPORTED_ENDPOINT_A1_QUALIFIED
   retained_route: FOUNDATION_CHECKPOINT
   retained_route_status: RETAINED_FAIL_CURRENT_PROTOCOL
   route_gate: MODEL_INPUT_ROUTE_AND_ROUTE_CONDITIONAL_EXPOSURE_CLOSED
@@ -210,33 +210,44 @@ dec020_current_disposition:
   existing_license_and_redistribution_rights_gate_status: PASS
   rights_gate_reopened_by_dec020: false
   current_qualified_counts:
-    ordinary: 0
-    a1: 0
+    ordinary: 1
+    a1: 1
     true_a2: 0
-    canonical_records: 0
-  qualified: false
+    canonical_records: 6547
+  qualified: true
+  canonical_materialization_qualification_eligible: true
   canonical_materialization_execution_authorized: false
   private_payload_access_allowed: false
+  row_level_payload_read_count: 0
+  private_payload_read_count: 0
+  sealed_payload_read_count: 0
   training_allowed: false
   gpu_work_allowed: false
   model_selection_allowed: false
   next_phase_authorized: false
   scientific_claim_status: NOT_ESTABLISHED
-  latest_settled_runtime_event_id: A1-EVT-049
+  latest_settled_runtime_event_id: A1-EVT-050
   authority_runtime_sync:
-    predecessor_event_id: A1-EVT-049
+    predecessor_event_id: A1-EVT-050
     next_event_id: PENDING_FRESH_RUNTIME_EVENT_ID
     next_event_id_preallocated: false
-    status: PENDING_FRESH_EVENT_AFTER_SETTLED_EVT_049
+    status: PENDING_FRESH_EVENT_AFTER_SETTLED_EVT_050
   future_v4_successor_registration:
-    lifecycle_status: DEFERRED_TO_POST_AUTHORITY_IMPLEMENTATION_COMMIT_I
+    lifecycle_status: ADJUDICATED_POST_IMPLEMENTATION_COMMIT_I_BOUND_PRODUCTION
     expected_static_leaf_count: 3
     expected_static_leaf_roles: [CONFIG, SCRIPT, FOCUSED_TEST]
-    registered_static_leaf_count: 0
-    registered_in_static_manifest: false
-    leaf_paths: []
-    leaf_sha256: []
-    implementation_commit: UNKNOWN_NOT_ASSERTED
+    registered_static_leaf_count: 3
+    registered_in_static_manifest: true
+    leaf_paths:
+      - configs/route_a_v3_gse200304_dec020_reported_endpoint_a1_activation_v4.json
+      - scripts/route_a_v3/adjudicate_gse200304_dec020_reported_endpoint_a1_v4.py
+      - tests/route_a_v3/test_adjudicate_gse200304_dec020_reported_endpoint_a1_v4.py
+    leaf_sha256:
+      - de0f7f4fbf8194d112e185806a6e0a19ae006714c5f1d2786629c9c2b1c85869
+      - 744b5cb10633bf7ca6d1e0d723f7104fe94b1ff725a1f9b9884b9c7e120d7b16
+      - 298304c19c3faa6103221913cb8b30e25fd56d3b55eb65ea04f2e8d82f7c3954
+    implementation_commit: 89618c2aa8aa383286de24b6363849f9743f1685
+    binding_commit: 0eab96955764998f6cc767dbe9754091f9becd83
     may_execute: false
     may_adjudicate: false
 
@@ -2097,6 +2108,70 @@ artifact_lineage:
       - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_DEC019_REPORTED_ENDPOINT_A1_ADJUDICATION_V3_GROUP_SPLIT_POWER_PASS_D6/PUBLICATION_COMMIT.json
         bytes: 1055
         sha256: c96530cf37ff0eed803adf24bfde6e6db0058ddf8264c63acf1ff95700a32ca4
+  gse200304_dec020_scratch_route_reported_endpoint_a1_adjudication_v4:
+    path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_DEC020_SCRATCH_ROUTE_A1_ADJUDICATION_V4_20260813T143426P0800
+    dataset_id: GSE200304
+    decision_id: V3-DEC-020
+    status: PASS_DEC020_SCRATCH_ROUTE_SCOPED_REPORTED_ENDPOINT_A1_QUALIFIED
+    publication_state: COMMITTED_EXACT
+    aggregate_only: true
+    historical_predecessor_adjudication_lineage_id: gse200304_dec019_reported_endpoint_a1_adjudication_v3_group_split_power_pass_d6
+    input_gate_count: 7
+    pass_slot_ids: [0, 1, 2, 3, 4, 5, 6]
+    input_status_counts:
+      PASS: 7
+    blocker_count: 0
+    blockers: []
+    ordinary_study_contribution: 1
+    a1_study_contribution: 1
+    true_a2_study_contribution: 0
+    positive_input_canonical_record_count: 6547
+    canonical_record_count: 6547
+    positive_input_fact_is_not_final_canonical_materialization: true
+    qualified: true
+    independent_reproduction_established: false
+    canonical_materialization_qualification_eligible: true
+    canonical_materialization_allowed: false
+    training_allowed: false
+    model_selection_allowed: false
+    next_phase_authorized: false
+    materialization_execution_authorized: false
+    foundation_route_status: RETAINED_FAIL_CURRENT_PROTOCOL
+    foundation_checkpoint_evidence_status: UNKNOWN_NOT_ASSERTED
+    private_payload_access_authorized: false
+    row_level_payload_read_count: 0
+    private_payload_read_count: 0
+    sealed_payload_read_count: 0
+    scientific_claim_status: NOT_ESTABLISHED
+    dynamic_config:
+      path: configs/route_a_v3_gse200304_dec020_reported_endpoint_a1_activation_v4.json
+      config_core_sha256: ae51c0682e1e45a062f3e1dcb7ee5d2defb684977591877650d9edcc06827545
+      descriptor_set_sha256: e682e3ed60fef02e894d533b647c4e06b7a58083e3dcce8b0d7b18f0e64cec03
+      exact_full_sha_in_static_manifest: true
+    consumer_lineage:
+      implementation_commit: 89618c2aa8aa383286de24b6363849f9743f1685
+      binding_commit: 0eab96955764998f6cc767dbe9754091f9becd83
+      script_path: scripts/route_a_v3/adjudicate_gse200304_dec020_reported_endpoint_a1_v4.py
+      script_sha256: 744b5cb10633bf7ca6d1e0d723f7104fe94b1ff725a1f9b9884b9c7e120d7b16
+      focused_test_path: tests/route_a_v3/test_adjudicate_gse200304_dec020_reported_endpoint_a1_v4.py
+      focused_test_sha256: 298304c19c3faa6103221913cb8b30e25fd56d3b55eb65ea04f2e8d82f7c3954
+    predecessor_runtime_event_id: A1-EVT-050
+    expected_next_runtime_event_id: PENDING_FRESH_RUNTIME_EVENT_ID
+    runtime_sync_status: PENDING_FRESH_EVENT_AFTER_SETTLED_EVT_050
+    runtime_evidence_payload_read_count: 0
+    files:
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_DEC020_SCRATCH_ROUTE_A1_ADJUDICATION_V4_20260813T143426P0800/ADJUDICATION_REPORT.json
+        bytes: 2812
+        sha256: 37ced466a905f8e71bb06ec55550a36d8c2e1d0ff8f03c6dde839562c1680d99
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_DEC020_SCRATCH_ROUTE_A1_ADJUDICATION_V4_20260813T143426P0800/INPUT_EVIDENCE_AUDIT.json
+        bytes: 2891
+        sha256: 3fc8171d6f69fb27e3a454bf504efacddcddceb99fffe8b47b59c84c554d1d72
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_DEC020_SCRATCH_ROUTE_A1_ADJUDICATION_V4_20260813T143426P0800/SHA256SUMS
+        bytes: 183
+        sha256: c11d227abbf5700c7a9a1b403236e331377f23e20c7192b9effe7bd6428f3fb3
+      - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_DEC020_SCRATCH_ROUTE_A1_ADJUDICATION_V4_20260813T143426P0800/PUBLICATION_COMMIT.json
+        bytes: 1082
+        sha256: 6597863e9eef342e6539fa886d81b373157f8248baacd519d7b0ebc60a3af2ac
   gse200304_dec019_checkpoint_exposure_fail_current_protocol_v1:
     path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE200304_DEC019_CHECKPOINT_EXPOSURE_FAIL_CURRENT_PROTOCOL.json
     bytes: 10391
@@ -2862,6 +2937,26 @@ verification:
   gse232572_qualification_authority_preflight_artifact_registration: PASS
   gse232572_qualification_authority_preflight_three_static_leaf_registration: PASS
   gse232572_qualification_authority_preflight_private_row_excluded: PASS
+  targeted_gse200304_dec020_v4_post_adjudication_ledger_tests:
+    status: PASS
+    scope: EXACT7_PASS_QUALIFIED_TRUE_ORDINARY1_A1_1_A2_0_CANONICAL6547_EVT050_SETTLED_RUNTIME_PENDING
+  gse200304_dec020_v4_static_leaf_registration: PASS
+  gse200304_dec020_v4_dynamic_config_binding: PASS
+  gse200304_dec020_v4_result:
+    status: PASS
+    qualified: true
+    ordinary_study_contribution: 1
+    a1_study_contribution: 1
+    true_a2_study_contribution: 0
+    canonical_record_count: 6547
+    canonical_materialization_qualification_eligible: true
+    canonical_materialization_execution_authorized: false
+    foundation_route_status: RETAINED_FAIL_CURRENT_PROTOCOL
+    foundation_checkpoint_evidence_status: UNKNOWN_NOT_ASSERTED
+    private_payload_access_authorized: false
+    sealed_payload_read_count: 0
+    row_level_payload_read_count: 0
+    scientific_claim_status: NOT_ESTABLISHED
   full_repository_tests:
     status: NOT_RUN
     reason: INTERIM_TARGETED_MODULE_SCOPE
@@ -2897,14 +2992,14 @@ verification:
     reason: FOUR_FILE_APPEND_ONLY_LOW_TO_MEDIUM_RISK_BATCH_SELF_CHECKED_UNDER_GLOBAL_LIGHTWEIGHT_POLICY
   targeted_dec020_authority_registry_tests:
     status: PASS
-    scope: DEC020_EXACT10_AUTHORITY_PLUS_EXACT4_REGISTRY_EVT049_SETTLED_FRESH_EVENT_PENDING_V4_DEFERRED
+    scope: DEC020_EXACT10_AUTHORITY_PLUS_EXACT4_REGISTRY_EXACT3_V4_STATIC_EVT050_SETTLED_FRESH_EVENT_PENDING
   dec020_active_authority_exact10_registration: PASS
-  dec020_v4_static_leaf_registration: DEFERRED_NOT_REGISTERED
+  dec020_v4_static_leaf_registration: PASS
   dec020_runtime_sync_event_id: PENDING_FRESH_RUNTIME_EVENT_ID
 
 initial_generated_at: "2026-08-10T06:30:58+08:00"
-generated_at: "2026-08-13T12:15:00+08:00"
-updated_at: "2026-08-13T12:15:00+08:00"
+generated_at: "2026-08-13T14:40:00+08:00"
+updated_at: "2026-08-13T14:40:00+08:00"
 updated_for_decision_id: V3-DEC-020
 latest_authority_update_id: V3-DEC-020
-latest_evidence_update_id: GSE232572_A1_QUALIFICATION_AUTHORITY_PREFLIGHT_V1
+latest_evidence_update_id: GSE200304_DEC020_SCRATCH_ROUTE_REPORTED_ENDPOINT_A1_ADJUDICATION_V4

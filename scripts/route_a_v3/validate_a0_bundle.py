@@ -41,7 +41,7 @@ DEC020_AMENDMENT_PATH = "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec
 DECISION_LOG_PATH = "docs/execution/route_a_v3_decision_log.yaml"
 REGISTRY_MANIFEST_PATH = "docs/execution/route_a_v3_registry_manifest.json"
 A1_INTERIM_PATH = "docs/execution/route_a_v3_a1_interim.yaml"
-EXPECTED_A1_INTERIM_SHA256 = "615cbb768d819f8acddfb6a5e86a59f9da21c342598caea267bf6ef101efe683"
+EXPECTED_A1_INTERIM_SHA256 = "cd4227db8b72d3835820aa1b967b3a5a5d891c585217a76bceb1ce7d7f090b21"
 DEC020_AUTHORITY_LEDGER_AT = "2026-08-13T12:15:00+08:00"
 DEC020_AUTHORITY_MANIFEST_AT = "2026-08-13T12:15:01+08:00"
 DEC020_AUTHORITY_MANIFEST_STATUS = (
@@ -50,6 +50,23 @@ DEC020_AUTHORITY_MANIFEST_STATUS = (
 )
 DEC020_RUNTIME_SYNC_STATUS = "PENDING_FRESH_EVENT_AFTER_SETTLED_EVT_049"
 DEC020_PENDING_RUNTIME_EVENT_ID = "PENDING_FRESH_RUNTIME_EVENT_ID"
+GSE200304_DEC020_V4_LEDGER_AT = "2026-08-13T14:40:00+08:00"
+GSE200304_DEC020_V4_MANIFEST_AT = "2026-08-13T14:40:01+08:00"
+GSE200304_DEC020_V4_EVIDENCE_UPDATE_ID = "GSE200304_DEC020_SCRATCH_ROUTE_REPORTED_ENDPOINT_A1_ADJUDICATION_V4"
+GSE200304_DEC020_V4_LINEAGE_ID = "gse200304_dec020_scratch_route_reported_endpoint_a1_adjudication_v4"
+GSE200304_DEC020_V4_MANIFEST_STATUS = "A1_GSE200304_DEC020_SCRATCH_ROUTE_V4_QUALIFIED_LEDGER_REGISTERED_EVT050_SETTLED_PENDING_FRESH_RUNTIME_EVENT"
+GSE200304_DEC020_V4_DYNAMIC_CONFIG_PATH = "configs/route_a_v3_gse200304_dec020_reported_endpoint_a1_activation_v4.json"
+GSE200304_DEC020_V4_SCRIPT_PATH = "scripts/route_a_v3/adjudicate_gse200304_dec020_reported_endpoint_a1_v4.py"
+GSE200304_DEC020_V4_TEST_PATH = "tests/route_a_v3/test_adjudicate_gse200304_dec020_reported_endpoint_a1_v4.py"
+GSE200304_DEC020_V4_STATIC_LEAF_SHA256 = {
+    GSE200304_DEC020_V4_DYNAMIC_CONFIG_PATH: "de0f7f4fbf8194d112e185806a6e0a19ae006714c5f1d2786629c9c2b1c85869",
+    GSE200304_DEC020_V4_SCRIPT_PATH: "744b5cb10633bf7ca6d1e0d723f7104fe94b1ff725a1f9b9884b9c7e120d7b16",
+    GSE200304_DEC020_V4_TEST_PATH: "298304c19c3faa6103221913cb8b30e25fd56d3b55eb65ea04f2e8d82f7c3954",
+}
+GSE200304_DEC020_V4_IMPLEMENTATION_COMMIT = "89618c2aa8aa383286de24b6363849f9743f1685"
+GSE200304_DEC020_V4_BINDING_COMMIT = "0eab96955764998f6cc767dbe9754091f9becd83"
+GSE200304_DEC020_V4_CONFIG_CORE_SHA256 = "ae51c0682e1e45a062f3e1dcb7ee5d2defb684977591877650d9edcc06827545"
+GSE200304_DEC020_V4_DESCRIPTOR_SET_SHA256 = "e682e3ed60fef02e894d533b647c4e06b7a58083e3dcce8b0d7b18f0e64cec03"
 DEC020_SCRATCH_ROUTE = "SCRATCH_ONLY_NO_FOUNDATION_NO_EXTERNAL_LEARNED_INPUTS"
 DEC020_FOUNDATION_ROUTE = "FOUNDATION_CHECKPOINT"
 DEC020_ROUTE_GATE = "MODEL_INPUT_ROUTE_AND_ROUTE_CONDITIONAL_EXPOSURE_CLOSED"
@@ -1614,6 +1631,9 @@ EXPECTED_REGISTRY_MANIFEST_PATH_ROLES = (
         GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_TEST_PATH,
         "GSE232572_A1_QUALIFICATION_AUTHORITY_PREFLIGHT_FOCUSED_TEST",
     ),
+    (GSE200304_DEC020_V4_DYNAMIC_CONFIG_PATH, "GSE200304_DEC020_SCRATCH_ROUTE_V4_CONFIG"),
+    (GSE200304_DEC020_V4_SCRIPT_PATH, "GSE200304_DEC020_SCRATCH_ROUTE_V4_ADJUDICATOR"),
+    (GSE200304_DEC020_V4_TEST_PATH, "GSE200304_DEC020_SCRATCH_ROUTE_V4_FOCUSED_TEST"),
     (INTEGRITY_GUARD_TEST_PATH, "A0_AUTHORITY_INTEGRITY_GUARD_TEST"),
     (VALIDATOR_PATH, "A0_STATIC_AND_SEMANTIC_VALIDATOR"),
 )
@@ -1738,6 +1758,7 @@ def required_bundle_paths() -> tuple[str, ...]:
         *GSE232572_PUBLIC_RECOVERY_AUDIT_STATIC_LEAF_SHA256,
         *GSE232572_DEVELOPMENT_V3_MATERIALIZATION_STATIC_LEAF_SHA256,
         *GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_STATIC_LEAF_SHA256,
+        *GSE200304_DEC020_V4_STATIC_LEAF_SHA256,
         INTEGRITY_GUARD_TEST_PATH,
         *REGISTRY_PATHS.values(),
         *(f"{SCHEMA_DIR}/{name}" for name in SCHEMA_FILES),
@@ -2671,10 +2692,10 @@ def validate_registry_manifest(repo_root: Path) -> list[Issue]:
         "contract_sha256": SOURCE_CONTRACT_SHA256,
         "active_amendment_decision_ids": ACTIVE_AMENDMENT_DECISION_IDS,
         "base_commit": "bbb71dcba6f1e1c9cb75a8a6653f1a4fe4a6ca0c",
-        "manifest_status": DEC020_AUTHORITY_MANIFEST_STATUS,
+        "manifest_status": GSE200304_DEC020_V4_MANIFEST_STATUS,
         "initial_generated_at": "2026-08-10T10:10:05+08:00",
-        "generated_at": DEC020_AUTHORITY_MANIFEST_AT,
-        "updated_at": DEC020_AUTHORITY_MANIFEST_AT,
+        "generated_at": GSE200304_DEC020_V4_MANIFEST_AT,
+        "updated_at": GSE200304_DEC020_V4_MANIFEST_AT,
         "sealed_contact": False,
     }
     expected_top_keys = set(expected_static_top) | {"files"}
@@ -2783,23 +2804,15 @@ def validate_registry_manifest(repo_root: Path) -> list[Issue]:
             "dynamic successor configs must be required and core-validated but not exact-hashed "
             f"by the static manifest: {sorted(cyclic_dynamic_paths)!r}",
         )
-    premature_dec020_v4_paths = {
-        relative
-        for relative, entry in by_path.items()
-        if relative != DEC020_AMENDMENT_PATH
-        and (
-            "gse200304_dec020" in relative.lower()
-            or str(entry.get("role", "")).startswith("GSE200304_DEC020_")
-        )
+    observed_v4_paths = {
+        relative for relative in by_path if relative in GSE200304_DEC020_V4_STATIC_LEAF_SHA256
     }
-    if premature_dec020_v4_paths:
+    if observed_v4_paths != set(GSE200304_DEC020_V4_STATIC_LEAF_SHA256):
         _issue(
             issues,
-            "DEC020_V4_PREMATURE_STATIC_REGISTRATION",
+            "DEC020_V4_STATIC_REGISTRATION",
             REGISTRY_MANIFEST_PATH,
-            "DEC020 successor V4 CONFIG/SCRIPT/FOCUSED_TEST leaves are deferred "
-            "to post-authority implementation commit I and must not be registered "
-            f"by authority commit A: {sorted(premature_dec020_v4_paths)!r}",
+            "DEC020 V4 CONFIG/SCRIPT/FOCUSED_TEST leaves must be registered exactly once",
         )
     try:
         goal_hash = sha256_bytes(_read_bytes(repo_root, GOAL_PATH))
@@ -6585,7 +6598,7 @@ def validate_a1_interim_lineage(
             "run_id": "A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5",
             "run_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5",
             "data_role_authority_remains": REGISTRY_PATHS["data"],
-            "this_record_changes_dataset_qualification": False,
+            "this_record_changes_dataset_qualification": True,
         }
         for key, value in expected_authority.items():
             _expect(authority, key, value, path, issues, "A1_INTERIM_AUTHORITY")
@@ -6645,7 +6658,7 @@ def validate_a1_interim_lineage(
             ],
             "absolute_auxiliary_dataset_ids": ["GSE145046"],
             "true_a2_recovery_candidate_dataset_ids": ["GSE114002"],
-            "scheme_a_changes_qualified_counts": False,
+            "scheme_a_changes_qualified_counts": True,
             "excluded_dataset_ids": ["GSE246381"],
             "legacy_canonical_purpose": "GAP_INVENTORY_ONLY",
             "metadata_only_qualification_allowed": False,
@@ -6672,9 +6685,9 @@ def validate_a1_interim_lineage(
             "decision": "BLOCKED_PENDING_PUBLIC_EVIDENCE",
             "evidence_status": "BLOCKED_PENDING_PUBLIC_EVIDENCE",
             "scientific_claim_status": "NOT_ESTABLISHED",
-            "qualified_independent_ordinary_studies": 0,
+            "qualified_independent_ordinary_studies": 1,
             "required_independent_ordinary_studies": 3,
-            "qualified_a1_studies": 0,
+            "qualified_a1_studies": 1,
             "required_a1_studies": 2,
             "qualified_a2_dense_studies": 0,
             "required_a2_dense_studies": 1,
@@ -6837,7 +6850,7 @@ def validate_a1_interim_lineage(
                 "authority_only_not_study_qualification": True,
                 "dataset_id": "GSE200304",
                 "selected_route": DEC020_SCRATCH_ROUTE,
-                "selected_route_status": "FROZEN_AUTHORIZED_NOT_YET_ADJUDICATED",
+                "selected_route_status": "PASS_DEC020_SCRATCH_ROUTE_SCOPED_REPORTED_ENDPOINT_A1_QUALIFIED",
                 "retained_route": DEC020_FOUNDATION_ROUTE,
                 "retained_route_status": "RETAINED_FAIL_CURRENT_PROTOCOL",
                 "route_gate": DEC020_ROUTE_GATE,
@@ -6858,23 +6871,44 @@ def validate_a1_interim_lineage(
                 "full_prior_analytic_use_attestation_completed": False,
                 "existing_license_and_redistribution_rights_gate_status": "PASS",
                 "rights_gate_reopened_by_dec020": False,
-                "current_qualified_counts": DEC020_CURRENT_ZERO_COUNTS,
-                "qualified": False,
+                "current_qualified_counts": {
+                    "ordinary": 1,
+                    "a1": 1,
+                    "true_a2": 0,
+                    "canonical_records": 6547,
+                },
+                "qualified": True,
+                "canonical_materialization_qualification_eligible": True,
                 "canonical_materialization_execution_authorized": False,
                 "private_payload_access_allowed": False,
+                "row_level_payload_read_count": 0,
+                "private_payload_read_count": 0,
+                "sealed_payload_read_count": 0,
                 "training_allowed": False,
                 "gpu_work_allowed": False,
                 "model_selection_allowed": False,
                 "next_phase_authorized": False,
                 "scientific_claim_status": "NOT_ESTABLISHED",
-                "latest_settled_runtime_event_id": "A1-EVT-049",
+                "latest_settled_runtime_event_id": "A1-EVT-050",
                 "authority_runtime_sync": {
-                    "predecessor_event_id": "A1-EVT-049",
+                    "predecessor_event_id": "A1-EVT-050",
                     "next_event_id": DEC020_PENDING_RUNTIME_EVENT_ID,
                     "next_event_id_preallocated": False,
-                    "status": DEC020_RUNTIME_SYNC_STATUS,
+                    "status": "PENDING_FRESH_EVENT_AFTER_SETTLED_EVT_050",
                 },
-                "future_v4_successor_registration": DEC020_FUTURE_V4_REGISTRATION,
+                "future_v4_successor_registration": {
+                    "lifecycle_status": "ADJUDICATED_POST_IMPLEMENTATION_COMMIT_I_BOUND_PRODUCTION",
+                    "expected_static_leaf_count": 3,
+                    "expected_static_leaf_roles": ["CONFIG", "SCRIPT", "FOCUSED_TEST"],
+                    "registered_static_leaf_count": 3,
+                    "registered_in_static_manifest": True,
+                    "leaf_paths": [GSE200304_DEC020_V4_DYNAMIC_CONFIG_PATH, GSE200304_DEC020_V4_SCRIPT_PATH, GSE200304_DEC020_V4_TEST_PATH],
+                    "leaf_sha256": list(GSE200304_DEC020_V4_STATIC_LEAF_SHA256.values()),
+                    "implementation_commit": GSE200304_DEC020_V4_IMPLEMENTATION_COMMIT,
+                    "binding_commit": GSE200304_DEC020_V4_BINDING_COMMIT,
+                    "may_execute": False,
+                    "may_adjudicate": False,
+                },
             },
             path,
             issues,
@@ -6934,6 +6968,7 @@ def validate_a1_interim_lineage(
             GSE200304_DEC019_POWER_LINEAGE_ID,
             GSE200304_DEC019_ONE_BLOCKER_ADJUDICATION_LINEAGE_ID,
             GSE200304_CHECKPOINT_EXPOSURE_FAIL_LINEAGE_ID,
+            GSE200304_DEC020_V4_LINEAGE_ID,
         }
         if set(lineage) != expected_all_lineage_ids:
             _issue(
@@ -8538,6 +8573,59 @@ def validate_a1_interim_lineage(
             },
             "gse200304_published_endpoint_a1_v1": GSE200304_PUBLISHED_ENDPOINT_EXPECTED_RECORD,
         }
+        expected_gse200304_lineage[GSE200304_DEC020_V4_LINEAGE_ID] = {
+            "path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_DEC020_SCRATCH_ROUTE_A1_ADJUDICATION_V4_20260813T143426P0800",
+            "dataset_id": "GSE200304",
+            "decision_id": "V3-DEC-020",
+            "status": "PASS_DEC020_SCRATCH_ROUTE_SCOPED_REPORTED_ENDPOINT_A1_QUALIFIED",
+            "publication_state": "COMMITTED_EXACT",
+            "aggregate_only": True,
+            "historical_predecessor_adjudication_lineage_id": GSE200304_DEC019_ONE_BLOCKER_ADJUDICATION_LINEAGE_ID,
+            "input_gate_count": 7,
+            "pass_slot_ids": [0, 1, 2, 3, 4, 5, 6],
+            "input_status_counts": {"PASS": 7},
+            "blocker_count": 0,
+            "blockers": [],
+            "ordinary_study_contribution": 1,
+            "a1_study_contribution": 1,
+            "true_a2_study_contribution": 0,
+            "positive_input_canonical_record_count": 6547,
+            "canonical_record_count": 6547,
+            "positive_input_fact_is_not_final_canonical_materialization": True,
+            "qualified": True,
+            "independent_reproduction_established": False,
+            "canonical_materialization_qualification_eligible": True,
+            "canonical_materialization_allowed": False,
+            "materialization_execution_authorized": False,
+            "training_allowed": False,
+            "model_selection_allowed": False,
+            "next_phase_authorized": False,
+            "foundation_route_status": "RETAINED_FAIL_CURRENT_PROTOCOL",
+            "foundation_checkpoint_evidence_status": "UNKNOWN_NOT_ASSERTED",
+            "private_payload_access_authorized": False,
+            "row_level_payload_read_count": 0,
+            "private_payload_read_count": 0,
+            "sealed_payload_read_count": 0,
+            "scientific_claim_status": "NOT_ESTABLISHED",
+            "dynamic_config": {
+                "path": GSE200304_DEC020_V4_DYNAMIC_CONFIG_PATH,
+                "config_core_sha256": GSE200304_DEC020_V4_CONFIG_CORE_SHA256,
+                "descriptor_set_sha256": GSE200304_DEC020_V4_DESCRIPTOR_SET_SHA256,
+                "exact_full_sha_in_static_manifest": True,
+            },
+            "consumer_lineage": {
+                "implementation_commit": GSE200304_DEC020_V4_IMPLEMENTATION_COMMIT,
+                "binding_commit": GSE200304_DEC020_V4_BINDING_COMMIT,
+                "script_path": GSE200304_DEC020_V4_SCRIPT_PATH,
+                "script_sha256": GSE200304_DEC020_V4_STATIC_LEAF_SHA256[GSE200304_DEC020_V4_SCRIPT_PATH],
+                "focused_test_path": GSE200304_DEC020_V4_TEST_PATH,
+                "focused_test_sha256": GSE200304_DEC020_V4_STATIC_LEAF_SHA256[GSE200304_DEC020_V4_TEST_PATH],
+            },
+            "predecessor_runtime_event_id": "A1-EVT-050",
+            "expected_next_runtime_event_id": DEC020_PENDING_RUNTIME_EVENT_ID,
+            "runtime_sync_status": "PENDING_FRESH_EVENT_AFTER_SETTLED_EVT_050",
+            "runtime_evidence_payload_read_count": 0,
+        }
         expected_relevant_lineage_ids = set(expected_gse200304_lineage)
         observed_relevant_lineage_ids: set[str] = set()
         for lineage_id, record in lineage.items():
@@ -8625,6 +8713,10 @@ def validate_a1_interim_lineage(
             "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/"
             "GSE200304_DEC019_REPORTED_ENDPOINT_A1_ADJUDICATION_V3_"
             "GROUP_SPLIT_POWER_PASS_D6"
+        )
+        v4_adjudication_root = (
+            "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/"
+            "GSE200304_DEC020_SCRATCH_ROUTE_A1_ADJUDICATION_V4_20260813T143426P0800"
         )
         expected_closed_files = {
             "gse200304_public_asset_bundle": _closed_files(
@@ -8981,6 +9073,15 @@ def validate_a1_interim_lineage(
                         1055,
                         "c96530cf37ff0eed803adf24bfde6e6db0058ddf8264c63acf1ff95700a32ca4",
                     ),
+                ),
+            ),
+            GSE200304_DEC020_V4_LINEAGE_ID: _closed_files(
+                v4_adjudication_root,
+                (
+                    ("ADJUDICATION_REPORT.json", 2812, "37ced466a905f8e71bb06ec55550a36d8c2e1d0ff8f03c6dde839562c1680d99"),
+                    ("INPUT_EVIDENCE_AUDIT.json", 2891, "3fc8171d6f69fb27e3a454bf504efacddcddceb99fffe8b47b59c84c554d1d72"),
+                    ("SHA256SUMS", 183, "c11d227abbf5700c7a9a1b403236e331377f23e20c7192b9effe7bd6428f3fb3"),
+                    ("PUBLICATION_COMMIT.json", 1082, "6597863e9eef342e6539fa886d81b373157f8248baacd519d7b0ebc60a3af2ac"),
                 ),
             ),
         }
@@ -9976,6 +10077,28 @@ def validate_a1_interim_lineage(
                 "gse232572_qualification_authority_preflight_artifact_registration": "PASS",
                 "gse232572_qualification_authority_preflight_three_static_leaf_registration": "PASS",
                 "gse232572_qualification_authority_preflight_private_row_excluded": "PASS",
+                "targeted_gse200304_dec020_v4_post_adjudication_ledger_tests": {
+                    "status": "PASS",
+                    "scope": "EXACT7_PASS_QUALIFIED_TRUE_ORDINARY1_A1_1_A2_0_CANONICAL6547_EVT050_SETTLED_RUNTIME_PENDING",
+                },
+                "gse200304_dec020_v4_static_leaf_registration": "PASS",
+                "gse200304_dec020_v4_dynamic_config_binding": "PASS",
+                "gse200304_dec020_v4_result": {
+                    "status": "PASS",
+                    "qualified": True,
+                    "ordinary_study_contribution": 1,
+                    "a1_study_contribution": 1,
+                    "true_a2_study_contribution": 0,
+                    "canonical_record_count": 6547,
+                    "canonical_materialization_qualification_eligible": True,
+                    "canonical_materialization_execution_authorized": False,
+                    "foundation_route_status": "RETAINED_FAIL_CURRENT_PROTOCOL",
+                    "foundation_checkpoint_evidence_status": "UNKNOWN_NOT_ASSERTED",
+                    "private_payload_access_authorized": False,
+                    "sealed_payload_read_count": 0,
+                    "row_level_payload_read_count": 0,
+                    "scientific_claim_status": "NOT_ESTABLISHED",
+                },
                 "full_repository_tests": {
                     "status": "NOT_RUN",
                     "reason": "INTERIM_TARGETED_MODULE_SCOPE",
@@ -10022,10 +10145,10 @@ def validate_a1_interim_lineage(
                 },
                 "targeted_dec020_authority_registry_tests": {
                     "status": "PASS",
-                    "scope": "DEC020_EXACT10_AUTHORITY_PLUS_EXACT4_REGISTRY_EVT049_SETTLED_FRESH_EVENT_PENDING_V4_DEFERRED",
+                    "scope": "DEC020_EXACT10_AUTHORITY_PLUS_EXACT4_REGISTRY_EXACT3_V4_STATIC_EVT050_SETTLED_FRESH_EVENT_PENDING",
                 },
                 "dec020_active_authority_exact10_registration": "PASS",
-                "dec020_v4_static_leaf_registration": "DEFERRED_NOT_REGISTERED",
+                "dec020_v4_static_leaf_registration": "PASS",
                 "dec020_runtime_sync_event_id": DEC020_PENDING_RUNTIME_EVENT_ID,
             },
             path,
@@ -10039,7 +10162,7 @@ def validate_a1_interim_lineage(
     _expect(
         interim,
         "latest_evidence_update_id",
-        GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_EVIDENCE_UPDATE_ID,
+        GSE200304_DEC020_V4_EVIDENCE_UPDATE_ID,
         path,
         issues,
         "A1_INTERIM_TIME",
@@ -10047,14 +10170,14 @@ def validate_a1_interim_lineage(
     generated = interim.get("generated_at")
     updated = interim.get("updated_at")
     if (
-        generated != DEC020_AUTHORITY_LEDGER_AT
-        or updated != DEC020_AUTHORITY_LEDGER_AT
+        generated != GSE200304_DEC020_V4_LEDGER_AT
+        or updated != GSE200304_DEC020_V4_LEDGER_AT
     ):
         _issue(
             issues,
             "A1_INTERIM_TIME",
             path,
-            "generated_at and updated_at must remain the exact DEC020 authority ledger timestamp",
+            "generated_at and updated_at must remain the exact DEC020 V4 post-adjudication ledger timestamp",
         )
     if generated != updated:
         _issue(issues, "A1_INTERIM_TIME", path, "generated_at and updated_at must identify the same amended record bytes")
@@ -11466,6 +11589,67 @@ def scan_conflict_markers(repo_root: Path) -> list[Issue]:
     return issues
 
 
+def validate_gse200304_dec020_v4_post_adjudication_registration(
+    repo_root: Path,
+) -> list[Issue]:
+    """Bind the DEC-020 V4 implementation and its settled aggregate outcome."""
+
+    issues: list[Issue] = []
+    for relative, expected_sha256 in GSE200304_DEC020_V4_STATIC_LEAF_SHA256.items():
+        try:
+            actual = sha256_bytes(_read_bytes(repo_root, relative))
+        except (FileNotFoundError, ValueError) as exc:
+            _issue(issues, "GSE200304_DEC020_V4_STATIC_LEAF", relative, str(exc))
+        else:
+            if actual != expected_sha256:
+                _issue(issues, "GSE200304_DEC020_V4_STATIC_LEAF", relative, f"current bytes hash {actual} must remain {expected_sha256}")
+
+    try:
+        config = _load_json(repo_root, GSE200304_DEC020_V4_DYNAMIC_CONFIG_PATH)
+        full_sha = sha256_bytes(_read_bytes(repo_root, GSE200304_DEC020_V4_DYNAMIC_CONFIG_PATH))
+    except (FileNotFoundError, ValueError, json.JSONDecodeError) as exc:
+        _issue(issues, "GSE200304_DEC020_V4_CONFIG", GSE200304_DEC020_V4_DYNAMIC_CONFIG_PATH, str(exc))
+        return issues
+    if config.get("dataset_id") != "GSE200304" or config.get("decision_id") != "V3-DEC-020":
+        _issue(issues, "GSE200304_DEC020_V4_CONFIG", GSE200304_DEC020_V4_DYNAMIC_CONFIG_PATH, "dataset_id and decision_id must remain GSE200304/V3-DEC-020")
+    binding = config.get("implementation_binding")
+    expected_binding = {
+        "status": "BOUND",
+        "implementation_commit": GSE200304_DEC020_V4_IMPLEMENTATION_COMMIT,
+        "implementation_script_path": GSE200304_DEC020_V4_SCRIPT_PATH,
+        "implementation_script_sha256": GSE200304_DEC020_V4_STATIC_LEAF_SHA256[GSE200304_DEC020_V4_SCRIPT_PATH],
+        "implementation_test_path": GSE200304_DEC020_V4_TEST_PATH,
+        "implementation_test_sha256": GSE200304_DEC020_V4_STATIC_LEAF_SHA256[GSE200304_DEC020_V4_TEST_PATH],
+        "config_core_sha256": GSE200304_DEC020_V4_CONFIG_CORE_SHA256,
+    }
+    if not isinstance(binding, Mapping):
+        _issue(issues, "GSE200304_DEC020_V4_BINDING", GSE200304_DEC020_V4_DYNAMIC_CONFIG_PATH, "implementation_binding must be a mapping")
+    else:
+        for key, expected in expected_binding.items():
+            _expect(binding, key, expected, GSE200304_DEC020_V4_DYNAMIC_CONFIG_PATH, issues, "GSE200304_DEC020_V4_BINDING")
+    descriptors = config.get("evidence_descriptor_bindings")
+    if not isinstance(descriptors, Mapping):
+        _issue(issues, "GSE200304_DEC020_V4_DESCRIPTORS", GSE200304_DEC020_V4_DYNAMIC_CONFIG_PATH, "evidence_descriptor_bindings must be a mapping")
+    else:
+        _expect(descriptors, "status", "BOUND", GSE200304_DEC020_V4_DYNAMIC_CONFIG_PATH, issues, "GSE200304_DEC020_V4_DESCRIPTORS")
+        _expect(descriptors, "descriptor_set_sha256", GSE200304_DEC020_V4_DESCRIPTOR_SET_SHA256, GSE200304_DEC020_V4_DYNAMIC_CONFIG_PATH, issues, "GSE200304_DEC020_V4_DESCRIPTORS")
+    # The full config is intentionally not a self-referential manifest leaf check.
+    if not full_sha or len(full_sha) != 64:
+        _issue(issues, "GSE200304_DEC020_V4_CONFIG", GSE200304_DEC020_V4_DYNAMIC_CONFIG_PATH, "config full SHA-256 is unavailable")
+    try:
+        manifest = _load_json(repo_root, REGISTRY_MANIFEST_PATH)
+    except (FileNotFoundError, ValueError, json.JSONDecodeError) as exc:
+        _issue(issues, "GSE200304_DEC020_V4_MANIFEST", REGISTRY_MANIFEST_PATH, str(exc))
+    else:
+        entries = manifest.get("files")
+        paths = {entry.get("path") for entry in entries if isinstance(entry, Mapping)} if isinstance(entries, list) else set()
+        if set(GSE200304_DEC020_V4_STATIC_LEAF_SHA256) - paths:
+            _issue(issues, "GSE200304_DEC020_V4_MANIFEST", REGISTRY_MANIFEST_PATH, "V4 static leaves must be registered in the manifest")
+        if GSE200304_DEC020_V4_LINEAGE_ID in paths:
+            _issue(issues, "GSE200304_DEC020_V4_MANIFEST", REGISTRY_MANIFEST_PATH, "runtime lineage IDs are not static manifest paths")
+    return issues
+
+
 def load_bundle_documents(repo_root: Path) -> tuple[Mapping[str, Any], Mapping[str, Any], dict[str, Mapping[str, Any]]]:
     config = _load_yaml(repo_root, CONFIG_PATH)
     supersession = _load_yaml(repo_root, SUPERSESSION_PATH)
@@ -11500,6 +11684,7 @@ def validate_bundle(repo_root: Path) -> list[Issue]:
             repo_root
         )
     )
+    issues.extend(validate_gse200304_dec020_v4_post_adjudication_registration(repo_root))
     issues.extend(validate_python_static_safety(repo_root))
     issues.extend(validate_runner_and_guard_ast(repo_root))
     issues.extend(scan_conflict_markers(repo_root))

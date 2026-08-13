@@ -206,27 +206,33 @@ def test_dec020_authority_commit_registration_is_closed(validator, repo_root):
     assert exact14 - {validator.REGISTRY_MANIFEST_PATH} <= manifest_paths
     assert validator.REGISTRY_MANIFEST_PATH not in manifest_paths
     assert validator.DEC020_AMENDMENT_PATH in manifest_paths
-    assert not any("gse200304_dec020" in path.lower() for path in manifest_paths)
+    assert set(validator.GSE200304_DEC020_V4_STATIC_LEAF_SHA256).issubset(manifest_paths)
 
     interim = validator._load_yaml(repo_root, validator.A1_INTERIM_PATH)
     current = interim["dec020_current_disposition"]
-    assert current["current_qualified_counts"] == validator.DEC020_CURRENT_ZERO_COUNTS
-    assert current["qualified"] is False
+    assert current["current_qualified_counts"] == {
+        "ordinary": 1,
+        "a1": 1,
+        "true_a2": 0,
+        "canonical_records": 6547,
+    }
+    assert current["qualified"] is True
     assert current["canonical_materialization_execution_authorized"] is False
     assert current["training_allowed"] is False
     assert current["model_selection_allowed"] is False
     assert current["next_phase_authorized"] is False
-    assert current["latest_settled_runtime_event_id"] == "A1-EVT-049"
+    assert current["latest_settled_runtime_event_id"] == "A1-EVT-050"
     sync = current["authority_runtime_sync"]
     assert sync == {
-        "predecessor_event_id": "A1-EVT-049",
+        "predecessor_event_id": "A1-EVT-050",
         "next_event_id": validator.DEC020_PENDING_RUNTIME_EVENT_ID,
         "next_event_id_preallocated": False,
-        "status": validator.DEC020_RUNTIME_SYNC_STATUS,
+        "status": "PENDING_FRESH_EVENT_AFTER_SETTLED_EVT_050",
     }
-    assert current["future_v4_successor_registration"] == (
-        validator.DEC020_FUTURE_V4_REGISTRATION
-    )
+    assert current["future_v4_successor_registration"]["registered_in_static_manifest"] is True
+    assert current["future_v4_successor_registration"]["may_execute"] is False
+    assert current["future_v4_successor_registration"]["lifecycle_status"] == "ADJUDICATED_POST_IMPLEMENTATION_COMMIT_I_BOUND_PRODUCTION"
+    assert current["future_v4_successor_registration"]["may_adjudicate"] is False
 
 
 def test_dec020_authority_synchronized_rehash_cannot_fake_route_pass(
@@ -277,7 +283,7 @@ def test_dec020_interim_cannot_preallocate_event_or_unlock_v4(
     assert "A1_INTERIM_DEC020" in codes
 
 
-def test_dec020_manifest_rejects_premature_v4_registration(
+def test_dec020_manifest_rejects_unregistered_v4_path(
     validator,
     repo_root,
     tmp_path,
@@ -297,7 +303,7 @@ def test_dec020_manifest_rejects_premature_v4_registration(
         tmp_path,
         mutate,
     )
-    assert "DEC020_V4_PREMATURE_STATIC_REGISTRATION" in codes
+    assert "REGISTRY_MANIFEST_CLOSURE" in codes
 
 
 def test_decision_log_requires_all_ids_and_historical_m0_decision(validator, repo_root):
@@ -2424,6 +2430,53 @@ def test_gse200304_dec019_one_blocker_registration_is_closed(
     assert len(current["files"]) == 4
 
 
+def test_gse200304_dec020_v4_post_adjudication_registration_is_closed(
+    validator,
+    repo_root,
+):
+    manifest = validator._load_json(repo_root, validator.REGISTRY_MANIFEST_PATH)
+    manifest_paths = {row["path"] for row in manifest["files"]}
+    static_paths = set(validator.GSE200304_DEC020_V4_STATIC_LEAF_SHA256)
+    assert len(static_paths) == 3
+    assert static_paths.issubset(manifest_paths)
+    assert validator.validate_gse200304_dec020_v4_post_adjudication_registration(repo_root) == []
+
+    interim = validator._load_yaml(repo_root, validator.A1_INTERIM_PATH)
+    current = interim["dec020_current_disposition"]
+    assert current["current_qualified_counts"] == {
+        "ordinary": 1,
+        "a1": 1,
+        "true_a2": 0,
+        "canonical_records": 6547,
+    }
+    assert current["qualified"] is True
+    assert current["canonical_materialization_qualification_eligible"] is True
+    assert current["canonical_materialization_execution_authorized"] is False
+    assert current["latest_settled_runtime_event_id"] == "A1-EVT-050"
+    assert current["authority_runtime_sync"] == {
+        "predecessor_event_id": "A1-EVT-050",
+        "next_event_id": validator.DEC020_PENDING_RUNTIME_EVENT_ID,
+        "next_event_id_preallocated": False,
+        "status": "PENDING_FRESH_EVENT_AFTER_SETTLED_EVT_050",
+    }
+    assert current["selected_route_status"] == "PASS_DEC020_SCRATCH_ROUTE_SCOPED_REPORTED_ENDPOINT_A1_QUALIFIED"
+    successor = current["future_v4_successor_registration"]
+    assert successor["lifecycle_status"] == "ADJUDICATED_POST_IMPLEMENTATION_COMMIT_I_BOUND_PRODUCTION"
+    assert successor["may_execute"] is False
+    assert successor["may_adjudicate"] is False
+    lineage = interim["artifact_lineage"][validator.GSE200304_DEC020_V4_LINEAGE_ID]
+    assert lineage["input_status_counts"] == {"PASS": 7}
+    assert lineage["qualified"] is True
+    assert lineage["ordinary_study_contribution"] == 1
+    assert lineage["a1_study_contribution"] == 1
+    assert lineage["true_a2_study_contribution"] == 0
+    assert lineage["canonical_record_count"] == 6547
+    assert lineage["predecessor_runtime_event_id"] == "A1-EVT-050"
+    assert lineage["expected_next_runtime_event_id"] == validator.DEC020_PENDING_RUNTIME_EVENT_ID
+    assert lineage["runtime_sync_status"] == "PENDING_FRESH_EVENT_AFTER_SETTLED_EVT_050"
+    assert len(lineage["files"]) == 4
+
+
 def test_post_fail_acquisition_registration_is_closed(
     validator,
     repo_root,
@@ -2524,7 +2577,7 @@ def test_gse217518_public_authority_preflight_registration_is_closed(
         not in manifest_paths
     )
     assert validator.REGISTRY_MANIFEST_PATH not in manifest_paths
-    assert manifest["manifest_status"] == validator.DEC020_AUTHORITY_MANIFEST_STATUS
+    assert manifest["manifest_status"] == validator.GSE200304_DEC020_V4_MANIFEST_STATUS
     assert (
         validator.validate_gse217518_public_authority_preflight_registration(
             repo_root
@@ -3674,7 +3727,7 @@ def test_registry_manifest_detects_every_listed_hash_drift(validator, tmp_path, 
         )
     interim_path = tmp_path / validator.A1_INTERIM_PATH
     interim_path.write_text(
-        yaml.safe_dump({"updated_at": "2026-08-10T10:33:39+08:00"}),
+        yaml.safe_dump({"updated_at": validator.GSE200304_DEC020_V4_LEDGER_AT}),
         encoding="utf-8",
     )
     next(row for row in entries if row["path"] == validator.A1_INTERIM_PATH)["sha256"] = validator.sha256_file(interim_path)
@@ -3687,10 +3740,10 @@ def test_registry_manifest_detects_every_listed_hash_drift(validator, tmp_path, 
         "contract_sha256": goal_hash,
         "active_amendment_decision_ids": validator.ACTIVE_AMENDMENT_DECISION_IDS,
         "base_commit": "bbb71dcba6f1e1c9cb75a8a6653f1a4fe4a6ca0c",
-        "manifest_status": validator.DEC020_AUTHORITY_MANIFEST_STATUS,
+        "manifest_status": validator.GSE200304_DEC020_V4_MANIFEST_STATUS,
         "initial_generated_at": "2026-08-10T10:10:05+08:00",
-        "generated_at": validator.DEC020_AUTHORITY_MANIFEST_AT,
-        "updated_at": validator.DEC020_AUTHORITY_MANIFEST_AT,
+        "generated_at": validator.GSE200304_DEC020_V4_MANIFEST_AT,
+        "updated_at": validator.GSE200304_DEC020_V4_MANIFEST_AT,
         "sealed_contact": False,
         "files": entries,
     }

@@ -64,7 +64,7 @@
     {
       "path": "docs/execution/route_a_v3_a1_interim.yaml",
       "role": "A1_ACTIVE_INTERIM_RECORD",
-      "sha256": "615cbb768d819f8acddfb6a5e86a59f9da21c342598caea267bf6ef101efe683"
+      "sha256": "cd4227db8b72d3835820aa1b967b3a5a5d891c585217a76bceb1ce7d7f090b21"
     },
     {
       "path": "docs/execution/route_a_v3_split_registry.yaml",
@@ -407,20 +407,35 @@
       "sha256": "2fcb96317f3b27b42f9274d297bac1427e4b19ee2ab5cb1bdfe18de417327732"
     },
     {
+      "path": "configs/route_a_v3_gse200304_dec020_reported_endpoint_a1_activation_v4.json",
+      "role": "GSE200304_DEC020_SCRATCH_ROUTE_V4_CONFIG",
+      "sha256": "de0f7f4fbf8194d112e185806a6e0a19ae006714c5f1d2786629c9c2b1c85869"
+    },
+    {
+      "path": "scripts/route_a_v3/adjudicate_gse200304_dec020_reported_endpoint_a1_v4.py",
+      "role": "GSE200304_DEC020_SCRATCH_ROUTE_V4_ADJUDICATOR",
+      "sha256": "744b5cb10633bf7ca6d1e0d723f7104fe94b1ff725a1f9b9884b9c7e120d7b16"
+    },
+    {
+      "path": "tests/route_a_v3/test_adjudicate_gse200304_dec020_reported_endpoint_a1_v4.py",
+      "role": "GSE200304_DEC020_SCRATCH_ROUTE_V4_FOCUSED_TEST",
+      "sha256": "298304c19c3faa6103221913cb8b30e25fd56d3b55eb65ea04f2e8d82f7c3954"
+    },
+    {
       "path": "tests/route_a_v3/test_a0_integrity_guards.py",
       "role": "A0_AUTHORITY_INTEGRITY_GUARD_TEST",
-      "sha256": "b3a1ea125a2264c88db422f5796aca0fcbafa85b5c5be5a3ed08c53bb9d5846c"
+      "sha256": "bb66d1168f6aef2456ef31c8dbb4f8e9058177b4be79cf0c3ea354ffc978b516"
     },
     {
       "path": "scripts/route_a_v3/validate_a0_bundle.py",
       "role": "A0_STATIC_AND_SEMANTIC_VALIDATOR",
-      "sha256": "e75ca6fb98b45122e9ee88e028a3ed34d5f40d70f5cd4cd25c9b4e446c26e2cc"
+      "sha256": "28370123be6ce12c1c2d99eb53e4d7d87755ae0174f239d0afd2bba5a6890841"
     }
   ],
   "initial_generated_at": "2026-08-10T10:10:05+08:00",
-  "generated_at": "2026-08-13T12:15:01+08:00",
-  "updated_at": "2026-08-13T12:15:01+08:00",
-  "manifest_status": "A1_DEC020_AUTHORITY_REGISTERED_EVT049_SETTLED_RUNTIME_SYNC_PENDING_FRESH_EVENT",
+  "generated_at": "2026-08-13T14:40:01+08:00",
+  "updated_at": "2026-08-13T14:40:01+08:00",
+  "manifest_status": "A1_GSE200304_DEC020_SCRATCH_ROUTE_V4_QUALIFIED_LEDGER_REGISTERED_EVT050_SETTLED_PENDING_FRESH_RUNTIME_EVENT",
   "schema_version": "1.0.0",
   "sealed_contact": false,
   "version": "3.0.0"
