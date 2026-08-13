@@ -11,12 +11,12 @@
   "event_name": "GSE200304_DEC020_SCRATCH_ROUTE_A1_QUALIFICATION_REGISTERED_RUNTIME_SYNCED",
   "implementation_binding": {
     "binding_scheme": "CONFIG_ONLY_POST_IMPLEMENTATION_BINDING_V1",
-    "status": "UNKNOWN_NOT_ASSERTED",
-    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "status": "BOUND",
+    "implementation_commit": "db4ba34f7a904b6568429af47384cbdf274dd33f",
     "implementation_script_path": "scripts/route_a_v3/gse200304_dec020_v4_qualification_runtime_sync.py",
-    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_script_sha256": "c06039431f0a47c98a8e084aaa5fddb4ca9b31898177285722ce927075765249",
     "implementation_test_path": "tests/route_a_v3/test_gse200304_dec020_v4_qualification_runtime_sync.py",
-    "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_test_sha256": "9cc310992b21c4071ecb677706c2bae231c5ad926a421042ce2248e993c6ad62",
     "compiled_core_sha256": "fb688f3cd3f4f07a04316d9423c8b8ebe9637f462e272c4c25d1d2dfb0484ef6",
     "unknown_to_bound_scalar_paths": [
       "implementation_binding.status",
