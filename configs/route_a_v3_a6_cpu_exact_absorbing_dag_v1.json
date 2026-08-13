@@ -6,10 +6,10 @@
   "run_scope": "DEVELOPMENT_ONLY_CPU_EXACT_ABSORPTION_FIXTURE",
   "production_python": "/home/cunyuliu/miniconda3/envs/editflow/bin/python",
   "implementation_binding": {
-    "status": "UNKNOWN_NOT_ASSERTED",
-    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
-    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
-    "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED"
+    "status": "BOUND",
+    "implementation_commit": "92ab710b3ddf570af305d94bdf68c36cff84aad2",
+    "implementation_script_sha256": "4cc0e10784c218cf4fa18ede1280cb84e1b7daf2553db4d82e0ee88f71e0f7c8",
+    "implementation_test_sha256": "7e8253be856645f276689dc032f9581b9ea172faea929dff60ba07995c709e24"
   },
   "authority": {
     "goal_path": "docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md",
