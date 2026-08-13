@@ -1,0 +1,258 @@
+{
+  "schema_version": "route_a_v3_gse256185_public_identifier_pool_geometry_preflight.v1",
+  "protocol_id": "GSE256185_PUBLIC_IDENTIFIER_POOL_GEOMETRY_PREFLIGHT_V1",
+  "contract_id": "mrna_xeditflow_route_a_v3",
+  "phase_id": "A1",
+  "dataset_id": "GSE256185",
+  "bioproject_id": "PRJNA1078388",
+  "decision_id": "V3-DEC-021",
+  "protocol_status": "PUBLIC_IDENTIFIER_AND_POOL_GEOMETRY_PREFLIGHT_ONLY_NOT_QUALIFICATION",
+  "implementation_binding": {
+    "binding_scheme": "AUTHORITY_A_THEN_AUTHORITY_RUNTIME_I_B_THEN_EXACT3_I_CONFIG_ONLY_B_V1",
+    "status": "UNKNOWN_NOT_ASSERTED",
+    "authority_commit": "1ee575799a4b3289f9b7d684b4b31885dde0bd50",
+    "authority_runtime_binding_commit": "e67be74d793a2a459b655ca11d38f86a9d52b7db",
+    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "implementation_script_path": "scripts/route_a_v3/preflight_gse256185_public_identifier_pool_geometry.py",
+    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_test_path": "tests/route_a_v3/test_preflight_gse256185_public_identifier_pool_geometry.py",
+    "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
+    "pre_implementation_authority_scalar_paths": [
+      "implementation_binding.authority_commit",
+      "implementation_binding.authority_runtime_binding_commit"
+    ],
+    "unknown_to_bound_scalar_paths": [
+      "implementation_binding.status",
+      "implementation_binding.implementation_commit",
+      "implementation_binding.implementation_script_sha256",
+      "implementation_binding.implementation_test_sha256"
+    ],
+    "implementation_commit_exact_changed_paths": [
+      "configs/route_a_v3_gse256185_public_identifier_pool_geometry_preflight_v1.json",
+      "scripts/route_a_v3/preflight_gse256185_public_identifier_pool_geometry.py",
+      "tests/route_a_v3/test_preflight_gse256185_public_identifier_pool_geometry.py"
+    ],
+    "binding_commit_exact_changed_paths": [
+      "configs/route_a_v3_gse256185_public_identifier_pool_geometry_preflight_v1.json"
+    ],
+    "activation_rule": "After the final DEC021 authority-and-registry commit A, the separate authority-runtime I/B lifecycle must settle. Preflight I must then be the direct child of that authority-runtime B, change exact3, and freeze both authority_commit=A and authority_runtime_binding_commit=runtime-B while the four normal preflight binding scalars remain UNKNOWN_NOT_ASSERTED. Preflight B must be the direct child of preflight I, change config-only, and replace only those four normal binding scalars. Until preflight B is valid, execution stops before asset identity inspection, decompression, aggregation, or output creation."
+  },
+  "decision_authority": {
+    "amendment_path": "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec021.yaml",
+    "data_role_registry_path": "docs/execution/route_a_v3_data_role_registry.yaml",
+    "authorized_role": "PUBLIC_IDENTIFIER_AND_POOL_GEOMETRY_PREFLIGHT_ONLY",
+    "allowed_input_field_classes_exactly": [
+      "IDENTIFIER",
+      "ROLE",
+      "CONTEXT"
+    ],
+    "allowed_output_class": "AGGREGATE_POOL_GEOMETRY_ONLY"
+  },
+  "official_public_sources": [
+    {
+      "authority_id": "NCBI_GEO_GSE256185",
+      "authority_type": "PRIMARY_PUBLIC_SERIES_METADATA_FILE_LISTING_AND_PROCESSED_ASSET",
+      "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE256185"
+    },
+    {
+      "authority_id": "NCBI_GEO_GSM8087263",
+      "authority_type": "PRIMARY_PUBLIC_VARIANT_POOL_MONOSOME_CONTEXT",
+      "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM8087263"
+    },
+    {
+      "authority_id": "NCBI_GEO_GSM8087266",
+      "authority_type": "PRIMARY_PUBLIC_VARIANT_POOL_TOTAL_INPUT_CONTEXT",
+      "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSM8087266"
+    },
+    {
+      "authority_id": "NCBI_PMC_11780321",
+      "authority_type": "PRIMARY_PUBLIC_MANUSCRIPT_METHOD_CONTEXT",
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC11780321/",
+      "pmid": "39706187",
+      "doi": "10.1016/j.molcel.2024.11.030"
+    }
+  ],
+  "official_processed_asset": {
+    "filename": "GSE256185_CPMandRRS_VCE_Var.tsv.gz",
+    "locator": "https://www.ncbi.nlm.nih.gov/geo/download/?acc=GSE256185&file=GSE256185_CPMandRRS_VCE_Var.tsv.gz&format=file",
+    "compressed_bytes": 952533,
+    "compressed_sha256": "71a8476a76e9a47a03bc69a2e0cbf79d92019249fba2049f57b7aa60f3f25aeb",
+    "identity_mismatch_action": "STOP_BEFORE_DECOMPRESSION_OR_AGGREGATION"
+  },
+  "frozen_public_context": {
+    "study_accession": "GSE256185",
+    "bioproject_accession": "PRJNA1078388",
+    "assay_context": "DART_SEQ_TRANSLATION_INITIATION_EFFICIENCY",
+    "library_pool_context": "VCE_VARIANT_POOL",
+    "biological_material_context": "HELA_CELL_EXTRACT",
+    "construct_context": "IN_VITRO_TRANSCRIBED_VCE_CAPPED_MRNA_LIBRARY",
+    "measurement_context_categories": [
+      "80S_MONOSOME_ASSOCIATED_RNA",
+      "TOTAL_IVT_INPUT_RNA"
+    ],
+    "relevant_public_sample_context_count": 2,
+    "context_source_authority_ids": [
+      "NCBI_GEO_GSE256185",
+      "NCBI_GEO_GSM8087263",
+      "NCBI_GEO_GSM8087266",
+      "NCBI_PMC_11780321"
+    ]
+  },
+  "header_contract": {
+    "exact_column_names": [
+      "ID",
+      "AVG_log2RRS",
+      "X80S.2_CPM",
+      "X80S.3_CPM",
+      "X80S.4_CPM",
+      "X80S.5_CPM",
+      "IVT.1_CPM",
+      "IVT.2_CPM",
+      "IVT.3_CPM",
+      "Sequence"
+    ],
+    "identifier_column_name": "ID",
+    "identifier_column_index": 0,
+    "forbidden_body_value_column_classes": {
+      "EFFECT": [
+        "AVG_log2RRS"
+      ],
+      "CPM": [
+        "X80S.2_CPM",
+        "X80S.3_CPM",
+        "X80S.4_CPM",
+        "X80S.5_CPM",
+        "IVT.1_CPM",
+        "IVT.2_CPM",
+        "IVT.3_CPM"
+      ],
+      "SEQUENCE": [
+        "Sequence"
+      ]
+    },
+    "body_parser_rule": "STREAM_DECOMPRESS_EACH_RAW_LINE_PARTITION_ON_FIRST_TAB_AND_DECODE_ONLY_ID_FIELD"
+  },
+  "identifier_role_grammar": {
+    "strict_identifier_shape": "GROUP_DOT_ROLE_DOT_OPAQUE_IDENTIFIER_SUFFIX",
+    "strict_group_shape": "ENSG_DIGITS_DASH_ENST_DIGITS_DASH_LENGTH_DIGITS",
+    "strict_role_tokens": [
+      "parent",
+      "win<digits>",
+      "+<digits>CCC",
+      "-<digits>CCC",
+      "rand<digits>"
+    ],
+    "role_families": [
+      "parent",
+      "win",
+      "+CCC",
+      "-CCC",
+      "rand"
+    ],
+    "frozen_observed_anomaly_classes": [
+      "MISSING_GROUP_ROLE_DELIMITER",
+      "UNSIGNED_CCC_ROLE"
+    ],
+    "family_closure_axis_status": "REASONED_FAMILY_CLOSURE_NOT_PUBLISHER_EXPLICIT",
+    "family_closure_rule": "ONLY_THE_TWO_FROZEN_ANOMALY_CLASSES_MAY_BE_MAPPED_TO_MINUS_CCC_FOR_A_SEPARATE_INFERENCE_AXIS",
+    "family_closure_may_replace_strict_axis": false
+  },
+  "expected_aggregate_geometry": {
+    "total_body_row_count": 11404,
+    "strict_grammar_row_count": 11402,
+    "strict_role_family_row_counts": {
+      "parent": 667,
+      "win": 5501,
+      "+CCC": 1125,
+      "-CCC": 1109,
+      "rand": 3000
+    },
+    "identifier_grammar_anomaly_counts": {
+      "MISSING_GROUP_ROLE_DELIMITER": 1,
+      "UNSIGNED_CCC_ROLE": 1,
+      "OTHER_IDENTIFIER_GRAMMAR": 0,
+      "OTHER_ROLE_GRAMMAR": 0
+    },
+    "strict_axis": {
+      "group_count": 652,
+      "groups_with_parent": 652,
+      "single_parent_group_count": 637,
+      "dual_parent_group_count": 15,
+      "other_parent_multiplicity_group_count": 0,
+      "single_parent_groups_with_at_least_3_strict_candidate_rows": 634,
+      "single_parent_groups_with_exactly_2_strict_candidate_rows": 3,
+      "strict_candidate_rows_in_at_least_3_candidate_groups": 7292
+    },
+    "reasoned_family_closure_axis": {
+      "status": "REASONED_FAMILY_CLOSURE_NOT_PUBLISHER_EXPLICIT",
+      "group_count": 652,
+      "groups_with_parent": 652,
+      "single_parent_group_count": 637,
+      "dual_parent_group_count": 15,
+      "other_parent_multiplicity_group_count": 0,
+      "single_parent_groups_with_at_least_3_candidate_rows": 634,
+      "single_parent_groups_with_exactly_2_candidate_rows": 3,
+      "candidate_rows_in_at_least_3_candidate_groups": 7294
+    }
+  },
+  "input_contract": {
+    "ordinary_public_only": true,
+    "allowed_body_value_columns_exactly": [
+      "ID"
+    ],
+    "header_name_inspection_allowed": true,
+    "identifier_body_values_allowed": true,
+    "role_tokens_derived_from_identifier_allowed": true,
+    "context_values_allowed_only_from_frozen_public_context": true,
+    "sequence_body_values_allowed": false,
+    "effect_body_values_allowed": false,
+    "cpm_body_values_allowed": false,
+    "private_or_restricted_input_allowed": false,
+    "sealed_contact_allowed": false,
+    "GSE246381_allowed": false
+  },
+  "output_contract": {
+    "filename": "GSE256185_PUBLIC_IDENTIFIER_POOL_GEOMETRY_PREFLIGHT_V1.json",
+    "single_aggregate_output_only": true,
+    "row_records_included": false,
+    "member_identifiers_included": false,
+    "member_roles_included": false,
+    "member_contexts_included": false,
+    "sequence_values_included": false,
+    "effect_values_included": false,
+    "cpm_values_included": false,
+    "qualification_or_counting_credit_included": false,
+    "canonical_records_included": false
+  },
+  "frozen_outer_truth": {
+    "current_qualified_counts": {
+      "ordinary": 1,
+      "a1": 1,
+      "true_a2": 0,
+      "canonical_records": 6547
+    },
+    "gse256185_contribution": {
+      "ordinary": 0,
+      "a1": 0,
+      "true_a2": 0,
+      "canonical_records": 0
+    },
+    "gse256185_qualified": false,
+    "gse256185_true_a2_established": false,
+    "sequence_edit_semantics": "NOT_EVALUATED_OUT_OF_SCOPE",
+    "edit_budget_status": "NOT_EVALUATED_OUT_OF_SCOPE",
+    "effect_status": "NOT_EVALUATED_OUT_OF_SCOPE",
+    "a1_complete": false,
+    "qualification_run_count": 0,
+    "canonical_materialization_run_count": 0,
+    "training_run_count": 0,
+    "gpu_work_run_count": 0,
+    "model_selection_run_count": 0,
+    "training_allowed": false,
+    "gpu_work_allowed": false,
+    "model_selection_allowed": false,
+    "next_phase_authorized": false,
+    "scientific_claim_status": "NOT_ESTABLISHED"
+  },
+  "claim_boundary": "A completed preflight establishes only the aggregate geometry mechanically encoded by the ordinary-public ID grammar under the strict and separately labeled reasoned-family-closure axes. Streaming gzip transport and decompression necessarily process the complete row bytes; after the first tab, forbidden-field bytes are discarded without decoding, tokenizing, parsing, storing as field values, or outputting them. It does not establish publisher-authoritative edit semantics, edit budget, effect validity, true-A2 status, qualification, study-count credit, canonical records, training permission, model-selection permission, or next-phase authorization. Completion must stop with every outer lock unchanged."
+}
