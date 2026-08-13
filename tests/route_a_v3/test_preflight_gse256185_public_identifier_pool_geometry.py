@@ -47,18 +47,14 @@ def _disk_lifecycle_state(protocol: dict[str, object]) -> str:
     normal_values = [
         binding[field] for field in PREFLIGHT.UNKNOWN_BINDING_SCALARS
     ]
-    authority_unknown = authority_values == [PREFLIGHT.UNKNOWN] * 2
-    authority_bound = all(
-        isinstance(value, str) and PREFLIGHT.HEX40_RE.fullmatch(value)
-        for value in authority_values
-    )
+    authority_bound = authority_values == [
+        PREFLIGHT.AUTHORITY_COMMIT,
+        PREFLIGHT.AUTHORITY_RUNTIME_BINDING_COMMIT,
+    ]
     normal_unknown = normal_values == [PREFLIGHT.UNKNOWN] * 4
-    if authority_unknown:
-        assert normal_unknown
-        return "TEMPLATE"
     assert authority_bound
     if normal_unknown:
-        return "I"
+        return "I2"
 
     assert binding["status"] == PREFLIGHT.BOUND
     assert PREFLIGHT.HEX40_RE.fullmatch(binding["implementation_commit"])
@@ -68,7 +64,7 @@ def _disk_lifecycle_state(protocol: dict[str, object]) -> str:
     assert hashlib.sha256(Path(__file__).read_bytes()).hexdigest() == (
         binding["implementation_test_sha256"]
     )
-    return "B"
+    return "B2"
 
 
 def _bound_protocol() -> dict[str, object]:
@@ -87,8 +83,10 @@ def _i_protocol() -> dict[str, object]:
     binding = protocol["implementation_binding"]
     for field in PREFLIGHT.UNKNOWN_BINDING_SCALARS:
         binding[field] = PREFLIGHT.UNKNOWN
-    binding["authority_commit"] = "0" * 40
-    binding["authority_runtime_binding_commit"] = "1" * 40
+    binding["authority_commit"] = PREFLIGHT.AUTHORITY_COMMIT
+    binding["authority_runtime_binding_commit"] = (
+        PREFLIGHT.AUTHORITY_RUNTIME_BINDING_COMMIT
+    )
     PREFLIGHT._validate_protocol(protocol)
     return protocol
 
@@ -211,7 +209,7 @@ def _write_identifier_only_fixture(path: Path) -> list[str]:
 def test_protocol_freezes_dec021_scope_two_stage_parent_and_exact3() -> None:
     protocol = _protocol()
     binding = protocol["implementation_binding"]
-    assert _disk_lifecycle_state(protocol) in {"TEMPLATE", "I", "B"}
+    assert _disk_lifecycle_state(protocol) in {"I2", "B2"}
     assert tuple(binding["implementation_commit_exact_changed_paths"]) == (
         PREFLIGHT.EXPECTED_EXACT3
     )
@@ -220,6 +218,12 @@ def test_protocol_freezes_dec021_scope_two_stage_parent_and_exact3() -> None:
         "implementation_binding.authority_commit",
         "implementation_binding.authority_runtime_binding_commit",
     ]
+    assert binding["predecessor_implementation_i1"] == {
+        "commit": PREFLIGHT.PREFLIGHT_I1_COMMIT,
+        "expected_parent": PREFLIGHT.AUTHORITY_RUNTIME_BINDING_COMMIT,
+        "exact_changed_paths": list(PREFLIGHT.EXPECTED_EXACT3),
+        "blob_sha256_by_path": PREFLIGHT.PREFLIGHT_I1_BLOB_SHA256_BY_PATH,
+    }
     assert protocol["decision_authority"]["authorized_role"] == (
         "PUBLIC_IDENTIFIER_AND_POOL_GEOMETRY_PREFLIGHT_ONLY"
     )
@@ -238,8 +242,10 @@ def test_protocol_freezes_dec021_scope_two_stage_parent_and_exact3() -> None:
 
     i_protocol = _i_protocol()
     i_binding = i_protocol["implementation_binding"]
-    assert i_binding["authority_commit"] == "0" * 40
-    assert i_binding["authority_runtime_binding_commit"] == "1" * 40
+    assert i_binding["authority_commit"] == PREFLIGHT.AUTHORITY_COMMIT
+    assert i_binding["authority_runtime_binding_commit"] == (
+        PREFLIGHT.AUTHORITY_RUNTIME_BINDING_COMMIT
+    )
     assert [i_binding[field] for field in PREFLIGHT.UNKNOWN_BINDING_SCALARS] == [
         PREFLIGHT.UNKNOWN
     ] * 4
@@ -247,8 +253,10 @@ def test_protocol_freezes_dec021_scope_two_stage_parent_and_exact3() -> None:
     b_protocol = _bound_protocol()
     b_binding = b_protocol["implementation_binding"]
     assert b_binding["status"] == PREFLIGHT.BOUND
-    assert b_binding["authority_commit"] == "0" * 40
-    assert b_binding["authority_runtime_binding_commit"] == "1" * 40
+    assert b_binding["authority_commit"] == PREFLIGHT.AUTHORITY_COMMIT
+    assert b_binding["authority_runtime_binding_commit"] == (
+        PREFLIGHT.AUTHORITY_RUNTIME_BINDING_COMMIT
+    )
     assert b_binding["implementation_commit"] == "2" * 40
     assert b_binding["implementation_script_sha256"] == "3" * 64
     assert b_binding["implementation_test_sha256"] == "4" * 64
@@ -258,9 +266,7 @@ def test_partial_authority_or_normal_binding_group_is_rejected() -> None:
     protocol = copy.deepcopy(_protocol())
     binding = protocol["implementation_binding"]
     binding["authority_commit"] = PREFLIGHT.UNKNOWN
-    binding["authority_runtime_binding_commit"] = PREFLIGHT.UNKNOWN
-    binding["authority_commit"] = "0" * 40
-    with pytest.raises(PREFLIGHT.ProtocolError, match="partially known"):
+    with pytest.raises(PREFLIGHT.ProtocolError, match="frozen binding differs"):
         PREFLIGHT._validate_protocol(protocol)
 
     protocol = copy.deepcopy(_protocol())
@@ -272,24 +278,24 @@ def test_partial_authority_or_normal_binding_group_is_rejected() -> None:
         PREFLIGHT._validate_protocol(protocol)
 
 
-def test_default_binding_auditor_verifies_real_i_and_b_lifecycle(
+def test_default_binding_auditor_verifies_real_i1_i2_b2_lifecycle(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     repo_root = tmp_path / "repo"
-    script_blob = b"preflight implementation at I\n"
-    test_blob = b"focused test at I\n"
+    script_blob = b"preflight implementation at I2\n"
+    test_blob = b"focused test at I2\n"
     protocol = _bound_protocol()
     binding = protocol["implementation_binding"]
     binding["implementation_script_sha256"] = hashlib.sha256(script_blob).hexdigest()
     binding["implementation_test_sha256"] = hashlib.sha256(test_blob).hexdigest()
     PREFLIGHT._validate_protocol(protocol)
 
-    i_protocol = PREFLIGHT._normalise_binding(protocol)
-    i_payload = (json.dumps(i_protocol, indent=2) + "\n").encode("utf-8")
-    b_payload = (json.dumps(protocol, indent=2) + "\n").encode("utf-8")
+    i2_protocol = PREFLIGHT._normalise_binding(protocol)
+    i2_payload = (json.dumps(i2_protocol, indent=2) + "\n").encode("utf-8")
+    b2_payload = (json.dumps(protocol, indent=2) + "\n").encode("utf-8")
     protocol_path = repo_root / PREFLIGHT.CONFIG_PATH
     protocol_path.parent.mkdir(parents=True, exist_ok=True)
-    protocol_path.write_bytes(b_payload)
+    protocol_path.write_bytes(b2_payload)
     script_path = repo_root / PREFLIGHT.SCRIPT_PATH
     script_path.parent.mkdir(parents=True, exist_ok=True)
     script_path.write_bytes(script_blob)
@@ -297,15 +303,17 @@ def test_default_binding_auditor_verifies_real_i_and_b_lifecycle(
     test_path.parent.mkdir(parents=True, exist_ok=True)
     test_path.write_bytes(test_blob)
 
-    authority_a = "0" * 40
+    authority_a = PREFLIGHT.AUTHORITY_COMMIT
     authority_runtime_i = "9" * 40
-    authority_runtime_b = "1" * 40
-    preflight_i = "2" * 40
-    preflight_b = "8" * 40
+    authority_runtime_b = PREFLIGHT.AUTHORITY_RUNTIME_BINDING_COMMIT
+    preflight_i1 = PREFLIGHT.PREFLIGHT_I1_COMMIT
+    preflight_i2 = "2" * 40
+    preflight_b2 = "8" * 40
     git_text = {
-        ("rev-parse", "HEAD"): preflight_b,
-        ("rev-parse", f"{preflight_b}^"): preflight_i,
-        ("rev-parse", f"{preflight_i}^"): authority_runtime_b,
+        ("rev-parse", "HEAD"): preflight_b2,
+        ("rev-parse", f"{preflight_b2}^"): preflight_i2,
+        ("rev-parse", f"{preflight_i2}^"): preflight_i1,
+        ("rev-parse", f"{preflight_i1}^"): authority_runtime_b,
         ("rev-parse", f"{authority_runtime_b}^"): authority_runtime_i,
         ("rev-parse", f"{authority_runtime_i}^"): authority_a,
         (
@@ -313,22 +321,45 @@ def test_default_binding_auditor_verifies_real_i_and_b_lifecycle(
             "--no-commit-id",
             "--name-only",
             "-r",
-            preflight_i,
+            preflight_i1,
         ): "\n".join(PREFLIGHT.EXPECTED_EXACT3),
         (
             "diff-tree",
             "--no-commit-id",
             "--name-only",
             "-r",
-            preflight_b,
+            preflight_i2,
+        ): "\n".join(PREFLIGHT.EXPECTED_EXACT3),
+        (
+            "diff-tree",
+            "--no-commit-id",
+            "--name-only",
+            "-r",
+            preflight_b2,
         ): PREFLIGHT.CONFIG_PATH,
     }
-    git_blobs = {
-        (preflight_i, PREFLIGHT.CONFIG_PATH): i_payload,
-        (preflight_i, PREFLIGHT.SCRIPT_PATH): script_blob,
-        (preflight_i, PREFLIGHT.TEST_PATH): test_blob,
-        (preflight_b, PREFLIGHT.CONFIG_PATH): b_payload,
+    i1_blobs = {
+        relative_path: f"frozen I1 blob for {relative_path}\n".encode("utf-8")
+        for relative_path in PREFLIGHT.EXPECTED_EXACT3
     }
+    git_blobs = {
+        **{
+            (preflight_i1, relative_path): payload
+            for relative_path, payload in i1_blobs.items()
+        },
+        (preflight_i2, PREFLIGHT.CONFIG_PATH): i2_payload,
+        (preflight_i2, PREFLIGHT.SCRIPT_PATH): script_blob,
+        (preflight_i2, PREFLIGHT.TEST_PATH): test_blob,
+        (preflight_b2, PREFLIGHT.CONFIG_PATH): b2_payload,
+    }
+    real_sha256_bytes = PREFLIGHT._sha256_bytes
+    i1_digest_overrides = {
+        payload: PREFLIGHT.PREFLIGHT_I1_BLOB_SHA256_BY_PATH[relative_path]
+        for relative_path, payload in i1_blobs.items()
+    }
+
+    def fake_sha256_bytes(payload: bytes) -> str:
+        return i1_digest_overrides.get(payload, real_sha256_bytes(payload))
 
     def fake_git_text(root: Path, *args: str) -> str:
         assert root == repo_root
@@ -340,15 +371,17 @@ def test_default_binding_auditor_verifies_real_i_and_b_lifecycle(
 
     monkeypatch.setattr(PREFLIGHT, "_run_git_text", fake_git_text)
     monkeypatch.setattr(PREFLIGHT, "_git_blob", fake_git_blob)
+    monkeypatch.setattr(PREFLIGHT, "_sha256_bytes", fake_sha256_bytes)
     result = PREFLIGHT._default_binding_auditor(
-        protocol, protocol_path, b_payload, repo_root
+        protocol, protocol_path, b2_payload, repo_root
     )
     assert result == {
-        "status": "BOUND_EXACT3_I_CONFIG_ONLY_B_VERIFIED",
+        "status": "BOUND_I1_EXACT3_I2_EXACT3_CONFIG_ONLY_B2_VERIFIED",
         "authority_commit": authority_a,
         "authority_runtime_binding_commit": authority_runtime_b,
-        "implementation_commit": preflight_i,
-        "binding_commit": preflight_b,
+        "predecessor_implementation_i1_commit": preflight_i1,
+        "implementation_commit": preflight_i2,
+        "binding_commit": preflight_b2,
     }
 
 
@@ -383,12 +416,17 @@ def test_unknown_preflight_binding_stops_before_asset_or_output_io(
         calls["geometry"] += 1
         raise AssertionError("asset body must not be read")
 
+    unknown_protocol_path = _write_protocol(
+        tmp_path / "repo" / PREFLIGHT.CONFIG_PATH,
+        _i_protocol(),
+    )
     output_dir = tmp_path / "must-not-exist"
     with pytest.raises(PREFLIGHT.BindingNotFrozen, match="not BOUND"):
         PREFLIGHT.execute(
-            PROTOCOL_PATH,
+            unknown_protocol_path,
             tmp_path / "missing-asset.gz",
             output_dir,
+            repo_root=tmp_path / "repo",
             asset_identity_auditor=forbidden_asset,
             geometry_aggregator=forbidden_geometry,
         )

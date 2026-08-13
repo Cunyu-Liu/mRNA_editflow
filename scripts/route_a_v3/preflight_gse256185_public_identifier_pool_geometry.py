@@ -53,6 +53,14 @@ TEST_PATH = (
 )
 CONFIG_PATH = f"configs/{PROTOCOL_BASENAME}"
 EXPECTED_EXACT3 = (CONFIG_PATH, SCRIPT_PATH, TEST_PATH)
+AUTHORITY_COMMIT = "1ee575799a4b3289f9b7d684b4b31885dde0bd50"
+AUTHORITY_RUNTIME_BINDING_COMMIT = "e67be74d793a2a459b655ca11d38f86a9d52b7db"
+PREFLIGHT_I1_COMMIT = "fbf7c25e86e3b147df492ac1b934593e391a904a"
+PREFLIGHT_I1_BLOB_SHA256_BY_PATH = {
+    CONFIG_PATH: "1035b35158b77a5497afd1f77f9d8592dfaf36a4c904ba933710d64b302ab6d9",
+    SCRIPT_PATH: "ae2ab795a8805aaf82cc80ec22f6cd1490321e554af4f8289ec94fe3d7ad8490",
+    TEST_PATH: "9ae5aebe534f635723c66ae3a442f043e3a228859a5579c6ce83ba65d5e92458",
+}
 UNKNOWN_BINDING_SCALARS = (
     "status",
     "implementation_commit",
@@ -269,18 +277,18 @@ def _validate_protocol(protocol: Mapping[str, Any]) -> None:
         protocol.get("implementation_binding"), label="implementation_binding"
     )
     if binding.get("binding_scheme") != (
-        "AUTHORITY_A_THEN_AUTHORITY_RUNTIME_I_B_THEN_EXACT3_I_CONFIG_ONLY_B_V1"
+        "AUTHORITY_RUNTIME_B_THEN_PREFLIGHT_I1_EXACT3_I2_EXACT3_"
+        "CONFIG_ONLY_B2_V1"
     ):
         raise ProtocolError("implementation binding scheme differs")
     authority_fields = ("authority_commit", "authority_runtime_binding_commit")
     authority_values = [binding.get(field) for field in authority_fields]
-    authority_unknown = authority_values == [UNKNOWN, UNKNOWN]
-    authority_bound = all(
-        isinstance(value, str) and HEX40_RE.fullmatch(value)
-        for value in authority_values
-    )
-    if not authority_unknown and not authority_bound:
-        raise ProtocolError("authority A/runtime-B binding is partially known")
+    authority_bound = authority_values == [
+        AUTHORITY_COMMIT,
+        AUTHORITY_RUNTIME_BINDING_COMMIT,
+    ]
+    if not authority_bound:
+        raise ProtocolError("authority A/runtime-B frozen binding differs")
     if binding.get("pre_implementation_authority_scalar_paths") != [
         "implementation_binding.authority_commit",
         "implementation_binding.authority_runtime_binding_commit",
@@ -300,14 +308,26 @@ def _validate_protocol(protocol: Mapping[str, Any]) -> None:
         raise ProtocolError("implementation script path differs")
     if binding.get("implementation_test_path") != TEST_PATH:
         raise ProtocolError("implementation test path differs")
+    predecessor_i1 = _mapping(
+        binding.get("predecessor_implementation_i1"),
+        label="predecessor_implementation_i1",
+    )
+    _expect(
+        predecessor_i1,
+        {
+            "commit": PREFLIGHT_I1_COMMIT,
+            "expected_parent": AUTHORITY_RUNTIME_BINDING_COMMIT,
+            "exact_changed_paths": list(EXPECTED_EXACT3),
+            "blob_sha256_by_path": PREFLIGHT_I1_BLOB_SHA256_BY_PATH,
+        },
+        label="predecessor preflight I1",
+    )
 
     status = binding.get("status")
     normal_values = [binding.get(field) for field in UNKNOWN_BINDING_SCALARS]
     if status == UNKNOWN:
         if normal_values != [UNKNOWN] * len(UNKNOWN_BINDING_SCALARS):
             raise ProtocolError("initial-I binding scalars must all remain UNKNOWN")
-        if not (authority_unknown or authority_bound):
-            raise ProtocolError("UNKNOWN lifecycle authority group is invalid")
     elif status == BOUND:
         if not authority_bound:
             raise ProtocolError(
@@ -527,6 +547,10 @@ def _changed_paths(repo_root: Path, commit: str) -> tuple[str, ...]:
     return tuple(sorted(line for line in output.splitlines() if line))
 
 
+def _sha256_bytes(payload: bytes) -> str:
+    return hashlib.sha256(payload).hexdigest()
+
+
 def _normalise_binding(protocol: Mapping[str, Any]) -> dict[str, Any]:
     result = copy.deepcopy(dict(protocol))
     binding = result["implementation_binding"]
@@ -544,7 +568,7 @@ def _default_binding_auditor(
     del protocol_payload
     binding = protocol["implementation_binding"]
     if binding.get("status") != BOUND:
-        raise BindingNotFrozen("exact3-I/config-only-B lifecycle is not BOUND")
+        raise BindingNotFrozen("exact3-I2/config-only-B2 lifecycle is not BOUND")
     if any(binding.get(field) == UNKNOWN for field in UNKNOWN_BINDING_SCALARS):
         raise BindingNotFrozen("the four normal binding scalars remain UNKNOWN")
     if binding.get("authority_commit") == UNKNOWN:
@@ -554,6 +578,9 @@ def _default_binding_auditor(
 
     binding_commit = _run_git_text(repo_root, "rev-parse", "HEAD")
     implementation_commit = str(binding["implementation_commit"])
+    predecessor_i1_commit = str(
+        binding["predecessor_implementation_i1"]["commit"]
+    )
     authority_commit = str(binding["authority_commit"])
     authority_runtime_binding_commit = str(
         binding["authority_runtime_binding_commit"]
@@ -561,11 +588,15 @@ def _default_binding_auditor(
     if _run_git_text(repo_root, "rev-parse", f"{binding_commit}^") != (
         implementation_commit
     ):
-        raise ProtocolError("B is not the direct child of I")
+        raise ProtocolError("B2 is not the direct child of I2")
     if _run_git_text(repo_root, "rev-parse", f"{implementation_commit}^") != (
+        predecessor_i1_commit
+    ):
+        raise ProtocolError("preflight I2 is not the direct child of preflight I1")
+    if _run_git_text(repo_root, "rev-parse", f"{predecessor_i1_commit}^") != (
         authority_runtime_binding_commit
     ):
-        raise ProtocolError("preflight I is not the direct child of authority-runtime B")
+        raise ProtocolError("preflight I1 is not the direct child of authority-runtime B")
     authority_runtime_i = _run_git_text(
         repo_root, "rev-parse", f"{authority_runtime_binding_commit}^"
     )
@@ -573,43 +604,54 @@ def _default_binding_auditor(
         authority_commit
     ):
         raise ProtocolError("authority-runtime I/B is not based on DEC021 authority A")
+    if _changed_paths(repo_root, predecessor_i1_commit) != tuple(
+        sorted(EXPECTED_EXACT3)
+    ):
+        raise ProtocolError("preflight I1 did not change exact3")
     if _changed_paths(repo_root, implementation_commit) != tuple(
         sorted(EXPECTED_EXACT3)
     ):
-        raise ProtocolError("I did not change exact3")
+        raise ProtocolError("preflight I2 did not change exact3")
     if _changed_paths(repo_root, binding_commit) != (CONFIG_PATH,):
-        raise ProtocolError("B did not change config-only")
+        raise ProtocolError("B2 did not change config-only")
+
+    for relative_path, expected_sha256 in PREFLIGHT_I1_BLOB_SHA256_BY_PATH.items():
+        if _sha256_bytes(
+            _git_blob(repo_root, predecessor_i1_commit, relative_path)
+        ) != expected_sha256:
+            raise ProtocolError(f"preflight I1 blob identity differs: {relative_path}")
 
     i_protocol = _strict_json_object(
         _git_blob(repo_root, implementation_commit, CONFIG_PATH),
-        label="implementation protocol",
+        label="preflight I2 protocol",
     )
     if _normalise_binding(protocol) != i_protocol:
-        raise ProtocolError("B changed more than the four binding scalars")
+        raise ProtocolError("B2 changed more than the four binding scalars")
 
     script_blob = _git_blob(repo_root, implementation_commit, SCRIPT_PATH)
     test_blob = _git_blob(repo_root, implementation_commit, TEST_PATH)
-    if hashlib.sha256(script_blob).hexdigest() != binding.get(
+    if _sha256_bytes(script_blob) != binding.get(
         "implementation_script_sha256"
     ):
         raise ProtocolError("bound implementation script hash differs")
-    if hashlib.sha256(test_blob).hexdigest() != binding.get(
+    if _sha256_bytes(test_blob) != binding.get(
         "implementation_test_sha256"
     ):
         raise ProtocolError("bound focused test hash differs")
     if protocol_path.resolve() != (repo_root / CONFIG_PATH).resolve():
         raise ProtocolError("protocol path is outside the bound repository location")
     if protocol_path.read_bytes() != _git_blob(repo_root, binding_commit, CONFIG_PATH):
-        raise ProtocolError("working protocol differs from bound B")
+        raise ProtocolError("working protocol differs from bound B2")
     if (repo_root / SCRIPT_PATH).read_bytes() != script_blob:
         raise ProtocolError("working implementation script differs from I")
     if (repo_root / TEST_PATH).read_bytes() != test_blob:
         raise ProtocolError("working focused test differs from I")
 
     return {
-        "status": "BOUND_EXACT3_I_CONFIG_ONLY_B_VERIFIED",
+        "status": "BOUND_I1_EXACT3_I2_EXACT3_CONFIG_ONLY_B2_VERIFIED",
         "authority_commit": authority_commit,
         "authority_runtime_binding_commit": authority_runtime_binding_commit,
+        "predecessor_implementation_i1_commit": predecessor_i1_commit,
         "implementation_commit": implementation_commit,
         "binding_commit": binding_commit,
     }

@@ -8,7 +8,7 @@
   "decision_id": "V3-DEC-021",
   "protocol_status": "PUBLIC_IDENTIFIER_AND_POOL_GEOMETRY_PREFLIGHT_ONLY_NOT_QUALIFICATION",
   "implementation_binding": {
-    "binding_scheme": "AUTHORITY_A_THEN_AUTHORITY_RUNTIME_I_B_THEN_EXACT3_I_CONFIG_ONLY_B_V1",
+    "binding_scheme": "AUTHORITY_RUNTIME_B_THEN_PREFLIGHT_I1_EXACT3_I2_EXACT3_CONFIG_ONLY_B2_V1",
     "status": "UNKNOWN_NOT_ASSERTED",
     "authority_commit": "1ee575799a4b3289f9b7d684b4b31885dde0bd50",
     "authority_runtime_binding_commit": "e67be74d793a2a459b655ca11d38f86a9d52b7db",
@@ -35,7 +35,21 @@
     "binding_commit_exact_changed_paths": [
       "configs/route_a_v3_gse256185_public_identifier_pool_geometry_preflight_v1.json"
     ],
-    "activation_rule": "After the final DEC021 authority-and-registry commit A, the separate authority-runtime I/B lifecycle must settle. Preflight I must then be the direct child of that authority-runtime B, change exact3, and freeze both authority_commit=A and authority_runtime_binding_commit=runtime-B while the four normal preflight binding scalars remain UNKNOWN_NOT_ASSERTED. Preflight B must be the direct child of preflight I, change config-only, and replace only those four normal binding scalars. Until preflight B is valid, execution stops before asset identity inspection, decompression, aggregation, or output creation."
+    "predecessor_implementation_i1": {
+      "commit": "fbf7c25e86e3b147df492ac1b934593e391a904a",
+      "expected_parent": "e67be74d793a2a459b655ca11d38f86a9d52b7db",
+      "exact_changed_paths": [
+        "configs/route_a_v3_gse256185_public_identifier_pool_geometry_preflight_v1.json",
+        "scripts/route_a_v3/preflight_gse256185_public_identifier_pool_geometry.py",
+        "tests/route_a_v3/test_preflight_gse256185_public_identifier_pool_geometry.py"
+      ],
+      "blob_sha256_by_path": {
+        "configs/route_a_v3_gse256185_public_identifier_pool_geometry_preflight_v1.json": "1035b35158b77a5497afd1f77f9d8592dfaf36a4c904ba933710d64b302ab6d9",
+        "scripts/route_a_v3/preflight_gse256185_public_identifier_pool_geometry.py": "ae2ab795a8805aaf82cc80ec22f6cd1490321e554af4f8289ec94fe3d7ad8490",
+        "tests/route_a_v3/test_preflight_gse256185_public_identifier_pool_geometry.py": "9ae5aebe534f635723c66ae3a442f043e3a228859a5579c6ce83ba65d5e92458"
+      }
+    },
+    "activation_rule": "DEC021 authority A and authority-runtime I/B are frozen, followed by frozen preflight I1 exact3. Repair I2 must be the direct exact3 child of I1, preserve the two authority commits, and leave the four normal binding scalars UNKNOWN_NOT_ASSERTED. B2 must be the direct config-only child of I2 and replace only those four normal binding scalars. Until B2 is valid, execution stops before asset identity inspection, decompression, aggregation, or output creation."
   },
   "decision_authority": {
     "amendment_path": "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec021.yaml",
