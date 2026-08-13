@@ -375,12 +375,12 @@ dec022_current_disposition:
   model_selection_allowed: false
   next_phase_authorized: false
   scientific_claim_status: NOT_ESTABLISHED
-  latest_settled_runtime_event_id: A1-EVT-054
+  latest_settled_runtime_event_id: A1-EVT-055
   settled_runtime_event_changed: true
   runtime_event_emitted: true
   authority_runtime_sync_status: SYNCED_EVT_054
-  evidence_runtime_sync_status: PENDING_FRESH_EVENT_AFTER_SETTLED_EVT_054
-  expected_next_runtime_event_id: PENDING_FRESH_RUNTIME_EVENT_ID
+  evidence_runtime_sync_status: SYNCED_EVT_055
+  expected_next_runtime_event_id: A1-EVT-055
   next_runtime_event_id_preallocated: false
   sealed_contact_allowed: false
 
@@ -2594,9 +2594,9 @@ artifact_lineage:
       focused_test_path: tests/route_a_v3/test_preflight_gse256185_aggregate_row_level_qualification.py
       focused_test_sha256: eaece480ead17f5ef3a8eb2662d3a0372e59910d07eee0eb77f1d55b4580e226
     predecessor_runtime_event_id: A1-EVT-054
-    expected_next_runtime_event_id: PENDING_FRESH_RUNTIME_EVENT_ID
+    expected_next_runtime_event_id: A1-EVT-055
     next_runtime_event_id_preallocated: false
-    runtime_sync_status: PENDING_FRESH_EVENT_AFTER_SETTLED_EVT_054
+    runtime_sync_status: SYNCED_EVT_055
     aggregate_report_read_count_for_ledger: 1
     private_row_artifact_read_count_for_ledger: 0
     raw_asset_registered_artifact_count: 0
@@ -2957,9 +2957,9 @@ dataset_boundary_summary:
       model_selection_allowed: false
       next_phase_authorized: false
       predecessor_runtime_event_id: A1-EVT-054
-      expected_next_runtime_event_id: PENDING_FRESH_RUNTIME_EVENT_ID
+      expected_next_runtime_event_id: A1-EVT-055
       next_runtime_event_id_preallocated: false
-      runtime_sync_status: PENDING_FRESH_EVENT_AFTER_SETTLED_EVT_054
+      runtime_sync_status: SYNCED_EVT_055
     qualified: false
     canonical_record_count: 0
     ordinary_study_contribution: 0
@@ -3534,12 +3534,12 @@ verification:
   gse256185_public_identifier_pool_geometry_preflight_runtime_event_id: A1-EVT-053
   targeted_gse256185_aggregate_row_level_qualification_preflight_ledger_tests:
     status: PASS
-    scope: ONE_PUBLIC_AGGREGATE_REPORT_THREE_STATIC_PRODUCER_LEAVES_EXACT17_EVT054_SETTLED_EVIDENCE_RUNTIME_PENDING
+    scope: ONE_PUBLIC_AGGREGATE_REPORT_THREE_STATIC_PRODUCER_LEAVES_EXACT17_EVT055_SETTLED_EVIDENCE_RUNTIME_SYNCED
   gse256185_aggregate_row_level_qualification_preflight_artifact_registration: PASS
   gse256185_aggregate_row_level_qualification_preflight_three_static_leaf_registration: PASS
   gse256185_aggregate_row_level_qualification_preflight_no_promotion_boundary: PASS
   gse256185_aggregate_row_level_qualification_preflight_no_disclosure_boundary: PASS
-  gse256185_aggregate_row_level_qualification_preflight_evidence_runtime_event_id: PENDING_FRESH_RUNTIME_EVENT_ID
+  gse256185_aggregate_row_level_qualification_preflight_evidence_runtime_event_id: A1-EVT-055
 
 initial_generated_at: "2026-08-10T06:30:58+08:00"
 generated_at: "2026-08-13T23:35:00+08:00"

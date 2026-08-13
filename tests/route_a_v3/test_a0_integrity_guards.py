@@ -756,7 +756,22 @@ def test_gse256185_row_preflight_registration_is_closed(validator, repo_root):
     assert lineage["scope_attestation"]["sequence_output_count"] == 0
     assert lineage["scope_attestation"]["row_effect_output_count"] == 0
     assert lineage["predecessor_runtime_event_id"] == "A1-EVT-054"
-    assert lineage["expected_next_runtime_event_id"] == "PENDING_FRESH_RUNTIME_EVENT_ID"
+    assert lineage["expected_next_runtime_event_id"] == (
+        validator.GSE256185_ROW_PREFLIGHT_RUNTIME_EVENT_ID
+    )
+    assert lineage["next_runtime_event_id_preallocated"] is False
+    assert lineage["runtime_sync_status"] == "SYNCED_EVT_055"
+
+    current = interim["dec022_current_disposition"]
+    assert current["latest_settled_runtime_event_id"] == (
+        validator.GSE256185_ROW_PREFLIGHT_RUNTIME_EVENT_ID
+    )
+    assert current["authority_runtime_sync_status"] == "SYNCED_EVT_054"
+    assert current["evidence_runtime_sync_status"] == "SYNCED_EVT_055"
+    assert current["expected_next_runtime_event_id"] == (
+        validator.GSE256185_ROW_PREFLIGHT_RUNTIME_EVENT_ID
+    )
+    assert current["next_runtime_event_id_preallocated"] is False
 
 
 def test_gse256185_row_preflight_rehash_cannot_promote_count_or_disclose(

@@ -74,7 +74,7 @@
     {
       "path": "docs/execution/route_a_v3_a1_interim.yaml",
       "role": "A1_ACTIVE_INTERIM_RECORD",
-      "sha256": "d62d7485b848571d618c797ad04284e8725b3fc6ba2e0dc42becffbfd0fc5810"
+      "sha256": "b72fc3e8f7f0c1ffddefa55f6234d2fd828851dc40927b6403357a359881e72c"
     },
     {
       "path": "docs/execution/route_a_v3_a6_interim.yaml",
@@ -499,18 +499,18 @@
     {
       "path": "tests/route_a_v3/test_a0_integrity_guards.py",
       "role": "A0_AUTHORITY_INTEGRITY_GUARD_TEST",
-      "sha256": "5a690fe50cb7db99ff1ee0c702fe0dbc2a1996b282dab53a980b1b8a27e18821"
+      "sha256": "9a8a8e06ca662609acfbf59996d88118a534287d1e431fd990c4a613bd6289e1"
     },
     {
       "path": "scripts/route_a_v3/validate_a0_bundle.py",
       "role": "A0_STATIC_AND_SEMANTIC_VALIDATOR",
-      "sha256": "3ea7ab270e33d7eebad9288265aa3d5a07ba2884698c11d3b277f5163393b4cf"
+      "sha256": "8fb1e84f29e3052a1d16ae90d8b67c6885150185aa28d68e55bb76f4bc8108e2"
     }
   ],
   "initial_generated_at": "2026-08-10T10:10:05+08:00",
-  "generated_at": "2026-08-13T23:35:01+08:00",
-  "updated_at": "2026-08-13T23:35:01+08:00",
-  "manifest_status": "DEC022_GSE256185_AGGREGATE_ROW_LEVEL_QUALIFICATION_PREFLIGHT_REGISTERED_EVT054_SETTLED_EVIDENCE_RUNTIME_PENDING_A1_INCOMPLETE_A6_IN_PROGRESS_L3_NOT_ESTABLISHED_A7_NOT_RUN",
+  "generated_at": "2026-08-13T23:57:32+08:00",
+  "updated_at": "2026-08-13T23:57:32+08:00",
+  "manifest_status": "DEC022_GSE256185_AGGREGATE_ROW_LEVEL_QUALIFICATION_PREFLIGHT_REGISTERED_EVT055_SETTLED_EVIDENCE_RUNTIME_SYNCED_A1_INCOMPLETE_A6_IN_PROGRESS_L3_NOT_ESTABLISHED_A7_NOT_RUN",
   "schema_version": "1.0.0",
   "sealed_contact": false,
   "version": "3.0.0"
