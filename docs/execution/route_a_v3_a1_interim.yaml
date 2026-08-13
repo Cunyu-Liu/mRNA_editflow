@@ -2135,7 +2135,8 @@ artifact_lineage:
     training_allowed: false
     model_selection_allowed: false
     next_phase_authorized: false
-    materialization_execution_authorized: false
+    canonical_materialization_execution_authorized: false
+    gpu_allowed: false
     foundation_route_status: RETAINED_FAIL_CURRENT_PROTOCOL
     foundation_checkpoint_evidence_status: UNKNOWN_NOT_ASSERTED
     private_payload_access_authorized: false
@@ -2951,6 +2952,7 @@ verification:
     canonical_record_count: 6547
     canonical_materialization_qualification_eligible: true
     canonical_materialization_execution_authorized: false
+    gpu_allowed: false
     foundation_route_status: RETAINED_FAIL_CURRENT_PROTOCOL
     foundation_checkpoint_evidence_status: UNKNOWN_NOT_ASSERTED
     private_payload_access_authorized: false

@@ -41,7 +41,7 @@ DEC020_AMENDMENT_PATH = "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec
 DECISION_LOG_PATH = "docs/execution/route_a_v3_decision_log.yaml"
 REGISTRY_MANIFEST_PATH = "docs/execution/route_a_v3_registry_manifest.json"
 A1_INTERIM_PATH = "docs/execution/route_a_v3_a1_interim.yaml"
-EXPECTED_A1_INTERIM_SHA256 = "cd4227db8b72d3835820aa1b967b3a5a5d891c585217a76bceb1ce7d7f090b21"
+EXPECTED_A1_INTERIM_SHA256 = "907ffd348e903904fec8fc86e93904af67ddaa971a087b985c6c3cf632539e14"
 DEC020_AUTHORITY_LEDGER_AT = "2026-08-13T12:15:00+08:00"
 DEC020_AUTHORITY_MANIFEST_AT = "2026-08-13T12:15:01+08:00"
 DEC020_AUTHORITY_MANIFEST_STATUS = (
@@ -8596,8 +8596,9 @@ def validate_a1_interim_lineage(
             "independent_reproduction_established": False,
             "canonical_materialization_qualification_eligible": True,
             "canonical_materialization_allowed": False,
-            "materialization_execution_authorized": False,
+            "canonical_materialization_execution_authorized": False,
             "training_allowed": False,
+            "gpu_allowed": False,
             "model_selection_allowed": False,
             "next_phase_authorized": False,
             "foundation_route_status": "RETAINED_FAIL_CURRENT_PROTOCOL",
@@ -10092,6 +10093,7 @@ def validate_a1_interim_lineage(
                     "canonical_record_count": 6547,
                     "canonical_materialization_qualification_eligible": True,
                     "canonical_materialization_execution_authorized": False,
+                    "gpu_allowed": False,
                     "foundation_route_status": "RETAINED_FAIL_CURRENT_PROTOCOL",
                     "foundation_checkpoint_evidence_status": "UNKNOWN_NOT_ASSERTED",
                     "private_payload_access_authorized": False,
