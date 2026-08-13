@@ -10,9 +10,10 @@ are three predecessor snapshots and one sync record.
 
 Mutable runtime files commit in the order STATUS, RUN_MANIFEST, EVENT_LOG, with
 EVENT_LOG as the commit point. Production proves the clean, pushed lifecycle
-L -> frozen exact3 I1 -> frozen config-only B1 -> dynamic exact3 I2 ->
-config-only B2 before report, prepared-output, or runtime I/O. I2 leaves only
-the four implementation-binding scalars UNKNOWN_NOT_ASSERTED; B2 binds them.
+pre-ledger -> exact4 L1 -> exact3 alignment L2 -> exact3 I1 -> config-only B1
+-> exact3 I2 -> config-only B2 -> dynamic exact3 I3 -> config-only B3 before
+report, prepared-output, or runtime I/O. I3 leaves only the four
+implementation-binding scalars UNKNOWN_NOT_ASSERTED; B3 binds them.
 """
 
 from __future__ import annotations
@@ -38,8 +39,13 @@ MUTABLE_NAMES = ("STATUS.json", "RUN_MANIFEST.json", "EVENT_LOG.jsonl")
 SCRIPT_REPO_PATH = "scripts/route_a_v3/gse200304_dec020_v4_qualification_runtime_sync.py"
 TEST_REPO_PATH = "tests/route_a_v3/test_gse200304_dec020_v4_qualification_runtime_sync.py"
 CONFIG_REPO_PATH = "configs/route_a_v3_gse200304_dec020_v4_qualification_runtime_sync_v1.json"
+PRE_LEDGER_COMMIT = "0eab96955764998f6cc767dbe9754091f9becd83"
+FROZEN_L1_COMMIT = "6fbd0059227c196b61c2c8d49c5e4e76dffe0b60"
+FROZEN_L2_COMMIT = "e10499a486347e2e21fd860251c95f8f4207fde9"
 FROZEN_I1_COMMIT = "2a329e041882f272577166b1a9224b1b0899fcf7"
 FROZEN_B1_COMMIT = "43229be309426997952c3d38a4a5881e89ceefb9"
+FROZEN_I2_COMMIT = "db4ba34f7a904b6568429af47384cbdf274dd33f"
+FROZEN_B2_COMMIT = "05db59209022f5c7f46926bcbc65d89043c56245"
 FROZEN_I1_BLOB_SHA256 = {
     CONFIG_REPO_PATH: "5708a1522bf29d5efb8bd4da7ddadd655fe6308ce5822fb357fb4827f96c9f84",
     SCRIPT_REPO_PATH: "2294d212fc7ab67fefbd70f123a46a59883272b5a28476c71741ae1a4f860431",
@@ -50,6 +56,16 @@ FROZEN_B1_BLOB_SHA256 = {
     SCRIPT_REPO_PATH: FROZEN_I1_BLOB_SHA256[SCRIPT_REPO_PATH],
     TEST_REPO_PATH: FROZEN_I1_BLOB_SHA256[TEST_REPO_PATH],
 }
+FROZEN_I2_BLOB_SHA256 = {
+    CONFIG_REPO_PATH: "7a2c4b593a741132e9d5de5906eb3f7a94fc90515fce9cb2c7fa030a770f1bfa",
+    SCRIPT_REPO_PATH: "c06039431f0a47c98a8e084aaa5fddb4ca9b31898177285722ce927075765249",
+    TEST_REPO_PATH: "9cc310992b21c4071ecb677706c2bae231c5ad926a421042ce2248e993c6ad62",
+}
+FROZEN_B2_BLOB_SHA256 = {
+    CONFIG_REPO_PATH: "dd977ea3b5b0ed9c7e535a6e2ca169fe7ca36b55047a23982066492804cb9226",
+    SCRIPT_REPO_PATH: FROZEN_I2_BLOB_SHA256[SCRIPT_REPO_PATH],
+    TEST_REPO_PATH: FROZEN_I2_BLOB_SHA256[TEST_REPO_PATH],
+}
 PRODUCTION_CONFIG_PATH = Path(__file__).resolve().parents[2] / CONFIG_REPO_PATH
 PRODUCTION_REPO_ROOT = Path(
     "/home/cunyuliu/mrna_editflow_goal/worktrees/routea_v3_a1_20260810"
@@ -59,12 +75,25 @@ HEX64 = re.compile(r"^[0-9a-f]{64}$")
 LEDGER_LINEAGE_IDS = [
     "gse200304_dec020_scratch_route_reported_endpoint_a1_adjudication_v4",
 ]
-LEDGER_PATHS = [
+LEDGER_REGISTRATION_PATHS = [
     "docs/execution/route_a_v3_a1_interim.yaml",
     "docs/execution/route_a_v3_registry_manifest.json",
     "scripts/route_a_v3/validate_a0_bundle.py",
     "tests/route_a_v3/test_a0_integrity_guards.py",
 ]
+LEDGER_ALIGNMENT_PATHS = LEDGER_REGISTRATION_PATHS[:3]
+FROZEN_L1_BLOB_SHA256 = {
+    LEDGER_REGISTRATION_PATHS[0]: "cd4227db8b72d3835820aa1b967b3a5a5d891c585217a76bceb1ce7d7f090b21",
+    LEDGER_REGISTRATION_PATHS[1]: "946ee402e9e82c3bd8ea31ed9c9c8f2f424c558e1242de6c1cbf61be2ae4ba46",
+    LEDGER_REGISTRATION_PATHS[2]: "28370123be6ce12c1c2d99eb53e4d7d87755ae0174f239d0afd2bba5a6890841",
+    LEDGER_REGISTRATION_PATHS[3]: "bb66d1168f6aef2456ef31c8dbb4f8e9058177b4be79cf0c3ea354ffc978b516",
+}
+FROZEN_L2_BLOB_SHA256 = {
+    LEDGER_REGISTRATION_PATHS[0]: "907ffd348e903904fec8fc86e93904af67ddaa971a087b985c6c3cf632539e14",
+    LEDGER_REGISTRATION_PATHS[1]: "23b3dcbe2f4dbb1b23e9d7fc2bd99bc3c7272de989b8cab6a14358bcff3e9231",
+    LEDGER_REGISTRATION_PATHS[2]: "b0e138466d5b05fe13ca4d8dbc6290e9baff55d28707deba357735d04568f17b",
+    LEDGER_REGISTRATION_PATHS[3]: FROZEN_L1_BLOB_SHA256[LEDGER_REGISTRATION_PATHS[3]],
+}
 REGISTERED_ARTIFACTS = [
     {
         "lineage_id": LEDGER_LINEAGE_IDS[0],
@@ -924,28 +953,51 @@ def validate_static_config(config: dict[str, Any]) -> None:
     _expect(authority["binding_exact_changed_paths"], [CONFIG_REPO_PATH], label="binding config-only path")
     lifecycle = _expect_keys(
         authority["frozen_runtime_sync_lifecycle"],
-        {"ledger_commit", "initial_implementation_commit", "initial_binding_commit",
-         "initial_implementation_blobs", "initial_binding_blobs"},
+        {"pre_ledger_commit", "initial_ledger_registration_commit",
+         "initial_ledger_registration_exact_changed_paths",
+         "initial_ledger_registration_blobs", "ledger_commit",
+         "ledger_alignment_parent_commit", "ledger_alignment_relation",
+         "ledger_alignment_exact_changed_paths", "ledger_alignment_blobs",
+         "initial_implementation_commit", "initial_binding_commit",
+         "initial_implementation_blobs", "initial_binding_blobs",
+         "second_implementation_commit", "second_binding_commit",
+         "second_implementation_blobs", "second_binding_blobs"},
         label="frozen runtime-sync lifecycle",
     )
-    _expect(lifecycle["ledger_commit"], "e10499a486347e2e21fd860251c95f8f4207fde9", label="lifecycle L")
+    _expect(lifecycle["pre_ledger_commit"], PRE_LEDGER_COMMIT, label="pre-ledger commit")
+    _expect(lifecycle["initial_ledger_registration_commit"], FROZEN_L1_COMMIT, label="lifecycle L1")
+    _expect(lifecycle["initial_ledger_registration_exact_changed_paths"], LEDGER_REGISTRATION_PATHS, label="L1 exact4 paths")
+    _expect(lifecycle["initial_ledger_registration_blobs"], FROZEN_L1_BLOB_SHA256, label="L1 blobs")
+    _expect(lifecycle["ledger_commit"], FROZEN_L2_COMMIT, label="lifecycle L2")
+    _expect(lifecycle["ledger_alignment_parent_commit"], FROZEN_L1_COMMIT, label="L2 parent/L1")
+    _expect(lifecycle["ledger_alignment_relation"], "DIRECT_CHILD_EXACT3_ALIGNMENT_OF_INITIAL_EXACT4_REGISTRATION", label="L2 alignment relation")
+    _expect(lifecycle["ledger_alignment_exact_changed_paths"], LEDGER_ALIGNMENT_PATHS, label="L2 exact3 paths")
+    _expect(lifecycle["ledger_alignment_blobs"], FROZEN_L2_BLOB_SHA256, label="L2 blobs")
     _expect(lifecycle["initial_implementation_commit"], FROZEN_I1_COMMIT, label="lifecycle I1")
     _expect(lifecycle["initial_binding_commit"], FROZEN_B1_COMMIT, label="lifecycle B1")
     _expect(lifecycle["initial_implementation_blobs"], FROZEN_I1_BLOB_SHA256, label="lifecycle I1 blobs")
     _expect(lifecycle["initial_binding_blobs"], FROZEN_B1_BLOB_SHA256, label="lifecycle B1 blobs")
+    _expect(lifecycle["second_implementation_commit"], FROZEN_I2_COMMIT, label="lifecycle I2")
+    _expect(lifecycle["second_binding_commit"], FROZEN_B2_COMMIT, label="lifecycle B2")
+    _expect(lifecycle["second_implementation_blobs"], FROZEN_I2_BLOB_SHA256, label="lifecycle I2 blobs")
+    _expect(lifecycle["second_binding_blobs"], FROZEN_B2_BLOB_SHA256, label="lifecycle B2 blobs")
     ledger = _expect_keys(
         authority["predecessor_ledger"],
         {"status", "commit", "integration_id", "manifest_status", "registered_lineage_ids", "exact_changed_paths", "frozen_blobs"},
         label="predecessor ledger",
     )
-    _expect(ledger["exact_changed_paths"], LEDGER_PATHS, label="ledger exact4 paths")
+    _expect(ledger["exact_changed_paths"], LEDGER_ALIGNMENT_PATHS, label="ledger L2 exact3 paths")
     blobs = ledger["frozen_blobs"]
     if not isinstance(blobs, list) or len(blobs) != 4:
-        raise BindingError("predecessor ledger exact4 blob closure drift")
-    for item, path in zip(blobs, LEDGER_PATHS):
+        raise BindingError("predecessor ledger final blob closure drift")
+    for item, path in zip(blobs, LEDGER_REGISTRATION_PATHS):
         _expect_keys(item, {"path", "sha256"}, label=f"ledger blob {path}")
         _expect(item["path"], path, label="ledger blob path")
     _validate_ledger_binding(ledger)
+    if not _ledger_values_are_unknown(ledger):
+        _expect(ledger["commit"], FROZEN_L2_COMMIT, label="predecessor ledger L2")
+        for item in blobs:
+            _expect(item["sha256"], FROZEN_L2_BLOB_SHA256[item["path"]], label="ledger final blob SHA")
 
     _expect(config["registered_artifacts"], REGISTERED_ARTIFACTS, label="registered exact4 bundle")
     if not _ledger_values_are_unknown(ledger):
@@ -1002,7 +1054,7 @@ def load_bound_config(config_path: Path = PRODUCTION_CONFIG_PATH) -> dict[str, A
     return load_config(config_path, require_bound=True)
 
 
-def expected_unknown_i2_config(bound_config: dict[str, Any]) -> dict[str, Any]:
+def expected_unknown_i3_config(bound_config: dict[str, Any]) -> dict[str, Any]:
     expected = copy.deepcopy(bound_config)
     for key in (
         "status",
@@ -1063,7 +1115,7 @@ def _read_repo_file(repo_root: Path, path: str) -> bytes:
 def audit_production_repository_authority(
     config: dict[str, Any], config_payload: bytes
 ) -> dict[str, Any]:
-    """Prove clean L -> exact3 I1 -> config-only B1 -> exact3 I2 -> B2."""
+    """Prove clean L1/L2 -> I1/B1 -> I2/B2 -> dynamic I3/B3."""
 
     validate_bound_config(config)
     authority = config["repository_authority"]
@@ -1072,9 +1124,8 @@ def audit_production_repository_authority(
     lifecycle = authority["frozen_runtime_sync_lifecycle"]
     repo_root = Path(authority["production_repo_root"])
     branch = authority["branch"]
-    implementation_i2_commit = binding["implementation_commit"]
-    ledger_commit = ledger["commit"]
-    _expect(lifecycle["ledger_commit"], ledger_commit, label="lifecycle/ledger L")
+    implementation_i3_commit = binding["implementation_commit"]
+    _expect(ledger["commit"], FROZEN_L2_COMMIT, label="predecessor ledger/L2")
 
     head = _run_git(repo_root, "rev-parse", "HEAD").decode("utf-8").strip()
     current_branch = _run_git(
@@ -1098,29 +1149,37 @@ def audit_production_repository_authority(
     ) != b"":
         raise AuthorityError("production worktree or index is dirty")
 
-    binding_b2_parent = _run_git(repo_root, "rev-parse", f"{head}^").decode(
-        "utf-8"
-    ).strip()
-    implementation_i2_parent = _run_git(
-        repo_root, "rev-parse", f"{implementation_i2_commit}^"
-    ).decode("utf-8").strip()
-    frozen_b1_parent = _run_git(
-        repo_root, "rev-parse", f"{FROZEN_B1_COMMIT}^"
-    ).decode("utf-8").strip()
-    frozen_i1_parent = _run_git(
-        repo_root, "rev-parse", f"{FROZEN_I1_COMMIT}^"
-    ).decode("utf-8").strip()
-    _expect(binding_b2_parent, implementation_i2_commit, label="B2 parent/I2")
-    _expect(implementation_i2_parent, FROZEN_B1_COMMIT, label="I2 parent/B1")
-    _expect(frozen_b1_parent, FROZEN_I1_COMMIT, label="B1 parent/I1")
-    _expect(frozen_i1_parent, ledger_commit, label="I1 parent/L")
+    chain = [
+        (head, implementation_i3_commit, "B3 parent/I3"),
+        (implementation_i3_commit, FROZEN_B2_COMMIT, "I3 parent/B2"),
+        (FROZEN_B2_COMMIT, FROZEN_I2_COMMIT, "B2 parent/I2"),
+        (FROZEN_I2_COMMIT, FROZEN_B1_COMMIT, "I2 parent/B1"),
+        (FROZEN_B1_COMMIT, FROZEN_I1_COMMIT, "B1 parent/I1"),
+        (FROZEN_I1_COMMIT, FROZEN_L2_COMMIT, "I1 parent/L2"),
+        (FROZEN_L2_COMMIT, FROZEN_L1_COMMIT, "L2 parent/L1"),
+        (FROZEN_L1_COMMIT, PRE_LEDGER_COMMIT, "L1 parent/pre-ledger"),
+    ]
+    for child, expected_parent, label in chain:
+        parent = _run_git(repo_root, "rev-parse", f"{child}^").decode("utf-8").strip()
+        _expect(parent, expected_parent, label=label)
+
     _expect(
         _changed_paths(repo_root, head),
+        sorted(authority["binding_exact_changed_paths"]),
+        label="B3 exact config-only paths",
+    )
+    _expect(
+        _changed_paths(repo_root, implementation_i3_commit),
+        sorted(authority["implementation_exact_changed_paths"]),
+        label="I3 exact config/script/test paths",
+    )
+    _expect(
+        _changed_paths(repo_root, FROZEN_B2_COMMIT),
         sorted(authority["binding_exact_changed_paths"]),
         label="B2 exact config-only paths",
     )
     _expect(
-        _changed_paths(repo_root, implementation_i2_commit),
+        _changed_paths(repo_root, FROZEN_I2_COMMIT),
         sorted(authority["implementation_exact_changed_paths"]),
         label="I2 exact config/script/test paths",
     )
@@ -1135,20 +1194,29 @@ def audit_production_repository_authority(
         label="I1 exact config/script/test paths",
     )
     _expect(
-        _changed_paths(repo_root, ledger_commit),
-        sorted(ledger["exact_changed_paths"]),
-        label="L exact frozen ledger paths",
+        _changed_paths(repo_root, FROZEN_L2_COMMIT),
+        sorted(LEDGER_ALIGNMENT_PATHS),
+        label="L2 exact alignment paths",
+    )
+    _expect(
+        _changed_paths(repo_root, FROZEN_L1_COMMIT),
+        sorted(LEDGER_REGISTRATION_PATHS),
+        label="L1 exact registration paths",
     )
 
-    for item in ledger["frozen_blobs"]:
-        path = item["path"]
-        digest = item["sha256"]
+    for path, digest in FROZEN_L1_BLOB_SHA256.items():
+        if sha256(_git_blob(repo_root, FROZEN_L1_COMMIT, path)) != digest:
+            raise AuthorityError(f"L1 frozen ledger blob drift: {path}")
+
+    for path, digest in FROZEN_L2_BLOB_SHA256.items():
         for commit, label in (
-            (ledger_commit, "L"),
+            (FROZEN_L2_COMMIT, "L2"),
             (FROZEN_I1_COMMIT, "I1"),
             (FROZEN_B1_COMMIT, "B1"),
-            (implementation_i2_commit, "I2"),
-            (head, "B2"),
+            (FROZEN_I2_COMMIT, "I2"),
+            (FROZEN_B2_COMMIT, "B2"),
+            (implementation_i3_commit, "I3"),
+            (head, "B3"),
         ):
             if sha256(_git_blob(repo_root, commit, path)) != digest:
                 raise AuthorityError(f"{label} frozen ledger blob drift: {path}")
@@ -1158,14 +1226,16 @@ def audit_production_repository_authority(
     for commit, expected_blobs, label in (
         (FROZEN_I1_COMMIT, FROZEN_I1_BLOB_SHA256, "I1"),
         (FROZEN_B1_COMMIT, FROZEN_B1_BLOB_SHA256, "B1"),
+        (FROZEN_I2_COMMIT, FROZEN_I2_BLOB_SHA256, "I2"),
+        (FROZEN_B2_COMMIT, FROZEN_B2_BLOB_SHA256, "B2"),
     ):
         for path, digest in expected_blobs.items():
             if sha256(_git_blob(repo_root, commit, path)) != digest:
                 raise AuthorityError(f"frozen {label} blob drift: {path}")
 
-    expected_unknown_i2_payload = json_bytes(expected_unknown_i2_config(config))
-    if _git_blob(repo_root, implementation_i2_commit, CONFIG_REPO_PATH) != expected_unknown_i2_payload:
-        raise AuthorityError("I2 config is not the exact four-scalar UNKNOWN form")
+    expected_unknown_i3_payload = json_bytes(expected_unknown_i3_config(config))
+    if _git_blob(repo_root, implementation_i3_commit, CONFIG_REPO_PATH) != expected_unknown_i3_payload:
+        raise AuthorityError("I3 config is not the exact four-scalar UNKNOWN form")
 
     if _git_blob(repo_root, head, CONFIG_REPO_PATH) != config_payload:
         raise AuthorityError("B config Git blob differs from the supplied production config")
@@ -1177,8 +1247,8 @@ def audit_production_repository_authority(
         (TEST_REPO_PATH, binding["implementation_test_sha256"]),
     ):
         for commit, label in (
-            (implementation_i2_commit, "I2"),
-            (head, "B2"),
+            (implementation_i3_commit, "I3"),
+            (head, "B3"),
         ):
             if sha256(_git_blob(repo_root, commit, path)) != digest:
                 raise AuthorityError(f"{label} implementation blob drift: {path}")
@@ -1190,12 +1260,16 @@ def audit_production_repository_authority(
         _expect(core, compiled_core_sha256(config), label="production compiled core")
 
     return {
-        "status": "PASS_EXACT_L_TO_I1_TO_B1_TO_EXACT3_I2_TO_CONFIG_ONLY_B2",
-        "ledger_commit": ledger_commit,
+        "status": "PASS_EXACT_L1_TO_L2_TO_I1_B1_TO_I2_B2_TO_EXACT3_I3_CONFIG_ONLY_B3",
+        "pre_ledger_commit": PRE_LEDGER_COMMIT,
+        "initial_ledger_registration_l1_commit": FROZEN_L1_COMMIT,
+        "ledger_alignment_l2_commit": FROZEN_L2_COMMIT,
         "frozen_i1_commit": FROZEN_I1_COMMIT,
         "frozen_b1_commit": FROZEN_B1_COMMIT,
-        "implementation_i2_commit": implementation_i2_commit,
-        "binding_b2_commit": head,
+        "frozen_i2_commit": FROZEN_I2_COMMIT,
+        "frozen_b2_commit": FROZEN_B2_COMMIT,
+        "implementation_i3_commit": implementation_i3_commit,
+        "binding_b3_commit": head,
         "head_commit": head,
         "upstream_head_commit": upstream_head,
         "origin_branch_head_commit": origin_head,

@@ -152,9 +152,15 @@ def test_disk_static_config_and_truth_axes() -> None:
     assert all(value == runtime_sync.UNKNOWN for value in values) or all(
         value != runtime_sync.UNKNOWN for value in values
     )
-    normalized = runtime_sync.expected_unknown_i2_config(config)
+    normalized = runtime_sync.expected_unknown_i3_config(config)
     assert runtime_sync._binding_values_are_unknown(normalized["implementation_binding"])
     assert runtime_sync.compiled_core_projection(normalized) == runtime_sync.compiled_core_projection(config)
+    lifecycle = config["repository_authority"]["frozen_runtime_sync_lifecycle"]
+    assert lifecycle["initial_ledger_registration_commit"] == runtime_sync.FROZEN_L1_COMMIT
+    assert lifecycle["ledger_commit"] == runtime_sync.FROZEN_L2_COMMIT
+    assert lifecycle["second_implementation_commit"] == runtime_sync.FROZEN_I2_COMMIT
+    assert lifecycle["second_binding_commit"] == runtime_sync.FROZEN_B2_COMMIT
+    assert config["repository_authority"]["predecessor_ledger"]["exact_changed_paths"] == runtime_sync.LEDGER_ALIGNMENT_PATHS
     assert config["runtime"]["predecessor_event_count"] == 50
     assert config["runtime"]["successor_event_count"] == 51
     assert (
@@ -321,56 +327,65 @@ def test_immutable_first_prefix_recovery(tmp_path: Path) -> None:
 
 
 @pytest.mark.parametrize("drift", [None, "parent", "path"])
-def test_production_authority_exact_l_i1_b1_i2_b2(
+def test_production_authority_exact_l1_l2_i1_b1_i2_b2_i3_b3(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path, drift: str | None
 ) -> None:
     config = bound_config()
     binding = config["implementation_binding"]
     authority = config["repository_authority"]
     ledger = authority["predecessor_ledger"]
-    i2 = binding["implementation_commit"]
+    i3 = binding["implementation_commit"]
     head = "e" * 40
     branch = authority["branch"]
     config_payload = runtime_sync.json_bytes(config)
-    unknown_i2_payload = runtime_sync.json_bytes(runtime_sync.expected_unknown_i2_config(config))
+    unknown_i3_payload = runtime_sync.json_bytes(runtime_sync.expected_unknown_i3_config(config))
 
     parents = {
-        head: i2,
-        i2: runtime_sync.FROZEN_B1_COMMIT,
+        head: i3,
+        i3: runtime_sync.FROZEN_B2_COMMIT,
+        runtime_sync.FROZEN_B2_COMMIT: runtime_sync.FROZEN_I2_COMMIT,
+        runtime_sync.FROZEN_I2_COMMIT: runtime_sync.FROZEN_B1_COMMIT,
         runtime_sync.FROZEN_B1_COMMIT: runtime_sync.FROZEN_I1_COMMIT,
-        runtime_sync.FROZEN_I1_COMMIT: ledger["commit"],
+        runtime_sync.FROZEN_I1_COMMIT: runtime_sync.FROZEN_L2_COMMIT,
+        runtime_sync.FROZEN_L2_COMMIT: runtime_sync.FROZEN_L1_COMMIT,
+        runtime_sync.FROZEN_L1_COMMIT: runtime_sync.PRE_LEDGER_COMMIT,
     }
     if drift == "parent":
-        parents[i2] = "f" * 40
+        parents[i3] = "f" * 40
     changed = {
         head: authority["binding_exact_changed_paths"],
-        i2: authority["implementation_exact_changed_paths"],
+        i3: authority["implementation_exact_changed_paths"],
+        runtime_sync.FROZEN_B2_COMMIT: authority["binding_exact_changed_paths"],
+        runtime_sync.FROZEN_I2_COMMIT: authority["implementation_exact_changed_paths"],
         runtime_sync.FROZEN_B1_COMMIT: authority["binding_exact_changed_paths"],
         runtime_sync.FROZEN_I1_COMMIT: authority["implementation_exact_changed_paths"],
-        ledger["commit"]: ledger["exact_changed_paths"],
+        runtime_sync.FROZEN_L2_COMMIT: runtime_sync.LEDGER_ALIGNMENT_PATHS,
+        runtime_sync.FROZEN_L1_COMMIT: runtime_sync.LEDGER_REGISTRATION_PATHS,
     }
     if drift == "path":
-        changed[i2] = [*changed[i2], "unexpected"]
+        changed[i3] = [*changed[i3], "unexpected"]
 
     digest_by_payload: dict[bytes, str] = {}
     blobs: dict[tuple[str, str], bytes] = {}
     for label, commit, digests in (
         ("i1", runtime_sync.FROZEN_I1_COMMIT, runtime_sync.FROZEN_I1_BLOB_SHA256),
         ("b1", runtime_sync.FROZEN_B1_COMMIT, runtime_sync.FROZEN_B1_BLOB_SHA256),
+        ("i2", runtime_sync.FROZEN_I2_COMMIT, runtime_sync.FROZEN_I2_BLOB_SHA256),
+        ("b2", runtime_sync.FROZEN_B2_COMMIT, runtime_sync.FROZEN_B2_BLOB_SHA256),
     ):
         for path, digest in digests.items():
             payload = f"{label}:{path}\n".encode()
             blobs[(commit, path)] = payload
             digest_by_payload[payload] = digest
 
-    dynamic_script = b"dynamic I2 script\n"
-    dynamic_test = b"dynamic I2 test\n"
+    dynamic_script = b"dynamic I3 script\n"
+    dynamic_test = b"dynamic I3 test\n"
     digest_by_payload[dynamic_script] = binding["implementation_script_sha256"]
     digest_by_payload[dynamic_test] = binding["implementation_test_sha256"]
-    for commit in (i2, head):
+    for commit in (i3, head):
         blobs[(commit, runtime_sync.SCRIPT_REPO_PATH)] = dynamic_script
         blobs[(commit, runtime_sync.TEST_REPO_PATH)] = dynamic_test
-    blobs[(i2, runtime_sync.CONFIG_REPO_PATH)] = unknown_i2_payload
+    blobs[(i3, runtime_sync.CONFIG_REPO_PATH)] = unknown_i3_payload
     blobs[(head, runtime_sync.CONFIG_REPO_PATH)] = config_payload
 
     worktree: dict[str, bytes] = {
@@ -378,12 +393,17 @@ def test_production_authority_exact_l_i1_b1_i2_b2(
         runtime_sync.SCRIPT_REPO_PATH: dynamic_script,
         runtime_sync.TEST_REPO_PATH: dynamic_test,
     }
+    for path, digest in runtime_sync.FROZEN_L1_BLOB_SHA256.items():
+        payload = f"ledger-l1:{path}\n".encode()
+        digest_by_payload[payload] = digest
+        blobs[(runtime_sync.FROZEN_L1_COMMIT, path)] = payload
     for item in ledger["frozen_blobs"]:
-        payload = f"ledger:{item['path']}\n".encode()
+        payload = f"ledger-l2:{item['path']}\n".encode()
         digest_by_payload[payload] = item["sha256"]
         worktree[item["path"]] = payload
-        for commit in (ledger["commit"], runtime_sync.FROZEN_I1_COMMIT,
-                       runtime_sync.FROZEN_B1_COMMIT, i2, head):
+        for commit in (runtime_sync.FROZEN_L2_COMMIT, runtime_sync.FROZEN_I1_COMMIT,
+                       runtime_sync.FROZEN_B1_COMMIT, runtime_sync.FROZEN_I2_COMMIT,
+                       runtime_sync.FROZEN_B2_COMMIT, i3, head):
             blobs[(commit, item["path"])] = payload
 
     def fake_git(_repo: Path, *args: str) -> bytes:
@@ -409,10 +429,14 @@ def test_production_authority_exact_l_i1_b1_i2_b2(
 
     if drift is None:
         result = runtime_sync.audit_production_repository_authority(config, config_payload)
+        assert result["initial_ledger_registration_l1_commit"] == runtime_sync.FROZEN_L1_COMMIT
+        assert result["ledger_alignment_l2_commit"] == runtime_sync.FROZEN_L2_COMMIT
         assert result["frozen_i1_commit"] == runtime_sync.FROZEN_I1_COMMIT
         assert result["frozen_b1_commit"] == runtime_sync.FROZEN_B1_COMMIT
-        assert result["implementation_i2_commit"] == i2
-        assert result["binding_b2_commit"] == head
+        assert result["frozen_i2_commit"] == runtime_sync.FROZEN_I2_COMMIT
+        assert result["frozen_b2_commit"] == runtime_sync.FROZEN_B2_COMMIT
+        assert result["implementation_i3_commit"] == i3
+        assert result["binding_b3_commit"] == head
     else:
         with pytest.raises(runtime_sync.RuntimeSyncError):
             runtime_sync.audit_production_repository_authority(config, config_payload)

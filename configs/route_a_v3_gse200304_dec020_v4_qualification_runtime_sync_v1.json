@@ -11,20 +11,20 @@
   "event_name": "GSE200304_DEC020_SCRATCH_ROUTE_A1_QUALIFICATION_REGISTERED_RUNTIME_SYNCED",
   "implementation_binding": {
     "binding_scheme": "CONFIG_ONLY_POST_IMPLEMENTATION_BINDING_V1",
-    "status": "BOUND",
-    "implementation_commit": "db4ba34f7a904b6568429af47384cbdf274dd33f",
+    "status": "UNKNOWN_NOT_ASSERTED",
+    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
     "implementation_script_path": "scripts/route_a_v3/gse200304_dec020_v4_qualification_runtime_sync.py",
-    "implementation_script_sha256": "c06039431f0a47c98a8e084aaa5fddb4ca9b31898177285722ce927075765249",
+    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
     "implementation_test_path": "tests/route_a_v3/test_gse200304_dec020_v4_qualification_runtime_sync.py",
-    "implementation_test_sha256": "9cc310992b21c4071ecb677706c2bae231c5ad926a421042ce2248e993c6ad62",
-    "compiled_core_sha256": "fb688f3cd3f4f07a04316d9423c8b8ebe9637f462e272c4c25d1d2dfb0484ef6",
+    "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
+    "compiled_core_sha256": "7850c8c87722b3f48d4ae68fb8d717f4356322fdc7ce7e6acb5a1a348b5d0260",
     "unknown_to_bound_scalar_paths": [
       "implementation_binding.status",
       "implementation_binding.implementation_commit",
       "implementation_binding.implementation_script_sha256",
       "implementation_binding.implementation_test_sha256"
     ],
-    "activation_rule": "The predecessor ledger L is frozen at e10499a486347e2e21fd860251c95f8f4207fde9 and changes exact4. Initial I1 is its direct exact3 child 2a329e041882f272577166b1a9224b1b0899fcf7; initial B1 is the direct config-only child 43229be309426997952c3d38a4a5881e89ceefb9. Dynamic I2 is the direct exact3 child of B1 and leaves exactly four implementation-binding scalars UNKNOWN_NOT_ASSERTED. Config-only B2 binds I2. L, I1, B1, I2, B2, HEAD, upstream, origin, frozen blobs, compiled core, and the worktree must be exact before registered-bundle, prepared-output, or runtime I/O."
+    "activation_rule": "Freeze pre-ledger 0eab96955764998f6cc767dbe9754091f9becd83, exact4 ledger registration L1 6fbd0059227c196b61c2c8d49c5e4e76dffe0b60, and its direct exact3 ledger-alignment child L2 e10499a486347e2e21fd860251c95f8f4207fde9. Then prove exact3 I1 2a329e041882f272577166b1a9224b1b0899fcf7, config-only B1 43229be309426997952c3d38a4a5881e89ceefb9, exact3 I2 db4ba34f7a904b6568429af47384cbdf274dd33f, and config-only B2 05db59209022f5c7f46926bcbc65d89043c56245. Dynamic I3 is B2's direct exact3 child and leaves exactly four implementation-binding scalars UNKNOWN_NOT_ASSERTED; config-only B3 binds I3. The complete parent chain, every exact path set, both ledger blob maps, prior runtime-sync blob maps, final ledger persistence, I3/B3 blobs, HEAD, upstream, origin, compiled core, and worktree must be exact before registered-bundle, prepared-output, or runtime I/O."
   },
   "repository_authority": {
     "production_repo_root": "/home/cunyuliu/mrna_editflow_goal/worktrees/routea_v3_a1_20260810",
@@ -38,7 +38,34 @@
       "configs/route_a_v3_gse200304_dec020_v4_qualification_runtime_sync_v1.json"
     ],
     "frozen_runtime_sync_lifecycle": {
+      "pre_ledger_commit": "0eab96955764998f6cc767dbe9754091f9becd83",
+      "initial_ledger_registration_commit": "6fbd0059227c196b61c2c8d49c5e4e76dffe0b60",
+      "initial_ledger_registration_exact_changed_paths": [
+        "docs/execution/route_a_v3_a1_interim.yaml",
+        "docs/execution/route_a_v3_registry_manifest.json",
+        "scripts/route_a_v3/validate_a0_bundle.py",
+        "tests/route_a_v3/test_a0_integrity_guards.py"
+      ],
+      "initial_ledger_registration_blobs": {
+        "docs/execution/route_a_v3_a1_interim.yaml": "cd4227db8b72d3835820aa1b967b3a5a5d891c585217a76bceb1ce7d7f090b21",
+        "docs/execution/route_a_v3_registry_manifest.json": "946ee402e9e82c3bd8ea31ed9c9c8f2f424c558e1242de6c1cbf61be2ae4ba46",
+        "scripts/route_a_v3/validate_a0_bundle.py": "28370123be6ce12c1c2d99eb53e4d7d87755ae0174f239d0afd2bba5a6890841",
+        "tests/route_a_v3/test_a0_integrity_guards.py": "bb66d1168f6aef2456ef31c8dbb4f8e9058177b4be79cf0c3ea354ffc978b516"
+      },
       "ledger_commit": "e10499a486347e2e21fd860251c95f8f4207fde9",
+      "ledger_alignment_parent_commit": "6fbd0059227c196b61c2c8d49c5e4e76dffe0b60",
+      "ledger_alignment_relation": "DIRECT_CHILD_EXACT3_ALIGNMENT_OF_INITIAL_EXACT4_REGISTRATION",
+      "ledger_alignment_exact_changed_paths": [
+        "docs/execution/route_a_v3_a1_interim.yaml",
+        "docs/execution/route_a_v3_registry_manifest.json",
+        "scripts/route_a_v3/validate_a0_bundle.py"
+      ],
+      "ledger_alignment_blobs": {
+        "docs/execution/route_a_v3_a1_interim.yaml": "907ffd348e903904fec8fc86e93904af67ddaa971a087b985c6c3cf632539e14",
+        "docs/execution/route_a_v3_registry_manifest.json": "23b3dcbe2f4dbb1b23e9d7fc2bd99bc3c7272de989b8cab6a14358bcff3e9231",
+        "scripts/route_a_v3/validate_a0_bundle.py": "b0e138466d5b05fe13ca4d8dbc6290e9baff55d28707deba357735d04568f17b",
+        "tests/route_a_v3/test_a0_integrity_guards.py": "bb66d1168f6aef2456ef31c8dbb4f8e9058177b4be79cf0c3ea354ffc978b516"
+      },
       "initial_implementation_commit": "2a329e041882f272577166b1a9224b1b0899fcf7",
       "initial_binding_commit": "43229be309426997952c3d38a4a5881e89ceefb9",
       "initial_implementation_blobs": {
@@ -50,6 +77,18 @@
         "configs/route_a_v3_gse200304_dec020_v4_qualification_runtime_sync_v1.json": "f3d2f3990f8ffe181c5a17fc90785a574e4e1dc3a7df1befc707db3706a1b71b",
         "scripts/route_a_v3/gse200304_dec020_v4_qualification_runtime_sync.py": "2294d212fc7ab67fefbd70f123a46a59883272b5a28476c71741ae1a4f860431",
         "tests/route_a_v3/test_gse200304_dec020_v4_qualification_runtime_sync.py": "990f47225a13237c42d50abfb7813830d5580c08e1cf2210fb11dd54d42f6581"
+      },
+      "second_implementation_commit": "db4ba34f7a904b6568429af47384cbdf274dd33f",
+      "second_binding_commit": "05db59209022f5c7f46926bcbc65d89043c56245",
+      "second_implementation_blobs": {
+        "configs/route_a_v3_gse200304_dec020_v4_qualification_runtime_sync_v1.json": "7a2c4b593a741132e9d5de5906eb3f7a94fc90515fce9cb2c7fa030a770f1bfa",
+        "scripts/route_a_v3/gse200304_dec020_v4_qualification_runtime_sync.py": "c06039431f0a47c98a8e084aaa5fddb4ca9b31898177285722ce927075765249",
+        "tests/route_a_v3/test_gse200304_dec020_v4_qualification_runtime_sync.py": "9cc310992b21c4071ecb677706c2bae231c5ad926a421042ce2248e993c6ad62"
+      },
+      "second_binding_blobs": {
+        "configs/route_a_v3_gse200304_dec020_v4_qualification_runtime_sync_v1.json": "dd977ea3b5b0ed9c7e535a6e2ca169fe7ca36b55047a23982066492804cb9226",
+        "scripts/route_a_v3/gse200304_dec020_v4_qualification_runtime_sync.py": "c06039431f0a47c98a8e084aaa5fddb4ca9b31898177285722ce927075765249",
+        "tests/route_a_v3/test_gse200304_dec020_v4_qualification_runtime_sync.py": "9cc310992b21c4071ecb677706c2bae231c5ad926a421042ce2248e993c6ad62"
       }
     },
     "predecessor_ledger": {
@@ -63,8 +102,7 @@
       "exact_changed_paths": [
         "docs/execution/route_a_v3_a1_interim.yaml",
         "docs/execution/route_a_v3_registry_manifest.json",
-        "scripts/route_a_v3/validate_a0_bundle.py",
-        "tests/route_a_v3/test_a0_integrity_guards.py"
+        "scripts/route_a_v3/validate_a0_bundle.py"
       ],
       "frozen_blobs": [
         {
