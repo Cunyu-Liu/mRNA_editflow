@@ -1,0 +1,116 @@
+{
+  "schema_version": "route_a_v3_a6_cpu_legal_ctmc_partial.v1",
+  "protocol_id": "ROUTE_A_V3_A6_CPU_LEGAL_CTMC_PARTIAL_V1",
+  "contract_id": "mrna_xeditflow_route_a_v3",
+  "phase_id": "A6",
+  "run_scope": "SYNTHETIC_NONLEARNED_CPU_GILLESPIE_BASE_RECOVERY",
+  "production_python": "/home/cunyuliu/miniconda3/envs/editflow/bin/python",
+  "implementation_binding": {
+    "status": "UNKNOWN_NOT_ASSERTED",
+    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED"
+  },
+  "authority": {
+    "goal_path": "docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md",
+    "goal_sha256": "cbac4c3dcba8f1b8df95d8edad52d19e3c126d1c865d0cc423537c754cc90982",
+    "active_config_path": "configs/route_a_v3.yaml",
+    "active_config_sha256": "c908ac57b7c9667398f616a0ccf7101b41451b80bf169e768131844d3b63a678",
+    "required_remote": "origin",
+    "frozen_base_commit": "a28bf3c67cf538a8754fde8505635b2ef2c3d68b",
+    "dependency_leaves": {
+      "configs/route_a_v3_a6_cpu_exact_absorbing_dag_v1.json": "84e9a3f21ac6293faa167eb08eb40e8886bfe43daaa374b2c7613fbc9baecab8",
+      "scripts/route_a_v3/run_a6_cpu_exact_absorbing_dag.py": "4cc0e10784c218cf4fa18ede1280cb84e1b7daf2553db4d82e0ee88f71e0f7c8"
+    },
+    "goal_critical_literals": [
+      "### 势函数一致的预算化 legal XEditFlow",
+      "`STOP`、预算耗尽、无合法动作、数值失败是不同终态。",
+      "对多个 action 指向相同 next state，先聚合 observable transition rate：",
+      "small-graph exact DP、定理、数值 fixture；"
+    ],
+    "active_config_critical_literals": [
+      "state_type: SOURCE_ANCHORED_ACYCLIC_SPARSE_EDIT_DAG",
+      "action_types: [SOURCE_BASE_TO_ALT_BASE, STOP]",
+      "hard_legality_before_rate_normalization: true",
+      "observable_transition_aliases_must_be_aggregated: true",
+      "phase_id: A6",
+      "may_run_in_parallel_with: [A1]",
+      "- SMALL_GRAPH_EXACT_ENUMERATION",
+      "- INDEPENDENT_NUMERICAL_CHECKER"
+    ]
+  },
+  "dependency_contract": {
+    "kernel_config_path": "configs/route_a_v3_a6_cpu_exact_absorbing_dag_v1.json",
+    "kernel_script_path": "scripts/route_a_v3/run_a6_cpu_exact_absorbing_dag.py",
+    "kernel_protocol_id": "ROUTE_A_V3_A6_CPU_EXACT_ABSORBING_DAG_V1",
+    "kernel_case_id": "L2_B2",
+    "kernel_role": "FROZEN_STATE_LEGALITY_RATE_ALIAS_GENERATOR_AND_DP_ORACLE"
+  },
+  "clock_contract": {
+    "clock_semantics": "CONTINUOUS_ALGORITHMIC_TIME",
+    "rate_time_dependence": "NONE",
+    "terminal_tilt_time_dependence": "NONE",
+    "holding_time_law": "EXPONENTIAL_WITH_CURRENT_TOTAL_EXIT_RATE",
+    "general_time_inhomogeneous_exactness": "NOT_RUN"
+  },
+  "sampler_contract": {
+    "algorithm": "SINGLE_EVENT_GILLESPIE_DIRECT_METHOD",
+    "raw_alias_aggregation_order": "BEFORE_EXIT_RATE_NORMALIZATION_AND_SAMPLING",
+    "stop_competes_as_positive_rate_jump": true,
+    "source_relative_no_reedit_no_revert": true,
+    "maximum_jumps": 3,
+    "random_seed": 2026081301,
+    "trajectory_count": 20000,
+    "replay_trajectory_count": 256,
+    "open_unit_generation": "GETRANDBITS53_PLUS_ONE_OVER_TWO_POW_53_PLUS_ONE"
+  },
+  "acceptance": {
+    "terminal_distribution_tv_max": 0.03,
+    "initial_holding_time_mean_relative_error_max": 0.025,
+    "replay_mismatch_count_max": 0,
+    "legality_violation_count_max": 0,
+    "source_reconstruction_violation_count_max": 0,
+    "budget_violation_count_max": 0,
+    "reedit_or_revert_violation_count_max": 0,
+    "algorithmic_time_monotonicity_violation_count_max": 0,
+    "alias_aggregation_violation_count_max": 0,
+    "numerical_failure_count_max": 0
+  },
+  "status_contract": {
+    "run_status_on_success": "PASS",
+    "a6_evidence_status": "IN_PROGRESS",
+    "a6_phase_complete": false,
+    "a6_pass_asserted": false,
+    "flow_base_legal_ctmc_evidence_status": "IN_PROGRESS",
+    "flow_base_legal_ctmc_result": "DEVELOPMENT_CPU_NONLEARNED_GILLESPIE_REPLAY_PARTIAL_PASS",
+    "flow_base_legal_ctmc_scope": "SYNTHETIC_NONLEARNED_CPU_GILLESPIE_BASE_RECOVERY",
+    "formal_flow_base_task_pass_asserted": false,
+    "exact_guidance_toy_graph_evidence_status": "PASS",
+    "l3_evidence_status": "IN_PROGRESS",
+    "l3_claim_status": "NOT_ESTABLISHED",
+    "learned_potential_approximation_error": "NOT_RUN",
+    "ordinary_data_evidence": "NOT_RUN",
+    "a7_evidence_status": "NOT_RUN",
+    "a7_unlock": false,
+    "training_allowed": false,
+    "model_selection_allowed": false,
+    "gpu_work_allowed": false,
+    "private_payload_access_allowed": false,
+    "sealed_contact_allowed": false
+  },
+  "publication": {
+    "allowed_output_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A6",
+    "output_directory": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A6/A6_CPU_LEGAL_CTMC_PARTIAL_V1",
+    "output_names": [
+      "A6_CPU_LEGAL_CTMC_PARTIAL_REPORT.json",
+      "RUN_MANIFEST.json",
+      "EVENT_LOG.jsonl"
+    ],
+    "exclusive_new_directory_required": true,
+    "atomic_directory_publish_required": true,
+    "public_aggregate_only": true,
+    "row_data_allowed": false,
+    "trajectory_data_allowed": false,
+    "ordinary_private_or_sealed_data_allowed": false
+  }
+}
