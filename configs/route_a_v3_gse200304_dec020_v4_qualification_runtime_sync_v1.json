@@ -1,0 +1,300 @@
+{
+  "schema_version": "route_a_v3_gse200304_dec020_v4_qualification_runtime_sync.v1",
+  "protocol_id": "ROUTE_A_V3_GSE200304_DEC020_V4_QUALIFICATION_RUNTIME_SYNC_V1",
+  "contract_id": "mrna_xeditflow_route_a_v3",
+  "phase_id": "A1",
+  "dataset_ids": [
+    "GSE200304"
+  ],
+  "decision_id": "V3-DEC-020",
+  "event_id": "A1-EVT-051",
+  "event_name": "GSE200304_DEC020_SCRATCH_ROUTE_A1_QUALIFICATION_REGISTERED_RUNTIME_SYNCED",
+  "implementation_binding": {
+    "binding_scheme": "CONFIG_ONLY_POST_IMPLEMENTATION_BINDING_V1",
+    "status": "UNKNOWN_NOT_ASSERTED",
+    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "implementation_script_path": "scripts/route_a_v3/gse200304_dec020_v4_qualification_runtime_sync.py",
+    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_test_path": "tests/route_a_v3/test_gse200304_dec020_v4_qualification_runtime_sync.py",
+    "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
+    "compiled_core_sha256": "ce0d4cac0841850e77032b1f6404ebed6e4f0c85e9130eb3935c1a2e8fd7ffe9",
+    "unknown_to_bound_scalar_paths": [
+      "implementation_binding.status",
+      "implementation_binding.implementation_commit",
+      "implementation_binding.implementation_script_sha256",
+      "implementation_binding.implementation_test_sha256"
+    ],
+    "activation_rule": "The predecessor ledger exact4 authority group (status, commit, integration ID, manifest status, ordered lineage ID, and four frozen blob SHA-256 values) must move atomically from UNKNOWN_NOT_ASSERTED to one fully bound L bundle. I is the direct child of L and changes exactly this config, script, and focused test while all four implementation-binding scalars remain UNKNOWN_NOT_ASSERTED. B is the direct child of I and changes only those four implementation-binding scalars. L, I, B, HEAD, upstream, and origin must be fully bound, exact, equal where required, and clean before registered-bundle, prepared-output, or runtime I/O."
+  },
+  "repository_authority": {
+    "production_repo_root": "/home/cunyuliu/mrna_editflow_goal/worktrees/routea_v3_a1_20260810",
+    "branch": "routea-v3-a1-20260810",
+    "implementation_exact_changed_paths": [
+      "configs/route_a_v3_gse200304_dec020_v4_qualification_runtime_sync_v1.json",
+      "scripts/route_a_v3/gse200304_dec020_v4_qualification_runtime_sync.py",
+      "tests/route_a_v3/test_gse200304_dec020_v4_qualification_runtime_sync.py"
+    ],
+    "binding_exact_changed_paths": [
+      "configs/route_a_v3_gse200304_dec020_v4_qualification_runtime_sync_v1.json"
+    ],
+    "predecessor_ledger": {
+      "status": "BOUND",
+      "commit": "e10499a486347e2e21fd860251c95f8f4207fde9",
+      "integration_id": "GSE200304_DEC020_SCRATCH_ROUTE_REPORTED_ENDPOINT_A1_ADJUDICATION_V4",
+      "manifest_status": "A1_GSE200304_DEC020_SCRATCH_ROUTE_V4_QUALIFIED_LEDGER_REGISTERED_EVT050_SETTLED_PENDING_FRESH_RUNTIME_EVENT",
+      "registered_lineage_ids": [
+        "gse200304_dec020_scratch_route_reported_endpoint_a1_adjudication_v4"
+      ],
+      "exact_changed_paths": [
+        "docs/execution/route_a_v3_a1_interim.yaml",
+        "docs/execution/route_a_v3_registry_manifest.json",
+        "scripts/route_a_v3/validate_a0_bundle.py",
+        "tests/route_a_v3/test_a0_integrity_guards.py"
+      ],
+      "frozen_blobs": [
+        {
+          "path": "docs/execution/route_a_v3_a1_interim.yaml",
+          "sha256": "907ffd348e903904fec8fc86e93904af67ddaa971a087b985c6c3cf632539e14"
+        },
+        {
+          "path": "docs/execution/route_a_v3_registry_manifest.json",
+          "sha256": "23b3dcbe2f4dbb1b23e9d7fc2bd99bc3c7272de989b8cab6a14358bcff3e9231"
+        },
+        {
+          "path": "scripts/route_a_v3/validate_a0_bundle.py",
+          "sha256": "b0e138466d5b05fe13ca4d8dbc6290e9baff55d28707deba357735d04568f17b"
+        },
+        {
+          "path": "tests/route_a_v3/test_a0_integrity_guards.py",
+          "sha256": "bb66d1168f6aef2456ef31c8dbb4f8e9058177b4be79cf0c3ea354ffc978b516"
+        }
+      ]
+    }
+  },
+  "registered_artifacts": [
+    {
+      "lineage_id": "gse200304_dec020_scratch_route_reported_endpoint_a1_adjudication_v4",
+      "name": "ADJUDICATION_REPORT.json",
+      "artifact_type": "ADJUDICATION_REPORT",
+      "absolute_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_DEC020_SCRATCH_ROUTE_A1_ADJUDICATION_V4_20260813T143426P0800/ADJUDICATION_REPORT.json",
+      "bytes": 2812,
+      "sha256": "37ced466a905f8e71bb06ec55550a36d8c2e1d0ff8f03c6dde839562c1680d99"
+    },
+    {
+      "lineage_id": "gse200304_dec020_scratch_route_reported_endpoint_a1_adjudication_v4",
+      "name": "INPUT_EVIDENCE_AUDIT.json",
+      "artifact_type": "INPUT_EVIDENCE_AUDIT",
+      "absolute_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_DEC020_SCRATCH_ROUTE_A1_ADJUDICATION_V4_20260813T143426P0800/INPUT_EVIDENCE_AUDIT.json",
+      "bytes": 2891,
+      "sha256": "3fc8171d6f69fb27e3a454bf504efacddcddceb99fffe8b47b59c84c554d1d72"
+    },
+    {
+      "lineage_id": "gse200304_dec020_scratch_route_reported_endpoint_a1_adjudication_v4",
+      "name": "SHA256SUMS",
+      "artifact_type": "SHA256SUMS",
+      "absolute_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_DEC020_SCRATCH_ROUTE_A1_ADJUDICATION_V4_20260813T143426P0800/SHA256SUMS",
+      "bytes": 183,
+      "sha256": "c11d227abbf5700c7a9a1b403236e331377f23e20c7192b9effe7bd6428f3fb3"
+    },
+    {
+      "lineage_id": "gse200304_dec020_scratch_route_reported_endpoint_a1_adjudication_v4",
+      "name": "PUBLICATION_COMMIT.json",
+      "artifact_type": "PUBLICATION_COMMIT",
+      "absolute_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_DEC020_SCRATCH_ROUTE_A1_ADJUDICATION_V4_20260813T143426P0800/PUBLICATION_COMMIT.json",
+      "bytes": 1082,
+      "sha256": "6597863e9eef342e6539fa886d81b373157f8248baacd519d7b0ebc60a3af2ac"
+    }
+  ],
+  "runtime": {
+    "run_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5",
+    "allowed_prepared_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/staging/runtime_sync/A1",
+    "predecessor_event_id": "A1-EVT-050",
+    "predecessor_event_count": 50,
+    "successor_event_id": "A1-EVT-051",
+    "successor_event_count": 51,
+    "predecessor_manifest_output_count": 212,
+    "successor_manifest_output_count": 220,
+    "predecessor_mutables": {
+      "STATUS.json": {
+        "bytes": 27036,
+        "sha256": "9aaf2ccadd06e763363f8ff64d619b1bdf47e6a6e19fdf37daf495ba965601cb",
+        "snapshot_name": "STATUS_PRE_GSE200304_DEC020_V4_QUALIFICATION_RUNTIME_SYNC_V1.json"
+      },
+      "RUN_MANIFEST.json": {
+        "bytes": 88241,
+        "sha256": "00dd14035e806f883c691af68c05a7e2f3afd48000096c15e541fdb87b765481",
+        "snapshot_name": "RUN_MANIFEST_PRE_GSE200304_DEC020_V4_QUALIFICATION_RUNTIME_SYNC_V1.json"
+      },
+      "EVENT_LOG.jsonl": {
+        "bytes": 98296,
+        "sha256": "6d77d51702aa809bd013b576b2db038c4b9faa72a17e88bdb080f00b93c65234",
+        "snapshot_name": "EVENT_LOG_PRE_GSE200304_DEC020_V4_QUALIFICATION_RUNTIME_SYNC_V1.jsonl"
+      }
+    },
+    "predecessor_tail": {
+      "event_id": "A1-EVT-050",
+      "decision_id": "V3-DEC-020",
+      "bytes": 3681,
+      "sha256": "2c9d756827f38d68eee0d66afdf7033349335563a55a8ffcedf097523747a697"
+    },
+    "sync_name": "A1_GSE200304_DEC020_V4_QUALIFICATION_RUNTIME_SYNC_V1.json",
+    "output_delta_count": 8,
+    "immutable_publish_order": [
+      "STATUS_PRE_GSE200304_DEC020_V4_QUALIFICATION_RUNTIME_SYNC_V1.json",
+      "RUN_MANIFEST_PRE_GSE200304_DEC020_V4_QUALIFICATION_RUNTIME_SYNC_V1.json",
+      "EVENT_LOG_PRE_GSE200304_DEC020_V4_QUALIFICATION_RUNTIME_SYNC_V1.jsonl",
+      "A1_GSE200304_DEC020_V4_QUALIFICATION_RUNTIME_SYNC_V1.json"
+    ],
+    "mutable_publish_order": [
+      "STATUS.json",
+      "RUN_MANIFEST.json",
+      "EVENT_LOG.jsonl"
+    ]
+  },
+  "successor_scientific_state": {
+    "input_status_counts": {
+      "PASS": 7,
+      "BLOCKED": 0,
+      "UNKNOWN_NOT_ASSERTED": 0,
+      "NOT_RUN": 0
+    },
+    "unresolved_blockers": [],
+    "scratch_route_qualified": true,
+    "scratch_route_ordinary_study_contribution": 1,
+    "scratch_route_a1_study_contribution": 1,
+    "scratch_route_true_a2_study_contribution": 0,
+    "scratch_route_canonical_record_count": 6547,
+    "canonical_materialization_qualification_eligible": true,
+    "canonical_materialization_execution_authorized": false,
+    "ordinary_study_contribution": 1,
+    "a1_study_contribution": 1,
+    "true_a2_study_contribution": 0,
+    "canonical_intervention_record_count": 6547,
+    "global_required_ordinary_studies": 3,
+    "global_required_a1_studies": 2,
+    "global_required_true_a2_studies": 1,
+    "global_phase_completion_status": "INCOMPLETE",
+    "global_phase_completion_gate_passed": false,
+    "qualified": false,
+    "training_started": false,
+    "training_allowed": false,
+    "training_authorized": false,
+    "gpu_work_started": false,
+    "gpu_work_allowed": false,
+    "model_selection_allowed": false,
+    "next_phase_authorized": false,
+    "private_payload_access_allowed": false,
+    "sealed_contact_allowed": false,
+    "foundation_route_status": "RETAINED_FAIL_CURRENT_PROTOCOL",
+    "foundation_checkpoint_evidence_status": "UNKNOWN_NOT_ASSERTED",
+    "scientific_claim_status": "NOT_ESTABLISHED"
+  },
+  "registered_evidence_truth": {
+    "scratch_route_adjudication": {
+      "status": "PASS_DEC020_SCRATCH_ROUTE_SCOPED_REPORTED_ENDPOINT_A1_QUALIFIED",
+      "qualified": true,
+      "ordinary_study_contribution": 1,
+      "a1_study_contribution": 1,
+      "true_a2_study_contribution": 0,
+      "canonical_record_count": 6547,
+      "canonical_materialization_qualification_eligible": true,
+      "canonical_materialization_execution_authorized": false,
+      "training_started": false,
+      "training_allowed": false,
+      "training_authorized": false,
+      "gpu_work_started": false,
+      "gpu_allowed": false,
+      "gpu_work_allowed": false,
+      "model_selection_allowed": false,
+      "next_phase_authorized": false,
+      "private_payload_access_allowed": false,
+      "sealed_contact_allowed": false,
+      "scientific_claim_status": "NOT_ESTABLISHED"
+    },
+    "global_phase": {
+      "required_ordinary_studies": 3,
+      "required_a1_studies": 2,
+      "required_true_a2_studies": 1,
+      "current_ordinary_studies": 1,
+      "current_a1_studies": 1,
+      "current_true_a2_studies": 0,
+      "phase_completion_status": "INCOMPLETE",
+      "unresolved_blockers": [
+        "INSUFFICIENT_QUALIFIED_ORDINARY_STUDIES",
+        "INSUFFICIENT_QUALIFIED_A1_STUDIES",
+        "NO_QUALIFIED_TRUE_A2_DENSE_STUDY"
+      ],
+      "overall_A1_phase_completion_gate_changed": false
+    },
+    "foundation_route": {
+      "input_status_counts": {
+        "PASS": 7,
+        "BLOCKED": 0,
+        "UNKNOWN_NOT_ASSERTED": 1,
+        "NOT_RUN": 0
+      },
+      "unresolved_blockers": [
+        "CHECKPOINT_SPECIFIC_EXPOSURE_NOT_PASS"
+      ],
+      "status": "RETAINED_FAIL_CURRENT_PROTOCOL",
+      "checkpoint_evidence_status": "UNKNOWN_NOT_ASSERTED"
+    },
+    "historical_dec019": {
+      "input_status_counts": {
+        "PASS": 7,
+        "BLOCKED": 0,
+        "UNKNOWN_NOT_ASSERTED": 1,
+        "NOT_RUN": 0
+      },
+      "unresolved_blockers": [
+        "CHECKPOINT_SPECIFIC_EXPOSURE_NOT_PASS"
+      ],
+      "status": "HISTORICAL_PRESERVED_NOT_REWRITTEN"
+    }
+  },
+  "outer_a1_state": {
+    "run_status": "IN_PROGRESS",
+    "evidence_status": "SCRATCH_ROUTE_QUALIFIED_GLOBAL_PHASE_INCOMPLETE",
+    "gate_status": "A1_PHASE_INCOMPLETE_GLOBAL_REQUIREMENTS",
+    "qualified_ordinary_studies": 1,
+    "qualified_a1_studies": 1,
+    "qualified_a2_dense_studies": 0,
+    "metadata_only_qualification_count": 0,
+    "qualified": false,
+    "training_started": false,
+    "training_allowed": false,
+    "training_authorized": false,
+    "model_selection_allowed": false,
+    "next_phase_authorized": false
+  },
+  "access_boundary": {
+    "registered_artifact_count": 4,
+    "registered_artifact_exact_byte_validation_count": 4,
+    "registered_artifact_body_parse_count": 0,
+    "registered_artifact_payload_field_read_count": 0,
+    "registered_artifacts_copied": false,
+    "private_payload_read_count": 0,
+    "private_payload_registered_artifact_count": 0,
+    "private_payload_copied": false,
+    "private_payload_listed": false,
+    "row_payload_read_count": 0,
+    "sequence_payload_read_count": 0,
+    "effect_payload_read_count": 0,
+    "canonical_materialization_count": 0,
+    "training_run_count": 0,
+    "gpu_work_count": 0,
+    "model_selection_run_count": 0,
+    "restricted_or_sealed_path_accessed": false,
+    "gse246381_contact": false
+  },
+  "publication_policy": {
+    "registered_artifacts_remain_in_place": true,
+    "registered_artifact_order_is_ledger_lineage_order": true,
+    "predecessor_snapshots_are_immutable_runtime_outputs": true,
+    "sync_record_is_immutable_runtime_output": true,
+    "mutables_commit_after_all_immutables": true,
+    "event_is_last_commit": true,
+    "supported_recovery": "EXACT_PUBLICATION_PREFIX_ONLY"
+  },
+  "sync_type": "APPEND_ONLY_QUALIFICATION_EVIDENCE_REGISTRATION_SCIENTIFIC_STATE_CHANGED_PHASE_GATE_UNCHANGED"
+}
