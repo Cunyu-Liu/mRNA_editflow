@@ -11,20 +11,20 @@
   "event_name": "GSE200304_DEC020_SCRATCH_ROUTE_A1_QUALIFICATION_REGISTERED_RUNTIME_SYNCED",
   "implementation_binding": {
     "binding_scheme": "CONFIG_ONLY_POST_IMPLEMENTATION_BINDING_V1",
-    "status": "BOUND",
-    "implementation_commit": "2a329e041882f272577166b1a9224b1b0899fcf7",
+    "status": "UNKNOWN_NOT_ASSERTED",
+    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
     "implementation_script_path": "scripts/route_a_v3/gse200304_dec020_v4_qualification_runtime_sync.py",
-    "implementation_script_sha256": "2294d212fc7ab67fefbd70f123a46a59883272b5a28476c71741ae1a4f860431",
+    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
     "implementation_test_path": "tests/route_a_v3/test_gse200304_dec020_v4_qualification_runtime_sync.py",
-    "implementation_test_sha256": "990f47225a13237c42d50abfb7813830d5580c08e1cf2210fb11dd54d42f6581",
-    "compiled_core_sha256": "ce0d4cac0841850e77032b1f6404ebed6e4f0c85e9130eb3935c1a2e8fd7ffe9",
+    "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
+    "compiled_core_sha256": "fb688f3cd3f4f07a04316d9423c8b8ebe9637f462e272c4c25d1d2dfb0484ef6",
     "unknown_to_bound_scalar_paths": [
       "implementation_binding.status",
       "implementation_binding.implementation_commit",
       "implementation_binding.implementation_script_sha256",
       "implementation_binding.implementation_test_sha256"
     ],
-    "activation_rule": "The predecessor ledger exact4 authority group (status, commit, integration ID, manifest status, ordered lineage ID, and four frozen blob SHA-256 values) must move atomically from UNKNOWN_NOT_ASSERTED to one fully bound L bundle. I is the direct child of L and changes exactly this config, script, and focused test while all four implementation-binding scalars remain UNKNOWN_NOT_ASSERTED. B is the direct child of I and changes only those four implementation-binding scalars. L, I, B, HEAD, upstream, and origin must be fully bound, exact, equal where required, and clean before registered-bundle, prepared-output, or runtime I/O."
+    "activation_rule": "The predecessor ledger L is frozen at e10499a486347e2e21fd860251c95f8f4207fde9 and changes exact4. Initial I1 is its direct exact3 child 2a329e041882f272577166b1a9224b1b0899fcf7; initial B1 is the direct config-only child 43229be309426997952c3d38a4a5881e89ceefb9. Dynamic I2 is the direct exact3 child of B1 and leaves exactly four implementation-binding scalars UNKNOWN_NOT_ASSERTED. Config-only B2 binds I2. L, I1, B1, I2, B2, HEAD, upstream, origin, frozen blobs, compiled core, and the worktree must be exact before registered-bundle, prepared-output, or runtime I/O."
   },
   "repository_authority": {
     "production_repo_root": "/home/cunyuliu/mrna_editflow_goal/worktrees/routea_v3_a1_20260810",
@@ -37,6 +37,21 @@
     "binding_exact_changed_paths": [
       "configs/route_a_v3_gse200304_dec020_v4_qualification_runtime_sync_v1.json"
     ],
+    "frozen_runtime_sync_lifecycle": {
+      "ledger_commit": "e10499a486347e2e21fd860251c95f8f4207fde9",
+      "initial_implementation_commit": "2a329e041882f272577166b1a9224b1b0899fcf7",
+      "initial_binding_commit": "43229be309426997952c3d38a4a5881e89ceefb9",
+      "initial_implementation_blobs": {
+        "configs/route_a_v3_gse200304_dec020_v4_qualification_runtime_sync_v1.json": "5708a1522bf29d5efb8bd4da7ddadd655fe6308ce5822fb357fb4827f96c9f84",
+        "scripts/route_a_v3/gse200304_dec020_v4_qualification_runtime_sync.py": "2294d212fc7ab67fefbd70f123a46a59883272b5a28476c71741ae1a4f860431",
+        "tests/route_a_v3/test_gse200304_dec020_v4_qualification_runtime_sync.py": "990f47225a13237c42d50abfb7813830d5580c08e1cf2210fb11dd54d42f6581"
+      },
+      "initial_binding_blobs": {
+        "configs/route_a_v3_gse200304_dec020_v4_qualification_runtime_sync_v1.json": "f3d2f3990f8ffe181c5a17fc90785a574e4e1dc3a7df1befc707db3706a1b71b",
+        "scripts/route_a_v3/gse200304_dec020_v4_qualification_runtime_sync.py": "2294d212fc7ab67fefbd70f123a46a59883272b5a28476c71741ae1a4f860431",
+        "tests/route_a_v3/test_gse200304_dec020_v4_qualification_runtime_sync.py": "990f47225a13237c42d50abfb7813830d5580c08e1cf2210fb11dd54d42f6581"
+      }
+    },
     "predecessor_ledger": {
       "status": "BOUND",
       "commit": "e10499a486347e2e21fd860251c95f8f4207fde9",
