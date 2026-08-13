@@ -20,13 +20,13 @@ authority:
   data_role_registry_path: docs/execution/route_a_v3_data_role_registry.yaml
   data_role_registry_sha256: d06bfcfb8d265153a44d270c7bc40e5dd462a5e3bdde631d91519c7d7e394852
   claim_evidence_matrix_path: docs/execution/route_a_v3_claim_evidence_matrix.yaml
-  claim_evidence_matrix_sha256: 9f5226ac78dd6c3848ba5ceb42742918de66ec459f951bb845ccaf21958a88f9
+  claim_evidence_matrix_sha256: 8c701a24b5a1f19c993037bcf4b30c3561f63f089344cb65e365aa0bd7c1bcb9
   active_authority_leaf_sha256:
     configs/route_a_v3.yaml: c908ac57b7c9667398f616a0ccf7101b41451b80bf169e768131844d3b63a678
     configs/route_a_v3_a1_qualification.json: ac1ed9e78bf88d916f5599e3a2e75e79df1504c16ba108a12f7e28cfd3da2e20
     docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec020.yaml: 0cfbe6e35c2c7f3b19756b8aee41dc91b2a8f05b249a5b6e9cacf90185c56026
     docs/contracts/supersession_mrna_xeditflow_v1_1_to_route_a_v3.yaml: d7c0559742a44b4f0b6f8c941e734da52359c2733ba759ec2acd8ca40b07e62d
-    docs/execution/route_a_v3_claim_evidence_matrix.yaml: 9f5226ac78dd6c3848ba5ceb42742918de66ec459f951bb845ccaf21958a88f9
+    docs/execution/route_a_v3_claim_evidence_matrix.yaml: 8c701a24b5a1f19c993037bcf4b30c3561f63f089344cb65e365aa0bd7c1bcb9
     docs/execution/route_a_v3_data_role_registry.yaml: d06bfcfb8d265153a44d270c7bc40e5dd462a5e3bdde631d91519c7d7e394852
     docs/execution/route_a_v3_decision_log.yaml: 1332e789758a11687d3bcbbe95e0a5c7e852694e25ed90563d280006d94caced
     docs/execution/route_a_v3_split_registry.yaml: 52e1146027956e024dd6194ff18862e542e27fff81e8fc6b6d8aeaa972b8259c
@@ -3000,8 +3000,8 @@ verification:
   dec020_runtime_sync_event_id: PENDING_FRESH_RUNTIME_EVENT_ID
 
 initial_generated_at: "2026-08-10T06:30:58+08:00"
-generated_at: "2026-08-13T14:40:00+08:00"
-updated_at: "2026-08-13T14:40:00+08:00"
+generated_at: "2026-08-13T16:45:00+08:00"
+updated_at: "2026-08-13T16:45:00+08:00"
 updated_for_decision_id: V3-DEC-020
 latest_authority_update_id: V3-DEC-020
 latest_evidence_update_id: GSE200304_DEC020_SCRATCH_ROUTE_REPORTED_ENDPOINT_A1_ADJUDICATION_V4

@@ -41,7 +41,35 @@ DEC020_AMENDMENT_PATH = "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec
 DECISION_LOG_PATH = "docs/execution/route_a_v3_decision_log.yaml"
 REGISTRY_MANIFEST_PATH = "docs/execution/route_a_v3_registry_manifest.json"
 A1_INTERIM_PATH = "docs/execution/route_a_v3_a1_interim.yaml"
-EXPECTED_A1_INTERIM_SHA256 = "907ffd348e903904fec8fc86e93904af67ddaa971a087b985c6c3cf632539e14"
+A6_INTERIM_PATH = "docs/execution/route_a_v3_a6_interim.yaml"
+EXPECTED_A1_INTERIM_SHA256 = "ab24ed95249773d18acd019b74f3676c79caa4e4279d44f1660027658f818042"
+EXPECTED_A6_INTERIM_SHA256 = "032aafef8b86d95f9408b46c619c3225313270e8770e858f8a82b16ab35b3cbb"
+A6_REGISTRATION_LEDGER_AT = "2026-08-13T16:45:00+08:00"
+A6_REGISTRATION_MANIFEST_AT = "2026-08-13T16:45:01+08:00"
+A6_REGISTRATION_MANIFEST_STATUS = (
+    "A6_CPU_EXACT_PARTIAL_EVIDENCE_REGISTERED_"
+    "A6_IN_PROGRESS_L3_NOT_ESTABLISHED_A7_NOT_RUN"
+)
+A6_PROTOCOL_ID = "ROUTE_A_V3_A6_CPU_EXACT_ABSORBING_DAG_V1"
+A6_PROTOCOL_CONFIG_PATH = "configs/route_a_v3_a6_cpu_exact_absorbing_dag_v1.json"
+A6_PRODUCER_PATH = "scripts/route_a_v3/run_a6_cpu_exact_absorbing_dag.py"
+A6_FOCUSED_TEST_PATH = "tests/route_a_v3/test_a6_cpu_exact_absorbing_dag.py"
+A6_STATIC_PRODUCER_LEAF_SHA256 = {
+    A6_PROTOCOL_CONFIG_PATH: "84e9a3f21ac6293faa167eb08eb40e8886bfe43daaa374b2c7613fbc9baecab8",
+    A6_PRODUCER_PATH: "4cc0e10784c218cf4fa18ede1280cb84e1b7daf2553db4d82e0ee88f71e0f7c8",
+    A6_FOCUSED_TEST_PATH: "7e8253be856645f276689dc032f9581b9ea172faea929dff60ba07995c709e24",
+}
+A6_REPORT_EVIDENCE_ID = "A6_CPU_EXACT_ABSORBING_DAG_V1"
+A6_REPORT_PATH = (
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A6/"
+    "A6_CPU_EXACT_ABSORBING_DAG_V1/A6_CPU_EXACT_ABSORBING_DAG_REPORT.json"
+)
+A6_REPORT_BYTES = 14574
+A6_REPORT_SHA256 = "e16e2536eb68b219644d64e40859c8e2270123c227994c0fa37e8b7084992e83"
+A6_REPORT_RECORDED_AT = "2026-08-13T16:44:55+08:00"
+A6_FROZEN_BASE_COMMIT = "db297787b3cd9f74908a1ae726cb64b19a9161fb"
+A6_IMPLEMENTATION_COMMIT = "92ab710b3ddf570af305d94bdf68c36cff84aad2"
+A6_BINDING_COMMIT = "de33f0d6337692409d17b2ac75e056e148815e72"
 DEC020_AUTHORITY_LEDGER_AT = "2026-08-13T12:15:00+08:00"
 DEC020_AUTHORITY_MANIFEST_AT = "2026-08-13T12:15:01+08:00"
 DEC020_AUTHORITY_MANIFEST_STATUS = (
@@ -142,7 +170,7 @@ ACTIVE_AMENDMENT_PATHS = {
 DEC019_IMMUTABLE_LEAF_SHA256 = {
     DEC019_AMENDMENT_PATH: "8c82e564398f0735fe4976f875fe91f053937b05044e5232e237694a2b36e1ca",
 }
-DEC020_ACTIVE_AUTHORITY_LEAF_SHA256 = {
+DEC020_FROZEN_AUTHORITY_LEAF_SHA256 = {
     CONFIG_PATH: "c908ac57b7c9667398f616a0ccf7101b41451b80bf169e768131844d3b63a678",
     A1_QUALIFICATION_CONFIG_PATH: "ac1ed9e78bf88d916f5599e3a2e75e79df1504c16ba108a12f7e28cfd3da2e20",
     SUPERSESSION_PATH: "d7c0559742a44b4f0b6f8c941e734da52359c2733ba759ec2acd8ca40b07e62d",
@@ -154,6 +182,10 @@ DEC020_ACTIVE_AUTHORITY_LEAF_SHA256 = {
     "docs/execution/route_a_v3_task_split_matrix.yaml": "db23e96b6977339237956de57309d04a9e692bf937a8d34427d2e1b6cc150db8",
     "docs/execution/route_a_v3_claim_evidence_matrix.yaml": "9f5226ac78dd6c3848ba5ceb42742918de66ec459f951bb845ccaf21958a88f9",
 }
+DEC020_ACTIVE_AUTHORITY_LEAF_SHA256 = {
+    **DEC020_FROZEN_AUTHORITY_LEAF_SHA256,
+    "docs/execution/route_a_v3_claim_evidence_matrix.yaml": "8c701a24b5a1f19c993037bcf4b30c3561f63f089344cb65e365aa0bd7c1bcb9",
+}
 DEC020_AUTHORITY_LEDGER_PATHS = (
     A1_INTERIM_PATH,
     REGISTRY_MANIFEST_PATH,
@@ -161,7 +193,7 @@ DEC020_AUTHORITY_LEDGER_PATHS = (
     "tests/route_a_v3/test_a0_integrity_guards.py",
 )
 DEC020_AUTHORITY_COMMIT_EXACT_CHANGED_PATHS = (
-    *DEC020_ACTIVE_AUTHORITY_LEAF_SHA256,
+    *DEC020_FROZEN_AUTHORITY_LEAF_SHA256,
     *DEC020_AUTHORITY_LEDGER_PATHS,
 )
 GSE114002_DEC019_SUCCESSOR_CONFIG_PATH = (
@@ -1395,6 +1427,7 @@ EXPECTED_REGISTRY_MANIFEST_PATH_ROLES = (
     (REGISTRY_PATHS["data"], "DATA_ROLE_REGISTRY"),
     (DECISION_LOG_PATH, "DECISION_AND_AMENDMENT_LOG"),
     (A1_INTERIM_PATH, "A1_ACTIVE_INTERIM_RECORD"),
+    (A6_INTERIM_PATH, "A6_ACTIVE_INTERIM_RECORD"),
     (REGISTRY_PATHS["split"], "SPLIT_REGISTRY"),
     (REGISTRY_PATHS["task"], "TASK_AND_PHASE_REGISTRY"),
     (REGISTRY_PATHS["matrix"], "TASK_SPLIT_MATRIX"),
@@ -1634,6 +1667,9 @@ EXPECTED_REGISTRY_MANIFEST_PATH_ROLES = (
     (GSE200304_DEC020_V4_DYNAMIC_CONFIG_PATH, "GSE200304_DEC020_SCRATCH_ROUTE_V4_CONFIG"),
     (GSE200304_DEC020_V4_SCRIPT_PATH, "GSE200304_DEC020_SCRATCH_ROUTE_V4_ADJUDICATOR"),
     (GSE200304_DEC020_V4_TEST_PATH, "GSE200304_DEC020_SCRATCH_ROUTE_V4_FOCUSED_TEST"),
+    (A6_PROTOCOL_CONFIG_PATH, "A6_CPU_EXACT_ABSORBING_DAG_BOUND_PROTOCOL"),
+    (A6_PRODUCER_PATH, "A6_CPU_EXACT_ABSORBING_DAG_PRODUCER"),
+    (A6_FOCUSED_TEST_PATH, "A6_CPU_EXACT_ABSORBING_DAG_FOCUSED_TEST"),
     (INTEGRITY_GUARD_TEST_PATH, "A0_AUTHORITY_INTEGRITY_GUARD_TEST"),
     (VALIDATOR_PATH, "A0_STATIC_AND_SEMANTIC_VALIDATOR"),
 )
@@ -1728,6 +1764,8 @@ def required_bundle_paths() -> tuple[str, ...]:
         SEALED_GUARD_PATH,
         SEALED_RUNNER_PATH,
         A1_INTERIM_PATH,
+        A6_INTERIM_PATH,
+        *A6_STATIC_PRODUCER_LEAF_SHA256,
         GSE149487_PLUMAGE_PROTOCOL_PATH,
         GSE149487_PLUMAGE_ASSET_MANIFEST_PATH,
         GSE149487_PLUMAGE_HELPER_PATH,
@@ -2692,10 +2730,10 @@ def validate_registry_manifest(repo_root: Path) -> list[Issue]:
         "contract_sha256": SOURCE_CONTRACT_SHA256,
         "active_amendment_decision_ids": ACTIVE_AMENDMENT_DECISION_IDS,
         "base_commit": "bbb71dcba6f1e1c9cb75a8a6653f1a4fe4a6ca0c",
-        "manifest_status": GSE200304_DEC020_V4_MANIFEST_STATUS,
+        "manifest_status": A6_REGISTRATION_MANIFEST_STATUS,
         "initial_generated_at": "2026-08-10T10:10:05+08:00",
-        "generated_at": GSE200304_DEC020_V4_MANIFEST_AT,
-        "updated_at": GSE200304_DEC020_V4_MANIFEST_AT,
+        "generated_at": A6_REGISTRATION_MANIFEST_AT,
+        "updated_at": A6_REGISTRATION_MANIFEST_AT,
         "sealed_contact": False,
     }
     expected_top_keys = set(expected_static_top) | {"files"}
@@ -2813,6 +2851,15 @@ def validate_registry_manifest(repo_root: Path) -> list[Issue]:
             "DEC020_V4_STATIC_REGISTRATION",
             REGISTRY_MANIFEST_PATH,
             "DEC020 V4 CONFIG/SCRIPT/FOCUSED_TEST leaves must be registered exactly once",
+        )
+    expected_a6_paths = {A6_INTERIM_PATH, *A6_STATIC_PRODUCER_LEAF_SHA256}
+    observed_a6_paths = set(by_path) & expected_a6_paths
+    if observed_a6_paths != expected_a6_paths:
+        _issue(
+            issues,
+            "A6_CPU_EXACT_STATIC_REGISTRATION",
+            REGISTRY_MANIFEST_PATH,
+            "A6 interim plus CONFIG/SCRIPT/FOCUSED_TEST leaves must be registered exactly once",
         )
     try:
         goal_hash = sha256_bytes(_read_bytes(repo_root, GOAL_PATH))
@@ -10172,14 +10219,14 @@ def validate_a1_interim_lineage(
     generated = interim.get("generated_at")
     updated = interim.get("updated_at")
     if (
-        generated != GSE200304_DEC020_V4_LEDGER_AT
-        or updated != GSE200304_DEC020_V4_LEDGER_AT
+        generated != A6_REGISTRATION_LEDGER_AT
+        or updated != A6_REGISTRATION_LEDGER_AT
     ):
         _issue(
             issues,
             "A1_INTERIM_TIME",
             path,
-            "generated_at and updated_at must remain the exact DEC020 V4 post-adjudication ledger timestamp",
+            "generated_at and updated_at must identify the exact A6 claim-matrix rebind timestamp",
         )
     if generated != updated:
         _issue(issues, "A1_INTERIM_TIME", path, "generated_at and updated_at must identify the same amended record bytes")
@@ -10243,6 +10290,297 @@ def validate_a1_interim_lineage(
                 "A1_INTERIM_TIME",
                 path,
                 "updated_at must follow all preserved evidence events, DEC-019 owner authorization, successor integration, GSE200304 post-adjudication artifacts, GSE149487 exact21 acquisition, the GSE217518 public-authority preflight, the GSE232572 public-recovery audit, the GSE232572 development V3 materialization, and the GSE232572 qualification-authority preflight",
+            )
+    return issues
+
+
+def _expected_a6_cpu_exact_interim() -> dict[str, Any]:
+    denominator = {
+        "denominator_type": "FROZEN_SYNTHETIC_ENUMERATION_CASES",
+        "fixed_case_count": 6,
+        "case_ids": ["L2_B0", "L2_B1", "L2_B2", "L3_B0", "L3_B1", "L3_B2"],
+        "total_state_count": 91,
+        "total_complete_path_count": 108,
+    }
+    return {
+        "schema_version": "1.0.0",
+        "contract_id": CONTRACT_ID,
+        "contract_version": VERSION,
+        "record_id": "ROUTE_A_V3_A6_CPU_EXACT_ABSORBING_DAG_V1",
+        "record_type": "A6_CPU_EXACT_PARTIAL_EVIDENCE_INTERIM",
+        "phase_id": "A6",
+        "record_status": "INTERIM_IN_PROGRESS_NOT_PHASE_COMPLETE",
+        "authority": {
+            "contract_path": GOAL_PATH,
+            "contract_sha256": SOURCE_CONTRACT_SHA256,
+            "active_config_path": CONFIG_PATH,
+            "active_config_sha256": DEC020_ACTIVE_AUTHORITY_LEAF_SHA256[CONFIG_PATH],
+            "task_registry_path": REGISTRY_PATHS["task"],
+            "task_registry_sha256": DEC020_ACTIVE_AUTHORITY_LEAF_SHA256[
+                REGISTRY_PATHS["task"]
+            ],
+            "claim_evidence_matrix_path": REGISTRY_PATHS["claim"],
+            "claim_evidence_matrix_sha256": DEC020_ACTIVE_AUTHORITY_LEAF_SHA256[
+                REGISTRY_PATHS["claim"]
+            ],
+            "branch": "routea-v3-a1-20260810",
+            "worktree": "/home/cunyuliu/mrna_editflow_goal/worktrees/routea_v3_a1_20260810",
+        },
+        "artifact_lineage": {
+            "producer_commits": {
+                "frozen_base_commit": A6_FROZEN_BASE_COMMIT,
+                "implementation_commit": A6_IMPLEMENTATION_COMMIT,
+                "binding_commit": A6_BINDING_COMMIT,
+            },
+            "static_leaves": {
+                "protocol": {
+                    "path": A6_PROTOCOL_CONFIG_PATH,
+                    "sha256": A6_STATIC_PRODUCER_LEAF_SHA256[
+                        A6_PROTOCOL_CONFIG_PATH
+                    ],
+                },
+                "producer": {
+                    "path": A6_PRODUCER_PATH,
+                    "sha256": A6_STATIC_PRODUCER_LEAF_SHA256[A6_PRODUCER_PATH],
+                },
+                "focused_test": {
+                    "path": A6_FOCUSED_TEST_PATH,
+                    "sha256": A6_STATIC_PRODUCER_LEAF_SHA256[
+                        A6_FOCUSED_TEST_PATH
+                    ],
+                },
+            },
+            "dynamic_report": {
+                "evidence_id": A6_REPORT_EVIDENCE_ID,
+                "path": A6_REPORT_PATH,
+                "bytes": A6_REPORT_BYTES,
+                "sha256": A6_REPORT_SHA256,
+                "recorded_at": A6_REPORT_RECORDED_AT,
+                "registered_in_static_manifest": False,
+            },
+        },
+        "run_state": {
+            "protocol_id": A6_PROTOCOL_ID,
+            "run_scope": "DEVELOPMENT_ONLY_CPU_EXACT_ABSORPTION_FIXTURE",
+            "run_status": "PASS",
+            "public_aggregate_only": True,
+            "runtime_output_count": 3,
+            "runtime_output_names": [
+                "A6_CPU_EXACT_ABSORBING_DAG_REPORT.json",
+                "RUN_MANIFEST.json",
+                "EVENT_LOG.jsonl",
+            ],
+            "runtime_auxiliary_output_hashes_registered": False,
+        },
+        "phase_state": {
+            "evidence_status": "IN_PROGRESS",
+            "phase_complete": False,
+        },
+        "task_states": {
+            "EXACT_GUIDANCE_TOY_GRAPH": {
+                "evidence_status": "PASS",
+                "result": "DEVELOPMENT_CPU_EXACT_FIXTURE_PASS",
+                "scope": "SYNTHETIC_TIME_HOMOGENEOUS_CPU_EXACT",
+            },
+            "FLOW_BASE_LEGAL_CTMC": {"evidence_status": "NOT_RUN"},
+        },
+        "claim_state": {
+            "claim_id": "L3_LEGAL_POTENTIAL_CONSISTENT_XEDITFLOW",
+            "evidence_status": "IN_PROGRESS",
+            "claim_status": "NOT_ESTABLISHED",
+        },
+        "time_scope": {
+            "clock_semantics": "CONTINUOUS_ALGORITHMIC_TIME",
+            "rate_time_dependence": "NONE",
+            "terminal_tilt_time_dependence": "NONE",
+            "general_time_inhomogeneous_exactness": "NOT_RUN",
+            "dp_time_key_rule": (
+                "DP_KEYS_MAY_QUOTIENT_ALGORITHMIC_TIME_ONLY_BECAUSE_"
+                "RATES_AND_TERMINAL_TILT_ARE_TIME_INVARIANT"
+            ),
+        },
+        "denominator": denominator,
+        "aggregate_maximum_metrics": {
+            "guided_terminal_tv_vs_tilted_base": 5.139118297581291e-17,
+            "guided_vs_base_total_exit_rate_relative_error": 2.0529242248115864e-16,
+            "path_product_relative_error": 2.2266202935521747e-16,
+            "true_per_rate_relative_error": 0.0,
+        },
+        "required_evidence_coverage": {
+            "exact_guidance_toy_graph": "PASS",
+            "flow_base_legal_ctmc": "NOT_RUN",
+            "general_time_inhomogeneous_exactness": "NOT_RUN",
+            "learned_potential_approximation_error": "NOT_RUN",
+            "l3_evidence_status": "IN_PROGRESS",
+        },
+        "registry_boundary": {
+            "task_registry_is_definition_only": True,
+            "task_registry_a6_phase_evidence_status_remains": "NOT_RUN",
+            "task_registry_exact_guidance_toy_graph_evidence_status_remains": "NOT_RUN",
+            "task_registry_flow_base_legal_ctmc_evidence_status_remains": "NOT_RUN",
+            "task_registry_changed_by_this_registration": False,
+            "evidence_semantics_registered_only_in_a6_interim_and_claim_cell": True,
+            "a1_interim_authority_pointer_rebind_only": True,
+            "a1_runtime_event_emitted": False,
+            "a1_runtime_science_or_counts_changed": False,
+        },
+        "boundaries": {
+            "a6_pass_asserted": False,
+            "l3_claim_established": False,
+            "a7_evidence_status": "NOT_RUN",
+            "a7_unlock": False,
+            "training_allowed": False,
+            "gpu_work_allowed": False,
+            "model_selection_allowed": False,
+            "ordinary_data_read": False,
+            "private_payload_access_allowed": False,
+            "sealed_contact_allowed": False,
+        },
+        "generated_at": A6_REGISTRATION_LEDGER_AT,
+        "updated_at": A6_REGISTRATION_LEDGER_AT,
+    }
+
+
+def validate_a6_cpu_exact_registration(
+    repo_root: Path,
+    registries: Mapping[str, Mapping[str, Any]],
+) -> list[Issue]:
+    """Validate the exact synthetic A6 partial-evidence registration."""
+
+    issues: list[Issue] = []
+    try:
+        interim = _load_yaml(repo_root, A6_INTERIM_PATH)
+        actual_interim_sha256 = sha256_bytes(_read_bytes(repo_root, A6_INTERIM_PATH))
+    except (FileNotFoundError, ValueError, yaml.YAMLError) as exc:
+        _issue(issues, "A6_INTERIM_LOAD", A6_INTERIM_PATH, str(exc))
+        return issues
+    if actual_interim_sha256 != EXPECTED_A6_INTERIM_SHA256:
+        _issue(
+            issues,
+            "A6_INTERIM_CANONICAL_HASH",
+            A6_INTERIM_PATH,
+            f"active interim hash {actual_interim_sha256} must remain {EXPECTED_A6_INTERIM_SHA256}",
+        )
+    _expect_closed_mapping(
+        interim,
+        _expected_a6_cpu_exact_interim(),
+        A6_INTERIM_PATH,
+        issues,
+        "A6_INTERIM_SEMANTICS",
+    )
+
+    for relative, expected_sha256 in A6_STATIC_PRODUCER_LEAF_SHA256.items():
+        try:
+            actual_sha256 = sha256_bytes(_read_bytes(repo_root, relative))
+        except (FileNotFoundError, ValueError) as exc:
+            _issue(issues, "A6_STATIC_LEAF_UNREADABLE", relative, str(exc))
+            continue
+        if actual_sha256 != expected_sha256:
+            _issue(
+                issues,
+                "A6_STATIC_LEAF_DRIFT",
+                relative,
+                f"current bytes hash {actual_sha256} must remain {expected_sha256}",
+            )
+
+    denominator = _expected_a6_cpu_exact_interim()["denominator"]
+    expected_evidence_cell = {
+        "evidence_id": A6_REPORT_EVIDENCE_ID,
+        "artifact_path": A6_REPORT_PATH,
+        "artifact_hash": A6_REPORT_SHA256,
+        "artifact_bytes": A6_REPORT_BYTES,
+        "recorded_at": A6_REPORT_RECORDED_AT,
+        "analysis_intent": (
+            "PROSPECTIVE_DEVELOPMENT_CPU_EXACT_FIXTURE_FOR_PARTIAL_A6_EVIDENCE"
+        ),
+        "denominator": denominator,
+        "evidence_status": "PASS",
+        "task_id": "EXACT_GUIDANCE_TOY_GRAPH",
+        "result": "DEVELOPMENT_CPU_EXACT_FIXTURE_PASS",
+        "scope": "SYNTHETIC_TIME_HOMOGENEOUS_CPU_EXACT",
+        "producer_lineage": {
+            "frozen_base_commit": A6_FROZEN_BASE_COMMIT,
+            "implementation_commit": A6_IMPLEMENTATION_COMMIT,
+            "binding_commit": A6_BINDING_COMMIT,
+        },
+        "establishes_a6_phase_pass": False,
+        "establishes_l3_claim": False,
+        "unlocks_a7": False,
+    }
+    claim_registry = registries.get("claim", {})
+    l3_claim = _mapping_entry(
+        claim_registry.get("claims"),
+        "claim_id",
+        "L3_LEGAL_POTENTIAL_CONSISTENT_XEDITFLOW",
+    )
+    if not isinstance(l3_claim, Mapping):
+        _issue(
+            issues,
+            "A6_CLAIM_CELL",
+            REGISTRY_PATHS["claim"],
+            "L3 legal potential-consistent claim cell is required",
+        )
+    else:
+        for key, expected in {
+            "evidence_status": "IN_PROGRESS",
+            "claim_status": "NOT_ESTABLISHED",
+            "required_phase_ids": ["A6"],
+            "required_task_ids": [
+                "FLOW_BASE_LEGAL_CTMC",
+                "EXACT_GUIDANCE_TOY_GRAPH",
+            ],
+            "evidence_cells": [expected_evidence_cell],
+        }.items():
+            _expect(
+                l3_claim,
+                key,
+                expected,
+                REGISTRY_PATHS["claim"],
+                issues,
+                "A6_CLAIM_CELL",
+            )
+
+    task_registry = registries.get("task", {})
+    a6_phase = _mapping_entry(task_registry.get("phase_tasks"), "phase_id", "A6")
+    exact_task = _mapping_entry(
+        task_registry.get("tasks"),
+        "task_id",
+        "EXACT_GUIDANCE_TOY_GRAPH",
+    )
+    base_task = _mapping_entry(
+        task_registry.get("tasks"),
+        "task_id",
+        "FLOW_BASE_LEGAL_CTMC",
+    )
+    for entry, label, expected in (
+        (a6_phase, "A6 phase definition", {"evidence_status": "NOT_RUN"}),
+        (
+            exact_task,
+            "EXACT_GUIDANCE_TOY_GRAPH definition",
+            {"evidence_status": "NOT_RUN", "claim_status": "NOT_ESTABLISHED"},
+        ),
+        (
+            base_task,
+            "FLOW_BASE_LEGAL_CTMC definition",
+            {"evidence_status": "NOT_RUN", "claim_status": "NOT_ESTABLISHED"},
+        ),
+    ):
+        if not isinstance(entry, Mapping):
+            _issue(
+                issues,
+                "A6_TASK_REGISTRY_BOUNDARY",
+                REGISTRY_PATHS["task"],
+                f"{label} is required",
+            )
+            continue
+        for key, value in expected.items():
+            _expect(
+                entry,
+                key,
+                value,
+                REGISTRY_PATHS["task"],
+                issues,
+                "A6_TASK_REGISTRY_BOUNDARY",
             )
     return issues
 
@@ -10436,8 +10774,23 @@ def validate_l4_and_pre_v3(
         for claim in claims_raw:
             if not isinstance(claim, Mapping) or claim.get("claim_id") == "L4_BIOLOGICAL_THERAPEUTIC":
                 continue
-            if claim.get("claim_status") != "NOT_ESTABLISHED" or claim.get("evidence_status") != "NOT_RUN":
-                _issue(issues, "A0_CLAIM_PREMATURE", REGISTRY_PATHS["claim"], f"claim {claim.get('claim_id')!r} must start NOT_RUN/NOT_ESTABLISHED")
+            expected_evidence_status = (
+                "IN_PROGRESS"
+                if claim.get("claim_id")
+                == "L3_LEGAL_POTENTIAL_CONSISTENT_XEDITFLOW"
+                else "NOT_RUN"
+            )
+            if (
+                claim.get("claim_status") != "NOT_ESTABLISHED"
+                or claim.get("evidence_status") != expected_evidence_status
+            ):
+                _issue(
+                    issues,
+                    "A0_CLAIM_PREMATURE",
+                    REGISTRY_PATHS["claim"],
+                    f"claim {claim.get('claim_id')!r} must remain "
+                    f"{expected_evidence_status}/NOT_ESTABLISHED",
+                )
 
     history = config.get("historical_constraints")
     active_run = history.get("active_pre_v3_run") if isinstance(history, Mapping) else None
@@ -11710,6 +12063,7 @@ def validate_bundle(repo_root: Path) -> list[Issue]:
         _issue(issues, "A1_INTERIM_LOAD", A1_INTERIM_PATH, str(exc))
     else:
         issues.extend(validate_a1_interim_lineage(repo_root, a1_interim))
+    issues.extend(validate_a6_cpu_exact_registration(repo_root, registries))
     issues.extend(validate_registry_closure(config, registries))
     issues.extend(validate_sealed_hard_disable(config, registries))
     issues.extend(validate_l4_and_pre_v3(config, supersession, registries["claim"]))

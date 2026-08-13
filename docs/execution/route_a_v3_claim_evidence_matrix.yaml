@@ -188,7 +188,7 @@ claims:
     prohibited_wording_when_not_established: REAL_BIOLOGICAL_OPTIMIZATION_ESTABLISHED
   - claim_id: L3_LEGAL_POTENTIAL_CONSISTENT_XEDITFLOW
     claim: POTENTIAL_CONSISTENT_DOOB_CONTROL_IS_IMPLEMENTED_ON_A_LEGAL_BUDGETED_MRNA_EDIT_CTMC
-    evidence_status: NOT_RUN
+    evidence_status: IN_PROGRESS
     claim_status: NOT_ESTABLISHED
     required_phase_ids: [A6]
     required_task_ids: [FLOW_BASE_LEGAL_CTMC, EXACT_GUIDANCE_TOY_GRAPH]
@@ -201,7 +201,30 @@ claims:
       - TRANSITION_ALIAS_AGGREGATION
       - SUPPORT_STOP_AND_BUDGET_FIXTURES
       - LEARNED_POTENTIAL_APPROXIMATION_ERROR
-    evidence_cells: []
+    evidence_cells:
+      - evidence_id: A6_CPU_EXACT_ABSORBING_DAG_V1
+        artifact_path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A6/A6_CPU_EXACT_ABSORBING_DAG_V1/A6_CPU_EXACT_ABSORBING_DAG_REPORT.json
+        artifact_hash: e16e2536eb68b219644d64e40859c8e2270123c227994c0fa37e8b7084992e83
+        artifact_bytes: 14574
+        recorded_at: "2026-08-13T16:44:55+08:00"
+        analysis_intent: PROSPECTIVE_DEVELOPMENT_CPU_EXACT_FIXTURE_FOR_PARTIAL_A6_EVIDENCE
+        denominator:
+          denominator_type: FROZEN_SYNTHETIC_ENUMERATION_CASES
+          fixed_case_count: 6
+          case_ids: [L2_B0, L2_B1, L2_B2, L3_B0, L3_B1, L3_B2]
+          total_state_count: 91
+          total_complete_path_count: 108
+        evidence_status: PASS
+        task_id: EXACT_GUIDANCE_TOY_GRAPH
+        result: DEVELOPMENT_CPU_EXACT_FIXTURE_PASS
+        scope: SYNTHETIC_TIME_HOMOGENEOUS_CPU_EXACT
+        producer_lineage:
+          frozen_base_commit: db297787b3cd9f74908a1ae726cb64b19a9161fb
+          implementation_commit: 92ab710b3ddf570af305d94bdf68c36cff84aad2
+          binding_commit: de33f0d6337692409d17b2ac75e056e148815e72
+        establishes_a6_phase_pass: false
+        establishes_l3_claim: false
+        unlocks_a7: false
     allowed_wording_when_not_established: EDIT_FLOWS_DERIVED_DEVELOPMENT_IMPLEMENTATION
     prohibited_wording_when_not_established:
       - EXACT_XEDITFLOW_ESTABLISHED

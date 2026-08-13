@@ -49,7 +49,7 @@
     {
       "path": "docs/execution/route_a_v3_claim_evidence_matrix.yaml",
       "role": "CLAIM_EVIDENCE_MATRIX",
-      "sha256": "9f5226ac78dd6c3848ba5ceb42742918de66ec459f951bb845ccaf21958a88f9"
+      "sha256": "8c701a24b5a1f19c993037bcf4b30c3561f63f089344cb65e365aa0bd7c1bcb9"
     },
     {
       "path": "docs/execution/route_a_v3_data_role_registry.yaml",
@@ -64,7 +64,12 @@
     {
       "path": "docs/execution/route_a_v3_a1_interim.yaml",
       "role": "A1_ACTIVE_INTERIM_RECORD",
-      "sha256": "907ffd348e903904fec8fc86e93904af67ddaa971a087b985c6c3cf632539e14"
+      "sha256": "ab24ed95249773d18acd019b74f3676c79caa4e4279d44f1660027658f818042"
+    },
+    {
+      "path": "docs/execution/route_a_v3_a6_interim.yaml",
+      "role": "A6_ACTIVE_INTERIM_RECORD",
+      "sha256": "032aafef8b86d95f9408b46c619c3225313270e8770e858f8a82b16ab35b3cbb"
     },
     {
       "path": "docs/execution/route_a_v3_split_registry.yaml",
@@ -422,20 +427,35 @@
       "sha256": "298304c19c3faa6103221913cb8b30e25fd56d3b55eb65ea04f2e8d82f7c3954"
     },
     {
+      "path": "configs/route_a_v3_a6_cpu_exact_absorbing_dag_v1.json",
+      "role": "A6_CPU_EXACT_ABSORBING_DAG_BOUND_PROTOCOL",
+      "sha256": "84e9a3f21ac6293faa167eb08eb40e8886bfe43daaa374b2c7613fbc9baecab8"
+    },
+    {
+      "path": "scripts/route_a_v3/run_a6_cpu_exact_absorbing_dag.py",
+      "role": "A6_CPU_EXACT_ABSORBING_DAG_PRODUCER",
+      "sha256": "4cc0e10784c218cf4fa18ede1280cb84e1b7daf2553db4d82e0ee88f71e0f7c8"
+    },
+    {
+      "path": "tests/route_a_v3/test_a6_cpu_exact_absorbing_dag.py",
+      "role": "A6_CPU_EXACT_ABSORBING_DAG_FOCUSED_TEST",
+      "sha256": "7e8253be856645f276689dc032f9581b9ea172faea929dff60ba07995c709e24"
+    },
+    {
       "path": "tests/route_a_v3/test_a0_integrity_guards.py",
       "role": "A0_AUTHORITY_INTEGRITY_GUARD_TEST",
-      "sha256": "bb66d1168f6aef2456ef31c8dbb4f8e9058177b4be79cf0c3ea354ffc978b516"
+      "sha256": "de09dffb093f2aba9c03d031078a9e428c4fbe833b0a214b9ac1fd9169ce0079"
     },
     {
       "path": "scripts/route_a_v3/validate_a0_bundle.py",
       "role": "A0_STATIC_AND_SEMANTIC_VALIDATOR",
-      "sha256": "b0e138466d5b05fe13ca4d8dbc6290e9baff55d28707deba357735d04568f17b"
+      "sha256": "8eb526a9cbd7224a833ac31fc9f59f5452c29f5f86a660fc615e732304b6842b"
     }
   ],
   "initial_generated_at": "2026-08-10T10:10:05+08:00",
-  "generated_at": "2026-08-13T14:40:01+08:00",
-  "updated_at": "2026-08-13T14:40:01+08:00",
-  "manifest_status": "A1_GSE200304_DEC020_SCRATCH_ROUTE_V4_QUALIFIED_LEDGER_REGISTERED_EVT050_SETTLED_PENDING_FRESH_RUNTIME_EVENT",
+  "generated_at": "2026-08-13T16:45:01+08:00",
+  "updated_at": "2026-08-13T16:45:01+08:00",
+  "manifest_status": "A6_CPU_EXACT_PARTIAL_EVIDENCE_REGISTERED_A6_IN_PROGRESS_L3_NOT_ESTABLISHED_A7_NOT_RUN",
   "schema_version": "1.0.0",
   "sealed_contact": false,
   "version": "3.0.0"

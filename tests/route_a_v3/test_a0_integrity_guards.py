@@ -2577,7 +2577,7 @@ def test_gse217518_public_authority_preflight_registration_is_closed(
         not in manifest_paths
     )
     assert validator.REGISTRY_MANIFEST_PATH not in manifest_paths
-    assert manifest["manifest_status"] == validator.GSE200304_DEC020_V4_MANIFEST_STATUS
+    assert manifest["manifest_status"] == validator.A6_REGISTRATION_MANIFEST_STATUS
     assert (
         validator.validate_gse217518_public_authority_preflight_registration(
             repo_root
@@ -2635,8 +2635,8 @@ def test_gse217518_public_authority_preflight_registration_is_closed(
     assert summary["next_phase_authorized"] is False
 
     gate = interim["gate_snapshot"]
-    assert gate["qualified_independent_ordinary_studies"] == 0
-    assert gate["qualified_a1_studies"] == 0
+    assert gate["qualified_independent_ordinary_studies"] == 1
+    assert gate["qualified_a1_studies"] == 1
     assert gate["qualified_a2_dense_studies"] == 0
     assert gate["next_phase_authorized"] is False
     assert interim["dec019_current_disposition"]["runtime_sync_status"] == (
@@ -3727,7 +3727,7 @@ def test_registry_manifest_detects_every_listed_hash_drift(validator, tmp_path, 
         )
     interim_path = tmp_path / validator.A1_INTERIM_PATH
     interim_path.write_text(
-        yaml.safe_dump({"updated_at": validator.GSE200304_DEC020_V4_LEDGER_AT}),
+        yaml.safe_dump({"updated_at": validator.A6_REGISTRATION_LEDGER_AT}),
         encoding="utf-8",
     )
     next(row for row in entries if row["path"] == validator.A1_INTERIM_PATH)["sha256"] = validator.sha256_file(interim_path)
@@ -3740,10 +3740,10 @@ def test_registry_manifest_detects_every_listed_hash_drift(validator, tmp_path, 
         "contract_sha256": goal_hash,
         "active_amendment_decision_ids": validator.ACTIVE_AMENDMENT_DECISION_IDS,
         "base_commit": "bbb71dcba6f1e1c9cb75a8a6653f1a4fe4a6ca0c",
-        "manifest_status": validator.GSE200304_DEC020_V4_MANIFEST_STATUS,
+        "manifest_status": validator.A6_REGISTRATION_MANIFEST_STATUS,
         "initial_generated_at": "2026-08-10T10:10:05+08:00",
-        "generated_at": validator.GSE200304_DEC020_V4_MANIFEST_AT,
-        "updated_at": validator.GSE200304_DEC020_V4_MANIFEST_AT,
+        "generated_at": validator.A6_REGISTRATION_MANIFEST_AT,
+        "updated_at": validator.A6_REGISTRATION_MANIFEST_AT,
         "sealed_contact": False,
         "files": entries,
     }
@@ -3849,3 +3849,169 @@ def test_registry_manifest_cannot_predate_the_a1_interim_it_hashes(
 
     codes = _codes(validator.validate_registry_manifest(tmp_path))
     assert "REGISTRY_MANIFEST_TIME" in codes
+
+
+def test_a6_cpu_exact_partial_registration_is_closed(validator, repo_root):
+    _, _, registries = validator.load_bundle_documents(repo_root)
+    assert validator.validate_a6_cpu_exact_registration(repo_root, registries) == []
+
+    interim = validator._load_yaml(repo_root, validator.A6_INTERIM_PATH)
+    assert interim["record_status"] == "INTERIM_IN_PROGRESS_NOT_PHASE_COMPLETE"
+    assert interim["run_state"]["run_status"] == "PASS"
+    assert interim["phase_state"] == {
+        "evidence_status": "IN_PROGRESS",
+        "phase_complete": False,
+    }
+    assert interim["task_states"]["EXACT_GUIDANCE_TOY_GRAPH"] == {
+        "evidence_status": "PASS",
+        "result": "DEVELOPMENT_CPU_EXACT_FIXTURE_PASS",
+        "scope": "SYNTHETIC_TIME_HOMOGENEOUS_CPU_EXACT",
+    }
+    assert interim["task_states"]["FLOW_BASE_LEGAL_CTMC"] == {
+        "evidence_status": "NOT_RUN"
+    }
+    assert interim["claim_state"] == {
+        "claim_id": "L3_LEGAL_POTENTIAL_CONSISTENT_XEDITFLOW",
+        "evidence_status": "IN_PROGRESS",
+        "claim_status": "NOT_ESTABLISHED",
+    }
+    assert interim["boundaries"] == {
+        "a6_pass_asserted": False,
+        "l3_claim_established": False,
+        "a7_evidence_status": "NOT_RUN",
+        "a7_unlock": False,
+        "training_allowed": False,
+        "gpu_work_allowed": False,
+        "model_selection_allowed": False,
+        "ordinary_data_read": False,
+        "private_payload_access_allowed": False,
+        "sealed_contact_allowed": False,
+    }
+
+    manifest = validator._load_json(repo_root, validator.REGISTRY_MANIFEST_PATH)
+    manifest_paths = {row["path"] for row in manifest["files"]}
+    assert {
+        validator.A6_INTERIM_PATH,
+        *validator.A6_STATIC_PRODUCER_LEAF_SHA256,
+    } <= manifest_paths
+    assert validator.A6_REPORT_PATH not in manifest_paths
+    assert not any(
+        path.endswith("/RUN_MANIFEST.json") or path.endswith("/EVENT_LOG.jsonl")
+        for path in manifest_paths
+    )
+
+    task_registry = registries["task"]
+    a6_phase = next(
+        row for row in task_registry["phase_tasks"] if row["phase_id"] == "A6"
+    )
+    assert a6_phase["evidence_status"] == "NOT_RUN"
+    for task_id in ("EXACT_GUIDANCE_TOY_GRAPH", "FLOW_BASE_LEGAL_CTMC"):
+        task = next(row for row in task_registry["tasks"] if row["task_id"] == task_id)
+        assert task["evidence_status"] == "NOT_RUN"
+        assert task["claim_status"] == "NOT_ESTABLISHED"
+
+
+@pytest.mark.parametrize(
+    ("field_path", "promoted_value"),
+    [
+        (("record_status",), "PASS"),
+        (("claim_state", "claim_status"), "ESTABLISHED"),
+        (("boundaries", "a7_unlock"), True),
+        (("boundaries", "training_allowed"), True),
+    ],
+)
+def test_a6_interim_rejects_partial_evidence_promotion(
+    validator,
+    repo_root,
+    tmp_path,
+    monkeypatch,
+    field_path,
+    promoted_value,
+):
+    case_root = tmp_path / "a6_partial_promotion"
+    _copy_manifest_bundle(validator, repo_root, case_root)
+    interim_path = case_root / validator.A6_INTERIM_PATH
+    interim = yaml.safe_load(interim_path.read_text(encoding="utf-8"))
+    target = interim
+    for key in field_path[:-1]:
+        target = target[key]
+    target[field_path[-1]] = promoted_value
+    interim_path.write_text(yaml.safe_dump(interim, sort_keys=False), encoding="utf-8")
+    monkeypatch.setattr(
+        validator,
+        "EXPECTED_A6_INTERIM_SHA256",
+        validator.sha256_file(interim_path),
+    )
+
+    _, _, registries = validator.load_bundle_documents(case_root)
+    codes = _codes(
+        validator.validate_a6_cpu_exact_registration(case_root, registries)
+    )
+    assert "A6_INTERIM_CANONICAL_HASH" not in codes
+    assert "A6_INTERIM_SEMANTICS" in codes
+
+
+def test_a6_claim_cell_cannot_establish_l3(validator, repo_root):
+    _, _, registries = validator.load_bundle_documents(repo_root)
+    mutated = deepcopy(registries)
+    l3_claim = next(
+        row
+        for row in mutated["claim"]["claims"]
+        if row["claim_id"] == "L3_LEGAL_POTENTIAL_CONSISTENT_XEDITFLOW"
+    )
+    l3_claim["evidence_status"] = "PASS"
+    l3_claim["claim_status"] = "ESTABLISHED"
+    l3_claim["evidence_cells"][0]["establishes_a6_phase_pass"] = True
+    l3_claim["evidence_cells"][0]["establishes_l3_claim"] = True
+    l3_claim["evidence_cells"][0]["unlocks_a7"] = True
+
+    codes = _codes(
+        validator.validate_a6_cpu_exact_registration(repo_root, mutated)
+    )
+    assert "A6_CLAIM_CELL" in codes
+
+
+def test_a6_exact3_synchronized_manifest_rehash_is_rejected(
+    validator,
+    repo_root,
+    tmp_path,
+):
+    case_root = tmp_path / "a6_exact3_synchronized_rehash"
+    manifest = _copy_manifest_bundle(validator, repo_root, case_root)
+    relative = validator.A6_PRODUCER_PATH
+    producer_path = case_root / relative
+    producer_path.write_bytes(producer_path.read_bytes() + b"\n# synchronized drift\n")
+    next(row for row in manifest["files"] if row["path"] == relative)[
+        "sha256"
+    ] = validator.sha256_file(producer_path)
+    manifest_path = case_root / validator.REGISTRY_MANIFEST_PATH
+    manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+
+    codes = _codes(validator.validate_bundle(case_root))
+    assert "REGISTRY_MANIFEST_HASH_MISMATCH" not in codes
+    assert "A6_STATIC_LEAF_DRIFT" in codes
+
+
+def test_a6_registration_preserves_dec020_history_and_rebinds_only_current_claim(
+    validator,
+):
+    claim_path = validator.REGISTRY_PATHS["claim"]
+    assert (
+        validator.DEC020_FROZEN_AUTHORITY_LEAF_SHA256[claim_path]
+        == "9f5226ac78dd6c3848ba5ceb42742918de66ec459f951bb845ccaf21958a88f9"
+    )
+    assert (
+        validator.DEC020_ACTIVE_AUTHORITY_LEAF_SHA256[claim_path]
+        == "8c701a24b5a1f19c993037bcf4b30c3561f63f089344cb65e365aa0bd7c1bcb9"
+    )
+    assert set(validator.DEC020_FROZEN_AUTHORITY_LEAF_SHA256) == set(
+        validator.DEC020_ACTIVE_AUTHORITY_LEAF_SHA256
+    )
+    changed = {
+        path
+        for path in validator.DEC020_FROZEN_AUTHORITY_LEAF_SHA256
+        if validator.DEC020_FROZEN_AUTHORITY_LEAF_SHA256[path]
+        != validator.DEC020_ACTIVE_AUTHORITY_LEAF_SHA256[path]
+    }
+    assert changed == {claim_path}
+    assert len(set(validator.DEC020_AUTHORITY_COMMIT_EXACT_CHANGED_PATHS)) == 14

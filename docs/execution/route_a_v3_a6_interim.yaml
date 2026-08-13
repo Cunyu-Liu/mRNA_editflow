@@ -1,0 +1,124 @@
+schema_version: "1.0.0"
+contract_id: mrna_xeditflow_route_a_v3
+contract_version: "3.0.0"
+record_id: ROUTE_A_V3_A6_CPU_EXACT_ABSORBING_DAG_V1
+record_type: A6_CPU_EXACT_PARTIAL_EVIDENCE_INTERIM
+phase_id: A6
+record_status: INTERIM_IN_PROGRESS_NOT_PHASE_COMPLETE
+
+authority:
+  contract_path: docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md
+  contract_sha256: cbac4c3dcba8f1b8df95d8edad52d19e3c126d1c865d0cc423537c754cc90982
+  active_config_path: configs/route_a_v3.yaml
+  active_config_sha256: c908ac57b7c9667398f616a0ccf7101b41451b80bf169e768131844d3b63a678
+  task_registry_path: docs/execution/route_a_v3_task_registry.yaml
+  task_registry_sha256: bf3066a7534041374685e9ebe9ac8c840e53ceec1acbb076a72a758d397c63f2
+  claim_evidence_matrix_path: docs/execution/route_a_v3_claim_evidence_matrix.yaml
+  claim_evidence_matrix_sha256: 8c701a24b5a1f19c993037bcf4b30c3561f63f089344cb65e365aa0bd7c1bcb9
+  branch: routea-v3-a1-20260810
+  worktree: /home/cunyuliu/mrna_editflow_goal/worktrees/routea_v3_a1_20260810
+
+artifact_lineage:
+  producer_commits:
+    frozen_base_commit: db297787b3cd9f74908a1ae726cb64b19a9161fb
+    implementation_commit: 92ab710b3ddf570af305d94bdf68c36cff84aad2
+    binding_commit: de33f0d6337692409d17b2ac75e056e148815e72
+  static_leaves:
+    protocol:
+      path: configs/route_a_v3_a6_cpu_exact_absorbing_dag_v1.json
+      sha256: 84e9a3f21ac6293faa167eb08eb40e8886bfe43daaa374b2c7613fbc9baecab8
+    producer:
+      path: scripts/route_a_v3/run_a6_cpu_exact_absorbing_dag.py
+      sha256: 4cc0e10784c218cf4fa18ede1280cb84e1b7daf2553db4d82e0ee88f71e0f7c8
+    focused_test:
+      path: tests/route_a_v3/test_a6_cpu_exact_absorbing_dag.py
+      sha256: 7e8253be856645f276689dc032f9581b9ea172faea929dff60ba07995c709e24
+  dynamic_report:
+    evidence_id: A6_CPU_EXACT_ABSORBING_DAG_V1
+    path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A6/A6_CPU_EXACT_ABSORBING_DAG_V1/A6_CPU_EXACT_ABSORBING_DAG_REPORT.json
+    bytes: 14574
+    sha256: e16e2536eb68b219644d64e40859c8e2270123c227994c0fa37e8b7084992e83
+    recorded_at: "2026-08-13T16:44:55+08:00"
+    registered_in_static_manifest: false
+
+run_state:
+  protocol_id: ROUTE_A_V3_A6_CPU_EXACT_ABSORBING_DAG_V1
+  run_scope: DEVELOPMENT_ONLY_CPU_EXACT_ABSORPTION_FIXTURE
+  run_status: PASS
+  public_aggregate_only: true
+  runtime_output_count: 3
+  runtime_output_names:
+    - A6_CPU_EXACT_ABSORBING_DAG_REPORT.json
+    - RUN_MANIFEST.json
+    - EVENT_LOG.jsonl
+  runtime_auxiliary_output_hashes_registered: false
+
+phase_state:
+  evidence_status: IN_PROGRESS
+  phase_complete: false
+
+task_states:
+  EXACT_GUIDANCE_TOY_GRAPH:
+    evidence_status: PASS
+    result: DEVELOPMENT_CPU_EXACT_FIXTURE_PASS
+    scope: SYNTHETIC_TIME_HOMOGENEOUS_CPU_EXACT
+  FLOW_BASE_LEGAL_CTMC:
+    evidence_status: NOT_RUN
+
+claim_state:
+  claim_id: L3_LEGAL_POTENTIAL_CONSISTENT_XEDITFLOW
+  evidence_status: IN_PROGRESS
+  claim_status: NOT_ESTABLISHED
+
+time_scope:
+  clock_semantics: CONTINUOUS_ALGORITHMIC_TIME
+  rate_time_dependence: NONE
+  terminal_tilt_time_dependence: NONE
+  general_time_inhomogeneous_exactness: NOT_RUN
+  dp_time_key_rule: DP_KEYS_MAY_QUOTIENT_ALGORITHMIC_TIME_ONLY_BECAUSE_RATES_AND_TERMINAL_TILT_ARE_TIME_INVARIANT
+
+denominator:
+  denominator_type: FROZEN_SYNTHETIC_ENUMERATION_CASES
+  fixed_case_count: 6
+  case_ids: [L2_B0, L2_B1, L2_B2, L3_B0, L3_B1, L3_B2]
+  total_state_count: 91
+  total_complete_path_count: 108
+
+aggregate_maximum_metrics:
+  guided_terminal_tv_vs_tilted_base: 5.139118297581291e-17
+  guided_vs_base_total_exit_rate_relative_error: 2.0529242248115864e-16
+  path_product_relative_error: 2.2266202935521747e-16
+  true_per_rate_relative_error: 0.0
+
+required_evidence_coverage:
+  exact_guidance_toy_graph: PASS
+  flow_base_legal_ctmc: NOT_RUN
+  general_time_inhomogeneous_exactness: NOT_RUN
+  learned_potential_approximation_error: NOT_RUN
+  l3_evidence_status: IN_PROGRESS
+
+registry_boundary:
+  task_registry_is_definition_only: true
+  task_registry_a6_phase_evidence_status_remains: NOT_RUN
+  task_registry_exact_guidance_toy_graph_evidence_status_remains: NOT_RUN
+  task_registry_flow_base_legal_ctmc_evidence_status_remains: NOT_RUN
+  task_registry_changed_by_this_registration: false
+  evidence_semantics_registered_only_in_a6_interim_and_claim_cell: true
+  a1_interim_authority_pointer_rebind_only: true
+  a1_runtime_event_emitted: false
+  a1_runtime_science_or_counts_changed: false
+
+boundaries:
+  a6_pass_asserted: false
+  l3_claim_established: false
+  a7_evidence_status: NOT_RUN
+  a7_unlock: false
+  training_allowed: false
+  gpu_work_allowed: false
+  model_selection_allowed: false
+  ordinary_data_read: false
+  private_payload_access_allowed: false
+  sealed_contact_allowed: false
+
+generated_at: "2026-08-13T16:45:00+08:00"
+updated_at: "2026-08-13T16:45:00+08:00"
