@@ -48,12 +48,12 @@
         }
       }
     },
-    "status": "UNKNOWN_NOT_ASSERTED",
-    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "status": "BOUND",
+    "implementation_commit": "2a577ef41b634a4c999740e12ed60ffb6aca80cb",
     "implementation_script_path": "scripts/route_a_v3/preflight_gse256185_aggregate_row_level_qualification.py",
-    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_script_sha256": "20d0b4a3355fb98cf3c67268f314c0d1fa571034772074abdfbf9f6037c90f0f",
     "implementation_test_path": "tests/route_a_v3/test_preflight_gse256185_aggregate_row_level_qualification.py",
-    "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_test_sha256": "eaece480ead17f5ef3a8eb2662d3a0372e59910d07eee0eb77f1d55b4580e226",
     "unknown_to_bound_scalar_paths": [
       "implementation_binding.status",
       "implementation_binding.implementation_commit",
