@@ -7,11 +7,11 @@ to RUN_MANIFEST, snapshots the three EVT052 runtime mutables, writes one sync
 record, then commits STATUS, RUN_MANIFEST, and EVENT_LOG in that order.  The
 EVT053 event is therefore the commit point.
 
-The append-only repair freezes exact4 L and the first exact3 I1.  Dynamic I2 is
+The append-only repair freezes exact4 L plus exact3 I1 and I2.  Dynamic I3 is
 another exact3 child whose implementation binding remains grouped UNKNOWN;
-config-only B2 binds exactly those four scalars to I2.  Every production entry
-point proves the exact L -> I1 -> I2 -> B2 chain before reading the report or
-runtime.
+config-only B3 binds exactly those four scalars to I3.  Every production entry
+point proves the exact L -> I1 -> I2 -> I3 -> B3 chain before reading the
+report or runtime.
 """
 
 from __future__ import annotations
@@ -66,6 +66,12 @@ I1_BLOBS = {
     SCRIPT_REPO_PATH: "6f50911b5e7c72165281c957c23647c8a776e8f6a2dc9905c68232600e9a4121",
     TEST_REPO_PATH: "9a6d892df6cec58bfd57382e22dffc271e3d526de81a427c418609ccf0e93544",
 }
+I2_COMMIT = "d3c410dfbf5d34c8e19f1bf8acac64952e687b0e"
+I2_BLOBS = {
+    CONFIG_REPO_PATH: "203ff047e565262715415ae871c2ec3c6dfda48b5e0f97f2e9ef714bdf4e17e3",
+    SCRIPT_REPO_PATH: "73165e0663a0cb375f0dfd443a1641f9a21b2b2462d3d1b10d4d64daa7cc049b",
+    TEST_REPO_PATH: "26d2708f2855b34b887721f83b9ee04ca9a506d0bd01dc07045deb5c73e26bfa",
+}
 TRUTH_SECTION_NAMES = (
     "registered_artifacts",
     "runtime",
@@ -90,7 +96,7 @@ class BindingError(RuntimeSyncError):
 
 
 class AuthorityError(RuntimeSyncError):
-    """The production Git lineage is not the frozen L -> I1 -> I2 -> B2 chain."""
+    """The production Git lineage is not L -> I1 -> I2 -> I3 -> B3."""
 
 
 class PredecessorError(RuntimeSyncError):
@@ -106,7 +112,7 @@ def sha256(payload: bytes) -> str:
 
 
 def runtime_science_report_truth_projection(config: Mapping[str, Any]) -> dict[str, Any]:
-    """Return the exact semantic surface that I2 must preserve from I1."""
+    """Return the exact semantic surface that I2/I3 must preserve from I1."""
 
     return {key: copy.deepcopy(config[key]) for key in TRUTH_SECTION_NAMES}
 
@@ -451,8 +457,8 @@ def validate_static_config(config: dict[str, Any]) -> None:
     _expect(
         binding["binding_scheme"],
         (
-            "LEDGER_L_EXACT4_THEN_FROZEN_I1_EXACT3_THEN_DYNAMIC_I2_EXACT3_"
-            "THEN_CONFIG_ONLY_B2_V1"
+            "LEDGER_L_EXACT4_THEN_FROZEN_I1_EXACT3_THEN_FROZEN_I2_EXACT3_"
+            "THEN_DYNAMIC_I3_EXACT3_THEN_CONFIG_ONLY_B3_V1"
         ),
         label="binding scheme",
     )
@@ -480,6 +486,7 @@ def validate_static_config(config: dict[str, Any]) -> None:
             "implementation_exact_changed_paths",
             "binding_exact_changed_paths",
             "predecessor_implementation_i1",
+            "predecessor_implementation_i2",
             "predecessor_ledger",
         },
         label="repository authority",
@@ -498,7 +505,7 @@ def validate_static_config(config: dict[str, Any]) -> None:
     _expect(
         authority["binding_exact_changed_paths"],
         [CONFIG_REPO_PATH],
-        label="B2 config-only path",
+        label="B3 config-only path",
     )
     _expect(
         authority["predecessor_implementation_i1"],
@@ -517,6 +524,24 @@ def validate_static_config(config: dict[str, Any]) -> None:
             ),
         },
         label="frozen I1 lifecycle",
+    )
+    _expect(
+        authority["predecessor_implementation_i2"],
+        {
+            "status": "FROZEN_BOUND_EXACT3",
+            "commit": I2_COMMIT,
+            "expected_parent": I1_COMMIT,
+            "exact_changed_paths": [
+                CONFIG_REPO_PATH,
+                SCRIPT_REPO_PATH,
+                TEST_REPO_PATH,
+            ],
+            "blob_sha256_by_path": I2_BLOBS,
+            "runtime_science_report_truth_projection_sha256": (
+                I1_TRUTH_PROJECTION_SHA256
+            ),
+        },
+        label="frozen I2 lifecycle",
     )
     ledger = _expect_keys(
         authority["predecessor_ledger"],
@@ -753,18 +778,20 @@ def _read_repo_file(repo_root: Path, path: str) -> bytes:
 def audit_production_repository_authority(
     config: dict[str, Any], config_payload: bytes
 ) -> dict[str, Any]:
-    """Prove exact L -> I1 -> dynamic exact3 I2 -> config-only B2."""
+    """Prove exact L -> I1 -> I2 -> dynamic exact3 I3 -> config-only B3."""
 
     validate_bound_config(config)
     authority = config["repository_authority"]
     binding = config["implementation_binding"]
     ledger = authority["predecessor_ledger"]
     frozen_i1 = authority["predecessor_implementation_i1"]
+    frozen_i2 = authority["predecessor_implementation_i2"]
     repo_root = Path(authority["production_repo_root"])
     branch = authority["branch"]
     l_commit = ledger["commit"]
     i1_commit = frozen_i1["commit"]
-    i2_commit = binding["implementation_commit"]
+    i2_commit = frozen_i2["commit"]
+    i3_commit = binding["implementation_commit"]
 
     head = _run_git(repo_root, "rev-parse", "HEAD").decode().strip()
     current_branch = _run_git(repo_root, "rev-parse", "--abbrev-ref", "HEAD").decode().strip()
@@ -782,20 +809,27 @@ def audit_production_repository_authority(
     if _run_git(repo_root, "status", "--porcelain=v1", "--untracked-files=all"):
         raise AuthorityError("production worktree or index is dirty")
 
-    b2_parent = _run_git(repo_root, "rev-parse", f"{head}^").decode().strip()
+    b3_parent = _run_git(repo_root, "rev-parse", f"{head}^").decode().strip()
+    i3_parent = _run_git(repo_root, "rev-parse", f"{i3_commit}^").decode().strip()
     i2_parent = _run_git(repo_root, "rev-parse", f"{i2_commit}^").decode().strip()
     i1_parent = _run_git(repo_root, "rev-parse", f"{i1_commit}^").decode().strip()
-    _expect(b2_parent, i2_commit, label="B2 parent/I2")
+    _expect(b3_parent, i3_commit, label="B3 parent/I3")
+    _expect(i3_parent, i2_commit, label="I3 parent/I2")
     _expect(i2_parent, i1_commit, label="I2 parent/I1")
     _expect(i1_parent, l_commit, label="I1 parent/L")
     _expect(
         _changed_paths(repo_root, head),
         sorted(authority["binding_exact_changed_paths"]),
-        label="B2 changed paths",
+        label="B3 changed paths",
+    )
+    _expect(
+        _changed_paths(repo_root, i3_commit),
+        sorted(authority["implementation_exact_changed_paths"]),
+        label="I3 changed paths",
     )
     _expect(
         _changed_paths(repo_root, i2_commit),
-        sorted(authority["implementation_exact_changed_paths"]),
+        sorted(frozen_i2["exact_changed_paths"]),
         label="I2 changed paths",
     )
     _expect(
@@ -812,7 +846,7 @@ def audit_production_repository_authority(
     for item in ledger["frozen_blobs"]:
         path = item["path"]
         digest = item["sha256"]
-        for commit, label in ((l_commit, "L"), (head, "B2")):
+        for commit, label in ((l_commit, "L"), (head, "B3")):
             if sha256(_git_blob(repo_root, commit, path)) != digest:
                 raise AuthorityError(f"{label} frozen ledger blob drift: {path}")
         if sha256(_read_repo_file(repo_root, path)) != digest:
@@ -830,19 +864,31 @@ def audit_production_repository_authority(
     ):
         raise AuthorityError("frozen I1 runtime/science/report truth drift")
 
+    for path, digest in frozen_i2["blob_sha256_by_path"].items():
+        if sha256(_git_blob(repo_root, i2_commit, path)) != digest:
+            raise AuthorityError(f"frozen I2 blob drift: {path}")
     i2_config = load_json(
         _git_blob(repo_root, i2_commit, CONFIG_REPO_PATH), label="I2 config"
     )
-    if not _typed_equal(i2_config, expected_unknown_i_config(config)):
-        raise AuthorityError("I2 config is not the exact four-scalar UNKNOWN form")
-    for candidate, label in ((i2_config, "I2"), (config, "B2")):
+    if (
+        runtime_science_report_truth_sha256(i2_config)
+        != frozen_i2["runtime_science_report_truth_projection_sha256"]
+    ):
+        raise AuthorityError("frozen I2 runtime/science/report truth drift")
+
+    i3_config = load_json(
+        _git_blob(repo_root, i3_commit, CONFIG_REPO_PATH), label="I3 config"
+    )
+    if not _typed_equal(i3_config, expected_unknown_i_config(config)):
+        raise AuthorityError("I3 config is not the exact four-scalar UNKNOWN form")
+    for candidate, label in ((i3_config, "I3"), (config, "B3")):
         if (
             runtime_science_report_truth_sha256(candidate)
             != frozen_i1["runtime_science_report_truth_projection_sha256"]
         ):
             raise AuthorityError(f"{label} runtime/science/report truth drift from I1")
     if _git_blob(repo_root, head, CONFIG_REPO_PATH) != config_payload:
-        raise AuthorityError("B2 config blob differs from supplied config")
+        raise AuthorityError("B3 config blob differs from supplied config")
     if _read_repo_file(repo_root, CONFIG_REPO_PATH) != config_payload:
         raise AuthorityError("worktree config differs from supplied config")
 
@@ -850,18 +896,19 @@ def audit_production_repository_authority(
         (SCRIPT_REPO_PATH, binding["implementation_script_sha256"]),
         (TEST_REPO_PATH, binding["implementation_test_sha256"]),
     ):
-        for commit, label in ((i2_commit, "I2"), (head, "B2")):
+        for commit, label in ((i3_commit, "I3"), (head, "B3")):
             if sha256(_git_blob(repo_root, commit, path)) != digest:
                 raise AuthorityError(f"{label} implementation blob drift: {path}")
         if sha256(_read_repo_file(repo_root, path)) != digest:
             raise AuthorityError(f"worktree implementation blob drift: {path}")
 
     return {
-        "status": "PASS_EXACT_L_TO_I1_TO_I2_TO_CONFIG_ONLY_B2",
+        "status": "PASS_EXACT_L_TO_I1_TO_I2_TO_I3_TO_CONFIG_ONLY_B3",
         "ledger_l_commit": l_commit,
         "frozen_i1_commit": i1_commit,
-        "implementation_i2_commit": i2_commit,
-        "binding_b2_commit": head,
+        "frozen_i2_commit": i2_commit,
+        "implementation_i3_commit": i3_commit,
+        "binding_b3_commit": head,
         "upstream_head_commit": upstream_head,
         "origin_branch_head_commit": origin_head,
         "worktree_and_index_clean": True,
@@ -1310,23 +1357,47 @@ def _write_atomic(path: Path, payload: bytes) -> None:
             temporary_path.unlink()
 
 
-def _write_immutable_once(path: Path, payload: bytes) -> str:
+def _write_immutable_once(
+    path: Path,
+    payload: bytes,
+    *,
+    fault_injector: FaultInjector | None = None,
+) -> str:
+    """Publish a complete immutable via an exclusive same-directory link."""
+
     if path.exists():
         if path.read_bytes() != payload:
             raise PublicationError(f"immutable output differs: {path.name}")
         return "EXISTING_EXACT"
     try:
-        with path.open("xb") as stream:
-            stream.write(payload)
+        descriptor, temporary = tempfile.mkstemp(
+            prefix=f".{path.name}.immutable.", dir=path.parent
+        )
+    except OSError as exc:
+        raise PublicationError(f"cannot stage immutable output: {path.name}") from exc
+    temporary_path = Path(temporary)
+    try:
+        with os.fdopen(descriptor, "wb") as stream:
+            split = max(1, len(payload) // 2) if payload else 0
+            stream.write(payload[:split])
+            stream.flush()
+            if fault_injector is not None:
+                fault_injector("after_partial_temp_write")
+            stream.write(payload[split:])
             stream.flush()
             os.fsync(stream.fileno())
-    except FileExistsError:
-        if path.read_bytes() != payload:
-            raise PublicationError(f"immutable output differs: {path.name}")
-        return "EXISTING_EXACT"
-    except OSError as exc:
-        raise PublicationError(f"cannot create immutable output: {path.name}") from exc
-    return "CREATED"
+        try:
+            os.link(temporary_path, path)
+        except FileExistsError:
+            if path.read_bytes() != payload:
+                raise PublicationError(f"immutable output differs: {path.name}")
+            return "EXISTING_EXACT"
+        except OSError as exc:
+            raise PublicationError(f"cannot publish immutable output: {path.name}") from exc
+        return "CREATED"
+    finally:
+        if temporary_path.exists():
+            temporary_path.unlink()
 
 
 def _prepared_members(
@@ -1483,7 +1554,9 @@ def publish_prepared(
             if fault_injector is not None:
                 fault_injector(f"before_immutable:{name}")
             immutable_results[name] = _write_immutable_once(
-                run_root / name, immutable_payloads[name]
+                run_root / name,
+                immutable_payloads[name],
+                fault_injector=fault_injector,
             )
         if states == ["NEW", "NEW", "NEW"]:
             return {

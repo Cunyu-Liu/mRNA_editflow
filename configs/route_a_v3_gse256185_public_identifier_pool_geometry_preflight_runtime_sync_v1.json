@@ -11,7 +11,7 @@
   "event_name": "GSE256185_PUBLIC_IDENTIFIER_POOL_GEOMETRY_PREFLIGHT_REGISTERED_GATES_UNCHANGED",
   "sync_type": "APPEND_ONLY_PUBLIC_AGGREGATE_EVIDENCE_REGISTRATION_NO_SCIENTIFIC_STATE_CHANGE",
   "implementation_binding": {
-    "binding_scheme": "LEDGER_L_EXACT4_THEN_FROZEN_I1_EXACT3_THEN_DYNAMIC_I2_EXACT3_THEN_CONFIG_ONLY_B2_V1",
+    "binding_scheme": "LEDGER_L_EXACT4_THEN_FROZEN_I1_EXACT3_THEN_FROZEN_I2_EXACT3_THEN_DYNAMIC_I3_EXACT3_THEN_CONFIG_ONLY_B3_V1",
     "status": "UNKNOWN_NOT_ASSERTED",
     "implementation_commit": "UNKNOWN_NOT_ASSERTED",
     "implementation_script_path": "scripts/route_a_v3/gse256185_public_identifier_pool_geometry_preflight_runtime_sync.py",
@@ -24,7 +24,7 @@
       "implementation_binding.implementation_script_sha256",
       "implementation_binding.implementation_test_sha256"
     ],
-    "activation_rule": "Frozen I1 is the direct exact3 child of L. Dynamic I2 must be the direct exact3 child of I1, freeze the I1 commit and its exact3 blobs, preserve the runtime/science/report truth projection, and retain the four implementation-binding scalars as UNKNOWN_NOT_ASSERTED. B2 must be the direct config-only child of I2 and bind only those four scalars to I2. Production requires clean HEAD equal to upstream and origin at B2 before any registered-report, prepared-output, or runtime I/O."
+    "activation_rule": "Frozen I1 is the direct exact3 child of L and frozen I2 is the direct exact3 child of I1. Dynamic I3 must be the direct exact3 child of I2, freeze both predecessor implementation commits and blobs, preserve the runtime/science/report truth projection, and retain the four implementation-binding scalars as UNKNOWN_NOT_ASSERTED. B3 must be the direct config-only child of I3 and bind only those four scalars to I3. Production requires clean HEAD equal to upstream and origin at B3 before any registered-report, prepared-output, or runtime I/O."
   },
   "repository_authority": {
     "production_repo_root": "/home/cunyuliu/mrna_editflow_goal/worktrees/routea_v3_a1_20260810",
@@ -50,6 +50,22 @@
         "configs/route_a_v3_gse256185_public_identifier_pool_geometry_preflight_runtime_sync_v1.json": "0e84fbdcd86f66907b1f5d001a8d315ed7103ba9c8e0f9cb80fb6fc8e98e52dc",
         "scripts/route_a_v3/gse256185_public_identifier_pool_geometry_preflight_runtime_sync.py": "6f50911b5e7c72165281c957c23647c8a776e8f6a2dc9905c68232600e9a4121",
         "tests/route_a_v3/test_gse256185_public_identifier_pool_geometry_preflight_runtime_sync.py": "9a6d892df6cec58bfd57382e22dffc271e3d526de81a427c418609ccf0e93544"
+      },
+      "runtime_science_report_truth_projection_sha256": "f7919d837493eae1da9dbd33bd45799f4798c65d41e82489e8d13bd864a963e1"
+    },
+    "predecessor_implementation_i2": {
+      "status": "FROZEN_BOUND_EXACT3",
+      "commit": "d3c410dfbf5d34c8e19f1bf8acac64952e687b0e",
+      "expected_parent": "4934b802344ee42a258cc27377daf18dc1dc79e9",
+      "exact_changed_paths": [
+        "configs/route_a_v3_gse256185_public_identifier_pool_geometry_preflight_runtime_sync_v1.json",
+        "scripts/route_a_v3/gse256185_public_identifier_pool_geometry_preflight_runtime_sync.py",
+        "tests/route_a_v3/test_gse256185_public_identifier_pool_geometry_preflight_runtime_sync.py"
+      ],
+      "blob_sha256_by_path": {
+        "configs/route_a_v3_gse256185_public_identifier_pool_geometry_preflight_runtime_sync_v1.json": "203ff047e565262715415ae871c2ec3c6dfda48b5e0f97f2e9ef714bdf4e17e3",
+        "scripts/route_a_v3/gse256185_public_identifier_pool_geometry_preflight_runtime_sync.py": "73165e0663a0cb375f0dfd443a1641f9a21b2b2462d3d1b10d4d64daa7cc049b",
+        "tests/route_a_v3/test_gse256185_public_identifier_pool_geometry_preflight_runtime_sync.py": "26d2708f2855b34b887721f83b9ee04ca9a506d0bd01dc07045deb5c73e26bfa"
       },
       "runtime_science_report_truth_projection_sha256": "f7919d837493eae1da9dbd33bd45799f4798c65d41e82489e8d13bd864a963e1"
     },
