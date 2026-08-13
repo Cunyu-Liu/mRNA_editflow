@@ -1,0 +1,499 @@
+{
+  "schema_version": "route_a_v3_a6_learned_base_value_gpu_protocol_draft.v1",
+  "protocol_id": "ROUTE_A_V3_A6_LEARNED_BASE_VALUE_GPU_PROTOCOL_DRAFT_V1",
+  "contract_id": "mrna_xeditflow_route_a_v3",
+  "phase_id": "A6",
+  "task_id": "FLOW_BASE_LEGAL_CTMC",
+  "document_status": "DRAFT_FOR_REVIEW_NOT_ACTIVE_PROTOCOL",
+  "authority_status": "NON_AUTHORITATIVE",
+  "activation_state": "INACTIVE_REVIEW_CANDIDATE",
+  "evidence_status": "NOT_RUN",
+  "claim_status": "NOT_ESTABLISHED",
+  "implementation_scope": "PROTOCOL_SCHEMA_STATIC_VALIDATOR_AND_FOCUSED_TEST_ONLY",
+  "authority_boundary": {
+    "goal_path": "docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md",
+    "active_config_path": "configs/route_a_v3.yaml",
+    "task_registry_path": "docs/execution/route_a_v3_task_registry.yaml",
+    "a6_interim_path": "docs/execution/route_a_v3_a6_interim.yaml",
+    "registered_in_active_authority": false,
+    "registered_in_static_manifest": false,
+    "runtime_event_required_for_this_draft": false,
+    "activation_requires_new_explicit_owner_authorization": true,
+    "parameter_updates_require_later_explicit_owner_authorization": true,
+    "current_task_registry_status_must_remain": "NOT_RUN",
+    "current_a6_phase_status_must_remain": "IN_PROGRESS",
+    "current_l3_claim_status_must_remain": "NOT_ESTABLISHED"
+  },
+  "forbidden_state_changes": {
+    "training_started": false,
+    "training_allowed": false,
+    "training_authorized": false,
+    "parameter_updates_allowed": false,
+    "gpu_work_allowed": false,
+    "gpu_run_allowed": false,
+    "model_execution_allowed": false,
+    "model_selection_allowed": false,
+    "checkpoint_selection_allowed": false,
+    "a6_pass_asserted": false,
+    "l3_claim_established": false,
+    "a7_unlocked": false,
+    "a7_authorized": false,
+    "private_data_access_allowed": false,
+    "sealed_data_access_allowed": false,
+    "canonical_materialization_allowed": false,
+    "qualification_change_allowed": false,
+    "ordinary_study_credit_delta": 0,
+    "a1_study_credit_delta": 0,
+    "true_a2_study_credit_delta": 0,
+    "canonical_record_count_delta": 0
+  },
+  "design_access_attestation": {
+    "ordinary_row_reads": 0,
+    "private_row_reads": 0,
+    "sealed_row_reads": 0,
+    "sequence_reads": 0,
+    "effect_reads": 0,
+    "model_executions": 0,
+    "optimizer_steps": 0,
+    "gpu_runs": 0,
+    "checkpoints_created": 0
+  },
+  "activation_preconditions": {
+    "explicit_owner_execution_authorization": "REQUIRED_NOT_PRESENT",
+    "active_protocol_registration": "REQUIRED_NOT_PRESENT",
+    "a2_frozen_development_split": "REQUIRED_NOT_PRESENT",
+    "qualified_ordinary_public_training_records": "REQUIRED_NOT_PRESENT",
+    "frozen_calibrated_lcb_terminal_score_manifest": "REQUIRED_NOT_PRESENT",
+    "rights_and_exposure_manifest": "REQUIRED_NOT_PRESENT",
+    "cuda_device_assignment": "REQUIRED_NOT_PRESENT",
+    "all_must_be_present_before_any_parameter_update": true,
+    "missing_precondition_action": "STOP_BEFORE_DATA_MODEL_CUDA_AND_OUTPUT_IO"
+  },
+  "formal_production_interface": {
+    "state_type": "SOURCE_ANCHORED_ACYCLIC_SPARSE_EDIT_DAG",
+    "state_fields": [
+      "source_sequence",
+      "current_sequence",
+      "source_relative_edit_set",
+      "remaining_budget",
+      "assay_context",
+      "algorithmic_time",
+      "terminal_cause"
+    ],
+    "action_types": [
+      "SOURCE_BASE_TO_ALT_BASE",
+      "STOP"
+    ],
+    "candidate_budget_assignment_rule": "USE_SMALLEST_PRIMARY_BUDGET_GREATER_THAN_OR_EQUAL_TO_NET_EDIT_COUNT",
+    "primary_edit_budgets": [
+      1,
+      3,
+      5
+    ],
+    "clock_semantics": "CONTINUOUS_ALGORITHMIC_TIME_NOT_PHYSICAL_MRNA_TIME",
+    "rate_time_dependence": "NONE_FOR_THIS_PROTOCOL",
+    "terminal_tilt_time_dependence": "NONE_FOR_THIS_PROTOCOL",
+    "general_time_inhomogeneous_exactness": "NOT_RUN",
+    "source_sequence_immutable": true,
+    "assay_context_immutable_within_trajectory": true,
+    "edited_position_may_recur": false,
+    "revert_to_source_allowed": false,
+    "remaining_budget_decrements_once_per_edit": true,
+    "event_count_definition": "NET_SOURCE_RELATIVE_EDIT_COUNT",
+    "terminal_causes": [
+      "EXPLICIT_STOP",
+      "BUDGET_EXHAUSTED",
+      "NO_LEGAL_ACTION",
+      "NUMERICAL_FAILURE"
+    ],
+    "terminal_precedence": [
+      "NUMERICAL_FAILURE",
+      "BUDGET_EXHAUSTED",
+      "NO_LEGAL_ACTION",
+      "EXPLICIT_STOP"
+    ],
+    "numerical_failure_policy": "FAIL_RUN_NOT_STOCHASTIC_TERMINAL_MASS",
+    "hard_legality_before_any_rate_or_model_evaluation": true,
+    "raw_alias_aggregation_key": "FULL_NEXT_EXTENDED_STATE",
+    "alias_aggregation_before_normalization": true,
+    "canonical_transition_provenance_retained": true,
+    "stop_is_positive_rate_competing_transition": true,
+    "canonical_support_floor": 1e-08,
+    "base_total_exit_hazard": 1.0,
+    "base_hazard_interpretation": "FIXED_ALGORITHMIC_SCALE_NOT_IDENTIFIED_PHYSICAL_RATE",
+    "base_rate_formula": "q_base(s,next)=(support_floor+softplus(logit))/(sum_over_canonical_next_states)",
+    "guided_rate_formula": "q_guided(s,next)=q_base(s,next)*exp(V(next)-V(s))",
+    "guided_diagonal_formula": "q_guided(s,s)=-sum_next_not_equal_s(q_guided(s,next))",
+    "free_action_ratio_head_allowed": false
+  },
+  "ordinary_public_data_contract": {
+    "data_scope": "QUALIFIED_ORDINARY_PUBLIC_ONLY",
+    "activation_requires_dataset_qualification": true,
+    "allowed_record_role": "A2_FROZEN_DEVELOPMENT_ONLY",
+    "allowed_fields": [
+      "source_sequence",
+      "candidate_sequence",
+      "source_relative_edit_set",
+      "study_id",
+      "biological_source_group_id",
+      "assay",
+      "observable_context",
+      "endpoint_id",
+      "calibrated_lower_confidence_bound",
+      "split_component_id",
+      "rights_role",
+      "exposure_role"
+    ],
+    "forbidden_roles": [
+      "OUTER_TEST",
+      "CONFIRMATORY_TEST",
+      "SEALED",
+      "PRIVATE_CANONICAL",
+      "REJECTED_OR_EXCLUDED",
+      "UNQUALIFIED_STUDY"
+    ],
+    "row_identifier_as_model_feature_allowed": false,
+    "study_identifier_as_random_embedding_allowed": false,
+    "significance_or_p_value_selection_allowed": false,
+    "unpublished_private_input_allowed": false,
+    "sealed_input_allowed": false,
+    "public_member_level_output_allowed": false,
+    "public_sequence_output_allowed": false,
+    "public_effect_output_allowed": false,
+    "public_prediction_output_allowed": false
+  },
+  "split_contract": {
+    "parent_split_authority": "A2_FROZEN_OUTCOME_BLIND_SOURCE_GROUP_NEAR_DUPLICATE_COMPONENT_SPLIT",
+    "components_indivisible": true,
+    "source_group_leakage_allowed": false,
+    "exact_sequence_leakage_allowed": false,
+    "near_duplicate_leakage_allowed": false,
+    "reverse_edge_leakage_allowed": false,
+    "candidate_leakage_allowed": false,
+    "study_context_leakage_allowed": false,
+    "development_subroles": [
+      "A6_PARAMETER_TRAIN",
+      "A6_INDEPENDENT_EXACT_REFERENCE"
+    ],
+    "reference_fraction": 0.2,
+    "assignment_salt": "ROUTE_A_V3_A6_LEARNED_BASE_VALUE_GPU_DRAFT_V1",
+    "assignment_unit": "FROZEN_SOURCE_GROUP_NEAR_DUPLICATE_COMPONENT",
+    "label_blind_assignment": true,
+    "split_retry_after_labels_or_results_allowed": false,
+    "outer_test_label_access_allowed": false
+  },
+  "exposure_contract": {
+    "model_input_route": "SCRATCH_ONLY_RANDOM_INITIALIZATION",
+    "pretrained_foundation_checkpoints": [],
+    "pretrained_weights": [],
+    "warm_start_checkpoints": [],
+    "external_learned_embeddings": [],
+    "external_pretraining_corpora": [],
+    "checkpoint_loading_before_first_optimizer_step_allowed": false,
+    "future_run_start_zero_external_checkpoint_load_attestation_required": true,
+    "future_checkpoint_role_manifest_required": true,
+    "new_external_learned_input_requires_new_protocol_and_exposure_audit": true,
+    "scratch_route_is_checkpoint_exposure_waiver": false
+  },
+  "rights_contract": {
+    "qualification_use_authority_required": true,
+    "private_processing_and_evaluation_authority_required": true,
+    "public_redistribution_authority_required_for_training": false,
+    "raw_or_member_level_redistribution_allowed": false,
+    "aggregate_public_reporting_only": true,
+    "unknown_rights_action": "EXCLUDE_DATASET_AND_RECOMPUTE_ELIGIBLE_UNIVERSE"
+  },
+  "base_architecture": {
+    "parameter_initialization": "RANDOM_FROM_FIXED_SEED_ONLY",
+    "pretrained_components_allowed": false,
+    "alphabet": [
+      "A",
+      "C",
+      "G",
+      "U",
+      "N"
+    ],
+    "per_position_features": [
+      "SOURCE_ONE_HOT_5",
+      "CURRENT_ONE_HOT_5",
+      "SOURCE_RELATIVE_EDIT_MASK_1",
+      "VALID_MASK_1",
+      "DETERMINISTIC_SINUSOIDAL_POSITION_16"
+    ],
+    "per_position_feature_width": 28,
+    "encoder": {
+      "type": "MASKED_DILATED_RESIDUAL_CONV1D",
+      "stem_channels": 64,
+      "stem_kernel": 5,
+      "residual_block_count": 4,
+      "residual_block_channels": 64,
+      "residual_kernel": 3,
+      "residual_dilations": [
+        1,
+        2,
+        4,
+        8
+      ],
+      "activation": "GELU",
+      "normalization": "MASKED_POSITIONWISE_LAYER_NORM",
+      "dropout": 0.0,
+      "pooling": [
+        "VALID_MASK_MEAN",
+        "VALID_MASK_MAX"
+      ],
+      "global_sequence_width": 128
+    },
+    "observable_context_encoder": {
+      "vocabulary_source": "FUTURE_FROZEN_A2_MANIFEST",
+      "unknown_token_required": true,
+      "embedding_width": 16,
+      "context_dropout": 0.1,
+      "study_id_embedding_allowed": false
+    },
+    "remaining_budget_embedding_width": 8,
+    "algorithmic_time_features": [
+      "TIME",
+      "LOG1P_TIME"
+    ],
+    "state_vector_width": 154,
+    "canonical_action_features": [
+      "LOCAL_POSITION_TOKEN_64",
+      "STATE_VECTOR_154",
+      "ALT_BASE_ONE_HOT_5",
+      "NORMALIZED_POSITION_1",
+      "STOP_INDICATOR_1"
+    ],
+    "action_vector_width": 225,
+    "rate_head_hidden_widths": [
+      128,
+      64
+    ],
+    "rate_head_output_width": 1,
+    "rate_head_activation": "GELU",
+    "illegal_action_mask_value": "NOT_EVALUATED",
+    "canonical_transition_only_scoring": true
+  },
+  "value_architecture": {
+    "base_encoder_parameters_shared": false,
+    "base_checkpoint_frozen_before_value_training": true,
+    "encoder_architecture": "SAME_SHAPE_AS_BASE_ENCODER_SEPARATE_RANDOM_PARAMETERS",
+    "state_vector_width": 154,
+    "value_head_hidden_widths": [
+      128,
+      64
+    ],
+    "value_head_output_width": 1,
+    "positive_h_parameterization": "1e-6+softplus(raw_value)",
+    "reported_potential": "log(h)",
+    "free_action_ratio_head_allowed": false
+  },
+  "terminal_tilt_contract": {
+    "input_score": "FROZEN_CALIBRATED_LOWER_CONFIDENCE_BOUND_FROM_ORDINARY_DEVELOPMENT_ROLE",
+    "bare_critic_mean_allowed": false,
+    "score_standardization": "TRAIN_PARTITION_ONLY_WITHIN_STUDY_ASSAY_CONTEXT_ROBUST_MEDIAN_MAD",
+    "mad_floor": 1e-06,
+    "degenerate_scale_action": "FAIL_CURRENT_PROTOCOL",
+    "standardized_score_clip": [
+      -4.0,
+      4.0
+    ],
+    "beta": 1.0,
+    "terminal_weight_formula": "w=exp(clamp(beta*z_lcb,-4,4))",
+    "strictly_positive": true,
+    "numerical_failure_weight_defined": false,
+    "terminal_tilt_frozen_before_value_parameter_updates": true,
+    "terminal_tilt_change_requires_new_protocol": true
+  },
+  "training_objectives": {
+    "base_objective": {
+      "name": "EXACT_OBSERVED_TERMINAL_NEGATIVE_LOG_LIKELIHOOD",
+      "eligible_edit_count_max": 5,
+      "path_marginalization": "EXACT_SUBSET_DP_OVER_ALL_TARGET_EDIT_ORDERS_WITH_COMPETING_NON_TARGET_AND_STOP_MASS",
+      "observed_holding_times_required": false,
+      "rate_scale_identification": "FIXED_TOTAL_EXIT_HAZARD_ONE",
+      "weighting": "EQUAL_STUDY_THEN_EQUAL_SOURCE_GROUP_THEN_EQUAL_CANDIDATE",
+      "significance_weighting_allowed": false
+    },
+    "value_objective": {
+      "name": "EXACT_HARMONIC_EXTENSION_LOG_H_HUBER",
+      "base_parameters_updated": false,
+      "exact_training_graph_source": "A6_PARAMETER_TRAIN_SOURCE_GROUPS",
+      "editable_positions_per_graph": 5,
+      "position_selection": "INCLUDE_MEASURED_EDIT_POSITIONS_THEN_FILL_BY_LABEL_BLIND_SALT",
+      "budgets": [
+        1,
+        3,
+        5
+      ],
+      "state_weighting": "EQUAL_GRAPH_THEN_EQUAL_TRANSIENT_STATE",
+      "loss": "HUBER_ON_LOG_H",
+      "huber_delta": 0.1
+    },
+    "joint_training_allowed": false,
+    "base_then_value_order_required": true
+  },
+  "independent_exact_reference": {
+    "implementation_role": "CPU_STDLIB_OR_NUMPY_NO_TORCH_NO_LEARNER_IMPORT",
+    "source_role": "A6_INDEPENDENT_EXACT_REFERENCE",
+    "graph_count": 96,
+    "graphs_per_budget": 32,
+    "graph_unit": "ONE_FROZEN_SOURCE_GROUP_CONTEXT_WITH_FIVE_LABEL_BLIND_EDITABLE_POSITIONS",
+    "graph_selection_rule": "SORT_ELIGIBLE_FROZEN_COMPONENT_IDS_BY_SHA256_OF_ASSIGNMENT_SALT_AND_COMPONENT_ID_THEN_TAKE_FIRST_32_PER_BUDGET",
+    "insufficient_graph_action": "FAIL_CURRENT_PROTOCOL_KEEP_A6_IN_PROGRESS",
+    "editable_positions_per_graph": 5,
+    "budgets": [
+      1,
+      3,
+      5
+    ],
+    "dp_and_exhaustive_path_enumeration_must_both_run": true,
+    "dp_vs_enumeration_terminal_tv_max": 1e-12,
+    "reference_graphs_may_train_parameters": false,
+    "reference_results_may_select_checkpoint": false,
+    "public_output": "AGGREGATE_METRICS_ONLY"
+  },
+  "learned_potential_approximation_gate": {
+    "primary_estimand": "MAX_OVER_REFERENCE_GRAPHS_OF_P95_OVER_CANONICAL_EDGES_ABS_ERROR_IN_LOG_POTENTIAL_DIFFERENCE",
+    "edge_error_formula": "abs((V(next)-V(state))-(log_h_exact(next)-log_h_exact(state)))",
+    "primary_threshold_max": 0.1,
+    "secondary_estimand": "MAX_OVER_REFERENCE_GRAPHS_TERMINAL_DISTRIBUTION_TV",
+    "secondary_threshold_max": 0.02,
+    "all_reference_graphs_required": true,
+    "abstention_or_graph_deletion_allowed": false,
+    "failed_gate_action": "FAIL_CURRENT_PROTOCOL_KEEP_A6_IN_PROGRESS"
+  },
+  "optimizer_compute_checkpoint_policy": {
+    "seed": 2026081401,
+    "seed_count": 1,
+    "optimizer": "ADAMW",
+    "learning_rate": 0.0003,
+    "betas": [
+      0.9,
+      0.999
+    ],
+    "epsilon": 1e-08,
+    "weight_decay": 0.0001,
+    "gradient_clip_l2": 1.0,
+    "learning_rate_schedule": "CONSTANT",
+    "precision": "FLOAT32",
+    "source_group_batch_size": 32,
+    "gradient_accumulation_steps": 1,
+    "base_optimizer_steps": 40000,
+    "value_optimizer_steps": 20000,
+    "total_optimizer_steps": 60000,
+    "early_stopping_allowed": false,
+    "hyperparameter_search_allowed": false,
+    "best_checkpoint_selection_allowed": false,
+    "scheduled_recovery_checkpoint_interval_steps": 5000,
+    "recovery_checkpoint_role": "CRASH_RESUME_ONLY_NOT_SELECTION",
+    "scientific_checkpoint_roles": [
+      "BASE_FINAL_STEP_40000",
+      "VALUE_FINAL_STEP_20000"
+    ],
+    "resume_rule": "LATEST_SCHEDULED_CHECKPOINT_FROM_SAME_RUN_ID_CONFIG_DATA_SPLIT_AND_OPTIMIZER_STATE_ONLY",
+    "changed_batch_precision_optimizer_schedule_or_data_requires_new_run_id": true,
+    "matched_compute_claim_allowed_in_a6": false
+  },
+  "cuda_fail_closed_contract": {
+    "parameter_updates_require_cuda": true,
+    "cpu_parameter_updates_allowed": false,
+    "silent_cpu_fallback_allowed": false,
+    "single_gpu_required": true,
+    "cuda_visible_devices_must_resolve_to_one_frozen_gpu_uuid": true,
+    "occupied_gpu_reuse_without_owner_authorization_allowed": false,
+    "required_pre_run_checks": [
+      "TORCH_CUDA_AVAILABLE",
+      "MODEL_AND_ALL_TENSORS_ON_CUDA",
+      "GPU_UUID_MATCHES_RUN_AUTHORITY",
+      "GPU_PID_OWNER_MEMORY_AND_UTILIZATION_RECORDED",
+      "NO_UNRELATED_JOB_PREEMPTION",
+      "OUTPUT_RUN_ID_ABSENT"
+    ],
+    "required_environment_provenance": [
+      "GPU_UUID",
+      "GPU_MODEL",
+      "DRIVER_VERSION",
+      "CUDA_VERSION",
+      "PYTORCH_VERSION",
+      "DEVICE_INDEX",
+      "PEAK_VRAM_BYTES"
+    ],
+    "failed_check_action": "FAIL_CLOSED_ZERO_PARAMETER_UPDATE_ZERO_OUTPUT"
+  },
+  "required_gates": {
+    "mathematical": [
+      "TIME_HOMOGENEOUS_RATE_AND_TILT_SCOPE_RECORDED",
+      "HARMONIC_H_DISTINGUISHED_FROM_TERMINAL_WEIGHT_W",
+      "SCALAR_POTENTIAL_DOOB_RATE_ONLY",
+      "INDEPENDENT_DP_AND_PATH_ENUMERATION_AGREE"
+    ],
+    "base_recovery": {
+      "operator_fixture": "SET_TERMINAL_WEIGHT_W_TO_ONE_AND_USE_EXACT_CONSTANT_V_ZERO_NOT_LEARNED_NETWORK_OUTPUT",
+      "unit_terminal_tilt_recovers_base": true,
+      "max_rate_relative_error": 1e-05
+    },
+    "legality_and_support": {
+      "hard_legality_fraction": 1.0,
+      "budget_violations_max": 0,
+      "support_coverage_fraction": 1.0,
+      "required_fixtures": [
+        "SOURCE_ANCHORING",
+        "NO_REPEAT_POSITION",
+        "NO_REVERT_TO_SOURCE",
+        "EXPLICIT_STOP_COMPETITION",
+        "BUDGET_EXHAUSTED",
+        "NO_LEGAL_ACTION",
+        "NUMERICAL_FAILURE_FAILS_RUN",
+        "UNEQUAL_RAW_ALIAS_AGGREGATION",
+        "PATH_PRODUCT_CONSISTENCY"
+      ]
+    },
+    "trajectory": {
+      "deterministic_replay_match_fraction": 1.0,
+      "trajectory_legality_fraction": 1.0,
+      "trajectory_budget_violations_max": 0,
+      "holding_time_distribution_check_required": true,
+      "statistical_trajectory_count": 20000,
+      "statistical_seed": 2026081402,
+      "holding_time_mean_relative_error_max": 0.02,
+      "sampled_terminal_distribution_tv_max": 0.02
+    },
+    "learned_potential": "USE_LEARNED_POTENTIAL_APPROXIMATION_GATE",
+    "failure_cannot_be_rescued_by_checkpoint_seed_or_threshold_selection": true
+  },
+  "future_provenance_and_manifest_outputs": {
+    "this_draft_creates_runtime_outputs": false,
+    "required_if_later_authorized": [
+      "FROZEN_ACTIVE_PROTOCOL_SNAPSHOT",
+      "INPUT_DATA_ROLE_AND_RIGHTS_MANIFEST",
+      "SPLIT_AND_EXPOSURE_MANIFEST",
+      "CUDA_ENVIRONMENT_MANIFEST",
+      "TRAINING_RUN_MANIFEST",
+      "BASE_FINAL_CHECKPOINT_MANIFEST",
+      "VALUE_FINAL_CHECKPOINT_MANIFEST",
+      "RECOVERY_CHECKPOINT_ROLE_MANIFEST",
+      "INDEPENDENT_EXACT_REFERENCE_REPORT",
+      "AGGREGATE_BASE_RECOVERY_LEGALITY_SUPPORT_REPORT",
+      "AGGREGATE_LEARNED_POTENTIAL_ERROR_REPORT",
+      "AGGREGATE_TRAJECTORY_AND_COMPUTE_LEDGER",
+      "FAILURE_BUNDLE_IF_ANY_GATE_FAILS"
+    ],
+    "public_outputs_aggregate_only": true,
+    "member_ids_sequences_effects_predictions_split_assignments_public": false,
+    "manifest_must_record_zero_private_and_sealed_access": true
+  },
+  "terminal_truth": {
+    "status": "DRAFT_FOR_REVIEW_NOT_ACTIVE_PROTOCOL",
+    "training": "NOT_AUTHORIZED_NOT_RUN",
+    "gpu": "NOT_AUTHORIZED_NOT_RUN",
+    "parameter_updates": 0,
+    "model_selection": "NOT_AUTHORIZED_NOT_RUN",
+    "a6": "IN_PROGRESS_UNCHANGED",
+    "flow_base_legal_ctmc_formal_task": "NOT_RUN_UNCHANGED",
+    "l3_claim": "NOT_ESTABLISHED_UNCHANGED",
+    "a7": "NOT_RUN_NOT_UNLOCKED",
+    "a1_scientific_counts": "UNCHANGED",
+    "canonical_state": "UNCHANGED",
+    "sole_next_action": "INDEPENDENT_REVIEW_THEN_EXPLICIT_OWNER_DECISION_ON_ACTIVE_PROTOCOL_PROMOTION;_PARAMETER_UPDATES_REQUIRE_A_SEPARATE_LATER_AUTHORIZATION"
+  }
+}
