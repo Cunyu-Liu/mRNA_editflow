@@ -8,9 +8,10 @@ date: "2026-08-10"
 
 authority:
   initial_source_goal_sha256: d1c031aecdec710495f6861b380785cccd64663ac4bd97b4f479d6fdf372ea07
-  active_amendment_decision_ids: [V3-DEC-017, V3-DEC-018, V3-DEC-019]
+  active_amendment_decision_ids: [V3-DEC-017, V3-DEC-018, V3-DEC-019, V3-DEC-020]
   active_amendment_paths:
     V3-DEC-019: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec019.yaml
+    V3-DEC-020: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec020.yaml
   source_goal:
     local_path: "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna v3.md"
     sha256: cbac4c3dcba8f1b8df95d8edad52d19e3c126d1c865d0cc423537c754cc90982
@@ -141,8 +142,69 @@ a1_qualification_authority:
     primary_measurement_route_if_qualified: AUTHOR_PUBLISHED_PROCESSED_ENDPOINT
     raw_replay_role: REPRODUCIBILITY_AUXILIARY
     raw_replay_completion_required_for_primary_a1_measurement_route: false
+    qualification_is_model_input_route_scoped: true
+    current_qualification_route: SCRATCH_ONLY_NO_FOUNDATION_NO_EXTERNAL_LEARNED_INPUTS
+    allowed_model_input_routes:
+      - SCRATCH_ONLY_NO_FOUNDATION_NO_EXTERNAL_LEARNED_INPUTS
+      - FOUNDATION_CHECKPOINT
+    route_selected_before_model_results: true
+    route_switch_after_model_results_allowed: false
+    route_fallback_after_failure_allowed: false
+    same_dataset_may_receive_duplicate_gate_credit_across_routes: false
+    model_input_route_gate: MODEL_INPUT_ROUTE_AND_ROUTE_CONDITIONAL_EXPOSURE_CLOSED
+    scratch_only_route:
+      checkpoint_specific_exposure_gate_applicable: false
+      checkpoint_specific_exposure_status_if_selected: NOT_APPLICABLE_BY_FROZEN_NO_EXTERNAL_LEARNED_INPUT_ROUTE
+      checkpoint_specific_exposure_pass_claimed: false
+      external_checkpoint_count_allowed: 0
+      external_learned_input_count_allowed: 0
+      allowed_parameter_initialization: RANDOM_INITIALIZATION_ONLY
+      runtime_no_external_learned_input_attestation_required: true
+      any_forbidden_external_learned_input_invalidates_route: true
+    foundation_checkpoint_route:
+      status: RETAINED_FAIL_CURRENT_PROTOCOL
+      existing_dec019_activation_and_adjudicator_retained: true
+      checkpoint_specific_exposure_gate_applicable: true
+      checkpoint_specific_exposure_may_be_waived: false
+      minimum_audited_checkpoint_count_for_pass: 1
+      empty_checkpoint_set_can_pass: false
+      required_true_fact_fields:
+        - checkpoint_ids_and_revisions_frozen
+        - checkpoint_artifact_digests_bound
+        - exact_member_exposure_audit_pass
+        - near_duplicate_exposure_audit_pass
+    forbidden_external_learned_inputs_under_scratch:
+      - FOUNDATION_OR_OTHER_PRETRAINED_CHECKPOINT_WEIGHTS
+      - EXTERNALLY_TRAINED_INITIALIZATION_OR_WARM_START
+      - EXTERNALLY_LEARNED_TOKEN_EMBEDDINGS
+      - EXTERNALLY_TRAINED_ENCODER_ADAPTER_OR_HEAD
+      - EXTERNAL_LEARNED_REPRESENTATIONS_FEATURES_OR_LOGITS
+      - EXTERNAL_TEACHER_OR_DISTILLATION_TARGETS
+      - EXTERNAL_PSEUDOLABELS
+      - CHECKPOINT_DERIVED_CALIBRATION_OR_NORMALIZATION_STATISTICS
+      - LEARNED_RETRIEVAL_INDEX_RERANKER_OR_SCORE
+      - ANY_PARAMETER_TENSOR_FEATURE_OR_SCORE_LEARNED_FROM_EXTERNAL_DATA
+    prior_aggregate_design_use: AGGREGATE_PUBLIC_STRUCTURAL_AUTHORITY_INFORMED_PROTOCOL_DESIGN
+    prior_aggregate_design_use_disclosed: true
+    untouched_claim_allowed: false
+    claim_of_no_prior_influence_allowed: false
+    prospective_freeze_boundary: DEC020_FORWARD
+    full_prior_analytic_use_attestation_required_before_predictor_protocol_promotion_or_training: true
+    full_prior_analytic_use_attestation_completion_asserted_by_dec020: false
+    existing_license_and_redistribution_rights_gate_status: PASS
+    rights_gate_reopened_by_dec020: false
+    future_route_scoped_qualification_and_canonical_count_possible_after_all_gates_pass: true
+    canonical_materialization_execution_authorized: false
+    private_payload_access_allowed: false
+    training_allowed: false
+    gpu_work_allowed: false
+    model_selection_allowed: false
+    next_phase_authorized: false
+    sealed_contact_allowed: false
     all_nonwaivable_gates_must_pass: true
-  checkpoint_specific_exposure_may_be_waived: false
+  model_input_route_and_route_conditional_exposure_gate_required: true
+  checkpoint_specific_exposure_may_be_waived_for_foundation_checkpoint_route: false
+  scratch_only_no_external_learned_inputs_is_checkpoint_exposure_waiver: false
   license_or_redistribution_rights_may_be_waived: false
   uncertainty_routes_are_dataset_scoped_only: true
   global_replicate_or_standard_error_relaxation_allowed: false
@@ -150,6 +212,7 @@ a1_qualification_authority:
   other_dataset_specific_stricter_replicate_or_standard_error_gates_changed: false
   decision_alone_qualifies_any_study: false
   decision_alone_authorizes_training_or_model_selection: false
+  decision_or_policy_alone_is_training_evidence: false
 
 region_plan:
   primary_region: 5UTR
@@ -295,7 +358,7 @@ phase_plan:
       - SOURCE_GROUP_NEAR_DUPLICATE_GRAPH_AND_SPLIT_SALT_FROZEN
       - ZERO_QUALIFICATION_LEAKAGE_AUDIT_PASS
       - GROUP_POWER_AT_LEAST_0_80_AND_FULL_CI_WIDTH_AT_MOST_0_30
-      - CHECKPOINT_SPECIFIC_EXPOSURE_AND_RIGHTS_CLOSED
+      - MODEL_INPUT_ROUTE_AND_ROUTE_CONDITIONAL_EXPOSURE_AND_RIGHTS_CLOSED
   - phase_id: A2
     name: BENCHMARK_METRIC_AND_EVALUATOR_FREEZE
     depends_on: [A1]

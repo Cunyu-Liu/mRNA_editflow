@@ -10,8 +10,9 @@ authority_ref:
   config_path: configs/route_a_v3.yaml
   goal_path: docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md
   goal_sha256: cbac4c3dcba8f1b8df95d8edad52d19e3c126d1c865d0cc423537c754cc90982
-  active_amendment_decision_ids: [V3-DEC-017, V3-DEC-018, V3-DEC-019]
+  active_amendment_decision_ids: [V3-DEC-017, V3-DEC-018, V3-DEC-019, V3-DEC-020]
   dec019_amendment_path: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec019.yaml
+  dec020_amendment_path: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec020.yaml
 
 data_policy:
   public_data_only: true
@@ -78,7 +79,7 @@ common_audit_requirements:
   - BIOLOGICAL_SOURCE_GROUP
   - PROVENANCE_AND_CHECKSUM
   - LICENSE_AND_REDISTRIBUTION
-  - FOUNDATION_EXPOSURE
+  - MODEL_INPUT_ROUTE_AND_ROUTE_CONDITIONAL_EXPOSURE
   - REJECT_REASON
   - POST_DEDUP_EFFECTIVE_N
   - PREFROZEN_GROUP_POWER_AND_FULL_CI_WIDTH
@@ -306,12 +307,14 @@ datasets:
       raw_replay_completion_required_for_primary_a1_measurement_route: false
       owner_primary_route_policy_status: CLOSED_BY_V3_DEC_019
       required_80s_role_authority_is_primary_route_blocker: false
-      checkpoint_specific_exposure_or_rights_waiver_allowed: false
+      model_input_route_and_route_conditional_exposure_gate_required: true
+      foundation_checkpoint_exposure_or_rights_waiver_allowed: false
+      scratch_only_no_external_learned_inputs_is_checkpoint_exposure_waiver: false
       power_target_minimum: 0.80
       maximum_full_ci_width: 0.30
       current_blocker_count: 8
       current_blockers:
-        - CHECKPOINT_SPECIFIC_EXPOSURE_UNKNOWN_NOT_ASSERTED
+        - MODEL_INPUT_ROUTE_CONDITIONAL_ADJUDICATION_NOT_RUN
         - BIOLOGICAL_GROUP_AUTHORITY_NOT_CLOSED
         - OUTCOME_BLIND_SPLIT_AND_LEAKAGE_NOT_FROZEN
         - GROUP_POWER_AND_CI_NOT_RUN
@@ -319,6 +322,38 @@ datasets:
         - ROW_LEVEL_REPLICATE_OR_STANDARD_ERROR_NOT_CLOSED
         - LICENSE_AND_REDISTRIBUTION_RIGHTS_UNKNOWN_NOT_ASSERTED
         - ROW_LOCATOR_AND_MULTI_ASSET_LINEAGE_NOT_CLOSED
+    dec020_model_input_route_policy:
+      selected_route: SCRATCH_ONLY_NO_FOUNDATION_NO_EXTERNAL_LEARNED_INPUTS
+      retained_route: FOUNDATION_CHECKPOINT
+      route_selected_before_model_results: true
+      route_switch_after_model_results_allowed: false
+      route_fallback_after_failure_allowed: false
+      same_dataset_may_receive_duplicate_gate_credit_across_routes: false
+      scratch_route_checkpoint_exposure_status: NOT_APPLICABLE_BY_FROZEN_NO_EXTERNAL_LEARNED_INPUT_ROUTE
+      scratch_route_checkpoint_exposure_pass_claimed: false
+      scratch_route_external_checkpoint_count_allowed: 0
+      scratch_route_external_learned_input_count_allowed: 0
+      scratch_route_parameter_initialization: RANDOM_INITIALIZATION_ONLY
+      scratch_route_runtime_attestation_required_before_any_learned_parameter_run: true
+      foundation_route_status: RETAINED_FAIL_CURRENT_PROTOCOL
+      foundation_route_dec019_activation_and_adjudicator_retained: true
+      foundation_route_minimum_audited_checkpoint_count_for_pass: 1
+      foundation_route_empty_checkpoint_set_can_pass: false
+      prior_aggregate_design_use: AGGREGATE_PUBLIC_STRUCTURAL_AUTHORITY_INFORMED_PROTOCOL_DESIGN
+      disclosure_status: DISCLOSED_NOT_UNTOUCHED
+      may_be_called_untouched: false
+      claim_of_no_prior_influence_allowed: false
+      prospective_freeze_boundary: DEC020_FORWARD
+      full_prior_analytic_use_attestation_required_before_predictor_protocol_promotion_or_training: true
+      full_prior_analytic_use_attestation_completion_asserted_by_dec020: false
+      existing_license_and_redistribution_rights_gate_status: PASS
+      rights_gate_reopened_by_dec020: false
+      future_route_scoped_qualification_and_canonical_count_possible_after_all_gates_pass: true
+      canonical_materialization_execution_authorized: false
+      private_payload_access_allowed: false
+      gpu_work_allowed: false
+      sealed_contact_allowed: false
+      decision_or_policy_alone_is_training_evidence: false
     role_authority_runtime_sync_status: PENDING_NO_EVT_035
     role_authority_changes_dataset_qualification: false
     ordinary_gate_contribution: 0
@@ -328,7 +363,7 @@ datasets:
     training_allowed: false
     model_selection_allowed: false
     next_phase_authorized: false
-    allowed_current_uses: [PROVENANCE_AUDIT, OFFICIAL_METADATA_ROLE_AUTHORITY_AUDIT, PUBLISHED_PROCESSED_ENDPOINT_PRIMARY_ROUTE_QUALIFICATION, REGION_AND_MEMBER_MAPPING_RECONSTRUCTION]
+    allowed_current_uses: [PROVENANCE_AUDIT, OFFICIAL_METADATA_ROLE_AUTHORITY_AUDIT, PUBLISHED_PROCESSED_ENDPOINT_PRIMARY_ROUTE_QUALIFICATION, REGION_AND_MEMBER_MAPPING_RECONSTRUCTION, MODEL_INPUT_ROUTE_CONDITIONAL_ADJUDICATION]
     forbidden_current_uses: [TRAINING, CALIBRATION, MODEL_SELECTION, CONFIRMATORY_EVALUATION, CLAIM_SUPPORT]
     blocking_requirements:
       - ROW_LEVEL_MULTI_ASSET_LINEAGE_AND_LOCATORS_CLOSED
@@ -336,7 +371,7 @@ datasets:
       - BIOLOGICAL_SOURCE_GROUP_AUTHORITY_CLOSED
       - REPLICATE_OR_VALID_STANDARD_ERROR_CLOSED
       - LICENSE_AND_REDISTRIBUTION_RIGHTS_CLOSED
-      - CHECKPOINT_SPECIFIC_EXPOSURE_CLOSED
+      - MODEL_INPUT_ROUTE_AND_ROUTE_CONDITIONAL_EXPOSURE_CLOSED
       - A1_SOURCE_GROUP_NEAR_DUPLICATE_GRAPH_AND_SALT_FROZEN_WITH_ZERO_LEAKAGE
       - PREFROZEN_GROUP_POWER_AT_LEAST_0_80_AND_FULL_CI_WIDTH_AT_MOST_0_30
     role_authority_evidence_status: PASS

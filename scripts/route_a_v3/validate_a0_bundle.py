@@ -37,10 +37,55 @@ CONFIG_PATH = "configs/route_a_v3.yaml"
 A1_QUALIFICATION_CONFIG_PATH = "configs/route_a_v3_a1_qualification.json"
 SUPERSESSION_PATH = "docs/contracts/supersession_mrna_xeditflow_v1_1_to_route_a_v3.yaml"
 DEC019_AMENDMENT_PATH = "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec019.yaml"
+DEC020_AMENDMENT_PATH = "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec020.yaml"
 DECISION_LOG_PATH = "docs/execution/route_a_v3_decision_log.yaml"
 REGISTRY_MANIFEST_PATH = "docs/execution/route_a_v3_registry_manifest.json"
 A1_INTERIM_PATH = "docs/execution/route_a_v3_a1_interim.yaml"
-EXPECTED_A1_INTERIM_SHA256 = "ec27d07f7240584380b8a74f7be78ed3f951405703a9c65b383e3928ff69df89"
+EXPECTED_A1_INTERIM_SHA256 = "615cbb768d819f8acddfb6a5e86a59f9da21c342598caea267bf6ef101efe683"
+DEC020_AUTHORITY_LEDGER_AT = "2026-08-13T12:15:00+08:00"
+DEC020_AUTHORITY_MANIFEST_AT = "2026-08-13T12:15:01+08:00"
+DEC020_AUTHORITY_MANIFEST_STATUS = (
+    "A1_DEC020_AUTHORITY_REGISTERED_EVT049_SETTLED_"
+    "RUNTIME_SYNC_PENDING_FRESH_EVENT"
+)
+DEC020_RUNTIME_SYNC_STATUS = "PENDING_FRESH_EVENT_AFTER_SETTLED_EVT_049"
+DEC020_PENDING_RUNTIME_EVENT_ID = "PENDING_FRESH_RUNTIME_EVENT_ID"
+DEC020_SCRATCH_ROUTE = "SCRATCH_ONLY_NO_FOUNDATION_NO_EXTERNAL_LEARNED_INPUTS"
+DEC020_FOUNDATION_ROUTE = "FOUNDATION_CHECKPOINT"
+DEC020_ROUTE_GATE = "MODEL_INPUT_ROUTE_AND_ROUTE_CONDITIONAL_EXPOSURE_CLOSED"
+DEC020_SCRATCH_EXPOSURE_STATUS = (
+    "NOT_APPLICABLE_BY_FROZEN_NO_EXTERNAL_LEARNED_INPUT_ROUTE"
+)
+DEC020_FORBIDDEN_EXTERNAL_LEARNED_INPUTS = [
+    "FOUNDATION_OR_OTHER_PRETRAINED_CHECKPOINT_WEIGHTS",
+    "EXTERNALLY_TRAINED_INITIALIZATION_OR_WARM_START",
+    "EXTERNALLY_LEARNED_TOKEN_EMBEDDINGS",
+    "EXTERNALLY_TRAINED_ENCODER_ADAPTER_OR_HEAD",
+    "EXTERNAL_LEARNED_REPRESENTATIONS_FEATURES_OR_LOGITS",
+    "EXTERNAL_TEACHER_OR_DISTILLATION_TARGETS",
+    "EXTERNAL_PSEUDOLABELS",
+    "CHECKPOINT_DERIVED_CALIBRATION_OR_NORMALIZATION_STATISTICS",
+    "LEARNED_RETRIEVAL_INDEX_RERANKER_OR_SCORE",
+    "ANY_PARAMETER_TENSOR_FEATURE_OR_SCORE_LEARNED_FROM_EXTERNAL_DATA",
+]
+DEC020_CURRENT_ZERO_COUNTS = {
+    "ordinary": 0,
+    "a1": 0,
+    "true_a2": 0,
+    "canonical_records": 0,
+}
+DEC020_FUTURE_V4_REGISTRATION = {
+    "lifecycle_status": "DEFERRED_TO_POST_AUTHORITY_IMPLEMENTATION_COMMIT_I",
+    "expected_static_leaf_count": 3,
+    "expected_static_leaf_roles": ["CONFIG", "SCRIPT", "FOCUSED_TEST"],
+    "registered_static_leaf_count": 0,
+    "registered_in_static_manifest": False,
+    "leaf_paths": [],
+    "leaf_sha256": [],
+    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "may_execute": False,
+    "may_adjudicate": False,
+}
 GSE200304_DEC019_ONE_BLOCKER_LEDGER_AT = "2026-08-12T16:09:52+08:00"
 GSE200304_DEC019_ONE_BLOCKER_MANIFEST_AT = "2026-08-12T16:09:53+08:00"
 POST_FAIL_ACQUISITION_LEDGER_AT = "2026-08-12T19:30:00+08:00"
@@ -67,17 +112,41 @@ GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_MANIFEST_AT = (
 GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_EVIDENCE_UPDATE_ID = (
     "GSE232572_A1_QUALIFICATION_AUTHORITY_PREFLIGHT_V1"
 )
-ACTIVE_AMENDMENT_DECISION_IDS = ["V3-DEC-017", "V3-DEC-018", "V3-DEC-019"]
-DEC019_LEAF_AUTHORITY_SHA256 = {
-    DEC019_AMENDMENT_PATH: "8c82e564398f0735fe4976f875fe91f053937b05044e5232e237694a2b36e1ca",
-    DECISION_LOG_PATH: "b537a2ce19e4bb8b099f05df4ba383b56b8957cbc7be0b5954c9c11d741eb23b",
-    "docs/execution/route_a_v3_data_role_registry.yaml": "4d14ebd1a6adc04a344165f775df8586ef9f8f0461fdcac08649d0644d9956f2",
-    "docs/execution/route_a_v3_split_registry.yaml": "2764d471c09a27da889b690cac317ac582bf9f25b79b6a34ac491f2e0b434929",
-    "docs/execution/route_a_v3_task_registry.yaml": "6c6659ef0e9ddbbbba002f77d39d388dbdacc7b383e98ebb30a1580d590d85b4",
-    "docs/execution/route_a_v3_task_split_matrix.yaml": "dd340bcfb291138b862c5858daa28910c44689299647b468aedcc48b3d90b534",
-    "docs/execution/route_a_v3_claim_evidence_matrix.yaml": "25b62c17320032c764f986892647d4548065cac3a6d42414f96737da3fb3cbad",
-    A1_QUALIFICATION_CONFIG_PATH: "fe3f7736c1f64b362ebda683ca571fc1a84e1fff36aed3a9ae67272665ba2343",
+ACTIVE_AMENDMENT_DECISION_IDS = [
+    "V3-DEC-017",
+    "V3-DEC-018",
+    "V3-DEC-019",
+    "V3-DEC-020",
+]
+ACTIVE_AMENDMENT_PATHS = {
+    "V3-DEC-019": DEC019_AMENDMENT_PATH,
+    "V3-DEC-020": DEC020_AMENDMENT_PATH,
 }
+DEC019_IMMUTABLE_LEAF_SHA256 = {
+    DEC019_AMENDMENT_PATH: "8c82e564398f0735fe4976f875fe91f053937b05044e5232e237694a2b36e1ca",
+}
+DEC020_ACTIVE_AUTHORITY_LEAF_SHA256 = {
+    CONFIG_PATH: "c908ac57b7c9667398f616a0ccf7101b41451b80bf169e768131844d3b63a678",
+    A1_QUALIFICATION_CONFIG_PATH: "ac1ed9e78bf88d916f5599e3a2e75e79df1504c16ba108a12f7e28cfd3da2e20",
+    SUPERSESSION_PATH: "d7c0559742a44b4f0b6f8c941e734da52359c2733ba759ec2acd8ca40b07e62d",
+    DEC020_AMENDMENT_PATH: "0cfbe6e35c2c7f3b19756b8aee41dc91b2a8f05b249a5b6e9cacf90185c56026",
+    DECISION_LOG_PATH: "1332e789758a11687d3bcbbe95e0a5c7e852694e25ed90563d280006d94caced",
+    "docs/execution/route_a_v3_data_role_registry.yaml": "d06bfcfb8d265153a44d270c7bc40e5dd462a5e3bdde631d91519c7d7e394852",
+    "docs/execution/route_a_v3_split_registry.yaml": "52e1146027956e024dd6194ff18862e542e27fff81e8fc6b6d8aeaa972b8259c",
+    "docs/execution/route_a_v3_task_registry.yaml": "bf3066a7534041374685e9ebe9ac8c840e53ceec1acbb076a72a758d397c63f2",
+    "docs/execution/route_a_v3_task_split_matrix.yaml": "db23e96b6977339237956de57309d04a9e692bf937a8d34427d2e1b6cc150db8",
+    "docs/execution/route_a_v3_claim_evidence_matrix.yaml": "9f5226ac78dd6c3848ba5ceb42742918de66ec459f951bb845ccaf21958a88f9",
+}
+DEC020_AUTHORITY_LEDGER_PATHS = (
+    A1_INTERIM_PATH,
+    REGISTRY_MANIFEST_PATH,
+    "scripts/route_a_v3/validate_a0_bundle.py",
+    "tests/route_a_v3/test_a0_integrity_guards.py",
+)
+DEC020_AUTHORITY_COMMIT_EXACT_CHANGED_PATHS = (
+    *DEC020_ACTIVE_AUTHORITY_LEAF_SHA256,
+    *DEC020_AUTHORITY_LEDGER_PATHS,
+)
 GSE114002_DEC019_SUCCESSOR_CONFIG_PATH = (
     "configs/route_a_v3_gse114002_dec019_true_a2_activation_v2.json"
 )
@@ -1246,7 +1315,7 @@ EXPECTED_HISTORICAL_GATE_BINDINGS = {
     "FINAL_MIGRATION": ("reports/migration/FINAL_MIGRATION_REPORT.md", "a987d8c292c3700754f77052cdfe7315cf656ff2ca32818b5267a6e9fff84b92"),
 }
 
-EXPECTED_DECISION_IDS = tuple(f"V3-DEC-{index:03d}" for index in range(1, 20))
+EXPECTED_DECISION_IDS = tuple(f"V3-DEC-{index:03d}" for index in range(1, 21))
 EXPECTED_DECISION_DIMENSIONS = {
     "V3-DEC-001": "strategic_target",
     "V3-DEC-002": "evidence_and_claim_separation",
@@ -1267,11 +1336,12 @@ EXPECTED_DECISION_DIMENSIONS = {
     "V3-DEC-017": "gse145046_true_a2_role_and_a2_recovery",
     "V3-DEC-018": "gse200302_official_srr_role_authority_and_raw_replay_boundary",
     "V3-DEC-019": "a1_measurement_uncertainty_split_and_claim_boundary",
+    "V3-DEC-020": "gse200304_model_input_route_and_route_conditional_exposure",
 }
 
 # Canonical per-entry digests make the accepted prefix genuinely append-only.
-# A future DEC-020 requires an explicit validator update; rewriting any accepted
-# DEC-001..019 entry while merely refreshing the registry manifest is rejected.
+# A future DEC-021 requires an explicit validator update; rewriting any accepted
+# DEC-001..020 entry while merely refreshing the registry manifest is rejected.
 EXPECTED_DECISION_ENTRY_SHA256 = {
     "V3-DEC-001": "e00b87c7cd529b452ef6db96f982adfd419c3cf289f02d8795abaf09dae966f3",
     "V3-DEC-002": "bc5c0e6d1a68bf45e16529470b9c173b1fbbccab3789cc5a27e3033ee70590b1",
@@ -1292,12 +1362,14 @@ EXPECTED_DECISION_ENTRY_SHA256 = {
     "V3-DEC-017": "d3f4799501b4d0abb63c91105c4f46c5e3246bea9da708c813a1de7c30f3b11a",
     "V3-DEC-018": "c49c04371b02e4f66a42fa33670d8b164d40ad012c0db50b5f16fbaee0b539e4",
     "V3-DEC-019": "93b32f2dbbc261d87604dfff7ea7eca1f57f6d5e7124d7cbec130a87a5466260",
+    "V3-DEC-020": "15e31d6abc30f221659ded9ba734d9d90959d48ba05f02d03864814bc6ded75b",
 }
 
 EXPECTED_REGISTRY_MANIFEST_PATH_ROLES = (
     (GOAL_PATH, "ACTIVE_AMENDED_CONTRACT"),
     (CONFIG_PATH, "EXECUTABLE_CONTRACT"),
     (DEC019_AMENDMENT_PATH, "DEC019_APPEND_ONLY_AUTHORITY_AMENDMENT"),
+    (DEC020_AMENDMENT_PATH, "DEC020_APPEND_ONLY_AUTHORITY_AMENDMENT"),
     (A1_QUALIFICATION_CONFIG_PATH, "A1_QUALIFICATION_ROOT_PROTOCOL"),
     (SUPERSESSION_PATH, "SUPERSESSION_LINEAGE"),
     (SCIENTIFIC_M0_HISTORY_PATH, "HISTORICAL_M0_SCIENTIFIC_FAILURE_EXACT_COPY"),
@@ -1853,17 +1925,17 @@ def validate_contract_authority(
             issues,
             "AUTHORITY_ACTIVE_AMENDMENT_LINEAGE",
             CONFIG_PATH,
-            "authority.active_amendment_decision_ids must be exactly [V3-DEC-017, V3-DEC-018, V3-DEC-019]",
+            "authority.active_amendment_decision_ids must be exactly [V3-DEC-017, V3-DEC-018, V3-DEC-019, V3-DEC-020]",
         )
     elif not _json_type_strict_equal(
         authority.get("active_amendment_paths"),
-        {"V3-DEC-019": DEC019_AMENDMENT_PATH},
+        ACTIVE_AMENDMENT_PATHS,
     ):
         _issue(
             issues,
             "AUTHORITY_ACTIVE_AMENDMENT_PATHS",
             CONFIG_PATH,
-            "authority.active_amendment_paths must bind only the DEC-019 append-only amendment path",
+            "authority.active_amendment_paths must bind the exact DEC-019/DEC-020 append-only lineage",
         )
 
     try:
@@ -1887,17 +1959,17 @@ def validate_contract_authority(
             issues,
             "SUPERSESSION_ACTIVE_AMENDMENT_LINEAGE",
             SUPERSESSION_PATH,
-            "active contract amendment lineage must be exactly [V3-DEC-017, V3-DEC-018, V3-DEC-019]",
+            "active contract amendment lineage must be exactly [V3-DEC-017, V3-DEC-018, V3-DEC-019, V3-DEC-020]",
         )
     if not _json_type_strict_equal(
         supersession.get("active_contract_amendment_paths"),
-        {"V3-DEC-019": DEC019_AMENDMENT_PATH},
+        ACTIVE_AMENDMENT_PATHS,
     ):
         _issue(
             issues,
             "SUPERSESSION_ACTIVE_AMENDMENT_PATHS",
             SUPERSESSION_PATH,
-            "active contract amendment paths must bind only DEC-019",
+            "active contract amendment paths must bind the exact DEC-019/DEC-020 lineage",
         )
     new_authority = supersession.get("new_authority")
     if not isinstance(new_authority, Mapping):
@@ -1918,17 +1990,17 @@ def validate_contract_authority(
                 issues,
                 "SUPERSESSION_NEW_AUTHORITY",
                 SUPERSESSION_PATH,
-                "new_authority.active_amendment_decision_ids must be exactly [V3-DEC-017, V3-DEC-018, V3-DEC-019]",
+                "new_authority.active_amendment_decision_ids must be exactly [V3-DEC-017, V3-DEC-018, V3-DEC-019, V3-DEC-020]",
             )
         if not _json_type_strict_equal(
             new_authority.get("active_amendment_paths"),
-            {"V3-DEC-019": DEC019_AMENDMENT_PATH},
+            ACTIVE_AMENDMENT_PATHS,
         ):
             _issue(
                 issues,
                 "SUPERSESSION_NEW_AUTHORITY",
                 SUPERSESSION_PATH,
-                "new_authority.active_amendment_paths must bind only DEC-019",
+                "new_authority.active_amendment_paths must bind the exact DEC-019/DEC-020 lineage",
             )
         actual_config_sha256 = sha256_bytes(_read_bytes(repo_root, CONFIG_PATH))
         if new_authority.get("config_sha256") != actual_config_sha256:
@@ -2599,10 +2671,10 @@ def validate_registry_manifest(repo_root: Path) -> list[Issue]:
         "contract_sha256": SOURCE_CONTRACT_SHA256,
         "active_amendment_decision_ids": ACTIVE_AMENDMENT_DECISION_IDS,
         "base_commit": "bbb71dcba6f1e1c9cb75a8a6653f1a4fe4a6ca0c",
-        "manifest_status": "A1_GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_LEDGER_REGISTERED_PENDING_EVT049",
+        "manifest_status": DEC020_AUTHORITY_MANIFEST_STATUS,
         "initial_generated_at": "2026-08-10T10:10:05+08:00",
-        "generated_at": GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_MANIFEST_AT,
-        "updated_at": GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_MANIFEST_AT,
+        "generated_at": DEC020_AUTHORITY_MANIFEST_AT,
+        "updated_at": DEC020_AUTHORITY_MANIFEST_AT,
         "sealed_contact": False,
     }
     expected_top_keys = set(expected_static_top) | {"files"}
@@ -2690,6 +2762,18 @@ def validate_registry_manifest(repo_root: Path) -> list[Issue]:
             REGISTRY_MANIFEST_PATH,
             "listed paths must equal the exact mandatory registry-manifest path set",
         )
+    expected_dec020_registered_paths = (
+        set(DEC020_AUTHORITY_COMMIT_EXACT_CHANGED_PATHS)
+        - {REGISTRY_MANIFEST_PATH}
+    )
+    if not expected_dec020_registered_paths.issubset(by_path):
+        _issue(
+            issues,
+            "DEC020_AUTHORITY_COMMIT_CLOSURE",
+            REGISTRY_MANIFEST_PATH,
+            "authority commit A must register all exact14 changed paths except "
+            "the intentionally non-self-hashed registry manifest",
+        )
     cyclic_dynamic_paths = set(by_path) & DEC019_SUCCESSOR_DYNAMIC_CONFIG_PATHS
     if cyclic_dynamic_paths:
         _issue(
@@ -2698,6 +2782,24 @@ def validate_registry_manifest(repo_root: Path) -> list[Issue]:
             REGISTRY_MANIFEST_PATH,
             "dynamic successor configs must be required and core-validated but not exact-hashed "
             f"by the static manifest: {sorted(cyclic_dynamic_paths)!r}",
+        )
+    premature_dec020_v4_paths = {
+        relative
+        for relative, entry in by_path.items()
+        if relative != DEC020_AMENDMENT_PATH
+        and (
+            "gse200304_dec020" in relative.lower()
+            or str(entry.get("role", "")).startswith("GSE200304_DEC020_")
+        )
+    }
+    if premature_dec020_v4_paths:
+        _issue(
+            issues,
+            "DEC020_V4_PREMATURE_STATIC_REGISTRATION",
+            REGISTRY_MANIFEST_PATH,
+            "DEC020 successor V4 CONFIG/SCRIPT/FOCUSED_TEST leaves are deferred "
+            "to post-authority implementation commit I and must not be registered "
+            f"by authority commit A: {sorted(premature_dec020_v4_paths)!r}",
         )
     try:
         goal_hash = sha256_bytes(_read_bytes(repo_root, GOAL_PATH))
@@ -2765,10 +2867,10 @@ def validate_decision_log(decision_log: Mapping[str, Any]) -> list[Issue]:
     if len(decisions) != len(raw):
         _issue(issues, "DECISION_LOG_DUPLICATE_OR_INVALID", DECISION_LOG_PATH, "decision IDs must be unique strings")
     if set(decisions) != set(EXPECTED_DECISION_IDS):
-        _issue(issues, "DECISION_LOG_ID_CLOSURE", DECISION_LOG_PATH, "decision IDs must be exactly V3-DEC-001 through V3-DEC-019")
+        _issue(issues, "DECISION_LOG_ID_CLOSURE", DECISION_LOG_PATH, "decision IDs must be exactly V3-DEC-001 through V3-DEC-020")
     ordered_ids = [entry.get("decision_id") if isinstance(entry, Mapping) else None for entry in raw]
     if ordered_ids != list(EXPECTED_DECISION_IDS):
-        _issue(issues, "DECISION_LOG_ORDER", DECISION_LOG_PATH, "accepted decision prefix must remain in exact DEC-001 through DEC-019 order")
+        _issue(issues, "DECISION_LOG_ORDER", DECISION_LOG_PATH, "accepted decision prefix must remain in exact DEC-001 through DEC-020 order")
     for decision_id, dimension in EXPECTED_DECISION_DIMENSIONS.items():
         entry = decisions.get(decision_id)
         if not isinstance(entry, Mapping):
@@ -2877,6 +2979,21 @@ def validate_decision_log(decision_log: Mapping[str, Any]) -> list[Issue]:
             "dataset-scoped",
             "GSE149487 three-biological-replicate",
             "qualifies no study",
+            "establishes no scientific claim",
+        ),
+        "V3-DEC-020": (
+            "SCRATCH_ONLY_NO_FOUNDATION_NO_EXTERNAL_LEARNED_INPUTS",
+            "NOT_APPLICABLE_BY_FROZEN_NO_EXTERNAL_LEARNED_INPUT_ROUTE",
+            "not PASS",
+            "Retain FOUNDATION_CHECKPOINT",
+            "No post-result route switch",
+            "3/2/1 minima",
+            "maximum 1/1/0 contribution",
+            "rights gate remains PASS",
+            "not untouched",
+            "prior-analytic-use attestation remains required",
+            "changes no current qualified count",
+            "is not training evidence",
             "establishes no scientific claim",
         ),
     }
@@ -3061,6 +3178,71 @@ def validate_decision_log(decision_log: Mapping[str, Any]) -> list[Issue]:
                 "DECISION_LOG_DEC019_EVIDENCE",
                 DECISION_LOG_PATH,
                 f"V3-DEC-019 evidence_refs must be exactly {sorted(expected_refs)!r}",
+            )
+    dec020 = decisions.get("V3-DEC-020")
+    if isinstance(dec020, Mapping):
+        expected_dec020_fields = {
+            "decision_type": "AMENDMENT",
+            "dimension": "gse200304_model_input_route_and_route_conditional_exposure",
+            "status": "FROZEN_USER_AUTHORIZED_GSE200304_MODEL_INPUT_ROUTE_POLICY",
+            "effective_phase": "A1",
+            "requires_user_authorization": True,
+            "user_authorization_status": "GRANTED",
+            "user_authorization_received_at": "2026-08-13T12:07:11+08:00",
+            "user_authorization_source": "ACTIVE_CODEX_THREAD_OWNER_CONFIRMATION",
+            "preserves_decision_ids": list(EXPECTED_DECISION_IDS[:-1]),
+            "accepted_prefix_preserved_through": "V3-DEC-019",
+            "amendment_path": DEC020_AMENDMENT_PATH,
+            "selected_model_input_route": "SCRATCH_ONLY_NO_FOUNDATION_NO_EXTERNAL_LEARNED_INPUTS",
+            "retained_model_input_route": "FOUNDATION_CHECKPOINT",
+            "current_qualified_counts": {
+                "ordinary": 0,
+                "a1": 0,
+                "true_a2": 0,
+                "canonical_records": 0,
+            },
+            "phase_complete": False,
+            "training_allowed": False,
+            "gpu_work_allowed": False,
+            "model_selection_allowed": False,
+            "next_phase_authorized": False,
+            "decision_or_policy_alone_is_training_evidence": False,
+            "existing_license_and_redistribution_rights_gate_status": "PASS",
+            "rights_gate_reopened_by_dec020": False,
+            "future_route_scoped_qualification_and_canonical_count_possible_after_all_gates_pass": True,
+            "canonical_materialization_execution_authorized": False,
+            "private_payload_access_allowed": False,
+            "full_prior_analytic_use_attestation_required_before_predictor_protocol_promotion_or_training": True,
+            "full_prior_analytic_use_attestation_completion_asserted_by_dec020": False,
+            "scientific_claim_status": "NOT_ESTABLISHED",
+            "sealed_contact": False,
+        }
+        for key, value in expected_dec020_fields.items():
+            if not _json_type_strict_equal(dec020.get(key), value):
+                _issue(
+                    issues,
+                    "DECISION_LOG_DEC020",
+                    DECISION_LOG_PATH,
+                    f"V3-DEC-020.{key} must remain {value!r}",
+                )
+        expected_refs = {
+            GOAL_PATH,
+            DEC019_AMENDMENT_PATH,
+            DEC020_AMENDMENT_PATH,
+            CONFIG_PATH,
+            A1_QUALIFICATION_CONFIG_PATH,
+            REGISTRY_PATHS["data"],
+            REGISTRY_PATHS["task"],
+            REGISTRY_PATHS["claim"],
+            REGISTRY_PATHS["split"],
+            REGISTRY_PATHS["matrix"],
+        }
+        if not isinstance(dec020.get("evidence_refs"), list) or set(dec020["evidence_refs"]) != expected_refs:
+            _issue(
+                issues,
+                "DECISION_LOG_DEC020_EVIDENCE",
+                DECISION_LOG_PATH,
+                f"V3-DEC-020 evidence_refs must be exactly {sorted(expected_refs)!r}",
             )
     return issues
 
@@ -3452,7 +3634,7 @@ def validate_dec019_authority(
     """Freeze DEC-019 without granting qualification, training, or a claim."""
 
     issues: list[Issue] = []
-    for relative, expected_sha256 in DEC019_LEAF_AUTHORITY_SHA256.items():
+    for relative, expected_sha256 in DEC019_IMMUTABLE_LEAF_SHA256.items():
         try:
             actual_sha256 = sha256_bytes(_read_bytes(repo_root, relative))
         except (FileNotFoundError, ValueError) as exc:
@@ -3685,6 +3867,7 @@ def validate_dec019_authority(
         "base_commit": "fd722d5fa3c2538fce742b8942b1fb48e782760b",
         "active_amendment_decision_ids": ACTIVE_AMENDMENT_DECISION_IDS,
         "dec019_amendment_path": DEC019_AMENDMENT_PATH,
+        "dec020_amendment_path": DEC020_AMENDMENT_PATH,
     }
     observed_q_authority = qualification.get("authority")
     if not isinstance(observed_q_authority, Mapping):
@@ -3827,7 +4010,8 @@ def validate_dec019_authority(
     else:
         for key, value in {
             "current_qualified_counts": {"ordinary": 0, "a1": 0, "true_a2": 0, "canonical_records": 0},
-            "checkpoint_specific_exposure_may_be_waived": False,
+            "checkpoint_specific_exposure_may_be_waived_for_foundation_checkpoint_route": False,
+            "scratch_only_no_external_learned_inputs_is_checkpoint_exposure_waiver": False,
             "license_or_redistribution_rights_may_be_waived": False,
             "uncertainty_routes_are_dataset_scoped_only": True,
             "global_replicate_or_standard_error_relaxation_allowed": False,
@@ -3835,6 +4019,7 @@ def validate_dec019_authority(
             "other_dataset_specific_stricter_replicate_or_standard_error_gates_changed": False,
             "decision_alone_qualifies_any_study": False,
             "decision_alone_authorizes_training_or_model_selection": False,
+            "decision_or_policy_alone_is_training_evidence": False,
         }.items():
             _expect(root_policy, key, value, CONFIG_PATH, issues, "DEC019_ROOT_POLICY")
 
@@ -3845,6 +4030,7 @@ def validate_dec019_authority(
             continue
         _expect(ref, "active_amendment_decision_ids", ACTIVE_AMENDMENT_DECISION_IDS, REGISTRY_PATHS[name], issues, "DEC019_REGISTRY_AUTHORITY")
         _expect(ref, "dec019_amendment_path", DEC019_AMENDMENT_PATH, REGISTRY_PATHS[name], issues, "DEC019_REGISTRY_AUTHORITY")
+        _expect(ref, "dec020_amendment_path", DEC020_AMENDMENT_PATH, REGISTRY_PATHS[name], issues, "DEC019_REGISTRY_AUTHORITY")
 
     data = registries["data"]
     common_requirements = data.get("common_audit_requirements")
@@ -3896,7 +4082,9 @@ def validate_dec019_authority(
                 "primary_measurement_route_if_qualified": "AUTHOR_PUBLISHED_PROCESSED_ENDPOINT",
                 "raw_replay_role": "REPRODUCIBILITY_AUXILIARY",
                 "required_80s_role_authority_is_primary_route_blocker": False,
-                "checkpoint_specific_exposure_or_rights_waiver_allowed": False,
+                "model_input_route_and_route_conditional_exposure_gate_required": True,
+                "foundation_checkpoint_exposure_or_rights_waiver_allowed": False,
+                "scratch_only_no_external_learned_inputs_is_checkpoint_exposure_waiver": False,
                 "current_blocker_count": 8,
             }.items():
                 _expect(route, key, value, REGISTRY_PATHS["data"], issues, "DEC019_DATA_ROLE_GSE200304")
@@ -3963,6 +4151,649 @@ def validate_dec019_authority(
             "decision_alone_establishes_any_claim": False,
         }.items():
             _expect(claim_boundary, key, value, REGISTRY_PATHS["claim"], issues, "DEC019_CLAIM_BOUNDARY")
+
+    return issues
+
+
+def validate_dec020_authority(
+    repo_root: Path,
+    config: Mapping[str, Any],
+    registries: Mapping[str, Mapping[str, Any]],
+) -> list[Issue]:
+    """Freeze DEC-020 as authority only; no route adjudication or V4 registration."""
+
+    issues: list[Issue] = []
+    for relative, expected_sha256 in DEC020_ACTIVE_AUTHORITY_LEAF_SHA256.items():
+        try:
+            actual_sha256 = sha256_bytes(_read_bytes(repo_root, relative))
+        except (FileNotFoundError, ValueError) as exc:
+            _issue(
+                issues,
+                "DEC020_ACTIVE_AUTHORITY_LEAF_UNREADABLE",
+                relative,
+                str(exc),
+            )
+            continue
+        if actual_sha256 != expected_sha256:
+            _issue(
+                issues,
+                "DEC020_ACTIVE_AUTHORITY_LEAF_DRIFT",
+                relative,
+                f"active authority leaf hash {actual_sha256} must remain {expected_sha256}",
+            )
+
+    try:
+        amendment = _load_yaml(repo_root, DEC020_AMENDMENT_PATH)
+    except (FileNotFoundError, ValueError, yaml.YAMLError) as exc:
+        _issue(issues, "DEC020_AMENDMENT_LOAD", DEC020_AMENDMENT_PATH, str(exc))
+        return issues
+    try:
+        qualification = _load_json(repo_root, A1_QUALIFICATION_CONFIG_PATH)
+    except (FileNotFoundError, ValueError, json.JSONDecodeError) as exc:
+        _issue(
+            issues,
+            "DEC020_A1_QUALIFICATION_LOAD",
+            A1_QUALIFICATION_CONFIG_PATH,
+            str(exc),
+        )
+        return issues
+
+    expected_metadata = {
+        "schema_version": "1.0.0",
+        "amendment_id": "MRNA_XEDITFLOW_ROUTE_A_V3_DEC020",
+        "decision_id": "V3-DEC-020",
+        "contract_id": CONTRACT_ID,
+        "contract_version": VERSION,
+        "amends_contract_path": GOAL_PATH,
+        "amends_contract_sha256": SOURCE_CONTRACT_SHA256,
+        "predecessor_amendment_path": DEC019_AMENDMENT_PATH,
+        "predecessor_amendment_sha256": DEC019_IMMUTABLE_LEAF_SHA256[
+            DEC019_AMENDMENT_PATH
+        ],
+        "amendment_mode": (
+            "APPEND_ONLY_AUTHORITY_COMPANION_ROOT_CONTRACT_AND_"
+            "DEC019_BYTES_UNCHANGED"
+        ),
+        "status": "FROZEN_USER_AUTHORIZED_GSE200304_MODEL_INPUT_ROUTE_POLICY",
+        "effective_phase": "A1",
+        "requires_user_authorization": True,
+    }
+    expected_top_keys = set(expected_metadata) | {
+        "user_authorization",
+        "scope",
+        "route_conditional_gate",
+        "gse200304_gate_preservation",
+        "prior_aggregate_design_use_disclosure",
+        "authorization_projection",
+        "historical_preservation",
+    }
+    if set(amendment) != expected_top_keys:
+        _issue(
+            issues,
+            "DEC020_AMENDMENT_CLOSURE",
+            DEC020_AMENDMENT_PATH,
+            f"top-level keys must be exactly {sorted(expected_top_keys)!r}",
+        )
+    for key, value in expected_metadata.items():
+        _expect(
+            amendment,
+            key,
+            value,
+            DEC020_AMENDMENT_PATH,
+            issues,
+            "DEC020_AMENDMENT_METADATA",
+        )
+
+    closed_sections = {
+        "user_authorization": {
+            "status": "GRANTED",
+            "received_at": "2026-08-13T12:07:11+08:00",
+            "source": "ACTIVE_CODEX_THREAD_OWNER_CONFIRMATION",
+        },
+        "scope": {
+            "dataset_id": "GSE200304",
+            "primary_measurement_route": "AUTHOR_PUBLISHED_PROCESSED_ENDPOINT",
+            "qualification_is_model_input_route_scoped": True,
+            "current_qualification_route": DEC020_SCRATCH_ROUTE,
+            "allowed_model_input_routes": [
+                DEC020_SCRATCH_ROUTE,
+                DEC020_FOUNDATION_ROUTE,
+            ],
+            "route_selected_before_model_results": True,
+            "outcome_or_model_result_used_for_route_selection": False,
+            "route_switch_after_model_results_allowed": False,
+            "route_fallback_after_failure_allowed": False,
+            "same_dataset_may_receive_duplicate_gate_credit_across_routes": False,
+        },
+        "gse200304_gate_preservation": {
+            "minimum_independent_ordinary_studies": 3,
+            "minimum_qualified_a1_studies": 2,
+            "minimum_qualified_true_a2_dense_studies": 1,
+            "maximum_independent_ordinary_study_contribution_if_qualified": 1,
+            "maximum_a1_study_contribution_if_qualified": 1,
+            "maximum_true_a2_dense_study_contribution_if_qualified": 0,
+            "all_nonroute_nonwaivable_gates_remain_required": [
+                "ROW_LEVEL_MULTI_ASSET_LINEAGE_AND_LOCATORS_CLOSED",
+                "ENDPOINT_DIRECTION_SCALE_AND_SEMANTICS_CLOSED",
+                "BIOLOGICAL_SOURCE_GROUP_AUTHORITY_CLOSED",
+                "REPLICATE_OR_VALID_STANDARD_ERROR_CLOSED",
+                "LICENSE_AND_REDISTRIBUTION_RIGHTS_CLOSED",
+                "A1_SOURCE_GROUP_NEAR_DUPLICATE_GRAPH_AND_SALT_FROZEN",
+                "A1_ZERO_LEAKAGE_AUDIT_PASS",
+                "PREFROZEN_GROUP_POWER_AT_LEAST_0_80_PASS",
+                "PREFROZEN_FULL_CI_WIDTH_AT_MOST_0_30_PASS",
+            ],
+            "license_or_redistribution_rights_may_be_waived": False,
+            "existing_license_and_redistribution_rights_gate_status": "PASS",
+            "rights_gate_reopened_by_dec020": False,
+            "target_power_minimum": 0.8,
+            "maximum_full_ci_width": 0.3,
+            "split_or_threshold_may_change_after_model_results": False,
+        },
+        "prior_aggregate_design_use_disclosure": {
+            "status": "DISCLOSED_NOT_UNTOUCHED",
+            "dataset_id": "GSE200304",
+            "disclosed_use": (
+                "AGGREGATE_PUBLIC_STRUCTURAL_AUTHORITY_INFORMED_PROTOCOL_DESIGN"
+            ),
+            "row_sequence_or_effect_payload_disclosed_by_this_amendment": False,
+            "may_be_called_untouched": False,
+            "claim_of_no_prior_influence_allowed": False,
+            "selected_test_may_be_relabelled_untouched": False,
+            "a2_final_benchmark_membership_frozen_by_this_amendment": False,
+            "prospective_freeze_boundary": "DEC020_FORWARD",
+            "full_prior_analytic_use_attestation_required_before_predictor_protocol_promotion_or_training": True,
+            "full_prior_analytic_use_attestation_completion_asserted_by_dec020": False,
+            "required_future_label": (
+                "PRIOR_AGGREGATE_DESIGN_USE_DISCLOSED_NOT_UNTOUCHED"
+            ),
+        },
+        "authorization_projection": {
+            "changes_current_qualified_counts": False,
+            "current_qualified_independent_ordinary_studies": 0,
+            "current_qualified_a1_studies": 0,
+            "current_qualified_true_a2_dense_studies": 0,
+            "current_canonical_record_count": 0,
+            "phase_complete": False,
+            "training_allowed": False,
+            "gpu_work_allowed": False,
+            "model_selection_allowed": False,
+            "next_phase_authorized": False,
+            "sealed_contact_allowed": False,
+            "scientific_claim_status": "NOT_ESTABLISHED",
+            "decision_alone_qualifies_gse200304": False,
+            "decision_alone_materializes_canonical_records": False,
+            "decision_alone_authorizes_adjudication_success": False,
+            "decision_or_policy_alone_is_training_evidence": False,
+            "future_route_scoped_qualification_and_canonical_count_possible_after_all_gates_pass": True,
+            "canonical_materialization_execution_authorized": False,
+            "private_payload_access_allowed": False,
+        },
+        "historical_preservation": {
+            "root_contract_bytes_changed": False,
+            "dec019_amendment_bytes_changed": False,
+            "existing_dec019_activation_config_bytes_changed": False,
+            "existing_dec019_adjudicator_bytes_changed": False,
+            "existing_dec019_focused_test_bytes_changed": False,
+            "existing_checkpoint_exposure_fail_record_changed_or_relabelled": False,
+            "prior_runtime_events_changed": False,
+            "failure_evidence_deleted_or_relabelled": False,
+        },
+    }
+    for key, expected in closed_sections.items():
+        observed = amendment.get(key)
+        if not isinstance(observed, Mapping):
+            _issue(
+                issues,
+                "DEC020_AMENDMENT_SEMANTICS",
+                DEC020_AMENDMENT_PATH,
+                f"{key} must be a mapping",
+            )
+        else:
+            _expect_closed_mapping(
+                observed,
+                expected,
+                DEC020_AMENDMENT_PATH,
+                issues,
+                "DEC020_AMENDMENT_SEMANTICS",
+            )
+
+    route_gate = amendment.get("route_conditional_gate")
+    if not isinstance(route_gate, Mapping):
+        _issue(
+            issues,
+            "DEC020_ROUTE_GATE",
+            DEC020_AMENDMENT_PATH,
+            "route_conditional_gate must be a mapping",
+        )
+    else:
+        expected_gate_keys = {
+            "gate_id",
+            "gate_is_required",
+            "unknown_or_mixed_route_passes",
+            "scratch_route",
+            "foundation_route",
+        }
+        if set(route_gate) != expected_gate_keys:
+            _issue(
+                issues,
+                "DEC020_ROUTE_GATE",
+                DEC020_AMENDMENT_PATH,
+                f"route gate keys must be exactly {sorted(expected_gate_keys)!r}",
+            )
+        for key, value in {
+            "gate_id": DEC020_ROUTE_GATE,
+            "gate_is_required": True,
+            "unknown_or_mixed_route_passes": False,
+        }.items():
+            _expect(
+                route_gate,
+                key,
+                value,
+                DEC020_AMENDMENT_PATH,
+                issues,
+                "DEC020_ROUTE_GATE",
+            )
+        scratch = route_gate.get("scratch_route")
+        if not isinstance(scratch, Mapping):
+            _issue(
+                issues,
+                "DEC020_SCRATCH_ROUTE",
+                DEC020_AMENDMENT_PATH,
+                "scratch_route must be a mapping",
+            )
+        else:
+            _expect_closed_mapping(
+                scratch,
+                {
+                    "route_id": DEC020_SCRATCH_ROUTE,
+                    "current_status": "FROZEN_AUTHORIZED_NOT_YET_ADJUDICATED",
+                    "checkpoint_specific_exposure_gate_applicable": False,
+                    "checkpoint_specific_exposure_status_if_selected": DEC020_SCRATCH_EXPOSURE_STATUS,
+                    "checkpoint_specific_exposure_pass_claimed": False,
+                    "external_checkpoint_count_allowed": 0,
+                    "external_learned_input_count_allowed": 0,
+                    "allowed_parameter_initialization": "RANDOM_INITIALIZATION_ONLY",
+                    "allowed_inputs": [
+                        "QUALIFIED_ROUTE_A_TRAIN_PARTITION_AFTER_A2_FREEZE",
+                        "DETERMINISTIC_NONLEARNED_TOKENIZATION_AND_TRANSFORMS",
+                        "FIXED_NONLEARNED_BIOLOGICAL_FEATURES_AND_ACTION_GRAPH",
+                        "PUBLIC_ARCHITECTURE_AND_METHOD_DESCRIPTIONS_WITHOUT_LEARNED_STATE",
+                    ],
+                    "forbidden_external_learned_inputs": DEC020_FORBIDDEN_EXTERNAL_LEARNED_INPUTS,
+                    "route_contract_binding_required_before_adjudication": True,
+                    "runtime_no_external_learned_input_attestation_required_before_any_learned_parameter_run": True,
+                    "any_forbidden_external_learned_input_invalidates_route": True,
+                    "invalidated_scratch_run_may_be_relabelled_foundation_without_re_adjudication": False,
+                },
+                DEC020_AMENDMENT_PATH,
+                issues,
+                "DEC020_SCRATCH_ROUTE",
+            )
+        foundation = route_gate.get("foundation_route")
+        if not isinstance(foundation, Mapping):
+            _issue(
+                issues,
+                "DEC020_FOUNDATION_ROUTE",
+                DEC020_AMENDMENT_PATH,
+                "foundation_route must be a mapping",
+            )
+        else:
+            _expect_closed_mapping(
+                foundation,
+                {
+                    "route_id": DEC020_FOUNDATION_ROUTE,
+                    "current_status": "RETAINED_FAIL_CURRENT_PROTOCOL",
+                    "existing_dec019_activation_and_adjudicator_retained": True,
+                    "checkpoint_specific_exposure_gate_applicable": True,
+                    "checkpoint_specific_exposure_may_be_waived": False,
+                    "minimum_audited_checkpoint_count_for_pass": 1,
+                    "empty_checkpoint_set_can_pass": False,
+                    "required_true_fact_fields": [
+                        "checkpoint_ids_and_revisions_frozen",
+                        "checkpoint_artifact_digests_bound",
+                        "exact_member_exposure_audit_pass",
+                        "near_duplicate_exposure_audit_pass",
+                    ],
+                },
+                DEC020_AMENDMENT_PATH,
+                issues,
+                "DEC020_FOUNDATION_ROUTE",
+            )
+
+    q_dec020 = qualification.get("dec020_model_input_route_authority")
+    if not isinstance(q_dec020, Mapping):
+        _issue(
+            issues,
+            "DEC020_A1_QUALIFICATION_POLICY",
+            A1_QUALIFICATION_CONFIG_PATH,
+            "dec020_model_input_route_authority must be a mapping",
+        )
+    else:
+        for key, value in {
+            "dataset_id": "GSE200304",
+            "qualification_is_model_input_route_scoped": True,
+            "selected_route": DEC020_SCRATCH_ROUTE,
+            "allowed_routes": [DEC020_SCRATCH_ROUTE, DEC020_FOUNDATION_ROUTE],
+            "route_selected_before_model_results": True,
+            "outcome_or_model_result_used_for_route_selection": False,
+            "route_switch_after_model_results_allowed": False,
+            "route_fallback_after_failure_allowed": False,
+            "same_dataset_may_receive_duplicate_gate_credit_across_routes": False,
+            "model_input_route_gate": DEC020_ROUTE_GATE,
+            "minimum_gate_counts_unchanged": {"ordinary": 3, "a1": 2, "true_a2": 1},
+            "maximum_gse200304_contribution_if_qualified": {"ordinary": 1, "a1": 1, "true_a2": 0},
+            "all_nonroute_nonwaivable_gates_must_pass": True,
+            "existing_license_and_redistribution_rights_gate_status": "PASS",
+            "rights_gate_reopened_by_dec020": False,
+            "decision_alone_qualifies_gse200304": False,
+            "future_route_scoped_qualification_and_canonical_count_possible_after_all_gates_pass": True,
+            "canonical_materialization_execution_authorized": False,
+            "decision_or_policy_alone_is_training_evidence": False,
+            "private_payload_access_allowed": False,
+            "training_allowed": False,
+            "gpu_work_allowed": False,
+            "model_selection_allowed": False,
+            "next_phase_authorized": False,
+            "sealed_contact_allowed": False,
+            "scientific_claim_status": "NOT_ESTABLISHED",
+        }.items():
+            _expect(
+                q_dec020,
+                key,
+                value,
+                A1_QUALIFICATION_CONFIG_PATH,
+                issues,
+                "DEC020_A1_QUALIFICATION_POLICY",
+            )
+        q_scratch = q_dec020.get("scratch_only_route")
+        if not isinstance(q_scratch, Mapping):
+            _issue(
+                issues,
+                "DEC020_A1_SCRATCH_ROUTE",
+                A1_QUALIFICATION_CONFIG_PATH,
+                "scratch_only_route must be a mapping",
+            )
+        else:
+            for key, value in {
+                "current_status": "FROZEN_AUTHORIZED_NOT_YET_ADJUDICATED",
+                "checkpoint_specific_exposure_gate_applicable": False,
+                "checkpoint_specific_exposure_status_if_selected": DEC020_SCRATCH_EXPOSURE_STATUS,
+                "checkpoint_specific_exposure_pass_claimed": False,
+                "external_checkpoint_count_allowed": 0,
+                "external_learned_input_count_allowed": 0,
+                "allowed_parameter_initialization": "RANDOM_INITIALIZATION_ONLY",
+                "forbidden_external_learned_inputs": DEC020_FORBIDDEN_EXTERNAL_LEARNED_INPUTS,
+                "runtime_no_external_learned_input_attestation_required_before_any_learned_parameter_run": True,
+                "any_forbidden_external_learned_input_invalidates_route": True,
+            }.items():
+                _expect(
+                    q_scratch,
+                    key,
+                    value,
+                    A1_QUALIFICATION_CONFIG_PATH,
+                    issues,
+                    "DEC020_A1_SCRATCH_ROUTE",
+                )
+        q_foundation = q_dec020.get("foundation_checkpoint_route")
+        if not isinstance(q_foundation, Mapping):
+            _issue(
+                issues,
+                "DEC020_A1_FOUNDATION_ROUTE",
+                A1_QUALIFICATION_CONFIG_PATH,
+                "foundation_checkpoint_route must be a mapping",
+            )
+        else:
+            for key, value in {
+                "current_status": "RETAINED_FAIL_CURRENT_PROTOCOL",
+                "existing_dec019_activation_and_adjudicator_retained": True,
+                "checkpoint_specific_exposure_gate_applicable": True,
+                "checkpoint_specific_exposure_may_be_waived": False,
+                "minimum_audited_checkpoint_count_for_pass": 1,
+                "empty_checkpoint_set_can_pass": False,
+            }.items():
+                _expect(
+                    q_foundation,
+                    key,
+                    value,
+                    A1_QUALIFICATION_CONFIG_PATH,
+                    issues,
+                    "DEC020_A1_FOUNDATION_ROUTE",
+                )
+        q_disclosure = q_dec020.get("prior_aggregate_design_use_disclosure")
+        if not isinstance(q_disclosure, Mapping):
+            _issue(
+                issues,
+                "DEC020_A1_PRIOR_USE",
+                A1_QUALIFICATION_CONFIG_PATH,
+                "prior-use disclosure must be a mapping",
+            )
+        else:
+            for key, value in {
+                "status": "DISCLOSED_NOT_UNTOUCHED",
+                "may_be_called_untouched": False,
+                "claim_of_no_prior_influence_allowed": False,
+                "prospective_freeze_boundary": "DEC020_FORWARD",
+                "full_prior_analytic_use_attestation_required_before_predictor_protocol_promotion_or_training": True,
+                "full_prior_analytic_use_attestation_completion_asserted_by_dec020": False,
+            }.items():
+                _expect(
+                    q_disclosure,
+                    key,
+                    value,
+                    A1_QUALIFICATION_CONFIG_PATH,
+                    issues,
+                    "DEC020_A1_PRIOR_USE",
+                )
+
+    root_policy = config.get("a1_qualification_authority")
+    root_gse200304 = (
+        root_policy.get("gse200304") if isinstance(root_policy, Mapping) else None
+    )
+    if not isinstance(root_gse200304, Mapping):
+        _issue(
+            issues,
+            "DEC020_ROOT_POLICY",
+            CONFIG_PATH,
+            "a1_qualification_authority.gse200304 must be a mapping",
+        )
+    else:
+        for key, value in {
+            "current_status": "NOT_QUALIFIED",
+            "qualification_is_model_input_route_scoped": True,
+            "current_qualification_route": DEC020_SCRATCH_ROUTE,
+            "allowed_model_input_routes": [DEC020_SCRATCH_ROUTE, DEC020_FOUNDATION_ROUTE],
+            "route_selected_before_model_results": True,
+            "route_switch_after_model_results_allowed": False,
+            "route_fallback_after_failure_allowed": False,
+            "same_dataset_may_receive_duplicate_gate_credit_across_routes": False,
+            "model_input_route_gate": DEC020_ROUTE_GATE,
+            "prior_aggregate_design_use_disclosed": True,
+            "untouched_claim_allowed": False,
+            "claim_of_no_prior_influence_allowed": False,
+            "prospective_freeze_boundary": "DEC020_FORWARD",
+            "full_prior_analytic_use_attestation_required_before_predictor_protocol_promotion_or_training": True,
+            "full_prior_analytic_use_attestation_completion_asserted_by_dec020": False,
+            "existing_license_and_redistribution_rights_gate_status": "PASS",
+            "rights_gate_reopened_by_dec020": False,
+            "future_route_scoped_qualification_and_canonical_count_possible_after_all_gates_pass": True,
+            "canonical_materialization_execution_authorized": False,
+            "private_payload_access_allowed": False,
+            "training_allowed": False,
+            "gpu_work_allowed": False,
+            "model_selection_allowed": False,
+            "next_phase_authorized": False,
+            "sealed_contact_allowed": False,
+        }.items():
+            _expect(
+                root_gse200304,
+                key,
+                value,
+                CONFIG_PATH,
+                issues,
+                "DEC020_ROOT_POLICY",
+            )
+
+    data_rows = registries["data"].get("datasets")
+    data_gse200304 = _mapping_entry(data_rows, "dataset_id", "GSE200304")
+    data_route = (
+        data_gse200304.get("dec020_model_input_route_policy")
+        if isinstance(data_gse200304, Mapping)
+        else None
+    )
+    if not isinstance(data_route, Mapping):
+        _issue(
+            issues,
+            "DEC020_DATA_ROLE_POLICY",
+            REGISTRY_PATHS["data"],
+            "GSE200304 DEC020 route policy must be a mapping",
+        )
+    else:
+        for key, value in {
+            "selected_route": DEC020_SCRATCH_ROUTE,
+            "retained_route": DEC020_FOUNDATION_ROUTE,
+            "route_selected_before_model_results": True,
+            "route_switch_after_model_results_allowed": False,
+            "route_fallback_after_failure_allowed": False,
+            "same_dataset_may_receive_duplicate_gate_credit_across_routes": False,
+            "scratch_route_checkpoint_exposure_status": DEC020_SCRATCH_EXPOSURE_STATUS,
+            "scratch_route_checkpoint_exposure_pass_claimed": False,
+            "scratch_route_external_checkpoint_count_allowed": 0,
+            "scratch_route_external_learned_input_count_allowed": 0,
+            "scratch_route_parameter_initialization": "RANDOM_INITIALIZATION_ONLY",
+            "scratch_route_runtime_attestation_required_before_any_learned_parameter_run": True,
+            "foundation_route_status": "RETAINED_FAIL_CURRENT_PROTOCOL",
+            "foundation_route_dec019_activation_and_adjudicator_retained": True,
+            "foundation_route_minimum_audited_checkpoint_count_for_pass": 1,
+            "foundation_route_empty_checkpoint_set_can_pass": False,
+            "disclosure_status": "DISCLOSED_NOT_UNTOUCHED",
+            "may_be_called_untouched": False,
+            "claim_of_no_prior_influence_allowed": False,
+            "prospective_freeze_boundary": "DEC020_FORWARD",
+            "full_prior_analytic_use_attestation_required_before_predictor_protocol_promotion_or_training": True,
+            "full_prior_analytic_use_attestation_completion_asserted_by_dec020": False,
+            "existing_license_and_redistribution_rights_gate_status": "PASS",
+            "rights_gate_reopened_by_dec020": False,
+            "canonical_materialization_execution_authorized": False,
+            "private_payload_access_allowed": False,
+            "gpu_work_allowed": False,
+            "sealed_contact_allowed": False,
+            "decision_or_policy_alone_is_training_evidence": False,
+        }.items():
+            _expect(
+                data_route,
+                key,
+                value,
+                REGISTRY_PATHS["data"],
+                issues,
+                "DEC020_DATA_ROLE_POLICY",
+            )
+
+    simple_boundaries = (
+        (
+            "split",
+            "dec020_model_input_route_split_boundary",
+            {
+                "changes_split_ids_or_assignment": False,
+                "changes_a1_source_group_graph_or_salt_freeze": False,
+                "changes_a2_final_benchmark_membership_freeze": False,
+                "split_or_membership_may_change_after_model_results": False,
+            },
+        ),
+        (
+            "matrix",
+            "dec020_model_input_route_task_split_boundary",
+            {
+                "changes_expected_task_ids": False,
+                "changes_expected_split_ids": False,
+                "changes_task_to_split_assignments": False,
+                "changes_ordinary_or_sealed_task_boundary": False,
+                "task_or_split_assignment_may_change_after_model_results": False,
+            },
+        ),
+    )
+    for registry_name, section_name, extra_expected in simple_boundaries:
+        boundary = registries[registry_name].get(section_name)
+        if not isinstance(boundary, Mapping):
+            _issue(
+                issues,
+                "DEC020_REGISTRY_BOUNDARY",
+                REGISTRY_PATHS[registry_name],
+                f"{section_name} must be a mapping",
+            )
+            continue
+        expected = {
+            "dataset_id": "GSE200304",
+            "selected_route": DEC020_SCRATCH_ROUTE,
+            "retained_route": DEC020_FOUNDATION_ROUTE,
+            "route_selected_before_model_results": True,
+            "prior_aggregate_design_use": (
+                "AGGREGATE_PUBLIC_STRUCTURAL_AUTHORITY_INFORMED_PROTOCOL_DESIGN"
+            ),
+            "disclosure_status": "DISCLOSED_NOT_UNTOUCHED",
+            "may_be_called_untouched": False,
+            "claim_of_no_prior_influence_allowed": False,
+            "prospective_freeze_boundary": "DEC020_FORWARD",
+            **extra_expected,
+        }
+        _expect_closed_mapping(
+            boundary,
+            expected,
+            REGISTRY_PATHS[registry_name],
+            issues,
+            "DEC020_REGISTRY_BOUNDARY",
+        )
+
+    for registry_name, section_name in (
+        ("task", "dec020_model_input_route_boundaries"),
+        ("claim", "dec020_model_input_route_claim_boundaries"),
+    ):
+        boundary = registries[registry_name].get(section_name)
+        if not isinstance(boundary, Mapping):
+            _issue(
+                issues,
+                "DEC020_REGISTRY_POLICY",
+                REGISTRY_PATHS[registry_name],
+                f"{section_name} must be a mapping",
+            )
+            continue
+        for key, value in {
+            "dataset_id": "GSE200304",
+            "selected_route": DEC020_SCRATCH_ROUTE,
+            "retained_route": DEC020_FOUNDATION_ROUTE,
+            "model_input_route_gate": DEC020_ROUTE_GATE,
+            "scratch_route_checkpoint_exposure_status": DEC020_SCRATCH_EXPOSURE_STATUS,
+            "scratch_route_checkpoint_exposure_pass_claimed": False,
+            "scratch_route_external_checkpoint_count_allowed": 0,
+            "scratch_route_external_learned_input_count_allowed": 0,
+            "foundation_route_status": "RETAINED_FAIL_CURRENT_PROTOCOL",
+            "foundation_route_minimum_audited_checkpoint_count_for_pass": 1,
+            "foundation_route_empty_checkpoint_set_can_pass": False,
+            "disclosure_status": "DISCLOSED_NOT_UNTOUCHED",
+            "may_be_called_untouched": False,
+            "claim_of_no_prior_influence_allowed": False,
+            "prospective_freeze_boundary": "DEC020_FORWARD",
+            "full_prior_analytic_use_attestation_required_before_predictor_protocol_promotion_or_training": True,
+            "full_prior_analytic_use_attestation_completion_asserted_by_dec020": False,
+            "existing_license_and_redistribution_rights_gate_status": "PASS",
+            "rights_gate_reopened_by_dec020": False,
+            "canonical_materialization_execution_authorized": False,
+            "private_payload_access_allowed": False,
+            "training_allowed": False,
+            "gpu_work_allowed": False,
+            "model_selection_allowed": False,
+            "next_phase_authorized": False,
+            "sealed_contact_allowed": False,
+            "decision_or_policy_alone_is_training_evidence": False,
+        }.items():
+            _expect(
+                boundary,
+                key,
+                value,
+                REGISTRY_PATHS[registry_name],
+                issues,
+                "DEC020_REGISTRY_POLICY",
+            )
 
     return issues
 
@@ -5713,6 +6544,7 @@ def validate_a1_interim_lineage(
         "gate_snapshot",
         "dec019_current_disposition",
         "artifact_lineage",
+        "dec020_current_disposition",
         "dataset_boundary_summary",
         "boundary_deviation",
         "power_prefreeze",
@@ -5743,6 +6575,7 @@ def validate_a1_interim_lineage(
             "contract_sha256": SOURCE_CONTRACT_SHA256,
             "active_amendment_decision_ids": ACTIVE_AMENDMENT_DECISION_IDS,
             "dec019_amendment_path": DEC019_AMENDMENT_PATH,
+            "dec020_amendment_path": DEC020_AMENDMENT_PATH,
             "decision_log_path": DECISION_LOG_PATH,
             "data_role_registry_path": REGISTRY_PATHS["data"],
             "claim_evidence_matrix_path": REGISTRY_PATHS["claim"],
@@ -5758,6 +6591,7 @@ def validate_a1_interim_lineage(
             _expect(authority, key, value, path, issues, "A1_INTERIM_AUTHORITY")
         for hash_key, relative in (
             ("dec019_amendment_sha256", DEC019_AMENDMENT_PATH),
+            ("dec020_amendment_sha256", DEC020_AMENDMENT_PATH),
             ("decision_log_sha256", DECISION_LOG_PATH),
             ("data_role_registry_sha256", REGISTRY_PATHS["data"]),
             ("claim_evidence_matrix_sha256", REGISTRY_PATHS["claim"]),
@@ -5770,10 +6604,20 @@ def validate_a1_interim_lineage(
                 _expect(authority, hash_key, actual, path, issues, "A1_INTERIM_AUTHORITY_HASH")
         expected_authority_keys = set(expected_authority) | {
             "dec019_amendment_sha256",
+            "dec020_amendment_sha256",
             "decision_log_sha256",
             "data_role_registry_sha256",
             "claim_evidence_matrix_sha256",
+            "active_authority_leaf_sha256",
         }
+        _expect(
+            authority,
+            "active_authority_leaf_sha256",
+            DEC020_ACTIVE_AUTHORITY_LEAF_SHA256,
+            path,
+            issues,
+            "A1_INTERIM_AUTHORITY_HASH",
+        )
         if set(authority) != expected_authority_keys:
             _issue(
                 issues,
@@ -5896,7 +6740,7 @@ def validate_a1_interim_lineage(
                 "next_phase_authorized": False,
                 "scientific_claim_status": "NOT_ESTABLISHED",
             },
-            "runtime_sync_status": "PENDING_NO_EVT_049",
+            "runtime_sync_status": "SYNCED_EVT_049",
         }.items():
             _expect(dec019_disposition, key, value, path, issues, "A1_INTERIM_DEC019")
         gse114002_current = dec019_disposition.get("gse114002_designed_library")
@@ -5976,6 +6820,67 @@ def validate_a1_interim_lineage(
                 "A1_INTERIM_DEC019_GSE200304",
             )
 
+    dec020_disposition = interim.get("dec020_current_disposition")
+    if not isinstance(dec020_disposition, Mapping):
+        _issue(
+            issues,
+            "A1_INTERIM_DEC020",
+            path,
+            "dec020_current_disposition must be a mapping",
+        )
+    else:
+        _expect_closed_mapping(
+            dec020_disposition,
+            {
+                "decision_id": "V3-DEC-020",
+                "status": "FROZEN_USER_AUTHORIZED_GSE200304_MODEL_INPUT_ROUTE_POLICY",
+                "authority_only_not_study_qualification": True,
+                "dataset_id": "GSE200304",
+                "selected_route": DEC020_SCRATCH_ROUTE,
+                "selected_route_status": "FROZEN_AUTHORIZED_NOT_YET_ADJUDICATED",
+                "retained_route": DEC020_FOUNDATION_ROUTE,
+                "retained_route_status": "RETAINED_FAIL_CURRENT_PROTOCOL",
+                "route_gate": DEC020_ROUTE_GATE,
+                "scratch_route_checkpoint_exposure_status": DEC020_SCRATCH_EXPOSURE_STATUS,
+                "scratch_route_checkpoint_exposure_pass_claimed": False,
+                "scratch_route_external_checkpoint_count_allowed": 0,
+                "scratch_route_external_learned_input_count_allowed": 0,
+                "scratch_route_parameter_initialization": "RANDOM_INITIALIZATION_ONLY",
+                "scratch_route_runtime_attestation_required": True,
+                "foundation_route_minimum_audited_checkpoint_count_for_pass": 1,
+                "foundation_route_empty_checkpoint_set_can_pass": False,
+                "foundation_route_checkpoint_exposure_may_be_waived": False,
+                "prior_aggregate_design_use_status": "DISCLOSED_NOT_UNTOUCHED",
+                "untouched_claim_allowed": False,
+                "claim_of_no_prior_influence_allowed": False,
+                "prospective_freeze_boundary": "DEC020_FORWARD",
+                "full_prior_analytic_use_attestation_required_before_predictor_protocol_promotion_or_training": True,
+                "full_prior_analytic_use_attestation_completed": False,
+                "existing_license_and_redistribution_rights_gate_status": "PASS",
+                "rights_gate_reopened_by_dec020": False,
+                "current_qualified_counts": DEC020_CURRENT_ZERO_COUNTS,
+                "qualified": False,
+                "canonical_materialization_execution_authorized": False,
+                "private_payload_access_allowed": False,
+                "training_allowed": False,
+                "gpu_work_allowed": False,
+                "model_selection_allowed": False,
+                "next_phase_authorized": False,
+                "scientific_claim_status": "NOT_ESTABLISHED",
+                "latest_settled_runtime_event_id": "A1-EVT-049",
+                "authority_runtime_sync": {
+                    "predecessor_event_id": "A1-EVT-049",
+                    "next_event_id": DEC020_PENDING_RUNTIME_EVENT_ID,
+                    "next_event_id_preallocated": False,
+                    "status": DEC020_RUNTIME_SYNC_STATUS,
+                },
+                "future_v4_successor_registration": DEC020_FUTURE_V4_REGISTRATION,
+            },
+            path,
+            issues,
+            "A1_INTERIM_DEC020",
+        )
+
     lineage = interim.get("artifact_lineage")
     if not isinstance(lineage, Mapping):
         _issue(issues, "A1_INTERIM_GSE200304_LINEAGE", path, "artifact_lineage must be a mapping")
@@ -6040,7 +6945,9 @@ def validate_a1_interim_lineage(
         expected_non_gse200304_lineage = {
             "protocol": {
                 "path": "configs/route_a_v3_a1_qualification.json",
-                "sha256": "fe3f7736c1f64b362ebda683ca571fc1a84e1fff36aed3a9ae67272665ba2343",
+                "sha256": DEC020_ACTIVE_AUTHORITY_LEAF_SHA256[
+                    A1_QUALIFICATION_CONFIG_PATH
+                ],
                 "status": "PREFROZEN_BEFORE_MODEL_RESULTS",
             },
             GSE114002_DEC019_SUCCESSOR_LINEAGE_ID: {
@@ -6557,7 +7464,7 @@ def validate_a1_interim_lineage(
                 },
                 "predecessor_runtime_event_id": "A1-EVT-048",
                 "expected_next_runtime_event_id": "A1-EVT-049",
-                "runtime_sync_status": "PENDING_NO_EVT_049",
+                "runtime_sync_status": "SYNCED_EVT_049",
                 "artifact_payload_read_count_for_ledger": 0,
                 "private_row_artifact_read_count_for_ledger": 0,
                 "private_jsonl_registered_artifact_count": 0,
@@ -8531,7 +9438,7 @@ def validate_a1_interim_lineage(
                     "changes_qualification_gate": False,
                     "predecessor_runtime_event_id": "A1-EVT-048",
                     "expected_next_runtime_event_id": "A1-EVT-049",
-                    "runtime_sync_status": "PENDING_NO_EVT_049",
+                    "runtime_sync_status": "SYNCED_EVT_049",
                 },
                 "qualified": False,
                 "training_allowed": False,
@@ -8929,6 +9836,13 @@ def validate_a1_interim_lineage(
             "dec019_changes_gse149487_three_biological_replicates_and_route_a_se_gate": False,
             "dec019_allows_checkpoint_specific_exposure_or_rights_waiver": False,
             "dec019_a1_authority_freeze_is_final_benchmark_membership_freeze": False,
+            "dec020_authority_decision_is_gse200304_study_qualification": False,
+            "dec020_scratch_checkpoint_exposure_not_applicable_is_exposure_gate_pass": False,
+            "dec020_authority_decision_authorizes_v4_execution_or_adjudication": False,
+            "dec020_authority_decision_authorizes_training_model_selection_or_next_phase": False,
+            "dec020_prior_aggregate_design_use_may_be_called_untouched": False,
+            "dec020_future_route_scoped_possibility_is_current_qualification_or_canonical_count": False,
+            "dec020_deferred_v4_registration_is_active_implementation": False,
             "a1_phase_complete": False,
             "route_a_established": False,
         }
@@ -9057,7 +9971,7 @@ def validate_a1_interim_lineage(
                 "gse232572_development_v3_private_jsonl_excluded": "PASS",
                 "targeted_gse232572_qualification_authority_preflight_ledger_tests": {
                     "status": "PASS",
-                    "scope": "ONE_PUBLIC_AGGREGATE_STOP_REPORT_THREE_STATIC_PRODUCER_LEAVES_EVT048_SETTLED_EVT049_PENDING",
+                    "scope": "ONE_PUBLIC_AGGREGATE_STOP_REPORT_THREE_STATIC_PRODUCER_LEAVES_EVT049_SETTLED",
                 },
                 "gse232572_qualification_authority_preflight_artifact_registration": "PASS",
                 "gse232572_qualification_authority_preflight_three_static_leaf_registration": "PASS",
@@ -9106,6 +10020,13 @@ def validate_a1_interim_lineage(
                     "status": "NOT_RUN",
                     "reason": "FOUR_FILE_APPEND_ONLY_LOW_TO_MEDIUM_RISK_BATCH_SELF_CHECKED_UNDER_GLOBAL_LIGHTWEIGHT_POLICY",
                 },
+                "targeted_dec020_authority_registry_tests": {
+                    "status": "PASS",
+                    "scope": "DEC020_EXACT10_AUTHORITY_PLUS_EXACT4_REGISTRY_EVT049_SETTLED_FRESH_EVENT_PENDING_V4_DEFERRED",
+                },
+                "dec020_active_authority_exact10_registration": "PASS",
+                "dec020_v4_static_leaf_registration": "DEFERRED_NOT_REGISTERED",
+                "dec020_runtime_sync_event_id": DEC020_PENDING_RUNTIME_EVENT_ID,
             },
             path,
             issues,
@@ -9113,8 +10034,8 @@ def validate_a1_interim_lineage(
         )
 
     _expect(interim, "initial_generated_at", "2026-08-10T06:30:58+08:00", path, issues, "A1_INTERIM_TIME")
-    _expect(interim, "updated_for_decision_id", "V3-DEC-019", path, issues, "A1_INTERIM_TIME")
-    _expect(interim, "latest_authority_update_id", "V3-DEC-019", path, issues, "A1_INTERIM_TIME")
+    _expect(interim, "updated_for_decision_id", "V3-DEC-020", path, issues, "A1_INTERIM_TIME")
+    _expect(interim, "latest_authority_update_id", "V3-DEC-020", path, issues, "A1_INTERIM_TIME")
     _expect(
         interim,
         "latest_evidence_update_id",
@@ -9126,14 +10047,14 @@ def validate_a1_interim_lineage(
     generated = interim.get("generated_at")
     updated = interim.get("updated_at")
     if (
-        generated != GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_LEDGER_AT
-        or updated != GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_LEDGER_AT
+        generated != DEC020_AUTHORITY_LEDGER_AT
+        or updated != DEC020_AUTHORITY_LEDGER_AT
     ):
         _issue(
             issues,
             "A1_INTERIM_TIME",
             path,
-            "generated_at and updated_at must remain the exact GSE232572 qualification-authority preflight ledger timestamp",
+            "generated_at and updated_at must remain the exact DEC020 authority ledger timestamp",
         )
     if generated != updated:
         _issue(issues, "A1_INTERIM_TIME", path, "generated_at and updated_at must identify the same amended record bytes")
@@ -10589,6 +11510,7 @@ def validate_bundle(repo_root: Path) -> list[Issue]:
         return sorted(set(issues))
     issues.extend(validate_contract_authority(repo_root, config, supersession, registries))
     issues.extend(validate_dec019_authority(repo_root, config, registries))
+    issues.extend(validate_dec020_authority(repo_root, config, registries))
     try:
         decision_log = _load_yaml(repo_root, DECISION_LOG_PATH)
     except (FileNotFoundError, ValueError, yaml.YAMLError) as exc:

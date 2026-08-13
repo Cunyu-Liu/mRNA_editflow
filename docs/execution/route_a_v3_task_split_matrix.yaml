@@ -11,8 +11,9 @@ authority_ref:
   task_registry_path: docs/execution/route_a_v3_task_registry.yaml
   split_registry_path: docs/execution/route_a_v3_split_registry.yaml
   goal_sha256: cbac4c3dcba8f1b8df95d8edad52d19e3c126d1c865d0cc423537c754cc90982
-  active_amendment_decision_ids: [V3-DEC-017, V3-DEC-018, V3-DEC-019]
+  active_amendment_decision_ids: [V3-DEC-017, V3-DEC-018, V3-DEC-019, V3-DEC-020]
   dec019_amendment_path: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec019.yaml
+  dec020_amendment_path: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec020.yaml
 
 expected_task_ids:
   - T5_SOURCE_RELATIVE_EFFECT
@@ -26,6 +27,22 @@ expected_task_ids:
   - TRANSFER_CDS
   - SEALED_EXTERNAL_ADJUDICATION
 expected_split_ids: [S1, S2, S3, S4, S5, S6, S7, S8, S9]
+
+dec020_model_input_route_task_split_boundary:
+  dataset_id: GSE200304
+  selected_route: SCRATCH_ONLY_NO_FOUNDATION_NO_EXTERNAL_LEARNED_INPUTS
+  retained_route: FOUNDATION_CHECKPOINT
+  changes_expected_task_ids: false
+  changes_expected_split_ids: false
+  changes_task_to_split_assignments: false
+  changes_ordinary_or_sealed_task_boundary: false
+  route_selected_before_model_results: true
+  task_or_split_assignment_may_change_after_model_results: false
+  prior_aggregate_design_use: AGGREGATE_PUBLIC_STRUCTURAL_AUTHORITY_INFORMED_PROTOCOL_DESIGN
+  disclosure_status: DISCLOSED_NOT_UNTOUCHED
+  may_be_called_untouched: false
+  claim_of_no_prior_influence_allowed: false
+  prospective_freeze_boundary: DEC020_FORWARD
 
 registry_closure:
   matrix_task_ids_must_equal_expected_task_ids: true

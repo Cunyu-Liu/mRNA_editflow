@@ -373,3 +373,76 @@ decisions:
       - docs/execution/route_a_v3_split_registry.yaml
       - docs/execution/route_a_v3_task_registry.yaml
       - docs/execution/route_a_v3_claim_evidence_matrix.yaml
+  - decision_id: V3-DEC-020
+    decision_type: AMENDMENT
+    dimension: gse200304_model_input_route_and_route_conditional_exposure
+    conflict: >-
+      DEC019 preserved a nonwaivable checkpoint-specific exposure gate for
+      GSE200304, while the owner-selected prospective route uses random
+      initialization and forbids every foundation checkpoint and other external
+      learned input. The existing empty checkpoint set remains a valid FAIL for
+      FOUNDATION_CHECKPOINT and cannot be relabelled PASS or waived.
+    resolution: >-
+      Freeze SCRATCH_ONLY_NO_FOUNDATION_NO_EXTERNAL_LEARNED_INPUTS as the
+      GSE200304 route selected before model results. On that route,
+      checkpoint-specific exposure is NOT_APPLICABLE_BY_FROZEN_NO_EXTERNAL_LEARNED_INPUT_ROUTE,
+      not PASS: zero external checkpoints and zero external learned inputs are
+      allowed, initialization is random only, and a runtime no-external-learned-
+      input attestation is required before any learned-parameter run. Retain
+      FOUNDATION_CHECKPOINT as an allowed alternative with the DEC019 activation
+      and adjudicator unchanged, minimum audited checkpoint count one, empty-set
+      pass forbidden, and all four required exposure facts true. No post-result
+      route switch, fallback, or duplicate study credit is allowed. The 3/2/1
+      minima, GSE200304 maximum 1/1/0 contribution, endpoint, unit, power, CI,
+      rights, split, leakage, and every other nonroute gate remain unchanged.
+      The existing license and redistribution rights gate remains PASS and is
+      not reopened by DEC020. Route-scoped qualification and canonical count may
+      become possible only after every applicable gate passes, but this decision
+      does not authorize canonical materialization execution or private payload
+      access.
+      Aggregate public structural authority informed protocol design, so the
+      dataset is disclosed as not untouched and no no-prior-influence claim is
+      allowed; the route is frozen prospectively from DEC020 forward. A complete
+      prior-analytic-use attestation remains required before predictor protocol
+      promotion or training and is not completed by this amendment. This
+      decision changes no current qualified count, is not training evidence,
+      authorizes no training, GPU work, model selection, next phase, or sealed
+      contact, and establishes no scientific claim.
+    status: FROZEN_USER_AUTHORIZED_GSE200304_MODEL_INPUT_ROUTE_POLICY
+    effective_phase: A1
+    requires_user_authorization: true
+    user_authorization_status: GRANTED
+    user_authorization_received_at: "2026-08-13T12:07:11+08:00"
+    user_authorization_source: ACTIVE_CODEX_THREAD_OWNER_CONFIRMATION
+    preserves_decision_ids: [V3-DEC-001, V3-DEC-002, V3-DEC-003, V3-DEC-004, V3-DEC-005, V3-DEC-006, V3-DEC-007, V3-DEC-008, V3-DEC-009, V3-DEC-010, V3-DEC-011, V3-DEC-012, V3-DEC-013, V3-DEC-014, V3-DEC-015, V3-DEC-016, V3-DEC-017, V3-DEC-018, V3-DEC-019]
+    accepted_prefix_preserved_through: V3-DEC-019
+    amendment_path: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec020.yaml
+    selected_model_input_route: SCRATCH_ONLY_NO_FOUNDATION_NO_EXTERNAL_LEARNED_INPUTS
+    retained_model_input_route: FOUNDATION_CHECKPOINT
+    current_qualified_counts: {ordinary: 0, a1: 0, true_a2: 0, canonical_records: 0}
+    phase_complete: false
+    training_allowed: false
+    gpu_work_allowed: false
+    model_selection_allowed: false
+    next_phase_authorized: false
+    decision_or_policy_alone_is_training_evidence: false
+    existing_license_and_redistribution_rights_gate_status: PASS
+    rights_gate_reopened_by_dec020: false
+    future_route_scoped_qualification_and_canonical_count_possible_after_all_gates_pass: true
+    canonical_materialization_execution_authorized: false
+    private_payload_access_allowed: false
+    full_prior_analytic_use_attestation_required_before_predictor_protocol_promotion_or_training: true
+    full_prior_analytic_use_attestation_completion_asserted_by_dec020: false
+    scientific_claim_status: NOT_ESTABLISHED
+    sealed_contact: false
+    evidence_refs:
+      - docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md
+      - docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec019.yaml
+      - docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec020.yaml
+      - configs/route_a_v3.yaml
+      - configs/route_a_v3_a1_qualification.json
+      - docs/execution/route_a_v3_data_role_registry.yaml
+      - docs/execution/route_a_v3_task_registry.yaml
+      - docs/execution/route_a_v3_claim_evidence_matrix.yaml
+      - docs/execution/route_a_v3_split_registry.yaml
+      - docs/execution/route_a_v3_task_split_matrix.yaml

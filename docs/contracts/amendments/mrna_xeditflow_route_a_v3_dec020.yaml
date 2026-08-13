@@ -1,0 +1,147 @@
+schema_version: "1.0.0"
+amendment_id: MRNA_XEDITFLOW_ROUTE_A_V3_DEC020
+decision_id: V3-DEC-020
+contract_id: mrna_xeditflow_route_a_v3
+contract_version: "3.0.0"
+amends_contract_path: docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md
+amends_contract_sha256: cbac4c3dcba8f1b8df95d8edad52d19e3c126d1c865d0cc423537c754cc90982
+predecessor_amendment_path: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec019.yaml
+predecessor_amendment_sha256: 8c82e564398f0735fe4976f875fe91f053937b05044e5232e237694a2b36e1ca
+amendment_mode: APPEND_ONLY_AUTHORITY_COMPANION_ROOT_CONTRACT_AND_DEC019_BYTES_UNCHANGED
+status: FROZEN_USER_AUTHORIZED_GSE200304_MODEL_INPUT_ROUTE_POLICY
+effective_phase: A1
+requires_user_authorization: true
+user_authorization:
+  status: GRANTED
+  received_at: "2026-08-13T12:07:11+08:00"
+  source: ACTIVE_CODEX_THREAD_OWNER_CONFIRMATION
+
+scope:
+  dataset_id: GSE200304
+  primary_measurement_route: AUTHOR_PUBLISHED_PROCESSED_ENDPOINT
+  qualification_is_model_input_route_scoped: true
+  current_qualification_route: SCRATCH_ONLY_NO_FOUNDATION_NO_EXTERNAL_LEARNED_INPUTS
+  allowed_model_input_routes:
+    - SCRATCH_ONLY_NO_FOUNDATION_NO_EXTERNAL_LEARNED_INPUTS
+    - FOUNDATION_CHECKPOINT
+  route_selected_before_model_results: true
+  outcome_or_model_result_used_for_route_selection: false
+  route_switch_after_model_results_allowed: false
+  route_fallback_after_failure_allowed: false
+  same_dataset_may_receive_duplicate_gate_credit_across_routes: false
+
+route_conditional_gate:
+  gate_id: MODEL_INPUT_ROUTE_AND_ROUTE_CONDITIONAL_EXPOSURE_CLOSED
+  gate_is_required: true
+  unknown_or_mixed_route_passes: false
+  scratch_route:
+    route_id: SCRATCH_ONLY_NO_FOUNDATION_NO_EXTERNAL_LEARNED_INPUTS
+    current_status: FROZEN_AUTHORIZED_NOT_YET_ADJUDICATED
+    checkpoint_specific_exposure_gate_applicable: false
+    checkpoint_specific_exposure_status_if_selected: NOT_APPLICABLE_BY_FROZEN_NO_EXTERNAL_LEARNED_INPUT_ROUTE
+    checkpoint_specific_exposure_pass_claimed: false
+    external_checkpoint_count_allowed: 0
+    external_learned_input_count_allowed: 0
+    allowed_parameter_initialization: RANDOM_INITIALIZATION_ONLY
+    allowed_inputs:
+      - QUALIFIED_ROUTE_A_TRAIN_PARTITION_AFTER_A2_FREEZE
+      - DETERMINISTIC_NONLEARNED_TOKENIZATION_AND_TRANSFORMS
+      - FIXED_NONLEARNED_BIOLOGICAL_FEATURES_AND_ACTION_GRAPH
+      - PUBLIC_ARCHITECTURE_AND_METHOD_DESCRIPTIONS_WITHOUT_LEARNED_STATE
+    forbidden_external_learned_inputs:
+      - FOUNDATION_OR_OTHER_PRETRAINED_CHECKPOINT_WEIGHTS
+      - EXTERNALLY_TRAINED_INITIALIZATION_OR_WARM_START
+      - EXTERNALLY_LEARNED_TOKEN_EMBEDDINGS
+      - EXTERNALLY_TRAINED_ENCODER_ADAPTER_OR_HEAD
+      - EXTERNAL_LEARNED_REPRESENTATIONS_FEATURES_OR_LOGITS
+      - EXTERNAL_TEACHER_OR_DISTILLATION_TARGETS
+      - EXTERNAL_PSEUDOLABELS
+      - CHECKPOINT_DERIVED_CALIBRATION_OR_NORMALIZATION_STATISTICS
+      - LEARNED_RETRIEVAL_INDEX_RERANKER_OR_SCORE
+      - ANY_PARAMETER_TENSOR_FEATURE_OR_SCORE_LEARNED_FROM_EXTERNAL_DATA
+    route_contract_binding_required_before_adjudication: true
+    runtime_no_external_learned_input_attestation_required_before_any_learned_parameter_run: true
+    any_forbidden_external_learned_input_invalidates_route: true
+    invalidated_scratch_run_may_be_relabelled_foundation_without_re_adjudication: false
+  foundation_route:
+    route_id: FOUNDATION_CHECKPOINT
+    current_status: RETAINED_FAIL_CURRENT_PROTOCOL
+    existing_dec019_activation_and_adjudicator_retained: true
+    checkpoint_specific_exposure_gate_applicable: true
+    checkpoint_specific_exposure_may_be_waived: false
+    minimum_audited_checkpoint_count_for_pass: 1
+    empty_checkpoint_set_can_pass: false
+    required_true_fact_fields:
+      - checkpoint_ids_and_revisions_frozen
+      - checkpoint_artifact_digests_bound
+      - exact_member_exposure_audit_pass
+      - near_duplicate_exposure_audit_pass
+
+gse200304_gate_preservation:
+  minimum_independent_ordinary_studies: 3
+  minimum_qualified_a1_studies: 2
+  minimum_qualified_true_a2_dense_studies: 1
+  maximum_independent_ordinary_study_contribution_if_qualified: 1
+  maximum_a1_study_contribution_if_qualified: 1
+  maximum_true_a2_dense_study_contribution_if_qualified: 0
+  all_nonroute_nonwaivable_gates_remain_required:
+    - ROW_LEVEL_MULTI_ASSET_LINEAGE_AND_LOCATORS_CLOSED
+    - ENDPOINT_DIRECTION_SCALE_AND_SEMANTICS_CLOSED
+    - BIOLOGICAL_SOURCE_GROUP_AUTHORITY_CLOSED
+    - REPLICATE_OR_VALID_STANDARD_ERROR_CLOSED
+    - LICENSE_AND_REDISTRIBUTION_RIGHTS_CLOSED
+    - A1_SOURCE_GROUP_NEAR_DUPLICATE_GRAPH_AND_SALT_FROZEN
+    - A1_ZERO_LEAKAGE_AUDIT_PASS
+    - PREFROZEN_GROUP_POWER_AT_LEAST_0_80_PASS
+    - PREFROZEN_FULL_CI_WIDTH_AT_MOST_0_30_PASS
+  license_or_redistribution_rights_may_be_waived: false
+  existing_license_and_redistribution_rights_gate_status: PASS
+  rights_gate_reopened_by_dec020: false
+  target_power_minimum: 0.80
+  maximum_full_ci_width: 0.30
+  split_or_threshold_may_change_after_model_results: false
+
+prior_aggregate_design_use_disclosure:
+  status: DISCLOSED_NOT_UNTOUCHED
+  dataset_id: GSE200304
+  disclosed_use: AGGREGATE_PUBLIC_STRUCTURAL_AUTHORITY_INFORMED_PROTOCOL_DESIGN
+  row_sequence_or_effect_payload_disclosed_by_this_amendment: false
+  may_be_called_untouched: false
+  claim_of_no_prior_influence_allowed: false
+  selected_test_may_be_relabelled_untouched: false
+  a2_final_benchmark_membership_frozen_by_this_amendment: false
+  prospective_freeze_boundary: DEC020_FORWARD
+  required_future_label: PRIOR_AGGREGATE_DESIGN_USE_DISCLOSED_NOT_UNTOUCHED
+  full_prior_analytic_use_attestation_required_before_predictor_protocol_promotion_or_training: true
+  full_prior_analytic_use_attestation_completion_asserted_by_dec020: false
+
+authorization_projection:
+  changes_current_qualified_counts: false
+  current_qualified_independent_ordinary_studies: 0
+  current_qualified_a1_studies: 0
+  current_qualified_true_a2_dense_studies: 0
+  current_canonical_record_count: 0
+  phase_complete: false
+  training_allowed: false
+  gpu_work_allowed: false
+  model_selection_allowed: false
+  next_phase_authorized: false
+  sealed_contact_allowed: false
+  scientific_claim_status: NOT_ESTABLISHED
+  decision_alone_qualifies_gse200304: false
+  future_route_scoped_qualification_and_canonical_count_possible_after_all_gates_pass: true
+  decision_alone_materializes_canonical_records: false
+  canonical_materialization_execution_authorized: false
+  decision_alone_authorizes_adjudication_success: false
+  decision_or_policy_alone_is_training_evidence: false
+  private_payload_access_allowed: false
+
+historical_preservation:
+  root_contract_bytes_changed: false
+  dec019_amendment_bytes_changed: false
+  existing_dec019_activation_config_bytes_changed: false
+  existing_dec019_adjudicator_bytes_changed: false
+  existing_dec019_focused_test_bytes_changed: false
+  existing_checkpoint_exposure_fail_record_changed_or_relabelled: false
+  prior_runtime_events_changed: false
+  failure_evidence_deleted_or_relabelled: false
