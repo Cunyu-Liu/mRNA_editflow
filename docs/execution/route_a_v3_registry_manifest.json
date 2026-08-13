@@ -4,7 +4,7 @@
   "contract_path": "docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md",
   "initial_contract_sha256": "d1c031aecdec710495f6861b380785cccd64663ac4bd97b4f479d6fdf372ea07",
   "contract_sha256": "cbac4c3dcba8f1b8df95d8edad52d19e3c126d1c865d0cc423537c754cc90982",
-  "active_amendment_decision_ids": ["V3-DEC-017", "V3-DEC-018", "V3-DEC-019", "V3-DEC-020", "V3-DEC-021"],
+  "active_amendment_decision_ids": ["V3-DEC-017", "V3-DEC-018", "V3-DEC-019", "V3-DEC-020", "V3-DEC-021", "V3-DEC-022"],
   "files": [
     {
       "path": "docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md",
@@ -14,7 +14,7 @@
     {
       "path": "configs/route_a_v3.yaml",
       "role": "EXECUTABLE_CONTRACT",
-      "sha256": "c9d685d6d300f0bcb5287401ce70ead3fedee940653d843290c94e3e3060b58f"
+      "sha256": "66d5303d4644c5da401ca1e4295da854c0a51c4d98fcd92556dc1d0abae9e2cd"
     },
     {
       "path": "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec019.yaml",
@@ -32,14 +32,19 @@
       "sha256": "2a7b05e40434398b1d39396280ca019f48164fbb70b5b6058123bc653c400d3d"
     },
     {
+      "path": "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec022.yaml",
+      "role": "DEC022_APPEND_ONLY_AUTHORITY_AMENDMENT",
+      "sha256": "3496c3d72c62cef2e26e5414e06b3593656ea80599b91c56f228f81d6125e3c7"
+    },
+    {
       "path": "configs/route_a_v3_a1_qualification.json",
       "role": "A1_QUALIFICATION_ROOT_PROTOCOL",
-      "sha256": "9344feca31c315ae273487347cc5275cb2433261838ea997035021a907a3cb8a"
+      "sha256": "baefc579eacfb5e43ded77c8443daade449e7cefeabeab1a1818b77800ac6184"
     },
     {
       "path": "docs/contracts/supersession_mrna_xeditflow_v1_1_to_route_a_v3.yaml",
       "role": "SUPERSESSION_LINEAGE",
-      "sha256": "50b1811f8331c1ed76c69c31f29b55a6a659d37d4591b7711d0b0ae9beec43a0"
+      "sha256": "eed3815b1825e2731cc60e03401f3046f440d76cd9c58d3a23f7cd0ef87ed4f8"
     },
     {
       "path": "docs/contracts/history/mrna_v2_readiness_audit_20260807.md",
@@ -59,17 +64,17 @@
     {
       "path": "docs/execution/route_a_v3_data_role_registry.yaml",
       "role": "DATA_ROLE_REGISTRY",
-      "sha256": "3579249154309a828f193c18785a9d6d9f4b325780cffbc014c2bf524b5b47d6"
+      "sha256": "943233c41a4ec40cef65bbe3efda38ce8509d816e2e9a72e1f3ab4b4fe0f98e7"
     },
     {
       "path": "docs/execution/route_a_v3_decision_log.yaml",
       "role": "DECISION_AND_AMENDMENT_LOG",
-      "sha256": "874d83156e337cc613b3df9f57bbd10f19a2585ffefbeb3e52d99aca696bc7ac"
+      "sha256": "3a27abc9dbc4924e3a12e7662418e34472509a5345dec6948ae7279ca5455ee1"
     },
     {
       "path": "docs/execution/route_a_v3_a1_interim.yaml",
       "role": "A1_ACTIVE_INTERIM_RECORD",
-      "sha256": "f988975f316c34cb3d55edaa31d03ee642d778df743ee2ee55f35f8e7a2c7493"
+      "sha256": "6f7c2b560e6a96e38d68de168d26623203243386dd116ba267003e23509a231d"
     },
     {
       "path": "docs/execution/route_a_v3_a6_interim.yaml",
@@ -479,18 +484,18 @@
     {
       "path": "tests/route_a_v3/test_a0_integrity_guards.py",
       "role": "A0_AUTHORITY_INTEGRITY_GUARD_TEST",
-      "sha256": "cef3e6e1af70d8af207edaedd88a72bfbe96614345540eb00449a34342a57202"
+      "sha256": "a40e9820e7f24583f6e4e19b850de0fedc6f53994140af50d5c341af1f1f87ad"
     },
     {
       "path": "scripts/route_a_v3/validate_a0_bundle.py",
       "role": "A0_STATIC_AND_SEMANTIC_VALIDATOR",
-      "sha256": "f2121d84c602bd037f918dda721bd93afbcb4c6b6e256041b718864db5f7b255"
+      "sha256": "ad48b02c296c5c9cb06f11984cfe0c8fc8b0bf0b8d6b246d4b4641890b02f243"
     }
   ],
   "initial_generated_at": "2026-08-10T10:10:05+08:00",
-  "generated_at": "2026-08-13T21:10:31+08:00",
-  "updated_at": "2026-08-13T21:10:31+08:00",
-  "manifest_status": "DEC021_GSE256185_PUBLIC_IDENTIFIER_POOL_GEOMETRY_PREFLIGHT_REGISTERED_EVT053_SETTLED_EVIDENCE_RUNTIME_SYNCED_A1_INCOMPLETE_A6_IN_PROGRESS_L3_NOT_ESTABLISHED_A7_NOT_RUN",
+  "generated_at": "2026-08-13T22:20:01+08:00",
+  "updated_at": "2026-08-13T22:20:01+08:00",
+  "manifest_status": "DEC022_GSE256185_AGGREGATE_ROW_LEVEL_QUALIFICATION_PREFLIGHT_ONLY_REGISTERED_EVT053_SETTLED_PENDING_FRESH_RUNTIME_EVENT_A1_INCOMPLETE_A6_IN_PROGRESS_L3_NOT_ESTABLISHED_A7_NOT_RUN",
   "schema_version": "1.0.0",
   "sealed_contact": false,
   "version": "3.0.0"

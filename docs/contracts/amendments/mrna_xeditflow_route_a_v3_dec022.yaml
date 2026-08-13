@@ -1,0 +1,181 @@
+schema_version: "1.0.0"
+amendment_id: MRNA_XEDITFLOW_ROUTE_A_V3_DEC022
+decision_id: V3-DEC-022
+contract_id: mrna_xeditflow_route_a_v3
+contract_version: "3.0.0"
+amends_contract_path: docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md
+amends_contract_sha256: cbac4c3dcba8f1b8df95d8edad52d19e3c126d1c865d0cc423537c754cc90982
+predecessor_amendment_path: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec021.yaml
+predecessor_amendment_sha256: 2a7b05e40434398b1d39396280ca019f48164fbb70b5b6058123bc653c400d3d
+predecessor_authority_head: c57f5aa937d33d7e5ec1c25d3e29b339628c6387
+amendment_mode: APPEND_ONLY_AUTHORITY_COMPANION_ROOT_CONTRACT_AND_DEC021_BYTES_UNCHANGED
+status: FROZEN_USER_AUTHORIZED_GSE256185_AGGREGATE_ROW_LEVEL_QUALIFICATION_PREFLIGHT_ONLY
+effective_phase: A1
+requires_user_authorization: true
+
+user_authorization:
+  status: GRANTED
+  received_at: "2026-08-13T22:15:00+08:00"
+  source: ACTIVE_CODEX_THREAD_OWNER_CONFIRMATION
+
+predecessor_public_geometry_evidence:
+  protocol_id: GSE256185_PUBLIC_IDENTIFIER_POOL_GEOMETRY_PREFLIGHT_V1
+  decision_id: V3-DEC-021
+  path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE256185_PUBLIC_IDENTIFIER_POOL_GEOMETRY_PREFLIGHT_V1_20260813T210613P0800_c95fe8e/GSE256185_PUBLIC_IDENTIFIER_POOL_GEOMETRY_PREFLIGHT_V1.json
+  bytes: 7441
+  sha256: 06a8fed9599266ca170303705e6d78a1555e7b8949254e5355c7b17aff742db8
+  status: PUBLIC_IDENTIFIER_AND_POOL_GEOMETRY_PREFLIGHT_COMPLETE_NOT_QUALIFIED
+  latest_settled_runtime_event_id: A1-EVT-053
+  report_body_may_be_used_only_to_bind_aggregate_geometry: true
+  report_does_not_qualify_gse256185: true
+
+candidate_universe:
+  dataset_id: GSE256185
+  universe_id: GSE256185_DEC022_STRICT_SINGLE_PARENT_634_POOL_UNIVERSE
+  selection_rule: STRICT_GRAMMAR_EXACTLY_ONE_PARENT_AND_AT_LEAST_THREE_STRICT_CANDIDATES_PER_GROUP
+  strict_single_parent_pool_count: 634
+  strict_candidate_member_count: 7292
+  membership_must_replay_to_exact_aggregate_counts_before_row_level_fields: true
+  count_or_rule_drift_action: STOP_BEFORE_ROW_LEVEL_FIELD_ACCESS
+  two_candidate_strict_single_parent_group_count_excluded: 3
+  dual_parent_group_count_excluded: 15
+  nonstrict_grammar_record_count_excluded: 2
+  reasoned_family_closure_candidate_count: 7294
+  reasoned_family_closure_included: false
+  dual_parent_or_nonstrict_future_inclusion_requires_new_explicit_authority: true
+  grammar_role_alone_establishes_source_to_candidate_edit_relation: false
+
+authorized_internal_access:
+  authority_surface: ORDINARY_PUBLIC_ONLY
+  allowed_input_field_classes_exactly:
+    - IDENTIFIER
+    - ROLE
+    - SEQUENCE
+    - ENDPOINT
+    - REPLICATE
+    - NECESSARY_CONTEXT
+  identifier_and_role_use: RECONSTRUCT_FROZEN_UNIVERSE_AND_PARENT_CANDIDATE_HYPOTHESES_ONLY
+  sequence_use: INTERNAL_PARENT_TO_CANDIDATE_EDIT_REPLAY_ONLY
+  endpoint_use: INTERNAL_DIRECTION_SCALE_SEMANTICS_AND_AGGREGATE_GATE_AUDIT_ONLY
+  replicate_use: INTERNAL_INDEPENDENCE_STANDARD_ERROR_AND_POWER_AUDIT_ONLY
+  necessary_context_use: INTERNAL_FAMILY_ASSAY_CELL_REPORTER_RNA_CHEMISTRY_STRATIFICATION_ONLY
+  internal_row_level_contrast_derivation_allowed: true
+  internal_row_level_contrast_derivation_scope: AGGREGATE_GATE_AUDIT_ONLY
+  private_or_restricted_input_allowed: false
+  sealed_contact_allowed: false
+  gse246381_contact_allowed: false
+
+aggregate_output_contract:
+  allowed_output_class: AGGREGATE_ROW_LEVEL_QUALIFICATION_PREFLIGHT_ONLY
+  allowed_aggregate_content_exactly:
+    - GATE_STATUS_AND_REASON_COUNTS
+    - AGGREGATE_DENOMINATORS_AND_EXCLUSION_COUNTS
+    - AGGREGATE_EDIT_DISTANCE_DISTRIBUTION
+    - AGGREGATE_FAMILY_AND_CONTEXT_STRATUM_COUNTS
+    - AGGREGATE_ENDPOINT_DIRECTION_AND_SCALE_DIAGNOSTICS
+    - AGGREGATE_REPLICATE_STANDARD_ERROR_AND_POWER_DIAGNOSTICS
+    - AGGREGATE_RIGHTS_EXPOSURE_SPLIT_LEAKAGE_AND_PROVENANCE_STATUS
+    - AGGREGATE_POST_DEDUP_EFFECTIVE_N_AND_REJECT_REASON_COUNTS
+  member_identifier_output_allowed: false
+  member_role_output_allowed: false
+  member_context_output_allowed: false
+  row_output_allowed: false
+  sequence_output_allowed: false
+  row_effect_output_allowed: false
+  replicate_identifier_output_allowed: false
+  split_assignment_output_allowed: false
+  canonical_record_output_allowed: false
+  persistent_row_level_intermediate_allowed: false
+
+qualification_preflight_semantics:
+  purpose: FAIL_CLOSED_AGGREGATE_ONLY_ROW_LEVEL_QUALIFICATION_PREFLIGHT_WITHOUT_QUALIFICATION
+  aggregate_row_level_qualification_preflight_execution_allowed: true
+  dataset_qualification_decision_allowed: false
+  a1_or_true_a2_assignment_allowed: false
+  ordinary_a1_true_a2_credit_allowed: false
+  canonical_materialization_allowed: false
+  source_to_candidate_edit_relation_may_be_presumed: false
+  gate_pass_requires_direct_evidence: true
+  missing_ambiguous_or_conflicting_evidence_passes_gate: false
+  all_required_gates_must_pass_before_separate_qualification_decision_may_be_requested: true
+  all_required_gates_passing_automatically_qualifies_dataset: false
+  separate_user_authority_required_for_qualification_or_counting: true
+
+fail_closed_gate_map:
+  required_gate_ids_exactly:
+    - STRICT_SINGLE_PARENT_CANDIDATE_UNIVERSE_CLOSED
+    - ROW_LEVEL_MULTI_ASSET_LINEAGE_AND_PRIMARY_MEASUREMENT_ROUTE_CLOSED
+    - SOURCE_AND_CANDIDATE_IDENTITY_CLOSED
+    - PARENT_TO_CANDIDATE_EDIT_REPLAY_CLOSED
+    - FAMILY_AND_CONTEXT_STRATIFICATION_CLOSED
+    - ENDPOINT_DIRECTION_SCALE_AND_SEMANTICS_CLOSED
+    - ORIGINAL_UNIT_AND_PAPER_FAITHFUL_TRANSFORM_CLOSED
+    - BIOLOGICAL_SOURCE_GROUP_AUTHORITY_CLOSED
+    - INDEPENDENT_BIOLOGICAL_REPLICATE_AND_VALID_STANDARD_ERROR_CLOSED
+    - LICENSE_AND_REDISTRIBUTION_RIGHTS_CLOSED
+    - OUTCOME_BLIND_SOURCE_GROUP_NEAR_DUPLICATE_SPLIT_AND_ZERO_LEAKAGE_CLOSED
+    - PREFROZEN_GROUP_POWER_AND_FULL_CI_WIDTH_CLOSED
+    - PUBLIC_PROVENANCE_AND_PRIMARY_MEASUREMENT_ROUTE_CLOSED
+    - MODEL_INPUT_ROUTE_AND_ROUTE_CONDITIONAL_EXPOSURE_CLOSED
+    - BENEFICIAL_SIGNAL_VERSUS_MEASUREMENT_NOISE_CLOSED
+    - POST_DEDUP_INDEPENDENT_EFFECTIVE_N_CLOSED
+    - REJECT_REASON_AND_EXCLUSION_CLOSURE_CLOSED
+  independent_axis_count: 17
+  initial_status_for_every_gate: NOT_RUN
+  unknown_or_not_run_gate_is_pass: false
+  gate_aggregation_rule: ALL_REQUIRED_GATES_MUST_PASS_WITH_NO_MISSING_AMBIGUOUS_OR_CONFLICTING_EVIDENCE
+  endpoint_direction_must_be_frozen_before_outcome_based_filtering: true
+  biological_replicate_independence_must_not_be_inferred_from_barcode_or_reaction_count: true
+  technical_replicates_may_substitute_for_biological_replicates: false
+  standard_error_must_bind_the_declared_analysis_unit: true
+  target_power_minimum: 0.80
+  confidence_level: 0.95
+  maximum_full_ci_width: 0.30
+  split_and_threshold_may_change_after_model_results: false
+  exposure_and_prior_analytic_use_must_be_asserted_not_inferred: true
+  beneficial_signal_must_be_distinguished_from_measurement_noise: true
+  post_dedup_effective_n_must_use_independent_analysis_units: true
+  strict_universe_gate_and_reject_closure_gate_are_independently_adjudicated: true
+  strict_universe_and_reject_closure_do_not_receive_duplicate_scientific_credit: true
+  every_excluded_or_rejected_row_must_have_one_aggregate_reason_category: true
+
+authorization_projection:
+  changes_current_qualified_counts: false
+  current_qualified_independent_ordinary_studies: 1
+  current_qualified_a1_studies: 1
+  current_qualified_true_a2_dense_studies: 0
+  current_canonical_record_count: 6547
+  gse256185_ordinary_study_contribution: 0
+  gse256185_a1_study_contribution: 0
+  gse256185_true_a2_dense_study_contribution: 0
+  gse256185_canonical_record_count: 0
+  gse256185_qualified: false
+  phase_complete: false
+  training_allowed: false
+  gpu_work_allowed: false
+  model_selection_allowed: false
+  next_phase_authorized: false
+  qualifier_execution_allowed: false
+  canonical_materialization_allowed: false
+  scientific_claim_status: NOT_ESTABLISHED
+
+runtime_successor:
+  latest_settled_runtime_event_id: A1-EVT-053
+  settled_runtime_state_changed_by_authority_bytes: false
+  runtime_event_emitted_by_authority_bytes: false
+  runtime_sync_status: PENDING_FRESH_EVENT_AFTER_SETTLED_EVT_053
+  expected_next_runtime_event_id: PENDING_FRESH_RUNTIME_EVENT_ID
+  next_runtime_event_id_preallocated: false
+  scientific_state_change_expected: false
+
+historical_preservation:
+  root_contract_bytes_changed: false
+  dec019_amendment_bytes_changed: false
+  dec020_amendment_bytes_changed: false
+  dec021_amendment_bytes_changed: false
+  predecessor_authority_head_rewritten: false
+  prior_runtime_events_changed: false
+  evt053_settled_state_changed: false
+  dec021_public_geometry_result_changed_or_relabelled: false
+  gse200304_current_qualification_changed: false
+  failure_evidence_deleted_or_relabelled: false

@@ -420,6 +420,157 @@ def test_dec021_cannot_promote_preflight_to_qualification_or_training(
     assert "DEC021_DATA_ROLE" in codes
 
 
+def test_dec022_authority_freezes_aggregate_only_universe_and_independent_gates(
+    validator,
+    repo_root,
+):
+    config, _, registries = validator.load_bundle_documents(repo_root)
+    assert validator.validate_dec021_authority(repo_root, config, registries) == []
+    assert validator.validate_dec022_authority(repo_root, config, registries) == []
+
+    amendment = validator._load_yaml(repo_root, validator.DEC022_AMENDMENT_PATH)
+    assert amendment["predecessor_amendment_path"] == validator.DEC021_AMENDMENT_PATH
+    assert amendment["predecessor_authority_head"] == (
+        "c57f5aa937d33d7e5ec1c25d3e29b339628c6387"
+    )
+    assert amendment["candidate_universe"] == {
+        "dataset_id": "GSE256185",
+        "universe_id": "GSE256185_DEC022_STRICT_SINGLE_PARENT_634_POOL_UNIVERSE",
+        "selection_rule": "STRICT_GRAMMAR_EXACTLY_ONE_PARENT_AND_AT_LEAST_THREE_STRICT_CANDIDATES_PER_GROUP",
+        "strict_single_parent_pool_count": 634,
+        "strict_candidate_member_count": 7292,
+        "membership_must_replay_to_exact_aggregate_counts_before_row_level_fields": True,
+        "count_or_rule_drift_action": "STOP_BEFORE_ROW_LEVEL_FIELD_ACCESS",
+        "two_candidate_strict_single_parent_group_count_excluded": 3,
+        "dual_parent_group_count_excluded": 15,
+        "nonstrict_grammar_record_count_excluded": 2,
+        "reasoned_family_closure_candidate_count": 7294,
+        "reasoned_family_closure_included": False,
+        "dual_parent_or_nonstrict_future_inclusion_requires_new_explicit_authority": True,
+        "grammar_role_alone_establishes_source_to_candidate_edit_relation": False,
+    }
+    gate_map = amendment["fail_closed_gate_map"]
+    assert gate_map["required_gate_ids_exactly"] == validator.DEC022_REQUIRED_GATE_IDS
+    assert len(gate_map["required_gate_ids_exactly"]) == 17
+    assert len(set(gate_map["required_gate_ids_exactly"])) == 17
+    assert gate_map["initial_status_for_every_gate"] == "NOT_RUN"
+    assert gate_map["unknown_or_not_run_gate_is_pass"] is False
+    assert (
+        gate_map[
+            "strict_universe_gate_and_reject_closure_gate_are_independently_adjudicated"
+        ]
+        is True
+    )
+    assert (
+        gate_map[
+            "strict_universe_and_reject_closure_do_not_receive_duplicate_scientific_credit"
+        ]
+        is True
+    )
+    assert amendment["authorization_projection"]["gse256185_qualified"] is False
+    assert amendment["authorization_projection"]["current_canonical_record_count"] == 6547
+    assert amendment["runtime_successor"] == {
+        "latest_settled_runtime_event_id": "A1-EVT-053",
+        "settled_runtime_state_changed_by_authority_bytes": False,
+        "runtime_event_emitted_by_authority_bytes": False,
+        "runtime_sync_status": "PENDING_FRESH_EVENT_AFTER_SETTLED_EVT_053",
+        "expected_next_runtime_event_id": "PENDING_FRESH_RUNTIME_EVENT_ID",
+        "next_runtime_event_id_preallocated": False,
+        "scientific_state_change_expected": False,
+    }
+
+
+def test_dec022_cannot_output_members_or_promote_qualification(
+    validator,
+    repo_root,
+    tmp_path,
+):
+    _copy_manifest_bundle(validator, repo_root, tmp_path)
+
+    qualification_path = tmp_path / validator.A1_QUALIFICATION_CONFIG_PATH
+    qualification = json.loads(qualification_path.read_text(encoding="utf-8"))
+    dec022 = qualification[
+        "dec022_aggregate_row_level_qualification_preflight_authority"
+    ]
+    dec022["row_output_allowed"] = True
+    dec022["sequence_output_allowed"] = True
+    dec022["qualification_allowed"] = True
+    dec022["dataset_contribution"]["ordinary"] = 1
+    qualification["scope"]["included_dataset_ids"].append("GSE256185")
+    qualification_path.write_text(
+        json.dumps(qualification, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+    data_path = tmp_path / validator.REGISTRY_PATHS["data"]
+    data = yaml.safe_load(data_path.read_text(encoding="utf-8"))
+    row = next(item for item in data["datasets"] if item["dataset_id"] == "GSE256185")
+    row["qualified"] = True
+    row["canonical_record_count"] = 7292
+    data_path.write_text(yaml.safe_dump(data, sort_keys=False), encoding="utf-8")
+
+    mutated_config, _, mutated_registries = validator.load_bundle_documents(tmp_path)
+    codes = _codes(
+        validator.validate_dec022_authority(
+            tmp_path,
+            mutated_config,
+            mutated_registries,
+        )
+    )
+    assert "DEC022_ACTIVE_AUTHORITY_LEAF_DRIFT" in codes
+    assert "DEC022_A1_SCOPE" in codes
+    assert "DEC022_A1_POLICY" in codes
+    assert "DEC022_DATA_ROLE" in codes
+
+
+def test_dec022_universe_or_required_gate_drift_stops_authority(
+    validator,
+    repo_root,
+    tmp_path,
+):
+    _copy_manifest_bundle(validator, repo_root, tmp_path)
+    amendment_path = tmp_path / validator.DEC022_AMENDMENT_PATH
+    amendment = yaml.safe_load(amendment_path.read_text(encoding="utf-8"))
+    amendment["candidate_universe"]["strict_single_parent_pool_count"] = 635
+    amendment["fail_closed_gate_map"]["required_gate_ids_exactly"].remove(
+        "PARENT_TO_CANDIDATE_EDIT_REPLAY_CLOSED"
+    )
+    amendment["fail_closed_gate_map"]["independent_axis_count"] = 16
+    amendment_path.write_text(
+        yaml.safe_dump(amendment, sort_keys=False),
+        encoding="utf-8",
+    )
+
+    config, _, registries = validator.load_bundle_documents(tmp_path)
+    codes = _codes(validator.validate_dec022_authority(tmp_path, config, registries))
+    assert "DEC022_ACTIVE_AUTHORITY_LEAF_DRIFT" in codes
+    assert "DEC022_UNIVERSE" in codes
+    assert "DEC022_GATE_MAP" in codes
+
+
+def test_dec022_exact10_static_registration_is_closed(
+    validator,
+    repo_root,
+):
+    manifest = validator._load_json(repo_root, validator.REGISTRY_MANIFEST_PATH)
+    paths = {row["path"] for row in manifest["files"]}
+    assert set(validator.DEC022_AUTHORITY_EXACT_CHANGED_PATHS) - {
+        validator.REGISTRY_MANIFEST_PATH
+    } <= paths
+    amendment_rows = [
+        row for row in manifest["files"] if row["path"] == validator.DEC022_AMENDMENT_PATH
+    ]
+    assert amendment_rows == [
+        {
+            "path": validator.DEC022_AMENDMENT_PATH,
+            "role": "DEC022_APPEND_ONLY_AUTHORITY_AMENDMENT",
+            "sha256": validator.DEC022_ACTIVE_AUTHORITY_LEAF_SHA256[
+                validator.DEC022_AMENDMENT_PATH
+            ],
+        }
+    ]
+
+
 def test_gse256185_public_geometry_registration_is_closed(
     validator,
     repo_root,

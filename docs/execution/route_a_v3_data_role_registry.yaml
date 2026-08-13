@@ -10,10 +10,11 @@ authority_ref:
   config_path: configs/route_a_v3.yaml
   goal_path: docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md
   goal_sha256: cbac4c3dcba8f1b8df95d8edad52d19e3c126d1c865d0cc423537c754cc90982
-  active_amendment_decision_ids: [V3-DEC-017, V3-DEC-018, V3-DEC-019, V3-DEC-020, V3-DEC-021]
+  active_amendment_decision_ids: [V3-DEC-017, V3-DEC-018, V3-DEC-019, V3-DEC-020, V3-DEC-021, V3-DEC-022]
   dec019_amendment_path: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec019.yaml
   dec020_amendment_path: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec020.yaml
   dec021_amendment_path: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec021.yaml
+  dec022_amendment_path: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec022.yaml
 
 data_policy:
   public_data_only: true
@@ -459,17 +460,22 @@ datasets:
     qualification_status: AUDIT_PENDING
     qualified: false
     training_role: EXCLUDED_PENDING_QUALIFICATION
-    intended_role: PUBLIC_IDENTIFIER_AND_POOL_GEOMETRY_PREFLIGHT_ONLY
+    intended_role: AGGREGATE_ROW_LEVEL_QUALIFICATION_PREFLIGHT_ONLY
     preflight_candidate_only_not_counting: true
-    mapping_status: PUBLIC_IDENTIFIER_ROLE_CONTEXT_AND_AGGREGATE_POOL_GEOMETRY_PREFLIGHT_AUTHORIZED_NOT_RUN
+    mapping_status: DEC022_AGGREGATE_ROW_LEVEL_QUALIFICATION_PREFLIGHT_AUTHORIZED_NOT_RUN
     allowed_current_uses:
       - OFFICIAL_PUBLIC_IDENTIFIER_ROLE_CONTEXT_AGGREGATE_AUDIT
       - AGGREGATE_POOL_GEOMETRY_PREFLIGHT
+      - INTERNAL_PUBLIC_ROW_LEVEL_QUALIFICATION_GATE_AUDIT
+      - AGGREGATE_ROW_LEVEL_QUALIFICATION_PREFLIGHT
     forbidden_current_uses:
       - ROW_OUTPUT
       - SEQUENCE_OUTPUT
       - EFFECT_OUTPUT
-      - EDIT_BUDGET_EVALUATION
+      - MEMBER_IDENTIFIER_OUTPUT
+      - MEMBER_ROLE_OR_CONTEXT_OUTPUT
+      - REPLICATE_IDENTIFIER_OUTPUT
+      - SPLIT_ASSIGNMENT_OUTPUT
       - TRUE_A2_STATUS_EVALUATION
       - QUALIFICATION
       - CANONICAL_MATERIALIZATION
@@ -479,13 +485,38 @@ datasets:
       - NEXT_PHASE
       - CONFIRMATORY_EVALUATION
       - CLAIM_SUPPORT
-    allowed_input_field_classes_exactly: [IDENTIFIER, ROLE, CONTEXT]
-    allowed_output_class: AGGREGATE_POOL_GEOMETRY_ONLY
-    sequence_evaluation: OUT_OF_SCOPE_NOT_EVALUATED
-    edit_budget_evaluation: OUT_OF_SCOPE_NOT_EVALUATED
-    effect_evaluation: OUT_OF_SCOPE_NOT_EVALUATED
-    true_a2_status_evaluation: OUT_OF_SCOPE_NOT_EVALUATED
-    qualification_evaluation: OUT_OF_SCOPE_NOT_EVALUATED
+    allowed_input_field_classes_exactly: [IDENTIFIER, ROLE, SEQUENCE, ENDPOINT, REPLICATE, NECESSARY_CONTEXT]
+    allowed_output_class: AGGREGATE_ROW_LEVEL_QUALIFICATION_PREFLIGHT_ONLY
+    strict_single_parent_pool_count: 634
+    strict_candidate_member_count: 7292
+    two_candidate_strict_single_parent_group_count_excluded: 3
+    dual_parent_group_count_excluded: 15
+    nonstrict_grammar_record_count_excluded: 2
+    reasoned_family_closure_candidate_count: 7294
+    reasoned_family_closure_included: false
+    required_fail_closed_gate_ids_exactly:
+      - STRICT_SINGLE_PARENT_CANDIDATE_UNIVERSE_CLOSED
+      - ROW_LEVEL_MULTI_ASSET_LINEAGE_AND_PRIMARY_MEASUREMENT_ROUTE_CLOSED
+      - SOURCE_AND_CANDIDATE_IDENTITY_CLOSED
+      - PARENT_TO_CANDIDATE_EDIT_REPLAY_CLOSED
+      - FAMILY_AND_CONTEXT_STRATIFICATION_CLOSED
+      - ENDPOINT_DIRECTION_SCALE_AND_SEMANTICS_CLOSED
+      - ORIGINAL_UNIT_AND_PAPER_FAITHFUL_TRANSFORM_CLOSED
+      - BIOLOGICAL_SOURCE_GROUP_AUTHORITY_CLOSED
+      - INDEPENDENT_BIOLOGICAL_REPLICATE_AND_VALID_STANDARD_ERROR_CLOSED
+      - LICENSE_AND_REDISTRIBUTION_RIGHTS_CLOSED
+      - OUTCOME_BLIND_SOURCE_GROUP_NEAR_DUPLICATE_SPLIT_AND_ZERO_LEAKAGE_CLOSED
+      - PREFROZEN_GROUP_POWER_AND_FULL_CI_WIDTH_CLOSED
+      - PUBLIC_PROVENANCE_AND_PRIMARY_MEASUREMENT_ROUTE_CLOSED
+      - MODEL_INPUT_ROUTE_AND_ROUTE_CONDITIONAL_EXPOSURE_CLOSED
+      - BENEFICIAL_SIGNAL_VERSUS_MEASUREMENT_NOISE_CLOSED
+      - POST_DEDUP_INDEPENDENT_EFFECTIVE_N_CLOSED
+      - REJECT_REASON_AND_EXCLUSION_CLOSURE_CLOSED
+    independent_gate_axis_count: 17
+    every_gate_initial_status: NOT_RUN
+    unknown_or_not_run_gate_is_pass: false
+    source_to_candidate_edit_relation_may_be_presumed: false
+    all_required_gates_passing_automatically_qualifies_dataset: false
     ordinary_gate_contribution: 0
     a1_gate_contribution: 0
     true_a2_gate_contribution: 0
@@ -493,6 +524,10 @@ datasets:
     row_output_allowed: false
     sequence_output_allowed: false
     effect_output_allowed: false
+    replicate_identifier_output_allowed: false
+    split_assignment_output_allowed: false
+    qualification_allowed: false
+    canonical_materialization_allowed: false
     training_allowed: false
     gpu_work_allowed: false
     model_selection_allowed: false

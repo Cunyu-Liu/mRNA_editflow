@@ -8,11 +8,12 @@ date: "2026-08-10"
 
 authority:
   initial_source_goal_sha256: d1c031aecdec710495f6861b380785cccd64663ac4bd97b4f479d6fdf372ea07
-  active_amendment_decision_ids: [V3-DEC-017, V3-DEC-018, V3-DEC-019, V3-DEC-020, V3-DEC-021]
+  active_amendment_decision_ids: [V3-DEC-017, V3-DEC-018, V3-DEC-019, V3-DEC-020, V3-DEC-021, V3-DEC-022]
   active_amendment_paths:
     V3-DEC-019: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec019.yaml
     V3-DEC-020: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec020.yaml
     V3-DEC-021: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec021.yaml
+    V3-DEC-022: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec022.yaml
   source_goal:
     local_path: "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna v3.md"
     sha256: cbac4c3dcba8f1b8df95d8edad52d19e3c126d1c865d0cc423537c754cc90982
@@ -221,6 +222,58 @@ a1_qualification_authority:
     row_output_allowed: false
     sequence_output_allowed: false
     effect_output_allowed: false
+    qualification_allowed: false
+    canonical_materialization_allowed: false
+    training_allowed: false
+    gpu_work_allowed: false
+    model_selection_allowed: false
+    next_phase_authorized: false
+    sealed_contact_allowed: false
+  gse256185_aggregate_row_level_qualification_preflight:
+    current_status: AUTHORIZED_NOT_RUN
+    role: AGGREGATE_ROW_LEVEL_QUALIFICATION_PREFLIGHT_ONLY
+    predecessor_decision_id: V3-DEC-021
+    predecessor_runtime_event_id: A1-EVT-053
+    strict_single_parent_pool_count: 634
+    strict_candidate_member_count: 7292
+    dual_parent_group_count_excluded: 15
+    nonstrict_grammar_record_count_excluded: 2
+    reasoned_family_closure_candidate_count: 7294
+    reasoned_family_closure_included: false
+    allowed_input_field_classes_exactly: [IDENTIFIER, ROLE, SEQUENCE, ENDPOINT, REPLICATE, NECESSARY_CONTEXT]
+    allowed_output_class: AGGREGATE_ROW_LEVEL_QUALIFICATION_PREFLIGHT_ONLY
+    required_fail_closed_gate_ids_exactly:
+      - STRICT_SINGLE_PARENT_CANDIDATE_UNIVERSE_CLOSED
+      - ROW_LEVEL_MULTI_ASSET_LINEAGE_AND_PRIMARY_MEASUREMENT_ROUTE_CLOSED
+      - SOURCE_AND_CANDIDATE_IDENTITY_CLOSED
+      - PARENT_TO_CANDIDATE_EDIT_REPLAY_CLOSED
+      - FAMILY_AND_CONTEXT_STRATIFICATION_CLOSED
+      - ENDPOINT_DIRECTION_SCALE_AND_SEMANTICS_CLOSED
+      - ORIGINAL_UNIT_AND_PAPER_FAITHFUL_TRANSFORM_CLOSED
+      - BIOLOGICAL_SOURCE_GROUP_AUTHORITY_CLOSED
+      - INDEPENDENT_BIOLOGICAL_REPLICATE_AND_VALID_STANDARD_ERROR_CLOSED
+      - LICENSE_AND_REDISTRIBUTION_RIGHTS_CLOSED
+      - OUTCOME_BLIND_SOURCE_GROUP_NEAR_DUPLICATE_SPLIT_AND_ZERO_LEAKAGE_CLOSED
+      - PREFROZEN_GROUP_POWER_AND_FULL_CI_WIDTH_CLOSED
+      - PUBLIC_PROVENANCE_AND_PRIMARY_MEASUREMENT_ROUTE_CLOSED
+      - MODEL_INPUT_ROUTE_AND_ROUTE_CONDITIONAL_EXPOSURE_CLOSED
+      - BENEFICIAL_SIGNAL_VERSUS_MEASUREMENT_NOISE_CLOSED
+      - POST_DEDUP_INDEPENDENT_EFFECTIVE_N_CLOSED
+      - REJECT_REASON_AND_EXCLUSION_CLOSURE_CLOSED
+    independent_gate_axis_count: 17
+    missing_ambiguous_or_conflicting_evidence_passes_gate: false
+    source_to_candidate_edit_relation_may_be_presumed: false
+    dataset_qualification_decision_allowed: false
+    ordinary_study_contribution: 0
+    a1_study_contribution: 0
+    true_a2_dense_study_contribution: 0
+    canonical_record_count: 0
+    member_identifier_output_allowed: false
+    row_output_allowed: false
+    sequence_output_allowed: false
+    row_effect_output_allowed: false
+    replicate_identifier_output_allowed: false
+    split_assignment_output_allowed: false
     qualification_allowed: false
     canonical_materialization_allowed: false
     training_allowed: false
