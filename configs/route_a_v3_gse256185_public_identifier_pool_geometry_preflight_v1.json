@@ -9,14 +9,14 @@
   "protocol_status": "PUBLIC_IDENTIFIER_AND_POOL_GEOMETRY_PREFLIGHT_ONLY_NOT_QUALIFICATION",
   "implementation_binding": {
     "binding_scheme": "AUTHORITY_RUNTIME_B_THEN_PREFLIGHT_I1_EXACT3_I2_EXACT3_CONFIG_ONLY_B2_V1",
-    "status": "UNKNOWN_NOT_ASSERTED",
+    "status": "BOUND",
     "authority_commit": "1ee575799a4b3289f9b7d684b4b31885dde0bd50",
     "authority_runtime_binding_commit": "e67be74d793a2a459b655ca11d38f86a9d52b7db",
-    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "implementation_commit": "96dadcb67edd0d494f5b80965590a5e306cabbe1",
     "implementation_script_path": "scripts/route_a_v3/preflight_gse256185_public_identifier_pool_geometry.py",
-    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_script_sha256": "a38449008adbd8921a1e9a3cbb118f695c05789d3027f37e89669d73bf568c87",
     "implementation_test_path": "tests/route_a_v3/test_preflight_gse256185_public_identifier_pool_geometry.py",
-    "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_test_sha256": "2ab43a6464b40ee0ac32b0cfda17604c1da05b0fa7ad9028b2ed2c2fd2174c07",
     "pre_implementation_authority_scalar_paths": [
       "implementation_binding.authority_commit",
       "implementation_binding.authority_runtime_binding_commit"
