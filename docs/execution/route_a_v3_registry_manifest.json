@@ -64,7 +64,7 @@
     {
       "path": "docs/execution/route_a_v3_a1_interim.yaml",
       "role": "A1_ACTIVE_INTERIM_RECORD",
-      "sha256": "fc3633711322be554b133c72ebed962e4d64552f0ed5652007636511ec3ea8aa"
+      "sha256": "5fcefdffba6178521b1b0765c417f92e34a3396a5a65e1fa831045adf7f9c055"
     },
     {
       "path": "docs/execution/route_a_v3_a6_interim.yaml",
@@ -459,12 +459,12 @@
     {
       "path": "tests/route_a_v3/test_a0_integrity_guards.py",
       "role": "A0_AUTHORITY_INTEGRITY_GUARD_TEST",
-      "sha256": "c009fd6af59a82aa1b71595ad08dc7ca472c42be114668a144429080de3e4187"
+      "sha256": "ae9e4440cd544fa8ebf7d5e5452a80e3543ab02f0f2d3bbf3fd95b5d0440dc81"
     },
     {
       "path": "scripts/route_a_v3/validate_a0_bundle.py",
       "role": "A0_STATIC_AND_SEMANTIC_VALIDATOR",
-      "sha256": "df2bf8a57fd0c47c755d6b930fd8703a125893442138e2a6abb877561a32ceb3"
+      "sha256": "b0389fe3d19626ea62db5ab3dc39f1d998a99c8e1500a2b822139ecf19a14b3c"
     }
   ],
   "initial_generated_at": "2026-08-10T10:10:05+08:00",

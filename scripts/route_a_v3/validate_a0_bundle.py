@@ -42,7 +42,7 @@ DECISION_LOG_PATH = "docs/execution/route_a_v3_decision_log.yaml"
 REGISTRY_MANIFEST_PATH = "docs/execution/route_a_v3_registry_manifest.json"
 A1_INTERIM_PATH = "docs/execution/route_a_v3_a1_interim.yaml"
 A6_INTERIM_PATH = "docs/execution/route_a_v3_a6_interim.yaml"
-EXPECTED_A1_INTERIM_SHA256 = "fc3633711322be554b133c72ebed962e4d64552f0ed5652007636511ec3ea8aa"
+EXPECTED_A1_INTERIM_SHA256 = "5fcefdffba6178521b1b0765c417f92e34a3396a5a65e1fa831045adf7f9c055"
 EXPECTED_A6_INTERIM_SHA256 = "64a5a5a03f0931b59a72ad5536c0e0c132332d1235e697bc4fff56f910d573d8"
 A6_REGISTRATION_LEDGER_AT = "2026-08-13T18:55:00+08:00"
 A6_REGISTRATION_MANIFEST_AT = "2026-08-13T18:55:01+08:00"
@@ -6966,12 +6966,12 @@ def validate_a1_interim_lineage(
                 "model_selection_allowed": False,
                 "next_phase_authorized": False,
                 "scientific_claim_status": "NOT_ESTABLISHED",
-                "latest_settled_runtime_event_id": "A1-EVT-050",
+                "latest_settled_runtime_event_id": "A1-EVT-051",
                 "authority_runtime_sync": {
                     "predecessor_event_id": "A1-EVT-050",
-                    "next_event_id": DEC020_PENDING_RUNTIME_EVENT_ID,
+                    "next_event_id": "A1-EVT-051",
                     "next_event_id_preallocated": False,
-                    "status": "PENDING_FRESH_EVENT_AFTER_SETTLED_EVT_050",
+                    "status": "SYNCED_EVT_051",
                 },
                 "future_v4_successor_registration": {
                     "lifecycle_status": "ADJUDICATED_POST_IMPLEMENTATION_COMMIT_I_BOUND_PRODUCTION",
@@ -8700,8 +8700,8 @@ def validate_a1_interim_lineage(
                 "focused_test_sha256": GSE200304_DEC020_V4_STATIC_LEAF_SHA256[GSE200304_DEC020_V4_TEST_PATH],
             },
             "predecessor_runtime_event_id": "A1-EVT-050",
-            "expected_next_runtime_event_id": DEC020_PENDING_RUNTIME_EVENT_ID,
-            "runtime_sync_status": "PENDING_FRESH_EVENT_AFTER_SETTLED_EVT_050",
+            "expected_next_runtime_event_id": "A1-EVT-051",
+            "runtime_sync_status": "SYNCED_EVT_051",
             "runtime_evidence_payload_read_count": 0,
         }
         expected_relevant_lineage_ids = set(expected_gse200304_lineage)
@@ -10157,7 +10157,7 @@ def validate_a1_interim_lineage(
                 "gse232572_qualification_authority_preflight_private_row_excluded": "PASS",
                 "targeted_gse200304_dec020_v4_post_adjudication_ledger_tests": {
                     "status": "PASS",
-                    "scope": "EXACT7_PASS_QUALIFIED_TRUE_ORDINARY1_A1_1_A2_0_CANONICAL6547_EVT050_SETTLED_RUNTIME_PENDING",
+                    "scope": "EXACT7_PASS_QUALIFIED_TRUE_ORDINARY1_A1_1_A2_0_CANONICAL6547_EVT051_SETTLED_RUNTIME_SYNCED",
                 },
                 "gse200304_dec020_v4_static_leaf_registration": "PASS",
                 "gse200304_dec020_v4_dynamic_config_binding": "PASS",
@@ -10224,11 +10224,11 @@ def validate_a1_interim_lineage(
                 },
                 "targeted_dec020_authority_registry_tests": {
                     "status": "PASS",
-                    "scope": "DEC020_EXACT10_AUTHORITY_PLUS_EXACT4_REGISTRY_EXACT3_V4_STATIC_EVT050_SETTLED_FRESH_EVENT_PENDING",
+                    "scope": "DEC020_EXACT10_AUTHORITY_PLUS_EXACT4_REGISTRY_EXACT3_V4_STATIC_EVT051_SETTLED_RUNTIME_SYNCED",
                 },
                 "dec020_active_authority_exact10_registration": "PASS",
                 "dec020_v4_static_leaf_registration": "PASS",
-                "dec020_runtime_sync_event_id": DEC020_PENDING_RUNTIME_EVENT_ID,
+                "dec020_runtime_sync_event_id": "A1-EVT-051",
             },
             path,
             issues,

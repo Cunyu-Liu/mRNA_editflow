@@ -221,13 +221,13 @@ def test_dec020_authority_commit_registration_is_closed(validator, repo_root):
     assert current["training_allowed"] is False
     assert current["model_selection_allowed"] is False
     assert current["next_phase_authorized"] is False
-    assert current["latest_settled_runtime_event_id"] == "A1-EVT-050"
+    assert current["latest_settled_runtime_event_id"] == "A1-EVT-051"
     sync = current["authority_runtime_sync"]
     assert sync == {
         "predecessor_event_id": "A1-EVT-050",
-        "next_event_id": validator.DEC020_PENDING_RUNTIME_EVENT_ID,
+        "next_event_id": "A1-EVT-051",
         "next_event_id_preallocated": False,
-        "status": "PENDING_FRESH_EVENT_AFTER_SETTLED_EVT_050",
+        "status": "SYNCED_EVT_051",
     }
     assert current["future_v4_successor_registration"]["registered_in_static_manifest"] is True
     assert current["future_v4_successor_registration"]["may_execute"] is False
@@ -2452,12 +2452,12 @@ def test_gse200304_dec020_v4_post_adjudication_registration_is_closed(
     assert current["qualified"] is True
     assert current["canonical_materialization_qualification_eligible"] is True
     assert current["canonical_materialization_execution_authorized"] is False
-    assert current["latest_settled_runtime_event_id"] == "A1-EVT-050"
+    assert current["latest_settled_runtime_event_id"] == "A1-EVT-051"
     assert current["authority_runtime_sync"] == {
         "predecessor_event_id": "A1-EVT-050",
-        "next_event_id": validator.DEC020_PENDING_RUNTIME_EVENT_ID,
+        "next_event_id": "A1-EVT-051",
         "next_event_id_preallocated": False,
-        "status": "PENDING_FRESH_EVENT_AFTER_SETTLED_EVT_050",
+        "status": "SYNCED_EVT_051",
     }
     assert current["selected_route_status"] == "PASS_DEC020_SCRATCH_ROUTE_SCOPED_REPORTED_ENDPOINT_A1_QUALIFIED"
     successor = current["future_v4_successor_registration"]
@@ -2472,8 +2472,8 @@ def test_gse200304_dec020_v4_post_adjudication_registration_is_closed(
     assert lineage["true_a2_study_contribution"] == 0
     assert lineage["canonical_record_count"] == 6547
     assert lineage["predecessor_runtime_event_id"] == "A1-EVT-050"
-    assert lineage["expected_next_runtime_event_id"] == validator.DEC020_PENDING_RUNTIME_EVENT_ID
-    assert lineage["runtime_sync_status"] == "PENDING_FRESH_EVENT_AFTER_SETTLED_EVT_050"
+    assert lineage["expected_next_runtime_event_id"] == "A1-EVT-051"
+    assert lineage["runtime_sync_status"] == "SYNCED_EVT_051"
     assert len(lineage["files"]) == 4
 
 

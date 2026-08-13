@@ -226,12 +226,12 @@ dec020_current_disposition:
   model_selection_allowed: false
   next_phase_authorized: false
   scientific_claim_status: NOT_ESTABLISHED
-  latest_settled_runtime_event_id: A1-EVT-050
+  latest_settled_runtime_event_id: A1-EVT-051
   authority_runtime_sync:
     predecessor_event_id: A1-EVT-050
-    next_event_id: PENDING_FRESH_RUNTIME_EVENT_ID
+    next_event_id: A1-EVT-051
     next_event_id_preallocated: false
-    status: PENDING_FRESH_EVENT_AFTER_SETTLED_EVT_050
+    status: SYNCED_EVT_051
   future_v4_successor_registration:
     lifecycle_status: ADJUDICATED_POST_IMPLEMENTATION_COMMIT_I_BOUND_PRODUCTION
     expected_static_leaf_count: 3
@@ -2157,8 +2157,8 @@ artifact_lineage:
       focused_test_path: tests/route_a_v3/test_adjudicate_gse200304_dec020_reported_endpoint_a1_v4.py
       focused_test_sha256: 298304c19c3faa6103221913cb8b30e25fd56d3b55eb65ea04f2e8d82f7c3954
     predecessor_runtime_event_id: A1-EVT-050
-    expected_next_runtime_event_id: PENDING_FRESH_RUNTIME_EVENT_ID
-    runtime_sync_status: PENDING_FRESH_EVENT_AFTER_SETTLED_EVT_050
+    expected_next_runtime_event_id: A1-EVT-051
+    runtime_sync_status: SYNCED_EVT_051
     runtime_evidence_payload_read_count: 0
     files:
       - path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE200304_DEC020_SCRATCH_ROUTE_A1_ADJUDICATION_V4_20260813T143426P0800/ADJUDICATION_REPORT.json
@@ -2940,7 +2940,7 @@ verification:
   gse232572_qualification_authority_preflight_private_row_excluded: PASS
   targeted_gse200304_dec020_v4_post_adjudication_ledger_tests:
     status: PASS
-    scope: EXACT7_PASS_QUALIFIED_TRUE_ORDINARY1_A1_1_A2_0_CANONICAL6547_EVT050_SETTLED_RUNTIME_PENDING
+    scope: EXACT7_PASS_QUALIFIED_TRUE_ORDINARY1_A1_1_A2_0_CANONICAL6547_EVT051_SETTLED_RUNTIME_SYNCED
   gse200304_dec020_v4_static_leaf_registration: PASS
   gse200304_dec020_v4_dynamic_config_binding: PASS
   gse200304_dec020_v4_result:
@@ -2994,10 +2994,10 @@ verification:
     reason: FOUR_FILE_APPEND_ONLY_LOW_TO_MEDIUM_RISK_BATCH_SELF_CHECKED_UNDER_GLOBAL_LIGHTWEIGHT_POLICY
   targeted_dec020_authority_registry_tests:
     status: PASS
-    scope: DEC020_EXACT10_AUTHORITY_PLUS_EXACT4_REGISTRY_EXACT3_V4_STATIC_EVT050_SETTLED_FRESH_EVENT_PENDING
+    scope: DEC020_EXACT10_AUTHORITY_PLUS_EXACT4_REGISTRY_EXACT3_V4_STATIC_EVT051_SETTLED_RUNTIME_SYNCED
   dec020_active_authority_exact10_registration: PASS
   dec020_v4_static_leaf_registration: PASS
-  dec020_runtime_sync_event_id: PENDING_FRESH_RUNTIME_EVENT_ID
+  dec020_runtime_sync_event_id: A1-EVT-051
 
 initial_generated_at: "2026-08-10T06:30:58+08:00"
 generated_at: "2026-08-13T18:55:00+08:00"
