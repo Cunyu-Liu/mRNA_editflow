@@ -12,12 +12,12 @@
   "sync_type": "APPEND_ONLY_AUTHORITY_ONLY_REGISTRATION_NO_SCIENTIFIC_STATE_CHANGE",
   "implementation_binding": {
     "binding_scheme": "CONFIG_ONLY_POST_IMPLEMENTATION_BINDING_V1",
-    "status": "UNKNOWN_NOT_ASSERTED",
-    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "status": "BOUND",
+    "implementation_commit": "17d0f570bdfb4bf4a3e5ff34cb1d3aa11a2cccdd",
     "implementation_script_path": "scripts/route_a_v3/dec020_authority_runtime_sync.py",
-    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_script_sha256": "fe4c7f19eecef91b9fd1340f4ea8258e644a6b0139d2880a8a84640bd4721862",
     "implementation_test_path": "tests/route_a_v3/test_dec020_authority_runtime_sync.py",
-    "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_test_sha256": "2909a34d6c1b152f91bfe0a336290066dc73bee8411db70814068e288a9378b1",
     "compiled_core_sha256": "891b99f633c214e4d92e4244a60e50f34b883776af755b7bd870572bee41badf",
     "unknown_to_bound_scalar_paths": [
       "implementation_binding.status",
