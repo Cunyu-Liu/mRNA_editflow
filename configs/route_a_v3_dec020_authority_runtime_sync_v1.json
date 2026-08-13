@@ -1,0 +1,287 @@
+{
+  "schema_version": "route_a_v3_dec020_authority_runtime_sync.v1",
+  "protocol_id": "ROUTE_A_V3_DEC020_AUTHORITY_RUNTIME_SYNC_V1",
+  "contract_id": "mrna_xeditflow_route_a_v3",
+  "phase_id": "A1",
+  "dataset_ids": [
+    "GSE200304"
+  ],
+  "decision_id": "V3-DEC-020",
+  "event_id": "A1-EVT-050",
+  "event_name": "DEC020_AUTHORITY_REGISTERED_RUNTIME_AND_SCIENTIFIC_GATES_UNCHANGED",
+  "sync_type": "APPEND_ONLY_AUTHORITY_ONLY_REGISTRATION_NO_SCIENTIFIC_STATE_CHANGE",
+  "implementation_binding": {
+    "binding_scheme": "CONFIG_ONLY_POST_IMPLEMENTATION_BINDING_V1",
+    "status": "UNKNOWN_NOT_ASSERTED",
+    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "implementation_script_path": "scripts/route_a_v3/dec020_authority_runtime_sync.py",
+    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_test_path": "tests/route_a_v3/test_dec020_authority_runtime_sync.py",
+    "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
+    "compiled_core_sha256": "3c844c0af9346c00c86ef91202666e8b4ab00ac435da6022a74ba096aca80dc4",
+    "unknown_to_bound_scalar_paths": [
+      "implementation_binding.status",
+      "implementation_binding.implementation_commit",
+      "implementation_binding.implementation_script_sha256",
+      "implementation_binding.implementation_test_sha256"
+    ],
+    "activation_rule": "A is the exact14 DEC020 authority commit. I must be the direct child of A, change exactly this config, script, and focused test, and retain all four implementation-binding scalars as UNKNOWN_NOT_ASSERTED. B must be the direct child of I, change only this config, and bind exactly those four scalars. Production requires clean HEAD equal to upstream and origin at B before any prepared or runtime I/O."
+  },
+  "repository_authority": {
+    "production_repo_root": "/home/cunyuliu/mrna_editflow_goal/worktrees/routea_v3_a1_20260810",
+    "branch": "routea-v3-a1-20260810",
+    "authority_commit": "d0611622f304d2d621a35b190922ac593a3b8788",
+    "authority_expected_parent": "ba6746adeb5dc9b2b41a69d139912006e0f5ad07",
+    "authority_snapshot_status": "FROZEN_CONFIRMED_A_GIT_BLOB_IDENTITIES_REVALIDATE_IN_PRODUCTION",
+    "authority_exact_changed_paths": [
+      "configs/route_a_v3.yaml",
+      "configs/route_a_v3_a1_qualification.json",
+      "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec020.yaml",
+      "docs/contracts/supersession_mrna_xeditflow_v1_1_to_route_a_v3.yaml",
+      "docs/execution/route_a_v3_a1_interim.yaml",
+      "docs/execution/route_a_v3_claim_evidence_matrix.yaml",
+      "docs/execution/route_a_v3_data_role_registry.yaml",
+      "docs/execution/route_a_v3_decision_log.yaml",
+      "docs/execution/route_a_v3_registry_manifest.json",
+      "docs/execution/route_a_v3_split_registry.yaml",
+      "docs/execution/route_a_v3_task_registry.yaml",
+      "docs/execution/route_a_v3_task_split_matrix.yaml",
+      "scripts/route_a_v3/validate_a0_bundle.py",
+      "tests/route_a_v3/test_a0_integrity_guards.py"
+    ],
+    "authority_files": [
+      {
+        "path": "configs/route_a_v3.yaml",
+        "bytes": 25075,
+        "sha256": "c908ac57b7c9667398f616a0ccf7101b41451b80bf169e768131844d3b63a678"
+      },
+      {
+        "path": "configs/route_a_v3_a1_qualification.json",
+        "bytes": 13193,
+        "sha256": "ac1ed9e78bf88d916f5599e3a2e75e79df1504c16ba108a12f7e28cfd3da2e20"
+      },
+      {
+        "path": "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec020.yaml",
+        "bytes": 6951,
+        "sha256": "0cfbe6e35c2c7f3b19756b8aee41dc91b2a8f05b249a5b6e9cacf90185c56026"
+      },
+      {
+        "path": "docs/contracts/supersession_mrna_xeditflow_v1_1_to_route_a_v3.yaml",
+        "bytes": 7155,
+        "sha256": "d7c0559742a44b4f0b6f8c941e734da52359c2733ba759ec2acd8ca40b07e62d"
+      },
+      {
+        "path": "docs/execution/route_a_v3_a1_interim.yaml",
+        "bytes": 157782,
+        "sha256": "615cbb768d819f8acddfb6a5e86a59f9da21c342598caea267bf6ef101efe683"
+      },
+      {
+        "path": "docs/execution/route_a_v3_claim_evidence_matrix.yaml",
+        "bytes": 14145,
+        "sha256": "9f5226ac78dd6c3848ba5ceb42742918de66ec459f951bb845ccaf21958a88f9"
+      },
+      {
+        "path": "docs/execution/route_a_v3_data_role_registry.yaml",
+        "bytes": 21122,
+        "sha256": "d06bfcfb8d265153a44d270c7bc40e5dd462a5e3bdde631d91519c7d7e394852"
+      },
+      {
+        "path": "docs/execution/route_a_v3_decision_log.yaml",
+        "bytes": 23991,
+        "sha256": "1332e789758a11687d3bcbbe95e0a5c7e852694e25ed90563d280006d94caced"
+      },
+      {
+        "path": "docs/execution/route_a_v3_registry_manifest.json",
+        "bytes": 20125,
+        "sha256": "2d6f7166ad60fa7486659069a0e6694a4ea42f6391bd08f6f5e0f5848dd5ea6b"
+      },
+      {
+        "path": "docs/execution/route_a_v3_split_registry.yaml",
+        "bytes": 6261,
+        "sha256": "52e1146027956e024dd6194ff18862e542e27fff81e8fc6b6d8aeaa972b8259c"
+      },
+      {
+        "path": "docs/execution/route_a_v3_task_registry.yaml",
+        "bytes": 13631,
+        "sha256": "bf3066a7534041374685e9ebe9ac8c840e53ceec1acbb076a72a758d397c63f2"
+      },
+      {
+        "path": "docs/execution/route_a_v3_task_split_matrix.yaml",
+        "bytes": 6169,
+        "sha256": "db23e96b6977339237956de57309d04a9e692bf937a8d34427d2e1b6cc150db8"
+      },
+      {
+        "path": "scripts/route_a_v3/validate_a0_bundle.py",
+        "bytes": 565642,
+        "sha256": "e75ca6fb98b45122e9ee88e028a3ed34d5f40d70f5cd4cd25c9b4e446c26e2cc"
+      },
+      {
+        "path": "tests/route_a_v3/test_a0_integrity_guards.py",
+        "bytes": 148631,
+        "sha256": "b3a1ea125a2264c88db422f5796aca0fcbafa85b5c5be5a3ed08c53bb9d5846c"
+      }
+    ],
+    "implementation_exact_changed_paths": [
+      "configs/route_a_v3_dec020_authority_runtime_sync_v1.json",
+      "scripts/route_a_v3/dec020_authority_runtime_sync.py",
+      "tests/route_a_v3/test_dec020_authority_runtime_sync.py"
+    ],
+    "binding_exact_changed_paths": [
+      "configs/route_a_v3_dec020_authority_runtime_sync_v1.json"
+    ]
+  },
+  "dec020_authority": {
+    "decision_id": "V3-DEC-020",
+    "status": "FROZEN_USER_AUTHORIZED_GSE200304_MODEL_INPUT_ROUTE_POLICY",
+    "authority_only_not_study_qualification": true,
+    "dataset_id": "GSE200304",
+    "selected_route": "SCRATCH_ONLY_NO_FOUNDATION_NO_EXTERNAL_LEARNED_INPUTS",
+    "selected_route_status": "FROZEN_AUTHORIZED_NOT_YET_ADJUDICATED",
+    "retained_foundation_route_status": "RETAINED_FAIL_CURRENT_PROTOCOL",
+    "scratch_route_checkpoint_exposure_status": "NOT_APPLICABLE_BY_FROZEN_NO_EXTERNAL_LEARNED_INPUT_ROUTE",
+    "scratch_route_checkpoint_exposure_pass_claimed": false,
+    "scratch_route_external_checkpoint_count_allowed": 0,
+    "scratch_route_external_learned_input_count_allowed": 0,
+    "scratch_route_parameter_initialization": "RANDOM_INITIALIZATION_ONLY",
+    "full_prior_analytic_use_attestation_completed": false,
+    "decision_or_policy_alone_is_training_evidence": false,
+    "authority_sync_qualifies_study": false
+  },
+  "runtime_authority": {
+    "historical_active_authority_commit_policy": "PRESERVE_PREDECESSOR_VALUE_UNCHANGED",
+    "active_amendment_decision_ids": [
+      "V3-DEC-017",
+      "V3-DEC-018",
+      "V3-DEC-019",
+      "V3-DEC-020"
+    ],
+    "current_contract_authority": {
+      "decision_id": "V3-DEC-020",
+      "authority_commit": "d0611622f304d2d621a35b190922ac593a3b8788",
+      "authority_expected_parent": "ba6746adeb5dc9b2b41a69d139912006e0f5ad07",
+      "scope": "DEC020_AUTHORITY_ONLY_NO_STUDY_QUALIFICATION",
+      "authority_file_count": 14
+    }
+  },
+  "registered_artifacts": [],
+  "runtime": {
+    "run_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5",
+    "allowed_prepared_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/staging/runtime_sync/A1",
+    "predecessor_candidate_status": "FROZEN_PREVIOUSLY_VERIFIED_REQUIRES_FRESH_PRODUCTION_VALIDATION_BEFORE_IO",
+    "fresh_production_validation_required": true,
+    "predecessor_event_id": "A1-EVT-049",
+    "predecessor_event_count": 49,
+    "successor_event_id": "A1-EVT-050",
+    "successor_event_count": 50,
+    "predecessor_manifest_output_count": 208,
+    "successor_manifest_output_count": 212,
+    "predecessor_mutables": {
+      "STATUS.json": {
+        "bytes": 26346,
+        "sha256": "f14476ebe60e7c70f93b335d675968ed71271184078207eab8a101ddbc818140",
+        "snapshot_name": "STATUS_PRE_DEC020_AUTHORITY_RUNTIME_SYNC_V1.json"
+      },
+      "RUN_MANIFEST.json": {
+        "bytes": 85950,
+        "sha256": "2eac508243cccbf28f82e35c79a055edf4de5545d96176335d780887b08f34f0",
+        "snapshot_name": "RUN_MANIFEST_PRE_DEC020_AUTHORITY_RUNTIME_SYNC_V1.json"
+      },
+      "EVENT_LOG.jsonl": {
+        "bytes": 94615,
+        "sha256": "bc3f0973adeb43054f41971931dde6fe87eb22d69dc7273ea2286c847b364ac0",
+        "snapshot_name": "EVENT_LOG_PRE_DEC020_AUTHORITY_RUNTIME_SYNC_V1.jsonl"
+      }
+    },
+    "predecessor_tail": {
+      "event_id": "A1-EVT-049",
+      "decision_id": "V3-DEC-019",
+      "bytes": 8030,
+      "sha256": "5f251fe3a67a729b89ee621e67899ebf12b56ef553fd49ab9bbaccdb768646fc"
+    },
+    "sync_name": "A1_DEC020_AUTHORITY_RUNTIME_SYNC_V1.json",
+    "output_delta_count": 4,
+    "immutable_publish_order": [
+      "STATUS_PRE_DEC020_AUTHORITY_RUNTIME_SYNC_V1.json",
+      "RUN_MANIFEST_PRE_DEC020_AUTHORITY_RUNTIME_SYNC_V1.json",
+      "EVENT_LOG_PRE_DEC020_AUTHORITY_RUNTIME_SYNC_V1.jsonl",
+      "A1_DEC020_AUTHORITY_RUNTIME_SYNC_V1.json"
+    ],
+    "mutable_publish_order": [
+      "STATUS.json",
+      "RUN_MANIFEST.json",
+      "EVENT_LOG.jsonl"
+    ]
+  },
+  "successor_scientific_state": {
+    "input_status_counts": {
+      "PASS": 7,
+      "BLOCKED": 0,
+      "UNKNOWN_NOT_ASSERTED": 1,
+      "NOT_RUN": 0
+    },
+    "unresolved_blockers": [
+      "CHECKPOINT_SPECIFIC_EXPOSURE_NOT_PASS"
+    ],
+    "ordinary_study_contribution": 0,
+    "a1_study_contribution": 0,
+    "true_a2_study_contribution": 0,
+    "canonical_intervention_record_count": 0,
+    "canonical_materialization_allowed": false,
+    "qualified": false,
+    "training_started": false,
+    "training_allowed": false,
+    "training_authorized": false,
+    "gpu_work_started": false,
+    "gpu_work_allowed": false,
+    "model_selection_allowed": false,
+    "next_phase_authorized": false,
+    "private_payload_access_allowed": false,
+    "sealed_contact_allowed": false,
+    "scientific_claim_status": "NOT_ESTABLISHED"
+  },
+  "outer_a1_state": {
+    "run_status": "IN_PROGRESS",
+    "evidence_status": "BLOCKED_PENDING_PUBLIC_EVIDENCE",
+    "gate_status": "A1_BLOCKED_PENDING_PUBLIC_EVIDENCE",
+    "qualified_ordinary_studies": 0,
+    "qualified_a1_studies": 0,
+    "qualified_a2_dense_studies": 0,
+    "metadata_only_qualification_count": 0,
+    "qualified": false,
+    "training_started": false,
+    "training_allowed": false,
+    "training_authorized": false,
+    "model_selection_allowed": false,
+    "next_phase_authorized": false
+  },
+  "access_boundary": {
+    "registered_artifact_count": 0,
+    "registered_artifact_read_count": 0,
+    "registered_artifact_body_parse_count": 0,
+    "registered_artifact_payload_field_read_count": 0,
+    "private_payload_read_count": 0,
+    "private_payload_write_count": 0,
+    "row_payload_read_count": 0,
+    "sequence_payload_read_count": 0,
+    "effect_payload_read_count": 0,
+    "canonical_materialization_count": 0,
+    "training_run_count": 0,
+    "gpu_work_count": 0,
+    "model_selection_run_count": 0,
+    "restricted_or_sealed_path_accessed": false,
+    "gse246381_contact": false
+  },
+  "publication_policy": {
+    "registered_artifacts_remain_empty": true,
+    "predecessor_snapshots_are_immutable_runtime_outputs": true,
+    "sync_record_is_immutable_runtime_output": true,
+    "mutables_commit_after_all_immutables": true,
+    "mutable_commit_order": [
+      "STATUS.json",
+      "RUN_MANIFEST.json",
+      "EVENT_LOG.jsonl"
+    ],
+    "event_is_last_commit": true,
+    "supported_recovery": "EXACT_PUBLICATION_PREFIX_ONLY"
+  }
+}
