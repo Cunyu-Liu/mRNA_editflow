@@ -42,12 +42,12 @@ DECISION_LOG_PATH = "docs/execution/route_a_v3_decision_log.yaml"
 REGISTRY_MANIFEST_PATH = "docs/execution/route_a_v3_registry_manifest.json"
 A1_INTERIM_PATH = "docs/execution/route_a_v3_a1_interim.yaml"
 A6_INTERIM_PATH = "docs/execution/route_a_v3_a6_interim.yaml"
-EXPECTED_A1_INTERIM_SHA256 = "ab24ed95249773d18acd019b74f3676c79caa4e4279d44f1660027658f818042"
-EXPECTED_A6_INTERIM_SHA256 = "032aafef8b86d95f9408b46c619c3225313270e8770e858f8a82b16ab35b3cbb"
-A6_REGISTRATION_LEDGER_AT = "2026-08-13T16:45:00+08:00"
-A6_REGISTRATION_MANIFEST_AT = "2026-08-13T16:45:01+08:00"
+EXPECTED_A1_INTERIM_SHA256 = "fc3633711322be554b133c72ebed962e4d64552f0ed5652007636511ec3ea8aa"
+EXPECTED_A6_INTERIM_SHA256 = "64a5a5a03f0931b59a72ad5536c0e0c132332d1235e697bc4fff56f910d573d8"
+A6_REGISTRATION_LEDGER_AT = "2026-08-13T18:55:00+08:00"
+A6_REGISTRATION_MANIFEST_AT = "2026-08-13T18:55:01+08:00"
 A6_REGISTRATION_MANIFEST_STATUS = (
-    "A6_CPU_EXACT_PARTIAL_EVIDENCE_REGISTERED_"
+    "A6_CPU_EXACT_AND_GILLESPIE_PARTIAL_EVIDENCE_REGISTERED_"
     "A6_IN_PROGRESS_L3_NOT_ESTABLISHED_A7_NOT_RUN"
 )
 A6_PROTOCOL_ID = "ROUTE_A_V3_A6_CPU_EXACT_ABSORBING_DAG_V1"
@@ -70,6 +70,28 @@ A6_REPORT_RECORDED_AT = "2026-08-13T16:44:55+08:00"
 A6_FROZEN_BASE_COMMIT = "db297787b3cd9f74908a1ae726cb64b19a9161fb"
 A6_IMPLEMENTATION_COMMIT = "92ab710b3ddf570af305d94bdf68c36cff84aad2"
 A6_BINDING_COMMIT = "de33f0d6337692409d17b2ac75e056e148815e72"
+A6_GILLESPIE_PROTOCOL_ID = "ROUTE_A_V3_A6_CPU_LEGAL_CTMC_PARTIAL_V1"
+A6_GILLESPIE_CONFIG_PATH = "configs/route_a_v3_a6_cpu_legal_ctmc_partial_v1.json"
+A6_GILLESPIE_PRODUCER_PATH = "scripts/route_a_v3/run_a6_cpu_legal_ctmc_partial.py"
+A6_GILLESPIE_FOCUSED_TEST_PATH = "tests/route_a_v3/test_a6_cpu_legal_ctmc_partial.py"
+A6_GILLESPIE_STATIC_PRODUCER_LEAF_SHA256 = {
+    A6_GILLESPIE_CONFIG_PATH: "c262ced2f9b7b0b951785a2a4dbbbc074c1bbc77a75d3229d7c2e82a0296da3a",
+    A6_GILLESPIE_PRODUCER_PATH: "5a8f3454bd32bac60d5f574fde4bf364f738cd58086ea6ad6d523c27ea0ad4c4",
+    A6_GILLESPIE_FOCUSED_TEST_PATH: "152172840f7f93efaab742bf4332568944c5121db2584a53a639724a47ba9a72",
+}
+A6_GILLESPIE_REPORT_EVIDENCE_ID = "A6_CPU_LEGAL_CTMC_PARTIAL_V1"
+A6_GILLESPIE_REPORT_PATH = (
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A6/"
+    "A6_CPU_LEGAL_CTMC_PARTIAL_V1/A6_CPU_LEGAL_CTMC_PARTIAL_REPORT.json"
+)
+A6_GILLESPIE_REPORT_BYTES = 4716
+A6_GILLESPIE_REPORT_SHA256 = "2e3c264b8c9bd2ebc180704ed02528b22b4493db36f0525543d5efeba282192f"
+A6_GILLESPIE_REPORT_RECORDED_AT = "2026-08-13T18:53:08+08:00"
+A6_GILLESPIE_FROZEN_BASE_COMMIT = "a28bf3c67cf538a8754fde8505635b2ef2c3d68b"
+A6_GILLESPIE_INITIAL_IMPLEMENTATION_COMMIT = "b5d729a1c75eb756ecf4f06fb8d073f7db394e46"
+A6_GILLESPIE_INITIAL_BINDING_COMMIT = "edb261f2065eeab601c2464fc669426b6d329b8b"
+A6_GILLESPIE_IMPLEMENTATION_COMMIT = "adc1e85eca4a597f45e583154c0565e8ef748db1"
+A6_GILLESPIE_BINDING_COMMIT = "6dc3d38bd58ec6ee93de5971aef03138806a3586"
 DEC020_AUTHORITY_LEDGER_AT = "2026-08-13T12:15:00+08:00"
 DEC020_AUTHORITY_MANIFEST_AT = "2026-08-13T12:15:01+08:00"
 DEC020_AUTHORITY_MANIFEST_STATUS = (
@@ -184,7 +206,7 @@ DEC020_FROZEN_AUTHORITY_LEAF_SHA256 = {
 }
 DEC020_ACTIVE_AUTHORITY_LEAF_SHA256 = {
     **DEC020_FROZEN_AUTHORITY_LEAF_SHA256,
-    "docs/execution/route_a_v3_claim_evidence_matrix.yaml": "8c701a24b5a1f19c993037bcf4b30c3561f63f089344cb65e365aa0bd7c1bcb9",
+    "docs/execution/route_a_v3_claim_evidence_matrix.yaml": "214279390d09c2857735c9cfa041ce38c45a7542142d4b0941ad7c035a7ee81a",
 }
 DEC020_AUTHORITY_LEDGER_PATHS = (
     A1_INTERIM_PATH,
@@ -1670,6 +1692,9 @@ EXPECTED_REGISTRY_MANIFEST_PATH_ROLES = (
     (A6_PROTOCOL_CONFIG_PATH, "A6_CPU_EXACT_ABSORBING_DAG_BOUND_PROTOCOL"),
     (A6_PRODUCER_PATH, "A6_CPU_EXACT_ABSORBING_DAG_PRODUCER"),
     (A6_FOCUSED_TEST_PATH, "A6_CPU_EXACT_ABSORBING_DAG_FOCUSED_TEST"),
+    (A6_GILLESPIE_CONFIG_PATH, "A6_CPU_LEGAL_CTMC_PARTIAL_BOUND_PROTOCOL"),
+    (A6_GILLESPIE_PRODUCER_PATH, "A6_CPU_LEGAL_CTMC_PARTIAL_PRODUCER"),
+    (A6_GILLESPIE_FOCUSED_TEST_PATH, "A6_CPU_LEGAL_CTMC_PARTIAL_FOCUSED_TEST"),
     (INTEGRITY_GUARD_TEST_PATH, "A0_AUTHORITY_INTEGRITY_GUARD_TEST"),
     (VALIDATOR_PATH, "A0_STATIC_AND_SEMANTIC_VALIDATOR"),
 )
@@ -1766,6 +1791,7 @@ def required_bundle_paths() -> tuple[str, ...]:
         A1_INTERIM_PATH,
         A6_INTERIM_PATH,
         *A6_STATIC_PRODUCER_LEAF_SHA256,
+        *A6_GILLESPIE_STATIC_PRODUCER_LEAF_SHA256,
         GSE149487_PLUMAGE_PROTOCOL_PATH,
         GSE149487_PLUMAGE_ASSET_MANIFEST_PATH,
         GSE149487_PLUMAGE_HELPER_PATH,
@@ -2852,14 +2878,18 @@ def validate_registry_manifest(repo_root: Path) -> list[Issue]:
             REGISTRY_MANIFEST_PATH,
             "DEC020 V4 CONFIG/SCRIPT/FOCUSED_TEST leaves must be registered exactly once",
         )
-    expected_a6_paths = {A6_INTERIM_PATH, *A6_STATIC_PRODUCER_LEAF_SHA256}
+    expected_a6_paths = {
+        A6_INTERIM_PATH,
+        *A6_STATIC_PRODUCER_LEAF_SHA256,
+        *A6_GILLESPIE_STATIC_PRODUCER_LEAF_SHA256,
+    }
     observed_a6_paths = set(by_path) & expected_a6_paths
     if observed_a6_paths != expected_a6_paths:
         _issue(
             issues,
-            "A6_CPU_EXACT_STATIC_REGISTRATION",
+            "A6_CPU_PARTIAL_STATIC_REGISTRATION",
             REGISTRY_MANIFEST_PATH,
-            "A6 interim plus CONFIG/SCRIPT/FOCUSED_TEST leaves must be registered exactly once",
+            "A6 interim plus both registered CONFIG/SCRIPT/FOCUSED_TEST trios must appear exactly once",
         )
     try:
         goal_hash = sha256_bytes(_read_bytes(repo_root, GOAL_PATH))
@@ -10358,6 +10388,45 @@ def _expected_a6_cpu_exact_interim() -> dict[str, Any]:
                 "recorded_at": A6_REPORT_RECORDED_AT,
                 "registered_in_static_manifest": False,
             },
+            "additional_partial_evidence": {
+                "evidence_id": A6_GILLESPIE_REPORT_EVIDENCE_ID,
+                "producer_commits": {
+                    "frozen_base_commit": A6_GILLESPIE_FROZEN_BASE_COMMIT,
+                    "initial_implementation_commit": (
+                        A6_GILLESPIE_INITIAL_IMPLEMENTATION_COMMIT
+                    ),
+                    "initial_binding_commit": A6_GILLESPIE_INITIAL_BINDING_COMMIT,
+                    "implementation_commit": A6_GILLESPIE_IMPLEMENTATION_COMMIT,
+                    "binding_commit": A6_GILLESPIE_BINDING_COMMIT,
+                },
+                "static_leaves": {
+                    "protocol": {
+                        "path": A6_GILLESPIE_CONFIG_PATH,
+                        "sha256": A6_GILLESPIE_STATIC_PRODUCER_LEAF_SHA256[
+                            A6_GILLESPIE_CONFIG_PATH
+                        ],
+                    },
+                    "producer": {
+                        "path": A6_GILLESPIE_PRODUCER_PATH,
+                        "sha256": A6_GILLESPIE_STATIC_PRODUCER_LEAF_SHA256[
+                            A6_GILLESPIE_PRODUCER_PATH
+                        ],
+                    },
+                    "focused_test": {
+                        "path": A6_GILLESPIE_FOCUSED_TEST_PATH,
+                        "sha256": A6_GILLESPIE_STATIC_PRODUCER_LEAF_SHA256[
+                            A6_GILLESPIE_FOCUSED_TEST_PATH
+                        ],
+                    },
+                },
+                "dynamic_report": {
+                    "path": A6_GILLESPIE_REPORT_PATH,
+                    "bytes": A6_GILLESPIE_REPORT_BYTES,
+                    "sha256": A6_GILLESPIE_REPORT_SHA256,
+                    "recorded_at": A6_GILLESPIE_REPORT_RECORDED_AT,
+                    "registered_in_static_manifest": False,
+                },
+            },
         },
         "run_state": {
             "protocol_id": A6_PROTOCOL_ID,
@@ -10371,6 +10440,19 @@ def _expected_a6_cpu_exact_interim() -> dict[str, Any]:
                 "EVENT_LOG.jsonl",
             ],
             "runtime_auxiliary_output_hashes_registered": False,
+            "additional_partial_run": {
+                "protocol_id": A6_GILLESPIE_PROTOCOL_ID,
+                "run_scope": "SYNTHETIC_NONLEARNED_CPU_GILLESPIE_BASE_RECOVERY",
+                "run_status": "PASS",
+                "public_aggregate_only": True,
+                "runtime_output_count": 3,
+                "runtime_output_names": [
+                    "A6_CPU_LEGAL_CTMC_PARTIAL_REPORT.json",
+                    "RUN_MANIFEST.json",
+                    "EVENT_LOG.jsonl",
+                ],
+                "runtime_auxiliary_output_hashes_registered": False,
+            },
         },
         "phase_state": {
             "evidence_status": "IN_PROGRESS",
@@ -10382,7 +10464,14 @@ def _expected_a6_cpu_exact_interim() -> dict[str, Any]:
                 "result": "DEVELOPMENT_CPU_EXACT_FIXTURE_PASS",
                 "scope": "SYNTHETIC_TIME_HOMOGENEOUS_CPU_EXACT",
             },
-            "FLOW_BASE_LEGAL_CTMC": {"evidence_status": "NOT_RUN"},
+            "FLOW_BASE_LEGAL_CTMC": {
+                "evidence_status": "IN_PROGRESS",
+                "result": (
+                    "DEVELOPMENT_CPU_NONLEARNED_GILLESPIE_REPLAY_PARTIAL_PASS"
+                ),
+                "scope": "SYNTHETIC_NONLEARNED_CPU_GILLESPIE_BASE_RECOVERY",
+                "formal_task_pass_asserted": False,
+            },
         },
         "claim_state": {
             "claim_id": "L3_LEGAL_POTENTIAL_CONSISTENT_XEDITFLOW",
@@ -10393,6 +10482,7 @@ def _expected_a6_cpu_exact_interim() -> dict[str, Any]:
             "clock_semantics": "CONTINUOUS_ALGORITHMIC_TIME",
             "rate_time_dependence": "NONE",
             "terminal_tilt_time_dependence": "NONE",
+            "holding_time_law": "EXPONENTIAL_WITH_CURRENT_TOTAL_EXIT_RATE",
             "general_time_inhomogeneous_exactness": "NOT_RUN",
             "dp_time_key_rule": (
                 "DP_KEYS_MAY_QUOTIENT_ALGORITHMIC_TIME_ONLY_BECAUSE_"
@@ -10406,11 +10496,45 @@ def _expected_a6_cpu_exact_interim() -> dict[str, Any]:
             "path_product_relative_error": 2.2266202935521747e-16,
             "true_per_rate_relative_error": 0.0,
         },
+        "flow_base_partial_denominator": {
+            "denominator_type": "FROZEN_SYNTHETIC_GILLESPIE_TRAJECTORIES",
+            "kernel_case_id": "L2_B2",
+            "trajectory_count": 20000,
+            "replay_trajectory_count": 256,
+            "random_seed": 2026081301,
+        },
+        "flow_base_partial_aggregate_metrics": {
+            "terminal_distribution_tv": 0.011045317469385082,
+            "initial_holding_time_mean_relative_error": 0.0017202797017030437,
+            "replay_mismatch_count": 0,
+            "legality_violation_count": 0,
+            "source_reconstruction_violation_count": 0,
+            "budget_violation_count": 0,
+            "reedit_or_revert_violation_count": 0,
+            "algorithmic_time_monotonicity_violation_count": 0,
+            "alias_aggregation_violation_count": 0,
+            "numerical_failure_count": 0,
+        },
+        "flow_base_partial_compute_ledger": {
+            "device": "CPU",
+            "learned_parameter_count": 0,
+            "parameter_update_count": 0,
+            "trajectory_count": 20000,
+            "total_jump_count": 38089,
+            "wall_clock_seconds": 24.46186525002122,
+        },
+        "flow_base_partial_terminal_cause_counts": {
+            "BUDGET_EXHAUSTED": 14473,
+            "EXPLICIT_STOP": 5527,
+            "NO_LEGAL_ACTION": 0,
+            "NUMERICAL_FAILURE": 0,
+        },
         "required_evidence_coverage": {
             "exact_guidance_toy_graph": "PASS",
-            "flow_base_legal_ctmc": "NOT_RUN",
+            "flow_base_legal_ctmc": "IN_PROGRESS",
             "general_time_inhomogeneous_exactness": "NOT_RUN",
             "learned_potential_approximation_error": "NOT_RUN",
+            "ordinary_data_evidence": "NOT_RUN",
             "l3_evidence_status": "IN_PROGRESS",
         },
         "registry_boundary": {
@@ -10426,6 +10550,7 @@ def _expected_a6_cpu_exact_interim() -> dict[str, Any]:
         },
         "boundaries": {
             "a6_pass_asserted": False,
+            "formal_flow_base_task_pass_asserted": False,
             "l3_claim_established": False,
             "a7_evidence_status": "NOT_RUN",
             "a7_unlock": False,
@@ -10445,7 +10570,7 @@ def validate_a6_cpu_exact_registration(
     repo_root: Path,
     registries: Mapping[str, Mapping[str, Any]],
 ) -> list[Issue]:
-    """Validate the exact synthetic A6 partial-evidence registration."""
+    """Validate the accumulated exact and Gillespie A6 partial evidence."""
 
     issues: list[Issue] = []
     try:
@@ -10469,7 +10594,11 @@ def validate_a6_cpu_exact_registration(
         "A6_INTERIM_SEMANTICS",
     )
 
-    for relative, expected_sha256 in A6_STATIC_PRODUCER_LEAF_SHA256.items():
+    registered_static_leaves = {
+        **A6_STATIC_PRODUCER_LEAF_SHA256,
+        **A6_GILLESPIE_STATIC_PRODUCER_LEAF_SHA256,
+    }
+    for relative, expected_sha256 in registered_static_leaves.items():
         try:
             actual_sha256 = sha256_bytes(_read_bytes(repo_root, relative))
         except (FileNotFoundError, ValueError) as exc:
@@ -10484,7 +10613,7 @@ def validate_a6_cpu_exact_registration(
             )
 
     denominator = _expected_a6_cpu_exact_interim()["denominator"]
-    expected_evidence_cell = {
+    expected_exact_evidence_cell = {
         "evidence_id": A6_REPORT_EVIDENCE_ID,
         "artifact_path": A6_REPORT_PATH,
         "artifact_hash": A6_REPORT_SHA256,
@@ -10503,6 +10632,37 @@ def validate_a6_cpu_exact_registration(
             "implementation_commit": A6_IMPLEMENTATION_COMMIT,
             "binding_commit": A6_BINDING_COMMIT,
         },
+        "establishes_a6_phase_pass": False,
+        "establishes_l3_claim": False,
+        "unlocks_a7": False,
+    }
+    expected_gillespie_evidence_cell = {
+        "evidence_id": A6_GILLESPIE_REPORT_EVIDENCE_ID,
+        "artifact_path": A6_GILLESPIE_REPORT_PATH,
+        "artifact_hash": A6_GILLESPIE_REPORT_SHA256,
+        "artifact_bytes": A6_GILLESPIE_REPORT_BYTES,
+        "recorded_at": A6_GILLESPIE_REPORT_RECORDED_AT,
+        "analysis_intent": (
+            "PROSPECTIVE_DEVELOPMENT_CPU_NONLEARNED_GILLESPIE_REPLAY_"
+            "FOR_PARTIAL_A6_EVIDENCE"
+        ),
+        "denominator": {
+            "denominator_type": "FROZEN_SYNTHETIC_GILLESPIE_TRAJECTORIES",
+            "kernel_case_id": "L2_B2",
+            "trajectory_count": 20000,
+            "replay_trajectory_count": 256,
+            "random_seed": 2026081301,
+        },
+        "evidence_status": "PASS",
+        "task_id": "FLOW_BASE_LEGAL_CTMC",
+        "result": "DEVELOPMENT_CPU_NONLEARNED_GILLESPIE_REPLAY_PARTIAL_PASS",
+        "scope": "SYNTHETIC_NONLEARNED_CPU_GILLESPIE_BASE_RECOVERY",
+        "producer_lineage": {
+            "frozen_base_commit": A6_GILLESPIE_FROZEN_BASE_COMMIT,
+            "implementation_commit": A6_GILLESPIE_IMPLEMENTATION_COMMIT,
+            "binding_commit": A6_GILLESPIE_BINDING_COMMIT,
+        },
+        "establishes_formal_task_pass": False,
         "establishes_a6_phase_pass": False,
         "establishes_l3_claim": False,
         "unlocks_a7": False,
@@ -10529,7 +10689,10 @@ def validate_a6_cpu_exact_registration(
                 "FLOW_BASE_LEGAL_CTMC",
                 "EXACT_GUIDANCE_TOY_GRAPH",
             ],
-            "evidence_cells": [expected_evidence_cell],
+            "evidence_cells": [
+                expected_exact_evidence_cell,
+                expected_gillespie_evidence_cell,
+            ],
         }.items():
             _expect(
                 l3_claim,

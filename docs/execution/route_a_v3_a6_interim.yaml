@@ -14,7 +14,7 @@ authority:
   task_registry_path: docs/execution/route_a_v3_task_registry.yaml
   task_registry_sha256: bf3066a7534041374685e9ebe9ac8c840e53ceec1acbb076a72a758d397c63f2
   claim_evidence_matrix_path: docs/execution/route_a_v3_claim_evidence_matrix.yaml
-  claim_evidence_matrix_sha256: 8c701a24b5a1f19c993037bcf4b30c3561f63f089344cb65e365aa0bd7c1bcb9
+  claim_evidence_matrix_sha256: 214279390d09c2857735c9cfa041ce38c45a7542142d4b0941ad7c035a7ee81a
   branch: routea-v3-a1-20260810
   worktree: /home/cunyuliu/mrna_editflow_goal/worktrees/routea_v3_a1_20260810
 
@@ -40,6 +40,30 @@ artifact_lineage:
     sha256: e16e2536eb68b219644d64e40859c8e2270123c227994c0fa37e8b7084992e83
     recorded_at: "2026-08-13T16:44:55+08:00"
     registered_in_static_manifest: false
+  additional_partial_evidence:
+    evidence_id: A6_CPU_LEGAL_CTMC_PARTIAL_V1
+    producer_commits:
+      frozen_base_commit: a28bf3c67cf538a8754fde8505635b2ef2c3d68b
+      initial_implementation_commit: b5d729a1c75eb756ecf4f06fb8d073f7db394e46
+      initial_binding_commit: edb261f2065eeab601c2464fc669426b6d329b8b
+      implementation_commit: adc1e85eca4a597f45e583154c0565e8ef748db1
+      binding_commit: 6dc3d38bd58ec6ee93de5971aef03138806a3586
+    static_leaves:
+      protocol:
+        path: configs/route_a_v3_a6_cpu_legal_ctmc_partial_v1.json
+        sha256: c262ced2f9b7b0b951785a2a4dbbbc074c1bbc77a75d3229d7c2e82a0296da3a
+      producer:
+        path: scripts/route_a_v3/run_a6_cpu_legal_ctmc_partial.py
+        sha256: 5a8f3454bd32bac60d5f574fde4bf364f738cd58086ea6ad6d523c27ea0ad4c4
+      focused_test:
+        path: tests/route_a_v3/test_a6_cpu_legal_ctmc_partial.py
+        sha256: 152172840f7f93efaab742bf4332568944c5121db2584a53a639724a47ba9a72
+    dynamic_report:
+      path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A6/A6_CPU_LEGAL_CTMC_PARTIAL_V1/A6_CPU_LEGAL_CTMC_PARTIAL_REPORT.json
+      bytes: 4716
+      sha256: 2e3c264b8c9bd2ebc180704ed02528b22b4493db36f0525543d5efeba282192f
+      recorded_at: "2026-08-13T18:53:08+08:00"
+      registered_in_static_manifest: false
 
 run_state:
   protocol_id: ROUTE_A_V3_A6_CPU_EXACT_ABSORBING_DAG_V1
@@ -52,6 +76,17 @@ run_state:
     - RUN_MANIFEST.json
     - EVENT_LOG.jsonl
   runtime_auxiliary_output_hashes_registered: false
+  additional_partial_run:
+    protocol_id: ROUTE_A_V3_A6_CPU_LEGAL_CTMC_PARTIAL_V1
+    run_scope: SYNTHETIC_NONLEARNED_CPU_GILLESPIE_BASE_RECOVERY
+    run_status: PASS
+    public_aggregate_only: true
+    runtime_output_count: 3
+    runtime_output_names:
+      - A6_CPU_LEGAL_CTMC_PARTIAL_REPORT.json
+      - RUN_MANIFEST.json
+      - EVENT_LOG.jsonl
+    runtime_auxiliary_output_hashes_registered: false
 
 phase_state:
   evidence_status: IN_PROGRESS
@@ -63,7 +98,10 @@ task_states:
     result: DEVELOPMENT_CPU_EXACT_FIXTURE_PASS
     scope: SYNTHETIC_TIME_HOMOGENEOUS_CPU_EXACT
   FLOW_BASE_LEGAL_CTMC:
-    evidence_status: NOT_RUN
+    evidence_status: IN_PROGRESS
+    result: DEVELOPMENT_CPU_NONLEARNED_GILLESPIE_REPLAY_PARTIAL_PASS
+    scope: SYNTHETIC_NONLEARNED_CPU_GILLESPIE_BASE_RECOVERY
+    formal_task_pass_asserted: false
 
 claim_state:
   claim_id: L3_LEGAL_POTENTIAL_CONSISTENT_XEDITFLOW
@@ -74,6 +112,7 @@ time_scope:
   clock_semantics: CONTINUOUS_ALGORITHMIC_TIME
   rate_time_dependence: NONE
   terminal_tilt_time_dependence: NONE
+  holding_time_law: EXPONENTIAL_WITH_CURRENT_TOTAL_EXIT_RATE
   general_time_inhomogeneous_exactness: NOT_RUN
   dp_time_key_rule: DP_KEYS_MAY_QUOTIENT_ALGORITHMIC_TIME_ONLY_BECAUSE_RATES_AND_TERMINAL_TILT_ARE_TIME_INVARIANT
 
@@ -90,11 +129,45 @@ aggregate_maximum_metrics:
   path_product_relative_error: 2.2266202935521747e-16
   true_per_rate_relative_error: 0.0
 
+flow_base_partial_denominator:
+  denominator_type: FROZEN_SYNTHETIC_GILLESPIE_TRAJECTORIES
+  kernel_case_id: L2_B2
+  trajectory_count: 20000
+  replay_trajectory_count: 256
+  random_seed: 2026081301
+
+flow_base_partial_aggregate_metrics:
+  terminal_distribution_tv: 0.011045317469385082
+  initial_holding_time_mean_relative_error: 0.0017202797017030437
+  replay_mismatch_count: 0
+  legality_violation_count: 0
+  source_reconstruction_violation_count: 0
+  budget_violation_count: 0
+  reedit_or_revert_violation_count: 0
+  algorithmic_time_monotonicity_violation_count: 0
+  alias_aggregation_violation_count: 0
+  numerical_failure_count: 0
+
+flow_base_partial_compute_ledger:
+  device: CPU
+  learned_parameter_count: 0
+  parameter_update_count: 0
+  trajectory_count: 20000
+  total_jump_count: 38089
+  wall_clock_seconds: 24.46186525002122
+
+flow_base_partial_terminal_cause_counts:
+  BUDGET_EXHAUSTED: 14473
+  EXPLICIT_STOP: 5527
+  NO_LEGAL_ACTION: 0
+  NUMERICAL_FAILURE: 0
+
 required_evidence_coverage:
   exact_guidance_toy_graph: PASS
-  flow_base_legal_ctmc: NOT_RUN
+  flow_base_legal_ctmc: IN_PROGRESS
   general_time_inhomogeneous_exactness: NOT_RUN
   learned_potential_approximation_error: NOT_RUN
+  ordinary_data_evidence: NOT_RUN
   l3_evidence_status: IN_PROGRESS
 
 registry_boundary:
@@ -110,6 +183,7 @@ registry_boundary:
 
 boundaries:
   a6_pass_asserted: false
+  formal_flow_base_task_pass_asserted: false
   l3_claim_established: false
   a7_evidence_status: NOT_RUN
   a7_unlock: false
@@ -120,5 +194,5 @@ boundaries:
   private_payload_access_allowed: false
   sealed_contact_allowed: false
 
-generated_at: "2026-08-13T16:45:00+08:00"
-updated_at: "2026-08-13T16:45:00+08:00"
+generated_at: "2026-08-13T18:55:00+08:00"
+updated_at: "2026-08-13T18:55:00+08:00"

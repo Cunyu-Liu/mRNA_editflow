@@ -3851,7 +3851,7 @@ def test_registry_manifest_cannot_predate_the_a1_interim_it_hashes(
     assert "REGISTRY_MANIFEST_TIME" in codes
 
 
-def test_a6_cpu_exact_partial_registration_is_closed(validator, repo_root):
+def test_a6_cpu_partial_registration_is_closed(validator, repo_root):
     _, _, registries = validator.load_bundle_documents(repo_root)
     assert validator.validate_a6_cpu_exact_registration(repo_root, registries) == []
 
@@ -3868,7 +3868,10 @@ def test_a6_cpu_exact_partial_registration_is_closed(validator, repo_root):
         "scope": "SYNTHETIC_TIME_HOMOGENEOUS_CPU_EXACT",
     }
     assert interim["task_states"]["FLOW_BASE_LEGAL_CTMC"] == {
-        "evidence_status": "NOT_RUN"
+        "evidence_status": "IN_PROGRESS",
+        "result": "DEVELOPMENT_CPU_NONLEARNED_GILLESPIE_REPLAY_PARTIAL_PASS",
+        "scope": "SYNTHETIC_NONLEARNED_CPU_GILLESPIE_BASE_RECOVERY",
+        "formal_task_pass_asserted": False,
     }
     assert interim["claim_state"] == {
         "claim_id": "L3_LEGAL_POTENTIAL_CONSISTENT_XEDITFLOW",
@@ -3877,6 +3880,7 @@ def test_a6_cpu_exact_partial_registration_is_closed(validator, repo_root):
     }
     assert interim["boundaries"] == {
         "a6_pass_asserted": False,
+        "formal_flow_base_task_pass_asserted": False,
         "l3_claim_established": False,
         "a7_evidence_status": "NOT_RUN",
         "a7_unlock": False,
@@ -3893,8 +3897,10 @@ def test_a6_cpu_exact_partial_registration_is_closed(validator, repo_root):
     assert {
         validator.A6_INTERIM_PATH,
         *validator.A6_STATIC_PRODUCER_LEAF_SHA256,
+        *validator.A6_GILLESPIE_STATIC_PRODUCER_LEAF_SHA256,
     } <= manifest_paths
     assert validator.A6_REPORT_PATH not in manifest_paths
+    assert validator.A6_GILLESPIE_REPORT_PATH not in manifest_paths
     assert not any(
         path.endswith("/RUN_MANIFEST.json") or path.endswith("/EVENT_LOG.jsonl")
         for path in manifest_paths
@@ -3915,6 +3921,7 @@ def test_a6_cpu_exact_partial_registration_is_closed(validator, repo_root):
     ("field_path", "promoted_value"),
     [
         (("record_status",), "PASS"),
+        (("task_states", "FLOW_BASE_LEGAL_CTMC", "formal_task_pass_asserted"), True),
         (("claim_state", "claim_status"), "ESTABLISHED"),
         (("boundaries", "a7_unlock"), True),
         (("boundaries", "training_allowed"), True),
@@ -3961,9 +3968,10 @@ def test_a6_claim_cell_cannot_establish_l3(validator, repo_root):
     )
     l3_claim["evidence_status"] = "PASS"
     l3_claim["claim_status"] = "ESTABLISHED"
-    l3_claim["evidence_cells"][0]["establishes_a6_phase_pass"] = True
-    l3_claim["evidence_cells"][0]["establishes_l3_claim"] = True
-    l3_claim["evidence_cells"][0]["unlocks_a7"] = True
+    l3_claim["evidence_cells"][1]["establishes_formal_task_pass"] = True
+    l3_claim["evidence_cells"][1]["establishes_a6_phase_pass"] = True
+    l3_claim["evidence_cells"][1]["establishes_l3_claim"] = True
+    l3_claim["evidence_cells"][1]["unlocks_a7"] = True
 
     codes = _codes(
         validator.validate_a6_cpu_exact_registration(repo_root, mutated)
@@ -3971,14 +3979,14 @@ def test_a6_claim_cell_cannot_establish_l3(validator, repo_root):
     assert "A6_CLAIM_CELL" in codes
 
 
-def test_a6_exact3_synchronized_manifest_rehash_is_rejected(
+def test_a6_gillespie_exact3_synchronized_manifest_rehash_is_rejected(
     validator,
     repo_root,
     tmp_path,
 ):
     case_root = tmp_path / "a6_exact3_synchronized_rehash"
     manifest = _copy_manifest_bundle(validator, repo_root, case_root)
-    relative = validator.A6_PRODUCER_PATH
+    relative = validator.A6_GILLESPIE_PRODUCER_PATH
     producer_path = case_root / relative
     producer_path.write_bytes(producer_path.read_bytes() + b"\n# synchronized drift\n")
     next(row for row in manifest["files"] if row["path"] == relative)[
@@ -4002,7 +4010,7 @@ def test_a6_registration_preserves_dec020_history_and_rebinds_only_current_claim
     )
     assert (
         validator.DEC020_ACTIVE_AUTHORITY_LEAF_SHA256[claim_path]
-        == "8c701a24b5a1f19c993037bcf4b30c3561f63f089344cb65e365aa0bd7c1bcb9"
+        == "214279390d09c2857735c9cfa041ce38c45a7542142d4b0941ad7c035a7ee81a"
     )
     assert set(validator.DEC020_FROZEN_AUTHORITY_LEAF_SHA256) == set(
         validator.DEC020_ACTIVE_AUTHORITY_LEAF_SHA256

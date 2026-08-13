@@ -225,6 +225,30 @@ claims:
         establishes_a6_phase_pass: false
         establishes_l3_claim: false
         unlocks_a7: false
+      - evidence_id: A6_CPU_LEGAL_CTMC_PARTIAL_V1
+        artifact_path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A6/A6_CPU_LEGAL_CTMC_PARTIAL_V1/A6_CPU_LEGAL_CTMC_PARTIAL_REPORT.json
+        artifact_hash: 2e3c264b8c9bd2ebc180704ed02528b22b4493db36f0525543d5efeba282192f
+        artifact_bytes: 4716
+        recorded_at: "2026-08-13T18:53:08+08:00"
+        analysis_intent: PROSPECTIVE_DEVELOPMENT_CPU_NONLEARNED_GILLESPIE_REPLAY_FOR_PARTIAL_A6_EVIDENCE
+        denominator:
+          denominator_type: FROZEN_SYNTHETIC_GILLESPIE_TRAJECTORIES
+          kernel_case_id: L2_B2
+          trajectory_count: 20000
+          replay_trajectory_count: 256
+          random_seed: 2026081301
+        evidence_status: PASS
+        task_id: FLOW_BASE_LEGAL_CTMC
+        result: DEVELOPMENT_CPU_NONLEARNED_GILLESPIE_REPLAY_PARTIAL_PASS
+        scope: SYNTHETIC_NONLEARNED_CPU_GILLESPIE_BASE_RECOVERY
+        producer_lineage:
+          frozen_base_commit: a28bf3c67cf538a8754fde8505635b2ef2c3d68b
+          implementation_commit: adc1e85eca4a597f45e583154c0565e8ef748db1
+          binding_commit: 6dc3d38bd58ec6ee93de5971aef03138806a3586
+        establishes_formal_task_pass: false
+        establishes_a6_phase_pass: false
+        establishes_l3_claim: false
+        unlocks_a7: false
     allowed_wording_when_not_established: EDIT_FLOWS_DERIVED_DEVELOPMENT_IMPLEMENTATION
     prohibited_wording_when_not_established:
       - EXACT_XEDITFLOW_ESTABLISHED

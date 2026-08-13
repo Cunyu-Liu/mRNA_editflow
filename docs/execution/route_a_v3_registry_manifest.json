@@ -49,7 +49,7 @@
     {
       "path": "docs/execution/route_a_v3_claim_evidence_matrix.yaml",
       "role": "CLAIM_EVIDENCE_MATRIX",
-      "sha256": "8c701a24b5a1f19c993037bcf4b30c3561f63f089344cb65e365aa0bd7c1bcb9"
+      "sha256": "214279390d09c2857735c9cfa041ce38c45a7542142d4b0941ad7c035a7ee81a"
     },
     {
       "path": "docs/execution/route_a_v3_data_role_registry.yaml",
@@ -64,12 +64,12 @@
     {
       "path": "docs/execution/route_a_v3_a1_interim.yaml",
       "role": "A1_ACTIVE_INTERIM_RECORD",
-      "sha256": "ab24ed95249773d18acd019b74f3676c79caa4e4279d44f1660027658f818042"
+      "sha256": "fc3633711322be554b133c72ebed962e4d64552f0ed5652007636511ec3ea8aa"
     },
     {
       "path": "docs/execution/route_a_v3_a6_interim.yaml",
       "role": "A6_ACTIVE_INTERIM_RECORD",
-      "sha256": "032aafef8b86d95f9408b46c619c3225313270e8770e858f8a82b16ab35b3cbb"
+      "sha256": "64a5a5a03f0931b59a72ad5536c0e0c132332d1235e697bc4fff56f910d573d8"
     },
     {
       "path": "docs/execution/route_a_v3_split_registry.yaml",
@@ -442,20 +442,35 @@
       "sha256": "7e8253be856645f276689dc032f9581b9ea172faea929dff60ba07995c709e24"
     },
     {
+      "path": "configs/route_a_v3_a6_cpu_legal_ctmc_partial_v1.json",
+      "role": "A6_CPU_LEGAL_CTMC_PARTIAL_BOUND_PROTOCOL",
+      "sha256": "c262ced2f9b7b0b951785a2a4dbbbc074c1bbc77a75d3229d7c2e82a0296da3a"
+    },
+    {
+      "path": "scripts/route_a_v3/run_a6_cpu_legal_ctmc_partial.py",
+      "role": "A6_CPU_LEGAL_CTMC_PARTIAL_PRODUCER",
+      "sha256": "5a8f3454bd32bac60d5f574fde4bf364f738cd58086ea6ad6d523c27ea0ad4c4"
+    },
+    {
+      "path": "tests/route_a_v3/test_a6_cpu_legal_ctmc_partial.py",
+      "role": "A6_CPU_LEGAL_CTMC_PARTIAL_FOCUSED_TEST",
+      "sha256": "152172840f7f93efaab742bf4332568944c5121db2584a53a639724a47ba9a72"
+    },
+    {
       "path": "tests/route_a_v3/test_a0_integrity_guards.py",
       "role": "A0_AUTHORITY_INTEGRITY_GUARD_TEST",
-      "sha256": "de09dffb093f2aba9c03d031078a9e428c4fbe833b0a214b9ac1fd9169ce0079"
+      "sha256": "c009fd6af59a82aa1b71595ad08dc7ca472c42be114668a144429080de3e4187"
     },
     {
       "path": "scripts/route_a_v3/validate_a0_bundle.py",
       "role": "A0_STATIC_AND_SEMANTIC_VALIDATOR",
-      "sha256": "8eb526a9cbd7224a833ac31fc9f59f5452c29f5f86a660fc615e732304b6842b"
+      "sha256": "df2bf8a57fd0c47c755d6b930fd8703a125893442138e2a6abb877561a32ceb3"
     }
   ],
   "initial_generated_at": "2026-08-10T10:10:05+08:00",
-  "generated_at": "2026-08-13T16:45:01+08:00",
-  "updated_at": "2026-08-13T16:45:01+08:00",
-  "manifest_status": "A6_CPU_EXACT_PARTIAL_EVIDENCE_REGISTERED_A6_IN_PROGRESS_L3_NOT_ESTABLISHED_A7_NOT_RUN",
+  "generated_at": "2026-08-13T18:55:01+08:00",
+  "updated_at": "2026-08-13T18:55:01+08:00",
+  "manifest_status": "A6_CPU_EXACT_AND_GILLESPIE_PARTIAL_EVIDENCE_REGISTERED_A6_IN_PROGRESS_L3_NOT_ESTABLISHED_A7_NOT_RUN",
   "schema_version": "1.0.0",
   "sealed_contact": false,
   "version": "3.0.0"
