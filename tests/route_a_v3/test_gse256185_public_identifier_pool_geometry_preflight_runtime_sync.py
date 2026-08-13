@@ -29,11 +29,6 @@ def candidate_config() -> dict:
 
 def bind_config(config: dict) -> dict:
     bound = copy.deepcopy(config)
-    ledger = bound["repository_authority"]["predecessor_ledger"]
-    ledger["status"] = "BOUND"
-    ledger["commit"] = "a" * 40
-    for index, item in enumerate(ledger["frozen_blobs"], start=1):
-        item["sha256"] = f"{index:x}" * 64
     binding = bound["implementation_binding"]
     binding["status"] = "BOUND"
     binding["implementation_commit"] = "b" * 40
@@ -101,7 +96,7 @@ def write_runtime(run_root: Path, payloads: dict[str, bytes]) -> None:
         (run_root / name).write_bytes(payloads[name])
 
 
-def test_disk_i_has_bound_l_and_unknown_implementation_then_fails_closed(
+def test_disk_i2_or_b2_normalizes_only_four_binding_scalars(
     tmp_path: Path,
 ) -> None:
     config = candidate_config()
@@ -115,9 +110,29 @@ def test_disk_i_has_bound_l_and_unknown_implementation_then_fails_closed(
         "7c7f6d47adc8914d1a0b3d92e59167c1743e6dc4125eec0d73d74e8f0f2a0cdf",
         "89702695c37b759a1c78e5b9d73653b0f158861e41a0232c7b6b6b061259cfc2",
     ]
-    assert sync._binding_is_unknown(config["implementation_binding"])
-    with pytest.raises(sync.BindingError, match="implementation binding"):
+    i1 = config["repository_authority"]["predecessor_implementation_i1"]
+    assert i1["commit"] == sync.I1_COMMIT
+    assert i1["blob_sha256_by_path"] == sync.I1_BLOBS
+
+    if sync._binding_is_unknown(config["implementation_binding"]):
+        with pytest.raises(sync.BindingError, match="implementation binding"):
+            sync.validate_bound_config(config)
+    else:
         sync.validate_bound_config(config)
+    normalized = copy.deepcopy(config)
+    for key in (
+        "status",
+        "implementation_commit",
+        "implementation_script_sha256",
+        "implementation_test_sha256",
+    ):
+        normalized["implementation_binding"][key] = sync.UNKNOWN
+    sync.validate_static_config(normalized)
+    assert sync._binding_is_unknown(normalized["implementation_binding"])
+    restored = bind_config(normalized)
+    assert sync.runtime_science_report_truth_projection(restored) == (
+        sync.runtime_science_report_truth_projection(config)
+    )
 
     partial = copy.deepcopy(config)
     partial["implementation_binding"]["status"] = "BOUND"
@@ -137,7 +152,7 @@ def test_disk_i_has_bound_l_and_unknown_implementation_then_fails_closed(
             prepared_directory=prepared,
             recorded_at="2026-08-13T21:30:00+08:00",
             production=False,
-            config_override=config,
+            config_override=normalized,
             run_root_override=tmp_path / "also-never-opened",
         )
     assert not prepared.exists()
@@ -299,27 +314,47 @@ def test_publish_recovers_only_from_ordered_mutable_prefix(tmp_path: Path) -> No
         assert (run_root / name).read_bytes() == (prepared / name).read_bytes()
 
 
-def test_repository_audit_proves_exact_l_i_b_chain(
+def test_repository_audit_proves_exact_l_i1_i2_b2_chain(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     config = bind_config(candidate_config())
     ledger = config["repository_authority"]["predecessor_ledger"]
     binding = config["implementation_binding"]
-    l_commit, i_commit, head = "a" * 40, "b" * 40, "e" * 40
-    ledger["commit"] = l_commit
-    binding["implementation_commit"] = i_commit
+    l_commit = ledger["commit"]
+    frozen_i1 = config["repository_authority"]["predecessor_implementation_i1"]
+    i1_commit = frozen_i1["commit"]
+    i2_commit, head = "b" * 40, "e" * 40
+    binding["implementation_commit"] = i2_commit
     ledger_payloads = {
         path: f"ledger:{path}".encode() for path in sync.LEDGER_PATHS
     }
-    for item in ledger["frozen_blobs"]:
-        item["sha256"] = sync.sha256(ledger_payloads[item["path"]])
     script_payload = b"implementation script"
     test_payload = b"implementation test"
     binding["implementation_script_sha256"] = sync.sha256(script_payload)
     binding["implementation_test_sha256"] = sync.sha256(test_payload)
-    sync.validate_bound_config(config)
+    i2_config_payload = sync.json_bytes(sync.expected_unknown_i_config(config))
     config_payload = sync.json_bytes(config)
-    i_config_payload = sync.json_bytes(sync.expected_unknown_i_config(config))
+    i1_config = candidate_config()
+    i1_config_payload = sync.json_bytes(i1_config)
+    i1_script_payload = b"frozen I1 script"
+    i1_test_payload = b"frozen I1 test"
+    sync.validate_bound_config(config)
+
+    exact_identity_by_payload = {
+        **{
+            ledger_payloads[item["path"]]: item["sha256"]
+            for item in ledger["frozen_blobs"]
+        },
+        i1_config_payload: frozen_i1["blob_sha256_by_path"][sync.CONFIG_REPO_PATH],
+        i1_script_payload: frozen_i1["blob_sha256_by_path"][sync.SCRIPT_REPO_PATH],
+        i1_test_payload: frozen_i1["blob_sha256_by_path"][sync.TEST_REPO_PATH],
+    }
+    real_sha256 = sync.sha256
+
+    def fake_sha256(payload: bytes) -> str:
+        return exact_identity_by_payload.get(payload, real_sha256(payload))
+
+    git_overrides: dict[tuple[str, ...], bytes] = {}
 
     def fake_run_git(repo_root: Path, *args: str) -> bytes:
         assert repo_root == sync.PRODUCTION_REPO_ROOT
@@ -336,16 +371,20 @@ def test_repository_audit_proves_exact_l_i_b_chain(
                 f"refs/remotes/origin/{sync.BRANCH}",
             ): f"{head}\n".encode(),
             ("status", "--porcelain=v1", "--untracked-files=all"): b"",
-            ("rev-parse", f"{head}^"): f"{i_commit}\n".encode(),
-            ("rev-parse", f"{i_commit}^"): f"{l_commit}\n".encode(),
+            ("rev-parse", f"{head}^"): f"{i2_commit}\n".encode(),
+            ("rev-parse", f"{i2_commit}^"): f"{i1_commit}\n".encode(),
+            ("rev-parse", f"{i1_commit}^"): f"{l_commit}\n".encode(),
         }
+        mapping.update(git_overrides)
         return mapping[args]
 
     def fake_changed_paths(repo_root: Path, commit: str) -> list[str]:
         assert repo_root == sync.PRODUCTION_REPO_ROOT
         if commit == l_commit:
             return sorted(sync.LEDGER_PATHS)
-        if commit == i_commit:
+        if commit == i1_commit:
+            return sorted(frozen_i1["exact_changed_paths"])
+        if commit == i2_commit:
             return sorted(config["repository_authority"]["implementation_exact_changed_paths"])
         if commit == head:
             return [sync.CONFIG_REPO_PATH]
@@ -355,13 +394,19 @@ def test_repository_audit_proves_exact_l_i_b_chain(
         assert repo_root == sync.PRODUCTION_REPO_ROOT
         if path in ledger_payloads and commit in {l_commit, head}:
             return ledger_payloads[path]
-        if path == sync.CONFIG_REPO_PATH and commit == i_commit:
-            return i_config_payload
+        if path == sync.CONFIG_REPO_PATH and commit == i1_commit:
+            return i1_config_payload
+        if path == sync.SCRIPT_REPO_PATH and commit == i1_commit:
+            return i1_script_payload
+        if path == sync.TEST_REPO_PATH and commit == i1_commit:
+            return i1_test_payload
+        if path == sync.CONFIG_REPO_PATH and commit == i2_commit:
+            return i2_config_payload
         if path == sync.CONFIG_REPO_PATH and commit == head:
             return config_payload
-        if path == sync.SCRIPT_REPO_PATH and commit in {i_commit, head}:
+        if path == sync.SCRIPT_REPO_PATH and commit in {i2_commit, head}:
             return script_payload
-        if path == sync.TEST_REPO_PATH and commit in {i_commit, head}:
+        if path == sync.TEST_REPO_PATH and commit in {i2_commit, head}:
             return test_payload
         raise AssertionError((commit, path))
 
@@ -381,13 +426,38 @@ def test_repository_audit_proves_exact_l_i_b_chain(
     monkeypatch.setattr(sync, "_changed_paths", fake_changed_paths)
     monkeypatch.setattr(sync, "_git_blob", fake_git_blob)
     monkeypatch.setattr(sync, "_read_repo_file", fake_repo_file)
+    monkeypatch.setattr(sync, "sha256", fake_sha256)
     result = sync.audit_production_repository_authority(config, config_payload)
     assert result == {
-        "status": "PASS_EXACT_L_TO_I_TO_CONFIG_ONLY_B",
+        "status": "PASS_EXACT_L_TO_I1_TO_I2_TO_CONFIG_ONLY_B2",
         "ledger_l_commit": l_commit,
-        "implementation_i_commit": i_commit,
-        "binding_b_commit": head,
+        "frozen_i1_commit": i1_commit,
+        "implementation_i2_commit": i2_commit,
+        "binding_b2_commit": head,
         "upstream_head_commit": head,
         "origin_branch_head_commit": head,
         "worktree_and_index_clean": True,
     }
+
+    git_overrides[("rev-parse", f"{i2_commit}^")] = f"{'f' * 40}\n".encode()
+    with pytest.raises(sync.RuntimeSyncError, match="I2 parent/I1"):
+        sync.audit_production_repository_authority(config, config_payload)
+    git_overrides.clear()
+
+    def changed_path_drift(repo_root: Path, commit: str) -> list[str]:
+        paths = fake_changed_paths(repo_root, commit)
+        return paths + ["unexpected.txt"] if commit == i2_commit else paths
+
+    monkeypatch.setattr(sync, "_changed_paths", changed_path_drift)
+    with pytest.raises(sync.RuntimeSyncError, match="I2 changed paths"):
+        sync.audit_production_repository_authority(config, config_payload)
+    monkeypatch.setattr(sync, "_changed_paths", fake_changed_paths)
+
+    def frozen_i1_blob_drift(repo_root: Path, commit: str, path: str) -> bytes:
+        if commit == i1_commit and path == sync.SCRIPT_REPO_PATH:
+            return b"drift"
+        return fake_git_blob(repo_root, commit, path)
+
+    monkeypatch.setattr(sync, "_git_blob", frozen_i1_blob_drift)
+    with pytest.raises(sync.AuthorityError, match="frozen I1 blob drift"):
+        sync.audit_production_repository_authority(config, config_payload)
