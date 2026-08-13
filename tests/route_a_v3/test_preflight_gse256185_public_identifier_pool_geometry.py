@@ -218,12 +218,24 @@ def test_protocol_freezes_dec021_scope_two_stage_parent_and_exact3() -> None:
         "implementation_binding.authority_commit",
         "implementation_binding.authority_runtime_binding_commit",
     ]
-    assert binding["predecessor_implementation_i1"] == {
-        "commit": PREFLIGHT.PREFLIGHT_I1_COMMIT,
-        "expected_parent": PREFLIGHT.AUTHORITY_RUNTIME_BINDING_COMMIT,
-        "exact_changed_paths": list(PREFLIGHT.EXPECTED_EXACT3),
-        "blob_sha256_by_path": PREFLIGHT.PREFLIGHT_I1_BLOB_SHA256_BY_PATH,
-    }
+    assert binding["authority_runtime_lifecycle"]["i1"]["commit"] == (
+        PREFLIGHT.RUNTIME_I1_COMMIT
+    )
+    assert binding["authority_runtime_lifecycle"]["i2"]["commit"] == (
+        PREFLIGHT.RUNTIME_I2_COMMIT
+    )
+    assert binding["authority_runtime_lifecycle"]["b2"]["commit"] == (
+        PREFLIGHT.AUTHORITY_RUNTIME_BINDING_COMMIT
+    )
+    assert binding["predecessor_preflight_lifecycle"]["i1"]["commit"] == (
+        PREFLIGHT.PREFLIGHT_I1_COMMIT
+    )
+    assert binding["predecessor_preflight_lifecycle"]["i2"]["commit"] == (
+        PREFLIGHT.PREFLIGHT_I2_COMMIT
+    )
+    assert binding["predecessor_preflight_lifecycle"]["b2"]["commit"] == (
+        PREFLIGHT.PREFLIGHT_B2_COMMIT
+    )
     assert protocol["decision_authority"]["authorized_role"] == (
         "PUBLIC_IDENTIFIER_AND_POOL_GEOMETRY_PREFLIGHT_ONLY"
     )
@@ -278,24 +290,24 @@ def test_partial_authority_or_normal_binding_group_is_rejected() -> None:
         PREFLIGHT._validate_protocol(protocol)
 
 
-def test_default_binding_auditor_verifies_real_i1_i2_b2_lifecycle(
+def test_default_binding_auditor_verifies_full_repaired_chain_to_i3_b3(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     repo_root = tmp_path / "repo"
-    script_blob = b"preflight implementation at I2\n"
-    test_blob = b"focused test at I2\n"
+    script_blob = b"dynamic preflight implementation at I3\n"
+    test_blob = b"dynamic focused test at I3\n"
     protocol = _bound_protocol()
     binding = protocol["implementation_binding"]
     binding["implementation_script_sha256"] = hashlib.sha256(script_blob).hexdigest()
     binding["implementation_test_sha256"] = hashlib.sha256(test_blob).hexdigest()
     PREFLIGHT._validate_protocol(protocol)
 
-    i2_protocol = PREFLIGHT._normalise_binding(protocol)
-    i2_payload = (json.dumps(i2_protocol, indent=2) + "\n").encode("utf-8")
-    b2_payload = (json.dumps(protocol, indent=2) + "\n").encode("utf-8")
+    i3_protocol = PREFLIGHT._normalise_binding(protocol)
+    i3_payload = (json.dumps(i3_protocol, indent=2) + "\n").encode("utf-8")
+    b3_payload = (json.dumps(protocol, indent=2) + "\n").encode("utf-8")
     protocol_path = repo_root / PREFLIGHT.CONFIG_PATH
     protocol_path.parent.mkdir(parents=True, exist_ok=True)
-    protocol_path.write_bytes(b2_payload)
+    protocol_path.write_bytes(b3_payload)
     script_path = repo_root / PREFLIGHT.SCRIPT_PATH
     script_path.parent.mkdir(parents=True, exist_ok=True)
     script_path.write_bytes(script_blob)
@@ -303,63 +315,130 @@ def test_default_binding_auditor_verifies_real_i1_i2_b2_lifecycle(
     test_path.parent.mkdir(parents=True, exist_ok=True)
     test_path.write_bytes(test_blob)
 
-    authority_a = PREFLIGHT.AUTHORITY_COMMIT
-    authority_runtime_i = "9" * 40
-    authority_runtime_b = PREFLIGHT.AUTHORITY_RUNTIME_BINDING_COMMIT
-    preflight_i1 = PREFLIGHT.PREFLIGHT_I1_COMMIT
-    preflight_i2 = "2" * 40
-    preflight_b2 = "8" * 40
+    dynamic_i3 = binding["implementation_commit"]
+    dynamic_b3 = "8" * 40
+    parents = {
+        PREFLIGHT.AUTHORITY_COMMIT: PREFLIGHT.AUTHORITY_PARENT,
+        PREFLIGHT.RUNTIME_I1_COMMIT: PREFLIGHT.AUTHORITY_COMMIT,
+        PREFLIGHT.RUNTIME_I2_COMMIT: PREFLIGHT.RUNTIME_I1_COMMIT,
+        PREFLIGHT.AUTHORITY_RUNTIME_BINDING_COMMIT: PREFLIGHT.RUNTIME_I2_COMMIT,
+        PREFLIGHT.PREFLIGHT_I1_COMMIT: PREFLIGHT.AUTHORITY_RUNTIME_BINDING_COMMIT,
+        PREFLIGHT.PREFLIGHT_I2_COMMIT: PREFLIGHT.PREFLIGHT_I1_COMMIT,
+        PREFLIGHT.PREFLIGHT_B2_COMMIT: PREFLIGHT.PREFLIGHT_I2_COMMIT,
+        dynamic_i3: PREFLIGHT.PREFLIGHT_B2_COMMIT,
+        dynamic_b3: dynamic_i3,
+    }
+    changed = {
+        PREFLIGHT.AUTHORITY_COMMIT: PREFLIGHT.AUTHORITY_EXACT10,
+        PREFLIGHT.RUNTIME_I1_COMMIT: PREFLIGHT.RUNTIME_EXACT3,
+        PREFLIGHT.RUNTIME_I2_COMMIT: PREFLIGHT.RUNTIME_EXACT3,
+        PREFLIGHT.AUTHORITY_RUNTIME_BINDING_COMMIT: (
+            PREFLIGHT.RUNTIME_CONFIG_PATH,
+        ),
+        PREFLIGHT.PREFLIGHT_I1_COMMIT: PREFLIGHT.EXPECTED_EXACT3,
+        PREFLIGHT.PREFLIGHT_I2_COMMIT: PREFLIGHT.EXPECTED_EXACT3,
+        PREFLIGHT.PREFLIGHT_B2_COMMIT: (PREFLIGHT.CONFIG_PATH,),
+        dynamic_i3: PREFLIGHT.EXPECTED_EXACT3,
+        dynamic_b3: (PREFLIGHT.CONFIG_PATH,),
+    }
     git_text = {
-        ("rev-parse", "HEAD"): preflight_b2,
-        ("rev-parse", f"{preflight_b2}^"): preflight_i2,
-        ("rev-parse", f"{preflight_i2}^"): preflight_i1,
-        ("rev-parse", f"{preflight_i1}^"): authority_runtime_b,
-        ("rev-parse", f"{authority_runtime_b}^"): authority_runtime_i,
-        ("rev-parse", f"{authority_runtime_i}^"): authority_a,
-        (
-            "diff-tree",
-            "--no-commit-id",
-            "--name-only",
-            "-r",
-            preflight_i1,
-        ): "\n".join(PREFLIGHT.EXPECTED_EXACT3),
-        (
-            "diff-tree",
-            "--no-commit-id",
-            "--name-only",
-            "-r",
-            preflight_i2,
-        ): "\n".join(PREFLIGHT.EXPECTED_EXACT3),
-        (
-            "diff-tree",
-            "--no-commit-id",
-            "--name-only",
-            "-r",
-            preflight_b2,
-        ): PREFLIGHT.CONFIG_PATH,
-    }
-    i1_blobs = {
-        relative_path: f"frozen I1 blob for {relative_path}\n".encode("utf-8")
-        for relative_path in PREFLIGHT.EXPECTED_EXACT3
-    }
-    git_blobs = {
+        ("rev-parse", "HEAD"): dynamic_b3,
         **{
-            (preflight_i1, relative_path): payload
-            for relative_path, payload in i1_blobs.items()
+            ("rev-parse", f"{commit}^"): parent
+            for commit, parent in parents.items()
         },
-        (preflight_i2, PREFLIGHT.CONFIG_PATH): i2_payload,
-        (preflight_i2, PREFLIGHT.SCRIPT_PATH): script_blob,
-        (preflight_i2, PREFLIGHT.TEST_PATH): test_blob,
-        (preflight_b2, PREFLIGHT.CONFIG_PATH): b2_payload,
-    }
-    real_sha256_bytes = PREFLIGHT._sha256_bytes
-    i1_digest_overrides = {
-        payload: PREFLIGHT.PREFLIGHT_I1_BLOB_SHA256_BY_PATH[relative_path]
-        for relative_path, payload in i1_blobs.items()
+        **{
+            (
+                "diff-tree",
+                "--no-commit-id",
+                "--name-only",
+                "-r",
+                commit,
+            ): "\n".join(paths)
+            for commit, paths in changed.items()
+        },
     }
 
+    def binding_config(bound: bool, marker: str) -> bytes:
+        value = {
+            "marker": marker,
+            "implementation_binding": {
+                "status": PREFLIGHT.BOUND if bound else PREFLIGHT.UNKNOWN,
+                "implementation_commit": "3" * 40 if bound else PREFLIGHT.UNKNOWN,
+                "implementation_script_sha256": "4" * 64
+                if bound
+                else PREFLIGHT.UNKNOWN,
+                "implementation_test_sha256": "5" * 64
+                if bound
+                else PREFLIGHT.UNKNOWN,
+            },
+        }
+        return (json.dumps(value, sort_keys=True) + "\n").encode()
+
+    runtime_i2_config = binding_config(False, "runtime-i2-b2")
+    runtime_b2_config = binding_config(True, "runtime-i2-b2")
+    preflight_i2_config = binding_config(False, "preflight-i2-b2")
+    preflight_b2_config = binding_config(True, "preflight-i2-b2")
+    stage_specs = (
+        (PREFLIGHT.RUNTIME_I1_COMMIT, PREFLIGHT.RUNTIME_I1_BLOBS),
+        (PREFLIGHT.RUNTIME_I2_COMMIT, PREFLIGHT.RUNTIME_I2_BLOBS),
+        (
+            PREFLIGHT.AUTHORITY_RUNTIME_BINDING_COMMIT,
+            PREFLIGHT.RUNTIME_B2_BLOBS,
+        ),
+        (PREFLIGHT.PREFLIGHT_I1_COMMIT, PREFLIGHT.PREFLIGHT_I1_BLOBS),
+        (PREFLIGHT.PREFLIGHT_I2_COMMIT, PREFLIGHT.PREFLIGHT_I2_BLOBS),
+        (PREFLIGHT.PREFLIGHT_B2_COMMIT, PREFLIGHT.PREFLIGHT_B2_BLOBS),
+    )
+    frozen_payloads: dict[tuple[str, str], bytes] = {}
+    digest_overrides: dict[bytes, str] = {}
+    for commit, expected_blobs in stage_specs:
+        for relative_path, expected_digest in expected_blobs.items():
+            payload = f"{commit}:{relative_path}\n".encode()
+            frozen_payloads[(commit, relative_path)] = payload
+            digest_overrides[payload] = expected_digest
+    frozen_payloads[(PREFLIGHT.RUNTIME_I2_COMMIT, PREFLIGHT.RUNTIME_CONFIG_PATH)] = (
+        runtime_i2_config
+    )
+    frozen_payloads[
+        (
+            PREFLIGHT.AUTHORITY_RUNTIME_BINDING_COMMIT,
+            PREFLIGHT.RUNTIME_CONFIG_PATH,
+        )
+    ] = runtime_b2_config
+    frozen_payloads[(PREFLIGHT.PREFLIGHT_I2_COMMIT, PREFLIGHT.CONFIG_PATH)] = (
+        preflight_i2_config
+    )
+    frozen_payloads[(PREFLIGHT.PREFLIGHT_B2_COMMIT, PREFLIGHT.CONFIG_PATH)] = (
+        preflight_b2_config
+    )
+    for commit, expected_blobs in stage_specs:
+        for relative_path, expected_digest in expected_blobs.items():
+            digest_overrides[frozen_payloads[(commit, relative_path)]] = expected_digest
+
+    authority_payloads = {
+        relative_path: f"authority:{relative_path}\n".encode()
+        for relative_path in PREFLIGHT.AUTHORITY_EXACT10
+    }
+    git_blobs = {
+        **frozen_payloads,
+        **{
+            (PREFLIGHT.AUTHORITY_COMMIT, relative_path): payload
+            for relative_path, payload in authority_payloads.items()
+        },
+        **{
+            (dynamic_b3, relative_path): payload
+            for relative_path, payload in authority_payloads.items()
+        },
+        (dynamic_i3, PREFLIGHT.CONFIG_PATH): i3_payload,
+        (dynamic_i3, PREFLIGHT.SCRIPT_PATH): script_blob,
+        (dynamic_i3, PREFLIGHT.TEST_PATH): test_blob,
+        (dynamic_b3, PREFLIGHT.CONFIG_PATH): b3_payload,
+    }
+    real_sha256_bytes = PREFLIGHT._sha256_bytes
+
     def fake_sha256_bytes(payload: bytes) -> str:
-        return i1_digest_overrides.get(payload, real_sha256_bytes(payload))
+        return digest_overrides.get(payload, real_sha256_bytes(payload))
 
     def fake_git_text(root: Path, *args: str) -> str:
         assert root == repo_root
@@ -373,15 +452,21 @@ def test_default_binding_auditor_verifies_real_i1_i2_b2_lifecycle(
     monkeypatch.setattr(PREFLIGHT, "_git_blob", fake_git_blob)
     monkeypatch.setattr(PREFLIGHT, "_sha256_bytes", fake_sha256_bytes)
     result = PREFLIGHT._default_binding_auditor(
-        protocol, protocol_path, b2_payload, repo_root
+        protocol, protocol_path, b3_payload, repo_root
     )
     assert result == {
-        "status": "BOUND_I1_EXACT3_I2_EXACT3_CONFIG_ONLY_B2_VERIFIED",
-        "authority_commit": authority_a,
-        "authority_runtime_binding_commit": authority_runtime_b,
-        "predecessor_implementation_i1_commit": preflight_i1,
-        "implementation_commit": preflight_i2,
-        "binding_commit": preflight_b2,
+        "status": "BOUND_FULL_FROZEN_CHAIN_DYNAMIC_I3_CONFIG_ONLY_B3_VERIFIED",
+        "authority_commit": PREFLIGHT.AUTHORITY_COMMIT,
+        "authority_runtime_i1_commit": PREFLIGHT.RUNTIME_I1_COMMIT,
+        "authority_runtime_i2_commit": PREFLIGHT.RUNTIME_I2_COMMIT,
+        "authority_runtime_binding_commit": (
+            PREFLIGHT.AUTHORITY_RUNTIME_BINDING_COMMIT
+        ),
+        "preflight_i1_commit": PREFLIGHT.PREFLIGHT_I1_COMMIT,
+        "preflight_i2_commit": PREFLIGHT.PREFLIGHT_I2_COMMIT,
+        "preflight_b2_commit": PREFLIGHT.PREFLIGHT_B2_COMMIT,
+        "implementation_commit": dynamic_i3,
+        "binding_commit": dynamic_b3,
     }
 
 

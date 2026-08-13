@@ -53,13 +53,59 @@ TEST_PATH = (
 )
 CONFIG_PATH = f"configs/{PROTOCOL_BASENAME}"
 EXPECTED_EXACT3 = (CONFIG_PATH, SCRIPT_PATH, TEST_PATH)
+AUTHORITY_PARENT = "8fedda9a84e6df9706aee1520bf5adee8f58c840"
 AUTHORITY_COMMIT = "1ee575799a4b3289f9b7d684b4b31885dde0bd50"
 AUTHORITY_RUNTIME_BINDING_COMMIT = "e67be74d793a2a459b655ca11d38f86a9d52b7db"
+AUTHORITY_EXACT10 = (
+    "configs/route_a_v3.yaml",
+    "configs/route_a_v3_a1_qualification.json",
+    "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec021.yaml",
+    "docs/contracts/supersession_mrna_xeditflow_v1_1_to_route_a_v3.yaml",
+    "docs/execution/route_a_v3_a1_interim.yaml",
+    "docs/execution/route_a_v3_data_role_registry.yaml",
+    "docs/execution/route_a_v3_decision_log.yaml",
+    "docs/execution/route_a_v3_registry_manifest.json",
+    "scripts/route_a_v3/validate_a0_bundle.py",
+    "tests/route_a_v3/test_a0_integrity_guards.py",
+)
+RUNTIME_CONFIG_PATH = "configs/route_a_v3_dec021_authority_runtime_sync_v1.json"
+RUNTIME_SCRIPT_PATH = "scripts/route_a_v3/dec021_authority_runtime_sync.py"
+RUNTIME_TEST_PATH = "tests/route_a_v3/test_dec021_authority_runtime_sync.py"
+RUNTIME_EXACT3 = (RUNTIME_CONFIG_PATH, RUNTIME_SCRIPT_PATH, RUNTIME_TEST_PATH)
+RUNTIME_I1_COMMIT = "2bd38ecf99002bb9583417adb2883375109d2759"
+RUNTIME_I2_COMMIT = "6d3508a5386b709b3ebc806d6915791a75ef4539"
+RUNTIME_I1_BLOBS = {
+    RUNTIME_CONFIG_PATH: "00932333233a6a2e88c240b3c0e3a73a0398bca0b125b7af6efde38d0cdf7330",
+    RUNTIME_SCRIPT_PATH: "9728d555b799b6b9d6aabfb136693d256779493deceebcd536f9b6a02eb4e3be",
+    RUNTIME_TEST_PATH: "c7e01030b930b4afbd63b7c47fce3fee812fbecbc15d16b76938aa34011ba21e",
+}
+RUNTIME_I2_BLOBS = {
+    RUNTIME_CONFIG_PATH: "f8e65e37f07965323f13e9353901a5650087e736755aea8a7978b46e76187888",
+    RUNTIME_SCRIPT_PATH: "a45d37f89900021acc3025a5a2dbebf37c15717dba742257beca53f0a63cf1c4",
+    RUNTIME_TEST_PATH: "ce2c6cf80a6263bd41d504420dc34ee4c3ef0053ddc7a1f3c581aa1d9ad13e7c",
+}
+RUNTIME_B2_BLOBS = {
+    RUNTIME_CONFIG_PATH: "8e9d89134b257f59e0d62c552947321731bd111bc9c3b5ab2dd445a4264ce91c",
+    RUNTIME_SCRIPT_PATH: RUNTIME_I2_BLOBS[RUNTIME_SCRIPT_PATH],
+    RUNTIME_TEST_PATH: RUNTIME_I2_BLOBS[RUNTIME_TEST_PATH],
+}
 PREFLIGHT_I1_COMMIT = "fbf7c25e86e3b147df492ac1b934593e391a904a"
-PREFLIGHT_I1_BLOB_SHA256_BY_PATH = {
+PREFLIGHT_I2_COMMIT = "96dadcb67edd0d494f5b80965590a5e306cabbe1"
+PREFLIGHT_B2_COMMIT = "6d1922a286adfc4e9a14d920d46f0648a02317cd"
+PREFLIGHT_I1_BLOBS = {
     CONFIG_PATH: "1035b35158b77a5497afd1f77f9d8592dfaf36a4c904ba933710d64b302ab6d9",
     SCRIPT_PATH: "ae2ab795a8805aaf82cc80ec22f6cd1490321e554af4f8289ec94fe3d7ad8490",
     TEST_PATH: "9ae5aebe534f635723c66ae3a442f043e3a228859a5579c6ce83ba65d5e92458",
+}
+PREFLIGHT_I2_BLOBS = {
+    CONFIG_PATH: "4be8eb40365a182df05de9cacc9d029feb4ed10f66fcfbdff8f0907a6a1ea15a",
+    SCRIPT_PATH: "a38449008adbd8921a1e9a3cbb118f695c05789d3027f37e89669d73bf568c87",
+    TEST_PATH: "2ab43a6464b40ee0ac32b0cfda17604c1da05b0fa7ad9028b2ed2c2fd2174c07",
+}
+PREFLIGHT_B2_BLOBS = {
+    CONFIG_PATH: "370994ffe9bcf5b9bdbd9eb6fa994c371e86d1869f7fb9b2e199d6fb724a0f9b",
+    SCRIPT_PATH: PREFLIGHT_I2_BLOBS[SCRIPT_PATH],
+    TEST_PATH: PREFLIGHT_I2_BLOBS[TEST_PATH],
 }
 UNKNOWN_BINDING_SCALARS = (
     "status",
@@ -256,6 +302,20 @@ def _expect(mapping: Mapping[str, Any], expected: Mapping[str, Any], *, label: s
         raise ProtocolError(f"{label} differs from the frozen protocol")
 
 
+def _frozen_stage(
+    commit: str,
+    expected_parent: str,
+    exact_changed_paths: tuple[str, ...],
+    blob_sha256_by_path: Mapping[str, str],
+) -> dict[str, Any]:
+    return {
+        "commit": commit,
+        "expected_parent": expected_parent,
+        "exact_changed_paths": list(exact_changed_paths),
+        "blob_sha256_by_path": dict(blob_sha256_by_path),
+    }
+
+
 def _validate_protocol(protocol: Mapping[str, Any]) -> None:
     expected_scalars = {
         "schema_version": SCHEMA_VERSION,
@@ -277,8 +337,8 @@ def _validate_protocol(protocol: Mapping[str, Any]) -> None:
         protocol.get("implementation_binding"), label="implementation_binding"
     )
     if binding.get("binding_scheme") != (
-        "AUTHORITY_RUNTIME_B_THEN_PREFLIGHT_I1_EXACT3_I2_EXACT3_"
-        "CONFIG_ONLY_B2_V1"
+        "AUTHORITY_A_RUNTIME_I1_I2_B2_PREFLIGHT_I1_I2_B2_DYNAMIC_I3_"
+        "CONFIG_ONLY_B3_V1"
     ):
         raise ProtocolError("implementation binding scheme differs")
     authority_fields = ("authority_commit", "authority_runtime_binding_commit")
@@ -308,19 +368,69 @@ def _validate_protocol(protocol: Mapping[str, Any]) -> None:
         raise ProtocolError("implementation script path differs")
     if binding.get("implementation_test_path") != TEST_PATH:
         raise ProtocolError("implementation test path differs")
-    predecessor_i1 = _mapping(
-        binding.get("predecessor_implementation_i1"),
-        label="predecessor_implementation_i1",
+    _expect(
+        _mapping(binding.get("authority_lifecycle"), label="authority_lifecycle"),
+        {
+            "expected_parent": AUTHORITY_PARENT,
+            "exact_changed_paths": list(AUTHORITY_EXACT10),
+        },
+        label="authority lifecycle",
     )
     _expect(
-        predecessor_i1,
+        _mapping(
+            binding.get("authority_runtime_lifecycle"),
+            label="authority_runtime_lifecycle",
+        ),
         {
-            "commit": PREFLIGHT_I1_COMMIT,
-            "expected_parent": AUTHORITY_RUNTIME_BINDING_COMMIT,
-            "exact_changed_paths": list(EXPECTED_EXACT3),
-            "blob_sha256_by_path": PREFLIGHT_I1_BLOB_SHA256_BY_PATH,
+            "paths": list(RUNTIME_EXACT3),
+            "i1": _frozen_stage(
+                RUNTIME_I1_COMMIT,
+                AUTHORITY_COMMIT,
+                RUNTIME_EXACT3,
+                RUNTIME_I1_BLOBS,
+            ),
+            "i2": _frozen_stage(
+                RUNTIME_I2_COMMIT,
+                RUNTIME_I1_COMMIT,
+                RUNTIME_EXACT3,
+                RUNTIME_I2_BLOBS,
+            ),
+            "b2": _frozen_stage(
+                AUTHORITY_RUNTIME_BINDING_COMMIT,
+                RUNTIME_I2_COMMIT,
+                (RUNTIME_CONFIG_PATH,),
+                RUNTIME_B2_BLOBS,
+            ),
         },
-        label="predecessor preflight I1",
+        label="authority-runtime lifecycle",
+    )
+    _expect(
+        _mapping(
+            binding.get("predecessor_preflight_lifecycle"),
+            label="predecessor_preflight_lifecycle",
+        ),
+        {
+            "paths": list(EXPECTED_EXACT3),
+            "i1": _frozen_stage(
+                PREFLIGHT_I1_COMMIT,
+                AUTHORITY_RUNTIME_BINDING_COMMIT,
+                EXPECTED_EXACT3,
+                PREFLIGHT_I1_BLOBS,
+            ),
+            "i2": _frozen_stage(
+                PREFLIGHT_I2_COMMIT,
+                PREFLIGHT_I1_COMMIT,
+                EXPECTED_EXACT3,
+                PREFLIGHT_I2_BLOBS,
+            ),
+            "b2": _frozen_stage(
+                PREFLIGHT_B2_COMMIT,
+                PREFLIGHT_I2_COMMIT,
+                (CONFIG_PATH,),
+                PREFLIGHT_B2_BLOBS,
+            ),
+        },
+        label="predecessor preflight lifecycle",
     )
 
     status = binding.get("status")
@@ -559,6 +669,30 @@ def _normalise_binding(protocol: Mapping[str, Any]) -> dict[str, Any]:
     return result
 
 
+def _verify_frozen_commit(
+    repo_root: Path,
+    *,
+    label: str,
+    commit: str,
+    expected_parent: str,
+    expected_paths: tuple[str, ...],
+    expected_blobs: Mapping[str, str],
+) -> None:
+    if _run_git_text(repo_root, "rev-parse", f"{commit}^") != expected_parent:
+        raise ProtocolError(f"{label} direct parent differs")
+    if _changed_paths(repo_root, commit) != tuple(sorted(expected_paths)):
+        raise ProtocolError(f"{label} changed-path closure differs")
+    for relative_path, expected_sha256 in expected_blobs.items():
+        if _sha256_bytes(_git_blob(repo_root, commit, relative_path)) != (
+            expected_sha256
+        ):
+            raise ProtocolError(f"{label} blob identity differs: {relative_path}")
+
+
+def _normalised_config_blob(payload: bytes, *, label: str) -> dict[str, Any]:
+    return _normalise_binding(_strict_json_object(payload, label=label))
+
+
 def _default_binding_auditor(
     protocol: Mapping[str, Any],
     protocol_path: Path,
@@ -568,7 +702,7 @@ def _default_binding_auditor(
     del protocol_payload
     binding = protocol["implementation_binding"]
     if binding.get("status") != BOUND:
-        raise BindingNotFrozen("exact3-I2/config-only-B2 lifecycle is not BOUND")
+        raise BindingNotFrozen("exact3-I3/config-only-B3 lifecycle is not BOUND")
     if any(binding.get(field) == UNKNOWN for field in UNKNOWN_BINDING_SCALARS):
         raise BindingNotFrozen("the four normal binding scalars remain UNKNOWN")
     if binding.get("authority_commit") == UNKNOWN:
@@ -578,9 +712,6 @@ def _default_binding_auditor(
 
     binding_commit = _run_git_text(repo_root, "rev-parse", "HEAD")
     implementation_commit = str(binding["implementation_commit"])
-    predecessor_i1_commit = str(
-        binding["predecessor_implementation_i1"]["commit"]
-    )
     authority_commit = str(binding["authority_commit"])
     authority_runtime_binding_commit = str(
         binding["authority_runtime_binding_commit"]
@@ -588,45 +719,112 @@ def _default_binding_auditor(
     if _run_git_text(repo_root, "rev-parse", f"{binding_commit}^") != (
         implementation_commit
     ):
-        raise ProtocolError("B2 is not the direct child of I2")
+        raise ProtocolError("B3 is not the direct child of dynamic I3")
     if _run_git_text(repo_root, "rev-parse", f"{implementation_commit}^") != (
-        predecessor_i1_commit
+        PREFLIGHT_B2_COMMIT
     ):
-        raise ProtocolError("preflight I2 is not the direct child of preflight I1")
-    if _run_git_text(repo_root, "rev-parse", f"{predecessor_i1_commit}^") != (
-        authority_runtime_binding_commit
-    ):
-        raise ProtocolError("preflight I1 is not the direct child of authority-runtime B")
-    authority_runtime_i = _run_git_text(
-        repo_root, "rev-parse", f"{authority_runtime_binding_commit}^"
+        raise ProtocolError("dynamic preflight I3 is not the child of frozen B2")
+    if _run_git_text(repo_root, "rev-parse", f"{authority_commit}^") != AUTHORITY_PARENT:
+        raise ProtocolError("DEC021 authority A parent differs")
+    if _changed_paths(repo_root, authority_commit) != tuple(sorted(AUTHORITY_EXACT10)):
+        raise ProtocolError("DEC021 authority A exact10 closure differs")
+
+    frozen_stages = (
+        (
+            "authority-runtime I1",
+            RUNTIME_I1_COMMIT,
+            authority_commit,
+            RUNTIME_EXACT3,
+            RUNTIME_I1_BLOBS,
+        ),
+        (
+            "authority-runtime I2",
+            RUNTIME_I2_COMMIT,
+            RUNTIME_I1_COMMIT,
+            RUNTIME_EXACT3,
+            RUNTIME_I2_BLOBS,
+        ),
+        (
+            "authority-runtime B2",
+            authority_runtime_binding_commit,
+            RUNTIME_I2_COMMIT,
+            (RUNTIME_CONFIG_PATH,),
+            RUNTIME_B2_BLOBS,
+        ),
+        (
+            "preflight I1",
+            PREFLIGHT_I1_COMMIT,
+            authority_runtime_binding_commit,
+            EXPECTED_EXACT3,
+            PREFLIGHT_I1_BLOBS,
+        ),
+        (
+            "preflight I2",
+            PREFLIGHT_I2_COMMIT,
+            PREFLIGHT_I1_COMMIT,
+            EXPECTED_EXACT3,
+            PREFLIGHT_I2_BLOBS,
+        ),
+        (
+            "preflight B2",
+            PREFLIGHT_B2_COMMIT,
+            PREFLIGHT_I2_COMMIT,
+            (CONFIG_PATH,),
+            PREFLIGHT_B2_BLOBS,
+        ),
     )
-    if _run_git_text(repo_root, "rev-parse", f"{authority_runtime_i}^") != (
-        authority_commit
-    ):
-        raise ProtocolError("authority-runtime I/B is not based on DEC021 authority A")
-    if _changed_paths(repo_root, predecessor_i1_commit) != tuple(
-        sorted(EXPECTED_EXACT3)
-    ):
-        raise ProtocolError("preflight I1 did not change exact3")
+    for label, commit, parent, paths, blobs in frozen_stages:
+        _verify_frozen_commit(
+            repo_root,
+            label=label,
+            commit=commit,
+            expected_parent=parent,
+            expected_paths=paths,
+            expected_blobs=blobs,
+        )
+
     if _changed_paths(repo_root, implementation_commit) != tuple(
         sorted(EXPECTED_EXACT3)
     ):
-        raise ProtocolError("preflight I2 did not change exact3")
+        raise ProtocolError("dynamic preflight I3 did not change exact3")
     if _changed_paths(repo_root, binding_commit) != (CONFIG_PATH,):
-        raise ProtocolError("B2 did not change config-only")
+        raise ProtocolError("B3 did not change config-only")
 
-    for relative_path, expected_sha256 in PREFLIGHT_I1_BLOB_SHA256_BY_PATH.items():
-        if _sha256_bytes(
-            _git_blob(repo_root, predecessor_i1_commit, relative_path)
-        ) != expected_sha256:
-            raise ProtocolError(f"preflight I1 blob identity differs: {relative_path}")
+    for relative_path in AUTHORITY_EXACT10:
+        if _git_blob(repo_root, authority_commit, relative_path) != _git_blob(
+            repo_root, binding_commit, relative_path
+        ):
+            raise ProtocolError(
+                f"authority blob did not persist to B3: {relative_path}"
+            )
+
+    if _normalised_config_blob(
+        _git_blob(repo_root, RUNTIME_I2_COMMIT, RUNTIME_CONFIG_PATH),
+        label="runtime I2 config",
+    ) != _normalised_config_blob(
+        _git_blob(
+            repo_root,
+            authority_runtime_binding_commit,
+            RUNTIME_CONFIG_PATH,
+        ),
+        label="runtime B2 config",
+    ):
+        raise ProtocolError("runtime B2 config does not normalise to runtime I2")
+    if _normalised_config_blob(
+        _git_blob(repo_root, PREFLIGHT_I2_COMMIT, CONFIG_PATH),
+        label="preflight I2 config",
+    ) != _normalised_config_blob(
+        _git_blob(repo_root, PREFLIGHT_B2_COMMIT, CONFIG_PATH),
+        label="preflight B2 config",
+    ):
+        raise ProtocolError("preflight B2 config does not normalise to I2")
 
     i_protocol = _strict_json_object(
         _git_blob(repo_root, implementation_commit, CONFIG_PATH),
-        label="preflight I2 protocol",
+        label="dynamic preflight I3 protocol",
     )
     if _normalise_binding(protocol) != i_protocol:
-        raise ProtocolError("B2 changed more than the four binding scalars")
+        raise ProtocolError("B3 changed more than the four binding scalars")
 
     script_blob = _git_blob(repo_root, implementation_commit, SCRIPT_PATH)
     test_blob = _git_blob(repo_root, implementation_commit, TEST_PATH)
@@ -641,17 +839,21 @@ def _default_binding_auditor(
     if protocol_path.resolve() != (repo_root / CONFIG_PATH).resolve():
         raise ProtocolError("protocol path is outside the bound repository location")
     if protocol_path.read_bytes() != _git_blob(repo_root, binding_commit, CONFIG_PATH):
-        raise ProtocolError("working protocol differs from bound B2")
+        raise ProtocolError("working protocol differs from bound B3")
     if (repo_root / SCRIPT_PATH).read_bytes() != script_blob:
         raise ProtocolError("working implementation script differs from I")
     if (repo_root / TEST_PATH).read_bytes() != test_blob:
         raise ProtocolError("working focused test differs from I")
 
     return {
-        "status": "BOUND_I1_EXACT3_I2_EXACT3_CONFIG_ONLY_B2_VERIFIED",
+        "status": "BOUND_FULL_FROZEN_CHAIN_DYNAMIC_I3_CONFIG_ONLY_B3_VERIFIED",
         "authority_commit": authority_commit,
+        "authority_runtime_i1_commit": RUNTIME_I1_COMMIT,
+        "authority_runtime_i2_commit": RUNTIME_I2_COMMIT,
         "authority_runtime_binding_commit": authority_runtime_binding_commit,
-        "predecessor_implementation_i1_commit": predecessor_i1_commit,
+        "preflight_i1_commit": PREFLIGHT_I1_COMMIT,
+        "preflight_i2_commit": PREFLIGHT_I2_COMMIT,
+        "preflight_b2_commit": PREFLIGHT_B2_COMMIT,
         "implementation_commit": implementation_commit,
         "binding_commit": binding_commit,
     }
