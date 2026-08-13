@@ -292,9 +292,9 @@ dec021_current_disposition:
   model_selection_allowed: false
   next_phase_authorized: false
   scientific_claim_status: NOT_ESTABLISHED
-  latest_settled_runtime_event_id: A1-EVT-051
-  settled_runtime_event_changed: false
-  runtime_event_emitted: false
+  latest_settled_runtime_event_id: A1-EVT-052
+  settled_runtime_event_changed: true
+  runtime_event_emitted: true
   sealed_contact_allowed: false
 
 artifact_lineage:
@@ -2255,6 +2255,91 @@ artifact_lineage:
     expected_next_runtime_event_id: A1-EVT-045
     runtime_sync_status: SYNCED_EVT_045
     artifact_payload_read_count_for_ledger: 0
+  gse256185_public_identifier_pool_geometry_preflight_v1:
+    path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE256185_PUBLIC_IDENTIFIER_POOL_GEOMETRY_PREFLIGHT_V1_20260813T210613P0800_c95fe8e/GSE256185_PUBLIC_IDENTIFIER_POOL_GEOMETRY_PREFLIGHT_V1.json
+    bytes: 7441
+    sha256: 06a8fed9599266ca170303705e6d78a1555e7b8949254e5355c7b17aff742db8
+    recorded_at: "2026-08-13T13:06:51.607157Z"
+    dataset_id: GSE256185
+    decision_id: V3-DEC-021
+    schema_version: route_a_v3_gse256185_public_identifier_pool_geometry_preflight.v1
+    protocol_id: GSE256185_PUBLIC_IDENTIFIER_POOL_GEOMETRY_PREFLIGHT_V1
+    status: PUBLIC_IDENTIFIER_AND_POOL_GEOMETRY_PREFLIGHT_COMPLETE_NOT_QUALIFIED
+    authority_role: PUBLIC_IDENTIFIER_AND_POOL_GEOMETRY_PREFLIGHT_ONLY
+    aggregate_only: true
+    preflight_complete: true
+    aggregate_pool_geometry:
+      total_body_row_count: 11404
+      group_count: 652
+      single_parent_group_count: 637
+      dual_parent_group_count: 15
+      single_parent_groups_with_at_least_3_candidate_rows: 634
+      strict_candidate_rows_in_at_least_3_candidate_groups: 7292
+      reasoned_family_closure_candidate_rows_in_at_least_3_candidate_groups: 7294
+      identifier_grammar_anomaly_counts:
+        MISSING_GROUP_ROLE_DELIMITER: 1
+        UNSIGNED_CCC_ROLE: 1
+      strict_axis_is_frozen_observed_identifier_grammar: true
+      reasoned_family_closure_axis_status: REASONED_FAMILY_CLOSURE_NOT_PUBLISHER_EXPLICIT
+      reasoned_family_closure_axis_is_publisher_explicit: false
+    scope_attestation:
+      ordinary_public_only: true
+      raw_asset_registered: false
+      row_record_output_count: 0
+      member_identifier_output_count: 0
+      member_role_output_count: 0
+      member_context_output_count: 0
+      sequence_value_output_count: 0
+      effect_value_output_count: 0
+      private_or_restricted_input_read_count: 0
+      sealed_contact_count: 0
+    sequence_evaluation: OUT_OF_SCOPE_NOT_EVALUATED
+    edit_budget_evaluation: OUT_OF_SCOPE_NOT_EVALUATED
+    effect_evaluation: OUT_OF_SCOPE_NOT_EVALUATED
+    true_a2_status_evaluation: OUT_OF_SCOPE_NOT_EVALUATED
+    qualification_evaluation: OUT_OF_SCOPE_NOT_EVALUATED
+    current_qualified_counts:
+      ordinary: 1
+      a1: 1
+      true_a2: 0
+      canonical_records: 6547
+    gse256185_contribution:
+      ordinary: 0
+      a1: 0
+      true_a2: 0
+      canonical_records: 0
+    qualified: false
+    a1_complete: false
+    training_allowed: false
+    gpu_work_allowed: false
+    model_selection_allowed: false
+    next_phase_authorized: false
+    scientific_claim_status: NOT_ESTABLISHED
+    sole_next_action: STOP_NO_FURTHER_ACTION_AUTHORIZED_BY_V3_DEC_021
+    producer_lineage:
+      authority_commit: 1ee575799a4b3289f9b7d684b4b31885dde0bd50
+      authority_runtime_i1_commit: 2bd38ecf99002bb9583417adb2883375109d2759
+      authority_runtime_i2_commit: 6d3508a5386b709b3ebc806d6915791a75ef4539
+      authority_runtime_binding_commit: e67be74d793a2a459b655ca11d38f86a9d52b7db
+      preflight_i1_commit: fbf7c25e86e3b147df492ac1b934593e391a904a
+      preflight_i2_commit: 96dadcb67edd0d494f5b80965590a5e306cabbe1
+      preflight_b2_commit: 6d1922a286adfc4e9a14d920d46f0648a02317cd
+      implementation_commit: bb346b0c09a18ef844d576f3679caee419a0f0a0
+      binding_commit: c95fe8e06f51c852c7ca1289d8df9d00a6754daa
+      binding_diff_is_config_only: true
+      config_path: configs/route_a_v3_gse256185_public_identifier_pool_geometry_preflight_v1.json
+      config_sha256: cd5aca36925d60797f18eccedd5ea6fa253c36f93d6e24c832a452b86169a34f
+      script_path: scripts/route_a_v3/preflight_gse256185_public_identifier_pool_geometry.py
+      script_sha256: 300c80811b9e4159c011041741d36cdbd265993381e9dbe08741cb89c639c196
+      focused_test_path: tests/route_a_v3/test_preflight_gse256185_public_identifier_pool_geometry.py
+      focused_test_sha256: 6eb989b33e0b770f16ccd5b1e1c9118a8e78ed548cbb4814391097d793ac0892
+    predecessor_runtime_event_id: A1-EVT-052
+    expected_next_runtime_event_id: PENDING_FRESH_RUNTIME_EVENT_ID
+    next_runtime_event_id_preallocated: false
+    runtime_sync_status: PENDING_FRESH_EVENT_AFTER_SETTLED_EVT_052
+    aggregate_report_read_count_for_ledger: 1
+    private_row_artifact_read_count_for_ledger: 0
+    raw_asset_registered_artifact_count: 0
 
 dataset_boundary_summary:
   evidence_ref:
@@ -2513,6 +2598,56 @@ dataset_boundary_summary:
       runtime_sync_status: SYNCED_EVT_049
     qualified: false
     training_allowed: false
+    model_selection_allowed: false
+    next_phase_authorized: false
+  GSE256185:
+    registry_qualification_status: AUDIT_PENDING
+    authority_role: PUBLIC_IDENTIFIER_AND_POOL_GEOMETRY_PREFLIGHT_ONLY
+    public_identifier_pool_geometry_preflight:
+      artifact_lineage_id: gse256185_public_identifier_pool_geometry_preflight_v1
+      status: PUBLIC_IDENTIFIER_AND_POOL_GEOMETRY_PREFLIGHT_COMPLETE_NOT_QUALIFIED
+      aggregate_only: true
+      preflight_complete: true
+      total_body_row_count: 11404
+      group_count: 652
+      single_parent_group_count: 637
+      dual_parent_group_count: 15
+      single_parent_groups_with_at_least_3_candidate_rows: 634
+      strict_candidate_rows_in_at_least_3_candidate_groups: 7292
+      reasoned_family_closure_candidate_rows_in_at_least_3_candidate_groups: 7294
+      missing_group_role_delimiter_anomaly_count: 1
+      unsigned_ccc_role_anomaly_count: 1
+      sequence_evaluation: OUT_OF_SCOPE_NOT_EVALUATED
+      edit_budget_evaluation: OUT_OF_SCOPE_NOT_EVALUATED
+      effect_evaluation: OUT_OF_SCOPE_NOT_EVALUATED
+      true_a2_status_evaluation: OUT_OF_SCOPE_NOT_EVALUATED
+      qualification_evaluation: OUT_OF_SCOPE_NOT_EVALUATED
+      qualified: false
+      canonical_record_count: 0
+      ordinary_study_contribution: 0
+      a1_study_contribution: 0
+      true_a2_study_contribution: 0
+      changes_qualification_gate: false
+      current_global_qualified_counts:
+        ordinary: 1
+        a1: 1
+        true_a2: 0
+        canonical_records: 6547
+      training_allowed: false
+      gpu_work_allowed: false
+      model_selection_allowed: false
+      next_phase_authorized: false
+      predecessor_runtime_event_id: A1-EVT-052
+      expected_next_runtime_event_id: PENDING_FRESH_RUNTIME_EVENT_ID
+      next_runtime_event_id_preallocated: false
+      runtime_sync_status: PENDING_FRESH_EVENT_AFTER_SETTLED_EVT_052
+    qualified: false
+    canonical_record_count: 0
+    ordinary_study_contribution: 0
+    a1_study_contribution: 0
+    true_a2_study_contribution: 0
+    training_allowed: false
+    gpu_work_allowed: false
     model_selection_allowed: false
     next_phase_authorized: false
   GSE145046:
@@ -2861,6 +2996,12 @@ claim_boundaries:
   dec020_prior_aggregate_design_use_may_be_called_untouched: false
   dec020_future_route_scoped_possibility_is_current_qualification_or_canonical_count: false
   dec020_deferred_v4_registration_is_active_implementation: false
+  gse256185_public_identifier_pool_geometry_preflight_is_study_qualification: false
+  gse256185_aggregate_pool_geometry_is_study_count_credit: false
+  gse256185_total_body_row_count_is_canonical_record_count: false
+  gse256185_reasoned_family_closure_axis_is_publisher_explicit: false
+  gse256185_public_identifier_pool_geometry_preflight_establishes_true_a2: false
+  gse256185_public_identifier_pool_geometry_preflight_authorizes_training_model_selection_or_next_phase: false
   a1_phase_complete: false
   route_a_established: false
 
@@ -3038,6 +3179,9 @@ verification:
   gse232572_qualification_authority_preflight_ledger_independent_review:
     status: NOT_RUN
     reason: FOUR_FILE_APPEND_ONLY_LOW_TO_MEDIUM_RISK_BATCH_SELF_CHECKED_UNDER_GLOBAL_LIGHTWEIGHT_POLICY
+  gse256185_post_preflight_ledger_independent_review:
+    status: NOT_RUN
+    reason: FOUR_FILE_APPEND_ONLY_LOW_TO_MEDIUM_RISK_BATCH_SELF_CHECKED_UNDER_GLOBAL_LIGHTWEIGHT_POLICY
   targeted_dec020_authority_registry_tests:
     status: PASS
     scope: DEC020_EXACT10_AUTHORITY_PLUS_EXACT4_REGISTRY_EXACT3_V4_STATIC_EVT051_SETTLED_RUNTIME_SYNCED
@@ -3046,13 +3190,20 @@ verification:
   dec020_runtime_sync_event_id: A1-EVT-051
   targeted_dec021_authority_registry_tests:
     status: PASS
-    scope: DEC021_EXACT10_AUTHORITY_GSE256185_PREFLIGHT_ONLY_EVT051_SETTLED
+    scope: DEC021_EXACT10_AUTHORITY_GSE256185_PREFLIGHT_ONLY_EVT052_SETTLED
   dec021_active_authority_exact10_registration: PASS
-  dec021_runtime_event_emitted: false
+  dec021_runtime_event_emitted: true
+  targeted_gse256185_public_identifier_pool_geometry_preflight_ledger_tests:
+    status: PASS
+    scope: ONE_PUBLIC_AGGREGATE_REPORT_THREE_STATIC_PRODUCER_LEAVES_EVT052_SETTLED_RUNTIME_PENDING
+  gse256185_public_identifier_pool_geometry_preflight_artifact_registration: PASS
+  gse256185_public_identifier_pool_geometry_preflight_three_static_leaf_registration: PASS
+  gse256185_public_identifier_pool_geometry_preflight_no_promotion_boundary: PASS
+  gse256185_public_identifier_pool_geometry_preflight_runtime_event_id: PENDING_FRESH_RUNTIME_EVENT_ID
 
 initial_generated_at: "2026-08-10T06:30:58+08:00"
-generated_at: "2026-08-13T19:50:00+08:00"
-updated_at: "2026-08-13T19:50:00+08:00"
+generated_at: "2026-08-13T21:10:30+08:00"
+updated_at: "2026-08-13T21:10:30+08:00"
 updated_for_decision_id: V3-DEC-021
 latest_authority_update_id: V3-DEC-021
-latest_evidence_update_id: GSE200304_DEC020_SCRATCH_ROUTE_REPORTED_ENDPOINT_A1_ADJUDICATION_V4
+latest_evidence_update_id: GSE256185_PUBLIC_IDENTIFIER_POOL_GEOMETRY_PREFLIGHT_V1

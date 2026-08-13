@@ -43,7 +43,7 @@ DECISION_LOG_PATH = "docs/execution/route_a_v3_decision_log.yaml"
 REGISTRY_MANIFEST_PATH = "docs/execution/route_a_v3_registry_manifest.json"
 A1_INTERIM_PATH = "docs/execution/route_a_v3_a1_interim.yaml"
 A6_INTERIM_PATH = "docs/execution/route_a_v3_a6_interim.yaml"
-EXPECTED_A1_INTERIM_SHA256 = "84b1067df43bb4a75b4de9868a5ab92a04286815418c140d9b21bab0e58739fc"
+EXPECTED_A1_INTERIM_SHA256 = "f178750dfed15fde42699840caef314e39b6b4fa4acf72dd8606695ae7c930c4"
 EXPECTED_A6_INTERIM_SHA256 = "64a5a5a03f0931b59a72ad5536c0e0c132332d1235e697bc4fff56f910d573d8"
 A6_REGISTRATION_LEDGER_AT = "2026-08-13T18:55:00+08:00"
 DEC021_AUTHORITY_LEDGER_AT = "2026-08-13T19:50:00+08:00"
@@ -51,6 +51,82 @@ DEC021_AUTHORITY_MANIFEST_AT = "2026-08-13T19:50:01+08:00"
 DEC021_AUTHORITY_MANIFEST_STATUS = (
     "DEC021_GSE256185_PUBLIC_IDENTIFIER_AND_POOL_GEOMETRY_PREFLIGHT_ONLY_"
     "REGISTERED_EVT051_SETTLED_A6_IN_PROGRESS_L3_NOT_ESTABLISHED_A7_NOT_RUN"
+)
+GSE256185_PUBLIC_GEOMETRY_LEDGER_AT = "2026-08-13T21:10:30+08:00"
+GSE256185_PUBLIC_GEOMETRY_MANIFEST_AT = "2026-08-13T21:10:31+08:00"
+GSE256185_PUBLIC_GEOMETRY_EVIDENCE_UPDATE_ID = (
+    "GSE256185_PUBLIC_IDENTIFIER_POOL_GEOMETRY_PREFLIGHT_V1"
+)
+GSE256185_PUBLIC_GEOMETRY_LINEAGE_ID = (
+    "gse256185_public_identifier_pool_geometry_preflight_v1"
+)
+GSE256185_PUBLIC_GEOMETRY_MANIFEST_STATUS = (
+    "DEC021_GSE256185_PUBLIC_IDENTIFIER_POOL_GEOMETRY_PREFLIGHT_REGISTERED_"
+    "EVT052_SETTLED_EVIDENCE_RUNTIME_PENDING_A1_INCOMPLETE_A6_IN_PROGRESS_"
+    "L3_NOT_ESTABLISHED_A7_NOT_RUN"
+)
+GSE256185_PUBLIC_GEOMETRY_PENDING_RUNTIME_EVENT_ID = (
+    "PENDING_FRESH_RUNTIME_EVENT_ID"
+)
+GSE256185_PUBLIC_GEOMETRY_CONFIG_PATH = (
+    "configs/route_a_v3_gse256185_public_identifier_pool_geometry_preflight_v1.json"
+)
+GSE256185_PUBLIC_GEOMETRY_SCRIPT_PATH = (
+    "scripts/route_a_v3/preflight_gse256185_public_identifier_pool_geometry.py"
+)
+GSE256185_PUBLIC_GEOMETRY_TEST_PATH = (
+    "tests/route_a_v3/test_preflight_gse256185_public_identifier_pool_geometry.py"
+)
+GSE256185_PUBLIC_GEOMETRY_RUNTIME_CONFIG_PATH = (
+    "configs/route_a_v3_gse256185_public_identifier_pool_geometry_"
+    "preflight_runtime_sync_v1.json"
+)
+GSE256185_PUBLIC_GEOMETRY_STATIC_LEAF_SHA256 = {
+    GSE256185_PUBLIC_GEOMETRY_CONFIG_PATH: (
+        "cd5aca36925d60797f18eccedd5ea6fa253c36f93d6e24c832a452b86169a34f"
+    ),
+    GSE256185_PUBLIC_GEOMETRY_SCRIPT_PATH: (
+        "300c80811b9e4159c011041741d36cdbd265993381e9dbe08741cb89c639c196"
+    ),
+    GSE256185_PUBLIC_GEOMETRY_TEST_PATH: (
+        "6eb989b33e0b770f16ccd5b1e1c9118a8e78ed548cbb4814391097d793ac0892"
+    ),
+}
+GSE256185_PUBLIC_GEOMETRY_REPORT_PATH = (
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/"
+    "GSE256185_PUBLIC_IDENTIFIER_POOL_GEOMETRY_PREFLIGHT_V1_"
+    "20260813T210613P0800_c95fe8e/"
+    "GSE256185_PUBLIC_IDENTIFIER_POOL_GEOMETRY_PREFLIGHT_V1.json"
+)
+GSE256185_PUBLIC_GEOMETRY_REPORT_BYTES = 7441
+GSE256185_PUBLIC_GEOMETRY_REPORT_SHA256 = (
+    "06a8fed9599266ca170303705e6d78a1555e7b8949254e5355c7b17aff742db8"
+)
+GSE256185_PUBLIC_GEOMETRY_RECORDED_AT = "2026-08-13T13:06:51.607157Z"
+GSE256185_AUTHORITY_COMMIT = "1ee575799a4b3289f9b7d684b4b31885dde0bd50"
+GSE256185_AUTHORITY_RUNTIME_I1_COMMIT = (
+    "2bd38ecf99002bb9583417adb2883375109d2759"
+)
+GSE256185_AUTHORITY_RUNTIME_I2_COMMIT = (
+    "6d3508a5386b709b3ebc806d6915791a75ef4539"
+)
+GSE256185_AUTHORITY_RUNTIME_BINDING_COMMIT = (
+    "e67be74d793a2a459b655ca11d38f86a9d52b7db"
+)
+GSE256185_PUBLIC_GEOMETRY_I1_COMMIT = (
+    "fbf7c25e86e3b147df492ac1b934593e391a904a"
+)
+GSE256185_PUBLIC_GEOMETRY_I2_COMMIT = (
+    "96dadcb67edd0d494f5b80965590a5e306cabbe1"
+)
+GSE256185_PUBLIC_GEOMETRY_B2_COMMIT = (
+    "6d1922a286adfc4e9a14d920d46f0648a02317cd"
+)
+GSE256185_PUBLIC_GEOMETRY_IMPLEMENTATION_COMMIT = (
+    "bb346b0c09a18ef844d576f3679caee419a0f0a0"
+)
+GSE256185_PUBLIC_GEOMETRY_BINDING_COMMIT = (
+    "c95fe8e06f51c852c7ca1289d8df9d00a6754daa"
 )
 A6_PROTOCOL_ID = "ROUTE_A_V3_A6_CPU_EXACT_ABSORBING_DAG_V1"
 A6_PROTOCOL_CONFIG_PATH = "configs/route_a_v3_a6_cpu_exact_absorbing_dag_v1.json"
@@ -1730,6 +1806,18 @@ EXPECTED_REGISTRY_MANIFEST_PATH_ROLES = (
     (GSE200304_DEC020_V4_DYNAMIC_CONFIG_PATH, "GSE200304_DEC020_SCRATCH_ROUTE_V4_CONFIG"),
     (GSE200304_DEC020_V4_SCRIPT_PATH, "GSE200304_DEC020_SCRATCH_ROUTE_V4_ADJUDICATOR"),
     (GSE200304_DEC020_V4_TEST_PATH, "GSE200304_DEC020_SCRATCH_ROUTE_V4_FOCUSED_TEST"),
+    (
+        GSE256185_PUBLIC_GEOMETRY_CONFIG_PATH,
+        "GSE256185_PUBLIC_IDENTIFIER_POOL_GEOMETRY_PREFLIGHT_BOUND_CONFIG",
+    ),
+    (
+        GSE256185_PUBLIC_GEOMETRY_SCRIPT_PATH,
+        "GSE256185_PUBLIC_IDENTIFIER_POOL_GEOMETRY_PREFLIGHT_PRODUCER",
+    ),
+    (
+        GSE256185_PUBLIC_GEOMETRY_TEST_PATH,
+        "GSE256185_PUBLIC_IDENTIFIER_POOL_GEOMETRY_PREFLIGHT_FOCUSED_TEST",
+    ),
     (A6_PROTOCOL_CONFIG_PATH, "A6_CPU_EXACT_ABSORBING_DAG_BOUND_PROTOCOL"),
     (A6_PRODUCER_PATH, "A6_CPU_EXACT_ABSORBING_DAG_PRODUCER"),
     (A6_FOCUSED_TEST_PATH, "A6_CPU_EXACT_ABSORBING_DAG_FOCUSED_TEST"),
@@ -1866,6 +1954,7 @@ def required_bundle_paths() -> tuple[str, ...]:
         *GSE232572_DEVELOPMENT_V3_MATERIALIZATION_STATIC_LEAF_SHA256,
         *GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_STATIC_LEAF_SHA256,
         *GSE200304_DEC020_V4_STATIC_LEAF_SHA256,
+        *GSE256185_PUBLIC_GEOMETRY_STATIC_LEAF_SHA256,
         INTEGRITY_GUARD_TEST_PATH,
         *REGISTRY_PATHS.values(),
         *(f"{SCHEMA_DIR}/{name}" for name in SCHEMA_FILES),
@@ -2799,10 +2888,10 @@ def validate_registry_manifest(repo_root: Path) -> list[Issue]:
         "contract_sha256": SOURCE_CONTRACT_SHA256,
         "active_amendment_decision_ids": ACTIVE_AMENDMENT_DECISION_IDS,
         "base_commit": "bbb71dcba6f1e1c9cb75a8a6653f1a4fe4a6ca0c",
-        "manifest_status": DEC021_AUTHORITY_MANIFEST_STATUS,
+        "manifest_status": GSE256185_PUBLIC_GEOMETRY_MANIFEST_STATUS,
         "initial_generated_at": "2026-08-10T10:10:05+08:00",
-        "generated_at": DEC021_AUTHORITY_MANIFEST_AT,
-        "updated_at": DEC021_AUTHORITY_MANIFEST_AT,
+        "generated_at": GSE256185_PUBLIC_GEOMETRY_MANIFEST_AT,
+        "updated_at": GSE256185_PUBLIC_GEOMETRY_MANIFEST_AT,
         "sealed_contact": False,
     }
     expected_top_keys = set(expected_static_top) | {"files"}
@@ -2930,6 +3019,25 @@ def validate_registry_manifest(repo_root: Path) -> list[Issue]:
             "DEC020_V4_STATIC_REGISTRATION",
             REGISTRY_MANIFEST_PATH,
             "DEC020 V4 CONFIG/SCRIPT/FOCUSED_TEST leaves must be registered exactly once",
+        )
+    observed_gse256185_paths = set(by_path) & set(
+        GSE256185_PUBLIC_GEOMETRY_STATIC_LEAF_SHA256
+    )
+    if observed_gse256185_paths != set(
+        GSE256185_PUBLIC_GEOMETRY_STATIC_LEAF_SHA256
+    ):
+        _issue(
+            issues,
+            "GSE256185_PUBLIC_GEOMETRY_STATIC_REGISTRATION",
+            REGISTRY_MANIFEST_PATH,
+            "the bound preflight CONFIG/SCRIPT/FOCUSED_TEST leaves must appear exactly once",
+        )
+    if GSE256185_PUBLIC_GEOMETRY_RUNTIME_CONFIG_PATH in by_path:
+        _issue(
+            issues,
+            "GSE256185_PUBLIC_GEOMETRY_RUNTIME_CONFIG_CYCLE",
+            REGISTRY_MANIFEST_PATH,
+            "a future dynamic evidence-runtime config must not enter the static manifest",
         )
     expected_a6_paths = {
         A6_INTERIM_PATH,
@@ -6170,6 +6278,73 @@ def validate_gse232572_qualification_authority_preflight_registration(
     return issues
 
 
+def validate_gse256185_public_geometry_registration(
+    repo_root: Path,
+) -> list[Issue]:
+    """Freeze the public aggregate preflight exact3 without reading runtime data."""
+
+    issues: list[Issue] = []
+    for relative, expected_sha256 in (
+        GSE256185_PUBLIC_GEOMETRY_STATIC_LEAF_SHA256.items()
+    ):
+        try:
+            actual_sha256 = sha256_bytes(_read_bytes(repo_root, relative))
+        except (FileNotFoundError, ValueError) as exc:
+            _issue(
+                issues,
+                "GSE256185_PUBLIC_GEOMETRY_STATIC_LEAF",
+                relative,
+                str(exc),
+            )
+            continue
+        if actual_sha256 != expected_sha256:
+            _issue(
+                issues,
+                "GSE256185_PUBLIC_GEOMETRY_STATIC_LEAF",
+                relative,
+                f"current bytes hash {actual_sha256} must remain {expected_sha256}",
+            )
+
+    try:
+        manifest = _load_json(repo_root, REGISTRY_MANIFEST_PATH)
+    except (FileNotFoundError, ValueError, json.JSONDecodeError) as exc:
+        _issue(
+            issues,
+            "GSE256185_PUBLIC_GEOMETRY_MANIFEST_DAG",
+            REGISTRY_MANIFEST_PATH,
+            str(exc),
+        )
+    else:
+        entries = manifest.get("files")
+        manifest_paths = {
+            entry.get("path")
+            for entry in entries
+            if isinstance(entries, list) and isinstance(entry, Mapping)
+        }
+        expected_static_paths = set(
+            GSE256185_PUBLIC_GEOMETRY_STATIC_LEAF_SHA256
+        )
+        if not expected_static_paths.issubset(manifest_paths):
+            _issue(
+                issues,
+                "GSE256185_PUBLIC_GEOMETRY_MANIFEST_DAG",
+                REGISTRY_MANIFEST_PATH,
+                "the bound preflight config, script, and focused test must be exact-hashed by the static manifest",
+            )
+        forbidden_paths = {
+            GSE256185_PUBLIC_GEOMETRY_RUNTIME_CONFIG_PATH,
+            REGISTRY_MANIFEST_PATH,
+        }
+        if manifest_paths & forbidden_paths:
+            _issue(
+                issues,
+                "GSE256185_PUBLIC_GEOMETRY_MANIFEST_DAG",
+                REGISTRY_MANIFEST_PATH,
+                "the future dynamic evidence-runtime config and registry output must not enter the static manifest",
+            )
+    return issues
+
+
 def _gse149487_plumage_nonbinding_core_sha256(protocol: Mapping[str, Any]) -> str:
     """Hash the full protocol after normalizing only the three permitted I/B scalars."""
 
@@ -7425,9 +7600,9 @@ def validate_a1_interim_lineage(
                 "model_selection_allowed": False,
                 "next_phase_authorized": False,
                 "scientific_claim_status": "NOT_ESTABLISHED",
-                "latest_settled_runtime_event_id": "A1-EVT-051",
-                "settled_runtime_event_changed": False,
-                "runtime_event_emitted": False,
+                "latest_settled_runtime_event_id": "A1-EVT-052",
+                "settled_runtime_event_changed": True,
+                "runtime_event_emitted": True,
                 "sealed_contact_allowed": False,
             },
             path,
@@ -7461,6 +7636,7 @@ def validate_a1_interim_lineage(
             GSE232572_DEVELOPMENT_V3_MATERIALIZATION_FAILURE_LINEAGE_ID,
             GSE232572_DEVELOPMENT_V3_MATERIALIZATION_LINEAGE_ID,
             GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_LINEAGE_ID,
+            GSE256185_PUBLIC_GEOMETRY_LINEAGE_ID,
             "gse145046_a2_audit_protocol",
             "gse145046_a2_formal_audit_v1",
             "a1_public_qualifiers_sync_v1",
@@ -8023,6 +8199,104 @@ def validate_a1_interim_lineage(
                 "artifact_payload_read_count_for_ledger": 0,
                 "private_row_artifact_read_count_for_ledger": 0,
                 "private_jsonl_registered_artifact_count": 0,
+            },
+            GSE256185_PUBLIC_GEOMETRY_LINEAGE_ID: {
+                "path": GSE256185_PUBLIC_GEOMETRY_REPORT_PATH,
+                "bytes": GSE256185_PUBLIC_GEOMETRY_REPORT_BYTES,
+                "sha256": GSE256185_PUBLIC_GEOMETRY_REPORT_SHA256,
+                "recorded_at": GSE256185_PUBLIC_GEOMETRY_RECORDED_AT,
+                "dataset_id": "GSE256185",
+                "decision_id": "V3-DEC-021",
+                "schema_version": "route_a_v3_gse256185_public_identifier_pool_geometry_preflight.v1",
+                "protocol_id": "GSE256185_PUBLIC_IDENTIFIER_POOL_GEOMETRY_PREFLIGHT_V1",
+                "status": "PUBLIC_IDENTIFIER_AND_POOL_GEOMETRY_PREFLIGHT_COMPLETE_NOT_QUALIFIED",
+                "authority_role": "PUBLIC_IDENTIFIER_AND_POOL_GEOMETRY_PREFLIGHT_ONLY",
+                "aggregate_only": True,
+                "preflight_complete": True,
+                "aggregate_pool_geometry": {
+                    "total_body_row_count": 11404,
+                    "group_count": 652,
+                    "single_parent_group_count": 637,
+                    "dual_parent_group_count": 15,
+                    "single_parent_groups_with_at_least_3_candidate_rows": 634,
+                    "strict_candidate_rows_in_at_least_3_candidate_groups": 7292,
+                    "reasoned_family_closure_candidate_rows_in_at_least_3_candidate_groups": 7294,
+                    "identifier_grammar_anomaly_counts": {
+                        "MISSING_GROUP_ROLE_DELIMITER": 1,
+                        "UNSIGNED_CCC_ROLE": 1,
+                    },
+                    "strict_axis_is_frozen_observed_identifier_grammar": True,
+                    "reasoned_family_closure_axis_status": "REASONED_FAMILY_CLOSURE_NOT_PUBLISHER_EXPLICIT",
+                    "reasoned_family_closure_axis_is_publisher_explicit": False,
+                },
+                "scope_attestation": {
+                    "ordinary_public_only": True,
+                    "raw_asset_registered": False,
+                    "row_record_output_count": 0,
+                    "member_identifier_output_count": 0,
+                    "member_role_output_count": 0,
+                    "member_context_output_count": 0,
+                    "sequence_value_output_count": 0,
+                    "effect_value_output_count": 0,
+                    "private_or_restricted_input_read_count": 0,
+                    "sealed_contact_count": 0,
+                },
+                "sequence_evaluation": "OUT_OF_SCOPE_NOT_EVALUATED",
+                "edit_budget_evaluation": "OUT_OF_SCOPE_NOT_EVALUATED",
+                "effect_evaluation": "OUT_OF_SCOPE_NOT_EVALUATED",
+                "true_a2_status_evaluation": "OUT_OF_SCOPE_NOT_EVALUATED",
+                "qualification_evaluation": "OUT_OF_SCOPE_NOT_EVALUATED",
+                "current_qualified_counts": {
+                    "ordinary": 1,
+                    "a1": 1,
+                    "true_a2": 0,
+                    "canonical_records": 6547,
+                },
+                "gse256185_contribution": {
+                    "ordinary": 0,
+                    "a1": 0,
+                    "true_a2": 0,
+                    "canonical_records": 0,
+                },
+                "qualified": False,
+                "a1_complete": False,
+                "training_allowed": False,
+                "gpu_work_allowed": False,
+                "model_selection_allowed": False,
+                "next_phase_authorized": False,
+                "scientific_claim_status": "NOT_ESTABLISHED",
+                "sole_next_action": "STOP_NO_FURTHER_ACTION_AUTHORIZED_BY_V3_DEC_021",
+                "producer_lineage": {
+                    "authority_commit": GSE256185_AUTHORITY_COMMIT,
+                    "authority_runtime_i1_commit": GSE256185_AUTHORITY_RUNTIME_I1_COMMIT,
+                    "authority_runtime_i2_commit": GSE256185_AUTHORITY_RUNTIME_I2_COMMIT,
+                    "authority_runtime_binding_commit": GSE256185_AUTHORITY_RUNTIME_BINDING_COMMIT,
+                    "preflight_i1_commit": GSE256185_PUBLIC_GEOMETRY_I1_COMMIT,
+                    "preflight_i2_commit": GSE256185_PUBLIC_GEOMETRY_I2_COMMIT,
+                    "preflight_b2_commit": GSE256185_PUBLIC_GEOMETRY_B2_COMMIT,
+                    "implementation_commit": GSE256185_PUBLIC_GEOMETRY_IMPLEMENTATION_COMMIT,
+                    "binding_commit": GSE256185_PUBLIC_GEOMETRY_BINDING_COMMIT,
+                    "binding_diff_is_config_only": True,
+                    "config_path": GSE256185_PUBLIC_GEOMETRY_CONFIG_PATH,
+                    "config_sha256": GSE256185_PUBLIC_GEOMETRY_STATIC_LEAF_SHA256[
+                        GSE256185_PUBLIC_GEOMETRY_CONFIG_PATH
+                    ],
+                    "script_path": GSE256185_PUBLIC_GEOMETRY_SCRIPT_PATH,
+                    "script_sha256": GSE256185_PUBLIC_GEOMETRY_STATIC_LEAF_SHA256[
+                        GSE256185_PUBLIC_GEOMETRY_SCRIPT_PATH
+                    ],
+                    "focused_test_path": GSE256185_PUBLIC_GEOMETRY_TEST_PATH,
+                    "focused_test_sha256": GSE256185_PUBLIC_GEOMETRY_STATIC_LEAF_SHA256[
+                        GSE256185_PUBLIC_GEOMETRY_TEST_PATH
+                    ],
+                },
+                "predecessor_runtime_event_id": "A1-EVT-052",
+                "expected_next_runtime_event_id": GSE256185_PUBLIC_GEOMETRY_PENDING_RUNTIME_EVENT_ID,
+                "next_runtime_event_id_preallocated": False,
+                "runtime_sync_status": "PENDING_FRESH_EVENT_AFTER_SETTLED_EVT_052",
+                "aggregate_report_read_count_for_ledger": 1,
+                "private_row_artifact_read_count_for_ledger": 0,
+                "raw_asset_registered_artifact_count": 0,
             },
         }
         for lineage_id, expected_record in expected_non_gse200304_lineage.items():
@@ -9686,6 +9960,7 @@ def validate_a1_interim_lineage(
             "GSE149487",
             "GSE217518",
             "GSE232572",
+            "GSE256185",
             "GSE145046",
             "GSE200304",
             "three_utr_candidates",
@@ -10073,6 +10348,75 @@ def validate_a1_interim_lineage(
                 path,
                 issues,
                 "A1_INTERIM_GSE232572",
+            )
+        gse256185 = summary.get("GSE256185")
+        if not isinstance(gse256185, Mapping):
+            _issue(
+                issues,
+                "A1_INTERIM_GSE256185",
+                path,
+                "GSE256185 boundary must be a mapping",
+            )
+        else:
+            expected_gse256185 = {
+                "registry_qualification_status": "AUDIT_PENDING",
+                "authority_role": "PUBLIC_IDENTIFIER_AND_POOL_GEOMETRY_PREFLIGHT_ONLY",
+                "public_identifier_pool_geometry_preflight": {
+                    "artifact_lineage_id": GSE256185_PUBLIC_GEOMETRY_LINEAGE_ID,
+                    "status": "PUBLIC_IDENTIFIER_AND_POOL_GEOMETRY_PREFLIGHT_COMPLETE_NOT_QUALIFIED",
+                    "aggregate_only": True,
+                    "preflight_complete": True,
+                    "total_body_row_count": 11404,
+                    "group_count": 652,
+                    "single_parent_group_count": 637,
+                    "dual_parent_group_count": 15,
+                    "single_parent_groups_with_at_least_3_candidate_rows": 634,
+                    "strict_candidate_rows_in_at_least_3_candidate_groups": 7292,
+                    "reasoned_family_closure_candidate_rows_in_at_least_3_candidate_groups": 7294,
+                    "missing_group_role_delimiter_anomaly_count": 1,
+                    "unsigned_ccc_role_anomaly_count": 1,
+                    "sequence_evaluation": "OUT_OF_SCOPE_NOT_EVALUATED",
+                    "edit_budget_evaluation": "OUT_OF_SCOPE_NOT_EVALUATED",
+                    "effect_evaluation": "OUT_OF_SCOPE_NOT_EVALUATED",
+                    "true_a2_status_evaluation": "OUT_OF_SCOPE_NOT_EVALUATED",
+                    "qualification_evaluation": "OUT_OF_SCOPE_NOT_EVALUATED",
+                    "qualified": False,
+                    "canonical_record_count": 0,
+                    "ordinary_study_contribution": 0,
+                    "a1_study_contribution": 0,
+                    "true_a2_study_contribution": 0,
+                    "changes_qualification_gate": False,
+                    "current_global_qualified_counts": {
+                        "ordinary": 1,
+                        "a1": 1,
+                        "true_a2": 0,
+                        "canonical_records": 6547,
+                    },
+                    "training_allowed": False,
+                    "gpu_work_allowed": False,
+                    "model_selection_allowed": False,
+                    "next_phase_authorized": False,
+                    "predecessor_runtime_event_id": "A1-EVT-052",
+                    "expected_next_runtime_event_id": GSE256185_PUBLIC_GEOMETRY_PENDING_RUNTIME_EVENT_ID,
+                    "next_runtime_event_id_preallocated": False,
+                    "runtime_sync_status": "PENDING_FRESH_EVENT_AFTER_SETTLED_EVT_052",
+                },
+                "qualified": False,
+                "canonical_record_count": 0,
+                "ordinary_study_contribution": 0,
+                "a1_study_contribution": 0,
+                "true_a2_study_contribution": 0,
+                "training_allowed": False,
+                "gpu_work_allowed": False,
+                "model_selection_allowed": False,
+                "next_phase_authorized": False,
+            }
+            _expect_closed_mapping(
+                gse256185,
+                expected_gse256185,
+                path,
+                issues,
+                "A1_INTERIM_GSE256185",
             )
         gse200304 = summary.get("GSE200304")
         if not isinstance(gse200304, Mapping):
@@ -10465,6 +10809,12 @@ def validate_a1_interim_lineage(
             "dec020_prior_aggregate_design_use_may_be_called_untouched": False,
             "dec020_future_route_scoped_possibility_is_current_qualification_or_canonical_count": False,
             "dec020_deferred_v4_registration_is_active_implementation": False,
+            "gse256185_public_identifier_pool_geometry_preflight_is_study_qualification": False,
+            "gse256185_aggregate_pool_geometry_is_study_count_credit": False,
+            "gse256185_total_body_row_count_is_canonical_record_count": False,
+            "gse256185_reasoned_family_closure_axis_is_publisher_explicit": False,
+            "gse256185_public_identifier_pool_geometry_preflight_establishes_true_a2": False,
+            "gse256185_public_identifier_pool_geometry_preflight_authorizes_training_model_selection_or_next_phase": False,
             "a1_phase_complete": False,
             "route_a_established": False,
         }
@@ -10665,6 +11015,10 @@ def validate_a1_interim_lineage(
                     "status": "NOT_RUN",
                     "reason": "FOUR_FILE_APPEND_ONLY_LOW_TO_MEDIUM_RISK_BATCH_SELF_CHECKED_UNDER_GLOBAL_LIGHTWEIGHT_POLICY",
                 },
+                "gse256185_post_preflight_ledger_independent_review": {
+                    "status": "NOT_RUN",
+                    "reason": "FOUR_FILE_APPEND_ONLY_LOW_TO_MEDIUM_RISK_BATCH_SELF_CHECKED_UNDER_GLOBAL_LIGHTWEIGHT_POLICY",
+                },
                 "targeted_dec020_authority_registry_tests": {
                     "status": "PASS",
                     "scope": "DEC020_EXACT10_AUTHORITY_PLUS_EXACT4_REGISTRY_EXACT3_V4_STATIC_EVT051_SETTLED_RUNTIME_SYNCED",
@@ -10674,10 +11028,18 @@ def validate_a1_interim_lineage(
                 "dec020_runtime_sync_event_id": "A1-EVT-051",
                 "targeted_dec021_authority_registry_tests": {
                     "status": "PASS",
-                    "scope": "DEC021_EXACT10_AUTHORITY_GSE256185_PREFLIGHT_ONLY_EVT051_SETTLED",
+                    "scope": "DEC021_EXACT10_AUTHORITY_GSE256185_PREFLIGHT_ONLY_EVT052_SETTLED",
                 },
                 "dec021_active_authority_exact10_registration": "PASS",
-                "dec021_runtime_event_emitted": False,
+                "dec021_runtime_event_emitted": True,
+                "targeted_gse256185_public_identifier_pool_geometry_preflight_ledger_tests": {
+                    "status": "PASS",
+                    "scope": "ONE_PUBLIC_AGGREGATE_REPORT_THREE_STATIC_PRODUCER_LEAVES_EVT052_SETTLED_RUNTIME_PENDING",
+                },
+                "gse256185_public_identifier_pool_geometry_preflight_artifact_registration": "PASS",
+                "gse256185_public_identifier_pool_geometry_preflight_three_static_leaf_registration": "PASS",
+                "gse256185_public_identifier_pool_geometry_preflight_no_promotion_boundary": "PASS",
+                "gse256185_public_identifier_pool_geometry_preflight_runtime_event_id": GSE256185_PUBLIC_GEOMETRY_PENDING_RUNTIME_EVENT_ID,
             },
             path,
             issues,
@@ -10690,7 +11052,7 @@ def validate_a1_interim_lineage(
     _expect(
         interim,
         "latest_evidence_update_id",
-        GSE200304_DEC020_V4_EVIDENCE_UPDATE_ID,
+        GSE256185_PUBLIC_GEOMETRY_EVIDENCE_UPDATE_ID,
         path,
         issues,
         "A1_INTERIM_TIME",
@@ -10698,14 +11060,14 @@ def validate_a1_interim_lineage(
     generated = interim.get("generated_at")
     updated = interim.get("updated_at")
     if (
-        generated != DEC021_AUTHORITY_LEDGER_AT
-        or updated != DEC021_AUTHORITY_LEDGER_AT
+        generated != GSE256185_PUBLIC_GEOMETRY_LEDGER_AT
+        or updated != GSE256185_PUBLIC_GEOMETRY_LEDGER_AT
     ):
         _issue(
             issues,
             "A1_INTERIM_TIME",
             path,
-            "generated_at and updated_at must identify the exact DEC021 authority registration timestamp",
+            "generated_at and updated_at must identify the exact GSE256185 aggregate-preflight ledger timestamp",
         )
     if generated != updated:
         _issue(issues, "A1_INTERIM_TIME", path, "generated_at and updated_at must identify the same amended record bytes")
@@ -10740,6 +11102,9 @@ def validate_a1_interim_lineage(
         gse232572_qualification_authority_preflight_dt = datetime.fromisoformat(
             "2026-08-13T01:01:33+08:00"
         )
+        gse256185_public_geometry_preflight_dt = datetime.fromisoformat(
+            "2026-08-13T21:06:51+08:00"
+        )
     except ValueError:
         _issue(issues, "A1_INTERIM_TIME", path, "updated_at must be an ISO-8601 timestamp with offset")
     else:
@@ -10763,12 +11128,13 @@ def validate_a1_interim_lineage(
             or updated_dt < gse232572_public_recovery_audit_dt
             or updated_dt < gse232572_development_v3_materialization_dt
             or updated_dt < gse232572_qualification_authority_preflight_dt
+            or updated_dt < gse256185_public_geometry_preflight_dt
         ):
             _issue(
                 issues,
                 "A1_INTERIM_TIME",
                 path,
-                "updated_at must follow all preserved evidence events, DEC-019 owner authorization, successor integration, GSE200304 post-adjudication artifacts, GSE149487 exact21 acquisition, the GSE217518 public-authority preflight, the GSE232572 public-recovery audit, the GSE232572 development V3 materialization, and the GSE232572 qualification-authority preflight",
+                "updated_at must follow all preserved evidence events, DEC-019 owner authorization, successor integration, GSE200304 post-adjudication artifacts, GSE149487 exact21 acquisition, the GSE217518 public-authority preflight, the GSE232572 public-recovery audit, the GSE232572 development V3 materialization, the GSE232572 qualification-authority preflight, and the GSE256185 public geometry preflight",
             )
     return issues
 
@@ -12652,6 +13018,7 @@ def validate_bundle(repo_root: Path) -> list[Issue]:
         )
     )
     issues.extend(validate_gse200304_dec020_v4_post_adjudication_registration(repo_root))
+    issues.extend(validate_gse256185_public_geometry_registration(repo_root))
     issues.extend(validate_python_static_safety(repo_root))
     issues.extend(validate_runner_and_guard_ast(repo_root))
     issues.extend(scan_conflict_markers(repo_root))

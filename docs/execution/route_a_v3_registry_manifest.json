@@ -69,7 +69,7 @@
     {
       "path": "docs/execution/route_a_v3_a1_interim.yaml",
       "role": "A1_ACTIVE_INTERIM_RECORD",
-      "sha256": "84b1067df43bb4a75b4de9868a5ab92a04286815418c140d9b21bab0e58739fc"
+      "sha256": "f178750dfed15fde42699840caef314e39b6b4fa4acf72dd8606695ae7c930c4"
     },
     {
       "path": "docs/execution/route_a_v3_a6_interim.yaml",
@@ -432,6 +432,21 @@
       "sha256": "298304c19c3faa6103221913cb8b30e25fd56d3b55eb65ea04f2e8d82f7c3954"
     },
     {
+      "path": "configs/route_a_v3_gse256185_public_identifier_pool_geometry_preflight_v1.json",
+      "role": "GSE256185_PUBLIC_IDENTIFIER_POOL_GEOMETRY_PREFLIGHT_BOUND_CONFIG",
+      "sha256": "cd5aca36925d60797f18eccedd5ea6fa253c36f93d6e24c832a452b86169a34f"
+    },
+    {
+      "path": "scripts/route_a_v3/preflight_gse256185_public_identifier_pool_geometry.py",
+      "role": "GSE256185_PUBLIC_IDENTIFIER_POOL_GEOMETRY_PREFLIGHT_PRODUCER",
+      "sha256": "300c80811b9e4159c011041741d36cdbd265993381e9dbe08741cb89c639c196"
+    },
+    {
+      "path": "tests/route_a_v3/test_preflight_gse256185_public_identifier_pool_geometry.py",
+      "role": "GSE256185_PUBLIC_IDENTIFIER_POOL_GEOMETRY_PREFLIGHT_FOCUSED_TEST",
+      "sha256": "6eb989b33e0b770f16ccd5b1e1c9118a8e78ed548cbb4814391097d793ac0892"
+    },
+    {
       "path": "configs/route_a_v3_a6_cpu_exact_absorbing_dag_v1.json",
       "role": "A6_CPU_EXACT_ABSORBING_DAG_BOUND_PROTOCOL",
       "sha256": "84e9a3f21ac6293faa167eb08eb40e8886bfe43daaa374b2c7613fbc9baecab8"
@@ -464,18 +479,18 @@
     {
       "path": "tests/route_a_v3/test_a0_integrity_guards.py",
       "role": "A0_AUTHORITY_INTEGRITY_GUARD_TEST",
-      "sha256": "ba6d8ca6ebb569e2094da74f798a07c9a523562f9f633bd43c2f2b2e50bf844e"
+      "sha256": "89702695c37b759a1c78e5b9d73653b0f158861e41a0232c7b6b6b061259cfc2"
     },
     {
       "path": "scripts/route_a_v3/validate_a0_bundle.py",
       "role": "A0_STATIC_AND_SEMANTIC_VALIDATOR",
-      "sha256": "478f1013bdd1a689728d594ee017c51e70b14c5efcaabf5151ab373e3f3ca36a"
+      "sha256": "7c7f6d47adc8914d1a0b3d92e59167c1743e6dc4125eec0d73d74e8f0f2a0cdf"
     }
   ],
   "initial_generated_at": "2026-08-10T10:10:05+08:00",
-  "generated_at": "2026-08-13T19:50:01+08:00",
-  "updated_at": "2026-08-13T19:50:01+08:00",
-  "manifest_status": "DEC021_GSE256185_PUBLIC_IDENTIFIER_AND_POOL_GEOMETRY_PREFLIGHT_ONLY_REGISTERED_EVT051_SETTLED_A6_IN_PROGRESS_L3_NOT_ESTABLISHED_A7_NOT_RUN",
+  "generated_at": "2026-08-13T21:10:31+08:00",
+  "updated_at": "2026-08-13T21:10:31+08:00",
+  "manifest_status": "DEC021_GSE256185_PUBLIC_IDENTIFIER_POOL_GEOMETRY_PREFLIGHT_REGISTERED_EVT052_SETTLED_EVIDENCE_RUNTIME_PENDING_A1_INCOMPLETE_A6_IN_PROGRESS_L3_NOT_ESTABLISHED_A7_NOT_RUN",
   "schema_version": "1.0.0",
   "sealed_contact": false,
   "version": "3.0.0"

@@ -306,7 +306,7 @@ def test_dec020_manifest_rejects_unregistered_v4_path(
     assert "REGISTRY_MANIFEST_CLOSURE" in codes
 
 
-def test_dec021_authority_is_public_aggregate_geometry_only_and_preserves_evt051(
+def test_dec021_authority_is_public_aggregate_geometry_only_and_preserves_history(
     validator,
     repo_root,
 ):
@@ -358,8 +358,13 @@ def test_dec021_authority_is_public_aggregate_geometry_only_and_preserves_evt051
     assert "GSE256185" not in data["true_a2_recovery_candidate_dataset_ids"]
     interim = validator._load_yaml(repo_root, validator.A1_INTERIM_PATH)
     current = interim["dec021_current_disposition"]
-    assert current["latest_settled_runtime_event_id"] == "A1-EVT-051"
-    assert current["settled_runtime_event_changed"] is False
+    assert amendment["historical_preservation"]["latest_settled_runtime_event_id"] == (
+        "A1-EVT-051"
+    )
+    assert amendment["historical_preservation"]["evt051_settled_state_changed"] is False
+    assert current["latest_settled_runtime_event_id"] == "A1-EVT-052"
+    assert current["settled_runtime_event_changed"] is True
+    assert current["runtime_event_emitted"] is True
     assert current["current_qualified_counts"] == {
         "ordinary": 1,
         "a1": 1,
@@ -413,6 +418,151 @@ def test_dec021_cannot_promote_preflight_to_qualification_or_training(
     assert "DEC021_A1_POLICY" in codes
     assert "DEC021_ROOT_POLICY" in codes
     assert "DEC021_DATA_ROLE" in codes
+
+
+def test_gse256185_public_geometry_registration_is_closed(
+    validator,
+    repo_root,
+):
+    manifest = validator._load_json(repo_root, validator.REGISTRY_MANIFEST_PATH)
+    manifest_paths = {row["path"] for row in manifest["files"]}
+    static_paths = set(validator.GSE256185_PUBLIC_GEOMETRY_STATIC_LEAF_SHA256)
+    assert len(static_paths) == 3
+    assert static_paths.issubset(manifest_paths)
+    assert validator.GSE256185_PUBLIC_GEOMETRY_RUNTIME_CONFIG_PATH not in manifest_paths
+    assert validator.validate_gse256185_public_geometry_registration(repo_root) == []
+
+    interim = validator._load_yaml(repo_root, validator.A1_INTERIM_PATH)
+    lineage = interim["artifact_lineage"][validator.GSE256185_PUBLIC_GEOMETRY_LINEAGE_ID]
+    assert lineage["path"] == validator.GSE256185_PUBLIC_GEOMETRY_REPORT_PATH
+    assert lineage["bytes"] == validator.GSE256185_PUBLIC_GEOMETRY_REPORT_BYTES
+    assert lineage["sha256"] == validator.GSE256185_PUBLIC_GEOMETRY_REPORT_SHA256
+    assert lineage["status"] == (
+        "PUBLIC_IDENTIFIER_AND_POOL_GEOMETRY_PREFLIGHT_COMPLETE_NOT_QUALIFIED"
+    )
+    assert lineage["aggregate_pool_geometry"] == {
+        "total_body_row_count": 11404,
+        "group_count": 652,
+        "single_parent_group_count": 637,
+        "dual_parent_group_count": 15,
+        "single_parent_groups_with_at_least_3_candidate_rows": 634,
+        "strict_candidate_rows_in_at_least_3_candidate_groups": 7292,
+        "reasoned_family_closure_candidate_rows_in_at_least_3_candidate_groups": 7294,
+        "identifier_grammar_anomaly_counts": {
+            "MISSING_GROUP_ROLE_DELIMITER": 1,
+            "UNSIGNED_CCC_ROLE": 1,
+        },
+        "strict_axis_is_frozen_observed_identifier_grammar": True,
+        "reasoned_family_closure_axis_status": (
+            "REASONED_FAMILY_CLOSURE_NOT_PUBLISHER_EXPLICIT"
+        ),
+        "reasoned_family_closure_axis_is_publisher_explicit": False,
+    }
+    assert lineage["current_qualified_counts"] == {
+        "ordinary": 1,
+        "a1": 1,
+        "true_a2": 0,
+        "canonical_records": 6547,
+    }
+    assert lineage["gse256185_contribution"] == {
+        "ordinary": 0,
+        "a1": 0,
+        "true_a2": 0,
+        "canonical_records": 0,
+    }
+    assert lineage["qualified"] is False
+    assert lineage["training_allowed"] is False
+    assert lineage["gpu_work_allowed"] is False
+    assert lineage["model_selection_allowed"] is False
+    assert lineage["next_phase_authorized"] is False
+    assert lineage["predecessor_runtime_event_id"] == "A1-EVT-052"
+    assert lineage["expected_next_runtime_event_id"] == (
+        validator.GSE256185_PUBLIC_GEOMETRY_PENDING_RUNTIME_EVENT_ID
+    )
+    assert lineage["next_runtime_event_id_preallocated"] is False
+    assert lineage["runtime_sync_status"] == (
+        "PENDING_FRESH_EVENT_AFTER_SETTLED_EVT_052"
+    )
+    assert lineage["scope_attestation"]["raw_asset_registered"] is False
+    assert lineage["scope_attestation"]["row_record_output_count"] == 0
+    assert lineage["scope_attestation"]["member_identifier_output_count"] == 0
+    assert lineage["scope_attestation"]["sequence_value_output_count"] == 0
+    assert lineage["scope_attestation"]["effect_value_output_count"] == 0
+
+
+def test_gse256185_rehashed_interim_cannot_promote_geometry_to_qualification(
+    validator,
+    repo_root,
+    tmp_path,
+    monkeypatch,
+):
+    def mutate(interim):
+        lineage = interim["artifact_lineage"][
+            validator.GSE256185_PUBLIC_GEOMETRY_LINEAGE_ID
+        ]
+        lineage["qualified"] = True
+        lineage["gse256185_contribution"]["ordinary"] = 1
+        lineage["training_allowed"] = True
+        boundary = interim["dataset_boundary_summary"]["GSE256185"]
+        boundary["qualified"] = True
+        boundary["ordinary_study_contribution"] = 1
+        boundary["training_allowed"] = True
+
+    codes = _validate_rehashed_interim_bypass(
+        validator,
+        repo_root,
+        tmp_path,
+        monkeypatch,
+        mutate,
+    )
+    assert "A1_INTERIM_LINEAGE" in codes
+    assert "A1_INTERIM_GSE256185" in codes
+
+
+def test_gse256185_synchronized_static_leaf_rehash_cannot_bypass_binding(
+    validator,
+    repo_root,
+    tmp_path,
+    monkeypatch,
+):
+    manifest = _copy_manifest_bundle(validator, repo_root, tmp_path)
+    config_path = tmp_path / validator.GSE256185_PUBLIC_GEOMETRY_CONFIG_PATH
+    config = json.loads(config_path.read_text(encoding="utf-8"))
+    config["frozen_outer_truth"]["training_allowed"] = True
+    config_path.write_text(json.dumps(config, indent=2) + "\n", encoding="utf-8")
+    config_sha256 = validator.sha256_file(config_path)
+    next(
+        row
+        for row in manifest["files"]
+        if row["path"] == validator.GSE256185_PUBLIC_GEOMETRY_CONFIG_PATH
+    )["sha256"] = config_sha256
+
+    interim_path = tmp_path / validator.A1_INTERIM_PATH
+    interim = yaml.safe_load(interim_path.read_text(encoding="utf-8"))
+    interim["artifact_lineage"][validator.GSE256185_PUBLIC_GEOMETRY_LINEAGE_ID][
+        "producer_lineage"
+    ]["config_sha256"] = config_sha256
+    interim_path.write_text(
+        yaml.safe_dump(interim, sort_keys=False),
+        encoding="utf-8",
+    )
+    interim_sha256 = validator.sha256_file(interim_path)
+    monkeypatch.setattr(validator, "EXPECTED_A1_INTERIM_SHA256", interim_sha256)
+    next(
+        row
+        for row in manifest["files"]
+        if row["path"] == validator.A1_INTERIM_PATH
+    )["sha256"] = interim_sha256
+    (tmp_path / validator.REGISTRY_MANIFEST_PATH).write_text(
+        json.dumps(manifest, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+    codes = _codes(validator.validate_bundle(tmp_path))
+    assert "REGISTRY_MANIFEST_HASH_MISMATCH" not in codes
+    assert "A1_INTERIM_CANONICAL_HASH" not in codes
+    assert "GSE256185_PUBLIC_GEOMETRY_STATIC_LEAF" in codes
+    assert "A1_INTERIM_LINEAGE" in codes
 
 
 def test_decision_log_requires_all_ids_and_historical_m0_decision(validator, repo_root):
