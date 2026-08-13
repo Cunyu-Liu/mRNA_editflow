@@ -11,7 +11,7 @@
   "event_name": "GSE256185_AGGREGATE_ROW_LEVEL_QUALIFICATION_PREFLIGHT_REGISTERED_STOP_CURRENT_PROTOCOL_QUALIFICATION_UNCHANGED",
   "sync_type": "APPEND_ONLY_PUBLIC_AGGREGATE_EVIDENCE_REGISTRATION_NO_SCIENTIFIC_STATE_CHANGE",
   "implementation_binding": {
-    "binding_scheme": "LEDGER_L_EXACT4_THEN_I_EXACT3_THEN_CONFIG_ONLY_B_V1",
+    "binding_scheme": "LEDGER_L_EXACT4_THEN_FROZEN_I1_EXACT3_THEN_DYNAMIC_I2_EXACT3_THEN_CONFIG_ONLY_B2_V1",
     "status": "UNKNOWN_NOT_ASSERTED",
     "implementation_commit": "UNKNOWN_NOT_ASSERTED",
     "implementation_script_path": "scripts/route_a_v3/gse256185_aggregate_row_level_qualification_preflight_runtime_sync.py",
@@ -24,7 +24,7 @@
       "implementation_binding.implementation_script_sha256",
       "implementation_binding.implementation_test_sha256"
     ],
-    "activation_rule": "L is the exact4 ledger commit. I is its direct exact3 child and retains exactly the four implementation-binding scalars as UNKNOWN_NOT_ASSERTED. B is the direct config-only child of I and binds only those four scalars. Production requires a clean worktree and index with HEAD equal to upstream and origin at B before any registered-report, prepared-output, or runtime I/O."
+    "activation_rule": "L is the frozen exact4 ledger commit. Frozen I1 is its direct exact3 child. Dynamic I2 is the direct exact3 child of I1, freezes I1 parent, changed paths, and blobs, and retains exactly the four implementation-binding scalars as UNKNOWN_NOT_ASSERTED. B2 is the direct config-only child of I2 and binds only those four scalars. Production requires a clean worktree and index with HEAD equal to upstream and origin at B2 before any registered-report, prepared-output, or runtime I/O."
   },
   "repository_authority": {
     "production_repo_root": "/home/cunyuliu/mrna_editflow_goal/worktrees/routea_v3_a1_20260810",
@@ -37,6 +37,21 @@
     "binding_exact_changed_paths": [
       "configs/route_a_v3_gse256185_aggregate_row_level_qualification_preflight_runtime_sync_v1.json"
     ],
+    "predecessor_implementation_i1": {
+      "status": "FROZEN_BOUND_EXACT3",
+      "commit": "0b57b0a03dc5ebd221d7bcbdf74feb7034ca9f0d",
+      "expected_parent": "7f1546c1012df413781796aeb9d614a6601e7322",
+      "exact_changed_paths": [
+        "configs/route_a_v3_gse256185_aggregate_row_level_qualification_preflight_runtime_sync_v1.json",
+        "scripts/route_a_v3/gse256185_aggregate_row_level_qualification_preflight_runtime_sync.py",
+        "tests/route_a_v3/test_gse256185_aggregate_row_level_qualification_preflight_runtime_sync.py"
+      ],
+      "blob_sha256_by_path": {
+        "configs/route_a_v3_gse256185_aggregate_row_level_qualification_preflight_runtime_sync_v1.json": "3e6c1b0f0b44e1b3448a184faf13173418ebe3e62cb6b0f887ead1be50b3e71b",
+        "scripts/route_a_v3/gse256185_aggregate_row_level_qualification_preflight_runtime_sync.py": "c0e25214dbeb45358170beeb68c323d0ab97701d1ba8a4236ab88836729c1d8d",
+        "tests/route_a_v3/test_gse256185_aggregate_row_level_qualification_preflight_runtime_sync.py": "da1bbb62b10f1989d365c5e01ff0e12afcb32ee6f1674da24ca08c2d5ccb0462"
+      }
+    },
     "predecessor_ledger": {
       "status": "BOUND",
       "commit": "7f1546c1012df413781796aeb9d614a6601e7322",
