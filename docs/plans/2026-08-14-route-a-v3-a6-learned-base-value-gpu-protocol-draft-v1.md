@@ -261,6 +261,16 @@ w(a)=\exp(\operatorname{clip}(z_{LCB}(a),-4,4)).
 Thus terminal weights are strictly positive. The complete tilt manifest is
 frozen before value updates. Any change requires a new protocol.
 
+The absorbing boundary is exact and is not learned:
+
+\[
+h(a)=w(a), \qquad V(a)=\log w(a)
+\]
+
+for every valid absorbing terminal state `a`. The value network is evaluated only
+on transient states; it may not overwrite or approximate this terminal boundary.
+Numerical-failure states have no terminal weight and fail the run.
+
 ### 6.2 Base objective
 
 Eligible observed candidates have at most five source-relative edits. For each

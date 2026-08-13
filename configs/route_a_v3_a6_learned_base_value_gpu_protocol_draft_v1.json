@@ -300,6 +300,9 @@
     "beta": 1.0,
     "terminal_weight_formula": "w=exp(clamp(beta*z_lcb,-4,4))",
     "strictly_positive": true,
+    "absorbing_terminal_boundary_h_equals_w": true,
+    "absorbing_terminal_potential_formula": "V_terminal=log(w_terminal)",
+    "learned_value_network_evaluated_on_absorbing_terminal_states": false,
     "numerical_failure_weight_defined": false,
     "terminal_tilt_frozen_before_value_parameter_updates": true,
     "terminal_tilt_change_requires_new_protocol": true
