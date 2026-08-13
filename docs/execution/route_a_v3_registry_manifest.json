@@ -74,7 +74,7 @@
     {
       "path": "docs/execution/route_a_v3_a1_interim.yaml",
       "role": "A1_ACTIVE_INTERIM_RECORD",
-      "sha256": "6f7c2b560e6a96e38d68de168d26623203243386dd116ba267003e23509a231d"
+      "sha256": "d62d7485b848571d618c797ad04284e8725b3fc6ba2e0dc42becffbfd0fc5810"
     },
     {
       "path": "docs/execution/route_a_v3_a6_interim.yaml",
@@ -452,6 +452,21 @@
       "sha256": "6eb989b33e0b770f16ccd5b1e1c9118a8e78ed548cbb4814391097d793ac0892"
     },
     {
+      "path": "configs/route_a_v3_gse256185_aggregate_row_level_qualification_preflight_v1.json",
+      "role": "GSE256185_AGGREGATE_ROW_LEVEL_QUALIFICATION_PREFLIGHT_BOUND_CONFIG",
+      "sha256": "50d37a4a5f49e0f9b458b35ada343aa8d77229fff5ac13bdff8ff88d78d4e7e8"
+    },
+    {
+      "path": "scripts/route_a_v3/preflight_gse256185_aggregate_row_level_qualification.py",
+      "role": "GSE256185_AGGREGATE_ROW_LEVEL_QUALIFICATION_PREFLIGHT_PRODUCER",
+      "sha256": "20d0b4a3355fb98cf3c67268f314c0d1fa571034772074abdfbf9f6037c90f0f"
+    },
+    {
+      "path": "tests/route_a_v3/test_preflight_gse256185_aggregate_row_level_qualification.py",
+      "role": "GSE256185_AGGREGATE_ROW_LEVEL_QUALIFICATION_PREFLIGHT_FOCUSED_TEST",
+      "sha256": "eaece480ead17f5ef3a8eb2662d3a0372e59910d07eee0eb77f1d55b4580e226"
+    },
+    {
       "path": "configs/route_a_v3_a6_cpu_exact_absorbing_dag_v1.json",
       "role": "A6_CPU_EXACT_ABSORBING_DAG_BOUND_PROTOCOL",
       "sha256": "84e9a3f21ac6293faa167eb08eb40e8886bfe43daaa374b2c7613fbc9baecab8"
@@ -484,18 +499,18 @@
     {
       "path": "tests/route_a_v3/test_a0_integrity_guards.py",
       "role": "A0_AUTHORITY_INTEGRITY_GUARD_TEST",
-      "sha256": "a40e9820e7f24583f6e4e19b850de0fedc6f53994140af50d5c341af1f1f87ad"
+      "sha256": "5a690fe50cb7db99ff1ee0c702fe0dbc2a1996b282dab53a980b1b8a27e18821"
     },
     {
       "path": "scripts/route_a_v3/validate_a0_bundle.py",
       "role": "A0_STATIC_AND_SEMANTIC_VALIDATOR",
-      "sha256": "ad48b02c296c5c9cb06f11984cfe0c8fc8b0bf0b8d6b246d4b4641890b02f243"
+      "sha256": "3ea7ab270e33d7eebad9288265aa3d5a07ba2884698c11d3b277f5163393b4cf"
     }
   ],
   "initial_generated_at": "2026-08-10T10:10:05+08:00",
-  "generated_at": "2026-08-13T22:20:01+08:00",
-  "updated_at": "2026-08-13T22:20:01+08:00",
-  "manifest_status": "DEC022_GSE256185_AGGREGATE_ROW_LEVEL_QUALIFICATION_PREFLIGHT_ONLY_REGISTERED_EVT053_SETTLED_PENDING_FRESH_RUNTIME_EVENT_A1_INCOMPLETE_A6_IN_PROGRESS_L3_NOT_ESTABLISHED_A7_NOT_RUN",
+  "generated_at": "2026-08-13T23:35:01+08:00",
+  "updated_at": "2026-08-13T23:35:01+08:00",
+  "manifest_status": "DEC022_GSE256185_AGGREGATE_ROW_LEVEL_QUALIFICATION_PREFLIGHT_REGISTERED_EVT054_SETTLED_EVIDENCE_RUNTIME_PENDING_A1_INCOMPLETE_A6_IN_PROGRESS_L3_NOT_ESTABLISHED_A7_NOT_RUN",
   "schema_version": "1.0.0",
   "sealed_contact": false,
   "version": "3.0.0"

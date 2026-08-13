@@ -714,6 +714,104 @@ def test_gse256185_synchronized_static_leaf_rehash_cannot_bypass_binding(
     assert "A1_INTERIM_LINEAGE" in codes
 
 
+def test_gse256185_row_preflight_registration_is_closed(validator, repo_root):
+    assert validator.validate_gse256185_row_preflight_registration(repo_root) == []
+    manifest = validator._load_json(repo_root, validator.REGISTRY_MANIFEST_PATH)
+    manifest_paths = {row["path"] for row in manifest["files"]}
+    static_paths = set(validator.GSE256185_ROW_PREFLIGHT_STATIC_LEAF_SHA256)
+    assert len(static_paths) == 3
+    assert static_paths.issubset(manifest_paths)
+    assert validator.GSE256185_ROW_PREFLIGHT_RUNTIME_CONFIG_PATH not in manifest_paths
+    assert validator.GSE256185_ROW_PREFLIGHT_REPORT_PATH not in manifest_paths
+    assert not any("/raw/GSE256185/" in path for path in manifest_paths)
+
+    interim = validator._load_yaml(repo_root, validator.A1_INTERIM_PATH)
+    lineage = interim["artifact_lineage"][validator.GSE256185_ROW_PREFLIGHT_LINEAGE_ID]
+    assert lineage["path"] == validator.GSE256185_ROW_PREFLIGHT_REPORT_PATH
+    assert lineage["bytes"] == validator.GSE256185_ROW_PREFLIGHT_REPORT_BYTES
+    assert lineage["sha256"] == validator.GSE256185_ROW_PREFLIGHT_REPORT_SHA256
+    assert lineage["status"] == "STOP_CURRENT_PROTOCOL_NOT_QUALIFIED"
+    assert lineage["required_gate_axis_count"] == 17
+    assert lineage["required_gate_statuses"] == validator.GSE256185_ROW_PREFLIGHT_GATE_STATUSES
+    assert lineage["all_required_gates_pass"] is False
+    assert lineage["aggregate_observation"]["candidate_universe"]["review_pool_count"] == 634
+    assert lineage["aggregate_observation"]["candidate_universe"]["review_candidate_row_count"] == 7292
+    assert lineage["aggregate_observation"]["eligible_after_row_preflight_exclusions"] == {
+        "pool_count": 633,
+        "parent_row_count": 633,
+        "candidate_row_count": 7288,
+        "row_count": 7921,
+        "candidate_family_counts": {"win": 5123, "+CCC": 1090, "-CCC": 1075},
+        "pool_family_counts": {"win": 185, "+CCC": 218, "-CCC": 230},
+    }
+    assert lineage["gse256185_contribution"] == {
+        "ordinary": 0, "a1": 0, "true_a2": 0, "canonical_records": 0,
+    }
+    assert lineage["qualified"] is False
+    assert lineage["training_allowed"] is False
+    assert lineage["gpu_work_allowed"] is False
+    assert lineage["model_selection_allowed"] is False
+    assert lineage["next_phase_authorized"] is False
+    assert lineage["scope_attestation"]["member_identifier_output_count"] == 0
+    assert lineage["scope_attestation"]["sequence_output_count"] == 0
+    assert lineage["scope_attestation"]["row_effect_output_count"] == 0
+    assert lineage["predecessor_runtime_event_id"] == "A1-EVT-054"
+    assert lineage["expected_next_runtime_event_id"] == "PENDING_FRESH_RUNTIME_EVENT_ID"
+
+
+def test_gse256185_row_preflight_rehash_cannot_promote_count_or_disclose(
+    validator, repo_root, tmp_path, monkeypatch
+):
+    def mutate(interim):
+        lineage = interim["artifact_lineage"][validator.GSE256185_ROW_PREFLIGHT_LINEAGE_ID]
+        lineage["qualified"] = True
+        lineage["all_required_gates_pass"] = True
+        lineage["required_gate_statuses"]["INDEPENDENT_BIOLOGICAL_REPLICATE_AND_VALID_STANDARD_ERROR_CLOSED"] = "PASS"
+        lineage["gse256185_contribution"]["ordinary"] = 1
+        lineage["scope_attestation"]["member_identifier_output_count"] = 1
+        boundary = interim["dataset_boundary_summary"]["GSE256185"]
+        boundary["qualified"] = True
+        boundary["ordinary_study_contribution"] = 1
+
+    codes = _validate_rehashed_interim_bypass(
+        validator, repo_root, tmp_path, monkeypatch, mutate
+    )
+    assert "A1_INTERIM_GSE256185_ROW_PREFLIGHT" in codes
+    assert "A1_INTERIM_GSE256185_ROW_PREFLIGHT_GATES" in codes
+    assert "A1_INTERIM_GSE256185_ROW_PREFLIGHT_COUNTS" in codes
+    assert "A1_INTERIM_GSE256185_ROW_PREFLIGHT_DISCLOSURE" in codes
+    assert "A1_INTERIM_GSE256185" in codes
+
+
+def test_gse256185_row_preflight_synchronized_leaf_rehash_is_rejected(
+    validator, repo_root, tmp_path, monkeypatch
+):
+    manifest = _copy_manifest_bundle(validator, repo_root, tmp_path)
+    config_path = tmp_path / validator.GSE256185_ROW_PREFLIGHT_CONFIG_PATH
+    config = json.loads(config_path.read_text(encoding="utf-8"))
+    config["frozen_outer_truth"]["training_allowed"] = True
+    config_path.write_text(json.dumps(config, indent=2) + "\n", encoding="utf-8")
+    config_sha256 = validator.sha256_file(config_path)
+    next(row for row in manifest["files"] if row["path"] == validator.GSE256185_ROW_PREFLIGHT_CONFIG_PATH)["sha256"] = config_sha256
+
+    interim_path = tmp_path / validator.A1_INTERIM_PATH
+    interim = yaml.safe_load(interim_path.read_text(encoding="utf-8"))
+    interim["artifact_lineage"][validator.GSE256185_ROW_PREFLIGHT_LINEAGE_ID]["producer_lineage"]["config_sha256"] = config_sha256
+    interim_path.write_text(yaml.safe_dump(interim, sort_keys=False), encoding="utf-8")
+    interim_sha256 = validator.sha256_file(interim_path)
+    monkeypatch.setattr(validator, "EXPECTED_A1_INTERIM_SHA256", interim_sha256)
+    next(row for row in manifest["files"] if row["path"] == validator.A1_INTERIM_PATH)["sha256"] = interim_sha256
+    (tmp_path / validator.REGISTRY_MANIFEST_PATH).write_text(
+        json.dumps(manifest, indent=2) + "\n", encoding="utf-8"
+    )
+
+    codes = _codes(validator.validate_bundle(tmp_path))
+    assert "REGISTRY_MANIFEST_HASH_MISMATCH" not in codes
+    assert "A1_INTERIM_CANONICAL_HASH" not in codes
+    assert "GSE256185_ROW_PREFLIGHT_STATIC_LEAF" in codes
+    assert "A1_INTERIM_GSE256185_ROW_PREFLIGHT_PRODUCER" in codes
+
+
 def test_decision_log_requires_all_ids_and_historical_m0_decision(validator, repo_root):
     decision_log = validator._load_yaml(repo_root, validator.DECISION_LOG_PATH)
     assert validator.validate_decision_log(decision_log) == []

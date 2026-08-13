@@ -44,7 +44,7 @@ DECISION_LOG_PATH = "docs/execution/route_a_v3_decision_log.yaml"
 REGISTRY_MANIFEST_PATH = "docs/execution/route_a_v3_registry_manifest.json"
 A1_INTERIM_PATH = "docs/execution/route_a_v3_a1_interim.yaml"
 A6_INTERIM_PATH = "docs/execution/route_a_v3_a6_interim.yaml"
-EXPECTED_A1_INTERIM_SHA256 = "6f7c2b560e6a96e38d68de168d26623203243386dd116ba267003e23509a231d"
+EXPECTED_A1_INTERIM_SHA256 = "d62d7485b848571d618c797ad04284e8725b3fc6ba2e0dc42becffbfd0fc5810"
 EXPECTED_A6_INTERIM_SHA256 = "64a5a5a03f0931b59a72ad5536c0e0c132332d1235e697bc4fff56f910d573d8"
 A6_REGISTRATION_LEDGER_AT = "2026-08-13T18:55:00+08:00"
 DEC021_AUTHORITY_LEDGER_AT = "2026-08-13T19:50:00+08:00"
@@ -75,6 +75,20 @@ DEC022_AUTHORITY_MANIFEST_STATUS = (
     "A6_IN_PROGRESS_L3_NOT_ESTABLISHED_A7_NOT_RUN"
 )
 DEC022_PENDING_RUNTIME_EVENT_ID = "PENDING_FRESH_RUNTIME_EVENT_ID"
+DEC022_AUTHORITY_RUNTIME_EVENT_ID = "A1-EVT-054"
+GSE256185_ROW_PREFLIGHT_LEDGER_AT = "2026-08-13T23:35:00+08:00"
+GSE256185_ROW_PREFLIGHT_MANIFEST_AT = "2026-08-13T23:35:01+08:00"
+GSE256185_ROW_PREFLIGHT_EVIDENCE_UPDATE_ID = (
+    "GSE256185_AGGREGATE_ROW_LEVEL_QUALIFICATION_PREFLIGHT_V1"
+)
+GSE256185_ROW_PREFLIGHT_LINEAGE_ID = (
+    "gse256185_aggregate_row_level_qualification_preflight_v1"
+)
+GSE256185_ROW_PREFLIGHT_MANIFEST_STATUS = (
+    "DEC022_GSE256185_AGGREGATE_ROW_LEVEL_QUALIFICATION_PREFLIGHT_REGISTERED_"
+    "EVT054_SETTLED_EVIDENCE_RUNTIME_PENDING_A1_INCOMPLETE_A6_IN_PROGRESS_"
+    "L3_NOT_ESTABLISHED_A7_NOT_RUN"
+)
 DEC022_REQUIRED_GATE_IDS = [
     "STRICT_SINGLE_PARENT_CANDIDATE_UNIVERSE_CLOSED",
     "ROW_LEVEL_MULTI_ASSET_LINEAGE_AND_PRIMARY_MEASUREMENT_ROUTE_CLOSED",
@@ -94,6 +108,66 @@ DEC022_REQUIRED_GATE_IDS = [
     "POST_DEDUP_INDEPENDENT_EFFECTIVE_N_CLOSED",
     "REJECT_REASON_AND_EXCLUSION_CLOSURE_CLOSED",
 ]
+GSE256185_ROW_PREFLIGHT_GATE_STATUSES = {
+    "STRICT_SINGLE_PARENT_CANDIDATE_UNIVERSE_CLOSED": "PASS",
+    "ROW_LEVEL_MULTI_ASSET_LINEAGE_AND_PRIMARY_MEASUREMENT_ROUTE_CLOSED": "PASS",
+    "SOURCE_AND_CANDIDATE_IDENTITY_CLOSED": "PASS",
+    "PARENT_TO_CANDIDATE_EDIT_REPLAY_CLOSED": "PARTIAL_FAIL_CURRENT_PROTOCOL",
+    "FAMILY_AND_CONTEXT_STRATIFICATION_CLOSED": "PASS_LIMITED_VCE_CONTEXT_ONLY",
+    "ENDPOINT_DIRECTION_SCALE_AND_SEMANTICS_CLOSED": "PARTIAL_FAIL_CURRENT_PROTOCOL",
+    "ORIGINAL_UNIT_AND_PAPER_FAITHFUL_TRANSFORM_CLOSED": "PASS_FOR_FINITE_ROWS_ONLY",
+    "BIOLOGICAL_SOURCE_GROUP_AUTHORITY_CLOSED": "UNKNOWN_NOT_ASSERTED",
+    "INDEPENDENT_BIOLOGICAL_REPLICATE_AND_VALID_STANDARD_ERROR_CLOSED": "FAIL",
+    "LICENSE_AND_REDISTRIBUTION_RIGHTS_CLOSED": "FAIL",
+    "OUTCOME_BLIND_SOURCE_GROUP_NEAR_DUPLICATE_SPLIT_AND_ZERO_LEAKAGE_CLOSED": "NOT_RUN_FORMAL",
+    "PREFROZEN_GROUP_POWER_AND_FULL_CI_WIDTH_CLOSED": "INELIGIBLE_NOT_RUN",
+    "PUBLIC_PROVENANCE_AND_PRIMARY_MEASUREMENT_ROUTE_CLOSED": "PASS_PUBLIC_ORIGIN_ONLY",
+    "MODEL_INPUT_ROUTE_AND_ROUTE_CONDITIONAL_EXPOSURE_CLOSED": "CONDITIONAL_PENDING_ZERO_EXTERNAL_LEARNED_INPUT_RUNTIME_ATTESTATION",
+    "BENEFICIAL_SIGNAL_VERSUS_MEASUREMENT_NOISE_CLOSED": "UNKNOWN_NOT_ASSERTED",
+    "POST_DEDUP_INDEPENDENT_EFFECTIVE_N_CLOSED": "FAIL",
+    "REJECT_REASON_AND_EXCLUSION_CLOSURE_CLOSED": "PASS_AGGREGATE_CLOSURE",
+}
+GSE256185_ROW_PREFLIGHT_CONFIG_PATH = (
+    "configs/route_a_v3_gse256185_aggregate_row_level_qualification_preflight_v1.json"
+)
+GSE256185_ROW_PREFLIGHT_SCRIPT_PATH = (
+    "scripts/route_a_v3/preflight_gse256185_aggregate_row_level_qualification.py"
+)
+GSE256185_ROW_PREFLIGHT_TEST_PATH = (
+    "tests/route_a_v3/test_preflight_gse256185_aggregate_row_level_qualification.py"
+)
+GSE256185_ROW_PREFLIGHT_RUNTIME_CONFIG_PATH = (
+    "configs/route_a_v3_gse256185_aggregate_row_level_qualification_"
+    "preflight_runtime_sync_v1.json"
+)
+GSE256185_ROW_PREFLIGHT_STATIC_LEAF_SHA256 = {
+    GSE256185_ROW_PREFLIGHT_CONFIG_PATH: (
+        "50d37a4a5f49e0f9b458b35ada343aa8d77229fff5ac13bdff8ff88d78d4e7e8"
+    ),
+    GSE256185_ROW_PREFLIGHT_SCRIPT_PATH: (
+        "20d0b4a3355fb98cf3c67268f314c0d1fa571034772074abdfbf9f6037c90f0f"
+    ),
+    GSE256185_ROW_PREFLIGHT_TEST_PATH: (
+        "eaece480ead17f5ef3a8eb2662d3a0372e59910d07eee0eb77f1d55b4580e226"
+    ),
+}
+GSE256185_ROW_PREFLIGHT_REPORT_PATH = (
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/"
+    "GSE256185_AGGREGATE_ROW_LEVEL_QUALIFICATION_PREFLIGHT_V1_"
+    "20260813T232328P0800_4858156/"
+    "GSE256185_AGGREGATE_ROW_LEVEL_QUALIFICATION_PREFLIGHT_V1.json"
+)
+GSE256185_ROW_PREFLIGHT_REPORT_BYTES = 15214
+GSE256185_ROW_PREFLIGHT_REPORT_SHA256 = (
+    "6ee9c7de65422d3223347d8afbae49a37f71e21b20a932c9e50547c09c9d1a54"
+)
+GSE256185_ROW_PREFLIGHT_RECORDED_AT = "2026-08-13T15:23:47.452529Z"
+GSE256185_ROW_PREFLIGHT_IMPLEMENTATION_COMMIT = (
+    "2a577ef41b634a4c999740e12ed60ffb6aca80cb"
+)
+GSE256185_ROW_PREFLIGHT_BINDING_COMMIT = (
+    "48581569b1ac86ec23d5662ea014f152384dc673"
+)
 GSE256185_PUBLIC_GEOMETRY_CONFIG_PATH = (
     "configs/route_a_v3_gse256185_public_identifier_pool_geometry_preflight_v1.json"
 )
@@ -1886,6 +1960,18 @@ EXPECTED_REGISTRY_MANIFEST_PATH_ROLES = (
         GSE256185_PUBLIC_GEOMETRY_TEST_PATH,
         "GSE256185_PUBLIC_IDENTIFIER_POOL_GEOMETRY_PREFLIGHT_FOCUSED_TEST",
     ),
+    (
+        GSE256185_ROW_PREFLIGHT_CONFIG_PATH,
+        "GSE256185_AGGREGATE_ROW_LEVEL_QUALIFICATION_PREFLIGHT_BOUND_CONFIG",
+    ),
+    (
+        GSE256185_ROW_PREFLIGHT_SCRIPT_PATH,
+        "GSE256185_AGGREGATE_ROW_LEVEL_QUALIFICATION_PREFLIGHT_PRODUCER",
+    ),
+    (
+        GSE256185_ROW_PREFLIGHT_TEST_PATH,
+        "GSE256185_AGGREGATE_ROW_LEVEL_QUALIFICATION_PREFLIGHT_FOCUSED_TEST",
+    ),
     (A6_PROTOCOL_CONFIG_PATH, "A6_CPU_EXACT_ABSORBING_DAG_BOUND_PROTOCOL"),
     (A6_PRODUCER_PATH, "A6_CPU_EXACT_ABSORBING_DAG_PRODUCER"),
     (A6_FOCUSED_TEST_PATH, "A6_CPU_EXACT_ABSORBING_DAG_FOCUSED_TEST"),
@@ -2957,10 +3043,10 @@ def validate_registry_manifest(repo_root: Path) -> list[Issue]:
         "contract_sha256": SOURCE_CONTRACT_SHA256,
         "active_amendment_decision_ids": ACTIVE_AMENDMENT_DECISION_IDS,
         "base_commit": "bbb71dcba6f1e1c9cb75a8a6653f1a4fe4a6ca0c",
-        "manifest_status": DEC022_AUTHORITY_MANIFEST_STATUS,
+        "manifest_status": GSE256185_ROW_PREFLIGHT_MANIFEST_STATUS,
         "initial_generated_at": "2026-08-10T10:10:05+08:00",
-        "generated_at": DEC022_AUTHORITY_MANIFEST_AT,
-        "updated_at": DEC022_AUTHORITY_MANIFEST_AT,
+        "generated_at": GSE256185_ROW_PREFLIGHT_MANIFEST_AT,
+        "updated_at": GSE256185_ROW_PREFLIGHT_MANIFEST_AT,
         "sealed_contact": False,
     }
     expected_top_keys = set(expected_static_top) | {"files"}
@@ -6905,6 +6991,77 @@ def validate_gse256185_public_geometry_registration(
     return issues
 
 
+def validate_gse256185_row_preflight_registration(
+    repo_root: Path,
+) -> list[Issue]:
+    """Freeze the DEC022 exact3 and exclude runtime/raw outputs from the static DAG."""
+
+    issues: list[Issue] = []
+    for relative, expected_sha256 in GSE256185_ROW_PREFLIGHT_STATIC_LEAF_SHA256.items():
+        try:
+            actual_sha256 = sha256_bytes(_read_bytes(repo_root, relative))
+        except (FileNotFoundError, ValueError) as exc:
+            _issue(issues, "GSE256185_ROW_PREFLIGHT_STATIC_LEAF", relative, str(exc))
+            continue
+        if actual_sha256 != expected_sha256:
+            _issue(
+                issues,
+                "GSE256185_ROW_PREFLIGHT_STATIC_LEAF",
+                relative,
+                f"current bytes hash {actual_sha256} must remain {expected_sha256}",
+            )
+
+    try:
+        manifest = _load_json(repo_root, REGISTRY_MANIFEST_PATH)
+    except (FileNotFoundError, ValueError, json.JSONDecodeError) as exc:
+        _issue(
+            issues,
+            "GSE256185_ROW_PREFLIGHT_MANIFEST_DAG",
+            REGISTRY_MANIFEST_PATH,
+            str(exc),
+        )
+    else:
+        entries = manifest.get("files")
+        manifest_paths = {
+            entry.get("path")
+            for entry in entries
+            if isinstance(entries, list) and isinstance(entry, Mapping)
+        }
+        if not set(GSE256185_ROW_PREFLIGHT_STATIC_LEAF_SHA256).issubset(manifest_paths):
+            _issue(
+                issues,
+                "GSE256185_ROW_PREFLIGHT_MANIFEST_DAG",
+                REGISTRY_MANIFEST_PATH,
+                "the bound config, producer, and focused test must be exact-hashed by the static manifest",
+            )
+        forbidden_paths = {
+            GSE256185_ROW_PREFLIGHT_RUNTIME_CONFIG_PATH,
+            REGISTRY_MANIFEST_PATH,
+            GSE256185_ROW_PREFLIGHT_REPORT_PATH,
+            "/mnt/cunyuliu/mrna_xeditflow_routea_v3/raw/GSE256185/GSE256185_CPMandRRS_VCE_Var.tsv.gz",
+            "/mnt/cunyuliu/mrna_xeditflow_routea_v3/raw/GSE256185/GSE256185_DNAPool_ref.fa.gz",
+        }
+        if manifest_paths & forbidden_paths:
+            _issue(
+                issues,
+                "GSE256185_ROW_PREFLIGHT_MANIFEST_DAG",
+                REGISTRY_MANIFEST_PATH,
+                "runtime config, aggregate report, raw assets, and registry output must remain outside the static manifest",
+            )
+        if any(
+            isinstance(relative, str)
+            and (relative.endswith(".private.jsonl") or relative.endswith(".rows.jsonl"))
+            for relative in manifest_paths
+        ):
+            _issue(
+                issues,
+                "GSE256185_ROW_PREFLIGHT_DISCLOSURE",
+                REGISTRY_MANIFEST_PATH,
+                "row/member payload artifacts are forbidden from the aggregate-only registry",
+            )
+    return issues
+
+
 def _gse149487_plumage_nonbinding_core_sha256(protocol: Mapping[str, Any]) -> str:
     """Hash the full protocol after normalizing only the three permitted I/B scalars."""
 
@@ -7718,6 +7875,166 @@ def validate_gse200302_role_protocol(repo_root: Path) -> list[Issue]:
     return issues
 
 
+def _validate_gse256185_row_preflight_interim(
+    interim: Mapping[str, Any], path: str, issues: list[Issue]
+) -> None:
+    lineage = interim.get("artifact_lineage")
+    record = (
+        lineage.get(GSE256185_ROW_PREFLIGHT_LINEAGE_ID)
+        if isinstance(lineage, Mapping)
+        else None
+    )
+    if not isinstance(record, Mapping):
+        _issue(issues, "A1_INTERIM_GSE256185_ROW_PREFLIGHT", path, "aggregate result lineage is required")
+        return
+    expected_scalars = {
+        "path": GSE256185_ROW_PREFLIGHT_REPORT_PATH,
+        "bytes": GSE256185_ROW_PREFLIGHT_REPORT_BYTES,
+        "sha256": GSE256185_ROW_PREFLIGHT_REPORT_SHA256,
+        "recorded_at": GSE256185_ROW_PREFLIGHT_RECORDED_AT,
+        "dataset_id": "GSE256185",
+        "decision_id": "V3-DEC-022",
+        "schema_version": "route_a_v3_gse256185_aggregate_row_level_qualification_preflight.v1",
+        "protocol_id": "GSE256185_AGGREGATE_ROW_LEVEL_QUALIFICATION_PREFLIGHT_V1",
+        "status": "STOP_CURRENT_PROTOCOL_NOT_QUALIFIED",
+        "authority_role": "AGGREGATE_ROW_LEVEL_QUALIFICATION_PREFLIGHT_ONLY",
+        "aggregate_only": True,
+        "preflight_complete": True,
+        "all_required_gates_pass": False,
+        "required_gate_axis_count": 17,
+        "qualified": False,
+        "a1_complete": False,
+        "training_allowed": False,
+        "gpu_work_allowed": False,
+        "model_selection_allowed": False,
+        "next_phase_authorized": False,
+        "scientific_claim_status": "NOT_ESTABLISHED",
+        "sole_next_external_action": "OBTAIN_AUTHORITATIVE_INDEPENDENT_BIOLOGICAL_REPLICATE_AND_ROW_LEVEL_VALID_STANDARD_ERROR_EVIDENCE_OR_AN_EXPLICIT_OWNER_DECISION_NOT_TO_USE_GSE256185_FOR_QUALIFICATION",
+        "predecessor_runtime_event_id": DEC022_AUTHORITY_RUNTIME_EVENT_ID,
+        "expected_next_runtime_event_id": DEC022_PENDING_RUNTIME_EVENT_ID,
+        "next_runtime_event_id_preallocated": False,
+        "runtime_sync_status": "PENDING_FRESH_EVENT_AFTER_SETTLED_EVT_054",
+        "aggregate_report_read_count_for_ledger": 1,
+        "private_row_artifact_read_count_for_ledger": 0,
+        "raw_asset_registered_artifact_count": 0,
+    }
+    expected_top_keys = set(expected_scalars) | {
+        "required_gate_statuses",
+        "aggregate_observation",
+        "remaining_independent_blocker_classes",
+        "scope_attestation",
+        "current_qualified_counts",
+        "gse256185_contribution",
+        "producer_lineage",
+    }
+    if set(record) != expected_top_keys:
+        _issue(issues, "A1_INTERIM_GSE256185_ROW_PREFLIGHT_CLOSURE", path, "aggregate result lineage keys must remain the exact aggregate-only set")
+    for key, value in expected_scalars.items():
+        _expect(record, key, value, path, issues, "A1_INTERIM_GSE256185_ROW_PREFLIGHT")
+    _expect_closed_mapping(
+        record.get("required_gate_statuses"),
+        GSE256185_ROW_PREFLIGHT_GATE_STATUSES,
+        path,
+        issues,
+        "A1_INTERIM_GSE256185_ROW_PREFLIGHT_GATES",
+    )
+    expected_observation = {
+        "candidate_universe": {
+            "total_body_row_count": 11404, "strict_grammar_row_count": 11402,
+            "strict_group_count": 652, "strict_single_parent_group_count": 637,
+            "review_pool_count": 634, "review_parent_row_count": 634,
+            "review_candidate_row_count": 7292, "review_row_count": 7926,
+            "strict_dual_parent_group_count_excluded": 15,
+            "strict_single_parent_two_candidate_group_count_excluded": 3,
+            "nonstrict_record_count_excluded": 2,
+            "review_candidate_family_counts": {"win": 5124, "+CCC": 1090, "-CCC": 1078, "rand": 0},
+        },
+        "multi_asset_lineage": {
+            "fasta_records_total": 51595, "tsv_rows_reviewed": 11404,
+            "fasta_headers_matched_to_tsv_rows": 11404, "missing_fasta_header_count": 0,
+            "transformed_sequences_exactly_matched": 11404, "transformed_sequence_mismatch_count": 0,
+        },
+        "edit_replay": {
+            "candidate_rows_reviewed": 7292, "direct_total": 7136,
+            "publisher_assisted_total": 153, "replay_closed_total": 7289,
+            "unexplained_count": 3, "win_direct_count": 5044,
+            "win_publisher_assisted_count": 80, "win_position_legal_count": 5124,
+            "plus_ccc_direct_count": 1090, "minus_ccc_direct_count": 1002,
+            "minus_ccc_publisher_assisted_count": 73,
+            "expected_edit_length_delta_counts": {"+3": 218, "+6": 218, "+9": 218, "+12": 218, "+15": 218, "-3": 231, "-6": 5353, "-9": 231, "-12": 208, "-15": 179},
+        },
+        "endpoint_transform": {
+            "rows_reviewed": 7926, "finite_endpoint_and_replicate_row_count": 7925,
+            "nonfinite_or_undefined_row_count": 1, "formula_match_within_tolerance_count": 7925,
+            "formula_mismatch_count": 0, "maximum_absolute_formula_difference": 2.7253181933417636e-09,
+        },
+        "eligible_after_row_preflight_exclusions": {
+            "pool_count": 633, "parent_row_count": 633, "candidate_row_count": 7288,
+            "row_count": 7921, "candidate_family_counts": {"win": 5123, "+CCC": 1090, "-CCC": 1075},
+            "pool_family_counts": {"win": 185, "+CCC": 218, "-CCC": 230},
+        },
+        "beneficial_direction_counts": {
+            "candidate_positive_count": 3790, "candidate_negative_count": 3498,
+            "candidate_zero_count": 0, "mixed_direction_pool_count": 363,
+            "positive_only_pool_count": 124, "negative_only_pool_count": 146,
+            "zero_only_pool_count": 0,
+        },
+        "structural_dedup_and_split_feasibility": {
+            "retained_row_count": 7921, "source_group_count": 633, "parent_row_count": 633,
+            "candidate_row_count": 7288, "gene_count": 547, "genes_with_multiple_source_groups": 66,
+            "exact_utr_cluster_count": 7902, "duplicate_exact_utr_cluster_count": 18,
+            "rows_in_duplicate_exact_utr_clusters": 37, "cross_pool_exact_utr_cluster_count": 1,
+            "distinct_within_pool_candidate_count": 7270,
+        },
+        "reject_closure": {
+            "dual_parent_group_count": 15, "dual_parent_group_row_count": 3467,
+            "two_candidate_group_count": 3, "two_candidate_group_row_count": 9,
+            "nonstrict_record_count": 2, "unexplained_edit_affected_group_count": 1,
+            "unexplained_edit_candidate_count": 3, "nonfinite_endpoint_affected_group_count": 1,
+            "nonfinite_endpoint_row_count": 1, "edit_failure_and_nonfinite_affected_group_overlap_count": 0,
+            "orphaned_parent_after_all_candidates_rejected_count": 1,
+            "retained_row_count": 7921, "mutually_exclusive_row_reason_total": 11404,
+        },
+    }
+    _expect_closed_mapping(record.get("aggregate_observation"), expected_observation, path, issues, "A1_INTERIM_GSE256185_ROW_PREFLIGHT_AGGREGATES")
+    _expect_closed_mapping(record.get("current_qualified_counts"), {"ordinary": 1, "a1": 1, "true_a2": 0, "canonical_records": 6547}, path, issues, "A1_INTERIM_GSE256185_ROW_PREFLIGHT_COUNTS")
+    _expect_closed_mapping(record.get("gse256185_contribution"), {"ordinary": 0, "a1": 0, "true_a2": 0, "canonical_records": 0}, path, issues, "A1_INTERIM_GSE256185_ROW_PREFLIGHT_COUNTS")
+    expected_scope = {
+        "ordinary_public_assets_read_count": 2, "aggregate_output_only": True,
+        "candidate_universe_closed_before_row_level_field_access": True,
+        "member_identifier_output_count": 0, "member_role_output_count": 0,
+        "member_context_output_count": 0, "sequence_output_count": 0,
+        "row_effect_output_count": 0, "raw_replicate_value_output_count": 0,
+        "replicate_identifier_output_count": 0, "split_assignment_output_count": 0,
+        "row_level_values_serialized_count": 0, "row_level_values_persisted_count": 0,
+        "canonical_record_output_count": 0, "private_or_restricted_input_read_count": 0,
+        "sealed_contact_count": 0, "gse246381_contact_count": 0,
+    }
+    _expect_closed_mapping(record.get("scope_attestation"), expected_scope, path, issues, "A1_INTERIM_GSE256185_ROW_PREFLIGHT_DISCLOSURE")
+    expected_producer = {
+        "authority_commit": "4fa39abca424bb6ff82e43a847332e92934b278b",
+        "authority_runtime_binding_commit": "ab511527a110dc17bc3538ee5309600396693534",
+        "implementation_commit": GSE256185_ROW_PREFLIGHT_IMPLEMENTATION_COMMIT,
+        "binding_commit": GSE256185_ROW_PREFLIGHT_BINDING_COMMIT,
+        "binding_diff_is_config_only": True,
+        "config_path": GSE256185_ROW_PREFLIGHT_CONFIG_PATH,
+        "config_sha256": GSE256185_ROW_PREFLIGHT_STATIC_LEAF_SHA256[GSE256185_ROW_PREFLIGHT_CONFIG_PATH],
+        "script_path": GSE256185_ROW_PREFLIGHT_SCRIPT_PATH,
+        "script_sha256": GSE256185_ROW_PREFLIGHT_STATIC_LEAF_SHA256[GSE256185_ROW_PREFLIGHT_SCRIPT_PATH],
+        "focused_test_path": GSE256185_ROW_PREFLIGHT_TEST_PATH,
+        "focused_test_sha256": GSE256185_ROW_PREFLIGHT_STATIC_LEAF_SHA256[GSE256185_ROW_PREFLIGHT_TEST_PATH],
+    }
+    _expect_closed_mapping(record.get("producer_lineage"), expected_producer, path, issues, "A1_INTERIM_GSE256185_ROW_PREFLIGHT_PRODUCER")
+    expected_blockers = [
+        "THREE_UNEXPLAINED_MINUS_CCC_EDIT_REPLAYS", "ONE_NONFINITE_ENDPOINT_ROW",
+        "BIOLOGICAL_SOURCE_GROUP_AND_REPLICATE_INDEPENDENCE", "VALID_ROW_LEVEL_STANDARD_ERROR",
+        "RAW_AND_DERIVED_REDISTRIBUTION_RIGHTS", "FORMAL_OUTCOME_BLIND_SPLIT_AND_ZERO_LEAKAGE",
+        "PREFROZEN_POWER_AND_FULL_CI_WIDTH", "ZERO_EXTERNAL_LEARNED_INPUT_RUNTIME_ATTESTATION",
+        "BENEFICIAL_SIGNAL_VERSUS_MEASUREMENT_NOISE", "POST_DEDUP_INDEPENDENT_EFFECTIVE_N",
+    ]
+    _expect(record, "remaining_independent_blocker_classes", expected_blockers, path, issues, "A1_INTERIM_GSE256185_ROW_PREFLIGHT_BLOCKERS")
+
+
 def validate_a1_interim_lineage(
     repo_root: Path,
     interim: Mapping[str, Any],
@@ -8231,10 +8548,11 @@ def validate_a1_interim_lineage(
                 "model_selection_allowed": False,
                 "next_phase_authorized": False,
                 "scientific_claim_status": "NOT_ESTABLISHED",
-                "latest_settled_runtime_event_id": "A1-EVT-053",
-                "settled_runtime_event_changed": False,
-                "runtime_event_emitted": False,
-                "runtime_sync_status": "PENDING_FRESH_EVENT_AFTER_SETTLED_EVT_053",
+                "latest_settled_runtime_event_id": DEC022_AUTHORITY_RUNTIME_EVENT_ID,
+                "settled_runtime_event_changed": True,
+                "runtime_event_emitted": True,
+                "authority_runtime_sync_status": "SYNCED_EVT_054",
+                "evidence_runtime_sync_status": "PENDING_FRESH_EVENT_AFTER_SETTLED_EVT_054",
                 "expected_next_runtime_event_id": DEC022_PENDING_RUNTIME_EVENT_ID,
                 "next_runtime_event_id_preallocated": False,
                 "sealed_contact_allowed": False,
@@ -8271,6 +8589,7 @@ def validate_a1_interim_lineage(
             GSE232572_DEVELOPMENT_V3_MATERIALIZATION_LINEAGE_ID,
             GSE232572_QUALIFICATION_AUTHORITY_PREFLIGHT_LINEAGE_ID,
             GSE256185_PUBLIC_GEOMETRY_LINEAGE_ID,
+            GSE256185_ROW_PREFLIGHT_LINEAGE_ID,
             "gse145046_a2_audit_protocol",
             "gse145046_a2_formal_audit_v1",
             "a1_public_qualifiers_sync_v1",
@@ -10584,6 +10903,8 @@ def validate_a1_interim_lineage(
                         f"current bytes hash {actual_sha256} must remain {expected_sha256}",
                     )
 
+    _validate_gse256185_row_preflight_interim(interim, path, issues)
+
     summary = interim.get("dataset_boundary_summary")
     if not isinstance(summary, Mapping):
         _issue(issues, "A1_INTERIM_DATASET_BOUNDARY", path, "dataset_boundary_summary must be a mapping")
@@ -11037,16 +11358,27 @@ def validate_a1_interim_lineage(
                     "runtime_sync_status": "SYNCED_EVT_053",
                 },
                 "aggregate_row_level_qualification_preflight": {
+                    "artifact_lineage_id": GSE256185_ROW_PREFLIGHT_LINEAGE_ID,
                     "decision_id": "V3-DEC-022",
-                    "status": "AUTHORIZED_NOT_RUN",
+                    "protocol_id": "GSE256185_AGGREGATE_ROW_LEVEL_QUALIFICATION_PREFLIGHT_V1",
+                    "status": "STOP_CURRENT_PROTOCOL_NOT_QUALIFIED",
+                    "preflight_complete": True,
                     "strict_single_parent_pool_count": 634,
                     "strict_candidate_member_count": 7292,
                     "dual_parent_group_count_excluded": 15,
+                    "strict_single_parent_two_candidate_group_count_excluded": 3,
                     "nonstrict_grammar_record_count_excluded": 2,
                     "reasoned_family_closure_candidate_count": 7294,
                     "reasoned_family_closure_included": False,
                     "independent_fail_closed_gate_axis_count": 17,
-                    "gate_status": "NOT_RUN",
+                    "required_gate_statuses": GSE256185_ROW_PREFLIGHT_GATE_STATUSES,
+                    "all_required_gates_pass": False,
+                    "eligible_after_row_preflight_exclusions": {
+                        "pool_count": 633,
+                        "parent_row_count": 633,
+                        "candidate_row_count": 7288,
+                        "row_count": 7921,
+                    },
                     "source_to_candidate_edit_relation_established": False,
                     "qualified": False,
                     "canonical_record_count": 0,
@@ -11063,10 +11395,10 @@ def validate_a1_interim_lineage(
                     "gpu_work_allowed": False,
                     "model_selection_allowed": False,
                     "next_phase_authorized": False,
-                    "predecessor_runtime_event_id": "A1-EVT-053",
+                    "predecessor_runtime_event_id": DEC022_AUTHORITY_RUNTIME_EVENT_ID,
                     "expected_next_runtime_event_id": DEC022_PENDING_RUNTIME_EVENT_ID,
                     "next_runtime_event_id_preallocated": False,
-                    "runtime_sync_status": "PENDING_FRESH_EVENT_AFTER_SETTLED_EVT_053",
+                    "runtime_sync_status": "PENDING_FRESH_EVENT_AFTER_SETTLED_EVT_054",
                 },
                 "qualified": False,
                 "canonical_record_count": 0,
@@ -11707,11 +12039,12 @@ def validate_a1_interim_lineage(
                 "dec021_runtime_event_emitted": True,
                 "targeted_dec022_authority_registry_tests": {
                     "status": "PASS",
-                    "scope": "DEC022_EXACT10_AGGREGATE_ONLY_ROW_LEVEL_QUALIFICATION_PREFLIGHT_AUTHORITY_EVT053_SETTLED_PENDING_FRESH_RUNTIME_EVENT",
+                    "scope": "DEC022_EXACT10_AGGREGATE_ONLY_ROW_LEVEL_QUALIFICATION_PREFLIGHT_AUTHORITY_EVT054_SETTLED",
                 },
                 "dec022_active_authority_exact10_registration": "PASS",
                 "dec022_independent_fail_closed_gate_axis_count": 17,
-                "dec022_runtime_event_emitted": False,
+                "dec022_runtime_event_emitted": True,
+                "dec022_authority_runtime_event_id": DEC022_AUTHORITY_RUNTIME_EVENT_ID,
                 "targeted_gse256185_public_identifier_pool_geometry_preflight_ledger_tests": {
                     "status": "PASS",
                     "scope": "ONE_PUBLIC_AGGREGATE_REPORT_THREE_STATIC_PRODUCER_LEAVES_EVT053_SETTLED_RUNTIME_SYNCED",
@@ -11720,6 +12053,15 @@ def validate_a1_interim_lineage(
                 "gse256185_public_identifier_pool_geometry_preflight_three_static_leaf_registration": "PASS",
                 "gse256185_public_identifier_pool_geometry_preflight_no_promotion_boundary": "PASS",
                 "gse256185_public_identifier_pool_geometry_preflight_runtime_event_id": GSE256185_PUBLIC_GEOMETRY_RUNTIME_EVENT_ID,
+                "targeted_gse256185_aggregate_row_level_qualification_preflight_ledger_tests": {
+                    "status": "PASS",
+                    "scope": "ONE_PUBLIC_AGGREGATE_REPORT_THREE_STATIC_PRODUCER_LEAVES_EXACT17_EVT054_SETTLED_EVIDENCE_RUNTIME_PENDING",
+                },
+                "gse256185_aggregate_row_level_qualification_preflight_artifact_registration": "PASS",
+                "gse256185_aggregate_row_level_qualification_preflight_three_static_leaf_registration": "PASS",
+                "gse256185_aggregate_row_level_qualification_preflight_no_promotion_boundary": "PASS",
+                "gse256185_aggregate_row_level_qualification_preflight_no_disclosure_boundary": "PASS",
+                "gse256185_aggregate_row_level_qualification_preflight_evidence_runtime_event_id": DEC022_PENDING_RUNTIME_EVENT_ID,
             },
             path,
             issues,
@@ -11732,7 +12074,7 @@ def validate_a1_interim_lineage(
     _expect(
         interim,
         "latest_evidence_update_id",
-        GSE256185_PUBLIC_GEOMETRY_EVIDENCE_UPDATE_ID,
+        GSE256185_ROW_PREFLIGHT_EVIDENCE_UPDATE_ID,
         path,
         issues,
         "A1_INTERIM_TIME",
@@ -11740,14 +12082,14 @@ def validate_a1_interim_lineage(
     generated = interim.get("generated_at")
     updated = interim.get("updated_at")
     if (
-        generated != DEC022_AUTHORITY_LEDGER_AT
-        or updated != DEC022_AUTHORITY_LEDGER_AT
+        generated != GSE256185_ROW_PREFLIGHT_LEDGER_AT
+        or updated != GSE256185_ROW_PREFLIGHT_LEDGER_AT
     ):
         _issue(
             issues,
             "A1_INTERIM_TIME",
             path,
-            "generated_at and updated_at must identify the exact DEC022 authority ledger timestamp",
+            "generated_at and updated_at must identify the exact DEC022 aggregate-result ledger timestamp",
         )
     if generated != updated:
         _issue(issues, "A1_INTERIM_TIME", path, "generated_at and updated_at must identify the same amended record bytes")
@@ -13699,6 +14041,7 @@ def validate_bundle(repo_root: Path) -> list[Issue]:
     )
     issues.extend(validate_gse200304_dec020_v4_post_adjudication_registration(repo_root))
     issues.extend(validate_gse256185_public_geometry_registration(repo_root))
+    issues.extend(validate_gse256185_row_preflight_registration(repo_root))
     issues.extend(validate_python_static_safety(repo_root))
     issues.extend(validate_runner_and_guard_ast(repo_root))
     issues.extend(scan_conflict_markers(repo_root))
