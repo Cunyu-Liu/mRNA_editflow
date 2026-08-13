@@ -69,7 +69,7 @@
     {
       "path": "docs/execution/route_a_v3_a1_interim.yaml",
       "role": "A1_ACTIVE_INTERIM_RECORD",
-      "sha256": "f178750dfed15fde42699840caef314e39b6b4fa4acf72dd8606695ae7c930c4"
+      "sha256": "f988975f316c34cb3d55edaa31d03ee642d778df743ee2ee55f35f8e7a2c7493"
     },
     {
       "path": "docs/execution/route_a_v3_a6_interim.yaml",
@@ -479,18 +479,18 @@
     {
       "path": "tests/route_a_v3/test_a0_integrity_guards.py",
       "role": "A0_AUTHORITY_INTEGRITY_GUARD_TEST",
-      "sha256": "89702695c37b759a1c78e5b9d73653b0f158861e41a0232c7b6b6b061259cfc2"
+      "sha256": "cef3e6e1af70d8af207edaedd88a72bfbe96614345540eb00449a34342a57202"
     },
     {
       "path": "scripts/route_a_v3/validate_a0_bundle.py",
       "role": "A0_STATIC_AND_SEMANTIC_VALIDATOR",
-      "sha256": "7c7f6d47adc8914d1a0b3d92e59167c1743e6dc4125eec0d73d74e8f0f2a0cdf"
+      "sha256": "f2121d84c602bd037f918dda721bd93afbcb4c6b6e256041b718864db5f7b255"
     }
   ],
   "initial_generated_at": "2026-08-10T10:10:05+08:00",
   "generated_at": "2026-08-13T21:10:31+08:00",
   "updated_at": "2026-08-13T21:10:31+08:00",
-  "manifest_status": "DEC021_GSE256185_PUBLIC_IDENTIFIER_POOL_GEOMETRY_PREFLIGHT_REGISTERED_EVT052_SETTLED_EVIDENCE_RUNTIME_PENDING_A1_INCOMPLETE_A6_IN_PROGRESS_L3_NOT_ESTABLISHED_A7_NOT_RUN",
+  "manifest_status": "DEC021_GSE256185_PUBLIC_IDENTIFIER_POOL_GEOMETRY_PREFLIGHT_REGISTERED_EVT053_SETTLED_EVIDENCE_RUNTIME_SYNCED_A1_INCOMPLETE_A6_IN_PROGRESS_L3_NOT_ESTABLISHED_A7_NOT_RUN",
   "schema_version": "1.0.0",
   "sealed_contact": false,
   "version": "3.0.0"

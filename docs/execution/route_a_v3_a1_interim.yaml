@@ -292,7 +292,7 @@ dec021_current_disposition:
   model_selection_allowed: false
   next_phase_authorized: false
   scientific_claim_status: NOT_ESTABLISHED
-  latest_settled_runtime_event_id: A1-EVT-052
+  latest_settled_runtime_event_id: A1-EVT-053
   settled_runtime_event_changed: true
   runtime_event_emitted: true
   sealed_contact_allowed: false
@@ -2334,9 +2334,9 @@ artifact_lineage:
       focused_test_path: tests/route_a_v3/test_preflight_gse256185_public_identifier_pool_geometry.py
       focused_test_sha256: 6eb989b33e0b770f16ccd5b1e1c9118a8e78ed548cbb4814391097d793ac0892
     predecessor_runtime_event_id: A1-EVT-052
-    expected_next_runtime_event_id: PENDING_FRESH_RUNTIME_EVENT_ID
+    expected_next_runtime_event_id: A1-EVT-053
     next_runtime_event_id_preallocated: false
-    runtime_sync_status: PENDING_FRESH_EVENT_AFTER_SETTLED_EVT_052
+    runtime_sync_status: SYNCED_EVT_053
     aggregate_report_read_count_for_ledger: 1
     private_row_artifact_read_count_for_ledger: 0
     raw_asset_registered_artifact_count: 0
@@ -2638,9 +2638,9 @@ dataset_boundary_summary:
       model_selection_allowed: false
       next_phase_authorized: false
       predecessor_runtime_event_id: A1-EVT-052
-      expected_next_runtime_event_id: PENDING_FRESH_RUNTIME_EVENT_ID
+      expected_next_runtime_event_id: A1-EVT-053
       next_runtime_event_id_preallocated: false
-      runtime_sync_status: PENDING_FRESH_EVENT_AFTER_SETTLED_EVT_052
+      runtime_sync_status: SYNCED_EVT_053
     qualified: false
     canonical_record_count: 0
     ordinary_study_contribution: 0
@@ -3195,11 +3195,11 @@ verification:
   dec021_runtime_event_emitted: true
   targeted_gse256185_public_identifier_pool_geometry_preflight_ledger_tests:
     status: PASS
-    scope: ONE_PUBLIC_AGGREGATE_REPORT_THREE_STATIC_PRODUCER_LEAVES_EVT052_SETTLED_RUNTIME_PENDING
+    scope: ONE_PUBLIC_AGGREGATE_REPORT_THREE_STATIC_PRODUCER_LEAVES_EVT053_SETTLED_RUNTIME_SYNCED
   gse256185_public_identifier_pool_geometry_preflight_artifact_registration: PASS
   gse256185_public_identifier_pool_geometry_preflight_three_static_leaf_registration: PASS
   gse256185_public_identifier_pool_geometry_preflight_no_promotion_boundary: PASS
-  gse256185_public_identifier_pool_geometry_preflight_runtime_event_id: PENDING_FRESH_RUNTIME_EVENT_ID
+  gse256185_public_identifier_pool_geometry_preflight_runtime_event_id: A1-EVT-053
 
 initial_generated_at: "2026-08-10T06:30:58+08:00"
 generated_at: "2026-08-13T21:10:30+08:00"

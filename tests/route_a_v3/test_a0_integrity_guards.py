@@ -362,7 +362,7 @@ def test_dec021_authority_is_public_aggregate_geometry_only_and_preserves_histor
         "A1-EVT-051"
     )
     assert amendment["historical_preservation"]["evt051_settled_state_changed"] is False
-    assert current["latest_settled_runtime_event_id"] == "A1-EVT-052"
+    assert current["latest_settled_runtime_event_id"] == "A1-EVT-053"
     assert current["settled_runtime_event_changed"] is True
     assert current["runtime_event_emitted"] is True
     assert current["current_qualified_counts"] == {
@@ -477,12 +477,10 @@ def test_gse256185_public_geometry_registration_is_closed(
     assert lineage["next_phase_authorized"] is False
     assert lineage["predecessor_runtime_event_id"] == "A1-EVT-052"
     assert lineage["expected_next_runtime_event_id"] == (
-        validator.GSE256185_PUBLIC_GEOMETRY_PENDING_RUNTIME_EVENT_ID
+        validator.GSE256185_PUBLIC_GEOMETRY_RUNTIME_EVENT_ID
     )
     assert lineage["next_runtime_event_id_preallocated"] is False
-    assert lineage["runtime_sync_status"] == (
-        "PENDING_FRESH_EVENT_AFTER_SETTLED_EVT_052"
-    )
+    assert lineage["runtime_sync_status"] == "SYNCED_EVT_053"
     assert lineage["scope_attestation"]["raw_asset_registered"] is False
     assert lineage["scope_attestation"]["row_record_output_count"] == 0
     assert lineage["scope_attestation"]["member_identifier_output_count"] == 0

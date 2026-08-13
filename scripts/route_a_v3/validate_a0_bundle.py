@@ -43,7 +43,7 @@ DECISION_LOG_PATH = "docs/execution/route_a_v3_decision_log.yaml"
 REGISTRY_MANIFEST_PATH = "docs/execution/route_a_v3_registry_manifest.json"
 A1_INTERIM_PATH = "docs/execution/route_a_v3_a1_interim.yaml"
 A6_INTERIM_PATH = "docs/execution/route_a_v3_a6_interim.yaml"
-EXPECTED_A1_INTERIM_SHA256 = "f178750dfed15fde42699840caef314e39b6b4fa4acf72dd8606695ae7c930c4"
+EXPECTED_A1_INTERIM_SHA256 = "f988975f316c34cb3d55edaa31d03ee642d778df743ee2ee55f35f8e7a2c7493"
 EXPECTED_A6_INTERIM_SHA256 = "64a5a5a03f0931b59a72ad5536c0e0c132332d1235e697bc4fff56f910d573d8"
 A6_REGISTRATION_LEDGER_AT = "2026-08-13T18:55:00+08:00"
 DEC021_AUTHORITY_LEDGER_AT = "2026-08-13T19:50:00+08:00"
@@ -62,12 +62,10 @@ GSE256185_PUBLIC_GEOMETRY_LINEAGE_ID = (
 )
 GSE256185_PUBLIC_GEOMETRY_MANIFEST_STATUS = (
     "DEC021_GSE256185_PUBLIC_IDENTIFIER_POOL_GEOMETRY_PREFLIGHT_REGISTERED_"
-    "EVT052_SETTLED_EVIDENCE_RUNTIME_PENDING_A1_INCOMPLETE_A6_IN_PROGRESS_"
+    "EVT053_SETTLED_EVIDENCE_RUNTIME_SYNCED_A1_INCOMPLETE_A6_IN_PROGRESS_"
     "L3_NOT_ESTABLISHED_A7_NOT_RUN"
 )
-GSE256185_PUBLIC_GEOMETRY_PENDING_RUNTIME_EVENT_ID = (
-    "PENDING_FRESH_RUNTIME_EVENT_ID"
-)
+GSE256185_PUBLIC_GEOMETRY_RUNTIME_EVENT_ID = "A1-EVT-053"
 GSE256185_PUBLIC_GEOMETRY_CONFIG_PATH = (
     "configs/route_a_v3_gse256185_public_identifier_pool_geometry_preflight_v1.json"
 )
@@ -7600,7 +7598,7 @@ def validate_a1_interim_lineage(
                 "model_selection_allowed": False,
                 "next_phase_authorized": False,
                 "scientific_claim_status": "NOT_ESTABLISHED",
-                "latest_settled_runtime_event_id": "A1-EVT-052",
+                "latest_settled_runtime_event_id": GSE256185_PUBLIC_GEOMETRY_RUNTIME_EVENT_ID,
                 "settled_runtime_event_changed": True,
                 "runtime_event_emitted": True,
                 "sealed_contact_allowed": False,
@@ -8291,9 +8289,9 @@ def validate_a1_interim_lineage(
                     ],
                 },
                 "predecessor_runtime_event_id": "A1-EVT-052",
-                "expected_next_runtime_event_id": GSE256185_PUBLIC_GEOMETRY_PENDING_RUNTIME_EVENT_ID,
+                "expected_next_runtime_event_id": GSE256185_PUBLIC_GEOMETRY_RUNTIME_EVENT_ID,
                 "next_runtime_event_id_preallocated": False,
-                "runtime_sync_status": "PENDING_FRESH_EVENT_AFTER_SETTLED_EVT_052",
+                "runtime_sync_status": "SYNCED_EVT_053",
                 "aggregate_report_read_count_for_ledger": 1,
                 "private_row_artifact_read_count_for_ledger": 0,
                 "raw_asset_registered_artifact_count": 0,
@@ -10397,9 +10395,9 @@ def validate_a1_interim_lineage(
                     "model_selection_allowed": False,
                     "next_phase_authorized": False,
                     "predecessor_runtime_event_id": "A1-EVT-052",
-                    "expected_next_runtime_event_id": GSE256185_PUBLIC_GEOMETRY_PENDING_RUNTIME_EVENT_ID,
+                    "expected_next_runtime_event_id": GSE256185_PUBLIC_GEOMETRY_RUNTIME_EVENT_ID,
                     "next_runtime_event_id_preallocated": False,
-                    "runtime_sync_status": "PENDING_FRESH_EVENT_AFTER_SETTLED_EVT_052",
+                    "runtime_sync_status": "SYNCED_EVT_053",
                 },
                 "qualified": False,
                 "canonical_record_count": 0,
@@ -11034,12 +11032,12 @@ def validate_a1_interim_lineage(
                 "dec021_runtime_event_emitted": True,
                 "targeted_gse256185_public_identifier_pool_geometry_preflight_ledger_tests": {
                     "status": "PASS",
-                    "scope": "ONE_PUBLIC_AGGREGATE_REPORT_THREE_STATIC_PRODUCER_LEAVES_EVT052_SETTLED_RUNTIME_PENDING",
+                    "scope": "ONE_PUBLIC_AGGREGATE_REPORT_THREE_STATIC_PRODUCER_LEAVES_EVT053_SETTLED_RUNTIME_SYNCED",
                 },
                 "gse256185_public_identifier_pool_geometry_preflight_artifact_registration": "PASS",
                 "gse256185_public_identifier_pool_geometry_preflight_three_static_leaf_registration": "PASS",
                 "gse256185_public_identifier_pool_geometry_preflight_no_promotion_boundary": "PASS",
-                "gse256185_public_identifier_pool_geometry_preflight_runtime_event_id": GSE256185_PUBLIC_GEOMETRY_PENDING_RUNTIME_EVENT_ID,
+                "gse256185_public_identifier_pool_geometry_preflight_runtime_event_id": GSE256185_PUBLIC_GEOMETRY_RUNTIME_EVENT_ID,
             },
             path,
             issues,
