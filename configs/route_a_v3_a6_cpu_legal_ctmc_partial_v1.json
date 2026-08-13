@@ -6,10 +6,10 @@
   "run_scope": "SYNTHETIC_NONLEARNED_CPU_GILLESPIE_BASE_RECOVERY",
   "production_python": "/home/cunyuliu/miniconda3/envs/editflow/bin/python",
   "implementation_binding": {
-    "status": "UNKNOWN_NOT_ASSERTED",
-    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
-    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
-    "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED"
+    "status": "BOUND",
+    "implementation_commit": "adc1e85eca4a597f45e583154c0565e8ef748db1",
+    "implementation_script_sha256": "5a8f3454bd32bac60d5f574fde4bf364f738cd58086ea6ad6d523c27ea0ad4c4",
+    "implementation_test_sha256": "152172840f7f93efaab742bf4332568944c5121db2584a53a639724a47ba9a72"
   },
   "authority": {
     "goal_path": "docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md",
