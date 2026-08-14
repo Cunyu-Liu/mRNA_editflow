@@ -14,12 +14,12 @@
   "sync_type": "APPEND_ONLY_AUTHORITY_ONLY_REGISTRATION_NO_SCIENTIFIC_STATE_CHANGE",
   "implementation_binding": {
     "binding_scheme": "APPEND_ONLY_A_EXACT12_THEN_NONAUTHORITATIVE_A6_G0_EXACT4_THEN_I_EXACT3_THEN_B_CONFIG_ONLY_V1",
-    "status": "UNKNOWN_NOT_ASSERTED",
-    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "status": "BOUND",
+    "implementation_commit": "f955ca5a1714af57f706ee2ddf0a6825ad4737de",
     "implementation_script_path": "scripts/route_a_v3/dec024_authority_runtime_sync.py",
-    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_script_sha256": "6d9614b53e160fe38bbf280c310d6adec773b790b48f93374448ff6b29e5bd3b",
     "implementation_test_path": "tests/route_a_v3/test_dec024_authority_runtime_sync.py",
-    "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_test_sha256": "b22d92aeea7f3c0dc754dd739daa1d5025af64e96e86a84e7b0458b1788c3799",
     "unknown_to_bound_scalar_paths": [
       "implementation_binding.status",
       "implementation_binding.implementation_commit",
