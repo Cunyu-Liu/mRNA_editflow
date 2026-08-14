@@ -8,13 +8,14 @@ date: "2026-08-10"
 
 authority:
   initial_source_goal_sha256: d1c031aecdec710495f6861b380785cccd64663ac4bd97b4f479d6fdf372ea07
-  active_amendment_decision_ids: [V3-DEC-017, V3-DEC-018, V3-DEC-019, V3-DEC-020, V3-DEC-021, V3-DEC-022, V3-DEC-023]
+  active_amendment_decision_ids: [V3-DEC-017, V3-DEC-018, V3-DEC-019, V3-DEC-020, V3-DEC-021, V3-DEC-022, V3-DEC-023, V3-DEC-024]
   active_amendment_paths:
     V3-DEC-019: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec019.yaml
     V3-DEC-020: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec020.yaml
     V3-DEC-021: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec021.yaml
     V3-DEC-022: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec022.yaml
     V3-DEC-023: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec023.yaml
+    V3-DEC-024: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec024.yaml
   source_goal:
     local_path: "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna v3.md"
     sha256: cbac4c3dcba8f1b8df95d8edad52d19e3c126d1c865d0cc423537c754cc90982
@@ -367,6 +368,166 @@ a1_qualification_authority:
     row_slope_output_allowed: false
     row_standard_error_output_allowed: false
     split_assignment_output_allowed: false
+    training_allowed: false
+    gpu_work_allowed: false
+    model_selection_allowed: false
+    a7_allowed: false
+    next_phase_authorized: false
+    sealed_contact_allowed: false
+  gse261709_dec024_processed_a1_qualification_preflight:
+    current_status: AUTHORIZED_NOT_RUN
+    amendment_path: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec024.yaml
+    dataset_id: GSE261709
+    project_id: PRJNA1088465
+    predecessor_decision_id: V3-DEC-023
+    role: AGGREGATE_ROW_LEVEL_A1_QUALIFICATION_PREFLIGHT_ONLY
+    authority_surface: ORDINARY_PUBLIC_PROCESSED_ASSET_ONLY
+    aggregate_preflight_execution_allowed: true
+    allowed_internal_input_field_classes_exactly: [PUBLIC_PROCESSED_ASSET_IDENTIFIER_AND_ROLE, BARCODE_TO_ALLELE_TRANSCRIPT_SOURCE_MAPPING, SOURCE_AND_CANDIDATE_SEQUENCE, FULL_CONSTRUCT_AND_REPORTER_CONTEXT, RNA_AND_DNA_THREE_BIOLOGICAL_REPLICATE_COUNTS, ENDPOINT_EFFECT_AND_STANDARD_ERROR_FIELDS, MISSINGNESS_CENSORING_AND_QC_STATUS, LICENSE_AND_REUSE_NOTICE, NECESSARY_CONTEXT]
+    allowed_output_class: AGGREGATE_ROW_LEVEL_A1_QUALIFICATION_PREFLIGHT_ONLY
+    required_fail_closed_gate_ids_exactly:
+      - PUBLIC_PROCESSED_ASSET_IDENTITY_ROLE_PROVENANCE_AND_PRIMARY_MEASUREMENT_ROUTE_CLOSED
+      - BARCODE_ALLELE_TRANSCRIPT_SOURCE_AND_FULL_CONSTRUCT_JOIN_CLOSED
+      - SOURCE_CANDIDATE_IDENTITY_AND_DENSE_FAMILY_MINIMUM_THREE_CANDIDATES_CLOSED
+      - SOURCE_TO_CANDIDATE_LEGAL_EDIT_REPLAY_CLOSED
+      - ENDPOINT_DIRECTION_SCALE_EFFECT_AND_STANDARD_ERROR_SEMANTICS_CLOSED
+      - THREE_INDEPENDENT_BIOLOGICAL_REPLICATE_RNA_DNA_COUNTS_AND_VALID_STANDARD_ERROR_CLOSED
+      - MISSING_CENSORING_QC_AND_SELECTION_CLOSED
+      - LICENSE_AND_REUSE_RIGHTS_CLOSED
+      - HISTORICAL_ANALYTIC_OR_CHECKPOINT_EXPOSURE_CLOSED
+      - OUTCOME_BLIND_SOURCE_GROUP_NEAR_DUPLICATE_SPLIT_AND_ZERO_LEAKAGE_READINESS_CLOSED
+      - POST_DEDUP_INDEPENDENT_SOURCE_GROUP_EFFECTIVE_N_CLOSED
+      - PREFROZEN_SOURCE_GROUP_POWER_AND_FULL_CI_WIDTH_CLOSED
+    independent_gate_axis_count: 12
+    initial_status_for_every_gate: NOT_RUN
+    unknown_or_not_run_gate_is_pass: false
+    minimum_distinct_candidates_per_source_family: 3
+    full_construct_and_source_join_required: true
+    three_biological_replicates_required: true
+    processed_public_asset_body_read_allowed: true
+    raw_fastq_or_sra_member_payload_read_allowed: false
+    source_to_candidate_edit_relation_may_be_presumed: false
+    split_assignment_execution_allowed: false
+    prefrozen_power_analysis_unit: POST_DEDUP_INDEPENDENT_SOURCE_GROUP
+    formal_qualification_power_gate_execution_allowed: false
+    future_use_route: SCRATCH_ONLY_NO_FOUNDATION_EXPOSURE_NO_MODEL_INPUT_UNTIL_QUALIFIED
+    historical_analytic_or_checkpoint_exposure: UNKNOWN_NOT_ASSERTED
+    unknown_historical_exposure_is_gate_blocker: true
+    member_identifier_output_allowed: false
+    barcode_output_allowed: false
+    sequence_output_allowed: false
+    row_effect_output_allowed: false
+    row_standard_error_output_allowed: false
+    split_assignment_output_allowed: false
+    qualification_allowed: false
+    canonical_materialization_allowed: false
+    contribution: {ordinary: 0, a1: 0, true_a2: 0, canonical_records: 0}
+    training_allowed: false
+    gpu_work_allowed: false
+    model_selection_allowed: false
+    a7_allowed: false
+    next_phase_authorized: false
+    sealed_contact_allowed: false
+  gse269595_dec024_role_adjudication_preflight:
+    current_status: AUTHORIZED_NOT_RUN
+    amendment_path: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec024.yaml
+    dataset_id: GSE269595
+    project_id: PRJNA1122592
+    replacement_candidate_role: REPLACEMENT_A1_OR_TRUE_A2_ROLE_ADJUDICATION_PREFLIGHT_ONLY
+    role: AGGREGATE_SOURCE_FAMILY_ASSET_SCHEMA_GEOMETRY_AND_ROLE_ADJUDICATION_PREFLIGHT_ONLY
+    aggregate_preflight_execution_allowed: true
+    allowed_internal_input_field_classes_exactly: [PUBLIC_IDENTIFIER, SOURCE_LOCUS_AND_SOURCE_FAMILY_ROLE, SOURCE_AND_CANDIDATE_SEQUENCE, APA_LOCATION_AND_INTRONIC_CONTEXT, LEGAL_SUBSTITUTION_ANNOTATION, ASSET_SAMPLE_RUN_ROLE, HEADER_NAME_AND_SCHEMA_ROLE, ASSET_DIMENSION_AND_AGGREGATE_COUNT, ASSAY_GUIDE_AND_REPORTER_CONTEXT, BIOLOGICAL_REPLICATE_ENDPOINT_AND_STANDARD_ERROR, MISSINGNESS_AND_CENSORING_STATUS, LICENSE_AND_REUSE_NOTICE, APARENT_EXPOSURE_AND_MODEL_INPUT_ROUTE_CONTEXT]
+    allowed_output_class: AGGREGATE_GATE_COUNTS_HISTOGRAMS_ROLE_STATUS_ONLY
+    required_fail_closed_gate_ids_exactly:
+      - A1_VERSUS_TRUE_A2_ROLE_ELIGIBILITY_AND_MUTUAL_EXCLUSIVITY_CLOSED
+      - ORDINARY_PUBLIC_ASSET_IDENTITY_ROLE_AND_PROVENANCE_CLOSED
+      - SOURCE_FAMILY_DISTRIBUTION_AND_UNIQUE_SOURCE_ANCHOR_CLOSED
+      - INTRONIC_APA_EXCLUSION_CLOSED
+      - SOURCE_TO_CANDIDATE_LEGAL_SUBSTITUTION_REPLAY_CLOSED
+      - ASSAY_CONTEXT_GUIDE_ENDPOINT_DIRECTION_SCALE_AND_SEMANTICS_CLOSED
+      - INDEPENDENT_BIOLOGICAL_REPLICATE_AND_VALID_STANDARD_ERROR_CLOSED
+      - ASSET_SCHEMA_DIMENSION_AND_COVERAGE_CLOSED
+      - MISSING_CENSORING_AND_SELECTION_CLOSED
+      - APARENT_PRIOR_EXPOSURE_AND_MODEL_INPUT_ROUTE_CLOSED
+      - LICENSE_AND_REUSE_RIGHTS_CLOSED
+      - OUTCOME_BLIND_SOURCE_GROUP_NEAR_DUPLICATE_SPLIT_AND_ZERO_LEAKAGE_READINESS_CLOSED
+      - POST_DEDUP_SOURCE_GROUP_EFFECTIVE_N_AND_PREFROZEN_POWER_FULL_CI_WIDTH_CLOSED
+    independent_gate_axis_count: 13
+    initial_status_for_every_gate: NOT_RUN
+    unknown_or_not_run_gate_is_pass: false
+    a1_role_may_be_presumed: false
+    true_a2_role_may_be_presumed: false
+    maximum_roles_if_later_qualified: 1
+    a1_and_true_a2_double_credit_allowed: false
+    intronic_apa_exclusion_required: true
+    source_to_candidate_edit_relation_may_be_presumed: false
+    minimum_distinct_candidates_per_source_family: 3
+    split_assignment_execution_allowed: false
+    formal_qualification_power_gate_execution_allowed: false
+    future_use_route: SCRATCH_ONLY_NO_FOUNDATION_EXPOSURE_NO_MODEL_INPUT_UNTIL_QUALIFIED
+    historical_analytic_or_checkpoint_exposure: UNKNOWN_NOT_ASSERTED
+    unknown_historical_exposure_is_gate_blocker: true
+    member_identifier_output_allowed: false
+    sequence_output_allowed: false
+    row_effect_output_allowed: false
+    row_standard_error_output_allowed: false
+    split_assignment_output_allowed: false
+    qualification_allowed: false
+    canonical_materialization_allowed: false
+    contribution: {ordinary: 0, a1: 0, true_a2: 0, canonical_records: 0}
+    training_allowed: false
+    gpu_work_allowed: false
+    model_selection_allowed: false
+    a7_allowed: false
+    next_phase_authorized: false
+    sealed_contact_allowed: false
+  emtab10902_dec024_true_a2_preflight:
+    current_status: AUTHORIZED_NOT_RUN
+    amendment_path: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec024.yaml
+    dataset_id: E-MTAB-10902
+    public_alias: N_ZIP
+    replacement_candidate_role: REPLACEMENT_TRUE_A2_CANDIDATE_PREFLIGHT_ONLY
+    role: AGGREGATE_DENSE_FAMILY_QUALIFICATION_PREFLIGHT_ONLY
+    aggregate_preflight_execution_allowed: true
+    allowed_internal_input_field_classes_exactly: [PUBLIC_IDENTIFIER, SOURCE_ANCHOR_AND_SOURCE_FAMILY_ROLE, SOURCE_AND_CANDIDATE_SEQUENCE, FULL_REPORTER_AND_ASSAY_CONTEXT, DESIGNED_OBSERVED_MAPPING, ENDPOINT_DIRECTION_SCALE_AND_UNIT, BIOLOGICAL_REPLICATE_AND_STANDARD_ERROR, MISSINGNESS_CENSORING_AND_QC_STATUS, LICENSE_REUSE_AND_EXPOSURE_CONTEXT]
+    allowed_output_class: AGGREGATE_DENSE_FAMILY_QUALIFICATION_PREFLIGHT_ONLY
+    required_fail_closed_gate_ids_exactly:
+      - INTENDED_UNIVERSE_MEMBERSHIP_CLOSED
+      - SOURCE_ANCHOR_IDENTITY_AND_FULL_REPORTER_CONTEXT_CLOSED
+      - SOURCE_TO_CANDIDATE_EDIT_REPLAY_CLOSED
+      - DENSE_SOURCE_FAMILY_MINIMUM_THREE_CANDIDATES_CLOSED
+      - ENDPOINT_DIRECTION_SCALE_UNIT_AND_SEMANTICS_CLOSED
+      - INDEPENDENT_BIOLOGICAL_REPLICATE_AND_VALID_STANDARD_ERROR_CLOSED
+      - MISSING_CENSORING_QC_AND_SELECTION_CLOSED
+      - LICENSE_REUSE_RIGHTS_AND_EXPOSURE_CLOSED
+      - OUTCOME_BLIND_SOURCE_GROUP_NEAR_DUPLICATE_SPLIT_AND_ZERO_LEAKAGE_READINESS_CLOSED
+      - POST_DEDUP_INDEPENDENT_SOURCE_GROUP_EFFECTIVE_N_CLOSED
+      - PREFROZEN_SOURCE_GROUP_POWER_AND_FULL_CI_WIDTH_CLOSED
+    independent_gate_axis_count: 11
+    initial_status_for_every_gate: NOT_RUN
+    unknown_or_not_run_gate_is_pass: false
+    full_reporter_context_required: true
+    source_to_candidate_edit_relation_may_be_presumed: false
+    minimum_distinct_candidates_per_source_family: 3
+    reported_source_group_count_approximate: 16
+    reported_qc_design_row_count_reference_only: 5679
+    reported_qc_design_row_count_may_substitute_for_independent_source_group_n: false
+    prefrozen_required_effective_n_for_power_and_full_ci_width: 156
+    power_infeasible_status_allowed: true
+    power_infeasible_status_is_qualification_or_credit: false
+    split_assignment_execution_allowed: false
+    formal_qualification_power_gate_execution_allowed: false
+    future_use_route: SCRATCH_ONLY_NO_FOUNDATION_EXPOSURE_NO_MODEL_INPUT_UNTIL_QUALIFIED
+    historical_analytic_or_checkpoint_exposure: UNKNOWN_NOT_ASSERTED
+    unknown_historical_exposure_is_gate_blocker: true
+    member_identifier_output_allowed: false
+    sequence_output_allowed: false
+    row_effect_output_allowed: false
+    row_standard_error_output_allowed: false
+    split_assignment_output_allowed: false
+    qualification_allowed: false
+    canonical_materialization_allowed: false
+    contribution: {ordinary: 0, a1: 0, true_a2: 0, canonical_records: 0}
     training_allowed: false
     gpu_work_allowed: false
     model_selection_allowed: false

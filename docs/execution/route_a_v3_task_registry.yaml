@@ -10,12 +10,13 @@ authority_ref:
   config_path: configs/route_a_v3.yaml
   goal_path: docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md
   goal_sha256: cbac4c3dcba8f1b8df95d8edad52d19e3c126d1c865d0cc423537c754cc90982
-  active_amendment_decision_ids: [V3-DEC-017, V3-DEC-018, V3-DEC-019, V3-DEC-020, V3-DEC-021, V3-DEC-022, V3-DEC-023]
+  active_amendment_decision_ids: [V3-DEC-017, V3-DEC-018, V3-DEC-019, V3-DEC-020, V3-DEC-021, V3-DEC-022, V3-DEC-023, V3-DEC-024]
   dec019_amendment_path: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec019.yaml
   dec020_amendment_path: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec020.yaml
   dec021_amendment_path: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec021.yaml
   dec022_amendment_path: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec022.yaml
   dec023_amendment_path: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec023.yaml
+  dec024_amendment_path: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec024.yaml
 
 expected_phase_ids: [A0, A1, A2, A3, A4, A5, A6, A7, A8, A9, A10]
 expected_task_ids:
@@ -101,6 +102,36 @@ dec020_model_input_route_boundaries:
   training_allowed: false
   gpu_work_allowed: false
   model_selection_allowed: false
+  next_phase_authorized: false
+  sealed_contact_allowed: false
+
+dec024_replacement_preflight_boundaries:
+  latest_settled_runtime_event_id: A1-EVT-057
+  gse261709_role: AGGREGATE_ROW_LEVEL_A1_QUALIFICATION_PREFLIGHT_ONLY
+  gse261709_input_surface: ORDINARY_PUBLIC_PROCESSED_ASSET_ONLY
+  gse261709_raw_fastq_or_sra_member_payload_read_allowed: false
+  gse269595_role: REPLACEMENT_A1_OR_TRUE_A2_ROLE_ADJUDICATION_PREFLIGHT_ONLY
+  gse269595_maximum_roles_if_later_qualified: 1
+  gse269595_double_credit_allowed: false
+  emtab10902_role: REPLACEMENT_TRUE_A2_CANDIDATE_PREFLIGHT_ONLY
+  emtab10902_reported_source_group_count_approximate: 16
+  emtab10902_reported_qc_design_rows_may_substitute_for_independent_n: false
+  prefrozen_required_effective_n_for_power_and_full_ci_width: 156
+  future_use_route: SCRATCH_ONLY_NO_FOUNDATION_EXPOSURE_NO_MODEL_INPUT_UNTIL_QUALIFIED
+  historical_analytic_or_checkpoint_exposure: UNKNOWN_NOT_ASSERTED
+  unknown_historical_exposure_is_gate_blocker: true
+  current_qualified_counts: {ordinary: 1, a1: 1, true_a2: 0, canonical_records: 6547}
+  changes_current_qualified_counts: false
+  gate_threshold_relaxation_authorized: false
+  dataset_role_assignment_allowed: false
+  qualification_allowed: false
+  canonical_materialization_allowed: false
+  split_execution_allowed: false
+  formal_qualification_power_gate_execution_allowed: false
+  training_allowed: false
+  gpu_work_allowed: false
+  model_selection_allowed: false
+  a7_allowed: false
   next_phase_authorized: false
   sealed_contact_allowed: false
 

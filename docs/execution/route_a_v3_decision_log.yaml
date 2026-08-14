@@ -675,3 +675,100 @@ decisions:
       - configs/route_a_v3_a1_qualification.json
       - docs/execution/route_a_v3_data_role_registry.yaml
       - docs/execution/route_a_v3_a1_interim.yaml
+  - decision_id: V3-DEC-024
+    decision_type: AMENDMENT
+    dimension: gse261709_processed_a1_gse269595_role_adjudication_and_emtab10902_true_a2_replacement_preflight_scope
+    resolution: >-
+      Authorize three ordinary-public, aggregate-output-only replacement
+      preflights without assigning a dataset role or scientific credit. First,
+      extend existing GSE261709/PRJNA1088465 beyond its preserved DEC-023
+      geometry preflight only for internal reads of ordinary-public processed
+      mapping, barcode-to-allele/transcript/source/full-construct joins,
+      source/candidate sequence, three biological RNA/DNA replicate counts,
+      endpoint/effect/SE fields and necessary context or rights notices; raw
+      FASTQ, SRA run members and other raw archive member payload remain
+      forbidden. Second, authorize GSE269595/PRJNA1122592 only for an
+      A1-versus-true-A2 role-adjudication preflight, with at most one later role and no
+      double credit, auditing source-family distribution, intronic APA
+      exclusion, legal substitutions, context/guide/replicate SE, APARENT
+      exposure, rights, split/leakage, effective N and power. Third, authorize
+      E-MTAB-10902/N-zip as a true-A2 candidate preflight requiring source
+      anchor/edit replay/full reporter context, family size at least three,
+      endpoint, biological replicate/SE, missingness, rights/exposure,
+      source-group split/leakage/effective N and power. Its reported approximate
+      16 source groups remain the independent scale; 5,679 QC design rows may
+      not substitute for independent N, and aggregate POWER_INFEASIBLE is an
+      allowed honest preflight outcome against the current required effective
+      N of 156. Freeze future model-input use for all three as scratch-only and
+      no-foundation until qualification, while leaving unsupported historical
+      analytic or checkpoint exposure UNKNOWN and blocking. Preserve settled
+      A1-EVT-057, global 1/1/0 and 6547 canonical records. Do not relax the
+      scientific 3/2/1 gate; authorize no row/member/barcode/sequence/effect/SE
+      or split-assignment output, qualification, role assignment, canonical
+      materialization, training, GPU, model selection, A7, next phase, private
+      or sealed access, or scientific claim.
+    status: FROZEN_USER_AUTHORIZED_REPLACEMENT_PREFLIGHT_ONLY_NO_PROMOTION
+    effective_phase: A1
+    requires_user_authorization: true
+    user_authorization_status: GRANTED
+    user_authorization_received_at: "2026-08-14T17:12:00+08:00"
+    user_authorization_source: ACTIVE_CODEX_THREAD_OWNER_AUTONOMY_AND_REPLACEMENT_PREFLIGHT_DIRECTIVE
+    preserves_decision_ids: [V3-DEC-001, V3-DEC-002, V3-DEC-003, V3-DEC-004, V3-DEC-005, V3-DEC-006, V3-DEC-007, V3-DEC-008, V3-DEC-009, V3-DEC-010, V3-DEC-011, V3-DEC-012, V3-DEC-013, V3-DEC-014, V3-DEC-015, V3-DEC-016, V3-DEC-017, V3-DEC-018, V3-DEC-019, V3-DEC-020, V3-DEC-021, V3-DEC-022, V3-DEC-023]
+    accepted_prefix_preserved_through: V3-DEC-023
+    amendment_path: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec024.yaml
+    gse261709_project_id: PRJNA1088465
+    gse261709_role: AGGREGATE_ROW_LEVEL_A1_QUALIFICATION_PREFLIGHT_ONLY
+    gse261709_authority_surface: ORDINARY_PUBLIC_PROCESSED_ASSET_ONLY
+    gse261709_raw_fastq_or_sra_member_payload_read_allowed: false
+    gse261709_independent_gate_axis_count: 12
+    gse269595_project_id: PRJNA1122592
+    gse269595_role: REPLACEMENT_A1_OR_TRUE_A2_ROLE_ADJUDICATION_PREFLIGHT_ONLY
+    gse269595_maximum_roles_if_later_qualified: 1
+    gse269595_a1_and_true_a2_double_credit_allowed: false
+    gse269595_intronic_apa_exclusion_required: true
+    gse269595_independent_gate_axis_count: 13
+    emtab10902_alias: N_ZIP
+    emtab10902_role: REPLACEMENT_TRUE_A2_CANDIDATE_PREFLIGHT_ONLY
+    emtab10902_reported_source_group_count_approximate: 16
+    emtab10902_reported_qc_design_row_count_reference_only: 5679
+    emtab10902_reported_qc_design_rows_may_substitute_for_independent_n: false
+    emtab10902_prefrozen_required_effective_n: 156
+    emtab10902_power_infeasible_status_allowed: true
+    future_use_route: SCRATCH_ONLY_NO_FOUNDATION_EXPOSURE_NO_MODEL_INPUT_UNTIL_QUALIFIED
+    historical_analytic_or_checkpoint_exposure: UNKNOWN_NOT_ASSERTED
+    unknown_historical_exposure_is_gate_blocker: true
+    current_qualified_counts: {ordinary: 1, a1: 1, true_a2: 0, canonical_records: 6547}
+    changes_current_qualified_counts: false
+    gse261709_contribution: {ordinary: 0, a1: 0, true_a2: 0, canonical_records: 0}
+    gse269595_contribution: {ordinary: 0, a1: 0, true_a2: 0, canonical_records: 0}
+    emtab10902_contribution: {ordinary: 0, a1: 0, true_a2: 0, canonical_records: 0}
+    gate_threshold_relaxation_authorized: false
+    dataset_role_assignment_allowed: false
+    qualification_allowed: false
+    canonical_materialization_allowed: false
+    split_execution_allowed: false
+    formal_qualification_power_gate_execution_allowed: false
+    training_allowed: false
+    gpu_work_allowed: false
+    model_selection_allowed: false
+    a7_allowed: false
+    next_phase_authorized: false
+    scientific_claim_status: NOT_ESTABLISHED
+    latest_settled_runtime_event_id: A1-EVT-057
+    settled_runtime_event_changed: false
+    runtime_event_emitted: false
+    runtime_sync_status: PENDING_FRESH_EVENT_AFTER_SETTLED_EVT_057
+    expected_next_runtime_event_id: PENDING_FRESH_RUNTIME_EVENT_ID
+    next_runtime_event_id_preallocated: false
+    sealed_contact: false
+    strategic_nonbinding_possible_future_combination: EXISTING_GSE261709_AS_A1_PLUS_GSE269595_AS_TRUE_A2
+    strategic_combination_requires_separate_formal_qualification_authority: true
+    evidence_refs:
+      - docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md
+      - docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec023.yaml
+      - docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec024.yaml
+      - configs/route_a_v3.yaml
+      - configs/route_a_v3_a1_qualification.json
+      - docs/execution/route_a_v3_data_role_registry.yaml
+      - docs/execution/route_a_v3_task_registry.yaml
+      - docs/execution/route_a_v3_a1_interim.yaml

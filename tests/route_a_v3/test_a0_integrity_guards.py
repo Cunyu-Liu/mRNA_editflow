@@ -4438,7 +4438,7 @@ def test_a6_cpu_partial_registration_is_closed(validator, repo_root):
         assert task["claim_status"] == "NOT_ESTABLISHED"
 
 
-def test_current_task_and_a6_authority_pointers_follow_dec023_without_rewriting_history(
+def test_current_task_and_a6_authority_pointers_follow_dec024_without_rewriting_history(
     validator,
     repo_root,
 ):
@@ -4451,6 +4451,7 @@ def test_current_task_and_a6_authority_pointers_follow_dec023_without_rewriting_
     assert authority_ref["dec021_amendment_path"] == validator.DEC021_AMENDMENT_PATH
     assert authority_ref["dec022_amendment_path"] == validator.DEC022_AMENDMENT_PATH
     assert authority_ref["dec023_amendment_path"] == validator.DEC023_AMENDMENT_PATH
+    assert authority_ref["dec024_amendment_path"] == validator.DEC024_AMENDMENT_PATH
 
     task_sha256 = validator.sha256_file(repo_root / task_path)
     assert task_sha256 == validator.CURRENT_TASK_REGISTRY_SHA256
@@ -4485,7 +4486,10 @@ def test_current_task_and_a6_authority_pointers_follow_dec023_without_rewriting_
     assert validator.DEC023_FROZEN_AUTHORITY_LEAF_SHA256[task_path] == (
         frozen_task_sha256
     )
-    assert validator.DEC023_ACTIVE_AUTHORITY_LEAF_SHA256[task_path] == task_sha256
+    assert validator.DEC023_ACTIVE_AUTHORITY_LEAF_SHA256[task_path] == (
+        validator.DEC023_ACTIVE_TASK_REGISTRY_SHA256
+    )
+    assert validator.DEC024_ACTIVE_AUTHORITY_LEAF_SHA256[task_path] == task_sha256
 
 
 @pytest.mark.parametrize(
@@ -4743,6 +4747,106 @@ def test_dec023_gse207584_gate_or_true_a2_promotion_drift_fails_closed(
     assert "DEC023_GSE207584_SCOPE" in codes
     assert "DEC023_DATA_ROLE" in codes
     assert "DEC023_DATA_GSE207584" in codes
+
+
+def test_dec024_three_replacement_preflight_authorities_are_closed(
+    validator,
+    repo_root,
+):
+    config, _, registries = validator.load_bundle_documents(repo_root)
+    assert validator.validate_dec024_authority(repo_root, config, registries) == []
+
+    amendment = validator._load_yaml(repo_root, validator.DEC024_AMENDMENT_PATH)
+    assert amendment["predecessor_authority_head"] == (
+        "e5d089a43d194caf59369fd12c203c0694ba40c6"
+    )
+    assert amendment["shared_no_promotion_boundary"]["original_gate_minima"] == {
+        "ordinary": 3,
+        "a1": 2,
+        "true_a2": 1,
+    }
+    assert amendment["shared_no_promotion_boundary"][
+        "changes_current_qualified_counts"
+    ] is False
+    assert amendment["gse269595_role_adjudication_scope"][
+        "maximum_roles_if_later_qualified"
+    ] == 1
+    assert amendment["gse269595_role_adjudication_scope"][
+        "a1_and_true_a2_double_credit_allowed"
+    ] is False
+    assert amendment["emtab10902_replacement_true_a2_scope"][
+        "reported_source_group_count_approximate"
+    ] == 16
+    assert amendment["emtab10902_replacement_true_a2_scope"][
+        "reported_qc_design_row_count_may_substitute_for_independent_source_group_n"
+    ] is False
+    assert amendment["emtab10902_replacement_true_a2_scope"][
+        "prefrozen_required_effective_n_for_power_and_full_ci_width"
+    ] == 156
+
+    manifest = validator._load_json(repo_root, validator.REGISTRY_MANIFEST_PATH)
+    manifest_paths = {row["path"] for row in manifest["files"]}
+    assert validator.DEC024_AMENDMENT_PATH in manifest_paths
+    assert {
+        "configs/route_a_v3_gse207584_moesm7_aggregate_endpoint_universe_preflight_v1.json",
+        "scripts/route_a_v3/preflight_gse207584_moesm7_aggregate_endpoint_universe.py",
+        "tests/route_a_v3/test_preflight_gse207584_moesm7_aggregate_endpoint_universe.py",
+    }.isdisjoint(manifest_paths)
+
+
+@pytest.mark.parametrize(
+    ("mutation", "expected_code"),
+    [
+        ("gse261_raw_member_read", "DEC024_ROOT_GSE261709"),
+        ("gse269_double_credit", "DEC024_ROOT_GSE269595"),
+        ("emtab_rows_as_independent_n", "DEC024_DATA_EMTAB10902"),
+        ("gate_relaxation", "DEC024_TASK_BOUNDARY"),
+        ("historical_exposure_fabricated_none", "DEC024_DATA_GSE269595"),
+    ],
+)
+def test_dec024_scope_or_promotion_drift_fails_closed(
+    validator,
+    repo_root,
+    mutation,
+    expected_code,
+):
+    config, _, registries = validator.load_bundle_documents(repo_root)
+    config = deepcopy(config)
+    registries = deepcopy(registries)
+    root_policy = config["a1_qualification_authority"]
+
+    if mutation == "gse261_raw_member_read":
+        root_policy["gse261709_dec024_processed_a1_qualification_preflight"][
+            "raw_fastq_or_sra_member_payload_read_allowed"
+        ] = True
+    elif mutation == "gse269_double_credit":
+        root_policy["gse269595_dec024_role_adjudication_preflight"][
+            "a1_and_true_a2_double_credit_allowed"
+        ] = True
+    elif mutation == "emtab_rows_as_independent_n":
+        row = next(
+            item
+            for item in registries["data"]["datasets"]
+            if item["dataset_id"] == "E-MTAB-10902"
+        )
+        row[
+            "reported_qc_design_row_count_may_substitute_for_independent_source_group_n"
+        ] = True
+    elif mutation == "gate_relaxation":
+        registries["task"]["dec024_replacement_preflight_boundaries"][
+            "gate_threshold_relaxation_authorized"
+        ] = True
+    else:
+        row = next(
+            item
+            for item in registries["data"]["datasets"]
+            if item["dataset_id"] == "GSE269595"
+        )
+        row["historical_analytic_or_checkpoint_exposure"] = "NONE"
+        row["unknown_historical_exposure_is_gate_blocker"] = False
+
+    codes = _codes(validator.validate_dec024_authority(repo_root, config, registries))
+    assert expected_code in codes
 
 
 def test_dec023_dual_preflight_final_evidence_registration_is_closed(

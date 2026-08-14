@@ -4,7 +4,7 @@
   "contract_path": "docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md",
   "initial_contract_sha256": "d1c031aecdec710495f6861b380785cccd64663ac4bd97b4f479d6fdf372ea07",
   "contract_sha256": "cbac4c3dcba8f1b8df95d8edad52d19e3c126d1c865d0cc423537c754cc90982",
-  "active_amendment_decision_ids": ["V3-DEC-017", "V3-DEC-018", "V3-DEC-019", "V3-DEC-020", "V3-DEC-021", "V3-DEC-022", "V3-DEC-023"],
+  "active_amendment_decision_ids": ["V3-DEC-017", "V3-DEC-018", "V3-DEC-019", "V3-DEC-020", "V3-DEC-021", "V3-DEC-022", "V3-DEC-023", "V3-DEC-024"],
   "files": [
     {
       "path": "docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md",
@@ -14,7 +14,7 @@
     {
       "path": "configs/route_a_v3.yaml",
       "role": "EXECUTABLE_CONTRACT",
-      "sha256": "df38455904d67f22a2fea1fb08a3314cd4fb120e91ea711427ad1689653ba8ce"
+      "sha256": "01cb7bb052da7459e946828b7c92dede8f257e3f13abba3534455b370ef09b74"
     },
     {
       "path": "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec019.yaml",
@@ -42,14 +42,19 @@
       "sha256": "44622c7f589d841105cb21d0b35219aa9163fe4d54350671106408d4c8439e4a"
     },
     {
+      "path": "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec024.yaml",
+      "role": "DEC024_APPEND_ONLY_REPLACEMENT_PREFLIGHT_AUTHORITY_AMENDMENT",
+      "sha256": "163c5b744a8d68e6e0bd3afad378c3cd8611d42e7f8ff881291557049d908eac"
+    },
+    {
       "path": "configs/route_a_v3_a1_qualification.json",
       "role": "A1_QUALIFICATION_ROOT_PROTOCOL",
-      "sha256": "98de408ec423836efac75bcd75b4fd940e9fbd52a0bf1b3c397ea0c67e548740"
+      "sha256": "46ce6ff3648f1abec47bfc9eb63045759ab8676b12fd3c38c5efe31d64f37c41"
     },
     {
       "path": "docs/contracts/supersession_mrna_xeditflow_v1_1_to_route_a_v3.yaml",
       "role": "SUPERSESSION_LINEAGE",
-      "sha256": "0edfddd90ebea11db1cebb7084bdf28dd8a99426c3956a81cdfd7a4a9ccb12e2"
+      "sha256": "d403a4aa7db9343848be74ae061b8196613525ff03600b1034864d7d803c7beb"
     },
     {
       "path": "docs/contracts/history/mrna_v2_readiness_audit_20260807.md",
@@ -69,22 +74,22 @@
     {
       "path": "docs/execution/route_a_v3_data_role_registry.yaml",
       "role": "DATA_ROLE_REGISTRY",
-      "sha256": "bb577d4ce7d7dc673f41bb182b7868f66816c15a3ed4235c98e0839292e75d6b"
+      "sha256": "f62034239854d494c45196d2535895e9593cc38655d7b9042719fb912cf08e45"
     },
     {
       "path": "docs/execution/route_a_v3_decision_log.yaml",
       "role": "DECISION_AND_AMENDMENT_LOG",
-      "sha256": "8e514512ccd63d87a596231b11183c06765ba50ba3736adc165f141da8fa13d0"
+      "sha256": "06a031cf67ead3417942938a17f4783a6f2168866f54e1fc2abe1b7fa938c0c3"
     },
     {
       "path": "docs/execution/route_a_v3_a1_interim.yaml",
       "role": "A1_ACTIVE_INTERIM_RECORD",
-      "sha256": "4983f166cfcc19d406065e766f2fff15e6d82c499aa9e441e0adff0140891a75"
+      "sha256": "0f35ae3b1b56a76174edac92fa578c0cdcd83a4a68c757717dbe155cf79e265a"
     },
     {
       "path": "docs/execution/route_a_v3_a6_interim.yaml",
       "role": "A6_ACTIVE_INTERIM_RECORD",
-      "sha256": "d741972e66f5b99a9b42460de3eb5f64a7f9c046135459e4778505fad49dc813"
+      "sha256": "c0002dac3ea470f69bf79e752a57041b9910e9583bddefd1625c6279f50e3081"
     },
     {
       "path": "docs/execution/route_a_v3_split_registry.yaml",
@@ -94,7 +99,7 @@
     {
       "path": "docs/execution/route_a_v3_task_registry.yaml",
       "role": "TASK_AND_PHASE_REGISTRY",
-      "sha256": "210964e1a1c0b1166dab73e95e0243eee54d8470149aa3b3cb182f4f90e266b3"
+      "sha256": "c1d9920cc3d28c7ee63d9649a69d6b6856b9b25115f6ca4f1d392a067a0d5dae"
     },
     {
       "path": "docs/execution/route_a_v3_task_split_matrix.yaml",
@@ -534,18 +539,18 @@
     {
       "path": "tests/route_a_v3/test_a0_integrity_guards.py",
       "role": "A0_AUTHORITY_INTEGRITY_GUARD_TEST",
-      "sha256": "455731fe97f667243cf7605ef4f8e1291719e415fb09db1abbdee99323f4a49c"
+      "sha256": "625677fd9e639ae0d9c23b8fc49aa321c7e0e46c3a52784e3ff41efbcd93d1e1"
     },
     {
       "path": "scripts/route_a_v3/validate_a0_bundle.py",
       "role": "A0_STATIC_AND_SEMANTIC_VALIDATOR",
-      "sha256": "783f1a3cd69e6b0c5d24b5123daba1da7be4b9f051122bd83f7fd7e5a84499b3"
+      "sha256": "d90908e4b2726df3621e5ef97fc290ec4af8464b7037cb000a2071886c586d3c"
     }
   ],
   "initial_generated_at": "2026-08-10T10:10:05+08:00",
-  "generated_at": "2026-08-14T13:45:38+08:00",
-  "updated_at": "2026-08-14T13:45:38+08:00",
-  "manifest_status": "DEC023_GSE261709_PUBLIC_SCHEMA_GEOMETRY_AND_GSE207584_DENSE_FAMILY_DUAL_PREFLIGHT_EVIDENCE_REGISTERED_EVT057_SETTLED_EVIDENCE_RUNTIME_SYNCED_A1_INCOMPLETE_A6_IN_PROGRESS_L3_NOT_ESTABLISHED_A7_NOT_RUN",
+  "generated_at": "2026-08-14T17:30:00+08:00",
+  "updated_at": "2026-08-14T17:30:00+08:00",
+  "manifest_status": "DEC024_THREE_REPLACEMENT_AGGREGATE_ONLY_PREFLIGHT_AUTHORITIES_REGISTERED_EVT057_SETTLED_PENDING_FRESH_UNALLOCATED_RUNTIME_EVENT_A1_INCOMPLETE_A6_IN_PROGRESS_L3_NOT_ESTABLISHED_A7_NOT_RUN",
   "schema_version": "1.0.0",
   "sealed_contact": false,
   "version": "3.0.0"
