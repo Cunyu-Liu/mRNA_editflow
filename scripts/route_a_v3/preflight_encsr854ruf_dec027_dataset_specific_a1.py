@@ -2,13 +2,13 @@
 """Fail-closed, aggregate-only ENCSR854RUF DEC027 A1 preflight.
 
 The implementation candidate is deliberately inactive.  DEC027 authority, the
-settled A1-EVT-059 runtime I1/I2/B2 history, and the GSE217518
-I1/I2/B2/I3/B3 predecessor history are byte-bound.  This producer's own
-four-scalar binding remains grouped UNKNOWN, so the production path stops
-before Git, publisher-workbook, author-repository, or output-path I/O.  A future
-bound run verifies the complete append-only commit chain and computes only
-aggregate geometry; identifiers, sequences, row values, standard errors, and
-split assignments are never serialized.
+settled A1-EVT-059 runtime I1/I2/B2 history, the GSE217518
+I1/I2/B2/I3/B3 predecessor history, and ENCSR854RUF I1 are byte-bound.  This
+producer is the append-only I2 candidate; its own four-scalar binding remains
+grouped UNKNOWN, so the production path stops before Git, publisher-workbook,
+author-repository, or output-path I/O.  A future B2 verifies the complete commit
+chain and computes only aggregate geometry; identifiers, sequences, row values,
+standard errors, and split assignments are never serialized.
 """
 
 from __future__ import annotations
@@ -108,6 +108,12 @@ GSE217_I2_COMMIT = "6fbd63be6d0edb9f73cf2f85e446917d3c3ff100"
 GSE217_B2_COMMIT = "c3611b0f2e8baeb83422bb07f5446b42edce90ef"
 GSE217_I3_COMMIT = "36b535f77b3f27bb872b182dcaf6c646d9781991"
 GSE217_B3_COMMIT = "0a46400efee4ead95b1283df73d263f6f8033036"
+ENCSR_I1_COMMIT = "c6132d8928df0a64be106b11ee62d225d77249ba"
+ENCSR_I1_BLOBS = {
+    CONFIG_REPO_PATH: "e1d3747876818f5b0d2b47f4a185cc5fb0f1c6b141b25a1e635768cdde588e2c",
+    SCRIPT_REPO_PATH: "d8f6517f935624204cfa8669c8322909734417b212287e867ea38d8e031881ec",
+    TEST_REPO_PATH: "b59e94373fb02cb2a0e65b67183af9b2f3ddcab24bc8f72d4a636f9a781f4714",
+}
 GSE217_OWN_BINDING_FIELDS = (
     "status",
     "implementation_commit",
@@ -361,6 +367,29 @@ def _predecessor_mode(group: Mapping[str, Any]) -> str:
     return BOUND
 
 
+def _validate_encsr_i1_group(group: Mapping[str, Any]) -> None:
+    _exact_keys(
+        group,
+        (
+            "status",
+            "i1_expected_parent",
+            "i1_commit",
+            "i1_exact_changed_paths",
+            "i1_blob_sha256_by_path",
+        ),
+        label="encsr854ruf_i1_group",
+    )
+    expected = {
+        "status": BOUND,
+        "i1_expected_parent": GSE217_B3_COMMIT,
+        "i1_commit": ENCSR_I1_COMMIT,
+        "i1_exact_changed_paths": list(EXACT3),
+        "i1_blob_sha256_by_path": ENCSR_I1_BLOBS,
+    }
+    if group != expected:
+        raise ProtocolError("ENCSR854RUF I1 binding differs")
+
+
 def _own_mode(group: Mapping[str, Any]) -> str:
     _exact_keys(
         group,
@@ -417,6 +446,7 @@ def _validate_binding(protocol: Mapping[str, Any]) -> tuple[str, str]:
             "authority_group",
             "runtime_group",
             "gse217518_predecessor_group",
+            "encsr854ruf_i1_group",
             "own_preflight_group",
             "activation_rule",
         ),
@@ -424,19 +454,19 @@ def _validate_binding(protocol: Mapping[str, Any]) -> tuple[str, str]:
     )
     if binding.get("binding_scheme") != (
         "DEC027_A_TO_RUNTIME_I1_I2_B2_EVT059_TO_GSE217518_"
-        "I1_I2_B2_I3_B3_TO_ENCSR854RUF_I_B"
+        "I1_I2_B2_I3_B3_TO_ENCSR854RUF_I1_I2_B2"
     ):
         raise ProtocolError("append-only binding scheme differs")
     expected_activation = (
         "Authority, the complete A1-EVT-059 runtime A-to-I1-to-I2-to-B2 "
-        "history, and the complete GSE217518 I1-to-I2-to-B2-to-I3-to-B3 "
-        "history are frozen. ENCSR854RUF I must be the direct child of "
-        "GSE217518 B3. This exact3 own four-scalar group remains grouped "
-        "UNKNOWN_NOT_ASSERTED in I, so production must stop before Git, "
-        "publisher workbook, author-repository asset, prepared-data path, or "
-        "output-path inspection until a config-only ENCSR854RUF B changes only "
-        "those four scalars. Generic registry requirements are never "
-        "dataset-specific gate facts."
+        "history, the complete GSE217518 I1-to-I2-to-B2-to-I3-to-B3 "
+        "history, and ENCSR854RUF I1 are frozen. ENCSR854RUF I2 must be the "
+        "direct child of ENCSR854RUF I1. This exact3 I2 own four-scalar group "
+        "remains grouped UNKNOWN_NOT_ASSERTED in I2, so production must stop "
+        "before Git, publisher workbook, author-repository asset, prepared-data "
+        "path, or output-path inspection until a config-only ENCSR854RUF B2 "
+        "changes only those four scalars. Generic registry requirements are "
+        "never dataset-specific gate facts."
     )
     if binding.get("activation_rule") != expected_activation:
         raise ProtocolError("production activation rule differs")
@@ -446,6 +476,9 @@ def _validate_binding(protocol: Mapping[str, Any]) -> tuple[str, str]:
     _validate_runtime_group(_mapping(binding["runtime_group"], label="runtime_group"))
     predecessor_mode = _predecessor_mode(
         _mapping(binding["gse217518_predecessor_group"], label="gse217518_predecessor_group")
+    )
+    _validate_encsr_i1_group(
+        _mapping(binding["encsr854ruf_i1_group"], label="encsr854ruf_i1_group")
     )
     own_mode = _own_mode(
         _mapping(binding["own_preflight_group"], label="own_preflight_group")
@@ -499,7 +532,7 @@ def validate_protocol(protocol: Mapping[str, Any]) -> None:
         if protocol.get(field) != value:
             raise ProtocolError(f"{field} differs from the frozen value")
     if protocol.get("protocol_status") != (
-        "LOCAL_EXACT3_CANDIDATE_FULL_PREDECESSOR_HISTORY_BOUND_"
+        "LOCAL_EXACT3_I2_CANDIDATE_FULL_PREDECESSOR_AND_ENCSR_I1_BOUND_"
         "OWN_BINDING_UNKNOWN_NOT_ACTIVE"
     ):
         raise ProtocolError("protocol status differs")
@@ -521,8 +554,10 @@ def validate_protocol(protocol: Mapping[str, Any]) -> None:
         raise ProtocolError("fresh runtime B2 differs")
     if baseline.get("gse217518_final_binding_commit") != GSE217_B3_COMMIT:
         raise ProtocolError("fresh GSE217518 B3 differs")
+    if baseline.get("encsr854ruf_i1_commit") != ENCSR_I1_COMMIT:
+        raise ProtocolError("fresh ENCSR854RUF I1 differs")
     for field in ("production_head", "upstream_head", "origin_head"):
-        if baseline.get(field) != GSE217_B3_COMMIT:
+        if baseline.get(field) != ENCSR_I1_COMMIT:
             raise ProtocolError(f"fresh baseline {field} differs")
     if baseline.get("worktree_clean") is not True:
         raise ProtocolError("fresh baseline worktree must be clean")
@@ -800,7 +835,7 @@ def _read_repository_file(path: Path, *, label: str) -> bytes:
 def _audit_repository(
     protocol: Mapping[str, Any], config_path: Path, repo_root: Path
 ) -> dict[str, Any]:
-    """Audit A -> runtime I1/I2/B2 -> GSE217518 I1/I2/B2/I3/B3 -> own I/B."""
+    """Audit A -> runtime history -> GSE217518 history -> ENCSR854RUF I1/I2/B2."""
 
     _require_activation(protocol)
     repository = protocol["repository_authority"]
@@ -825,6 +860,7 @@ def _audit_repository(
     authority = binding["authority_group"]
     runtime = binding["runtime_group"]
     predecessor = binding["gse217518_predecessor_group"]
+    encsr_i1 = binding["encsr854ruf_i1_group"]
     own = binding["own_preflight_group"]
     own_i = own["implementation_commit"]
 
@@ -902,9 +938,17 @@ def _audit_repository(
     )
     _verify_commit(
         repo_root,
-        label="ENCSR854RUF implementation I",
-        commit=own_i,
+        label="ENCSR854RUF I1",
+        commit=ENCSR_I1_COMMIT,
         expected_parent=GSE217_B3_COMMIT,
+        expected_paths=EXACT3,
+        expected_blobs=encsr_i1["i1_blob_sha256_by_path"],
+    )
+    _verify_commit(
+        repo_root,
+        label="ENCSR854RUF I2",
+        commit=own_i,
+        expected_parent=ENCSR_I1_COMMIT,
         expected_paths=EXACT3,
         expected_blobs={
             SCRIPT_REPO_PATH: own["implementation_script_sha256"],
@@ -913,7 +957,7 @@ def _audit_repository(
     )
     _verify_commit(
         repo_root,
-        label="ENCSR854RUF binding B",
+        label="ENCSR854RUF B2",
         commit=head,
         expected_parent=own_i,
         expected_paths=(CONFIG_REPO_PATH,),
@@ -938,26 +982,26 @@ def _audit_repository(
 
     own_i_protocol = _strict_json_bytes(
         _git_blob(repo_root, own_i, CONFIG_REPO_PATH),
-        label="ENCSR854RUF I protocol",
+        label="ENCSR854RUF I2 protocol",
     )
     if _normalise_own_binding(protocol) != own_i_protocol:
-        raise RepositoryError("ENCSR854RUF B changed fields outside its own four scalars")
+        raise RepositoryError("ENCSR854RUF B2 changed fields outside its own four scalars")
     if _read_repository_file(config_path, label="working ENCSR854RUF config") != _git_blob(
         repo_root, head, CONFIG_REPO_PATH
     ):
-        raise RepositoryError("working config differs from ENCSR854RUF B")
+        raise RepositoryError("working config differs from ENCSR854RUF B2")
     executing_script = Path(__file__).resolve()
     if executing_script != (repo_root / SCRIPT_REPO_PATH).resolve():
         raise RepositoryError("executing producer is a stale or copied script")
     if _read_repository_file(executing_script, label="executing producer") != _git_blob(
         repo_root, own_i, SCRIPT_REPO_PATH
     ):
-        raise RepositoryError("executing producer differs from ENCSR854RUF I")
+        raise RepositoryError("executing producer differs from ENCSR854RUF I2")
     focused_test = repo_root / TEST_REPO_PATH
     if _read_repository_file(focused_test, label="working focused test") != _git_blob(
         repo_root, own_i, TEST_REPO_PATH
     ):
-        raise RepositoryError("working focused test differs from ENCSR854RUF I")
+        raise RepositoryError("working focused test differs from ENCSR854RUF I2")
     return {
         "status": "BOUND_REPOSITORY_CHAIN_CLOSED",
         "head": head,
@@ -969,6 +1013,7 @@ def _audit_repository(
         "gse217518_b2_commit": GSE217_B2_COMMIT,
         "gse217518_i3_commit": GSE217_I3_COMMIT,
         "gse217518_b3_commit": GSE217_B3_COMMIT,
+        "encsr854ruf_i1_commit": ENCSR_I1_COMMIT,
         "implementation_commit": own["implementation_commit"],
         "binding_commit": head,
         "changed_path_counts": {
@@ -981,6 +1026,7 @@ def _audit_repository(
             "gse217518_b2": 1,
             "gse217518_i3": 3,
             "gse217518_b3": 1,
+            "encsr854ruf_i1": 3,
             "implementation": 3,
             "binding": 1,
         },

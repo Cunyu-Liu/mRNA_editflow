@@ -26,8 +26,14 @@ sys.modules[SPEC.name] = PREFLIGHT
 SPEC.loader.exec_module(PREFLIGHT)
 
 
+def _disk_protocol() -> dict:
+    return PREFLIGHT.load_protocol(CONFIG_PATH)
+
+
 def _protocol() -> dict:
-    protocol = json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
+    """Return the clean I2 fixture from either a legal disk I2 or disk B2."""
+
+    protocol = PREFLIGHT._normalise_own_binding(_disk_protocol())
     PREFLIGHT.validate_protocol(protocol)
     return protocol
 
@@ -166,7 +172,7 @@ def test_candidate_freezes_authority_runtime_and_scientific_disposition() -> Non
     protocol = _protocol()
     baseline = protocol["fresh_baseline"]
     assert baseline["latest_settled_runtime_event_id"] == "A1-EVT-059"
-    assert baseline["production_head"] == PREFLIGHT.GSE217_B3_COMMIT
+    assert baseline["production_head"] == PREFLIGHT.ENCSR_I1_COMMIT
     authority = protocol["implementation_binding"]["authority_group"]
     assert authority["authority_commit"] == PREFLIGHT.AUTHORITY_COMMIT
     assert tuple(authority["authority_exact_changed_paths"]) == PREFLIGHT.AUTHORITY_EXACT12
@@ -176,6 +182,7 @@ def test_candidate_freezes_authority_runtime_and_scientific_disposition() -> Non
     assert runtime["b2_commit"] == PREFLIGHT.RUNTIME_B2_COMMIT
     assert tuple(runtime["i1_exact_changed_paths"]) == PREFLIGHT.RUNTIME_EXACT3
     predecessor = protocol["implementation_binding"]["gse217518_predecessor_group"]
+    encsr_i1 = protocol["implementation_binding"]["encsr854ruf_i1_group"]
     own = protocol["implementation_binding"]["own_preflight_group"]
     assert predecessor["status"] == PREFLIGHT.BOUND
     assert predecessor["i1_commit"] == PREFLIGHT.GSE217_I1_COMMIT
@@ -183,6 +190,13 @@ def test_candidate_freezes_authority_runtime_and_scientific_disposition() -> Non
     assert predecessor["b2_commit"] == PREFLIGHT.GSE217_B2_COMMIT
     assert predecessor["i3_commit"] == PREFLIGHT.GSE217_I3_COMMIT
     assert predecessor["b3_commit"] == PREFLIGHT.GSE217_B3_COMMIT
+    assert encsr_i1 == {
+        "status": PREFLIGHT.BOUND,
+        "i1_expected_parent": PREFLIGHT.GSE217_B3_COMMIT,
+        "i1_commit": PREFLIGHT.ENCSR_I1_COMMIT,
+        "i1_exact_changed_paths": list(PREFLIGHT.EXACT3),
+        "i1_blob_sha256_by_path": PREFLIGHT.ENCSR_I1_BLOBS,
+    }
     assert own["status"] == PREFLIGHT.UNKNOWN
     assert tuple(own["implementation_exact_changed_paths"]) == PREFLIGHT.EXACT3
     assert protocol["public_research_snapshot"]["normalized_gate_counts"] == {
@@ -212,6 +226,15 @@ def test_legal_disk_i_and_disk_b_protocols_are_both_accepted(tmp_path: Path) -> 
     b_path.write_text(json.dumps(disk_b), encoding="utf-8")
     loaded_b = PREFLIGHT.load_protocol(b_path)
     assert loaded_b["implementation_binding"]["own_preflight_group"]["status"] == PREFLIGHT.BOUND
+
+
+def test_checked_in_disk_i2_or_b2_normalises_to_clean_i2() -> None:
+    disk = _disk_protocol()
+    disk_status = disk["implementation_binding"]["own_preflight_group"]["status"]
+    assert disk_status in {PREFLIGHT.UNKNOWN, PREFLIGHT.BOUND}
+    clean = _protocol()
+    assert clean["implementation_binding"]["own_preflight_group"]["status"] == PREFLIGHT.UNKNOWN
+    assert PREFLIGHT._normalise_own_binding(disk) == clean
 
 
 def test_inactive_candidate_stops_before_git_asset_or_output_io(
@@ -340,7 +363,7 @@ def test_repository_auditor_freezes_full_chain_and_rejects_stale_copy(
     monkeypatch.setattr(PREFLIGHT, "_verify_commit", fake_verify)
     monkeypatch.setattr(PREFLIGHT, "_git_blob", fake_blob)
     monkeypatch.setattr(PREFLIGHT, "__file__", str(script_path))
-    with pytest.raises(PREFLIGHT.RepositoryError, match="differs from ENCSR854RUF I"):
+    with pytest.raises(PREFLIGHT.RepositoryError, match="differs from ENCSR854RUF I2"):
         PREFLIGHT._audit_repository(protocol, config_path, repo)
     assert [item["label"] for item in verified] == [
         "DEC027 authority A",
@@ -352,12 +375,14 @@ def test_repository_auditor_freezes_full_chain_and_rejects_stale_copy(
         "GSE217518 B2",
         "GSE217518 I3",
         "GSE217518 B3",
-        "ENCSR854RUF implementation I",
-        "ENCSR854RUF binding B",
+        "ENCSR854RUF I1",
+        "ENCSR854RUF I2",
+        "ENCSR854RUF B2",
     ]
     assert verified[4]["expected_parent"] == PREFLIGHT.RUNTIME_B2_COMMIT
     assert verified[9]["expected_parent"] == PREFLIGHT.GSE217_B3_COMMIT
-    assert verified[10]["expected_parent"] == "3" * 40
+    assert verified[10]["expected_parent"] == PREFLIGHT.ENCSR_I1_COMMIT
+    assert verified[11]["expected_parent"] == "3" * 40
 
 
 def test_repository_failure_precedes_asset_and_output_io(

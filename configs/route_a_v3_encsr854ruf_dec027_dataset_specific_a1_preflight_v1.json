@@ -5,13 +5,13 @@
   "phase_id": "A1",
   "dataset_id": "ENCSR854RUF",
   "decision_id": "V3-DEC-027",
-  "protocol_status": "LOCAL_EXACT3_CANDIDATE_FULL_PREDECESSOR_HISTORY_BOUND_OWN_BINDING_UNKNOWN_NOT_ACTIVE",
+  "protocol_status": "LOCAL_EXACT3_I2_CANDIDATE_FULL_PREDECESSOR_AND_ENCSR_I1_BOUND_OWN_BINDING_UNKNOWN_NOT_ACTIVE",
   "fresh_baseline": {
     "observed_at": "BOUND_COMMIT_FACTS_RECEIVED_2026-08-15_TIME_NOT_ASSERTED",
     "production_branch": "routea-v3-a1-20260810",
-    "production_head": "0a46400efee4ead95b1283df73d263f6f8033036",
-    "upstream_head": "0a46400efee4ead95b1283df73d263f6f8033036",
-    "origin_head": "0a46400efee4ead95b1283df73d263f6f8033036",
+    "production_head": "c6132d8928df0a64be106b11ee62d225d77249ba",
+    "upstream_head": "c6132d8928df0a64be106b11ee62d225d77249ba",
+    "origin_head": "c6132d8928df0a64be106b11ee62d225d77249ba",
     "worktree_clean": true,
     "latest_settled_runtime_event_id": "A1-EVT-059",
     "dec027_authority_present": true,
@@ -22,6 +22,7 @@
     "dec027_runtime_i2_commit": "5d66e8dc83eb9966f7698ac0fc677f1b06af8ea6",
     "dec027_runtime_binding_commit": "e60956cf59cbddc0406c5d116fb9714906db36e1",
     "gse217518_final_binding_commit": "0a46400efee4ead95b1283df73d263f6f8033036",
+    "encsr854ruf_i1_commit": "c6132d8928df0a64be106b11ee62d225d77249ba",
     "fact_class": "CONFIRMED_EXACT_COMMIT_AND_BLOB_FACTS_FROM_PREDECESSOR_EXECUTION"
   },
   "repository_authority": {
@@ -31,7 +32,7 @@
     "clean_head_equals_upstream_equals_live_origin_required": true
   },
   "implementation_binding": {
-    "binding_scheme": "DEC027_A_TO_RUNTIME_I1_I2_B2_EVT059_TO_GSE217518_I1_I2_B2_I3_B3_TO_ENCSR854RUF_I_B",
+    "binding_scheme": "DEC027_A_TO_RUNTIME_I1_I2_B2_EVT059_TO_GSE217518_I1_I2_B2_I3_B3_TO_ENCSR854RUF_I1_I2_B2",
     "authority_group": {
       "status": "BOUND",
       "authority_commit": "3e0ad158a0b45b2f26ed82da3afe60667c712cd6",
@@ -162,6 +163,21 @@
         "tests/route_a_v3/test_preflight_gse217518_corrected_a1_successor_candidate.py": "bba0ee97e9ed2500f0155c8d1a776d185661b00d8c7fd48c3c0d718d53ccd097"
       }
     },
+    "encsr854ruf_i1_group": {
+      "status": "BOUND",
+      "i1_expected_parent": "0a46400efee4ead95b1283df73d263f6f8033036",
+      "i1_commit": "c6132d8928df0a64be106b11ee62d225d77249ba",
+      "i1_exact_changed_paths": [
+        "configs/route_a_v3_encsr854ruf_dec027_dataset_specific_a1_preflight_v1.json",
+        "scripts/route_a_v3/preflight_encsr854ruf_dec027_dataset_specific_a1.py",
+        "tests/route_a_v3/test_preflight_encsr854ruf_dec027_dataset_specific_a1.py"
+      ],
+      "i1_blob_sha256_by_path": {
+        "configs/route_a_v3_encsr854ruf_dec027_dataset_specific_a1_preflight_v1.json": "e1d3747876818f5b0d2b47f4a185cc5fb0f1c6b141b25a1e635768cdde588e2c",
+        "scripts/route_a_v3/preflight_encsr854ruf_dec027_dataset_specific_a1.py": "d8f6517f935624204cfa8669c8322909734417b212287e867ea38d8e031881ec",
+        "tests/route_a_v3/test_preflight_encsr854ruf_dec027_dataset_specific_a1.py": "b59e94373fb02cb2a0e65b67183af9b2f3ddcab24bc8f72d4a636f9a781f4714"
+      }
+    },
     "own_preflight_group": {
       "status": "UNKNOWN_NOT_ASSERTED",
       "implementation_commit": "UNKNOWN_NOT_ASSERTED",
@@ -184,7 +200,7 @@
         "implementation_binding.own_preflight_group.implementation_test_sha256"
       ]
     },
-    "activation_rule": "Authority, the complete A1-EVT-059 runtime A-to-I1-to-I2-to-B2 history, and the complete GSE217518 I1-to-I2-to-B2-to-I3-to-B3 history are frozen. ENCSR854RUF I must be the direct child of GSE217518 B3. This exact3 own four-scalar group remains grouped UNKNOWN_NOT_ASSERTED in I, so production must stop before Git, publisher workbook, author-repository asset, prepared-data path, or output-path inspection until a config-only ENCSR854RUF B changes only those four scalars. Generic registry requirements are never dataset-specific gate facts."
+    "activation_rule": "Authority, the complete A1-EVT-059 runtime A-to-I1-to-I2-to-B2 history, the complete GSE217518 I1-to-I2-to-B2-to-I3-to-B3 history, and ENCSR854RUF I1 are frozen. ENCSR854RUF I2 must be the direct child of ENCSR854RUF I1. This exact3 I2 own four-scalar group remains grouped UNKNOWN_NOT_ASSERTED in I2, so production must stop before Git, publisher workbook, author-repository asset, prepared-data path, or output-path inspection until a config-only ENCSR854RUF B2 changes only those four scalars. Generic registry requirements are never dataset-specific gate facts."
   },
   "decision_boundary": {
     "public_research_role": "READ_ONLY_ORDINARY_PUBLIC_FIRST_PARTY_AGGREGATE_FACT_FORMATION",
