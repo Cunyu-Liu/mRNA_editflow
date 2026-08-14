@@ -8,7 +8,7 @@
   "decision_id": "V3-DEC-023",
   "protocol_status": "PUBLIC_IDENTIFIER_ASSET_SCHEMA_AND_AGGREGATE_GEOMETRY_PREFLIGHT_ONLY_NOT_QUALIFICATION",
   "implementation_binding": {
-    "binding_scheme": "AUTHORITY_A_THEN_AUTHORITY_RUNTIME_I1_I2_B2_THEN_EXACT3_I_CONFIG_ONLY_B_V2",
+    "binding_scheme": "AUTHORITY_A_THEN_AUTHORITY_RUNTIME_I1_I2_B2_THEN_PREFLIGHT_I1_I2_B2_V3",
     "status": "UNKNOWN_NOT_ASSERTED",
     "authority_commit": "f7cfff896a1a30d25a3b73ea7f89957d70d95d39",
     "authority_runtime_binding_commit": "b225f73b72d73be3380e2d48325c7773a67c0d17",
@@ -44,6 +44,21 @@
         "configs/route_a_v3_dec023_authority_runtime_sync_v1.json"
       ]
     },
+    "predecessor_preflight_i1": {
+      "status": "FROZEN_BOUND_EXACT3",
+      "commit": "512d9cdf02a3b3826a3a5a0dcd79a7f4ccf88399",
+      "expected_parent": "b225f73b72d73be3380e2d48325c7773a67c0d17",
+      "exact_changed_paths": [
+        "configs/route_a_v3_gse261709_public_identifier_asset_schema_aggregate_geometry_preflight_v1.json",
+        "scripts/route_a_v3/preflight_gse261709_public_identifier_asset_schema_aggregate_geometry.py",
+        "tests/route_a_v3/test_preflight_gse261709_public_identifier_asset_schema_aggregate_geometry.py"
+      ],
+      "blob_sha256_by_path": {
+        "configs/route_a_v3_gse261709_public_identifier_asset_schema_aggregate_geometry_preflight_v1.json": "77e22ef8fe145a44887ada0ecda7ac14e3e0fa89b08c4e5772ec5efd18e4e8d4",
+        "scripts/route_a_v3/preflight_gse261709_public_identifier_asset_schema_aggregate_geometry.py": "0bf35b359f083242c2febb819526119191a3dbd92b06fcf9bb224f7d906ea28e",
+        "tests/route_a_v3/test_preflight_gse261709_public_identifier_asset_schema_aggregate_geometry.py": "8f69c635f7780135a4c79a6d4f43eb824c507da4e2055393b700642ef8c31d29"
+      }
+    },
     "implementation_commit": "UNKNOWN_NOT_ASSERTED",
     "implementation_script_path": "scripts/route_a_v3/preflight_gse261709_public_identifier_asset_schema_aggregate_geometry.py",
     "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
@@ -67,7 +82,7 @@
     "binding_commit_exact_changed_paths": [
       "configs/route_a_v3_gse261709_public_identifier_asset_schema_aggregate_geometry_preflight_v1.json"
     ],
-    "activation_rule": "After DEC023 authority A, the frozen authority-runtime I1, dynamic authority-runtime I2, and config-only authority-runtime B2 lifecycle must settle in that exact direct-parent order. Preflight I must be the direct child of B2 and change exact3 while freezing the full authority-runtime lineage and leaving the four normal binding scalars UNKNOWN_NOT_ASSERTED. Preflight B must be the direct child of I, change config-only, and replace only those four scalars. Until B is valid, execution stops before metadata input, network access, or output creation."
+    "activation_rule": "After DEC023 authority A, authority-runtime I1/I2/B2 and frozen GSE261709 preflight I1 must settle in that exact direct-parent order. Preflight I2 must be the direct exact3 child of preflight I1, freeze I1 commit and blobs, and leave the four normal binding scalars UNKNOWN_NOT_ASSERTED. Preflight B2 must be the direct config-only child of I2 and replace only those four scalars. Until B2 is valid, execution stops before metadata input, network access, or output creation."
   },
   "decision_authority": {
     "amendment_path": "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec023.yaml",

@@ -67,6 +67,7 @@ def _fixture_binding(*args: object) -> dict[str, str]:
         "authority_runtime_implementation_i1_commit": PREFLIGHT.RUNTIME_I1_COMMIT,
         "authority_runtime_implementation_i2_commit": PREFLIGHT.RUNTIME_I2_COMMIT,
         "authority_runtime_binding_commit": PREFLIGHT.RUNTIME_B2_COMMIT,
+        "preflight_implementation_i1_commit": PREFLIGHT.PREFLIGHT_I1_COMMIT,
         "implementation_commit": "2" * 40,
         "binding_commit": "3" * 40,
     }
@@ -150,7 +151,7 @@ def _write_json(path: Path, value: object) -> Path:
     return path
 
 
-def test_protocol_freezes_dec023_exact3_and_whole_unknown_groups() -> None:
+def test_protocol_freezes_dec023_exact3_and_supports_disk_i2_or_b2() -> None:
     protocol = _protocol()
     binding = protocol["implementation_binding"]
     assert binding["authority_commit"] == PREFLIGHT.AUTHORITY_COMMIT
@@ -168,9 +169,23 @@ def test_protocol_freezes_dec023_exact3_and_whole_unknown_groups() -> None:
     assert runtime["binding_b2_blob_sha256_by_path"] == (
         PREFLIGHT.RUNTIME_B2_BLOB_SHA256_BY_PATH
     )
-    assert [binding[field] for field in PREFLIGHT.UNKNOWN_BINDING_SCALARS] == [
+    predecessor = binding["predecessor_preflight_i1"]
+    assert predecessor == {
+        "status": "FROZEN_BOUND_EXACT3",
+        "commit": PREFLIGHT.PREFLIGHT_I1_COMMIT,
+        "expected_parent": PREFLIGHT.RUNTIME_B2_COMMIT,
+        "exact_changed_paths": list(PREFLIGHT.EXPECTED_EXACT3),
+        "blob_sha256_by_path": PREFLIGHT.PREFLIGHT_I1_BLOB_SHA256_BY_PATH,
+    }
+    assert binding["status"] in {PREFLIGHT.UNKNOWN, PREFLIGHT.BOUND}
+    normalised = PREFLIGHT._normalise_binding(protocol)
+    assert [
+        normalised["implementation_binding"][field]
+        for field in PREFLIGHT.UNKNOWN_BINDING_SCALARS
+    ] == [
         PREFLIGHT.UNKNOWN
     ] * 4
+    PREFLIGHT._validate_protocol(normalised)
     assert tuple(binding["implementation_commit_exact_changed_paths"]) == (
         PREFLIGHT.EXPECTED_EXACT3
     )
@@ -200,7 +215,7 @@ def test_protocol_freezes_dec023_exact3_and_whole_unknown_groups() -> None:
 def test_partial_binding_groups_are_rejected(
     field: str, value: str, message: str
 ) -> None:
-    protocol = copy.deepcopy(_protocol())
+    protocol = _i_protocol()
     protocol["implementation_binding"][field] = value
     with pytest.raises(PREFLIGHT.ProtocolError, match=message):
         PREFLIGHT._validate_protocol(protocol)
@@ -237,9 +252,10 @@ def test_protocol_rejects_payload_or_promotion_flags(
 
 def test_unknown_binding_stops_before_network_or_output(tmp_path: Path) -> None:
     fetcher = BombFetcher()
+    protocol_path = _write_json(tmp_path / PREFLIGHT.PROTOCOL_BASENAME, _i_protocol())
     output_dir = tmp_path / "must-not-exist"
     with pytest.raises(PREFLIGHT.BindingNotFrozen, match="not BOUND"):
-        PREFLIGHT.execute(PROTOCOL_PATH, output_dir, fetcher=fetcher)
+        PREFLIGHT.execute(protocol_path, output_dir, fetcher=fetcher)
     assert fetcher.calls == 0
     assert not output_dir.exists()
 
@@ -461,12 +477,14 @@ def test_default_binding_auditor_is_real_disk_i_b_future_compatible(
     runtime_i1 = PREFLIGHT.RUNTIME_I1_COMMIT
     runtime_i2 = PREFLIGHT.RUNTIME_I2_COMMIT
     runtime_b2 = PREFLIGHT.RUNTIME_B2_COMMIT
-    preflight_i = "2" * 40
-    preflight_b = "8" * 40
+    preflight_i1 = PREFLIGHT.PREFLIGHT_I1_COMMIT
+    preflight_i2 = "2" * 40
+    preflight_b2 = "8" * 40
     git_text = {
-        ("rev-parse", "HEAD"): preflight_b,
-        ("rev-parse", f"{preflight_b}^"): preflight_i,
-        ("rev-parse", f"{preflight_i}^"): runtime_b2,
+        ("rev-parse", "HEAD"): preflight_b2,
+        ("rev-parse", f"{preflight_b2}^"): preflight_i2,
+        ("rev-parse", f"{preflight_i2}^"): preflight_i1,
+        ("rev-parse", f"{preflight_i1}^"): runtime_b2,
         ("rev-parse", f"{runtime_b2}^"): runtime_i2,
         ("rev-parse", f"{runtime_i2}^"): runtime_i1,
         ("rev-parse", f"{runtime_i1}^"): authority_a,
@@ -496,21 +514,28 @@ def test_default_binding_auditor_is_real_disk_i_b_future_compatible(
             "--no-commit-id",
             "--name-only",
             "-r",
-            preflight_i,
+            preflight_i1,
         ): "\n".join(PREFLIGHT.EXPECTED_EXACT3),
         (
             "diff-tree",
             "--no-commit-id",
             "--name-only",
             "-r",
-            preflight_b,
+            preflight_i2,
+        ): "\n".join(PREFLIGHT.EXPECTED_EXACT3),
+        (
+            "diff-tree",
+            "--no-commit-id",
+            "--name-only",
+            "-r",
+            preflight_b2,
         ): PREFLIGHT.CONFIG_PATH,
     }
     git_blobs = {
-        (preflight_i, PREFLIGHT.CONFIG_PATH): i_payload,
-        (preflight_i, PREFLIGHT.SCRIPT_PATH): script_blob,
-        (preflight_i, PREFLIGHT.TEST_PATH): test_blob,
-        (preflight_b, PREFLIGHT.CONFIG_PATH): b_payload,
+        (preflight_i2, PREFLIGHT.CONFIG_PATH): i_payload,
+        (preflight_i2, PREFLIGHT.SCRIPT_PATH): script_blob,
+        (preflight_i2, PREFLIGHT.TEST_PATH): test_blob,
+        (preflight_b2, PREFLIGHT.CONFIG_PATH): b_payload,
     }
 
     git_calls: list[tuple[str, ...]] = []
@@ -540,22 +565,25 @@ def test_default_binding_auditor_is_real_disk_i_b_future_compatible(
         protocol, protocol_path, b_payload, repo_root
     )
     assert result == {
-        "status": "BOUND_AUTHORITY_RUNTIME_I1_I2_B2_AND_EXACT3_I_B_VERIFIED",
+        "status": "BOUND_RUNTIME_AND_PREFLIGHT_I1_I2_B2_LIFECYCLES_VERIFIED",
         "authority_commit": authority_a,
         "authority_runtime_implementation_i1_commit": runtime_i1,
         "authority_runtime_implementation_i2_commit": runtime_i2,
         "authority_runtime_binding_commit": runtime_b2,
-        "implementation_commit": preflight_i,
-        "binding_commit": preflight_b,
+        "preflight_implementation_i1_commit": preflight_i1,
+        "implementation_commit": preflight_i2,
+        "binding_commit": preflight_b2,
     }
     assert verified_runtime_blobs == [
         (runtime_i1, PREFLIGHT.RUNTIME_I1_BLOB_SHA256_BY_PATH),
         (runtime_i2, PREFLIGHT.RUNTIME_I2_BLOB_SHA256_BY_PATH),
         (runtime_b2, PREFLIGHT.RUNTIME_B2_BLOB_SHA256_BY_PATH),
+        (preflight_i1, PREFLIGHT.PREFLIGHT_I1_BLOB_SHA256_BY_PATH),
     ]
     assert [
-        ("rev-parse", f"{preflight_b}^"),
-        ("rev-parse", f"{preflight_i}^"),
+        ("rev-parse", f"{preflight_b2}^"),
+        ("rev-parse", f"{preflight_i2}^"),
+        ("rev-parse", f"{preflight_i1}^"),
         ("rev-parse", f"{runtime_b2}^"),
         ("rev-parse", f"{runtime_i2}^"),
         ("rev-parse", f"{runtime_i1}^"),
