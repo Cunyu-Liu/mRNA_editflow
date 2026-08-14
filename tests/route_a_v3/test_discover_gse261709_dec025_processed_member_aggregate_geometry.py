@@ -77,9 +77,17 @@ def test_reviewed_successor_freezes_bound_owner_exact_asset_directory_and_lineag
     assert protocol["owner_decision"]["exact_approval_text"] == (
         DISCOVERY.OWNER_APPROVAL_TEXT
     )
+    assert protocol["owner_decision"]["activation_instruction_exact"] == (
+        DISCOVERY.OWNER_ACTIVATION_INSTRUCTION
+    )
     predecessor = protocol["implementation_binding"]["current_predecessor"]
     assert predecessor["implementation_commit"] == DISCOVERY.GSE269_IMPLEMENTATION_COMMIT
     assert predecessor["binding_commit"] == DISCOVERY.GSE269_BINDING_COMMIT
+    failed = protocol["implementation_binding"]["failed_outer_identity_attempt_group"]
+    assert failed["implementation_commit"] == DISCOVERY.DEC025_I1_COMMIT
+    assert failed["binding_commit"] == DISCOVERY.DEC025_B1_COMMIT
+    assert failed["member_payload_open_count"] == 0
+    assert failed["report_publication_count"] == 0
     candidate = protocol["implementation_binding"]["candidate_group"]
     assert [candidate[field] for field in DISCOVERY.OWN_BINDING_FIELDS] == [
         DISCOVERY.UNKNOWN
@@ -89,7 +97,7 @@ def test_reviewed_successor_freezes_bound_owner_exact_asset_directory_and_lineag
 
     asset = protocol["ordinary_public_asset"]
     assert asset["filename"] == DISCOVERY.OUTER_FILENAME
-    assert asset["byte_count"] == 667648
+    assert asset["byte_count"] == 706560
     assert asset["sha256"] == DISCOVERY.OUTER_SHA256
     assert [
         (item["filename"], item["gzip_byte_count"])
@@ -97,6 +105,7 @@ def test_reviewed_successor_freezes_bound_owner_exact_asset_directory_and_lineag
     ] == list(DISCOVERY.MEMBERS)
     assert asset["network_access_allowed"] is False
     assert asset["archive_or_member_access_before_owner_and_binding_bound"] is False
+    assert protocol["identity_correction"] == DISCOVERY.IDENTITY_CORRECTION
 
 
 def test_unbound_implementation_stops_before_repository_archive_or_output_io(

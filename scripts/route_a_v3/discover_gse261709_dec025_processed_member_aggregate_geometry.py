@@ -5,7 +5,9 @@ The reviewed exact3 protocol freezes the owner decision while its own grouped
 implementation identity remains unknown.  The production entrypoint therefore
 stops before repository, archive, member, or output-path I/O until a direct
 config-only child binds that identity; only that bound child can reach the
-fixed built-in TAR/gzip/TSV parser below.
+fixed built-in TAR/gzip/TSV parser below.  The append-only predecessor attempt
+is retained as failed closed: its frozen SHA and seven-member directory were
+correct, but its outer byte count was a transcription error.
 
 The parser holds barcode tokens only in memory long enough to compute set
 geometry.  Its report contains aggregate schema, dimension, missingness,
@@ -52,7 +54,7 @@ STOP_GATE = "STOP_NOT_EVALUATED_BY_DISCOVERY"
 TERMINAL_STATUS = "DISCOVERY_ONLY_STOP_NOT_QUALIFIED"
 
 OUTER_FILENAME = "GSE261709_RAW.tar"
-OUTER_BYTE_COUNT = 667648
+OUTER_BYTE_COUNT = 706560
 OUTER_SHA256 = "3024746ce25f4b795daa376ac6dbafd3d53f6d30be8aed9fb14db0f118c6f434"
 OUTER_URL = (
     "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE261nnn/GSE261709/suppl/"
@@ -70,6 +72,8 @@ MEMBERS: tuple[tuple[str, int], ...] = (
 
 GSE269_IMPLEMENTATION_COMMIT = "99112bedf8cf7c399a772def9f34e9db6c1d5310"
 GSE269_BINDING_COMMIT = "da4174f05fd026bcbf8788e0182e5cc68ffb7d1e"
+DEC025_I1_COMMIT = "b64768a7cf9c789bd4a6296211e897801a899804"
+DEC025_B1_COMMIT = "bfb3cc084eebbe65404b60fe81f5b8296b9b3a1f"
 
 CONFIG_REPO_PATH = (
     "configs/route_a_v3_gse261709_dec025_processed_member_aggregate_"
@@ -98,6 +102,20 @@ OWNER_APPROVAL_TEXT = (
     "split, power, training, GPU, model selection, A7 or next-phase status. Any "
     "unclosed mapping or scientific gate must remain STOP."
 )
+OWNER_ACTIVATION_INSTRUCTION = (
+    "先激活并运行 DEC025 discovery reader，快速判断 GSE261709 是否值得继续；"
+)
+IDENTITY_CORRECTION = {
+    "status": "BOUND_SAME_ASSET_BYTE_COUNT_TRANSCRIPTION_CORRECTION_NO_SCOPE_CHANGE",
+    "original_incorrect_outer_byte_count": 667648,
+    "corrected_outer_byte_count": OUTER_BYTE_COUNT,
+    "frozen_outer_sha256_matches_observed": True,
+    "frozen_seven_member_directory_matches_observed": True,
+    "compressed_member_byte_count_total": sum(size for _, size in MEMBERS),
+    "member_payload_open_count_before_correction": 0,
+    "report_publication_count_before_correction": 0,
+    "asset_or_access_scope_changed": False,
+}
 
 BARCODE_ALIASES = (
     "barcode",
@@ -226,6 +244,7 @@ def _validate_protocol(protocol: Mapping[str, Any]) -> None:
         "implementation_binding",
         "repository_authority",
         "ordinary_public_asset",
+        "identity_correction",
         "fixed_parser_contract",
         "allowed_discovery_output",
         "downstream_stop_contract",
@@ -251,26 +270,41 @@ def _validate_protocol(protocol: Mapping[str, Any]) -> None:
         {
             "status",
             "exact_approval_text",
+            "activation_instruction_exact",
             "current_candidate_may_be_activated_in_place",
             "explicit_approval_and_new_reviewed_exact3_successor_required",
+            "reviewed_successor_requirement_status",
         },
         label="owner_decision",
     )
     if owner["exact_approval_text"] != OWNER_APPROVAL_TEXT:
         raise ProtocolError("owner approval text differs")
+    if owner["activation_instruction_exact"] != OWNER_ACTIVATION_INSTRUCTION:
+        raise ProtocolError("owner activation instruction differs")
     if owner["current_candidate_may_be_activated_in_place"] is not False:
         raise ProtocolError("current candidate must not activate in place")
     if owner["explicit_approval_and_new_reviewed_exact3_successor_required"] is not True:
         raise ProtocolError("reviewed successor requirement differs")
+    if owner["reviewed_successor_requirement_status"] != (
+        "SATISFIED_BY_APPEND_ONLY_REVIEWED_SUCCESSOR_CHAIN"
+    ):
+        raise ProtocolError("reviewed successor status differs")
 
     binding = _mapping(protocol["implementation_binding"], label="implementation_binding")
     _exact_keys(
         binding,
-        {"binding_scheme", "current_predecessor", "candidate_group", "activation_rule"},
+        {
+            "binding_scheme",
+            "current_predecessor",
+            "failed_outer_identity_attempt_group",
+            "candidate_group",
+            "activation_rule",
+        },
         label="implementation_binding",
     )
     if binding["binding_scheme"] != (
-        "GSE269595_B_THEN_DEC025_REVIEWED_EXACT3_I_CONFIG_ONLY_B_V1"
+        "GSE269595_B_THEN_DEC025_I1_B1_FAILED_OUTER_BYTE_COUNT_"
+        "THEN_REVIEWED_I2_CONFIG_ONLY_B2_V1"
     ):
         raise ProtocolError("binding scheme differs")
     predecessor = _mapping(binding["current_predecessor"], label="current_predecessor")
@@ -287,6 +321,24 @@ def _validate_protocol(protocol: Mapping[str, Any]) -> None:
     }:
         raise ProtocolError("GSE269595 predecessor lineage differs")
 
+    failed_attempt = _mapping(
+        binding["failed_outer_identity_attempt_group"],
+        label="failed_outer_identity_attempt_group",
+    )
+    if failed_attempt != {
+        "status": "FAILED_CLOSED_BEFORE_MEMBER_OR_OUTPUT_IO",
+        "implementation_commit": DEC025_I1_COMMIT,
+        "implementation_expected_parent": GSE269_BINDING_COMMIT,
+        "binding_commit": DEC025_B1_COMMIT,
+        "binding_expected_parent": DEC025_I1_COMMIT,
+        "implementation_changed_paths_exactly": list(EXACT3),
+        "binding_changed_paths_exactly": [CONFIG_REPO_PATH],
+        "terminal_reason": "OUTER_ARCHIVE_BYTE_COUNT_DIFFERS",
+        "member_payload_open_count": 0,
+        "report_publication_count": 0,
+    }:
+        raise ProtocolError("failed DEC025 outer-identity attempt lineage differs")
+
     candidate = _mapping(binding["candidate_group"], label="candidate_group")
     _exact_keys(
         candidate,
@@ -299,7 +351,7 @@ def _validate_protocol(protocol: Mapping[str, Any]) -> None:
         },
         label="candidate_group",
     )
-    if candidate["implementation_expected_parent"] != GSE269_BINDING_COMMIT:
+    if candidate["implementation_expected_parent"] != DEC025_B1_COMMIT:
         raise ProtocolError("candidate expected parent differs")
     if tuple(candidate["implementation_changed_paths_exactly"]) != EXACT3:
         raise ProtocolError("candidate implementation is not exact3")
@@ -369,6 +421,9 @@ def _validate_protocol(protocol: Mapping[str, Any]) -> None:
         expected = field == "ordinary_public_only"
         if asset[field] is not expected:
             raise ProtocolError(f"ordinary_public_asset.{field} differs")
+
+    if protocol["identity_correction"] != IDENTITY_CORRECTION:
+        raise ProtocolError("outer byte-count identity correction differs")
 
     parser = _mapping(protocol["fixed_parser_contract"], label="fixed_parser_contract")
     expected_parser = {
@@ -528,8 +583,16 @@ def _audit_repository(protocol: Mapping[str, Any]) -> dict[str, str]:
         raise RepositoryError("HEAD differs from live origin branch")
 
     implementation = str(candidate["implementation_commit"])
-    if _single_parent(repo_root, implementation) != GSE269_BINDING_COMMIT:
-        raise RepositoryError("DEC025 implementation is not the direct child of GSE269595 B")
+    if _single_parent(repo_root, DEC025_I1_COMMIT) != GSE269_BINDING_COMMIT:
+        raise RepositoryError("DEC025 I1 is not the direct child of GSE269595 B")
+    if _changed_paths(repo_root, DEC025_I1_COMMIT) != tuple(sorted(EXACT3)):
+        raise RepositoryError("DEC025 I1 is not exact3")
+    if _single_parent(repo_root, DEC025_B1_COMMIT) != DEC025_I1_COMMIT:
+        raise RepositoryError("DEC025 B1 is not the direct child of I1")
+    if _changed_paths(repo_root, DEC025_B1_COMMIT) != (CONFIG_REPO_PATH,):
+        raise RepositoryError("DEC025 B1 is not config-only")
+    if _single_parent(repo_root, implementation) != DEC025_B1_COMMIT:
+        raise RepositoryError("DEC025 corrected implementation is not the direct child of B1")
     if _changed_paths(repo_root, implementation) != tuple(sorted(EXACT3)):
         raise RepositoryError("DEC025 implementation commit is not exact3")
     if _single_parent(repo_root, head) != implementation:
@@ -737,6 +800,7 @@ def _build_report(
             "outer_asset_identity_verified": True,
             "outer_archive_byte_count": OUTER_BYTE_COUNT,
             "outer_archive_sha256": OUTER_SHA256,
+            "identity_correction_status": IDENTITY_CORRECTION["status"],
             "frozen_member_count": len(MEMBERS),
             "frozen_compressed_member_byte_count_total": sum(size for _, size in MEMBERS),
             "member_identifier_output_count": 0,

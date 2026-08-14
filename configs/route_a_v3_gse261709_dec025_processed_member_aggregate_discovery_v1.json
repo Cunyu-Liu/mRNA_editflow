@@ -10,11 +10,13 @@
   "owner_decision": {
     "status": "BOUND",
     "exact_approval_text": "APPROVE V3-DEC-025 GSE261709 PROCESSED_MEMBER_AGGREGATE_ONLY_READ: authorize one aggregate-only inspection of the exact 667648-byte official GSE261709_RAW.tar with SHA-256 3024746ce25f4b795daa376ac6dbafd3d53f6d30be8aed9fb14db0f118c6f434 and its seven frozen *_BARCODES.txt.gz members. Internal parsing may use header, barcode-token and numeric-count fields only for schema, dimensions, missingness, duplicate and cross-sample join geometry. Do not output member or barcode values and do not infer mapping, qualification, credit, canonical, split, power, training, GPU, model selection, A7 or next-phase status. Any unclosed mapping or scientific gate must remain STOP.",
+    "activation_instruction_exact": "先激活并运行 DEC025 discovery reader，快速判断 GSE261709 是否值得继续；",
     "current_candidate_may_be_activated_in_place": false,
-    "explicit_approval_and_new_reviewed_exact3_successor_required": true
+    "explicit_approval_and_new_reviewed_exact3_successor_required": true,
+    "reviewed_successor_requirement_status": "SATISFIED_BY_APPEND_ONLY_REVIEWED_SUCCESSOR_CHAIN"
   },
   "implementation_binding": {
-    "binding_scheme": "GSE269595_B_THEN_DEC025_REVIEWED_EXACT3_I_CONFIG_ONLY_B_V1",
+    "binding_scheme": "GSE269595_B_THEN_DEC025_I1_B1_FAILED_OUTER_BYTE_COUNT_THEN_REVIEWED_I2_CONFIG_ONLY_B2_V1",
     "current_predecessor": {
       "status": "BOUND",
       "protocol_id": "GSE269595_REPLACEMENT_A1_OR_TRUE_A2_ROLE_ADJUDICATION_PREFLIGHT_V1",
@@ -25,12 +27,30 @@
         "configs/route_a_v3_gse269595_replacement_a1_true_a2_role_adjudication_preflight_v1.json"
       ]
     },
-    "candidate_group": {
-      "status": "BOUND",
+    "failed_outer_identity_attempt_group": {
+      "status": "FAILED_CLOSED_BEFORE_MEMBER_OR_OUTPUT_IO",
       "implementation_commit": "b64768a7cf9c789bd4a6296211e897801a899804",
-      "implementation_script_sha256": "09e6c9b450de706c5f037aef73676f77fc5a1781bdc22511ac70e20fa6365b22",
-      "implementation_test_sha256": "18c3e5aa399205405ec2caa37262685805f43135668a8eae0e7a6923f51ef408",
       "implementation_expected_parent": "da4174f05fd026bcbf8788e0182e5cc68ffb7d1e",
+      "binding_commit": "bfb3cc084eebbe65404b60fe81f5b8296b9b3a1f",
+      "binding_expected_parent": "b64768a7cf9c789bd4a6296211e897801a899804",
+      "implementation_changed_paths_exactly": [
+        "configs/route_a_v3_gse261709_dec025_processed_member_aggregate_discovery_v1.json",
+        "scripts/route_a_v3/discover_gse261709_dec025_processed_member_aggregate_geometry.py",
+        "tests/route_a_v3/test_discover_gse261709_dec025_processed_member_aggregate_geometry.py"
+      ],
+      "binding_changed_paths_exactly": [
+        "configs/route_a_v3_gse261709_dec025_processed_member_aggregate_discovery_v1.json"
+      ],
+      "terminal_reason": "OUTER_ARCHIVE_BYTE_COUNT_DIFFERS",
+      "member_payload_open_count": 0,
+      "report_publication_count": 0
+    },
+    "candidate_group": {
+      "status": "UNKNOWN_NOT_ASSERTED",
+      "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+      "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
+      "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
+      "implementation_expected_parent": "bfb3cc084eebbe65404b60fe81f5b8296b9b3a1f",
       "implementation_changed_paths_exactly": [
         "configs/route_a_v3_gse261709_dec025_processed_member_aggregate_discovery_v1.json",
         "scripts/route_a_v3/discover_gse261709_dec025_processed_member_aggregate_geometry.py",
@@ -46,7 +66,7 @@
         "implementation_binding.candidate_group.implementation_test_sha256"
       ]
     },
-    "activation_rule": "This reviewed exact3 successor is the direct single-parent child of GSE269595 binding B da4174f05fd026bcbf8788e0182e5cc68ffb7d1e and freezes the owner decision as BOUND while preserving every scientific and promotion STOP. Its own four candidate_group scalars remain grouped UNKNOWN_NOT_ASSERTED until a direct config-only binding child binds exactly those four scalars. Clean HEAD equals upstream equals live origin at that binding commit is required before archive or output I/O."
+    "activation_rule": "DEC025 I1 b64768a and config-only B1 bfb3cc0 are retained append-only as a failed-closed attempt that stopped before member or output I/O because the outer byte count was transcribed incorrectly. This reviewed exact3 identity-correction successor must be the direct single-parent child of B1 and preserves the same frozen SHA-256, exact seven-member directory, parser, output boundary, and every scientific and promotion STOP. Its own four candidate_group scalars remain grouped UNKNOWN_NOT_ASSERTED until a direct config-only binding child binds exactly those four scalars. Clean HEAD equals upstream equals live origin at that binding commit is required before archive or output I/O."
   },
   "repository_authority": {
     "production_repo_root": "/home/cunyuliu/mrna_editflow_goal/worktrees/routea_v3_a1_20260810",
@@ -57,7 +77,7 @@
   "ordinary_public_asset": {
     "canonical_url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE261nnn/GSE261709/suppl/GSE261709_RAW.tar",
     "filename": "GSE261709_RAW.tar",
-    "byte_count": 667648,
+    "byte_count": 706560,
     "sha256": "3024746ce25f4b795daa376ac6dbafd3d53f6d30be8aed9fb14db0f118c6f434",
     "tar_members_exactly": [
       {
@@ -93,6 +113,17 @@
     "network_access_allowed": false,
     "raw_fastq_sra_or_private_asset_access_allowed": false,
     "archive_or_member_access_before_owner_and_binding_bound": false
+  },
+  "identity_correction": {
+    "status": "BOUND_SAME_ASSET_BYTE_COUNT_TRANSCRIPTION_CORRECTION_NO_SCOPE_CHANGE",
+    "original_incorrect_outer_byte_count": 667648,
+    "corrected_outer_byte_count": 706560,
+    "frozen_outer_sha256_matches_observed": true,
+    "frozen_seven_member_directory_matches_observed": true,
+    "compressed_member_byte_count_total": 690560,
+    "member_payload_open_count_before_correction": 0,
+    "report_publication_count_before_correction": 0,
+    "asset_or_access_scope_changed": false
   },
   "fixed_parser_contract": {
     "execution_model": "BUILT_IN_IN_MEMORY_ONLY_NO_CALLER_PARSER_OR_CALLBACK",
