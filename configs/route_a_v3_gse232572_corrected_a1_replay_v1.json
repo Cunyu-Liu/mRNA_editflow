@@ -240,12 +240,12 @@
       }
     },
     "implementation": {
-      "status": "UNKNOWN_NOT_ASSERTED",
-      "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+      "status": "BOUND",
+      "implementation_commit": "d3dcae4c6ef53c52e942bb511946b52b952d3c7f",
       "implementation_script_path": "scripts/route_a_v3/replay_gse232572_corrected_a1.py",
-      "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
+      "implementation_script_sha256": "132a7cf7ea9008f87e2d77a4ba51b2e0701f6ccec2b6e8782a6f645c26cdb466",
       "implementation_test_path": "tests/route_a_v3/test_replay_gse232572_corrected_a1.py",
-      "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
+      "implementation_test_sha256": "ea46cfbbdc3f8f0fd74149b862deabe3ce2c551c94f3a46edf891c1917dfca66",
       "implementation_exact_changed_paths": [
         "configs/route_a_v3_gse232572_corrected_a1_replay_v1.json",
         "scripts/route_a_v3/replay_gse232572_corrected_a1.py",
