@@ -22,6 +22,15 @@ def disk_config() -> dict[str, Any]:
     return json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
 
 
+def clean_i_config() -> dict[str, Any]:
+    config = SYNC.expected_unknown_i_config(disk_config())
+    SYNC.validate_static_config(config)
+    assert SYNC._implementation_binding_state(config["implementation_binding"]) == (
+        "UNKNOWN"
+    )
+    return config
+
+
 def bind_authority(config: dict[str, Any]) -> None:
     authority = config["repository_authority"]
     authority.update(
@@ -125,7 +134,7 @@ def write_runtime(run_root: Path, payloads: dict[str, bytes]) -> None:
         (run_root / name).write_bytes(payloads[name])
 
 
-def test_disk_candidate_is_true_i_with_only_implementation4_unknown() -> None:
+def test_disk_candidate_is_strict_valid_i_or_b_and_normalizes_to_i() -> None:
     config = disk_config()
     SYNC.validate_static_config(config)
     authority = config["repository_authority"]
@@ -148,10 +157,16 @@ def test_disk_candidate_is_true_i_with_only_implementation4_unknown() -> None:
         (735770, "a6a71a82e90352c6c9bc02fad95c54436e268d1ee58233093dc8412c5e5739bb"),
         (188940, "a0c9b3cc457011e57046506a02e57a4314a26a8885b3d110f88797a000daca0a"),
     ]
+    assert authority["predecessor_implementation_i1"] == {
+        "status": "FROZEN_BOUND_EXACT3",
+        "commit": "b0afa92eea9718c15a5989cfa67bac57036617d9",
+        "expected_parent": "f7cfff896a1a30d25a3b73ea7f89957d70d95d39",
+        "exact_changed_paths": SYNC.IMPLEMENTATION_PATHS,
+        "blob_sha256_by_path": SYNC.FROZEN_I1_BLOBS,
+    }
     assert SYNC._predecessor_binding_state(config["runtime"]) == SYNC.BOUND
-    assert SYNC._implementation_binding_state(config["implementation_binding"]) == (
-        "UNKNOWN"
-    )
+    binding = config["implementation_binding"]
+    implementation_state = SYNC._implementation_binding_state(binding)
     assert config["runtime"]["predecessor_event_id"] == "A1-EVT-055"
     assert config["runtime"]["predecessor_event_count"] == 55
     assert config["runtime"]["predecessor_manifest_output_count"] == 238
@@ -185,14 +200,44 @@ def test_disk_candidate_is_true_i_with_only_implementation4_unknown() -> None:
         "sha256": "e83ca46853724c9f9b0e28daa33f99b141affee464d1725b2b23863b49d462e3",
     }
     assert config["registered_artifacts"] == []
-    assert SYNC.expected_unknown_i_config(config) == config
-    with pytest.raises(SYNC.BindingError, match="implementation remains"):
+    normalized_i = SYNC.expected_unknown_i_config(config)
+    SYNC.validate_static_config(normalized_i)
+    if implementation_state == "UNKNOWN":
+        assert normalized_i == config
+        with pytest.raises(SYNC.BindingError, match="implementation remains"):
+            SYNC.validate_bound_config(config)
+    else:
+        assert implementation_state == SYNC.BOUND
+        assert binding["status"] == SYNC.BOUND
+        assert SYNC.HEX40.fullmatch(binding["implementation_commit"])
+        assert binding["implementation_script_sha256"] == SYNC.sha256(
+            SCRIPT_PATH.read_bytes()
+        )
+        assert binding["implementation_test_sha256"] == SYNC.sha256(
+            Path(__file__).read_bytes()
+        )
         SYNC.validate_bound_config(config)
+        restored_b = copy.deepcopy(normalized_i)
+        for field in SYNC.UNKNOWN_BINDING_FIELDS:
+            restored_b["implementation_binding"][field] = binding[field]
+        assert restored_b == config
+
+    synthetic_b = copy.deepcopy(normalized_i)
+    synthetic_b["implementation_binding"].update(
+        {
+            "status": SYNC.BOUND,
+            "implementation_commit": "9" * 40,
+            "implementation_script_sha256": SYNC.sha256(SCRIPT_PATH.read_bytes()),
+            "implementation_test_sha256": SYNC.sha256(Path(__file__).read_bytes()),
+        }
+    )
+    SYNC.validate_bound_config(synthetic_b)
+    assert SYNC.expected_unknown_i_config(synthetic_b) == normalized_i
 
 
 @pytest.mark.parametrize("group", ["authority", "predecessor", "implementation"])
 def test_partial_group_is_rejected(group: str) -> None:
-    config = disk_config()
+    config = clean_i_config()
     if group == "authority":
         authority = config["repository_authority"]
         authority["authority_binding_status"] = SYNC.UNKNOWN
@@ -222,7 +267,7 @@ def test_partial_group_is_rejected(group: str) -> None:
 def test_any_unknown_stops_before_prepared_or_runtime_io(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    config = disk_config()
+    config = clean_i_config()
     touched: list[str] = []
 
     def forbidden(*_args: Any, **_kwargs: Any) -> Any:
@@ -281,6 +326,153 @@ def test_stale_copied_producer_is_rejected_before_git_commands(
             config, stale_sync.json_bytes(config)
         )
     assert touched == []
+
+
+def test_repository_audit_proves_a_i1_i2_b2_and_frozen_i1_blobs(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    config = clean_i_config()
+    authority = config["repository_authority"]
+    frozen_i1 = authority["predecessor_implementation_i1"]
+    authority_commit = authority["authority_commit"]
+    i1_commit = frozen_i1["commit"]
+    i2_commit = "2" * 40
+    b2_commit = "3" * 40
+    script_payload = b"dynamic I2 implementation script\n"
+    test_payload = b"dynamic I2 focused test\n"
+    config["implementation_binding"].update(
+        {
+            "status": SYNC.BOUND,
+            "implementation_commit": i2_commit,
+            "implementation_script_sha256": SYNC.sha256(script_payload),
+            "implementation_test_sha256": SYNC.sha256(test_payload),
+        }
+    )
+    SYNC.validate_bound_config(config)
+    b2_config_payload = SYNC.json_bytes(config)
+    i2_config_payload = SYNC.json_bytes(SYNC.expected_unknown_i_config(config))
+    i1_config_payload = SYNC.json_bytes(
+        {
+            "implementation_binding": {
+                field: SYNC.UNKNOWN for field in SYNC.UNKNOWN_BINDING_FIELDS
+            }
+        }
+    )
+    i1_payloads = {
+        SYNC.CONFIG_REPO_PATH: i1_config_payload,
+        SYNC.SCRIPT_REPO_PATH: b"frozen I1 implementation script\n",
+        SYNC.TEST_REPO_PATH: b"frozen I1 focused test\n",
+    }
+    authority_payloads = {
+        item["path"]: bytes([index]) * item["bytes"]
+        for index, item in enumerate(authority["authority_files"], start=1)
+    }
+    frozen_digest_by_payload = {
+        payload: frozen_i1["blob_sha256_by_path"][path]
+        for path, payload in i1_payloads.items()
+    }
+    frozen_digest_by_payload.update(
+        {
+            authority_payloads[item["path"]]: item["sha256"]
+            for item in authority["authority_files"]
+        }
+    )
+    real_sha256 = SYNC.sha256
+
+    def fake_sha256(payload: bytes) -> str:
+        return frozen_digest_by_payload.get(payload, real_sha256(payload))
+
+    def fake_run_git(_repo_root: Path, *args: str) -> bytes:
+        mapping = {
+            ("rev-parse", "HEAD"): f"{b2_commit}\n".encode(),
+            ("rev-parse", "--abbrev-ref", "HEAD"): f"{SYNC.BRANCH}\n".encode(),
+            ("rev-parse", "--abbrev-ref", "@{upstream}"): f"origin/{SYNC.BRANCH}\n".encode(),
+            ("rev-parse", "@{upstream}"): f"{b2_commit}\n".encode(),
+            (
+                "rev-parse",
+                "--verify",
+                f"refs/remotes/origin/{SYNC.BRANCH}",
+            ): f"{b2_commit}\n".encode(),
+            ("status", "--porcelain=v1", "--untracked-files=all"): b"",
+            ("rev-parse", f"{b2_commit}^"): f"{i2_commit}\n".encode(),
+            ("rev-parse", f"{i2_commit}^"): f"{i1_commit}\n".encode(),
+            ("rev-parse", f"{i1_commit}^"): f"{authority_commit}\n".encode(),
+            (
+                "rev-parse",
+                f"{authority_commit}^",
+            ): f"{authority['authority_expected_parent']}\n".encode(),
+        }
+        return mapping[args]
+
+    def fake_changed_paths(_repo_root: Path, commit: str) -> list[str]:
+        if commit == authority_commit:
+            return sorted(SYNC.AUTHORITY_PATHS)
+        if commit in {i1_commit, i2_commit}:
+            return sorted(SYNC.IMPLEMENTATION_PATHS)
+        if commit == b2_commit:
+            return [SYNC.CONFIG_REPO_PATH]
+        raise AssertionError(commit)
+
+    i1_drift_path: str | None = None
+
+    def fake_git_blob(_repo_root: Path, commit: str, path: str) -> bytes:
+        if path in authority_payloads and commit in {
+            authority_commit,
+            i1_commit,
+            i2_commit,
+            b2_commit,
+        }:
+            return authority_payloads[path]
+        if commit == i1_commit and path in i1_payloads:
+            if path == i1_drift_path:
+                return b"drifted frozen I1 blob"
+            return i1_payloads[path]
+        if commit == i2_commit:
+            return {
+                SYNC.CONFIG_REPO_PATH: i2_config_payload,
+                SYNC.SCRIPT_REPO_PATH: script_payload,
+                SYNC.TEST_REPO_PATH: test_payload,
+            }[path]
+        if commit == b2_commit:
+            return {
+                SYNC.CONFIG_REPO_PATH: b2_config_payload,
+                SYNC.SCRIPT_REPO_PATH: script_payload,
+                SYNC.TEST_REPO_PATH: test_payload,
+            }[path]
+        raise AssertionError((commit, path))
+
+    def fake_repo_file(_repo_root: Path, path: str) -> bytes:
+        if path in authority_payloads:
+            return authority_payloads[path]
+        return {
+            SYNC.CONFIG_REPO_PATH: b2_config_payload,
+            SYNC.SCRIPT_REPO_PATH: script_payload,
+            SYNC.TEST_REPO_PATH: test_payload,
+        }[path]
+
+    monkeypatch.setattr(
+        SYNC, "__file__", str(SYNC.PRODUCTION_REPO_ROOT / SYNC.SCRIPT_REPO_PATH)
+    )
+    monkeypatch.setattr(SYNC, "_run_git", fake_run_git)
+    monkeypatch.setattr(SYNC, "_changed_paths", fake_changed_paths)
+    monkeypatch.setattr(SYNC, "_git_blob", fake_git_blob)
+    monkeypatch.setattr(SYNC, "_read_repo_file", fake_repo_file)
+    monkeypatch.setattr(SYNC, "sha256", fake_sha256)
+    assert SYNC.audit_production_repository_authority(
+        config, b2_config_payload
+    ) == {
+        "status": "PASS_EXACT10_A_TO_FROZEN_EXACT3_I1_TO_EXACT3_I2_TO_CONFIG_ONLY_B2",
+        "authority_commit": authority_commit,
+        "frozen_i1_commit": i1_commit,
+        "implementation_i2_commit": i2_commit,
+        "binding_b2_commit": b2_commit,
+        "authority_blob_count": 10,
+        "worktree_and_index_clean": True,
+    }
+
+    i1_drift_path = SYNC.TEST_REPO_PATH
+    with pytest.raises(SYNC.AuthorityError, match="frozen I1 blob identity"):
+        SYNC.audit_production_repository_authority(config, b2_config_payload)
 
 
 def test_build_successor_is_exact_238_to_242_no_science_change() -> None:

@@ -12,7 +12,7 @@
   "event_name": "DEC023_DUAL_AGGREGATE_ONLY_PREFLIGHT_AUTHORITIES_REGISTERED_RUNTIME_GATES_UNCHANGED",
   "sync_type": "APPEND_ONLY_AUTHORITY_ONLY_REGISTRATION_NO_SCIENTIFIC_STATE_CHANGE",
   "implementation_binding": {
-    "binding_scheme": "APPEND_ONLY_A_EXACT10_THEN_I_EXACT3_THEN_B_CONFIG_ONLY_V1",
+    "binding_scheme": "APPEND_ONLY_A_EXACT10_THEN_FROZEN_I1_EXACT3_THEN_DYNAMIC_I2_EXACT3_THEN_B2_CONFIG_ONLY_V1",
     "status": "UNKNOWN_NOT_ASSERTED",
     "implementation_commit": "UNKNOWN_NOT_ASSERTED",
     "implementation_script_path": "scripts/route_a_v3/dec023_authority_runtime_sync.py",
@@ -33,7 +33,7 @@
     "binding_commit_exact_changed_paths": [
       "configs/route_a_v3_dec023_authority_runtime_sync_v1.json"
     ],
-    "activation_rule": "A is the frozen exact10 DEC023 authority commit. I is the direct exact3 child of A, freezes the exact10 authority and fresh EVT055 predecessor identities, and retains exactly four implementation-binding scalars as UNKNOWN_NOT_ASSERTED. B is the direct config-only child of I and binds only those four scalars. Every production entry point requires all authority, predecessor, and implementation groups BOUND plus a clean HEAD equal to upstream and origin at B before any prepared-directory or runtime I/O."
+    "activation_rule": "A is the frozen exact10 DEC023 authority commit. Frozen I1 is its direct exact3 child and is retained byte-for-byte as immutable history. Dynamic I2 is the direct exact3 child of I1, freezes I1 commit, parent, changed paths, and blobs, and retains exactly four implementation-binding scalars as UNKNOWN_NOT_ASSERTED. B2 is the direct config-only child of I2 and binds only those four scalars to I2. Every production entry point requires all authority, predecessor, and implementation groups BOUND plus a clean HEAD equal to upstream and origin at B2 before any prepared-directory or runtime I/O."
   },
   "repository_authority": {
     "production_repo_root": "/home/cunyuliu/mrna_editflow_goal/worktrees/routea_v3_a1_20260810",
@@ -105,6 +105,21 @@
         "sha256": "a0c9b3cc457011e57046506a02e57a4314a26a8885b3d110f88797a000daca0a"
       }
     ],
+    "predecessor_implementation_i1": {
+      "status": "FROZEN_BOUND_EXACT3",
+      "commit": "b0afa92eea9718c15a5989cfa67bac57036617d9",
+      "expected_parent": "f7cfff896a1a30d25a3b73ea7f89957d70d95d39",
+      "exact_changed_paths": [
+        "configs/route_a_v3_dec023_authority_runtime_sync_v1.json",
+        "scripts/route_a_v3/dec023_authority_runtime_sync.py",
+        "tests/route_a_v3/test_dec023_authority_runtime_sync.py"
+      ],
+      "blob_sha256_by_path": {
+        "configs/route_a_v3_dec023_authority_runtime_sync_v1.json": "330a5fceaa97a1c1f16fcb20f1c6e4e35329923a293bcb463f35eaa666cb4701",
+        "scripts/route_a_v3/dec023_authority_runtime_sync.py": "3082aa44b70356d0e512fa8d1c92daadd08084a97594ba20976d0b93ca4706bd",
+        "tests/route_a_v3/test_dec023_authority_runtime_sync.py": "0ad48f947eee136e9104ba1dcdd5c921281ad0379ce2a17dcd4c411861115e65"
+      }
+    },
     "implementation_exact_changed_paths": [
       "configs/route_a_v3_dec023_authority_runtime_sync_v1.json",
       "scripts/route_a_v3/dec023_authority_runtime_sync.py",
