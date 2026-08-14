@@ -46,10 +46,10 @@
       "report_publication_count": 0
     },
     "candidate_group": {
-      "status": "UNKNOWN_NOT_ASSERTED",
-      "implementation_commit": "UNKNOWN_NOT_ASSERTED",
-      "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
-      "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
+      "status": "BOUND",
+      "implementation_commit": "a5f6e264263e78211098ef3ab2e8c9d9901abc17",
+      "implementation_script_sha256": "3216cc7123ef6cda0bec50619404c3c83c1361d65f61bf69d343eb162a1fa218",
+      "implementation_test_sha256": "e556f42350facab61e5af5df12561ca0a969904a310e51bb9f10891ee8952254",
       "implementation_expected_parent": "bfb3cc084eebbe65404b60fe81f5b8296b9b3a1f",
       "implementation_changed_paths_exactly": [
         "configs/route_a_v3_gse261709_dec025_processed_member_aggregate_discovery_v1.json",
