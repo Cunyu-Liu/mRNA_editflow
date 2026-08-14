@@ -1,0 +1,82 @@
+{
+  "schema_version": "route_a_v3_a6_learned_base_value_g0_implementation_candidate.v1",
+  "candidate_id": "ROUTE_A_V3_A6_LEARNED_BASE_VALUE_G0_IMPLEMENTATION_CANDIDATE_V1",
+  "document_status": "DRAFT_FOR_REVIEW_NOT_ACTIVE_PROTOCOL",
+  "authority_status": "NON_AUTHORITATIVE",
+  "activation_state": "INACTIVE_IMPLEMENTATION_CANDIDATE",
+  "parent_protocol": {
+    "path": "configs/route_a_v3_a6_learned_base_value_gpu_protocol_draft_v1.json",
+    "protocol_id": "ROUTE_A_V3_A6_LEARNED_BASE_VALUE_GPU_PROTOCOL_DRAFT_V1",
+    "required_document_status": "DRAFT_FOR_REVIEW_NOT_ACTIVE_PROTOCOL",
+    "required_authority_status": "NON_AUTHORITATIVE",
+    "required_implementation_scope": "PROTOCOL_SCHEMA_STATIC_VALIDATOR_AND_FOCUSED_TEST_ONLY",
+    "must_remain_unmodified_by_candidate": true,
+    "promotion_requires_new_explicit_owner_authority": true,
+    "parameter_updates_require_separate_later_authority": true
+  },
+  "permitted_g0_operations": [
+    "LOAD_AND_VALIDATE_FROZEN_DRAFT_CONFIG",
+    "BUILD_PURE_ARCHITECTURE_PLAN_WITHOUT_PARAMETERS",
+    "VALIDATE_AGGREGATE_ONLY_FUTURE_INPUT_CONTRACT_MANIFEST",
+    "EXERCISE_EXISTING_SYNTHETIC_CPU_KERNEL_INTERFACE_IN_TESTS",
+    "PLAN_TERMINAL_OBJECTIVE_REFERENCE_GATE_AND_PROVENANCE_MANIFESTS",
+    "VALIDATE_ONLY_ZERO_UPDATE_DRY_RUN_TO_STDOUT"
+  ],
+  "forbidden_operations": [
+    "TRAIN",
+    "OPTIMIZER_STEP",
+    "PARAMETER_UPDATE",
+    "TORCH_MODEL_CONSTRUCTION_OR_FORWARD",
+    "CUDA_PROBE_OR_GPU_TOUCH",
+    "CHECKPOINT_READ_OR_WRITE",
+    "RUNTIME_OUTPUT_FILE_WRITE",
+    "MODEL_OR_CHECKPOINT_SELECTION",
+    "PRIVATE_OR_SEALED_ACCESS",
+    "MEMBER_ROW_OR_SEQUENCE_ACCESS",
+    "QUALIFICATION_OR_CREDIT_CHANGE",
+    "CANONICAL_MATERIALIZATION",
+    "A6_PASS_OR_L3_CLAIM",
+    "A7_UNLOCK"
+  ],
+  "aggregate_input_interface": {
+    "schema_version": "route_a_v3_a6_g0_aggregate_input_contract_manifest.v1",
+    "member_payload_allowed": false,
+    "qualified_ordinary_public_role_required": true,
+    "frozen_outcome_blind_split_required": true,
+    "zero_leakage_required": true,
+    "scratch_only_exposure_required": true,
+    "qualification_and_private_processing_rights_required": true,
+    "raw_or_member_level_redistribution_allowed": false
+  },
+  "existing_kernel_dependency": {
+    "role": "SYNTHETIC_CPU_LEGALITY_ALIAS_AND_STATE_TRANSITION_INTERFACE_ONLY",
+    "script_path_from_repo": "scripts/route_a_v3/run_a6_cpu_exact_absorbing_dag.py",
+    "config_path_from_repo": "configs/route_a_v3_a6_cpu_exact_absorbing_dag_v1.json",
+    "validate_only_loads_dependency": false,
+    "ordinary_private_or_sealed_data_used": false,
+    "kernel_execution_is_scientific_evidence": false
+  },
+  "runtime_truth": {
+    "training_allowed": false,
+    "training_started": false,
+    "parameter_updates": 0,
+    "optimizer_steps": 0,
+    "model_constructions": 0,
+    "model_forwards": 0,
+    "cuda_probe_calls": 0,
+    "gpu_runs": 0,
+    "checkpoints_read": 0,
+    "checkpoints_written": 0,
+    "runtime_output_files_written": 0,
+    "ordinary_rows_read": 0,
+    "private_rows_read": 0,
+    "sealed_rows_read": 0,
+    "member_sequences_read": 0,
+    "qualification_changes": 0,
+    "credit_changes": 0,
+    "canonical_changes": 0,
+    "a6_pass_asserted": false,
+    "l3_claim_established": false,
+    "a7_unlocked": false
+  }
+}
