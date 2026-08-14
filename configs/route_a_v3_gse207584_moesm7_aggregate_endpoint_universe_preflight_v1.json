@@ -9,7 +9,7 @@
   "protocol_status": "DRAFT_FOR_REVIEW_NOT_ACTIVE_PROTOCOL",
   "implementation_binding": {
     "binding_scheme": "CURRENT_PREDECESSOR_THEN_I1_EXACT3_THEN_I2_EXACT3_CONFIG_ONLY_B2_V2",
-    "status": "UNKNOWN_NOT_ASSERTED",
+    "status": "BOUND",
     "current_predecessor_commit": "0a6586814460b211cc730c463390e68f64aaa4f1",
     "initial_implementation_commit": "374ea6166c74c898751c7a3d4d6951664ca1d524",
     "initial_implementation_exact_changed_paths": [
@@ -34,11 +34,11 @@
     "production_repo_root": "/home/cunyuliu/mrna_editflow_goal/worktrees/routea_v3_a1_20260810",
     "production_branch": "routea-v3-a1-20260810",
     "remote_name": "origin",
-    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "implementation_commit": "b411008c104bad55a2ab7688a027e23c1e8b7744",
     "implementation_script_path": "scripts/route_a_v3/preflight_gse207584_moesm7_aggregate_endpoint_universe.py",
-    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_script_sha256": "515ac60163be812c978629e31382ed9d762018495931f3885ef5522f6f5e8d4c",
     "implementation_test_path": "tests/route_a_v3/test_preflight_gse207584_moesm7_aggregate_endpoint_universe.py",
-    "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_test_sha256": "25eff124e2c731a89569a6cc2a577118b0b88ed7b1fead35df4487a35f7d35d2",
     "unknown_to_bound_scalar_paths": [
       "implementation_binding.status",
       "implementation_binding.implementation_commit",
