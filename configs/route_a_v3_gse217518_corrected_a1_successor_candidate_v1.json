@@ -106,13 +106,13 @@
           "tests/route_a_v3/test_preflight_gse217518_corrected_a1_successor_candidate.py": "b08209856fb852991c1b795864304fcda62a4f63419197c068ec6d1f0fd34691"
         }
       },
-      "status": "UNKNOWN_NOT_ASSERTED",
-      "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+      "status": "BOUND",
+      "implementation_commit": "6fbd63be6d0edb9f73cf2f85e446917d3c3ff100",
       "implementation_expected_parent": "17a35f0f88cc988b938aaf25d94a8b32f0cacfc8",
       "implementation_script_path": "scripts/route_a_v3/preflight_gse217518_corrected_a1_successor_candidate.py",
-      "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
+      "implementation_script_sha256": "0c96d41e4f9ddd694be0be21aab3bcfcb938d3ccb996f3f7cb10ca0a9b69902e",
       "implementation_test_path": "tests/route_a_v3/test_preflight_gse217518_corrected_a1_successor_candidate.py",
-      "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
+      "implementation_test_sha256": "c881350f5b6ab457af24a4004eedfa34e30d0c8fac7e1b99f74b37b9fe40ccc7",
       "implementation_exact_changed_paths": [
         "configs/route_a_v3_gse217518_corrected_a1_successor_candidate_v1.json",
         "scripts/route_a_v3/preflight_gse217518_corrected_a1_successor_candidate.py",
