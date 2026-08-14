@@ -1,0 +1,238 @@
+{
+  "schema_version": "route_a_v3_gse207584_moesm7_aggregate_endpoint_universe_preflight.v1",
+  "protocol_id": "GSE207584_MOESM7_AGGREGATE_ENDPOINT_UNIVERSE_PREFLIGHT_V1",
+  "contract_id": "mrna_xeditflow_route_a_v3",
+  "phase_id": "A1",
+  "dataset_id": "GSE207584",
+  "bioproject_id": "PRJNA856272",
+  "decision_id": "V3-DEC-023",
+  "protocol_status": "DRAFT_FOR_REVIEW_NOT_ACTIVE_PROTOCOL",
+  "implementation_binding": {
+    "binding_scheme": "CURRENT_PREDECESSOR_THEN_EXACT3_I_CONFIG_ONLY_B_V1",
+    "status": "UNKNOWN_NOT_ASSERTED",
+    "current_predecessor_commit": "0a6586814460b211cc730c463390e68f64aaa4f1",
+    "production_repo_root": "/home/cunyuliu/mrna_editflow_goal/worktrees/routea_v3_a1_20260810",
+    "production_branch": "routea-v3-a1-20260810",
+    "remote_name": "origin",
+    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "implementation_script_path": "scripts/route_a_v3/preflight_gse207584_moesm7_aggregate_endpoint_universe.py",
+    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_test_path": "tests/route_a_v3/test_preflight_gse207584_moesm7_aggregate_endpoint_universe.py",
+    "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
+    "unknown_to_bound_scalar_paths": [
+      "implementation_binding.status",
+      "implementation_binding.implementation_commit",
+      "implementation_binding.implementation_script_sha256",
+      "implementation_binding.implementation_test_sha256"
+    ],
+    "implementation_commit_exact_changed_paths": [
+      "configs/route_a_v3_gse207584_moesm7_aggregate_endpoint_universe_preflight_v1.json",
+      "scripts/route_a_v3/preflight_gse207584_moesm7_aggregate_endpoint_universe.py",
+      "tests/route_a_v3/test_preflight_gse207584_moesm7_aggregate_endpoint_universe.py"
+    ],
+    "binding_commit_exact_changed_paths": [
+      "configs/route_a_v3_gse207584_moesm7_aggregate_endpoint_universe_preflight_v1.json"
+    ],
+    "activation_rule": "The implementation commit I must be the direct single-parent child of current_predecessor_commit, change exact3, and retain all four unknown_to_bound_scalar_paths as UNKNOWN_NOT_ASSERTED. Binding commit B must be the direct single-parent child of I, change config-only, and change exactly those four semantic scalars. Production requires a clean production_branch with HEAD equal to its configured upstream, origin tracking ref, and live origin branch. The working B config, I script/test blobs, and the executing __file__ script must match before any publisher/GEO asset or output I/O. A valid B permits only this aggregate preflight; protocol_status remains DRAFT_FOR_REVIEW_NOT_ACTIVE_PROTOCOL and qualification remains inactive."
+  },
+  "authority_assessment": {
+    "current_authority_sufficient_for_this_candidate_and_aggregate_preflight": true,
+    "new_row_level_authority_granted": false,
+    "basis": "DEC023 already permits internal ordinary-public designed/observed mapping, 2/5/8-hour replicate abundance, necessary context, and rights notices with aggregate-only output. This successor reads no sequence and emits no member payload.",
+    "authorized_role": "AGGREGATE_DENSE_FAMILY_QUALIFICATION_PREFLIGHT_ONLY",
+    "allowed_input_field_classes_exactly": [
+      "DESIGNED_OBSERVED_MAPPING",
+      "SOURCE_SEQUENCE",
+      "CANDIDATE_SEQUENCE",
+      "TWO_FIVE_EIGHT_HOUR_REPLICATE_ABUNDANCE",
+      "NECESSARY_CONTEXT",
+      "ORDINARY_PUBLIC_RIGHTS_NOTICE"
+    ],
+    "input_field_classes_used_by_this_successor": [
+      "DESIGNED_OBSERVED_MAPPING",
+      "TWO_FIVE_EIGHT_HOUR_REPLICATE_ABUNDANCE",
+      "NECESSARY_CONTEXT",
+      "ORDINARY_PUBLIC_RIGHTS_NOTICE"
+    ],
+    "sequence_field_classes_read_count": 0,
+    "allowed_output_class": "AGGREGATE_COUNTS_HISTOGRAMS_AND_GATE_STATUSES_ONLY",
+    "forbidden_output_classes": [
+      "MEMBER_IDENTIFIER",
+      "SOURCE_OR_CANDIDATE_SEQUENCE",
+      "ROW_ABUNDANCE",
+      "ROW_EFFECT_OR_SLOPE",
+      "ROW_STANDARD_ERROR",
+      "SPLIT_ASSIGNMENT"
+    ]
+  },
+  "official_public_sources": [
+    {
+      "authority_id": "SPRINGER_NATURE_MOESM7_SUPPLEMENTAL_TABLE_6",
+      "role": "PUBLISHER_PRIMARY_ENDPOINT_UNIVERSE",
+      "url": "https://static-content.springer.com/esm/art%3A10.1038%2Fs41598-022-15526-7/MediaObjects/41598_2022_15526_MOESM7_ESM.xlsx"
+    },
+    {
+      "authority_id": "NCBI_GEO_GSE207584",
+      "role": "PUBLIC_PROCESSED_ASSET_AGGREGATE_GEOMETRY_COMPARATOR",
+      "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE207584"
+    },
+    {
+      "authority_id": "SCIENTIFIC_REPORTS_2022_15526",
+      "role": "PUBLISHER_ARTICLE_AND_DATA_AVAILABILITY_RECORD",
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC9287306/",
+      "doi": "10.1038/s41598-022-15526-7"
+    },
+    {
+      "authority_id": "STOWERS_ODR_LIBPB_1591",
+      "role": "AUTHOR_INSTITUTION_OPEN_DATA_RECORD",
+      "url": "https://odr.stowers.org/publications/LIBPB-1591/"
+    }
+  ],
+  "ordinary_public_asset_contract": {
+    "publisher_endpoint_workbook": {
+      "filename": "41598_2022_15526_MOESM7_ESM.xlsx",
+      "sheet_name": "Supplemental-Table-6-library-pe",
+      "role": "PUBLISHER_PRIMARY_ONE_ROW_PER_PERFECT_REPORTER_ENDPOINT_UNIVERSE",
+      "required_header_exactly": [
+        "Protein_id",
+        "Group",
+        "2h_A",
+        "2h_B",
+        "2h_C",
+        "5h_A",
+        "5h_B",
+        "5h_C",
+        "8h_A",
+        "8h_B",
+        "8h_C",
+        "Decay_rate",
+        "Predicted_mRNA_stability"
+      ],
+      "payload_columns_read": [
+        "Protein_id",
+        "Group",
+        "2h_A",
+        "2h_B",
+        "2h_C",
+        "5h_A",
+        "5h_B",
+        "5h_C",
+        "8h_A",
+        "8h_B",
+        "8h_C"
+      ],
+      "derived_effect_columns_values_read": false
+    },
+    "geo_perfect_csv": {
+      "filename": "GSE207584_Zebrafish-library-perfect.csv.gz",
+      "role": "AGGREGATE_COVERAGE_AND_CARTESIAN_GEOMETRY_COMPARATOR_ONLY",
+      "required_header_exactly": [
+        "Name",
+        "Protein_id",
+        "Group",
+        "zf_library_2h_1",
+        "zf_library_2h_2",
+        "zf_library_2h_3",
+        "zf_library_5h_1",
+        "zf_library_5h_2",
+        "zf_library_5h_3",
+        "zf_library_8h_1",
+        "zf_library_8h_2",
+        "zf_library_8h_3"
+      ]
+    },
+    "reference_fasta": {
+      "read_by_this_successor": false,
+      "reason": "No sequence is needed to establish endpoint-universe geometry, and the public assets do not identify a source-to-candidate or sequence-to-endpoint pairing."
+    }
+  },
+  "prefrozen_geometry": {
+    "publisher_endpoint_row_count": 955,
+    "publisher_unique_endpoint_signature_count": 955,
+    "publisher_family_count": 100,
+    "publisher_group_label_count": 7,
+    "geo_body_row_count": 10227,
+    "geo_unique_candidate_name_count": 955,
+    "geo_family_count": 100,
+    "family_size_histogram": {
+      "1": 3,
+      "2": 1,
+      "3": 3,
+      "4": 4,
+      "5": 2,
+      "6": 7,
+      "7": 6,
+      "8": 6,
+      "9": 7,
+      "10": 10,
+      "11": 15,
+      "12": 17,
+      "13": 15,
+      "14": 4
+    },
+    "endpoint_signature_numeric_decimal_places": 9,
+    "required_family_geometry": "FOR_EACH_FAMILY_PUBLISHER_ENDPOINT_COUNT_EQUALS_GEO_UNIQUE_CANDIDATE_COUNT_AND_GEO_CONTAINS_EACH_CANDIDATE_BY_EACH_PUBLISHER_ENDPOINT_EXACTLY_ONCE_AFTER_NUMERIC_NORMALIZATION",
+    "row_order_pairing_permitted": false,
+    "sequence_pairing_permitted": false
+  },
+  "rights_policy": {
+    "status": "CONFIRMED_FOR_PRIVATE_ANALYSIS_AND_AGGREGATE_DERIVED_REPORTING_ONLY",
+    "private_academic_analysis_allowed": true,
+    "aggregate_derived_reporting_allowed": true,
+    "member_payload_redistribution_allowed": false,
+    "submitter_intellectual_property_transfer_asserted": false,
+    "basis": [
+      {
+        "authority_id": "STOWERS_ODR_LIBPB_1591",
+        "locator": "https://www.stowers.org/research/publications/libpb-1591",
+        "scope": "Institutional record says the data are freely accessible to the scientific community for validation or extension of the findings and requests citation for further analysis or publication."
+      },
+      {
+        "authority_id": "NCBI_DATABASE_AND_GEO_POLICIES",
+        "locator": "https://www.ncbi.nlm.nih.gov/home/about/policies/",
+        "scope": "Public database access/use basis; NCBI does not transfer submitter intellectual-property rights."
+      },
+      {
+        "authority_id": "SCIENTIFIC_REPORTS_CC_BY_4_0",
+        "locator": "https://pmc.ncbi.nlm.nih.gov/articles/PMC9287306/",
+        "scope": "Publisher article and supplement reuse under CC BY 4.0, subject to third-party-material notices."
+      }
+    ]
+  },
+  "gate_ids": [
+    "PUBLISHER_ENDPOINT_UNIVERSE_CLOSED",
+    "GEO_AGGREGATE_COVERAGE_GEOMETRY_CLOSED",
+    "PUBLISHER_TO_GEO_CARTESIAN_EXPANSION_SEMANTICS_CLOSED",
+    "PRIVATE_ANALYSIS_AND_AGGREGATE_REPORTING_RIGHTS_CLOSED",
+    "ROW_ORDER_AND_SEQUENCE_PAIRING_PROHIBITION_ENFORCED",
+    "SOURCE_TO_CANDIDATE_MAPPING_CLOSED"
+  ],
+  "claim_boundary": {
+    "source_to_candidate_mapping_established": false,
+    "source_to_candidate_edit_replay_closed": false,
+    "a1_qualification_allowed_or_changed": false,
+    "true_a2_status_allowed_or_changed": false,
+    "study_credit_allowed_or_changed": false,
+    "canonical_allowed_or_changed": false,
+    "training_allowed_or_changed": false,
+    "gpu_work_allowed_or_changed": false,
+    "model_selection_allowed_or_changed": false,
+    "a7_unlock_allowed_or_changed": false,
+    "next_phase_allowed_or_changed": false,
+    "current_credit_delta": {
+      "ordinary": 0,
+      "A1": 0,
+      "true_A2": 0
+    }
+  },
+  "output_contract": {
+    "filename": "GSE207584_MOESM7_AGGREGATE_ENDPOINT_UNIVERSE_PREFLIGHT_V1.json",
+    "single_json_only": true,
+    "overwrite_allowed": false,
+    "existing_exact_payload_policy": "ACCEPT_IDEMPOTENTLY",
+    "existing_different_payload_policy": "REJECT",
+    "publication_strategy": "SAME_DIRECTORY_UNIQUE_TEMP_WRITE_FLUSH_FSYNC_THEN_ATOMIC_LINK_NOREPLACE",
+    "member_identifier_sequence_or_row_payload_output_count": 0,
+    "row_or_member_material_persisted_count": 0
+  }
+}
