@@ -1,0 +1,191 @@
+{
+  "schema_version": "route_a_v3_gse261709_dec025_processed_member_aggregate_discovery.v1",
+  "protocol_id": "GSE261709_DEC025_PROCESSED_MEMBER_AGGREGATE_DISCOVERY_V1",
+  "contract_id": "mrna_xeditflow_route_a_v3",
+  "phase_id": "A1",
+  "dataset_id": "GSE261709",
+  "bioproject_id": "PRJNA1088465",
+  "decision_id": "V3-DEC-025",
+  "protocol_status": "AUTHORIZED_AGGREGATE_DISCOVERY_ONLY_NOT_QUALIFICATION",
+  "owner_decision": {
+    "status": "BOUND",
+    "exact_approval_text": "APPROVE V3-DEC-025 GSE261709 PROCESSED_MEMBER_AGGREGATE_ONLY_READ: authorize one aggregate-only inspection of the exact 667648-byte official GSE261709_RAW.tar with SHA-256 3024746ce25f4b795daa376ac6dbafd3d53f6d30be8aed9fb14db0f118c6f434 and its seven frozen *_BARCODES.txt.gz members. Internal parsing may use header, barcode-token and numeric-count fields only for schema, dimensions, missingness, duplicate and cross-sample join geometry. Do not output member or barcode values and do not infer mapping, qualification, credit, canonical, split, power, training, GPU, model selection, A7 or next-phase status. Any unclosed mapping or scientific gate must remain STOP.",
+    "current_candidate_may_be_activated_in_place": false,
+    "explicit_approval_and_new_reviewed_exact3_successor_required": true
+  },
+  "implementation_binding": {
+    "binding_scheme": "GSE269595_B_THEN_DEC025_REVIEWED_EXACT3_I_CONFIG_ONLY_B_V1",
+    "current_predecessor": {
+      "status": "BOUND",
+      "protocol_id": "GSE269595_REPLACEMENT_A1_OR_TRUE_A2_ROLE_ADJUDICATION_PREFLIGHT_V1",
+      "implementation_commit": "99112bedf8cf7c399a772def9f34e9db6c1d5310",
+      "binding_commit": "da4174f05fd026bcbf8788e0182e5cc68ffb7d1e",
+      "binding_expected_parent": "99112bedf8cf7c399a772def9f34e9db6c1d5310",
+      "binding_changed_paths_exactly": [
+        "configs/route_a_v3_gse269595_replacement_a1_true_a2_role_adjudication_preflight_v1.json"
+      ]
+    },
+    "candidate_group": {
+      "status": "UNKNOWN_NOT_ASSERTED",
+      "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+      "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
+      "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
+      "implementation_expected_parent": "da4174f05fd026bcbf8788e0182e5cc68ffb7d1e",
+      "implementation_changed_paths_exactly": [
+        "configs/route_a_v3_gse261709_dec025_processed_member_aggregate_discovery_v1.json",
+        "scripts/route_a_v3/discover_gse261709_dec025_processed_member_aggregate_geometry.py",
+        "tests/route_a_v3/test_discover_gse261709_dec025_processed_member_aggregate_geometry.py"
+      ],
+      "binding_changed_paths_exactly": [
+        "configs/route_a_v3_gse261709_dec025_processed_member_aggregate_discovery_v1.json"
+      ],
+      "unknown_to_bound_scalar_paths": [
+        "implementation_binding.candidate_group.status",
+        "implementation_binding.candidate_group.implementation_commit",
+        "implementation_binding.candidate_group.implementation_script_sha256",
+        "implementation_binding.candidate_group.implementation_test_sha256"
+      ]
+    },
+    "activation_rule": "This reviewed exact3 successor is the direct single-parent child of GSE269595 binding B da4174f05fd026bcbf8788e0182e5cc68ffb7d1e and freezes the owner decision as BOUND while preserving every scientific and promotion STOP. Its own four candidate_group scalars remain grouped UNKNOWN_NOT_ASSERTED until a direct config-only binding child binds exactly those four scalars. Clean HEAD equals upstream equals live origin at that binding commit is required before archive or output I/O."
+  },
+  "repository_authority": {
+    "production_repo_root": "/home/cunyuliu/mrna_editflow_goal/worktrees/routea_v3_a1_20260810",
+    "branch": "routea-v3-a1-20260810",
+    "upstream_ref": "origin/routea-v3-a1-20260810",
+    "required_state_before_archive_or_output_io": "CLEAN_HEAD_EQUALS_UPSTREAM_EQUALS_LIVE_ORIGIN_AT_DEC025_BINDING_COMMIT"
+  },
+  "ordinary_public_asset": {
+    "canonical_url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE261nnn/GSE261709/suppl/GSE261709_RAW.tar",
+    "filename": "GSE261709_RAW.tar",
+    "byte_count": 667648,
+    "sha256": "3024746ce25f4b795daa376ac6dbafd3d53f6d30be8aed9fb14db0f118c6f434",
+    "tar_members_exactly": [
+      {
+        "filename": "GSM8149344_S1_BARCODES.txt.gz",
+        "gzip_byte_count": 98593
+      },
+      {
+        "filename": "GSM8149345_S3_BARCODES.txt.gz",
+        "gzip_byte_count": 99839
+      },
+      {
+        "filename": "GSM8149346_S5_BARCODES.txt.gz",
+        "gzip_byte_count": 96359
+      },
+      {
+        "filename": "GSM8149347_S2_BARCODES.txt.gz",
+        "gzip_byte_count": 98438
+      },
+      {
+        "filename": "GSM8149348_S4_BARCODES.txt.gz",
+        "gzip_byte_count": 100030
+      },
+      {
+        "filename": "GSM8149349_S6_BARCODES.txt.gz",
+        "gzip_byte_count": 97483
+      },
+      {
+        "filename": "GSM8149350_S7_BARCODES.txt.gz",
+        "gzip_byte_count": 99818
+      }
+    ],
+    "ordinary_public_only": true,
+    "network_access_allowed": false,
+    "raw_fastq_sra_or_private_asset_access_allowed": false,
+    "archive_or_member_access_before_owner_and_binding_bound": false
+  },
+  "fixed_parser_contract": {
+    "execution_model": "BUILT_IN_IN_MEMORY_ONLY_NO_CALLER_PARSER_OR_CALLBACK",
+    "member_container": "GZIP",
+    "member_text_encoding": "UTF-8",
+    "record_delimiter": "LF",
+    "field_delimiter": "TAB",
+    "header_mode": "FIRST_NONEMPTY_RECORD",
+    "barcode_column_detection": "EXACTLY_ONE_NORMALIZED_HEADER_IN_FIXED_ALIAS_SET",
+    "barcode_header_aliases": [
+      "barcode",
+      "barcodes",
+      "barcode_id",
+      "barcode_seq",
+      "barcode_sequence",
+      "bc"
+    ],
+    "remaining_columns_role": "NUMERIC_COUNT",
+    "missing_tokens_case_insensitive": [
+      "",
+      ".",
+      "na",
+      "n/a",
+      "nan"
+    ],
+    "numeric_value_rule": "FINITE_NONNEGATIVE_DECIMAL",
+    "member_payload_retention_after_report": false,
+    "barcode_token_retention_after_report": false,
+    "persistent_member_level_intermediate_allowed": false
+  },
+  "allowed_discovery_output": {
+    "sole_report_filename": "GSE261709_DEC025_PROCESSED_MEMBER_AGGREGATE_DISCOVERY_V1.json",
+    "sections_exactly": [
+      "asset_identity",
+      "aggregate_schema_geometry",
+      "aggregate_dimensions",
+      "aggregate_missingness",
+      "aggregate_duplicates",
+      "aggregate_cross_sample_join_geometry",
+      "downstream_stop_state"
+    ],
+    "atomic_no_replace_publication_required": true,
+    "member_identifier_included": false,
+    "barcode_value_included": false,
+    "actual_header_name_included": false,
+    "sequence_variant_transcript_included": false,
+    "row_effect_or_standard_error_included": false,
+    "split_assignment_included": false,
+    "qualifier_input_emitted": false,
+    "qualifier_invocation_allowed_in_same_execution": false
+  },
+  "downstream_stop_contract": {
+    "scientific_gate_ids_exactly": [
+      "BARCODE_TO_ALLELE_OR_VARIANT_MAPPING_CLOSED",
+      "SOURCE_TO_CANDIDATE_RELATION_AND_EDIT_REPLAY_CLOSED",
+      "FAMILY_AND_CONTEXT_STRATIFICATION_CLOSED",
+      "ENDPOINT_DIRECTION_AND_SCALE_CLOSED",
+      "INDEPENDENT_BIOLOGICAL_REPLICATES_AND_STANDARD_ERROR_CLOSED",
+      "RIGHTS_AND_EXPOSURE_CLOSED",
+      "SOURCE_GROUP_SPLIT_AND_ZERO_LEAKAGE_CLOSED",
+      "POST_DEDUP_EFFECTIVE_N_AND_PREFROZEN_POWER_CLOSED"
+    ],
+    "status_for_every_scientific_gate": "STOP_NOT_EVALUATED_BY_DISCOVERY",
+    "terminal_status": "DISCOVERY_ONLY_STOP_NOT_QUALIFIED",
+    "qualification_allowed": false,
+    "credit_or_canonical_change_allowed": false,
+    "split_or_power_execution_allowed": false,
+    "training_or_gpu_work_allowed": false,
+    "model_selection_or_a7_allowed": false,
+    "next_phase_allowed": false
+  },
+  "frozen_outer_truth": {
+    "current_qualified_counts": {
+      "ordinary": 1,
+      "a1": 1,
+      "true_a2": 0,
+      "canonical_records": 6547
+    },
+    "gse261709_contribution": {
+      "ordinary": 0,
+      "a1": 0,
+      "true_a2": 0,
+      "canonical_records": 0
+    },
+    "qualification_run_count": 0,
+    "qualifier_input_emission_count": 0,
+    "qualifier_invocation_count": 0,
+    "split_run_count": 0,
+    "power_run_count": 0,
+    "training_run_count": 0,
+    "gpu_run_count": 0,
+    "model_selection_run_count": 0,
+    "a7_unlocked": false,
+    "scientific_claim_status": "NOT_ESTABLISHED"
+  }
+}
