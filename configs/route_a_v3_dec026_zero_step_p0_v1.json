@@ -20,13 +20,13 @@
     "g1_launch_is_separate_orchestrator_action": true
   },
   "implementation_binding": {
-    "status": "UNKNOWN_NOT_ASSERTED",
+    "status": "BOUND",
     "implementation_expected_parent": "1da9ad0999ee3a92dc19bc9cce8611499ec391bb",
-    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "implementation_commit": "d49dfa48f2ef481a8a1562b57b84ca1484b4d0a6",
     "implementation_script_path": "scripts/route_a_v3/dec026_metadata_only_zero_step_p0.py",
-    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_script_sha256": "785e8cb69fa320b9d07cefd0c635f31b4af4990b68e6613f50d9d3376062dc1a",
     "implementation_test_path": "tests/route_a_v3/test_dec026_metadata_only_zero_step_p0.py",
-    "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_test_sha256": "e74ad6408c802d3dd4251311b0c495f1f20e5e0d90bac65044a1a03e949fdaad",
     "implementation_exact_changed_paths": [
       "configs/route_a_v3_dec026_zero_step_p0_v1.json",
       "scripts/route_a_v3/dec026_metadata_only_zero_step_p0.py",
