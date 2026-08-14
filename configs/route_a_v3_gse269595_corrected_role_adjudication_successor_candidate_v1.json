@@ -1,0 +1,640 @@
+{
+  "schema_version": "route_a_v3_gse269595_corrected_role_adjudication_successor_candidate.v1",
+  "protocol_id": "GSE269595_CORRECTED_ROLE_ADJUDICATION_SUCCESSOR_CANDIDATE_V1",
+  "contract_id": "mrna_xeditflow_route_a_v3",
+  "phase_id": "A1",
+  "decision_id": "V3-DEC-027",
+  "document_status": "DRAFT_CORRECTED_SUCCESSOR_NOT_ACTIVE_PROTOCOL",
+  "dataset_id": "GSE269595",
+  "project_id": "PRJNA1122592",
+  "baseline": {
+    "remote_branch": "routea-v3-a1-20260810",
+    "dec027_authority_head": "3e0ad158a0b45b2f26ed82da3afe60667c712cd6",
+    "dec027_authority_parent": "b1ca33d852bad111ff31b4f60493d8c43c63d1a3",
+    "pre_dec027_projection_event": "A1-EVT-058",
+    "bound_runtime_event": "A1-EVT-059",
+    "gse217518_final_binding_commit": "0a46400efee4ead95b1283df73d263f6f8033036",
+    "encsr854ruf_final_binding_commit": "56b39f966a272d8ea8022048855d2fcca0ee155a",
+    "current_projection_status": "SETTLED_RUNTIME_CURRENT_PROJECTION"
+  },
+  "repository_authority": {
+    "production_repo_root": "/home/cunyuliu/mrna_editflow_goal/worktrees/routea_v3_a1_20260810",
+    "branch": "routea-v3-a1-20260810",
+    "upstream_ref": "origin/routea-v3-a1-20260810",
+    "live_origin_head_required": true,
+    "clean_worktree_and_index_required": true
+  },
+  "decision_snapshot": {
+    "authority_path": "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec027.yaml",
+    "authority_status": "FROZEN_USER_AUTHORIZED_RESCUE_PREFLIGHT_ONLY_NO_AUTOMATIC_PROMOTION",
+    "predecessor_decision_id": "V3-DEC-024",
+    "aggregate_preflight_execution_allowed": true,
+    "qualification_allowed": false,
+    "credit_may_be_inferred_from_preflight_status": false,
+    "separate_promotion_authority_required": true
+  },
+  "bindings": {
+    "authority": {
+      "status": "BOUND",
+      "authority_commit": "3e0ad158a0b45b2f26ed82da3afe60667c712cd6",
+      "authority_expected_parent": "b1ca33d852bad111ff31b4f60493d8c43c63d1a3",
+      "authority_exact_changed_paths": [
+        "configs/route_a_v3.yaml",
+        "configs/route_a_v3_a1_qualification.json",
+        "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec027.yaml",
+        "docs/contracts/supersession_mrna_xeditflow_v1_1_to_route_a_v3.yaml",
+        "docs/execution/route_a_v3_a1_interim.yaml",
+        "docs/execution/route_a_v3_a6_interim.yaml",
+        "docs/execution/route_a_v3_data_role_registry.yaml",
+        "docs/execution/route_a_v3_decision_log.yaml",
+        "docs/execution/route_a_v3_registry_manifest.json",
+        "docs/execution/route_a_v3_task_registry.yaml",
+        "scripts/route_a_v3/validate_a0_bundle.py",
+        "tests/route_a_v3/test_a0_integrity_guards.py"
+      ],
+      "authority_blob_sha256_by_path": {
+        "configs/route_a_v3.yaml": "c5ec7d236443b506c09fd3f09e149ce5d082daff618887989af6e59472727a27",
+        "configs/route_a_v3_a1_qualification.json": "261339c38f4b8bbd48bf8f63f6a588be57af9f6229119e84bf661d7ee8f855db",
+        "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec027.yaml": "2a27c296539e8e665873363778d91cc223f56f933a815e9509b10a7267f6b5c4",
+        "docs/contracts/supersession_mrna_xeditflow_v1_1_to_route_a_v3.yaml": "1c4b6e29c09eb24798207138047b68909d7bda8bacc3a2eab8e17a7ca789b44b",
+        "docs/execution/route_a_v3_a1_interim.yaml": "fb50929ae2dfa0bdd1c50b003fc43c0e13b89baade203e8384c8b6ea3eba7b1e",
+        "docs/execution/route_a_v3_a6_interim.yaml": "1d44bcfe8669a55dc42f619ed43178f0637e20a4297ca996ecab3f7165612769",
+        "docs/execution/route_a_v3_data_role_registry.yaml": "80217a8114286f84960237819ac5b2d5828afbc23af118576541cc7cee64ae4e",
+        "docs/execution/route_a_v3_decision_log.yaml": "e0dc2a7fb186c5c8d00c1c5604602b1b2f87b26241191d4da55a405a02387e05",
+        "docs/execution/route_a_v3_registry_manifest.json": "73a39a566aa0310a80cc83f4eb17ddb95cabc87e5b070ef6484c05178ba32b75",
+        "docs/execution/route_a_v3_task_registry.yaml": "a64d0b8bb5eb466b06daa46ed109bd19901ee775910bc5cc9221c39ead63a4bc",
+        "scripts/route_a_v3/validate_a0_bundle.py": "81d1a8dc49375f53a1edd5c3f41625e734eacc31a4c328c8137340a041d77e65",
+        "tests/route_a_v3/test_a0_integrity_guards.py": "106f847e957a40fffec4c1b57f8f572325ef96e8a3dc5729db68499e320f380b"
+      }
+    },
+    "runtime": {
+      "status": "BOUND",
+      "runtime_event_id": "A1-EVT-059",
+      "frozen_i1_commit": "de40c58ab81fc06196be3bb9ffb5aa35d39c9d03",
+      "frozen_i1_expected_parent": "3e0ad158a0b45b2f26ed82da3afe60667c712cd6",
+      "frozen_i1_exact_changed_paths": [
+        "configs/route_a_v3_dec027_authority_runtime_sync_v1.json",
+        "scripts/route_a_v3/dec027_authority_runtime_sync.py",
+        "tests/route_a_v3/test_dec027_authority_runtime_sync.py"
+      ],
+      "frozen_i1_blob_sha256_by_path": {
+        "configs/route_a_v3_dec027_authority_runtime_sync_v1.json": "cbb0c8c4fb2b47a1e1c1dd629d46c149b1c35299e8127dfd431a22666e40dfd5",
+        "scripts/route_a_v3/dec027_authority_runtime_sync.py": "ae13a64ecbe10edd47eb403a328bdb2563f7d30e185d11e73d1b10f1955da4a1",
+        "tests/route_a_v3/test_dec027_authority_runtime_sync.py": "de253087afd14136f188d3c525be76788cd214509d96971c4f11d2799c215117"
+      },
+      "implementation_commit": "5d66e8dc83eb9966f7698ac0fc677f1b06af8ea6",
+      "implementation_expected_parent": "de40c58ab81fc06196be3bb9ffb5aa35d39c9d03",
+      "implementation_exact_changed_paths": [
+        "configs/route_a_v3_dec027_authority_runtime_sync_v1.json",
+        "scripts/route_a_v3/dec027_authority_runtime_sync.py",
+        "tests/route_a_v3/test_dec027_authority_runtime_sync.py"
+      ],
+      "implementation_blob_sha256_by_path": {
+        "configs/route_a_v3_dec027_authority_runtime_sync_v1.json": "3d5af87e7512568ed663b211c24a8586eeb9f03936a397cf2d2ddaeb2a21f57b",
+        "scripts/route_a_v3/dec027_authority_runtime_sync.py": "44dcda8897e747cfe363668ddc23d8dd9c53a7f3ffab692a1bb4e7cf738973ca",
+        "tests/route_a_v3/test_dec027_authority_runtime_sync.py": "ff250d4f011d8526e9a4a7bf13049f1f47346faa1c7ea512cbf447a6fb59ba4a"
+      },
+      "binding_commit": "e60956cf59cbddc0406c5d116fb9714906db36e1",
+      "binding_expected_parent": "5d66e8dc83eb9966f7698ac0fc677f1b06af8ea6",
+      "binding_exact_changed_paths": [
+        "configs/route_a_v3_dec027_authority_runtime_sync_v1.json"
+      ],
+      "binding_blob_sha256_by_path": {
+        "configs/route_a_v3_dec027_authority_runtime_sync_v1.json": "e5c1f96ec57b220fd36ff4677deb37d6dc0be06e02f21af3837e17a51e91e5ee",
+        "scripts/route_a_v3/dec027_authority_runtime_sync.py": "44dcda8897e747cfe363668ddc23d8dd9c53a7f3ffab692a1bb4e7cf738973ca",
+        "tests/route_a_v3/test_dec027_authority_runtime_sync.py": "ff250d4f011d8526e9a4a7bf13049f1f47346faa1c7ea512cbf447a6fb59ba4a"
+      }
+    },
+    "gse217518_predecessor": {
+      "status": "BOUND",
+      "append_only_history": [
+        {
+          "step": "I1",
+          "commit": "17a35f0f88cc988b938aaf25d94a8b32f0cacfc8",
+          "expected_parent": "e60956cf59cbddc0406c5d116fb9714906db36e1",
+          "exact_changed_paths": [
+            "configs/route_a_v3_gse217518_corrected_a1_successor_candidate_v1.json",
+            "scripts/route_a_v3/preflight_gse217518_corrected_a1_successor_candidate.py",
+            "tests/route_a_v3/test_preflight_gse217518_corrected_a1_successor_candidate.py"
+          ],
+          "blob_sha256_by_path": {
+            "configs/route_a_v3_gse217518_corrected_a1_successor_candidate_v1.json": "0aa3324d3cfdfd50837ea32a4d1efef754fe70abdab9805f373401f21a1ccb41",
+            "scripts/route_a_v3/preflight_gse217518_corrected_a1_successor_candidate.py": "6ca04bdc464ac30f1c3b83830b74c6621816bd25308e345f39e2c5ee94f21b4c",
+            "tests/route_a_v3/test_preflight_gse217518_corrected_a1_successor_candidate.py": "b08209856fb852991c1b795864304fcda62a4f63419197c068ec6d1f0fd34691"
+          }
+        },
+        {
+          "step": "I2",
+          "commit": "6fbd63be6d0edb9f73cf2f85e446917d3c3ff100",
+          "expected_parent": "17a35f0f88cc988b938aaf25d94a8b32f0cacfc8",
+          "exact_changed_paths": [
+            "configs/route_a_v3_gse217518_corrected_a1_successor_candidate_v1.json",
+            "scripts/route_a_v3/preflight_gse217518_corrected_a1_successor_candidate.py",
+            "tests/route_a_v3/test_preflight_gse217518_corrected_a1_successor_candidate.py"
+          ],
+          "blob_sha256_by_path": {
+            "configs/route_a_v3_gse217518_corrected_a1_successor_candidate_v1.json": "de064e62e7031725908de8d09a1c6b7a2a36112868208ba0cb387a394062a1d8",
+            "scripts/route_a_v3/preflight_gse217518_corrected_a1_successor_candidate.py": "0c96d41e4f9ddd694be0be21aab3bcfcb938d3ccb996f3f7cb10ca0a9b69902e",
+            "tests/route_a_v3/test_preflight_gse217518_corrected_a1_successor_candidate.py": "c881350f5b6ab457af24a4004eedfa34e30d0c8fac7e1b99f74b37b9fe40ccc7"
+          }
+        },
+        {
+          "step": "B2",
+          "commit": "c3611b0f2e8baeb83422bb07f5446b42edce90ef",
+          "expected_parent": "6fbd63be6d0edb9f73cf2f85e446917d3c3ff100",
+          "exact_changed_paths": [
+            "configs/route_a_v3_gse217518_corrected_a1_successor_candidate_v1.json"
+          ],
+          "blob_sha256_by_path": {
+            "configs/route_a_v3_gse217518_corrected_a1_successor_candidate_v1.json": "c808bdc6eb1ad8aaccd3d2ab483415ed0803da4683315b92ef3139f203f61e64",
+            "scripts/route_a_v3/preflight_gse217518_corrected_a1_successor_candidate.py": "0c96d41e4f9ddd694be0be21aab3bcfcb938d3ccb996f3f7cb10ca0a9b69902e",
+            "tests/route_a_v3/test_preflight_gse217518_corrected_a1_successor_candidate.py": "c881350f5b6ab457af24a4004eedfa34e30d0c8fac7e1b99f74b37b9fe40ccc7"
+          }
+        },
+        {
+          "step": "I3",
+          "commit": "36b535f77b3f27bb872b182dcaf6c646d9781991",
+          "expected_parent": "c3611b0f2e8baeb83422bb07f5446b42edce90ef",
+          "exact_changed_paths": [
+            "configs/route_a_v3_gse217518_corrected_a1_successor_candidate_v1.json",
+            "scripts/route_a_v3/preflight_gse217518_corrected_a1_successor_candidate.py",
+            "tests/route_a_v3/test_preflight_gse217518_corrected_a1_successor_candidate.py"
+          ],
+          "blob_sha256_by_path": {
+            "configs/route_a_v3_gse217518_corrected_a1_successor_candidate_v1.json": "3355ba986f60268d3dd7b985ed31fe9df4aa2acbe9fd03c984956a1270279ff9",
+            "scripts/route_a_v3/preflight_gse217518_corrected_a1_successor_candidate.py": "9fa4464e1cc42baacdf39b4bae2427e1895269b8d6f4e1a05e1e944b0434f3fa",
+            "tests/route_a_v3/test_preflight_gse217518_corrected_a1_successor_candidate.py": "bba0ee97e9ed2500f0155c8d1a776d185661b00d8c7fd48c3c0d718d53ccd097"
+          }
+        },
+        {
+          "step": "B3",
+          "commit": "0a46400efee4ead95b1283df73d263f6f8033036",
+          "expected_parent": "36b535f77b3f27bb872b182dcaf6c646d9781991",
+          "exact_changed_paths": [
+            "configs/route_a_v3_gse217518_corrected_a1_successor_candidate_v1.json"
+          ],
+          "blob_sha256_by_path": {
+            "configs/route_a_v3_gse217518_corrected_a1_successor_candidate_v1.json": "c5acc8548ab8542ac029a420f21f1d8524bb0f255c6dd53c2d896c2838ce391f",
+            "scripts/route_a_v3/preflight_gse217518_corrected_a1_successor_candidate.py": "9fa4464e1cc42baacdf39b4bae2427e1895269b8d6f4e1a05e1e944b0434f3fa",
+            "tests/route_a_v3/test_preflight_gse217518_corrected_a1_successor_candidate.py": "bba0ee97e9ed2500f0155c8d1a776d185661b00d8c7fd48c3c0d718d53ccd097"
+          }
+        }
+      ],
+      "terminal_binding_commit": "0a46400efee4ead95b1283df73d263f6f8033036"
+    },
+    "encsr854ruf_predecessor": {
+      "status": "BOUND",
+      "append_only_history": [
+        {
+          "step": "I1",
+          "commit": "c6132d8928df0a64be106b11ee62d225d77249ba",
+          "expected_parent": "0a46400efee4ead95b1283df73d263f6f8033036",
+          "exact_changed_paths": [
+            "configs/route_a_v3_encsr854ruf_dec027_dataset_specific_a1_preflight_v1.json",
+            "scripts/route_a_v3/preflight_encsr854ruf_dec027_dataset_specific_a1.py",
+            "tests/route_a_v3/test_preflight_encsr854ruf_dec027_dataset_specific_a1.py"
+          ],
+          "blob_sha256_by_path": {
+            "configs/route_a_v3_encsr854ruf_dec027_dataset_specific_a1_preflight_v1.json": "e1d3747876818f5b0d2b47f4a185cc5fb0f1c6b141b25a1e635768cdde588e2c",
+            "scripts/route_a_v3/preflight_encsr854ruf_dec027_dataset_specific_a1.py": "d8f6517f935624204cfa8669c8322909734417b212287e867ea38d8e031881ec",
+            "tests/route_a_v3/test_preflight_encsr854ruf_dec027_dataset_specific_a1.py": "b59e94373fb02cb2a0e65b67183af9b2f3ddcab24bc8f72d4a636f9a781f4714"
+          }
+        },
+        {
+          "step": "I2",
+          "commit": "5531907c9ede1a4323ffe884c47a410d9bcb946d",
+          "expected_parent": "c6132d8928df0a64be106b11ee62d225d77249ba",
+          "exact_changed_paths": [
+            "configs/route_a_v3_encsr854ruf_dec027_dataset_specific_a1_preflight_v1.json",
+            "scripts/route_a_v3/preflight_encsr854ruf_dec027_dataset_specific_a1.py",
+            "tests/route_a_v3/test_preflight_encsr854ruf_dec027_dataset_specific_a1.py"
+          ],
+          "blob_sha256_by_path": {
+            "configs/route_a_v3_encsr854ruf_dec027_dataset_specific_a1_preflight_v1.json": "e7f4adf157b638c10161c922d848c494aa6b3b50f8aed9c05c7111907bb691c8",
+            "scripts/route_a_v3/preflight_encsr854ruf_dec027_dataset_specific_a1.py": "4a5910cad545d4b699b2daf20933afe3e6512aff11b015cb6adb983f4911c247",
+            "tests/route_a_v3/test_preflight_encsr854ruf_dec027_dataset_specific_a1.py": "364b908433353451501b0419587d20d6702451ae87726231e3ac1800313e60b7"
+          }
+        },
+        {
+          "step": "B2",
+          "commit": "e52a8d8614724574e3647c6cf0f84041221b76a0",
+          "expected_parent": "5531907c9ede1a4323ffe884c47a410d9bcb946d",
+          "exact_changed_paths": [
+            "configs/route_a_v3_encsr854ruf_dec027_dataset_specific_a1_preflight_v1.json"
+          ],
+          "blob_sha256_by_path": {
+            "configs/route_a_v3_encsr854ruf_dec027_dataset_specific_a1_preflight_v1.json": "2f3d688f463f5ee359ae76aa9111af2d9ee091f77a1c8037d2337feb49583045",
+            "scripts/route_a_v3/preflight_encsr854ruf_dec027_dataset_specific_a1.py": "4a5910cad545d4b699b2daf20933afe3e6512aff11b015cb6adb983f4911c247",
+            "tests/route_a_v3/test_preflight_encsr854ruf_dec027_dataset_specific_a1.py": "364b908433353451501b0419587d20d6702451ae87726231e3ac1800313e60b7"
+          }
+        },
+        {
+          "step": "I3",
+          "commit": "c0f65f181ea797978d660ef3c918ee7318a51292",
+          "expected_parent": "e52a8d8614724574e3647c6cf0f84041221b76a0",
+          "exact_changed_paths": [
+            "configs/route_a_v3_encsr854ruf_dec027_dataset_specific_a1_preflight_v1.json",
+            "scripts/route_a_v3/preflight_encsr854ruf_dec027_dataset_specific_a1.py",
+            "tests/route_a_v3/test_preflight_encsr854ruf_dec027_dataset_specific_a1.py"
+          ],
+          "blob_sha256_by_path": {
+            "configs/route_a_v3_encsr854ruf_dec027_dataset_specific_a1_preflight_v1.json": "fe22477d631cc1ce08e9eed6cd0ca48b4723bf9757a16dd37c4a391cc3318263",
+            "scripts/route_a_v3/preflight_encsr854ruf_dec027_dataset_specific_a1.py": "6235c78ea8bcb008fb33b9d3356461bfb0446a516111d941c640e7a9933d6bac",
+            "tests/route_a_v3/test_preflight_encsr854ruf_dec027_dataset_specific_a1.py": "a7303cca44bbb0340251fb00640456fdea592bd461f49852510eb719a1c401c5"
+          }
+        },
+        {
+          "step": "B3",
+          "commit": "d38f4b31cd5add04bbd7f3b839ff60590fa5fad2",
+          "expected_parent": "c0f65f181ea797978d660ef3c918ee7318a51292",
+          "exact_changed_paths": [
+            "configs/route_a_v3_encsr854ruf_dec027_dataset_specific_a1_preflight_v1.json"
+          ],
+          "blob_sha256_by_path": {
+            "configs/route_a_v3_encsr854ruf_dec027_dataset_specific_a1_preflight_v1.json": "f801ac603ccd8903921e2e513f5b363ce5112ed6b220e93ab6ddf896dcde3ceb",
+            "scripts/route_a_v3/preflight_encsr854ruf_dec027_dataset_specific_a1.py": "6235c78ea8bcb008fb33b9d3356461bfb0446a516111d941c640e7a9933d6bac",
+            "tests/route_a_v3/test_preflight_encsr854ruf_dec027_dataset_specific_a1.py": "a7303cca44bbb0340251fb00640456fdea592bd461f49852510eb719a1c401c5"
+          }
+        },
+        {
+          "step": "I4",
+          "commit": "53f426aef8b12e8dcbfaaf978fcfa7d1c7a911d2",
+          "expected_parent": "d38f4b31cd5add04bbd7f3b839ff60590fa5fad2",
+          "exact_changed_paths": [
+            "configs/route_a_v3_encsr854ruf_dec027_dataset_specific_a1_preflight_v1.json",
+            "scripts/route_a_v3/preflight_encsr854ruf_dec027_dataset_specific_a1.py",
+            "tests/route_a_v3/test_preflight_encsr854ruf_dec027_dataset_specific_a1.py"
+          ],
+          "blob_sha256_by_path": {
+            "configs/route_a_v3_encsr854ruf_dec027_dataset_specific_a1_preflight_v1.json": "1ebbbe07339ccf8b6bf88d1e8fb946976d2065073c479affe8811af3cc1bd088",
+            "scripts/route_a_v3/preflight_encsr854ruf_dec027_dataset_specific_a1.py": "d5a1ef3e174f479404c3ca1b2dcac9b81c3848b2a7008c9333ca5f339f2d15c9",
+            "tests/route_a_v3/test_preflight_encsr854ruf_dec027_dataset_specific_a1.py": "1e31a4dd3643f1c8a3b56e3e6bd0f99b1f01cac65b4c6c3b7113aad5c26ee5b2"
+          }
+        },
+        {
+          "step": "B4",
+          "commit": "56b39f966a272d8ea8022048855d2fcca0ee155a",
+          "expected_parent": "53f426aef8b12e8dcbfaaf978fcfa7d1c7a911d2",
+          "exact_changed_paths": [
+            "configs/route_a_v3_encsr854ruf_dec027_dataset_specific_a1_preflight_v1.json"
+          ],
+          "blob_sha256_by_path": {
+            "configs/route_a_v3_encsr854ruf_dec027_dataset_specific_a1_preflight_v1.json": "de9df6055a83f29351c4eba2dd895708de4890181e639e26f2228105f6c2cc07",
+            "scripts/route_a_v3/preflight_encsr854ruf_dec027_dataset_specific_a1.py": "d5a1ef3e174f479404c3ca1b2dcac9b81c3848b2a7008c9333ca5f339f2d15c9",
+            "tests/route_a_v3/test_preflight_encsr854ruf_dec027_dataset_specific_a1.py": "1e31a4dd3643f1c8a3b56e3e6bd0f99b1f01cac65b4c6c3b7113aad5c26ee5b2"
+          }
+        }
+      ],
+      "terminal_binding_commit": "56b39f966a272d8ea8022048855d2fcca0ee155a"
+    },
+    "gse232572_predecessor": {
+      "status": "BOUND",
+      "implementation_exact_changed_paths": [
+        "configs/route_a_v3_gse232572_corrected_a1_replay_v1.json",
+        "scripts/route_a_v3/replay_gse232572_corrected_a1.py",
+        "tests/route_a_v3/test_replay_gse232572_corrected_a1.py"
+      ],
+      "binding_exact_changed_paths": [
+        "configs/route_a_v3_gse232572_corrected_a1_replay_v1.json"
+      ],
+      "append_only_history": [
+        {
+          "step": "I1",
+          "commit": "d3dcae4c6ef53c52e942bb511946b52b952d3c7f",
+          "expected_parent": "56b39f966a272d8ea8022048855d2fcca0ee155a",
+          "exact_changed_paths": [
+            "configs/route_a_v3_gse232572_corrected_a1_replay_v1.json",
+            "scripts/route_a_v3/replay_gse232572_corrected_a1.py",
+            "tests/route_a_v3/test_replay_gse232572_corrected_a1.py"
+          ],
+          "blob_sha256_by_path": {
+            "configs/route_a_v3_gse232572_corrected_a1_replay_v1.json": "98f1e888e7466230767fb020ba48745f82faf4f2a3cb5e5c3e343d13fcb9a118",
+            "scripts/route_a_v3/replay_gse232572_corrected_a1.py": "132a7cf7ea9008f87e2d77a4ba51b2e0701f6ccec2b6e8782a6f645c26cdb466",
+            "tests/route_a_v3/test_replay_gse232572_corrected_a1.py": "ea46cfbbdc3f8f0fd74149b862deabe3ce2c551c94f3a46edf891c1917dfca66"
+          }
+        },
+        {
+          "step": "B1",
+          "commit": "0f2c00868b6581edd9a429c7a8a67bb43f6b7776",
+          "expected_parent": "d3dcae4c6ef53c52e942bb511946b52b952d3c7f",
+          "exact_changed_paths": [
+            "configs/route_a_v3_gse232572_corrected_a1_replay_v1.json"
+          ],
+          "blob_sha256_by_path": {
+            "configs/route_a_v3_gse232572_corrected_a1_replay_v1.json": "c21821027d8a6806ee98d07177aacf5b7de3b007f15bd3d27bc6a6410bac3aab",
+            "scripts/route_a_v3/replay_gse232572_corrected_a1.py": "132a7cf7ea9008f87e2d77a4ba51b2e0701f6ccec2b6e8782a6f645c26cdb466",
+            "tests/route_a_v3/test_replay_gse232572_corrected_a1.py": "ea46cfbbdc3f8f0fd74149b862deabe3ce2c551c94f3a46edf891c1917dfca66"
+          }
+        }
+      ],
+      "terminal_binding_commit": "0f2c00868b6581edd9a429c7a8a67bb43f6b7776",
+      "unknown_to_bound_fields": [
+        "status",
+        "append_only_history",
+        "terminal_binding_commit"
+      ]
+    },
+    "gse113849_predecessor": {
+      "status": "BOUND",
+      "implementation_exact_changed_paths": [
+        "configs/route_a_v3_gse113849_designed_snv_true_a2_preflight_v1.json",
+        "scripts/route_a_v3/preflight_gse113849_designed_snv_true_a2.py",
+        "tests/route_a_v3/test_preflight_gse113849_designed_snv_true_a2.py"
+      ],
+      "binding_exact_changed_paths": [
+        "configs/route_a_v3_gse113849_designed_snv_true_a2_preflight_v1.json"
+      ],
+      "append_only_history": [
+        {
+          "step": "I1",
+          "commit": "8dfca85f3311ede01f594662d13b126bc8e2fef2",
+          "expected_parent": "0f2c00868b6581edd9a429c7a8a67bb43f6b7776",
+          "exact_changed_paths": [
+            "configs/route_a_v3_gse113849_designed_snv_true_a2_preflight_v1.json",
+            "scripts/route_a_v3/preflight_gse113849_designed_snv_true_a2.py",
+            "tests/route_a_v3/test_preflight_gse113849_designed_snv_true_a2.py"
+          ],
+          "blob_sha256_by_path": {
+            "configs/route_a_v3_gse113849_designed_snv_true_a2_preflight_v1.json": "ce591264d42dfe67a92da0d9f2e548eeaff1e037140bcdcfbee05ba3111fa986",
+            "scripts/route_a_v3/preflight_gse113849_designed_snv_true_a2.py": "44b934b828c8fa78aa37588006e7205d0f6277e463ebfe3b3834bbdfd022e23c",
+            "tests/route_a_v3/test_preflight_gse113849_designed_snv_true_a2.py": "98630bc8e48c5a07e5f17cf60addbf4382b7e7c49f66ff81245e76062e8d0001"
+          }
+        },
+        {
+          "step": "B1",
+          "commit": "6372ddcb4b006d587a40ce628f9e193324c28b17",
+          "expected_parent": "8dfca85f3311ede01f594662d13b126bc8e2fef2",
+          "exact_changed_paths": [
+            "configs/route_a_v3_gse113849_designed_snv_true_a2_preflight_v1.json"
+          ],
+          "blob_sha256_by_path": {
+            "configs/route_a_v3_gse113849_designed_snv_true_a2_preflight_v1.json": "464bf2da3988d3bce0a9edf978ac8fd2d88f07598e17d11cae7898ca3645758d",
+            "scripts/route_a_v3/preflight_gse113849_designed_snv_true_a2.py": "44b934b828c8fa78aa37588006e7205d0f6277e463ebfe3b3834bbdfd022e23c",
+            "tests/route_a_v3/test_preflight_gse113849_designed_snv_true_a2.py": "98630bc8e48c5a07e5f17cf60addbf4382b7e7c49f66ff81245e76062e8d0001"
+          }
+        }
+      ],
+      "terminal_binding_commit": "6372ddcb4b006d587a40ce628f9e193324c28b17",
+      "unknown_to_bound_fields": [
+        "status",
+        "append_only_history",
+        "terminal_binding_commit"
+      ]
+    },
+    "implementation": {
+      "status": "UNKNOWN_NOT_ASSERTED",
+      "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+      "implementation_script_path": "scripts/route_a_v3/preflight_gse269595_corrected_role_adjudication_successor_candidate.py",
+      "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
+      "implementation_test_path": "tests/route_a_v3/test_preflight_gse269595_corrected_role_adjudication_successor_candidate.py",
+      "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
+      "implementation_exact_changed_paths": [
+        "configs/route_a_v3_gse269595_corrected_role_adjudication_successor_candidate_v1.json",
+        "scripts/route_a_v3/preflight_gse269595_corrected_role_adjudication_successor_candidate.py",
+        "tests/route_a_v3/test_preflight_gse269595_corrected_role_adjudication_successor_candidate.py"
+      ],
+      "binding_exact_changed_paths": [
+        "configs/route_a_v3_gse269595_corrected_role_adjudication_successor_candidate_v1.json"
+      ],
+      "unknown_to_bound_fields": [
+        "status",
+        "implementation_commit",
+        "implementation_script_sha256",
+        "implementation_test_sha256"
+      ]
+    }
+  },
+  "production_activation_rule": {
+    "required_commit_chain": "DEC027_A_TO_RUNTIME_I1_TO_RUNTIME_I2_TO_RUNTIME_B2_TO_GSE217518_I1_I2_B2_I3_B3_TO_ENCSR854RUF_I1_I2_B2_I3_B3_I4_B4_TO_GSE232572_APPEND_ONLY_HISTORY_TO_GSE113849_APPEND_ONLY_HISTORY_TO_GSE269595_I_TO_GSE269595_B",
+    "predecessor_order": [
+      "gse217518_predecessor",
+      "encsr854ruf_predecessor",
+      "gse232572_predecessor",
+      "gse113849_predecessor"
+    ],
+    "all_binding_groups_must_be_bound": true,
+    "gse269595_implementation_i_must_be_direct_child_of_gse113849_b": true,
+    "clean_head_equals_upstream_equals_live_origin_required": true,
+    "direct_parent_changed_path_and_blob_audit_required": true,
+    "executing_script_and_focused_test_must_match_implementation_i": true,
+    "binding_commit_may_change_only_the_four_own_binding_scalars": true,
+    "fail_before_git_asset_or_output_while_any_predecessor_or_own_group_is_unknown": true
+  },
+  "execution_boundary": {
+    "production_mode": "SINGLE_BOUND_PRODUCTION_ENTRY_FIXED_BUILT_IN_PUBLIC_READER_ONLY",
+    "ordinary_public_analysis_mode": "NO_SEPARATE_PUBLIC_ANALYSIS_BYPASS",
+    "asset_argument_mode": "SINGLE_DIRECTORY_WITH_EXACT_TWO_FROZEN_BASENAMES",
+    "identity_and_context_validation_before_parse": true,
+    "ordinary_public_inputs_only": true,
+    "private_or_sealed_access_allowed": false,
+    "persistent_member_level_intermediate_allowed": false,
+    "member_or_row_payload_output_allowed": false,
+    "canonical_materialization_allowed": false,
+    "training_allowed": false,
+    "gpu_work_allowed": false,
+    "model_selection_allowed": false,
+    "a7_allowed": false,
+    "next_phase_allowed": false
+  },
+  "scope": {
+    "ordinary_public_only": true,
+    "aggregate_output_only": true,
+    "allowed_internal_field_classes": [
+      "ORDINARY_PUBLIC_ASSET_IDENTITY_AND_PROVENANCE",
+      "SOURCE_FAMILY_AND_SOURCE_CANDIDATE_SEQUENCE",
+      "APA_LOCATION_AND_INTRONIC_CONTEXT",
+      "LEGAL_SUBSTITUTION_ANNOTATION",
+      "ASSET_SAMPLE_RUN_ROLE_SCHEMA_AND_DIMENSION",
+      "ASSAY_GUIDE_REPORTER_ENDPOINT_REPLICATE_AND_STANDARD_ERROR",
+      "MISSINGNESS_CENSORING_QC_RIGHTS_AND_EXPOSURE_CONTEXT",
+      "NECESSARY_SOURCE_GROUP_AND_NEAR_DUPLICATE_CONTEXT"
+    ],
+    "member_identifier_output_allowed": false,
+    "sequence_output_allowed": false,
+    "row_endpoint_output_allowed": false,
+    "row_effect_output_allowed": false,
+    "row_standard_error_output_allowed": false,
+    "replicate_identifier_output_allowed": false,
+    "split_assignment_output_allowed": false,
+    "persistent_member_level_intermediate_allowed": false,
+    "private_or_sealed_access_allowed": false,
+    "qualification_allowed": false,
+    "credit_change_allowed": false,
+    "canonical_materialization_allowed": false,
+    "training_allowed": false,
+    "gpu_work_allowed": false,
+    "model_selection_allowed": false,
+    "a7_allowed": false
+  },
+  "official_public_sources": [
+    {
+      "authority_id": "NCBI_GEO_GSE269595",
+      "role": "PRIMARY_PUBLIC_SERIES_SAMPLE_AND_PROCESSED_ASSET_ROUTE",
+      "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE269595"
+    },
+    {
+      "authority_id": "CELL_2024_06_005_VERSION_OF_RECORD",
+      "role": "PRIMARY_PUBLISHER_METHOD_ROLE_ENDPOINT_REPLICATE_QC_AND_SELECTION_AUTHORITY",
+      "url": "https://doi.org/10.1016/j.cell.2024.06.005",
+      "pmcid": "PMC12052259"
+    },
+    {
+      "authority_id": "CELL_TABLE_S5",
+      "role": "PRIMARY_PUBLISHER_MPRA_OLIGO_LIBRARY_MAPPING",
+      "url": "https://ars.els-cdn.com/content/image/1-s2.0-S0092867424006457-mmc5.xlsx"
+    },
+    {
+      "authority_id": "AUTHOR_APARENT_PERTURB_REPOSITORY",
+      "role": "AUTHOR_MODEL_AND_EXPOSURE_CONTEXT",
+      "url": "https://github.com/johli/aparent-perturb"
+    }
+  ],
+  "official_asset_contract": {
+    "processed_mpra": {
+      "filename": "GSE269595_mpra_constructs_all_samples_proximal_site_usage.txt.gz",
+      "canonical_url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE269nnn/GSE269595/suppl/GSE269595_mpra_constructs_all_samples_proximal_site_usage.txt.gz",
+      "byte_count": 5910248,
+      "sha256": "6527ea54257b3f17ddb9df5977637e41e2ef16d926a27be4e29f56165acaa1de",
+      "exact_data_row_count": 366780,
+      "exact_sample_count": 12,
+      "exact_distal_context_count": 5
+    },
+    "publisher_table_s5": {
+      "filename": "1-s2.0-S0092867424006457-mmc5.xlsx",
+      "canonical_url": "https://ars.els-cdn.com/content/image/1-s2.0-S0092867424006457-mmc5.xlsx",
+      "byte_count": 353937,
+      "sha256": "d350be818d87120216052645a5ffa97afeee898d32a877c74033dba0d0fa151a",
+      "required_sheet": "MPRA oligo library",
+      "required_sheet_dimension": "A1:G6114",
+      "exact_data_row_count": 6113
+    }
+  },
+  "required_gate_ids_exactly": [
+    "A1_VERSUS_TRUE_A2_ROLE_ELIGIBILITY_AND_MUTUAL_EXCLUSIVITY_CLOSED",
+    "ORDINARY_PUBLIC_ASSET_IDENTITY_ROLE_AND_PROVENANCE_CLOSED",
+    "ELIGIBLE_DENSE_SOURCE_FAMILY_DISTRIBUTION_AND_UNIQUE_SOURCE_ANCHOR_CLOSED",
+    "INTRONIC_APA_EXCLUSION_CLOSED",
+    "SOURCE_TO_CANDIDATE_LEGAL_SUBSTITUTION_REPLAY_CLOSED",
+    "ASSAY_CONTEXT_GUIDE_ENDPOINT_DIRECTION_SCALE_AND_SEMANTICS_CLOSED",
+    "INDEPENDENT_BIOLOGICAL_REPLICATE_AND_VALID_STANDARD_ERROR_CLOSED",
+    "ASSET_SCHEMA_DIMENSION_AND_COVERAGE_CLOSED",
+    "MISSING_CENSORING_AND_SELECTION_CLOSED",
+    "APARENT_PRIOR_EXPOSURE_AND_MODEL_INPUT_ROUTE_CLOSED",
+    "LICENSE_AND_REUSE_RIGHTS_CLOSED",
+    "OUTCOME_BLIND_SOURCE_GROUP_NEAR_DUPLICATE_SPLIT_AND_ZERO_LEAKAGE_READINESS_CLOSED",
+    "POST_DEDUP_SOURCE_GROUP_EFFECTIVE_N_AND_PREFROZEN_POWER_FULL_CI_WIDTH_CLOSED"
+  ],
+  "corrected_successor_rules": {
+    "maximum_roles_if_later_qualified": 1,
+    "a1_and_true_a2_double_credit_allowed": false,
+    "minimum_distinct_candidates_per_dense_source": 3,
+    "two_candidate_families_are_pairwise_only_and_excluded_from_dense_universe": true,
+    "one_two_candidate_family_may_fail_all_other_dense_families": false,
+    "finite_endpoint_required": true,
+    "nonfinite_or_undefined_endpoint_requires_prefrozen_censoring_policy": true,
+    "published_biological_replicate_count_reference_only": 2,
+    "published_replicate_fact_may_be_hardcoded_false": false,
+    "valid_standard_error_requires_independent_audit": true,
+    "five_declared_multiplicity_discrepancies_are_schema_coverage_failure": false,
+    "legal_sequence_diff_replay_may_be_failed_only_because_separate_annotation_column_is_absent": false
+  },
+  "publisher_facts": {
+    "primary_role_evidence": "TRUE_A2_DENSE_MEASURED_NEIGHBORHOOD_GEOMETRY_ONLY_NOT_ROLE_ASSIGNMENT",
+    "a1_primary_role_evidence": false,
+    "true_a2_primary_role_evidence": true,
+    "model_scope": "TANDEM_POLYA_SITE_USAGE",
+    "mpra_locus_count": 373,
+    "mpra_test_sequence_count": 3802,
+    "reporter_distal_context_count": 5,
+    "biological_replicate_count_per_genetic_condition": 2,
+    "biological_replicate_reproducibility_range": [
+      0.96,
+      0.98
+    ],
+    "endpoint_identity": "PROXIMAL_POLYA_SITE_USAGE",
+    "endpoint_scale": "LOG2_PROXIMAL_READS_DIVIDED_BY_DISTAL_READS",
+    "endpoint_direction": "HIGHER_IS_MORE_PROXIMAL_SITE_USAGE",
+    "publisher_qc_minimum_total_umi": 100,
+    "publisher_qc_excludes_exclusively_proximal_or_distal": true,
+    "publisher_reports_average_across_two_biological_replicates": true,
+    "publisher_reports_row_standard_error": false,
+    "exact_publisher_pooling_and_censor_replay_closed": false,
+    "source_locus_selection_uses_model_prediction_and_measured_perturbation_response": true,
+    "candidate_design_uses_aparent_prediction_or_interpretation": true,
+    "article_copyright_notice": "COPYRIGHT_2024_ELSEVIER_ALL_RIGHTS_RESERVED",
+    "dataset_specific_reuse_license_notice_present": false,
+    "geo_public_download_is_dataset_specific_reuse_license": false
+  },
+  "split_and_power_policy": {
+    "analysis_unit": "POST_DEDUP_INDEPENDENT_SOURCE_GROUP",
+    "outcome_blind_primary_group_key": "GENE_ID_WITH_SOURCE_FAMILY",
+    "near_duplicate_rule": "EQUAL_LENGTH_SOURCE_CONSTRUCT_IDENTITY_AT_LEAST_0_80",
+    "near_duplicate_identity_threshold": 0.8,
+    "near_duplicate_coverage_threshold": 0.8,
+    "source_construct_length": 164,
+    "minimum_components_for_three_way_split_readiness": 3,
+    "alternative_spearman_rho": 0.25,
+    "alpha_two_sided": 0.05,
+    "target_power_minimum": 0.8,
+    "confidence_level": 0.95,
+    "maximum_full_ci_width": 0.3,
+    "required_effective_n_reference": 156,
+    "formal_qualification_power_execution_allowed": false,
+    "split_assignment_execution_allowed": false
+  },
+  "expected_public_geometry": {
+    "verified_asset_identity_count": 2,
+    "publisher_library_member_count": 6113,
+    "publisher_design_count": 3802,
+    "processed_measurement_row_count": 366780,
+    "processed_distinct_joined_member_count": 6113,
+    "processed_unmatched_row_count": 0,
+    "publisher_unseen_member_count": 0,
+    "join_crosscheck_mismatch_row_count": 0,
+    "complete_context_member_count": 6113,
+    "candidate_source_family_count": 373,
+    "eligible_dense_source_family_count": 372,
+    "pairwise_only_excluded_family_count": 1,
+    "candidate_design_count": 3429,
+    "sequence_diff_replayable_candidate_count": 3429,
+    "minimum_pairwise_source_hamming_distance": 86,
+    "near_duplicate_component_count": 372,
+    "post_gene_group_effective_source_count": 363,
+    "nonfinite_or_undefined_endpoint_row_count": 82908,
+    "declared_multiplicity_mismatch_design_count": 5
+  },
+  "output_contract": {
+    "report_filename": "GSE269595_CORRECTED_ROLE_ADJUDICATION_SUCCESSOR_AGGREGATE_RECOMPUTE_V1.json",
+    "aggregate_only": true,
+    "atomic_no_replace_publication": true,
+    "identical_existing_report_is_idempotent_success": true,
+    "member_identifier_output_allowed": false,
+    "sequence_output_allowed": false,
+    "row_endpoint_or_effect_output_allowed": false,
+    "row_standard_error_output_allowed": false,
+    "replicate_identifier_output_allowed": false,
+    "split_assignment_output_allowed": false
+  },
+  "terminal_state": {
+    "qualified": false,
+    "role_assigned": false,
+    "contribution": {
+      "ordinary": 0,
+      "a1": 0,
+      "true_a2": 0,
+      "canonical_records": 0
+    },
+    "current_qualified_counts": {
+      "ordinary": 1,
+      "a1": 1,
+      "true_a2": 0,
+      "canonical_records": 6547
+    },
+    "training_allowed": false,
+    "gpu_work_allowed": false,
+    "model_selection_allowed": false,
+    "a7_allowed": false,
+    "next_phase_authorized": false,
+    "scientific_claim_status": "NOT_ESTABLISHED"
+  }
+}
