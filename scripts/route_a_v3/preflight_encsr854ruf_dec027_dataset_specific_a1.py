@@ -3,10 +3,10 @@
 
 The implementation candidate is deliberately inactive.  DEC027 authority, the
 settled A1-EVT-059 runtime I1/I2/B2 history, the GSE217518
-I1/I2/B2/I3/B3 predecessor history, and ENCSR854RUF I1/I2/B2 are byte-bound.
-This producer is the append-only I3 candidate; its own four-scalar binding remains
+I1/I2/B2/I3/B3 predecessor history, and ENCSR854RUF I1/I2/B2/I3/B3 are byte-bound.
+This producer is the append-only I4 candidate; its own four-scalar binding remains
 grouped UNKNOWN, so the production path stops before Git, publisher-workbook,
-author-repository, or output-path I/O.  A future B3 verifies the complete commit
+author-repository, or output-path I/O.  A future B4 verifies the complete commit
 chain and computes only aggregate geometry; identifiers, sequences, row values,
 standard errors, and split assignments are never serialized.
 """
@@ -125,6 +125,18 @@ ENCSR_B2_BLOBS = {
     CONFIG_REPO_PATH: "2f3d688f463f5ee359ae76aa9111af2d9ee091f77a1c8037d2337feb49583045",
     SCRIPT_REPO_PATH: ENCSR_I2_BLOBS[SCRIPT_REPO_PATH],
     TEST_REPO_PATH: ENCSR_I2_BLOBS[TEST_REPO_PATH],
+}
+ENCSR_I3_COMMIT = "c0f65f181ea797978d660ef3c918ee7318a51292"
+ENCSR_B3_COMMIT = "d38f4b31cd5add04bbd7f3b839ff60590fa5fad2"
+ENCSR_I3_BLOBS = {
+    CONFIG_REPO_PATH: "fe22477d631cc1ce08e9eed6cd0ca48b4723bf9757a16dd37c4a391cc3318263",
+    SCRIPT_REPO_PATH: "6235c78ea8bcb008fb33b9d3356461bfb0446a516111d941c640e7a9933d6bac",
+    TEST_REPO_PATH: "a7303cca44bbb0340251fb00640456fdea592bd461f49852510eb719a1c401c5",
+}
+ENCSR_B3_BLOBS = {
+    CONFIG_REPO_PATH: "f801ac603ccd8903921e2e513f5b363ce5112ed6b220e93ab6ddf896dcde3ceb",
+    SCRIPT_REPO_PATH: ENCSR_I3_BLOBS[SCRIPT_REPO_PATH],
+    TEST_REPO_PATH: ENCSR_I3_BLOBS[TEST_REPO_PATH],
 }
 GSE217_OWN_BINDING_FIELDS = (
     "status",
@@ -433,6 +445,37 @@ def _validate_encsr_i2_b2_group(group: Mapping[str, Any]) -> None:
         raise ProtocolError("ENCSR854RUF I2/B2 binding differs")
 
 
+def _validate_encsr_i3_b3_group(group: Mapping[str, Any]) -> None:
+    _exact_keys(
+        group,
+        (
+            "status",
+            "i3_expected_parent",
+            "i3_commit",
+            "i3_exact_changed_paths",
+            "i3_blob_sha256_by_path",
+            "b3_expected_parent",
+            "b3_commit",
+            "b3_exact_changed_paths",
+            "b3_blob_sha256_by_path",
+        ),
+        label="encsr854ruf_i3_b3_group",
+    )
+    expected = {
+        "status": BOUND,
+        "i3_expected_parent": ENCSR_B2_COMMIT,
+        "i3_commit": ENCSR_I3_COMMIT,
+        "i3_exact_changed_paths": list(EXACT3),
+        "i3_blob_sha256_by_path": ENCSR_I3_BLOBS,
+        "b3_expected_parent": ENCSR_I3_COMMIT,
+        "b3_commit": ENCSR_B3_COMMIT,
+        "b3_exact_changed_paths": [CONFIG_REPO_PATH],
+        "b3_blob_sha256_by_path": ENCSR_B3_BLOBS,
+    }
+    if group != expected:
+        raise ProtocolError("ENCSR854RUF I3/B3 binding differs")
+
+
 def _own_mode(group: Mapping[str, Any]) -> str:
     _exact_keys(
         group,
@@ -491,6 +534,7 @@ def _validate_binding(protocol: Mapping[str, Any]) -> tuple[str, str]:
             "gse217518_predecessor_group",
             "encsr854ruf_i1_group",
             "encsr854ruf_i2_b2_group",
+            "encsr854ruf_i3_b3_group",
             "own_preflight_group",
             "activation_rule",
         ),
@@ -498,17 +542,18 @@ def _validate_binding(protocol: Mapping[str, Any]) -> tuple[str, str]:
     )
     if binding.get("binding_scheme") != (
         "DEC027_A_TO_RUNTIME_I1_I2_B2_EVT059_TO_GSE217518_"
-        "I1_I2_B2_I3_B3_TO_ENCSR854RUF_I1_I2_B2_I3_B3"
+        "I1_I2_B2_I3_B3_TO_ENCSR854RUF_I1_I2_B2_I3_B3_I4_B4"
     ):
         raise ProtocolError("append-only binding scheme differs")
     expected_activation = (
         "Authority, the complete A1-EVT-059 runtime A-to-I1-to-I2-to-B2 "
         "history, the complete GSE217518 I1-to-I2-to-B2-to-I3-to-B3 "
-        "history, and ENCSR854RUF I1-to-I2-to-B2 are frozen. ENCSR854RUF I3 "
-        "must be the direct child of ENCSR854RUF B2. This exact3 I3 own "
-        "four-scalar group remains grouped UNKNOWN_NOT_ASSERTED in I3, so production must stop "
+        "history, and ENCSR854RUF I1-to-I2-to-B2-to-I3-to-B3 are frozen. "
+        "ENCSR854RUF I4 must be the direct child of ENCSR854RUF B3. This "
+        "exact3 I4 own four-scalar group remains grouped UNKNOWN_NOT_ASSERTED "
+        "in I4, so production must stop "
         "before Git, publisher workbook, author-repository asset, prepared-data "
-        "path, or output-path inspection until a config-only ENCSR854RUF B3 "
+        "path, or output-path inspection until a config-only ENCSR854RUF B4 "
         "changes only those four scalars. Generic registry requirements are "
         "never dataset-specific gate facts."
     )
@@ -526,6 +571,9 @@ def _validate_binding(protocol: Mapping[str, Any]) -> tuple[str, str]:
     )
     _validate_encsr_i2_b2_group(
         _mapping(binding["encsr854ruf_i2_b2_group"], label="encsr854ruf_i2_b2_group")
+    )
+    _validate_encsr_i3_b3_group(
+        _mapping(binding["encsr854ruf_i3_b3_group"], label="encsr854ruf_i3_b3_group")
     )
     own_mode = _own_mode(
         _mapping(binding["own_preflight_group"], label="own_preflight_group")
@@ -579,7 +627,7 @@ def validate_protocol(protocol: Mapping[str, Any]) -> None:
         if protocol.get(field) != value:
             raise ProtocolError(f"{field} differs from the frozen value")
     if protocol.get("protocol_status") != (
-        "LOCAL_EXACT3_I3_CANDIDATE_FULL_PREDECESSOR_AND_ENCSR_I1_I2_B2_BOUND_"
+        "LOCAL_EXACT3_I4_CANDIDATE_FULL_PREDECESSOR_AND_ENCSR_I1_I2_B2_I3_B3_BOUND_"
         "OWN_BINDING_UNKNOWN_NOT_ACTIVE"
     ):
         raise ProtocolError("protocol status differs")
@@ -607,8 +655,12 @@ def validate_protocol(protocol: Mapping[str, Any]) -> None:
         raise ProtocolError("fresh ENCSR854RUF I2 differs")
     if baseline.get("encsr854ruf_b2_commit") != ENCSR_B2_COMMIT:
         raise ProtocolError("fresh ENCSR854RUF B2 differs")
+    if baseline.get("encsr854ruf_i3_commit") != ENCSR_I3_COMMIT:
+        raise ProtocolError("fresh ENCSR854RUF I3 differs")
+    if baseline.get("encsr854ruf_b3_commit") != ENCSR_B3_COMMIT:
+        raise ProtocolError("fresh ENCSR854RUF B3 differs")
     for field in ("production_head", "upstream_head", "origin_head"):
-        if baseline.get(field) != ENCSR_B2_COMMIT:
+        if baseline.get(field) != ENCSR_B3_COMMIT:
             raise ProtocolError(f"fresh baseline {field} differs")
     if baseline.get("worktree_clean") is not True:
         raise ProtocolError("fresh baseline worktree must be clean")
@@ -886,7 +938,7 @@ def _read_repository_file(path: Path, *, label: str) -> bytes:
 def _audit_repository(
     protocol: Mapping[str, Any], config_path: Path, repo_root: Path
 ) -> dict[str, Any]:
-    """Audit A -> runtime history -> GSE217518 history -> ENCSR I1/I2/B2/I3/B3."""
+    """Audit A -> runtime/GSE217518 history -> ENCSR I1/I2/B2/I3/B3/I4/B4."""
 
     _require_activation(protocol)
     repository = protocol["repository_authority"]
@@ -913,6 +965,7 @@ def _audit_repository(
     predecessor = binding["gse217518_predecessor_group"]
     encsr_i1 = binding["encsr854ruf_i1_group"]
     encsr_i2_b2 = binding["encsr854ruf_i2_b2_group"]
+    encsr_i3_b3 = binding["encsr854ruf_i3_b3_group"]
     own = binding["own_preflight_group"]
     own_i = own["implementation_commit"]
 
@@ -1015,8 +1068,24 @@ def _audit_repository(
     _verify_commit(
         repo_root,
         label="ENCSR854RUF I3",
-        commit=own_i,
+        commit=ENCSR_I3_COMMIT,
         expected_parent=ENCSR_B2_COMMIT,
+        expected_paths=EXACT3,
+        expected_blobs=encsr_i3_b3["i3_blob_sha256_by_path"],
+    )
+    _verify_commit(
+        repo_root,
+        label="ENCSR854RUF B3",
+        commit=ENCSR_B3_COMMIT,
+        expected_parent=ENCSR_I3_COMMIT,
+        expected_paths=(CONFIG_REPO_PATH,),
+        expected_blobs=encsr_i3_b3["b3_blob_sha256_by_path"],
+    )
+    _verify_commit(
+        repo_root,
+        label="ENCSR854RUF I4",
+        commit=own_i,
+        expected_parent=ENCSR_B3_COMMIT,
         expected_paths=EXACT3,
         expected_blobs={
             SCRIPT_REPO_PATH: own["implementation_script_sha256"],
@@ -1025,7 +1094,7 @@ def _audit_repository(
     )
     _verify_commit(
         repo_root,
-        label="ENCSR854RUF B3",
+        label="ENCSR854RUF B4",
         commit=head,
         expected_parent=own_i,
         expected_paths=(CONFIG_REPO_PATH,),
@@ -1059,28 +1128,39 @@ def _audit_repository(
     if _normalise_own_binding(encsr_b2_protocol) != encsr_i2_protocol:
         raise RepositoryError("ENCSR854RUF B2 changed fields outside I2 own four scalars")
 
-    own_i_protocol = _strict_json_bytes(
-        _git_blob(repo_root, own_i, CONFIG_REPO_PATH),
+    encsr_i3_protocol = _strict_json_bytes(
+        _git_blob(repo_root, ENCSR_I3_COMMIT, CONFIG_REPO_PATH),
         label="ENCSR854RUF I3 protocol",
     )
-    if _normalise_own_binding(protocol) != own_i_protocol:
+    encsr_b3_protocol = _strict_json_bytes(
+        _git_blob(repo_root, ENCSR_B3_COMMIT, CONFIG_REPO_PATH),
+        label="ENCSR854RUF B3 protocol",
+    )
+    if _normalise_own_binding(encsr_b3_protocol) != encsr_i3_protocol:
         raise RepositoryError("ENCSR854RUF B3 changed fields outside I3 own four scalars")
+
+    own_i_protocol = _strict_json_bytes(
+        _git_blob(repo_root, own_i, CONFIG_REPO_PATH),
+        label="ENCSR854RUF I4 protocol",
+    )
+    if _normalise_own_binding(protocol) != own_i_protocol:
+        raise RepositoryError("ENCSR854RUF B4 changed fields outside I4 own four scalars")
     if _read_repository_file(config_path, label="working ENCSR854RUF config") != _git_blob(
         repo_root, head, CONFIG_REPO_PATH
     ):
-        raise RepositoryError("working config differs from ENCSR854RUF B3")
+        raise RepositoryError("working config differs from ENCSR854RUF B4")
     executing_script = Path(__file__).resolve()
     if executing_script != (repo_root / SCRIPT_REPO_PATH).resolve():
         raise RepositoryError("executing producer is a stale or copied script")
     if _read_repository_file(executing_script, label="executing producer") != _git_blob(
         repo_root, own_i, SCRIPT_REPO_PATH
     ):
-        raise RepositoryError("executing producer differs from ENCSR854RUF I3")
+        raise RepositoryError("executing producer differs from ENCSR854RUF I4")
     focused_test = repo_root / TEST_REPO_PATH
     if _read_repository_file(focused_test, label="working focused test") != _git_blob(
         repo_root, own_i, TEST_REPO_PATH
     ):
-        raise RepositoryError("working focused test differs from ENCSR854RUF I3")
+        raise RepositoryError("working focused test differs from ENCSR854RUF I4")
     return {
         "status": "BOUND_REPOSITORY_CHAIN_CLOSED",
         "head": head,
@@ -1095,6 +1175,8 @@ def _audit_repository(
         "encsr854ruf_i1_commit": ENCSR_I1_COMMIT,
         "encsr854ruf_i2_commit": ENCSR_I2_COMMIT,
         "encsr854ruf_b2_commit": ENCSR_B2_COMMIT,
+        "encsr854ruf_i3_commit": ENCSR_I3_COMMIT,
+        "encsr854ruf_b3_commit": ENCSR_B3_COMMIT,
         "implementation_commit": own["implementation_commit"],
         "binding_commit": head,
         "changed_path_counts": {
@@ -1110,6 +1192,8 @@ def _audit_repository(
             "encsr854ruf_i1": 3,
             "encsr854ruf_i2": 3,
             "encsr854ruf_b2": 1,
+            "encsr854ruf_i3": 3,
+            "encsr854ruf_b3": 1,
             "implementation": 3,
             "binding": 1,
         },
@@ -1237,22 +1321,56 @@ def _load_fasta_aliases(
     return aliases, invalid_aliases, stats
 
 
-def _levenshtein(left: str, right: str) -> int:
-    if len(left) < len(right):
-        left, right = right, left
-    previous = list(range(len(right) + 1))
-    for left_index, left_base in enumerate(left, 1):
-        current = [left_index]
-        for right_index, right_base in enumerate(right, 1):
-            current.append(
-                min(
-                    current[-1] + 1,
-                    previous[right_index] + 1,
-                    previous[right_index - 1] + (left_base != right_base),
-                )
-            )
-        previous = current
-    return previous[-1]
+def _reverse_complement(sequence: str) -> str:
+    return sequence.translate(str.maketrans("ACGTN", "TGCAN"))[::-1]
+
+
+def _fixed_length_declared_allele_replay(
+    source: str,
+    candidate: str,
+    declared_ref: str,
+    declared_alt: str,
+    strand: str,
+) -> bool:
+    if (
+        not declared_ref
+        or not declared_alt
+        or any(base not in "ACGTN" for base in declared_ref + declared_alt)
+        or strand not in {"+", "-"}
+    ):
+        return False
+    if strand == "-":
+        declared_ref = _reverse_complement(declared_ref)
+        declared_alt = _reverse_complement(declared_alt)
+
+    # The author reporters have a fixed total length.  For an insertion, replay
+    # ref->alt in the source and crop exactly the added length across the two
+    # outer boundaries.  For a deletion, perform the symmetric alt->ref replay
+    # from the candidate.  This checks the actual declared allele and complete
+    # paired reporter bytes; it is not a full-string distance proxy.
+    if len(declared_alt) >= len(declared_ref):
+        base, target = source, candidate
+        old_allele, new_allele = declared_ref, declared_alt
+    else:
+        base, target = candidate, source
+        old_allele, new_allele = declared_alt, declared_ref
+    crop_count = len(new_allele) - len(old_allele)
+    start = 0
+    while True:
+        position = base.find(old_allele, start)
+        if position < 0:
+            return False
+        edited = (
+            base[:position]
+            + new_allele
+            + base[position + len(old_allele) :]
+        )
+        for left_crop in range(crop_count + 1):
+            right_crop = crop_count - left_crop
+            stop = len(edited) - right_crop if right_crop else None
+            if edited[left_crop:stop] == target:
+                return True
+        start = position + 1
 
 
 def _read_array_assignments(path: Path) -> list[dict[str, str]]:
@@ -1300,6 +1418,7 @@ def _parse_workbook(workbook_path: Path, fasta_path: Path, array_path: Path) -> 
             "oligo_id",
             "ref_allele",
             "alt_allele",
+            "strand",
             "other_var_in_oligo_window",
         }
         if not required_oligo.issubset(oligo_header):
@@ -1321,6 +1440,7 @@ def _parse_workbook(workbook_path: Path, fasta_path: Path, array_path: Path) -> 
                 "reporter_id": reporter_id,
                 "ref_allele": str(row[oligo_header["ref_allele"]]).upper(),
                 "alt_allele": str(row[oligo_header["alt_allele"]]).upper(),
+                "strand": str(row[oligo_header["strand"]]).strip(),
             }
             other = str(row[oligo_header["other_var_in_oligo_window"]] or "")
             if "index_error" in {part.strip().lower() for part in other.split(",")}:
@@ -1347,6 +1467,7 @@ def _parse_workbook(workbook_path: Path, fasta_path: Path, array_path: Path) -> 
 
         identical_pair_count = 0
         replay_mismatch_count = 0
+        declared_pair_metadata_disagreement_count = 0
         insert_lengths: Counter[int] = Counter()
         source_by_pair: dict[str, str] = {}
         candidate_by_pair: dict[str, str] = {}
@@ -1360,10 +1481,25 @@ def _parse_workbook(workbook_path: Path, fasta_path: Path, array_path: Path) -> 
             insert_lengths[len(source)] += 1
             insert_lengths[len(candidate)] += 1
             identical_pair_count += source == candidate
-            declared_ref = members["ref"]["ref_allele"]
-            declared_alt = members["ref"]["alt_allele"]
-            expected_distance = max(len(declared_ref), len(declared_alt))
-            replay_mismatch_count += _levenshtein(source, candidate) != expected_distance
+            ref_metadata = tuple(
+                members["ref"][field]
+                for field in ("ref_allele", "alt_allele", "strand")
+            )
+            alt_metadata = tuple(
+                members["alt"][field]
+                for field in ("ref_allele", "alt_allele", "strand")
+            )
+            metadata_disagrees = ref_metadata != alt_metadata
+            declared_pair_metadata_disagreement_count += metadata_disagrees
+            replay_mismatch_count += metadata_disagrees or not (
+                _fixed_length_declared_allele_replay(
+                    source,
+                    candidate,
+                    members["ref"]["ref_allele"],
+                    members["ref"]["alt_allele"],
+                    members["ref"]["strand"],
+                )
+            )
 
         result_header, result_rows = _rows_and_header(workbook, "Variant MPRAu Results")
         if "mpra_variant_id" not in result_header:
@@ -1483,7 +1619,8 @@ def _parse_workbook(workbook_path: Path, fasta_path: Path, array_path: Path) -> 
             "published_reporter_to_author_fasta_missing_after_documented_alias_expansion": crosswalk_missing,
             "variable_insert_length_bp": variable_insert_length,
             "ref_alt_sequence_identical_pair_count": identical_pair_count,
-            "declared_allele_length_to_sequence_replay_mismatch_count": replay_mismatch_count,
+            "declared_allele_fixed_length_exact_replay_mismatch_count": replay_mismatch_count,
+            "declared_allele_or_strand_pair_metadata_disagreement_count": declared_pair_metadata_disagreement_count,
             "index_error_affected_pair_count": len(index_error_pairs),
             "finite_effect_and_lfcse_all_six_context_pair_count_after_index_error_exclusion": len(eligible_all),
             "finite_effect_and_lfcse_at_least_one_context_pair_count_after_index_error_exclusion": len(eligible_any),
@@ -1553,7 +1690,6 @@ def evaluate_gate_statuses(
     protocol: Mapping[str, Any], geometry: Mapping[str, int]
 ) -> list[dict[str, Any]]:
     gates = copy.deepcopy(protocol["public_research_snapshot"]["gate_statuses"])
-    invalid_fasta_record_count = geometry.get("author_fasta_invalid_record_count", 0)
     invalid_crosswalk_reporter_count = geometry.get(
         "source_candidate_crosswalk_invalid_fasta_record_reporter_count", 0
     )
@@ -1568,13 +1704,12 @@ def evaluate_gate_statuses(
         geometry["published_pair_count"] == geometry["pair_size_two_count"]
         and geometry["published_reporter_count"] == 2 * geometry["published_pair_count"]
         and geometry["source_candidate_crosswalk_missing_count"] == 0
-        and invalid_fasta_record_count == 0
         and invalid_crosswalk_reporter_count == 0
         and unresolved_pair_count == 0
         and geometry["result_missing_pair_count"] == 0
         and geometry["unexpected_result_pair_count"] == 0
     ):
-        if invalid_fasta_record_count or invalid_crosswalk_reporter_count:
+        if invalid_crosswalk_reporter_count:
             crosswalk_reason = "INVALID_FASTA_RECORD_OR_UNRESOLVED_REPORTER_CROSSWALK"
             crosswalk_evidence = (
                 "Aggregate execution found an invalid author FASTA record and an "
@@ -1595,12 +1730,12 @@ def evaluate_gate_statuses(
     if not (
         geometry["variable_insert_length_bp"] == 133
         and geometry["ref_alt_sequence_identical_pair_count"] == 0
-        and geometry["declared_allele_length_to_sequence_replay_mismatch_count"] == 0
-        and invalid_fasta_record_count == 0
+        and geometry["declared_allele_fixed_length_exact_replay_mismatch_count"] == 0
+        and geometry["declared_allele_or_strand_pair_metadata_disagreement_count"] == 0
         and unresolved_pair_count == 0
         and replay_evaluated_count == geometry["published_pair_count"]
     ):
-        if invalid_fasta_record_count or unresolved_pair_count:
+        if unresolved_pair_count:
             reporter_reason = (
                 "INVALID_FASTA_RECORD_OR_UNRESOLVED_PAIR_PREVENTS_COMPLETE_REPORTER_REPLAY"
             )
@@ -1609,10 +1744,10 @@ def evaluate_gate_statuses(
                 "full reporter/context sequence replay is not closed."
             )
         else:
-            reporter_reason = "OBSERVED_REPORTER_INSERT_OR_EDIT_REPLAY_DIFFERS"
+            reporter_reason = "OBSERVED_FIXED_LENGTH_DECLARED_ALLELE_REPLAY_DIFFERS"
             reporter_evidence = (
-                "Aggregate execution found a construct-length, identical-pair, or "
-                "edit-replay mismatch."
+                "Aggregate execution found a construct-length, identical-pair, "
+                "declared-metadata, or exact fixed-length allele-replay mismatch."
             )
         _replace_gate_failure(
             gates,
