@@ -4716,8 +4716,8 @@ def test_dec023_dual_preflight_final_evidence_registration_is_closed(
 
     interim = validator._load_yaml(repo_root, validator.A1_INTERIM_PATH)
     current = interim["dec023_current_disposition"]
-    assert current["latest_settled_runtime_event_id"] == "A1-EVT-056"
-    assert current["runtime_sync_status"] == "SYNCED_EVT_056"
+    assert current["latest_settled_runtime_event_id"] == "A1-EVT-057"
+    assert current["runtime_sync_status"] == "SYNCED_EVT_057"
     assert current["runtime_event_emitted"] is True
     assert current["current_qualified_counts"] == {
         "ordinary": 1,
@@ -4733,10 +4733,10 @@ def test_dec023_dual_preflight_final_evidence_registration_is_closed(
             validator.GSE207584_PREFLIGHT_LINEAGE_ID,
         ],
         "predecessor_runtime_event_id": "A1-EVT-056",
-        "expected_next_runtime_event_id": "PENDING_FRESH_RUNTIME_EVENT_ID",
+        "expected_next_runtime_event_id": "A1-EVT-057",
         "next_runtime_event_id_preallocated": False,
-        "runtime_sync_status": "PENDING_FRESH_EVENT_AFTER_SETTLED_EVT_056",
-        "runtime_event_emitted": False,
+        "runtime_sync_status": "SYNCED_EVT_057",
+        "runtime_event_emitted": True,
     }
 
     lineage = interim["artifact_lineage"]
@@ -4792,10 +4792,9 @@ def test_dec023_dual_preflight_final_evidence_registration_is_closed(
         assert record["a7_allowed"] is False
         assert record["next_phase_authorized"] is False
         assert record["predecessor_runtime_event_id"] == "A1-EVT-056"
-        assert record["expected_next_runtime_event_id"] == (
-            "PENDING_FRESH_RUNTIME_EVENT_ID"
-        )
-        assert record["runtime_event_emitted"] is False
+        assert record["expected_next_runtime_event_id"] == "A1-EVT-057"
+        assert record["runtime_sync_status"] == "SYNCED_EVT_057"
+        assert record["runtime_event_emitted"] is True
         assert record["scope_attestation"]["member_identifier_output_count"] == 0
         assert record["private_row_artifact_read_count_for_ledger"] == 0
 
@@ -4900,7 +4899,7 @@ def test_dec023_no_promotion_member_or_successor_event_bypass(
         current["current_qualified_counts"]["true_a2"] = 1
         current["changes_current_qualified_counts"] = True
         registration = current["evidence_registration"]
-        registration["expected_next_runtime_event_id"] = "A1-EVT-057"
+        registration["expected_next_runtime_event_id"] = "A1-EVT-058"
         registration["next_runtime_event_id_preallocated"] = True
         registration["runtime_event_emitted"] = True
         for lineage_id in (
@@ -4911,7 +4910,7 @@ def test_dec023_no_promotion_member_or_successor_event_bypass(
             record["qualified"] = True
             record["contribution"]["true_a2"] = 1
             record["scope_attestation"]["member_identifier_output_count"] = 1
-            record["expected_next_runtime_event_id"] = "A1-EVT-057"
+            record["expected_next_runtime_event_id"] = "A1-EVT-058"
             record["next_runtime_event_id_preallocated"] = True
             record["runtime_event_emitted"] = True
 

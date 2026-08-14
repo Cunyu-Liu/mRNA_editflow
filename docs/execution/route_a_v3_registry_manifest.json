@@ -79,7 +79,7 @@
     {
       "path": "docs/execution/route_a_v3_a1_interim.yaml",
       "role": "A1_ACTIVE_INTERIM_RECORD",
-      "sha256": "2e7eb368c9b76318064838d3a3415fd5a92f9a2314b6f53604afcb6b8794a204"
+      "sha256": "59ea0a7d5b457e8861710992b76a3868a5b44ae1e1972c99f716a33a0f68204b"
     },
     {
       "path": "docs/execution/route_a_v3_a6_interim.yaml",
@@ -534,18 +534,18 @@
     {
       "path": "tests/route_a_v3/test_a0_integrity_guards.py",
       "role": "A0_AUTHORITY_INTEGRITY_GUARD_TEST",
-      "sha256": "708d73ade233e4f8ade8fbc477be615ff3d447f694f30fe5b1c73f457c3445d3"
+      "sha256": "6560f2f5adf2bde53fe63841425b63338d8d40ea15f92e8af1ea8f33f5f1e16e"
     },
     {
       "path": "scripts/route_a_v3/validate_a0_bundle.py",
       "role": "A0_STATIC_AND_SEMANTIC_VALIDATOR",
-      "sha256": "724ddd3e3dc18eed22efccb1b6ce3389b91fd76ebed81eba0cf33018711bfab1"
+      "sha256": "986376e60d8a96e7de4bfac6f290bbe2c814717aeb8bf68c5e3dce8fc737e4e0"
     }
   ],
   "initial_generated_at": "2026-08-10T10:10:05+08:00",
-  "generated_at": "2026-08-14T12:55:01+08:00",
-  "updated_at": "2026-08-14T12:55:01+08:00",
-  "manifest_status": "DEC023_GSE261709_PUBLIC_SCHEMA_GEOMETRY_AND_GSE207584_DENSE_FAMILY_DUAL_PREFLIGHT_EVIDENCE_REGISTERED_EVT056_SETTLED_EVIDENCE_RUNTIME_PENDING_A1_INCOMPLETE_A6_IN_PROGRESS_L3_NOT_ESTABLISHED_A7_NOT_RUN",
+  "generated_at": "2026-08-14T13:45:38+08:00",
+  "updated_at": "2026-08-14T13:45:38+08:00",
+  "manifest_status": "DEC023_GSE261709_PUBLIC_SCHEMA_GEOMETRY_AND_GSE207584_DENSE_FAMILY_DUAL_PREFLIGHT_EVIDENCE_REGISTERED_EVT057_SETTLED_EVIDENCE_RUNTIME_SYNCED_A1_INCOMPLETE_A6_IN_PROGRESS_L3_NOT_ESTABLISHED_A7_NOT_RUN",
   "schema_version": "1.0.0",
   "sealed_contact": false,
   "version": "3.0.0"

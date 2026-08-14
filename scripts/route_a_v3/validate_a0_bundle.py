@@ -45,7 +45,7 @@ DECISION_LOG_PATH = "docs/execution/route_a_v3_decision_log.yaml"
 REGISTRY_MANIFEST_PATH = "docs/execution/route_a_v3_registry_manifest.json"
 A1_INTERIM_PATH = "docs/execution/route_a_v3_a1_interim.yaml"
 A6_INTERIM_PATH = "docs/execution/route_a_v3_a6_interim.yaml"
-EXPECTED_A1_INTERIM_SHA256 = "2e7eb368c9b76318064838d3a3415fd5a92f9a2314b6f53604afcb6b8794a204"
+EXPECTED_A1_INTERIM_SHA256 = "59ea0a7d5b457e8861710992b76a3868a5b44ae1e1972c99f716a33a0f68204b"
 EXPECTED_A6_INTERIM_SHA256 = "64a5a5a03f0931b59a72ad5536c0e0c132332d1235e697bc4fff56f910d573d8"
 A6_REGISTRATION_LEDGER_AT = "2026-08-13T18:55:00+08:00"
 DEC021_AUTHORITY_LEDGER_AT = "2026-08-13T19:50:00+08:00"
@@ -99,9 +99,10 @@ DEC023_AUTHORITY_MANIFEST_STATUS = (
     "UNALLOCATED_RUNTIME_EVENT_A1_INCOMPLETE_A6_IN_PROGRESS_L3_NOT_ESTABLISHED_A7_NOT_RUN"
 )
 DEC023_PENDING_RUNTIME_EVENT_ID = "PENDING_FRESH_RUNTIME_EVENT_ID"
-DEC023_CURRENT_RUNTIME_EVENT_ID = "A1-EVT-056"
+DEC023_AUTHORITY_RUNTIME_EVENT_ID = "A1-EVT-056"
+DEC023_CURRENT_RUNTIME_EVENT_ID = "A1-EVT-057"
 DEC023_DUAL_PREFLIGHT_EVIDENCE_LEDGER_AT = "2026-08-14T12:55:00+08:00"
-DEC023_DUAL_PREFLIGHT_EVIDENCE_MANIFEST_AT = "2026-08-14T12:55:01+08:00"
+DEC023_DUAL_PREFLIGHT_EVIDENCE_MANIFEST_AT = "2026-08-14T13:45:38+08:00"
 DEC023_DUAL_PREFLIGHT_EVIDENCE_INTEGRATION_ID = (
     "DEC023_GSE261709_AND_GSE207584_DUAL_PREFLIGHT_FINAL_EVIDENCE_V1_"
     "LEDGER_REGISTRATION"
@@ -111,8 +112,8 @@ DEC023_DUAL_PREFLIGHT_EVIDENCE_UPDATE_ID = (
 )
 DEC023_DUAL_PREFLIGHT_EVIDENCE_MANIFEST_STATUS = (
     "DEC023_GSE261709_PUBLIC_SCHEMA_GEOMETRY_AND_GSE207584_DENSE_FAMILY_"
-    "DUAL_PREFLIGHT_EVIDENCE_REGISTERED_EVT056_SETTLED_EVIDENCE_RUNTIME_"
-    "PENDING_A1_INCOMPLETE_A6_IN_PROGRESS_L3_NOT_ESTABLISHED_A7_NOT_RUN"
+    "DUAL_PREFLIGHT_EVIDENCE_REGISTERED_EVT057_SETTLED_EVIDENCE_RUNTIME_"
+    "SYNCED_A1_INCOMPLETE_A6_IN_PROGRESS_L3_NOT_ESTABLISHED_A7_NOT_RUN"
 )
 GSE261709_PREFLIGHT_LINEAGE_ID = (
     "gse261709_public_identifier_asset_schema_aggregate_geometry_preflight_v1"
@@ -6704,7 +6705,7 @@ def validate_dec023_authority(
             "latest_settled_runtime_event_id": DEC023_CURRENT_RUNTIME_EVENT_ID,
             "settled_runtime_event_changed": True,
             "runtime_event_emitted": True,
-            "runtime_sync_status": "SYNCED_EVT_056",
+            "runtime_sync_status": "SYNCED_EVT_057",
             "expected_next_runtime_event_id": DEC023_CURRENT_RUNTIME_EVENT_ID,
             "next_runtime_event_id_preallocated": False,
         }.items():
@@ -6748,11 +6749,11 @@ def validate_dec023_authority(
                     GSE261709_PREFLIGHT_LINEAGE_ID,
                     GSE207584_PREFLIGHT_LINEAGE_ID,
                 ],
-                "predecessor_runtime_event_id": DEC023_CURRENT_RUNTIME_EVENT_ID,
-                "expected_next_runtime_event_id": DEC023_PENDING_RUNTIME_EVENT_ID,
+                "predecessor_runtime_event_id": DEC023_AUTHORITY_RUNTIME_EVENT_ID,
+                "expected_next_runtime_event_id": DEC023_CURRENT_RUNTIME_EVENT_ID,
                 "next_runtime_event_id_preallocated": False,
-                "runtime_sync_status": "PENDING_FRESH_EVENT_AFTER_SETTLED_EVT_056",
-                "runtime_event_emitted": False,
+                "runtime_sync_status": "SYNCED_EVT_057",
+                "runtime_event_emitted": True,
             },
             A1_INTERIM_PATH,
             issues,
@@ -8878,11 +8879,11 @@ def _validate_dec023_dual_preflight_interim(
         "a7_allowed": False,
         "next_phase_authorized": False,
         "scientific_claim_status": "NOT_ESTABLISHED",
-        "predecessor_runtime_event_id": DEC023_CURRENT_RUNTIME_EVENT_ID,
-        "expected_next_runtime_event_id": DEC023_PENDING_RUNTIME_EVENT_ID,
+        "predecessor_runtime_event_id": DEC023_AUTHORITY_RUNTIME_EVENT_ID,
+        "expected_next_runtime_event_id": DEC023_CURRENT_RUNTIME_EVENT_ID,
         "next_runtime_event_id_preallocated": False,
-        "runtime_sync_status": "PENDING_FRESH_EVENT_AFTER_SETTLED_EVT_056",
-        "runtime_event_emitted": False,
+        "runtime_sync_status": "SYNCED_EVT_057",
+        "runtime_event_emitted": True,
         "aggregate_report_read_count_for_ledger": 1,
         "private_row_artifact_read_count_for_ledger": 0,
         "raw_asset_registered_artifact_count": 0,
@@ -13128,7 +13129,7 @@ def validate_a1_interim_lineage(
                 "dec023_current_runtime_event_id": DEC023_CURRENT_RUNTIME_EVENT_ID,
                 "targeted_dec023_dual_preflight_evidence_ledger_tests": {
                     "status": "PASS",
-                    "scope": "TWO_FINAL_AGGREGATE_STOP_REPORTS_SIX_STATIC_PRODUCER_LEAVES_EVT056_SETTLED_EVIDENCE_RUNTIME_PENDING",
+                    "scope": "TWO_FINAL_AGGREGATE_STOP_REPORTS_SIX_STATIC_PRODUCER_LEAVES_EVT057_SETTLED_EVIDENCE_RUNTIME_SYNCED",
                 },
                 "dec023_dual_preflight_evidence_integration_id": DEC023_DUAL_PREFLIGHT_EVIDENCE_INTEGRATION_ID,
                 "dec023_dual_preflight_registered_lineage_ids_exactly": [
@@ -13139,8 +13140,8 @@ def validate_a1_interim_lineage(
                 "dec023_dual_preflight_two_dynamic_report_lineage_registration": "PASS",
                 "dec023_dual_preflight_no_promotion_boundary": "PASS",
                 "dec023_dual_preflight_no_member_or_row_disclosure_boundary": "PASS",
-                "dec023_dual_preflight_evidence_runtime_event_emitted": False,
-                "dec023_dual_preflight_expected_next_runtime_event_id": DEC023_PENDING_RUNTIME_EVENT_ID,
+                "dec023_dual_preflight_evidence_runtime_event_emitted": True,
+                "dec023_dual_preflight_expected_next_runtime_event_id": DEC023_CURRENT_RUNTIME_EVENT_ID,
             },
             path,
             issues,

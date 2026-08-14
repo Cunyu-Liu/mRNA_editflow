@@ -464,11 +464,11 @@ dec023_current_disposition:
   a7_allowed: false
   next_phase_authorized: false
   scientific_claim_status: NOT_ESTABLISHED
-  latest_settled_runtime_event_id: A1-EVT-056
+  latest_settled_runtime_event_id: A1-EVT-057
   settled_runtime_event_changed: true
   runtime_event_emitted: true
-  runtime_sync_status: SYNCED_EVT_056
-  expected_next_runtime_event_id: A1-EVT-056
+  runtime_sync_status: SYNCED_EVT_057
+  expected_next_runtime_event_id: A1-EVT-057
   next_runtime_event_id_preallocated: false
   evidence_registration:
     integration_id: DEC023_GSE261709_AND_GSE207584_DUAL_PREFLIGHT_FINAL_EVIDENCE_V1_LEDGER_REGISTRATION
@@ -476,10 +476,10 @@ dec023_current_disposition:
       - gse261709_public_identifier_asset_schema_aggregate_geometry_preflight_v1
       - gse207584_aggregate_dense_family_qualification_preflight_v1
     predecessor_runtime_event_id: A1-EVT-056
-    expected_next_runtime_event_id: PENDING_FRESH_RUNTIME_EVENT_ID
+    expected_next_runtime_event_id: A1-EVT-057
     next_runtime_event_id_preallocated: false
-    runtime_sync_status: PENDING_FRESH_EVENT_AFTER_SETTLED_EVT_056
-    runtime_event_emitted: false
+    runtime_sync_status: SYNCED_EVT_057
+    runtime_event_emitted: true
   sealed_contact_allowed: false
 
 artifact_lineage:
@@ -2778,10 +2778,10 @@ artifact_lineage:
       focused_test_path: tests/route_a_v3/test_preflight_gse261709_public_identifier_asset_schema_aggregate_geometry.py
       focused_test_sha256: ada9d6220b49a9076e58d983eb8f41457d1010030c330dedcd8a164e2fb593dd
     predecessor_runtime_event_id: A1-EVT-056
-    expected_next_runtime_event_id: PENDING_FRESH_RUNTIME_EVENT_ID
+    expected_next_runtime_event_id: A1-EVT-057
     next_runtime_event_id_preallocated: false
-    runtime_sync_status: PENDING_FRESH_EVENT_AFTER_SETTLED_EVT_056
-    runtime_event_emitted: false
+    runtime_sync_status: SYNCED_EVT_057
+    runtime_event_emitted: true
     aggregate_report_read_count_for_ledger: 1
     private_row_artifact_read_count_for_ledger: 0
     raw_asset_registered_artifact_count: 0
@@ -2868,10 +2868,10 @@ artifact_lineage:
       focused_test_path: tests/route_a_v3/test_preflight_gse207584_aggregate_dense_family_qualification.py
       focused_test_sha256: 81eccd24f16930df334e17b2cc8ae89906a91fba936ee1685d281079ba0b4df6
     predecessor_runtime_event_id: A1-EVT-056
-    expected_next_runtime_event_id: PENDING_FRESH_RUNTIME_EVENT_ID
+    expected_next_runtime_event_id: A1-EVT-057
     next_runtime_event_id_preallocated: false
-    runtime_sync_status: PENDING_FRESH_EVENT_AFTER_SETTLED_EVT_056
-    runtime_event_emitted: false
+    runtime_sync_status: SYNCED_EVT_057
+    runtime_event_emitted: true
     aggregate_report_read_count_for_ledger: 1
     private_row_artifact_read_count_for_ledger: 0
     raw_asset_registered_artifact_count: 0
@@ -3831,10 +3831,10 @@ verification:
   dec023_gse207584_aggregate_prefrozen_power_planning_required_effective_n_for_both_power_and_ci_width: 156
   dec023_gse207584_formal_qualification_power_gate_execution_allowed: false
   dec023_runtime_event_emitted: true
-  dec023_current_runtime_event_id: A1-EVT-056
+  dec023_current_runtime_event_id: A1-EVT-057
   targeted_dec023_dual_preflight_evidence_ledger_tests:
     status: PASS
-    scope: TWO_FINAL_AGGREGATE_STOP_REPORTS_SIX_STATIC_PRODUCER_LEAVES_EVT056_SETTLED_EVIDENCE_RUNTIME_PENDING
+    scope: TWO_FINAL_AGGREGATE_STOP_REPORTS_SIX_STATIC_PRODUCER_LEAVES_EVT057_SETTLED_EVIDENCE_RUNTIME_SYNCED
   dec023_dual_preflight_evidence_integration_id: DEC023_GSE261709_AND_GSE207584_DUAL_PREFLIGHT_FINAL_EVIDENCE_V1_LEDGER_REGISTRATION
   dec023_dual_preflight_registered_lineage_ids_exactly:
     - gse261709_public_identifier_asset_schema_aggregate_geometry_preflight_v1
@@ -3843,8 +3843,8 @@ verification:
   dec023_dual_preflight_two_dynamic_report_lineage_registration: PASS
   dec023_dual_preflight_no_promotion_boundary: PASS
   dec023_dual_preflight_no_member_or_row_disclosure_boundary: PASS
-  dec023_dual_preflight_evidence_runtime_event_emitted: false
-  dec023_dual_preflight_expected_next_runtime_event_id: PENDING_FRESH_RUNTIME_EVENT_ID
+  dec023_dual_preflight_evidence_runtime_event_emitted: true
+  dec023_dual_preflight_expected_next_runtime_event_id: A1-EVT-057
 
 initial_generated_at: "2026-08-10T06:30:58+08:00"
 generated_at: "2026-08-14T12:55:00+08:00"
