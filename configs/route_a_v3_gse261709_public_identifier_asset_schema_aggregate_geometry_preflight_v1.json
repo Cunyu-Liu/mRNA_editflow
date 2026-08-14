@@ -1,0 +1,227 @@
+{
+  "schema_version": "route_a_v3_gse261709_public_identifier_asset_schema_aggregate_geometry_preflight.v1",
+  "protocol_id": "GSE261709_PUBLIC_IDENTIFIER_ASSET_SCHEMA_AGGREGATE_GEOMETRY_PREFLIGHT_V1",
+  "contract_id": "mrna_xeditflow_route_a_v3",
+  "phase_id": "A1",
+  "dataset_id": "GSE261709",
+  "bioproject_id": "PRJNA1088465",
+  "decision_id": "V3-DEC-023",
+  "protocol_status": "PUBLIC_IDENTIFIER_ASSET_SCHEMA_AND_AGGREGATE_GEOMETRY_PREFLIGHT_ONLY_NOT_QUALIFICATION",
+  "implementation_binding": {
+    "binding_scheme": "AUTHORITY_A_THEN_AUTHORITY_RUNTIME_I1_I2_B2_THEN_EXACT3_I_CONFIG_ONLY_B_V2",
+    "status": "UNKNOWN_NOT_ASSERTED",
+    "authority_commit": "f7cfff896a1a30d25a3b73ea7f89957d70d95d39",
+    "authority_runtime_binding_commit": "b225f73b72d73be3380e2d48325c7773a67c0d17",
+    "authority_runtime_lineage": {
+      "paths": [
+        "configs/route_a_v3_dec023_authority_runtime_sync_v1.json",
+        "scripts/route_a_v3/dec023_authority_runtime_sync.py",
+        "tests/route_a_v3/test_dec023_authority_runtime_sync.py"
+      ],
+      "implementation_i1_commit": "b0afa92eea9718c15a5989cfa67bac57036617d9",
+      "implementation_i1_blob_sha256_by_path": {
+        "configs/route_a_v3_dec023_authority_runtime_sync_v1.json": "330a5fceaa97a1c1f16fcb20f1c6e4e35329923a293bcb463f35eaa666cb4701",
+        "scripts/route_a_v3/dec023_authority_runtime_sync.py": "3082aa44b70356d0e512fa8d1c92daadd08084a97594ba20976d0b93ca4706bd",
+        "tests/route_a_v3/test_dec023_authority_runtime_sync.py": "0ad48f947eee136e9104ba1dcdd5c921281ad0379ce2a17dcd4c411861115e65"
+      },
+      "implementation_i2_commit": "d125bec7e0d9f28a679ff98c25b4feb70e198034",
+      "implementation_i2_blob_sha256_by_path": {
+        "configs/route_a_v3_dec023_authority_runtime_sync_v1.json": "4baa8ff33938dfc0448fb7e94097d407d8fb60beb122192aafb15eecd4f81c20",
+        "scripts/route_a_v3/dec023_authority_runtime_sync.py": "3502227b48a0506a8c2e9c2ddec0a51017d2cb86e68c155fbdc4bccf72fa41be",
+        "tests/route_a_v3/test_dec023_authority_runtime_sync.py": "e3147049d06536b95298089ef1cd03676d8e477848890b1149dbd66352c44cc7"
+      },
+      "binding_b2_blob_sha256_by_path": {
+        "configs/route_a_v3_dec023_authority_runtime_sync_v1.json": "d1d39a659aa3ccde38d88fadb76c72d77d47585cfd7038e58493eec818b6b280",
+        "scripts/route_a_v3/dec023_authority_runtime_sync.py": "3502227b48a0506a8c2e9c2ddec0a51017d2cb86e68c155fbdc4bccf72fa41be",
+        "tests/route_a_v3/test_dec023_authority_runtime_sync.py": "e3147049d06536b95298089ef1cd03676d8e477848890b1149dbd66352c44cc7"
+      },
+      "implementation_exact_changed_paths": [
+        "configs/route_a_v3_dec023_authority_runtime_sync_v1.json",
+        "scripts/route_a_v3/dec023_authority_runtime_sync.py",
+        "tests/route_a_v3/test_dec023_authority_runtime_sync.py"
+      ],
+      "binding_exact_changed_paths": [
+        "configs/route_a_v3_dec023_authority_runtime_sync_v1.json"
+      ]
+    },
+    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "implementation_script_path": "scripts/route_a_v3/preflight_gse261709_public_identifier_asset_schema_aggregate_geometry.py",
+    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_test_path": "tests/route_a_v3/test_preflight_gse261709_public_identifier_asset_schema_aggregate_geometry.py",
+    "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
+    "pre_implementation_authority_scalar_paths": [
+      "implementation_binding.authority_commit",
+      "implementation_binding.authority_runtime_binding_commit"
+    ],
+    "unknown_to_bound_scalar_paths": [
+      "implementation_binding.status",
+      "implementation_binding.implementation_commit",
+      "implementation_binding.implementation_script_sha256",
+      "implementation_binding.implementation_test_sha256"
+    ],
+    "implementation_commit_exact_changed_paths": [
+      "configs/route_a_v3_gse261709_public_identifier_asset_schema_aggregate_geometry_preflight_v1.json",
+      "scripts/route_a_v3/preflight_gse261709_public_identifier_asset_schema_aggregate_geometry.py",
+      "tests/route_a_v3/test_preflight_gse261709_public_identifier_asset_schema_aggregate_geometry.py"
+    ],
+    "binding_commit_exact_changed_paths": [
+      "configs/route_a_v3_gse261709_public_identifier_asset_schema_aggregate_geometry_preflight_v1.json"
+    ],
+    "activation_rule": "After DEC023 authority A, the frozen authority-runtime I1, dynamic authority-runtime I2, and config-only authority-runtime B2 lifecycle must settle in that exact direct-parent order. Preflight I must be the direct child of B2 and change exact3 while freezing the full authority-runtime lineage and leaving the four normal binding scalars UNKNOWN_NOT_ASSERTED. Preflight B must be the direct child of I, change config-only, and replace only those four scalars. Until B is valid, execution stops before metadata input, network access, or output creation."
+  },
+  "decision_authority": {
+    "amendment_path": "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec023.yaml",
+    "data_role_registry_path": "docs/execution/route_a_v3_data_role_registry.yaml",
+    "authorized_role": "PUBLIC_IDENTIFIER_ASSET_SCHEMA_AND_AGGREGATE_GEOMETRY_PREFLIGHT_ONLY",
+    "allowed_input_field_classes_exactly": [
+      "PUBLIC_IDENTIFIER",
+      "ASSET_ROLE",
+      "SAMPLE_ROLE",
+      "RUN_ROLE",
+      "CONTEXT_METADATA",
+      "HEADER_NAME",
+      "DIMENSION",
+      "AGGREGATE_COUNT",
+      "AGGREGATE_BYTE_COUNT",
+      "LICENSE_NOTICE"
+    ],
+    "allowed_output_class": "AGGREGATE_GEOMETRY_AND_GATE_STATUS_ONLY",
+    "separate_row_level_authority_required_after_all_gates_pass": true
+  },
+  "official_public_sources": [
+    {
+      "authority_id": "NCBI_GEO_GSE261709",
+      "authority_type": "PRIMARY_PUBLIC_SERIES_METADATA_AND_ARCHIVE_LISTING",
+      "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE261709",
+      "live_metadata_fetch_allowed": true
+    },
+    {
+      "authority_id": "NCBI_BIOPROJECT_PRJNA1088465",
+      "authority_type": "PRIMARY_PUBLIC_BIOPROJECT_METADATA_LOCATOR",
+      "url": "https://www.ncbi.nlm.nih.gov/bioproject/PRJNA1088465",
+      "live_metadata_fetch_allowed": false
+    },
+    {
+      "authority_id": "NCBI_PUBMED_38773080_AND_PMC_11109163",
+      "authority_type": "PRIMARY_PUBLIC_ARTICLE_IDENTIFIER_METADATA_AND_STATIC_ARTICLE_LOCATOR",
+      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC11109163/",
+      "live_metadata_url": "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esummary.fcgi?db=pubmed&id=38773080&retmode=json",
+      "pmid": "38773080",
+      "pmcid": "PMC11109163",
+      "doi": "10.1038/s41467-024-48436-5",
+      "live_metadata_fetch_allowed": true
+    }
+  ],
+  "frozen_known_public_geometry": {
+    "organism": "Homo sapiens",
+    "assay": "MASSIVELY_PARALLEL_REPORTER_ASSAY",
+    "utr_region": "3UTR",
+    "cell_context_count": 2,
+    "cell_context_labels": [
+      "AGS",
+      "SNU719"
+    ],
+    "replicate_count_per_cell_context": 3,
+    "biological_assay_sample_count": 6,
+    "input_pool_sample_count": 1,
+    "total_sample_count": 7,
+    "platform_count": 1,
+    "supplementary_archive_listing_count": 1,
+    "supplementary_archive_filename": "GSE261709_RAW.tar",
+    "supplementary_archive_display_size": "690.0 Kb",
+    "raw_data_sra_relation_listed": true
+  },
+  "gate_contract": {
+    "gate_ids_exactly": [
+      "OFFICIAL_IDENTIFIER_AND_CONTEXT",
+      "ASSET_SAMPLE_AND_RUN_ROLE_AGGREGATE_GEOMETRY",
+      "HEADER_DIMENSION_AND_ASSET_LICENSE_NOTICE"
+    ],
+    "allowed_statuses": [
+      "PASS",
+      "BLOCKED",
+      "UNKNOWN_NOT_ASSERTED"
+    ],
+    "required_header_role_classes_exactly": [
+      "PUBLIC_IDENTIFIER",
+      "SOURCE_CANDIDATE_ROLE",
+      "SEQUENCE",
+      "ENDPOINT",
+      "REPLICATE",
+      "CONTEXT"
+    ],
+    "all_pass_terminal_action": "GO_REQUEST_SEPARATE_ROW_LEVEL_QUALIFICATION_AUTHORITY",
+    "nonpass_terminal_action": "STOP_PREFLIGHT_GATES_NOT_CLOSED"
+  },
+  "input_contract": {
+    "supported_modes": [
+      "LIVE_OFFICIAL_SMALL_METADATA_AND_ARCHIVE_LISTING_ONLY",
+      "EXISTING_ORDINARY_PUBLIC_METADATA_SCHEMA_AGGREGATE_ONLY"
+    ],
+    "existing_aggregate_schema_version": "route_a_v3_gse261709_public_metadata_schema_observation.v1",
+    "ordinary_public_only": true,
+    "official_small_metadata_page_read_allowed": true,
+    "official_archive_listing_read_allowed": true,
+    "header_names_allowed": true,
+    "dimensions_allowed": true,
+    "aggregate_counts_and_bytes_allowed": true,
+    "license_notice_allowed": true,
+    "archive_or_processed_asset_download_allowed": false,
+    "archive_member_listing_or_open_allowed": false,
+    "row_or_member_body_read_allowed": false,
+    "barcode_value_allowed": false,
+    "variant_value_allowed": false,
+    "transcript_value_allowed": false,
+    "sequence_value_allowed": false,
+    "effect_value_allowed": false,
+    "se_value_allowed": false,
+    "private_or_sealed_allowed": false
+  },
+  "output_contract": {
+    "filename": "GSE261709_PUBLIC_IDENTIFIER_ASSET_SCHEMA_AGGREGATE_GEOMETRY_PREFLIGHT_V1.json",
+    "single_aggregate_output_only": true,
+    "header_names_included": false,
+    "member_identifiers_included": false,
+    "sample_or_run_identifiers_included": false,
+    "row_records_included": false,
+    "barcode_values_included": false,
+    "variant_values_included": false,
+    "transcript_values_included": false,
+    "sequence_values_included": false,
+    "effect_values_included": false,
+    "se_values_included": false,
+    "split_assignment_included": false,
+    "qualification_or_credit_included": false,
+    "canonical_records_included": false
+  },
+  "frozen_outer_truth": {
+    "current_qualified_counts": {
+      "ordinary": 1,
+      "a1": 1,
+      "true_a2": 0,
+      "canonical_records": 6547
+    },
+    "gse261709_contribution": {
+      "ordinary": 0,
+      "a1": 0,
+      "true_a2": 0,
+      "canonical_records": 0
+    },
+    "gse261709_qualified": false,
+    "gse261709_a1_credit_established": false,
+    "row_level_qualification_run_count": 0,
+    "split_run_count": 0,
+    "power_run_count": 0,
+    "canonical_materialization_run_count": 0,
+    "training_run_count": 0,
+    "gpu_work_run_count": 0,
+    "model_selection_run_count": 0,
+    "training_allowed": false,
+    "gpu_work_allowed": false,
+    "model_selection_allowed": false,
+    "a7_unlocked": false,
+    "next_phase_authorized": false,
+    "scientific_claim_status": "NOT_ESTABLISHED"
+  },
+  "claim_boundary": "This preflight may establish only ordinary-public identifier, role, context, header-name visibility, dimensions, aggregate counts or bytes, license-notice visibility, and three aggregate gate statuses. It may not open the listed archive or any member, read or output a barcode, variant, transcript, sequence, row effect, SE, sample/run identifier, or member payload. Even three PASS gates establish only that a separate row-level qualification authority may be requested; they do not establish qualification, credit, canonical records, split, power, training, GPU work, model selection, A7, a later phase, or a scientific claim."
+}
