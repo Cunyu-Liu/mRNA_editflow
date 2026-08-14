@@ -38,9 +38,11 @@ def _load_runner():
 
 
 def _config(runner):
-    config = runner.load_config(CONFIG_PATH)
-    runner.validate_protocol(config)
-    return config
+    disk_config = runner.load_config(CONFIG_PATH)
+    runner.validate_protocol(disk_config)
+    clean_i2 = runner._normalise_own_binding(disk_config)
+    runner.validate_protocol(clean_i2)
+    return clean_i2
 
 
 def _bound_config(runner):
@@ -176,6 +178,10 @@ def test_exact3_freezes_all_predecessor_histories_and_only_own_remains_unknown()
         runner.GSE113_TEST_PATH: "98630bc8e48c5a07e5f17cf60addbf4382b7e7c49f66ff81245e76062e8d0001",
     }
     own = config["bindings"]["implementation"]
+    assert own["frozen_i1_commit"] == runner.FROZEN_I1_COMMIT
+    assert own["frozen_i1_expected_parent"] == runner.FROZEN_I1_PARENT
+    assert own["frozen_i1_exact_changed_paths"] == list(runner.EXACT3)
+    assert own["frozen_i1_blob_sha256_by_path"] == runner.FROZEN_I1_BLOBS
     assert own["status"] == runner.UNKNOWN
     assert {own[field] for field in own["unknown_to_bound_fields"]} == {
         runner.UNKNOWN
@@ -186,6 +192,12 @@ def test_exact3_freezes_all_predecessor_histories_and_only_own_remains_unknown()
         "gse232572_predecessor",
         "gse113849_predecessor",
     ]
+    assert config["production_activation_rule"][
+        "gse269595_frozen_i1_must_be_direct_child_of_gse113849_b1"
+    ] is True
+    assert config["production_activation_rule"][
+        "gse269595_dynamic_i2_must_be_direct_child_of_frozen_i1"
+    ] is True
 
 
 def test_real_aggregate_report_has_corrected_eight_pass_three_blocked_two_fail():
@@ -352,6 +364,8 @@ def test_own_grouped_unknown_stops_before_asset_or_output_io(tmp_path: Path):
     asset_dir = tmp_path / "must-not-be-read-assets"
     output = tmp_path / "must-not-exist"
     with mock.patch.object(
+        runner, "load_config", return_value=_config(runner)
+    ), mock.patch.object(
         runner, "_audit_repository_bindings", poison("git")
     ), mock.patch.object(
         runner, "inspect_official_public_assets", poison("asset")
@@ -401,28 +415,39 @@ def test_later_unknown_predecessor_also_stops_before_all_io(tmp_path: Path):
     assert calls == {"git": 0, "asset": 0, "output": 0}
 
 
-def test_partial_predecessor_binding_is_rejected():
+def test_partial_own_or_predecessor_binding_is_rejected():
     runner = _load_runner()
-    config = deepcopy(runner.load_config(CONFIG_PATH))
-    gse232 = config["bindings"]["gse232572_predecessor"]
+    clean_i2 = _config(runner)
+    partial_own = deepcopy(clean_i2)
+    partial_own["bindings"]["implementation"]["implementation_commit"] = "a" * 40
+    with pytest.raises(runner.CandidateContractError, match="partially populated"):
+        runner.validate_protocol(partial_own)
+
+    partial_predecessor = deepcopy(clean_i2)
+    gse232 = partial_predecessor["bindings"]["gse232572_predecessor"]
     gse232["status"] = runner.UNKNOWN
     gse232["terminal_binding_commit"] = runner.UNKNOWN
     with pytest.raises(runner.CandidateContractError, match="partially populated"):
-        runner.validate_protocol(config)
+        runner.validate_protocol(partial_predecessor)
 
 
-def test_clean_normalised_implementation_i_and_legal_disk_b_are_accepted():
+def test_clean_i2_and_synthetic_legal_disk_b2_normalise_to_same_i2():
     runner = _load_runner()
-    bound = _bound_config(runner)
-    implementation_i = runner._normalise_own_binding(bound)
-    runner.validate_protocol(implementation_i)
+    disk_config = runner.load_config(CONFIG_PATH)
+    runner.validate_protocol(disk_config)
+    clean_i2 = _config(runner)
+    assert runner._normalise_own_binding(disk_config) == clean_i2
+
+    synthetic_b2 = _bound_config(runner)
+    assert runner._normalise_own_binding(synthetic_b2) == clean_i2
+    runner.validate_protocol(clean_i2)
     assert {
-        implementation_i["bindings"]["implementation"][field]
+        clean_i2["bindings"]["implementation"][field]
         for field in runner.OWN_BINDING_FIELDS
     } == {runner.UNKNOWN}
     with pytest.raises(runner.BindingNotFrozen, match="grouped UNKNOWN"):
-        runner._require_production_bindings(implementation_i)
-    runner._require_production_bindings(bound)
+        runner._require_production_bindings(clean_i2)
+    runner._require_production_bindings(synthetic_b2)
 
 
 def test_single_production_entry_has_no_public_analysis_or_loader_bypass():
@@ -467,7 +492,7 @@ def _repository_audit_fixture(runner, tmp_path: Path, *, stale_copy: bool):
         + "\n"
     ).encode("utf-8")
     head = "d" * 40
-    own_i = "a" * 40
+    own_i2 = "a" * 40
     verified = []
 
     def fake_run_git(_repo_root, *arguments):
@@ -490,13 +515,13 @@ def _repository_audit_fixture(runner, tmp_path: Path, *, stale_copy: bool):
         )
 
     def fake_blob(_repo_root, commit, path):
-        if commit == own_i and path == runner.CONFIG_REPO_PATH:
+        if commit == own_i2 and path == runner.CONFIG_REPO_PATH:
             return implementation_bytes
         if commit == head and path == runner.CONFIG_REPO_PATH:
             return config_path.read_bytes()
-        if commit == own_i and path == runner.SCRIPT_REPO_PATH:
+        if commit == own_i2 and path == runner.SCRIPT_REPO_PATH:
             return script_path.read_bytes()
-        if commit == own_i and path == runner.TEST_REPO_PATH:
+        if commit == own_i2 and path == runner.TEST_REPO_PATH:
             return test_path.read_bytes()
         raise AssertionError(f"unexpected blob request: {commit}:{path}")
 
@@ -517,6 +542,7 @@ def _repository_audit_fixture(runner, tmp_path: Path, *, stale_copy: bool):
                 )
             return verified
         result = runner._audit_repository_bindings(disk_config, config_path, repo_root)
+    assert result["frozen_i1_commit"] == runner.FROZEN_I1_COMMIT
     assert result["binding_commit"] == head
     return verified
 
@@ -545,20 +571,22 @@ def test_legal_full_i_b_chain_audits_in_exact_order(tmp_path: Path):
         "GSE232572_B1",
         "GSE113849_I1",
         "GSE113849_B1",
-        "GSE269595_I",
-        "GSE269595_B",
+        "GSE269595_I1",
+        "GSE269595_I2",
+        "GSE269595_B2",
     ]
     assert verified[4][2] == runner.RUNTIME_B_COMMIT
     assert verified[9][2] == runner.GSE217_FINAL_B
     assert verified[16][2] == runner.ENCSR_FINAL_B
     assert verified[18][2] == "0f2c00868b6581edd9a429c7a8a67bb43f6b7776"
     assert verified[20][2] == "6372ddcb4b006d587a40ce628f9e193324c28b17"
-    assert verified[21][2] == "a" * 40
+    assert verified[21][2] == runner.FROZEN_I1_COMMIT
+    assert verified[22][2] == "a" * 40
 
 
 def test_stale_script_copy_is_rejected_before_asset_read(tmp_path: Path):
     runner = _load_runner()
-    assert len(_repository_audit_fixture(runner, tmp_path, stale_copy=True)) == 22
+    assert len(_repository_audit_fixture(runner, tmp_path, stale_copy=True)) == 23
 
 
 def test_both_asset_identities_are_checked_before_any_parse(tmp_path: Path):
