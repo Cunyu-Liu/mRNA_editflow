@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 """Aggregate-only GSE207584/iCodon dense-family qualification preflight.
 
-The producer is intentionally not a qualifier.  This exact3 is the true
-GSE207584 I candidate: it freezes the actual DEC-023 A/runtime I1/I2/B2 and
-GSE261709 I1/I2/B2 histories while retaining exactly four GSE207584 binding
-scalars as UNKNOWN.  A later config-only GSE207584 B must bind those four
-scalars and prove the complete direct-parent chain before touching an input or
-the output path.  The producer reads only ordinary-public fields authorized
-for the preflight, retains member material in memory, and atomically publishes
-one aggregate JSON report.  A missing authoritative source-to-candidate
-mapping is an expected fail-closed outcome rather than a reason to invent an
-edit replay.
+The producer is intentionally not a qualifier.  This exact3 is the append-only
+GSE207584 I2 repair candidate: it freezes the actual DEC-023 A/runtime
+I1/I2/B2, GSE261709 I1/I2/B2, and historical GSE207584 I1 identities while
+retaining exactly four dynamic GSE207584 I2/B2 binding scalars as UNKNOWN.  A
+later config-only GSE207584 B2 must bind those four scalars and prove the
+complete direct-parent chain before touching an input or the output path.  The
+producer reads only ordinary-public fields authorized for the preflight,
+retains member material in memory, and atomically publishes one aggregate JSON
+report.  A missing authoritative source-to-candidate mapping is an expected
+fail-closed outcome rather than a reason to invent an edit replay.
 """
 
 from __future__ import annotations
@@ -189,6 +189,19 @@ PREDECESSOR_B2_BLOBS = {
     PREDECESSOR_PATHS[1]: PREDECESSOR_I2_BLOBS[PREDECESSOR_PATHS[1]],
     PREDECESSOR_PATHS[2]: PREDECESSOR_I2_BLOBS[PREDECESSOR_PATHS[2]],
 }
+GSE207_I1_FROZEN_STATUS = "FROZEN_BOUND_EXACT3"
+GSE207_I1_COMMIT = "21337a0ee240bf469d3036d7718fb069068707a4"
+GSE207_I1_BLOBS = {
+    CONFIG_PATH: (
+        "67c1ea9264e813154f1a4808fe8bad9d535315b9e097440412dcae8b6d4050bf"
+    ),
+    SCRIPT_PATH: (
+        "1c967a3e0fd861579a1adcb0c881dc1ab37725867ccd5cdd35ccc3cecd3e7b16"
+    ),
+    TEST_PATH: (
+        "6b70a439c94a61cd64464d53839b23615b1b21f75f7eb5f6a45bb521a397f070"
+    ),
+}
 OWN_BINDING_SCALARS = (
     "status",
     "implementation_commit",
@@ -335,8 +348,8 @@ def _validate_digest_map(value: Any, paths: tuple[str, ...], *, label: str) -> N
 
 def _validate_lifecycle(binding: Mapping[str, Any]) -> None:
     if binding.get("binding_scheme") != (
-        "DEC023_A_RUNTIME_I1_I2_B2_THEN_GSE261_I1_I2_B2_THEN_DYNAMIC_"
-        "GSE207_I_B_V3"
+        "DEC023_A_RUNTIME_I1_I2_B2_THEN_GSE261_I1_I2_B2_THEN_GSE207_"
+        "FROZEN_I1_DYNAMIC_I2_B2_V4"
     ):
         raise ProtocolError("binding scheme differs")
 
@@ -391,6 +404,7 @@ def _validate_lifecycle(binding: Mapping[str, Any]) -> None:
 
     preflight = _mapping(binding.get("preflight_group"), label="preflight group")
     expected_preflight_keys = {
+        "predecessor_implementation_i1",
         "status",
         "implementation_commit",
         "implementation_script_path",
@@ -403,6 +417,14 @@ def _validate_lifecycle(binding: Mapping[str, Any]) -> None:
     }
     if set(preflight) != expected_preflight_keys:
         raise ProtocolError("GSE207 preflight binding fields differ")
+    if preflight.get("predecessor_implementation_i1") != {
+        "status": GSE207_I1_FROZEN_STATUS,
+        "commit": GSE207_I1_COMMIT,
+        "expected_parent": PREDECESSOR_B2_COMMIT,
+        "exact_changed_paths": list(EXACT3),
+        "blob_sha256_by_path": GSE207_I1_BLOBS,
+    }:
+        raise ProtocolError("frozen GSE207 I1 identity differs")
     if preflight.get("implementation_script_path") != SCRIPT_PATH:
         raise ProtocolError("GSE207 implementation script path differs")
     if preflight.get("implementation_test_path") != TEST_PATH:
@@ -818,10 +840,18 @@ def _default_binding_auditor(
         expected_paths=PREDECESSOR_B2_EXACT_CHANGED_PATHS,
         expected_blobs=predecessor["binding_b2_blob_sha256_by_path"],
     )
+    frozen_i1 = preflight["predecessor_implementation_i1"]
+    _verify_commit(
+        root,
+        commit=frozen_i1["commit"],
+        expected_parent=frozen_i1["expected_parent"],
+        expected_paths=EXACT3,
+        expected_blobs=frozen_i1["blob_sha256_by_path"],
+    )
     _verify_commit(
         root,
         commit=preflight["implementation_commit"],
-        expected_parent=predecessor["binding_b2_commit"],
+        expected_parent=frozen_i1["commit"],
         expected_paths=EXACT3,
     )
     _verify_commit(
@@ -851,7 +881,7 @@ def _default_binding_auditor(
     if (root / TEST_PATH).read_bytes() != test_blob:
         raise ProtocolError("focused test bytes differ from bound test")
     return {
-        "status": "BOUND_DEC023_AND_GSE261_I1_I2_B2_THEN_GSE207_I_B",
+        "status": "BOUND_DEC023_GSE261_AND_GSE207_I1_I2_B2",
         "authority_commit": authority["authority_commit"],
         "runtime_i1_commit": authority["runtime_i1_commit"],
         "runtime_i2_commit": authority["runtime_i2_commit"],
@@ -859,8 +889,9 @@ def _default_binding_auditor(
         "gse261709_i1_commit": predecessor["implementation_i1_commit"],
         "gse261709_i2_commit": predecessor["implementation_i2_commit"],
         "gse261709_b2_commit": predecessor["binding_b2_commit"],
-        "preflight_implementation_commit": preflight["implementation_commit"],
-        "preflight_binding_commit": head,
+        "gse207584_i1_commit": frozen_i1["commit"],
+        "gse207584_i2_commit": preflight["implementation_commit"],
+        "gse207584_b2_commit": head,
     }
 
 

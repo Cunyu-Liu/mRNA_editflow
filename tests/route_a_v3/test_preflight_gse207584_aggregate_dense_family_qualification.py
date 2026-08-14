@@ -78,8 +78,9 @@ def _fixture_binding(*args: object) -> dict[str, str]:
         "gse261709_i1_commit": PREFLIGHT.PREDECESSOR_I1_COMMIT,
         "gse261709_i2_commit": PREFLIGHT.PREDECESSOR_I2_COMMIT,
         "gse261709_b2_commit": PREFLIGHT.PREDECESSOR_B2_COMMIT,
-        "preflight_implementation_commit": "6" * 40,
-        "preflight_binding_commit": "7" * 40,
+        "gse207584_i1_commit": PREFLIGHT.GSE207_I1_COMMIT,
+        "gse207584_i2_commit": "6" * 40,
+        "gse207584_b2_commit": "7" * 40,
     }
 
 
@@ -307,7 +308,7 @@ def test_disk_candidate_is_strict_valid_i_or_b_and_normalizes_to_i() -> None:
     assert PREFLIGHT._normalise_preflight_binding(synthetic_b) == synthetic_i
 
 
-def test_protocol_freezes_dec023_and_gse261_but_keeps_gse207_own4_unknown() -> None:
+def test_protocol_freezes_dec023_gse261_and_gse207_i1_for_disk_i2_or_b2() -> None:
     protocol = _protocol()
     assert PROTOCOL_PATH.read_bytes() == PREFLIGHT._protocol_json_bytes(protocol)
     authority = protocol["implementation_binding"]["authority_runtime_group"]
@@ -335,7 +336,18 @@ def test_protocol_freezes_dec023_and_gse261_but_keeps_gse207_own4_unknown() -> N
     assert predecessor["binding_b2_blob_sha256_by_path"] == (
         PREFLIGHT.PREDECESSOR_B2_BLOBS
     )
-    assert [preflight[field] for field in OWN_BINDING_SCALARS] == [
+    assert preflight["predecessor_implementation_i1"] == {
+        "status": PREFLIGHT.GSE207_I1_FROZEN_STATUS,
+        "commit": PREFLIGHT.GSE207_I1_COMMIT,
+        "expected_parent": PREFLIGHT.PREDECESSOR_B2_COMMIT,
+        "exact_changed_paths": list(PREFLIGHT.EXACT3),
+        "blob_sha256_by_path": PREFLIGHT.GSE207_I1_BLOBS,
+    }
+    normalized_disk = PREFLIGHT._normalise_preflight_binding(protocol)
+    assert [
+        normalized_disk["implementation_binding"]["preflight_group"][field]
+        for field in OWN_BINDING_SCALARS
+    ] == [
         PREFLIGHT.UNKNOWN
     ] * 4
     assert protocol["claim_boundary"]["current_credit_delta"] == {
@@ -363,9 +375,10 @@ def test_protocol_freezes_dec023_and_gse261_but_keeps_gse207_own4_unknown() -> N
     assert normalised["implementation_binding"]["predecessor_preflight_group"][
         "status"
     ] == PREFLIGHT.PREDECESSOR_FROZEN_STATUS
-    assert normalised["implementation_binding"]["preflight_group"][
-        "status"
-    ] == PREFLIGHT.UNKNOWN
+    assert [
+        normalised["implementation_binding"]["preflight_group"][field]
+        for field in OWN_BINDING_SCALARS
+    ] == [PREFLIGHT.UNKNOWN] * 4
 
 
 def test_frozen_predecessor_drift_and_partial_own4_are_rejected() -> None:
@@ -392,13 +405,20 @@ def test_frozen_predecessor_drift_and_partial_own4_are_rejected() -> None:
 
     protocol = _clean_i_protocol()
     protocol["implementation_binding"]["preflight_group"][
+        "predecessor_implementation_i1"
+    ]["commit"] = "5" * 40
+    with pytest.raises(PREFLIGHT.ProtocolError, match="frozen GSE207 I1"):
+        PREFLIGHT._validate_protocol(protocol)
+
+    protocol = _clean_i_protocol()
+    protocol["implementation_binding"]["preflight_group"][
         "implementation_commit"
     ] = "4" * 40
     with pytest.raises(PREFLIGHT.ProtocolError, match="own4"):
         PREFLIGHT._validate_protocol(protocol)
 
 
-def test_repository_audit_proves_dec023_gse261_and_dynamic_gse207_i_b(
+def test_repository_audit_proves_dec023_gse261_and_gse207_i1_i2_b2(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -407,6 +427,7 @@ def test_repository_audit_proves_dec023_gse261_and_dynamic_gse207_i_b(
     authority = binding["authority_runtime_group"]
     predecessor = binding["predecessor_preflight_group"]
     preflight = binding["preflight_group"]
+    frozen_gse207_i1 = preflight["predecessor_implementation_i1"]
     script_payload = b"synthetic GSE207 implementation script\n"
     test_payload = b"synthetic GSE207 focused test\n"
     preflight["implementation_script_sha256"] = hashlib.sha256(
@@ -469,6 +490,9 @@ def test_repository_audit_proves_dec023_gse261_and_dynamic_gse207_i_b(
             PREFLIGHT.PREDECESSOR_I2_COMMIT
         ][PREFLIGHT.PREDECESSOR_PATHS[2]],
     }
+    gse207_i1_payloads = {
+        path: f"gse207-i1:{path}".encode() for path in PREFLIGHT.EXACT3
+    }
 
     digest_by_payload: dict[bytes, str] = {}
     digest_by_payload.update(
@@ -488,6 +512,12 @@ def test_repository_audit_proves_dec023_gse261_and_dynamic_gse207_i_b(
                 for path, digest in authority[digest_field].items()
             }
         )
+    digest_by_payload.update(
+        {
+            gse207_i1_payloads[path]: digest
+            for path, digest in frozen_gse207_i1["blob_sha256_by_path"].items()
+        }
+    )
     for commit, digest_field in (
         (
             PREFLIGHT.PREDECESSOR_I1_COMMIT,
@@ -521,7 +551,8 @@ def test_repository_audit_proves_dec023_gse261_and_dynamic_gse207_i_b(
 
     parent_by_commit = {
         preflight_b: preflight_i,
-        preflight_i: PREFLIGHT.PREDECESSOR_B2_COMMIT,
+        preflight_i: PREFLIGHT.GSE207_I1_COMMIT,
+        PREFLIGHT.GSE207_I1_COMMIT: PREFLIGHT.PREDECESSOR_B2_COMMIT,
         PREFLIGHT.PREDECESSOR_B2_COMMIT: PREFLIGHT.PREDECESSOR_I2_COMMIT,
         PREFLIGHT.PREDECESSOR_I2_COMMIT: PREFLIGHT.PREDECESSOR_I1_COMMIT,
         PREFLIGHT.PREDECESSOR_I1_COMMIT: PREFLIGHT.RUNTIME_B2_COMMIT,
@@ -552,7 +583,7 @@ def test_repository_audit_proves_dec023_gse261_and_dynamic_gse207_i_b(
         if len(args) == 2 and args[0] == "rev-parse" and args[1].endswith("^"):
             commit = args[1][:-1]
             if parent_drift["enabled"] and commit == preflight_i:
-                return PREFLIGHT.RUNTIME_B2_COMMIT
+                return PREFLIGHT.PREDECESSOR_B2_COMMIT
             return parent_by_commit[commit]
         raise AssertionError(args)
 
@@ -570,6 +601,8 @@ def test_repository_audit_proves_dec023_gse261_and_dynamic_gse207_i_b(
             return tuple(sorted(PREFLIGHT.PREDECESSOR_PATHS))
         if commit == PREFLIGHT.PREDECESSOR_B2_COMMIT:
             return tuple(sorted(PREFLIGHT.PREDECESSOR_B2_EXACT_CHANGED_PATHS))
+        if commit == PREFLIGHT.GSE207_I1_COMMIT:
+            return tuple(sorted(PREFLIGHT.EXACT3))
         if commit == preflight_i:
             return tuple(sorted(PREFLIGHT.EXACT3))
         if commit == preflight_b:
@@ -591,6 +624,8 @@ def test_repository_audit_proves_dec023_gse261_and_dynamic_gse207_i_b(
             return runtime_payloads[commit][path]
         if commit in predecessor_payloads:
             return predecessor_payloads[commit][path]
+        if commit == PREFLIGHT.GSE207_I1_COMMIT:
+            return gse207_i1_payloads[path]
         if commit == preflight_i:
             return {
                 PREFLIGHT.CONFIG_PATH: PREFLIGHT._protocol_json_bytes(
@@ -615,7 +650,7 @@ def test_repository_audit_proves_dec023_gse261_and_dynamic_gse207_i_b(
         protocol_bytes,
         root,
     ) == {
-        "status": "BOUND_DEC023_AND_GSE261_I1_I2_B2_THEN_GSE207_I_B",
+        "status": "BOUND_DEC023_GSE261_AND_GSE207_I1_I2_B2",
         "authority_commit": PREFLIGHT.AUTHORITY_COMMIT,
         "runtime_i1_commit": PREFLIGHT.RUNTIME_I1_COMMIT,
         "runtime_i2_commit": PREFLIGHT.RUNTIME_I2_COMMIT,
@@ -623,8 +658,9 @@ def test_repository_audit_proves_dec023_gse261_and_dynamic_gse207_i_b(
         "gse261709_i1_commit": PREFLIGHT.PREDECESSOR_I1_COMMIT,
         "gse261709_i2_commit": PREFLIGHT.PREDECESSOR_I2_COMMIT,
         "gse261709_b2_commit": PREFLIGHT.PREDECESSOR_B2_COMMIT,
-        "preflight_implementation_commit": preflight_i,
-        "preflight_binding_commit": preflight_b,
+        "gse207584_i1_commit": PREFLIGHT.GSE207_I1_COMMIT,
+        "gse207584_i2_commit": preflight_i,
+        "gse207584_b2_commit": preflight_b,
     }
 
     runtime_drift["enabled"] = True
