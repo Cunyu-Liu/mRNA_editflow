@@ -1,0 +1,372 @@
+{
+  "schema_version": "route_a_v3_gse261709_dec024_aggregate_row_level_a1_qualification_preflight.v1",
+  "protocol_id": "GSE261709_DEC024_AGGREGATE_ROW_LEVEL_A1_QUALIFICATION_PREFLIGHT_V1",
+  "contract_id": "mrna_xeditflow_route_a_v3",
+  "phase_id": "A1",
+  "dataset_id": "GSE261709",
+  "bioproject_id": "PRJNA1088465",
+  "decision_id": "V3-DEC-024",
+  "protocol_status": "LOCAL_EXACT3_I_CANDIDATE_RUNTIME_BOUND_OWN_BINDING_AND_MEMBER_BODY_AUTHORITY_SCHEMA_PENDING_NOT_QUALIFICATION",
+  "implementation_binding": {
+    "binding_scheme": "DEC024_AUTHORITY_A_THEN_NONAUTHORITATIVE_A6_G0_EXACT4_THEN_RUNTIME_I_B_THEN_EVT058_PROJECTION_P_THEN_GSE261_EXACT3_I_CONFIG_ONLY_B_V1",
+    "authority_group": {
+      "status": "BOUND",
+      "authority_commit": "0bb84dffb1389b9eced7e92e36ef80b8a97ed0be",
+      "authority_expected_parent": "e5d089a43d194caf59369fd12c203c0694ba40c6",
+      "authority_exact_changed_paths": [
+        "configs/route_a_v3.yaml",
+        "configs/route_a_v3_a1_qualification.json",
+        "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec024.yaml",
+        "docs/contracts/supersession_mrna_xeditflow_v1_1_to_route_a_v3.yaml",
+        "docs/execution/route_a_v3_a1_interim.yaml",
+        "docs/execution/route_a_v3_a6_interim.yaml",
+        "docs/execution/route_a_v3_data_role_registry.yaml",
+        "docs/execution/route_a_v3_decision_log.yaml",
+        "docs/execution/route_a_v3_registry_manifest.json",
+        "docs/execution/route_a_v3_task_registry.yaml",
+        "scripts/route_a_v3/validate_a0_bundle.py",
+        "tests/route_a_v3/test_a0_integrity_guards.py"
+      ],
+      "authority_runtime_lifecycle": {
+        "status": "BOUND",
+        "mandatory_non_authoritative_predecessor": {
+          "status": "BOUND_ENGINEERING_ONLY_NO_AUTHORITY_OR_SCIENCE_CHANGE",
+          "commit": "8fde46ca7daa765fa3a8ad8ce24a3da82ce1a8d0",
+          "expected_parent": "0bb84dffb1389b9eced7e92e36ef80b8a97ed0be",
+          "exact_changed_paths": [
+            "configs/route_a_v3_a6_learned_base_value_g0_implementation_candidate_v1.json",
+            "docs/plans/2026-08-14-route-a-v3-a6-learned-g0-implementation-candidate-v1.md",
+            "scripts/route_a_v3/a6_learned_base_value_g0_candidate.py",
+            "tests/route_a_v3/test_a6_learned_base_value_g0_candidate.py"
+          ],
+          "changes_dec024_authority": false,
+          "changes_scientific_state": false
+        },
+        "paths": [
+          "configs/route_a_v3_dec024_authority_runtime_sync_v1.json",
+          "scripts/route_a_v3/dec024_authority_runtime_sync.py",
+          "tests/route_a_v3/test_dec024_authority_runtime_sync.py"
+        ],
+        "implementation_commit": "f955ca5a1714af57f706ee2ddf0a6825ad4737de",
+        "implementation_expected_parent": "8fde46ca7daa765fa3a8ad8ce24a3da82ce1a8d0",
+        "implementation_blob_sha256_by_path": {
+          "configs/route_a_v3_dec024_authority_runtime_sync_v1.json": "3dbbdaed8458c6eb68af1c11d890b66c4116457b84df96dd84ef8622be0fd669",
+          "scripts/route_a_v3/dec024_authority_runtime_sync.py": "6d9614b53e160fe38bbf280c310d6adec773b790b48f93374448ff6b29e5bd3b",
+          "tests/route_a_v3/test_dec024_authority_runtime_sync.py": "b22d92aeea7f3c0dc754dd739daa1d5025af64e96e86a84e7b0458b1788c3799"
+        },
+        "binding_commit": "e3c3416e24e0298ab792a1e0998018125c907ffa",
+        "binding_expected_parent": "f955ca5a1714af57f706ee2ddf0a6825ad4737de",
+        "binding_blob_sha256_by_path": {
+          "configs/route_a_v3_dec024_authority_runtime_sync_v1.json": "1b1a3159fc7b08aeb967983f3b651bdb8cba182829c22e767b6a9e9dad1fb7e1",
+          "scripts/route_a_v3/dec024_authority_runtime_sync.py": "6d9614b53e160fe38bbf280c310d6adec773b790b48f93374448ff6b29e5bd3b",
+          "tests/route_a_v3/test_dec024_authority_runtime_sync.py": "b22d92aeea7f3c0dc754dd739daa1d5025af64e96e86a84e7b0458b1788c3799"
+        },
+        "implementation_exact_changed_paths": [
+          "configs/route_a_v3_dec024_authority_runtime_sync_v1.json",
+          "scripts/route_a_v3/dec024_authority_runtime_sync.py",
+          "tests/route_a_v3/test_dec024_authority_runtime_sync.py"
+        ],
+        "binding_exact_changed_paths": [
+          "configs/route_a_v3_dec024_authority_runtime_sync_v1.json"
+        ]
+      }
+    },
+    "mandatory_non_science_current_projection_predecessor": {
+      "status": "BOUND_RUNTIME_PROJECTION_ONLY_NO_AUTHORITY_OR_SCIENCE_CHANGE",
+      "commit": "6df392e61d0d55b836c5baf84ce67f4aa9e7d1fe",
+      "expected_parent_source": "implementation_binding.authority_group.authority_runtime_lifecycle.binding_commit",
+      "exact_changed_paths": [
+        "docs/execution/route_a_v3_a1_interim.yaml",
+        "docs/execution/route_a_v3_registry_manifest.json",
+        "scripts/route_a_v3/validate_a0_bundle.py",
+        "tests/route_a_v3/test_a0_integrity_guards.py"
+      ],
+      "blob_sha256_by_path": {
+        "docs/execution/route_a_v3_a1_interim.yaml": "06bfbcf468e28ee27f2f02210a0cad6719cb805cb441ea40142b7b837680b44b",
+        "docs/execution/route_a_v3_registry_manifest.json": "fde5f7150a6dbd8b3e1caa53c69beb5ddb8b7fb9f3242bd1ffe270b165a579b9",
+        "scripts/route_a_v3/validate_a0_bundle.py": "4d4188f7777a2651c73b19e691be22687a73ad0da2abe8fc39f2c0e297ddc3a0",
+        "tests/route_a_v3/test_a0_integrity_guards.py": "aa7e5773d4353f4c8fb9a9afb6d5b9a3f3fb1ba035c6c54e6ae0d4eabac99c6b"
+      },
+      "changes_dec024_authority": false,
+      "changes_scientific_state": false
+    },
+    "status": "UNKNOWN_NOT_ASSERTED",
+    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "implementation_script_path": "scripts/route_a_v3/preflight_gse261709_dec024_aggregate_row_level_a1_qualification.py",
+    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_test_path": "tests/route_a_v3/test_preflight_gse261709_dec024_aggregate_row_level_a1_qualification.py",
+    "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
+    "unknown_to_bound_scalar_paths": [
+      "implementation_binding.status",
+      "implementation_binding.implementation_commit",
+      "implementation_binding.implementation_script_sha256",
+      "implementation_binding.implementation_test_sha256"
+    ],
+    "implementation_commit_exact_changed_paths": [
+      "configs/route_a_v3_gse261709_dec024_aggregate_row_level_a1_qualification_preflight_v1.json",
+      "scripts/route_a_v3/preflight_gse261709_dec024_aggregate_row_level_a1_qualification.py",
+      "tests/route_a_v3/test_preflight_gse261709_dec024_aggregate_row_level_a1_qualification.py"
+    ],
+    "binding_commit_exact_changed_paths": [
+      "configs/route_a_v3_gse261709_dec024_aggregate_row_level_a1_qualification_preflight_v1.json"
+    ],
+    "activation_rule": "DEC024 authority A is frozen at 0bb84dff. The non-authoritative A6 G0 exact4 engineering candidate at 8fde46c is its direct child and changes no authority or scientific state. Authority-runtime I exact3 at f955ca5a is the direct child of 8fde46c, and its config-only B at e3c3416e is frozen as one complete group; runtime I is not authority A. The non-science EVT058 current projection P at 6df392e is the direct exact4 child of runtime B with the four frozen blobs above. GSE261709 exact3-I must then be the direct exact3 child of projection P with its own four implementation binding scalars UNKNOWN_NOT_ASSERTED; GSE261709 exact3-B may replace only those four scalars. The official outer TAR identity and seven-entry directory are frozen, but member-body authority, member digest/schema, endpoint formula, and evidence remain UNKNOWN_NOT_ASSERTED. A later explicit user authority and new reviewed exact3 successor are required before any TAR member open. Until then stop before asset-path inspection, member-body read, aggregation, or output-path inspection."
+  },
+  "repository_authority": {
+    "production_repo_root": "/home/cunyuliu/mrna_editflow_goal/worktrees/routea_v3_a1_20260810",
+    "branch": "routea-v3-a1-20260810",
+    "upstream_ref": "origin/routea-v3-a1-20260810",
+    "require_clean_worktree": true,
+    "require_head_upstream_origin_match": true
+  },
+  "decision_authority": {
+    "amendment_path": "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec024.yaml",
+    "authorized_role": "AGGREGATE_ROW_LEVEL_A1_QUALIFICATION_PREFLIGHT_ONLY",
+    "authority_surface": "ORDINARY_PUBLIC_PROCESSED_ASSET_ONLY",
+    "allowed_internal_input_field_classes_exactly": [
+      "PUBLIC_PROCESSED_ASSET_IDENTIFIER_AND_ROLE",
+      "BARCODE_TO_ALLELE_TRANSCRIPT_SOURCE_MAPPING",
+      "SOURCE_AND_CANDIDATE_SEQUENCE",
+      "FULL_CONSTRUCT_AND_REPORTER_CONTEXT",
+      "RNA_AND_DNA_THREE_BIOLOGICAL_REPLICATE_COUNTS",
+      "ENDPOINT_EFFECT_AND_STANDARD_ERROR_FIELDS",
+      "MISSINGNESS_CENSORING_AND_QC_STATUS",
+      "LICENSE_AND_REUSE_NOTICE",
+      "NECESSARY_CONTEXT"
+    ],
+    "allowed_internal_uses_exactly": [
+      "PROCESSED_ASSET_PRIMARY_MEASUREMENT_ROUTE_AUDIT",
+      "BARCODE_ALLELE_TRANSCRIPT_SOURCE_FULL_CONSTRUCT_JOIN_AUDIT",
+      "SOURCE_FAMILY_AND_LEGAL_EDIT_REPLAY_AUDIT",
+      "ENDPOINT_DIRECTION_SCALE_EFFECT_AND_STANDARD_ERROR_AUDIT",
+      "THREE_BIOLOGICAL_REPLICATE_RNA_DNA_COUNT_AUDIT",
+      "RIGHTS_AND_EXPOSURE_AUDIT",
+      "SOURCE_GROUP_SPLIT_LEAKAGE_EFFECTIVE_N_AND_POWER_READINESS_AUDIT"
+    ],
+    "allowed_output_class": "AGGREGATE_ROW_LEVEL_A1_QUALIFICATION_PREFLIGHT_ONLY",
+    "all_required_gates_passing_automatically_qualifies_dataset": false,
+    "separate_user_authority_required_for_qualification_or_counting": true
+  },
+  "processed_asset_contract": {
+    "processed_public_asset_body_read_allowed_after_all_bindings": true,
+    "official_manifest_bound_processed_tar_txt_member_read_allowed_after_all_bindings": true,
+    "raw_fastq_or_sra_member_payload_read_allowed": false,
+    "raw_archive_run_member_open_allowed": false,
+    "network_download_allowed_by_this_candidate": false,
+    "official_processed_asset_manifest": {
+      "status": "ARCHIVE_DIRECTORY_BOUND_MEMBER_BODY_AUTHORITY_AND_SCHEMA_UNKNOWN_NOT_ASSERTED",
+      "official_download_url": "https://ftp.ncbi.nlm.nih.gov/geo/series/GSE261nnn/GSE261709/suppl/GSE261709_RAW.tar",
+      "filename": "GSE261709_RAW.tar",
+      "byte_count": 667648,
+      "sha256": "3024746ce25f4b795daa376ac6dbafd3d53f6d30be8aed9fb14db0f118c6f434",
+      "tar_member_directory_exactly": [
+        {"filename": "GSM8149344_S1_BARCODES.txt.gz", "gzip_byte_count": 98593},
+        {"filename": "GSM8149345_S3_BARCODES.txt.gz", "gzip_byte_count": 99839},
+        {"filename": "GSM8149346_S5_BARCODES.txt.gz", "gzip_byte_count": 96359},
+        {"filename": "GSM8149347_S2_BARCODES.txt.gz", "gzip_byte_count": 98438},
+        {"filename": "GSM8149348_S4_BARCODES.txt.gz", "gzip_byte_count": 100030},
+        {"filename": "GSM8149349_S6_BARCODES.txt.gz", "gzip_byte_count": 97483},
+        {"filename": "GSM8149350_S7_BARCODES.txt.gz", "gzip_byte_count": 99818}
+      ],
+      "member_body_access_authority_status": "EXPLICIT_USER_AUTHORITY_REQUIRED_NOT_GRANTED",
+      "encoding": "UNKNOWN_NOT_ASSERTED",
+      "container_format": "TAR_DIRECTORY_BOUND_SEVEN_GZIP_TXT_MEMBERS",
+      "tar_member_filename": "UNKNOWN_NOT_ASSERTED",
+      "tar_member_byte_count": "UNKNOWN_NOT_ASSERTED",
+      "tar_member_sha256": "UNKNOWN_NOT_ASSERTED",
+      "tar_member_uncompressed_byte_count": "UNKNOWN_NOT_ASSERTED",
+      "tar_member_uncompressed_sha256": "UNKNOWN_NOT_ASSERTED",
+      "delimiter": "UNKNOWN_NOT_ASSERTED",
+      "header_names_exactly": "UNKNOWN_NOT_ASSERTED",
+      "row_count_excluding_header": "UNKNOWN_NOT_ASSERTED",
+      "column_count": "UNKNOWN_NOT_ASSERTED",
+      "field_columns_exactly": "UNKNOWN_NOT_ASSERTED",
+      "endpoint_formula_id": "UNKNOWN_NOT_ASSERTED",
+      "endpoint_pseudocount": "UNKNOWN_NOT_ASSERTED",
+      "endpoint_primary_documentation_locator": "UNKNOWN_NOT_ASSERTED",
+      "primary_measurement_route_status": "UNKNOWN_NOT_ASSERTED",
+      "endpoint_formula_and_primary_documentation_status": "UNKNOWN_NOT_ASSERTED",
+      "biological_replicate_sample_role_provenance_status": "UNKNOWN_NOT_ASSERTED",
+      "license_and_reuse_rights_status": "UNKNOWN_NOT_ASSERTED",
+      "historical_analytic_or_checkpoint_exposure_status": "UNKNOWN_NOT_ASSERTED",
+      "split_readiness": "UNKNOWN_NOT_ASSERTED"
+    },
+    "unknown_group_action": "STOP_BEFORE_PROCESSED_ASSET_BODY_OR_OUTPUT_IO",
+    "forbidden_filename_suffixes": [
+      ".fastq",
+      ".fastq.gz",
+      ".fq",
+      ".fq.gz",
+      ".sra",
+      ".tar",
+      ".tar.gz",
+      ".tgz",
+      ".zip"
+    ],
+    "synthetic_fixture_execution_is_scientific_evidence": false
+  },
+  "canonical_internal_record_interface": {
+    "fields_exactly": [
+      "source_group_token",
+      "candidate_token",
+      "near_duplicate_component_token",
+      "source_sequence",
+      "candidate_sequence",
+      "construct_context",
+      "cell_context",
+      "barcode_to_allele_join_closed",
+      "allele_to_transcript_join_closed",
+      "transcript_to_source_join_closed",
+      "full_construct_join_closed",
+      "replicate_roles",
+      "replicate_sample_provenance_tokens",
+      "replicate_independence_closed",
+      "rna_counts",
+      "dna_counts",
+      "replicate_effects",
+      "reported_effect",
+      "reported_standard_error",
+      "endpoint_direction",
+      "missing",
+      "censored",
+      "qc_pass"
+    ],
+    "source_and_candidate_alphabet": "ACGT",
+    "edit_type": "SOURCE_RELATIVE_SUBSTITUTION_ONLY",
+    "minimum_source_relative_substitutions": 1,
+    "maximum_source_relative_substitutions": 5,
+    "minimum_distinct_candidates_per_source_family": 3,
+    "biological_replicate_count": 3,
+    "required_replicate_roles": [
+      "BIOLOGICAL_1",
+      "BIOLOGICAL_2",
+      "BIOLOGICAL_3"
+    ],
+    "endpoint_direction": "HIGHER_REPORTED_EFFECT_IS_GREATER_REPORTER_ACTIVITY",
+    "replicate_effect_recompute": "LOG2_RNA_PLUS_PSEUDOCOUNT_OVER_DNA_PLUS_PSEUDOCOUNT",
+    "reported_effect_recompute": "MEAN_OF_THREE_RECOMPUTED_PAIRED_BIOLOGICAL_REPLICATE_EFFECTS",
+    "reported_standard_error_recompute": "SAMPLE_STANDARD_DEVIATION_OF_THREE_PAIRED_EFFECTS_DIVIDED_BY_SQRT_THREE",
+    "effect_and_se_absolute_tolerance": 1e-10,
+    "technical_units_may_substitute_for_biological_replicates": false,
+    "missing_or_censored_measurement_may_be_treated_as_zero": false,
+    "source_to_candidate_edit_relation_may_be_presumed": false,
+    "barcode_to_source_join_may_be_inferred_from_row_order": false
+  },
+  "gate_contract": {
+    "gate_ids_exactly": [
+      "PUBLIC_PROCESSED_ASSET_IDENTITY_ROLE_PROVENANCE_AND_PRIMARY_MEASUREMENT_ROUTE_CLOSED",
+      "BARCODE_ALLELE_TRANSCRIPT_SOURCE_AND_FULL_CONSTRUCT_JOIN_CLOSED",
+      "SOURCE_CANDIDATE_IDENTITY_AND_DENSE_FAMILY_MINIMUM_THREE_CANDIDATES_CLOSED",
+      "SOURCE_TO_CANDIDATE_LEGAL_EDIT_REPLAY_CLOSED",
+      "ENDPOINT_DIRECTION_SCALE_EFFECT_AND_STANDARD_ERROR_SEMANTICS_CLOSED",
+      "THREE_INDEPENDENT_BIOLOGICAL_REPLICATE_RNA_DNA_COUNTS_AND_VALID_STANDARD_ERROR_CLOSED",
+      "MISSING_CENSORING_QC_AND_SELECTION_CLOSED",
+      "LICENSE_AND_REUSE_RIGHTS_CLOSED",
+      "HISTORICAL_ANALYTIC_OR_CHECKPOINT_EXPOSURE_CLOSED",
+      "OUTCOME_BLIND_SOURCE_GROUP_NEAR_DUPLICATE_SPLIT_AND_ZERO_LEAKAGE_READINESS_CLOSED",
+      "POST_DEDUP_INDEPENDENT_SOURCE_GROUP_EFFECTIVE_N_CLOSED",
+      "PREFROZEN_SOURCE_GROUP_POWER_AND_FULL_CI_WIDTH_CLOSED"
+    ],
+    "allowed_statuses": [
+      "PASS_PREFLIGHT_ONLY",
+      "BLOCKED",
+      "UNKNOWN_NOT_ASSERTED"
+    ],
+    "all_pass_action": "READY_FOR_SEPARATE_FORMAL_QUALIFIER_AUTHORITY_NOT_QUALIFIED",
+    "synthetic_all_pass_action": "SYNTHETIC_IMPLEMENTATION_EXERCISE_ONLY_NOT_DATA_PREFLIGHT",
+    "nonpass_action": "STOP_CURRENT_PROTOCOL_NOT_QUALIFIED",
+    "unknown_or_not_run_gate_is_pass": false
+  },
+  "aggregate_evidence_interface": {
+    "fields_exactly": [
+      "processed_asset_identity_status",
+      "processed_asset_role_and_primary_measurement_route_status",
+      "processed_asset_schema_role_binding_status",
+      "endpoint_formula_and_primary_documentation_status",
+      "biological_replicate_sample_role_provenance_status",
+      "license_and_reuse_rights_status",
+      "historical_analytic_or_checkpoint_exposure_status",
+      "split_readiness"
+    ],
+    "split_readiness_fields_exactly": [
+      "status",
+      "outcome_blind",
+      "components_indivisible",
+      "split_executed",
+      "assignment_output_count",
+      "source_group_leakage_count",
+      "exact_sequence_leakage_count",
+      "near_duplicate_leakage_count",
+      "reverse_edge_leakage_count",
+      "candidate_leakage_count",
+      "study_context_leakage_count"
+    ]
+  },
+  "prefrozen_power_contract": {
+    "analysis_unit": "POST_DEDUP_INDEPENDENT_SOURCE_GROUP",
+    "alternative_spearman_rho": 0.25,
+    "alpha_two_sided": 0.05,
+    "target_power_minimum": 0.8,
+    "confidence_level": 0.95,
+    "maximum_full_ci_width": 0.3,
+    "method": "BONETT_WRIGHT_FISHER_Z_ASYMPTOTIC_TWO_SIDED_SPEARMAN",
+    "required_effective_n_for_power_and_ci_width": 156,
+    "formal_qualification_power_gate_execution_allowed": false
+  },
+  "output_contract": {
+    "filename": "GSE261709_DEC024_AGGREGATE_ROW_LEVEL_A1_QUALIFICATION_PREFLIGHT_V1.json",
+    "single_aggregate_output_only": true,
+    "atomic_no_replace_publication_required": true,
+    "allowed_aggregate_sections_exactly": [
+      "processed_asset_role_schema_and_join_coverage",
+      "source_family_size_histogram",
+      "edit_distance_histogram",
+      "replicate_coverage_histogram",
+      "rna_dna_count_validity_histogram",
+      "effect_direction_histogram",
+      "standard_error_validity_histogram",
+      "missing_censoring_qc_histogram",
+      "rights_exposure_split_gate_status",
+      "post_dedup_effective_n_and_power_readiness"
+    ],
+    "member_identifier_included": false,
+    "barcode_included": false,
+    "transcript_included": false,
+    "sequence_included": false,
+    "row_count_included": false,
+    "row_endpoint_included": false,
+    "row_effect_included": false,
+    "row_standard_error_included": false,
+    "replicate_identifier_included": false,
+    "split_assignment_included": false,
+    "qualification_or_credit_included": false,
+    "canonical_records_included": false
+  },
+  "frozen_outer_truth": {
+    "current_qualified_counts": {
+      "ordinary": 1,
+      "a1": 1,
+      "true_a2": 0,
+      "canonical_records": 6547
+    },
+    "gse261709_contribution": {
+      "ordinary": 0,
+      "a1": 0,
+      "true_a2": 0,
+      "canonical_records": 0
+    },
+    "gse261709_qualified": false,
+    "gse261709_a1_credit_established": false,
+    "qualification_run_count": 0,
+    "canonical_materialization_run_count": 0,
+    "training_run_count": 0,
+    "gpu_work_run_count": 0,
+    "model_selection_run_count": 0,
+    "training_allowed": false,
+    "gpu_work_allowed": false,
+    "model_selection_allowed": false,
+    "a7_unlocked": false,
+    "next_phase_authorized": false,
+    "scientific_claim_status": "NOT_ESTABLISHED"
+  }
+}
