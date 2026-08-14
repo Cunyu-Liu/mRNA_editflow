@@ -26,10 +26,10 @@
       ]
     },
     "candidate_group": {
-      "status": "UNKNOWN_NOT_ASSERTED",
-      "implementation_commit": "UNKNOWN_NOT_ASSERTED",
-      "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
-      "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
+      "status": "BOUND",
+      "implementation_commit": "b64768a7cf9c789bd4a6296211e897801a899804",
+      "implementation_script_sha256": "09e6c9b450de706c5f037aef73676f77fc5a1781bdc22511ac70e20fa6365b22",
+      "implementation_test_sha256": "18c3e5aa399205405ec2caa37262685805f43135668a8eae0e7a6923f51ef408",
       "implementation_expected_parent": "da4174f05fd026bcbf8788e0182e5cc68ffb7d1e",
       "implementation_changed_paths_exactly": [
         "configs/route_a_v3_gse261709_dec025_processed_member_aggregate_discovery_v1.json",
