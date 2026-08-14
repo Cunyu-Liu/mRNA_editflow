@@ -1,0 +1,400 @@
+{
+  "schema_version": "route_a_v3_gse217518_corrected_a1_successor_candidate.v1",
+  "protocol_id": "GSE217518_CORRECTED_A1_SUCCESSOR_CANDIDATE_V1",
+  "contract_id": "mrna_xeditflow_route_a_v3",
+  "phase_id": "A1",
+  "decision_id": "V3-DEC-027",
+  "document_status": "DRAFT_CANDIDATE_NOT_ACTIVE_PROTOCOL",
+  "dataset_id": "GSE217518",
+  "baseline": {
+    "remote_branch": "routea-v3-a1-20260810",
+    "dec027_authority_head": "3e0ad158a0b45b2f26ed82da3afe60667c712cd6",
+    "dec027_authority_parent": "b1ca33d852bad111ff31b4f60493d8c43c63d1a3",
+    "fresh_verified_clean_at_authority_freeze": true,
+    "pre_dec027_projection_event": "A1-EVT-058",
+    "dec027_runtime_event_expected_when_bound": "A1-EVT-059"
+  },
+  "repository_authority": {
+    "production_repo_root": "/home/cunyuliu/mrna_editflow_goal/worktrees/routea_v3_a1_20260810",
+    "branch": "routea-v3-a1-20260810",
+    "upstream_ref": "origin/routea-v3-a1-20260810",
+    "live_origin_head_required": true,
+    "clean_worktree_and_index_required": true
+  },
+  "bindings": {
+    "authority": {
+      "status": "BOUND",
+      "authority_commit": "3e0ad158a0b45b2f26ed82da3afe60667c712cd6",
+      "authority_expected_parent": "b1ca33d852bad111ff31b4f60493d8c43c63d1a3",
+      "authority_exact_changed_paths": [
+        "configs/route_a_v3.yaml",
+        "configs/route_a_v3_a1_qualification.json",
+        "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec027.yaml",
+        "docs/contracts/supersession_mrna_xeditflow_v1_1_to_route_a_v3.yaml",
+        "docs/execution/route_a_v3_a1_interim.yaml",
+        "docs/execution/route_a_v3_a6_interim.yaml",
+        "docs/execution/route_a_v3_data_role_registry.yaml",
+        "docs/execution/route_a_v3_decision_log.yaml",
+        "docs/execution/route_a_v3_registry_manifest.json",
+        "docs/execution/route_a_v3_task_registry.yaml",
+        "scripts/route_a_v3/validate_a0_bundle.py",
+        "tests/route_a_v3/test_a0_integrity_guards.py"
+      ],
+      "authority_blob_sha256_by_path": {
+        "configs/route_a_v3.yaml": "c5ec7d236443b506c09fd3f09e149ce5d082daff618887989af6e59472727a27",
+        "configs/route_a_v3_a1_qualification.json": "261339c38f4b8bbd48bf8f63f6a588be57af9f6229119e84bf661d7ee8f855db",
+        "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec027.yaml": "2a27c296539e8e665873363778d91cc223f56f933a815e9509b10a7267f6b5c4",
+        "docs/contracts/supersession_mrna_xeditflow_v1_1_to_route_a_v3.yaml": "1c4b6e29c09eb24798207138047b68909d7bda8bacc3a2eab8e17a7ca789b44b",
+        "docs/execution/route_a_v3_a1_interim.yaml": "fb50929ae2dfa0bdd1c50b003fc43c0e13b89baade203e8384c8b6ea3eba7b1e",
+        "docs/execution/route_a_v3_a6_interim.yaml": "1d44bcfe8669a55dc42f619ed43178f0637e20a4297ca996ecab3f7165612769",
+        "docs/execution/route_a_v3_data_role_registry.yaml": "80217a8114286f84960237819ac5b2d5828afbc23af118576541cc7cee64ae4e",
+        "docs/execution/route_a_v3_decision_log.yaml": "e0dc2a7fb186c5c8d00c1c5604602b1b2f87b26241191d4da55a405a02387e05",
+        "docs/execution/route_a_v3_registry_manifest.json": "73a39a566aa0310a80cc83f4eb17ddb95cabc87e5b070ef6484c05178ba32b75",
+        "docs/execution/route_a_v3_task_registry.yaml": "a64d0b8bb5eb466b06daa46ed109bd19901ee775910bc5cc9221c39ead63a4bc",
+        "scripts/route_a_v3/validate_a0_bundle.py": "81d1a8dc49375f53a1edd5c3f41625e734eacc31a4c328c8137340a041d77e65",
+        "tests/route_a_v3/test_a0_integrity_guards.py": "106f847e957a40fffec4c1b57f8f572325ef96e8a3dc5729db68499e320f380b"
+      }
+    },
+    "runtime": {
+      "status": "BOUND",
+      "runtime_event_id": "A1-EVT-059",
+      "implementation_commit": "5d66e8dc83eb9966f7698ac0fc677f1b06af8ea6",
+      "implementation_expected_parent": "3e0ad158a0b45b2f26ed82da3afe60667c712cd6",
+      "implementation_exact_changed_paths": [
+        "configs/route_a_v3_dec027_authority_runtime_sync_v1.json",
+        "scripts/route_a_v3/dec027_authority_runtime_sync.py",
+        "tests/route_a_v3/test_dec027_authority_runtime_sync.py"
+      ],
+      "implementation_blob_sha256_by_path": {
+        "configs/route_a_v3_dec027_authority_runtime_sync_v1.json": "3d5af87e7512568ed663b211c24a8586eeb9f03936a397cf2d2ddaeb2a21f57b",
+        "scripts/route_a_v3/dec027_authority_runtime_sync.py": "44dcda8897e747cfe363668ddc23d8dd9c53a7f3ffab692a1bb4e7cf738973ca",
+        "tests/route_a_v3/test_dec027_authority_runtime_sync.py": "ff250d4f011d8526e9a4a7bf13049f1f47346faa1c7ea512cbf447a6fb59ba4a"
+      },
+      "binding_commit": "e60956cf59cbddc0406c5d116fb9714906db36e1",
+      "binding_expected_parent": "5d66e8dc83eb9966f7698ac0fc677f1b06af8ea6",
+      "binding_exact_changed_paths": [
+        "configs/route_a_v3_dec027_authority_runtime_sync_v1.json"
+      ],
+      "binding_blob_sha256_by_path": {
+        "configs/route_a_v3_dec027_authority_runtime_sync_v1.json": "e5c1f96ec57b220fd36ff4677deb37d6dc0be06e02f21af3837e17a51e91e5ee",
+        "scripts/route_a_v3/dec027_authority_runtime_sync.py": "44dcda8897e747cfe363668ddc23d8dd9c53a7f3ffab692a1bb4e7cf738973ca",
+        "tests/route_a_v3/test_dec027_authority_runtime_sync.py": "ff250d4f011d8526e9a4a7bf13049f1f47346faa1c7ea512cbf447a6fb59ba4a"
+      },
+      "unknown_to_bound_fields": [
+        "status",
+        "runtime_event_id",
+        "implementation_commit",
+        "implementation_blob_sha256_by_path",
+        "binding_commit",
+        "binding_expected_parent",
+        "binding_blob_sha256_by_path"
+      ]
+    },
+    "implementation": {
+      "status": "UNKNOWN_NOT_ASSERTED",
+      "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+      "implementation_script_path": "scripts/route_a_v3/preflight_gse217518_corrected_a1_successor_candidate.py",
+      "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
+      "implementation_test_path": "tests/route_a_v3/test_preflight_gse217518_corrected_a1_successor_candidate.py",
+      "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
+      "implementation_exact_changed_paths": [
+        "configs/route_a_v3_gse217518_corrected_a1_successor_candidate_v1.json",
+        "scripts/route_a_v3/preflight_gse217518_corrected_a1_successor_candidate.py",
+        "tests/route_a_v3/test_preflight_gse217518_corrected_a1_successor_candidate.py"
+      ],
+      "binding_exact_changed_paths": [
+        "configs/route_a_v3_gse217518_corrected_a1_successor_candidate_v1.json"
+      ],
+      "unknown_to_bound_fields": [
+        "status",
+        "implementation_commit",
+        "implementation_script_sha256",
+        "implementation_test_sha256"
+      ]
+    }
+  },
+  "production_activation_rule": {
+    "all_three_binding_groups_must_be_bound": true,
+    "required_commit_chain": "DEC027_A_TO_RUNTIME_I_TO_RUNTIME_B_TO_GSE217518_I_TO_GSE217518_B",
+    "clean_head_equals_upstream_equals_live_origin_required": true,
+    "direct_parent_changed_path_and_blob_audit_required": true,
+    "executing_script_and_focused_test_must_match_implementation_i": true,
+    "binding_commit_may_change_only_the_four_own_binding_scalars": true,
+    "fail_before_official_asset_read": true,
+    "fail_before_output_directory_creation": true,
+    "candidate_evaluation_is_not_production_execution": true
+  },
+  "scope": {
+    "ordinary_public_only": true,
+    "aggregate_output_only": true,
+    "allowed_internal_field_classes": [
+      "ORDINARY_PUBLIC_SOURCE_AND_ASSET_IDENTIFIER",
+      "REFERENCE_AND_CANDIDATE_SEQUENCE_AND_CROSSWALK",
+      "REGION_AND_115BP_CONSTRUCT_CONTEXT",
+      "ENDPOINT_DIRECTION_SCALE_TRANSFORM_AND_QC",
+      "THREE_INDEPENDENT_BIOLOGICAL_EXPERIMENT_MEASUREMENTS",
+      "RIGHTS_NOTICE_AND_HISTORICAL_EXPOSURE_CONTEXT",
+      "NECESSARY_SOURCE_GROUP_AND_NEAR_DUPLICATE_CONTEXT"
+    ],
+    "member_identifier_output_allowed": false,
+    "sequence_output_allowed": false,
+    "row_effect_output_allowed": false,
+    "row_standard_error_output_allowed": false,
+    "split_assignment_output_allowed": false,
+    "persistent_member_level_intermediate_allowed": false,
+    "private_or_sealed_access_allowed": false,
+    "qualification_allowed": false,
+    "credit_change_allowed": false,
+    "canonical_materialization_allowed": false,
+    "training_allowed": false,
+    "gpu_work_allowed": false,
+    "model_selection_allowed": false,
+    "a7_allowed": false
+  },
+  "official_public_sources": [
+    {
+      "authority_id": "NCBI_GEO_GSE217518",
+      "role": "PRIMARY_PUBLIC_SERIES_SAMPLE_AND_PROCESSED_ASSET_ROUTE",
+      "url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE217518"
+    },
+    {
+      "authority_id": "ELIFE_97682_VERSION_OF_RECORD",
+      "role": "PRIMARY_PUBLISHER_METHOD_ENDPOINT_REPLICATE_QC_RIGHTS_AUTHORITY",
+      "url": "https://elifesciences.org/articles/97682",
+      "doi": "10.7554/eLife.97682.3"
+    },
+    {
+      "authority_id": "ELIFE_97682_SUPPLEMENTARY_FILE_1",
+      "role": "PRIMARY_PUBLISHER_VARIANT_ENDPOINT_TABLE",
+      "url": "https://cdn.elifesciences.org/articles/97682/elife-97682-supp1-v1.xlsx"
+    },
+    {
+      "authority_id": "AUTHOR_CODE_SWH_REV_30B9983",
+      "role": "AUTHOR_CODE_AND_DOWNSTREAM_QC_SCOPE_EVIDENCE",
+      "url": "https://archive.softwareheritage.org/swh:1:rev:30b9983b77a5673a090316d0068a28ec1c0ef510"
+    }
+  ],
+  "official_asset_contract": {
+    "supplement_filename": "elife-97682-supp1-v1.xlsx",
+    "supplement_sheet": "Sup_T2_metaTable",
+    "supplement_headers": [
+      "Mutant",
+      "variant_name",
+      "GeneSymbol",
+      "Chromosome",
+      "Start",
+      "Stop",
+      "UTR_Group",
+      "ReferenceAllele",
+      "AlternateAllele",
+      "t05_WT_SH",
+      "t05_mt_SH",
+      "pval_SH",
+      "sig_SH",
+      "t05_WT_HEK",
+      "t05_mt_HEK",
+      "pval_HEK",
+      "sig_HEK",
+      "GCcontent_WT",
+      "GCcontent_mt",
+      "TA_ratio_WT",
+      "TA_ratio_mt"
+    ],
+    "processed_assets": [
+      {
+        "filename": "GSE217518_HEK_U3_Raw.csv.gz",
+        "cell_line": "HEK293T",
+        "region": "3UTR",
+        "timepoint_minutes": [30, 75, 120]
+      },
+      {
+        "filename": "GSE217518_HEK_U5_Raw.csv.gz",
+        "cell_line": "HEK293T",
+        "region": "5UTR",
+        "timepoint_minutes": [30, 75, 120]
+      },
+      {
+        "filename": "GSE217518_SH_U3_Raw.csv.gz",
+        "cell_line": "SH-SY5Y",
+        "region": "3UTR",
+        "timepoint_minutes": [20, 40, 60]
+      },
+      {
+        "filename": "GSE217518_SH_U5_Raw.csv.gz",
+        "cell_line": "SH-SY5Y",
+        "region": "5UTR",
+        "timepoint_minutes": [20, 40, 60]
+      }
+    ],
+    "replicate_count_per_cell_region": 3,
+    "measurement_columns_per_asset": 9
+  },
+  "required_gate_ids_exactly": [
+    "PUBLIC_SOURCE_ASSET_IDENTITY_AND_PRIMARY_ROUTE_CLOSED",
+    "SOURCE_REFERENCE_TO_CANDIDATE_CROSSWALK_CLOSED",
+    "FULL_115BP_CONSTRUCT_REPORTER_AND_REGION_CONTEXT_CLOSED",
+    "ENDPOINT_DIRECTION_SCALE_TRANSFORM_AND_SEMANTICS_CLOSED",
+    "THREE_INDEPENDENT_BIOLOGICAL_EXPERIMENTS_AND_VALID_STANDARD_ERROR_CLOSED",
+    "MISSING_OUTLIER_QC_AND_SELECTION_CLOSED",
+    "LICENSE_AND_REUSE_RIGHTS_CLOSED",
+    "HISTORICAL_ANALYTIC_OR_CHECKPOINT_EXPOSURE_CLOSED",
+    "OUTCOME_BLIND_SOURCE_GROUP_NEAR_DUPLICATE_SPLIT_AND_ZERO_LEAKAGE_READINESS_CLOSED",
+    "POST_DEDUP_INDEPENDENT_SOURCE_GROUP_EFFECTIVE_N_CLOSED",
+    "PREFROZEN_SOURCE_GROUP_POWER_AND_FULL_CI_WIDTH_CLOSED"
+  ],
+  "prefrozen_information_thresholds": {
+    "analysis_unit": "INDEPENDENT_SOURCE_GROUP",
+    "alternative_spearman_rho": 0.25,
+    "alpha_two_sided": 0.05,
+    "target_power_minimum": 0.8,
+    "confidence_level": 0.95,
+    "maximum_full_ci_width": 0.3,
+    "required_effective_n_reference": 156,
+    "formal_power_execution_allowed_by_candidate": false
+  },
+  "article_and_project_facts": {
+    "publisher_construct_length_bp": 115,
+    "publisher_reporter_context": "T7_5UTR_EGFP_OR_T7_EGFP_3UTR_WITH_UTR_SPECIFIC_PRIMERS",
+    "publisher_boundary_rule": "VARIANT_CENTERED_UNLESS_NEAR_UTR_BOUNDARY",
+    "publisher_independent_experiment_count": 3,
+    "endpoint_identity": "RNA_HALF_LIFE_T1_2",
+    "endpoint_unit": "MINUTES",
+    "endpoint_direction": "HIGHER_T1_2_IS_MORE_STABLE",
+    "normalization": "EACH_COUNT_NORMALIZED_BY_MEAN_COUNT_AT_FIRST_TIMEPOINT",
+    "decay_transform": "LN_C_T_OVER_C_T0",
+    "effect_model": "JOINT_WEIGHTED_LINEAR_MODEL_WITH_REFERENCE_MUTANT_TIME_INTERACTION",
+    "effect_orientation": "POSITIVE_MUTANT_MINUS_REFERENCE_HALF_LIFE_EFFECT_MEANS_MORE_STABLE",
+    "core_qc_r_squared_strictly_greater_than": 0.5,
+    "core_qc_mse_strictly_less_than": 1.0,
+    "downstream_quantile_mse_filter_scope": "REFERENCE_ONLY_MOTIF_ANALYSES_FIGURE2_AND_FIGURE4_NOT_CORE_A1_PAIR_EFFECT",
+    "article_license": "CC_BY_4_0",
+    "article_data_availability": "ALL_RAW_AND_PROCESSED_SEQUENCING_DATA_SUBMITTED_TO_GEO_GSE217518",
+    "existing_data_scope_rights_audit": "VERIFIED_CC_BY_4_0_DATA_SCOPE_PROCESSING_EVALUATION_AND_REDISTRIBUTION_ALLOWED",
+    "external_foundation_sequence_exposure": "NO_GSE217518_UTRLM_EXPOSURE_RECORDED",
+    "historical_internal_b0_total_records": 7128,
+    "historical_internal_b0_delta_defined_records": 5194,
+    "historical_internal_g1_pair_expanded_training_rows": 36155,
+    "successor_exposure_role_adjudication_closed": false
+  },
+  "current_aggregate_observation": {
+    "schema_version": "route_a_v3_gse217518_corrected_a1_public_aggregate_observation.v1",
+    "source_mode": "READ_ONLY_PRIMARY_PUBLIC_AGGREGATE_SNAPSHOT_20260815",
+    "official_public_source_count": 4,
+    "official_processed_asset_count": 4,
+    "official_supplement_count": 1,
+    "all_primary_routes_resolved": true,
+    "asset_geometry": {
+      "supplement_rows": 5072,
+      "supplement_columns": 21,
+      "supplement_region_counts": {
+        "3UTR": 2580,
+        "5UTR": 2492
+      },
+      "versioned_transcript_rows": 4337,
+      "unique_versioned_transcripts": 1305,
+      "mutant_identifier_unique_count": 4963,
+      "variant_name_unique_count": 4904,
+      "single_base_ref_alt_rows": 4659,
+      "indel_or_complex_allele_rows": 413,
+      "complete_endpoint_rows_sh": 3678,
+      "complete_endpoint_rows_hek": 3729,
+      "complete_endpoint_rows_both": 2335,
+      "complete_endpoint_rows_either": 5072,
+      "missing_endpoint_rows_both": 0,
+      "raw_rows_by_cell_region": {
+        "HEK293T_3UTR": 6235,
+        "HEK293T_5UTR": 6237,
+        "SH_SY5Y_3UTR": 6235,
+        "SH_SY5Y_5UTR": 6237
+      },
+      "all_raw_rows_have_exactly_one_ref_or_mut_role_token": true,
+      "same_region_key_sets_identical_across_cell_lines": true,
+      "cross_region_key_intersection_count": 0,
+      "syntactic_one_ref_one_mut_group_count": 5164,
+      "allele_singleton_group_count": 2144,
+      "groups_with_role_multiplicity_count": 0,
+      "raw_measurement_nonfinite_count": 0,
+      "raw_measurement_missing_count": 0
+    },
+    "crosswalk": {
+      "raw_role_tokens_closed": true,
+      "shared_reference_and_supplement_to_raw_exact_crosswalk_closed": false
+    },
+    "construct_context": {
+      "publisher_115bp_rule_and_reporter_context_present": true,
+      "exact_boundary_aware_construct_replay_closed_for_all_rows": false
+    },
+    "endpoint": {
+      "identity_direction_scale_transform_and_pair_semantics_closed": true
+    },
+    "replicate_and_se": {
+      "publisher_independent_experiment_count": 3,
+      "raw_three_by_three_geometry_closed": true,
+      "valid_row_level_standard_error_replay_closed": false
+    },
+    "missing_qc_selection": {
+      "core_r2_mse_rule_executable": true,
+      "missing_endpoint_is_zero": false,
+      "downstream_ref_only_quantile_filter_applies_to_core_a1_effect": false
+    },
+    "rights": {
+      "article_cc_by_4_0": true,
+      "geo_data_availability_explicit": true,
+      "existing_data_scope_rights_audit_pass": true
+    },
+    "exposure": {
+      "external_foundation_sequence_exposure_count": 0,
+      "internal_historical_analytic_record_count": 7128,
+      "internal_historical_checkpoint_training_row_count": 36155,
+      "successor_role_adjudication_closed": false
+    },
+    "split": {
+      "outcome_blind_source_group_split_readiness_closed": false,
+      "near_duplicate_zero_leakage_audit_run": false,
+      "split_assignment_execution_count": 0
+    },
+    "effective_n": {
+      "post_dedup_independent_source_group_count": null,
+      "audit_run": false
+    },
+    "power": {
+      "formal_power_run": false,
+      "full_ci_width_run": false
+    }
+  },
+  "output_contract": {
+    "report_filename": "GSE217518_CORRECTED_A1_SUCCESSOR_AGGREGATE_PREFLIGHT_V1.json",
+    "final_file_count": 1,
+    "same_directory_temporary_file_required": true,
+    "file_fsync_before_publish_required": true,
+    "atomic_no_replace_hard_link_required": true,
+    "directory_fsync_after_publish_required": true,
+    "identical_existing_report_is_idempotent": true,
+    "different_existing_report_action": "REJECT_WITHOUT_REPLACEMENT",
+    "member_payload_allowed": false,
+    "sequence_payload_allowed": false,
+    "row_effect_or_standard_error_payload_allowed": false,
+    "split_assignment_payload_allowed": false
+  },
+  "terminal_state": {
+    "qualified": false,
+    "contribution": {
+      "ordinary": 0,
+      "a1": 0,
+      "true_a2": 0,
+      "canonical_records": 0
+    },
+    "current_qualified_counts": {
+      "ordinary": 1,
+      "a1": 1,
+      "true_a2": 0,
+      "canonical_records": 6547
+    },
+    "training_allowed": false,
+    "gpu_work_allowed": false,
+    "model_selection_allowed": false,
+    "a7_allowed": false,
+    "next_phase_authorized": false,
+    "scientific_claim_status": "NOT_ESTABLISHED"
+  }
+}
