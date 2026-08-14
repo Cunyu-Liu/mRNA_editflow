@@ -46,7 +46,7 @@ DECISION_LOG_PATH = "docs/execution/route_a_v3_decision_log.yaml"
 REGISTRY_MANIFEST_PATH = "docs/execution/route_a_v3_registry_manifest.json"
 A1_INTERIM_PATH = "docs/execution/route_a_v3_a1_interim.yaml"
 A6_INTERIM_PATH = "docs/execution/route_a_v3_a6_interim.yaml"
-EXPECTED_A1_INTERIM_SHA256 = "0f35ae3b1b56a76174edac92fa578c0cdcd83a4a68c757717dbe155cf79e265a"
+EXPECTED_A1_INTERIM_SHA256 = "06bfbcf468e28ee27f2f02210a0cad6719cb805cb441ea40142b7b837680b44b"
 EXPECTED_A6_INTERIM_SHA256 = "c0002dac3ea470f69bf79e752a57041b9910e9583bddefd1625c6279f50e3081"
 CURRENT_ACTIVE_CONFIG_SHA256 = "01cb7bb052da7459e946828b7c92dede8f257e3f13abba3534455b370ef09b74"
 CURRENT_TASK_REGISTRY_SHA256 = "c1d9920cc3d28c7ee63d9649a69d6b6856b9b25115f6ca4f1d392a067a0d5dae"
@@ -126,6 +126,13 @@ DEC024_AUTHORITY_MANIFEST_STATUS = (
     "A1_INCOMPLETE_A6_IN_PROGRESS_L3_NOT_ESTABLISHED_A7_NOT_RUN"
 )
 DEC024_PENDING_RUNTIME_EVENT_ID = "PENDING_FRESH_RUNTIME_EVENT_ID"
+DEC024_CURRENT_RUNTIME_EVENT_ID = "A1-EVT-058"
+DEC024_CURRENT_MANIFEST_AT = "2026-08-14T18:35:00+08:00"
+DEC024_CURRENT_MANIFEST_STATUS = (
+    "DEC024_THREE_REPLACEMENT_AGGREGATE_ONLY_PREFLIGHT_AUTHORITIES_"
+    "REGISTERED_EVT058_SETTLED_RUNTIME_SYNCED_A1_INCOMPLETE_A6_IN_PROGRESS_"
+    "L3_NOT_ESTABLISHED_A7_NOT_RUN"
+)
 GSE261709_PREFLIGHT_LINEAGE_ID = (
     "gse261709_public_identifier_asset_schema_aggregate_geometry_preflight_v1"
 )
@@ -3353,10 +3360,10 @@ def validate_registry_manifest(repo_root: Path) -> list[Issue]:
         "contract_sha256": SOURCE_CONTRACT_SHA256,
         "active_amendment_decision_ids": ACTIVE_AMENDMENT_DECISION_IDS,
         "base_commit": "bbb71dcba6f1e1c9cb75a8a6653f1a4fe4a6ca0c",
-        "manifest_status": DEC024_AUTHORITY_MANIFEST_STATUS,
+        "manifest_status": DEC024_CURRENT_MANIFEST_STATUS,
         "initial_generated_at": "2026-08-10T10:10:05+08:00",
-        "generated_at": DEC024_AUTHORITY_MANIFEST_AT,
-        "updated_at": DEC024_AUTHORITY_MANIFEST_AT,
+        "generated_at": DEC024_CURRENT_MANIFEST_AT,
+        "updated_at": DEC024_CURRENT_MANIFEST_AT,
         "sealed_contact": False,
     }
     expected_top_keys = set(expected_static_top) | {"files"}
@@ -7638,11 +7645,11 @@ def validate_dec024_authority(
             "model_selection_allowed": False,
             "a7_allowed": False,
             "next_phase_authorized": False,
-            "latest_settled_runtime_event_id": "A1-EVT-057",
-            "settled_runtime_event_changed": False,
-            "runtime_event_emitted": False,
-            "runtime_sync_status": "PENDING_FRESH_EVENT_AFTER_SETTLED_EVT_057",
-            "expected_next_runtime_event_id": DEC024_PENDING_RUNTIME_EVENT_ID,
+            "latest_settled_runtime_event_id": DEC024_CURRENT_RUNTIME_EVENT_ID,
+            "settled_runtime_event_changed": True,
+            "runtime_event_emitted": True,
+            "runtime_sync_status": "SYNCED_EVT_058",
+            "expected_next_runtime_event_id": DEC024_CURRENT_RUNTIME_EVENT_ID,
             "next_runtime_event_id_preallocated": False,
             "strategic_nonbinding_possible_future_combination": "EXISTING_GSE261709_AS_A1_PLUS_GSE269595_AS_TRUE_A2",
             "strategic_combination_requires_separate_formal_qualification_authority": True,
@@ -14088,7 +14095,7 @@ def validate_a1_interim_lineage(
                 "dec023_dual_preflight_expected_next_runtime_event_id": DEC023_CURRENT_RUNTIME_EVENT_ID,
                 "targeted_dec024_replacement_preflight_authority_tests": {
                     "status": "PASS",
-                    "scope": "THREE_ORDINARY_PUBLIC_AGGREGATE_ONLY_PREFLIGHT_AUTHORITIES_EVT057_SETTLED_NO_PROMOTION",
+                    "scope": "THREE_ORDINARY_PUBLIC_AGGREGATE_ONLY_PREFLIGHT_AUTHORITIES_EVT058_SETTLED_RUNTIME_SYNCED_NO_PROMOTION",
                 },
                 "dec024_gse261709_processed_only_no_raw_archive_boundary": "PASS",
                 "dec024_gse269595_mutually_exclusive_role_adjudication_boundary": "PASS",

@@ -574,11 +574,11 @@ dec024_current_disposition:
   model_selection_allowed: false
   a7_allowed: false
   next_phase_authorized: false
-  latest_settled_runtime_event_id: A1-EVT-057
-  settled_runtime_event_changed: false
-  runtime_event_emitted: false
-  runtime_sync_status: PENDING_FRESH_EVENT_AFTER_SETTLED_EVT_057
-  expected_next_runtime_event_id: PENDING_FRESH_RUNTIME_EVENT_ID
+  latest_settled_runtime_event_id: A1-EVT-058
+  settled_runtime_event_changed: true
+  runtime_event_emitted: true
+  runtime_sync_status: SYNCED_EVT_058
+  expected_next_runtime_event_id: A1-EVT-058
   next_runtime_event_id_preallocated: false
   strategic_nonbinding_possible_future_combination: EXISTING_GSE261709_AS_A1_PLUS_GSE269595_AS_TRUE_A2
   strategic_combination_requires_separate_formal_qualification_authority: true
@@ -3950,7 +3950,7 @@ verification:
   dec023_dual_preflight_expected_next_runtime_event_id: A1-EVT-057
   targeted_dec024_replacement_preflight_authority_tests:
     status: PASS
-    scope: THREE_ORDINARY_PUBLIC_AGGREGATE_ONLY_PREFLIGHT_AUTHORITIES_EVT057_SETTLED_NO_PROMOTION
+    scope: THREE_ORDINARY_PUBLIC_AGGREGATE_ONLY_PREFLIGHT_AUTHORITIES_EVT058_SETTLED_RUNTIME_SYNCED_NO_PROMOTION
   dec024_gse261709_processed_only_no_raw_archive_boundary: PASS
   dec024_gse269595_mutually_exclusive_role_adjudication_boundary: PASS
   dec024_emtab10902_source_group_n_not_row_n_boundary: PASS

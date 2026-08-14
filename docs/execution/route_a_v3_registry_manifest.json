@@ -84,7 +84,7 @@
     {
       "path": "docs/execution/route_a_v3_a1_interim.yaml",
       "role": "A1_ACTIVE_INTERIM_RECORD",
-      "sha256": "0f35ae3b1b56a76174edac92fa578c0cdcd83a4a68c757717dbe155cf79e265a"
+      "sha256": "06bfbcf468e28ee27f2f02210a0cad6719cb805cb441ea40142b7b837680b44b"
     },
     {
       "path": "docs/execution/route_a_v3_a6_interim.yaml",
@@ -539,18 +539,18 @@
     {
       "path": "tests/route_a_v3/test_a0_integrity_guards.py",
       "role": "A0_AUTHORITY_INTEGRITY_GUARD_TEST",
-      "sha256": "625677fd9e639ae0d9c23b8fc49aa321c7e0e46c3a52784e3ff41efbcd93d1e1"
+      "sha256": "aa7e5773d4353f4c8fb9a9afb6d5b9a3f3fb1ba035c6c54e6ae0d4eabac99c6b"
     },
     {
       "path": "scripts/route_a_v3/validate_a0_bundle.py",
       "role": "A0_STATIC_AND_SEMANTIC_VALIDATOR",
-      "sha256": "d90908e4b2726df3621e5ef97fc290ec4af8464b7037cb000a2071886c586d3c"
+      "sha256": "4d4188f7777a2651c73b19e691be22687a73ad0da2abe8fc39f2c0e297ddc3a0"
     }
   ],
   "initial_generated_at": "2026-08-10T10:10:05+08:00",
-  "generated_at": "2026-08-14T17:30:00+08:00",
-  "updated_at": "2026-08-14T17:30:00+08:00",
-  "manifest_status": "DEC024_THREE_REPLACEMENT_AGGREGATE_ONLY_PREFLIGHT_AUTHORITIES_REGISTERED_EVT057_SETTLED_PENDING_FRESH_UNALLOCATED_RUNTIME_EVENT_A1_INCOMPLETE_A6_IN_PROGRESS_L3_NOT_ESTABLISHED_A7_NOT_RUN",
+  "generated_at": "2026-08-14T18:35:00+08:00",
+  "updated_at": "2026-08-14T18:35:00+08:00",
+  "manifest_status": "DEC024_THREE_REPLACEMENT_AGGREGATE_ONLY_PREFLIGHT_AUTHORITIES_REGISTERED_EVT058_SETTLED_RUNTIME_SYNCED_A1_INCOMPLETE_A6_IN_PROGRESS_L3_NOT_ESTABLISHED_A7_NOT_RUN",
   "schema_version": "1.0.0",
   "sealed_contact": false,
   "version": "3.0.0"

@@ -4783,15 +4783,45 @@ def test_dec024_three_replacement_preflight_authorities_are_closed(
     assert amendment["emtab10902_replacement_true_a2_scope"][
         "prefrozen_required_effective_n_for_power_and_full_ci_width"
     ] == 156
+    assert amendment["runtime_successor"] == {
+        "latest_settled_runtime_event_id": "A1-EVT-057",
+        "settled_runtime_state_changed_by_authority_bytes": False,
+        "runtime_event_emitted_by_authority_bytes": False,
+        "runtime_sync_status": "PENDING_FRESH_EVENT_AFTER_SETTLED_EVT_057",
+        "expected_next_runtime_event_id": validator.DEC024_PENDING_RUNTIME_EVENT_ID,
+        "next_runtime_event_id_preallocated": False,
+        "scientific_state_change_expected": False,
+    }
 
     manifest = validator._load_json(repo_root, validator.REGISTRY_MANIFEST_PATH)
     manifest_paths = {row["path"] for row in manifest["files"]}
     assert validator.DEC024_AMENDMENT_PATH in manifest_paths
+    assert manifest["manifest_status"] == validator.DEC024_CURRENT_MANIFEST_STATUS
     assert {
         "configs/route_a_v3_gse207584_moesm7_aggregate_endpoint_universe_preflight_v1.json",
         "scripts/route_a_v3/preflight_gse207584_moesm7_aggregate_endpoint_universe.py",
         "tests/route_a_v3/test_preflight_gse207584_moesm7_aggregate_endpoint_universe.py",
     }.isdisjoint(manifest_paths)
+
+    interim = validator._load_yaml(repo_root, validator.A1_INTERIM_PATH)
+    current = interim["dec024_current_disposition"]
+    assert current["latest_settled_runtime_event_id"] == (
+        validator.DEC024_CURRENT_RUNTIME_EVENT_ID
+    )
+    assert current["settled_runtime_event_changed"] is True
+    assert current["runtime_event_emitted"] is True
+    assert current["runtime_sync_status"] == "SYNCED_EVT_058"
+    assert current["expected_next_runtime_event_id"] == (
+        validator.DEC024_CURRENT_RUNTIME_EVENT_ID
+    )
+    assert current["next_runtime_event_id_preallocated"] is False
+    assert current["current_qualified_counts"] == {
+        "ordinary": 1,
+        "a1": 1,
+        "true_a2": 0,
+        "canonical_records": 6547,
+    }
+    assert current["changes_current_qualified_counts"] is False
 
 
 @pytest.mark.parametrize(
