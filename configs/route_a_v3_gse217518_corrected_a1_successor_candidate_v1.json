@@ -56,10 +56,25 @@
       }
     },
     "runtime": {
+      "frozen_i1_predecessor": {
+        "status": "BOUND",
+        "implementation_commit": "de40c58ab81fc06196be3bb9ffb5aa35d39c9d03",
+        "implementation_expected_parent": "3e0ad158a0b45b2f26ed82da3afe60667c712cd6",
+        "implementation_exact_changed_paths": [
+          "configs/route_a_v3_dec027_authority_runtime_sync_v1.json",
+          "scripts/route_a_v3/dec027_authority_runtime_sync.py",
+          "tests/route_a_v3/test_dec027_authority_runtime_sync.py"
+        ],
+        "implementation_blob_sha256_by_path": {
+          "configs/route_a_v3_dec027_authority_runtime_sync_v1.json": "cbb0c8c4fb2b47a1e1c1dd629d46c149b1c35299e8127dfd431a22666e40dfd5",
+          "scripts/route_a_v3/dec027_authority_runtime_sync.py": "ae13a64ecbe10edd47eb403a328bdb2563f7d30e185d11e73d1b10f1955da4a1",
+          "tests/route_a_v3/test_dec027_authority_runtime_sync.py": "de253087afd14136f188d3c525be76788cd214509d96971c4f11d2799c215117"
+        }
+      },
       "status": "BOUND",
       "runtime_event_id": "A1-EVT-059",
       "implementation_commit": "5d66e8dc83eb9966f7698ac0fc677f1b06af8ea6",
-      "implementation_expected_parent": "3e0ad158a0b45b2f26ed82da3afe60667c712cd6",
+      "implementation_expected_parent": "de40c58ab81fc06196be3bb9ffb5aa35d39c9d03",
       "implementation_exact_changed_paths": [
         "configs/route_a_v3_dec027_authority_runtime_sync_v1.json",
         "scripts/route_a_v3/dec027_authority_runtime_sync.py",
@@ -106,13 +121,38 @@
           "tests/route_a_v3/test_preflight_gse217518_corrected_a1_successor_candidate.py": "b08209856fb852991c1b795864304fcda62a4f63419197c068ec6d1f0fd34691"
         }
       },
-      "status": "BOUND",
-      "implementation_commit": "6fbd63be6d0edb9f73cf2f85e446917d3c3ff100",
-      "implementation_expected_parent": "17a35f0f88cc988b938aaf25d94a8b32f0cacfc8",
+      "frozen_i2_b2_predecessor": {
+        "status": "BOUND",
+        "implementation_commit": "6fbd63be6d0edb9f73cf2f85e446917d3c3ff100",
+        "implementation_expected_parent": "17a35f0f88cc988b938aaf25d94a8b32f0cacfc8",
+        "implementation_exact_changed_paths": [
+          "configs/route_a_v3_gse217518_corrected_a1_successor_candidate_v1.json",
+          "scripts/route_a_v3/preflight_gse217518_corrected_a1_successor_candidate.py",
+          "tests/route_a_v3/test_preflight_gse217518_corrected_a1_successor_candidate.py"
+        ],
+        "implementation_blob_sha256_by_path": {
+          "configs/route_a_v3_gse217518_corrected_a1_successor_candidate_v1.json": "de064e62e7031725908de8d09a1c6b7a2a36112868208ba0cb387a394062a1d8",
+          "scripts/route_a_v3/preflight_gse217518_corrected_a1_successor_candidate.py": "0c96d41e4f9ddd694be0be21aab3bcfcb938d3ccb996f3f7cb10ca0a9b69902e",
+          "tests/route_a_v3/test_preflight_gse217518_corrected_a1_successor_candidate.py": "c881350f5b6ab457af24a4004eedfa34e30d0c8fac7e1b99f74b37b9fe40ccc7"
+        },
+        "binding_commit": "c3611b0f2e8baeb83422bb07f5446b42edce90ef",
+        "binding_expected_parent": "6fbd63be6d0edb9f73cf2f85e446917d3c3ff100",
+        "binding_exact_changed_paths": [
+          "configs/route_a_v3_gse217518_corrected_a1_successor_candidate_v1.json"
+        ],
+        "binding_blob_sha256_by_path": {
+          "configs/route_a_v3_gse217518_corrected_a1_successor_candidate_v1.json": "c808bdc6eb1ad8aaccd3d2ab483415ed0803da4683315b92ef3139f203f61e64",
+          "scripts/route_a_v3/preflight_gse217518_corrected_a1_successor_candidate.py": "0c96d41e4f9ddd694be0be21aab3bcfcb938d3ccb996f3f7cb10ca0a9b69902e",
+          "tests/route_a_v3/test_preflight_gse217518_corrected_a1_successor_candidate.py": "c881350f5b6ab457af24a4004eedfa34e30d0c8fac7e1b99f74b37b9fe40ccc7"
+        }
+      },
+      "status": "UNKNOWN_NOT_ASSERTED",
+      "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+      "implementation_expected_parent": "c3611b0f2e8baeb83422bb07f5446b42edce90ef",
       "implementation_script_path": "scripts/route_a_v3/preflight_gse217518_corrected_a1_successor_candidate.py",
-      "implementation_script_sha256": "0c96d41e4f9ddd694be0be21aab3bcfcb938d3ccb996f3f7cb10ca0a9b69902e",
+      "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
       "implementation_test_path": "tests/route_a_v3/test_preflight_gse217518_corrected_a1_successor_candidate.py",
-      "implementation_test_sha256": "c881350f5b6ab457af24a4004eedfa34e30d0c8fac7e1b99f74b37b9fe40ccc7",
+      "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
       "implementation_exact_changed_paths": [
         "configs/route_a_v3_gse217518_corrected_a1_successor_candidate_v1.json",
         "scripts/route_a_v3/preflight_gse217518_corrected_a1_successor_candidate.py",
@@ -131,7 +171,7 @@
   },
   "production_activation_rule": {
     "all_three_binding_groups_must_be_bound": true,
-    "required_commit_chain": "DEC027_A_TO_RUNTIME_I_TO_RUNTIME_B_TO_GSE217518_I1_TO_GSE217518_I2_TO_GSE217518_B2",
+    "required_commit_chain": "DEC027_A_TO_RUNTIME_I1_TO_RUNTIME_I2_TO_RUNTIME_B2_TO_GSE217518_I1_TO_GSE217518_I2_TO_GSE217518_B2_TO_GSE217518_I3_TO_GSE217518_B3",
     "clean_head_equals_upstream_equals_live_origin_required": true,
     "direct_parent_changed_path_and_blob_audit_required": true,
     "executing_script_and_focused_test_must_match_implementation_i": true,

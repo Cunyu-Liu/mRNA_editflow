@@ -7,14 +7,14 @@ sequence motif analyses.  It audits the exact eleven DEC027 gate IDs without
 serialising member identifiers, sequences, row effects, row standard errors,
 or split assignments.
 
-DEC027 authority A, the settled A1-EVT-059 authority-runtime I/B predecessor,
-and the first GSE217518 implementation commit I1 are frozen and byte-bound.  The
-replacement I2 candidate's own four-scalar implementation group remains grouped
-UNKNOWN, so the production entry point fails before Git, official-asset, or
-output I/O.  Once B2 separately binds I2, production verifies the entire
-A -> runtime I/B -> I1 -> I2/B2 Git chain, the executing I2 script bytes, and a
-clean HEAD equal to upstream and the live origin.  Pure in-memory evaluation
-changes no qualification, credit, canonical, training, GPU, model, or A7 state.
+DEC027 authority A, the settled A1-EVT-059 runtime I1/I2/B2 lifecycle, and the
+published GSE217518 I1/I2/B2 lifecycle are frozen and byte-bound.  The replacement
+I3 candidate's own four-scalar implementation group remains grouped UNKNOWN, so
+the production entry point fails before Git, official-asset, or output I/O.  Once
+B3 separately binds I3, production verifies the complete append-only chain, the
+executing I3 script bytes, and a clean HEAD equal to upstream and the live origin.
+Pure in-memory evaluation changes no qualification, credit, canonical, training,
+GPU, model, or A7 state.
 """
 
 from __future__ import annotations
@@ -120,9 +120,21 @@ RUNTIME_EXACT3: tuple[str, ...] = (
     RUNTIME_SCRIPT_PATH,
     RUNTIME_TEST_PATH,
 )
-RUNTIME_I_COMMIT = "5d66e8dc83eb9966f7698ac0fc677f1b06af8ea6"
-RUNTIME_B_COMMIT = "e60956cf59cbddc0406c5d116fb9714906db36e1"
-RUNTIME_I_BLOBS: dict[str, str] = {
+RUNTIME_I1_COMMIT = "de40c58ab81fc06196be3bb9ffb5aa35d39c9d03"
+RUNTIME_I1_BLOBS: dict[str, str] = {
+    RUNTIME_CONFIG_PATH: (
+        "cbb0c8c4fb2b47a1e1c1dd629d46c149b1c35299e8127dfd431a22666e40dfd5"
+    ),
+    RUNTIME_SCRIPT_PATH: (
+        "ae13a64ecbe10edd47eb403a328bdb2563f7d30e185d11e73d1b10f1955da4a1"
+    ),
+    RUNTIME_TEST_PATH: (
+        "de253087afd14136f188d3c525be76788cd214509d96971c4f11d2799c215117"
+    ),
+}
+RUNTIME_I2_COMMIT = "5d66e8dc83eb9966f7698ac0fc677f1b06af8ea6"
+RUNTIME_B2_COMMIT = "e60956cf59cbddc0406c5d116fb9714906db36e1"
+RUNTIME_I2_BLOBS: dict[str, str] = {
     RUNTIME_CONFIG_PATH: (
         "3d5af87e7512568ed663b211c24a8586eeb9f03936a397cf2d2ddaeb2a21f57b"
     ),
@@ -133,12 +145,12 @@ RUNTIME_I_BLOBS: dict[str, str] = {
         "ff250d4f011d8526e9a4a7bf13049f1f47346faa1c7ea512cbf447a6fb59ba4a"
     ),
 }
-RUNTIME_B_BLOBS: dict[str, str] = {
+RUNTIME_B2_BLOBS: dict[str, str] = {
     RUNTIME_CONFIG_PATH: (
         "e5c1f96ec57b220fd36ff4677deb37d6dc0be06e02f21af3837e17a51e91e5ee"
     ),
-    RUNTIME_SCRIPT_PATH: RUNTIME_I_BLOBS[RUNTIME_SCRIPT_PATH],
-    RUNTIME_TEST_PATH: RUNTIME_I_BLOBS[RUNTIME_TEST_PATH],
+    RUNTIME_SCRIPT_PATH: RUNTIME_I2_BLOBS[RUNTIME_SCRIPT_PATH],
+    RUNTIME_TEST_PATH: RUNTIME_I2_BLOBS[RUNTIME_TEST_PATH],
 }
 CONFIG_REPO_PATH = (
     "configs/route_a_v3_gse217518_corrected_a1_successor_candidate_v1.json"
@@ -161,6 +173,26 @@ I1_BLOBS: dict[str, str] = {
     TEST_REPO_PATH: (
         "b08209856fb852991c1b795864304fcda62a4f63419197c068ec6d1f0fd34691"
     ),
+}
+I2_COMMIT = "6fbd63be6d0edb9f73cf2f85e446917d3c3ff100"
+I2_BLOBS: dict[str, str] = {
+    CONFIG_REPO_PATH: (
+        "de064e62e7031725908de8d09a1c6b7a2a36112868208ba0cb387a394062a1d8"
+    ),
+    SCRIPT_REPO_PATH: (
+        "0c96d41e4f9ddd694be0be21aab3bcfcb938d3ccb996f3f7cb10ca0a9b69902e"
+    ),
+    TEST_REPO_PATH: (
+        "c881350f5b6ab457af24a4004eedfa34e30d0c8fac7e1b99f74b37b9fe40ccc7"
+    ),
+}
+B2_COMMIT = "c3611b0f2e8baeb83422bb07f5446b42edce90ef"
+B2_BLOBS: dict[str, str] = {
+    CONFIG_REPO_PATH: (
+        "c808bdc6eb1ad8aaccd3d2ab483415ed0803da4683315b92ef3139f203f61e64"
+    ),
+    SCRIPT_REPO_PATH: I2_BLOBS[SCRIPT_REPO_PATH],
+    TEST_REPO_PATH: I2_BLOBS[TEST_REPO_PATH],
 }
 OWN_BINDING_FIELDS: tuple[str, ...] = (
     "status",
@@ -301,6 +333,14 @@ def _validate_authority_binding(binding: Mapping[str, Any]) -> None:
 
 
 def _runtime_binding_mode(binding: Mapping[str, Any]) -> str:
+    if binding.get("frozen_i1_predecessor") != {
+        "status": BOUND,
+        "implementation_commit": RUNTIME_I1_COMMIT,
+        "implementation_expected_parent": AUTHORITY_COMMIT,
+        "implementation_exact_changed_paths": list(RUNTIME_EXACT3),
+        "implementation_blob_sha256_by_path": RUNTIME_I1_BLOBS,
+    }:
+        raise CandidateContractError("frozen A1-EVT-059 runtime I1 predecessor differs")
     expected_fields = [
         "status",
         "runtime_event_id",
@@ -312,8 +352,8 @@ def _runtime_binding_mode(binding: Mapping[str, Any]) -> str:
     ]
     if binding.get("unknown_to_bound_fields") != expected_fields:
         raise CandidateContractError("runtime grouped binding field list differs")
-    if binding.get("implementation_expected_parent") != AUTHORITY_COMMIT:
-        raise CandidateContractError("runtime implementation parent differs")
+    if binding.get("implementation_expected_parent") != RUNTIME_I1_COMMIT:
+        raise CandidateContractError("runtime I2 parent differs")
     if binding.get("implementation_exact_changed_paths") != list(RUNTIME_EXACT3):
         raise CandidateContractError("runtime implementation exact3 differs")
     if binding.get("binding_exact_changed_paths") != [RUNTIME_CONFIG_PATH]:
@@ -335,24 +375,26 @@ def _runtime_binding_mode(binding: Mapping[str, Any]) -> str:
         raise CandidateContractError(
             "runtime implementation or binding commit is invalid"
         )
-    if implementation != RUNTIME_I_COMMIT or binding_commit != RUNTIME_B_COMMIT:
-        raise CandidateContractError("settled A1-EVT-059 runtime I/B identity differs")
+    if implementation != RUNTIME_I2_COMMIT or binding_commit != RUNTIME_B2_COMMIT:
+        raise CandidateContractError(
+            "settled A1-EVT-059 runtime I2/B2 identity differs"
+        )
     if binding.get("binding_expected_parent") != implementation:
         raise CandidateContractError("runtime binding parent differs")
     _validate_sha_map(
         binding.get("implementation_blob_sha256_by_path"),
         RUNTIME_EXACT3,
-        label="runtime I blobs",
+        label="runtime I2 blobs",
     )
     _validate_sha_map(
         binding.get("binding_blob_sha256_by_path"),
         RUNTIME_EXACT3,
-        label="runtime B blobs",
+        label="runtime B2 blobs",
     )
-    if binding.get("implementation_blob_sha256_by_path") != RUNTIME_I_BLOBS:
-        raise CandidateContractError("settled A1-EVT-059 runtime I blobs differ")
-    if binding.get("binding_blob_sha256_by_path") != RUNTIME_B_BLOBS:
-        raise CandidateContractError("settled A1-EVT-059 runtime B blobs differ")
+    if binding.get("implementation_blob_sha256_by_path") != RUNTIME_I2_BLOBS:
+        raise CandidateContractError("settled A1-EVT-059 runtime I2 blobs differ")
+    if binding.get("binding_blob_sha256_by_path") != RUNTIME_B2_BLOBS:
+        raise CandidateContractError("settled A1-EVT-059 runtime B2 blobs differ")
     return BOUND
 
 
@@ -363,13 +405,25 @@ def _implementation_binding_mode(
     if frozen_i1 != {
         "status": BOUND,
         "implementation_commit": I1_COMMIT,
-        "implementation_expected_parent": RUNTIME_B_COMMIT,
+        "implementation_expected_parent": RUNTIME_B2_COMMIT,
         "implementation_exact_changed_paths": list(EXACT3),
         "implementation_blob_sha256_by_path": I1_BLOBS,
     }:
         raise CandidateContractError("frozen GSE217518 I1 predecessor differs")
-    if binding.get("implementation_expected_parent") != I1_COMMIT:
-        raise CandidateContractError("dynamic GSE217518 I2 parent differs")
+    if binding.get("frozen_i2_b2_predecessor") != {
+        "status": BOUND,
+        "implementation_commit": I2_COMMIT,
+        "implementation_expected_parent": I1_COMMIT,
+        "implementation_exact_changed_paths": list(EXACT3),
+        "implementation_blob_sha256_by_path": I2_BLOBS,
+        "binding_commit": B2_COMMIT,
+        "binding_expected_parent": I2_COMMIT,
+        "binding_exact_changed_paths": [CONFIG_REPO_PATH],
+        "binding_blob_sha256_by_path": B2_BLOBS,
+    }:
+        raise CandidateContractError("frozen GSE217518 I2/B2 predecessor differs")
+    if binding.get("implementation_expected_parent") != B2_COMMIT:
+        raise CandidateContractError("dynamic GSE217518 I3 parent differs")
     if binding.get("unknown_to_bound_fields") != list(OWN_BINDING_FIELDS):
         raise CandidateContractError("implementation four-scalar group differs")
     if binding.get("implementation_script_path") != SCRIPT_REPO_PATH:
@@ -379,7 +433,7 @@ def _implementation_binding_mode(
     if binding.get("implementation_exact_changed_paths") != list(EXACT3):
         raise CandidateContractError("implementation exact3 differs")
     if binding.get("binding_exact_changed_paths") != [CONFIG_REPO_PATH]:
-        raise CandidateContractError("implementation B must be config-only")
+        raise CandidateContractError("implementation B3 must be config-only")
     dynamic = tuple(binding.get(field) for field in OWN_BINDING_FIELDS)
     if binding.get("status") == UNKNOWN:
         if dynamic != (UNKNOWN,) * len(OWN_BINDING_FIELDS):
@@ -455,6 +509,7 @@ def validate_protocol(config: Mapping[str, Any]) -> None:
     _expect_keys(
         bindings["runtime"],
         {
+            "frozen_i1_predecessor",
             "status",
             "runtime_event_id",
             "implementation_commit",
@@ -473,6 +528,7 @@ def validate_protocol(config: Mapping[str, Any]) -> None:
         bindings["implementation"],
         {
             "frozen_i1_predecessor",
+            "frozen_i2_b2_predecessor",
             "status",
             "implementation_commit",
             "implementation_expected_parent",
@@ -523,8 +579,9 @@ def validate_protocol(config: Mapping[str, Any]) -> None:
     ):
         raise CandidateContractError("production fail-before-input/output rule differs")
     if activation.get("required_commit_chain") != (
-        "DEC027_A_TO_RUNTIME_I_TO_RUNTIME_B_TO_GSE217518_I1_"
-        "TO_GSE217518_I2_TO_GSE217518_B2"
+        "DEC027_A_TO_RUNTIME_I1_TO_RUNTIME_I2_TO_RUNTIME_B2_"
+        "TO_GSE217518_I1_TO_GSE217518_I2_TO_GSE217518_B2_"
+        "TO_GSE217518_I3_TO_GSE217518_B3"
     ):
         raise CandidateContractError("production commit chain differs")
 
@@ -1522,7 +1579,7 @@ def _normalise_own_binding(config: Mapping[str, Any]) -> dict[str, Any]:
 def _audit_repository_bindings(
     config: Mapping[str, Any], config_path: Path, repo_root: Path
 ) -> dict[str, str]:
-    """Verify A -> runtime I/B -> GSE217518 I1 -> I2/B2 before asset/output I/O."""
+    """Verify full runtime and GSE217518 I1/I2/B2 -> I3/B3 history."""
 
     _require_production_bindings(config)
     repository = config["repository_authority"]
@@ -1550,9 +1607,9 @@ def _audit_repository_bindings(
     authority = config["bindings"]["authority"]
     runtime = config["bindings"]["runtime"]
     own = config["bindings"]["implementation"]
-    runtime_i = str(runtime["implementation_commit"])
-    runtime_b = str(runtime["binding_commit"])
-    implementation_i2 = str(own["implementation_commit"])
+    runtime_i2 = str(runtime["implementation_commit"])
+    runtime_b2 = str(runtime["binding_commit"])
+    implementation_i3 = str(own["implementation_commit"])
 
     _verify_frozen_commit(
         repo_root,
@@ -1564,17 +1621,25 @@ def _audit_repository_bindings(
     )
     _verify_frozen_commit(
         repo_root,
-        label="DEC027 runtime I",
-        commit=runtime_i,
+        label="DEC027 runtime frozen I1",
+        commit=RUNTIME_I1_COMMIT,
         expected_parent=AUTHORITY_COMMIT,
+        expected_paths=RUNTIME_EXACT3,
+        expected_blobs=RUNTIME_I1_BLOBS,
+    )
+    _verify_frozen_commit(
+        repo_root,
+        label="DEC027 runtime I2",
+        commit=runtime_i2,
+        expected_parent=RUNTIME_I1_COMMIT,
         expected_paths=RUNTIME_EXACT3,
         expected_blobs=runtime["implementation_blob_sha256_by_path"],
     )
     _verify_frozen_commit(
         repo_root,
-        label="DEC027 runtime B",
-        commit=runtime_b,
-        expected_parent=runtime_i,
+        label="DEC027 runtime B2",
+        commit=runtime_b2,
+        expected_parent=runtime_i2,
         expected_paths=(RUNTIME_CONFIG_PATH,),
         expected_blobs=runtime["binding_blob_sha256_by_path"],
     )
@@ -1582,15 +1647,31 @@ def _audit_repository_bindings(
         repo_root,
         label="GSE217518 frozen implementation I1",
         commit=I1_COMMIT,
-        expected_parent=runtime_b,
+        expected_parent=runtime_b2,
         expected_paths=EXACT3,
         expected_blobs=I1_BLOBS,
     )
     _verify_frozen_commit(
         repo_root,
-        label="GSE217518 dynamic implementation I2",
-        commit=implementation_i2,
+        label="GSE217518 frozen implementation I2",
+        commit=I2_COMMIT,
         expected_parent=I1_COMMIT,
+        expected_paths=EXACT3,
+        expected_blobs=I2_BLOBS,
+    )
+    _verify_frozen_commit(
+        repo_root,
+        label="GSE217518 frozen binding B2",
+        commit=B2_COMMIT,
+        expected_parent=I2_COMMIT,
+        expected_paths=(CONFIG_REPO_PATH,),
+        expected_blobs=B2_BLOBS,
+    )
+    _verify_frozen_commit(
+        repo_root,
+        label="GSE217518 dynamic implementation I3",
+        commit=implementation_i3,
+        expected_parent=B2_COMMIT,
         expected_paths=EXACT3,
         expected_blobs={
             SCRIPT_REPO_PATH: own["implementation_script_sha256"],
@@ -1599,38 +1680,41 @@ def _audit_repository_bindings(
     )
     _verify_frozen_commit(
         repo_root,
-        label="GSE217518 binding B2",
+        label="GSE217518 binding B3",
         commit=head,
-        expected_parent=implementation_i2,
+        expected_parent=implementation_i3,
         expected_paths=(CONFIG_REPO_PATH,),
     )
 
     implementation_protocol = load_json_object_from_bytes(
-        _git_blob(repo_root, implementation_i2, CONFIG_REPO_PATH),
-        label="GSE217518 dynamic implementation I2 protocol",
+        _git_blob(repo_root, implementation_i3, CONFIG_REPO_PATH),
+        label="GSE217518 dynamic implementation I3 protocol",
     )
     if _normalise_own_binding(config) != implementation_protocol:
         raise CandidateContractError(
-            "GSE217518 B2 changed fields outside its frozen four-scalar group"
+            "GSE217518 B3 changed fields outside its frozen four-scalar group"
         )
     head_config_blob = _git_blob(repo_root, head, CONFIG_REPO_PATH)
     if config_path.read_bytes() != head_config_blob:
-        raise CandidateContractError("working protocol differs from GSE217518 B2")
-    script_blob = _git_blob(repo_root, implementation_i2, SCRIPT_REPO_PATH)
-    test_blob = _git_blob(repo_root, implementation_i2, TEST_REPO_PATH)
+        raise CandidateContractError("working protocol differs from GSE217518 B3")
+    script_blob = _git_blob(repo_root, implementation_i3, SCRIPT_REPO_PATH)
+    test_blob = _git_blob(repo_root, implementation_i3, TEST_REPO_PATH)
     executing_script = Path(__file__).resolve()
     if executing_script != (repo_root / SCRIPT_REPO_PATH).resolve():
         raise CandidateContractError("executing producer is a stale or copied script")
     if executing_script.read_bytes() != script_blob:
-        raise CandidateContractError("executing producer differs from GSE217518 I2")
+        raise CandidateContractError("executing producer differs from GSE217518 I3")
     if (repo_root / TEST_REPO_PATH).read_bytes() != test_blob:
-        raise CandidateContractError("working focused test differs from GSE217518 I2")
+        raise CandidateContractError("working focused test differs from GSE217518 I3")
     return {
         "status": PASS,
         "authority_commit": AUTHORITY_COMMIT,
-        "runtime_binding_commit": runtime_b,
+        "runtime_i1_commit": RUNTIME_I1_COMMIT,
+        "runtime_binding_commit": runtime_b2,
         "frozen_i1_commit": I1_COMMIT,
-        "implementation_commit": implementation_i2,
+        "frozen_i2_commit": I2_COMMIT,
+        "frozen_b2_commit": B2_COMMIT,
+        "implementation_commit": implementation_i3,
         "binding_commit": head,
     }
 
