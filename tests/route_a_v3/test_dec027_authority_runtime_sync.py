@@ -22,8 +22,12 @@ def disk_config() -> dict[str, Any]:
     return SYNC.load_config(CONFIG_PATH, require_bound=False)
 
 
+def unknown_i2_config() -> dict[str, Any]:
+    return SYNC.normalized_unknown_i2_config(disk_config())
+
+
 def bound_config() -> dict[str, Any]:
-    config = copy.deepcopy(disk_config())
+    config = unknown_i2_config()
     config["implementation_binding"].update(
         {
             "status": SYNC.BOUND,
@@ -154,14 +158,16 @@ def read_runtime(run_root: Path) -> dict[str, bytes]:
 def fresh_publisher_audit(config: dict[str, Any]) -> dict[str, Any]:
     binding = config["implementation_binding"]
     return {
-        "status": "PASS_EXACT12_A_EXACT3_I_CONFIG_ONLY_B",
+        "status": "PASS_EXACT12_A_EXACT3_I1_EXACT3_I2_CONFIG_ONLY_B2",
         "authority_commit": SYNC.AUTHORITY_COMMIT,
+        "predecessor_implementation_commit": SYNC.I1_COMMIT,
         "implementation_commit": binding["implementation_commit"],
         "binding_commit": "b" * 40,
         "head_commit": "b" * 40,
         "upstream_head_commit": "b" * 40,
         "origin_branch_head_commit": "b" * 40,
         "authority_blob_count": 12,
+        "predecessor_implementation_blob_count": 3,
         "worktree_and_index_clean": True,
     }
 
@@ -171,12 +177,13 @@ def install_fake_repository(
     config: dict[str, Any],
     *,
     drift_authority_paths: bool = False,
+    drift_i1_blob: bool = False,
     drift_i_config: bool = False,
 ) -> bytes:
     implementation_commit = "6" * 40
     binding_commit = "b" * 40
-    script_payload = b"DEC027 authority runtime sync producer I\n"
-    test_payload = b"DEC027 authority runtime sync focused test I\n"
+    script_payload = b"DEC027 authority runtime sync producer I2\n"
+    test_payload = b"DEC027 authority runtime sync focused test I2\n"
     config["implementation_binding"].update(
         {
             "status": SYNC.BOUND,
@@ -187,7 +194,7 @@ def install_fake_repository(
     )
     SYNC.validate_static_config(config)
     config_payload = SYNC.json_bytes(config)
-    i_payload = SYNC.json_bytes(SYNC.expected_unknown_i_config(config))
+    i_payload = SYNC.json_bytes(SYNC.normalized_unknown_i2_config(config))
     if drift_i_config:
         i_payload += b"drift"
 
@@ -198,6 +205,14 @@ def install_fake_repository(
         payload = (seed * (item["bytes"] // len(seed) + 1))[: item["bytes"]]
         authority_payloads[item["path"]] = payload
         digest_overrides[payload] = item["sha256"]
+    i1_payloads: dict[str, bytes] = {}
+    for index, item in enumerate(SYNC.I1_FILES, start=1):
+        seed = f"DEC027 frozen I1 blob {index}\n".encode()
+        payload = (seed * (item["bytes"] // len(seed) + 1))[: item["bytes"]]
+        i1_payloads[item["path"]] = payload
+        digest_overrides[payload] = item["sha256"]
+    if drift_i1_blob:
+        i1_payloads[SYNC.CONFIG_REPO_PATH] += b"drift"
     real_sha256 = SYNC.sha256
 
     def fake_sha256(payload: bytes) -> str:
@@ -205,17 +220,27 @@ def install_fake_repository(
 
     changed = {
         SYNC.AUTHORITY_COMMIT: list(SYNC.AUTHORITY_PATHS),
+        SYNC.I1_COMMIT: list(SYNC.IMPLEMENTATION_PATHS),
         implementation_commit: list(SYNC.IMPLEMENTATION_PATHS),
         binding_commit: [SYNC.CONFIG_REPO_PATH],
     }
     if drift_authority_paths:
         changed[SYNC.AUTHORITY_COMMIT].append("unexpected/path")
     blobs: dict[tuple[str, str], bytes] = {}
-    for commit in (SYNC.AUTHORITY_COMMIT, implementation_commit, binding_commit):
+    for commit in (
+        SYNC.AUTHORITY_COMMIT,
+        SYNC.I1_COMMIT,
+        implementation_commit,
+        binding_commit,
+    ):
         for relative, payload in authority_payloads.items():
             blobs[(commit, relative)] = payload
     blobs.update(
         {
+            **{
+                (SYNC.I1_COMMIT, relative): payload
+                for relative, payload in i1_payloads.items()
+            },
             (implementation_commit, SYNC.CONFIG_REPO_PATH): i_payload,
             (implementation_commit, SYNC.SCRIPT_REPO_PATH): script_payload,
             (implementation_commit, SYNC.TEST_REPO_PATH): test_payload,
@@ -234,7 +259,8 @@ def install_fake_repository(
             ("rev-parse", "--abbrev-ref", "@{upstream}"): f"origin/{SYNC.BRANCH}\n".encode(),
             ("status", "--porcelain=v1", "--untracked-files=all"): b"",
             ("rev-parse", f"{binding_commit}^"): f"{implementation_commit}\n".encode(),
-            ("rev-parse", f"{implementation_commit}^"): f"{SYNC.AUTHORITY_COMMIT}\n".encode(),
+            ("rev-parse", f"{implementation_commit}^"): f"{SYNC.I1_COMMIT}\n".encode(),
+            ("rev-parse", f"{SYNC.I1_COMMIT}^"): f"{SYNC.AUTHORITY_COMMIT}\n".encode(),
             ("rev-parse", f"{SYNC.AUTHORITY_COMMIT}^"): f"{SYNC.AUTHORITY_PARENT}\n".encode(),
         }
         if arguments in mapping:
@@ -263,14 +289,18 @@ def install_fake_repository(
     return config_payload
 
 
-def test_disk_candidate_is_exact_i_with_bound_a_and_unknown_four_scalars() -> None:
+def test_disk_candidate_is_valid_i2_or_b2_with_frozen_a_and_i1() -> None:
     config = disk_config()
     SYNC.validate_static_config(config)
     assert SYNC._authority_binding_state(config["repository_authority"]) == "BOUND"
     assert config["repository_authority"]["authority_commit"] == SYNC.AUTHORITY_COMMIT
     assert config["repository_authority"]["authority_expected_parent"] == SYNC.AUTHORITY_PARENT
     assert config["repository_authority"]["authority_files"] == SYNC.AUTHORITY_FILES
-    assert SYNC._implementation_binding_state(config["implementation_binding"]) == "UNKNOWN"
+    assert config["implementation_binding"]["frozen_predecessor_implementation"] == SYNC.FROZEN_I1_BINDING
+    assert SYNC._implementation_binding_state(config["implementation_binding"]) in {
+        "UNKNOWN",
+        "BOUND",
+    }
     assert config["implementation_binding"]["implementation_commit_exact_changed_paths"] == SYNC.IMPLEMENTATION_PATHS
     assert config["implementation_binding"]["binding_commit_exact_changed_paths"] == [SYNC.CONFIG_REPO_PATH]
     assert config["runtime"]["predecessor_event_count"] == 58
@@ -281,10 +311,10 @@ def test_disk_candidate_is_exact_i_with_bound_a_and_unknown_four_scalars() -> No
     assert config["runtime"]["successor_manifest_registered_artifact_count"] == 8
 
 
-def test_unknown_i_stops_before_git_prepared_or_runtime_io(
+def test_unknown_i2_stops_before_git_prepared_or_runtime_io(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    config = disk_config()
+    config = unknown_i2_config()
     touched: list[str] = []
 
     def forbidden(*_args: Any, **_kwargs: Any) -> Any:
@@ -306,6 +336,13 @@ def test_unknown_i_stops_before_git_prepared_or_runtime_io(
     assert touched == []
     assert not (tmp_path / "must-not-exist").exists()
     assert not (tmp_path / "must-not-open").exists()
+
+
+def test_partially_bound_i2_is_rejected_from_clean_normalized_i2() -> None:
+    config = unknown_i2_config()
+    config["implementation_binding"]["status"] = SYNC.BOUND
+    with pytest.raises(SYNC.BindingError, match="partially known"):
+        SYNC.validate_static_config(config)
 
 
 def test_production_config_copy_rejected_before_config_or_runtime_io(
@@ -353,14 +390,16 @@ def test_repository_a_i_b_lifecycle_and_exact12_blobs_are_audited(
     payload = install_fake_repository(monkeypatch, config)
     audit = SYNC.audit_production_repository_authority(config, payload)
     assert audit == {
-        "status": "PASS_EXACT12_A_EXACT3_I_CONFIG_ONLY_B",
+        "status": "PASS_EXACT12_A_EXACT3_I1_EXACT3_I2_CONFIG_ONLY_B2",
         "authority_commit": SYNC.AUTHORITY_COMMIT,
+        "predecessor_implementation_commit": SYNC.I1_COMMIT,
         "implementation_commit": "6" * 40,
         "binding_commit": "b" * 40,
         "head_commit": "b" * 40,
         "upstream_head_commit": "b" * 40,
         "origin_branch_head_commit": "b" * 40,
         "authority_blob_count": 12,
+        "predecessor_implementation_blob_count": 3,
         "worktree_and_index_clean": True,
     }
 
@@ -369,6 +408,7 @@ def test_repository_a_i_b_lifecycle_and_exact12_blobs_are_audited(
     ("drift_flag", "message"),
     [
         ("drift_authority_paths", "A exact12 drift"),
+        ("drift_i1_blob", "frozen I1 exact3 blob identity differs"),
         ("drift_i_config", "invalid JSON"),
     ],
 )

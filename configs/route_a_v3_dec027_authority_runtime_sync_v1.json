@@ -16,7 +16,34 @@
   "event_name": "DEC027_BOUNDED_DATA_RESCUE_PREFLIGHT_AUTHORITY_REGISTERED_RUNTIME_GATES_UNCHANGED",
   "sync_type": "APPEND_ONLY_AUTHORITY_ONLY_REGISTRATION_NO_SCIENTIFIC_STATE_CHANGE",
   "implementation_binding": {
-    "binding_scheme": "APPEND_ONLY_A_EXACT12_THEN_I_EXACT3_THEN_B_CONFIG_ONLY_V1",
+    "binding_scheme": "APPEND_ONLY_A_EXACT12_THEN_I1_EXACT3_THEN_I2_EXACT3_THEN_B2_CONFIG_ONLY_V2",
+    "frozen_predecessor_implementation": {
+      "status": "FROZEN_BOUND_EXACT3",
+      "implementation_commit": "de40c58ab81fc06196be3bb9ffb5aa35d39c9d03",
+      "implementation_expected_parent": "3e0ad158a0b45b2f26ed82da3afe60667c712cd6",
+      "implementation_exact_changed_paths": [
+        "configs/route_a_v3_dec027_authority_runtime_sync_v1.json",
+        "scripts/route_a_v3/dec027_authority_runtime_sync.py",
+        "tests/route_a_v3/test_dec027_authority_runtime_sync.py"
+      ],
+      "implementation_files": [
+        {
+          "path": "configs/route_a_v3_dec027_authority_runtime_sync_v1.json",
+          "bytes": 13238,
+          "sha256": "cbb0c8c4fb2b47a1e1c1dd629d46c149b1c35299e8127dfd431a22666e40dfd5"
+        },
+        {
+          "path": "scripts/route_a_v3/dec027_authority_runtime_sync.py",
+          "bytes": 61354,
+          "sha256": "ae13a64ecbe10edd47eb403a328bdb2563f7d30e185d11e73d1b10f1955da4a1"
+        },
+        {
+          "path": "tests/route_a_v3/test_dec027_authority_runtime_sync.py",
+          "bytes": 25181,
+          "sha256": "de253087afd14136f188d3c525be76788cd214509d96971c4f11d2799c215117"
+        }
+      ]
+    },
     "status": "UNKNOWN_NOT_ASSERTED",
     "implementation_commit": "UNKNOWN_NOT_ASSERTED",
     "implementation_script_path": "scripts/route_a_v3/dec027_authority_runtime_sync.py",
@@ -37,7 +64,7 @@
     "binding_commit_exact_changed_paths": [
       "configs/route_a_v3_dec027_authority_runtime_sync_v1.json"
     ],
-    "activation_rule": "A is frozen DEC027 authority commit 3e0ad158a0b45b2f26ed82da3afe60667c712cd6 with exact12 changed paths and direct parent b1ca33d852bad111ff31b4f60493d8c43c63d1a3. I must be A's direct exact3 child and leave exactly four implementation-binding scalars UNKNOWN_NOT_ASSERTED. B must be I's direct config-only child and bind only those four scalars to I. Every production entry point requires authority/runtime/implementation groups BOUND, the executing producer to be the bound repository script, and clean HEAD equal to upstream and origin at B before prepared-directory or runtime I/O."
+    "activation_rule": "A is frozen DEC027 authority commit 3e0ad158a0b45b2f26ed82da3afe60667c712cd6 with exact12 changed paths and direct parent b1ca33d852bad111ff31b4f60493d8c43c63d1a3. I1 is the already-published direct exact3 child de40c58ab81fc06196be3bb9ffb5aa35d39c9d03 and its three blob identities are frozen here. I2 must be I1's direct exact3 child and leave exactly its own four implementation-binding scalars UNKNOWN_NOT_ASSERTED. B2 must be I2's direct config-only child and bind only those four scalars to I2. Every production entry point requires authority/runtime/implementation groups BOUND, the executing producer to be the bound repository script, and clean HEAD equal to upstream and origin at B2 before prepared-directory or runtime I/O."
   },
   "repository_authority": {
     "production_repo_root": "/home/cunyuliu/mrna_editflow_goal/worktrees/routea_v3_a1_20260810",
