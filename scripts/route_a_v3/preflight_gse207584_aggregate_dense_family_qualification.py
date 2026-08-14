@@ -2,11 +2,11 @@
 """Aggregate-only GSE207584/iCodon dense-family qualification preflight.
 
 The producer is intentionally not a qualifier.  This exact3 is the append-only
-GSE207584 I2 repair candidate: it freezes the actual DEC-023 A/runtime
-I1/I2/B2, GSE261709 I1/I2/B2, and historical GSE207584 I1 identities while
-retaining exactly four dynamic GSE207584 I2/B2 binding scalars as UNKNOWN.  A
-later config-only GSE207584 B2 must bind those four scalars and prove the
-complete direct-parent chain before touching an input or the output path.  The
+GSE207584 I3 schema-repair candidate: it freezes the actual DEC-023 A/runtime
+I1/I2/B2, GSE261709 I1/I2/B2, and historical GSE207584 I1/I2/B2 identities
+while retaining exactly four dynamic GSE207584 I3/B3 binding scalars as
+UNKNOWN.  A later config-only GSE207584 B3 must bind those four scalars and
+prove the complete direct-parent chain before touching an input or the output path.  The
 producer reads only ordinary-public fields authorized for the preflight,
 retains member material in memory, and atomically publishes one aggregate JSON
 report.  A missing authoritative source-to-candidate mapping is an expected
@@ -202,6 +202,29 @@ GSE207_I1_BLOBS = {
         "6b70a439c94a61cd64464d53839b23615b1b21f75f7eb5f6a45bb521a397f070"
     ),
 }
+GSE207_I2_FROZEN_STATUS = "FROZEN_BOUND_EXACT3"
+GSE207_I2_COMMIT = "973e75f1daff45e0087d385c1b015d300b1c3f0f"
+GSE207_I2_BLOBS = {
+    CONFIG_PATH: (
+        "ff1b81bbce7e029d97280dd50be47f5f3073be452fc0a55a4fed256baa34fa97"
+    ),
+    SCRIPT_PATH: (
+        "1a3468c1dfe3628ff95587b5922be25d630ca09e2bb567e8c04b181ff862b1a8"
+    ),
+    TEST_PATH: (
+        "fd9cc811bf9c6b5ce4a4e2a4f99f1aa134adf62361eced53ca927f53576a06a0"
+    ),
+}
+GSE207_B2_FROZEN_STATUS = "FROZEN_BOUND_CONFIG_ONLY"
+GSE207_B2_COMMIT = "d8f501ecfafb55a54a23225d7abbe3422a24fcdd"
+GSE207_B2_EXACT_CHANGED_PATHS = (CONFIG_PATH,)
+GSE207_B2_BLOBS = {
+    CONFIG_PATH: (
+        "2491af4cc3c54eb5b7219253f377ad85d80e61f536e31e0f5bcba008ccad75d3"
+    ),
+    SCRIPT_PATH: GSE207_I2_BLOBS[SCRIPT_PATH],
+    TEST_PATH: GSE207_I2_BLOBS[TEST_PATH],
+}
 OWN_BINDING_SCALARS = (
     "status",
     "implementation_commit",
@@ -214,9 +237,9 @@ PRODUCTION_REPO_ROOT = (
 PRODUCTION_BRANCH = "routea-v3-a1-20260810"
 
 OBSERVED_HEADER = (
+    "Name",
     "Protein_id",
     "Group",
-    "Name",
     "zf_library_2h_1",
     "zf_library_2h_2",
     "zf_library_2h_3",
@@ -349,7 +372,7 @@ def _validate_digest_map(value: Any, paths: tuple[str, ...], *, label: str) -> N
 def _validate_lifecycle(binding: Mapping[str, Any]) -> None:
     if binding.get("binding_scheme") != (
         "DEC023_A_RUNTIME_I1_I2_B2_THEN_GSE261_I1_I2_B2_THEN_GSE207_"
-        "FROZEN_I1_DYNAMIC_I2_B2_V4"
+        "FROZEN_I1_I2_B2_DYNAMIC_I3_B3_V5"
     ):
         raise ProtocolError("binding scheme differs")
 
@@ -405,6 +428,8 @@ def _validate_lifecycle(binding: Mapping[str, Any]) -> None:
     preflight = _mapping(binding.get("preflight_group"), label="preflight group")
     expected_preflight_keys = {
         "predecessor_implementation_i1",
+        "predecessor_implementation_i2",
+        "predecessor_binding_b2",
         "status",
         "implementation_commit",
         "implementation_script_path",
@@ -425,6 +450,22 @@ def _validate_lifecycle(binding: Mapping[str, Any]) -> None:
         "blob_sha256_by_path": GSE207_I1_BLOBS,
     }:
         raise ProtocolError("frozen GSE207 I1 identity differs")
+    if preflight.get("predecessor_implementation_i2") != {
+        "status": GSE207_I2_FROZEN_STATUS,
+        "commit": GSE207_I2_COMMIT,
+        "expected_parent": GSE207_I1_COMMIT,
+        "exact_changed_paths": list(EXACT3),
+        "blob_sha256_by_path": GSE207_I2_BLOBS,
+    }:
+        raise ProtocolError("frozen GSE207 I2 identity differs")
+    if preflight.get("predecessor_binding_b2") != {
+        "status": GSE207_B2_FROZEN_STATUS,
+        "commit": GSE207_B2_COMMIT,
+        "expected_parent": GSE207_I2_COMMIT,
+        "exact_changed_paths": list(GSE207_B2_EXACT_CHANGED_PATHS),
+        "blob_sha256_by_path": GSE207_B2_BLOBS,
+    }:
+        raise ProtocolError("frozen GSE207 B2 identity differs")
     if preflight.get("implementation_script_path") != SCRIPT_PATH:
         raise ProtocolError("GSE207 implementation script path differs")
     if preflight.get("implementation_test_path") != TEST_PATH:
@@ -848,10 +889,26 @@ def _default_binding_auditor(
         expected_paths=EXACT3,
         expected_blobs=frozen_i1["blob_sha256_by_path"],
     )
+    frozen_i2 = preflight["predecessor_implementation_i2"]
+    _verify_commit(
+        root,
+        commit=frozen_i2["commit"],
+        expected_parent=frozen_i2["expected_parent"],
+        expected_paths=EXACT3,
+        expected_blobs=frozen_i2["blob_sha256_by_path"],
+    )
+    frozen_b2 = preflight["predecessor_binding_b2"]
+    _verify_commit(
+        root,
+        commit=frozen_b2["commit"],
+        expected_parent=frozen_b2["expected_parent"],
+        expected_paths=GSE207_B2_EXACT_CHANGED_PATHS,
+        expected_blobs=frozen_b2["blob_sha256_by_path"],
+    )
     _verify_commit(
         root,
         commit=preflight["implementation_commit"],
-        expected_parent=frozen_i1["commit"],
+        expected_parent=frozen_b2["commit"],
         expected_paths=EXACT3,
     )
     _verify_commit(
@@ -881,7 +938,7 @@ def _default_binding_auditor(
     if (root / TEST_PATH).read_bytes() != test_blob:
         raise ProtocolError("focused test bytes differ from bound test")
     return {
-        "status": "BOUND_DEC023_GSE261_AND_GSE207_I1_I2_B2",
+        "status": "BOUND_DEC023_GSE261_AND_GSE207_I1_I2_B2_I3_B3",
         "authority_commit": authority["authority_commit"],
         "runtime_i1_commit": authority["runtime_i1_commit"],
         "runtime_i2_commit": authority["runtime_i2_commit"],
@@ -890,8 +947,10 @@ def _default_binding_auditor(
         "gse261709_i2_commit": predecessor["implementation_i2_commit"],
         "gse261709_b2_commit": predecessor["binding_b2_commit"],
         "gse207584_i1_commit": frozen_i1["commit"],
-        "gse207584_i2_commit": preflight["implementation_commit"],
-        "gse207584_b2_commit": head,
+        "gse207584_i2_commit": frozen_i2["commit"],
+        "gse207584_b2_commit": frozen_b2["commit"],
+        "gse207584_i3_commit": preflight["implementation_commit"],
+        "gse207584_b3_commit": head,
     }
 
 
@@ -939,7 +998,7 @@ def _read_observed(path: Path) -> dict[str, Any]:
             if len(row) != len(OBSERVED_HEADER):
                 malformed_rows += 1
                 continue
-            protein_id, group, candidate_id = row[:3]
+            candidate_id, protein_id, group = row[:3]
             if not protein_id or not group or not candidate_id:
                 malformed_rows += 1
                 continue

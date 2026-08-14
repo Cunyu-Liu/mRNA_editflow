@@ -8,7 +8,7 @@
   "decision_id": "V3-DEC-023",
   "protocol_status": "AGGREGATE_DENSE_FAMILY_QUALIFICATION_PREFLIGHT_ONLY_NOT_QUALIFICATION",
   "implementation_binding": {
-    "binding_scheme": "DEC023_A_RUNTIME_I1_I2_B2_THEN_GSE261_I1_I2_B2_THEN_GSE207_FROZEN_I1_DYNAMIC_I2_B2_V4",
+    "binding_scheme": "DEC023_A_RUNTIME_I1_I2_B2_THEN_GSE261_I1_I2_B2_THEN_GSE207_FROZEN_I1_I2_B2_DYNAMIC_I3_B3_V5",
     "authority_runtime_group": {
       "status": "BOUND",
       "authority_commit": "f7cfff896a1a30d25a3b73ea7f89957d70d95d39",
@@ -121,12 +121,40 @@
           "tests/route_a_v3/test_preflight_gse207584_aggregate_dense_family_qualification.py": "6b70a439c94a61cd64464d53839b23615b1b21f75f7eb5f6a45bb521a397f070"
         }
       },
-      "status": "BOUND",
-      "implementation_commit": "973e75f1daff45e0087d385c1b015d300b1c3f0f",
+      "predecessor_implementation_i2": {
+        "status": "FROZEN_BOUND_EXACT3",
+        "commit": "973e75f1daff45e0087d385c1b015d300b1c3f0f",
+        "expected_parent": "21337a0ee240bf469d3036d7718fb069068707a4",
+        "exact_changed_paths": [
+          "configs/route_a_v3_gse207584_aggregate_dense_family_qualification_preflight_v1.json",
+          "scripts/route_a_v3/preflight_gse207584_aggregate_dense_family_qualification.py",
+          "tests/route_a_v3/test_preflight_gse207584_aggregate_dense_family_qualification.py"
+        ],
+        "blob_sha256_by_path": {
+          "configs/route_a_v3_gse207584_aggregate_dense_family_qualification_preflight_v1.json": "ff1b81bbce7e029d97280dd50be47f5f3073be452fc0a55a4fed256baa34fa97",
+          "scripts/route_a_v3/preflight_gse207584_aggregate_dense_family_qualification.py": "1a3468c1dfe3628ff95587b5922be25d630ca09e2bb567e8c04b181ff862b1a8",
+          "tests/route_a_v3/test_preflight_gse207584_aggregate_dense_family_qualification.py": "fd9cc811bf9c6b5ce4a4e2a4f99f1aa134adf62361eced53ca927f53576a06a0"
+        }
+      },
+      "predecessor_binding_b2": {
+        "status": "FROZEN_BOUND_CONFIG_ONLY",
+        "commit": "d8f501ecfafb55a54a23225d7abbe3422a24fcdd",
+        "expected_parent": "973e75f1daff45e0087d385c1b015d300b1c3f0f",
+        "exact_changed_paths": [
+          "configs/route_a_v3_gse207584_aggregate_dense_family_qualification_preflight_v1.json"
+        ],
+        "blob_sha256_by_path": {
+          "configs/route_a_v3_gse207584_aggregate_dense_family_qualification_preflight_v1.json": "2491af4cc3c54eb5b7219253f377ad85d80e61f536e31e0f5bcba008ccad75d3",
+          "scripts/route_a_v3/preflight_gse207584_aggregate_dense_family_qualification.py": "1a3468c1dfe3628ff95587b5922be25d630ca09e2bb567e8c04b181ff862b1a8",
+          "tests/route_a_v3/test_preflight_gse207584_aggregate_dense_family_qualification.py": "fd9cc811bf9c6b5ce4a4e2a4f99f1aa134adf62361eced53ca927f53576a06a0"
+        }
+      },
+      "status": "UNKNOWN_NOT_ASSERTED",
+      "implementation_commit": "UNKNOWN_NOT_ASSERTED",
       "implementation_script_path": "scripts/route_a_v3/preflight_gse207584_aggregate_dense_family_qualification.py",
-      "implementation_script_sha256": "1a3468c1dfe3628ff95587b5922be25d630ca09e2bb567e8c04b181ff862b1a8",
+      "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
       "implementation_test_path": "tests/route_a_v3/test_preflight_gse207584_aggregate_dense_family_qualification.py",
-      "implementation_test_sha256": "fd9cc811bf9c6b5ce4a4e2a4f99f1aa134adf62361eced53ca927f53576a06a0",
+      "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
       "unknown_to_bound_scalar_paths": [
         "implementation_binding.preflight_group.status",
         "implementation_binding.preflight_group.implementation_commit",
@@ -142,7 +170,7 @@
         "configs/route_a_v3_gse207584_aggregate_dense_family_qualification_preflight_v1.json"
       ]
     },
-    "activation_rule": "The frozen DEC-023 authority A and runtime I1/I2/B2 chain, frozen GSE261709 I1/I2/B2 chain, frozen historical GSE207584 I1 exact3, dynamic repair GSE207584 I2 exact3, and GSE207584 B2 config-only commit must be verified in that linear order. Historical GSE207584 I1 is the direct child of GSE261709 B2. Dynamic GSE207584 I2 must be the direct child of historical I1, and GSE207584 B2 must be the direct child of I2. This file is the true GSE207584 I2 candidate and therefore retains exactly the four dynamic GSE207584 binding scalars as UNKNOWN_NOT_ASSERTED. Any partial own4 group, parent drift, changed-path drift, or blob drift stops before asset or output I/O."
+    "activation_rule": "The frozen DEC-023 authority A and runtime I1/I2/B2 chain, frozen GSE261709 I1/I2/B2 chain, frozen historical GSE207584 I1 exact3, frozen GSE207584 I2 exact3 and B2 config-only commits, dynamic schema-repair GSE207584 I3 exact3, and GSE207584 B3 config-only commit must be verified in that linear order. Historical GSE207584 I1 is the direct child of GSE261709 B2, frozen I2 is the direct child of I1, frozen B2 is the direct child of I2, dynamic I3 is the direct child of B2, and B3 is the direct child of I3. This file is the true GSE207584 I3 candidate and therefore retains exactly the four dynamic GSE207584 binding scalars as UNKNOWN_NOT_ASSERTED. Any partial own4 group, parent drift, changed-path drift, or blob drift stops before asset or output I/O."
   },
   "decision_authority": {
     "amendment_path": "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec023.yaml",
@@ -192,9 +220,9 @@
     "observed_perfect_csv": {
       "filename": "GSE207584_Zebrafish-library-perfect.csv.gz",
       "required_header_exactly": [
+        "Name",
         "Protein_id",
         "Group",
-        "Name",
         "zf_library_2h_1",
         "zf_library_2h_2",
         "zf_library_2h_3",
