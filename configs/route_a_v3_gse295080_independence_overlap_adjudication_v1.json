@@ -434,7 +434,7 @@
       ]
     },
     "own_preflight_group": {
-      "status": "UNKNOWN_NOT_ASSERTED",
+      "status": "BOUND",
       "frozen_i1_commit": "d422e27fe31ff66d8a9dd1faa8b0aef1d2cf352d",
       "frozen_i1_expected_parent": "19ca49229c9ff2814bad2c58b8b84be14624b7ea",
       "frozen_i1_exact_changed_paths": [
@@ -447,11 +447,11 @@
         "scripts/route_a_v3/preflight_gse295080_independence_overlap_adjudication.py": "d1db3a0e267aa6bbdb098ea665a8539253b344616d6861c5ae379ee33b3099ad",
         "tests/route_a_v3/test_preflight_gse295080_independence_overlap_adjudication.py": "1bd5efa9cf6e685e9e939c74e0e465c51321f223e71002cdab43ce8a40d33de2"
       },
-      "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+      "implementation_commit": "845550e24c836872f4572abe10275db58f62554e",
       "implementation_script_path": "scripts/route_a_v3/preflight_gse295080_independence_overlap_adjudication.py",
-      "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
+      "implementation_script_sha256": "1eb410d58facdc22af1cfb86583c864e6a6f790699f6b89c13bc2303dbabb00c",
       "implementation_test_path": "tests/route_a_v3/test_preflight_gse295080_independence_overlap_adjudication.py",
-      "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
+      "implementation_test_sha256": "68e3b8c3908aa518eb531a269cebc1d82f9210d9f770deaa6019a3ce44b4a069",
       "implementation_exact_changed_paths": [
         "configs/route_a_v3_gse295080_independence_overlap_adjudication_v1.json",
         "scripts/route_a_v3/preflight_gse295080_independence_overlap_adjudication.py",
