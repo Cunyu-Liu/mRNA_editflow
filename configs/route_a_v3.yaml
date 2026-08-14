@@ -8,12 +8,13 @@ date: "2026-08-10"
 
 authority:
   initial_source_goal_sha256: d1c031aecdec710495f6861b380785cccd64663ac4bd97b4f479d6fdf372ea07
-  active_amendment_decision_ids: [V3-DEC-017, V3-DEC-018, V3-DEC-019, V3-DEC-020, V3-DEC-021, V3-DEC-022]
+  active_amendment_decision_ids: [V3-DEC-017, V3-DEC-018, V3-DEC-019, V3-DEC-020, V3-DEC-021, V3-DEC-022, V3-DEC-023]
   active_amendment_paths:
     V3-DEC-019: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec019.yaml
     V3-DEC-020: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec020.yaml
     V3-DEC-021: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec021.yaml
     V3-DEC-022: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec022.yaml
+    V3-DEC-023: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec023.yaml
   source_goal:
     local_path: "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna v3.md"
     sha256: cbac4c3dcba8f1b8df95d8edad52d19e3c126d1c865d0cc423537c754cc90982
@@ -279,6 +280,97 @@ a1_qualification_authority:
     training_allowed: false
     gpu_work_allowed: false
     model_selection_allowed: false
+    next_phase_authorized: false
+    sealed_contact_allowed: false
+  gse261709_public_identifier_asset_schema_and_aggregate_geometry_preflight:
+    current_status: AUTHORIZED_NOT_RUN
+    dataset_id: GSE261709
+    project_id: PRJNA1088465
+    role: PUBLIC_IDENTIFIER_ASSET_SCHEMA_AND_AGGREGATE_GEOMETRY_PREFLIGHT_ONLY
+    preflight_execution_allowed: true
+    allowed_input_field_classes_exactly: [PUBLIC_IDENTIFIER, ASSET_SAMPLE_RUN_ROLE, CONTEXT_METADATA, HEADER_NAME, ASSET_DIMENSION, AGGREGATE_COUNT, AGGREGATE_BYTE_COUNT, LICENSE_NOTICE]
+    allowed_output_class: AGGREGATE_IDENTIFIER_ASSET_SCHEMA_AND_GEOMETRY_ONLY
+    actual_header_names_output_allowed: false
+    header_role_class_coverage_count_output_allowed: true
+    asset_body_read_allowed: false
+    member_payload_read_allowed: false
+    member_or_body_read_count_required: 0
+    member_or_body_output_count_required: 0
+    row_level_access_allowed: false
+    qualification_allowed: false
+    split_execution_allowed: false
+    power_execution_allowed: false
+    canonical_materialization_allowed: false
+    ordinary_study_contribution: 0
+    a1_study_contribution: 0
+    true_a2_dense_study_contribution: 0
+    canonical_record_count: 0
+    training_allowed: false
+    gpu_work_allowed: false
+    model_selection_allowed: false
+    a7_allowed: false
+    next_phase_authorized: false
+    sealed_contact_allowed: false
+  gse207584_aggregate_dense_family_qualification_preflight:
+    current_status: AUTHORIZED_NOT_RUN
+    dataset_id: GSE207584
+    project_id: PRJNA856272
+    role: AGGREGATE_DENSE_FAMILY_QUALIFICATION_PREFLIGHT_ONLY
+    aggregate_dense_family_qualification_preflight_execution_allowed: true
+    registry_role_must_remain: AUDIT_ONLY
+    allowed_internal_input_field_classes_exactly: [DESIGNED_OBSERVED_MAPPING, SOURCE_SEQUENCE, CANDIDATE_SEQUENCE, TWO_FIVE_EIGHT_HOUR_REPLICATE_ABUNDANCE, NECESSARY_CONTEXT]
+    allowed_output_class: AGGREGATE_DENSE_FAMILY_QUALIFICATION_PREFLIGHT_ONLY
+    required_fail_closed_gate_ids_exactly:
+      - INTENDED_UNIVERSE_MEMBERSHIP_CLOSED
+      - SOURCE_TO_CANDIDATE_SYNONYMOUS_EDIT_REPLAY_CLOSED
+      - DENSE_FAMILY_AND_CONTEXT_CLOSED
+      - ENDPOINT_DIRECTION_SCALE_AND_SEMANTICS_CLOSED
+      - THREE_BIOLOGICAL_REPLICATE_SLOPE_AND_VALID_STANDARD_ERROR_CLOSED
+      - MISSING_CENSORING_AND_COVERAGE_SELECTION_CLOSED
+      - LICENSE_AND_REUSE_RIGHTS_CLOSED
+      - MODEL_INPUT_ROUTE_AND_SCRATCH_EXPOSURE_CLOSED
+      - OUTCOME_BLIND_SOURCE_GROUP_NEAR_DUPLICATE_SPLIT_AND_ZERO_LEAKAGE_CLOSED
+      - POST_DEDUP_INDEPENDENT_EFFECTIVE_N_CLOSED
+      - PREFROZEN_SOURCE_GROUP_POWER_AND_FULL_CI_WIDTH_CLOSED
+    independent_gate_axis_count: 11
+    initial_status_for_every_gate: NOT_RUN
+    unknown_or_not_run_gate_is_pass: false
+    source_to_candidate_edit_relation_may_be_presumed: false
+    split_leakage_readiness_audit_allowed: true
+    split_assignment_execution_allowed: false
+    power_readiness_audit_allowed: true
+    aggregate_prefrozen_power_planning_calculation_allowed: true
+    aggregate_prefrozen_power_planning_alternative_spearman_rho: 0.25
+    aggregate_prefrozen_power_planning_method: BONETT_WRIGHT_FISHER_Z_ASYMPTOTIC_TWO_SIDED_SPEARMAN
+    aggregate_prefrozen_power_planning_confidence_interval_method: BONETT_WRIGHT_FISHER_Z_SPEARMAN_AT_PREFROZEN_ALTERNATIVE
+    aggregate_prefrozen_power_planning_null_standard_error_formula: "1/sqrt(n-3)"
+    aggregate_prefrozen_power_planning_alternative_standard_error_formula: "sqrt(1+rho^2/2)/sqrt(n-3)"
+    aggregate_prefrozen_power_planning_working_distribution_assumption: MONOTONIC_TRANSFORMATION_OF_BIVARIATE_NORMAL_AT_PREFROZEN_SPEARMAN_RHO
+    aggregate_prefrozen_power_planning_alpha_two_sided: 0.05
+    aggregate_prefrozen_power_planning_target_power: 0.80
+    aggregate_prefrozen_power_planning_confidence_level: 0.95
+    aggregate_prefrozen_power_planning_maximum_full_ci_width: 0.30
+    aggregate_prefrozen_power_planning_required_effective_n_for_both_power_and_ci_width: 156
+    aggregate_prefrozen_power_planning_analysis_unit: POST_DEDUP_INDEPENDENT_SOURCE_GROUP
+    aggregate_prefrozen_power_planning_output_class: AGGREGATE_ONLY
+    formal_qualification_power_gate_execution_allowed: false
+    qualification_allowed: false
+    canonical_materialization_allowed: false
+    ordinary_study_contribution: 0
+    a1_study_contribution: 0
+    true_a2_dense_study_contribution: 0
+    canonical_record_count: 0
+    member_identifier_output_allowed: false
+    sequence_output_allowed: false
+    row_abundance_output_allowed: false
+    row_effect_output_allowed: false
+    row_slope_output_allowed: false
+    row_standard_error_output_allowed: false
+    split_assignment_output_allowed: false
+    training_allowed: false
+    gpu_work_allowed: false
+    model_selection_allowed: false
+    a7_allowed: false
     next_phase_authorized: false
     sealed_contact_allowed: false
   model_input_route_and_route_conditional_exposure_gate_required: true

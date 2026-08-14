@@ -4,7 +4,7 @@
   "contract_path": "docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md",
   "initial_contract_sha256": "d1c031aecdec710495f6861b380785cccd64663ac4bd97b4f479d6fdf372ea07",
   "contract_sha256": "cbac4c3dcba8f1b8df95d8edad52d19e3c126d1c865d0cc423537c754cc90982",
-  "active_amendment_decision_ids": ["V3-DEC-017", "V3-DEC-018", "V3-DEC-019", "V3-DEC-020", "V3-DEC-021", "V3-DEC-022"],
+  "active_amendment_decision_ids": ["V3-DEC-017", "V3-DEC-018", "V3-DEC-019", "V3-DEC-020", "V3-DEC-021", "V3-DEC-022", "V3-DEC-023"],
   "files": [
     {
       "path": "docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md",
@@ -14,7 +14,7 @@
     {
       "path": "configs/route_a_v3.yaml",
       "role": "EXECUTABLE_CONTRACT",
-      "sha256": "66d5303d4644c5da401ca1e4295da854c0a51c4d98fcd92556dc1d0abae9e2cd"
+      "sha256": "df38455904d67f22a2fea1fb08a3314cd4fb120e91ea711427ad1689653ba8ce"
     },
     {
       "path": "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec019.yaml",
@@ -37,14 +37,19 @@
       "sha256": "3496c3d72c62cef2e26e5414e06b3593656ea80599b91c56f228f81d6125e3c7"
     },
     {
+      "path": "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec023.yaml",
+      "role": "DEC023_APPEND_ONLY_DUAL_PREFLIGHT_AUTHORITY_AMENDMENT",
+      "sha256": "44622c7f589d841105cb21d0b35219aa9163fe4d54350671106408d4c8439e4a"
+    },
+    {
       "path": "configs/route_a_v3_a1_qualification.json",
       "role": "A1_QUALIFICATION_ROOT_PROTOCOL",
-      "sha256": "baefc579eacfb5e43ded77c8443daade449e7cefeabeab1a1818b77800ac6184"
+      "sha256": "98de408ec423836efac75bcd75b4fd940e9fbd52a0bf1b3c397ea0c67e548740"
     },
     {
       "path": "docs/contracts/supersession_mrna_xeditflow_v1_1_to_route_a_v3.yaml",
       "role": "SUPERSESSION_LINEAGE",
-      "sha256": "eed3815b1825e2731cc60e03401f3046f440d76cd9c58d3a23f7cd0ef87ed4f8"
+      "sha256": "0edfddd90ebea11db1cebb7084bdf28dd8a99426c3956a81cdfd7a4a9ccb12e2"
     },
     {
       "path": "docs/contracts/history/mrna_v2_readiness_audit_20260807.md",
@@ -64,17 +69,17 @@
     {
       "path": "docs/execution/route_a_v3_data_role_registry.yaml",
       "role": "DATA_ROLE_REGISTRY",
-      "sha256": "943233c41a4ec40cef65bbe3efda38ce8509d816e2e9a72e1f3ab4b4fe0f98e7"
+      "sha256": "bb577d4ce7d7dc673f41bb182b7868f66816c15a3ed4235c98e0839292e75d6b"
     },
     {
       "path": "docs/execution/route_a_v3_decision_log.yaml",
       "role": "DECISION_AND_AMENDMENT_LOG",
-      "sha256": "3a27abc9dbc4924e3a12e7662418e34472509a5345dec6948ae7279ca5455ee1"
+      "sha256": "8e514512ccd63d87a596231b11183c06765ba50ba3736adc165f141da8fa13d0"
     },
     {
       "path": "docs/execution/route_a_v3_a1_interim.yaml",
       "role": "A1_ACTIVE_INTERIM_RECORD",
-      "sha256": "b72fc3e8f7f0c1ffddefa55f6234d2fd828851dc40927b6403357a359881e72c"
+      "sha256": "fbeef398ff59764375edf9a35c2c35fd3a93db89eb3b06326ec1c73968646eff"
     },
     {
       "path": "docs/execution/route_a_v3_a6_interim.yaml",
@@ -499,18 +504,18 @@
     {
       "path": "tests/route_a_v3/test_a0_integrity_guards.py",
       "role": "A0_AUTHORITY_INTEGRITY_GUARD_TEST",
-      "sha256": "9a8a8e06ca662609acfbf59996d88118a534287d1e431fd990c4a613bd6289e1"
+      "sha256": "a0c9b3cc457011e57046506a02e57a4314a26a8885b3d110f88797a000daca0a"
     },
     {
       "path": "scripts/route_a_v3/validate_a0_bundle.py",
       "role": "A0_STATIC_AND_SEMANTIC_VALIDATOR",
-      "sha256": "8fb1e84f29e3052a1d16ae90d8b67c6885150185aa28d68e55bb76f4bc8108e2"
+      "sha256": "a6a71a82e90352c6c9bc02fad95c54436e268d1ee58233093dc8412c5e5739bb"
     }
   ],
   "initial_generated_at": "2026-08-10T10:10:05+08:00",
-  "generated_at": "2026-08-13T23:57:32+08:00",
-  "updated_at": "2026-08-13T23:57:32+08:00",
-  "manifest_status": "DEC022_GSE256185_AGGREGATE_ROW_LEVEL_QUALIFICATION_PREFLIGHT_REGISTERED_EVT055_SETTLED_EVIDENCE_RUNTIME_SYNCED_A1_INCOMPLETE_A6_IN_PROGRESS_L3_NOT_ESTABLISHED_A7_NOT_RUN",
+  "generated_at": "2026-08-14T10:15:01+08:00",
+  "updated_at": "2026-08-14T10:15:01+08:00",
+  "manifest_status": "DEC023_GSE261709_PUBLIC_SCHEMA_GEOMETRY_AND_GSE207584_DENSE_FAMILY_DUAL_AGGREGATE_ONLY_PREFLIGHT_REGISTERED_EVT055_SETTLED_PENDING_FRESH_UNALLOCATED_RUNTIME_EVENT_A1_INCOMPLETE_A6_IN_PROGRESS_L3_NOT_ESTABLISHED_A7_NOT_RUN",
   "schema_version": "1.0.0",
   "sealed_contact": false,
   "version": "3.0.0"

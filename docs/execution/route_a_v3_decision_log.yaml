@@ -583,3 +583,95 @@ decisions:
       - configs/route_a_v3_a1_qualification.json
       - docs/execution/route_a_v3_data_role_registry.yaml
       - docs/execution/route_a_v3_a1_interim.yaml
+  - decision_id: V3-DEC-023
+    decision_type: AMENDMENT
+    dimension: gse261709_schema_geometry_and_gse207584_dense_family_dual_aggregate_only_preflight_scope
+    resolution: >-
+      Authorize GSE261709/PRJNA1088465 only for ordinary-public identifier,
+      asset/sample/run role, context metadata, header-name, dimension,
+      aggregate count/byte, and license-notice preflight, with zero member/body
+      reads and aggregate geometry output only. Separately authorize existing
+      GSE207584/PRJNA856272 for internal reads of ordinary-public
+      designed/observed mapping, source/candidate sequence, 2/5/8-hour
+      replicate abundance, and necessary context solely for an aggregate dense
+      family qualification preflight across 11 independent fail-closed axes.
+      Actual GSE261709 header names may not be output; only aggregate header
+      role-class coverage counts are allowed. GSE207584 aggregate prefrozen
+      power planning may use only rho 0.25, Fisher-z, and post-dedup independent
+      source-group N; formal qualification power-gate execution remains forbidden.
+      Preserve GSE207584 as AUDIT_ONLY and exclude both datasets from any new
+      qualification, ordinary/A1/true-A2 credit, canonical materialization,
+      split or power execution, training, GPU work, model selection, A7, next
+      phase, private/sealed access, or scientific claim. Preserve settled
+      A1-EVT-055, global 1/1/0, and 6547 canonical records; leave the next
+      runtime event unallocated.
+    status: FROZEN_USER_AUTHORIZED_DUAL_AGGREGATE_ONLY_PREFLIGHT_NO_PROMOTION
+    effective_phase: A1
+    requires_user_authorization: true
+    user_authorization_status: GRANTED
+    user_authorization_received_at: "2026-08-14T10:05:00+08:00"
+    user_authorization_source: ACTIVE_CODEX_THREAD_OWNER_CONFIRMATION
+    preserves_decision_ids: [V3-DEC-001, V3-DEC-002, V3-DEC-003, V3-DEC-004, V3-DEC-005, V3-DEC-006, V3-DEC-007, V3-DEC-008, V3-DEC-009, V3-DEC-010, V3-DEC-011, V3-DEC-012, V3-DEC-013, V3-DEC-014, V3-DEC-015, V3-DEC-016, V3-DEC-017, V3-DEC-018, V3-DEC-019, V3-DEC-020, V3-DEC-021, V3-DEC-022]
+    accepted_prefix_preserved_through: V3-DEC-022
+    amendment_path: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec023.yaml
+    gse261709_project_id: PRJNA1088465
+    gse261709_role: PUBLIC_IDENTIFIER_ASSET_SCHEMA_AND_AGGREGATE_GEOMETRY_PREFLIGHT_ONLY
+    gse261709_member_or_body_read_count_required: 0
+    gse261709_member_or_body_output_count_required: 0
+    gse261709_actual_header_names_output_allowed: false
+    gse261709_header_role_class_coverage_count_output_allowed: true
+    gse261709_row_level_access_allowed: false
+    gse207584_project_id: PRJNA856272
+    gse207584_role: AGGREGATE_DENSE_FAMILY_QUALIFICATION_PREFLIGHT_ONLY
+    gse207584_registry_role: AUDIT_ONLY
+    gse207584_independent_gate_axis_count: 11
+    gse207584_all_required_gates_initial_status: NOT_RUN
+    gse207584_unknown_or_not_run_gate_is_pass: false
+    gse207584_source_to_candidate_edit_relation_may_be_presumed: false
+    gse207584_split_assignment_execution_allowed: false
+    gse207584_aggregate_prefrozen_power_planning_calculation_allowed: true
+    gse207584_aggregate_prefrozen_power_planning_alternative_spearman_rho: 0.25
+    gse207584_aggregate_prefrozen_power_planning_method: BONETT_WRIGHT_FISHER_Z_ASYMPTOTIC_TWO_SIDED_SPEARMAN
+    gse207584_aggregate_prefrozen_power_planning_confidence_interval_method: BONETT_WRIGHT_FISHER_Z_SPEARMAN_AT_PREFROZEN_ALTERNATIVE
+    gse207584_aggregate_prefrozen_power_planning_null_standard_error_formula: "1/sqrt(n-3)"
+    gse207584_aggregate_prefrozen_power_planning_alternative_standard_error_formula: "sqrt(1+rho^2/2)/sqrt(n-3)"
+    gse207584_aggregate_prefrozen_power_planning_working_distribution_assumption: MONOTONIC_TRANSFORMATION_OF_BIVARIATE_NORMAL_AT_PREFROZEN_SPEARMAN_RHO
+    gse207584_aggregate_prefrozen_power_planning_alpha_two_sided: 0.05
+    gse207584_aggregate_prefrozen_power_planning_target_power: 0.80
+    gse207584_aggregate_prefrozen_power_planning_confidence_level: 0.95
+    gse207584_aggregate_prefrozen_power_planning_maximum_full_ci_width: 0.30
+    gse207584_aggregate_prefrozen_power_planning_required_effective_n_for_both_power_and_ci_width: 156
+    gse207584_aggregate_prefrozen_power_planning_analysis_unit: POST_DEDUP_INDEPENDENT_SOURCE_GROUP
+    gse207584_aggregate_prefrozen_power_planning_output_class: AGGREGATE_ONLY
+    gse207584_formal_qualification_power_gate_execution_allowed: false
+    current_qualified_counts: {ordinary: 1, a1: 1, true_a2: 0, canonical_records: 6547}
+    changes_current_qualified_counts: false
+    gse261709_contribution: {ordinary: 0, a1: 0, true_a2: 0, canonical_records: 0}
+    gse207584_contribution: {ordinary: 0, a1: 0, true_a2: 0, canonical_records: 0}
+    gse261709_qualified: false
+    gse207584_qualified: false
+    qualifier_execution_allowed: false
+    canonical_materialization_allowed: false
+    split_execution_allowed: false
+    formal_qualification_power_gate_execution_allowed: false
+    training_allowed: false
+    gpu_work_allowed: false
+    model_selection_allowed: false
+    a7_allowed: false
+    next_phase_authorized: false
+    scientific_claim_status: NOT_ESTABLISHED
+    latest_settled_runtime_event_id: A1-EVT-055
+    settled_runtime_event_changed: false
+    runtime_event_emitted: false
+    runtime_sync_status: PENDING_FRESH_EVENT_AFTER_SETTLED_EVT_055
+    expected_next_runtime_event_id: PENDING_FRESH_RUNTIME_EVENT_ID
+    next_runtime_event_id_preallocated: false
+    sealed_contact: false
+    evidence_refs:
+      - docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md
+      - docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec022.yaml
+      - docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec023.yaml
+      - configs/route_a_v3.yaml
+      - configs/route_a_v3_a1_qualification.json
+      - docs/execution/route_a_v3_data_role_registry.yaml
+      - docs/execution/route_a_v3_a1_interim.yaml

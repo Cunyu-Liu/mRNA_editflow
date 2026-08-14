@@ -4544,3 +4544,152 @@ def test_a6_registration_preserves_dec020_history_and_rebinds_only_current_claim
     }
     assert changed == {claim_path}
     assert len(set(validator.DEC020_AUTHORITY_COMMIT_EXACT_CHANGED_PATHS)) == 14
+
+
+def test_dec023_dual_aggregate_only_authority_is_closed(validator, repo_root):
+    config, _, registries = validator.load_bundle_documents(repo_root)
+    assert validator.validate_dec023_authority(repo_root, config, registries) == []
+
+    amendment = validator._load_yaml(repo_root, validator.DEC023_AMENDMENT_PATH)
+    assert amendment["runtime_successor"] == {
+        "latest_settled_runtime_event_id": "A1-EVT-055",
+        "settled_runtime_state_changed_by_authority_bytes": False,
+        "runtime_event_emitted_by_authority_bytes": False,
+        "runtime_sync_status": "PENDING_FRESH_EVENT_AFTER_SETTLED_EVT_055",
+        "expected_next_runtime_event_id": "PENDING_FRESH_RUNTIME_EVENT_ID",
+        "next_runtime_event_id_preallocated": False,
+        "scientific_state_change_expected": False,
+    }
+    gse261 = amendment["gse261709_public_schema_geometry_scope"]
+    assert gse261["member_or_body_read_count_required"] == 0
+    assert gse261["member_or_body_output_count_required"] == 0
+    assert gse261["asset_body_read_allowed"] is False
+    assert gse261["member_payload_read_allowed"] is False
+    assert gse261["actual_header_names_output_allowed"] is False
+    assert gse261["header_role_class_coverage_count_output_allowed"] is True
+    assert "HEADER_ROLE_CLASS_COVERAGE_COUNTS" in gse261["allowed_aggregate_outputs_exactly"]
+    gse207 = amendment["gse207584_dense_family_scope"]
+    assert gse207["required_fail_closed_gate_ids_exactly"] == (
+        validator.DEC023_GSE207584_REQUIRED_GATE_IDS
+    )
+    assert gse207["independent_gate_axis_count"] == 11
+    assert gse207["split_assignment_execution_allowed"] is False
+    assert gse207["aggregate_prefrozen_power_planning_calculation_allowed"] is True
+    assert gse207["aggregate_prefrozen_power_planning_alternative_spearman_rho"] == 0.25
+    assert gse207["aggregate_prefrozen_power_planning_method"] == (
+        "BONETT_WRIGHT_FISHER_Z_ASYMPTOTIC_TWO_SIDED_SPEARMAN"
+    )
+    assert gse207["aggregate_prefrozen_power_planning_confidence_interval_method"] == (
+        "BONETT_WRIGHT_FISHER_Z_SPEARMAN_AT_PREFROZEN_ALTERNATIVE"
+    )
+    assert gse207["aggregate_prefrozen_power_planning_null_standard_error_formula"] == (
+        "1/sqrt(n-3)"
+    )
+    assert gse207[
+        "aggregate_prefrozen_power_planning_alternative_standard_error_formula"
+    ] == "sqrt(1+rho^2/2)/sqrt(n-3)"
+    assert gse207["aggregate_prefrozen_power_planning_alpha_two_sided"] == 0.05
+    assert gse207["aggregate_prefrozen_power_planning_target_power"] == 0.8
+    assert gse207["aggregate_prefrozen_power_planning_confidence_level"] == 0.95
+    assert gse207["aggregate_prefrozen_power_planning_maximum_full_ci_width"] == 0.3
+    assert gse207[
+        "aggregate_prefrozen_power_planning_required_effective_n_for_both_power_and_ci_width"
+    ] == 156
+    assert gse207["aggregate_prefrozen_power_planning_analysis_unit"] == "POST_DEDUP_INDEPENDENT_SOURCE_GROUP"
+    assert gse207["aggregate_prefrozen_power_planning_output_class"] == "AGGREGATE_ONLY"
+    assert gse207["formal_qualification_power_gate_execution_allowed"] is False
+
+    manifest = validator._load_json(repo_root, validator.REGISTRY_MANIFEST_PATH)
+    paths = {row["path"] for row in manifest["files"]}
+    assert set(validator.DEC023_AUTHORITY_EXACT_CHANGED_PATHS) - {
+        validator.REGISTRY_MANIFEST_PATH
+    } <= paths
+    assert next(
+        row
+        for row in manifest["files"]
+        if row["path"] == validator.DEC023_AMENDMENT_PATH
+    )["role"] == "DEC023_APPEND_ONLY_DUAL_PREFLIGHT_AUTHORITY_AMENDMENT"
+
+
+def test_dec023_gse261709_cannot_read_members_or_enter_qualification(
+    validator,
+    repo_root,
+    tmp_path,
+):
+    _copy_manifest_bundle(validator, repo_root, tmp_path)
+    qualification_path = tmp_path / validator.A1_QUALIFICATION_CONFIG_PATH
+    qualification = json.loads(qualification_path.read_text(encoding="utf-8"))
+    authority = qualification["dec023_dual_aggregate_only_preflight_authority"]
+    authority["gse261709"]["asset_body_read_allowed"] = True
+    authority["gse261709"]["member_payload_read_allowed"] = True
+    authority["gse261709"]["actual_header_names_output_allowed"] = True
+    qualification["scope"]["included_dataset_ids"].append("GSE261709")
+    qualification_path.write_text(json.dumps(qualification, indent=2) + "\n", encoding="utf-8")
+
+    data_path = tmp_path / validator.REGISTRY_PATHS["data"]
+    data = yaml.safe_load(data_path.read_text(encoding="utf-8"))
+    row = next(item for item in data["datasets"] if item["dataset_id"] == "GSE261709")
+    row["member_payload_read_allowed"] = True
+    row["actual_header_names_output_allowed"] = True
+    row["qualified"] = True
+    data["ordinary_candidate_dataset_ids"].append("GSE261709")
+    data_path.write_text(yaml.safe_dump(data, sort_keys=False), encoding="utf-8")
+
+    config, _, registries = validator.load_bundle_documents(tmp_path)
+    codes = _codes(validator.validate_dec023_authority(tmp_path, config, registries))
+    assert "DEC023_ACTIVE_AUTHORITY_LEAF_DRIFT" in codes
+    assert "DEC023_A1_SCOPE" in codes
+    assert "DEC023_DATA_ROLE" in codes
+    assert "DEC023_DATA_GSE261709" in codes
+
+
+def test_dec023_gse207584_gate_or_true_a2_promotion_drift_fails_closed(
+    validator,
+    repo_root,
+    tmp_path,
+):
+    _copy_manifest_bundle(validator, repo_root, tmp_path)
+    amendment_path = tmp_path / validator.DEC023_AMENDMENT_PATH
+    amendment = yaml.safe_load(amendment_path.read_text(encoding="utf-8"))
+    dense = amendment["gse207584_dense_family_scope"]
+    dense["required_fail_closed_gate_ids_exactly"].remove(
+        "MISSING_CENSORING_AND_COVERAGE_SELECTION_CLOSED"
+    )
+    dense["independent_gate_axis_count"] = 10
+    dense["initial_status_for_every_gate"] = "PASS"
+    dense["source_to_candidate_edit_relation_may_be_presumed"] = True
+    dense["aggregate_prefrozen_power_planning_calculation_allowed"] = False
+    dense["aggregate_prefrozen_power_planning_method"] = "FISHER_Z_APPROXIMATION"
+    dense[
+        "aggregate_prefrozen_power_planning_alternative_standard_error_formula"
+    ] = "1/sqrt(n-3)"
+    dense[
+        "aggregate_prefrozen_power_planning_required_effective_n_for_both_power_and_ci_width"
+    ] = 151
+    dense["formal_qualification_power_gate_execution_allowed"] = True
+    amendment_path.write_text(yaml.safe_dump(amendment, sort_keys=False), encoding="utf-8")
+
+    data_path = tmp_path / validator.REGISTRY_PATHS["data"]
+    data = yaml.safe_load(data_path.read_text(encoding="utf-8"))
+    data["true_a2_recovery_candidate_dataset_ids"].append("GSE207584")
+    row = next(item for item in data["datasets"] if item["dataset_id"] == "GSE207584")
+    row["role"] = "TRUE_A2_CANDIDATE"
+    row["qualified"] = True
+    row["true_a2_gate_contribution"] = 1
+    row["aggregate_prefrozen_power_planning_calculation_allowed"] = False
+    row["aggregate_prefrozen_power_planning_method"] = "FISHER_Z_APPROXIMATION"
+    row[
+        "aggregate_prefrozen_power_planning_alternative_standard_error_formula"
+    ] = "1/sqrt(n-3)"
+    row[
+        "aggregate_prefrozen_power_planning_required_effective_n_for_both_power_and_ci_width"
+    ] = 151
+    row["formal_qualification_power_gate_execution_allowed"] = True
+    data_path.write_text(yaml.safe_dump(data, sort_keys=False), encoding="utf-8")
+
+    config, _, registries = validator.load_bundle_documents(tmp_path)
+    codes = _codes(validator.validate_dec023_authority(tmp_path, config, registries))
+    assert "DEC023_ACTIVE_AUTHORITY_LEAF_DRIFT" in codes
+    assert "DEC023_GSE207584_SCOPE" in codes
+    assert "DEC023_DATA_ROLE" in codes
+    assert "DEC023_DATA_GSE207584" in codes

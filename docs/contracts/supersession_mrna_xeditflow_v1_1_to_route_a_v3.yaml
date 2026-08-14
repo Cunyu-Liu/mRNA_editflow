@@ -108,15 +108,16 @@ new_authority:
   contract_path: docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md
   initial_contract_sha256: d1c031aecdec710495f6861b380785cccd64663ac4bd97b4f479d6fdf372ea07
   contract_sha256: cbac4c3dcba8f1b8df95d8edad52d19e3c126d1c865d0cc423537c754cc90982
-  active_amendment_decision_ids: [V3-DEC-017, V3-DEC-018, V3-DEC-019, V3-DEC-020, V3-DEC-021, V3-DEC-022]
+  active_amendment_decision_ids: [V3-DEC-017, V3-DEC-018, V3-DEC-019, V3-DEC-020, V3-DEC-021, V3-DEC-022, V3-DEC-023]
   active_amendment_paths:
     V3-DEC-019: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec019.yaml
     V3-DEC-020: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec020.yaml
     V3-DEC-021: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec021.yaml
     V3-DEC-022: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec022.yaml
-  latest_authority_update_id: V3-DEC-022
+    V3-DEC-023: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec023.yaml
+  latest_authority_update_id: V3-DEC-023
   config_path: configs/route_a_v3.yaml
-  config_sha256: 66d5303d4644c5da401ca1e4295da854c0a51c4d98fcd92556dc1d0abae9e2cd
+  config_sha256: df38455904d67f22a2fea1fb08a3314cd4fb120e91ea711427ad1689653ba8ce
   base_commit: bbb71dcba6f1e1c9cb75a8a6653f1a4fe4a6ca0c
   authority_bundle_commit_binding: docs/execution/route_a_v3_a0_activation.yaml
   status: ACTIVE_AUTHORITATIVE_CONTRACT_PENDING_A0_ACCEPTANCE
@@ -135,12 +136,13 @@ active_contract: mrna_xeditflow_route_a_v3
 active_contract_path: docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md
 initial_active_contract_sha256: d1c031aecdec710495f6861b380785cccd64663ac4bd97b4f479d6fdf372ea07
 active_contract_sha256: cbac4c3dcba8f1b8df95d8edad52d19e3c126d1c865d0cc423537c754cc90982
-active_contract_amendment_decision_ids: [V3-DEC-017, V3-DEC-018, V3-DEC-019, V3-DEC-020, V3-DEC-021, V3-DEC-022]
+active_contract_amendment_decision_ids: [V3-DEC-017, V3-DEC-018, V3-DEC-019, V3-DEC-020, V3-DEC-021, V3-DEC-022, V3-DEC-023]
 active_contract_amendment_paths:
   V3-DEC-019: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec019.yaml
   V3-DEC-020: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec020.yaml
   V3-DEC-021: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec021.yaml
   V3-DEC-022: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec022.yaml
+  V3-DEC-023: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec023.yaml
 activation_rule: >-
   The V3 authority becomes A0-accepted only when the schema/registry bundle
   validates, the A0 gate record is PASS, the implementation commit is bound by
