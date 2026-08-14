@@ -1,0 +1,471 @@
+{
+  "schema_version": "route_a_v3_encsr854ruf_dec027_dataset_specific_a1_preflight.v1",
+  "protocol_id": "ENCSR854RUF_DEC027_DATASET_SPECIFIC_A1_PREFLIGHT_V1",
+  "contract_id": "mrna_xeditflow_route_a_v3",
+  "phase_id": "A1",
+  "dataset_id": "ENCSR854RUF",
+  "decision_id": "V3-DEC-027",
+  "protocol_status": "LOCAL_EXACT3_CANDIDATE_FULL_PREDECESSOR_HISTORY_BOUND_OWN_BINDING_UNKNOWN_NOT_ACTIVE",
+  "fresh_baseline": {
+    "observed_at": "BOUND_COMMIT_FACTS_RECEIVED_2026-08-15_TIME_NOT_ASSERTED",
+    "production_branch": "routea-v3-a1-20260810",
+    "production_head": "0a46400efee4ead95b1283df73d263f6f8033036",
+    "upstream_head": "0a46400efee4ead95b1283df73d263f6f8033036",
+    "origin_head": "0a46400efee4ead95b1283df73d263f6f8033036",
+    "worktree_clean": true,
+    "latest_settled_runtime_event_id": "A1-EVT-059",
+    "dec027_authority_present": true,
+    "dec027_authority_commit": "3e0ad158a0b45b2f26ed82da3afe60667c712cd6",
+    "dec027_authority_status": "FROZEN_USER_AUTHORIZED_RESCUE_PREFLIGHT_ONLY_NO_AUTOMATIC_PROMOTION",
+    "dec027_runtime_binding_present": true,
+    "dec027_runtime_i1_commit": "de40c58ab81fc06196be3bb9ffb5aa35d39c9d03",
+    "dec027_runtime_i2_commit": "5d66e8dc83eb9966f7698ac0fc677f1b06af8ea6",
+    "dec027_runtime_binding_commit": "e60956cf59cbddc0406c5d116fb9714906db36e1",
+    "gse217518_final_binding_commit": "0a46400efee4ead95b1283df73d263f6f8033036",
+    "fact_class": "CONFIRMED_EXACT_COMMIT_AND_BLOB_FACTS_FROM_PREDECESSOR_EXECUTION"
+  },
+  "repository_authority": {
+    "production_repo_root": "/home/cunyuliu/mrna_editflow_goal/worktrees/routea_v3_a1_20260810",
+    "branch": "routea-v3-a1-20260810",
+    "upstream_ref": "origin/routea-v3-a1-20260810",
+    "clean_head_equals_upstream_equals_live_origin_required": true
+  },
+  "implementation_binding": {
+    "binding_scheme": "DEC027_A_TO_RUNTIME_I1_I2_B2_EVT059_TO_GSE217518_I1_I2_B2_I3_B3_TO_ENCSR854RUF_I_B",
+    "authority_group": {
+      "status": "BOUND",
+      "authority_commit": "3e0ad158a0b45b2f26ed82da3afe60667c712cd6",
+      "authority_expected_parent": "b1ca33d852bad111ff31b4f60493d8c43c63d1a3",
+      "authority_exact_changed_paths": [
+        "configs/route_a_v3.yaml",
+        "configs/route_a_v3_a1_qualification.json",
+        "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec027.yaml",
+        "docs/contracts/supersession_mrna_xeditflow_v1_1_to_route_a_v3.yaml",
+        "docs/execution/route_a_v3_a1_interim.yaml",
+        "docs/execution/route_a_v3_a6_interim.yaml",
+        "docs/execution/route_a_v3_data_role_registry.yaml",
+        "docs/execution/route_a_v3_decision_log.yaml",
+        "docs/execution/route_a_v3_registry_manifest.json",
+        "docs/execution/route_a_v3_task_registry.yaml",
+        "scripts/route_a_v3/validate_a0_bundle.py",
+        "tests/route_a_v3/test_a0_integrity_guards.py"
+      ],
+      "authority_blob_sha256_by_path": {
+        "configs/route_a_v3.yaml": "c5ec7d236443b506c09fd3f09e149ce5d082daff618887989af6e59472727a27",
+        "configs/route_a_v3_a1_qualification.json": "261339c38f4b8bbd48bf8f63f6a588be57af9f6229119e84bf661d7ee8f855db",
+        "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec027.yaml": "2a27c296539e8e665873363778d91cc223f56f933a815e9509b10a7267f6b5c4",
+        "docs/contracts/supersession_mrna_xeditflow_v1_1_to_route_a_v3.yaml": "1c4b6e29c09eb24798207138047b68909d7bda8bacc3a2eab8e17a7ca789b44b",
+        "docs/execution/route_a_v3_a1_interim.yaml": "fb50929ae2dfa0bdd1c50b003fc43c0e13b89baade203e8384c8b6ea3eba7b1e",
+        "docs/execution/route_a_v3_a6_interim.yaml": "1d44bcfe8669a55dc42f619ed43178f0637e20a4297ca996ecab3f7165612769",
+        "docs/execution/route_a_v3_data_role_registry.yaml": "80217a8114286f84960237819ac5b2d5828afbc23af118576541cc7cee64ae4e",
+        "docs/execution/route_a_v3_decision_log.yaml": "e0dc2a7fb186c5c8d00c1c5604602b1b2f87b26241191d4da55a405a02387e05",
+        "docs/execution/route_a_v3_registry_manifest.json": "73a39a566aa0310a80cc83f4eb17ddb95cabc87e5b070ef6484c05178ba32b75",
+        "docs/execution/route_a_v3_task_registry.yaml": "a64d0b8bb5eb466b06daa46ed109bd19901ee775910bc5cc9221c39ead63a4bc",
+        "scripts/route_a_v3/validate_a0_bundle.py": "81d1a8dc49375f53a1edd5c3f41625e734eacc31a4c328c8137340a041d77e65",
+        "tests/route_a_v3/test_a0_integrity_guards.py": "106f847e957a40fffec4c1b57f8f572325ef96e8a3dc5729db68499e320f380b"
+      }
+    },
+    "runtime_group": {
+      "status": "BOUND",
+      "runtime_event_id": "A1-EVT-059",
+      "i1_expected_parent": "3e0ad158a0b45b2f26ed82da3afe60667c712cd6",
+      "i1_commit": "de40c58ab81fc06196be3bb9ffb5aa35d39c9d03",
+      "i1_exact_changed_paths": [
+        "configs/route_a_v3_dec027_authority_runtime_sync_v1.json",
+        "scripts/route_a_v3/dec027_authority_runtime_sync.py",
+        "tests/route_a_v3/test_dec027_authority_runtime_sync.py"
+      ],
+      "i1_blob_sha256_by_path": {
+        "configs/route_a_v3_dec027_authority_runtime_sync_v1.json": "cbb0c8c4fb2b47a1e1c1dd629d46c149b1c35299e8127dfd431a22666e40dfd5",
+        "scripts/route_a_v3/dec027_authority_runtime_sync.py": "ae13a64ecbe10edd47eb403a328bdb2563f7d30e185d11e73d1b10f1955da4a1",
+        "tests/route_a_v3/test_dec027_authority_runtime_sync.py": "de253087afd14136f188d3c525be76788cd214509d96971c4f11d2799c215117"
+      },
+      "i2_expected_parent": "de40c58ab81fc06196be3bb9ffb5aa35d39c9d03",
+      "i2_commit": "5d66e8dc83eb9966f7698ac0fc677f1b06af8ea6",
+      "i2_exact_changed_paths": [
+        "configs/route_a_v3_dec027_authority_runtime_sync_v1.json",
+        "scripts/route_a_v3/dec027_authority_runtime_sync.py",
+        "tests/route_a_v3/test_dec027_authority_runtime_sync.py"
+      ],
+      "i2_blob_sha256_by_path": {
+        "configs/route_a_v3_dec027_authority_runtime_sync_v1.json": "3d5af87e7512568ed663b211c24a8586eeb9f03936a397cf2d2ddaeb2a21f57b",
+        "scripts/route_a_v3/dec027_authority_runtime_sync.py": "44dcda8897e747cfe363668ddc23d8dd9c53a7f3ffab692a1bb4e7cf738973ca",
+        "tests/route_a_v3/test_dec027_authority_runtime_sync.py": "ff250d4f011d8526e9a4a7bf13049f1f47346faa1c7ea512cbf447a6fb59ba4a"
+      },
+      "b2_expected_parent": "5d66e8dc83eb9966f7698ac0fc677f1b06af8ea6",
+      "b2_commit": "e60956cf59cbddc0406c5d116fb9714906db36e1",
+      "b2_exact_changed_paths": [
+        "configs/route_a_v3_dec027_authority_runtime_sync_v1.json"
+      ],
+      "b2_blob_sha256_by_path": {
+        "configs/route_a_v3_dec027_authority_runtime_sync_v1.json": "e5c1f96ec57b220fd36ff4677deb37d6dc0be06e02f21af3837e17a51e91e5ee",
+        "scripts/route_a_v3/dec027_authority_runtime_sync.py": "44dcda8897e747cfe363668ddc23d8dd9c53a7f3ffab692a1bb4e7cf738973ca",
+        "tests/route_a_v3/test_dec027_authority_runtime_sync.py": "ff250d4f011d8526e9a4a7bf13049f1f47346faa1c7ea512cbf447a6fb59ba4a"
+      }
+    },
+    "gse217518_predecessor_group": {
+      "status": "BOUND",
+      "i1_expected_parent": "e60956cf59cbddc0406c5d116fb9714906db36e1",
+      "i1_commit": "17a35f0f88cc988b938aaf25d94a8b32f0cacfc8",
+      "i1_exact_changed_paths": [
+        "configs/route_a_v3_gse217518_corrected_a1_successor_candidate_v1.json",
+        "scripts/route_a_v3/preflight_gse217518_corrected_a1_successor_candidate.py",
+        "tests/route_a_v3/test_preflight_gse217518_corrected_a1_successor_candidate.py"
+      ],
+      "i1_blob_sha256_by_path": {
+        "configs/route_a_v3_gse217518_corrected_a1_successor_candidate_v1.json": "0aa3324d3cfdfd50837ea32a4d1efef754fe70abdab9805f373401f21a1ccb41",
+        "scripts/route_a_v3/preflight_gse217518_corrected_a1_successor_candidate.py": "6ca04bdc464ac30f1c3b83830b74c6621816bd25308e345f39e2c5ee94f21b4c",
+        "tests/route_a_v3/test_preflight_gse217518_corrected_a1_successor_candidate.py": "b08209856fb852991c1b795864304fcda62a4f63419197c068ec6d1f0fd34691"
+      },
+      "i2_expected_parent": "17a35f0f88cc988b938aaf25d94a8b32f0cacfc8",
+      "i2_commit": "6fbd63be6d0edb9f73cf2f85e446917d3c3ff100",
+      "i2_exact_changed_paths": [
+        "configs/route_a_v3_gse217518_corrected_a1_successor_candidate_v1.json",
+        "scripts/route_a_v3/preflight_gse217518_corrected_a1_successor_candidate.py",
+        "tests/route_a_v3/test_preflight_gse217518_corrected_a1_successor_candidate.py"
+      ],
+      "i2_blob_sha256_by_path": {
+        "configs/route_a_v3_gse217518_corrected_a1_successor_candidate_v1.json": "de064e62e7031725908de8d09a1c6b7a2a36112868208ba0cb387a394062a1d8",
+        "scripts/route_a_v3/preflight_gse217518_corrected_a1_successor_candidate.py": "0c96d41e4f9ddd694be0be21aab3bcfcb938d3ccb996f3f7cb10ca0a9b69902e",
+        "tests/route_a_v3/test_preflight_gse217518_corrected_a1_successor_candidate.py": "c881350f5b6ab457af24a4004eedfa34e30d0c8fac7e1b99f74b37b9fe40ccc7"
+      },
+      "b2_expected_parent": "6fbd63be6d0edb9f73cf2f85e446917d3c3ff100",
+      "b2_commit": "c3611b0f2e8baeb83422bb07f5446b42edce90ef",
+      "b2_exact_changed_paths": [
+        "configs/route_a_v3_gse217518_corrected_a1_successor_candidate_v1.json"
+      ],
+      "b2_blob_sha256_by_path": {
+        "configs/route_a_v3_gse217518_corrected_a1_successor_candidate_v1.json": "c808bdc6eb1ad8aaccd3d2ab483415ed0803da4683315b92ef3139f203f61e64",
+        "scripts/route_a_v3/preflight_gse217518_corrected_a1_successor_candidate.py": "0c96d41e4f9ddd694be0be21aab3bcfcb938d3ccb996f3f7cb10ca0a9b69902e",
+        "tests/route_a_v3/test_preflight_gse217518_corrected_a1_successor_candidate.py": "c881350f5b6ab457af24a4004eedfa34e30d0c8fac7e1b99f74b37b9fe40ccc7"
+      },
+      "i3_expected_parent": "c3611b0f2e8baeb83422bb07f5446b42edce90ef",
+      "i3_commit": "36b535f77b3f27bb872b182dcaf6c646d9781991",
+      "i3_exact_changed_paths": [
+        "configs/route_a_v3_gse217518_corrected_a1_successor_candidate_v1.json",
+        "scripts/route_a_v3/preflight_gse217518_corrected_a1_successor_candidate.py",
+        "tests/route_a_v3/test_preflight_gse217518_corrected_a1_successor_candidate.py"
+      ],
+      "i3_blob_sha256_by_path": {
+        "configs/route_a_v3_gse217518_corrected_a1_successor_candidate_v1.json": "3355ba986f60268d3dd7b985ed31fe9df4aa2acbe9fd03c984956a1270279ff9",
+        "scripts/route_a_v3/preflight_gse217518_corrected_a1_successor_candidate.py": "9fa4464e1cc42baacdf39b4bae2427e1895269b8d6f4e1a05e1e944b0434f3fa",
+        "tests/route_a_v3/test_preflight_gse217518_corrected_a1_successor_candidate.py": "bba0ee97e9ed2500f0155c8d1a776d185661b00d8c7fd48c3c0d718d53ccd097"
+      },
+      "b3_expected_parent": "36b535f77b3f27bb872b182dcaf6c646d9781991",
+      "b3_commit": "0a46400efee4ead95b1283df73d263f6f8033036",
+      "b3_exact_changed_paths": [
+        "configs/route_a_v3_gse217518_corrected_a1_successor_candidate_v1.json"
+      ],
+      "b3_blob_sha256_by_path": {
+        "configs/route_a_v3_gse217518_corrected_a1_successor_candidate_v1.json": "c5acc8548ab8542ac029a420f21f1d8524bb0f255c6dd53c2d896c2838ce391f",
+        "scripts/route_a_v3/preflight_gse217518_corrected_a1_successor_candidate.py": "9fa4464e1cc42baacdf39b4bae2427e1895269b8d6f4e1a05e1e944b0434f3fa",
+        "tests/route_a_v3/test_preflight_gse217518_corrected_a1_successor_candidate.py": "bba0ee97e9ed2500f0155c8d1a776d185661b00d8c7fd48c3c0d718d53ccd097"
+      }
+    },
+    "own_preflight_group": {
+      "status": "UNKNOWN_NOT_ASSERTED",
+      "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+      "implementation_script_path": "scripts/route_a_v3/preflight_encsr854ruf_dec027_dataset_specific_a1.py",
+      "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
+      "implementation_test_path": "tests/route_a_v3/test_preflight_encsr854ruf_dec027_dataset_specific_a1.py",
+      "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
+      "implementation_exact_changed_paths": [
+        "configs/route_a_v3_encsr854ruf_dec027_dataset_specific_a1_preflight_v1.json",
+        "scripts/route_a_v3/preflight_encsr854ruf_dec027_dataset_specific_a1.py",
+        "tests/route_a_v3/test_preflight_encsr854ruf_dec027_dataset_specific_a1.py"
+      ],
+      "binding_exact_changed_paths": [
+        "configs/route_a_v3_encsr854ruf_dec027_dataset_specific_a1_preflight_v1.json"
+      ],
+      "unknown_to_bound_scalar_paths": [
+        "implementation_binding.own_preflight_group.status",
+        "implementation_binding.own_preflight_group.implementation_commit",
+        "implementation_binding.own_preflight_group.implementation_script_sha256",
+        "implementation_binding.own_preflight_group.implementation_test_sha256"
+      ]
+    },
+    "activation_rule": "Authority, the complete A1-EVT-059 runtime A-to-I1-to-I2-to-B2 history, and the complete GSE217518 I1-to-I2-to-B2-to-I3-to-B3 history are frozen. ENCSR854RUF I must be the direct child of GSE217518 B3. This exact3 own four-scalar group remains grouped UNKNOWN_NOT_ASSERTED in I, so production must stop before Git, publisher workbook, author-repository asset, prepared-data path, or output-path inspection until a config-only ENCSR854RUF B changes only those four scalars. Generic registry requirements are never dataset-specific gate facts."
+  },
+  "decision_boundary": {
+    "public_research_role": "READ_ONLY_ORDINARY_PUBLIC_FIRST_PARTY_AGGREGATE_FACT_FORMATION",
+    "production_preflight_execution_allowed_after_all_bindings": true,
+    "production_asset_read_allowed_after_all_bindings": true,
+    "production_output_allowed_after_all_bindings": true,
+    "network_download_allowed_by_candidate": false,
+    "raw_fastq_body_read_allowed": false,
+    "private_or_sealed_access_allowed": false,
+    "qualification_allowed": false,
+    "ordinary_credit_change_allowed": false,
+    "a1_credit_change_allowed": false,
+    "true_a2_credit_change_allowed": false,
+    "canonical_mutation_allowed": false,
+    "split_assignment_execution_allowed": false,
+    "formal_power_gate_execution_allowed": false,
+    "training_allowed": false,
+    "gpu_work_allowed": false,
+    "cuda_or_device_probe_allowed": false,
+    "model_selection_allowed": false,
+    "a7_allowed": false,
+    "next_phase_authorized": false,
+    "all_gates_passing_automatically_qualifies_dataset": false,
+    "separate_promotion_authority_required": true
+  },
+  "ordinary_public_asset_contract": {
+    "encode_publication_data": {
+      "canonical_url": "https://www.encodeproject.org/publication-data/ENCSR854RUF/",
+      "api_url": "https://www.encodeproject.org/publication-data/ENCSR854RUF/?format=json",
+      "accession_status": "released",
+      "date_released": "2021-09-10",
+      "related_raw_file_count": 62,
+      "raw_file_format": "fastq",
+      "raw_output_type": "reads",
+      "raw_total_bytes": 357950358596,
+      "functional_characterization_component_count": 7,
+      "independent_study_count": 1,
+      "raw_files_are_primary_processed_a1_endpoint": false
+    },
+    "publisher_processed_asset": {
+      "canonical_url": "https://ars.els-cdn.com/content/image/1-s2.0-S0092867421009995-mmc1.xlsx",
+      "doi": "10.1016/j.cell.2021.08.025",
+      "pii": "S0092867421009995",
+      "filename": "1-s2.0-S0092867421009995-mmc1.xlsx",
+      "byte_count": 37117358,
+      "sha256": "a02e6bd45e4f57bc0cf877aee766f006699b40469568c82974d21ac4d0346145",
+      "format": "XLSX",
+      "primary_processed_a1_endpoint_route": true,
+      "required_sheet_names": [
+        "README",
+        "Variant MPRAu Results",
+        "Oligo Variant Info",
+        "Raw Counts HEK CMS",
+        "Raw Counts HEK GWAS",
+        "Raw Counts HEK Remaining"
+      ]
+    },
+    "author_repository": {
+      "canonical_url": "https://github.com/jxmavs/MPRAu",
+      "commit": "1addfb04be5c3e6c6199274593b94df66120056b",
+      "repository_license_spdx": "ABSENT_NOT_ASSERTED",
+      "required_assets": {
+        "data/GWASrewritepos_CMS_alignment_file.fasta": {
+          "byte_count": 6786354,
+          "sha256": "43db50e67077999e35732451c845d725ddecdea61b66b9c9e356225ee8e5d6f3"
+        },
+        "data/GWASrewritepos_CMS_arrayassign": {
+          "byte_count": 1943127,
+          "sha256": "ed05af8c0bad936a788003e562fb20e1528e6cf497e2ef22b599052535f1648c"
+        },
+        "scripts/generate_processed_DESeq2_data.R": {
+          "byte_count": 36126,
+          "sha256": "2c4cd70c3592be64cfcad4819dfa86a38dfbfd178b0d69fa2db26b46a80fdba0"
+        }
+      }
+    },
+    "methods_document": {
+      "canonical_url": "https://www.encodeproject.org/documents/3f7d5100-ebff-4829-8f6a-c36973d436ee/@@download/attachment/MPRAu_Methods.pdf",
+      "publisher_article_url": "https://doi.org/10.1016/j.cell.2021.08.025"
+    }
+  },
+  "gate_contract": {
+    "gate_ids_exactly": [
+      "PUBLIC_SOURCE_ASSET_IDENTITY_AND_PRIMARY_ROUTE_CLOSED",
+      "SOURCE_REFERENCE_TO_CANDIDATE_CROSSWALK_CLOSED",
+      "FULL_REPORTER_AND_THREE_UTR_CONTEXT_CLOSED",
+      "ENDPOINT_DIRECTION_SCALE_TRANSFORM_AND_SEMANTICS_CLOSED",
+      "INDEPENDENT_BIOLOGICAL_REPLICATE_AND_VALID_STANDARD_ERROR_CLOSED",
+      "MISSING_QC_AND_SELECTION_CLOSED",
+      "LICENSE_AND_REUSE_RIGHTS_CLOSED",
+      "HISTORICAL_ANALYTIC_OR_CHECKPOINT_EXPOSURE_CLOSED",
+      "OUTCOME_BLIND_SOURCE_GROUP_NEAR_DUPLICATE_SPLIT_AND_ZERO_LEAKAGE_READINESS_CLOSED",
+      "POST_DEDUP_INDEPENDENT_SOURCE_GROUP_EFFECTIVE_N_CLOSED",
+      "PREFROZEN_SOURCE_GROUP_POWER_AND_FULL_CI_WIDTH_CLOSED"
+    ],
+    "independent_gate_axis_count": 11,
+    "unknown_or_partial_is_pass": false,
+    "all_required_gates_must_pass": true,
+    "registry_generic_requirements_may_be_reported_as_dataset_specific_results": false,
+    "study_unit": "ENCSR854RUF_ONE_PUBLICATION_DATA_STUDY",
+    "component_accession_cell_context_replicate_or_reporter_may_count_as_independent_study": false,
+    "analysis_unit_for_power": "POST_DEDUP_INDEPENDENT_SOURCE_GROUP",
+    "prefrozen_required_effective_n": 156,
+    "prefrozen_spearman_alternative": 0.25,
+    "prefrozen_alpha_two_sided": 0.05,
+    "prefrozen_target_power": 0.8,
+    "prefrozen_confidence_level": 0.95,
+    "prefrozen_maximum_full_ci_width": 0.3
+  },
+  "public_research_snapshot": {
+    "snapshot_status": "AGGREGATE_PUBLIC_RESEARCH_COMPLETE_NOT_PRODUCTION_PREFLIGHT_NOT_QUALIFICATION",
+    "observed_at": "2026-08-15T01:40:00+08:00",
+    "source_priority": "ENCODE_DCC_THEN_CELL_PUBLISHER_THEN_AUTHOR_OFFICIAL_REPOSITORY_THEN_PROJECT_EXPOSURE_RECORDS",
+    "aggregate_geometry": {
+      "independent_study_count": 1,
+      "encode_related_raw_file_count": 62,
+      "encode_raw_total_bytes": 357950358596,
+      "functional_characterization_component_count": 7,
+      "component_count_with_five_biological_replicates": 3,
+      "component_count_with_four_biological_replicates": 4,
+      "publisher_workbook_sheet_count": 12,
+      "published_pair_count": 15266,
+      "published_reporter_count": 30532,
+      "published_declared_variant_count": 12173,
+      "pair_size_two_count": 15266,
+      "reference_role_reporter_count": 15266,
+      "alternate_role_reporter_count": 15266,
+      "source_candidate_crosswalk_missing_count": 0,
+      "author_fasta_header_count": 44227,
+      "author_fasta_expanded_alias_token_count": 44882,
+      "published_reporter_to_author_fasta_missing_after_documented_alias_expansion": 0,
+      "variable_insert_length_bp": 133,
+      "ref_alt_sequence_identical_pair_count": 0,
+      "declared_allele_length_to_sequence_replay_mismatch_count": 0,
+      "index_error_affected_pair_count": 117,
+      "finite_effect_and_lfcse_all_six_context_pair_count_after_index_error_exclusion": 15081,
+      "finite_effect_and_lfcse_at_least_one_context_pair_count_after_index_error_exclusion": 15091,
+      "full_universe_distinct_exact_source_sequence_count": 15152,
+      "finite_six_context_no_index_error_distinct_exact_source_sequence_count": 14969,
+      "finite_six_context_no_index_error_distinct_exact_source_candidate_pair_count": 15079,
+      "reported_result_rows_with_any_nonnumeric_statistic": 1288,
+      "reported_nonnumeric_statistic_cell_count": 8049,
+      "raw_count_numeric_cell_count": 1589096,
+      "raw_count_missing_nonfinite_negative_or_noninteger_cell_count": 0,
+      "expected_array_specific_hek_reporter_absence_count": 11
+    },
+    "gate_statuses": [
+      {
+        "gate_id": "PUBLIC_SOURCE_ASSET_IDENTITY_AND_PRIMARY_ROUTE_CLOSED",
+        "raw_status": "PASS",
+        "normalized_status": "PASS",
+        "fact_class": "CONFIRMED_PUBLIC_FACT",
+        "reason_code": "ONE_RELEASED_ENCODE_PUBLICATION_DATA_STUDY_WITH_CELL_SUPPLEMENTARY_TABLE_1_AS_PAPER_DECLARED_PRIMARY_PROCESSED_ROUTE",
+        "aggregate_evidence": "One study; 62 released ENCODE raw files; the paper explicitly identifies Supplementary Table 1 as the processed MPRAu results and per-oligo count route."
+      },
+      {
+        "gate_id": "SOURCE_REFERENCE_TO_CANDIDATE_CROSSWALK_CLOSED",
+        "raw_status": "PASS",
+        "normalized_status": "PASS",
+        "fact_class": "CONFIRMED_PUBLIC_FACT",
+        "reason_code": "ALL_15266_PUBLISHED_PAIR_KEYS_HAVE_EXACTLY_ONE_REFERENCE_AND_ONE_ALTERNATE_REPORTER_AND_JOIN_TO_RESULTS",
+        "aggregate_evidence": "15,266 pair keys, 30,532 reporters, exact two-member ref/alt closure, zero crosswalk misses."
+      },
+      {
+        "gate_id": "FULL_REPORTER_AND_THREE_UTR_CONTEXT_CLOSED",
+        "raw_status": "PASS_FOR_COMPLETE_133BP_VARIABLE_INSERT_AND_FIXED_REPORTER_IDENTITY_ONLY",
+        "normalized_status": "PARTIAL_OR_CONDITIONAL",
+        "fact_class": "CONFIRMED_PUBLIC_FACT_AND_LIMIT",
+        "reason_code": "ALL_REPORTERS_MAP_TO_133BP_AUTHOR_FASTA_AND_REPLAY_DECLARED_ALLELES_BUT_EXACT_MODIFIED_VECTOR_BACKBONE_SEQUENCE_IS_NOT_DEPOSITED",
+        "aggregate_evidence": "After the author-code slash-alias rule, all 30,532 reporters map to 133-bp insert sequences and all ref/alt edits replay; the modified reporter vector is described but its complete sequence is not deposited."
+      },
+      {
+        "gate_id": "ENDPOINT_DIRECTION_SCALE_TRANSFORM_AND_SEMANTICS_CLOSED",
+        "raw_status": "PASS",
+        "normalized_status": "PASS",
+        "fact_class": "CONFIRMED_PUBLIC_FACT_WITH_CLAIM_BOUNDARY",
+        "reason_code": "DESEQ2_LOG2_ALT_VERSUS_REF_RNA_OVER_PLASMID_INTERACTION_AND_DIRECTION_ARE_EXPLICIT",
+        "aggregate_evidence": "The published endpoint is assay-specific MPRAu reporter allelic skew; positive values mean greater alternate relative reporter RNA abundance. It must not be relabeled as native full-length mRNA stability or a mechanism-specific effect."
+      },
+      {
+        "gate_id": "INDEPENDENT_BIOLOGICAL_REPLICATE_AND_VALID_STANDARD_ERROR_CLOSED",
+        "raw_status": "PARTIAL_REPLICATE_INDEPENDENCE_CLOSED_REPORTED_LFCSE_PRESENT_EXACT_RECOMPUTATION_ENVIRONMENT_NOT_FROZEN",
+        "normalized_status": "PARTIAL_OR_CONDITIONAL",
+        "fact_class": "CONFIRMED_PUBLIC_FACT_AND_REPRODUCIBILITY_GAP",
+        "reason_code": "FOUR_OR_FIVE_DIFFERENT_DAY_TRANSFECTIONS_AND_LFCSE_ARE_PUBLIC_BUT_DESEQ2_VERSION_AND_COMPLETE_RECOMPUTE_INPUT_BUNDLE_ARE_NOT_FROZEN",
+        "aggregate_evidence": "Seven assay components have four or five biological replicates and the workbook reports lfcSE; exact re-estimation remains a required successor check."
+      },
+      {
+        "gate_id": "MISSING_QC_AND_SELECTION_CLOSED",
+        "raw_status": "PARTIAL_DETERMINISTIC_FINITE_SUBSET_IDENTIFIED_REJECT_REASON_CLOSURE_NOT_BOUND",
+        "normalized_status": "PARTIAL_OR_CONDITIONAL",
+        "fact_class": "CONFIRMED_PUBLIC_FACT_AND_UNBOUND_RULE",
+        "reason_code": "INDEX_ERRORS_AND_NONNUMERIC_STATISTICS_HAVE_AGGREGATE_COUNTS_BUT_NO_AUTHORIZED_ROW_LEVEL_REJECT_LEDGER",
+        "aggregate_evidence": "117 index-error pairs are publisher-flagged; 15,081 pairs retain finite skew effect and lfcSE in all six contexts after aggregate exclusion, but the row-level reject ledger and immutable intended universe are not yet bound."
+      },
+      {
+        "gate_id": "LICENSE_AND_REUSE_RIGHTS_CLOSED",
+        "raw_status": "UNKNOWN_NOT_ASSERTED",
+        "normalized_status": "UNKNOWN_NOT_ASSERTED",
+        "fact_class": "MIXED_CONFIRMED_POLICY_AND_UNRESOLVED_ASSET_RIGHTS",
+        "reason_code": "ENCODE_GENERAL_UNRESTRICTED_USE_POLICY_EXISTS_BUT_ESSENTIAL_CELL_ATTACHMENT_AND_GITHUB_MAPPING_ASSET_LEVEL_BASIS_IS_NOT_BOUND",
+        "aggregate_evidence": "ENCODE permits unrestricted analysis and publication of released data; the author repository has no license and the applicability of the policy to the essential off-portal mapping assets has not been formally bound."
+      },
+      {
+        "gate_id": "HISTORICAL_ANALYTIC_OR_CHECKPOINT_EXPOSURE_CLOSED",
+        "raw_status": "FAIL_KNOWN_HISTORICAL_MODEL_INPUT_WITHOUT_FULL_PRIOR_USE_ATTESTATION",
+        "normalized_status": "FAIL",
+        "fact_class": "CONFIRMED_PROJECT_FACT",
+        "reason_code": "LEGACY_EFFECT_DATASET_TRAIN_TEST_AND_MODEL_CHECKPOINT_RECORDS_NAME_ENCSR854RUF_BUT_MEMBER_LEVEL_EXPOSURE_ATTESTATION_IS_ABSENT",
+        "aggregate_evidence": "The study is not untouched. Any successor must bind it as exposed/development-only unless a stronger route is independently justified."
+      },
+      {
+        "gate_id": "OUTCOME_BLIND_SOURCE_GROUP_NEAR_DUPLICATE_SPLIT_AND_ZERO_LEAKAGE_READINESS_CLOSED",
+        "raw_status": "UNKNOWN_NOT_ASSERTED",
+        "normalized_status": "UNKNOWN_NOT_ASSERTED",
+        "fact_class": "UNKNOWN_NOT_ASSERTED",
+        "reason_code": "NO_PROSPECTIVELY_FROZEN_SOURCE_GROUP_NEAR_DUPLICATE_GRAPH_SALT_OR_ZERO_LEAKAGE_REPLAY",
+        "aggregate_evidence": "No split assignment is produced by this candidate."
+      },
+      {
+        "gate_id": "POST_DEDUP_INDEPENDENT_SOURCE_GROUP_EFFECTIVE_N_CLOSED",
+        "raw_status": "UNKNOWN_NOT_ASSERTED",
+        "normalized_status": "UNKNOWN_NOT_ASSERTED",
+        "fact_class": "AGGREGATE_GEOMETRY_ONLY_NOT_EFFECTIVE_N",
+        "reason_code": "EXACT_SOURCE_SEQUENCE_GEOMETRY_IS_LARGE_BUT_REQUIRED_SOURCE_GROUP_AND_NEAR_DUPLICATE_DEDUP_RULE_IS_NOT_FROZEN",
+        "aggregate_evidence": "The finite six-context subset has 14,969 distinct exact source sequences before required source-family and near-duplicate closure; that is not formal effective N."
+      },
+      {
+        "gate_id": "PREFROZEN_SOURCE_GROUP_POWER_AND_FULL_CI_WIDTH_CLOSED",
+        "raw_status": "UNKNOWN_NOT_ASSERTED",
+        "normalized_status": "UNKNOWN_NOT_ASSERTED",
+        "fact_class": "UNKNOWN_NOT_ASSERTED",
+        "reason_code": "POWER_CANNOT_EXECUTE_BEFORE_POST_DEDUP_EFFECTIVE_N_AND_DEC027_AUTHORITY",
+        "aggregate_evidence": "The frozen planning threshold is N=156 at power 0.80 and full CI width at most 0.30; no formal power result is asserted."
+      }
+    ],
+    "normalized_gate_counts": {
+      "pass": 3,
+      "partial_or_conditional": 3,
+      "fail": 1,
+      "unknown_not_asserted": 4,
+      "total": 11
+    },
+    "aggregate_verdict": "STOP_NOT_READY_FOR_A1_QUALIFICATION_OR_CREDIT",
+    "formal_binding_recommendation": "YES_BIND_AS_DATASET_SPECIFIC_AGGREGATE_PREFLIGHT_ONLY_BECAUSE_SOURCE_CANDIDATE_AND_ENDPOINT_ROUTE_ARE_HIGH_VALUE_AND_REMAINING_BLOCKERS_ARE_EXPLICIT",
+    "formal_binding_is_qualification": false
+  },
+  "aggregate_output_contract": {
+    "report_schema_version": "route_a_v3_encsr854ruf_dec027_dataset_specific_a1_preflight_record.v1",
+    "report_filename": "ENCSR854RUF_DEC027_DATASET_SPECIFIC_A1_PREFLIGHT_RECORD_V1.json",
+    "allowed_output": "AGGREGATE_GATE_COUNTS_GEOMETRY_AND_STOP_STATUS_ONLY",
+    "same_directory_temporary_file_required": true,
+    "file_fsync_before_publish_required": true,
+    "atomic_no_replace_hard_link_required": true,
+    "directory_fsync_after_publish_required": true,
+    "identical_existing_report_is_idempotent": true,
+    "different_existing_report_action": "REJECT_WITHOUT_REPLACEMENT",
+    "failure_cleanup_required": true,
+    "member_identifier_allowed": false,
+    "source_or_candidate_sequence_allowed": false,
+    "row_endpoint_or_effect_allowed": false,
+    "row_standard_error_allowed": false,
+    "replicate_identifier_allowed": false,
+    "split_assignment_allowed": false,
+    "final_file_count": 1
+  },
+  "scientific_state": {
+    "current_qualified_counts": {
+      "ordinary": 1,
+      "a1": 1,
+      "true_a2": 0,
+      "canonical_records": 6547
+    },
+    "contribution_delta": {
+      "ordinary": 0,
+      "a1": 0,
+      "true_a2": 0,
+      "canonical_records": 0
+    },
+    "scientific_claim_status": "NOT_ESTABLISHED_UNCHANGED",
+    "a6_status": "IN_PROGRESS_UNCHANGED",
+    "a7_status": "NOT_RUN_NOT_UNLOCKED"
+  }
+}
