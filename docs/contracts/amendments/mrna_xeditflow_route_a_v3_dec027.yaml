@@ -1,0 +1,341 @@
+schema_version: "1.0.0"
+amendment_id: MRNA_XEDITFLOW_ROUTE_A_V3_DEC027
+decision_id: V3-DEC-027
+contract_id: mrna_xeditflow_route_a_v3
+contract_version: "3.0.0"
+amends_contract_path: docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md
+amends_contract_sha256: cbac4c3dcba8f1b8df95d8edad52d19e3c126d1c865d0cc423537c754cc90982
+predecessor_amendment_path: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec024.yaml
+predecessor_amendment_sha256: 163c5b744a8d68e6e0bd3afad378c3cd8611d42e7f8ff881291557049d908eac
+predecessor_authority_head: b1ca33d852bad111ff31b4f60493d8c43c63d1a3
+amendment_mode: APPEND_ONLY_BOUNDED_DATA_RESCUE_SPRINT_AND_CONDITIONAL_CLAIM_LADDER_TRIGGER
+status: FROZEN_USER_AUTHORIZED_RESCUE_PREFLIGHT_ONLY_NO_AUTOMATIC_PROMOTION
+effective_phase: A1
+requires_user_authorization: true
+
+user_authorization:
+  status: GRANTED
+  received_at: "2026-08-15T01:11:08+08:00"
+  source: ACTIVE_CODEX_THREAD_OWNER_BOUNDED_RESCUE_SPRINT_AND_STOP_RULE_DIRECTIVE
+
+preserved_full_route_a_target:
+  status: RETAINED_AS_HIGHEST_TARGET_DURING_RESCUE
+  required_qualified_ordinary_studies: 3
+  required_qualified_a1_studies: 2
+  required_qualified_true_a2_studies: 1
+  current_qualified_counts: {ordinary: 1, a1: 1, true_a2: 0, canonical_records: 6547}
+  gate_threshold_relaxation_authorized_by_this_decision: false
+  credit_may_be_inferred_from_preflight_status: false
+  separate_evidence_based_promotion_authority_required: true
+
+ordered_rescue_sprint:
+  execution_order_exactly:
+    - GSE217518_CORRECTED_A1_SUCCESSOR
+    - ENCSR854RUF_DATASET_SPECIFIC_A1_PREFLIGHT
+    - GSE232572_CORRECTED_A1_REPLAY
+    - GSE113849_DESIGNED_SNV_TRUE_A2_AGGREGATE_PREFLIGHT
+    - GSE269595_CORRECTED_ROLE_ADJUDICATION_SUCCESSOR
+    - GSE295080_INDEPENDENCE_OVERLAP_ADJUDICATION_ONLY
+  all_six_terminal_reports_required_before_stop_rule_evaluation: true
+  one_route_failure_may_be_recorded_without_aborting_later_routes: true
+  route_failure_may_be_rewritten_as_pass: false
+  ordinary_public_data_only: true
+  aggregate_output_only: true
+  private_or_sealed_access_allowed: false
+  row_or_member_identifier_output_allowed: false
+  sequence_output_allowed: false
+  row_abundance_effect_slope_or_standard_error_output_allowed: false
+  split_assignment_output_allowed: false
+  persistent_member_level_intermediate_allowed: false
+
+shared_preflight_rules:
+  pass_status_requires_exact_gate_evidence: true
+  unknown_or_not_run_is_pass: false
+  partial_or_context_limited_pass_is_full_pass: false
+  rows_barcodes_replicates_endpoints_or_accessions_may_count_as_independent_studies: false
+  biological_replicates_may_count_as_independent_studies: false
+  post_dedup_power_analysis_unit: INDEPENDENT_SOURCE_GROUP
+  prefrozen_alternative_spearman_rho: 0.25
+  prefrozen_alpha_two_sided: 0.05
+  prefrozen_target_power_minimum: 0.80
+  prefrozen_confidence_level: 0.95
+  prefrozen_maximum_full_ci_width: 0.30
+  prefrozen_required_effective_n_reference: 156
+  missing_or_censored_measurement_may_be_treated_as_zero: false
+  technical_units_may_substitute_for_biological_replicates: false
+  source_or_family_split_assignment_execution_allowed: false
+  formal_qualification_power_gate_execution_allowed: false
+  all_preflight_gates_passing_automatically_qualifies_or_credits_dataset: false
+
+gse217518_corrected_a1_successor:
+  dataset_id: GSE217518
+  role: AGGREGATE_CORRECTED_A1_QUALIFICATION_PREFLIGHT_ONLY
+  current_registry_role_must_remain: AUDIT_ONLY
+  predecessor_evidence_status: FOUR_PASS_THREE_BLOCKED_REQUIRES_CORRECTED_SUCCESSOR
+  aggregate_preflight_execution_allowed: true
+  allowed_internal_input_field_classes_exactly:
+    - ORDINARY_PUBLIC_SOURCE_AND_ASSET_IDENTIFIER
+    - REFERENCE_AND_CANDIDATE_SEQUENCE_AND_CROSSWALK
+    - REGION_AND_115BP_CONSTRUCT_CONTEXT
+    - ENDPOINT_DIRECTION_SCALE_TRANSFORM_AND_QC
+    - THREE_INDEPENDENT_BIOLOGICAL_EXPERIMENT_MEASUREMENTS
+    - RIGHTS_NOTICE_AND_HISTORICAL_EXPOSURE_CONTEXT
+    - NECESSARY_SOURCE_GROUP_AND_NEAR_DUPLICATE_CONTEXT
+  required_fail_closed_gate_ids_exactly:
+    - PUBLIC_SOURCE_ASSET_IDENTITY_AND_PRIMARY_ROUTE_CLOSED
+    - SOURCE_REFERENCE_TO_CANDIDATE_CROSSWALK_CLOSED
+    - FULL_115BP_CONSTRUCT_REPORTER_AND_REGION_CONTEXT_CLOSED
+    - ENDPOINT_DIRECTION_SCALE_TRANSFORM_AND_SEMANTICS_CLOSED
+    - THREE_INDEPENDENT_BIOLOGICAL_EXPERIMENTS_AND_VALID_STANDARD_ERROR_CLOSED
+    - MISSING_OUTLIER_QC_AND_SELECTION_CLOSED
+    - LICENSE_AND_REUSE_RIGHTS_CLOSED
+    - HISTORICAL_ANALYTIC_OR_CHECKPOINT_EXPOSURE_CLOSED
+    - OUTCOME_BLIND_SOURCE_GROUP_NEAR_DUPLICATE_SPLIT_AND_ZERO_LEAKAGE_READINESS_CLOSED
+    - POST_DEDUP_INDEPENDENT_SOURCE_GROUP_EFFECTIVE_N_CLOSED
+    - PREFROZEN_SOURCE_GROUP_POWER_AND_FULL_CI_WIDTH_CLOSED
+  independent_gate_axis_count: 11
+  published_three_independent_experiments_may_be_audited: true
+  published_115bp_construct_and_r2_mse_qc_may_be_audited: true
+  publication_facts_may_be_replaced_by_blanket_unknown: false
+  qualification_allowed: false
+  contribution: {ordinary: 0, a1: 0, true_a2: 0, canonical_records: 0}
+
+encsr854ruf_dataset_specific_a1_preflight:
+  dataset_id: ENCSR854RUF
+  role: AGGREGATE_DATASET_SPECIFIC_A1_QUALIFICATION_PREFLIGHT_ONLY
+  current_registry_role_must_remain: AUDIT_ONLY
+  aggregate_preflight_execution_allowed: true
+  allowed_internal_input_field_classes_exactly:
+    - ORDINARY_PUBLIC_ENCODE_AND_PUBLISHER_IDENTIFIERS
+    - SOURCE_REFERENCE_CANDIDATE_MAPPING_AND_SEQUENCE
+    - FULL_REPORTER_AND_THREE_UTR_CONTEXT
+    - ENDPOINT_DIRECTION_SCALE_TRANSFORM_AND_QC
+    - BIOLOGICAL_REPLICATE_MEASUREMENTS_AND_NECESSARY_STANDARD_ERROR_FIELDS
+    - RIGHTS_NOTICE_AND_HISTORICAL_EXPOSURE_CONTEXT
+    - NECESSARY_SOURCE_GROUP_AND_NEAR_DUPLICATE_CONTEXT
+  required_fail_closed_gate_ids_exactly:
+    - PUBLIC_SOURCE_ASSET_IDENTITY_AND_PRIMARY_ROUTE_CLOSED
+    - SOURCE_REFERENCE_TO_CANDIDATE_CROSSWALK_CLOSED
+    - FULL_REPORTER_AND_THREE_UTR_CONTEXT_CLOSED
+    - ENDPOINT_DIRECTION_SCALE_TRANSFORM_AND_SEMANTICS_CLOSED
+    - INDEPENDENT_BIOLOGICAL_REPLICATE_AND_VALID_STANDARD_ERROR_CLOSED
+    - MISSING_QC_AND_SELECTION_CLOSED
+    - LICENSE_AND_REUSE_RIGHTS_CLOSED
+    - HISTORICAL_ANALYTIC_OR_CHECKPOINT_EXPOSURE_CLOSED
+    - OUTCOME_BLIND_SOURCE_GROUP_NEAR_DUPLICATE_SPLIT_AND_ZERO_LEAKAGE_READINESS_CLOSED
+    - POST_DEDUP_INDEPENDENT_SOURCE_GROUP_EFFECTIVE_N_CLOSED
+    - PREFROZEN_SOURCE_GROUP_POWER_AND_FULL_CI_WIDTH_CLOSED
+  independent_gate_axis_count: 11
+  registry_generic_requirements_may_be_reported_as_dataset_specific_results: false
+  qualification_allowed: false
+  contribution: {ordinary: 0, a1: 0, true_a2: 0, canonical_records: 0}
+
+gse232572_corrected_a1_replay:
+  dataset_id: GSE232572
+  role: AGGREGATE_CORRECTED_A1_REPLAY_PREFLIGHT_ONLY
+  current_registry_role_must_remain: AUDIT_ONLY
+  aggregate_preflight_execution_allowed: true
+  accepted_pair_count_reference_only: 8068
+  published_biological_replicate_count_reference_only: 3
+  dense_multi_candidate_true_a2_gate_applicability: NOT_APPLICABLE_FOR_A1_REPLAY
+  dense_multi_candidate_gate_may_block_a1_replay: false
+  allowed_internal_input_field_classes_exactly:
+    - ORDINARY_PUBLIC_SOURCE_ASSET_AND_PROVENANCE
+    - REFERENCE_ALTERNATIVE_CROSSWALK_AND_SEQUENCE
+    - FULL_REPORTER_AND_THREE_UTR_CONTEXT
+    - THREE_BIOLOGICAL_REPLICATE_MEASUREMENTS
+    - ENDPOINT_DIRECTION_SCALE_TRANSFORM_AND_STANDARD_ERROR_FIELDS
+    - MISSINGNESS_QC_AND_SELECTION_STATUS
+    - RIGHTS_NOTICE_AND_HISTORICAL_EXPOSURE_CONTEXT
+    - NECESSARY_SOURCE_GROUP_AND_NEAR_DUPLICATE_CONTEXT
+  required_fail_closed_gate_ids_exactly:
+    - PUBLIC_SOURCE_ASSET_IDENTITY_AND_PRIMARY_ROUTE_CLOSED
+    - REFERENCE_ALTERNATIVE_SOURCE_CANDIDATE_CROSSWALK_CLOSED
+    - FULL_REPORTER_AND_THREE_UTR_CONTEXT_CLOSED
+    - ENDPOINT_DIRECTION_SCALE_TRANSFORM_AND_SEMANTICS_CLOSED
+    - THREE_INDEPENDENT_BIOLOGICAL_REPLICATES_AND_VALID_STANDARD_ERROR_CLOSED
+    - MISSING_QC_AND_SELECTION_CLOSED
+    - LICENSE_AND_REUSE_RIGHTS_CLOSED
+    - HISTORICAL_ANALYTIC_OR_CHECKPOINT_EXPOSURE_CLOSED
+    - OUTCOME_BLIND_SOURCE_GROUP_NEAR_DUPLICATE_SPLIT_AND_ZERO_LEAKAGE_READINESS_CLOSED
+    - POST_DEDUP_INDEPENDENT_SOURCE_GROUP_EFFECTIVE_N_CLOSED
+    - PREFROZEN_SOURCE_GROUP_POWER_AND_FULL_CI_WIDTH_CLOSED
+  independent_gate_axis_count: 11
+  qualification_allowed: false
+  contribution: {ordinary: 0, a1: 0, true_a2: 0, canonical_records: 0}
+
+gse113849_designed_snv_true_a2_preflight:
+  dataset_id: GSE113849
+  project_alias: APARENT_DESIGNED_SNV_SUBSET
+  role: AGGREGATE_DESIGNED_SNV_TRUE_A2_QUALIFICATION_PREFLIGHT_ONLY
+  registry_membership: EXTERNAL_PREFLIGHT_CANDIDATE_ONLY_NOT_COUNTING
+  randomized_absolute_library_is_true_a2: false
+  aggregate_preflight_execution_allowed: true
+  context_rule_must_be_frozen_before_endpoint_or_power_evaluation: true
+  allowed_context_rule_candidates_exactly:
+    - ALL_PUBLISHER_ASSERTED_DESIGNED_THREE_UTR_REPORTER_SNVS
+    - PUBLIC_CONTEXT_FIELD_EXPLICIT_UTR3_ONLY
+  outcome_or_power_may_select_context_rule: false
+  allowed_internal_input_field_classes_exactly:
+    - ORDINARY_PUBLIC_PAPER_GEO_AND_COMMIT_BOUND_AUTHOR_ASSET_IDENTITY
+    - DESIGNED_SNV_SOURCE_CANDIDATE_MAPPING_AND_SEQUENCE
+    - REPORTER_AND_CONTEXT_CLASS
+    - MEASURED_SOURCE_RELATIVE_APA_ENDPOINT_AND_PVALUE
+    - BIOLOGICAL_REPLICATE_AND_NECESSARY_UNCERTAINTY_FIELDS
+    - MISSINGNESS_QC_AND_LINEAGE_STATUS
+    - RIGHTS_NOTICE_AND_HISTORICAL_EXPOSURE_CONTEXT
+    - NECESSARY_SOURCE_GENE_FAMILY_AND_NEAR_DUPLICATE_CONTEXT
+  required_fail_closed_gate_ids_exactly:
+    - PUBLIC_ASSET_LINEAGE_AND_INTENDED_UNIVERSE_CLOSED
+    - SOURCE_TO_CANDIDATE_IDENTITY_CLOSED
+    - LEGAL_SINGLE_SUBSTITUTION_EDIT_REPLAY_CLOSED
+    - OUTCOME_BLIND_REPORTER_CONTEXT_RULE_CLOSED
+    - DENSE_SOURCE_FAMILY_MINIMUM_THREE_CANDIDATES_CLOSED
+    - ENDPOINT_DIRECTION_SCALE_TRANSFORM_AND_SEMANTICS_CLOSED
+    - INDEPENDENT_BIOLOGICAL_REPLICATE_AND_VALID_STANDARD_ERROR_CLOSED
+    - MISSING_QC_AND_SELECTION_CLOSED
+    - LICENSE_AND_REUSE_RIGHTS_CLOSED
+    - HISTORICAL_ANALYTIC_OR_CHECKPOINT_EXPOSURE_CLOSED
+    - OUTCOME_BLIND_SOURCE_GROUP_NEAR_DUPLICATE_SPLIT_AND_ZERO_LEAKAGE_READINESS_CLOSED
+    - POST_DEDUP_INDEPENDENT_SOURCE_GROUP_EFFECTIVE_N_CLOSED
+    - PREFROZEN_SOURCE_GROUP_POWER_AND_FULL_CI_WIDTH_CLOSED
+  independent_gate_axis_count: 13
+  nominal_dense_source_count_reference_only: 532
+  explicit_utr3_dense_source_count_reference_only: 148
+  published_biological_replicate_count_reference_only: 2
+  row_or_pair_count_may_substitute_for_independent_source_group_n: false
+  qualification_allowed: false
+  contribution: {ordinary: 0, a1: 0, true_a2: 0, canonical_records: 0}
+
+gse269595_corrected_role_adjudication_successor:
+  dataset_id: GSE269595
+  project_id: PRJNA1122592
+  predecessor_decision_id: V3-DEC-024
+  role: AGGREGATE_CORRECTED_A1_OR_TRUE_A2_ROLE_ADJUDICATION_PREFLIGHT_ONLY
+  current_registry_role_must_remain: AUDIT_ONLY
+  aggregate_preflight_execution_allowed: true
+  a1_and_true_a2_double_credit_allowed: false
+  maximum_roles_if_later_qualified: 1
+  published_biological_replicate_count_reference_only: 2
+  eligible_dense_family_policy:
+    minimum_distinct_candidates_per_source: 3
+    two_candidate_families_are_pairwise_only_and_excluded_from_dense_universe: true
+    one_two_candidate_family_may_fail_all_other_eligible_dense_families: false
+  finite_endpoint_required: true
+  nonfinite_or_undefined_endpoint_requires_prefrozen_censoring_policy: true
+  allowed_internal_input_field_classes_exactly:
+    - ORDINARY_PUBLIC_ASSET_IDENTITY_AND_PROVENANCE
+    - SOURCE_FAMILY_AND_SOURCE_CANDIDATE_SEQUENCE
+    - APA_LOCATION_AND_INTRONIC_CONTEXT
+    - LEGAL_SUBSTITUTION_ANNOTATION
+    - ASSET_SAMPLE_RUN_ROLE_SCHEMA_AND_DIMENSION
+    - ASSAY_GUIDE_REPORTER_ENDPOINT_REPLICATE_AND_STANDARD_ERROR
+    - MISSINGNESS_CENSORING_QC_RIGHTS_AND_EXPOSURE_CONTEXT
+    - NECESSARY_SOURCE_GROUP_AND_NEAR_DUPLICATE_CONTEXT
+  required_fail_closed_gate_ids_exactly:
+    - A1_VERSUS_TRUE_A2_ROLE_ELIGIBILITY_AND_MUTUAL_EXCLUSIVITY_CLOSED
+    - ORDINARY_PUBLIC_ASSET_IDENTITY_ROLE_AND_PROVENANCE_CLOSED
+    - ELIGIBLE_DENSE_SOURCE_FAMILY_DISTRIBUTION_AND_UNIQUE_SOURCE_ANCHOR_CLOSED
+    - INTRONIC_APA_EXCLUSION_CLOSED
+    - SOURCE_TO_CANDIDATE_LEGAL_SUBSTITUTION_REPLAY_CLOSED
+    - ASSAY_CONTEXT_GUIDE_ENDPOINT_DIRECTION_SCALE_AND_SEMANTICS_CLOSED
+    - INDEPENDENT_BIOLOGICAL_REPLICATE_AND_VALID_STANDARD_ERROR_CLOSED
+    - ASSET_SCHEMA_DIMENSION_AND_COVERAGE_CLOSED
+    - MISSING_CENSORING_AND_SELECTION_CLOSED
+    - APARENT_PRIOR_EXPOSURE_AND_MODEL_INPUT_ROUTE_CLOSED
+    - LICENSE_AND_REUSE_RIGHTS_CLOSED
+    - OUTCOME_BLIND_SOURCE_GROUP_NEAR_DUPLICATE_SPLIT_AND_ZERO_LEAKAGE_READINESS_CLOSED
+    - POST_DEDUP_SOURCE_GROUP_EFFECTIVE_N_AND_PREFROZEN_POWER_FULL_CI_WIDTH_CLOSED
+  independent_gate_axis_count: 13
+  qualification_allowed: false
+  contribution: {ordinary: 0, a1: 0, true_a2: 0, canonical_records: 0}
+
+gse295080_independence_overlap_adjudication:
+  dataset_id: GSE295080
+  project_id: PRJNA1252772
+  role: PUBLIC_IDENTIFIER_ASSET_SCHEMA_AND_INDEPENDENCE_OVERLAP_ADJUDICATION_ONLY
+  registry_membership: EXTERNAL_PREFLIGHT_CANDIDATE_ONLY_NOT_COUNTING
+  row_level_qualification_execution_allowed: false
+  aggregate_preflight_execution_allowed: true
+  comparison_study_units_exactly:
+    - GSE186455
+    - ENCSR854RUF
+    - GSE217518
+    - GSE232572
+  allowed_internal_input_field_classes_exactly:
+    - ORDINARY_PUBLIC_IDENTIFIER_ASSET_SAMPLE_RUN_ROLE
+    - HEADER_ROLE_CLASS_AND_DIMENSION
+    - SOURCE_REFERENCE_ALTERNATIVE_FAMILY_GEOMETRY
+    - BIOLOGICAL_REPLICATE_LABEL_GEOMETRY
+    - LICENSE_NOTICE
+    - NECESSARY_CROSS_STUDY_SOURCE_LIBRARY_PROVENANCE_CONTEXT
+  required_fail_closed_gate_ids_exactly:
+    - PUBLIC_IDENTIFIER_ASSET_ROLE_AND_PROVENANCE_CLOSED
+    - SOURCE_REFERENCE_ALTERNATIVE_MAPPING_SCHEMA_GEOMETRY_CLOSED
+    - BIOLOGICAL_REPLICATE_LABEL_GEOMETRY_CLOSED
+    - CROSS_DATASET_SOURCE_FAMILY_LIBRARY_OVERLAP_CLOSED
+    - INDEPENDENT_STUDY_OR_REUSED_LIBRARY_BOUNDARY_CLOSED
+    - LICENSE_AND_REUSE_RIGHTS_CLOSED
+    - OUTCOME_BLIND_NEXT_AUTHORITY_DISPOSITION_CLOSED
+  independent_gate_axis_count: 7
+  member_sequence_or_row_value_output_allowed: false
+  overlap_output_allowed: AGGREGATE_COUNTS_AND_HISTOGRAMS_ONLY
+  all_gates_passing_sole_next_action: REQUEST_SEPARATE_ROW_LEVEL_QUALIFICATION_AUTHORITY
+  qualification_allowed: false
+  contribution: {ordinary: 0, a1: 0, true_a2: 0, canonical_records: 0}
+
+stop_rule_and_conditional_successor_authority:
+  evaluation_allowed_only_after_all_six_terminal_reports_registered: true
+  rescue_floor_after_any_separately_authorized_evidence_based_promotions:
+    qualified_ordinary_minimum: 2
+    qualified_a1_minimum: 2
+    qualified_true_a2_minimum: 0
+  rescue_floor_failure_logic: QUALIFIED_ORDINARY_LT_2_OR_QUALIFIED_A1_LT_2
+  true_a2_reachability_required_to_continue_full_route_a_data_rescue:
+    at_least_one_route: true
+    outcome_blind_context_rule_required: true
+    post_dedup_independent_source_group_n_at_least: 156
+    prefrozen_power_at_least: 0.80
+    full_ci_width_at_most: 0.30
+    rows_pairs_barcodes_endpoints_or_replicates_may_substitute_for_n: false
+  trigger_logic: RESCUE_FLOOR_FAILED_AND_NO_TRUE_A2_ROUTE_WITH_REACHABLE_POST_DEDUP_N_AND_POWER
+  if_triggered:
+    stop_further_full_route_a_data_rescue: true
+    full_route_a_remains_retained_as_highest_inactive_target: true
+    prospective_single_study_source_relative_development_and_engineering_theory_successor_authorized: true
+    successor_must_be_separate_append_only_amendment: true
+    successor_active_claim_exactly: SINGLE_STUDY_SOURCE_RELATIVE_DEVELOPMENT_PLUS_ENGINEERING_THEORY
+    no_longer_required_gates_status: NOT_APPLICABLE_FOR_REVISED_CLAIM
+    historical_fail_unknown_or_not_run_statuses_must_be_preserved: true
+    claims_to_delete_exactly:
+      - CROSS_STUDY_GENERALIZATION
+      - CONFIRMATORY_BIOLOGICAL_EFFECT
+      - MEASURED_NEIGHBORHOOD_OPTIMIZATION
+      - BROAD_BIOLOGICAL_GENERALIZATION
+    retained_paper_roles_exactly:
+      - LEGAL_CTMC_EXACT_REFERENCE_BASE_RECOVERY_SUPPORT_STOP_BUDGET_AND_TRAJECTORY_METHODS
+      - GSE200304_SINGLE_STUDY_SOURCE_RELATIVE_EFFECT_DEVELOPMENT
+      - MULTI_DATASET_EXTERNAL_STRESS_AND_DISTRIBUTION_SHIFT
+      - DENSE_DATASET_EXPLORATORY_ORDINAL_AND_EVALUATOR_ANALYSIS
+      - GSE261709_AND_GSE207584_PROVENANCE_AND_IDENTIFIABILITY_ANALYSIS
+      - GSE246381_FUTURE_SEALED_FINAL
+  if_not_triggered:
+    single_study_successor_activation_allowed_by_this_decision: false
+
+no_promotion_state:
+  current_qualified_counts: {ordinary: 1, a1: 1, true_a2: 0, canonical_records: 6547}
+  changes_current_qualified_counts: false
+  dataset_role_assignment_allowed: false
+  qualification_allowed: false
+  canonical_materialization_allowed: false
+  training_allowed: false
+  gpu_work_allowed: false
+  model_selection_allowed: false
+  a7_allowed: false
+  next_phase_authorized: false
+  scientific_claim_status: NOT_ESTABLISHED
+  latest_settled_runtime_event_id: A1-EVT-058
+  runtime_event_emitted: false
+  expected_next_runtime_event_id: PENDING_FRESH_RUNTIME_EVENT_ID
+  next_runtime_event_id_preallocated: false
+  sealed_contact: false

@@ -10,13 +10,14 @@ authority_ref:
   config_path: configs/route_a_v3.yaml
   goal_path: docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md
   goal_sha256: cbac4c3dcba8f1b8df95d8edad52d19e3c126d1c865d0cc423537c754cc90982
-  active_amendment_decision_ids: [V3-DEC-017, V3-DEC-018, V3-DEC-019, V3-DEC-020, V3-DEC-021, V3-DEC-022, V3-DEC-023, V3-DEC-024]
+  active_amendment_decision_ids: [V3-DEC-017, V3-DEC-018, V3-DEC-019, V3-DEC-020, V3-DEC-021, V3-DEC-022, V3-DEC-023, V3-DEC-024, V3-DEC-027]
   dec019_amendment_path: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec019.yaml
   dec020_amendment_path: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec020.yaml
   dec021_amendment_path: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec021.yaml
   dec022_amendment_path: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec022.yaml
   dec023_amendment_path: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec023.yaml
   dec024_amendment_path: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec024.yaml
+  dec027_amendment_path: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec027.yaml
 
 data_policy:
   public_data_only: true
@@ -69,7 +70,62 @@ true_a2_recovery_candidate_dataset_ids: [GSE114002]
 replacement_a1_processed_preflight_candidate_dataset_ids: [GSE261709]
 replacement_a1_or_true_a2_role_adjudication_preflight_candidate_dataset_ids: [GSE269595]
 replacement_true_a2_preflight_candidate_dataset_ids: [E-MTAB-10902]
+dec027_existing_registered_rescue_dataset_ids: [GSE217518, ENCSR854RUF, GSE232572, GSE269595]
+dec027_external_preflight_candidate_only_dataset_ids: [GSE113849, GSE295080]
 sealed_dataset_ids: [GSE246381]
+
+dec027_rescue_route_overrides:
+  authority_only_no_qualification_or_credit: true
+  execution_order_exactly: [GSE217518_CORRECTED_A1_SUCCESSOR, ENCSR854RUF_DATASET_SPECIFIC_A1_PREFLIGHT, GSE232572_CORRECTED_A1_REPLAY, GSE113849_DESIGNED_SNV_TRUE_A2_AGGREGATE_PREFLIGHT, GSE269595_CORRECTED_ROLE_ADJUDICATION_SUCCESSOR, GSE295080_INDEPENDENCE_OVERLAP_ADJUDICATION_ONLY]
+  GSE217518:
+    route: AGGREGATE_CORRECTED_A1_QUALIFICATION_PREFLIGHT_ONLY
+    mapping_status: DEC027_CORRECTED_A1_SUCCESSOR_AUTHORIZED_NOT_RUN
+    exact_gate_count: 11
+  ENCSR854RUF:
+    route: AGGREGATE_DATASET_SPECIFIC_A1_QUALIFICATION_PREFLIGHT_ONLY
+    mapping_status: DEC027_DATASET_SPECIFIC_A1_PREFLIGHT_AUTHORIZED_NOT_RUN
+    exact_gate_count: 11
+    generic_registry_requirements_are_dataset_specific_results: false
+  GSE232572:
+    route: AGGREGATE_CORRECTED_A1_REPLAY_PREFLIGHT_ONLY
+    mapping_status: DEC027_CORRECTED_A1_REPLAY_AUTHORIZED_NOT_RUN
+    exact_gate_count: 11
+    dense_multi_candidate_true_a2_gate_applicability: NOT_APPLICABLE_FOR_A1_REPLAY
+  GSE113849:
+    route: AGGREGATE_DESIGNED_SNV_TRUE_A2_QUALIFICATION_PREFLIGHT_ONLY
+    mapping_status: DEC027_EXTERNAL_PREFLIGHT_CANDIDATE_AUTHORIZED_NOT_RUN
+    exact_gate_count: 13
+    counts_as_registered_independent_study_before_qualification: false
+    randomized_absolute_library_is_true_a2: false
+    context_rule_must_be_frozen_before_endpoint_or_power: true
+  GSE269595:
+    route: AGGREGATE_CORRECTED_A1_OR_TRUE_A2_ROLE_ADJUDICATION_PREFLIGHT_ONLY
+    mapping_status: DEC027_CORRECTED_ROLE_ADJUDICATION_SUCCESSOR_AUTHORIZED_NOT_RUN
+    exact_gate_count: 13
+    a1_and_true_a2_double_credit_allowed: false
+    two_candidate_family_is_pairwise_only_not_global_dense_failure: true
+    finite_endpoint_required: true
+  GSE295080:
+    route: PUBLIC_IDENTIFIER_ASSET_SCHEMA_AND_INDEPENDENCE_OVERLAP_ADJUDICATION_ONLY
+    mapping_status: DEC027_EXTERNAL_PREFLIGHT_CANDIDATE_AUTHORIZED_NOT_RUN
+    exact_gate_count: 7
+    counts_as_registered_independent_study_before_qualification: false
+    row_level_qualification_execution_allowed: false
+  current_qualified_counts: {ordinary: 1, a1: 1, true_a2: 0, canonical_records: 6547}
+  changes_current_qualified_counts: false
+  aggregate_output_only: true
+  member_or_row_payload_output_allowed: false
+  sequence_output_allowed: false
+  split_assignment_output_allowed: false
+  dataset_role_assignment_allowed: false
+  qualification_allowed: false
+  canonical_materialization_allowed: false
+  training_allowed: false
+  gpu_work_allowed: false
+  model_selection_allowed: false
+  a7_allowed: false
+  next_phase_authorized: false
+  sealed_contact_allowed: false
 
 registry_closure:
   dataset_ids_must_equal_expected_dataset_ids: true

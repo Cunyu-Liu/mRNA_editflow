@@ -14,14 +14,16 @@
       "V3-DEC-021",
       "V3-DEC-022",
       "V3-DEC-023",
-      "V3-DEC-024"
+      "V3-DEC-024",
+      "V3-DEC-027"
     ],
     "dec019_amendment_path": "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec019.yaml",
     "dec020_amendment_path": "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec020.yaml",
     "dec021_amendment_path": "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec021.yaml",
     "dec022_amendment_path": "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec022.yaml",
     "dec023_amendment_path": "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec023.yaml",
-    "dec024_amendment_path": "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec024.yaml"
+    "dec024_amendment_path": "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec024.yaml",
+    "dec027_amendment_path": "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec027.yaml"
   },
   "dec020_model_input_route_authority": {
     "dataset_id": "GSE200304",
@@ -474,6 +476,76 @@
     "member_identifier_output_allowed": false,
     "sequence_output_allowed": false,
     "row_effect_or_standard_error_output_allowed": false,
+    "split_assignment_output_allowed": false,
+    "training_allowed": false,
+    "gpu_work_allowed": false,
+    "model_selection_allowed": false,
+    "a7_allowed": false,
+    "next_phase_authorized": false,
+    "sealed_contact_allowed": false,
+    "scientific_claim_status": "NOT_ESTABLISHED"
+  },
+  "dec027_bounded_rescue_sprint_authority": {
+    "user_authorization": {
+      "status": "GRANTED",
+      "received_at": "2026-08-15T01:11:08+08:00",
+      "source": "ACTIVE_CODEX_THREAD_OWNER_BOUNDED_RESCUE_SPRINT_AND_STOP_RULE_DIRECTIVE"
+    },
+    "latest_settled_runtime_event_id": "A1-EVT-058",
+    "runtime_sync_status": "PENDING_FRESH_EVENT_AFTER_SETTLED_EVT_058",
+    "expected_next_runtime_event_id": "PENDING_FRESH_RUNTIME_EVENT_ID",
+    "next_runtime_event_id_preallocated": false,
+    "execution_order_exactly": [
+      "GSE217518_CORRECTED_A1_SUCCESSOR",
+      "ENCSR854RUF_DATASET_SPECIFIC_A1_PREFLIGHT",
+      "GSE232572_CORRECTED_A1_REPLAY",
+      "GSE113849_DESIGNED_SNV_TRUE_A2_AGGREGATE_PREFLIGHT",
+      "GSE269595_CORRECTED_ROLE_ADJUDICATION_SUCCESSOR",
+      "GSE295080_INDEPENDENCE_OVERLAP_ADJUDICATION_ONLY"
+    ],
+    "route_gate_counts_exactly": {
+      "GSE217518_CORRECTED_A1_SUCCESSOR": 11,
+      "ENCSR854RUF_DATASET_SPECIFIC_A1_PREFLIGHT": 11,
+      "GSE232572_CORRECTED_A1_REPLAY": 11,
+      "GSE113849_DESIGNED_SNV_TRUE_A2_AGGREGATE_PREFLIGHT": 13,
+      "GSE269595_CORRECTED_ROLE_ADJUDICATION_SUCCESSOR": 13,
+      "GSE295080_INDEPENDENCE_OVERLAP_ADJUDICATION_ONLY": 7
+    },
+    "route_gate_ids_exactly": {
+      "GSE217518_CORRECTED_A1_SUCCESSOR": ["PUBLIC_SOURCE_ASSET_IDENTITY_AND_PRIMARY_ROUTE_CLOSED", "SOURCE_REFERENCE_TO_CANDIDATE_CROSSWALK_CLOSED", "FULL_115BP_CONSTRUCT_REPORTER_AND_REGION_CONTEXT_CLOSED", "ENDPOINT_DIRECTION_SCALE_TRANSFORM_AND_SEMANTICS_CLOSED", "THREE_INDEPENDENT_BIOLOGICAL_EXPERIMENTS_AND_VALID_STANDARD_ERROR_CLOSED", "MISSING_OUTLIER_QC_AND_SELECTION_CLOSED", "LICENSE_AND_REUSE_RIGHTS_CLOSED", "HISTORICAL_ANALYTIC_OR_CHECKPOINT_EXPOSURE_CLOSED", "OUTCOME_BLIND_SOURCE_GROUP_NEAR_DUPLICATE_SPLIT_AND_ZERO_LEAKAGE_READINESS_CLOSED", "POST_DEDUP_INDEPENDENT_SOURCE_GROUP_EFFECTIVE_N_CLOSED", "PREFROZEN_SOURCE_GROUP_POWER_AND_FULL_CI_WIDTH_CLOSED"],
+      "ENCSR854RUF_DATASET_SPECIFIC_A1_PREFLIGHT": ["PUBLIC_SOURCE_ASSET_IDENTITY_AND_PRIMARY_ROUTE_CLOSED", "SOURCE_REFERENCE_TO_CANDIDATE_CROSSWALK_CLOSED", "FULL_REPORTER_AND_THREE_UTR_CONTEXT_CLOSED", "ENDPOINT_DIRECTION_SCALE_TRANSFORM_AND_SEMANTICS_CLOSED", "INDEPENDENT_BIOLOGICAL_REPLICATE_AND_VALID_STANDARD_ERROR_CLOSED", "MISSING_QC_AND_SELECTION_CLOSED", "LICENSE_AND_REUSE_RIGHTS_CLOSED", "HISTORICAL_ANALYTIC_OR_CHECKPOINT_EXPOSURE_CLOSED", "OUTCOME_BLIND_SOURCE_GROUP_NEAR_DUPLICATE_SPLIT_AND_ZERO_LEAKAGE_READINESS_CLOSED", "POST_DEDUP_INDEPENDENT_SOURCE_GROUP_EFFECTIVE_N_CLOSED", "PREFROZEN_SOURCE_GROUP_POWER_AND_FULL_CI_WIDTH_CLOSED"],
+      "GSE232572_CORRECTED_A1_REPLAY": ["PUBLIC_SOURCE_ASSET_IDENTITY_AND_PRIMARY_ROUTE_CLOSED", "REFERENCE_ALTERNATIVE_SOURCE_CANDIDATE_CROSSWALK_CLOSED", "FULL_REPORTER_AND_THREE_UTR_CONTEXT_CLOSED", "ENDPOINT_DIRECTION_SCALE_TRANSFORM_AND_SEMANTICS_CLOSED", "THREE_INDEPENDENT_BIOLOGICAL_REPLICATES_AND_VALID_STANDARD_ERROR_CLOSED", "MISSING_QC_AND_SELECTION_CLOSED", "LICENSE_AND_REUSE_RIGHTS_CLOSED", "HISTORICAL_ANALYTIC_OR_CHECKPOINT_EXPOSURE_CLOSED", "OUTCOME_BLIND_SOURCE_GROUP_NEAR_DUPLICATE_SPLIT_AND_ZERO_LEAKAGE_READINESS_CLOSED", "POST_DEDUP_INDEPENDENT_SOURCE_GROUP_EFFECTIVE_N_CLOSED", "PREFROZEN_SOURCE_GROUP_POWER_AND_FULL_CI_WIDTH_CLOSED"],
+      "GSE113849_DESIGNED_SNV_TRUE_A2_AGGREGATE_PREFLIGHT": ["PUBLIC_ASSET_LINEAGE_AND_INTENDED_UNIVERSE_CLOSED", "SOURCE_TO_CANDIDATE_IDENTITY_CLOSED", "LEGAL_SINGLE_SUBSTITUTION_EDIT_REPLAY_CLOSED", "OUTCOME_BLIND_REPORTER_CONTEXT_RULE_CLOSED", "DENSE_SOURCE_FAMILY_MINIMUM_THREE_CANDIDATES_CLOSED", "ENDPOINT_DIRECTION_SCALE_TRANSFORM_AND_SEMANTICS_CLOSED", "INDEPENDENT_BIOLOGICAL_REPLICATE_AND_VALID_STANDARD_ERROR_CLOSED", "MISSING_QC_AND_SELECTION_CLOSED", "LICENSE_AND_REUSE_RIGHTS_CLOSED", "HISTORICAL_ANALYTIC_OR_CHECKPOINT_EXPOSURE_CLOSED", "OUTCOME_BLIND_SOURCE_GROUP_NEAR_DUPLICATE_SPLIT_AND_ZERO_LEAKAGE_READINESS_CLOSED", "POST_DEDUP_INDEPENDENT_SOURCE_GROUP_EFFECTIVE_N_CLOSED", "PREFROZEN_SOURCE_GROUP_POWER_AND_FULL_CI_WIDTH_CLOSED"],
+      "GSE269595_CORRECTED_ROLE_ADJUDICATION_SUCCESSOR": ["A1_VERSUS_TRUE_A2_ROLE_ELIGIBILITY_AND_MUTUAL_EXCLUSIVITY_CLOSED", "ORDINARY_PUBLIC_ASSET_IDENTITY_ROLE_AND_PROVENANCE_CLOSED", "ELIGIBLE_DENSE_SOURCE_FAMILY_DISTRIBUTION_AND_UNIQUE_SOURCE_ANCHOR_CLOSED", "INTRONIC_APA_EXCLUSION_CLOSED", "SOURCE_TO_CANDIDATE_LEGAL_SUBSTITUTION_REPLAY_CLOSED", "ASSAY_CONTEXT_GUIDE_ENDPOINT_DIRECTION_SCALE_AND_SEMANTICS_CLOSED", "INDEPENDENT_BIOLOGICAL_REPLICATE_AND_VALID_STANDARD_ERROR_CLOSED", "ASSET_SCHEMA_DIMENSION_AND_COVERAGE_CLOSED", "MISSING_CENSORING_AND_SELECTION_CLOSED", "APARENT_PRIOR_EXPOSURE_AND_MODEL_INPUT_ROUTE_CLOSED", "LICENSE_AND_REUSE_RIGHTS_CLOSED", "OUTCOME_BLIND_SOURCE_GROUP_NEAR_DUPLICATE_SPLIT_AND_ZERO_LEAKAGE_READINESS_CLOSED", "POST_DEDUP_SOURCE_GROUP_EFFECTIVE_N_AND_PREFROZEN_POWER_FULL_CI_WIDTH_CLOSED"],
+      "GSE295080_INDEPENDENCE_OVERLAP_ADJUDICATION_ONLY": ["PUBLIC_IDENTIFIER_ASSET_ROLE_AND_PROVENANCE_CLOSED", "SOURCE_REFERENCE_ALTERNATIVE_MAPPING_SCHEMA_GEOMETRY_CLOSED", "BIOLOGICAL_REPLICATE_LABEL_GEOMETRY_CLOSED", "CROSS_DATASET_SOURCE_FAMILY_LIBRARY_OVERLAP_CLOSED", "INDEPENDENT_STUDY_OR_REUSED_LIBRARY_BOUNDARY_CLOSED", "LICENSE_AND_REUSE_RIGHTS_CLOSED", "OUTCOME_BLIND_NEXT_AUTHORITY_DISPOSITION_CLOSED"]
+    },
+    "gse232572_dense_multi_candidate_true_a2_gate_applicability": "NOT_APPLICABLE_FOR_A1_REPLAY",
+    "gse269595_a1_and_true_a2_double_credit_allowed": false,
+    "gse269595_two_candidate_family_is_pairwise_only_not_global_dense_failure": true,
+    "gse269595_finite_endpoint_required": true,
+    "gse113849_context_rule_must_be_frozen_before_endpoint_or_power": true,
+    "gse295080_row_level_qualification_execution_allowed": false,
+    "stop_rule": {
+      "evaluate_only_after_all_six_terminal_reports_registered": true,
+      "minimum_qualified_counts_after_separate_promotions": {"ordinary": 2, "a1": 2, "true_a2": 0},
+      "floor_failure_logic": "QUALIFIED_ORDINARY_LT_2_OR_QUALIFIED_A1_LT_2",
+      "true_a2_reachable_post_dedup_n_minimum": 156,
+      "true_a2_reachable_power_minimum": 0.80,
+      "true_a2_reachable_maximum_full_ci_width": 0.30,
+      "trigger_logic": "RESCUE_FLOOR_FAILED_AND_NO_TRUE_A2_ROUTE_WITH_REACHABLE_POST_DEDUP_N_AND_POWER",
+      "triggered_successor": "SINGLE_STUDY_SOURCE_RELATIVE_DEVELOPMENT_PLUS_ENGINEERING_THEORY",
+      "triggered_successor_requires_separate_append_only_amendment": true,
+      "full_route_a_remains_highest_inactive_target": true
+    },
+    "current_qualified_counts": {"ordinary": 1, "a1": 1, "true_a2": 0, "canonical_records": 6547},
+    "changes_current_qualified_counts": false,
+    "dataset_role_assignment_allowed": false,
+    "qualification_allowed": false,
+    "canonical_materialization_allowed": false,
+    "split_execution_allowed": false,
+    "formal_qualification_power_gate_execution_allowed": false,
+    "member_or_row_payload_output_allowed": false,
+    "sequence_output_allowed": false,
     "split_assignment_output_allowed": false,
     "training_allowed": false,
     "gpu_work_allowed": false,

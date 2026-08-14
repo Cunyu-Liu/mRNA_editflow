@@ -4438,7 +4438,7 @@ def test_a6_cpu_partial_registration_is_closed(validator, repo_root):
         assert task["claim_status"] == "NOT_ESTABLISHED"
 
 
-def test_current_task_and_a6_authority_pointers_follow_dec024_without_rewriting_history(
+def test_current_task_and_a6_authority_pointers_follow_dec027_without_rewriting_history(
     validator,
     repo_root,
 ):
@@ -4452,6 +4452,7 @@ def test_current_task_and_a6_authority_pointers_follow_dec024_without_rewriting_
     assert authority_ref["dec022_amendment_path"] == validator.DEC022_AMENDMENT_PATH
     assert authority_ref["dec023_amendment_path"] == validator.DEC023_AMENDMENT_PATH
     assert authority_ref["dec024_amendment_path"] == validator.DEC024_AMENDMENT_PATH
+    assert authority_ref["dec027_amendment_path"] == validator.DEC027_AMENDMENT_PATH
 
     task_sha256 = validator.sha256_file(repo_root / task_path)
     assert task_sha256 == validator.CURRENT_TASK_REGISTRY_SHA256
@@ -4489,7 +4490,10 @@ def test_current_task_and_a6_authority_pointers_follow_dec024_without_rewriting_
     assert validator.DEC023_ACTIVE_AUTHORITY_LEAF_SHA256[task_path] == (
         validator.DEC023_ACTIVE_TASK_REGISTRY_SHA256
     )
-    assert validator.DEC024_ACTIVE_AUTHORITY_LEAF_SHA256[task_path] == task_sha256
+    assert validator.DEC024_ACTIVE_AUTHORITY_LEAF_SHA256[task_path] == (
+        "c1d9920cc3d28c7ee63d9649a69d6b6856b9b25115f6ca4f1d392a067a0d5dae"
+    )
+    assert validator.DEC027_ACTIVE_AUTHORITY_LEAF_SHA256[task_path] == task_sha256
 
 
 @pytest.mark.parametrize(
@@ -4796,7 +4800,7 @@ def test_dec024_three_replacement_preflight_authorities_are_closed(
     manifest = validator._load_json(repo_root, validator.REGISTRY_MANIFEST_PATH)
     manifest_paths = {row["path"] for row in manifest["files"]}
     assert validator.DEC024_AMENDMENT_PATH in manifest_paths
-    assert manifest["manifest_status"] == validator.DEC024_CURRENT_MANIFEST_STATUS
+    assert manifest["manifest_status"] == validator.DEC027_AUTHORITY_MANIFEST_STATUS
     assert {
         "configs/route_a_v3_gse207584_moesm7_aggregate_endpoint_universe_preflight_v1.json",
         "scripts/route_a_v3/preflight_gse207584_moesm7_aggregate_endpoint_universe.py",
@@ -4876,6 +4880,102 @@ def test_dec024_scope_or_promotion_drift_fails_closed(
         row["unknown_historical_exposure_is_gate_blocker"] = False
 
     codes = _codes(validator.validate_dec024_authority(repo_root, config, registries))
+    assert expected_code in codes
+
+
+def test_dec027_ordered_rescue_and_conditional_stop_rule_are_closed(
+    validator,
+    repo_root,
+):
+    config, _, registries = validator.load_bundle_documents(repo_root)
+    assert validator.validate_dec027_authority(repo_root, config, registries) == []
+
+    amendment = validator._load_yaml(repo_root, validator.DEC027_AMENDMENT_PATH)
+    assert amendment["ordered_rescue_sprint"]["execution_order_exactly"] == (
+        validator.DEC027_RESCUE_EXECUTION_ORDER
+    )
+    assert amendment["preserved_full_route_a_target"][
+        "current_qualified_counts"
+    ] == {"ordinary": 1, "a1": 1, "true_a2": 0, "canonical_records": 6547}
+    assert amendment["preserved_full_route_a_target"][
+        "gate_threshold_relaxation_authorized_by_this_decision"
+    ] is False
+    stop = amendment["stop_rule_and_conditional_successor_authority"]
+    assert stop["evaluation_allowed_only_after_all_six_terminal_reports_registered"] is True
+    assert stop["trigger_logic"] == (
+        "RESCUE_FLOOR_FAILED_AND_NO_TRUE_A2_ROUTE_WITH_REACHABLE_POST_DEDUP_N_AND_POWER"
+    )
+    assert stop["if_triggered"]["successor_active_claim_exactly"] == (
+        "SINGLE_STUDY_SOURCE_RELATIVE_DEVELOPMENT_PLUS_ENGINEERING_THEORY"
+    )
+    assert stop["if_triggered"]["successor_must_be_separate_append_only_amendment"] is True
+    assert amendment["gse232572_corrected_a1_replay"][
+        "dense_multi_candidate_gate_may_block_a1_replay"
+    ] is False
+    assert amendment["gse269595_corrected_role_adjudication_successor"][
+        "a1_and_true_a2_double_credit_allowed"
+    ] is False
+    assert amendment["gse295080_independence_overlap_adjudication"][
+        "row_level_qualification_execution_allowed"
+    ] is False
+
+    data = registries["data"]
+    assert data["dec027_external_preflight_candidate_only_dataset_ids"] == [
+        "GSE113849",
+        "GSE295080",
+    ]
+    assert {"GSE113849", "GSE295080"}.isdisjoint(data["expected_dataset_ids"])
+    assert {"GSE113849", "GSE295080"}.isdisjoint(
+        {row["dataset_id"] for row in data["datasets"]}
+    )
+
+    manifest = validator._load_json(repo_root, validator.REGISTRY_MANIFEST_PATH)
+    assert manifest["manifest_status"] == validator.DEC027_AUTHORITY_MANIFEST_STATUS
+    assert validator.DEC027_AMENDMENT_PATH in {
+        row["path"] for row in manifest["files"]
+    }
+    decision_log = validator._load_yaml(repo_root, validator.DECISION_LOG_PATH)
+    assert [row["decision_id"] for row in decision_log["decisions"]][-2:] == [
+        "V3-DEC-024",
+        "V3-DEC-027",
+    ]
+
+
+@pytest.mark.parametrize(
+    ("mutation", "expected_code"),
+    [
+        ("route_order", "DEC027_ROOT"),
+        ("gse269_nonfinite_allowed", "DEC027_ROOT"),
+        ("gse232_dense_gate_reintroduced", "DEC027_ROOT_GATE_MAP"),
+        ("stop_rule_relaxed", "DEC027_ROOT_STOP_RULE"),
+        ("external_candidate_promoted", "DEC027_EXTERNAL_CANDIDATE_PROMOTION"),
+    ],
+)
+def test_dec027_scope_stop_rule_or_promotion_drift_fails_closed(
+    validator,
+    repo_root,
+    mutation,
+    expected_code,
+):
+    config, _, registries = validator.load_bundle_documents(repo_root)
+    config = deepcopy(config)
+    registries = deepcopy(registries)
+    root = config["a1_qualification_authority"]["dec027_bounded_rescue_sprint"]
+
+    if mutation == "route_order":
+        root["execution_order_exactly"] = list(reversed(root["execution_order_exactly"]))
+    elif mutation == "gse269_nonfinite_allowed":
+        root["gse269595_finite_endpoint_required"] = False
+    elif mutation == "gse232_dense_gate_reintroduced":
+        root["route_gate_ids_exactly"]["GSE232572_CORRECTED_A1_REPLAY"].append(
+            "ELIGIBLE_MULTI_CANDIDATE_POOLS"
+        )
+    elif mutation == "stop_rule_relaxed":
+        root["stop_rule"]["true_a2_reachable_post_dedup_n_minimum"] = 155
+    else:
+        registries["data"]["expected_dataset_ids"].append("GSE113849")
+
+    codes = _codes(validator.validate_dec027_authority(repo_root, config, registries))
     assert expected_code in codes
 
 
