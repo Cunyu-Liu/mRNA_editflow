@@ -121,12 +121,12 @@
           "tests/route_a_v3/test_preflight_gse207584_aggregate_dense_family_qualification.py": "6b70a439c94a61cd64464d53839b23615b1b21f75f7eb5f6a45bb521a397f070"
         }
       },
-      "status": "UNKNOWN_NOT_ASSERTED",
-      "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+      "status": "BOUND",
+      "implementation_commit": "973e75f1daff45e0087d385c1b015d300b1c3f0f",
       "implementation_script_path": "scripts/route_a_v3/preflight_gse207584_aggregate_dense_family_qualification.py",
-      "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
+      "implementation_script_sha256": "1a3468c1dfe3628ff95587b5922be25d630ca09e2bb567e8c04b181ff862b1a8",
       "implementation_test_path": "tests/route_a_v3/test_preflight_gse207584_aggregate_dense_family_qualification.py",
-      "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
+      "implementation_test_sha256": "fd9cc811bf9c6b5ce4a4e2a4f99f1aa134adf62361eced53ca927f53576a06a0",
       "unknown_to_bound_scalar_paths": [
         "implementation_binding.preflight_group.status",
         "implementation_binding.preflight_group.implementation_commit",
