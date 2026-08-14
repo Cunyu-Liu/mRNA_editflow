@@ -31,7 +31,7 @@ def _disk_protocol() -> dict:
 
 
 def _protocol() -> dict:
-    """Return the clean I2 fixture from either a legal disk I2 or disk B2."""
+    """Return the clean I3 fixture from either a legal disk I3 or disk B3."""
 
     protocol = PREFLIGHT._normalise_own_binding(_disk_protocol())
     PREFLIGHT.validate_protocol(protocol)
@@ -71,6 +71,8 @@ def _make_assets(
     *,
     omit_alt_member: bool = False,
     omit_alt_fasta: bool = False,
+    invalid_alt_fasta: bool = False,
+    reverse_fasta_order: bool = False,
 ) -> tuple[Path, Path, dict]:
     author = tmp_path / "author"
     data = author / "data"
@@ -96,7 +98,14 @@ def _make_assets(
         f">{reporter_ids[2]}\n{sequences[2]}\n",
     ]
     if not omit_alt_fasta:
-        fasta_entries.append(f">{reporter_ids[3]}\n{sequences[3]}\n")
+        alt_sequence = (
+            "A" * 62 + ">LEH<" + "A" * 66
+            if invalid_alt_fasta
+            else sequences[3]
+        )
+        fasta_entries.append(f">{reporter_ids[3]}\n{alt_sequence}\n")
+    if reverse_fasta_order:
+        fasta_entries.reverse()
     fasta_path = data / "GWASrewritepos_CMS_alignment_file.fasta"
     fasta_path.write_text("".join(fasta_entries), encoding="utf-8")
 
@@ -172,7 +181,7 @@ def test_candidate_freezes_authority_runtime_and_scientific_disposition() -> Non
     protocol = _protocol()
     baseline = protocol["fresh_baseline"]
     assert baseline["latest_settled_runtime_event_id"] == "A1-EVT-059"
-    assert baseline["production_head"] == PREFLIGHT.ENCSR_I1_COMMIT
+    assert baseline["production_head"] == PREFLIGHT.ENCSR_B2_COMMIT
     authority = protocol["implementation_binding"]["authority_group"]
     assert authority["authority_commit"] == PREFLIGHT.AUTHORITY_COMMIT
     assert tuple(authority["authority_exact_changed_paths"]) == PREFLIGHT.AUTHORITY_EXACT12
@@ -183,6 +192,7 @@ def test_candidate_freezes_authority_runtime_and_scientific_disposition() -> Non
     assert tuple(runtime["i1_exact_changed_paths"]) == PREFLIGHT.RUNTIME_EXACT3
     predecessor = protocol["implementation_binding"]["gse217518_predecessor_group"]
     encsr_i1 = protocol["implementation_binding"]["encsr854ruf_i1_group"]
+    encsr_i2_b2 = protocol["implementation_binding"]["encsr854ruf_i2_b2_group"]
     own = protocol["implementation_binding"]["own_preflight_group"]
     assert predecessor["status"] == PREFLIGHT.BOUND
     assert predecessor["i1_commit"] == PREFLIGHT.GSE217_I1_COMMIT
@@ -196,6 +206,17 @@ def test_candidate_freezes_authority_runtime_and_scientific_disposition() -> Non
         "i1_commit": PREFLIGHT.ENCSR_I1_COMMIT,
         "i1_exact_changed_paths": list(PREFLIGHT.EXACT3),
         "i1_blob_sha256_by_path": PREFLIGHT.ENCSR_I1_BLOBS,
+    }
+    assert encsr_i2_b2 == {
+        "status": PREFLIGHT.BOUND,
+        "i2_expected_parent": PREFLIGHT.ENCSR_I1_COMMIT,
+        "i2_commit": PREFLIGHT.ENCSR_I2_COMMIT,
+        "i2_exact_changed_paths": list(PREFLIGHT.EXACT3),
+        "i2_blob_sha256_by_path": PREFLIGHT.ENCSR_I2_BLOBS,
+        "b2_expected_parent": PREFLIGHT.ENCSR_I2_COMMIT,
+        "b2_commit": PREFLIGHT.ENCSR_B2_COMMIT,
+        "b2_exact_changed_paths": [PREFLIGHT.CONFIG_REPO_PATH],
+        "b2_blob_sha256_by_path": PREFLIGHT.ENCSR_B2_BLOBS,
     }
     assert own["status"] == PREFLIGHT.UNKNOWN
     assert tuple(own["implementation_exact_changed_paths"]) == PREFLIGHT.EXACT3
@@ -228,7 +249,7 @@ def test_legal_disk_i_and_disk_b_protocols_are_both_accepted(tmp_path: Path) -> 
     assert loaded_b["implementation_binding"]["own_preflight_group"]["status"] == PREFLIGHT.BOUND
 
 
-def test_checked_in_disk_i2_or_b2_normalises_to_clean_i2() -> None:
+def test_checked_in_disk_i3_or_b3_normalises_to_clean_i3() -> None:
     disk = _disk_protocol()
     disk_status = disk["implementation_binding"]["own_preflight_group"]["status"]
     assert disk_status in {PREFLIGHT.UNKNOWN, PREFLIGHT.BOUND}
@@ -340,6 +361,26 @@ def test_repository_auditor_freezes_full_chain_and_rejects_stale_copy(
             "implementation_test_sha256": "a" * 64,
         }
     )
+    encsr_prior_i_protocol = {
+        "implementation_binding": {
+            "own_preflight_group": {
+                "status": PREFLIGHT.UNKNOWN,
+                "implementation_commit": PREFLIGHT.UNKNOWN,
+                "implementation_script_sha256": PREFLIGHT.UNKNOWN,
+                "implementation_test_sha256": PREFLIGHT.UNKNOWN,
+                "fixed": "preserved",
+            }
+        }
+    }
+    encsr_prior_b_protocol = copy.deepcopy(encsr_prior_i_protocol)
+    encsr_prior_b_protocol["implementation_binding"]["own_preflight_group"].update(
+        {
+            "status": PREFLIGHT.BOUND,
+            "implementation_commit": "2" * 40,
+            "implementation_script_sha256": "b" * 64,
+            "implementation_test_sha256": "b" * 64,
+        }
+    )
     own_i_protocol = PREFLIGHT._normalise_own_binding(protocol)
 
     def fake_blob(_repo: Path, commit: str, path: str) -> bytes:
@@ -348,6 +389,10 @@ def test_repository_auditor_freezes_full_chain_and_rejects_stale_copy(
             return json.dumps(gse_i_protocol).encode("utf-8")
         if commit in (PREFLIGHT.GSE217_B2_COMMIT, PREFLIGHT.GSE217_B3_COMMIT) and path == PREFLIGHT.GSE217_CONFIG_PATH:
             return json.dumps(gse_b_protocol).encode("utf-8")
+        if commit == PREFLIGHT.ENCSR_I2_COMMIT and path == PREFLIGHT.CONFIG_REPO_PATH:
+            return json.dumps(encsr_prior_i_protocol).encode("utf-8")
+        if commit == PREFLIGHT.ENCSR_B2_COMMIT and path == PREFLIGHT.CONFIG_REPO_PATH:
+            return json.dumps(encsr_prior_b_protocol).encode("utf-8")
         if commit == own["implementation_commit"] and path == PREFLIGHT.CONFIG_REPO_PATH:
             return json.dumps(own_i_protocol).encode("utf-8")
         if commit == head and path == PREFLIGHT.CONFIG_REPO_PATH:
@@ -363,7 +408,7 @@ def test_repository_auditor_freezes_full_chain_and_rejects_stale_copy(
     monkeypatch.setattr(PREFLIGHT, "_verify_commit", fake_verify)
     monkeypatch.setattr(PREFLIGHT, "_git_blob", fake_blob)
     monkeypatch.setattr(PREFLIGHT, "__file__", str(script_path))
-    with pytest.raises(PREFLIGHT.RepositoryError, match="differs from ENCSR854RUF I2"):
+    with pytest.raises(PREFLIGHT.RepositoryError, match="differs from ENCSR854RUF I3"):
         PREFLIGHT._audit_repository(protocol, config_path, repo)
     assert [item["label"] for item in verified] == [
         "DEC027 authority A",
@@ -378,11 +423,15 @@ def test_repository_auditor_freezes_full_chain_and_rejects_stale_copy(
         "ENCSR854RUF I1",
         "ENCSR854RUF I2",
         "ENCSR854RUF B2",
+        "ENCSR854RUF I3",
+        "ENCSR854RUF B3",
     ]
     assert verified[4]["expected_parent"] == PREFLIGHT.RUNTIME_B2_COMMIT
     assert verified[9]["expected_parent"] == PREFLIGHT.GSE217_B3_COMMIT
     assert verified[10]["expected_parent"] == PREFLIGHT.ENCSR_I1_COMMIT
-    assert verified[11]["expected_parent"] == "3" * 40
+    assert verified[11]["expected_parent"] == PREFLIGHT.ENCSR_I2_COMMIT
+    assert verified[12]["expected_parent"] == PREFLIGHT.ENCSR_B2_COMMIT
+    assert verified[13]["expected_parent"] == "3" * 40
 
 
 def test_repository_failure_precedes_asset_and_output_io(
@@ -436,7 +485,12 @@ def test_synthetic_assets_emit_only_aggregate_geometry(tmp_path: Path) -> None:
     assert geometry["published_reporter_count"] == 4
     assert geometry["author_fasta_header_count"] == 4
     assert geometry["author_fasta_expanded_alias_token_count"] == 5
+    assert geometry["author_fasta_valid_alias_token_count"] == 5
+    assert geometry["author_fasta_invalid_record_count"] == 0
+    assert geometry["author_fasta_invalid_character_count"] == 0
     assert geometry["source_candidate_crosswalk_missing_count"] == 0
+    assert geometry["source_candidate_pair_with_unresolved_reporter_count"] == 0
+    assert geometry["source_candidate_pair_sequence_replay_evaluated_count"] == 2
     assert geometry["declared_allele_length_to_sequence_replay_mismatch_count"] == 0
     assert geometry["index_error_affected_pair_count"] == 1
     assert geometry[
@@ -461,27 +515,97 @@ def test_synthetic_assets_emit_only_aggregate_geometry(tmp_path: Path) -> None:
         assert poison not in serialized
 
 
-@pytest.mark.parametrize(
-    ("omit_alt_member", "omit_alt_fasta", "message"),
-    (
-        (True, False, "exactly one ref and one alt"),
-        (False, True, "crosswalk is incomplete"),
-    ),
-)
-def test_malformed_pair_or_unmapped_reporter_fails_closed(
-    tmp_path: Path,
-    omit_alt_member: bool,
-    omit_alt_fasta: bool,
-    message: str,
-) -> None:
+def test_malformed_pair_fails_before_terminal_aggregation(tmp_path: Path) -> None:
     workbook, author, bound = _make_assets(
         tmp_path,
         _protocol(),
-        omit_alt_member=omit_alt_member,
-        omit_alt_fasta=omit_alt_fasta,
+        omit_alt_member=True,
     )
-    with pytest.raises(PREFLIGHT.AssetAuditError, match=message):
+    with pytest.raises(PREFLIGHT.AssetAuditError, match="exactly one ref and one alt"):
         PREFLIGHT._audit_prepared_assets(bound, workbook, author)
+
+
+def test_unmapped_reporter_emits_terminal_stop_instead_of_aborting(tmp_path: Path) -> None:
+    workbook, author, bound = _make_assets(
+        tmp_path,
+        _protocol(),
+        omit_alt_fasta=True,
+    )
+    geometry = PREFLIGHT._audit_prepared_assets(bound, workbook, author)
+    record = PREFLIGHT.build_aggregate_record(
+        bound,
+        geometry,
+        {"status": "SYNTHETIC_TEST_BINDING_ONLY"},
+    )
+    assert geometry["source_candidate_crosswalk_missing_count"] == 1
+    assert geometry["source_candidate_pair_with_unresolved_reporter_count"] == 1
+    assert geometry["source_candidate_pair_sequence_replay_evaluated_count"] == 1
+    assert record["status"] == "TERMINAL_AGGREGATE_PREFLIGHT_STOP_NOT_QUALIFIED"
+    assert record["normalized_gate_counts"] == {
+        "pass": 2,
+        "partial_or_conditional": 2,
+        "fail": 3,
+        "unknown_not_asserted": 4,
+        "total": 11,
+    }
+
+
+def test_invalid_real_shape_fasta_record_is_aggregate_order_invariant_terminal_stop(
+    tmp_path: Path,
+) -> None:
+    forward = _make_assets(
+        tmp_path / "forward",
+        _protocol(),
+        invalid_alt_fasta=True,
+    )
+    reverse = _make_assets(
+        tmp_path / "reverse",
+        _protocol(),
+        invalid_alt_fasta=True,
+        reverse_fasta_order=True,
+    )
+    geometries: list[dict[str, int]] = []
+    records: list[dict] = []
+    for workbook, author, bound in (forward, reverse):
+        geometry = PREFLIGHT._audit_prepared_assets(bound, workbook, author)
+        geometries.append(geometry)
+        records.append(
+            PREFLIGHT.build_aggregate_record(
+                bound,
+                geometry,
+                {"status": "SYNTHETIC_TEST_BINDING_ONLY"},
+            )
+        )
+
+    assert geometries[0] == geometries[1]
+    geometry = geometries[0]
+    assert geometry["author_fasta_header_count"] == 4
+    assert geometry["author_fasta_record_length_133_count"] == 4
+    assert geometry["author_fasta_invalid_record_count"] == 1
+    assert geometry["author_fasta_invalid_record_length_133_count"] == 1
+    assert geometry["author_fasta_invalid_character_count"] == 5
+    assert geometry["author_fasta_invalid_alias_token_count"] == 1
+    assert geometry["source_candidate_crosswalk_invalid_fasta_record_reporter_count"] == 1
+    assert geometry["source_candidate_pair_with_unresolved_reporter_count"] == 1
+    assert geometry["source_candidate_pair_sequence_replay_evaluated_count"] == 1
+    for record in records:
+        assert record["status"] == "TERMINAL_AGGREGATE_PREFLIGHT_STOP_NOT_QUALIFIED"
+        assert record["normalized_gate_counts"] == {
+            "pass": 2,
+            "partial_or_conditional": 2,
+            "fail": 3,
+            "unknown_not_asserted": 4,
+            "total": 11,
+        }
+        serialized = json.dumps(record, sort_keys=True)
+        for poison in (
+            "SECRET_REPORTER",
+            "SECRET_PAIR",
+            "SECRET_UNUSED_ALIAS",
+            ">LEH<",
+            "A" * 62 + ">LEH<" + "A" * 66,
+        ):
+            assert poison not in serialized
 
 
 def test_observed_geometry_mismatch_downgrades_pass() -> None:

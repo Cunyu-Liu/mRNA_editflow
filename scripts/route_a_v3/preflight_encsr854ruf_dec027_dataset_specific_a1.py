@@ -3,10 +3,10 @@
 
 The implementation candidate is deliberately inactive.  DEC027 authority, the
 settled A1-EVT-059 runtime I1/I2/B2 history, the GSE217518
-I1/I2/B2/I3/B3 predecessor history, and ENCSR854RUF I1 are byte-bound.  This
-producer is the append-only I2 candidate; its own four-scalar binding remains
+I1/I2/B2/I3/B3 predecessor history, and ENCSR854RUF I1/I2/B2 are byte-bound.
+This producer is the append-only I3 candidate; its own four-scalar binding remains
 grouped UNKNOWN, so the production path stops before Git, publisher-workbook,
-author-repository, or output-path I/O.  A future B2 verifies the complete commit
+author-repository, or output-path I/O.  A future B3 verifies the complete commit
 chain and computes only aggregate geometry; identifiers, sequences, row values,
 standard errors, and split assignments are never serialized.
 """
@@ -113,6 +113,18 @@ ENCSR_I1_BLOBS = {
     CONFIG_REPO_PATH: "e1d3747876818f5b0d2b47f4a185cc5fb0f1c6b141b25a1e635768cdde588e2c",
     SCRIPT_REPO_PATH: "d8f6517f935624204cfa8669c8322909734417b212287e867ea38d8e031881ec",
     TEST_REPO_PATH: "b59e94373fb02cb2a0e65b67183af9b2f3ddcab24bc8f72d4a636f9a781f4714",
+}
+ENCSR_I2_COMMIT = "5531907c9ede1a4323ffe884c47a410d9bcb946d"
+ENCSR_B2_COMMIT = "e52a8d8614724574e3647c6cf0f84041221b76a0"
+ENCSR_I2_BLOBS = {
+    CONFIG_REPO_PATH: "e7f4adf157b638c10161c922d848c494aa6b3b50f8aed9c05c7111907bb691c8",
+    SCRIPT_REPO_PATH: "4a5910cad545d4b699b2daf20933afe3e6512aff11b015cb6adb983f4911c247",
+    TEST_REPO_PATH: "364b908433353451501b0419587d20d6702451ae87726231e3ac1800313e60b7",
+}
+ENCSR_B2_BLOBS = {
+    CONFIG_REPO_PATH: "2f3d688f463f5ee359ae76aa9111af2d9ee091f77a1c8037d2337feb49583045",
+    SCRIPT_REPO_PATH: ENCSR_I2_BLOBS[SCRIPT_REPO_PATH],
+    TEST_REPO_PATH: ENCSR_I2_BLOBS[TEST_REPO_PATH],
 }
 GSE217_OWN_BINDING_FIELDS = (
     "status",
@@ -390,6 +402,37 @@ def _validate_encsr_i1_group(group: Mapping[str, Any]) -> None:
         raise ProtocolError("ENCSR854RUF I1 binding differs")
 
 
+def _validate_encsr_i2_b2_group(group: Mapping[str, Any]) -> None:
+    _exact_keys(
+        group,
+        (
+            "status",
+            "i2_expected_parent",
+            "i2_commit",
+            "i2_exact_changed_paths",
+            "i2_blob_sha256_by_path",
+            "b2_expected_parent",
+            "b2_commit",
+            "b2_exact_changed_paths",
+            "b2_blob_sha256_by_path",
+        ),
+        label="encsr854ruf_i2_b2_group",
+    )
+    expected = {
+        "status": BOUND,
+        "i2_expected_parent": ENCSR_I1_COMMIT,
+        "i2_commit": ENCSR_I2_COMMIT,
+        "i2_exact_changed_paths": list(EXACT3),
+        "i2_blob_sha256_by_path": ENCSR_I2_BLOBS,
+        "b2_expected_parent": ENCSR_I2_COMMIT,
+        "b2_commit": ENCSR_B2_COMMIT,
+        "b2_exact_changed_paths": [CONFIG_REPO_PATH],
+        "b2_blob_sha256_by_path": ENCSR_B2_BLOBS,
+    }
+    if group != expected:
+        raise ProtocolError("ENCSR854RUF I2/B2 binding differs")
+
+
 def _own_mode(group: Mapping[str, Any]) -> str:
     _exact_keys(
         group,
@@ -447,6 +490,7 @@ def _validate_binding(protocol: Mapping[str, Any]) -> tuple[str, str]:
             "runtime_group",
             "gse217518_predecessor_group",
             "encsr854ruf_i1_group",
+            "encsr854ruf_i2_b2_group",
             "own_preflight_group",
             "activation_rule",
         ),
@@ -454,17 +498,17 @@ def _validate_binding(protocol: Mapping[str, Any]) -> tuple[str, str]:
     )
     if binding.get("binding_scheme") != (
         "DEC027_A_TO_RUNTIME_I1_I2_B2_EVT059_TO_GSE217518_"
-        "I1_I2_B2_I3_B3_TO_ENCSR854RUF_I1_I2_B2"
+        "I1_I2_B2_I3_B3_TO_ENCSR854RUF_I1_I2_B2_I3_B3"
     ):
         raise ProtocolError("append-only binding scheme differs")
     expected_activation = (
         "Authority, the complete A1-EVT-059 runtime A-to-I1-to-I2-to-B2 "
         "history, the complete GSE217518 I1-to-I2-to-B2-to-I3-to-B3 "
-        "history, and ENCSR854RUF I1 are frozen. ENCSR854RUF I2 must be the "
-        "direct child of ENCSR854RUF I1. This exact3 I2 own four-scalar group "
-        "remains grouped UNKNOWN_NOT_ASSERTED in I2, so production must stop "
+        "history, and ENCSR854RUF I1-to-I2-to-B2 are frozen. ENCSR854RUF I3 "
+        "must be the direct child of ENCSR854RUF B2. This exact3 I3 own "
+        "four-scalar group remains grouped UNKNOWN_NOT_ASSERTED in I3, so production must stop "
         "before Git, publisher workbook, author-repository asset, prepared-data "
-        "path, or output-path inspection until a config-only ENCSR854RUF B2 "
+        "path, or output-path inspection until a config-only ENCSR854RUF B3 "
         "changes only those four scalars. Generic registry requirements are "
         "never dataset-specific gate facts."
     )
@@ -479,6 +523,9 @@ def _validate_binding(protocol: Mapping[str, Any]) -> tuple[str, str]:
     )
     _validate_encsr_i1_group(
         _mapping(binding["encsr854ruf_i1_group"], label="encsr854ruf_i1_group")
+    )
+    _validate_encsr_i2_b2_group(
+        _mapping(binding["encsr854ruf_i2_b2_group"], label="encsr854ruf_i2_b2_group")
     )
     own_mode = _own_mode(
         _mapping(binding["own_preflight_group"], label="own_preflight_group")
@@ -532,7 +579,7 @@ def validate_protocol(protocol: Mapping[str, Any]) -> None:
         if protocol.get(field) != value:
             raise ProtocolError(f"{field} differs from the frozen value")
     if protocol.get("protocol_status") != (
-        "LOCAL_EXACT3_I2_CANDIDATE_FULL_PREDECESSOR_AND_ENCSR_I1_BOUND_"
+        "LOCAL_EXACT3_I3_CANDIDATE_FULL_PREDECESSOR_AND_ENCSR_I1_I2_B2_BOUND_"
         "OWN_BINDING_UNKNOWN_NOT_ACTIVE"
     ):
         raise ProtocolError("protocol status differs")
@@ -556,8 +603,12 @@ def validate_protocol(protocol: Mapping[str, Any]) -> None:
         raise ProtocolError("fresh GSE217518 B3 differs")
     if baseline.get("encsr854ruf_i1_commit") != ENCSR_I1_COMMIT:
         raise ProtocolError("fresh ENCSR854RUF I1 differs")
+    if baseline.get("encsr854ruf_i2_commit") != ENCSR_I2_COMMIT:
+        raise ProtocolError("fresh ENCSR854RUF I2 differs")
+    if baseline.get("encsr854ruf_b2_commit") != ENCSR_B2_COMMIT:
+        raise ProtocolError("fresh ENCSR854RUF B2 differs")
     for field in ("production_head", "upstream_head", "origin_head"):
-        if baseline.get(field) != ENCSR_I1_COMMIT:
+        if baseline.get(field) != ENCSR_B2_COMMIT:
             raise ProtocolError(f"fresh baseline {field} differs")
     if baseline.get("worktree_clean") is not True:
         raise ProtocolError("fresh baseline worktree must be clean")
@@ -835,7 +886,7 @@ def _read_repository_file(path: Path, *, label: str) -> bytes:
 def _audit_repository(
     protocol: Mapping[str, Any], config_path: Path, repo_root: Path
 ) -> dict[str, Any]:
-    """Audit A -> runtime history -> GSE217518 history -> ENCSR854RUF I1/I2/B2."""
+    """Audit A -> runtime history -> GSE217518 history -> ENCSR I1/I2/B2/I3/B3."""
 
     _require_activation(protocol)
     repository = protocol["repository_authority"]
@@ -861,6 +912,7 @@ def _audit_repository(
     runtime = binding["runtime_group"]
     predecessor = binding["gse217518_predecessor_group"]
     encsr_i1 = binding["encsr854ruf_i1_group"]
+    encsr_i2_b2 = binding["encsr854ruf_i2_b2_group"]
     own = binding["own_preflight_group"]
     own_i = own["implementation_commit"]
 
@@ -947,8 +999,24 @@ def _audit_repository(
     _verify_commit(
         repo_root,
         label="ENCSR854RUF I2",
-        commit=own_i,
+        commit=ENCSR_I2_COMMIT,
         expected_parent=ENCSR_I1_COMMIT,
+        expected_paths=EXACT3,
+        expected_blobs=encsr_i2_b2["i2_blob_sha256_by_path"],
+    )
+    _verify_commit(
+        repo_root,
+        label="ENCSR854RUF B2",
+        commit=ENCSR_B2_COMMIT,
+        expected_parent=ENCSR_I2_COMMIT,
+        expected_paths=(CONFIG_REPO_PATH,),
+        expected_blobs=encsr_i2_b2["b2_blob_sha256_by_path"],
+    )
+    _verify_commit(
+        repo_root,
+        label="ENCSR854RUF I3",
+        commit=own_i,
+        expected_parent=ENCSR_B2_COMMIT,
         expected_paths=EXACT3,
         expected_blobs={
             SCRIPT_REPO_PATH: own["implementation_script_sha256"],
@@ -957,7 +1025,7 @@ def _audit_repository(
     )
     _verify_commit(
         repo_root,
-        label="ENCSR854RUF B2",
+        label="ENCSR854RUF B3",
         commit=head,
         expected_parent=own_i,
         expected_paths=(CONFIG_REPO_PATH,),
@@ -980,28 +1048,39 @@ def _audit_repository(
                 f"GSE217518 {label} changed fields outside its own four scalars"
             )
 
-    own_i_protocol = _strict_json_bytes(
-        _git_blob(repo_root, own_i, CONFIG_REPO_PATH),
+    encsr_i2_protocol = _strict_json_bytes(
+        _git_blob(repo_root, ENCSR_I2_COMMIT, CONFIG_REPO_PATH),
         label="ENCSR854RUF I2 protocol",
     )
+    encsr_b2_protocol = _strict_json_bytes(
+        _git_blob(repo_root, ENCSR_B2_COMMIT, CONFIG_REPO_PATH),
+        label="ENCSR854RUF B2 protocol",
+    )
+    if _normalise_own_binding(encsr_b2_protocol) != encsr_i2_protocol:
+        raise RepositoryError("ENCSR854RUF B2 changed fields outside I2 own four scalars")
+
+    own_i_protocol = _strict_json_bytes(
+        _git_blob(repo_root, own_i, CONFIG_REPO_PATH),
+        label="ENCSR854RUF I3 protocol",
+    )
     if _normalise_own_binding(protocol) != own_i_protocol:
-        raise RepositoryError("ENCSR854RUF B2 changed fields outside its own four scalars")
+        raise RepositoryError("ENCSR854RUF B3 changed fields outside I3 own four scalars")
     if _read_repository_file(config_path, label="working ENCSR854RUF config") != _git_blob(
         repo_root, head, CONFIG_REPO_PATH
     ):
-        raise RepositoryError("working config differs from ENCSR854RUF B2")
+        raise RepositoryError("working config differs from ENCSR854RUF B3")
     executing_script = Path(__file__).resolve()
     if executing_script != (repo_root / SCRIPT_REPO_PATH).resolve():
         raise RepositoryError("executing producer is a stale or copied script")
     if _read_repository_file(executing_script, label="executing producer") != _git_blob(
         repo_root, own_i, SCRIPT_REPO_PATH
     ):
-        raise RepositoryError("executing producer differs from ENCSR854RUF I2")
+        raise RepositoryError("executing producer differs from ENCSR854RUF I3")
     focused_test = repo_root / TEST_REPO_PATH
     if _read_repository_file(focused_test, label="working focused test") != _git_blob(
         repo_root, own_i, TEST_REPO_PATH
     ):
-        raise RepositoryError("working focused test differs from ENCSR854RUF I2")
+        raise RepositoryError("working focused test differs from ENCSR854RUF I3")
     return {
         "status": "BOUND_REPOSITORY_CHAIN_CLOSED",
         "head": head,
@@ -1014,6 +1093,8 @@ def _audit_repository(
         "gse217518_i3_commit": GSE217_I3_COMMIT,
         "gse217518_b3_commit": GSE217_B3_COMMIT,
         "encsr854ruf_i1_commit": ENCSR_I1_COMMIT,
+        "encsr854ruf_i2_commit": ENCSR_I2_COMMIT,
+        "encsr854ruf_b2_commit": ENCSR_B2_COMMIT,
         "implementation_commit": own["implementation_commit"],
         "binding_commit": head,
         "changed_path_counts": {
@@ -1027,6 +1108,8 @@ def _audit_repository(
             "gse217518_i3": 3,
             "gse217518_b3": 1,
             "encsr854ruf_i1": 3,
+            "encsr854ruf_i2": 3,
+            "encsr854ruf_b2": 1,
             "implementation": 3,
             "binding": 1,
         },
@@ -1077,24 +1160,48 @@ def _finite_number(value: Any) -> bool:
     return math.isfinite(number)
 
 
-def _load_fasta_aliases(path: Path) -> tuple[dict[str, str], int]:
+def _load_fasta_aliases(
+    path: Path,
+) -> tuple[dict[str, str], set[str], dict[str, int]]:
     aliases: dict[str, str] = {}
+    invalid_aliases: set[str] = set()
+    all_aliases: set[str] = set()
     header_count = 0
+    invalid_record_count = 0
+    invalid_character_count = 0
+    empty_record_count = 0
+    record_length_133_count = 0
+    invalid_record_length_133_count = 0
     header: str | None = None
     sequence_parts: list[str] = []
 
     def commit() -> None:
-        nonlocal header_count
+        nonlocal header_count, invalid_record_count, invalid_character_count
+        nonlocal empty_record_count, record_length_133_count
+        nonlocal invalid_record_length_133_count
         if header is None:
             return
         sequence = "".join(sequence_parts).strip().upper()
-        if not sequence or any(base not in "ACGTN" for base in sequence):
-            raise AssetAuditError("author FASTA contains an invalid sequence alphabet")
+        tokens = [token.strip() for token in header.split("/")]
+        if any(not token for token in tokens):
+            raise AssetAuditError("author FASTA contains an empty slash alias")
         header_count += 1
-        for token in header.split("/"):
-            token = token.strip()
-            if not token:
-                raise AssetAuditError("author FASTA contains an empty slash alias")
+        record_length_133_count += len(sequence) == 133
+        invalid_characters = sum(base not in "ACGTN" for base in sequence)
+        invalid_record = not sequence or invalid_characters > 0
+        if invalid_record:
+            invalid_record_count += 1
+            invalid_character_count += invalid_characters
+            empty_record_count += not sequence
+            invalid_record_length_133_count += len(sequence) == 133
+        for token in tokens:
+            all_aliases.add(token)
+            if invalid_record:
+                invalid_aliases.add(token)
+                aliases.pop(token, None)
+                continue
+            if token in invalid_aliases:
+                continue
             if token in aliases and aliases[token] != sequence:
                 raise AssetAuditError("author FASTA slash alias maps to conflicting sequences")
             aliases[token] = sequence
@@ -1116,7 +1223,18 @@ def _load_fasta_aliases(path: Path) -> tuple[dict[str, str], int]:
     except (OSError, UnicodeDecodeError) as exc:
         raise AssetAuditError("cannot parse author FASTA") from exc
     commit()
-    return aliases, header_count
+    stats = {
+        "header_count": header_count,
+        "expanded_alias_token_count": len(all_aliases),
+        "valid_alias_token_count": len(aliases),
+        "invalid_record_count": invalid_record_count,
+        "invalid_alias_token_count": len(invalid_aliases),
+        "invalid_character_count": invalid_character_count,
+        "empty_record_count": empty_record_count,
+        "record_length_133_count": record_length_133_count,
+        "invalid_record_length_133_count": invalid_record_length_133_count,
+    }
+    return aliases, invalid_aliases, stats
 
 
 def _levenshtein(left: str, right: str) -> int:
@@ -1172,7 +1290,7 @@ def _parse_workbook(workbook_path: Path, fasta_path: Path, array_path: Path) -> 
         missing_sheets = sorted(set(REQUIRED_SHEETS) - set(workbook.sheetnames))
         if missing_sheets:
             raise AssetAuditError("publisher workbook required-sheet set differs")
-        aliases, fasta_header_count = _load_fasta_aliases(fasta_path)
+        aliases, invalid_aliases, fasta_stats = _load_fasta_aliases(fasta_path)
         array_rows = _read_array_assignments(array_path)
 
         oligo_header, oligo_rows = _rows_and_header(workbook, "Oligo Variant Info")
@@ -1216,8 +1334,16 @@ def _parse_workbook(workbook_path: Path, fasta_path: Path, array_path: Path) -> 
             for members in pair_members.values()
             for member in members.values()
         )
-        if crosswalk_missing:
-            raise AssetAuditError("publisher reporter to author FASTA crosswalk is incomplete")
+        crosswalk_invalid = sum(
+            member["reporter_id"] in invalid_aliases
+            for members in pair_members.values()
+            for member in members.values()
+        )
+        unresolved_pairs = {
+            pair_id
+            for pair_id, members in pair_members.items()
+            if any(member["reporter_id"] not in aliases for member in members.values())
+        }
 
         identical_pair_count = 0
         replay_mismatch_count = 0
@@ -1225,6 +1351,8 @@ def _parse_workbook(workbook_path: Path, fasta_path: Path, array_path: Path) -> 
         source_by_pair: dict[str, str] = {}
         candidate_by_pair: dict[str, str] = {}
         for pair_id, members in pair_members.items():
+            if pair_id in unresolved_pairs:
+                continue
             source = aliases[members["ref"]["reporter_id"]]
             candidate = aliases[members["alt"]["reporter_id"]]
             source_by_pair[pair_id] = source
@@ -1273,6 +1401,7 @@ def _parse_workbook(workbook_path: Path, fasta_path: Path, array_path: Path) -> 
             raise AssetAuditError("publisher oligo and result pair universes differ")
         eligible_all = finite_all_pairs - index_error_pairs
         eligible_any = finite_any_pairs - index_error_pairs
+        eligible_all_resolved = eligible_all & set(source_by_pair)
 
         raw_ids: dict[str, set[str]] = {}
         raw_numeric_cells = 0
@@ -1329,8 +1458,28 @@ def _parse_workbook(workbook_path: Path, fasta_path: Path, array_path: Path) -> 
             "reference_role_reporter_count": len(pair_members),
             "alternate_role_reporter_count": len(pair_members),
             "source_candidate_crosswalk_missing_count": crosswalk_missing,
-            "author_fasta_header_count": fasta_header_count,
-            "author_fasta_expanded_alias_token_count": len(aliases),
+            "source_candidate_crosswalk_invalid_fasta_record_reporter_count": crosswalk_invalid,
+            "source_candidate_pair_with_unresolved_reporter_count": len(unresolved_pairs),
+            "source_candidate_pair_sequence_replay_evaluated_count": len(source_by_pair),
+            "author_fasta_header_count": fasta_stats["header_count"],
+            "author_fasta_expanded_alias_token_count": fasta_stats[
+                "expanded_alias_token_count"
+            ],
+            "author_fasta_valid_alias_token_count": fasta_stats["valid_alias_token_count"],
+            "author_fasta_invalid_record_count": fasta_stats["invalid_record_count"],
+            "author_fasta_invalid_alias_token_count": fasta_stats[
+                "invalid_alias_token_count"
+            ],
+            "author_fasta_invalid_character_count": fasta_stats[
+                "invalid_character_count"
+            ],
+            "author_fasta_empty_record_count": fasta_stats["empty_record_count"],
+            "author_fasta_record_length_133_count": fasta_stats[
+                "record_length_133_count"
+            ],
+            "author_fasta_invalid_record_length_133_count": fasta_stats[
+                "invalid_record_length_133_count"
+            ],
             "published_reporter_to_author_fasta_missing_after_documented_alias_expansion": crosswalk_missing,
             "variable_insert_length_bp": variable_insert_length,
             "ref_alt_sequence_identical_pair_count": identical_pair_count,
@@ -1340,10 +1489,13 @@ def _parse_workbook(workbook_path: Path, fasta_path: Path, array_path: Path) -> 
             "finite_effect_and_lfcse_at_least_one_context_pair_count_after_index_error_exclusion": len(eligible_any),
             "full_universe_distinct_exact_source_sequence_count": len(set(source_by_pair.values())),
             "finite_six_context_no_index_error_distinct_exact_source_sequence_count": len(
-                {source_by_pair[pair_id] for pair_id in eligible_all}
+                {source_by_pair[pair_id] for pair_id in eligible_all_resolved}
             ),
             "finite_six_context_no_index_error_distinct_exact_source_candidate_pair_count": len(
-                {(source_by_pair[pair_id], candidate_by_pair[pair_id]) for pair_id in eligible_all}
+                {
+                    (source_by_pair[pair_id], candidate_by_pair[pair_id])
+                    for pair_id in eligible_all_resolved
+                }
             ),
             "reported_result_rows_with_any_nonnumeric_statistic": rows_with_nonnumeric,
             "reported_nonnumeric_statistic_cell_count": nonnumeric_cells,
@@ -1401,29 +1553,72 @@ def evaluate_gate_statuses(
     protocol: Mapping[str, Any], geometry: Mapping[str, int]
 ) -> list[dict[str, Any]]:
     gates = copy.deepcopy(protocol["public_research_snapshot"]["gate_statuses"])
+    invalid_fasta_record_count = geometry.get("author_fasta_invalid_record_count", 0)
+    invalid_crosswalk_reporter_count = geometry.get(
+        "source_candidate_crosswalk_invalid_fasta_record_reporter_count", 0
+    )
+    unresolved_pair_count = geometry.get(
+        "source_candidate_pair_with_unresolved_reporter_count", 0
+    )
+    replay_evaluated_count = geometry.get(
+        "source_candidate_pair_sequence_replay_evaluated_count",
+        geometry["published_pair_count"],
+    )
     if not (
         geometry["published_pair_count"] == geometry["pair_size_two_count"]
         and geometry["published_reporter_count"] == 2 * geometry["published_pair_count"]
         and geometry["source_candidate_crosswalk_missing_count"] == 0
+        and invalid_fasta_record_count == 0
+        and invalid_crosswalk_reporter_count == 0
+        and unresolved_pair_count == 0
         and geometry["result_missing_pair_count"] == 0
         and geometry["unexpected_result_pair_count"] == 0
     ):
+        if invalid_fasta_record_count or invalid_crosswalk_reporter_count:
+            crosswalk_reason = "INVALID_FASTA_RECORD_OR_UNRESOLVED_REPORTER_CROSSWALK"
+            crosswalk_evidence = (
+                "Aggregate execution found an invalid author FASTA record and an "
+                "unresolved publisher-reporter crosswalk; the affected member was "
+                "quarantined from sequence calculations."
+            )
+        else:
+            crosswalk_reason = "OBSERVED_SOURCE_CANDIDATE_CROSSWALK_NOT_CLOSED"
+            crosswalk_evidence = (
+                "Aggregate execution found a role, crosswalk, or result-universe mismatch."
+            )
         _replace_gate_failure(
             gates,
             GATE_IDS[1],
-            "OBSERVED_SOURCE_CANDIDATE_CROSSWALK_NOT_CLOSED",
-            "Aggregate execution found a role, crosswalk, or result-universe mismatch.",
+            crosswalk_reason,
+            crosswalk_evidence,
         )
     if not (
         geometry["variable_insert_length_bp"] == 133
         and geometry["ref_alt_sequence_identical_pair_count"] == 0
         and geometry["declared_allele_length_to_sequence_replay_mismatch_count"] == 0
+        and invalid_fasta_record_count == 0
+        and unresolved_pair_count == 0
+        and replay_evaluated_count == geometry["published_pair_count"]
     ):
+        if invalid_fasta_record_count or unresolved_pair_count:
+            reporter_reason = (
+                "INVALID_FASTA_RECORD_OR_UNRESOLVED_PAIR_PREVENTS_COMPLETE_REPORTER_REPLAY"
+            )
+            reporter_evidence = (
+                "Aggregate execution quarantined an invalid author FASTA record, so "
+                "full reporter/context sequence replay is not closed."
+            )
+        else:
+            reporter_reason = "OBSERVED_REPORTER_INSERT_OR_EDIT_REPLAY_DIFFERS"
+            reporter_evidence = (
+                "Aggregate execution found a construct-length, identical-pair, or "
+                "edit-replay mismatch."
+            )
         _replace_gate_failure(
             gates,
             GATE_IDS[2],
-            "OBSERVED_REPORTER_INSERT_OR_EDIT_REPLAY_DIFFERS",
-            "Aggregate execution found a construct-length, identical-pair, or edit-replay mismatch.",
+            reporter_reason,
+            reporter_evidence,
         )
     if geometry["endpoint_context_count"] != 6:
         _replace_gate_failure(
