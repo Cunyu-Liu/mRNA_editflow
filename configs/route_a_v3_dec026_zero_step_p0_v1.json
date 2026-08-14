@@ -1,0 +1,312 @@
+{
+  "schema_version": "route_a_v3_dec026_zero_step_p0.v1",
+  "protocol_id": "ROUTE_A_V3_DEC026_METADATA_ONLY_ZERO_STEP_P0_V1",
+  "contract_id": "mrna_xeditflow_route_a_v3",
+  "phase_id": "A6_G1_BRIDGE",
+  "decision_id": "V3-DEC-026",
+  "document_status": "FROZEN_USER_AUTHORIZED_METADATA_ONLY_ZERO_STEP_P0",
+  "authority": {
+    "decision_status": "GRANTED_METADATA_ONLY_ZERO_STEP_P0",
+    "owner_authorization_record": "ACTIVE_CODEX_THREAD_2026-08-14_DEC026_METADATA_ONLY_ZERO_STEP_P0_AND_CONDITIONAL_ONE_G1_RUN",
+    "validator_activation_state": "ACTIVE_METADATA_ONLY_ZERO_STEP_P0",
+    "validator_may_publish_exactly_one_aggregate_record": true,
+    "validator_may_read_data_or_materialize": false,
+    "validator_may_probe_cuda_or_device": false,
+    "validator_may_construct_model_or_optimizer": false,
+    "validator_may_read_or_write_checkpoint": false,
+    "validator_may_update_parameters": false,
+    "validator_may_launch_g1": false,
+    "g1_launch_requires_all_eleven_pass": true,
+    "g1_launch_is_separate_orchestrator_action": true
+  },
+  "implementation_binding": {
+    "status": "UNKNOWN_NOT_ASSERTED",
+    "implementation_expected_parent": "1da9ad0999ee3a92dc19bc9cce8611499ec391bb",
+    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "implementation_script_path": "scripts/route_a_v3/dec026_metadata_only_zero_step_p0.py",
+    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_test_path": "tests/route_a_v3/test_dec026_metadata_only_zero_step_p0.py",
+    "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_exact_changed_paths": [
+      "configs/route_a_v3_dec026_zero_step_p0_v1.json",
+      "scripts/route_a_v3/dec026_metadata_only_zero_step_p0.py",
+      "tests/route_a_v3/test_dec026_metadata_only_zero_step_p0.py"
+    ],
+    "binding_exact_changed_paths": [
+      "configs/route_a_v3_dec026_zero_step_p0_v1.json"
+    ],
+    "unknown_to_bound_scalar_paths": [
+      "implementation_binding.status",
+      "implementation_binding.implementation_commit",
+      "implementation_binding.implementation_script_sha256",
+      "implementation_binding.implementation_test_sha256"
+    ]
+  },
+  "evaluation_scope": {
+    "input_role": "STATIC_METADATA_AND_AUTHORITY_BINDINGS_ONLY",
+    "missing_or_unknown_is_pass": false,
+    "partial_group_policy": "FAIL_CLOSED",
+    "unexpected_group_policy": "FAIL_CLOSED_WHOLE_SUBMISSION",
+    "allowed_runtime_record": "EXACTLY_ONE_AGGREGATE_ZERO_STEP_P0_RECORD",
+    "runtime_or_training_output_allowed": false,
+    "all_eleven_pass_action": "RETURN_G1_ONE_RUN_ELIGIBLE_NOT_LAUNCHED",
+    "any_nonpass_action": "STOP_BEFORE_DATA_MATERIALIZATION_CUDA_DEVICE_MODEL_OPTIMIZER_CHECKPOINT_PARAMETER_UPDATE_OR_TRAINING"
+  },
+  "p0_groups": [
+    {"gate_id": "P0.1", "gate_name": "INPUT_MEMBERSHIP_AND_BINDING"},
+    {"gate_id": "P0.2", "gate_name": "PRIOR_USE_ATTESTATION"},
+    {"gate_id": "P0.3", "gate_name": "EXPOSURE_ROLE"},
+    {"gate_id": "P0.4", "gate_name": "RIGHTS"},
+    {"gate_id": "P0.5", "gate_name": "SCIENTIFIC_ROW_CONTRACT"},
+    {"gate_id": "P0.6", "gate_name": "SCRATCH_ONLY_ROUTE"},
+    {"gate_id": "P0.7", "gate_name": "PROSPECTIVE_SPLIT"},
+    {"gate_id": "P0.8", "gate_name": "SINGLE_RUN_POLICY"},
+    {"gate_id": "P0.9", "gate_name": "EXECUTABLE_SCIENTIFIC_GATES"},
+    {"gate_id": "P0.10", "gate_name": "SUCCESSOR_LEARNED_RUN_IMPLEMENTATION"},
+    {"gate_id": "P0.11", "gate_name": "STATE_LOCKS"}
+  ],
+  "current_submission": {
+    "schema_version": "route_a_v3_dec026_zero_step_p0_metadata_package.v1",
+    "package_role": "STATIC_METADATA_AND_AUTHORITY_BINDINGS_ONLY",
+    "groups": {
+      "P0.1": {
+        "declared_status": "FAIL_CLOSED_BINDING_ABSENT",
+        "evidence": {}
+      },
+      "P0.2": {
+        "declared_status": "UNKNOWN_NOT_ASSERTED",
+        "evidence": {}
+      },
+      "P0.3": {
+        "declared_status": "PASS",
+        "evidence": {
+          "authority_binding_record_id": "V3-DEC-026::STUDY_LEVEL_EXPOSED_DEVELOPMENT_ONLY",
+          "participating_study_count": 1,
+          "study_level_binding_count": 1,
+          "gse200304_included": true,
+          "all_study_role": "EXPOSED_DEVELOPMENT_ONLY",
+          "untouched_role_count": 0,
+          "sealed_role_count": 0,
+          "confirmatory_role_count": 0,
+          "later_confirmatory_reuse_eligible_count": 0,
+          "independent_review_status": "INDEPENDENT_REVIEW_PASS"
+        }
+      },
+      "P0.4": {
+        "declared_status": "FAIL_CLOSED_INTENDED_INTERNAL_TRAIN_RIGHTS_NOT_BOUND",
+        "evidence": {}
+      },
+      "P0.5": {
+        "declared_status": "FAIL_CLOSED_COMPLETE_ROW_CONTRACT_NOT_BOUND",
+        "evidence": {}
+      },
+      "P0.6": {
+        "declared_status": "PASS",
+        "evidence": {
+          "route_binding_id": "V3-DEC-020::GSE200304::SCRATCH_ONLY_NO_FOUNDATION_NO_EXTERNAL_LEARNED_INPUTS",
+          "route": "SCRATCH_ONLY_NO_EXTERNAL_LEARNED_INPUTS",
+          "initialization": "RANDOM_INITIALIZATION",
+          "foundation_input_count": 0,
+          "warm_start_input_count": 0,
+          "resumed_checkpoint_count": 0,
+          "previously_failed_checkpoint_count": 0,
+          "external_learned_input_count": 0,
+          "checkpoint_reads_before_first_update": 0,
+          "independent_review_status": "INDEPENDENT_REVIEW_PASS"
+        }
+      },
+      "P0.7": {
+        "declared_status": "FAIL_CLOSED_PROSPECTIVE_SPLIT_NOT_FROZEN",
+        "evidence": {}
+      },
+      "P0.8": {
+        "declared_status": "FAIL_CLOSED_SINGLE_RUN_POLICY_NOT_ACTIVE",
+        "evidence": {}
+      },
+      "P0.9": {
+        "declared_status": "FAIL_CLOSED_EXECUTABLE_GATE_BUNDLE_NOT_BOUND",
+        "evidence": {}
+      },
+      "P0.10": {
+        "declared_status": "FAIL_CLOSED_SUCCESSOR_NOT_BOUND",
+        "evidence": {}
+      },
+      "P0.11": {
+        "declared_status": "PASS",
+        "evidence": {
+          "lock_binding_id": "V3-DEC-026::ZERO_STEP_AND_CONDITIONAL_ONE_RUN_LOCKS",
+          "pre_p0_lock_state": {
+            "training_allowed": false,
+            "gpu_work_allowed": false,
+            "parameter_updates_allowed": false
+          },
+          "p0_01_to_p0_10_required_pass_count": 10,
+          "conditional_one_run_atomic_unlock": true,
+          "conditional_unlock_scope": "ACTIVE_FOR_THIS_G1_ONE_RUN_ONLY",
+          "persistent_locks": {
+            "model_selection_allowed": false,
+            "qualification_change_allowed": false,
+            "credit_change_allowed": false,
+            "canonical_mutation_allowed": false,
+            "a6_pass_allowed": false,
+            "l3_claim_allowed": false,
+            "a7_unlock_allowed": false,
+            "private_or_sealed_access_allowed": false,
+            "scientific_claim_allowed": false
+          },
+          "independent_review_status": "INDEPENDENT_REVIEW_PASS"
+        }
+      }
+    }
+  },
+  "gate_evidence_ledger": {
+    "P0.1": {
+      "fact_class": "CONFIRMED_FACT",
+      "reason_code": "NO_SINGLE_DEC026_BOUND_6547_CANONICAL_ASSET_AND_NO_BOUND_UNEXERCISED_MEMBERSHIP_PRESERVING_MATERIALIZATION_AUTHORITY",
+      "evidence_refs": [
+        "configs/route_a_v3_gse200304_dec019_canonical_row_lineage_gate_v1.json",
+        "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec024.yaml"
+      ]
+    },
+    "P0.2": {
+      "fact_class": "CONFIRMED_FACT",
+      "reason_code": "FULL_PRIOR_ANALYTIC_USE_ATTESTATION_NOT_PRESENT",
+      "evidence_refs": [
+        "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec020.yaml",
+        "configs/route_a_v3.yaml"
+      ]
+    },
+    "P0.3": {
+      "fact_class": "CONFIRMED_FACT",
+      "reason_code": "DEC026_BINDS_GSE200304_AS_EXPOSED_DEVELOPMENT_ONLY",
+      "evidence_refs": [
+        "configs/route_a_v3_dec026_zero_step_p0_v1.json"
+      ]
+    },
+    "P0.4": {
+      "fact_class": "CONFIRMED_FACT",
+      "reason_code": "EXISTING_PUBLIC_OR_PRIVATE_CANONICAL_RIGHTS_DO_NOT_EXPLICITLY_BIND_INTENDED_INTERNAL_PROCESS_TRAIN_AND_EVALUATE_USE",
+      "evidence_refs": [
+        "configs/route_a_v3_gse200304_dec019_upstream_pass_gate_pack_v1.json",
+        "configs/route_a_v3_a6_learned_base_value_gpu_protocol_draft_v1.json"
+      ]
+    },
+    "P0.5": {
+      "fact_class": "CONFIRMED_FACT",
+      "reason_code": "NO_6547_MEMBER_ROW_CONTRACT_BINDS_ALL_REQUIRED_AUTHORITY_FIELDS_INCLUDING_RIGHTS_EXPOSURE_AND_MEMBERSHIP",
+      "evidence_refs": [
+        "configs/route_a_v3_gse200304_dec019_canonical_row_lineage_gate_v1.json",
+        "configs/route_a_v3_a6_learned_base_value_gpu_protocol_draft_v1.json"
+      ]
+    },
+    "P0.6": {
+      "fact_class": "CONFIRMED_FACT",
+      "reason_code": "DEC020_SCRATCH_ONLY_ROUTE_FROZEN_WITH_ZERO_EXTERNAL_LEARNED_INPUTS",
+      "evidence_refs": [
+        "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec020.yaml",
+        "configs/route_a_v3_gse200304_dec020_reported_endpoint_a1_activation_v4.json"
+      ]
+    },
+    "P0.7": {
+      "fact_class": "CONFIRMED_FACT",
+      "reason_code": "A2_FROZEN_DEVELOPMENT_SPLIT_REQUIRED_NOT_PRESENT",
+      "evidence_refs": [
+        "configs/route_a_v3_a6_learned_base_value_gpu_protocol_draft_v1.json",
+        "docs/execution/route_a_v3_task_registry.yaml"
+      ]
+    },
+    "P0.8": {
+      "fact_class": "CONFIRMED_FACT",
+      "reason_code": "FROZEN_VALUES_EXIST_ONLY_IN_NONAUTHORITATIVE_INACTIVE_DRAFT",
+      "evidence_refs": [
+        "configs/route_a_v3_a6_learned_base_value_gpu_protocol_draft_v1.json"
+      ]
+    },
+    "P0.9": {
+      "fact_class": "CONFIRMED_FACT",
+      "reason_code": "G0_STATIC_AND_SYNTHETIC_PARTIAL_EVIDENCE_IS_NOT_BOUND_G1_EXECUTABLE_GATE_BUNDLE",
+      "evidence_refs": [
+        "configs/route_a_v3_a6_learned_base_value_g0_implementation_candidate_v1.json",
+        "docs/execution/route_a_v3_a6_interim.yaml"
+      ]
+    },
+    "P0.10": {
+      "fact_class": "CONFIRMED_FACT",
+      "reason_code": "REVIEWED_FULLY_BOUND_ACTIVE_FOR_THIS_G1_ONE_RUN_ONLY_SUCCESSOR_ABSENT",
+      "evidence_refs": [
+        "configs/route_a_v3_a6_learned_base_value_g0_implementation_candidate_v1.json"
+      ]
+    },
+    "P0.11": {
+      "fact_class": "CONFIRMED_FACT",
+      "reason_code": "LOCKS_BOUND_BY_DEC026_AND_ALL_PERSISTENT_PROMOTION_LOCKS_RETAINED",
+      "evidence_refs": [
+        "configs/route_a_v3_dec026_zero_step_p0_v1.json",
+        "configs/route_a_v3.yaml"
+      ]
+    }
+  },
+  "allowed_declared_statuses": [
+    "PASS",
+    "UNKNOWN_NOT_ASSERTED",
+    "FAIL_CLOSED_BINDING_ABSENT",
+    "FAIL_CLOSED_INTENDED_INTERNAL_TRAIN_RIGHTS_NOT_BOUND",
+    "FAIL_CLOSED_COMPLETE_ROW_CONTRACT_NOT_BOUND",
+    "FAIL_CLOSED_PROSPECTIVE_SPLIT_NOT_FROZEN",
+    "FAIL_CLOSED_SINGLE_RUN_POLICY_NOT_ACTIVE",
+    "FAIL_CLOSED_EXECUTABLE_GATE_BUNDLE_NOT_BOUND",
+    "FAIL_CLOSED_SUCCESSOR_NOT_BOUND"
+  ],
+  "forbidden_touchpoints": [
+    "DATA_ROW_READ",
+    "MATERIALIZATION_READ_OR_EXERCISE",
+    "CUDA_PROBE",
+    "DEVICE_PROBE",
+    "MODEL_CONSTRUCTION",
+    "OPTIMIZER_CONSTRUCTION",
+    "CHECKPOINT_READ",
+    "CHECKPOINT_WRITE",
+    "PARAMETER_UPDATE",
+    "TRAINING_OUTPUT_WRITE",
+    "TRAINING_START",
+    "GPU_RUN"
+  ],
+  "retained_locks": {
+    "training_allowed": false,
+    "gpu_work_allowed": false,
+    "parameter_updates_allowed": false,
+    "model_selection_allowed": false,
+    "qualification_change_allowed": false,
+    "credit_change_allowed": false,
+    "canonical_mutation_allowed": false,
+    "a6_pass_allowed": false,
+    "l3_claim_allowed": false,
+    "a7_unlock_allowed": false,
+    "private_or_sealed_access_allowed": false,
+    "scientific_claim_allowed": false
+  },
+  "scientific_state": {
+    "current_qualified_counts": {
+      "ordinary": 1,
+      "a1": 1,
+      "true_a2": 0,
+      "canonical_records": 6547
+    },
+    "contribution_delta": {
+      "ordinary": 0,
+      "a1": 0,
+      "true_a2": 0,
+      "canonical_records": 0
+    },
+    "a6_status": "IN_PROGRESS_UNCHANGED",
+    "l3_claim_status": "NOT_ESTABLISHED_UNCHANGED",
+    "a7_status": "NOT_RUN_NOT_UNLOCKED"
+  },
+  "output_contract": {
+    "run_root_prefix": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A6/ROUTE_A_V3_DEC026_ZERO_STEP_P0_B_",
+    "report_filename": "ROUTE_A_V3_DEC026_ZERO_STEP_P0_RECORD_V1.json",
+    "final_file_count": 1,
+    "member_row_sequence_endpoint_split_model_optimizer_checkpoint_or_device_payload_allowed": false,
+    "g1_launch_side_effect_allowed": false
+  }
+}
