@@ -47,7 +47,7 @@ DECISION_LOG_PATH = "docs/execution/route_a_v3_decision_log.yaml"
 REGISTRY_MANIFEST_PATH = "docs/execution/route_a_v3_registry_manifest.json"
 A1_INTERIM_PATH = "docs/execution/route_a_v3_a1_interim.yaml"
 A6_INTERIM_PATH = "docs/execution/route_a_v3_a6_interim.yaml"
-EXPECTED_A1_INTERIM_SHA256 = "a0f0c4927328dd9d790da7c348f0a72b3c437feef2e3e22ce91a640155402b6e"
+EXPECTED_A1_INTERIM_SHA256 = "c21edd8ca5e72b1949fdb4b12807affdf9378d95b23ad3382d5eb13ad7b1de82"
 EXPECTED_A6_INTERIM_SHA256 = "1d44bcfe8669a55dc42f619ed43178f0637e20a4297ca996ecab3f7165612769"
 CURRENT_ACTIVE_CONFIG_SHA256 = "c5ec7d236443b506c09fd3f09e149ce5d082daff618887989af6e59472727a27"
 CURRENT_TASK_REGISTRY_SHA256 = "a64d0b8bb5eb466b06daa46ed109bd19901ee775910bc5cc9221c39ead63a4bc"
@@ -156,6 +156,25 @@ DEC027_SIX_RESCUE_EVIDENCE_MANIFEST_STATUS = (
     "PENDING_UNALLOCATED_EVT060_NO_PROMOTION_A1_INCOMPLETE_A6_IN_PROGRESS_"
     "L3_NOT_ESTABLISHED_A7_NOT_RUN"
 )
+DEC027_EVT060_CURRENT_RUNTIME_EVENT_ID = "A1-EVT-060"
+DEC027_EVT060_PROJECTION_LEDGER_AT = "2026-08-15T05:35:00+08:00"
+DEC027_EVT060_PROJECTION_MANIFEST_AT = "2026-08-15T05:35:01+08:00"
+DEC027_EVT060_PROJECTION_LINEAGE_ID = (
+    "dec027_evt060_current_projection_settlement_v1"
+)
+DEC027_EVT060_PROJECTION_UPDATE_ID = (
+    "DEC027_EVT060_CURRENT_PROJECTION_SETTLEMENT_V1"
+)
+DEC027_EVT060_PROJECTION_MANIFEST_STATUS = (
+    "DEC027_EVT060_CURRENT_PROJECTION_SETTLED_RUNTIME_SYNCED_NO_EVT061_"
+    "UNALLOCATED_NO_PROMOTION_A1_INCOMPLETE_A6_IN_PROGRESS_"
+    "L3_NOT_ESTABLISHED_A7_NOT_RUN"
+)
+DEC027_EVT060_RUNTIME_CAS_PATHS = {
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/STATUS.json",
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/RUN_MANIFEST.json",
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/EVENT_LOG.jsonl",
+}
 DEC027_RESCUE_EXECUTION_ORDER = [
     "GSE217518_CORRECTED_A1_SUCCESSOR",
     "ENCSR854RUF_DATASET_SPECIFIC_A1_PREFLIGHT",
@@ -3732,10 +3751,10 @@ def validate_registry_manifest(repo_root: Path) -> list[Issue]:
         "contract_sha256": SOURCE_CONTRACT_SHA256,
         "active_amendment_decision_ids": ACTIVE_AMENDMENT_DECISION_IDS,
         "base_commit": "bbb71dcba6f1e1c9cb75a8a6653f1a4fe4a6ca0c",
-        "manifest_status": DEC027_SIX_RESCUE_EVIDENCE_MANIFEST_STATUS,
+        "manifest_status": DEC027_EVT060_PROJECTION_MANIFEST_STATUS,
         "initial_generated_at": "2026-08-10T10:10:05+08:00",
-        "generated_at": DEC027_SIX_RESCUE_EVIDENCE_MANIFEST_AT,
-        "updated_at": DEC027_SIX_RESCUE_EVIDENCE_MANIFEST_AT,
+        "generated_at": DEC027_EVT060_PROJECTION_MANIFEST_AT,
+        "updated_at": DEC027_EVT060_PROJECTION_MANIFEST_AT,
         "sealed_contact": False,
     }
     expected_top_keys = set(expected_static_top) | {"files"}
@@ -8325,8 +8344,8 @@ def validate_dec027_authority(
     if isinstance(disposition, Mapping):
         interim_expected_locks = {
             **authority_expected_locks,
-            "latest_settled_runtime_event_id": DEC027_CURRENT_RUNTIME_EVENT_ID,
-            "runtime_event_emitted": False,
+            "latest_settled_runtime_event_id": DEC027_EVT060_CURRENT_RUNTIME_EVENT_ID,
+            "runtime_event_emitted": True,
             "expected_next_runtime_event_id": DEC027_PENDING_RUNTIME_EVENT_ID,
         }
         for key, value in interim_expected_locks.items():
@@ -8355,9 +8374,9 @@ def validate_dec027_authority(
         _issue(issues, "DEC027_MANIFEST", REGISTRY_MANIFEST_PATH, "DEC027 amendment must be registered with its exact role")
     for key, value in {
         "active_amendment_decision_ids": ACTIVE_AMENDMENT_DECISION_IDS,
-        "manifest_status": DEC027_SIX_RESCUE_EVIDENCE_MANIFEST_STATUS,
-        "generated_at": DEC027_SIX_RESCUE_EVIDENCE_MANIFEST_AT,
-        "updated_at": DEC027_SIX_RESCUE_EVIDENCE_MANIFEST_AT,
+        "manifest_status": DEC027_EVT060_PROJECTION_MANIFEST_STATUS,
+        "generated_at": DEC027_EVT060_PROJECTION_MANIFEST_AT,
+        "updated_at": DEC027_EVT060_PROJECTION_MANIFEST_AT,
         "sealed_contact": False,
     }.items():
         _expect(manifest, key, value, REGISTRY_MANIFEST_PATH, issues, "DEC027_MANIFEST")
@@ -9506,12 +9525,16 @@ def validate_dec027_six_rescue_evidence_registration(
             REGISTRY_MANIFEST_PATH,
             "all six bound configs, producers, and focused tests must be exact-hashed as exactly 18 static leaves",
         )
-    if manifest_paths & (DEC027_SIX_RESCUE_REPORT_PATHS | {REGISTRY_MANIFEST_PATH}):
+    if manifest_paths & (
+        DEC027_SIX_RESCUE_REPORT_PATHS
+        | DEC027_EVT060_RUNTIME_CAS_PATHS
+        | {REGISTRY_MANIFEST_PATH}
+    ):
         _issue(
             issues,
             "DEC027_SIX_RESCUE_MANIFEST_DAG",
             REGISTRY_MANIFEST_PATH,
-            "six dynamic aggregate reports and the registry output must remain outside the static manifest",
+            "six dynamic reports, EVT060 runtime CAS artifacts, and the registry output must remain outside the static manifest",
         )
     return issues
 
@@ -10793,6 +10816,69 @@ def _expected_dec027_six_rescue_record(
     }
 
 
+def _expected_dec027_evt060_projection_record() -> dict[str, Any]:
+    run_root = (
+        "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/"
+        "A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5"
+    )
+    return {
+        "record_type": "DEC027_EVT060_CURRENT_PROJECTION_SETTLEMENT",
+        "decision_id": "V3-DEC-027",
+        "runtime_binding_commit": "6a7ebeae2a2ced43e29c9458601e43a19496416c",
+        "aggregate_only": True,
+        "event_id": DEC027_EVT060_CURRENT_RUNTIME_EVENT_ID,
+        "event_count": 60,
+        "runtime_sync_status": "SYNCED_EVT_060",
+        "manifest_output_count": 266,
+        "manifest_registered_artifact_count": 14,
+        "all_six_terminal_reports_registered": True,
+        "stop_rule_ready": True,
+        "stop_rule_evaluated_by_this_event": False,
+        "conditional_successor_activated": False,
+        "current_qualified_counts": {
+            "ordinary": 1,
+            "a1": 1,
+            "true_a2": 0,
+            "canonical_records": 6547,
+        },
+        "scientific_claim_status": "NOT_ESTABLISHED",
+        "training_allowed": False,
+        "gpu_work_allowed": False,
+        "model_selection_allowed": False,
+        "a7_allowed": False,
+        "next_phase_authorized": False,
+        "stop_rule_trigger_condition_met": False,
+        "successor_runtime_event_id": DEC027_PENDING_RUNTIME_EVENT_ID,
+        "successor_runtime_event_id_preallocated": False,
+        "evt061_emitted": False,
+        "runtime_event_emitted_by_this_settlement": False,
+        "runtime_cas": {
+            "status": {
+                "path": f"{run_root}/STATUS.json",
+                "bytes": 32889,
+                "sha256": "faad1d6bceecb8bece2a95bdb2420eb98cfb38cc9efabe6e38bb6d6f9f8fbced",
+            },
+            "run_manifest": {
+                "path": f"{run_root}/RUN_MANIFEST.json",
+                "bytes": 118291,
+                "sha256": "700a285b61fdf13f69aecafecef8f590de4e44322bbdd0f528877027bd5de2f7",
+            },
+            "event_log": {
+                "path": f"{run_root}/EVENT_LOG.jsonl",
+                "bytes": 156074,
+                "sha256": "91e4ec7a4a0b221ba641a544c90d213d6b2ce02ff076372a8bca34309c71d5e8",
+            },
+            "event_log_tail": {
+                "identity": "EVENT_LOG_JSONL_CANONICAL_EVT060_TAIL_BYTES",
+                "bytes": 5393,
+                "sha256": "0895318bf3fec442ffdd3b914f3f51308e9b1e50e0cc847ff0a537e7c6638e47",
+            },
+        },
+        "runtime_cas_artifacts_in_static_manifest": False,
+        "private_or_sealed_payload_registered": False,
+    }
+
+
 def _validate_dec027_six_rescue_interim(
     interim: Mapping[str, Any], path: str, issues: list[Issue]
 ) -> None:
@@ -10812,6 +10898,14 @@ def _validate_dec027_six_rescue_interim(
             issues,
             "A1_INTERIM_DEC027_SIX_RESCUE",
         )
+    settlement = lineage.get(DEC027_EVT060_PROJECTION_LINEAGE_ID)
+    _expect_closed_mapping(
+        settlement if isinstance(settlement, Mapping) else {},
+        _expected_dec027_evt060_projection_record(),
+        path,
+        issues,
+        "A1_INTERIM_DEC027_EVT060_PROJECTION",
+    )
 
     disposition = interim.get("dec027_current_disposition")
     if not isinstance(disposition, Mapping):
@@ -10874,6 +10968,9 @@ def _validate_dec027_six_rescue_interim(
         "trigger_condition_met": False,
         "successor_amendment_triggered": False,
         "full_route_a_remains_highest_inactive_target": True,
+        "stop_rule_ready": True,
+        "stop_rule_evaluated_by_evt060": False,
+        "conditional_successor_activated": False,
     }
     _expect_closed_mapping(
         disposition.get("stop_rule_adjudication")
@@ -10884,6 +10981,22 @@ def _validate_dec027_six_rescue_interim(
         issues,
         "A1_INTERIM_DEC027_STOP_RULE_ADJUDICATION",
     )
+    for key, value in {
+        "latest_settled_runtime_event_id": DEC027_EVT060_CURRENT_RUNTIME_EVENT_ID,
+        "settled_runtime_event_changed": True,
+        "runtime_event_emitted": True,
+        "runtime_sync_status": "SYNCED_EVT_060",
+        "expected_next_runtime_event_id": DEC027_PENDING_RUNTIME_EVENT_ID,
+        "next_runtime_event_id_preallocated": False,
+    }.items():
+        _expect(
+            disposition,
+            key,
+            value,
+            path,
+            issues,
+            "A1_INTERIM_DEC027_EVT060_CURRENT_PROJECTION",
+        )
 def validate_a1_interim_lineage(
     repo_root: Path,
     interim: Mapping[str, Any],
@@ -11469,6 +11582,7 @@ def validate_a1_interim_lineage(
             GSE261709_PREFLIGHT_LINEAGE_ID,
             GSE207584_PREFLIGHT_LINEAGE_ID,
             *DEC027_SIX_RESCUE_LINEAGE_IDS,
+            DEC027_EVT060_PROJECTION_LINEAGE_ID,
             "gse145046_a2_audit_protocol",
             "gse145046_a2_formal_audit_v1",
             "a1_public_qualifiers_sync_v1",
@@ -15004,10 +15118,24 @@ def validate_a1_interim_lineage(
                 "dec027_six_rescue_eighteen_static_leaf_registration": "PASS",
                 "dec027_six_rescue_six_dynamic_report_lineage_registration": "PASS",
                 "dec027_six_rescue_no_promotion_boundary": "PASS",
-                "dec027_six_rescue_current_runtime_event_id": DEC027_CURRENT_RUNTIME_EVENT_ID,
-                "dec027_six_rescue_pending_successor_runtime_event_label": DEC027_PENDING_SUCCESSOR_RUNTIME_EVENT_LABEL,
+                "dec027_six_rescue_ledger_runtime_event_id": DEC027_CURRENT_RUNTIME_EVENT_ID,
+                "dec027_six_rescue_ledger_pending_successor_runtime_event_label": DEC027_PENDING_SUCCESSOR_RUNTIME_EVENT_LABEL,
                 "dec027_six_rescue_successor_runtime_event_preallocated": False,
                 "dec027_six_rescue_stop_rule_trigger_condition_met": False,
+                "targeted_dec027_evt060_current_projection_tests": {
+                    "status": "PASS",
+                    "scope": "EVT060_EXACT_CAS_CURRENT_PROJECTION_SETTLED_NO_EVT061_NO_PROMOTION",
+                },
+                "dec027_evt060_projection_lineage_id": DEC027_EVT060_PROJECTION_LINEAGE_ID,
+                "dec027_evt060_runtime_binding_commit": "6a7ebeae2a2ced43e29c9458601e43a19496416c",
+                "dec027_evt060_current_runtime_event_id": DEC027_EVT060_CURRENT_RUNTIME_EVENT_ID,
+                "dec027_evt060_expected_next_runtime_event_id": DEC027_PENDING_RUNTIME_EVENT_ID,
+                "dec027_evt060_successor_runtime_event_preallocated": False,
+                "dec027_evt060_runtime_cas_registration": "PASS",
+                "dec027_evt060_counts_claim_and_locks_unchanged": "PASS",
+                "dec027_evt060_stop_rule_ready": True,
+                "dec027_evt060_stop_rule_evaluated_by_this_event": False,
+                "dec027_evt060_conditional_successor_activated": False,
             },
             path,
             issues,
@@ -15020,7 +15148,7 @@ def validate_a1_interim_lineage(
     _expect(
         interim,
         "latest_evidence_update_id",
-        DEC027_SIX_RESCUE_EVIDENCE_UPDATE_ID,
+        DEC027_EVT060_PROJECTION_UPDATE_ID,
         path,
         issues,
         "A1_INTERIM_TIME",
@@ -15028,14 +15156,14 @@ def validate_a1_interim_lineage(
     generated = interim.get("generated_at")
     updated = interim.get("updated_at")
     if (
-        generated != DEC027_SIX_RESCUE_EVIDENCE_LEDGER_AT
-        or updated != DEC027_SIX_RESCUE_EVIDENCE_LEDGER_AT
+        generated != DEC027_EVT060_PROJECTION_LEDGER_AT
+        or updated != DEC027_EVT060_PROJECTION_LEDGER_AT
     ):
         _issue(
             issues,
             "A1_INTERIM_TIME",
             path,
-            "generated_at and updated_at must identify the exact DEC027 six-report evidence-ledger timestamp",
+            "generated_at and updated_at must identify the exact DEC027 EVT060 current-projection settlement timestamp",
         )
     if generated != updated:
         _issue(issues, "A1_INTERIM_TIME", path, "generated_at and updated_at must identify the same amended record bytes")

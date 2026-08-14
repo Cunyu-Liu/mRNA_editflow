@@ -89,7 +89,7 @@
     {
       "path": "docs/execution/route_a_v3_a1_interim.yaml",
       "role": "A1_ACTIVE_INTERIM_RECORD",
-      "sha256": "a0f0c4927328dd9d790da7c348f0a72b3c437feef2e3e22ce91a640155402b6e"
+      "sha256": "c21edd8ca5e72b1949fdb4b12807affdf9378d95b23ad3382d5eb13ad7b1de82"
     },
     {
       "path": "docs/execution/route_a_v3_a6_interim.yaml",
@@ -634,18 +634,18 @@
     {
       "path": "tests/route_a_v3/test_a0_integrity_guards.py",
       "role": "A0_AUTHORITY_INTEGRITY_GUARD_TEST",
-      "sha256": "9a1ba78254c27ab63867ef0c0a82c5acb66824a0c6f26e6b0ffd6c2ded4c3b83"
+      "sha256": "f8b93874131f560964d2c76d72d44b9e8d03c0275d1d1aa1e8eda2de63b16dfd"
     },
     {
       "path": "scripts/route_a_v3/validate_a0_bundle.py",
       "role": "A0_STATIC_AND_SEMANTIC_VALIDATOR",
-      "sha256": "600f328f989108829f6e9dffc2a169d47ec4247994551469f5d0af8002b2ddc3"
+      "sha256": "c3991916bbf2c729d3ffc6481c0e326b88b37c7e6f27e19ed653246d854c8f61"
     }
   ],
   "initial_generated_at": "2026-08-10T10:10:05+08:00",
-  "generated_at": "2026-08-15T05:05:01+08:00",
-  "updated_at": "2026-08-15T05:05:01+08:00",
-  "manifest_status": "DEC027_SIX_TERMINAL_AGGREGATE_RESCUE_REPORTS_REGISTERED_EVT059_SETTLED_PENDING_UNALLOCATED_EVT060_NO_PROMOTION_A1_INCOMPLETE_A6_IN_PROGRESS_L3_NOT_ESTABLISHED_A7_NOT_RUN",
+  "generated_at": "2026-08-15T05:35:01+08:00",
+  "updated_at": "2026-08-15T05:35:01+08:00",
+  "manifest_status": "DEC027_EVT060_CURRENT_PROJECTION_SETTLED_RUNTIME_SYNCED_NO_EVT061_UNALLOCATED_NO_PROMOTION_A1_INCOMPLETE_A6_IN_PROGRESS_L3_NOT_ESTABLISHED_A7_NOT_RUN",
   "schema_version": "1.0.0",
   "sealed_contact": false,
   "version": "3.0.0"

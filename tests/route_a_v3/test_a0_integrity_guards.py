@@ -3098,7 +3098,9 @@ def test_gse217518_public_authority_preflight_registration_is_closed(
         not in manifest_paths
     )
     assert validator.REGISTRY_MANIFEST_PATH not in manifest_paths
-    assert manifest["manifest_status"] == validator.A6_REGISTRATION_MANIFEST_STATUS
+    assert manifest["manifest_status"] == (
+        validator.DEC027_EVT060_PROJECTION_MANIFEST_STATUS
+    )
     assert (
         validator.validate_gse217518_public_authority_preflight_registration(
             repo_root
@@ -4800,7 +4802,9 @@ def test_dec024_three_replacement_preflight_authorities_are_closed(
     manifest = validator._load_json(repo_root, validator.REGISTRY_MANIFEST_PATH)
     manifest_paths = {row["path"] for row in manifest["files"]}
     assert validator.DEC024_AMENDMENT_PATH in manifest_paths
-    assert manifest["manifest_status"] == validator.DEC027_AUTHORITY_MANIFEST_STATUS
+    assert manifest["manifest_status"] == (
+        validator.DEC027_EVT060_PROJECTION_MANIFEST_STATUS
+    )
     assert {
         "configs/route_a_v3_gse207584_moesm7_aggregate_endpoint_universe_preflight_v1.json",
         "scripts/route_a_v3/preflight_gse207584_moesm7_aggregate_endpoint_universe.py",
@@ -4930,7 +4934,9 @@ def test_dec027_ordered_rescue_and_conditional_stop_rule_are_closed(
     )
 
     manifest = validator._load_json(repo_root, validator.REGISTRY_MANIFEST_PATH)
-    assert manifest["manifest_status"] == validator.DEC027_AUTHORITY_MANIFEST_STATUS
+    assert manifest["manifest_status"] == (
+        validator.DEC027_EVT060_PROJECTION_MANIFEST_STATUS
+    )
     assert validator.DEC027_AMENDMENT_PATH in {
         row["path"] for row in manifest["files"]
     }
@@ -4995,7 +5001,7 @@ def test_dec023_dual_preflight_final_evidence_registration_is_closed(
     assert validator.GSE261709_PREFLIGHT_REPORT_PATH not in manifest_paths
     assert validator.GSE207584_PREFLIGHT_REPORT_PATH not in manifest_paths
     assert manifest["manifest_status"] == (
-        validator.DEC023_DUAL_PREFLIGHT_EVIDENCE_MANIFEST_STATUS
+        validator.DEC027_EVT060_PROJECTION_MANIFEST_STATUS
     )
 
     interim = validator._load_yaml(repo_root, validator.A1_INTERIM_PATH)
@@ -5211,16 +5217,20 @@ def test_dec023_no_promotion_member_or_successor_event_bypass(
     assert "A1_INTERIM_GSE207584_PREFLIGHT_SCOPE_ATTESTATION" in codes
 
 
-def test_dec027_six_terminal_rescue_evidence_registration_is_closed(
+def test_dec027_evt060_current_projection_settlement_is_closed(
     validator,
     repo_root,
 ):
     assert validator.validate_dec027_six_rescue_evidence_registration(repo_root) == []
     manifest = validator._load_json(repo_root, validator.REGISTRY_MANIFEST_PATH)
+    assert manifest["manifest_status"] == (
+        validator.DEC027_EVT060_PROJECTION_MANIFEST_STATUS
+    )
     manifest_paths = {row["path"] for row in manifest["files"]}
     assert len(validator.DEC027_SIX_RESCUE_STATIC_LEAF_SHA256) == 18
     assert set(validator.DEC027_SIX_RESCUE_STATIC_LEAF_SHA256) <= manifest_paths
     assert validator.DEC027_SIX_RESCUE_REPORT_PATHS.isdisjoint(manifest_paths)
+    assert validator.DEC027_EVT060_RUNTIME_CAS_PATHS.isdisjoint(manifest_paths)
 
     interim = validator._load_yaml(repo_root, validator.A1_INTERIM_PATH)
     issues = []
@@ -5237,8 +5247,9 @@ def test_dec027_six_terminal_rescue_evidence_registration_is_closed(
         "true_a2": 0,
         "canonical_records": 6547,
     }
-    assert current["latest_settled_runtime_event_id"] == "A1-EVT-059"
-    assert current["runtime_event_emitted"] is False
+    assert current["latest_settled_runtime_event_id"] == "A1-EVT-060"
+    assert current["runtime_event_emitted"] is True
+    assert current["runtime_sync_status"] == "SYNCED_EVT_060"
     assert current["expected_next_runtime_event_id"] == (
         "PENDING_FRESH_RUNTIME_EVENT_ID"
     )
@@ -5250,9 +5261,19 @@ def test_dec027_six_terminal_rescue_evidence_registration_is_closed(
     ] is True
     assert adjudication["trigger_condition_met"] is False
     assert adjudication["successor_amendment_triggered"] is False
+    assert adjudication["stop_rule_ready"] is True
+    assert adjudication["stop_rule_evaluated_by_evt060"] is False
+    assert adjudication["conditional_successor_activated"] is False
+    settlement = interim["artifact_lineage"][
+        validator.DEC027_EVT060_PROJECTION_LINEAGE_ID
+    ]
+    assert settlement == validator._expected_dec027_evt060_projection_record()
+    assert settlement["event_count"] == 60
+    assert settlement["manifest_output_count"] == 266
+    assert settlement["manifest_registered_artifact_count"] == 14
 
 
-def test_dec027_six_rescue_rehashed_lineage_and_stop_rule_drift_fails_closed(
+def test_dec027_evt060_rehashed_projection_and_successor_drift_fails_closed(
     validator,
     repo_root,
     tmp_path,
@@ -5260,13 +5281,16 @@ def test_dec027_six_rescue_rehashed_lineage_and_stop_rule_drift_fails_closed(
 ):
     def mutate(interim):
         lineage = interim["artifact_lineage"][
-            validator.DEC027_SIX_RESCUE_LINEAGE_IDS[4]
+            validator.DEC027_EVT060_PROJECTION_LINEAGE_ID
         ]
-        lineage["status"] = "PASS"
-        lineage["contribution"]["true_a2"] = 1
+        lineage["event_count"] = 61
+        lineage["runtime_cas"]["status"]["sha256"] = "0" * 64
+        lineage["evt061_emitted"] = True
         current = interim["dec027_current_disposition"]
+        current["latest_settled_runtime_event_id"] = "A1-EVT-061"
+        current["next_runtime_event_id_preallocated"] = True
         current["stop_rule_adjudication"]["trigger_condition_met"] = True
-        current["stop_rule_adjudication"]["successor_amendment_triggered"] = True
+        current["stop_rule_adjudication"]["conditional_successor_activated"] = True
 
     codes = _validate_rehashed_interim_bypass(
         validator,
@@ -5275,11 +5299,12 @@ def test_dec027_six_rescue_rehashed_lineage_and_stop_rule_drift_fails_closed(
         monkeypatch,
         mutate,
     )
-    assert "A1_INTERIM_DEC027_SIX_RESCUE" in codes
+    assert "A1_INTERIM_DEC027_EVT060_PROJECTION" in codes
+    assert "A1_INTERIM_DEC027_EVT060_CURRENT_PROJECTION" in codes
     assert "A1_INTERIM_DEC027_STOP_RULE_ADJUDICATION" in codes
 
 
-def test_dec027_dynamic_terminal_report_cannot_enter_static_manifest(
+def test_dec027_evt060_runtime_cas_cannot_enter_static_manifest(
     validator,
     repo_root,
     tmp_path,
@@ -5287,8 +5312,8 @@ def test_dec027_dynamic_terminal_report_cannot_enter_static_manifest(
     manifest = _copy_manifest_bundle(validator, repo_root, tmp_path)
     manifest["files"].append(
         {
-            "path": sorted(validator.DEC027_SIX_RESCUE_REPORT_PATHS)[0],
-            "role": "FORBIDDEN_DYNAMIC_REPORT",
+            "path": sorted(validator.DEC027_EVT060_RUNTIME_CAS_PATHS)[0],
+            "role": "FORBIDDEN_DYNAMIC_RUNTIME_CAS",
             "sha256": "0" * 64,
         }
     )

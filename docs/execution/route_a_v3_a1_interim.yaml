@@ -592,7 +592,7 @@ dec024_current_disposition:
 
 dec027_current_disposition:
   decision_id: V3-DEC-027
-  status: SIX_TERMINAL_AGGREGATE_REPORTS_REGISTERED_NO_PROMOTION
+  status: SIX_TERMINAL_AGGREGATE_REPORTS_REGISTERED_EVT060_RUNTIME_SYNCED_NO_PROMOTION
   authority_only_not_study_qualification: true
   execution_order_exactly:
     - GSE217518_CORRECTED_A1_SUCCESSOR
@@ -654,6 +654,9 @@ dec027_current_disposition:
     trigger_condition_met: false
     successor_amendment_triggered: false
     full_route_a_remains_highest_inactive_target: true
+    stop_rule_ready: true
+    stop_rule_evaluated_by_evt060: false
+    conditional_successor_activated: false
   current_qualified_counts: {ordinary: 1, a1: 1, true_a2: 0, canonical_records: 6547}
   changes_current_qualified_counts: false
   original_gate_minima: {ordinary: 3, a1: 2, true_a2: 1}
@@ -668,10 +671,10 @@ dec027_current_disposition:
   model_selection_allowed: false
   a7_allowed: false
   next_phase_authorized: false
-  latest_settled_runtime_event_id: A1-EVT-059
+  latest_settled_runtime_event_id: A1-EVT-060
   settled_runtime_event_changed: true
-  runtime_event_emitted: false
-  runtime_sync_status: EVIDENCE_REGISTERED_AFTER_EVT_059_PENDING_UNALLOCATED_EVT_060
+  runtime_event_emitted: true
+  runtime_sync_status: SYNCED_EVT_060
   expected_next_runtime_event_id: PENDING_FRESH_RUNTIME_EVENT_ID
   next_runtime_event_id_preallocated: false
   evidence_registration:
@@ -3670,6 +3673,56 @@ artifact_lineage:
     private_row_artifact_read_count_for_ledger: 0
     raw_asset_registered_artifact_count: 0
 
+  dec027_evt060_current_projection_settlement_v1:
+    record_type: DEC027_EVT060_CURRENT_PROJECTION_SETTLEMENT
+    decision_id: V3-DEC-027
+    runtime_binding_commit: 6a7ebeae2a2ced43e29c9458601e43a19496416c
+    aggregate_only: true
+    event_id: A1-EVT-060
+    event_count: 60
+    runtime_sync_status: SYNCED_EVT_060
+    manifest_output_count: 266
+    manifest_registered_artifact_count: 14
+    all_six_terminal_reports_registered: true
+    stop_rule_ready: true
+    stop_rule_evaluated_by_this_event: false
+    conditional_successor_activated: false
+    current_qualified_counts:
+      ordinary: 1
+      a1: 1
+      true_a2: 0
+      canonical_records: 6547
+    scientific_claim_status: NOT_ESTABLISHED
+    training_allowed: false
+    gpu_work_allowed: false
+    model_selection_allowed: false
+    a7_allowed: false
+    next_phase_authorized: false
+    stop_rule_trigger_condition_met: false
+    successor_runtime_event_id: PENDING_FRESH_RUNTIME_EVENT_ID
+    successor_runtime_event_id_preallocated: false
+    evt061_emitted: false
+    runtime_event_emitted_by_this_settlement: false
+    runtime_cas:
+      status:
+        path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/STATUS.json
+        bytes: 32889
+        sha256: faad1d6bceecb8bece2a95bdb2420eb98cfb38cc9efabe6e38bb6d6f9f8fbced
+      run_manifest:
+        path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/RUN_MANIFEST.json
+        bytes: 118291
+        sha256: 700a285b61fdf13f69aecafecef8f590de4e44322bbdd0f528877027bd5de2f7
+      event_log:
+        path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/EVENT_LOG.jsonl
+        bytes: 156074
+        sha256: 91e4ec7a4a0b221ba641a544c90d213d6b2ce02ff076372a8bca34309c71d5e8
+      event_log_tail:
+        identity: EVENT_LOG_JSONL_CANONICAL_EVT060_TAIL_BYTES
+        bytes: 5393
+        sha256: 0895318bf3fec442ffdd3b914f3f51308e9b1e50e0cc847ff0a537e7c6638e47
+    runtime_cas_artifacts_in_static_manifest: false
+    private_or_sealed_payload_registered: false
+
 dataset_boundary_summary:
   evidence_ref:
     path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/A1_LEGACY_GAP_INVENTORY_V2.json
@@ -4670,14 +4723,27 @@ verification:
   dec027_six_rescue_eighteen_static_leaf_registration: PASS
   dec027_six_rescue_six_dynamic_report_lineage_registration: PASS
   dec027_six_rescue_no_promotion_boundary: PASS
-  dec027_six_rescue_current_runtime_event_id: A1-EVT-059
-  dec027_six_rescue_pending_successor_runtime_event_label: A1-EVT-060
+  dec027_six_rescue_ledger_runtime_event_id: A1-EVT-059
+  dec027_six_rescue_ledger_pending_successor_runtime_event_label: A1-EVT-060
   dec027_six_rescue_successor_runtime_event_preallocated: false
   dec027_six_rescue_stop_rule_trigger_condition_met: false
+  targeted_dec027_evt060_current_projection_tests:
+    status: PASS
+    scope: EVT060_EXACT_CAS_CURRENT_PROJECTION_SETTLED_NO_EVT061_NO_PROMOTION
+  dec027_evt060_projection_lineage_id: dec027_evt060_current_projection_settlement_v1
+  dec027_evt060_runtime_binding_commit: 6a7ebeae2a2ced43e29c9458601e43a19496416c
+  dec027_evt060_current_runtime_event_id: A1-EVT-060
+  dec027_evt060_expected_next_runtime_event_id: PENDING_FRESH_RUNTIME_EVENT_ID
+  dec027_evt060_successor_runtime_event_preallocated: false
+  dec027_evt060_runtime_cas_registration: PASS
+  dec027_evt060_counts_claim_and_locks_unchanged: PASS
+  dec027_evt060_stop_rule_ready: true
+  dec027_evt060_stop_rule_evaluated_by_this_event: false
+  dec027_evt060_conditional_successor_activated: false
 
 initial_generated_at: "2026-08-10T06:30:58+08:00"
-generated_at: "2026-08-15T05:05:00+08:00"
-updated_at: "2026-08-15T05:05:00+08:00"
+generated_at: "2026-08-15T05:35:00+08:00"
+updated_at: "2026-08-15T05:35:00+08:00"
 updated_for_decision_id: V3-DEC-027
 latest_authority_update_id: V3-DEC-027
-latest_evidence_update_id: DEC027_SIX_TERMINAL_AGGREGATE_RESCUE_REPORTS_V1
+latest_evidence_update_id: DEC027_EVT060_CURRENT_PROJECTION_SETTLEMENT_V1
