@@ -101,6 +101,66 @@ PREFLIGHT_I1_BLOB_SHA256_BY_PATH = {
     SCRIPT_PATH: "0bf35b359f083242c2febb819526119191a3dbd92b06fcf9bb224f7d906ea28e",
     TEST_PATH: "8f69c635f7780135a4c79a6d4f43eb824c507da4e2055393b700642ef8c31d29",
 }
+PREFLIGHT_I2_COMMIT = "e8638d541f048361c338948e000bf4d52d8e1654"
+PREFLIGHT_B2_COMMIT = "1b6422e2d6b8a77e876a0289a0f18f570fe037d2"
+PREFLIGHT_I2_BLOB_SHA256_BY_PATH = {
+    CONFIG_PATH: "85cebe980424a1a3e0df6880fc5f476cf5a4d36f897559f90800088a6bea5b53",
+    SCRIPT_PATH: "b94aeeb98a27ff0b5c5d176c5152a188336adcc1b49beeade9727068101581fe",
+    TEST_PATH: "03b9850326dd14c90a1bbff306b96c780229d649469766cce96da6808316ca97",
+}
+PREFLIGHT_B2_BLOB_SHA256_BY_PATH = {
+    CONFIG_PATH: "24e523a8c327234999594d1019f8e6ffafd0b08330710db2b9f284d26937c50a",
+    SCRIPT_PATH: PREFLIGHT_I2_BLOB_SHA256_BY_PATH[SCRIPT_PATH],
+    TEST_PATH: PREFLIGHT_I2_BLOB_SHA256_BY_PATH[TEST_PATH],
+}
+GSE207_PROTOCOL_ID = "GSE207584_AGGREGATE_DENSE_FAMILY_QUALIFICATION_PREFLIGHT_V1"
+GSE207_PATHS = (
+    "configs/route_a_v3_gse207584_aggregate_dense_family_qualification_preflight_v1.json",
+    "scripts/route_a_v3/preflight_gse207584_aggregate_dense_family_qualification.py",
+    "tests/route_a_v3/test_preflight_gse207584_aggregate_dense_family_qualification.py",
+)
+GSE207_I1_COMMIT = "21337a0ee240bf469d3036d7718fb069068707a4"
+GSE207_I2_COMMIT = "973e75f1daff45e0087d385c1b015d300b1c3f0f"
+GSE207_B2_COMMIT = "d8f501ecfafb55a54a23225d7abbe3422a24fcdd"
+GSE207_I3_COMMIT = "0ebd391f3e7713f7c0564065eab5610aaa9ed65a"
+GSE207_B3_COMMIT = "54dc498009a9be09cde5e84c197d17a4182c0b8b"
+GSE207_I1_BLOB_SHA256_BY_PATH = {
+    GSE207_PATHS[0]: "67c1ea9264e813154f1a4808fe8bad9d535315b9e097440412dcae8b6d4050bf",
+    GSE207_PATHS[1]: "1c967a3e0fd861579a1adcb0c881dc1ab37725867ccd5cdd35ccc3cecd3e7b16",
+    GSE207_PATHS[2]: "6b70a439c94a61cd64464d53839b23615b1b21f75f7eb5f6a45bb521a397f070",
+}
+GSE207_I2_BLOB_SHA256_BY_PATH = {
+    GSE207_PATHS[0]: "ff1b81bbce7e029d97280dd50be47f5f3073be452fc0a55a4fed256baa34fa97",
+    GSE207_PATHS[1]: "1a3468c1dfe3628ff95587b5922be25d630ca09e2bb567e8c04b181ff862b1a8",
+    GSE207_PATHS[2]: "fd9cc811bf9c6b5ce4a4e2a4f99f1aa134adf62361eced53ca927f53576a06a0",
+}
+GSE207_B2_BLOB_SHA256_BY_PATH = {
+    GSE207_PATHS[0]: "2491af4cc3c54eb5b7219253f377ad85d80e61f536e31e0f5bcba008ccad75d3",
+    GSE207_PATHS[1]: GSE207_I2_BLOB_SHA256_BY_PATH[GSE207_PATHS[1]],
+    GSE207_PATHS[2]: GSE207_I2_BLOB_SHA256_BY_PATH[GSE207_PATHS[2]],
+}
+GSE207_I3_BLOB_SHA256_BY_PATH = {
+    GSE207_PATHS[0]: "047a47129d01286f34c72db963563ec69efc2312c87de268986267eaf99feae0",
+    GSE207_PATHS[1]: "919753efb890efd6cafa41c010563537493cf96238e3a7a33f0351c8758db729",
+    GSE207_PATHS[2]: "cd5f1a0aa345c769540cfb7833b2af614b5f23a405be1e03c685fded8fc45af8",
+}
+GSE207_B3_BLOB_SHA256_BY_PATH = {
+    GSE207_PATHS[0]: "0575ec9fddb0839d494a485b84263ba88dae0ecbbefd3b402ac0bafc61862a62",
+    GSE207_PATHS[1]: GSE207_I3_BLOB_SHA256_BY_PATH[GSE207_PATHS[1]],
+    GSE207_PATHS[2]: GSE207_I3_BLOB_SHA256_BY_PATH[GSE207_PATHS[2]],
+}
+GSE207_I4_COMMIT = "a136b9a7e5b218b24325bb45d112c348abd7adc5"
+GSE207_B4_COMMIT = "021ba2af69309b0b2b3b0dd13beffb5c31e6487b"
+GSE207_I4_BLOB_SHA256_BY_PATH = {
+    GSE207_PATHS[0]: "ab81b980f4c37b88a639a50383a04a9db10e0ebc009a4197f45b9f0a8666f719",
+    GSE207_PATHS[1]: "4776085ad8bd459da92fc63d1d3c437b4e534f81d1e5ff55c167d17880f0c074",
+    GSE207_PATHS[2]: "81eccd24f16930df334e17b2cc8ae89906a91fba936ee1685d281079ba0b4df6",
+}
+GSE207_B4_BLOB_SHA256_BY_PATH = {
+    GSE207_PATHS[0]: "65bae0b40a599f150d4a757887fb1c86239205ee56800f89d0bb9e10227cea43",
+    GSE207_PATHS[1]: GSE207_I4_BLOB_SHA256_BY_PATH[GSE207_PATHS[1]],
+    GSE207_PATHS[2]: GSE207_I4_BLOB_SHA256_BY_PATH[GSE207_PATHS[2]],
+}
 UNKNOWN_BINDING_SCALARS = (
     "status",
     "implementation_commit",
@@ -272,8 +332,8 @@ def _validate_protocol(protocol: Mapping[str, Any]) -> None:
         protocol.get("implementation_binding"), label="implementation_binding"
     )
     if binding.get("binding_scheme") != (
-        "AUTHORITY_A_THEN_AUTHORITY_RUNTIME_I1_I2_B2_THEN_PREFLIGHT_I1_I2_B2_"
-        "V3"
+        "AUTHORITY_RUNTIME_I1_I2_B2_GSE261_I1_I2_B2_GSE207_I1_I2_B2_I3_B3_"
+        "I4_B4_GSE261_I3_B3_V6"
     ):
         raise ProtocolError("implementation binding scheme differs")
     if binding.get("authority_commit") != AUTHORITY_COMMIT:
@@ -330,6 +390,54 @@ def _validate_protocol(protocol: Mapping[str, Any]) -> None:
         "blob_sha256_by_path": PREFLIGHT_I1_BLOB_SHA256_BY_PATH,
     }:
         raise ProtocolError("preflight I1 frozen identity differs")
+    predecessor_i2_b2 = _mapping(
+        binding.get("predecessor_preflight_i2_b2"),
+        label="predecessor_preflight_i2_b2",
+    )
+    if predecessor_i2_b2 != {
+        "status": "FROZEN_BOUND_EXACT3_CONFIG_ONLY_BINDING",
+        "implementation_commit": PREFLIGHT_I2_COMMIT,
+        "implementation_expected_parent": PREFLIGHT_I1_COMMIT,
+        "implementation_exact_changed_paths": list(EXPECTED_EXACT3),
+        "implementation_blob_sha256_by_path": PREFLIGHT_I2_BLOB_SHA256_BY_PATH,
+        "binding_commit": PREFLIGHT_B2_COMMIT,
+        "binding_expected_parent": PREFLIGHT_I2_COMMIT,
+        "binding_exact_changed_paths": [CONFIG_PATH],
+        "binding_blob_sha256_by_path": PREFLIGHT_B2_BLOB_SHA256_BY_PATH,
+    }:
+        raise ProtocolError("preflight I2/B2 frozen identity differs")
+    intervening = _mapping(
+        binding.get("intervening_gse207584_preflight_lifecycle"),
+        label="intervening_gse207584_preflight_lifecycle",
+    )
+    if intervening != {
+        "protocol_id": GSE207_PROTOCOL_ID,
+        "paths": list(GSE207_PATHS),
+        "implementation_i1_commit": GSE207_I1_COMMIT,
+        "implementation_i1_expected_parent": PREFLIGHT_B2_COMMIT,
+        "implementation_i1_blob_sha256_by_path": GSE207_I1_BLOB_SHA256_BY_PATH,
+        "implementation_i2_commit": GSE207_I2_COMMIT,
+        "implementation_i2_expected_parent": GSE207_I1_COMMIT,
+        "implementation_i2_blob_sha256_by_path": GSE207_I2_BLOB_SHA256_BY_PATH,
+        "binding_b2_commit": GSE207_B2_COMMIT,
+        "binding_b2_expected_parent": GSE207_I2_COMMIT,
+        "binding_b2_blob_sha256_by_path": GSE207_B2_BLOB_SHA256_BY_PATH,
+        "implementation_i3_commit": GSE207_I3_COMMIT,
+        "implementation_i3_expected_parent": GSE207_B2_COMMIT,
+        "implementation_i3_blob_sha256_by_path": GSE207_I3_BLOB_SHA256_BY_PATH,
+        "binding_b3_commit": GSE207_B3_COMMIT,
+        "binding_b3_expected_parent": GSE207_I3_COMMIT,
+        "binding_b3_blob_sha256_by_path": GSE207_B3_BLOB_SHA256_BY_PATH,
+        "implementation_i4_commit": GSE207_I4_COMMIT,
+        "implementation_i4_expected_parent": GSE207_B3_COMMIT,
+        "implementation_i4_blob_sha256_by_path": GSE207_I4_BLOB_SHA256_BY_PATH,
+        "binding_b4_commit": GSE207_B4_COMMIT,
+        "binding_b4_expected_parent": GSE207_I4_COMMIT,
+        "binding_b4_blob_sha256_by_path": GSE207_B4_BLOB_SHA256_BY_PATH,
+        "implementation_exact_changed_paths": list(GSE207_PATHS),
+        "binding_exact_changed_paths": [GSE207_PATHS[0]],
+    }:
+        raise ProtocolError("intervening GSE207584 lifecycle differs")
     if binding.get("pre_implementation_authority_scalar_paths") != [
         "implementation_binding.authority_commit",
         "implementation_binding.authority_runtime_binding_commit",
@@ -434,6 +542,18 @@ def _validate_protocol(protocol: Mapping[str, Any]) -> None:
     inputs = _mapping(protocol.get("input_contract"), label="input_contract")
     if inputs.get("existing_aggregate_schema_version") != OBSERVATION_SCHEMA_VERSION:
         raise ProtocolError("existing aggregate schema differs")
+    for key in (
+        "whole_allowlisted_small_metadata_response_transport_and_decode_allowed",
+        "archive_listing_metadata_parse_allowed",
+    ):
+        if inputs.get(key) is not True:
+            raise ProtocolError(f"input_contract.{key} must remain true")
+    for deprecated in (
+        "official_small_metadata_page_read_allowed",
+        "official_archive_listing_read_allowed",
+    ):
+        if deprecated in inputs:
+            raise ProtocolError(f"input_contract.{deprecated} is semantically obsolete")
     for key in (
         "archive_or_processed_asset_download_allowed",
         "archive_member_listing_or_open_allowed",
@@ -556,14 +676,43 @@ def _default_binding_auditor(
     if executing_script_path != production_script_path:
         raise ProtocolError("executing producer is not the bound production path")
 
-    preflight_b2 = _run_git_text(repo_root, "rev-parse", "HEAD")
-    preflight_i2 = str(binding["implementation_commit"])
+    preflight_b3 = _run_git_text(repo_root, "rev-parse", "HEAD")
+    preflight_i3 = str(binding["implementation_commit"])
     preflight_i1 = str(binding["predecessor_preflight_i1"]["commit"])
+    predecessor_i2_b2 = binding["predecessor_preflight_i2_b2"]
+    preflight_i2 = str(predecessor_i2_b2["implementation_commit"])
+    preflight_b2 = str(predecessor_i2_b2["binding_commit"])
+    intervening = binding["intervening_gse207584_preflight_lifecycle"]
+    gse207_i1 = str(intervening["implementation_i1_commit"])
+    gse207_i2 = str(intervening["implementation_i2_commit"])
+    gse207_b2 = str(intervening["binding_b2_commit"])
+    gse207_i3 = str(intervening["implementation_i3_commit"])
+    gse207_b3 = str(intervening["binding_b3_commit"])
+    gse207_i4 = str(intervening["implementation_i4_commit"])
+    gse207_b4 = str(intervening["binding_b4_commit"])
     runtime = binding["authority_runtime_lineage"]
     runtime_i1 = str(runtime["implementation_i1_commit"])
     runtime_i2 = str(runtime["implementation_i2_commit"])
     runtime_b2 = str(binding["authority_runtime_binding_commit"])
     authority_a = str(binding["authority_commit"])
+    if _run_git_text(repo_root, "rev-parse", f"{preflight_b3}^") != preflight_i3:
+        raise ProtocolError("preflight B3 is not the direct child of preflight I3")
+    if _run_git_text(repo_root, "rev-parse", f"{preflight_i3}^") != gse207_b4:
+        raise ProtocolError("GSE261709 preflight I3 is not the child of GSE207584 B4")
+    if _run_git_text(repo_root, "rev-parse", f"{gse207_b4}^") != gse207_i4:
+        raise ProtocolError("GSE207584 B4 is not the direct child of I4")
+    if _run_git_text(repo_root, "rev-parse", f"{gse207_i4}^") != gse207_b3:
+        raise ProtocolError("GSE207584 I4 is not the direct child of B3")
+    if _run_git_text(repo_root, "rev-parse", f"{gse207_b3}^") != gse207_i3:
+        raise ProtocolError("GSE207584 B3 is not the direct child of I3")
+    if _run_git_text(repo_root, "rev-parse", f"{gse207_i3}^") != gse207_b2:
+        raise ProtocolError("GSE207584 I3 is not the direct child of B2")
+    if _run_git_text(repo_root, "rev-parse", f"{gse207_b2}^") != gse207_i2:
+        raise ProtocolError("GSE207584 B2 is not the direct child of I2")
+    if _run_git_text(repo_root, "rev-parse", f"{gse207_i2}^") != gse207_i1:
+        raise ProtocolError("GSE207584 I2 is not the direct child of I1")
+    if _run_git_text(repo_root, "rev-parse", f"{gse207_i1}^") != preflight_b2:
+        raise ProtocolError("GSE207584 I1 is not the child of GSE261709 B2")
     if _run_git_text(repo_root, "rev-parse", f"{preflight_b2}^") != preflight_i2:
         raise ProtocolError("preflight B2 is not the direct child of preflight I2")
     if _run_git_text(repo_root, "rev-parse", f"{preflight_i2}^") != preflight_i1:
@@ -606,17 +755,48 @@ def _default_binding_auditor(
     )
     if _changed_paths(repo_root, preflight_i2) != tuple(sorted(EXPECTED_EXACT3)):
         raise ProtocolError("preflight I2 did not change exact3")
+    _verify_blob_map(
+        repo_root,
+        preflight_i2,
+        predecessor_i2_b2["implementation_blob_sha256_by_path"],
+    )
     if _changed_paths(repo_root, preflight_b2) != (CONFIG_PATH,):
         raise ProtocolError("preflight B2 did not change config-only")
+    _verify_blob_map(
+        repo_root,
+        preflight_b2,
+        predecessor_i2_b2["binding_blob_sha256_by_path"],
+    )
+    for commit, expected_blobs, stage in (
+        (gse207_i1, intervening["implementation_i1_blob_sha256_by_path"], "I1"),
+        (gse207_i2, intervening["implementation_i2_blob_sha256_by_path"], "I2"),
+        (gse207_i3, intervening["implementation_i3_blob_sha256_by_path"], "I3"),
+        (gse207_i4, intervening["implementation_i4_blob_sha256_by_path"], "I4"),
+    ):
+        if _changed_paths(repo_root, commit) != tuple(sorted(GSE207_PATHS)):
+            raise ProtocolError(f"GSE207584 {stage} did not change exact3")
+        _verify_blob_map(repo_root, commit, expected_blobs)
+    for commit, expected_blobs, stage in (
+        (gse207_b2, intervening["binding_b2_blob_sha256_by_path"], "B2"),
+        (gse207_b3, intervening["binding_b3_blob_sha256_by_path"], "B3"),
+        (gse207_b4, intervening["binding_b4_blob_sha256_by_path"], "B4"),
+    ):
+        if _changed_paths(repo_root, commit) != (GSE207_PATHS[0],):
+            raise ProtocolError(f"GSE207584 {stage} did not change config-only")
+        _verify_blob_map(repo_root, commit, expected_blobs)
+    if _changed_paths(repo_root, preflight_i3) != tuple(sorted(EXPECTED_EXACT3)):
+        raise ProtocolError("preflight I3 did not change exact3")
+    if _changed_paths(repo_root, preflight_b3) != (CONFIG_PATH,):
+        raise ProtocolError("preflight B3 did not change config-only")
 
     i_protocol = _strict_json_object(
-        _git_blob(repo_root, preflight_i2, CONFIG_PATH),
+        _git_blob(repo_root, preflight_i3, CONFIG_PATH),
         label="implementation protocol",
     )
     if i_protocol != _normalise_binding(protocol):
         raise ProtocolError("preflight B changed more than four binding scalars")
-    script_blob = _git_blob(repo_root, preflight_i2, SCRIPT_PATH)
-    test_blob = _git_blob(repo_root, preflight_i2, TEST_PATH)
+    script_blob = _git_blob(repo_root, preflight_i3, SCRIPT_PATH)
+    test_blob = _git_blob(repo_root, preflight_i3, TEST_PATH)
     if hashlib.sha256(script_blob).hexdigest() != binding.get(
         "implementation_script_sha256"
     ):
@@ -627,8 +807,8 @@ def _default_binding_auditor(
         raise ProtocolError("bound test digest differs")
     if protocol_path.resolve() != (repo_root / CONFIG_PATH).resolve():
         raise ProtocolError("protocol path is outside the bound repository location")
-    if protocol_path.read_bytes() != _git_blob(repo_root, preflight_b2, CONFIG_PATH):
-        raise ProtocolError("working protocol differs from bound B2")
+    if protocol_path.read_bytes() != _git_blob(repo_root, preflight_b3, CONFIG_PATH):
+        raise ProtocolError("working protocol differs from bound B3")
     if (repo_root / SCRIPT_PATH).read_bytes() != script_blob:
         raise ProtocolError("working script differs from preflight I")
     if executing_script_path.read_bytes() != script_blob:
@@ -636,14 +816,23 @@ def _default_binding_auditor(
     if (repo_root / TEST_PATH).read_bytes() != test_blob:
         raise ProtocolError("working test differs from preflight I")
     return {
-        "status": "BOUND_RUNTIME_AND_PREFLIGHT_I1_I2_B2_LIFECYCLES_VERIFIED",
+        "status": "BOUND_GLOBAL_RUNTIME_GSE261_GSE207_B4_GSE261_CHAIN_VERIFIED",
         "authority_commit": authority_a,
         "authority_runtime_implementation_i1_commit": runtime_i1,
         "authority_runtime_implementation_i2_commit": runtime_i2,
         "authority_runtime_binding_commit": runtime_b2,
         "preflight_implementation_i1_commit": preflight_i1,
-        "implementation_commit": preflight_i2,
-        "binding_commit": preflight_b2,
+        "preflight_implementation_i2_commit": preflight_i2,
+        "preflight_binding_b2_commit": preflight_b2,
+        "gse207584_implementation_i1_commit": gse207_i1,
+        "gse207584_implementation_i2_commit": gse207_i2,
+        "gse207584_binding_b2_commit": gse207_b2,
+        "gse207584_implementation_i3_commit": gse207_i3,
+        "gse207584_binding_b3_commit": gse207_b3,
+        "gse207584_implementation_i4_commit": gse207_i4,
+        "gse207584_binding_b4_commit": gse207_b4,
+        "implementation_commit": preflight_i3,
+        "binding_commit": preflight_b3,
     }
 
 
@@ -767,22 +956,28 @@ def build_live_observation(
     )
 
 
-def _zero_scope(*, page_reads: int = 2, listing_reads: int = 1) -> dict[str, Any]:
+def _zero_scope(
+    *,
+    whole_response_transport_and_decode_count: int = 2,
+    archive_listing_metadata_parsed_count: int = 1,
+) -> dict[str, Any]:
     return {
         "ordinary_public_only": True,
-        "small_metadata_page_read_count": page_reads,
-        "archive_listing_read_count": listing_reads,
+        "whole_small_metadata_response_transport_and_decode_count": (
+            whole_response_transport_and_decode_count
+        ),
+        "archive_listing_metadata_parsed_count": (
+            archive_listing_metadata_parsed_count
+        ),
+        "archive_endpoint_access_count": 0,
+        "member_endpoint_access_count": 0,
+        "payload_endpoint_access_count": 0,
         "archive_download_count": 0,
         "archive_member_listing_count": 0,
         "archive_member_open_count": 0,
-        "row_or_member_body_read_count": 0,
-        "barcode_value_read_count": 0,
-        "variant_value_read_count": 0,
-        "transcript_value_read_count": 0,
-        "sequence_value_read_count": 0,
-        "effect_value_read_count": 0,
-        "se_value_read_count": 0,
-        "private_or_sealed_read_count": 0,
+        "forbidden_value_parsed_or_extracted_count": 0,
+        "forbidden_value_persistently_stored_count": 0,
+        "private_or_sealed_endpoint_access_count": 0,
     }
 
 
@@ -899,7 +1094,10 @@ def _validate_observation(observation: Mapping[str, Any]) -> None:
     scope = _mapping(observation.get("scope"), label="scope")
     if dict(scope) not in (
         _zero_scope(),
-        _zero_scope(page_reads=0, listing_reads=0),
+        _zero_scope(
+            whole_response_transport_and_decode_count=0,
+            archive_listing_metadata_parsed_count=0,
+        ),
     ):
         raise ProtocolError("observation scope exceeds the no-member boundary")
 
@@ -1060,6 +1258,7 @@ def evaluate_observation(
             "sequence_value_output_count": 0,
             "effect_value_output_count": 0,
             "se_value_output_count": 0,
+            "forbidden_value_output_count": 0,
         },
         "terminal_truth": copy.deepcopy(dict(protocol["frozen_outer_truth"])),
         "interpretation_boundary": {

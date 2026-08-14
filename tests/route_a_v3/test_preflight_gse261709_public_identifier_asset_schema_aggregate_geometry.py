@@ -68,6 +68,9 @@ def _fixture_binding(*args: object) -> dict[str, str]:
         "authority_runtime_implementation_i2_commit": PREFLIGHT.RUNTIME_I2_COMMIT,
         "authority_runtime_binding_commit": PREFLIGHT.RUNTIME_B2_COMMIT,
         "preflight_implementation_i1_commit": PREFLIGHT.PREFLIGHT_I1_COMMIT,
+        "preflight_implementation_i2_commit": PREFLIGHT.PREFLIGHT_I2_COMMIT,
+        "preflight_binding_b2_commit": PREFLIGHT.PREFLIGHT_B2_COMMIT,
+        "gse207584_binding_b4_commit": PREFLIGHT.GSE207_B4_COMMIT,
         "implementation_commit": "2" * 40,
         "binding_commit": "3" * 40,
     }
@@ -76,10 +79,11 @@ def _fixture_binding(*args: object) -> dict[str, str]:
 class StaticFetcher:
     def __init__(self) -> None:
         self.urls: list[str] = []
-        self.member_payload_read_count = 0
+        self.whole_response_transport_and_decode_count = 0
 
     def fetch_text(self, url: str) -> str:
         self.urls.append(url)
+        self.whole_response_transport_and_decode_count += 1
         if url == PREFLIGHT.GEO_URL:
             return " ".join(
                 [
@@ -89,7 +93,11 @@ class StaticFetcher:
                     "AGS, rep1 AGS, rep2 AGS, rep3",
                     "SNU719, rep1 SNU719, rep2 SNU719, rep3 plasmid pool",
                     "GSE261709_RAW.tar 690.0 Kb Raw data are available in SRA",
-                    "MEMBER_BARCODE_POISON MEMBER_SEQUENCE_POISON ROW_EFFECT_POISON",
+                    (
+                        "MEMBER_BARCODE_POISON MEMBER_VARIANT_POISON "
+                        "MEMBER_TRANSCRIPT_POISON MEMBER_SEQUENCE_POISON "
+                        "ROW_EFFECT_POISON ROW_SE_POISON"
+                    ),
                 ]
             )
         if url == PREFLIGHT.PUBMED_SUMMARY_URL:
@@ -139,7 +147,8 @@ def _all_pass_observation(*, existing_aggregate: bool = False) -> dict[str, obje
     )
     if existing_aggregate:
         observation["scope"] = PREFLIGHT._zero_scope(
-            page_reads=0, listing_reads=0
+            whole_response_transport_and_decode_count=0,
+            archive_listing_metadata_parsed_count=0,
         )
     PREFLIGHT._validate_observation(observation)
     return observation
@@ -151,7 +160,7 @@ def _write_json(path: Path, value: object) -> Path:
     return path
 
 
-def test_protocol_freezes_dec023_exact3_and_supports_disk_i2_or_b2() -> None:
+def test_protocol_freezes_dec023_exact3_and_supports_disk_i3_or_b3() -> None:
     protocol = _protocol()
     binding = protocol["implementation_binding"]
     assert binding["authority_commit"] == PREFLIGHT.AUTHORITY_COMMIT
@@ -177,6 +186,78 @@ def test_protocol_freezes_dec023_exact3_and_supports_disk_i2_or_b2() -> None:
         "exact_changed_paths": list(PREFLIGHT.EXPECTED_EXACT3),
         "blob_sha256_by_path": PREFLIGHT.PREFLIGHT_I1_BLOB_SHA256_BY_PATH,
     }
+    predecessor_i2_b2 = binding["predecessor_preflight_i2_b2"]
+    assert predecessor_i2_b2 == {
+        "status": "FROZEN_BOUND_EXACT3_CONFIG_ONLY_BINDING",
+        "implementation_commit": PREFLIGHT.PREFLIGHT_I2_COMMIT,
+        "implementation_expected_parent": PREFLIGHT.PREFLIGHT_I1_COMMIT,
+        "implementation_exact_changed_paths": list(PREFLIGHT.EXPECTED_EXACT3),
+        "implementation_blob_sha256_by_path": (
+            PREFLIGHT.PREFLIGHT_I2_BLOB_SHA256_BY_PATH
+        ),
+        "binding_commit": PREFLIGHT.PREFLIGHT_B2_COMMIT,
+        "binding_expected_parent": PREFLIGHT.PREFLIGHT_I2_COMMIT,
+        "binding_exact_changed_paths": [PREFLIGHT.CONFIG_PATH],
+        "binding_blob_sha256_by_path": PREFLIGHT.PREFLIGHT_B2_BLOB_SHA256_BY_PATH,
+    }
+    intervening = binding["intervening_gse207584_preflight_lifecycle"]
+    assert intervening["protocol_id"] == PREFLIGHT.GSE207_PROTOCOL_ID
+    assert tuple(intervening["paths"]) == PREFLIGHT.GSE207_PATHS
+    assert [
+        intervening["implementation_i1_commit"],
+        intervening["implementation_i2_commit"],
+        intervening["binding_b2_commit"],
+        intervening["implementation_i3_commit"],
+        intervening["binding_b3_commit"],
+        intervening["implementation_i4_commit"],
+        intervening["binding_b4_commit"],
+    ] == [
+        PREFLIGHT.GSE207_I1_COMMIT,
+        PREFLIGHT.GSE207_I2_COMMIT,
+        PREFLIGHT.GSE207_B2_COMMIT,
+        PREFLIGHT.GSE207_I3_COMMIT,
+        PREFLIGHT.GSE207_B3_COMMIT,
+        PREFLIGHT.GSE207_I4_COMMIT,
+        PREFLIGHT.GSE207_B4_COMMIT,
+    ]
+    assert [
+        intervening["implementation_i1_expected_parent"],
+        intervening["implementation_i2_expected_parent"],
+        intervening["binding_b2_expected_parent"],
+        intervening["implementation_i3_expected_parent"],
+        intervening["binding_b3_expected_parent"],
+        intervening["implementation_i4_expected_parent"],
+        intervening["binding_b4_expected_parent"],
+    ] == [
+        PREFLIGHT.PREFLIGHT_B2_COMMIT,
+        PREFLIGHT.GSE207_I1_COMMIT,
+        PREFLIGHT.GSE207_I2_COMMIT,
+        PREFLIGHT.GSE207_B2_COMMIT,
+        PREFLIGHT.GSE207_I3_COMMIT,
+        PREFLIGHT.GSE207_B3_COMMIT,
+        PREFLIGHT.GSE207_I4_COMMIT,
+    ]
+    assert intervening["implementation_i1_blob_sha256_by_path"] == (
+        PREFLIGHT.GSE207_I1_BLOB_SHA256_BY_PATH
+    )
+    assert intervening["implementation_i2_blob_sha256_by_path"] == (
+        PREFLIGHT.GSE207_I2_BLOB_SHA256_BY_PATH
+    )
+    assert intervening["binding_b2_blob_sha256_by_path"] == (
+        PREFLIGHT.GSE207_B2_BLOB_SHA256_BY_PATH
+    )
+    assert intervening["implementation_i3_blob_sha256_by_path"] == (
+        PREFLIGHT.GSE207_I3_BLOB_SHA256_BY_PATH
+    )
+    assert intervening["binding_b3_blob_sha256_by_path"] == (
+        PREFLIGHT.GSE207_B3_BLOB_SHA256_BY_PATH
+    )
+    assert intervening["implementation_i4_blob_sha256_by_path"] == (
+        PREFLIGHT.GSE207_I4_BLOB_SHA256_BY_PATH
+    )
+    assert intervening["binding_b4_blob_sha256_by_path"] == (
+        PREFLIGHT.GSE207_B4_BLOB_SHA256_BY_PATH
+    )
     assert binding["status"] in {PREFLIGHT.UNKNOWN, PREFLIGHT.BOUND}
     normalised = PREFLIGHT._normalise_binding(protocol)
     assert [
@@ -273,7 +354,7 @@ def test_live_metadata_only_reports_real_schema_rights_blockers_without_poison(
         recorded_at="2026-08-14T08:00:00Z",
     )
     assert fetcher.urls == list(PREFLIGHT.LIVE_URLS)
-    assert fetcher.member_payload_read_count == 0
+    assert fetcher.whole_response_transport_and_decode_count == 2
     assert report["status"] == "STOP_PREFLIGHT_GATES_NOT_CLOSED"
     assert report["gate_counts"] == {
         "PASS": 1,
@@ -286,23 +367,35 @@ def test_live_metadata_only_reports_real_schema_rights_blockers_without_poison(
         "HEADER_DIMENSION_AND_ASSET_LICENSE_NOTICE": "BLOCKED",
     }
     scope = report["scope_attestation"]
+    assert scope["whole_small_metadata_response_transport_and_decode_count"] == 2
+    assert scope["archive_listing_metadata_parsed_count"] == 1
+    assert scope["archive_endpoint_access_count"] == 0
+    assert scope["member_endpoint_access_count"] == 0
+    assert scope["payload_endpoint_access_count"] == 0
     assert scope["archive_download_count"] == 0
     assert scope["archive_member_listing_count"] == 0
     assert scope["archive_member_open_count"] == 0
-    assert scope["row_or_member_body_read_count"] == 0
-    assert scope["barcode_value_read_count"] == 0
-    assert scope["sequence_value_read_count"] == 0
-    assert scope["effect_value_read_count"] == 0
+    assert scope["forbidden_value_parsed_or_extracted_count"] == 0
+    assert scope["forbidden_value_persistently_stored_count"] == 0
+    assert scope["forbidden_value_output_count"] == 0
+    assert "row_or_member_body_read_count" not in scope
+    assert not any(key.endswith("_value_read_count") for key in scope)
     files = list(output_dir.iterdir())
     assert [path.name for path in files] == [PREFLIGHT.REPORT_FILENAME]
     serialized = files[0].read_text(encoding="utf-8")
     for poison in (
         "MEMBER_BARCODE_POISON",
+        "MEMBER_VARIANT_POISON",
+        "MEMBER_TRANSCRIPT_POISON",
         "MEMBER_SEQUENCE_POISON",
         "ROW_EFFECT_POISON",
+        "ROW_SE_POISON",
         "GSM8149344",
     ):
         assert poison not in serialized
+    assert "transports and decodes exactly two whole allowlisted" in report[
+        "claim_boundary"
+    ]
 
 
 def test_all_three_pass_only_requests_separate_row_level_authority() -> None:
@@ -478,10 +571,28 @@ def test_default_binding_auditor_is_real_disk_i_b_future_compatible(
     runtime_i2 = PREFLIGHT.RUNTIME_I2_COMMIT
     runtime_b2 = PREFLIGHT.RUNTIME_B2_COMMIT
     preflight_i1 = PREFLIGHT.PREFLIGHT_I1_COMMIT
-    preflight_i2 = "2" * 40
-    preflight_b2 = "8" * 40
+    preflight_i2 = PREFLIGHT.PREFLIGHT_I2_COMMIT
+    preflight_b2 = PREFLIGHT.PREFLIGHT_B2_COMMIT
+    gse207_i1 = PREFLIGHT.GSE207_I1_COMMIT
+    gse207_i2 = PREFLIGHT.GSE207_I2_COMMIT
+    gse207_b2 = PREFLIGHT.GSE207_B2_COMMIT
+    gse207_i3 = PREFLIGHT.GSE207_I3_COMMIT
+    gse207_b3 = PREFLIGHT.GSE207_B3_COMMIT
+    gse207_i4 = PREFLIGHT.GSE207_I4_COMMIT
+    gse207_b4 = PREFLIGHT.GSE207_B4_COMMIT
+    preflight_i3 = "2" * 40
+    preflight_b3 = "8" * 40
     git_text = {
-        ("rev-parse", "HEAD"): preflight_b2,
+        ("rev-parse", "HEAD"): preflight_b3,
+        ("rev-parse", f"{preflight_b3}^"): preflight_i3,
+        ("rev-parse", f"{preflight_i3}^"): gse207_b4,
+        ("rev-parse", f"{gse207_b4}^"): gse207_i4,
+        ("rev-parse", f"{gse207_i4}^"): gse207_b3,
+        ("rev-parse", f"{gse207_b3}^"): gse207_i3,
+        ("rev-parse", f"{gse207_i3}^"): gse207_b2,
+        ("rev-parse", f"{gse207_b2}^"): gse207_i2,
+        ("rev-parse", f"{gse207_i2}^"): gse207_i1,
+        ("rev-parse", f"{gse207_i1}^"): preflight_b2,
         ("rev-parse", f"{preflight_b2}^"): preflight_i2,
         ("rev-parse", f"{preflight_i2}^"): preflight_i1,
         ("rev-parse", f"{preflight_i1}^"): runtime_b2,
@@ -530,12 +641,75 @@ def test_default_binding_auditor_is_real_disk_i_b_future_compatible(
             "-r",
             preflight_b2,
         ): PREFLIGHT.CONFIG_PATH,
+        (
+            "diff-tree",
+            "--no-commit-id",
+            "--name-only",
+            "-r",
+            gse207_i1,
+        ): "\n".join(PREFLIGHT.GSE207_PATHS),
+        (
+            "diff-tree",
+            "--no-commit-id",
+            "--name-only",
+            "-r",
+            gse207_i2,
+        ): "\n".join(PREFLIGHT.GSE207_PATHS),
+        (
+            "diff-tree",
+            "--no-commit-id",
+            "--name-only",
+            "-r",
+            gse207_b2,
+        ): PREFLIGHT.GSE207_PATHS[0],
+        (
+            "diff-tree",
+            "--no-commit-id",
+            "--name-only",
+            "-r",
+            gse207_i3,
+        ): "\n".join(PREFLIGHT.GSE207_PATHS),
+        (
+            "diff-tree",
+            "--no-commit-id",
+            "--name-only",
+            "-r",
+            gse207_b3,
+        ): PREFLIGHT.GSE207_PATHS[0],
+        (
+            "diff-tree",
+            "--no-commit-id",
+            "--name-only",
+            "-r",
+            gse207_i4,
+        ): "\n".join(PREFLIGHT.GSE207_PATHS),
+        (
+            "diff-tree",
+            "--no-commit-id",
+            "--name-only",
+            "-r",
+            gse207_b4,
+        ): PREFLIGHT.GSE207_PATHS[0],
+        (
+            "diff-tree",
+            "--no-commit-id",
+            "--name-only",
+            "-r",
+            preflight_i3,
+        ): "\n".join(PREFLIGHT.EXPECTED_EXACT3),
+        (
+            "diff-tree",
+            "--no-commit-id",
+            "--name-only",
+            "-r",
+            preflight_b3,
+        ): PREFLIGHT.CONFIG_PATH,
     }
     git_blobs = {
-        (preflight_i2, PREFLIGHT.CONFIG_PATH): i_payload,
-        (preflight_i2, PREFLIGHT.SCRIPT_PATH): script_blob,
-        (preflight_i2, PREFLIGHT.TEST_PATH): test_blob,
-        (preflight_b2, PREFLIGHT.CONFIG_PATH): b_payload,
+        (preflight_i3, PREFLIGHT.CONFIG_PATH): i_payload,
+        (preflight_i3, PREFLIGHT.SCRIPT_PATH): script_blob,
+        (preflight_i3, PREFLIGHT.TEST_PATH): test_blob,
+        (preflight_b3, PREFLIGHT.CONFIG_PATH): b_payload,
     }
 
     git_calls: list[tuple[str, ...]] = []
@@ -565,22 +739,49 @@ def test_default_binding_auditor_is_real_disk_i_b_future_compatible(
         protocol, protocol_path, b_payload, repo_root
     )
     assert result == {
-        "status": "BOUND_RUNTIME_AND_PREFLIGHT_I1_I2_B2_LIFECYCLES_VERIFIED",
+        "status": "BOUND_GLOBAL_RUNTIME_GSE261_GSE207_B4_GSE261_CHAIN_VERIFIED",
         "authority_commit": authority_a,
         "authority_runtime_implementation_i1_commit": runtime_i1,
         "authority_runtime_implementation_i2_commit": runtime_i2,
         "authority_runtime_binding_commit": runtime_b2,
         "preflight_implementation_i1_commit": preflight_i1,
-        "implementation_commit": preflight_i2,
-        "binding_commit": preflight_b2,
+        "preflight_implementation_i2_commit": preflight_i2,
+        "preflight_binding_b2_commit": preflight_b2,
+        "gse207584_implementation_i1_commit": gse207_i1,
+        "gse207584_implementation_i2_commit": gse207_i2,
+        "gse207584_binding_b2_commit": gse207_b2,
+        "gse207584_implementation_i3_commit": gse207_i3,
+        "gse207584_binding_b3_commit": gse207_b3,
+        "gse207584_implementation_i4_commit": gse207_i4,
+        "gse207584_binding_b4_commit": gse207_b4,
+        "implementation_commit": preflight_i3,
+        "binding_commit": preflight_b3,
     }
     assert verified_runtime_blobs == [
         (runtime_i1, PREFLIGHT.RUNTIME_I1_BLOB_SHA256_BY_PATH),
         (runtime_i2, PREFLIGHT.RUNTIME_I2_BLOB_SHA256_BY_PATH),
         (runtime_b2, PREFLIGHT.RUNTIME_B2_BLOB_SHA256_BY_PATH),
         (preflight_i1, PREFLIGHT.PREFLIGHT_I1_BLOB_SHA256_BY_PATH),
+        (preflight_i2, PREFLIGHT.PREFLIGHT_I2_BLOB_SHA256_BY_PATH),
+        (preflight_b2, PREFLIGHT.PREFLIGHT_B2_BLOB_SHA256_BY_PATH),
+        (gse207_i1, PREFLIGHT.GSE207_I1_BLOB_SHA256_BY_PATH),
+        (gse207_i2, PREFLIGHT.GSE207_I2_BLOB_SHA256_BY_PATH),
+        (gse207_i3, PREFLIGHT.GSE207_I3_BLOB_SHA256_BY_PATH),
+        (gse207_i4, PREFLIGHT.GSE207_I4_BLOB_SHA256_BY_PATH),
+        (gse207_b2, PREFLIGHT.GSE207_B2_BLOB_SHA256_BY_PATH),
+        (gse207_b3, PREFLIGHT.GSE207_B3_BLOB_SHA256_BY_PATH),
+        (gse207_b4, PREFLIGHT.GSE207_B4_BLOB_SHA256_BY_PATH),
     ]
     assert [
+        ("rev-parse", f"{preflight_b3}^"),
+        ("rev-parse", f"{preflight_i3}^"),
+        ("rev-parse", f"{gse207_b4}^"),
+        ("rev-parse", f"{gse207_i4}^"),
+        ("rev-parse", f"{gse207_b3}^"),
+        ("rev-parse", f"{gse207_i3}^"),
+        ("rev-parse", f"{gse207_b2}^"),
+        ("rev-parse", f"{gse207_i2}^"),
+        ("rev-parse", f"{gse207_i1}^"),
         ("rev-parse", f"{preflight_b2}^"),
         ("rev-parse", f"{preflight_i2}^"),
         ("rev-parse", f"{preflight_i1}^"),

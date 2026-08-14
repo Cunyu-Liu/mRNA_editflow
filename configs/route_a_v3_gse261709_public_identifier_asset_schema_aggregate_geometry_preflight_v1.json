@@ -8,8 +8,8 @@
   "decision_id": "V3-DEC-023",
   "protocol_status": "PUBLIC_IDENTIFIER_ASSET_SCHEMA_AND_AGGREGATE_GEOMETRY_PREFLIGHT_ONLY_NOT_QUALIFICATION",
   "implementation_binding": {
-    "binding_scheme": "AUTHORITY_A_THEN_AUTHORITY_RUNTIME_I1_I2_B2_THEN_PREFLIGHT_I1_I2_B2_V3",
-    "status": "BOUND",
+    "binding_scheme": "AUTHORITY_RUNTIME_I1_I2_B2_GSE261_I1_I2_B2_GSE207_I1_I2_B2_I3_B3_I4_B4_GSE261_I3_B3_V6",
+    "status": "UNKNOWN_NOT_ASSERTED",
     "authority_commit": "f7cfff896a1a30d25a3b73ea7f89957d70d95d39",
     "authority_runtime_binding_commit": "b225f73b72d73be3380e2d48325c7773a67c0d17",
     "authority_runtime_lineage": {
@@ -59,11 +59,101 @@
         "tests/route_a_v3/test_preflight_gse261709_public_identifier_asset_schema_aggregate_geometry.py": "8f69c635f7780135a4c79a6d4f43eb824c507da4e2055393b700642ef8c31d29"
       }
     },
-    "implementation_commit": "e8638d541f048361c338948e000bf4d52d8e1654",
+    "predecessor_preflight_i2_b2": {
+      "status": "FROZEN_BOUND_EXACT3_CONFIG_ONLY_BINDING",
+      "implementation_commit": "e8638d541f048361c338948e000bf4d52d8e1654",
+      "implementation_expected_parent": "512d9cdf02a3b3826a3a5a0dcd79a7f4ccf88399",
+      "implementation_exact_changed_paths": [
+        "configs/route_a_v3_gse261709_public_identifier_asset_schema_aggregate_geometry_preflight_v1.json",
+        "scripts/route_a_v3/preflight_gse261709_public_identifier_asset_schema_aggregate_geometry.py",
+        "tests/route_a_v3/test_preflight_gse261709_public_identifier_asset_schema_aggregate_geometry.py"
+      ],
+      "implementation_blob_sha256_by_path": {
+        "configs/route_a_v3_gse261709_public_identifier_asset_schema_aggregate_geometry_preflight_v1.json": "85cebe980424a1a3e0df6880fc5f476cf5a4d36f897559f90800088a6bea5b53",
+        "scripts/route_a_v3/preflight_gse261709_public_identifier_asset_schema_aggregate_geometry.py": "b94aeeb98a27ff0b5c5d176c5152a188336adcc1b49beeade9727068101581fe",
+        "tests/route_a_v3/test_preflight_gse261709_public_identifier_asset_schema_aggregate_geometry.py": "03b9850326dd14c90a1bbff306b96c780229d649469766cce96da6808316ca97"
+      },
+      "binding_commit": "1b6422e2d6b8a77e876a0289a0f18f570fe037d2",
+      "binding_expected_parent": "e8638d541f048361c338948e000bf4d52d8e1654",
+      "binding_exact_changed_paths": [
+        "configs/route_a_v3_gse261709_public_identifier_asset_schema_aggregate_geometry_preflight_v1.json"
+      ],
+      "binding_blob_sha256_by_path": {
+        "configs/route_a_v3_gse261709_public_identifier_asset_schema_aggregate_geometry_preflight_v1.json": "24e523a8c327234999594d1019f8e6ffafd0b08330710db2b9f284d26937c50a",
+        "scripts/route_a_v3/preflight_gse261709_public_identifier_asset_schema_aggregate_geometry.py": "b94aeeb98a27ff0b5c5d176c5152a188336adcc1b49beeade9727068101581fe",
+        "tests/route_a_v3/test_preflight_gse261709_public_identifier_asset_schema_aggregate_geometry.py": "03b9850326dd14c90a1bbff306b96c780229d649469766cce96da6808316ca97"
+      }
+    },
+    "intervening_gse207584_preflight_lifecycle": {
+      "protocol_id": "GSE207584_AGGREGATE_DENSE_FAMILY_QUALIFICATION_PREFLIGHT_V1",
+      "paths": [
+        "configs/route_a_v3_gse207584_aggregate_dense_family_qualification_preflight_v1.json",
+        "scripts/route_a_v3/preflight_gse207584_aggregate_dense_family_qualification.py",
+        "tests/route_a_v3/test_preflight_gse207584_aggregate_dense_family_qualification.py"
+      ],
+      "implementation_i1_commit": "21337a0ee240bf469d3036d7718fb069068707a4",
+      "implementation_i1_expected_parent": "1b6422e2d6b8a77e876a0289a0f18f570fe037d2",
+      "implementation_i1_blob_sha256_by_path": {
+        "configs/route_a_v3_gse207584_aggregate_dense_family_qualification_preflight_v1.json": "67c1ea9264e813154f1a4808fe8bad9d535315b9e097440412dcae8b6d4050bf",
+        "scripts/route_a_v3/preflight_gse207584_aggregate_dense_family_qualification.py": "1c967a3e0fd861579a1adcb0c881dc1ab37725867ccd5cdd35ccc3cecd3e7b16",
+        "tests/route_a_v3/test_preflight_gse207584_aggregate_dense_family_qualification.py": "6b70a439c94a61cd64464d53839b23615b1b21f75f7eb5f6a45bb521a397f070"
+      },
+      "implementation_i2_commit": "973e75f1daff45e0087d385c1b015d300b1c3f0f",
+      "implementation_i2_expected_parent": "21337a0ee240bf469d3036d7718fb069068707a4",
+      "implementation_i2_blob_sha256_by_path": {
+        "configs/route_a_v3_gse207584_aggregate_dense_family_qualification_preflight_v1.json": "ff1b81bbce7e029d97280dd50be47f5f3073be452fc0a55a4fed256baa34fa97",
+        "scripts/route_a_v3/preflight_gse207584_aggregate_dense_family_qualification.py": "1a3468c1dfe3628ff95587b5922be25d630ca09e2bb567e8c04b181ff862b1a8",
+        "tests/route_a_v3/test_preflight_gse207584_aggregate_dense_family_qualification.py": "fd9cc811bf9c6b5ce4a4e2a4f99f1aa134adf62361eced53ca927f53576a06a0"
+      },
+      "binding_b2_commit": "d8f501ecfafb55a54a23225d7abbe3422a24fcdd",
+      "binding_b2_expected_parent": "973e75f1daff45e0087d385c1b015d300b1c3f0f",
+      "binding_b2_blob_sha256_by_path": {
+        "configs/route_a_v3_gse207584_aggregate_dense_family_qualification_preflight_v1.json": "2491af4cc3c54eb5b7219253f377ad85d80e61f536e31e0f5bcba008ccad75d3",
+        "scripts/route_a_v3/preflight_gse207584_aggregate_dense_family_qualification.py": "1a3468c1dfe3628ff95587b5922be25d630ca09e2bb567e8c04b181ff862b1a8",
+        "tests/route_a_v3/test_preflight_gse207584_aggregate_dense_family_qualification.py": "fd9cc811bf9c6b5ce4a4e2a4f99f1aa134adf62361eced53ca927f53576a06a0"
+      },
+      "implementation_i3_commit": "0ebd391f3e7713f7c0564065eab5610aaa9ed65a",
+      "implementation_i3_expected_parent": "d8f501ecfafb55a54a23225d7abbe3422a24fcdd",
+      "implementation_i3_blob_sha256_by_path": {
+        "configs/route_a_v3_gse207584_aggregate_dense_family_qualification_preflight_v1.json": "047a47129d01286f34c72db963563ec69efc2312c87de268986267eaf99feae0",
+        "scripts/route_a_v3/preflight_gse207584_aggregate_dense_family_qualification.py": "919753efb890efd6cafa41c010563537493cf96238e3a7a33f0351c8758db729",
+        "tests/route_a_v3/test_preflight_gse207584_aggregate_dense_family_qualification.py": "cd5f1a0aa345c769540cfb7833b2af614b5f23a405be1e03c685fded8fc45af8"
+      },
+      "binding_b3_commit": "54dc498009a9be09cde5e84c197d17a4182c0b8b",
+      "binding_b3_expected_parent": "0ebd391f3e7713f7c0564065eab5610aaa9ed65a",
+      "binding_b3_blob_sha256_by_path": {
+        "configs/route_a_v3_gse207584_aggregate_dense_family_qualification_preflight_v1.json": "0575ec9fddb0839d494a485b84263ba88dae0ecbbefd3b402ac0bafc61862a62",
+        "scripts/route_a_v3/preflight_gse207584_aggregate_dense_family_qualification.py": "919753efb890efd6cafa41c010563537493cf96238e3a7a33f0351c8758db729",
+        "tests/route_a_v3/test_preflight_gse207584_aggregate_dense_family_qualification.py": "cd5f1a0aa345c769540cfb7833b2af614b5f23a405be1e03c685fded8fc45af8"
+      },
+      "implementation_i4_commit": "a136b9a7e5b218b24325bb45d112c348abd7adc5",
+      "implementation_i4_expected_parent": "54dc498009a9be09cde5e84c197d17a4182c0b8b",
+      "implementation_i4_blob_sha256_by_path": {
+        "configs/route_a_v3_gse207584_aggregate_dense_family_qualification_preflight_v1.json": "ab81b980f4c37b88a639a50383a04a9db10e0ebc009a4197f45b9f0a8666f719",
+        "scripts/route_a_v3/preflight_gse207584_aggregate_dense_family_qualification.py": "4776085ad8bd459da92fc63d1d3c437b4e534f81d1e5ff55c167d17880f0c074",
+        "tests/route_a_v3/test_preflight_gse207584_aggregate_dense_family_qualification.py": "81eccd24f16930df334e17b2cc8ae89906a91fba936ee1685d281079ba0b4df6"
+      },
+      "binding_b4_commit": "021ba2af69309b0b2b3b0dd13beffb5c31e6487b",
+      "binding_b4_expected_parent": "a136b9a7e5b218b24325bb45d112c348abd7adc5",
+      "binding_b4_blob_sha256_by_path": {
+        "configs/route_a_v3_gse207584_aggregate_dense_family_qualification_preflight_v1.json": "65bae0b40a599f150d4a757887fb1c86239205ee56800f89d0bb9e10227cea43",
+        "scripts/route_a_v3/preflight_gse207584_aggregate_dense_family_qualification.py": "4776085ad8bd459da92fc63d1d3c437b4e534f81d1e5ff55c167d17880f0c074",
+        "tests/route_a_v3/test_preflight_gse207584_aggregate_dense_family_qualification.py": "81eccd24f16930df334e17b2cc8ae89906a91fba936ee1685d281079ba0b4df6"
+      },
+      "implementation_exact_changed_paths": [
+        "configs/route_a_v3_gse207584_aggregate_dense_family_qualification_preflight_v1.json",
+        "scripts/route_a_v3/preflight_gse207584_aggregate_dense_family_qualification.py",
+        "tests/route_a_v3/test_preflight_gse207584_aggregate_dense_family_qualification.py"
+      ],
+      "binding_exact_changed_paths": [
+        "configs/route_a_v3_gse207584_aggregate_dense_family_qualification_preflight_v1.json"
+      ]
+    },
+    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
     "implementation_script_path": "scripts/route_a_v3/preflight_gse261709_public_identifier_asset_schema_aggregate_geometry.py",
-    "implementation_script_sha256": "b94aeeb98a27ff0b5c5d176c5152a188336adcc1b49beeade9727068101581fe",
+    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
     "implementation_test_path": "tests/route_a_v3/test_preflight_gse261709_public_identifier_asset_schema_aggregate_geometry.py",
-    "implementation_test_sha256": "03b9850326dd14c90a1bbff306b96c780229d649469766cce96da6808316ca97",
+    "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
     "pre_implementation_authority_scalar_paths": [
       "implementation_binding.authority_commit",
       "implementation_binding.authority_runtime_binding_commit"
@@ -82,7 +172,7 @@
     "binding_commit_exact_changed_paths": [
       "configs/route_a_v3_gse261709_public_identifier_asset_schema_aggregate_geometry_preflight_v1.json"
     ],
-    "activation_rule": "After DEC023 authority A, authority-runtime I1/I2/B2 and frozen GSE261709 preflight I1 must settle in that exact direct-parent order. Preflight I2 must be the direct exact3 child of preflight I1, freeze I1 commit and blobs, and leave the four normal binding scalars UNKNOWN_NOT_ASSERTED. Preflight B2 must be the direct config-only child of I2 and replace only those four scalars. Until B2 is valid, execution stops before metadata input, network access, or output creation."
+    "activation_rule": "After DEC023 authority-runtime I1/I2/B2 and GSE261709 preflight I1/I2/B2, the intervening GSE207584 preflight I1/I2/B2/I3/B3/I4/B4 lifecycle must settle in the exact direct-parent order frozen here. Dynamic GSE261709 preflight I3 must be the direct exact3 child of final GSE207584 B4, freeze all predecessor commits and blobs, and leave the four normal binding scalars UNKNOWN_NOT_ASSERTED. GSE261709 preflight B3 must be the direct config-only child of I3 and replace only those four scalars. Until B3 is valid, execution stops before metadata input, network access, or output creation."
   },
   "decision_authority": {
     "amendment_path": "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec023.yaml",
@@ -175,8 +265,8 @@
     ],
     "existing_aggregate_schema_version": "route_a_v3_gse261709_public_metadata_schema_observation.v1",
     "ordinary_public_only": true,
-    "official_small_metadata_page_read_allowed": true,
-    "official_archive_listing_read_allowed": true,
+    "whole_allowlisted_small_metadata_response_transport_and_decode_allowed": true,
+    "archive_listing_metadata_parse_allowed": true,
     "header_names_allowed": true,
     "dimensions_allowed": true,
     "aggregate_counts_and_bytes_allowed": true,
@@ -238,5 +328,5 @@
     "next_phase_authorized": false,
     "scientific_claim_status": "NOT_ESTABLISHED"
   },
-  "claim_boundary": "This preflight may establish only ordinary-public identifier, role, context, header-name visibility, dimensions, aggregate counts or bytes, license-notice visibility, and three aggregate gate statuses. It may not open the listed archive or any member, read or output a barcode, variant, transcript, sequence, row effect, SE, sample/run identifier, or member payload. Even three PASS gates establish only that a separate row-level qualification authority may be requested; they do not establish qualification, credit, canonical records, split, power, training, GPU work, model selection, A7, a later phase, or a scientific claim."
+  "claim_boundary": "Live mode transports and decodes exactly two whole allowlisted ordinary-public small-metadata responses. Incidental strings in those responses are not treated as authorized member fields: only the allowed identifier, role, context, aggregate geometry, schema-visibility, and license-notice facts may be parsed or extracted, and no barcode, variant, transcript, sequence, row effect, SE, member identifier, sample/run identifier, or member payload value may be extracted, persistently stored, or output. The producer may not access an archive, member, or payload endpoint. Even three PASS gates establish only that a separate row-level qualification authority may be requested; they do not establish qualification, credit, canonical records, split, power, training, GPU work, model selection, A7, a later phase, or a scientific claim."
 }
