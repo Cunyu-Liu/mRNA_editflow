@@ -42,6 +42,14 @@ def _i_protocol() -> dict[str, object]:
     value = json.loads(PROTOCOL_PATH.read_text(encoding="utf-8"))
     binding = value["implementation_binding"]
     binding["production_repo_root"] = str(PREFLIGHT.PRODUCTION_REPO_ROOT)
+    binding["initial_implementation_commit"] = PREFLIGHT.INITIAL_IMPLEMENTATION_COMMIT
+    binding["initial_implementation_frozen_blobs"] = [
+        {
+            "path": path,
+            "sha256": PREFLIGHT.INITIAL_IMPLEMENTATION_FROZEN_BLOBS[path],
+        }
+        for path in PREFLIGHT.EXPECTED_EXACT3
+    ]
     for field in PREFLIGHT.UNKNOWN_BINDING_SCALARS:
         binding[field] = PREFLIGHT.UNKNOWN
     PREFLIGHT._validate_protocol(value)
@@ -177,6 +185,16 @@ def test_disk_protocol_freezes_dec023_scope_geometry_rights_and_zero_claims() ->
     assert binding["current_predecessor_commit"] == (
         "0a6586814460b211cc730c463390e68f64aaa4f1"
     )
+    assert binding["initial_implementation_commit"] == (
+        "374ea6166c74c898751c7a3d4d6951664ca1d524"
+    )
+    assert binding["initial_implementation_frozen_blobs"] == [
+        {
+            "path": path,
+            "sha256": PREFLIGHT.INITIAL_IMPLEMENTATION_FROZEN_BLOBS[path],
+        }
+        for path in PREFLIGHT.EXPECTED_EXACT3
+    ]
     assert tuple(binding["implementation_commit_exact_changed_paths"]) == (
         PREFLIGHT.EXPECTED_EXACT3
     )
@@ -246,9 +264,14 @@ def test_unknown_or_partial_binding_stops_before_asset_and_output_io(
     monkeypatch.setattr(PREFLIGHT, "aggregate", forbidden_aggregate)
     monkeypatch.setattr(PREFLIGHT, "_publish_no_replace", forbidden_publish)
     output = tmp_path / PREFLIGHT.REPORT_FILENAME
+    unknown_protocol = _i_protocol()
+    unknown_path, _ = _write_protocol(
+        tmp_path / "unknown" / PREFLIGHT.PROTOCOL_BASENAME,
+        unknown_protocol,
+    )
     with pytest.raises(PREFLIGHT.BindingNotFrozen, match="not BOUND"):
         PREFLIGHT.execute(
-            PROTOCOL_PATH,
+            unknown_path,
             tmp_path / "missing-publisher.xlsx",
             tmp_path / "missing-geo.csv.gz",
             output,
@@ -256,7 +279,7 @@ def test_unknown_or_partial_binding_stops_before_asset_and_output_io(
     assert calls == {"asset": 0, "output": 0}
     assert not output.exists()
 
-    partial = copy.deepcopy(_protocol())
+    partial = copy.deepcopy(unknown_protocol)
     partial["implementation_binding"]["implementation_commit"] = "2" * 40
     partial_path, _ = _write_protocol(
         tmp_path / "partial" / PREFLIGHT.PROTOCOL_BASENAME,
@@ -281,8 +304,28 @@ def _fake_bound_repository(
     repo_root.mkdir()
     monkeypatch.setattr(PREFLIGHT, "PRODUCTION_REPO_ROOT", repo_root)
 
-    script_blob = b"GSE207584 endpoint-universe implementation I\n"
-    test_blob = b"GSE207584 endpoint-universe focused test I\n"
+    initial_protocol = json.loads(PROTOCOL_PATH.read_text(encoding="utf-8"))
+    initial_protocol["implementation_binding"] = {
+        "historical_lifecycle": "FROZEN_INITIAL_I1_TEST_FIXTURE"
+    }
+    initial_config_blob = (json.dumps(initial_protocol, indent=2) + "\n").encode(
+        "utf-8"
+    )
+    initial_script_blob = b"GSE207584 endpoint-universe initial implementation I1\n"
+    initial_test_blob = b"GSE207584 endpoint-universe initial focused test I1\n"
+    frozen_initial_blobs = {
+        PREFLIGHT.CONFIG_PATH: hashlib.sha256(initial_config_blob).hexdigest(),
+        PREFLIGHT.SCRIPT_PATH: hashlib.sha256(initial_script_blob).hexdigest(),
+        PREFLIGHT.TEST_PATH: hashlib.sha256(initial_test_blob).hexdigest(),
+    }
+    monkeypatch.setattr(
+        PREFLIGHT,
+        "INITIAL_IMPLEMENTATION_FROZEN_BLOBS",
+        frozen_initial_blobs,
+    )
+
+    script_blob = b"GSE207584 endpoint-universe repair implementation I2\n"
+    test_blob = b"GSE207584 endpoint-universe repair focused test I2\n"
     protocol = _bound_protocol()
     binding = protocol["implementation_binding"]
     binding["implementation_script_sha256"] = hashlib.sha256(script_blob).hexdigest()
@@ -303,6 +346,7 @@ def _fake_bound_repository(
     monkeypatch.setattr(PREFLIGHT, "EXECUTING_SCRIPT_PATH", script_path.resolve())
 
     predecessor = PREFLIGHT.CURRENT_PREDECESSOR_COMMIT
+    initial_implementation = PREFLIGHT.INITIAL_IMPLEMENTATION_COMMIT
     implementation = str(binding["implementation_commit"])
     head = "8" * 40
     branch = PREFLIGHT.PRODUCTION_BRANCH
@@ -330,9 +374,23 @@ def _fake_bound_repository(
             "--parents",
             "-n",
             "1",
+            initial_implementation,
+        ): f"{initial_implementation} {predecessor}",
+        (
+            "rev-list",
+            "--parents",
+            "-n",
+            "1",
             implementation,
-        ): f"{implementation} {predecessor}",
+        ): f"{implementation} {initial_implementation}",
         ("rev-list", "--parents", "-n", "1", head): f"{head} {implementation}",
+        (
+            "diff-tree",
+            "--no-commit-id",
+            "--name-only",
+            "-r",
+            initial_implementation,
+        ): "\n".join(PREFLIGHT.EXPECTED_EXACT3),
         (
             "diff-tree",
             "--no-commit-id",
@@ -350,6 +408,9 @@ def _fake_bound_repository(
     }
     i_payload = (json.dumps(i_protocol, indent=2) + "\n").encode("utf-8")
     git_blobs = {
+        (initial_implementation, PREFLIGHT.CONFIG_PATH): initial_config_blob,
+        (initial_implementation, PREFLIGHT.SCRIPT_PATH): initial_script_blob,
+        (initial_implementation, PREFLIGHT.TEST_PATH): initial_test_blob,
         (implementation, PREFLIGHT.CONFIG_PATH): i_payload,
         (implementation, PREFLIGHT.SCRIPT_PATH): script_blob,
         (implementation, PREFLIGHT.TEST_PATH): test_blob,
@@ -388,8 +449,9 @@ def test_default_binding_auditor_closes_current_refs_exact3_i_and_config_only_b(
     )
 
     assert result == {
-        "status": "BOUND_CURRENT_PREDECESSOR_EXACT3_I_CONFIG_ONLY_B_VERIFIED",
+        "status": "BOUND_FROZEN_I1_REPAIR_EXACT3_I2_CONFIG_ONLY_B2_VERIFIED",
         "current_predecessor_commit": PREFLIGHT.CURRENT_PREDECESSOR_COMMIT,
+        "initial_implementation_commit": PREFLIGHT.INITIAL_IMPLEMENTATION_COMMIT,
         "implementation_commit": "2" * 40,
         "binding_commit": "8" * 40,
         "upstream_head": "8" * 40,

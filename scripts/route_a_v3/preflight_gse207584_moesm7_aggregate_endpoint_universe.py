@@ -65,6 +65,15 @@ UNKNOWN_TO_BOUND_PATHS = tuple(
     f"implementation_binding.{field}" for field in UNKNOWN_BINDING_SCALARS
 )
 CURRENT_PREDECESSOR_COMMIT = "0a6586814460b211cc730c463390e68f64aaa4f1"
+INITIAL_IMPLEMENTATION_COMMIT = "374ea6166c74c898751c7a3d4d6951664ca1d524"
+INITIAL_IMPLEMENTATION_FROZEN_BLOBS = {
+    CONFIG_PATH: "308d9dda359a56d3d765c326b99de0bfdf5eff0434a7d3075ddc0c06152f547a",
+    SCRIPT_PATH: "4473dacb00714e33a4fdd8e97920a297dae2b4e3ce33991d387b16d4d0d7ee28",
+    TEST_PATH: "3c7dd85e415f18cfc93508bb0474b91aa04e8a68817db918cfca01cedb819626",
+}
+BINDING_SCHEME = (
+    "CURRENT_PREDECESSOR_THEN_I1_EXACT3_THEN_I2_EXACT3_CONFIG_ONLY_B2_V2"
+)
 PRODUCTION_REPO_ROOT = Path(
     "/home/cunyuliu/mrna_editflow_goal/worktrees/routea_v3_a1_20260810"
 )
@@ -217,6 +226,9 @@ def _validate_protocol(protocol: Mapping[str, Any]) -> None:
         "binding_scheme",
         "status",
         "current_predecessor_commit",
+        "initial_implementation_commit",
+        "initial_implementation_exact_changed_paths",
+        "initial_implementation_frozen_blobs",
         "production_repo_root",
         "production_branch",
         "remote_name",
@@ -232,11 +244,20 @@ def _validate_protocol(protocol: Mapping[str, Any]) -> None:
     }
     if set(binding) != expected_binding_keys:
         raise ProtocolError("implementation binding schema differs")
+    expected_initial_blobs = [
+        {"path": path, "sha256": INITIAL_IMPLEMENTATION_FROZEN_BLOBS[path]}
+        for path in EXPECTED_EXACT3
+    ]
     if (
-        binding.get("binding_scheme")
-        != "CURRENT_PREDECESSOR_THEN_EXACT3_I_CONFIG_ONLY_B_V1"
+        binding.get("binding_scheme") != BINDING_SCHEME
         or binding.get("current_predecessor_commit")
         != CURRENT_PREDECESSOR_COMMIT
+        or binding.get("initial_implementation_commit")
+        != INITIAL_IMPLEMENTATION_COMMIT
+        or tuple(binding.get("initial_implementation_exact_changed_paths", ()))
+        != EXPECTED_EXACT3
+        or binding.get("initial_implementation_frozen_blobs")
+        != expected_initial_blobs
         or binding.get("production_repo_root") != str(PRODUCTION_REPO_ROOT)
         or binding.get("production_branch") != PRODUCTION_BRANCH
         or binding.get("remote_name") != REMOTE_NAME
@@ -466,6 +487,14 @@ def _normalise_binding_to_i(protocol: Mapping[str, Any]) -> dict[str, Any]:
     return result
 
 
+def _truth_projection(protocol: Mapping[str, Any]) -> dict[str, Any]:
+    """Return all scientific/geometry truth, excluding lifecycle bookkeeping."""
+
+    result = copy.deepcopy(dict(protocol))
+    result.pop("implementation_binding", None)
+    return result
+
+
 def _verify_live_origin_head(
     repo_root: Path,
     *,
@@ -491,7 +520,7 @@ def _default_binding_auditor(
     protocol_payload: bytes,
     repo_root: Path,
 ) -> dict[str, str]:
-    """Close the current-predecessor -> exact3-I -> config-only-B chain.
+    """Close predecessor -> frozen I1 -> repair I2 -> config-only B2.
 
     This is called before any publisher/GEO asset or output operation.  A
     draft I file, a partially filled binding, a stale checkout, or a copied
@@ -500,7 +529,7 @@ def _default_binding_auditor(
 
     binding = protocol["implementation_binding"]
     if binding.get("status") != BOUND:
-        raise BindingNotFrozen("exact3-I/config-only-B lifecycle is not BOUND")
+        raise BindingNotFrozen("repair exact3-I2/config-only-B2 lifecycle is not BOUND")
     if any(binding.get(field) == UNKNOWN for field in UNKNOWN_BINDING_SCALARS):
         raise BindingNotFrozen("implementation binding remains UNKNOWN or partial")
 
@@ -545,27 +574,45 @@ def _default_binding_auditor(
         expected_head=head,
     )
 
+    initial_implementation_commit = str(binding["initial_implementation_commit"])
     implementation_commit = str(binding["implementation_commit"])
     predecessor = str(binding["current_predecessor_commit"])
     _require_single_parent(
         resolved_repo,
-        implementation_commit,
+        initial_implementation_commit,
         predecessor,
-        label="implementation I",
+        label="initial implementation I1",
+    )
+    _require_single_parent(
+        resolved_repo,
+        implementation_commit,
+        initial_implementation_commit,
+        label="repair implementation I2",
     )
     _require_single_parent(
         resolved_repo,
         head,
         implementation_commit,
-        label="binding B",
+        label="binding B2",
     )
+    if _changed_paths(resolved_repo, initial_implementation_commit) != tuple(
+        sorted(EXPECTED_EXACT3)
+    ):
+        raise ProtocolError("initial implementation I1 did not change exact3")
     if _changed_paths(resolved_repo, implementation_commit) != tuple(
         sorted(EXPECTED_EXACT3)
     ):
-        raise ProtocolError("implementation I did not change exact3")
+        raise ProtocolError("repair implementation I2 did not change exact3")
     if _changed_paths(resolved_repo, head) != (CONFIG_PATH,):
-        raise ProtocolError("binding B did not change config-only")
+        raise ProtocolError("binding B2 did not change config-only")
 
+    initial_blobs: dict[str, bytes] = {}
+    for path in EXPECTED_EXACT3:
+        blob = _git_blob(resolved_repo, initial_implementation_commit, path)
+        if hashlib.sha256(blob).hexdigest() != INITIAL_IMPLEMENTATION_FROZEN_BLOBS[path]:
+            raise ProtocolError(f"frozen initial I1 blob differs: {path}")
+        initial_blobs[path] = blob
+    initial_protocol = _strict_json(initial_blobs[CONFIG_PATH])
     i_config_blob = _git_blob(resolved_repo, implementation_commit, CONFIG_PATH)
     b_config_blob = _git_blob(resolved_repo, head, CONFIG_PATH)
     i_protocol = _strict_json(i_config_blob)
@@ -576,21 +623,24 @@ def _default_binding_auditor(
     if [i_binding.get(field) for field in UNKNOWN_BINDING_SCALARS] != [
         UNKNOWN
     ] * len(UNKNOWN_BINDING_SCALARS):
-        raise ProtocolError("implementation I does not own exact four UNKNOWN scalars")
+        raise ProtocolError("repair implementation I2 does not own exact four UNKNOWN scalars")
+    truth = _truth_projection(initial_protocol)
+    if _truth_projection(i_protocol) != truth or _truth_projection(b_protocol) != truth:
+        raise ProtocolError("I1-to-I2/B2 normalized scientific truth changed")
     differences = _semantic_diff_paths(i_protocol, b_protocol)
     if differences != set(UNKNOWN_TO_BOUND_PATHS):
-        raise ProtocolError("I-to-B semantic change is not the exact four scalars")
+        raise ProtocolError("I2-to-B2 semantic change is not the exact four scalars")
     if _normalise_binding_to_i(b_protocol) != i_protocol:
-        raise ProtocolError("B does not normalize exactly to implementation I")
+        raise ProtocolError("B2 does not normalize exactly to repair I2")
     if b_protocol != dict(protocol) or b_config_blob != protocol_payload:
-        raise ProtocolError("executed protocol is not the current B Git blob")
+        raise ProtocolError("executed protocol is not the current B2 Git blob")
 
     script_blob = _git_blob(resolved_repo, implementation_commit, SCRIPT_PATH)
     test_blob = _git_blob(resolved_repo, implementation_commit, TEST_PATH)
     if _git_blob(resolved_repo, head, SCRIPT_PATH) != script_blob:
-        raise ProtocolError("B script blob differs from implementation I")
+        raise ProtocolError("B2 script blob differs from repair I2")
     if _git_blob(resolved_repo, head, TEST_PATH) != test_blob:
-        raise ProtocolError("B focused-test blob differs from implementation I")
+        raise ProtocolError("B2 focused-test blob differs from repair I2")
     if hashlib.sha256(script_blob).hexdigest() != binding.get(
         "implementation_script_sha256"
     ):
@@ -611,15 +661,16 @@ def _default_binding_auditor(
     except OSError as exc:
         raise ProtocolError("bound working implementation is unreadable") from exc
     if working_config != b_config_blob:
-        raise ProtocolError("working config differs from binding B")
+        raise ProtocolError("working config differs from binding B2")
     if executing_script != script_blob:
-        raise ProtocolError("executing __file__ bytes differ from implementation I")
+        raise ProtocolError("executing __file__ bytes differ from repair I2")
     if working_test != test_blob:
-        raise ProtocolError("working focused test differs from implementation I")
+        raise ProtocolError("working focused test differs from repair I2")
 
     return {
-        "status": "BOUND_CURRENT_PREDECESSOR_EXACT3_I_CONFIG_ONLY_B_VERIFIED",
+        "status": "BOUND_FROZEN_I1_REPAIR_EXACT3_I2_CONFIG_ONLY_B2_VERIFIED",
         "current_predecessor_commit": predecessor,
+        "initial_implementation_commit": initial_implementation_commit,
         "implementation_commit": implementation_commit,
         "binding_commit": head,
         "upstream_head": upstream_head,

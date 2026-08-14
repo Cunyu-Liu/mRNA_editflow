@@ -8,9 +8,29 @@
   "decision_id": "V3-DEC-023",
   "protocol_status": "DRAFT_FOR_REVIEW_NOT_ACTIVE_PROTOCOL",
   "implementation_binding": {
-    "binding_scheme": "CURRENT_PREDECESSOR_THEN_EXACT3_I_CONFIG_ONLY_B_V1",
+    "binding_scheme": "CURRENT_PREDECESSOR_THEN_I1_EXACT3_THEN_I2_EXACT3_CONFIG_ONLY_B2_V2",
     "status": "UNKNOWN_NOT_ASSERTED",
     "current_predecessor_commit": "0a6586814460b211cc730c463390e68f64aaa4f1",
+    "initial_implementation_commit": "374ea6166c74c898751c7a3d4d6951664ca1d524",
+    "initial_implementation_exact_changed_paths": [
+      "configs/route_a_v3_gse207584_moesm7_aggregate_endpoint_universe_preflight_v1.json",
+      "scripts/route_a_v3/preflight_gse207584_moesm7_aggregate_endpoint_universe.py",
+      "tests/route_a_v3/test_preflight_gse207584_moesm7_aggregate_endpoint_universe.py"
+    ],
+    "initial_implementation_frozen_blobs": [
+      {
+        "path": "configs/route_a_v3_gse207584_moesm7_aggregate_endpoint_universe_preflight_v1.json",
+        "sha256": "308d9dda359a56d3d765c326b99de0bfdf5eff0434a7d3075ddc0c06152f547a"
+      },
+      {
+        "path": "scripts/route_a_v3/preflight_gse207584_moesm7_aggregate_endpoint_universe.py",
+        "sha256": "4473dacb00714e33a4fdd8e97920a297dae2b4e3ce33991d387b16d4d0d7ee28"
+      },
+      {
+        "path": "tests/route_a_v3/test_preflight_gse207584_moesm7_aggregate_endpoint_universe.py",
+        "sha256": "3c7dd85e415f18cfc93508bb0474b91aa04e8a68817db918cfca01cedb819626"
+      }
+    ],
     "production_repo_root": "/home/cunyuliu/mrna_editflow_goal/worktrees/routea_v3_a1_20260810",
     "production_branch": "routea-v3-a1-20260810",
     "remote_name": "origin",
@@ -33,7 +53,7 @@
     "binding_commit_exact_changed_paths": [
       "configs/route_a_v3_gse207584_moesm7_aggregate_endpoint_universe_preflight_v1.json"
     ],
-    "activation_rule": "The implementation commit I must be the direct single-parent child of current_predecessor_commit, change exact3, and retain all four unknown_to_bound_scalar_paths as UNKNOWN_NOT_ASSERTED. Binding commit B must be the direct single-parent child of I, change config-only, and change exactly those four semantic scalars. Production requires a clean production_branch with HEAD equal to its configured upstream, origin tracking ref, and live origin branch. The working B config, I script/test blobs, and the executing __file__ script must match before any publisher/GEO asset or output I/O. A valid B permits only this aggregate preflight; protocol_status remains DRAFT_FOR_REVIEW_NOT_ACTIVE_PROTOCOL and qualification remains inactive."
+    "activation_rule": "The frozen initial implementation I1 must be the direct single-parent child of current_predecessor_commit, change exact3, and retain its frozen blobs. Repair implementation I2 must be the direct single-parent child of I1, change exact3, preserve the normalized non-binding scientific truth, and retain all four unknown_to_bound_scalar_paths as UNKNOWN_NOT_ASSERTED. Binding B2 must be the direct single-parent child of I2, change config-only, and change exactly those four semantic scalars. Production requires a clean production_branch with HEAD equal to its configured upstream, origin tracking ref, and live origin branch. The working B2 config, I2 script/test blobs, and the executing __file__ script must match before any publisher/GEO asset or output I/O. A valid B2 permits only this aggregate preflight; protocol_status remains DRAFT_FOR_REVIEW_NOT_ACTIVE_PROTOCOL and qualification remains inactive."
   },
   "authority_assessment": {
     "current_authority_sufficient_for_this_candidate_and_aggregate_preflight": true,
