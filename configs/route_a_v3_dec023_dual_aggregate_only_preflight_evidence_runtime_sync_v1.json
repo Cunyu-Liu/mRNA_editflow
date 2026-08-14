@@ -12,20 +12,20 @@
   "event_name": "GSE261709_PUBLIC_IDENTIFIER_ASSET_SCHEMA_AGGREGATE_GEOMETRY_AND_GSE207584_AGGREGATE_DENSE_FAMILY_QUALIFICATION_PREFLIGHTS_REGISTERED_QUALIFICATION_UNCHANGED",
   "sync_type": "APPEND_ONLY_PUBLIC_AGGREGATE_EVIDENCE_REGISTRATION_NO_SCIENTIFIC_STATE_CHANGE",
   "implementation_binding": {
-    "binding_scheme": "LEDGER_L_EXACT4_THEN_I_EXACT3_THEN_CONFIG_ONLY_B_V1",
-    "status": "BOUND",
-    "implementation_commit": "6c2312385ebb3b999b26caa3901fcc825b1a0f6e",
+    "binding_scheme": "LEDGER_L_EXACT4_THEN_I1_EXACT3_THEN_B1_CONFIG_ONLY_THEN_DYNAMIC_I2_EXACT3_THEN_CONFIG_ONLY_B2_V1",
+    "status": "UNKNOWN_NOT_ASSERTED",
+    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
     "implementation_script_path": "scripts/route_a_v3/dec023_dual_aggregate_only_preflight_evidence_runtime_sync.py",
-    "implementation_script_sha256": "d82e15fee72b4960aa919a226b65377a0cf1bf3b879f5aebc71096e0cf479f18",
+    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
     "implementation_test_path": "tests/route_a_v3/test_dec023_dual_aggregate_only_preflight_evidence_runtime_sync.py",
-    "implementation_test_sha256": "5b542e94fc0d5f9f097b9d0da434386f2ef993b768ae9990bc4ee5a737175935",
+    "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
     "unknown_to_bound_scalar_paths": [
       "implementation_binding.status",
       "implementation_binding.implementation_commit",
       "implementation_binding.implementation_script_sha256",
       "implementation_binding.implementation_test_sha256"
     ],
-    "activation_rule": "L is the frozen exact4 dual-evidence ledger commit. I is its direct exact3 child and retains exactly the four implementation-binding scalars as UNKNOWN_NOT_ASSERTED. B is the direct config-only child of I and binds only those four scalars. Production requires both groups BOUND plus a clean worktree and index with HEAD equal to upstream and origin at B before any report, prepared-directory, or runtime I/O."
+    "activation_rule": "L is the frozen exact4 dual-evidence ledger commit. Historical I1 is its direct exact3 child and historical B1 is the direct config-only child of I1. Dynamic repair I2 is the direct exact3 child of B1 and retains exactly the four implementation-binding scalars as UNKNOWN_NOT_ASSERTED. B2 is the direct config-only child of I2 and binds only those four scalars. Production requires the ledger, prior lifecycle, and current implementation groups bound plus a clean worktree and index with HEAD equal to upstream and origin at B2 before any report, prepared-directory, or runtime I/O."
   },
   "repository_authority": {
     "production_repo_root": "/home/cunyuliu/mrna_editflow_goal/worktrees/routea_v3_a1_20260810",
@@ -38,6 +38,35 @@
     "binding_exact_changed_paths": [
       "configs/route_a_v3_dec023_dual_aggregate_only_preflight_evidence_runtime_sync_v1.json"
     ],
+    "predecessor_lifecycle": {
+      "status": "FROZEN_BOUND_I1_EXACT3_B1_CONFIG_ONLY",
+      "implementation_i1": {
+        "commit": "6c2312385ebb3b999b26caa3901fcc825b1a0f6e",
+        "expected_parent": "8eecab9933873a2c310abf17b48fc6a49d373346",
+        "exact_changed_paths": [
+          "configs/route_a_v3_dec023_dual_aggregate_only_preflight_evidence_runtime_sync_v1.json",
+          "scripts/route_a_v3/dec023_dual_aggregate_only_preflight_evidence_runtime_sync.py",
+          "tests/route_a_v3/test_dec023_dual_aggregate_only_preflight_evidence_runtime_sync.py"
+        ],
+        "blob_sha256_by_path": {
+          "configs/route_a_v3_dec023_dual_aggregate_only_preflight_evidence_runtime_sync_v1.json": "4524b3868a84e13fc1ee408ebd0fae427652341855f0d1a596bce12239dec1a0",
+          "scripts/route_a_v3/dec023_dual_aggregate_only_preflight_evidence_runtime_sync.py": "d82e15fee72b4960aa919a226b65377a0cf1bf3b879f5aebc71096e0cf479f18",
+          "tests/route_a_v3/test_dec023_dual_aggregate_only_preflight_evidence_runtime_sync.py": "5b542e94fc0d5f9f097b9d0da434386f2ef993b768ae9990bc4ee5a737175935"
+        }
+      },
+      "binding_b1": {
+        "commit": "a1edff1235972de4760df5c504532831be93ada6",
+        "expected_parent": "6c2312385ebb3b999b26caa3901fcc825b1a0f6e",
+        "exact_changed_paths": [
+          "configs/route_a_v3_dec023_dual_aggregate_only_preflight_evidence_runtime_sync_v1.json"
+        ],
+        "blob_sha256_by_path": {
+          "configs/route_a_v3_dec023_dual_aggregate_only_preflight_evidence_runtime_sync_v1.json": "2d5373595224bed8719104c3d68d6ca467171f4d17d2db9165b832ac8222b1e1",
+          "scripts/route_a_v3/dec023_dual_aggregate_only_preflight_evidence_runtime_sync.py": "d82e15fee72b4960aa919a226b65377a0cf1bf3b879f5aebc71096e0cf479f18",
+          "tests/route_a_v3/test_dec023_dual_aggregate_only_preflight_evidence_runtime_sync.py": "5b542e94fc0d5f9f097b9d0da434386f2ef993b768ae9990bc4ee5a737175935"
+        }
+      }
+    },
     "predecessor_ledger": {
       "status": "BOUND",
       "commit": "8eecab9933873a2c310abf17b48fc6a49d373346",

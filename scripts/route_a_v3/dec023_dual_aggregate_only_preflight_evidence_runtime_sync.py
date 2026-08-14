@@ -7,12 +7,12 @@ adds their in-place metadata to RUN_MANIFEST, snapshots the three EVT056 runtime
 mutables, writes one sync record, then commits STATUS, RUN_MANIFEST, and
 EVENT_LOG in that order.  EVT057 is therefore the commit point.
 
-The lifecycle is directly exact4 ledger L -> exact3 implementation I ->
-config-only B.  The staging candidate may retain the entire ledger group and
-exactly four implementation-binding scalars as UNKNOWN; production requires
-both groups bound.  Every production entry point proves the exact chain, clean
-worktree/index, branch, upstream, and origin equality before reading either
-report, the prepared directory, or the runtime.
+The lifecycle is exact4 ledger L -> historical exact3 I1 -> historical
+config-only B1 -> dynamic repair exact3 I2 -> config-only B2.  I2 retains
+exactly four implementation-binding scalars as UNKNOWN until B2 binds them.
+Every production entry point proves the exact chain, clean worktree/index,
+branch, upstream, and origin equality before reading either report, the
+prepared directory, or the runtime.
 """
 
 from __future__ import annotations
@@ -93,7 +93,7 @@ class BindingError(RuntimeSyncError):
 
 
 class AuthorityError(RuntimeSyncError):
-    """The production Git lineage is not exact4 L -> exact3 I -> config-only B."""
+    """The production Git lineage is not exact L -> I1 -> B1 -> I2 -> B2."""
 
 
 class PredecessorError(RuntimeSyncError):
@@ -515,7 +515,10 @@ def validate_static_config(config: dict[str, Any]) -> None:
     )
     _expect(
         binding["binding_scheme"],
-        "LEDGER_L_EXACT4_THEN_I_EXACT3_THEN_CONFIG_ONLY_B_V1",
+        (
+            "LEDGER_L_EXACT4_THEN_I1_EXACT3_THEN_B1_CONFIG_ONLY_THEN_"
+            "DYNAMIC_I2_EXACT3_THEN_CONFIG_ONLY_B2_V1"
+        ),
         label="binding scheme",
     )
     _expect(binding["implementation_script_path"], SCRIPT_REPO_PATH, label="script path")
@@ -541,6 +544,7 @@ def validate_static_config(config: dict[str, Any]) -> None:
             "branch",
             "implementation_exact_changed_paths",
             "binding_exact_changed_paths",
+            "predecessor_lifecycle",
             "predecessor_ledger",
         },
         label="repository authority",
@@ -560,6 +564,59 @@ def validate_static_config(config: dict[str, Any]) -> None:
         authority["binding_exact_changed_paths"],
         [CONFIG_REPO_PATH],
         label="B config-only path",
+    )
+    lifecycle = _expect_keys(
+        authority["predecessor_lifecycle"],
+        {"status", "implementation_i1", "binding_b1"},
+        label="predecessor lifecycle",
+    )
+    _expect(
+        lifecycle["status"],
+        "FROZEN_BOUND_I1_EXACT3_B1_CONFIG_ONLY",
+        label="predecessor lifecycle status",
+    )
+    i1 = _expect_keys(
+        lifecycle["implementation_i1"],
+        {"commit", "expected_parent", "exact_changed_paths", "blob_sha256_by_path"},
+        label="historical I1",
+    )
+    b1 = _expect_keys(
+        lifecycle["binding_b1"],
+        {"commit", "expected_parent", "exact_changed_paths", "blob_sha256_by_path"},
+        label="historical B1",
+    )
+    _expect_hex(i1["commit"], HEX40, label="historical I1 commit")
+    _expect_hex(i1["expected_parent"], HEX40, label="historical I1 parent")
+    _expect_hex(b1["commit"], HEX40, label="historical B1 commit")
+    _expect_hex(b1["expected_parent"], HEX40, label="historical B1 parent")
+    _expect(
+        i1["exact_changed_paths"],
+        [CONFIG_REPO_PATH, SCRIPT_REPO_PATH, TEST_REPO_PATH],
+        label="historical I1 exact3 paths",
+    )
+    _expect(
+        b1["exact_changed_paths"],
+        [CONFIG_REPO_PATH],
+        label="historical B1 config-only path",
+    )
+    exact3_paths = {CONFIG_REPO_PATH, SCRIPT_REPO_PATH, TEST_REPO_PATH}
+    i1_blobs = _expect_keys(
+        i1["blob_sha256_by_path"], exact3_paths, label="historical I1 blobs"
+    )
+    b1_blobs = _expect_keys(
+        b1["blob_sha256_by_path"], exact3_paths, label="historical B1 blobs"
+    )
+    for path in sorted(exact3_paths):
+        _expect_hex(i1_blobs[path], HEX64, label=f"historical I1 blob {path}")
+        _expect_hex(b1_blobs[path], HEX64, label=f"historical B1 blob {path}")
+    for path in (SCRIPT_REPO_PATH, TEST_REPO_PATH):
+        _expect(
+            b1_blobs[path],
+            i1_blobs[path],
+            label=f"historical B1 retained I1 blob {path}",
+        )
+    _expect(
+        b1["expected_parent"], i1["commit"], label="historical B1 parent/I1"
     )
     ledger = _expect_keys(
         authority["predecessor_ledger"],
@@ -582,6 +639,12 @@ def validate_static_config(config: dict[str, Any]) -> None:
         _expect_keys(item, {"path", "sha256"}, label=f"ledger blob {path}")
         _expect(item["path"], path, label="ledger blob path")
     _validate_grouped_ledger(ledger)
+    if not _ledger_is_unknown(ledger):
+        _expect(
+            i1["expected_parent"],
+            ledger["commit"],
+            label="historical I1 parent/L",
+        )
     if _ledger_is_unknown(ledger) and not _binding_is_unknown(binding):
         raise BindingError("implementation cannot be bound before the ledger")
 
@@ -778,16 +841,21 @@ def _read_repo_file(repo_root: Path, path: str) -> bytes:
 def audit_production_repository_authority(
     config: dict[str, Any], config_payload: bytes
 ) -> dict[str, Any]:
-    """Prove the direct exact4 L -> exact3 I -> config-only B chain."""
+    """Prove the direct L -> I1 -> B1 -> I2 -> B2 lifecycle."""
 
     validate_bound_config(config)
     authority = config["repository_authority"]
     binding = config["implementation_binding"]
     ledger = authority["predecessor_ledger"]
+    lifecycle = authority["predecessor_lifecycle"]
+    historical_i1 = lifecycle["implementation_i1"]
+    historical_b1 = lifecycle["binding_b1"]
     repo_root = Path(authority["production_repo_root"])
     branch = authority["branch"]
     l_commit = ledger["commit"]
-    i_commit = binding["implementation_commit"]
+    i1_commit = historical_i1["commit"]
+    b1_commit = historical_b1["commit"]
+    i2_commit = binding["implementation_commit"]
 
     expected_executing_path = (repo_root / SCRIPT_REPO_PATH).resolve()
     executing_path = Path(__file__).resolve()
@@ -814,19 +882,33 @@ def audit_production_repository_authority(
     if _run_git(repo_root, "status", "--porcelain=v1", "--untracked-files=all"):
         raise AuthorityError("production worktree or index is dirty")
 
-    b_parent = _run_git(repo_root, "rev-parse", f"{head}^").decode().strip()
-    i_parent = _run_git(repo_root, "rev-parse", f"{i_commit}^").decode().strip()
-    _expect(b_parent, i_commit, label="B parent/I")
-    _expect(i_parent, l_commit, label="I parent/L")
+    b2_parent = _run_git(repo_root, "rev-parse", f"{head}^").decode().strip()
+    i2_parent = _run_git(repo_root, "rev-parse", f"{i2_commit}^").decode().strip()
+    b1_parent = _run_git(repo_root, "rev-parse", f"{b1_commit}^").decode().strip()
+    i1_parent = _run_git(repo_root, "rev-parse", f"{i1_commit}^").decode().strip()
+    _expect(b2_parent, i2_commit, label="B2 parent/I2")
+    _expect(i2_parent, b1_commit, label="I2 parent/B1")
+    _expect(b1_parent, i1_commit, label="B1 parent/I1")
+    _expect(i1_parent, l_commit, label="I1 parent/L")
     _expect(
         _changed_paths(repo_root, head),
         sorted(authority["binding_exact_changed_paths"]),
-        label="B changed paths",
+        label="B2 changed paths",
     )
     _expect(
-        _changed_paths(repo_root, i_commit),
+        _changed_paths(repo_root, i2_commit),
         sorted(authority["implementation_exact_changed_paths"]),
-        label="I changed paths",
+        label="I2 changed paths",
+    )
+    _expect(
+        _changed_paths(repo_root, b1_commit),
+        sorted(historical_b1["exact_changed_paths"]),
+        label="B1 changed paths",
+    )
+    _expect(
+        _changed_paths(repo_root, i1_commit),
+        sorted(historical_i1["exact_changed_paths"]),
+        label="I1 changed paths",
     )
     _expect(
         _changed_paths(repo_root, l_commit),
@@ -837,24 +919,36 @@ def audit_production_repository_authority(
     for item in ledger["frozen_blobs"]:
         path = item["path"]
         digest = item["sha256"]
-        for commit, label in ((l_commit, "L"), (i_commit, "I"), (head, "B")):
+        for commit, label in (
+            (l_commit, "L"),
+            (i1_commit, "I1"),
+            (b1_commit, "B1"),
+            (i2_commit, "I2"),
+            (head, "B2"),
+        ):
             if sha256(_git_blob(repo_root, commit, path)) != digest:
                 raise AuthorityError(f"{label} frozen ledger blob drift: {path}")
         if sha256(_read_repo_file(repo_root, path)) != digest:
             raise AuthorityError(f"worktree frozen ledger blob drift: {path}")
 
-    i_config = load_json(
-        _git_blob(repo_root, i_commit, CONFIG_REPO_PATH), label="I config"
+    for record, label in ((historical_i1, "I1"), (historical_b1, "B1")):
+        commit = record["commit"]
+        for path, digest in record["blob_sha256_by_path"].items():
+            if sha256(_git_blob(repo_root, commit, path)) != digest:
+                raise AuthorityError(f"{label} lifecycle blob drift: {path}")
+
+    i2_config = load_json(
+        _git_blob(repo_root, i2_commit, CONFIG_REPO_PATH), label="I2 config"
     )
-    if not _typed_equal(i_config, expected_unknown_i_config(config)):
-        raise AuthorityError("I config is not the exact four-scalar UNKNOWN form")
+    if not _typed_equal(i2_config, expected_unknown_i_config(config)):
+        raise AuthorityError("I2 config is not the exact four-scalar UNKNOWN form")
     if not _typed_equal(
         runtime_science_report_truth_projection(config),
-        runtime_science_report_truth_projection(i_config),
+        runtime_science_report_truth_projection(i2_config),
     ):
-        raise AuthorityError("B runtime/science/report truth drift from I")
+        raise AuthorityError("B2 runtime/science/report truth drift from I2")
     if _git_blob(repo_root, head, CONFIG_REPO_PATH) != config_payload:
-        raise AuthorityError("B config blob differs from supplied config")
+        raise AuthorityError("B2 config blob differs from supplied config")
     if _read_repo_file(repo_root, CONFIG_REPO_PATH) != config_payload:
         raise AuthorityError("worktree config differs from supplied config")
 
@@ -862,23 +956,29 @@ def audit_production_repository_authority(
         (SCRIPT_REPO_PATH, binding["implementation_script_sha256"]),
         (TEST_REPO_PATH, binding["implementation_test_sha256"]),
     ):
-        i_blob = _git_blob(repo_root, i_commit, path)
-        for commit, label in ((i_commit, "I"), (head, "B")):
-            if sha256(i_blob if commit == i_commit else _git_blob(repo_root, commit, path)) != digest:
+        i2_blob = _git_blob(repo_root, i2_commit, path)
+        for commit, label in ((i2_commit, "I2"), (head, "B2")):
+            blob = i2_blob if commit == i2_commit else _git_blob(repo_root, commit, path)
+            if sha256(blob) != digest:
                 raise AuthorityError(f"{label} implementation blob drift: {path}")
         if sha256(_read_repo_file(repo_root, path)) != digest:
             raise AuthorityError(f"worktree implementation blob drift: {path}")
         if path == SCRIPT_REPO_PATH:
             if sha256(executing_payload) != digest:
                 raise AuthorityError("executing script SHA-256 differs from bound implementation")
-            if executing_payload != i_blob:
-                raise AuthorityError("executing script bytes differ from bound I script blob")
+            if executing_payload != i2_blob:
+                raise AuthorityError("executing script bytes differ from bound I2 script blob")
 
     return {
-        "status": "PASS_DIRECT_EXACT4_L_TO_EXACT3_I_TO_CONFIG_ONLY_B",
+        "status": (
+            "PASS_DIRECT_EXACT4_L_TO_EXACT3_I1_TO_CONFIG_ONLY_B1_TO_"
+            "EXACT3_I2_TO_CONFIG_ONLY_B2"
+        ),
         "ledger_l_commit": l_commit,
-        "implementation_i_commit": i_commit,
-        "binding_b_commit": head,
+        "historical_implementation_i1_commit": i1_commit,
+        "historical_binding_b1_commit": b1_commit,
+        "implementation_i2_commit": i2_commit,
+        "binding_b2_commit": head,
         "upstream_head_commit": upstream_head,
         "origin_branch_head_commit": origin_head,
         "worktree_and_index_clean": True,
@@ -999,7 +1099,6 @@ def _runtime_truth_fields(config: dict[str, Any]) -> dict[str, Any]:
         "gpu_work_started": False,
         "gpu_work_allowed": False,
         "model_selection_allowed": False,
-        "a7_allowed": False,
         "next_phase_authorized": False,
         "scientific_claim_status": "NOT_ESTABLISHED",
     }
