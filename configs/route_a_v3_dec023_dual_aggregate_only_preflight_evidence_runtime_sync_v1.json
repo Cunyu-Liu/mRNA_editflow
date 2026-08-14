@@ -1,0 +1,247 @@
+{
+  "schema_version": "route_a_v3_dec023_dual_aggregate_only_preflight_evidence_runtime_sync.v1",
+  "protocol_id": "ROUTE_A_V3_DEC023_DUAL_AGGREGATE_ONLY_PREFLIGHT_EVIDENCE_RUNTIME_SYNC_V1",
+  "contract_id": "mrna_xeditflow_route_a_v3",
+  "phase_id": "A1",
+  "dataset_ids": [
+    "GSE261709",
+    "GSE207584"
+  ],
+  "decision_id": "V3-DEC-023",
+  "event_id": "A1-EVT-057",
+  "event_name": "GSE261709_PUBLIC_IDENTIFIER_ASSET_SCHEMA_AGGREGATE_GEOMETRY_AND_GSE207584_AGGREGATE_DENSE_FAMILY_QUALIFICATION_PREFLIGHTS_REGISTERED_QUALIFICATION_UNCHANGED",
+  "sync_type": "APPEND_ONLY_PUBLIC_AGGREGATE_EVIDENCE_REGISTRATION_NO_SCIENTIFIC_STATE_CHANGE",
+  "implementation_binding": {
+    "binding_scheme": "LEDGER_L_EXACT4_THEN_I_EXACT3_THEN_CONFIG_ONLY_B_V1",
+    "status": "UNKNOWN_NOT_ASSERTED",
+    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "implementation_script_path": "scripts/route_a_v3/dec023_dual_aggregate_only_preflight_evidence_runtime_sync.py",
+    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_test_path": "tests/route_a_v3/test_dec023_dual_aggregate_only_preflight_evidence_runtime_sync.py",
+    "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
+    "unknown_to_bound_scalar_paths": [
+      "implementation_binding.status",
+      "implementation_binding.implementation_commit",
+      "implementation_binding.implementation_script_sha256",
+      "implementation_binding.implementation_test_sha256"
+    ],
+    "activation_rule": "L is the frozen exact4 dual-evidence ledger commit. I is its direct exact3 child and retains exactly the four implementation-binding scalars as UNKNOWN_NOT_ASSERTED. B is the direct config-only child of I and binds only those four scalars. Production requires both groups BOUND plus a clean worktree and index with HEAD equal to upstream and origin at B before any report, prepared-directory, or runtime I/O."
+  },
+  "repository_authority": {
+    "production_repo_root": "/home/cunyuliu/mrna_editflow_goal/worktrees/routea_v3_a1_20260810",
+    "branch": "routea-v3-a1-20260810",
+    "implementation_exact_changed_paths": [
+      "configs/route_a_v3_dec023_dual_aggregate_only_preflight_evidence_runtime_sync_v1.json",
+      "scripts/route_a_v3/dec023_dual_aggregate_only_preflight_evidence_runtime_sync.py",
+      "tests/route_a_v3/test_dec023_dual_aggregate_only_preflight_evidence_runtime_sync.py"
+    ],
+    "binding_exact_changed_paths": [
+      "configs/route_a_v3_dec023_dual_aggregate_only_preflight_evidence_runtime_sync_v1.json"
+    ],
+    "predecessor_ledger": {
+      "status": "BOUND",
+      "commit": "8eecab9933873a2c310abf17b48fc6a49d373346",
+      "integration_id": "DEC023_GSE261709_AND_GSE207584_DUAL_PREFLIGHT_FINAL_EVIDENCE_V1_LEDGER_REGISTRATION",
+      "manifest_status": "DEC023_GSE261709_PUBLIC_SCHEMA_GEOMETRY_AND_GSE207584_DENSE_FAMILY_DUAL_PREFLIGHT_EVIDENCE_REGISTERED_EVT056_SETTLED_EVIDENCE_RUNTIME_PENDING_A1_INCOMPLETE_A6_IN_PROGRESS_L3_NOT_ESTABLISHED_A7_NOT_RUN",
+      "registered_lineage_ids": [
+        "gse261709_public_identifier_asset_schema_aggregate_geometry_preflight_v1",
+        "gse207584_aggregate_dense_family_qualification_preflight_v1"
+      ],
+      "exact_changed_paths": [
+        "docs/execution/route_a_v3_a1_interim.yaml",
+        "docs/execution/route_a_v3_registry_manifest.json",
+        "scripts/route_a_v3/validate_a0_bundle.py",
+        "tests/route_a_v3/test_a0_integrity_guards.py"
+      ],
+      "frozen_blobs": [
+        {
+          "path": "docs/execution/route_a_v3_a1_interim.yaml",
+          "sha256": "2e7eb368c9b76318064838d3a3415fd5a92f9a2314b6f53604afcb6b8794a204"
+        },
+        {
+          "path": "docs/execution/route_a_v3_registry_manifest.json",
+          "sha256": "4fed11311e07687362c14f7721e5972bbd015b7c1aa045dc64e7f86e88a50db6"
+        },
+        {
+          "path": "scripts/route_a_v3/validate_a0_bundle.py",
+          "sha256": "724ddd3e3dc18eed22efccb1b6ce3389b91fd76ebed81eba0cf33018711bfab1"
+        },
+        {
+          "path": "tests/route_a_v3/test_a0_integrity_guards.py",
+          "sha256": "708d73ade233e4f8ade8fbc477be615ff3d447f694f30fe5b1c73f457c3445d3"
+        }
+      ]
+    }
+  },
+  "registered_artifacts": [
+    {
+      "lineage_id": "gse261709_public_identifier_asset_schema_aggregate_geometry_preflight_v1",
+      "name": "GSE261709_PUBLIC_IDENTIFIER_ASSET_SCHEMA_AGGREGATE_GEOMETRY_PREFLIGHT_V1.json",
+      "artifact_type": "PUBLIC_IDENTIFIER_ASSET_SCHEMA_AGGREGATE_GEOMETRY_PREFLIGHT_ONLY",
+      "absolute_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE261709_PUBLIC_IDENTIFIER_ASSET_SCHEMA_GEOMETRY_PREFLIGHT_B3_d3177b0/GSE261709_PUBLIC_IDENTIFIER_ASSET_SCHEMA_AGGREGATE_GEOMETRY_PREFLIGHT_V1.json",
+      "bytes": 6748,
+      "sha256": "ca68fb3a0e18e9c4989c3449f9b88c5112cc737e54ec026ce7c3b0df83386400"
+    },
+    {
+      "lineage_id": "gse207584_aggregate_dense_family_qualification_preflight_v1",
+      "name": "GSE207584_AGGREGATE_DENSE_FAMILY_QUALIFICATION_PREFLIGHT_V1.json",
+      "artifact_type": "AGGREGATE_DENSE_FAMILY_QUALIFICATION_PREFLIGHT_ONLY",
+      "absolute_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE207584_AGGREGATE_DENSE_FAMILY_PREFLIGHT_B4_021ba2a/GSE207584_AGGREGATE_DENSE_FAMILY_QUALIFICATION_PREFLIGHT_V1.json",
+      "bytes": 7755,
+      "sha256": "a50329b862f41415b3ff33e8fc251d07457449e0d75f31501238eaf30feba6b1"
+    }
+  ],
+  "runtime": {
+    "run_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5",
+    "allowed_prepared_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/staging/runtime_sync/A1",
+    "predecessor_event_id": "A1-EVT-056",
+    "predecessor_event_count": 56,
+    "successor_event_id": "A1-EVT-057",
+    "successor_event_count": 57,
+    "predecessor_manifest_output_count": 242,
+    "successor_manifest_output_count": 248,
+    "predecessor_manifest_registered_artifact_count": 6,
+    "successor_manifest_registered_artifact_count": 8,
+    "predecessor_mutables": {
+      "STATUS.json": {
+        "bytes": 29902,
+        "sha256": "6117eddd98de0168b7825907f054bfa0af7a77301ae2487594c89d22ae1a02ac",
+        "snapshot_name": "STATUS_PRE_DEC023_DUAL_AGGREGATE_ONLY_PREFLIGHT_EVIDENCE_RUNTIME_SYNC_V1.json"
+      },
+      "RUN_MANIFEST.json": {
+        "bytes": 103903,
+        "sha256": "fcf4a264fc2b8cc0ebdb982a29192cd4b0cbf06e78d099f5409cb3a9a2bafe1c",
+        "snapshot_name": "RUN_MANIFEST_PRE_DEC023_DUAL_AGGREGATE_ONLY_PREFLIGHT_EVIDENCE_RUNTIME_SYNC_V1.json"
+      },
+      "EVENT_LOG.jsonl": {
+        "bytes": 128048,
+        "sha256": "7b3ce512e5257a7e27111cb72cedcb1b25e66f6acf59b12ddd93edbd8dbff4d7",
+        "snapshot_name": "EVENT_LOG_PRE_DEC023_DUAL_AGGREGATE_ONLY_PREFLIGHT_EVIDENCE_RUNTIME_SYNC_V1.jsonl"
+      }
+    },
+    "predecessor_tail": {
+      "event_id": "A1-EVT-056",
+      "predecessor_event_id": "A1-EVT-055",
+      "decision_id": "V3-DEC-023",
+      "bytes": 6360,
+      "sha256": "062ba8fa4aa11b90cefc7de0bd3e28bdf8830800580922053c5af9250566451c"
+    },
+    "sync_name": "A1_DEC023_DUAL_AGGREGATE_ONLY_PREFLIGHT_EVIDENCE_RUNTIME_SYNC_V1.json",
+    "output_delta_count": 6,
+    "immutable_publish_order": [
+      "STATUS_PRE_DEC023_DUAL_AGGREGATE_ONLY_PREFLIGHT_EVIDENCE_RUNTIME_SYNC_V1.json",
+      "RUN_MANIFEST_PRE_DEC023_DUAL_AGGREGATE_ONLY_PREFLIGHT_EVIDENCE_RUNTIME_SYNC_V1.json",
+      "EVENT_LOG_PRE_DEC023_DUAL_AGGREGATE_ONLY_PREFLIGHT_EVIDENCE_RUNTIME_SYNC_V1.jsonl",
+      "A1_DEC023_DUAL_AGGREGATE_ONLY_PREFLIGHT_EVIDENCE_RUNTIME_SYNC_V1.json"
+    ],
+    "mutable_publish_order": [
+      "STATUS.json",
+      "RUN_MANIFEST.json",
+      "EVENT_LOG.jsonl"
+    ]
+  },
+  "frozen_scientific_state": {
+    "current_qualified_counts": {
+      "ordinary": 1,
+      "a1": 1,
+      "true_a2": 0,
+      "canonical_records": 6547
+    },
+    "gse261709_contribution": {
+      "ordinary": 0,
+      "a1": 0,
+      "true_a2": 0,
+      "canonical_records": 0
+    },
+    "gse207584_contribution": {
+      "ordinary": 0,
+      "a1": 0,
+      "true_a2": 0,
+      "canonical_records": 0
+    },
+    "run_status": "IN_PROGRESS",
+    "evidence_status": "SCRATCH_ROUTE_QUALIFIED_GLOBAL_PHASE_INCOMPLETE",
+    "gate_status": "A1_PHASE_INCOMPLETE_GLOBAL_REQUIREMENTS",
+    "a1_complete": false,
+    "qualified": false,
+    "training_started": false,
+    "training_allowed": false,
+    "training_authorized": false,
+    "gpu_work_started": false,
+    "gpu_work_allowed": false,
+    "model_selection_allowed": false,
+    "a7_allowed": false,
+    "next_phase_authorized": false,
+    "scientific_claim_status": "NOT_ESTABLISHED"
+  },
+  "registered_evidence_truth": {
+    "combined_status": "STOP_BOTH_PREFLIGHT_PROTOCOLS_NO_QUALIFICATION",
+    "qualification_changed": false,
+    "gse261709_public_identifier_asset_schema_aggregate_geometry_preflight": {
+      "record_type": "PUBLIC_IDENTIFIER_ASSET_SCHEMA_AND_AGGREGATE_GEOMETRY_PREFLIGHT_ONLY",
+      "status": "STOP_PREFLIGHT_GATES_NOT_CLOSED",
+      "required_gate_count": 3,
+      "gate_status_counts": {
+        "PASS": 1,
+        "BLOCKED": 2,
+        "UNKNOWN_NOT_ASSERTED": 0
+      },
+      "all_required_gates_pass": false,
+      "qualified": false,
+      "ordinary_study_contribution": 0,
+      "a1_study_contribution": 0,
+      "true_a2_study_contribution": 0,
+      "canonical_record_count": 0,
+      "row_level_authority_granted": false,
+      "sole_next_action": "STOP_PREFLIGHT_GATES_NOT_CLOSED"
+    },
+    "gse207584_aggregate_dense_family_qualification_preflight": {
+      "record_type": "AGGREGATE_DENSE_FAMILY_QUALIFICATION_PREFLIGHT_ONLY",
+      "status": "STOP_CURRENT_PROTOCOL_NOT_QUALIFIED",
+      "required_gate_count": 11,
+      "gate_status_counts": {
+        "PASS_PREFLIGHT_ONLY": 1,
+        "FAIL_CLOSED": 2,
+        "UNKNOWN_NOT_ASSERTED": 8
+      },
+      "all_required_gates_pass": false,
+      "qualified": false,
+      "ordinary_study_contribution": 0,
+      "a1_study_contribution": 0,
+      "true_a2_study_contribution": 0,
+      "canonical_record_count": 0,
+      "sole_next_action": "STOP_CURRENT_PROTOCOL_NOT_QUALIFIED"
+    }
+  },
+  "access_boundary": {
+    "registered_artifact_count": 2,
+    "registered_artifact_exact_byte_validation_count": 2,
+    "registered_artifact_body_parse_count": 0,
+    "registered_artifact_payload_field_read_count": 0,
+    "registered_artifacts_copied": false,
+    "public_asset_read_count": 0,
+    "private_payload_read_count": 0,
+    "sealed_payload_read_count": 0,
+    "member_payload_read_count": 0,
+    "row_payload_read_count": 0,
+    "sequence_payload_read_count": 0,
+    "effect_payload_read_count": 0,
+    "canonical_materialization_count": 0,
+    "qualification_run_count": 0,
+    "training_run_count": 0,
+    "gpu_work_count": 0,
+    "model_selection_run_count": 0,
+    "restricted_or_sealed_path_accessed": false,
+    "gse246381_contact": false
+  },
+  "publication_policy": {
+    "registered_artifacts_remain_in_place": true,
+    "registered_artifact_order_is_ledger_lineage_order": true,
+    "registered_artifact_bodies_are_not_parsed": true,
+    "predecessor_snapshots_are_immutable_runtime_outputs": true,
+    "sync_record_is_immutable_runtime_output": true,
+    "mutables_commit_after_all_immutables": true,
+    "event_is_last_commit": true,
+    "supported_recovery": "EXACT_PUBLICATION_PREFIX_ONLY"
+  }
+}
