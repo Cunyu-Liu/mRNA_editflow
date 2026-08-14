@@ -33,6 +33,19 @@ sys.modules[SPEC.name] = PREFLIGHT
 SPEC.loader.exec_module(PREFLIGHT)
 
 OWN_BINDING_SCALARS = PREFLIGHT.OWN_BINDING_SCALARS
+DEC023_GSE207584_REQUIRED_GATE_IDS = (
+    "INTENDED_UNIVERSE_MEMBERSHIP_CLOSED",
+    "SOURCE_TO_CANDIDATE_SYNONYMOUS_EDIT_REPLAY_CLOSED",
+    "DENSE_FAMILY_AND_CONTEXT_CLOSED",
+    "ENDPOINT_DIRECTION_SCALE_AND_SEMANTICS_CLOSED",
+    "THREE_BIOLOGICAL_REPLICATE_SLOPE_AND_VALID_STANDARD_ERROR_CLOSED",
+    "MISSING_CENSORING_AND_COVERAGE_SELECTION_CLOSED",
+    "LICENSE_AND_REUSE_RIGHTS_CLOSED",
+    "MODEL_INPUT_ROUTE_AND_SCRATCH_EXPOSURE_CLOSED",
+    "OUTCOME_BLIND_SOURCE_GROUP_NEAR_DUPLICATE_SPLIT_AND_ZERO_LEAKAGE_CLOSED",
+    "POST_DEDUP_INDEPENDENT_EFFECTIVE_N_CLOSED",
+    "PREFROZEN_SOURCE_GROUP_POWER_AND_FULL_CI_WIDTH_CLOSED",
+)
 
 
 def _protocol() -> dict[str, object]:
@@ -81,8 +94,10 @@ def _fixture_binding(*args: object) -> dict[str, str]:
         "gse207584_i1_commit": PREFLIGHT.GSE207_I1_COMMIT,
         "gse207584_i2_commit": PREFLIGHT.GSE207_I2_COMMIT,
         "gse207584_b2_commit": PREFLIGHT.GSE207_B2_COMMIT,
-        "gse207584_i3_commit": "6" * 40,
-        "gse207584_b3_commit": "7" * 40,
+        "gse207584_i3_commit": PREFLIGHT.GSE207_I3_COMMIT,
+        "gse207584_b3_commit": PREFLIGHT.GSE207_B3_COMMIT,
+        "gse207584_i4_commit": "6" * 40,
+        "gse207584_b4_commit": "7" * 40,
     }
 
 
@@ -171,6 +186,7 @@ def _synthetic_assets(
     include_mapping: bool,
     poison: bool = False,
     add_missing_intended: bool = False,
+    conflicting_duplicate_order: str | None = None,
 ) -> tuple[Path, Path, Path | None]:
     observed_rows: list[list[object]] = []
     fasta: dict[str, str] = {}
@@ -182,12 +198,27 @@ def _synthetic_assets(
             if poison:
                 candidate_id += "_MEMBER_ID_POISON"
             values = _positive_values(index * 0.1)
+            duplicate_values = values
+            if protein == "P1" and candidate_index == 0:
+                if conflicting_duplicate_order not in {
+                    None,
+                    "ORIGINAL_FIRST",
+                    "CONFLICT_FIRST",
+                }:
+                    raise AssertionError("invalid synthetic duplicate order")
+                if conflicting_duplicate_order is not None:
+                    conflicting_values = list(values)
+                    conflicting_values[-1] += 5.0
+                    if conflicting_duplicate_order == "CONFLICT_FIRST":
+                        values, duplicate_values = conflicting_values, values
+                    else:
+                        duplicate_values = conflicting_values
             observed_rows.append(
                 [candidate_id, protein, "DESIGN_A_MEMBER_POISON" if poison else "DESIGN_A", *values]
             )
             if candidate_index == 0:
                 observed_rows.append(
-                    [candidate_id, protein, "DESIGN_B_MEMBER_POISON" if poison else "DESIGN_B", *values]
+                    [candidate_id, protein, "DESIGN_B_MEMBER_POISON" if poison else "DESIGN_B", *duplicate_values]
                 )
             fasta[candidate_id] = candidate_sequence
             mapping_rows.append(
@@ -310,7 +341,7 @@ def test_disk_candidate_is_strict_valid_i_or_b_and_normalizes_to_i() -> None:
     assert PREFLIGHT._normalise_preflight_binding(synthetic_b) == synthetic_i
 
 
-def test_protocol_freezes_dec023_gse261_and_gse207_i1_i2_b2_for_disk_i3_or_b3() -> None:
+def test_protocol_freezes_dec023_gse261_and_gse207_through_b3_for_disk_i4_or_b4() -> None:
     protocol = _protocol()
     assert PROTOCOL_PATH.read_bytes() == PREFLIGHT._protocol_json_bytes(protocol)
     authority = protocol["implementation_binding"]["authority_runtime_group"]
@@ -359,6 +390,20 @@ def test_protocol_freezes_dec023_gse261_and_gse207_i1_i2_b2_for_disk_i3_or_b3() 
         "exact_changed_paths": list(PREFLIGHT.GSE207_B2_EXACT_CHANGED_PATHS),
         "blob_sha256_by_path": PREFLIGHT.GSE207_B2_BLOBS,
     }
+    assert preflight["predecessor_implementation_i3"] == {
+        "status": PREFLIGHT.GSE207_I3_FROZEN_STATUS,
+        "commit": PREFLIGHT.GSE207_I3_COMMIT,
+        "expected_parent": PREFLIGHT.GSE207_B2_COMMIT,
+        "exact_changed_paths": list(PREFLIGHT.EXACT3),
+        "blob_sha256_by_path": PREFLIGHT.GSE207_I3_BLOBS,
+    }
+    assert preflight["predecessor_binding_b3"] == {
+        "status": PREFLIGHT.GSE207_B3_FROZEN_STATUS,
+        "commit": PREFLIGHT.GSE207_B3_COMMIT,
+        "expected_parent": PREFLIGHT.GSE207_I3_COMMIT,
+        "exact_changed_paths": list(PREFLIGHT.GSE207_B3_EXACT_CHANGED_PATHS),
+        "blob_sha256_by_path": PREFLIGHT.GSE207_B3_BLOBS,
+    }
     assert PREFLIGHT.OBSERVED_HEADER[:3] == ("Name", "Protein_id", "Group")
     assert tuple(
         protocol["ordinary_public_asset_contract"]["observed_perfect_csv"][
@@ -401,6 +446,12 @@ def test_protocol_freezes_dec023_gse261_and_gse207_i1_i2_b2_for_disk_i3_or_b3() 
         normalised["implementation_binding"]["preflight_group"][field]
         for field in OWN_BINDING_SCALARS
     ] == [PREFLIGHT.UNKNOWN] * 4
+
+
+def test_gate_ids_equal_dec023_required_fail_closed_tuple_exactly() -> None:
+    protocol = _protocol()
+    assert PREFLIGHT.GATE_IDS == DEC023_GSE207584_REQUIRED_GATE_IDS
+    assert tuple(protocol["gate_ids"]) == DEC023_GSE207584_REQUIRED_GATE_IDS
 
 
 def test_frozen_predecessor_drift_and_partial_own4_are_rejected() -> None:
@@ -448,13 +499,27 @@ def test_frozen_predecessor_drift_and_partial_own4_are_rejected() -> None:
 
     protocol = _clean_i_protocol()
     protocol["implementation_binding"]["preflight_group"][
+        "predecessor_implementation_i3"
+    ]["commit"] = "5" * 40
+    with pytest.raises(PREFLIGHT.ProtocolError, match="frozen GSE207 I3"):
+        PREFLIGHT._validate_protocol(protocol)
+
+    protocol = _clean_i_protocol()
+    protocol["implementation_binding"]["preflight_group"][
+        "predecessor_binding_b3"
+    ]["commit"] = "5" * 40
+    with pytest.raises(PREFLIGHT.ProtocolError, match="frozen GSE207 B3"):
+        PREFLIGHT._validate_protocol(protocol)
+
+    protocol = _clean_i_protocol()
+    protocol["implementation_binding"]["preflight_group"][
         "implementation_commit"
     ] = "4" * 40
     with pytest.raises(PREFLIGHT.ProtocolError, match="own4"):
         PREFLIGHT._validate_protocol(protocol)
 
 
-def test_repository_audit_proves_dec023_gse261_and_gse207_i1_i2_b2_i3_b3(
+def test_repository_audit_proves_dec023_gse261_and_gse207_through_i4_b4(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -466,6 +531,8 @@ def test_repository_audit_proves_dec023_gse261_and_gse207_i1_i2_b2_i3_b3(
     frozen_gse207_i1 = preflight["predecessor_implementation_i1"]
     frozen_gse207_i2 = preflight["predecessor_implementation_i2"]
     frozen_gse207_b2 = preflight["predecessor_binding_b2"]
+    frozen_gse207_i3 = preflight["predecessor_implementation_i3"]
+    frozen_gse207_b3 = preflight["predecessor_binding_b3"]
     script_payload = b"synthetic GSE207 implementation script\n"
     test_payload = b"synthetic GSE207 focused test\n"
     preflight["implementation_script_sha256"] = hashlib.sha256(
@@ -486,8 +553,8 @@ def test_repository_audit_proves_dec023_gse261_and_gse207_i1_i2_b2_i3_b3(
     test_path.parent.mkdir(parents=True)
     script_path.write_bytes(script_payload)
     test_path.write_bytes(test_payload)
-    preflight_i3 = preflight["implementation_commit"]
-    preflight_b3 = "7" * 40
+    preflight_i4 = preflight["implementation_commit"]
+    preflight_b4 = "7" * 40
 
     authority_payloads = {
         path: f"authority:{path}".encode() for path in PREFLIGHT.AUTHORITY_EXACT10
@@ -539,6 +606,14 @@ def test_repository_audit_proves_dec023_gse261_and_gse207_i1_i2_b2_i3_b3(
         PREFLIGHT.SCRIPT_PATH: gse207_i2_payloads[PREFLIGHT.SCRIPT_PATH],
         PREFLIGHT.TEST_PATH: gse207_i2_payloads[PREFLIGHT.TEST_PATH],
     }
+    gse207_i3_payloads = {
+        path: f"gse207-i3:{path}".encode() for path in PREFLIGHT.EXACT3
+    }
+    gse207_b3_payloads = {
+        PREFLIGHT.CONFIG_PATH: b"gse207-b3:config",
+        PREFLIGHT.SCRIPT_PATH: gse207_i3_payloads[PREFLIGHT.SCRIPT_PATH],
+        PREFLIGHT.TEST_PATH: gse207_i3_payloads[PREFLIGHT.TEST_PATH],
+    }
 
     digest_by_payload: dict[bytes, str] = {}
     digest_by_payload.update(
@@ -576,6 +651,18 @@ def test_repository_audit_proves_dec023_gse261_and_gse207_i1_i2_b2_i3_b3(
             for path, digest in frozen_gse207_b2["blob_sha256_by_path"].items()
         }
     )
+    digest_by_payload.update(
+        {
+            gse207_i3_payloads[path]: digest
+            for path, digest in frozen_gse207_i3["blob_sha256_by_path"].items()
+        }
+    )
+    digest_by_payload.update(
+        {
+            gse207_b3_payloads[path]: digest
+            for path, digest in frozen_gse207_b3["blob_sha256_by_path"].items()
+        }
+    )
     for commit, digest_field in (
         (
             PREFLIGHT.PREDECESSOR_I1_COMMIT,
@@ -608,8 +695,10 @@ def test_repository_audit_proves_dec023_gse261_and_gse207_i1_i2_b2_i3_b3(
         return FrozenDigest(expected) if expected is not None else real_sha256(payload)
 
     parent_by_commit = {
-        preflight_b3: preflight_i3,
-        preflight_i3: PREFLIGHT.GSE207_B2_COMMIT,
+        preflight_b4: preflight_i4,
+        preflight_i4: PREFLIGHT.GSE207_B3_COMMIT,
+        PREFLIGHT.GSE207_B3_COMMIT: PREFLIGHT.GSE207_I3_COMMIT,
+        PREFLIGHT.GSE207_I3_COMMIT: PREFLIGHT.GSE207_B2_COMMIT,
         PREFLIGHT.GSE207_B2_COMMIT: PREFLIGHT.GSE207_I2_COMMIT,
         PREFLIGHT.GSE207_I2_COMMIT: PREFLIGHT.GSE207_I1_COMMIT,
         PREFLIGHT.GSE207_I1_COMMIT: PREFLIGHT.PREDECESSOR_B2_COMMIT,
@@ -625,13 +714,13 @@ def test_repository_audit_proves_dec023_gse261_and_gse207_i1_i2_b2_i3_b3(
 
     def fake_run_git(_root: Path, *args: str) -> str:
         fixed = {
-            ("rev-parse", "HEAD"): preflight_b3,
-            ("rev-parse", "@{upstream}"): preflight_b3,
+            ("rev-parse", "HEAD"): preflight_b4,
+            ("rev-parse", "@{upstream}"): preflight_b4,
             (
                 "rev-parse",
                 "--verify",
                 f"refs/remotes/origin/{PREFLIGHT.PRODUCTION_BRANCH}",
-            ): preflight_b3,
+            ): preflight_b4,
             ("rev-parse", "--abbrev-ref", "HEAD"): PREFLIGHT.PRODUCTION_BRANCH,
             ("rev-parse", "--abbrev-ref", "@{upstream}"): (
                 f"origin/{PREFLIGHT.PRODUCTION_BRANCH}"
@@ -642,7 +731,7 @@ def test_repository_audit_proves_dec023_gse261_and_gse207_i1_i2_b2_i3_b3(
             return fixed[args]
         if len(args) == 2 and args[0] == "rev-parse" and args[1].endswith("^"):
             commit = args[1][:-1]
-            if parent_drift["enabled"] and commit == preflight_i3:
+            if parent_drift["enabled"] and commit == preflight_i4:
                 return PREFLIGHT.GSE207_I1_COMMIT
             return parent_by_commit[commit]
         raise AssertionError(args)
@@ -667,9 +756,13 @@ def test_repository_audit_proves_dec023_gse261_and_gse207_i1_i2_b2_i3_b3(
             return tuple(sorted(PREFLIGHT.EXACT3))
         if commit == PREFLIGHT.GSE207_B2_COMMIT:
             return tuple(sorted(PREFLIGHT.GSE207_B2_EXACT_CHANGED_PATHS))
-        if commit == preflight_i3:
+        if commit == PREFLIGHT.GSE207_I3_COMMIT:
             return tuple(sorted(PREFLIGHT.EXACT3))
-        if commit == preflight_b3:
+        if commit == PREFLIGHT.GSE207_B3_COMMIT:
+            return tuple(sorted(PREFLIGHT.GSE207_B3_EXACT_CHANGED_PATHS))
+        if commit == preflight_i4:
+            return tuple(sorted(PREFLIGHT.EXACT3))
+        if commit == preflight_b4:
             return (PREFLIGHT.CONFIG_PATH,)
         raise AssertionError(commit)
 
@@ -694,7 +787,11 @@ def test_repository_audit_proves_dec023_gse261_and_gse207_i1_i2_b2_i3_b3(
             return gse207_i2_payloads[path]
         if commit == PREFLIGHT.GSE207_B2_COMMIT:
             return gse207_b2_payloads[path]
-        if commit == preflight_i3:
+        if commit == PREFLIGHT.GSE207_I3_COMMIT:
+            return gse207_i3_payloads[path]
+        if commit == PREFLIGHT.GSE207_B3_COMMIT:
+            return gse207_b3_payloads[path]
+        if commit == preflight_i4:
             return {
                 PREFLIGHT.CONFIG_PATH: PREFLIGHT._protocol_json_bytes(
                     PREFLIGHT._normalise_preflight_binding(protocol)
@@ -702,7 +799,7 @@ def test_repository_audit_proves_dec023_gse261_and_gse207_i1_i2_b2_i3_b3(
                 PREFLIGHT.SCRIPT_PATH: script_payload,
                 PREFLIGHT.TEST_PATH: test_payload,
             }[path]
-        if commit == preflight_b3 and path == PREFLIGHT.CONFIG_PATH:
+        if commit == preflight_b4 and path == PREFLIGHT.CONFIG_PATH:
             return protocol_bytes
         raise AssertionError((commit, path))
 
@@ -718,7 +815,7 @@ def test_repository_audit_proves_dec023_gse261_and_gse207_i1_i2_b2_i3_b3(
         protocol_bytes,
         root,
     ) == {
-        "status": "BOUND_DEC023_GSE261_AND_GSE207_I1_I2_B2_I3_B3",
+        "status": "BOUND_DEC023_GSE261_AND_GSE207_I1_I2_B2_I3_B3_I4_B4",
         "authority_commit": PREFLIGHT.AUTHORITY_COMMIT,
         "runtime_i1_commit": PREFLIGHT.RUNTIME_I1_COMMIT,
         "runtime_i2_commit": PREFLIGHT.RUNTIME_I2_COMMIT,
@@ -729,8 +826,10 @@ def test_repository_audit_proves_dec023_gse261_and_gse207_i1_i2_b2_i3_b3(
         "gse207584_i1_commit": PREFLIGHT.GSE207_I1_COMMIT,
         "gse207584_i2_commit": PREFLIGHT.GSE207_I2_COMMIT,
         "gse207584_b2_commit": PREFLIGHT.GSE207_B2_COMMIT,
-        "gse207584_i3_commit": preflight_i3,
-        "gse207584_b3_commit": preflight_b3,
+        "gse207584_i3_commit": PREFLIGHT.GSE207_I3_COMMIT,
+        "gse207584_b3_commit": PREFLIGHT.GSE207_B3_COMMIT,
+        "gse207584_i4_commit": preflight_i4,
+        "gse207584_b4_commit": preflight_b4,
     }
 
     runtime_drift["enabled"] = True
@@ -949,14 +1048,74 @@ def test_three_biological_replicates_are_not_nine_independent_units(
     assert power["analysis_unit"] == "BIOLOGICAL_SOURCE_GROUP"
 
 
+def test_conflicting_duplicate_is_excluded_and_first_row_order_cannot_change_endpoint_evidence(
+    tmp_path: Path,
+) -> None:
+    reports: list[dict[str, object]] = []
+    for order in ("ORIGINAL_FIRST", "CONFLICT_FIRST"):
+        fixture_root = tmp_path / order.lower()
+        fixture_root.mkdir()
+        observed, reference, source_mapping = _synthetic_assets(
+            fixture_root,
+            include_mapping=True,
+            conflicting_duplicate_order=order,
+        )
+        assert source_mapping is not None
+        protocol = _bound_protocol()
+        _bind_source_mapping(protocol, source_mapping)
+        reports.append(
+            PREFLIGHT.aggregate(protocol, observed, reference, source_mapping)
+        )
+
+    original_first, conflict_first = reports
+    assert original_first["aggregate_observation"]["endpoint_and_replicates"] == (
+        conflict_first["aggregate_observation"]["endpoint_and_replicates"]
+    )
+    assert original_first["aggregate_observation"]["family_and_context"] == (
+        conflict_first["aggregate_observation"]["family_and_context"]
+    )
+    assert original_first["aggregate_observation"]["split_dedup_and_power"] == (
+        conflict_first["aggregate_observation"]["split_dedup_and_power"]
+    )
+
+    observation = original_first["aggregate_observation"]
+    observed_asset = observation["observed_asset"]
+    endpoint = observation["endpoint_and_replicates"]
+    assert observed_asset["duplicate_measurement_conflict_count"] == 1
+    assert observed_asset["unresolved_conflicting_candidate_count"] == 1
+    assert endpoint["valid_candidate_endpoint_and_se_count"] == 8
+    assert endpoint["missing_or_censored_candidate_endpoint_count"] == 0
+    assert sum(endpoint["standard_error_histogram"].values()) == 8
+    assert observation["family_and_context"][
+        "eligible_family_count_after_endpoint_availability"
+    ] == 2
+
+    reason = "DUPLICATE_MEASUREMENT_TUPLE_SEMANTICS_UNRESOLVED"
+    for gate_id, expected_status in (
+        ("ENDPOINT_DIRECTION_SCALE_AND_SEMANTICS_CLOSED", PREFLIGHT.FAIL),
+        (
+            "THREE_BIOLOGICAL_REPLICATE_SLOPE_AND_VALID_STANDARD_ERROR_CLOSED",
+            PREFLIGHT.FAIL,
+        ),
+        ("MISSING_CENSORING_AND_COVERAGE_SELECTION_CLOSED", PREFLIGHT.UNKNOWN),
+    ):
+        assert original_first["gates"][gate_id] == {
+            "status": expected_status,
+            "reason": reason,
+        }
+        assert conflict_first["gates"][gate_id] == original_first["gates"][gate_id]
+
+
 def test_synonymous_replay_family_geometry_and_power_fail_closed(tmp_path: Path) -> None:
     report, _ = _execute_fixture(tmp_path, include_mapping=True)
     gates = report["gates"]
     assert gates["SOURCE_TO_CANDIDATE_SYNONYMOUS_EDIT_REPLAY_CLOSED"][
         "status"
     ] == PREFLIGHT.PASS
-    assert gates["FAMILY_AND_CONTEXT_STRATIFICATION_CLOSED"]["status"] == PREFLIGHT.PASS
-    assert gates["THREE_BIOLOGICAL_REPLICATE_SLOPE_AND_STANDARD_ERROR_CLOSED"][
+    assert gates["DENSE_FAMILY_AND_CONTEXT_CLOSED"]["status"] == PREFLIGHT.PASS
+    assert gates[
+        "THREE_BIOLOGICAL_REPLICATE_SLOPE_AND_VALID_STANDARD_ERROR_CLOSED"
+    ][
         "status"
     ] == PREFLIGHT.PASS
     power = report["aggregate_observation"]["split_dedup_and_power"]
@@ -965,7 +1124,9 @@ def test_synonymous_replay_family_geometry_and_power_fail_closed(tmp_path: Path)
     assert power["required_effective_n_for_both_power_and_ci_width"] == 156
     assert power["power_method"] == PREFLIGHT.POWER_METHOD
     assert power["confidence_interval_method"] == PREFLIGHT.CI_METHOD
-    assert gates["PREFROZEN_POWER_AND_CI_WIDTH_CLOSED"]["status"] == PREFLIGHT.FAIL
+    assert gates["PREFROZEN_SOURCE_GROUP_POWER_AND_FULL_CI_WIDTH_CLOSED"][
+        "status"
+    ] == PREFLIGHT.FAIL
     assert report["status"] == PREFLIGHT.STATUS_STOP
 
 
@@ -997,7 +1158,7 @@ def test_intended_universe_is_not_redefined_by_detected_perfect_subset(
     assert intended["authoritative_mapping_candidate_count"] == 10
     assert intended["observed_unique_candidate_count"] == 9
     assert intended["intended_not_observed_count"] == 1
-    assert report["gates"]["MISSING_AND_CENSORING_POLICY_CLOSED"][
+    assert report["gates"]["MISSING_CENSORING_AND_COVERAGE_SELECTION_CLOSED"][
         "status"
     ] == PREFLIGHT.UNKNOWN
 

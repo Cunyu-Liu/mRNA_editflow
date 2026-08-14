@@ -2,10 +2,10 @@
 """Aggregate-only GSE207584/iCodon dense-family qualification preflight.
 
 The producer is intentionally not a qualifier.  This exact3 is the append-only
-GSE207584 I3 schema-repair candidate: it freezes the actual DEC-023 A/runtime
-I1/I2/B2, GSE261709 I1/I2/B2, and historical GSE207584 I1/I2/B2 identities
-while retaining exactly four dynamic GSE207584 I3/B3 binding scalars as
-UNKNOWN.  A later config-only GSE207584 B3 must bind those four scalars and
+GSE207584 I4 duplicate-semantics and gate-ID repair candidate: it freezes the
+actual DEC-023 A/runtime I1/I2/B2, GSE261709 I1/I2/B2, and historical GSE207584
+I1/I2/B2/I3/B3 identities while retaining exactly four dynamic GSE207584 I4/B4
+binding scalars as UNKNOWN.  A later config-only GSE207584 B4 must bind those four scalars and
 prove the complete direct-parent chain before touching an input or the output path.  The
 producer reads only ordinary-public fields authorized for the preflight,
 retains member material in memory, and atomically publishes one aggregate JSON
@@ -225,6 +225,29 @@ GSE207_B2_BLOBS = {
     SCRIPT_PATH: GSE207_I2_BLOBS[SCRIPT_PATH],
     TEST_PATH: GSE207_I2_BLOBS[TEST_PATH],
 }
+GSE207_I3_FROZEN_STATUS = "FROZEN_BOUND_EXACT3"
+GSE207_I3_COMMIT = "0ebd391f3e7713f7c0564065eab5610aaa9ed65a"
+GSE207_I3_BLOBS = {
+    CONFIG_PATH: (
+        "047a47129d01286f34c72db963563ec69efc2312c87de268986267eaf99feae0"
+    ),
+    SCRIPT_PATH: (
+        "919753efb890efd6cafa41c010563537493cf96238e3a7a33f0351c8758db729"
+    ),
+    TEST_PATH: (
+        "cd5f1a0aa345c769540cfb7833b2af614b5f23a405be1e03c685fded8fc45af8"
+    ),
+}
+GSE207_B3_FROZEN_STATUS = "FROZEN_BOUND_CONFIG_ONLY"
+GSE207_B3_COMMIT = "54dc498009a9be09cde5e84c197d17a4182c0b8b"
+GSE207_B3_EXACT_CHANGED_PATHS = (CONFIG_PATH,)
+GSE207_B3_BLOBS = {
+    CONFIG_PATH: (
+        "0575ec9fddb0839d494a485b84263ba88dae0ecbbefd3b402ac0bafc61862a62"
+    ),
+    SCRIPT_PATH: GSE207_I3_BLOBS[SCRIPT_PATH],
+    TEST_PATH: GSE207_I3_BLOBS[TEST_PATH],
+}
 OWN_BINDING_SCALARS = (
     "status",
     "implementation_commit",
@@ -275,15 +298,15 @@ REPLICATES = (1, 2, 3)
 GATE_IDS = (
     "INTENDED_UNIVERSE_MEMBERSHIP_CLOSED",
     "SOURCE_TO_CANDIDATE_SYNONYMOUS_EDIT_REPLAY_CLOSED",
-    "FAMILY_AND_CONTEXT_STRATIFICATION_CLOSED",
-    "ENDPOINT_DIRECTION_CLOSED",
-    "THREE_BIOLOGICAL_REPLICATE_SLOPE_AND_STANDARD_ERROR_CLOSED",
-    "MISSING_AND_CENSORING_POLICY_CLOSED",
-    "RIGHTS_CLOSED",
-    "SCRATCH_AND_FOUNDATION_EXPOSURE_CLOSED",
-    "SOURCE_GROUP_SPLIT_AND_ZERO_LEAKAGE_FEASIBILITY_CLOSED",
+    "DENSE_FAMILY_AND_CONTEXT_CLOSED",
+    "ENDPOINT_DIRECTION_SCALE_AND_SEMANTICS_CLOSED",
+    "THREE_BIOLOGICAL_REPLICATE_SLOPE_AND_VALID_STANDARD_ERROR_CLOSED",
+    "MISSING_CENSORING_AND_COVERAGE_SELECTION_CLOSED",
+    "LICENSE_AND_REUSE_RIGHTS_CLOSED",
+    "MODEL_INPUT_ROUTE_AND_SCRATCH_EXPOSURE_CLOSED",
+    "OUTCOME_BLIND_SOURCE_GROUP_NEAR_DUPLICATE_SPLIT_AND_ZERO_LEAKAGE_CLOSED",
     "POST_DEDUP_INDEPENDENT_EFFECTIVE_N_CLOSED",
-    "PREFROZEN_POWER_AND_CI_WIDTH_CLOSED",
+    "PREFROZEN_SOURCE_GROUP_POWER_AND_FULL_CI_WIDTH_CLOSED",
 )
 
 PASS = "PASS_PREFLIGHT_ONLY"
@@ -372,7 +395,7 @@ def _validate_digest_map(value: Any, paths: tuple[str, ...], *, label: str) -> N
 def _validate_lifecycle(binding: Mapping[str, Any]) -> None:
     if binding.get("binding_scheme") != (
         "DEC023_A_RUNTIME_I1_I2_B2_THEN_GSE261_I1_I2_B2_THEN_GSE207_"
-        "FROZEN_I1_I2_B2_DYNAMIC_I3_B3_V5"
+        "FROZEN_I1_I2_B2_I3_B3_DYNAMIC_I4_B4_V6"
     ):
         raise ProtocolError("binding scheme differs")
 
@@ -430,6 +453,8 @@ def _validate_lifecycle(binding: Mapping[str, Any]) -> None:
         "predecessor_implementation_i1",
         "predecessor_implementation_i2",
         "predecessor_binding_b2",
+        "predecessor_implementation_i3",
+        "predecessor_binding_b3",
         "status",
         "implementation_commit",
         "implementation_script_path",
@@ -466,6 +491,22 @@ def _validate_lifecycle(binding: Mapping[str, Any]) -> None:
         "blob_sha256_by_path": GSE207_B2_BLOBS,
     }:
         raise ProtocolError("frozen GSE207 B2 identity differs")
+    if preflight.get("predecessor_implementation_i3") != {
+        "status": GSE207_I3_FROZEN_STATUS,
+        "commit": GSE207_I3_COMMIT,
+        "expected_parent": GSE207_B2_COMMIT,
+        "exact_changed_paths": list(EXACT3),
+        "blob_sha256_by_path": GSE207_I3_BLOBS,
+    }:
+        raise ProtocolError("frozen GSE207 I3 identity differs")
+    if preflight.get("predecessor_binding_b3") != {
+        "status": GSE207_B3_FROZEN_STATUS,
+        "commit": GSE207_B3_COMMIT,
+        "expected_parent": GSE207_I3_COMMIT,
+        "exact_changed_paths": list(GSE207_B3_EXACT_CHANGED_PATHS),
+        "blob_sha256_by_path": GSE207_B3_BLOBS,
+    }:
+        raise ProtocolError("frozen GSE207 B3 identity differs")
     if preflight.get("implementation_script_path") != SCRIPT_PATH:
         raise ProtocolError("GSE207 implementation script path differs")
     if preflight.get("implementation_test_path") != TEST_PATH:
@@ -905,10 +946,26 @@ def _default_binding_auditor(
         expected_paths=GSE207_B2_EXACT_CHANGED_PATHS,
         expected_blobs=frozen_b2["blob_sha256_by_path"],
     )
+    frozen_i3 = preflight["predecessor_implementation_i3"]
+    _verify_commit(
+        root,
+        commit=frozen_i3["commit"],
+        expected_parent=frozen_i3["expected_parent"],
+        expected_paths=EXACT3,
+        expected_blobs=frozen_i3["blob_sha256_by_path"],
+    )
+    frozen_b3 = preflight["predecessor_binding_b3"]
+    _verify_commit(
+        root,
+        commit=frozen_b3["commit"],
+        expected_parent=frozen_b3["expected_parent"],
+        expected_paths=GSE207_B3_EXACT_CHANGED_PATHS,
+        expected_blobs=frozen_b3["blob_sha256_by_path"],
+    )
     _verify_commit(
         root,
         commit=preflight["implementation_commit"],
-        expected_parent=frozen_b2["commit"],
+        expected_parent=frozen_b3["commit"],
         expected_paths=EXACT3,
     )
     _verify_commit(
@@ -938,7 +995,7 @@ def _default_binding_auditor(
     if (root / TEST_PATH).read_bytes() != test_blob:
         raise ProtocolError("focused test bytes differ from bound test")
     return {
-        "status": "BOUND_DEC023_GSE261_AND_GSE207_I1_I2_B2_I3_B3",
+        "status": "BOUND_DEC023_GSE261_AND_GSE207_I1_I2_B2_I3_B3_I4_B4",
         "authority_commit": authority["authority_commit"],
         "runtime_i1_commit": authority["runtime_i1_commit"],
         "runtime_i2_commit": authority["runtime_i2_commit"],
@@ -949,8 +1006,10 @@ def _default_binding_auditor(
         "gse207584_i1_commit": frozen_i1["commit"],
         "gse207584_i2_commit": frozen_i2["commit"],
         "gse207584_b2_commit": frozen_b2["commit"],
-        "gse207584_i3_commit": preflight["implementation_commit"],
-        "gse207584_b3_commit": head,
+        "gse207584_i3_commit": frozen_i3["commit"],
+        "gse207584_b3_commit": frozen_b3["commit"],
+        "gse207584_i4_commit": preflight["implementation_commit"],
+        "gse207584_b4_commit": head,
     }
 
 
@@ -981,6 +1040,7 @@ def _parse_float(value: str) -> tuple[float | None, bool]:
 
 def _read_observed(path: Path) -> dict[str, Any]:
     records: dict[str, dict[str, Any]] = {}
+    conflicted_candidates: set[str] = set()
     body_rows = 0
     malformed_rows = 0
     invalid_numeric_cells = 0
@@ -1021,6 +1081,7 @@ def _read_observed(path: Path) -> dict[str, Any]:
                     or existing["values"] != tuple(values)
                 ):
                     duplicate_measurement_conflicts += 1
+                    conflicted_candidates.add(candidate_id)
     group_label_histogram = Counter(
         _small_count_bin(len(record["groups"])) for record in records.values()
     )
@@ -1031,6 +1092,8 @@ def _read_observed(path: Path) -> dict[str, Any]:
         "malformed_row_count": malformed_rows,
         "invalid_numeric_cell_count": invalid_numeric_cells,
         "duplicate_measurement_conflict_count": duplicate_measurement_conflicts,
+        "conflicted_candidate_ids": conflicted_candidates,
+        "unresolved_conflicting_candidate_count": len(conflicted_candidates),
         "candidate_design_group_label_count_histogram": dict(
             sorted(group_label_histogram.items())
         ),
@@ -1430,6 +1493,8 @@ def aggregate(
     valid_endpoint_count = 0
     invalid_endpoint_count = 0
     for candidate_id, record in observed_records.items():
+        if candidate_id in observed["conflicted_candidate_ids"]:
+            continue
         estimate = estimate_endpoint(record["values"])
         endpoint_by_candidate[candidate_id] = estimate
         if estimate["valid"]:
@@ -1598,25 +1663,44 @@ def aggregate(
             if family_fail
             else "SOURCE_FAMILIES_HAVE_ONE_SOURCE_ONE_CONTEXT_AND_AT_LEAST_THREE_CANDIDATES",
         )
-    gates[GATE_IDS[3]] = _gate(PASS, "LOG_DECAY_SLOPE_DIRECTION_FROZEN")
+    unresolved_conflicts = observed["unresolved_conflicting_candidate_count"]
+    duplicate_semantics_reason = (
+        "DUPLICATE_MEASUREMENT_TUPLE_SEMANTICS_UNRESOLVED"
+    )
+    gates[GATE_IDS[3]] = _gate(
+        FAIL if unresolved_conflicts else PASS,
+        duplicate_semantics_reason
+        if unresolved_conflicts
+        else "LOG_DECAY_SLOPE_DIRECTION_SCALE_AND_SEMANTICS_FROZEN",
+    )
     endpoint_fail = (
         observed["malformed_row_count"] > 0
         or observed["invalid_numeric_cell_count"] > 0
-        or observed["duplicate_measurement_conflict_count"] > 0
+        or unresolved_conflicts > 0
         or invalid_endpoint_count > 0
         or valid_endpoint_count == 0
     )
     gates[GATE_IDS[4]] = _gate(
         FAIL if endpoint_fail else PASS,
-        "THREE_REPLICATE_SLOPE_OR_STANDARD_ERROR_UNAVAILABLE"
-        if endpoint_fail
-        else "THREE_BIOLOGICAL_REPLICATE_SLOPES_AND_SAMPLE_STANDARD_ERROR_COMPUTABLE",
+        duplicate_semantics_reason
+        if unresolved_conflicts
+        else (
+            "THREE_REPLICATE_SLOPE_OR_STANDARD_ERROR_UNAVAILABLE"
+            if endpoint_fail
+            else "THREE_BIOLOGICAL_REPLICATE_SLOPES_AND_SAMPLE_STANDARD_ERROR_COMPUTABLE"
+        ),
     )
     gates[GATE_IDS[5]] = _gate(
-        UNKNOWN if intended_not_observed or invalid_endpoint_count else PASS,
-        "PERFECT_DETECTION_MISSINGNESS_MECHANISM_NOT_CLOSED"
-        if intended_not_observed or invalid_endpoint_count
-        else "NO_INTENDED_MEMBER_MISSING_OR_CENSORED",
+        UNKNOWN
+        if intended_not_observed or invalid_endpoint_count or unresolved_conflicts
+        else PASS,
+        duplicate_semantics_reason
+        if unresolved_conflicts
+        else (
+            "PERFECT_DETECTION_MISSINGNESS_MECHANISM_NOT_CLOSED"
+            if intended_not_observed or invalid_endpoint_count
+            else "NO_INTENDED_MEMBER_MISSING_OR_CENSORED"
+        ),
     )
     rights = protocol["rights_policy"]
     rights_pass = (
@@ -1709,6 +1793,9 @@ def aggregate(
                 "invalid_numeric_cell_count": observed["invalid_numeric_cell_count"],
                 "duplicate_measurement_conflict_count": observed[
                     "duplicate_measurement_conflict_count"
+                ],
+                "unresolved_conflicting_candidate_count": observed[
+                    "unresolved_conflicting_candidate_count"
                 ],
                 "candidate_design_group_label_count_histogram": observed[
                     "candidate_design_group_label_count_histogram"
