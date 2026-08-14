@@ -23,7 +23,7 @@
     "clean_worktree_and_index_required": true
   },
   "implementation_binding": {
-    "binding_scheme": "DEC027_A_RUNTIME_I1_I2_B2_GSE217_I1_I2_B2_I3_B3_ENCSR_I1_I2_B2_I3_B3_I4_B4_FUTURE_GSE232_GSE113_GSE269_APPEND_ONLY_THEN_GSE295080_EXACT3_I_CONFIG_ONLY_B",
+    "binding_scheme": "DEC027_A_RUNTIME_I1_I2_B2_GSE217_I1_I2_B2_I3_B3_ENCSR_I1_I2_B2_I3_B3_I4_B4_FUTURE_GSE232_GSE113_GSE269_APPEND_ONLY_THEN_GSE295080_FROZEN_I1_DYNAMIC_I2_CONFIG_ONLY_B2",
     "authority_group": {
       "status": "BOUND",
       "authority_commit": "3e0ad158a0b45b2f26ed82da3afe60667c712cd6",
@@ -435,6 +435,18 @@
     },
     "own_preflight_group": {
       "status": "UNKNOWN_NOT_ASSERTED",
+      "frozen_i1_commit": "d422e27fe31ff66d8a9dd1faa8b0aef1d2cf352d",
+      "frozen_i1_expected_parent": "19ca49229c9ff2814bad2c58b8b84be14624b7ea",
+      "frozen_i1_exact_changed_paths": [
+        "configs/route_a_v3_gse295080_independence_overlap_adjudication_v1.json",
+        "scripts/route_a_v3/preflight_gse295080_independence_overlap_adjudication.py",
+        "tests/route_a_v3/test_preflight_gse295080_independence_overlap_adjudication.py"
+      ],
+      "frozen_i1_blob_sha256_by_path": {
+        "configs/route_a_v3_gse295080_independence_overlap_adjudication_v1.json": "bab1148a045ddbf1e6f465f9dcb096c460f75e9929ef865375ccf51e32fdb6e5",
+        "scripts/route_a_v3/preflight_gse295080_independence_overlap_adjudication.py": "d1db3a0e267aa6bbdb098ea665a8539253b344616d6861c5ae379ee33b3099ad",
+        "tests/route_a_v3/test_preflight_gse295080_independence_overlap_adjudication.py": "1bd5efa9cf6e685e9e939c74e0e465c51321f223e71002cdab43ce8a40d33de2"
+      },
       "implementation_commit": "UNKNOWN_NOT_ASSERTED",
       "implementation_script_path": "scripts/route_a_v3/preflight_gse295080_independence_overlap_adjudication.py",
       "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
@@ -457,7 +469,7 @@
     }
   },
   "production_activation_rule": {
-    "required_commit_chain": "DEC027_A_TO_RUNTIME_I1_TO_RUNTIME_I2_TO_RUNTIME_B2_TO_GSE217518_I1_TO_GSE217518_I2_TO_GSE217518_B2_TO_GSE217518_I3_TO_GSE217518_B3_TO_ENCSR854RUF_I1_TO_ENCSR854RUF_I2_TO_ENCSR854RUF_B2_TO_ENCSR854RUF_I3_TO_ENCSR854RUF_B3_TO_ENCSR854RUF_I4_TO_ENCSR854RUF_B4_TO_GSE232572_APPEND_ONLY_I_B_HISTORY_TO_GSE113849_APPEND_ONLY_I_B_HISTORY_TO_GSE269595_APPEND_ONLY_I_B_HISTORY_TO_GSE295080_I_TO_GSE295080_B",
+    "required_commit_chain": "DEC027_A_TO_RUNTIME_I1_TO_RUNTIME_I2_TO_RUNTIME_B2_TO_GSE217518_I1_TO_GSE217518_I2_TO_GSE217518_B2_TO_GSE217518_I3_TO_GSE217518_B3_TO_ENCSR854RUF_I1_TO_ENCSR854RUF_I2_TO_ENCSR854RUF_B2_TO_ENCSR854RUF_I3_TO_ENCSR854RUF_B3_TO_ENCSR854RUF_I4_TO_ENCSR854RUF_B4_TO_GSE232572_APPEND_ONLY_I_B_HISTORY_TO_GSE113849_APPEND_ONLY_I_B_HISTORY_TO_GSE269595_APPEND_ONLY_I_B_HISTORY_TO_GSE295080_I1_TO_GSE295080_I2_TO_GSE295080_B2",
     "predecessor_order": [
       "gse217518_predecessor",
       "encsr854ruf_predecessor",
@@ -466,7 +478,8 @@
       "gse269595_predecessor"
     ],
     "all_binding_groups_must_be_bound": true,
-    "gse295080_implementation_i_must_be_direct_child_of_gse269595_b": true,
+    "gse295080_frozen_i1_must_be_direct_child_of_gse269595_b2": true,
+    "gse295080_dynamic_i2_must_be_direct_child_of_frozen_i1": true,
     "clean_head_equals_upstream_equals_live_origin_required": true,
     "direct_parent_changed_path_and_blob_audit_required": true,
     "executing_script_and_focused_test_must_match_implementation_i": true,

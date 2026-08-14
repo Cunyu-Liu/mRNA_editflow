@@ -31,8 +31,14 @@ sys.modules[SPEC.name] = PREFLIGHT
 SPEC.loader.exec_module(PREFLIGHT)
 
 
-def _protocol() -> dict:
+def _disk_protocol() -> dict:
     protocol = json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
+    PREFLIGHT.validate_protocol(protocol)
+    return protocol
+
+
+def _protocol() -> dict:
+    protocol = PREFLIGHT._normalise_own_binding(_disk_protocol())
     PREFLIGHT.validate_protocol(protocol)
     return protocol
 
@@ -187,6 +193,10 @@ def test_protocol_freezes_dec027_exact7_zero_credit_and_no_row_level_authority()
             group["binding_exact_changed_paths"]
         )
     own = protocol["implementation_binding"]["own_preflight_group"]
+    assert own["frozen_i1_commit"] == PREFLIGHT.FROZEN_I1_COMMIT
+    assert own["frozen_i1_expected_parent"] == PREFLIGHT.FROZEN_I1_PARENT
+    assert own["frozen_i1_exact_changed_paths"] == list(PREFLIGHT.EXACT3)
+    assert own["frozen_i1_blob_sha256_by_path"] == PREFLIGHT.FROZEN_I1_BLOBS
     assert own["status"] == PREFLIGHT.UNKNOWN
     assert {own[field] for field in own["unknown_to_bound_fields"]} == {
         PREFLIGHT.UNKNOWN
@@ -221,6 +231,8 @@ def test_production_stops_before_asset_loader_or_output_path_inspection(tmp_path
     asset_dir = tmp_path / "must-not-be-inspected-assets"
     output_dir = tmp_path / "must-not-be-inspected-output"
     with mock.patch.object(
+        PREFLIGHT, "load_protocol", return_value=_protocol()
+    ), mock.patch.object(
         PREFLIGHT, "_audit_bound_repository", poison("git")
     ), mock.patch.object(
         PREFLIGHT, "_build_actual_geometry", poison("asset")
@@ -278,6 +290,13 @@ def test_later_grouped_unknown_also_stops_before_git_asset_or_output(
 
 def test_partial_unknown_binding_is_rejected() -> None:
     protocol = copy.deepcopy(_protocol())
+    protocol["implementation_binding"]["own_preflight_group"][
+        "implementation_commit"
+    ] = "a" * 40
+    with pytest.raises(PREFLIGHT.ProtocolError, match="partially bound"):
+        PREFLIGHT.validate_protocol(protocol)
+
+    protocol = copy.deepcopy(_protocol())
     protocol["implementation_binding"]["gse217518_predecessor"][
         "terminal_binding_commit"
     ] = "1" * 40
@@ -325,16 +344,20 @@ def test_future_history_allows_repairs_but_every_binding_is_config_only() -> Non
         PREFLIGHT.validate_protocol(invalid)
 
 
-def test_clean_normalised_disk_i_and_legal_disk_b_are_accepted() -> None:
+def test_clean_i2_and_synthetic_legal_disk_b2_normalise_to_same_i2() -> None:
+    clean_i2 = _protocol()
+    disk_protocol = _disk_protocol()
+    assert PREFLIGHT._normalise_own_binding(disk_protocol) == clean_i2
+
     bound = _bound_protocol()
-    implementation_i = PREFLIGHT._normalise_own_binding(bound)
-    PREFLIGHT.validate_protocol(implementation_i)
+    assert PREFLIGHT._normalise_own_binding(bound) == clean_i2
+    PREFLIGHT.validate_protocol(clean_i2)
     assert {
-        implementation_i["implementation_binding"]["own_preflight_group"][field]
+        clean_i2["implementation_binding"]["own_preflight_group"][field]
         for field in PREFLIGHT.OWN_BINDING_FIELDS
     } == {PREFLIGHT.UNKNOWN}
     with pytest.raises(PREFLIGHT.ActivationBlocked, match="GROUPED_BINDINGS_UNKNOWN"):
-        PREFLIGHT._require_all_bindings(implementation_i)
+        PREFLIGHT._require_all_bindings(clean_i2)
     PREFLIGHT._require_all_bindings(bound)
 
 
@@ -378,7 +401,7 @@ def _repository_audit_fixture(tmp_path: Path, *, stale_copy: bool):
         + "\n"
     ).encode("utf-8")
     head = "e" * 40
-    own_i = "9" * 40
+    own_i2 = "9" * 40
     verified = []
 
     def fake_run_git(_repo_root, *arguments):
@@ -401,13 +424,13 @@ def _repository_audit_fixture(tmp_path: Path, *, stale_copy: bool):
         )
 
     def fake_blob(_repo_root, commit, path):
-        if commit == own_i and path == PREFLIGHT.CONFIG_REPO_PATH:
+        if commit == own_i2 and path == PREFLIGHT.CONFIG_REPO_PATH:
             return implementation_bytes
         if commit == head and path == PREFLIGHT.CONFIG_REPO_PATH:
             return protocol_path.read_bytes()
-        if commit == own_i and path == PREFLIGHT.SCRIPT_REPO_PATH:
+        if commit == own_i2 and path == PREFLIGHT.SCRIPT_REPO_PATH:
             return script_path.read_bytes()
-        if commit == own_i and path == PREFLIGHT.TEST_REPO_PATH:
+        if commit == own_i2 and path == PREFLIGHT.TEST_REPO_PATH:
             return test_path.read_bytes()
         raise AssertionError(f"unexpected blob request: {commit}:{path}")
 
@@ -431,6 +454,7 @@ def _repository_audit_fixture(tmp_path: Path, *, stale_copy: bool):
             disk_protocol, protocol_path, repo_root
         )
     assert result["binding_commit"] == head
+    assert result["frozen_i1_commit"] == PREFLIGHT.FROZEN_I1_COMMIT
     return verified
 
 
@@ -460,8 +484,9 @@ def test_full_legal_disk_i_b_chain_audits_in_exact_order(tmp_path: Path) -> None
         "GSE269595_I1",
         "GSE269595_I2",
         "GSE269595_B2",
-        "GSE295080_I",
-        "GSE295080_B",
+        "GSE295080_I1",
+        "GSE295080_I2",
+        "GSE295080_B2",
     ]
     assert verified[4][2] == PREFLIGHT.RUNTIME_B_COMMIT
     assert verified[9][2] == PREFLIGHT.GSE217_FINAL_B
@@ -469,12 +494,13 @@ def test_full_legal_disk_i_b_chain_audits_in_exact_order(tmp_path: Path) -> None
     assert verified[18][2] == "0f2c00868b6581edd9a429c7a8a67bb43f6b7776"
     assert verified[20][2] == "6372ddcb4b006d587a40ce628f9e193324c28b17"
     assert verified[23][2] == "19ca49229c9ff2814bad2c58b8b84be14624b7ea"
-    assert verified[24][2] == "9" * 40
-    assert verified[24][3] == (PREFLIGHT.CONFIG_REPO_PATH,)
+    assert verified[24][2] == PREFLIGHT.FROZEN_I1_COMMIT
+    assert verified[25][2] == "9" * 40
+    assert verified[25][3] == (PREFLIGHT.CONFIG_REPO_PATH,)
 
 
 def test_stale_executing_copy_is_rejected_before_asset_read(tmp_path: Path) -> None:
-    assert len(_repository_audit_fixture(tmp_path, stale_copy=True)) == 25
+    assert len(_repository_audit_fixture(tmp_path, stale_copy=True)) == 26
 
 
 def test_all_five_asset_identities_are_checked_before_any_parse(tmp_path: Path) -> None:

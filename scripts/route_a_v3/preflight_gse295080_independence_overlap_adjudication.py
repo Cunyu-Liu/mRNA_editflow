@@ -4,10 +4,10 @@
 This exact3 route does not perform row-level qualification.  Production has
 one built-in reader set for the five frozen ordinary-public assets and remains
 fail-closed until DEC027 authority, full runtime history, the complete frozen
-GSE217518 and ENCSR854RUF histories, all three future append-only predecessor
-histories, and this implementation are bound.  The complete direct-parent Git
-chain is audited before asset or output I/O.  It publishes one aggregate JSON
-atomically and cannot qualify or credit GSE295080.
+GSE217518 and ENCSR854RUF histories, all three append-only predecessor histories,
+and the GSE295080 frozen-I1/dynamic-I2/config-only-B2 lifecycle are bound.  The
+complete direct-parent Git chain is audited before asset or output I/O.  It
+publishes one aggregate JSON atomically and cannot qualify or credit GSE295080.
 """
 
 from __future__ import annotations
@@ -271,6 +271,13 @@ TEST_REPO_PATH = (
     "tests/route_a_v3/test_preflight_gse295080_independence_overlap_adjudication.py"
 )
 EXACT3 = (CONFIG_REPO_PATH, SCRIPT_REPO_PATH, TEST_REPO_PATH)
+FROZEN_I1_COMMIT = "d422e27fe31ff66d8a9dd1faa8b0aef1d2cf352d"
+FROZEN_I1_PARENT = "19ca49229c9ff2814bad2c58b8b84be14624b7ea"
+FROZEN_I1_BLOBS = {
+    CONFIG_REPO_PATH: "bab1148a045ddbf1e6f465f9dcb096c460f75e9929ef865375ccf51e32fdb6e5",
+    SCRIPT_REPO_PATH: "d1db3a0e267aa6bbdb098ea665a8539253b344616d6861c5ae379ee33b3099ad",
+    TEST_REPO_PATH: "1bd5efa9cf6e685e9e939c74e0e465c51321f223e71002cdab43ce8a40d33de2",
+}
 OWN_BINDING_FIELDS = (
     "status",
     "implementation_commit",
@@ -586,6 +593,31 @@ def _future_predecessor_mode(
 
 
 def _own_mode(group: Mapping[str, Any], *, predecessor_mode: str) -> str:
+    expected_keys = {
+        "status",
+        "frozen_i1_commit",
+        "frozen_i1_expected_parent",
+        "frozen_i1_exact_changed_paths",
+        "frozen_i1_blob_sha256_by_path",
+        "implementation_commit",
+        "implementation_script_path",
+        "implementation_script_sha256",
+        "implementation_test_path",
+        "implementation_test_sha256",
+        "implementation_exact_changed_paths",
+        "binding_exact_changed_paths",
+        "unknown_to_bound_fields",
+    }
+    if set(group) != expected_keys:
+        raise ProtocolError("own I1/I2 binding group schema differs")
+    if group.get("frozen_i1_commit") != FROZEN_I1_COMMIT:
+        raise ProtocolError("own frozen I1 commit differs")
+    if group.get("frozen_i1_expected_parent") != FROZEN_I1_PARENT:
+        raise ProtocolError("own frozen I1 parent differs")
+    if group.get("frozen_i1_exact_changed_paths") != list(EXACT3):
+        raise ProtocolError("own frozen I1 exact3 differs")
+    if group.get("frozen_i1_blob_sha256_by_path") != FROZEN_I1_BLOBS:
+        raise ProtocolError("own frozen I1 blobs differ")
     if group.get("unknown_to_bound_fields") != list(OWN_BINDING_FIELDS):
         raise ProtocolError("own four-scalar binding fields differ")
     if group.get("implementation_script_path") != SCRIPT_REPO_PATH:
@@ -606,10 +638,10 @@ def _own_mode(group: Mapping[str, Any], *, predecessor_mode: str) -> str:
     if predecessor_mode != BOUND:
         raise ProtocolError("own predecessor is not bound")
     if not HEX40.fullmatch(str(group.get("implementation_commit"))):
-        raise ProtocolError("own implementation commit differs")
+        raise ProtocolError("own I2 implementation commit differs")
     for field in ("implementation_script_sha256", "implementation_test_sha256"):
         if not HEX64.fullmatch(str(group.get(field))):
-            raise ProtocolError(f"own {field} differs")
+            raise ProtocolError(f"own I2 {field} differs")
     return BOUND
 
 
@@ -631,7 +663,7 @@ def _binding_modes(protocol: Mapping[str, Any]) -> dict[str, str]:
     if binding.get("binding_scheme") != (
         "DEC027_A_RUNTIME_I1_I2_B2_GSE217_I1_I2_B2_I3_B3_"
         "ENCSR_I1_I2_B2_I3_B3_I4_B4_FUTURE_GSE232_GSE113_GSE269_"
-        "APPEND_ONLY_THEN_GSE295080_EXACT3_I_CONFIG_ONLY_B"
+        "APPEND_ONLY_THEN_GSE295080_FROZEN_I1_DYNAMIC_I2_CONFIG_ONLY_B2"
     ):
         raise ProtocolError("binding scheme differs")
     for name in expected_keys - {"binding_scheme"}:
@@ -676,6 +708,9 @@ def _binding_modes(protocol: Mapping[str, Any]) -> dict[str, str]:
         expected_parent=str(gse113_b) if gse113_mode == BOUND else None,
         predecessor_mode=gse113_mode,
     )
+    gse269_b = binding["gse269595_predecessor"].get("terminal_binding_commit")
+    if gse269_mode == BOUND and gse269_b != FROZEN_I1_PARENT:
+        raise ProtocolError("GSE295080 frozen I1 parent differs from GSE269595 B2")
     own_mode = _own_mode(
         binding["own_preflight_group"], predecessor_mode=gse269_mode
     )
@@ -780,7 +815,7 @@ def validate_protocol(protocol: Mapping[str, Any]) -> None:
             "TO_ENCSR854RUF_B4_TO_GSE232572_APPEND_ONLY_I_B_HISTORY_"
             "TO_GSE113849_APPEND_ONLY_I_B_HISTORY_"
             "TO_GSE269595_APPEND_ONLY_I_B_HISTORY_"
-            "TO_GSE295080_I_TO_GSE295080_B"
+            "TO_GSE295080_I1_TO_GSE295080_I2_TO_GSE295080_B2"
         ),
         "predecessor_order": [
             "gse217518_predecessor",
@@ -790,7 +825,8 @@ def validate_protocol(protocol: Mapping[str, Any]) -> None:
             "gse269595_predecessor",
         ],
         "all_binding_groups_must_be_bound": True,
-        "gse295080_implementation_i_must_be_direct_child_of_gse269595_b": True,
+        "gse295080_frozen_i1_must_be_direct_child_of_gse269595_b2": True,
+        "gse295080_dynamic_i2_must_be_direct_child_of_frozen_i1": True,
         "clean_head_equals_upstream_equals_live_origin_required": True,
         "direct_parent_changed_path_and_blob_audit_required": True,
         "executing_script_and_focused_test_must_match_implementation_i": True,
@@ -1119,7 +1155,7 @@ def _audit_bound_repository(
     gse232_b = str(gse232_history[-1]["commit"])
     gse113_b = str(gse113_history[-1]["commit"])
     gse269_b = str(gse269_history[-1]["commit"])
-    own_i = str(own["implementation_commit"])
+    own_i2 = str(own["implementation_commit"])
 
     chain: list[
         tuple[str, str, str, Sequence[str], Mapping[str, str] | None]
@@ -1173,16 +1209,23 @@ def _audit_bound_repository(
     chain.extend(
         [
             (
-                "GSE295080_I",
-                own_i,
+                "GSE295080_I1",
+                str(own["frozen_i1_commit"]),
                 gse269_b,
+                tuple(own["frozen_i1_exact_changed_paths"]),
+                own["frozen_i1_blob_sha256_by_path"],
+            ),
+            (
+                "GSE295080_I2",
+                own_i2,
+                str(own["frozen_i1_commit"]),
                 EXACT3,
                 {
                     SCRIPT_REPO_PATH: own["implementation_script_sha256"],
                     TEST_REPO_PATH: own["implementation_test_sha256"],
                 },
             ),
-            ("GSE295080_B", head, own_i, (CONFIG_REPO_PATH,), None),
+            ("GSE295080_B2", head, own_i2, (CONFIG_REPO_PATH,), None),
         ]
     )
     for label, commit, parent, paths, blobs in chain:
@@ -1196,21 +1239,21 @@ def _audit_bound_repository(
         )
 
     implementation_protocol = _load_json_bytes(
-        _git_blob(repository_root, own_i, CONFIG_REPO_PATH), "GSE295080_I_CONFIG"
+        _git_blob(repository_root, own_i2, CONFIG_REPO_PATH), "GSE295080_I2_CONFIG"
     )
     if _normalise_own_binding(protocol) != implementation_protocol:
-        raise ActivationBlocked("GSE295080_B_CHANGED_OUTSIDE_FOUR_OWN_SCALARS")
+        raise ActivationBlocked("GSE295080_B2_CHANGED_OUTSIDE_FOUR_OWN_SCALARS")
     if protocol_path.read_bytes() != _git_blob(repository_root, head, CONFIG_REPO_PATH):
-        raise ActivationBlocked("WORKING_CONFIG_DIFFERS_FROM_GSE295080_B")
-    script_blob = _git_blob(repository_root, own_i, SCRIPT_REPO_PATH)
-    test_blob = _git_blob(repository_root, own_i, TEST_REPO_PATH)
+        raise ActivationBlocked("WORKING_CONFIG_DIFFERS_FROM_GSE295080_B2")
+    script_blob = _git_blob(repository_root, own_i2, SCRIPT_REPO_PATH)
+    test_blob = _git_blob(repository_root, own_i2, TEST_REPO_PATH)
     executing_script = Path(__file__).resolve()
     if executing_script != (repository_root / SCRIPT_REPO_PATH).resolve():
         raise ActivationBlocked("EXECUTING_SCRIPT_IS_STALE_COPY")
     if executing_script.read_bytes() != script_blob:
-        raise ActivationBlocked("EXECUTING_SCRIPT_DIFFERS_FROM_GSE295080_I")
+        raise ActivationBlocked("EXECUTING_SCRIPT_DIFFERS_FROM_GSE295080_I2")
     if (repository_root / TEST_REPO_PATH).read_bytes() != test_blob:
-        raise ActivationBlocked("FOCUSED_TEST_DIFFERS_FROM_GSE295080_I")
+        raise ActivationBlocked("FOCUSED_TEST_DIFFERS_FROM_GSE295080_I2")
     return {
         "head_equals_upstream_and_origin": True,
         "worktree_clean": True,
@@ -1221,7 +1264,8 @@ def _audit_bound_repository(
         "gse232572_binding_commit": gse232_b,
         "gse113849_binding_commit": gse113_b,
         "gse269595_binding_commit": gse269_b,
-        "implementation_commit": own_i,
+        "frozen_i1_commit": FROZEN_I1_COMMIT,
+        "implementation_commit": own_i2,
         "binding_commit": head,
         "executing_script_matches_bound_implementation": True,
     }
