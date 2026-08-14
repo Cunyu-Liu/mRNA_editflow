@@ -179,12 +179,12 @@
       }
     },
     "own_preflight_group": {
-      "status": "UNKNOWN_NOT_ASSERTED",
-      "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+      "status": "BOUND",
+      "implementation_commit": "5531907c9ede1a4323ffe884c47a410d9bcb946d",
       "implementation_script_path": "scripts/route_a_v3/preflight_encsr854ruf_dec027_dataset_specific_a1.py",
-      "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
+      "implementation_script_sha256": "4a5910cad545d4b699b2daf20933afe3e6512aff11b015cb6adb983f4911c247",
       "implementation_test_path": "tests/route_a_v3/test_preflight_encsr854ruf_dec027_dataset_specific_a1.py",
-      "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
+      "implementation_test_sha256": "364b908433353451501b0419587d20d6702451ae87726231e3ac1800313e60b7",
       "implementation_exact_changed_paths": [
         "configs/route_a_v3_encsr854ruf_dec027_dataset_specific_a1_preflight_v1.json",
         "scripts/route_a_v3/preflight_encsr854ruf_dec027_dataset_specific_a1.py",
