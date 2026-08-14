@@ -91,8 +91,24 @@
       ]
     },
     "implementation": {
+      "frozen_i1_predecessor": {
+        "status": "BOUND",
+        "implementation_commit": "17a35f0f88cc988b938aaf25d94a8b32f0cacfc8",
+        "implementation_expected_parent": "e60956cf59cbddc0406c5d116fb9714906db36e1",
+        "implementation_exact_changed_paths": [
+          "configs/route_a_v3_gse217518_corrected_a1_successor_candidate_v1.json",
+          "scripts/route_a_v3/preflight_gse217518_corrected_a1_successor_candidate.py",
+          "tests/route_a_v3/test_preflight_gse217518_corrected_a1_successor_candidate.py"
+        ],
+        "implementation_blob_sha256_by_path": {
+          "configs/route_a_v3_gse217518_corrected_a1_successor_candidate_v1.json": "0aa3324d3cfdfd50837ea32a4d1efef754fe70abdab9805f373401f21a1ccb41",
+          "scripts/route_a_v3/preflight_gse217518_corrected_a1_successor_candidate.py": "6ca04bdc464ac30f1c3b83830b74c6621816bd25308e345f39e2c5ee94f21b4c",
+          "tests/route_a_v3/test_preflight_gse217518_corrected_a1_successor_candidate.py": "b08209856fb852991c1b795864304fcda62a4f63419197c068ec6d1f0fd34691"
+        }
+      },
       "status": "UNKNOWN_NOT_ASSERTED",
       "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+      "implementation_expected_parent": "17a35f0f88cc988b938aaf25d94a8b32f0cacfc8",
       "implementation_script_path": "scripts/route_a_v3/preflight_gse217518_corrected_a1_successor_candidate.py",
       "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
       "implementation_test_path": "tests/route_a_v3/test_preflight_gse217518_corrected_a1_successor_candidate.py",
@@ -115,7 +131,7 @@
   },
   "production_activation_rule": {
     "all_three_binding_groups_must_be_bound": true,
-    "required_commit_chain": "DEC027_A_TO_RUNTIME_I_TO_RUNTIME_B_TO_GSE217518_I_TO_GSE217518_B",
+    "required_commit_chain": "DEC027_A_TO_RUNTIME_I_TO_RUNTIME_B_TO_GSE217518_I1_TO_GSE217518_I2_TO_GSE217518_B2",
     "clean_head_equals_upstream_equals_live_origin_required": true,
     "direct_parent_changed_path_and_blob_audit_required": true,
     "executing_script_and_focused_test_must_match_implementation_i": true,

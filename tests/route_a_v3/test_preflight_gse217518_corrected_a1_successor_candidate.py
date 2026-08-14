@@ -40,6 +40,13 @@ def _config(runner):
     return config
 
 
+def _disk_and_clean_i2(runner):
+    disk = _config(runner)
+    clean_i2 = runner._normalise_own_binding(disk)
+    runner.validate_protocol(clean_i2)
+    return disk, clean_i2
+
+
 def _gate_map(report):
     return {item["gate_id"]: item for item in report["gates"]}
 
@@ -54,9 +61,9 @@ def _walk_keys(value):
             yield from _walk_keys(child)
 
 
-def test_exact3_candidate_binds_dec027_a_and_evt059_but_keeps_own_four_unknown():
+def test_exact3_accepts_legal_disk_i2_or_b2_and_normalises_to_clean_i2():
     runner = _load_candidate()
-    config = _config(runner)
+    disk, config = _disk_and_clean_i2(runner)
     assert config["required_gate_ids_exactly"] == list(runner.GATE_IDS)
     assert len(runner.GATE_IDS) == 11
     assert config["document_status"] == "DRAFT_CANDIDATE_NOT_ACTIVE_PROTOCOL"
@@ -76,34 +83,24 @@ def test_exact3_candidate_binds_dec027_a_and_evt059_but_keeps_own_four_unknown()
     runtime = config["bindings"]["runtime"]
     assert runtime["status"] == runner.BOUND
     assert runtime["runtime_event_id"] == "A1-EVT-059"
-    assert runtime["implementation_commit"] == (
-        "5d66e8dc83eb9966f7698ac0fc677f1b06af8ea6"
-    )
-    assert runtime["binding_commit"] == "e60956cf59cbddc0406c5d116fb9714906db36e1"
+    assert runtime["implementation_commit"] == runner.RUNTIME_I_COMMIT
+    assert runtime["binding_commit"] == runner.RUNTIME_B_COMMIT
     assert runtime["binding_expected_parent"] == runtime["implementation_commit"]
-    assert runtime["implementation_blob_sha256_by_path"] == {
-        runner.RUNTIME_CONFIG_PATH: (
-            "3d5af87e7512568ed663b211c24a8586eeb9f03936a397cf2d2ddaeb2a21f57b"
-        ),
-        runner.RUNTIME_SCRIPT_PATH: (
-            "44dcda8897e747cfe363668ddc23d8dd9c53a7f3ffab692a1bb4e7cf738973ca"
-        ),
-        runner.RUNTIME_TEST_PATH: (
-            "ff250d4f011d8526e9a4a7bf13049f1f47346faa1c7ea512cbf447a6fb59ba4a"
-        ),
-    }
-    assert runtime["binding_blob_sha256_by_path"] == {
-        runner.RUNTIME_CONFIG_PATH: (
-            "e5c1f96ec57b220fd36ff4677deb37d6dc0be06e02f21af3837e17a51e91e5ee"
-        ),
-        runner.RUNTIME_SCRIPT_PATH: runtime["implementation_blob_sha256_by_path"][
-            runner.RUNTIME_SCRIPT_PATH
-        ],
-        runner.RUNTIME_TEST_PATH: runtime["implementation_blob_sha256_by_path"][
-            runner.RUNTIME_TEST_PATH
-        ],
-    }
+    assert runtime["implementation_blob_sha256_by_path"] == runner.RUNTIME_I_BLOBS
+    assert runtime["binding_blob_sha256_by_path"] == runner.RUNTIME_B_BLOBS
     implementation = config["bindings"]["implementation"]
+    assert disk["bindings"]["implementation"]["status"] in {
+        runner.UNKNOWN,
+        runner.BOUND,
+    }
+    assert implementation["frozen_i1_predecessor"] == {
+        "status": runner.BOUND,
+        "implementation_commit": runner.I1_COMMIT,
+        "implementation_expected_parent": runtime["binding_commit"],
+        "implementation_exact_changed_paths": list(runner.EXACT3),
+        "implementation_blob_sha256_by_path": runner.I1_BLOBS,
+    }
+    assert implementation["implementation_expected_parent"] == runner.I1_COMMIT
     assert implementation["status"] == runner.UNKNOWN
     assert {
         implementation[field] for field in implementation["unknown_to_bound_fields"]
@@ -210,6 +207,9 @@ def test_production_own_four_unknown_fails_before_git_asset_or_output(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ):
     runner = _load_candidate()
+    _, clean_i2 = _disk_and_clean_i2(runner)
+    clean_i2_path = tmp_path / "clean-i2.json"
+    clean_i2_path.write_text(json.dumps(clean_i2), encoding="utf-8")
     missing_asset_dir = tmp_path / "must-not-be-read"
     output_dir = tmp_path / "must-not-exist"
     calls = {"git": 0, "asset": 0, "output": 0}
@@ -225,7 +225,7 @@ def test_production_own_four_unknown_fails_before_git_asset_or_output(
     monkeypatch.setattr(runner, "inspect_official_public_assets", poison("asset"))
     monkeypatch.setattr(runner, "write_report", poison("output"))
     with pytest.raises(runner.BindingNotFrozen, match="grouped UNKNOWN"):
-        runner.execute(CONFIG_PATH, missing_asset_dir, output_dir)
+        runner.execute(clean_i2_path, missing_asset_dir, output_dir)
     assert calls == {"git": 0, "asset": 0, "output": 0}
     assert not missing_asset_dir.exists()
     assert not output_dir.exists()
@@ -396,7 +396,7 @@ def test_report_contains_no_member_sequence_row_effect_se_or_split_payload():
 
 
 def _own_bound_config(runner):
-    config = _config(runner)
+    _, config = _disk_and_clean_i2(runner)
     own = config["bindings"]["implementation"]
     own.update(
         {
@@ -412,7 +412,7 @@ def _own_bound_config(runner):
 
 def test_gate_set_or_partial_runtime_or_own_binding_drift_fails_closed():
     runner = _load_candidate()
-    config = _config(runner)
+    _, config = _disk_and_clean_i2(runner)
     wrong_gate = deepcopy(config)
     wrong_gate["required_gate_ids_exactly"][-1] = "ALTERNATE_POWER_GATE"
     with pytest.raises(runner.CandidateContractError, match="exact eleven"):
@@ -427,12 +427,12 @@ def test_gate_set_or_partial_runtime_or_own_binding_drift_fails_closed():
     runtime = clean_runtime_unknown["bindings"]["runtime"]
     for field in runtime["unknown_to_bound_fields"]:
         runtime[field] = runner.UNKNOWN
-    runner.validate_protocol(clean_runtime_unknown)
+    assert runner._runtime_binding_mode(runtime) == runner.UNKNOWN
 
     partial_runtime = deepcopy(clean_runtime_unknown)
     partial_runtime["bindings"]["runtime"]["implementation_commit"] = "1" * 40
     with pytest.raises(runner.CandidateContractError, match="partially bound"):
-        runner.validate_protocol(partial_runtime)
+        runner._runtime_binding_mode(partial_runtime["bindings"]["runtime"])
 
     partial_own = deepcopy(config)
     partial_own["bindings"]["implementation"]["implementation_commit"] = "3" * 40
@@ -493,24 +493,26 @@ def test_repository_auditor_rejects_stale_executing_copy_and_freezes_full_chain(
     monkeypatch.setattr(runner, "_verify_frozen_commit", fake_verify)
     monkeypatch.setattr(runner, "_git_blob", fake_blob)
     monkeypatch.setattr(runner, "__file__", str(script_path))
-    with pytest.raises(runner.CandidateContractError, match="differs from GSE217518 I"):
+    with pytest.raises(
+        runner.CandidateContractError, match="differs from GSE217518 I2"
+    ):
         runner._audit_repository_bindings(config, config_path, repo)
     assert [item["label"] for item in verified] == [
         "DEC027 authority A",
         "DEC027 runtime I",
         "DEC027 runtime B",
-        "GSE217518 implementation I",
-        "GSE217518 binding B",
+        "GSE217518 frozen implementation I1",
+        "GSE217518 dynamic implementation I2",
+        "GSE217518 binding B2",
     ]
     assert verified[1]["expected_parent"] == runner.AUTHORITY_COMMIT
-    assert verified[2]["expected_parent"] == (
-        "5d66e8dc83eb9966f7698ac0fc677f1b06af8ea6"
-    )
-    assert verified[3]["expected_parent"] == (
-        "e60956cf59cbddc0406c5d116fb9714906db36e1"
-    )
-    assert verified[4]["expected_parent"] == "3" * 40
-    assert tuple(verified[4]["expected_paths"]) == (runner.CONFIG_REPO_PATH,)
+    assert verified[2]["expected_parent"] == runner.RUNTIME_I_COMMIT
+    assert verified[3]["expected_parent"] == runner.RUNTIME_B_COMMIT
+    assert verified[3]["commit"] == runner.I1_COMMIT
+    assert verified[3]["expected_blobs"] == runner.I1_BLOBS
+    assert verified[4]["expected_parent"] == runner.I1_COMMIT
+    assert verified[5]["expected_parent"] == "3" * 40
+    assert tuple(verified[5]["expected_paths"]) == (runner.CONFIG_REPO_PATH,)
 
 
 def test_atomic_fixed_name_publication_is_idempotent_and_never_replaces(
