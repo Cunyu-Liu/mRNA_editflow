@@ -79,7 +79,7 @@
     {
       "path": "docs/execution/route_a_v3_a1_interim.yaml",
       "role": "A1_ACTIVE_INTERIM_RECORD",
-      "sha256": "fbeef398ff59764375edf9a35c2c35fd3a93db89eb3b06326ec1c73968646eff"
+      "sha256": "2e7eb368c9b76318064838d3a3415fd5a92f9a2314b6f53604afcb6b8794a204"
     },
     {
       "path": "docs/execution/route_a_v3_a6_interim.yaml",
@@ -472,6 +472,36 @@
       "sha256": "eaece480ead17f5ef3a8eb2662d3a0372e59910d07eee0eb77f1d55b4580e226"
     },
     {
+      "path": "configs/route_a_v3_gse261709_public_identifier_asset_schema_aggregate_geometry_preflight_v1.json",
+      "role": "GSE261709_PUBLIC_IDENTIFIER_ASSET_SCHEMA_AGGREGATE_GEOMETRY_PREFLIGHT_BOUND_CONFIG",
+      "sha256": "c1b72a24b12a54067f43be347f58060e7b5d382030afcd8d7eb178939e24c835"
+    },
+    {
+      "path": "scripts/route_a_v3/preflight_gse261709_public_identifier_asset_schema_aggregate_geometry.py",
+      "role": "GSE261709_PUBLIC_IDENTIFIER_ASSET_SCHEMA_AGGREGATE_GEOMETRY_PREFLIGHT_PRODUCER",
+      "sha256": "a6f3981a58cb4f22e0fb1d495070804e4d6d3fba3bbcb090730f19344a7a9089"
+    },
+    {
+      "path": "tests/route_a_v3/test_preflight_gse261709_public_identifier_asset_schema_aggregate_geometry.py",
+      "role": "GSE261709_PUBLIC_IDENTIFIER_ASSET_SCHEMA_AGGREGATE_GEOMETRY_PREFLIGHT_FOCUSED_TEST",
+      "sha256": "ada9d6220b49a9076e58d983eb8f41457d1010030c330dedcd8a164e2fb593dd"
+    },
+    {
+      "path": "configs/route_a_v3_gse207584_aggregate_dense_family_qualification_preflight_v1.json",
+      "role": "GSE207584_AGGREGATE_DENSE_FAMILY_QUALIFICATION_PREFLIGHT_BOUND_CONFIG",
+      "sha256": "65bae0b40a599f150d4a757887fb1c86239205ee56800f89d0bb9e10227cea43"
+    },
+    {
+      "path": "scripts/route_a_v3/preflight_gse207584_aggregate_dense_family_qualification.py",
+      "role": "GSE207584_AGGREGATE_DENSE_FAMILY_QUALIFICATION_PREFLIGHT_PRODUCER",
+      "sha256": "4776085ad8bd459da92fc63d1d3c437b4e534f81d1e5ff55c167d17880f0c074"
+    },
+    {
+      "path": "tests/route_a_v3/test_preflight_gse207584_aggregate_dense_family_qualification.py",
+      "role": "GSE207584_AGGREGATE_DENSE_FAMILY_QUALIFICATION_PREFLIGHT_FOCUSED_TEST",
+      "sha256": "81eccd24f16930df334e17b2cc8ae89906a91fba936ee1685d281079ba0b4df6"
+    },
+    {
       "path": "configs/route_a_v3_a6_cpu_exact_absorbing_dag_v1.json",
       "role": "A6_CPU_EXACT_ABSORBING_DAG_BOUND_PROTOCOL",
       "sha256": "84e9a3f21ac6293faa167eb08eb40e8886bfe43daaa374b2c7613fbc9baecab8"
@@ -504,18 +534,18 @@
     {
       "path": "tests/route_a_v3/test_a0_integrity_guards.py",
       "role": "A0_AUTHORITY_INTEGRITY_GUARD_TEST",
-      "sha256": "a0c9b3cc457011e57046506a02e57a4314a26a8885b3d110f88797a000daca0a"
+      "sha256": "708d73ade233e4f8ade8fbc477be615ff3d447f694f30fe5b1c73f457c3445d3"
     },
     {
       "path": "scripts/route_a_v3/validate_a0_bundle.py",
       "role": "A0_STATIC_AND_SEMANTIC_VALIDATOR",
-      "sha256": "a6a71a82e90352c6c9bc02fad95c54436e268d1ee58233093dc8412c5e5739bb"
+      "sha256": "724ddd3e3dc18eed22efccb1b6ce3389b91fd76ebed81eba0cf33018711bfab1"
     }
   ],
   "initial_generated_at": "2026-08-10T10:10:05+08:00",
-  "generated_at": "2026-08-14T10:15:01+08:00",
-  "updated_at": "2026-08-14T10:15:01+08:00",
-  "manifest_status": "DEC023_GSE261709_PUBLIC_SCHEMA_GEOMETRY_AND_GSE207584_DENSE_FAMILY_DUAL_AGGREGATE_ONLY_PREFLIGHT_REGISTERED_EVT055_SETTLED_PENDING_FRESH_UNALLOCATED_RUNTIME_EVENT_A1_INCOMPLETE_A6_IN_PROGRESS_L3_NOT_ESTABLISHED_A7_NOT_RUN",
+  "generated_at": "2026-08-14T12:55:01+08:00",
+  "updated_at": "2026-08-14T12:55:01+08:00",
+  "manifest_status": "DEC023_GSE261709_PUBLIC_SCHEMA_GEOMETRY_AND_GSE207584_DENSE_FAMILY_DUAL_PREFLIGHT_EVIDENCE_REGISTERED_EVT056_SETTLED_EVIDENCE_RUNTIME_PENDING_A1_INCOMPLETE_A6_IN_PROGRESS_L3_NOT_ESTABLISHED_A7_NOT_RUN",
   "schema_version": "1.0.0",
   "sealed_contact": false,
   "version": "3.0.0"

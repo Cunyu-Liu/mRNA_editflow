@@ -4693,3 +4693,236 @@ def test_dec023_gse207584_gate_or_true_a2_promotion_drift_fails_closed(
     assert "DEC023_GSE207584_SCOPE" in codes
     assert "DEC023_DATA_ROLE" in codes
     assert "DEC023_DATA_GSE207584" in codes
+
+
+def test_dec023_dual_preflight_final_evidence_registration_is_closed(
+    validator,
+    repo_root,
+):
+    assert validator.validate_dec023_dual_preflight_evidence_registration(repo_root) == []
+    manifest = validator._load_json(repo_root, validator.REGISTRY_MANIFEST_PATH)
+    manifest_paths = {row["path"] for row in manifest["files"]}
+    static_paths = {
+        **validator.GSE261709_PREFLIGHT_STATIC_LEAF_SHA256,
+        **validator.GSE207584_PREFLIGHT_STATIC_LEAF_SHA256,
+    }
+    assert len(static_paths) == 6
+    assert set(static_paths).issubset(manifest_paths)
+    assert validator.GSE261709_PREFLIGHT_REPORT_PATH not in manifest_paths
+    assert validator.GSE207584_PREFLIGHT_REPORT_PATH not in manifest_paths
+    assert manifest["manifest_status"] == (
+        validator.DEC023_DUAL_PREFLIGHT_EVIDENCE_MANIFEST_STATUS
+    )
+
+    interim = validator._load_yaml(repo_root, validator.A1_INTERIM_PATH)
+    current = interim["dec023_current_disposition"]
+    assert current["latest_settled_runtime_event_id"] == "A1-EVT-056"
+    assert current["runtime_sync_status"] == "SYNCED_EVT_056"
+    assert current["runtime_event_emitted"] is True
+    assert current["current_qualified_counts"] == {
+        "ordinary": 1,
+        "a1": 1,
+        "true_a2": 0,
+        "canonical_records": 6547,
+    }
+    registration = current["evidence_registration"]
+    assert registration == {
+        "integration_id": validator.DEC023_DUAL_PREFLIGHT_EVIDENCE_INTEGRATION_ID,
+        "registered_lineage_ids_exactly": [
+            validator.GSE261709_PREFLIGHT_LINEAGE_ID,
+            validator.GSE207584_PREFLIGHT_LINEAGE_ID,
+        ],
+        "predecessor_runtime_event_id": "A1-EVT-056",
+        "expected_next_runtime_event_id": "PENDING_FRESH_RUNTIME_EVENT_ID",
+        "next_runtime_event_id_preallocated": False,
+        "runtime_sync_status": "PENDING_FRESH_EVENT_AFTER_SETTLED_EVT_056",
+        "runtime_event_emitted": False,
+    }
+
+    lineage = interim["artifact_lineage"]
+    gse261 = lineage[validator.GSE261709_PREFLIGHT_LINEAGE_ID]
+    gse207 = lineage[validator.GSE207584_PREFLIGHT_LINEAGE_ID]
+    assert (
+        gse261["path"],
+        gse261["bytes"],
+        gse261["sha256"],
+        gse261["status"],
+    ) == (
+        validator.GSE261709_PREFLIGHT_REPORT_PATH,
+        6748,
+        validator.GSE261709_PREFLIGHT_REPORT_SHA256,
+        "STOP_PREFLIGHT_GATES_NOT_CLOSED",
+    )
+    assert gse261["required_gate_status_counts"] == {"PASS": 1, "BLOCKED": 2}
+    assert gse261["required_gate_results"] == validator.GSE261709_PREFLIGHT_GATE_RESULTS
+    assert gse261["artifact_type"] == (
+        "PUBLIC_IDENTIFIER_ASSET_SCHEMA_AGGREGATE_GEOMETRY_PREFLIGHT_ONLY"
+    )
+    assert (
+        gse207["path"],
+        gse207["bytes"],
+        gse207["sha256"],
+        gse207["status"],
+    ) == (
+        validator.GSE207584_PREFLIGHT_REPORT_PATH,
+        7755,
+        validator.GSE207584_PREFLIGHT_REPORT_SHA256,
+        "STOP_CURRENT_PROTOCOL_NOT_QUALIFIED",
+    )
+    assert gse207["required_gate_status_counts"] == {
+        "PASS_PREFLIGHT_ONLY": 1,
+        "FAIL_CLOSED": 2,
+        "UNKNOWN_NOT_ASSERTED": 8,
+    }
+    assert gse207["required_gate_results"] == validator.GSE207584_PREFLIGHT_GATE_RESULTS
+    assert gse207["artifact_type"] == (
+        "AGGREGATE_DENSE_FAMILY_QUALIFICATION_PREFLIGHT_ONLY"
+    )
+    for record in (gse261, gse207):
+        assert record["contribution"] == {
+            "ordinary": 0,
+            "a1": 0,
+            "true_a2": 0,
+            "canonical_records": 0,
+        }
+        assert record["qualified"] is False
+        assert record["training_allowed"] is False
+        assert record["gpu_work_allowed"] is False
+        assert record["model_selection_allowed"] is False
+        assert record["a7_allowed"] is False
+        assert record["next_phase_authorized"] is False
+        assert record["predecessor_runtime_event_id"] == "A1-EVT-056"
+        assert record["expected_next_runtime_event_id"] == (
+            "PENDING_FRESH_RUNTIME_EVENT_ID"
+        )
+        assert record["runtime_event_emitted"] is False
+        assert record["scope_attestation"]["member_identifier_output_count"] == 0
+        assert record["private_row_artifact_read_count_for_ledger"] == 0
+
+
+@pytest.mark.parametrize(
+    ("lineage_id", "code"),
+    [
+        (
+            "gse261709_public_identifier_asset_schema_aggregate_geometry_preflight_v1",
+            "A1_INTERIM_GSE261709_PREFLIGHT",
+        ),
+        (
+            "gse207584_aggregate_dense_family_qualification_preflight_v1",
+            "A1_INTERIM_GSE207584_PREFLIGHT",
+        ),
+    ],
+)
+def test_dec023_final_report_hash_bytes_and_stop_status_are_immutable(
+    validator,
+    repo_root,
+    tmp_path,
+    monkeypatch,
+    lineage_id,
+    code,
+):
+    def mutate(interim):
+        record = interim["artifact_lineage"][lineage_id]
+        record["sha256"] = "0" * 64
+        record["bytes"] += 1
+        record["status"] = "PASS"
+
+    codes = _validate_rehashed_interim_bypass(
+        validator, repo_root, tmp_path, monkeypatch, mutate
+    )
+    assert code in codes
+
+
+@pytest.mark.parametrize(
+    ("config_path", "lineage_id", "producer_code"),
+    [
+        (
+            "configs/route_a_v3_gse261709_public_identifier_asset_schema_aggregate_geometry_preflight_v1.json",
+            "gse261709_public_identifier_asset_schema_aggregate_geometry_preflight_v1",
+            "A1_INTERIM_GSE261709_PREFLIGHT_PRODUCER_LINEAGE",
+        ),
+        (
+            "configs/route_a_v3_gse207584_aggregate_dense_family_qualification_preflight_v1.json",
+            "gse207584_aggregate_dense_family_qualification_preflight_v1",
+            "A1_INTERIM_GSE207584_PREFLIGHT_PRODUCER_LINEAGE",
+        ),
+    ],
+)
+def test_dec023_synchronized_static_leaf_rehash_is_rejected(
+    validator,
+    repo_root,
+    tmp_path,
+    monkeypatch,
+    config_path,
+    lineage_id,
+    producer_code,
+):
+    manifest = _copy_manifest_bundle(validator, repo_root, tmp_path)
+    target = tmp_path / config_path
+    target.write_bytes(target.read_bytes() + b"\n")
+    changed_sha256 = validator.sha256_file(target)
+    next(row for row in manifest["files"] if row["path"] == config_path)[
+        "sha256"
+    ] = changed_sha256
+
+    interim_path = tmp_path / validator.A1_INTERIM_PATH
+    interim = yaml.safe_load(interim_path.read_text(encoding="utf-8"))
+    interim["artifact_lineage"][lineage_id]["producer_lineage"][
+        "config_sha256"
+    ] = changed_sha256
+    interim_path.write_text(yaml.safe_dump(interim, sort_keys=False), encoding="utf-8")
+    interim_sha256 = validator.sha256_file(interim_path)
+    monkeypatch.setattr(validator, "EXPECTED_A1_INTERIM_SHA256", interim_sha256)
+    next(
+        row
+        for row in manifest["files"]
+        if row["path"] == validator.A1_INTERIM_PATH
+    )["sha256"] = interim_sha256
+    (tmp_path / validator.REGISTRY_MANIFEST_PATH).write_text(
+        json.dumps(manifest, indent=2) + "\n", encoding="utf-8"
+    )
+
+    codes = _codes(validator.validate_bundle(tmp_path))
+    assert "REGISTRY_MANIFEST_HASH_MISMATCH" not in codes
+    assert "A1_INTERIM_CANONICAL_HASH" not in codes
+    assert "DEC023_DUAL_PREFLIGHT_STATIC_LEAF" in codes
+    assert producer_code in codes
+
+
+def test_dec023_no_promotion_member_or_successor_event_bypass(
+    validator,
+    repo_root,
+    tmp_path,
+    monkeypatch,
+):
+    def mutate(interim):
+        current = interim["dec023_current_disposition"]
+        current["current_qualified_counts"]["true_a2"] = 1
+        current["changes_current_qualified_counts"] = True
+        registration = current["evidence_registration"]
+        registration["expected_next_runtime_event_id"] = "A1-EVT-057"
+        registration["next_runtime_event_id_preallocated"] = True
+        registration["runtime_event_emitted"] = True
+        for lineage_id in (
+            validator.GSE261709_PREFLIGHT_LINEAGE_ID,
+            validator.GSE207584_PREFLIGHT_LINEAGE_ID,
+        ):
+            record = interim["artifact_lineage"][lineage_id]
+            record["qualified"] = True
+            record["contribution"]["true_a2"] = 1
+            record["scope_attestation"]["member_identifier_output_count"] = 1
+            record["expected_next_runtime_event_id"] = "A1-EVT-057"
+            record["next_runtime_event_id_preallocated"] = True
+            record["runtime_event_emitted"] = True
+
+    codes = _validate_rehashed_interim_bypass(
+        validator, repo_root, tmp_path, monkeypatch, mutate
+    )
+    assert "DEC023_INTERIM" in codes
+    assert "DEC023_EVIDENCE_RUNTIME_BOUNDARY" in codes
+    assert "A1_INTERIM_GSE261709_PREFLIGHT" in codes
+    assert "A1_INTERIM_GSE261709_PREFLIGHT_COUNTS" in codes
+    assert "A1_INTERIM_GSE261709_PREFLIGHT_SCOPE_ATTESTATION" in codes
+    assert "A1_INTERIM_GSE207584_PREFLIGHT" in codes
+    assert "A1_INTERIM_GSE207584_PREFLIGHT_COUNTS" in codes
+    assert "A1_INTERIM_GSE207584_PREFLIGHT_SCOPE_ATTESTATION" in codes
