@@ -17,12 +17,12 @@
   "sync_type": "APPEND_ONLY_PUBLIC_AGGREGATE_EVIDENCE_REGISTRATION_NO_SCIENTIFIC_STATE_CHANGE",
   "implementation_binding": {
     "binding_scheme": "BASE_GSE295_B2_THEN_LEDGER_L_EXACT4_THEN_DYNAMIC_I1_EXACT3_THEN_CONFIG_ONLY_B1_V1",
-    "status": "UNKNOWN_NOT_ASSERTED",
-    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "status": "BOUND",
+    "implementation_commit": "482e8ab19c3fcab4427d55d2e66b5ed7b4c32e98",
     "implementation_script_path": "scripts/route_a_v3/dec027_six_rescue_terminal_aggregate_evidence_runtime_sync.py",
-    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_script_sha256": "450dcb69be896dab85553e77996d57e20f74617b24e32d26e2dc55fdae24e1a1",
     "implementation_test_path": "tests/route_a_v3/test_dec027_six_rescue_terminal_aggregate_evidence_runtime_sync.py",
-    "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_test_sha256": "cf53e12496fc2076569af232de0c8b8ca2cc66fe059fcfd9ffa3e47553e71129",
     "unknown_to_bound_scalar_paths": [
       "implementation_binding.status",
       "implementation_binding.implementation_commit",
