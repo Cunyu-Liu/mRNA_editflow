@@ -47,7 +47,7 @@ DECISION_LOG_PATH = "docs/execution/route_a_v3_decision_log.yaml"
 REGISTRY_MANIFEST_PATH = "docs/execution/route_a_v3_registry_manifest.json"
 A1_INTERIM_PATH = "docs/execution/route_a_v3_a1_interim.yaml"
 A6_INTERIM_PATH = "docs/execution/route_a_v3_a6_interim.yaml"
-EXPECTED_A1_INTERIM_SHA256 = "fb50929ae2dfa0bdd1c50b003fc43c0e13b89baade203e8384c8b6ea3eba7b1e"
+EXPECTED_A1_INTERIM_SHA256 = "a0f0c4927328dd9d790da7c348f0a72b3c437feef2e3e22ce91a640155402b6e"
 EXPECTED_A6_INTERIM_SHA256 = "1d44bcfe8669a55dc42f619ed43178f0637e20a4297ca996ecab3f7165612769"
 CURRENT_ACTIVE_CONFIG_SHA256 = "c5ec7d236443b506c09fd3f09e149ce5d082daff618887989af6e59472727a27"
 CURRENT_TASK_REGISTRY_SHA256 = "a64d0b8bb5eb466b06daa46ed109bd19901ee775910bc5cc9221c39ead63a4bc"
@@ -141,6 +141,21 @@ DEC027_AUTHORITY_MANIFEST_STATUS = (
     "L3_NOT_ESTABLISHED_A7_NOT_RUN"
 )
 DEC027_PENDING_RUNTIME_EVENT_ID = "PENDING_FRESH_RUNTIME_EVENT_ID"
+DEC027_CURRENT_RUNTIME_EVENT_ID = "A1-EVT-059"
+DEC027_PENDING_SUCCESSOR_RUNTIME_EVENT_LABEL = "A1-EVT-060"
+DEC027_SIX_RESCUE_EVIDENCE_LEDGER_AT = "2026-08-15T05:05:00+08:00"
+DEC027_SIX_RESCUE_EVIDENCE_MANIFEST_AT = "2026-08-15T05:05:01+08:00"
+DEC027_SIX_RESCUE_EVIDENCE_INTEGRATION_ID = (
+    "DEC027_SIX_TERMINAL_AGGREGATE_RESCUE_REPORTS_V1_LEDGER_REGISTRATION"
+)
+DEC027_SIX_RESCUE_EVIDENCE_UPDATE_ID = (
+    "DEC027_SIX_TERMINAL_AGGREGATE_RESCUE_REPORTS_V1"
+)
+DEC027_SIX_RESCUE_EVIDENCE_MANIFEST_STATUS = (
+    "DEC027_SIX_TERMINAL_AGGREGATE_RESCUE_REPORTS_REGISTERED_EVT059_SETTLED_"
+    "PENDING_UNALLOCATED_EVT060_NO_PROMOTION_A1_INCOMPLETE_A6_IN_PROGRESS_"
+    "L3_NOT_ESTABLISHED_A7_NOT_RUN"
+)
 DEC027_RESCUE_EXECUTION_ORDER = [
     "GSE217518_CORRECTED_A1_SUCCESSOR",
     "ENCSR854RUF_DATASET_SPECIFIC_A1_PREFLIGHT",
@@ -156,6 +171,250 @@ DEC027_ROUTE_SECTION_AND_GATE_COUNT = {
     "GSE113849_DESIGNED_SNV_TRUE_A2_AGGREGATE_PREFLIGHT": ("gse113849_designed_snv_true_a2_preflight", 13),
     "GSE269595_CORRECTED_ROLE_ADJUDICATION_SUCCESSOR": ("gse269595_corrected_role_adjudication_successor", 13),
     "GSE295080_INDEPENDENCE_OVERLAP_ADJUDICATION_ONLY": ("gse295080_independence_overlap_adjudication", 7),
+}
+DEC027_SIX_RESCUE_LINEAGE_IDS = [
+    "gse217518_corrected_a1_successor_aggregate_preflight_v1",
+    "encsr854ruf_dec027_dataset_specific_a1_preflight_corrected_b4_v1",
+    "gse232572_corrected_a1_replay_aggregate_preflight_v1",
+    "gse113849_designed_snv_true_a2_aggregate_preflight_v1",
+    "gse269595_corrected_role_adjudication_successor_aggregate_recompute_v1",
+    "gse295080_independence_overlap_aggregate_preflight_v1",
+]
+DEC027_SIX_RESCUE_STATIC_LEAF_SHA256 = {
+    "configs/route_a_v3_gse217518_corrected_a1_successor_candidate_v1.json": "c5acc8548ab8542ac029a420f21f1d8524bb0f255c6dd53c2d896c2838ce391f",
+    "scripts/route_a_v3/preflight_gse217518_corrected_a1_successor_candidate.py": "9fa4464e1cc42baacdf39b4bae2427e1895269b8d6f4e1a05e1e944b0434f3fa",
+    "tests/route_a_v3/test_preflight_gse217518_corrected_a1_successor_candidate.py": "bba0ee97e9ed2500f0155c8d1a776d185661b00d8c7fd48c3c0d718d53ccd097",
+    "configs/route_a_v3_encsr854ruf_dec027_dataset_specific_a1_preflight_v1.json": "de9df6055a83f29351c4eba2dd895708de4890181e639e26f2228105f6c2cc07",
+    "scripts/route_a_v3/preflight_encsr854ruf_dec027_dataset_specific_a1.py": "d5a1ef3e174f479404c3ca1b2dcac9b81c3848b2a7008c9333ca5f339f2d15c9",
+    "tests/route_a_v3/test_preflight_encsr854ruf_dec027_dataset_specific_a1.py": "1e31a4dd3643f1c8a3b56e3e6bd0f99b1f01cac65b4c6c3b7113aad5c26ee5b2",
+    "configs/route_a_v3_gse232572_corrected_a1_replay_v1.json": "c21821027d8a6806ee98d07177aacf5b7de3b007f15bd3d27bc6a6410bac3aab",
+    "scripts/route_a_v3/replay_gse232572_corrected_a1.py": "132a7cf7ea9008f87e2d77a4ba51b2e0701f6ccec2b6e8782a6f645c26cdb466",
+    "tests/route_a_v3/test_replay_gse232572_corrected_a1.py": "ea46cfbbdc3f8f0fd74149b862deabe3ce2c551c94f3a46edf891c1917dfca66",
+    "configs/route_a_v3_gse113849_designed_snv_true_a2_preflight_v1.json": "464bf2da3988d3bce0a9edf978ac8fd2d88f07598e17d11cae7898ca3645758d",
+    "scripts/route_a_v3/preflight_gse113849_designed_snv_true_a2.py": "44b934b828c8fa78aa37588006e7205d0f6277e463ebfe3b3834bbdfd022e23c",
+    "tests/route_a_v3/test_preflight_gse113849_designed_snv_true_a2.py": "98630bc8e48c5a07e5f17cf60addbf4382b7e7c49f66ff81245e76062e8d0001",
+    "configs/route_a_v3_gse269595_corrected_role_adjudication_successor_candidate_v1.json": "db58c162c282e90b2d1930b5526cea7d0751a2feb238a7c7b156627bd1bf8a26",
+    "scripts/route_a_v3/preflight_gse269595_corrected_role_adjudication_successor_candidate.py": "d72bc64f68c72784f58739b6ac46a018e77a4e6034e55d690bf9b61b543c9c51",
+    "tests/route_a_v3/test_preflight_gse269595_corrected_role_adjudication_successor_candidate.py": "69abb99c0c8710794f710bb7898b703e3e601237e949562c7910cbb4d7b800e7",
+    "configs/route_a_v3_gse295080_independence_overlap_adjudication_v1.json": "368cf0f2fbfd85090518303b1fedfcc04fb21085f214a2729fa636806274a483",
+    "scripts/route_a_v3/preflight_gse295080_independence_overlap_adjudication.py": "1eb410d58facdc22af1cfb86583c864e6a6f790699f6b89c13bc2303dbabb00c",
+    "tests/route_a_v3/test_preflight_gse295080_independence_overlap_adjudication.py": "68e3b8c3908aa518eb531a269cebc1d82f9210d9f770deaa6019a3ce44b4a069",
+}
+DEC027_SIX_RESCUE_REPORT_PATHS = {
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE217518_CORRECTED_A1_SUCCESSOR_AGGREGATE_PREFLIGHT_V1/GSE217518_CORRECTED_A1_SUCCESSOR_AGGREGATE_PREFLIGHT_V1.json",
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/ENCSR854RUF_DEC027_DATASET_SPECIFIC_A1_PREFLIGHT_CORRECTED_B4_V1/ENCSR854RUF_DEC027_DATASET_SPECIFIC_A1_PREFLIGHT_RECORD_V1.json",
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE232572_CORRECTED_A1_REPLAY_B_0f2c008/GSE232572_CORRECTED_A1_REPLAY_AGGREGATE_PREFLIGHT.json",
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE113849_DESIGNED_SNV_TRUE_A2_B_6372ddc/GSE113849_DESIGNED_SNV_TRUE_A2_AGGREGATE_PREFLIGHT.json",
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE269595_CORRECTED_ROLE_ADJUDICATION_B2_19ca492/GSE269595_CORRECTED_ROLE_ADJUDICATION_SUCCESSOR_AGGREGATE_RECOMPUTE_V1.json",
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE295080_INDEPENDENCE_OVERLAP_B2_679a1c2/GSE295080_INDEPENDENCE_OVERLAP_AGGREGATE_PREFLIGHT_V1.json",
+}
+DEC027_SIX_RESCUE_REPORT_SPECS = {
+    DEC027_SIX_RESCUE_LINEAGE_IDS[0]: {
+        "route_id": "GSE217518_CORRECTED_A1_SUCCESSOR",
+        "dataset_id": "GSE217518",
+        "registry_status": "EXISTING_REGISTERED_STUDY_UNIT",
+        "candidate_role": "CORRECTED_A1_SUCCESSOR_PREFLIGHT_ONLY",
+        "path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE217518_CORRECTED_A1_SUCCESSOR_AGGREGATE_PREFLIGHT_V1/GSE217518_CORRECTED_A1_SUCCESSOR_AGGREGATE_PREFLIGHT_V1.json",
+        "bytes": 7833,
+        "sha256": "03de0d423604518653a5188696d8186c82fa66e7858e7f498052fc67256e8884",
+        "report_observed_at": "UNKNOWN_NOT_ASSERTED",
+        "schema_version": "route_a_v3_gse217518_corrected_a1_successor_aggregate_preflight.v1",
+        "protocol_id": "GSE217518_CORRECTED_A1_SUCCESSOR_CANDIDATE_V1",
+        "status": "STOP_CORRECTED_PREFLIGHT_GATES_NOT_CLOSED",
+        "gate_status_counts": {"PASS": 4, "BLOCKED": 4, "NOT_RUN": 3},
+        "implementation_commit": "36b535f77b3f27bb872b182dcaf6c646d9781991",
+        "binding_commit": "0a46400efee4ead95b1283df73d263f6f8033036",
+        "static_paths": [
+            "configs/route_a_v3_gse217518_corrected_a1_successor_candidate_v1.json",
+            "scripts/route_a_v3/preflight_gse217518_corrected_a1_successor_candidate.py",
+            "tests/route_a_v3/test_preflight_gse217518_corrected_a1_successor_candidate.py",
+        ],
+    },
+    DEC027_SIX_RESCUE_LINEAGE_IDS[1]: {
+        "route_id": "ENCSR854RUF_DATASET_SPECIFIC_A1_PREFLIGHT",
+        "dataset_id": "ENCSR854RUF",
+        "registry_status": "EXISTING_REGISTERED_STUDY_UNIT",
+        "candidate_role": "DATASET_SPECIFIC_A1_PREFLIGHT_ONLY",
+        "path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/ENCSR854RUF_DEC027_DATASET_SPECIFIC_A1_PREFLIGHT_CORRECTED_B4_V1/ENCSR854RUF_DEC027_DATASET_SPECIFIC_A1_PREFLIGHT_RECORD_V1.json",
+        "bytes": 11423,
+        "sha256": "3753d6fc5fb4132e43e11f29f9c79a04078a592aaba760c1f8a6e6ed2c5fc6c2",
+        "report_observed_at": "2026-08-15T01:40:00+08:00",
+        "schema_version": "route_a_v3_encsr854ruf_dec027_dataset_specific_a1_preflight_record.v1",
+        "protocol_id": "ENCSR854RUF_DEC027_DATASET_SPECIFIC_A1_PREFLIGHT_V1",
+        "status": "TERMINAL_AGGREGATE_PREFLIGHT_STOP_NOT_QUALIFIED",
+        "gate_status_counts": {"PASS": 3, "PARTIAL_OR_CONDITIONAL": 3, "FAIL": 1, "UNKNOWN_NOT_ASSERTED": 4},
+        "implementation_commit": "53f426aef8b12e8dcbfaaf978fcfa7d1c7a911d2",
+        "binding_commit": "56b39f966a272d8ea8022048855d2fcca0ee155a",
+        "static_paths": [
+            "configs/route_a_v3_encsr854ruf_dec027_dataset_specific_a1_preflight_v1.json",
+            "scripts/route_a_v3/preflight_encsr854ruf_dec027_dataset_specific_a1.py",
+            "tests/route_a_v3/test_preflight_encsr854ruf_dec027_dataset_specific_a1.py",
+        ],
+    },
+    DEC027_SIX_RESCUE_LINEAGE_IDS[2]: {
+        "route_id": "GSE232572_CORRECTED_A1_REPLAY",
+        "dataset_id": "GSE232572",
+        "registry_status": "EXISTING_REGISTERED_STUDY_UNIT",
+        "candidate_role": "CORRECTED_A1_REPLAY_PREFLIGHT_ONLY",
+        "path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE232572_CORRECTED_A1_REPLAY_B_0f2c008/GSE232572_CORRECTED_A1_REPLAY_AGGREGATE_PREFLIGHT.json",
+        "bytes": 9823,
+        "sha256": "20451d763b8b2bc2658a4bf6163bbef8a2449759fa7fbe1ff5a29f9146cdae2c",
+        "report_observed_at": "2026-08-15T04:05:39+08:00",
+        "schema_version": "route_a_v3_gse232572_corrected_a1_replay.v1",
+        "protocol_id": "GSE232572_CORRECTED_A1_REPLAY_V1",
+        "status": "STOP_REMAINING_QUALIFICATION_GATES_NOT_CLOSED",
+        "gate_status_counts": {"PASS": 7, "UNKNOWN_NOT_ASSERTED": 3, "NOT_RUN": 1},
+        "implementation_commit": "d3dcae4c6ef53c52e942bb511946b52b952d3c7f",
+        "binding_commit": "0f2c00868b6581edd9a429c7a8a67bb43f6b7776",
+        "static_paths": [
+            "configs/route_a_v3_gse232572_corrected_a1_replay_v1.json",
+            "scripts/route_a_v3/replay_gse232572_corrected_a1.py",
+            "tests/route_a_v3/test_replay_gse232572_corrected_a1.py",
+        ],
+    },
+    DEC027_SIX_RESCUE_LINEAGE_IDS[3]: {
+        "route_id": "GSE113849_DESIGNED_SNV_TRUE_A2_AGGREGATE_PREFLIGHT",
+        "dataset_id": "GSE113849",
+        "registry_status": "EXTERNAL_PREFLIGHT_CANDIDATE_ONLY_NOT_ACTIVE_STUDY_UNIT",
+        "candidate_role": "DESIGNED_SNV_TRUE_A2_PREFLIGHT_ONLY",
+        "path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE113849_DESIGNED_SNV_TRUE_A2_B_6372ddc/GSE113849_DESIGNED_SNV_TRUE_A2_AGGREGATE_PREFLIGHT.json",
+        "bytes": 16280,
+        "sha256": "7ac51be90de8bbed2562e081a4063b6ed479f8a700d417623bfbefb269384839",
+        "report_observed_at": "2026-08-15T04:14:00+08:00",
+        "schema_version": "route_a_v3_gse113849_designed_snv_true_a2_preflight.v1",
+        "protocol_id": "GSE113849_DESIGNED_SNV_TRUE_A2_AGGREGATE_PREFLIGHT_V1",
+        "status": "STOP_REMAINING_QUALIFICATION_GATES_NOT_CLOSED",
+        "gate_status_counts": {"PASS": 5, "PARTIAL_OR_CONDITIONAL": 2, "FAIL": 1, "UNKNOWN_NOT_ASSERTED": 4, "NOT_RUN": 1},
+        "implementation_commit": "8dfca85f3311ede01f594662d13b126bc8e2fef2",
+        "binding_commit": "6372ddcb4b006d587a40ce628f9e193324c28b17",
+        "static_paths": [
+            "configs/route_a_v3_gse113849_designed_snv_true_a2_preflight_v1.json",
+            "scripts/route_a_v3/preflight_gse113849_designed_snv_true_a2.py",
+            "tests/route_a_v3/test_preflight_gse113849_designed_snv_true_a2.py",
+        ],
+    },
+    DEC027_SIX_RESCUE_LINEAGE_IDS[4]: {
+        "route_id": "GSE269595_CORRECTED_ROLE_ADJUDICATION_SUCCESSOR",
+        "dataset_id": "GSE269595",
+        "registry_status": "EXISTING_REGISTERED_STUDY_UNIT",
+        "candidate_role": "MUTUALLY_EXCLUSIVE_A1_OR_TRUE_A2_ROLE_ADJUDICATION_PREFLIGHT_ONLY",
+        "path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE269595_CORRECTED_ROLE_ADJUDICATION_B2_19ca492/GSE269595_CORRECTED_ROLE_ADJUDICATION_SUCCESSOR_AGGREGATE_RECOMPUTE_V1.json",
+        "bytes": 13272,
+        "sha256": "7952a74690817f24c3dc1df1ccdb104b9997464ceb97f0320fddd227bd84ac4b",
+        "report_observed_at": "2026-08-15T04:31:00+08:00",
+        "schema_version": "route_a_v3_gse269595_corrected_role_adjudication_aggregate_recompute.v1",
+        "protocol_id": "GSE269595_CORRECTED_ROLE_ADJUDICATION_SUCCESSOR_CANDIDATE_V1",
+        "status": "STOP_CORRECTED_ROLE_ADJUDICATION_GATES_NOT_CLOSED",
+        "gate_status_counts": {"PASS": 8, "BLOCKED": 3, "FAIL": 2},
+        "implementation_commit": "95f32836f62db26f0302edbbb6443ae0a33918b3",
+        "binding_commit": "19ca49229c9ff2814bad2c58b8b84be14624b7ea",
+        "static_paths": [
+            "configs/route_a_v3_gse269595_corrected_role_adjudication_successor_candidate_v1.json",
+            "scripts/route_a_v3/preflight_gse269595_corrected_role_adjudication_successor_candidate.py",
+            "tests/route_a_v3/test_preflight_gse269595_corrected_role_adjudication_successor_candidate.py",
+        ],
+    },
+    DEC027_SIX_RESCUE_LINEAGE_IDS[5]: {
+        "route_id": "GSE295080_INDEPENDENCE_OVERLAP_ADJUDICATION_ONLY",
+        "dataset_id": "GSE295080",
+        "registry_status": "EXTERNAL_PREFLIGHT_CANDIDATE_ONLY_NOT_ACTIVE_STUDY_UNIT",
+        "candidate_role": "INDEPENDENCE_OVERLAP_ADJUDICATION_ONLY",
+        "path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE295080_INDEPENDENCE_OVERLAP_B2_679a1c2/GSE295080_INDEPENDENCE_OVERLAP_AGGREGATE_PREFLIGHT_V1.json",
+        "bytes": 8989,
+        "sha256": "f3f258cd89f58d42270e05b40a67c55fcd18511e6b17d9dc6711f62d0db5aa63",
+        "report_observed_at": "2026-08-15T04:55:49+08:00",
+        "schema_version": "route_a_v3_gse295080_independence_overlap_aggregate_record.v1",
+        "protocol_id": "GSE295080_DEC027_INDEPENDENCE_OVERLAP_ADJUDICATION_ONLY_V1",
+        "status": "STOP_NO_INDEPENDENT_CREDIT_AND_NO_ROW_LEVEL_AUTHORITY_REQUEST",
+        "gate_status_counts": {"PASS": 3, "PARTIAL_OR_CONDITIONAL": 1, "FAIL": 1, "UNKNOWN_NOT_ASSERTED": 1, "BLOCKED_OR_STOP": 1},
+        "implementation_commit": "845550e24c836872f4572abe10275db58f62554e",
+        "binding_commit": "679a1c2ae89db7d6a9894f9299de7ce38b30ecdb",
+        "static_paths": [
+            "configs/route_a_v3_gse295080_independence_overlap_adjudication_v1.json",
+            "scripts/route_a_v3/preflight_gse295080_independence_overlap_adjudication.py",
+            "tests/route_a_v3/test_preflight_gse295080_independence_overlap_adjudication.py",
+        ],
+    },
+}
+DEC027_SIX_RESCUE_GATE_RESULTS = {
+    "gse217518_corrected_a1_successor_aggregate_preflight_v1": {
+        "PUBLIC_SOURCE_ASSET_IDENTITY_AND_PRIMARY_ROUTE_CLOSED": {"raw_status": "PASS", "normalized_status": "PASS"},
+        "SOURCE_REFERENCE_TO_CANDIDATE_CROSSWALK_CLOSED": {"raw_status": "BLOCKED", "normalized_status": "BLOCKED"},
+        "FULL_115BP_CONSTRUCT_REPORTER_AND_REGION_CONTEXT_CLOSED": {"raw_status": "BLOCKED", "normalized_status": "BLOCKED"},
+        "ENDPOINT_DIRECTION_SCALE_TRANSFORM_AND_SEMANTICS_CLOSED": {"raw_status": "PASS", "normalized_status": "PASS"},
+        "THREE_INDEPENDENT_BIOLOGICAL_EXPERIMENTS_AND_VALID_STANDARD_ERROR_CLOSED": {"raw_status": "BLOCKED", "normalized_status": "BLOCKED"},
+        "MISSING_OUTLIER_QC_AND_SELECTION_CLOSED": {"raw_status": "PASS", "normalized_status": "PASS"},
+        "LICENSE_AND_REUSE_RIGHTS_CLOSED": {"raw_status": "PASS", "normalized_status": "PASS"},
+        "HISTORICAL_ANALYTIC_OR_CHECKPOINT_EXPOSURE_CLOSED": {"raw_status": "BLOCKED", "normalized_status": "BLOCKED"},
+        "OUTCOME_BLIND_SOURCE_GROUP_NEAR_DUPLICATE_SPLIT_AND_ZERO_LEAKAGE_READINESS_CLOSED": {"raw_status": "NOT_RUN", "normalized_status": "NOT_RUN"},
+        "POST_DEDUP_INDEPENDENT_SOURCE_GROUP_EFFECTIVE_N_CLOSED": {"raw_status": "NOT_RUN", "normalized_status": "NOT_RUN"},
+        "PREFROZEN_SOURCE_GROUP_POWER_AND_FULL_CI_WIDTH_CLOSED": {"raw_status": "NOT_RUN", "normalized_status": "NOT_RUN"},
+    },
+    "encsr854ruf_dec027_dataset_specific_a1_preflight_corrected_b4_v1": {
+        "PUBLIC_SOURCE_ASSET_IDENTITY_AND_PRIMARY_ROUTE_CLOSED": {"raw_status": "PASS", "normalized_status": "PASS"},
+        "SOURCE_REFERENCE_TO_CANDIDATE_CROSSWALK_CLOSED": {"raw_status": "PASS", "normalized_status": "PASS"},
+        "FULL_REPORTER_AND_THREE_UTR_CONTEXT_CLOSED": {"raw_status": "PASS_FOR_COMPLETE_133BP_VARIABLE_INSERT_AND_FIXED_REPORTER_IDENTITY_ONLY", "normalized_status": "PARTIAL_OR_CONDITIONAL"},
+        "ENDPOINT_DIRECTION_SCALE_TRANSFORM_AND_SEMANTICS_CLOSED": {"raw_status": "PASS", "normalized_status": "PASS"},
+        "INDEPENDENT_BIOLOGICAL_REPLICATE_AND_VALID_STANDARD_ERROR_CLOSED": {"raw_status": "PARTIAL_REPLICATE_INDEPENDENCE_CLOSED_REPORTED_LFCSE_PRESENT_EXACT_RECOMPUTATION_ENVIRONMENT_NOT_FROZEN", "normalized_status": "PARTIAL_OR_CONDITIONAL"},
+        "MISSING_QC_AND_SELECTION_CLOSED": {"raw_status": "PARTIAL_DETERMINISTIC_FINITE_SUBSET_IDENTIFIED_REJECT_REASON_CLOSURE_NOT_BOUND", "normalized_status": "PARTIAL_OR_CONDITIONAL"},
+        "LICENSE_AND_REUSE_RIGHTS_CLOSED": {"raw_status": "UNKNOWN_NOT_ASSERTED", "normalized_status": "UNKNOWN_NOT_ASSERTED"},
+        "HISTORICAL_ANALYTIC_OR_CHECKPOINT_EXPOSURE_CLOSED": {"raw_status": "FAIL_KNOWN_HISTORICAL_MODEL_INPUT_WITHOUT_FULL_PRIOR_USE_ATTESTATION", "normalized_status": "FAIL"},
+        "OUTCOME_BLIND_SOURCE_GROUP_NEAR_DUPLICATE_SPLIT_AND_ZERO_LEAKAGE_READINESS_CLOSED": {"raw_status": "UNKNOWN_NOT_ASSERTED", "normalized_status": "UNKNOWN_NOT_ASSERTED"},
+        "POST_DEDUP_INDEPENDENT_SOURCE_GROUP_EFFECTIVE_N_CLOSED": {"raw_status": "UNKNOWN_NOT_ASSERTED", "normalized_status": "UNKNOWN_NOT_ASSERTED"},
+        "PREFROZEN_SOURCE_GROUP_POWER_AND_FULL_CI_WIDTH_CLOSED": {"raw_status": "UNKNOWN_NOT_ASSERTED", "normalized_status": "UNKNOWN_NOT_ASSERTED"},
+    },
+    "gse232572_corrected_a1_replay_aggregate_preflight_v1": {
+        "PUBLIC_SOURCE_ASSET_IDENTITY_AND_PRIMARY_ROUTE_CLOSED": {"raw_status": "PASS", "normalized_status": "PASS"},
+        "REFERENCE_ALTERNATIVE_SOURCE_CANDIDATE_CROSSWALK_CLOSED": {"raw_status": "PASS", "normalized_status": "PASS"},
+        "FULL_REPORTER_AND_THREE_UTR_CONTEXT_CLOSED": {"raw_status": "PASS", "normalized_status": "PASS"},
+        "ENDPOINT_DIRECTION_SCALE_TRANSFORM_AND_SEMANTICS_CLOSED": {"raw_status": "PASS", "normalized_status": "PASS"},
+        "THREE_INDEPENDENT_BIOLOGICAL_REPLICATES_AND_VALID_STANDARD_ERROR_CLOSED": {"raw_status": "PASS", "normalized_status": "PASS"},
+        "MISSING_QC_AND_SELECTION_CLOSED": {"raw_status": "PASS", "normalized_status": "PASS"},
+        "LICENSE_AND_REUSE_RIGHTS_CLOSED": {"raw_status": "UNKNOWN_NOT_ASSERTED", "normalized_status": "UNKNOWN_NOT_ASSERTED"},
+        "HISTORICAL_ANALYTIC_OR_CHECKPOINT_EXPOSURE_CLOSED": {"raw_status": "PASS", "normalized_status": "PASS"},
+        "OUTCOME_BLIND_SOURCE_GROUP_NEAR_DUPLICATE_SPLIT_AND_ZERO_LEAKAGE_READINESS_CLOSED": {"raw_status": "UNKNOWN_NOT_ASSERTED", "normalized_status": "UNKNOWN_NOT_ASSERTED"},
+        "POST_DEDUP_INDEPENDENT_SOURCE_GROUP_EFFECTIVE_N_CLOSED": {"raw_status": "UNKNOWN_NOT_ASSERTED", "normalized_status": "UNKNOWN_NOT_ASSERTED"},
+        "PREFROZEN_SOURCE_GROUP_POWER_AND_FULL_CI_WIDTH_CLOSED": {"raw_status": "NOT_RUN", "normalized_status": "NOT_RUN"},
+    },
+    "gse113849_designed_snv_true_a2_aggregate_preflight_v1": {
+        "PUBLIC_ASSET_LINEAGE_AND_INTENDED_UNIVERSE_CLOSED": {"raw_status": "PARTIAL_OR_CONDITIONAL", "normalized_status": "PARTIAL_OR_CONDITIONAL"},
+        "SOURCE_TO_CANDIDATE_IDENTITY_CLOSED": {"raw_status": "PASS", "normalized_status": "PASS"},
+        "LEGAL_SINGLE_SUBSTITUTION_EDIT_REPLAY_CLOSED": {"raw_status": "PASS", "normalized_status": "PASS"},
+        "OUTCOME_BLIND_REPORTER_CONTEXT_RULE_CLOSED": {"raw_status": "PASS", "normalized_status": "PASS"},
+        "DENSE_SOURCE_FAMILY_MINIMUM_THREE_CANDIDATES_CLOSED": {"raw_status": "PASS", "normalized_status": "PASS"},
+        "ENDPOINT_DIRECTION_SCALE_TRANSFORM_AND_SEMANTICS_CLOSED": {"raw_status": "PASS", "normalized_status": "PASS"},
+        "INDEPENDENT_BIOLOGICAL_REPLICATE_AND_VALID_STANDARD_ERROR_CLOSED": {"raw_status": "FAIL", "normalized_status": "FAIL"},
+        "MISSING_QC_AND_SELECTION_CLOSED": {"raw_status": "PARTIAL_OR_CONDITIONAL", "normalized_status": "PARTIAL_OR_CONDITIONAL"},
+        "LICENSE_AND_REUSE_RIGHTS_CLOSED": {"raw_status": "UNKNOWN_NOT_ASSERTED", "normalized_status": "UNKNOWN_NOT_ASSERTED"},
+        "HISTORICAL_ANALYTIC_OR_CHECKPOINT_EXPOSURE_CLOSED": {"raw_status": "UNKNOWN_NOT_ASSERTED", "normalized_status": "UNKNOWN_NOT_ASSERTED"},
+        "OUTCOME_BLIND_SOURCE_GROUP_NEAR_DUPLICATE_SPLIT_AND_ZERO_LEAKAGE_READINESS_CLOSED": {"raw_status": "UNKNOWN_NOT_ASSERTED", "normalized_status": "UNKNOWN_NOT_ASSERTED"},
+        "POST_DEDUP_INDEPENDENT_SOURCE_GROUP_EFFECTIVE_N_CLOSED": {"raw_status": "UNKNOWN_NOT_ASSERTED", "normalized_status": "UNKNOWN_NOT_ASSERTED"},
+        "PREFROZEN_SOURCE_GROUP_POWER_AND_FULL_CI_WIDTH_CLOSED": {"raw_status": "NOT_RUN", "normalized_status": "NOT_RUN"},
+    },
+    "gse269595_corrected_role_adjudication_successor_aggregate_recompute_v1": {
+        "A1_VERSUS_TRUE_A2_ROLE_ELIGIBILITY_AND_MUTUAL_EXCLUSIVITY_CLOSED": {"raw_status": "PASS", "normalized_status": "PASS"},
+        "ORDINARY_PUBLIC_ASSET_IDENTITY_ROLE_AND_PROVENANCE_CLOSED": {"raw_status": "PASS", "normalized_status": "PASS"},
+        "ELIGIBLE_DENSE_SOURCE_FAMILY_DISTRIBUTION_AND_UNIQUE_SOURCE_ANCHOR_CLOSED": {"raw_status": "PASS", "normalized_status": "PASS"},
+        "INTRONIC_APA_EXCLUSION_CLOSED": {"raw_status": "PASS", "normalized_status": "PASS"},
+        "SOURCE_TO_CANDIDATE_LEGAL_SUBSTITUTION_REPLAY_CLOSED": {"raw_status": "PASS", "normalized_status": "PASS"},
+        "ASSAY_CONTEXT_GUIDE_ENDPOINT_DIRECTION_SCALE_AND_SEMANTICS_CLOSED": {"raw_status": "BLOCKED", "normalized_status": "BLOCKED"},
+        "INDEPENDENT_BIOLOGICAL_REPLICATE_AND_VALID_STANDARD_ERROR_CLOSED": {"raw_status": "BLOCKED", "normalized_status": "BLOCKED"},
+        "ASSET_SCHEMA_DIMENSION_AND_COVERAGE_CLOSED": {"raw_status": "PASS", "normalized_status": "PASS"},
+        "MISSING_CENSORING_AND_SELECTION_CLOSED": {"raw_status": "FAIL", "normalized_status": "FAIL"},
+        "APARENT_PRIOR_EXPOSURE_AND_MODEL_INPUT_ROUTE_CLOSED": {"raw_status": "FAIL", "normalized_status": "FAIL"},
+        "LICENSE_AND_REUSE_RIGHTS_CLOSED": {"raw_status": "BLOCKED", "normalized_status": "BLOCKED"},
+        "OUTCOME_BLIND_SOURCE_GROUP_NEAR_DUPLICATE_SPLIT_AND_ZERO_LEAKAGE_READINESS_CLOSED": {"raw_status": "PASS", "normalized_status": "PASS"},
+        "POST_DEDUP_SOURCE_GROUP_EFFECTIVE_N_AND_PREFROZEN_POWER_FULL_CI_WIDTH_CLOSED": {"raw_status": "PASS", "normalized_status": "PASS"},
+    },
+    "gse295080_independence_overlap_aggregate_preflight_v1": {
+        "PUBLIC_IDENTIFIER_ASSET_ROLE_AND_PROVENANCE_CLOSED": {"raw_status": "PASS", "normalized_status": "PASS"},
+        "SOURCE_REFERENCE_ALTERNATIVE_MAPPING_SCHEMA_GEOMETRY_CLOSED": {"raw_status": "PASS_AGGREGATE_SCHEMA_GEOMETRY_ONLY_NOT_ROW_REPLAY", "normalized_status": "PASS"},
+        "BIOLOGICAL_REPLICATE_LABEL_GEOMETRY_CLOSED": {"raw_status": "PASS_LABEL_GEOMETRY_ONLY_NOT_INDEPENDENCE_OR_STANDARD_ERROR", "normalized_status": "PASS"},
+        "CROSS_DATASET_SOURCE_FAMILY_LIBRARY_OVERLAP_CLOSED": {"raw_status": "PARTIAL_GSE186455_EXACT_NAME_OVERLAP_CLOSED_THREE_REQUIRED_COMPARISONS_UNKNOWN", "normalized_status": "PARTIAL_OR_CONDITIONAL"},
+        "INDEPENDENT_STUDY_OR_REUSED_LIBRARY_BOUNDARY_CLOSED": {"raw_status": "FAIL_FOR_INDEPENDENT_CREDIT_LIBRARY1_REUSED_LIBRARY_AND_LIBRARY2_BOUNDARY_NOT_CLOSED", "normalized_status": "FAIL"},
+        "LICENSE_AND_REUSE_RIGHTS_CLOSED": {"raw_status": "UNKNOWN_NOT_ASSERTED", "normalized_status": "UNKNOWN_NOT_ASSERTED"},
+        "OUTCOME_BLIND_NEXT_AUTHORITY_DISPOSITION_CLOSED": {"raw_status": "BLOCKED_OR_STOP", "normalized_status": "BLOCKED_OR_STOP"},
+    },
 }
 GSE261709_PREFLIGHT_LINEAGE_ID = (
     "gse261709_public_identifier_asset_schema_aggregate_geometry_preflight_v1"
@@ -2327,6 +2586,78 @@ EXPECTED_REGISTRY_MANIFEST_PATH_ROLES = (
         GSE207584_PREFLIGHT_TEST_PATH,
         "GSE207584_AGGREGATE_DENSE_FAMILY_QUALIFICATION_PREFLIGHT_FOCUSED_TEST",
     ),
+    (
+        "configs/route_a_v3_gse217518_corrected_a1_successor_candidate_v1.json",
+        "DEC027_GSE217518_CORRECTED_A1_SUCCESSOR_BOUND_CONFIG",
+    ),
+    (
+        "scripts/route_a_v3/preflight_gse217518_corrected_a1_successor_candidate.py",
+        "DEC027_GSE217518_CORRECTED_A1_SUCCESSOR_PRODUCER",
+    ),
+    (
+        "tests/route_a_v3/test_preflight_gse217518_corrected_a1_successor_candidate.py",
+        "DEC027_GSE217518_CORRECTED_A1_SUCCESSOR_FOCUSED_TEST",
+    ),
+    (
+        "configs/route_a_v3_encsr854ruf_dec027_dataset_specific_a1_preflight_v1.json",
+        "DEC027_ENCSR854RUF_DATASET_SPECIFIC_A1_PREFLIGHT_BOUND_CONFIG",
+    ),
+    (
+        "scripts/route_a_v3/preflight_encsr854ruf_dec027_dataset_specific_a1.py",
+        "DEC027_ENCSR854RUF_DATASET_SPECIFIC_A1_PREFLIGHT_PRODUCER",
+    ),
+    (
+        "tests/route_a_v3/test_preflight_encsr854ruf_dec027_dataset_specific_a1.py",
+        "DEC027_ENCSR854RUF_DATASET_SPECIFIC_A1_PREFLIGHT_FOCUSED_TEST",
+    ),
+    (
+        "configs/route_a_v3_gse232572_corrected_a1_replay_v1.json",
+        "DEC027_GSE232572_CORRECTED_A1_REPLAY_BOUND_CONFIG",
+    ),
+    (
+        "scripts/route_a_v3/replay_gse232572_corrected_a1.py",
+        "DEC027_GSE232572_CORRECTED_A1_REPLAY_PRODUCER",
+    ),
+    (
+        "tests/route_a_v3/test_replay_gse232572_corrected_a1.py",
+        "DEC027_GSE232572_CORRECTED_A1_REPLAY_FOCUSED_TEST",
+    ),
+    (
+        "configs/route_a_v3_gse113849_designed_snv_true_a2_preflight_v1.json",
+        "DEC027_GSE113849_DESIGNED_SNV_TRUE_A2_PREFLIGHT_BOUND_CONFIG",
+    ),
+    (
+        "scripts/route_a_v3/preflight_gse113849_designed_snv_true_a2.py",
+        "DEC027_GSE113849_DESIGNED_SNV_TRUE_A2_PREFLIGHT_PRODUCER",
+    ),
+    (
+        "tests/route_a_v3/test_preflight_gse113849_designed_snv_true_a2.py",
+        "DEC027_GSE113849_DESIGNED_SNV_TRUE_A2_PREFLIGHT_FOCUSED_TEST",
+    ),
+    (
+        "configs/route_a_v3_gse269595_corrected_role_adjudication_successor_candidate_v1.json",
+        "DEC027_GSE269595_CORRECTED_ROLE_ADJUDICATION_BOUND_CONFIG",
+    ),
+    (
+        "scripts/route_a_v3/preflight_gse269595_corrected_role_adjudication_successor_candidate.py",
+        "DEC027_GSE269595_CORRECTED_ROLE_ADJUDICATION_PRODUCER",
+    ),
+    (
+        "tests/route_a_v3/test_preflight_gse269595_corrected_role_adjudication_successor_candidate.py",
+        "DEC027_GSE269595_CORRECTED_ROLE_ADJUDICATION_FOCUSED_TEST",
+    ),
+    (
+        "configs/route_a_v3_gse295080_independence_overlap_adjudication_v1.json",
+        "DEC027_GSE295080_INDEPENDENCE_OVERLAP_BOUND_CONFIG",
+    ),
+    (
+        "scripts/route_a_v3/preflight_gse295080_independence_overlap_adjudication.py",
+        "DEC027_GSE295080_INDEPENDENCE_OVERLAP_PRODUCER",
+    ),
+    (
+        "tests/route_a_v3/test_preflight_gse295080_independence_overlap_adjudication.py",
+        "DEC027_GSE295080_INDEPENDENCE_OVERLAP_FOCUSED_TEST",
+    ),
     (A6_PROTOCOL_CONFIG_PATH, "A6_CPU_EXACT_ABSORBING_DAG_BOUND_PROTOCOL"),
     (A6_PRODUCER_PATH, "A6_CPU_EXACT_ABSORBING_DAG_PRODUCER"),
     (A6_FOCUSED_TEST_PATH, "A6_CPU_EXACT_ABSORBING_DAG_FOCUSED_TEST"),
@@ -3401,10 +3732,10 @@ def validate_registry_manifest(repo_root: Path) -> list[Issue]:
         "contract_sha256": SOURCE_CONTRACT_SHA256,
         "active_amendment_decision_ids": ACTIVE_AMENDMENT_DECISION_IDS,
         "base_commit": "bbb71dcba6f1e1c9cb75a8a6653f1a4fe4a6ca0c",
-        "manifest_status": DEC027_AUTHORITY_MANIFEST_STATUS,
+        "manifest_status": DEC027_SIX_RESCUE_EVIDENCE_MANIFEST_STATUS,
         "initial_generated_at": "2026-08-10T10:10:05+08:00",
-        "generated_at": DEC027_AUTHORITY_MANIFEST_AT,
-        "updated_at": DEC027_AUTHORITY_MANIFEST_AT,
+        "generated_at": DEC027_SIX_RESCUE_EVIDENCE_MANIFEST_AT,
+        "updated_at": DEC027_SIX_RESCUE_EVIDENCE_MANIFEST_AT,
         "sealed_contact": False,
     }
     expected_top_keys = set(expected_static_top) | {"files"}
@@ -7964,7 +8295,7 @@ def validate_dec027_authority(
         _expect_closed_mapping(observed if isinstance(observed, Mapping) else {}, interim_stop, A1_INTERIM_PATH, issues, "DEC027_INTERIM_STOP_RULE")
 
     no_promotion = amendment.get("no_promotion_state")
-    expected_locks = {
+    authority_expected_locks = {
         "current_qualified_counts": current_counts,
         "changes_current_qualified_counts": False,
         "dataset_role_assignment_allowed": False,
@@ -7985,14 +8316,20 @@ def validate_dec027_authority(
     if not isinstance(no_promotion, Mapping):
         _issue(issues, "DEC027_NO_PROMOTION", DEC027_AMENDMENT_PATH, "no_promotion_state must be a mapping")
     else:
-        for key, value in expected_locks.items():
+        for key, value in authority_expected_locks.items():
             _expect(no_promotion, key, value, DEC027_AMENDMENT_PATH, issues, "DEC027_NO_PROMOTION")
     if isinstance(q_policy, Mapping):
-        for key, value in expected_locks.items():
+        for key, value in authority_expected_locks.items():
             if key in q_policy:
                 _expect(q_policy, key, value, A1_QUALIFICATION_CONFIG_PATH, issues, "DEC027_A1_NO_PROMOTION")
     if isinstance(disposition, Mapping):
-        for key, value in expected_locks.items():
+        interim_expected_locks = {
+            **authority_expected_locks,
+            "latest_settled_runtime_event_id": DEC027_CURRENT_RUNTIME_EVENT_ID,
+            "runtime_event_emitted": False,
+            "expected_next_runtime_event_id": DEC027_PENDING_RUNTIME_EVENT_ID,
+        }
+        for key, value in interim_expected_locks.items():
             if key in disposition:
                 _expect(disposition, key, value, A1_INTERIM_PATH, issues, "DEC027_INTERIM_NO_PROMOTION")
 
@@ -8018,9 +8355,9 @@ def validate_dec027_authority(
         _issue(issues, "DEC027_MANIFEST", REGISTRY_MANIFEST_PATH, "DEC027 amendment must be registered with its exact role")
     for key, value in {
         "active_amendment_decision_ids": ACTIVE_AMENDMENT_DECISION_IDS,
-        "manifest_status": DEC027_AUTHORITY_MANIFEST_STATUS,
-        "generated_at": DEC027_AUTHORITY_MANIFEST_AT,
-        "updated_at": DEC027_AUTHORITY_MANIFEST_AT,
+        "manifest_status": DEC027_SIX_RESCUE_EVIDENCE_MANIFEST_STATUS,
+        "generated_at": DEC027_SIX_RESCUE_EVIDENCE_MANIFEST_AT,
+        "updated_at": DEC027_SIX_RESCUE_EVIDENCE_MANIFEST_AT,
         "sealed_contact": False,
     }.items():
         _expect(manifest, key, value, REGISTRY_MANIFEST_PATH, issues, "DEC027_MANIFEST")
@@ -9127,6 +9464,54 @@ def validate_dec023_dual_preflight_evidence_registration(
             "DEC023_DUAL_PREFLIGHT_DISCLOSURE",
             REGISTRY_MANIFEST_PATH,
             "member or row payload artifacts are forbidden from the aggregate-only registry",
+        )
+    return issues
+
+
+def validate_dec027_six_rescue_evidence_registration(
+    repo_root: Path,
+) -> list[Issue]:
+    """Bind exactly 18 producer leaves; keep six terminal reports dynamic."""
+
+    issues: list[Issue] = []
+    for relative, expected_sha256 in DEC027_SIX_RESCUE_STATIC_LEAF_SHA256.items():
+        try:
+            actual_sha256 = sha256_bytes(_read_bytes(repo_root, relative))
+        except (FileNotFoundError, ValueError) as exc:
+            _issue(issues, "DEC027_SIX_RESCUE_STATIC_LEAF", relative, str(exc))
+            continue
+        if actual_sha256 != expected_sha256:
+            _issue(
+                issues,
+                "DEC027_SIX_RESCUE_STATIC_LEAF",
+                relative,
+                f"current bytes hash {actual_sha256} must remain {expected_sha256}",
+            )
+
+    try:
+        manifest = _load_json(repo_root, REGISTRY_MANIFEST_PATH)
+    except (FileNotFoundError, ValueError, json.JSONDecodeError) as exc:
+        _issue(issues, "DEC027_SIX_RESCUE_MANIFEST_DAG", REGISTRY_MANIFEST_PATH, str(exc))
+        return issues
+    entries = manifest.get("files")
+    manifest_paths = {
+        entry.get("path")
+        for entry in entries
+        if isinstance(entries, list) and isinstance(entry, Mapping)
+    }
+    if set(DEC027_SIX_RESCUE_STATIC_LEAF_SHA256) - manifest_paths:
+        _issue(
+            issues,
+            "DEC027_SIX_RESCUE_MANIFEST_DAG",
+            REGISTRY_MANIFEST_PATH,
+            "all six bound configs, producers, and focused tests must be exact-hashed as exactly 18 static leaves",
+        )
+    if manifest_paths & (DEC027_SIX_RESCUE_REPORT_PATHS | {REGISTRY_MANIFEST_PATH}):
+        _issue(
+            issues,
+            "DEC027_SIX_RESCUE_MANIFEST_DAG",
+            REGISTRY_MANIFEST_PATH,
+            "six dynamic aggregate reports and the registry output must remain outside the static manifest",
         )
     return issues
 
@@ -10338,6 +10723,167 @@ def _validate_dec023_dual_preflight_interim(
                 _expect(record, key, value, path, issues, code)
 
 
+def _expected_dec027_six_rescue_record(
+    lineage_id: str, spec: Mapping[str, Any]
+) -> dict[str, Any]:
+    static_paths = spec["static_paths"]
+    return {
+        "path": spec["path"],
+        "bytes": spec["bytes"],
+        "sha256": spec["sha256"],
+        "report_observed_at": spec["report_observed_at"],
+        "decision_id": "V3-DEC-027",
+        "route_id": spec["route_id"],
+        "dataset_id": spec["dataset_id"],
+        "registry_status": spec["registry_status"],
+        "candidate_role": spec["candidate_role"],
+        "schema_version": spec["schema_version"],
+        "protocol_id": spec["protocol_id"],
+        "status": spec["status"],
+        "aggregate_only": True,
+        "terminal_report_registered": True,
+        "required_gate_axis_count": sum(spec["gate_status_counts"].values()),
+        "required_gate_status_counts": spec["gate_status_counts"],
+        "required_gate_results": DEC027_SIX_RESCUE_GATE_RESULTS[lineage_id],
+        "producer_lineage": {
+            "implementation_commit": spec["implementation_commit"],
+            "binding_commit": spec["binding_commit"],
+            "binding_diff_is_config_only": True,
+            "config_path": static_paths[0],
+            "config_sha256": DEC027_SIX_RESCUE_STATIC_LEAF_SHA256[static_paths[0]],
+            "script_path": static_paths[1],
+            "script_sha256": DEC027_SIX_RESCUE_STATIC_LEAF_SHA256[static_paths[1]],
+            "focused_test_path": static_paths[2],
+            "focused_test_sha256": DEC027_SIX_RESCUE_STATIC_LEAF_SHA256[static_paths[2]],
+        },
+        "current_qualified_counts": {
+            "ordinary": 1,
+            "a1": 1,
+            "true_a2": 0,
+            "canonical_records": 6547,
+        },
+        "contribution": {
+            "ordinary": 0,
+            "a1": 0,
+            "true_a2": 0,
+            "canonical_records": 0,
+        },
+        "qualified": False,
+        "qualification_allowed": False,
+        "role_assignment_allowed": False,
+        "canonical_materialization_allowed": False,
+        "training_allowed": False,
+        "gpu_work_allowed": False,
+        "model_selection_allowed": False,
+        "a7_allowed": False,
+        "next_phase_authorized": False,
+        "scientific_claim_status": "NOT_ESTABLISHED",
+        "active_registry_study_unit_count_changed": False,
+        "member_or_row_payload_registered": False,
+        "sequence_or_effect_payload_registered": False,
+        "latest_settled_runtime_event_id": DEC027_CURRENT_RUNTIME_EVENT_ID,
+        "expected_next_runtime_event_id": DEC027_PENDING_RUNTIME_EVENT_ID,
+        "pending_successor_runtime_event_label": DEC027_PENDING_SUCCESSOR_RUNTIME_EVENT_LABEL,
+        "next_runtime_event_id_preallocated": False,
+        "runtime_sync_status": "EVIDENCE_REGISTERED_AFTER_EVT_059_PENDING_UNALLOCATED_EVT_060",
+        "runtime_event_emitted": False,
+        "aggregate_report_read_count_for_ledger": 1,
+        "private_row_artifact_read_count_for_ledger": 0,
+        "raw_asset_registered_artifact_count": 0,
+    }
+
+
+def _validate_dec027_six_rescue_interim(
+    interim: Mapping[str, Any], path: str, issues: list[Issue]
+) -> None:
+    lineage = interim.get("artifact_lineage")
+    if not isinstance(lineage, Mapping):
+        _issue(issues, "A1_INTERIM_DEC027_SIX_RESCUE", path, "artifact_lineage must be a mapping")
+        return
+    for lineage_id, spec in DEC027_SIX_RESCUE_REPORT_SPECS.items():
+        record = lineage.get(lineage_id)
+        if not isinstance(record, Mapping):
+            _issue(issues, "A1_INTERIM_DEC027_SIX_RESCUE", path, f"missing lineage {lineage_id}")
+            continue
+        _expect_closed_mapping(
+            record,
+            _expected_dec027_six_rescue_record(lineage_id, spec),
+            path,
+            issues,
+            "A1_INTERIM_DEC027_SIX_RESCUE",
+        )
+
+    disposition = interim.get("dec027_current_disposition")
+    if not isinstance(disposition, Mapping):
+        _issue(issues, "A1_INTERIM_DEC027_SIX_RESCUE", path, "dec027_current_disposition must be a mapping")
+        return
+    _expect(
+        disposition,
+        "route_statuses",
+        {spec["route_id"]: spec["status"] for spec in DEC027_SIX_RESCUE_REPORT_SPECS.values()},
+        path,
+        issues,
+        "A1_INTERIM_DEC027_SIX_RESCUE_ROUTE_STATUS",
+    )
+    expected_registration = {
+        "integration_id": DEC027_SIX_RESCUE_EVIDENCE_INTEGRATION_ID,
+        "registered_lineage_ids_exactly": DEC027_SIX_RESCUE_LINEAGE_IDS,
+        "static_leaf_count": 18,
+        "dynamic_report_count": 6,
+        "latest_settled_runtime_event_id": DEC027_CURRENT_RUNTIME_EVENT_ID,
+        "expected_next_runtime_event_id": DEC027_PENDING_RUNTIME_EVENT_ID,
+        "pending_successor_runtime_event_label": DEC027_PENDING_SUCCESSOR_RUNTIME_EVENT_LABEL,
+        "next_runtime_event_id_preallocated": False,
+        "runtime_sync_status": "EVIDENCE_REGISTERED_AFTER_EVT_059_PENDING_UNALLOCATED_EVT_060",
+        "runtime_event_emitted": False,
+    }
+    _expect_closed_mapping(
+        disposition.get("evidence_registration")
+        if isinstance(disposition.get("evidence_registration"), Mapping)
+        else {},
+        expected_registration,
+        path,
+        issues,
+        "A1_INTERIM_DEC027_SIX_RESCUE_REGISTRATION",
+    )
+    expected_adjudication = {
+        "all_six_terminal_reports_registered": True,
+        "separate_promotion_count": 0,
+        "qualified_counts_after_reports": {
+            "ordinary": 1,
+            "a1": 1,
+            "true_a2": 0,
+            "canonical_records": 6547,
+        },
+        "rescue_floor_met": False,
+        "rescue_floor_failed": True,
+        "gse269595_true_a2_reachability": {
+            "effective_source_group_n": 363,
+            "required_effective_n": 156,
+            "planning_power": 0.9977590398119175,
+            "target_power": 0.8,
+            "planning_full_ci_width": 0.19610459396615842,
+            "maximum_full_ci_width": 0.3,
+            "reachable_for_stop_rule": True,
+            "formal_qualification_power_run": False,
+            "qualification_established": False,
+            "role_assigned": False,
+            "credit_change": 0,
+        },
+        "no_true_a2_route_with_reachable_post_dedup_n_and_power": False,
+        "trigger_condition_met": False,
+        "successor_amendment_triggered": False,
+        "full_route_a_remains_highest_inactive_target": True,
+    }
+    _expect_closed_mapping(
+        disposition.get("stop_rule_adjudication")
+        if isinstance(disposition.get("stop_rule_adjudication"), Mapping)
+        else {},
+        expected_adjudication,
+        path,
+        issues,
+        "A1_INTERIM_DEC027_STOP_RULE_ADJUDICATION",
+    )
 def validate_a1_interim_lineage(
     repo_root: Path,
     interim: Mapping[str, Any],
@@ -10922,6 +11468,7 @@ def validate_a1_interim_lineage(
             GSE256185_ROW_PREFLIGHT_LINEAGE_ID,
             GSE261709_PREFLIGHT_LINEAGE_ID,
             GSE207584_PREFLIGHT_LINEAGE_ID,
+            *DEC027_SIX_RESCUE_LINEAGE_IDS,
             "gse145046_a2_audit_protocol",
             "gse145046_a2_formal_audit_v1",
             "a1_public_qualifiers_sync_v1",
@@ -13237,6 +13784,7 @@ def validate_a1_interim_lineage(
 
     _validate_gse256185_row_preflight_interim(interim, path, issues)
     _validate_dec023_dual_preflight_interim(interim, path, issues)
+    _validate_dec027_six_rescue_interim(interim, path, issues)
 
     summary = interim.get("dataset_boundary_summary")
     if not isinstance(summary, Mapping):
@@ -14447,6 +14995,19 @@ def validate_a1_interim_lineage(
                 "dec027_ordered_six_route_and_terminal_report_boundary": "PASS",
                 "dec027_conditional_single_study_successor_stop_rule_frozen": "PASS",
                 "dec027_training_gpu_model_selection_a7_next_phase_all_unchanged_false": "PASS",
+                "targeted_dec027_six_rescue_evidence_ledger_tests": {
+                    "status": "PASS",
+                    "scope": "SIX_TERMINAL_AGGREGATE_REPORTS_EIGHTEEN_STATIC_PRODUCER_LEAVES_EVT059_SETTLED_PENDING_UNALLOCATED_EVT060_NO_PROMOTION",
+                },
+                "dec027_six_rescue_evidence_integration_id": DEC027_SIX_RESCUE_EVIDENCE_INTEGRATION_ID,
+                "dec027_six_rescue_registered_lineage_ids_exactly": DEC027_SIX_RESCUE_LINEAGE_IDS,
+                "dec027_six_rescue_eighteen_static_leaf_registration": "PASS",
+                "dec027_six_rescue_six_dynamic_report_lineage_registration": "PASS",
+                "dec027_six_rescue_no_promotion_boundary": "PASS",
+                "dec027_six_rescue_current_runtime_event_id": DEC027_CURRENT_RUNTIME_EVENT_ID,
+                "dec027_six_rescue_pending_successor_runtime_event_label": DEC027_PENDING_SUCCESSOR_RUNTIME_EVENT_LABEL,
+                "dec027_six_rescue_successor_runtime_event_preallocated": False,
+                "dec027_six_rescue_stop_rule_trigger_condition_met": False,
             },
             path,
             issues,
@@ -14459,7 +15020,7 @@ def validate_a1_interim_lineage(
     _expect(
         interim,
         "latest_evidence_update_id",
-        DEC023_DUAL_PREFLIGHT_EVIDENCE_UPDATE_ID,
+        DEC027_SIX_RESCUE_EVIDENCE_UPDATE_ID,
         path,
         issues,
         "A1_INTERIM_TIME",
@@ -14467,14 +15028,14 @@ def validate_a1_interim_lineage(
     generated = interim.get("generated_at")
     updated = interim.get("updated_at")
     if (
-        generated != DEC027_AUTHORITY_MANIFEST_AT
-        or updated != DEC027_AUTHORITY_MANIFEST_AT
+        generated != DEC027_SIX_RESCUE_EVIDENCE_LEDGER_AT
+        or updated != DEC027_SIX_RESCUE_EVIDENCE_LEDGER_AT
     ):
         _issue(
             issues,
             "A1_INTERIM_TIME",
             path,
-            "generated_at and updated_at must identify the exact DEC027 authority-ledger timestamp",
+            "generated_at and updated_at must identify the exact DEC027 six-report evidence-ledger timestamp",
         )
     if generated != updated:
         _issue(issues, "A1_INTERIM_TIME", path, "generated_at and updated_at must identify the same amended record bytes")
@@ -16428,6 +16989,7 @@ def validate_bundle(repo_root: Path) -> list[Issue]:
     issues.extend(validate_gse256185_public_geometry_registration(repo_root))
     issues.extend(validate_gse256185_row_preflight_registration(repo_root))
     issues.extend(validate_dec023_dual_preflight_evidence_registration(repo_root))
+    issues.extend(validate_dec027_six_rescue_evidence_registration(repo_root))
     issues.extend(validate_python_static_safety(repo_root))
     issues.extend(validate_runner_and_guard_ast(repo_root))
     issues.extend(scan_conflict_markers(repo_root))

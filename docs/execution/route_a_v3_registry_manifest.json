@@ -89,7 +89,7 @@
     {
       "path": "docs/execution/route_a_v3_a1_interim.yaml",
       "role": "A1_ACTIVE_INTERIM_RECORD",
-      "sha256": "fb50929ae2dfa0bdd1c50b003fc43c0e13b89baade203e8384c8b6ea3eba7b1e"
+      "sha256": "a0f0c4927328dd9d790da7c348f0a72b3c437feef2e3e22ce91a640155402b6e"
     },
     {
       "path": "docs/execution/route_a_v3_a6_interim.yaml",
@@ -512,6 +512,96 @@
       "sha256": "81eccd24f16930df334e17b2cc8ae89906a91fba936ee1685d281079ba0b4df6"
     },
     {
+      "path": "configs/route_a_v3_gse217518_corrected_a1_successor_candidate_v1.json",
+      "role": "DEC027_GSE217518_CORRECTED_A1_SUCCESSOR_BOUND_CONFIG",
+      "sha256": "c5acc8548ab8542ac029a420f21f1d8524bb0f255c6dd53c2d896c2838ce391f"
+    },
+    {
+      "path": "scripts/route_a_v3/preflight_gse217518_corrected_a1_successor_candidate.py",
+      "role": "DEC027_GSE217518_CORRECTED_A1_SUCCESSOR_PRODUCER",
+      "sha256": "9fa4464e1cc42baacdf39b4bae2427e1895269b8d6f4e1a05e1e944b0434f3fa"
+    },
+    {
+      "path": "tests/route_a_v3/test_preflight_gse217518_corrected_a1_successor_candidate.py",
+      "role": "DEC027_GSE217518_CORRECTED_A1_SUCCESSOR_FOCUSED_TEST",
+      "sha256": "bba0ee97e9ed2500f0155c8d1a776d185661b00d8c7fd48c3c0d718d53ccd097"
+    },
+    {
+      "path": "configs/route_a_v3_encsr854ruf_dec027_dataset_specific_a1_preflight_v1.json",
+      "role": "DEC027_ENCSR854RUF_DATASET_SPECIFIC_A1_PREFLIGHT_BOUND_CONFIG",
+      "sha256": "de9df6055a83f29351c4eba2dd895708de4890181e639e26f2228105f6c2cc07"
+    },
+    {
+      "path": "scripts/route_a_v3/preflight_encsr854ruf_dec027_dataset_specific_a1.py",
+      "role": "DEC027_ENCSR854RUF_DATASET_SPECIFIC_A1_PREFLIGHT_PRODUCER",
+      "sha256": "d5a1ef3e174f479404c3ca1b2dcac9b81c3848b2a7008c9333ca5f339f2d15c9"
+    },
+    {
+      "path": "tests/route_a_v3/test_preflight_encsr854ruf_dec027_dataset_specific_a1.py",
+      "role": "DEC027_ENCSR854RUF_DATASET_SPECIFIC_A1_PREFLIGHT_FOCUSED_TEST",
+      "sha256": "1e31a4dd3643f1c8a3b56e3e6bd0f99b1f01cac65b4c6c3b7113aad5c26ee5b2"
+    },
+    {
+      "path": "configs/route_a_v3_gse232572_corrected_a1_replay_v1.json",
+      "role": "DEC027_GSE232572_CORRECTED_A1_REPLAY_BOUND_CONFIG",
+      "sha256": "c21821027d8a6806ee98d07177aacf5b7de3b007f15bd3d27bc6a6410bac3aab"
+    },
+    {
+      "path": "scripts/route_a_v3/replay_gse232572_corrected_a1.py",
+      "role": "DEC027_GSE232572_CORRECTED_A1_REPLAY_PRODUCER",
+      "sha256": "132a7cf7ea9008f87e2d77a4ba51b2e0701f6ccec2b6e8782a6f645c26cdb466"
+    },
+    {
+      "path": "tests/route_a_v3/test_replay_gse232572_corrected_a1.py",
+      "role": "DEC027_GSE232572_CORRECTED_A1_REPLAY_FOCUSED_TEST",
+      "sha256": "ea46cfbbdc3f8f0fd74149b862deabe3ce2c551c94f3a46edf891c1917dfca66"
+    },
+    {
+      "path": "configs/route_a_v3_gse113849_designed_snv_true_a2_preflight_v1.json",
+      "role": "DEC027_GSE113849_DESIGNED_SNV_TRUE_A2_PREFLIGHT_BOUND_CONFIG",
+      "sha256": "464bf2da3988d3bce0a9edf978ac8fd2d88f07598e17d11cae7898ca3645758d"
+    },
+    {
+      "path": "scripts/route_a_v3/preflight_gse113849_designed_snv_true_a2.py",
+      "role": "DEC027_GSE113849_DESIGNED_SNV_TRUE_A2_PREFLIGHT_PRODUCER",
+      "sha256": "44b934b828c8fa78aa37588006e7205d0f6277e463ebfe3b3834bbdfd022e23c"
+    },
+    {
+      "path": "tests/route_a_v3/test_preflight_gse113849_designed_snv_true_a2.py",
+      "role": "DEC027_GSE113849_DESIGNED_SNV_TRUE_A2_PREFLIGHT_FOCUSED_TEST",
+      "sha256": "98630bc8e48c5a07e5f17cf60addbf4382b7e7c49f66ff81245e76062e8d0001"
+    },
+    {
+      "path": "configs/route_a_v3_gse269595_corrected_role_adjudication_successor_candidate_v1.json",
+      "role": "DEC027_GSE269595_CORRECTED_ROLE_ADJUDICATION_BOUND_CONFIG",
+      "sha256": "db58c162c282e90b2d1930b5526cea7d0751a2feb238a7c7b156627bd1bf8a26"
+    },
+    {
+      "path": "scripts/route_a_v3/preflight_gse269595_corrected_role_adjudication_successor_candidate.py",
+      "role": "DEC027_GSE269595_CORRECTED_ROLE_ADJUDICATION_PRODUCER",
+      "sha256": "d72bc64f68c72784f58739b6ac46a018e77a4e6034e55d690bf9b61b543c9c51"
+    },
+    {
+      "path": "tests/route_a_v3/test_preflight_gse269595_corrected_role_adjudication_successor_candidate.py",
+      "role": "DEC027_GSE269595_CORRECTED_ROLE_ADJUDICATION_FOCUSED_TEST",
+      "sha256": "69abb99c0c8710794f710bb7898b703e3e601237e949562c7910cbb4d7b800e7"
+    },
+    {
+      "path": "configs/route_a_v3_gse295080_independence_overlap_adjudication_v1.json",
+      "role": "DEC027_GSE295080_INDEPENDENCE_OVERLAP_BOUND_CONFIG",
+      "sha256": "368cf0f2fbfd85090518303b1fedfcc04fb21085f214a2729fa636806274a483"
+    },
+    {
+      "path": "scripts/route_a_v3/preflight_gse295080_independence_overlap_adjudication.py",
+      "role": "DEC027_GSE295080_INDEPENDENCE_OVERLAP_PRODUCER",
+      "sha256": "1eb410d58facdc22af1cfb86583c864e6a6f790699f6b89c13bc2303dbabb00c"
+    },
+    {
+      "path": "tests/route_a_v3/test_preflight_gse295080_independence_overlap_adjudication.py",
+      "role": "DEC027_GSE295080_INDEPENDENCE_OVERLAP_FOCUSED_TEST",
+      "sha256": "68e3b8c3908aa518eb531a269cebc1d82f9210d9f770deaa6019a3ce44b4a069"
+    },
+    {
       "path": "configs/route_a_v3_a6_cpu_exact_absorbing_dag_v1.json",
       "role": "A6_CPU_EXACT_ABSORBING_DAG_BOUND_PROTOCOL",
       "sha256": "84e9a3f21ac6293faa167eb08eb40e8886bfe43daaa374b2c7613fbc9baecab8"
@@ -544,18 +634,18 @@
     {
       "path": "tests/route_a_v3/test_a0_integrity_guards.py",
       "role": "A0_AUTHORITY_INTEGRITY_GUARD_TEST",
-      "sha256": "106f847e957a40fffec4c1b57f8f572325ef96e8a3dc5729db68499e320f380b"
+      "sha256": "9a1ba78254c27ab63867ef0c0a82c5acb66824a0c6f26e6b0ffd6c2ded4c3b83"
     },
     {
       "path": "scripts/route_a_v3/validate_a0_bundle.py",
       "role": "A0_STATIC_AND_SEMANTIC_VALIDATOR",
-      "sha256": "81d1a8dc49375f53a1edd5c3f41625e734eacc31a4c328c8137340a041d77e65"
+      "sha256": "600f328f989108829f6e9dffc2a169d47ec4247994551469f5d0af8002b2ddc3"
     }
   ],
   "initial_generated_at": "2026-08-10T10:10:05+08:00",
-  "generated_at": "2026-08-15T01:11:09+08:00",
-  "updated_at": "2026-08-15T01:11:09+08:00",
-  "manifest_status": "DEC027_BOUNDED_SIX_ROUTE_DATA_RESCUE_SPRINT_AUTHORIZED_EVT058_SETTLED_PENDING_FRESH_UNALLOCATED_RUNTIME_EVENT_A1_INCOMPLETE_A6_IN_PROGRESS_L3_NOT_ESTABLISHED_A7_NOT_RUN",
+  "generated_at": "2026-08-15T05:05:01+08:00",
+  "updated_at": "2026-08-15T05:05:01+08:00",
+  "manifest_status": "DEC027_SIX_TERMINAL_AGGREGATE_RESCUE_REPORTS_REGISTERED_EVT059_SETTLED_PENDING_UNALLOCATED_EVT060_NO_PROMOTION_A1_INCOMPLETE_A6_IN_PROGRESS_L3_NOT_ESTABLISHED_A7_NOT_RUN",
   "schema_version": "1.0.0",
   "sealed_contact": false,
   "version": "3.0.0"

@@ -5209,3 +5209,92 @@ def test_dec023_no_promotion_member_or_successor_event_bypass(
     assert "A1_INTERIM_GSE207584_PREFLIGHT" in codes
     assert "A1_INTERIM_GSE207584_PREFLIGHT_COUNTS" in codes
     assert "A1_INTERIM_GSE207584_PREFLIGHT_SCOPE_ATTESTATION" in codes
+
+
+def test_dec027_six_terminal_rescue_evidence_registration_is_closed(
+    validator,
+    repo_root,
+):
+    assert validator.validate_dec027_six_rescue_evidence_registration(repo_root) == []
+    manifest = validator._load_json(repo_root, validator.REGISTRY_MANIFEST_PATH)
+    manifest_paths = {row["path"] for row in manifest["files"]}
+    assert len(validator.DEC027_SIX_RESCUE_STATIC_LEAF_SHA256) == 18
+    assert set(validator.DEC027_SIX_RESCUE_STATIC_LEAF_SHA256) <= manifest_paths
+    assert validator.DEC027_SIX_RESCUE_REPORT_PATHS.isdisjoint(manifest_paths)
+
+    interim = validator._load_yaml(repo_root, validator.A1_INTERIM_PATH)
+    issues = []
+    validator._validate_dec027_six_rescue_interim(
+        interim,
+        validator.A1_INTERIM_PATH,
+        issues,
+    )
+    assert issues == []
+    current = interim["dec027_current_disposition"]
+    assert current["current_qualified_counts"] == {
+        "ordinary": 1,
+        "a1": 1,
+        "true_a2": 0,
+        "canonical_records": 6547,
+    }
+    assert current["latest_settled_runtime_event_id"] == "A1-EVT-059"
+    assert current["runtime_event_emitted"] is False
+    assert current["expected_next_runtime_event_id"] == (
+        "PENDING_FRESH_RUNTIME_EVENT_ID"
+    )
+    adjudication = current["stop_rule_adjudication"]
+    assert adjudication["rescue_floor_met"] is False
+    assert adjudication["rescue_floor_failed"] is True
+    assert adjudication["gse269595_true_a2_reachability"][
+        "reachable_for_stop_rule"
+    ] is True
+    assert adjudication["trigger_condition_met"] is False
+    assert adjudication["successor_amendment_triggered"] is False
+
+
+def test_dec027_six_rescue_rehashed_lineage_and_stop_rule_drift_fails_closed(
+    validator,
+    repo_root,
+    tmp_path,
+    monkeypatch,
+):
+    def mutate(interim):
+        lineage = interim["artifact_lineage"][
+            validator.DEC027_SIX_RESCUE_LINEAGE_IDS[4]
+        ]
+        lineage["status"] = "PASS"
+        lineage["contribution"]["true_a2"] = 1
+        current = interim["dec027_current_disposition"]
+        current["stop_rule_adjudication"]["trigger_condition_met"] = True
+        current["stop_rule_adjudication"]["successor_amendment_triggered"] = True
+
+    codes = _validate_rehashed_interim_bypass(
+        validator,
+        repo_root,
+        tmp_path,
+        monkeypatch,
+        mutate,
+    )
+    assert "A1_INTERIM_DEC027_SIX_RESCUE" in codes
+    assert "A1_INTERIM_DEC027_STOP_RULE_ADJUDICATION" in codes
+
+
+def test_dec027_dynamic_terminal_report_cannot_enter_static_manifest(
+    validator,
+    repo_root,
+    tmp_path,
+):
+    manifest = _copy_manifest_bundle(validator, repo_root, tmp_path)
+    manifest["files"].append(
+        {
+            "path": sorted(validator.DEC027_SIX_RESCUE_REPORT_PATHS)[0],
+            "role": "FORBIDDEN_DYNAMIC_REPORT",
+            "sha256": "0" * 64,
+        }
+    )
+    manifest_path = tmp_path / validator.REGISTRY_MANIFEST_PATH
+    manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+    codes = _codes(
+        validator.validate_dec027_six_rescue_evidence_registration(tmp_path)
+    )
+    assert "DEC027_SIX_RESCUE_MANIFEST_DAG" in codes

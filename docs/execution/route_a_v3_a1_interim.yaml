@@ -592,7 +592,7 @@ dec024_current_disposition:
 
 dec027_current_disposition:
   decision_id: V3-DEC-027
-  status: FROZEN_USER_AUTHORIZED_RESCUE_PREFLIGHT_ONLY_NO_AUTOMATIC_PROMOTION
+  status: SIX_TERMINAL_AGGREGATE_REPORTS_REGISTERED_NO_PROMOTION
   authority_only_not_study_qualification: true
   execution_order_exactly:
     - GSE217518_CORRECTED_A1_SUCCESSOR
@@ -602,12 +602,12 @@ dec027_current_disposition:
     - GSE269595_CORRECTED_ROLE_ADJUDICATION_SUCCESSOR
     - GSE295080_INDEPENDENCE_OVERLAP_ADJUDICATION_ONLY
   route_statuses:
-    GSE217518_CORRECTED_A1_SUCCESSOR: AUTHORIZED_NOT_RUN
-    ENCSR854RUF_DATASET_SPECIFIC_A1_PREFLIGHT: AUTHORIZED_NOT_RUN
-    GSE232572_CORRECTED_A1_REPLAY: AUTHORIZED_NOT_RUN
-    GSE113849_DESIGNED_SNV_TRUE_A2_AGGREGATE_PREFLIGHT: AUTHORIZED_NOT_RUN
-    GSE269595_CORRECTED_ROLE_ADJUDICATION_SUCCESSOR: AUTHORIZED_NOT_RUN
-    GSE295080_INDEPENDENCE_OVERLAP_ADJUDICATION_ONLY: AUTHORIZED_NOT_RUN
+    GSE217518_CORRECTED_A1_SUCCESSOR: STOP_CORRECTED_PREFLIGHT_GATES_NOT_CLOSED
+    ENCSR854RUF_DATASET_SPECIFIC_A1_PREFLIGHT: TERMINAL_AGGREGATE_PREFLIGHT_STOP_NOT_QUALIFIED
+    GSE232572_CORRECTED_A1_REPLAY: STOP_REMAINING_QUALIFICATION_GATES_NOT_CLOSED
+    GSE113849_DESIGNED_SNV_TRUE_A2_AGGREGATE_PREFLIGHT: STOP_REMAINING_QUALIFICATION_GATES_NOT_CLOSED
+    GSE269595_CORRECTED_ROLE_ADJUDICATION_SUCCESSOR: STOP_CORRECTED_ROLE_ADJUDICATION_GATES_NOT_CLOSED
+    GSE295080_INDEPENDENCE_OVERLAP_ADJUDICATION_ONLY: STOP_NO_INDEPENDENT_CREDIT_AND_NO_ROW_LEVEL_AUTHORITY_REQUEST
   route_gate_counts_exactly:
     GSE217518_CORRECTED_A1_SUCCESSOR: 11
     ENCSR854RUF_DATASET_SPECIFIC_A1_PREFLIGHT: 11
@@ -632,6 +632,28 @@ dec027_current_disposition:
     prospective_triggered_successor: SINGLE_STUDY_SOURCE_RELATIVE_DEVELOPMENT_PLUS_ENGINEERING_THEORY
     triggered_successor_requires_separate_append_only_amendment: true
     full_route_a_remains_highest_inactive_target: true
+  stop_rule_adjudication:
+    all_six_terminal_reports_registered: true
+    separate_promotion_count: 0
+    qualified_counts_after_reports: {ordinary: 1, a1: 1, true_a2: 0, canonical_records: 6547}
+    rescue_floor_met: false
+    rescue_floor_failed: true
+    gse269595_true_a2_reachability:
+      effective_source_group_n: 363
+      required_effective_n: 156
+      planning_power: 0.9977590398119175
+      target_power: 0.8
+      planning_full_ci_width: 0.19610459396615842
+      maximum_full_ci_width: 0.3
+      reachable_for_stop_rule: true
+      formal_qualification_power_run: false
+      qualification_established: false
+      role_assigned: false
+      credit_change: 0
+    no_true_a2_route_with_reachable_post_dedup_n_and_power: false
+    trigger_condition_met: false
+    successor_amendment_triggered: false
+    full_route_a_remains_highest_inactive_target: true
   current_qualified_counts: {ordinary: 1, a1: 1, true_a2: 0, canonical_records: 6547}
   changes_current_qualified_counts: false
   original_gate_minima: {ordinary: 3, a1: 2, true_a2: 1}
@@ -646,12 +668,29 @@ dec027_current_disposition:
   model_selection_allowed: false
   a7_allowed: false
   next_phase_authorized: false
-  latest_settled_runtime_event_id: A1-EVT-058
-  settled_runtime_event_changed: false
+  latest_settled_runtime_event_id: A1-EVT-059
+  settled_runtime_event_changed: true
   runtime_event_emitted: false
-  runtime_sync_status: PENDING_FRESH_EVENT_AFTER_SETTLED_EVT_058
+  runtime_sync_status: EVIDENCE_REGISTERED_AFTER_EVT_059_PENDING_UNALLOCATED_EVT_060
   expected_next_runtime_event_id: PENDING_FRESH_RUNTIME_EVENT_ID
   next_runtime_event_id_preallocated: false
+  evidence_registration:
+    integration_id: DEC027_SIX_TERMINAL_AGGREGATE_RESCUE_REPORTS_V1_LEDGER_REGISTRATION
+    registered_lineage_ids_exactly:
+      - gse217518_corrected_a1_successor_aggregate_preflight_v1
+      - encsr854ruf_dec027_dataset_specific_a1_preflight_corrected_b4_v1
+      - gse232572_corrected_a1_replay_aggregate_preflight_v1
+      - gse113849_designed_snv_true_a2_aggregate_preflight_v1
+      - gse269595_corrected_role_adjudication_successor_aggregate_recompute_v1
+      - gse295080_independence_overlap_aggregate_preflight_v1
+    static_leaf_count: 18
+    dynamic_report_count: 6
+    latest_settled_runtime_event_id: A1-EVT-059
+    expected_next_runtime_event_id: PENDING_FRESH_RUNTIME_EVENT_ID
+    pending_successor_runtime_event_label: A1-EVT-060
+    next_runtime_event_id_preallocated: false
+    runtime_sync_status: EVIDENCE_REGISTERED_AFTER_EVT_059_PENDING_UNALLOCATED_EVT_060
+    runtime_event_emitted: false
   scientific_claim_status: NOT_ESTABLISHED
   sealed_contact_allowed: false
 
@@ -3049,6 +3088,588 @@ artifact_lineage:
     private_row_artifact_read_count_for_ledger: 0
     raw_asset_registered_artifact_count: 0
 
+  gse217518_corrected_a1_successor_aggregate_preflight_v1:
+    path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE217518_CORRECTED_A1_SUCCESSOR_AGGREGATE_PREFLIGHT_V1/GSE217518_CORRECTED_A1_SUCCESSOR_AGGREGATE_PREFLIGHT_V1.json
+    bytes: 7833
+    sha256: 03de0d423604518653a5188696d8186c82fa66e7858e7f498052fc67256e8884
+    report_observed_at: UNKNOWN_NOT_ASSERTED
+    decision_id: V3-DEC-027
+    route_id: GSE217518_CORRECTED_A1_SUCCESSOR
+    dataset_id: GSE217518
+    registry_status: EXISTING_REGISTERED_STUDY_UNIT
+    candidate_role: CORRECTED_A1_SUCCESSOR_PREFLIGHT_ONLY
+    schema_version: route_a_v3_gse217518_corrected_a1_successor_aggregate_preflight.v1
+    protocol_id: GSE217518_CORRECTED_A1_SUCCESSOR_CANDIDATE_V1
+    status: STOP_CORRECTED_PREFLIGHT_GATES_NOT_CLOSED
+    aggregate_only: true
+    terminal_report_registered: true
+    required_gate_axis_count: 11
+    required_gate_status_counts:
+      PASS: 4
+      BLOCKED: 4
+      NOT_RUN: 3
+    required_gate_results:
+      PUBLIC_SOURCE_ASSET_IDENTITY_AND_PRIMARY_ROUTE_CLOSED:
+        raw_status: PASS
+        normalized_status: PASS
+      SOURCE_REFERENCE_TO_CANDIDATE_CROSSWALK_CLOSED:
+        raw_status: BLOCKED
+        normalized_status: BLOCKED
+      FULL_115BP_CONSTRUCT_REPORTER_AND_REGION_CONTEXT_CLOSED:
+        raw_status: BLOCKED
+        normalized_status: BLOCKED
+      ENDPOINT_DIRECTION_SCALE_TRANSFORM_AND_SEMANTICS_CLOSED:
+        raw_status: PASS
+        normalized_status: PASS
+      THREE_INDEPENDENT_BIOLOGICAL_EXPERIMENTS_AND_VALID_STANDARD_ERROR_CLOSED:
+        raw_status: BLOCKED
+        normalized_status: BLOCKED
+      MISSING_OUTLIER_QC_AND_SELECTION_CLOSED:
+        raw_status: PASS
+        normalized_status: PASS
+      LICENSE_AND_REUSE_RIGHTS_CLOSED:
+        raw_status: PASS
+        normalized_status: PASS
+      HISTORICAL_ANALYTIC_OR_CHECKPOINT_EXPOSURE_CLOSED:
+        raw_status: BLOCKED
+        normalized_status: BLOCKED
+      OUTCOME_BLIND_SOURCE_GROUP_NEAR_DUPLICATE_SPLIT_AND_ZERO_LEAKAGE_READINESS_CLOSED:
+        raw_status: NOT_RUN
+        normalized_status: NOT_RUN
+      POST_DEDUP_INDEPENDENT_SOURCE_GROUP_EFFECTIVE_N_CLOSED:
+        raw_status: NOT_RUN
+        normalized_status: NOT_RUN
+      PREFROZEN_SOURCE_GROUP_POWER_AND_FULL_CI_WIDTH_CLOSED:
+        raw_status: NOT_RUN
+        normalized_status: NOT_RUN
+    producer_lineage:
+      implementation_commit: 36b535f77b3f27bb872b182dcaf6c646d9781991
+      binding_commit: 0a46400efee4ead95b1283df73d263f6f8033036
+      binding_diff_is_config_only: true
+      config_path: configs/route_a_v3_gse217518_corrected_a1_successor_candidate_v1.json
+      config_sha256: c5acc8548ab8542ac029a420f21f1d8524bb0f255c6dd53c2d896c2838ce391f
+      script_path: scripts/route_a_v3/preflight_gse217518_corrected_a1_successor_candidate.py
+      script_sha256: 9fa4464e1cc42baacdf39b4bae2427e1895269b8d6f4e1a05e1e944b0434f3fa
+      focused_test_path: tests/route_a_v3/test_preflight_gse217518_corrected_a1_successor_candidate.py
+      focused_test_sha256: bba0ee97e9ed2500f0155c8d1a776d185661b00d8c7fd48c3c0d718d53ccd097
+    current_qualified_counts:
+      ordinary: 1
+      a1: 1
+      true_a2: 0
+      canonical_records: 6547
+    contribution:
+      ordinary: 0
+      a1: 0
+      true_a2: 0
+      canonical_records: 0
+    qualified: false
+    qualification_allowed: false
+    role_assignment_allowed: false
+    canonical_materialization_allowed: false
+    training_allowed: false
+    gpu_work_allowed: false
+    model_selection_allowed: false
+    a7_allowed: false
+    next_phase_authorized: false
+    scientific_claim_status: NOT_ESTABLISHED
+    active_registry_study_unit_count_changed: false
+    member_or_row_payload_registered: false
+    sequence_or_effect_payload_registered: false
+    latest_settled_runtime_event_id: A1-EVT-059
+    expected_next_runtime_event_id: PENDING_FRESH_RUNTIME_EVENT_ID
+    pending_successor_runtime_event_label: A1-EVT-060
+    next_runtime_event_id_preallocated: false
+    runtime_sync_status: EVIDENCE_REGISTERED_AFTER_EVT_059_PENDING_UNALLOCATED_EVT_060
+    runtime_event_emitted: false
+    aggregate_report_read_count_for_ledger: 1
+    private_row_artifact_read_count_for_ledger: 0
+    raw_asset_registered_artifact_count: 0
+  encsr854ruf_dec027_dataset_specific_a1_preflight_corrected_b4_v1:
+    path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/ENCSR854RUF_DEC027_DATASET_SPECIFIC_A1_PREFLIGHT_CORRECTED_B4_V1/ENCSR854RUF_DEC027_DATASET_SPECIFIC_A1_PREFLIGHT_RECORD_V1.json
+    bytes: 11423
+    sha256: 3753d6fc5fb4132e43e11f29f9c79a04078a592aaba760c1f8a6e6ed2c5fc6c2
+    report_observed_at: '2026-08-15T01:40:00+08:00'
+    decision_id: V3-DEC-027
+    route_id: ENCSR854RUF_DATASET_SPECIFIC_A1_PREFLIGHT
+    dataset_id: ENCSR854RUF
+    registry_status: EXISTING_REGISTERED_STUDY_UNIT
+    candidate_role: DATASET_SPECIFIC_A1_PREFLIGHT_ONLY
+    schema_version: route_a_v3_encsr854ruf_dec027_dataset_specific_a1_preflight_record.v1
+    protocol_id: ENCSR854RUF_DEC027_DATASET_SPECIFIC_A1_PREFLIGHT_V1
+    status: TERMINAL_AGGREGATE_PREFLIGHT_STOP_NOT_QUALIFIED
+    aggregate_only: true
+    terminal_report_registered: true
+    required_gate_axis_count: 11
+    required_gate_status_counts:
+      PASS: 3
+      PARTIAL_OR_CONDITIONAL: 3
+      FAIL: 1
+      UNKNOWN_NOT_ASSERTED: 4
+    required_gate_results:
+      PUBLIC_SOURCE_ASSET_IDENTITY_AND_PRIMARY_ROUTE_CLOSED:
+        raw_status: PASS
+        normalized_status: PASS
+      SOURCE_REFERENCE_TO_CANDIDATE_CROSSWALK_CLOSED:
+        raw_status: PASS
+        normalized_status: PASS
+      FULL_REPORTER_AND_THREE_UTR_CONTEXT_CLOSED:
+        raw_status: PASS_FOR_COMPLETE_133BP_VARIABLE_INSERT_AND_FIXED_REPORTER_IDENTITY_ONLY
+        normalized_status: PARTIAL_OR_CONDITIONAL
+      ENDPOINT_DIRECTION_SCALE_TRANSFORM_AND_SEMANTICS_CLOSED:
+        raw_status: PASS
+        normalized_status: PASS
+      INDEPENDENT_BIOLOGICAL_REPLICATE_AND_VALID_STANDARD_ERROR_CLOSED:
+        raw_status: PARTIAL_REPLICATE_INDEPENDENCE_CLOSED_REPORTED_LFCSE_PRESENT_EXACT_RECOMPUTATION_ENVIRONMENT_NOT_FROZEN
+        normalized_status: PARTIAL_OR_CONDITIONAL
+      MISSING_QC_AND_SELECTION_CLOSED:
+        raw_status: PARTIAL_DETERMINISTIC_FINITE_SUBSET_IDENTIFIED_REJECT_REASON_CLOSURE_NOT_BOUND
+        normalized_status: PARTIAL_OR_CONDITIONAL
+      LICENSE_AND_REUSE_RIGHTS_CLOSED:
+        raw_status: UNKNOWN_NOT_ASSERTED
+        normalized_status: UNKNOWN_NOT_ASSERTED
+      HISTORICAL_ANALYTIC_OR_CHECKPOINT_EXPOSURE_CLOSED:
+        raw_status: FAIL_KNOWN_HISTORICAL_MODEL_INPUT_WITHOUT_FULL_PRIOR_USE_ATTESTATION
+        normalized_status: FAIL
+      OUTCOME_BLIND_SOURCE_GROUP_NEAR_DUPLICATE_SPLIT_AND_ZERO_LEAKAGE_READINESS_CLOSED:
+        raw_status: UNKNOWN_NOT_ASSERTED
+        normalized_status: UNKNOWN_NOT_ASSERTED
+      POST_DEDUP_INDEPENDENT_SOURCE_GROUP_EFFECTIVE_N_CLOSED:
+        raw_status: UNKNOWN_NOT_ASSERTED
+        normalized_status: UNKNOWN_NOT_ASSERTED
+      PREFROZEN_SOURCE_GROUP_POWER_AND_FULL_CI_WIDTH_CLOSED:
+        raw_status: UNKNOWN_NOT_ASSERTED
+        normalized_status: UNKNOWN_NOT_ASSERTED
+    producer_lineage:
+      implementation_commit: 53f426aef8b12e8dcbfaaf978fcfa7d1c7a911d2
+      binding_commit: 56b39f966a272d8ea8022048855d2fcca0ee155a
+      binding_diff_is_config_only: true
+      config_path: configs/route_a_v3_encsr854ruf_dec027_dataset_specific_a1_preflight_v1.json
+      config_sha256: de9df6055a83f29351c4eba2dd895708de4890181e639e26f2228105f6c2cc07
+      script_path: scripts/route_a_v3/preflight_encsr854ruf_dec027_dataset_specific_a1.py
+      script_sha256: d5a1ef3e174f479404c3ca1b2dcac9b81c3848b2a7008c9333ca5f339f2d15c9
+      focused_test_path: tests/route_a_v3/test_preflight_encsr854ruf_dec027_dataset_specific_a1.py
+      focused_test_sha256: 1e31a4dd3643f1c8a3b56e3e6bd0f99b1f01cac65b4c6c3b7113aad5c26ee5b2
+    current_qualified_counts:
+      ordinary: 1
+      a1: 1
+      true_a2: 0
+      canonical_records: 6547
+    contribution:
+      ordinary: 0
+      a1: 0
+      true_a2: 0
+      canonical_records: 0
+    qualified: false
+    qualification_allowed: false
+    role_assignment_allowed: false
+    canonical_materialization_allowed: false
+    training_allowed: false
+    gpu_work_allowed: false
+    model_selection_allowed: false
+    a7_allowed: false
+    next_phase_authorized: false
+    scientific_claim_status: NOT_ESTABLISHED
+    active_registry_study_unit_count_changed: false
+    member_or_row_payload_registered: false
+    sequence_or_effect_payload_registered: false
+    latest_settled_runtime_event_id: A1-EVT-059
+    expected_next_runtime_event_id: PENDING_FRESH_RUNTIME_EVENT_ID
+    pending_successor_runtime_event_label: A1-EVT-060
+    next_runtime_event_id_preallocated: false
+    runtime_sync_status: EVIDENCE_REGISTERED_AFTER_EVT_059_PENDING_UNALLOCATED_EVT_060
+    runtime_event_emitted: false
+    aggregate_report_read_count_for_ledger: 1
+    private_row_artifact_read_count_for_ledger: 0
+    raw_asset_registered_artifact_count: 0
+  gse232572_corrected_a1_replay_aggregate_preflight_v1:
+    path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE232572_CORRECTED_A1_REPLAY_B_0f2c008/GSE232572_CORRECTED_A1_REPLAY_AGGREGATE_PREFLIGHT.json
+    bytes: 9823
+    sha256: 20451d763b8b2bc2658a4bf6163bbef8a2449759fa7fbe1ff5a29f9146cdae2c
+    report_observed_at: '2026-08-15T04:05:39+08:00'
+    decision_id: V3-DEC-027
+    route_id: GSE232572_CORRECTED_A1_REPLAY
+    dataset_id: GSE232572
+    registry_status: EXISTING_REGISTERED_STUDY_UNIT
+    candidate_role: CORRECTED_A1_REPLAY_PREFLIGHT_ONLY
+    schema_version: route_a_v3_gse232572_corrected_a1_replay.v1
+    protocol_id: GSE232572_CORRECTED_A1_REPLAY_V1
+    status: STOP_REMAINING_QUALIFICATION_GATES_NOT_CLOSED
+    aggregate_only: true
+    terminal_report_registered: true
+    required_gate_axis_count: 11
+    required_gate_status_counts:
+      PASS: 7
+      UNKNOWN_NOT_ASSERTED: 3
+      NOT_RUN: 1
+    required_gate_results:
+      PUBLIC_SOURCE_ASSET_IDENTITY_AND_PRIMARY_ROUTE_CLOSED:
+        raw_status: PASS
+        normalized_status: PASS
+      REFERENCE_ALTERNATIVE_SOURCE_CANDIDATE_CROSSWALK_CLOSED:
+        raw_status: PASS
+        normalized_status: PASS
+      FULL_REPORTER_AND_THREE_UTR_CONTEXT_CLOSED:
+        raw_status: PASS
+        normalized_status: PASS
+      ENDPOINT_DIRECTION_SCALE_TRANSFORM_AND_SEMANTICS_CLOSED:
+        raw_status: PASS
+        normalized_status: PASS
+      THREE_INDEPENDENT_BIOLOGICAL_REPLICATES_AND_VALID_STANDARD_ERROR_CLOSED:
+        raw_status: PASS
+        normalized_status: PASS
+      MISSING_QC_AND_SELECTION_CLOSED:
+        raw_status: PASS
+        normalized_status: PASS
+      LICENSE_AND_REUSE_RIGHTS_CLOSED:
+        raw_status: UNKNOWN_NOT_ASSERTED
+        normalized_status: UNKNOWN_NOT_ASSERTED
+      HISTORICAL_ANALYTIC_OR_CHECKPOINT_EXPOSURE_CLOSED:
+        raw_status: PASS
+        normalized_status: PASS
+      OUTCOME_BLIND_SOURCE_GROUP_NEAR_DUPLICATE_SPLIT_AND_ZERO_LEAKAGE_READINESS_CLOSED:
+        raw_status: UNKNOWN_NOT_ASSERTED
+        normalized_status: UNKNOWN_NOT_ASSERTED
+      POST_DEDUP_INDEPENDENT_SOURCE_GROUP_EFFECTIVE_N_CLOSED:
+        raw_status: UNKNOWN_NOT_ASSERTED
+        normalized_status: UNKNOWN_NOT_ASSERTED
+      PREFROZEN_SOURCE_GROUP_POWER_AND_FULL_CI_WIDTH_CLOSED:
+        raw_status: NOT_RUN
+        normalized_status: NOT_RUN
+    producer_lineage:
+      implementation_commit: d3dcae4c6ef53c52e942bb511946b52b952d3c7f
+      binding_commit: 0f2c00868b6581edd9a429c7a8a67bb43f6b7776
+      binding_diff_is_config_only: true
+      config_path: configs/route_a_v3_gse232572_corrected_a1_replay_v1.json
+      config_sha256: c21821027d8a6806ee98d07177aacf5b7de3b007f15bd3d27bc6a6410bac3aab
+      script_path: scripts/route_a_v3/replay_gse232572_corrected_a1.py
+      script_sha256: 132a7cf7ea9008f87e2d77a4ba51b2e0701f6ccec2b6e8782a6f645c26cdb466
+      focused_test_path: tests/route_a_v3/test_replay_gse232572_corrected_a1.py
+      focused_test_sha256: ea46cfbbdc3f8f0fd74149b862deabe3ce2c551c94f3a46edf891c1917dfca66
+    current_qualified_counts:
+      ordinary: 1
+      a1: 1
+      true_a2: 0
+      canonical_records: 6547
+    contribution:
+      ordinary: 0
+      a1: 0
+      true_a2: 0
+      canonical_records: 0
+    qualified: false
+    qualification_allowed: false
+    role_assignment_allowed: false
+    canonical_materialization_allowed: false
+    training_allowed: false
+    gpu_work_allowed: false
+    model_selection_allowed: false
+    a7_allowed: false
+    next_phase_authorized: false
+    scientific_claim_status: NOT_ESTABLISHED
+    active_registry_study_unit_count_changed: false
+    member_or_row_payload_registered: false
+    sequence_or_effect_payload_registered: false
+    latest_settled_runtime_event_id: A1-EVT-059
+    expected_next_runtime_event_id: PENDING_FRESH_RUNTIME_EVENT_ID
+    pending_successor_runtime_event_label: A1-EVT-060
+    next_runtime_event_id_preallocated: false
+    runtime_sync_status: EVIDENCE_REGISTERED_AFTER_EVT_059_PENDING_UNALLOCATED_EVT_060
+    runtime_event_emitted: false
+    aggregate_report_read_count_for_ledger: 1
+    private_row_artifact_read_count_for_ledger: 0
+    raw_asset_registered_artifact_count: 0
+  gse113849_designed_snv_true_a2_aggregate_preflight_v1:
+    path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE113849_DESIGNED_SNV_TRUE_A2_B_6372ddc/GSE113849_DESIGNED_SNV_TRUE_A2_AGGREGATE_PREFLIGHT.json
+    bytes: 16280
+    sha256: 7ac51be90de8bbed2562e081a4063b6ed479f8a700d417623bfbefb269384839
+    report_observed_at: '2026-08-15T04:14:00+08:00'
+    decision_id: V3-DEC-027
+    route_id: GSE113849_DESIGNED_SNV_TRUE_A2_AGGREGATE_PREFLIGHT
+    dataset_id: GSE113849
+    registry_status: EXTERNAL_PREFLIGHT_CANDIDATE_ONLY_NOT_ACTIVE_STUDY_UNIT
+    candidate_role: DESIGNED_SNV_TRUE_A2_PREFLIGHT_ONLY
+    schema_version: route_a_v3_gse113849_designed_snv_true_a2_preflight.v1
+    protocol_id: GSE113849_DESIGNED_SNV_TRUE_A2_AGGREGATE_PREFLIGHT_V1
+    status: STOP_REMAINING_QUALIFICATION_GATES_NOT_CLOSED
+    aggregate_only: true
+    terminal_report_registered: true
+    required_gate_axis_count: 13
+    required_gate_status_counts:
+      PASS: 5
+      PARTIAL_OR_CONDITIONAL: 2
+      FAIL: 1
+      UNKNOWN_NOT_ASSERTED: 4
+      NOT_RUN: 1
+    required_gate_results:
+      PUBLIC_ASSET_LINEAGE_AND_INTENDED_UNIVERSE_CLOSED:
+        raw_status: PARTIAL_OR_CONDITIONAL
+        normalized_status: PARTIAL_OR_CONDITIONAL
+      SOURCE_TO_CANDIDATE_IDENTITY_CLOSED:
+        raw_status: PASS
+        normalized_status: PASS
+      LEGAL_SINGLE_SUBSTITUTION_EDIT_REPLAY_CLOSED:
+        raw_status: PASS
+        normalized_status: PASS
+      OUTCOME_BLIND_REPORTER_CONTEXT_RULE_CLOSED:
+        raw_status: PASS
+        normalized_status: PASS
+      DENSE_SOURCE_FAMILY_MINIMUM_THREE_CANDIDATES_CLOSED:
+        raw_status: PASS
+        normalized_status: PASS
+      ENDPOINT_DIRECTION_SCALE_TRANSFORM_AND_SEMANTICS_CLOSED:
+        raw_status: PASS
+        normalized_status: PASS
+      INDEPENDENT_BIOLOGICAL_REPLICATE_AND_VALID_STANDARD_ERROR_CLOSED:
+        raw_status: FAIL
+        normalized_status: FAIL
+      MISSING_QC_AND_SELECTION_CLOSED:
+        raw_status: PARTIAL_OR_CONDITIONAL
+        normalized_status: PARTIAL_OR_CONDITIONAL
+      LICENSE_AND_REUSE_RIGHTS_CLOSED:
+        raw_status: UNKNOWN_NOT_ASSERTED
+        normalized_status: UNKNOWN_NOT_ASSERTED
+      HISTORICAL_ANALYTIC_OR_CHECKPOINT_EXPOSURE_CLOSED:
+        raw_status: UNKNOWN_NOT_ASSERTED
+        normalized_status: UNKNOWN_NOT_ASSERTED
+      OUTCOME_BLIND_SOURCE_GROUP_NEAR_DUPLICATE_SPLIT_AND_ZERO_LEAKAGE_READINESS_CLOSED:
+        raw_status: UNKNOWN_NOT_ASSERTED
+        normalized_status: UNKNOWN_NOT_ASSERTED
+      POST_DEDUP_INDEPENDENT_SOURCE_GROUP_EFFECTIVE_N_CLOSED:
+        raw_status: UNKNOWN_NOT_ASSERTED
+        normalized_status: UNKNOWN_NOT_ASSERTED
+      PREFROZEN_SOURCE_GROUP_POWER_AND_FULL_CI_WIDTH_CLOSED:
+        raw_status: NOT_RUN
+        normalized_status: NOT_RUN
+    producer_lineage:
+      implementation_commit: 8dfca85f3311ede01f594662d13b126bc8e2fef2
+      binding_commit: 6372ddcb4b006d587a40ce628f9e193324c28b17
+      binding_diff_is_config_only: true
+      config_path: configs/route_a_v3_gse113849_designed_snv_true_a2_preflight_v1.json
+      config_sha256: 464bf2da3988d3bce0a9edf978ac8fd2d88f07598e17d11cae7898ca3645758d
+      script_path: scripts/route_a_v3/preflight_gse113849_designed_snv_true_a2.py
+      script_sha256: 44b934b828c8fa78aa37588006e7205d0f6277e463ebfe3b3834bbdfd022e23c
+      focused_test_path: tests/route_a_v3/test_preflight_gse113849_designed_snv_true_a2.py
+      focused_test_sha256: 98630bc8e48c5a07e5f17cf60addbf4382b7e7c49f66ff81245e76062e8d0001
+    current_qualified_counts:
+      ordinary: 1
+      a1: 1
+      true_a2: 0
+      canonical_records: 6547
+    contribution:
+      ordinary: 0
+      a1: 0
+      true_a2: 0
+      canonical_records: 0
+    qualified: false
+    qualification_allowed: false
+    role_assignment_allowed: false
+    canonical_materialization_allowed: false
+    training_allowed: false
+    gpu_work_allowed: false
+    model_selection_allowed: false
+    a7_allowed: false
+    next_phase_authorized: false
+    scientific_claim_status: NOT_ESTABLISHED
+    active_registry_study_unit_count_changed: false
+    member_or_row_payload_registered: false
+    sequence_or_effect_payload_registered: false
+    latest_settled_runtime_event_id: A1-EVT-059
+    expected_next_runtime_event_id: PENDING_FRESH_RUNTIME_EVENT_ID
+    pending_successor_runtime_event_label: A1-EVT-060
+    next_runtime_event_id_preallocated: false
+    runtime_sync_status: EVIDENCE_REGISTERED_AFTER_EVT_059_PENDING_UNALLOCATED_EVT_060
+    runtime_event_emitted: false
+    aggregate_report_read_count_for_ledger: 1
+    private_row_artifact_read_count_for_ledger: 0
+    raw_asset_registered_artifact_count: 0
+  gse269595_corrected_role_adjudication_successor_aggregate_recompute_v1:
+    path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE269595_CORRECTED_ROLE_ADJUDICATION_B2_19ca492/GSE269595_CORRECTED_ROLE_ADJUDICATION_SUCCESSOR_AGGREGATE_RECOMPUTE_V1.json
+    bytes: 13272
+    sha256: 7952a74690817f24c3dc1df1ccdb104b9997464ceb97f0320fddd227bd84ac4b
+    report_observed_at: '2026-08-15T04:31:00+08:00'
+    decision_id: V3-DEC-027
+    route_id: GSE269595_CORRECTED_ROLE_ADJUDICATION_SUCCESSOR
+    dataset_id: GSE269595
+    registry_status: EXISTING_REGISTERED_STUDY_UNIT
+    candidate_role: MUTUALLY_EXCLUSIVE_A1_OR_TRUE_A2_ROLE_ADJUDICATION_PREFLIGHT_ONLY
+    schema_version: route_a_v3_gse269595_corrected_role_adjudication_aggregate_recompute.v1
+    protocol_id: GSE269595_CORRECTED_ROLE_ADJUDICATION_SUCCESSOR_CANDIDATE_V1
+    status: STOP_CORRECTED_ROLE_ADJUDICATION_GATES_NOT_CLOSED
+    aggregate_only: true
+    terminal_report_registered: true
+    required_gate_axis_count: 13
+    required_gate_status_counts:
+      PASS: 8
+      BLOCKED: 3
+      FAIL: 2
+    required_gate_results:
+      A1_VERSUS_TRUE_A2_ROLE_ELIGIBILITY_AND_MUTUAL_EXCLUSIVITY_CLOSED:
+        raw_status: PASS
+        normalized_status: PASS
+      ORDINARY_PUBLIC_ASSET_IDENTITY_ROLE_AND_PROVENANCE_CLOSED:
+        raw_status: PASS
+        normalized_status: PASS
+      ELIGIBLE_DENSE_SOURCE_FAMILY_DISTRIBUTION_AND_UNIQUE_SOURCE_ANCHOR_CLOSED:
+        raw_status: PASS
+        normalized_status: PASS
+      INTRONIC_APA_EXCLUSION_CLOSED:
+        raw_status: PASS
+        normalized_status: PASS
+      SOURCE_TO_CANDIDATE_LEGAL_SUBSTITUTION_REPLAY_CLOSED:
+        raw_status: PASS
+        normalized_status: PASS
+      ASSAY_CONTEXT_GUIDE_ENDPOINT_DIRECTION_SCALE_AND_SEMANTICS_CLOSED:
+        raw_status: BLOCKED
+        normalized_status: BLOCKED
+      INDEPENDENT_BIOLOGICAL_REPLICATE_AND_VALID_STANDARD_ERROR_CLOSED:
+        raw_status: BLOCKED
+        normalized_status: BLOCKED
+      ASSET_SCHEMA_DIMENSION_AND_COVERAGE_CLOSED:
+        raw_status: PASS
+        normalized_status: PASS
+      MISSING_CENSORING_AND_SELECTION_CLOSED:
+        raw_status: FAIL
+        normalized_status: FAIL
+      APARENT_PRIOR_EXPOSURE_AND_MODEL_INPUT_ROUTE_CLOSED:
+        raw_status: FAIL
+        normalized_status: FAIL
+      LICENSE_AND_REUSE_RIGHTS_CLOSED:
+        raw_status: BLOCKED
+        normalized_status: BLOCKED
+      OUTCOME_BLIND_SOURCE_GROUP_NEAR_DUPLICATE_SPLIT_AND_ZERO_LEAKAGE_READINESS_CLOSED:
+        raw_status: PASS
+        normalized_status: PASS
+      POST_DEDUP_SOURCE_GROUP_EFFECTIVE_N_AND_PREFROZEN_POWER_FULL_CI_WIDTH_CLOSED:
+        raw_status: PASS
+        normalized_status: PASS
+    producer_lineage:
+      implementation_commit: 95f32836f62db26f0302edbbb6443ae0a33918b3
+      binding_commit: 19ca49229c9ff2814bad2c58b8b84be14624b7ea
+      binding_diff_is_config_only: true
+      config_path: configs/route_a_v3_gse269595_corrected_role_adjudication_successor_candidate_v1.json
+      config_sha256: db58c162c282e90b2d1930b5526cea7d0751a2feb238a7c7b156627bd1bf8a26
+      script_path: scripts/route_a_v3/preflight_gse269595_corrected_role_adjudication_successor_candidate.py
+      script_sha256: d72bc64f68c72784f58739b6ac46a018e77a4e6034e55d690bf9b61b543c9c51
+      focused_test_path: tests/route_a_v3/test_preflight_gse269595_corrected_role_adjudication_successor_candidate.py
+      focused_test_sha256: 69abb99c0c8710794f710bb7898b703e3e601237e949562c7910cbb4d7b800e7
+    current_qualified_counts:
+      ordinary: 1
+      a1: 1
+      true_a2: 0
+      canonical_records: 6547
+    contribution:
+      ordinary: 0
+      a1: 0
+      true_a2: 0
+      canonical_records: 0
+    qualified: false
+    qualification_allowed: false
+    role_assignment_allowed: false
+    canonical_materialization_allowed: false
+    training_allowed: false
+    gpu_work_allowed: false
+    model_selection_allowed: false
+    a7_allowed: false
+    next_phase_authorized: false
+    scientific_claim_status: NOT_ESTABLISHED
+    active_registry_study_unit_count_changed: false
+    member_or_row_payload_registered: false
+    sequence_or_effect_payload_registered: false
+    latest_settled_runtime_event_id: A1-EVT-059
+    expected_next_runtime_event_id: PENDING_FRESH_RUNTIME_EVENT_ID
+    pending_successor_runtime_event_label: A1-EVT-060
+    next_runtime_event_id_preallocated: false
+    runtime_sync_status: EVIDENCE_REGISTERED_AFTER_EVT_059_PENDING_UNALLOCATED_EVT_060
+    runtime_event_emitted: false
+    aggregate_report_read_count_for_ledger: 1
+    private_row_artifact_read_count_for_ledger: 0
+    raw_asset_registered_artifact_count: 0
+  gse295080_independence_overlap_aggregate_preflight_v1:
+    path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE295080_INDEPENDENCE_OVERLAP_B2_679a1c2/GSE295080_INDEPENDENCE_OVERLAP_AGGREGATE_PREFLIGHT_V1.json
+    bytes: 8989
+    sha256: f3f258cd89f58d42270e05b40a67c55fcd18511e6b17d9dc6711f62d0db5aa63
+    report_observed_at: '2026-08-15T04:55:49+08:00'
+    decision_id: V3-DEC-027
+    route_id: GSE295080_INDEPENDENCE_OVERLAP_ADJUDICATION_ONLY
+    dataset_id: GSE295080
+    registry_status: EXTERNAL_PREFLIGHT_CANDIDATE_ONLY_NOT_ACTIVE_STUDY_UNIT
+    candidate_role: INDEPENDENCE_OVERLAP_ADJUDICATION_ONLY
+    schema_version: route_a_v3_gse295080_independence_overlap_aggregate_record.v1
+    protocol_id: GSE295080_DEC027_INDEPENDENCE_OVERLAP_ADJUDICATION_ONLY_V1
+    status: STOP_NO_INDEPENDENT_CREDIT_AND_NO_ROW_LEVEL_AUTHORITY_REQUEST
+    aggregate_only: true
+    terminal_report_registered: true
+    required_gate_axis_count: 7
+    required_gate_status_counts:
+      PASS: 3
+      PARTIAL_OR_CONDITIONAL: 1
+      FAIL: 1
+      UNKNOWN_NOT_ASSERTED: 1
+      BLOCKED_OR_STOP: 1
+    required_gate_results:
+      PUBLIC_IDENTIFIER_ASSET_ROLE_AND_PROVENANCE_CLOSED:
+        raw_status: PASS
+        normalized_status: PASS
+      SOURCE_REFERENCE_ALTERNATIVE_MAPPING_SCHEMA_GEOMETRY_CLOSED:
+        raw_status: PASS_AGGREGATE_SCHEMA_GEOMETRY_ONLY_NOT_ROW_REPLAY
+        normalized_status: PASS
+      BIOLOGICAL_REPLICATE_LABEL_GEOMETRY_CLOSED:
+        raw_status: PASS_LABEL_GEOMETRY_ONLY_NOT_INDEPENDENCE_OR_STANDARD_ERROR
+        normalized_status: PASS
+      CROSS_DATASET_SOURCE_FAMILY_LIBRARY_OVERLAP_CLOSED:
+        raw_status: PARTIAL_GSE186455_EXACT_NAME_OVERLAP_CLOSED_THREE_REQUIRED_COMPARISONS_UNKNOWN
+        normalized_status: PARTIAL_OR_CONDITIONAL
+      INDEPENDENT_STUDY_OR_REUSED_LIBRARY_BOUNDARY_CLOSED:
+        raw_status: FAIL_FOR_INDEPENDENT_CREDIT_LIBRARY1_REUSED_LIBRARY_AND_LIBRARY2_BOUNDARY_NOT_CLOSED
+        normalized_status: FAIL
+      LICENSE_AND_REUSE_RIGHTS_CLOSED:
+        raw_status: UNKNOWN_NOT_ASSERTED
+        normalized_status: UNKNOWN_NOT_ASSERTED
+      OUTCOME_BLIND_NEXT_AUTHORITY_DISPOSITION_CLOSED:
+        raw_status: BLOCKED_OR_STOP
+        normalized_status: BLOCKED_OR_STOP
+    producer_lineage:
+      implementation_commit: 845550e24c836872f4572abe10275db58f62554e
+      binding_commit: 679a1c2ae89db7d6a9894f9299de7ce38b30ecdb
+      binding_diff_is_config_only: true
+      config_path: configs/route_a_v3_gse295080_independence_overlap_adjudication_v1.json
+      config_sha256: 368cf0f2fbfd85090518303b1fedfcc04fb21085f214a2729fa636806274a483
+      script_path: scripts/route_a_v3/preflight_gse295080_independence_overlap_adjudication.py
+      script_sha256: 1eb410d58facdc22af1cfb86583c864e6a6f790699f6b89c13bc2303dbabb00c
+      focused_test_path: tests/route_a_v3/test_preflight_gse295080_independence_overlap_adjudication.py
+      focused_test_sha256: 68e3b8c3908aa518eb531a269cebc1d82f9210d9f770deaa6019a3ce44b4a069
+    current_qualified_counts:
+      ordinary: 1
+      a1: 1
+      true_a2: 0
+      canonical_records: 6547
+    contribution:
+      ordinary: 0
+      a1: 0
+      true_a2: 0
+      canonical_records: 0
+    qualified: false
+    qualification_allowed: false
+    role_assignment_allowed: false
+    canonical_materialization_allowed: false
+    training_allowed: false
+    gpu_work_allowed: false
+    model_selection_allowed: false
+    a7_allowed: false
+    next_phase_authorized: false
+    scientific_claim_status: NOT_ESTABLISHED
+    active_registry_study_unit_count_changed: false
+    member_or_row_payload_registered: false
+    sequence_or_effect_payload_registered: false
+    latest_settled_runtime_event_id: A1-EVT-059
+    expected_next_runtime_event_id: PENDING_FRESH_RUNTIME_EVENT_ID
+    pending_successor_runtime_event_label: A1-EVT-060
+    next_runtime_event_id_preallocated: false
+    runtime_sync_status: EVIDENCE_REGISTERED_AFTER_EVT_059_PENDING_UNALLOCATED_EVT_060
+    runtime_event_emitted: false
+    aggregate_report_read_count_for_ledger: 1
+    private_row_artifact_read_count_for_ledger: 0
+    raw_asset_registered_artifact_count: 0
+
 dataset_boundary_summary:
   evidence_ref:
     path: /mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/A1_LEGACY_GAP_INVENTORY_V2.json
@@ -4035,10 +4656,28 @@ verification:
   dec027_ordered_six_route_and_terminal_report_boundary: PASS
   dec027_conditional_single_study_successor_stop_rule_frozen: PASS
   dec027_training_gpu_model_selection_a7_next_phase_all_unchanged_false: PASS
+  targeted_dec027_six_rescue_evidence_ledger_tests:
+    status: PASS
+    scope: SIX_TERMINAL_AGGREGATE_REPORTS_EIGHTEEN_STATIC_PRODUCER_LEAVES_EVT059_SETTLED_PENDING_UNALLOCATED_EVT060_NO_PROMOTION
+  dec027_six_rescue_evidence_integration_id: DEC027_SIX_TERMINAL_AGGREGATE_RESCUE_REPORTS_V1_LEDGER_REGISTRATION
+  dec027_six_rescue_registered_lineage_ids_exactly:
+    - gse217518_corrected_a1_successor_aggregate_preflight_v1
+    - encsr854ruf_dec027_dataset_specific_a1_preflight_corrected_b4_v1
+    - gse232572_corrected_a1_replay_aggregate_preflight_v1
+    - gse113849_designed_snv_true_a2_aggregate_preflight_v1
+    - gse269595_corrected_role_adjudication_successor_aggregate_recompute_v1
+    - gse295080_independence_overlap_aggregate_preflight_v1
+  dec027_six_rescue_eighteen_static_leaf_registration: PASS
+  dec027_six_rescue_six_dynamic_report_lineage_registration: PASS
+  dec027_six_rescue_no_promotion_boundary: PASS
+  dec027_six_rescue_current_runtime_event_id: A1-EVT-059
+  dec027_six_rescue_pending_successor_runtime_event_label: A1-EVT-060
+  dec027_six_rescue_successor_runtime_event_preallocated: false
+  dec027_six_rescue_stop_rule_trigger_condition_met: false
 
 initial_generated_at: "2026-08-10T06:30:58+08:00"
-generated_at: "2026-08-15T01:11:09+08:00"
-updated_at: "2026-08-15T01:11:09+08:00"
+generated_at: "2026-08-15T05:05:00+08:00"
+updated_at: "2026-08-15T05:05:00+08:00"
 updated_for_decision_id: V3-DEC-027
 latest_authority_update_id: V3-DEC-027
-latest_evidence_update_id: DEC023_GSE261709_AND_GSE207584_DUAL_PREFLIGHT_FINAL_EVIDENCE_V1
+latest_evidence_update_id: DEC027_SIX_TERMINAL_AGGREGATE_RESCUE_REPORTS_V1
