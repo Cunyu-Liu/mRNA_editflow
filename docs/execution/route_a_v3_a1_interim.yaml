@@ -40,7 +40,7 @@ authority:
     docs/execution/route_a_v3_data_role_registry.yaml: bb577d4ce7d7dc673f41bb182b7868f66816c15a3ed4235c98e0839292e75d6b
     docs/execution/route_a_v3_decision_log.yaml: 8e514512ccd63d87a596231b11183c06765ba50ba3736adc165f141da8fa13d0
     docs/execution/route_a_v3_split_registry.yaml: 52e1146027956e024dd6194ff18862e542e27fff81e8fc6b6d8aeaa972b8259c
-    docs/execution/route_a_v3_task_registry.yaml: bf3066a7534041374685e9ebe9ac8c840e53ceec1acbb076a72a758d397c63f2
+    docs/execution/route_a_v3_task_registry.yaml: 210964e1a1c0b1166dab73e95e0243eee54d8470149aa3b3cb182f4f90e266b3
     docs/execution/route_a_v3_task_split_matrix.yaml: db23e96b6977339237956de57309d04a9e692bf937a8d34427d2e1b6cc150db8
   accepted_a0_activation_commit: fd722d5fa3c2538fce742b8942b1fb48e782760b
   branch: routea-v3-a1-20260810

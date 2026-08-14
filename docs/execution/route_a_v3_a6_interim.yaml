@@ -10,9 +10,9 @@ authority:
   contract_path: docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md
   contract_sha256: cbac4c3dcba8f1b8df95d8edad52d19e3c126d1c865d0cc423537c754cc90982
   active_config_path: configs/route_a_v3.yaml
-  active_config_sha256: c908ac57b7c9667398f616a0ccf7101b41451b80bf169e768131844d3b63a678
+  active_config_sha256: df38455904d67f22a2fea1fb08a3314cd4fb120e91ea711427ad1689653ba8ce
   task_registry_path: docs/execution/route_a_v3_task_registry.yaml
-  task_registry_sha256: bf3066a7534041374685e9ebe9ac8c840e53ceec1acbb076a72a758d397c63f2
+  task_registry_sha256: 210964e1a1c0b1166dab73e95e0243eee54d8470149aa3b3cb182f4f90e266b3
   claim_evidence_matrix_path: docs/execution/route_a_v3_claim_evidence_matrix.yaml
   claim_evidence_matrix_sha256: 214279390d09c2857735c9cfa041ce38c45a7542142d4b0941ad7c035a7ee81a
   branch: routea-v3-a1-20260810

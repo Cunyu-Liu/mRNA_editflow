@@ -4438,6 +4438,56 @@ def test_a6_cpu_partial_registration_is_closed(validator, repo_root):
         assert task["claim_status"] == "NOT_ESTABLISHED"
 
 
+def test_current_task_and_a6_authority_pointers_follow_dec023_without_rewriting_history(
+    validator,
+    repo_root,
+):
+    task_path = validator.REGISTRY_PATHS["task"]
+    task_registry = validator._load_yaml(repo_root, task_path)
+    authority_ref = task_registry["authority_ref"]
+    assert authority_ref["active_amendment_decision_ids"] == (
+        validator.ACTIVE_AMENDMENT_DECISION_IDS
+    )
+    assert authority_ref["dec021_amendment_path"] == validator.DEC021_AMENDMENT_PATH
+    assert authority_ref["dec022_amendment_path"] == validator.DEC022_AMENDMENT_PATH
+    assert authority_ref["dec023_amendment_path"] == validator.DEC023_AMENDMENT_PATH
+
+    task_sha256 = validator.sha256_file(repo_root / task_path)
+    assert task_sha256 == validator.CURRENT_TASK_REGISTRY_SHA256
+    a6_interim = validator._load_yaml(repo_root, validator.A6_INTERIM_PATH)
+    a6_authority = a6_interim["authority"]
+    assert a6_authority["active_config_sha256"] == validator.sha256_file(
+        repo_root / validator.CONFIG_PATH
+    )
+    assert a6_authority["active_config_sha256"] == (
+        validator.CURRENT_ACTIVE_CONFIG_SHA256
+    )
+    assert a6_authority["task_registry_sha256"] == task_sha256
+
+    frozen_task_sha256 = (
+        "bf3066a7534041374685e9ebe9ac8c840e53ceec1acbb076a72a758d397c63f2"
+    )
+    assert validator.DEC020_FROZEN_AUTHORITY_LEAF_SHA256[task_path] == (
+        frozen_task_sha256
+    )
+    assert validator.DEC020_PRESERVED_AUTHORITY_LEAF_SHA256[task_path] == (
+        frozen_task_sha256
+    )
+    assert validator.DEC021_ACTIVE_AUTHORITY_LEAF_SHA256[task_path] == (
+        frozen_task_sha256
+    )
+    assert validator.DEC021_PRESERVED_HISTORICAL_LEAF_SHA256[task_path] == (
+        frozen_task_sha256
+    )
+    assert validator.DEC022_ACTIVE_AUTHORITY_LEAF_SHA256[task_path] == (
+        frozen_task_sha256
+    )
+    assert validator.DEC023_FROZEN_AUTHORITY_LEAF_SHA256[task_path] == (
+        frozen_task_sha256
+    )
+    assert validator.DEC023_ACTIVE_AUTHORITY_LEAF_SHA256[task_path] == task_sha256
+
+
 @pytest.mark.parametrize(
     ("field_path", "promoted_value"),
     [

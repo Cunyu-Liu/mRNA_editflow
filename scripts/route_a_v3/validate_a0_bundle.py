@@ -45,8 +45,10 @@ DECISION_LOG_PATH = "docs/execution/route_a_v3_decision_log.yaml"
 REGISTRY_MANIFEST_PATH = "docs/execution/route_a_v3_registry_manifest.json"
 A1_INTERIM_PATH = "docs/execution/route_a_v3_a1_interim.yaml"
 A6_INTERIM_PATH = "docs/execution/route_a_v3_a6_interim.yaml"
-EXPECTED_A1_INTERIM_SHA256 = "59ea0a7d5b457e8861710992b76a3868a5b44ae1e1972c99f716a33a0f68204b"
-EXPECTED_A6_INTERIM_SHA256 = "64a5a5a03f0931b59a72ad5536c0e0c132332d1235e697bc4fff56f910d573d8"
+EXPECTED_A1_INTERIM_SHA256 = "4983f166cfcc19d406065e766f2fff15e6d82c499aa9e441e0adff0140891a75"
+EXPECTED_A6_INTERIM_SHA256 = "d741972e66f5b99a9b42460de3eb5f64a7f9c046135459e4778505fad49dc813"
+CURRENT_ACTIVE_CONFIG_SHA256 = "df38455904d67f22a2fea1fb08a3314cd4fb120e91ea711427ad1689653ba8ce"
+CURRENT_TASK_REGISTRY_SHA256 = "210964e1a1c0b1166dab73e95e0243eee54d8470149aa3b3cb182f4f90e266b3"
 A6_REGISTRATION_LEDGER_AT = "2026-08-13T18:55:00+08:00"
 DEC021_AUTHORITY_LEDGER_AT = "2026-08-13T19:50:00+08:00"
 DEC021_AUTHORITY_MANIFEST_AT = "2026-08-13T19:50:01+08:00"
@@ -654,8 +656,8 @@ DEC022_AUTHORITY_EXACT_CHANGED_PATHS = (
     "scripts/route_a_v3/validate_a0_bundle.py",
     "tests/route_a_v3/test_a0_integrity_guards.py",
 )
-DEC023_ACTIVE_AUTHORITY_LEAF_SHA256 = dict(DEC022_ACTIVE_AUTHORITY_LEAF_SHA256)
-DEC023_ACTIVE_AUTHORITY_LEAF_SHA256.update(
+DEC023_FROZEN_AUTHORITY_LEAF_SHA256 = dict(DEC022_ACTIVE_AUTHORITY_LEAF_SHA256)
+DEC023_FROZEN_AUTHORITY_LEAF_SHA256.update(
     {
         CONFIG_PATH: "df38455904d67f22a2fea1fb08a3314cd4fb120e91ea711427ad1689653ba8ce",
         A1_QUALIFICATION_CONFIG_PATH: "98de408ec423836efac75bcd75b4fd940e9fbd52a0bf1b3c397ea0c67e548740",
@@ -665,6 +667,10 @@ DEC023_ACTIVE_AUTHORITY_LEAF_SHA256.update(
         "docs/execution/route_a_v3_data_role_registry.yaml": "bb577d4ce7d7dc673f41bb182b7868f66816c15a3ed4235c98e0839292e75d6b",
     }
 )
+DEC023_ACTIVE_AUTHORITY_LEAF_SHA256 = dict(DEC023_FROZEN_AUTHORITY_LEAF_SHA256)
+DEC023_ACTIVE_AUTHORITY_LEAF_SHA256[
+    "docs/execution/route_a_v3_task_registry.yaml"
+] = CURRENT_TASK_REGISTRY_SHA256
 DEC023_AUTHORITY_EXACT_CHANGED_PATHS = (
     CONFIG_PATH,
     A1_QUALIFICATION_CONFIG_PATH,
@@ -4936,11 +4942,15 @@ def validate_dec019_authority(
         if not isinstance(ref, Mapping):
             _issue(issues, "DEC019_REGISTRY_AUTHORITY", REGISTRY_PATHS[name], "authority_ref must be a mapping")
             continue
-        expected_ids = ACTIVE_AMENDMENT_DECISION_IDS if name == "data" else ACTIVE_AMENDMENT_DECISION_IDS[:-3]
+        expected_ids = (
+            ACTIVE_AMENDMENT_DECISION_IDS
+            if name in {"data", "task"}
+            else ACTIVE_AMENDMENT_DECISION_IDS[:-3]
+        )
         _expect(ref, "active_amendment_decision_ids", expected_ids, REGISTRY_PATHS[name], issues, "DEC019_REGISTRY_AUTHORITY")
         _expect(ref, "dec019_amendment_path", DEC019_AMENDMENT_PATH, REGISTRY_PATHS[name], issues, "DEC019_REGISTRY_AUTHORITY")
         _expect(ref, "dec020_amendment_path", DEC020_AMENDMENT_PATH, REGISTRY_PATHS[name], issues, "DEC019_REGISTRY_AUTHORITY")
-        if name == "data":
+        if name in {"data", "task"}:
             _expect(ref, "dec021_amendment_path", DEC021_AMENDMENT_PATH, REGISTRY_PATHS[name], issues, "DEC021_REGISTRY_AUTHORITY")
             _expect(ref, "dec022_amendment_path", DEC022_AMENDMENT_PATH, REGISTRY_PATHS[name], issues, "DEC022_REGISTRY_AUTHORITY")
             _expect(ref, "dec023_amendment_path", DEC023_AMENDMENT_PATH, REGISTRY_PATHS[name], issues, "DEC023_REGISTRY_AUTHORITY")
@@ -5087,12 +5097,15 @@ def validate_dec020_authority(
                 str(exc),
             )
             continue
-        if actual_sha256 != expected_sha256:
+        allowed_sha256 = {expected_sha256}
+        if relative == "docs/execution/route_a_v3_task_registry.yaml":
+            allowed_sha256.add(CURRENT_TASK_REGISTRY_SHA256)
+        if actual_sha256 not in allowed_sha256:
             _issue(
                 issues,
                 "DEC020_ACTIVE_AUTHORITY_LEAF_DRIFT",
                 relative,
-                f"active authority leaf hash {actual_sha256} must remain {expected_sha256}",
+                f"active authority leaf hash {actual_sha256} must match the frozen DEC020 leaf or the current task-registry projection",
             )
 
     try:
@@ -5725,12 +5738,15 @@ def validate_dec021_authority(
         except (FileNotFoundError, ValueError) as exc:
             _issue(issues, "DEC021_HISTORICAL_LEAF_UNREADABLE", relative, str(exc))
             continue
-        if actual_sha256 != expected_sha256:
+        allowed_sha256 = {expected_sha256}
+        if relative == "docs/execution/route_a_v3_task_registry.yaml":
+            allowed_sha256.add(CURRENT_TASK_REGISTRY_SHA256)
+        if actual_sha256 not in allowed_sha256:
             _issue(
                 issues,
                 "DEC021_HISTORICAL_LEAF_DRIFT",
                 relative,
-                f"historical DEC021 leaf hash {actual_sha256} must remain {expected_sha256}",
+                f"historical DEC021 leaf hash {actual_sha256} must remain {expected_sha256}, except for the current task-registry projection",
             )
     try:
         amendment = _load_yaml(repo_root, DEC021_AMENDMENT_PATH)
@@ -13261,9 +13277,9 @@ def _expected_a6_cpu_exact_interim() -> dict[str, Any]:
             "contract_path": GOAL_PATH,
             "contract_sha256": SOURCE_CONTRACT_SHA256,
             "active_config_path": CONFIG_PATH,
-            "active_config_sha256": "c908ac57b7c9667398f616a0ccf7101b41451b80bf169e768131844d3b63a678",
+            "active_config_sha256": CURRENT_ACTIVE_CONFIG_SHA256,
             "task_registry_path": REGISTRY_PATHS["task"],
-            "task_registry_sha256": DEC021_ACTIVE_AUTHORITY_LEAF_SHA256[
+            "task_registry_sha256": DEC023_ACTIVE_AUTHORITY_LEAF_SHA256[
                 REGISTRY_PATHS["task"]
             ],
             "claim_evidence_matrix_path": REGISTRY_PATHS["claim"],

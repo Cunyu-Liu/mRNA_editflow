@@ -79,12 +79,12 @@
     {
       "path": "docs/execution/route_a_v3_a1_interim.yaml",
       "role": "A1_ACTIVE_INTERIM_RECORD",
-      "sha256": "59ea0a7d5b457e8861710992b76a3868a5b44ae1e1972c99f716a33a0f68204b"
+      "sha256": "4983f166cfcc19d406065e766f2fff15e6d82c499aa9e441e0adff0140891a75"
     },
     {
       "path": "docs/execution/route_a_v3_a6_interim.yaml",
       "role": "A6_ACTIVE_INTERIM_RECORD",
-      "sha256": "64a5a5a03f0931b59a72ad5536c0e0c132332d1235e697bc4fff56f910d573d8"
+      "sha256": "d741972e66f5b99a9b42460de3eb5f64a7f9c046135459e4778505fad49dc813"
     },
     {
       "path": "docs/execution/route_a_v3_split_registry.yaml",
@@ -94,7 +94,7 @@
     {
       "path": "docs/execution/route_a_v3_task_registry.yaml",
       "role": "TASK_AND_PHASE_REGISTRY",
-      "sha256": "bf3066a7534041374685e9ebe9ac8c840e53ceec1acbb076a72a758d397c63f2"
+      "sha256": "210964e1a1c0b1166dab73e95e0243eee54d8470149aa3b3cb182f4f90e266b3"
     },
     {
       "path": "docs/execution/route_a_v3_task_split_matrix.yaml",
@@ -534,12 +534,12 @@
     {
       "path": "tests/route_a_v3/test_a0_integrity_guards.py",
       "role": "A0_AUTHORITY_INTEGRITY_GUARD_TEST",
-      "sha256": "6560f2f5adf2bde53fe63841425b63338d8d40ea15f92e8af1ea8f33f5f1e16e"
+      "sha256": "455731fe97f667243cf7605ef4f8e1291719e415fb09db1abbdee99323f4a49c"
     },
     {
       "path": "scripts/route_a_v3/validate_a0_bundle.py",
       "role": "A0_STATIC_AND_SEMANTIC_VALIDATOR",
-      "sha256": "986376e60d8a96e7de4bfac6f290bbe2c814717aeb8bf68c5e3dce8fc737e4e0"
+      "sha256": "783f1a3cd69e6b0c5d24b5123daba1da7be4b9f051122bd83f7fd7e5a84499b3"
     }
   ],
   "initial_generated_at": "2026-08-10T10:10:05+08:00",
