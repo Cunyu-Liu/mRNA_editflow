@@ -5,9 +5,9 @@
   "runtime_authority_event_id": "A1-EVT-061",
   "document_status": "ACTIVE_METADATA_ONLY_P0_EXACTLY_ONCE",
   "implementation_binding": {
-    "status": "BOUND",
-    "implementation_expected_parent": "6ed009f57b23a26bb844f2f93bcb9a5a2fa34d79",
-    "implementation_commit": "2b1cf841530ee5f0ae7aca5e35b6f111e54416ac",
+    "status": "UNKNOWN_NOT_ASSERTED",
+    "implementation_expected_parent": "UNKNOWN_NOT_ASSERTED",
+    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
     "implementation_exact_changed_paths": [
       "configs/route_a_v3_dec028_single_study_successor_p0_v1.json",
       "scripts/route_a_v3/dec028_single_study_successor_p0.py",
@@ -16,6 +16,12 @@
     "binding_exact_changed_paths": [
       "configs/route_a_v3_dec028_single_study_successor_p0_v1.json"
     ]
+  },
+  "previous_implementation_binding": {
+    "implementation_commit": "2b1cf841530ee5f0ae7aca5e35b6f111e54416ac",
+    "binding_commit": "d8d51ef66c79373dcd0064b572676422bc1f2ca3",
+    "production_execution_count": 0,
+    "superseded_reason": "A0_STATIC_VALIDATOR_REJECTED_LITERAL_TORCH_IMPORT_IN_INACTIVE_G1_CANDIDATE"
   },
   "predecessor_record": {
     "protocol_id": "ROUTE_A_V3_DEC026_METADATA_ONLY_ZERO_STEP_P0_V1",
@@ -165,7 +171,7 @@
     "P0.10": {
       "status": "PASS",
       "implementation_id": "ROUTE_A_V3_GSE200304_SOURCE_RELATIVE_CRITIC_G1_IMPLEMENTATION_CANDIDATE_V1",
-      "implementation_commit": "6ed009f57b23a26bb844f2f93bcb9a5a2fa34d79",
+      "implementation_commit": "20a4198eb022e7a8abc63a4dd763f0dc154c3488",
       "implementation_config_path": "configs/route_a_v3_gse200304_source_relative_critic_g1_implementation_candidate_v1.json",
       "implementation_script_path": "scripts/route_a_v3/gse200304_source_relative_critic_g1.py",
       "implementation_test_path": "tests/route_a_v3/test_gse200304_source_relative_critic_g1_implementation_candidate.py",

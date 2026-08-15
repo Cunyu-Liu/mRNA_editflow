@@ -88,6 +88,14 @@ def test_p07_is_contract_only_and_p08_is_one_fit() -> None:
     assert submission["P0.8"]["automatic_retry_allowed"] is False
 
 
+def test_p010_binds_the_a0_clean_deferred_import_implementation() -> None:
+    config = _config()
+    evidence = config["current_submission"]["P0.10"]
+    assert evidence["implementation_commit"] == "20a4198eb022e7a8abc63a4dd763f0dc154c3488"
+    assert config["previous_implementation_binding"]["production_execution_count"] == 0
+    assert config["previous_implementation_binding"]["binding_commit"] == "d8d51ef66c79373dcd0064b572676422bc1f2ca3"
+
+
 def test_publish_is_exactly_once(tmp_path: Path) -> None:
     module = _module()
     result = module.evaluate(_config())

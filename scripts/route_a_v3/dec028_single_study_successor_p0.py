@@ -175,11 +175,19 @@ def _p10(e: Mapping[str, Any]) -> None:
     _require(e["review_status"] == "PASS_STATIC_IMPLEMENTATION_BINDING_ONLY_NOT_ACTIVE_NOT_RUN", "P0.10 review differs")
     _require(e["current_activation_state"] == "INACTIVE_FAIL_BEFORE_DATA_MODEL_CUDA_OUTPUT", "P0.10 current state differs")
     _require(e["future_activation_requires_separate_authority"] is True and e["a6_learned_base_value_implementation"] is False, "P0.10 scope differs")
-    for key in ("implementation_config_path", "implementation_script_path", "implementation_test_path"):
-        _require((REPO_ROOT / e[key]).is_file(), f"P0.10 missing path: {key}")
     commit = e["implementation_commit"]
     observed = subprocess.run(["git", "rev-parse", commit], cwd=REPO_ROOT, check=True, capture_output=True, text=True).stdout.strip()
     _require(observed == commit, "P0.10 implementation commit is absent")
+    for key in ("implementation_config_path", "implementation_script_path", "implementation_test_path"):
+        path = e[key]
+        _require((REPO_ROOT / path).is_file(), f"P0.10 missing path: {key}")
+        committed = subprocess.run(
+            ["git", "show", f"{commit}:{path}"],
+            cwd=REPO_ROOT,
+            check=True,
+            capture_output=True,
+        ).stdout
+        _require((REPO_ROOT / path).read_bytes() == committed, f"P0.10 working bytes differ: {path}")
 
 
 def _p11(e: Mapping[str, Any]) -> None:
