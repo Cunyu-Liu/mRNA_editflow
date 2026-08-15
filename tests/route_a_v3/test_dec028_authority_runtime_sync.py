@@ -84,21 +84,24 @@ def _materialize_runtime(root: Path, payloads: dict[str, bytes]) -> None:
         (root / name).write_bytes(payload)
 
 
-def test_disk_candidate_is_exact_unbound_i() -> None:
+def test_disk_candidate_is_legal_i2_or_b2_and_normalizes_to_unbound_i2() -> None:
     config = _disk_config()
     sync.validate_static_config(config)
-    assert sync._binding_state(config["implementation_binding"]) == "UNKNOWN"
-    assert config["dec028_authority"]["current_qualified_counts"] == {
+    assert sync._binding_state(config["implementation_binding"]) in {"UNKNOWN", "BOUND"}
+    normalized = sync.normalized_unknown_i_config(config)
+    assert sync._binding_state(normalized["implementation_binding"]) == "UNKNOWN"
+    assert normalized["implementation_binding"]["frozen_predecessor_implementation"]["implementation_commit"] == sync.I1_COMMIT
+    assert normalized["dec028_authority"]["current_qualified_counts"] == {
         "ordinary": 1,
         "a1": 1,
         "true_a2": 0,
         "canonical_records": 6547,
     }
-    assert all(value == 0 for value in config["access_boundary"].values())
+    assert all(value == 0 for value in normalized["access_boundary"].values())
 
 
 def test_partial_binding_is_rejected() -> None:
-    config = _disk_config()
+    config = sync.normalized_unknown_i_config(_disk_config())
     config["implementation_binding"]["status"] = "BOUND"
     with pytest.raises(sync.BindingError, match="partially known"):
         sync.validate_static_config(config)

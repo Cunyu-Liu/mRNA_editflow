@@ -37,6 +37,12 @@ IMPLEMENTATION_PATHS = [CONFIG_REPO_PATH, SCRIPT_REPO_PATH, TEST_REPO_PATH]
 PRODUCTION_CONFIG_PATH = Path(__file__).resolve().parents[2] / CONFIG_REPO_PATH
 AUTHORITY_COMMIT = "89ae669313b0adbc7ca4e05f8ffee37ad4c9d2a7"
 AUTHORITY_PARENT = "43d29569aa979fca46cd50ee8e8763fb1f59bb52"
+I1_COMMIT = "ac712281351963628348397fb7b3a1d8840c66ef"
+I1_FILES = [
+    {"path": CONFIG_REPO_PATH, "bytes": 8468, "sha256": "61828137763a1183fcf749f491cf372434789338987c2d51a9d5716a4ddcfdc1"},
+    {"path": SCRIPT_REPO_PATH, "bytes": 31106, "sha256": "271a8a541c1452ad58e7c29a6ec403d97925e1d3445421c668ee8cba944ac597"},
+    {"path": TEST_REPO_PATH, "bytes": 10096, "sha256": "0573cd5dcfa327b65fa3faeeb85887a1a74fdce21ed647e7370af0cf94ce85c3"},
+]
 BRANCH = "routea-v3-a1-20260810"
 HEX40 = re.compile(r"^[0-9a-f]{40}$")
 HEX64 = re.compile(r"^[0-9a-f]{64}$")
@@ -92,6 +98,21 @@ def validate_static_config(config: dict[str, Any]) -> None:
     _expect(config["event_id"], "A1-EVT-061", label="event")
     binding = config["implementation_binding"]
     _binding_state(binding)
+    _expect(
+        binding.get("binding_scheme"),
+        "AUTHORITY_A_TO_FROZEN_I1_TO_IMPLEMENTATION_I2_TO_CONFIG_ONLY_B2",
+        label="binding scheme",
+    )
+    _expect(
+        binding.get("frozen_predecessor_implementation"),
+        {
+            "status": "FROZEN_BOUND_EXACT3",
+            "implementation_commit": I1_COMMIT,
+            "implementation_expected_parent": AUTHORITY_COMMIT,
+            "implementation_files": I1_FILES,
+        },
+        label="frozen I1",
+    )
     _expect(binding["implementation_exact_changed_paths"], IMPLEMENTATION_PATHS, label="I exact3")
     _expect(binding["binding_exact_changed_paths"], [CONFIG_REPO_PATH], label="B config-only")
 
@@ -208,11 +229,13 @@ def audit_production_repository_authority(config: dict[str, Any], config_payload
         raise AuthorityError("production worktree or index is dirty")
     implementation = binding["implementation_commit"]
     _expect(base._run_git(repo, "rev-parse", f"{head}^").decode().strip(), implementation, label="B parent/I")
-    _expect(base._run_git(repo, "rev-parse", f"{implementation}^").decode().strip(), AUTHORITY_COMMIT, label="I parent/A")
+    _expect(base._run_git(repo, "rev-parse", f"{implementation}^").decode().strip(), I1_COMMIT, label="I2 parent/I1")
+    _expect(base._run_git(repo, "rev-parse", f"{I1_COMMIT}^").decode().strip(), AUTHORITY_COMMIT, label="I1 parent/A")
     _expect(base._run_git(repo, "rev-parse", f"{AUTHORITY_COMMIT}^").decode().strip(), AUTHORITY_PARENT, label="A parent")
     authority_paths = sorted(item["path"] for item in authority["authority_files"])
     _expect(base._changed_paths(repo, AUTHORITY_COMMIT), authority_paths, label="A exact17")
-    _expect(base._changed_paths(repo, implementation), sorted(IMPLEMENTATION_PATHS), label="I exact3")
+    _expect(base._changed_paths(repo, I1_COMMIT), sorted(IMPLEMENTATION_PATHS), label="I1 exact3")
+    _expect(base._changed_paths(repo, implementation), sorted(IMPLEMENTATION_PATHS), label="I2 exact3")
     _expect(base._changed_paths(repo, head), [CONFIG_REPO_PATH], label="B config-only")
     for item in authority["authority_files"]:
         blob = base._git_blob(repo, AUTHORITY_COMMIT, item["path"])
@@ -222,6 +245,10 @@ def audit_production_repository_authority(config: dict[str, Any], config_payload
             raise AuthorityError("authority blob did not persist through I/B")
         if base._read_repo_file(repo, item["path"]) != blob:
             raise AuthorityError("working authority file differs")
+    for item in I1_FILES:
+        blob = base._git_blob(repo, I1_COMMIT, item["path"])
+        if len(blob) != item["bytes"] or sha256(blob) != item["sha256"]:
+            raise AuthorityError("frozen I1 exact3 blob identity differs")
     i_config = load_json(base._git_blob(repo, implementation, CONFIG_REPO_PATH), label="I config")
     _expect(i_config, normalized_unknown_i_config(config), label="I unknown config")
     script_blob = base._git_blob(repo, implementation, SCRIPT_REPO_PATH)
@@ -235,8 +262,9 @@ def audit_production_repository_authority(config: dict[str, Any], config_payload
     _expect(base._read_repo_file(repo, SCRIPT_REPO_PATH), script_blob, label="working script")
     _expect(base._read_repo_file(repo, TEST_REPO_PATH), test_blob, label="working test")
     return {
-        "status": "PASS_EXACT17_A_EXACT3_I_CONFIG_ONLY_B",
+        "status": "PASS_EXACT17_A_EXACT3_I1_EXACT3_I2_CONFIG_ONLY_B2",
         "authority_commit": AUTHORITY_COMMIT,
+        "predecessor_implementation_commit": I1_COMMIT,
         "implementation_commit": implementation,
         "binding_commit": head,
         "authority_blob_count": 17,
