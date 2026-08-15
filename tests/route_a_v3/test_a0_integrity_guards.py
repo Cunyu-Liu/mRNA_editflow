@@ -4968,6 +4968,16 @@ def test_dec028_owner_initiated_single_study_s0_authority_is_closed(
     assert amendment["future_learned_execution"]["final_refit_count_if_later_granted"] == 0
     assert amendment["runtime_activation"]["successor_event_preallocated"] is False
 
+    protocol = validator._load_yaml(repo_root, validator.DEC028_PROTOCOL_PATH)
+    execution = validator._load_yaml(repo_root, validator.DEC028_EXECUTION_PATH)
+    assert protocol["learned_execution"]["authority_consumed"] is True
+    assert protocol["learned_execution"]["launched_execution_count"] == 1
+    assert protocol["learned_execution"]["parameter_update_count"] == 0
+    assert protocol["learned_execution"]["retry_authorized"] is False
+    assert protocol["ss6_nonlearned_engineering"]["status"] == "PASS_SS6_NONLEARNED_ENGINEERING_REFERENCE"
+    assert execution["g1"]["terminal_status"] == "TERMINATED_SAFELY_WITH_EVIDENCE_NO_RETRY"
+    assert execution["ss9"]["payload_access_count"] == 0
+
     interim = validator._load_yaml(repo_root, validator.A1_INTERIM_PATH)
     assert interim["dec027_current_disposition"]["stop_rule_adjudication"][
         "trigger_condition_met"

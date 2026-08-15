@@ -1,7 +1,7 @@
 schema_version: "1.0.0"
 protocol_id: ROUTE_A_V3_SINGLE_STUDY_MAINLINE_V1
 decision_id: V3-DEC-028
-status: ACTIVE_S0_P0_CLOSURE_ONLY
+status: SS5_TERMINATED_SAFELY_NO_RETRY_SS6_ENGINEERING_PASS_SS8_ADJUDICATION
 authority_path: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec028.yaml
 primary_study_unit: GSE200304
 canonical_record_count: 6547
@@ -23,14 +23,38 @@ locks:
   next_phase_authorized: false
   sealed_access_authorized: false
 successor_p0:
-  status: AUTHORIZED_TO_PREPARE_AND_RUN_METADATA_ONLY_AFTER_RUNTIME_SYNC
+  status: PASS_11_OF_11_SUPERSEDED_BY_COMPLETED_SS3_SS4_AND_CONSUMED_SS5
   exact_gate_count: 11
   required_pass_count: 11
   nonpass_action: STOP_BEFORE_DATA_CUDA_OR_MODEL
 learned_execution:
   g1_authorized: false
-  authorized_execution_count: 0
+  authority_consumed: true
+  terminal_status: TERMINATED_SAFELY_WITH_EVIDENCE_NO_RETRY
+  authorized_execution_count: 1
+  launched_execution_count: 1
+  optimizer_fit_attempt_count: 1
   optimizer_fit_count: 0
+  parameter_update_count: 0
   checkpoint_count: 0
   final_refit_count: 0
-
+  retry_authorized: false
+ss3_materialization:
+  status: PASS_SS3_MATERIALIZATION_CONFORMANCE
+  member_count: 6547
+ss4_split_evaluator:
+  status: PASS_SS4_SPLIT_EVALUATOR_BASELINE_FREEZE
+  assignment_count: 6547
+  source_group_count: 6544
+  component_count: 1936
+ss6_nonlearned_engineering:
+  status: PASS_SS6_NONLEARNED_ENGINEERING_REFERENCE
+  graph_count: 96
+  learned_execution_authorized: false
+ss8_claim_adjudication:
+  result_class: ENGINEERING_METHOD_RESULT_AND_G1_FAILURE_PACKAGE
+  within_study_learned_result_available: false
+  scientific_claim_status: NOT_ESTABLISHED
+ss9_sealed_boundary:
+  payload_access_count: 0
+  sealed_access_authorized: false

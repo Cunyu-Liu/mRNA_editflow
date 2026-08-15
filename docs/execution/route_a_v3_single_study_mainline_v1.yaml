@@ -1,11 +1,11 @@
 schema_version: "1.0.0"
 record_id: ROUTE_A_V3_SINGLE_STUDY_MAINLINE_V1
 decision_id: V3-DEC-028
-record_status: ACTIVE_AUTHORITY_PENDING_RUNTIME_SYNC
-current_phase: SINGLE_STUDY_S0_AUTHORITY_AND_P0_CLOSURE
+record_status: SS5_TERMINATED_SAFELY_NO_RETRY_SS6_ENGINEERING_PASS_SS8_ADJUDICATED
+current_phase: SINGLE_STUDY_SS8_FAILURE_AND_ENGINEERING_PACKAGE
 authority_path: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec028.yaml
 protocol_path: configs/route_a_v3_single_study_mainline_v1.yaml
-predecessor_runtime_event_id: A1-EVT-060
+predecessor_runtime_event_id: A1-EVT-061
 expected_next_runtime_event_id: PENDING_FRESH_RUNTIME_EVENT_ID
 next_runtime_event_id_preallocated: false
 scientific_claim_status: NOT_ESTABLISHED
@@ -28,8 +28,37 @@ locks:
 g1:
   run_id: GSE200304_SOURCE_RELATIVE_CRITIC_G1
   authorized: false
-  execution_count: 0
+  authority_consumed: true
+  execution_count: 1
+  terminal_status: TERMINATED_SAFELY_WITH_EVIDENCE_NO_RETRY
+  failure_type: CUDA_OUT_OF_MEMORY
+  optimizer_fit_attempt_count: 1
   optimizer_fit_count: 0
+  parameter_update_count: 0
   checkpoint_count: 0
   final_refit_count: 0
-immediate_next_action: BIND_AND_SETTLE_DEC028_AUTHORITY_RUNTIME_SYNC_WITHOUT_DATA_CUDA_OR_MODEL_TOUCH
+  retry_authorized: false
+ss3:
+  status: PASS_SS3_MATERIALIZATION_CONFORMANCE
+  materialized_member_count: 6547
+ss4:
+  status: PASS_SS4_SPLIT_EVALUATOR_BASELINE_FREEZE
+  split_assignment_count: 6547
+  leakage_count: 0
+ss6:
+  status: PASS_SS6_NONLEARNED_ENGINEERING_REFERENCE
+  synthetic_graph_count: 96
+  learned_execution_authorized: false
+ss7:
+  status: DEVELOPMENT_EXPLORATORY_AND_NEGATIVE_CONTROL_EVIDENCE_ONLY
+  portfolio_credit_delta: {ordinary: 0, a1: 0, true_a2: 0, canonical_records: 0}
+ss8:
+  result_class: ENGINEERING_METHOD_RESULT_AND_G1_FAILURE_PACKAGE
+  within_study_learned_result_available: false
+  cross_study_claim_available: false
+  scientific_claim_status: NOT_ESTABLISHED
+ss9:
+  sealed_dataset_id: GSE246381
+  payload_access_count: 0
+  sealed_access_authorized: false
+immediate_next_action: RETAIN_NO_RETRY_FAILURE_PACKAGE_AND_REQUIRE_NEW_PROSPECTIVE_DECISION_FOR_ANY_FUTURE_LEARNED_RUN
