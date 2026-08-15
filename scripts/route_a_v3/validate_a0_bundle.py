@@ -51,7 +51,7 @@ DECISION_LOG_PATH = "docs/execution/route_a_v3_decision_log.yaml"
 REGISTRY_MANIFEST_PATH = "docs/execution/route_a_v3_registry_manifest.json"
 A1_INTERIM_PATH = "docs/execution/route_a_v3_a1_interim.yaml"
 A6_INTERIM_PATH = "docs/execution/route_a_v3_a6_interim.yaml"
-EXPECTED_A1_INTERIM_SHA256 = "8a38e0eb1f378504db2119cc1812b0283740e057fc3a72554edf0a98b2286bf4"
+EXPECTED_A1_INTERIM_SHA256 = "15cda2717c69a13ace3567b24b97a68de9f7fc7c391aacb549380fa7f819c681"
 EXPECTED_A6_INTERIM_SHA256 = "560f24b1a6fc3ef29f7507c59d4c2b62760c0405855b2a8671e5f0ce39ffe6b8"
 CURRENT_ACTIVE_CONFIG_SHA256 = "6a6c97fe28b07738b42175183be556f36d5477d67c1180a69df75d0850790e41"
 CURRENT_TASK_REGISTRY_SHA256 = "113c98a78644f5f5e432f59de7f8bc34f9956b13998e68b785f350cf5289d917"
@@ -180,11 +180,10 @@ DEC027_EVT060_RUNTIME_CAS_PATHS = {
     "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/EVENT_LOG.jsonl",
 }
 DEC028_AUTHORITY_LEDGER_AT = "2026-08-15T17:15:00+08:00"
-DEC028_AUTHORITY_MANIFEST_AT = "2026-08-15T19:26:03+08:00"
+DEC028_AUTHORITY_MANIFEST_AT = "2026-08-15T20:00:17+08:00"
 DEC028_AUTHORITY_MANIFEST_STATUS = (
-    "DEC028_SINGLE_STUDY_SS5_TERMINATED_SAFELY_NO_RETRY_SS6_ENGINEERING_"
-    "PASS_SS8_ADJUDICATED_EVT061_SETTLED_PENDING_FRESH_UNALLOCATED_RUNTIME_"
-    "EVENT_CLAIM_NOT_ESTABLISHED_SEALED_UNTOUCHED"
+    "DEC028_STANDARD_DEVELOPMENT_CRITIC_COMPLETED_NEGATIVE_RESULT_SS6_"
+    "ENGINEERING_PASS_EVT061_SETTLED_CLAIM_NOT_ESTABLISHED_SEALED_UNTOUCHED"
 )
 DEC027_RESCUE_EXECUTION_ORDER = [
     "GSE217518_CORRECTED_A1_SUCCESSOR",
@@ -1080,8 +1079,8 @@ DEC028_ACTIVE_AUTHORITY_LEAF_SHA256.update(
         SUPERSESSION_PATH: "b13146dd852c8e8c6f5bf29972156d9c2f11c13bc09b2da5f5ea7f78c275cc93",
         DEC028_AMENDMENT_PATH: "98182778439b7f2da39fc26c32be6fe50f9710cb01682fb1ada6c5a440c0b26f",
         DEC028_HUMAN_CONTRACT_PATH: "1864f28a963f8feda113d4b5de5f92b23ebad58b9fe6471136466b9d314b0fd0",
-        DEC028_PROTOCOL_PATH: "9fec74d819698f0bb54a9745f7ee1bbb3bd0c748c48029b05ca06864acadf032",
-        DEC028_EXECUTION_PATH: "ea3c7d2c9c64ab5f9823dd8a4ca0f2131422d6bdeba298db09b925801f25b4ba",
+        DEC028_PROTOCOL_PATH: "7d5c461189109f60b7bef2f96251327be641b0e154a05fe0ff53a973672bb47b",
+        DEC028_EXECUTION_PATH: "0ad5f3a797110071dd01ea5ccbb3a37c1780b334442576aa671e5081882f5801",
         DECISION_LOG_PATH: "2248029779742897896f5a944d459d65444b959f5cde93f3a67bb91e16b425a0",
         "docs/execution/route_a_v3_data_role_registry.yaml": "b4b9949b3c41bcd501980d52f3cdafe37bf3d5a4b23b35dd9113337f1a1bb8e0",
         "docs/execution/route_a_v3_split_registry.yaml": "222a63d18e1ccca0a97ed3fdc2a3a656aefe283be3f3bdf23f19f5f1e04e2051",
@@ -8604,10 +8603,10 @@ def validate_dec028_authority(
         for key in ("training_allowed", "gpu_work_allowed", "model_selection_allowed", "a7_allowed", "next_phase_authorized"):
             _expect(surface, key, False, path, issues, "DEC028_SURFACE")
 
-    _expect(protocol, "status", "SS5_TERMINATED_SAFELY_NO_RETRY_SS6_ENGINEERING_PASS_SS8_ADJUDICATION", DEC028_PROTOCOL_PATH, issues, "DEC028_PROTOCOL")
+    _expect(protocol, "status", "STANDARD_DEVELOPMENT_CRITIC_COMPLETED_NEGATIVE_RESULT_SS6_ENGINEERING_PASS", DEC028_PROTOCOL_PATH, issues, "DEC028_PROTOCOL")
     _expect(protocol, "primary_study_unit", "GSE200304", DEC028_PROTOCOL_PATH, issues, "DEC028_PROTOCOL")
     _expect(protocol, "canonical_record_count", 6547, DEC028_PROTOCOL_PATH, issues, "DEC028_PROTOCOL")
-    _expect(execution, "record_status", "SS5_TERMINATED_SAFELY_NO_RETRY_SS6_ENGINEERING_PASS_SS8_ADJUDICATED", DEC028_EXECUTION_PATH, issues, "DEC028_EXECUTION")
+    _expect(execution, "record_status", "STANDARD_DEVELOPMENT_CRITIC_COMPLETED_NEGATIVE_RESULT_SS6_ENGINEERING_PASS", DEC028_EXECUTION_PATH, issues, "DEC028_EXECUTION")
     _expect(execution, "predecessor_runtime_event_id", "A1-EVT-061", DEC028_EXECUTION_PATH, issues, "DEC028_EXECUTION")
     _expect(execution, "expected_next_runtime_event_id", "PENDING_FRESH_RUNTIME_EVENT_ID", DEC028_EXECUTION_PATH, issues, "DEC028_EXECUTION")
     _expect(execution, "next_runtime_event_id_preallocated", False, DEC028_EXECUTION_PATH, issues, "DEC028_EXECUTION")
@@ -8626,8 +8625,33 @@ def validate_dec028_authority(
         "retry_authorized": False,
     }.items():
         _expect(learned, key, expected, DEC028_PROTOCOL_PATH, issues, "DEC028_G1_SETTLEMENT")
+    development_policy = protocol.get("standard_development_policy", {})
+    for key, expected in {
+        "status": "ACTIVE_OWNER_DIRECTED_STANDARD_DEVELOPMENT",
+        "global_run_limit": None,
+        "resource_failure_retry_allowed": True,
+        "successor_required_after_resource_failure": False,
+        "fixed_gpu_index_or_uuid_required": False,
+        "membership_split_model_and_evaluator_unchanged": True,
+    }.items():
+        _expect(development_policy, key, expected, DEC028_PROTOCOL_PATH, issues, "DEC028_DEVELOPMENT_POLICY")
+    development_result = protocol.get("development_result", {})
+    for key, expected in {
+        "status": "COMPLETED_NEGATIVE_NO_PREDICTIVE_SIGNAL_ESTABLISHED",
+        "parameter_update_count": 72,
+        "checkpoint_count": 1,
+        "test_source_group_count": 981,
+        "multi_candidate_source_group_count": 3,
+        "scientific_claim_status": "NOT_ESTABLISHED",
+    }.items():
+        _expect(development_result, key, expected, DEC028_PROTOCOL_PATH, issues, "DEC028_DEVELOPMENT_RESULT")
+    if abs(float(development_result.get("test_spearman", float("nan"))) - 0.001882286575573072) > 1e-15:
+        _issue(issues, "DEC028_DEVELOPMENT_RESULT", DEC028_PROTOCOL_PATH, "development test Spearman differs")
+    if abs(float(development_result.get("test_mae", float("nan"))) - 0.13537058487266992) > 1e-15:
+        _issue(issues, "DEC028_DEVELOPMENT_RESULT", DEC028_PROTOCOL_PATH, "development test MAE differs")
     _expect(protocol.get("ss6_nonlearned_engineering", {}), "status", "PASS_SS6_NONLEARNED_ENGINEERING_REFERENCE", DEC028_PROTOCOL_PATH, issues, "DEC028_SS6")
     _expect(protocol.get("ss8_claim_adjudication", {}), "scientific_claim_status", "NOT_ESTABLISHED", DEC028_PROTOCOL_PATH, issues, "DEC028_SS8")
+    _expect(protocol.get("ss8_claim_adjudication", {}), "learned_result_disposition", "NEGATIVE_NO_PREDICTIVE_SIGNAL_ESTABLISHED", DEC028_PROTOCOL_PATH, issues, "DEC028_SS8")
     _expect(protocol.get("ss9_sealed_boundary", {}), "payload_access_count", 0, DEC028_PROTOCOL_PATH, issues, "DEC028_SS9")
 
     dec027 = interim.get("dec027_current_disposition")

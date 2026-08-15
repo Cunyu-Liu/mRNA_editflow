@@ -64,12 +64,12 @@
     {
       "path": "configs/route_a_v3_single_study_mainline_v1.yaml",
       "role": "DEC028_SINGLE_STUDY_MAINLINE_EXECUTABLE_PROTOCOL",
-      "sha256": "9fec74d819698f0bb54a9745f7ee1bbb3bd0c748c48029b05ca06864acadf032"
+      "sha256": "7d5c461189109f60b7bef2f96251327be641b0e154a05fe0ff53a973672bb47b"
     },
     {
       "path": "docs/execution/route_a_v3_single_study_mainline_v1.yaml",
       "role": "DEC028_SINGLE_STUDY_MAINLINE_EXECUTION_STATE",
-      "sha256": "ea3c7d2c9c64ab5f9823dd8a4ca0f2131422d6bdeba298db09b925801f25b4ba"
+      "sha256": "0ad5f3a797110071dd01ea5ccbb3a37c1780b334442576aa671e5081882f5801"
     },
     {
       "path": "configs/route_a_v3_a1_qualification.json",
@@ -109,7 +109,7 @@
     {
       "path": "docs/execution/route_a_v3_a1_interim.yaml",
       "role": "A1_ACTIVE_INTERIM_RECORD",
-      "sha256": "8a38e0eb1f378504db2119cc1812b0283740e057fc3a72554edf0a98b2286bf4"
+      "sha256": "15cda2717c69a13ace3567b24b97a68de9f7fc7c391aacb549380fa7f819c681"
     },
     {
       "path": "docs/execution/route_a_v3_a6_interim.yaml",
@@ -654,18 +654,18 @@
     {
       "path": "tests/route_a_v3/test_a0_integrity_guards.py",
       "role": "A0_AUTHORITY_INTEGRITY_GUARD_TEST",
-      "sha256": "be7e08683cbdc86bec69fbe88498a787d4f63044342db198dddd0c33f08d5bec"
+      "sha256": "0a2c482c6624079904e1bc323942a985aba1901297aac37d74111f8f14e84e40"
     },
     {
       "path": "scripts/route_a_v3/validate_a0_bundle.py",
       "role": "A0_STATIC_AND_SEMANTIC_VALIDATOR",
-      "sha256": "52c07f620197c0158d92d4ad8627778a280625414e21c71e954b5bf781fb7ecc"
+      "sha256": "736b1ef98bfd210b072c0de9ee75a692e78ae7736db43f037be6080cb3c48ee7"
     }
   ],
   "initial_generated_at": "2026-08-10T10:10:05+08:00",
-  "generated_at": "2026-08-15T19:26:03+08:00",
-  "updated_at": "2026-08-15T19:26:03+08:00",
-  "manifest_status": "DEC028_SINGLE_STUDY_SS5_TERMINATED_SAFELY_NO_RETRY_SS6_ENGINEERING_PASS_SS8_ADJUDICATED_EVT061_SETTLED_PENDING_FRESH_UNALLOCATED_RUNTIME_EVENT_CLAIM_NOT_ESTABLISHED_SEALED_UNTOUCHED",
+  "generated_at": "2026-08-15T20:00:17+08:00",
+  "updated_at": "2026-08-15T20:00:17+08:00",
+  "manifest_status": "DEC028_STANDARD_DEVELOPMENT_CRITIC_COMPLETED_NEGATIVE_RESULT_SS6_ENGINEERING_PASS_EVT061_SETTLED_CLAIM_NOT_ESTABLISHED_SEALED_UNTOUCHED",
   "schema_version": "1.0.0",
   "sealed_contact": false,
   "version": "3.0.0"

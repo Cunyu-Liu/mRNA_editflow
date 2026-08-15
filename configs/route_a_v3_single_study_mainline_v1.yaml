@@ -1,7 +1,7 @@
 schema_version: "1.0.0"
 protocol_id: ROUTE_A_V3_SINGLE_STUDY_MAINLINE_V1
 decision_id: V3-DEC-028
-status: SS5_TERMINATED_SAFELY_NO_RETRY_SS6_ENGINEERING_PASS_SS8_ADJUDICATION
+status: STANDARD_DEVELOPMENT_CRITIC_COMPLETED_NEGATIVE_RESULT_SS6_ENGINEERING_PASS
 authority_path: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec028.yaml
 primary_study_unit: GSE200304
 canonical_record_count: 6547
@@ -39,6 +39,30 @@ learned_execution:
   checkpoint_count: 0
   final_refit_count: 0
   retry_authorized: false
+standard_development_policy:
+  status: ACTIVE_OWNER_DIRECTED_STANDARD_DEVELOPMENT
+  global_run_limit: null
+  resource_failure_retry_allowed: true
+  successor_required_after_resource_failure: false
+  fixed_gpu_index_or_uuid_required: false
+  gpu_selection: OPERATOR_SELECTS_GPU_0_TO_5_BY_CURRENT_FREE_MEMORY
+  membership_split_model_and_evaluator_unchanged: true
+development_result:
+  run_id: GSE200304_CRITIC_DEVELOPMENT_GPU3_177D83C
+  status: COMPLETED_NEGATIVE_NO_PREDICTIVE_SIGNAL_ESTABLISHED
+  physical_gpu_index: 3
+  cuda_total_memory_bytes: 42404806656
+  cuda_peak_allocated_bytes: 20994054144
+  parameter_update_count: 72
+  checkpoint_count: 1
+  test_source_group_count: 981
+  test_spearman: 0.001882286575573072
+  test_mae: 0.13537058487266992
+  test_interval_coverage_90: 0.9087665647298675
+  best_nonconstant_baseline_spearman: 0.017701033937807364
+  best_baseline_mae: 0.13361905984653222
+  multi_candidate_source_group_count: 3
+  scientific_claim_status: NOT_ESTABLISHED
 ss3_materialization:
   status: PASS_SS3_MATERIALIZATION_CONFORMANCE
   member_count: 6547
@@ -52,8 +76,9 @@ ss6_nonlearned_engineering:
   graph_count: 96
   learned_execution_authorized: false
 ss8_claim_adjudication:
-  result_class: ENGINEERING_METHOD_RESULT_AND_G1_FAILURE_PACKAGE
-  within_study_learned_result_available: false
+  result_class: ENGINEERING_METHOD_AND_WITHIN_STUDY_NEGATIVE_RESULT
+  within_study_learned_result_available: true
+  learned_result_disposition: NEGATIVE_NO_PREDICTIVE_SIGNAL_ESTABLISHED
   scientific_claim_status: NOT_ESTABLISHED
 ss9_sealed_boundary:
   payload_access_count: 0

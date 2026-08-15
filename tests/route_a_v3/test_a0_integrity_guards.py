@@ -4974,8 +4974,15 @@ def test_dec028_owner_initiated_single_study_s0_authority_is_closed(
     assert protocol["learned_execution"]["launched_execution_count"] == 1
     assert protocol["learned_execution"]["parameter_update_count"] == 0
     assert protocol["learned_execution"]["retry_authorized"] is False
+    assert protocol["standard_development_policy"]["resource_failure_retry_allowed"] is True
+    assert protocol["standard_development_policy"]["successor_required_after_resource_failure"] is False
+    assert protocol["development_result"]["status"] == "COMPLETED_NEGATIVE_NO_PREDICTIVE_SIGNAL_ESTABLISHED"
+    assert protocol["development_result"]["parameter_update_count"] == 72
+    assert protocol["development_result"]["test_spearman"] == pytest.approx(0.001882286575573072)
+    assert protocol["development_result"]["multi_candidate_source_group_count"] == 3
     assert protocol["ss6_nonlearned_engineering"]["status"] == "PASS_SS6_NONLEARNED_ENGINEERING_REFERENCE"
     assert execution["g1"]["terminal_status"] == "TERMINATED_SAFELY_WITH_EVIDENCE_NO_RETRY"
+    assert execution["development_result"]["status"] == "COMPLETED_NEGATIVE_NO_PREDICTIVE_SIGNAL_ESTABLISHED"
     assert execution["ss9"]["payload_access_count"] == 0
 
     interim = validator._load_yaml(repo_root, validator.A1_INTERIM_PATH)
