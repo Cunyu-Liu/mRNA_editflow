@@ -1,0 +1,8 @@
+{
+  "converter_id": "ROUTE_A_V3_ROUTE2_GSE114002_DEVELOPMENT_CANONICAL_V1",
+  "excluded_provisional_pool_count": 22218,
+  "out_of_rule_or_invalid_included_row_count": 8909,
+  "out_of_scope_library_row_count": 49417,
+  "reject_payload_in_summary": false,
+  "study_unit_id": "GSE114002"
+}

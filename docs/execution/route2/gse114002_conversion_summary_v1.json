@@ -1,0 +1,46 @@
+{
+  "converted_record_count": 3899,
+  "converter_id": "ROUTE_A_V3_ROUTE2_GSE114002_DEVELOPMENT_CANONICAL_V1",
+  "edit_distance_counts": {
+    "1": 2925,
+    "2": 870,
+    "3": 104
+  },
+  "eligible_pool_count": 959,
+  "generated_candidate_count": 0,
+  "included_library_rows": 50600,
+  "limitations": [
+    "MOTHER_INFO1_INFO2_INFO3_MATCH_SCORE_ID_AUTHORITY_UNKNOWN_NOT_ASSERTED",
+    "FULL_25NT_PREFIX_REPORTER_RNA_CHEMISTRY_UNKNOWN_NOT_ASSERTED",
+    "CHECKPOINT_SPECIFIC_EXPOSURE_UNKNOWN_NOT_ASSERTED",
+    "LICENSE_AND_REDISTRIBUTION_UNKNOWN_NOT_ASSERTED",
+    "NEAR_DUPLICATE_SPLIT_NOT_RUN",
+    "PREFROZEN_GROUP_POWER_NOT_RUN",
+    "BIOLOGICAL_STANDARD_ERROR_ABSENT_BY_DESIGN"
+  ],
+  "measured_candidate_count": 3899,
+  "missing_standard_error_count": 3899,
+  "near_duplicate_split_status": "NOT_RUN",
+  "out_of_rule_included_rows": 8909,
+  "out_of_scope_library_rows": 49417,
+  "pool_assignment": "DEVELOPMENT",
+  "provisional_pool_count": 23177,
+  "public_redistribution_allowed": false,
+  "qualification_class": "DEVELOPMENT_RELAXED",
+  "qualified_counts_after_conversion": {
+    "a1": 1,
+    "canonical_records": 6547,
+    "ordinary": 1,
+    "true_a2": 0
+  },
+  "qualified_credit_delta": {
+    "a1": 0,
+    "canonical_records": 0,
+    "ordinary": 0,
+    "true_a2": 0
+  },
+  "scientific_claim_status": "NOT_ESTABLISHED",
+  "source_rows": 100017,
+  "status": "CONVERTED_DEVELOPMENT_RELAXED",
+  "study_unit_id": "GSE114002"
+}

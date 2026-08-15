@@ -1,0 +1,63 @@
+{
+  "schema_version": "route_a_v3_route2_gse114002_converter.v1",
+  "converter_id": "ROUTE_A_V3_ROUTE2_GSE114002_DEVELOPMENT_CANONICAL_V1",
+  "study": {
+    "study_unit_id": "GSE114002",
+    "pool_assignment": "DEVELOPMENT",
+    "qualification_class": "DEVELOPMENT_RELAXED",
+    "study_role": "TRUE_A2_LISTWISE_DEVELOPMENT_RELAXED",
+    "region": "5UTR",
+    "included_libraries": ["human_utrs", "snv"],
+    "biological_context_id": "SAMPLE_2019_DESIGNED_LIBRARY_CONTEXT_UNRESOLVED",
+    "assay_id": "SAMPLE_2019_POLYSOME_FRACTIONATION",
+    "endpoint_id": "MEAN_RIBOSOME_LOAD",
+    "endpoint_direction": "HIGHER_IS_BETTER"
+  },
+  "input": {
+    "public_source_path": "/home/cunyuliu/mrna_editflow_goal/mrna_editflow/data/raw/sample2019_mpra/GSM3130443_designed_library.csv.gz",
+    "required_columns": ["utr", "rl", "id", "library", "mother", "designed"],
+    "expected_source_row_count": 100017,
+    "expected_included_library_row_count": 50600,
+    "expected_out_of_scope_library_row_count": 49417,
+    "expected_out_of_rule_included_row_count": 8909,
+    "expected_provisional_pool_count": 23177,
+    "expected_eligible_pool_count": 959,
+    "expected_distinct_candidate_count": 3899,
+    "expected_candidate_edit_distance_counts": {"1": 2925, "2": 870, "3": 104},
+    "expected_sequence_length": 50,
+    "identity_rule": "DESIGNED_TRUE_AND_UTR_EQUALS_MOTHER",
+    "candidate_rule": "DESIGNED_FALSE_AND_EQUAL_LENGTH_HAMMING_DISTANCE_1_TO_3",
+    "eligible_pool_rule": "EXACTLY_ONE_IDENTITY_ROW_AND_AT_LEAST_THREE_DISTINCT_CANDIDATE_SEQUENCES"
+  },
+  "output": {
+    "directory": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE114002/v1",
+    "canonical_filename": "canonical_records.private.jsonl",
+    "conversion_summary_filename": "conversion_summary.json",
+    "reject_summary_filename": "reject_summary.json",
+    "overwrite_allowed": false,
+    "public_redistribution_allowed": false
+  },
+  "development_policy": {
+    "training_eligible": true,
+    "model_selection_eligible": true,
+    "near_duplicate_split_status": "NOT_RUN",
+    "biological_standard_error_status": "ABSENT_BY_DESIGN",
+    "missing_standard_error_representation": null
+  },
+  "limitations": [
+    "MOTHER_INFO1_INFO2_INFO3_MATCH_SCORE_ID_AUTHORITY_UNKNOWN_NOT_ASSERTED",
+    "FULL_25NT_PREFIX_REPORTER_RNA_CHEMISTRY_UNKNOWN_NOT_ASSERTED",
+    "CHECKPOINT_SPECIFIC_EXPOSURE_UNKNOWN_NOT_ASSERTED",
+    "LICENSE_AND_REDISTRIBUTION_UNKNOWN_NOT_ASSERTED",
+    "NEAR_DUPLICATE_SPLIT_NOT_RUN",
+    "PREFROZEN_GROUP_POWER_NOT_RUN",
+    "BIOLOGICAL_STANDARD_ERROR_ABSENT_BY_DESIGN"
+  ],
+  "credit_policy": {
+    "measured_candidate": true,
+    "generated_candidate": false,
+    "qualified_credit_delta": {"ordinary": 0, "a1": 0, "true_a2": 0, "canonical_records": 0},
+    "qualified_counts_after_conversion": {"ordinary": 1, "a1": 1, "true_a2": 0, "canonical_records": 6547}
+  },
+  "scientific_claim_status": "NOT_ESTABLISHED"
+}
