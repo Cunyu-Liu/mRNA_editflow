@@ -1,0 +1,12 @@
+{
+  "converter_id": "ROUTE_A_V3_ROUTE2_GSE200304_CANONICAL_V1",
+  "reject_payload_in_summary": false,
+  "route2_reject_counts": {},
+  "route2_rejected_record_count": 0,
+  "study_unit_id": "GSE200304",
+  "upstream_reject_counts": {
+    "nonpositive_se": 0,
+    "s2_not_in_s3": 338,
+    "s3_na_or_nonfinite": 225
+  }
+}
