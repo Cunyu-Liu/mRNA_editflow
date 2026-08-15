@@ -166,7 +166,7 @@ def test_predecessor_cas_or_timestamp_drift_stops() -> None:
 
 
 def test_unknown_binding_stops_before_runtime_io(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    config = _disk_config()
+    config = sync.normalized_unknown_i_config(_disk_config())
     touched = {"runtime": 0}
 
     def forbidden(_: Path) -> dict[str, bytes]:

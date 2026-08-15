@@ -43,6 +43,12 @@ I1_FILES = [
     {"path": SCRIPT_REPO_PATH, "bytes": 31106, "sha256": "271a8a541c1452ad58e7c29a6ec403d97925e1d3445421c668ee8cba944ac597"},
     {"path": TEST_REPO_PATH, "bytes": 10096, "sha256": "0573cd5dcfa327b65fa3faeeb85887a1a74fdce21ed647e7370af0cf94ce85c3"},
 ]
+I2_COMMIT = "fba71d8896c34c513fbc0c781c9fb046fc298bfa"
+I2_FILES = [
+    {"path": CONFIG_REPO_PATH, "bytes": 9278, "sha256": "efed13c6f09b60cc7bcbc8b64312b53a73ca2070f601dfa6435142ac09dc8798"},
+    {"path": SCRIPT_REPO_PATH, "bytes": 32561, "sha256": "c95cad3c9b96aea841f15cdb0073f9c93039612392e7e633fec2520f58a3feaf"},
+    {"path": TEST_REPO_PATH, "bytes": 10445, "sha256": "23324fc8e598295da76b7ddd016376eff839df971cf33dbde02b17c0301a93c8"},
+]
 BRANCH = "routea-v3-a1-20260810"
 HEX40 = re.compile(r"^[0-9a-f]{40}$")
 HEX64 = re.compile(r"^[0-9a-f]{64}$")
@@ -100,7 +106,7 @@ def validate_static_config(config: dict[str, Any]) -> None:
     _binding_state(binding)
     _expect(
         binding.get("binding_scheme"),
-        "AUTHORITY_A_TO_FROZEN_I1_TO_IMPLEMENTATION_I2_TO_CONFIG_ONLY_B2",
+        "AUTHORITY_A_TO_FROZEN_I1_TO_FROZEN_I2_TO_IMPLEMENTATION_I3_TO_CONFIG_ONLY_B3",
         label="binding scheme",
     )
     _expect(
@@ -112,6 +118,16 @@ def validate_static_config(config: dict[str, Any]) -> None:
             "implementation_files": I1_FILES,
         },
         label="frozen I1",
+    )
+    _expect(
+        binding.get("frozen_second_implementation"),
+        {
+            "status": "FROZEN_BOUND_EXACT3",
+            "implementation_commit": I2_COMMIT,
+            "implementation_expected_parent": I1_COMMIT,
+            "implementation_files": I2_FILES,
+        },
+        label="frozen I2",
     )
     _expect(binding["implementation_exact_changed_paths"], IMPLEMENTATION_PATHS, label="I exact3")
     _expect(binding["binding_exact_changed_paths"], [CONFIG_REPO_PATH], label="B config-only")
@@ -229,13 +245,15 @@ def audit_production_repository_authority(config: dict[str, Any], config_payload
         raise AuthorityError("production worktree or index is dirty")
     implementation = binding["implementation_commit"]
     _expect(base._run_git(repo, "rev-parse", f"{head}^").decode().strip(), implementation, label="B parent/I")
-    _expect(base._run_git(repo, "rev-parse", f"{implementation}^").decode().strip(), I1_COMMIT, label="I2 parent/I1")
+    _expect(base._run_git(repo, "rev-parse", f"{implementation}^").decode().strip(), I2_COMMIT, label="I3 parent/I2")
+    _expect(base._run_git(repo, "rev-parse", f"{I2_COMMIT}^").decode().strip(), I1_COMMIT, label="I2 parent/I1")
     _expect(base._run_git(repo, "rev-parse", f"{I1_COMMIT}^").decode().strip(), AUTHORITY_COMMIT, label="I1 parent/A")
     _expect(base._run_git(repo, "rev-parse", f"{AUTHORITY_COMMIT}^").decode().strip(), AUTHORITY_PARENT, label="A parent")
     authority_paths = sorted(item["path"] for item in authority["authority_files"])
     _expect(base._changed_paths(repo, AUTHORITY_COMMIT), authority_paths, label="A exact17")
     _expect(base._changed_paths(repo, I1_COMMIT), sorted(IMPLEMENTATION_PATHS), label="I1 exact3")
-    _expect(base._changed_paths(repo, implementation), sorted(IMPLEMENTATION_PATHS), label="I2 exact3")
+    _expect(base._changed_paths(repo, I2_COMMIT), sorted(IMPLEMENTATION_PATHS), label="I2 exact3")
+    _expect(base._changed_paths(repo, implementation), sorted(IMPLEMENTATION_PATHS), label="I3 exact3")
     _expect(base._changed_paths(repo, head), [CONFIG_REPO_PATH], label="B config-only")
     for item in authority["authority_files"]:
         blob = base._git_blob(repo, AUTHORITY_COMMIT, item["path"])
@@ -249,6 +267,10 @@ def audit_production_repository_authority(config: dict[str, Any], config_payload
         blob = base._git_blob(repo, I1_COMMIT, item["path"])
         if len(blob) != item["bytes"] or sha256(blob) != item["sha256"]:
             raise AuthorityError("frozen I1 exact3 blob identity differs")
+    for item in I2_FILES:
+        blob = base._git_blob(repo, I2_COMMIT, item["path"])
+        if len(blob) != item["bytes"] or sha256(blob) != item["sha256"]:
+            raise AuthorityError("frozen I2 exact3 blob identity differs")
     i_config = load_json(base._git_blob(repo, implementation, CONFIG_REPO_PATH), label="I config")
     _expect(i_config, normalized_unknown_i_config(config), label="I unknown config")
     script_blob = base._git_blob(repo, implementation, SCRIPT_REPO_PATH)
@@ -262,9 +284,10 @@ def audit_production_repository_authority(config: dict[str, Any], config_payload
     _expect(base._read_repo_file(repo, SCRIPT_REPO_PATH), script_blob, label="working script")
     _expect(base._read_repo_file(repo, TEST_REPO_PATH), test_blob, label="working test")
     return {
-        "status": "PASS_EXACT17_A_EXACT3_I1_EXACT3_I2_CONFIG_ONLY_B2",
+        "status": "PASS_EXACT17_A_EXACT3_I1_EXACT3_I2_EXACT3_I3_CONFIG_ONLY_B3",
         "authority_commit": AUTHORITY_COMMIT,
         "predecessor_implementation_commit": I1_COMMIT,
+        "second_predecessor_implementation_commit": I2_COMMIT,
         "implementation_commit": implementation,
         "binding_commit": head,
         "authority_blob_count": 17,

@@ -8,7 +8,7 @@
   "event_name": "DEC028_SINGLE_STUDY_MAINLINE_AUTHORITY_RUNTIME_SYNCED",
   "sync_type": "AUTHORITY_ONLY_NO_DATA_NO_MODEL_NO_PROMOTION",
   "implementation_binding": {
-    "binding_scheme": "AUTHORITY_A_TO_FROZEN_I1_TO_IMPLEMENTATION_I2_TO_CONFIG_ONLY_B2",
+    "binding_scheme": "AUTHORITY_A_TO_FROZEN_I1_TO_FROZEN_I2_TO_IMPLEMENTATION_I3_TO_CONFIG_ONLY_B3",
     "frozen_predecessor_implementation": {
       "status": "FROZEN_BOUND_EXACT3",
       "implementation_commit": "ac712281351963628348397fb7b3a1d8840c66ef",
@@ -17,6 +17,16 @@
         {"path": "configs/route_a_v3_dec028_authority_runtime_sync_v1.json", "bytes": 8468, "sha256": "61828137763a1183fcf749f491cf372434789338987c2d51a9d5716a4ddcfdc1"},
         {"path": "scripts/route_a_v3/dec028_authority_runtime_sync.py", "bytes": 31106, "sha256": "271a8a541c1452ad58e7c29a6ec403d97925e1d3445421c668ee8cba944ac597"},
         {"path": "tests/route_a_v3/test_dec028_authority_runtime_sync.py", "bytes": 10096, "sha256": "0573cd5dcfa327b65fa3faeeb85887a1a74fdce21ed647e7370af0cf94ce85c3"}
+      ]
+    },
+    "frozen_second_implementation": {
+      "status": "FROZEN_BOUND_EXACT3",
+      "implementation_commit": "fba71d8896c34c513fbc0c781c9fb046fc298bfa",
+      "implementation_expected_parent": "ac712281351963628348397fb7b3a1d8840c66ef",
+      "implementation_files": [
+        {"path": "configs/route_a_v3_dec028_authority_runtime_sync_v1.json", "bytes": 9278, "sha256": "efed13c6f09b60cc7bcbc8b64312b53a73ca2070f601dfa6435142ac09dc8798"},
+        {"path": "scripts/route_a_v3/dec028_authority_runtime_sync.py", "bytes": 32561, "sha256": "c95cad3c9b96aea841f15cdb0073f9c93039612392e7e633fec2520f58a3feaf"},
+        {"path": "tests/route_a_v3/test_dec028_authority_runtime_sync.py", "bytes": 10445, "sha256": "23324fc8e598295da76b7ddd016376eff839df971cf33dbde02b17c0301a93c8"}
       ]
     },
     "status": "UNKNOWN_NOT_ASSERTED",
