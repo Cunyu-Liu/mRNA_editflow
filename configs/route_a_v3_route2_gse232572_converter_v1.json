@@ -1,0 +1,86 @@
+{
+  "schema_version": "route_a_v3_route2_gse232572_converter.v1",
+  "converter_id": "ROUTE_A_V3_ROUTE2_GSE232572_EVALUATION_CANONICAL_V1",
+  "study": {
+    "study_unit_id": "GSE232572",
+    "independent_study_group_id": "GSE232573",
+    "publication_doi": "10.1038/s41467-024-46795-7",
+    "pool_assignment": "EVALUATION",
+    "qualification_class": "EVALUATION_RESERVED",
+    "study_role": "A1_ZERO_SHOT",
+    "region": "3UTR",
+    "biological_context_id": "GSE232572|HeLa",
+    "assay_id": "GSE232572_MAPUTR_HELA",
+    "assay_type": "MPRA_MAPUTR_RNA_DNA",
+    "endpoint_id": "GSE232572|ln_activity_ratio_alt_over_ref",
+    "endpoint_direction": "HIGHER_IS_BETTER"
+  },
+  "input": {
+    "legacy_rows_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE232572/GSE232572_DEVELOPMENT_V3_MATERIALIZATION_20260812T234243P0800/development_v3_records.private.jsonl",
+    "expected_row_count": 8068,
+    "expected_sequence_length": 165,
+    "required_legacy_data_role": "ORDINARY_DEVELOPMENT",
+    "required_legacy_eligibility_status": "DEVELOPMENT_ONLY",
+    "upstream_reject_counts": {
+      "NO_UNIQUE_SEQUENCE_PAIR": 3404,
+      "AMBIGUOUS_DISTINCT_SEQUENCE_PAIRS": 457
+    },
+    "required_fields": [
+      "record_id",
+      "study",
+      "region",
+      "source",
+      "candidate",
+      "source_sequence",
+      "candidate_sequence",
+      "edit_set",
+      "biological_source_group_id",
+      "gene_group_id",
+      "context",
+      "assay",
+      "endpoint",
+      "delta",
+      "standard_error",
+      "eligibility",
+      "data_role",
+      "provenance",
+      "replicate",
+      "license",
+      "exposure",
+      "paper_faithful_transform"
+    ]
+  },
+  "output": {
+    "directory": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE232572/v1",
+    "canonical_filename": "canonical_records.private.jsonl",
+    "conversion_summary_filename": "conversion_summary.json",
+    "reject_summary_filename": "reject_summary.json",
+    "overwrite_allowed": false,
+    "public_redistribution_allowed": false
+  },
+  "evaluation_policy": {
+    "outcome_access_stage": "CONVERSION_ONLY_UNTIL_PREDICTOR_GENERATOR_AND_BASELINES_FROZEN",
+    "training_eligible": false,
+    "model_selection_eligible": false,
+    "hpo_eligible": false,
+    "threshold_selection_eligible": false,
+    "zero_shot_result_recorded": false
+  },
+  "credit_policy": {
+    "measured_candidate": true,
+    "generated_candidate": false,
+    "qualified_credit_delta": {
+      "ordinary": 0,
+      "a1": 0,
+      "true_a2": 0,
+      "canonical_records": 0
+    },
+    "qualified_counts_after_conversion": {
+      "ordinary": 1,
+      "a1": 1,
+      "true_a2": 0,
+      "canonical_records": 6547
+    }
+  },
+  "scientific_claim_status": "NOT_ESTABLISHED"
+}

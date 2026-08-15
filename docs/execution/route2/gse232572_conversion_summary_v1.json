@@ -1,0 +1,31 @@
+{
+  "converted_record_count": 8068,
+  "converter_id": "ROUTE_A_V3_ROUTE2_GSE232572_EVALUATION_CANONICAL_V1",
+  "evaluation_outcome_access_stage": "CONVERSION_ONLY_UNTIL_PREDICTOR_GENERATOR_AND_BASELINES_FROZEN",
+  "expected_input_row_count": 8068,
+  "generated_candidate_count": 0,
+  "input_row_count": 8068,
+  "measured_candidate_count": 8068,
+  "missing_standard_error_count": 8068,
+  "model_selection_eligible_record_count": 0,
+  "pool_assignment": "EVALUATION",
+  "public_redistribution_allowed": false,
+  "qualified_counts_after_conversion": {
+    "a1": 1,
+    "canonical_records": 6547,
+    "ordinary": 1,
+    "true_a2": 0
+  },
+  "qualified_credit_delta": {
+    "a1": 0,
+    "canonical_records": 0,
+    "ordinary": 0,
+    "true_a2": 0
+  },
+  "rejected_record_count": 0,
+  "scientific_claim_status": "NOT_ESTABLISHED",
+  "status": "CONVERTED_EVALUATION_RESERVED",
+  "study_unit_id": "GSE232572",
+  "training_eligible_record_count": 0,
+  "zero_shot_result_recorded": false
+}

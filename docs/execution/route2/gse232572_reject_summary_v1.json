@@ -1,0 +1,11 @@
+{
+  "converter_id": "ROUTE_A_V3_ROUTE2_GSE232572_EVALUATION_CANONICAL_V1",
+  "reject_payload_in_summary": false,
+  "route2_reject_counts": {},
+  "route2_rejected_record_count": 0,
+  "study_unit_id": "GSE232572",
+  "upstream_reject_counts": {
+    "AMBIGUOUS_DISTINCT_SEQUENCE_PAIRS": 457,
+    "NO_UNIQUE_SEQUENCE_PAIR": 3404
+  }
+}
