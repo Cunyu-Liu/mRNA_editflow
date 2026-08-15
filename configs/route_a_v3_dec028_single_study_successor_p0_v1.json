@@ -1,13 +1,13 @@
 {
-  "schema_version": "route_a_v3_dec028_single_study_successor_p0.v1",
-  "protocol_id": "ROUTE_A_V3_DEC028_SINGLE_STUDY_SUCCESSOR_METADATA_ONLY_P0_V1",
+  "schema_version": "route_a_v3_dec028_single_study_successor_p0.v2",
+  "protocol_id": "ROUTE_A_V3_DEC028_SINGLE_STUDY_SUCCESSOR_METADATA_ONLY_P0_V2",
   "decision_id": "V3-DEC-028",
   "runtime_authority_event_id": "A1-EVT-061",
   "document_status": "ACTIVE_METADATA_ONLY_P0_EXACTLY_ONCE",
   "implementation_binding": {
-    "status": "BOUND",
-    "implementation_expected_parent": "20a4198eb022e7a8abc63a4dd763f0dc154c3488",
-    "implementation_commit": "fdfd0d4a17f654b3fbc5c74fa29994e19d9425e4",
+    "status": "UNKNOWN_NOT_ASSERTED",
+    "implementation_expected_parent": "UNKNOWN_NOT_ASSERTED",
+    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
     "implementation_exact_changed_paths": [
       "configs/route_a_v3_dec028_single_study_successor_p0_v1.json",
       "scripts/route_a_v3/dec028_single_study_successor_p0.py",
@@ -18,10 +18,12 @@
     ]
   },
   "previous_implementation_binding": {
-    "implementation_commit": "2b1cf841530ee5f0ae7aca5e35b6f111e54416ac",
-    "binding_commit": "d8d51ef66c79373dcd0064b572676422bc1f2ca3",
-    "production_execution_count": 0,
-    "superseded_reason": "A0_STATIC_VALIDATOR_REJECTED_LITERAL_TORCH_IMPORT_IN_INACTIVE_G1_CANDIDATE"
+    "implementation_commit": "fdfd0d4a17f654b3fbc5c74fa29994e19d9425e4",
+    "binding_commit": "40c17659aaf44c26e7990763a76201a723f6ab09",
+    "production_execution_count": 1,
+    "production_report": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/DEC028_SINGLE_STUDY_SUCCESSOR_P0_B_40c1765/ROUTE_A_V3_DEC028_SINGLE_STUDY_SUCCESSOR_P0_RECORD_V1.json",
+    "ss3_valid": false,
+    "superseded_reason": "P0_5_FIELD_NAMES_WERE_FROZEN_BUT_FEATURE_EFFECT_AND_STANDARD_ERROR_DERIVATIONS_WERE_NOT_COMPLETE"
   },
   "predecessor_record": {
     "protocol_id": "ROUTE_A_V3_DEC026_METADATA_ONLY_ZERO_STEP_P0_V1",
@@ -39,7 +41,7 @@
     "all_status_fields_must_equal_pass": true,
     "success_action": "ELIGIBLE_TO_REQUEST_MATERIALIZATION_NOT_G1_NOT_LAUNCHED",
     "nonpass_action": "STOP_BEFORE_DATA_ROWS_CUDA_MODEL_OPTIMIZER_CHECKPOINT_PARAMETER_UPDATE_OR_TRAINING",
-    "report_filename": "ROUTE_A_V3_DEC028_SINGLE_STUDY_SUCCESSOR_P0_RECORD_V1.json"
+    "report_filename": "ROUTE_A_V3_DEC028_SINGLE_STUDY_SUCCESSOR_P0_CORRECTION_V2.json"
   },
   "gates": [
     {"gate_id": "P0.1", "gate_name": "INPUT_MEMBERSHIP_AND_BINDING"},
@@ -95,6 +97,15 @@
       "status": "PASS",
       "row_contract_id": "GSE200304_SINGLE_STUDY_SOURCE_RELATIVE_DEVELOPMENT_ROW_CONTRACT_V1",
       "member_count": 6547,
+      "membership_definition": "INNER_JOIN_TABLE_S2_EXACT_WT_MUTANT_PAIR_TABLE_S3_FINITE_TOTALPOLY_AND_PROCESSED_MATRIX_KEY",
+      "record_key_definition": "TABLE_S2_AUTHOR_PAIR_ID_EXACT",
+      "source_group_definition": "GSE200304_GSE200302_AUTHOR_LOCUS_CANONICAL_POSITION_REFERENCE_ALLELE_ORIENTATION_NORMALIZED_WT201",
+      "sequence_definition": "TABLE_S2_201NT_WT_AND_MUTANT_ORIENTATION_NORMALIZED_TO_DECLARED_REFERENCE_ALTERNATIVE_CENTRAL_SNV",
+      "context_vector_definition": "SIXTEEN_CONTIGUOUS_201NT_POSITION_BINS_TIMES_ACGT_PAIR_MEAN_FRACTIONS_SOURCE_CANDIDATE_SWAP_INVARIANT",
+      "edit_feature_definition": "THREE_POSITIONS_CENTER_MINUS_ONE_CENTER_CENTER_PLUS_ONE_TIMES_ACGT_CANDIDATE_ONEHOT_MINUS_SOURCE_ONEHOT",
+      "effect_definition": "MEAN_OVER_SIX_PAIRED_BIOLOGICAL_REPLICATES_OF_LOG2_SUM_HIGH_LOW_MINUS_TOTAL_RNA_MUTANT_MINUS_WT",
+      "standard_error_definition": "SAMPLE_STANDARD_DEVIATION_OF_SIX_PAIRED_REPLICATE_DELTAS_DIVIDED_BY_SQRT_SIX_FINITE_POSITIVE",
+      "missing_nonfinite_or_nonpositive_se_action": "STOP_MATERIALIZATION_CONFORMANCE_NO_MODEL_OR_CUDA",
       "required_fields_exactly": [
         "record_key",
         "source_group",
@@ -171,7 +182,7 @@
     "P0.10": {
       "status": "PASS",
       "implementation_id": "ROUTE_A_V3_GSE200304_SOURCE_RELATIVE_CRITIC_G1_IMPLEMENTATION_CANDIDATE_V1",
-      "implementation_commit": "20a4198eb022e7a8abc63a4dd763f0dc154c3488",
+      "implementation_commit": "6b944adab20d03352d0893e34d758c6216540944",
       "implementation_config_path": "configs/route_a_v3_gse200304_source_relative_critic_g1_implementation_candidate_v1.json",
       "implementation_script_path": "scripts/route_a_v3/gse200304_source_relative_critic_g1.py",
       "implementation_test_path": "tests/route_a_v3/test_gse200304_source_relative_critic_g1_implementation_candidate.py",

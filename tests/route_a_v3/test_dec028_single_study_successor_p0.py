@@ -39,6 +39,7 @@ def test_successor_p0_has_exactly_eleven_passes_and_only_materialization_eligibi
     assert result["forbidden_touchpoint_count"] == 0
     assert result["qualified_counts"] == {"ordinary": 1, "a1": 1, "true_a2": 0, "canonical_records": 6547}
     assert result["scientific_claim_status"] == "NOT_ESTABLISHED"
+    assert result["supersedes_invalid_ss3_eligibility_report"].endswith("P0_RECORD_V1.json")
 
 
 def test_p02_is_scoped_pass_without_rewriting_historical_unknown() -> None:
@@ -91,9 +92,18 @@ def test_p07_is_contract_only_and_p08_is_one_fit() -> None:
 def test_p010_binds_the_a0_clean_deferred_import_implementation() -> None:
     config = _config()
     evidence = config["current_submission"]["P0.10"]
-    assert evidence["implementation_commit"] == "20a4198eb022e7a8abc63a4dd763f0dc154c3488"
-    assert config["previous_implementation_binding"]["production_execution_count"] == 0
-    assert config["previous_implementation_binding"]["binding_commit"] == "d8d51ef66c79373dcd0064b572676422bc1f2ca3"
+    assert evidence["implementation_commit"] == "6b944adab20d03352d0893e34d758c6216540944"
+    assert config["previous_implementation_binding"]["production_execution_count"] == 1
+    assert config["previous_implementation_binding"]["binding_commit"] == "40c17659aaf44c26e7990763a76201a723f6ab09"
+    assert config["previous_implementation_binding"]["ss3_valid"] is False
+
+
+def test_p05_freezes_replayable_feature_effect_and_uncertainty_definitions() -> None:
+    p05 = _config()["current_submission"]["P0.5"]
+    assert p05["context_vector_definition"].startswith("SIXTEEN_CONTIGUOUS_201NT_POSITION_BINS")
+    assert p05["edit_feature_definition"].startswith("THREE_POSITIONS_CENTER_MINUS_ONE_CENTER")
+    assert p05["effect_definition"].startswith("MEAN_OVER_SIX_PAIRED_BIOLOGICAL_REPLICATES")
+    assert p05["standard_error_definition"].endswith("FINITE_POSITIVE")
 
 
 def test_publish_is_exactly_once(tmp_path: Path) -> None:

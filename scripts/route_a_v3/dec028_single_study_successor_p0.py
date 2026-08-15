@@ -19,8 +19,8 @@ from typing import Any, Callable, Mapping
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 CONFIG_PATH = REPO_ROOT / "configs/route_a_v3_dec028_single_study_successor_p0_v1.json"
-PROTOCOL_ID = "ROUTE_A_V3_DEC028_SINGLE_STUDY_SUCCESSOR_METADATA_ONLY_P0_V1"
-REPORT_FILENAME = "ROUTE_A_V3_DEC028_SINGLE_STUDY_SUCCESSOR_P0_RECORD_V1.json"
+PROTOCOL_ID = "ROUTE_A_V3_DEC028_SINGLE_STUDY_SUCCESSOR_METADATA_ONLY_P0_V2"
+REPORT_FILENAME = "ROUTE_A_V3_DEC028_SINGLE_STUDY_SUCCESSOR_P0_CORRECTION_V2.json"
 UNKNOWN = "UNKNOWN_NOT_ASSERTED"
 GATES = (
     ("P0.1", "INPUT_MEMBERSHIP_AND_BINDING"),
@@ -125,6 +125,19 @@ def _p05(e: Mapping[str, Any]) -> None:
         "context_vector", "edit_features", "direction_normalized_effect", "biological_standard_error",
     ]
     _require(e["required_fields_exactly"] == expected, "P0.5 row fields differ")
+    expected_definitions = {
+        "membership_definition": "INNER_JOIN_TABLE_S2_EXACT_WT_MUTANT_PAIR_TABLE_S3_FINITE_TOTALPOLY_AND_PROCESSED_MATRIX_KEY",
+        "record_key_definition": "TABLE_S2_AUTHOR_PAIR_ID_EXACT",
+        "source_group_definition": "GSE200304_GSE200302_AUTHOR_LOCUS_CANONICAL_POSITION_REFERENCE_ALLELE_ORIENTATION_NORMALIZED_WT201",
+        "sequence_definition": "TABLE_S2_201NT_WT_AND_MUTANT_ORIENTATION_NORMALIZED_TO_DECLARED_REFERENCE_ALTERNATIVE_CENTRAL_SNV",
+        "context_vector_definition": "SIXTEEN_CONTIGUOUS_201NT_POSITION_BINS_TIMES_ACGT_PAIR_MEAN_FRACTIONS_SOURCE_CANDIDATE_SWAP_INVARIANT",
+        "edit_feature_definition": "THREE_POSITIONS_CENTER_MINUS_ONE_CENTER_CENTER_PLUS_ONE_TIMES_ACGT_CANDIDATE_ONEHOT_MINUS_SOURCE_ONEHOT",
+        "effect_definition": "MEAN_OVER_SIX_PAIRED_BIOLOGICAL_REPLICATES_OF_LOG2_SUM_HIGH_LOW_MINUS_TOTAL_RNA_MUTANT_MINUS_WT",
+        "standard_error_definition": "SAMPLE_STANDARD_DEVIATION_OF_SIX_PAIRED_REPLICATE_DELTAS_DIVIDED_BY_SQRT_SIX_FINITE_POSITIVE",
+        "missing_nonfinite_or_nonpositive_se_action": "STOP_MATERIALIZATION_CONFORMANCE_NO_MODEL_OR_CUDA",
+    }
+    for key, value in expected_definitions.items():
+        _require(e.get(key) == value, f"P0.5 definition differs: {key}")
     _require(all(e[key] is True for key in (
         "source_candidate_identity_required", "endpoint_direction_transform_required",
         "biological_group_and_positive_se_required", "rights_and_exposure_required",
@@ -219,6 +232,7 @@ def evaluate(config: Mapping[str, Any]) -> dict[str, Any]:
         "protocol_id": PROTOCOL_ID,
         "decision_id": "V3-DEC-028",
         "predecessor_result_preserved": config["predecessor_record"]["result_preserved"],
+        "supersedes_invalid_ss3_eligibility_report": config["previous_implementation_binding"]["production_report"],
         "gate_statuses": statuses,
         "status_counts": {
             "PASS": sum(item["status"] == "PASS" for item in statuses),
