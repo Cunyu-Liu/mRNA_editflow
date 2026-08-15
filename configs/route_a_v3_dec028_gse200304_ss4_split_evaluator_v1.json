@@ -1,0 +1,92 @@
+{
+  "schema_version": "route_a_v3_dec028_gse200304_ss4_split_evaluator.v1",
+  "protocol_id": "ROUTE_A_V3_DEC028_GSE200304_SS4_SPLIT_EVALUATOR_V1",
+  "decision_id": "V3-DEC-028",
+  "document_status": "ACTIVE_FOR_ONE_SS4_SPLIT_AND_FREEZE_ONLY",
+  "implementation_binding": {
+    "status": "UNKNOWN_NOT_ASSERTED",
+    "implementation_expected_parent": "UNKNOWN_NOT_ASSERTED",
+    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "implementation_exact_changed_paths": [
+      "configs/route_a_v3_dec028_gse200304_ss4_split_evaluator_v1.json",
+      "scripts/route_a_v3/freeze_gse200304_dec028_ss4_split_evaluator.py",
+      "tests/route_a_v3/test_freeze_gse200304_dec028_ss4_split_evaluator.py"
+    ],
+    "binding_exact_changed_paths": ["configs/route_a_v3_dec028_gse200304_ss4_split_evaluator_v1.json"]
+  },
+  "authority": {
+    "authority_id": "DEC028_SS4_GSE200304_ONE_SPLIT_EVALUATOR_FREEZE_V1",
+    "authorized_execution_count": 1,
+    "materialization_conformance_required": "PASS_SS3_MATERIALIZATION_CONFORMANCE",
+    "endpoint_or_model_result_allowed_for_assignment": false,
+    "model_authorized": false,
+    "cuda_authorized": false,
+    "optimizer_authorized": false,
+    "training_authorized": false,
+    "g1_authorized": false,
+    "sealed_access_authorized": false
+  },
+  "inputs": {
+    "ss3_directory": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/DEC028_GSE200304_SS3_MATERIALIZATION_B_93645f8",
+    "historical_group_mapping": {
+      "path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE200304_DEC019_BIOLOGICAL_GROUP_AUTHORITY_GATE_V1/GSE200304_DEC019_BIOLOGICAL_GROUP_MAPPING_PRIVATE.json",
+      "bytes": 1336202,
+      "sha256": "33abf14479671e264c3fbd8bae58e350d132d5c8f1cfdc65d766b1668b8f0229"
+    },
+    "historical_component_assignment": {
+      "path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE200304_DEC019_OUTCOME_BLIND_SPLIT_LEAKAGE_GATE_V1/GSE200304_DEC019_SPLIT_ASSIGNMENT_PRIVATE.json",
+      "bytes": 2094877,
+      "sha256": "1e330df0fb34fcf860003389f380efae3969522dbf65755ee0d8081a50b3dbca"
+    },
+    "expected_rows": 6547,
+    "expected_groups": 6544,
+    "expected_components": 1936
+  },
+  "split_contract": {
+    "split_id": "ONE_FROZEN_COMPONENT_DISJOINT_TRAIN_CALIBRATION_TEST_SPLIT_V1",
+    "split_salt": "GSE200304_DEC028_SINGLE_STUDY_SPLIT_V1",
+    "roles": ["TRAIN", "CALIBRATION", "TEST"],
+    "target_group_proportions": {"TRAIN": 0.70, "CALIBRATION": 0.15, "TEST": 0.15},
+    "component_source": "DEC019_ACCEPTED_OUTCOME_BLIND_GENE_HAMMING_JACCARD_GRAPH_MEMBERSHIP_ONLY",
+    "historical_fold_roles_reused": false,
+    "component_order": "GROUP_COUNT_DESC_THEN_SHA256_SALT_NUL_COMPONENT_ID_ASC",
+    "assignment_rule": "MAXIMUM_TARGET_GROUP_DEFICIT_THEN_ROLE_ORDER",
+    "one_biological_group_one_vote": true,
+    "reverse_pair_same_component_required": true,
+    "outcome_columns_used": [],
+    "retry_or_resalt_allowed": false
+  },
+  "evaluator_contract": {
+    "primary_metric": "WITHIN_STUDY_SOURCE_GROUP_EQUAL_WEIGHT_SPEARMAN",
+    "diagnostics": ["MAE", "CALIBRATION_SLOPE_INTERCEPT", "INTERVAL_COVERAGE_90", "COVERAGE_RISK_ABSTENTION"],
+    "calibration_role_only": "CALIBRATION",
+    "terminal_test_role_only": "TEST",
+    "guide_or_model_selection_output_allowed": false,
+    "checkpoint_selection_allowed": false,
+    "missing_nonfinite_or_nonpositive_se_policy": "STOP_NEVER_IMPUTE_ZERO",
+    "baseline_set": [
+      "TRAIN_SOURCE_GROUP_EQUAL_WEIGHT_GLOBAL_MEAN",
+      "TRAIN_DIRECTED_EDIT_TYPE_MEAN",
+      "TRAIN_GC_AND_LENGTH_LINEAR_RIDGE_FIXED_ALPHA_1",
+      "TRAIN_15MER_COUNT_RIDGE_FIXED_ALPHA_10"
+    ],
+    "planning_only": {"effective_n_reference": 156, "minimum_power": 0.80, "maximum_full_ci_width": 0.30, "produces_portfolio_credit": false}
+  },
+  "outputs": {
+    "private_assignment_filename": "GSE200304_SINGLE_STUDY_SPLIT_ASSIGNMENTS_PRIVATE.json",
+    "aggregate_audit_filename": "GSE200304_DEC028_SS4_SPLIT_EVALUATOR_AGGREGATE_AUDIT.json",
+    "member_payload_in_aggregate_allowed": false
+  },
+  "current_truth": {
+    "split_assignment_count": 0,
+    "metric_execution_count": 0,
+    "baseline_fit_count": 0,
+    "model_construction_count": 0,
+    "cuda_touch_count": 0,
+    "optimizer_construction_count": 0,
+    "parameter_update_count": 0,
+    "g1_launched": false,
+    "qualified_counts": {"ordinary": 1, "a1": 1, "true_a2": 0, "canonical_records": 6547},
+    "scientific_claim_status": "NOT_ESTABLISHED"
+  }
+}
