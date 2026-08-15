@@ -5,9 +5,9 @@
   "runtime_authority_event_id": "A1-EVT-061",
   "document_status": "ACTIVE_METADATA_ONLY_P0_EXACTLY_ONCE",
   "implementation_binding": {
-    "status": "UNKNOWN_NOT_ASSERTED",
-    "implementation_expected_parent": "UNKNOWN_NOT_ASSERTED",
-    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "status": "BOUND",
+    "implementation_expected_parent": "6ed009f57b23a26bb844f2f93bcb9a5a2fa34d79",
+    "implementation_commit": "2b1cf841530ee5f0ae7aca5e35b6f111e54416ac",
     "implementation_exact_changed_paths": [
       "configs/route_a_v3_dec028_single_study_successor_p0_v1.json",
       "scripts/route_a_v3/dec028_single_study_successor_p0.py",
