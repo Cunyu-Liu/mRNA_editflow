@@ -1,0 +1,54 @@
+{
+  "schema_version": "route_a_v3_dec028_a6_ss6_nonlearned_exact_reference.v1",
+  "protocol_id": "ROUTE_A_V3_DEC028_A6_SS6_NONLEARNED_EXACT_REFERENCE_V1",
+  "decision_id": "V3-DEC-028",
+  "status": "ACTIVE_ONE_CPU_SYNTHETIC_RUN_ONLY",
+  "scientific_scope": "ENGINEERING_THEORY_NOT_PHYSICAL_KINETICS_NOT_BIOLOGICAL_CLAIM",
+  "graph_contract": {
+    "graph_count": 96,
+    "budgets": [1, 3, 5],
+    "graphs_per_budget": 32,
+    "editable_positions": 5,
+    "source_anchored_acyclic": true,
+    "stop_absorbing": true,
+    "alias_actions_per_edit": 2,
+    "support_floor": 0.0001
+  },
+  "time_contract": {
+    "semantics": "ALGORITHMIC_TIME_ONLY_NOT_PHYSICAL_KINETICS",
+    "piecewise_constant_segment_durations": [0.2, 0.35, 0.45],
+    "general_finite_piecewise_constant_schedule_exactness_required": true,
+    "arbitrary_continuous_schedule_claimed": false
+  },
+  "reference_contract": {
+    "method_one": "SPARSE_UNIFORMIZATION_DYNAMIC_PROGRAM",
+    "method_two": "MEMOIZED_RAW_ALIAS_PATH_ENUMERATION",
+    "terminal_total_variation_maximum": 1e-12,
+    "mass_error_maximum": 1e-12,
+    "base_rate_recovery_error_maximum": 1e-12
+  },
+  "future_learned_contract": {
+    "edge_rate_relative_error_gate_frozen": true,
+    "terminal_total_variation_gate_frozen": true,
+    "legality_support_budget_no_graph_deletion_gates_frozen": true,
+    "base_then_value_required": true,
+    "joint_optimization_allowed": false,
+    "requires_independently_accepted_critic_lcb_manifest": true,
+    "current_critic_lcb_manifest_available": false,
+    "learned_execution_authorized": false
+  },
+  "output_filename": "ROUTE_A_V3_DEC028_A6_SS6_NONLEARNED_EXACT_REFERENCE_V1.json",
+  "run_policy": {"authorized_execution_count": 1, "retry_allowed": false},
+  "locks": {
+    "project_data_row_reads": 0,
+    "torch_imports": 0,
+    "model_constructions": 0,
+    "optimizer_constructions": 0,
+    "cuda_touches": 0,
+    "parameter_updates": 0,
+    "checkpoint_writes": 0,
+    "a6_learned_pass": false,
+    "a7_allowed": false,
+    "scientific_claim_status": "NOT_ESTABLISHED"
+  }
+}
