@@ -1,0 +1,136 @@
+{
+  "schema_version": "route_a_v3_route2_gse269595_converter.v1",
+  "study": {
+    "study_unit_id": "GSE269595",
+    "pool_assignment": "DEVELOPMENT",
+    "qualification_class": "DEVELOPMENT_RELAXED",
+    "study_role": "TRUE_A2_LISTWISE_DEVELOPMENT_EXPOSED_LIBRARY",
+    "conversion_scope": "DENSE_SOURCE_FAMILY_PAIRED_REPLICATE_FINITE_SUB_TRAJECTORY",
+    "region": "3UTR",
+    "assay_id": "KOWALSKI_2024_APA_MPRA_HEK293FT",
+    "endpoint_id": "PROXIMAL_POLYA_SITE_USAGE_LOG2_ODDS",
+    "endpoint_direction": "HIGHER_IS_MORE_PROXIMAL_SITE_USAGE",
+    "biological_context_perturbations": [
+      "CSTF3",
+      "NT",
+      "NUDT21"
+    ],
+    "distal_reporter_contexts": [
+      "CCT6A_moduleA",
+      "CDK1_moduleB",
+      "TMEM106C_moduleB",
+      "TMEM237_moduleA",
+      "bGH"
+    ]
+  },
+  "input": {
+    "library_workbook_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/prepared_public/GSE269595_DEC027_20260815/1-s2.0-S0092867424006457-mmc5.xlsx",
+    "processed_mpra_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/prepared_public/GSE269595_DEC027_20260815/GSE269595_mpra_constructs_all_samples_proximal_site_usage.txt.gz",
+    "required_library_sheet": "MPRA oligo library",
+    "expected_library_member_count": 6113,
+    "expected_family_count": 373,
+    "expected_eligible_dense_family_count": 372,
+    "expected_pairwise_family_exclusion_count": 1,
+    "expected_eligible_candidate_design_count": 3427,
+    "expected_distinct_eligible_sequence_pair_count": 3427,
+    "expected_eligible_edit_count_histogram": {
+      "11+": 771,
+      "2": 8,
+      "3-5": 551,
+      "6-10": 2097
+    },
+    "expected_processed_measurement_row_count": 366780,
+    "expected_complete_context_member_count": 6113,
+    "expected_processed_subaim_label_mismatch_row_count": 47880,
+    "expected_formula_mismatch_row_count": 0
+  },
+  "endpoint_policy": {
+    "guide_arms_pooled_within_perturbation_and_biological_replicate": true,
+    "biological_replicates": [
+      "rep1",
+      "rep2"
+    ],
+    "minimum_pooled_total_umi_per_replicate": 100,
+    "require_nonzero_proximal_and_distal_counts": true,
+    "source_and_candidate_must_pass_same_rule": true,
+    "endpoint_formula": "LOG2_PROXIMAL_DIVIDED_BY_DISTAL",
+    "delta_formula": "MEAN_PAIRED_CANDIDATE_MINUS_SOURCE_LOG2_ODDS",
+    "standard_error_formula": "STANDARD_ERROR_OF_TWO_PAIRED_REPLICATE_DELTAS",
+    "missing_is_zero": false,
+    "publisher_exact_censor_universe_claimed": false
+  },
+  "expected_conversion": {
+    "candidate_context_universe_count": 51405,
+    "reject_candidate_endpoint_qc_count": 19518,
+    "reject_source_endpoint_qc_after_candidate_pass_count": 921,
+    "canonical_record_count": 30966,
+    "source_family_with_record_count": 363,
+    "context_record_counts": {
+      "CSTF3|CCT6A_moduleA": 1972,
+      "CSTF3|CDK1_moduleB": 1173,
+      "CSTF3|TMEM106C_moduleB": 1942,
+      "CSTF3|TMEM237_moduleA": 2554,
+      "CSTF3|bGH": 2412,
+      "NT|CCT6A_moduleA": 1871,
+      "NT|CDK1_moduleB": 1372,
+      "NT|TMEM106C_moduleB": 1923,
+      "NT|TMEM237_moduleA": 2364,
+      "NT|bGH": 2241,
+      "NUDT21|CCT6A_moduleA": 2024,
+      "NUDT21|CDK1_moduleB": 1386,
+      "NUDT21|TMEM106C_moduleB": 2278,
+      "NUDT21|TMEM237_moduleA": 2852,
+      "NUDT21|bGH": 2602
+    }
+  },
+  "action_policy": {
+    "allowed_candidate_action": "SUB",
+    "multi_step_sub_trajectory_supported": true,
+    "same_position_repeated_edit_required": false,
+    "ins_supported": false,
+    "del_supported": false
+  },
+  "development_policy": {
+    "training_eligible": true,
+    "model_selection_eligible": true,
+    "confirmatory_evaluation_eligible": false,
+    "unseen_evaluation_eligible": false,
+    "listwise_grouping_required": true,
+    "study_balanced_sampling_required": true,
+    "near_duplicate_split_status": "NOT_RUN",
+    "library_selection_exposure": "APARENT_AND_MEASURED_RESPONSE_GUIDED",
+    "publisher_exact_censor_universe_status": "NOT_CLAIMED_DEVELOPMENT_RULE_EXPLICIT"
+  },
+  "credit_policy": {
+    "measured_candidate": true,
+    "generated_candidate": false,
+    "qualified_credit_delta": {
+      "ordinary": 0,
+      "a1": 0,
+      "true_a2": 0,
+      "canonical_records": 0
+    },
+    "qualified_counts_after_conversion": {
+      "ordinary": 1,
+      "a1": 1,
+      "true_a2": 0,
+      "canonical_records": 6547
+    }
+  },
+  "output": {
+    "directory": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE269595/v1",
+    "canonical_filename": "canonical_records.private.jsonl",
+    "conversion_summary_filename": "conversion_summary.json",
+    "reject_summary_filename": "reject_summary.json",
+    "overwrite_allowed": false,
+    "public_redistribution_allowed": false
+  },
+  "scientific_claim_status": "NOT_ESTABLISHED",
+  "limitations": [
+    "The MPRA library was selected using APARENT predictions or interpretations and measured perturbation response, so it is exposed Development data rather than an unseen benchmark.",
+    "The explicit finite-endpoint rule is a Route 2 Development rule and is not claimed to reproduce the publisher's exact prefrozen censor universe.",
+    "Standard errors are derived from two paired biological-replicate deltas after guide arms are pooled within perturbation and replicate.",
+    "Candidate designs contain multiple substitutions and are represented as multi-step legal SUB trajectories, not single-edit effects.",
+    "This conversion grants no ordinary, A1, true-A2, or qualified canonical credit."
+  ]
+}
