@@ -91,6 +91,9 @@ def test_disk_candidate_is_legal_i2_or_b2_and_normalizes_to_unbound_i2() -> None
     normalized = sync.normalized_unknown_i_config(config)
     assert sync._binding_state(normalized["implementation_binding"]) == "UNKNOWN"
     assert normalized["implementation_binding"]["frozen_predecessor_implementation"]["implementation_commit"] == sync.I1_COMMIT
+    assert normalized["implementation_binding"]["frozen_second_implementation"]["implementation_commit"] == sync.I2_COMMIT
+    assert normalized["implementation_binding"]["frozen_third_implementation"]["implementation_commit"] == sync.I3_COMMIT
+    assert normalized["implementation_binding"]["frozen_failed_binding"]["binding_commit"] == sync.FAILED_B3_COMMIT
     assert normalized["dec028_authority"]["current_qualified_counts"] == {
         "ordinary": 1,
         "a1": 1,

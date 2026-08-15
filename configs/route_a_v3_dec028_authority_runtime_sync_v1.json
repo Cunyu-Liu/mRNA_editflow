@@ -8,10 +8,10 @@
   "event_name": "DEC028_SINGLE_STUDY_MAINLINE_AUTHORITY_RUNTIME_SYNCED",
   "sync_type": "AUTHORITY_ONLY_NO_DATA_NO_MODEL_NO_PROMOTION",
   "implementation_binding": {
-    "binding_scheme": "AUTHORITY_A_TO_FROZEN_I1_TO_FROZEN_I2_TO_IMPLEMENTATION_I3_TO_CONFIG_ONLY_B3",
+    "binding_scheme": "AUTHORITY_A_TO_I1_TO_I2_TO_I3_TO_FAILED_B3_TO_IMPLEMENTATION_I4_TO_CONFIG_ONLY_B4",
     "frozen_predecessor_implementation": {
       "status": "FROZEN_BOUND_EXACT3",
-      "implementation_commit": "ac712281351963628348397fb7b3a1d8840c66ef",
+      "implementation_commit": "ac7122858d07d8027e02da4ce2fca841fb75eb87",
       "implementation_expected_parent": "89ae669313b0adbc7ca4e05f8ffee37ad4c9d2a7",
       "implementation_files": [
         {"path": "configs/route_a_v3_dec028_authority_runtime_sync_v1.json", "bytes": 8468, "sha256": "61828137763a1183fcf749f491cf372434789338987c2d51a9d5716a4ddcfdc1"},
@@ -21,20 +21,40 @@
     },
     "frozen_second_implementation": {
       "status": "FROZEN_BOUND_EXACT3",
-      "implementation_commit": "fba71d8896c34c513fbc0c781c9fb046fc298bfa",
-      "implementation_expected_parent": "ac712281351963628348397fb7b3a1d8840c66ef",
+      "implementation_commit": "fba71d896ed72aaedc9466b2919de379b7c240c6",
+      "implementation_expected_parent": "ac7122858d07d8027e02da4ce2fca841fb75eb87",
       "implementation_files": [
         {"path": "configs/route_a_v3_dec028_authority_runtime_sync_v1.json", "bytes": 9278, "sha256": "efed13c6f09b60cc7bcbc8b64312b53a73ca2070f601dfa6435142ac09dc8798"},
         {"path": "scripts/route_a_v3/dec028_authority_runtime_sync.py", "bytes": 32561, "sha256": "c95cad3c9b96aea841f15cdb0073f9c93039612392e7e633fec2520f58a3feaf"},
         {"path": "tests/route_a_v3/test_dec028_authority_runtime_sync.py", "bytes": 10445, "sha256": "23324fc8e598295da76b7ddd016376eff839df971cf33dbde02b17c0301a93c8"}
       ]
     },
-    "status": "BOUND",
-    "implementation_commit": "0f418e04fcb7ee496caa4469e2f57bcf76f96c4a",
+    "frozen_third_implementation": {
+      "status": "FROZEN_BOUND_EXACT3",
+      "implementation_commit": "0f418e04fcb7ee496caa4469e2f57bcf76f96c4a",
+      "implementation_expected_parent": "fba71d896ed72aaedc9466b2919de379b7c240c6",
+      "implementation_files": [
+        {"path": "configs/route_a_v3_dec028_authority_runtime_sync_v1.json", "bytes": 10081, "sha256": "6c819f3d9fc3b4997abd30a6b9a89ee93cd8efd13a36bb227a48cf5fdbdc89b7"},
+        {"path": "scripts/route_a_v3/dec028_authority_runtime_sync.py", "bytes": 33855, "sha256": "dad8bcd2f7f8421eefcaf7fe33b91875bd69e0ad81722311cc6698858937e449"},
+        {"path": "tests/route_a_v3/test_dec028_authority_runtime_sync.py", "bytes": 10479, "sha256": "3116cb611c9a570232b7ae350dbe143da9df7fe7dd3f17a692ec520fdf13b155"}
+      ]
+    },
+    "frozen_failed_binding": {
+      "status": "FROZEN_FAILED_PRODUCTION_AUDIT_NO_RUNTIME_IO",
+      "binding_commit": "b5ce55c853aff6c1ca5604060ac0c2ec2774f530",
+      "binding_expected_parent": "0f418e04fcb7ee496caa4469e2f57bcf76f96c4a",
+      "binding_files": [
+        {"path": "configs/route_a_v3_dec028_authority_runtime_sync_v1.json", "bytes": 10174, "sha256": "2be2ac8bcc64c4183de51d3b7fec2279f092726febec35ec479b7036ffc66bc5"},
+        {"path": "scripts/route_a_v3/dec028_authority_runtime_sync.py", "bytes": 33855, "sha256": "dad8bcd2f7f8421eefcaf7fe33b91875bd69e0ad81722311cc6698858937e449"},
+        {"path": "tests/route_a_v3/test_dec028_authority_runtime_sync.py", "bytes": 10479, "sha256": "3116cb611c9a570232b7ae350dbe143da9df7fe7dd3f17a692ec520fdf13b155"}
+      ]
+    },
+    "status": "UNKNOWN_NOT_ASSERTED",
+    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
     "implementation_script_path": "scripts/route_a_v3/dec028_authority_runtime_sync.py",
-    "implementation_script_sha256": "dad8bcd2f7f8421eefcaf7fe33b91875bd69e0ad81722311cc6698858937e449",
+    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
     "implementation_test_path": "tests/route_a_v3/test_dec028_authority_runtime_sync.py",
-    "implementation_test_sha256": "3116cb611c9a570232b7ae350dbe143da9df7fe7dd3f17a692ec520fdf13b155",
+    "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
     "implementation_exact_changed_paths": [
       "configs/route_a_v3_dec028_authority_runtime_sync_v1.json",
       "scripts/route_a_v3/dec028_authority_runtime_sync.py",
