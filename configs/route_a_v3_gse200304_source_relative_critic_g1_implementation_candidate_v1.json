@@ -47,7 +47,10 @@
     "full_length_dynamic_padding_required": true,
     "mean_construction": "HALF_FORWARD_MINUS_REVERSE_PAIR_SCORE",
     "predictive_scale_minimum": 0.000001,
-    "interaction_residual_enabled": false
+    "interaction_residual_enabled": false,
+    "deterministic_algorithms_required": true,
+    "flash_attention_allowed": false,
+    "memory_efficient_attention_allowed": false
   },
   "single_fit_contract": {
     "split_id": "ONE_FROZEN_COMPONENT_DISJOINT_TRAIN_CALIBRATION_TEST_SPLIT_V1",
@@ -91,10 +94,40 @@
     "any_nonpass_action": "STOP_WITH_EVIDENCE_NO_RETRY",
     "gate_pass_is_scientific_claim": false
   },
+  "evaluator_and_baseline_contract": {
+    "fit_role": "TRAIN",
+    "calibration_role": "CALIBRATION",
+    "terminal_evaluation_role": "TEST",
+    "one_source_group_one_vote": true,
+    "primary_metric": "WITHIN_STUDY_SOURCE_GROUP_EQUAL_WEIGHT_SPEARMAN",
+    "diagnostics": [
+      "SOURCE_GROUP_EQUAL_WEIGHT_MAE",
+      "CALIBRATION_SLOPE_INTERCEPT_FROM_CALIBRATION_ONLY",
+      "SOURCE_GROUP_EQUAL_WEIGHT_INTERVAL_COVERAGE_90",
+      "CALIBRATION_FROZEN_COVERAGE_RISK_ABSTENTION"
+    ],
+    "constant_rank_main_prediction_action": "STOP_WITH_EVIDENCE_NO_RETRY",
+    "coverage_risk_retained_fractions": [1.0, 0.8, 0.5, 0.2],
+    "baseline_set": [
+      "TRAIN_SOURCE_GROUP_EQUAL_WEIGHT_GLOBAL_MEAN",
+      "TRAIN_DIRECTED_EDIT_TYPE_MEAN",
+      "TRAIN_GC_AND_LENGTH_LINEAR_RIDGE_FIXED_ALPHA_1",
+      "TRAIN_15MER_COUNT_RIDGE_FIXED_ALPHA_10"
+    ],
+    "ridge_intercept_penalized": false,
+    "gc_length_ridge_alpha": 1.0,
+    "kmer_length": 15,
+    "kmer_feature_dimension": 4096,
+    "kmer_feature_map": "FNV1A64_SIGNED_FEATURE_HASH_OF_CANDIDATE_MINUS_SOURCE_15MER_COUNTS",
+    "kmer_ridge_alpha": 10.0,
+    "guide_or_model_selection_output_allowed": false,
+    "test_feedback_allowed": false
+  },
   "output_contract": {
     "aggregate_report_filename": "GSE200304_SOURCE_RELATIVE_CRITIC_G1_AGGREGATE_RESULT.json",
     "private_checkpoint_filename": "GSE200304_SOURCE_RELATIVE_CRITIC_G1_TERMINAL.pt",
     "private_predictions_filename": "GSE200304_SOURCE_RELATIVE_CRITIC_G1_TEST_PREDICTIONS_PRIVATE.jsonl",
+    "calibration_lcb_manifest_filename": "GSE200304_SOURCE_RELATIVE_CRITIC_G1_CALIBRATION_LCB_MANIFEST.json",
     "failure_record_filename": "GSE200304_SOURCE_RELATIVE_CRITIC_G1_FAILURE.json",
     "public_member_or_sequence_payload_allowed": false,
     "aggregate_result_may_select_model_checkpoint_seed_or_threshold": false
@@ -111,9 +144,21 @@
   "activation_binding": {
     "run_authority_id": null,
     "materialization_conformance_id": null,
+    "materialized_rows_path": null,
+    "materialized_rows_bytes": null,
+    "materialized_rows_sha256": null,
     "split_evaluator_baseline_id": null,
+    "split_assignments_path": null,
+    "split_assignments_bytes": null,
+    "split_assignments_sha256": null,
     "implementation_gate_review_id": null,
+    "implementation_commit": null,
     "cuda_device": null,
+    "cuda_physical_index": null,
+    "cuda_uuid": null,
+    "python_executable": null,
+    "torch_version": null,
+    "torch_cuda_version": null,
     "output_directory": null
   },
   "current_truth": {
