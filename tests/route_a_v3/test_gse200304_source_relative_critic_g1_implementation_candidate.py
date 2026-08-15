@@ -29,6 +29,14 @@ def _inactive_config(module):
     config["activation_state"] = module.INACTIVE
     config["future_activation_requirements"]["current_requirement_count_satisfied"] = 0
     config["activation_binding"] = {key: None for key in config["activation_binding"]}
+    for key, value in list(config["current_truth"].items()):
+        if key == "scientific_claim_status":
+            config["current_truth"][key] = "NOT_ESTABLISHED"
+        elif isinstance(value, bool):
+            config["current_truth"][key] = False
+        else:
+            config["current_truth"][key] = 0
+    config.pop("execution_result", None)
     module.validate_config(config)
     return config
 
@@ -200,3 +208,20 @@ def test_future_active_shape_is_explicit_and_complete() -> None:
     config["activation_binding"]["cuda_uuid"] = "GPU-00000000-0000-0000-0000-000000000000"
     module.validate_config(config)
     assert module.validate_only(config)["status"] == "PASS_ACTIVE_EXACTLY_ONE_RUN_AUTHORITY_STATIC_VALIDATION_NOT_RUN"
+
+
+def test_settled_disk_state_is_consumed_and_cannot_run(tmp_path: Path) -> None:
+    module = _module()
+    config = module.load_config(CONFIG_PATH)
+    assert config["activation_state"] == module.TERMINATED
+    validation = module.validate_only(config)
+    assert validation["status"] == "PASS_SETTLED_TERMINATED_SAFELY_NO_RETRY"
+    assert validation["data_rows_read"] == 6547
+    assert validation["model_constructions"] == 1
+    assert validation["cuda_touches"] == 1
+    assert validation["parameter_updates"] == 0
+    assert validation["outputs_written"] == 1
+    assert config["execution_result"]["retry_authorized"] is False
+    with pytest.raises(module.InactiveAuthorityError, match="stop before data"):
+        module.run_once(config, tmp_path / "repo", tmp_path / "output")
+    assert not (tmp_path / "output").exists()

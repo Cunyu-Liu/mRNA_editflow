@@ -1,12 +1,12 @@
 {
   "schema_version": "route_a_v3_gse200304_source_relative_critic_g1_implementation_candidate.v1",
   "implementation_id": "ROUTE_A_V3_GSE200304_SOURCE_RELATIVE_CRITIC_G1_IMPLEMENTATION_CANDIDATE_V1",
-  "document_status": "ACTIVE_EXACTLY_ONE_RUN_AUTHORITY",
-  "authority_status": "ACTIVE_FOR_THIS_G1_ONE_RUN_ONLY",
+  "document_status": "SETTLED_TERMINATED_SAFELY_WITH_EVIDENCE_NO_RETRY",
+  "authority_status": "CONSUMED_EXACTLY_ONE_RUN_AUTHORITY",
   "decision_id": "V3-DEC-028",
   "runtime_event_id": "A1-EVT-061",
   "run_role": "GSE200304_SOURCE_RELATIVE_CRITIC_G1",
-  "activation_state": "ACTIVE_FOR_THIS_G1_ONE_RUN_ONLY",
+  "activation_state": "CONSUMED_TERMINATED_SAFELY_WITH_EVIDENCE_NO_RETRY",
   "input_contract": {
     "study_unit": "GSE200304_SUPERSERIES_ONE_STUDY",
     "materialized_rows_filename": "GSE200304_SINGLE_STUDY_DEVELOPMENT_ROWS_PRIVATE.jsonl",
@@ -162,18 +162,33 @@
     "output_directory": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/DEC028_GSE200304_SOURCE_RELATIVE_CRITIC_G1_ONE_RUN_20260815"
   },
   "current_truth": {
-    "data_rows_read": 0,
-    "split_assignments_read": 0,
-    "model_constructions": 0,
-    "optimizer_constructions": 0,
-    "cuda_touches": 0,
+    "data_rows_read": 6547,
+    "split_assignments_read": 6547,
+    "model_constructions": 1,
+    "optimizer_constructions": 1,
+    "cuda_touches": 1,
     "parameter_updates": 0,
     "checkpoints_read": 0,
     "checkpoints_written": 0,
-    "runtime_outputs_written": 0,
-    "g1_launched": false,
+    "runtime_outputs_written": 1,
+    "g1_launched": true,
     "scientific_claim_status": "NOT_ESTABLISHED",
     "a6_learned_base_value_authorized": false,
     "a7_allowed": false
+  },
+  "execution_result": {
+    "observed_at": "2026-08-15T19:13:54+08:00",
+    "status": "TERMINATED_SAFELY_WITH_EVIDENCE_NO_RETRY",
+    "failure_stage": "FIRST_TRAIN_BATCH_FORWARD_REVERSE_ENCODER",
+    "error_type": "OutOfMemoryError",
+    "reason_code": "BOUND_CUDA_DEVICE_PROCESS_VISIBLE_CAPACITY_APPROX_4_75_GIB_INSUFFICIENT",
+    "failure_record_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/DEC028_GSE200304_SOURCE_RELATIVE_CRITIC_G1_ONE_RUN_20260815/GSE200304_SOURCE_RELATIVE_CRITIC_G1_FAILURE.json",
+    "failure_record_bytes": 1152,
+    "failure_record_sha256": "5fa222e5417229bb841d412045e824fa8841840512876aae6d37172a673039ab",
+    "retry_authorized": false,
+    "terminal_checkpoint_present": false,
+    "private_predictions_present": false,
+    "aggregate_success_result_present": false,
+    "member_payload_included": false
   }
 }

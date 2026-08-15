@@ -29,6 +29,7 @@ CONFIG_PATH = REPO_ROOT / "configs/route_a_v3_gse200304_source_relative_critic_g
 IMPLEMENTATION_ID = "ROUTE_A_V3_GSE200304_SOURCE_RELATIVE_CRITIC_G1_IMPLEMENTATION_CANDIDATE_V1"
 INACTIVE = "INACTIVE_FAIL_BEFORE_DATA_MODEL_CUDA_OUTPUT"
 ACTIVE = "ACTIVE_FOR_THIS_G1_ONE_RUN_ONLY"
+TERMINATED = "CONSUMED_TERMINATED_SAFELY_WITH_EVIDENCE_NO_RETRY"
 
 
 class ContractError(RuntimeError):
@@ -72,7 +73,7 @@ def validate_config(config: Mapping[str, Any]) -> None:
         raise ContractError("authority context differs")
     if config.get("run_role") != "GSE200304_SOURCE_RELATIVE_CRITIC_G1":
         raise ContractError("run role differs")
-    if config.get("activation_state") not in {INACTIVE, ACTIVE}:
+    if config.get("activation_state") not in {INACTIVE, ACTIVE, TERMINATED}:
         raise ContractError("activation state is invalid")
 
     inputs = config["input_contract"]
@@ -167,7 +168,7 @@ def validate_config(config: Mapping[str, Any]) -> None:
         raise ContractError("future activation requirement set differs")
     if config["activation_state"] == INACTIVE and requirements["current_requirement_count_satisfied"] != 0:
         raise ContractError("inactive candidate claims satisfied activation requirements")
-    if config["activation_state"] == ACTIVE and requirements["current_requirement_count_satisfied"] != 5:
+    if config["activation_state"] in {ACTIVE, TERMINATED} and requirements["current_requirement_count_satisfied"] != 5:
         raise ContractError("active run is missing activation requirements")
     activation = config["activation_binding"]
     expected_activation_keys = {
@@ -218,32 +219,58 @@ def validate_config(config: Mapping[str, Any]) -> None:
             raise ContractError("active CUDA UUID is invalid")
 
     truth = config["current_truth"]
-    for key, value in truth.items():
-        if key in {"scientific_claim_status"}:
-            if value != "NOT_ESTABLISHED":
-                raise ContractError("scientific claim was promoted")
-        elif isinstance(value, bool):
-            if value is not False:
-                raise ContractError(f"inactive truth is not false: {key}")
-        elif value != 0:
-            raise ContractError(f"inactive truth is not zero: {key}")
+    if truth["scientific_claim_status"] != "NOT_ESTABLISHED" or truth["a6_learned_base_value_authorized"] is not False or truth["a7_allowed"] is not False:
+        raise ContractError("scientific claim or downstream lock was promoted")
+    if config["activation_state"] == TERMINATED:
+        expected_terminal_truth = {
+            "data_rows_read": 6547,
+            "split_assignments_read": 6547,
+            "model_constructions": 1,
+            "optimizer_constructions": 1,
+            "cuda_touches": 1,
+            "parameter_updates": 0,
+            "checkpoints_read": 0,
+            "checkpoints_written": 0,
+            "runtime_outputs_written": 1,
+            "g1_launched": True,
+        }
+        for key, expected in expected_terminal_truth.items():
+            if truth[key] != expected:
+                raise ContractError(f"terminal execution truth differs: {key}")
+        result = config.get("execution_result")
+        if not isinstance(result, Mapping) or result.get("status") != "TERMINATED_SAFELY_WITH_EVIDENCE_NO_RETRY":
+            raise ContractError("terminal failure result is absent")
+        if result.get("retry_authorized") is not False or result.get("terminal_checkpoint_present") is not False:
+            raise ContractError("terminal no-retry/checkpoint state differs")
+        if result.get("failure_record_bytes") != 1152 or len(result.get("failure_record_sha256", "")) != 64:
+            raise ContractError("terminal failure record identity differs")
+    else:
+        for key, value in truth.items():
+            if key in {"scientific_claim_status"}:
+                continue
+            if isinstance(value, bool):
+                if value is not False:
+                    raise ContractError(f"pre-run truth is not false: {key}")
+            elif value != 0:
+                raise ContractError(f"pre-run truth is not zero: {key}")
 
 
 def validate_only(config: Mapping[str, Any]) -> dict[str, Any]:
     validate_config(config)
+    truth = config["current_truth"]
     return {
         "implementation_id": IMPLEMENTATION_ID,
-        "status": (
-            "PASS_ACTIVE_EXACTLY_ONE_RUN_AUTHORITY_STATIC_VALIDATION_NOT_RUN"
-            if config["activation_state"] == ACTIVE
-            else "PASS_STATIC_IMPLEMENTATION_CONTRACT_NOT_ACTIVE_NOT_RUN"
-        ),
+        "status": {
+            INACTIVE: "PASS_STATIC_IMPLEMENTATION_CONTRACT_NOT_ACTIVE_NOT_RUN",
+            ACTIVE: "PASS_ACTIVE_EXACTLY_ONE_RUN_AUTHORITY_STATIC_VALIDATION_NOT_RUN",
+            TERMINATED: "PASS_SETTLED_TERMINATED_SAFELY_NO_RETRY",
+        }[config["activation_state"]],
         "activation_state": config["activation_state"],
-        "data_rows_read": 0,
-        "model_constructions": 0,
-        "cuda_touches": 0,
-        "parameter_updates": 0,
-        "outputs_written": 0,
+        "data_rows_read": truth["data_rows_read"],
+        "model_constructions": truth["model_constructions"],
+        "cuda_touches": truth["cuda_touches"],
+        "parameter_updates": truth["parameter_updates"],
+        "outputs_written": truth["runtime_outputs_written"],
     }
 
 
