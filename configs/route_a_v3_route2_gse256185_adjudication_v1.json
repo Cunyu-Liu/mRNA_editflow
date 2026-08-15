@@ -1,0 +1,96 @@
+{
+  "schema_version": "route_a_v3_route2_gse256185_adjudication.v1",
+  "study": {
+    "study_unit_id": "GSE256185",
+    "pool_assignment": "DEVELOPMENT",
+    "qualification_class": "AGGREGATE_ONLY_UNCONVERTIBLE_V1",
+    "study_role": "NEGATIVE_CONTROL_POOL_PARSER_REJECT_QA_WITHIN_DEVELOPMENT_INVENTORY",
+    "conversion_scope": "SUB_STOP_V1_ACTION_COMPATIBILITY_ADJUDICATION_ONLY"
+  },
+  "input": {
+    "aggregate_preflight_report_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/GSE256185_AGGREGATE_ROW_LEVEL_QUALIFICATION_PREFLIGHT_V1_20260813T232328P0800_4858156/GSE256185_AGGREGATE_ROW_LEVEL_QUALIFICATION_PREFLIGHT_V1.json",
+    "expected_report_schema_version": "route_a_v3_gse256185_aggregate_row_level_qualification_preflight.v1",
+    "expected_report_protocol_id": "GSE256185_AGGREGATE_ROW_LEVEL_QUALIFICATION_PREFLIGHT_V1",
+    "expected_report_status": "STOP_CURRENT_PROTOCOL_NOT_QUALIFIED",
+    "expected_review_candidate_row_count": 7292,
+    "expected_replay_closed_total": 7289,
+    "expected_unexplained_count": 3,
+    "expected_finite_endpoint_and_replicate_row_count": 7925,
+    "expected_nonfinite_or_undefined_row_count": 1,
+    "expected_retained_pool_count": 633,
+    "expected_retained_parent_row_count": 633,
+    "expected_retained_candidate_row_count": 7288,
+    "expected_retained_row_count": 7921,
+    "expected_retained_candidate_family_counts": {
+      "+CCC": 1090,
+      "-CCC": 1075,
+      "win": 5123
+    },
+    "expected_review_edit_length_delta_counts": {
+      "+12": 218,
+      "+15": 218,
+      "+3": 218,
+      "+6": 218,
+      "+9": 218,
+      "-12": 208,
+      "-15": 179,
+      "-3": 231,
+      "-6": 5353,
+      "-9": 231
+    }
+  },
+  "action_policy": {
+    "allowed_candidate_actions": [
+      "SUB",
+      "STOP"
+    ],
+    "ins_supported": false,
+    "del_supported": false,
+    "zero_length_delta_required_for_sub": true
+  },
+  "adjudication_policy": {
+    "canonical_record_count": 0,
+    "legal_sub_candidate_count": 0,
+    "retained_preflight_candidates_rejected_for_action_space": 7288,
+    "primary_reject_reason": "ACTION_OUTSIDE_SUB_STOP_V1",
+    "qualification_blockers_are_not_reinterpreted_as_action_compatibility": true,
+    "future_ins_del_expansion_authorized": false
+  },
+  "development_policy": {
+    "training_eligible": false,
+    "model_selection_eligible": false,
+    "confirmatory_evaluation_eligible": false,
+    "parser_reject_qa_eligible": true
+  },
+  "credit_policy": {
+    "measured_candidate": true,
+    "generated_candidate": false,
+    "qualified_credit_delta": {
+      "ordinary": 0,
+      "a1": 0,
+      "true_a2": 0,
+      "canonical_records": 0
+    },
+    "qualified_counts_after_adjudication": {
+      "ordinary": 1,
+      "a1": 1,
+      "true_a2": 0,
+      "canonical_records": 6547
+    }
+  },
+  "output": {
+    "directory": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE256185/v1",
+    "canonical_filename": "canonical_records.private.jsonl",
+    "conversion_summary_filename": "conversion_summary.json",
+    "reject_summary_filename": "reject_summary.json",
+    "overwrite_allowed": false,
+    "public_redistribution_allowed": false
+  },
+  "scientific_claim_status": "NOT_ESTABLISHED",
+  "limitations": [
+    "The retained candidates are insertions or deletions and therefore are outside the frozen SUB plus STOP V1 action space.",
+    "The aggregate preflight did not establish independent biological replication or valid row-level standard errors.",
+    "No INS or DEL action-space expansion is authorized by this adjudication.",
+    "The dataset remains useful only as parser and reject-closure QA for Route 2 V1."
+  ]
+}
