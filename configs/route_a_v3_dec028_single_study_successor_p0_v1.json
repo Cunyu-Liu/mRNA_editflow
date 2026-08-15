@@ -1,0 +1,212 @@
+{
+  "schema_version": "route_a_v3_dec028_single_study_successor_p0.v1",
+  "protocol_id": "ROUTE_A_V3_DEC028_SINGLE_STUDY_SUCCESSOR_METADATA_ONLY_P0_V1",
+  "decision_id": "V3-DEC-028",
+  "runtime_authority_event_id": "A1-EVT-061",
+  "document_status": "ACTIVE_METADATA_ONLY_P0_EXACTLY_ONCE",
+  "implementation_binding": {
+    "status": "UNKNOWN_NOT_ASSERTED",
+    "implementation_expected_parent": "UNKNOWN_NOT_ASSERTED",
+    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "implementation_exact_changed_paths": [
+      "configs/route_a_v3_dec028_single_study_successor_p0_v1.json",
+      "scripts/route_a_v3/dec028_single_study_successor_p0.py",
+      "tests/route_a_v3/test_dec028_single_study_successor_p0.py"
+    ],
+    "binding_exact_changed_paths": [
+      "configs/route_a_v3_dec028_single_study_successor_p0_v1.json"
+    ]
+  },
+  "predecessor_record": {
+    "protocol_id": "ROUTE_A_V3_DEC026_METADATA_ONLY_ZERO_STEP_P0_V1",
+    "result_preserved": {
+      "pass": 3,
+      "fail_closed": 7,
+      "unknown_not_asserted": 1,
+      "g1_launched": false
+    },
+    "overwritten": false
+  },
+  "evaluation_scope": {
+    "metadata_only": true,
+    "exact_gate_count": 11,
+    "all_status_fields_must_equal_pass": true,
+    "success_action": "ELIGIBLE_TO_REQUEST_MATERIALIZATION_NOT_G1_NOT_LAUNCHED",
+    "nonpass_action": "STOP_BEFORE_DATA_ROWS_CUDA_MODEL_OPTIMIZER_CHECKPOINT_PARAMETER_UPDATE_OR_TRAINING",
+    "report_filename": "ROUTE_A_V3_DEC028_SINGLE_STUDY_SUCCESSOR_P0_RECORD_V1.json"
+  },
+  "gates": [
+    {"gate_id": "P0.1", "gate_name": "INPUT_MEMBERSHIP_AND_BINDING"},
+    {"gate_id": "P0.2", "gate_name": "PRIOR_USE_ATTESTATION"},
+    {"gate_id": "P0.3", "gate_name": "EXPOSURE_ROLE"},
+    {"gate_id": "P0.4", "gate_name": "RIGHTS"},
+    {"gate_id": "P0.5", "gate_name": "SCIENTIFIC_ROW_CONTRACT"},
+    {"gate_id": "P0.6", "gate_name": "SCRATCH_ONLY_ROUTE"},
+    {"gate_id": "P0.7", "gate_name": "PROSPECTIVE_SPLIT"},
+    {"gate_id": "P0.8", "gate_name": "SINGLE_RUN_POLICY"},
+    {"gate_id": "P0.9", "gate_name": "EXECUTABLE_SCIENTIFIC_GATES"},
+    {"gate_id": "P0.10", "gate_name": "SUCCESSOR_LEARNED_RUN_IMPLEMENTATION"},
+    {"gate_id": "P0.11", "gate_name": "STATE_LOCKS"}
+  ],
+  "current_submission": {
+    "P0.1": {
+      "status": "PASS",
+      "membership_count": 6547,
+      "study_unit": "GSE200304_SUPERSERIES_ONE_STUDY",
+      "membership_rule": "ALL_FINITE_TOTALPOLY_PAIRS_BEFORE_ANY_SIGNIFICANCE_LABEL",
+      "source_lineage": "ROUTE_A_V3_GSE200304_DEC019_CANONICAL_ROW_LINEAGE_GATE_V1",
+      "materialization_recipe": "DEC028_MEMBERSHIP_PRESERVING_GSE200304_PRIVATE_DEVELOPMENT_ASSET_V1",
+      "materialization_exercised": false,
+      "materialization_authority_granted": false
+    },
+    "P0.2": {
+      "status": "PASS",
+      "scope": "DISCLOSED_EXPOSED_DEVELOPMENT_ONLY",
+      "predecessor_historical_status": "UNKNOWN_NOT_ASSERTED",
+      "known_use_disclosure": "PUBLIC_AGGREGATE_STRUCTURE_AND_GSE200304_QUALIFICATION_EVIDENCE_INFLUENCED_PROTOCOL_DESIGN",
+      "residual_historical_uncertainty_disclosed": true,
+      "untouched_or_confirmatory_claim_allowed": false
+    },
+    "P0.3": {
+      "status": "PASS",
+      "role": "EXPOSED_DEVELOPMENT_ONLY",
+      "participating_study_count": 1,
+      "untouched_study_count": 0,
+      "confirmatory_study_count": 0
+    },
+    "P0.4": {
+      "status": "PASS",
+      "permission_scope": "PRIVATE_INTERNAL_PROCESS_TRAIN_EVALUATE_NO_PUBLIC_MEMBER_REDISTRIBUTION",
+      "basis": [
+        "DEC019_PRIVATE_CANONICAL_RIGHTS_PASS",
+        "ARTICLE_CC_BY_AND_OFFICIAL_GEO_PUBLIC_SOURCE",
+        "DEC028_OWNER_INTERNAL_DEVELOPMENT_AUTHORIZATION"
+      ],
+      "public_member_redistribution_allowed": false,
+      "sealed_or_restricted_input_allowed": false
+    },
+    "P0.5": {
+      "status": "PASS",
+      "row_contract_id": "GSE200304_SINGLE_STUDY_SOURCE_RELATIVE_DEVELOPMENT_ROW_CONTRACT_V1",
+      "member_count": 6547,
+      "required_fields_exactly": [
+        "record_key",
+        "source_group",
+        "source_sequence",
+        "candidate_sequence",
+        "context_vector",
+        "edit_features",
+        "direction_normalized_effect",
+        "biological_standard_error"
+      ],
+      "source_candidate_identity_required": true,
+      "endpoint_direction_transform_required": true,
+      "biological_group_and_positive_se_required": true,
+      "rights_and_exposure_required": true,
+      "materialization_conformance_not_yet_run": true
+    },
+    "P0.6": {
+      "status": "PASS",
+      "route": "SCRATCH_ONLY_NO_FOUNDATION_NO_EXTERNAL_LEARNED_INPUTS",
+      "initialization": "RANDOM_INITIALIZATION_ONLY",
+      "external_learned_input_count": 0,
+      "checkpoint_read_count_before_first_update": 0
+    },
+    "P0.7": {
+      "status": "PASS",
+      "contract_id": "ONE_FROZEN_COMPONENT_DISJOINT_TRAIN_CALIBRATION_TEST_SPLIT_V1",
+      "split_salt": "GSE200304_DEC028_SINGLE_STUDY_SPLIT_V1",
+      "outcome_blind": true,
+      "grouping_rules": [
+        "BIOLOGICAL_SOURCE_GROUP",
+        "EXACT_GENE_TOKEN",
+        "ORIENTATION_NORMALIZED_WT201_HAMMING_LE_10",
+        "CANONICAL_15MER_SET_JACCARD_GE_0_80",
+        "REVERSE_PAIR_SAME_COMPONENT"
+      ],
+      "target_proportions": {"train": 0.7, "calibration": 0.15, "test": 0.15},
+      "allocation_rule": "DESCENDING_COMPONENT_SIZE_THEN_SALTED_COMPONENT_ORDER_TO_MINIMUM_TARGET_DEFICIT",
+      "split_assignment_count": 0,
+      "model_or_endpoint_result_used": false
+    },
+    "P0.8": {
+      "status": "PASS",
+      "policy_id": "GSE200304_SOURCE_RELATIVE_CRITIC_G1_SINGLE_FIT_POLICY_V1",
+      "architecture_id": "FULL_LENGTH_MASKED_SHARED_TRANSFORMER_ANTISYMMETRIC_PAIR_CRITIC_V1",
+      "seed": 42,
+      "authorized_execution_count": 1,
+      "optimizer_fit_count": 1,
+      "fold_model_count": 1,
+      "checkpoint_count": 1,
+      "final_refit_count": 0,
+      "seed_count": 1,
+      "optimizer": "ADAMW",
+      "learning_rate": 0.001,
+      "weight_decay": 0.00001,
+      "schedule": "CONSTANT",
+      "batch_size": 256,
+      "epochs": 4,
+      "terminal_checkpoint_only": true,
+      "early_stopping_allowed": false,
+      "best_checkpoint_selection_allowed": false,
+      "hyperparameter_search_allowed": false,
+      "automatic_retry_allowed": false
+    },
+    "P0.9": {
+      "status": "PASS",
+      "gate_bundle_id": "GSE200304_SOURCE_RELATIVE_CRITIC_G1_FAIL_CLOSED_GATE_BUNDLE_V1",
+      "implementation_path": "scripts/route_a_v3/gse200304_source_relative_critic_g1.py",
+      "pre_model_gate_count": 5,
+      "runtime_gate_count": 6,
+      "binding_state": "BOUND_EXECUTABLE_NOT_RUN",
+      "any_nonpass_action": "STOP_WITH_EVIDENCE_NO_RETRY",
+      "runtime_gate_execution_count": 0
+    },
+    "P0.10": {
+      "status": "PASS",
+      "implementation_id": "ROUTE_A_V3_GSE200304_SOURCE_RELATIVE_CRITIC_G1_IMPLEMENTATION_CANDIDATE_V1",
+      "implementation_commit": "6ed009f57b23a26bb844f2f93bcb9a5a2fa34d79",
+      "implementation_config_path": "configs/route_a_v3_gse200304_source_relative_critic_g1_implementation_candidate_v1.json",
+      "implementation_script_path": "scripts/route_a_v3/gse200304_source_relative_critic_g1.py",
+      "implementation_test_path": "tests/route_a_v3/test_gse200304_source_relative_critic_g1_implementation_candidate.py",
+      "review_status": "PASS_STATIC_IMPLEMENTATION_BINDING_ONLY_NOT_ACTIVE_NOT_RUN",
+      "current_activation_state": "INACTIVE_FAIL_BEFORE_DATA_MODEL_CUDA_OUTPUT",
+      "future_activation_requires_separate_authority": true,
+      "a6_learned_base_value_implementation": false
+    },
+    "P0.11": {
+      "status": "PASS",
+      "pre_p0_locks": {
+        "training_allowed": false,
+        "gpu_work_allowed": false,
+        "model_selection_allowed": false,
+        "parameter_updates_allowed": false,
+        "materialization_allowed": false
+      },
+      "persistent_locks": {
+        "qualification_change_allowed": false,
+        "credit_change_allowed": false,
+        "canonical_mutation_allowed": false,
+        "scientific_claim_allowed": false,
+        "a6_learned_base_value_allowed": false,
+        "a7_allowed": false,
+        "sealed_access_allowed": false,
+        "automatic_g1_launch_allowed": false
+      }
+    }
+  },
+  "current_truth": {
+    "qualified_counts": {"ordinary": 1, "a1": 1, "true_a2": 0, "canonical_records": 6547},
+    "scientific_claim_status": "NOT_ESTABLISHED",
+    "data_rows_read": 0,
+    "split_assignments_generated": 0,
+    "cuda_touches": 0,
+    "model_constructions": 0,
+    "optimizer_constructions": 0,
+    "checkpoint_reads": 0,
+    "checkpoint_writes": 0,
+    "parameter_updates": 0,
+    "g1_launched": false,
+    "materialization_authority_granted": false
+  }
+}
