@@ -94,6 +94,8 @@ def test_disk_candidate_is_legal_i2_or_b2_and_normalizes_to_unbound_i2() -> None
     assert normalized["implementation_binding"]["frozen_second_implementation"]["implementation_commit"] == sync.I2_COMMIT
     assert normalized["implementation_binding"]["frozen_third_implementation"]["implementation_commit"] == sync.I3_COMMIT
     assert normalized["implementation_binding"]["frozen_failed_binding"]["binding_commit"] == sync.FAILED_B3_COMMIT
+    assert normalized["implementation_binding"]["frozen_fourth_implementation"]["implementation_commit"] == sync.I4_COMMIT
+    assert normalized["implementation_binding"]["frozen_failed_binding_b4"]["binding_commit"] == sync.FAILED_B4_COMMIT
     assert normalized["dec028_authority"]["current_qualified_counts"] == {
         "ordinary": 1,
         "a1": 1,
@@ -166,6 +168,24 @@ def test_predecessor_cas_or_timestamp_drift_stops() -> None:
         sync.build_successors(
             config, predecessor, "2026-08-14T00:00:00+08:00"
         )
+
+
+def test_legacy_status_may_omit_a7_but_explicit_true_stops() -> None:
+    config, predecessor = _fixture()
+    legacy_status = sync.load_json(predecessor["STATUS.json"], label="legacy status")
+    legacy_status.pop("a7_allowed")
+    legacy_payload = sync.json_bytes(legacy_status)
+    predecessor["STATUS.json"] = legacy_payload
+    status_spec = config["runtime"]["predecessor_mutables"]["STATUS.json"]
+    status_spec.update({"bytes": len(legacy_payload), "sha256": sync.sha256(legacy_payload)})
+    sync.validate_predecessor(config, predecessor)
+
+    legacy_status["a7_allowed"] = True
+    forbidden_payload = sync.json_bytes(legacy_status)
+    predecessor["STATUS.json"] = forbidden_payload
+    status_spec.update({"bytes": len(forbidden_payload), "sha256": sync.sha256(forbidden_payload)})
+    with pytest.raises(sync.RuntimeSyncError, match="a7_allowed drift"):
+        sync.validate_predecessor(config, predecessor)
 
 
 def test_unknown_binding_stops_before_runtime_io(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:

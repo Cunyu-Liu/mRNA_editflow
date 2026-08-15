@@ -61,6 +61,18 @@ FAILED_B3_FILES = [
     {"path": SCRIPT_REPO_PATH, "bytes": 33855, "sha256": "dad8bcd2f7f8421eefcaf7fe33b91875bd69e0ad81722311cc6698858937e449"},
     {"path": TEST_REPO_PATH, "bytes": 10479, "sha256": "3116cb611c9a570232b7ae350dbe143da9df7fe7dd3f17a692ec520fdf13b155"},
 ]
+I4_COMMIT = "a9ace1a8d2b8031b0b9b14caa815430b6642a9ad"
+I4_FILES = [
+    {"path": CONFIG_REPO_PATH, "bytes": 11664, "sha256": "a12c880f8afe5bda17b85691cd264aa96d9105970b97e1badffa633d3c1c409c"},
+    {"path": SCRIPT_REPO_PATH, "bytes": 36444, "sha256": "50857c5f06c78028ade0ef5dd2c88cdabf9fc51edeb63f3800307714feef2c8b"},
+    {"path": TEST_REPO_PATH, "bytes": 10840, "sha256": "d4daa64e27a5d4bb44ff93c87f2e225a1bf16dab3abb8295042484ecb31c256c"},
+]
+FAILED_B4_COMMIT = "45d000f3abde84d30a0a3b6872025c019e8d4232"
+FAILED_B4_FILES = [
+    {"path": CONFIG_REPO_PATH, "bytes": 11757, "sha256": "3dcc801da3bbc2149536b226577c1f7396fd3bf2ec37efdd4979c631e05d0f29"},
+    {"path": SCRIPT_REPO_PATH, "bytes": 36444, "sha256": "50857c5f06c78028ade0ef5dd2c88cdabf9fc51edeb63f3800307714feef2c8b"},
+    {"path": TEST_REPO_PATH, "bytes": 10840, "sha256": "d4daa64e27a5d4bb44ff93c87f2e225a1bf16dab3abb8295042484ecb31c256c"},
+]
 BRANCH = "routea-v3-a1-20260810"
 HEX40 = re.compile(r"^[0-9a-f]{40}$")
 HEX64 = re.compile(r"^[0-9a-f]{64}$")
@@ -118,7 +130,7 @@ def validate_static_config(config: dict[str, Any]) -> None:
     _binding_state(binding)
     _expect(
         binding.get("binding_scheme"),
-        "AUTHORITY_A_TO_I1_TO_I2_TO_I3_TO_FAILED_B3_TO_IMPLEMENTATION_I4_TO_CONFIG_ONLY_B4",
+        "AUTHORITY_A_TO_I1_TO_I2_TO_I3_TO_FAILED_B3_TO_I4_TO_FAILED_B4_TO_IMPLEMENTATION_I5_TO_CONFIG_ONLY_B5",
         label="binding scheme",
     )
     _expect(
@@ -160,6 +172,26 @@ def validate_static_config(config: dict[str, Any]) -> None:
             "binding_files": FAILED_B3_FILES,
         },
         label="failed B3",
+    )
+    _expect(
+        binding.get("frozen_fourth_implementation"),
+        {
+            "status": "FROZEN_BOUND_EXACT3",
+            "implementation_commit": I4_COMMIT,
+            "implementation_expected_parent": FAILED_B3_COMMIT,
+            "implementation_files": I4_FILES,
+        },
+        label="frozen I4",
+    )
+    _expect(
+        binding.get("frozen_failed_binding_b4"),
+        {
+            "status": "FROZEN_FAILED_PREDECESSOR_SCHEMA_AUDIT_NO_PREPARED_OR_RUNTIME_IO",
+            "binding_commit": FAILED_B4_COMMIT,
+            "binding_expected_parent": I4_COMMIT,
+            "binding_files": FAILED_B4_FILES,
+        },
+        label="failed B4",
     )
     _expect(binding["implementation_exact_changed_paths"], IMPLEMENTATION_PATHS, label="I exact3")
     _expect(binding["binding_exact_changed_paths"], [CONFIG_REPO_PATH], label="B config-only")
@@ -277,7 +309,9 @@ def audit_production_repository_authority(config: dict[str, Any], config_payload
         raise AuthorityError("production worktree or index is dirty")
     implementation = binding["implementation_commit"]
     _expect(base._run_git(repo, "rev-parse", f"{head}^").decode().strip(), implementation, label="B parent/I")
-    _expect(base._run_git(repo, "rev-parse", f"{implementation}^").decode().strip(), FAILED_B3_COMMIT, label="I4 parent/B3")
+    _expect(base._run_git(repo, "rev-parse", f"{implementation}^").decode().strip(), FAILED_B4_COMMIT, label="I5 parent/B4")
+    _expect(base._run_git(repo, "rev-parse", f"{FAILED_B4_COMMIT}^").decode().strip(), I4_COMMIT, label="B4 parent/I4")
+    _expect(base._run_git(repo, "rev-parse", f"{I4_COMMIT}^").decode().strip(), FAILED_B3_COMMIT, label="I4 parent/B3")
     _expect(base._run_git(repo, "rev-parse", f"{FAILED_B3_COMMIT}^").decode().strip(), I3_COMMIT, label="B3 parent/I3")
     _expect(base._run_git(repo, "rev-parse", f"{I3_COMMIT}^").decode().strip(), I2_COMMIT, label="I3 parent/I2")
     _expect(base._run_git(repo, "rev-parse", f"{I2_COMMIT}^").decode().strip(), I1_COMMIT, label="I2 parent/I1")
@@ -289,7 +323,9 @@ def audit_production_repository_authority(config: dict[str, Any], config_payload
     _expect(base._changed_paths(repo, I2_COMMIT), sorted(IMPLEMENTATION_PATHS), label="I2 exact3")
     _expect(base._changed_paths(repo, I3_COMMIT), sorted(IMPLEMENTATION_PATHS), label="I3 exact3")
     _expect(base._changed_paths(repo, FAILED_B3_COMMIT), [CONFIG_REPO_PATH], label="failed B3 config-only")
-    _expect(base._changed_paths(repo, implementation), sorted(IMPLEMENTATION_PATHS), label="I4 exact3")
+    _expect(base._changed_paths(repo, I4_COMMIT), sorted(IMPLEMENTATION_PATHS), label="I4 exact3")
+    _expect(base._changed_paths(repo, FAILED_B4_COMMIT), [CONFIG_REPO_PATH], label="failed B4 config-only")
+    _expect(base._changed_paths(repo, implementation), sorted(IMPLEMENTATION_PATHS), label="I5 exact3")
     _expect(base._changed_paths(repo, head), [CONFIG_REPO_PATH], label="B config-only")
     for item in authority["authority_files"]:
         blob = base._git_blob(repo, AUTHORITY_COMMIT, item["path"])
@@ -315,6 +351,14 @@ def audit_production_repository_authority(config: dict[str, Any], config_payload
         blob = base._git_blob(repo, FAILED_B3_COMMIT, item["path"])
         if len(blob) != item["bytes"] or sha256(blob) != item["sha256"]:
             raise AuthorityError("frozen failed B3 blob identity differs")
+    for item in I4_FILES:
+        blob = base._git_blob(repo, I4_COMMIT, item["path"])
+        if len(blob) != item["bytes"] or sha256(blob) != item["sha256"]:
+            raise AuthorityError("frozen I4 exact3 blob identity differs")
+    for item in FAILED_B4_FILES:
+        blob = base._git_blob(repo, FAILED_B4_COMMIT, item["path"])
+        if len(blob) != item["bytes"] or sha256(blob) != item["sha256"]:
+            raise AuthorityError("frozen failed B4 blob identity differs")
     i_config = load_json(base._git_blob(repo, implementation, CONFIG_REPO_PATH), label="I config")
     _expect(i_config, normalized_unknown_i_config(config), label="I unknown config")
     script_blob = base._git_blob(repo, implementation, SCRIPT_REPO_PATH)
@@ -328,12 +372,14 @@ def audit_production_repository_authority(config: dict[str, Any], config_payload
     _expect(base._read_repo_file(repo, SCRIPT_REPO_PATH), script_blob, label="working script")
     _expect(base._read_repo_file(repo, TEST_REPO_PATH), test_blob, label="working test")
     return {
-        "status": "PASS_EXACT17_A_I1_I2_I3_FAILED_B3_I4_CONFIG_ONLY_B4",
+        "status": "PASS_EXACT17_A_I1_I2_I3_FAILED_B3_I4_FAILED_B4_I5_CONFIG_ONLY_B5",
         "authority_commit": AUTHORITY_COMMIT,
         "predecessor_implementation_commit": I1_COMMIT,
         "second_predecessor_implementation_commit": I2_COMMIT,
         "third_predecessor_implementation_commit": I3_COMMIT,
         "failed_binding_commit": FAILED_B3_COMMIT,
+        "fourth_predecessor_implementation_commit": I4_COMMIT,
+        "second_failed_binding_commit": FAILED_B4_COMMIT,
         "implementation_commit": implementation,
         "binding_commit": head,
         "authority_blob_count": 17,
@@ -348,6 +394,8 @@ def _check_identity(payload: bytes, spec: Mapping[str, Any], *, label: str) -> N
 
 def _validate_outer(document: Mapping[str, Any], truth: Mapping[str, Any], *, label: str) -> None:
     for key, expected in truth.items():
+        if key == "a7_allowed" and key not in document:
+            continue
         _expect(document.get(key), expected, label=f"{label}.{key}")
 
 
