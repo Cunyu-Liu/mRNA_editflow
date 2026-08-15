@@ -1,0 +1,68 @@
+{
+  "schema_version": "route_a_v3_a2_g0_evaluator_candidate_dec028_review.v1",
+  "review_id": "ROUTE_A_V3_A2_G0_EVALUATOR_CANDIDATE_DEC028_CURRENT_HEAD_REVIEW_V1",
+  "record_status": "REVIEW_COMPLETE_NON_AUTHORITATIVE_NOT_ACTIVE_PROTOCOL",
+  "authority_status": "NON_AUTHORITATIVE",
+  "authority_context": {
+    "decision_id": "V3-DEC-028",
+    "machine_authority_status": "ACTIVE_AUTHORITY_AMENDMENT",
+    "runtime_event_id": "A1-EVT-061",
+    "operational_phase": "SINGLE_STUDY_S0_AUTHORITY_AND_P0_CLOSURE",
+    "current_qualified_counts": {
+      "ordinary": 1,
+      "a1": 1,
+      "true_a2": 0,
+      "canonical_records": 6547
+    },
+    "training_allowed": false,
+    "gpu_work_allowed": false,
+    "model_selection_allowed": false,
+    "a7_allowed": false
+  },
+  "candidate": {
+    "candidate_id": "ROUTE_A_V3_A2_G0_EVALUATOR_SPLIT_POWER_CANDIDATE_V1",
+    "implementation_commit": "865b6941ce86822b775da396cef47c4ea9fb985c",
+    "implementation_expected_parent": "4f8d2b2d6b4c8f6a4f47856c56dea741ba4cab4c",
+    "implementation_exact_changed_paths": [
+      "configs/route_a_v3_a2_g0_evaluator_candidate_v1.json",
+      "docs/reviews/route_a_v3_a2_g0_evaluator_candidate_review.md",
+      "scripts/route_a_v3/a2_g0_evaluator_split_power_candidate.py",
+      "tests/route_a_v3/test_a2_g0_evaluator_split_power_candidate.py"
+    ],
+    "required_document_status": "DRAFT_FOR_REVIEW_NOT_ACTIVE_PROTOCOL",
+    "required_authority_status": "NON_AUTHORITATIVE",
+    "required_activation_state": "INACTIVE_G0_IMPLEMENTATION_CANDIDATE"
+  },
+  "independent_review": {
+    "review_status": "COMPLETE",
+    "verdict": "PASS_G0_SYNTHETIC_INTERFACE_ONLY_PARTIAL_NOT_ACTIVE",
+    "focused_test_count": 26,
+    "semantic_drift_from_reviewed_candidate": "NONE",
+    "validated_behavior": [
+      "SYNTHETIC_ONLY_INPUT_SCOPE",
+      "OUTCOME_BLIND_SOURCE_GROUP_AND_KNOWN_DUPLICATE_COMPONENT_SPLIT",
+      "COMPONENT_DISJOINT_AGGREGATE_SPLIT_OUTPUT",
+      "DIRECTION_NORMALIZED_CANDIDATE_MINUS_SOURCE_ENDPOINT_CONTRACT",
+      "BIOLOGICAL_REPLICATE_STANDARD_ERROR_REQUIRED",
+      "MISSING_AND_NONFINITE_NEVER_IMPUTED_ZERO",
+      "BONETT_WRIGHT_FISHER_Z_PLANNING_FIRST_JOINT_PASS_N156",
+      "ZERO_PROJECT_OR_DATASET_ROW_IO",
+      "ZERO_TRAINING_CUDA_MODEL_SELECTION_OR_STATE_CHANGE"
+    ],
+    "explicit_noncoverage": [
+      "FINAL_MEMBERSHIP_OR_REAL_SPLIT_ASSIGNMENT",
+      "REAL_DATASET_EVALUATION",
+      "MEASURED_NEIGHBORHOOD_NDCG_RECALL_REGRET_OR_SEARCH_CLAIM",
+      "GUIDE_OR_MODEL_SELECTION_OUTPUT_ACCESS",
+      "FORMAL_POWER_OR_QUALIFICATION_GATE",
+      "A2_PHASE_PASS"
+    ]
+  },
+  "interface_isolation": {
+    "a6_candidate_is_review_evidence_for_a2": false,
+    "a2_candidate_is_review_evidence_for_a6": false,
+    "guide_output_is_evaluator_input": false,
+    "model_selection_output_is_evaluator_input": false
+  },
+  "activation_rule": "This review binds only a non-authoritative synthetic G0 candidate to the DEC028 current context. It does not freeze real membership or assignments, read project rows, run a formal evaluator or power gate, qualify A2, change credit, authorize training or CUDA, or unlock any later phase."
+}
