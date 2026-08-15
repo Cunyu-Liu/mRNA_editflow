@@ -1,0 +1,129 @@
+{
+  "schema_version": "route_a_v3_dec028_successor_p0_metadata_closure_template.v1",
+  "template_id": "ROUTE_A_V3_DEC028_SUCCESSOR_P0_METADATA_CLOSURE_TEMPLATE_V1",
+  "document_status": "SCHEMA_FIXTURE_AND_FAILURE_CODES_ONLY_NOT_A_PRODUCTION_P0_RECORD",
+  "production_p0_authorized": false,
+  "runtime_output_allowed": false,
+  "static_authority": {
+    "root_config_path": "configs/route_a_v3.yaml",
+    "root_config_sha256": "1f11e6a84ed394aecc5ef7a5626b7a07b2a877a4aa8c2a4c67a3d79e9771aca8",
+    "dec028_amendment_path": "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec028.yaml",
+    "dec028_amendment_sha256": "bd0e845daca76a75998b3bca3b8d2b93a9011a0cfb1ec8b40acd7ef133fed3c8",
+    "effective_active_amendment_decision_ids": [
+      "V3-DEC-017",
+      "V3-DEC-018",
+      "V3-DEC-019",
+      "V3-DEC-020",
+      "V3-DEC-021",
+      "V3-DEC-022",
+      "V3-DEC-023",
+      "V3-DEC-024",
+      "V3-DEC-027"
+    ],
+    "pending_successor_decision_id": "V3-DEC-028",
+    "current_qualified_counts": {
+      "ordinary": 1,
+      "a1": 1,
+      "true_a2": 0,
+      "canonical_records": 6547
+    },
+    "scientific_claim_status": "NOT_ESTABLISHED"
+  },
+  "p0_groups": [
+    {"gate_id": "P0.1", "gate_name": "INPUT_MEMBERSHIP_AND_BINDING"},
+    {"gate_id": "P0.2", "gate_name": "PRIOR_USE_ATTESTATION"},
+    {"gate_id": "P0.3", "gate_name": "EXPOSURE_ROLE"},
+    {"gate_id": "P0.4", "gate_name": "RIGHTS"},
+    {"gate_id": "P0.5", "gate_name": "SCIENTIFIC_ROW_CONTRACT"},
+    {"gate_id": "P0.6", "gate_name": "SCRATCH_ONLY_ROUTE"},
+    {"gate_id": "P0.7", "gate_name": "PROSPECTIVE_SPLIT"},
+    {"gate_id": "P0.8", "gate_name": "SINGLE_RUN_POLICY"},
+    {"gate_id": "P0.9", "gate_name": "EXECUTABLE_SCIENTIFIC_GATES"},
+    {"gate_id": "P0.10", "gate_name": "SUCCESSOR_LEARNED_RUN_IMPLEMENTATION"},
+    {"gate_id": "P0.11", "gate_name": "STATE_LOCKS"}
+  ],
+  "allowed_declared_statuses": [
+    "PASS",
+    "UNKNOWN_NOT_ASSERTED",
+    "FAIL_CLOSED_BINDING_ABSENT",
+    "FAIL_CLOSED_INTENDED_INTERNAL_TRAIN_RIGHTS_NOT_BOUND",
+    "FAIL_CLOSED_COMPLETE_ROW_CONTRACT_NOT_BOUND",
+    "FAIL_CLOSED_PROSPECTIVE_SPLIT_NOT_FROZEN",
+    "FAIL_CLOSED_SINGLE_RUN_POLICY_NOT_ACTIVE",
+    "FAIL_CLOSED_EXECUTABLE_GATE_BUNDLE_NOT_BOUND",
+    "FAIL_CLOSED_SUCCESSOR_NOT_BOUND"
+  ],
+  "initial_template_groups": {
+    "P0.1": {"declared_status": "FAIL_CLOSED_BINDING_ABSENT", "failure_code": "MISSING_6547_MEMBERSHIP_SOURCE_LINEAGE_AND_SINGLE_PROSPECTIVE_MATERIALIZATION_RECIPE"},
+    "P0.2": {"declared_status": "UNKNOWN_NOT_ASSERTED", "failure_code": "OWNER_FULL_PRIOR_ANALYTIC_USE_ATTESTATION_ABSENT"},
+    "P0.3": {"declared_status": "PASS", "failure_code": "INHERITED_EXPOSED_DEVELOPMENT_ONLY_ROLE"},
+    "P0.4": {"declared_status": "FAIL_CLOSED_INTENDED_INTERNAL_TRAIN_RIGHTS_NOT_BOUND", "failure_code": "OWNER_OR_LEGAL_RIGHTS_BINDING_ABSENT"},
+    "P0.5": {"declared_status": "FAIL_CLOSED_COMPLETE_ROW_CONTRACT_NOT_BOUND", "failure_code": "COMPLETE_SCHEMA_AUTHORITY_MEMBERSHIP_ENDPOINT_GROUP_SE_RIGHTS_EXPOSURE_CONTRACT_ABSENT"},
+    "P0.6": {"declared_status": "PASS", "failure_code": "INHERITED_DEC020_SCRATCH_ONLY_ZERO_EXTERNAL_LEARNED_INPUT_ROUTE"},
+    "P0.7": {"declared_status": "FAIL_CLOSED_PROSPECTIVE_SPLIT_NOT_FROZEN", "failure_code": "OUTCOME_BLIND_ALGORITHM_GROUPING_KEYS_SALT_AND_SUBROLE_CONTRACT_ABSENT"},
+    "P0.8": {"declared_status": "FAIL_CLOSED_SINGLE_RUN_POLICY_NOT_ACTIVE", "failure_code": "ONE_RUN_ONE_FIT_ONE_CHECKPOINT_NO_RETRY_POLICY_NOT_ACTIVE"},
+    "P0.9": {"declared_status": "FAIL_CLOSED_EXECUTABLE_GATE_BUNDLE_NOT_BOUND", "failure_code": "SOURCE_RELATIVE_CRITIC_ACTIVE_FAIL_CLOSED_GATE_BUNDLE_NOT_BOUND"},
+    "P0.10": {"declared_status": "FAIL_CLOSED_SUCCESSOR_NOT_BOUND", "failure_code": "GSE200304_SOURCE_RELATIVE_CRITIC_G1_IMPLEMENTATION_NOT_BOUND"},
+    "P0.11": {"declared_status": "PASS", "failure_code": "PERSISTENT_NO_PROMOTION_NO_A7_NO_SEALED_NO_SELECTION_NO_RETRY_LOCKS_RETAINED"}
+  },
+  "owner_metadata_closure_inputs": {
+    "P0.1": {
+      "responsible_role": "DATA_CUSTODIAN_AND_PROJECT_OWNER",
+      "minimum_aggregate_input": "BOUND_6547_MEMBERSHIP_CONTRACT_SOURCE_LINEAGE_AND_SINGLE_UNEXERCISED_PROSPECTIVE_MATERIALIZATION_RECIPE_REFERENCE",
+      "row_or_member_payload_allowed": false
+    },
+    "P0.2": {
+      "responsible_role": "PROJECT_OWNER",
+      "minimum_aggregate_input": "FULL_PRIOR_ANALYTIC_USE_DISCLOSURE_WITH_SCOPE_DISCLOSED_EXPOSED_DEVELOPMENT_ONLY_AND_PREDECESSOR_UNKNOWN_PRESERVED",
+      "row_or_member_payload_allowed": false
+    },
+    "P0.4": {
+      "responsible_role": "PROJECT_OWNER_OR_RIGHTS_HOLDER",
+      "minimum_aggregate_input": "INTENDED_INTERNAL_PROCESS_TRAIN_EVALUATE_RIGHTS_AND_OUTPUT_BOUNDARY_BINDING",
+      "row_or_member_payload_allowed": false
+    },
+    "P0.5": {
+      "responsible_role": "DATA_CUSTODIAN_AND_SCIENTIFIC_OWNER",
+      "minimum_aggregate_input": "COMPLETE_ROW_CONTRACT_SCHEMA_AUTHORITY_MEMBERSHIP_ENDPOINT_GROUP_SE_RIGHTS_AND_EXPOSURE_BINDING",
+      "row_or_member_payload_allowed": false
+    },
+    "P0.7": {
+      "responsible_role": "METHOD_OWNER",
+      "minimum_aggregate_input": "OUTCOME_BLIND_ALGORITHM_GROUPING_KEYS_SALT_FOLD_AND_SUBROLE_CONTRACT_WITH_SPLIT_ASSIGNMENT_COUNT_ZERO",
+      "row_or_member_payload_allowed": false
+    }
+  },
+  "result_policy": {
+    "all_eleven_pass_result": "ELIGIBLE_TO_REQUEST_MATERIALIZATION_NOT_G1_NOT_LAUNCHED",
+    "any_nonpass_result": "STOP_BEFORE_DATA_CUDA_MODEL",
+    "all_pass_starts_materialization": false,
+    "all_pass_launches_g1": false,
+    "all_pass_changes_scientific_claim": false
+  },
+  "forbidden_touchpoints": [
+    "DATA_ROWS", "MEMBER_IDS", "SEQUENCES", "ENDPOINT_VALUES", "STANDARD_ERRORS", "SPLIT_ASSIGNMENTS",
+    "CUDA", "DEVICE", "MODEL", "OPTIMIZER", "CHECKPOINT", "PARAMETER_UPDATE", "TRAINING", "RUNTIME_OUTPUT"
+  ],
+  "persistent_locks": {
+    "materialization_allowed": false,
+    "training_allowed": false,
+    "gpu_work_allowed": false,
+    "model_selection_allowed": false,
+    "a7_allowed": false,
+    "sealed_access_allowed": false,
+    "g1_launched": false
+  },
+  "runtime_truth": {
+    "project_rows_read": 0,
+    "split_assignments_created": 0,
+    "cuda_probe_calls": 0,
+    "model_constructions": 0,
+    "optimizer_constructions": 0,
+    "checkpoint_reads": 0,
+    "checkpoint_writes": 0,
+    "parameter_updates": 0,
+    "training_runs": 0,
+    "runtime_output_files_written": 0,
+    "g1_launched": false
+  }
+}
