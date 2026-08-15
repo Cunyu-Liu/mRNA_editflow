@@ -1,0 +1,73 @@
+{
+  "schema_version": "route_a_v3_a6_learned_base_value_g0_candidate_dec028_review.v1",
+  "review_id": "ROUTE_A_V3_A6_LEARNED_BASE_VALUE_G0_CANDIDATE_DEC028_CURRENT_HEAD_REVIEW_V1",
+  "record_status": "REVIEW_COMPLETE_NON_AUTHORITATIVE_NOT_ACTIVE_PROTOCOL",
+  "authority_status": "NON_AUTHORITATIVE",
+  "review_base_head": "a733480ad95cacb271ec97cdec692e8d0d792c55",
+  "authority_context": {
+    "decision_id": "V3-DEC-028",
+    "runtime_event_id": "A1-EVT-061",
+    "operational_phase": "SINGLE_STUDY_S0_AUTHORITY_AND_P0_CLOSURE",
+    "current_qualified_counts": {
+      "ordinary": 1,
+      "a1": 1,
+      "true_a2": 0,
+      "canonical_records": 6547
+    },
+    "current_future_g1_role": "GSE200304_SOURCE_RELATIVE_CRITIC_G1",
+    "a6_learned_base_value_execution_authorized": false,
+    "training_allowed": false,
+    "gpu_work_allowed": false,
+    "model_selection_allowed": false,
+    "a7_allowed": false
+  },
+  "candidate": {
+    "candidate_id": "ROUTE_A_V3_A6_LEARNED_BASE_VALUE_G0_IMPLEMENTATION_CANDIDATE_V1",
+    "implementation_commit": "8fde46ca7daa765fa3a8ad8ce24a3da82ce1a8d0",
+    "implementation_expected_parent": "0bb84dffb1389b9eced7e92e36ef80b8a97ed0be",
+    "implementation_exact_changed_paths": [
+      "configs/route_a_v3_a6_learned_base_value_g0_implementation_candidate_v1.json",
+      "docs/plans/2026-08-14-route-a-v3-a6-learned-g0-implementation-candidate-v1.md",
+      "scripts/route_a_v3/a6_learned_base_value_g0_candidate.py",
+      "tests/route_a_v3/test_a6_learned_base_value_g0_candidate.py"
+    ],
+    "config_path": "configs/route_a_v3_a6_learned_base_value_g0_implementation_candidate_v1.json",
+    "parent_protocol_path": "configs/route_a_v3_a6_learned_base_value_gpu_protocol_draft_v1.json",
+    "required_document_status": "DRAFT_FOR_REVIEW_NOT_ACTIVE_PROTOCOL",
+    "required_authority_status": "NON_AUTHORITATIVE",
+    "required_activation_state": "INACTIVE_IMPLEMENTATION_CANDIDATE",
+    "parent_required_activation_state": "INACTIVE_REVIEW_CANDIDATE"
+  },
+  "independent_review": {
+    "review_status": "COMPLETE",
+    "verdict": "PASS_G0_ZERO_UPDATE_INTERFACE_ONLY_PARTIAL_NOT_ACTIVE",
+    "semantic_drift_from_reviewed_candidate": "NONE",
+    "validated_behavior": [
+      "FROZEN_PARENT_PROTOCOL_STATIC_VALIDATION",
+      "PURE_ARCHITECTURE_SHAPE_PLAN_ZERO_PARAMETERS",
+      "AGGREGATE_ONLY_FUTURE_INPUT_CONTRACT_INTERFACE",
+      "SYNTHETIC_CPU_LEGALITY_STOP_ALIAS_AND_BUDGET_ADAPTER",
+      "PURE_BASE_RATE_DOOB_RATE_AND_TERMINAL_BOUNDARY_FORMULAS",
+      "ZERO_MODEL_OPTIMIZER_CUDA_CHECKPOINT_PARAMETER_UPDATE_OR_DATA_ROW_IO"
+    ],
+    "explicit_noncoverage": [
+      "TORCH_BASE_OR_VALUE_MODULE",
+      "REAL_DATA_LOADER_OR_MATERIALIZED_ROWS",
+      "OPTIMIZER_OR_PARAMETER_UPDATE",
+      "CUDA_OWNERSHIP_OR_GPU_RUN",
+      "CHECKPOINT_CREATION_OR_SELECTION",
+      "INDEPENDENT_96_GRAPH_EXACT_REFERENCE_RUN",
+      "FORMAL_FLOW_BASE_LEGAL_CTMC_PASS",
+      "SOURCE_RELATIVE_CRITIC_CALIBRATION_OR_LCB_MANIFEST",
+      "A6_LEARNED_BASE_VALUE_SUCCESSOR_AUTHORITY",
+      "A6_PASS_L3_CLAIM_OR_A7_UNLOCK"
+    ]
+  },
+  "interface_isolation": {
+    "a2_candidate_is_review_evidence_for_a6": false,
+    "a6_candidate_is_review_evidence_for_a2": false,
+    "source_relative_critic_is_implemented_by_this_candidate": false,
+    "source_relative_critic_lcb_is_available": false
+  },
+  "activation_rule": "This review binds the unchanged non-authoritative A6 G0 candidate only. Under DEC028 the future exactly-one G1 role is the source-relative critic, not A6 learned base/value. This candidate authorizes no data rows, model, optimizer, CUDA, checkpoint, parameter update, A6 PASS, L3, A7, or later phase. Any future A6 learned execution requires a separate successor after an independently accepted critic calibration/LCB manifest."
+}
