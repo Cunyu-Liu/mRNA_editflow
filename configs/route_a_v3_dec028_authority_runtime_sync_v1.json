@@ -1,0 +1,110 @@
+{
+  "schema_version": "route_a_v3_dec028_authority_runtime_sync.v1",
+  "protocol_id": "ROUTE_A_V3_DEC028_AUTHORITY_RUNTIME_SYNC_V1",
+  "contract_id": "mrna_xeditflow_route_a_v3",
+  "phase_id": "A1",
+  "decision_id": "V3-DEC-028",
+  "sync_type": "APPEND_ONLY_AUTHORITY_ONLY_RUNTIME_REGISTRATION_NO_SCIENTIFIC_STATE_CHANGE",
+  "candidate_contract": {
+    "path": "docs/contracts/candidates/mrna_xeditflow_route_a_v3_dec028_single_study_mainline_contract_v1.md",
+    "sha256": "1864f28a963f8feda113d4b5de5f92b23ebad58b9fe6471136466b9d314b0fd0",
+    "bytes": 38799
+  },
+  "amendment": {
+    "path": "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec028.yaml",
+    "sha256": "bd0e845daca76a75998b3bca3b8d2b93a9011a0cfb1ec8b40acd7ef133fed3c8",
+    "status": "FROZEN_OWNER_SELECTED_PENDING_FRESH_RUNTIME_AUTHORITY_SYNC"
+  },
+  "static_authority": {
+    "status": "PENDING_STATIC_AUTHORITY_ONLY",
+    "effective_active_amendment_decision_ids_before_sync": [
+      "V3-DEC-017",
+      "V3-DEC-018",
+      "V3-DEC-019",
+      "V3-DEC-020",
+      "V3-DEC-021",
+      "V3-DEC-022",
+      "V3-DEC-023",
+      "V3-DEC-024",
+      "V3-DEC-027"
+    ],
+    "active_amendment_decision_ids_after_sync": [
+      "V3-DEC-017",
+      "V3-DEC-018",
+      "V3-DEC-019",
+      "V3-DEC-020",
+      "V3-DEC-021",
+      "V3-DEC-022",
+      "V3-DEC-023",
+      "V3-DEC-024",
+      "V3-DEC-027",
+      "V3-DEC-028"
+    ],
+    "current_qualified_counts": {
+      "ordinary": 1,
+      "a1": 1,
+      "true_a2": 0,
+      "canonical_records": 6547
+    },
+    "scientific_claim_status": "NOT_ESTABLISHED",
+    "next_operational_scope": "SINGLE_STUDY_S0_AUTHORITY_AND_P0_CLOSURE",
+    "locks": {
+      "data_row_access_allowed": false,
+      "materialization_allowed": false,
+      "cuda_probe_allowed": false,
+      "model_or_optimizer_construction_allowed": false,
+      "checkpoint_read_or_write_allowed": false,
+      "parameter_update_or_training_allowed": false,
+      "model_selection_allowed": false,
+      "g1_launched": false,
+      "a7_allowed": false,
+      "sealed_access_allowed": false,
+      "p0_production_authorized": false
+    }
+  },
+  "owner_activation": {
+    "status": "OWNER_ISSUANCE_REQUIRED",
+    "decision_issuance_reference": "UNKNOWN_NOT_ASSERTED",
+    "issued_at": "UNKNOWN_NOT_ASSERTED",
+    "independent_review_status": "PENDING_DISTINCT_REVIEW",
+    "independent_review_reference": "UNKNOWN_NOT_ASSERTED"
+  },
+  "implementation_binding": {
+    "status": "UNKNOWN_NOT_ASSERTED",
+    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "implementation_script_path": "scripts/route_a_v3/dec028_authority_runtime_sync.py",
+    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_test_path": "tests/route_a_v3/test_dec028_authority_runtime_sync.py",
+    "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED"
+  },
+  "production_repository": {
+    "status": "UNKNOWN_NOT_ASSERTED",
+    "repository_root": "UNKNOWN_NOT_ASSERTED",
+    "branch": "UNKNOWN_NOT_ASSERTED",
+    "expected_head_commit": "UNKNOWN_NOT_ASSERTED"
+  },
+  "runtime": {
+    "run_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5",
+    "allowed_prepared_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/staging/runtime_sync/A1",
+    "predecessor_decision_id": "V3-DEC-027",
+    "event_id_prefix": "A1-EVT-",
+    "event_id_width": 3,
+    "sync_name": "A1_DEC028_AUTHORITY_RUNTIME_SYNC_V1.json",
+    "snapshot_names": {
+      "STATUS.json": "STATUS_PRE_DEC028_AUTHORITY_RUNTIME_SYNC_V1.json",
+      "RUN_MANIFEST.json": "RUN_MANIFEST_PRE_DEC028_AUTHORITY_RUNTIME_SYNC_V1.json",
+      "EVENT_LOG.jsonl": "EVENT_LOG_PRE_DEC028_AUTHORITY_RUNTIME_SYNC_V1.jsonl"
+    },
+    "immutable_publish_order": [
+      "STATUS_PRE_DEC028_AUTHORITY_RUNTIME_SYNC_V1.json",
+      "RUN_MANIFEST_PRE_DEC028_AUTHORITY_RUNTIME_SYNC_V1.json",
+      "EVENT_LOG_PRE_DEC028_AUTHORITY_RUNTIME_SYNC_V1.jsonl",
+      "A1_DEC028_AUTHORITY_RUNTIME_SYNC_V1.json"
+    ],
+    "mutable_publish_order": [
+      "STATUS.json",
+      "RUN_MANIFEST.json",
+      "EVENT_LOG.jsonl"
+    ]
+  }
+}
