@@ -120,7 +120,7 @@ new_authority:
     V3-DEC-027: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec027.yaml
   latest_authority_update_id: V3-DEC-027
   config_path: configs/route_a_v3.yaml
-  config_sha256: c5ec7d236443b506c09fd3f09e149ce5d082daff618887989af6e59472727a27
+  config_sha256: 1f11e6a84ed394aecc5ef7a5626b7a07b2a877a4aa8c2a4c67a3d79e9771aca8
   base_commit: bbb71dcba6f1e1c9cb75a8a6653f1a4fe4a6ca0c
   authority_bundle_commit_binding: docs/execution/route_a_v3_a0_activation.yaml
   status: ACTIVE_AUTHORITATIVE_CONTRACT_PENDING_A0_ACCEPTANCE

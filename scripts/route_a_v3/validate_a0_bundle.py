@@ -43,6 +43,19 @@ DEC022_AMENDMENT_PATH = "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec
 DEC023_AMENDMENT_PATH = "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec023.yaml"
 DEC024_AMENDMENT_PATH = "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec024.yaml"
 DEC027_AMENDMENT_PATH = "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec027.yaml"
+DEC028_AMENDMENT_PATH = "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec028.yaml"
+DEC028_CANDIDATE_CONTRACT_PATH = (
+    "docs/contracts/candidates/mrna_xeditflow_route_a_v3_dec028_single_study_mainline_contract_v1.md"
+)
+DEC028_SINGLE_STUDY_PROTOCOL_PATH = "configs/route_a_v3_dec028_single_study_protocol_v1.json"
+DEC028_SUCCESSOR_P0_SCHEMA_PATH = "configs/route_a_v3_dec028_successor_p0_schema_v1.json"
+DEC028_INDEPENDENT_REVIEW_PATH = "docs/reviews/2026-08-15-route-a-v3-dec028-independent-action-changing-review.md"
+DEC028_METADATA_PLAN_PATH = "docs/plans/2026-08-15-route-a-v3-dec028-gse200304-metadata-closure-plan.md"
+DEC028_A2_G0_PLAN_PATH = "docs/plans/2026-08-15-route-a-v3-dec028-a2-evaluator-freeze.md"
+DEC028_STATIC_VALIDATOR_PATH = "scripts/route_a_v3/validate_dec028_static_bundle.py"
+DEC028_SS0_RECORDER_PATH = "scripts/route_a_v3/record_dec028_ss0_static_preflight.py"
+DEC028_FOCUSED_TEST_PATH = "tests/route_a_v3/test_dec028_static_bundle.py"
+DEC028_AUTHORITY_FOCUSED_TEST_PATH = "tests/route_a_v3/test_dec028_authority_bundle.py"
 DECISION_LOG_PATH = "docs/execution/route_a_v3_decision_log.yaml"
 REGISTRY_MANIFEST_PATH = "docs/execution/route_a_v3_registry_manifest.json"
 A1_INTERIM_PATH = "docs/execution/route_a_v3_a1_interim.yaml"
@@ -170,6 +183,16 @@ DEC027_EVT060_PROJECTION_MANIFEST_STATUS = (
     "UNALLOCATED_NO_PROMOTION_A1_INCOMPLETE_A6_IN_PROGRESS_"
     "L3_NOT_ESTABLISHED_A7_NOT_RUN"
 )
+DEC028_PENDING_MANIFEST_STATUS = (
+    "DEC028_STATIC_BUNDLE_FROZEN_PENDING_FRESH_RUNTIME_SYNC_COUNTS_1_1_0_6547_"
+    "CLAIM_NOT_ESTABLISHED_G1_NOT_LAUNCHED"
+)
+DEC028_CURRENT_COUNTS = {
+    "ordinary": 1,
+    "a1": 1,
+    "true_a2": 0,
+    "canonical_records": 6547,
+}
 DEC027_EVT060_RUNTIME_CAS_PATHS = {
     "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/STATUS.json",
     "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/RUN_MANIFEST.json",
@@ -1059,6 +1082,49 @@ DEC027_ACTIVE_AUTHORITY_LEAF_SHA256.update(
         "docs/execution/route_a_v3_task_registry.yaml": "a64d0b8bb5eb466b06daa46ed109bd19901ee775910bc5cc9221c39ead63a4bc",
     }
 )
+DEC028_PENDING_AUTHORITY_LEAF_SHA256 = dict(DEC027_ACTIVE_AUTHORITY_LEAF_SHA256)
+DEC028_PENDING_AUTHORITY_LEAF_SHA256.update(
+    {
+    CONFIG_PATH: "1f11e6a84ed394aecc5ef7a5626b7a07b2a877a4aa8c2a4c67a3d79e9771aca8",
+    A1_QUALIFICATION_CONFIG_PATH: "e0a30eb16919528f723012891c4b142adf2b0475f127389cc9fc03aaf2666c3f",
+    SUPERSESSION_PATH: "c57acbc01d9c7dcf7624afcde1b7b6742cdfece7266d169e84fc566695d0e540",
+    "docs/execution/route_a_v3_baseline_registry.yaml": "9a834e75e760c7d0700e01d8c5fffe8d184d61ceda7a8fb43ccf1f948fd64d5f",
+    "docs/execution/route_a_v3_claim_evidence_matrix.yaml": "a96cff153480fbe9c1d0ffaf0d902804fca72c06c9d64429b50d9d6cfbb266c0",
+    "docs/execution/route_a_v3_data_role_registry.yaml": "569115ab218990379e7399b3544a2b53d05f200b71668f02042f0a95fa0fa339",
+    DECISION_LOG_PATH: "e2e9b53efb79617b13f3bdfbcc27a7f1a05c3312ed1da3f11fd1062d28eb7ab2",
+    A1_INTERIM_PATH: "5c93a7dd06fbfa24133c66e6f4477fa4b5a200d440989d36a39cf092802cb4e3",
+    A6_INTERIM_PATH: "82d3407f060d3622def4587d97db569bb7350d9e69fedb5a8baedcf0647921ab",
+    "docs/execution/route_a_v3_split_registry.yaml": "4fe05a1154c591c448b6fc190557904e746421347dd5c373ea9a704c6c4ba393",
+    "docs/execution/route_a_v3_task_registry.yaml": "aeb8165ca79135eeda73fc1590579b695ab2b7bee4ce83e5d158776cd184bb8c",
+    "docs/execution/route_a_v3_task_split_matrix.yaml": "675bcfc298ff7d27320880ebd218962533286a20e2f3987df23a5b2e944546e6",
+    }
+)
+DEC028_PENDING_STATIC_PATH_ROLES = (
+    (DEC028_AMENDMENT_PATH, "DEC028_PENDING_SUCCESSOR_AMENDMENT"),
+    (DEC028_CANDIDATE_CONTRACT_PATH, "DEC028_CANDIDATE_CONTRACT_BYTES"),
+    (DEC028_SINGLE_STUDY_PROTOCOL_PATH, "DEC028_SINGLE_STUDY_PROTOCOL"),
+    (DEC028_SUCCESSOR_P0_SCHEMA_PATH, "DEC028_SUCCESSOR_P0_SCHEMA_ONLY"),
+    (DEC028_INDEPENDENT_REVIEW_PATH, "DEC028_INDEPENDENT_REVIEW"),
+    (DEC028_METADATA_PLAN_PATH, "DEC028_METADATA_PLAN"),
+    (DEC028_A2_G0_PLAN_PATH, "DEC028_A2_G0_PLAN"),
+    (DEC028_STATIC_VALIDATOR_PATH, "DEC028_STATIC_VALIDATOR"),
+    (DEC028_SS0_RECORDER_PATH, "DEC028_SS0_RECORDER"),
+    (DEC028_FOCUSED_TEST_PATH, "DEC028_FOCUSED_TEST"),
+    (DEC028_AUTHORITY_FOCUSED_TEST_PATH, "DEC028_OFFICIAL_AUTHORITY_FOCUSED_TEST"),
+)
+DEC028_PENDING_STATIC_LEAF_SHA256 = {
+    DEC028_AMENDMENT_PATH: "bd0e845daca76a75998b3bca3b8d2b93a9011a0cfb1ec8b40acd7ef133fed3c8",
+    DEC028_CANDIDATE_CONTRACT_PATH: "1864f28a963f8feda113d4b5de5f92b23ebad58b9fe6471136466b9d314b0fd0",
+    DEC028_SINGLE_STUDY_PROTOCOL_PATH: "eb0a6995c66e29ca5d509c4b4adde4e69612f5f29ea9cd2cedcd7d4bff285fee",
+    DEC028_SUCCESSOR_P0_SCHEMA_PATH: "8b52526c0b178708ac496503361c32a130a2ec4bce989f02af809e4a61aa91bb",
+    DEC028_INDEPENDENT_REVIEW_PATH: "3d5aebf70a55d9affbb5b94e42fee3cbfeef94d71f5daf68a65692a00b47ac8d",
+    DEC028_METADATA_PLAN_PATH: "c32b1e577fced6f99238402ca19d8e5685f3a1d73bcf196bfd902eefcff77a43",
+    DEC028_A2_G0_PLAN_PATH: "f72f091b342889288fe0b9b5f7c3ec05c9ae39c7eda57e4e2446d5de09c5753d",
+    DEC028_STATIC_VALIDATOR_PATH: "0d43dfbeabb615c67164c105781639fab98baa6fdbb50121515b125caebdd70b",
+    DEC028_SS0_RECORDER_PATH: "79106444f460457b00e290846a06cf43c743b5b3028741917e76ead7a7082b6d",
+    DEC028_FOCUSED_TEST_PATH: "8a261b7d0c36dd78d713a279a9dee76fd64dbbb0a4de4b4e94aabbd538a3b2ca",
+    DEC028_AUTHORITY_FOCUSED_TEST_PATH: "a8259f2c41640fed67ae1f88d29649f51dedf7da195b33b240b3b6e3911fdd98",
+}
 DEC023_AUTHORITY_EXACT_CHANGED_PATHS = (
     CONFIG_PATH,
     A1_QUALIFICATION_CONFIG_PATH,
@@ -2764,6 +2830,189 @@ def _load_json(repo_root: Path, relative: str) -> Mapping[str, Any]:
     return loaded
 
 
+def _is_dec028_pending_manifest(manifest: Mapping[str, Any]) -> bool:
+    """Recognize only the closed, unactivated DEC028 manifest state."""
+
+    return (
+        manifest.get("active_amendment_decision_ids") == ACTIVE_AMENDMENT_DECISION_IDS
+        and manifest.get("pending_successor_amendment_decision_ids") == ["V3-DEC-028"]
+        and manifest.get("manifest_status") == DEC028_PENDING_MANIFEST_STATUS
+        and manifest.get("sealed_contact") is False
+    )
+
+
+def expected_manifest_status(repo_root: Path) -> str:
+    """Return the only accepted status for the manifest currently being checked."""
+
+    try:
+        manifest = _load_json(repo_root, REGISTRY_MANIFEST_PATH)
+    except (FileNotFoundError, ValueError, json.JSONDecodeError):
+        return DEC027_EVT060_PROJECTION_MANIFEST_STATUS
+    return (
+        DEC028_PENDING_MANIFEST_STATUS
+        if _is_dec028_pending_manifest(manifest)
+        else DEC027_EVT060_PROJECTION_MANIFEST_STATUS
+    )
+
+
+def _is_dec028_pending_authority_bundle(repo_root: Path) -> bool:
+    """Return true only for the exact pre-runtime DEC028 authority state."""
+
+    try:
+        amendment = _load_yaml(repo_root, DEC028_AMENDMENT_PATH)
+        candidate = _read_bytes(repo_root, DEC028_CANDIDATE_CONTRACT_PATH)
+        config = _load_yaml(repo_root, CONFIG_PATH)
+        qualification = _load_json(repo_root, A1_QUALIFICATION_CONFIG_PATH)
+        supersession = _load_yaml(repo_root, SUPERSESSION_PATH)
+        interim = _load_yaml(repo_root, A1_INTERIM_PATH)
+        a6_interim = _load_yaml(repo_root, A6_INTERIM_PATH)
+        decision_log = _load_yaml(repo_root, DECISION_LOG_PATH)
+        manifest = _load_json(repo_root, REGISTRY_MANIFEST_PATH)
+    except (FileNotFoundError, ValueError, yaml.YAMLError, json.JSONDecodeError):
+        return False
+
+    expected_amendment = {
+        "schema_version": "1.0.0",
+        "amendment_id": "MRNA_XEDITFLOW_ROUTE_A_V3_DEC028",
+        "decision_id": "V3-DEC-028",
+        "contract_id": CONTRACT_ID,
+        "status": "FROZEN_OWNER_SELECTED_PENDING_FRESH_RUNTIME_AUTHORITY_SYNC",
+        "predecessor_decision_id": "V3-DEC-027",
+        "candidate_contract": {
+            "path": DEC028_CANDIDATE_CONTRACT_PATH,
+            "sha256": DEC028_PENDING_STATIC_LEAF_SHA256[DEC028_CANDIDATE_CONTRACT_PATH],
+            "bytes": 38799,
+        },
+        "preserved_full_route_a": {
+            "required_counts": {"ordinary": 3, "a1": 2, "true_a2": 1},
+            "current_counts": DEC028_CURRENT_COUNTS,
+            "scientific_claim_status": "NOT_ESTABLISHED",
+            "gate_relaxation": "NONE",
+        },
+        "locks": {
+            "data_row_access_allowed": False,
+            "materialization_allowed": False,
+            "cuda_probe_allowed": False,
+            "model_or_optimizer_construction_allowed": False,
+            "checkpoint_read_or_write_allowed": False,
+            "parameter_update_or_training_allowed": False,
+            "model_selection_allowed": False,
+            "g1_launched": False,
+            "a7_allowed": False,
+            "sealed_access_allowed": False,
+            "p0_production_authorized": False,
+        },
+        "runtime_sync": {
+            "required": True,
+            "event_id": "PENDING_FRESH_RUNTIME_EVENT_ID",
+            "must_not_change_counts_claim_or_locks": True,
+        },
+    }
+    expected_root = {
+        "decision_id": "V3-DEC-028",
+        "status": "FROZEN_PENDING_FRESH_RUNTIME_AUTHORITY_SYNC",
+        "current_counts": DEC028_CURRENT_COUNTS,
+        "scientific_claim_status": "NOT_ESTABLISHED",
+        "data_row_access_allowed": False,
+        "materialization_allowed": False,
+        "cuda_probe_allowed": False,
+        "model_or_optimizer_construction_allowed": False,
+        "parameter_update_or_training_allowed": False,
+        "model_selection_allowed": False,
+        "g1_launched": False,
+        "a7_allowed": False,
+        "sealed_access_allowed": False,
+        "p0_production_authorized": False,
+    }
+    expected_qualification = {
+        "status": "FROZEN_PENDING_FRESH_RUNTIME_AUTHORITY_SYNC",
+        "current_counts": DEC028_CURRENT_COUNTS,
+        "scientific_claim_status": "NOT_ESTABLISHED",
+        "qualification_or_credit_change_allowed": False,
+        "data_cuda_model_training_allowed": False,
+        "g1_launched": False,
+    }
+    expected_disposition = {
+        "status": "FROZEN_PENDING_FRESH_RUNTIME_AUTHORITY_SYNC",
+        "predecessor_runtime_event_id": DEC027_EVT060_CURRENT_RUNTIME_EVENT_ID,
+        "fresh_runtime_event_id": "PENDING_FRESH_RUNTIME_EVENT_ID",
+        "current_counts": DEC028_CURRENT_COUNTS,
+        "scientific_claim_status": "NOT_ESTABLISHED",
+        "training_allowed": False,
+        "gpu_work_allowed": False,
+        "model_selection_allowed": False,
+        "a7_allowed": False,
+        "sealed_contact_allowed": False,
+        "materialization_allowed": False,
+    }
+    expected_a6_boundary = {
+        "status": "NONLEARNED_CPU_STATIC_SYNTHETIC_ONLY",
+        "learned_base_value_authorized": False,
+        "cuda_probe_allowed": False,
+        "model_or_optimizer_construction_allowed": False,
+        "parameter_update_allowed": False,
+        "a6_status": "IN_PROGRESS",
+        "l3_status": "NOT_ESTABLISHED",
+    }
+    expected_decision = {
+        "decision_id": "V3-DEC-028",
+        "record_type": "APPEND_ONLY_PENDING_SINGLE_STUDY_SUCCESSOR",
+        "status": "FROZEN_OWNER_SELECTED_PENDING_FRESH_RUNTIME_AUTHORITY_SYNC",
+        "predecessor_decision_id": "V3-DEC-027",
+        "current_counts": DEC028_CURRENT_COUNTS,
+        "scientific_claim_status": "NOT_ESTABLISHED",
+        "data_cuda_model_or_sealed_authorized": False,
+    }
+    new_authority = supersession.get("new_authority")
+    successor = supersession.get("dec028_pending_successor")
+    decisions = decision_log.get("decisions")
+    if not isinstance(new_authority, Mapping) or not isinstance(successor, Mapping):
+        return False
+    if not isinstance(decisions, list) or not decisions:
+        return False
+    if any(
+        sha256_bytes(_read_bytes(repo_root, relative)) != expected
+        for relative, expected in {
+            **DEC028_PENDING_AUTHORITY_LEAF_SHA256,
+            **DEC028_PENDING_STATIC_LEAF_SHA256,
+        }.items()
+    ):
+        return False
+    authority_text_paths = (
+        DEC028_AMENDMENT_PATH,
+        CONFIG_PATH,
+        A1_QUALIFICATION_CONFIG_PATH,
+        SUPERSESSION_PATH,
+        A1_INTERIM_PATH,
+        DECISION_LOG_PATH,
+    )
+    if any("A1-EVT-061" in _read_text(repo_root, path) for path in authority_text_paths):
+        return False
+    return (
+        amendment == expected_amendment
+        and len(candidate) == 38799
+        and sha256_bytes(candidate) == expected_amendment["candidate_contract"]["sha256"]
+        and config.get("dec028_single_study_successor") == expected_root
+        and qualification.get("dec028_single_study_successor_projection") == expected_qualification
+        and new_authority.get("active_amendment_decision_ids") == ACTIVE_AMENDMENT_DECISION_IDS
+        and new_authority.get("pending_successor_amendment_decision_ids") == ["V3-DEC-028"]
+        and new_authority.get("latest_authority_update_id") == "V3-DEC-027"
+        and new_authority.get("config_path") == CONFIG_PATH
+        and new_authority.get("config_sha256") == DEC028_PENDING_AUTHORITY_LEAF_SHA256[CONFIG_PATH]
+        and successor == {
+            "amendment_path": DEC028_AMENDMENT_PATH,
+            "activation_requires_fresh_runtime_sync": True,
+            "current_effective_authority_remains": "V3-DEC-027",
+            "successor_phase_after_sync": "SINGLE_STUDY_S0_AUTHORITY_AND_P0_CLOSURE",
+            "counts_claim_and_locks_must_remain_unchanged": True,
+        }
+        and interim.get("dec028_current_disposition") == expected_disposition
+        and a6_interim.get("dec028_a6_boundary") == expected_a6_boundary
+        and decisions[-1] == expected_decision
+        and _is_dec028_pending_manifest(manifest)
+    )
+
+
 def required_bundle_paths() -> tuple[str, ...]:
     return (
         GOAL_PATH,
@@ -3742,6 +3991,7 @@ def validate_registry_manifest(repo_root: Path) -> list[Issue]:
         _issue(issues, "REGISTRY_MANIFEST_UNREADABLE", REGISTRY_MANIFEST_PATH, str(exc))
         return issues
 
+    dec028_pending = _is_dec028_pending_manifest(manifest)
     expected_static_top = {
         "contract_id": CONTRACT_ID,
         "version": VERSION,
@@ -3757,6 +4007,11 @@ def validate_registry_manifest(repo_root: Path) -> list[Issue]:
         "updated_at": DEC027_EVT060_PROJECTION_MANIFEST_AT,
         "sealed_contact": False,
     }
+    if dec028_pending:
+        expected_static_top["manifest_status"] = DEC028_PENDING_MANIFEST_STATUS
+        expected_static_top["pending_successor_amendment_decision_ids"] = [
+            "V3-DEC-028"
+        ]
     expected_top_keys = set(expected_static_top) | {"files"}
     if type(manifest) is not dict or set(manifest) != expected_top_keys:
         _issue(
@@ -3825,17 +4080,20 @@ def validate_registry_manifest(repo_root: Path) -> list[Issue]:
         if actual != declared:
             _issue(issues, "REGISTRY_MANIFEST_HASH_MISMATCH", relative, f"got {actual}, expected {declared}")
 
-    if not _json_type_strict_equal(
-        observed_path_roles,
-        list(EXPECTED_REGISTRY_MANIFEST_PATH_ROLES),
-    ):
+    expected_path_roles = list(EXPECTED_REGISTRY_MANIFEST_PATH_ROLES)
+    if dec028_pending:
+        expected_path_roles.extend(DEC028_PENDING_STATIC_PATH_ROLES)
+    if not _json_type_strict_equal(observed_path_roles, expected_path_roles):
         _issue(
             issues,
             "REGISTRY_MANIFEST_CLOSURE",
             REGISTRY_MANIFEST_PATH,
             "files must preserve the exact ordered path-to-role registry",
         )
-    if set(by_path) != MANDATORY_REGISTRY_MANIFEST_PATHS:
+    expected_paths = set(MANDATORY_REGISTRY_MANIFEST_PATHS)
+    if dec028_pending:
+        expected_paths.update(path for path, _role in DEC028_PENDING_STATIC_PATH_ROLES)
+    if set(by_path) != expected_paths:
         _issue(
             issues,
             "REGISTRY_MANIFEST_COVERAGE",
@@ -4000,11 +4258,27 @@ def validate_decision_log(decision_log: Mapping[str, Any]) -> list[Issue]:
     }
     if len(decisions) != len(raw):
         _issue(issues, "DECISION_LOG_DUPLICATE_OR_INVALID", DECISION_LOG_PATH, "decision IDs must be unique strings")
-    if set(decisions) != set(EXPECTED_DECISION_IDS):
-        _issue(issues, "DECISION_LOG_ID_CLOSURE", DECISION_LOG_PATH, "decision IDs must preserve V3-DEC-001 through V3-DEC-024 and append V3-DEC-027")
     ordered_ids = [entry.get("decision_id") if isinstance(entry, Mapping) else None for entry in raw]
-    if ordered_ids != list(EXPECTED_DECISION_IDS):
-        _issue(issues, "DECISION_LOG_ORDER", DECISION_LOG_PATH, "accepted DEC-001 through DEC-024 prefix must remain exact and DEC-027 must be appended")
+    dec028_pending = ordered_ids == [*EXPECTED_DECISION_IDS, "V3-DEC-028"]
+    expected_ids = (
+        (*EXPECTED_DECISION_IDS, "V3-DEC-028")
+        if dec028_pending
+        else EXPECTED_DECISION_IDS
+    )
+    if set(decisions) != set(expected_ids):
+        _issue(
+            issues,
+            "DECISION_LOG_ID_CLOSURE",
+            DECISION_LOG_PATH,
+            "decision IDs must preserve the accepted DEC001-DEC027 history and only append the closed DEC028 pending successor",
+        )
+    if ordered_ids != list(expected_ids):
+        _issue(
+            issues,
+            "DECISION_LOG_ORDER",
+            DECISION_LOG_PATH,
+            "accepted DEC001-DEC027 order must remain exact; DEC028 may only be the final pending successor",
+        )
     for decision_id, dimension in EXPECTED_DECISION_DIMENSIONS.items():
         entry = decisions.get(decision_id)
         if not isinstance(entry, Mapping):
@@ -4032,6 +4306,25 @@ def validate_decision_log(decision_log: Mapping[str, Any]) -> list[Issue]:
             _issue(issues, "DECISION_LOG_TYPE", DECISION_LOG_PATH, f"{decision_id} has invalid decision_type")
         if not isinstance(entry.get("evidence_refs"), list) or not entry.get("evidence_refs"):
             _issue(issues, "DECISION_LOG_EVIDENCE", DECISION_LOG_PATH, f"{decision_id} requires evidence_refs")
+
+    if dec028_pending:
+        _expect_closed_mapping(
+            decisions.get("V3-DEC-028")
+            if isinstance(decisions.get("V3-DEC-028"), Mapping)
+            else {},
+            {
+                "decision_id": "V3-DEC-028",
+                "record_type": "APPEND_ONLY_PENDING_SINGLE_STUDY_SUCCESSOR",
+                "status": "FROZEN_OWNER_SELECTED_PENDING_FRESH_RUNTIME_AUTHORITY_SYNC",
+                "predecessor_decision_id": "V3-DEC-027",
+                "current_counts": DEC028_CURRENT_COUNTS,
+                "scientific_claim_status": "NOT_ESTABLISHED",
+                "data_cuda_model_or_sealed_authorized": False,
+            },
+            DECISION_LOG_PATH,
+            issues,
+            "DEC028_DECISION_LOG",
+        )
 
     exact_resolutions = {
         "V3-DEC-001": "ROUTE_A_FULL_XEDITFLOW",
@@ -5629,10 +5922,14 @@ def validate_dec020_authority(
     repo_root: Path,
     config: Mapping[str, Any],
     registries: Mapping[str, Mapping[str, Any]],
+    *,
+    dec028_pending: bool | None = None,
 ) -> list[Issue]:
     """Freeze DEC-020 as authority only; no route adjudication or V4 registration."""
 
     issues: list[Issue] = []
+    if dec028_pending is None:
+        dec028_pending = _is_dec028_pending_authority_bundle(repo_root)
     for relative, expected_sha256 in DEC020_PRESERVED_AUTHORITY_LEAF_SHA256.items():
         try:
             actual_sha256 = sha256_bytes(_read_bytes(repo_root, relative))
@@ -5647,6 +5944,8 @@ def validate_dec020_authority(
         allowed_sha256 = {expected_sha256}
         if relative == "docs/execution/route_a_v3_task_registry.yaml":
             allowed_sha256.add(CURRENT_TASK_REGISTRY_SHA256)
+        if dec028_pending and relative in DEC028_PENDING_AUTHORITY_LEAF_SHA256:
+            allowed_sha256.add(DEC028_PENDING_AUTHORITY_LEAF_SHA256[relative])
         if actual_sha256 not in allowed_sha256:
             _issue(
                 issues,
@@ -6275,10 +6574,14 @@ def validate_dec021_authority(
     repo_root: Path,
     config: Mapping[str, Any],
     registries: Mapping[str, Mapping[str, Any]],
+    *,
+    dec028_pending: bool | None = None,
 ) -> list[Issue]:
     """Preserve the completed DEC-021 authority bytes under its DEC-022 successor."""
 
     issues: list[Issue] = []
+    if dec028_pending is None:
+        dec028_pending = _is_dec028_pending_authority_bundle(repo_root)
     for relative, expected_sha256 in DEC021_PRESERVED_HISTORICAL_LEAF_SHA256.items():
         try:
             actual_sha256 = sha256_bytes(_read_bytes(repo_root, relative))
@@ -6288,6 +6591,8 @@ def validate_dec021_authority(
         allowed_sha256 = {expected_sha256}
         if relative == "docs/execution/route_a_v3_task_registry.yaml":
             allowed_sha256.add(CURRENT_TASK_REGISTRY_SHA256)
+        if dec028_pending and relative in DEC028_PENDING_AUTHORITY_LEAF_SHA256:
+            allowed_sha256.add(DEC028_PENDING_AUTHORITY_LEAF_SHA256[relative])
         if actual_sha256 not in allowed_sha256:
             _issue(
                 issues,
@@ -6584,10 +6889,14 @@ def validate_dec022_authority(
     repo_root: Path,
     config: Mapping[str, Any],
     registries: Mapping[str, Mapping[str, Any]],
+    *,
+    dec028_pending: bool | None = None,
 ) -> list[Issue]:
     """Freeze the aggregate-only GSE256185 row-level preflight without promotion."""
 
     issues: list[Issue] = []
+    if dec028_pending is None:
+        dec028_pending = _is_dec028_pending_authority_bundle(repo_root)
     for relative, expected_sha256 in DEC022_ACTIVE_AUTHORITY_LEAF_SHA256.items():
         try:
             actual_sha256 = sha256_bytes(_read_bytes(repo_root, relative))
@@ -6602,6 +6911,8 @@ def validate_dec022_authority(
                 DEC024_ACTIVE_AUTHORITY_LEAF_SHA256.get(relative, expected_sha256),
             ),
         }
+        if dec028_pending and relative in DEC028_PENDING_AUTHORITY_LEAF_SHA256:
+            allowed_sha256.add(DEC028_PENDING_AUTHORITY_LEAF_SHA256[relative])
         if actual_sha256 not in allowed_sha256:
             _issue(
                 issues,
@@ -6941,10 +7252,14 @@ def validate_dec023_authority(
     repo_root: Path,
     config: Mapping[str, Any],
     registries: Mapping[str, Mapping[str, Any]],
+    *,
+    dec028_pending: bool | None = None,
 ) -> list[Issue]:
     """Freeze both DEC023 aggregate-only preflights without any promotion."""
 
     issues: list[Issue] = []
+    if dec028_pending is None:
+        dec028_pending = _is_dec028_pending_authority_bundle(repo_root)
     for relative, expected_sha256 in DEC023_ACTIVE_AUTHORITY_LEAF_SHA256.items():
         try:
             actual_sha256 = sha256_bytes(_read_bytes(repo_root, relative))
@@ -6958,6 +7273,8 @@ def validate_dec023_authority(
                 DEC024_ACTIVE_AUTHORITY_LEAF_SHA256.get(relative, expected_sha256),
             ),
         }
+        if dec028_pending and relative in DEC028_PENDING_AUTHORITY_LEAF_SHA256:
+            allowed_sha256.add(DEC028_PENDING_AUTHORITY_LEAF_SHA256[relative])
         if actual_sha256 not in allowed_sha256:
             _issue(
                 issues,
@@ -7340,14 +7657,22 @@ def validate_dec024_authority(
     repo_root: Path,
     config: Mapping[str, Any],
     registries: Mapping[str, Mapping[str, Any]],
+    *,
+    dec028_pending: bool | None = None,
 ) -> list[Issue]:
     """Freeze three ordinary-public aggregate-only successor preflights."""
 
     issues: list[Issue] = []
+    if dec028_pending is None:
+        dec028_pending = _is_dec028_pending_authority_bundle(repo_root)
     for relative, historical_sha256 in DEC024_ACTIVE_AUTHORITY_LEAF_SHA256.items():
         expected_sha256 = DEC027_ACTIVE_AUTHORITY_LEAF_SHA256.get(
             relative, historical_sha256
         )
+        if dec028_pending:
+            expected_sha256 = DEC028_PENDING_AUTHORITY_LEAF_SHA256.get(
+                relative, expected_sha256
+            )
         try:
             actual_sha256 = sha256_bytes(_read_bytes(repo_root, relative))
         except (FileNotFoundError, ValueError) as exc:
@@ -8112,11 +8437,19 @@ def validate_dec027_authority(
     repo_root: Path,
     config: Mapping[str, Any],
     registries: Mapping[str, Mapping[str, Any]],
+    *,
+    dec028_pending: bool | None = None,
 ) -> list[Issue]:
     """Freeze the ordered six-route rescue sprint without awarding credit."""
 
     issues: list[Issue] = []
+    if dec028_pending is None:
+        dec028_pending = _is_dec028_pending_authority_bundle(repo_root)
     for relative, expected_sha256 in DEC027_ACTIVE_AUTHORITY_LEAF_SHA256.items():
+        if dec028_pending:
+            expected_sha256 = DEC028_PENDING_AUTHORITY_LEAF_SHA256.get(
+                relative, expected_sha256
+            )
         try:
             actual_sha256 = sha256_bytes(_read_bytes(repo_root, relative))
         except (FileNotFoundError, ValueError) as exc:
@@ -8362,8 +8695,9 @@ def validate_dec027_authority(
         _issue(issues, "DEC027_EXTERNAL_CANDIDATE_PROMOTION", REGISTRY_PATHS["data"], "external preflight candidates may not enter registered study units before qualification")
 
     decisions = decision_log.get("decisions")
-    if not isinstance(decisions, list) or not decisions or not isinstance(decisions[-1], Mapping) or decisions[-1].get("decision_id") != "V3-DEC-027":
-        _issue(issues, "DEC027_DECISION_LOG", DECISION_LOG_PATH, "DEC027 must be the append-only final decision after the preserved DEC001-DEC024 prefix")
+    expected_final_decision_id = "V3-DEC-028" if dec028_pending else "V3-DEC-027"
+    if not isinstance(decisions, list) or not decisions or not isinstance(decisions[-1], Mapping) or decisions[-1].get("decision_id") != expected_final_decision_id:
+        _issue(issues, "DEC027_DECISION_LOG", DECISION_LOG_PATH, "DEC027 must remain intact; only the exact pending DEC028 successor may follow it")
     manifest_paths = {
         entry.get("path"): entry
         for entry in manifest.get("files", [])
@@ -8374,12 +8708,76 @@ def validate_dec027_authority(
         _issue(issues, "DEC027_MANIFEST", REGISTRY_MANIFEST_PATH, "DEC027 amendment must be registered with its exact role")
     for key, value in {
         "active_amendment_decision_ids": ACTIVE_AMENDMENT_DECISION_IDS,
-        "manifest_status": DEC027_EVT060_PROJECTION_MANIFEST_STATUS,
+        "manifest_status": (
+            DEC028_PENDING_MANIFEST_STATUS
+            if dec028_pending
+            else DEC027_EVT060_PROJECTION_MANIFEST_STATUS
+        ),
         "generated_at": DEC027_EVT060_PROJECTION_MANIFEST_AT,
         "updated_at": DEC027_EVT060_PROJECTION_MANIFEST_AT,
         "sealed_contact": False,
     }.items():
         _expect(manifest, key, value, REGISTRY_MANIFEST_PATH, issues, "DEC027_MANIFEST")
+    if dec028_pending:
+        _expect(
+            manifest,
+            "pending_successor_amendment_decision_ids",
+            ["V3-DEC-028"],
+            REGISTRY_MANIFEST_PATH,
+            issues,
+            "DEC027_MANIFEST",
+        )
+    return issues
+
+
+def validate_dec028_pending_authority(
+    repo_root: Path,
+    config: Mapping[str, Any],
+    supersession: Mapping[str, Any],
+    registries: Mapping[str, Mapping[str, Any]],
+    *,
+    dec028_pending: bool | None = None,
+) -> list[Issue]:
+    """Bind the sole allowed DEC028 state before its required runtime sync."""
+
+    del config, supersession, registries
+    issues: list[Issue] = []
+    try:
+        manifest = _load_json(repo_root, REGISTRY_MANIFEST_PATH)
+        amendment = _load_yaml(repo_root, DEC028_AMENDMENT_PATH)
+    except (FileNotFoundError, ValueError, yaml.YAMLError, json.JSONDecodeError):
+        return issues
+    declared = (
+        _is_dec028_pending_manifest(manifest)
+        or amendment.get("decision_id") == "V3-DEC-028"
+    )
+    if not declared:
+        return issues
+    for relative, expected_sha256 in {
+        **DEC028_PENDING_AUTHORITY_LEAF_SHA256,
+        **DEC028_PENDING_STATIC_LEAF_SHA256,
+    }.items():
+        try:
+            actual_sha256 = sha256_bytes(_read_bytes(repo_root, relative))
+        except (FileNotFoundError, ValueError) as exc:
+            _issue(issues, "DEC028_STATIC_LEAF_UNREADABLE", relative, str(exc))
+            continue
+        if actual_sha256 != expected_sha256:
+            _issue(
+                issues,
+                "DEC028_STATIC_LEAF_DRIFT",
+                relative,
+                f"pending DEC028 leaf hash {actual_sha256} must remain {expected_sha256}",
+            )
+    if dec028_pending is None:
+        dec028_pending = _is_dec028_pending_authority_bundle(repo_root)
+    if not dec028_pending:
+        _issue(
+            issues,
+            "DEC028_PENDING_AUTHORITY_BUNDLE",
+            DEC028_AMENDMENT_PATH,
+            "DEC028 may remain only as the exact, unactivated pending successor with counts and locks unchanged",
+        )
     return issues
 
 
@@ -11000,22 +11398,31 @@ def _validate_dec027_six_rescue_interim(
 def validate_a1_interim_lineage(
     repo_root: Path,
     interim: Mapping[str, Any],
+    *,
+    dec028_pending: bool | None = None,
 ) -> list[Issue]:
     """Bind the active A1 blocked record to Scheme A without granting a gate."""
 
     issues: list[Issue] = []
+    if dec028_pending is None:
+        dec028_pending = _is_dec028_pending_authority_bundle(repo_root)
     path = A1_INTERIM_PATH
     try:
         actual_interim_hash = sha256_bytes(_read_bytes(repo_root, path))
     except (FileNotFoundError, ValueError) as exc:
         _issue(issues, "A1_INTERIM_UNREADABLE", path, str(exc))
         actual_interim_hash = None
-    if actual_interim_hash is not None and actual_interim_hash != EXPECTED_A1_INTERIM_SHA256:
+    expected_interim_hash = (
+        DEC028_PENDING_AUTHORITY_LEAF_SHA256[A1_INTERIM_PATH]
+        if dec028_pending
+        else EXPECTED_A1_INTERIM_SHA256
+    )
+    if actual_interim_hash is not None and actual_interim_hash != expected_interim_hash:
         _issue(
             issues,
             "A1_INTERIM_CANONICAL_HASH",
             path,
-            f"active interim hash {actual_interim_hash} must remain {EXPECTED_A1_INTERIM_SHA256}",
+            f"active interim hash {actual_interim_hash} must remain {expected_interim_hash}",
         )
 
     expected_top = {
@@ -11060,6 +11467,8 @@ def validate_a1_interim_lineage(
         "latest_authority_update_id",
         "latest_evidence_update_id",
     }
+    if dec028_pending:
+        expected_top_keys.add("dec028_current_disposition")
     if set(interim) != expected_top_keys:
         _issue(
             issues,
@@ -11128,10 +11537,18 @@ def validate_a1_interim_lineage(
             "claim_evidence_matrix_sha256",
             "active_authority_leaf_sha256",
         }
+        expected_active_authority_leaf_sha256 = (
+            {
+                relative: DEC028_PENDING_AUTHORITY_LEAF_SHA256[relative]
+                for relative in DEC027_ACTIVE_AUTHORITY_LEAF_SHA256
+            }
+            if dec028_pending
+            else DEC027_ACTIVE_AUTHORITY_LEAF_SHA256
+        )
         _expect(
             authority,
             "active_authority_leaf_sha256",
-            DEC027_ACTIVE_AUTHORITY_LEAF_SHA256,
+            expected_active_authority_leaf_sha256,
             path,
             issues,
             "A1_INTERIM_AUTHORITY_HASH",
@@ -15480,26 +15897,58 @@ def _expected_a6_cpu_exact_interim() -> dict[str, Any]:
 def validate_a6_cpu_exact_registration(
     repo_root: Path,
     registries: Mapping[str, Mapping[str, Any]],
+    *,
+    dec028_pending: bool | None = None,
 ) -> list[Issue]:
     """Validate the accumulated exact and Gillespie A6 partial evidence."""
 
     issues: list[Issue] = []
+    if dec028_pending is None:
+        dec028_pending = _is_dec028_pending_authority_bundle(repo_root)
     try:
         interim = _load_yaml(repo_root, A6_INTERIM_PATH)
         actual_interim_sha256 = sha256_bytes(_read_bytes(repo_root, A6_INTERIM_PATH))
     except (FileNotFoundError, ValueError, yaml.YAMLError) as exc:
         _issue(issues, "A6_INTERIM_LOAD", A6_INTERIM_PATH, str(exc))
         return issues
-    if actual_interim_sha256 != EXPECTED_A6_INTERIM_SHA256:
+    expected_interim_sha256 = (
+        DEC028_PENDING_AUTHORITY_LEAF_SHA256[A6_INTERIM_PATH]
+        if dec028_pending
+        else EXPECTED_A6_INTERIM_SHA256
+    )
+    if actual_interim_sha256 != expected_interim_sha256:
         _issue(
             issues,
             "A6_INTERIM_CANONICAL_HASH",
             A6_INTERIM_PATH,
-            f"active interim hash {actual_interim_sha256} must remain {EXPECTED_A6_INTERIM_SHA256}",
+            f"active interim hash {actual_interim_sha256} must remain {expected_interim_sha256}",
         )
+    expected_interim = _expected_a6_cpu_exact_interim()
+    if dec028_pending:
+        expected_interim["authority"] = {
+            **expected_interim["authority"],
+            "active_config_sha256": DEC028_PENDING_AUTHORITY_LEAF_SHA256[
+                CONFIG_PATH
+            ],
+            "task_registry_sha256": DEC028_PENDING_AUTHORITY_LEAF_SHA256[
+                REGISTRY_PATHS["task"]
+            ],
+            "claim_evidence_matrix_sha256": DEC028_PENDING_AUTHORITY_LEAF_SHA256[
+                REGISTRY_PATHS["claim"]
+            ],
+        }
+        expected_interim["dec028_a6_boundary"] = {
+            "status": "NONLEARNED_CPU_STATIC_SYNTHETIC_ONLY",
+            "learned_base_value_authorized": False,
+            "cuda_probe_allowed": False,
+            "model_or_optimizer_construction_allowed": False,
+            "parameter_update_allowed": False,
+            "a6_status": "IN_PROGRESS",
+            "l3_status": "NOT_ESTABLISHED",
+        }
     _expect_closed_mapping(
         interim,
-        _expected_a6_cpu_exact_interim(),
+        expected_interim,
         A6_INTERIM_PATH,
         issues,
         "A6_INTERIM_SEMANTICS",
@@ -17126,14 +17575,48 @@ def validate_bundle(repo_root: Path) -> list[Issue]:
     except (FileNotFoundError, ValueError, yaml.YAMLError) as exc:
         _issue(issues, "BUNDLE_DOCUMENT_LOAD", ".", str(exc))
         return sorted(set(issues))
+    dec028_pending = _is_dec028_pending_authority_bundle(repo_root)
     issues.extend(validate_contract_authority(repo_root, config, supersession, registries))
     issues.extend(validate_dec019_authority(repo_root, config, registries))
-    issues.extend(validate_dec020_authority(repo_root, config, registries))
-    issues.extend(validate_dec021_authority(repo_root, config, registries))
-    issues.extend(validate_dec022_authority(repo_root, config, registries))
-    issues.extend(validate_dec023_authority(repo_root, config, registries))
-    issues.extend(validate_dec024_authority(repo_root, config, registries))
-    issues.extend(validate_dec027_authority(repo_root, config, registries))
+    issues.extend(
+        validate_dec020_authority(
+            repo_root, config, registries, dec028_pending=dec028_pending
+        )
+    )
+    issues.extend(
+        validate_dec021_authority(
+            repo_root, config, registries, dec028_pending=dec028_pending
+        )
+    )
+    issues.extend(
+        validate_dec022_authority(
+            repo_root, config, registries, dec028_pending=dec028_pending
+        )
+    )
+    issues.extend(
+        validate_dec023_authority(
+            repo_root, config, registries, dec028_pending=dec028_pending
+        )
+    )
+    issues.extend(
+        validate_dec024_authority(
+            repo_root, config, registries, dec028_pending=dec028_pending
+        )
+    )
+    issues.extend(
+        validate_dec027_authority(
+            repo_root, config, registries, dec028_pending=dec028_pending
+        )
+    )
+    issues.extend(
+        validate_dec028_pending_authority(
+            repo_root,
+            config,
+            supersession,
+            registries,
+            dec028_pending=dec028_pending,
+        )
+    )
     try:
         decision_log = _load_yaml(repo_root, DECISION_LOG_PATH)
     except (FileNotFoundError, ValueError, yaml.YAMLError) as exc:
@@ -17145,8 +17628,16 @@ def validate_bundle(repo_root: Path) -> list[Issue]:
     except (FileNotFoundError, ValueError, yaml.YAMLError) as exc:
         _issue(issues, "A1_INTERIM_LOAD", A1_INTERIM_PATH, str(exc))
     else:
-        issues.extend(validate_a1_interim_lineage(repo_root, a1_interim))
-    issues.extend(validate_a6_cpu_exact_registration(repo_root, registries))
+        issues.extend(
+            validate_a1_interim_lineage(
+                repo_root, a1_interim, dec028_pending=dec028_pending
+            )
+        )
+    issues.extend(
+        validate_a6_cpu_exact_registration(
+            repo_root, registries, dec028_pending=dec028_pending
+        )
+    )
     issues.extend(validate_registry_closure(config, registries))
     issues.extend(validate_sealed_hard_disable(config, registries))
     issues.extend(validate_l4_and_pre_v3(config, supersession, registries["claim"]))

@@ -3098,9 +3098,7 @@ def test_gse217518_public_authority_preflight_registration_is_closed(
         not in manifest_paths
     )
     assert validator.REGISTRY_MANIFEST_PATH not in manifest_paths
-    assert manifest["manifest_status"] == (
-        validator.DEC027_EVT060_PROJECTION_MANIFEST_STATUS
-    )
+    assert manifest["manifest_status"] == validator.expected_manifest_status(repo_root)
     assert (
         validator.validate_gse217518_public_authority_preflight_registration(
             repo_root
@@ -4263,10 +4261,10 @@ def test_registry_manifest_detects_every_listed_hash_drift(validator, tmp_path, 
         "contract_sha256": goal_hash,
         "active_amendment_decision_ids": validator.ACTIVE_AMENDMENT_DECISION_IDS,
         "base_commit": "bbb71dcba6f1e1c9cb75a8a6653f1a4fe4a6ca0c",
-        "manifest_status": validator.A6_REGISTRATION_MANIFEST_STATUS,
+        "manifest_status": validator.DEC027_EVT060_PROJECTION_MANIFEST_STATUS,
         "initial_generated_at": "2026-08-10T10:10:05+08:00",
-        "generated_at": validator.A6_REGISTRATION_MANIFEST_AT,
-        "updated_at": validator.A6_REGISTRATION_MANIFEST_AT,
+        "generated_at": validator.DEC027_EVT060_PROJECTION_MANIFEST_AT,
+        "updated_at": validator.DEC027_EVT060_PROJECTION_MANIFEST_AT,
         "sealed_contact": False,
         "files": entries,
     }
@@ -4456,16 +4454,25 @@ def test_current_task_and_a6_authority_pointers_follow_dec027_without_rewriting_
     assert authority_ref["dec024_amendment_path"] == validator.DEC024_AMENDMENT_PATH
     assert authority_ref["dec027_amendment_path"] == validator.DEC027_AMENDMENT_PATH
 
+    dec028_pending = validator._is_dec028_pending_authority_bundle(repo_root)
+    expected_task_sha256 = (
+        validator.DEC028_PENDING_AUTHORITY_LEAF_SHA256[task_path]
+        if dec028_pending
+        else validator.CURRENT_TASK_REGISTRY_SHA256
+    )
     task_sha256 = validator.sha256_file(repo_root / task_path)
-    assert task_sha256 == validator.CURRENT_TASK_REGISTRY_SHA256
+    assert task_sha256 == expected_task_sha256
     a6_interim = validator._load_yaml(repo_root, validator.A6_INTERIM_PATH)
     a6_authority = a6_interim["authority"]
     assert a6_authority["active_config_sha256"] == validator.sha256_file(
         repo_root / validator.CONFIG_PATH
     )
-    assert a6_authority["active_config_sha256"] == (
-        validator.CURRENT_ACTIVE_CONFIG_SHA256
+    expected_config_sha256 = (
+        validator.DEC028_PENDING_AUTHORITY_LEAF_SHA256[validator.CONFIG_PATH]
+        if dec028_pending
+        else validator.CURRENT_ACTIVE_CONFIG_SHA256
     )
+    assert a6_authority["active_config_sha256"] == expected_config_sha256
     assert a6_authority["task_registry_sha256"] == task_sha256
 
     frozen_task_sha256 = (
@@ -4495,7 +4502,12 @@ def test_current_task_and_a6_authority_pointers_follow_dec027_without_rewriting_
     assert validator.DEC024_ACTIVE_AUTHORITY_LEAF_SHA256[task_path] == (
         "c1d9920cc3d28c7ee63d9649a69d6b6856b9b25115f6ca4f1d392a067a0d5dae"
     )
-    assert validator.DEC027_ACTIVE_AUTHORITY_LEAF_SHA256[task_path] == task_sha256
+    expected_current_leaf_hashes = (
+        validator.DEC028_PENDING_AUTHORITY_LEAF_SHA256
+        if dec028_pending
+        else validator.DEC027_ACTIVE_AUTHORITY_LEAF_SHA256
+    )
+    assert expected_current_leaf_hashes[task_path] == task_sha256
 
 
 @pytest.mark.parametrize(
@@ -4802,9 +4814,7 @@ def test_dec024_three_replacement_preflight_authorities_are_closed(
     manifest = validator._load_json(repo_root, validator.REGISTRY_MANIFEST_PATH)
     manifest_paths = {row["path"] for row in manifest["files"]}
     assert validator.DEC024_AMENDMENT_PATH in manifest_paths
-    assert manifest["manifest_status"] == (
-        validator.DEC027_EVT060_PROJECTION_MANIFEST_STATUS
-    )
+    assert manifest["manifest_status"] == validator.expected_manifest_status(repo_root)
     assert {
         "configs/route_a_v3_gse207584_moesm7_aggregate_endpoint_universe_preflight_v1.json",
         "scripts/route_a_v3/preflight_gse207584_moesm7_aggregate_endpoint_universe.py",
@@ -4934,16 +4944,15 @@ def test_dec027_ordered_rescue_and_conditional_stop_rule_are_closed(
     )
 
     manifest = validator._load_json(repo_root, validator.REGISTRY_MANIFEST_PATH)
-    assert manifest["manifest_status"] == (
-        validator.DEC027_EVT060_PROJECTION_MANIFEST_STATUS
-    )
+    assert manifest["manifest_status"] == validator.expected_manifest_status(repo_root)
     assert validator.DEC027_AMENDMENT_PATH in {
         row["path"] for row in manifest["files"]
     }
     decision_log = validator._load_yaml(repo_root, validator.DECISION_LOG_PATH)
-    assert [row["decision_id"] for row in decision_log["decisions"]][-2:] == [
+    assert [row["decision_id"] for row in decision_log["decisions"]][-3:] == [
         "V3-DEC-024",
         "V3-DEC-027",
+        "V3-DEC-028",
     ]
 
 
@@ -5000,9 +5009,7 @@ def test_dec023_dual_preflight_final_evidence_registration_is_closed(
     assert set(static_paths).issubset(manifest_paths)
     assert validator.GSE261709_PREFLIGHT_REPORT_PATH not in manifest_paths
     assert validator.GSE207584_PREFLIGHT_REPORT_PATH not in manifest_paths
-    assert manifest["manifest_status"] == (
-        validator.DEC027_EVT060_PROJECTION_MANIFEST_STATUS
-    )
+    assert manifest["manifest_status"] == validator.expected_manifest_status(repo_root)
 
     interim = validator._load_yaml(repo_root, validator.A1_INTERIM_PATH)
     current = interim["dec023_current_disposition"]
@@ -5223,9 +5230,7 @@ def test_dec027_evt060_current_projection_settlement_is_closed(
 ):
     assert validator.validate_dec027_six_rescue_evidence_registration(repo_root) == []
     manifest = validator._load_json(repo_root, validator.REGISTRY_MANIFEST_PATH)
-    assert manifest["manifest_status"] == (
-        validator.DEC027_EVT060_PROJECTION_MANIFEST_STATUS
-    )
+    assert manifest["manifest_status"] == validator.expected_manifest_status(repo_root)
     manifest_paths = {row["path"] for row in manifest["files"]}
     assert len(validator.DEC027_SIX_RESCUE_STATIC_LEAF_SHA256) == 18
     assert set(validator.DEC027_SIX_RESCUE_STATIC_LEAF_SHA256) <= manifest_paths

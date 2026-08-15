@@ -10,11 +10,11 @@ authority:
   contract_path: docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md
   contract_sha256: cbac4c3dcba8f1b8df95d8edad52d19e3c126d1c865d0cc423537c754cc90982
   active_config_path: configs/route_a_v3.yaml
-  active_config_sha256: c5ec7d236443b506c09fd3f09e149ce5d082daff618887989af6e59472727a27
+  active_config_sha256: 1f11e6a84ed394aecc5ef7a5626b7a07b2a877a4aa8c2a4c67a3d79e9771aca8
   task_registry_path: docs/execution/route_a_v3_task_registry.yaml
-  task_registry_sha256: a64d0b8bb5eb466b06daa46ed109bd19901ee775910bc5cc9221c39ead63a4bc
+  task_registry_sha256: aeb8165ca79135eeda73fc1590579b695ab2b7bee4ce83e5d158776cd184bb8c
   claim_evidence_matrix_path: docs/execution/route_a_v3_claim_evidence_matrix.yaml
-  claim_evidence_matrix_sha256: 214279390d09c2857735c9cfa041ce38c45a7542142d4b0941ad7c035a7ee81a
+  claim_evidence_matrix_sha256: a96cff153480fbe9c1d0ffaf0d902804fca72c06c9d64429b50d9d6cfbb266c0
   branch: routea-v3-a1-20260810
   worktree: /home/cunyuliu/mrna_editflow_goal/worktrees/routea_v3_a1_20260810
 

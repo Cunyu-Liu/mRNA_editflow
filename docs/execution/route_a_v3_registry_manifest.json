@@ -24,7 +24,7 @@
     {
       "path": "configs/route_a_v3.yaml",
       "role": "EXECUTABLE_CONTRACT",
-      "sha256": "c5ec7d236443b506c09fd3f09e149ce5d082daff618887989af6e59472727a27"
+      "sha256": "1f11e6a84ed394aecc5ef7a5626b7a07b2a877a4aa8c2a4c67a3d79e9771aca8"
     },
     {
       "path": "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec019.yaml",
@@ -64,12 +64,12 @@
     {
       "path": "configs/route_a_v3_a1_qualification.json",
       "role": "A1_QUALIFICATION_ROOT_PROTOCOL",
-      "sha256": "261339c38f4b8bbd48bf8f63f6a588be57af9f6229119e84bf661d7ee8f855db"
+      "sha256": "e0a30eb16919528f723012891c4b142adf2b0475f127389cc9fc03aaf2666c3f"
     },
     {
       "path": "docs/contracts/supersession_mrna_xeditflow_v1_1_to_route_a_v3.yaml",
       "role": "SUPERSESSION_LINEAGE",
-      "sha256": "1c4b6e29c09eb24798207138047b68909d7bda8bacc3a2eab8e17a7ca789b44b"
+      "sha256": "c57acbc01d9c7dcf7624afcde1b7b6742cdfece7266d169e84fc566695d0e540"
     },
     {
       "path": "docs/contracts/history/mrna_v2_readiness_audit_20260807.md",
@@ -79,47 +79,47 @@
     {
       "path": "docs/execution/route_a_v3_baseline_registry.yaml",
       "role": "BASELINE_REGISTRY",
-      "sha256": "fb47324918b4cdd24a441e0c89909e4956b1f6a83ae64ef359af0bcc1a9371bf"
+      "sha256": "9a834e75e760c7d0700e01d8c5fffe8d184d61ceda7a8fb43ccf1f948fd64d5f"
     },
     {
       "path": "docs/execution/route_a_v3_claim_evidence_matrix.yaml",
       "role": "CLAIM_EVIDENCE_MATRIX",
-      "sha256": "214279390d09c2857735c9cfa041ce38c45a7542142d4b0941ad7c035a7ee81a"
+      "sha256": "a96cff153480fbe9c1d0ffaf0d902804fca72c06c9d64429b50d9d6cfbb266c0"
     },
     {
       "path": "docs/execution/route_a_v3_data_role_registry.yaml",
       "role": "DATA_ROLE_REGISTRY",
-      "sha256": "80217a8114286f84960237819ac5b2d5828afbc23af118576541cc7cee64ae4e"
+      "sha256": "569115ab218990379e7399b3544a2b53d05f200b71668f02042f0a95fa0fa339"
     },
     {
       "path": "docs/execution/route_a_v3_decision_log.yaml",
       "role": "DECISION_AND_AMENDMENT_LOG",
-      "sha256": "e0dc2a7fb186c5c8d00c1c5604602b1b2f87b26241191d4da55a405a02387e05"
+      "sha256": "e2e9b53efb79617b13f3bdfbcc27a7f1a05c3312ed1da3f11fd1062d28eb7ab2"
     },
     {
       "path": "docs/execution/route_a_v3_a1_interim.yaml",
       "role": "A1_ACTIVE_INTERIM_RECORD",
-      "sha256": "c21edd8ca5e72b1949fdb4b12807affdf9378d95b23ad3382d5eb13ad7b1de82"
+      "sha256": "5c93a7dd06fbfa24133c66e6f4477fa4b5a200d440989d36a39cf092802cb4e3"
     },
     {
       "path": "docs/execution/route_a_v3_a6_interim.yaml",
       "role": "A6_ACTIVE_INTERIM_RECORD",
-      "sha256": "1d44bcfe8669a55dc42f619ed43178f0637e20a4297ca996ecab3f7165612769"
+      "sha256": "82d3407f060d3622def4587d97db569bb7350d9e69fedb5a8baedcf0647921ab"
     },
     {
       "path": "docs/execution/route_a_v3_split_registry.yaml",
       "role": "SPLIT_REGISTRY",
-      "sha256": "52e1146027956e024dd6194ff18862e542e27fff81e8fc6b6d8aeaa972b8259c"
+      "sha256": "4fe05a1154c591c448b6fc190557904e746421347dd5c373ea9a704c6c4ba393"
     },
     {
       "path": "docs/execution/route_a_v3_task_registry.yaml",
       "role": "TASK_AND_PHASE_REGISTRY",
-      "sha256": "a64d0b8bb5eb466b06daa46ed109bd19901ee775910bc5cc9221c39ead63a4bc"
+      "sha256": "aeb8165ca79135eeda73fc1590579b695ab2b7bee4ce83e5d158776cd184bb8c"
     },
     {
       "path": "docs/execution/route_a_v3_task_split_matrix.yaml",
       "role": "TASK_SPLIT_MATRIX",
-      "sha256": "db23e96b6977339237956de57309d04a9e692bf937a8d34427d2e1b6cc150db8"
+      "sha256": "675bcfc298ff7d27320880ebd218962533286a20e2f3987df23a5b2e944546e6"
     },
     {
       "path": "schemas/route_a_v3/SCHEMA_MANIFEST.json",
@@ -644,12 +644,12 @@
     {
       "path": "tests/route_a_v3/test_a0_integrity_guards.py",
       "role": "A0_AUTHORITY_INTEGRITY_GUARD_TEST",
-      "sha256": "f8b93874131f560964d2c76d72d44b9e8d03c0275d1d1aa1e8eda2de63b16dfd"
+      "sha256": "ba56d4ccf0d85cbbfa7b880f7b7d9d6e1b504340f842779f54d44fd6ffef5a57"
     },
     {
       "path": "scripts/route_a_v3/validate_a0_bundle.py",
       "role": "A0_STATIC_AND_SEMANTIC_VALIDATOR",
-      "sha256": "c3991916bbf2c729d3ffc6481c0e326b88b37c7e6f27e19ed653246d854c8f61"
+      "sha256": "e8d703dd96b8e4a949cd9532013ca953b97d9d3cd3e50a5a5ca1248159e65512"
     },
     {
       "path": "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec028.yaml",
@@ -700,6 +700,11 @@
       "path": "tests/route_a_v3/test_dec028_static_bundle.py",
       "role": "DEC028_FOCUSED_TEST",
       "sha256": "8a261b7d0c36dd78d713a279a9dee76fd64dbbb0a4de4b4e94aabbd538a3b2ca"
+    },
+    {
+      "path": "tests/route_a_v3/test_dec028_authority_bundle.py",
+      "role": "DEC028_OFFICIAL_AUTHORITY_FOCUSED_TEST",
+      "sha256": "a8259f2c41640fed67ae1f88d29649f51dedf7da195b33b240b3b6e3911fdd98"
     }
   ],
   "initial_generated_at": "2026-08-10T10:10:05+08:00",
