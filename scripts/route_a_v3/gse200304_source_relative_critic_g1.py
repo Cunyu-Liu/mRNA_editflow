@@ -10,6 +10,7 @@ activation requirements before ``--run`` can reach the private input contract.
 from __future__ import annotations
 
 import argparse
+import importlib
 import json
 import math
 import os
@@ -218,8 +219,8 @@ def _load_rows_and_split(config: Mapping[str, Any], asset_dir: Path) -> tuple[li
 def _torch_components(config: Mapping[str, Any]):
     """Create the model type only after active authority and input closure."""
 
-    import torch
-    from torch import nn
+    torch = importlib.import_module("torch")
+    nn = importlib.import_module("torch.nn")
 
     model_cfg = config["model_contract"]
     hidden = int(model_cfg["hidden_width"])

@@ -75,6 +75,16 @@ def test_full_length_antisymmetric_architecture_and_single_fit_are_frozen() -> N
 def test_static_source_contains_real_model_and_input_paths_but_no_current_execution() -> None:
     source = SCRIPT_PATH.read_text(encoding="utf-8")
     tree = ast.parse(source)
+    forbidden_imports = [
+        node
+        for node in ast.walk(tree)
+        if isinstance(node, (ast.Import, ast.ImportFrom))
+        and (
+            (isinstance(node, ast.Import) and any(alias.name == "torch" or alias.name.startswith("torch.") for alias in node.names))
+            or (isinstance(node, ast.ImportFrom) and (node.module == "torch" or str(node.module).startswith("torch.")))
+        )
+    ]
+    assert forbidden_imports == []
     functions = {node.name for node in ast.walk(tree) if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))}
     assert {
         "_load_rows_and_split",
