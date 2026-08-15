@@ -1,0 +1,102 @@
+{
+  "schema_version": "route_a_v3_route2_encsr854ruf_converter.v1",
+  "converter_id": "ROUTE_A_V3_ROUTE2_ENCSR854RUF_PUBLIC_FASTA_SIX_CONTEXT_SUB_DEVELOPMENT_V1",
+  "study": {
+    "study_unit_id": "ENCSR854RUF",
+    "pool_assignment": "DEVELOPMENT",
+    "qualification_class": "DEVELOPMENT_RELAXED",
+    "study_role": "A1_EXPOSURE_POSITIVE_STRICT_SUB_DEVELOPMENT",
+    "region": "3UTR",
+    "biological_context_ids": ["GM12878", "HEK293FT", "HEPG2", "HMEC", "K562", "SKNSH"],
+    "assay_id": "MPRAU_ALLELIC_REPORTER_ABUNDANCE",
+    "endpoint_id": "MPRAU_ALLELIC_SKEW_LOG2_FOLD_CHANGE",
+    "endpoint_direction": "HIGHER_IS_BETTER",
+    "conversion_scope": "PUBLIC_AUTHOR_FASTA_FINITE_ALL_SIX_CONTEXT_SUB_ONLY"
+  },
+  "input": {
+    "publisher_workbook_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/prepared_public/ENCSR854RUF_DEC027_20260815/1-s2.0-S0092867421009995-mmc1.xlsx",
+    "author_fasta_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/prepared_public/ENCSR854RUF_DEC027_20260815/MPRAu_1addfb04be5c3e6c6199274593b94df66120056b/data/GWASrewritepos_CMS_alignment_file.fasta",
+    "expected_workbook_sheet_count": 12,
+    "expected_fasta_header_count": 44227,
+    "expected_fasta_valid_record_count": 44226,
+    "expected_fasta_expanded_alias_token_count": 44882,
+    "expected_fasta_valid_alias_token_count": 44881,
+    "expected_fasta_invalid_record_count": 1,
+    "expected_fasta_alias_conflict_count": 0,
+    "expected_published_pair_count": 15266,
+    "expected_pair_size_two_count": 15266,
+    "expected_crosswalk_missing_pair_count": 0,
+    "expected_metadata_disagreement_pair_count": 0,
+    "expected_sequence_identical_pair_count": 0,
+    "expected_action_counts": {"OTHER": 1844, "SUB": 13422},
+    "expected_sub_declared_allele_replay_mismatch_count": 0,
+    "expected_result_row_count": 15266,
+    "expected_index_error_pair_count": 117,
+    "expected_incomplete_six_context_effect_or_se_pair_count": 68,
+    "expected_complete_six_context_sub_pair_count": 13302,
+    "expected_complete_six_context_other_action_pair_count": 1779,
+    "expected_negative_standard_error_count": 0,
+    "expected_endpoint_slot_count_before_exact_dedup": 79812,
+    "expected_exact_duplicate_unit_count": 12,
+    "expected_conflicting_exact_unit_count": 0,
+    "expected_distinct_sequence_pair_count": 13300,
+    "expected_canonical_record_count": 79800,
+    "expected_context_record_count_each": 13300,
+    "expected_distinct_source_group_count": 13205,
+    "expected_sequence_length": 133,
+    "fasta_alias_expansion_rule": "SPLIT_HEADER_ON_SLASH",
+    "index_error_rule": "OTHER_VAR_IN_OLIGO_WINDOW_CONTAINS_CASE_INSENSITIVE_INDEX_ERROR_TOKEN"
+  },
+  "output": {
+    "directory": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/ENCSR854RUF/v1",
+    "canonical_filename": "canonical_records.private.jsonl",
+    "conversion_summary_filename": "conversion_summary.json",
+    "reject_summary_filename": "reject_summary.json",
+    "overwrite_allowed": false,
+    "public_redistribution_allowed": false
+  },
+  "development_policy": {
+    "training_eligible": true,
+    "model_selection_eligible": true,
+    "near_duplicate_split_status": "NOT_RUN",
+    "historical_exposure_status": "KNOWN_EXPOSED_DEVELOPMENT_ONLY",
+    "reported_standard_error_status": "PUBLISHED_LFCSE_NOT_INDEPENDENTLY_RECOMPUTED",
+    "source_endpoint_value_representation": null,
+    "candidate_endpoint_value_representation": null,
+    "missing_endpoint_is_zero": false,
+    "exact_duplicate_unit_action": "COLLAPSE_IDENTICAL_EFFECT_AND_STANDARD_ERROR",
+    "conflicting_exact_unit_action": "REJECT_ALL_CONFLICTING_ROWS",
+    "endpoint_or_context_increases_independent_study_count": false
+  },
+  "action_policy": {
+    "allowed_candidate_action": "SUB",
+    "ins_supported": false,
+    "del_supported": false
+  },
+  "published_biological_replicate_counts": {
+    "GM12878": 4,
+    "HEK293FT": 5,
+    "HEPG2": 4,
+    "HMEC": 5,
+    "K562": 4,
+    "SKNSH": 4
+  },
+  "limitations": [
+    "KNOWN_HISTORICAL_ANALYTIC_AND_CHECKPOINT_EXPOSURE_DEVELOPMENT_ONLY",
+    "AUTHOR_REPOSITORY_ASSET_LEVEL_REUSE_BASIS_NOT_CLOSED_NO_PUBLIC_REDISTRIBUTION",
+    "ONLY_SUB_ACTIONS_RETAINED_OTHER_ACTIONS_EXCLUDED",
+    "PUBLISHER_INDEX_ERROR_PAIRS_EXCLUDED",
+    "LISTWISE_FINITE_EFFECT_AND_LFCSE_REQUIRED_ACROSS_ALL_SIX_CONTEXTS",
+    "PUBLISHED_LFCSE_NOT_INDEPENDENTLY_RECOMPUTED",
+    "SKEW_IS_FORMAL_INTERACTION_EFFECT_NOT_SIMPLE_ALT_MINUS_REF_LFC",
+    "NEAR_DUPLICATE_AND_GROUPED_SPLIT_NOT_RUN",
+    "NO_QUALIFICATION_OR_SCIENTIFIC_CLAIM"
+  ],
+  "credit_policy": {
+    "measured_candidate": true,
+    "generated_candidate": false,
+    "qualified_credit_delta": {"ordinary": 0, "a1": 0, "true_a2": 0, "canonical_records": 0},
+    "qualified_counts_after_conversion": {"ordinary": 1, "a1": 1, "true_a2": 0, "canonical_records": 6547}
+  },
+  "scientific_claim_status": "NOT_ESTABLISHED"
+}

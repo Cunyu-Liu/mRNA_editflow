@@ -1,0 +1,10 @@
+{
+  "conflicting_exact_unit_count": 0,
+  "converter_id": "ROUTE_A_V3_ROUTE2_ENCSR854RUF_PUBLIC_FASTA_SIX_CONTEXT_SUB_DEVELOPMENT_V1",
+  "exact_duplicate_unit_count_collapsed": 12,
+  "incomplete_six_context_effect_or_se_pair_count": 68,
+  "other_action_pair_count": 1844,
+  "publisher_index_error_pair_count": 117,
+  "reject_payload_in_summary": false,
+  "study_unit_id": "ENCSR854RUF"
+}
