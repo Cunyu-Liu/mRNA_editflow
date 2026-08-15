@@ -4,9 +4,9 @@
   "decision_id": "V3-DEC-028",
   "document_status": "ACTIVE_FOR_ONE_SS4_SPLIT_AND_FREEZE_ONLY",
   "implementation_binding": {
-    "status": "UNKNOWN_NOT_ASSERTED",
-    "implementation_expected_parent": "UNKNOWN_NOT_ASSERTED",
-    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "status": "BOUND",
+    "implementation_expected_parent": "93645f88d4d49fee9254df5cf7db08a47ed66155",
+    "implementation_commit": "e1a59bf0d9e8ea637f51d88f901110e7824c4d2b",
     "implementation_exact_changed_paths": [
       "configs/route_a_v3_dec028_gse200304_ss4_split_evaluator_v1.json",
       "scripts/route_a_v3/freeze_gse200304_dec028_ss4_split_evaluator.py",
