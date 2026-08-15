@@ -1,0 +1,63 @@
+{
+  "biological_standard_error_count": 0,
+  "canonical_record_count": 4009,
+  "conflicting_endpoint_row_count": 18,
+  "conflicting_exact_unit_count": 9,
+  "context_record_counts": {
+    "HEK293T": 2038,
+    "SH_SY5Y": 1971
+  },
+  "conversion_scope": "STRICT_PUBLIC_RECONSTRUCTION_SUB_ONLY_PARTIAL",
+  "converter_id": "ROUTE_A_V3_ROUTE2_GSE217518_STRICT_115BP_SUB_DEVELOPMENT_CANONICAL_V1",
+  "distinct_source_group_count": 2571,
+  "exact_duplicate_unit_count": 0,
+  "genbank_record_count": 1297,
+  "generated_candidate_count": 0,
+  "limitations": [
+    "PARTIAL_STRICT_RECONSTRUCTION_NOT_ALL_5072_SUPPLEMENT_ROWS",
+    "ONLY_SUB_ACTIONS_RETAINED_INS_AND_DEL_EXCLUDED",
+    "BIOLOGICAL_STANDARD_ERROR_ABSENT_FROM_PUBLIC_SUPPLEMENT",
+    "RAW_COUNT_WEIGHTED_REGRESSION_NOT_REPLAYED",
+    "CONFLICTING_EXACT_SEQUENCE_CONTEXT_UNITS_REJECTED_NOT_AVERAGED",
+    "NEAR_DUPLICATE_AND_GROUPED_SPLIT_NOT_RUN",
+    "HISTORICAL_CHECKPOINT_EXPOSURE_ROLE_NOT_CLOSED",
+    "NO_QUALIFICATION_OR_SCIENTIFIC_CLAIM"
+  ],
+  "measured_candidate_count": 4009,
+  "near_duplicate_split_status": "NOT_RUN",
+  "nonmissing_endpoint_slot_count": 4027,
+  "parsed_transcript_count": 1287,
+  "pool_assignment": "DEVELOPMENT",
+  "public_redistribution_allowed": true,
+  "qualification_class": "DEVELOPMENT_RELAXED",
+  "qualified_counts_after_conversion": {
+    "a1": 1,
+    "canonical_records": 6547,
+    "ordinary": 1,
+    "true_a2": 0
+  },
+  "qualified_credit_delta": {
+    "a1": 0,
+    "canonical_records": 0,
+    "ordinary": 0,
+    "true_a2": 0
+  },
+  "region_record_counts": {
+    "3UTR": 2314,
+    "5UTR": 1695
+  },
+  "rejection_counts": {
+    "CONSTRUCT_GC_COMPOSITION_MISMATCH": 242,
+    "GC_FRACTION_DENOMINATOR_MISMATCH": 224,
+    "HGVS_SUPPLEMENT_REGION_MISMATCH": 338,
+    "TRANSCRIPT_OR_VARIANT_APPLICATION_FAILURE": 83,
+    "UNPARSEABLE_OR_NON_UTR": 1424,
+    "UNSUPPORTED_ACTION_NOT_SUB": 2
+  },
+  "scientific_claim_status": "NOT_ESTABLISHED",
+  "status": "CONVERTED_DEVELOPMENT_RELAXED_STRICT_115BP_SUB_ONLY_PARTIAL",
+  "strict_gc_valid_construct_row_count": 2761,
+  "study_unit_id": "GSE217518",
+  "sub_construct_row_count": 2759,
+  "supplement_row_count": 5072
+}

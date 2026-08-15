@@ -1,0 +1,17 @@
+{
+  "conflicting_endpoint_row_count": 18,
+  "conflicting_exact_unit_count": 9,
+  "conflicting_exact_units_action": "REJECT_ALL_CONFLICTING_ROWS",
+  "construct_rejection_counts": {
+    "CONSTRUCT_GC_COMPOSITION_MISMATCH": 242,
+    "GC_FRACTION_DENOMINATOR_MISMATCH": 224,
+    "HGVS_SUPPLEMENT_REGION_MISMATCH": 338,
+    "TRANSCRIPT_OR_VARIANT_APPLICATION_FAILURE": 83,
+    "UNPARSEABLE_OR_NON_UTR": 1424,
+    "UNSUPPORTED_ACTION_NOT_SUB": 2
+  },
+  "converter_id": "ROUTE_A_V3_ROUTE2_GSE217518_STRICT_115BP_SUB_DEVELOPMENT_CANONICAL_V1",
+  "missing_endpoint_slot_count_after_sub_construct_acceptance": 1491,
+  "reject_payload_in_summary": false,
+  "study_unit_id": "GSE217518"
+}
