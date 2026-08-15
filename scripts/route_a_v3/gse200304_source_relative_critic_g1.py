@@ -233,7 +233,11 @@ def validate_only(config: Mapping[str, Any]) -> dict[str, Any]:
     validate_config(config)
     return {
         "implementation_id": IMPLEMENTATION_ID,
-        "status": "PASS_STATIC_IMPLEMENTATION_CONTRACT_NOT_ACTIVE_NOT_RUN",
+        "status": (
+            "PASS_ACTIVE_EXACTLY_ONE_RUN_AUTHORITY_STATIC_VALIDATION_NOT_RUN"
+            if config["activation_state"] == ACTIVE
+            else "PASS_STATIC_IMPLEMENTATION_CONTRACT_NOT_ACTIVE_NOT_RUN"
+        ),
         "activation_state": config["activation_state"],
         "data_rows_read": 0,
         "model_constructions": 0,

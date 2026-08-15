@@ -199,3 +199,4 @@ def test_future_active_shape_is_explicit_and_complete() -> None:
     config["activation_binding"]["output_directory"] = "/private/output"
     config["activation_binding"]["cuda_uuid"] = "GPU-00000000-0000-0000-0000-000000000000"
     module.validate_config(config)
+    assert module.validate_only(config)["status"] == "PASS_ACTIVE_EXACTLY_ONE_RUN_AUTHORITY_STATIC_VALIDATION_NOT_RUN"
