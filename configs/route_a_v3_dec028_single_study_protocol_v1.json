@@ -1,0 +1,30 @@
+{
+  "schema_version": "route_a_v3_dec028_single_study_protocol.v1",
+  "status": "FROZEN_PENDING_FRESH_RUNTIME_AUTHORITY_SYNC",
+  "study_unit": "GSE200304_SUPERSERIES_ONE_STUDY",
+  "estimand": "DIRECTION_NORMALIZED_CANDIDATE_MINUS_SOURCE_ENDPOINT",
+  "analysis_unit": "BIOLOGICAL_SOURCE_GROUP",
+  "exposure": "DISCLOSED_NOT_UNTOUCHED",
+  "authority": {
+    "data_row_access_allowed": false,
+    "materialization_allowed": false,
+    "cuda_probe_allowed": false,
+    "model_construction_allowed": false,
+    "optimizer_construction_allowed": false,
+    "checkpoint_access_allowed": false,
+    "parameter_update_allowed": false,
+    "training_allowed": false,
+    "model_selection_allowed": false,
+    "g1_launched": false
+  },
+  "single_run_policy": {
+    "authorized_execution_count": 1,
+    "optimizer_fit_count": 1,
+    "fold_model_count": 1,
+    "checkpoint_count": 1,
+    "final_refit_count": 0,
+    "seed_count": 1,
+    "active_now": false
+  },
+  "scientific_claim_status": "NOT_ESTABLISHED"
+}

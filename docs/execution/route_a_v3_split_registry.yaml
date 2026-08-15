@@ -162,3 +162,12 @@ splits:
     biological_claim_support_allowed: false
     learned_parameter_update_requires_gpu: true
     cpu_exact_enumeration_allowed: true
+
+dec028_single_study_split_contract:
+  split_id: S10
+  name: ONE_FROZEN_COMPONENT_DISJOINT_TRAIN_CALIBRATION_TEST_SPLIT_V1
+  status: SCHEMA_ONLY_NOT_INSTANTIATED
+  split_assignment_count: 0
+  outcome_blind_algorithm_required: true
+  real_split_execution_authorized: false
+  evaluator_model_selection_isolation_required: true

@@ -1,0 +1,25 @@
+schema_version: "1.0.0"
+amendment_id: MRNA_XEDITFLOW_ROUTE_A_V3_DEC028
+decision_id: V3-DEC-028
+contract_id: mrna_xeditflow_route_a_v3
+status: FROZEN_OWNER_SELECTED_PENDING_FRESH_RUNTIME_AUTHORITY_SYNC
+predecessor_decision_id: V3-DEC-027
+candidate_contract: {path: docs/contracts/candidates/mrna_xeditflow_route_a_v3_dec028_single_study_mainline_contract_v1.md, sha256: 1864f28a963f8feda113d4b5de5f92b23ebad58b9fe6471136466b9d314b0fd0, bytes: 38799}
+preserved_full_route_a:
+  required_counts: {ordinary: 3, a1: 2, true_a2: 1}
+  current_counts: {ordinary: 1, a1: 1, true_a2: 0, canonical_records: 6547}
+  scientific_claim_status: NOT_ESTABLISHED
+  gate_relaxation: NONE
+locks:
+  data_row_access_allowed: false
+  materialization_allowed: false
+  cuda_probe_allowed: false
+  model_or_optimizer_construction_allowed: false
+  checkpoint_read_or_write_allowed: false
+  parameter_update_or_training_allowed: false
+  model_selection_allowed: false
+  g1_launched: false
+  a7_allowed: false
+  sealed_access_allowed: false
+  p0_production_authorized: false
+runtime_sync: {required: true, event_id: PENDING_FRESH_RUNTIME_EVENT_ID, must_not_change_counts_claim_or_locks: true}

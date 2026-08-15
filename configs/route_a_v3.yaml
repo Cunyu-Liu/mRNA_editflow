@@ -1070,3 +1070,19 @@ artifact_policy:
     - TRANSFER
     - FINAL_DELIVERY
     - ANOMALY_INVESTIGATION
+
+dec028_single_study_successor:
+  decision_id: V3-DEC-028
+  status: FROZEN_PENDING_FRESH_RUNTIME_AUTHORITY_SYNC
+  current_counts: {ordinary: 1, a1: 1, true_a2: 0, canonical_records: 6547}
+  scientific_claim_status: NOT_ESTABLISHED
+  data_row_access_allowed: false
+  materialization_allowed: false
+  cuda_probe_allowed: false
+  model_or_optimizer_construction_allowed: false
+  parameter_update_or_training_allowed: false
+  model_selection_allowed: false
+  g1_launched: false
+  a7_allowed: false
+  sealed_access_allowed: false
+  p0_production_authorized: false

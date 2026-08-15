@@ -4747,3 +4747,16 @@ updated_at: "2026-08-15T05:35:00+08:00"
 updated_for_decision_id: V3-DEC-027
 latest_authority_update_id: V3-DEC-027
 latest_evidence_update_id: DEC027_EVT060_CURRENT_PROJECTION_SETTLEMENT_V1
+
+dec028_current_disposition:
+  status: FROZEN_PENDING_FRESH_RUNTIME_AUTHORITY_SYNC
+  predecessor_runtime_event_id: A1-EVT-060
+  fresh_runtime_event_id: PENDING_FRESH_RUNTIME_EVENT_ID
+  current_counts: {ordinary: 1, a1: 1, true_a2: 0, canonical_records: 6547}
+  scientific_claim_status: NOT_ESTABLISHED
+  training_allowed: false
+  gpu_work_allowed: false
+  model_selection_allowed: false
+  a7_allowed: false
+  sealed_contact_allowed: false
+  materialization_allowed: false

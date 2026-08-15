@@ -196,3 +196,12 @@ boundaries:
 
 generated_at: "2026-08-13T18:55:00+08:00"
 updated_at: "2026-08-13T18:55:00+08:00"
+
+dec028_a6_boundary:
+  status: NONLEARNED_CPU_STATIC_SYNTHETIC_ONLY
+  learned_base_value_authorized: false
+  cuda_probe_allowed: false
+  model_or_optimizer_construction_allowed: false
+  parameter_update_allowed: false
+  a6_status: IN_PROGRESS
+  l3_status: NOT_ESTABLISHED

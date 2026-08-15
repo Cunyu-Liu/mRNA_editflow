@@ -753,4 +753,6 @@
       "GROUP_POWER_SIMULATION"
     ]
   }
+,
+  "dec028_single_study_successor_projection": {"status": "FROZEN_PENDING_FRESH_RUNTIME_AUTHORITY_SYNC", "current_counts": {"ordinary": 1, "a1": 1, "true_a2": 0, "canonical_records": 6547}, "scientific_claim_status": "NOT_ESTABLISHED", "qualification_or_credit_change_allowed": false, "data_cuda_model_training_allowed": false, "g1_launched": false}
 }

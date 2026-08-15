@@ -428,3 +428,11 @@ baselines:
     adapter_status: NO_VERIFIED_COMMON_SOURCE_EDIT_TASK_ADAPTER_AT_A0
     compute_ledger_required_if_executed: true
     evidence_status: NOT_RUN
+
+dec028_single_study_baseline_freeze:
+  status: SCHEMA_ONLY_NOT_EXECUTABLE
+  same_information_direct_baseline_required: true
+  baseline_set_frozen_before_real_split: true
+  compute_ledger_required: true
+  model_selection_allowed: false
+  learned_execution_authorized: false
