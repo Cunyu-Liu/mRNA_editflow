@@ -92,7 +92,16 @@ def test_full_length_antisymmetric_architecture_and_single_fit_are_frozen() -> N
     assert run["early_stopping_allowed"] is False
     assert run["best_checkpoint_selection_allowed"] is False
     assert run["hyperparameter_search_allowed"] is False
-    assert run["automatic_retry_allowed"] is False
+    assert run["automatic_retry_allowed"] is True
+    policy = config["development_policy"]
+    assert policy["status"] == "ACTIVE_OWNER_DIRECTED_STANDARD_DEVELOPMENT"
+    assert policy["global_run_limit"] is None
+    assert policy["resource_failure_retry_allowed"] is True
+    assert policy["successor_required_after_resource_failure"] is False
+    assert policy["fixed_gpu_index_or_uuid_required"] is False
+    assert policy["membership_split_model_and_evaluator_unchanged"] is True
+    assert policy["model_selection_allowed"] is False
+    assert policy["sealed_access_allowed"] is False
     evaluator = config["evaluator_and_baseline_contract"]
     assert evaluator["primary_metric"] == "WITHIN_STUDY_SOURCE_GROUP_EQUAL_WEIGHT_SPEARMAN"
     assert evaluator["baseline_set"] == [
@@ -133,7 +142,9 @@ def test_static_source_contains_real_model_and_input_paths_but_no_current_execut
         "_write_terminal_outputs",
         "_write_failure",
         "run_once",
+        "run_development",
         "require_active_before_operational_io",
+        "require_development_before_operational_io",
     } <= functions
     assert "FullLengthEncoder" in source
     assert "SourceRelativeCritic" in source
@@ -225,3 +236,38 @@ def test_settled_disk_state_is_consumed_and_cannot_run(tmp_path: Path) -> None:
     with pytest.raises(module.InactiveAuthorityError, match="stop before data"):
         module.run_once(config, tmp_path / "repo", tmp_path / "output")
     assert not (tmp_path / "output").exists()
+
+
+def test_owner_directed_development_policy_reuses_settled_science_contract() -> None:
+    module = _module()
+    config = module.load_config(CONFIG_PATH)
+    module.require_development_before_operational_io(
+        config,
+        "cuda:0",
+        "GSE200304_CRITIC_DEVELOPMENT_20260815",
+    )
+    with pytest.raises(module.ContractError, match="CUDA device"):
+        module.require_development_before_operational_io(
+            config,
+            "cpu",
+            "GSE200304_CRITIC_DEVELOPMENT_20260815",
+        )
+    with pytest.raises(module.ContractError, match="run ID"):
+        module.require_development_before_operational_io(config, "cuda:0", "bad run")
+
+
+def test_development_failure_record_allows_resource_retry(tmp_path: Path) -> None:
+    module = _module()
+    config = module.load_config(CONFIG_PATH)
+    output = tmp_path / "failed-development"
+    module._write_failure(
+        config,
+        output,
+        RuntimeError("synthetic resource failure"),
+        run_id="GSE200304_CRITIC_DEVELOPMENT_20260815",
+        retry_allowed=True,
+    )
+    record = json.loads((output / config["output_contract"]["failure_record_filename"]).read_text())
+    assert record["status"] == "DEVELOPMENT_INVOCATION_FAILED_WITH_EVIDENCE_RETRY_ALLOWED"
+    assert record["retry_authorized"] is True
+    assert record["scientific_claim_status"] == "NOT_ESTABLISHED"

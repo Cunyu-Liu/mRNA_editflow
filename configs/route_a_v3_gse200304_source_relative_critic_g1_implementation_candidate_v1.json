@@ -1,8 +1,8 @@
 {
   "schema_version": "route_a_v3_gse200304_source_relative_critic_g1_implementation_candidate.v1",
   "implementation_id": "ROUTE_A_V3_GSE200304_SOURCE_RELATIVE_CRITIC_G1_IMPLEMENTATION_CANDIDATE_V1",
-  "document_status": "SETTLED_TERMINATED_SAFELY_WITH_EVIDENCE_NO_RETRY",
-  "authority_status": "CONSUMED_EXACTLY_ONE_RUN_AUTHORITY",
+  "document_status": "ACTIVE_OWNER_DIRECTED_STANDARD_DEVELOPMENT",
+  "authority_status": "OWNER_AUTHORIZED_REPEATABLE_DEVELOPMENT_EXECUTION",
   "decision_id": "V3-DEC-028",
   "runtime_event_id": "A1-EVT-061",
   "run_role": "GSE200304_SOURCE_RELATIVE_CRITIC_G1",
@@ -72,7 +72,7 @@
     "early_stopping_allowed": false,
     "best_checkpoint_selection_allowed": false,
     "hyperparameter_search_allowed": false,
-    "automatic_retry_allowed": false
+    "automatic_retry_allowed": true
   },
   "gate_bundle": {
     "bundle_id": "GSE200304_SOURCE_RELATIVE_CRITIC_G1_FAIL_CLOSED_GATE_BUNDLE_V1",
@@ -81,7 +81,7 @@
       "SOURCE_CANDIDATE_ENDPOINT_GROUP_SE_RIGHTS_EXPOSURE_CLOSURE",
       "SPLIT_SOURCE_EXACT_DUPLICATE_NEAR_DUPLICATE_REVERSE_PAIR_ZERO_LEAKAGE",
       "SCRATCH_RANDOM_INIT_ZERO_EXTERNAL_LEARNED_INPUTS",
-      "EXACTLY_ONE_RUN_FIT_MODEL_CHECKPOINT_SEED_ZERO_REFIT"
+      "ONE_FIT_PER_DEVELOPMENT_INVOCATION_ZERO_REFIT"
     ],
     "runtime_gates": [
       "FINITE_LOSS_GRADIENT_AND_PARAMETER_STATE",
@@ -89,9 +89,9 @@
       "CALIBRATION_FROM_CALIBRATION_SPLIT_ONLY",
       "TEST_ONE_TERMINAL_EVALUATION_ONLY",
       "EVALUATOR_NO_GUIDE_OR_MODEL_SELECTION_FEEDBACK",
-      "FAILURE_BUNDLE_AND_NO_RETRY"
+      "FAILURE_BUNDLE_AND_RESOURCE_RETRY_ALLOWED"
     ],
-    "any_nonpass_action": "STOP_WITH_EVIDENCE_NO_RETRY",
+    "any_nonpass_action": "STOP_CURRENT_INVOCATION_WITH_EVIDENCE",
     "gate_pass_is_scientific_claim": false
   },
   "evaluator_and_baseline_contract": {
@@ -106,7 +106,7 @@
       "SOURCE_GROUP_EQUAL_WEIGHT_INTERVAL_COVERAGE_90",
       "CALIBRATION_FROZEN_COVERAGE_RISK_ABSTENTION"
     ],
-    "constant_rank_main_prediction_action": "STOP_WITH_EVIDENCE_NO_RETRY",
+    "constant_rank_main_prediction_action": "STOP_CURRENT_INVOCATION_WITH_EVIDENCE",
     "coverage_risk_retained_fractions": [1.0, 0.8, 0.5, 0.2],
     "baseline_set": [
       "TRAIN_SOURCE_GROUP_EQUAL_WEIGHT_GLOBAL_MEAN",
@@ -190,5 +190,19 @@
     "private_predictions_present": false,
     "aggregate_success_result_present": false,
     "member_payload_included": false
+  },
+  "development_policy": {
+    "status": "ACTIVE_OWNER_DIRECTED_STANDARD_DEVELOPMENT",
+    "global_run_limit": null,
+    "one_fit_per_invocation": true,
+    "resource_failure_retry_allowed": true,
+    "successor_required_after_resource_failure": false,
+    "fixed_gpu_index_or_uuid_required": false,
+    "gpu_selection": "OPERATOR_SELECTS_GPU_0_TO_5_BY_CURRENT_FREE_MEMORY",
+    "single_active_project_process": true,
+    "membership_split_model_and_evaluator_unchanged": true,
+    "scientific_claim_status": "NOT_ESTABLISHED",
+    "model_selection_allowed": false,
+    "sealed_access_allowed": false
   }
 }

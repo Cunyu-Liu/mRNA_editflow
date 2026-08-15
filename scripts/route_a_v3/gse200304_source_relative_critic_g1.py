@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Future exactly-one DEC028 source-relative critic implementation.
+"""GSE200304 source-relative critic implementation.
 
-The checked-in candidate is inactive.  ``--validate-only`` inspects static
-configuration and exits before data, PyTorch, CUDA, model, optimizer, checkpoint
-or output access.  A later config-only activation must provide all five frozen
-activation requirements before ``--run`` can reach the private input contract.
+The historical ``--run`` entry preserves the settled DEC028 exactly-once record.
+The owner-directed ``--development-run`` entry reuses the same membership, split,
+model and evaluator while selecting an available GPU at launch time.  Resource
+failures stop only the current invocation and may be retried without creating a
+new successor contract.
 """
 
 from __future__ import annotations
@@ -30,6 +31,7 @@ IMPLEMENTATION_ID = "ROUTE_A_V3_GSE200304_SOURCE_RELATIVE_CRITIC_G1_IMPLEMENTATI
 INACTIVE = "INACTIVE_FAIL_BEFORE_DATA_MODEL_CUDA_OUTPUT"
 ACTIVE = "ACTIVE_FOR_THIS_G1_ONE_RUN_ONLY"
 TERMINATED = "CONSUMED_TERMINATED_SAFELY_WITH_EVIDENCE_NO_RETRY"
+DEVELOPMENT_ACTIVE = "ACTIVE_OWNER_DIRECTED_STANDARD_DEVELOPMENT"
 
 
 class ContractError(RuntimeError):
@@ -112,14 +114,15 @@ def validate_config(config: Mapping[str, Any]) -> None:
         "early_stopping_allowed",
         "best_checkpoint_selection_allowed",
         "hyperparameter_search_allowed",
-        "automatic_retry_allowed",
     ):
         if single[key] is not False:
-            raise ContractError(f"selection/retry is enabled: {key}")
+            raise ContractError(f"selection is enabled: {key}")
+    if single["automatic_retry_allowed"] is not True:
+        raise ContractError("development resource retry is disabled")
     if single["terminal_checkpoint_only"] is not True:
         raise ContractError("terminal checkpoint policy differs")
 
-    if config["gate_bundle"]["any_nonpass_action"] != "STOP_WITH_EVIDENCE_NO_RETRY":
+    if config["gate_bundle"]["any_nonpass_action"] != "STOP_CURRENT_INVOCATION_WITH_EVIDENCE":
         raise ContractError("gate failure action differs")
     evaluator = config["evaluator_and_baseline_contract"]
     if evaluator["fit_role"] != "TRAIN" or evaluator["calibration_role"] != "CALIBRATION":
@@ -143,6 +146,26 @@ def validate_config(config: Mapping[str, Any]) -> None:
         raise ContractError("15-mer feature map differs")
     if evaluator["guide_or_model_selection_output_allowed"] is not False or evaluator["test_feedback_allowed"] is not False:
         raise ContractError("evaluator isolation differs")
+    development = config.get("development_policy")
+    if not isinstance(development, Mapping):
+        raise ContractError("development policy is absent")
+    expected_development = {
+        "status": DEVELOPMENT_ACTIVE,
+        "global_run_limit": None,
+        "one_fit_per_invocation": True,
+        "resource_failure_retry_allowed": True,
+        "successor_required_after_resource_failure": False,
+        "fixed_gpu_index_or_uuid_required": False,
+        "gpu_selection": "OPERATOR_SELECTS_GPU_0_TO_5_BY_CURRENT_FREE_MEMORY",
+        "single_active_project_process": True,
+        "membership_split_model_and_evaluator_unchanged": True,
+        "scientific_claim_status": "NOT_ESTABLISHED",
+        "model_selection_allowed": False,
+        "sealed_access_allowed": False,
+    }
+    for key, expected in expected_development.items():
+        if development.get(key) != expected:
+            raise ContractError(f"development policy differs: {key}")
     input_contract = config["input_contract"]
     expected_definitions = {
         "context_vector_definition": "SIXTEEN_CONTIGUOUS_201NT_POSITION_BINS_TIMES_ACGT_PAIR_MEAN_FRACTIONS_SOURCE_CANDIDATE_SWAP_INVARIANT",
@@ -271,6 +294,8 @@ def validate_only(config: Mapping[str, Any]) -> dict[str, Any]:
         "cuda_touches": truth["cuda_touches"],
         "parameter_updates": truth["parameter_updates"],
         "outputs_written": truth["runtime_outputs_written"],
+        "development_status": config["development_policy"]["status"],
+        "resource_retry_allowed": config["development_policy"]["resource_failure_retry_allowed"],
     }
 
 
@@ -280,6 +305,20 @@ def require_active_before_operational_io(config: Mapping[str, Any]) -> None:
         raise InactiveAuthorityError(
             "critic implementation is inactive; stop before data, model, CUDA and output"
         )
+
+
+def require_development_before_operational_io(
+    config: Mapping[str, Any], device_name: str, run_id: str
+) -> None:
+    validate_config(config)
+    if config["development_policy"]["status"] != DEVELOPMENT_ACTIVE:
+        raise InactiveAuthorityError(
+            "development execution is inactive; stop before data, model, CUDA and output"
+        )
+    if not device_name.startswith("cuda:"):
+        raise ContractError("development device must be a CUDA device")
+    if not run_id or any(character.isspace() for character in run_id):
+        raise ContractError("development run ID must be nonempty and contain no whitespace")
 
 
 def _git(repository_root: Path, *args: str) -> str:
@@ -876,7 +915,14 @@ def _write_terminal_outputs(
         raise
 
 
-def _write_failure(config: Mapping[str, Any], output_dir: Path, error: Exception) -> None:
+def _write_failure(
+    config: Mapping[str, Any],
+    output_dir: Path,
+    error: Exception,
+    *,
+    run_id: Optional[str] = None,
+    retry_allowed: bool = False,
+) -> None:
     if output_dir.exists():
         raise ContractError("failure output directory already exists") from error
     output_dir.parent.mkdir(parents=True, exist_ok=True)
@@ -884,12 +930,16 @@ def _write_failure(config: Mapping[str, Any], output_dir: Path, error: Exception
     try:
         failure = {
             "implementation_id": IMPLEMENTATION_ID,
-            "run_authority_id": config["activation_binding"]["run_authority_id"],
-            "status": "TERMINATED_SAFELY_WITH_EVIDENCE_NO_RETRY",
+            "run_authority_id": run_id or config["activation_binding"]["run_authority_id"],
+            "status": (
+                "DEVELOPMENT_INVOCATION_FAILED_WITH_EVIDENCE_RETRY_ALLOWED"
+                if retry_allowed
+                else "TERMINATED_SAFELY_WITH_EVIDENCE_NO_RETRY"
+            ),
             "error_type": type(error).__name__,
             "error_message": str(error),
             "member_payload_included": False,
-            "retry_authorized": False,
+            "retry_authorized": retry_allowed,
             "scientific_claim_status": "NOT_ESTABLISHED",
         }
         (temporary / config["output_contract"]["failure_record_filename"]).write_text(
@@ -902,23 +952,39 @@ def _write_failure(config: Mapping[str, Any], output_dir: Path, error: Exception
         raise
 
 
-def run_once(config: Mapping[str, Any], repository_root: Path, output_dir: Path) -> dict[str, Any]:
+def run_once(
+    config: Mapping[str, Any],
+    repository_root: Path,
+    output_dir: Path,
+    *,
+    development_device: Optional[str] = None,
+    development_run_id: Optional[str] = None,
+) -> dict[str, Any]:
     """Train one fixed critic and publish only its terminal result."""
 
-    require_active_before_operational_io(config)
     activation = config["activation_binding"]
-    if output_dir.resolve() != Path(activation["output_directory"]).resolve():
-        raise ContractError("output directory differs from active authority")
-    _repository_audit(config, repository_root)
-    _cuda_binding_audit(config)
+    development_mode = development_device is not None or development_run_id is not None
+    if development_mode:
+        if development_device is None or development_run_id is None:
+            raise ContractError("development device and run ID must be supplied together")
+        require_development_before_operational_io(config, development_device, development_run_id)
+        device_name = development_device
+        run_id = development_run_id
+    else:
+        require_active_before_operational_io(config)
+        if output_dir.resolve() != Path(activation["output_directory"]).resolve():
+            raise ContractError("output directory differs from active authority")
+        _repository_audit(config, repository_root)
+        _cuda_binding_audit(config)
+        device_name = activation["cuda_device"]
+        run_id = activation["run_authority_id"]
     rows, split = _load_rows_and_split(config)
     os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"
     torch, model_type = _torch_components(config)
     if torch.__version__ != activation["torch_version"] or torch.version.cuda != activation["torch_cuda_version"]:
         raise ContractError("PyTorch or CUDA runtime version differs from active authority")
-    device_name = activation["cuda_device"]
     if not device_name.startswith("cuda:") or not torch.cuda.is_available():
-        raise ContractError("bound CUDA device is unavailable")
+        raise ContractError("CUDA device is unavailable")
     device = torch.device(device_name)
     torch.cuda.set_device(device)
     torch.use_deterministic_algorithms(True)
@@ -997,7 +1063,12 @@ def run_once(config: Mapping[str, Any], repository_root: Path, output_dir: Path)
     )
     aggregate = {
         "implementation_id": IMPLEMENTATION_ID,
-        "run_authority_id": activation["run_authority_id"],
+        "run_authority_id": run_id,
+        "run_mode": "STANDARD_DEVELOPMENT" if development_mode else "HISTORICAL_EXACTLY_ONE",
+        "cuda_device": device_name,
+        "cuda_device_name": torch.cuda.get_device_name(device),
+        "cuda_total_memory_bytes": torch.cuda.get_device_properties(device).total_memory,
+        "cuda_peak_allocated_bytes": torch.cuda.max_memory_allocated(device),
         "status": "DEVELOPMENT_RESULT_NOT_SCIENTIFIC_CLAIM",
         "study_unit": "GSE200304_SUPERSERIES_ONE_STUDY",
         "member_count": len(rows),
@@ -1040,27 +1111,63 @@ def run_once(config: Mapping[str, Any], repository_root: Path, output_dir: Path)
     return aggregate
 
 
+def run_development(
+    config: Mapping[str, Any],
+    repository_root: Path,
+    output_dir: Path,
+    device_name: str,
+    run_id: str,
+) -> dict[str, Any]:
+    return run_once(
+        config,
+        repository_root,
+        output_dir,
+        development_device=device_name,
+        development_run_id=run_id,
+    )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", type=Path, default=CONFIG_PATH)
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--validate-only", action="store_true")
     mode.add_argument("--run", action="store_true")
+    mode.add_argument("--development-run", action="store_true")
     parser.add_argument("--repository-root", type=Path, default=REPO_ROOT)
     parser.add_argument("--output-dir", type=Path)
+    parser.add_argument("--device", default="cuda:0")
+    parser.add_argument("--run-id")
     args = parser.parse_args()
     config = load_config(args.config)
     if args.validate_only:
         print(json.dumps(validate_only(config), sort_keys=True))
         return 0
     if args.output_dir is None:
-        raise ContractError("--run requires --output-dir")
+        raise ContractError("run mode requires --output-dir")
+    if args.development_run and args.run_id is None:
+        raise ContractError("--development-run requires --run-id")
     try:
-        result = run_once(config, args.repository_root, args.output_dir)
+        if args.development_run:
+            result = run_development(
+                config,
+                args.repository_root,
+                args.output_dir,
+                args.device,
+                args.run_id,
+            )
+        else:
+            result = run_once(config, args.repository_root, args.output_dir)
     except InactiveAuthorityError:
         raise
     except Exception as exc:
-        _write_failure(config, args.output_dir, exc)
+        _write_failure(
+            config,
+            args.output_dir,
+            exc,
+            run_id=args.run_id if args.development_run else None,
+            retry_allowed=args.development_run,
+        )
         raise
     print(json.dumps(result, sort_keys=True))
     return 0
