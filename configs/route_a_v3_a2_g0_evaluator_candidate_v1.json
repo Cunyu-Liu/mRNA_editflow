@@ -1,0 +1,66 @@
+{
+  "schema_version": "route_a_v3_a2_g0_evaluator_candidate.v1",
+  "candidate_id": "ROUTE_A_V3_A2_G0_SYNTHETIC_EVALUATOR_CANDIDATE_V1",
+  "document_status": "DRAFT_FOR_REVIEW_NOT_ACTIVE_PROTOCOL",
+  "authority_status": "NON_AUTHORITATIVE",
+  "activation_state": "INACTIVE_EVALUATOR_CANDIDATE",
+  "parent_contract": {
+    "path": "docs/contracts/candidates/mrna_xeditflow_route_a_v3_dec028_single_study_mainline_contract_v1.md",
+    "required_document_status": "DRAFT_FOR_REVIEW_NOT_ACTIVE_PROTOCOL",
+    "requires_fresh_runtime_authority_sync": true,
+    "promotion_requires_separate_later_authority": true
+  },
+  "permitted_g0_operations": [
+    "SYNTHETIC_CONNECTED_COMPONENT_GROUPING",
+    "OUTCOME_BLIND_COMPONENT_DISJOINT_SYNTHETIC_SPLIT_PLANNING",
+    "AGGREGATE_EVALUATOR_SCHEMA_VALIDATION",
+    "CANDIDATE_MINUS_SOURCE_DIRECTION_NORMALIZED_SYNTHETIC_ENDPOINT_VALIDATION",
+    "BIOLOGICAL_SE_AND_MISSINGNESS_SCHEMA_VALIDATION",
+    "VALIDATE_ONLY_STDOUT_RESULT"
+  ],
+  "forbidden_operations": [
+    "PROJECT_PRIVATE_OR_SEALED_ROW_IO",
+    "FINAL_MEMBERSHIP_OR_SPLIT_ASSIGNMENT",
+    "REAL_EVALUATION",
+    "MEASURED_NEIGHBORHOOD_NDCG_OR_REGRET_CLAIM",
+    "GUIDE_EVALUATOR_FEEDBACK",
+    "FORMAL_POWER_OR_A2_PASS",
+    "MODEL_OR_MODEL_SELECTION_ACCESS",
+    "TORCH_MODEL_CONSTRUCTION",
+    "CUDA_PROBE_OR_GPU_TOUCH",
+    "CHECKPOINT_READ_OR_WRITE",
+    "RUNTIME_OUTPUT_FILE_WRITE",
+    "PARAMETER_UPDATE_OR_TRAINING",
+    "A6_L3_A7_OR_SCIENTIFIC_CLAIM"
+  ],
+  "synthetic_evaluator_contract": {
+    "input_scope": "SYNTHETIC_FIXTURES_OR_AGGREGATE_METADATA_ONLY",
+    "synthetic_identifier_prefix": "SYN_",
+    "component_algorithm": "CONNECTED_COMPONENTS_FROM_SOURCE_CANDIDATE_RELATIONS",
+    "split_planning": "OUTCOME_BLIND_COMPONENT_DISJOINT_SYNTHETIC_ONLY",
+    "endpoint_direction": "CANDIDATE_MINUS_SOURCE",
+    "biological_se_rule": "EXPLICIT_FINITE_NONNEGATIVE_BIOLOGICAL_SE_AND_REPLICATE_COUNT_AT_LEAST_2",
+    "missing_or_nonfinite_policy": "FAIL_CLOSED_NEVER_COERCE_TO_ZERO",
+    "real_evaluation_allowed": false,
+    "final_membership_allowed": false,
+    "final_split_assignment_allowed": false,
+    "guide_or_model_selection_input_allowed": false
+  },
+  "runtime_truth": {
+    "project_rows_read": 0,
+    "private_rows_read": 0,
+    "sealed_rows_read": 0,
+    "membership_or_split_assignments_materialized": 0,
+    "real_evaluations": 0,
+    "guide_or_model_selection_reads": 0,
+    "torch_model_constructions": 0,
+    "cuda_probe_calls": 0,
+    "gpu_runs": 0,
+    "checkpoints_read": 0,
+    "checkpoints_written": 0,
+    "runtime_output_files_written": 0,
+    "parameter_updates": 0,
+    "a2_pass_asserted": false,
+    "scientific_claim_established": false
+  }
+}
