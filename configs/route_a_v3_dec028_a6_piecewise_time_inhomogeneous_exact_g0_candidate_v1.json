@@ -1,0 +1,96 @@
+{
+  "schema_version": "route_a_v3_dec028_a6_piecewise_time_inhomogeneous_exact_g0_candidate.v1",
+  "protocol_id": "ROUTE_A_V3_DEC028_A6_PIECEWISE_TIME_INHOMOGENEOUS_EXACT_G0_CANDIDATE_V1",
+  "authority_status": "NON_AUTHORITATIVE_G0_NONLEARNED_SYNTHETIC_TIME_INHOMOGENEOUS_PREPARATION",
+  "static_authority": {
+    "root_config_path": "configs/route_a_v3.yaml",
+    "root_config_sha256": "1f11e6a84ed394aecc5ef7a5626b7a07b2a877a4aa8c2a4c67a3d79e9771aca8",
+    "dec028_amendment_path": "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec028.yaml",
+    "dec028_amendment_sha256": "bd0e845daca76a75998b3bca3b8d2b93a9011a0cfb1ec8b40acd7ef133fed3c8",
+    "effective_active_amendment_decision_ids": [
+      "V3-DEC-017",
+      "V3-DEC-018",
+      "V3-DEC-019",
+      "V3-DEC-020",
+      "V3-DEC-021",
+      "V3-DEC-022",
+      "V3-DEC-023",
+      "V3-DEC-024",
+      "V3-DEC-027"
+    ],
+    "pending_successor_amendment_decision_ids": ["V3-DEC-028"],
+    "current_qualified_counts": {
+      "ordinary": 1,
+      "a1": 1,
+      "true_a2": 0,
+      "canonical_records": 6547
+    },
+    "scientific_claim_status": "NOT_ESTABLISHED"
+  },
+  "synthetic_fixture_generator": {
+    "source_lengths": [2, 3, 4, 5],
+    "budgets": [1, 3, 5],
+    "deterministic_variants": 8,
+    "expected_fixture_count": 96,
+    "alphabet": ["A", "C"],
+    "source_anchored": true,
+    "repeated_position_edit_allowed": false,
+    "revert_to_source_allowed": false
+  },
+  "transition_contract": {
+    "support_floor": 0.03125,
+    "edit_rate_scale": 0.125,
+    "stop_rate": 0.25,
+    "raw_aliases_per_canonical_transition": 2,
+    "raw_alias_shares": [0.4, 0.6],
+    "aggregate_aliases_by": "FULL_NEXT_EXTENDED_STATE_BEFORE_NORMALIZATION",
+    "stop_is_competing_positive_rate": true,
+    "terminal_causes": ["BUDGET_EXHAUSTED", "EXPLICIT_STOP"],
+    "budget_invariant": "remaining_budget_plus_net_edit_count_is_constant"
+  },
+  "time_inhomogeneous_reference_contract": {
+    "clock_semantics": "CONTINUOUS_ALGORITHMIC_TIME_NOT_PHYSICAL_KINETICS",
+    "finite_schedule_type": "THREE_PIECEWISE_CONSTANT_NONCOMMON_RATE_SEGMENTS",
+    "finite_segments": [
+      {"start": 0.0, "end": 0.2, "edit_multiplier": 0.7, "stop_multiplier": 1.5},
+      {"start": 0.2, "end": 0.55, "edit_multiplier": 1.45, "stop_multiplier": 0.65},
+      {"start": 0.55, "end": 1.0, "edit_multiplier": 0.9, "stop_multiplier": 1.25}
+    ],
+    "post_schedule_tail": {"edit_multiplier": 1.2, "stop_multiplier": 0.8},
+    "primary_reference": "PIECEWISE_CONSTANT_CTMC_UNIFORMIZATION_WITH_RECORDED_POISSON_TAIL_BOUND",
+    "independent_crosscheck": "KOLMOGOROV_FORWARD_RK4_STEP_REFINEMENT_PLUS_COMPLETE_TERMINAL_PATH_ENUMERATION_VERSUS_TOPOLOGICAL_TAIL_DP",
+    "uniformization_tail_probability_max": 1e-13,
+    "independent_terminal_distribution_tv_max": 1e-10,
+    "reference_scope": "FINITE_PIECEWISE_CONSTANT_CONTINUOUS_ALGORITHMIC_TIME_SCHEDULE_WITH_HOMOGENEOUS_ABSORBING_TAIL_ONLY",
+    "contract_wide_general_time_inhomogeneous_exactness": "NOT_ESTABLISHED_NOT_CLAIMED",
+    "physical_kinetics_claim": "NOT_CLAIMED"
+  },
+  "forbidden_operations": [
+    "PROJECT_ROW_OR_SEQUENCE_READ",
+    "REAL_TRAJECTORY_OR_MEMBERSHIP_INPUT",
+    "CUDA_OR_GPU_TOUCH",
+    "TORCH_MODEL_OR_DATALOADER",
+    "OPTIMIZER_OR_PARAMETER_UPDATE",
+    "CHECKPOINT_READ_OR_WRITE",
+    "RUNTIME_OUTPUT_WRITE",
+    "A6_PASS_OR_L3_CLAIM",
+    "A7_UNLOCK",
+    "SEALED_ACCESS"
+  ],
+  "runtime_truth": {
+    "project_rows_read": 0,
+    "sequences_read": 0,
+    "real_trajectories_read": 0,
+    "cuda_probe_calls": 0,
+    "gpu_runs": 0,
+    "model_constructions": 0,
+    "optimizer_steps": 0,
+    "checkpoint_reads": 0,
+    "checkpoint_writes": 0,
+    "runtime_output_files_written": 0,
+    "a6_pass_asserted": false,
+    "l3_claim_established": false,
+    "a7_unlocked": false,
+    "contract_wide_general_time_inhomogeneous_exactness_established": false
+  }
+}
