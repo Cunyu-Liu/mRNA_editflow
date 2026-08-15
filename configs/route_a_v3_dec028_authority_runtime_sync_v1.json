@@ -49,12 +49,12 @@
         {"path": "tests/route_a_v3/test_dec028_authority_runtime_sync.py", "bytes": 10479, "sha256": "3116cb611c9a570232b7ae350dbe143da9df7fe7dd3f17a692ec520fdf13b155"}
       ]
     },
-    "status": "UNKNOWN_NOT_ASSERTED",
-    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "status": "BOUND",
+    "implementation_commit": "a9ace1a8d2b8031b0b9b14caa815430b6642a9ad",
     "implementation_script_path": "scripts/route_a_v3/dec028_authority_runtime_sync.py",
-    "implementation_script_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_script_sha256": "50857c5f06c78028ade0ef5dd2c88cdabf9fc51edeb63f3800307714feef2c8b",
     "implementation_test_path": "tests/route_a_v3/test_dec028_authority_runtime_sync.py",
-    "implementation_test_sha256": "UNKNOWN_NOT_ASSERTED",
+    "implementation_test_sha256": "d4daa64e27a5d4bb44ff93c87f2e225a1bf16dab3abb8295042484ecb31c256c",
     "implementation_exact_changed_paths": [
       "configs/route_a_v3_dec028_authority_runtime_sync_v1.json",
       "scripts/route_a_v3/dec028_authority_runtime_sync.py",
