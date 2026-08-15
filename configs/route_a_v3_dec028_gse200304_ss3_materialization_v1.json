@@ -1,0 +1,88 @@
+{
+  "schema_version": "route_a_v3_dec028_gse200304_ss3_materialization.v1",
+  "protocol_id": "ROUTE_A_V3_DEC028_GSE200304_SS3_MATERIALIZATION_V1",
+  "decision_id": "V3-DEC-028",
+  "runtime_authority_event_id": "A1-EVT-061",
+  "document_status": "ACTIVE_FOR_ONE_SS3_MATERIALIZATION_ONLY",
+  "implementation_binding": {
+    "status": "UNKNOWN_NOT_ASSERTED",
+    "implementation_expected_parent": "UNKNOWN_NOT_ASSERTED",
+    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "implementation_exact_changed_paths": [
+      "configs/route_a_v3_dec028_gse200304_ss3_materialization_v1.json",
+      "scripts/route_a_v3/materialize_gse200304_dec028_ss3.py",
+      "tests/route_a_v3/test_materialize_gse200304_dec028_ss3.py"
+    ],
+    "binding_exact_changed_paths": [
+      "configs/route_a_v3_dec028_gse200304_ss3_materialization_v1.json"
+    ]
+  },
+  "authority": {
+    "authority_id": "DEC028_SS3_GSE200304_ONE_MATERIALIZATION_AUTHORITY_V1",
+    "authority_scope": "ONE_MEMBERSHIP_PRESERVING_PRIVATE_DEVELOPMENT_MATERIALIZATION_AND_CONFORMANCE_ONLY",
+    "owner_directive": "EXECUTE_DEC028_CONTRACT_IN_ORDER",
+    "p0_correction_report": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/DEC028_SINGLE_STUDY_SUCCESSOR_P0_CORRECTION_B_4c31aa7/ROUTE_A_V3_DEC028_SINGLE_STUDY_SUCCESSOR_P0_CORRECTION_V2.json",
+    "required_p0_status": "ELIGIBLE_TO_REQUEST_MATERIALIZATION_NOT_G1_NOT_LAUNCHED",
+    "authorized_execution_count": 1,
+    "split_authorized": false,
+    "model_authorized": false,
+    "cuda_authorized": false,
+    "optimizer_authorized": false,
+    "training_authorized": false,
+    "g1_authorized": false,
+    "sealed_access_authorized": false
+  },
+  "inputs": {
+    "public_asset_directory": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/data/A1/GSE200304/GSE200304_PUBLIC_ASSETS_20260810T143731P0800",
+    "processed_matrix_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE200304_UPSTREAM_AUTHORITY_VIABILITY_V1/GSE200302_log2_cpm_counts_all_samples.txt.gz",
+    "assets": [
+      {"name": "NIHMS1928233-supplement-3.csv", "bytes": 7323186, "sha256": "812f3c983cb7c4f473200741ffd6d73bcab911c9e354934542e018e7b0cf8a6d"},
+      {"name": "NIHMS1928233-supplement-4.xlsx", "bytes": 864791, "sha256": "ec2aab60fcb0be87f2bcc1b1a5a1f786b23bb429edc9851a4034a3e8983dfa08"},
+      {"name": "GSE200302_log2_cpm_counts_all_samples.txt.gz", "bytes": 2843042, "sha256": "ed93162f9540676138cfba05af2841c90619ac4335eb55ee3d956a3cd8aace3c"}
+    ]
+  },
+  "row_contract": {
+    "expected_public_join_count": 6772,
+    "expected_na_exclusion_count": 225,
+    "expected_materialized_count": 6547,
+    "required_fields_exactly": [
+      "record_key",
+      "source_group",
+      "source_sequence",
+      "candidate_sequence",
+      "context_vector",
+      "edit_features",
+      "direction_normalized_effect",
+      "biological_standard_error"
+    ],
+    "membership_definition": "INNER_JOIN_TABLE_S2_EXACT_WT_MUTANT_PAIR_TABLE_S3_FINITE_TOTALPOLY_AND_PROCESSED_MATRIX_KEY",
+    "membership_frozen_before_replicate_effect_calculation": true,
+    "source_group_definition": "GSE200304_GSE200302_AUTHOR_LOCUS_CANONICAL_POSITION_REFERENCE_ALLELE_ORIENTATION_NORMALIZED_WT201",
+    "context_vector_definition": "SIXTEEN_CONTIGUOUS_201NT_POSITION_BINS_TIMES_ACGT_PAIR_MEAN_FRACTIONS_SOURCE_CANDIDATE_SWAP_INVARIANT",
+    "edit_feature_definition": "THREE_POSITIONS_CENTER_MINUS_ONE_CENTER_CENTER_PLUS_ONE_TIMES_ACGT_CANDIDATE_ONEHOT_MINUS_SOURCE_ONEHOT",
+    "effect_definition": "MEAN_OVER_SIX_PAIRED_BIOLOGICAL_REPLICATES_OF_LOG2_SUM_HIGH_LOW_MINUS_TOTAL_RNA_MUTANT_MINUS_WT",
+    "standard_error_definition": "SAMPLE_STANDARD_DEVIATION_OF_SIX_PAIRED_REPLICATE_DELTAS_DIVIDED_BY_SQRT_SIX_FINITE_POSITIVE",
+    "missing_nonfinite_or_nonpositive_se_action": "STOP_NO_PRIVATE_SUCCESS_ASSET_NO_SPLIT_MODEL_OR_CUDA"
+  },
+  "outputs": {
+    "private_rows_filename": "GSE200304_SINGLE_STUDY_DEVELOPMENT_ROWS_PRIVATE.jsonl",
+    "aggregate_manifest_filename": "GSE200304_DEC028_SS3_MATERIALIZATION_AGGREGATE_MANIFEST.json",
+    "aggregate_reject_summary_filename": "GSE200304_DEC028_SS3_AGGREGATE_REJECT_SUMMARY.json",
+    "conformance_filename": "GSE200304_DEC028_SS3_MATERIALIZATION_CONFORMANCE.json",
+    "member_payload_publication_allowed": false,
+    "split_assignment_count": 0
+  },
+  "current_truth": {
+    "materialization_execution_count": 0,
+    "data_rows_read": 0,
+    "private_rows_written": 0,
+    "split_assignments_written": 0,
+    "model_constructions": 0,
+    "cuda_touches": 0,
+    "optimizer_constructions": 0,
+    "parameter_updates": 0,
+    "g1_launched": false,
+    "qualified_counts": {"ordinary": 1, "a1": 1, "true_a2": 0, "canonical_records": 6547},
+    "scientific_claim_status": "NOT_ESTABLISHED"
+  }
+}
