@@ -411,3 +411,9 @@ tasks:
     explicit_user_authorization_required: true
     evidence_status: NOT_RUN
     claim_status: NOT_ESTABLISHED
+
+dec028_single_study_successor_tasks:
+  phase_id: SINGLE_STUDY_S0_AUTHORITY_AND_P0_CLOSURE
+  permitted_task_ids: [DEC028_STATIC_AUTHORITY_REVIEW, DEC028_A2_G0_SYNTHETIC_RECONCILIATION, DEC028_A6_G0_NONLEARNED_RECONCILIATION, DEC028_SUCCESSOR_P0_SCHEMA_ONLY]
+  g1_authorized: false
+  data_or_cuda_authorized: false

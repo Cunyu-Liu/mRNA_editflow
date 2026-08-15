@@ -109,6 +109,7 @@ new_authority:
   initial_contract_sha256: d1c031aecdec710495f6861b380785cccd64663ac4bd97b4f479d6fdf372ea07
   contract_sha256: cbac4c3dcba8f1b8df95d8edad52d19e3c126d1c865d0cc423537c754cc90982
   active_amendment_decision_ids: [V3-DEC-017, V3-DEC-018, V3-DEC-019, V3-DEC-020, V3-DEC-021, V3-DEC-022, V3-DEC-023, V3-DEC-024, V3-DEC-027]
+  pending_successor_amendment_decision_ids: [V3-DEC-028]
   active_amendment_paths:
     V3-DEC-019: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec019.yaml
     V3-DEC-020: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec020.yaml
@@ -139,6 +140,7 @@ active_contract_path: docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md
 initial_active_contract_sha256: d1c031aecdec710495f6861b380785cccd64663ac4bd97b4f479d6fdf372ea07
 active_contract_sha256: cbac4c3dcba8f1b8df95d8edad52d19e3c126d1c865d0cc423537c754cc90982
 active_contract_amendment_decision_ids: [V3-DEC-017, V3-DEC-018, V3-DEC-019, V3-DEC-020, V3-DEC-021, V3-DEC-022, V3-DEC-023, V3-DEC-024, V3-DEC-027]
+pending_successor_contract_amendment_decision_ids: [V3-DEC-028]
 active_contract_amendment_paths:
   V3-DEC-019: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec019.yaml
   V3-DEC-020: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec020.yaml
@@ -152,3 +154,10 @@ activation_rule: >-
   validates, the A0 gate record is PASS, the implementation commit is bound by
   route_a_v3_a0_activation.yaml, and the task branch is pushed. None of these
   engineering conditions establishes a scientific Route-A claim.
+
+dec028_pending_successor:
+  amendment_path: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec028.yaml
+  activation_requires_fresh_runtime_sync: true
+  current_effective_authority_remains: V3-DEC-027
+  successor_phase_after_sync: SINGLE_STUDY_S0_AUTHORITY_AND_P0_CLOSURE
+  counts_claim_and_locks_must_remain_unchanged: true

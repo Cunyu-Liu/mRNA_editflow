@@ -847,3 +847,10 @@ decisions:
       - docs/execution/route_a_v3_data_role_registry.yaml
       - docs/execution/route_a_v3_task_registry.yaml
       - docs/execution/route_a_v3_a1_interim.yaml
+  - decision_id: V3-DEC-028
+    record_type: APPEND_ONLY_PENDING_SINGLE_STUDY_SUCCESSOR
+    status: FROZEN_OWNER_SELECTED_PENDING_FRESH_RUNTIME_AUTHORITY_SYNC
+    predecessor_decision_id: V3-DEC-027
+    current_counts: {ordinary: 1, a1: 1, true_a2: 0, canonical_records: 6547}
+    scientific_claim_status: NOT_ESTABLISHED
+    data_cuda_model_or_sealed_authorized: false

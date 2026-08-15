@@ -1,0 +1,64 @@
+{
+  "schema_version": "route_a_v3_dec028_successor_p0_schema.v1",
+  "status": "SCHEMA_AND_FAILURE_CODES_ONLY_NOT_A_PRODUCTION_P0_RECORD",
+  "production_p0_authorized": false,
+  "p0_groups": [
+    {
+      "gate_id": "P0.1",
+      "gate_name": "INPUT_MEMBERSHIP_AND_BINDING"
+    },
+    {
+      "gate_id": "P0.2",
+      "gate_name": "PRIOR_USE_ATTESTATION"
+    },
+    {
+      "gate_id": "P0.3",
+      "gate_name": "EXPOSURE_ROLE"
+    },
+    {
+      "gate_id": "P0.4",
+      "gate_name": "RIGHTS"
+    },
+    {
+      "gate_id": "P0.5",
+      "gate_name": "SCIENTIFIC_ROW_CONTRACT"
+    },
+    {
+      "gate_id": "P0.6",
+      "gate_name": "SCRATCH_ONLY_ROUTE"
+    },
+    {
+      "gate_id": "P0.7",
+      "gate_name": "PROSPECTIVE_SPLIT"
+    },
+    {
+      "gate_id": "P0.8",
+      "gate_name": "SINGLE_RUN_POLICY"
+    },
+    {
+      "gate_id": "P0.9",
+      "gate_name": "EXECUTABLE_SCIENTIFIC_GATES"
+    },
+    {
+      "gate_id": "P0.10",
+      "gate_name": "SUCCESSOR_LEARNED_RUN_IMPLEMENTATION"
+    },
+    {
+      "gate_id": "P0.11",
+      "gate_name": "STATE_LOCKS"
+    }
+  ],
+  "all_pass_result": "ELIGIBLE_TO_REQUEST_MATERIALIZATION_NOT_G1_NOT_LAUNCHED",
+  "any_nonpass_result": "STOP_BEFORE_DATA_CUDA_MODEL",
+  "forbidden_touchpoints": [
+    "DATA_ROWS",
+    "MEMBER_IDS",
+    "SEQUENCES",
+    "SPLIT_ASSIGNMENTS",
+    "CUDA",
+    "MODEL",
+    "OPTIMIZER",
+    "CHECKPOINT",
+    "PARAMETER_UPDATE"
+  ]
+}

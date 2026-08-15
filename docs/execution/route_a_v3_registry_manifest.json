@@ -4,7 +4,17 @@
   "contract_path": "docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md",
   "initial_contract_sha256": "d1c031aecdec710495f6861b380785cccd64663ac4bd97b4f479d6fdf372ea07",
   "contract_sha256": "cbac4c3dcba8f1b8df95d8edad52d19e3c126d1c865d0cc423537c754cc90982",
-  "active_amendment_decision_ids": ["V3-DEC-017", "V3-DEC-018", "V3-DEC-019", "V3-DEC-020", "V3-DEC-021", "V3-DEC-022", "V3-DEC-023", "V3-DEC-024", "V3-DEC-027"],
+  "active_amendment_decision_ids": [
+    "V3-DEC-017",
+    "V3-DEC-018",
+    "V3-DEC-019",
+    "V3-DEC-020",
+    "V3-DEC-021",
+    "V3-DEC-022",
+    "V3-DEC-023",
+    "V3-DEC-024",
+    "V3-DEC-027"
+  ],
   "files": [
     {
       "path": "docs/goals/MRNA_XEDITFLOW_ROUTE_A_V3.md",
@@ -640,13 +650,66 @@
       "path": "scripts/route_a_v3/validate_a0_bundle.py",
       "role": "A0_STATIC_AND_SEMANTIC_VALIDATOR",
       "sha256": "c3991916bbf2c729d3ffc6481c0e326b88b37c7e6f27e19ed653246d854c8f61"
+    },
+    {
+      "path": "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec028.yaml",
+      "role": "DEC028_PENDING_SUCCESSOR_AMENDMENT",
+      "sha256": "bd0e845daca76a75998b3bca3b8d2b93a9011a0cfb1ec8b40acd7ef133fed3c8"
+    },
+    {
+      "path": "docs/contracts/candidates/mrna_xeditflow_route_a_v3_dec028_single_study_mainline_contract_v1.md",
+      "role": "DEC028_CANDIDATE_CONTRACT_BYTES",
+      "sha256": "1864f28a963f8feda113d4b5de5f92b23ebad58b9fe6471136466b9d314b0fd0"
+    },
+    {
+      "path": "configs/route_a_v3_dec028_single_study_protocol_v1.json",
+      "role": "DEC028_SINGLE_STUDY_PROTOCOL",
+      "sha256": "eb0a6995c66e29ca5d509c4b4adde4e69612f5f29ea9cd2cedcd7d4bff285fee"
+    },
+    {
+      "path": "configs/route_a_v3_dec028_successor_p0_schema_v1.json",
+      "role": "DEC028_SUCCESSOR_P0_SCHEMA_ONLY",
+      "sha256": "8b52526c0b178708ac496503361c32a130a2ec4bce989f02af809e4a61aa91bb"
+    },
+    {
+      "path": "docs/reviews/2026-08-15-route-a-v3-dec028-independent-action-changing-review.md",
+      "role": "DEC028_INDEPENDENT_REVIEW",
+      "sha256": "3d5aebf70a55d9affbb5b94e42fee3cbfeef94d71f5daf68a65692a00b47ac8d"
+    },
+    {
+      "path": "docs/plans/2026-08-15-route-a-v3-dec028-gse200304-metadata-closure-plan.md",
+      "role": "DEC028_METADATA_PLAN",
+      "sha256": "c32b1e577fced6f99238402ca19d8e5685f3a1d73bcf196bfd902eefcff77a43"
+    },
+    {
+      "path": "docs/plans/2026-08-15-route-a-v3-dec028-a2-evaluator-freeze.md",
+      "role": "DEC028_A2_G0_PLAN",
+      "sha256": "f72f091b342889288fe0b9b5f7c3ec05c9ae39c7eda57e4e2446d5de09c5753d"
+    },
+    {
+      "path": "scripts/route_a_v3/validate_dec028_static_bundle.py",
+      "role": "DEC028_STATIC_VALIDATOR",
+      "sha256": "0d43dfbeabb615c67164c105781639fab98baa6fdbb50121515b125caebdd70b"
+    },
+    {
+      "path": "scripts/route_a_v3/record_dec028_ss0_static_preflight.py",
+      "role": "DEC028_SS0_RECORDER",
+      "sha256": "79106444f460457b00e290846a06cf43c743b5b3028741917e76ead7a7082b6d"
+    },
+    {
+      "path": "tests/route_a_v3/test_dec028_static_bundle.py",
+      "role": "DEC028_FOCUSED_TEST",
+      "sha256": "8a261b7d0c36dd78d713a279a9dee76fd64dbbb0a4de4b4e94aabbd538a3b2ca"
     }
   ],
   "initial_generated_at": "2026-08-10T10:10:05+08:00",
   "generated_at": "2026-08-15T05:35:01+08:00",
   "updated_at": "2026-08-15T05:35:01+08:00",
-  "manifest_status": "DEC027_EVT060_CURRENT_PROJECTION_SETTLED_RUNTIME_SYNCED_NO_EVT061_UNALLOCATED_NO_PROMOTION_A1_INCOMPLETE_A6_IN_PROGRESS_L3_NOT_ESTABLISHED_A7_NOT_RUN",
+  "manifest_status": "DEC028_STATIC_BUNDLE_FROZEN_PENDING_FRESH_RUNTIME_SYNC_COUNTS_1_1_0_6547_CLAIM_NOT_ESTABLISHED_G1_NOT_LAUNCHED",
   "schema_version": "1.0.0",
   "sealed_contact": false,
-  "version": "3.0.0"
+  "version": "3.0.0",
+  "pending_successor_amendment_decision_ids": [
+    "V3-DEC-028"
+  ]
 }

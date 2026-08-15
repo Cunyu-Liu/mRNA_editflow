@@ -148,3 +148,13 @@ sealed_controls:
   in_model_selection: false
   in_architecture_selection: false
   in_threshold_selection: false
+
+dec028_single_study_task_split_contract:
+  task_id: GSE200304_SOURCE_RELATIVE_CRITIC_G1
+  split_id: S10
+  binding_status: SCHEMA_ONLY_G1_NOT_AUTHORIZED
+  optimizer_fit_count: 1
+  fold_model_count: 1
+  checkpoint_count: 1
+  final_refit_count: 0
+  seed_count: 1
