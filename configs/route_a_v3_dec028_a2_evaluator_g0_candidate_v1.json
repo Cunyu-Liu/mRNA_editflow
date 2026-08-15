@@ -1,0 +1,123 @@
+{
+  "schema_version": "route_a_v3_dec028_a2_evaluator_g0_candidate.v1",
+  "candidate_id": "ROUTE_A_V3_DEC028_A2_EVALUATOR_G0_CANDIDATE_V1",
+  "document_status": "DRAFT_FOR_DISTINCT_REVIEW_NOT_ACTIVE_PROTOCOL",
+  "authority_status": "NON_AUTHORITATIVE_G0_PREPARATION_ONLY",
+  "activation_state": "INACTIVE_NO_REAL_MEMBERSHIP_OR_ASSIGNMENT",
+  "static_authority": {
+    "root_config_path": "configs/route_a_v3.yaml",
+    "root_config_sha256": "1f11e6a84ed394aecc5ef7a5626b7a07b2a877a4aa8c2a4c67a3d79e9771aca8",
+    "dec028_amendment_path": "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec028.yaml",
+    "dec028_amendment_sha256": "bd0e845daca76a75998b3bca3b8d2b93a9011a0cfb1ec8b40acd7ef133fed3c8",
+    "effective_active_amendment_decision_ids": [
+      "V3-DEC-017",
+      "V3-DEC-018",
+      "V3-DEC-019",
+      "V3-DEC-020",
+      "V3-DEC-021",
+      "V3-DEC-022",
+      "V3-DEC-023",
+      "V3-DEC-024",
+      "V3-DEC-027"
+    ],
+    "pending_successor_decision_id": "V3-DEC-028",
+    "current_qualified_counts": {
+      "ordinary": 1,
+      "a1": 1,
+      "true_a2": 0,
+      "canonical_records": 6547
+    },
+    "scientific_claim_status": "NOT_ESTABLISHED"
+  },
+  "permitted_g0_operations": [
+    "VALIDATE_SYNTHETIC_CONNECTED_COMPONENTS",
+    "VALIDATE_OUTCOME_BLIND_SPLIT_RECIPE_WITH_ZERO_ASSIGNMENTS",
+    "VALIDATE_CANDIDATE_MINUS_SOURCE_DIRECTION_NORMALIZED_SCHEMA",
+    "VALIDATE_SYNTHETIC_BIOLOGICAL_SE_AND_MISSINGNESS_POLICY",
+    "VALIDATE_SAME_INFORMATION_DIRECT_BASELINE_CONTRACT",
+    "VALIDATE_ONLY_JSON_REPORT_TO_STDOUT"
+  ],
+  "forbidden_operations": [
+    "PROJECT_ROW_OR_MEMBER_ID_READ",
+    "REAL_MEMBERSHIP_OR_SPLIT_ASSIGNMENT",
+    "REAL_EVALUATION_OR_BIOLOGICAL_A2_PASS",
+    "GUIDE_TO_EVALUATOR_FEEDBACK",
+    "MODEL_OR_CHECKPOINT_INPUT",
+    "MODEL_SELECTION_OR_THRESHOLD_SELECTION",
+    "CUDA_OR_GPU_TOUCH",
+    "TRAINING_OR_PARAMETER_UPDATE",
+    "RUNTIME_OUTPUT_FILE_WRITE",
+    "QUALIFICATION_CREDIT_OR_CANONICAL_CHANGE",
+    "A7_UNLOCK",
+    "SEALED_ACCESS"
+  ],
+  "synthetic_split_recipe": {
+    "scope": "SYNTHETIC_ONLY_NO_PROJECT_MEMBERSHIP_OR_ASSIGNMENTS",
+    "outcome_blind": true,
+    "split_assignment_count": 0,
+    "grouping_keys": [
+      "synthetic_connected_component"
+    ],
+    "salt": "DEC028_A2_G0_SYNTHETIC_COMPONENT_RECIPE_V1",
+    "forbidden_information": [
+      "outcome",
+      "effect",
+      "significance",
+      "standard_error",
+      "prediction",
+      "guide_output",
+      "checkpoint",
+      "model_selection_result"
+    ]
+  },
+  "aggregate_evaluator_schema": {
+    "target_definition": "CANDIDATE_MINUS_SOURCE_DIRECTION_NORMALIZED",
+    "source_required": true,
+    "candidate_required": true,
+    "direction_normalization_required": true,
+    "biological_se_required_when_observed": true,
+    "finite_positive_biological_se_required": true,
+    "missing_or_censored_never_imputed_as_zero": true,
+    "real_endpoint_values_allowed": false,
+    "real_member_or_sequence_values_allowed": false
+  },
+  "same_information_direct_baseline_contract": {
+    "baseline_id": "DIRECT_CANDIDATE_MINUS_SOURCE_AGGREGATE_BASELINE_V1",
+    "allowed_input_roles": [
+      "candidate_metadata",
+      "source_metadata",
+      "direction_metadata",
+      "aggregate_schema_metadata"
+    ],
+    "forbidden_input_roles": [
+      "guide_output",
+      "model_prediction",
+      "checkpoint",
+      "optimizer_state",
+      "selection_metric",
+      "real_outcome",
+      "split_assignment"
+    ],
+    "usable_for_model_selection": false,
+    "usable_for_checkpoint_selection": false,
+    "usable_for_scientific_claim": false
+  },
+  "runtime_truth": {
+    "project_rows_read": 0,
+    "member_ids_read": 0,
+    "split_assignments_created": 0,
+    "guide_outputs_read": 0,
+    "model_inputs_read": 0,
+    "cuda_probe_calls": 0,
+    "gpu_runs": 0,
+    "training_runs": 0,
+    "parameter_updates": 0,
+    "runtime_output_files_written": 0,
+    "qualification_changes": 0,
+    "credit_changes": 0,
+    "canonical_changes": 0,
+    "a2_pass_asserted": false,
+    "a7_unlocked": false,
+    "sealed_accessed": false
+  }
+}
