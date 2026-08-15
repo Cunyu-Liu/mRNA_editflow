@@ -1,0 +1,10 @@
+{
+  "conversion_rejection_counts": {
+    "MISSING_EFFECT_AND_STANDARD_ERROR": 12
+  },
+  "converter_id": "ROUTE_A_V3_ROUTE2_GSE149487_293T_PARTIAL_DEVELOPMENT_CANONICAL_V1",
+  "reject_payload_in_summary": false,
+  "study_unit_id": "GSE149487",
+  "upstream_rejected_endpoint_pair_count": 822,
+  "upstream_sequence_rejected_pair_count": 405
+}

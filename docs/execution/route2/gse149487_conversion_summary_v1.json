@@ -1,0 +1,50 @@
+{
+  "accepted_endpoint_counts": {
+    "te_log2_polysome_over_totalrna": 96,
+    "transcript_log2_totalrna_over_dna": 96
+  },
+  "accepted_record_count": 192,
+  "conversion_scope": "PARTIAL_293T_ONLY",
+  "converter_id": "ROUTE_A_V3_ROUTE2_GSE149487_293T_PARTIAL_DEVELOPMENT_CANONICAL_V1",
+  "distinct_accepted_pair_count": 96,
+  "distinct_input_pair_count": 102,
+  "endpoint_counts": {
+    "te_log2_polysome_over_totalrna": 102,
+    "transcript_log2_totalrna_over_dna": 102
+  },
+  "generated_candidate_count": 0,
+  "input_record_count": 204,
+  "limitations": [
+    "PARTIAL_293T_ONLY_PC3_AND_18_GEO_RAW_COUNT_TABLES_NOT_INCLUDED",
+    "PAPER_NATIVE_MANN_WHITNEY_AND_MULTIPLE_TESTING_NOT_REPRODUCED",
+    "LICENSE_AND_PUBLIC_REDISTRIBUTION_NOT_CLOSED",
+    "CHECKPOINT_SPECIFIC_EXPOSURE_NOT_CLOSED",
+    "GROUP_LEAKAGE_AND_NEAR_DUPLICATE_SPLIT_NOT_RUN",
+    "UNADJUDICATED_DESCRIPTION_AND_COORDINATE_CLASSES_EXCLUDED",
+    "COMPANION_EFFECT_NOT_PAPER_TEST",
+    "WHOLE_STUDY_CONTEXT_NOT_CLOSED"
+  ],
+  "max_effect_recompute_error": 0.0,
+  "max_standard_error_recompute_error": 0.0,
+  "measured_candidate_count": 192,
+  "near_duplicate_split_status": "NOT_RUN",
+  "pool_assignment": "DEVELOPMENT",
+  "public_redistribution_allowed": false,
+  "qualification_class": "DEVELOPMENT_RELAXED",
+  "qualified_counts_after_conversion": {
+    "a1": 1,
+    "canonical_records": 6547,
+    "ordinary": 1,
+    "true_a2": 0
+  },
+  "qualified_credit_delta": {
+    "a1": 0,
+    "canonical_records": 0,
+    "ordinary": 0,
+    "true_a2": 0
+  },
+  "rejected_record_count": 12,
+  "scientific_claim_status": "NOT_ESTABLISHED",
+  "status": "CONVERTED_DEVELOPMENT_RELAXED_PARTIAL_293T_ONLY",
+  "study_unit_id": "GSE149487"
+}

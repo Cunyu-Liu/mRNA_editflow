@@ -1,0 +1,72 @@
+{
+  "schema_version": "route_a_v3_route2_gse149487_converter.v1",
+  "converter_id": "ROUTE_A_V3_ROUTE2_GSE149487_293T_PARTIAL_DEVELOPMENT_CANONICAL_V1",
+  "study": {
+    "study_unit_id": "GSE149487",
+    "pool_assignment": "DEVELOPMENT",
+    "qualification_class": "DEVELOPMENT_RELAXED",
+    "study_role": "A1_MULTI_ENDPOINT_PARTIAL_293T",
+    "region": "5UTR",
+    "biological_context_id": "293T",
+    "assay_id": "PLUMAGE_BARCODE_MPRA",
+    "endpoint_ids": [
+      "te_log2_polysome_over_totalrna",
+      "transcript_log2_totalrna_over_dna"
+    ],
+    "conversion_scope": "PARTIAL_293T_ONLY"
+  },
+  "input": {
+    "development_companion_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE149487_PLUMAGE_293T_PARTIAL_RECONSTRUCTION_V4/development_companion_effect_records.jsonl",
+    "reconstruction_report_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/GSE149487_PLUMAGE_293T_PARTIAL_RECONSTRUCTION_V4/RECONSTRUCTION_REPORT.json",
+    "expected_input_record_count": 204,
+    "expected_accepted_record_count": 192,
+    "expected_missing_effect_or_se_count": 12,
+    "expected_distinct_accepted_pair_count": 96,
+    "expected_distinct_input_pair_count": 102,
+    "expected_endpoint_counts": {
+      "te_log2_polysome_over_totalrna": 102,
+      "transcript_log2_totalrna_over_dna": 102
+    },
+    "expected_accepted_endpoint_counts": {
+      "te_log2_polysome_over_totalrna": 96,
+      "transcript_log2_totalrna_over_dna": 96
+    },
+    "expected_rejected_endpoint_pair_count_upstream": 822,
+    "expected_sequence_rejected_pair_count_upstream": 405,
+    "required_biological_replicate_count": 3,
+    "required_hamming_distance": 1
+  },
+  "output": {
+    "directory": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE149487/v1",
+    "canonical_filename": "canonical_records.private.jsonl",
+    "conversion_summary_filename": "conversion_summary.json",
+    "reject_summary_filename": "reject_summary.json",
+    "overwrite_allowed": false,
+    "public_redistribution_allowed": false
+  },
+  "development_policy": {
+    "training_eligible": true,
+    "model_selection_eligible": true,
+    "near_duplicate_split_status": "NOT_RUN",
+    "endpoint_or_context_increases_independent_study_count": false,
+    "effective_n_unit": "BIOLOGICAL_REPLICATE",
+    "barcode_is_independent_n": false
+  },
+  "limitations": [
+    "PARTIAL_293T_ONLY_PC3_AND_18_GEO_RAW_COUNT_TABLES_NOT_INCLUDED",
+    "PAPER_NATIVE_MANN_WHITNEY_AND_MULTIPLE_TESTING_NOT_REPRODUCED",
+    "LICENSE_AND_PUBLIC_REDISTRIBUTION_NOT_CLOSED",
+    "CHECKPOINT_SPECIFIC_EXPOSURE_NOT_CLOSED",
+    "GROUP_LEAKAGE_AND_NEAR_DUPLICATE_SPLIT_NOT_RUN",
+    "UNADJUDICATED_DESCRIPTION_AND_COORDINATE_CLASSES_EXCLUDED",
+    "COMPANION_EFFECT_NOT_PAPER_TEST",
+    "WHOLE_STUDY_CONTEXT_NOT_CLOSED"
+  ],
+  "credit_policy": {
+    "measured_candidate": true,
+    "generated_candidate": false,
+    "qualified_credit_delta": {"ordinary": 0, "a1": 0, "true_a2": 0, "canonical_records": 0},
+    "qualified_counts_after_conversion": {"ordinary": 1, "a1": 1, "true_a2": 0, "canonical_records": 6547}
+  },
+  "scientific_claim_status": "NOT_ESTABLISHED"
+}
