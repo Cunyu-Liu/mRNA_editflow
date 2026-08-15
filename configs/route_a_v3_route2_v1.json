@@ -1,0 +1,207 @@
+{
+  "schema_version": "route_a_v3_route2.v1",
+  "route_id": "ROUTE_A_V3_3_ROUTE2",
+  "status": "ACTIVE_DUAL_TRACK_DEVELOPMENT",
+  "contract": {
+    "human_contract_name": "mrna 数据gate转向后的合同.md",
+    "execution_entry_name": "mrna gate 提示词.md",
+    "version": "V3.3.0",
+    "parallel_contract_allowed": false
+  },
+  "current_truth": {
+    "qualified_ordinary_studies": 1,
+    "qualified_a1_studies": 1,
+    "qualified_true_a2_studies": 0,
+    "qualified_canonical_records": 6547,
+    "diagnostic_model_parameter_count": 81794,
+    "diagnostic_model_status": "COMPLETED_NEGATIVE_NO_PREDICTIVE_SIGNAL_ESTABLISHED",
+    "edit_flow_status": "ACTIVE_IMPLEMENTATION_TARGET_NOT_YET_SCIENTIFICALLY_ESTABLISHED",
+    "scientific_claim_status": "NOT_ESTABLISHED"
+  },
+  "development_policy": {
+    "full_route_a_qualification_is_development_gate": false,
+    "canonicalization_enabled": true,
+    "baseline_execution_enabled": true,
+    "prediction_training_enabled": true,
+    "flow_g0_implementation_enabled": true,
+    "training_requires_nvidia_gpu": true,
+    "training_cuda_fallback_to_cpu_allowed": false,
+    "eligible_physical_gpu_indices": [0, 1, 2, 3, 4, 5],
+    "evaluation_protected": true,
+    "successor_authority_required": false,
+    "runtime_ledger_required": false,
+    "one_read_required": false,
+    "resource_once_required": false
+  },
+  "storage": {
+    "route2_data_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2",
+    "large_artifacts_in_git_allowed": false,
+    "git_allowed": [
+      "code",
+      "configs",
+      "tests",
+      "small_summaries"
+    ]
+  },
+  "study_inventory": [
+    {
+      "study_unit_id": "GSE200304",
+      "pool": "DEVELOPMENT",
+      "role": "A1",
+      "qualification_class": "QUALIFIED_CURRENT",
+      "canonical_records": 6547
+    },
+    {
+      "study_unit_id": "GSE114002",
+      "pool": "DEVELOPMENT",
+      "role": "A1_OR_TRUE_A2_PENDING_CONVERSION",
+      "qualification_class": "DEVELOPMENT_RELAXED",
+      "canonical_records": null
+    },
+    {
+      "study_unit_id": "GSE149487",
+      "pool": "DEVELOPMENT",
+      "role": "A1_PENDING_CONVERSION",
+      "qualification_class": "DEVELOPMENT_RELAXED",
+      "canonical_records": null
+    },
+    {
+      "study_unit_id": "GSE217518",
+      "pool": "DEVELOPMENT",
+      "role": "A1_PENDING_CONVERSION",
+      "qualification_class": "DEVELOPMENT_RELAXED",
+      "canonical_records": null
+    },
+    {
+      "study_unit_id": "ENCSR854RUF",
+      "pool": "DEVELOPMENT",
+      "role": "A1_PENDING_CONVERSION",
+      "qualification_class": "DEVELOPMENT_RELAXED",
+      "canonical_records": null
+    },
+    {
+      "study_unit_id": "GSE186455",
+      "pool": "DEVELOPMENT",
+      "role": "A1_PENDING_REFERENCE_ADJUDICATION",
+      "qualification_class": "DEVELOPMENT_RELAXED",
+      "canonical_records": null
+    },
+    {
+      "study_unit_id": "GSE256185",
+      "pool": "DEVELOPMENT",
+      "role": "A1_PENDING_FINITE_EDIT_VALIDATION",
+      "qualification_class": "DEVELOPMENT_RELAXED",
+      "canonical_records": null
+    },
+    {
+      "study_unit_id": "GSE269595",
+      "pool": "DEVELOPMENT",
+      "role": "TRUE_A2_LISTWISE",
+      "qualification_class": "DEVELOPMENT_RELAXED",
+      "canonical_records": null
+    },
+    {
+      "study_unit_id": "GSE232572",
+      "pool": "EVALUATION",
+      "role": "A1_ZERO_SHOT",
+      "qualification_class": "EVALUATION_RESERVED",
+      "canonical_records": 8068
+    },
+    {
+      "study_unit_id": "E-MTAB-10902",
+      "pool": "EVALUATION",
+      "role": "TRUE_A2_EXPLORATORY_ZERO_SHOT",
+      "qualification_class": "EVALUATION_RESERVED",
+      "canonical_records": null
+    },
+    {
+      "study_unit_id": "GSE145046",
+      "pool": "AUXILIARY",
+      "role": "ABSOLUTE_AUXILIARY",
+      "qualification_class": "AUXILIARY_ONLY",
+      "canonical_records": null
+    },
+    {
+      "study_unit_id": "GSE207584",
+      "pool": "NEGATIVE_CONTROL",
+      "role": "MAPPING_CARTESIAN_NEGATIVE_CONTROL",
+      "qualification_class": "AGGREGATE_ONLY_UNCONVERTIBLE",
+      "canonical_records": 0
+    },
+    {
+      "study_unit_id": "GSE261709",
+      "pool": "NEGATIVE_CONTROL",
+      "role": "IDENTIFIABILITY_NEGATIVE_CONTROL",
+      "qualification_class": "AGGREGATE_ONLY_UNCONVERTIBLE",
+      "canonical_records": 0
+    },
+    {
+      "study_unit_id": "GSE246381",
+      "pool": "SEALED_EXCLUDED",
+      "role": "OPTIONAL_SEALED_FINAL",
+      "qualification_class": "SEALED_EXCLUDED",
+      "canonical_records": null
+    }
+  ],
+  "run_roles": {
+    "PREDICTION_BASELINE": {
+      "track": "PREDICTION",
+      "parameter_updates_allowed": true,
+      "gpu_required_when_parameterized": true
+    },
+    "DELTA_PREDICTOR": {
+      "track": "PREDICTION",
+      "parameter_updates_allowed": true,
+      "gpu_required_when_parameterized": true
+    },
+    "SEARCH_BASELINE": {
+      "track": "GENERATION",
+      "parameter_updates_allowed": false,
+      "gpu_required_when_parameterized": false
+    },
+    "FLOW_G0_BASE": {
+      "track": "GENERATION",
+      "parameter_updates_allowed": true,
+      "gpu_required_when_parameterized": true
+    },
+    "GUIDED_XEDITFLOW": {
+      "track": "COUPLING",
+      "parameter_updates_allowed": true,
+      "gpu_required_when_parameterized": true,
+      "requires": [
+        "CRITIC_READY_FOR_GUIDANCE",
+        "FLOW_G0_READY"
+      ]
+    }
+  },
+  "action_space": {
+    "version": "SUB_STOP_V1",
+    "allowed_actions": ["SUB", "STOP"],
+    "ins_supported": false,
+    "del_supported": false,
+    "repeat_position_edit_allowed": false,
+    "hard_legality_mask_before_rate_normalization": true
+  },
+  "readiness": {
+    "critic": "CRITIC_NOT_READY_FOR_GUIDANCE",
+    "flow": "FLOW_G0_NOT_READY",
+    "guided_generation": "NOT_STARTED_DEPENDENCY_NOT_MET"
+  },
+  "evaluation_isolation": {
+    "evaluation_study_ids": ["GSE232572", "E-MTAB-10902"],
+    "evaluation_in_training_allowed": false,
+    "evaluation_for_architecture_hpo_or_threshold_selection_allowed": false,
+    "evaluation_model_gradient_to_generator_allowed": false,
+    "report_layers": [
+      "FROZEN_CRITIC_SELF_SCORE",
+      "INDEPENDENT_EVALUATOR",
+      "MEASURED_OUTCOME"
+    ]
+  },
+  "credit_policy": {
+    "development_relaxed_counts_as_qualified": false,
+    "generated_candidates_count_as_canonical": false,
+    "generated_candidates_count_as_measured": false,
+    "generated_candidates_increase_ordinary_a1_or_true_a2_credit": false
+  }
+}
