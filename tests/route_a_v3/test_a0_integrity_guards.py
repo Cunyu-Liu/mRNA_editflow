@@ -3099,7 +3099,7 @@ def test_gse217518_public_authority_preflight_registration_is_closed(
     )
     assert validator.REGISTRY_MANIFEST_PATH not in manifest_paths
     assert manifest["manifest_status"] == (
-        validator.DEC027_EVT060_PROJECTION_MANIFEST_STATUS
+        validator.DEC028_AUTHORITY_MANIFEST_STATUS
     )
     assert (
         validator.validate_gse217518_public_authority_preflight_registration(
@@ -4803,7 +4803,7 @@ def test_dec024_three_replacement_preflight_authorities_are_closed(
     manifest_paths = {row["path"] for row in manifest["files"]}
     assert validator.DEC024_AMENDMENT_PATH in manifest_paths
     assert manifest["manifest_status"] == (
-        validator.DEC027_EVT060_PROJECTION_MANIFEST_STATUS
+        validator.DEC028_AUTHORITY_MANIFEST_STATUS
     )
     assert {
         "configs/route_a_v3_gse207584_moesm7_aggregate_endpoint_universe_preflight_v1.json",
@@ -4935,16 +4935,74 @@ def test_dec027_ordered_rescue_and_conditional_stop_rule_are_closed(
 
     manifest = validator._load_json(repo_root, validator.REGISTRY_MANIFEST_PATH)
     assert manifest["manifest_status"] == (
-        validator.DEC027_EVT060_PROJECTION_MANIFEST_STATUS
+        validator.DEC028_AUTHORITY_MANIFEST_STATUS
     )
     assert validator.DEC027_AMENDMENT_PATH in {
         row["path"] for row in manifest["files"]
     }
     decision_log = validator._load_yaml(repo_root, validator.DECISION_LOG_PATH)
     assert [row["decision_id"] for row in decision_log["decisions"]][-2:] == [
-        "V3-DEC-024",
         "V3-DEC-027",
+        "V3-DEC-028",
     ]
+
+
+def test_dec028_owner_initiated_single_study_s0_authority_is_closed(
+    validator,
+    repo_root,
+):
+    config, _, registries = validator.load_bundle_documents(repo_root)
+    assert validator.validate_dec028_authority(repo_root, config, registries) == []
+
+    amendment = validator._load_yaml(repo_root, validator.DEC028_AMENDMENT_PATH)
+    assert amendment["owner_authorization"]["dec027_automatic_trigger_claimed"] is False
+    assert amendment["authority_scope"]["current_qualified_counts"] == {
+        "ordinary": 1,
+        "a1": 1,
+        "true_a2": 0,
+        "canonical_records": 6547,
+    }
+    assert amendment["execution_dependency"]["p0_required_pass_count"] == 11
+    assert amendment["execution_dependency"]["materialization_authority_granted"] is False
+    assert amendment["future_learned_execution"]["current_authorized_execution_count"] == 0
+    assert amendment["future_learned_execution"]["final_refit_count_if_later_granted"] == 0
+    assert amendment["runtime_activation"]["successor_event_preallocated"] is False
+
+    interim = validator._load_yaml(repo_root, validator.A1_INTERIM_PATH)
+    assert interim["dec027_current_disposition"]["stop_rule_adjudication"][
+        "trigger_condition_met"
+    ] is False
+    assert interim["dec028_current_disposition"]["training_allowed"] is False
+    assert interim["dec028_current_disposition"]["gpu_work_allowed"] is False
+    assert interim["dec028_current_disposition"]["g1_development_run_authorized"] is False
+
+
+@pytest.mark.parametrize(
+    ("mutation", "expected_code"),
+    [
+        ("training", "DEC028_SURFACE"),
+        ("sealed_role", "DEC028_STUDY_ROLES"),
+    ],
+)
+def test_dec028_training_or_study_role_drift_fails_closed(
+    validator,
+    repo_root,
+    mutation,
+    expected_code,
+):
+    config, _, registries = validator.load_bundle_documents(repo_root)
+    config = deepcopy(config)
+    registries = deepcopy(registries)
+    if mutation == "training":
+        config["a1_qualification_authority"][
+            "dec028_single_study_operational_mainline"
+        ]["training_allowed"] = True
+    else:
+        registries["data"]["dec028_single_study_use_roles"][
+            "GSE246381"
+        ] = "DEVELOPMENT_ROBUSTNESS_ONLY"
+    codes = _codes(validator.validate_dec028_authority(repo_root, config, registries))
+    assert expected_code in codes
 
 
 @pytest.mark.parametrize(
@@ -5001,7 +5059,7 @@ def test_dec023_dual_preflight_final_evidence_registration_is_closed(
     assert validator.GSE261709_PREFLIGHT_REPORT_PATH not in manifest_paths
     assert validator.GSE207584_PREFLIGHT_REPORT_PATH not in manifest_paths
     assert manifest["manifest_status"] == (
-        validator.DEC027_EVT060_PROJECTION_MANIFEST_STATUS
+        validator.DEC028_AUTHORITY_MANIFEST_STATUS
     )
 
     interim = validator._load_yaml(repo_root, validator.A1_INTERIM_PATH)
@@ -5224,7 +5282,7 @@ def test_dec027_evt060_current_projection_settlement_is_closed(
     assert validator.validate_dec027_six_rescue_evidence_registration(repo_root) == []
     manifest = validator._load_json(repo_root, validator.REGISTRY_MANIFEST_PATH)
     assert manifest["manifest_status"] == (
-        validator.DEC027_EVT060_PROJECTION_MANIFEST_STATUS
+        validator.DEC028_AUTHORITY_MANIFEST_STATUS
     )
     manifest_paths = {row["path"] for row in manifest["files"]}
     assert len(validator.DEC027_SIX_RESCUE_STATIC_LEAF_SHA256) == 18

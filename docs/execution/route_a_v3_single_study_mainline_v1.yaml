@@ -1,0 +1,35 @@
+schema_version: "1.0.0"
+record_id: ROUTE_A_V3_SINGLE_STUDY_MAINLINE_V1
+decision_id: V3-DEC-028
+record_status: ACTIVE_AUTHORITY_PENDING_RUNTIME_SYNC
+current_phase: SINGLE_STUDY_S0_AUTHORITY_AND_P0_CLOSURE
+authority_path: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec028.yaml
+protocol_path: configs/route_a_v3_single_study_mainline_v1.yaml
+predecessor_runtime_event_id: A1-EVT-060
+expected_next_runtime_event_id: PENDING_FRESH_RUNTIME_EVENT_ID
+next_runtime_event_id_preallocated: false
+scientific_claim_status: NOT_ESTABLISHED
+current_qualified_counts: {ordinary: 1, a1: 1, true_a2: 0, canonical_records: 6547}
+full_route_a_gate_minima: {ordinary: 3, a1: 2, true_a2: 1}
+full_route_a_retained: true
+dec027_automatic_trigger_condition_met: false
+owner_initiated_prospective_choice: true
+historical_gate_statuses_preserved: true
+locks:
+  materialization_authorized: false
+  data_row_access_authorized: false
+  split_assignment_execution_authorized: false
+  training_authorized: false
+  gpu_authorized: false
+  model_selection_authorized: false
+  a7_allowed: false
+  next_phase_authorized: false
+  sealed_access_authorized: false
+g1:
+  run_id: GSE200304_SOURCE_RELATIVE_CRITIC_G1
+  authorized: false
+  execution_count: 0
+  optimizer_fit_count: 0
+  checkpoint_count: 0
+  final_refit_count: 0
+immediate_next_action: BIND_AND_SETTLE_DEC028_AUTHORITY_RUNTIME_SYNC_WITHOUT_DATA_CUDA_OR_MODEL_TOUCH

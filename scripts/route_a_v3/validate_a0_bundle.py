@@ -43,14 +43,18 @@ DEC022_AMENDMENT_PATH = "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec
 DEC023_AMENDMENT_PATH = "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec023.yaml"
 DEC024_AMENDMENT_PATH = "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec024.yaml"
 DEC027_AMENDMENT_PATH = "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec027.yaml"
+DEC028_AMENDMENT_PATH = "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec028.yaml"
+DEC028_HUMAN_CONTRACT_PATH = "docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec028_single_study_mainline_contract.md"
+DEC028_PROTOCOL_PATH = "configs/route_a_v3_single_study_mainline_v1.yaml"
+DEC028_EXECUTION_PATH = "docs/execution/route_a_v3_single_study_mainline_v1.yaml"
 DECISION_LOG_PATH = "docs/execution/route_a_v3_decision_log.yaml"
 REGISTRY_MANIFEST_PATH = "docs/execution/route_a_v3_registry_manifest.json"
 A1_INTERIM_PATH = "docs/execution/route_a_v3_a1_interim.yaml"
 A6_INTERIM_PATH = "docs/execution/route_a_v3_a6_interim.yaml"
-EXPECTED_A1_INTERIM_SHA256 = "c21edd8ca5e72b1949fdb4b12807affdf9378d95b23ad3382d5eb13ad7b1de82"
-EXPECTED_A6_INTERIM_SHA256 = "1d44bcfe8669a55dc42f619ed43178f0637e20a4297ca996ecab3f7165612769"
-CURRENT_ACTIVE_CONFIG_SHA256 = "c5ec7d236443b506c09fd3f09e149ce5d082daff618887989af6e59472727a27"
-CURRENT_TASK_REGISTRY_SHA256 = "a64d0b8bb5eb466b06daa46ed109bd19901ee775910bc5cc9221c39ead63a4bc"
+EXPECTED_A1_INTERIM_SHA256 = "83ace45bc3aeb8a55a2eb0e52c132674b2a600997c6406a6e11b3396b5326d8e"
+EXPECTED_A6_INTERIM_SHA256 = "560f24b1a6fc3ef29f7507c59d4c2b62760c0405855b2a8671e5f0ce39ffe6b8"
+CURRENT_ACTIVE_CONFIG_SHA256 = "6a6c97fe28b07738b42175183be556f36d5477d67c1180a69df75d0850790e41"
+CURRENT_TASK_REGISTRY_SHA256 = "113c98a78644f5f5e432f59de7f8bc34f9956b13998e68b785f350cf5289d917"
 DEC023_ACTIVE_TASK_REGISTRY_SHA256 = "210964e1a1c0b1166dab73e95e0243eee54d8470149aa3b3cb182f4f90e266b3"
 A6_REGISTRATION_LEDGER_AT = "2026-08-13T18:55:00+08:00"
 DEC021_AUTHORITY_LEDGER_AT = "2026-08-13T19:50:00+08:00"
@@ -175,6 +179,13 @@ DEC027_EVT060_RUNTIME_CAS_PATHS = {
     "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/RUN_MANIFEST.json",
     "/mnt/cunyuliu/mrna_xeditflow_routea_v3/runs/A1/A1_DATA_QUALIFICATION_20260810T032128P0800_fd722d5/EVENT_LOG.jsonl",
 }
+DEC028_AUTHORITY_LEDGER_AT = "2026-08-15T17:15:00+08:00"
+DEC028_AUTHORITY_MANIFEST_AT = "2026-08-15T17:15:01+08:00"
+DEC028_AUTHORITY_MANIFEST_STATUS = (
+    "DEC028_SINGLE_STUDY_S0_P0_CLOSURE_AUTHORITY_ACTIVE_EVT060_SETTLED_"
+    "PENDING_FRESH_UNALLOCATED_RUNTIME_EVENT_NO_DATA_CUDA_MODEL_OR_G1_"
+    "L3_NOT_ESTABLISHED_A7_NOT_RUN"
+)
 DEC027_RESCUE_EXECUTION_ORDER = [
     "GSE217518_CORRECTED_A1_SUCCESSOR",
     "ENCSR854RUF_DATASET_SPECIFIC_A1_PREFLIGHT",
@@ -910,6 +921,7 @@ ACTIVE_AMENDMENT_DECISION_IDS = [
     "V3-DEC-023",
     "V3-DEC-024",
     "V3-DEC-027",
+    "V3-DEC-028",
 ]
 ACTIVE_AMENDMENT_PATHS = {
     "V3-DEC-019": DEC019_AMENDMENT_PATH,
@@ -919,6 +931,7 @@ ACTIVE_AMENDMENT_PATHS = {
     "V3-DEC-023": DEC023_AMENDMENT_PATH,
     "V3-DEC-024": DEC024_AMENDMENT_PATH,
     "V3-DEC-027": DEC027_AMENDMENT_PATH,
+    "V3-DEC-028": DEC028_AMENDMENT_PATH,
 }
 DEC019_IMMUTABLE_LEAF_SHA256 = {
     DEC019_AMENDMENT_PATH: "8c82e564398f0735fe4976f875fe91f053937b05044e5232e237694a2b36e1ca",
@@ -1057,6 +1070,24 @@ DEC027_ACTIVE_AUTHORITY_LEAF_SHA256.update(
         DECISION_LOG_PATH: "e0dc2a7fb186c5c8d00c1c5604602b1b2f87b26241191d4da55a405a02387e05",
         "docs/execution/route_a_v3_data_role_registry.yaml": "80217a8114286f84960237819ac5b2d5828afbc23af118576541cc7cee64ae4e",
         "docs/execution/route_a_v3_task_registry.yaml": "a64d0b8bb5eb466b06daa46ed109bd19901ee775910bc5cc9221c39ead63a4bc",
+    }
+)
+DEC028_ACTIVE_AUTHORITY_LEAF_SHA256 = dict(DEC027_ACTIVE_AUTHORITY_LEAF_SHA256)
+DEC028_ACTIVE_AUTHORITY_LEAF_SHA256.update(
+    {
+        CONFIG_PATH: "6a6c97fe28b07738b42175183be556f36d5477d67c1180a69df75d0850790e41",
+        A1_QUALIFICATION_CONFIG_PATH: "0dfb6dba77ab80628451d0a87f09144864965a5ba65d1a05ce9a32ae3441c7bd",
+        SUPERSESSION_PATH: "b13146dd852c8e8c6f5bf29972156d9c2f11c13bc09b2da5f5ea7f78c275cc93",
+        DEC028_AMENDMENT_PATH: "98182778439b7f2da39fc26c32be6fe50f9710cb01682fb1ada6c5a440c0b26f",
+        DEC028_HUMAN_CONTRACT_PATH: "1864f28a963f8feda113d4b5de5f92b23ebad58b9fe6471136466b9d314b0fd0",
+        DEC028_PROTOCOL_PATH: "cba7ebeedc960e594a4a7a9ca8c1fc538af2fc96fb43991a5302d44a01052f6d",
+        DEC028_EXECUTION_PATH: "f7345f772a304531428cc7fe9783eaeecbe29dd46e231578167893db61b2e1b0",
+        DECISION_LOG_PATH: "2248029779742897896f5a944d459d65444b959f5cde93f3a67bb91e16b425a0",
+        "docs/execution/route_a_v3_data_role_registry.yaml": "b4b9949b3c41bcd501980d52f3cdafe37bf3d5a4b23b35dd9113337f1a1bb8e0",
+        "docs/execution/route_a_v3_split_registry.yaml": "222a63d18e1ccca0a97ed3fdc2a3a656aefe283be3f3bdf23f19f5f1e04e2051",
+        "docs/execution/route_a_v3_task_registry.yaml": "113c98a78644f5f5e432f59de7f8bc34f9956b13998e68b785f350cf5289d917",
+        "docs/execution/route_a_v3_task_split_matrix.yaml": "46c122705ffec30efdbfb7f796c8866506bd07a847a6fcc8b622c4ada0ff50d0",
+        "docs/execution/route_a_v3_claim_evidence_matrix.yaml": "ea188483008fcb6bb7df15de25b1ebb0264044eeee8d96d7c070d0b264ecea7e",
     }
 )
 DEC023_AUTHORITY_EXACT_CHANGED_PATHS = (
@@ -2239,7 +2270,7 @@ EXPECTED_HISTORICAL_GATE_BINDINGS = {
     "FINAL_MIGRATION": ("reports/migration/FINAL_MIGRATION_REPORT.md", "a987d8c292c3700754f77052cdfe7315cf656ff2ca32818b5267a6e9fff84b92"),
 }
 
-EXPECTED_DECISION_IDS = tuple(f"V3-DEC-{index:03d}" for index in range(1, 25)) + ("V3-DEC-027",)
+EXPECTED_DECISION_IDS = tuple(f"V3-DEC-{index:03d}" for index in range(1, 25)) + ("V3-DEC-027", "V3-DEC-028")
 EXPECTED_DECISION_DIMENSIONS = {
     "V3-DEC-001": "strategic_target",
     "V3-DEC-002": "evidence_and_claim_separation",
@@ -2266,6 +2297,7 @@ EXPECTED_DECISION_DIMENSIONS = {
     "V3-DEC-023": "gse261709_schema_geometry_and_gse207584_dense_family_dual_aggregate_only_preflight_scope",
     "V3-DEC-024": "gse261709_processed_a1_gse269595_role_adjudication_and_emtab10902_true_a2_replacement_preflight_scope",
     "V3-DEC-027": "bounded_six_route_data_rescue_sprint_and_conditional_claim_ladder_trigger",
+    "V3-DEC-028": "owner_initiated_single_study_source_relative_operational_mainline",
 }
 
 # Canonical per-entry digests make the accepted prefix genuinely append-only.
@@ -2297,6 +2329,7 @@ EXPECTED_DECISION_ENTRY_SHA256 = {
     "V3-DEC-023": "fa777bec43eddc1269644aed2b23be09c3b33c870717101e7d00d7eb3c8d098b",
     "V3-DEC-024": "c71101c5edc6c2f3a8dcef537dfffc035c69439717eba5062edfaa398550caf9",
     "V3-DEC-027": "10945f65bddf732b8a5f754d54f74c607ccb9cd2b088848801380ed06405ad39",
+    "V3-DEC-028": "7511cf322b94eb0854a9378ac48e0bfbba5022f9ea79730e0357e2a43acea363",
 }
 
 EXPECTED_REGISTRY_MANIFEST_PATH_ROLES = (
@@ -2309,6 +2342,10 @@ EXPECTED_REGISTRY_MANIFEST_PATH_ROLES = (
     (DEC023_AMENDMENT_PATH, "DEC023_APPEND_ONLY_DUAL_PREFLIGHT_AUTHORITY_AMENDMENT"),
     (DEC024_AMENDMENT_PATH, "DEC024_APPEND_ONLY_REPLACEMENT_PREFLIGHT_AUTHORITY_AMENDMENT"),
     (DEC027_AMENDMENT_PATH, "DEC027_APPEND_ONLY_BOUNDED_RESCUE_SPRINT_AUTHORITY_AMENDMENT"),
+    (DEC028_AMENDMENT_PATH, "DEC028_APPEND_ONLY_SINGLE_STUDY_MAINLINE_AUTHORITY_AMENDMENT"),
+    (DEC028_HUMAN_CONTRACT_PATH, "DEC028_REVIEWED_HUMAN_READABLE_SINGLE_STUDY_CONTRACT"),
+    (DEC028_PROTOCOL_PATH, "DEC028_SINGLE_STUDY_MAINLINE_EXECUTABLE_PROTOCOL"),
+    (DEC028_EXECUTION_PATH, "DEC028_SINGLE_STUDY_MAINLINE_EXECUTION_STATE"),
     (A1_QUALIFICATION_CONFIG_PATH, "A1_QUALIFICATION_ROOT_PROTOCOL"),
     (SUPERSESSION_PATH, "SUPERSESSION_LINEAGE"),
     (SCIENTIFIC_M0_HISTORY_PATH, "HISTORICAL_M0_SCIENTIFIC_FAILURE_EXACT_COPY"),
@@ -3751,10 +3788,10 @@ def validate_registry_manifest(repo_root: Path) -> list[Issue]:
         "contract_sha256": SOURCE_CONTRACT_SHA256,
         "active_amendment_decision_ids": ACTIVE_AMENDMENT_DECISION_IDS,
         "base_commit": "bbb71dcba6f1e1c9cb75a8a6653f1a4fe4a6ca0c",
-        "manifest_status": DEC027_EVT060_PROJECTION_MANIFEST_STATUS,
+        "manifest_status": DEC028_AUTHORITY_MANIFEST_STATUS,
         "initial_generated_at": "2026-08-10T10:10:05+08:00",
-        "generated_at": DEC027_EVT060_PROJECTION_MANIFEST_AT,
-        "updated_at": DEC027_EVT060_PROJECTION_MANIFEST_AT,
+        "generated_at": DEC028_AUTHORITY_MANIFEST_AT,
+        "updated_at": DEC028_AUTHORITY_MANIFEST_AT,
         "sealed_contact": False,
     }
     expected_top_keys = set(expected_static_top) | {"files"}
@@ -5327,6 +5364,7 @@ def validate_dec019_authority(
         "dec023_amendment_path": DEC023_AMENDMENT_PATH,
         "dec024_amendment_path": DEC024_AMENDMENT_PATH,
         "dec027_amendment_path": DEC027_AMENDMENT_PATH,
+        "dec028_amendment_path": DEC028_AMENDMENT_PATH,
     }
     observed_q_authority = qualification.get("authority")
     if not isinstance(observed_q_authority, Mapping):
@@ -5487,11 +5525,7 @@ def validate_dec019_authority(
         if not isinstance(ref, Mapping):
             _issue(issues, "DEC019_REGISTRY_AUTHORITY", REGISTRY_PATHS[name], "authority_ref must be a mapping")
             continue
-        expected_ids = (
-            ACTIVE_AMENDMENT_DECISION_IDS
-            if name in {"data", "task"}
-            else ACTIVE_AMENDMENT_DECISION_IDS[:4]
-        )
+        expected_ids = ACTIVE_AMENDMENT_DECISION_IDS
         _expect(ref, "active_amendment_decision_ids", expected_ids, REGISTRY_PATHS[name], issues, "DEC019_REGISTRY_AUTHORITY")
         _expect(ref, "dec019_amendment_path", DEC019_AMENDMENT_PATH, REGISTRY_PATHS[name], issues, "DEC019_REGISTRY_AUTHORITY")
         _expect(ref, "dec020_amendment_path", DEC020_AMENDMENT_PATH, REGISTRY_PATHS[name], issues, "DEC019_REGISTRY_AUTHORITY")
@@ -5501,6 +5535,7 @@ def validate_dec019_authority(
             _expect(ref, "dec023_amendment_path", DEC023_AMENDMENT_PATH, REGISTRY_PATHS[name], issues, "DEC023_REGISTRY_AUTHORITY")
             _expect(ref, "dec024_amendment_path", DEC024_AMENDMENT_PATH, REGISTRY_PATHS[name], issues, "DEC024_REGISTRY_AUTHORITY")
             _expect(ref, "dec027_amendment_path", DEC027_AMENDMENT_PATH, REGISTRY_PATHS[name], issues, "DEC027_REGISTRY_AUTHORITY")
+        _expect(ref, "dec028_amendment_path", DEC028_AMENDMENT_PATH, REGISTRY_PATHS[name], issues, "DEC028_REGISTRY_AUTHORITY")
 
     data = registries["data"]
     common_requirements = data.get("common_audit_requirements")
@@ -5645,6 +5680,9 @@ def validate_dec020_authority(
             )
             continue
         allowed_sha256 = {expected_sha256}
+        successor_sha256 = DEC028_ACTIVE_AUTHORITY_LEAF_SHA256.get(relative)
+        if successor_sha256 is not None:
+            allowed_sha256.add(successor_sha256)
         if relative == "docs/execution/route_a_v3_task_registry.yaml":
             allowed_sha256.add(CURRENT_TASK_REGISTRY_SHA256)
         if actual_sha256 not in allowed_sha256:
@@ -6286,6 +6324,9 @@ def validate_dec021_authority(
             _issue(issues, "DEC021_HISTORICAL_LEAF_UNREADABLE", relative, str(exc))
             continue
         allowed_sha256 = {expected_sha256}
+        successor_sha256 = DEC028_ACTIVE_AUTHORITY_LEAF_SHA256.get(relative)
+        if successor_sha256 is not None:
+            allowed_sha256.add(successor_sha256)
         if relative == "docs/execution/route_a_v3_task_registry.yaml":
             allowed_sha256.add(CURRENT_TASK_REGISTRY_SHA256)
         if actual_sha256 not in allowed_sha256:
@@ -6596,6 +6637,7 @@ def validate_dec022_authority(
             continue
         allowed_sha256 = {
             expected_sha256,
+            DEC028_ACTIVE_AUTHORITY_LEAF_SHA256.get(relative, expected_sha256),
             DEC023_ACTIVE_AUTHORITY_LEAF_SHA256.get(relative, expected_sha256),
             DEC027_ACTIVE_AUTHORITY_LEAF_SHA256.get(
                 relative,
@@ -6953,6 +6995,7 @@ def validate_dec023_authority(
             continue
         allowed_sha256 = {
             expected_sha256,
+            DEC028_ACTIVE_AUTHORITY_LEAF_SHA256.get(relative, expected_sha256),
             DEC027_ACTIVE_AUTHORITY_LEAF_SHA256.get(
                 relative,
                 DEC024_ACTIVE_AUTHORITY_LEAF_SHA256.get(relative, expected_sha256),
@@ -7345,8 +7388,9 @@ def validate_dec024_authority(
 
     issues: list[Issue] = []
     for relative, historical_sha256 in DEC024_ACTIVE_AUTHORITY_LEAF_SHA256.items():
-        expected_sha256 = DEC027_ACTIVE_AUTHORITY_LEAF_SHA256.get(
-            relative, historical_sha256
+        expected_sha256 = DEC028_ACTIVE_AUTHORITY_LEAF_SHA256.get(
+            relative,
+            DEC027_ACTIVE_AUTHORITY_LEAF_SHA256.get(relative, historical_sha256),
         )
         try:
             actual_sha256 = sha256_bytes(_read_bytes(repo_root, relative))
@@ -8116,7 +8160,10 @@ def validate_dec027_authority(
     """Freeze the ordered six-route rescue sprint without awarding credit."""
 
     issues: list[Issue] = []
-    for relative, expected_sha256 in DEC027_ACTIVE_AUTHORITY_LEAF_SHA256.items():
+    for relative, historical_sha256 in DEC027_ACTIVE_AUTHORITY_LEAF_SHA256.items():
+        expected_sha256 = DEC028_ACTIVE_AUTHORITY_LEAF_SHA256.get(
+            relative, historical_sha256
+        )
         try:
             actual_sha256 = sha256_bytes(_read_bytes(repo_root, relative))
         except (FileNotFoundError, ValueError) as exc:
@@ -8362,8 +8409,11 @@ def validate_dec027_authority(
         _issue(issues, "DEC027_EXTERNAL_CANDIDATE_PROMOTION", REGISTRY_PATHS["data"], "external preflight candidates may not enter registered study units before qualification")
 
     decisions = decision_log.get("decisions")
-    if not isinstance(decisions, list) or not decisions or not isinstance(decisions[-1], Mapping) or decisions[-1].get("decision_id") != "V3-DEC-027":
-        _issue(issues, "DEC027_DECISION_LOG", DECISION_LOG_PATH, "DEC027 must be the append-only final decision after the preserved DEC001-DEC024 prefix")
+    if not isinstance(decisions, list) or not any(
+        isinstance(entry, Mapping) and entry.get("decision_id") == "V3-DEC-027"
+        for entry in decisions
+    ):
+        _issue(issues, "DEC027_DECISION_LOG", DECISION_LOG_PATH, "DEC027 must remain in the append-only decision prefix")
     manifest_paths = {
         entry.get("path"): entry
         for entry in manifest.get("files", [])
@@ -8374,12 +8424,221 @@ def validate_dec027_authority(
         _issue(issues, "DEC027_MANIFEST", REGISTRY_MANIFEST_PATH, "DEC027 amendment must be registered with its exact role")
     for key, value in {
         "active_amendment_decision_ids": ACTIVE_AMENDMENT_DECISION_IDS,
-        "manifest_status": DEC027_EVT060_PROJECTION_MANIFEST_STATUS,
-        "generated_at": DEC027_EVT060_PROJECTION_MANIFEST_AT,
-        "updated_at": DEC027_EVT060_PROJECTION_MANIFEST_AT,
         "sealed_contact": False,
     }.items():
         _expect(manifest, key, value, REGISTRY_MANIFEST_PATH, issues, "DEC027_MANIFEST")
+    return issues
+
+
+def validate_dec028_authority(
+    repo_root: Path,
+    config: Mapping[str, Any],
+    registries: Mapping[str, Mapping[str, Any]],
+) -> list[Issue]:
+    """Validate the owner-initiated Single-study S0/P0 authority without unlocking execution."""
+
+    issues: list[Issue] = []
+    for relative, expected_sha256 in DEC028_ACTIVE_AUTHORITY_LEAF_SHA256.items():
+        try:
+            actual_sha256 = sha256_bytes(_read_bytes(repo_root, relative))
+        except (FileNotFoundError, ValueError) as exc:
+            _issue(issues, "DEC028_ACTIVE_AUTHORITY_LEAF_UNREADABLE", relative, str(exc))
+            continue
+        if actual_sha256 != expected_sha256:
+            _issue(
+                issues,
+                "DEC028_ACTIVE_AUTHORITY_LEAF_DRIFT",
+                relative,
+                f"active DEC028 authority leaf hash {actual_sha256} must remain {expected_sha256}",
+            )
+
+    try:
+        amendment = _load_yaml(repo_root, DEC028_AMENDMENT_PATH)
+        protocol = _load_yaml(repo_root, DEC028_PROTOCOL_PATH)
+        execution = _load_yaml(repo_root, DEC028_EXECUTION_PATH)
+        qualification = _load_json(repo_root, A1_QUALIFICATION_CONFIG_PATH)
+        interim = _load_yaml(repo_root, A1_INTERIM_PATH)
+        decision_log = _load_yaml(repo_root, DECISION_LOG_PATH)
+        manifest = _load_json(repo_root, REGISTRY_MANIFEST_PATH)
+    except (FileNotFoundError, ValueError, json.JSONDecodeError, yaml.YAMLError) as exc:
+        _issue(issues, "DEC028_AUTHORITY_LOAD", DEC028_AMENDMENT_PATH, str(exc))
+        return issues
+
+    for key, value in {
+        "schema_version": "1.0.0",
+        "contract_id": CONTRACT_ID,
+        "decision_id": "V3-DEC-028",
+        "decision_type": "APPEND_ONLY_AUTHORITY_AMENDMENT",
+        "dimension": "owner_initiated_single_study_source_relative_operational_mainline",
+        "status": "ACTIVE_AUTHORITY_AMENDMENT",
+        "effective_phase": "SINGLE_STUDY_S0_AUTHORITY_AND_P0_CLOSURE",
+    }.items():
+        _expect(amendment, key, value, DEC028_AMENDMENT_PATH, issues, "DEC028_METADATA")
+
+    owner = amendment.get("owner_authorization")
+    expected_owner = {
+        "status": "GRANTED",
+        "source": "ACTIVE_CODEX_THREAD_OWNER_CONTRACT_EXECUTION_DIRECTIVE",
+        "choice": "OWNER_INITIATED_PROSPECTIVE_OPERATIONAL_MAINLINE_CHOICE_NOT_DEC027_AUTOMATIC_TRIGGER",
+        "dec027_automatic_trigger_claimed": False,
+        "historical_gate_rewrite_allowed": False,
+        "gate_threshold_relaxation_claimed": False,
+        "new_credit_claimed": False,
+    }
+    _expect_closed_mapping(
+        owner if isinstance(owner, Mapping) else {},
+        expected_owner,
+        DEC028_AMENDMENT_PATH,
+        issues,
+        "DEC028_OWNER_AUTHORITY",
+    )
+
+    counts = {"ordinary": 1, "a1": 1, "true_a2": 0, "canonical_records": 6547}
+    locks = {
+        "changes_current_qualified_counts": False,
+        "scientific_claim_status": "NOT_ESTABLISHED",
+        "dataset_promotion_allowed": False,
+        "qualification_allowed": False,
+        "canonical_materialization_allowed": False,
+        "private_row_access_allowed": False,
+        "split_assignment_execution_allowed": False,
+        "training_allowed": False,
+        "gpu_work_allowed": False,
+        "model_selection_allowed": False,
+        "a7_allowed": False,
+        "next_phase_authorized": False,
+        "sealed_access_authorized": False,
+    }
+    authority_scope = amendment.get("authority_scope")
+    if not isinstance(authority_scope, Mapping):
+        _issue(issues, "DEC028_SCOPE", DEC028_AMENDMENT_PATH, "authority_scope must be a mapping")
+    else:
+        _expect(authority_scope, "scope", "PROSPECTIVE_OPERATIONAL_MAINLINE_ONLY", DEC028_AMENDMENT_PATH, issues, "DEC028_SCOPE")
+        _expect(authority_scope, "creates_second_root_contract", False, DEC028_AMENDMENT_PATH, issues, "DEC028_SCOPE")
+        _expect(authority_scope, "strategic_target", "FULL_ROUTE_A_RETAINED_HIGHEST_INACTIVE_TARGET", DEC028_AMENDMENT_PATH, issues, "DEC028_SCOPE")
+        _expect(authority_scope, "full_route_a_required_counts", {"ordinary": 3, "a1": 2, "true_a2": 1}, DEC028_AMENDMENT_PATH, issues, "DEC028_SCOPE")
+        _expect(authority_scope, "current_qualified_counts", counts, DEC028_AMENDMENT_PATH, issues, "DEC028_SCOPE")
+        _expect(authority_scope, "historical_gate_statuses_preserved", True, DEC028_AMENDMENT_PATH, issues, "DEC028_SCOPE")
+        for key, value in locks.items():
+            _expect(authority_scope, key, value, DEC028_AMENDMENT_PATH, issues, "DEC028_LOCKS")
+
+    expected_roles = {
+        "GSE200304": "PRIMARY_SINGLE_STUDY_SOURCE_RELATIVE_DEVELOPMENT",
+        "GSE232572": "DEVELOPMENT_ROBUSTNESS_ONLY",
+        "ENCSR854RUF": "DEVELOPMENT_EXPOSURE_POSITIVE_STRESS_ONLY",
+        "GSE217518": "DEVELOPMENT_FAIL_CLOSED_CROSSWALK_STRESS_ONLY",
+        "GSE149487": "DEVELOPMENT_RECONSTRUCTION_REGRESSION_ONLY",
+        "GSE269595": "EXPLORATORY_DENSE_EVALUATOR_ONLY",
+        "GSE114002": "EXPLORATORY_WITHIN_ASSAY_ORDINAL_EVALUATOR_ONLY",
+        "E-MTAB-10902": "EXPLORATORY_SMALL_N_DENSE_SMOKE_ONLY",
+        "GSE261709": "NEGATIVE_CONTROL_PROVENANCE_IDENTIFIABILITY",
+        "GSE207584": "NEGATIVE_CONTROL_MAPPING_AND_CARTESIAN_RECONSTRUCTION",
+        "GSE256185": "NEGATIVE_CONTROL_POOL_PARSER_REJECT_QA",
+        "GSE145046": "NEGATIVE_CONTROL_ABSOLUTE_VS_SOURCE_RELATIVE",
+        "GSE186455": "NEGATIVE_CONTROL_LIBRARY_INDEPENDENCE_REFERENCE",
+        "GSE246381": "SEALED_EXTERNAL_FINAL_ONLY",
+    }
+    _expect(amendment, "study_use_roles", expected_roles, DEC028_AMENDMENT_PATH, issues, "DEC028_STUDY_ROLES")
+    data_roles = registries["data"].get("dec028_single_study_use_roles")
+    if not isinstance(data_roles, Mapping):
+        _issue(issues, "DEC028_STUDY_ROLES", REGISTRY_PATHS["data"], "dec028_single_study_use_roles must be a mapping")
+    else:
+        _expect(data_roles, "role_field_is_orthogonal_to_qualification_status_and_credit", True, REGISTRY_PATHS["data"], issues, "DEC028_STUDY_ROLES")
+        _expect(data_roles, "current_credit_unchanged", counts, REGISTRY_PATHS["data"], issues, "DEC028_STUDY_ROLES")
+        for dataset_id, role in expected_roles.items():
+            _expect(data_roles, dataset_id, role, REGISTRY_PATHS["data"], issues, "DEC028_STUDY_ROLES")
+
+    dependency = amendment.get("execution_dependency")
+    if not isinstance(dependency, Mapping):
+        _issue(issues, "DEC028_DEPENDENCY", DEC028_AMENDMENT_PATH, "execution_dependency must be a mapping")
+    else:
+        _expect(dependency, "p0_required_pass_count", 11, DEC028_AMENDMENT_PATH, issues, "DEC028_DEPENDENCY")
+        _expect(dependency, "p0_nonpass_action", "STOP_BEFORE_DATA_ROWS_CUDA_MODEL_OPTIMIZER_CHECKPOINT_PARAMETER_UPDATE_OR_TRAINING", DEC028_AMENDMENT_PATH, issues, "DEC028_DEPENDENCY")
+        _expect(dependency, "materialization_authority_granted", False, DEC028_AMENDMENT_PATH, issues, "DEC028_DEPENDENCY")
+        _expect(dependency, "g1_development_run_authorized", False, DEC028_AMENDMENT_PATH, issues, "DEC028_DEPENDENCY")
+
+    p0 = amendment.get("p0_successor_contract")
+    if not isinstance(p0, Mapping):
+        _issue(issues, "DEC028_P0", DEC028_AMENDMENT_PATH, "p0_successor_contract must be a mapping")
+    else:
+        _expect(p0, "predecessor_result_preserved", {"pass": 3, "fail_closed": 7, "unknown_not_asserted": 1}, DEC028_AMENDMENT_PATH, issues, "DEC028_P0")
+        _expect(p0, "predecessor_overwrite_allowed", False, DEC028_AMENDMENT_PATH, issues, "DEC028_P0")
+        _expect(p0, "exact_gate_count", 11, DEC028_AMENDMENT_PATH, issues, "DEC028_P0")
+        _expect(p0, "all_status_fields_must_equal_pass", True, DEC028_AMENDMENT_PATH, issues, "DEC028_P0")
+        _expect(p0, "p0_2_success_shape", {"status": "PASS", "scope": "DISCLOSED_EXPOSED_DEVELOPMENT_ONLY", "predecessor_historical_status": "UNKNOWN_NOT_ASSERTED"}, DEC028_AMENDMENT_PATH, issues, "DEC028_P0")
+        _expect(p0, "p0_7_pre_materialization_scope", {"freezes": ["GROUPING_ALGORITHM", "COMPONENT_RULES", "SALT", "DEVELOPMENT_SUBROLE_CONTRACT"], "split_assignment_count": 0}, DEC028_AMENDMENT_PATH, issues, "DEC028_P0")
+
+    future = amendment.get("future_learned_execution")
+    expected_future = {
+        "current_authorized_execution_count": 0,
+        "future_run_id": "GSE200304_SOURCE_RELATIVE_CRITIC_G1",
+        "future_run_role": "SOURCE_RELATIVE_CRITIC_NOT_A6_LEARNED_BASE_VALUE",
+        "separate_authority_required": True,
+        "authorized_execution_count_if_later_granted": 1,
+        "optimizer_fit_count_if_later_granted": 1,
+        "fold_model_count_if_later_granted": 1,
+        "checkpoint_count_if_later_granted": 1,
+        "final_refit_count_if_later_granted": 0,
+        "seed_count_if_later_granted": 1,
+        "nested_cross_validation_authorized": False,
+        "a6_learned_base_value_execution_authorized": False,
+    }
+    _expect_closed_mapping(
+        future if isinstance(future, Mapping) else {},
+        expected_future,
+        DEC028_AMENDMENT_PATH,
+        issues,
+        "DEC028_G1",
+    )
+
+    for surface, path in (
+        (config.get("a1_qualification_authority", {}).get("dec028_single_study_operational_mainline", {}), CONFIG_PATH),
+        (qualification.get("dec028_single_study_operational_mainline_authority", {}), A1_QUALIFICATION_CONFIG_PATH),
+        (interim.get("dec028_current_disposition", {}), A1_INTERIM_PATH),
+    ):
+        if not isinstance(surface, Mapping):
+            _issue(issues, "DEC028_SURFACE", path, "DEC028 operational surface must be a mapping")
+            continue
+        _expect(surface, "current_qualified_counts", counts, path, issues, "DEC028_SURFACE")
+        _expect(surface, "scientific_claim_status", "NOT_ESTABLISHED", path, issues, "DEC028_SURFACE")
+        for key in ("training_allowed", "gpu_work_allowed", "model_selection_allowed", "a7_allowed", "next_phase_authorized"):
+            _expect(surface, key, False, path, issues, "DEC028_SURFACE")
+
+    _expect(protocol, "status", "ACTIVE_S0_P0_CLOSURE_ONLY", DEC028_PROTOCOL_PATH, issues, "DEC028_PROTOCOL")
+    _expect(protocol, "primary_study_unit", "GSE200304", DEC028_PROTOCOL_PATH, issues, "DEC028_PROTOCOL")
+    _expect(protocol, "canonical_record_count", 6547, DEC028_PROTOCOL_PATH, issues, "DEC028_PROTOCOL")
+    _expect(execution, "record_status", "ACTIVE_AUTHORITY_PENDING_RUNTIME_SYNC", DEC028_EXECUTION_PATH, issues, "DEC028_EXECUTION")
+    _expect(execution, "predecessor_runtime_event_id", "A1-EVT-060", DEC028_EXECUTION_PATH, issues, "DEC028_EXECUTION")
+    _expect(execution, "expected_next_runtime_event_id", "PENDING_FRESH_RUNTIME_EVENT_ID", DEC028_EXECUTION_PATH, issues, "DEC028_EXECUTION")
+    _expect(execution, "next_runtime_event_id_preallocated", False, DEC028_EXECUTION_PATH, issues, "DEC028_EXECUTION")
+
+    dec027 = interim.get("dec027_current_disposition")
+    adjudication = dec027.get("stop_rule_adjudication") if isinstance(dec027, Mapping) else None
+    if not isinstance(adjudication, Mapping):
+        _issue(issues, "DEC028_DEC027_HISTORY", A1_INTERIM_PATH, "DEC027 stop-rule adjudication must remain present")
+    else:
+        _expect(adjudication, "trigger_condition_met", False, A1_INTERIM_PATH, issues, "DEC028_DEC027_HISTORY")
+        _expect(adjudication, "conditional_successor_activated", False, A1_INTERIM_PATH, issues, "DEC028_DEC027_HISTORY")
+
+    decisions = decision_log.get("decisions")
+    if not isinstance(decisions, list) or not decisions or not isinstance(decisions[-1], Mapping) or decisions[-1].get("decision_id") != "V3-DEC-028":
+        _issue(issues, "DEC028_DECISION_LOG", DECISION_LOG_PATH, "DEC028 must be the append-only final decision after DEC027")
+
+    manifest_paths = {
+        entry.get("path"): entry
+        for entry in manifest.get("files", [])
+        if isinstance(entry, Mapping)
+    }
+    expected_roles_by_path = {
+        DEC028_AMENDMENT_PATH: "DEC028_APPEND_ONLY_SINGLE_STUDY_MAINLINE_AUTHORITY_AMENDMENT",
+        DEC028_HUMAN_CONTRACT_PATH: "DEC028_REVIEWED_HUMAN_READABLE_SINGLE_STUDY_CONTRACT",
+        DEC028_PROTOCOL_PATH: "DEC028_SINGLE_STUDY_MAINLINE_EXECUTABLE_PROTOCOL",
+        DEC028_EXECUTION_PATH: "DEC028_SINGLE_STUDY_MAINLINE_EXECUTION_STATE",
+    }
+    for relative, role in expected_roles_by_path.items():
+        entry = manifest_paths.get(relative)
+        if not isinstance(entry, Mapping) or entry.get("role") != role:
+            _issue(issues, "DEC028_MANIFEST", REGISTRY_MANIFEST_PATH, f"{relative} must be registered as {role}")
     return issues
 
 
@@ -11048,6 +11307,7 @@ def validate_a1_interim_lineage(
         "dec023_current_disposition",
         "dec024_current_disposition",
         "dec027_current_disposition",
+        "dec028_current_disposition",
         "dataset_boundary_summary",
         "boundary_deviation",
         "power_prefreeze",
@@ -11084,6 +11344,7 @@ def validate_a1_interim_lineage(
             "dec023_amendment_path": DEC023_AMENDMENT_PATH,
             "dec024_amendment_path": DEC024_AMENDMENT_PATH,
             "dec027_amendment_path": DEC027_AMENDMENT_PATH,
+            "dec028_amendment_path": DEC028_AMENDMENT_PATH,
             "decision_log_path": DECISION_LOG_PATH,
             "data_role_registry_path": REGISTRY_PATHS["data"],
             "claim_evidence_matrix_path": REGISTRY_PATHS["claim"],
@@ -11105,6 +11366,7 @@ def validate_a1_interim_lineage(
             ("dec023_amendment_sha256", DEC023_AMENDMENT_PATH),
             ("dec024_amendment_sha256", DEC024_AMENDMENT_PATH),
             ("dec027_amendment_sha256", DEC027_AMENDMENT_PATH),
+            ("dec028_amendment_sha256", DEC028_AMENDMENT_PATH),
             ("decision_log_sha256", DECISION_LOG_PATH),
             ("data_role_registry_sha256", REGISTRY_PATHS["data"]),
             ("claim_evidence_matrix_sha256", REGISTRY_PATHS["claim"]),
@@ -11123,6 +11385,7 @@ def validate_a1_interim_lineage(
             "dec023_amendment_sha256",
             "dec024_amendment_sha256",
             "dec027_amendment_sha256",
+            "dec028_amendment_sha256",
             "decision_log_sha256",
             "data_role_registry_sha256",
             "claim_evidence_matrix_sha256",
@@ -11131,7 +11394,7 @@ def validate_a1_interim_lineage(
         _expect(
             authority,
             "active_authority_leaf_sha256",
-            DEC027_ACTIVE_AUTHORITY_LEAF_SHA256,
+            DEC028_ACTIVE_AUTHORITY_LEAF_SHA256,
             path,
             issues,
             "A1_INTERIM_AUTHORITY_HASH",
@@ -11180,6 +11443,8 @@ def validate_a1_interim_lineage(
                 "GSE113849",
                 "GSE295080",
             ],
+            "dec028_primary_single_study_unit": "GSE200304",
+            "dec028_operational_mainline": "SINGLE_STUDY_SOURCE_RELATIVE_DEVELOPMENT_ENGINEERING_THEORY",
             "scheme_a_changes_qualified_counts": True,
             "excluded_dataset_ids": ["GSE246381"],
             "legacy_canonical_purpose": "GAP_INVENTORY_ONLY",
@@ -15143,12 +15408,12 @@ def validate_a1_interim_lineage(
         )
 
     _expect(interim, "initial_generated_at", "2026-08-10T06:30:58+08:00", path, issues, "A1_INTERIM_TIME")
-    _expect(interim, "updated_for_decision_id", "V3-DEC-027", path, issues, "A1_INTERIM_TIME")
-    _expect(interim, "latest_authority_update_id", "V3-DEC-027", path, issues, "A1_INTERIM_TIME")
+    _expect(interim, "updated_for_decision_id", "V3-DEC-028", path, issues, "A1_INTERIM_TIME")
+    _expect(interim, "latest_authority_update_id", "V3-DEC-028", path, issues, "A1_INTERIM_TIME")
     _expect(
         interim,
         "latest_evidence_update_id",
-        DEC027_EVT060_PROJECTION_UPDATE_ID,
+        "DEC028_STATIC_AUTHORITY_PENDING_RUNTIME_SYNC",
         path,
         issues,
         "A1_INTERIM_TIME",
@@ -15156,14 +15421,14 @@ def validate_a1_interim_lineage(
     generated = interim.get("generated_at")
     updated = interim.get("updated_at")
     if (
-        generated != DEC027_EVT060_PROJECTION_LEDGER_AT
-        or updated != DEC027_EVT060_PROJECTION_LEDGER_AT
+        generated != DEC028_AUTHORITY_LEDGER_AT
+        or updated != DEC028_AUTHORITY_LEDGER_AT
     ):
         _issue(
             issues,
             "A1_INTERIM_TIME",
             path,
-            "generated_at and updated_at must identify the exact DEC027 EVT060 current-projection settlement timestamp",
+            "generated_at and updated_at must identify the exact DEC028 static-authority ledger timestamp",
         )
     if generated != updated:
         _issue(issues, "A1_INTERIM_TIME", path, "generated_at and updated_at must identify the same amended record bytes")
@@ -15257,11 +15522,11 @@ def _expected_a6_cpu_exact_interim() -> dict[str, Any]:
             "active_config_path": CONFIG_PATH,
             "active_config_sha256": CURRENT_ACTIVE_CONFIG_SHA256,
             "task_registry_path": REGISTRY_PATHS["task"],
-            "task_registry_sha256": DEC027_ACTIVE_AUTHORITY_LEAF_SHA256[
+            "task_registry_sha256": DEC028_ACTIVE_AUTHORITY_LEAF_SHA256[
                 REGISTRY_PATHS["task"]
             ],
             "claim_evidence_matrix_path": REGISTRY_PATHS["claim"],
-            "claim_evidence_matrix_sha256": DEC021_ACTIVE_AUTHORITY_LEAF_SHA256[
+            "claim_evidence_matrix_sha256": DEC028_ACTIVE_AUTHORITY_LEAF_SHA256[
                 REGISTRY_PATHS["claim"]
             ],
             "branch": "routea-v3-a1-20260810",
@@ -17134,6 +17399,7 @@ def validate_bundle(repo_root: Path) -> list[Issue]:
     issues.extend(validate_dec023_authority(repo_root, config, registries))
     issues.extend(validate_dec024_authority(repo_root, config, registries))
     issues.extend(validate_dec027_authority(repo_root, config, registries))
+    issues.extend(validate_dec028_authority(repo_root, config, registries))
     try:
         decision_log = _load_yaml(repo_root, DECISION_LOG_PATH)
     except (FileNotFoundError, ValueError, yaml.YAMLError) as exc:

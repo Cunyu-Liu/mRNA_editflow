@@ -1,0 +1,172 @@
+schema_version: "1.0.0"
+contract_id: mrna_xeditflow_route_a_v3
+decision_id: V3-DEC-028
+decision_type: APPEND_ONLY_AUTHORITY_AMENDMENT
+dimension: owner_initiated_single_study_source_relative_operational_mainline
+status: ACTIVE_AUTHORITY_AMENDMENT
+effective_phase: SINGLE_STUDY_S0_AUTHORITY_AND_P0_CLOSURE
+effective_at: "2026-08-15T17:02:45+08:00"
+owner_authorization:
+  status: GRANTED
+  source: ACTIVE_CODEX_THREAD_OWNER_CONTRACT_EXECUTION_DIRECTIVE
+  choice: OWNER_INITIATED_PROSPECTIVE_OPERATIONAL_MAINLINE_CHOICE_NOT_DEC027_AUTOMATIC_TRIGGER
+  dec027_automatic_trigger_claimed: false
+  historical_gate_rewrite_allowed: false
+  gate_threshold_relaxation_claimed: false
+  new_credit_claimed: false
+
+human_readable_contract:
+  path: docs/contracts/amendments/mrna_xeditflow_route_a_v3_dec028_single_study_mainline_contract.md
+  status: REVIEWED_PASS_SUPPORTING_CONTRACT
+  independent_review: PASS_NO_ACTION_CHANGING_P0_OR_P1
+
+authority_scope:
+  scope: PROSPECTIVE_OPERATIONAL_MAINLINE_ONLY
+  creates_second_root_contract: false
+  strategic_target: FULL_ROUTE_A_RETAINED_HIGHEST_INACTIVE_TARGET
+  full_route_a_required_counts: {ordinary: 3, a1: 2, true_a2: 1}
+  current_qualified_counts: {ordinary: 1, a1: 1, true_a2: 0, canonical_records: 6547}
+  changes_current_qualified_counts: false
+  scientific_claim_status: NOT_ESTABLISHED
+  historical_gate_statuses_preserved: true
+  dataset_promotion_allowed: false
+  qualification_allowed: false
+  canonical_materialization_allowed: false
+  private_row_access_allowed: false
+  split_assignment_execution_allowed: false
+  training_allowed: false
+  gpu_work_allowed: false
+  model_selection_allowed: false
+  a7_allowed: false
+  next_phase_authorized: false
+  sealed_access_authorized: false
+
+active_operational_mainline:
+  id: SINGLE_STUDY_SOURCE_RELATIVE_DEVELOPMENT_ENGINEERING_THEORY
+  lifecycle: ACTIVE_S0_P0_CLOSURE_ONLY
+  primary_study_unit: GSE200304
+  selected_measurement_route: AUTHOR_PUBLISHED_PROCESSED_ENDPOINT
+  selected_model_input_route: SCRATCH_ONLY_NO_FOUNDATION_NO_EXTERNAL_LEARNED_INPUTS
+  active_estimand: WITHIN_BIOLOGICAL_SOURCE_CANDIDATE_MINUS_SOURCE_DIRECTION_NORMALIZED_ENDPOINT
+  independent_analysis_unit: BIOLOGICAL_SOURCE_GROUP
+  exposed_development_scope: DISCLOSED_NOT_UNTOUCHED
+  allowed_claim_scope:
+    - NAMED_DATASET_SOURCE_RELATIVE_DEVELOPMENT
+    - WITHIN_STUDY_PREDICTION_CALIBRATION_ABSTENTION_AND_ERROR_ANALYSIS
+    - ENGINEERING_THEORY_AND_SOFTWARE_EVIDENCE
+  prohibited_claims:
+    - CROSS_STUDY_GENERALIZATION
+    - CONFIRMATORY_BIOLOGICAL_EFFECT
+    - INDEPENDENT_REPLICATION
+    - TRUE_A2_MEASURED_NEIGHBORHOOD_OPTIMIZATION
+    - GUIDANCE_SUPERIORITY
+    - BEST_CANDIDATE_DISCOVERY
+    - UNTOUCHED_EXTERNAL_VALIDATION
+
+study_use_roles:
+  GSE200304: PRIMARY_SINGLE_STUDY_SOURCE_RELATIVE_DEVELOPMENT
+  GSE232572: DEVELOPMENT_ROBUSTNESS_ONLY
+  ENCSR854RUF: DEVELOPMENT_EXPOSURE_POSITIVE_STRESS_ONLY
+  GSE217518: DEVELOPMENT_FAIL_CLOSED_CROSSWALK_STRESS_ONLY
+  GSE149487: DEVELOPMENT_RECONSTRUCTION_REGRESSION_ONLY
+  GSE269595: EXPLORATORY_DENSE_EVALUATOR_ONLY
+  GSE114002: EXPLORATORY_WITHIN_ASSAY_ORDINAL_EVALUATOR_ONLY
+  E-MTAB-10902: EXPLORATORY_SMALL_N_DENSE_SMOKE_ONLY
+  GSE261709: NEGATIVE_CONTROL_PROVENANCE_IDENTIFIABILITY
+  GSE207584: NEGATIVE_CONTROL_MAPPING_AND_CARTESIAN_RECONSTRUCTION
+  GSE256185: NEGATIVE_CONTROL_POOL_PARSER_REJECT_QA
+  GSE145046: NEGATIVE_CONTROL_ABSOLUTE_VS_SOURCE_RELATIVE
+  GSE186455: NEGATIVE_CONTROL_LIBRARY_INDEPENDENCE_REFERENCE
+  GSE246381: SEALED_EXTERNAL_FINAL_ONLY
+external_preflight_candidates_not_active_study_units:
+  GSE113849: EXTERNAL_PREFLIGHT_CANDIDATE_ONLY_NOT_ACTIVE_STUDY_UNIT
+  GSE295080: EXTERNAL_PREFLIGHT_CANDIDATE_ONLY_NOT_ACTIVE_STUDY_UNIT
+
+execution_dependency:
+  exact_order:
+    - DEC028_AUTHORITY_RUNTIME_SYNC
+    - A2_G0_A6_NONLEARNED_G0_AND_CRITIC_IMPLEMENTATION_PREPARATION
+    - SUCCESSOR_DEC026_METADATA_ONLY_P0_EXACTLY_ONCE
+    - SEPARATE_MATERIALIZATION_AUTHORITY_IF_AND_ONLY_IF_P0_11_OF_11_PASS
+    - MATERIALIZATION_CONFORMANCE
+    - REAL_SPLIT_EVALUATOR_BASELINE_PASS
+    - CRITIC_IMPLEMENTATION_AND_GATE_REVIEW_PASS
+    - SEPARATE_EXACTLY_ONCE_G1_AUTHORITY
+  p0_nonpass_action: STOP_BEFORE_DATA_ROWS_CUDA_MODEL_OPTIMIZER_CHECKPOINT_PARAMETER_UPDATE_OR_TRAINING
+  p0_required_pass_count: 11
+  materialization_authority_granted: false
+  g1_development_run_authorized: false
+
+p0_successor_contract:
+  predecessor_result_preserved: {pass: 3, fail_closed: 7, unknown_not_asserted: 1}
+  predecessor_overwrite_allowed: false
+  successor_is_new_lineage: true
+  aggregate_metadata_only: true
+  exact_gate_count: 11
+  all_status_fields_must_equal_pass: true
+  p0_2_success_shape:
+    status: PASS
+    scope: DISCLOSED_EXPOSED_DEVELOPMENT_ONLY
+    predecessor_historical_status: UNKNOWN_NOT_ASSERTED
+  p0_7_pre_materialization_scope:
+    freezes: [GROUPING_ALGORITHM, COMPONENT_RULES, SALT, DEVELOPMENT_SUBROLE_CONTRACT]
+    split_assignment_count: 0
+  output_on_success: ELIGIBLE_TO_REQUEST_MATERIALIZATION_NOT_G1_NOT_LAUNCHED
+
+future_learned_execution:
+  current_authorized_execution_count: 0
+  future_run_id: GSE200304_SOURCE_RELATIVE_CRITIC_G1
+  future_run_role: SOURCE_RELATIVE_CRITIC_NOT_A6_LEARNED_BASE_VALUE
+  separate_authority_required: true
+  authorized_execution_count_if_later_granted: 1
+  optimizer_fit_count_if_later_granted: 1
+  fold_model_count_if_later_granted: 1
+  checkpoint_count_if_later_granted: 1
+  final_refit_count_if_later_granted: 0
+  seed_count_if_later_granted: 1
+  nested_cross_validation_authorized: false
+  a6_learned_base_value_execution_authorized: false
+
+parallel_zero_update_work:
+  a2_g0_current_head_reconciliation_allowed: true
+  a6_nonlearned_cpu_g0_allowed: true
+  source_relative_critic_static_implementation_preparation_allowed: true
+  synthetic_only: true
+  parameter_update_count: 0
+  cuda_touch_count: 0
+  model_checkpoint_count: 0
+
+runtime_activation:
+  predecessor_event_id: A1-EVT-060
+  successor_event_id: PENDING_FRESH_RUNTIME_EVENT_ID
+  successor_event_preallocated: false
+  runtime_sync_status: PENDING_FRESH_EVENT_AFTER_STATIC_AUTHORITY_BINDING
+  runtime_event_emitted: false
+
+preserves_decision_ids:
+  - V3-DEC-001
+  - V3-DEC-002
+  - V3-DEC-003
+  - V3-DEC-004
+  - V3-DEC-005
+  - V3-DEC-006
+  - V3-DEC-007
+  - V3-DEC-008
+  - V3-DEC-009
+  - V3-DEC-010
+  - V3-DEC-011
+  - V3-DEC-012
+  - V3-DEC-013
+  - V3-DEC-014
+  - V3-DEC-015
+  - V3-DEC-016
+  - V3-DEC-017
+  - V3-DEC-018
+  - V3-DEC-019
+  - V3-DEC-020
+  - V3-DEC-021
+  - V3-DEC-022
+  - V3-DEC-023
+  - V3-DEC-024
+  - V3-DEC-027
+
