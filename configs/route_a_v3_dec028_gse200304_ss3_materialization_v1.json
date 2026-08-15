@@ -5,9 +5,9 @@
   "runtime_authority_event_id": "A1-EVT-061",
   "document_status": "ACTIVE_FOR_ONE_SS3_MATERIALIZATION_ONLY",
   "implementation_binding": {
-    "status": "UNKNOWN_NOT_ASSERTED",
-    "implementation_expected_parent": "UNKNOWN_NOT_ASSERTED",
-    "implementation_commit": "UNKNOWN_NOT_ASSERTED",
+    "status": "BOUND",
+    "implementation_expected_parent": "4c31aa734b61e7d81d9cbaf79a062bc319c9aa64",
+    "implementation_commit": "8d11b0ea4296a3950d868ec2200ef84b5f88af54",
     "implementation_exact_changed_paths": [
       "configs/route_a_v3_dec028_gse200304_ss3_materialization_v1.json",
       "scripts/route_a_v3/materialize_gse200304_dec028_ss3.py",
