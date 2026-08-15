@@ -1,0 +1,137 @@
+{
+  "schema_version": "route_a_v3_route2_gse186455_converter.v1",
+  "converter_id": "ROUTE_A_V3_ROUTE2_GSE186455_FINAL_PUBLISHED_LMM_STRICT_SUB_DEVELOPMENT_V1",
+  "study": {
+    "study_unit_id": "GSE186455",
+    "pool_assignment": "DEVELOPMENT",
+    "qualification_class": "DEVELOPMENT_RELAXED",
+    "study_role": "A1_LIBRARY_INDEPENDENCE_REFERENCE_DEVELOPMENT",
+    "region": "3UTR",
+    "biological_context_ids": [
+      "N2A_TRANSCRIPT_ABUNDANCE",
+      "VGLUT_TRANSCRIPT_ABUNDANCE"
+    ],
+    "assay_id": "CRE_DEPENDENT_3UTR_MPRA",
+    "endpoint_id": "PUBLISHED_REF_VS_ALT_ACTIVITY_LMM_LOG2_FOLD_CHANGE",
+    "endpoint_direction": "HIGHER_IS_BETTER",
+    "conversion_scope": "FINAL_PUBLISHED_REF_VS_ALT_LMM_STRICT_SUB_ONLY"
+  },
+  "input": {
+    "sequence_tar_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/prepared_public/GSE295080_DEC027_20260815/GSE186455_RAW.tar",
+    "publisher_workbook_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/raw_public/GSE186455/42003_2023_5483_MOESM7_ESM.xlsx",
+    "expected_tar_member_count": 13,
+    "expected_unique_element_count": 1624,
+    "expected_source_group_count": 653,
+    "expected_complete_ref_alt_pair_count": 649,
+    "expected_incomplete_ref_alt_pair_count": 4,
+    "expected_action_counts": {
+      "LENGTH_CHANGE": 77,
+      "SUB": 572
+    },
+    "expected_author_bad_alt_count": 13,
+    "expected_author_bad_alt_sub_count": 1,
+    "expected_workbook_sheets": [
+      "N2A 410 - Ref vs Alt",
+      "N2A 410 - TE Ref vs Alt",
+      "Vglut 410 - Ref vs Alt",
+      "Vgat 410 - Ref vs Alt"
+    ],
+    "expected_workbook_element_count_each": 649,
+    "expected_finite_effect_count": {
+      "N2A_TRANSCRIPT_ABUNDANCE": 520,
+      "VGLUT_TRANSCRIPT_ABUNDANCE": 305
+    },
+    "expected_context_record_counts": {
+      "N2A_TRANSCRIPT_ABUNDANCE": 471,
+      "VGLUT_TRANSCRIPT_ABUNDANCE": 281
+    },
+    "expected_canonical_record_count": 752,
+    "expected_distinct_sequence_pair_count": 461,
+    "expected_exact_sequence_pair_context_duplicate_count": 18
+  },
+  "published_effect_sheets": {
+    "N2A_TRANSCRIPT_ABUNDANCE": "N2A 410 - Ref vs Alt",
+    "VGLUT_TRANSCRIPT_ABUNDANCE": "Vglut 410 - Ref vs Alt"
+  },
+  "author_bad_alt_pair_ids": [
+    "ZNF626_wgs",
+    "ASIC2_wgs",
+    "CDKN2B_wgs",
+    "ELMO1_wgs",
+    "ENPP5_wgs",
+    "GDPD4_ssc",
+    "INSR_wgs",
+    "LMBRD2_wgs",
+    "LRP2BP_wgs",
+    "SCARB2.1_wgs",
+    "TLK1_wgs",
+    "TRIM37_wgs",
+    "ZCCHC11_wgs"
+  ],
+  "published_replication": {
+    "N2A_TRANSCRIPT_ABUNDANCE": {
+      "published_biological_replicate_count": 6,
+      "analyzed_biological_replicate_count": 6
+    },
+    "VGLUT_TRANSCRIPT_ABUNDANCE": {
+      "published_biological_replicate_count": 11,
+      "analyzed_biological_replicate_count": 10
+    }
+  },
+  "output": {
+    "directory": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE186455/v1",
+    "canonical_filename": "canonical_records.private.jsonl",
+    "conversion_summary_filename": "conversion_summary.json",
+    "reject_summary_filename": "reject_summary.json",
+    "overwrite_allowed": false,
+    "public_redistribution_allowed": false
+  },
+  "development_policy": {
+    "training_eligible": true,
+    "model_selection_eligible": true,
+    "confirmatory_evaluation_eligible": false,
+    "historical_exposure_status": "KNOWN_LIBRARY_INDEPENDENCE_REFERENCE_DEVELOPMENT_ONLY",
+    "near_duplicate_split_status": "NOT_RUN",
+    "source_endpoint_value_representation": null,
+    "candidate_endpoint_value_representation": null,
+    "biological_standard_error_representation": null,
+    "reported_standard_error_status": "PUBLISHED_LMM_EFFECT_SE_NOT_REPORTED",
+    "missing_endpoint_is_zero": false,
+    "exact_sequence_pair_group_binding_required": true,
+    "endpoint_or_context_increases_independent_study_count": false
+  },
+  "action_policy": {
+    "allowed_candidate_action": "SUB",
+    "ins_supported": false,
+    "del_supported": false
+  },
+  "limitations": [
+    "DEVELOPMENT_RELAXED_AND_LIBRARY_INDEPENDENCE_REFERENCE_NOT_CONFIRMATORY",
+    "PUBLISHED_ALLELIC_EFFECT_IS_LMM_COEFFICIENT_NOT_DIFFERENCE_OF_SEPARATELY_FITTED_ABSOLUTE_ENDPOINTS",
+    "PUBLISHED_LMM_EFFECT_STANDARD_ERROR_NOT_REPORTED_AND_NOT_DERIVED_FROM_LRT_PVALUE",
+    "SIX_BARCODES_WERE_ESTIMATED_BY_AUTHORS_TO_LEAVE_ABOUT_EIGHT_PERCENT_BARCODE_FALSE_POSITIVES_FOR_RARE_ALLELIC_HITS",
+    "AUTHOR_MISDESIGNED_ALTERNATIVE_ELEMENTS_EXCLUDED",
+    "ONLY_SINGLE_SUB_ACTIONS_RETAINED_LENGTH_CHANGES_EXCLUDED",
+    "VGLUT_FINAL_AUTHOR_ANALYSIS_EXCLUDED_BIOLOGICAL_REPLICATE_TWO_AS_AN_OUTLIER",
+    "EXACT_SEQUENCE_PAIR_DUPLICATES_RETAINED_AS_DISTINCT_MEASUREMENTS_BUT_BOUND_TO_ONE_GROUP",
+    "NEAR_DUPLICATE_AND_GROUPED_SPLIT_NOT_RUN",
+    "NO_QUALIFICATION_OR_SCIENTIFIC_CLAIM"
+  ],
+  "credit_policy": {
+    "measured_candidate": true,
+    "generated_candidate": false,
+    "qualified_credit_delta": {
+      "ordinary": 0,
+      "a1": 0,
+      "true_a2": 0,
+      "canonical_records": 0
+    },
+    "qualified_counts_after_conversion": {
+      "ordinary": 1,
+      "a1": 1,
+      "true_a2": 0,
+      "canonical_records": 6547
+    }
+  },
+  "scientific_claim_status": "NOT_ESTABLISHED"
+}
