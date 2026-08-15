@@ -113,6 +113,16 @@ def validate_config(config: Mapping[str, Any]) -> None:
 
     if config["gate_bundle"]["any_nonpass_action"] != "STOP_WITH_EVIDENCE_NO_RETRY":
         raise ContractError("gate failure action differs")
+    input_contract = config["input_contract"]
+    expected_definitions = {
+        "context_vector_definition": "SIXTEEN_CONTIGUOUS_201NT_POSITION_BINS_TIMES_ACGT_PAIR_MEAN_FRACTIONS_SOURCE_CANDIDATE_SWAP_INVARIANT",
+        "edit_feature_definition": "THREE_POSITIONS_CENTER_MINUS_ONE_CENTER_CENTER_PLUS_ONE_TIMES_ACGT_CANDIDATE_ONEHOT_MINUS_SOURCE_ONEHOT",
+        "effect_definition": "MEAN_OVER_SIX_PAIRED_BIOLOGICAL_REPLICATES_OF_LOG2_SUM_HIGH_LOW_MINUS_TOTAL_RNA_MUTANT_MINUS_WT",
+        "standard_error_definition": "SAMPLE_STANDARD_DEVIATION_OF_SIX_PAIRED_REPLICATE_DELTAS_DIVIDED_BY_SQRT_SIX_FINITE_POSITIVE",
+    }
+    for key, expected in expected_definitions.items():
+        if input_contract.get(key) != expected:
+            raise ContractError(f"row-contract definition differs: {key}")
     requirements = config["future_activation_requirements"]
     required_count = sum(
         bool(requirements[key])

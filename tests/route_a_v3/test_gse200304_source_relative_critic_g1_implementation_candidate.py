@@ -51,6 +51,11 @@ def test_inactive_run_stops_before_asset_model_cuda_and_output(tmp_path: Path) -
 
 def test_full_length_antisymmetric_architecture_and_single_fit_are_frozen() -> None:
     config = json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
+    input_contract = config["input_contract"]
+    assert input_contract["context_vector_definition"].startswith("SIXTEEN_CONTIGUOUS_201NT_POSITION_BINS")
+    assert input_contract["edit_feature_definition"].startswith("THREE_POSITIONS_CENTER_MINUS_ONE_CENTER")
+    assert input_contract["effect_definition"].startswith("MEAN_OVER_SIX_PAIRED_BIOLOGICAL_REPLICATES")
+    assert input_contract["standard_error_definition"].endswith("FINITE_POSITIVE")
     model = config["model_contract"]
     assert model["fixed_prefix_truncation_allowed"] is False
     assert model["full_length_dynamic_padding_required"] is True
