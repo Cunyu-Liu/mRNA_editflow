@@ -222,7 +222,12 @@ def _predict_native(model: torch.nn.Module, records: list[TaskRecord], device: t
             batch = records[start:start + batch_size]
             sources = one_hot((record.source for record in batch), device)
             candidates = one_hot((record.candidate for record in batch), device)
-            values = (model(candidates) - model(sources)).detach().cpu().numpy()
+            values = model(candidates) - model(sources)
+            _require(
+                values.is_cuda and values.device == device and torch.isfinite(values).all().item(),
+                "native external prediction left CUDA or became nonfinite",
+            )
+            values = values.detach().cpu().numpy()
             result.update({record.record_id: float(value) for record, value in zip(batch, values)})
     return result
 
