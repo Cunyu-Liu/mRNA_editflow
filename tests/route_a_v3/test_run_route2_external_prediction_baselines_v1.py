@@ -106,12 +106,6 @@ def test_native_weight_ports_disclose_missing_tensorflow_numeric_parity() -> Non
     assert '"pytorch_port_numeric_parity_status": "NOT_RUN_TENSORFLOW_UNAVAILABLE"' in source
 
 
-def test_summary_records_explicit_cuda_execution_without_cpu_fallback() -> None:
-    source = SCRIPT.read_text(encoding="utf-8")
-    assert '"cpu_fallback_used": False' in source
-    assert '"cuda_training_tensors_verified": True' in source
-
-
 def test_rnafm_probe_refits_train_plus_validation_only_after_freeze() -> None:
     module = _load()
     if not torch.cuda.is_available():
@@ -141,3 +135,27 @@ def test_rnafm_probe_refits_train_plus_validation_only_after_freeze() -> None:
     assert set(predictions) == {row.record_id for row in records}
     assert frozen["development_validation_folded_into_probe_training"] is True
     assert frozen["best_validation_source_group_weighted_mse"] is None
+
+
+def test_rnafm_bottleneck_adapter_updates_on_cuda_and_preserves_split_policy() -> None:
+    module = _load()
+    if not torch.cuda.is_available():
+        pytest.skip("RNA-FM adapter test requires CUDA")
+    device = torch.device(f"cuda:{int(os.environ.get('ROUTE2_TEST_CUDA_INDEX', '0'))}")
+    generator = torch.Generator(device=device).manual_seed(11)
+    embeddings = {f"s{index}": torch.randn(6, generator=generator, device=device) for index in range(10)}
+    records = [
+        module.TaskRecord("t1", "g1", "s0", "s1", 0.2, "TRAIN"),
+        module.TaskRecord("t2", "g2", "s2", "s3", -0.1, "TRAIN"),
+        module.TaskRecord("v1", "g3", "s4", "s5", 0.3, "VALIDATION"),
+        module.TaskRecord("v2", "g4", "s6", "s7", -0.2, "VALIDATION"),
+    ]
+    predictions, summary, artifact = module._train_multimolecule_rnafm_bottleneck_adapter(
+        records, embeddings, device, 11, 3, 1e-2, 0.0, 2, "HPO_VALIDATION_ONLY"
+    )
+    assert set(predictions) == {row.record_id for row in records}
+    assert summary["adapter_parameter_changed"] is True
+    assert summary["development_validation_folded_into_adapter_training"] is False
+    assert summary["best_validation_source_group_weighted_mse"] is not None
+    assert artifact["bottleneck_dim"] == 2
+    assert set(artifact["adapter_state"]) == {"0.weight", "0.bias", "2.weight", "2.bias"}

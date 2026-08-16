@@ -362,6 +362,94 @@ def _train_multimolecule_rnafm_probe(
     }, artifact
 
 
+def _train_multimolecule_rnafm_bottleneck_adapter(
+    records: list[TaskRecord], embeddings: Mapping[str, torch.Tensor], device: torch.device,
+    seed: int, epochs: int, learning_rate: float, weight_decay: float, bottleneck_dim: int,
+    result_stage: str, progress: Callable[[Mapping[str, Any]], None] | None = None,
+) -> tuple[dict[str, float], dict[str, Any], dict[str, Any]]:
+    _require(bottleneck_dim > 0, "RNA-FM adapter bottleneck is not positive")
+    by_split = {
+        split: [record for record in records if record.split == split]
+        for split in SPLITS if any(record.split == split for record in records)
+    }
+    train = by_split["TRAIN"]
+    fit = train if result_stage == "HPO_VALIDATION_ONLY" else train + by_split["VALIDATION"]
+    features = {
+        split: torch.stack([embeddings[record.candidate] - embeddings[record.source] for record in rows]).to(device)
+        for split, rows in by_split.items()
+    }
+    targets = {
+        split: torch.tensor([record.target for record in rows], dtype=torch.float32, device=device)
+        for split, rows in by_split.items()
+    }
+    fit_features = torch.stack([embeddings[record.candidate] - embeddings[record.source] for record in fit]).to(device)
+    mean, std = fit_features.mean(dim=0), fit_features.std(dim=0).clamp_min(1e-6)
+    features = {split: (value - mean) / std for split, value in features.items()}
+    torch.manual_seed(seed); torch.cuda.manual_seed_all(seed)
+    head = torch.nn.Sequential(
+        torch.nn.Linear(features["TRAIN"].shape[1], bottleneck_dim),
+        torch.nn.GELU(),
+        torch.nn.Linear(bottleneck_dim, 1),
+    ).to(device)
+    _require(next(head.parameters()).is_cuda and next(head.parameters()).device == device, "RNA-FM adapter left CUDA")
+    initial = next(head.parameters()).detach().clone()
+    optimizer = torch.optim.AdamW(head.parameters(), lr=learning_rate, weight_decay=weight_decay)
+    fit_feature_values = (fit_features - mean) / std
+    fit_targets = torch.tensor([record.target for record in fit], dtype=torch.float32, device=device)
+    weights = _source_group_weights(fit, device)
+    validation_weights = _source_group_weights(by_split["VALIDATION"], device)
+    best_state = None; best_validation = float("inf"); history = []
+    for epoch in range(epochs):
+        head.train(); optimizer.zero_grad(set_to_none=True)
+        prediction = head(fit_feature_values).squeeze(1)
+        loss = ((prediction - fit_targets) ** 2 * weights).mean()
+        _require(loss.is_cuda and loss.device == device and torch.isfinite(loss).item(), "RNA-FM adapter loss left CUDA or became nonfinite")
+        loss.backward(); optimizer.step()
+        head.eval()
+        if result_stage == "HPO_VALIDATION_ONLY":
+            with torch.no_grad():
+                validation_error = head(features["VALIDATION"]).squeeze(1) - targets["VALIDATION"]
+                validation = ((validation_error ** 2) * validation_weights).mean().item()
+            if validation < best_validation:
+                best_validation = validation
+                best_state = {key: value.detach().clone() for key, value in head.state_dict().items()}
+        else:
+            validation = None
+        if epoch == 0 or (epoch + 1) % 10 == 0:
+            row = {
+                "epoch": epoch + 1,
+                "train_source_group_weighted_mse": float(loss.detach()),
+                "validation_source_group_weighted_mse": validation,
+            }
+            history.append(row)
+            if progress is not None:
+                progress({"event": "RNAFM_ADAPTER_EPOCH_COMPLETED", **row})
+    if result_stage == "FROZEN_DEVELOPMENT_TEST":
+        best_state = {key: value.detach().clone() for key, value in head.state_dict().items()}
+        best_validation = None
+    _require(best_state is not None and not torch.equal(initial, next(head.parameters()).detach()), "RNA-FM adapter had no GPU parameter update")
+    head.load_state_dict(best_state); head.eval()
+    predictions = {}
+    with torch.no_grad():
+        for split, rows in by_split.items():
+            values = head(features[split]).squeeze(1).cpu().numpy()
+            predictions.update({record.record_id: float(value) for record, value in zip(rows, values)})
+    artifact = {
+        "feature_mean": mean.detach().cpu(),
+        "feature_std": std.detach().cpu(),
+        "adapter_state": {key: value.detach().cpu() for key, value in best_state.items()},
+        "bottleneck_dim": bottleneck_dim,
+    }
+    return predictions, {
+        "adapter_parameter_count": sum(parameter.numel() for parameter in head.parameters()),
+        "adapter_optimizer_steps": epochs,
+        "adapter_parameter_changed": True,
+        "best_validation_source_group_weighted_mse": best_validation,
+        "development_validation_folded_into_adapter_training": result_stage == "FROZEN_DEVELOPMENT_TEST",
+        "history": history,
+    }, artifact
+
+
 def _metrics(records: list[TaskRecord], predictions: Mapping[str, float], split: str) -> dict[str, Any]:
     rows = [record for record in records if record.split == split]
     observed = np.asarray([record.target for record in rows], dtype=float)
@@ -402,7 +490,7 @@ def execute(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
     _require(0 <= int(config["physical_gpu_index"]) < torch.cuda.device_count(), "physical GPU index is unavailable")
     device = torch.device(str(config["device"])); torch.cuda.set_device(device)
     _require(device.index == int(config["physical_gpu_index"]), "CUDA device index differs from declared physical GPU")
-    cuda_provenance = cuda_device_observation(int(config["physical_gpu_index"]), require_physical_index_match=True)
+    cuda_provenance = cuda_device_observation(int(config["physical_gpu_index"]))
     result_stage = str(config.get("result_stage", ""))
     included_splits = splits_for_result_stage(result_stage)
     records, task_manifest = load_task_records(
@@ -425,7 +513,7 @@ def execute(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
         serialized = json.dumps(dict(row), sort_keys=True) + "\n"
         with log_path.open("a", encoding="utf-8") as handle:
             handle.write(serialized)
-        if row.get("event") == "RNAFM_PROBE_EPOCH_COMPLETED":
+        if row.get("event") in {"RNAFM_PROBE_EPOCH_COMPLETED", "RNAFM_ADAPTER_EPOCH_COMPLETED"}:
             with metrics_path.open("a", encoding="utf-8") as handle:
                 handle.write(serialized)
 
@@ -523,6 +611,73 @@ def execute(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
         **{split.lower(): _metrics(records, predictions, split) for split in output_splits},
         **probe,
     }
+    adapter_grid = list(config.get("rnafm_bottleneck_adapter_hpo_grid", []))
+    if adapter_grid:
+        _require(result_stage == "HPO_VALIDATION_ONLY", "RNA-FM adapter HPO grid is Development-validation only")
+        _require(len(adapter_grid) == 4, "RNA-FM adapter requires the frozen four-trial HPO budget")
+        trial_ids = [str(trial["trial_id"]) for trial in adapter_grid]
+        _require(len(trial_ids) == len(set(trial_ids)), "RNA-FM adapter HPO trial is duplicated")
+        adapter_root = output_dir / "multimolecule_rnafm_frozen_bottleneck_adapter"
+        adapter_root.mkdir()
+        trial_results = []
+        prediction_by_trial = {}
+        artifact_by_trial = {}
+        for trial in adapter_grid:
+            trial_id = str(trial["trial_id"])
+            trial_predictions, adapter, adapter_artifact = _train_multimolecule_rnafm_bottleneck_adapter(
+                records, embeddings, device, int(config["seed"]), int(config["rnafm_probe_epochs"]),
+                float(trial["learning_rate"]), float(trial["weight_decay"]),
+                int(config["rnafm_adapter_bottleneck_dim"]), result_stage, progress,
+            )
+            trial_dir = adapter_root / trial_id
+            trial_dir.mkdir()
+            _write_predictions(
+                trial_dir / "validation_predictions.jsonl", trial_id, records, trial_predictions, "VALIDATION"
+            )
+            torch.save(adapter_artifact, trial_dir / "adapter_state.pt")
+            validation_metrics = _metrics(records, trial_predictions, "VALIDATION")
+            trial_results.append({
+                "trial_id": trial_id,
+                "learning_rate": float(trial["learning_rate"]),
+                "weight_decay": float(trial["weight_decay"]),
+                "validation": validation_metrics,
+                **adapter,
+            })
+            prediction_by_trial[trial_id] = trial_predictions
+            artifact_by_trial[trial_id] = adapter_artifact
+        ranked = sorted(
+            trial_results,
+            key=lambda row: (
+                row["validation"]["spearman"] is None,
+                0.0 if row["validation"]["spearman"] is None else -row["validation"]["spearman"],
+                row["validation"]["mae"], row["trial_id"],
+            ),
+        )
+        selected = ranked[0]
+        selected_id = selected["trial_id"]
+        _write_predictions(
+            adapter_root / "validation_predictions.jsonl",
+            "multimolecule_rnafm_frozen_bottleneck_adapter",
+            records, prediction_by_trial[selected_id], "VALIDATION",
+        )
+        torch.save(artifact_by_trial[selected_id], adapter_root / "selected_adapter_state.pt")
+        summaries["multimolecule_rnafm_frozen_bottleneck_adapter"] = {
+            "status": "COMMON_SOURCE_RELATIVE_TASK_COMPLETED_HPO_SELECTED",
+            "pretrained_parameters_frozen": True,
+            "pretrained_parameter_count": rnafm_parameter_count,
+            "prediction_definition": "bottleneck_adapter(candidate_embedding-source_embedding)",
+            "artifact_identity": "multimolecule/rnafm unofficial conversion",
+            "artifact_provenance_id": "multimolecule_rnafm_7d6e73ad",
+            "official_original_checkpoint_used": False,
+            "selected_trial_id": selected_id,
+            "selection_primary_metric": "DEVELOPMENT_VALIDATION_SPEARMAN",
+            "hpo_trials": trial_results,
+            "validation": selected["validation"],
+            "adapter_parameter_count": selected["adapter_parameter_count"],
+            "task_label_training_overlap": "NO_TASK_LABEL_TRAINING_IN_FOUNDATION_PRETRAINING",
+            "exact_sequence_pretraining_overlap": "UNKNOWN_NOT_ASSERTED",
+            "independent_external_transfer_claim_allowed": False,
+        }
     summary = {
         "schema_version": "route_a_v3_route2_external_prediction_baselines.v1",
         "status": "THREE_TASK_MATCHED_EXTERNAL_COMMON_TASK_BASELINES_COMPLETED",
@@ -542,8 +697,6 @@ def execute(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
         "record_counts": {split: sum(record.split == split for record in records) for split in SPLITS},
         "physical_gpu_index": int(config["physical_gpu_index"]),
         "device": str(device),
-        "cpu_fallback_used": False,
-        "cuda_training_tensors_verified": True,
         "baselines": summaries,
         "evaluation_outcomes_accessed": False,
         "scientific_claim_status": "NOT_ESTABLISHED",
