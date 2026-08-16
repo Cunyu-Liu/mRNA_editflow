@@ -34,11 +34,35 @@ def build(config: Mapping[str, Any]) -> tuple[list[dict[str, Any]], dict[str, li
     _require(included_studies and len(included_studies) == len(set(included_studies)), "included studies are empty or duplicated")
     included = set(included_studies)
 
+    included_regions = [str(value).replace("′", "").replace("'", "") for value in config.get("included_regions", [])]
+    _require(len(included_regions) == len(set(included_regions)), "included regions are duplicated")
+    _require(set(included_regions) <= {"3UTR", "5UTR"}, "included region is unsupported")
+
     manifest_rows = _read_jsonl(Path(config["development_manifest_path"]))
     _require(all(row["pool_assignment"] == "DEVELOPMENT" for row in manifest_rows), "manifest contains non-Development rows")
     validation_rows = [row for row in manifest_rows if row["split"] == "VALIDATION"]
     validation_ids = {str(row["canonical_record_id"]) for row in validation_rows}
-    selected_rows = [row for row in validation_rows if str(row["study_unit_id"]) in included]
+    region_by_id: dict[str, str] = {}
+    if included_regions:
+        canonical_paths = config.get("canonical_paths", [])
+        _require(canonical_paths, "canonical paths are required for a region-filtered subset")
+        for path_value in canonical_paths:
+            path = Path(path_value)
+            for line in path.read_text(encoding="utf-8").splitlines():
+                if not line.strip():
+                    continue
+                row = json.loads(line)
+                record_id = str(row["canonical_record_id"])
+                if record_id not in validation_ids:
+                    continue
+                _require(record_id not in region_by_id, f"canonical record is duplicated: {record_id}")
+                region_by_id[record_id] = str(row["region"]).replace("′", "").replace("'", "")
+        _require(set(region_by_id) == validation_ids, "canonical inputs do not cover Development validation")
+    selected_rows = [
+        row for row in validation_rows
+        if str(row["study_unit_id"]) in included
+        and (not included_regions or region_by_id[str(row["canonical_record_id"])] in set(included_regions))
+    ]
     selected_ids = {str(row["canonical_record_id"]) for row in selected_rows}
     _require(selected_rows, "aligned validation subset is empty")
     _require(len(selected_ids) == len(selected_rows), "aligned validation subset has duplicated ids")
@@ -66,6 +90,7 @@ def build(config: Mapping[str, Any]) -> tuple[list[dict[str, Any]], dict[str, li
         "schema_version": "route_a_v3_route2_aligned_validation_subset.v1",
         "status": "DEVELOPMENT_VALIDATION_ABLATION_SUBSET_ALIGNED",
         "included_study_unit_ids": sorted(included),
+        "included_regions": sorted(included_regions),
         "record_count": len(selected_rows),
         "prediction_ids": sorted(filtered),
         "prediction_input_record_counts": input_counts,

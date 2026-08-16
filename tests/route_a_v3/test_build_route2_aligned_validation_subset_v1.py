@@ -78,3 +78,31 @@ def test_build_rejects_prediction_outside_validation(tmp_path: Path) -> None:
             "prediction_inputs": [{"prediction_id": "bad", "path": str(predictions)}],
             "evaluation_outcomes_accessed": False,
         })
+
+
+def test_build_filters_a_mixed_study_by_canonical_region(tmp_path: Path) -> None:
+    module = _module()
+    manifest = tmp_path / "manifest.jsonl"
+    canonical = tmp_path / "canonical.jsonl"
+    predictions = tmp_path / "predictions.jsonl"
+    _write(manifest, [
+        {"canonical_record_id": "three", "study_unit_id": "MIXED", "split": "VALIDATION", "pool_assignment": "DEVELOPMENT"},
+        {"canonical_record_id": "five", "study_unit_id": "MIXED", "split": "VALIDATION", "pool_assignment": "DEVELOPMENT"},
+    ])
+    _write(canonical, [
+        {"canonical_record_id": "three", "region": "3UTR"},
+        {"canonical_record_id": "five", "region": "5UTR"},
+    ])
+    _write(predictions, [{"canonical_record_id": "five", "predicted_direction_normalized_delta": 1.0}])
+    rows, filtered, summary = module.build({
+        "schema_version": "route_a_v3_route2_aligned_validation_subset_config.v1",
+        "development_manifest_path": str(manifest),
+        "included_study_unit_ids": ["MIXED"],
+        "included_regions": ["5′UTR"],
+        "canonical_paths": [str(canonical)],
+        "prediction_inputs": [{"prediction_id": "regional", "path": str(predictions)}],
+        "evaluation_outcomes_accessed": False,
+    })
+    assert [row["canonical_record_id"] for row in rows] == ["five"]
+    assert [row["canonical_record_id"] for row in filtered["regional"]] == ["five"]
+    assert summary["included_regions"] == ["5UTR"]
