@@ -1,0 +1,52 @@
+{
+  "schema_version": "route_a_v3_route2_gse232572_zero_shot_summary.v1",
+  "evaluation_release_state": "PREDICTOR_GENERATOR_AND_BASELINES_FROZEN",
+  "study_unit_id": "GSE232572",
+  "evaluation_record_count": 8068,
+  "strongest_baseline_id": "neural_medium_siamese_cnn",
+  "gpu_inference": {
+    "delta_physical_gpu_by_seed": {
+      "20260816": 0,
+      "20260817": 1,
+      "20260818": 2
+    },
+    "strongest_baseline_physical_gpu": 3,
+    "cuda_provenance_verified": true,
+    "cpu_fallback_detected": false
+  },
+  "paired_results": [
+    {
+      "seed": 20260816,
+      "task_macro_spearman_model": -0.010941527221892145,
+      "task_macro_spearman_baseline": -0.031243974054172684,
+      "task_macro_spearman_improvement": 0.020302446832280538,
+      "task_macro_spearman_improvement_ci_95": [-0.011728708071697243, 0.05541335827944692],
+      "baseline_mae_minus_model_mae": -0.18983225690001593,
+      "baseline_mae_minus_model_mae_ci_95": [-0.19585186624289078, -0.18345103771880084]
+    },
+    {
+      "seed": 20260817,
+      "task_macro_spearman_model": 0.017286776159004737,
+      "task_macro_spearman_baseline": -0.031243974054172684,
+      "task_macro_spearman_improvement": 0.04853075021317742,
+      "task_macro_spearman_improvement_ci_95": [0.017174099568648585, 0.08162652713699045],
+      "baseline_mae_minus_model_mae": -0.16465689517502083,
+      "baseline_mae_minus_model_mae_ci_95": [-0.17049350846780434, -0.1586320390045046]
+    },
+    {
+      "seed": 20260818,
+      "task_macro_spearman_model": 0.005849545341785685,
+      "task_macro_spearman_baseline": -0.031243974054172684,
+      "task_macro_spearman_improvement": 0.03709351939595837,
+      "task_macro_spearman_improvement_ci_95": [0.00370956395205847, 0.06996253543091081],
+      "baseline_mae_minus_model_mae": -0.14065073428818486,
+      "baseline_mae_minus_model_mae_ci_95": [-0.1456791146057011, -0.13565468962020574]
+    }
+  ],
+  "preregistered_pass": false,
+  "failure_reasons": [
+    "Seed 20260816 Spearman improvement CI lower bound is not greater than zero.",
+    "All three seeds have significantly worse MAE than the strongest baseline."
+  ],
+  "paper_outcome": "BENCHMARK_PLUS_TRANSFER_AND_GENERATION_LIMITS_PAPER"
+}
