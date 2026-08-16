@@ -1,0 +1,70 @@
+{
+  "schema_version": "route_a_v3_route2_external_model_provenance.v1",
+  "artifacts": [
+    {
+      "provenance_id": "optimus5prime_official_d53df410",
+      "model_id": "Optimus5Prime",
+      "artifact_role": "OFFICIAL_REPOSITORY_WEIGHT_AND_REFERENCE_NOTEBOOK",
+      "repository": "https://github.com/pjsample/human_5utr_modeling",
+      "revision": "d53df410c7fb3fcd4bc4541bd7e8c6dc52b66fbe",
+      "files": [
+        "modeling/saved_models/main_MRL_model.hdf5",
+        "modeling/training_MRL_CNN.ipynb"
+      ],
+      "artifact_license": "GPL-3.0"
+    },
+    {
+      "provenance_id": "framepool_official_c575f9cd",
+      "model_id": "FramePool",
+      "artifact_role": "OFFICIAL_REPOSITORY_WEIGHT_AND_KIPOI_WRAPPER",
+      "repository": "https://github.com/Karollus/5UTR",
+      "revision": "c575f9cdca0cac1ffa88eb18e4435fdfbc674b08",
+      "files": [
+        "kipoi/5UTR_Model/model/Framepool_combined_residual.h5",
+        "kipoi/5UTR_Model/model.py",
+        "Modelling/model.py"
+      ],
+      "artifact_license": "MIT"
+    },
+    {
+      "provenance_id": "multimolecule_rnafm_7d6e73ad",
+      "model_id": "RNA-FM_MULTI_MOLECULE_CONVERSION",
+      "artifact_role": "UNOFFICIAL_MULTIMOLECULE_CONVERSION_CHECKPOINT",
+      "repository": "https://huggingface.co/multimolecule/rnafm",
+      "revision": "7d6e73ad3b48e042b378f9a788a56ccb4d573a27",
+      "files": [
+        "config.json",
+        "model.safetensors",
+        "tokenizer_config.json",
+        "vocab.txt",
+        "README.md",
+        "license.md",
+        "license-faq.md"
+      ],
+      "artifact_license": "AGPL-3.0",
+      "official_original_repository": "https://github.com/ml4bio/RNA-FM",
+      "official_original_repository_revision_observed": "348951516e0963d22bbb33b3c9fc18c89081d38e",
+      "official_original_repository_license": "MIT",
+      "official_original_checkpoint_used": false,
+      "exact_sequence_pretraining_overlap": "UNKNOWN_NOT_ASSERTED"
+    },
+    {
+      "provenance_id": "utrlm_official_b77b589b",
+      "model_id": "UTR-LM",
+      "artifact_role": "OFFICIAL_REPOSITORY_AND_STRICT_CHECKPOINT",
+      "repository": "https://github.com/a96123155/UTR-LM",
+      "revision": "b77b589bf182eb9de6a1a5024fa09d44294d94fc",
+      "artifact_license": "GPL-3.0"
+    },
+    {
+      "provenance_id": "aparent_official_69ad2979",
+      "model_id": "APARENT",
+      "artifact_role": "OFFICIAL_REPOSITORY_WEIGHT_AND_NOTEBOOK_REFERENCE",
+      "repository": "https://github.com/johli/aparent",
+      "revision": "69ad29791709b48689ff5d9e3a3daefc568de9ce",
+      "artifact_license": "MIT"
+    }
+  ],
+  "evaluation_outcomes_accessed": false,
+  "scientific_claim_status": "NOT_ESTABLISHED"
+}

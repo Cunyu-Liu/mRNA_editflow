@@ -1,0 +1,93 @@
+from __future__ import annotations
+
+import importlib.util
+import json
+import sys
+from pathlib import Path
+
+import pytest
+import torch
+
+
+ROOT = Path(__file__).resolve().parents[2]
+SCRIPT = ROOT / "scripts/route_a_v3/run_route2_external_prediction_baselines_v1.py"
+
+
+def _load():
+    spec = importlib.util.spec_from_file_location("route2_external_baselines_test", SCRIPT)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    sys.modules[spec.name] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_even_kernel_same_padding_matches_tensorflow_length() -> None:
+    module = _load()
+    x = torch.arange(2 * 4 * 50, dtype=torch.float32).reshape(2, 4, 50)
+    weight = torch.ones((3, 4, 8))
+    result = module._same_conv(x, weight, torch.zeros(3))
+    assert result.shape == (2, 3, 50)
+    expected_first = x[0, :, :5].sum()
+    assert result[0, 0, 0] == expected_first
+
+
+def test_task_loader_is_development_only_and_exact(tmp_path: Path) -> None:
+    module = _load()
+    canonical = tmp_path / "canonical.jsonl"
+    manifest = tmp_path / "manifest.jsonl"
+    rows = []
+    manifests = []
+    for index, split in enumerate(("TRAIN", "VALIDATION", "TEST"), start=1):
+        record_id = f"R{index}"
+        rows.append({
+            "canonical_record_id": record_id, "study_unit_id": "GSE114002",
+            "pool_assignment": "DEVELOPMENT", "region": "5UTR", "endpoint_id": "MEAN_RIBOSOME_LOAD",
+            "source_id": f"S{index}", "source_sequence": "A" * 50,
+            "candidate_sequence": "C" + "A" * 49, "direction_normalized_delta": 0.1 * index,
+        })
+        manifests.append({"canonical_record_id": record_id, "study_unit_id": "GSE114002", "split": split})
+    canonical.write_text("".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8")
+    manifest.write_text("".join(json.dumps(row) + "\n" for row in manifests), encoding="utf-8")
+    records, task_manifest = module.load_task_records(canonical, manifest)
+    assert len(records) == len(task_manifest) == 3
+    assert {record.split for record in records} == {"TRAIN", "VALIDATION", "TEST"}
+
+
+def test_task_loader_rejects_non_development(tmp_path: Path) -> None:
+    module = _load()
+    canonical = tmp_path / "canonical.jsonl"
+    manifest = tmp_path / "manifest.jsonl"
+    canonical.write_text(json.dumps({
+        "canonical_record_id": "R", "study_unit_id": "GSE114002", "pool_assignment": "EVALUATION",
+        "region": "5UTR", "endpoint_id": "MEAN_RIBOSOME_LOAD", "source_id": "S",
+        "source_sequence": "A" * 50, "candidate_sequence": "C" + "A" * 49,
+        "direction_normalized_delta": 0.1,
+    }) + "\n", encoding="utf-8")
+    manifest.write_text(json.dumps({"canonical_record_id": "R", "study_unit_id": "GSE114002", "split": "TRAIN"}) + "\n", encoding="utf-8")
+    with pytest.raises(module.ExternalBaselineError, match="non-Development"):
+        module.load_task_records(canonical, manifest)
+
+
+def test_constant_external_predictions_keep_spearman_undefined() -> None:
+    module = _load()
+    records = [
+        module.TaskRecord(f"R{index}", f"S{index}", "A" * 50, "C" + "A" * 49, float(index), "TEST")
+        for index in range(3)
+    ]
+    predictions = {record.record_id: 0.0 for record in records}
+    assert module._metrics(records, predictions, "TEST")["spearman"] is None
+
+
+def test_rnafm_artifact_is_not_described_as_official_checkpoint() -> None:
+    source = SCRIPT.read_text(encoding="utf-8")
+    assert "multimolecule_rnafm_frozen_linear_probe" in source
+    assert '"official_original_checkpoint_used": False' in source
+    assert '"artifact_identity": "multimolecule/rnafm unofficial conversion"' in source
+
+
+def test_native_weight_ports_disclose_missing_tensorflow_numeric_parity() -> None:
+    source = SCRIPT.read_text(encoding="utf-8")
+    assert '"optimus5prime_official_d53df410"' in source
+    assert '"framepool_official_c575f9cd"' in source
+    assert '"pytorch_port_numeric_parity_status": "NOT_RUN_TENSORFLOW_UNAVAILABLE"' in source
