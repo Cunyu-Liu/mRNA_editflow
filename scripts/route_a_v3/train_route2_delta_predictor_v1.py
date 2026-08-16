@@ -527,8 +527,11 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
     }
     model_kind = str(config.get("model_kind", ROUTE2_DELTA_MODEL_KIND))
     if model_kind == ROUTE2_DELTA_MODEL_KIND:
-        model = Route2DeltaPredictor(**shared_model_config).to(device)
-        checkpoint_model_config = shared_model_config
+        checkpoint_model_config = {
+            **shared_model_config,
+            "study_specific_scale_calibration": bool(config.get("study_specific_scale_calibration", False)),
+        }
+        model = Route2DeltaPredictor(**checkpoint_model_config).to(device)
     elif model_kind in Route2NeuralBaseline.MODES:
         checkpoint_model_config = {
             **shared_model_config,
@@ -653,6 +656,7 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
         "seed": int(config["seed"]),
         "baseline_id": baseline_id,
         "model_kind": model_kind,
+        "study_specific_scale_calibration": bool(config.get("study_specific_scale_calibration", False)),
         "loss_kind": loss_kind,
         "ranking_loss_weight": float(config.get("ranking_loss_weight", 1.0)) if loss_kind.startswith("huber_plus_") else None,
         "run_mode": run_mode,

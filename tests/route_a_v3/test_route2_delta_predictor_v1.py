@@ -61,6 +61,29 @@ def test_structural_constraints_remain_exact_in_training_mode() -> None:
     assert torch.equal(_forward(model, source, source), torch.zeros(1))
 
 
+def test_study_specific_scale_calibration_preserves_constraints_and_scales_delta() -> None:
+    module = _load(MODEL_PATH, "route2_delta_study_scale_test")
+    model = module.Route2DeltaPredictor(
+        hidden_dim=16, depth=2, study_count=2, assay_count=1,
+        context_count=1, endpoint_count=1, study_specific_scale_calibration=True,
+    ).eval()
+    with torch.no_grad():
+        model.study.weight[1].copy_(model.study.weight[0])
+        model.study_log_scale.weight[0] = 0.0
+        model.study_log_scale.weight[1] = torch.log(torch.tensor(2.0))
+    source = torch.tensor([[0, 1, 2, 3], [0, 1, 2, 3]])
+    candidate = torch.tensor([[1, 1, 2, 3], [1, 1, 2, 3]])
+    padding = torch.zeros_like(source, dtype=torch.bool)
+    studies = torch.tensor([0, 1])
+    zeros = torch.zeros(2, dtype=torch.long)
+    forward = model(source, candidate, padding, studies, zeros, zeros, zeros, zeros)["mean"]
+    reverse = model(candidate, source, padding, studies, zeros, zeros, zeros, zeros)["mean"]
+    identity = model(source, source, padding, studies, zeros, zeros, zeros, zeros)["mean"]
+    assert forward[1].item() == pytest.approx(2.0 * forward[0].item())
+    assert torch.equal(forward, -reverse)
+    assert torch.equal(identity, torch.zeros_like(identity))
+
+
 def test_normalized_position_channels_are_length_relative_and_edit_gated() -> None:
     module = _load(MODEL_PATH, "route2_delta_model_position_channel_test")
     padding_mask = torch.tensor([

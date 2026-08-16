@@ -64,6 +64,7 @@ class Route2DeltaPredictor(nn.Module):
         context_count: int,
         endpoint_count: int,
         region_count: int = 2,
+        study_specific_scale_calibration: bool = False,
     ):
         super().__init__()
         if hidden_dim < 16 or depth < 1:
@@ -77,6 +78,10 @@ class Route2DeltaPredictor(nn.Module):
         self.context = nn.Embedding(context_count, category_dim)
         self.endpoint = nn.Embedding(endpoint_count, category_dim)
         self.region = nn.Embedding(region_count, category_dim)
+        self.study_specific_scale_calibration = study_specific_scale_calibration
+        if study_specific_scale_calibration:
+            self.study_log_scale = nn.Embedding(study_count, 1)
+            nn.init.zeros_(self.study_log_scale.weight)
         # Both the main critic and the same-information full-pair CNN receive
         # source, candidate, signed nucleotide delta, edit identity, normalized
         # absolute position, and edit-gated position.
@@ -147,6 +152,8 @@ class Route2DeltaPredictor(nn.Module):
             study_ids, assay_ids, context_ids, endpoint_ids, region_ids,
         )
         mean = 0.5 * (self.score_head(forward) - self.score_head(reverse)).squeeze(-1)
+        if self.study_specific_scale_calibration:
+            mean = mean * torch.exp(self.study_log_scale(study_ids).squeeze(-1))
         log_variance = torch.zeros_like(mean)
         return {"mean": mean, "log_variance": log_variance}
 
