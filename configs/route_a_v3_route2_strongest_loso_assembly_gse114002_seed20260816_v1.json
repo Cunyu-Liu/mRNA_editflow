@@ -1,0 +1,22 @@
+{
+  "baseline_predictions": [
+    {
+      "baseline_id": "external_framepool",
+      "prediction_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_loso_baselines/framepool_gse114002_gpu2_v1/loso_predictions.jsonl"
+    }
+  ],
+  "canonical_paths": [
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE200304/v1/canonical_records.jsonl",
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE114002/v1/canonical_records.private.jsonl",
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE149487/v1/canonical_records.private.jsonl",
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE217518/v1/canonical_records.jsonl",
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/ENCSR854RUF/v1/canonical_records.private.jsonl",
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE186455/v1/canonical_records.private.jsonl",
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE269595/v1/canonical_records.private.jsonl"
+  ],
+  "development_manifest_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/manifests/route2_development_frozen_v1/development_manifest.jsonl",
+  "evaluation_outcomes_accessed": false,
+  "requested_split": "LOSO::GSE114002",
+  "schema_version": "route_a_v3_route2_strongest_prediction_assembly_config.v1",
+  "strongest_selection_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/audits/route_a_v3_route2_strongest_prediction_baselines_v1.json"
+}
