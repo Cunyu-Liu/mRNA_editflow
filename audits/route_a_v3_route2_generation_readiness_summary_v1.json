@@ -1,0 +1,48 @@
+{
+  "schema_version": "route_a_v3_route2_generation_readiness_summary.v1",
+  "evaluation_release_state": "CLOSED",
+  "evaluation_outcomes_accessed": false,
+  "base_flow_training": {
+    "parameter_count": 205717,
+    "training_optimizer_steps": 21350,
+    "selected_best_checkpoint_optimizer_steps": 2135,
+    "physical_gpu_index": 5,
+    "cuda_device_uuid": "347d7935-3bea-a371-8e23-d97da06b3b47",
+    "cuda_training_tensors_verified": true,
+    "cpu_fallback_detected": false
+  },
+  "g0_validation": {
+    "status": "FLOW_G0_READY",
+    "source_count": 891,
+    "trajectory_count": 28512,
+    "hard_legality_rate": 1.0,
+    "edit_budget_violation_count": 0,
+    "trajectory_replay_failure_count": 0,
+    "small_graph_total_variation": 0.0,
+    "small_graph_tolerance": 1e-12,
+    "generator_nfe": 83599,
+    "physical_gpu_index": 5,
+    "cuda_device_uuid": "347d7935-3bea-a371-8e23-d97da06b3b47",
+    "cpu_fallback_detected": false
+  },
+  "generation_baseline_selection": {
+    "required_method_count": 7,
+    "strongest_generation_baseline_id": "unguided_learned_base_flow_g0",
+    "point_leader_method_id": "unguided_learned_base_flow_g0",
+    "bootstrap_uncertainty_equivalent_method_ids": [
+      "unguided_learned_base_flow_g0"
+    ],
+    "source_macro_measured_ndcg_at_10": 0.0792034003381312,
+    "next_best_source_macro_measured_ndcg_at_10": 0.032443531451568766,
+    "matched_source_and_candidate_budget": true,
+    "critic_budget_matched_within_critic_using_methods": true,
+    "independent_evaluator_established": false
+  },
+  "readiness": {
+    "critic_status": "CRITIC_NOT_READY_FOR_GUIDANCE",
+    "flow_status": "FLOW_G0_READY",
+    "guided_unlocked": false,
+    "negative_control_margin_pre_frozen": false
+  },
+  "claim_boundary": "G0 engineering and Development measured-neighborhood baseline selection are established; guided generation and biological optimization are not established."
+}

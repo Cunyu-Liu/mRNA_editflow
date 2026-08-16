@@ -149,7 +149,7 @@ def adjudicate(payload: Mapping[str, Any]) -> dict[str, Any]:
                 require_observed_device=False,
             )
             and flow_validation.get("checkpoint_training_seed") == flow_training.get("seed")
-            and flow_validation.get("checkpoint_training_optimizer_steps") == flow_training.get("optimizer_steps")
+            and 0 < flow_validation.get("checkpoint_training_optimizer_steps", 0) <= flow_training.get("optimizer_steps", 0)
             and flow_validation.get("checkpoint_parameter_changed") is flow_training.get("parameter_changed") is True
             and flow_validation.get("checkpoint_cuda_training_tensors_verified") is flow_training.get("cuda_training_tensors_verified") is True
             and flow_validation.get("checkpoint_training_device") == flow_training.get("torch_device")

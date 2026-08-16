@@ -147,11 +147,29 @@ def test_validation_checkpoint_must_match_flow_training_summary() -> None:
     module = _load()
     for field, value in (
         ("checkpoint_training_seed", 12),
-        ("checkpoint_training_optimizer_steps", 9),
         ("checkpoint_training_cuda_device_uuid", "GPU-other"),
     ):
         payload = deepcopy(_passing_input())
         payload["flow"]["validation_summary"][field] = value
+        result = module.adjudicate(payload)
+        assert result["flow_checks"]["validation_gpu_and_checkpoint_provenance"] is False
+        assert result["guided_unlocked"] is False
+
+
+def test_validation_accepts_earlier_best_checkpoint_from_same_training_run() -> None:
+    module = _load()
+    payload = deepcopy(_passing_input())
+    payload["flow"]["validation_summary"]["checkpoint_training_optimizer_steps"] = 9
+    result = module.adjudicate(payload)
+    assert result["flow_checks"]["validation_gpu_and_checkpoint_provenance"] is True
+    assert result["flow_status"] == "FLOW_G0_READY"
+
+
+def test_validation_rejects_zero_or_future_checkpoint_steps() -> None:
+    module = _load()
+    for optimizer_steps in (0, 11):
+        payload = deepcopy(_passing_input())
+        payload["flow"]["validation_summary"]["checkpoint_training_optimizer_steps"] = optimizer_steps
         result = module.adjudicate(payload)
         assert result["flow_checks"]["validation_gpu_and_checkpoint_provenance"] is False
         assert result["guided_unlocked"] is False
