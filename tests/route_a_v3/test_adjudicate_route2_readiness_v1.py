@@ -172,6 +172,23 @@ def test_incomplete_loso_or_cpu_sampling_provenance_keeps_guided_closed() -> Non
     assert result["guided_unlocked"] is False
 
 
+def test_structured_undefined_loso_result_keeps_critic_closed_without_error() -> None:
+    module = _load()
+    payload = deepcopy(_passing_input())
+    payload["critic"]["loso_seed_results"][1].update({
+        "status": "LOSO_MODEL_BASELINE_ALIGNMENT_NOT_ESTABLISHED",
+        "model_macro_spearman": None,
+        "baseline_macro_spearman": None,
+        "macro_improvement": None,
+        "undefined_study_count": 1,
+    })
+    result = module.adjudicate(payload)
+    assert result["critic_checks"]["three_complete_final_seed_loso_runs_present"] is False
+    assert result["critic_checks"]["all_loso_seed_improvements_positive"] is False
+    assert result["critic_status"] == "CRITIC_NOT_READY_FOR_GUIDANCE"
+    assert result["guided_unlocked"] is False
+
+
 def test_critic_requires_real_gpu_training_provenance() -> None:
     module = _load()
     payload = deepcopy(_passing_input())

@@ -86,8 +86,28 @@ def test_undefined_study_spearman_is_not_silently_dropped() -> None:
     payload = deepcopy(_payload())
     payload["model_results"][3]["evaluation"]["metrics"]["task_macro_spearman"] = None
     payload["model_results"][3]["evaluation"]["metrics"]["task_spearman_defined_count"] = 0
-    with pytest.raises(module.LosoAggregationError, match="undefined"):
-        module.aggregate(payload)
+    result = module.aggregate(payload)
+    assert result["status"] == "LOSO_MODEL_BASELINE_ALIGNMENT_NOT_ESTABLISHED"
+    assert result["model_macro_spearman"] is None
+    assert result["baseline_macro_spearman"] is None
+    assert result["macro_improvement"] is None
+    assert result["aligned_study_count"] == 6
+    assert result["undefined_study_count"] == 1
+    assert result["per_study"][3]["model_task_macro_spearman"] is None
+    assert result["per_study"][3]["baseline_task_macro_spearman"] == pytest.approx(0.1)
+    assert result["per_study"][3]["improvement"] is None
+    assert result["per_study"][3]["failure_reasons"][0].startswith("MODEL:")
+
+
+def test_undefined_baseline_spearman_preserves_model_and_failure_role() -> None:
+    module = _load()
+    payload = deepcopy(_payload())
+    payload["baseline_results"][4]["evaluation"] = _evaluation("S4", None)
+    result = module.aggregate(payload)
+    assert result["status"] == "LOSO_MODEL_BASELINE_ALIGNMENT_NOT_ESTABLISHED"
+    assert result["per_study"][4]["model_task_macro_spearman"] == pytest.approx(0.2)
+    assert result["per_study"][4]["baseline_task_macro_spearman"] is None
+    assert result["per_study"][4]["failure_reasons"][0].startswith("BASELINE:")
 
 
 def test_zero_record_study_cannot_be_fabricated_as_loso_fold() -> None:

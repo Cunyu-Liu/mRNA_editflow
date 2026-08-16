@@ -63,6 +63,23 @@ def adjudicate(payload: Mapping[str, Any]) -> dict[str, Any]:
     critic = payload["critic"]
     flow = payload["flow"]
     critic_training = critic["training_summary"]
+    loso_rows = critic["loso_seed_results"]
+    complete_loso = (
+        len(loso_rows) == 3
+        and len({row["seed"] for row in loso_rows}) == 3
+        and all(
+            row.get("status") == "LOSO_MODEL_BASELINE_ALIGNED_COMPLETE"
+            and row.get("study_count") == critic["expected_loso_study_count"]
+            and row.get("all_model_training_gpu_provenance_verified") is True
+            and row.get("evaluation_studies_included") == 0
+            for row in loso_rows
+        )
+    )
+    positive_loso = complete_loso and all(
+        _finite(row["model_macro_spearman"], "model macro Spearman")
+        - _finite(row["baseline_macro_spearman"], "baseline macro Spearman") > 0.0
+        for row in loso_rows
+    )
     critic_checks = {
         "learned_gpu_parameter_update": (
             critic_training["status"] == "DELTA_PREDICTOR_DEVELOPMENT_GPU_RUN_COMPLETE"
@@ -76,22 +93,8 @@ def adjudicate(payload: Mapping[str, Any]) -> dict[str, Any]:
         ),
         "development_grouped_split_frozen": critic["development_grouped_split_status"] == "ROUTE2_MANIFEST_AND_GROUPED_SPLIT_MATERIALIZED",
         "strongest_same_information_baseline_run": critic["strongest_baseline_status"] == "COMPLETED_DEVELOPMENT_ONLY",
-        "three_complete_final_seed_loso_runs_present": (
-            len(critic["loso_seed_results"]) == 3
-            and len({row["seed"] for row in critic["loso_seed_results"]}) == 3
-            and all(
-                row.get("status") == "LOSO_MODEL_BASELINE_ALIGNED_COMPLETE"
-                and row.get("study_count") == critic["expected_loso_study_count"]
-                and row.get("all_model_training_gpu_provenance_verified") is True
-                and row.get("evaluation_studies_included") == 0
-                for row in critic["loso_seed_results"]
-            )
-        ),
-        "all_loso_seed_improvements_positive": all(
-            _finite(row["model_macro_spearman"], "model macro Spearman")
-            - _finite(row["baseline_macro_spearman"], "baseline macro Spearman") > 0.0
-            for row in critic["loso_seed_results"]
-        ),
+        "three_complete_final_seed_loso_runs_present": complete_loso,
+        "all_loso_seed_improvements_positive": positive_loso,
         "candidate_permutation_control_worse": (
             _finite(critic["full_model_validation_primary"], "full validation primary")
             - _finite(critic["candidate_permutation_validation_primary"], "candidate permutation primary")

@@ -77,14 +77,48 @@ def aggregate(payload: Mapping[str, Any]) -> dict[str, Any]:
             _verified_model_training(model_rows[study]["training_summary"], study, int(payload["seed"])),
             f"LOSO model training provenance is invalid: {study}",
         )
-        model = _spearman(model_rows[study]["evaluation"], study)
-        baseline = _spearman(baseline_rows[study]["evaluation"], study)
+        failure_reasons = []
+        try:
+            model = _spearman(model_rows[study]["evaluation"], study)
+        except LosoAggregationError as exc:
+            model = None
+            failure_reasons.append(f"MODEL: {exc}")
+        try:
+            baseline = _spearman(baseline_rows[study]["evaluation"], study)
+        except LosoAggregationError as exc:
+            baseline = None
+            failure_reasons.append(f"BASELINE: {exc}")
         per_study.append({
             "study_unit_id": study,
             "model_task_macro_spearman": model,
             "baseline_task_macro_spearman": baseline,
-            "improvement": model - baseline,
+            "improvement": model - baseline if model is not None and baseline is not None else None,
+            "failure_reasons": failure_reasons,
         })
+    undefined_rows = [row for row in per_study if row["failure_reasons"]]
+    if undefined_rows:
+        return {
+            "schema_version": "route_a_v3_route2_loso_aggregation.v1",
+            "status": "LOSO_MODEL_BASELINE_ALIGNMENT_NOT_ESTABLISHED",
+            "seed": payload["seed"],
+            "study_count": len(per_study),
+            "aligned_study_count": len(per_study) - len(undefined_rows),
+            "undefined_study_count": len(undefined_rows),
+            "development_inventory_study_count": len(inventory),
+            "zero_record_development_studies": sorted(zero_record),
+            "model_macro_spearman": None,
+            "baseline_macro_spearman": None,
+            "within_study_metric": "TASK_MACRO_SPEARMAN_REGION_ENDPOINT",
+            "macro_improvement": None,
+            "per_study": per_study,
+            "failure_reasons": [
+                f"{row['study_unit_id']}: {reason}"
+                for row in undefined_rows
+                for reason in row["failure_reasons"]
+            ],
+            "all_model_training_gpu_provenance_verified": True,
+            "evaluation_studies_included": 0,
+        }
     model_macro = sum(row["model_task_macro_spearman"] for row in per_study) / len(per_study)
     baseline_macro = sum(row["baseline_task_macro_spearman"] for row in per_study) / len(per_study)
     return {
@@ -92,6 +126,8 @@ def aggregate(payload: Mapping[str, Any]) -> dict[str, Any]:
         "status": "LOSO_MODEL_BASELINE_ALIGNED_COMPLETE",
         "seed": payload["seed"],
         "study_count": len(per_study),
+        "aligned_study_count": len(per_study),
+        "undefined_study_count": 0,
         "development_inventory_study_count": len(inventory),
         "zero_record_development_studies": sorted(zero_record),
         "model_macro_spearman": model_macro,
@@ -99,6 +135,7 @@ def aggregate(payload: Mapping[str, Any]) -> dict[str, Any]:
         "within_study_metric": "TASK_MACRO_SPEARMAN_REGION_ENDPOINT",
         "macro_improvement": model_macro - baseline_macro,
         "per_study": per_study,
+        "failure_reasons": [],
         "all_model_training_gpu_provenance_verified": True,
         "evaluation_studies_included": 0,
     }
