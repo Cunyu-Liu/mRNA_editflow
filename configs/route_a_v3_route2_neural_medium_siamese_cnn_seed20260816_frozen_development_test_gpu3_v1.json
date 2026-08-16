@@ -33,6 +33,6 @@
   "num_workers": 0,
   "frozen_capacity_profile_id": "MEDIUM_0_5M",
   "frozen_target_parameter_count": 500000,
-  "frozen_expected_parameter_count": 509905,
+  "frozen_expected_parameter_count": 509845,
   "output_directory": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_frozen_test/neural_medium_siamese_cnn_seed20260816_frozen_development_test_gpu3_v1"
 }
