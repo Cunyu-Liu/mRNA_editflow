@@ -5,6 +5,7 @@ from types import SimpleNamespace
 import pytest
 
 from core import route2_gpu_failure_evidence as gpu_evidence
+from scripts.route_a_v3 import train_route2_delta_predictor_v1 as delta_trainer
 
 
 def _mock_cuda(monkeypatch: pytest.MonkeyPatch, *, torch_uuid: str, physical_uuid: str) -> None:
@@ -30,3 +31,22 @@ def test_matching_parent_and_physical_gpu_is_recorded(monkeypatch: pytest.Monkey
     observed = gpu_evidence.cuda_device_observation(2, require_physical_index_match=True)
     assert observed["cuda_parent_uuid_matches_declared_physical_index"] is True
     assert observed["declared_physical_gpu_uuid"] == "PARENT-A"
+
+
+def test_delta_trainer_enforces_native_physical_gpu_identity(
+    monkeypatch: pytest.MonkeyPatch, tmp_path
+) -> None:
+    monkeypatch.setattr(delta_trainer, "require_cuda", lambda _device, _index: "cuda:7")
+    observed = []
+
+    def reject_mismatch(index: int, *, require_physical_index_match: bool = False):
+        observed.append((index, require_physical_index_match))
+        raise RuntimeError("UUID_MISMATCH")
+
+    monkeypatch.setattr(delta_trainer, "cuda_device_observation", reject_mismatch)
+    with pytest.raises(RuntimeError, match="UUID_MISMATCH"):
+        delta_trainer.train(
+            {"device": "cuda:7", "physical_gpu_index": 7, "baseline_id": "test"},
+            tmp_path / "run",
+        )
+    assert observed == [(7, True)]

@@ -495,7 +495,9 @@ def execute(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
     _require(0 <= int(config["physical_gpu_index"]) < torch.cuda.device_count(), "physical GPU index is unavailable")
     device = torch.device(str(config["device"])); torch.cuda.set_device(device)
     _require(device.index == int(config["physical_gpu_index"]), "CUDA device index differs from declared physical GPU")
-    cuda_provenance = cuda_device_observation(int(config["physical_gpu_index"]))
+    cuda_provenance = cuda_device_observation(
+        int(config["physical_gpu_index"]), require_physical_index_match=True
+    )
     result_stage = str(config.get("result_stage", ""))
     included_splits = splits_for_result_stage(result_stage)
     records, task_manifest = load_task_records(

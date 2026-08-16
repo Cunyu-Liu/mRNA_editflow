@@ -439,7 +439,9 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
     device = require_cuda(str(config["device"]), int(config["physical_gpu_index"]))
     baseline_id = str(config["baseline_id"])
     _require(bool(baseline_id), "baseline identity is empty")
-    cuda_provenance = cuda_device_observation(int(config["physical_gpu_index"]))
+    cuda_provenance = cuda_device_observation(
+        int(config["physical_gpu_index"]), require_physical_index_match=True
+    )
     manifest = load_manifest(Path(config["development_manifest"]))
     records = load_records([Path(path) for path in config["canonical_paths"]], manifest)
     records, included_studies, excluded_record_count = select_study_subset(
