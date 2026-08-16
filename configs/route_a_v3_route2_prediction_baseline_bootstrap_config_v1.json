@@ -1,0 +1,208 @@
+{
+  "schema_version": "route_a_v3_route2_prediction_baseline_bootstrap_config.v1",
+  "status": "ALL_MANDATORY_BASELINE_INPUTS_COMPLETE_FROZEN",
+  "development_manifest_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/manifests/route2_development_frozen_v1/development_manifest.jsonl",
+  "canonical_paths": [
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE200304/v1/canonical_records.jsonl",
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE114002/v1/canonical_records.private.jsonl",
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE149487/v1/canonical_records.private.jsonl",
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE217518/v1/canonical_records.jsonl",
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/ENCSR854RUF/v1/canonical_records.private.jsonl",
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE186455/v1/canonical_records.private.jsonl",
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE269595/v1/canonical_records.private.jsonl"
+  ],
+  "zero_eligible_studies_excluded_from_nonempty_reader": [
+    {
+      "study_unit_id": "GSE256185",
+      "canonical_records_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE256185/v1/canonical_records.private.jsonl",
+      "canonical_record_count": 0
+    }
+  ],
+  "comparison_policy": "POINT_LEADER_VS_SMALLER_FINITE",
+  "bootstrap_iterations": 1000,
+  "seed": 20260816,
+  "evaluation_outcomes_accessed": false,
+  "main_model_result_used_for_baseline_selection": false,
+  "baselines": [
+    {
+      "baseline_id": "classical_edit_context_elastic_net",
+      "baseline_family": "CLASSICAL_EDIT_CONTEXT_ELASTIC_NET",
+      "parameter_count": 317,
+      "validation_predictions_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/classical_elastic_recovery_replay_v2/edit_context_elastic_net/validation_predictions.jsonl"
+    },
+    {
+      "baseline_id": "classical_absolute_candidate_difference_ridge",
+      "baseline_family": "CLASSICAL_RIDGE",
+      "parameter_count": 116,
+      "validation_predictions_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/classical_v1/absolute_candidate_difference_ridge/validation_predictions.jsonl"
+    },
+    {
+      "baseline_id": "classical_candidate_only_ridge",
+      "baseline_family": "CLASSICAL_RIDGE",
+      "parameter_count": 132,
+      "validation_predictions_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/classical_v1/candidate_only_ridge/validation_predictions.jsonl"
+    },
+    {
+      "baseline_id": "classical_candidate_permutation_ridge",
+      "baseline_family": "CLASSICAL_RIDGE_CONTROL",
+      "parameter_count": 317,
+      "validation_predictions_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/classical_v1/candidate_permutation_ridge/validation_predictions.jsonl"
+    },
+    {
+      "baseline_id": "classical_context_only_mean",
+      "baseline_family": "CLASSICAL_MEAN_CONTROL",
+      "parameter_count": 28,
+      "validation_predictions_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/classical_v1/context_only_mean/validation_predictions.jsonl"
+    },
+    {
+      "baseline_id": "classical_edit_position_only_ridge",
+      "baseline_family": "CLASSICAL_RIDGE",
+      "parameter_count": 53,
+      "validation_predictions_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/classical_v1/edit_position_only_ridge/validation_predictions.jsonl"
+    },
+    {
+      "baseline_id": "classical_gc_mfe_motif_ridge",
+      "baseline_family": "CLASSICAL_RIDGE",
+      "parameter_count": 72,
+      "validation_predictions_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/classical_v1/gc_mfe_motif_ridge/validation_predictions.jsonl"
+    },
+    {
+      "baseline_id": "classical_global_mean",
+      "baseline_family": "CLASSICAL_MEAN_CONTROL",
+      "parameter_count": 1,
+      "validation_predictions_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/classical_v1/global_mean/validation_predictions.jsonl"
+    },
+    {
+      "baseline_id": "classical_kmer_context_ridge",
+      "baseline_family": "CLASSICAL_RIDGE",
+      "parameter_count": 317,
+      "validation_predictions_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/classical_v1/kmer_context_ridge/validation_predictions.jsonl"
+    },
+    {
+      "baseline_id": "classical_majority_sign",
+      "baseline_family": "CLASSICAL_SIGN_CONTROL",
+      "parameter_count": 1,
+      "validation_predictions_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/classical_v1/majority_sign/validation_predictions.jsonl"
+    },
+    {
+      "baseline_id": "classical_ref_alt_only_ridge",
+      "baseline_family": "CLASSICAL_RIDGE",
+      "parameter_count": 60,
+      "validation_predictions_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/classical_v1/ref_alt_only_ridge/validation_predictions.jsonl"
+    },
+    {
+      "baseline_id": "classical_source_centered_ridge",
+      "baseline_family": "CLASSICAL_RIDGE",
+      "parameter_count": 233,
+      "validation_predictions_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/classical_v1/source_centered_ridge/validation_predictions.jsonl"
+    },
+    {
+      "baseline_id": "classical_source_group_mean",
+      "baseline_family": "CLASSICAL_GROUP_MEAN_CONTROL",
+      "parameter_count": 64168,
+      "validation_predictions_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/classical_v1/source_group_mean/validation_predictions.jsonl"
+    },
+    {
+      "baseline_id": "classical_source_only_ridge",
+      "baseline_family": "CLASSICAL_RIDGE",
+      "parameter_count": 132,
+      "validation_predictions_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/classical_v1/source_only_ridge/validation_predictions.jsonl"
+    },
+    {
+      "baseline_id": "classical_xgboost_full",
+      "baseline_family": "CLASSICAL_XGBOOST",
+      "parameter_count": 12966,
+      "validation_predictions_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/classical_v1/xgboost_full/validation_predictions.jsonl"
+    },
+    {
+      "baseline_id": "neural_medium_candidate_cnn",
+      "baseline_family": "NEURAL_ARCHITECTURE_CONTROL",
+      "parameter_count": 509083,
+      "validation_predictions_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_medium_0_5m_candidate_cnn_lr3e4_v1/validation_predictions.jsonl"
+    },
+    {
+      "baseline_id": "neural_medium_siamese_cnn",
+      "baseline_family": "NEURAL_ARCHITECTURE_CONTROL",
+      "parameter_count": 509845,
+      "validation_predictions_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_medium_0_5m_siamese_cnn_lr3e4_v1/validation_predictions.jsonl"
+    },
+    {
+      "baseline_id": "neural_medium_full_pair_cnn",
+      "baseline_family": "NEURAL_ARCHITECTURE_CONTROL",
+      "parameter_count": 515725,
+      "validation_predictions_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_medium_0_5m_full_pair_cnn_lr3e4_v1/validation_predictions.jsonl"
+    },
+    {
+      "baseline_id": "neural_medium_small_transformer",
+      "baseline_family": "NEURAL_ARCHITECTURE_CONTROL",
+      "parameter_count": 500638,
+      "validation_predictions_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_medium_0_5m_small_transformer_lr1e3_v1/validation_predictions.jsonl"
+    },
+    {
+      "baseline_id": "neural_main_candidate_cnn",
+      "baseline_family": "NEURAL_ARCHITECTURE_CONTROL",
+      "parameter_count": 2021064,
+      "validation_predictions_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_main_2m_candidate_cnn_lr3e4_v1/validation_predictions.jsonl"
+    },
+    {
+      "baseline_id": "neural_main_siamese_cnn",
+      "baseline_family": "NEURAL_ARCHITECTURE_CONTROL",
+      "parameter_count": 2037109,
+      "validation_predictions_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_main_2m_siamese_cnn_lr3e4_v1/validation_predictions.jsonl"
+    },
+    {
+      "baseline_id": "neural_main_full_pair_cnn",
+      "baseline_family": "NEURAL_ARCHITECTURE_CONTROL",
+      "parameter_count": 2032852,
+      "validation_predictions_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_main_2m_full_pair_cnn_lr3e4_v1/validation_predictions.jsonl"
+    },
+    {
+      "baseline_id": "neural_main_small_transformer",
+      "baseline_family": "NEURAL_ARCHITECTURE_CONTROL",
+      "parameter_count": 1996528,
+      "validation_predictions_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_main_2m_small_transformer_lr3e4_v1/validation_predictions.jsonl"
+    },
+    {
+      "baseline_id": "external_optimus5prime",
+      "baseline_family": "EXTERNAL_5UTR_SPECIALIST",
+      "parameter_count": 474681,
+      "validation_predictions_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/external_lr1e3_wd1e4_replay_gpu5_v1/optimus5prime/validation_predictions.jsonl"
+    },
+    {
+      "baseline_id": "external_framepool",
+      "baseline_family": "EXTERNAL_5UTR_SPECIALIST",
+      "parameter_count": 282629,
+      "validation_predictions_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/external_lr1e3_wd1e4_replay_gpu5_v1/framepool/validation_predictions.jsonl"
+    },
+    {
+      "baseline_id": "external_rnafm_frozen_linear_probe",
+      "baseline_family": "EXTERNAL_5UTR_SPECIALIST",
+      "parameter_count": 99522561,
+      "validation_predictions_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/external_lr1e3_wd1e4_replay_gpu5_v1/multimolecule_rnafm_frozen_linear_probe/validation_predictions.jsonl"
+    },
+    {
+      "baseline_id": "external_utrlm_frozen_linear_probe",
+      "baseline_family": "EXTERNAL_5UTR_SPECIALIST",
+      "parameter_count": 1208688,
+      "validation_predictions_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/utrlm_lr1e3_wd1e4_replay_gpu5_v1/validation_predictions.jsonl"
+    },
+    {
+      "baseline_id": "external_aparent",
+      "baseline_family": "EXTERNAL_3UTR_SPECIALIST",
+      "parameter_count": 6425650,
+      "validation_predictions_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/aparent_v1/validation_predictions.jsonl"
+    },
+    {
+      "baseline_id": "ranking_pairwise",
+      "baseline_family": "MANDATORY_RANKING_BASELINE",
+      "parameter_count": 2001070,
+      "validation_predictions_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_ablation/delta_main_2m_huber_plus_pairwise_lr3e4_v1/validation_predictions.jsonl"
+    },
+    {
+      "baseline_id": "ranking_listwise",
+      "baseline_family": "MANDATORY_RANKING_BASELINE",
+      "parameter_count": 2001070,
+      "validation_predictions_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_ablation/delta_main_2m_huber_plus_listwise_lr3e4_v1/validation_predictions.jsonl"
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "schema_version": "route_a_v3_route2_aligned_validation_subset_config.v1",
+  "status": "A1_ONLY_MULTISTUDY_ABLATION_COMPLETE_INPUTS_FROZEN",
+  "development_manifest_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/manifests/route2_development_frozen_v1/development_manifest.jsonl",
+  "included_study_unit_ids": [
+    "GSE200304",
+    "GSE114002",
+    "GSE149487",
+    "GSE217518",
+    "ENCSR854RUF",
+    "GSE186455"
+  ],
+  "prediction_inputs": [
+    {
+      "prediction_id": "delta_main_2m_lr3e4_seed20260816",
+      "path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/delta_main_2m_lr3e4_v1/validation_predictions.jsonl"
+    },
+    {
+      "prediction_id": "delta_main_2m_a1_only_multistudy_lr3e4_seed20260816",
+      "path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_ablation/delta_main_2m_a1_only_multistudy_lr3e4_v1/validation_predictions.jsonl"
+    }
+  ],
+  "evaluation_outcomes_accessed": false
+}
