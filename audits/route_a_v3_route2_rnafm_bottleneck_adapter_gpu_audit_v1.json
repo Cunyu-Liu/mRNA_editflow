@@ -1,0 +1,22 @@
+{
+  "schema_version": "route_a_v3_route2_rnafm_bottleneck_adapter_gpu_audit.v1",
+  "status": "GPU_RUN_COMPLETE_EXPLICIT_CPU_FALLBACK_FIELD_ABSENT_FROM_ORIGINAL_SUMMARY",
+  "run_directory": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/rnafm_bottleneck_adapter_grid_v1",
+  "device": "cuda:2",
+  "physical_gpu_index": 2,
+  "cuda_device_uuid": "d46dc272-4b72-0b54-aacd-f9ace57d622f",
+  "cuda_parent_uuid_matches_declared_physical_index": true,
+  "peak_vram_mb": 492.9248046875,
+  "adapter_parameter_changed_all_trials": true,
+  "cuda_loss_events_present_all_trials": true,
+  "cpu_fallback_used_inferred_from_runtime_evidence": false,
+  "original_summary_cpu_fallback_used_field": "ABSENT",
+  "selected_trial_id": "adapter_lr3e4_wd1e4",
+  "selected_validation_spearman": 0.12191892642433695,
+  "selected_validation_mae": 0.4508232065206762,
+  "adapter_parameter_count": 41089,
+  "pretrained_parameter_count": 99521920,
+  "total_parameter_count": 99563009,
+  "evaluation_outcomes_accessed": false,
+  "scientific_claim_status": "NOT_ESTABLISHED"
+}

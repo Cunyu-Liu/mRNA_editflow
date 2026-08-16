@@ -1,6 +1,6 @@
 {
   "schema_version": "route_a_v3_route2_prediction_baseline_bootstrap_config.v1",
-  "status": "ALL_MANDATORY_BASELINE_INPUTS_COMPLETE_FROZEN",
+  "status": "ALL_MANDATORY_BASELINE_INPUTS_COMPLETE_FROZEN_INCLUDING_RNAFM_ADAPTER",
   "development_manifest_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/manifests/route2_development_frozen_v1/development_manifest.jsonl",
   "canonical_paths": [
     "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE200304/v1/canonical_records.jsonl",
@@ -191,6 +191,12 @@
       "baseline_family": "EXTERNAL_3UTR_SPECIALIST",
       "parameter_count": 6425650,
       "validation_predictions_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/aparent_v1/validation_predictions.jsonl"
+    },
+    {
+      "baseline_id": "external_rnafm_bottleneck_adapter",
+      "baseline_family": "EXTERNAL_5UTR_SPECIALIST_LIGHTWEIGHT_ADAPTER",
+      "parameter_count": 99563009,
+      "validation_predictions_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/rnafm_bottleneck_adapter_grid_v1/multimolecule_rnafm_frozen_bottleneck_adapter/validation_predictions.jsonl"
     },
     {
       "baseline_id": "ranking_pairwise",
