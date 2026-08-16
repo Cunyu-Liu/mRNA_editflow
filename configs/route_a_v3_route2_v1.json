@@ -26,7 +26,7 @@
     "flow_g0_implementation_enabled": true,
     "training_requires_nvidia_gpu": true,
     "training_cuda_fallback_to_cpu_allowed": false,
-    "eligible_physical_gpu_indices": [0, 1, 2, 3, 4, 5, 6, 7],
+    "eligible_physical_gpu_indices": [0, 1, 2, 3, 4, 5],
     "evaluation_protected": true,
     "successor_authority_required": false,
     "runtime_ledger_required": false,
@@ -54,51 +54,51 @@
     {
       "study_unit_id": "GSE114002",
       "pool": "DEVELOPMENT",
-      "role": "A1_OR_TRUE_A2_PENDING_CONVERSION",
+      "role": "A1_DEVELOPMENT_RELAXED",
       "qualification_class": "DEVELOPMENT_RELAXED",
-      "canonical_records": null
+      "canonical_records": 3899
     },
     {
       "study_unit_id": "GSE149487",
       "pool": "DEVELOPMENT",
-      "role": "A1_PENDING_CONVERSION",
+      "role": "A1_DEVELOPMENT_RELAXED",
       "qualification_class": "DEVELOPMENT_RELAXED",
-      "canonical_records": null
+      "canonical_records": 192
     },
     {
       "study_unit_id": "GSE217518",
       "pool": "DEVELOPMENT",
-      "role": "A1_PENDING_CONVERSION",
+      "role": "A1_DEVELOPMENT_RELAXED",
       "qualification_class": "DEVELOPMENT_RELAXED",
-      "canonical_records": null
+      "canonical_records": 4009
     },
     {
       "study_unit_id": "ENCSR854RUF",
       "pool": "DEVELOPMENT",
-      "role": "A1_PENDING_CONVERSION",
+      "role": "A1_DEVELOPMENT_RELAXED",
       "qualification_class": "DEVELOPMENT_RELAXED",
-      "canonical_records": null
+      "canonical_records": 79800
     },
     {
       "study_unit_id": "GSE186455",
       "pool": "DEVELOPMENT",
-      "role": "A1_PENDING_REFERENCE_ADJUDICATION",
+      "role": "A1_DEVELOPMENT_RELAXED",
       "qualification_class": "DEVELOPMENT_RELAXED",
-      "canonical_records": null
+      "canonical_records": 752
     },
     {
       "study_unit_id": "GSE256185",
       "pool": "DEVELOPMENT",
-      "role": "A1_PENDING_FINITE_EDIT_VALIDATION",
-      "qualification_class": "DEVELOPMENT_RELAXED",
-      "canonical_records": null
+      "role": "ZERO_CANONICAL_ACTION_OUTSIDE_SUB_STOP",
+      "qualification_class": "DEVELOPMENT_RELAXED_ZERO_CANONICAL",
+      "canonical_records": 0
     },
     {
       "study_unit_id": "GSE269595",
       "pool": "DEVELOPMENT",
       "role": "TRUE_A2_LISTWISE",
       "qualification_class": "DEVELOPMENT_RELAXED",
-      "canonical_records": null
+      "canonical_records": 30966
     },
     {
       "study_unit_id": "GSE232572",
@@ -110,16 +110,16 @@
     {
       "study_unit_id": "E-MTAB-10902",
       "pool": "EVALUATION",
-      "role": "TRUE_A2_EXPLORATORY_ZERO_SHOT",
-      "qualification_class": "EVALUATION_RESERVED",
-      "canonical_records": null
+      "role": "TRUE_A2_EXPLORATORY_CONVERSION_BLOCKED_QC_MISMATCH",
+      "qualification_class": "EVALUATION_RESERVED_CONVERSION_BLOCKED",
+      "canonical_records": 0
     },
     {
       "study_unit_id": "GSE145046",
       "pool": "AUXILIARY",
       "role": "ABSOLUTE_AUXILIARY",
       "qualification_class": "AUXILIARY_ONLY",
-      "canonical_records": null
+      "canonical_records": 0
     },
     {
       "study_unit_id": "GSE207584",

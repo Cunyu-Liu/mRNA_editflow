@@ -99,7 +99,7 @@ def validate_config(config: dict[str, Any]) -> dict[str, Any]:
     ):
         _require(policy[key] is True, f"required Route 2 policy disabled: {key}")
     _require(policy["training_cuda_fallback_to_cpu_allowed"] is False, "CPU training fallback is enabled")
-    _require(policy["eligible_physical_gpu_indices"] == list(range(8)), "unexpected GPU set")
+    _require(policy["eligible_physical_gpu_indices"] == list(range(6)), "unexpected GPU set")
     for key in (
         "successor_authority_required",
         "runtime_ledger_required",
@@ -118,7 +118,12 @@ def validate_config(config: dict[str, Any]) -> dict[str, Any]:
     studies = {item["study_unit_id"]: item for item in config["study_inventory"]}
     _require(studies["GSE200304"]["canonical_records"] == 6547, "GSE200304 record count changed")
     _require(studies["GSE200304"]["qualification_class"] == "QUALIFIED_CURRENT", "GSE200304 qualification changed")
+    _require(
+        sum(studies[study]["canonical_records"] for study in EXPECTED_DEVELOPMENT) == 126165,
+        "materialized Development record count changed",
+    )
     _require(studies["GSE232572"]["canonical_records"] == 8068, "GSE232572 replay count changed")
+    _require(studies["E-MTAB-10902"]["canonical_records"] == 0, "blocked E-MTAB conversion gained records")
     _require(studies["GSE207584"]["canonical_records"] == 0, "GSE207584 gained unsupported records")
     _require(studies["GSE261709"]["canonical_records"] == 0, "GSE261709 gained unsupported records")
     _require(studies["GSE246381"]["pool"] == "SEALED_EXCLUDED", "sealed study became readable")

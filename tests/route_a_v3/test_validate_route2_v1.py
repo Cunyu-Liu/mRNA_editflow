@@ -54,7 +54,7 @@ def test_development_is_not_blocked_by_old_qualification_or_authority_workflows(
     assert policy["flow_g0_implementation_enabled"] is True
     assert policy["training_requires_nvidia_gpu"] is True
     assert policy["training_cuda_fallback_to_cpu_allowed"] is False
-    assert policy["eligible_physical_gpu_indices"] == list(range(8))
+    assert policy["eligible_physical_gpu_indices"] == list(range(6))
     assert policy["successor_authority_required"] is False
     assert policy["runtime_ledger_required"] is False
     assert policy["one_read_required"] is False
@@ -70,7 +70,13 @@ def test_evaluation_and_credit_boundaries_are_frozen() -> None:
     inventory = {item["study_unit_id"]: item for item in config["study_inventory"]}
     assert inventory["GSE232572"]["pool"] == "EVALUATION"
     assert inventory["E-MTAB-10902"]["pool"] == "EVALUATION"
+    assert inventory["E-MTAB-10902"]["canonical_records"] == 0
     assert inventory["GSE246381"]["pool"] == "SEALED_EXCLUDED"
+    assert sum(
+        row["canonical_records"]
+        for row in config["study_inventory"]
+        if row["pool"] == "DEVELOPMENT"
+    ) == 126165
     assert inventory["GSE207584"]["canonical_records"] == 0
     assert inventory["GSE261709"]["canonical_records"] == 0
     assert not any(config["credit_policy"].values())
