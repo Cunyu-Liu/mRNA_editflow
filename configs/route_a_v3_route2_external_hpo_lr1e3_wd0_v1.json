@@ -1,0 +1,19 @@
+{
+  "schema_version": "route_a_v3_route2_external_prediction_hpo.v1",
+  "result_stage": "HPO_VALIDATION_ONLY",
+  "evaluation_outcomes_accessed": false,
+  "device": "cuda:6",
+  "physical_gpu_index": 6,
+  "canonical_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE114002/v1/canonical_records.private.jsonl",
+  "development_manifest_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/manifests/route2_development_frozen_v1/development_manifest.jsonl",
+  "optimus5prime_weight_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/external_model_assets/optimus5prime/main_MRL_model.hdf5",
+  "framepool_weight_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/external_model_assets/framepool/Framepool_combined_residual.h5",
+  "rnafm_model_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/external_model_assets/rnafm",
+  "native_batch_size": 512,
+  "rnafm_batch_size": 32,
+  "seed": 20260816,
+  "rnafm_probe_epochs": 100,
+  "rnafm_probe_learning_rate": 0.001,
+  "rnafm_probe_weight_decay": 0.0,
+  "output_directory": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/external_lr1e3_wd0_v1"
+}

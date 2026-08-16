@@ -1,0 +1,142 @@
+{
+  "schema_version": "route_a_v3_route2_classical_prediction_hpo.v1",
+  "result_stage": "HPO_VALIDATION_ONLY",
+  "run_mode": "FIXED_GROUPED_SPLIT",
+  "evaluation_outcomes_accessed": false,
+  "cpu_thread_cap": 4,
+  "device": "cuda:4",
+  "physical_gpu_index": 4,
+  "minimum_free_gpu_memory_bytes": 8589934592,
+  "development_manifest_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/manifests/route2_development_frozen_v1/development_manifest.jsonl",
+  "canonical_paths": [
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE200304/v1/canonical_records.jsonl",
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE114002/v1/canonical_records.private.jsonl",
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE149487/v1/canonical_records.private.jsonl",
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE217518/v1/canonical_records.jsonl",
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/ENCSR854RUF/v1/canonical_records.private.jsonl",
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE186455/v1/canonical_records.private.jsonl",
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE256185/v1/canonical_records.private.jsonl",
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE269595/v1/canonical_records.private.jsonl"
+  ],
+  "baselines": [
+    {
+      "baseline_id": "global_mean",
+      "kind": "mean",
+      "weighting": "STUDY_THEN_SOURCE_GROUP_EQUAL",
+      "parameter_grid": {}
+    },
+    {
+      "baseline_id": "majority_sign",
+      "kind": "majority_sign",
+      "weighting": "STUDY_THEN_SOURCE_GROUP_EQUAL",
+      "parameter_grid": {}
+    },
+    {
+      "baseline_id": "context_only_mean",
+      "kind": "group_mean",
+      "group_fields": ["study_unit_id", "biological_context_id", "endpoint_id"],
+      "weighting": "STUDY_THEN_SOURCE_GROUP_EQUAL",
+      "parameter_grid": {}
+    },
+    {
+      "baseline_id": "source_group_mean",
+      "kind": "group_mean",
+      "group_fields": ["study_unit_id", "source_id", "biological_context_id", "endpoint_id"],
+      "weighting": "STUDY_THEN_SOURCE_GROUP_EQUAL",
+      "parameter_grid": {}
+    },
+    {
+      "baseline_id": "kmer_context_ridge",
+      "kind": "ridge",
+      "feature_mode": "full",
+      "weighting": "STUDY_THEN_SOURCE_GROUP_EQUAL",
+      "parameter_grid": {"alpha": [0.01, 0.1, 1.0, 10.0]}
+    },
+    {
+      "baseline_id": "source_centered_ridge",
+      "kind": "ridge",
+      "feature_mode": "source_centered",
+      "weighting": "STUDY_THEN_SOURCE_GROUP_EQUAL",
+      "parameter_grid": {"alpha": [0.01, 0.1, 1.0, 10.0]}
+    },
+    {
+      "baseline_id": "source_only_ridge",
+      "kind": "ridge",
+      "feature_mode": "source_only",
+      "weighting": "STUDY_THEN_SOURCE_GROUP_EQUAL",
+      "parameter_grid": {"alpha": [0.01, 0.1, 1.0, 10.0]}
+    },
+    {
+      "baseline_id": "candidate_only_ridge",
+      "kind": "ridge",
+      "feature_mode": "candidate_only",
+      "weighting": "STUDY_THEN_SOURCE_GROUP_EQUAL",
+      "parameter_grid": {"alpha": [0.01, 0.1, 1.0, 10.0]}
+    },
+    {
+      "baseline_id": "edit_position_only_ridge",
+      "kind": "ridge",
+      "feature_mode": "edit_position_only",
+      "weighting": "STUDY_THEN_SOURCE_GROUP_EQUAL",
+      "parameter_grid": {"alpha": [0.01, 0.1, 1.0, 10.0]}
+    },
+    {
+      "baseline_id": "ref_alt_only_ridge",
+      "kind": "ridge",
+      "feature_mode": "ref_alt_only",
+      "weighting": "STUDY_THEN_SOURCE_GROUP_EQUAL",
+      "parameter_grid": {"alpha": [0.01, 0.1, 1.0, 10.0]}
+    },
+    {
+      "baseline_id": "gc_mfe_motif_ridge",
+      "kind": "ridge",
+      "feature_mode": "gc_mfe_motif",
+      "weighting": "STUDY_THEN_SOURCE_GROUP_EQUAL",
+      "parameter_grid": {"alpha": [0.01, 0.1, 1.0, 10.0]}
+    },
+    {
+      "baseline_id": "candidate_permutation_ridge",
+      "kind": "candidate_permutation_ridge",
+      "weighting": "STUDY_THEN_SOURCE_GROUP_EQUAL",
+      "parameter_grid": {
+        "alpha": [0.01, 0.1, 1.0, 10.0],
+        "seed": [20260816]
+      }
+    },
+    {
+      "baseline_id": "edit_context_elastic_net",
+      "kind": "elastic_net",
+      "feature_mode": "full",
+      "weighting": "STUDY_THEN_SOURCE_GROUP_EQUAL",
+      "parameter_grid": {
+        "alpha": [0.001, 0.01, 0.1],
+        "l1_ratio": [0.1, 0.5, 0.9],
+        "max_iter": [2000],
+        "tolerance": [0.00001],
+        "seed": [20260816]
+      }
+    },
+    {
+      "baseline_id": "xgboost_full",
+      "kind": "xgboost",
+      "weighting": "STUDY_THEN_SOURCE_GROUP_EQUAL",
+      "parameter_grid": {
+        "n_estimators": [200, 500],
+        "max_depth": [4, 8],
+        "learning_rate": [0.03, 0.1],
+        "n_jobs": [4],
+        "seed": [20260816]
+      }
+    },
+    {
+      "baseline_id": "absolute_candidate_difference_ridge",
+      "kind": "absolute_difference_ridge",
+      "weighting": "STUDY_THEN_SOURCE_GROUP_EQUAL",
+      "parameter_grid": {
+        "alpha": [0.01, 0.1, 1.0, 10.0],
+        "minimum_complete_training_records": [100]
+      }
+    }
+  ],
+  "output_directory": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/classical_v1"
+}

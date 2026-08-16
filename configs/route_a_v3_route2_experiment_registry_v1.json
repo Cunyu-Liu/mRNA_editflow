@@ -1,0 +1,156 @@
+{
+  "schema_version": "route_a_v3_route2_experiment_registry.v1",
+  "status": "FROZEN_BEFORE_FORMAL_DEVELOPMENT_RUNS",
+  "freeze_date": "2026-08-16",
+  "data_access": {
+    "hpo_fit_split": "TRAIN",
+    "hpo_selection_split": "VALIDATION",
+    "development_test_access": "ONE_FROZEN_REFIT_AFTER_ALL_SELECTION",
+    "evaluation_access": "ZERO_SHOT_ONLY_AFTER_PREDICTOR_GENERATOR_AND_BASELINES_FROZEN",
+    "evaluation_outcomes_used_for_training_hpo_or_selection": 0
+  },
+  "seeds": {
+    "hpo_seed": 20260816,
+    "final_seeds": [20260816, 20260817, 20260818],
+    "best_seed_selection_allowed": false
+  },
+  "neural_common_budget": {
+    "epochs": 8,
+    "batch_size": 32,
+    "learning_rates": [0.0003, 0.001],
+    "weight_decay": 0.0001,
+    "num_workers": 0,
+    "training_weighting_mode": "STUDY_THEN_SOURCE_CONTEXT_ENDPOINT_GROUP",
+    "hpo_trial_count_per_architecture_profile": 2,
+    "cuda_required": true,
+    "cpu_fallback_allowed": false
+  },
+  "delta_predictor": {
+    "historical_diagnostic_reference": {
+      "parameter_count": 81794,
+      "status": "COMPLETED_NEGATIVE_NO_PREDICTIVE_SIGNAL_ESTABLISHED",
+      "checkpoint_replay_status": "CHECKPOINT_NOT_LOCATED_CURRENTLY_HISTORY_ONLY",
+      "replace_with_new_capacity_profile_allowed": false
+    },
+    "position_aware_diagnostic_profile_relation": "SAME_CAPACITY_BAND_NEW_ARCHITECTURE_NOT_EXACT_HISTORICAL_REPLICATION",
+    "capacity_profile_ids": ["DIAGNOSTIC_0_08M", "MEDIUM_0_5M", "MAIN_2M"],
+    "primary_loss": "huber",
+    "huber_delta": 1.0,
+    "primary_metadata_mode": "FULL_CONTEXT",
+    "primary_study_scope": "ALL_NONEMPTY_DEVELOPMENT_STUDIES",
+    "ablations": [
+      "MAIN_2M_SEQUENCE_AND_REGION_ONLY",
+      "MAIN_2M_SOURCE_GROUP_WEIGHTING_WITHOUT_STUDY_BALANCE",
+      "MAIN_2M_GSE200304_ONLY",
+      "MAIN_2M_HUBER_PLUS_PAIRWISE",
+      "MAIN_2M_HUBER_PLUS_LISTWISE"
+    ],
+    "ranking_loss_weight": 1.0
+  },
+  "architecture_controlled_neural_baselines": {
+    "capacity_profile_ids": ["MEDIUM_0_5M", "MAIN_2M"],
+    "model_kinds": ["candidate_cnn", "siamese_cnn", "full_pair_cnn", "small_transformer"],
+    "use_neural_common_budget": true
+  },
+  "classical_baselines": {
+    "cpu_thread_cap": 4,
+    "fit_and_prediction_cuda_required": true,
+    "training_weighting_mode": "STUDY_THEN_SOURCE_GROUP_EQUAL",
+    "mandatory_models": [
+      "kmer_context_ridge",
+      "source_centered_ridge",
+      "edit_context_elastic_net",
+      "xgboost_full",
+      "absolute_candidate_difference_ridge",
+      "gc_mfe_motif_ridge"
+    ],
+    "controls": [
+      "global_mean",
+      "majority_sign",
+      "context_only_mean",
+      "source_group_mean",
+      "source_only_ridge",
+      "candidate_only_ridge",
+      "edit_position_only_ridge",
+      "ref_alt_only_ridge",
+      "candidate_permutation_ridge"
+    ],
+    "ridge_alphas": [0.01, 0.1, 1.0, 10.0],
+    "elastic_net": {
+      "alphas": [0.001, 0.01, 0.1],
+      "l1_ratios": [0.1, 0.5, 0.9],
+      "max_iter": 2000,
+      "tolerance": 1e-05
+    },
+    "xgboost": {
+      "n_estimators": [200, 500],
+      "max_depth": [4, 8],
+      "learning_rates": [0.03, 0.1],
+      "n_jobs": 4
+    },
+    "absolute_difference_ridge_alphas": [0.01, 0.1, 1.0, 10.0]
+  },
+  "external_baselines": {
+    "native_frozen": ["optimus5prime", "framepool", "aparent_official_base_cut_window"],
+    "frozen_encoder_linear_probes": [
+      "multimolecule_rnafm_frozen_linear_probe",
+      "utrlm_siss_frozen_bos_linear_probe"
+    ],
+    "probe_epochs": 100,
+    "probe_learning_rates": [0.0003, 0.001],
+    "probe_weight_decays": [0.0, 0.0001],
+    "pretrained_parameters_frozen": true,
+    "tensorflow_numeric_parity_status": "NOT_RUN_TENSORFLOW_UNAVAILABLE"
+  },
+  "loso": {
+    "expected_nonempty_development_study_count": 7,
+    "zero_record_development_studies": ["GSE256185"],
+    "final_seed_count": 3,
+    "hyperparameters_refrozen_from_development_validation": true,
+    "held_out_study_used_for_selection": false,
+    "primary_metric": "TASK_MACRO_SPEARMAN_REGION_ENDPOINT"
+  },
+  "generation": {
+    "edit_budgets": [1, 3, 5],
+    "candidate_budget": 32,
+    "critic_forward_equivalent_budget": 256,
+    "beam_width": 16,
+    "genetic_population_size": 32,
+    "exhaustive_maximum_legal_space": 4096,
+    "methods": [
+      "random_legal",
+      "exhaustive",
+      "greedy",
+      "beam",
+      "genetic",
+      "local_search",
+      "generate_then_rerank"
+    ],
+    "matched_source_action_edit_candidate_and_forward_budgets": true
+  },
+  "base_flow_g0": {
+    "hidden_dim": 128,
+    "epochs": 10,
+    "batch_size": 32,
+    "learning_rate": 0.0003,
+    "weight_decay": 0.0001,
+    "seed": 20260816,
+    "allowed_edit_budgets": [1, 3, 5],
+    "guided_critic_used": false,
+    "cuda_required": true,
+    "cpu_fallback_allowed": false
+  },
+  "selection": {
+    "primary_prediction_metric": "DEVELOPMENT_VALIDATION_TASK_MACRO_SPEARMAN",
+    "prediction_tie_policy": "BOOTSTRAP_EQUIVALENT_CHOOSE_FEWER_PARAMETERS",
+    "unseen_endpoint_policy": "EXACT_TASK_ELSE_COMPLETE_COVERAGE_REGION_ELSE_COMPLETE_COVERAGE_GLOBAL",
+    "primary_generation_metric": "MEASURED_NEIGHBORHOOD_SOURCE_MACRO_NDCG",
+    "development_test_reselection_allowed": false,
+    "evaluation_reselection_allowed": false
+  },
+  "guided_generation": {
+    "required_readiness_states": ["CRITIC_READY_FOR_GUIDANCE", "FLOW_G0_READY"],
+    "start_before_both_ready_allowed": false
+  },
+  "scientific_claim_status": "NOT_ESTABLISHED"
+}

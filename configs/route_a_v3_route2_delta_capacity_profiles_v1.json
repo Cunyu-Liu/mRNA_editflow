@@ -1,0 +1,64 @@
+{
+  "schema_version": "route_a_v3_route2_delta_capacity_profiles.v1",
+  "status": "DEVELOPMENT_FULL_CONTEXT_CAPACITY_PROFILES_FROZEN",
+  "development_geometry": {
+    "record_count": 126165,
+    "evaluation_records_read": 0,
+    "vocabulary_sizes_including_unknown": {
+      "study_count": 8,
+      "assay_count": 8,
+      "context_count": 29,
+      "endpoint_count": 9,
+      "region_count": 2
+    },
+    "sequence_length": {
+      "minimum": 46,
+      "median": 133,
+      "p95": 201,
+      "maximum": 1874,
+      "configured_maximum": 2048
+    }
+  },
+  "profiles": [
+    {
+      "profile_id": "DIAGNOSTIC_0_08M",
+      "target_parameter_count": 80000,
+      "hidden_dim": 65,
+      "depth": 2,
+      "actual_parameter_count": 80139
+    },
+    {
+      "profile_id": "MEDIUM_0_5M",
+      "target_parameter_count": 500000,
+      "hidden_dim": 113,
+      "depth": 7,
+      "actual_parameter_count": 499906
+    },
+    {
+      "profile_id": "MAIN_2M",
+      "target_parameter_count": 2000000,
+      "hidden_dim": 184,
+      "depth": 12,
+      "actual_parameter_count": 2001185
+    }
+  ],
+  "architecture_controlled_neural_baseline_profiles": {
+    "target_band_relative_tolerance": 0.035,
+    "MEDIUM_0_5M": [
+      {"model_kind": "candidate_cnn", "target_parameter_count": 500000, "hidden_dim": 119, "depth": 7, "actual_parameter_count": 509153},
+      {"model_kind": "siamese_cnn", "target_parameter_count": 500000, "hidden_dim": 103, "depth": 7, "actual_parameter_count": 509905},
+      {"model_kind": "full_pair_cnn", "target_parameter_count": 500000, "hidden_dim": 87, "depth": 7, "actual_parameter_count": 515775},
+      {"model_kind": "small_transformer", "target_parameter_count": 500000, "hidden_dim": 60, "depth": 7, "actual_parameter_count": 500673}
+    ],
+    "MAIN_2M": [
+      {"model_kind": "candidate_cnn", "target_parameter_count": 2000000, "hidden_dim": 190, "depth": 12, "actual_parameter_count": 2021179},
+      {"model_kind": "siamese_cnn", "target_parameter_count": 2000000, "hidden_dim": 173, "depth": 12, "actual_parameter_count": 2037214},
+      {"model_kind": "full_pair_cnn", "target_parameter_count": 2000000, "hidden_dim": 137, "depth": 12, "actual_parameter_count": 2032937},
+      {"model_kind": "small_transformer", "target_parameter_count": 2000000, "hidden_dim": 104, "depth": 12, "actual_parameter_count": 1996593}
+    ]
+  },
+  "architecture": "delta_anchored_position_aware_antisymmetric",
+  "metadata_mode": "FULL_CONTEXT",
+  "training_weighting_mode": "STUDY_THEN_SOURCE_CONTEXT_ENDPOINT_GROUP",
+  "scientific_claim_status": "NOT_ESTABLISHED"
+}
