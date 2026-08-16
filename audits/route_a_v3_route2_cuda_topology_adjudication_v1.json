@@ -1,7 +1,7 @@
 {
   "schema_version": "route_a_v3_route2_cuda_topology_adjudication.v1",
   "observed_at": "2026-08-16",
-  "status": "TWO_HPO_RUNS_EXCLUDED_AND_REPLAY_REQUIRED",
+  "status": "TWO_HPO_RUNS_EXCLUDED_AND_REPLAY_COMPLETED",
   "cause": "PYTORCH_CUDA_LOGICAL_INDEX_7_IS_A_MIG_INSTANCE_ON_PHYSICAL_GPU_6_NOT_PHYSICAL_GPU_7",
   "cuda_visible_devices": null,
   "observed_topology": {
@@ -30,6 +30,17 @@
     "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/external_lr1e3_wd1e4_replay_gpu5_v1",
     "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/utrlm_lr1e3_wd1e4_replay_gpu5_v1"
   ],
+  "replacement_execution": {
+    "physical_gpu_index": 5,
+    "physical_gpu_uuid": "347d7935-3bea-a371-8e23-d97da06b3b47",
+    "physical_identity_match": true,
+    "cpu_fallback_used": false,
+    "external_cuda_training_tensors_verified": true,
+    "external_peak_vram_mb": 492.9248046875,
+    "utrlm_peak_vram_mb": 179.591796875,
+    "utrlm_validation_spearman": 0.1107267878538859,
+    "utrlm_validation_mae": 0.4483427366649748
+  },
   "evaluation_outcomes_accessed": false,
   "original_artifacts_deleted_or_modified": false,
   "scientific_claim_status": "NOT_ESTABLISHED"
