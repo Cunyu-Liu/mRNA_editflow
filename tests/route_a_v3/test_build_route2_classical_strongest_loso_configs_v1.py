@@ -34,16 +34,18 @@ def test_builder_freezes_only_selected_classical_winners() -> None:
         "canonical_paths": ["/canonical.jsonl"],
         "baselines": baselines,
     }
-    config = module.build_config(base, "GSE269595", 2)
+    config = module.build_config(base, "GSE149487", 2)
     assert config["run_mode"] == config["result_stage"] == "LOSO_FROZEN_PARAMETERS"
     assert config["device"] == "cuda:2"
     assert config["physical_gpu_index"] == 2
     assert config["evaluation_outcomes_accessed"] is False
+    expected = module.CLASSICAL_WINNERS_BY_STUDY["GSE149487"]
     assert {row["baseline_id"] for row in config["baselines"]} == {
-        f"classical_{baseline_id}" for baseline_id in module.FROZEN_PARAMETERS
+        f"classical_{baseline_id}" for baseline_id in expected
     }
     assert all("parameter_grid" not in row for row in config["baselines"])
     assert {row["baseline_id"]: row["frozen_parameters"] for row in config["baselines"]} == {
         f"classical_{baseline_id}": parameters
         for baseline_id, parameters in module.FROZEN_PARAMETERS.items()
+        if baseline_id in expected
     }

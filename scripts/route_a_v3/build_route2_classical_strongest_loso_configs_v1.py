@@ -15,12 +15,10 @@ class ClassicalLosoConfigError(RuntimeError):
 
 STUDY_GPU = {
     "GSE200304": 0,
-    "GSE114002": 1,
     "GSE149487": 2,
     "GSE217518": 3,
     "ENCSR854RUF": 4,
     "GSE186455": 5,
-    "GSE269595": 2,
 }
 
 FROZEN_PARAMETERS = {
@@ -28,6 +26,14 @@ FROZEN_PARAMETERS = {
     "gc_mfe_motif_ridge": {"alpha": 0.01},
     "edit_position_only_ridge": {"alpha": 1.0},
     "ref_alt_only_ridge": {"alpha": 1.0},
+}
+
+CLASSICAL_WINNERS_BY_STUDY = {
+    "GSE200304": ("gc_mfe_motif_ridge",),
+    "GSE149487": ("edit_position_only_ridge", "ref_alt_only_ridge"),
+    "GSE217518": ("context_only_mean",),
+    "ENCSR854RUF": ("context_only_mean",),
+    "GSE186455": ("context_only_mean",),
 }
 
 
@@ -41,9 +47,11 @@ def build_config(base: Mapping[str, Any], study: str, gpu_index: int) -> dict[st
     _require(gpu_index == STUDY_GPU[study], f"GPU mapping changed for {study}")
     _require(base["evaluation_outcomes_accessed"] is False, "base config accessed Evaluation")
     specs = {str(row["baseline_id"]): dict(row) for row in base["baselines"]}
-    _require(set(FROZEN_PARAMETERS) <= set(specs), "selected classical baseline is absent")
+    required = CLASSICAL_WINNERS_BY_STUDY[study]
+    _require(set(required) <= set(specs), "selected classical baseline is absent")
     baselines = []
-    for baseline_id, parameters in FROZEN_PARAMETERS.items():
+    for baseline_id in required:
+        parameters = FROZEN_PARAMETERS[baseline_id]
         spec = specs[baseline_id]
         spec.pop("parameter_grid", None)
         spec["baseline_id"] = f"classical_{baseline_id}"
@@ -75,6 +83,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--base-config", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
+    parser.add_argument("--replace-generated", action="store_true")
     args = parser.parse_args()
     base = json.loads(args.base_config.read_text(encoding="utf-8"))
     args.output_dir.mkdir(parents=True, exist_ok=True)
@@ -83,7 +92,7 @@ def main() -> int:
         path = args.output_dir / (
             f"route_a_v3_route2_classical_strongest_loso_{study.lower()}_gpu{gpu_index}_v1.json"
         )
-        _require(not path.exists(), f"output config already exists: {path}")
+        _require(args.replace_generated or not path.exists(), f"output config already exists: {path}")
         path.write_text(
             json.dumps(build_config(base, study, gpu_index), indent=2, sort_keys=True) + "\n",
             encoding="utf-8",

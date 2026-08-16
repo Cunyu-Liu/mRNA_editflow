@@ -1,39 +1,10 @@
 {
   "baselines": [
     {
-      "baseline_id": "classical_context_only_mean",
-      "frozen_parameters": {},
-      "group_fields": [
-        "study_unit_id",
-        "biological_context_id",
-        "endpoint_id"
-      ],
-      "kind": "group_mean",
-      "weighting": "STUDY_THEN_SOURCE_GROUP_EQUAL"
-    },
-    {
       "baseline_id": "classical_gc_mfe_motif_ridge",
       "feature_mode": "gc_mfe_motif",
       "frozen_parameters": {
         "alpha": 0.01
-      },
-      "kind": "ridge",
-      "weighting": "STUDY_THEN_SOURCE_GROUP_EQUAL"
-    },
-    {
-      "baseline_id": "classical_edit_position_only_ridge",
-      "feature_mode": "edit_position_only",
-      "frozen_parameters": {
-        "alpha": 1.0
-      },
-      "kind": "ridge",
-      "weighting": "STUDY_THEN_SOURCE_GROUP_EQUAL"
-    },
-    {
-      "baseline_id": "classical_ref_alt_only_ridge",
-      "feature_mode": "ref_alt_only",
-      "frozen_parameters": {
-        "alpha": 1.0
       },
       "kind": "ridge",
       "weighting": "STUDY_THEN_SOURCE_GROUP_EQUAL"
