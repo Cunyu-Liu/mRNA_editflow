@@ -1,0 +1,65 @@
+{
+  "schema_version": "route_a_v3_route2_classical_elastic_recovery_audit.v1",
+  "status": "MANDATORY_ELASTIC_NET_RECOVERED_ON_DEVELOPMENT_VALIDATION",
+  "evaluation_outcomes_accessed": false,
+  "development_test_outcomes_accessed": false,
+  "original_run": {
+    "path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/classical_v1",
+    "elastic_net_status": "NOT_RUN",
+    "failed_trial_count": 9,
+    "reason": "CUDA elastic net did not converge within 2000 iterations"
+  },
+  "recovery_attempts": [
+    {
+      "path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/classical_elastic_recovery_v1",
+      "status": "LAUNCH_FAILED_BEFORE_GPU_EXECUTION",
+      "reason": "launcher pre-created an output directory that the fail-closed entrypoint required not to exist"
+    },
+    {
+      "path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/classical_elastic_recovery_replay_v1",
+      "status": "NO_TRIAL_CONVERGED",
+      "failed_trial_count": 9,
+      "reason": "the original accelerated stopping rule still failed within 10000 iterations"
+    }
+  ],
+  "solver_repair": {
+    "source_commit": "781ccf1b4db898b32e644bdb3ac40689c48a1c28",
+    "optimizer": "CUDA_FISTA_WITH_ADAPTIVE_RESTART",
+    "stopping_rule": "NORMALIZED_PROXIMAL_FIXED_POINT_RESIDUAL",
+    "tolerance": 0.0001,
+    "maximum_iterations": 10000,
+    "unconverged_trials_are_rejected": true
+  },
+  "successful_replay": {
+    "path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/classical_elastic_recovery_replay_v2",
+    "status": "COMPLETED_DEVELOPMENT_VALIDATION_ONLY",
+    "training_record_count": 89580,
+    "development_test_record_count_withheld": 18292,
+    "hpo_trial_count": 9,
+    "completed_trial_count": 9,
+    "selected_parameters": {
+      "alpha": 0.1,
+      "l1_ratio": 0.9,
+      "max_iter": 10000,
+      "seed": 20260816,
+      "tolerance": 0.0001
+    },
+    "selected_model_completed_iterations": 175,
+    "selected_model_normalized_fixed_point_residual": 0.000089974571892526,
+    "selected_validation_task_macro_spearman": 0.013215073462355221,
+    "selected_validation_pooled_spearman": 0.04244417409221418,
+    "selected_validation_mae": 130.9277929384438,
+    "execution_provenance": {
+      "device": "cuda:4",
+      "physical_gpu_index": 4,
+      "cuda_device_uuid": "d7c96455-f897-7e6d-933a-d90dafd6bc3a",
+      "cuda_parent_uuid_matches_declared_physical_index": true,
+      "cpu_fallback_used": false,
+      "parameter_fit_execution": "CUDA",
+      "prediction_execution": "CUDA",
+      "peak_cuda_memory_bytes": 371380736
+    }
+  },
+  "scientific_claim_status": "NOT_ESTABLISHED",
+  "interpretation": "The mandatory baseline is executable and converged, but its Development-validation task-macro result is weak and does not establish a predictive advantage."
+}
