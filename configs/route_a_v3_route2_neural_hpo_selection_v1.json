@@ -1,0 +1,162 @@
+{
+  "schema_version": "route_a_v3_route2_neural_hpo_selection_config.v1",
+  "selection_pool": "DEVELOPMENT_VALIDATION",
+  "evaluation_outcomes_accessed": false,
+  "expected_trials_per_profile": 2,
+  "trials": [
+    {
+      "trial_id": "delta_diagnostic_0_08m_lr3e4_v1",
+      "profile_id": "DELTA_DIAGNOSTIC_0_08M",
+      "training_summary_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/delta_diagnostic_0_08m_lr3e4_v1/training_summary.json",
+      "validation_evaluation_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/delta_diagnostic_0_08m_lr3e4_v1/validation_evaluation.json",
+      "training_config_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/delta_diagnostic_0_08m_lr3e4_v1/training_config.json"
+    },
+    {
+      "trial_id": "delta_diagnostic_0_08m_lr1e3_v1",
+      "profile_id": "DELTA_DIAGNOSTIC_0_08M",
+      "training_summary_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/delta_diagnostic_0_08m_lr1e3_v1/training_summary.json",
+      "validation_evaluation_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/delta_diagnostic_0_08m_lr1e3_v1/validation_evaluation.json",
+      "training_config_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/delta_diagnostic_0_08m_lr1e3_v1/training_config.json"
+    },
+    {
+      "trial_id": "delta_medium_0_5m_lr3e4_v1",
+      "profile_id": "DELTA_MEDIUM_0_5M",
+      "training_summary_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/delta_medium_0_5m_lr3e4_v1/training_summary.json",
+      "validation_evaluation_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/delta_medium_0_5m_lr3e4_v1/validation_evaluation.json",
+      "training_config_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/delta_medium_0_5m_lr3e4_v1/training_config.json"
+    },
+    {
+      "trial_id": "delta_medium_0_5m_lr1e3_v1",
+      "profile_id": "DELTA_MEDIUM_0_5M",
+      "training_summary_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/delta_medium_0_5m_lr1e3_v1/training_summary.json",
+      "validation_evaluation_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/delta_medium_0_5m_lr1e3_v1/validation_evaluation.json",
+      "training_config_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/delta_medium_0_5m_lr1e3_v1/training_config.json"
+    },
+    {
+      "trial_id": "delta_main_2m_lr3e4_v1",
+      "profile_id": "DELTA_MAIN_2M",
+      "training_summary_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/delta_main_2m_lr3e4_v1/training_summary.json",
+      "validation_evaluation_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/delta_main_2m_lr3e4_v1/validation_evaluation.json",
+      "training_config_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/delta_main_2m_lr3e4_v1/training_config.json"
+    },
+    {
+      "trial_id": "delta_main_2m_lr1e3_v1",
+      "profile_id": "DELTA_MAIN_2M",
+      "training_summary_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/delta_main_2m_lr1e3_v1/training_summary.json",
+      "validation_evaluation_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/delta_main_2m_lr1e3_v1/validation_evaluation.json",
+      "training_config_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/delta_main_2m_lr1e3_v1/training_config.json"
+    },
+    {
+      "trial_id": "neural_medium_0_5m_candidate_cnn_lr3e4_v1",
+      "profile_id": "NEURAL_MEDIUM_0_5M_CANDIDATE_CNN",
+      "training_summary_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_medium_0_5m_candidate_cnn_lr3e4_v1/training_summary.json",
+      "validation_evaluation_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_medium_0_5m_candidate_cnn_lr3e4_v1/validation_evaluation.json",
+      "training_config_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_medium_0_5m_candidate_cnn_lr3e4_v1/training_config.json"
+    },
+    {
+      "trial_id": "neural_medium_0_5m_candidate_cnn_lr1e3_v1",
+      "profile_id": "NEURAL_MEDIUM_0_5M_CANDIDATE_CNN",
+      "training_summary_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_medium_0_5m_candidate_cnn_lr1e3_v1/training_summary.json",
+      "validation_evaluation_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_medium_0_5m_candidate_cnn_lr1e3_v1/validation_evaluation.json",
+      "training_config_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_medium_0_5m_candidate_cnn_lr1e3_v1/training_config.json"
+    },
+    {
+      "trial_id": "neural_medium_0_5m_siamese_cnn_lr3e4_v1",
+      "profile_id": "NEURAL_MEDIUM_0_5M_SIAMESE_CNN",
+      "training_summary_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_medium_0_5m_siamese_cnn_lr3e4_v1/training_summary.json",
+      "validation_evaluation_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_medium_0_5m_siamese_cnn_lr3e4_v1/validation_evaluation.json",
+      "training_config_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_medium_0_5m_siamese_cnn_lr3e4_v1/training_config.json"
+    },
+    {
+      "trial_id": "neural_medium_0_5m_siamese_cnn_lr1e3_v1",
+      "profile_id": "NEURAL_MEDIUM_0_5M_SIAMESE_CNN",
+      "training_summary_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_medium_0_5m_siamese_cnn_lr1e3_v1/training_summary.json",
+      "validation_evaluation_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_medium_0_5m_siamese_cnn_lr1e3_v1/validation_evaluation.json",
+      "training_config_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_medium_0_5m_siamese_cnn_lr1e3_v1/training_config.json"
+    },
+    {
+      "trial_id": "neural_medium_0_5m_full_pair_cnn_lr3e4_v1",
+      "profile_id": "NEURAL_MEDIUM_0_5M_FULL_PAIR_CNN",
+      "training_summary_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_medium_0_5m_full_pair_cnn_lr3e4_v1/training_summary.json",
+      "validation_evaluation_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_medium_0_5m_full_pair_cnn_lr3e4_v1/validation_evaluation.json",
+      "training_config_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_medium_0_5m_full_pair_cnn_lr3e4_v1/training_config.json"
+    },
+    {
+      "trial_id": "neural_medium_0_5m_full_pair_cnn_lr1e3_v1",
+      "profile_id": "NEURAL_MEDIUM_0_5M_FULL_PAIR_CNN",
+      "training_summary_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_medium_0_5m_full_pair_cnn_lr1e3_v1/training_summary.json",
+      "validation_evaluation_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_medium_0_5m_full_pair_cnn_lr1e3_v1/validation_evaluation.json",
+      "training_config_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_medium_0_5m_full_pair_cnn_lr1e3_v1/training_config.json"
+    },
+    {
+      "trial_id": "neural_medium_0_5m_small_transformer_lr3e4_v1",
+      "profile_id": "NEURAL_MEDIUM_0_5M_SMALL_TRANSFORMER",
+      "training_summary_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_medium_0_5m_small_transformer_lr3e4_v1/training_summary.json",
+      "validation_evaluation_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_medium_0_5m_small_transformer_lr3e4_v1/validation_evaluation.json",
+      "training_config_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_medium_0_5m_small_transformer_lr3e4_v1/training_config.json"
+    },
+    {
+      "trial_id": "neural_medium_0_5m_small_transformer_lr1e3_v1",
+      "profile_id": "NEURAL_MEDIUM_0_5M_SMALL_TRANSFORMER",
+      "training_summary_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_medium_0_5m_small_transformer_lr1e3_v1/training_summary.json",
+      "validation_evaluation_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_medium_0_5m_small_transformer_lr1e3_v1/validation_evaluation.json",
+      "training_config_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_medium_0_5m_small_transformer_lr1e3_v1/training_config.json"
+    },
+    {
+      "trial_id": "neural_main_2m_candidate_cnn_lr3e4_v1",
+      "profile_id": "NEURAL_MAIN_2M_CANDIDATE_CNN",
+      "training_summary_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_main_2m_candidate_cnn_lr3e4_v1/training_summary.json",
+      "validation_evaluation_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_main_2m_candidate_cnn_lr3e4_v1/validation_evaluation.json",
+      "training_config_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_main_2m_candidate_cnn_lr3e4_v1/training_config.json"
+    },
+    {
+      "trial_id": "neural_main_2m_candidate_cnn_lr1e3_v1",
+      "profile_id": "NEURAL_MAIN_2M_CANDIDATE_CNN",
+      "training_summary_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_main_2m_candidate_cnn_lr1e3_v1/training_summary.json",
+      "validation_evaluation_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_main_2m_candidate_cnn_lr1e3_v1/validation_evaluation.json",
+      "training_config_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_main_2m_candidate_cnn_lr1e3_v1/training_config.json"
+    },
+    {
+      "trial_id": "neural_main_2m_siamese_cnn_lr3e4_v1",
+      "profile_id": "NEURAL_MAIN_2M_SIAMESE_CNN",
+      "training_summary_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_main_2m_siamese_cnn_lr3e4_v1/training_summary.json",
+      "validation_evaluation_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_main_2m_siamese_cnn_lr3e4_v1/validation_evaluation.json",
+      "training_config_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_main_2m_siamese_cnn_lr3e4_v1/training_config.json"
+    },
+    {
+      "trial_id": "neural_main_2m_siamese_cnn_lr1e3_v1",
+      "profile_id": "NEURAL_MAIN_2M_SIAMESE_CNN",
+      "training_summary_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_main_2m_siamese_cnn_lr1e3_v1/training_summary.json",
+      "validation_evaluation_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_main_2m_siamese_cnn_lr1e3_v1/validation_evaluation.json",
+      "training_config_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_main_2m_siamese_cnn_lr1e3_v1/training_config.json"
+    },
+    {
+      "trial_id": "neural_main_2m_full_pair_cnn_lr3e4_v1",
+      "profile_id": "NEURAL_MAIN_2M_FULL_PAIR_CNN",
+      "training_summary_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_main_2m_full_pair_cnn_lr3e4_v1/training_summary.json",
+      "validation_evaluation_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_main_2m_full_pair_cnn_lr3e4_v1/validation_evaluation.json",
+      "training_config_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_main_2m_full_pair_cnn_lr3e4_v1/training_config.json"
+    },
+    {
+      "trial_id": "neural_main_2m_full_pair_cnn_lr1e3_v1",
+      "profile_id": "NEURAL_MAIN_2M_FULL_PAIR_CNN",
+      "training_summary_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_main_2m_full_pair_cnn_lr1e3_v1/training_summary.json",
+      "validation_evaluation_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_main_2m_full_pair_cnn_lr1e3_v1/validation_evaluation.json",
+      "training_config_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_main_2m_full_pair_cnn_lr1e3_v1/training_config.json"
+    },
+    {
+      "trial_id": "neural_main_2m_small_transformer_lr3e4_v1",
+      "profile_id": "NEURAL_MAIN_2M_SMALL_TRANSFORMER",
+      "training_summary_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_main_2m_small_transformer_lr3e4_v1/training_summary.json",
+      "validation_evaluation_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_main_2m_small_transformer_lr3e4_v1/validation_evaluation.json",
+      "training_config_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_main_2m_small_transformer_lr3e4_v1/training_config.json"
+    },
+    {
+      "trial_id": "neural_main_2m_small_transformer_lr1e3_v1",
+      "profile_id": "NEURAL_MAIN_2M_SMALL_TRANSFORMER",
+      "training_summary_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_main_2m_small_transformer_lr1e3_v1/training_summary.json",
+      "validation_evaluation_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_main_2m_small_transformer_lr1e3_v1/validation_evaluation.json",
+      "training_config_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_main_2m_small_transformer_lr1e3_v1/training_config.json"
+    }
+  ]
+}
