@@ -1,0 +1,64 @@
+{
+  "baselines": [
+    {
+      "baseline_id": "classical_context_only_mean",
+      "frozen_parameters": {},
+      "group_fields": [
+        "study_unit_id",
+        "biological_context_id",
+        "endpoint_id"
+      ],
+      "kind": "group_mean",
+      "weighting": "STUDY_THEN_SOURCE_GROUP_EQUAL"
+    },
+    {
+      "baseline_id": "classical_gc_mfe_motif_ridge",
+      "feature_mode": "gc_mfe_motif",
+      "frozen_parameters": {
+        "alpha": 0.01
+      },
+      "kind": "ridge",
+      "weighting": "STUDY_THEN_SOURCE_GROUP_EQUAL"
+    },
+    {
+      "baseline_id": "classical_edit_position_only_ridge",
+      "feature_mode": "edit_position_only",
+      "frozen_parameters": {
+        "alpha": 1.0
+      },
+      "kind": "ridge",
+      "weighting": "STUDY_THEN_SOURCE_GROUP_EQUAL"
+    },
+    {
+      "baseline_id": "classical_ref_alt_only_ridge",
+      "feature_mode": "ref_alt_only",
+      "frozen_parameters": {
+        "alpha": 1.0
+      },
+      "kind": "ridge",
+      "weighting": "STUDY_THEN_SOURCE_GROUP_EQUAL"
+    }
+  ],
+  "canonical_paths": [
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE200304/v1/canonical_records.jsonl",
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE114002/v1/canonical_records.private.jsonl",
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE149487/v1/canonical_records.private.jsonl",
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE217518/v1/canonical_records.jsonl",
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/ENCSR854RUF/v1/canonical_records.private.jsonl",
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE186455/v1/canonical_records.private.jsonl",
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE256185/v1/canonical_records.private.jsonl",
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE269595/v1/canonical_records.private.jsonl"
+  ],
+  "cpu_thread_cap": 4,
+  "development_manifest_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/manifests/route2_development_frozen_v1/development_manifest.jsonl",
+  "device": "cuda:2",
+  "evaluation_outcomes_accessed": false,
+  "loso_holdout_study_unit_id": "GSE149487",
+  "minimum_free_gpu_memory_bytes": 8589934592,
+  "output_directory": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_loso_baselines/classical_strongest_gse149487_gpu2_v1",
+  "physical_gpu_index": 2,
+  "result_stage": "LOSO_FROZEN_PARAMETERS",
+  "run_mode": "LOSO_FROZEN_PARAMETERS",
+  "schema_version": "route_a_v3_route2_classical_prediction_hpo.v1",
+  "seed": 20260816
+}
