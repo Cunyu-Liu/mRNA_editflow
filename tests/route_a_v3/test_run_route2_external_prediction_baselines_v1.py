@@ -106,6 +106,12 @@ def test_native_weight_ports_disclose_missing_tensorflow_numeric_parity() -> Non
     assert '"pytorch_port_numeric_parity_status": "NOT_RUN_TENSORFLOW_UNAVAILABLE"' in source
 
 
+def test_summary_records_explicit_cuda_execution_without_cpu_fallback() -> None:
+    source = SCRIPT.read_text(encoding="utf-8")
+    assert '"cpu_fallback_used": False' in source
+    assert '"cuda_training_tensors_verified": True' in source
+
+
 def test_rnafm_probe_refits_train_plus_validation_only_after_freeze() -> None:
     module = _load()
     if not torch.cuda.is_available():

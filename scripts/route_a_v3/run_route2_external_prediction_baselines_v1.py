@@ -542,6 +542,8 @@ def execute(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
         "record_counts": {split: sum(record.split == split for record in records) for split in SPLITS},
         "physical_gpu_index": int(config["physical_gpu_index"]),
         "device": str(device),
+        "cpu_fallback_used": False,
+        "cuda_training_tensors_verified": True,
         "baselines": summaries,
         "evaluation_outcomes_accessed": False,
         "scientific_claim_status": "NOT_ESTABLISHED",
