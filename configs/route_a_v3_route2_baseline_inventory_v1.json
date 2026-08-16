@@ -1,51 +1,66 @@
 {
   "schema_version": "route_a_v3_route2_baseline_inventory.v1",
-  "status": "IMPLEMENTATION_INVENTORY_BEFORE_FORMAL_DEVELOPMENT_RUNS",
+  "status": "DEVELOPMENT_BASELINE_RESULTS_PARTIALLY_COMPLETED",
   "prediction_common_task_adapters": [
     {
       "model_id": "Optimus5Prime",
       "task": "GSE114002|5UTR|MEAN_RIBOSOME_LOAD",
-      "common_task_status": "IMPLEMENTED_GPU_RUN_PENDING_FROZEN_MANIFEST",
+      "common_task_status": "COMPLETED_DEVELOPMENT_VALIDATION_GPU",
       "prediction_transform": "f(candidate)-f(source)",
       "native_track_status": "OFFICIAL_REPOSITORY_WEIGHT_PORT_PARITY_PENDING",
       "artifact_provenance_id": "optimus5prime_official_d53df410",
-      "independent_external_transfer_claim_allowed": false
+      "independent_external_transfer_claim_allowed": false,
+      "development_result_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/external_lr1e3_wd1e4_replay_gpu5_v1/optimus5prime/validation_evaluation.json"
     },
     {
       "model_id": "FramePool",
       "task": "GSE114002|5UTR|MEAN_RIBOSOME_LOAD",
-      "common_task_status": "IMPLEMENTED_GPU_RUN_PENDING_FROZEN_MANIFEST",
+      "common_task_status": "COMPLETED_DEVELOPMENT_VALIDATION_GPU",
       "prediction_transform": "f(candidate)-f(source)",
       "native_track_status": "OFFICIAL_REPOSITORY_WEIGHT_PORT_PARITY_PENDING",
       "artifact_provenance_id": "framepool_official_c575f9cd",
-      "independent_external_transfer_claim_allowed": false
+      "independent_external_transfer_claim_allowed": false,
+      "development_result_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/external_lr1e3_wd1e4_replay_gpu5_v1/framepool/validation_evaluation.json"
     },
     {
       "model_id": "RNA-FM_MULTI_MOLECULE_CONVERSION",
       "task": "GSE114002|5UTR|MEAN_RIBOSOME_LOAD",
-      "common_task_status": "IMPLEMENTED_FROZEN_ENCODER_GPU_PROBE_PENDING_FROZEN_MANIFEST",
+      "common_task_status": "COMPLETED_DEVELOPMENT_VALIDATION_GPU",
       "prediction_transform": "linear(candidate_embedding-source_embedding)",
       "native_track_status": "UNOFFICIAL_MULTIMOLECULE_CONVERSION_GPU_LOAD_SMOKE_ONLY",
       "artifact_provenance_id": "multimolecule_rnafm_7d6e73ad",
-      "independent_external_transfer_claim_allowed": false
+      "independent_external_transfer_claim_allowed": false,
+      "development_result_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/external_lr1e3_wd1e4_replay_gpu5_v1/multimolecule_rnafm_frozen_linear_probe/validation_evaluation.json"
     },
     {
       "model_id": "UTR-LM",
       "task": "GSE114002|5UTR|MEAN_RIBOSOME_LOAD",
-      "common_task_status": "IMPLEMENTED_FROZEN_ENCODER_GPU_PROBE_PENDING_FROZEN_MANIFEST",
+      "common_task_status": "COMPLETED_DEVELOPMENT_VALIDATION_GPU",
       "prediction_transform": "linear(BOS(candidate)-BOS(source))",
       "native_track_status": "OFFICIAL_STRICT_CHECKPOINT_GPU_SMOKE_ONLY",
       "artifact_provenance_id": "utrlm_official_b77b589b",
-      "independent_external_transfer_claim_allowed": false
+      "independent_external_transfer_claim_allowed": false,
+      "development_result_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/utrlm_lr1e3_wd1e4_replay_gpu5_v1/validation_evaluation.json"
     },
     {
       "model_id": "APARENT",
       "task": "GSE269595|3UTR|PROXIMAL_POLYA_SITE_USAGE_LOG2_ODDS",
-      "common_task_status": "IMPLEMENTED_GPU_RUN_PENDING_FROZEN_MANIFEST",
+      "common_task_status": "COMPLETED_DEVELOPMENT_VALIDATION_GPU",
       "prediction_transform": "log2_odds(candidate)-log2_odds(source)",
       "native_track_status": "OFFICIAL_NOTEBOOK_EXAMPLE_PARITY_ONLY",
       "artifact_provenance_id": "aparent_official_69ad2979",
-      "independent_external_transfer_claim_allowed": false
+      "independent_external_transfer_claim_allowed": false,
+      "development_result_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/aparent_v1/validation_evaluation.json"
+    },
+    {
+      "model_id": "RNA-FM_MULTI_MOLECULE_BOTTLENECK_ADAPTER",
+      "task": "GSE114002|5UTR|MEAN_RIBOSOME_LOAD",
+      "common_task_status": "COMPLETED_DEVELOPMENT_VALIDATION_GPU",
+      "prediction_transform": "bottleneck(candidate_embedding-source_embedding)",
+      "native_track_status": "UNOFFICIAL_MULTIMOLECULE_CONVERSION_ADAPTER",
+      "artifact_provenance_id": "multimolecule_rnafm_7d6e73ad",
+      "independent_external_transfer_claim_allowed": false,
+      "development_result_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/rnafm_bottleneck_adapter_grid_v1/summary.json"
     }
   ],
   "external_model_provenance_path": "configs/route_a_v3_route2_external_model_provenance_v1.json",
@@ -72,16 +87,16 @@
     }
   ],
   "generation_methods": [
-    {"method_id": "random_legal", "status": "IMPLEMENTED_RUN_PENDING_FROZEN_GENERATION_COHORT"},
-    {"method_id": "exhaustive", "status": "IMPLEMENTED_SMALL_ENUMERABLE_COHORT_ONLY"},
-    {"method_id": "greedy", "status": "IMPLEMENTED_RUN_PENDING_FROZEN_GENERATION_COHORT"},
-    {"method_id": "beam", "status": "IMPLEMENTED_RUN_PENDING_FROZEN_GENERATION_COHORT"},
-    {"method_id": "genetic", "status": "IMPLEMENTED_RUN_PENDING_FROZEN_GENERATION_COHORT"},
-    {"method_id": "local_search", "status": "IMPLEMENTED_RUN_PENDING_FROZEN_GENERATION_COHORT"},
-    {"method_id": "generate_then_rerank", "status": "IMPLEMENTED_RUN_PENDING_FROZEN_GENERATION_COHORT"},
-    {"method_id": "unguided_learned_base_flow_g0", "status": "IMPLEMENTED_GPU_TRAINING_AND_VALIDATION_PENDING"},
-    {"method_id": "first_order_rate_guidance", "status": "NOT_EXECUTED_REQUIRES_FROZEN_CRITIC_AND_FLOW_G0"},
-    {"method_id": "frozen_critic_xeditflow", "status": "NOT_EXECUTED_REQUIRES_CRITIC_READY_AND_FLOW_G0_READY"},
+    {"method_id": "random_legal", "status": "COMPLETED_DEVELOPMENT_MEASURED_NEIGHBORHOOD_GPU"},
+    {"method_id": "exhaustive", "status": "NOT_EXECUTED_LEGAL_SPACE_EXCEEDS_MATCHED_BUDGET"},
+    {"method_id": "greedy", "status": "COMPLETED_DEVELOPMENT_MEASURED_NEIGHBORHOOD_GPU"},
+    {"method_id": "beam", "status": "COMPLETED_DEVELOPMENT_MEASURED_NEIGHBORHOOD_GPU"},
+    {"method_id": "genetic", "status": "COMPLETED_DEVELOPMENT_MEASURED_NEIGHBORHOOD_GPU"},
+    {"method_id": "local_search", "status": "COMPLETED_DEVELOPMENT_MEASURED_NEIGHBORHOOD_GPU"},
+    {"method_id": "generate_then_rerank", "status": "COMPLETED_DEVELOPMENT_MEASURED_NEIGHBORHOOD_GPU"},
+    {"method_id": "unguided_learned_base_flow_g0", "status": "GPU_VALIDATION_RUNNING"},
+    {"method_id": "first_order_rate_guidance", "status": "NOT_EXECUTED_CRITIC_NOT_READY_FOR_GUIDANCE"},
+    {"method_id": "frozen_critic_xeditflow", "status": "NOT_EXECUTED_CRITIC_NOT_READY_FOR_GUIDANCE"},
     {"method_id": "masked_discrete_flow_or_diffusion", "status": "LITERATURE_ONLY_TASK_MISMATCH"}
   ],
   "evaluation_outcomes_accessed": false,
