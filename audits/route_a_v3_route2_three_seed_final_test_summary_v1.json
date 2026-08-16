@@ -1,0 +1,57 @@
+{
+  "schema_version": "route_a_v3_route2_three_seed_final_test_summary.v1",
+  "evaluation_release_state": "CLOSED",
+  "split": "TEST",
+  "evaluation_studies_included": 0,
+  "strongest_baseline_id": "neural_medium_siamese_cnn",
+  "strongest_baseline_parameter_count": 509905,
+  "delta_parameter_count": 2001185,
+  "training": {
+    "optimizer_steps_per_fit": 26976,
+    "delta_physical_gpu_by_seed": {
+      "20260816": 0,
+      "20260817": 1,
+      "20260818": 2
+    },
+    "strongest_baseline_physical_gpu": 3,
+    "cuda_tensor_verified": true,
+    "cpu_fallback_detected": false
+  },
+  "paired_results": [
+    {
+      "seed": 20260816,
+      "task_macro_spearman_model": 0.12146021288693719,
+      "task_macro_spearman_baseline": 0.10487379651469451,
+      "task_macro_spearman_improvement": 0.016586416372242674,
+      "task_macro_spearman_improvement_ci_95": [-0.05529944095650398, 0.08225084578114587],
+      "baseline_mae_minus_model_mae": -0.024946353213462037,
+      "baseline_mae_minus_model_mae_ci_95": [-0.029514486801637818, -0.020374541166016776],
+      "ndcg_improvement": -0.005327855470125387,
+      "ndcg_improvement_ci_95": [-0.016164479722876893, 0.0058943401035498845]
+    },
+    {
+      "seed": 20260817,
+      "task_macro_spearman_model": 0.06259119108189462,
+      "task_macro_spearman_baseline": 0.10487379651469451,
+      "task_macro_spearman_improvement": -0.042282605432799894,
+      "task_macro_spearman_improvement_ci_95": [-0.1031221258095696, 0.021156820249167468],
+      "baseline_mae_minus_model_mae": -0.015557833820564458,
+      "baseline_mae_minus_model_mae_ci_95": [-0.01921620389773215, -0.011849527391716191],
+      "ndcg_improvement": -0.009189616619615912,
+      "ndcg_improvement_ci_95": [-0.020207889540791505, 0.0020827827331345115]
+    },
+    {
+      "seed": 20260818,
+      "task_macro_spearman_model": 0.1030682216284749,
+      "task_macro_spearman_baseline": 0.10487379651469451,
+      "task_macro_spearman_improvement": -0.0018055748862196158,
+      "task_macro_spearman_improvement_ci_95": [-0.06975964616691535, 0.06607390080746771],
+      "baseline_mae_minus_model_mae": -0.009331066953978872,
+      "baseline_mae_minus_model_mae_ci_95": [-0.01318201430113466, -0.005386124674110918],
+      "ndcg_improvement": -0.018352082487369793,
+      "ndcg_improvement_ci_95": [-0.029537405960773713, -0.006830767762722271]
+    }
+  ],
+  "adjudication": "DELTA_SUPERIORITY_NOT_ESTABLISHED",
+  "adjudication_reason": "No seed has a task-macro Spearman improvement CI excluding zero; all three MAE intervals favor the strongest baseline."
+}
