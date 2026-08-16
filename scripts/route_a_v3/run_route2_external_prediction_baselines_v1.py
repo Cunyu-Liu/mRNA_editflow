@@ -7,6 +7,7 @@ import argparse
 import json
 import math
 import os
+import sys
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -17,6 +18,10 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 from scipy.stats import spearmanr
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 from core.route2_gpu_failure_evidence import cuda_device_observation, write_gpu_failure_evidence
 

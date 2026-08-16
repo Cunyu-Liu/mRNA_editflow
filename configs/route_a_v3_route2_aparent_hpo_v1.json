@@ -1,0 +1,15 @@
+{
+  "schema_version": "route_a_v3_route2_aparent_hpo.v1",
+  "result_stage": "HPO_VALIDATION_ONLY",
+  "evaluation_outcomes_accessed": false,
+  "device": "cuda:4",
+  "physical_gpu_index": 4,
+  "official_git_revision": "69ad29791709b48689ff5d9e3a3daefc568de9ce",
+  "canonical_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE269595/v1/canonical_records.private.jsonl",
+  "development_manifest_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/manifests/route2_development_frozen_v1/development_manifest.jsonl",
+  "weight_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/external_model_assets/aparent/saved_models/aparent_large_lessdropout_all_libs_no_sampleweights.h5",
+  "cut_start": 80,
+  "cut_end": 105,
+  "batch_size": 128,
+  "output_directory": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/aparent_v1"
+}

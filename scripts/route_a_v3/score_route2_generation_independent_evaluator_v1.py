@@ -7,11 +7,16 @@ import argparse
 import json
 import math
 import os
+import sys
 import time
 from pathlib import Path
 from typing import Any, Callable, Mapping
 
 import torch
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 from core.route2_delta_predictor import (
     ROUTE2_DELTA_MODEL_KIND,

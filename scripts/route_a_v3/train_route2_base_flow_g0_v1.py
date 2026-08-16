@@ -8,6 +8,7 @@ import json
 import math
 import os
 import random
+import sys
 import time
 from collections import Counter
 from dataclasses import dataclass
@@ -16,6 +17,10 @@ from typing import Any, Iterable, Mapping
 
 import torch
 from torch.utils.data import DataLoader, Dataset
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 from core.route2_base_flow_model import Route2BaseFlowModel
 from core.route2_gpu_failure_evidence import cuda_device_observation, write_gpu_failure_evidence

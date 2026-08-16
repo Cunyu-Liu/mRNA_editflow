@@ -75,3 +75,53 @@ def test_result_stage_withholds_test_before_aparent_inference() -> None:
     assert module.splits_for_result_stage("FROZEN_DEVELOPMENT_TEST") == module.SPLITS
     with pytest.raises(module.AparentBaselineError, match="invalid result_stage"):
         module.splits_for_result_stage("")
+
+
+def test_execute_persists_live_contract_artifacts(tmp_path: Path, monkeypatch) -> None:
+    module = _module()
+    device = _device()
+    records = [
+        module.TaskRecord("train", "s1", "A" * 164, "C" * 164, 0.1, "TRAIN"),
+        module.TaskRecord("validation", "s2", "G" * 164, "T" * 164, 0.2, "VALIDATION"),
+    ]
+    manifest_rows = [
+        {"canonical_record_id": row.record_id, "study_unit_id": module.TASK_STUDY}
+        for row in records
+    ]
+
+    class DummyModel(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.register_buffer("weight", torch.ones(1))
+
+    monkeypatch.setattr(module, "load_task_records", lambda *_args: (records, manifest_rows))
+    monkeypatch.setattr(module, "AparentBase", lambda _path: DummyModel())
+    monkeypatch.setattr(
+        module,
+        "predict",
+        lambda _model, rows, _device, _batch_size, _start, _end: {
+            row.record_id: 0.25 for row in rows
+        },
+    )
+    output = tmp_path / "aparent_run"
+    summary = module.execute({
+        "evaluation_outcomes_accessed": False,
+        "device": str(device),
+        "physical_gpu_index": device.index,
+        "official_git_revision": "69ad29791709b48689ff5d9e3a3daefc568de9ce",
+        "cut_start": 80,
+        "cut_end": 105,
+        "result_stage": "HPO_VALIDATION_ONLY",
+        "canonical_path": str(tmp_path / "canonical.jsonl"),
+        "development_manifest_path": str(tmp_path / "manifest.jsonl"),
+        "weight_path": str(tmp_path / "weights.h5"),
+        "batch_size": 2,
+    }, output)
+    assert summary["status"] == "APARENT_GSE269595_COMMON_TASK_COMPLETED"
+    for name in (
+        "config.yaml", "run_config.json", "task_manifest.jsonl", "train.log",
+        "metrics.jsonl", "validation_predictions.jsonl", "summary.json", "final_summary.json",
+    ):
+        assert (output / name).is_file(), name
+    assert "RUN_STARTED" in (output / "train.log").read_text()
+    assert "INFERENCE_COMPLETED" in (output / "metrics.jsonl").read_text()

@@ -7,8 +7,7 @@ import argparse
 import json
 import math
 import os
-import shutil
-import tempfile
+import sys
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -19,6 +18,10 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 from scipy.stats import spearmanr
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 from core.route2_gpu_failure_evidence import cuda_device_observation, write_gpu_failure_evidence
 
@@ -254,19 +257,40 @@ def execute(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
         Path(config["canonical_path"]), Path(config["development_manifest_path"]), included_splits
     )
     output_splits = ("VALIDATION",) if result_stage == "HPO_VALIDATION_ONLY" else ("TEST",)
+    output_dir.parent.mkdir(parents=True, exist_ok=True)
+    output_dir.mkdir()
+    serialized_config = json.dumps(dict(config), indent=2, sort_keys=True) + "\n"
+    (output_dir / "run_config.json").write_text(serialized_config, encoding="utf-8")
+    (output_dir / "config.yaml").write_text(serialized_config, encoding="utf-8")
+    (output_dir / "task_manifest.jsonl").write_text(
+        "".join(json.dumps(row, sort_keys=True) + "\n" for row in task_manifest), encoding="utf-8"
+    )
+    log_path = output_dir / "train.log"
+    metrics_path = output_dir / "metrics.jsonl"
+    metrics_path.write_text("", encoding="utf-8")
+
+    def progress(row: Mapping[str, Any]) -> None:
+        serialized = json.dumps(dict(row), sort_keys=True) + "\n"
+        with log_path.open("a", encoding="utf-8") as handle:
+            handle.write(serialized)
+        if row.get("event") == "INFERENCE_COMPLETED":
+            with metrics_path.open("a", encoding="utf-8") as handle:
+                handle.write(serialized)
+
+    progress({
+        "event": "RUN_STARTED",
+        "device": str(device),
+        "physical_gpu_index": physical_gpu_index,
+        "cuda_device_uuid": cuda_provenance["cuda_device_uuid"],
+        "result_stage": result_stage,
+    })
     model = AparentBase(Path(config["weight_path"])).to(device)
     started = time.time()
     predictions = predict(model, records, device, int(config["batch_size"]), cut_start, cut_end)
     torch.cuda.synchronize(device)
-    output_dir.parent.mkdir(parents=True, exist_ok=True)
-    temporary = Path(tempfile.mkdtemp(prefix=f".{output_dir.name}.", dir=output_dir.parent))
-    try:
-        (temporary / "task_manifest.jsonl").write_text(
-            "".join(json.dumps(row, sort_keys=True) + "\n" for row in task_manifest), encoding="utf-8"
-        )
-        for split in output_splits:
-            _write_predictions(temporary / f"{split.lower()}_predictions.jsonl", records, predictions, split)
-        summary = {
+    for split in output_splits:
+        _write_predictions(output_dir / f"{split.lower()}_predictions.jsonl", records, predictions, split)
+    summary = {
             "schema_version": "route_a_v3_route2_aparent_baseline.v1",
             "status": "APARENT_GSE269595_COMMON_TASK_COMPLETED",
             "result_stage": result_stage,
@@ -288,14 +312,16 @@ def execute(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
             "peak_vram_mb": torch.cuda.max_memory_allocated(device) / (1024 ** 2),
             **cuda_provenance,
             "scientific_claim_status": "NOT_ESTABLISHED",
-        }
-        (temporary / "summary.json").write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-        (temporary / "run_config.json").write_text(json.dumps(dict(config), indent=2, sort_keys=True) + "\n", encoding="utf-8")
-        os.rename(temporary, output_dir)
-        return summary
-    except Exception:
-        shutil.rmtree(temporary, ignore_errors=True)
-        raise
+    }
+    serialized_summary = json.dumps(summary, indent=2, sort_keys=True) + "\n"
+    (output_dir / "summary.json").write_text(serialized_summary, encoding="utf-8")
+    (output_dir / "final_summary.json").write_text(serialized_summary, encoding="utf-8")
+    progress({
+        "event": "INFERENCE_COMPLETED",
+        "record_count": len(records),
+        "wall_time_seconds": summary["wall_time_seconds"],
+    })
+    return summary
 
 
 def main() -> int:

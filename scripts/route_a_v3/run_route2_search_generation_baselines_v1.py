@@ -16,6 +16,10 @@ from typing import Callable, Iterable, Mapping, Sequence
 
 import torch
 
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
 from core.route2_gpu_failure_evidence import cuda_device_observation, write_gpu_failure_evidence
 
 
