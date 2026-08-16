@@ -107,3 +107,21 @@ def test_undefined_task_spearman_is_preserved_but_ranked_behind_complete_trial(t
     ranked = result["selections"]["P"]["all_trials_ranked"]
     assert ranked[1]["trial_id"] == "collapsed"
     assert ranked[1]["task_macro_spearman"] is None
+
+
+def test_zero_defined_task_mean_is_not_treated_as_missing(tmp_path: Path) -> None:
+    module = _load()
+    zero = _trial(tmp_path, "zero", None)
+    negative = _trial(tmp_path, "negative", None)
+    path = Path(negative["validation_evaluation_path"])
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    payload["metrics"]["task_numeric"]["B"]["spearman"] = -0.2
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    result = module.select({
+        "schema_version": "route_a_v3_route2_neural_hpo_selection_config.v1",
+        "selection_pool": "DEVELOPMENT_VALIDATION",
+        "evaluation_outcomes_accessed": False,
+        "expected_trials_per_profile": 2,
+        "trials": [negative, zero],
+    })
+    assert result["selections"]["P"]["selected_trial_id"] == "zero"

@@ -96,7 +96,13 @@ def select(config: Mapping[str, Any]) -> dict[str, Any]:
             key=lambda row: (
                 row["task_macro_spearman"] is None,
                 -row["task_spearman_defined_count"],
-                -(row["task_macro_spearman"] if row["task_macro_spearman"] is not None else row["defined_task_mean_spearman"] or -math.inf),
+                -(
+                    row["task_macro_spearman"]
+                    if row["task_macro_spearman"] is not None
+                    else row["defined_task_mean_spearman"]
+                    if row["defined_task_mean_spearman"] is not None
+                    else -math.inf
+                ),
                 row["parameter_count"],
                 row["source_macro_mae"], row["trial_id"],
             ),
