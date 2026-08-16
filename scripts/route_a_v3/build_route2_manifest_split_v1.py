@@ -123,6 +123,8 @@ def _gene_tokens(record: Mapping[str, Any], fields: list[str]) -> tuple[str, ...
 
 def _load_study(spec: Mapping[str, Any]) -> tuple[list[RecordMetadata], Counter[str]]:
     path = Path(spec["canonical_records_path"])
+    if spec["expected_canonical_record_count"] == 0 and not path.exists():
+        return [], Counter(canonical_record_count=0, source_group_count=0)
     _require(path.is_file(), f"canonical input absent: {path}")
     result: list[RecordMetadata] = []
     stats: Counter[str] = Counter()

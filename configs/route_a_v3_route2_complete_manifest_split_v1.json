@@ -1,0 +1,103 @@
+{
+  "schema_version": "route_a_v3_route2_manifest_split.v1",
+  "materialization_scope": "COMPLETE_DEVELOPMENT_AND_EVALUATION",
+  "studies": [
+    {
+      "study_unit_id": "GSE200304",
+      "pool_assignment": "DEVELOPMENT",
+      "canonical_records_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE200304/v1/canonical_records.jsonl",
+      "expected_canonical_record_count": 6547,
+      "gene_group_fields": []
+    },
+    {
+      "study_unit_id": "GSE114002",
+      "pool_assignment": "DEVELOPMENT",
+      "canonical_records_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE114002/v1/canonical_records.private.jsonl",
+      "expected_canonical_record_count": 3899,
+      "gene_group_fields": []
+    },
+    {
+      "study_unit_id": "GSE149487",
+      "pool_assignment": "DEVELOPMENT",
+      "canonical_records_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE149487/v1/canonical_records.private.jsonl",
+      "expected_canonical_record_count": 192,
+      "gene_group_fields": ["gene"]
+    },
+    {
+      "study_unit_id": "GSE217518",
+      "pool_assignment": "DEVELOPMENT",
+      "canonical_records_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE217518/v1/canonical_records.jsonl",
+      "expected_canonical_record_count": 4009,
+      "gene_group_fields": ["gene", "transcript_accession"]
+    },
+    {
+      "study_unit_id": "ENCSR854RUF",
+      "pool_assignment": "DEVELOPMENT",
+      "canonical_records_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/ENCSR854RUF/v1/canonical_records.private.jsonl",
+      "expected_canonical_record_count": 79800,
+      "gene_group_fields": ["gene_symbols"]
+    },
+    {
+      "study_unit_id": "GSE186455",
+      "pool_assignment": "DEVELOPMENT",
+      "canonical_records_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE186455/v1/canonical_records.private.jsonl",
+      "expected_canonical_record_count": 752,
+      "gene_group_fields": ["gene_symbol"]
+    },
+    {
+      "study_unit_id": "GSE256185",
+      "pool_assignment": "DEVELOPMENT",
+      "canonical_records_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE256185/v1/canonical_records.private.jsonl",
+      "expected_canonical_record_count": 0,
+      "gene_group_fields": []
+    },
+    {
+      "study_unit_id": "GSE269595",
+      "pool_assignment": "DEVELOPMENT",
+      "canonical_records_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE269595/v1/canonical_records.private.jsonl",
+      "expected_canonical_record_count": 30966,
+      "gene_group_fields": ["gene_id", "pas_id"]
+    },
+    {
+      "study_unit_id": "GSE232572",
+      "pool_assignment": "EVALUATION",
+      "canonical_records_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE232572/v1/canonical_records.private.jsonl",
+      "expected_canonical_record_count": 8068,
+      "gene_group_fields": ["gene_group_id"]
+    },
+    {
+      "study_unit_id": "E-MTAB-10902",
+      "pool_assignment": "EVALUATION",
+      "canonical_records_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/E-MTAB-10902/v1/canonical_records.private.jsonl",
+      "expected_canonical_record_count": 0,
+      "gene_group_fields": []
+    }
+  ],
+  "split_policy": {
+    "unit": "CONNECTED_SOURCE_COMPONENT",
+    "group_by_source_id": true,
+    "group_by_gene_within_study": true,
+    "group_by_exact_source_or_candidate_sequence": true,
+    "group_by_near_duplicate_source_sequence": true,
+    "near_duplicate_same_length_identity": 0.95,
+    "ratios": {
+      "TRAIN": 0.7,
+      "VALIDATION": 0.15,
+      "TEST": 0.15
+    },
+    "seed": 20260816
+  },
+  "evaluation_policy": {
+    "training_eligible": false,
+    "model_selection_eligible": false,
+    "outcome_metrics_computed": false
+  },
+  "output": {
+    "directory": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/manifests/route2_complete_frozen_v1",
+    "development_manifest_filename": "development_manifest.jsonl",
+    "evaluation_manifest_filename": "evaluation_manifest.jsonl",
+    "loso_fold_definitions_filename": "loso_folds.jsonl",
+    "summary_filename": "manifest_summary.json",
+    "overwrite_allowed": false
+  }
+}

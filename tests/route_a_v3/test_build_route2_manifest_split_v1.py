@@ -5,6 +5,8 @@ import json
 import sys
 from pathlib import Path
 
+import pytest
+
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SCRIPT_PATH = REPO_ROOT / "scripts/route_a_v3/build_route2_manifest_split_v1.py"
@@ -119,6 +121,29 @@ def test_loso_excludes_other_study_records_connected_to_holdout() -> None:
     folds = {row["holdout_study_unit_id"]: row for row in module._loso_definitions(records, components)}
     assert folds["STUDY"]["training_record_count"] == 2
     assert folds["STUDY"]["excluded_connected_other_study_record_count"] == 1
+
+
+def test_zero_count_study_does_not_require_placeholder_canonical_file(tmp_path: Path) -> None:
+    module = _module()
+    records, stats = module._load_study({
+        "study_unit_id": "ZERO_RECORD_STUDY",
+        "pool_assignment": "EVALUATION",
+        "canonical_records_path": str(tmp_path / "absent.jsonl"),
+        "expected_canonical_record_count": 0,
+        "gene_group_fields": [],
+    })
+    assert records == []
+    assert stats["canonical_record_count"] == 0
+    assert stats["source_group_count"] == 0
+
+    with pytest.raises(module.ManifestError, match="canonical input absent"):
+        module._load_study({
+            "study_unit_id": "MISSING_NONZERO_STUDY",
+            "pool_assignment": "EVALUATION",
+            "canonical_records_path": str(tmp_path / "also-absent.jsonl"),
+            "expected_canonical_record_count": 1,
+            "gene_group_fields": [],
+        })
 
 
 def test_development_only_materialization_does_not_create_evaluation_manifest(tmp_path: Path) -> None:
