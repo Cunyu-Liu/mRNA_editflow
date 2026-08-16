@@ -1,0 +1,61 @@
+{
+  "schema_version": "route_a_v3_route2_three_seed_loso_summary.v1",
+  "status": "THREE_SEED_LOSO_ALIGNMENT_NOT_ESTABLISHED",
+  "seed_results": [
+    {
+      "seed": 20260816,
+      "status": "LOSO_MODEL_BASELINE_ALIGNMENT_NOT_ESTABLISHED",
+      "study_count": 7,
+      "aligned_study_count": 4,
+      "undefined_study_count": 3,
+      "all_model_training_gpu_provenance_verified": true,
+      "evaluation_studies_included": 0,
+      "defined_study_improvements": {
+        "GSE114002": -0.2786076379372652,
+        "GSE149487": -0.07742730734380385,
+        "GSE200304": -0.0008505489258583228,
+        "GSE269595": 0.2539418390762076
+      },
+      "undefined_baseline_study_ids": ["ENCSR854RUF", "GSE186455", "GSE217518"],
+      "artifact_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/audits/loso/seed20260816/aggregation_v1.json"
+    },
+    {
+      "seed": 20260817,
+      "status": "LOSO_MODEL_BASELINE_ALIGNMENT_NOT_ESTABLISHED",
+      "study_count": 7,
+      "aligned_study_count": 4,
+      "undefined_study_count": 3,
+      "all_model_training_gpu_provenance_verified": true,
+      "evaluation_studies_included": 0,
+      "defined_study_improvements": {
+        "GSE114002": -0.3068004971963822,
+        "GSE149487": -0.02031933121792214,
+        "GSE200304": 0.031050805571713174,
+        "GSE269595": -0.044849176885908115
+      },
+      "undefined_baseline_study_ids": ["ENCSR854RUF", "GSE186455", "GSE217518"],
+      "artifact_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/audits/loso/seed20260817/aggregation_v1.json"
+    },
+    {
+      "seed": 20260818,
+      "status": "LOSO_MODEL_BASELINE_ALIGNMENT_NOT_ESTABLISHED",
+      "study_count": 7,
+      "aligned_study_count": 4,
+      "undefined_study_count": 3,
+      "all_model_training_gpu_provenance_verified": true,
+      "evaluation_studies_included": 0,
+      "defined_study_improvements": {
+        "GSE114002": -0.2545672248741929,
+        "GSE149487": 0.06126639857046637,
+        "GSE200304": 0.02154346502350655,
+        "GSE269595": 0.10416905954716327
+      },
+      "undefined_baseline_study_ids": ["ENCSR854RUF", "GSE186455", "GSE217518"],
+      "artifact_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/audits/loso/seed20260818/aggregation_v1.json"
+    }
+  ],
+  "critic_readiness_consequence": "CRITIC_NOT_READY_FOR_GUIDANCE",
+  "guided_generation_status": "NOT_STARTED_DEPENDENCY_NOT_MET",
+  "evaluation_outcomes_accessed": false,
+  "scientific_claim_status": "NOT_ESTABLISHED"
+}
