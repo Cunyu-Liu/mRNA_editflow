@@ -442,6 +442,8 @@ def _elastic_net_cuda(
     acceleration = 1.0
     converged = False
     completed_iterations = 0
+    normalized_fixed_point_residual = math.inf
+    restart_count = 0
     for iteration in range(1, max_iter + 1):
         residual = x_train @ momentum_coefficient + momentum_intercept - y_train
         gradient_coefficient = x_train.T @ (sample_weight * residual) / weight_sum
@@ -451,19 +453,51 @@ def _elastic_net_cuda(
         threshold = step * alpha * l1_ratio
         next_coefficient = torch.sign(proposal) * torch.clamp(torch.abs(proposal) - threshold, min=0.0)
         next_intercept = momentum_intercept - step * gradient_intercept
-        maximum_change = torch.max(torch.abs(next_coefficient - coefficient))
-        maximum_change = torch.maximum(maximum_change, torch.abs(next_intercept - intercept))
         next_acceleration = (1.0 + math.sqrt(1.0 + 4.0 * acceleration * acceleration)) / 2.0
         momentum = (acceleration - 1.0) / next_acceleration
+        restart_signal = torch.dot(
+            momentum_coefficient - next_coefficient,
+            next_coefficient - coefficient,
+        ) + (momentum_intercept - next_intercept) * (next_intercept - intercept)
+        if float(restart_signal.detach().cpu()) > 0.0:
+            next_acceleration = 1.0
+            momentum = 0.0
+            restart_count += 1
         momentum_coefficient = next_coefficient + momentum * (next_coefficient - coefficient)
         momentum_intercept = next_intercept + momentum * (next_intercept - intercept)
         coefficient, intercept = next_coefficient, next_intercept
         acceleration = next_acceleration
         completed_iterations = iteration
-        if float(maximum_change.detach().cpu()) <= tolerance:
-            converged = True
-            break
-    _require(converged, f"CUDA elastic net did not converge within {max_iter} iterations")
+        if iteration == 1 or iteration % 25 == 0:
+            residual = x_train @ coefficient + intercept - y_train
+            gradient_coefficient = x_train.T @ (sample_weight * residual) / weight_sum
+            gradient_coefficient = gradient_coefficient + alpha * (1.0 - l1_ratio) * coefficient
+            gradient_intercept = torch.sum(sample_weight * residual) / weight_sum
+            proposal = coefficient - step * gradient_coefficient
+            fixed_point_coefficient = torch.sign(proposal) * torch.clamp(
+                torch.abs(proposal) - threshold, min=0.0
+            )
+            fixed_point_intercept = intercept - step * gradient_intercept
+            fixed_point_change = torch.max(torch.abs(fixed_point_coefficient - coefficient))
+            fixed_point_change = torch.maximum(
+                fixed_point_change, torch.abs(fixed_point_intercept - intercept)
+            )
+            parameter_scale = torch.maximum(
+                torch.ones((), dtype=coefficient.dtype, device=coefficient.device),
+                torch.maximum(torch.max(torch.abs(coefficient)), torch.abs(intercept)),
+            )
+            normalized_fixed_point_residual = float(
+                (fixed_point_change / parameter_scale).detach().cpu()
+            )
+            if normalized_fixed_point_residual <= tolerance:
+                converged = True
+                break
+    _require(
+        converged,
+        "CUDA elastic net did not converge within "
+        f"{max_iter} iterations; normalized fixed-point residual="
+        f"{normalized_fixed_point_residual:.8g}",
+    )
     prediction = x_target @ coefficient + intercept
     _gpu_require(prediction.is_cuda, "elastic-net prediction silently fell back to CPU")
     return prediction, {
@@ -474,6 +508,8 @@ def _elastic_net_cuda(
         "optimizer": "CUDA_FISTA",
         "completed_iterations": completed_iterations,
         "converged": converged,
+        "normalized_fixed_point_residual": normalized_fixed_point_residual,
+        "adaptive_restart_count": restart_count,
     }
 
 
