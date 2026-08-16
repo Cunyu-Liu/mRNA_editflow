@@ -1,0 +1,37 @@
+{
+  "schema_version": "route_a_v3_route2_classical_prediction_hpo.v1",
+  "result_stage": "HPO_VALIDATION_ONLY",
+  "run_mode": "FIXED_GROUPED_SPLIT",
+  "evaluation_outcomes_accessed": false,
+  "cpu_thread_cap": 4,
+  "device": "cuda:4",
+  "physical_gpu_index": 4,
+  "minimum_free_gpu_memory_bytes": 8589934592,
+  "development_manifest_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/manifests/route2_development_frozen_v1/development_manifest.jsonl",
+  "canonical_paths": [
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE200304/v1/canonical_records.jsonl",
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE114002/v1/canonical_records.private.jsonl",
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE149487/v1/canonical_records.private.jsonl",
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE217518/v1/canonical_records.jsonl",
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/ENCSR854RUF/v1/canonical_records.private.jsonl",
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE186455/v1/canonical_records.private.jsonl",
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE256185/v1/canonical_records.private.jsonl",
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE269595/v1/canonical_records.private.jsonl"
+  ],
+  "baselines": [
+    {
+      "baseline_id": "edit_context_elastic_net",
+      "kind": "elastic_net",
+      "feature_mode": "full",
+      "weighting": "STUDY_THEN_SOURCE_GROUP_EQUAL",
+      "parameter_grid": {
+        "alpha": [0.001, 0.01, 0.1],
+        "l1_ratio": [0.1, 0.5, 0.9],
+        "max_iter": [10000],
+        "tolerance": [0.0001],
+        "seed": [20260816]
+      }
+    }
+  ],
+  "output_directory": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/classical_elastic_recovery_v1"
+}

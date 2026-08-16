@@ -912,7 +912,9 @@ def execute(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
         int(config["physical_gpu_index"]),
         int(config.get("minimum_free_gpu_memory_bytes", 0)),
     )
-    cuda_provenance = cuda_device_observation(int(config["physical_gpu_index"]))
+    cuda_provenance = cuda_device_observation(
+        int(config["physical_gpu_index"]), require_physical_index_match=True
+    )
     manifest = load_manifest(Path(config["development_manifest_path"]))
     run_mode = str(config.get("run_mode", "FIXED_GROUPED_SPLIT"))
     _require(run_mode in {"FIXED_GROUPED_SPLIT", "LOSO_FROZEN_PARAMETERS"}, f"unknown run mode: {run_mode}")
