@@ -39,6 +39,7 @@ def _payload():
         "schema_version": "route_a_v3_route2_baseline_selection_input.v1",
         "selection_pool": "DEVELOPMENT_VALIDATION",
         "evaluation_outcomes_accessed": False,
+        "comparison_policy": "POINT_LEADER_VS_SMALLER_FINITE",
         "baseline_evaluations": [_entry("ridge", 0.2, 0.3, 10), _entry("cnn", 0.4, 0.2, 1000)],
         "paired_validation_bootstrap": [{
             "task": "5UTR|MRL", "split": "VALIDATION",
@@ -105,6 +106,16 @@ def test_missing_pairwise_bootstrap_fails_closed() -> None:
     payload["paired_validation_bootstrap"] = []
     with pytest.raises(module.BaselineSelectionError, match="bootstrap is absent"):
         module.select(payload)
+
+
+def test_larger_candidate_does_not_require_bootstrap_to_keep_point_leader() -> None:
+    payload = _payload()
+    payload["baseline_evaluations"][1]["parameter_count"] = 10
+    payload["baseline_evaluations"][0]["parameter_count"] = 1000
+    payload["paired_validation_bootstrap"] = []
+    selected = _load().select(payload)["tasks"]["5UTR|MRL"]
+    assert selected["strongest_baseline_id"] == "cnn"
+    assert selected["bootstrap_decision_relevant_candidate_count"] == 0
 
 
 def test_unseen_endpoint_fallback_requires_complete_task_coverage() -> None:

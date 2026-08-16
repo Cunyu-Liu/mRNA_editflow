@@ -103,6 +103,10 @@ def select(payload: Mapping[str, Any]) -> dict[str, Any]:
     _require(payload["schema_version"] == "route_a_v3_route2_baseline_selection_input.v1", "unexpected selection schema")
     _require(payload["selection_pool"] == "DEVELOPMENT_VALIDATION", "selection is not Development validation")
     _require(payload["evaluation_outcomes_accessed"] is False, "baseline selection accessed Evaluation")
+    _require(
+        payload["comparison_policy"] == "POINT_LEADER_VS_SMALLER_FINITE",
+        "baseline bootstrap comparison policy is incompatible with selection",
+    )
     entries = payload["baseline_evaluations"]
     _require(entries, "no baseline evaluations were provided")
     identifiers = [str(entry["baseline_id"]) for entry in entries]
@@ -146,6 +150,8 @@ def select(payload: Mapping[str, Any]) -> dict[str, Any]:
             for candidate in ranked[1:]:
                 if candidate["spearman"] is None:
                     continue
+                if candidate["parameter_count"] >= point_winner["parameter_count"]:
+                    continue
                 key = (task, frozenset((point_winner["baseline_id"], candidate["baseline_id"])))
                 _require(key in bootstrap, f"paired validation bootstrap is absent for {task}: {candidate['baseline_id']}")
                 lower, upper = bootstrap[key]["spearman_difference_ci_95"]
@@ -172,6 +178,11 @@ def select(payload: Mapping[str, Any]) -> dict[str, Any]:
             "selected_mae": winner["mae"],
             "exact_spearman_tie_count": sum(row["spearman"] == winner["spearman"] for row in ranked),
             "bootstrap_uncertainty_equivalent_candidate_count": len(uncertainty_equivalent),
+            "bootstrap_decision_relevant_candidate_count": sum(
+                row["spearman"] is not None
+                and row["parameter_count"] < point_winner["parameter_count"]
+                for row in ranked[1:]
+            ) if finite_spearman else 0,
             "bootstrap_uncertainty_equivalent_baseline_ids": sorted(
                 row["baseline_id"] for row in uncertainty_equivalent
             ),

@@ -144,7 +144,7 @@ def build(config: Mapping[str, Any]) -> dict[str, Any]:
     _require(iterations >= 1000, "baseline bootstrap budget is below 1000 iterations")
     comparison_policy = str(config["comparison_policy"])
     _require(
-        comparison_policy == "POINT_LEADER_VS_ALL_FINITE",
+        comparison_policy == "POINT_LEADER_VS_SMALLER_FINITE",
         "unsupported baseline bootstrap comparison policy",
     )
     validation_ids = load_validation_manifest(Path(config["development_manifest_path"]))
@@ -202,7 +202,16 @@ def build(config: Mapping[str, Any]) -> dict[str, Any]:
                 baseline_id,
             ),
         )
-        pairs = [] if not ranked else [(ranked[0], baseline_id) for baseline_id in ranked[1:]]
+        pairs = (
+            []
+            if not ranked
+            else [
+                (ranked[0], baseline_id)
+                for baseline_id in ranked[1:]
+                if parameter_count_by_baseline[baseline_id]
+                < parameter_count_by_baseline[ranked[0]]
+            ]
+        )
         for left_id, right_id in pairs:
             result = paired_source_group_bootstrap(
                 rows, predictions_by_baseline[left_id], predictions_by_baseline[right_id],
