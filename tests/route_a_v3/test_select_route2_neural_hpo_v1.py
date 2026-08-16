@@ -21,7 +21,7 @@ def _load():
     return module
 
 
-def _trial(tmp_path: Path, trial_id: str, spearman: float, *, cpu_fallback: bool = False) -> dict:
+def _trial(tmp_path: Path, trial_id: str, spearman: float | None, *, cpu_fallback: bool = False) -> dict:
     summary_path = tmp_path / f"{trial_id}.summary.json"
     evaluation_path = tmp_path / f"{trial_id}.evaluation.json"
     config_path = tmp_path / f"{trial_id}.config.json"
@@ -49,8 +49,12 @@ def _trial(tmp_path: Path, trial_id: str, spearman: float, *, cpu_fallback: bool
         "evaluation_release_state": "CLOSED",
         "metrics": {
             "task_count": 2,
-            "task_spearman_defined_count": 2,
+            "task_spearman_defined_count": 2 if spearman is not None else 1,
             "task_macro_spearman": spearman,
+            "task_numeric": {
+                "A": {"spearman": spearman},
+                "B": {"spearman": spearman if spearman is not None else 0.0},
+            },
             "source_macro_mae": 0.2,
         },
     }), encoding="utf-8")
@@ -88,3 +92,18 @@ def test_cpu_fallback_trial_is_rejected(tmp_path: Path) -> None:
             "expected_trials_per_profile": 2,
             "trials": [_trial(tmp_path, "invalid", 0.2, cpu_fallback=True), _trial(tmp_path, "valid", 0.1)],
         })
+
+
+def test_undefined_task_spearman_is_preserved_but_ranked_behind_complete_trial(tmp_path: Path) -> None:
+    module = _load()
+    result = module.select({
+        "schema_version": "route_a_v3_route2_neural_hpo_selection_config.v1",
+        "selection_pool": "DEVELOPMENT_VALIDATION",
+        "evaluation_outcomes_accessed": False,
+        "expected_trials_per_profile": 2,
+        "trials": [_trial(tmp_path, "collapsed", None), _trial(tmp_path, "complete", -0.1)],
+    })
+    assert result["selections"]["P"]["selected_trial_id"] == "complete"
+    ranked = result["selections"]["P"]["all_trials_ranked"]
+    assert ranked[1]["trial_id"] == "collapsed"
+    assert ranked[1]["task_macro_spearman"] is None

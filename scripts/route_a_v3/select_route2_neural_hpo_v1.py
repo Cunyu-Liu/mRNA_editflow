@@ -59,13 +59,27 @@ def select(config: Mapping[str, Any]) -> dict[str, Any]:
         _require(evaluation["split"] == "VALIDATION", f"evaluation is not validation-only: {trial_id}")
         _require(evaluation["evaluation_release_state"] == "CLOSED", f"Evaluation release opened: {trial_id}")
         metrics = evaluation["metrics"]
-        _require(metrics["task_count"] == metrics["task_spearman_defined_count"], f"trial has undefined task Spearman: {trial_id}")
+        task_count = int(metrics["task_count"])
+        defined_task_count = int(metrics["task_spearman_defined_count"])
+        _require(0 <= defined_task_count <= task_count and task_count > 0, f"task counts are invalid: {trial_id}")
+        task_values = [
+            _finite(row["spearman"], "task Spearman")
+            for row in metrics["task_numeric"].values() if row.get("spearman") is not None
+        ]
+        _require(len(task_values) == defined_task_count, f"defined task count differs: {trial_id}")
+        complete_task_macro = (
+            _finite(metrics["task_macro_spearman"], "task-macro Spearman")
+            if defined_task_count == task_count else None
+        )
         grouped[str(spec["profile_id"])].append({
             "trial_id": trial_id,
             "baseline_id": str(summary["baseline_id"]),
             "model_kind": str(summary["model_kind"]),
             "parameter_count": int(summary["parameter_count"]),
-            "task_macro_spearman": _finite(metrics["task_macro_spearman"], "task-macro Spearman"),
+            "task_count": task_count,
+            "task_spearman_defined_count": defined_task_count,
+            "task_macro_spearman": complete_task_macro,
+            "defined_task_mean_spearman": None if not task_values else sum(task_values) / len(task_values),
             "source_macro_mae": _finite(metrics["source_macro_mae"], "source-macro MAE"),
             "training_summary_path": str(summary_path),
             "validation_evaluation_path": str(evaluation_path),
@@ -80,13 +94,20 @@ def select(config: Mapping[str, Any]) -> dict[str, Any]:
         ranked = sorted(
             trials,
             key=lambda row: (
-                -row["task_macro_spearman"], row["parameter_count"],
+                row["task_macro_spearman"] is None,
+                -row["task_spearman_defined_count"],
+                -(row["task_macro_spearman"] if row["task_macro_spearman"] is not None else row["defined_task_mean_spearman"] or -math.inf),
+                row["parameter_count"],
                 row["source_macro_mae"], row["trial_id"],
             ),
         )
         selections[profile_id] = {
             "selected_trial_id": ranked[0]["trial_id"],
-            "selection_primary_metric": "DEVELOPMENT_VALIDATION_TASK_MACRO_SPEARMAN",
+            "selection_primary_metric": (
+                "DEVELOPMENT_VALIDATION_TASK_MACRO_SPEARMAN"
+                if ranked[0]["task_macro_spearman"] is not None
+                else "DEFINED_TASK_COUNT_THEN_DEFINED_TASK_MEAN_SPEARMAN_FALLBACK"
+            ),
             "selected_training_config_path": ranked[0]["training_config_path"],
             "all_trials_ranked": ranked,
         }
