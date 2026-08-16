@@ -1,0 +1,440 @@
+{
+  "development_test_outcomes_accessed": false,
+  "evaluation_outcomes_accessed": false,
+  "profile_count": 11,
+  "schema_version": "route_a_v3_route2_neural_hpo_selection.v1",
+  "scientific_claim_status": "NOT_ESTABLISHED",
+  "selection_pool": "DEVELOPMENT_VALIDATION",
+  "selections": {
+    "DELTA_DIAGNOSTIC_0_08M": {
+      "all_trials_ranked": [
+        {
+          "baseline_id": "delta_diagnostic_0_08m_lr3e4",
+          "cuda_device_uuid": "cfd06c8a-4322-b952-2e65-f71eaf622347",
+          "defined_task_mean_spearman": 0.15328703375929226,
+          "model_kind": "delta_anchored_position_aware_antisymmetric",
+          "parameter_count": 80099,
+          "physical_gpu_index": 0,
+          "source_macro_mae": 24.001712019448178,
+          "task_count": 9,
+          "task_macro_spearman": 0.15328703375929226,
+          "task_spearman_defined_count": 9,
+          "training_config_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/delta_diagnostic_0_08m_lr3e4_v1/training_config.json",
+          "training_summary_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/delta_diagnostic_0_08m_lr3e4_v1/training_summary.json",
+          "trial_id": "delta_diagnostic_0_08m_lr3e4_v1",
+          "validation_evaluation_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/delta_diagnostic_0_08m_lr3e4_v1/validation_evaluation.json"
+        },
+        {
+          "baseline_id": "delta_diagnostic_0_08m_lr1e3",
+          "cuda_device_uuid": "a590f174-04eb-13f7-58a4-1067bc8bd765",
+          "defined_task_mean_spearman": 0.10786940349077212,
+          "model_kind": "delta_anchored_position_aware_antisymmetric",
+          "parameter_count": 80099,
+          "physical_gpu_index": 1,
+          "source_macro_mae": 24.000698204776562,
+          "task_count": 9,
+          "task_macro_spearman": 0.10786940349077215,
+          "task_spearman_defined_count": 9,
+          "training_config_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/delta_diagnostic_0_08m_lr1e3_v1/training_config.json",
+          "training_summary_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/delta_diagnostic_0_08m_lr1e3_v1/training_summary.json",
+          "trial_id": "delta_diagnostic_0_08m_lr1e3_v1",
+          "validation_evaluation_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/delta_diagnostic_0_08m_lr1e3_v1/validation_evaluation.json"
+        }
+      ],
+      "selected_training_config_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/delta_diagnostic_0_08m_lr3e4_v1/training_config.json",
+      "selected_trial_id": "delta_diagnostic_0_08m_lr3e4_v1",
+      "selection_primary_metric": "DEVELOPMENT_VALIDATION_TASK_MACRO_SPEARMAN"
+    },
+    "DELTA_MAIN_2M": {
+      "all_trials_ranked": [
+        {
+          "baseline_id": "delta_main_2m_lr3e4",
+          "cuda_device_uuid": "d7c96455-f897-7e6d-933a-d90dafd6bc3a",
+          "defined_task_mean_spearman": 0.1120475007445691,
+          "model_kind": "delta_anchored_position_aware_antisymmetric",
+          "parameter_count": 2001070,
+          "physical_gpu_index": 4,
+          "source_macro_mae": 24.00304841587443,
+          "task_count": 9,
+          "task_macro_spearman": 0.11204750074456908,
+          "task_spearman_defined_count": 9,
+          "training_config_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/delta_main_2m_lr3e4_v1/training_config.json",
+          "training_summary_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/delta_main_2m_lr3e4_v1/training_summary.json",
+          "trial_id": "delta_main_2m_lr3e4_v1",
+          "validation_evaluation_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/delta_main_2m_lr3e4_v1/validation_evaluation.json"
+        },
+        {
+          "baseline_id": "delta_main_2m_lr1e3",
+          "cuda_device_uuid": "1bbaf049-a78e-a985-19d4-02448974ccf8",
+          "defined_task_mean_spearman": 0.09589007118462464,
+          "model_kind": "delta_anchored_position_aware_antisymmetric",
+          "parameter_count": 2001070,
+          "physical_gpu_index": 6,
+          "source_macro_mae": 24.02146130274181,
+          "task_count": 9,
+          "task_macro_spearman": 0.09589007118462464,
+          "task_spearman_defined_count": 9,
+          "training_config_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/delta_main_2m_lr1e3_v1/training_config.json",
+          "training_summary_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/delta_main_2m_lr1e3_v1/training_summary.json",
+          "trial_id": "delta_main_2m_lr1e3_v1",
+          "validation_evaluation_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/delta_main_2m_lr1e3_v1/validation_evaluation.json"
+        }
+      ],
+      "selected_training_config_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/delta_main_2m_lr3e4_v1/training_config.json",
+      "selected_trial_id": "delta_main_2m_lr3e4_v1",
+      "selection_primary_metric": "DEVELOPMENT_VALIDATION_TASK_MACRO_SPEARMAN"
+    },
+    "DELTA_MEDIUM_0_5M": {
+      "all_trials_ranked": [
+        {
+          "baseline_id": "delta_medium_0_5m_lr1e3",
+          "cuda_device_uuid": "3bafcaab-df4e-6fe2-154e-a8d47ef4ba98",
+          "defined_task_mean_spearman": 0.0989465450641433,
+          "model_kind": "delta_anchored_position_aware_antisymmetric",
+          "parameter_count": 499836,
+          "physical_gpu_index": 3,
+          "source_macro_mae": 24.005570320837723,
+          "task_count": 9,
+          "task_macro_spearman": 0.0989465450641433,
+          "task_spearman_defined_count": 9,
+          "training_config_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/delta_medium_0_5m_lr1e3_v1/training_config.json",
+          "training_summary_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/delta_medium_0_5m_lr1e3_v1/training_summary.json",
+          "trial_id": "delta_medium_0_5m_lr1e3_v1",
+          "validation_evaluation_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/delta_medium_0_5m_lr1e3_v1/validation_evaluation.json"
+        },
+        {
+          "baseline_id": "delta_medium_0_5m_lr3e4",
+          "cuda_device_uuid": "d46dc272-4b72-0b54-aacd-f9ace57d622f",
+          "defined_task_mean_spearman": 0.09854055181439152,
+          "model_kind": "delta_anchored_position_aware_antisymmetric",
+          "parameter_count": 499836,
+          "physical_gpu_index": 2,
+          "source_macro_mae": 24.00644283151231,
+          "task_count": 9,
+          "task_macro_spearman": 0.0985405518143915,
+          "task_spearman_defined_count": 9,
+          "training_config_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/delta_medium_0_5m_lr3e4_v1/training_config.json",
+          "training_summary_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/delta_medium_0_5m_lr3e4_v1/training_summary.json",
+          "trial_id": "delta_medium_0_5m_lr3e4_v1",
+          "validation_evaluation_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/delta_medium_0_5m_lr3e4_v1/validation_evaluation.json"
+        }
+      ],
+      "selected_training_config_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/delta_medium_0_5m_lr1e3_v1/training_config.json",
+      "selected_trial_id": "delta_medium_0_5m_lr1e3_v1",
+      "selection_primary_metric": "DEVELOPMENT_VALIDATION_TASK_MACRO_SPEARMAN"
+    },
+    "NEURAL_MAIN_2M_CANDIDATE_CNN": {
+      "all_trials_ranked": [
+        {
+          "baseline_id": "neural_main_2m_candidate_cnn_lr3e4",
+          "cuda_device_uuid": "d46dc272-4b72-0b54-aacd-f9ace57d622f",
+          "defined_task_mean_spearman": 0.0786384419538513,
+          "model_kind": "candidate_cnn",
+          "parameter_count": 2021064,
+          "physical_gpu_index": 2,
+          "source_macro_mae": 24.01637964781148,
+          "task_count": 9,
+          "task_macro_spearman": 0.07863844195385129,
+          "task_spearman_defined_count": 9,
+          "training_config_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_main_2m_candidate_cnn_lr3e4_v1/training_config.json",
+          "training_summary_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_main_2m_candidate_cnn_lr3e4_v1/training_summary.json",
+          "trial_id": "neural_main_2m_candidate_cnn_lr3e4_v1",
+          "validation_evaluation_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_main_2m_candidate_cnn_lr3e4_v1/validation_evaluation.json"
+        },
+        {
+          "baseline_id": "neural_main_2m_candidate_cnn_lr1e3",
+          "cuda_device_uuid": "3bafcaab-df4e-6fe2-154e-a8d47ef4ba98",
+          "defined_task_mean_spearman": null,
+          "model_kind": "candidate_cnn",
+          "parameter_count": 2021064,
+          "physical_gpu_index": 3,
+          "source_macro_mae": 24.028259789828525,
+          "task_count": 9,
+          "task_macro_spearman": null,
+          "task_spearman_defined_count": 0,
+          "training_config_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_main_2m_candidate_cnn_lr1e3_v1/training_config.json",
+          "training_summary_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_main_2m_candidate_cnn_lr1e3_v1/training_summary.json",
+          "trial_id": "neural_main_2m_candidate_cnn_lr1e3_v1",
+          "validation_evaluation_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_main_2m_candidate_cnn_lr1e3_v1/validation_evaluation.json"
+        }
+      ],
+      "selected_training_config_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_main_2m_candidate_cnn_lr3e4_v1/training_config.json",
+      "selected_trial_id": "neural_main_2m_candidate_cnn_lr3e4_v1",
+      "selection_primary_metric": "DEVELOPMENT_VALIDATION_TASK_MACRO_SPEARMAN"
+    },
+    "NEURAL_MAIN_2M_FULL_PAIR_CNN": {
+      "all_trials_ranked": [
+        {
+          "baseline_id": "neural_main_2m_full_pair_cnn_lr3e4",
+          "cuda_device_uuid": "cfd06c8a-4322-b952-2e65-f71eaf622347",
+          "defined_task_mean_spearman": 0.11618839097201311,
+          "model_kind": "full_pair_cnn",
+          "parameter_count": 2032852,
+          "physical_gpu_index": 0,
+          "source_macro_mae": 24.00146433524951,
+          "task_count": 9,
+          "task_macro_spearman": 0.11618839097201311,
+          "task_spearman_defined_count": 9,
+          "training_config_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_main_2m_full_pair_cnn_lr3e4_v1/training_config.json",
+          "training_summary_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_main_2m_full_pair_cnn_lr3e4_v1/training_summary.json",
+          "trial_id": "neural_main_2m_full_pair_cnn_lr3e4_v1",
+          "validation_evaluation_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_main_2m_full_pair_cnn_lr3e4_v1/validation_evaluation.json"
+        },
+        {
+          "baseline_id": "neural_main_2m_full_pair_cnn_lr1e3",
+          "cuda_device_uuid": "a590f174-04eb-13f7-58a4-1067bc8bd765",
+          "defined_task_mean_spearman": 0.2619211323834382,
+          "model_kind": "full_pair_cnn",
+          "parameter_count": 2032852,
+          "physical_gpu_index": 1,
+          "source_macro_mae": 23.997680044716656,
+          "task_count": 9,
+          "task_macro_spearman": null,
+          "task_spearman_defined_count": 3,
+          "training_config_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_main_2m_full_pair_cnn_lr1e3_v1/training_config.json",
+          "training_summary_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_main_2m_full_pair_cnn_lr1e3_v1/training_summary.json",
+          "trial_id": "neural_main_2m_full_pair_cnn_lr1e3_v1",
+          "validation_evaluation_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_main_2m_full_pair_cnn_lr1e3_v1/validation_evaluation.json"
+        }
+      ],
+      "selected_training_config_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_main_2m_full_pair_cnn_lr3e4_v1/training_config.json",
+      "selected_trial_id": "neural_main_2m_full_pair_cnn_lr3e4_v1",
+      "selection_primary_metric": "DEVELOPMENT_VALIDATION_TASK_MACRO_SPEARMAN"
+    },
+    "NEURAL_MAIN_2M_SIAMESE_CNN": {
+      "all_trials_ranked": [
+        {
+          "baseline_id": "neural_main_2m_siamese_cnn_lr3e4",
+          "cuda_device_uuid": "d7c96455-f897-7e6d-933a-d90dafd6bc3a",
+          "defined_task_mean_spearman": 0.09848663802296459,
+          "model_kind": "siamese_cnn",
+          "parameter_count": 2037109,
+          "physical_gpu_index": 4,
+          "source_macro_mae": 23.982174696940568,
+          "task_count": 9,
+          "task_macro_spearman": 0.09848663802296456,
+          "task_spearman_defined_count": 9,
+          "training_config_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_main_2m_siamese_cnn_lr3e4_v1/training_config.json",
+          "training_summary_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_main_2m_siamese_cnn_lr3e4_v1/training_summary.json",
+          "trial_id": "neural_main_2m_siamese_cnn_lr3e4_v1",
+          "validation_evaluation_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_main_2m_siamese_cnn_lr3e4_v1/validation_evaluation.json"
+        },
+        {
+          "baseline_id": "neural_main_2m_siamese_cnn_lr1e3",
+          "cuda_device_uuid": "347d7935-3bea-a371-8e23-d97da06b3b47",
+          "defined_task_mean_spearman": 0.34635533081244585,
+          "model_kind": "siamese_cnn",
+          "parameter_count": 2037109,
+          "physical_gpu_index": 5,
+          "source_macro_mae": 24.027400958575477,
+          "task_count": 9,
+          "task_macro_spearman": null,
+          "task_spearman_defined_count": 1,
+          "training_config_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_main_2m_siamese_cnn_lr1e3_v1/training_config.json",
+          "training_summary_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_main_2m_siamese_cnn_lr1e3_v1/training_summary.json",
+          "trial_id": "neural_main_2m_siamese_cnn_lr1e3_v1",
+          "validation_evaluation_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_main_2m_siamese_cnn_lr1e3_v1/validation_evaluation.json"
+        }
+      ],
+      "selected_training_config_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_main_2m_siamese_cnn_lr3e4_v1/training_config.json",
+      "selected_trial_id": "neural_main_2m_siamese_cnn_lr3e4_v1",
+      "selection_primary_metric": "DEVELOPMENT_VALIDATION_TASK_MACRO_SPEARMAN"
+    },
+    "NEURAL_MAIN_2M_SMALL_TRANSFORMER": {
+      "all_trials_ranked": [
+        {
+          "baseline_id": "neural_main_2m_small_transformer_lr3e4",
+          "cuda_device_uuid": "d46dc272-4b72-0b54-aacd-f9ace57d622f",
+          "defined_task_mean_spearman": 0.08786740946276624,
+          "model_kind": "small_transformer",
+          "parameter_count": 1996528,
+          "physical_gpu_index": 2,
+          "source_macro_mae": 23.994456399482363,
+          "task_count": 9,
+          "task_macro_spearman": 0.08786740946276624,
+          "task_spearman_defined_count": 9,
+          "training_config_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_main_2m_small_transformer_lr3e4_v1/training_config.json",
+          "training_summary_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_main_2m_small_transformer_lr3e4_v1/training_summary.json",
+          "trial_id": "neural_main_2m_small_transformer_lr3e4_v1",
+          "validation_evaluation_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_main_2m_small_transformer_lr3e4_v1/validation_evaluation.json"
+        },
+        {
+          "baseline_id": "neural_main_2m_small_transformer_lr1e3",
+          "cuda_device_uuid": "3bafcaab-df4e-6fe2-154e-a8d47ef4ba98",
+          "defined_task_mean_spearman": null,
+          "model_kind": "small_transformer",
+          "parameter_count": 1996528,
+          "physical_gpu_index": 3,
+          "source_macro_mae": 24.028239549049882,
+          "task_count": 9,
+          "task_macro_spearman": null,
+          "task_spearman_defined_count": 0,
+          "training_config_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_main_2m_small_transformer_lr1e3_v1/training_config.json",
+          "training_summary_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_main_2m_small_transformer_lr1e3_v1/training_summary.json",
+          "trial_id": "neural_main_2m_small_transformer_lr1e3_v1",
+          "validation_evaluation_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_main_2m_small_transformer_lr1e3_v1/validation_evaluation.json"
+        }
+      ],
+      "selected_training_config_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_main_2m_small_transformer_lr3e4_v1/training_config.json",
+      "selected_trial_id": "neural_main_2m_small_transformer_lr3e4_v1",
+      "selection_primary_metric": "DEVELOPMENT_VALIDATION_TASK_MACRO_SPEARMAN"
+    },
+    "NEURAL_MEDIUM_0_5M_CANDIDATE_CNN": {
+      "all_trials_ranked": [
+        {
+          "baseline_id": "neural_medium_0_5m_candidate_cnn_lr3e4",
+          "cuda_device_uuid": "cfd06c8a-4322-b952-2e65-f71eaf622347",
+          "defined_task_mean_spearman": 0.08589846458883334,
+          "model_kind": "candidate_cnn",
+          "parameter_count": 509083,
+          "physical_gpu_index": 0,
+          "source_macro_mae": 24.014110607343294,
+          "task_count": 9,
+          "task_macro_spearman": 0.08589846458883334,
+          "task_spearman_defined_count": 9,
+          "training_config_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_medium_0_5m_candidate_cnn_lr3e4_v1/training_config.json",
+          "training_summary_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_medium_0_5m_candidate_cnn_lr3e4_v1/training_summary.json",
+          "trial_id": "neural_medium_0_5m_candidate_cnn_lr3e4_v1",
+          "validation_evaluation_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_medium_0_5m_candidate_cnn_lr3e4_v1/validation_evaluation.json"
+        },
+        {
+          "baseline_id": "neural_medium_0_5m_candidate_cnn_lr1e3",
+          "cuda_device_uuid": "a590f174-04eb-13f7-58a4-1067bc8bd765",
+          "defined_task_mean_spearman": -0.0022267847583330707,
+          "model_kind": "candidate_cnn",
+          "parameter_count": 509083,
+          "physical_gpu_index": 1,
+          "source_macro_mae": 24.02835303066464,
+          "task_count": 9,
+          "task_macro_spearman": -0.0022267847583330724,
+          "task_spearman_defined_count": 9,
+          "training_config_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_medium_0_5m_candidate_cnn_lr1e3_v1/training_config.json",
+          "training_summary_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_medium_0_5m_candidate_cnn_lr1e3_v1/training_summary.json",
+          "trial_id": "neural_medium_0_5m_candidate_cnn_lr1e3_v1",
+          "validation_evaluation_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_medium_0_5m_candidate_cnn_lr1e3_v1/validation_evaluation.json"
+        }
+      ],
+      "selected_training_config_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_medium_0_5m_candidate_cnn_lr3e4_v1/training_config.json",
+      "selected_trial_id": "neural_medium_0_5m_candidate_cnn_lr3e4_v1",
+      "selection_primary_metric": "DEVELOPMENT_VALIDATION_TASK_MACRO_SPEARMAN"
+    },
+    "NEURAL_MEDIUM_0_5M_FULL_PAIR_CNN": {
+      "all_trials_ranked": [
+        {
+          "baseline_id": "neural_medium_0_5m_full_pair_cnn_lr3e4",
+          "cuda_device_uuid": "d7c96455-f897-7e6d-933a-d90dafd6bc3a",
+          "defined_task_mean_spearman": 0.09339457861677855,
+          "model_kind": "full_pair_cnn",
+          "parameter_count": 515725,
+          "physical_gpu_index": 4,
+          "source_macro_mae": 23.9994353317916,
+          "task_count": 9,
+          "task_macro_spearman": 0.09339457861677855,
+          "task_spearman_defined_count": 9,
+          "training_config_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_medium_0_5m_full_pair_cnn_lr3e4_v1/training_config.json",
+          "training_summary_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_medium_0_5m_full_pair_cnn_lr3e4_v1/training_summary.json",
+          "trial_id": "neural_medium_0_5m_full_pair_cnn_lr3e4_v1",
+          "validation_evaluation_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_medium_0_5m_full_pair_cnn_lr3e4_v1/validation_evaluation.json"
+        },
+        {
+          "baseline_id": "neural_medium_0_5m_full_pair_cnn_lr1e3",
+          "cuda_device_uuid": "347d7935-3bea-a371-8e23-d97da06b3b47",
+          "defined_task_mean_spearman": 0.08625211436033126,
+          "model_kind": "full_pair_cnn",
+          "parameter_count": 515725,
+          "physical_gpu_index": 5,
+          "source_macro_mae": 24.003598961300373,
+          "task_count": 9,
+          "task_macro_spearman": 0.08625211436033127,
+          "task_spearman_defined_count": 9,
+          "training_config_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_medium_0_5m_full_pair_cnn_lr1e3_v1/training_config.json",
+          "training_summary_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_medium_0_5m_full_pair_cnn_lr1e3_v1/training_summary.json",
+          "trial_id": "neural_medium_0_5m_full_pair_cnn_lr1e3_v1",
+          "validation_evaluation_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_medium_0_5m_full_pair_cnn_lr1e3_v1/validation_evaluation.json"
+        }
+      ],
+      "selected_training_config_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_medium_0_5m_full_pair_cnn_lr3e4_v1/training_config.json",
+      "selected_trial_id": "neural_medium_0_5m_full_pair_cnn_lr3e4_v1",
+      "selection_primary_metric": "DEVELOPMENT_VALIDATION_TASK_MACRO_SPEARMAN"
+    },
+    "NEURAL_MEDIUM_0_5M_SIAMESE_CNN": {
+      "all_trials_ranked": [
+        {
+          "baseline_id": "neural_medium_0_5m_siamese_cnn_lr3e4",
+          "cuda_device_uuid": "d46dc272-4b72-0b54-aacd-f9ace57d622f",
+          "defined_task_mean_spearman": 0.13677577027758647,
+          "model_kind": "siamese_cnn",
+          "parameter_count": 509845,
+          "physical_gpu_index": 2,
+          "source_macro_mae": 23.997050506775494,
+          "task_count": 9,
+          "task_macro_spearman": 0.13677577027758647,
+          "task_spearman_defined_count": 9,
+          "training_config_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_medium_0_5m_siamese_cnn_lr3e4_v1/training_config.json",
+          "training_summary_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_medium_0_5m_siamese_cnn_lr3e4_v1/training_summary.json",
+          "trial_id": "neural_medium_0_5m_siamese_cnn_lr3e4_v1",
+          "validation_evaluation_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_medium_0_5m_siamese_cnn_lr3e4_v1/validation_evaluation.json"
+        },
+        {
+          "baseline_id": "neural_medium_0_5m_siamese_cnn_lr1e3",
+          "cuda_device_uuid": "3bafcaab-df4e-6fe2-154e-a8d47ef4ba98",
+          "defined_task_mean_spearman": null,
+          "model_kind": "siamese_cnn",
+          "parameter_count": 509845,
+          "physical_gpu_index": 3,
+          "source_macro_mae": 24.02919490442505,
+          "task_count": 9,
+          "task_macro_spearman": null,
+          "task_spearman_defined_count": 0,
+          "training_config_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_medium_0_5m_siamese_cnn_lr1e3_v1/training_config.json",
+          "training_summary_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_medium_0_5m_siamese_cnn_lr1e3_v1/training_summary.json",
+          "trial_id": "neural_medium_0_5m_siamese_cnn_lr1e3_v1",
+          "validation_evaluation_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_medium_0_5m_siamese_cnn_lr1e3_v1/validation_evaluation.json"
+        }
+      ],
+      "selected_training_config_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_medium_0_5m_siamese_cnn_lr3e4_v1/training_config.json",
+      "selected_trial_id": "neural_medium_0_5m_siamese_cnn_lr3e4_v1",
+      "selection_primary_metric": "DEVELOPMENT_VALIDATION_TASK_MACRO_SPEARMAN"
+    },
+    "NEURAL_MEDIUM_0_5M_SMALL_TRANSFORMER": {
+      "all_trials_ranked": [
+        {
+          "baseline_id": "neural_medium_0_5m_small_transformer_lr1e3",
+          "cuda_device_uuid": "a590f174-04eb-13f7-58a4-1067bc8bd765",
+          "defined_task_mean_spearman": 0.08632799528563384,
+          "model_kind": "small_transformer",
+          "parameter_count": 500638,
+          "physical_gpu_index": 1,
+          "source_macro_mae": 24.00371498778527,
+          "task_count": 9,
+          "task_macro_spearman": 0.08632799528563385,
+          "task_spearman_defined_count": 9,
+          "training_config_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_medium_0_5m_small_transformer_lr1e3_v1/training_config.json",
+          "training_summary_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_medium_0_5m_small_transformer_lr1e3_v1/training_summary.json",
+          "trial_id": "neural_medium_0_5m_small_transformer_lr1e3_v1",
+          "validation_evaluation_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_medium_0_5m_small_transformer_lr1e3_v1/validation_evaluation.json"
+        },
+        {
+          "baseline_id": "neural_medium_0_5m_small_transformer_lr3e4",
+          "cuda_device_uuid": "cfd06c8a-4322-b952-2e65-f71eaf622347",
+          "defined_task_mean_spearman": 0.062044385135197735,
+          "model_kind": "small_transformer",
+          "parameter_count": 500638,
+          "physical_gpu_index": 0,
+          "source_macro_mae": 23.98943938584861,
+          "task_count": 9,
+          "task_macro_spearman": 0.06204438513519775,
+          "task_spearman_defined_count": 9,
+          "training_config_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_medium_0_5m_small_transformer_lr3e4_v1/training_config.json",
+          "training_summary_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_medium_0_5m_small_transformer_lr3e4_v1/training_summary.json",
+          "trial_id": "neural_medium_0_5m_small_transformer_lr3e4_v1",
+          "validation_evaluation_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_medium_0_5m_small_transformer_lr3e4_v1/validation_evaluation.json"
+        }
+      ],
+      "selected_training_config_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/neural_medium_0_5m_small_transformer_lr1e3_v1/training_config.json",
+      "selected_trial_id": "neural_medium_0_5m_small_transformer_lr1e3_v1",
+      "selection_primary_metric": "DEVELOPMENT_VALIDATION_TASK_MACRO_SPEARMAN"
+    }
+  },
+  "status": "NEURAL_HPO_LEARNING_RATES_FROZEN_BY_PROFILE"
+}
