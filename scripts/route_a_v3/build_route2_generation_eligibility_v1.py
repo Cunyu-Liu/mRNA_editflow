@@ -115,15 +115,21 @@ def build_eligibility(
         for row in rows:
             by_candidate[row["candidate"]].append(row)
         collapsed: dict[str, dict[str, Any]] = {}
+        ambiguous_candidate_outcome = False
         for sequence, members in by_candidate.items():
             outcomes = {member["outcome"] for member in members}
-            _require(len(outcomes) == 1, f"same candidate has unequal outcomes within group: {group_key}")
+            if len(outcomes) != 1:
+                exclusions["AMBIGUOUS_DUPLICATE_CANDIDATE_OUTCOME_SOURCE_GROUP"] += 1
+                ambiguous_candidate_outcome = True
+                break
             collapsed[sequence] = {
                 "candidate_sequence": sequence,
                 "measured_direction_normalized_delta": next(iter(outcomes)),
                 "canonical_record_ids": sorted(member["record_id"] for member in members),
                 "edit_count": members[0]["edit_count"],
             }
+        if ambiguous_candidate_outcome:
+            continue
         for budget in edit_budgets:
             eligible = [row for row in collapsed.values() if row["edit_count"] <= budget]
             if len(eligible) < minimum_measured_candidates:

@@ -149,7 +149,7 @@ def execute(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
     device, observed_free_bytes = classical.require_cuda_device(
         str(config["device"]), physical_index, int(config.get("minimum_free_gpu_memory_bytes", 0))
     )
-    cuda_provenance = cuda_device_observation(physical_index)
+    cuda_provenance = cuda_device_observation(physical_index, require_physical_index_match=True)
     result = json.loads(Path(config["frozen_result_path"]).read_text(encoding="utf-8"))
     validate_frozen_result(result)
     baseline = dict(config["baseline"])

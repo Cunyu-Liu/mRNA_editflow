@@ -249,7 +249,7 @@ def execute(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
     cut_start, cut_end = int(config["cut_start"]), int(config["cut_end"])
     _require((cut_start, cut_end) == (80, 105), "APARENT proximal cut window changed")
     torch.cuda.set_device(device)
-    cuda_provenance = cuda_device_observation(physical_gpu_index)
+    cuda_provenance = cuda_device_observation(physical_gpu_index, require_physical_index_match=True)
     torch.cuda.reset_peak_memory_stats(device)
     result_stage = str(config.get("result_stage", ""))
     included_splits = splits_for_result_stage(result_stage)

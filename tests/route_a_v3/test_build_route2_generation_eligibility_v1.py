@@ -54,18 +54,27 @@ def test_generation_cohorts_use_fixed_budgets_and_no_canonical_credit() -> None:
     assert summary["evaluation_records_read"] == 0
 
 
-def test_unequal_duplicate_candidate_outcomes_are_not_silently_averaged() -> None:
+def test_unequal_duplicate_candidate_outcomes_exclude_the_source_group() -> None:
     module = _load()
-    key = ("S", "SRC", "CTX", "END")
-    groups = {key: [_row("r1", "CAAA", 1.0), _row("r2", "CAAA", 2.0)]}
-    with pytest.raises(module.EligibilityError, match="unequal outcomes"):
-        module.build_eligibility(
-            groups,
-            requested_split="TEST",
-            edit_budgets=(1, 3, 5),
-            candidate_budget=8,
-            minimum_measured_candidates=2,
-        )
+    ambiguous_key = ("S", "SRC", "CTX", "END")
+    eligible_key = ("S", "SRC2", "CTX", "END")
+    eligible_rows = [_row("r3", "CAAA", 1.0), _row("r4", "GAAA", 2.0)]
+    for row in eligible_rows:
+        row["source_id"] = "SRC2"
+    groups = {
+        ambiguous_key: [_row("r1", "CAAA", 1.0), _row("r2", "CAAA", 2.0)],
+        eligible_key: eligible_rows,
+    }
+    sources, measured, summary = module.build_eligibility(
+        groups,
+        requested_split="TEST",
+        edit_budgets=(1, 3, 5),
+        candidate_budget=8,
+        minimum_measured_candidates=2,
+    )
+    assert {row["source_id"] for row in sources} == {"SRC2"}
+    assert {record_id for row in measured for record_id in row["canonical_record_ids"]} == {"r3", "r4"}
+    assert summary["exclusions"]["AMBIGUOUS_DUPLICATE_CANDIDATE_OUTCOME_SOURCE_GROUP"] == 1
 
 
 def test_too_small_measured_pool_is_excluded_with_reason() -> None:

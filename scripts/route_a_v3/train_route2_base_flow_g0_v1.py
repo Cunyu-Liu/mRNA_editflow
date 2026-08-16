@@ -251,7 +251,7 @@ def _loss(model: Route2BaseFlowModel, batch: Mapping[str, Any]) -> torch.Tensor:
 def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
     _require(not output_dir.exists(), f"output already exists: {output_dir}")
     device = require_cuda_device(str(config["device"]), int(config["physical_gpu_index"]))
-    cuda_provenance = cuda_device_observation(int(config["physical_gpu_index"]))
+    cuda_provenance = cuda_device_observation(int(config["physical_gpu_index"]), require_physical_index_match=True)
     train_ids = load_manifest_ids(Path(config["development_manifest"]), "TRAIN")
     validation_ids = load_manifest_ids(Path(config["development_manifest"]), "VALIDATION")
     canonical_paths = [Path(path) for path in config["canonical_paths"]]

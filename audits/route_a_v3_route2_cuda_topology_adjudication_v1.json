@@ -1,0 +1,36 @@
+{
+  "schema_version": "route_a_v3_route2_cuda_topology_adjudication.v1",
+  "observed_at": "2026-08-16",
+  "status": "TWO_HPO_RUNS_EXCLUDED_AND_REPLAY_REQUIRED",
+  "cause": "PYTORCH_CUDA_LOGICAL_INDEX_7_IS_A_MIG_INSTANCE_ON_PHYSICAL_GPU_6_NOT_PHYSICAL_GPU_7",
+  "cuda_visible_devices": null,
+  "observed_topology": {
+    "cuda:6": {
+      "torch_device_name": "NVIDIA A100-PCIE-40GB MIG 1g.5gb",
+      "torch_total_memory_mb": 4864.0,
+      "torch_parent_gpu_uuid": "1bbaf049-a78e-a985-19d4-02448974ccf8",
+      "declared_physical_gpu_index": 6,
+      "declared_physical_gpu_uuid": "1bbaf049-a78e-a985-19d4-02448974ccf8",
+      "physical_identity_match": true
+    },
+    "cuda:7": {
+      "torch_device_name": "NVIDIA A100-PCIE-40GB MIG 1g.5gb",
+      "torch_total_memory_mb": 4864.0,
+      "torch_parent_gpu_uuid": "1bbaf049-a78e-a985-19d4-02448974ccf8",
+      "declared_physical_gpu_index": 7,
+      "declared_physical_gpu_uuid": "d41cb4b0-575c-7993-2ec7-fe486aa8fb63",
+      "physical_identity_match": false
+    }
+  },
+  "excluded_run_directories": [
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/external_lr1e3_wd1e4_v1",
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/utrlm_lr1e3_wd1e4_v1"
+  ],
+  "replacement_run_directories": [
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/external_lr1e3_wd1e4_replay_gpu5_v1",
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/utrlm_lr1e3_wd1e4_replay_gpu5_v1"
+  ],
+  "evaluation_outcomes_accessed": false,
+  "original_artifacts_deleted_or_modified": false,
+  "scientific_claim_status": "NOT_ESTABLISHED"
+}

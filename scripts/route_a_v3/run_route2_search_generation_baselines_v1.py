@@ -457,7 +457,7 @@ def scoring_execution_provenance(
             "device": device_text,
             "physical_gpu_index": physical_gpu_index,
             "cpu_fallback_used": False,
-            **cuda_device_observation(physical_gpu_index),
+            **cuda_device_observation(physical_gpu_index, require_physical_index_match=True),
         }
     return {
         "critic_scoring_execution": "PRECOMPUTED_SCORE_TABLE",

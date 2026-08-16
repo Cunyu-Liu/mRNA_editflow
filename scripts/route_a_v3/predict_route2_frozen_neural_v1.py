@@ -201,7 +201,7 @@ def execute(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
     device = torch.device(str(config["device"]))
     _require(device.index == physical_index, "CUDA device differs from declared physical GPU")
     torch.cuda.set_device(device)
-    cuda_provenance = cuda_device_observation(physical_index)
+    cuda_provenance = cuda_device_observation(physical_index, require_physical_index_match=True)
     selected_ids = load_evaluation_manifest(Path(config["evaluation_manifest_path"]))
     records = load_prediction_records([Path(path) for path in config["evaluation_canonical_paths"]], selected_ids)
     model, checkpoint, model_kind = _load_checkpoint(Path(config["checkpoint_path"]), device)

@@ -320,7 +320,7 @@ def execute(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
     device = torch.device(str(config["device"]))
     _require(device.index == physical_gpu_index, "CUDA device differs from declared physical GPU")
     torch.cuda.set_device(device)
-    cuda_provenance = cuda_device_observation(physical_gpu_index)
+    cuda_provenance = cuda_device_observation(physical_gpu_index, require_physical_index_match=True)
     torch.cuda.reset_peak_memory_stats(device)
     result_stage = str(config.get("result_stage", ""))
     included_splits = splits_for_result_stage(result_stage)
