@@ -1,0 +1,15 @@
+{
+  "schema_version": "route_a_v3_route2_frozen_neural_prediction_config.v1",
+  "evaluation_release_state": "PREDICTOR_GENERATOR_AND_BASELINES_FROZEN",
+  "evaluation_outcomes_used_for_training_hpo_or_selection": 0,
+  "device": "cuda:3",
+  "physical_gpu_index": 3,
+  "evaluation_manifest_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/manifests/route2_complete_frozen_v1/evaluation_manifest.jsonl",
+  "evaluation_canonical_paths": [
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE232572/v1/canonical_records.private.jsonl"
+  ],
+  "checkpoint_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_frozen_test/neural_medium_siamese_cnn_seed20260816_frozen_development_test_gpu3_v1/delta_predictor_checkpoint.pt",
+  "baseline_id": "neural_medium_siamese_cnn",
+  "batch_size": 64,
+  "output_directory": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/evaluation_zero_shot/gse232572_neural_medium_siamese_gpu3_v1"
+}
