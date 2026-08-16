@@ -1,0 +1,17 @@
+{
+  "schema_version": "route_a_v3_route2_evaluation_strongest_prediction_assembly_config.v1",
+  "evaluation_release_state": "PREDICTOR_GENERATOR_AND_BASELINES_FROZEN",
+  "evaluation_outcomes_used_for_training_hpo_or_selection": 0,
+  "evaluation_manifest_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/manifests/route2_complete_frozen_v1/evaluation_manifest.jsonl",
+  "evaluation_canonical_paths": [
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE232572/v1/canonical_records.private.jsonl"
+  ],
+  "strongest_selection_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/audits/route_a_v3_route2_strongest_prediction_baselines_v1.json",
+  "baseline_predictions": [
+    {
+      "baseline_id": "neural_medium_siamese_cnn",
+      "prediction_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/evaluation_zero_shot/gse232572_neural_medium_siamese_gpu3_v1/predictions.jsonl",
+      "prediction_summary_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/evaluation_zero_shot/gse232572_neural_medium_siamese_gpu3_v1/summary.json"
+    }
+  ]
+}
