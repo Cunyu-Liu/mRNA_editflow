@@ -306,6 +306,17 @@ def test_hpo_stage_withholds_development_test_outcomes() -> None:
     assert withheld == 1
 
 
+def test_frozen_validation_stage_keeps_validation_out_of_training() -> None:
+    trainer = _load(TRAIN_PATH, "route2_delta_frozen_validation_stage_test")
+    selected, withheld = trainer.fixed_split_records(
+        _fixed_split_records(trainer), "FROZEN_DEVELOPMENT_VALIDATION"
+    )
+    assert set(selected) == {"TRAIN", "VALIDATION"}
+    assert [row.record_id for row in selected["TRAIN"]] == ["train"]
+    assert [row.record_id for row in selected["VALIDATION"]] == ["validation"]
+    assert withheld == 1
+
+
 def test_frozen_stage_exposes_development_test_once() -> None:
     trainer = _load(TRAIN_PATH, "route2_delta_frozen_test_stage_test")
     selected, withheld = trainer.fixed_split_records(

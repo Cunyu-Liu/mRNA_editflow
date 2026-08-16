@@ -132,7 +132,7 @@ def test_checkpoint_search_requires_gpu_training_provenance_and_preserves_failur
 def test_checkpoint_search_requires_frozen_observed_cuda_provenance() -> None:
     module = _load()
     provenance = {
-        "result_stage": "FROZEN_DEVELOPMENT_TEST",
+        "result_stage": "FROZEN_DEVELOPMENT_VALIDATION",
         "optimizer_steps": 10,
         "parameter_changed": True,
         "cpu_fallback_used": False,
@@ -144,7 +144,7 @@ def test_checkpoint_search_requires_frozen_observed_cuda_provenance() -> None:
         "cuda_total_memory_mb": 40960.0,
     }
     module.validate_frozen_checkpoint_provenance(provenance)
-    for field, value in (("result_stage", "HPO_VALIDATION_ONLY"), ("cuda_device_uuid", None)):
+    for field, value in (("result_stage", "FROZEN_DEVELOPMENT_TEST"), ("cuda_device_uuid", None)):
         invalid = dict(provenance)
         invalid[field] = value
         with pytest.raises(module.SearchBaselineError, match="frozen learned GPU"):

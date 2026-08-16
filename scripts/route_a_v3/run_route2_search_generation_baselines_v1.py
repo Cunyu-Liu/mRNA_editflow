@@ -152,7 +152,7 @@ def validate_frozen_checkpoint_provenance(provenance: Mapping[str, object]) -> N
     physical_index = provenance.get("physical_gpu_index")
     total_memory = provenance.get("cuda_total_memory_mb")
     _require(
-        provenance.get("result_stage") == "FROZEN_DEVELOPMENT_TEST"
+        provenance.get("result_stage") == "FROZEN_DEVELOPMENT_VALIDATION"
         and isinstance(provenance.get("optimizer_steps"), int)
         and int(provenance["optimizer_steps"]) > 0
         and provenance.get("parameter_changed") is True

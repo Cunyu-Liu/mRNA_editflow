@@ -212,7 +212,11 @@ def fixed_split_records(
 ) -> tuple[dict[str, list[DeltaRecord]], int]:
     """Expose Development TEST outcomes only after the configuration is frozen."""
     _require(
-        result_stage in {"HPO_VALIDATION_ONLY", "FROZEN_DEVELOPMENT_TEST"},
+        result_stage in {
+            "HPO_VALIDATION_ONLY",
+            "FROZEN_DEVELOPMENT_VALIDATION",
+            "FROZEN_DEVELOPMENT_TEST",
+        },
         f"invalid result_stage for fixed split: {result_stage}",
     )
     complete = {
@@ -220,7 +224,7 @@ def fixed_split_records(
         for split in ("TRAIN", "VALIDATION", "TEST")
     }
     _require(all(complete.values()), "Development split is incomplete")
-    if result_stage == "HPO_VALIDATION_ONLY":
+    if result_stage in {"HPO_VALIDATION_ONLY", "FROZEN_DEVELOPMENT_VALIDATION"}:
         return {split: complete[split] for split in ("TRAIN", "VALIDATION")}, len(complete["TEST"])
     return {"TRAIN": complete["TRAIN"] + complete["VALIDATION"], "TEST": complete["TEST"]}, 0
 
