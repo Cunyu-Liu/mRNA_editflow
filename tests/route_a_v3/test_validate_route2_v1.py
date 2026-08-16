@@ -54,6 +54,7 @@ def test_development_is_not_blocked_by_old_qualification_or_authority_workflows(
     assert policy["flow_g0_implementation_enabled"] is True
     assert policy["training_requires_nvidia_gpu"] is True
     assert policy["training_cuda_fallback_to_cpu_allowed"] is False
+    assert policy["eligible_physical_gpu_indices"] == list(range(8))
     assert policy["successor_authority_required"] is False
     assert policy["runtime_ledger_required"] is False
     assert policy["one_read_required"] is False

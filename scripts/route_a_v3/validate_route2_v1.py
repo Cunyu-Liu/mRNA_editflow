@@ -99,7 +99,7 @@ def validate_config(config: dict[str, Any]) -> dict[str, Any]:
     ):
         _require(policy[key] is True, f"required Route 2 policy disabled: {key}")
     _require(policy["training_cuda_fallback_to_cpu_allowed"] is False, "CPU training fallback is enabled")
-    _require(policy["eligible_physical_gpu_indices"] == [0, 1, 2, 3, 4, 5], "unexpected GPU set")
+    _require(policy["eligible_physical_gpu_indices"] == list(range(8)), "unexpected GPU set")
     for key in (
         "successor_authority_required",
         "runtime_ledger_required",
