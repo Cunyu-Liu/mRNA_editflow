@@ -60,6 +60,7 @@ def test_builder_uses_complete_development_tasks_and_source_group_bootstrap(tmp_
             {"baseline_id": "left", "baseline_family": "TEST", "parameter_count": 10, "validation_predictions_path": str(left)},
             {"baseline_id": "right", "baseline_family": "TEST", "parameter_count": 5, "validation_predictions_path": str(right)},
         ],
+        "comparison_policy": "POINT_LEADER_VS_ALL_FINITE",
         "bootstrap_iterations": 1000,
         "seed": 7,
         "evaluation_outcomes_accessed": False,
@@ -83,5 +84,39 @@ def test_incomplete_task_prediction_coverage_is_rejected(tmp_path: Path) -> None
             "schema_version": "route_a_v3_route2_prediction_baseline_bootstrap_config.v1",
             "development_manifest_path": str(manifest), "canonical_paths": [str(canonical)],
             "baselines": [{"baseline_id": "right", "baseline_family": "TEST", "parameter_count": 5, "validation_predictions_path": str(right)}],
+            "comparison_policy": "POINT_LEADER_VS_ALL_FINITE",
             "bootstrap_iterations": 1000, "seed": 7, "evaluation_outcomes_accessed": False,
         })
+
+
+def test_point_leader_policy_avoids_unused_nonleader_pair(tmp_path: Path) -> None:
+    module = _load()
+    manifest, canonical, left, right = _write_fixture(tmp_path)
+    middle = tmp_path / "middle.jsonl"
+    rows = [json.loads(line) for line in left.read_text(encoding="utf-8").splitlines()]
+    first = rows[0]["predicted_direction_normalized_delta"]
+    rows[0]["predicted_direction_normalized_delta"] = rows[1]["predicted_direction_normalized_delta"]
+    rows[1]["predicted_direction_normalized_delta"] = first
+    middle.write_text("".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8")
+    result = module.build({
+        "schema_version": "route_a_v3_route2_prediction_baseline_bootstrap_config.v1",
+        "development_manifest_path": str(manifest),
+        "canonical_paths": [str(canonical)],
+        "baselines": [
+            {"baseline_id": "leader", "baseline_family": "TEST", "parameter_count": 10, "validation_predictions_path": str(left)},
+            {"baseline_id": "middle", "baseline_family": "TEST", "parameter_count": 5, "validation_predictions_path": str(middle)},
+            {"baseline_id": "last", "baseline_family": "TEST", "parameter_count": 1, "validation_predictions_path": str(right)},
+        ],
+        "comparison_policy": "POINT_LEADER_VS_ALL_FINITE",
+        "bootstrap_iterations": 1000,
+        "seed": 7,
+        "evaluation_outcomes_accessed": False,
+    })
+    pairs = {
+        frozenset((row["left_baseline_id"], row["right_baseline_id"]))
+        for row in result["paired_validation_bootstrap"]
+    }
+    assert pairs == {
+        frozenset(("leader", "middle")),
+        frozenset(("leader", "last")),
+    }

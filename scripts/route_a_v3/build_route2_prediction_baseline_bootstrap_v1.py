@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import argparse
-import itertools
 import json
 import math
 from collections import defaultdict
@@ -143,6 +142,11 @@ def build(config: Mapping[str, Any]) -> dict[str, Any]:
     _require(config["evaluation_outcomes_accessed"] is False, "baseline bootstrap accessed Evaluation")
     iterations = int(config["bootstrap_iterations"])
     _require(iterations >= 1000, "baseline bootstrap budget is below 1000 iterations")
+    comparison_policy = str(config["comparison_policy"])
+    _require(
+        comparison_policy == "POINT_LEADER_VS_ALL_FINITE",
+        "unsupported baseline bootstrap comparison policy",
+    )
     validation_ids = load_validation_manifest(Path(config["development_manifest_path"]))
     observations = load_observations([Path(path) for path in config["canonical_paths"]], validation_ids)
     task_ids: dict[str, set[str]] = defaultdict(set)
@@ -152,6 +156,8 @@ def build(config: Mapping[str, Any]) -> dict[str, Any]:
     entries = []
     predictions_by_baseline = {}
     tasks_by_baseline = {}
+    parameter_count_by_baseline = {}
+    task_metrics_by_baseline = {}
     identifiers = [str(spec["baseline_id"]) for spec in config["baselines"]]
     _require(len(identifiers) == len(set(identifiers)) and identifiers, "baseline inventory is empty or duplicated")
     for spec in config["baselines"]:
@@ -178,6 +184,8 @@ def build(config: Mapping[str, Any]) -> dict[str, Any]:
         })
         predictions_by_baseline[baseline_id] = predictions
         tasks_by_baseline[baseline_id] = set(covered_tasks)
+        parameter_count_by_baseline[baseline_id] = int(spec["parameter_count"])
+        task_metrics_by_baseline[baseline_id] = task_metrics
 
     comparisons = []
     seed = int(config["seed"])
@@ -185,10 +193,20 @@ def build(config: Mapping[str, Any]) -> dict[str, Any]:
         baselines = sorted(baseline_id for baseline_id in identifiers if task in tasks_by_baseline[baseline_id])
         rows = [observations[record_id] for record_id in sorted(task_ids[task])]
         finite = [baseline_id for baseline_id in baselines if _spearman(rows, predictions_by_baseline[baseline_id]) is not None]
-        for pair_index, (left_id, right_id) in enumerate(itertools.combinations(finite, 2)):
+        ranked = sorted(
+            finite,
+            key=lambda baseline_id: (
+                -float(task_metrics_by_baseline[baseline_id][task]["spearman"]),
+                parameter_count_by_baseline[baseline_id],
+                float(task_metrics_by_baseline[baseline_id][task]["mae"]),
+                baseline_id,
+            ),
+        )
+        pairs = [] if not ranked else [(ranked[0], baseline_id) for baseline_id in ranked[1:]]
+        for left_id, right_id in pairs:
             result = paired_source_group_bootstrap(
                 rows, predictions_by_baseline[left_id], predictions_by_baseline[right_id],
-                iterations=iterations, seed=seed + pair_index,
+                iterations=iterations, seed=seed + len(comparisons),
             )
             comparisons.append({
                 "task": task,
@@ -203,6 +221,7 @@ def build(config: Mapping[str, Any]) -> dict[str, Any]:
         "evaluation_outcomes_accessed": False,
         "baseline_evaluations": entries,
         "paired_validation_bootstrap": comparisons,
+        "comparison_policy": comparison_policy,
         "bootstrap_analysis_unit": "SOURCE_GROUP",
         "scientific_claim_status": "NOT_ESTABLISHED",
     }
