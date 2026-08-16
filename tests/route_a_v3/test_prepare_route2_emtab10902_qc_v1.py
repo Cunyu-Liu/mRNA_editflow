@@ -46,7 +46,7 @@ def _small_workbook(path: Path) -> None:
     workbook.save(path)
 
 
-def test_outcome_blind_library_and_read_membership_use_read_count_column(tmp_path: Path) -> None:
+def test_outcome_blind_library_and_read_membership_use_unique_molecule_column(tmp_path: Path) -> None:
     module = _module()
     module.EXPECTED_DESIGN_ROWS = 3
     module.EXPECTED_UNIQUE_SEQUENCES = 2
@@ -71,14 +71,20 @@ def test_outcome_blind_library_and_read_membership_use_read_count_column(tmp_pat
         path = tmp_path / f"{sample_id}.txt"
         with path.open("w", encoding="utf-8") as handle:
             for sequence_id in unique_ids:
-                read_count = 25 if sequence_id == duplicated_id else (25 if sample_index == 0 else 0)
-                handle.write(f"{sequence_id}\t999\t{read_count}\textra\n")
+                unique_molecule_count = 25 if sequence_id == duplicated_id else (25 if sample_index == 0 else 0)
+                handle.write(f"{sequence_id}\t{unique_molecule_count}\t999\textra\n")
         count_specs.append(f"{sample_id}={path}")
     closed = tmp_path / "closed"
     qc_summary = module.close_qc(prepared / "design_row_to_sequence_id.jsonl", count_specs, closed)
     assert qc_summary["publisher_reported_count_reproduced"] is True
     assert qc_summary["passed_design_row_count"] == 2
     assert qc_summary["passed_unique_sequence_count"] == 1
+    assert qc_summary["count_measure"] == "UNIQUE_UMI_COUNT"
+    membership = [
+        json.loads(line)
+        for line in (closed / "publisher_read_qc_membership.jsonl").read_text(encoding="utf-8").splitlines()
+    ]
+    assert all(set(row["raw_read_counts"].values()) == {999} for row in membership)
 
 
 def test_qc_closure_rejects_missing_primary_sample(tmp_path: Path) -> None:

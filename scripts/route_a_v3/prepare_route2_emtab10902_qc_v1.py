@@ -15,7 +15,7 @@ from openpyxl import load_workbook
 EXPECTED_DESIGN_ROWS = 6266
 EXPECTED_UNIQUE_SEQUENCES = 6260
 PUBLISHER_REPORTED_PASSING_DESIGNS = 5679
-MINIMUM_READS = 20
+MINIMUM_COUNTED_MOLECULES = 20
 MINIMUM_PASSING_SAMPLES = 3
 SAMPLE_IDS = (
     "ERR7337821",
@@ -124,19 +124,30 @@ def load_mapping(path: Path) -> list[dict[str, Any]]:
     return rows
 
 
-def load_read_counts(path: Path) -> dict[str, int]:
-    result: dict[str, int] = {}
+def load_count_table(path: Path) -> dict[str, dict[str, int]]:
+    result: dict[str, dict[str, int]] = {}
     with path.open(encoding="utf-8") as handle:
         for line_number, line in enumerate(handle, start=1):
             fields = line.rstrip("\n").split("\t")
             _require(len(fields) >= 3, f"count row width changed in {path.name}:{line_number}")
-            sequence_id, _umi_count, read_count = fields[:3]
+            sequence_id, unique_molecule_count, raw_read_count = fields[:3]
             _require(sequence_id not in result, f"duplicate sequence id in {path.name}")
             try:
-                result[sequence_id] = int(read_count)
+                result[sequence_id] = {
+                    "unique_molecule_count": int(unique_molecule_count),
+                    "raw_read_count": int(raw_read_count),
+                }
             except ValueError as exc:
-                raise QcPreparationError(f"noninteger read count in {path.name}:{line_number}") from exc
-            _require(result[sequence_id] >= 0, f"negative read count in {path.name}:{line_number}")
+                raise QcPreparationError(f"noninteger count in {path.name}:{line_number}") from exc
+            _require(
+                result[sequence_id]["unique_molecule_count"] >= 0
+                and result[sequence_id]["raw_read_count"] >= 0,
+                f"negative count in {path.name}:{line_number}",
+            )
+            _require(
+                result[sequence_id]["unique_molecule_count"] <= result[sequence_id]["raw_read_count"],
+                f"unique-molecule count exceeds raw-read count in {path.name}:{line_number}",
+            )
     _require(len(result) == EXPECTED_UNIQUE_SEQUENCES, f"count member count changed in {path.name}")
     return result
 
@@ -152,7 +163,7 @@ def close_qc(mapping_path: Path, count_specs: list[str], output_dir: Path) -> di
     _require(set(parsed) == set(SAMPLE_IDS), "count sample set differs from the six primary WT secondary N-zip samples")
 
     mapping = load_mapping(mapping_path)
-    counts_by_sample = {sample_id: load_read_counts(parsed[sample_id]) for sample_id in SAMPLE_IDS}
+    counts_by_sample = {sample_id: load_count_table(parsed[sample_id]) for sample_id in SAMPLE_IDS}
     expected_ids = {row["sequence_id"] for row in mapping}
     for sample_id, counts in counts_by_sample.items():
         _require(set(counts) == expected_ids, f"count sequence ids changed in {sample_id}")
@@ -164,27 +175,46 @@ def close_qc(mapping_path: Path, count_specs: list[str], output_dir: Path) -> di
     with membership_path.open("w", encoding="utf-8") as handle:
         for row in mapping:
             sequence_id = row["sequence_id"]
-            read_counts = {sample_id: counts_by_sample[sample_id][sequence_id] for sample_id in SAMPLE_IDS}
-            samples_at_least_20 = sum(value >= MINIMUM_READS for value in read_counts.values())
+            unique_molecule_counts = {
+                sample_id: counts_by_sample[sample_id][sequence_id]["unique_molecule_count"]
+                for sample_id in SAMPLE_IDS
+            }
+            raw_read_counts = {
+                sample_id: counts_by_sample[sample_id][sequence_id]["raw_read_count"]
+                for sample_id in SAMPLE_IDS
+            }
+            samples_at_least_20 = sum(
+                value >= MINIMUM_COUNTED_MOLECULES for value in unique_molecule_counts.values()
+            )
             passes = samples_at_least_20 >= MINIMUM_PASSING_SAMPLES
             passed_designs += int(passes)
             if passes:
                 passed_sequence_ids.add(sequence_id)
             payload = {
                 **row,
-                "read_counts": read_counts,
-                "samples_at_least_20_reads": samples_at_least_20,
+                "unique_molecule_counts": unique_molecule_counts,
+                "raw_read_counts": raw_read_counts,
+                "samples_at_least_20_counted_molecules": samples_at_least_20,
                 "passes_publisher_read_qc": passes,
             }
             handle.write(json.dumps(payload, sort_keys=True) + "\n")
 
     summary = {
-        "schema_version": "route_a_v3_route2_emtab10902_qc_membership.v1",
+        "schema_version": "route_a_v3_route2_emtab10902_qc_membership.v2",
         "status": "PUBLISHER_READ_QC_REPRODUCED" if passed_designs == PUBLISHER_REPORTED_PASSING_DESIGNS else "PUBLISHER_READ_QC_COUNT_MISMATCH",
         "evaluation_outcome_sheet_read": False,
         "sample_ids": list(SAMPLE_IDS),
-        "minimum_reads_per_sample": MINIMUM_READS,
+        "count_measure": "UNIQUE_UMI_COUNT",
+        "minimum_counted_molecules_per_sample": MINIMUM_COUNTED_MOLECULES,
         "minimum_passing_sample_count": MINIMUM_PASSING_SAMPLES,
+        "sample_unique_molecule_totals": {
+            sample_id: sum(row["unique_molecule_count"] for row in counts_by_sample[sample_id].values())
+            for sample_id in SAMPLE_IDS
+        },
+        "sample_raw_read_totals": {
+            sample_id: sum(row["raw_read_count"] for row in counts_by_sample[sample_id].values())
+            for sample_id in SAMPLE_IDS
+        },
         "design_row_count": len(mapping),
         "unique_sequence_count": len(expected_ids),
         "passed_design_row_count": passed_designs,
