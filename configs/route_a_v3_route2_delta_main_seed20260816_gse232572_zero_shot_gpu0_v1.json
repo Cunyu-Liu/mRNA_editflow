@@ -8,7 +8,7 @@
   "evaluation_canonical_paths": [
     "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE232572/v1/canonical_records.private.jsonl"
   ],
-  "checkpoint_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_frozen_test/delta_main_2m_lr3e4_seed20260816_frozen_development_test_v1/delta_predictor_checkpoint.pt",
+  "checkpoint_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_frozen_test/delta_main_2m_lr3e4_seed20260816_frozen_development_test_gpu0_v1/delta_predictor_checkpoint.pt",
   "baseline_id": "delta_main_2m_lr3e4_seed20260816_frozen_development_test",
   "batch_size": 64,
   "output_directory": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/evaluation_zero_shot/gse232572_delta_main_seed20260816_gpu0_v1"
