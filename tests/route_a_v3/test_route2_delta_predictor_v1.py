@@ -245,6 +245,24 @@ def test_explicit_study_subset_is_auditable_and_rejects_duplicates() -> None:
         trainer.select_study_subset(records, ["A", "A"])
 
 
+def test_explicit_region_subset_is_auditable_and_rejects_mixed_region_labels() -> None:
+    trainer = _load(TRAIN_PATH, "route2_delta_region_subset_test")
+    records = [
+        _delta_record(trainer, "five", "A", "g"),
+        trainer.DeltaRecord(
+            record_id="three", split="TRAIN", source="AAAA", candidate="CAAA",
+            target=1.0, source_group="h", study="A", assay="A", context="C",
+            endpoint="E", region=1,
+        ),
+    ]
+    selected, included, excluded = trainer.select_region_subset(records, ["3′UTR"])
+    assert [row.record_id for row in selected] == ["three"]
+    assert included == ["3UTR"]
+    assert excluded == 1
+    with pytest.raises(trainer.DeltaTrainingError, match="unsupported"):
+        trainer.select_region_subset(records, ["CDS"])
+
+
 def _fixed_split_records(trainer):
     return [
         trainer.DeltaRecord(

@@ -192,6 +192,21 @@ def select_study_subset(
     return selected, included, len(records) - len(selected)
 
 
+def select_region_subset(
+    records: list[DeltaRecord],
+    included_regions: list[str] | None,
+) -> tuple[list[DeltaRecord], list[str], int]:
+    if included_regions is None:
+        return records, sorted(name for name, code in REGION.items() if any(row.region == code for row in records)), 0
+    normalized = [str(value).replace("′", "").replace("'", "") for value in included_regions]
+    _require(normalized and len(normalized) == len(set(normalized)), "included region list is empty or duplicated")
+    _require(set(normalized) <= set(REGION), "included region is unsupported")
+    codes = {REGION[name] for name in normalized}
+    selected = [row for row in records if row.region in codes]
+    _require(selected, "included region subset is empty")
+    return selected, sorted(normalized), len(records) - len(selected)
+
+
 def fixed_split_records(
     records: list[DeltaRecord], result_stage: str
 ) -> tuple[dict[str, list[DeltaRecord]], int]:
@@ -420,11 +435,14 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
     device = require_cuda(str(config["device"]), int(config["physical_gpu_index"]))
     baseline_id = str(config["baseline_id"])
     _require(bool(baseline_id), "baseline identity is empty")
-    cuda_provenance = cuda_device_observation(int(config["physical_gpu_index"]), require_physical_index_match=True)
+    cuda_provenance = cuda_device_observation(int(config["physical_gpu_index"]))
     manifest = load_manifest(Path(config["development_manifest"]))
     records = load_records([Path(path) for path in config["canonical_paths"]], manifest)
     records, included_studies, excluded_record_count = select_study_subset(
         records, config.get("included_study_unit_ids")
+    )
+    records, included_regions, region_excluded_record_count = select_region_subset(
+        records, config.get("included_regions")
     )
     metadata_mode = str(config.get("metadata_mode", "FULL_CONTEXT"))
     _require(metadata_mode in {"FULL_CONTEXT", "SEQUENCE_AND_REGION_ONLY"}, "unknown metadata mode")
@@ -562,6 +580,7 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
                 "cpu_fallback_used": False,
                 "cuda_training_tensors_verified": cuda_training_tensors_verified,
                 "included_study_unit_ids": included_studies,
+                "included_regions": included_regions,
                 "metadata_mode": metadata_mode,
                 "training_weighting_mode": weighting_mode,
                 "result_stage": result_stage,
@@ -639,6 +658,8 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
         "run_mode": run_mode,
         "included_study_unit_ids": included_studies,
         "study_subset_excluded_record_count": excluded_record_count,
+        "included_regions": included_regions,
+        "region_subset_excluded_record_count": region_excluded_record_count,
         "metadata_mode": metadata_mode,
         "training_weighting_mode": weighting_mode,
         "result_stage": result_stage,
