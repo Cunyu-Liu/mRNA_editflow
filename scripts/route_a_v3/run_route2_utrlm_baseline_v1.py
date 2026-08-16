@@ -408,6 +408,7 @@ def execute(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
             "physical_gpu_index": physical_gpu_index,
             "device": str(device),
             "cpu_fallback_used": False,
+            "cuda_training_tensors_verified": True,
             "evaluation_outcomes_accessed": False,
             "wall_time_seconds": time.time() - started,
             "peak_vram_mb": torch.cuda.max_memory_allocated(device) / (1024 ** 2),

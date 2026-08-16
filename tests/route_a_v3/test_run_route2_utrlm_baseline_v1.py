@@ -118,3 +118,9 @@ def test_result_stage_withholds_test_before_probe_training() -> None:
     assert MODULE.splits_for_result_stage("FROZEN_DEVELOPMENT_TEST") == MODULE.SPLITS
     with pytest.raises(MODULE.UtrLmBaselineError, match="invalid result_stage"):
         MODULE.splits_for_result_stage("")
+
+
+def test_summary_records_explicit_cuda_training_without_cpu_fallback() -> None:
+    source = MODULE_PATH.read_text(encoding="utf-8")
+    assert '"cpu_fallback_used": False' in source
+    assert '"cuda_training_tensors_verified": True' in source

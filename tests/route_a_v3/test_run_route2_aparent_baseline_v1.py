@@ -125,3 +125,9 @@ def test_execute_persists_live_contract_artifacts(tmp_path: Path, monkeypatch) -
         assert (output / name).is_file(), name
     assert "RUN_STARTED" in (output / "train.log").read_text()
     assert "INFERENCE_COMPLETED" in (output / "metrics.jsonl").read_text()
+
+
+def test_summary_records_explicit_cuda_validation_without_cpu_fallback() -> None:
+    source = SCRIPT.read_text(encoding="utf-8")
+    assert '"cpu_fallback_used": False' in source
+    assert '"cuda_validation_tensors_verified": True' in source

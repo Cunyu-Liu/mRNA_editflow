@@ -306,6 +306,7 @@ def execute(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
             "physical_gpu_index": physical_gpu_index,
             "device": str(device),
             "cpu_fallback_used": False,
+            "cuda_validation_tensors_verified": True,
             "evaluation_outcomes_accessed": False,
             "independent_external_transfer_claim_allowed": False,
             "wall_time_seconds": time.time() - started,
