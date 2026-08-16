@@ -1,0 +1,58 @@
+{
+  "schema_version": "route_a_v3_route2_external_hpo_selection.v1",
+  "status": "EXTERNAL_ADAPTER_HYPERPARAMETERS_FROZEN_FROM_DEVELOPMENT_VALIDATION",
+  "selection_pool": "DEVELOPMENT_VALIDATION",
+  "task": "5UTR|MEAN_RIBOSOME_LOAD",
+  "rnafm": {
+    "selected_run_directory": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/external_lr1e3_wd1e4_replay_gpu5_v1",
+    "selected_config_path": "configs/route_a_v3_route2_external_hpo_lr1e3_wd1e4_replay_gpu5_v1.json",
+    "learning_rate": 0.001,
+    "weight_decay": 0.0001,
+    "validation_spearman": 0.13693731732817227,
+    "validation_mae": 0.47297901675762727,
+    "selection_primary_metric": "DEVELOPMENT_VALIDATION_SPEARMAN",
+    "physical_gpu_index": 5,
+    "cuda_device_uuid": "347d7935-3bea-a371-8e23-d97da06b3b47",
+    "cpu_fallback_used": false,
+    "cuda_training_tensors_verified": true
+  },
+  "utrlm": {
+    "selected_run_directory": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/utrlm_lr1e3_wd1e4_replay_gpu5_v1",
+    "selected_config_path": "configs/route_a_v3_route2_utrlm_hpo_lr1e3_wd1e4_replay_gpu5_v1.json",
+    "learning_rate": 0.001,
+    "weight_decay": 0.0001,
+    "validation_spearman": 0.1107267878538859,
+    "validation_mae": 0.4483427366649748,
+    "selection_primary_metric": "DEVELOPMENT_VALIDATION_SPEARMAN_THEN_MAE_EXACT_SPEARMAN_TIE",
+    "physical_gpu_index": 5,
+    "cuda_device_uuid": "347d7935-3bea-a371-8e23-d97da06b3b47",
+    "cpu_fallback_used": false,
+    "cuda_training_tensors_verified_field_in_original_summary": "ABSENT_RUNTIME_CUDA_ASSERTIONS_UUID_AND_PEAK_VRAM_PRESENT"
+  },
+  "fixed_native_adapters": {
+    "optimus5prime": {
+      "hpo_applicable": false,
+      "prediction_definition": "f(candidate)-f(source)"
+    },
+    "framepool": {
+      "hpo_applicable": false,
+      "prediction_definition": "f(candidate)-f(source)"
+    },
+    "aparent": {
+      "hpo_applicable": false,
+      "selected_config_path": "configs/route_a_v3_route2_aparent_hpo_v1.json",
+      "task": "3UTR|PROXIMAL_POLYA_SITE_USAGE_LOG2_ODDS",
+      "validation_spearman": 0.7343148901021292,
+      "validation_mae": 1.2895561683404064,
+      "prediction_definition": "f(candidate)-f(source)"
+    }
+  },
+  "excluded_topology_mismatch_runs": [
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/external_lr1e3_wd1e4_v1",
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/utrlm_lr1e3_wd1e4_v1"
+  ],
+  "development_test_outcomes_accessed": false,
+  "evaluation_outcomes_accessed": false,
+  "strongest_baseline_established": false,
+  "scientific_claim_status": "NOT_ESTABLISHED"
+}
