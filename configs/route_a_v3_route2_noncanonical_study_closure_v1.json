@@ -1,0 +1,78 @@
+{
+  "schema_version": "route_a_v3_route2_noncanonical_study_closure.v1",
+  "route_id": "ROUTE_A_V3_3_ROUTE2",
+  "status": "FOUR_NONCANONICAL_STUDY_UNITS_CLOSED",
+  "scope": {
+    "study_unit_count": 4,
+    "route2_manifest_row_count": 0,
+    "qualified_credit_delta": {
+      "ordinary": 0,
+      "a1": 0,
+      "true_a2": 0,
+      "canonical_records": 0
+    },
+    "scientific_claim_status": "NOT_ESTABLISHED"
+  },
+  "study_closures": [
+    {
+      "study_unit_id": "GSE145046",
+      "pool": "AUXILIARY",
+      "role": "ABSOLUTE_AUXILIARY",
+      "disposition": "ABSOLUTE_AUXILIARY_NO_SOURCE_RELATIVE_CANONICAL_ROWS",
+      "route2_manifest_rows": 0,
+      "canonical_record_count": 0,
+      "reason": "Public processed rows are random 10-nt insert counts or RPM values across assay fractions; the frozen Route 2 evidence does not supply an exact measured source-candidate pairing for the source-relative Delta estimand.",
+      "allowed_use": "ABSOLUTE_PROPERTY_AUXILIARY_SUMMARY_ONLY",
+      "training_eligible": false,
+      "source_material": [
+        "configs/route_a_v3_gse145046_a2_audit.json",
+        "configs/route_a_v3_a1_qualification.json"
+      ]
+    },
+    {
+      "study_unit_id": "GSE207584",
+      "pool": "NEGATIVE_CONTROL",
+      "role": "MAPPING_CARTESIAN_NEGATIVE_CONTROL",
+      "disposition": "ZERO_CANONICAL_MAPPING_NOT_IDENTIFIED",
+      "route2_manifest_rows": 0,
+      "canonical_record_count": 0,
+      "reason": "Measured protein-family and expression aggregates exist, but the available reference and codon-scheme assets do not identify an exact per-variant synonymous source-candidate sequence without a cartesian or fabricated join.",
+      "allowed_use": "MAPPING_FAILURE_NEGATIVE_CONTROL_ONLY",
+      "training_eligible": false,
+      "source_material": [
+        "configs/route_a_v3_gse207584_aggregate_dense_family_qualification_preflight_v1.json",
+        "reports/migration/X0X_CDS_B1_REBUILD_AUDIT_GATE.md"
+      ]
+    },
+    {
+      "study_unit_id": "GSE261709",
+      "pool": "NEGATIVE_CONTROL",
+      "role": "IDENTIFIABILITY_NEGATIVE_CONTROL",
+      "disposition": "ZERO_CANONICAL_INTERVENTION_IDENTITY_NOT_IDENTIFIED",
+      "route2_manifest_rows": 0,
+      "canonical_record_count": 0,
+      "reason": "The processed members expose aggregate barcode-count geometry, but no accepted mapping binds those identifiers to exact source and candidate sequences with a measured source-relative endpoint.",
+      "allowed_use": "IDENTIFIABILITY_FAILURE_NEGATIVE_CONTROL_ONLY",
+      "training_eligible": false,
+      "source_material": [
+        "configs/route_a_v3_gse261709_dec025_processed_member_aggregate_discovery_v1.json",
+        "configs/route_a_v3_route2_v1.json"
+      ]
+    },
+    {
+      "study_unit_id": "GSE246381",
+      "pool": "SEALED_EXCLUDED",
+      "role": "OPTIONAL_SEALED_FINAL",
+      "disposition": "NOT_MATERIALIZED_IN_ROUTE2_SEALED_EXCLUDED",
+      "route2_manifest_rows": 0,
+      "canonical_record_count": null,
+      "reason": "The current Route 2 contract excludes this optional sealed-final study from readable Development and Evaluation manifests; no Route 2 materialization or outcome access is authorized here.",
+      "allowed_use": "NONE_UNLESS_SEPARATE_FUTURE_AUTHORITY",
+      "training_eligible": false,
+      "historical_exposure_status": "NOT_ASSERTED_BY_THIS_ROUTE2_CLOSURE",
+      "source_material": [
+        "configs/route_a_v3_route2_v1.json"
+      ]
+    }
+  ]
+}
