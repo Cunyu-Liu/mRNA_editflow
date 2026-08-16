@@ -80,6 +80,14 @@ def adjudicate(payload: Mapping[str, Any]) -> dict[str, Any]:
         - _finite(row["baseline_macro_spearman"], "baseline macro Spearman") > 0.0
         for row in loso_rows
     )
+    control_margin_value = critic.get("minimum_negative_control_margin")
+    control_margin_frozen = (
+        isinstance(control_margin_value, (int, float))
+        and not isinstance(control_margin_value, bool)
+        and math.isfinite(float(control_margin_value))
+        and float(control_margin_value) > 0.0
+    )
+    control_margin = float(control_margin_value) if control_margin_frozen else None
     critic_checks = {
         "learned_gpu_parameter_update": (
             critic_training["status"] == "DELTA_PREDICTOR_DEVELOPMENT_GPU_RUN_COMPLETE"
@@ -95,15 +103,16 @@ def adjudicate(payload: Mapping[str, Any]) -> dict[str, Any]:
         "strongest_same_information_baseline_run": critic["strongest_baseline_status"] == "COMPLETED_DEVELOPMENT_ONLY",
         "three_complete_final_seed_loso_runs_present": complete_loso,
         "all_loso_seed_improvements_positive": positive_loso,
-        "candidate_permutation_control_worse": (
+        "negative_control_margin_pre_frozen": control_margin_frozen,
+        "candidate_permutation_control_worse": control_margin_frozen and (
             _finite(critic["full_model_validation_primary"], "full validation primary")
             - _finite(critic["candidate_permutation_validation_primary"], "candidate permutation primary")
-            >= _finite(critic["minimum_negative_control_margin"], "control margin") > 0.0
+            >= control_margin
         ),
-        "anchor_only_control_worse": (
+        "anchor_only_control_worse": control_margin_frozen and (
             _finite(critic["full_model_validation_primary"], "full validation primary")
             - _finite(critic["anchor_only_validation_primary"], "anchor-only primary")
-            >= _finite(critic["minimum_negative_control_margin"], "control margin")
+            >= control_margin
         ),
         "critic_checkpoint_frozen": critic["critic_checkpoint_frozen"] is True,
         "input_schema_context_reward_frozen": all(
@@ -176,6 +185,7 @@ def adjudicate(payload: Mapping[str, Any]) -> dict[str, Any]:
         "flow_status": "FLOW_G0_READY" if flow_ready else "FLOW_G0_NOT_READY",
         "guided_generation_status": "GUIDED_XEDITFLOW_DEVELOPMENT_ALLOWED" if guided_unlocked else "NOT_STARTED_DEPENDENCY_NOT_MET",
         "critic_checks": critic_checks,
+        "minimum_negative_control_margin": control_margin,
         "flow_checks": flow_checks,
         "guided_unlocked": guided_unlocked,
         "evaluation_opened": False,

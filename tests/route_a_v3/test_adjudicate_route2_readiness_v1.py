@@ -189,6 +189,20 @@ def test_structured_undefined_loso_result_keeps_critic_closed_without_error() ->
     assert result["guided_unlocked"] is False
 
 
+def test_missing_negative_control_margin_is_preserved_as_not_frozen() -> None:
+    module = _load()
+    for missing_value in (None, 0.0):
+        payload = deepcopy(_passing_input())
+        payload["critic"]["minimum_negative_control_margin"] = missing_value
+        result = module.adjudicate(payload)
+        assert result["minimum_negative_control_margin"] is None
+        assert result["critic_checks"]["negative_control_margin_pre_frozen"] is False
+        assert result["critic_checks"]["candidate_permutation_control_worse"] is False
+        assert result["critic_checks"]["anchor_only_control_worse"] is False
+        assert result["critic_status"] == "CRITIC_NOT_READY_FOR_GUIDANCE"
+        assert result["guided_unlocked"] is False
+
+
 def test_critic_requires_real_gpu_training_provenance() -> None:
     module = _load()
     payload = deepcopy(_passing_input())
