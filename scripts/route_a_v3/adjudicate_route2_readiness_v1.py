@@ -83,7 +83,7 @@ def adjudicate(payload: Mapping[str, Any]) -> dict[str, Any]:
     critic_checks = {
         "learned_gpu_parameter_update": (
             critic_training["status"] == "DELTA_PREDICTOR_DEVELOPMENT_GPU_RUN_COMPLETE"
-            and critic_training.get("result_stage") == "FROZEN_DEVELOPMENT_TEST"
+            and critic_training.get("result_stage") == "FROZEN_DEVELOPMENT_VALIDATION"
             and critic_training["optimizer_steps"] > 0
             and critic_training["parameter_changed"] is True
             and critic_training.get("cuda_training_tensors_verified") is True

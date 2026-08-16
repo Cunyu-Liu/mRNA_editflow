@@ -30,7 +30,7 @@ def _passing_input():
                 "cpu_fallback_used": False, "cuda_training_tensors_verified": True,
                 "cuda_device_index": 3, "cuda_device_uuid": "GPU-critic",
                 "cuda_total_memory_mb": 40960.0,
-                "result_stage": "FROZEN_DEVELOPMENT_TEST",
+                "result_stage": "FROZEN_DEVELOPMENT_VALIDATION",
                 "evaluation_outcomes_read": 0,
             },
             "development_grouped_split_status": "ROUTE2_MANIFEST_AND_GROUPED_SPLIT_MATERIALIZED",
@@ -231,4 +231,14 @@ def test_hpo_checkpoint_or_unverified_loso_training_keeps_guided_closed() -> Non
     payload["critic"]["loso_seed_results"][0]["all_model_training_gpu_provenance_verified"] = False
     result = module.adjudicate(payload)
     assert result["critic_checks"]["three_complete_final_seed_loso_runs_present"] is False
+    assert result["guided_unlocked"] is False
+
+
+def test_development_test_refit_cannot_guide_development_validation_generation() -> None:
+    module = _load()
+    payload = deepcopy(_passing_input())
+    payload["critic"]["training_summary"]["result_stage"] = "FROZEN_DEVELOPMENT_TEST"
+    result = module.adjudicate(payload)
+    assert result["critic_checks"]["learned_gpu_parameter_update"] is False
+    assert result["critic_status"] == "CRITIC_NOT_READY_FOR_GUIDANCE"
     assert result["guided_unlocked"] is False
