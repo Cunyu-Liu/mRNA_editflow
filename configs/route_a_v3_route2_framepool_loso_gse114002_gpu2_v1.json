@@ -1,0 +1,13 @@
+{
+  "schema_version": "route_a_v3_route2_framepool_loso_prediction_config.v1",
+  "evaluation_outcomes_accessed": false,
+  "holdout_outcomes_accessed": false,
+  "loso_holdout_study_unit_id": "GSE114002",
+  "development_manifest_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/manifests/route2_development_frozen_v1/development_manifest.jsonl",
+  "canonical_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE114002/v1/canonical_records.private.jsonl",
+  "framepool_weight_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/external_model_assets/framepool/Framepool_combined_residual.h5",
+  "device": "cuda:2",
+  "physical_gpu_index": 2,
+  "batch_size": 512,
+  "output_directory": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_loso_baselines/framepool_gse114002_gpu2_v1"
+}
