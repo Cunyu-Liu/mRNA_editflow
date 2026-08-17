@@ -9,6 +9,9 @@ from torch import nn
 ROUTE2_DELTA_MODEL_KIND = "delta_anchored_position_aware_antisymmetric"
 ROUTE2_EDIT_CENTERED_MODEL_KIND = "delta_edit_centered_antisymmetric"
 ROUTE2_EDIT_CENTERED_SOURCE_ONLY_KIND = "delta_edit_centered_source_only_control"
+ROUTE2_PRETRAINED_EDIT_CENTERED_MODEL_KIND = (
+    "delta_pretrained_rnafm_edit_centered_antisymmetric"
+)
 
 
 def normalized_position_channels(
@@ -305,6 +308,201 @@ class Route2EditCenteredDeltaPredictor(nn.Module):
             )
             mean = 0.5 * (self.score_head(forward) - self.score_head(reverse)).squeeze(-1)
         return {"mean": mean, "log_variance": torch.zeros_like(mean)}
+
+
+class Route2PretrainedEditCenteredDeltaPredictor(nn.Module):
+    """Frozen-RNA-FM global context plus trainable edit-local Delta critic.
+
+    RNA-FM embeddings are computed once outside this module and remain frozen.
+    The trainable sequence path concentrates capacity around observed edits while
+    retaining whole-source context.  The Delta mean is exactly antisymmetric;
+    an optional uncertainty head is symmetric and is used only in the matched
+    learned-scale diagnostic arm.
+    """
+
+    def __init__(
+        self,
+        *,
+        hidden_dim: int,
+        depth: int,
+        study_count: int,
+        assay_count: int,
+        context_count: int,
+        endpoint_count: int,
+        pretrained_width: int,
+        region_count: int = 2,
+        learned_uncertainty: bool = False,
+    ):
+        super().__init__()
+        if hidden_dim < 16 or depth < 1 or pretrained_width < 1:
+            raise ValueError("hidden_dim/depth/pretrained_width are invalid")
+        if min(study_count, assay_count, context_count, endpoint_count, region_count) <= 0:
+            raise ValueError("categorical vocabularies must be non-empty")
+        self.learned_uncertainty = learned_uncertainty
+        category_dim = max(4, hidden_dim // 8)
+        self.nucleotide = nn.Embedding(5, hidden_dim, padding_idx=4)
+        self.source_projection = nn.Linear(hidden_dim, hidden_dim)
+        self.pair_projection = nn.Linear(hidden_dim * 3 + 3, hidden_dim)
+        self.blocks = nn.ModuleList(
+            ResidualConvBlock(hidden_dim, dilation=2 ** (index % 4))
+            for index in range(depth)
+        )
+        self.region_scale = nn.Embedding(region_count, hidden_dim)
+        self.region_shift = nn.Embedding(region_count, hidden_dim)
+        self.edit_attention = nn.Linear(hidden_dim, 1)
+        self.pretrained_delta = nn.Linear(pretrained_width, hidden_dim)
+        self.pretrained_background = nn.Linear(pretrained_width, hidden_dim)
+        # Study identity remains outside the transferable effect representation.
+        del study_count
+        self.assay = nn.Embedding(assay_count, category_dim)
+        self.context = nn.Embedding(context_count, category_dim)
+        self.endpoint = nn.Embedding(endpoint_count, category_dim)
+        self.region = nn.Embedding(region_count, category_dim)
+        representation_width = hidden_dim * 6 + category_dim * 4
+        self.pair_fusion = nn.Sequential(
+            nn.Linear(representation_width, hidden_dim * 2),
+            nn.GELU(),
+            nn.Linear(hidden_dim * 2, hidden_dim),
+            nn.GELU(),
+            nn.LayerNorm(hidden_dim),
+        )
+        self.mean_head = nn.Linear(hidden_dim, 1)
+        self.log_variance_head = (
+            nn.Linear(hidden_dim, 1) if learned_uncertainty else None
+        )
+
+    @staticmethod
+    def _mean_max(
+        hidden: torch.Tensor, mask: torch.Tensor
+    ) -> tuple[torch.Tensor, torch.Tensor]:
+        weights = mask.to(hidden.dtype).unsqueeze(-1)
+        mean = (hidden * weights).sum(dim=1) / weights.sum(dim=1).clamp_min(1.0)
+        maximum = hidden.masked_fill(~mask.unsqueeze(-1), -torch.inf).amax(dim=1)
+        maximum = torch.where(
+            mask.any(dim=1, keepdim=True), maximum, torch.zeros_like(maximum)
+        )
+        return mean, maximum
+
+    def _encode_pair(
+        self,
+        left_tokens: torch.Tensor,
+        right_tokens: torch.Tensor,
+        padding_mask: torch.Tensor,
+        left_pretrained: torch.Tensor,
+        right_pretrained: torch.Tensor,
+        assay_ids: torch.Tensor,
+        context_ids: torch.Tensor,
+        endpoint_ids: torch.Tensor,
+        region_ids: torch.Tensor,
+    ) -> torch.Tensor:
+        valid = ~padding_mask
+        left = self.nucleotide(left_tokens)
+        right = self.nucleotide(right_tokens)
+        source_hidden = self.source_projection(left) * valid.unsqueeze(-1)
+        for block in self.blocks:
+            source_hidden = block(source_hidden, padding_mask)
+
+        edited = ((left_tokens != right_tokens) & valid).float().unsqueeze(-1)
+        position, edited_position = normalized_position_channels(padding_mask, edited)
+        pair_hidden = self.pair_projection(
+            torch.cat(
+                [left, right, right - left, edited, position, edited_position],
+                dim=-1,
+            )
+        )
+        pair_hidden = pair_hidden * valid.unsqueeze(-1)
+        for block in self.blocks:
+            pair_hidden = block(pair_hidden, padding_mask)
+        pair_hidden = pair_hidden * (1.0 + self.region_scale(region_ids).unsqueeze(1))
+        pair_hidden = pair_hidden + self.region_shift(region_ids).unsqueeze(1)
+
+        edit_mask = edited.squeeze(-1).bool()
+        logits = self.edit_attention(pair_hidden).squeeze(-1).masked_fill(
+            ~edit_mask, -torch.inf
+        )
+        safe_logits = torch.where(
+            edit_mask.any(dim=1, keepdim=True), logits, torch.zeros_like(logits)
+        )
+        attention = torch.softmax(safe_logits, dim=1) * edit_mask.to(pair_hidden.dtype)
+        attention = attention / attention.sum(dim=1, keepdim=True).clamp_min(1.0)
+        edit_attention_pool = (pair_hidden * attention.unsqueeze(-1)).sum(dim=1)
+        _edit_mean, edit_max = self._mean_max(pair_hidden, edit_mask)
+        source_mean, source_max = self._mean_max(source_hidden, valid)
+        pretrained_delta = self.pretrained_delta(right_pretrained - left_pretrained)
+        pretrained_background = self.pretrained_background(
+            0.5 * (right_pretrained + left_pretrained)
+        )
+        categories = torch.cat(
+            [
+                self.assay(assay_ids),
+                self.context(context_ids),
+                self.endpoint(endpoint_ids),
+                self.region(region_ids),
+            ],
+            dim=-1,
+        )
+        return self.pair_fusion(
+            torch.cat(
+                [
+                    edit_attention_pool,
+                    edit_max,
+                    source_mean,
+                    source_max,
+                    pretrained_delta,
+                    pretrained_background,
+                    categories,
+                ],
+                dim=-1,
+            )
+        )
+
+    def forward(
+        self,
+        source_tokens: torch.Tensor,
+        candidate_tokens: torch.Tensor,
+        padding_mask: torch.Tensor,
+        study_ids: torch.Tensor,
+        assay_ids: torch.Tensor,
+        context_ids: torch.Tensor,
+        endpoint_ids: torch.Tensor,
+        region_ids: torch.Tensor,
+        source_pretrained: torch.Tensor,
+        candidate_pretrained: torch.Tensor,
+    ) -> dict[str, torch.Tensor]:
+        del study_ids
+        forward = self._encode_pair(
+            source_tokens,
+            candidate_tokens,
+            padding_mask,
+            source_pretrained,
+            candidate_pretrained,
+            assay_ids,
+            context_ids,
+            endpoint_ids,
+            region_ids,
+        )
+        reverse = self._encode_pair(
+            candidate_tokens,
+            source_tokens,
+            padding_mask,
+            candidate_pretrained,
+            source_pretrained,
+            assay_ids,
+            context_ids,
+            endpoint_ids,
+            region_ids,
+        )
+        mean = 0.5 * (
+            self.mean_head(forward) - self.mean_head(reverse)
+        ).squeeze(-1)
+        if self.log_variance_head is None:
+            log_variance = torch.zeros_like(mean)
+        else:
+            log_variance = 0.5 * (
+                self.log_variance_head(forward) + self.log_variance_head(reverse)
+            ).squeeze(-1)
+            log_variance = log_variance.clamp(min=-8.0, max=6.0)
+        return {"mean": mean, "log_variance": log_variance}
 
 
 class SequenceCNNEncoder(nn.Module):

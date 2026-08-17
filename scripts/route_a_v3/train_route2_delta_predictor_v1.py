@@ -28,9 +28,11 @@ from core.route2_delta_predictor import (
     ROUTE2_DELTA_MODEL_KIND,
     ROUTE2_EDIT_CENTERED_MODEL_KIND,
     ROUTE2_EDIT_CENTERED_SOURCE_ONLY_KIND,
+    ROUTE2_PRETRAINED_EDIT_CENTERED_MODEL_KIND,
     Route2DeltaPredictor,
     Route2EditCenteredDeltaPredictor,
     Route2NeuralBaseline,
+    Route2PretrainedEditCenteredDeltaPredictor,
 )
 from core.route2_gpu_failure_evidence import cuda_device_observation, write_gpu_failure_evidence
 from core.route2_target_scaling import (
@@ -105,6 +107,33 @@ class DeltaRecord:
     region: int
 
 
+class FrozenPretrainedPairFeatures:
+    """Record-aligned frozen pair embeddings without sequence payloads."""
+
+    def __init__(self, path: Path, expected_record_ids: set[str]):
+        payload = torch.load(path, map_location="cpu", weights_only=False)
+        _require(
+            payload.get("schema_version") == "route_a_v3_route2_rnafm_pair_features.v1",
+            "unexpected pretrained feature-cache schema",
+        )
+        record_ids = [str(value) for value in payload["record_ids"]]
+        _require(len(record_ids) == len(set(record_ids)), "pretrained feature ids are duplicated")
+        _require(set(record_ids) == expected_record_ids, "pretrained features do not exactly cover Development")
+        self.index = {record_id: index for index, record_id in enumerate(record_ids)}
+        self.source = payload["source_embeddings"].float()
+        self.candidate = payload["candidate_embeddings"].float()
+        _require(self.source.ndim == 2 and self.source.shape == self.candidate.shape, "pretrained pair feature shape is invalid")
+        _require(self.source.shape[0] == len(record_ids), "pretrained pair feature row count differs")
+        _require(torch.isfinite(self.source).all().item() and torch.isfinite(self.candidate).all().item(), "pretrained pair feature is nonfinite")
+        self.width = int(self.source.shape[1])
+        self.pretrained_parameter_count = int(payload["pretrained_parameter_count"])
+        self.model_id = str(payload["model_id"])
+
+    def pair(self, record_id: str) -> tuple[torch.Tensor, torch.Tensor]:
+        index = self.index[record_id]
+        return self.source[index], self.candidate[index]
+
+
 def load_records(canonical_paths: Iterable[Path], manifest: Mapping[str, Mapping[str, str]]) -> list[DeltaRecord]:
     records = {}
     for path in canonical_paths:
@@ -150,6 +179,7 @@ class DeltaDataset(Dataset):
         weighting_mode: str = "SOURCE_CONTEXT_ENDPOINT_GROUP",
         target_scaler: Route2TargetScaler | None = None,
         candidate_overrides: Mapping[str, str] | None = None,
+        pretrained_features: FrozenPretrainedPairFeatures | None = None,
     ):
         _require(
             metadata_mode in {"FULL_CONTEXT", "TRANSFERABLE_CONTEXT", "SEQUENCE_AND_REGION_ONLY"},
@@ -170,6 +200,7 @@ class DeltaDataset(Dataset):
             records, mode=TARGET_SCALING_NONE
         )
         self.candidate_overrides = dict(candidate_overrides or {})
+        self.pretrained_features = pretrained_features
         _require(
             set(self.candidate_overrides) <= {row.record_id for row in records},
             "candidate override is outside this dataset",
@@ -212,7 +243,7 @@ class DeltaDataset(Dataset):
         row = self.records[index]
         target_scale, target_scale_source = self.target_scaler.scale(row.endpoint, row.region)
         candidate = self.candidate_overrides.get(row.record_id, row.candidate)
-        return {
+        result = {
             "record_id": row.record_id,
             "source": [TOKEN[base] for base in row.source],
             "candidate": [TOKEN[base] for base in candidate],
@@ -229,6 +260,13 @@ class DeltaDataset(Dataset):
             "endpoint": 0 if self.metadata_mode == "SEQUENCE_AND_REGION_ONLY" else self.vocabs["endpoint"].get(row.endpoint, 0),
             "region": row.region,
         }
+        if self.pretrained_features is not None:
+            source_pretrained, candidate_pretrained = self.pretrained_features.pair(
+                row.record_id
+            )
+            result["source_pretrained"] = source_pretrained
+            result["candidate_pretrained"] = candidate_pretrained
+        return result
 
 
 def select_study_subset(
@@ -305,6 +343,7 @@ def fixed_split_records(
             "HPO_VALIDATION_ONLY",
             "FROZEN_DEVELOPMENT_VALIDATION",
             "FROZEN_DEVELOPMENT_TEST",
+            "FINAL_ALL_DEVELOPMENT_REFIT",
         },
         f"invalid result_stage for fixed split: {result_stage}",
     )
@@ -315,6 +354,8 @@ def fixed_split_records(
     _require(all(complete.values()), "Development split is incomplete")
     if result_stage in {"HPO_VALIDATION_ONLY", "FROZEN_DEVELOPMENT_VALIDATION"}:
         return {split: complete[split] for split in ("TRAIN", "VALIDATION")}, len(complete["TEST"])
+    if result_stage == "FINAL_ALL_DEVELOPMENT_REFIT":
+        return {"TRAIN": complete["TRAIN"] + complete["VALIDATION"] + complete["TEST"]}, 0
     return {"TRAIN": complete["TRAIN"] + complete["VALIDATION"], "TEST": complete["TEST"]}, 0
 
 
@@ -414,7 +455,7 @@ def collate(examples: list[dict[str, Any]]) -> dict[str, Any]:
         source[index, :length] = torch.tensor(row["source"])
         candidate[index, :length] = torch.tensor(row["candidate"])
         padding[index, :length] = False
-    return {
+    result = {
         "record_ids": [row["record_id"] for row in examples],
         "source_groups": [row["source_group"] for row in examples],
         "task_keys": [row.get("task_key", "__UNSPECIFIED_TASK__") for row in examples],
@@ -432,6 +473,18 @@ def collate(examples: list[dict[str, Any]]) -> dict[str, Any]:
         "target_scale": torch.tensor([row.get("target_scale", 1.0) for row in examples], dtype=torch.float32),
         "sample_weight": torch.tensor([row["sample_weight"] for row in examples], dtype=torch.float32),
     }
+    if "source_pretrained" in examples[0]:
+        _require(
+            all("source_pretrained" in row and "candidate_pretrained" in row for row in examples),
+            "pretrained features are partial within a batch",
+        )
+        result["source_pretrained"] = torch.stack(
+            [row["source_pretrained"] for row in examples]
+        )
+        result["candidate_pretrained"] = torch.stack(
+            [row["candidate_pretrained"] for row in examples]
+        )
+    return result
 
 
 def require_cuda(device_text: str, physical_gpu_index: int) -> torch.device:
@@ -446,11 +499,16 @@ def require_cuda(device_text: str, physical_gpu_index: int) -> torch.device:
 
 
 def _forward(model, batch):
-    return model(
+    arguments = (
         batch["source_tokens"], batch["candidate_tokens"], batch["padding_mask"],
         batch["study_ids"], batch["assay_ids"], batch["context_ids"],
         batch["endpoint_ids"], batch["region_ids"],
     )
+    if "source_pretrained" in batch:
+        return model(
+            *arguments, batch["source_pretrained"], batch["candidate_pretrained"]
+        )
+    return model(*arguments)
 
 
 def _move(batch, device):
@@ -463,6 +521,11 @@ def gaussian_nll(output, target, sample_weight=None):
     if sample_weight is None:
         return per_record.mean()
     return (per_record * sample_weight).mean()
+
+
+def fixed_variance_gaussian_nll(output, target, sample_weight=None):
+    fixed_output = {"mean": output["mean"], "log_variance": torch.zeros_like(target)}
+    return gaussian_nll(fixed_output, target, sample_weight)
 
 
 def huber_loss(output, target, sample_weight=None, delta: float = 1.0):
@@ -530,6 +593,14 @@ def training_loss(
             _training_target(batch),
             batch["sample_weight"],
             huber_delta,
+        )
+    if loss_kind == "fixed_variance_gaussian_nll":
+        return fixed_variance_gaussian_nll(
+            output, _training_target(batch), batch["sample_weight"]
+        )
+    if loss_kind == "learned_variance_gaussian_nll":
+        return gaussian_nll(
+            output, _training_target(batch), batch["sample_weight"]
         )
     if loss_kind.startswith("huber_plus_"):
         return multitask_loss(
@@ -755,6 +826,7 @@ def metrics(
     task_keys: list[str] | None = None,
     scaled_targets: list[float] | None = None,
     scaled_predictions: list[float] | None = None,
+    predicted_standard_deviations: list[float] | None = None,
 ) -> dict[str, Any]:
     target = np.asarray(targets)
     prediction = np.asarray(predictions)
@@ -767,7 +839,26 @@ def metrics(
         "mae": float(np.mean(np.abs(prediction - target))),
         "rmse": float(np.sqrt(np.mean((prediction - target) ** 2))),
         "spearman": correlation,
+        "target_std": float(np.std(target)),
+        "prediction_std": float(np.std(prediction)),
+        "prediction_std_over_target_std": float(
+            np.std(prediction) / max(np.std(target), 1e-12)
+        ),
     }
+    if predicted_standard_deviations is not None:
+        scale = np.asarray(predicted_standard_deviations)
+        _require(len(scale) == len(target), "predicted scales do not align")
+        residual = np.abs(prediction - target)
+        scale_correlation = None
+        if len(scale) >= 3 and np.std(scale) > 0 and np.std(residual) > 0:
+            value = float(spearmanr(scale, residual).statistic)
+            scale_correlation = value if math.isfinite(value) else None
+        result.update({
+            "predicted_standard_deviation_mean": float(np.mean(scale)),
+            "predicted_standard_deviation_median": float(np.median(scale)),
+            "predicted_standard_deviation_p90": float(np.quantile(scale, 0.9)),
+            "absolute_residual_scale_spearman": scale_correlation,
+        })
     if task_keys is None:
         return result
     _require(len(task_keys) == len(targets), "task keys do not align with predictions")
@@ -817,16 +908,28 @@ def predict(model, loader, device):
     task_keys = []
     scaled_targets = []
     scaled_predictions = []
+    predicted_standard_deviations = []
+    uncertainty_trained = bool(getattr(model, "learned_uncertainty", False))
     for raw in loader:
         batch = _move(raw, device)
         output = _forward(model, batch)
         standardized_means = output["mean"]
         raw_means = standardized_means * batch["target_scale"]
+        raw_standard_deviation = (
+            torch.exp(0.5 * output["log_variance"]) * batch["target_scale"]
+            if uncertainty_trained
+            else None
+        )
         means = raw_means.cpu().tolist()
         standardized = standardized_means.cpu().tolist()
-        for record_id, mean, standardized_mean, target, scale, scale_source in zip(
+        standard_deviations = (
+            raw_standard_deviation.cpu().tolist()
+            if raw_standard_deviation is not None
+            else [None] * len(means)
+        )
+        for record_id, mean, standardized_mean, target, scale, scale_source, predicted_std in zip(
             raw["record_ids"], means, standardized, raw["target"].tolist(),
-            raw["target_scale"].tolist(), raw["target_scale_sources"],
+            raw["target_scale"].tolist(), raw["target_scale_sources"], standard_deviations,
         ):
             rows.append({
                 "canonical_record_id": record_id,
@@ -834,11 +937,17 @@ def predict(model, loader, device):
                 "predicted_standardized_delta": standardized_mean,
                 "target_scale": scale,
                 "target_scale_source": scale_source,
-                "predicted_variance": None,
-                "prediction_uncertainty_status": "NOT_TRAINED_NO_UNIVERSAL_TRUE_STANDARD_ERROR",
+                "predicted_variance": None if predicted_std is None else predicted_std ** 2,
+                "prediction_uncertainty_status": (
+                    "MODEL_ALEATORIC_DIAGNOSTIC_NOT_BIOLOGICAL_STANDARD_ERROR"
+                    if predicted_std is not None
+                    else "NOT_TRAINED_NO_UNIVERSAL_TRUE_STANDARD_ERROR"
+                ),
             })
             targets.append(target)
             predictions.append(mean)
+            if predicted_std is not None:
+                predicted_standard_deviations.append(predicted_std)
         task_keys.extend(raw["task_keys"])
         scaled_targets.extend(raw["scaled_target"].tolist())
         scaled_predictions.extend(standardized)
@@ -848,6 +957,9 @@ def predict(model, loader, device):
         task_keys=task_keys,
         scaled_targets=scaled_targets,
         scaled_predictions=scaled_predictions,
+        predicted_standard_deviations=(
+            predicted_standard_deviations if uncertainty_trained else None
+        ),
     )
 
 
@@ -861,6 +973,14 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
     )
     manifest = load_manifest(Path(config["development_manifest"]))
     records = load_records([Path(path) for path in config["canonical_paths"]], manifest)
+    model_kind = str(config.get("model_kind", ROUTE2_DELTA_MODEL_KIND))
+    pretrained_features = None
+    if model_kind == ROUTE2_PRETRAINED_EDIT_CENTERED_MODEL_KIND:
+        _require("pretrained_feature_cache_path" in config, "pretrained feature cache is required")
+        pretrained_features = FrozenPretrainedPairFeatures(
+            Path(config["pretrained_feature_cache_path"]),
+            {row.record_id for row in records},
+        )
     records, included_studies, excluded_record_count = select_study_subset(
         records, config.get("included_study_unit_ids")
     )
@@ -967,11 +1087,20 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
             weighting_mode=weighting_mode,
             target_scaler=target_scaler,
             candidate_overrides=training_candidate_overrides if split == "TRAIN" else None,
+            pretrained_features=pretrained_features,
         )
         for split, rows in by_split.items() if rows
     }
     loss_kind = str(config.get("loss_kind", "huber"))
-    allowed_losses = {"huber", "pairwise", "listwise", "huber_plus_pairwise", "huber_plus_listwise"}
+    allowed_losses = {
+        "huber",
+        "fixed_variance_gaussian_nll",
+        "learned_variance_gaussian_nll",
+        "pairwise",
+        "listwise",
+        "huber_plus_pairwise",
+        "huber_plus_listwise",
+    }
     _require(loss_kind in allowed_losses, f"unknown or unauthorized loss_kind: {loss_kind}")
     ranking_loss_weight = float(config.get("ranking_loss_weight", 1.0))
     huber_delta = float(config.get("huber_delta", 1.0))
@@ -1001,7 +1130,6 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
         "study_count": len(vocabs["study"]), "assay_count": len(vocabs["assay"]),
         "context_count": len(vocabs["context"]), "endpoint_count": len(vocabs["endpoint"]),
     }
-    model_kind = str(config.get("model_kind", ROUTE2_DELTA_MODEL_KIND))
     if model_kind == ROUTE2_DELTA_MODEL_KIND:
         checkpoint_model_config = {
             **shared_model_config,
@@ -1014,6 +1142,16 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
             "source_only_control": model_kind == ROUTE2_EDIT_CENTERED_SOURCE_ONLY_KIND,
         }
         model = Route2EditCenteredDeltaPredictor(**checkpoint_model_config).to(device)
+    elif model_kind == ROUTE2_PRETRAINED_EDIT_CENTERED_MODEL_KIND:
+        _require(pretrained_features is not None, "pretrained features were not loaded")
+        checkpoint_model_config = {
+            **shared_model_config,
+            "pretrained_width": pretrained_features.width,
+            "learned_uncertainty": loss_kind == "learned_variance_gaussian_nll",
+        }
+        model = Route2PretrainedEditCenteredDeltaPredictor(
+            **checkpoint_model_config
+        ).to(device)
     elif model_kind in Route2NeuralBaseline.MODES:
         checkpoint_model_config = {
             **shared_model_config,
@@ -1023,6 +1161,22 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
         model = Route2NeuralBaseline(**checkpoint_model_config).to(device)
     else:
         raise DeltaTrainingError(f"unknown model_kind: {model_kind}")
+    if loss_kind == "learned_variance_gaussian_nll":
+        _require(
+            model_kind == ROUTE2_PRETRAINED_EDIT_CENTERED_MODEL_KIND,
+            "learned uncertainty is scoped to the matched pretrained critic comparison",
+        )
+    trainable_parameter_count = sum(
+        parameter.numel() for parameter in model.parameters()
+    )
+    expected_trainable = config.get("expected_trainable_parameter_count")
+    if expected_trainable is not None:
+        tolerance = float(config.get("parameter_count_relative_tolerance", 0.02))
+        _require(
+            abs(trainable_parameter_count - int(expected_trainable))
+            <= tolerance * int(expected_trainable),
+            "trainable parameter count differs from the configured max profile",
+        )
     if training_update_mode == TRAINING_UPDATE_TASK_GRADIENT_NORM_CALIBRATED:
         _require(
             model_kind in {
@@ -1262,7 +1416,10 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
         "result_stage": result_stage,
         "development_test_outcomes_evaluated": result_stage == "FROZEN_DEVELOPMENT_TEST",
         "development_test_record_count_withheld": development_test_record_count_withheld,
-        "development_validation_folded_into_training": result_stage == "FROZEN_DEVELOPMENT_TEST",
+        "development_validation_folded_into_training": result_stage in {
+            "FROZEN_DEVELOPMENT_TEST",
+            "FINAL_ALL_DEVELOPMENT_REFIT",
+        },
         "loso_holdout_study_unit_id": loso_holdout,
         "loso_excluded_connected_other_study_record_count": excluded_bridge_count,
         "physical_gpu_index": int(config["physical_gpu_index"]),
@@ -1270,6 +1427,20 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
         "cpu_fallback_used": False,
         "cuda_training_tensors_verified": cuda_training_tensors_verified,
         "parameter_count": parameter_count,
+        "trainable_parameter_count": parameter_count,
+        "frozen_pretrained_parameter_count": (
+            pretrained_features.pretrained_parameter_count
+            if pretrained_features is not None
+            else 0
+        ),
+        "total_effective_parameter_count": parameter_count + (
+            pretrained_features.pretrained_parameter_count
+            if pretrained_features is not None
+            else 0
+        ),
+        "pretrained_model_id": (
+            pretrained_features.model_id if pretrained_features is not None else None
+        ),
         "optimizer_steps": optimizer_steps,
         "parameter_changed": changed,
         "record_counts": {split: len(rows) for split, rows in by_split.items()},
@@ -1283,21 +1454,29 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
         "swap_antisymmetry_by_construction": model_kind in {
             ROUTE2_DELTA_MODEL_KIND,
             ROUTE2_EDIT_CENTERED_MODEL_KIND,
+            ROUTE2_PRETRAINED_EDIT_CENTERED_MODEL_KIND,
         },
         "identity_zero_by_construction": model_kind in {
             ROUTE2_DELTA_MODEL_KIND,
             ROUTE2_EDIT_CENTERED_MODEL_KIND,
+            ROUTE2_PRETRAINED_EDIT_CENTERED_MODEL_KIND,
         },
         "edit_centered_pooling": model_kind in {
             ROUTE2_EDIT_CENTERED_MODEL_KIND,
             ROUTE2_EDIT_CENTERED_SOURCE_ONLY_KIND,
+            ROUTE2_PRETRAINED_EDIT_CENTERED_MODEL_KIND,
         },
         "study_identity_used_by_effect_encoder": model_kind not in {
             ROUTE2_EDIT_CENTERED_MODEL_KIND,
             ROUTE2_EDIT_CENTERED_SOURCE_ONLY_KIND,
+            ROUTE2_PRETRAINED_EDIT_CENTERED_MODEL_KIND,
         } and metadata_mode == "FULL_CONTEXT",
-        "uncertainty_head_used": False,
-        "prediction_uncertainty_status": "NOT_TRAINED_NO_UNIVERSAL_TRUE_STANDARD_ERROR",
+        "uncertainty_head_used": bool(getattr(model, "learned_uncertainty", False)),
+        "prediction_uncertainty_status": (
+            "MODEL_ALEATORIC_DIAGNOSTIC_NOT_BIOLOGICAL_STANDARD_ERROR"
+            if bool(getattr(model, "learned_uncertainty", False))
+            else "NOT_TRAINED_NO_UNIVERSAL_TRUE_STANDARD_ERROR"
+        ),
         "training_weight_unit": weighting_mode,
         "evaluation_outcomes_read": 0,
         "scientific_claim_status": "NOT_ESTABLISHED",

@@ -113,6 +113,119 @@ def test_edit_centered_source_only_control_is_candidate_invariant_and_parameter_
     assert torch.equal(first, second)
 
 
+def test_pretrained_edit_centered_mean_is_antisymmetric_and_scale_is_symmetric() -> None:
+    module = _load(MODEL_PATH, "route2_pretrained_edit_centered_constraint_test")
+    model = module.Route2PretrainedEditCenteredDeltaPredictor(
+        hidden_dim=32,
+        depth=2,
+        study_count=2,
+        assay_count=2,
+        context_count=2,
+        endpoint_count=2,
+        pretrained_width=24,
+        learned_uncertainty=True,
+    ).train()
+    source = torch.tensor([[0, 1, 2, 3], [0, 0, 1, 1]])
+    candidate = torch.tensor([[1, 1, 2, 3], [0, 0, 1, 2]])
+    padding = torch.zeros_like(source, dtype=torch.bool)
+    categories = torch.zeros(2, dtype=torch.long)
+    source_pretrained = torch.randn(2, 24)
+    candidate_pretrained = torch.randn(2, 24)
+    forward = model(
+        source,
+        candidate,
+        padding,
+        categories,
+        categories,
+        categories,
+        categories,
+        categories,
+        source_pretrained,
+        candidate_pretrained,
+    )
+    reverse = model(
+        candidate,
+        source,
+        padding,
+        categories,
+        categories,
+        categories,
+        categories,
+        categories,
+        candidate_pretrained,
+        source_pretrained,
+    )
+    identity = model(
+        source,
+        source,
+        padding,
+        categories,
+        categories,
+        categories,
+        categories,
+        categories,
+        source_pretrained,
+        source_pretrained,
+    )
+    assert torch.equal(forward["mean"], -reverse["mean"])
+    assert torch.equal(identity["mean"], torch.zeros_like(identity["mean"]))
+    assert torch.equal(forward["log_variance"], reverse["log_variance"])
+
+
+def test_final_refit_uses_all_development_records_without_internal_evaluation() -> None:
+    trainer = _load(TRAIN_PATH, "route2_delta_final_all_refit_test")
+    records = [
+        trainer.DeltaRecord(
+            split.lower(), split, "AA", "CA", 1.0, split, "s", "a", "c", "e", 0
+        )
+        for split in ("TRAIN", "VALIDATION", "TEST")
+    ]
+    by_split, withheld = trainer.fixed_split_records(
+        records, "FINAL_ALL_DEVELOPMENT_REFIT"
+    )
+    assert list(by_split) == ["TRAIN"]
+    assert len(by_split["TRAIN"]) == 3
+    assert withheld == 0
+
+
+def test_uncertainty_loss_can_absorb_residual_and_is_therefore_diagnostic_only() -> None:
+    trainer = _load(TRAIN_PATH, "route2_delta_uncertainty_absorption_test")
+    target = torch.tensor([1.0, -1.0])
+    sample_weight = torch.ones(2)
+    narrow = {
+        "mean": torch.zeros(2),
+        "log_variance": torch.full((2,), -4.0),
+    }
+    broad = {
+        "mean": torch.zeros(2),
+        "log_variance": torch.zeros(2),
+    }
+    assert trainer.gaussian_nll(broad, target, sample_weight) < trainer.gaussian_nll(
+        narrow, target, sample_weight
+    )
+
+
+def test_frozen_pretrained_feature_table_requires_exact_record_universe(tmp_path) -> None:
+    trainer = _load(TRAIN_PATH, "route2_delta_pretrained_feature_table_test")
+    path = tmp_path / "features.pt"
+    torch.save(
+        {
+            "schema_version": "route_a_v3_route2_rnafm_pair_features.v1",
+            "model_id": "multimolecule/rnafm",
+            "pretrained_parameter_count": 99_000_000,
+            "record_ids": ["a", "b"],
+            "source_embeddings": torch.randn(2, 16).half(),
+            "candidate_embeddings": torch.randn(2, 16).half(),
+        },
+        path,
+    )
+    table = trainer.FrozenPretrainedPairFeatures(path, {"a", "b"})
+    assert table.width == 16
+    assert table.pretrained_parameter_count == 99_000_000
+    with pytest.raises(trainer.DeltaTrainingError, match="exactly cover"):
+        trainer.FrozenPretrainedPairFeatures(path, {"a"})
+
+
 def test_study_specific_scale_calibration_preserves_constraints_and_scales_delta() -> None:
     module = _load(MODEL_PATH, "route2_delta_study_scale_test")
     model = module.Route2DeltaPredictor(
