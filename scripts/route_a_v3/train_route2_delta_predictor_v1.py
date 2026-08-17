@@ -1265,6 +1265,19 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
             optimizer.step()
             optimizer_steps += 1
             cuda_training_tensors_verified = True
+            if optimizer_steps == 1:
+                with log_path.open("a", encoding="utf-8") as handle:
+                    handle.write(json.dumps({
+                        "event": "FIRST_OPTIMIZER_STEP_COMPLETED",
+                        "device": str(device),
+                        "physical_gpu_index": int(config["physical_gpu_index"]),
+                        "cuda_training_tensors_verified": True,
+                        "source_tokens_device": str(batch["source_tokens"].device),
+                        "loss_device": str(loss.device),
+                        "parameter_changed_after_first_step": not torch.equal(
+                            initial_parameter, next(model.parameters()).detach()
+                        ),
+                    }, sort_keys=True) + "\n")
             losses.append(float(loss.detach().cpu()))
         validation_metrics = None
         if "VALIDATION" in loaders:
