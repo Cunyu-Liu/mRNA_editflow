@@ -88,7 +88,15 @@
   ],
   "generation_methods": [
     {"method_id": "random_legal", "status": "COMPLETED_DEVELOPMENT_MEASURED_NEIGHBORHOOD_GPU"},
-    {"method_id": "exhaustive", "status": "NOT_EXECUTED_LEGAL_SPACE_EXCEEDS_MATCHED_BUDGET"},
+    {
+      "method_id": "exhaustive",
+      "status": "OUTCOME_BLIND_190_COHORT_SUBSET_READY_CANDIDATES_NOT_EXECUTED_EVALUATOR_NOT_FROZEN",
+      "source_manifest_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/generation_eligibility/development_validation_v1/exhaustive_small_space_critic256_v1/source_eligibility.jsonl",
+      "source_summary_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/generation_eligibility/development_validation_v1/exhaustive_small_space_critic256_v1/summary.json",
+      "source_cohort_count": 190,
+      "legal_space_size_per_source": 151,
+      "full_cohort_strongest_selector_eligible": false
+    },
     {"method_id": "greedy", "status": "COMPLETED_DEVELOPMENT_MEASURED_NEIGHBORHOOD_GPU"},
     {"method_id": "beam", "status": "COMPLETED_DEVELOPMENT_MEASURED_NEIGHBORHOOD_GPU"},
     {"method_id": "genetic", "status": "COMPLETED_DEVELOPMENT_MEASURED_NEIGHBORHOOD_GPU"},

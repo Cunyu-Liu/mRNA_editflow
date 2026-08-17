@@ -36,6 +36,18 @@
     "generate_then_rerank",
     "unguided_learned_base_flow_g0"
   ],
+  "small_space_exhaustive_reference": {
+    "scientific_role": "REAL_SMALL_SPACE_ORACLE_REFERENCE_NOT_FULL_COHORT_STRONGEST_SELECTOR",
+    "source_manifest_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/generation_eligibility/development_validation_v1/exhaustive_small_space_critic256_v1/source_eligibility.jsonl",
+    "source_summary_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/generation_eligibility/development_validation_v1/exhaustive_small_space_critic256_v1/summary.json",
+    "source_cohort_count": 190,
+    "legal_space_size_per_source": 151,
+    "critic_forward_budget_per_source": 256,
+    "candidate_budget_per_source": 32,
+    "exhaustive_space_limit": 4096,
+    "candidate_generation_requires_qualified_independent_evaluator": true,
+    "full_cohort_strongest_selector_eligible": false
+  },
   "candidate_budget_per_source": 32,
   "forward_equivalent_budget_per_source": 320,
   "search_critic_forward_budget_per_source": 256,
