@@ -129,11 +129,26 @@ class BudgetedScorer:
         return value
 
     def score_available(self, sequences: Iterable[str]) -> list[tuple[str, float]]:
+        ordered = list(dict.fromkeys(sequences))
+        missing = [sequence for sequence in ordered if sequence not in self.cache]
+        missing = missing[: self.remaining]
+        score_many = getattr(self.score_function, "score_many", None)
+        if missing and callable(score_many):
+            values = list(score_many(missing))
+            _require(len(values) == len(missing), "batched critic score count differs")
+            for sequence, value in zip(missing, values):
+                number = float(value)
+                _require(math.isfinite(number), "critic score is not finite")
+                self.cache[sequence] = number
+            self.forward_count += len(missing)
+        elif missing:
+            for sequence in missing:
+                self.score(sequence)
         result = []
-        for sequence in sequences:
-            if sequence not in self.cache and self.remaining <= 0:
+        for sequence in ordered:
+            if sequence not in self.cache:
                 break
-            result.append((sequence, self.score(sequence)))
+            result.append((sequence, self.cache[sequence]))
         return result
 
 
@@ -262,6 +277,67 @@ class TorchCheckpointScorer:
         )
         scale, _scale_source = self.target_scaler.scale(self.endpoint, self.region_id)
         return float(output["mean"].item()) * scale
+
+
+class MRNABERTCheckpointScorer:
+    """Final-refit mRNABERT scorer with batched online candidate encoding."""
+
+    def __init__(
+        self,
+        checkpoint_path: Path,
+        model_path: Path,
+        reward_policy_path: Path,
+        device_text: str,
+    ):
+        from scripts.route_a_v3.route2_mrnabert_guided_critic_v1 import (
+            FrozenRoute2MRNABERTCritic,
+        )
+
+        _require(device_text.startswith("cuda"), "mRNABERT search scoring requires CUDA")
+        _require(not os.environ.get("CUDA_VISIBLE_DEVICES"), "CUDA remapping is forbidden")
+        _require(torch.cuda.is_available(), "CUDA is unavailable for mRNABERT search scoring")
+        self.device = torch.device(device_text)
+        torch.cuda.set_device(self.device)
+        policy = json.loads(reward_policy_path.read_text(encoding="utf-8"))
+        _require(
+            policy.get("status") == "PROSPECTIVELY_FROZEN_BEFORE_GUIDED_GENERATION"
+            and policy.get("uncertainty_in_guidance") == "DISABLED_DIAGNOSTIC_ONLY"
+            and policy.get("evaluation_records_used_for_training_hpo_threshold_or_reward") == 0,
+            "mRNABERT search reward policy differs",
+        )
+        transform = policy["potential_transform"]
+        self.critic = FrozenRoute2MRNABERTCritic(
+            checkpoint_path,
+            model_path,
+            self.device,
+            potential_minimum=float(transform["minimum"]),
+            potential_maximum=float(transform["maximum"]),
+        )
+        self.source_row: Mapping[str, object] | None = None
+
+    def bind_source(self, source_row: Mapping[str, object]):
+        self.source_row = source_row
+        return self
+
+    @property
+    def peak_vram_mb(self) -> float:
+        return torch.cuda.max_memory_allocated(self.device) / (1024 ** 2)
+
+    def score_many(self, candidates: Iterable[str]) -> list[float]:
+        _require(self.source_row is not None, "mRNABERT scorer is not bound to a source")
+        row = self.source_row
+        assert row is not None
+        return self.critic.score_candidates(
+            str(row["source_sequence"]),
+            list(candidates),
+            assay_id=str(row["assay_id"]),
+            context_id=str(row["biological_context_id"]),
+            endpoint_id=str(row["endpoint_id"]),
+            region=str(row["region"]),
+        )
+
+    def __call__(self, candidate: str) -> float:
+        return self.score_many([candidate])[0]
 
 
 def _rank_unique(items: Iterable[tuple[str, float]], candidate_budget: int) -> tuple[tuple[str, ...], tuple[float, ...]]:
@@ -500,6 +576,8 @@ def _main() -> int:
     scorer = parser.add_mutually_exclusive_group(required=True)
     scorer.add_argument("--score-table", type=Path)
     scorer.add_argument("--checkpoint", type=Path)
+    parser.add_argument("--mrnabert-model-path", type=Path)
+    parser.add_argument("--reward-policy", type=Path)
     parser.add_argument("--device")
     parser.add_argument("--physical-gpu-index", type=int)
     parser.add_argument("--method", choices=METHODS, required=True)
@@ -537,9 +615,23 @@ def _main() -> int:
         str(args.device) if args.device is not None else None,
         args.physical_gpu_index,
     )
-    shared_checkpoint_scorer = (
-        TorchCheckpointScorer(args.checkpoint, str(args.device)) if args.checkpoint else None
+    _require(
+        (args.mrnabert_model_path is None) == (args.reward_policy is None),
+        "mRNABERT model path and reward policy must be supplied together",
     )
+    if args.checkpoint and args.mrnabert_model_path:
+        shared_checkpoint_scorer = MRNABERTCheckpointScorer(
+            args.checkpoint,
+            args.mrnabert_model_path,
+            args.reward_policy,
+            str(args.device),
+        )
+    elif args.checkpoint:
+        shared_checkpoint_scorer = TorchCheckpointScorer(
+            args.checkpoint, str(args.device)
+        )
+    else:
+        shared_checkpoint_scorer = None
     output_rows = []
     for source_row in sources:
         source_key = str(source_row["source_key"])

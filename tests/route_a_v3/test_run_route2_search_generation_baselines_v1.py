@@ -102,8 +102,20 @@ def test_checkpoint_scorer_rejects_random_untrained_checkpoint(tmp_path: Path, m
         module.TorchCheckpointScorer(path, "cuda:0")
 
 
-def test_scoring_execution_provenance_distinguishes_cuda_from_precomputed_scores() -> None:
+def test_scoring_execution_provenance_distinguishes_cuda_from_precomputed_scores(
+    monkeypatch,
+) -> None:
     module = _load()
+    monkeypatch.setattr(module.torch.cuda, "device_count", lambda: 8)
+    monkeypatch.setattr(
+        module,
+        "cuda_device_observation",
+        lambda index, require_physical_index_match: {
+            "cuda_device_index": index,
+            "cuda_device_uuid": "GPU-test",
+            "cuda_total_memory_mb": 40960.0,
+        },
+    )
     checkpoint = module.scoring_execution_provenance(True, "cuda:2", 2)
     assert checkpoint["critic_scoring_execution"] == "CUDA_CHECKPOINT"
     assert checkpoint["device"] == "cuda:2"
@@ -172,3 +184,27 @@ def test_search_hyperparameters_are_explicit_and_positive() -> None:
             oversample_factor=8,
             exhaustive_space_limit=4096,
         )
+
+
+def test_budgeted_scorer_batches_missing_candidates_and_counts_equivalents() -> None:
+    module = _load()
+
+    class BatchedScore:
+        def __init__(self):
+            self.batches = []
+
+        def __call__(self, sequence):
+            raise AssertionError("single scoring should not be used")
+
+        def score_many(self, sequences):
+            self.batches.append(tuple(sequences))
+            return [_score(sequence) for sequence in sequences]
+
+    function = BatchedScore()
+    scorer = module.BudgetedScorer(function, max_forwards=3)
+    values = scorer.score_available(["AAAA", "CAAA", "GAAA", "UAAA"])
+    assert [sequence for sequence, _score_value in values] == ["AAAA", "CAAA", "GAAA"]
+    assert function.batches == [("AAAA", "CAAA", "GAAA")]
+    assert scorer.forward_count == 3
+    assert scorer.score_available(["AAAA", "CAAA"])[0][1] == _score("AAAA")
+    assert len(function.batches) == 1
