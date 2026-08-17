@@ -30,6 +30,7 @@ def _protocol() -> dict:
         "expected_task_count": 7,
         "expected_seed": 17,
         "expected_final_epoch": 8,
+        "expected_optimizer_steps_per_arm": 24,
         "expected_physical_gpu_index": 6,
         "expected_parameter_counts": {"shared": 100, "residual": 114},
         "material_gain_rule": {

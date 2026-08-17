@@ -127,6 +127,10 @@ def validate_summary(
     _require(summary.get("final_training_epoch") == protocol["expected_final_epoch"], f"{arm} epoch budget changed")
     _require(summary.get("selected_epoch") == protocol["expected_final_epoch"], f"{arm} did not select final epoch")
     _require(
+        summary.get("optimizer_steps") == protocol["expected_optimizer_steps_per_arm"],
+        f"{arm} optimizer-step budget changed",
+    )
+    _require(
         summary.get("parameter_count") == protocol["expected_parameter_counts"][arm],
         f"{arm} parameter count changed",
     )
@@ -192,7 +196,7 @@ def adjudicate(
         "shared_task_macro_standardized_mae": shared_metrics["task_macro_standardized_mae"],
         "residual_task_macro_standardized_mae": residual_metrics["task_macro_standardized_mae"],
         "task_macro_standardized_mae_ratio": mae_ratio,
-        "optimizer_steps_per_arm": shared_summary["optimizer_steps"],
+        "optimizer_steps_per_arm": protocol["expected_optimizer_steps_per_arm"],
         "parent_development_validation_outcomes_accessed": False,
         "parent_development_test_outcomes_accessed": False,
         "inner_test_outcomes_accessed": False,

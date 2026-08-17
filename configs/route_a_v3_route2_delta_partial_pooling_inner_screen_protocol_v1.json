@@ -17,6 +17,7 @@
   "expected_task_count": 7,
   "expected_seed": 20260816,
   "expected_final_epoch": 8,
+  "expected_optimizer_steps_per_arm": 15840,
   "expected_physical_gpu_index": 6,
   "expected_parameter_counts": {
     "shared": 80099,
