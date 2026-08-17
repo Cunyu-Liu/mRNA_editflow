@@ -23,6 +23,7 @@ exact_terminal_distribution = FLOW.exact_terminal_distribution
 initial_state = FLOW.initial_state
 legal_actions = FLOW.legal_actions
 positive_rates = FLOW.positive_rates
+potential_guided_rate_function = FLOW.potential_guided_rate_function
 replay_source_relative = FLOW.replay_source_relative
 sample_trajectory = FLOW.sample_trajectory
 numerical_failure_state = FLOW.numerical_failure_state
@@ -121,3 +122,40 @@ def test_inconsistent_state_is_rejected() -> None:
     state = FlowState("A", "C", (), 1, "a", "c")
     with pytest.raises(LegalFlowError, match="does not replay"):
         legal_actions(state)
+
+
+def test_frozen_potential_tilts_rates_without_changing_legal_support() -> None:
+    root = initial_state("A", budget=1, assay_id="a", context_id="c")
+
+    def potential(state):
+        return {"A": 0.0, "C": 2.0, "G": 1.0, "U": -1.0}[state.current_sequence]
+
+    guided = potential_guided_rate_function(
+        _unit_rates, potential, guidance_strength=1.0
+    )
+    rates = dict(positive_rates(root, guided, support_floor=1e-8))
+    actions = {action.action_id: action for action in legal_actions(root)}
+    assert set(rates) == set(legal_actions(root))
+    assert rates[actions["SUB:0:C"]] > rates[actions["SUB:0:G"]]
+    assert rates[actions["SUB:0:G"]] > rates[actions[STOP]]
+    assert rates[actions[STOP]] > rates[actions["SUB:0:U"]]
+    assert rates[actions[STOP]] == pytest.approx(1.0 + 1e-8)
+
+
+def test_guidance_rejects_missing_base_action_and_nonfinite_potential() -> None:
+    root = initial_state("A", budget=1, assay_id="a", context_id="c")
+
+    def missing_stop(_state, actions):
+        return {action: 1.0 for action in actions if action.kind != STOP}
+
+    guided = potential_guided_rate_function(
+        missing_stop, lambda _state: 0.0, guidance_strength=1.0
+    )
+    with pytest.raises(LegalFlowError, match="exactly"):
+        positive_rates(root, guided)
+
+    guided = potential_guided_rate_function(
+        _unit_rates, lambda _state: float("nan"), guidance_strength=1.0
+    )
+    with pytest.raises(LegalFlowError, match="nonfinite"):
+        positive_rates(root, guided)

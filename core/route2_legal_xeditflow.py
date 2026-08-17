@@ -59,6 +59,7 @@ class LegalAction:
 
 
 RateFunction = Callable[[FlowState, Sequence[LegalAction]], Mapping[LegalAction, float]]
+PotentialFunction = Callable[[FlowState], float]
 
 
 def replay_source_relative(
@@ -200,6 +201,49 @@ def positive_rates(
             raise LegalFlowError(f"invalid learned base rate for {action.action_id}")
         result.append((action, raw_rate + support_floor))
     return tuple(result)
+
+
+def potential_guided_rate_function(
+    base_rate_function: RateFunction,
+    potential_function: PotentialFunction,
+    *,
+    guidance_strength: float,
+) -> RateFunction:
+    """Tilt legal base rates by a frozen state-potential difference."""
+
+    strength = float(guidance_strength)
+    if not math.isfinite(strength) or strength < 0.0:
+        raise LegalFlowError("guidance strength must be finite and nonnegative")
+
+    def score(
+        state: FlowState, actions: Sequence[LegalAction]
+    ) -> Mapping[LegalAction, float]:
+        supplied = base_rate_function(state, actions)
+        if set(supplied) != set(actions):
+            raise LegalFlowError(
+                "base rate function must return exactly the enumerated legal actions"
+            )
+        current_potential = float(potential_function(state))
+        if not math.isfinite(current_potential):
+            raise LegalFlowError("current-state potential is nonfinite")
+        result = {}
+        for action in actions:
+            base_rate = float(supplied[action])
+            if not math.isfinite(base_rate) or base_rate < 0.0:
+                raise LegalFlowError(
+                    f"invalid learned base rate for {action.action_id}"
+                )
+            child_potential = float(potential_function(apply_action(state, action)))
+            if not math.isfinite(child_potential):
+                raise LegalFlowError(
+                    f"child-state potential is nonfinite for {action.action_id}"
+                )
+            result[action] = base_rate * math.exp(
+                strength * (child_potential - current_potential)
+            )
+        return result
+
+    return score
 
 
 def jump_distribution(
