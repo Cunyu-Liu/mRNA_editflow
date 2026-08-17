@@ -104,6 +104,29 @@ def adjudicate_screen(protocol: Mapping[str, Any], runs: list[Mapping[str, Any]]
     edit_scaled = by_role["FACTORIAL_EDIT_CENTERED_SCALED"]
     source_only = by_role["MATCHED_SOURCE_ONLY_CONTROL"]
     permutation = by_role["MATCHED_TRAIN_CANDIDATE_PERMUTATION_CONTROL"]
+    _require(global_raw["model_kind"] == global_scaled["model_kind"], "global factorial model kinds differ")
+    _require(edit_raw["model_kind"] == edit_scaled["model_kind"], "edit-centered factorial model kinds differ")
+    _require(permutation["model_kind"] == edit_scaled["model_kind"], "permutation control model kind is not matched")
+    _require(source_only["model_kind"] != edit_scaled["model_kind"], "source-only control is not a distinct model kind")
+    _require(global_raw["target_scaling_mode"] == edit_raw["target_scaling_mode"] == "NONE", "raw factorial target scaling differs")
+    _require(
+        global_scaled["target_scaling_mode"]
+        == edit_scaled["target_scaling_mode"]
+        == source_only["target_scaling_mode"]
+        == permutation["target_scaling_mode"]
+        == "TRAIN_TASK_ROBUST",
+        "scaled factorial/control target scaling differs",
+    )
+    _require(global_raw["parameter_count"] == global_scaled["parameter_count"], "global factorial parameter counts differ")
+    _require(
+        edit_scaled["parameter_count"] == source_only["parameter_count"] == permutation["parameter_count"],
+        "edit-scaled control parameter counts differ",
+    )
+    _require(edit_raw["candidate_control"] == edit_scaled["candidate_control"] == source_only["candidate_control"] == "NONE", "unexpected candidate control in main/source-only arm")
+    _require(
+        permutation["candidate_control"] == "WITHIN_TASK_TRAIN_CANDIDATE_PERMUTATION",
+        "permutation control identity differs",
+    )
     factorial_effects = {
         "robust_scaling_with_global_pooling": global_scaled["task_macro_spearman"] - global_raw["task_macro_spearman"],
         "robust_scaling_with_edit_centering": edit_scaled["task_macro_spearman"] - edit_raw["task_macro_spearman"],
@@ -115,13 +138,15 @@ def adjudicate_screen(protocol: Mapping[str, Any], runs: list[Mapping[str, Any]]
         "over_train_candidate_permutation": edit_scaled["task_macro_spearman"] - permutation["task_macro_spearman"],
     }
     improvement_over_reference = winner["task_macro_spearman"] - global_raw["task_macro_spearman"]
-    winner_uses_edit_centering = winner["scientific_role"].startswith("FACTORIAL_EDIT_CENTERED")
+    controls_matched_to_winner = winner["scientific_role"] == "FACTORIAL_EDIT_CENTERED_SCALED"
     edit_controls_positive = all(margin > 0.0 for margin in edit_control_margins.values())
-    controls_support_winner = winner_uses_edit_centering and edit_controls_positive
+    controls_support_winner = controls_matched_to_winner and edit_controls_positive
     supports_confirmation = improvement_over_reference > 0.0 and controls_support_winner
     if supports_confirmation:
         status = "EXPLORATORY_SCREEN_SUPPORTS_FRESH_SEED_CONFIRMATION"
-    elif improvement_over_reference > 0.0 and not winner_uses_edit_centering:
+    elif improvement_over_reference > 0.0 and winner["scientific_role"] == "FACTORIAL_EDIT_CENTERED_RAW":
+        status = "EXPLORATORY_EDIT_RAW_REQUIRES_MATCHED_CONTROLS"
+    elif improvement_over_reference > 0.0 and winner["scientific_role"].startswith("FACTORIAL_GLOBAL"):
         status = "EXPLORATORY_GLOBAL_REPAIR_REQUIRES_MATCHED_CONTROLS"
     else:
         status = "EXPLORATORY_SCREEN_DOES_NOT_SUPPORT_CONFIRMATION"
@@ -137,6 +162,8 @@ def adjudicate_screen(protocol: Mapping[str, Any], runs: list[Mapping[str, Any]]
         "factorial_effects": factorial_effects,
         "edit_centered_control_margins": edit_control_margins,
         "matched_controls_support_edit_scaled": edit_controls_positive,
+        "matched_control_target_role": "FACTORIAL_EDIT_CENTERED_SCALED",
+        "matched_controls_are_for_selected_role": controls_matched_to_winner,
         "matched_controls_support_selected_edit_model": controls_support_winner,
         "fresh_confirmation_seeds": protocol["fresh_confirmation_seeds"] if supports_confirmation else [],
         "guided_generation_status": protocol["guided_generation_status"],

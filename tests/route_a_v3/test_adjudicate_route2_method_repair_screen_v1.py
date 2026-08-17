@@ -19,12 +19,16 @@ def _load():
 
 
 def _run(role, spearman, mae=1.0):
+    is_global = role.startswith("FACTORIAL_GLOBAL")
+    is_source_only = role == "MATCHED_SOURCE_ONLY_CONTROL"
+    is_permutation = role == "MATCHED_TRAIN_CANDIDATE_PERMUTATION_CONTROL"
+    is_scaled = role.endswith("SCALED") or is_source_only or is_permutation
     return {
         "scientific_role": role,
         "baseline_id": role.lower(),
-        "model_kind": "model",
-        "target_scaling_mode": "NONE",
-        "candidate_control": "NONE",
+        "model_kind": "global" if is_global else ("source_only" if is_source_only else "edit"),
+        "target_scaling_mode": "TRAIN_TASK_ROBUST" if is_scaled else "NONE",
+        "candidate_control": "WITHIN_TASK_TRAIN_CANDIDATE_PERMUTATION" if is_permutation else "NONE",
         "parameter_count": 500_000,
         "selected_epoch": 1,
         "task_macro_spearman": spearman,
@@ -95,6 +99,38 @@ def test_global_winner_requires_architecture_matched_controls_before_confirmatio
     assert result["status"] == "EXPLORATORY_GLOBAL_REPAIR_REQUIRES_MATCHED_CONTROLS"
     assert result["matched_controls_support_selected_edit_model"] is False
     assert result["fresh_confirmation_seeds"] == []
+
+
+def test_edit_raw_winner_requires_raw_target_controls_before_confirmation() -> None:
+    module = _load()
+    runs = [
+        _run("FACTORIAL_GLOBAL_RAW", 0.10),
+        _run("FACTORIAL_GLOBAL_SCALED", 0.12),
+        _run("FACTORIAL_EDIT_CENTERED_RAW", 0.23),
+        _run("FACTORIAL_EDIT_CENTERED_SCALED", 0.20),
+        _run("MATCHED_SOURCE_ONLY_CONTROL", 0.08),
+        _run("MATCHED_TRAIN_CANDIDATE_PERMUTATION_CONTROL", 0.09),
+    ]
+    result = module.adjudicate_screen(_protocol(), runs)
+    assert result["status"] == "EXPLORATORY_EDIT_RAW_REQUIRES_MATCHED_CONTROLS"
+    assert result["matched_controls_are_for_selected_role"] is False
+    assert result["matched_controls_support_selected_edit_model"] is False
+    assert result["fresh_confirmation_seeds"] == []
+
+
+def test_screen_rejects_parameter_mismatched_control() -> None:
+    module = _load()
+    runs = [
+        _run("FACTORIAL_GLOBAL_RAW", 0.10),
+        _run("FACTORIAL_GLOBAL_SCALED", 0.12),
+        _run("FACTORIAL_EDIT_CENTERED_RAW", 0.13),
+        _run("FACTORIAL_EDIT_CENTERED_SCALED", 0.20),
+        _run("MATCHED_SOURCE_ONLY_CONTROL", 0.08),
+        _run("MATCHED_TRAIN_CANDIDATE_PERMUTATION_CONTROL", 0.09),
+    ]
+    runs[-1]["parameter_count"] += 1
+    with pytest.raises(module.MethodRepairScreenError, match="parameter counts differ"):
+        module.adjudicate_screen(_protocol(), runs)
 
 
 def test_validate_run_rejects_undefined_task_or_cpu_fallback() -> None:
