@@ -792,6 +792,30 @@ def test_manifest_loader_retains_component_metadata_for_loso(tmp_path: Path) -> 
     }
 
 
+def test_loso_train_validation_only_preserves_test_and_component_boundary() -> None:
+    trainer = _load(TRAIN_PATH, "route2_delta_test_preserving_loso_test")
+    rows = [
+        trainer.DeltaRecord("a", "TRAIN", "AA", "CA", 1.0, "a", "A", "x", "c", "e", 0),
+        trainer.DeltaRecord("b", "VALIDATION", "AA", "GA", 2.0, "b", "B", "x", "c", "e", 0),
+        trainer.DeltaRecord("bridge", "TRAIN", "AA", "UA", 3.0, "bridge", "C", "x", "c", "e", 0),
+        trainer.DeltaRecord("held", "TRAIN", "AA", "AC", 4.0, "held", "B", "x", "c", "e", 0),
+        trainer.DeltaRecord("test", "TEST", "AA", "AG", 5.0, "test", "A", "x", "c", "e", 0),
+    ]
+    manifest = {
+        "a": {"split": "TRAIN", "study_unit_id": "A", "connected_source_component_id": "A"},
+        "b": {"split": "VALIDATION", "study_unit_id": "B", "connected_source_component_id": "B"},
+        "bridge": {"split": "TRAIN", "study_unit_id": "C", "connected_source_component_id": "B"},
+        "held": {"split": "TRAIN", "study_unit_id": "B", "connected_source_component_id": "H"},
+        "test": {"split": "TEST", "study_unit_id": "A", "connected_source_component_id": "T"},
+    }
+    selected, excluded, withheld = trainer.loso_train_validation_records(rows, manifest, "B")
+    assert [row.record_id for row in selected["TRAIN"]] == ["a"]
+    assert [row.record_id for row in selected["VALIDATION"]] == ["b", "held"]
+    assert excluded == 1
+    assert withheld == 1
+    assert all(row.record_id != "test" for split in selected.values() for row in split)
+
+
 def test_holdout_category_is_unknown_when_vocab_is_built_from_training_only() -> None:
     trainer = _load(TRAIN_PATH, "route2_delta_training_vocab_test")
     train = trainer.DeltaRecord("a", "TRAIN", "AA", "CA", 1.0, "g1", "TRAIN_STUDY", "a", "c", "e", 0)

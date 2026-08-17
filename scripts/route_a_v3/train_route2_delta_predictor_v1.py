@@ -410,6 +410,54 @@ def fixed_split_records(
     return {"TRAIN": complete["TRAIN"] + complete["VALIDATION"], "TEST": complete["TEST"]}, 0
 
 
+def loso_train_validation_records(
+    records: list[DeltaRecord],
+    manifest: Mapping[str, Mapping[str, str]],
+    holdout_study: str,
+) -> tuple[dict[str, list[DeltaRecord]], int, int]:
+    """Build cross-study folds without exposing the frozen Development TEST."""
+    modeling_splits = {"TRAIN", "VALIDATION"}
+    holdout_components = {
+        value["connected_source_component_id"]
+        for value in manifest.values()
+        if value["study_unit_id"] == holdout_study
+        and value["split"] in modeling_splits
+    }
+    _require(holdout_components, f"LOSO study is absent before Development TEST: {holdout_study}")
+    train_ids = {
+        record_id
+        for record_id, value in manifest.items()
+        if value["split"] in modeling_splits
+        and value["study_unit_id"] != holdout_study
+        and value["connected_source_component_id"] not in holdout_components
+    }
+    holdout_ids = {
+        record_id
+        for record_id, value in manifest.items()
+        if value["split"] in modeling_splits
+        and value["study_unit_id"] == holdout_study
+    }
+    excluded_bridge_count = sum(
+        value["split"] in modeling_splits
+        and value["study_unit_id"] != holdout_study
+        and value["connected_source_component_id"] in holdout_components
+        for value in manifest.values()
+    )
+    development_test_record_count_withheld = sum(
+        value["split"] == "TEST" for value in manifest.values()
+    )
+    by_split = {
+        "TRAIN": [row for row in records if row.record_id in train_ids],
+        "VALIDATION": [row for row in records if row.record_id in holdout_ids],
+    }
+    _require(by_split["TRAIN"] and by_split["VALIDATION"], "LOSO train or holdout set is empty")
+    _require(
+        all(row.split in modeling_splits for rows in by_split.values() for row in rows),
+        "Development TEST entered test-preserving LOSO",
+    )
+    return by_split, excluded_bridge_count, development_test_record_count_withheld
+
+
 class LengthBucketBatchSampler(Sampler[list[int]]):
     """Shuffle length-local batches without padding all records to 1,874 nt."""
 
@@ -1107,13 +1155,32 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
         "unknown training weighting mode",
     )
     run_mode = str(config.get("run_mode", "FIXED_GROUPED_SPLIT"))
-    _require(run_mode in {"FIXED_GROUPED_SPLIT", "LOSO_FROZEN_HYPERPARAMETERS"}, f"unknown run mode: {run_mode}")
+    _require(
+        run_mode in {
+            "FIXED_GROUPED_SPLIT",
+            "LOSO_FROZEN_HYPERPARAMETERS",
+            "LOSO_DEVELOPMENT_TRAIN_VALIDATION_ONLY",
+        },
+        f"unknown run mode: {run_mode}",
+    )
     result_stage = str(config.get("result_stage", ""))
     loso_holdout = None
     excluded_bridge_count = 0
     development_test_record_count_withheld = 0
     if run_mode == "FIXED_GROUPED_SPLIT":
         by_split, development_test_record_count_withheld = fixed_split_records(records, result_stage)
+    elif run_mode == "LOSO_DEVELOPMENT_TRAIN_VALIDATION_ONLY":
+        _require(
+            result_stage
+            == "LOSO_DEVELOPMENT_VALIDATION_ONLY_FROZEN_HYPERPARAMETERS",
+            f"invalid result_stage for TEST-preserving LOSO: {result_stage}",
+        )
+        loso_holdout = str(config["loso_holdout_study_unit_id"])
+        (
+            by_split,
+            excluded_bridge_count,
+            development_test_record_count_withheld,
+        ) = loso_train_validation_records(records, manifest, loso_holdout)
     else:
         _require(
             result_stage == "LOSO_FROZEN_HYPERPARAMETERS",
@@ -1621,6 +1688,9 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
         },
         "loso_holdout_study_unit_id": loso_holdout,
         "loso_excluded_connected_other_study_record_count": excluded_bridge_count,
+        "loso_development_test_preserved": (
+            run_mode == "LOSO_DEVELOPMENT_TRAIN_VALIDATION_ONLY"
+        ),
         "physical_gpu_index": int(config["physical_gpu_index"]),
         "device": str(device),
         "optimizer_name": str(config.get("optimizer_name", "AdamW")),
