@@ -77,12 +77,37 @@ def validate_run(config: Mapping[str, Any], summary: Mapping[str, Any]) -> dict[
         str(task): _finite(row.get("mae"), f"raw task MAE for {task}")
         for task, row in task_metrics.items()
     }
+    candidate_control = str(summary["candidate_control"])
+    candidate_control_summary = summary.get("candidate_control_summary") or {}
+    if config["scientific_role"] == "MATCHED_TRAIN_CANDIDATE_PERMUTATION_CONTROL":
+        _require(
+            candidate_control == "WITHIN_EXACT_SOURCE_TASK_TRAIN_CANDIDATE_PERMUTATION",
+            "permutation control identity differs",
+        )
+        _require(
+            candidate_control_summary.get("permutation_stratum")
+            == "EXACT_SOURCE_SEQUENCE_ENDPOINT_REGION",
+            "permutation control stratum differs",
+        )
+        _require(
+            candidate_control_summary.get("candidate_pool_membership_preserved") is True,
+            "permutation control left recipient candidate support",
+        )
+        _require(
+            candidate_control_summary.get("edit_distance_multiset_preserved") is True,
+            "permutation control changed edit-distance support",
+        )
+        _require(
+            int(candidate_control_summary.get("changed_candidate_sequence_count", 0)) > 0,
+            "permutation control changed no candidates",
+        )
     return {
         "scientific_role": config["scientific_role"],
         "baseline_id": summary["baseline_id"],
         "model_kind": summary["model_kind"],
         "target_scaling_mode": scaler["mode"],
-        "candidate_control": summary["candidate_control"],
+        "candidate_control": candidate_control,
+        "candidate_control_summary": dict(candidate_control_summary),
         "parameter_count": int(summary["parameter_count"]),
         "selected_epoch": int(summary["selected_epoch"]),
         "task_macro_spearman": task_macro_spearman,

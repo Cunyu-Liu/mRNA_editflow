@@ -162,6 +162,12 @@ def test_validate_run_rejects_undefined_task_or_cpu_fallback() -> None:
         "checkpoint_metric": "TASK_MACRO_SPEARMAN_THEN_STANDARDIZED_MAE",
         "target_scaler": {"fit_scope": "TRAIN_ONLY", "center_subtracted": False, "mode": "NONE"},
         "candidate_control": "NONE", "parameter_count": 1, "selected_epoch": 1,
+        "candidate_control_summary": {
+            "permutation_stratum": "NONE",
+            "candidate_pool_membership_preserved": True,
+            "edit_distance_multiset_preserved": True,
+            "changed_candidate_sequence_count": 0,
+        },
         "cuda_device_uuid": "uuid",
         "validation_metrics": {
             "task_macro_spearman": 0.1,
@@ -178,4 +184,49 @@ def test_validate_run_rejects_undefined_task_or_cpu_fallback() -> None:
         module.validate_run(config, summary)
     summary["cpu_fallback_used"] = False
     with pytest.raises(module.MethodRepairScreenError, match="undefined"):
+        module.validate_run(config, summary)
+
+
+def test_validate_run_rejects_permutation_that_leaves_exact_source_support() -> None:
+    module = _load()
+    config = {
+        "baseline_id": "permutation", "model_kind": "edit", "seed": 1,
+        "device": "cuda:2", "physical_gpu_index": 2,
+        "scientific_role": "MATCHED_TRAIN_CANDIDATE_PERMUTATION_CONTROL",
+        "output_directory": "/mnt/permutation",
+    }
+    summary = {
+        "status": "DELTA_PREDICTOR_DEVELOPMENT_GPU_RUN_COMPLETE",
+        "result_stage": "HPO_VALIDATION_ONLY",
+        "development_test_outcomes_evaluated": False,
+        "evaluation_outcomes_read": 0,
+        "cpu_fallback_used": False,
+        "cuda_training_tensors_verified": True,
+        "parameter_changed": True,
+        "baseline_id": "permutation", "model_kind": "edit", "seed": 1,
+        "device": "cuda:2", "physical_gpu_index": 2,
+        "checkpoint_selection": "BEST_VALIDATION",
+        "checkpoint_metric": "TASK_MACRO_SPEARMAN_THEN_STANDARDIZED_MAE",
+        "target_scaler": {
+            "fit_scope": "TRAIN_ONLY", "center_subtracted": False,
+            "mode": "TRAIN_TASK_ROBUST",
+        },
+        "candidate_control": "WITHIN_EXACT_SOURCE_TASK_TRAIN_CANDIDATE_PERMUTATION",
+        "candidate_control_summary": {
+            "permutation_stratum": "EXACT_SOURCE_SEQUENCE_ENDPOINT_REGION",
+            "candidate_pool_membership_preserved": False,
+            "edit_distance_multiset_preserved": True,
+            "changed_candidate_sequence_count": 10,
+        },
+        "parameter_count": 1, "selected_epoch": 1,
+        "cuda_device_uuid": "uuid",
+        "validation_metrics": {
+            "task_macro_spearman": 0.1,
+            "task_macro_standardized_mae": 1.0,
+            "defined_task_spearman_count": 1,
+            "task_count": 1,
+            "task_metrics": {"endpoint::region=0": {"mae": 1.0}},
+        },
+    }
+    with pytest.raises(module.MethodRepairScreenError, match="left recipient candidate support"):
         module.validate_run(config, summary)
