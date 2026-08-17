@@ -36,9 +36,13 @@ def _evaluation(study: str, value):
 def _training(study: str, seed: int = 1):
     return {
         "status": "DELTA_PREDICTOR_DEVELOPMENT_GPU_RUN_COMPLETE",
-        "run_mode": "LOSO_FROZEN_HYPERPARAMETERS",
-        "result_stage": "LOSO_FROZEN_HYPERPARAMETERS",
+        "run_mode": "LOSO_DEVELOPMENT_TRAIN_VALIDATION_ONLY",
+        "result_stage": "LOSO_DEVELOPMENT_VALIDATION_ONLY_FROZEN_HYPERPARAMETERS",
         "loso_holdout_study_unit_id": study,
+        "loso_development_test_preserved": True,
+        "development_test_outcomes_evaluated": False,
+        "development_test_record_count_withheld": 10,
+        "test_metrics": None,
         "seed": seed,
         "optimizer_steps": 10,
         "parameter_changed": True,
@@ -79,6 +83,7 @@ def test_loso_macro_keeps_all_nonempty_studies_and_records_zero_study() -> None:
     assert result["baseline_macro_spearman"] == pytest.approx(0.1)
     assert result["macro_improvement"] == pytest.approx(0.1)
     assert result["all_model_training_gpu_provenance_verified"] is True
+    assert result["development_test_preserved"] is True
 
 
 def test_undefined_study_spearman_is_not_silently_dropped() -> None:
@@ -124,6 +129,8 @@ def test_loso_fold_requires_matching_gpu_training_provenance() -> None:
     for field, value in (
         ("result_stage", "HPO_VALIDATION_ONLY"),
         ("loso_holdout_study_unit_id", "OTHER"),
+        ("loso_development_test_preserved", False),
+        ("development_test_outcomes_evaluated", True),
         ("cpu_fallback_used", True),
         ("cuda_device_uuid", None),
     ):

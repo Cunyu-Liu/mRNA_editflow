@@ -42,6 +42,7 @@ def _passing_input():
                     "status": "LOSO_MODEL_BASELINE_ALIGNED_COMPLETE",
                     "study_count": 7,
                     "all_model_training_gpu_provenance_verified": True,
+                    "development_test_preserved": True,
                     "evaluation_studies_included": 0,
                     "model_macro_spearman": 0.2,
                     "baseline_macro_spearman": 0.1,

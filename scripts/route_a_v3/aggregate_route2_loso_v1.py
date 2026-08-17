@@ -36,9 +36,14 @@ def _verified_model_training(summary: Mapping[str, Any], study: str, seed: int) 
     total_memory = summary.get("cuda_total_memory_mb")
     return (
         summary.get("status") == "DELTA_PREDICTOR_DEVELOPMENT_GPU_RUN_COMPLETE"
-        and summary.get("run_mode") == "LOSO_FROZEN_HYPERPARAMETERS"
-        and summary.get("result_stage") == "LOSO_FROZEN_HYPERPARAMETERS"
+        and summary.get("run_mode") == "LOSO_DEVELOPMENT_TRAIN_VALIDATION_ONLY"
+        and summary.get("result_stage")
+        == "LOSO_DEVELOPMENT_VALIDATION_ONLY_FROZEN_HYPERPARAMETERS"
         and summary.get("loso_holdout_study_unit_id") == study
+        and summary.get("loso_development_test_preserved") is True
+        and summary.get("development_test_outcomes_evaluated") is False
+        and summary.get("development_test_record_count_withheld", 0) > 0
+        and summary.get("test_metrics") is None
         and summary.get("seed") == seed
         and summary.get("optimizer_steps", 0) > 0
         and summary.get("parameter_changed") is True
@@ -117,6 +122,7 @@ def aggregate(payload: Mapping[str, Any]) -> dict[str, Any]:
                 for reason in row["failure_reasons"]
             ],
             "all_model_training_gpu_provenance_verified": True,
+            "development_test_preserved": True,
             "evaluation_studies_included": 0,
         }
     model_macro = sum(row["model_task_macro_spearman"] for row in per_study) / len(per_study)
@@ -137,6 +143,7 @@ def aggregate(payload: Mapping[str, Any]) -> dict[str, Any]:
         "per_study": per_study,
         "failure_reasons": [],
         "all_model_training_gpu_provenance_verified": True,
+        "development_test_preserved": True,
         "evaluation_studies_included": 0,
     }
 

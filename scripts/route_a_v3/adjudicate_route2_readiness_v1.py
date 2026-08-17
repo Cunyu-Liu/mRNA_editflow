@@ -71,6 +71,7 @@ def adjudicate(payload: Mapping[str, Any]) -> dict[str, Any]:
             row.get("status") == "LOSO_MODEL_BASELINE_ALIGNED_COMPLETE"
             and row.get("study_count") == critic["expected_loso_study_count"]
             and row.get("all_model_training_gpu_provenance_verified") is True
+            and row.get("development_test_preserved") is True
             and row.get("evaluation_studies_included") == 0
             for row in loso_rows
         )
