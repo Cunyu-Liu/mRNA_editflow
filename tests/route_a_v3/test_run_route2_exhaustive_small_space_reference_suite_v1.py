@@ -100,6 +100,29 @@ def test_validated_inputs_build_the_four_frozen_stages() -> None:
     assert evaluation[evaluation.index("--candidate-support-mode") + 1] == "OPEN_GENERATED_SUPPORT"
 
 
+def test_exhaustive_reference_may_use_another_cuda_device_than_full_suite() -> None:
+    module = _load_module()
+    config, scoring, protocol, suite, adjudication = _inputs()
+    config["device"] = "cuda:2"
+    config["physical_gpu_index"] = 2
+    scoring["device"] = "cuda:2"
+    scoring["physical_gpu_index"] = 2
+    module.validate_inputs(config, scoring, protocol, suite, adjudication)
+    commands = module.build_commands(config, Path("scoring.json"), protocol, Path("reference.json"))
+    generation = commands[0]["command"]
+    assert generation[generation.index("--device") + 1] == "cuda:2"
+    assert generation[generation.index("--physical-gpu-index") + 1] == "2"
+
+
+def test_exhaustive_reference_rejects_cpu_execution() -> None:
+    module = _load_module()
+    config, scoring, protocol, suite, adjudication = _inputs()
+    config["device"] = "cpu"
+    scoring["device"] = "cpu"
+    with pytest.raises(module.ExhaustiveReferenceSuiteError):
+        module.validate_inputs(config, scoring, protocol, suite, adjudication)
+
+
 def test_validation_rejects_incomplete_full_suite() -> None:
     module = _load_module()
     config, scoring, protocol, suite, adjudication = _inputs()
