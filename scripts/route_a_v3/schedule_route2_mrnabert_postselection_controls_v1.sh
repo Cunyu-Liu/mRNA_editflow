@@ -11,6 +11,7 @@ HUBER_DIR="${RUN_ROOT}/max_mean_only_seed20260816_gpu0_bf16_v1"
 FIXED_DIR="${RUN_ROOT}/max_fixed_variance_seed20260816_gpu5_bf16_v1"
 LEARNED_DIR="${RUN_ROOT}/max_learned_variance_seed20260816_gpu3_bf16_v1"
 COMPARISON="${ROUTE2_ROOT}/comparisons/mrnabert_loss_comparison_seed20260816_v1.json"
+CONTROL_ADJUDICATION="${ROUTE2_ROOT}/comparisons/mrnabert_signal_control_adjudication_seed20260816_v1.json"
 RUNTIME_CONFIG_ROOT="${RUN_ROOT}/runtime_configs"
 PERMUTATION_CONFIG="${RUNTIME_CONFIG_ROOT}/selected_loss_candidate_permutation_seed20260816_gpu0_v1.json"
 SOURCE_ONLY_CONFIG="${RUNTIME_CONFIG_ROOT}/selected_loss_source_only_seed20260816_gpu5_v1.json"
@@ -50,12 +51,15 @@ selected_loss=$("${PYTHON}" -c \
 case "${selected_loss}" in
   huber)
     selected_config="${HUBER_DIR}/training_config.json"
+    selected_summary="${HUBER_DIR}/training_summary.json"
     ;;
   fixed_variance_gaussian_nll)
     selected_config="${FIXED_DIR}/training_config.json"
+    selected_summary="${FIXED_DIR}/training_summary.json"
     ;;
   learned_variance_gaussian_nll)
     selected_config="${LEARNED_DIR}/training_config.json"
+    selected_summary="${LEARNED_DIR}/training_summary.json"
     ;;
   *)
     printf 'unexpected selected loss: %s\n' "${selected_loss}" >&2
@@ -93,3 +97,11 @@ printf '%s controls_finished permutation_status=%s source_only_status=%s\n' \
 if [[ "${permutation_status}" -ne 0 || "${source_only_status}" -ne 0 ]]; then
   exit 1
 fi
+
+"${PYTHON}" scripts/route_a_v3/adjudicate_route2_mrnabert_signal_controls_v1.py \
+  --protocol configs/route_a_v3_route2_mrnabert_signal_control_gate_v1.json \
+  --comparison "${COMPARISON}" \
+  --primary-summary "${selected_summary}" \
+  --permutation-summary "${PERMUTATION_RUN}/training_summary.json" \
+  --source-only-summary "${SOURCE_ONLY_RUN}/training_summary.json" \
+  --output "${CONTROL_ADJUDICATION}"
