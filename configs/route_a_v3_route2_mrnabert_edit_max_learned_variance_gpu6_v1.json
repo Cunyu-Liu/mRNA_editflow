@@ -5,8 +5,8 @@
   "run_mode": "FIXED_GROUPED_SPLIT",
   "evaluation_outcomes_accessed": false,
   "development_test_outcomes_accessed": false,
-  "device": "cuda:0",
-  "physical_gpu_index": 0,
+  "device": "cuda:3",
+  "physical_gpu_index": 3,
   "development_manifest": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/manifests/route2_complete_frozen_v1/development_manifest.jsonl",
   "canonical_paths": [
     "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE200304/v1/canonical_records.jsonl",
@@ -19,7 +19,7 @@
     "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE269595/v1/canonical_records.private.jsonl"
   ],
   "pretrained_feature_cache_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/pretrained_features/mrnabert_full_development_v1.pt",
-  "baseline_id": "mrnabert_edit_max_learned_variance_seed20260816_full_a100_bf16",
+  "baseline_id": "mrnabert_edit_max_learned_variance_seed20260816_full_a100_gpu3_bf16",
   "model_kind": "delta_pretrained_mrnabert_edit_centered_antisymmetric",
   "metadata_mode": "FULL_CONTEXT",
   "training_weighting_mode": "STUDY_THEN_SOURCE_CONTEXT_ENDPOINT_GROUP",
@@ -55,5 +55,5 @@
   "expected_frozen_pretrained_parameter_count": 113389056,
   "parameter_count_relative_tolerance": 0.02,
   "experiment_ledger_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiment_tracking/route2_training_attempts.csv",
-  "output_directory": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/mrnabert_scaleup_v2/max_learned_variance_seed20260816_gpu0_bf16_v1"
+  "output_directory": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/mrnabert_scaleup_v2/max_learned_variance_seed20260816_gpu3_bf16_v1"
 }

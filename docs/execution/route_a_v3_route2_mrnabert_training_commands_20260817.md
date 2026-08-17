@@ -4,8 +4,8 @@
 
 - 主冻结编码器：`YYLY66/mRNABERT`，固定版本 `a1eb7df25804d23f08646e1cb996b234d7208a40`。
 - RNA-FM 仅保留为历史对照，不再是新的主训练配置。
-- 冻结 mRNABERT：113,389,056 参数；Huber/固定方差 critic：9,343,106 个可训练参数；总有效规模 122,732,162。
-- 可学习方差 critic：9,343,491 个可训练参数；总有效规模 122,732,547。
+- 冻结 mRNABERT：113,389,056 参数；Huber/固定方差 critic：9,342,914 个可训练参数；总有效规模 122,731,970。
+- 可学习方差 critic：9,343,299 个可训练参数；总有效规模 122,732,355。
 - Development pool：126,165 条。HPO 只使用 TRAIN/VALIDATION；Development TEST 只在冻结模型选择后使用；Evaluation pool 不进入训练、调参或模型选择。
 
 ## 2. 参数在哪里修改
@@ -15,8 +15,8 @@
 | mRNABERT 模型版本、GPU、分块、特征输出 | `configs/route_a_v3_route2_mrnabert_full_development_feature_cache_v1.json` | `mrnabert_model_path`、`physical_gpu_index`、`maximum_chunk_nucleotides`、`maximum_sequences_per_batch`、`batch_token_budget` |
 | critic 架构 | `core/route2_delta_predictor.py` | `Route2PretrainedEditCenteredDeltaPredictor`；预训练全局背景、edit-centered pooling、差分表征、反对称输出 |
 | Huber 主训练 | `configs/route_a_v3_route2_mrnabert_edit_max_mean_only_gpu6_v1.json` | `hidden_dim=384`、`depth=10`、`batch_size=16`、`learning_rate=1e-4`、`weight_decay=1e-4`、`epochs=100` |
-| 固定方差对照 | `configs/route_a_v3_route2_mrnabert_edit_max_fixed_variance_gpu6_v1.json` | 同结构，`loss_kind=fixed_variance_gaussian_nll` |
-| 可学习方差对照 | `configs/route_a_v3_route2_mrnabert_edit_max_learned_variance_gpu6_v1.json` | 同结构，`loss_kind=learned_variance_gaussian_nll` |
+| 固定方差对照 | `configs/route_a_v3_route2_mrnabert_edit_max_fixed_variance_gpu6_v1.json` | 同结构，`loss_kind=fixed_variance_gaussian_nll`，等待 GPU 5 空闲后运行 |
+| 可学习方差对照 | `configs/route_a_v3_route2_mrnabert_edit_max_learned_variance_gpu6_v1.json` | 同结构，`loss_kind=learned_variance_gaussian_nll`，等待 GPU 3 空闲后运行 |
 | 冻结 TEST | `configs/route_a_v3_route2_mrnabert_edit_max_mean_only_frozen_test_gpu6_v1.json` | `result_stage=FROZEN_DEVELOPMENT_TEST` |
 | 全部 Development 最终拟合 | `configs/route_a_v3_route2_mrnabert_edit_max_mean_only_all126165_gpu6_v1.json` | `result_stage=FINAL_ALL_DEVELOPMENT_REFIT` |
 
@@ -127,13 +127,15 @@ $PY scripts/route_a_v3/train_route2_delta_predictor_v1.py \
 - mRNABERT 官方模型采用 ALiBi 相对位置偏置，不依赖固定长度的 learned absolute position embedding；
 - critic 显式加入归一化绝对位置和 edit-gated position channels；
 - critic 使用 edit-centered attention pooling、edit max pooling、source mean/max 全局背景、region FiLM 和 source/candidate 反对称结构。
+- A100 数值对照通过后，正式 loss 比较已启用 BF16 autocast、fused AdamW、pinned memory 和 non-blocking transfer；
+- 实测 `num_workers=0` 对当前内存特征缓存最快，因此没有为了形式上的并行而增加 workers。
 
 当前未启用：
 
 - FlashAttention：官方仓库附带的旧 Triton kernel 与服务器当前 Triton API 不兼容，因此现在使用官方 PyTorch attention fallback；
-- critic 的 BF16、fused AdamW、pinned-memory/non-blocking loader、`torch.compile` 尚未启用。
+- `torch.compile` 尚未启用；当前没有证据表明其编译开销能被这批固定长度的 critic 训练摊薄。
 
-FlashAttention 主要影响一次性的冻结特征构建，不能提升后续 100-epoch critic 的主体训练。下一步性能优化优先针对 critic 训练做独立吞吐/数值一致性测试，通过后再用于新的运行，不能在进行中的 loss 对照中途切换数值路径。
+FlashAttention 主要影响一次性的冻结特征构建，不能提升后续 100-epoch critic 的主体训练。当前使用的 BF16/fused 路径已经先通过独立吞吐与数值一致性测试，再用于全新的正式 runs；没有中途改变既有 run 的数值路径。
 
 ## 9. 低频查看进度
 
@@ -141,12 +143,12 @@ FlashAttention 主要影响一次性的冻结特征构建，不能提升后续 1
 
 ```bash
 tail -n 5 \
-  /mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/mrnabert_scaleup_v1/max_mean_only_seed20260816_gpu6_v1/metrics.jsonl
+  /mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/mrnabert_scaleup_v2/max_mean_only_seed20260816_gpu0_bf16_v1/metrics.jsonl
 ```
 
 结束后查看一次汇总：
 
 ```bash
 python -m json.tool \
-  /mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/mrnabert_scaleup_v1/max_mean_only_seed20260816_gpu6_v1/training_summary.json
+  /mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/mrnabert_scaleup_v2/max_mean_only_seed20260816_gpu0_bf16_v1/training_summary.json
 ```
