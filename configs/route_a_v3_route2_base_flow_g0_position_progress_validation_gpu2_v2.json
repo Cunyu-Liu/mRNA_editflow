@@ -1,0 +1,12 @@
+{
+  "schema_version": "route_a_v3_route2_base_flow_g0_validation_config.v1",
+  "scientific_role": "FLOW_G0_ENGINEERING_VALIDATION_NOT_BIOLOGICAL_OPTIMIZATION",
+  "evaluation_outcomes_accessed": false,
+  "guided_critic_used": false,
+  "device": "cuda:2",
+  "physical_gpu_index": 2,
+  "source_eligibility_manifest": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/generation_eligibility/development_validation_v1/source_eligibility.jsonl",
+  "checkpoint_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/base_flow_g0/position_progress_gpu_v2/best.pt",
+  "seed": 20260816,
+  "output_directory": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/base_flow_g0/position_progress_validation_gpu_v2"
+}
