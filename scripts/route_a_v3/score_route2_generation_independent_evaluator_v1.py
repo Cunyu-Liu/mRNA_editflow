@@ -67,7 +67,7 @@ def validate_frozen_evaluator_provenance(provenance: Mapping[str, Any]) -> None:
     total_memory = provenance.get("cuda_total_memory_mb")
     training_device = provenance.get("device", provenance.get("torch_device"))
     _require(
-        provenance.get("result_stage") == "FROZEN_DEVELOPMENT_TEST"
+        provenance.get("result_stage") == "FROZEN_DEVELOPMENT_VALIDATION"
         and isinstance(provenance.get("optimizer_steps"), int)
         and int(provenance["optimizer_steps"]) > 0
         and provenance.get("parameter_changed") is True
@@ -84,7 +84,7 @@ def validate_frozen_evaluator_provenance(provenance: Mapping[str, Any]) -> None:
         and not isinstance(total_memory, bool)
         and math.isfinite(float(total_memory))
         and float(total_memory) > 0.0,
-        "evaluator checkpoint does not prove a frozen learned GPU update",
+        "evaluator checkpoint does not prove a TRAIN-only frozen Development-validation GPU update",
     )
 
 

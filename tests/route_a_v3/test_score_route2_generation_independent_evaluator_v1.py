@@ -50,7 +50,7 @@ def test_independent_scoring_caches_source_and_duplicate_candidates() -> None:
 def test_independent_evaluator_requires_frozen_observed_cuda_provenance() -> None:
     module = _load()
     provenance = {
-        "result_stage": "FROZEN_DEVELOPMENT_TEST",
+        "result_stage": "FROZEN_DEVELOPMENT_VALIDATION",
         "optimizer_steps": 10,
         "parameter_changed": True,
         "cuda_training_tensors_verified": True,
@@ -62,8 +62,12 @@ def test_independent_evaluator_requires_frozen_observed_cuda_provenance() -> Non
         "cuda_total_memory_mb": 40960.0,
     }
     module.validate_frozen_evaluator_provenance(provenance)
-    for field, value in (("result_stage", "HPO_VALIDATION_ONLY"), ("cuda_device_index", 1)):
+    for field, value in (
+        ("result_stage", "HPO_VALIDATION_ONLY"),
+        ("result_stage", "FROZEN_DEVELOPMENT_TEST"),
+        ("cuda_device_index", 1),
+    ):
         invalid = dict(provenance)
         invalid[field] = value
-        with pytest.raises(module.IndependentEvaluatorError, match="frozen learned GPU"):
+        with pytest.raises(module.IndependentEvaluatorError, match="TRAIN-only frozen"):
             module.validate_frozen_evaluator_provenance(invalid)
