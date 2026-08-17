@@ -34,6 +34,7 @@ def _run(role, spearman, mae=1.0):
         "task_macro_spearman": spearman,
         "within_run_task_macro_standardized_mae": mae,
         "raw_task_mae_by_task": {"endpoint::region=0": mae * 2.0},
+        "task_spearman_by_task": {"endpoint::region=0": spearman},
         "target_scaler": {
             "mode": "TRAIN_TASK_ROBUST" if is_scaled else "NONE",
             "task_scales": {"endpoint::region=0": 2.0} if is_scaled else {},
@@ -63,6 +64,11 @@ def _protocol():
             "common_train_robust_task_macro_standardized_mae": 1.822,
             "development_test_used": False,
             "evaluation_used": False,
+        },
+        "screen_breadth_requirements": {
+            "selected_task_median_spearman": ">0",
+            "minimum_tasks_improved_over_global_raw": 1,
+            "task_count": 1,
         },
     }
 
@@ -133,6 +139,40 @@ def test_screen_stops_when_ranking_leads_but_common_mae_is_worse() -> None:
     assert result["status"] == "EXPLORATORY_REPAIR_RANKING_LEADING_BUT_COMMON_MAE_WORSE"
     assert result["beats_legacy_best_observed_validation_reference"] is True
     assert result["common_train_robust_task_macro_standardized_mae_not_worse_than_legacy_best_observed"] is False
+    assert result["fresh_confirmation_seeds"] == []
+
+
+def test_screen_stops_when_macro_gain_is_concentrated_in_one_task() -> None:
+    module = _load()
+    runs = [
+        _run("FACTORIAL_GLOBAL_RAW", 0.05),
+        _run("FACTORIAL_GLOBAL_SCALED", 0.06),
+        _run("FACTORIAL_EDIT_CENTERED_RAW", 0.07),
+        _run("FACTORIAL_EDIT_CENTERED_SCALED", 0.10),
+        _run("MATCHED_SOURCE_ONLY_CONTROL", 0.00),
+        _run("MATCHED_TRAIN_CANDIDATE_PERMUTATION_CONTROL", 0.00),
+    ]
+    tasks = [f"endpoint_{index}::region=0" for index in range(3)]
+    task_values = {
+        "FACTORIAL_GLOBAL_RAW": [0.05, 0.05, 0.05],
+        "FACTORIAL_GLOBAL_SCALED": [0.06, 0.06, 0.06],
+        "FACTORIAL_EDIT_CENTERED_RAW": [0.07, 0.07, 0.07],
+        "FACTORIAL_EDIT_CENTERED_SCALED": [0.50, -0.10, -0.10],
+        "MATCHED_SOURCE_ONLY_CONTROL": [0.00, 0.00, 0.00],
+        "MATCHED_TRAIN_CANDIDATE_PERMUTATION_CONTROL": [0.00, 0.00, 0.00],
+    }
+    for run in runs:
+        run["raw_task_mae_by_task"] = {task: 2.0 for task in tasks}
+        run["task_spearman_by_task"] = dict(zip(tasks, task_values[run["scientific_role"]]))
+        if run["target_scaling_mode"] == "TRAIN_TASK_ROBUST":
+            run["target_scaler"]["task_scales"] = {task: 2.0 for task in tasks}
+    protocol = _protocol()
+    protocol["legacy_best_observed_validation_reference"].update(value=0.08, defined_task_count=3)
+    protocol["screen_breadth_requirements"].update(task_count=3, minimum_tasks_improved_over_global_raw=2)
+    result = module.adjudicate_screen(protocol, runs)
+    assert result["status"] == "EXPLORATORY_REPAIR_MACRO_GAIN_LACKS_TASK_BREADTH"
+    assert result["tasks_improved_over_global_raw"] == 1
+    assert result["selected_task_median_spearman"] == pytest.approx(-0.10)
     assert result["fresh_confirmation_seeds"] == []
 
 
@@ -218,7 +258,7 @@ def test_validate_run_rejects_undefined_task_or_cpu_fallback() -> None:
             "defined_task_spearman_count": 8,
             "task_count": 9,
             "task_metrics": {
-                f"endpoint_{index}::region=0": {"mae": 1.0}
+                f"endpoint_{index}::region=0": {"mae": 1.0, "spearman": 0.1}
                 for index in range(9)
             },
         },
@@ -268,7 +308,7 @@ def test_validate_run_rejects_permutation_that_leaves_exact_source_support() -> 
             "task_macro_standardized_mae": 1.0,
             "defined_task_spearman_count": 1,
             "task_count": 1,
-            "task_metrics": {"endpoint::region=0": {"mae": 1.0}},
+            "task_metrics": {"endpoint::region=0": {"mae": 1.0, "spearman": 0.1}},
         },
     }
     with pytest.raises(module.MethodRepairScreenError, match="left recipient candidate support"):

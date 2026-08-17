@@ -124,3 +124,6 @@ def test_protocol_keeps_new_method_claim_and_guidance_fail_closed() -> None:
     assert legacy["prior_run_count_replayed"] == 42
     assert legacy["development_test_used"] is False
     assert legacy["evaluation_used"] is False
+    breadth = protocol["screen_breadth_requirements"]
+    assert breadth["task_count"] == 9
+    assert breadth["minimum_tasks_improved_over_global_raw"] == 5

@@ -16,6 +16,14 @@
     "global_spearman": 0.20284591617986497,
     "common_train_robust_task_macro_standardized_mae": 1.822072723037273
   },
+  "strongest_task_profile": {
+    "positive_task_count": 9,
+    "task_median_spearman": 0.06128736969192246,
+    "largest_task_spearman": 0.6963246957337714,
+    "largest_task": "PROXIMAL_POLYA_SITE_USAGE_LOG2_ODDS::region=1",
+    "macro_spearman_excluding_largest_task": 0.08540732601248233,
+    "interpretation": "The legacy macro lead is materially concentrated in the GSE269595 task and is not broad cross-task success."
+  },
   "runner_up": {
     "baseline_id": "neural_medium_0_5m_siamese_cnn_lr3e4",
     "model_kind": "siamese_cnn",

@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import statistics
 from pathlib import Path
 from typing import Any, Mapping
 
@@ -77,6 +78,19 @@ def validate_run(config: Mapping[str, Any], summary: Mapping[str, Any]) -> dict[
         str(task): _finite(row.get("mae"), f"raw task MAE for {task}")
         for task, row in task_metrics.items()
     }
+    task_spearman_by_task = {
+        str(task): _finite(row.get("spearman"), f"task Spearman for {task}")
+        for task, row in task_metrics.items()
+    }
+    _require(
+        math.isclose(
+            task_macro_spearman,
+            sum(task_spearman_by_task.values()) / len(task_spearman_by_task),
+            rel_tol=1e-12,
+            abs_tol=1e-12,
+        ),
+        "task-macro Spearman does not close to task metrics",
+    )
     candidate_control = str(summary["candidate_control"])
     candidate_control_summary = summary.get("candidate_control_summary") or {}
     if config["scientific_role"] == "MATCHED_TRAIN_CANDIDATE_PERMUTATION_CONTROL":
@@ -113,6 +127,7 @@ def validate_run(config: Mapping[str, Any], summary: Mapping[str, Any]) -> dict[
         "task_macro_spearman": task_macro_spearman,
         "within_run_task_macro_standardized_mae": task_macro_standardized_mae,
         "raw_task_mae_by_task": raw_task_mae_by_task,
+        "task_spearman_by_task": task_spearman_by_task,
         "target_scaler": dict(scaler),
         "validation_task_count": int(validation["task_count"]),
         "physical_gpu_index": int(summary["physical_gpu_index"]),
@@ -185,6 +200,10 @@ def adjudicate_screen(protocol: Mapping[str, Any], runs: list[Mapping[str, Any]]
         all(set(run["raw_task_mae_by_task"]) == common_task_keys for run in by_role.values()),
         "validation task identities differ across screen arms",
     )
+    _require(
+        all(set(run["task_spearman_by_task"]) == common_task_keys for run in by_role.values()),
+        "validation task Spearman identities differ across screen arms",
+    )
     common_scaler = robust_scalers[0]
     for run in by_role.values():
         run["common_train_robust_task_macro_standardized_mae"] = sum(
@@ -231,6 +250,22 @@ def adjudicate_screen(protocol: Mapping[str, Any], runs: list[Mapping[str, Any]]
         - winner["common_train_robust_task_macro_standardized_mae"]
     )
     common_mae_not_worse_than_legacy = common_mae_improvement_over_legacy >= 0.0
+    breadth = protocol.get("screen_breadth_requirements") or {}
+    _require(breadth.get("task_count") == len(common_task_keys), "screen breadth task count differs")
+    minimum_improved_tasks = int(breadth.get("minimum_tasks_improved_over_global_raw", 0))
+    _require(1 <= minimum_improved_tasks <= len(common_task_keys), "minimum improved task count is invalid")
+    selected_task_median_spearman = float(statistics.median(winner["task_spearman_by_task"].values()))
+    task_spearman_margins_over_global_raw = {
+        task: winner["task_spearman_by_task"][task] - global_raw["task_spearman_by_task"][task]
+        for task in sorted(common_task_keys)
+    }
+    tasks_improved_over_global_raw = sum(
+        margin > 0.0 for margin in task_spearman_margins_over_global_raw.values()
+    )
+    breadth_supported = (
+        selected_task_median_spearman > 0.0
+        and tasks_improved_over_global_raw >= minimum_improved_tasks
+    )
     controls_matched_to_winner = winner["scientific_role"] == "FACTORIAL_EDIT_CENTERED_SCALED"
     edit_controls_positive = all(margin > 0.0 for margin in edit_control_margins.values())
     controls_support_winner = controls_matched_to_winner and edit_controls_positive
@@ -239,6 +274,7 @@ def adjudicate_screen(protocol: Mapping[str, Any], runs: list[Mapping[str, Any]]
         and controls_support_winner
         and beats_legacy_reference
         and common_mae_not_worse_than_legacy
+        and breadth_supported
     )
     if supports_confirmation:
         status = "EXPLORATORY_SCREEN_SUPPORTS_FRESH_SEED_CONFIRMATION"
@@ -246,6 +282,8 @@ def adjudicate_screen(protocol: Mapping[str, Any], runs: list[Mapping[str, Any]]
         status = "EXPLORATORY_REPAIR_NOT_LEADING_LEGACY_VALIDATION_REFERENCE"
     elif improvement_over_reference > 0.0 and controls_support_winner and not common_mae_not_worse_than_legacy:
         status = "EXPLORATORY_REPAIR_RANKING_LEADING_BUT_COMMON_MAE_WORSE"
+    elif improvement_over_reference > 0.0 and controls_support_winner and not breadth_supported:
+        status = "EXPLORATORY_REPAIR_MACRO_GAIN_LACKS_TASK_BREADTH"
     elif improvement_over_reference > 0.0 and winner["scientific_role"] == "FACTORIAL_EDIT_CENTERED_RAW":
         status = "EXPLORATORY_EDIT_RAW_REQUIRES_MATCHED_CONTROLS"
     elif improvement_over_reference > 0.0 and winner["scientific_role"].startswith("FACTORIAL_GLOBAL"):
@@ -268,6 +306,11 @@ def adjudicate_screen(protocol: Mapping[str, Any], runs: list[Mapping[str, Any]]
         "beats_legacy_best_observed_validation_reference": beats_legacy_reference,
         "common_train_robust_task_macro_standardized_mae_improvement_over_legacy_best_observed": common_mae_improvement_over_legacy,
         "common_train_robust_task_macro_standardized_mae_not_worse_than_legacy_best_observed": common_mae_not_worse_than_legacy,
+        "selected_task_median_spearman": selected_task_median_spearman,
+        "task_spearman_margins_over_global_raw": task_spearman_margins_over_global_raw,
+        "tasks_improved_over_global_raw": tasks_improved_over_global_raw,
+        "minimum_tasks_improved_over_global_raw": minimum_improved_tasks,
+        "task_breadth_supported": breadth_supported,
         "factorial_effects": factorial_effects,
         "edit_centered_control_margins": edit_control_margins,
         "matched_controls_support_edit_scaled": edit_controls_positive,
@@ -283,7 +326,7 @@ def adjudicate_screen(protocol: Mapping[str, Any], runs: list[Mapping[str, Any]]
             {
                 key: value
                 for key, value in run.items()
-                if key not in {"raw_task_mae_by_task", "target_scaler"}
+                if key not in {"raw_task_mae_by_task", "task_spearman_by_task", "target_scaler"}
             }
             for run in sorted(by_role.values(), key=lambda run: run["scientific_role"])
         ],

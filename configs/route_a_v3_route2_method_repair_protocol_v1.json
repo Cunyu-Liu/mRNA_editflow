@@ -45,6 +45,11 @@
     "evaluation_used": false,
     "interpretation": "STRONGEST_OBSERVED_INTERNAL_REFERENCE_NOT_SAME_INFORMATION_BECAUSE_STUDY_CONTEXT_IS_AVAILABLE"
   },
+  "screen_breadth_requirements": {
+    "selected_task_median_spearman": ">0",
+    "minimum_tasks_improved_over_global_raw": 5,
+    "task_count": 9
+  },
   "screen_arms": [
     "configs/route_a_v3_route2_method_repair_global_raw_seed20260821_gpu1_v1.json",
     "configs/route_a_v3_route2_method_repair_global_scaled_seed20260821_gpu0_v1.json",
@@ -85,6 +90,7 @@
   "stop_conditions": [
     "NO_FACTORIAL_ARM_IMPROVES_VALIDATION_TASK_MACRO_SPEARMAN_OVER_GLOBAL_RAW",
     "SELECTED_ARM_DOES_NOT_EXCEED_LEGACY_BEST_OBSERVED_9_TASK_MACRO_SPEARMAN",
+    "SELECTED_ARM_TASK_MEDIAN_IS_NOT_POSITIVE_OR_FEWER_THAN_FIVE_TASKS_IMPROVE_OVER_GLOBAL_RAW",
     "EDIT_CENTERED_ARM_DOES_NOT_BEAT_MATCHED_SOURCE_ONLY_OR_PERMUTATION_CONTROL",
     "THREE_FRESH_SEEDS_ARE_NOT_DIRECTIONALLY_CONSISTENT",
     "LOSO_OR_LEAVE_GSE269595_OUT_SHOWS_SINGLE_STUDY_DEPENDENCE"
