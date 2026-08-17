@@ -254,6 +254,13 @@ def adjudicate_screen(protocol: Mapping[str, Any], runs: list[Mapping[str, Any]]
     _require(breadth.get("task_count") == len(common_task_keys), "screen breadth task count differs")
     minimum_improved_tasks = int(breadth.get("minimum_tasks_improved_over_global_raw", 0))
     _require(1 <= minimum_improved_tasks <= len(common_task_keys), "minimum improved task count is invalid")
+    minimum_control_improved_tasks = int(
+        breadth.get("minimum_tasks_improved_over_each_matched_control", 0)
+    )
+    _require(
+        1 <= minimum_control_improved_tasks <= len(common_task_keys),
+        "minimum control-improved task count is invalid",
+    )
     selected_task_median_spearman = float(statistics.median(winner["task_spearman_by_task"].values()))
     task_spearman_margins_over_global_raw = {
         task: winner["task_spearman_by_task"][task] - global_raw["task_spearman_by_task"][task]
@@ -266,8 +273,29 @@ def adjudicate_screen(protocol: Mapping[str, Any], runs: list[Mapping[str, Any]]
         selected_task_median_spearman > 0.0
         and tasks_improved_over_global_raw >= minimum_improved_tasks
     )
+    edit_control_task_margins = {
+        "over_source_only": {
+            task: edit_scaled["task_spearman_by_task"][task] - source_only["task_spearman_by_task"][task]
+            for task in sorted(common_task_keys)
+        },
+        "over_train_candidate_permutation": {
+            task: edit_scaled["task_spearman_by_task"][task] - permutation["task_spearman_by_task"][task]
+            for task in sorted(common_task_keys)
+        },
+    }
+    edit_control_task_win_counts = {
+        control: sum(margin > 0.0 for margin in margins.values())
+        for control, margins in edit_control_task_margins.items()
+    }
+    edit_controls_task_broad = all(
+        count >= minimum_control_improved_tasks
+        for count in edit_control_task_win_counts.values()
+    )
     controls_matched_to_winner = winner["scientific_role"] == "FACTORIAL_EDIT_CENTERED_SCALED"
-    edit_controls_positive = all(margin > 0.0 for margin in edit_control_margins.values())
+    edit_controls_positive = (
+        all(margin > 0.0 for margin in edit_control_margins.values())
+        and edit_controls_task_broad
+    )
     controls_support_winner = controls_matched_to_winner and edit_controls_positive
     supports_confirmation = (
         improvement_over_reference > 0.0
@@ -313,6 +341,10 @@ def adjudicate_screen(protocol: Mapping[str, Any], runs: list[Mapping[str, Any]]
         "task_breadth_supported": breadth_supported,
         "factorial_effects": factorial_effects,
         "edit_centered_control_margins": edit_control_margins,
+        "edit_centered_control_task_margins": edit_control_task_margins,
+        "edit_centered_control_task_win_counts": edit_control_task_win_counts,
+        "minimum_tasks_improved_over_each_matched_control": minimum_control_improved_tasks,
+        "edit_centered_controls_have_task_breadth": edit_controls_task_broad,
         "matched_controls_support_edit_scaled": edit_controls_positive,
         "matched_control_target_role": "FACTORIAL_EDIT_CENTERED_SCALED",
         "matched_controls_are_for_selected_role": controls_matched_to_winner,

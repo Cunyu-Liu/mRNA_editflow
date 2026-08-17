@@ -127,3 +127,4 @@ def test_protocol_keeps_new_method_claim_and_guidance_fail_closed() -> None:
     breadth = protocol["screen_breadth_requirements"]
     assert breadth["task_count"] == 9
     assert breadth["minimum_tasks_improved_over_global_raw"] == 5
+    assert breadth["minimum_tasks_improved_over_each_matched_control"] == 5

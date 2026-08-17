@@ -68,6 +68,7 @@ def _protocol():
         "screen_breadth_requirements": {
             "selected_task_median_spearman": ">0",
             "minimum_tasks_improved_over_global_raw": 1,
+            "minimum_tasks_improved_over_each_matched_control": 1,
             "task_count": 1,
         },
     }
@@ -149,8 +150,8 @@ def test_screen_stops_when_macro_gain_is_concentrated_in_one_task() -> None:
         _run("FACTORIAL_GLOBAL_SCALED", 0.06),
         _run("FACTORIAL_EDIT_CENTERED_RAW", 0.07),
         _run("FACTORIAL_EDIT_CENTERED_SCALED", 0.10),
-        _run("MATCHED_SOURCE_ONLY_CONTROL", 0.00),
-        _run("MATCHED_TRAIN_CANDIDATE_PERMUTATION_CONTROL", 0.00),
+        _run("MATCHED_SOURCE_ONLY_CONTROL", -0.20),
+        _run("MATCHED_TRAIN_CANDIDATE_PERMUTATION_CONTROL", -0.20),
     ]
     tasks = [f"endpoint_{index}::region=0" for index in range(3)]
     task_values = {
@@ -158,8 +159,8 @@ def test_screen_stops_when_macro_gain_is_concentrated_in_one_task() -> None:
         "FACTORIAL_GLOBAL_SCALED": [0.06, 0.06, 0.06],
         "FACTORIAL_EDIT_CENTERED_RAW": [0.07, 0.07, 0.07],
         "FACTORIAL_EDIT_CENTERED_SCALED": [0.50, -0.10, -0.10],
-        "MATCHED_SOURCE_ONLY_CONTROL": [0.00, 0.00, 0.00],
-        "MATCHED_TRAIN_CANDIDATE_PERMUTATION_CONTROL": [0.00, 0.00, 0.00],
+        "MATCHED_SOURCE_ONLY_CONTROL": [-0.20, -0.20, -0.20],
+        "MATCHED_TRAIN_CANDIDATE_PERMUTATION_CONTROL": [-0.20, -0.20, -0.20],
     }
     for run in runs:
         run["raw_task_mae_by_task"] = {task: 2.0 for task in tasks}
@@ -168,7 +169,11 @@ def test_screen_stops_when_macro_gain_is_concentrated_in_one_task() -> None:
             run["target_scaler"]["task_scales"] = {task: 2.0 for task in tasks}
     protocol = _protocol()
     protocol["legacy_best_observed_validation_reference"].update(value=0.08, defined_task_count=3)
-    protocol["screen_breadth_requirements"].update(task_count=3, minimum_tasks_improved_over_global_raw=2)
+    protocol["screen_breadth_requirements"].update(
+        task_count=3,
+        minimum_tasks_improved_over_global_raw=2,
+        minimum_tasks_improved_over_each_matched_control=2,
+    )
     result = module.adjudicate_screen(protocol, runs)
     assert result["status"] == "EXPLORATORY_REPAIR_MACRO_GAIN_LACKS_TASK_BREADTH"
     assert result["tasks_improved_over_global_raw"] == 1

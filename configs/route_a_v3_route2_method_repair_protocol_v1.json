@@ -48,6 +48,7 @@
   "screen_breadth_requirements": {
     "selected_task_median_spearman": ">0",
     "minimum_tasks_improved_over_global_raw": 5,
+    "minimum_tasks_improved_over_each_matched_control": 5,
     "task_count": 9
   },
   "screen_arms": [
