@@ -1,0 +1,54 @@
+{
+  "schema_version": "route_a_v3_route2_task_gradient_norm_repair_protocol.v1",
+  "status": "FROZEN_DEVELOPMENT_ONLY_BEFORE_GRADNORM_ARM_OUTCOME",
+  "design": "docs/plans/2026-08-17-route2-task-gradient-norm-repair-design.md",
+  "predecessor_screen_adjudication": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/method_repair_v1/exploratory_screen_adjudication_v2.json",
+  "predecessor_screen_status": "EXPLORATORY_GLOBAL_REPAIR_REQUIRES_MATCHED_CONTROLS",
+  "train_gradient_diagnostic": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/method_repair_v1/diagnostics/edit_scaled_task_gradient_conflict_v1.json",
+  "train_gradient_evidence": {
+    "training_record_count": 89580,
+    "task_count": 7,
+    "negative_off_diagonal_pair_count": 11,
+    "off_diagonal_pair_count": 21,
+    "minimum_off_diagonal_cosine": -0.8573490381240845,
+    "largest_shared_gradient_norm": 0.9064859747886658,
+    "smallest_shared_gradient_norm": 0.0260769035667181,
+    "optimizer_steps": 0,
+    "parameter_updates": 0,
+    "development_test_outcomes_read": 0,
+    "evaluation_outcomes_read": 0
+  },
+  "sampler_evidence": {
+    "training_batch_count": 2765,
+    "single_task_batch_count": 2761,
+    "multi_task_batch_count": 4,
+    "multi_task_batch_fraction": 0.0014466546112115732,
+    "decision": "DO_NOT_IMPLEMENT_BATCH_LEVEL_PCGRAD_IN_THIS_EXPERIMENT"
+  },
+  "candidate_arm": "configs/route_a_v3_route2_method_repair_edit_scaled_gradnorm_seed20260821_gpu6_v1.json",
+  "candidate_output": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/method_repair_v1/optimizer_repair/edit_scaled_gradnorm_seed20260821_gpu6_v1/final_summary.json",
+  "frozen_references": {
+    "global_raw_summary": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/method_repair_v1/exploratory/global_raw_seed20260821_gpu1_v1/final_summary.json",
+    "global_scaled_summary": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/method_repair_v1/exploratory/global_scaled_seed20260821_gpu0_v1/final_summary.json",
+    "legacy_best_task_macro_spearman": 0.15328703375929223,
+    "legacy_best_common_train_robust_task_macro_standardized_mae": 1.822072723037273
+  },
+  "advance_requirements": {
+    "task_macro_spearman_above_global_scaled": true,
+    "task_macro_spearman_above_legacy_best": true,
+    "task_median_spearman_above_zero": true,
+    "minimum_task_wins_over_global_raw": 5,
+    "common_train_robust_task_macro_standardized_mae_not_worse_than_legacy": true,
+    "defined_task_count": 9,
+    "calibration_task_count": 7,
+    "calibration_optimizer_steps": 0,
+    "calibration_parameter_updates": 0,
+    "cuda_only": true,
+    "development_test_used": false,
+    "evaluation_used": false
+  },
+  "advance_action": "RUN_MATCHED_SOURCE_ONLY_AND_EXACT_SOURCE_PERMUTATION_CONTROLS_WITH_IDENTICAL_UPDATE_MODE_BEFORE_FRESH_SEEDS",
+  "failure_action": "STOP_TASK_GRADIENT_NORM_REPAIR_NO_CONFIRMATION_NO_GUIDED_GENERATION",
+  "fresh_confirmation_seeds_authorized": [],
+  "guided_generation_status": "BLOCKED"
+}

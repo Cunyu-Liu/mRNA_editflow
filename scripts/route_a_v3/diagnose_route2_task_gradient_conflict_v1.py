@@ -15,7 +15,7 @@ import json
 import math
 from pathlib import Path
 import sys
-from typing import Any, Iterable, Mapping
+from typing import Any, Mapping
 
 import torch
 from torch.utils.data import DataLoader
@@ -40,10 +40,13 @@ from scripts.route_a_v3.train_route2_delta_predictor_v1 import (  # noqa: E402
     _forward,
     _move,
     collate,
+    evenly_spaced_batches,
+    gradient_vector,
     load_manifest,
     load_records,
     multitask_loss,
     require_cuda,
+    shared_effect_parameters,
     task_key,
 )
 
@@ -82,42 +85,6 @@ def validate_terminal_no_go(adjudication: Mapping[str, Any]) -> None:
     )
 
 
-def shared_gradient_parameters(
-    model: Route2EditCenteredDeltaPredictor,
-) -> list[tuple[str, torch.nn.Parameter]]:
-    """Return parameters shared across tasks, excluding categorical adapters."""
-
-    excluded_prefixes = (
-        "assay.",
-        "context.",
-        "endpoint.",
-        "region.",
-        "region_scale.",
-        "region_shift.",
-    )
-    selected = [
-        (name, parameter)
-        for name, parameter in model.named_parameters()
-        if parameter.requires_grad
-        and not any(name.startswith(prefix) for prefix in excluded_prefixes)
-    ]
-    _require(bool(selected), "shared gradient parameter set is empty")
-    return selected
-
-
-def gradient_vector(
-    parameters: Iterable[tuple[str, torch.nn.Parameter]],
-) -> torch.Tensor:
-    values = []
-    for _name, parameter in parameters:
-        values.append(
-            parameter.grad.reshape(-1)
-            if parameter.grad is not None
-            else torch.zeros_like(parameter).reshape(-1)
-        )
-    return torch.cat(values)
-
-
 def cosine_matrix(
     gradients: Mapping[str, torch.Tensor],
 ) -> dict[str, dict[str, float]]:
@@ -139,21 +106,6 @@ def cosine_matrix(
         }
         for left in tasks
     }
-
-
-def evenly_spaced_batches(
-    sampler: SourceGroupBatchSampler, maximum: int
-) -> list[list[int]]:
-    _require(maximum > 0, "maximum batch count must be positive")
-    batches = list(sampler.batches)
-    _require(bool(batches), "task sampler has no batches")
-    if len(batches) <= maximum:
-        return batches
-    positions = [
-        round(index * (len(batches) - 1) / (maximum - 1))
-        for index in range(maximum)
-    ] if maximum > 1 else [len(batches) // 2]
-    return [batches[index] for index in positions]
 
 
 def load_edit_checkpoint(path: Path, device: torch.device):
@@ -213,7 +165,7 @@ def execute(
     for record in train_records:
         records_by_task.setdefault(task_key(record.endpoint, record.region), []).append(record)
 
-    parameters = shared_gradient_parameters(model)
+    parameters = shared_effect_parameters(model)
     gradients = {}
     task_rows = {}
     cuda_losses_verified = True

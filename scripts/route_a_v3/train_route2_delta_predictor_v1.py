@@ -45,6 +45,19 @@ from core.route2_target_scaling import (
 TOKEN = {"A": 0, "C": 1, "G": 2, "U": 3}
 PAD = 4
 REGION = {"5UTR": 0, "3UTR": 1}
+TRAINING_UPDATE_STANDARD = "STANDARD"
+TRAINING_UPDATE_TASK_GRADIENT_NORM_CALIBRATED = (
+    "TRAIN_TASK_GRADIENT_NORM_CALIBRATED"
+)
+SHARED_EFFECT_EXCLUDED_PREFIXES = (
+    "study.",
+    "assay.",
+    "context.",
+    "endpoint.",
+    "region.",
+    "region_scale.",
+    "region_shift.",
+)
 
 
 class DeltaTrainingError(RuntimeError):
@@ -370,6 +383,27 @@ class SourceGroupBatchSampler(Sampler[list[int]]):
         return len(self.batches)
 
 
+def evenly_spaced_batches(
+    sampler: SourceGroupBatchSampler, maximum: int
+) -> list[list[int]]:
+    """Select deterministic coverage across a source-group sampler."""
+
+    _require(maximum > 0, "maximum batch count must be positive")
+    batches = list(sampler.batches)
+    _require(bool(batches), "task sampler has no batches")
+    if len(batches) <= maximum:
+        return batches
+    positions = (
+        [
+            round(index * (len(batches) - 1) / (maximum - 1))
+            for index in range(maximum)
+        ]
+        if maximum > 1
+        else [len(batches) // 2]
+    )
+    return [batches[index] for index in positions]
+
+
 def collate(examples: list[dict[str, Any]]) -> dict[str, Any]:
     maximum = max(len(row["source"]) for row in examples)
     source = torch.full((len(examples), maximum), PAD, dtype=torch.long)
@@ -479,6 +513,239 @@ def multitask_loss(output, batch, rank_kind: str, rank_weight: float, huber_delt
     regression = huber_loss(output, _training_target(batch), batch["sample_weight"], huber_delta)
     ranking = ranking_group_loss(output, batch, rank_kind)
     return regression if ranking is None else regression + rank_weight * ranking
+
+
+def training_loss(
+    output: Mapping[str, torch.Tensor],
+    batch: Mapping[str, Any],
+    loss_kind: str,
+    ranking_loss_weight: float,
+    huber_delta: float,
+) -> torch.Tensor:
+    """Apply the configured objective without changing the standard path."""
+
+    if loss_kind == "huber":
+        return huber_loss(
+            output,
+            _training_target(batch),
+            batch["sample_weight"],
+            huber_delta,
+        )
+    if loss_kind.startswith("huber_plus_"):
+        return multitask_loss(
+            output,
+            batch,
+            loss_kind.removeprefix("huber_plus_"),
+            ranking_loss_weight,
+            huber_delta,
+        )
+    return ranking_loss(output, batch, loss_kind)
+
+
+def shared_effect_parameters(model: torch.nn.Module) -> list[tuple[str, torch.nn.Parameter]]:
+    """Select the shared effect representation, excluding categorical adapters."""
+
+    selected = [
+        (name, parameter)
+        for name, parameter in model.named_parameters()
+        if parameter.requires_grad
+        and not any(name.startswith(prefix) for prefix in SHARED_EFFECT_EXCLUDED_PREFIXES)
+    ]
+    _require(bool(selected), "shared effect parameter set is empty")
+    return selected
+
+
+def gradient_vector(
+    parameters: Iterable[tuple[str, torch.nn.Parameter]],
+) -> torch.Tensor:
+    values = []
+    for _name, parameter in parameters:
+        values.append(
+            parameter.grad.reshape(-1)
+            if parameter.grad is not None
+            else torch.zeros_like(parameter).reshape(-1)
+        )
+    return torch.cat(values)
+
+
+def task_gradient_norm_loss_multipliers(
+    norms: Mapping[str, float],
+) -> dict[str, float]:
+    """Equalize frozen task-gradient norms around their geometric mean."""
+
+    _require(len(norms) >= 2, "at least two TRAIN tasks are required for calibration")
+    checked = {}
+    for task, value in norms.items():
+        number = float(value)
+        _require(math.isfinite(number) and number > 0.0, f"invalid task gradient norm: {task}")
+        checked[str(task)] = number
+    reference = math.exp(sum(math.log(value) for value in checked.values()) / len(checked))
+    return {task: reference / value for task, value in checked.items()}
+
+
+def _select_batch(batch: Mapping[str, Any], indices: list[int]) -> dict[str, Any]:
+    selected = {}
+    for key, value in batch.items():
+        if isinstance(value, torch.Tensor):
+            index = torch.tensor(indices, device=value.device)
+            selected[key] = value[index]
+        elif isinstance(value, list):
+            selected[key] = [value[index] for index in indices]
+        else:
+            selected[key] = value
+    return selected
+
+
+def _select_output(
+    output: Mapping[str, torch.Tensor], indices: list[int]
+) -> dict[str, torch.Tensor]:
+    return {
+        key: value[torch.tensor(indices, device=value.device)]
+        for key, value in output.items()
+    }
+
+
+def task_gradient_scaled_training_loss(
+    output: Mapping[str, torch.Tensor],
+    batch: Mapping[str, Any],
+    multipliers: Mapping[str, float],
+    loss_kind: str,
+    ranking_loss_weight: float,
+    huber_delta: float,
+) -> torch.Tensor:
+    """Average task losses after applying frozen TRAIN-only norm multipliers."""
+
+    by_task: dict[str, list[int]] = {}
+    for index, task in enumerate(batch["task_keys"]):
+        by_task.setdefault(str(task), []).append(index)
+    _require(bool(by_task), "training batch has no task keys")
+    _require(set(by_task) <= set(multipliers), "training task lacks gradient calibration")
+    scaled_losses = []
+    for task, indices in sorted(by_task.items()):
+        task_batch = _select_batch(batch, indices)
+        task_output = _select_output(output, indices)
+        scaled_losses.append(
+            float(multipliers[task])
+            * training_loss(
+                task_output,
+                task_batch,
+                loss_kind,
+                ranking_loss_weight,
+                huber_delta,
+            )
+        )
+    return torch.stack(scaled_losses).mean()
+
+
+def calibrate_task_gradient_norms(
+    *,
+    model: torch.nn.Module,
+    records: list[DeltaRecord],
+    vocabs: Mapping[str, Mapping[str, int]],
+    metadata_mode: str,
+    weighting_mode: str,
+    target_scaler: Route2TargetScaler,
+    candidate_overrides: Mapping[str, str],
+    loss_kind: str,
+    ranking_loss_weight: float,
+    huber_delta: float,
+    batch_size: int,
+    seed: int,
+    maximum_batches_per_task: int,
+    device: torch.device,
+) -> dict[str, Any]:
+    """Calibrate fixed task loss multipliers before any parameter update."""
+
+    initial_parameters = {
+        name: parameter.detach().clone()
+        for name, parameter in model.named_parameters()
+    }
+    records_by_task: dict[str, list[DeltaRecord]] = {}
+    for record in records:
+        records_by_task.setdefault(task_key(record.endpoint, record.region), []).append(record)
+    _require(len(records_by_task) >= 2, "gradient calibration requires multiple TRAIN tasks")
+    parameters = shared_effect_parameters(model)
+    norms = {}
+    task_rows = {}
+    cuda_losses_verified = True
+    model.train()
+    for task, task_records in sorted(records_by_task.items()):
+        record_ids = {record.record_id for record in task_records}
+        task_overrides = {
+            record_id: candidate
+            for record_id, candidate in candidate_overrides.items()
+            if record_id in record_ids
+        }
+        dataset = DeltaDataset(
+            task_records,
+            vocabs,
+            metadata_mode=metadata_mode,
+            weighting_mode=weighting_mode,
+            target_scaler=target_scaler,
+            candidate_overrides=task_overrides,
+        )
+        sampler = SourceGroupBatchSampler(
+            task_records, batch_size, seed, False
+        )
+        batches = evenly_spaced_batches(sampler, maximum_batches_per_task)
+        loader = DataLoader(
+            dataset,
+            batch_sampler=batches,
+            collate_fn=collate,
+            num_workers=0,
+        )
+        model.zero_grad(set_to_none=True)
+        loss_values = []
+        for raw_batch in loader:
+            batch = _move(raw_batch, device)
+            output = _forward(model, batch)
+            loss = training_loss(
+                output,
+                batch,
+                loss_kind,
+                ranking_loss_weight,
+                huber_delta,
+            )
+            _require(loss.is_cuda and loss.device == device, "calibration loss left CUDA")
+            (loss / len(batches)).backward()
+            loss_values.append(float(loss.detach().cpu()))
+        vector = gradient_vector(parameters).detach()
+        _require(vector.is_cuda and vector.device == device, "calibration gradient left CUDA")
+        norm = float(torch.linalg.vector_norm(vector))
+        _require(math.isfinite(norm) and norm > 0.0, f"zero or invalid gradient: {task}")
+        sampled_record_count = sum(len(batch) for batch in batches)
+        norms[task] = norm
+        task_rows[task] = {
+            "training_record_count": len(task_records),
+            "sampled_batch_count": len(batches),
+            "sampled_record_count": sampled_record_count,
+            "sampled_record_fraction": sampled_record_count / len(task_records),
+            "mean_sampled_loss": sum(loss_values) / len(loss_values),
+            "shared_gradient_norm": norm,
+        }
+    model.zero_grad(set_to_none=True)
+    _require(
+        all(
+            torch.equal(initial_parameters[name], parameter.detach())
+            for name, parameter in model.named_parameters()
+        ),
+        "gradient calibration changed a model parameter",
+    )
+    multipliers = task_gradient_norm_loss_multipliers(norms)
+    for task, multiplier in multipliers.items():
+        task_rows[task]["loss_multiplier"] = multiplier
+    return {
+        "mode": TRAINING_UPDATE_TASK_GRADIENT_NORM_CALIBRATED,
+        "fit_scope": "TRAIN_ONLY_BEFORE_FIRST_OPTIMIZER_STEP",
+        "maximum_batches_per_task": maximum_batches_per_task,
+        "task_count": len(task_rows),
+        "shared_parameter_count": sum(parameter.numel() for _, parameter in parameters),
+        "task_diagnostics": task_rows,
+        "loss_multipliers": multipliers,
+        "cuda_losses_verified": cuda_losses_verified,
+        "optimizer_steps": 0,
+        "parameter_updates": 0,
+    }
 
 
 def metrics(
@@ -706,6 +973,18 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
     loss_kind = str(config.get("loss_kind", "huber"))
     allowed_losses = {"huber", "pairwise", "listwise", "huber_plus_pairwise", "huber_plus_listwise"}
     _require(loss_kind in allowed_losses, f"unknown or unauthorized loss_kind: {loss_kind}")
+    ranking_loss_weight = float(config.get("ranking_loss_weight", 1.0))
+    huber_delta = float(config.get("huber_delta", 1.0))
+    training_update_mode = str(
+        config.get("training_update_mode", TRAINING_UPDATE_STANDARD)
+    )
+    _require(
+        training_update_mode in {
+            TRAINING_UPDATE_STANDARD,
+            TRAINING_UPDATE_TASK_GRADIENT_NORM_CALIBRATED,
+        },
+        "unknown training update mode",
+    )
     sampler_class = SourceGroupBatchSampler if "pairwise" in loss_kind or "listwise" in loss_kind else LengthBucketBatchSampler
     samplers = {
         split: sampler_class(by_split[split], int(config["batch_size"]), int(config["seed"]), split == "TRAIN")
@@ -744,6 +1023,22 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
         model = Route2NeuralBaseline(**checkpoint_model_config).to(device)
     else:
         raise DeltaTrainingError(f"unknown model_kind: {model_kind}")
+    if training_update_mode == TRAINING_UPDATE_TASK_GRADIENT_NORM_CALIBRATED:
+        _require(
+            model_kind in {
+                ROUTE2_EDIT_CENTERED_MODEL_KIND,
+                ROUTE2_EDIT_CENTERED_SOURCE_ONLY_KIND,
+            },
+            "task-gradient calibration is scoped to edit-centered models",
+        )
+        _require(
+            weighting_mode == "TASK_THEN_SOURCE_CONTEXT_ENDPOINT_GROUP",
+            "task-gradient calibration requires task-balanced source-group weights",
+        )
+        _require(
+            target_scaler.mode == TARGET_SCALING_TRAIN_TASK_ROBUST,
+            "task-gradient calibration requires TRAIN task-robust targets",
+        )
     optimizer = torch.optim.AdamW(model.parameters(), lr=float(config["learning_rate"]), weight_decay=float(config["weight_decay"]))
     initial_parameter = next(model.parameters()).detach().clone()
     history = []
@@ -757,6 +1052,7 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
     metrics_path = output_dir / "metrics.jsonl"
     metrics_path.write_text("", encoding="utf-8")
     log_path = output_dir / "train.log"
+    started = time.time()
     log_path.write_text(
         json.dumps({
             "event": "TRAINING_STARTED",
@@ -765,9 +1061,40 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
             "cuda_device_uuid": cuda_provenance["cuda_device_uuid"],
             "result_stage": result_stage,
             "run_mode": run_mode,
+            "training_update_mode": training_update_mode,
         }, sort_keys=True) + "\n",
         encoding="utf-8",
     )
+    task_gradient_calibration = None
+    task_gradient_loss_multipliers = None
+    if training_update_mode == TRAINING_UPDATE_TASK_GRADIENT_NORM_CALIBRATED:
+        task_gradient_calibration = calibrate_task_gradient_norms(
+            model=model,
+            records=by_split["TRAIN"],
+            vocabs=vocabs,
+            metadata_mode=metadata_mode,
+            weighting_mode=weighting_mode,
+            target_scaler=target_scaler,
+            candidate_overrides=training_candidate_overrides,
+            loss_kind=loss_kind,
+            ranking_loss_weight=ranking_loss_weight,
+            huber_delta=huber_delta,
+            batch_size=int(config["batch_size"]),
+            seed=int(config["seed"]),
+            maximum_batches_per_task=int(
+                config.get("task_gradient_calibration_max_batches_per_task", 16)
+            ),
+            device=device,
+        )
+        task_gradient_loss_multipliers = task_gradient_calibration[
+            "loss_multipliers"
+        ]
+        with log_path.open("a", encoding="utf-8") as handle:
+            handle.write(json.dumps({
+                "event": "TASK_GRADIENT_CALIBRATION_COMPLETED",
+                "training_update_mode": training_update_mode,
+                "task_gradient_calibration": task_gradient_calibration,
+            }, sort_keys=True) + "\n")
     checkpoint_selection = str(config.get("checkpoint_selection", "FINAL_EPOCH"))
     _require(
         checkpoint_selection in {"FINAL_EPOCH", "BEST_VALIDATION"},
@@ -808,6 +1135,8 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
                 "included_regions": included_regions,
                 "metadata_mode": metadata_mode,
                 "training_weighting_mode": weighting_mode,
+                "training_update_mode": training_update_mode,
+                "task_gradient_calibration": task_gradient_calibration,
                 "target_scaling_mode": target_scaler.mode,
                 "target_scaler_fit_scope": "TRAIN_ONLY",
                 "candidate_control": candidate_control,
@@ -816,7 +1145,6 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
             },
         }
 
-    started = time.time()
     best_rank: tuple[float, ...] | None = None
     for epoch in range(int(config["epochs"])):
         samplers["TRAIN"].set_epoch(epoch)
@@ -830,18 +1158,27 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
             )
             optimizer.zero_grad(set_to_none=True)
             output = _forward(model, batch)
-            if loss_kind == "huber":
-                loss = huber_loss(
-                    output, _training_target(batch), batch["sample_weight"],
-                    float(config.get("huber_delta", 1.0)),
+            if training_update_mode == TRAINING_UPDATE_TASK_GRADIENT_NORM_CALIBRATED:
+                _require(
+                    task_gradient_loss_multipliers is not None,
+                    "task gradient calibration is missing",
                 )
-            elif loss_kind.startswith("huber_plus_"):
-                loss = multitask_loss(
-                    output, batch, loss_kind.removeprefix("huber_plus_"),
-                    float(config.get("ranking_loss_weight", 1.0)), float(config.get("huber_delta", 1.0)),
+                loss = task_gradient_scaled_training_loss(
+                    output,
+                    batch,
+                    task_gradient_loss_multipliers,
+                    loss_kind,
+                    ranking_loss_weight,
+                    huber_delta,
                 )
             else:
-                loss = ranking_loss(output, batch, loss_kind)
+                loss = training_loss(
+                    output,
+                    batch,
+                    loss_kind,
+                    ranking_loss_weight,
+                    huber_delta,
+                )
             _require(loss.is_cuda and loss.device == device, "Delta training loss left CUDA")
             loss.backward()
             optimizer.step()
@@ -912,6 +1249,8 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
         "region_subset_excluded_record_count": region_excluded_record_count,
         "metadata_mode": metadata_mode,
         "training_weighting_mode": weighting_mode,
+        "training_update_mode": training_update_mode,
+        "task_gradient_calibration": task_gradient_calibration,
         "target_scaler": target_scaler.to_dict(),
         "candidate_control": candidate_control,
         "candidate_control_summary": candidate_control_summary,

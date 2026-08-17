@@ -257,6 +257,59 @@ def test_multitask_loss_keeps_singleton_a1_regression_with_rankable_a2_group() -
     assert trainer.multitask_loss(good_a1, batch, "pairwise", 1.0, 1.0) < trainer.multitask_loss(bad_a1, batch, "pairwise", 1.0, 1.0)
 
 
+def test_task_gradient_norm_multipliers_center_on_geometric_mean() -> None:
+    trainer = _load(TRAIN_PATH, "route2_delta_gradient_multiplier_test")
+    multipliers = trainer.task_gradient_norm_loss_multipliers(
+        {"task-a": 1.0, "task-b": 4.0}
+    )
+    assert multipliers == pytest.approx({"task-a": 2.0, "task-b": 0.5})
+    with pytest.raises(trainer.DeltaTrainingError, match="invalid"):
+        trainer.task_gradient_norm_loss_multipliers({"task-a": 1.0, "task-b": 0.0})
+
+
+def test_task_gradient_scaled_loss_splits_tasks_before_scaling() -> None:
+    trainer = _load(TRAIN_PATH, "route2_delta_gradient_scaled_loss_test")
+    output = {
+        "mean": torch.tensor([1.0, 1.0, 2.0, 2.0]),
+        "log_variance": torch.zeros(4),
+    }
+    batch = {
+        "target": torch.zeros(4),
+        "scaled_target": torch.zeros(4),
+        "sample_weight": torch.ones(4),
+        "source_groups": ["a1", "a2", "b1", "b2"],
+        "task_keys": ["task-a", "task-a", "task-b", "task-b"],
+    }
+    loss = trainer.task_gradient_scaled_training_loss(
+        output,
+        batch,
+        {"task-a": 2.0, "task-b": 0.5},
+        "huber",
+        1.0,
+        1.0,
+    )
+    # Huber(1) = 0.5 and Huber(2) = 1.5; scaled task mean is (1 + 0.75) / 2.
+    assert loss == pytest.approx(0.875)
+
+
+def test_shared_effect_parameters_exclude_categorical_task_adapters() -> None:
+    trainer = _load(TRAIN_PATH, "route2_delta_shared_parameter_test")
+    model = trainer.Route2EditCenteredDeltaPredictor(
+        hidden_dim=16,
+        depth=1,
+        study_count=1,
+        assay_count=2,
+        context_count=2,
+        endpoint_count=2,
+    )
+    names = {name for name, _parameter in trainer.shared_effect_parameters(model)}
+    assert "nucleotide.weight" in names
+    assert "pair_fusion.0.weight" in names
+    assert "assay.weight" not in names
+    assert "endpoint.weight" not in names
+    assert "region_scale.weight" not in names
+
+
 def _delta_record(trainer, record_id, study, group, target=0.0):
     return trainer.DeltaRecord(
         record_id=record_id,
@@ -522,6 +575,73 @@ def test_delta_training_refuses_cuda_device_remapping(monkeypatch) -> None:
     monkeypatch.setenv("CUDA_VISIBLE_DEVICES", "3")
     with pytest.raises(trainer.DeltaTrainingError, match="remapping is forbidden"):
         trainer.require_cuda("cuda:0", 0)
+
+
+def test_task_gradient_calibration_is_cuda_and_zero_update() -> None:
+    if not torch.cuda.is_available():
+        pytest.skip("CUDA is required for task-gradient calibration")
+    trainer = _load(TRAIN_PATH, "route2_delta_gradient_calibration_gpu_test")
+    physical_index = int(os.environ.get("ROUTE2_TEST_CUDA_INDEX", "0"))
+    device = trainer.require_cuda(f"cuda:{physical_index}", physical_index)
+    records = []
+    for task_number, (endpoint, region) in enumerate((("E1", 0), ("E2", 1))):
+        for index, candidate in enumerate(("CAAA", "GAAA", "UAAA")):
+            records.append(trainer.DeltaRecord(
+                record_id=f"{endpoint}-{index}",
+                split="TRAIN",
+                source="AAAA",
+                candidate=candidate,
+                target=float(index - 1 + task_number),
+                source_group=f"{endpoint}-g{index}",
+                study=f"S{task_number}",
+                assay=f"A{task_number}",
+                context=f"C{task_number}",
+                endpoint=endpoint,
+                region=region,
+            ))
+    vocabs = {
+        "study": {"__UNK__": 0},
+        **{
+            field: trainer.build_vocab(records, field)
+            for field in ("assay", "context", "endpoint")
+        },
+    }
+    scaler = trainer.fit_route2_target_scaler(
+        records,
+        mode=trainer.TARGET_SCALING_TRAIN_TASK_ROBUST,
+        minimum_task_records=2,
+    )
+    model = trainer.Route2EditCenteredDeltaPredictor(
+        hidden_dim=16,
+        depth=1,
+        study_count=1,
+        assay_count=len(vocabs["assay"]),
+        context_count=len(vocabs["context"]),
+        endpoint_count=len(vocabs["endpoint"]),
+    ).to(device)
+    before = {name: value.detach().clone() for name, value in model.named_parameters()}
+    result = trainer.calibrate_task_gradient_norms(
+        model=model,
+        records=records,
+        vocabs=vocabs,
+        metadata_mode="TRANSFERABLE_CONTEXT",
+        weighting_mode="TASK_THEN_SOURCE_CONTEXT_ENDPOINT_GROUP",
+        target_scaler=scaler,
+        candidate_overrides={},
+        loss_kind="huber",
+        ranking_loss_weight=1.0,
+        huber_delta=1.0,
+        batch_size=2,
+        seed=7,
+        maximum_batches_per_task=2,
+        device=device,
+    )
+    assert result["task_count"] == 2
+    assert result["cuda_losses_verified"] is True
+    assert result["optimizer_steps"] == result["parameter_updates"] == 0
+    assert all(value > 0 for value in result["loss_multipliers"].values())
+    for name, value in model.named_parameters():
+        assert torch.equal(before[name], value.detach())
 
 
 def test_gpu_training_persists_live_contract_artifacts(tmp_path: Path) -> None:

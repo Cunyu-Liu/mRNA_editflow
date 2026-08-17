@@ -11,6 +11,7 @@ from core.route2_delta_predictor import (
 
 ROOT = Path(__file__).resolve().parents[2]
 PROTOCOL = ROOT / "configs/route_a_v3_route2_method_repair_protocol_v2.json"
+GRADNORM_PROTOCOL = ROOT / "configs/route_a_v3_route2_task_gradient_norm_repair_protocol_v1.json"
 
 
 def _load(path: str | Path):
@@ -139,3 +140,29 @@ def test_protocol_keeps_new_method_claim_and_guidance_fail_closed() -> None:
     assert audit["status"] == "EXACT_SOURCE_PERMUTATION_VALID_BUT_TASK_SUPPORT_PARTIAL"
     assert audit["permutation_gate_eligible_tasks"] == support["eligible_tasks"]
     assert audit["task_balanced_weighting_audit"]["source_groups_spanning_multiple_tasks"] == 0
+
+
+def test_gradnorm_protocol_is_single_arm_development_only_and_fail_closed() -> None:
+    protocol = _load(GRADNORM_PROTOCOL)
+    config = _load(protocol["candidate_arm"])
+    assert protocol["status"] == "FROZEN_DEVELOPMENT_ONLY_BEFORE_GRADNORM_ARM_OUTCOME"
+    assert config["result_stage"] == "HPO_VALIDATION_ONLY"
+    assert config["training_update_mode"] == "TRAIN_TASK_GRADIENT_NORM_CALIBRATED"
+    assert config["task_gradient_calibration_max_batches_per_task"] == 16
+    assert config["training_weighting_mode"] == "TASK_THEN_SOURCE_CONTEXT_ENDPOINT_GROUP"
+    assert config["target_scaling_mode"] == "TRAIN_TASK_ROBUST"
+    assert config["evaluation_outcomes_accessed"] is False
+    assert config["development_test_outcomes_accessed"] is False
+    assert all(
+        name not in path
+        for path in config["canonical_paths"]
+        for name in ("GSE232572", "E-MTAB-10902", "GSE246381")
+    )
+    assert protocol["fresh_confirmation_seeds_authorized"] == []
+    assert protocol["guided_generation_status"] == "BLOCKED"
+    assert protocol["sampler_evidence"]["multi_task_batch_count"] == 4
+    assert protocol["sampler_evidence"]["decision"].startswith("DO_NOT_IMPLEMENT")
+    requirements = protocol["advance_requirements"]
+    assert requirements["minimum_task_wins_over_global_raw"] == 5
+    assert requirements["development_test_used"] is False
+    assert requirements["evaluation_used"] is False
