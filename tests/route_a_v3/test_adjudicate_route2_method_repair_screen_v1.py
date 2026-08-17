@@ -28,7 +28,7 @@ def _run(role, spearman, mae=1.0):
         "baseline_id": role.lower(),
         "model_kind": "global" if is_global else ("source_only" if is_source_only else "edit"),
         "target_scaling_mode": "TRAIN_TASK_ROBUST" if is_scaled else "NONE",
-        "candidate_control": "WITHIN_TASK_TRAIN_CANDIDATE_PERMUTATION" if is_permutation else "NONE",
+        "candidate_control": "WITHIN_EXACT_SOURCE_TASK_TRAIN_CANDIDATE_PERMUTATION" if is_permutation else "NONE",
         "parameter_count": 500_000,
         "selected_epoch": 1,
         "task_macro_spearman": spearman,

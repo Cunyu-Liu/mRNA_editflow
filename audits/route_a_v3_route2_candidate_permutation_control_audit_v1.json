@@ -1,0 +1,31 @@
+{
+  "schema_version": "route_a_v3_route2_candidate_permutation_control_audit.v1",
+  "status": "CROSS_SOURCE_PERMUTATION_CONTROL_INVALIDATED",
+  "scope": "DEVELOPMENT_TRAIN_ONLY",
+  "training_record_count": 89580,
+  "invalid_control_config": "configs/route_a_v3_route2_method_repair_edit_scaled_permutation_seed20260821_gpu2_recovery_v1.json",
+  "invalid_control_stratum": "ENDPOINT_REGION_SEQUENCE_LENGTH",
+  "invalid_control_observed": {
+    "permutable_record_count": 89580,
+    "changed_candidate_sequence_count": 89568,
+    "override_not_observed_for_recipient_source_group": 89255,
+    "override_above_observed_max_edit_distance": 87275,
+    "observed_training_max_edit_distance": 38,
+    "invalid_control_max_edit_distance": 171
+  },
+  "invalidity_reason": "Candidates were exchanged across different source sequences, so the control created source-candidate pairs outside the observed intervention support and changed the edit-distance distribution.",
+  "invalid_control_result_use": "FORBIDDEN_FOR_METHOD_CONFIRMATION",
+  "replacement_control_config": "configs/route_a_v3_route2_method_repair_edit_scaled_exact_source_permutation_seed20260821_gpu2_v2.json",
+  "replacement_control_stratum": "EXACT_SOURCE_SEQUENCE_ENDPOINT_REGION",
+  "replacement_control_preflight": {
+    "permutable_record_count": 85679,
+    "changed_candidate_sequence_count": 26464,
+    "override_outside_exact_source_task_pool": 0,
+    "override_above_observed_max_edit_distance": 0,
+    "edit_distance_multiset_preserved": true,
+    "replacement_max_edit_distance": 38
+  },
+  "evaluation_outcomes_accessed": false,
+  "development_test_outcomes_accessed": false,
+  "scientific_claim_status": "NOT_ESTABLISHED"
+}

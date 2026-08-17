@@ -347,6 +347,33 @@ def test_candidate_permutation_is_deterministic_and_train_only_ready() -> None:
     assert {first[row.record_id] for row in records} == {row.candidate for row in records}
 
 
+def test_candidate_permutation_never_crosses_exact_source_task_support() -> None:
+    trainer = _load(TRAIN_PATH, "route2_delta_candidate_permutation_support_test")
+    records = [
+        trainer.DeltaRecord(
+            record_id="source_a_1", split="TRAIN", source="AAAA", candidate="CAAA",
+            target=1.0, source_group="a1", study="S", assay="A", context="C",
+            endpoint="E", region=0,
+        ),
+        trainer.DeltaRecord(
+            record_id="source_a_2", split="TRAIN", source="AAAA", candidate="GAAA",
+            target=2.0, source_group="a2", study="S", assay="A", context="D",
+            endpoint="E", region=0,
+        ),
+        trainer.DeltaRecord(
+            record_id="source_c", split="TRAIN", source="CCCC", candidate="ACCC",
+            target=3.0, source_group="c", study="S", assay="A", context="C",
+            endpoint="E", region=0,
+        ),
+    ]
+    overrides, summary = trainer.build_training_candidate_permutation(records, 17)
+    assert {overrides["source_a_1"], overrides["source_a_2"]} == {"CAAA", "GAAA"}
+    assert "source_c" not in overrides
+    assert summary["permutation_stratum"] == "EXACT_SOURCE_SEQUENCE_ENDPOINT_REGION"
+    assert summary["candidate_pool_membership_preserved"] is True
+    assert summary["edit_distance_multiset_preserved"] is True
+
+
 def test_dataset_uses_train_scaler_without_changing_raw_target() -> None:
     trainer = _load(TRAIN_PATH, "route2_delta_scaled_dataset_test")
     records = [
@@ -612,7 +639,7 @@ def test_gpu_method_repair_smoke_is_scaled_edit_centered_and_best_selected(tmp_p
         "target_scaling_mode": trainer.TARGET_SCALING_TRAIN_TASK_ROBUST,
         "target_scale_minimum_task_records": 2,
         "target_scale_floor": 1e-3,
-        "candidate_control": "WITHIN_TASK_TRAIN_CANDIDATE_PERMUTATION",
+        "candidate_control": "WITHIN_EXACT_SOURCE_TASK_TRAIN_CANDIDATE_PERMUTATION",
         "loss_kind": "huber_plus_pairwise",
         "ranking_loss_weight": 0.25,
         "checkpoint_selection": "BEST_VALIDATION",

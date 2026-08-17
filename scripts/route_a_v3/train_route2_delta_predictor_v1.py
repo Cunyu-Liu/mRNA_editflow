@@ -251,11 +251,11 @@ def select_region_subset(
 def build_training_candidate_permutation(
     records: list[DeltaRecord], seed: int
 ) -> tuple[dict[str, str], dict[str, int]]:
-    """Permute candidates within train task/length strata for a matched control."""
+    """Permute candidates within exact-source/task strata for a matched control."""
 
-    groups: dict[tuple[str, int, int], list[DeltaRecord]] = {}
+    groups: dict[tuple[str, str, int], list[DeltaRecord]] = {}
     for row in records:
-        groups.setdefault((row.endpoint, row.region, len(row.candidate)), []).append(row)
+        groups.setdefault((row.source, row.endpoint, row.region), []).append(row)
     overrides = {}
     permutable_records = 0
     changed_candidates = 0
@@ -273,6 +273,9 @@ def build_training_candidate_permutation(
             permutable_records += 1
             changed_candidates += candidate != recipient.candidate
     return overrides, {
+        "permutation_stratum": "EXACT_SOURCE_SEQUENCE_ENDPOINT_REGION",
+        "candidate_pool_membership_preserved": True,
+        "edit_distance_multiset_preserved": True,
         "training_record_count": len(records),
         "permutable_record_count": permutable_records,
         "changed_candidate_sequence_count": changed_candidates,
@@ -658,10 +661,10 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
     )
     candidate_control = str(config.get("candidate_control", "NONE"))
     _require(
-        candidate_control in {"NONE", "WITHIN_TASK_TRAIN_CANDIDATE_PERMUTATION"},
+        candidate_control in {"NONE", "WITHIN_EXACT_SOURCE_TASK_TRAIN_CANDIDATE_PERMUTATION"},
         "unknown candidate control",
     )
-    if candidate_control == "WITHIN_TASK_TRAIN_CANDIDATE_PERMUTATION":
+    if candidate_control == "WITHIN_EXACT_SOURCE_TASK_TRAIN_CANDIDATE_PERMUTATION":
         training_candidate_overrides, candidate_control_summary = build_training_candidate_permutation(
             by_split["TRAIN"], int(config["seed"])
         )
@@ -672,6 +675,9 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
     else:
         training_candidate_overrides = {}
         candidate_control_summary = {
+            "permutation_stratum": "NONE",
+            "candidate_pool_membership_preserved": True,
+            "edit_distance_multiset_preserved": True,
             "training_record_count": len(by_split["TRAIN"]),
             "permutable_record_count": 0,
             "changed_candidate_sequence_count": 0,

@@ -139,7 +139,7 @@ def adjudicate_screen(protocol: Mapping[str, Any], runs: list[Mapping[str, Any]]
     )
     _require(edit_raw["candidate_control"] == edit_scaled["candidate_control"] == source_only["candidate_control"] == "NONE", "unexpected candidate control in main/source-only arm")
     _require(
-        permutation["candidate_control"] == "WITHIN_TASK_TRAIN_CANDIDATE_PERMUTATION",
+        permutation["candidate_control"] == "WITHIN_EXACT_SOURCE_TASK_TRAIN_CANDIDATE_PERMUTATION",
         "permutation control identity differs",
     )
     robust_scalers = [

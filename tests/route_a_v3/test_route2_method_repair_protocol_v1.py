@@ -77,7 +77,7 @@ def test_method_repair_screen_is_development_only_and_factorially_aligned() -> N
         ("delta_edit_centered_antisymmetric", "TRAIN_TASK_ROBUST"),
     }
     assert roles["MATCHED_SOURCE_ONLY_CONTROL"]["model_kind"] == "delta_edit_centered_source_only_control"
-    assert roles["MATCHED_TRAIN_CANDIDATE_PERMUTATION_CONTROL"]["candidate_control"] == "WITHIN_TASK_TRAIN_CANDIDATE_PERMUTATION"
+    assert roles["MATCHED_TRAIN_CANDIDATE_PERMUTATION_CONTROL"]["candidate_control"] == "WITHIN_EXACT_SOURCE_TASK_TRAIN_CANDIDATE_PERMUTATION"
     assert len({config["output_directory"] for config in configs}) == len(configs)
 
 
@@ -109,3 +109,6 @@ def test_protocol_keeps_new_method_claim_and_guidance_fail_closed() -> None:
     assert recovery["recovery_change"] == "PHYSICAL_GPU_ONLY"
     assert recovery["scientific_configuration_changed"] is False
     assert "gpu7" in recovery["failed_config"]
+    invalidated = protocol["invalidated_control"]
+    assert invalidated["status"] == "INVALID_CROSS_SOURCE_CANDIDATE_PERMUTATION"
+    assert "exact_source" in invalidated["replacement"]

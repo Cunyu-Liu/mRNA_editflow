@@ -17,13 +17,19 @@
   ],
   "matched_controls": [
     "configs/route_a_v3_route2_method_repair_edit_scaled_source_only_seed20260821_gpu5_v1.json",
-    "configs/route_a_v3_route2_method_repair_edit_scaled_permutation_seed20260821_gpu2_recovery_v1.json"
+    "configs/route_a_v3_route2_method_repair_edit_scaled_exact_source_permutation_seed20260821_gpu2_v2.json"
   ],
   "runtime_recovery": {
     "failed_config": "configs/route_a_v3_route2_method_repair_edit_scaled_permutation_seed20260821_gpu7_v1.json",
     "failure_status": "STOPPED_WITH_EVIDENCE_GPU7_PARENT_UUID_MISMATCH",
     "recovery_change": "PHYSICAL_GPU_ONLY",
     "scientific_configuration_changed": false
+  },
+  "invalidated_control": {
+    "config": "configs/route_a_v3_route2_method_repair_edit_scaled_permutation_seed20260821_gpu2_recovery_v1.json",
+    "status": "INVALID_CROSS_SOURCE_CANDIDATE_PERMUTATION",
+    "reason": "89255_OF_89580_OVERRIDES_OUTSIDE_RECIPIENT_SOURCE_GROUP_AND_87275_ABOVE_OBSERVED_MAX_EDIT_DISTANCE",
+    "replacement": "configs/route_a_v3_route2_method_repair_edit_scaled_exact_source_permutation_seed20260821_gpu2_v2.json"
   },
   "screen_selection": {
     "primary": "validation.task_macro_spearman",
