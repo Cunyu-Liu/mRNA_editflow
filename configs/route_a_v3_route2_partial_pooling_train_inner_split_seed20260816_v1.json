@@ -1,0 +1,30 @@
+{
+  "schema_version": "route_a_v3_route2_train_inner_split.v1",
+  "scientific_role": "TRAIN_ONLY_GROUPED_MODEL_SELECTION_WITHOUT_DEVELOPMENT_VALIDATION",
+  "inner_split_id": "PARTIAL_POOLING_INNER_SEED20260816_V1",
+  "source_development_manifest": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/manifests/route2_development_frozen_v1/development_manifest.jsonl",
+  "source_split": "TRAIN",
+  "expected_parent_record_counts": {
+    "TRAIN": 89580,
+    "VALIDATION": 18293,
+    "TEST": 18292
+  },
+  "split_policy": {
+    "unit": "CONNECTED_SOURCE_COMPONENT",
+    "ratios": {
+      "TRAIN": 0.7,
+      "VALIDATION": 0.15,
+      "TEST": 0.15
+    },
+    "seed": 20260816
+  },
+  "development_validation_outcomes_accessed": false,
+  "development_test_outcomes_accessed": false,
+  "evaluation_outcomes_accessed": false,
+  "output": {
+    "directory": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/manifests/route2_partial_pooling_inner_seed20260816_v1",
+    "manifest_filename": "development_inner_manifest.jsonl",
+    "summary_filename": "summary.json",
+    "overwrite_allowed": false
+  }
+}
