@@ -8,6 +8,13 @@ from pathlib import Path
 from typing import Iterable
 
 import torch
+import torch.nn.functional as F
+
+
+ATTENTION_BACKENDS = {
+    "OFFICIAL_PYTORCH_FALLBACK",
+    "PYTORCH_SDPA_AUTO",
+}
 
 
 class OnlineEncoderError(RuntimeError):
@@ -45,6 +52,29 @@ def pool_last_hidden(
     return (last_hidden_state * weights).sum(dim=1) / weights.sum(dim=1).clamp_min(1)
 
 
+def pytorch_sdpa_qkvpacked(
+    qkv: torch.Tensor, bias: torch.Tensor
+) -> torch.Tensor:
+    """Match mRNABERT's packed-QKV attention interface with PyTorch SDPA."""
+
+    _require(
+        qkv.ndim == 5 and qkv.shape[2] == 3,
+        "packed mRNABERT QKV must have shape batch x length x 3 x heads x dim",
+    )
+    query = qkv[:, :, 0].permute(0, 2, 1, 3)
+    key = qkv[:, :, 1].permute(0, 2, 1, 3)
+    value = qkv[:, :, 2].permute(0, 2, 1, 3)
+    attention = F.scaled_dot_product_attention(
+        query,
+        key,
+        value,
+        attn_mask=bias.to(dtype=query.dtype),
+        dropout_p=0.0,
+        is_causal=False,
+    )
+    return attention.permute(0, 2, 1, 3)
+
+
 def chunk_batches(
     chunks: list[tuple[str, str]], maximum_sequences: int, token_budget: int
 ) -> Iterable[list[tuple[str, str]]]:
@@ -78,6 +108,7 @@ class FrozenMRNABERTOnlineEncoder:
         maximum_chunk_nucleotides: int = 1000,
         maximum_sequences_per_batch: int = 8,
         batch_token_budget: int = 4096,
+        attention_backend: str = "OFFICIAL_PYTORCH_FALLBACK",
     ) -> None:
         _require(device.type == "cuda", "online mRNABERT encoding requires CUDA")
         _require(model_path.is_dir(), "mRNABERT model directory is absent")
@@ -97,7 +128,13 @@ class FrozenMRNABERTOnlineEncoder:
             model_config, trust_remote_code=True, add_pooling_layer=False
         )
         modeling_module = sys.modules[model.__class__.__module__]
-        modeling_module.flash_attn_qkvpacked_func = None
+        backend = str(attention_backend)
+        _require(backend in ATTENTION_BACKENDS, "unknown mRNABERT attention backend")
+        modeling_module.flash_attn_qkvpacked_func = (
+            None
+            if backend == "OFFICIAL_PYTORCH_FALLBACK"
+            else pytorch_sdpa_qkvpacked
+        )
         checkpoint = torch.load(
             model_path / "pytorch_model.bin", map_location="cpu", weights_only=False
         )
@@ -111,6 +148,7 @@ class FrozenMRNABERTOnlineEncoder:
         self.model = model.to(device).eval()
         self.model.requires_grad_(False)
         self.device = device
+        self.attention_backend = backend
         self.parameter_count = sum(
             parameter.numel() for parameter in self.model.parameters()
         )

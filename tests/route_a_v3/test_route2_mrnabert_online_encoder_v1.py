@@ -24,6 +24,28 @@ def test_online_batches_use_special_token_budget() -> None:
     assert [len(batch) for batch in batches] == [2, 1, 1]
 
 
+def test_sdpa_adapter_matches_manual_packed_qkv_attention() -> None:
+    torch.manual_seed(20260817)
+    qkv = torch.randn(2, 7, 3, 4, 8)
+    bias = torch.randn(2, 4, 7, 7) * 0.1
+    query = qkv[:, :, 0].permute(0, 2, 1, 3)
+    key = qkv[:, :, 1].permute(0, 2, 3, 1)
+    value = qkv[:, :, 2].permute(0, 2, 1, 3)
+    scores = torch.matmul(query, key) / (query.shape[-1] ** 0.5)
+    expected = torch.matmul(torch.softmax(scores + bias, dim=-1), value).permute(
+        0, 2, 1, 3
+    )
+    observed = encoder.pytorch_sdpa_qkvpacked(qkv, bias)
+    assert torch.allclose(observed, expected, atol=1e-5, rtol=1e-5)
+
+
+def test_attention_backend_names_are_explicit() -> None:
+    assert encoder.ATTENTION_BACKENDS == {
+        "OFFICIAL_PYTORCH_FALLBACK",
+        "PYTORCH_SDPA_AUTO",
+    }
+
+
 def test_validation_sampling_spans_full_record_order() -> None:
     assert validation._sample_indices(10, 4) == [0, 3, 6, 9]
     assert validation._sample_indices(3, 8) == [0, 1, 2]

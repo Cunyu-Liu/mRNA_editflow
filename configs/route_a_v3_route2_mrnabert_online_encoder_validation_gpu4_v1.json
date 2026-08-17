@@ -21,6 +21,7 @@
   "maximum_chunk_nucleotides": 1000,
   "maximum_sequences_per_batch": 8,
   "batch_token_budget": 4096,
+  "attention_backend": "OFFICIAL_PYTORCH_FALLBACK",
   "sample_record_count": 32,
   "absolute_tolerance": 0.01,
   "output_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/mrnabert_online_encoder_validation_v1/validation_summary.json",

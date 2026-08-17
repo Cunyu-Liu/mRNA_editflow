@@ -95,6 +95,9 @@ def validate(
         maximum_chunk_nucleotides=int(config["maximum_chunk_nucleotides"]),
         maximum_sequences_per_batch=int(config["maximum_sequences_per_batch"]),
         batch_token_budget=int(config["batch_token_budget"]),
+        attention_backend=str(
+            config.get("attention_backend", "OFFICIAL_PYTORCH_FALLBACK")
+        ),
     )
     sequences = []
     expected = []
@@ -137,7 +140,7 @@ def validate(
         "novel_candidate_encoding_supported": novel_supported,
         "frozen_parameter_count": int(encoder.parameter_count),
         "online_sequence_cache_count": int(encoder.cached_sequence_count),
-        "attention_backend": "OFFICIAL_PYTORCH_FALLBACK",
+        "attention_backend": encoder.attention_backend,
         "evaluation_records_read": 0,
         "sequence_payload_written": 0,
         "scientific_claim_status": "NOT_ESTABLISHED",
