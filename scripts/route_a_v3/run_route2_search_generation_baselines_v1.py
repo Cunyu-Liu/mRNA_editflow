@@ -180,9 +180,13 @@ class TorchCheckpointScorer:
         import torch
         from core.route2_delta_predictor import (
             ROUTE2_DELTA_MODEL_KIND,
+            ROUTE2_EDIT_CENTERED_MODEL_KIND,
+            ROUTE2_EDIT_CENTERED_SOURCE_ONLY_KIND,
             Route2DeltaPredictor,
+            Route2EditCenteredDeltaPredictor,
             Route2NeuralBaseline,
         )
+        from core.route2_target_scaling import target_scaler_from_checkpoint
 
         _require(device_text.startswith("cuda"), "checkpoint search scoring requires CUDA")
         _require(not os.environ.get("CUDA_VISIBLE_DEVICES"), "CUDA_VISIBLE_DEVICES remapping is forbidden for physical-device provenance")
@@ -196,13 +200,17 @@ class TorchCheckpointScorer:
         model_kind = checkpoint.get("model_kind")
         if model_kind == ROUTE2_DELTA_MODEL_KIND:
             self.model = Route2DeltaPredictor(**checkpoint["model_config"])
+        elif model_kind in {ROUTE2_EDIT_CENTERED_MODEL_KIND, ROUTE2_EDIT_CENTERED_SOURCE_ONLY_KIND}:
+            self.model = Route2EditCenteredDeltaPredictor(**checkpoint["model_config"])
         else:
             _require(model_kind in Route2NeuralBaseline.MODES, f"unsupported checkpoint model kind: {model_kind}")
             self.model = Route2NeuralBaseline(**checkpoint["model_config"])
         self.model.load_state_dict(checkpoint["model_state"])
         self.model.to(self.device).eval()
         self.vocabs = checkpoint["vocabs"]
+        self.target_scaler = target_scaler_from_checkpoint(checkpoint)
         self.source = ""
+        self.endpoint = ""
         self.category_ids: dict[str, int] = {}
         self.region_id = 0
 
@@ -219,6 +227,7 @@ class TorchCheckpointScorer:
         self.category_ids = {
             field: int(self.vocabs[field].get(value, 0)) for field, value in values.items()
         }
+        self.endpoint = values["endpoint"]
         self.region_id = REGION[region_text]
         return self
 
@@ -251,7 +260,8 @@ class TorchCheckpointScorer:
             and torch.isfinite(output["mean"]).all().item(),
             "checkpoint search prediction left CUDA or became nonfinite",
         )
-        return float(output["mean"].item())
+        scale, _scale_source = self.target_scaler.scale(self.endpoint, self.region_id)
+        return float(output["mean"].item()) * scale
 
 
 def _rank_unique(items: Iterable[tuple[str, float]], candidate_budget: int) -> tuple[tuple[str, ...], tuple[float, ...]]:

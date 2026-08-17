@@ -1,0 +1,49 @@
+{
+  "schema_version": "route_a_v3_route2_method_repair_protocol.v1",
+  "status": "FROZEN_DEVELOPMENT_ONLY_EXPLORATORY_SCREEN",
+  "post_exposure_boundary": {
+    "GSE232572": "OUTCOME_EXPOSED_DO_NOT_USE_FOR_MODEL_SELECTION",
+    "E-MTAB-10902": "EVALUATION_UNMATERIALIZED_DO_NOT_USE_FOR_MODEL_SELECTION",
+    "GSE246381": "SEALED_EXCLUDED",
+    "new_external_confirmation_required_for_new_method_claim": true
+  },
+  "screen_seed": 20260821,
+  "fresh_confirmation_seeds": [20260822, 20260823, 20260824],
+  "screen_arms": [
+    "configs/route_a_v3_route2_method_repair_global_raw_seed20260821_gpu1_v1.json",
+    "configs/route_a_v3_route2_method_repair_global_scaled_seed20260821_gpu0_v1.json",
+    "configs/route_a_v3_route2_method_repair_edit_raw_seed20260821_gpu3_v1.json",
+    "configs/route_a_v3_route2_method_repair_edit_scaled_seed20260821_gpu6_v1.json"
+  ],
+  "matched_controls": [
+    "configs/route_a_v3_route2_method_repair_edit_scaled_source_only_seed20260821_gpu5_v1.json",
+    "configs/route_a_v3_route2_method_repair_edit_scaled_permutation_seed20260821_gpu7_v1.json"
+  ],
+  "screen_selection": {
+    "primary": "validation.task_macro_spearman",
+    "tie_breaker": "validation.task_macro_standardized_mae",
+    "single_seed_role": "EXPLORATORY_SELECTION_ONLY",
+    "development_test_role": "NOT_ACCESSED"
+  },
+  "confirmation_requirements": {
+    "all_seven_loso_studies_defined": true,
+    "three_fresh_seed_macro_spearman_improvement_over_frozen_strongest_same_information_baseline": ">0_IN_EACH_SEED",
+    "matched_source_only_and_candidate_permutation_controls": "WORSE_IN_EACH_SEED",
+    "leave_GSE269595_out_direction": "POSITIVE",
+    "task_macro_standardized_mae": "NOT_WORSE",
+    "evaluation_used_for_selection": false
+  },
+  "stop_conditions": [
+    "NO_FACTORIAL_ARM_IMPROVES_VALIDATION_TASK_MACRO_SPEARMAN_OVER_GLOBAL_RAW",
+    "EDIT_CENTERED_ARM_DOES_NOT_BEAT_MATCHED_SOURCE_ONLY_OR_PERMUTATION_CONTROL",
+    "THREE_FRESH_SEEDS_ARE_NOT_DIRECTIONALLY_CONSISTENT",
+    "LOSO_OR_LEAVE_GSE269595_OUT_SHOWS_SINGLE_STUDY_DEPENDENCE"
+  ],
+  "guided_generation_status": "BLOCKED_UNTIL_CRITIC_READY_AND_INDEPENDENT_EVALUATOR_FIXED",
+  "gpu_policy": {
+    "parameter_updates": "CUDA_ONLY",
+    "cpu_fallback": "FORBIDDEN",
+    "physical_gpu_scope": "ANY_GPU_WITH_SUFFICIENT_FREE_MEMORY_PER_USER_AUTHORIZATION",
+    "monitoring": "START_AND_FIRST_BATCH_THEN_30_TO_60_MINUTES_OR_TERMINAL_EVENT"
+  }
+}

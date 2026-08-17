@@ -26,10 +26,20 @@ if str(REPO_ROOT) not in sys.path:
 
 from core.route2_delta_predictor import (
     ROUTE2_DELTA_MODEL_KIND,
+    ROUTE2_EDIT_CENTERED_MODEL_KIND,
+    ROUTE2_EDIT_CENTERED_SOURCE_ONLY_KIND,
     Route2DeltaPredictor,
+    Route2EditCenteredDeltaPredictor,
     Route2NeuralBaseline,
 )
 from core.route2_gpu_failure_evidence import cuda_device_observation, write_gpu_failure_evidence
+from core.route2_target_scaling import (
+    TARGET_SCALING_NONE,
+    TARGET_SCALING_TRAIN_TASK_ROBUST,
+    Route2TargetScaler,
+    fit_route2_target_scaler,
+    task_key,
+)
 
 
 TOKEN = {"A": 0, "C": 1, "G": 2, "U": 3}
@@ -125,24 +135,38 @@ class DeltaDataset(Dataset):
         *,
         metadata_mode: str = "FULL_CONTEXT",
         weighting_mode: str = "SOURCE_CONTEXT_ENDPOINT_GROUP",
+        target_scaler: Route2TargetScaler | None = None,
+        candidate_overrides: Mapping[str, str] | None = None,
     ):
-        _require(metadata_mode in {"FULL_CONTEXT", "SEQUENCE_AND_REGION_ONLY"}, "unknown metadata mode")
+        _require(
+            metadata_mode in {"FULL_CONTEXT", "TRANSFERABLE_CONTEXT", "SEQUENCE_AND_REGION_ONLY"},
+            "unknown metadata mode",
+        )
         _require(
             weighting_mode in {
                 "SOURCE_CONTEXT_ENDPOINT_GROUP",
                 "STUDY_THEN_SOURCE_CONTEXT_ENDPOINT_GROUP",
+                "TASK_THEN_SOURCE_CONTEXT_ENDPOINT_GROUP",
             },
             "unknown training weighting mode",
         )
         self.records = records
         self.vocabs = vocabs
         self.metadata_mode = metadata_mode
+        self.target_scaler = target_scaler or fit_route2_target_scaler(
+            records, mode=TARGET_SCALING_NONE
+        )
+        self.candidate_overrides = dict(candidate_overrides or {})
+        _require(
+            set(self.candidate_overrides) <= {row.record_id for row in records},
+            "candidate override is outside this dataset",
+        )
         self.group_sizes = Counter(row.source_group for row in records)
         if weighting_mode == "SOURCE_CONTEXT_ENDPOINT_GROUP":
             raw_weights = {
                 group: 1.0 / size for group, size in self.group_sizes.items()
             }
-        else:
+        elif weighting_mode == "STUDY_THEN_SOURCE_CONTEXT_ENDPOINT_GROUP":
             study_groups: dict[str, set[str]] = {}
             group_study = {}
             for row in records:
@@ -150,6 +174,17 @@ class DeltaDataset(Dataset):
                 group_study[row.source_group] = row.study
             raw_weights = {
                 group: 1.0 / (len(study_groups[group_study[group]]) * size)
+                for group, size in self.group_sizes.items()
+            }
+        else:
+            task_groups: dict[str, set[str]] = {}
+            group_task = {}
+            for row in records:
+                task = task_key(row.endpoint, row.region)
+                task_groups.setdefault(task, set()).add(row.source_group)
+                group_task[row.source_group] = task
+            raw_weights = {
+                group: 1.0 / (len(task_groups[group_task[group]]) * size)
                 for group, size in self.group_sizes.items()
             }
         raw_total = sum(raw_weights[row.source_group] for row in records)
@@ -162,14 +197,20 @@ class DeltaDataset(Dataset):
 
     def __getitem__(self, index: int) -> dict[str, Any]:
         row = self.records[index]
+        target_scale, target_scale_source = self.target_scaler.scale(row.endpoint, row.region)
+        candidate = self.candidate_overrides.get(row.record_id, row.candidate)
         return {
             "record_id": row.record_id,
             "source": [TOKEN[base] for base in row.source],
-            "candidate": [TOKEN[base] for base in row.candidate],
+            "candidate": [TOKEN[base] for base in candidate],
             "target": row.target,
+            "scaled_target": row.target / target_scale,
+            "target_scale": target_scale,
+            "target_scale_source": target_scale_source,
+            "task_key": task_key(row.endpoint, row.region),
             "sample_weight": self.group_weights[row.source_group],
             "source_group": row.source_group,
-            "study": 0 if self.metadata_mode == "SEQUENCE_AND_REGION_ONLY" else self.vocabs["study"].get(row.study, 0),
+            "study": 0 if self.metadata_mode != "FULL_CONTEXT" else self.vocabs["study"].get(row.study, 0),
             "assay": 0 if self.metadata_mode == "SEQUENCE_AND_REGION_ONLY" else self.vocabs["assay"].get(row.assay, 0),
             "context": 0 if self.metadata_mode == "SEQUENCE_AND_REGION_ONLY" else self.vocabs["context"].get(row.context, 0),
             "endpoint": 0 if self.metadata_mode == "SEQUENCE_AND_REGION_ONLY" else self.vocabs["endpoint"].get(row.endpoint, 0),
@@ -205,6 +246,38 @@ def select_region_subset(
     selected = [row for row in records if row.region in codes]
     _require(selected, "included region subset is empty")
     return selected, sorted(normalized), len(records) - len(selected)
+
+
+def build_training_candidate_permutation(
+    records: list[DeltaRecord], seed: int
+) -> tuple[dict[str, str], dict[str, int]]:
+    """Permute candidates within train task/length strata for a matched control."""
+
+    groups: dict[tuple[str, int, int], list[DeltaRecord]] = {}
+    for row in records:
+        groups.setdefault((row.endpoint, row.region, len(row.candidate)), []).append(row)
+    overrides = {}
+    permutable_records = 0
+    changed_candidates = 0
+    for group_number, key in enumerate(sorted(groups)):
+        rows = sorted(groups[key], key=lambda row: row.record_id)
+        if len(rows) < 2:
+            continue
+        order = list(range(len(rows)))
+        random.Random(seed + group_number).shuffle(order)
+        donors = order[1:] + order[:1]
+        for recipient_index, donor_index in zip(order, donors):
+            recipient = rows[recipient_index]
+            candidate = rows[donor_index].candidate
+            overrides[recipient.record_id] = candidate
+            permutable_records += 1
+            changed_candidates += candidate != recipient.candidate
+    return overrides, {
+        "training_record_count": len(records),
+        "permutable_record_count": permutable_records,
+        "changed_candidate_sequence_count": changed_candidates,
+        "singleton_or_unpermutable_record_count": len(records) - permutable_records,
+    }
 
 
 def fixed_split_records(
@@ -307,6 +380,8 @@ def collate(examples: list[dict[str, Any]]) -> dict[str, Any]:
     return {
         "record_ids": [row["record_id"] for row in examples],
         "source_groups": [row["source_group"] for row in examples],
+        "task_keys": [row.get("task_key", "__UNSPECIFIED_TASK__") for row in examples],
+        "target_scale_sources": [row.get("target_scale_source", "NONE") for row in examples],
         "source_tokens": source,
         "candidate_tokens": candidate,
         "padding_mask": padding,
@@ -316,6 +391,8 @@ def collate(examples: list[dict[str, Any]]) -> dict[str, Any]:
         "endpoint_ids": torch.tensor([row["endpoint"] for row in examples]),
         "region_ids": torch.tensor([row["region"] for row in examples]),
         "target": torch.tensor([row["target"] for row in examples], dtype=torch.float32),
+        "scaled_target": torch.tensor([row.get("scaled_target", row["target"]) for row in examples], dtype=torch.float32),
+        "target_scale": torch.tensor([row.get("target_scale", 1.0) for row in examples], dtype=torch.float32),
         "sample_weight": torch.tensor([row["sample_weight"] for row in examples], dtype=torch.float32),
     }
 
@@ -358,9 +435,13 @@ def huber_loss(output, target, sample_weight=None, delta: float = 1.0):
     return (per_record * sample_weight).mean()
 
 
+def _training_target(batch: Mapping[str, Any]) -> torch.Tensor:
+    return batch.get("scaled_target", batch["target"])
+
+
 def ranking_group_loss(output, batch, loss_kind: str) -> torch.Tensor | None:
     predictions = output["mean"]
-    targets = batch["target"]
+    targets = _training_target(batch)
     by_group: dict[str, list[int]] = {}
     for index, group in enumerate(batch["source_groups"]):
         by_group.setdefault(group, []).append(index)
@@ -387,29 +468,74 @@ def ranking_group_loss(output, batch, loss_kind: str) -> torch.Tensor | None:
 
 def ranking_loss(output, batch, loss_kind: str):
     group_loss = ranking_group_loss(output, batch, loss_kind)
-    return huber_loss(output, batch["target"], batch["sample_weight"]) if group_loss is None else group_loss
+    return huber_loss(output, _training_target(batch), batch["sample_weight"]) if group_loss is None else group_loss
 
 
 def multitask_loss(output, batch, rank_kind: str, rank_weight: float, huber_delta: float) -> torch.Tensor:
     _require(rank_weight > 0.0, "multitask ranking weight must be positive")
-    regression = huber_loss(output, batch["target"], batch["sample_weight"], huber_delta)
+    regression = huber_loss(output, _training_target(batch), batch["sample_weight"], huber_delta)
     ranking = ranking_group_loss(output, batch, rank_kind)
     return regression if ranking is None else regression + rank_weight * ranking
 
 
-def metrics(targets: list[float], predictions: list[float]) -> dict[str, Any]:
+def metrics(
+    targets: list[float],
+    predictions: list[float],
+    *,
+    task_keys: list[str] | None = None,
+    scaled_targets: list[float] | None = None,
+    scaled_predictions: list[float] | None = None,
+) -> dict[str, Any]:
     target = np.asarray(targets)
     prediction = np.asarray(predictions)
     correlation = None
     if len(target) >= 3 and np.std(target) > 0 and np.std(prediction) > 0:
         value = float(spearmanr(target, prediction).statistic)
         correlation = value if math.isfinite(value) else None
-    return {
+    result = {
         "record_count": len(targets),
         "mae": float(np.mean(np.abs(prediction - target))),
         "rmse": float(np.sqrt(np.mean((prediction - target) ** 2))),
         "spearman": correlation,
     }
+    if task_keys is None:
+        return result
+    _require(len(task_keys) == len(targets), "task keys do not align with predictions")
+    if scaled_targets is None or scaled_predictions is None:
+        raise DeltaTrainingError("scaled prediction metrics are missing")
+    by_task: dict[str, list[int]] = {}
+    for index, key in enumerate(task_keys):
+        by_task.setdefault(key, []).append(index)
+    task_metrics = {}
+    correlations = []
+    scaled_maes = []
+    scaled_target = np.asarray(scaled_targets)
+    scaled_prediction = np.asarray(scaled_predictions)
+    for key, indices in sorted(by_task.items()):
+        task_target = target[indices]
+        task_prediction = prediction[indices]
+        task_correlation = None
+        if len(indices) >= 3 and np.std(task_target) > 0 and np.std(task_prediction) > 0:
+            value = float(spearmanr(task_target, task_prediction).statistic)
+            task_correlation = value if math.isfinite(value) else None
+        if task_correlation is not None:
+            correlations.append(task_correlation)
+        task_scaled_mae = float(np.mean(np.abs(scaled_prediction[indices] - scaled_target[indices])))
+        scaled_maes.append(task_scaled_mae)
+        task_metrics[key] = {
+            "record_count": len(indices),
+            "spearman": task_correlation,
+            "mae": float(np.mean(np.abs(task_prediction - task_target))),
+            "standardized_mae": task_scaled_mae,
+        }
+    result.update({
+        "task_count": len(task_metrics),
+        "defined_task_spearman_count": len(correlations),
+        "task_macro_spearman": None if not correlations else float(np.mean(correlations)),
+        "task_macro_standardized_mae": float(np.mean(scaled_maes)),
+        "task_metrics": task_metrics,
+    })
+    return result
 
 
 @torch.no_grad()
@@ -418,20 +544,41 @@ def predict(model, loader, device):
     rows = []
     targets = []
     predictions = []
+    task_keys = []
+    scaled_targets = []
+    scaled_predictions = []
     for raw in loader:
         batch = _move(raw, device)
         output = _forward(model, batch)
-        means = output["mean"].cpu().tolist()
-        for record_id, mean, target in zip(raw["record_ids"], means, raw["target"].tolist()):
+        standardized_means = output["mean"]
+        raw_means = standardized_means * batch["target_scale"]
+        means = raw_means.cpu().tolist()
+        standardized = standardized_means.cpu().tolist()
+        for record_id, mean, standardized_mean, target, scale, scale_source in zip(
+            raw["record_ids"], means, standardized, raw["target"].tolist(),
+            raw["target_scale"].tolist(), raw["target_scale_sources"],
+        ):
             rows.append({
                 "canonical_record_id": record_id,
                 "predicted_direction_normalized_delta": mean,
+                "predicted_standardized_delta": standardized_mean,
+                "target_scale": scale,
+                "target_scale_source": scale_source,
                 "predicted_variance": None,
                 "prediction_uncertainty_status": "NOT_TRAINED_NO_UNIVERSAL_TRUE_STANDARD_ERROR",
             })
             targets.append(target)
             predictions.append(mean)
-    return rows, metrics(targets, predictions)
+        task_keys.extend(raw["task_keys"])
+        scaled_targets.extend(raw["scaled_target"].tolist())
+        scaled_predictions.extend(standardized)
+    return rows, metrics(
+        targets,
+        predictions,
+        task_keys=task_keys,
+        scaled_targets=scaled_targets,
+        scaled_predictions=scaled_predictions,
+    )
 
 
 def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
@@ -451,12 +598,16 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
         records, config.get("included_regions")
     )
     metadata_mode = str(config.get("metadata_mode", "FULL_CONTEXT"))
-    _require(metadata_mode in {"FULL_CONTEXT", "SEQUENCE_AND_REGION_ONLY"}, "unknown metadata mode")
+    _require(
+        metadata_mode in {"FULL_CONTEXT", "TRANSFERABLE_CONTEXT", "SEQUENCE_AND_REGION_ONLY"},
+        "unknown metadata mode",
+    )
     weighting_mode = str(config.get("training_weighting_mode", "SOURCE_CONTEXT_ENDPOINT_GROUP"))
     _require(
         weighting_mode in {
             "SOURCE_CONTEXT_ENDPOINT_GROUP",
             "STUDY_THEN_SOURCE_CONTEXT_ENDPOINT_GROUP",
+            "TASK_THEN_SOURCE_CONTEXT_ENDPOINT_GROUP",
         },
         "unknown training weighting mode",
     )
@@ -499,8 +650,40 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
             "TEST": [row for row in records if row.record_id in test_ids],
         }
         _require(by_split["TRAIN"] and by_split["TEST"], "LOSO train or holdout set is empty")
+    target_scaler = fit_route2_target_scaler(
+        by_split["TRAIN"],
+        mode=str(config.get("target_scaling_mode", TARGET_SCALING_NONE)),
+        minimum_task_records=int(config.get("target_scale_minimum_task_records", 20)),
+        floor=float(config.get("target_scale_floor", 1e-3)),
+    )
+    candidate_control = str(config.get("candidate_control", "NONE"))
+    _require(
+        candidate_control in {"NONE", "WITHIN_TASK_TRAIN_CANDIDATE_PERMUTATION"},
+        "unknown candidate control",
+    )
+    if candidate_control == "WITHIN_TASK_TRAIN_CANDIDATE_PERMUTATION":
+        training_candidate_overrides, candidate_control_summary = build_training_candidate_permutation(
+            by_split["TRAIN"], int(config["seed"])
+        )
+        _require(
+            candidate_control_summary["changed_candidate_sequence_count"] > 0,
+            "candidate permutation did not change any training candidate",
+        )
+    else:
+        training_candidate_overrides = {}
+        candidate_control_summary = {
+            "training_record_count": len(by_split["TRAIN"]),
+            "permutable_record_count": 0,
+            "changed_candidate_sequence_count": 0,
+            "singleton_or_unpermutable_record_count": len(by_split["TRAIN"]),
+        }
     if metadata_mode == "FULL_CONTEXT":
         vocabs = {field: build_vocab(by_split["TRAIN"], field) for field in ("study", "assay", "context", "endpoint")}
+    elif metadata_mode == "TRANSFERABLE_CONTEXT":
+        vocabs = {
+            "study": {"__UNK__": 0},
+            **{field: build_vocab(by_split["TRAIN"], field) for field in ("assay", "context", "endpoint")},
+        }
     else:
         vocabs = {field: {"__UNK__": 0} for field in ("study", "assay", "context", "endpoint")}
     datasets = {
@@ -509,6 +692,8 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
             vocabs,
             metadata_mode=metadata_mode,
             weighting_mode=weighting_mode,
+            target_scaler=target_scaler,
+            candidate_overrides=training_candidate_overrides if split == "TRAIN" else None,
         )
         for split, rows in by_split.items() if rows
     }
@@ -538,6 +723,12 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
             "study_specific_scale_calibration": bool(config.get("study_specific_scale_calibration", False)),
         }
         model = Route2DeltaPredictor(**checkpoint_model_config).to(device)
+    elif model_kind in {ROUTE2_EDIT_CENTERED_MODEL_KIND, ROUTE2_EDIT_CENTERED_SOURCE_ONLY_KIND}:
+        checkpoint_model_config = {
+            **shared_model_config,
+            "source_only_control": model_kind == ROUTE2_EDIT_CENTERED_SOURCE_ONLY_KIND,
+        }
+        model = Route2EditCenteredDeltaPredictor(**checkpoint_model_config).to(device)
     elif model_kind in Route2NeuralBaseline.MODES:
         checkpoint_model_config = {
             **shared_model_config,
@@ -571,6 +762,23 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
         }, sort_keys=True) + "\n",
         encoding="utf-8",
     )
+    checkpoint_selection = str(config.get("checkpoint_selection", "FINAL_EPOCH"))
+    _require(
+        checkpoint_selection in {"FINAL_EPOCH", "BEST_VALIDATION"},
+        "unknown checkpoint selection rule",
+    )
+    checkpoint_metric = str(config.get("checkpoint_metric", "GLOBAL_SPEARMAN_THEN_MAE"))
+    _require(
+        checkpoint_metric in {
+            "GLOBAL_SPEARMAN_THEN_MAE",
+            "TASK_MACRO_SPEARMAN_THEN_STANDARDIZED_MAE",
+        },
+        "unknown checkpoint metric",
+    )
+    _require(
+        checkpoint_selection != "BEST_VALIDATION" or "VALIDATION" in loaders,
+        "best-validation checkpoint selection requires a validation split",
+    )
 
     def checkpoint_payload(epoch: int) -> dict[str, Any]:
         return {
@@ -580,7 +788,9 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
             "baseline_id": baseline_id,
             "model_config": checkpoint_model_config,
             "vocabs": vocabs,
+            "target_scaler": target_scaler.to_dict(),
             "completed_epoch": epoch,
+            "candidate_control": candidate_control,
             "training_provenance": {
                 "optimizer_steps": optimizer_steps,
                 "parameter_changed": not torch.equal(initial_parameter, next(model.parameters()).detach()),
@@ -592,6 +802,9 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
                 "included_regions": included_regions,
                 "metadata_mode": metadata_mode,
                 "training_weighting_mode": weighting_mode,
+                "target_scaling_mode": target_scaler.mode,
+                "target_scaler_fit_scope": "TRAIN_ONLY",
+                "candidate_control": candidate_control,
                 "result_stage": result_stage,
                 **cuda_provenance,
             },
@@ -612,7 +825,10 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
             optimizer.zero_grad(set_to_none=True)
             output = _forward(model, batch)
             if loss_kind == "huber":
-                loss = huber_loss(output, batch["target"], batch["sample_weight"], float(config.get("huber_delta", 1.0)))
+                loss = huber_loss(
+                    output, _training_target(batch), batch["sample_weight"],
+                    float(config.get("huber_delta", 1.0)),
+                )
             elif loss_kind.startswith("huber_plus_"):
                 loss = multitask_loss(
                     output, batch, loss_kind.removeprefix("huber_plus_"),
@@ -638,6 +854,16 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
         torch.save(checkpoint_payload(epoch + 1), output_dir / "latest.pt")
         if validation_metrics is None:
             rank = (epoch_row["train_loss"],)
+        elif checkpoint_metric == "TASK_MACRO_SPEARMAN_THEN_STANDARDIZED_MAE":
+            task_spearman = validation_metrics["task_macro_spearman"]
+            if task_spearman is None:
+                rank = (1.0, validation_metrics["task_macro_standardized_mae"])
+            else:
+                rank = (
+                    0.0,
+                    -task_spearman,
+                    validation_metrics["task_macro_standardized_mae"],
+                )
         elif validation_metrics["spearman"] is None:
             rank = (1.0, validation_metrics["mae"])
         else:
@@ -647,6 +873,14 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
             torch.save(checkpoint_payload(epoch + 1), output_dir / "best.pt")
     changed = not torch.equal(initial_parameter, next(model.parameters()).detach())
     _require(optimizer_steps > 0 and changed, "no learned GPU parameter update occurred")
+    selected_checkpoint_path = output_dir / (
+        "best.pt" if checkpoint_selection == "BEST_VALIDATION" else "latest.pt"
+    )
+    selected_checkpoint = torch.load(
+        selected_checkpoint_path, map_location=device, weights_only=False
+    )
+    selected_epoch = int(selected_checkpoint["completed_epoch"])
+    model.load_state_dict(selected_checkpoint["model_state"])
     if "VALIDATION" in loaders:
         validation_rows, validation_metrics = predict(model, loaders["VALIDATION"], device)
     else:
@@ -672,6 +906,14 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
         "region_subset_excluded_record_count": region_excluded_record_count,
         "metadata_mode": metadata_mode,
         "training_weighting_mode": weighting_mode,
+        "target_scaler": target_scaler.to_dict(),
+        "candidate_control": candidate_control,
+        "candidate_control_summary": candidate_control_summary,
+        "checkpoint_selection": checkpoint_selection,
+        "checkpoint_metric": checkpoint_metric,
+        "selected_checkpoint": selected_checkpoint_path.name,
+        "selected_epoch": selected_epoch,
+        "final_training_epoch": int(config["epochs"]),
         "result_stage": result_stage,
         "development_test_outcomes_evaluated": result_stage == "FROZEN_DEVELOPMENT_TEST",
         "development_test_record_count_withheld": development_test_record_count_withheld,
@@ -693,15 +935,45 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
         "wall_time_seconds": time.time() - started,
         "peak_vram_mb": torch.cuda.max_memory_allocated(device) / (1024 ** 2),
         **cuda_provenance,
-        "swap_antisymmetry_by_construction": model_kind == ROUTE2_DELTA_MODEL_KIND,
-        "identity_zero_by_construction": model_kind == ROUTE2_DELTA_MODEL_KIND,
+        "swap_antisymmetry_by_construction": model_kind in {
+            ROUTE2_DELTA_MODEL_KIND,
+            ROUTE2_EDIT_CENTERED_MODEL_KIND,
+        },
+        "identity_zero_by_construction": model_kind in {
+            ROUTE2_DELTA_MODEL_KIND,
+            ROUTE2_EDIT_CENTERED_MODEL_KIND,
+        },
+        "edit_centered_pooling": model_kind in {
+            ROUTE2_EDIT_CENTERED_MODEL_KIND,
+            ROUTE2_EDIT_CENTERED_SOURCE_ONLY_KIND,
+        },
+        "study_identity_used_by_effect_encoder": model_kind not in {
+            ROUTE2_EDIT_CENTERED_MODEL_KIND,
+            ROUTE2_EDIT_CENTERED_SOURCE_ONLY_KIND,
+        } and metadata_mode == "FULL_CONTEXT",
         "uncertainty_head_used": False,
         "prediction_uncertainty_status": "NOT_TRAINED_NO_UNIVERSAL_TRUE_STANDARD_ERROR",
         "training_weight_unit": weighting_mode,
         "evaluation_outcomes_read": 0,
         "scientific_claim_status": "NOT_ESTABLISHED",
     }
-    torch.save(checkpoint_payload(int(config["epochs"])), output_dir / "delta_predictor_checkpoint.pt")
+    selected_checkpoint = dict(selected_checkpoint)
+    selected_provenance = dict(selected_checkpoint["training_provenance"])
+    selected_provenance.update({
+        "checkpoint_selection": checkpoint_selection,
+        "checkpoint_metric": checkpoint_metric,
+        "selected_epoch": selected_epoch,
+        "total_run_optimizer_steps": optimizer_steps,
+    })
+    selected_checkpoint["training_provenance"] = selected_provenance
+    selected_checkpoint["selection_provenance"] = {
+        "checkpoint_selection": checkpoint_selection,
+        "checkpoint_metric": checkpoint_metric,
+        "selected_checkpoint": selected_checkpoint_path.name,
+        "selected_epoch": selected_epoch,
+        "final_training_epoch": int(config["epochs"]),
+    }
+    torch.save(selected_checkpoint, output_dir / "delta_predictor_checkpoint.pt")
     if validation_rows:
         (output_dir / "validation_predictions.jsonl").write_text(
             "".join(json.dumps(row, sort_keys=True) + "\n" for row in validation_rows), encoding="utf-8"

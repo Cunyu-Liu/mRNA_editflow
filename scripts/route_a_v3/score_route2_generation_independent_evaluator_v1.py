@@ -20,10 +20,14 @@ if str(REPO_ROOT) not in sys.path:
 
 from core.route2_delta_predictor import (
     ROUTE2_DELTA_MODEL_KIND,
+    ROUTE2_EDIT_CENTERED_MODEL_KIND,
+    ROUTE2_EDIT_CENTERED_SOURCE_ONLY_KIND,
     Route2DeltaPredictor,
+    Route2EditCenteredDeltaPredictor,
     Route2NeuralBaseline,
 )
 from core.route2_gpu_failure_evidence import cuda_device_observation, write_gpu_failure_evidence
+from core.route2_target_scaling import target_scaler_from_checkpoint
 
 
 TOKEN = {"A": 0, "C": 1, "G": 2, "U": 3}
@@ -102,6 +106,8 @@ class CheckpointScorer:
         model_kind = str(checkpoint.get("model_kind", ""))
         if model_kind == ROUTE2_DELTA_MODEL_KIND:
             model = Route2DeltaPredictor(**checkpoint["model_config"])
+        elif model_kind in {ROUTE2_EDIT_CENTERED_MODEL_KIND, ROUTE2_EDIT_CENTERED_SOURCE_ONLY_KIND}:
+            model = Route2EditCenteredDeltaPredictor(**checkpoint["model_config"])
         else:
             _require(model_kind in Route2NeuralBaseline.MODES, f"unsupported evaluator model kind: {model_kind}")
             model = Route2NeuralBaseline(**checkpoint["model_config"])
@@ -109,6 +115,7 @@ class CheckpointScorer:
         self.model = model.to(device).eval()
         self.model.requires_grad_(False)
         self.vocabs = checkpoint["vocabs"]
+        self.target_scaler = target_scaler_from_checkpoint(checkpoint)
         self.device = device
         self.model_kind = model_kind
         self.training_provenance = provenance
@@ -142,7 +149,10 @@ class CheckpointScorer:
             torch.tensor([category["endpoint"]], device=self.device),
             torch.tensor([REGION[region_text]], device=self.device),
         )
-        return _finite(float(output["mean"].item()), "independent evaluator score")
+        scale, _scale_source = self.target_scaler.scale(
+            str(source_row["endpoint_id"]), REGION[region_text]
+        )
+        return _finite(float(output["mean"].item()) * scale, "independent evaluator score")
 
 
 def augment_candidates(

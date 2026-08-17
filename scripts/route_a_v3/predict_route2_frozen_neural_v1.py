@@ -23,10 +23,14 @@ if str(REPO_ROOT) not in sys.path:
 
 from core.route2_delta_predictor import (
     ROUTE2_DELTA_MODEL_KIND,
+    ROUTE2_EDIT_CENTERED_MODEL_KIND,
+    ROUTE2_EDIT_CENTERED_SOURCE_ONLY_KIND,
     Route2DeltaPredictor,
+    Route2EditCenteredDeltaPredictor,
     Route2NeuralBaseline,
 )
 from core.route2_gpu_failure_evidence import cuda_device_observation, write_gpu_failure_evidence
+from core.route2_target_scaling import Route2TargetScaler, target_scaler_from_checkpoint
 
 
 TOKEN = {"A": 0, "C": 1, "G": 2, "U": 3}
@@ -139,6 +143,8 @@ def _load_checkpoint(path: Path, device: torch.device):
     model_kind = str(checkpoint.get("model_kind", ""))
     if model_kind == ROUTE2_DELTA_MODEL_KIND:
         model = Route2DeltaPredictor(**checkpoint["model_config"])
+    elif model_kind in {ROUTE2_EDIT_CENTERED_MODEL_KIND, ROUTE2_EDIT_CENTERED_SOURCE_ONLY_KIND}:
+        model = Route2EditCenteredDeltaPredictor(**checkpoint["model_config"])
     else:
         _require(model_kind in Route2NeuralBaseline.MODES, f"unsupported model kind: {model_kind}")
         model = Route2NeuralBaseline(**checkpoint["model_config"])
@@ -155,9 +161,11 @@ def predict_records(
     device: torch.device,
     batch_size: int,
     baseline_id: str,
+    target_scaler: Route2TargetScaler | None = None,
 ) -> list[dict[str, Any]]:
     _require(batch_size > 0, "batch size must be positive")
     _require(bool(baseline_id), "frozen neural baseline identity is empty")
+    target_scaler = target_scaler or Route2TargetScaler.from_dict(None)
     output = []
     ordered = sorted(records, key=lambda row: (len(row.source), row.record_id))
     for start in range(0, len(ordered), batch_size):
@@ -178,11 +186,16 @@ def predict_records(
         region = torch.tensor([row.region for row in rows], device=device)
         prediction = model(source, candidate, padding, *categories, region)["mean"]
         _require(prediction.is_cuda and prediction.device == device, "zero-shot prediction silently left CUDA")
-        for row, value in zip(rows, prediction.cpu().tolist()):
+        for row, standardized_value in zip(rows, prediction.cpu().tolist()):
+            scale, scale_source = target_scaler.scale(row.endpoint, row.region)
+            value = float(standardized_value) * scale
             output.append({
                 "canonical_record_id": row.record_id,
                 "baseline_id": baseline_id,
-                "predicted_direction_normalized_delta": float(value),
+                "predicted_direction_normalized_delta": value,
+                "predicted_standardized_delta": float(standardized_value),
+                "target_scale": scale,
+                "target_scale_source": scale_source,
                 "prediction_role": "EVALUATION_ZERO_SHOT_FROZEN_MODEL",
             })
     return sorted(output, key=lambda row: row["canonical_record_id"])
@@ -209,7 +222,13 @@ def execute(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
     baseline_id = str(config["baseline_id"])
     validate_checkpoint_identity(checkpoint, baseline_id)
     rows = predict_records(
-        model, records, checkpoint["vocabs"], device, int(config["batch_size"]), baseline_id
+        model,
+        records,
+        checkpoint["vocabs"],
+        device,
+        int(config["batch_size"]),
+        baseline_id,
+        target_scaler_from_checkpoint(checkpoint),
     )
     summary = {
         "schema_version": "route_a_v3_route2_frozen_neural_predictions.v1",

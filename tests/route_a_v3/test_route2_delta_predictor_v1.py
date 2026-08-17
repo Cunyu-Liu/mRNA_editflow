@@ -61,6 +61,58 @@ def test_structural_constraints_remain_exact_in_training_mode() -> None:
     assert torch.equal(_forward(model, source, source), torch.zeros(1))
 
 
+def test_edit_centered_model_is_exactly_antisymmetric_and_study_invariant() -> None:
+    module = _load(MODEL_PATH, "route2_edit_centered_constraint_test")
+    model = module.Route2EditCenteredDeltaPredictor(
+        hidden_dim=16,
+        depth=2,
+        study_count=2,
+        assay_count=1,
+        context_count=1,
+        endpoint_count=1,
+    ).train()
+    source = torch.tensor([[0, 1, 2, 3], [0, 1, 2, 3]])
+    candidate = torch.tensor([[1, 1, 2, 3], [1, 1, 2, 3]])
+    padding = torch.zeros_like(source, dtype=torch.bool)
+    studies = torch.tensor([0, 1])
+    zeros = torch.zeros(2, dtype=torch.long)
+    forward = model(source, candidate, padding, studies, zeros, zeros, zeros, zeros)["mean"]
+    reverse = model(candidate, source, padding, studies, zeros, zeros, zeros, zeros)["mean"]
+    identity = model(source, source, padding, studies, zeros, zeros, zeros, zeros)["mean"]
+    assert torch.equal(forward, -reverse)
+    assert torch.equal(identity, torch.zeros_like(identity))
+    assert forward[0].item() == pytest.approx(forward[1].item())
+
+
+def test_edit_centered_source_only_control_is_candidate_invariant_and_parameter_matched() -> None:
+    module = _load(MODEL_PATH, "route2_edit_centered_source_control_test")
+    common = {
+        "hidden_dim": 16,
+        "depth": 1,
+        "study_count": 1,
+        "assay_count": 1,
+        "context_count": 1,
+        "endpoint_count": 1,
+    }
+    main = module.Route2EditCenteredDeltaPredictor(**common).eval()
+    control = module.Route2EditCenteredDeltaPredictor(**common, source_only_control=True).eval()
+    assert sum(parameter.numel() for parameter in main.parameters()) == sum(
+        parameter.numel() for parameter in control.parameters()
+    )
+    source = torch.tensor([[0, 1, 2, 3]])
+    first_candidate = torch.tensor([[1, 1, 2, 3]])
+    second_candidate = torch.tensor([[0, 1, 2, 0]])
+    padding = torch.zeros_like(source, dtype=torch.bool)
+    zeros = torch.zeros(1, dtype=torch.long)
+    first = control(
+        source, first_candidate, padding, zeros, zeros, zeros, zeros, zeros
+    )["mean"]
+    second = control(
+        source, second_candidate, padding, zeros, zeros, zeros, zeros, zeros
+    )["mean"]
+    assert torch.equal(first, second)
+
+
 def test_study_specific_scale_calibration_preserves_constraints_and_scales_delta() -> None:
     module = _load(MODEL_PATH, "route2_delta_study_scale_test")
     model = module.Route2DeltaPredictor(
@@ -239,6 +291,78 @@ def test_study_balanced_weights_equalize_studies_then_source_groups() -> None:
     assert sum(weights[:3]) == pytest.approx(weights[3])
     assert weights[0] + weights[1] == pytest.approx(weights[2])
     assert sum(weights) / len(weights) == pytest.approx(1.0)
+
+
+def test_task_balanced_weights_equalize_tasks_then_source_groups() -> None:
+    trainer = _load(TRAIN_PATH, "route2_delta_task_weight_test")
+    records = [
+        _delta_record(trainer, "a1", "A", "g1"),
+        _delta_record(trainer, "a2", "A", "g1"),
+        _delta_record(trainer, "a3", "A", "g2"),
+        trainer.DeltaRecord(
+            record_id="b1", split="TRAIN", source="AAAA", candidate="CAAA",
+            target=0.0, source_group="B::g1", study="B", assay="assay-B",
+            context="context-B", endpoint="different-task", region=1,
+        ),
+    ]
+    vocabs = {field: trainer.build_vocab(records, field) for field in ("study", "assay", "context", "endpoint")}
+    dataset = trainer.DeltaDataset(
+        records,
+        vocabs,
+        weighting_mode="TASK_THEN_SOURCE_CONTEXT_ENDPOINT_GROUP",
+    )
+    weights = [dataset[index]["sample_weight"] for index in range(len(dataset))]
+    assert sum(weights[:3]) == pytest.approx(weights[3])
+    assert weights[0] + weights[1] == pytest.approx(weights[2])
+
+
+def test_transferable_context_masks_only_study_identity() -> None:
+    trainer = _load(TRAIN_PATH, "route2_delta_transferable_context_test")
+    records = [_delta_record(trainer, "a", "A", "g")]
+    vocabs = {field: trainer.build_vocab(records, field) for field in ("study", "assay", "context", "endpoint")}
+    row = trainer.DeltaDataset(
+        records,
+        vocabs,
+        metadata_mode="TRANSFERABLE_CONTEXT",
+    )[0]
+    assert row["study"] == 0
+    assert (row["assay"], row["context"], row["endpoint"], row["region"]) == (1, 1, 1, 0)
+
+
+def test_candidate_permutation_is_deterministic_and_train_only_ready() -> None:
+    trainer = _load(TRAIN_PATH, "route2_delta_candidate_permutation_test")
+    records = [
+        trainer.DeltaRecord(
+            record_id=f"r{index}", split="TRAIN", source="AAAA", candidate=candidate,
+            target=float(index), source_group=f"g{index}", study="S", assay="A",
+            context="C", endpoint="E", region=0,
+        )
+        for index, candidate in enumerate(("CAAA", "GAAA", "UAAA"))
+    ]
+    first, summary = trainer.build_training_candidate_permutation(records, 17)
+    second, _summary = trainer.build_training_candidate_permutation(records, 17)
+    assert first == second
+    assert set(first) == {row.record_id for row in records}
+    assert summary["changed_candidate_sequence_count"] == len(records)
+    assert {first[row.record_id] for row in records} == {row.candidate for row in records}
+
+
+def test_dataset_uses_train_scaler_without_changing_raw_target() -> None:
+    trainer = _load(TRAIN_PATH, "route2_delta_scaled_dataset_test")
+    records = [
+        _delta_record(trainer, f"r{index}", "A", f"g{index}", target=value)
+        for index, value in enumerate((-2.0, -1.0, 0.0, 1.0, 2.0))
+    ]
+    vocabs = {field: trainer.build_vocab(records, field) for field in ("study", "assay", "context", "endpoint")}
+    scaler = trainer.fit_route2_target_scaler(
+        records,
+        mode=trainer.TARGET_SCALING_TRAIN_TASK_ROBUST,
+        minimum_task_records=3,
+    )
+    row = trainer.DeltaDataset(records, vocabs, target_scaler=scaler)[0]
+    assert row["target"] == -2.0
+    assert row["scaled_target"] == pytest.approx(-2.0 / 1.4826)
+    assert row["target_scale_source"] == "TASK"
 
 
 def test_no_context_mode_masks_all_categorical_metadata_but_keeps_region() -> None:
@@ -436,6 +560,86 @@ def test_gpu_training_persists_live_contract_artifacts(tmp_path: Path) -> None:
         assert (output / name).is_file(), name
     assert len((output / "metrics.jsonl").read_text().splitlines()) == 1
     assert "TRAINING_COMPLETED" in (output / "train.log").read_text()
+
+
+def test_gpu_method_repair_smoke_is_scaled_edit_centered_and_best_selected(tmp_path: Path) -> None:
+    if not torch.cuda.is_available():
+        pytest.skip("CUDA is required for method-repair integration test")
+    trainer = _load(TRAIN_PATH, "route2_delta_method_repair_gpu_test")
+    physical_index = int(os.environ.get("ROUTE2_TEST_CUDA_INDEX", "0"))
+    manifest = tmp_path / "manifest.jsonl"
+    canonical = tmp_path / "canonical.jsonl"
+    manifest_rows = []
+    canonical_rows = []
+    splits = ("TRAIN", "TRAIN", "TRAIN", "VALIDATION", "VALIDATION", "VALIDATION", "TEST")
+    candidates = ("CAAA", "GAAA", "UAAA", "ACAA", "AGAA", "AUAA", "AACA")
+    for index, (split, candidate) in enumerate(zip(splits, candidates)):
+        record_id = f"r{index}"
+        manifest_rows.append({
+            "canonical_record_id": record_id,
+            "pool_assignment": "DEVELOPMENT",
+            "split": split,
+            "study_unit_id": "S",
+            "connected_source_component_id": f"C{index}",
+        })
+        canonical_rows.append({
+            "canonical_record_id": record_id,
+            "pool_assignment": "DEVELOPMENT",
+            "source_sequence": "AAAA",
+            "candidate_sequence": candidate,
+            "direction_normalized_delta": float(index - 3),
+            "study_unit_id": "S",
+            "source_id": f"SOURCE{index}",
+            "assay_id": "A",
+            "biological_context_id": "C",
+            "endpoint_id": "E",
+            "region": "5UTR",
+        })
+    manifest.write_text("".join(json.dumps(row) + "\n" for row in manifest_rows))
+    canonical.write_text("".join(json.dumps(row) + "\n" for row in canonical_rows))
+    output = tmp_path / "method-repair-run"
+    summary = trainer.train({
+        "device": f"cuda:{physical_index}",
+        "physical_gpu_index": physical_index,
+        "development_manifest": str(manifest),
+        "canonical_paths": [str(canonical)],
+        "run_mode": "FIXED_GROUPED_SPLIT",
+        "result_stage": "HPO_VALIDATION_ONLY",
+        "baseline_id": "method_repair_gpu_smoke",
+        "model_kind": trainer.ROUTE2_EDIT_CENTERED_MODEL_KIND,
+        "metadata_mode": "TRANSFERABLE_CONTEXT",
+        "training_weighting_mode": "TASK_THEN_SOURCE_CONTEXT_ENDPOINT_GROUP",
+        "target_scaling_mode": trainer.TARGET_SCALING_TRAIN_TASK_ROBUST,
+        "target_scale_minimum_task_records": 2,
+        "target_scale_floor": 1e-3,
+        "candidate_control": "WITHIN_TASK_TRAIN_CANDIDATE_PERMUTATION",
+        "loss_kind": "huber_plus_pairwise",
+        "ranking_loss_weight": 0.25,
+        "checkpoint_selection": "BEST_VALIDATION",
+        "checkpoint_metric": "TASK_MACRO_SPEARMAN_THEN_STANDARDIZED_MAE",
+        "batch_size": 3,
+        "seed": 19,
+        "hidden_dim": 16,
+        "depth": 1,
+        "learning_rate": 1e-3,
+        "weight_decay": 0.0,
+        "epochs": 2,
+        "num_workers": 0,
+    }, output)
+    assert summary["model_kind"] == trainer.ROUTE2_EDIT_CENTERED_MODEL_KIND
+    assert summary["target_scaler"]["fit_scope"] == "TRAIN_ONLY"
+    assert summary["target_scaler"]["training_record_count"] == 3
+    assert summary["candidate_control_summary"]["changed_candidate_sequence_count"] == 3
+    assert summary["checkpoint_selection"] == "BEST_VALIDATION"
+    selected = torch.load(output / "delta_predictor_checkpoint.pt", map_location="cpu", weights_only=False)
+    best = torch.load(output / "best.pt", map_location="cpu", weights_only=False)
+    assert selected["selection_provenance"]["selected_checkpoint"] == "best.pt"
+    assert selected["completed_epoch"] == best["completed_epoch"]
+    for name, value in selected["model_state"].items():
+        torch.testing.assert_close(value, best["model_state"][name])
+    prediction = json.loads((output / "validation_predictions.jsonl").read_text().splitlines()[0])
+    assert prediction["target_scale_source"] == "TASK"
+    assert "predicted_standardized_delta" in prediction
 
 
 @pytest.mark.parametrize("mode", ["candidate_cnn", "siamese_cnn", "full_pair_cnn", "small_transformer"])
