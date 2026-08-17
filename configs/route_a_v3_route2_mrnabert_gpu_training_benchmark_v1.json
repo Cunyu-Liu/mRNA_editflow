@@ -1,9 +1,9 @@
 {
   "schema_version": "route_a_v3_route2_gpu_training_benchmark_config.v1",
-  "baseline_id": "mrnabert_9m_critic_gpu_training_benchmark_v3",
+  "baseline_id": "mrnabert_9m_critic_gpu_training_benchmark_v4_full_a100_gpu0",
   "training_config": "configs/route_a_v3_route2_mrnabert_edit_max_mean_only_gpu6_v1.json",
-  "device": "cuda:6",
-  "physical_gpu_index": 6,
+  "device": "cuda:0",
+  "physical_gpu_index": 0,
   "warmup_steps": 5,
   "measured_steps": 20,
   "bf16_fp32_max_absolute_difference": 0.05,
@@ -92,5 +92,5 @@
     }
   ],
   "experiment_ledger_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiment_tracking/route2_training_attempts.csv",
-  "output_directory": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/benchmarks/mrnabert_gpu_training_benchmark_v3"
+  "output_directory": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/benchmarks/mrnabert_gpu_training_benchmark_v4_full_a100_gpu0"
 }
