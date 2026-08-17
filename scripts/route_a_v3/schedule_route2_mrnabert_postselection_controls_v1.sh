@@ -32,6 +32,7 @@ LOSO_AGGREGATION_INPUT_DIR="${ROUTE2_ROOT}/comparisons/mrnabert_test_preserving_
 LOSO_AGGREGATION_DIR="${ROUTE2_ROOT}/comparisons/mrnabert_test_preserving_loso_v1"
 FLOW_V2_TRAINING_SUMMARY="${ROUTE2_ROOT}/runs/base_flow_g0/position_progress_gpu_v2/training_summary.json"
 FLOW_V2_VALIDATION_SUMMARY="${ROUTE2_ROOT}/runs/base_flow_g0/position_progress_validation_gpu_v2/validation_summary.json"
+FLOW_V2_CHECKPOINT="${ROUTE2_ROOT}/runs/base_flow_g0/position_progress_gpu_v2/best.pt"
 ONLINE_ENCODER_VALIDATION="${ROUTE2_ROOT}/runs/mrnabert_online_encoder_validation_v1/validation_summary.json"
 READINESS_INPUT="${ROUTE2_ROOT}/comparisons/mrnabert_guidance_readiness_input_v1.json"
 READINESS_ADJUDICATION="${ROUTE2_ROOT}/comparisons/mrnabert_guidance_readiness_adjudication_v1.json"
@@ -326,6 +327,7 @@ done
   --loso-result "${LOSO_AGGREGATION_DIR}/test_preserving_loso_seed20260824.json" \
   --flow-training-summary "${FLOW_V2_TRAINING_SUMMARY}" \
   --flow-validation-summary "${FLOW_V2_VALIDATION_SUMMARY}" \
+  --flow-checkpoint "${FLOW_V2_CHECKPOINT}" \
   --reward-policy configs/route_a_v3_route2_mrnabert_guidance_reward_policy_v1.json \
   --online-encoder-validation "${ONLINE_ENCODER_VALIDATION}" \
   --output "${READINESS_INPUT}"
@@ -341,4 +343,19 @@ if [[ "${guided_unlocked}" != "true" ]]; then
   printf '%s readiness_stop_before_guided_xeditflow\n' "$(date -Is)"
   exit 0
 fi
-printf '%s critic_and_flow_ready_guided_runner_is_separate_next_step\n' "$(date -Is)"
+
+while true; do
+  free_mb=$(nvidia-smi --query-gpu=memory.free --format=csv,noheader,nounits -i 0 | tr -d ' ')
+  util=$(nvidia-smi --query-gpu=utilization.gpu --format=csv,noheader,nounits -i 0 | tr -d ' ')
+  printf '%s waiting_for_guided_gpu=0 free_mb=%s util=%s\n' "$(date -Is)" "${free_mb}" "${util}"
+  if [[ "${free_mb}" -ge 24000 && "${util}" -le 70 ]]; then
+    break
+  fi
+  sleep "${POLL_SECONDS}"
+done
+
+printf '%s starting_guided_xeditflow_development gpu=0\n' "$(date -Is)"
+"${PYTHON}" -u scripts/route_a_v3/run_route2_guided_xeditflow_v1.py \
+  --config configs/route_a_v3_route2_guided_xeditflow_development_gpu0_v1.json \
+  >"${ROUTE2_ROOT}/guided_xeditflow_development_gpu0_v1.log" 2>&1
+printf '%s guided_xeditflow_development_finished\n' "$(date -Is)"

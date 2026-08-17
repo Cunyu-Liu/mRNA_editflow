@@ -72,10 +72,12 @@ def build_input(
     loso_results: list[Mapping[str, Any]],
     flow_training_summary: Mapping[str, Any],
     flow_validation_summary: Mapping[str, Any],
+    flow_checkpoint: Path,
     reward_policy: Mapping[str, Any],
     online_encoder_validation: Mapping[str, Any],
 ) -> dict[str, Any]:
     _require(final_refit_checkpoint.is_file(), "final refit checkpoint is absent")
+    _require(flow_checkpoint.is_file(), "Flow checkpoint is absent")
     _require(len(loso_results) == 3, "exactly three LOSO seed results are required")
     _require(
         tuple(sorted(int(row.get("seed", -1)) for row in loso_results))
@@ -118,6 +120,7 @@ def build_input(
         "flow": {
             "training_summary": dict(flow_training_summary),
             "validation_summary": dict(flow_validation_summary),
+            "validation_checkpoint": str(flow_checkpoint),
         },
     }
 
@@ -131,6 +134,7 @@ def main() -> int:
     parser.add_argument("--loso-result", type=Path, action="append", required=True)
     parser.add_argument("--flow-training-summary", type=Path, required=True)
     parser.add_argument("--flow-validation-summary", type=Path, required=True)
+    parser.add_argument("--flow-checkpoint", type=Path, required=True)
     parser.add_argument("--reward-policy", type=Path, required=True)
     parser.add_argument("--online-encoder-validation", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
@@ -150,6 +154,7 @@ def main() -> int:
         flow_validation_summary=_read_json(
             args.flow_validation_summary, "Flow validation summary"
         ),
+        flow_checkpoint=args.flow_checkpoint,
         reward_policy=_read_json(args.reward_policy, "reward policy"),
         online_encoder_validation=_read_json(
             args.online_encoder_validation, "online encoder validation"

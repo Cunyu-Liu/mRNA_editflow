@@ -96,6 +96,8 @@ class FrozenRoute2MRNABERTCritic:
             "online mRNABERT width differs from critic input width",
         )
         self._potential_cache: dict[tuple[str, str, str, str, str, str], float] = {}
+        self.model_batch_forward_count = 0
+        self.candidate_forward_equivalent_count = 0
 
     @property
     def cached_potential_count(self) -> int:
@@ -157,6 +159,8 @@ class FrozenRoute2MRNABERTCritic:
                 source_pretrained,
                 candidate_pretrained,
             )
+        self.model_batch_forward_count += 1
+        self.candidate_forward_equivalent_count += batch
         values = output["mean"].float().cpu().tolist()
         _require(all(math.isfinite(float(value)) for value in values), "critic mean is nonfinite")
         return [min(self.maximum, max(self.minimum, float(value))) for value in values]
@@ -168,21 +172,53 @@ class FrozenRoute2MRNABERTCritic:
         endpoint_id: str,
         region: str,
     ) -> float:
-        key = (
-            state.source_sequence,
-            state.current_sequence,
-            state.assay_id,
-            state.context_id,
-            str(endpoint_id),
-            str(region),
+        return self.potentials(
+            [state], endpoint_id=endpoint_id, region=region
+        )[0]
+
+    def potentials(
+        self,
+        states: Iterable[FlowState],
+        *,
+        endpoint_id: str,
+        region: str,
+    ) -> list[float]:
+        ordered = list(states)
+        _require(bool(ordered), "potential state batch is empty")
+        source = ordered[0].source_sequence
+        assay = ordered[0].assay_id
+        context = ordered[0].context_id
+        _require(
+            all(
+                state.source_sequence == source
+                and state.assay_id == assay
+                and state.context_id == context
+                for state in ordered
+            ),
+            "batched potentials must share source and biological context",
         )
-        if key not in self._potential_cache:
-            self._potential_cache[key] = self.score_candidates(
+        keys = [
+            (
                 state.source_sequence,
-                [state.current_sequence],
-                assay_id=state.assay_id,
-                context_id=state.context_id,
+                state.current_sequence,
+                state.assay_id,
+                state.context_id,
+                str(endpoint_id),
+                str(region),
+            )
+            for state in ordered
+        ]
+        missing_keys = list(dict.fromkeys(
+            key for key in keys if key not in self._potential_cache
+        ))
+        if missing_keys:
+            values = self.score_candidates(
+                source,
+                [key[1] for key in missing_keys],
+                assay_id=assay,
+                context_id=context,
                 endpoint_id=endpoint_id,
                 region=region,
-            )[0]
-        return self._potential_cache[key]
+            )
+            self._potential_cache.update(zip(missing_keys, values))
+        return [self._potential_cache[key] for key in keys]

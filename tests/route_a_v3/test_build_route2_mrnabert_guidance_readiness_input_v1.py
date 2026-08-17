@@ -24,6 +24,8 @@ def _load():
 def _kwargs(tmp_path: Path):
     checkpoint = tmp_path / "delta_predictor_checkpoint.pt"
     checkpoint.write_bytes(b"checkpoint")
+    flow_checkpoint = tmp_path / "base_flow.pt"
+    flow_checkpoint.write_bytes(b"flow")
     return {
         "validation_training_summary": {"result_stage": "FROZEN_DEVELOPMENT_VALIDATION"},
         "final_refit_summary": {"result_stage": "FINAL_ALL_DEVELOPMENT_REFIT"},
@@ -35,6 +37,7 @@ def _kwargs(tmp_path: Path):
         ],
         "flow_training_summary": {"status": "flow training"},
         "flow_validation_summary": {"status": "flow validation"},
+        "flow_checkpoint": flow_checkpoint,
         "reward_policy": json.loads(POLICY.read_text(encoding="utf-8")),
         "online_encoder_validation": {
             "schema_version": "route_a_v3_route2_mrnabert_online_encoder_validation.v1",

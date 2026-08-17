@@ -1,0 +1,315 @@
+#!/usr/bin/env python3
+"""Run frozen-critic guided SUB+STOP XEditFlow after readiness adjudication."""
+
+from __future__ import annotations
+
+import argparse
+import json
+import math
+import os
+import sys
+import time
+from collections import Counter
+from pathlib import Path
+from typing import Any, Mapping
+
+import torch
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from core.route2_gpu_failure_evidence import (
+    cuda_device_observation,
+    write_gpu_failure_evidence,
+)
+from core.route2_legal_xeditflow import FlowState, apply_action, initial_state
+from scripts.route_a_v3.route2_mrnabert_guided_critic_v1 import (
+    FrozenRoute2MRNABERTCritic,
+)
+from scripts.route_a_v3.run_route2_base_flow_g0_validation_v1 import (
+    REGION,
+    learned_rate_function,
+    load_model,
+    load_sources,
+    sample_one,
+    validate_checkpoint_training_provenance,
+)
+
+
+class GuidedRunError(RuntimeError):
+    pass
+
+
+def _require(condition: bool, message: str) -> None:
+    if not condition:
+        raise GuidedRunError(message)
+
+
+def _read_json(path: Path, label: str) -> dict[str, Any]:
+    _require(path.is_file(), f"{label} is absent: {path}")
+    value = json.loads(path.read_text(encoding="utf-8"))
+    _require(isinstance(value, dict), f"{label} root is not an object")
+    return value
+
+
+def validate_readiness(
+    readiness_input: Mapping[str, Any],
+    adjudication: Mapping[str, Any],
+    config: Mapping[str, Any],
+) -> None:
+    _require(
+        readiness_input.get("schema_version") == "route_a_v3_route2_readiness_input.v1",
+        "readiness input schema differs",
+    )
+    _require(
+        adjudication.get("schema_version")
+        == "route_a_v3_route2_readiness_adjudication.v1"
+        and adjudication.get("guided_unlocked") is True
+        and adjudication.get("critic_status") == "CRITIC_READY_FOR_GUIDANCE"
+        and adjudication.get("flow_status") == "FLOW_G0_READY",
+        "critic and Flow are not ready for guided generation",
+    )
+    critic = readiness_input["critic"]
+    flow = readiness_input["flow"]
+    _require(
+        critic.get("generated_candidate_online_encoder_ready") is True,
+        "online generated-candidate encoding is not ready",
+    )
+    _require(
+        critic.get("evaluation_records_used_for_training_hpo_threshold_or_reward") == 0,
+        "Evaluation entered critic selection or reward",
+    )
+    _require(
+        Path(critic["final_refit_checkpoint"])
+        == Path(config["critic_checkpoint_path"]),
+        "guided critic path differs from readiness evidence",
+    )
+    _require(
+        Path(flow["validation_checkpoint"])
+        == Path(config["base_flow_checkpoint_path"]),
+        "guided base-flow path differs from readiness evidence",
+    )
+
+
+def batched_guided_rate_function(
+    base_rate_function,
+    critic: FrozenRoute2MRNABERTCritic,
+    *,
+    endpoint_id: str,
+    region: str,
+    guidance_strength: float,
+    counters: dict[str, int] | None = None,
+):
+    strength = float(guidance_strength)
+    _require(math.isfinite(strength) and strength >= 0.0, "guidance strength is invalid")
+
+    def score(state: FlowState, actions):
+        base = base_rate_function(state, actions)
+        _require(set(base) == set(actions), "base rates do not cover the legal action set")
+        children = [apply_action(state, action) for action in actions]
+        values = critic.potentials(
+            [state, *children], endpoint_id=endpoint_id, region=region
+        )
+        current = values[0]
+        if counters is not None:
+            counters["base_flow_forwards"] = counters.get("base_flow_forwards", 0) + 1
+        result = {}
+        for action, child_value in zip(actions, values[1:]):
+            rate = float(base[action])
+            _require(math.isfinite(rate) and rate >= 0.0, "base rate is invalid")
+            result[action] = rate * math.exp(strength * (child_value - current))
+        return result
+
+    return score
+
+
+def execute(config: Mapping[str, Any]) -> dict[str, Any]:
+    output_dir = Path(config["output_directory"])
+    _require(not output_dir.exists(), f"guided output already exists: {output_dir}")
+    readiness_input = _read_json(
+        Path(config["readiness_input_path"]), "readiness input"
+    )
+    readiness_adjudication = _read_json(
+        Path(config["readiness_adjudication_path"]), "readiness adjudication"
+    )
+    validate_readiness(readiness_input, readiness_adjudication, config)
+    policy = _read_json(Path(config["reward_policy_path"]), "reward policy")
+    _require(
+        policy.get("status") == "PROSPECTIVELY_FROZEN_BEFORE_GUIDED_GENERATION"
+        and policy.get("action_space") == "SUB_PLUS_STOP"
+        and policy.get("uncertainty_in_guidance") == "DISABLED_DIAGNOSTIC_ONLY"
+        and policy.get("evaluation_records_used_for_training_hpo_threshold_or_reward") == 0,
+        "reward policy is not the frozen mean-only SUB+STOP policy",
+    )
+    _require(
+        config.get("evaluation_outcomes_accessed") is False,
+        "Evaluation is not available to guided Development",
+    )
+    _require(not os.environ.get("CUDA_VISIBLE_DEVICES"), "CUDA remapping is forbidden")
+    _require(torch.cuda.is_available(), "CUDA is unavailable")
+    physical_gpu_index = int(config["physical_gpu_index"])
+    device = torch.device(str(config["device"]))
+    _require(device.type == "cuda" and device.index == physical_gpu_index, "CUDA index differs")
+    _require(0 <= physical_gpu_index < torch.cuda.device_count(), "physical GPU is unavailable")
+    torch.cuda.set_device(device)
+    cuda_provenance = cuda_device_observation(
+        physical_gpu_index, require_physical_index_match=True
+    )
+    sources = load_sources(Path(config["source_eligibility_manifest"]))
+    base_model, base_checkpoint = load_model(
+        Path(config["base_flow_checkpoint_path"]), device
+    )
+    validate_checkpoint_training_provenance(
+        base_checkpoint.get("training_provenance", {})
+    )
+    transform = policy["potential_transform"]
+    critic = FrozenRoute2MRNABERTCritic(
+        Path(config["critic_checkpoint_path"]),
+        Path(config["mrnabert_model_path"]),
+        device,
+        potential_minimum=float(transform["minimum"]),
+        potential_maximum=float(transform["maximum"]),
+    )
+    rows = []
+    terminal_causes = Counter()
+    budget_violations = 0
+    replay_probe_failures = 0
+    generator_nfe = 0
+    replay_probe_nfe = 0
+    counters: dict[str, int] = {}
+    started = time.time()
+    for source_index, source_row in enumerate(sources):
+        source = source_row["source_sequence"]
+        region = str(source_row["region"]).replace("′", "").replace("'", "")
+        _require(region in REGION, "source region is unsupported")
+        root = initial_state(
+            source,
+            budget=source_row["edit_budget"],
+            assay_id=str(source_row["assay_id"]),
+            context_id=str(source_row["biological_context_id"]),
+        )
+        base_rate = learned_rate_function(
+            base_model,
+            region_id=REGION[region],
+            assay_id=base_checkpoint["assay_vocab"].get(
+                str(source_row["assay_id"]), 0
+            ),
+            context_id=base_checkpoint["context_vocab"].get(
+                str(source_row["biological_context_id"]), 0
+            ),
+            device=device,
+        )
+        guided_rate = batched_guided_rate_function(
+            base_rate,
+            critic,
+            endpoint_id=str(source_row["endpoint_id"]),
+            region=region,
+            guidance_strength=float(policy["guidance_strength"]),
+            counters=counters,
+        )
+        for candidate_index in range(source_row["candidate_budget"]):
+            trajectory_seed = int(config["seed"]) + source_index * 1_000_003 + candidate_index
+            terminal, action_ids, forwards = sample_one(
+                root, guided_rate, seed=trajectory_seed, device=device
+            )
+            if candidate_index == 0:
+                replay, replay_actions, replay_forwards = sample_one(
+                    root, guided_rate, seed=trajectory_seed, device=device
+                )
+                replay_probe_failures += int(
+                    replay != terminal or replay_actions != action_ids
+                )
+                replay_probe_nfe += replay_forwards
+            generator_nfe += forwards
+            budget_violations += int(terminal.edit_count > source_row["edit_budget"])
+            terminal_causes[terminal.terminal_cause] += 1
+            rows.append({
+                "method_id": "frozen_mrnabert_critic_guided_xeditflow_v1",
+                "source_key": source_row["source_key"],
+                "candidate_sequence": terminal.current_sequence,
+                "terminal_cause": terminal.terminal_cause,
+                "edit_count": terminal.edit_count,
+                "trajectory_actions": list(action_ids),
+                "trajectory_seed": trajectory_seed,
+                "generator_nfe": forwards,
+                "generated_candidate_grants_canonical_credit": False,
+            })
+    _require(replay_probe_failures == 0, "guided fixed-seed replay failed")
+    _require(budget_violations == 0, "guided trajectory exceeded edit budget")
+    unique_candidate_count = len({
+        (row["source_key"], row["candidate_sequence"]) for row in rows
+    })
+    summary = {
+        "schema_version": "route_a_v3_route2_guided_xeditflow_development.v1",
+        "status": "GUIDED_XEDITFLOW_DEVELOPMENT_COMPLETE",
+        "trajectory_count": len(rows),
+        "source_budget_cohort_count": len(sources),
+        "hard_legality_rate": 1.0,
+        "edit_budget_violation_count": budget_violations,
+        "replay_probe_trajectory_count": len(sources),
+        "replay_probe_failure_count": replay_probe_failures,
+        "terminal_causes": dict(sorted(terminal_causes.items())),
+        "unique_candidate_count": unique_candidate_count,
+        "unique_candidate_rate": unique_candidate_count / len(rows),
+        "generator_nfe": generator_nfe,
+        "replay_probe_generator_nfe": replay_probe_nfe,
+        "base_flow_forward_count_including_replay_probes": counters.get(
+            "base_flow_forwards", 0
+        ),
+        "critic_model_batch_forward_count": critic.model_batch_forward_count,
+        "critic_candidate_forward_equivalent_count":
+        critic.candidate_forward_equivalent_count,
+        "critic_parameter_updates": 0,
+        "generator_parameter_updates": 0,
+        "reward_signal": policy["reward_signal"],
+        "uncertainty_in_guidance": policy["uncertainty_in_guidance"],
+        "evaluation_outcomes_read": 0,
+        "generated_candidates_grant_canonical_credit": False,
+        "biological_optimization_established": False,
+        "wall_time_seconds": time.time() - started,
+        "peak_vram_mb": torch.cuda.max_memory_allocated(device) / (1024 ** 2),
+        "device": str(device),
+        "physical_gpu_index": physical_gpu_index,
+        "cpu_fallback_used": False,
+        "scientific_claim_status": "NOT_ESTABLISHED",
+        **cuda_provenance,
+    }
+    output_dir.parent.mkdir(parents=True, exist_ok=True)
+    output_dir.mkdir()
+    (output_dir / "guided_config.json").write_text(
+        json.dumps(dict(config), indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
+    (output_dir / "generated_candidates.private.jsonl").write_text(
+        "".join(json.dumps(row, sort_keys=True) + "\n" for row in rows),
+        encoding="utf-8",
+    )
+    serialized = json.dumps(summary, indent=2, sort_keys=True) + "\n"
+    (output_dir / "guided_summary.json").write_text(serialized, encoding="utf-8")
+    (output_dir / "final_summary.json").write_text(serialized, encoding="utf-8")
+    return summary
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--config", type=Path, required=True)
+    args = parser.parse_args()
+    config = json.loads(args.config.read_text(encoding="utf-8"))
+    try:
+        result = execute(config)
+    except Exception as exc:
+        output = Path(config["output_directory"])
+        write_gpu_failure_evidence(
+            output.with_name(output.name + ".failed.json"),
+            config,
+            exc,
+            entrypoint="run_route2_guided_xeditflow_v1",
+            evaluation_outcomes_accessed=False,
+        )
+        raise
+    print(json.dumps(result, sort_keys=True))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

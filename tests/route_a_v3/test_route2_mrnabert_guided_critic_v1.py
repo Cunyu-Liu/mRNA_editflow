@@ -6,7 +6,7 @@ import pytest
 import torch
 
 from core.route2_delta_predictor import Route2PretrainedEditCenteredDeltaPredictor
-from core.route2_legal_xeditflow import initial_state
+from core.route2_legal_xeditflow import apply_action, initial_state, legal_actions
 from scripts.route_a_v3.route2_mrnabert_guided_critic_v1 import (
     FrozenRoute2MRNABERTCritic,
     GuidedCriticError,
@@ -100,6 +100,28 @@ def test_state_potential_is_memoized(tmp_path: Path) -> None:
     assert first == second
     assert critic.cached_potential_count == 1
     assert critic.encoder.calls == 1
+    assert critic.model_batch_forward_count == 1
+    assert critic.candidate_forward_equivalent_count == 1
+
+
+def test_multiple_child_potentials_are_scored_in_one_batch(tmp_path: Path) -> None:
+    checkpoint = tmp_path / "critic.pt"
+    _checkpoint(checkpoint)
+    critic = FrozenRoute2MRNABERTCritic(
+        checkpoint, tmp_path, torch.device("cpu"), encoder_class=FakeEncoder
+    )
+    root = initial_state("AA", budget=1, assay_id="A", context_id="C")
+    children = [
+        apply_action(root, action) for action in legal_actions(root)
+    ]
+    values = critic.potentials(
+        [root, *children], endpoint_id="E", region="3UTR"
+    )
+    assert len(values) == 1 + len(children)
+    assert critic.model_batch_forward_count == 1
+    assert critic.candidate_forward_equivalent_count == len({
+        root.current_sequence, *(child.current_sequence for child in children)
+    })
 
 
 def test_nonfinal_or_length_changing_candidate_is_rejected(tmp_path: Path) -> None:
