@@ -5,7 +5,12 @@ from pathlib import Path
 
 import pytest
 
-from core.route2_legal_xeditflow import STOP, initial_state, legal_actions
+from core.route2_legal_xeditflow import (
+    STOP,
+    initial_state,
+    legal_actions,
+    sample_trajectory,
+)
 from scripts.route_a_v3 import run_route2_guided_xeditflow_v1 as runner
 
 
@@ -59,8 +64,10 @@ def test_readiness_must_unlock_exact_bound_checkpoints() -> None:
 
 def test_batched_guidance_matches_frozen_potential_difference() -> None:
     root = initial_state("A", budget=1, assay_id="a", context_id="c")
+    base_calls = []
 
-    def base(_state, actions):
+    def base(state, actions):
+        base_calls.append(state)
         return {action: 1.0 for action in actions}
 
     counters = {}
@@ -79,6 +86,23 @@ def test_batched_guidance_matches_frozen_potential_difference() -> None:
     assert by_id[STOP] == pytest.approx(1.0)
     assert by_id["SUB:0:U"] == pytest.approx(math.exp(-1.0))
     assert counters["base_flow_forwards"] == 1
+    assert counters["guided_rate_requests"] == 1
+    assert counters["unique_state_rate_evaluations"] == 1
+
+    repeated = guided(root, legal_actions(root))
+    assert repeated == rates
+    assert base_calls == [root]
+    assert counters["base_flow_forwards"] == 1
+    assert counters["guided_rate_requests"] == 2
+    assert counters["guided_rate_cache_hits"] == 1
+    assert counters["unique_state_rate_evaluations"] == 1
+
+    first = sample_trajectory(root, guided, seed=20260817)
+    second = sample_trajectory(root, guided, seed=20260817)
+    assert first == second
+    assert counters["guided_rate_requests"] == 4
+    assert counters["guided_rate_cache_hits"] == 3
+    assert counters["unique_state_rate_evaluations"] == 1
 
 
 def test_online_encoder_and_evaluation_are_required() -> None:

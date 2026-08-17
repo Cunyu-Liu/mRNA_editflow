@@ -104,8 +104,17 @@ def batched_guided_rate_function(
 ):
     strength = float(guidance_strength)
     _require(math.isfinite(strength) and strength >= 0.0, "guidance strength is invalid")
+    rate_cache: dict[FlowState, dict[Any, float]] = {}
 
     def score(state: FlowState, actions):
+        if counters is not None:
+            counters["guided_rate_requests"] = counters.get("guided_rate_requests", 0) + 1
+        cached = rate_cache.get(state)
+        if cached is not None:
+            _require(set(cached) == set(actions), "cached rates do not cover the legal action set")
+            if counters is not None:
+                counters["guided_rate_cache_hits"] = counters.get("guided_rate_cache_hits", 0) + 1
+            return cached
         base = base_rate_function(state, actions)
         _require(set(base) == set(actions), "base rates do not cover the legal action set")
         children = [apply_action(state, action) for action in actions]
@@ -120,6 +129,11 @@ def batched_guided_rate_function(
             rate = float(base[action])
             _require(math.isfinite(rate) and rate >= 0.0, "base rate is invalid")
             result[action] = rate * math.exp(strength * (child_value - current))
+        rate_cache[state] = result
+        if counters is not None:
+            counters["unique_state_rate_evaluations"] = counters.get(
+                "unique_state_rate_evaluations", 0
+            ) + 1
         return result
 
     return score
@@ -213,8 +227,20 @@ def execute(config: Mapping[str, Any]) -> dict[str, Any]:
         )
         source_replay_model_batches = 0
         source_replay_candidate_equivalents = 0
+        replay_actual_generator_forwards = 0
+        replay_forwards = 0
         source_generator_nfe = 0
+        source_trajectory_decision_count = 0
+        source_rate_requests_start = counters.get("guided_rate_requests", 0)
+        source_rate_cache_hits_start = counters.get("guided_rate_cache_hits", 0)
+        source_unique_rate_evaluations_start = counters.get(
+            "unique_state_rate_evaluations", 0
+        )
         source = source_row["source_sequence"]
+        _require(
+            int(source_row["candidate_budget"]) > 0,
+            "guided candidate budget must be positive",
+        )
         region = str(source_row["region"]).replace("′", "").replace("'", "")
         _require(region in REGION, "source region is unsupported")
         root = initial_state(
@@ -249,16 +275,27 @@ def execute(config: Mapping[str, Any]) -> dict[str, Any]:
         )
         for candidate_index in range(source_row["candidate_budget"]):
             trajectory_seed = int(config["seed"]) + source_index * 1_000_003 + candidate_index
+            generator_forwards_start = counters.get("base_flow_forwards", 0)
             terminal, action_ids, forwards = sample_one(
                 root, guided_rate, seed=trajectory_seed, device=device
+            )
+            actual_generator_forwards = (
+                counters.get("base_flow_forwards", 0) - generator_forwards_start
             )
             if candidate_index == 0:
                 replay_model_batches_start = critic.model_batch_forward_count
                 replay_candidate_equivalents_start = (
                     critic.candidate_forward_equivalent_count
                 )
+                replay_generator_forwards_start = counters.get(
+                    "base_flow_forwards", 0
+                )
                 replay, replay_actions, replay_forwards = sample_one(
                     root, guided_rate, seed=trajectory_seed, device=device
+                )
+                replay_actual_generator_forwards = (
+                    counters.get("base_flow_forwards", 0)
+                    - replay_generator_forwards_start
                 )
                 source_replay_model_batches += (
                     critic.model_batch_forward_count - replay_model_batches_start
@@ -270,9 +307,10 @@ def execute(config: Mapping[str, Any]) -> dict[str, Any]:
                 replay_probe_failures += int(
                     replay != terminal or replay_actions != action_ids
                 )
-                replay_probe_nfe += replay_forwards
-            generator_nfe += forwards
-            source_generator_nfe += forwards
+                replay_probe_nfe += replay_actual_generator_forwards
+            generator_nfe += actual_generator_forwards
+            source_generator_nfe += actual_generator_forwards
+            source_trajectory_decision_count += forwards
             budget_violations += int(terminal.edit_count > source_row["edit_budget"])
             terminal_causes[terminal.terminal_cause] += 1
             terminal_critic_score = critic.potential(
@@ -288,7 +326,8 @@ def execute(config: Mapping[str, Any]) -> dict[str, Any]:
                 "edit_count": terminal.edit_count,
                 "trajectory_actions": list(action_ids),
                 "trajectory_seed": trajectory_seed,
-                "generator_nfe": forwards,
+                "generator_nfe": actual_generator_forwards,
+                "trajectory_decision_count": forwards,
                 "critic_score": terminal_critic_score,
                 "source_critic_score": source_critic_score,
                 "generated_candidate_grants_canonical_credit": False,
@@ -302,6 +341,21 @@ def execute(config: Mapping[str, Any]) -> dict[str, Any]:
             critic.candidate_forward_equivalent_count
             - source_candidate_equivalents_start
             - source_replay_candidate_equivalents
+        )
+        source_rate_requests = (
+            counters.get("guided_rate_requests", 0) - source_rate_requests_start
+        )
+        source_rate_cache_hits = (
+            counters.get("guided_rate_cache_hits", 0) - source_rate_cache_hits_start
+        )
+        source_unique_rate_evaluations = (
+            counters.get("unique_state_rate_evaluations", 0)
+            - source_unique_rate_evaluations_start
+        )
+        _require(
+            source_rate_requests
+            == source_rate_cache_hits + source_unique_rate_evaluations,
+            "guided state-rate cache accounting does not close",
         )
         _require(
             source_model_batches > 0 and source_candidate_equivalents > 0,
@@ -324,13 +378,25 @@ def execute(config: Mapping[str, Any]) -> dict[str, Any]:
             "edit_budget": int(source_row["edit_budget"]),
             "candidate_budget": int(source_row["candidate_budget"]),
             "generator_nfe": source_generator_nfe,
+            "trajectory_decision_count": source_trajectory_decision_count,
+            "guided_rate_request_count_including_replay_probes": source_rate_requests,
+            "guided_rate_cache_hit_count_including_replay_probes": source_rate_cache_hits,
+            "unique_state_rate_evaluation_count_including_replay_probes": (
+                source_unique_rate_evaluations
+            ),
+            "guided_rate_cache_hit_rate_including_replay_probes": (
+                source_rate_cache_hits / source_rate_requests
+                if source_rate_requests
+                else 0.0
+            ),
             "critic_model_batch_forward_count": source_model_batches,
             "critic_candidate_forward_equivalent_count": source_candidate_equivalents,
             "total_forward_equivalent_count": (
                 source_candidate_equivalents + source_generator_nfe
             ),
             "matched_search_critic_forward_budget": matched_search_critic_budget,
-            "replay_probe_generator_nfe": replay_forwards,
+            "replay_probe_generator_nfe": replay_actual_generator_forwards,
+            "replay_probe_trajectory_decision_count": replay_forwards,
             "replay_probe_critic_model_batch_forward_count": source_replay_model_batches,
             "replay_probe_critic_candidate_forward_equivalent_count": (
                 source_replay_candidate_equivalents
@@ -358,9 +424,27 @@ def execute(config: Mapping[str, Any]) -> dict[str, Any]:
         "unique_candidate_count": unique_candidate_count,
         "unique_candidate_rate": unique_candidate_count / len(rows),
         "generator_nfe": generator_nfe,
+        "trajectory_decision_count": sum(
+            int(row["trajectory_decision_count"]) for row in per_source_compute
+        ),
         "replay_probe_generator_nfe": replay_probe_nfe,
         "base_flow_forward_count_including_replay_probes": counters.get(
             "base_flow_forwards", 0
+        ),
+        "guided_rate_request_count_including_replay_probes": counters.get(
+            "guided_rate_requests", 0
+        ),
+        "guided_rate_cache_hit_count_including_replay_probes": counters.get(
+            "guided_rate_cache_hits", 0
+        ),
+        "unique_state_rate_evaluation_count_including_replay_probes": counters.get(
+            "unique_state_rate_evaluations", 0
+        ),
+        "guided_rate_cache_hit_rate_including_replay_probes": (
+            counters.get("guided_rate_cache_hits", 0)
+            / counters.get("guided_rate_requests", 1)
+            if counters.get("guided_rate_requests", 0)
+            else 0.0
         ),
         "critic_model_batch_forward_count": guided_model_batches,
         "critic_candidate_forward_equivalent_count": forward_summary[
