@@ -32,6 +32,18 @@ def _finite(value: Any, label: str) -> float:
     return float(value)
 
 
+def _scale_for_task(target_scaler: Mapping[str, Any], task: str) -> float:
+    task_scales = target_scaler.get("task_scales") or {}
+    if task in task_scales:
+        return _finite(task_scales[task], f"task scale for {task}")
+    _require("::region=" in task, f"task key lacks a region: {task}")
+    region = f"region={task.rsplit('::region=', 1)[1]}"
+    region_scales = target_scaler.get("region_scales") or {}
+    if region in region_scales:
+        return _finite(region_scales[region], f"region scale for {task}")
+    return _finite(target_scaler.get("global_scale"), f"global scale for {task}")
+
+
 def validate_run(config: Mapping[str, Any], summary: Mapping[str, Any]) -> dict[str, Any]:
     _require(summary.get("status") == "DELTA_PREDICTOR_DEVELOPMENT_GPU_RUN_COMPLETE", "screen run is incomplete")
     _require(summary.get("result_stage") == "HPO_VALIDATION_ONLY", "screen run accessed the wrong result stage")
@@ -59,6 +71,12 @@ def validate_run(config: Mapping[str, Any], summary: Mapping[str, Any]) -> dict[
         validation.get("task_macro_standardized_mae"), "task-macro standardized MAE"
     )
     _require(validation.get("defined_task_spearman_count") == validation.get("task_count"), "some validation task Spearman is undefined")
+    task_metrics = validation.get("task_metrics") or {}
+    _require(len(task_metrics) == int(validation["task_count"]), "validation task metric closure differs")
+    raw_task_mae_by_task = {
+        str(task): _finite(row.get("mae"), f"raw task MAE for {task}")
+        for task, row in task_metrics.items()
+    }
     return {
         "scientific_role": config["scientific_role"],
         "baseline_id": summary["baseline_id"],
@@ -68,7 +86,9 @@ def validate_run(config: Mapping[str, Any], summary: Mapping[str, Any]) -> dict[
         "parameter_count": int(summary["parameter_count"]),
         "selected_epoch": int(summary["selected_epoch"]),
         "task_macro_spearman": task_macro_spearman,
-        "task_macro_standardized_mae": task_macro_standardized_mae,
+        "within_run_task_macro_standardized_mae": task_macro_standardized_mae,
+        "raw_task_mae_by_task": raw_task_mae_by_task,
+        "target_scaler": dict(scaler),
         "validation_task_count": int(validation["task_count"]),
         "physical_gpu_index": int(summary["physical_gpu_index"]),
         "cuda_device_uuid": str(summary["cuda_device_uuid"]),
@@ -93,11 +113,6 @@ def adjudicate_screen(protocol: Mapping[str, Any], runs: list[Mapping[str, Any]]
         "MATCHED_TRAIN_CANDIDATE_PERMUTATION_CONTROL",
     )
     _require(set(factorial_roles + control_roles) == set(by_role), "screen role coverage is incomplete")
-    ranked = sorted(
-        (by_role[role] for role in factorial_roles),
-        key=lambda run: (-run["task_macro_spearman"], run["task_macro_standardized_mae"], run["scientific_role"]),
-    )
-    winner = ranked[0]
     global_raw = by_role["FACTORIAL_GLOBAL_RAW"]
     global_scaled = by_role["FACTORIAL_GLOBAL_SCALED"]
     edit_raw = by_role["FACTORIAL_EDIT_CENTERED_RAW"]
@@ -127,6 +142,39 @@ def adjudicate_screen(protocol: Mapping[str, Any], runs: list[Mapping[str, Any]]
         permutation["candidate_control"] == "WITHIN_TASK_TRAIN_CANDIDATE_PERMUTATION",
         "permutation control identity differs",
     )
+    robust_scalers = [
+        run["target_scaler"]
+        for run in (global_scaled, edit_scaled, source_only, permutation)
+    ]
+    _require(
+        all(scaler.get("mode") == "TRAIN_TASK_ROBUST" for scaler in robust_scalers),
+        "common metric scaler is not train-task robust",
+    )
+    _require(
+        all(scaler == robust_scalers[0] for scaler in robust_scalers[1:]),
+        "train-only robust scalers differ across matched runs",
+    )
+    common_task_keys = set(global_raw["raw_task_mae_by_task"])
+    _require(common_task_keys, "validation task metrics are empty")
+    _require(
+        all(set(run["raw_task_mae_by_task"]) == common_task_keys for run in by_role.values()),
+        "validation task identities differ across screen arms",
+    )
+    common_scaler = robust_scalers[0]
+    for run in by_role.values():
+        run["common_train_robust_task_macro_standardized_mae"] = sum(
+            run["raw_task_mae_by_task"][task] / _scale_for_task(common_scaler, task)
+            for task in common_task_keys
+        ) / len(common_task_keys)
+    ranked = sorted(
+        (by_role[role] for role in factorial_roles),
+        key=lambda run: (
+            -run["task_macro_spearman"],
+            run["common_train_robust_task_macro_standardized_mae"],
+            run["scientific_role"],
+        ),
+    )
+    winner = ranked[0]
     factorial_effects = {
         "robust_scaling_with_global_pooling": global_scaled["task_macro_spearman"] - global_raw["task_macro_spearman"],
         "robust_scaling_with_edit_centering": edit_scaled["task_macro_spearman"] - edit_raw["task_macro_spearman"],
@@ -157,7 +205,9 @@ def adjudicate_screen(protocol: Mapping[str, Any], runs: list[Mapping[str, Any]]
         "selected_role": winner["scientific_role"],
         "selected_baseline_id": winner["baseline_id"],
         "selected_task_macro_spearman": winner["task_macro_spearman"],
-        "selected_task_macro_standardized_mae": winner["task_macro_standardized_mae"],
+        "selected_common_train_robust_task_macro_standardized_mae": winner[
+            "common_train_robust_task_macro_standardized_mae"
+        ],
         "task_macro_spearman_improvement_over_global_raw": improvement_over_reference,
         "factorial_effects": factorial_effects,
         "edit_centered_control_margins": edit_control_margins,
@@ -170,7 +220,14 @@ def adjudicate_screen(protocol: Mapping[str, Any], runs: list[Mapping[str, Any]]
         "evaluation_used_for_selection": False,
         "development_test_used_for_selection": False,
         "new_external_confirmation_required": protocol["post_exposure_boundary"]["new_external_confirmation_required_for_new_method_claim"],
-        "runs": sorted(runs, key=lambda run: run["scientific_role"]),
+        "runs": [
+            {
+                key: value
+                for key, value in run.items()
+                if key not in {"raw_task_mae_by_task", "target_scaler"}
+            }
+            for run in sorted(by_role.values(), key=lambda run: run["scientific_role"])
+        ],
     }
 
 

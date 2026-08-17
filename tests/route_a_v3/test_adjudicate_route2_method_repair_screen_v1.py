@@ -32,7 +32,14 @@ def _run(role, spearman, mae=1.0):
         "parameter_count": 500_000,
         "selected_epoch": 1,
         "task_macro_spearman": spearman,
-        "task_macro_standardized_mae": mae,
+        "within_run_task_macro_standardized_mae": mae,
+        "raw_task_mae_by_task": {"endpoint::region=0": mae * 2.0},
+        "target_scaler": {
+            "mode": "TRAIN_TASK_ROBUST" if is_scaled else "NONE",
+            "task_scales": {"endpoint::region=0": 2.0} if is_scaled else {},
+            "region_scales": {"region=0": 2.0} if is_scaled else {},
+            "global_scale": 2.0 if is_scaled else 1.0,
+        },
         "validation_task_count": 9,
         "physical_gpu_index": 0,
         "cuda_device_uuid": "uuid",
@@ -65,6 +72,7 @@ def test_screen_supports_confirmation_only_when_selected_edit_model_beats_contro
     assert result["status"] == "EXPLORATORY_SCREEN_SUPPORTS_FRESH_SEED_CONFIRMATION"
     assert result["selected_role"] == "FACTORIAL_EDIT_CENTERED_SCALED"
     assert result["task_macro_spearman_improvement_over_global_raw"] == pytest.approx(0.10)
+    assert result["selected_common_train_robust_task_macro_standardized_mae"] == pytest.approx(1.0)
     assert result["edit_centered_control_margins"]["over_source_only"] == pytest.approx(0.12)
     assert result["fresh_confirmation_seeds"] == [2, 3, 4]
     assert result["evaluation_used_for_selection"] is False
@@ -160,6 +168,10 @@ def test_validate_run_rejects_undefined_task_or_cpu_fallback() -> None:
             "task_macro_standardized_mae": 1.0,
             "defined_task_spearman_count": 8,
             "task_count": 9,
+            "task_metrics": {
+                f"endpoint_{index}::region=0": {"mae": 1.0}
+                for index in range(9)
+            },
         },
     }
     with pytest.raises(module.MethodRepairScreenError, match="CPU fallback"):

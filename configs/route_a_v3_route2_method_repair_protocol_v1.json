@@ -27,7 +27,8 @@
   },
   "screen_selection": {
     "primary": "validation.task_macro_spearman",
-    "tie_breaker": "validation.task_macro_standardized_mae",
+    "within_run_checkpoint_tie_breaker": "validation.task_macro_standardized_mae_USING_THAT_RUNS_TRAIN_SCALER",
+    "cross_arm_tie_breaker": "validation.task_macro_raw_mae_DIVIDED_BY_COMMON_TRAIN_ONLY_ROBUST_TASK_SCALE",
     "single_seed_role": "EXPLORATORY_SELECTION_ONLY",
     "development_test_role": "NOT_ACCESSED"
   },
@@ -36,7 +37,7 @@
     "three_fresh_seed_macro_spearman_improvement_over_frozen_strongest_same_information_baseline": ">0_IN_EACH_SEED",
     "matched_source_only_and_candidate_permutation_controls": "WORSE_IN_EACH_SEED",
     "leave_GSE269595_out_direction": "POSITIVE",
-    "task_macro_standardized_mae": "NOT_WORSE",
+    "common_train_robust_task_macro_standardized_mae": "NOT_WORSE",
     "evaluation_used_for_selection": false
   },
   "stop_conditions": [
