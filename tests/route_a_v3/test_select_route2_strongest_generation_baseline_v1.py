@@ -47,6 +47,7 @@ def _evaluation(method_id: str, ndcg: float, regret: float, total_forwards: floa
         "generation": {
             "method_id": method_id,
             "source_count": 4,
+            "candidate_count": 32,
             "hard_legality_rate": 1.0,
             "edit_budget_violation_count": 0,
             "candidate_budget_violation_count": 0,
@@ -72,6 +73,7 @@ def _payload():
     return {
         "schema_version": "route_a_v3_route2_generation_baseline_selection_input.v2",
         "selection_pool": "DEVELOPMENT_MEASURED_NEIGHBORHOOD",
+        "selection_evidence_mode": "CLOSED_MEASURED_SUPPORT",
         "evaluation_release_state": "CLOSED",
         "bootstrap_iterations": 1000,
         "bootstrap_seed": 17,
@@ -88,6 +90,7 @@ def test_measured_ndcg_freezes_strongest_matched_baseline() -> None:
     module = _load()
     result = module.select(_payload())
     assert result["strongest_generation_baseline_id"] == "beam"
+    assert result["selection_evidence_mode"] == "CLOSED_MEASURED_SUPPORT"
     assert result["matched_source_and_candidate_budget"] is True
     assert result["matched_forward_equivalent_budget"] is True
     assert result["forward_equivalent_budget_per_source"] == 64
@@ -192,4 +195,62 @@ def test_open_generated_support_requires_independent_evaluator() -> None:
     for row in measured["per_source"].values():
         row["closed_measured_ndcg_at_k"] = None
     with pytest.raises(module.GenerationBaselineSelectionError, match="independent evaluator required"):
+        module.select(payload)
+
+
+def _make_independent_open_support(payload) -> None:
+    payload["selection_evidence_mode"] = "INDEPENDENT_EVALUATOR_OPEN_SUPPORT"
+    for entry in payload["baseline_evaluations"]:
+        evaluation = entry["evaluation"]
+        method_id = entry["method_id"]
+        uplift = 0.2 if method_id == "beam" else 0.1
+        measured = evaluation["measured_neighborhood"]
+        measured["candidate_support_mode"] = "OPEN_GENERATED_SUPPORT"
+        measured["source_closed_measured_ndcg_defined_count"] = 0
+        measured["source_macro_closed_measured_ndcg_at_k"] = None
+        for row in measured["per_source"].values():
+            row["closed_measured_ndcg_at_k"] = None
+        for row in evaluation["generation"]["per_source"].values():
+            row["compute"]["critic_forwards"] -= 1
+            row["compute"]["independent_evaluator_forwards"] = 1
+            row["independent_evaluator_score"] = {
+                "count": 8,
+                "max_uplift_over_source": uplift,
+            }
+        entry["independent_evaluator_summary"] = {
+            "schema_version": "route_a_v3_route2_independent_generation_evaluator.v1",
+            "status": "FROZEN_INDEPENDENT_EVALUATOR_SCORING_COMPLETE",
+            "source_count": 4,
+            "candidate_row_count": 32,
+            "independent_evaluator_forward_count": 36,
+            "evaluator_checkpoint_path": "/mnt/evaluator.pt",
+            "guiding_checkpoint_path": "/mnt/guide.pt",
+            "evaluator_result_stage": "FROZEN_DEVELOPMENT_VALIDATION",
+            "evaluator_frozen_before_candidate_generation": True,
+            "guiding_checkpoint_distinct": True,
+            "evaluation_outcomes_used_to_select_evaluator": 0,
+            "device": "cuda:6",
+            "cpu_fallback_used": False,
+        }
+
+
+def test_open_support_can_freeze_an_independent_evaluator_only_baseline() -> None:
+    module = _load()
+    payload = _payload()
+    _make_independent_open_support(payload)
+    result = module.select(payload)
+    assert result["strongest_generation_baseline_id"] == "beam"
+    assert result["selection_evidence_mode"] == "INDEPENDENT_EVALUATOR_OPEN_SUPPORT"
+    assert result["independent_evaluator_checkpoint_path"] == "/mnt/evaluator.pt"
+    assert result["scientific_claim_status"] == "INDEPENDENT_EVALUATOR_ONLY_MEASURED_OUTCOME_NOT_ESTABLISHED"
+
+
+def test_open_support_rejects_development_test_evaluator_exposure() -> None:
+    module = _load()
+    payload = _payload()
+    _make_independent_open_support(payload)
+    payload["baseline_evaluations"][0]["independent_evaluator_summary"][
+        "evaluator_result_stage"
+    ] = "FROZEN_DEVELOPMENT_TEST"
+    with pytest.raises(module.GenerationBaselineSelectionError, match="training exposure"):
         module.select(payload)

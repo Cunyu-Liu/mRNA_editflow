@@ -15,6 +15,12 @@ class GenerationBaselineSelectionError(RuntimeError):
     pass
 
 
+SELECTION_EVIDENCE_MODES = {
+    "CLOSED_MEASURED_SUPPORT",
+    "INDEPENDENT_EVALUATOR_OPEN_SUPPORT",
+}
+
+
 def _require(condition: bool, message: str) -> None:
     if not condition:
         raise GenerationBaselineSelectionError(message)
@@ -119,6 +125,35 @@ def paired_source_bootstrap(
     }
 
 
+def _validate_independent_evaluator_summary(
+    summary: Mapping[str, Any],
+    *,
+    method_id: str,
+    generation: Mapping[str, Any],
+) -> tuple[str, str]:
+    _require(
+        summary["schema_version"] == "route_a_v3_route2_independent_generation_evaluator.v1",
+        f"independent evaluator schema changed: {method_id}",
+    )
+    _require(
+        summary["status"] == "FROZEN_INDEPENDENT_EVALUATOR_SCORING_COMPLETE",
+        f"independent evaluator scoring is incomplete: {method_id}",
+    )
+    _require(summary["evaluator_frozen_before_candidate_generation"] is True, f"evaluator was not pre-frozen: {method_id}")
+    _require(summary["guiding_checkpoint_distinct"] is True, f"guide and evaluator checkpoints match: {method_id}")
+    _require(summary["evaluation_outcomes_used_to_select_evaluator"] == 0, f"Evaluation selected evaluator: {method_id}")
+    _require(summary["evaluator_result_stage"] == "FROZEN_DEVELOPMENT_VALIDATION", f"evaluator training exposure is invalid: {method_id}")
+    _require(summary["cpu_fallback_used"] is False, f"independent evaluator used CPU fallback: {method_id}")
+    _require(str(summary["device"]).startswith("cuda"), f"independent evaluator did not use CUDA: {method_id}")
+    _require(int(summary["source_count"]) == int(generation["source_count"]), f"independent evaluator source count differs: {method_id}")
+    _require(int(summary["candidate_row_count"]) == int(generation["candidate_count"]), f"independent evaluator candidate count differs: {method_id}")
+    _require(int(summary["independent_evaluator_forward_count"]) > 0, f"independent evaluator made no forward calls: {method_id}")
+    evaluator_path = str(summary["evaluator_checkpoint_path"])
+    guiding_path = str(summary["guiding_checkpoint_path"])
+    _require(evaluator_path and guiding_path and evaluator_path != guiding_path, f"guide/evaluator checkpoint separation is absent: {method_id}")
+    return evaluator_path, guiding_path
+
+
 def select(payload: Mapping[str, Any]) -> dict[str, Any]:
     _require(
         payload["schema_version"] == "route_a_v3_route2_generation_baseline_selection_input.v2",
@@ -126,6 +161,8 @@ def select(payload: Mapping[str, Any]) -> dict[str, Any]:
     )
     _require(payload["selection_pool"] == "DEVELOPMENT_MEASURED_NEIGHBORHOOD", "selection is not Development measured data")
     _require(payload["evaluation_release_state"] == "CLOSED", "Evaluation was opened during baseline selection")
+    selection_evidence_mode = str(payload["selection_evidence_mode"])
+    _require(selection_evidence_mode in SELECTION_EVIDENCE_MODES, "selection evidence mode is invalid")
     bootstrap_iterations = int(payload["bootstrap_iterations"])
     _require(bootstrap_iterations >= 1000, "generation bootstrap budget is below 1000 iterations")
     bootstrap_seed = int(payload["bootstrap_seed"])
@@ -152,6 +189,8 @@ def select(payload: Mapping[str, Any]) -> dict[str, Any]:
     candidates = []
     matched_candidate_signature = None
     matched_critic_signature = None
+    matched_evaluator_checkpoint_path = None
+    matched_guiding_checkpoint_path = None
     for entry in entries:
         method_id = str(entry["method_id"])
         evaluation = entry["evaluation"]
@@ -184,28 +223,79 @@ def select(payload: Mapping[str, Any]) -> dict[str, Any]:
 
         measured = evaluation["measured_neighborhood"]
         _require(
-            measured["candidate_support_mode"] == "CLOSED_MEASURED_SUPPORT",
-            (
-                "open generated support cannot be selected by measured NDCG because "
-                f"unknown outcomes are not zero gain; independent evaluator required: {method_id}"
-            ),
-        )
-        _require(
             measured["unknown_generated_candidates_are_zero_gain"] is False,
             f"unknown generated candidates were assigned zero gain: {method_id}",
         )
         source_count = int(measured["source_count"])
         _require(source_count == int(generation["source_count"]), f"measured source count differs for {method_id}")
-        ndcg_defined_count = int(measured["source_closed_measured_ndcg_defined_count"])
-        regret_defined_count = int(measured["source_normalized_regret_defined_count"])
-        _require(0 < ndcg_defined_count <= source_count, f"measured NDCG is not defined for any source: {method_id}")
-        _require(0 <= regret_defined_count <= source_count, f"regret defined count is invalid: {method_id}")
         mean_total_forwards = sum(
             _finite(result["compute"]["total_forward_equivalents"], "total forward equivalents")
             for result in generation["per_source"].values()
         ) / source_count
         per_source = measured["per_source"]
         _require(set(per_source) == set(generation["per_source"]), f"measured source coverage differs for {method_id}")
+
+        if selection_evidence_mode == "INDEPENDENT_EVALUATOR_OPEN_SUPPORT":
+            _require(
+                measured["candidate_support_mode"] == "OPEN_GENERATED_SUPPORT",
+                f"independent-evaluator selection requires open generated support: {method_id}",
+            )
+            _require(
+                int(measured["source_closed_measured_ndcg_defined_count"]) == 0
+                and measured["source_macro_closed_measured_ndcg_at_k"] is None,
+                f"open-support closed NDCG was treated as defined: {method_id}",
+            )
+            evaluator_path, guiding_path = _validate_independent_evaluator_summary(
+                entry["independent_evaluator_summary"],
+                method_id=method_id,
+                generation=generation,
+            )
+            if matched_evaluator_checkpoint_path is None:
+                matched_evaluator_checkpoint_path = evaluator_path
+                matched_guiding_checkpoint_path = guiding_path
+            else:
+                _require(evaluator_path == matched_evaluator_checkpoint_path, f"independent evaluator checkpoint differs: {method_id}")
+                _require(guiding_path == matched_guiding_checkpoint_path, f"guiding checkpoint differs: {method_id}")
+            uplift_by_source = {}
+            for source_key, result in generation["per_source"].items():
+                score = result["independent_evaluator_score"]
+                _require(score is not None, f"independent evaluator score is absent: {method_id}/{source_key}")
+                _require(int(score["count"]) > 0, f"independent evaluator score is empty: {method_id}/{source_key}")
+                uplift_by_source[str(source_key)] = _finite(
+                    score["max_uplift_over_source"],
+                    f"independent evaluator max uplift for {method_id}/{source_key}",
+                )
+            candidates.append({
+                "method_id": method_id,
+                "source_count": source_count,
+                "source_macro_independent_evaluator_max_uplift_over_source": (
+                    sum(uplift_by_source.values()) / source_count
+                ),
+                "source_macro_measured_top_k_recovery_at_k": _finite(
+                    measured["source_macro_measured_top_k_recovery_at_k"],
+                    f"measured top-k recovery for {method_id}",
+                ),
+                "source_macro_candidate_recovery_rate": _finite(
+                    measured["source_macro_candidate_recovery_rate"],
+                    f"candidate recovery for {method_id}",
+                ),
+                "mean_total_forward_equivalents_per_source": mean_total_forwards,
+                "critic_budget_class": "MATCHED_CRITIC_BUDGET" if critic_signature is not None else "NO_CRITIC_CALLS",
+                "independent_evaluator_uplift_by_source": uplift_by_source,
+            })
+            continue
+
+        _require(
+            measured["candidate_support_mode"] == "CLOSED_MEASURED_SUPPORT",
+            (
+                "open generated support cannot be selected by measured NDCG because "
+                f"unknown outcomes are not zero gain; independent evaluator required: {method_id}"
+            ),
+        )
+        ndcg_defined_count = int(measured["source_closed_measured_ndcg_defined_count"])
+        regret_defined_count = int(measured["source_normalized_regret_defined_count"])
+        _require(0 < ndcg_defined_count <= source_count, f"measured NDCG is not defined for any source: {method_id}")
+        _require(0 <= regret_defined_count <= source_count, f"regret defined count is invalid: {method_id}")
         ndcg_by_source = {
             str(source_key): _finite(row["closed_measured_ndcg_at_k"], f"source NDCG for {method_id}/{source_key}")
             for source_key, row in per_source.items()
@@ -240,6 +330,74 @@ def select(payload: Mapping[str, Any]) -> dict[str, Any]:
             "ndcg_by_source": ndcg_by_source,
             "regret_by_source": regret_by_source,
         })
+
+    if selection_evidence_mode == "INDEPENDENT_EVALUATOR_OPEN_SUPPORT":
+        _require(
+            len({frozenset(candidate["independent_evaluator_uplift_by_source"]) for candidate in candidates}) == 1,
+            "independent evaluator source identities differ across methods",
+        )
+        ranked = sorted(candidates, key=lambda candidate: (
+            -candidate["source_macro_independent_evaluator_max_uplift_over_source"],
+            -candidate["source_macro_measured_top_k_recovery_at_k"],
+            candidate["mean_total_forward_equivalents_per_source"],
+            candidate["method_id"],
+        ))
+        point_winner = ranked[0]
+        uncertainty_equivalent = [point_winner]
+        comparisons = []
+        for comparison_index, candidate in enumerate(ranked[1:]):
+            comparison = paired_source_bootstrap(
+                point_winner["independent_evaluator_uplift_by_source"],
+                candidate["independent_evaluator_uplift_by_source"],
+                maximize=True,
+                iterations=bootstrap_iterations,
+                seed=bootstrap_seed + comparison_index,
+            )
+            comparisons.append({
+                "metric": "INDEPENDENT_EVALUATOR_MAX_UPLIFT_OVER_SOURCE",
+                "point_leader_method_id": point_winner["method_id"],
+                "candidate_method_id": candidate["method_id"],
+                **comparison,
+            })
+            lower, upper = comparison["leader_advantage_ci_95"]
+            if lower <= 0.0 <= upper:
+                uncertainty_equivalent.append(candidate)
+        winner = min(
+            uncertainty_equivalent,
+            key=lambda candidate: (
+                candidate["mean_total_forward_equivalents_per_source"],
+                candidate["method_id"],
+            ),
+        )
+        for candidate in candidates:
+            candidate.pop("independent_evaluator_uplift_by_source")
+        return {
+            "schema_version": "route_a_v3_route2_strongest_generation_baseline.v2",
+            "status": "DEVELOPMENT_STRONGEST_GENERATION_BASELINE_FROZEN_INDEPENDENT_EVALUATOR_ONLY",
+            "strongest_generation_baseline_id": winner["method_id"],
+            "selection_evidence_mode": selection_evidence_mode,
+            "selection_primary_metric": "DEVELOPMENT_INDEPENDENT_EVALUATOR_MAX_UPLIFT_OVER_SOURCE",
+            "point_leader_method_id": point_winner["method_id"],
+            "bootstrap_uncertainty_equivalent_method_ids": sorted(
+                candidate["method_id"] for candidate in uncertainty_equivalent
+            ),
+            "paired_source_bootstrap": comparisons,
+            "bootstrap_iterations": bootstrap_iterations,
+            "bootstrap_seed": bootstrap_seed,
+            "uncertainty_tiebreak": "LOWEST_MEAN_TOTAL_FORWARD_EQUIVALENTS_THEN_METHOD_ID",
+            "matched_source_and_candidate_budget": True,
+            "matched_forward_equivalent_budget": True,
+            "forward_equivalent_budget_per_source": forward_equivalent_budget_per_source,
+            "critic_budget_matched_within_critic_using_methods": True,
+            "generator_nfe_accounting_validated": True,
+            "independent_evaluator_checkpoint_path": matched_evaluator_checkpoint_path,
+            "guiding_checkpoint_path": matched_guiding_checkpoint_path,
+            "required_method_ids": sorted(required_methods),
+            "all_candidates_ranked": ranked,
+            "evaluation_outcomes_accessed": False,
+            "main_guided_model_result_used_for_selection": False,
+            "scientific_claim_status": "INDEPENDENT_EVALUATOR_ONLY_MEASURED_OUTCOME_NOT_ESTABLISHED",
+        }
 
     _require(
         len({candidate["source_closed_measured_ndcg_defined_count"] for candidate in candidates}) == 1,
@@ -332,6 +490,7 @@ def select(payload: Mapping[str, Any]) -> dict[str, Any]:
         "schema_version": "route_a_v3_route2_strongest_generation_baseline.v2",
         "status": "DEVELOPMENT_STRONGEST_GENERATION_BASELINE_FROZEN",
         "strongest_generation_baseline_id": winner["method_id"],
+        "selection_evidence_mode": selection_evidence_mode,
         "selection_primary_metric": selection_metric,
         "point_leader_method_id": point_winner["method_id"],
         "bootstrap_uncertainty_equivalent_method_ids": sorted(
