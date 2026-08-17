@@ -186,6 +186,16 @@ $PY scripts/route_a_v3/train_route2_delta_predictor_v1.py \
 
 FlashAttention 主要影响一次性的冻结特征构建和后续候选在线编码，不能提升 100-epoch critic 的主体训练。当前在线路径优先用 candidate batching 与 memoization 降低重复前向；在没有证明新的 attention kernel 与冻结 cache 数值一致前，不替换官方 PyTorch fallback。当前使用的 BF16/fused 路径已经先通过独立吞吐与数值一致性测试，再用于全新的正式 runs；没有中途改变既有 run 的数值路径。
 
+已增加一个不读取项目数据的 attention operator 基准，比较官方 `QK-softmax-V` fallback 与 PyTorch 2.5 SDPA 的 AUTO、Flash、memory-efficient 和 math 后端：
+
+```bash
+CUDA_VISIBLE_DEVICES=4 /home/cunyuliu/miniconda3/envs/editflow/bin/python \
+  scripts/route_a_v3/benchmark_route2_mrnabert_attention_backend_v1.py \
+  --config configs/route_a_v3_route2_mrnabert_attention_backend_benchmark_gpu4_v1.json
+```
+
+该基准只筛查 `50/64/96/128/164 nt × batch 1/4/8` 下的数值误差、真实融合后端和速度。即使通过，也只允许继续做全编码器 cache 对齐与端到端吞吐验证，不会自动切换正式 encoder。位置编码继续使用官方双向 ALiBi；不会在加载同一预训练权重时改成 RoPE 或新的绝对位置编码。
+
 ## 9. 2026-08-17 21:59 运行快照
 
 | 运行 | 当前 epoch | 最新 task-macro Spearman | 最新 task-macro standardized MAE | 状态 |
