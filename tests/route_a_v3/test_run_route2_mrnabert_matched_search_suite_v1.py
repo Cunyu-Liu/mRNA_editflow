@@ -35,6 +35,7 @@ def _config():
         "source_manifest_path": "/sources.jsonl",
         "mrnabert_model_path": "/model",
         "reward_policy_path": "/policy.json",
+        "selected_attention_backend": "PYTORCH_SDPA_AUTO",
         "guided_compute_by_source_path": "/compute.jsonl",
         "independent_evaluator_adjudication_path": "/evaluator.json",
         "device": "cuda:0",
@@ -111,6 +112,7 @@ def test_commands_are_serial_mrnabert_search_jobs_without_evaluator() -> None:
         command = row["command"]
         assert "--mrnabert-model-path" in command
         assert "--reward-policy" in command
+        assert command[command.index("--attention-backend") + 1] == "PYTORCH_SDPA_AUTO"
         assert "--critic-budget-by-source" in command
         assert "--max-critic-forwards" not in command
         assert not any("independent_evaluator" in value for value in command)

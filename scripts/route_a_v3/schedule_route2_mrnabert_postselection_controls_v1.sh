@@ -38,6 +38,7 @@ ONLINE_ENCODER_VALIDATION="${ROUTE2_ROOT}/runs/mrnabert_online_encoder_validatio
 READINESS_INPUT="${ROUTE2_ROOT}/comparisons/mrnabert_guidance_readiness_input_v1.json"
 READINESS_ADJUDICATION="${ROUTE2_ROOT}/comparisons/mrnabert_guidance_readiness_adjudication_v1.json"
 INDEPENDENT_EVALUATOR_ADJUDICATION="${ROUTE2_ROOT}/comparisons/mrnabert_independent_evaluator_adjudication_v1.json"
+ENCODER_BACKEND_ADJUDICATION="${ROUTE2_ROOT}/comparisons/mrnabert_sdpa_backend_adjudication_v1.json"
 
 summaries=(
   "${HUBER_DIR}/training_summary.json"
@@ -321,8 +322,9 @@ printf '%s three_test_preserving_loso_aggregations_finished\n' "$(date -Is)"
 
 while [[ ! -f "${FLOW_V2_TRAINING_SUMMARY}" \
   || ! -f "${FLOW_V2_VALIDATION_SUMMARY}" \
-  || ! -f "${ONLINE_ENCODER_VALIDATION}" ]]; do
-  printf '%s waiting_for_flow_v2_and_online_encoder_validation\n' "$(date -Is)"
+  || ! -f "${ONLINE_ENCODER_VALIDATION}" \
+  || ! -f "${ENCODER_BACKEND_ADJUDICATION}" ]]; do
+  printf '%s waiting_for_flow_v2_online_encoder_and_backend_adjudication\n' "$(date -Is)"
   sleep "${POLL_SECONDS}"
 done
 

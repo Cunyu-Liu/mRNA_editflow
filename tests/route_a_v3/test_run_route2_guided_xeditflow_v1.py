@@ -112,6 +112,19 @@ def test_online_encoder_and_evaluation_are_required() -> None:
         runner.validate_readiness(readiness, _adjudication(), _config())
 
 
+def test_backend_selection_requires_completed_non_evaluation_adjudication() -> None:
+    value = {
+        "schema_version": "route_a_v3_route2_mrnabert_sdpa_backend_adjudication.v1",
+        "status": "ONLINE_ENCODER_BACKEND_ADJUDICATED",
+        "selected_attention_backend": "PYTORCH_SDPA_AUTO",
+        "evaluation_opened": False,
+    }
+    assert runner.selected_attention_backend(value) == "PYTORCH_SDPA_AUTO"
+    value["evaluation_opened"] = True
+    with pytest.raises(runner.GuidedRunError, match="backend adjudication"):
+        runner.selected_attention_backend(value)
+
+
 def test_guided_output_contract_contains_ranking_scores_for_later_evaluation() -> None:
     source = Path(runner.__file__).read_text(encoding="utf-8")
     assert '"critic_score": terminal_critic_score' in source

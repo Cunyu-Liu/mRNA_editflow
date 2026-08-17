@@ -6,6 +6,7 @@
   "seed": 20260825,
   "readiness_input_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/comparisons/mrnabert_guidance_readiness_input_v1.json",
   "readiness_adjudication_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/comparisons/mrnabert_guidance_readiness_adjudication_v1.json",
+  "encoder_attention_backend_adjudication_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/comparisons/mrnabert_sdpa_backend_adjudication_v1.json",
   "reward_policy_path": "/home/cunyuliu/mrna_editflow_goal/worktrees/route_a_v3_route2_method_repair_20260817/configs/route_a_v3_route2_mrnabert_guidance_reward_policy_v1.json",
   "source_eligibility_manifest": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/generation_eligibility/development_validation_v1/source_eligibility.jsonl",
   "base_flow_checkpoint_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/base_flow_g0/position_progress_gpu_v2/best.pt",

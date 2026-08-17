@@ -17,8 +17,15 @@ class FakeEncoder:
     embedding_width = 8
     parameter_count = 113_389_056
 
-    def __init__(self, _model_path, _device):
+    def __init__(
+        self,
+        _model_path,
+        _device,
+        *,
+        attention_backend="OFFICIAL_PYTORCH_FALLBACK",
+    ):
         self.calls = 0
+        self.attention_backend = attention_backend
 
     def encode_sequences(self, sequences):
         self.calls += 1

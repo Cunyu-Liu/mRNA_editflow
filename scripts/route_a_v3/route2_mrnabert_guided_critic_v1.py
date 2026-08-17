@@ -48,6 +48,7 @@ class FrozenRoute2MRNABERTCritic:
         *,
         potential_minimum: float = -5.0,
         potential_maximum: float = 5.0,
+        encoder_attention_backend: str = "OFFICIAL_PYTORCH_FALLBACK",
         encoder_class=FrozenMRNABERTOnlineEncoder,
     ) -> None:
         checkpoint = torch.load(
@@ -89,7 +90,11 @@ class FrozenRoute2MRNABERTCritic:
         self.model.load_state_dict(checkpoint["model_state"])
         self.model.eval().requires_grad_(False)
         self.vocabs = checkpoint["vocabs"]
-        self.encoder = encoder_class(model_path, device)
+        self.encoder = encoder_class(
+            model_path,
+            device,
+            attention_backend=encoder_attention_backend,
+        )
         _require(
             int(checkpoint["model_config"]["pretrained_width"])
             == int(self.encoder.embedding_width),

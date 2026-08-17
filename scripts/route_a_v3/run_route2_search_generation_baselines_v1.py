@@ -288,6 +288,7 @@ class MRNABERTCheckpointScorer:
         model_path: Path,
         reward_policy_path: Path,
         device_text: str,
+        attention_backend: str,
     ):
         from scripts.route_a_v3.route2_mrnabert_guided_critic_v1 import (
             FrozenRoute2MRNABERTCritic,
@@ -312,6 +313,7 @@ class MRNABERTCheckpointScorer:
             self.device,
             potential_minimum=float(transform["minimum"]),
             potential_maximum=float(transform["maximum"]),
+            encoder_attention_backend=attention_backend,
         )
         self.source_row: Mapping[str, object] | None = None
 
@@ -595,6 +597,11 @@ def _main() -> int:
     scorer.add_argument("--checkpoint", type=Path)
     parser.add_argument("--mrnabert-model-path", type=Path)
     parser.add_argument("--reward-policy", type=Path)
+    parser.add_argument(
+        "--attention-backend",
+        choices=("OFFICIAL_PYTORCH_FALLBACK", "PYTORCH_SDPA_AUTO"),
+        default="OFFICIAL_PYTORCH_FALLBACK",
+    )
     parser.add_argument("--device")
     parser.add_argument("--physical-gpu-index", type=int)
     parser.add_argument("--method", choices=METHODS, required=True)
@@ -659,6 +666,7 @@ def _main() -> int:
             args.mrnabert_model_path,
             args.reward_policy,
             str(args.device),
+            args.attention_backend,
         )
     elif args.checkpoint:
         shared_checkpoint_scorer = TorchCheckpointScorer(

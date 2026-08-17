@@ -164,6 +164,8 @@ def build_commands(config: Mapping[str, Any]) -> list[dict[str, Any]]:
                     str(config["mrnabert_model_path"]),
                     "--reward-policy",
                     str(config["reward_policy_path"]),
+                    "--attention-backend",
+                    str(config["selected_attention_backend"]),
                     "--device",
                     str(config["device"]),
                     "--physical-gpu-index",
@@ -220,6 +222,26 @@ def execute(config_path: Path) -> dict[str, Any]:
     guided_summary = _read_json(Path(str(config["guided_summary_path"])), "guided summary")
     compute_rows = _read_jsonl(Path(str(config["guided_compute_by_source_path"])), "guided source compute")
     source_rows = _read_jsonl(Path(str(config["source_manifest_path"])), "source manifest")
+    backend_adjudication = _read_json(
+        Path(str(config["encoder_attention_backend_adjudication_path"])),
+        "encoder attention backend adjudication",
+    )
+    _require(
+        backend_adjudication.get("schema_version")
+        == "route_a_v3_route2_mrnabert_sdpa_backend_adjudication.v1"
+        and backend_adjudication.get("status") == "ONLINE_ENCODER_BACKEND_ADJUDICATED"
+        and backend_adjudication.get("evaluation_opened") is False,
+        "encoder attention backend adjudication is invalid",
+    )
+    execution_config = dict(config)
+    execution_config["selected_attention_backend"] = str(
+        backend_adjudication["selected_attention_backend"]
+    )
+    _require(
+        execution_config["selected_attention_backend"]
+        in {"OFFICIAL_PYTORCH_FALLBACK", "PYTORCH_SDPA_AUTO"},
+        "encoder attention backend selection is unknown",
+    )
     budgets = validate_inputs(
         config,
         readiness_input,
@@ -236,7 +258,7 @@ def execute(config_path: Path) -> dict[str, Any]:
     started = time.time()
     method_summaries = []
     try:
-        for spec in build_commands(config):
+        for spec in build_commands(execution_config):
             stdout_path = log_directory / f"{spec['method_id']}.stdout.log"
             stderr_path = log_directory / f"{spec['method_id']}.stderr.log"
             with stdout_path.open("w", encoding="utf-8") as stdout_handle, stderr_path.open("w", encoding="utf-8") as stderr_handle:
@@ -258,6 +280,9 @@ def execute(config_path: Path) -> dict[str, Any]:
             "method_summaries": method_summaries,
             "method_count": len(method_summaries),
             "source_budget_cohort_count": len(budgets),
+            "encoder_attention_backend": execution_config[
+                "selected_attention_backend"
+            ],
             "critic_budget_rule": config["critic_budget_rule"],
             "critic_budget_total_per_method": sum(budgets.values()),
             "critic_budget_minimum_per_source": min(budgets.values()),

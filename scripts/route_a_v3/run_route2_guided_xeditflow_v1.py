@@ -93,6 +93,22 @@ def validate_readiness(
     )
 
 
+def selected_attention_backend(adjudication: Mapping[str, Any]) -> str:
+    _require(
+        adjudication.get("schema_version")
+        == "route_a_v3_route2_mrnabert_sdpa_backend_adjudication.v1"
+        and adjudication.get("status") == "ONLINE_ENCODER_BACKEND_ADJUDICATED"
+        and adjudication.get("evaluation_opened") is False,
+        "online encoder backend adjudication is invalid",
+    )
+    backend = str(adjudication.get("selected_attention_backend"))
+    _require(
+        backend in {"OFFICIAL_PYTORCH_FALLBACK", "PYTORCH_SDPA_AUTO"},
+        "online encoder backend selection is unknown",
+    )
+    return backend
+
+
 def batched_guided_rate_function(
     base_rate_function,
     critic: FrozenRoute2MRNABERTCritic,
@@ -171,6 +187,11 @@ def execute(config: Mapping[str, Any]) -> dict[str, Any]:
     readiness_adjudication = _read_json(
         Path(config["readiness_adjudication_path"]), "readiness adjudication"
     )
+    backend_adjudication = _read_json(
+        Path(config["encoder_attention_backend_adjudication_path"]),
+        "encoder attention backend adjudication",
+    )
+    attention_backend = selected_attention_backend(backend_adjudication)
     validate_readiness(readiness_input, readiness_adjudication, config)
     policy = _read_json(Path(config["reward_policy_path"]), "reward policy")
     _require(
@@ -208,6 +229,7 @@ def execute(config: Mapping[str, Any]) -> dict[str, Any]:
         device,
         potential_minimum=float(transform["minimum"]),
         potential_maximum=float(transform["maximum"]),
+        encoder_attention_backend=attention_backend,
     )
     rows = []
     terminal_causes = Counter()
@@ -480,6 +502,7 @@ def execute(config: Mapping[str, Any]) -> dict[str, Any]:
         "critic_parameter_updates": 0,
         "generator_parameter_updates": 0,
         "reward_signal": policy["reward_signal"],
+        "encoder_attention_backend": attention_backend,
         "uncertainty_in_guidance": policy["uncertainty_in_guidance"],
         "evaluation_outcomes_read": 0,
         "generated_candidates_grant_canonical_credit": False,
