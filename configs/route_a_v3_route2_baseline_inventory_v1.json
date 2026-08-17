@@ -1,6 +1,21 @@
 {
   "schema_version": "route_a_v3_route2_baseline_inventory.v1",
   "status": "DEVELOPMENT_BASELINE_RESULTS_PARTIALLY_COMPLETED",
+  "generation_benchmark_current_state": {
+    "status": "MATCHED_FORWARD_QUALITY_SUITE_RUNNING",
+    "previous_strongest_selection_status": "RETIRED_OPEN_SUPPORT_AND_COMPUTE_MISMATCH",
+    "matched_quality_suite_summary_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/audits/generation_search_baselines/matched_compute_seed20260816_v1/matched_generation_suite_final_summary_v1.json",
+    "matched_quality_runtime_comparison_valid": false,
+    "independent_evaluator_status": "INDEPENDENT_GENERATION_EVALUATOR_QUALIFIED",
+    "independent_evaluator_adjudication_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/independent_generation_evaluator/neural_medium_siamese_task_scaled_seed20260816_frozen_development_validation_gpu6_v2/independent_evaluator_adjudication_v1.json",
+    "exhaustive_190_cohort_status": "CONFIGURED_NOT_EXECUTED_REQUIRES_MATCHED_QUALITY_SUITE_SUCCESS",
+    "exhaustive_190_cohort_final_summary_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/audits/generation_search_baselines/matched_compute_seed20260816_v1/exhaustive_small_space_reference_suite_final_summary_v1.json",
+    "exhaustive_190_cohort_comparison_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/audits/generation_search_baselines/matched_compute_seed20260816_v1/exhaustive_small_space_reference_comparison_v1.json",
+    "runtime_valid_successor_status": "CONFIGURED_NOT_EXECUTED",
+    "runtime_valid_protocol_path": "configs/route_a_v3_route2_generation_matched_runtime_valid_protocol_v1.json",
+    "runtime_valid_suite_summary_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/audits/generation_search_baselines/matched_runtime_valid_seed20260816_v1/matched_generation_suite_final_summary_v1.json",
+    "scientific_claim_status": "NOT_ESTABLISHED"
+  },
   "prediction_common_task_adapters": [
     {
       "model_id": "Optimus5Prime",
@@ -90,11 +105,14 @@
     {"method_id": "random_legal", "status": "COMPLETED_DEVELOPMENT_MEASURED_NEIGHBORHOOD_GPU"},
     {
       "method_id": "exhaustive",
-      "status": "OUTCOME_BLIND_190_COHORT_SUBSET_READY_CANDIDATES_NOT_EXECUTED_EVALUATOR_NOT_FROZEN",
+      "status": "OUTCOME_BLIND_190_COHORT_SUITE_READY_NOT_EXECUTED_MATCHED_SUITE_PENDING",
       "source_manifest_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/generation_eligibility/development_validation_v1/exhaustive_small_space_critic256_v1/source_eligibility.jsonl",
       "source_summary_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/generation_eligibility/development_validation_v1/exhaustive_small_space_critic256_v1/summary.json",
       "source_cohort_count": 190,
       "legal_space_size_per_source": 151,
+      "independent_evaluator_status": "INDEPENDENT_GENERATION_EVALUATOR_QUALIFIED",
+      "suite_config_path": "configs/route_a_v3_route2_exhaustive_small_space_reference_seed20260816_gpu6_v1.json",
+      "scoring_config_path": "configs/route_a_v3_route2_exhaustive_small_space_independent_evaluator_gpu6_v1.json",
       "full_cohort_strongest_selector_eligible": false
     },
     {"method_id": "greedy", "status": "COMPLETED_DEVELOPMENT_MEASURED_NEIGHBORHOOD_GPU"},

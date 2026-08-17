@@ -29,6 +29,41 @@ def test_unexecuted_external_and_guided_methods_are_not_presented_as_results() -
     assert generation["masked_discrete_flow_or_diffusion"] == "LITERATURE_ONLY_TASK_MISMATCH"
 
 
+def test_generation_inventory_exposes_current_matched_suite_and_retired_selection() -> None:
+    inventory = json.loads(PATH.read_text(encoding="utf-8"))
+    state = inventory["generation_benchmark_current_state"]
+    assert state["status"] == "MATCHED_FORWARD_QUALITY_SUITE_RUNNING"
+    assert state["previous_strongest_selection_status"] == (
+        "RETIRED_OPEN_SUPPORT_AND_COMPUTE_MISMATCH"
+    )
+    assert state["matched_quality_runtime_comparison_valid"] is False
+    assert state["independent_evaluator_status"] == (
+        "INDEPENDENT_GENERATION_EVALUATOR_QUALIFIED"
+    )
+    assert state["exhaustive_190_cohort_status"] == (
+        "CONFIGURED_NOT_EXECUTED_REQUIRES_MATCHED_QUALITY_SUITE_SUCCESS"
+    )
+    assert state["runtime_valid_successor_status"] == "CONFIGURED_NOT_EXECUTED"
+    assert state["scientific_claim_status"] == "NOT_ESTABLISHED"
+    assert (ROOT / state["runtime_valid_protocol_path"]).is_file()
+
+    exhaustive = next(
+        row for row in inventory["generation_methods"]
+        if row["method_id"] == "exhaustive"
+    )
+    assert exhaustive["status"] == (
+        "OUTCOME_BLIND_190_COHORT_SUITE_READY_NOT_EXECUTED_MATCHED_SUITE_PENDING"
+    )
+    assert exhaustive["source_cohort_count"] == 190
+    assert exhaustive["legal_space_size_per_source"] == 151
+    assert exhaustive["independent_evaluator_status"] == (
+        "INDEPENDENT_GENERATION_EVALUATOR_QUALIFIED"
+    )
+    assert exhaustive["full_cohort_strongest_selector_eligible"] is False
+    assert (ROOT / exhaustive["suite_config_path"]).is_file()
+    assert (ROOT / exhaustive["scoring_config_path"]).is_file()
+
+
 def test_unguided_flow_inventory_records_terminal_g0_evidence_without_biological_claim() -> None:
     inventory = json.loads(PATH.read_text(encoding="utf-8"))
     flow = next(
