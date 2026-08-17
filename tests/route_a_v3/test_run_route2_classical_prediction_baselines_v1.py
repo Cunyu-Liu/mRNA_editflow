@@ -391,5 +391,12 @@ def test_hpo_manifest_withholds_development_test_before_outcome_loading() -> Non
     )
     assert set(selected) == set(manifest)
     assert withheld == 0
+    selected, withheld = module.manifest_for_result_stage(
+        manifest,
+        "LOSO_DEVELOPMENT_TRAIN_VALIDATION_ONLY",
+        "LOSO_DEVELOPMENT_VALIDATION_ONLY_FROZEN_PARAMETERS",
+    )
+    assert set(selected) == {"train", "validation"}
+    assert withheld == 1
     with pytest.raises(module.BaselineError, match="invalid result_stage"):
         module.manifest_for_result_stage(manifest, "FIXED_GROUPED_SPLIT", "")

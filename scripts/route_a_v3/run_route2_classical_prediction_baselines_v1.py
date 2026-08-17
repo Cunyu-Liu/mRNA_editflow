@@ -927,11 +927,20 @@ def manifest_for_result_stage(
                 if value["split"] != "TEST"
             }, withheld
         return dict(manifest), 0
+    if run_mode == "LOSO_DEVELOPMENT_TRAIN_VALIDATION_ONLY":
+        _require(
+            result_stage == "LOSO_DEVELOPMENT_VALIDATION_ONLY_FROZEN_PARAMETERS",
+            f"invalid result_stage for TEST-preserving LOSO: {result_stage}",
+        )
+        withheld = sum(value["split"] == "TEST" for value in manifest.values())
+        _require(withheld > 0, "Development test split is empty")
+        return {
+            record_id: value
+            for record_id, value in manifest.items()
+            if value["split"] != "TEST"
+        }, withheld
     _require(run_mode == "LOSO_FROZEN_PARAMETERS", f"unknown run mode: {run_mode}")
-    _require(
-        result_stage == "LOSO_FROZEN_PARAMETERS",
-        f"invalid result_stage for LOSO: {result_stage}",
-    )
+    _require(result_stage == "LOSO_FROZEN_PARAMETERS", f"invalid result_stage for LOSO: {result_stage}")
     return dict(manifest), 0
 
 
@@ -953,7 +962,14 @@ def execute(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
     )
     manifest = load_manifest(Path(config["development_manifest_path"]))
     run_mode = str(config.get("run_mode", "FIXED_GROUPED_SPLIT"))
-    _require(run_mode in {"FIXED_GROUPED_SPLIT", "LOSO_FROZEN_PARAMETERS"}, f"unknown run mode: {run_mode}")
+    _require(
+        run_mode in {
+            "FIXED_GROUPED_SPLIT",
+            "LOSO_FROZEN_PARAMETERS",
+            "LOSO_DEVELOPMENT_TRAIN_VALIDATION_ONLY",
+        },
+        f"unknown run mode: {run_mode}",
+    )
     result_stage = str(config.get("result_stage", ""))
     manifest, development_test_record_count_withheld = manifest_for_result_stage(
         manifest, run_mode, result_stage
@@ -1023,7 +1039,7 @@ def execute(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
         for baseline in config["baselines"]:
             baseline_id = baseline["baseline_id"]
             torch.cuda.reset_peak_memory_stats(device)
-            if run_mode == "LOSO_FROZEN_PARAMETERS":
+            if run_mode != "FIXED_GROUPED_SPLIT":
                 _require("frozen_parameters" in baseline, f"LOSO parameters are not frozen: {baseline_id}")
                 selected_parameters = baseline["frozen_parameters"]
                 started = time.monotonic()
@@ -1211,6 +1227,9 @@ def execute(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
             "development_test_record_count_withheld": development_test_record_count_withheld,
             "loso_holdout_study_unit_id": loso_holdout,
             "loso_excluded_connected_other_study_record_count": excluded_bridge_count,
+            "loso_development_test_preserved": (
+                run_mode == "LOSO_DEVELOPMENT_TRAIN_VALIDATION_ONLY"
+            ),
             "development_record_counts": {"TRAIN": len(train), "VALIDATION": len(validation), "TEST": len(test)},
             "cpu_thread_cap": config["cpu_thread_cap"],
             "device": str(device),
