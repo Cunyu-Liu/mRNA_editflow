@@ -1,0 +1,183 @@
+#!/usr/bin/env python3
+"""Adjudicate the frozen Development-only Route 2 method-repair screen."""
+
+from __future__ import annotations
+
+import argparse
+import json
+import math
+from pathlib import Path
+from typing import Any, Mapping
+
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+
+
+class MethodRepairScreenError(RuntimeError):
+    pass
+
+
+def _require(condition: bool, message: str) -> None:
+    if not condition:
+        raise MethodRepairScreenError(message)
+
+
+def _finite(value: Any, label: str) -> float:
+    _require(
+        isinstance(value, (int, float))
+        and not isinstance(value, bool)
+        and math.isfinite(float(value)),
+        f"{label} is not finite",
+    )
+    return float(value)
+
+
+def validate_run(config: Mapping[str, Any], summary: Mapping[str, Any]) -> dict[str, Any]:
+    _require(summary.get("status") == "DELTA_PREDICTOR_DEVELOPMENT_GPU_RUN_COMPLETE", "screen run is incomplete")
+    _require(summary.get("result_stage") == "HPO_VALIDATION_ONLY", "screen run accessed the wrong result stage")
+    _require(summary.get("development_test_outcomes_evaluated") is False, "Development TEST entered screen")
+    _require(summary.get("evaluation_outcomes_read") == 0, "Evaluation entered screen")
+    _require(summary.get("cpu_fallback_used") is False, "screen used CPU fallback")
+    _require(summary.get("cuda_training_tensors_verified") is True, "screen lacks CUDA tensor proof")
+    _require(summary.get("parameter_changed") is True, "screen lacks a learned parameter update")
+    _require(summary.get("baseline_id") == config.get("baseline_id"), "baseline identity differs from config")
+    _require(summary.get("model_kind") == config.get("model_kind"), "model kind differs from config")
+    _require(summary.get("seed") == config.get("seed"), "screen seed differs from config")
+    _require(summary.get("device") == config.get("device"), "screen device differs from config")
+    _require(summary.get("physical_gpu_index") == config.get("physical_gpu_index"), "physical GPU differs from config")
+    _require(summary.get("checkpoint_selection") == "BEST_VALIDATION", "screen did not use best validation checkpoint")
+    _require(
+        summary.get("checkpoint_metric") == "TASK_MACRO_SPEARMAN_THEN_STANDARDIZED_MAE",
+        "screen used the wrong checkpoint metric",
+    )
+    scaler = summary.get("target_scaler", {})
+    _require(scaler.get("fit_scope") == "TRAIN_ONLY", "target scaler is not train-only")
+    _require(scaler.get("center_subtracted") is False, "target scaler changed the Delta zero")
+    validation = summary.get("validation_metrics") or {}
+    task_macro_spearman = _finite(validation.get("task_macro_spearman"), "task-macro Spearman")
+    task_macro_standardized_mae = _finite(
+        validation.get("task_macro_standardized_mae"), "task-macro standardized MAE"
+    )
+    _require(validation.get("defined_task_spearman_count") == validation.get("task_count"), "some validation task Spearman is undefined")
+    return {
+        "scientific_role": config["scientific_role"],
+        "baseline_id": summary["baseline_id"],
+        "model_kind": summary["model_kind"],
+        "target_scaling_mode": scaler["mode"],
+        "candidate_control": summary["candidate_control"],
+        "parameter_count": int(summary["parameter_count"]),
+        "selected_epoch": int(summary["selected_epoch"]),
+        "task_macro_spearman": task_macro_spearman,
+        "task_macro_standardized_mae": task_macro_standardized_mae,
+        "validation_task_count": int(validation["task_count"]),
+        "physical_gpu_index": int(summary["physical_gpu_index"]),
+        "cuda_device_uuid": str(summary["cuda_device_uuid"]),
+        "cpu_fallback_used": False,
+        "evaluation_outcomes_read": 0,
+        "output_directory": config["output_directory"],
+    }
+
+
+def adjudicate_screen(protocol: Mapping[str, Any], runs: list[Mapping[str, Any]]) -> dict[str, Any]:
+    _require(protocol.get("status") == "FROZEN_DEVELOPMENT_ONLY_EXPLORATORY_SCREEN", "method-repair protocol is not frozen")
+    by_role = {str(run["scientific_role"]): dict(run) for run in runs}
+    _require(len(by_role) == len(runs), "scientific role is duplicated")
+    factorial_roles = (
+        "FACTORIAL_GLOBAL_RAW",
+        "FACTORIAL_GLOBAL_SCALED",
+        "FACTORIAL_EDIT_CENTERED_RAW",
+        "FACTORIAL_EDIT_CENTERED_SCALED",
+    )
+    control_roles = (
+        "MATCHED_SOURCE_ONLY_CONTROL",
+        "MATCHED_TRAIN_CANDIDATE_PERMUTATION_CONTROL",
+    )
+    _require(set(factorial_roles + control_roles) == set(by_role), "screen role coverage is incomplete")
+    ranked = sorted(
+        (by_role[role] for role in factorial_roles),
+        key=lambda run: (-run["task_macro_spearman"], run["task_macro_standardized_mae"], run["scientific_role"]),
+    )
+    winner = ranked[0]
+    global_raw = by_role["FACTORIAL_GLOBAL_RAW"]
+    global_scaled = by_role["FACTORIAL_GLOBAL_SCALED"]
+    edit_raw = by_role["FACTORIAL_EDIT_CENTERED_RAW"]
+    edit_scaled = by_role["FACTORIAL_EDIT_CENTERED_SCALED"]
+    source_only = by_role["MATCHED_SOURCE_ONLY_CONTROL"]
+    permutation = by_role["MATCHED_TRAIN_CANDIDATE_PERMUTATION_CONTROL"]
+    factorial_effects = {
+        "robust_scaling_with_global_pooling": global_scaled["task_macro_spearman"] - global_raw["task_macro_spearman"],
+        "robust_scaling_with_edit_centering": edit_scaled["task_macro_spearman"] - edit_raw["task_macro_spearman"],
+        "edit_centering_with_raw_target": edit_raw["task_macro_spearman"] - global_raw["task_macro_spearman"],
+        "edit_centering_with_robust_scaling": edit_scaled["task_macro_spearman"] - global_scaled["task_macro_spearman"],
+    }
+    edit_control_margins = {
+        "over_source_only": edit_scaled["task_macro_spearman"] - source_only["task_macro_spearman"],
+        "over_train_candidate_permutation": edit_scaled["task_macro_spearman"] - permutation["task_macro_spearman"],
+    }
+    improvement_over_reference = winner["task_macro_spearman"] - global_raw["task_macro_spearman"]
+    winner_uses_edit_centering = winner["scientific_role"].startswith("FACTORIAL_EDIT_CENTERED")
+    edit_controls_positive = all(margin > 0.0 for margin in edit_control_margins.values())
+    controls_support_winner = winner_uses_edit_centering and edit_controls_positive
+    supports_confirmation = improvement_over_reference > 0.0 and controls_support_winner
+    if supports_confirmation:
+        status = "EXPLORATORY_SCREEN_SUPPORTS_FRESH_SEED_CONFIRMATION"
+    elif improvement_over_reference > 0.0 and not winner_uses_edit_centering:
+        status = "EXPLORATORY_GLOBAL_REPAIR_REQUIRES_MATCHED_CONTROLS"
+    else:
+        status = "EXPLORATORY_SCREEN_DOES_NOT_SUPPORT_CONFIRMATION"
+    return {
+        "schema_version": "route_a_v3_route2_method_repair_screen_adjudication.v1",
+        "status": status,
+        "scientific_claim_status": "EXPLORATORY_DEVELOPMENT_ONLY_NOT_ESTABLISHED",
+        "selected_role": winner["scientific_role"],
+        "selected_baseline_id": winner["baseline_id"],
+        "selected_task_macro_spearman": winner["task_macro_spearman"],
+        "selected_task_macro_standardized_mae": winner["task_macro_standardized_mae"],
+        "task_macro_spearman_improvement_over_global_raw": improvement_over_reference,
+        "factorial_effects": factorial_effects,
+        "edit_centered_control_margins": edit_control_margins,
+        "matched_controls_support_edit_scaled": edit_controls_positive,
+        "matched_controls_support_selected_edit_model": controls_support_winner,
+        "fresh_confirmation_seeds": protocol["fresh_confirmation_seeds"] if supports_confirmation else [],
+        "guided_generation_status": protocol["guided_generation_status"],
+        "evaluation_used_for_selection": False,
+        "development_test_used_for_selection": False,
+        "new_external_confirmation_required": protocol["post_exposure_boundary"]["new_external_confirmation_required_for_new_method_claim"],
+        "runs": sorted(runs, key=lambda run: run["scientific_role"]),
+    }
+
+
+def execute(protocol_path: Path, output_path: Path) -> dict[str, Any]:
+    _require(not output_path.exists(), f"output already exists: {output_path}")
+    protocol = json.loads(protocol_path.read_text(encoding="utf-8"))
+    config_paths = protocol["screen_arms"] + protocol["matched_controls"]
+    runs = []
+    for relative_path in config_paths:
+        config_path = REPO_ROOT / relative_path
+        config = json.loads(config_path.read_text(encoding="utf-8"))
+        summary_path = Path(config["output_directory"]) / "final_summary.json"
+        _require(summary_path.is_file(), f"screen summary is missing: {summary_path}")
+        summary = json.loads(summary_path.read_text(encoding="utf-8"))
+        runs.append(validate_run(config, summary))
+    result = adjudicate_screen(protocol, runs)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return result
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--protocol",
+        type=Path,
+        default=REPO_ROOT / "configs/route_a_v3_route2_method_repair_protocol_v1.json",
+    )
+    parser.add_argument("--output", type=Path, required=True)
+    args = parser.parse_args()
+    result = execute(args.protocol, args.output)
+    print(json.dumps(result, sort_keys=True))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
