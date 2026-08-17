@@ -15,6 +15,16 @@
   "independent_evaluator_must_be_frozen_before_candidate_generation": true,
   "guide_evaluator_checkpoint_distinct": true,
   "guide_evaluator_architecture_distinct": true,
+  "independent_evaluator_qualification": {
+    "selection_pool": "DEVELOPMENT_VALIDATION",
+    "minimum_task_macro_spearman_exclusive": 0.1012475745988908,
+    "reference": "EXACT_SOURCE_PERMUTATION_CONTROL",
+    "minimum_positive_task_count": 5,
+    "development_test_outcomes_accessed": 0,
+    "evaluation_outcomes_accessed": 0,
+    "cuda_training_required": true,
+    "cpu_fallback_allowed": false
+  },
   "required_method_ids": [
     "random_legal",
     "greedy",
