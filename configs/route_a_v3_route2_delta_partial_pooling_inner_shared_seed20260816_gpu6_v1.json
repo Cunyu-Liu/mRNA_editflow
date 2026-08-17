@@ -9,6 +9,7 @@
   "parent_development_validation_record_count_excluded": 18293,
   "parent_development_test_record_count_excluded": 18292,
   "inner_test_outcomes_accessed": false,
+  "development_validation_outcomes_accessed": false,
   "development_test_outcomes_accessed": false,
   "evaluation_outcomes_accessed": false,
   "device": "cuda:6",

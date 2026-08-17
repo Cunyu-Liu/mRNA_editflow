@@ -212,6 +212,8 @@ def test_train_inner_stage_is_distinct_from_development_validation() -> None:
         "inner_split_id": "INNER_V1",
         "parent_development_validation_outcomes_accessed": False,
         "parent_development_test_outcomes_accessed": False,
+        "development_validation_outcomes_accessed": False,
+        "development_test_outcomes_accessed": False,
         "inner_test_outcomes_accessed": False,
         "evaluation_outcomes_accessed": False,
         "parent_development_validation_record_count_excluded": 11,
@@ -224,9 +226,22 @@ def test_train_inner_stage_is_distinct_from_development_validation() -> None:
     assert provenance["inner_validation_outcomes_evaluated"] is True
     assert provenance["inner_test_outcomes_evaluated"] is False
 
-    config["parent_development_validation_outcomes_accessed"] = True
-    with pytest.raises(trainer.DeltaTrainingError):
-        trainer.train_inner_stage_provenance(config)
+    forbidden_access_flags = (
+        "parent_development_validation_outcomes_accessed",
+        "parent_development_test_outcomes_accessed",
+        "development_validation_outcomes_accessed",
+        "development_test_outcomes_accessed",
+        "inner_test_outcomes_accessed",
+        "evaluation_outcomes_accessed",
+    )
+    for key in forbidden_access_flags:
+        contradictory_config = dict(config)
+        contradictory_config[key] = True
+        with pytest.raises(
+            trainer.DeltaTrainingError,
+            match=f"forbidden TRAIN-inner outcome access: {key}",
+        ):
+            trainer.train_inner_stage_provenance(contradictory_config)
 
 
 def test_frozen_parameter_count_is_enforced_before_training() -> None:

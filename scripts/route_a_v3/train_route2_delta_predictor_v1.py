@@ -337,6 +337,8 @@ def train_inner_stage_provenance(config: Mapping[str, Any]) -> dict[str, Any]:
     for key in (
         "parent_development_validation_outcomes_accessed",
         "parent_development_test_outcomes_accessed",
+        "development_validation_outcomes_accessed",
+        "development_test_outcomes_accessed",
         "inner_test_outcomes_accessed",
         "evaluation_outcomes_accessed",
     ):
