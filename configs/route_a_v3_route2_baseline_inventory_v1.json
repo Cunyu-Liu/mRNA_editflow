@@ -1,6 +1,24 @@
 {
   "schema_version": "route_a_v3_route2_baseline_inventory.v1",
-  "status": "DEVELOPMENT_BASELINE_RESULTS_PARTIALLY_COMPLETED",
+  "status": "DEVELOPMENT_BASELINES_COMPLETED_PRIMARY_MRNABERT_HPO_RUNNING",
+  "prediction_primary_models_in_progress": [
+    {
+      "model_id": "mRNABERT_EDIT_CENTERED_CRITIC",
+      "status": "IMPLEMENTED_AND_DEVELOPMENT_HPO_VALIDATION_RUNNING",
+      "pretrained_encoder": "YYLY66/mRNABERT",
+      "pretrained_encoder_revision": "a1eb7df25804d23f08646e1cb996b234d7208a40",
+      "pretrained_encoder_trainable": false,
+      "current_loss_comparison": [
+        "huber",
+        "fixed_variance_gaussian_nll",
+        "learned_variance_gaussian_nll"
+      ],
+      "development_test_outcomes_accessed": false,
+      "evaluation_outcomes_accessed": false,
+      "scientific_success_established": false,
+      "current_run_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/mrnabert_scaleup_v2"
+    }
+  ],
   "prediction_common_task_adapters": [
     {
       "model_id": "Optimus5Prime",
@@ -67,11 +85,6 @@
   "prediction_literature_only_or_not_executed": [
     {
       "model_id": "RiNALMo",
-      "status": "LITERATURE_ONLY_NOT_EXECUTED",
-      "reason": "No Route 2 common-task adapter and frozen official checkpoint were prepared within the current execution budget."
-    },
-    {
-      "model_id": "mRNABERT",
       "status": "LITERATURE_ONLY_NOT_EXECUTED",
       "reason": "No Route 2 common-task adapter and frozen official checkpoint were prepared within the current execution budget."
     },

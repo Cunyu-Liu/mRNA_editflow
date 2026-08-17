@@ -21,12 +21,26 @@ def test_unexecuted_external_and_guided_methods_are_not_presented_as_results() -
     inventory = json.loads(PATH.read_text(encoding="utf-8"))
     literature = inventory["prediction_literature_only_or_not_executed"]
     assert {row["model_id"] for row in literature} == {
-        "RiNALMo", "mRNABERT", "Orthrus", "APARENT-Perturb"
+        "RiNALMo", "Orthrus", "APARENT-Perturb"
     }
     assert all(row["status"].startswith("LITERATURE_ONLY") for row in literature)
     generation = {row["method_id"]: row["status"] for row in inventory["generation_methods"]}
     assert generation["frozen_critic_xeditflow"] == "NOT_EXECUTED_REQUIRES_CRITIC_READY_AND_FLOW_G0_READY"
     assert generation["masked_discrete_flow_or_diffusion"] == "LITERATURE_ONLY_TASK_MISMATCH"
+
+
+def test_mrnabert_is_running_only_on_development_validation() -> None:
+    inventory = json.loads(PATH.read_text(encoding="utf-8"))
+    model = inventory["prediction_primary_models_in_progress"][0]
+    assert model["model_id"] == "mRNABERT_EDIT_CENTERED_CRITIC"
+    assert model["status"] == "IMPLEMENTED_AND_DEVELOPMENT_HPO_VALIDATION_RUNNING"
+    assert model["pretrained_encoder_trainable"] is False
+    assert set(model["current_loss_comparison"]) == {
+        "huber", "fixed_variance_gaussian_nll", "learned_variance_gaussian_nll"
+    }
+    assert model["development_test_outcomes_accessed"] is False
+    assert model["evaluation_outcomes_accessed"] is False
+    assert model["scientific_success_established"] is False
 
 
 def test_unguided_flow_inventory_records_terminal_g0_evidence_without_biological_claim() -> None:
