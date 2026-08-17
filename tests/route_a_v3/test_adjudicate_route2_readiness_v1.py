@@ -49,10 +49,22 @@ def _passing_input():
                 }
                 for seed in (1, 2, 3)
             ],
-            "full_model_validation_primary": 0.3,
-            "candidate_permutation_validation_primary": 0.1,
-            "anchor_only_validation_primary": 0.05,
-            "minimum_negative_control_margin": 0.05,
+            "signal_control_adjudication": {
+                "schema_version": "route_a_v3_route2_mrnabert_signal_control_adjudication.v1",
+                "status": "MRNABERT_SIGNAL_CONTROLS_SUPPORT_FINAL_SEED_CONFIRMATION",
+                "supports_final_seed_confirmation": True,
+                "development_test_opened": False,
+                "evaluation_opened": False,
+                "guided_generation_authorized": False,
+                "checks": {
+                    "primary_beats_strongest_same_information_baseline": True,
+                    "primary_task_median_positive": True,
+                    "primary_beats_source_only_macro": True,
+                    "primary_beats_source_only_on_required_task_breadth": True,
+                    "primary_beats_permutation_on_all_required_tasks": True,
+                    "primary_permutation_required_task_mean_margin_positive": True,
+                },
+            },
             "critic_checkpoint_frozen": True,
             "input_schema_frozen": True,
             "context_policy_frozen": True,
@@ -208,16 +220,19 @@ def test_structured_undefined_loso_result_keeps_critic_closed_without_error() ->
     assert result["guided_unlocked"] is False
 
 
-def test_missing_negative_control_margin_is_preserved_as_not_frozen() -> None:
+def test_nonpassing_signal_control_adjudication_keeps_critic_closed() -> None:
     module = _load()
-    for missing_value in (None, 0.0):
+    for field, value in (
+        ("supports_final_seed_confirmation", False),
+        ("development_test_opened", True),
+        ("status", "MRNABERT_SIGNAL_CONTROLS_DO_NOT_SUPPORT_FINAL_SEED_CONFIRMATION"),
+    ):
         payload = deepcopy(_passing_input())
-        payload["critic"]["minimum_negative_control_margin"] = missing_value
+        payload["critic"]["signal_control_adjudication"][field] = value
         result = module.adjudicate(payload)
-        assert result["minimum_negative_control_margin"] is None
-        assert result["critic_checks"]["negative_control_margin_pre_frozen"] is False
+        assert result["critic_checks"]["prospectively_frozen_signal_control_gate_pass"] is False
         assert result["critic_checks"]["candidate_permutation_control_worse"] is False
-        assert result["critic_checks"]["anchor_only_control_worse"] is False
+        assert result["critic_checks"]["source_only_control_worse"] is False
         assert result["critic_status"] == "CRITIC_NOT_READY_FOR_GUIDANCE"
         assert result["guided_unlocked"] is False
 

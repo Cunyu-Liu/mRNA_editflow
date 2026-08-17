@@ -81,14 +81,21 @@ def adjudicate(payload: Mapping[str, Any]) -> dict[str, Any]:
         - _finite(row["baseline_macro_spearman"], "baseline macro Spearman") > 0.0
         for row in loso_rows
     )
-    control_margin_value = critic.get("minimum_negative_control_margin")
-    control_margin_frozen = (
-        isinstance(control_margin_value, (int, float))
-        and not isinstance(control_margin_value, bool)
-        and math.isfinite(float(control_margin_value))
-        and float(control_margin_value) > 0.0
+    signal = critic.get("signal_control_adjudication")
+    signal_checks = signal.get("checks", {}) if isinstance(signal, Mapping) else {}
+    signal_gate_pass = (
+        isinstance(signal, Mapping)
+        and signal.get("schema_version")
+        == "route_a_v3_route2_mrnabert_signal_control_adjudication.v1"
+        and signal.get("status")
+        == "MRNABERT_SIGNAL_CONTROLS_SUPPORT_FINAL_SEED_CONFIRMATION"
+        and signal.get("supports_final_seed_confirmation") is True
+        and signal.get("development_test_opened") is False
+        and signal.get("evaluation_opened") is False
+        and signal.get("guided_generation_authorized") is False
+        and signal_checks
+        and all(value is True for value in signal_checks.values())
     )
-    control_margin = float(control_margin_value) if control_margin_frozen else None
     critic_checks = {
         "learned_gpu_parameter_update": (
             critic_training["status"] == "DELTA_PREDICTOR_DEVELOPMENT_GPU_RUN_COMPLETE"
@@ -104,16 +111,14 @@ def adjudicate(payload: Mapping[str, Any]) -> dict[str, Any]:
         "strongest_same_information_baseline_run": critic["strongest_baseline_status"] == "COMPLETED_DEVELOPMENT_ONLY",
         "three_complete_final_seed_loso_runs_present": complete_loso,
         "all_loso_seed_improvements_positive": positive_loso,
-        "negative_control_margin_pre_frozen": control_margin_frozen,
-        "candidate_permutation_control_worse": control_margin_frozen and (
-            _finite(critic["full_model_validation_primary"], "full validation primary")
-            - _finite(critic["candidate_permutation_validation_primary"], "candidate permutation primary")
-            >= control_margin
+        "prospectively_frozen_signal_control_gate_pass": signal_gate_pass,
+        "candidate_permutation_control_worse": signal_gate_pass and (
+            signal_checks.get("primary_beats_permutation_on_all_required_tasks") is True
+            and signal_checks.get("primary_permutation_required_task_mean_margin_positive") is True
         ),
-        "anchor_only_control_worse": control_margin_frozen and (
-            _finite(critic["full_model_validation_primary"], "full validation primary")
-            - _finite(critic["anchor_only_validation_primary"], "anchor-only primary")
-            >= control_margin
+        "source_only_control_worse": signal_gate_pass and (
+            signal_checks.get("primary_beats_source_only_macro") is True
+            and signal_checks.get("primary_beats_source_only_on_required_task_breadth") is True
         ),
         "critic_checkpoint_frozen": critic["critic_checkpoint_frozen"] is True,
         "input_schema_context_reward_frozen": all(
@@ -186,7 +191,7 @@ def adjudicate(payload: Mapping[str, Any]) -> dict[str, Any]:
         "flow_status": "FLOW_G0_READY" if flow_ready else "FLOW_G0_NOT_READY",
         "guided_generation_status": "GUIDED_XEDITFLOW_DEVELOPMENT_ALLOWED" if guided_unlocked else "NOT_STARTED_DEPENDENCY_NOT_MET",
         "critic_checks": critic_checks,
-        "minimum_negative_control_margin": control_margin,
+        "signal_control_status": signal.get("status") if isinstance(signal, Mapping) else None,
         "flow_checks": flow_checks,
         "guided_unlocked": guided_unlocked,
         "evaluation_opened": False,
