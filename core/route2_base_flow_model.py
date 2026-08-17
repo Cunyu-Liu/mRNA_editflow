@@ -158,6 +158,9 @@ class Route2BaseFlowModel(nn.Module):
 
     def rates(self, *args, **kwargs) -> tuple[torch.Tensor, torch.Tensor]:
         logits, legal_mask = self.forward(*args, **kwargs)
-        rates = torch.zeros_like(logits)
-        rates[legal_mask] = F.softplus(logits[legal_mask]) + self.support_floor
+        support_floor = torch.as_tensor(
+            self.support_floor, dtype=logits.dtype, device=logits.device
+        )
+        positive_rates = F.softplus(logits) + support_floor
+        rates = torch.where(legal_mask, positive_rates, torch.zeros_like(logits))
         return rates, legal_mask
