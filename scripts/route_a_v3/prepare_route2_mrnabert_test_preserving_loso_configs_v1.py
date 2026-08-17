@@ -5,21 +5,17 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 from typing import Any, Mapping
 
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from core.route2_loso_schedule import FINAL_SEEDS, HOLDOUT_STUDIES, loso_assignments
 
 PRIMARY_KIND = "delta_pretrained_mrnabert_edit_centered_antisymmetric"
-HOLDOUT_STUDIES = (
-    "GSE200304",
-    "GSE114002",
-    "GSE149487",
-    "GSE217518",
-    "ENCSR854RUF",
-    "GSE186455",
-    "GSE269595",
-)
-SEED_GPU_PAIRS = ((20260822, 0), (20260823, 3), (20260824, 5))
 
 
 class TestPreservingLosoConfigError(RuntimeError):
@@ -59,29 +55,28 @@ def build_configs(
 
     configs = []
     loss = str(selected["loss_kind"])
-    for study in HOLDOUT_STUDIES:
+    for study, seed, gpu in loso_assignments():
         study_label = study.lower().replace("-", "_")
-        for seed, gpu in SEED_GPU_PAIRS:
-            config = dict(selected)
-            config.update({
-                "scientific_role": "MRNABERT_TEST_PRESERVING_CROSS_STUDY_TRANSFER",
-                "result_stage": "LOSO_DEVELOPMENT_VALIDATION_ONLY_FROZEN_HYPERPARAMETERS",
-                "run_mode": "LOSO_DEVELOPMENT_TRAIN_VALIDATION_ONLY",
-                "baseline_id": f"mrnabert_{loss}_loso_{study_label}_seed{seed}",
-                "attempt_purpose": "THREE_SEED_TEST_PRESERVING_LOSO_FOR_GUIDANCE_READINESS",
-                "seed": seed,
-                "device": f"cuda:{gpu}",
-                "physical_gpu_index": gpu,
-                "candidate_control": "NONE",
-                "checkpoint_selection": "FINAL_EPOCH",
-                "development_test_outcomes_accessed": False,
-                "evaluation_outcomes_accessed": False,
-                "loso_holdout_study_unit_id": study,
-                "output_directory": str(
-                    run_root / study / f"seed{seed}_gpu{gpu}_{loss}_v1"
-                ),
-            })
-            configs.append(config)
+        config = dict(selected)
+        config.update({
+            "scientific_role": "MRNABERT_TEST_PRESERVING_CROSS_STUDY_TRANSFER",
+            "result_stage": "LOSO_DEVELOPMENT_VALIDATION_ONLY_FROZEN_HYPERPARAMETERS",
+            "run_mode": "LOSO_DEVELOPMENT_TRAIN_VALIDATION_ONLY",
+            "baseline_id": f"mrnabert_{loss}_loso_{study_label}_seed{seed}",
+            "attempt_purpose": "THREE_SEED_TEST_PRESERVING_LOSO_FOR_GUIDANCE_READINESS",
+            "seed": seed,
+            "device": f"cuda:{gpu}",
+            "physical_gpu_index": gpu,
+            "candidate_control": "NONE",
+            "checkpoint_selection": "FINAL_EPOCH",
+            "development_test_outcomes_accessed": False,
+            "evaluation_outcomes_accessed": False,
+            "loso_holdout_study_unit_id": study,
+            "output_directory": str(
+                run_root / study / f"seed{seed}_gpu{gpu}_{loss}_v1"
+            ),
+        })
+        configs.append(config)
     return configs
 
 
@@ -111,7 +106,7 @@ def main() -> int:
         "status": "TEST_PRESERVING_LOSO_CONFIGS_PREPARED",
         "config_count": len(paths),
         "holdout_studies": list(HOLDOUT_STUDIES),
-        "seeds": [seed for seed, _gpu in SEED_GPU_PAIRS],
+        "seeds": list(FINAL_SEEDS),
         "development_test_opened": False,
         "evaluation_opened": False,
         "paths": paths,

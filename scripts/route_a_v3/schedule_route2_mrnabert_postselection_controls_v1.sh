@@ -233,74 +233,74 @@ printf '%s final_all126165_refit_finished\n' "$(date -Is)"
   --output-config-dir "${LOSO_CONFIG_DIR}" \
   --run-root "${LOSO_RUN_ROOT}"
 
-loso_studies=(
-  GSE200304 GSE114002 GSE149487 GSE217518 ENCSR854RUF GSE186455 GSE269595
-)
-for study in "${loso_studies[@]}"; do
-  study_label=$(printf '%s' "${study}" | tr '[:upper:]-' '[:lower:]_')
-  loso_pids=()
-  for seed_gpu in "20260822:0" "20260823:3" "20260824:5"; do
-    seed=${seed_gpu%%:*}
-    gpu=${seed_gpu##*:}
-    config="${LOSO_CONFIG_DIR}/mrnabert_${selected_loss}_loso_${study_label}_seed${seed}.json"
-    log="${ROUTE2_ROOT}/mrnabert_loso_${study_label}_seed${seed}_gpu${gpu}_v1.log"
-    "${PYTHON}" -u scripts/route_a_v3/train_route2_delta_predictor_v1.py \
-      --config "${config}" >"${log}" 2>&1 &
-    loso_pids+=("$!")
-  done
-  loso_failure=0
-  set +e
-  for pid in "${loso_pids[@]}"; do
-    wait "${pid}"
-    status=$?
-    if [[ "${status}" -ne 0 ]]; then
-      loso_failure=1
-    fi
-  done
-  set -e
-  printf '%s test_preserving_loso_finished study=%s failure=%s\n' \
-    "$(date -Is)" "${study}" "${loso_failure}"
-  if [[ "${loso_failure}" -ne 0 ]]; then
-    exit 1
-  fi
-done
-printf '%s all_test_preserving_loso_runs_finished test_remained_excluded=true\n' "$(date -Is)"
-
 "${PYTHON}" scripts/route_a_v3/prepare_route2_global_scaled_test_preserving_loso_configs_v1.py \
   --base-config configs/route_a_v3_route2_method_repair_global_scaled_seed20260821_gpu0_v1.json \
   --three-seed-adjudication "${THREE_SEED_ADJUDICATION}" \
   --output-config-dir "${BASELINE_LOSO_CONFIG_DIR}" \
   --run-root "${BASELINE_LOSO_RUN_ROOT}"
 
-for study in "${loso_studies[@]}"; do
-  study_label=$(printf '%s' "${study}" | tr '[:upper:]-' '[:lower:]_')
-  baseline_loso_pids=()
-  for seed_gpu in "20260822:0" "20260823:3" "20260824:5"; do
-    seed=${seed_gpu%%:*}
-    gpu=${seed_gpu##*:}
-    config="${BASELINE_LOSO_CONFIG_DIR}/global_scaled_loso_${study_label}_seed${seed}.json"
-    log="${ROUTE2_ROOT}/global_scaled_loso_${study_label}_seed${seed}_gpu${gpu}_v1.log"
-    "${PYTHON}" -u scripts/route_a_v3/train_route2_delta_predictor_v1.py \
-      --config "${config}" >"${log}" 2>&1 &
-    baseline_loso_pids+=("$!")
-  done
-  baseline_loso_failure=0
-  set +e
-  for pid in "${baseline_loso_pids[@]}"; do
-    wait "${pid}"
-    status=$?
-    if [[ "${status}" -ne 0 ]]; then
-      baseline_loso_failure=1
+mapfile -t loso_tasks < <("${PYTHON}" - <<'PY'
+from core.route2_loso_schedule import loso_assignments
+for study, seed, gpu in loso_assignments():
+    print(f"{study}|{seed}|{gpu}")
+PY
+)
+
+run_loso_gpu_worker() {
+  local worker_gpu=$1
+  local task study seed gpu study_label primary_config baseline_config
+  local primary_log baseline_log free_mb
+  for task in "${loso_tasks[@]}"; do
+    IFS='|' read -r study seed gpu <<<"${task}"
+    if [[ "${gpu}" -ne "${worker_gpu}" ]]; then
+      continue
     fi
+    while true; do
+      free_mb=$(nvidia-smi --query-gpu=memory.free --format=csv,noheader,nounits -i "${gpu}" | tr -d ' ')
+      if [[ "${free_mb}" -ge 4000 ]]; then
+        break
+      fi
+      printf '%s waiting_for_loso_gpu=%s free_mb=%s\n' "$(date -Is)" "${gpu}" "${free_mb}"
+      sleep "${POLL_SECONDS}"
+    done
+    study_label=$(printf '%s' "${study}" | tr '[:upper:]-' '[:lower:]_')
+    primary_config="${LOSO_CONFIG_DIR}/mrnabert_${selected_loss}_loso_${study_label}_seed${seed}.json"
+    baseline_config="${BASELINE_LOSO_CONFIG_DIR}/global_scaled_loso_${study_label}_seed${seed}.json"
+    primary_log="${ROUTE2_ROOT}/mrnabert_loso_${study_label}_seed${seed}_gpu${gpu}_v1.log"
+    baseline_log="${ROUTE2_ROOT}/global_scaled_loso_${study_label}_seed${seed}_gpu${gpu}_v1.log"
+    printf '%s starting_paired_loso study=%s seed=%s gpu=%s role=primary\n' \
+      "$(date -Is)" "${study}" "${seed}" "${gpu}"
+    "${PYTHON}" -u scripts/route_a_v3/train_route2_delta_predictor_v1.py \
+      --config "${primary_config}" >"${primary_log}" 2>&1
+    printf '%s starting_paired_loso study=%s seed=%s gpu=%s role=baseline\n' \
+      "$(date -Is)" "${study}" "${seed}" "${gpu}"
+    "${PYTHON}" -u scripts/route_a_v3/train_route2_delta_predictor_v1.py \
+      --config "${baseline_config}" >"${baseline_log}" 2>&1
+    printf '%s paired_loso_finished study=%s seed=%s gpu=%s\n' \
+      "$(date -Is)" "${study}" "${seed}" "${gpu}"
   done
-  set -e
-  printf '%s matched_baseline_test_preserving_loso_finished study=%s failure=%s\n' \
-    "$(date -Is)" "${study}" "${baseline_loso_failure}"
-  if [[ "${baseline_loso_failure}" -ne 0 ]]; then
-    exit 1
+}
+
+loso_worker_pids=()
+for gpu in 0 1 2 3 4 5; do
+  run_loso_gpu_worker "${gpu}" &
+  loso_worker_pids+=("$!")
+done
+loso_failure=0
+set +e
+for pid in "${loso_worker_pids[@]}"; do
+  wait "${pid}"
+  status=$?
+  if [[ "${status}" -ne 0 ]]; then
+    loso_failure=1
   fi
 done
-printf '%s all_matched_baseline_test_preserving_loso_runs_finished\n' "$(date -Is)"
+set -e
+if [[ "${loso_failure}" -ne 0 ]]; then
+  printf '%s paired_six_gpu_loso_failed\n' "$(date -Is)" >&2
+  exit 1
+fi
+printf '%s all_paired_six_gpu_loso_runs_finished test_remained_excluded=true\n' "$(date -Is)"
 
 "${PYTHON}" scripts/route_a_v3/build_route2_test_preserving_loso_aggregation_inputs_v1.py \
   --model-run-root "${LOSO_RUN_ROOT}" \

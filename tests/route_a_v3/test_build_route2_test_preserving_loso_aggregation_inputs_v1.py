@@ -30,8 +30,9 @@ def _summary(study: str, seed: int, model_kind: str):
 def test_builds_three_aligned_inputs(tmp_path: Path):
     model_root = tmp_path / "model"
     baseline_root = tmp_path / "baseline"
-    for seed, gpu in MODULE.SEED_GPU_PAIRS:
+    for seed in MODULE.FINAL_SEEDS:
         for study in MODULE.HOLDOUT_STUDIES:
+            gpu = MODULE.assigned_gpu(study, seed)
             model_path = model_root / study / f"seed{seed}_gpu{gpu}_huber_v1/training_summary.json"
             baseline_path = baseline_root / study / f"seed{seed}_gpu{gpu}_global_scaled_v1/training_summary.json"
             model_path.parent.mkdir(parents=True, exist_ok=True)

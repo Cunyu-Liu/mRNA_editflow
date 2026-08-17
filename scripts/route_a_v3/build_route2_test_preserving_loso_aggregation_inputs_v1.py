@@ -5,20 +5,16 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 from typing import Any, Mapping
 
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
-HOLDOUT_STUDIES = (
-    "GSE200304",
-    "GSE114002",
-    "GSE149487",
-    "GSE217518",
-    "ENCSR854RUF",
-    "GSE186455",
-    "GSE269595",
-)
-SEED_GPU_PAIRS = ((20260822, 0), (20260823, 3), (20260824, 5))
+from core.route2_loso_schedule import FINAL_SEEDS, HOLDOUT_STUDIES, assigned_gpu
+
 ZERO_RECORD_STUDIES = ("GSE256185",)
 
 
@@ -49,10 +45,11 @@ def build_inputs(
     loss_kind: str,
 ) -> dict[int, dict[str, Any]]:
     outputs = {}
-    for seed, gpu in SEED_GPU_PAIRS:
+    for seed in FINAL_SEEDS:
         model_results = []
         baseline_results = []
         for study in HOLDOUT_STUDIES:
+            gpu = assigned_gpu(study, seed)
             model_summary = _read_summary(
                 model_run_root / study / f"seed{seed}_gpu{gpu}_{loss_kind}_v1/training_summary.json"
             )

@@ -37,6 +37,7 @@ def test_builds_matched_21_fold_baseline_configs():
     assert all(row["development_test_outcomes_accessed"] is False for row in configs)
     assert all(row["evaluation_outcomes_accessed"] is False for row in configs)
     assert all(row["checkpoint_selection"] == "FINAL_EPOCH" for row in configs)
+    assert {row["physical_gpu_index"] for row in configs} == {0, 1, 2, 3, 4, 5}
 
 
 def test_rejects_baseline_substitution():
