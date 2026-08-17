@@ -369,6 +369,22 @@ def train_inner_stage_provenance(config: Mapping[str, Any]) -> dict[str, Any]:
     }
 
 
+def validate_frozen_parameter_count(
+    config: Mapping[str, Any], actual_parameter_count: int
+) -> None:
+    expected = config.get("frozen_expected_parameter_count")
+    if expected is None:
+        return
+    _require(
+        isinstance(expected, int) and not isinstance(expected, bool) and expected > 0,
+        "invalid frozen expected parameter count",
+    )
+    _require(
+        actual_parameter_count == expected,
+        f"parameter count changed: expected {expected}, observed {actual_parameter_count}",
+    )
+
+
 class LengthBucketBatchSampler(Sampler[list[int]]):
     """Shuffle length-local batches without padding all records to 1,874 nt."""
 
@@ -1086,6 +1102,8 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
         model = Route2NeuralBaseline(**checkpoint_model_config).to(device)
     else:
         raise DeltaTrainingError(f"unknown model_kind: {model_kind}")
+    parameter_count = sum(parameter.numel() for parameter in model.parameters())
+    validate_frozen_parameter_count(config, parameter_count)
     if training_update_mode == TRAINING_UPDATE_TASK_GRADIENT_NORM_CALIBRATED:
         _require(
             model_kind in {
@@ -1295,7 +1313,6 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
         test_rows, test_metrics = predict(model, loaders["TEST"], device)
     else:
         test_rows, test_metrics = [], None
-    parameter_count = sum(parameter.numel() for parameter in model.parameters())
     is_train_inner_stage = result_stage == TRAIN_INNER_VALIDATION_ONLY
     reported_development_test_record_count_withheld = (
         int(config["parent_development_test_record_count_excluded"])

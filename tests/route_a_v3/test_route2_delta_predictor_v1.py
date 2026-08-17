@@ -229,6 +229,22 @@ def test_train_inner_stage_is_distinct_from_development_validation() -> None:
         trainer.train_inner_stage_provenance(config)
 
 
+def test_frozen_parameter_count_is_enforced_before_training() -> None:
+    trainer = _load(TRAIN_PATH, "route2_delta_frozen_parameter_count_test")
+    trainer.validate_frozen_parameter_count({}, 100)
+    trainer.validate_frozen_parameter_count(
+        {"frozen_expected_parameter_count": 100}, 100
+    )
+    with pytest.raises(trainer.DeltaTrainingError, match="parameter count changed"):
+        trainer.validate_frozen_parameter_count(
+            {"frozen_expected_parameter_count": 101}, 100
+        )
+    with pytest.raises(trainer.DeltaTrainingError, match="invalid frozen"):
+        trainer.validate_frozen_parameter_count(
+            {"frozen_expected_parameter_count": True}, 100
+        )
+
+
 def test_normalized_position_channels_are_length_relative_and_edit_gated() -> None:
     module = _load(MODEL_PATH, "route2_delta_model_position_channel_test")
     padding_mask = torch.tensor([
