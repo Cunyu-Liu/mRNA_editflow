@@ -218,6 +218,11 @@ def execute(config: Mapping[str, Any]) -> dict[str, Any]:
             guidance_strength=float(policy["guidance_strength"]),
             counters=counters,
         )
+        source_critic_score = critic.potential(
+            root,
+            endpoint_id=str(source_row["endpoint_id"]),
+            region=region,
+        )
         for candidate_index in range(source_row["candidate_budget"]):
             trajectory_seed = int(config["seed"]) + source_index * 1_000_003 + candidate_index
             terminal, action_ids, forwards = sample_one(
@@ -246,6 +251,11 @@ def execute(config: Mapping[str, Any]) -> dict[str, Any]:
             source_generator_nfe += forwards
             budget_violations += int(terminal.edit_count > source_row["edit_budget"])
             terminal_causes[terminal.terminal_cause] += 1
+            terminal_critic_score = critic.potential(
+                terminal,
+                endpoint_id=str(source_row["endpoint_id"]),
+                region=region,
+            )
             rows.append({
                 "method_id": "frozen_mrnabert_critic_guided_xeditflow_v1",
                 "source_key": source_row["source_key"],
@@ -255,6 +265,8 @@ def execute(config: Mapping[str, Any]) -> dict[str, Any]:
                 "trajectory_actions": list(action_ids),
                 "trajectory_seed": trajectory_seed,
                 "generator_nfe": forwards,
+                "critic_score": terminal_critic_score,
+                "source_critic_score": source_critic_score,
                 "generated_candidate_grants_canonical_credit": False,
             })
         source_model_batches = (

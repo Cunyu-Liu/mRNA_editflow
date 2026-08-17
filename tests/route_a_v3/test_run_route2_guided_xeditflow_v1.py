@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+from pathlib import Path
 
 import pytest
 
@@ -85,6 +86,12 @@ def test_online_encoder_and_evaluation_are_required() -> None:
     readiness["critic"]["generated_candidate_online_encoder_ready"] = False
     with pytest.raises(runner.GuidedRunError, match="online"):
         runner.validate_readiness(readiness, _adjudication(), _config())
+
+
+def test_guided_output_contract_contains_ranking_scores_for_later_evaluation() -> None:
+    source = Path(runner.__file__).read_text(encoding="utf-8")
+    assert '"critic_score": terminal_critic_score' in source
+    assert '"source_critic_score": source_critic_score' in source
     readiness = _readiness()
     readiness["critic"]["evaluation_records_used_for_training_hpo_threshold_or_reward"] = 1
     with pytest.raises(runner.GuidedRunError, match="Evaluation"):

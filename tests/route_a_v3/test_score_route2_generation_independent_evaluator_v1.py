@@ -79,3 +79,37 @@ def test_independent_evaluator_requires_frozen_observed_cuda_provenance() -> Non
         invalid[field] = value
         with pytest.raises(module.IndependentEvaluatorError, match="TRAIN-only frozen"):
             module.validate_frozen_evaluator_provenance(invalid)
+
+
+def test_independent_evaluator_batches_unique_sequences_per_source() -> None:
+    module = _load()
+    sources = {
+        "S": {
+            "source_key": "S", "source_sequence": "AAAA", "region": "5UTR",
+            "study_unit_id": "STUDY", "assay_id": "A", "biological_context_id": "C", "endpoint_id": "E",
+        }
+    }
+    candidates = [
+        {"method_id": "beam", "source_key": "S", "candidate_sequence": value, "independent_evaluator_forwards": 0}
+        for value in ("CAAA", "GAAA", "CAAA")
+    ]
+
+    class Batched:
+        def __init__(self):
+            self.calls = []
+
+        def __call__(self, _source, _candidate):
+            raise AssertionError("single-sequence scoring should not be used")
+
+        def score_many(self, _source, sequences):
+            self.calls.append(tuple(sequences))
+            return [
+                module.EvaluatorScore(float(index), float(index), 1.0, "TASK")
+                for index, _sequence in enumerate(sequences)
+            ]
+
+    scorer = Batched()
+    rows, forwards = module.augment_candidates(sources, candidates, scorer)
+    assert scorer.calls == [("AAAA", "CAAA", "GAAA")]
+    assert forwards == {"S": 3}
+    assert sum(row["independent_evaluator_forwards"] for row in rows) == 3

@@ -135,17 +135,29 @@ class CheckpointScorer:
         self.device = device
         self.model_kind = model_kind
         self.training_provenance = provenance
+        self.model_batch_forward_count = 0
 
-    @torch.no_grad()
     def __call__(self, source_row: Mapping[str, Any], candidate: str) -> EvaluatorScore:
+        return self.score_many(source_row, [candidate])[0]
+
+    @torch.inference_mode()
+    def score_many(
+        self,
+        source_row: Mapping[str, Any],
+        candidates: list[str],
+        *,
+        batch_size: int = 256,
+    ) -> list[EvaluatorScore]:
         source = _normalize(source_row["source_sequence"])
-        candidate = _normalize(candidate)
-        _require(len(source) == len(candidate), "candidate length differs from source")
+        normalized = [_normalize(candidate) for candidate in candidates]
+        _require(bool(normalized), "independent evaluator candidate batch is empty")
+        _require(
+            all(len(source) == len(candidate) for candidate in normalized),
+            "candidate length differs from source",
+        )
+        _require(batch_size > 0, "independent evaluator batch size must be positive")
         region_text = str(source_row["region"]).replace("′", "").replace("'", "")
         _require(region_text in REGION, f"unsupported region: {source_row['region']}")
-        source_tokens = torch.tensor([[TOKEN[base] for base in source]], device=self.device)
-        candidate_tokens = torch.tensor([[TOKEN[base] for base in candidate]], device=self.device)
-        padding = torch.zeros_like(source_tokens, dtype=torch.bool)
         category = {
             field: int(self.vocabs[field].get(str(source_row[source_field]), 0))
             for field, source_field in (
@@ -155,26 +167,52 @@ class CheckpointScorer:
                 ("endpoint", "endpoint_id"),
             )
         }
-        output = self.model(
-            source_tokens,
-            candidate_tokens,
-            padding,
-            torch.tensor([category["study"]], device=self.device),
-            torch.tensor([category["assay"]], device=self.device),
-            torch.tensor([category["context"]], device=self.device),
-            torch.tensor([category["endpoint"]], device=self.device),
-            torch.tensor([REGION[region_text]], device=self.device),
-        )
         scale, scale_source = self.target_scaler.scale(
             str(source_row["endpoint_id"]), REGION[region_text]
         )
-        standardized = _finite(float(output["mean"].item()), "standardized independent evaluator score")
-        return EvaluatorScore(
-            standardized=standardized,
-            raw=_finite(standardized * scale, "raw independent evaluator score"),
-            target_scale=scale,
-            target_scale_source=scale_source,
-        )
+        result = []
+        for start in range(0, len(normalized), batch_size):
+            chunk = normalized[start : start + batch_size]
+            count = len(chunk)
+            source_tokens = torch.tensor(
+                [[TOKEN[base] for base in source]] * count, device=self.device
+            )
+            candidate_tokens = torch.tensor(
+                [[TOKEN[base] for base in candidate] for candidate in chunk],
+                device=self.device,
+            )
+            padding = torch.zeros_like(source_tokens, dtype=torch.bool)
+            with torch.autocast(
+                device_type=self.device.type,
+                dtype=torch.bfloat16,
+                enabled=self.device.type == "cuda",
+            ):
+                output = self.model(
+                    source_tokens,
+                    candidate_tokens,
+                    padding,
+                    torch.full((count,), category["study"], device=self.device),
+                    torch.full((count,), category["assay"], device=self.device),
+                    torch.full((count,), category["context"], device=self.device),
+                    torch.full((count,), category["endpoint"], device=self.device),
+                    torch.full((count,), REGION[region_text], device=self.device),
+                )
+            self.model_batch_forward_count += 1
+            values = output["mean"].float().cpu().tolist()
+            for value in values:
+                standardized = _finite(
+                    value, "standardized independent evaluator score"
+                )
+                result.append(EvaluatorScore(
+                    standardized=standardized,
+                    raw=_finite(
+                        standardized * scale,
+                        "raw independent evaluator score",
+                    ),
+                    target_scale=scale,
+                    target_scale_source=scale_source,
+                ))
+        return result
 
 
 def augment_candidates(
@@ -191,17 +229,33 @@ def augment_candidates(
         rows = [row for row in candidates if str(row["source_key"]) == source_key]
         _require(rows, f"candidate source is empty: {source_key}")
         source_sequence = str(source_row["source_sequence"])
-        cache = {source_sequence: score_function(source_row, source_sequence)}
+        unique_sequences = list(dict.fromkeys([
+            source_sequence,
+            *(_normalize(row["candidate_sequence"]) for row in rows),
+        ]))
+        score_many = getattr(score_function, "score_many", None)
+        if callable(score_many):
+            values = list(score_many(source_row, unique_sequences))
+            _require(
+                len(values) == len(unique_sequences),
+                "batched independent evaluator score count differs",
+            )
+            cache = dict(zip(unique_sequences, values))
+        else:
+            cache = {
+                sequence: score_function(source_row, sequence)
+                for sequence in unique_sequences
+            }
         source_forward_pending = 1
-        forwards = 1
+        forwards = len(unique_sequences)
+        seen_candidates: set[str] = set()
         for row in rows:
             _require(_finite(row.get("independent_evaluator_forwards", 0), "existing evaluator forwards") == 0.0, "candidate was already independently scored")
             candidate = _normalize(row["candidate_sequence"])
-            new_forward = 0
-            if candidate not in cache:
-                cache[candidate] = score_function(source_row, candidate)
-                forwards += 1
-                new_forward = 1
+            new_forward = int(
+                candidate != source_sequence and candidate not in seen_candidates
+            )
+            seen_candidates.add(candidate)
             output.append({
                 **row,
                 "source_independent_evaluator_score": cache[source_sequence].standardized,
@@ -252,6 +306,9 @@ def execute(config: Mapping[str, Any], output_path: Path) -> dict[str, Any]:
         "candidate_row_count": len(rows),
         "source_count": len(sources),
         "independent_evaluator_forward_count": sum(forwards.values()),
+        "independent_evaluator_model_batch_forward_count": (
+            scorer.model_batch_forward_count
+        ),
         "independent_evaluator_forwards_by_source": forwards,
         "evaluator_checkpoint_path": str(evaluator_path),
         "guiding_checkpoint_path": None if guiding_path is None else str(Path(guiding_path).resolve()),
