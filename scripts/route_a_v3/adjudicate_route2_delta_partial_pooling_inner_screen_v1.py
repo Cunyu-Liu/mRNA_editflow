@@ -63,6 +63,10 @@ def validate_protocol(protocol: Mapping[str, Any]) -> None:
         "conditional confirmation activation gate changed",
     )
     _require(
+        confirmation.get("result_stage") == "TRAIN_INNER_TEST_CONFIRMATION",
+        "conditional confirmation result stage changed",
+    )
+    _require(
         confirmation.get("paired_seeds") == [20260817, 20260818, 20260819],
         "conditional confirmation seeds changed",
     )
@@ -82,10 +86,23 @@ def validate_protocol(protocol: Mapping[str, Any]) -> None:
         "conditional confirmation optimizer budget changed",
     )
     _require(
+        confirmation.get("batch_size") == 32 and confirmation.get("epochs") == 8,
+        "conditional confirmation batch or epoch budget changed",
+    )
+    _require(
         confirmation.get("minimum_seed_count_with_positive_paired_task_macro_spearman_gain")
         == confirmation.get("required_seed_count")
         == 3,
         "conditional confirmation no longer requires three positive seeds",
+    )
+    _require(
+        confirmation.get("minimum_mean_paired_task_macro_spearman_gain_inclusive")
+        == 0.01
+        and confirmation.get("minimum_tasks_with_positive_median_paired_spearman_gain")
+        == 4
+        and confirmation.get("maximum_mean_task_macro_standardized_mae_ratio_inclusive")
+        == 1.02,
+        "conditional confirmation success rule changed",
     )
     for key in (
         "parent_development_validation_outcomes_accessed",
@@ -99,6 +116,18 @@ def validate_protocol(protocol: Mapping[str, Any]) -> None:
     _require(
         confirmation.get("inner_test_outcomes_accessed") is True,
         "conditional confirmation does not declare inner TEST access",
+    )
+    _require(
+        confirmation.get("does_not_authorize")
+        == [
+            "FORMAL_DEVELOPMENT_VALIDATION",
+            "FORMAL_DEVELOPMENT_TEST",
+            "EVALUATION",
+            "CRITIC_READY_FOR_GUIDANCE",
+            "GUIDED_XEDITFLOW",
+            "PUBLICATION_SUCCESS_CLAIM",
+        ],
+        "conditional confirmation claim boundary changed",
     )
 
 
