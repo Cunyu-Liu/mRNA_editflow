@@ -1,0 +1,35 @@
+{
+  "schema_version": "route_a_v3_route2_delta_0_08m_task_scaled_successor_protocol.v1",
+  "status": "FROZEN_BEFORE_SUCCESSOR_TERMINAL_OUTCOME",
+  "scientific_hypothesis": "TRAIN_ONLY_TASK_ROBUST_TARGET_SCALING_ALONE_IMPROVES_THE_STRONGEST_0_08M_DELTA",
+  "successor_baseline_id": "delta_diagnostic_0_08m_train_task_robust_lr3e4_seed20260816",
+  "reference_baseline_id": "delta_diagnostic_0_08m_lr3e4",
+  "reference_evaluation_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/delta_diagnostic_0_08m_lr3e4_v1/validation_evaluation.json",
+  "minimum_task_macro_spearman_exclusive": 0.15328703375929226,
+  "maximum_task_macro_standardized_mae_inclusive": 1.822072723037273,
+  "minimum_tasks_improved_over_reference": 5,
+  "required_task_count": 9,
+  "required_train_record_count": 89580,
+  "required_validation_record_count": 18293,
+  "required_withheld_test_record_count": 18292,
+  "required_parameter_count": 80099,
+  "required_seed": 20260816,
+  "required_final_epoch": 8,
+  "required_model_kind": "delta_anchored_position_aware_antisymmetric",
+  "required_metadata_mode": "FULL_CONTEXT",
+  "required_training_weighting_mode": "STUDY_THEN_SOURCE_CONTEXT_ENDPOINT_GROUP",
+  "required_target_scaling_mode": "TRAIN_TASK_ROBUST",
+  "required_loss_kind": "huber",
+  "required_checkpoint_selection": "FINAL_EPOCH",
+  "evaluation_outcomes_accessed": false,
+  "pass_authorizes": [
+    "THREE_FRESH_DEVELOPMENT_SEEDS",
+    "SEVEN_STUDY_LOSO"
+  ],
+  "pass_does_not_authorize": [
+    "DEVELOPMENT_TEST",
+    "EVALUATION",
+    "GUIDED_XEDITFLOW",
+    "PUBLICATION_SUCCESS_CLAIM"
+  ]
+}
