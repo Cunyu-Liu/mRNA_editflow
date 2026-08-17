@@ -24,23 +24,44 @@ def _write_run(root: Path, loss: str, macro: float, scaled_mae: float, spread: f
     run.mkdir()
     config = {
         "model_kind": "delta_pretrained_mrnabert_edit_centered_antisymmetric",
+        "run_mode": "FIXED_GROUPED_SPLIT",
+        "result_stage": "HPO_VALIDATION_ONLY",
+        "scientific_role": "DEVELOPMENT_VALIDATION_LOSS_COMPARISON",
+        "candidate_control": "NONE",
         "metadata_mode": "FULL_CONTEXT",
         "training_weighting_mode": "STUDY_THEN_SOURCE_CONTEXT_ENDPOINT_GROUP",
         "target_scaling_mode": "TRAIN_TASK_ROBUST",
+        "target_scale_floor": 0.001,
+        "target_scale_minimum_task_records": 20,
         "hidden_dim": 384,
         "depth": 10,
+        "max_length": 164,
+        "critic_position_features": "NORMALIZED_ABSOLUTE_PLUS_EDIT_GATED",
         "batch_size": 16,
         "seed": 17,
         "learning_rate": 1e-4,
         "weight_decay": 1e-4,
         "epochs": 100,
+        "optimizer_name": "AdamW",
         "checkpoint_selection": "BEST_VALIDATION",
         "checkpoint_metric": "TASK_MACRO_SPEARMAN_THEN_STANDARDIZED_MAE",
         "development_manifest": "/mnt/development.jsonl",
+        "development_test_outcomes_accessed": False,
+        "evaluation_outcomes_accessed": False,
         "pretrained_feature_cache_path": "/mnt/mrnabert.pt",
+        "pretrained_position_encoding": "ALIBI_RELATIVE_BIAS",
+        "encoder_attention_backend": "OFFICIAL_PYTORCH_FALLBACK",
+        "expected_frozen_pretrained_parameter_count": 113_389_056,
+        "frozen_capacity_profile_id": "mrnabert_frozen_113m",
         "canonical_paths": ["/mnt/a.jsonl"],
         "training_precision": "BF16",
         "optimizer_fused": True,
+        "torch_compile": False,
+        "num_workers": 0,
+        "pin_memory": True,
+        "non_blocking_transfer": True,
+        "huber_delta": 1.0,
+        "parameter_count_relative_tolerance": 0.01,
         "loss_kind": loss,
     }
     uncertainty = loss == "learned_variance_gaussian_nll"
@@ -106,3 +127,24 @@ def test_refuses_nonmatched_configuration_or_incomplete_loss_set(tmp_path: Path)
         module.summarize(paths)
     with pytest.raises(module.LossComparisonError, match="exactly three"):
         module.summarize(paths[:2])
+
+
+def test_refuses_hidden_architecture_or_split_scope_drift(tmp_path: Path) -> None:
+    module = _load()
+    paths = [
+        _write_run(tmp_path, "huber", 0.20, 0.9, 0.2),
+        _write_run(tmp_path, "fixed_variance_gaussian_nll", 0.25, 1.0, 0.25),
+        _write_run(tmp_path, "learned_variance_gaussian_nll", 0.22, 0.8, 0.1),
+    ]
+    config_path = paths[-1].parent / "training_config.json"
+    config = json.loads(config_path.read_text())
+    config["critic_position_features"] = "DIFFERENT_POSITION_FEATURES"
+    config_path.write_text(json.dumps(config))
+    with pytest.raises(module.LossComparisonError, match="non-loss"):
+        module.summarize(paths)
+
+    config["critic_position_features"] = "NORMALIZED_ABSOLUTE_PLUS_EDIT_GATED"
+    config["development_test_outcomes_accessed"] = True
+    config_path.write_text(json.dumps(config))
+    with pytest.raises(module.LossComparisonError, match="TEST outcomes"):
+        module.summarize(paths)

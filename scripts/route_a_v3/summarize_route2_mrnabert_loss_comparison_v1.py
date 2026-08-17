@@ -17,23 +17,44 @@ EXPECTED_LOSSES = {
 }
 MATCHED_CONFIG_KEYS = (
     "model_kind",
+    "run_mode",
+    "result_stage",
+    "scientific_role",
+    "candidate_control",
     "metadata_mode",
     "training_weighting_mode",
     "target_scaling_mode",
+    "target_scale_floor",
+    "target_scale_minimum_task_records",
     "hidden_dim",
     "depth",
+    "max_length",
+    "critic_position_features",
     "batch_size",
     "seed",
     "learning_rate",
     "weight_decay",
     "epochs",
+    "optimizer_name",
     "checkpoint_selection",
     "checkpoint_metric",
     "development_manifest",
+    "development_test_outcomes_accessed",
+    "evaluation_outcomes_accessed",
     "pretrained_feature_cache_path",
+    "pretrained_position_encoding",
+    "encoder_attention_backend",
+    "expected_frozen_pretrained_parameter_count",
+    "frozen_capacity_profile_id",
     "canonical_paths",
     "training_precision",
     "optimizer_fused",
+    "torch_compile",
+    "num_workers",
+    "pin_memory",
+    "non_blocking_transfer",
+    "huber_delta",
+    "parameter_count_relative_tolerance",
 )
 
 
@@ -84,6 +105,25 @@ def summarize(summary_paths: list[Path]) -> dict[str, Any]:
         _require(summary.get("evaluation_outcomes_read") == 0, "Evaluation entered loss selection")
         _require(summary.get("test_metrics") is None, "Development TEST entered loss selection")
         _require(summary.get("development_test_outcomes_evaluated") is False, "Development TEST was evaluated")
+        _require(
+            config.get("result_stage") == "HPO_VALIDATION_ONLY"
+            and config.get("run_mode") == "FIXED_GROUPED_SPLIT"
+            and config.get("candidate_control") == "NONE",
+            "loss-selection config is not the primary fixed Development split",
+        )
+        _require(
+            config.get("evaluation_outcomes_accessed") is False
+            and config.get("development_test_outcomes_accessed") is False,
+            "loss-selection config admits Evaluation or Development TEST outcomes",
+        )
+        _require(
+            config.get("loss_kind") == summary.get("loss_kind"),
+            "training config and summary loss kinds differ",
+        )
+        _require(
+            config.get("training_precision") == summary.get("training_precision"),
+            "training config and summary precision differ",
+        )
         loaded.append((summary_path, config, summary))
 
     losses = {str(summary["loss_kind"]) for _, _, summary in loaded}
