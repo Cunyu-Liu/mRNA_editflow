@@ -1,0 +1,26 @@
+{
+  "schema_version": "route_a_v3_route2_mrnabert_guidance_reward_policy.v1",
+  "status": "PROSPECTIVELY_FROZEN_BEFORE_GUIDED_GENERATION",
+  "critic_model_kind": "delta_pretrained_mrnabert_edit_centered_antisymmetric",
+  "critic_checkpoint_role": "FINAL_ALL_DEVELOPMENT_REFIT_FINAL_EPOCH",
+  "critic_parameter_update_during_generation": false,
+  "generator_gradient_into_critic": false,
+  "evaluation_model_gradient_into_generator": false,
+  "reward_signal": "STANDARDIZED_PREDICTED_MEAN_DELTA",
+  "uncertainty_in_guidance": "DISABLED_DIAGNOSTIC_ONLY",
+  "target_scale_source": "FINAL_REFIT_CHECKPOINT_TRAIN_TASK_ROBUST_SCALER",
+  "potential_transform": {
+    "kind": "CLIPPED_IDENTITY",
+    "minimum": -5.0,
+    "maximum": 5.0
+  },
+  "guidance_strength": 1.0,
+  "guidance_schedule": "CONSTANT",
+  "transition_rule": "BASE_TRANSITION_RATE_TIMES_EXP_POTENTIAL_DIFFERENCE",
+  "action_space": "SUB_PLUS_STOP",
+  "generated_candidate_encoder": "ONLINE_FROZEN_MRNABERT_WITH_SEQUENCE_MEMOIZATION",
+  "development_records_used_for_reward_calibration": 126165,
+  "evaluation_records_used_for_training_hpo_threshold_or_reward": 0,
+  "generated_candidates_add_to_canonical_records": false,
+  "scientific_claim_status": "NOT_ESTABLISHED"
+}

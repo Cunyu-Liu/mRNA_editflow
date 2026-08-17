@@ -151,6 +151,9 @@ def adjudicate(payload: Mapping[str, Any]) -> dict[str, Any]:
         "input_schema_context_reward_frozen": all(
             critic[key] is True for key in ("input_schema_frozen", "context_policy_frozen", "reward_calibration_policy_frozen")
         ),
+        "generated_candidate_online_encoder_ready": (
+            critic.get("generated_candidate_online_encoder_ready") is True
+        ),
         "evaluation_not_used": (
             critic["evaluation_records_used_for_training_hpo_threshold_or_reward"] == 0
             and critic_validation_training["evaluation_outcomes_read"] == 0

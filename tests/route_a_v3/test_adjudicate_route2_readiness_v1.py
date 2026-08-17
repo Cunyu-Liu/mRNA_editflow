@@ -86,6 +86,7 @@ def _passing_input():
             "input_schema_frozen": True,
             "context_policy_frozen": True,
             "reward_calibration_policy_frozen": True,
+            "generated_candidate_online_encoder_ready": True,
             "evaluation_records_used_for_training_hpo_threshold_or_reward": 0,
         },
         "flow": {
@@ -260,6 +261,16 @@ def test_critic_requires_real_gpu_training_provenance() -> None:
     payload["critic"]["final_refit_summary"]["cpu_fallback_used"] = True
     result = module.adjudicate(payload)
     assert result["critic_checks"]["final_all_development_refit_gpu_parameter_update"] is False
+    assert result["critic_status"] == "CRITIC_NOT_READY_FOR_GUIDANCE"
+    assert result["guided_unlocked"] is False
+
+
+def test_cache_only_critic_cannot_score_generated_candidates() -> None:
+    module = _load()
+    payload = deepcopy(_passing_input())
+    payload["critic"]["generated_candidate_online_encoder_ready"] = False
+    result = module.adjudicate(payload)
+    assert result["critic_checks"]["generated_candidate_online_encoder_ready"] is False
     assert result["critic_status"] == "CRITIC_NOT_READY_FOR_GUIDANCE"
     assert result["guided_unlocked"] is False
 
