@@ -9,6 +9,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
 ENTRYPOINTS = (
+    "adjudicate_route2_independent_generation_evaluator_v1.py",
     "predict_route2_frozen_classical_v1.py",
     "predict_route2_frozen_neural_v1.py",
     "run_route2_aparent_baseline_v1.py",
