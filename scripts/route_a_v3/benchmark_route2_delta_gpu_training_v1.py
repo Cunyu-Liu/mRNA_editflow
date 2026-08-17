@@ -196,6 +196,7 @@ def benchmark_profile(
     elapsed = time.perf_counter() - started
     peak_vram_mb = torch.cuda.max_memory_allocated(device) / (1024 ** 2)
     result = {
+        "status": "PASS",
         "profile_id": str(profile["profile_id"]),
         "batch_size": int(profile["batch_size"]),
         "training_precision": precision,
@@ -220,6 +221,36 @@ def benchmark_profile(
     del optimizer, model, iterator, loader
     torch.cuda.empty_cache()
     return result
+
+
+def run_profile_or_record_oom(*args, **kwargs) -> dict[str, Any]:
+    profile = dict(args[3])
+    device = args[5]
+    try:
+        return benchmark_profile(*args, **kwargs)
+    except torch.OutOfMemoryError as exc:
+        torch.cuda.empty_cache()
+        properties = torch.cuda.get_device_properties(device)
+        return {
+            "status": "OUT_OF_MEMORY",
+            "profile_id": str(profile["profile_id"]),
+            "batch_size": int(profile["batch_size"]),
+            "training_precision": str(profile["training_precision"]),
+            "fused_adamw": bool(profile.get("fused_adamw", False)),
+            "num_workers": int(profile.get("num_workers", 0)),
+            "pin_memory": bool(profile.get("pin_memory", False)),
+            "non_blocking_transfer": bool(
+                profile.get("non_blocking_transfer", False)
+            ),
+            "device_name": properties.name,
+            "device_total_memory_gib": properties.total_memory / (1024 ** 3),
+            "error_type": type(exc).__name__,
+            "error": "profile exceeded the visible CUDA device memory",
+            "temporary_parameter_updates": 0,
+            "checkpoint_saved": False,
+            "scientific_metrics_computed": False,
+            "evaluation_pool_records_read": 0,
+        }
 
 
 def precision_probe(
@@ -325,7 +356,7 @@ def main() -> int:
         withheld_count,
     ) = prepare(training_config)
     profiles = [
-        benchmark_profile(
+        run_profile_or_record_oom(
             dataset,
             train_records,
             model_config,
@@ -347,7 +378,14 @@ def main() -> int:
     )
     payload = {
         "schema_version": "route_a_v3_route2_gpu_training_benchmark.v1",
-        "status": "GPU_TRAINING_BENCHMARK_COMPLETE_NO_SCIENTIFIC_RESULT",
+        "status": (
+            "GPU_TRAINING_BENCHMARK_COMPLETE_WITH_PROFILE_OOM_NO_SCIENTIFIC_RESULT"
+            if any(row["status"] != "PASS" for row in profiles)
+            else "GPU_TRAINING_BENCHMARK_COMPLETE_NO_SCIENTIFIC_RESULT"
+        ),
+        "device_name": torch.cuda.get_device_properties(device).name,
+        "device_total_memory_gib": torch.cuda.get_device_properties(device).total_memory
+        / (1024 ** 3),
         "included_study_unit_ids": included_studies,
         "included_regions": included_regions,
         "train_record_count": len(train_records),
@@ -370,7 +408,9 @@ def main() -> int:
     (output_dir / "benchmark_summary.json").write_text(
         json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
-    best = max(profiles, key=lambda row: row["records_per_second"])
+    successful_profiles = [row for row in profiles if row["status"] == "PASS"]
+    _require(bool(successful_profiles), "all GPU benchmark profiles failed")
+    best = max(successful_profiles, key=lambda row: row["records_per_second"])
     record_training_attempt(
         Path(benchmark["experiment_ledger_path"]),
         output_dir / "training_attempt.json",
@@ -395,8 +435,12 @@ def main() -> int:
                 "optimizer_steps": sum(
                     row["temporary_parameter_updates"] for row in profiles
                 ),
-                "peak_vram_mb": max(row["peak_vram_mb"] for row in profiles),
-                "wall_time_seconds": sum(row["elapsed_seconds"] for row in profiles),
+                "peak_vram_mb": max(
+                    row["peak_vram_mb"] for row in successful_profiles
+                ),
+                "wall_time_seconds": sum(
+                    row["elapsed_seconds"] for row in successful_profiles
+                ),
                 "notes": f"best_profile={best['profile_id']}; no checkpoint retained",
             },
         ),
