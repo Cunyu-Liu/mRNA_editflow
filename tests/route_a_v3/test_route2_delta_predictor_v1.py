@@ -136,6 +136,61 @@ def test_study_specific_scale_calibration_preserves_constraints_and_scales_delta
     assert torch.equal(identity, torch.zeros_like(identity))
 
 
+def test_endpoint_region_residual_starts_shared_and_preserves_exact_constraints() -> None:
+    module = _load(MODEL_PATH, "route2_delta_partial_pooling_test")
+    common = {
+        "hidden_dim": 16,
+        "depth": 2,
+        "study_count": 1,
+        "assay_count": 1,
+        "context_count": 1,
+        "endpoint_count": 2,
+    }
+    torch.manual_seed(17)
+    shared = module.Route2DeltaPredictor(**common).eval()
+    torch.manual_seed(17)
+    partial = module.Route2DeltaPredictor(
+        **common, endpoint_region_residual=True
+    ).eval()
+    source = torch.tensor([[0, 1, 2, 3], [0, 1, 2, 3]])
+    candidate = torch.tensor([[1, 1, 2, 3], [1, 1, 2, 3]])
+    padding = torch.zeros_like(source, dtype=torch.bool)
+    zeros = torch.zeros(2, dtype=torch.long)
+    endpoints = torch.tensor([1, 0])
+    regions = torch.tensor([1, 1])
+
+    def predict(model, left, right):
+        return model(
+            left, right, padding, zeros, zeros, zeros, endpoints, regions
+        )["mean"]
+
+    torch.testing.assert_close(
+        predict(partial, source, candidate),
+        predict(shared, source, candidate),
+        rtol=0.0,
+        atol=0.0,
+    )
+    with torch.no_grad():
+        forward = partial._encode_pair(
+            source, candidate, padding, zeros, zeros, zeros, endpoints, regions
+        )
+        reverse = partial._encode_pair(
+            candidate, source, padding, zeros, zeros, zeros, endpoints, regions
+        )
+        direction = forward[0] - reverse[0]
+        assert direction.norm().item() > 0.0
+        partial.task_residual.weight[3].copy_(direction)
+
+    changed = predict(partial, source, candidate)
+    shared_value = predict(shared, source, candidate)
+    assert changed[0].item() != shared_value[0].item()
+    assert changed[1].item() == shared_value[1].item()
+    assert torch.equal(changed, -predict(partial, candidate, source))
+    assert torch.equal(
+        predict(partial, source, source), torch.zeros_like(changed)
+    )
+
+
 def test_normalized_position_channels_are_length_relative_and_edit_gated() -> None:
     module = _load(MODEL_PATH, "route2_delta_model_position_channel_test")
     padding_mask = torch.tensor([

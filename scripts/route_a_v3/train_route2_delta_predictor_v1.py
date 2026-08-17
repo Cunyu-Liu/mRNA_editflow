@@ -1002,10 +1002,21 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
         "context_count": len(vocabs["context"]), "endpoint_count": len(vocabs["endpoint"]),
     }
     model_kind = str(config.get("model_kind", ROUTE2_DELTA_MODEL_KIND))
+    endpoint_region_residual = bool(config.get("endpoint_region_residual", False))
+    if endpoint_region_residual:
+        _require(
+            model_kind == ROUTE2_DELTA_MODEL_KIND,
+            "endpoint-region residual is only supported by the anchored Delta predictor",
+        )
+        _require(
+            metadata_mode != "SEQUENCE_AND_REGION_ONLY",
+            "endpoint-region residual requires endpoint metadata",
+        )
     if model_kind == ROUTE2_DELTA_MODEL_KIND:
         checkpoint_model_config = {
             **shared_model_config,
             "study_specific_scale_calibration": bool(config.get("study_specific_scale_calibration", False)),
+            "endpoint_region_residual": endpoint_region_residual,
         }
         model = Route2DeltaPredictor(**checkpoint_model_config).to(device)
     elif model_kind in {ROUTE2_EDIT_CENTERED_MODEL_KIND, ROUTE2_EDIT_CENTERED_SOURCE_ONLY_KIND}:
@@ -1240,6 +1251,7 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
         "baseline_id": baseline_id,
         "model_kind": model_kind,
         "study_specific_scale_calibration": bool(config.get("study_specific_scale_calibration", False)),
+        "endpoint_region_residual": endpoint_region_residual,
         "loss_kind": loss_kind,
         "ranking_loss_weight": float(config.get("ranking_loss_weight", 1.0)) if loss_kind.startswith("huber_plus_") else None,
         "run_mode": run_mode,

@@ -67,6 +67,7 @@ class Route2DeltaPredictor(nn.Module):
         endpoint_count: int,
         region_count: int = 2,
         study_specific_scale_calibration: bool = False,
+        endpoint_region_residual: bool = False,
     ):
         super().__init__()
         if hidden_dim < 16 or depth < 1:
@@ -101,6 +102,13 @@ class Route2DeltaPredictor(nn.Module):
             nn.LayerNorm(hidden_dim),
         )
         self.score_head = nn.Linear(hidden_dim, 1)
+        self.endpoint_region_residual_enabled = endpoint_region_residual
+        self.region_count = region_count
+        self.task_residual = (
+            nn.Embedding(endpoint_count * region_count, hidden_dim) if endpoint_region_residual else None
+        )
+        if self.task_residual is not None:
+            nn.init.zeros_(self.task_residual.weight)
 
     def _encode_pair(
         self,
@@ -154,6 +162,13 @@ class Route2DeltaPredictor(nn.Module):
             study_ids, assay_ids, context_ids, endpoint_ids, region_ids,
         )
         mean = 0.5 * (self.score_head(forward) - self.score_head(reverse)).squeeze(-1)
+        if self.task_residual is not None:
+            directed = 0.5 * (forward - reverse)
+            task_ids = endpoint_ids * self.region_count + region_ids
+            residual = (
+                directed * self.task_residual(task_ids)
+            ).sum(dim=-1) / (self.task_residual.embedding_dim ** 0.5)
+            mean = mean + residual * endpoint_ids.ne(0).to(residual.dtype)
         if self.study_specific_scale_calibration:
             mean = mean * torch.exp(self.study_log_scale(study_ids).squeeze(-1))
         log_variance = torch.zeros_like(mean)
