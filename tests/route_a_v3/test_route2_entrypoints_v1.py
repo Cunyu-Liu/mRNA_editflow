@@ -17,6 +17,7 @@ ENTRYPOINTS = (
     "run_route2_base_flow_g0_validation_v1.py",
     "run_route2_classical_prediction_baselines_v1.py",
     "run_route2_external_prediction_baselines_v1.py",
+    "run_route2_matched_generation_suite_v1.py",
     "run_route2_search_generation_baselines_v1.py",
     "run_route2_utrlm_baseline_v1.py",
     "score_route2_generation_independent_evaluator_v1.py",
