@@ -48,6 +48,7 @@ def _config(tmp_path: Path) -> dict:
         "physical_gpu_index": 6,
         "device": "cuda:6",
         "optimizer_name": "AdamW",
+        "optimizer_fused": True,
         "training_precision": "FP32",
         "encoder_attention_backend": "OFFICIAL_PYTORCH_FALLBACK",
         "pretrained_position_encoding": "ALIBI_RELATIVE_BIAS",
@@ -108,6 +109,7 @@ def test_training_attempt_upsert_preserves_start_and_adds_final_metrics(tmp_path
     assert rows[0]["validation_spearman"] == "0.21"
     assert rows[0]["pretrained_position_encoding"] == "ALIBI_RELATIVE_BIAS"
     assert rows[0]["encoder_attention_backend"] == "OFFICIAL_PYTORCH_FALLBACK"
+    assert rows[0]["optimizer_fused"] == "True"
     assert json.loads(run_record.read_text())["status"] == "COMPLETED"
 
 

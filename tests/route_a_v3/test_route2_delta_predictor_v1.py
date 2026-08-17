@@ -205,6 +205,17 @@ def test_uncertainty_loss_can_absorb_residual_and_is_therefore_diagnostic_only()
     )
 
 
+def test_prediction_rejects_unbenchmarked_precision() -> None:
+    trainer = _load(TRAIN_PATH, "route2_delta_precision_validation_test")
+    with pytest.raises(trainer.DeltaTrainingError, match="FP32 or BF16"):
+        trainer.predict(
+            model=None,
+            loader=[],
+            device=torch.device("cpu"),
+            training_precision="FP16",
+        )
+
+
 def test_frozen_pretrained_feature_table_requires_exact_record_universe(tmp_path) -> None:
     trainer = _load(TRAIN_PATH, "route2_delta_pretrained_feature_table_test")
     path = tmp_path / "features.pt"
@@ -958,8 +969,14 @@ def test_gpu_training_persists_live_contract_artifacts(tmp_path: Path) -> None:
         "weight_decay": 0.0,
         "epochs": 1,
         "num_workers": 0,
+        "pin_memory": True,
+        "non_blocking_transfer": True,
+        "optimizer_fused": True,
+        "training_precision": "BF16",
     }, output)
     assert summary["optimizer_steps"] == 1
+    assert summary["optimizer_fused"] is True
+    assert summary["training_precision"] == "BF16"
     for name in (
         "train.log", "metrics.jsonl", "config.yaml", "latest.pt", "best.pt",
         "final_summary.json", "training_summary.json", "delta_predictor_checkpoint.pt",

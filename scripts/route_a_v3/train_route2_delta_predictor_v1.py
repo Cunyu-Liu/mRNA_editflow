@@ -965,7 +965,18 @@ def metrics(
 
 
 @torch.no_grad()
-def predict(model, loader, device, *, non_blocking: bool = False):
+def predict(
+    model,
+    loader,
+    device,
+    *,
+    non_blocking: bool = False,
+    training_precision: str = "FP32",
+):
+    _require(
+        training_precision in {"FP32", "BF16"},
+        "prediction precision must be FP32 or BF16",
+    )
     model.eval()
     rows = []
     targets = []
@@ -977,7 +988,12 @@ def predict(model, loader, device, *, non_blocking: bool = False):
     uncertainty_trained = bool(getattr(model, "learned_uncertainty", False))
     for raw in loader:
         batch = _move(raw, device, non_blocking=non_blocking)
-        output = _forward(model, batch)
+        with torch.autocast(
+            device_type=device.type,
+            dtype=torch.bfloat16,
+            enabled=training_precision == "BF16",
+        ):
+            output = _forward(model, batch)
         standardized_means = output["mean"]
         raw_means = standardized_means * batch["target_scale"]
         raw_standard_deviation = (
@@ -1180,7 +1196,12 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
         "unknown training update mode",
     )
     _require(config.get("optimizer_name", "AdamW") == "AdamW", "only AdamW is implemented")
-    _require(config.get("training_precision", "FP32") == "FP32", "only FP32 critic training is implemented")
+    training_precision = str(config.get("training_precision", "FP32"))
+    _require(
+        training_precision in {"FP32", "BF16"},
+        "training_precision must be FP32 or BF16",
+    )
+    optimizer_fused = bool(config.get("optimizer_fused", False))
     _require(not bool(config.get("torch_compile", False)), "torch_compile is recorded but not implemented")
     if pretrained_features is not None and config.get("encoder_attention_backend"):
         _require(
@@ -1277,7 +1298,12 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
             target_scaler.mode == TARGET_SCALING_TRAIN_TASK_ROBUST,
             "task-gradient calibration requires TRAIN task-robust targets",
         )
-    optimizer = torch.optim.AdamW(model.parameters(), lr=float(config["learning_rate"]), weight_decay=float(config["weight_decay"]))
+    optimizer = torch.optim.AdamW(
+        model.parameters(),
+        lr=float(config["learning_rate"]),
+        weight_decay=float(config["weight_decay"]),
+        fused=optimizer_fused,
+    )
     initial_parameter = next(model.parameters()).detach().clone()
     history = []
     optimizer_steps = 0
@@ -1335,6 +1361,8 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
             "result_stage": result_stage,
             "run_mode": run_mode,
             "training_update_mode": training_update_mode,
+            "training_precision": training_precision,
+            "optimizer_fused": optimizer_fused,
         }, sort_keys=True) + "\n",
         encoding="utf-8",
     )
@@ -1410,6 +1438,8 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
                 "training_weighting_mode": weighting_mode,
                 "training_update_mode": training_update_mode,
                 "task_gradient_calibration": task_gradient_calibration,
+                "training_precision": training_precision,
+                "optimizer_fused": optimizer_fused,
                 "target_scaling_mode": target_scaler.mode,
                 "target_scaler_fit_scope": "TRAIN_ONLY",
                 "candidate_control": candidate_control,
@@ -1430,28 +1460,33 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
                 "Delta training inputs left CUDA",
             )
             optimizer.zero_grad(set_to_none=True)
-            output = _forward(model, batch)
-            if training_update_mode == TRAINING_UPDATE_TASK_GRADIENT_NORM_CALIBRATED:
-                _require(
-                    task_gradient_loss_multipliers is not None,
-                    "task gradient calibration is missing",
-                )
-                loss = task_gradient_scaled_training_loss(
-                    output,
-                    batch,
-                    task_gradient_loss_multipliers,
-                    loss_kind,
-                    ranking_loss_weight,
-                    huber_delta,
-                )
-            else:
-                loss = training_loss(
-                    output,
-                    batch,
-                    loss_kind,
-                    ranking_loss_weight,
-                    huber_delta,
-                )
+            with torch.autocast(
+                device_type=device.type,
+                dtype=torch.bfloat16,
+                enabled=training_precision == "BF16",
+            ):
+                output = _forward(model, batch)
+                if training_update_mode == TRAINING_UPDATE_TASK_GRADIENT_NORM_CALIBRATED:
+                    _require(
+                        task_gradient_loss_multipliers is not None,
+                        "task gradient calibration is missing",
+                    )
+                    loss = task_gradient_scaled_training_loss(
+                        output,
+                        batch,
+                        task_gradient_loss_multipliers,
+                        loss_kind,
+                        ranking_loss_weight,
+                        huber_delta,
+                    )
+                else:
+                    loss = training_loss(
+                        output,
+                        batch,
+                        loss_kind,
+                        ranking_loss_weight,
+                        huber_delta,
+                    )
             _require(loss.is_cuda and loss.device == device, "Delta training loss left CUDA")
             loss.backward()
             optimizer.step()
@@ -1465,6 +1500,7 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
                 loaders["VALIDATION"],
                 device,
                 non_blocking=non_blocking_transfer,
+                training_precision=training_precision,
             )
         epoch_row = {"epoch": epoch + 1, "train_loss": float(np.mean(losses)), "validation": validation_metrics}
         history.append(epoch_row)
@@ -1508,6 +1544,7 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
             loaders["VALIDATION"],
             device,
             non_blocking=non_blocking_transfer,
+            training_precision=training_precision,
         )
     else:
         validation_rows, validation_metrics = [], None
@@ -1517,6 +1554,7 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
             loaders["TEST"],
             device,
             non_blocking=non_blocking_transfer,
+            training_precision=training_precision,
         )
     else:
         test_rows, test_metrics = [], None
@@ -1559,7 +1597,8 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
         "physical_gpu_index": int(config["physical_gpu_index"]),
         "device": str(device),
         "optimizer_name": str(config.get("optimizer_name", "AdamW")),
-        "training_precision": str(config.get("training_precision", "FP32")),
+        "optimizer_fused": optimizer_fused,
+        "training_precision": training_precision,
         "encoder_attention_backend": (
             pretrained_features.attention_backend
             if pretrained_features is not None
