@@ -1,0 +1,67 @@
+{
+  "schema_version": "route_a_v3_route2_generation_evaluator_repair_audit.v1",
+  "status": "OLD_OPEN_SUPPORT_MEASURED_NDCG_INVALID_FOR_SELECTION",
+  "audit_scope": "DEVELOPMENT_OPEN_GENERATED_SUPPORT_REPLAY",
+  "evaluation_release_state": "CLOSED",
+  "evaluation_outcomes_accessed": false,
+  "source_count": 891,
+  "v1_summary_artifact": "audits/route_a_v3_route2_search_baseline_summary_v1.json",
+  "v1_strongest_baseline_artifact_state": "RETIRED_NOT_AUTHORITATIVE_FOR_SELECTION",
+  "failure_reason": "The v1 evaluator assigned zero gain to generated candidates without measured outcomes, so its measured NDCG mixed observed low gain with unknown outcome.",
+  "replacement_rule": "Closed measured NDCG may select a baseline only when every generated candidate has a measured outcome. Open generated support requires an independent evaluator and reports measured-candidate recovery separately.",
+  "v2_replay_artifact_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/audits/generation_search_baselines/development_validation_seed20260816/evaluator_v2_open_support/",
+  "methods": [
+    {
+      "method_id": "random_legal",
+      "sources_with_unmeasured_generated_candidates": 891,
+      "unmeasured_generated_candidate_occurrences": 28320,
+      "source_closed_measured_ndcg_defined_count": 0,
+      "source_macro_candidate_recovery_rate": 0.07575757575757576,
+      "source_macro_measured_top_k_recovery_at_k": 0.005611672278338945
+    },
+    {
+      "method_id": "greedy",
+      "sources_with_unmeasured_generated_candidates": 891,
+      "unmeasured_generated_candidate_occurrences": 27838,
+      "source_closed_measured_ndcg_defined_count": 0,
+      "source_macro_candidate_recovery_rate": 0.2556116722783389,
+      "source_macro_measured_top_k_recovery_at_k": 0.03675645342312009
+    },
+    {
+      "method_id": "beam",
+      "sources_with_unmeasured_generated_candidates": 891,
+      "unmeasured_generated_candidate_occurrences": 27838,
+      "source_closed_measured_ndcg_defined_count": 0,
+      "source_macro_candidate_recovery_rate": 0.2556116722783389,
+      "source_macro_measured_top_k_recovery_at_k": 0.03675645342312009
+    },
+    {
+      "method_id": "genetic",
+      "sources_with_unmeasured_generated_candidates": 891,
+      "unmeasured_generated_candidate_occurrences": 28177,
+      "source_closed_measured_ndcg_defined_count": 0,
+      "source_macro_candidate_recovery_rate": 0.09371492704826039,
+      "source_macro_measured_top_k_recovery_at_k": 0.004863449307893752
+    },
+    {
+      "method_id": "local_search",
+      "sources_with_unmeasured_generated_candidates": 891,
+      "unmeasured_generated_candidate_occurrences": 20227,
+      "source_closed_measured_ndcg_defined_count": 0,
+      "source_macro_candidate_recovery_rate": 0.009820426487093154,
+      "source_macro_measured_top_k_recovery_at_k": 0.0009352787130564908
+    },
+    {
+      "method_id": "generate_then_rerank",
+      "sources_with_unmeasured_generated_candidates": 891,
+      "unmeasured_generated_candidate_occurrences": 28320,
+      "source_closed_measured_ndcg_defined_count": 0,
+      "source_macro_candidate_recovery_rate": 0.07575757575757576,
+      "source_macro_measured_top_k_recovery_at_k": 0.005611672278338945
+    }
+  ],
+  "unknown_generated_candidates_are_zero_gain": false,
+  "strongest_generation_baseline_status": "NOT_FROZEN_IN_OPEN_GENERATED_SUPPORT",
+  "independent_evaluator_status": "REQUIRED_FOR_OPEN_SUPPORT_SELECTION",
+  "scientific_claim_status": "NOT_ESTABLISHED"
+}
