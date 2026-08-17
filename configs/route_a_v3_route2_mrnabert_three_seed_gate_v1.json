@@ -1,0 +1,17 @@
+{
+  "schema_version": "route_a_v3_route2_mrnabert_three_seed_gate.v1",
+  "status": "FROZEN_BEFORE_FINAL_SEED_OUTCOMES",
+  "selection_pool": "DEVELOPMENT_VALIDATION_ONLY",
+  "required_seeds": [20260822, 20260823, 20260824],
+  "required_task_count": 9,
+  "strongest_same_information_baseline_task_macro_spearman": 0.13171439492559175,
+  "per_seed_requirements": {
+    "task_macro_spearman_improvement_over_strongest_baseline": ">0",
+    "task_median_spearman": ">0"
+  },
+  "single_frozen_test_seed": 20260823,
+  "development_test_accessed": false,
+  "evaluation_outcomes_accessed": false,
+  "guided_generation_authorized": false,
+  "scientific_claim_status": "NOT_ESTABLISHED"
+}
