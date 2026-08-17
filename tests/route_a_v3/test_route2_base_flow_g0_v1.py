@@ -195,8 +195,8 @@ def test_gpu_base_flow_training_persists_live_contract_artifacts(tmp_path: Path)
         "model_kind": "route2_base_flow_sub_stop",
         "loss_kind": "next_legal_action_cross_entropy",
         "optimizer_name": "AdamW",
-        "optimizer_fused": False,
-        "training_precision": "FP32",
+        "optimizer_fused": True,
+        "training_precision": "BF16" if torch.cuda.is_bf16_supported() else "FP32",
         "position_progress_features": True,
         "generation_action_space": "SUB_PLUS_STOP",
         "generator_position_features": "NORMALIZED_ABSOLUTE_PLUS_EDIT_GATED",
@@ -217,6 +217,10 @@ def test_gpu_base_flow_training_persists_live_contract_artifacts(tmp_path: Path)
     }, output)
     assert summary["optimizer_steps"] == 1
     assert summary["selected_epoch"] == 1
+    assert summary["optimizer_fused"] is True
+    assert summary["training_precision"] == (
+        "BF16" if torch.cuda.is_bf16_supported() else "FP32"
+    )
     for name in (
         "train.log", "metrics.jsonl", "config.yaml", "latest.pt", "best.pt",
         "final_summary.json", "training_summary.json", "base_flow_checkpoint.pt",
