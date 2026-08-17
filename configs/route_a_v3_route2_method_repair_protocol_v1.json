@@ -9,6 +9,27 @@
   },
   "screen_seed": 20260821,
   "fresh_confirmation_seeds": [20260822, 20260823, 20260824],
+  "loso_study_unit_ids": [
+    "ENCSR854RUF",
+    "GSE114002",
+    "GSE149487",
+    "GSE186455",
+    "GSE200304",
+    "GSE217518",
+    "GSE269595"
+  ],
+  "development_independence_units": {
+    "record_count": 126165,
+    "connected_source_component_count": 12635,
+    "source_group_count": 96145,
+    "task_count": 9,
+    "study_unit_count": 7,
+    "fixed_split_record_counts": {
+      "TRAIN": 89580,
+      "VALIDATION": 18293,
+      "TEST": 18292
+    }
+  },
   "screen_arms": [
     "configs/route_a_v3_route2_method_repair_global_raw_seed20260821_gpu1_v1.json",
     "configs/route_a_v3_route2_method_repair_global_scaled_seed20260821_gpu0_v1.json",

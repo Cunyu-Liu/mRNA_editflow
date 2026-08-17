@@ -112,3 +112,10 @@ def test_protocol_keeps_new_method_claim_and_guidance_fail_closed() -> None:
     invalidated = protocol["invalidated_control"]
     assert invalidated["status"] == "INVALID_CROSS_SOURCE_CANDIDATE_PERMUTATION"
     assert "exact_source" in invalidated["replacement"]
+    assert protocol["loso_study_unit_ids"] == [
+        "ENCSR854RUF", "GSE114002", "GSE149487", "GSE186455",
+        "GSE200304", "GSE217518", "GSE269595",
+    ]
+    units = protocol["development_independence_units"]
+    assert units["study_unit_count"] == len(protocol["loso_study_unit_ids"]) == 7
+    assert units["record_count"] == sum(units["fixed_split_record_counts"].values())
