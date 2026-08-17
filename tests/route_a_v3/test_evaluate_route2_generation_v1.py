@@ -90,11 +90,15 @@ def test_measured_neighborhood_recovery_is_separate_from_self_score() -> None:
         {"source_key": "s1", "candidate_sequence": "CCAA", "measured_direction_normalized_delta": 3.0, "pool_assignment": "DEVELOPMENT"},
         {"source_key": "s1", "candidate_sequence": "GAAA", "measured_direction_normalized_delta": 2.0, "pool_assignment": "DEVELOPMENT"},
     ]
-    result = module.measured_neighborhood_metrics(_sources(), _candidates(), measured, k=1)
+    result = module.measured_neighborhood_metrics(
+        _sources(), _candidates(), measured, k=1,
+        candidate_support_mode="CLOSED_MEASURED_SUPPORT",
+    )
     source = result["per_source"]["s1"]
     assert source["candidate_recovery_rate"] == pytest.approx(2 / 3)
-    assert source["measured_top_k_recall"] == 0.0
-    assert source["measured_ndcg_at_k"] == 0.0
+    assert source["measured_top_k_recovery_at_k"] == 0.0
+    assert source["closed_measured_ndcg_at_k"] == 0.0
+    assert source["unmeasured_generated_candidate_count"] == 0
     assert source["normalized_regret"] == 1.0
 
 
@@ -106,9 +110,15 @@ def test_unmeasured_top_candidate_has_no_fabricated_measured_regret() -> None:
     ]
     candidates = _candidates()
     candidates[0] = dict(candidates[0], candidate_sequence="GAAA", critic_score=10.0)
-    summary = module.measured_neighborhood_metrics(_sources(), candidates, measured, k=1)
+    summary = module.measured_neighborhood_metrics(
+        _sources(), candidates, measured, k=1,
+        candidate_support_mode="OPEN_GENERATED_SUPPORT",
+    )
     result = summary["per_source"]["s1"]
-    assert result["measured_ndcg_at_k"] == 0.0
+    assert result["closed_measured_ndcg_at_k"] is None
+    assert result["closed_measured_ndcg_status"] == "UNDEFINED_OPEN_SUPPORT_HAS_UNKNOWN_OUTCOMES"
+    assert result["unmeasured_generated_candidate_count"] == 1
+    assert summary["unknown_generated_candidates_are_zero_gain"] is False
     assert result["selected_measured_outcome"] is None
     assert result["normalized_regret"] is None
     assert summary["source_normalized_regret_defined_count"] == 0
@@ -125,9 +135,12 @@ def test_unguided_generation_probability_can_rank_measured_candidates_without_cr
         {"source_key": "s1", "candidate_sequence": "CAAA", "generation_score": -2.0},
         {"source_key": "s1", "candidate_sequence": "CCAA", "generation_score": -0.1},
     ]
-    result = module.measured_neighborhood_metrics(_sources(), candidates, measured, k=1)["per_source"]["s1"]
+    result = module.measured_neighborhood_metrics(
+        _sources(), candidates, measured, k=1,
+        candidate_support_mode="CLOSED_MEASURED_SUPPORT",
+    )["per_source"]["s1"]
     assert result["ranking_score_field"] == "generation_score"
-    assert result["measured_ndcg_at_k"] == 1.0
+    assert result["closed_measured_ndcg_at_k"] == 1.0
     assert result["normalized_regret"] == 0.0
 
 
@@ -141,11 +154,17 @@ def test_measured_ranking_is_order_invariant_for_score_ties() -> None:
         {"source_key": "s1", "candidate_sequence": "CAAA", "generation_score": 0.0},
         {"source_key": "s1", "candidate_sequence": "GAAA", "generation_score": 0.0},
     ]
-    first = module.measured_neighborhood_metrics(_sources(), candidates, measured, k=1)["per_source"]["s1"]
-    second = module.measured_neighborhood_metrics(_sources(), list(reversed(candidates)), measured, k=1)["per_source"]["s1"]
+    first = module.measured_neighborhood_metrics(
+        _sources(), candidates, measured, k=1,
+        candidate_support_mode="CLOSED_MEASURED_SUPPORT",
+    )["per_source"]["s1"]
+    second = module.measured_neighborhood_metrics(
+        _sources(), list(reversed(candidates)), measured, k=1,
+        candidate_support_mode="CLOSED_MEASURED_SUPPORT",
+    )["per_source"]["s1"]
     assert first == second
-    assert first["measured_ndcg_at_k"] == pytest.approx(0.5)
-    assert first["measured_top_k_recall"] == pytest.approx(0.5)
+    assert first["closed_measured_ndcg_at_k"] == pytest.approx(0.5)
+    assert first["measured_top_k_recovery_at_k"] == pytest.approx(0.5)
     assert first["normalized_regret"] == pytest.approx(0.5)
 
 
@@ -159,7 +178,11 @@ def test_unmeasured_member_of_top_score_tie_keeps_regret_undefined() -> None:
         {"source_key": "s1", "candidate_sequence": "CAAA", "generation_score": 1.0},
         {"source_key": "s1", "candidate_sequence": "UAAA", "generation_score": 1.0},
     ]
-    result = module.measured_neighborhood_metrics(_sources(), candidates, measured, k=1)["per_source"]["s1"]
+    result = module.measured_neighborhood_metrics(
+        _sources(), candidates, measured, k=1,
+        candidate_support_mode="OPEN_GENERATED_SUPPORT",
+    )["per_source"]["s1"]
+    assert result["closed_measured_ndcg_at_k"] is None
     assert result["selected_measured_outcome"] is None
     assert result["normalized_regret"] is None
 
@@ -180,6 +203,7 @@ def test_cli_keeps_measured_evaluation_closed_before_freeze(tmp_path: Path, monk
     monkeypatch.setattr(sys, "argv", [
         str(SCRIPT), "--source-manifest", str(manifest), "--candidates", str(candidates),
         "--measured-neighborhood", str(measured), "--measured-neighborhood-pool", "EVALUATION",
+        "--candidate-support-mode", "OPEN_GENERATED_SUPPORT",
         "--output", str(tmp_path / "out.json"),
     ])
     with pytest.raises(module.GenerationEvaluationError, match="remain closed"):
@@ -201,7 +225,45 @@ def test_cli_allows_development_measured_neighborhood_while_evaluation_closed(tm
     monkeypatch.setattr(sys, "argv", [
         str(SCRIPT), "--source-manifest", str(manifest), "--candidates", str(candidates),
         "--measured-neighborhood", str(measured), "--measured-neighborhood-pool", "DEVELOPMENT",
+        "--candidate-support-mode", "OPEN_GENERATED_SUPPORT",
         "--evaluation-release-state", "CLOSED", "--output", str(output),
     ])
     assert module.main() == 0
-    assert json.loads(output.read_text())["measured_neighborhood_pool"] == "DEVELOPMENT"
+    result = json.loads(output.read_text())
+    assert result["schema_version"] == "route_a_v3_route2_generation_evaluation.v2"
+    assert result["measured_neighborhood_pool"] == "DEVELOPMENT"
+    assert result["measured_neighborhood"]["candidate_support_mode"] == "OPEN_GENERATED_SUPPORT"
+
+
+def test_cli_requires_explicit_candidate_support_mode(tmp_path: Path, monkeypatch) -> None:
+    module = _load()
+    manifest = tmp_path / "manifest.jsonl"
+    candidates = tmp_path / "candidates.jsonl"
+    measured = tmp_path / "measured.jsonl"
+    manifest.write_text(json.dumps({"source_key": "s1", **_sources()["s1"]}) + "\n")
+    candidates.write_text("\n".join(json.dumps(row) for row in _candidates()) + "\n")
+    measured.write_text(json.dumps({
+        "source_key": "s1",
+        "candidate_sequence": "CAAA",
+        "measured_direction_normalized_delta": 1.0,
+        "pool_assignment": "DEVELOPMENT",
+    }) + "\n")
+    monkeypatch.setattr(sys, "argv", [
+        str(SCRIPT), "--source-manifest", str(manifest), "--candidates", str(candidates),
+        "--measured-neighborhood", str(measured), "--measured-neighborhood-pool", "DEVELOPMENT",
+        "--output", str(tmp_path / "out.json"),
+    ])
+    with pytest.raises(module.GenerationEvaluationError, match="candidate support mode is required"):
+        module.main()
+
+
+def test_closed_measured_support_rejects_unknown_generated_candidate() -> None:
+    module = _load()
+    measured = [
+        {"source_key": "s1", "candidate_sequence": "CAAA", "measured_direction_normalized_delta": 1.0},
+    ]
+    with pytest.raises(module.GenerationEvaluationError, match="unmeasured generated candidate"):
+        module.measured_neighborhood_metrics(
+            _sources(), _candidates(), measured, k=1,
+            candidate_support_mode="CLOSED_MEASURED_SUPPORT",
+        )

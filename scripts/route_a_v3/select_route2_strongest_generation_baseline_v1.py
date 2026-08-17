@@ -115,7 +115,7 @@ def select(payload: Mapping[str, Any]) -> dict[str, Any]:
     for entry in entries:
         method_id = str(entry["method_id"])
         evaluation = entry["evaluation"]
-        _require(evaluation["schema_version"] == "route_a_v3_route2_generation_evaluation.v1", f"evaluation schema changed: {method_id}")
+        _require(evaluation["schema_version"] == "route_a_v3_route2_generation_evaluation.v2", f"evaluation schema changed: {method_id}")
         _require(evaluation["evaluation_release_state"] == "CLOSED", f"Evaluation opened for {method_id}")
         _require(evaluation["measured_neighborhood_pool"] == "DEVELOPMENT", f"measured pool is not Development: {method_id}")
         generation = evaluation["generation"]
@@ -136,9 +136,20 @@ def select(payload: Mapping[str, Any]) -> dict[str, Any]:
                 _require(critic_signature == matched_critic_signature, f"critic budgets differ for {method_id}")
 
         measured = evaluation["measured_neighborhood"]
+        _require(
+            measured["candidate_support_mode"] == "CLOSED_MEASURED_SUPPORT",
+            (
+                "open generated support cannot be selected by measured NDCG because "
+                f"unknown outcomes are not zero gain; independent evaluator required: {method_id}"
+            ),
+        )
+        _require(
+            measured["unknown_generated_candidates_are_zero_gain"] is False,
+            f"unknown generated candidates were assigned zero gain: {method_id}",
+        )
         source_count = int(measured["source_count"])
         _require(source_count == int(generation["source_count"]), f"measured source count differs for {method_id}")
-        ndcg_defined_count = int(measured["source_measured_ndcg_defined_count"])
+        ndcg_defined_count = int(measured["source_closed_measured_ndcg_defined_count"])
         regret_defined_count = int(measured["source_normalized_regret_defined_count"])
         _require(0 < ndcg_defined_count <= source_count, f"measured NDCG is not defined for any source: {method_id}")
         _require(0 <= regret_defined_count <= source_count, f"regret defined count is invalid: {method_id}")
@@ -149,9 +160,9 @@ def select(payload: Mapping[str, Any]) -> dict[str, Any]:
         per_source = measured["per_source"]
         _require(set(per_source) == set(generation["per_source"]), f"measured source coverage differs for {method_id}")
         ndcg_by_source = {
-            str(source_key): _finite(row["measured_ndcg_at_k"], f"source NDCG for {method_id}/{source_key}")
+            str(source_key): _finite(row["closed_measured_ndcg_at_k"], f"source NDCG for {method_id}/{source_key}")
             for source_key, row in per_source.items()
-            if row["measured_ndcg_at_k"] is not None
+            if row["closed_measured_ndcg_at_k"] is not None
         }
         regret_by_source = {
             str(source_key): _finite(row["normalized_regret"], f"source regret for {method_id}/{source_key}")
@@ -163,16 +174,16 @@ def select(payload: Mapping[str, Any]) -> dict[str, Any]:
         candidates.append({
             "method_id": method_id,
             "source_count": source_count,
-            "source_measured_ndcg_defined_count": ndcg_defined_count,
+            "source_closed_measured_ndcg_defined_count": ndcg_defined_count,
             "source_normalized_regret_defined_count": regret_defined_count,
-            "source_macro_measured_ndcg_at_k": _optional_finite(
-                measured["source_macro_measured_ndcg_at_k"], f"measured NDCG for {method_id}"
+            "source_macro_closed_measured_ndcg_at_k": _optional_finite(
+                measured["source_macro_closed_measured_ndcg_at_k"], f"closed measured NDCG for {method_id}"
             ),
             "source_macro_normalized_regret": _optional_finite(
                 measured["source_macro_normalized_regret"], f"normalized regret for {method_id}"
             ),
-            "source_macro_measured_top_k_recall": _finite(
-                measured["source_macro_measured_top_k_recall"], f"measured top-k recall for {method_id}"
+            "source_macro_measured_top_k_recovery_at_k": _finite(
+                measured["source_macro_measured_top_k_recovery_at_k"], f"measured top-k recovery for {method_id}"
             ),
             "source_macro_candidate_recovery_rate": _finite(
                 measured["source_macro_candidate_recovery_rate"], f"candidate recovery for {method_id}"
@@ -184,31 +195,31 @@ def select(payload: Mapping[str, Any]) -> dict[str, Any]:
         })
 
     _require(
-        len({candidate["source_measured_ndcg_defined_count"] for candidate in candidates}) == 1,
-        "measured NDCG source eligibility differs across methods",
+        len({candidate["source_closed_measured_ndcg_defined_count"] for candidate in candidates}) == 1,
+        "closed measured NDCG source eligibility differs across methods",
     )
     _require(
         len({frozenset(candidate["ndcg_by_source"]) for candidate in candidates}) == 1,
         "measured NDCG source identities differ across methods",
     )
 
-    finite_ndcg = any(candidate["source_macro_measured_ndcg_at_k"] is not None for candidate in candidates)
+    finite_ndcg = any(candidate["source_macro_closed_measured_ndcg_at_k"] is not None for candidate in candidates)
     comparisons = []
     if finite_ndcg:
         ranked = sorted(candidates, key=lambda candidate: (
-            candidate["source_macro_measured_ndcg_at_k"] is None,
-            0.0 if candidate["source_macro_measured_ndcg_at_k"] is None else -candidate["source_macro_measured_ndcg_at_k"],
+            candidate["source_macro_closed_measured_ndcg_at_k"] is None,
+            0.0 if candidate["source_macro_closed_measured_ndcg_at_k"] is None else -candidate["source_macro_closed_measured_ndcg_at_k"],
             candidate["source_macro_normalized_regret"] is None,
             math.inf if candidate["source_macro_normalized_regret"] is None else candidate["source_macro_normalized_regret"],
-            -candidate["source_macro_measured_top_k_recall"],
+            -candidate["source_macro_measured_top_k_recovery_at_k"],
             candidate["mean_total_forward_equivalents_per_source"],
             candidate["method_id"],
         ))
-        selection_metric = "DEVELOPMENT_MEASURED_NDCG_THEN_REGRET_THEN_COST"
+        selection_metric = "DEVELOPMENT_CLOSED_MEASURED_NDCG_THEN_REGRET_THEN_COST"
         point_winner = ranked[0]
         uncertainty_equivalent = [point_winner]
         for comparison_index, candidate in enumerate(ranked[1:]):
-            if candidate["source_macro_measured_ndcg_at_k"] is None:
+            if candidate["source_macro_closed_measured_ndcg_at_k"] is None:
                 continue
             comparison = paired_source_bootstrap(
                 point_winner["ndcg_by_source"], candidate["ndcg_by_source"],
@@ -216,7 +227,7 @@ def select(payload: Mapping[str, Any]) -> dict[str, Any]:
                 seed=bootstrap_seed + comparison_index,
             )
             comparisons.append({
-                "metric": "MEASURED_NDCG_AT_K",
+                "metric": "CLOSED_MEASURED_NDCG_AT_K",
                 "point_leader_method_id": point_winner["method_id"],
                 "candidate_method_id": candidate["method_id"],
                 **comparison,
@@ -232,11 +243,11 @@ def select(payload: Mapping[str, Any]) -> dict[str, Any]:
         ranked = sorted(candidates, key=lambda candidate: (
             candidate["source_macro_normalized_regret"] is None,
             math.inf if candidate["source_macro_normalized_regret"] is None else candidate["source_macro_normalized_regret"],
-            -candidate["source_macro_measured_top_k_recall"],
+            -candidate["source_macro_measured_top_k_recovery_at_k"],
             candidate["mean_total_forward_equivalents_per_source"],
             candidate["method_id"],
         ))
-        selection_metric = "DEVELOPMENT_MEASURED_REGRET_ALL_NDCG_UNDEFINED"
+        selection_metric = "DEVELOPMENT_MEASURED_REGRET_ALL_CLOSED_NDCG_UNDEFINED"
         _require(
             len({frozenset(candidate["regret_by_source"]) for candidate in candidates}) == 1,
             "measured regret source identities differ across methods",
@@ -271,7 +282,7 @@ def select(payload: Mapping[str, Any]) -> dict[str, Any]:
         candidate.pop("ndcg_by_source")
         candidate.pop("regret_by_source")
     return {
-        "schema_version": "route_a_v3_route2_strongest_generation_baseline.v1",
+        "schema_version": "route_a_v3_route2_strongest_generation_baseline.v2",
         "status": "DEVELOPMENT_STRONGEST_GENERATION_BASELINE_FROZEN",
         "strongest_generation_baseline_id": winner["method_id"],
         "selection_primary_metric": selection_metric,

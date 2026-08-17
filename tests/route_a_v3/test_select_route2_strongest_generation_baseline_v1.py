@@ -35,11 +35,11 @@ def _evaluation(method_id: str, ndcg: float, regret: float, total_forwards: floa
             },
         }
         per_source_measured[source_key] = {
-            "measured_ndcg_at_k": ndcg,
+            "closed_measured_ndcg_at_k": ndcg,
             "normalized_regret": regret,
         }
     return {
-        "schema_version": "route_a_v3_route2_generation_evaluation.v1",
+        "schema_version": "route_a_v3_route2_generation_evaluation.v2",
         "evaluation_release_state": "CLOSED",
         "measured_neighborhood_pool": "DEVELOPMENT",
         "generation": {
@@ -52,12 +52,14 @@ def _evaluation(method_id: str, ndcg: float, regret: float, total_forwards: floa
             "per_source": per_source_generation,
         },
         "measured_neighborhood": {
+            "candidate_support_mode": "CLOSED_MEASURED_SUPPORT",
+            "unknown_generated_candidates_are_zero_gain": False,
             "source_count": 4,
-            "source_measured_ndcg_defined_count": 4,
+            "source_closed_measured_ndcg_defined_count": 4,
             "source_normalized_regret_defined_count": 4,
             "source_macro_candidate_recovery_rate": 0.5,
-            "source_macro_measured_top_k_recall": 0.5,
-            "source_macro_measured_ndcg_at_k": ndcg,
+            "source_macro_measured_top_k_recovery_at_k": 0.5,
+            "source_macro_closed_measured_ndcg_at_k": ndcg,
             "source_macro_normalized_regret": regret,
             "per_source": per_source_measured,
         },
@@ -130,8 +132,8 @@ def test_uncertainty_equivalent_point_leader_yields_to_faster_method() -> None:
     beam = payload["baseline_evaluations"][1]["evaluation"]
     values = [1.0, 1.0, 0.1, 0.1]
     for source_key, value in zip(sorted(beam["measured_neighborhood"]["per_source"]), values):
-        beam["measured_neighborhood"]["per_source"][source_key]["measured_ndcg_at_k"] = value
-    beam["measured_neighborhood"]["source_macro_measured_ndcg_at_k"] = sum(values) / len(values)
+        beam["measured_neighborhood"]["per_source"][source_key]["closed_measured_ndcg_at_k"] = value
+    beam["measured_neighborhood"]["source_macro_closed_measured_ndcg_at_k"] = sum(values) / len(values)
     result = module.select(payload)
     assert result["point_leader_method_id"] == "beam"
     assert result["strongest_generation_baseline_id"] == "random_legal"
@@ -143,4 +145,17 @@ def test_generation_selector_requires_real_bootstrap_budget() -> None:
     payload = _payload()
     payload["bootstrap_iterations"] = 999
     with pytest.raises(module.GenerationBaselineSelectionError, match="below 1000"):
+        module.select(payload)
+
+
+def test_open_generated_support_requires_independent_evaluator() -> None:
+    module = _load()
+    payload = _payload()
+    measured = payload["baseline_evaluations"][1]["evaluation"]["measured_neighborhood"]
+    measured["candidate_support_mode"] = "OPEN_GENERATED_SUPPORT"
+    measured["source_closed_measured_ndcg_defined_count"] = 0
+    measured["source_macro_closed_measured_ndcg_at_k"] = None
+    for row in measured["per_source"].values():
+        row["closed_measured_ndcg_at_k"] = None
+    with pytest.raises(module.GenerationBaselineSelectionError, match="independent evaluator required"):
         module.select(payload)

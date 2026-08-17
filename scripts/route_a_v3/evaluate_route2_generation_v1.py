@@ -20,6 +20,10 @@ TERMINAL_CAUSES = {
     "NO_LEGAL_ACTION",
     "NUMERICAL_FAILURE",
 }
+CANDIDATE_SUPPORT_MODES = {
+    "OPEN_GENERATED_SUPPORT",
+    "CLOSED_MEASURED_SUPPORT",
+}
 
 
 class GenerationEvaluationError(RuntimeError):
@@ -288,7 +292,9 @@ def measured_neighborhood_metrics(
     measured_rows: list[dict[str, Any]],
     *,
     k: int,
+    candidate_support_mode: str,
 ) -> dict[str, Any]:
+    _require(candidate_support_mode in CANDIDATE_SUPPORT_MODES, "candidate support mode must be explicit")
     measured: dict[str, dict[str, float]] = defaultdict(dict)
     for row in measured_rows:
         source_key = str(row["source_key"])
@@ -318,16 +324,40 @@ def measured_neighborhood_metrics(
         score_fields = {value[2] for value in generated.values()}
         _require(len(score_fields) == 1, f"ranking score field differs within source: {source_key}")
         hits = [sequence for sequence in generated if sequence in pool]
+        unmeasured = [sequence for sequence in generated if sequence not in pool]
+        if candidate_support_mode == "CLOSED_MEASURED_SUPPORT":
+            _require(
+                not unmeasured,
+                f"closed measured support contains an unmeasured generated candidate: {source_key}",
+            )
         true_order = sorted(pool, key=lambda sequence: (-pool[sequence], sequence))
         generated_sequences = sorted(generated)
         generated_scores = np.asarray([generated[sequence][1] for sequence in generated_sequences], dtype=float)
         top_k = min(k, len(pool))
         shifted = {sequence: pool[sequence] - min(pool.values()) for sequence in pool}
-        generated_gains = np.asarray([shifted.get(sequence, 0.0) for sequence in generated_sequences], dtype=float)
         true_scores = np.asarray([pool[sequence] for sequence in true_order], dtype=float)
         true_gains = np.asarray([shifted[sequence] for sequence in true_order], dtype=float)
-        dcg = _tie_aware_dcg(generated_gains, generated_scores, top_k)
-        idcg = _tie_aware_dcg(true_gains, true_scores, top_k)
+        if candidate_support_mode == "CLOSED_MEASURED_SUPPORT":
+            closed_gains = np.asarray([shifted[sequence] for sequence in generated_sequences], dtype=float)
+            closed_dcg = _tie_aware_dcg(closed_gains, generated_scores, top_k)
+            closed_idcg = _tie_aware_dcg(true_gains, true_scores, top_k)
+            closed_ndcg = None if closed_idcg == 0.0 else closed_dcg / closed_idcg
+        else:
+            closed_ndcg = None
+        recovered_sequences = sorted(hits)
+        recovered_k = min(k, len(recovered_sequences))
+        if recovered_k:
+            recovered_scores = np.asarray(
+                [generated[sequence][1] for sequence in recovered_sequences], dtype=float
+            )
+            recovered_gains = np.asarray(
+                [shifted[sequence] for sequence in recovered_sequences], dtype=float
+            )
+            recovered_dcg = _tie_aware_dcg(recovered_gains, recovered_scores, recovered_k)
+            recovered_idcg = _tie_aware_dcg(true_gains, true_scores, recovered_k)
+            recovered_ndcg = None if recovered_idcg == 0.0 else recovered_dcg / recovered_idcg
+        else:
+            recovered_ndcg = None
         true_cutoff = true_scores[top_k - 1]
         true_top_eligible = {
             sequence for sequence, value in pool.items() if value >= true_cutoff
@@ -350,27 +380,51 @@ def measured_neighborhood_metrics(
         per_source[source_key] = {
             "measured_candidate_count": len(pool),
             "recovered_candidate_count": len(hits),
+            "unmeasured_generated_candidate_count": len(unmeasured),
+            "all_generated_candidates_measured": not unmeasured,
             "candidate_recovery_rate": len(hits) / len(pool),
-            "measured_top_k_recall": float(sum(
+            "measured_top_k_recovery_at_k": float(sum(
                 probability
                 for sequence, probability in zip(generated_sequences, generated_inclusion)
                 if sequence in true_top_eligible
             ) / top_k),
-            "measured_ndcg_at_k": None if idcg == 0.0 else dcg / idcg,
+            "closed_measured_ndcg_at_k": closed_ndcg,
+            "recovered_measured_ndcg_at_k": recovered_ndcg,
+            "closed_measured_ndcg_status": (
+                "DEFINED_CLOSED_MEASURED_SUPPORT"
+                if closed_ndcg is not None
+                else (
+                    "UNDEFINED_ZERO_MEASURED_GAIN"
+                    if candidate_support_mode == "CLOSED_MEASURED_SUPPORT"
+                    else "UNDEFINED_OPEN_SUPPORT_HAS_UNKNOWN_OUTCOMES"
+                )
+            ),
             "normalized_regret": regret,
             "selected_measured_outcome": selected_value,
             "ranking_score_field": next(iter(score_fields)),
         }
-    ndcg_values = [row["measured_ndcg_at_k"] for row in per_source.values()]
+    closed_ndcg_values = [row["closed_measured_ndcg_at_k"] for row in per_source.values()]
+    recovered_ndcg_values = [row["recovered_measured_ndcg_at_k"] for row in per_source.values()]
     regret_values = [row["normalized_regret"] for row in per_source.values()]
-    defined_ndcg = [float(value) for value in ndcg_values if value is not None]
+    defined_closed_ndcg = [float(value) for value in closed_ndcg_values if value is not None]
+    defined_recovered_ndcg = [float(value) for value in recovered_ndcg_values if value is not None]
     defined_regret = [float(value) for value in regret_values if value is not None]
     return {
+        "candidate_support_mode": candidate_support_mode,
+        "unknown_generated_candidates_are_zero_gain": False,
         "source_count": len(per_source),
         "source_macro_candidate_recovery_rate": _mean(row["candidate_recovery_rate"] for row in per_source.values()),
-        "source_macro_measured_top_k_recall": _mean(row["measured_top_k_recall"] for row in per_source.values()),
-        "source_measured_ndcg_defined_count": len(defined_ndcg),
-        "source_macro_measured_ndcg_at_k": None if not defined_ndcg else float(np.mean(defined_ndcg)),
+        "source_macro_measured_top_k_recovery_at_k": _mean(
+            row["measured_top_k_recovery_at_k"] for row in per_source.values()
+        ),
+        "source_closed_measured_ndcg_defined_count": len(defined_closed_ndcg),
+        "source_macro_closed_measured_ndcg_at_k": (
+            None if not defined_closed_ndcg else float(np.mean(defined_closed_ndcg))
+        ),
+        "source_recovered_measured_ndcg_defined_count": len(defined_recovered_ndcg),
+        "source_macro_recovered_measured_ndcg_at_k": (
+            None if not defined_recovered_ndcg else float(np.mean(defined_recovered_ndcg))
+        ),
         "source_normalized_regret_defined_count": len(defined_regret),
         "source_macro_normalized_regret": (
             float(np.mean(defined_regret))
@@ -399,6 +453,7 @@ def main() -> int:
     parser.add_argument("--candidates", type=Path, required=True)
     parser.add_argument("--measured-neighborhood", type=Path)
     parser.add_argument("--measured-neighborhood-pool", choices=("DEVELOPMENT", "EVALUATION"))
+    parser.add_argument("--candidate-support-mode", choices=tuple(sorted(CANDIDATE_SUPPORT_MODES)))
     parser.add_argument("--evaluation-release-state", default="CLOSED")
     parser.add_argument("--k", type=int, default=10)
     parser.add_argument("--output", type=Path, required=True)
@@ -406,15 +461,20 @@ def main() -> int:
     sources = load_source_manifest(args.source_manifest)
     candidate_rows = _read_jsonl(args.candidates)
     result = {
-        "schema_version": "route_a_v3_route2_generation_evaluation.v1",
+        "schema_version": "route_a_v3_route2_generation_evaluation.v2",
         "generation": evaluate_generation(sources, candidate_rows),
         "evaluation_release_state": args.evaluation_release_state,
     }
     if args.measured_neighborhood:
+        _require(args.candidate_support_mode is not None, "candidate support mode is required with measured neighborhood")
         measured_rows = _read_jsonl(args.measured_neighborhood)
         validate_measured_pool(measured_rows, args.measured_neighborhood_pool, args.evaluation_release_state)
         result["measured_neighborhood"] = measured_neighborhood_metrics(
-            sources, candidate_rows, measured_rows, k=args.k
+            sources,
+            candidate_rows,
+            measured_rows,
+            k=args.k,
+            candidate_support_mode=args.candidate_support_mode,
         )
         result["measured_neighborhood_pool"] = args.measured_neighborhood_pool
     _require(not args.output.exists(), f"output already exists: {args.output}")
