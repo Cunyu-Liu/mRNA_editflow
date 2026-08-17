@@ -1,6 +1,6 @@
 {
   "schema_version": "route_a_v3_route2_baseline_inventory.v1",
-  "status": "DEVELOPMENT_BASELINES_COMPLETED_PRIMARY_MRNABERT_HPO_RUNNING",
+  "status": "DEVELOPMENT_BASELINE_RESULTS_PARTIALLY_COMPLETED_PRIMARY_MRNABERT_HPO_RUNNING",
   "prediction_primary_models_in_progress": [
     {
       "model_id": "mRNABERT_EDIT_CENTERED_CRITIC",
