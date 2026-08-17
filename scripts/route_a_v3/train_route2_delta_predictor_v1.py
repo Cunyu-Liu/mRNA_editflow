@@ -218,6 +218,20 @@ class DeltaDataset(Dataset):
             set(self.candidate_overrides) <= {row.record_id for row in records},
             "candidate override is outside this dataset",
         )
+        sequences = {
+            sequence
+            for row in records
+            for sequence in (
+                row.source,
+                self.candidate_overrides.get(row.record_id, row.candidate),
+            )
+        }
+        self.token_cache = {
+            sequence: torch.tensor(
+                [TOKEN[base] for base in sequence], dtype=torch.long
+            )
+            for sequence in sequences
+        }
         self.group_sizes = Counter(row.source_group for row in records)
         if weighting_mode == "SOURCE_CONTEXT_ENDPOINT_GROUP":
             raw_weights = {
@@ -258,8 +272,8 @@ class DeltaDataset(Dataset):
         candidate = self.candidate_overrides.get(row.record_id, row.candidate)
         result = {
             "record_id": row.record_id,
-            "source": [TOKEN[base] for base in row.source],
-            "candidate": [TOKEN[base] for base in candidate],
+            "source": self.token_cache[row.source],
+            "candidate": self.token_cache[candidate],
             "target": row.target,
             "scaled_target": row.target / target_scale,
             "target_scale": target_scale,
@@ -465,8 +479,18 @@ def collate(examples: list[dict[str, Any]]) -> dict[str, Any]:
     padding = torch.ones_like(source, dtype=torch.bool)
     for index, row in enumerate(examples):
         length = len(row["source"])
-        source[index, :length] = torch.tensor(row["source"])
-        candidate[index, :length] = torch.tensor(row["candidate"])
+        source_value = (
+            row["source"]
+            if isinstance(row["source"], torch.Tensor)
+            else torch.as_tensor(row["source"], dtype=torch.long)
+        )
+        candidate_value = (
+            row["candidate"]
+            if isinstance(row["candidate"], torch.Tensor)
+            else torch.as_tensor(row["candidate"], dtype=torch.long)
+        )
+        source[index, :length].copy_(source_value)
+        candidate[index, :length].copy_(candidate_value)
         padding[index, :length] = False
     result = {
         "record_ids": [row["record_id"] for row in examples],
@@ -524,8 +548,36 @@ def _forward(model, batch):
     return model(*arguments)
 
 
-def _move(batch, device):
-    return {key: (value.to(device) if isinstance(value, torch.Tensor) else value) for key, value in batch.items()}
+def _move(batch, device, *, non_blocking: bool = False):
+    return {
+        key: (
+            value.to(device, non_blocking=non_blocking)
+            if isinstance(value, torch.Tensor)
+            else value
+        )
+        for key, value in batch.items()
+    }
+
+
+def data_loader_options(config: Mapping[str, Any]) -> dict[str, Any]:
+    workers = int(config.get("num_workers", 0))
+    _require(workers >= 0, "num_workers must be nonnegative")
+    pin_memory = bool(config.get("pin_memory", False))
+    persistent_workers = bool(config.get("persistent_workers", workers > 0))
+    _require(
+        workers > 0 or not persistent_workers,
+        "persistent workers require num_workers > 0",
+    )
+    result: dict[str, Any] = {
+        "num_workers": workers,
+        "pin_memory": pin_memory,
+        "persistent_workers": persistent_workers,
+    }
+    if workers > 0:
+        prefetch_factor = int(config.get("prefetch_factor", 2))
+        _require(prefetch_factor > 0, "prefetch_factor must be positive")
+        result["prefetch_factor"] = prefetch_factor
+    return result
 
 
 def gaussian_nll(output, target, sample_weight=None):
@@ -913,7 +965,7 @@ def metrics(
 
 
 @torch.no_grad()
-def predict(model, loader, device):
+def predict(model, loader, device, *, non_blocking: bool = False):
     model.eval()
     rows = []
     targets = []
@@ -924,7 +976,7 @@ def predict(model, loader, device):
     predicted_standard_deviations = []
     uncertainty_trained = bool(getattr(model, "learned_uncertainty", False))
     for raw in loader:
-        batch = _move(raw, device)
+        batch = _move(raw, device, non_blocking=non_blocking)
         output = _forward(model, batch)
         standardized_means = output["mean"]
         raw_means = standardized_means * batch["target_scale"]
@@ -1129,7 +1181,6 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
     )
     _require(config.get("optimizer_name", "AdamW") == "AdamW", "only AdamW is implemented")
     _require(config.get("training_precision", "FP32") == "FP32", "only FP32 critic training is implemented")
-    _require(not bool(config.get("pin_memory", False)), "pin_memory is recorded but not implemented")
     _require(not bool(config.get("torch_compile", False)), "torch_compile is recorded but not implemented")
     if pretrained_features is not None and config.get("encoder_attention_backend"):
         _require(
@@ -1141,8 +1192,19 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
         split: sampler_class(by_split[split], int(config["batch_size"]), int(config["seed"]), split == "TRAIN")
         for split in datasets
     }
+    loader_options = data_loader_options(config)
+    non_blocking_transfer = bool(config.get("non_blocking_transfer", False))
+    _require(
+        not non_blocking_transfer or loader_options["pin_memory"],
+        "non-blocking transfer requires pinned host memory",
+    )
     loaders = {
-        split: DataLoader(datasets[split], batch_sampler=samplers[split], collate_fn=collate, num_workers=int(config.get("num_workers", 0)))
+        split: DataLoader(
+            datasets[split],
+            batch_sampler=samplers[split],
+            collate_fn=collate,
+            **loader_options,
+        )
         for split in datasets
     }
     torch.manual_seed(int(config["seed"]))
@@ -1362,7 +1424,7 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
         model.train()
         losses = []
         for raw in loaders["TRAIN"]:
-            batch = _move(raw, device)
+            batch = _move(raw, device, non_blocking=non_blocking_transfer)
             _require(
                 batch["source_tokens"].device == device and batch["target"].device == device,
                 "Delta training inputs left CUDA",
@@ -1398,7 +1460,12 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
             losses.append(float(loss.detach().cpu()))
         validation_metrics = None
         if "VALIDATION" in loaders:
-            _validation_rows, validation_metrics = predict(model, loaders["VALIDATION"], device)
+            _validation_rows, validation_metrics = predict(
+                model,
+                loaders["VALIDATION"],
+                device,
+                non_blocking=non_blocking_transfer,
+            )
         epoch_row = {"epoch": epoch + 1, "train_loss": float(np.mean(losses)), "validation": validation_metrics}
         history.append(epoch_row)
         with metrics_path.open("a", encoding="utf-8") as handle:
@@ -1436,11 +1503,21 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
     selected_epoch = int(selected_checkpoint["completed_epoch"])
     model.load_state_dict(selected_checkpoint["model_state"])
     if "VALIDATION" in loaders:
-        validation_rows, validation_metrics = predict(model, loaders["VALIDATION"], device)
+        validation_rows, validation_metrics = predict(
+            model,
+            loaders["VALIDATION"],
+            device,
+            non_blocking=non_blocking_transfer,
+        )
     else:
         validation_rows, validation_metrics = [], None
     if "TEST" in loaders:
-        test_rows, test_metrics = predict(model, loaders["TEST"], device)
+        test_rows, test_metrics = predict(
+            model,
+            loaders["TEST"],
+            device,
+            non_blocking=non_blocking_transfer,
+        )
     else:
         test_rows, test_metrics = [], None
     parameter_count = sum(parameter.numel() for parameter in model.parameters())
@@ -1492,6 +1569,9 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
         "critic_position_features": config.get("critic_position_features"),
         "num_workers": int(config.get("num_workers", 0)),
         "pin_memory": bool(config.get("pin_memory", False)),
+        "persistent_workers": bool(loader_options["persistent_workers"]),
+        "prefetch_factor": loader_options.get("prefetch_factor"),
+        "non_blocking_transfer": non_blocking_transfer,
         "torch_compile": bool(config.get("torch_compile", False)),
         "cpu_fallback_used": False,
         "cuda_training_tensors_verified": cuda_training_tensors_verified,

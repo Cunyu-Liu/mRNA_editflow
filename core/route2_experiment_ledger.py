@@ -59,6 +59,9 @@ TRAINING_ATTEMPT_COLUMNS = (
     "critic_position_features",
     "num_workers",
     "pin_memory",
+    "persistent_workers",
+    "prefetch_factor",
+    "non_blocking_transfer",
     "torch_compile",
     "trainable_parameter_count",
     "frozen_pretrained_parameter_count",
@@ -203,6 +206,11 @@ def build_training_attempt_row(
         "critic_position_features": config.get("critic_position_features", ""),
         "num_workers": config.get("num_workers", 0),
         "pin_memory": config.get("pin_memory", False),
+        "persistent_workers": config.get(
+            "persistent_workers", int(config.get("num_workers", 0)) > 0
+        ),
+        "prefetch_factor": config.get("prefetch_factor", ""),
+        "non_blocking_transfer": config.get("non_blocking_transfer", False),
         "torch_compile": config.get("torch_compile", False),
         "trainable_parameter_count": trainable_count,
         "frozen_pretrained_parameter_count": pretrained_count,

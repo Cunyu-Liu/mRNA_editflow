@@ -711,6 +711,50 @@ def test_delta_training_refuses_cuda_device_remapping(monkeypatch) -> None:
         trainer.require_cuda("cuda:0", 0)
 
 
+def test_cached_tokenization_and_collate_preserve_exact_tokens() -> None:
+    trainer = _load(TRAIN_PATH, "route2_delta_cached_tokenization_test")
+    records = [
+        trainer.DeltaRecord(
+            "a", "TRAIN", "ACGU", "AGGU", 1.0, "g", "S", "A", "C", "E", 0
+        ),
+        trainer.DeltaRecord(
+            "b", "TRAIN", "AC", "UC", 2.0, "h", "S", "A", "C", "E", 0
+        ),
+    ]
+    vocabs = {
+        field: trainer.build_vocab(records, field)
+        for field in ("study", "assay", "context", "endpoint")
+    }
+    dataset = trainer.DeltaDataset(records, vocabs)
+    first = dataset[0]
+    assert isinstance(first["source"], torch.Tensor)
+    assert first["source"].tolist() == [0, 1, 2, 3]
+    batch = trainer.collate([dataset[0], dataset[1]])
+    assert batch["source_tokens"].tolist() == [[0, 1, 2, 3], [0, 1, 4, 4]]
+    assert batch["candidate_tokens"].tolist() == [[0, 2, 2, 3], [3, 1, 4, 4]]
+
+
+def test_data_loader_options_require_valid_pipeline_combinations() -> None:
+    trainer = _load(TRAIN_PATH, "route2_delta_loader_options_test")
+    assert trainer.data_loader_options({"num_workers": 0}) == {
+        "num_workers": 0,
+        "pin_memory": False,
+        "persistent_workers": False,
+    }
+    assert trainer.data_loader_options({
+        "num_workers": 4,
+        "pin_memory": True,
+        "prefetch_factor": 3,
+    }) == {
+        "num_workers": 4,
+        "pin_memory": True,
+        "persistent_workers": True,
+        "prefetch_factor": 3,
+    }
+    with pytest.raises(trainer.DeltaTrainingError, match="persistent"):
+        trainer.data_loader_options({"num_workers": 0, "persistent_workers": True})
+
+
 def test_task_gradient_calibration_is_cuda_and_zero_update() -> None:
     if not torch.cuda.is_available():
         pytest.skip("CUDA is required for task-gradient calibration")

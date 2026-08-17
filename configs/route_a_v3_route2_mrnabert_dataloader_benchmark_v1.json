@@ -1,0 +1,53 @@
+{
+  "schema_version": "route_a_v3_route2_dataloader_benchmark_config.v1",
+  "training_config": "configs/route_a_v3_route2_mrnabert_edit_max_mean_only_gpu6_v1.json",
+  "warmup_batches": 8,
+  "measured_batches": 128,
+  "profiles": [
+    {
+      "profile_id": "B16_W0_PAGEABLE",
+      "batch_size": 16,
+      "num_workers": 0,
+      "pin_memory": false,
+      "persistent_workers": false,
+      "non_blocking_transfer": false
+    },
+    {
+      "profile_id": "B16_W4_PINNED",
+      "batch_size": 16,
+      "num_workers": 4,
+      "pin_memory": true,
+      "persistent_workers": true,
+      "prefetch_factor": 2,
+      "non_blocking_transfer": true
+    },
+    {
+      "profile_id": "B16_W8_PINNED",
+      "batch_size": 16,
+      "num_workers": 8,
+      "pin_memory": true,
+      "persistent_workers": true,
+      "prefetch_factor": 2,
+      "non_blocking_transfer": true
+    },
+    {
+      "profile_id": "B32_W4_PINNED",
+      "batch_size": 32,
+      "num_workers": 4,
+      "pin_memory": true,
+      "persistent_workers": true,
+      "prefetch_factor": 2,
+      "non_blocking_transfer": true
+    },
+    {
+      "profile_id": "B64_W8_PINNED",
+      "batch_size": 64,
+      "num_workers": 8,
+      "pin_memory": true,
+      "persistent_workers": true,
+      "prefetch_factor": 2,
+      "non_blocking_transfer": true
+    }
+  ],
+  "output_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/benchmarks/mrnabert_dataloader_benchmark_v1.json"
+}
