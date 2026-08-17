@@ -256,6 +256,7 @@ def execute(
             "training_record_count": len(records),
             "sampled_batch_count": len(batches),
             "sampled_record_count": sum(len(batch) for batch in batches),
+            "sampled_record_fraction": sum(len(batch) for batch in batches) / len(records),
             "mean_sampled_loss": sum(loss_values) / len(loss_values),
             "shared_gradient_norm": float(torch.linalg.vector_norm(vector)),
         }
@@ -307,7 +308,7 @@ def main() -> int:
     parser.add_argument("--adjudication", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--physical-gpu-index", type=int, required=True)
-    parser.add_argument("--maximum-batches-per-task", type=int, default=4)
+    parser.add_argument("--maximum-batches-per-task", type=int, default=16)
     args = parser.parse_args()
     failure_config = {
         "device": f"cuda:{args.physical_gpu_index}",
