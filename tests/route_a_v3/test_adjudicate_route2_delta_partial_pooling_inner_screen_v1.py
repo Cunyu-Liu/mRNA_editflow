@@ -3,6 +3,8 @@ from __future__ import annotations
 import importlib.util
 from pathlib import Path
 
+import pytest
+
 
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / "scripts/route_a_v3/adjudicate_route2_delta_partial_pooling_inner_screen_v1.py"
@@ -157,3 +159,16 @@ def test_frozen_arm_configs_differ_only_by_residual_factor_and_run_identity() ->
     residual = module.load_json(ROOT / protocol["residual_arm_config"])
     module.validate_protocol(protocol)
     module.validate_arm_config_pair(protocol, shared, residual)
+
+
+def test_prefrozen_confirmation_rejects_success_rule_drift() -> None:
+    module = _load_module()
+    protocol = _protocol()
+    protocol["conditional_confirmation_plan"][
+        "minimum_mean_paired_task_macro_spearman_gain_inclusive"
+    ] = 0.0
+    with pytest.raises(
+        module.PartialPoolingAdjudicationError,
+        match="confirmation success rule changed",
+    ):
+        module.validate_protocol(protocol)
