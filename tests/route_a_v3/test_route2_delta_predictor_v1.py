@@ -644,6 +644,88 @@ def test_task_gradient_calibration_is_cuda_and_zero_update() -> None:
         assert torch.equal(before[name], value.detach())
 
 
+def test_gradnorm_training_mode_persists_calibration_and_updates_on_cuda(
+    tmp_path: Path,
+) -> None:
+    if not torch.cuda.is_available():
+        pytest.skip("CUDA is required for gradnorm training integration")
+    trainer = _load(TRAIN_PATH, "route2_delta_gradnorm_training_gpu_test")
+    physical_index = int(os.environ.get("ROUTE2_TEST_CUDA_INDEX", "0"))
+    manifest = tmp_path / "manifest.jsonl"
+    canonical = tmp_path / "canonical.jsonl"
+    manifest_rows = []
+    canonical_rows = []
+    candidates = ("CAAA", "GAAA", "UAAA", "ACAA", "AGAA", "AUAA", "AACA")
+    for task_number, (endpoint, region) in enumerate((("E1", "5UTR"), ("E2", "3UTR"))):
+        for index, (split, candidate) in enumerate(zip(
+            ("TRAIN", "TRAIN", "TRAIN", "VALIDATION", "VALIDATION", "VALIDATION", "TEST"),
+            candidates,
+        )):
+            record_id = f"{endpoint}-{index}"
+            manifest_rows.append({
+                "canonical_record_id": record_id,
+                "pool_assignment": "DEVELOPMENT",
+                "split": split,
+                "study_unit_id": f"S{task_number}",
+                "connected_source_component_id": f"COMP-{record_id}",
+            })
+            canonical_rows.append({
+                "canonical_record_id": record_id,
+                "pool_assignment": "DEVELOPMENT",
+                "source_sequence": "AAAA",
+                "candidate_sequence": candidate,
+                "direction_normalized_delta": float(index - 2 + task_number),
+                "study_unit_id": f"S{task_number}",
+                "source_id": f"SOURCE-{record_id}",
+                "assay_id": f"A{task_number}",
+                "biological_context_id": f"C{task_number}",
+                "endpoint_id": endpoint,
+                "region": region,
+            })
+    manifest.write_text("".join(json.dumps(row) + "\n" for row in manifest_rows))
+    canonical.write_text("".join(json.dumps(row) + "\n" for row in canonical_rows))
+    output = tmp_path / "gradnorm-run"
+    summary = trainer.train({
+        "device": f"cuda:{physical_index}",
+        "physical_gpu_index": physical_index,
+        "development_manifest": str(manifest),
+        "canonical_paths": [str(canonical)],
+        "run_mode": "FIXED_GROUPED_SPLIT",
+        "result_stage": "HPO_VALIDATION_ONLY",
+        "baseline_id": "gradnorm_gpu_smoke",
+        "model_kind": trainer.ROUTE2_EDIT_CENTERED_MODEL_KIND,
+        "metadata_mode": "TRANSFERABLE_CONTEXT",
+        "training_weighting_mode": "TASK_THEN_SOURCE_CONTEXT_ENDPOINT_GROUP",
+        "training_update_mode": trainer.TRAINING_UPDATE_TASK_GRADIENT_NORM_CALIBRATED,
+        "task_gradient_calibration_max_batches_per_task": 2,
+        "target_scaling_mode": trainer.TARGET_SCALING_TRAIN_TASK_ROBUST,
+        "target_scale_minimum_task_records": 2,
+        "loss_kind": "huber",
+        "checkpoint_selection": "BEST_VALIDATION",
+        "checkpoint_metric": "TASK_MACRO_SPEARMAN_THEN_STANDARDIZED_MAE",
+        "batch_size": 2,
+        "seed": 23,
+        "hidden_dim": 16,
+        "depth": 1,
+        "learning_rate": 1e-3,
+        "weight_decay": 0.0,
+        "epochs": 1,
+        "num_workers": 0,
+    }, output)
+    calibration = summary["task_gradient_calibration"]
+    assert summary["training_update_mode"] == trainer.TRAINING_UPDATE_TASK_GRADIENT_NORM_CALIBRATED
+    assert calibration["task_count"] == 2
+    assert calibration["cuda_losses_verified"] is True
+    assert calibration["optimizer_steps"] == calibration["parameter_updates"] == 0
+    assert summary["cuda_training_tensors_verified"] is True
+    assert summary["cpu_fallback_used"] is False
+    assert summary["optimizer_steps"] > 0 and summary["parameter_changed"] is True
+    checkpoint = torch.load(
+        output / "delta_predictor_checkpoint.pt", map_location="cpu", weights_only=False
+    )
+    assert checkpoint["training_provenance"]["task_gradient_calibration"] == calibration
+
+
 def test_gpu_training_persists_live_contract_artifacts(tmp_path: Path) -> None:
     if not torch.cuda.is_available():
         pytest.skip("CUDA is required for training artifact integration test")
