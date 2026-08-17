@@ -28,6 +28,7 @@ from core.route2_delta_predictor import (
     ROUTE2_DELTA_MODEL_KIND,
     ROUTE2_EDIT_CENTERED_MODEL_KIND,
     ROUTE2_EDIT_CENTERED_SOURCE_ONLY_KIND,
+    ROUTE2_LEGACY_RNAFM_EDIT_CENTERED_MODEL_KIND,
     ROUTE2_PRETRAINED_EDIT_CENTERED_MODEL_KIND,
     Route2DeltaPredictor,
     Route2EditCenteredDeltaPredictor,
@@ -60,6 +61,10 @@ SHARED_EFFECT_EXCLUDED_PREFIXES = (
     "region_scale.",
     "region_shift.",
 )
+PRETRAINED_EDIT_CENTERED_MODEL_KINDS = {
+    ROUTE2_PRETRAINED_EDIT_CENTERED_MODEL_KIND,
+    ROUTE2_LEGACY_RNAFM_EDIT_CENTERED_MODEL_KIND,
+}
 
 
 class DeltaTrainingError(RuntimeError):
@@ -113,7 +118,10 @@ class FrozenPretrainedPairFeatures:
     def __init__(self, path: Path, expected_record_ids: set[str]):
         payload = torch.load(path, map_location="cpu", weights_only=False)
         _require(
-            payload.get("schema_version") == "route_a_v3_route2_rnafm_pair_features.v1",
+            payload.get("schema_version") in {
+                "route_a_v3_route2_frozen_pair_features.v1",
+                "route_a_v3_route2_rnafm_pair_features.v1",
+            },
             "unexpected pretrained feature-cache schema",
         )
         record_ids = [str(value) for value in payload["record_ids"]]
@@ -975,7 +983,7 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
     records = load_records([Path(path) for path in config["canonical_paths"]], manifest)
     model_kind = str(config.get("model_kind", ROUTE2_DELTA_MODEL_KIND))
     pretrained_features = None
-    if model_kind == ROUTE2_PRETRAINED_EDIT_CENTERED_MODEL_KIND:
+    if model_kind in PRETRAINED_EDIT_CENTERED_MODEL_KINDS:
         _require("pretrained_feature_cache_path" in config, "pretrained feature cache is required")
         pretrained_features = FrozenPretrainedPairFeatures(
             Path(config["pretrained_feature_cache_path"]),
@@ -1142,7 +1150,7 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
             "source_only_control": model_kind == ROUTE2_EDIT_CENTERED_SOURCE_ONLY_KIND,
         }
         model = Route2EditCenteredDeltaPredictor(**checkpoint_model_config).to(device)
-    elif model_kind == ROUTE2_PRETRAINED_EDIT_CENTERED_MODEL_KIND:
+    elif model_kind in PRETRAINED_EDIT_CENTERED_MODEL_KINDS:
         _require(pretrained_features is not None, "pretrained features were not loaded")
         checkpoint_model_config = {
             **shared_model_config,
@@ -1163,7 +1171,7 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
         raise DeltaTrainingError(f"unknown model_kind: {model_kind}")
     if loss_kind == "learned_variance_gaussian_nll":
         _require(
-            model_kind == ROUTE2_PRETRAINED_EDIT_CENTERED_MODEL_KIND,
+            model_kind in PRETRAINED_EDIT_CENTERED_MODEL_KINDS,
             "learned uncertainty is scoped to the matched pretrained critic comparison",
         )
     trainable_parameter_count = sum(
@@ -1454,22 +1462,22 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
         "swap_antisymmetry_by_construction": model_kind in {
             ROUTE2_DELTA_MODEL_KIND,
             ROUTE2_EDIT_CENTERED_MODEL_KIND,
-            ROUTE2_PRETRAINED_EDIT_CENTERED_MODEL_KIND,
+            *PRETRAINED_EDIT_CENTERED_MODEL_KINDS,
         },
         "identity_zero_by_construction": model_kind in {
             ROUTE2_DELTA_MODEL_KIND,
             ROUTE2_EDIT_CENTERED_MODEL_KIND,
-            ROUTE2_PRETRAINED_EDIT_CENTERED_MODEL_KIND,
+            *PRETRAINED_EDIT_CENTERED_MODEL_KINDS,
         },
         "edit_centered_pooling": model_kind in {
             ROUTE2_EDIT_CENTERED_MODEL_KIND,
             ROUTE2_EDIT_CENTERED_SOURCE_ONLY_KIND,
-            ROUTE2_PRETRAINED_EDIT_CENTERED_MODEL_KIND,
+            *PRETRAINED_EDIT_CENTERED_MODEL_KINDS,
         },
         "study_identity_used_by_effect_encoder": model_kind not in {
             ROUTE2_EDIT_CENTERED_MODEL_KIND,
             ROUTE2_EDIT_CENTERED_SOURCE_ONLY_KIND,
-            ROUTE2_PRETRAINED_EDIT_CENTERED_MODEL_KIND,
+            *PRETRAINED_EDIT_CENTERED_MODEL_KINDS,
         } and metadata_mode == "FULL_CONTEXT",
         "uncertainty_head_used": bool(getattr(model, "learned_uncertainty", False)),
         "prediction_uncertainty_status": (

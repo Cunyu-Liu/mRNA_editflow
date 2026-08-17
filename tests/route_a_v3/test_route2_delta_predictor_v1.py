@@ -226,6 +226,27 @@ def test_frozen_pretrained_feature_table_requires_exact_record_universe(tmp_path
         trainer.FrozenPretrainedPairFeatures(path, {"a"})
 
 
+def test_generic_mrnabert_feature_table_is_accepted(tmp_path) -> None:
+    trainer = _load(TRAIN_PATH, "route2_delta_mrnabert_feature_table_test")
+    path = tmp_path / "mrnabert_features.pt"
+    torch.save(
+        {
+            "schema_version": "route_a_v3_route2_frozen_pair_features.v1",
+            "encoder_family": "mRNABERT",
+            "model_id": "YYLY66/mRNABERT",
+            "pretrained_parameter_count": 86_000_000,
+            "record_ids": ["a", "b"],
+            "source_embeddings": torch.randn(2, 768).half(),
+            "candidate_embeddings": torch.randn(2, 768).half(),
+        },
+        path,
+    )
+    table = trainer.FrozenPretrainedPairFeatures(path, {"a", "b"})
+    assert table.width == 768
+    assert table.model_id == "YYLY66/mRNABERT"
+    assert table.pretrained_parameter_count == 86_000_000
+
+
 def test_study_specific_scale_calibration_preserves_constraints_and_scales_delta() -> None:
     module = _load(MODEL_PATH, "route2_delta_study_scale_test")
     model = module.Route2DeltaPredictor(

@@ -1,0 +1,26 @@
+{
+  "schema_version": "route_a_v3_route2_mrnabert_feature_cache.v1",
+  "status": "ACTIVE_DEVELOPMENT_IMPLEMENTATION",
+  "device": "cuda:6",
+  "physical_gpu_index": 6,
+  "development_manifest": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/manifests/route2_complete_frozen_v1/development_manifest.jsonl",
+  "canonical_paths": [
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE200304/v1/canonical_records.jsonl",
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE114002/v1/canonical_records.private.jsonl",
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE149487/v1/canonical_records.private.jsonl",
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE217518/v1/canonical_records.jsonl",
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/ENCSR854RUF/v1/canonical_records.private.jsonl",
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE186455/v1/canonical_records.private.jsonl",
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE256185/v1/canonical_records.private.jsonl",
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE269595/v1/canonical_records.private.jsonl"
+  ],
+  "expected_record_count": 126165,
+  "model_id": "YYLY66/mRNABERT@a1eb7df25804d23f08646e1cb996b234d7208a40",
+  "mrnabert_model_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/external_model_assets/mrnabert_a1eb7df25804d23f08646e1cb996b234d7208a40",
+  "maximum_chunk_nucleotides": 1000,
+  "maximum_sequences_per_batch": 8,
+  "batch_token_budget": 4096,
+  "progress_every_batches": 100,
+  "output_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/pretrained_features/mrnabert_full_development_v1.pt",
+  "summary_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/pretrained_features/mrnabert_full_development_v1.summary.json"
+}

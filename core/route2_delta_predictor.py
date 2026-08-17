@@ -10,6 +10,9 @@ ROUTE2_DELTA_MODEL_KIND = "delta_anchored_position_aware_antisymmetric"
 ROUTE2_EDIT_CENTERED_MODEL_KIND = "delta_edit_centered_antisymmetric"
 ROUTE2_EDIT_CENTERED_SOURCE_ONLY_KIND = "delta_edit_centered_source_only_control"
 ROUTE2_PRETRAINED_EDIT_CENTERED_MODEL_KIND = (
+    "delta_pretrained_mrnabert_edit_centered_antisymmetric"
+)
+ROUTE2_LEGACY_RNAFM_EDIT_CENTERED_MODEL_KIND = (
     "delta_pretrained_rnafm_edit_centered_antisymmetric"
 )
 
@@ -311,9 +314,9 @@ class Route2EditCenteredDeltaPredictor(nn.Module):
 
 
 class Route2PretrainedEditCenteredDeltaPredictor(nn.Module):
-    """Frozen-RNA-FM global context plus trainable edit-local Delta critic.
+    """Frozen pretrained global context plus trainable edit-local Delta critic.
 
-    RNA-FM embeddings are computed once outside this module and remain frozen.
+    Encoder embeddings are computed once outside this module and remain frozen.
     The trainable sequence path concentrates capacity around observed edits while
     retaining whole-source context.  The Delta mean is exactly antisymmetric;
     an optional uncertainty head is symmetric and is used only in the matched

@@ -10,6 +10,7 @@ import pytest
 ROOT = Path(__file__).resolve().parents[2]
 ENTRYPOINTS = (
     "adjudicate_route2_independent_generation_evaluator_v1.py",
+    "build_route2_mrnabert_feature_cache_v1.py",
     "build_route2_rnafm_feature_cache_v1.py",
     "build_route2_generation_baseline_selection_input_v2.py",
     "compare_route2_exhaustive_small_space_reference_v1.py",
