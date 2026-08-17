@@ -58,6 +58,14 @@
       "source_closed_measured_ndcg_defined_count": 0,
       "source_macro_candidate_recovery_rate": 0.07575757575757576,
       "source_macro_measured_top_k_recovery_at_k": 0.005611672278338945
+    },
+    {
+      "method_id": "unguided_learned_base_flow_g0",
+      "sources_with_unmeasured_generated_candidates": 891,
+      "unmeasured_generated_candidate_occurrences": 24714,
+      "source_closed_measured_ndcg_defined_count": 0,
+      "source_macro_candidate_recovery_rate": 0.20202020202020202,
+      "source_macro_measured_top_k_recovery_at_k": 0.10101027011562196
     }
   ],
   "unknown_generated_candidates_are_zero_gain": false,

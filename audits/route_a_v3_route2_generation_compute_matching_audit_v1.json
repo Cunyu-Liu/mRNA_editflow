@@ -1,0 +1,66 @@
+{
+  "schema_version": "route_a_v3_route2_generation_compute_matching_audit.v1",
+  "status": "EXISTING_GENERATION_BASELINE_COMPARISON_NOT_MATCHED_COMPUTE",
+  "evaluation_release_state": "CLOSED",
+  "evaluation_outcomes_accessed": false,
+  "source_count": 891,
+  "candidate_budget_per_source": 32,
+  "frozen_registry_critic_forward_equivalent_budget_per_source": 256,
+  "observed_search_critic_forward_budget_per_source": 32,
+  "methods": [
+    {
+      "method_id": "random_legal",
+      "mean_total_forward_equivalents_per_source": 32.0,
+      "minimum_total_forward_equivalents_per_source": 32.0,
+      "maximum_total_forward_equivalents_per_source": 32.0
+    },
+    {
+      "method_id": "greedy",
+      "mean_total_forward_equivalents_per_source": 32.0,
+      "minimum_total_forward_equivalents_per_source": 32.0,
+      "maximum_total_forward_equivalents_per_source": 32.0
+    },
+    {
+      "method_id": "beam",
+      "mean_total_forward_equivalents_per_source": 32.0,
+      "minimum_total_forward_equivalents_per_source": 32.0,
+      "maximum_total_forward_equivalents_per_source": 32.0
+    },
+    {
+      "method_id": "genetic",
+      "mean_total_forward_equivalents_per_source": 31.88776655443322,
+      "minimum_total_forward_equivalents_per_source": 30.0,
+      "maximum_total_forward_equivalents_per_source": 32.0
+    },
+    {
+      "method_id": "local_search",
+      "mean_total_forward_equivalents_per_source": 23.7317620650954,
+      "minimum_total_forward_equivalents_per_source": 4.0,
+      "maximum_total_forward_equivalents_per_source": 32.0
+    },
+    {
+      "method_id": "generate_then_rerank",
+      "mean_total_forward_equivalents_per_source": 32.0,
+      "minimum_total_forward_equivalents_per_source": 32.0,
+      "maximum_total_forward_equivalents_per_source": 32.0
+    },
+    {
+      "method_id": "unguided_learned_base_flow_g0",
+      "mean_total_forward_equivalents_per_source": 93.82603815937149,
+      "minimum_total_forward_equivalents_per_source": 32.0,
+      "maximum_total_forward_equivalents_per_source": 160.0
+    }
+  ],
+  "candidate_support_mode": "OPEN_GENERATED_SUPPORT",
+  "closed_measured_ndcg_defined_method_count": 0,
+  "independent_evaluator_status": "NOT_ESTABLISHED",
+  "old_v1_strongest_baseline_artifact_state": "RETIRED_NOT_AUTHORITATIVE_FOR_SELECTION",
+  "selector_repair": {
+    "matched_forward_equivalent_budget_is_required": true,
+    "per_source_total_forward_accounting_must_close": true,
+    "per_source_total_forwards_may_not_exceed_the_frozen_budget": true,
+    "critic_using_methods_must_declare_the_frozen_budget": true
+  },
+  "required_reexecution": "Rerun the search methods with the frozen 256-forward ceiling and record the same total forward-equivalent ceiling for every method before any strongest-baseline selection.",
+  "scientific_claim_status": "NOT_ESTABLISHED"
+}

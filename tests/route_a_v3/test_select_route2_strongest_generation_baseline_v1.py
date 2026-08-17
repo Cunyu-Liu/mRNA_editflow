@@ -30,7 +30,9 @@ def _evaluation(method_id: str, ndcg: float, regret: float, total_forwards: floa
             "candidate_budget": 8,
             "compute": {
                 "critic_forward_budget": 64,
-                "critic_forwards": 32,
+                "generator_nfe": 0,
+                "critic_forwards": total_forwards,
+                "independent_evaluator_forwards": 0,
                 "total_forward_equivalents": total_forwards,
             },
         }
@@ -68,11 +70,12 @@ def _evaluation(method_id: str, ndcg: float, regret: float, total_forwards: floa
 
 def _payload():
     return {
-        "schema_version": "route_a_v3_route2_generation_baseline_selection_input.v1",
+        "schema_version": "route_a_v3_route2_generation_baseline_selection_input.v2",
         "selection_pool": "DEVELOPMENT_MEASURED_NEIGHBORHOOD",
         "evaluation_release_state": "CLOSED",
         "bootstrap_iterations": 1000,
         "bootstrap_seed": 17,
+        "forward_equivalent_budget_per_source": 64,
         "required_method_ids": ["random_legal", "beam"],
         "baseline_evaluations": [
             {"method_id": "random_legal", "evaluation": _evaluation("random_legal", 0.5, 0.5, 10.0)},
@@ -86,6 +89,8 @@ def test_measured_ndcg_freezes_strongest_matched_baseline() -> None:
     result = module.select(_payload())
     assert result["strongest_generation_baseline_id"] == "beam"
     assert result["matched_source_and_candidate_budget"] is True
+    assert result["matched_forward_equivalent_budget"] is True
+    assert result["forward_equivalent_budget_per_source"] == 64
     assert result["critic_budget_matched_within_critic_using_methods"] is True
     assert result["evaluation_outcomes_accessed"] is False
 
@@ -94,7 +99,35 @@ def test_budget_mismatch_refuses_unfair_selection() -> None:
     module = _load()
     payload = deepcopy(_payload())
     payload["baseline_evaluations"][1]["evaluation"]["generation"]["per_source"]["S0"]["compute"]["critic_forward_budget"] = 32
-    with pytest.raises(module.GenerationBaselineSelectionError, match="budgets differ"):
+    with pytest.raises(module.GenerationBaselineSelectionError, match="critic budget"):
+        module.select(payload)
+
+
+def test_missing_matched_forward_budget_refuses_selection() -> None:
+    module = _load()
+    payload = _payload()
+    del payload["forward_equivalent_budget_per_source"]
+    with pytest.raises(module.GenerationBaselineSelectionError, match="budget is missing"):
+        module.select(payload)
+
+
+def test_forward_budget_overrun_refuses_selection() -> None:
+    module = _load()
+    payload = _payload()
+    compute = payload["baseline_evaluations"][1]["evaluation"]["generation"]["per_source"]["S0"]["compute"]
+    compute["critic_forwards"] = 65
+    compute["total_forward_equivalents"] = 65
+    with pytest.raises(module.GenerationBaselineSelectionError, match="budget exceeded"):
+        module.select(payload)
+
+
+def test_forward_accounting_must_close() -> None:
+    module = _load()
+    payload = _payload()
+    payload["baseline_evaluations"][1]["evaluation"]["generation"]["per_source"]["S0"]["compute"][
+        "total_forward_equivalents"
+    ] += 1
+    with pytest.raises(module.GenerationBaselineSelectionError, match="accounting does not close"):
         module.select(payload)
 
 
@@ -106,6 +139,7 @@ def test_unguided_method_is_allowed_only_with_zero_critic_calls() -> None:
     for row in evaluation["generation"]["per_source"].values():
         row["compute"]["critic_forward_budget"] = None
         row["compute"]["critic_forwards"] = 0
+        row["compute"]["generator_nfe"] = row["compute"]["total_forward_equivalents"]
     payload["baseline_evaluations"].append({
         "method_id": "unguided_learned_base_flow_g0",
         "evaluation": evaluation,

@@ -33,6 +33,8 @@ def _optional_finite(value: Any, label: str) -> float | None:
 
 def _budget_signature(
     generation: Mapping[str, Any],
+    *,
+    forward_equivalent_budget_per_source: float,
 ) -> tuple[dict[str, int], dict[str, int] | None]:
     signature = {}
     critic_signature = {}
@@ -42,9 +44,34 @@ def _budget_signature(
         forward_budget = compute["critic_forward_budget"]
         critic_budget_presence.add(forward_budget is not None)
         signature[str(source_key)] = int(result["candidate_budget"])
+        generator_nfe = _finite(compute["generator_nfe"], "generator NFE")
+        critic_forwards = _finite(compute["critic_forwards"], "critic forwards")
+        evaluator_forwards = _finite(
+            compute["independent_evaluator_forwards"], "independent evaluator forwards"
+        )
+        total_forwards = _finite(
+            compute["total_forward_equivalents"], "total forward equivalents"
+        )
         if forward_budget is None:
-            _require(_finite(compute["critic_forwards"], "critic forwards") == 0.0, f"unbudgeted critic calls occurred: {source_key}")
-        else:
+            _require(critic_forwards == 0.0, f"unbudgeted critic calls occurred: {source_key}")
+        _require(
+            min(generator_nfe, critic_forwards, evaluator_forwards, total_forwards) >= 0.0,
+            f"negative forward accounting occurred: {source_key}",
+        )
+        _require(
+            math.isclose(
+                total_forwards,
+                generator_nfe + critic_forwards + evaluator_forwards,
+                rel_tol=0.0,
+                abs_tol=1e-9,
+            ),
+            f"total forward-equivalent accounting does not close: {source_key}",
+        )
+        _require(
+            total_forwards <= forward_equivalent_budget_per_source,
+            f"matched forward-equivalent budget exceeded: {source_key}",
+        )
+        if forward_budget is not None:
             critic_signature[str(source_key)] = int(forward_budget)
     _require(len(signature) == int(generation["source_count"]), "per-source results do not close to source count")
     _require(len(critic_budget_presence) == 1, "critic budget presence differs within one method")
@@ -94,7 +121,7 @@ def paired_source_bootstrap(
 
 def select(payload: Mapping[str, Any]) -> dict[str, Any]:
     _require(
-        payload["schema_version"] == "route_a_v3_route2_generation_baseline_selection_input.v1",
+        payload["schema_version"] == "route_a_v3_route2_generation_baseline_selection_input.v2",
         "unexpected selection input schema",
     )
     _require(payload["selection_pool"] == "DEVELOPMENT_MEASURED_NEIGHBORHOOD", "selection is not Development measured data")
@@ -102,6 +129,19 @@ def select(payload: Mapping[str, Any]) -> dict[str, Any]:
     bootstrap_iterations = int(payload["bootstrap_iterations"])
     _require(bootstrap_iterations >= 1000, "generation bootstrap budget is below 1000 iterations")
     bootstrap_seed = int(payload["bootstrap_seed"])
+    _require(
+        "forward_equivalent_budget_per_source" in payload,
+        "matched forward-equivalent budget is missing",
+    )
+    forward_equivalent_budget_per_source = _finite(
+        payload["forward_equivalent_budget_per_source"],
+        "forward-equivalent budget per source",
+    )
+    _require(
+        forward_equivalent_budget_per_source > 0.0
+        and forward_equivalent_budget_per_source.is_integer(),
+        "forward-equivalent budget per source must be a positive integer",
+    )
     required_methods = {str(value) for value in payload["required_method_ids"]}
     entries = payload["baseline_evaluations"]
     _require(entries, "no generation baseline evaluations were provided")
@@ -124,12 +164,19 @@ def select(payload: Mapping[str, Any]) -> dict[str, Any]:
         _require(generation["edit_budget_violation_count"] == 0, f"edit-budget violation produced by {method_id}")
         _require(generation["candidate_budget_violation_count"] == 0, f"candidate-budget violation produced by {method_id}")
         _require(generation["generated_candidates_grant_canonical_credit"] is False, f"canonical credit enabled for {method_id}")
-        candidate_signature, critic_signature = _budget_signature(generation)
+        candidate_signature, critic_signature = _budget_signature(
+            generation,
+            forward_equivalent_budget_per_source=forward_equivalent_budget_per_source,
+        )
         if matched_candidate_signature is None:
             matched_candidate_signature = candidate_signature
         else:
             _require(candidate_signature == matched_candidate_signature, f"source/candidate budgets differ for {method_id}")
         if critic_signature is not None:
+            _require(
+                set(critic_signature.values()) == {int(forward_equivalent_budget_per_source)},
+                f"critic budget does not use the matched forward-equivalent budget for {method_id}",
+            )
             if matched_critic_signature is None:
                 matched_critic_signature = critic_signature
             else:
@@ -295,8 +342,10 @@ def select(payload: Mapping[str, Any]) -> dict[str, Any]:
         "bootstrap_seed": bootstrap_seed,
         "uncertainty_tiebreak": "LOWEST_MEAN_TOTAL_FORWARD_EQUIVALENTS_THEN_METHOD_ID",
         "matched_source_and_candidate_budget": True,
+        "matched_forward_equivalent_budget": True,
+        "forward_equivalent_budget_per_source": forward_equivalent_budget_per_source,
         "critic_budget_matched_within_critic_using_methods": True,
-        "generator_nfe_accounting_compared": True,
+        "generator_nfe_accounting_validated": True,
         "required_method_ids": sorted(required_methods),
         "all_candidates_ranked": ranked,
         "evaluation_outcomes_accessed": False,
