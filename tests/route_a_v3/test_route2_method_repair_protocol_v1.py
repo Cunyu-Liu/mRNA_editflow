@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import json
 from pathlib import Path
 
@@ -8,7 +10,7 @@ from core.route2_delta_predictor import (
 
 
 ROOT = Path(__file__).resolve().parents[2]
-PROTOCOL = ROOT / "configs/route_a_v3_route2_method_repair_protocol_v1.json"
+PROTOCOL = ROOT / "configs/route_a_v3_route2_method_repair_protocol_v2.json"
 
 
 def _load(path: str | Path):
@@ -127,4 +129,13 @@ def test_protocol_keeps_new_method_claim_and_guidance_fail_closed() -> None:
     breadth = protocol["screen_breadth_requirements"]
     assert breadth["task_count"] == 9
     assert breadth["minimum_tasks_improved_over_global_raw"] == 5
-    assert breadth["minimum_tasks_improved_over_each_matched_control"] == 5
+    assert breadth["minimum_tasks_improved_over_source_only_control"] == 5
+    support = protocol["candidate_permutation_support"]
+    assert support["audit_timing"] == "BEFORE_EDIT_CENTERED_OR_CONTROL_SCREEN_OUTCOMES_WERE_READ"
+    assert support["all_task_primary_control"] == "MATCHED_SOURCE_ONLY_CONTROL"
+    assert support["changed_candidate_sequence_count"] == 26464
+    assert support["minimum_eligible_task_wins"] == len(support["eligible_tasks"]) == 2
+    audit = _load(support["audit"])
+    assert audit["status"] == "EXACT_SOURCE_PERMUTATION_VALID_BUT_TASK_SUPPORT_PARTIAL"
+    assert audit["permutation_gate_eligible_tasks"] == support["eligible_tasks"]
+    assert audit["task_balanced_weighting_audit"]["source_groups_spanning_multiple_tasks"] == 0

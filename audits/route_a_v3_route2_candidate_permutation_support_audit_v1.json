@@ -1,0 +1,85 @@
+{
+  "schema_version": "route2_method_repair_control_support_audit.v1",
+  "status": "EXACT_SOURCE_PERMUTATION_VALID_BUT_TASK_SUPPORT_PARTIAL",
+  "audit_date": "2026-08-17",
+  "audit_timing": "BEFORE_EDIT_CENTERED_OR_CONTROL_SCREEN_OUTCOMES_WERE_READ",
+  "development_pool": "TRAIN_ONLY",
+  "training_record_count": 89580,
+  "current_control": {
+    "permutation_stratum": "EXACT_SOURCE_SEQUENCE_ENDPOINT_REGION",
+    "candidate_pool_membership_preserved": true,
+    "edit_distance_multiset_preserved": true,
+    "permutable_record_count": 85679,
+    "changed_candidate_sequence_count": 26464,
+    "changed_candidate_sequence_fraction": 0.2954230855101585,
+    "maximum_achievable_changed_candidate_sequence_count": 29259,
+    "fraction_of_achievable_sequence_changes_realized": 0.9044738371099491
+  },
+  "task_support": {
+    "MEAN_RIBOSOME_LOAD::region=0": {
+      "training_record_count": 2443,
+      "changed_candidate_sequence_count": 2443,
+      "changed_candidate_sequence_fraction": 1.0,
+      "maximum_achievable_changed_candidate_sequence_count": 2443,
+      "permutation_gate_eligible": true
+    },
+    "MPRAU_ALLELIC_SKEW_LOG2_FOLD_CHANGE::region=1": {
+      "training_record_count": 55704,
+      "changed_candidate_sequence_count": 524,
+      "changed_candidate_sequence_fraction": 0.009406864857101824,
+      "maximum_achievable_changed_candidate_sequence_count": 822,
+      "permutation_gate_eligible": false
+    },
+    "PROXIMAL_POLYA_SITE_USAGE_LOG2_ODDS::region=1": {
+      "training_record_count": 25710,
+      "changed_candidate_sequence_count": 23247,
+      "changed_candidate_sequence_fraction": 0.9042007001166861,
+      "maximum_achievable_changed_candidate_sequence_count": 25709,
+      "permutation_gate_eligible": true
+    },
+    "PUBLISHED_REF_VS_ALT_ACTIVITY_LMM_LOG2_FOLD_CHANGE::region=1": {
+      "training_record_count": 204,
+      "changed_candidate_sequence_count": 0,
+      "changed_candidate_sequence_fraction": 0.0,
+      "maximum_achievable_changed_candidate_sequence_count": 0,
+      "permutation_gate_eligible": false
+    },
+    "RNA_HALF_LIFE_MINUTES::region=0": {
+      "training_record_count": 893,
+      "changed_candidate_sequence_count": 211,
+      "changed_candidate_sequence_fraction": 0.23628219484882418,
+      "maximum_achievable_changed_candidate_sequence_count": 244,
+      "permutation_gate_eligible": false
+    },
+    "RNA_HALF_LIFE_MINUTES::region=1": {
+      "training_record_count": 1308,
+      "changed_candidate_sequence_count": 33,
+      "changed_candidate_sequence_fraction": 0.02522935779816514,
+      "maximum_achievable_changed_candidate_sequence_count": 35,
+      "permutation_gate_eligible": false
+    },
+    "TOTAL_POLYSOME_TRANSLATION_EFFICIENCY::region=1": {
+      "training_record_count": 3318,
+      "changed_candidate_sequence_count": 6,
+      "changed_candidate_sequence_fraction": 0.0018083182640144665,
+      "maximum_achievable_changed_candidate_sequence_count": 6,
+      "permutation_gate_eligible": false
+    }
+  },
+  "permutation_gate_eligibility_rule": "TRAIN_CHANGED_CANDIDATE_SEQUENCE_FRACTION_AT_LEAST_0.5_FIXED_BEFORE_SCREEN_OUTCOME_READ",
+  "permutation_gate_eligible_tasks": [
+    "MEAN_RIBOSOME_LOAD::region=0",
+    "PROXIMAL_POLYA_SITE_USAGE_LOG2_ODDS::region=1"
+  ],
+  "candidate_effect_control_roles": {
+    "all_task_primary": "MATCHED_SOURCE_ONLY_CONTROL",
+    "supported_task_secondary": "MATCHED_TRAIN_CANDIDATE_PERMUTATION_CONTROL"
+  },
+  "task_balanced_weighting_audit": {
+    "source_group_count": 64167,
+    "source_groups_spanning_multiple_tasks": 0,
+    "records_in_source_groups_spanning_multiple_tasks": 0,
+    "status": "CORRECT_ON_REAL_TRAIN_DATA"
+  },
+  "decision": "DO_NOT_USE_PERMUTATION_AS_A_NINE_TASK_GATE; REQUIRE_SOURCE_ONLY_BREADTH_AND_REQUIRE_PERMUTATION_WINS_ON_BOTH_ELIGIBLE_TASKS"
+}

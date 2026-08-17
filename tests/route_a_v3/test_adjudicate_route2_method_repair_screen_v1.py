@@ -29,6 +29,10 @@ def _run(role, spearman, mae=1.0):
         "model_kind": "global" if is_global else ("source_only" if is_source_only else "edit"),
         "target_scaling_mode": "TRAIN_TASK_ROBUST" if is_scaled else "NONE",
         "candidate_control": "WITHIN_EXACT_SOURCE_TASK_TRAIN_CANDIDATE_PERMUTATION" if is_permutation else "NONE",
+        "candidate_control_summary": {
+            "training_record_count": 100 if is_permutation else 0,
+            "changed_candidate_sequence_count": 80 if is_permutation else 0,
+        },
         "parameter_count": 500_000,
         "selected_epoch": 1,
         "task_macro_spearman": spearman,
@@ -52,7 +56,7 @@ def _run(role, spearman, mae=1.0):
 
 def _protocol():
     return {
-        "status": "FROZEN_DEVELOPMENT_ONLY_EXPLORATORY_SCREEN",
+        "status": "FROZEN_DEVELOPMENT_ONLY_EXPLORATORY_SCREEN_SUPPORT_AMENDED_BEFORE_OUTCOME_READ",
         "fresh_confirmation_seeds": [2, 3, 4],
         "guided_generation_status": "BLOCKED_UNTIL_CRITIC_READY_AND_INDEPENDENT_EVALUATOR_FIXED",
         "post_exposure_boundary": {"new_external_confirmation_required_for_new_method_claim": True},
@@ -68,8 +72,17 @@ def _protocol():
         "screen_breadth_requirements": {
             "selected_task_median_spearman": ">0",
             "minimum_tasks_improved_over_global_raw": 1,
-            "minimum_tasks_improved_over_each_matched_control": 1,
+            "minimum_tasks_improved_over_source_only_control": 1,
             "task_count": 1,
+        },
+        "candidate_permutation_support": {
+            "audit_timing": "BEFORE_EDIT_CENTERED_OR_CONTROL_SCREEN_OUTCOMES_WERE_READ",
+            "training_record_count": 100,
+            "changed_candidate_sequence_count": 80,
+            "all_task_primary_control": "MATCHED_SOURCE_ONLY_CONTROL",
+            "permutation_role": "SUPPORTED_TASK_SECONDARY_CONTROL",
+            "eligible_tasks": ["endpoint::region=0"],
+            "minimum_eligible_task_wins": 1,
         },
     }
 
@@ -105,7 +118,7 @@ def test_screen_stops_when_candidate_control_matches_selected_edit_model() -> No
         _run("MATCHED_TRAIN_CANDIDATE_PERMUTATION_CONTROL", 0.21),
     ]
     result = module.adjudicate_screen(_protocol(), runs)
-    assert result["status"] == "EXPLORATORY_SCREEN_DOES_NOT_SUPPORT_CONFIRMATION"
+    assert result["status"] == "EXPLORATORY_PERMUTATION_SUPPORTED_TASKS_DO_NOT_SUPPORT_CANDIDATE_EFFECT"
     assert result["fresh_confirmation_seeds"] == []
 
 
@@ -172,13 +185,64 @@ def test_screen_stops_when_macro_gain_is_concentrated_in_one_task() -> None:
     protocol["screen_breadth_requirements"].update(
         task_count=3,
         minimum_tasks_improved_over_global_raw=2,
-        minimum_tasks_improved_over_each_matched_control=2,
+        minimum_tasks_improved_over_source_only_control=2,
+    )
+    protocol["candidate_permutation_support"].update(
+        eligible_tasks=[tasks[0]], minimum_eligible_task_wins=1
     )
     result = module.adjudicate_screen(protocol, runs)
     assert result["status"] == "EXPLORATORY_REPAIR_MACRO_GAIN_LACKS_TASK_BREADTH"
     assert result["tasks_improved_over_global_raw"] == 1
     assert result["selected_task_median_spearman"] == pytest.approx(-0.10)
     assert result["fresh_confirmation_seeds"] == []
+
+
+def test_unsupported_permutation_tasks_do_not_form_a_false_all_task_gate() -> None:
+    module = _load()
+    roles = [
+        "FACTORIAL_GLOBAL_RAW",
+        "FACTORIAL_GLOBAL_SCALED",
+        "FACTORIAL_EDIT_CENTERED_RAW",
+        "FACTORIAL_EDIT_CENTERED_SCALED",
+        "MATCHED_SOURCE_ONLY_CONTROL",
+        "MATCHED_TRAIN_CANDIDATE_PERMUTATION_CONTROL",
+    ]
+    runs = [_run(role, 0.0) for role in roles]
+    tasks = [f"endpoint_{index}::region=0" for index in range(3)]
+    task_values = {
+        "FACTORIAL_GLOBAL_RAW": [0.10, 0.10, 0.10],
+        "FACTORIAL_GLOBAL_SCALED": [0.12, 0.12, 0.12],
+        "FACTORIAL_EDIT_CENTERED_RAW": [0.14, 0.14, 0.14],
+        "FACTORIAL_EDIT_CENTERED_SCALED": [0.30, 0.20, 0.20],
+        "MATCHED_SOURCE_ONLY_CONTROL": [0.05, 0.05, 0.05],
+        # Only task 0 has enough TRAIN permutation support.  The two higher
+        # unsupported values must remain diagnostic rather than a false gate.
+        "MATCHED_TRAIN_CANDIDATE_PERMUTATION_CONTROL": [0.10, 0.40, 0.40],
+    }
+    for run in runs:
+        values = task_values[run["scientific_role"]]
+        run["task_macro_spearman"] = sum(values) / len(values)
+        run["raw_task_mae_by_task"] = {task: 2.0 for task in tasks}
+        run["task_spearman_by_task"] = dict(zip(tasks, values))
+        if run["target_scaling_mode"] == "TRAIN_TASK_ROBUST":
+            run["target_scaler"]["task_scales"] = {task: 2.0 for task in tasks}
+    protocol = _protocol()
+    protocol["legacy_best_observed_validation_reference"].update(
+        value=0.18, defined_task_count=3
+    )
+    protocol["screen_breadth_requirements"].update(
+        task_count=3,
+        minimum_tasks_improved_over_global_raw=2,
+        minimum_tasks_improved_over_source_only_control=2,
+    )
+    protocol["candidate_permutation_support"].update(
+        eligible_tasks=[tasks[0]], minimum_eligible_task_wins=1
+    )
+    result = module.adjudicate_screen(protocol, runs)
+    assert result["status"] == "EXPLORATORY_SCREEN_SUPPORTS_FRESH_SEED_CONFIRMATION"
+    assert result["edit_centered_control_margins"]["over_train_candidate_permutation"] < 0
+    assert result["permutation_supported_task_win_count"] == 1
+    assert result["permutation_candidate_effect_supported"] is True
 
 
 def test_global_winner_requires_architecture_matched_controls_before_confirmation() -> None:

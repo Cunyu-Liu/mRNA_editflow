@@ -139,7 +139,11 @@ def validate_run(config: Mapping[str, Any], summary: Mapping[str, Any]) -> dict[
 
 
 def adjudicate_screen(protocol: Mapping[str, Any], runs: list[Mapping[str, Any]]) -> dict[str, Any]:
-    _require(protocol.get("status") == "FROZEN_DEVELOPMENT_ONLY_EXPLORATORY_SCREEN", "method-repair protocol is not frozen")
+    _require(
+        protocol.get("status")
+        == "FROZEN_DEVELOPMENT_ONLY_EXPLORATORY_SCREEN_SUPPORT_AMENDED_BEFORE_OUTCOME_READ",
+        "support-aware method-repair protocol is not frozen",
+    )
     by_role = {str(run["scientific_role"]): dict(run) for run in runs}
     _require(len(by_role) == len(runs), "scientific role is duplicated")
     factorial_roles = (
@@ -182,6 +186,32 @@ def adjudicate_screen(protocol: Mapping[str, Any], runs: list[Mapping[str, Any]]
         permutation["candidate_control"] == "WITHIN_EXACT_SOURCE_TASK_TRAIN_CANDIDATE_PERMUTATION",
         "permutation control identity differs",
     )
+    permutation_support = protocol.get("candidate_permutation_support") or {}
+    _require(
+        permutation_support.get("audit_timing")
+        == "BEFORE_EDIT_CENTERED_OR_CONTROL_SCREEN_OUTCOMES_WERE_READ",
+        "candidate-permutation support was not fixed before screen outcomes",
+    )
+    _require(
+        permutation_support.get("all_task_primary_control")
+        == "MATCHED_SOURCE_ONLY_CONTROL",
+        "source-only is not the all-task candidate-effect control",
+    )
+    _require(
+        permutation_support.get("permutation_role")
+        == "SUPPORTED_TASK_SECONDARY_CONTROL",
+        "candidate-permutation role differs",
+    )
+    _require(
+        permutation["candidate_control_summary"].get("training_record_count")
+        == permutation_support.get("training_record_count"),
+        "candidate-permutation training count differs from support audit",
+    )
+    _require(
+        permutation["candidate_control_summary"].get("changed_candidate_sequence_count")
+        == permutation_support.get("changed_candidate_sequence_count"),
+        "candidate-permutation changed count differs from support audit",
+    )
     robust_scalers = [
         run["target_scaler"]
         for run in (global_scaled, edit_scaled, source_only, permutation)
@@ -203,6 +233,23 @@ def adjudicate_screen(protocol: Mapping[str, Any], runs: list[Mapping[str, Any]]
     _require(
         all(set(run["task_spearman_by_task"]) == common_task_keys for run in by_role.values()),
         "validation task Spearman identities differ across screen arms",
+    )
+    permutation_eligible_tasks = tuple(permutation_support.get("eligible_tasks") or ())
+    _require(
+        permutation_eligible_tasks
+        and len(permutation_eligible_tasks) == len(set(permutation_eligible_tasks)),
+        "candidate-permutation eligible tasks are empty or duplicated",
+    )
+    _require(
+        set(permutation_eligible_tasks) <= common_task_keys,
+        "candidate-permutation eligible task is absent from Validation",
+    )
+    minimum_permutation_task_wins = int(
+        permutation_support.get("minimum_eligible_task_wins", 0)
+    )
+    _require(
+        minimum_permutation_task_wins == len(permutation_eligible_tasks),
+        "candidate-permutation gate must cover every eligible task",
     )
     common_scaler = robust_scalers[0]
     for run in by_role.values():
@@ -254,12 +301,12 @@ def adjudicate_screen(protocol: Mapping[str, Any], runs: list[Mapping[str, Any]]
     _require(breadth.get("task_count") == len(common_task_keys), "screen breadth task count differs")
     minimum_improved_tasks = int(breadth.get("minimum_tasks_improved_over_global_raw", 0))
     _require(1 <= minimum_improved_tasks <= len(common_task_keys), "minimum improved task count is invalid")
-    minimum_control_improved_tasks = int(
-        breadth.get("minimum_tasks_improved_over_each_matched_control", 0)
+    minimum_source_only_improved_tasks = int(
+        breadth.get("minimum_tasks_improved_over_source_only_control", 0)
     )
     _require(
-        1 <= minimum_control_improved_tasks <= len(common_task_keys),
-        "minimum control-improved task count is invalid",
+        1 <= minimum_source_only_improved_tasks <= len(common_task_keys),
+        "minimum source-only-improved task count is invalid",
     )
     selected_task_median_spearman = float(statistics.median(winner["task_spearman_by_task"].values()))
     task_spearman_margins_over_global_raw = {
@@ -287,14 +334,29 @@ def adjudicate_screen(protocol: Mapping[str, Any], runs: list[Mapping[str, Any]]
         control: sum(margin > 0.0 for margin in margins.values())
         for control, margins in edit_control_task_margins.items()
     }
-    edit_controls_task_broad = all(
-        count >= minimum_control_improved_tasks
-        for count in edit_control_task_win_counts.values()
+    source_only_candidate_effect_supported = (
+        edit_control_margins["over_source_only"] > 0.0
+        and edit_control_task_win_counts["over_source_only"]
+        >= minimum_source_only_improved_tasks
+    )
+    permutation_supported_task_margins = {
+        task: edit_control_task_margins["over_train_candidate_permutation"][task]
+        for task in permutation_eligible_tasks
+    }
+    permutation_supported_task_mean_margin = sum(
+        permutation_supported_task_margins.values()
+    ) / len(permutation_supported_task_margins)
+    permutation_supported_task_win_count = sum(
+        margin > 0.0 for margin in permutation_supported_task_margins.values()
+    )
+    permutation_candidate_effect_supported = (
+        permutation_supported_task_mean_margin > 0.0
+        and permutation_supported_task_win_count >= minimum_permutation_task_wins
     )
     controls_matched_to_winner = winner["scientific_role"] == "FACTORIAL_EDIT_CENTERED_SCALED"
     edit_controls_positive = (
-        all(margin > 0.0 for margin in edit_control_margins.values())
-        and edit_controls_task_broad
+        source_only_candidate_effect_supported
+        and permutation_candidate_effect_supported
     )
     controls_support_winner = controls_matched_to_winner and edit_controls_positive
     supports_confirmation = (
@@ -312,6 +374,18 @@ def adjudicate_screen(protocol: Mapping[str, Any], runs: list[Mapping[str, Any]]
         status = "EXPLORATORY_REPAIR_RANKING_LEADING_BUT_COMMON_MAE_WORSE"
     elif improvement_over_reference > 0.0 and controls_support_winner and not breadth_supported:
         status = "EXPLORATORY_REPAIR_MACRO_GAIN_LACKS_TASK_BREADTH"
+    elif (
+        improvement_over_reference > 0.0
+        and winner["scientific_role"] == "FACTORIAL_EDIT_CENTERED_SCALED"
+        and not source_only_candidate_effect_supported
+    ):
+        status = "EXPLORATORY_CANDIDATE_EFFECT_NOT_ESTABLISHED_VS_SOURCE_ONLY"
+    elif (
+        improvement_over_reference > 0.0
+        and winner["scientific_role"] == "FACTORIAL_EDIT_CENTERED_SCALED"
+        and not permutation_candidate_effect_supported
+    ):
+        status = "EXPLORATORY_PERMUTATION_SUPPORTED_TASKS_DO_NOT_SUPPORT_CANDIDATE_EFFECT"
     elif improvement_over_reference > 0.0 and winner["scientific_role"] == "FACTORIAL_EDIT_CENTERED_RAW":
         status = "EXPLORATORY_EDIT_RAW_REQUIRES_MATCHED_CONTROLS"
     elif improvement_over_reference > 0.0 and winner["scientific_role"].startswith("FACTORIAL_GLOBAL"):
@@ -319,7 +393,7 @@ def adjudicate_screen(protocol: Mapping[str, Any], runs: list[Mapping[str, Any]]
     else:
         status = "EXPLORATORY_SCREEN_DOES_NOT_SUPPORT_CONFIRMATION"
     return {
-        "schema_version": "route_a_v3_route2_method_repair_screen_adjudication.v1",
+        "schema_version": "route_a_v3_route2_method_repair_screen_adjudication.v2",
         "status": status,
         "scientific_claim_status": "EXPLORATORY_DEVELOPMENT_ONLY_NOT_ESTABLISHED",
         "selected_role": winner["scientific_role"],
@@ -343,8 +417,14 @@ def adjudicate_screen(protocol: Mapping[str, Any], runs: list[Mapping[str, Any]]
         "edit_centered_control_margins": edit_control_margins,
         "edit_centered_control_task_margins": edit_control_task_margins,
         "edit_centered_control_task_win_counts": edit_control_task_win_counts,
-        "minimum_tasks_improved_over_each_matched_control": minimum_control_improved_tasks,
-        "edit_centered_controls_have_task_breadth": edit_controls_task_broad,
+        "minimum_tasks_improved_over_source_only_control": minimum_source_only_improved_tasks,
+        "source_only_candidate_effect_supported": source_only_candidate_effect_supported,
+        "candidate_permutation_support": dict(permutation_support),
+        "permutation_supported_task_margins": permutation_supported_task_margins,
+        "permutation_supported_task_mean_margin": permutation_supported_task_mean_margin,
+        "permutation_supported_task_win_count": permutation_supported_task_win_count,
+        "minimum_permutation_supported_task_wins": minimum_permutation_task_wins,
+        "permutation_candidate_effect_supported": permutation_candidate_effect_supported,
         "matched_controls_support_edit_scaled": edit_controls_positive,
         "matched_control_target_role": "FACTORIAL_EDIT_CENTERED_SCALED",
         "matched_controls_are_for_selected_role": controls_matched_to_winner,
@@ -368,6 +448,20 @@ def adjudicate_screen(protocol: Mapping[str, Any], runs: list[Mapping[str, Any]]
 def execute(protocol_path: Path, output_path: Path) -> dict[str, Any]:
     _require(not output_path.exists(), f"output already exists: {output_path}")
     protocol = json.loads(protocol_path.read_text(encoding="utf-8"))
+    support = protocol.get("candidate_permutation_support") or {}
+    support_audit_path = REPO_ROOT / str(support.get("audit", ""))
+    _require(support_audit_path.is_file(), "candidate-permutation support audit is missing")
+    support_audit = json.loads(support_audit_path.read_text(encoding="utf-8"))
+    _require(
+        support_audit.get("status")
+        == "EXACT_SOURCE_PERMUTATION_VALID_BUT_TASK_SUPPORT_PARTIAL",
+        "candidate-permutation support audit is not valid",
+    )
+    _require(
+        support_audit.get("permutation_gate_eligible_tasks")
+        == support.get("eligible_tasks"),
+        "candidate-permutation eligible tasks differ from support audit",
+    )
     config_paths = protocol["screen_arms"] + protocol["matched_controls"]
     runs = []
     for relative_path in config_paths:
@@ -388,7 +482,7 @@ def main() -> int:
     parser.add_argument(
         "--protocol",
         type=Path,
-        default=REPO_ROOT / "configs/route_a_v3_route2_method_repair_protocol_v1.json",
+        default=REPO_ROOT / "configs/route_a_v3_route2_method_repair_protocol_v2.json",
     )
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
