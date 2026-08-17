@@ -105,3 +105,7 @@ def test_protocol_keeps_new_method_claim_and_guidance_fail_closed() -> None:
     assert protocol["guided_generation_status"].startswith("BLOCKED_")
     assert protocol["gpu_policy"]["parameter_updates"] == "CUDA_ONLY"
     assert protocol["gpu_policy"]["cpu_fallback"] == "FORBIDDEN"
+    recovery = protocol["runtime_recovery"]
+    assert recovery["recovery_change"] == "PHYSICAL_GPU_ONLY"
+    assert recovery["scientific_configuration_changed"] is False
+    assert "gpu7" in recovery["failed_config"]

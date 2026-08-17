@@ -17,8 +17,14 @@
   ],
   "matched_controls": [
     "configs/route_a_v3_route2_method_repair_edit_scaled_source_only_seed20260821_gpu5_v1.json",
-    "configs/route_a_v3_route2_method_repair_edit_scaled_permutation_seed20260821_gpu7_v1.json"
+    "configs/route_a_v3_route2_method_repair_edit_scaled_permutation_seed20260821_gpu2_recovery_v1.json"
   ],
+  "runtime_recovery": {
+    "failed_config": "configs/route_a_v3_route2_method_repair_edit_scaled_permutation_seed20260821_gpu7_v1.json",
+    "failure_status": "STOPPED_WITH_EVIDENCE_GPU7_PARENT_UUID_MISMATCH",
+    "recovery_change": "PHYSICAL_GPU_ONLY",
+    "scientific_configuration_changed": false
+  },
   "screen_selection": {
     "primary": "validation.task_macro_spearman",
     "tie_breaker": "validation.task_macro_standardized_mae",
