@@ -23,6 +23,10 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from core.route2_base_flow_model import Route2BaseFlowModel
+from core.route2_experiment_ledger import (
+    build_training_attempt_row,
+    record_training_attempt,
+)
 from core.route2_gpu_failure_evidence import cuda_device_observation, write_gpu_failure_evidence
 
 
@@ -288,6 +292,7 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
     ).to(device)
     _require(next(model.parameters()).is_cuda, "model parameters are not on GPU")
     optimizer = torch.optim.AdamW(model.parameters(), lr=float(config["learning_rate"]), weight_decay=float(config["weight_decay"]))
+    trainable_parameter_count = sum(parameter.numel() for parameter in model.parameters())
     start = time.time()
     history = []
     optimizer_steps = 0
@@ -308,6 +313,36 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
         "cuda_device_uuid": cuda_provenance["cuda_device_uuid"],
         "guided_critic_used": False,
     }, sort_keys=True) + "\n", encoding="utf-8")
+    attempt_details = {
+        "started_at": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
+        "included_study_unit_ids": sorted(
+            {record.source_group.split("::", 1)[0] for record in train_records}
+        ),
+        "included_regions": sorted(
+            {"5UTR" if record.region == 0 else "3UTR" for record in train_records}
+        ),
+        "record_counts": {
+            "TRAIN": len(train_records),
+            "VALIDATION": len(validation_records),
+        },
+        "development_test_record_count_withheld": 0,
+        "evaluation_record_count": 0,
+        "trainable_parameter_count": trainable_parameter_count,
+        "frozen_pretrained_parameter_count": 0,
+        "total_effective_parameter_count": trainable_parameter_count,
+    }
+    if config.get("experiment_ledger_path"):
+        record_training_attempt(
+            Path(config["experiment_ledger_path"]),
+            output_dir / "training_attempt.json",
+            build_training_attempt_row(
+                config,
+                output_dir,
+                "RUNNING",
+                repository_root=REPO_ROOT,
+                details=attempt_details,
+            ),
+        )
 
     def checkpoint_payload(epoch: int) -> dict[str, Any]:
         return {
@@ -335,6 +370,7 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
         }
 
     best_validation_nll: float | None = None
+    best_epoch: int | None = None
     for epoch in range(int(config["epochs"])):
         train_dataset.set_epoch(epoch)
         validation_dataset.set_epoch(epoch)
@@ -372,7 +408,9 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
         torch.save(checkpoint_payload(epoch + 1), output_dir / "latest.pt")
         if best_validation_nll is None or epoch_row["validation_nll"] < best_validation_nll:
             best_validation_nll = epoch_row["validation_nll"]
+            best_epoch = epoch + 1
             torch.save(checkpoint_payload(epoch + 1), output_dir / "best.pt")
+    _require(best_epoch is not None, "no best validation epoch was selected")
     parameter_changed = not torch.equal(initial_parameter, next(model.parameters()).detach())
     _require(optimizer_steps > 0 and parameter_changed, "no learned parameter update occurred")
     elapsed = time.time() - start
@@ -388,11 +426,14 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
         "cuda_training_tensors_verified": cuda_training_tensors_verified,
         "train_record_count": len(train_records),
         "validation_record_count": len(validation_records),
+        "trainable_parameter_count": trainable_parameter_count,
         "over_budget_excluded_record_counts": {
             "TRAIN": len(train_ids) - len(train_records),
             "VALIDATION": len(validation_ids) - len(validation_records),
         },
         "optimizer_steps": optimizer_steps,
+        "selected_epoch": best_epoch,
+        "best_validation_nll": best_validation_nll,
         "parameter_changed": parameter_changed,
         "history": history,
         "wall_time_seconds": elapsed,
@@ -405,6 +446,28 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
     serialized_summary = json.dumps(summary, indent=2, sort_keys=True) + "\n"
     (output_dir / "training_summary.json").write_text(serialized_summary, encoding="utf-8")
     (output_dir / "final_summary.json").write_text(serialized_summary, encoding="utf-8")
+    if config.get("experiment_ledger_path"):
+        record_training_attempt(
+            Path(config["experiment_ledger_path"]),
+            output_dir / "training_attempt.json",
+            build_training_attempt_row(
+                config,
+                output_dir,
+                "COMPLETED",
+                repository_root=REPO_ROOT,
+                details={
+                    **attempt_details,
+                    "optimizer_steps": optimizer_steps,
+                    "selected_epoch": best_epoch,
+                    "wall_time_seconds": elapsed,
+                    "peak_vram_mb": peak_vram,
+                    "notes": (
+                        "unguided G0 engineering run; no critic guidance or "
+                        "biological optimization claim"
+                    ),
+                },
+            ),
+        )
     with log_path.open("a", encoding="utf-8") as handle:
         handle.write(json.dumps({
             "event": "TRAINING_COMPLETED",
@@ -429,6 +492,22 @@ def main() -> int:
             entrypoint="train_route2_base_flow_g0_v1",
             evaluation_outcomes_accessed=False,
         )
+        if config.get("experiment_ledger_path"):
+            record_training_attempt(
+                Path(config["experiment_ledger_path"]),
+                output_dir / "training_attempt.json",
+                build_training_attempt_row(
+                    config,
+                    output_dir,
+                    "FAILED",
+                    repository_root=REPO_ROOT,
+                    details={
+                        "evaluation_record_count": 0,
+                        "error_type": type(exc).__name__,
+                        "error": str(exc),
+                    },
+                ),
+            )
         raise
     print(json.dumps(result, sort_keys=True))
     return 0

@@ -1,5 +1,12 @@
 {
   "schema_version": "route_a_v3_route2_base_flow_g0_training_config.v1",
+  "baseline_id": "route2_base_flow_g0_sub_stop_seed20260816",
+  "attempt_purpose": "UNGUIDED_SUB_STOP_BASE_FLOW_G0_GPU_TRAINING",
+  "scientific_role": "FLOW_G0_ENGINEERING_NOT_BIOLOGICAL_OPTIMIZATION",
+  "result_stage": "FLOW_G0_DEVELOPMENT_VALIDATION",
+  "run_mode": "FIXED_GROUPED_SPLIT",
+  "model_kind": "route2_base_flow_sub_stop",
+  "loss_kind": "next_legal_action_cross_entropy",
   "evaluation_outcomes_accessed": false,
   "guided_critic_used": false,
   "device": "cuda:5",
@@ -21,7 +28,11 @@
   "batch_size": 32,
   "learning_rate": 0.0003,
   "weight_decay": 0.0001,
+  "optimizer_name": "AdamW",
+  "optimizer_fused": false,
+  "training_precision": "FP32",
   "seed": 20260816,
   "num_workers": 0,
+  "experiment_ledger_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiment_tracking/route2_training_attempts.csv",
   "output_directory": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/base_flow_g0/development_v1"
 }

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import csv
 import importlib.util
 import json
 import os
@@ -166,7 +167,19 @@ def test_gpu_base_flow_training_persists_live_contract_artifacts(tmp_path: Path)
     manifest.write_text("".join(json.dumps(row) + "\n" for row in manifest_rows))
     canonical.write_text("".join(json.dumps(row) + "\n" for row in canonical_rows))
     output = tmp_path / "flow_run"
+    ledger = tmp_path / "experiment_tracking" / "training_attempts.csv"
     summary = trainer.train({
+        "baseline_id": "test_base_flow_g0",
+        "attempt_purpose": "GPU_INTEGRATION_TEST",
+        "scientific_role": "FLOW_G0_ENGINEERING_NOT_BIOLOGICAL_OPTIMIZATION",
+        "result_stage": "FLOW_G0_DEVELOPMENT_VALIDATION",
+        "run_mode": "FIXED_GROUPED_SPLIT",
+        "model_kind": "route2_base_flow_sub_stop",
+        "loss_kind": "next_legal_action_cross_entropy",
+        "optimizer_name": "AdamW",
+        "optimizer_fused": False,
+        "training_precision": "FP32",
+        "experiment_ledger_path": str(ledger),
         "device": f"cuda:{physical_index}",
         "physical_gpu_index": physical_index,
         "development_manifest": str(manifest),
@@ -181,13 +194,23 @@ def test_gpu_base_flow_training_persists_live_contract_artifacts(tmp_path: Path)
         "epochs": 1,
     }, output)
     assert summary["optimizer_steps"] == 1
+    assert summary["selected_epoch"] == 1
     for name in (
         "train.log", "metrics.jsonl", "config.yaml", "latest.pt", "best.pt",
         "final_summary.json", "training_summary.json", "base_flow_checkpoint.pt",
+        "training_attempt.json",
     ):
         assert (output / name).is_file(), name
     assert len((output / "metrics.jsonl").read_text().splitlines()) == 1
     assert "TRAINING_COMPLETED" in (output / "train.log").read_text()
+    rows = list(csv.DictReader(ledger.open(encoding="utf-8-sig")))
+    assert len(rows) == 1
+    assert rows[0]["status"] == "COMPLETED"
+    assert rows[0]["model_kind"] == "route2_base_flow_sub_stop"
+    assert rows[0]["loss_kind"] == "next_legal_action_cross_entropy"
+    assert int(rows[0]["trainable_parameter_count"]) == summary["trainable_parameter_count"]
+    assert rows[0]["selected_epoch"] == "1"
+    assert rows[0]["evaluation_record_count"] == "0"
 
 
 def test_base_flow_source_group_weights_have_equal_group_mass() -> None:
