@@ -9,6 +9,7 @@ import math
 import os
 import sys
 import time
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Callable, Mapping
 
@@ -27,7 +28,10 @@ from core.route2_delta_predictor import (
     Route2NeuralBaseline,
 )
 from core.route2_gpu_failure_evidence import cuda_device_observation, write_gpu_failure_evidence
-from core.route2_target_scaling import target_scaler_from_checkpoint
+from core.route2_target_scaling import (
+    TARGET_SCALING_TRAIN_TASK_ROBUST,
+    target_scaler_from_checkpoint,
+)
 
 
 TOKEN = {"A": 0, "C": 1, "G": 2, "U": 3}
@@ -36,6 +40,14 @@ REGION = {"5UTR": 0, "3UTR": 1}
 
 class IndependentEvaluatorError(RuntimeError):
     pass
+
+
+@dataclass(frozen=True)
+class EvaluatorScore:
+    standardized: float
+    raw: float
+    target_scale: float
+    target_scale_source: str
 
 
 def _require(condition: bool, message: str) -> None:
@@ -116,12 +128,16 @@ class CheckpointScorer:
         self.model.requires_grad_(False)
         self.vocabs = checkpoint["vocabs"]
         self.target_scaler = target_scaler_from_checkpoint(checkpoint)
+        _require(
+            self.target_scaler.mode == TARGET_SCALING_TRAIN_TASK_ROBUST,
+            "independent evaluator must use TRAIN-only task-robust target scaling",
+        )
         self.device = device
         self.model_kind = model_kind
         self.training_provenance = provenance
 
     @torch.no_grad()
-    def __call__(self, source_row: Mapping[str, Any], candidate: str) -> float:
+    def __call__(self, source_row: Mapping[str, Any], candidate: str) -> EvaluatorScore:
         source = _normalize(source_row["source_sequence"])
         candidate = _normalize(candidate)
         _require(len(source) == len(candidate), "candidate length differs from source")
@@ -149,16 +165,22 @@ class CheckpointScorer:
             torch.tensor([category["endpoint"]], device=self.device),
             torch.tensor([REGION[region_text]], device=self.device),
         )
-        scale, _scale_source = self.target_scaler.scale(
+        scale, scale_source = self.target_scaler.scale(
             str(source_row["endpoint_id"]), REGION[region_text]
         )
-        return _finite(float(output["mean"].item()) * scale, "independent evaluator score")
+        standardized = _finite(float(output["mean"].item()), "standardized independent evaluator score")
+        return EvaluatorScore(
+            standardized=standardized,
+            raw=_finite(standardized * scale, "raw independent evaluator score"),
+            target_scale=scale,
+            target_scale_source=scale_source,
+        )
 
 
 def augment_candidates(
     sources: Mapping[str, Mapping[str, Any]],
     candidates: list[dict[str, Any]],
-    score_function: Callable[[Mapping[str, Any], str], float],
+    score_function: Callable[[Mapping[str, Any], str], EvaluatorScore],
 ) -> tuple[list[dict[str, Any]], dict[str, int]]:
     source_keys = {str(row["source_key"]) for row in candidates}
     _require(source_keys == set(sources), "candidate source coverage differs from source manifest")
@@ -169,7 +191,7 @@ def augment_candidates(
         rows = [row for row in candidates if str(row["source_key"]) == source_key]
         _require(rows, f"candidate source is empty: {source_key}")
         source_sequence = str(source_row["source_sequence"])
-        cache = {source_sequence: _finite(score_function(source_row, source_sequence), "source evaluator score")}
+        cache = {source_sequence: score_function(source_row, source_sequence)}
         source_forward_pending = 1
         forwards = 1
         for row in rows:
@@ -177,13 +199,17 @@ def augment_candidates(
             candidate = _normalize(row["candidate_sequence"])
             new_forward = 0
             if candidate not in cache:
-                cache[candidate] = _finite(score_function(source_row, candidate), "candidate evaluator score")
+                cache[candidate] = score_function(source_row, candidate)
                 forwards += 1
                 new_forward = 1
             output.append({
                 **row,
-                "source_independent_evaluator_score": cache[source_sequence],
-                "independent_evaluator_score": cache[candidate],
+                "source_independent_evaluator_score": cache[source_sequence].standardized,
+                "independent_evaluator_score": cache[candidate].standardized,
+                "source_independent_evaluator_raw_score": cache[source_sequence].raw,
+                "independent_evaluator_raw_score": cache[candidate].raw,
+                "independent_evaluator_target_scale": cache[candidate].target_scale,
+                "independent_evaluator_target_scale_source": cache[candidate].target_scale_source,
                 "independent_evaluator_forwards": new_forward + source_forward_pending,
             })
             source_forward_pending = 0
@@ -220,6 +246,9 @@ def execute(config: Mapping[str, Any], output_path: Path) -> dict[str, Any]:
         "schema_version": "route_a_v3_route2_independent_generation_evaluator.v1",
         "status": "FROZEN_INDEPENDENT_EVALUATOR_SCORING_COMPLETE",
         "model_kind": scorer.model_kind,
+        "selection_score_field": "independent_evaluator_score",
+        "selection_score_scale": "TRAIN_TASK_ROBUST_STANDARDIZED",
+        "raw_score_field": "independent_evaluator_raw_score",
         "candidate_row_count": len(rows),
         "source_count": len(sources),
         "independent_evaluator_forward_count": sum(forwards.values()),

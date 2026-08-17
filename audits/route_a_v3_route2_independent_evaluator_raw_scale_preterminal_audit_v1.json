@@ -1,0 +1,18 @@
+{
+  "schema_version": "route_a_v3_route2_independent_evaluator_raw_scale_preterminal_audit.v1",
+  "status": "STOPPED_PRETERMINAL_METHOD_INVALID",
+  "run_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/independent_generation_evaluator/neural_medium_siamese_seed20260816_frozen_development_validation_gpu6_v1",
+  "completed_epoch_count": 4,
+  "final_summary_present": false,
+  "last_observed_task_macro_spearman": 0.10867209015052577,
+  "last_observed_task_macro_standardized_mae": 109.19656700567401,
+  "stop_reason": "Raw endpoint units cannot be averaged as a source-macro independent-evaluator uplift because minute-scale half-life outcomes dominate log-fold and usage outcomes.",
+  "process_ownership": "STARTED_AND_STOPPED_BY_CURRENT_ROUTE2_METHOD_REPAIR",
+  "unrelated_gpu_processes_modified": false,
+  "artifacts_preserved": true,
+  "development_test_outcomes_accessed": false,
+  "evaluation_outcomes_accessed": false,
+  "successor_config": "configs/route_a_v3_route2_independent_evaluator_neural_medium_siamese_task_scaled_seed20260816_frozen_development_validation_gpu6_v2.json",
+  "successor_selection_score_scale": "TRAIN_TASK_ROBUST_STANDARDIZED",
+  "scientific_claim_status": "NOT_ESTABLISHED"
+}

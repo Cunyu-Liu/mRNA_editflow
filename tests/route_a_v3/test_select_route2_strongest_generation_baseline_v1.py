@@ -236,6 +236,7 @@ def _make_independent_open_support(payload) -> None:
             "evaluator_checkpoint_path": "/mnt/evaluator.pt",
             "guiding_checkpoint_path": "/mnt/guide.pt",
             "evaluator_result_stage": "FROZEN_DEVELOPMENT_VALIDATION",
+            "selection_score_scale": "TRAIN_TASK_ROBUST_STANDARDIZED",
             "evaluator_frozen_before_candidate_generation": True,
             "guiding_checkpoint_distinct": True,
             "evaluation_outcomes_used_to_select_evaluator": 0,

@@ -143,6 +143,7 @@ def _validate_independent_evaluator_summary(
     _require(summary["guiding_checkpoint_distinct"] is True, f"guide and evaluator checkpoints match: {method_id}")
     _require(summary["evaluation_outcomes_used_to_select_evaluator"] == 0, f"Evaluation selected evaluator: {method_id}")
     _require(summary["evaluator_result_stage"] == "FROZEN_DEVELOPMENT_VALIDATION", f"evaluator training exposure is invalid: {method_id}")
+    _require(summary["selection_score_scale"] == "TRAIN_TASK_ROBUST_STANDARDIZED", f"independent evaluator score scale is invalid: {method_id}")
     _require(summary["cpu_fallback_used"] is False, f"independent evaluator used CPU fallback: {method_id}")
     _require(str(summary["device"]).startswith("cuda"), f"independent evaluator did not use CUDA: {method_id}")
     _require(int(summary["source_count"]) == int(generation["source_count"]), f"independent evaluator source count differs: {method_id}")

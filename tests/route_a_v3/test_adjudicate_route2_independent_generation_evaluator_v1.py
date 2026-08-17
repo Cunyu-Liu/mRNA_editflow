@@ -28,6 +28,7 @@ def _protocol() -> dict:
         "independent_evaluator_qualification": {
             "minimum_task_macro_spearman_exclusive": 0.1012475745988908,
             "minimum_positive_task_count": 5,
+            "target_scaling_mode": "TRAIN_TASK_ROBUST",
         },
     }
 
@@ -52,6 +53,11 @@ def _summary() -> dict:
         "parameter_changed": True,
         "optimizer_steps": 22120,
         "model_kind": "siamese_cnn",
+        "target_scaler": {
+            "mode": "TRAIN_TASK_ROBUST",
+            "fit_scope": "TRAIN_ONLY",
+            "center_subtracted": False,
+        },
         "parameter_count": 509905,
         "selected_epoch": 8,
         "final_training_epoch": 8,
@@ -59,6 +65,7 @@ def _summary() -> dict:
         "cuda_device_uuid": "GPU-independent",
         "validation_metrics": {
             "task_macro_spearman": 0.13,
+            "task_macro_standardized_mae": 1.7,
             "task_count": 9,
             "defined_task_spearman_count": 9,
             "task_metrics": task_metrics,

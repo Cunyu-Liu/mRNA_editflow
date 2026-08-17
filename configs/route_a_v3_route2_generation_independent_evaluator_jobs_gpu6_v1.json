@@ -1,6 +1,6 @@
 {
   "schema_version": "route_a_v3_route2_generation_independent_evaluator_jobs.v1",
-  "evaluator_checkpoint_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/independent_generation_evaluator/neural_medium_siamese_seed20260816_frozen_development_validation_gpu6_v1/delta_predictor_checkpoint.pt",
+  "evaluator_checkpoint_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/independent_generation_evaluator/neural_medium_siamese_task_scaled_seed20260816_frozen_development_validation_gpu6_v2/delta_predictor_checkpoint.pt",
   "guiding_checkpoint_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_frozen_validation/delta_main_2m_lr3e4_seed20260816_frozen_development_validation_gpu4_v1/delta_predictor_checkpoint.pt",
   "source_manifest_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/generation_eligibility/development_validation_v1/source_eligibility.jsonl",
   "evaluator_frozen_before_candidate_generation": true,

@@ -41,6 +41,10 @@ def adjudicate(summary: Mapping[str, Any], protocol: Mapping[str, Any]) -> dict[
     task_metrics = metrics["task_metrics"]
     _require(isinstance(task_metrics, Mapping) and task_metrics, "task metrics are absent")
     task_macro_spearman = _finite(metrics["task_macro_spearman"], "task-macro Spearman")
+    task_macro_standardized_mae = _finite(
+        metrics["task_macro_standardized_mae"],
+        "task-macro standardized MAE",
+    )
     positive_task_count = sum(
         _finite(row["spearman"], f"task Spearman {task}") > 0.0
         for task, row in task_metrics.items()
@@ -74,6 +78,11 @@ def adjudicate(summary: Mapping[str, Any], protocol: Mapping[str, Any]) -> dict[
             and summary["model_kind"] == protocol["independent_evaluator_model_kind"]
             and summary["model_kind"] != protocol["guiding_model_kind"]
         ),
+        "train_only_task_robust_target_scaling": (
+            summary["target_scaler"]["mode"] == qualification["target_scaling_mode"]
+            and summary["target_scaler"]["fit_scope"] == "TRAIN_ONLY"
+            and summary["target_scaler"]["center_subtracted"] is False
+        ),
         "all_expected_tasks_defined": (
             int(metrics["task_count"]) == len(task_metrics)
             and int(metrics["defined_task_spearman_count"]) == len(task_metrics)
@@ -91,6 +100,7 @@ def adjudicate(summary: Mapping[str, Any], protocol: Mapping[str, Any]) -> dict[
         ),
         "candidate_rerun_authorized": qualified,
         "task_macro_spearman": task_macro_spearman,
+        "task_macro_standardized_mae": task_macro_standardized_mae,
         "task_macro_threshold_exclusive": threshold,
         "task_macro_margin": task_macro_spearman - threshold,
         "positive_task_count": positive_task_count,

@@ -37,7 +37,13 @@ def test_independent_scoring_caches_source_and_duplicate_candidates() -> None:
 
     def score(_source, candidate):
         calls.append(candidate)
-        return float(candidate.count("C"))
+        value = float(candidate.count("C"))
+        return module.EvaluatorScore(
+            standardized=value,
+            raw=value * 2.0,
+            target_scale=2.0,
+            target_scale_source="TASK",
+        )
 
     rows, forwards = module.augment_candidates(sources, candidates, score)
     assert calls == ["AAAA", "CAAA"]
@@ -45,6 +51,8 @@ def test_independent_scoring_caches_source_and_duplicate_candidates() -> None:
     assert sum(row["independent_evaluator_forwards"] for row in rows) == 2
     assert [row["independent_evaluator_score"] for row in rows] == [1.0, 1.0, 0.0]
     assert all(row["source_independent_evaluator_score"] == 0.0 for row in rows)
+    assert [row["independent_evaluator_raw_score"] for row in rows] == [2.0, 2.0, 0.0]
+    assert all(row["independent_evaluator_target_scale"] == 2.0 for row in rows)
 
 
 def test_independent_evaluator_requires_frozen_observed_cuda_provenance() -> None:
