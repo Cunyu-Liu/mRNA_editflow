@@ -128,3 +128,18 @@ def test_backfill_marks_existing_run_completed(tmp_path: Path) -> None:
     assert row["status"] == "COMPLETED"
     assert row["optimizer_steps"] == 500
     assert row["validation_task_macro_spearman"] == 0.3
+
+
+def test_training_attempt_uses_run_id_when_baseline_id_is_absent(tmp_path: Path) -> None:
+    ledger = _load(MODULE_PATH, "route2_experiment_ledger_run_id_test")
+    config = _config(tmp_path)
+    del config["baseline_id"]
+    config["run_id"] = "base-flow-g0"
+    row = ledger.build_training_attempt_row(
+        config,
+        tmp_path / "run",
+        "COMPLETED",
+        repository_root=ROOT,
+    )
+    assert row["baseline_id"] == "base-flow-g0"
+    assert row["attempt_id"] == "base-flow-g0::run"

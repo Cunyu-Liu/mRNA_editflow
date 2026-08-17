@@ -141,7 +141,10 @@ def build_training_attempt_row(
     record_counts = details.get("record_counts") or {}
     validation_metrics = details.get("validation_metrics")
     test_metrics = details.get("test_metrics")
-    attempt_id = str(config.get("attempt_id") or f"{config['baseline_id']}::{output_dir.name}")
+    baseline_id = str(
+        config.get("baseline_id") or config.get("run_id") or output_dir.name
+    )
+    attempt_id = str(config.get("attempt_id") or f"{baseline_id}::{output_dir.name}")
     pretrained_count = details.get(
         "frozen_pretrained_parameter_count",
         config.get("expected_frozen_pretrained_parameter_count", ""),
@@ -161,7 +164,7 @@ def build_training_attempt_row(
         "updated_at": now,
         "completed_at": now if status in {"COMPLETED", "FAILED"} else "",
         "code_commit": details.get("code_commit", _git_commit(repository_root)),
-        "baseline_id": config.get("baseline_id", ""),
+        "baseline_id": baseline_id,
         "scientific_role": config.get("scientific_role", ""),
         "result_stage": config.get("result_stage", ""),
         "run_mode": config.get("run_mode", ""),

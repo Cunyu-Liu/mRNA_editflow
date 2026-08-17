@@ -50,6 +50,14 @@ $PY scripts/route_a_v3/sync_route2_training_attempt_ledger_v1.py \
   --run-dir /mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/mrnabert_scaleup_v1/max_mean_only_seed20260816_gpu6_v1
 ```
 
+一次性回填整个 Route 2 历史运行目录：
+
+```bash
+$PY scripts/route_a_v3/sync_route2_training_attempt_ledger_v1.py \
+  --ledger /mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiment_tracking/route2_training_attempts.csv \
+  --runs-root /mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs
+```
+
 ## 4. 服务器环境与测试
 
 ```bash
