@@ -179,6 +179,20 @@ def select(payload: Mapping[str, Any]) -> dict[str, Any]:
         and forward_equivalent_budget_per_source.is_integer(),
         "forward-equivalent budget per source must be a positive integer",
     )
+    _require(
+        "critic_forward_budget_per_source" in payload,
+        "matched critic-forward budget is missing",
+    )
+    critic_forward_budget_per_source = _finite(
+        payload["critic_forward_budget_per_source"],
+        "critic-forward budget per source",
+    )
+    _require(
+        critic_forward_budget_per_source > 0.0
+        and critic_forward_budget_per_source.is_integer()
+        and critic_forward_budget_per_source <= forward_equivalent_budget_per_source,
+        "critic-forward budget per source must be a positive integer within the total budget",
+    )
     required_methods = {str(value) for value in payload["required_method_ids"]}
     entries = payload["baseline_evaluations"]
     _require(entries, "no generation baseline evaluations were provided")
@@ -213,8 +227,8 @@ def select(payload: Mapping[str, Any]) -> dict[str, Any]:
             _require(candidate_signature == matched_candidate_signature, f"source/candidate budgets differ for {method_id}")
         if critic_signature is not None:
             _require(
-                set(critic_signature.values()) == {int(forward_equivalent_budget_per_source)},
-                f"critic budget does not use the matched forward-equivalent budget for {method_id}",
+                set(critic_signature.values()) == {int(critic_forward_budget_per_source)},
+                f"critic budget does not use the matched critic-forward budget for {method_id}",
             )
             if matched_critic_signature is None:
                 matched_critic_signature = critic_signature
@@ -388,6 +402,7 @@ def select(payload: Mapping[str, Any]) -> dict[str, Any]:
             "matched_source_and_candidate_budget": True,
             "matched_forward_equivalent_budget": True,
             "forward_equivalent_budget_per_source": forward_equivalent_budget_per_source,
+            "critic_forward_budget_per_source": critic_forward_budget_per_source,
             "critic_budget_matched_within_critic_using_methods": True,
             "generator_nfe_accounting_validated": True,
             "independent_evaluator_checkpoint_path": matched_evaluator_checkpoint_path,
@@ -503,6 +518,7 @@ def select(payload: Mapping[str, Any]) -> dict[str, Any]:
         "matched_source_and_candidate_budget": True,
         "matched_forward_equivalent_budget": True,
         "forward_equivalent_budget_per_source": forward_equivalent_budget_per_source,
+        "critic_forward_budget_per_source": critic_forward_budget_per_source,
         "critic_budget_matched_within_critic_using_methods": True,
         "generator_nfe_accounting_validated": True,
         "required_method_ids": sorted(required_methods),

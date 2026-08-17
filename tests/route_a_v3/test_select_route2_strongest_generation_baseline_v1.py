@@ -77,7 +77,8 @@ def _payload():
         "evaluation_release_state": "CLOSED",
         "bootstrap_iterations": 1000,
         "bootstrap_seed": 17,
-        "forward_equivalent_budget_per_source": 64,
+        "forward_equivalent_budget_per_source": 80,
+        "critic_forward_budget_per_source": 64,
         "required_method_ids": ["random_legal", "beam"],
         "baseline_evaluations": [
             {"method_id": "random_legal", "evaluation": _evaluation("random_legal", 0.5, 0.5, 10.0)},
@@ -93,7 +94,8 @@ def test_measured_ndcg_freezes_strongest_matched_baseline() -> None:
     assert result["selection_evidence_mode"] == "CLOSED_MEASURED_SUPPORT"
     assert result["matched_source_and_candidate_budget"] is True
     assert result["matched_forward_equivalent_budget"] is True
-    assert result["forward_equivalent_budget_per_source"] == 64
+    assert result["forward_equivalent_budget_per_source"] == 80
+    assert result["critic_forward_budget_per_source"] == 64
     assert result["critic_budget_matched_within_critic_using_methods"] is True
     assert result["evaluation_outcomes_accessed"] is False
 
@@ -114,12 +116,20 @@ def test_missing_matched_forward_budget_refuses_selection() -> None:
         module.select(payload)
 
 
+def test_missing_matched_critic_budget_refuses_selection() -> None:
+    module = _load()
+    payload = _payload()
+    del payload["critic_forward_budget_per_source"]
+    with pytest.raises(module.GenerationBaselineSelectionError, match="critic-forward budget is missing"):
+        module.select(payload)
+
+
 def test_forward_budget_overrun_refuses_selection() -> None:
     module = _load()
     payload = _payload()
     compute = payload["baseline_evaluations"][1]["evaluation"]["generation"]["per_source"]["S0"]["compute"]
-    compute["critic_forwards"] = 65
-    compute["total_forward_equivalents"] = 65
+    compute["critic_forwards"] = 81
+    compute["total_forward_equivalents"] = 81
     with pytest.raises(module.GenerationBaselineSelectionError, match="budget exceeded"):
         module.select(payload)
 

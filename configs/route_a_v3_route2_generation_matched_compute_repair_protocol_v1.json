@@ -25,7 +25,7 @@
     "unguided_learned_base_flow_g0"
   ],
   "candidate_budget_per_source": 32,
-  "forward_equivalent_budget_per_source": 256,
+  "forward_equivalent_budget_per_source": 320,
   "search_critic_forward_budget_per_source": 256,
   "seed": 20260816,
   "execution_device": "cuda:6",

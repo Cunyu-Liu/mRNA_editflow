@@ -57,6 +57,7 @@
   "old_v1_strongest_baseline_artifact_state": "RETIRED_NOT_AUTHORITATIVE_FOR_SELECTION",
   "selector_repair": {
     "matched_forward_equivalent_budget_is_required": true,
+    "matched_critic_forward_budget_is_required_separately": true,
     "per_source_total_forward_accounting_must_close": true,
     "per_source_total_forwards_may_not_exceed_the_frozen_budget": true,
     "critic_using_methods_must_declare_the_frozen_budget": true
