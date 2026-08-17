@@ -36,6 +36,9 @@ def _verified_model_training(summary: Mapping[str, Any], study: str, seed: int) 
     total_memory = summary.get("cuda_total_memory_mb")
     return (
         summary.get("status") == "DELTA_PREDICTOR_DEVELOPMENT_GPU_RUN_COMPLETE"
+        and summary.get("model_kind")
+        == "delta_pretrained_mrnabert_edit_centered_antisymmetric"
+        and summary.get("candidate_control") == "NONE"
         and summary.get("run_mode") == "LOSO_DEVELOPMENT_TRAIN_VALIDATION_ONLY"
         and summary.get("result_stage")
         == "LOSO_DEVELOPMENT_VALIDATION_ONLY_FROZEN_HYPERPARAMETERS"
@@ -64,6 +67,27 @@ def _verified_model_training(summary: Mapping[str, Any], study: str, seed: int) 
     )
 
 
+def _verified_baseline_training(summary: Mapping[str, Any], study: str, seed: int) -> bool:
+    return (
+        summary.get("status") == "DELTA_PREDICTOR_DEVELOPMENT_GPU_RUN_COMPLETE"
+        and summary.get("model_kind") == "delta_anchored_position_aware_antisymmetric"
+        and summary.get("candidate_control") == "NONE"
+        and summary.get("run_mode") == "LOSO_DEVELOPMENT_TRAIN_VALIDATION_ONLY"
+        and summary.get("result_stage")
+        == "LOSO_DEVELOPMENT_VALIDATION_ONLY_FROZEN_HYPERPARAMETERS"
+        and summary.get("loso_holdout_study_unit_id") == study
+        and summary.get("loso_development_test_preserved") is True
+        and summary.get("development_test_outcomes_evaluated") is False
+        and summary.get("development_test_record_count_withheld", 0) > 0
+        and summary.get("test_metrics") is None
+        and summary.get("seed") == seed
+        and summary.get("optimizer_steps", 0) > 0
+        and summary.get("parameter_changed") is True
+        and summary.get("cuda_training_tensors_verified") is True
+        and summary.get("evaluation_outcomes_read") == 0
+    )
+
+
 def aggregate(payload: Mapping[str, Any]) -> dict[str, Any]:
     _require(payload["schema_version"] == "route_a_v3_route2_loso_aggregation_input.v1", "unexpected LOSO input schema")
     inventory = set(payload["development_inventory_studies"])
@@ -81,6 +105,14 @@ def aggregate(payload: Mapping[str, Any]) -> dict[str, Any]:
         _require(
             _verified_model_training(model_rows[study]["training_summary"], study, int(payload["seed"])),
             f"LOSO model training provenance is invalid: {study}",
+        )
+        _require(
+            _verified_baseline_training(
+                baseline_rows[study]["training_summary"],
+                study,
+                int(payload["seed"]),
+            ),
+            f"LOSO baseline training provenance is invalid: {study}",
         )
         failure_reasons = []
         try:

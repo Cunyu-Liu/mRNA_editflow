@@ -36,6 +36,8 @@ def _evaluation(study: str, value):
 def _training(study: str, seed: int = 1):
     return {
         "status": "DELTA_PREDICTOR_DEVELOPMENT_GPU_RUN_COMPLETE",
+        "model_kind": "delta_pretrained_mrnabert_edit_centered_antisymmetric",
+        "candidate_control": "NONE",
         "run_mode": "LOSO_DEVELOPMENT_TRAIN_VALIDATION_ONLY",
         "result_stage": "LOSO_DEVELOPMENT_VALIDATION_ONLY_FROZEN_HYPERPARAMETERS",
         "loso_holdout_study_unit_id": study,
@@ -57,6 +59,12 @@ def _training(study: str, seed: int = 1):
     }
 
 
+def _baseline_training(study: str, seed: int = 1):
+    result = _training(study, seed)
+    result["model_kind"] = "delta_anchored_position_aware_antisymmetric"
+    return result
+
+
 def _payload():
     studies = [f"S{index}" for index in range(7)]
     return {
@@ -69,7 +77,14 @@ def _payload():
             {"study_unit_id": study, "training_summary": _training(study), "evaluation": _evaluation(study, 0.2)}
             for study in studies
         ],
-        "baseline_results": [{"study_unit_id": study, "evaluation": _evaluation(study, 0.1)} for study in studies],
+        "baseline_results": [
+            {
+                "study_unit_id": study,
+                "training_summary": _baseline_training(study),
+                "evaluation": _evaluation(study, 0.1),
+            }
+            for study in studies
+        ],
     }
 
 
@@ -138,3 +153,11 @@ def test_loso_fold_requires_matching_gpu_training_provenance() -> None:
         payload["model_results"][0]["training_summary"][field] = value
         with pytest.raises(module.LosoAggregationError, match="training provenance"):
             module.aggregate(payload)
+
+
+def test_loso_requires_test_preserving_matched_baseline_training() -> None:
+    module = _load()
+    payload = deepcopy(_payload())
+    payload["baseline_results"][0]["training_summary"]["loso_development_test_preserved"] = False
+    with pytest.raises(module.LosoAggregationError, match="baseline training provenance"):
+        module.aggregate(payload)

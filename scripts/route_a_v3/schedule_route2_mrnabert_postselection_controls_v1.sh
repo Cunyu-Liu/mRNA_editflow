@@ -26,6 +26,10 @@ FINAL_REFIT_CONFIG="${RUNTIME_CONFIG_ROOT}/selected_loss_all126165_seed20260823_
 FINAL_REFIT_RUN="${RUN_ROOT}/selected_loss_all126165_seed20260823_gpu0_v1"
 LOSO_CONFIG_DIR="${RUNTIME_CONFIG_ROOT}/test_preserving_loso_v1"
 LOSO_RUN_ROOT="${RUN_ROOT}/test_preserving_loso_v1"
+BASELINE_LOSO_CONFIG_DIR="${RUNTIME_CONFIG_ROOT}/global_scaled_test_preserving_loso_v1"
+BASELINE_LOSO_RUN_ROOT="${RUN_ROOT}/global_scaled_test_preserving_loso_v1"
+LOSO_AGGREGATION_INPUT_DIR="${ROUTE2_ROOT}/comparisons/mrnabert_test_preserving_loso_inputs_v1"
+LOSO_AGGREGATION_DIR="${ROUTE2_ROOT}/comparisons/mrnabert_test_preserving_loso_v1"
 
 summaries=(
   "${HUBER_DIR}/training_summary.json"
@@ -245,3 +249,57 @@ for study in "${loso_studies[@]}"; do
   fi
 done
 printf '%s all_test_preserving_loso_runs_finished test_remained_excluded=true\n' "$(date -Is)"
+
+"${PYTHON}" scripts/route_a_v3/prepare_route2_global_scaled_test_preserving_loso_configs_v1.py \
+  --base-config configs/route_a_v3_route2_method_repair_global_scaled_seed20260821_gpu0_v1.json \
+  --three-seed-adjudication "${THREE_SEED_ADJUDICATION}" \
+  --output-config-dir "${BASELINE_LOSO_CONFIG_DIR}" \
+  --run-root "${BASELINE_LOSO_RUN_ROOT}"
+
+for study in "${loso_studies[@]}"; do
+  study_label=$(printf '%s' "${study}" | tr '[:upper:]-' '[:lower:]_')
+  baseline_loso_pids=()
+  for seed_gpu in "20260822:0" "20260823:3" "20260824:5"; do
+    seed=${seed_gpu%%:*}
+    gpu=${seed_gpu##*:}
+    config="${BASELINE_LOSO_CONFIG_DIR}/global_scaled_loso_${study_label}_seed${seed}.json"
+    log="${ROUTE2_ROOT}/global_scaled_loso_${study_label}_seed${seed}_gpu${gpu}_v1.log"
+    "${PYTHON}" -u scripts/route_a_v3/train_route2_delta_predictor_v1.py \
+      --config "${config}" >"${log}" 2>&1 &
+    baseline_loso_pids+=("$!")
+  done
+  baseline_loso_failure=0
+  set +e
+  for pid in "${baseline_loso_pids[@]}"; do
+    wait "${pid}"
+    status=$?
+    if [[ "${status}" -ne 0 ]]; then
+      baseline_loso_failure=1
+    fi
+  done
+  set -e
+  printf '%s matched_baseline_test_preserving_loso_finished study=%s failure=%s\n' \
+    "$(date -Is)" "${study}" "${baseline_loso_failure}"
+  if [[ "${baseline_loso_failure}" -ne 0 ]]; then
+    exit 1
+  fi
+done
+printf '%s all_matched_baseline_test_preserving_loso_runs_finished\n' "$(date -Is)"
+
+"${PYTHON}" scripts/route_a_v3/build_route2_test_preserving_loso_aggregation_inputs_v1.py \
+  --model-run-root "${LOSO_RUN_ROOT}" \
+  --baseline-run-root "${BASELINE_LOSO_RUN_ROOT}" \
+  --loss-kind "${selected_loss}" \
+  --output-dir "${LOSO_AGGREGATION_INPUT_DIR}"
+
+if [[ -e "${LOSO_AGGREGATION_DIR}" ]]; then
+  printf 'LOSO aggregation output directory already exists: %s\n' "${LOSO_AGGREGATION_DIR}" >&2
+  exit 1
+fi
+mkdir -p "${LOSO_AGGREGATION_DIR}"
+for seed in 20260822 20260823 20260824; do
+  "${PYTHON}" scripts/route_a_v3/aggregate_route2_loso_v1.py \
+    --input "${LOSO_AGGREGATION_INPUT_DIR}/test_preserving_loso_aggregation_input_seed${seed}.json" \
+    --output "${LOSO_AGGREGATION_DIR}/test_preserving_loso_seed${seed}.json"
+done
+printf '%s three_test_preserving_loso_aggregations_finished\n' "$(date -Is)"
