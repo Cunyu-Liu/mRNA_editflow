@@ -36,6 +36,7 @@ FLOW_V2_CHECKPOINT="${ROUTE2_ROOT}/runs/base_flow_g0/position_progress_gpu_v2/be
 ONLINE_ENCODER_VALIDATION="${ROUTE2_ROOT}/runs/mrnabert_online_encoder_validation_v1/validation_summary.json"
 READINESS_INPUT="${ROUTE2_ROOT}/comparisons/mrnabert_guidance_readiness_input_v1.json"
 READINESS_ADJUDICATION="${ROUTE2_ROOT}/comparisons/mrnabert_guidance_readiness_adjudication_v1.json"
+INDEPENDENT_EVALUATOR_ADJUDICATION="${ROUTE2_ROOT}/comparisons/mrnabert_independent_evaluator_adjudication_v1.json"
 
 summaries=(
   "${HUBER_DIR}/training_summary.json"
@@ -343,6 +344,16 @@ if [[ "${guided_unlocked}" != "true" ]]; then
   printf '%s readiness_stop_before_guided_xeditflow\n' "$(date -Is)"
   exit 0
 fi
+
+while [[ ! -f "${INDEPENDENT_EVALUATOR_ADJUDICATION}" ]]; do
+  printf '%s waiting_for_prefrozen_independent_evaluator_adjudication\n' "$(date -Is)"
+  sleep "${POLL_SECONDS}"
+done
+independent_evaluator_status=$(${PYTHON} -c \
+  'import json,sys; print(json.load(open(sys.argv[1]))["status"])' \
+  "${INDEPENDENT_EVALUATOR_ADJUDICATION}")
+printf '%s independent_evaluator_frozen status=%s candidate_generation_continues=true scientific_selection=false\n' \
+  "$(date -Is)" "${independent_evaluator_status}"
 
 while true; do
   free_mb=$(nvidia-smi --query-gpu=memory.free --format=csv,noheader,nounits -i 0 | tr -d ' ')

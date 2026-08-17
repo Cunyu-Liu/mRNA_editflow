@@ -8,6 +8,7 @@
   "readiness_adjudication_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/comparisons/mrnabert_guidance_readiness_adjudication_v1.json",
   "guided_summary_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/guided_xeditflow_development_v1/guided_summary.json",
   "guided_compute_by_source_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/guided_xeditflow_development_v1/guided_compute_by_source.jsonl",
+  "independent_evaluator_adjudication_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/comparisons/mrnabert_independent_evaluator_adjudication_v1.json",
   "source_manifest_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/generation_eligibility/development_validation_v1/source_eligibility.jsonl",
   "critic_checkpoint_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/mrnabert_scaleup_v2/selected_loss_all126165_seed20260823_gpu0_v1/delta_predictor_checkpoint.pt",
   "mrnabert_model_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/external_model_assets/mrnabert_a1eb7df25804d23f08646e1cb996b234d7208a40",
@@ -27,7 +28,7 @@
   "exhaustive_space_limit": 4096,
   "output_directory": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/mrnabert_matched_search_baselines_v1",
   "candidate_generation_only": true,
-  "independent_evaluator_status": "NOT_QUALIFIED_DO_NOT_SELECT_STRONGEST_METHOD",
+  "strongest_method_selection_in_this_suite": false,
   "evaluation_outcomes_accessed": false,
   "scientific_claim_status": "NOT_ESTABLISHED"
 }

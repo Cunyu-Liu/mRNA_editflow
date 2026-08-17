@@ -57,6 +57,7 @@ def validate_inputs(
     config: Mapping[str, Any],
     readiness_input: Mapping[str, Any],
     readiness_adjudication: Mapping[str, Any],
+    independent_evaluator_adjudication: Mapping[str, Any],
     guided_summary: Mapping[str, Any],
     compute_rows: Sequence[Mapping[str, Any]],
     source_rows: Sequence[Mapping[str, Any]],
@@ -77,13 +78,25 @@ def validate_inputs(
     )
     _require(
         config.get("candidate_generation_only") is True
-        and config.get("independent_evaluator_status")
-        == "NOT_QUALIFIED_DO_NOT_SELECT_STRONGEST_METHOD",
+        and config.get("strongest_method_selection_in_this_suite") is False,
         "matched search incorrectly enables scientific method selection",
     )
     _require(
         config.get("evaluation_outcomes_accessed") is False,
         "Evaluation cannot enter Development search generation",
+    )
+    _require(
+        independent_evaluator_adjudication.get("schema_version")
+        == "route_a_v3_route2_independent_generation_evaluator_adjudication.v1"
+        and independent_evaluator_adjudication.get("status") in {
+            "INDEPENDENT_GENERATION_EVALUATOR_QUALIFIED",
+            "INDEPENDENT_GENERATION_EVALUATOR_NO_GO",
+        }
+        and independent_evaluator_adjudication.get("development_test_outcomes_accessed")
+        is False
+        and independent_evaluator_adjudication.get("evaluation_outcomes_accessed")
+        is False,
+        "independent evaluator was not frozen before candidate generation",
     )
     _require(
         readiness_input.get("schema_version")
@@ -200,6 +213,10 @@ def execute(config_path: Path) -> dict[str, Any]:
     _require(not output_directory.exists(), f"matched-search output exists: {output_directory}")
     readiness_input = _read_json(Path(str(config["readiness_input_path"])), "readiness input")
     readiness_adjudication = _read_json(Path(str(config["readiness_adjudication_path"])), "readiness adjudication")
+    independent_evaluator_adjudication = _read_json(
+        Path(str(config["independent_evaluator_adjudication_path"])),
+        "independent evaluator adjudication",
+    )
     guided_summary = _read_json(Path(str(config["guided_summary_path"])), "guided summary")
     compute_rows = _read_jsonl(Path(str(config["guided_compute_by_source_path"])), "guided source compute")
     source_rows = _read_jsonl(Path(str(config["source_manifest_path"])), "source manifest")
@@ -207,6 +224,7 @@ def execute(config_path: Path) -> dict[str, Any]:
         config,
         readiness_input,
         readiness_adjudication,
+        independent_evaluator_adjudication,
         guided_summary,
         compute_rows,
         source_rows,
@@ -246,7 +264,11 @@ def execute(config_path: Path) -> dict[str, Any]:
             "critic_budget_maximum_per_source": max(budgets.values()),
             "candidate_generation_only": True,
             "strongest_method_selected": False,
-            "independent_evaluator_status": config["independent_evaluator_status"],
+            "independent_evaluator_status": independent_evaluator_adjudication["status"],
+            "independent_evaluator_qualified": (
+                independent_evaluator_adjudication["status"]
+                == "INDEPENDENT_GENERATION_EVALUATOR_QUALIFIED"
+            ),
             "evaluation_outcomes_read": 0,
             "generated_candidates_grant_canonical_credit": False,
             "wall_time_seconds": time.time() - started,
