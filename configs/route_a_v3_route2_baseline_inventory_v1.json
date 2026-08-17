@@ -5,7 +5,7 @@
     {
       "model_id": "Optimus5Prime",
       "task": "GSE114002|5UTR|MEAN_RIBOSOME_LOAD",
-      "common_task_status": "COMPLETED_DEVELOPMENT_VALIDATION_GPU",
+      "common_task_status": "IMPLEMENTED_AND_COMPLETED_DEVELOPMENT_VALIDATION_GPU",
       "prediction_transform": "f(candidate)-f(source)",
       "native_track_status": "OFFICIAL_REPOSITORY_WEIGHT_PORT_PARITY_PENDING",
       "artifact_provenance_id": "optimus5prime_official_d53df410",
@@ -15,7 +15,7 @@
     {
       "model_id": "FramePool",
       "task": "GSE114002|5UTR|MEAN_RIBOSOME_LOAD",
-      "common_task_status": "COMPLETED_DEVELOPMENT_VALIDATION_GPU",
+      "common_task_status": "IMPLEMENTED_AND_COMPLETED_DEVELOPMENT_VALIDATION_GPU",
       "prediction_transform": "f(candidate)-f(source)",
       "native_track_status": "OFFICIAL_REPOSITORY_WEIGHT_PORT_PARITY_PENDING",
       "artifact_provenance_id": "framepool_official_c575f9cd",
@@ -25,7 +25,7 @@
     {
       "model_id": "RNA-FM_MULTI_MOLECULE_CONVERSION",
       "task": "GSE114002|5UTR|MEAN_RIBOSOME_LOAD",
-      "common_task_status": "COMPLETED_DEVELOPMENT_VALIDATION_GPU",
+      "common_task_status": "IMPLEMENTED_AND_COMPLETED_DEVELOPMENT_VALIDATION_GPU",
       "prediction_transform": "linear(candidate_embedding-source_embedding)",
       "native_track_status": "UNOFFICIAL_MULTIMOLECULE_CONVERSION_GPU_LOAD_SMOKE_ONLY",
       "artifact_provenance_id": "multimolecule_rnafm_7d6e73ad",
@@ -35,7 +35,7 @@
     {
       "model_id": "UTR-LM",
       "task": "GSE114002|5UTR|MEAN_RIBOSOME_LOAD",
-      "common_task_status": "COMPLETED_DEVELOPMENT_VALIDATION_GPU",
+      "common_task_status": "IMPLEMENTED_AND_COMPLETED_DEVELOPMENT_VALIDATION_GPU",
       "prediction_transform": "linear(BOS(candidate)-BOS(source))",
       "native_track_status": "OFFICIAL_STRICT_CHECKPOINT_GPU_SMOKE_ONLY",
       "artifact_provenance_id": "utrlm_official_b77b589b",
@@ -45,7 +45,7 @@
     {
       "model_id": "APARENT",
       "task": "GSE269595|3UTR|PROXIMAL_POLYA_SITE_USAGE_LOG2_ODDS",
-      "common_task_status": "COMPLETED_DEVELOPMENT_VALIDATION_GPU",
+      "common_task_status": "IMPLEMENTED_AND_COMPLETED_DEVELOPMENT_VALIDATION_GPU",
       "prediction_transform": "log2_odds(candidate)-log2_odds(source)",
       "native_track_status": "OFFICIAL_NOTEBOOK_EXAMPLE_PARITY_ONLY",
       "artifact_provenance_id": "aparent_official_69ad2979",
@@ -55,7 +55,7 @@
     {
       "model_id": "RNA-FM_MULTI_MOLECULE_BOTTLENECK_ADAPTER",
       "task": "GSE114002|5UTR|MEAN_RIBOSOME_LOAD",
-      "common_task_status": "COMPLETED_DEVELOPMENT_VALIDATION_GPU",
+      "common_task_status": "IMPLEMENTED_AND_COMPLETED_DEVELOPMENT_VALIDATION_GPU",
       "prediction_transform": "bottleneck(candidate_embedding-source_embedding)",
       "native_track_status": "UNOFFICIAL_MULTIMOLECULE_CONVERSION_ADAPTER",
       "artifact_provenance_id": "multimolecule_rnafm_7d6e73ad",
@@ -94,9 +94,15 @@
     {"method_id": "genetic", "status": "COMPLETED_DEVELOPMENT_MEASURED_NEIGHBORHOOD_GPU"},
     {"method_id": "local_search", "status": "COMPLETED_DEVELOPMENT_MEASURED_NEIGHBORHOOD_GPU"},
     {"method_id": "generate_then_rerank", "status": "COMPLETED_DEVELOPMENT_MEASURED_NEIGHBORHOOD_GPU"},
-    {"method_id": "unguided_learned_base_flow_g0", "status": "GPU_VALIDATION_RUNNING"},
+    {
+      "method_id": "unguided_learned_base_flow_g0",
+      "status": "COMPLETED_DEVELOPMENT_GPU_FLOW_G0_READY",
+      "training_result_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/base_flow_g0/development_v1/final_summary.json",
+      "validation_result_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/base_flow_g0/development_validation_replay_v1/final_summary.json",
+      "biological_optimization_established": false
+    },
     {"method_id": "first_order_rate_guidance", "status": "NOT_EXECUTED_CRITIC_NOT_READY_FOR_GUIDANCE"},
-    {"method_id": "frozen_critic_xeditflow", "status": "NOT_EXECUTED_CRITIC_NOT_READY_FOR_GUIDANCE"},
+    {"method_id": "frozen_critic_xeditflow", "status": "NOT_EXECUTED_REQUIRES_CRITIC_READY_AND_FLOW_G0_READY"},
     {"method_id": "masked_discrete_flow_or_diffusion", "status": "LITERATURE_ONLY_TASK_MISMATCH"}
   ],
   "evaluation_outcomes_accessed": false,

@@ -27,3 +27,17 @@ def test_unexecuted_external_and_guided_methods_are_not_presented_as_results() -
     generation = {row["method_id"]: row["status"] for row in inventory["generation_methods"]}
     assert generation["frozen_critic_xeditflow"] == "NOT_EXECUTED_REQUIRES_CRITIC_READY_AND_FLOW_G0_READY"
     assert generation["masked_discrete_flow_or_diffusion"] == "LITERATURE_ONLY_TASK_MISMATCH"
+
+
+def test_unguided_flow_inventory_records_terminal_g0_evidence_without_biological_claim() -> None:
+    inventory = json.loads(PATH.read_text(encoding="utf-8"))
+    flow = next(
+        row for row in inventory["generation_methods"]
+        if row["method_id"] == "unguided_learned_base_flow_g0"
+    )
+    assert flow["status"] == "COMPLETED_DEVELOPMENT_GPU_FLOW_G0_READY"
+    assert flow["training_result_path"].endswith("/base_flow_g0/development_v1/final_summary.json")
+    assert flow["validation_result_path"].endswith(
+        "/base_flow_g0/development_validation_replay_v1/final_summary.json"
+    )
+    assert flow["biological_optimization_established"] is False
