@@ -1,0 +1,48 @@
+{
+  "schema_version": "route_a_v3_route2_gpu_training_benchmark_config.v1",
+  "baseline_id": "mrnabert_9m_critic_dataloader_benchmark_v1_gpu0",
+  "training_config": "configs/route_a_v3_route2_mrnabert_edit_max_mean_only_gpu6_v1.json",
+  "device": "cuda:0",
+  "physical_gpu_index": 0,
+  "warmup_steps": 10,
+  "measured_steps": 100,
+  "bf16_fp32_max_absolute_difference": 0.05,
+  "bf16_fp32_mean_absolute_difference": 0.01,
+  "bf16_fp32_minimum_pearson": 0.999,
+  "profiles": [
+    {
+      "profile_id": "B32_BF16_FUSED_WORKERS0",
+      "batch_size": 32,
+      "training_precision": "BF16",
+      "fused_adamw": true,
+      "num_workers": 0,
+      "pin_memory": true,
+      "persistent_workers": false,
+      "non_blocking_transfer": true
+    },
+    {
+      "profile_id": "B32_BF16_FUSED_WORKERS4",
+      "batch_size": 32,
+      "training_precision": "BF16",
+      "fused_adamw": true,
+      "num_workers": 4,
+      "pin_memory": true,
+      "persistent_workers": true,
+      "prefetch_factor": 2,
+      "non_blocking_transfer": true
+    },
+    {
+      "profile_id": "B32_BF16_FUSED_WORKERS8",
+      "batch_size": 32,
+      "training_precision": "BF16",
+      "fused_adamw": true,
+      "num_workers": 8,
+      "pin_memory": true,
+      "persistent_workers": true,
+      "prefetch_factor": 2,
+      "non_blocking_transfer": true
+    }
+  ],
+  "experiment_ledger_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiment_tracking/route2_training_attempts.csv",
+  "output_directory": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/benchmarks/mrnabert_dataloader_benchmark_v1_gpu0"
+}

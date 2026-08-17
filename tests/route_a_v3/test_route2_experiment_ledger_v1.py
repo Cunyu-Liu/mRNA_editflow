@@ -167,3 +167,20 @@ def test_bulk_backfill_does_not_call_unfinished_history_running(tmp_path: Path) 
     (run_dir / "training_config.json").write_text(json.dumps(config))
     row = sync.sync_run(run_dir, tmp_path / "attempts.csv", active_run=False)
     assert row["status"] == "INCOMPLETE_NO_TERMINAL_RECORD"
+
+
+def test_mrnabert_dataloader_benchmark_is_a_matched_worker_comparison() -> None:
+    config = json.loads(
+        (
+            ROOT
+            / "configs/route_a_v3_route2_mrnabert_dataloader_benchmark_gpu0_v1.json"
+        ).read_text(encoding="utf-8")
+    )
+    profiles = config["profiles"]
+    assert [profile["num_workers"] for profile in profiles] == [0, 4, 8]
+    assert {profile["batch_size"] for profile in profiles} == {32}
+    assert {profile["training_precision"] for profile in profiles} == {"BF16"}
+    assert {profile["fused_adamw"] for profile in profiles} == {True}
+    assert {profile["pin_memory"] for profile in profiles} == {True}
+    assert {profile["non_blocking_transfer"] for profile in profiles} == {True}
+    assert config["measured_steps"] >= 100
