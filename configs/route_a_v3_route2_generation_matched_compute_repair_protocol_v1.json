@@ -42,6 +42,8 @@
   "oversample_factor": 8,
   "exhaustive_space_limit": 4096,
   "hpo_policy": "FROZEN_REGISTRY_VALUES_NO_NEW_HPO",
+  "selection_bootstrap_iterations": 10000,
+  "selection_bootstrap_seed": 20260816,
   "seed": 20260816,
   "execution_device": "cuda:6",
   "physical_gpu_index": 6,
