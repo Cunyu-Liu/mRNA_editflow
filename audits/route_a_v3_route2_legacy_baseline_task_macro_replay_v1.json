@@ -1,0 +1,41 @@
+{
+  "schema_version": "route_a_v3_route2_legacy_baseline_task_macro_replay.v1",
+  "status": "LEGACY_BEST_OBSERVED_VALIDATION_REFERENCE_FROZEN",
+  "selection_pool": "DEVELOPMENT_VALIDATION",
+  "record_count": 18293,
+  "task_count": 9,
+  "prior_full_coverage_run_count": 42,
+  "metric": "TASK_MACRO_SPEARMAN",
+  "common_mae_scale": "TRAIN_ONLY_ROBUST_ENDPOINT_REGION_SCALE",
+  "strongest": {
+    "baseline_id": "delta_diagnostic_0_08m_lr3e4",
+    "model_kind": "delta_anchored_position_aware_antisymmetric",
+    "metadata_mode": "FULL_CONTEXT",
+    "parameter_count": 80099,
+    "task_macro_spearman": 0.15328703375929223,
+    "global_spearman": 0.20284591617986497,
+    "common_train_robust_task_macro_standardized_mae": 1.822072723037273
+  },
+  "runner_up": {
+    "baseline_id": "neural_medium_0_5m_siamese_cnn_lr3e4",
+    "model_kind": "siamese_cnn",
+    "metadata_mode": "FULL_CONTEXT",
+    "parameter_count": 509845,
+    "task_macro_spearman": 0.13677577027758647,
+    "global_spearman": 0.21157618509995527,
+    "common_train_robust_task_macro_standardized_mae": 1.8090038722943886
+  },
+  "strongest_sequence_and_region_only": {
+    "baseline_id": "delta_main_2m_sequence_and_region_only_lr3e4",
+    "model_kind": "delta_anchored_position_aware_antisymmetric",
+    "metadata_mode": "SEQUENCE_AND_REGION_ONLY",
+    "parameter_count": 2000035,
+    "task_macro_spearman": 0.13333163818624325,
+    "global_spearman": 0.19728096599897627,
+    "common_train_robust_task_macro_standardized_mae": 1.978106823439429
+  },
+  "same_information_caveat": "The strongest legacy run uses FULL_CONTEXT, while the method-repair screen uses TRANSFERABLE_CONTEXT with study identity masked. It is an observed internal hurdle, not a same-information causal ablation.",
+  "development_test_outcomes_accessed": false,
+  "evaluation_outcomes_accessed": false,
+  "scientific_claim_status": "NOT_ESTABLISHED"
+}

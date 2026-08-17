@@ -30,6 +30,21 @@
       "TEST": 18292
     }
   },
+  "legacy_best_observed_validation_reference": {
+    "baseline_id": "delta_diagnostic_0_08m_lr3e4",
+    "artifact": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/delta_diagnostic_0_08m_lr3e4_v1/validation_predictions.jsonl",
+    "metric": "COMMON_TRAIN_ROBUST_9_TASK_MACRO_SPEARMAN",
+    "value": 0.15328703375929223,
+    "defined_task_count": 9,
+    "common_train_robust_task_macro_standardized_mae": 1.822072723037273,
+    "metadata_mode": "FULL_CONTEXT",
+    "parameter_count": 80099,
+    "full_validation_coverage": true,
+    "prior_run_count_replayed": 42,
+    "development_test_used": false,
+    "evaluation_used": false,
+    "interpretation": "STRONGEST_OBSERVED_INTERNAL_REFERENCE_NOT_SAME_INFORMATION_BECAUSE_STUDY_CONTEXT_IS_AVAILABLE"
+  },
   "screen_arms": [
     "configs/route_a_v3_route2_method_repair_global_raw_seed20260821_gpu1_v1.json",
     "configs/route_a_v3_route2_method_repair_global_scaled_seed20260821_gpu0_v1.json",
@@ -69,6 +84,7 @@
   },
   "stop_conditions": [
     "NO_FACTORIAL_ARM_IMPROVES_VALIDATION_TASK_MACRO_SPEARMAN_OVER_GLOBAL_RAW",
+    "SELECTED_ARM_DOES_NOT_EXCEED_LEGACY_BEST_OBSERVED_9_TASK_MACRO_SPEARMAN",
     "EDIT_CENTERED_ARM_DOES_NOT_BEAT_MATCHED_SOURCE_ONLY_OR_PERMUTATION_CONTROL",
     "THREE_FRESH_SEEDS_ARE_NOT_DIRECTIONALLY_CONSISTENT",
     "LOSO_OR_LEAVE_GSE269595_OUT_SHOWS_SINGLE_STUDY_DEPENDENCE"

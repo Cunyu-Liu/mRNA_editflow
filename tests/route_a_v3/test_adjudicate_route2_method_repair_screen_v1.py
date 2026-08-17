@@ -55,6 +55,14 @@ def _protocol():
         "fresh_confirmation_seeds": [2, 3, 4],
         "guided_generation_status": "BLOCKED_UNTIL_CRITIC_READY_AND_INDEPENDENT_EVALUATOR_FIXED",
         "post_exposure_boundary": {"new_external_confirmation_required_for_new_method_claim": True},
+        "legacy_best_observed_validation_reference": {
+            "baseline_id": "legacy",
+            "metric": "COMMON_TRAIN_ROBUST_9_TASK_MACRO_SPEARMAN",
+            "value": 0.153,
+            "defined_task_count": 1,
+            "development_test_used": False,
+            "evaluation_used": False,
+        },
     }
 
 
@@ -90,6 +98,23 @@ def test_screen_stops_when_candidate_control_matches_selected_edit_model() -> No
     ]
     result = module.adjudicate_screen(_protocol(), runs)
     assert result["status"] == "EXPLORATORY_SCREEN_DOES_NOT_SUPPORT_CONFIRMATION"
+    assert result["fresh_confirmation_seeds"] == []
+
+
+def test_screen_stops_when_repair_improves_same_information_but_not_legacy_best() -> None:
+    module = _load()
+    runs = [
+        _run("FACTORIAL_GLOBAL_RAW", 0.10),
+        _run("FACTORIAL_GLOBAL_SCALED", 0.12),
+        _run("FACTORIAL_EDIT_CENTERED_RAW", 0.13),
+        _run("FACTORIAL_EDIT_CENTERED_SCALED", 0.14),
+        _run("MATCHED_SOURCE_ONLY_CONTROL", 0.08),
+        _run("MATCHED_TRAIN_CANDIDATE_PERMUTATION_CONTROL", 0.09),
+    ]
+    result = module.adjudicate_screen(_protocol(), runs)
+    assert result["status"] == "EXPLORATORY_REPAIR_NOT_LEADING_LEGACY_VALIDATION_REFERENCE"
+    assert result["task_macro_spearman_improvement_over_global_raw"] == pytest.approx(0.04)
+    assert result["beats_legacy_best_observed_validation_reference"] is False
     assert result["fresh_confirmation_seeds"] == []
 
 

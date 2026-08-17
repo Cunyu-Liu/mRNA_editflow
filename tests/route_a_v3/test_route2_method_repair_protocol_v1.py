@@ -119,3 +119,8 @@ def test_protocol_keeps_new_method_claim_and_guidance_fail_closed() -> None:
     units = protocol["development_independence_units"]
     assert units["study_unit_count"] == len(protocol["loso_study_unit_ids"]) == 7
     assert units["record_count"] == sum(units["fixed_split_record_counts"].values())
+    legacy = protocol["legacy_best_observed_validation_reference"]
+    assert legacy["defined_task_count"] == units["task_count"] == 9
+    assert legacy["prior_run_count_replayed"] == 42
+    assert legacy["development_test_used"] is False
+    assert legacy["evaluation_used"] is False
