@@ -172,6 +172,57 @@ def test_pretrained_edit_centered_mean_is_antisymmetric_and_scale_is_symmetric()
     assert torch.equal(forward["log_variance"], reverse["log_variance"])
 
 
+def test_pretrained_source_only_control_is_candidate_invariant_and_parameter_matched() -> None:
+    module = _load(MODEL_PATH, "route2_pretrained_source_only_control_test")
+    common = {
+        "hidden_dim": 32,
+        "depth": 2,
+        "study_count": 1,
+        "assay_count": 1,
+        "context_count": 1,
+        "endpoint_count": 1,
+        "pretrained_width": 24,
+    }
+    main = module.Route2PretrainedEditCenteredDeltaPredictor(**common).eval()
+    control = module.Route2PretrainedEditCenteredDeltaPredictor(
+        **common, source_only_control=True
+    ).eval()
+    assert sum(parameter.numel() for parameter in main.parameters()) == sum(
+        parameter.numel() for parameter in control.parameters()
+    )
+    source = torch.tensor([[0, 1, 2, 3]])
+    first_candidate = torch.tensor([[1, 1, 2, 3]])
+    second_candidate = torch.tensor([[0, 1, 2, 0]])
+    padding = torch.zeros_like(source, dtype=torch.bool)
+    categories = torch.zeros(1, dtype=torch.long)
+    source_pretrained = torch.randn(1, 24)
+    first = control(
+        source,
+        first_candidate,
+        padding,
+        categories,
+        categories,
+        categories,
+        categories,
+        categories,
+        source_pretrained,
+        torch.randn(1, 24),
+    )["mean"]
+    second = control(
+        source,
+        second_candidate,
+        padding,
+        categories,
+        categories,
+        categories,
+        categories,
+        categories,
+        source_pretrained,
+        torch.randn(1, 24),
+    )["mean"]
+    assert torch.equal(first, second)
+
+
 def test_final_refit_uses_all_development_records_without_internal_evaluation() -> None:
     trainer = _load(TRAIN_PATH, "route2_delta_final_all_refit_test")
     records = [
@@ -570,6 +621,51 @@ def test_candidate_permutation_never_crosses_exact_source_task_support() -> None
     assert summary["permutation_stratum"] == "EXACT_SOURCE_SEQUENCE_ENDPOINT_REGION"
     assert summary["candidate_pool_membership_preserved"] is True
     assert summary["edit_distance_multiset_preserved"] is True
+
+
+def test_candidate_permutation_moves_matching_pretrained_candidate_feature(
+    tmp_path: Path,
+) -> None:
+    trainer = _load(TRAIN_PATH, "route2_delta_pretrained_permutation_test")
+    records = [
+        trainer.DeltaRecord(
+            record_id="r0", split="TRAIN", source="AAAA", candidate="CAAA",
+            target=0.0, source_group="g0", study="S", assay="A",
+            context="C", endpoint="E", region=0,
+        ),
+        trainer.DeltaRecord(
+            record_id="r1", split="TRAIN", source="AAAA", candidate="GAAA",
+            target=1.0, source_group="g1", study="S", assay="A",
+            context="C", endpoint="E", region=0,
+        ),
+    ]
+    source_features = torch.tensor([[1.0, 2.0], [3.0, 4.0]])
+    candidate_features = torch.tensor([[5.0, 6.0], [7.0, 8.0]])
+    feature_path = tmp_path / "features.pt"
+    torch.save(
+        {
+            "schema_version": "route_a_v3_route2_frozen_pair_features.v1",
+            "model_id": "YYLY66/mRNABERT",
+            "pretrained_parameter_count": 113_389_056,
+            "record_ids": ["r0", "r1"],
+            "source_embeddings": source_features,
+            "candidate_embeddings": candidate_features,
+        },
+        feature_path,
+    )
+    table = trainer.FrozenPretrainedPairFeatures(feature_path, {"r0", "r1"})
+    vocabs = {
+        field: trainer.build_vocab(records, field)
+        for field in ("study", "assay", "context", "endpoint")
+    }
+    row = trainer.DeltaDataset(
+        records,
+        vocabs,
+        candidate_overrides={"r0": "GAAA"},
+        pretrained_features=table,
+    )[0]
+    assert torch.equal(row["source_pretrained"], source_features[0])
+    assert torch.equal(row["candidate_pretrained"], candidate_features[1])
 
 
 def test_dataset_uses_train_scaler_without_changing_raw_target() -> None:

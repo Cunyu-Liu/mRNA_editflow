@@ -30,6 +30,7 @@ from core.route2_delta_predictor import (
     ROUTE2_EDIT_CENTERED_SOURCE_ONLY_KIND,
     ROUTE2_LEGACY_RNAFM_EDIT_CENTERED_MODEL_KIND,
     ROUTE2_PRETRAINED_EDIT_CENTERED_MODEL_KIND,
+    ROUTE2_PRETRAINED_EDIT_CENTERED_SOURCE_ONLY_KIND,
     Route2DeltaPredictor,
     Route2EditCenteredDeltaPredictor,
     Route2NeuralBaseline,
@@ -66,6 +67,11 @@ SHARED_EFFECT_EXCLUDED_PREFIXES = (
     "region_shift.",
 )
 PRETRAINED_EDIT_CENTERED_MODEL_KINDS = {
+    ROUTE2_PRETRAINED_EDIT_CENTERED_MODEL_KIND,
+    ROUTE2_LEGACY_RNAFM_EDIT_CENTERED_MODEL_KIND,
+    ROUTE2_PRETRAINED_EDIT_CENTERED_SOURCE_ONLY_KIND,
+}
+PRETRAINED_ANTISYMMETRIC_MODEL_KINDS = {
     ROUTE2_PRETRAINED_EDIT_CENTERED_MODEL_KIND,
     ROUTE2_LEGACY_RNAFM_EDIT_CENTERED_MODEL_KIND,
 }
@@ -214,6 +220,11 @@ class DeltaDataset(Dataset):
         )
         self.candidate_overrides = dict(candidate_overrides or {})
         self.pretrained_features = pretrained_features
+        self.candidate_feature_record_by_sequence = {}
+        for row in records:
+            self.candidate_feature_record_by_sequence.setdefault(
+                row.candidate, row.record_id
+            )
         _require(
             set(self.candidate_overrides) <= {row.record_id for row in records},
             "candidate override is outside this dataset",
@@ -288,9 +299,22 @@ class DeltaDataset(Dataset):
             "region": row.region,
         }
         if self.pretrained_features is not None:
-            source_pretrained, candidate_pretrained = self.pretrained_features.pair(
-                row.record_id
+            source_pretrained, original_candidate_pretrained = (
+                self.pretrained_features.pair(row.record_id)
             )
+            if candidate == row.candidate:
+                candidate_pretrained = original_candidate_pretrained
+            else:
+                donor_record_id = self.candidate_feature_record_by_sequence.get(
+                    candidate
+                )
+                _require(
+                    donor_record_id is not None,
+                    "permuted candidate lacks a matching frozen pretrained feature",
+                )
+                _donor_source, candidate_pretrained = self.pretrained_features.pair(
+                    donor_record_id
+                )
             result["source_pretrained"] = source_pretrained
             result["candidate_pretrained"] = candidate_pretrained
         return result
@@ -1253,6 +1277,9 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
             **shared_model_config,
             "pretrained_width": pretrained_features.width,
             "learned_uncertainty": loss_kind == "learned_variance_gaussian_nll",
+            "source_only_control": (
+                model_kind == ROUTE2_PRETRAINED_EDIT_CENTERED_SOURCE_ONLY_KIND
+            ),
         }
         model = Route2PretrainedEditCenteredDeltaPredictor(
             **checkpoint_model_config
@@ -1642,12 +1669,12 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
         "swap_antisymmetry_by_construction": model_kind in {
             ROUTE2_DELTA_MODEL_KIND,
             ROUTE2_EDIT_CENTERED_MODEL_KIND,
-            *PRETRAINED_EDIT_CENTERED_MODEL_KINDS,
+            *PRETRAINED_ANTISYMMETRIC_MODEL_KINDS,
         },
         "identity_zero_by_construction": model_kind in {
             ROUTE2_DELTA_MODEL_KIND,
             ROUTE2_EDIT_CENTERED_MODEL_KIND,
-            *PRETRAINED_EDIT_CENTERED_MODEL_KINDS,
+            *PRETRAINED_ANTISYMMETRIC_MODEL_KINDS,
         },
         "edit_centered_pooling": model_kind in {
             ROUTE2_EDIT_CENTERED_MODEL_KIND,

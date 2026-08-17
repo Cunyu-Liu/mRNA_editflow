@@ -12,6 +12,9 @@ ROUTE2_EDIT_CENTERED_SOURCE_ONLY_KIND = "delta_edit_centered_source_only_control
 ROUTE2_PRETRAINED_EDIT_CENTERED_MODEL_KIND = (
     "delta_pretrained_mrnabert_edit_centered_antisymmetric"
 )
+ROUTE2_PRETRAINED_EDIT_CENTERED_SOURCE_ONLY_KIND = (
+    "delta_pretrained_mrnabert_edit_centered_source_only_control"
+)
 ROUTE2_LEGACY_RNAFM_EDIT_CENTERED_MODEL_KIND = (
     "delta_pretrained_rnafm_edit_centered_antisymmetric"
 )
@@ -320,7 +323,9 @@ class Route2PretrainedEditCenteredDeltaPredictor(nn.Module):
     The trainable sequence path concentrates capacity around observed edits while
     retaining whole-source context.  The Delta mean is exactly antisymmetric;
     an optional uncertainty head is symmetric and is used only in the matched
-    learned-scale diagnostic arm.
+    learned-scale diagnostic arm.  The parameter-matched source-only control
+    runs the same network with candidate tokens and embeddings replaced by the
+    source and intentionally does not claim antisymmetry.
     """
 
     def __init__(
@@ -335,6 +340,7 @@ class Route2PretrainedEditCenteredDeltaPredictor(nn.Module):
         pretrained_width: int,
         region_count: int = 2,
         learned_uncertainty: bool = False,
+        source_only_control: bool = False,
     ):
         super().__init__()
         if hidden_dim < 16 or depth < 1 or pretrained_width < 1:
@@ -342,6 +348,7 @@ class Route2PretrainedEditCenteredDeltaPredictor(nn.Module):
         if min(study_count, assay_count, context_count, endpoint_count, region_count) <= 0:
             raise ValueError("categorical vocabularies must be non-empty")
         self.learned_uncertainty = learned_uncertainty
+        self.source_only_control = source_only_control
         category_dim = max(4, hidden_dim // 8)
         self.nucleotide = nn.Embedding(5, hidden_dim, padding_idx=4)
         self.source_projection = nn.Linear(hidden_dim, hidden_dim)
@@ -473,6 +480,25 @@ class Route2PretrainedEditCenteredDeltaPredictor(nn.Module):
         candidate_pretrained: torch.Tensor,
     ) -> dict[str, torch.Tensor]:
         del study_ids
+        if self.source_only_control:
+            source_representation = self._encode_pair(
+                source_tokens,
+                source_tokens,
+                padding_mask,
+                source_pretrained,
+                source_pretrained,
+                assay_ids,
+                context_ids,
+                endpoint_ids,
+                region_ids,
+            )
+            mean = self.mean_head(source_representation).squeeze(-1)
+            if self.log_variance_head is None:
+                log_variance = torch.zeros_like(mean)
+            else:
+                log_variance = self.log_variance_head(source_representation).squeeze(-1)
+                log_variance = log_variance.clamp(min=-8.0, max=6.0)
+            return {"mean": mean, "log_variance": log_variance}
         forward = self._encode_pair(
             source_tokens,
             candidate_tokens,
