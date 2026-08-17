@@ -11,6 +11,7 @@ HUBER_DIR="${RUN_ROOT}/max_mean_only_seed20260816_gpu0_bf16_v1"
 FIXED_DIR="${RUN_ROOT}/max_fixed_variance_seed20260816_gpu5_bf16_v1"
 LEARNED_DIR="${RUN_ROOT}/max_learned_variance_seed20260816_gpu3_bf16_v1"
 COMPARISON="${ROUTE2_ROOT}/comparisons/mrnabert_loss_comparison_seed20260816_v1.json"
+UNCERTAINTY_AUDIT="${ROUTE2_ROOT}/comparisons/mrnabert_uncertainty_absorption_seed20260816_v1.json"
 CONTROL_ADJUDICATION="${ROUTE2_ROOT}/comparisons/mrnabert_signal_control_adjudication_seed20260816_v1.json"
 RUNTIME_CONFIG_ROOT="${RUN_ROOT}/runtime_configs"
 PERMUTATION_CONFIG="${RUNTIME_CONFIG_ROOT}/selected_loss_candidate_permutation_seed20260816_gpu0_v1.json"
@@ -64,6 +65,13 @@ cd "${REPO_ROOT}"
   --summary "${summaries[1]}" \
   --summary "${summaries[2]}" \
   --output "${COMPARISON}"
+
+"${PYTHON}" scripts/route_a_v3/audit_route2_mrnabert_uncertainty_absorption_v1.py \
+  --summary "${summaries[0]}" \
+  --summary "${summaries[1]}" \
+  --summary "${summaries[2]}" \
+  --loss-comparison "${COMPARISON}" \
+  --output "${UNCERTAINTY_AUDIT}"
 
 selected_loss=$("${PYTHON}" -c \
   'import json,sys; print(json.load(open(sys.argv[1]))["selected_loss_for_controls"])' \

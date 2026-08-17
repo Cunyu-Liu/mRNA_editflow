@@ -123,6 +123,8 @@ nohup scripts/route_a_v3/schedule_route2_mrnabert_postselection_controls_v1.sh \
 
 它每 15 分钟检查三个 summary，并按固定顺序接力：loss VALIDATION 选择 → GPU 0/5 两个 signal controls → GPU 0/3/5 三个固定验证 seeds → 单次冻结 Development TEST → 全 126,165 条最终拟合 → 7 个 Development study × 3 seeds 的 TEST-preserving mRNABERT LOSO → 同样 21 个 matched global-scaled baseline LOSO → 三个 seed 的对齐汇总。随后等待 Flow V2 和在线 mRNABERT candidate encoder 的独立验证，组装 readiness；只有 `CRITIC_READY_FOR_GUIDANCE` 与 `FLOW_G0_READY` 同时成立，才会在空闲 GPU 0 上启动一次 guided XEditFlow Development run。任一门槛不通过，后续阶段停止。该调度器始终不会读取 GSE232572 或 E-MTAB-10902 的 Evaluation outcomes。
 
+三个 loss 完成后、启动 controls 之前，调度器还会生成 `mrnabert_uncertainty_absorption_seed20260816_v1.json`。它从 Development VALIDATION 逐 task 重算 mean Spearman、正向 task 数、standardized MAE、prediction-spread ratio，以及 learned uncertainty 与绝对残差的相关性。这样不会让分钟、log-fold 和 usage 的不同原始量纲混成一个无意义的全局 spread。该报告只诊断 learned uncertainty 是否伴随 mean collapse；loss 选择仍只使用预冻结的 mean 性能规则，不会因 NLL 或预测方差看起来更好而选中 learned-variance。
+
 ## 7. 冻结 TEST 与最终拟合
 
 冻结 TEST 不再直接使用预写死为 Huber 的旧配置。它由三个 final seeds 的冻结判定动态生成：
