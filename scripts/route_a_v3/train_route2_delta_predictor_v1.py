@@ -36,6 +36,10 @@ from core.route2_delta_predictor import (
     Route2PretrainedEditCenteredDeltaPredictor,
 )
 from core.route2_gpu_failure_evidence import cuda_device_observation, write_gpu_failure_evidence
+from core.route2_experiment_ledger import (
+    build_training_attempt_row,
+    record_training_attempt,
+)
 from core.route2_target_scaling import (
     TARGET_SCALING_NONE,
     TARGET_SCALING_TRAIN_TASK_ROBUST,
@@ -1215,6 +1219,41 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
     metrics_path.write_text("", encoding="utf-8")
     log_path = output_dir / "train.log"
     started = time.time()
+    started_at = time.strftime("%Y-%m-%dT%H:%M:%S%z")
+    attempt_details = {
+        "started_at": started_at,
+        "included_study_unit_ids": included_studies,
+        "included_regions": included_regions,
+        "record_counts": {split: len(rows) for split, rows in by_split.items()},
+        "development_test_record_count_withheld": development_test_record_count_withheld,
+        "evaluation_record_count": 0,
+        "trainable_parameter_count": trainable_parameter_count,
+        "frozen_pretrained_parameter_count": (
+            pretrained_features.pretrained_parameter_count
+            if pretrained_features is not None
+            else 0
+        ),
+        "total_effective_parameter_count": trainable_parameter_count + (
+            pretrained_features.pretrained_parameter_count
+            if pretrained_features is not None
+            else 0
+        ),
+        "pretrained_model_id": (
+            pretrained_features.model_id if pretrained_features is not None else None
+        ),
+    }
+    if config.get("experiment_ledger_path"):
+        record_training_attempt(
+            Path(config["experiment_ledger_path"]),
+            output_dir / "training_attempt.json",
+            build_training_attempt_row(
+                config,
+                output_dir,
+                "RUNNING",
+                repository_root=REPO_ROOT,
+                details=attempt_details,
+            ),
+        )
     log_path.write_text(
         json.dumps({
             "event": "TRAINING_STARTED",
@@ -1517,6 +1556,18 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
     serialized_summary = json.dumps(summary, indent=2, sort_keys=True) + "\n"
     (output_dir / "training_summary.json").write_text(serialized_summary, encoding="utf-8")
     (output_dir / "final_summary.json").write_text(serialized_summary, encoding="utf-8")
+    if config.get("experiment_ledger_path"):
+        record_training_attempt(
+            Path(config["experiment_ledger_path"]),
+            output_dir / "training_attempt.json",
+            build_training_attempt_row(
+                config,
+                output_dir,
+                "COMPLETED",
+                repository_root=REPO_ROOT,
+                details={**attempt_details, **summary},
+            ),
+        )
     with log_path.open("a", encoding="utf-8") as handle:
         handle.write(json.dumps({
             "event": "TRAINING_COMPLETED",
@@ -1541,6 +1592,22 @@ def main() -> int:
             entrypoint="train_route2_delta_predictor_v1",
             evaluation_outcomes_accessed=config.get("evaluation_outcomes_accessed", False),
         )
+        if config.get("experiment_ledger_path"):
+            record_training_attempt(
+                Path(config["experiment_ledger_path"]),
+                output_dir / "training_attempt.json",
+                build_training_attempt_row(
+                    config,
+                    output_dir,
+                    "FAILED",
+                    repository_root=REPO_ROOT,
+                    details={
+                        "evaluation_record_count": 0,
+                        "error_type": type(exc).__name__,
+                        "error": str(exc),
+                    },
+                ),
+            )
         raise
     print(json.dumps(result, sort_keys=True))
     return 0

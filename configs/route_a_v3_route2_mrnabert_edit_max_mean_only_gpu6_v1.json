@@ -41,7 +41,10 @@
   "epochs": 100,
   "num_workers": 0,
   "frozen_capacity_profile_id": "MRNABERT_768_PLUS_9M_CRITIC",
+  "attempt_purpose": "HPO_COMPARE_MEAN_ONLY_HUBER_ON_FROZEN_DEVELOPMENT_VALIDATION",
   "expected_trainable_parameter_count": 9343106,
+  "expected_frozen_pretrained_parameter_count": 113389056,
   "parameter_count_relative_tolerance": 0.02,
+  "experiment_ledger_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiment_tracking/route2_training_attempts.csv",
   "output_directory": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/mrnabert_scaleup_v1/max_mean_only_seed20260816_gpu6_v1"
 }
