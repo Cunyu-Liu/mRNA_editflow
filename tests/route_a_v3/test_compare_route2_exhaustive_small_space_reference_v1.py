@@ -91,6 +91,7 @@ def test_real_reference_config_matches_frozen_protocol_and_jobs() -> None:
     assert config["guiding_checkpoint_path"] == jobs["guiding_checkpoint_path"]
     assert config["independent_evaluator_checkpoint_path"] == jobs["evaluator_checkpoint_path"]
     assert config["independent_evaluator_scoring_config"] == str(SCORING.relative_to(ROOT))
+    assert config["matched_compute_protocol_config"] == str(PROTOCOL.relative_to(ROOT))
     assert scoring["evaluator_checkpoint_path"] == config["independent_evaluator_checkpoint_path"]
     assert scoring["guiding_checkpoint_path"] == config["guiding_checkpoint_path"]
     assert scoring["source_manifest_path"] == config["source_manifest_path"]
@@ -102,6 +103,12 @@ def test_real_reference_config_matches_frozen_protocol_and_jobs() -> None:
     assert config["physical_gpu_index"] == 6
     assert scoring["device"] == config["device"]
     assert scoring["physical_gpu_index"] == config["physical_gpu_index"]
+    assert config["measured_neighborhood_path"].endswith(
+        "/exhaustive_small_space_critic256_v1/measured_neighborhood.private.jsonl"
+    )
+    assert config["runner_script"] == (
+        "scripts/route_a_v3/run_route2_exhaustive_small_space_reference_suite_v1.py"
+    )
     assert config["full_cohort_strongest_selector_eligible"] is False
 
 
