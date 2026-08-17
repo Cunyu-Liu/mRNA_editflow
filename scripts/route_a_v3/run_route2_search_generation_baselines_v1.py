@@ -445,6 +445,23 @@ def run_search_method(
     return SearchResult(method_id, candidates, scores, 0, nfe, scorer.forward_count, source_score)
 
 
+def validated_search_hyperparameters(
+    *,
+    beam_width: int,
+    genetic_population_size: int,
+    oversample_factor: int,
+    exhaustive_space_limit: int,
+) -> dict[str, int]:
+    values = {
+        "beam_width": beam_width,
+        "genetic_population_size": genetic_population_size,
+        "oversample_factor": oversample_factor,
+        "exhaustive_space_limit": exhaustive_space_limit,
+    }
+    _require(all(isinstance(value, int) and not isinstance(value, bool) and value > 0 for value in values.values()), "search hyperparameters must be positive integers")
+    return values
+
+
 def _read_jsonl(path: Path) -> list[dict]:
     with path.open(encoding="utf-8") as handle:
         return [json.loads(line) for line in handle if line.strip()]
@@ -487,9 +504,19 @@ def _main() -> int:
     parser.add_argument("--physical-gpu-index", type=int)
     parser.add_argument("--method", choices=METHODS, required=True)
     parser.add_argument("--max-critic-forwards", type=int, required=True)
+    parser.add_argument("--beam-width", type=int, required=True)
+    parser.add_argument("--genetic-population-size", type=int, required=True)
+    parser.add_argument("--oversample-factor", type=int, required=True)
+    parser.add_argument("--exhaustive-space-limit", type=int, required=True)
     parser.add_argument("--seed", type=int, default=20260816)
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
+    search_hyperparameters = validated_search_hyperparameters(
+        beam_width=args.beam_width,
+        genetic_population_size=args.genetic_population_size,
+        oversample_factor=args.oversample_factor,
+        exhaustive_space_limit=args.exhaustive_space_limit,
+    )
     sources = _read_jsonl(args.source_manifest)
     score_table = None
     if args.score_table:
@@ -539,6 +566,10 @@ def _main() -> int:
             max_critic_forwards=args.max_critic_forwards,
             score_function=score_function,
             seed=args.seed,
+            beam_width=args.beam_width,
+            population_size=args.genetic_population_size,
+            oversample_factor=args.oversample_factor,
+            exhaustive_space_limit=args.exhaustive_space_limit,
         )
         for index, (candidate, score) in enumerate(zip(result.candidates, result.scores)):
             distance = edit_count(source, candidate)
@@ -555,6 +586,7 @@ def _main() -> int:
                 "critic_forwards": result.critic_forwards if index == 0 else 0,
                 "independent_evaluator_forwards": 0,
                 "seed": args.seed,
+                "search_hyperparameters": search_hyperparameters,
                 "peak_vram_mb": checkpoint_scorer.peak_vram_mb if checkpoint_scorer is not None and index == 0 else 0,
                 **execution_provenance,
             })

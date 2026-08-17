@@ -149,3 +149,26 @@ def test_checkpoint_search_requires_frozen_observed_cuda_provenance() -> None:
         invalid[field] = value
         with pytest.raises(module.SearchBaselineError, match="frozen learned GPU"):
             module.validate_frozen_checkpoint_provenance(invalid)
+
+
+def test_search_hyperparameters_are_explicit_and_positive() -> None:
+    module = _load()
+    values = module.validated_search_hyperparameters(
+        beam_width=16,
+        genetic_population_size=32,
+        oversample_factor=8,
+        exhaustive_space_limit=4096,
+    )
+    assert values == {
+        "beam_width": 16,
+        "genetic_population_size": 32,
+        "oversample_factor": 8,
+        "exhaustive_space_limit": 4096,
+    }
+    with pytest.raises(module.SearchBaselineError, match="positive integers"):
+        module.validated_search_hyperparameters(
+            beam_width=0,
+            genetic_population_size=32,
+            oversample_factor=8,
+            exhaustive_space_limit=4096,
+        )
