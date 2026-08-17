@@ -23,7 +23,7 @@ def _passing_input():
     return {
         "schema_version": "route_a_v3_route2_readiness_input.v1",
         "critic": {
-            "training_summary": {
+            "validation_training_summary": {
                 "status": "DELTA_PREDICTOR_DEVELOPMENT_GPU_RUN_COMPLETE",
                 "optimizer_steps": 10, "parameter_changed": True,
                 "device": "cuda:3", "physical_gpu_index": 3,
@@ -31,6 +31,23 @@ def _passing_input():
                 "cuda_device_index": 3, "cuda_device_uuid": "GPU-critic",
                 "cuda_total_memory_mb": 40960.0,
                 "result_stage": "FROZEN_DEVELOPMENT_VALIDATION",
+                "development_test_outcomes_evaluated": False,
+                "test_metrics": None,
+                "candidate_control": "NONE",
+                "evaluation_outcomes_read": 0,
+            },
+            "final_refit_summary": {
+                "status": "DELTA_PREDICTOR_DEVELOPMENT_GPU_RUN_COMPLETE",
+                "optimizer_steps": 20, "parameter_changed": True,
+                "device": "cuda:0", "physical_gpu_index": 0,
+                "cpu_fallback_used": False, "cuda_training_tensors_verified": True,
+                "cuda_device_index": 0, "cuda_device_uuid": "GPU-final-critic",
+                "cuda_total_memory_mb": 40960.0,
+                "result_stage": "FINAL_ALL_DEVELOPMENT_REFIT",
+                "checkpoint_selection": "FINAL_EPOCH",
+                "candidate_control": "NONE",
+                "validation_metrics": None,
+                "test_metrics": None,
                 "evaluation_outcomes_read": 0,
             },
             "development_grouped_split_status": "ROUTE2_MANIFEST_AND_GROUPED_SPLIT_MATERIALIZED",
@@ -240,9 +257,9 @@ def test_nonpassing_signal_control_adjudication_keeps_critic_closed() -> None:
 def test_critic_requires_real_gpu_training_provenance() -> None:
     module = _load()
     payload = deepcopy(_passing_input())
-    payload["critic"]["training_summary"]["cpu_fallback_used"] = True
+    payload["critic"]["final_refit_summary"]["cpu_fallback_used"] = True
     result = module.adjudicate(payload)
-    assert result["critic_checks"]["learned_gpu_parameter_update"] is False
+    assert result["critic_checks"]["final_all_development_refit_gpu_parameter_update"] is False
     assert result["critic_status"] == "CRITIC_NOT_READY_FOR_GUIDANCE"
     assert result["guided_unlocked"] is False
 
@@ -250,10 +267,10 @@ def test_critic_requires_real_gpu_training_provenance() -> None:
 def test_missing_cuda_tensor_execution_proof_keeps_both_gates_closed() -> None:
     module = _load()
     payload = deepcopy(_passing_input())
-    payload["critic"]["training_summary"]["cuda_training_tensors_verified"] = False
+    payload["critic"]["validation_training_summary"]["cuda_training_tensors_verified"] = False
     payload["flow"]["training_summary"]["cuda_training_tensors_verified"] = False
     result = module.adjudicate(payload)
-    assert result["critic_checks"]["learned_gpu_parameter_update"] is False
+    assert result["critic_checks"]["validation_evidence_gpu_parameter_update"] is False
     assert result["flow_checks"]["learned_gpu_parameter_update"] is False
     assert result["guided_unlocked"] is False
 
@@ -261,18 +278,18 @@ def test_missing_cuda_tensor_execution_proof_keeps_both_gates_closed() -> None:
 def test_missing_observed_cuda_identity_keeps_guided_closed() -> None:
     module = _load()
     payload = deepcopy(_passing_input())
-    payload["critic"]["training_summary"]["cuda_device_uuid"] = None
+    payload["critic"]["final_refit_summary"]["cuda_device_uuid"] = None
     result = module.adjudicate(payload)
-    assert result["critic_checks"]["learned_gpu_parameter_update"] is False
+    assert result["critic_checks"]["final_all_development_refit_gpu_parameter_update"] is False
     assert result["guided_unlocked"] is False
 
 
 def test_hpo_checkpoint_or_unverified_loso_training_keeps_guided_closed() -> None:
     module = _load()
     payload = deepcopy(_passing_input())
-    payload["critic"]["training_summary"]["result_stage"] = "HPO_VALIDATION_ONLY"
+    payload["critic"]["validation_training_summary"]["result_stage"] = "HPO_VALIDATION_ONLY"
     result = module.adjudicate(payload)
-    assert result["critic_checks"]["learned_gpu_parameter_update"] is False
+    assert result["critic_checks"]["validation_evidence_gpu_parameter_update"] is False
     assert result["guided_unlocked"] is False
 
     payload = deepcopy(_passing_input())
@@ -285,8 +302,8 @@ def test_hpo_checkpoint_or_unverified_loso_training_keeps_guided_closed() -> Non
 def test_development_test_refit_cannot_guide_development_validation_generation() -> None:
     module = _load()
     payload = deepcopy(_passing_input())
-    payload["critic"]["training_summary"]["result_stage"] = "FROZEN_DEVELOPMENT_TEST"
+    payload["critic"]["final_refit_summary"]["result_stage"] = "FROZEN_DEVELOPMENT_TEST"
     result = module.adjudicate(payload)
-    assert result["critic_checks"]["learned_gpu_parameter_update"] is False
+    assert result["critic_checks"]["final_all_development_refit_gpu_parameter_update"] is False
     assert result["critic_status"] == "CRITIC_NOT_READY_FOR_GUIDANCE"
     assert result["guided_unlocked"] is False

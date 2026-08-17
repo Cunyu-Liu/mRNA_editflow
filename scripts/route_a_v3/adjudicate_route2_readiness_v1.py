@@ -62,7 +62,8 @@ def adjudicate(payload: Mapping[str, Any]) -> dict[str, Any]:
     _require(payload["schema_version"] == "route_a_v3_route2_readiness_input.v1", "unexpected readiness input schema")
     critic = payload["critic"]
     flow = payload["flow"]
-    critic_training = critic["training_summary"]
+    critic_validation_training = critic["validation_training_summary"]
+    critic_final_refit = critic["final_refit_summary"]
     loso_rows = critic["loso_seed_results"]
     complete_loso = (
         len(loso_rows) == 3
@@ -97,14 +98,40 @@ def adjudicate(payload: Mapping[str, Any]) -> dict[str, Any]:
         and all(value is True for value in signal_checks.values())
     )
     critic_checks = {
-        "learned_gpu_parameter_update": (
-            critic_training["status"] == "DELTA_PREDICTOR_DEVELOPMENT_GPU_RUN_COMPLETE"
-            and critic_training.get("result_stage") == "FROZEN_DEVELOPMENT_VALIDATION"
-            and critic_training["optimizer_steps"] > 0
-            and critic_training["parameter_changed"] is True
-            and critic_training.get("cuda_training_tensors_verified") is True
+        "validation_evidence_gpu_parameter_update": (
+            critic_validation_training["status"]
+            == "DELTA_PREDICTOR_DEVELOPMENT_GPU_RUN_COMPLETE"
+            and critic_validation_training.get("result_stage")
+            == "FROZEN_DEVELOPMENT_VALIDATION"
+            and critic_validation_training.get("development_test_outcomes_evaluated") is False
+            and critic_validation_training.get("test_metrics") is None
+            and critic_validation_training.get("candidate_control") == "NONE"
+            and critic_validation_training["optimizer_steps"] > 0
+            and critic_validation_training["parameter_changed"] is True
+            and critic_validation_training.get("cuda_training_tensors_verified") is True
             and _cuda_provenance(
-                critic_training, "device", "physical_gpu_index", "cpu_fallback_used"
+                critic_validation_training,
+                "device",
+                "physical_gpu_index",
+                "cpu_fallback_used",
+            )
+        ),
+        "final_all_development_refit_gpu_parameter_update": (
+            critic_final_refit["status"]
+            == "DELTA_PREDICTOR_DEVELOPMENT_GPU_RUN_COMPLETE"
+            and critic_final_refit.get("result_stage") == "FINAL_ALL_DEVELOPMENT_REFIT"
+            and critic_final_refit.get("checkpoint_selection") == "FINAL_EPOCH"
+            and critic_final_refit.get("candidate_control") == "NONE"
+            and critic_final_refit.get("validation_metrics") is None
+            and critic_final_refit.get("test_metrics") is None
+            and critic_final_refit["optimizer_steps"] > 0
+            and critic_final_refit["parameter_changed"] is True
+            and critic_final_refit.get("cuda_training_tensors_verified") is True
+            and _cuda_provenance(
+                critic_final_refit,
+                "device",
+                "physical_gpu_index",
+                "cpu_fallback_used",
             )
         ),
         "development_grouped_split_frozen": critic["development_grouped_split_status"] == "ROUTE2_MANIFEST_AND_GROUPED_SPLIT_MATERIALIZED",
@@ -126,7 +153,8 @@ def adjudicate(payload: Mapping[str, Any]) -> dict[str, Any]:
         ),
         "evaluation_not_used": (
             critic["evaluation_records_used_for_training_hpo_threshold_or_reward"] == 0
-            and critic_training["evaluation_outcomes_read"] == 0
+            and critic_validation_training["evaluation_outcomes_read"] == 0
+            and critic_final_refit["evaluation_outcomes_read"] == 0
         ),
     }
     flow_training = flow["training_summary"]
