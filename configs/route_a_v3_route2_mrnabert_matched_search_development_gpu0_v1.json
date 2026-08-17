@@ -21,7 +21,7 @@
     "local_search",
     "generate_then_rerank"
   ],
-  "critic_budget_rule": "EXACT_GUIDED_CRITIC_CANDIDATE_FORWARD_EQUIVALENTS_PER_SOURCE",
+  "critic_budget_rule": "GUIDED_TOTAL_FORWARD_EQUIVALENTS_AS_SEARCH_CRITIC_CAP_PER_SOURCE",
   "beam_width": 16,
   "genetic_population_size": 32,
   "oversample_factor": 8,

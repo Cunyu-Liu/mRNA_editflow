@@ -12,7 +12,7 @@
   "critic_checkpoint_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/mrnabert_scaleup_v2/selected_loss_all126165_seed20260823_gpu0_v1/delta_predictor_checkpoint.pt",
   "mrnabert_model_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/external_model_assets/mrnabert_a1eb7df25804d23f08646e1cb996b234d7208a40",
   "output_directory": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/guided_xeditflow_development_v1",
-  "matched_search_budget_rule": "EXACT_GUIDED_CRITIC_CANDIDATE_FORWARD_EQUIVALENTS_PER_SOURCE",
+  "matched_search_budget_rule": "GUIDED_TOTAL_FORWARD_EQUIVALENTS_AS_SEARCH_CRITIC_CAP_PER_SOURCE",
   "evaluation_outcomes_accessed": false,
   "generated_candidates_grant_canonical_credit": false,
   "scientific_claim_status": "NOT_ESTABLISHED"

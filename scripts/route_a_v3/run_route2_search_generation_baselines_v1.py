@@ -550,7 +550,7 @@ def load_critic_budgets_by_source(path: Path) -> dict[str, int]:
     for row in rows:
         source_key = str(row["source_key"])
         _require(source_key not in budgets, f"duplicate guided budget source: {source_key}")
-        value = row.get("critic_candidate_forward_equivalent_count")
+        value = row.get("matched_search_critic_forward_budget")
         _require(
             isinstance(value, int) and not isinstance(value, bool) and value > 0,
             f"guided critic budget is invalid: {source_key}",
@@ -713,7 +713,7 @@ def _main() -> int:
                 "source_critic_score": result.source_score,
                 "critic_forward_budget": max_critic_forwards,
                 "critic_forward_budget_rule": (
-                    "EXACT_GUIDED_CRITIC_CANDIDATE_FORWARD_EQUIVALENTS_PER_SOURCE"
+                    "GUIDED_TOTAL_FORWARD_EQUIVALENTS_AS_SEARCH_CRITIC_CAP_PER_SOURCE"
                     if critic_budgets is not None
                     else "FIXED_NUMERIC_PER_SOURCE"
                 ),

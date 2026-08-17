@@ -73,7 +73,7 @@ def validate_inputs(
     )
     _require(
         config.get("critic_budget_rule")
-        == "EXACT_GUIDED_CRITIC_CANDIDATE_FORWARD_EQUIVALENTS_PER_SOURCE",
+        == "GUIDED_TOTAL_FORWARD_EQUIVALENTS_AS_SEARCH_CRITIC_CAP_PER_SOURCE",
         "matched-search critic budget rule differs",
     )
     _require(
@@ -131,7 +131,7 @@ def validate_inputs(
     budgets: dict[str, int] = {}
     for row in compute_rows:
         key = str(row["source_key"])
-        value = row.get("critic_candidate_forward_equivalent_count")
+        value = row.get("matched_search_critic_forward_budget")
         _require(key not in budgets, f"guided source compute is duplicated: {key}")
         _require(
             isinstance(value, int) and not isinstance(value, bool) and value > 0,

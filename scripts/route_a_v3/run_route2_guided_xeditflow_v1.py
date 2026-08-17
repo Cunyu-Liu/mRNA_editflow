@@ -125,6 +125,29 @@ def batched_guided_rate_function(
     return score
 
 
+def summarize_compute_rows(rows: list[Mapping[str, Any]]) -> dict[str, float | int]:
+    _require(bool(rows), "guided per-source compute is empty")
+    matched = [int(row["matched_search_critic_forward_budget"]) for row in rows]
+    critic = [
+        int(row["critic_candidate_forward_equivalent_count"]) for row in rows
+    ]
+    generator = [int(row["generator_nfe"]) for row in rows]
+    _require(
+        all(value > 0 for value in matched + critic)
+        and all(value >= 0 for value in generator)
+        and all(total == critic_value + generator_value for total, critic_value, generator_value in zip(matched, critic, generator)),
+        "guided per-source forward accounting does not close",
+    )
+    return {
+        "critic_candidate_forward_equivalent_count": sum(critic),
+        "total_forward_equivalent_count": sum(matched),
+        "matched_search_budget_minimum": min(matched),
+        "matched_search_budget_maximum": max(matched),
+        "matched_search_budget_mean": statistics.fmean(matched),
+        "matched_search_budget_median": statistics.median(matched),
+    }
+
+
 def execute(config: Mapping[str, Any]) -> dict[str, Any]:
     output_dir = Path(config["output_directory"])
     _require(not output_dir.exists(), f"guided output already exists: {output_dir}")
@@ -182,6 +205,7 @@ def execute(config: Mapping[str, Any]) -> dict[str, Any]:
     per_source_compute = []
     started = time.time()
     for source_index, source_row in enumerate(sources):
+        source_candidate_row_start = len(rows)
         critic.clear_source_caches()
         source_model_batches_start = critic.model_batch_forward_count
         source_candidate_equivalents_start = (
@@ -283,6 +307,18 @@ def execute(config: Mapping[str, Any]) -> dict[str, Any]:
             source_model_batches > 0 and source_candidate_equivalents > 0,
             "guided source cohort made no critic forward calls",
         )
+        matched_search_critic_budget = (
+            source_candidate_equivalents + source_generator_nfe
+        )
+        for row_index, row in enumerate(rows[source_candidate_row_start:]):
+            row["critic_forwards"] = (
+                source_candidate_equivalents if row_index == 0 else 0
+            )
+            row["critic_forward_budget"] = matched_search_critic_budget
+            row["critic_forward_budget_rule"] = (
+                "GUIDED_TOTAL_FORWARD_EQUIVALENTS_AS_SEARCH_CRITIC_CAP_PER_SOURCE"
+            )
+            row["independent_evaluator_forwards"] = 0
         per_source_compute.append({
             "source_key": source_row["source_key"],
             "edit_budget": int(source_row["edit_budget"]),
@@ -290,6 +326,10 @@ def execute(config: Mapping[str, Any]) -> dict[str, Any]:
             "generator_nfe": source_generator_nfe,
             "critic_model_batch_forward_count": source_model_batches,
             "critic_candidate_forward_equivalent_count": source_candidate_equivalents,
+            "total_forward_equivalent_count": (
+                source_candidate_equivalents + source_generator_nfe
+            ),
+            "matched_search_critic_forward_budget": matched_search_critic_budget,
             "replay_probe_generator_nfe": replay_forwards,
             "replay_probe_critic_model_batch_forward_count": source_replay_model_batches,
             "replay_probe_critic_candidate_forward_equivalent_count": (
@@ -301,11 +341,7 @@ def execute(config: Mapping[str, Any]) -> dict[str, Any]:
     unique_candidate_count = len({
         (row["source_key"], row["candidate_sequence"]) for row in rows
     })
-    matched_budget_values = [
-        row["critic_candidate_forward_equivalent_count"]
-        for row in per_source_compute
-    ]
-    guided_candidate_equivalents = sum(matched_budget_values)
+    forward_summary = summarize_compute_rows(per_source_compute)
     guided_model_batches = sum(
         row["critic_model_batch_forward_count"] for row in per_source_compute
     )
@@ -327,7 +363,12 @@ def execute(config: Mapping[str, Any]) -> dict[str, Any]:
             "base_flow_forwards", 0
         ),
         "critic_model_batch_forward_count": guided_model_batches,
-        "critic_candidate_forward_equivalent_count": guided_candidate_equivalents,
+        "critic_candidate_forward_equivalent_count": forward_summary[
+            "critic_candidate_forward_equivalent_count"
+        ],
+        "total_forward_equivalent_count": forward_summary[
+            "total_forward_equivalent_count"
+        ],
         "critic_model_batch_forward_count_including_replay_probes": (
             critic.model_batch_forward_count
         ),
@@ -335,12 +376,20 @@ def execute(config: Mapping[str, Any]) -> dict[str, Any]:
             critic.candidate_forward_equivalent_count
         ),
         "matched_search_budget_rule": (
-            "EXACT_GUIDED_CRITIC_CANDIDATE_FORWARD_EQUIVALENTS_PER_SOURCE"
+            "GUIDED_TOTAL_FORWARD_EQUIVALENTS_AS_SEARCH_CRITIC_CAP_PER_SOURCE"
         ),
-        "matched_search_budget_minimum": min(matched_budget_values),
-        "matched_search_budget_maximum": max(matched_budget_values),
-        "matched_search_budget_mean": statistics.fmean(matched_budget_values),
-        "matched_search_budget_median": statistics.median(matched_budget_values),
+        "matched_search_budget_minimum": forward_summary[
+            "matched_search_budget_minimum"
+        ],
+        "matched_search_budget_maximum": forward_summary[
+            "matched_search_budget_maximum"
+        ],
+        "matched_search_budget_mean": forward_summary[
+            "matched_search_budget_mean"
+        ],
+        "matched_search_budget_median": forward_summary[
+            "matched_search_budget_median"
+        ],
         "per_source_compute_path": str(
             output_dir / "guided_compute_by_source.jsonl"
         ),

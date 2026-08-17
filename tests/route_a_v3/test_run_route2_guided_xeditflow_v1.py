@@ -92,6 +92,32 @@ def test_guided_output_contract_contains_ranking_scores_for_later_evaluation() -
     source = Path(runner.__file__).read_text(encoding="utf-8")
     assert '"critic_score": terminal_critic_score' in source
     assert '"source_critic_score": source_critic_score' in source
+
+
+def test_search_budget_matches_guided_total_not_only_critic() -> None:
+    summary = runner.summarize_compute_rows([
+        {
+            "critic_candidate_forward_equivalent_count": 100,
+            "generator_nfe": 7,
+            "matched_search_critic_forward_budget": 107,
+        },
+        {
+            "critic_candidate_forward_equivalent_count": 200,
+            "generator_nfe": 11,
+            "matched_search_critic_forward_budget": 211,
+        },
+    ])
+    assert summary["critic_candidate_forward_equivalent_count"] == 300
+    assert summary["total_forward_equivalent_count"] == 318
+    assert summary["matched_search_budget_minimum"] == 107
+    with pytest.raises(runner.GuidedRunError, match="does not close"):
+        runner.summarize_compute_rows([
+            {
+                "critic_candidate_forward_equivalent_count": 100,
+                "generator_nfe": 7,
+                "matched_search_critic_forward_budget": 100,
+            }
+        ])
     readiness = _readiness()
     readiness["critic"]["evaluation_records_used_for_training_hpo_threshold_or_reward"] = 1
     with pytest.raises(runner.GuidedRunError, match="Evaluation"):
