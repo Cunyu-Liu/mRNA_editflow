@@ -8,6 +8,7 @@ import pytest
 ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = ROOT / "scripts" / "route_a_v3" / "compare_route2_exhaustive_small_space_reference_v1.py"
 CONFIG = ROOT / "configs" / "route_a_v3_route2_exhaustive_small_space_reference_seed20260816_gpu6_v1.json"
+SCORING = ROOT / "configs" / "route_a_v3_route2_exhaustive_small_space_independent_evaluator_gpu6_v1.json"
 PROTOCOL = ROOT / "configs" / "route_a_v3_route2_generation_matched_compute_repair_protocol_v1.json"
 JOBS = ROOT / "configs" / "route_a_v3_route2_generation_independent_evaluator_jobs_gpu6_v1.json"
 
@@ -78,6 +79,7 @@ def _toy_inputs():
 
 def test_real_reference_config_matches_frozen_protocol_and_jobs() -> None:
     config = _load(CONFIG)
+    scoring = _load(SCORING)
     protocol = _load(PROTOCOL)
     jobs = _load(JOBS)
 
@@ -88,8 +90,18 @@ def test_real_reference_config_matches_frozen_protocol_and_jobs() -> None:
     assert config["forward_equivalent_budget_per_source"] == protocol["forward_equivalent_budget_per_source"] == 320
     assert config["guiding_checkpoint_path"] == jobs["guiding_checkpoint_path"]
     assert config["independent_evaluator_checkpoint_path"] == jobs["evaluator_checkpoint_path"]
+    assert config["independent_evaluator_scoring_config"] == str(SCORING.relative_to(ROOT))
+    assert scoring["evaluator_checkpoint_path"] == config["independent_evaluator_checkpoint_path"]
+    assert scoring["guiding_checkpoint_path"] == config["guiding_checkpoint_path"]
+    assert scoring["source_manifest_path"] == config["source_manifest_path"]
+    assert scoring["candidate_path"] == config["candidate_output_path"]
+    assert scoring["output_path"] == config["independent_scored_output_path"]
+    assert scoring["evaluator_frozen_before_candidate_generation"] is True
+    assert scoring["evaluation_outcomes_used_to_select_evaluator"] == 0
     assert config["device"] == "cuda:6"
     assert config["physical_gpu_index"] == 6
+    assert scoring["device"] == config["device"]
+    assert scoring["physical_gpu_index"] == config["physical_gpu_index"]
     assert config["full_cohort_strongest_selector_eligible"] is False
 
 
