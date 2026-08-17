@@ -19,6 +19,11 @@ PERMUTATION_RUN="${RUN_ROOT}/selected_loss_candidate_permutation_seed20260816_gp
 SOURCE_ONLY_RUN="${RUN_ROOT}/selected_loss_source_only_seed20260816_gpu5_v1"
 FINAL_CONFIG_DIR="${RUNTIME_CONFIG_ROOT}/final_seed_validation_v1"
 FINAL_RUN_ROOT="${RUN_ROOT}/final_seed_validation_v1"
+THREE_SEED_ADJUDICATION="${ROUTE2_ROOT}/comparisons/mrnabert_three_seed_adjudication_v1.json"
+FROZEN_TEST_CONFIG="${RUNTIME_CONFIG_ROOT}/selected_loss_frozen_development_test_seed20260823_gpu0_v1.json"
+FROZEN_TEST_RUN="${RUN_ROOT}/selected_loss_frozen_development_test_seed20260823_gpu0_v1"
+FINAL_REFIT_CONFIG="${RUNTIME_CONFIG_ROOT}/selected_loss_all126165_seed20260823_gpu0_v1.json"
+FINAL_REFIT_RUN="${RUN_ROOT}/selected_loss_all126165_seed20260823_gpu0_v1"
 
 summaries=(
   "${HUBER_DIR}/training_summary.json"
@@ -147,3 +152,55 @@ printf '%s final_seed_runs_finished failure=%s\n' "$(date -Is)" "${final_seed_fa
 if [[ "${final_seed_failure}" -ne 0 ]]; then
   exit 1
 fi
+
+final_seed_summaries=()
+for seed_gpu in "20260822:0" "20260823:3" "20260824:5"; do
+  seed=${seed_gpu%%:*}
+  gpu=${seed_gpu##*:}
+  final_seed_summaries+=(
+    "${FINAL_RUN_ROOT}/seed${seed}_gpu${gpu}_${selected_loss}_v1/training_summary.json"
+  )
+done
+
+"${PYTHON}" scripts/route_a_v3/adjudicate_route2_mrnabert_three_seeds_v1.py \
+  --protocol configs/route_a_v3_route2_mrnabert_three_seed_gate_v1.json \
+  --summary "${final_seed_summaries[0]}" \
+  --summary "${final_seed_summaries[1]}" \
+  --summary "${final_seed_summaries[2]}" \
+  --output "${THREE_SEED_ADJUDICATION}"
+
+supports_frozen_test=$("${PYTHON}" -c \
+  'import json,sys; print(str(json.load(open(sys.argv[1]))["supports_single_frozen_development_test"]).lower())' \
+  "${THREE_SEED_ADJUDICATION}")
+if [[ "${supports_frozen_test}" != "true" ]]; then
+  printf '%s three_seed_gate_stop_before_frozen_development_test\n' "$(date -Is)"
+  exit 0
+fi
+
+selected_seed_config="${FINAL_CONFIG_DIR}/mrnabert_edit_centered_${selected_loss}_final_seed20260823.json"
+"${PYTHON}" scripts/route_a_v3/prepare_route2_mrnabert_frozen_test_config_v1.py \
+  --selected-config "${selected_seed_config}" \
+  --three-seed-adjudication "${THREE_SEED_ADJUDICATION}" \
+  --gpu 0 \
+  --output-directory "${FROZEN_TEST_RUN}" \
+  --output-config "${FROZEN_TEST_CONFIG}"
+
+printf '%s starting_single_frozen_development_test loss=%s seed=20260823 gpu=0\n' \
+  "$(date -Is)" "${selected_loss}"
+"${PYTHON}" -u scripts/route_a_v3/train_route2_delta_predictor_v1.py \
+  --config "${FROZEN_TEST_CONFIG}" \
+  >"${ROUTE2_ROOT}/mrnabert_frozen_development_test_seed20260823_gpu0_v1.log" 2>&1
+
+"${PYTHON}" scripts/route_a_v3/prepare_route2_mrnabert_all_development_refit_config_v1.py \
+  --frozen-test-config "${FROZEN_TEST_CONFIG}" \
+  --frozen-test-summary "${FROZEN_TEST_RUN}/training_summary.json" \
+  --gpu 0 \
+  --output-directory "${FINAL_REFIT_RUN}" \
+  --output-config "${FINAL_REFIT_CONFIG}"
+
+printf '%s starting_final_all126165_refit loss=%s seed=20260823 gpu=0\n' \
+  "$(date -Is)" "${selected_loss}"
+"${PYTHON}" -u scripts/route_a_v3/train_route2_delta_predictor_v1.py \
+  --config "${FINAL_REFIT_CONFIG}" \
+  >"${ROUTE2_ROOT}/mrnabert_final_all126165_seed20260823_gpu0_v1.log" 2>&1
+printf '%s final_all126165_refit_finished\n' "$(date -Is)"
