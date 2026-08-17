@@ -220,8 +220,17 @@ def adjudicate_screen(protocol: Mapping[str, Any], runs: list[Mapping[str, Any]]
     _require(legacy_reference.get("development_test_used") is False, "legacy reference used Development TEST")
     _require(legacy_reference.get("evaluation_used") is False, "legacy reference used Evaluation")
     legacy_reference_value = _finite(legacy_reference.get("value"), "legacy validation reference")
+    legacy_reference_mae = _finite(
+        legacy_reference.get("common_train_robust_task_macro_standardized_mae"),
+        "legacy common robust task-macro MAE",
+    )
     margin_over_legacy_reference = winner["task_macro_spearman"] - legacy_reference_value
     beats_legacy_reference = margin_over_legacy_reference > 0.0
+    common_mae_improvement_over_legacy = (
+        legacy_reference_mae
+        - winner["common_train_robust_task_macro_standardized_mae"]
+    )
+    common_mae_not_worse_than_legacy = common_mae_improvement_over_legacy >= 0.0
     controls_matched_to_winner = winner["scientific_role"] == "FACTORIAL_EDIT_CENTERED_SCALED"
     edit_controls_positive = all(margin > 0.0 for margin in edit_control_margins.values())
     controls_support_winner = controls_matched_to_winner and edit_controls_positive
@@ -229,11 +238,14 @@ def adjudicate_screen(protocol: Mapping[str, Any], runs: list[Mapping[str, Any]]
         improvement_over_reference > 0.0
         and controls_support_winner
         and beats_legacy_reference
+        and common_mae_not_worse_than_legacy
     )
     if supports_confirmation:
         status = "EXPLORATORY_SCREEN_SUPPORTS_FRESH_SEED_CONFIRMATION"
     elif improvement_over_reference > 0.0 and controls_support_winner and not beats_legacy_reference:
         status = "EXPLORATORY_REPAIR_NOT_LEADING_LEGACY_VALIDATION_REFERENCE"
+    elif improvement_over_reference > 0.0 and controls_support_winner and not common_mae_not_worse_than_legacy:
+        status = "EXPLORATORY_REPAIR_RANKING_LEADING_BUT_COMMON_MAE_WORSE"
     elif improvement_over_reference > 0.0 and winner["scientific_role"] == "FACTORIAL_EDIT_CENTERED_RAW":
         status = "EXPLORATORY_EDIT_RAW_REQUIRES_MATCHED_CONTROLS"
     elif improvement_over_reference > 0.0 and winner["scientific_role"].startswith("FACTORIAL_GLOBAL"):
@@ -254,6 +266,8 @@ def adjudicate_screen(protocol: Mapping[str, Any], runs: list[Mapping[str, Any]]
         "legacy_best_observed_validation_reference": dict(legacy_reference),
         "task_macro_spearman_margin_over_legacy_best_observed": margin_over_legacy_reference,
         "beats_legacy_best_observed_validation_reference": beats_legacy_reference,
+        "common_train_robust_task_macro_standardized_mae_improvement_over_legacy_best_observed": common_mae_improvement_over_legacy,
+        "common_train_robust_task_macro_standardized_mae_not_worse_than_legacy_best_observed": common_mae_not_worse_than_legacy,
         "factorial_effects": factorial_effects,
         "edit_centered_control_margins": edit_control_margins,
         "matched_controls_support_edit_scaled": edit_controls_positive,

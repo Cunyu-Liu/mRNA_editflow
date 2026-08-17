@@ -60,6 +60,7 @@ def _protocol():
             "metric": "COMMON_TRAIN_ROBUST_9_TASK_MACRO_SPEARMAN",
             "value": 0.153,
             "defined_task_count": 1,
+            "common_train_robust_task_macro_standardized_mae": 1.822,
             "development_test_used": False,
             "evaluation_used": False,
         },
@@ -115,6 +116,23 @@ def test_screen_stops_when_repair_improves_same_information_but_not_legacy_best(
     assert result["status"] == "EXPLORATORY_REPAIR_NOT_LEADING_LEGACY_VALIDATION_REFERENCE"
     assert result["task_macro_spearman_improvement_over_global_raw"] == pytest.approx(0.04)
     assert result["beats_legacy_best_observed_validation_reference"] is False
+    assert result["fresh_confirmation_seeds"] == []
+
+
+def test_screen_stops_when_ranking_leads_but_common_mae_is_worse() -> None:
+    module = _load()
+    runs = [
+        _run("FACTORIAL_GLOBAL_RAW", 0.10),
+        _run("FACTORIAL_GLOBAL_SCALED", 0.12),
+        _run("FACTORIAL_EDIT_CENTERED_RAW", 0.13),
+        _run("FACTORIAL_EDIT_CENTERED_SCALED", 0.20, mae=2.0),
+        _run("MATCHED_SOURCE_ONLY_CONTROL", 0.08),
+        _run("MATCHED_TRAIN_CANDIDATE_PERMUTATION_CONTROL", 0.09),
+    ]
+    result = module.adjudicate_screen(_protocol(), runs)
+    assert result["status"] == "EXPLORATORY_REPAIR_RANKING_LEADING_BUT_COMMON_MAE_WORSE"
+    assert result["beats_legacy_best_observed_validation_reference"] is True
+    assert result["common_train_robust_task_macro_standardized_mae_not_worse_than_legacy_best_observed"] is False
     assert result["fresh_confirmation_seeds"] == []
 
 
