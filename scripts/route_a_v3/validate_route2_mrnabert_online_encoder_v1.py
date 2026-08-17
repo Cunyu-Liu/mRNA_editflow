@@ -7,6 +7,7 @@ import argparse
 import json
 import math
 import sys
+import time
 from pathlib import Path
 from typing import Any, Mapping
 
@@ -106,7 +107,18 @@ def validate(
         expected.extend(
             (cache["source_embeddings"][index], cache["candidate_embeddings"][index])
         )
-    observed = encoder.encode_sequences(sequences).float()
+    repetitions = int(config.get("throughput_repetitions", 1))
+    _require(repetitions > 0, "throughput repetitions must be positive")
+    elapsed_seconds = []
+    observed = None
+    for _ in range(repetitions):
+        encoder.clear_cache()
+        torch.cuda.synchronize(device)
+        started = time.perf_counter()
+        observed = encoder.encode_sequences(sequences).float()
+        torch.cuda.synchronize(device)
+        elapsed_seconds.append(time.perf_counter() - started)
+    assert observed is not None
     expected_tensor = torch.stack(expected).float()
     difference = (observed - expected_tensor).abs()
     maximum_difference = float(difference.max())
@@ -141,6 +153,17 @@ def validate(
         "frozen_parameter_count": int(encoder.parameter_count),
         "online_sequence_cache_count": int(encoder.cached_sequence_count),
         "attention_backend": encoder.attention_backend,
+        "model_id": config.get("model_id"),
+        "maximum_sequences_per_batch": int(config["maximum_sequences_per_batch"]),
+        "batch_token_budget": int(config["batch_token_budget"]),
+        "throughput_repetitions": repetitions,
+        "encoding_wall_time_seconds_by_repetition": elapsed_seconds,
+        "median_encoding_wall_time_seconds": float(
+            sorted(elapsed_seconds)[len(elapsed_seconds) // 2]
+        ),
+        "median_encoded_sequences_per_second": float(
+            len(sequences) / sorted(elapsed_seconds)[len(elapsed_seconds) // 2]
+        ),
         "evaluation_records_read": 0,
         "sequence_payload_written": 0,
         "scientific_claim_status": "NOT_ESTABLISHED",
