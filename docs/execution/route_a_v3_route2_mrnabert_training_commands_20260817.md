@@ -121,24 +121,45 @@ nohup scripts/route_a_v3/schedule_route2_mrnabert_postselection_controls_v1.sh \
   2>&1 </dev/null &
 ```
 
-它每 15 分钟检查三个 summary；全部完成后只读取 Development VALIDATION 汇总并在 GPU 0/5 启动两个 controls。它不会读取 Development TEST、GSE232572、E-MTAB-10902，也不会自动启动 final seeds、全量 refit 或 guided XEditFlow。
+它每 15 分钟检查三个 summary，并按固定顺序接力：loss VALIDATION 选择 → GPU 0/5 两个 signal controls → GPU 0/3/5 三个固定验证 seeds → 单次冻结 Development TEST → 全 126,165 条最终拟合。任一门槛不通过，后续阶段停止。该调度器始终不会读取 GSE232572、E-MTAB-10902，也不会自动启动 guided XEditFlow。
 
 ## 7. 冻结 TEST 与最终拟合
 
-只在三种 loss 的 VALIDATION 比较完成后运行一次冻结 TEST：
+冻结 TEST 不再直接使用预写死为 Huber 的旧配置。它由三个 final seeds 的冻结判定动态生成：
 
 ```bash
+$PY scripts/route_a_v3/adjudicate_route2_mrnabert_three_seeds_v1.py \
+  --protocol configs/route_a_v3_route2_mrnabert_three_seed_gate_v1.json \
+  --summary <seed-20260822-training-summary.json> \
+  --summary <seed-20260823-training-summary.json> \
+  --summary <seed-20260824-training-summary.json> \
+  --output <three-seed-adjudication.json>
+
+$PY scripts/route_a_v3/prepare_route2_mrnabert_frozen_test_config_v1.py \
+  --selected-config <selected-loss-seed-20260823-config.json> \
+  --three-seed-adjudication <three-seed-adjudication.json> \
+  --gpu 0 \
+  --output-directory <new-frozen-test-run-directory> \
+  --output-config <new-frozen-test-config.json>
+
 $PY scripts/route_a_v3/train_route2_delta_predictor_v1.py \
-  --config configs/route_a_v3_route2_mrnabert_edit_max_mean_only_frozen_test_gpu6_v1.json
+  --config <new-frozen-test-config.json>
 ```
 
 该配置使用 TRAIN+VALIDATION 共 107,873 条拟合，最后评测 18,292 条 TEST。
 
-冻结模型选择后，使用全部 126,165 条 Development 记录拟合 guidance critic：
+TEST 完成后，最终拟合配置由 TEST 记录生成；这里只验证一次性 TEST 已完成，不根据 TEST 数值重新选择结构、loss、seed 或轮数：
 
 ```bash
+$PY scripts/route_a_v3/prepare_route2_mrnabert_all_development_refit_config_v1.py \
+  --frozen-test-config <frozen-test-config.json> \
+  --frozen-test-summary <frozen-test-training-summary.json> \
+  --gpu 0 \
+  --output-directory <new-all126165-run-directory> \
+  --output-config <new-all126165-config.json>
+
 $PY scripts/route_a_v3/train_route2_delta_predictor_v1.py \
-  --config configs/route_a_v3_route2_mrnabert_edit_max_mean_only_all126165_gpu6_v1.json
+  --config <new-all126165-config.json>
 ```
 
 该结果不重新产生内部模型选择结论。
@@ -162,7 +183,18 @@ $PY scripts/route_a_v3/train_route2_delta_predictor_v1.py \
 
 FlashAttention 主要影响一次性的冻结特征构建，不能提升后续 100-epoch critic 的主体训练。当前使用的 BF16/fused 路径已经先通过独立吞吐与数值一致性测试，再用于全新的正式 runs；没有中途改变既有 run 的数值路径。
 
-## 9. 低频查看进度
+## 9. 2026-08-17 21:31 运行快照
+
+| 运行 | 当前 epoch | 最新 task-macro Spearman | 最新 task-macro standardized MAE | 状态 |
+|---|---:|---:|---:|---|
+| RNA-FM Huber | 31/100 | 0.0882 | 2.0912 | 运行中，历史对照 |
+| RNA-FM learned variance | 21/100 | 0.0717 | 1.8557 | 运行中，检查 uncertainty absorption |
+| RNA-FM fixed variance | 21/100 | 0.0567 | 1.9322 | 运行中，固定噪声对照 |
+| mRNABERT Huber | 10/100 | 0.0986 | 1.8628 | 运行中，当前主编码器 |
+
+同信息最强已完成 baseline 的 task-macro Spearman 为 `0.131714`。表中只是运行中单个 epoch 的观察值，不是最终选择结果。三个 mRNABERT loss 尚未完成，所以 controls、final seeds、TEST、全量 refit 和 guided XEditFlow 均未启动。
+
+## 10. 低频查看进度
 
 运行中只在事件节点低频查看：
 
