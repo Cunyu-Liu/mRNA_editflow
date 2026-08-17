@@ -376,3 +376,9 @@ printf '%s starting_mrnabert_matched_search_baselines gpu=0\n' "$(date -Is)"
   --config configs/route_a_v3_route2_mrnabert_matched_search_development_gpu0_v1.json \
   >"${ROUTE2_ROOT}/mrnabert_matched_search_baselines_gpu0_v1.log" 2>&1
 printf '%s mrnabert_matched_search_baselines_finished_without_scientific_selection\n' "$(date -Is)"
+
+printf '%s starting_development_generation_comparison gpu=0\n' "$(date -Is)"
+"${PYTHON}" -u scripts/route_a_v3/run_route2_mrnabert_generation_comparison_suite_v1.py \
+  --config configs/route_a_v3_route2_mrnabert_generation_comparison_development_gpu0_v1.json \
+  >"${ROUTE2_ROOT}/mrnabert_generation_comparison_gpu0_v1.log" 2>&1
+printf '%s development_generation_comparison_finished\n' "$(date -Is)"

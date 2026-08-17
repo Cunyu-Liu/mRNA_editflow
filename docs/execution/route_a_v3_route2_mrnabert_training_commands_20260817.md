@@ -234,6 +234,15 @@ configs/route_a_v3_route2_mrnabert_matched_search_development_gpu0_v1.json
 
 这个步骤只生成 matched-budget candidates；在独立评估器合格前不选择“最强生成方法”，也不把 critic 自评分写成科学收益。
 
+候选生成完成后，主调度器会调用：
+
+```text
+scripts/route_a_v3/run_route2_mrnabert_generation_comparison_suite_v1.py
+configs/route_a_v3_route2_mrnabert_generation_comparison_development_gpu0_v1.json
+```
+
+它把 guided XEditFlow 与 random、greedy、beam、genetic、local search、generate-then-rerank 和 unguided learned base flow 一起交给预冻结的独立 evaluator。先在七个 baseline 中用 source-paired bootstrap 冻结 strongest baseline，再比较 guided 与 strongest；未知的生成候选不会被当作 measured zero。该结果仍只是 Development independent-evaluator evidence，不是外部 Evaluation，也不是 measured biological improvement。
+
 ## 11. 独立评估器修复
 
 旧独立评估器曾直接混合不同 endpoint 的原始量纲，分钟级 half-life 误差会压倒 log-fold 和 usage，因此该 run 已作为 `STOPPED_PRETERMINAL_METHOD_INVALID` 保留，不能用于生成方法选择。新的单次预冻结 run 使用 TRAIN-only task robust scaling、独立的 0.51M Siamese CNN、Development VALIDATION 和 GPU 2；它不读取 mRNABERT 特征、Development TEST 或 Evaluation：
