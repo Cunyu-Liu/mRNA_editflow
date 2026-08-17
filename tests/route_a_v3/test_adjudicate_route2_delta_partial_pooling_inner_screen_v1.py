@@ -42,7 +42,26 @@ def _protocol() -> dict:
         "parent_development_test_outcomes_accessed": False,
         "inner_test_outcomes_accessed": False,
         "evaluation_outcomes_accessed": False,
-        "pass_authorizes": ["FREEZE_THREE_SEED_TRAIN_INNER_TEST_CONFIRMATION"],
+        "conditional_confirmation_plan": {
+            "status": "PREFROZEN_BEFORE_TRAIN_INNER_VALIDATION_OUTCOMES",
+            "activation_requires": "MATERIAL_TRAIN_INNER_GAIN_ESTABLISHED_FOR_SCREEN",
+            "result_stage": "TRAIN_INNER_TEST_CONFIRMATION",
+            "paired_seeds": [20260817, 20260818, 20260819],
+            "arm_count": 2,
+            "run_count": 6,
+            "training_record_count_after_folding_inner_validation": 76458,
+            "inner_test_record_count": 13122,
+            "expected_optimizer_steps_per_arm_per_seed": 19120,
+            "minimum_seed_count_with_positive_paired_task_macro_spearman_gain": 3,
+            "required_seed_count": 3,
+            "parent_development_validation_outcomes_accessed": False,
+            "parent_development_test_outcomes_accessed": False,
+            "inner_test_outcomes_accessed": True,
+            "evaluation_outcomes_accessed": False,
+        },
+        "pass_authorizes": [
+            "MATERIALIZE_AND_RUN_PREFROZEN_THREE_SEED_TRAIN_INNER_TEST_CONFIRMATION"
+        ],
         "pass_does_not_authorize": ["FORMAL_DEVELOPMENT_VALIDATION", "EVALUATION"],
     }
 
@@ -102,7 +121,9 @@ def test_adjudication_requires_material_breadth_and_preserves_claim_boundary() -
     result = module.adjudicate(protocol, shared, residual)
     assert result["material_gain"] is True
     assert result["tasks_with_strict_spearman_improvement_count"] == 4
-    assert result["authorizes"] == ["FREEZE_THREE_SEED_TRAIN_INNER_TEST_CONFIRMATION"]
+    assert result["authorizes"] == [
+        "MATERIALIZE_AND_RUN_PREFROZEN_THREE_SEED_TRAIN_INNER_TEST_CONFIRMATION"
+    ]
     assert result["scientific_claim_status"] == "NOT_ESTABLISHED"
     assert "FORMAL_DEVELOPMENT_VALIDATION" in result["does_not_authorize"]
 

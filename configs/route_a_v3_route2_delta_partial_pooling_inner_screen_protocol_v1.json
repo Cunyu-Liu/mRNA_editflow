@@ -32,8 +32,42 @@
   "parent_development_test_outcomes_accessed": false,
   "inner_test_outcomes_accessed": false,
   "evaluation_outcomes_accessed": false,
+  "conditional_confirmation_plan": {
+    "status": "PREFROZEN_BEFORE_TRAIN_INNER_VALIDATION_OUTCOMES",
+    "activation_requires": "MATERIAL_TRAIN_INNER_GAIN_ESTABLISHED_FOR_SCREEN",
+    "result_stage": "TRAIN_INNER_TEST_CONFIRMATION",
+    "paired_seeds": [
+      20260817,
+      20260818,
+      20260819
+    ],
+    "arm_count": 2,
+    "run_count": 6,
+    "training_record_count_after_folding_inner_validation": 76458,
+    "inner_test_record_count": 13122,
+    "batch_size": 32,
+    "epochs": 8,
+    "expected_optimizer_steps_per_arm_per_seed": 19120,
+    "minimum_seed_count_with_positive_paired_task_macro_spearman_gain": 3,
+    "required_seed_count": 3,
+    "minimum_mean_paired_task_macro_spearman_gain_inclusive": 0.01,
+    "minimum_tasks_with_positive_median_paired_spearman_gain": 4,
+    "maximum_mean_task_macro_standardized_mae_ratio_inclusive": 1.02,
+    "parent_development_validation_outcomes_accessed": false,
+    "parent_development_test_outcomes_accessed": false,
+    "inner_test_outcomes_accessed": true,
+    "evaluation_outcomes_accessed": false,
+    "does_not_authorize": [
+      "FORMAL_DEVELOPMENT_VALIDATION",
+      "FORMAL_DEVELOPMENT_TEST",
+      "EVALUATION",
+      "CRITIC_READY_FOR_GUIDANCE",
+      "GUIDED_XEDITFLOW",
+      "PUBLICATION_SUCCESS_CLAIM"
+    ]
+  },
   "pass_authorizes": [
-    "FREEZE_THREE_SEED_TRAIN_INNER_TEST_CONFIRMATION"
+    "MATERIALIZE_AND_RUN_PREFROZEN_THREE_SEED_TRAIN_INNER_TEST_CONFIRMATION"
   ],
   "pass_does_not_authorize": [
     "FORMAL_DEVELOPMENT_VALIDATION",

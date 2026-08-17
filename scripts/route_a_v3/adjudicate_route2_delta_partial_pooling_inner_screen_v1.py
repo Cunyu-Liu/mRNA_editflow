@@ -50,6 +50,56 @@ def validate_protocol(protocol: Mapping[str, Any]) -> None:
         "evaluation_outcomes_accessed",
     ):
         _require(protocol.get(key) is False, f"forbidden protocol outcome access: {key}")
+    confirmation = protocol.get("conditional_confirmation_plan")
+    _require(isinstance(confirmation, dict), "conditional confirmation plan is absent")
+    _require(
+        confirmation.get("status")
+        == "PREFROZEN_BEFORE_TRAIN_INNER_VALIDATION_OUTCOMES",
+        "conditional confirmation was not prefrozen",
+    )
+    _require(
+        confirmation.get("activation_requires")
+        == "MATERIAL_TRAIN_INNER_GAIN_ESTABLISHED_FOR_SCREEN",
+        "conditional confirmation activation gate changed",
+    )
+    _require(
+        confirmation.get("paired_seeds") == [20260817, 20260818, 20260819],
+        "conditional confirmation seeds changed",
+    )
+    _require(
+        confirmation.get("arm_count") == 2
+        and confirmation.get("run_count") == 6,
+        "conditional confirmation run count changed",
+    )
+    _require(
+        confirmation.get("training_record_count_after_folding_inner_validation")
+        == 76458
+        and confirmation.get("inner_test_record_count") == 13122,
+        "conditional confirmation record counts changed",
+    )
+    _require(
+        confirmation.get("expected_optimizer_steps_per_arm_per_seed") == 19120,
+        "conditional confirmation optimizer budget changed",
+    )
+    _require(
+        confirmation.get("minimum_seed_count_with_positive_paired_task_macro_spearman_gain")
+        == confirmation.get("required_seed_count")
+        == 3,
+        "conditional confirmation no longer requires three positive seeds",
+    )
+    for key in (
+        "parent_development_validation_outcomes_accessed",
+        "parent_development_test_outcomes_accessed",
+        "evaluation_outcomes_accessed",
+    ):
+        _require(
+            confirmation.get(key) is False,
+            f"forbidden conditional confirmation outcome access: {key}",
+        )
+    _require(
+        confirmation.get("inner_test_outcomes_accessed") is True,
+        "conditional confirmation does not declare inner TEST access",
+    )
 
 
 def validate_arm_config_pair(
