@@ -63,7 +63,12 @@ def _running_details(config: dict[str, Any], config_path: Path) -> dict[str, Any
     }
 
 
-def sync_run(run_dir: Path, ledger_path: Path) -> dict[str, Any]:
+def sync_run(
+    run_dir: Path,
+    ledger_path: Path,
+    *,
+    active_run: bool = True,
+) -> dict[str, Any]:
     config_path = run_dir / "training_config.json"
     if not config_path.exists():
         raise ValueError(f"training_config.json is missing: {run_dir}")
@@ -82,7 +87,7 @@ def sync_run(run_dir: Path, ledger_path: Path) -> dict[str, Any]:
             "evaluation_record_count": 0,
         }
     else:
-        status = "RUNNING"
+        status = "RUNNING" if active_run else "INCOMPLETE_NO_TERMINAL_RECORD"
         details = _running_details(config, config_path)
     row = build_training_attempt_row(
         config,
@@ -101,13 +106,17 @@ def main() -> int:
     parser.add_argument("--run-dir", type=Path, action="append", default=[])
     parser.add_argument("--runs-root", type=Path, action="append", default=[])
     args = parser.parse_args()
-    run_dirs = list(args.run_dir)
+    explicit_run_dirs = set(args.run_dir)
+    run_dirs = list(explicit_run_dirs)
     for runs_root in args.runs_root:
         run_dirs.extend(path.parent for path in runs_root.rglob("training_config.json"))
     run_dirs = sorted(set(run_dirs))
     if not run_dirs:
         parser.error("at least one --run-dir or --runs-root is required")
-    rows = [sync_run(path, args.ledger) for path in run_dirs]
+    rows = [
+        sync_run(path, args.ledger, active_run=path in explicit_run_dirs)
+        for path in run_dirs
+    ]
     statuses: dict[str, int] = {}
     for row in rows:
         statuses[row["status"]] = statuses.get(row["status"], 0) + 1

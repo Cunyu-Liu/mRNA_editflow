@@ -143,3 +143,20 @@ def test_training_attempt_uses_run_id_when_baseline_id_is_absent(tmp_path: Path)
     )
     assert row["baseline_id"] == "base-flow-g0"
     assert row["attempt_id"] == "base-flow-g0::run"
+
+
+def test_bulk_backfill_does_not_call_unfinished_history_running(tmp_path: Path) -> None:
+    sync = _load(SYNC_PATH, "route2_experiment_ledger_incomplete_test")
+    run_dir = tmp_path / "run"
+    run_dir.mkdir()
+    config = _config(tmp_path)
+    manifest = tmp_path / "development_manifest.jsonl"
+    manifest.write_text(json.dumps({
+        "pool_assignment": "DEVELOPMENT",
+        "study_unit_id": "GSE1",
+        "split": "TRAIN",
+    }) + "\n")
+    config["development_manifest"] = str(manifest)
+    (run_dir / "training_config.json").write_text(json.dumps(config))
+    row = sync.sync_run(run_dir, tmp_path / "attempts.csv", active_run=False)
+    assert row["status"] == "INCOMPLETE_NO_TERMINAL_RECORD"
