@@ -182,6 +182,11 @@ def test_gpu_base_flow_training_persists_live_contract_artifacts(tmp_path: Path)
             "assay_id": "A",
             "biological_context_id": "C",
         })
+    manifest_rows.append({
+        "canonical_record_id": "withheld-test-no-outcome-file-needed",
+        "pool_assignment": "DEVELOPMENT",
+        "split": "TEST",
+    })
     manifest.write_text("".join(json.dumps(row) + "\n" for row in manifest_rows))
     canonical.write_text("".join(json.dumps(row) + "\n" for row in canonical_rows))
     output = tmp_path / "flow_run"
@@ -217,6 +222,8 @@ def test_gpu_base_flow_training_persists_live_contract_artifacts(tmp_path: Path)
     }, output)
     assert summary["optimizer_steps"] == 1
     assert summary["selected_epoch"] == 1
+    assert summary["development_test_record_count_withheld"] == 1
+    assert summary["development_test_outcomes_evaluated"] is False
     assert summary["optimizer_fused"] is True
     assert summary["training_precision"] == (
         "BF16" if torch.cuda.is_bf16_supported() else "FP32"
@@ -237,6 +244,7 @@ def test_gpu_base_flow_training_persists_live_contract_artifacts(tmp_path: Path)
     assert int(rows[0]["trainable_parameter_count"]) == summary["trainable_parameter_count"]
     assert rows[0]["selected_epoch"] == "1"
     assert rows[0]["evaluation_record_count"] == "0"
+    assert rows[0]["withheld_test_record_count"] == "1"
     assert rows[0]["generator_position_features"] == "NORMALIZED_ABSOLUTE_PLUS_EDIT_GATED"
     assert rows[0]["algorithmic_time_feature"] == "CONSUMED_EDIT_BUDGET_FRACTION"
 

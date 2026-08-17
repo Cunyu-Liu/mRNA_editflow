@@ -277,6 +277,7 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
     non_blocking_transfer = bool(config.get("non_blocking_transfer", False))
     train_ids = load_manifest_ids(Path(config["development_manifest"]), "TRAIN")
     validation_ids = load_manifest_ids(Path(config["development_manifest"]), "VALIDATION")
+    test_ids = load_manifest_ids(Path(config["development_manifest"]), "TEST")
     canonical_paths = [Path(path) for path in config["canonical_paths"]]
     allowed_budgets = tuple(int(value) for value in config["allowed_edit_budgets"])
     _require(allowed_budgets == (1, 3, 5), "allowed edit budgets must remain 1/3/5")
@@ -354,7 +355,7 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
             "TRAIN": len(train_records),
             "VALIDATION": len(validation_records),
         },
-        "development_test_record_count_withheld": 0,
+        "development_test_record_count_withheld": len(test_ids),
         "evaluation_record_count": 0,
         "trainable_parameter_count": trainable_parameter_count,
         "frozen_pretrained_parameter_count": 0,
@@ -468,6 +469,8 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
         "cuda_training_tensors_verified": cuda_training_tensors_verified,
         "train_record_count": len(train_records),
         "validation_record_count": len(validation_records),
+        "development_test_record_count_withheld": len(test_ids),
+        "development_test_outcomes_evaluated": False,
         "trainable_parameter_count": trainable_parameter_count,
         "training_precision": training_precision,
         "optimizer_fused": optimizer_fused,
