@@ -53,6 +53,9 @@ def _config(tmp_path: Path) -> dict:
         "encoder_attention_backend": "OFFICIAL_PYTORCH_FALLBACK",
         "pretrained_position_encoding": "ALIBI_RELATIVE_BIAS",
         "critic_position_features": "NORMALIZED_ABSOLUTE_PLUS_EDIT_GATED",
+        "generation_action_space": "SUB_PLUS_STOP",
+        "generator_position_features": "NORMALIZED_ABSOLUTE_PLUS_EDIT_GATED",
+        "algorithmic_time_feature": "CONSUMED_EDIT_BUDGET_FRACTION",
         "num_workers": 0,
         "pin_memory": False,
         "torch_compile": False,
@@ -110,6 +113,8 @@ def test_training_attempt_upsert_preserves_start_and_adds_final_metrics(tmp_path
     assert rows[0]["pretrained_position_encoding"] == "ALIBI_RELATIVE_BIAS"
     assert rows[0]["encoder_attention_backend"] == "OFFICIAL_PYTORCH_FALLBACK"
     assert rows[0]["optimizer_fused"] == "True"
+    assert rows[0]["generation_action_space"] == "SUB_PLUS_STOP"
+    assert rows[0]["algorithmic_time_feature"] == "CONSUMED_EDIT_BUDGET_FRACTION"
     assert json.loads(run_record.read_text())["status"] == "COMPLETED"
 
 

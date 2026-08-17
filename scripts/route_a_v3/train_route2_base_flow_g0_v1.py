@@ -230,8 +230,20 @@ def require_cuda_device(device_text: str, physical_gpu_index: int) -> torch.devi
     return device
 
 
-def _move(batch: Mapping[str, Any], device: torch.device) -> dict[str, Any]:
-    return {key: (value.to(device) if isinstance(value, torch.Tensor) else value) for key, value in batch.items()}
+def _move(
+    batch: Mapping[str, Any],
+    device: torch.device,
+    *,
+    non_blocking: bool = False,
+) -> dict[str, Any]:
+    return {
+        key: (
+            value.to(device, non_blocking=non_blocking)
+            if isinstance(value, torch.Tensor)
+            else value
+        )
+        for key, value in batch.items()
+    }
 
 
 def _loss(model: Route2BaseFlowModel, batch: Mapping[str, Any]) -> torch.Tensor:
@@ -256,6 +268,13 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
     _require(not output_dir.exists(), f"output already exists: {output_dir}")
     device = require_cuda_device(str(config["device"]), int(config["physical_gpu_index"]))
     cuda_provenance = cuda_device_observation(int(config["physical_gpu_index"]), require_physical_index_match=True)
+    training_precision = str(config.get("training_precision", "FP32")).upper()
+    _require(training_precision in {"FP32", "BF16"}, "training_precision must be FP32 or BF16")
+    if training_precision == "BF16":
+        _require(torch.cuda.is_bf16_supported(), "BF16 is unavailable on the selected CUDA device")
+    autocast_enabled = training_precision == "BF16"
+    optimizer_fused = bool(config.get("optimizer_fused", False))
+    non_blocking_transfer = bool(config.get("non_blocking_transfer", False))
     train_ids = load_manifest_ids(Path(config["development_manifest"]), "TRAIN")
     validation_ids = load_manifest_ids(Path(config["development_manifest"]), "VALIDATION")
     canonical_paths = [Path(path) for path in config["canonical_paths"]]
@@ -274,6 +293,7 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
         shuffle=True,
         generator=generator,
         num_workers=int(config.get("num_workers", 0)),
+        pin_memory=bool(config.get("pin_memory", False)),
         collate_fn=collate_examples,
     )
     validation_loader = DataLoader(
@@ -281,6 +301,7 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
         batch_size=int(config["batch_size"]),
         shuffle=False,
         num_workers=int(config.get("num_workers", 0)),
+        pin_memory=bool(config.get("pin_memory", False)),
         collate_fn=collate_examples,
     )
     torch.manual_seed(int(config["seed"]))
@@ -289,9 +310,15 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
         hidden_dim=int(config["hidden_dim"]),
         assay_count=len(assay_vocab),
         context_count=len(context_vocab),
+        position_progress_features=bool(config.get("position_progress_features", False)),
     ).to(device)
     _require(next(model.parameters()).is_cuda, "model parameters are not on GPU")
-    optimizer = torch.optim.AdamW(model.parameters(), lr=float(config["learning_rate"]), weight_decay=float(config["weight_decay"]))
+    optimizer = torch.optim.AdamW(
+        model.parameters(),
+        lr=float(config["learning_rate"]),
+        weight_decay=float(config["weight_decay"]),
+        fused=optimizer_fused,
+    )
     trainable_parameter_count = sum(parameter.numel() for parameter in model.parameters())
     start = time.time()
     history = []
@@ -312,6 +339,8 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
         "physical_gpu_index": int(config["physical_gpu_index"]),
         "cuda_device_uuid": cuda_provenance["cuda_device_uuid"],
         "guided_critic_used": False,
+        "training_precision": training_precision,
+        "optimizer_fused": optimizer_fused,
     }, sort_keys=True) + "\n", encoding="utf-8")
     attempt_details = {
         "started_at": time.strftime("%Y-%m-%dT%H:%M:%S%z"),
@@ -352,6 +381,7 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
                 "hidden_dim": int(config["hidden_dim"]),
                 "assay_count": len(assay_vocab),
                 "context_count": len(context_vocab),
+                "position_progress_features": bool(config.get("position_progress_features", False)),
             },
             "assay_vocab": assay_vocab,
             "context_vocab": context_vocab,
@@ -377,13 +407,18 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
         model.train()
         train_losses = []
         for raw_batch in train_loader:
-            batch = _move(raw_batch, device)
+            batch = _move(raw_batch, device, non_blocking=non_blocking_transfer)
             _require(
                 batch["source_tokens"].device == device and batch["target"].device == device,
                 "base-flow training inputs left CUDA",
             )
             optimizer.zero_grad(set_to_none=True)
-            loss = _loss(model, batch)
+            with torch.autocast(
+                device_type="cuda",
+                dtype=torch.bfloat16,
+                enabled=autocast_enabled,
+            ):
+                loss = _loss(model, batch)
             _require(loss.is_cuda and loss.device == device, "base-flow training loss left CUDA")
             loss.backward()
             optimizer.step()
@@ -394,7 +429,14 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
         validation_losses = []
         with torch.no_grad():
             for raw_batch in validation_loader:
-                validation_losses.append(float(_loss(model, _move(raw_batch, device)).cpu()))
+                batch = _move(raw_batch, device, non_blocking=non_blocking_transfer)
+                with torch.autocast(
+                    device_type="cuda",
+                    dtype=torch.bfloat16,
+                    enabled=autocast_enabled,
+                ):
+                    validation_loss = _loss(model, batch)
+                validation_losses.append(float(validation_loss.float().cpu()))
         epoch_row = {
             "epoch": epoch + 1,
             "train_nll": float(sum(train_losses) / len(train_losses)),
@@ -427,6 +469,9 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
         "train_record_count": len(train_records),
         "validation_record_count": len(validation_records),
         "trainable_parameter_count": trainable_parameter_count,
+        "training_precision": training_precision,
+        "optimizer_fused": optimizer_fused,
+        "position_progress_features": bool(config.get("position_progress_features", False)),
         "over_budget_excluded_record_counts": {
             "TRAIN": len(train_ids) - len(train_records),
             "VALIDATION": len(validation_ids) - len(validation_records),

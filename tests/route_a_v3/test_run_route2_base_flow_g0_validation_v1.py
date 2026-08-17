@@ -100,7 +100,9 @@ def test_random_checkpoint_cannot_be_presented_as_learned_gpu_evidence(tmp_path:
         "generated_candidates_grant_canonical_credit": False, "evaluation_outcomes_included": False,
     }) + "\n")
     monkeypatch.setattr(torch.cuda, "is_available", lambda: True)
+    monkeypatch.setattr(torch.cuda, "device_count", lambda: 1)
     monkeypatch.setattr(torch.cuda, "set_device", lambda device: None)
+    monkeypatch.setattr(module, "cuda_device_observation", lambda *args, **kwargs: {})
     monkeypatch.setattr(module, "load_model", lambda path, device: (model, checkpoint))
     with pytest.raises(module.G0ValidationError, match="does not prove"):
         module.execute({

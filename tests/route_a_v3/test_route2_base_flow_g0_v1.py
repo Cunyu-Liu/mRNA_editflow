@@ -43,6 +43,24 @@ def test_model_masks_reedit_revert_padding_and_keeps_stop() -> None:
     assert torch.all(rates[legal] > 0)
 
 
+def test_position_and_algorithmic_progress_channels_are_explicit() -> None:
+    model_module = _load(MODEL_PATH, "route2_base_flow_model_for_position_test")
+    padding = torch.tensor([[False, False, False, True]])
+    edited = torch.tensor([[False, False, True, False]])
+    position, edited_position, progress = model_module.normalized_generation_state_channels(
+        padding, edited, torch.tensor([2])
+    )
+    assert position[0, :, 0].tolist() == pytest.approx([0.0, 0.5, 1.0, 0.0])
+    assert edited_position[0, :, 0].tolist() == pytest.approx([0.0, 0.0, 1.0, 0.0])
+    assert progress[0, :, 0].tolist() == pytest.approx([1 / 3, 1 / 3, 1 / 3, 0.0])
+    legacy = model_module.Route2BaseFlowModel(hidden_dim=16, assay_count=1, context_count=1)
+    upgraded = model_module.Route2BaseFlowModel(
+        hidden_dim=16, assay_count=1, context_count=1, position_progress_features=True
+    )
+    assert upgraded.input_projection.in_features == legacy.input_projection.in_features + 3
+    assert upgraded.stop_head[0].in_features == legacy.stop_head[0].in_features + 1
+
+
 def test_dataset_target_is_always_legal_and_t_is_normalized() -> None:
     sys.path.insert(0, str(ROOT))
     trainer = _load(TRAIN_PATH, "train_route2_base_flow_for_dataset_test")
@@ -179,6 +197,10 @@ def test_gpu_base_flow_training_persists_live_contract_artifacts(tmp_path: Path)
         "optimizer_name": "AdamW",
         "optimizer_fused": False,
         "training_precision": "FP32",
+        "position_progress_features": True,
+        "generation_action_space": "SUB_PLUS_STOP",
+        "generator_position_features": "NORMALIZED_ABSOLUTE_PLUS_EDIT_GATED",
+        "algorithmic_time_feature": "CONSUMED_EDIT_BUDGET_FRACTION",
         "experiment_ledger_path": str(ledger),
         "device": f"cuda:{physical_index}",
         "physical_gpu_index": physical_index,
@@ -211,6 +233,8 @@ def test_gpu_base_flow_training_persists_live_contract_artifacts(tmp_path: Path)
     assert int(rows[0]["trainable_parameter_count"]) == summary["trainable_parameter_count"]
     assert rows[0]["selected_epoch"] == "1"
     assert rows[0]["evaluation_record_count"] == "0"
+    assert rows[0]["generator_position_features"] == "NORMALIZED_ABSOLUTE_PLUS_EDIT_GATED"
+    assert rows[0]["algorithmic_time_feature"] == "CONSUMED_EDIT_BUDGET_FRACTION"
 
 
 def test_base_flow_source_group_weights_have_equal_group_mass() -> None:
