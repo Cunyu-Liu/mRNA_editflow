@@ -1,0 +1,24 @@
+{
+  "schema_version": "route_a_v3_route2_mrnabert_independent_evaluator_qualification.v1",
+  "status": "PROSPECTIVELY_FROZEN_BEFORE_GUIDED_CANDIDATE_GENERATION",
+  "guiding_model_kind": "delta_pretrained_mrnabert_edit_centered_antisymmetric",
+  "independent_evaluator_model_kind": "siamese_cnn",
+  "independent_evaluator_baseline_id": "independent_evaluator_neural_medium_siamese_task_scaled_seed20260816_frozen_development_validation",
+  "seed": 20260816,
+  "guide_evaluator_architecture_distinct": true,
+  "independent_evaluator_qualification": {
+    "selection_pool": "DEVELOPMENT_VALIDATION",
+    "minimum_task_macro_spearman_exclusive": 0.1012475745988908,
+    "reference": "EXACT_SOURCE_PERMUTATION_CONTROL",
+    "minimum_positive_task_count": 5,
+    "development_test_outcomes_accessed": 0,
+    "evaluation_outcomes_accessed": 0,
+    "cuda_training_required": true,
+    "cpu_fallback_allowed": false,
+    "target_scaling_mode": "TRAIN_TASK_ROBUST"
+  },
+  "candidate_generation_may_continue_when_no_go": true,
+  "strongest_generation_method_selection_requires_qualification": true,
+  "evaluation_outcomes_accessed": false,
+  "scientific_claim_status": "NOT_ESTABLISHED"
+}

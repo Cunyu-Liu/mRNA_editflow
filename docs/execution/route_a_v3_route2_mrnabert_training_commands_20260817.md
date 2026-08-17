@@ -176,6 +176,7 @@ $PY scripts/route_a_v3/train_route2_delta_predictor_v1.py \
 - A100 数值对照通过后，正式 loss 比较已启用 BF16 autocast、fused AdamW、pinned memory 和 non-blocking transfer；
 - 实测 `num_workers=0` 对当前内存特征缓存最快，因此没有为了形式上的并行而增加 workers。
 - 新生成候选不在 canonical feature cache 中，因此已增加冻结 mRNABERT 在线编码器；它按 candidate batch 运行、在 trajectory 内做 sequence memoization，并先与 canonical cache 做数值对齐验证。
+- 在线编码器和 guided potential cache 只在当前 source/budget cohort 内保留；进入下一个 source 时主动清空，避免对成千上万候选长期累积 768 维 embedding 而耗尽主存。
 - guided XEditFlow 的合法动作仍由 SUB+STOP kernel 枚举，hard mask 不交给 critic；base transition rate 使用冻结 critic 的 clipped mean-potential difference 做一致性倾斜，critic uncertainty 不进入 guidance。
 
 当前未启用：
@@ -224,7 +225,37 @@ scripts/route_a_v3/run_route2_guided_xeditflow_v1.py
 
 guided runner 在 readiness 未全通过时会在读取 source manifest、base-flow checkpoint 和 critic checkpoint 之前停止；即使完成，它仍只代表 Development generation 完成，不代表 biological improvement，generated candidates 也不增加 canonical records。
 
-## 11. 低频查看进度
+guided runner 现在另外生成 `guided_compute_by_source.jsonl`，只记录 source key、编辑预算、候选预算和计算量，不记录序列。搜索基线不再使用旧的统一 `256` 次 critic 预算，而是逐 source 复用 guided run 的实际 `critic_candidate_forward_equivalent_count`。六种搜索方法依次运行，使用完全相同的最终 mRNABERT critic、reward policy、source pool、candidate budget 和逐 source critic 上限：
+
+```text
+scripts/route_a_v3/run_route2_mrnabert_matched_search_suite_v1.py
+configs/route_a_v3_route2_mrnabert_matched_search_development_gpu0_v1.json
+```
+
+这个步骤只生成 matched-budget candidates；在独立评估器合格前不选择“最强生成方法”，也不把 critic 自评分写成科学收益。
+
+## 11. 独立评估器修复
+
+旧独立评估器曾直接混合不同 endpoint 的原始量纲，分钟级 half-life 误差会压倒 log-fold 和 usage，因此该 run 已作为 `STOPPED_PRETERMINAL_METHOD_INVALID` 保留，不能用于生成方法选择。新的单次预冻结 run 使用 TRAIN-only task robust scaling、独立的 0.51M Siamese CNN、Development VALIDATION 和 GPU 2；它不读取 mRNABERT 特征、Development TEST 或 Evaluation：
+
+```bash
+nohup scripts/route_a_v3/schedule_route2_independent_evaluator_gpu2_v3.sh \
+  >/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/schedulers/independent_evaluator_gpu2_v3.log \
+  2>&1 </dev/null &
+```
+
+该调度器等待 Base Flow V2 的 GPU 2 任务完成后再启动，不与当前训练争卡。它只运行一次，不按结果追加 HPO；只有 task-macro Spearman 超过预冻结 candidate-permutation reference `0.1012476`、至少 5 个 task 为正且所有数据隔离检查通过，才标记为 qualified。无论 PASS 或 NO-GO，尝试都会自动写入中央训练表。
+
+## 12. 2026-08-17 22:12 追加快照
+
+- mRNABERT 三种 loss 的正式 summary 仍为 `0/3`，所以 loss 选择、controls、three seeds、冻结 TEST 和全量 refit都未越级启动；
+- mRNABERT Huber 已运行约 1 小时 46 分钟，GPU 0 持续满载；
+- GPU 0–5 当前均有项目任务，显存状态正常，没有 CUDA/NaN/提前退出证据；
+- Base Flow V2、在线 mRNABERT encoder validation 和主 post-selection scheduler 都在低频等待各自条件；
+- 新增的独立评估器将等待 GPU 2 的 Base Flow 验证完成后再运行，不抢占现有任务；
+- 当前正式数据与 claim 状态仍为 `ordinary=1 / A1=1 / true-A2=0 / canonical=6,547 / NOT_ESTABLISHED`。
+
+## 13. 低频查看进度
 
 运行中只在事件节点低频查看：
 

@@ -32,7 +32,10 @@ def adjudicate(summary: Mapping[str, Any], protocol: Mapping[str, Any]) -> dict[
         "unexpected training summary schema",
     )
     _require(
-        protocol["schema_version"] == "route_a_v3_route2_generation_matched_compute_repair_protocol.v1",
+        protocol["schema_version"] in {
+            "route_a_v3_route2_generation_matched_compute_repair_protocol.v1",
+            "route_a_v3_route2_mrnabert_independent_evaluator_qualification.v1",
+        },
         "unexpected protocol schema",
     )
     qualification = protocol["independent_evaluator_qualification"]
@@ -90,6 +93,20 @@ def adjudicate(summary: Mapping[str, Any], protocol: Mapping[str, Any]) -> dict[
         "task_macro_exceeds_exact_source_permutation": task_macro_spearman > threshold,
         "positive_task_breadth_reached": positive_task_count >= minimum_positive_tasks,
     }
+    if protocol["schema_version"] == "route_a_v3_route2_mrnabert_independent_evaluator_qualification.v1":
+        checks.update({
+            "exact_frozen_evaluator_identity": (
+                summary["baseline_id"] == protocol["independent_evaluator_baseline_id"]
+                and int(summary["seed"]) == int(protocol["seed"])
+                and summary["checkpoint_selection"] == "FINAL_EPOCH"
+                and summary["candidate_control"] == "NONE"
+            ),
+            "full_context_without_pretrained_guide_features": (
+                summary["metadata_mode"] == "FULL_CONTEXT"
+                and int(summary["frozen_pretrained_parameter_count"]) == 0
+                and summary["pretrained_model_id"] is None
+            ),
+        })
     qualified = all(checks.values())
     return {
         "schema_version": "route_a_v3_route2_independent_generation_evaluator_adjudication.v1",
