@@ -316,6 +316,7 @@ class MRNABERTCheckpointScorer:
         self.source_row: Mapping[str, object] | None = None
 
     def bind_source(self, source_row: Mapping[str, object]):
+        self.critic.clear_source_caches()
         self.source_row = source_row
         return self
 
@@ -543,6 +544,22 @@ def _read_jsonl(path: Path) -> list[dict]:
         return [json.loads(line) for line in handle if line.strip()]
 
 
+def load_critic_budgets_by_source(path: Path) -> dict[str, int]:
+    rows = _read_jsonl(path)
+    budgets: dict[str, int] = {}
+    for row in rows:
+        source_key = str(row["source_key"])
+        _require(source_key not in budgets, f"duplicate guided budget source: {source_key}")
+        value = row.get("critic_candidate_forward_equivalent_count")
+        _require(
+            isinstance(value, int) and not isinstance(value, bool) and value > 0,
+            f"guided critic budget is invalid: {source_key}",
+        )
+        budgets[source_key] = value
+    _require(bool(budgets), "guided critic budget table is empty")
+    return budgets
+
+
 def scoring_execution_provenance(
     checkpoint_used: bool,
     device_text: str | None,
@@ -581,7 +598,9 @@ def _main() -> int:
     parser.add_argument("--device")
     parser.add_argument("--physical-gpu-index", type=int)
     parser.add_argument("--method", choices=METHODS, required=True)
-    parser.add_argument("--max-critic-forwards", type=int, required=True)
+    budget = parser.add_mutually_exclusive_group(required=True)
+    budget.add_argument("--max-critic-forwards", type=int)
+    budget.add_argument("--critic-budget-by-source", type=Path)
     parser.add_argument("--beam-width", type=int, required=True)
     parser.add_argument("--genetic-population-size", type=int, required=True)
     parser.add_argument("--oversample-factor", type=int, required=True)
@@ -596,6 +615,21 @@ def _main() -> int:
         exhaustive_space_limit=args.exhaustive_space_limit,
     )
     sources = _read_jsonl(args.source_manifest)
+    critic_budgets = (
+        load_critic_budgets_by_source(args.critic_budget_by_source)
+        if args.critic_budget_by_source is not None
+        else None
+    )
+    if critic_budgets is not None:
+        source_keys = [str(row["source_key"]) for row in sources]
+        _require(
+            len(source_keys) == len(set(source_keys)),
+            "source manifest contains duplicate source keys",
+        )
+        _require(
+            set(source_keys) == set(critic_budgets),
+            "guided critic budgets do not exactly cover the source manifest",
+        )
     score_table = None
     if args.score_table:
         score_rows = _read_jsonl(args.score_table)
@@ -633,9 +667,15 @@ def _main() -> int:
     else:
         shared_checkpoint_scorer = None
     output_rows = []
-    for source_row in sources:
+    for source_index, source_row in enumerate(sources):
         source_key = str(source_row["source_key"])
         source = str(source_row["source_sequence"]).upper().replace("T", "U")
+        max_critic_forwards = (
+            critic_budgets[source_key]
+            if critic_budgets is not None
+            else int(args.max_critic_forwards)
+        )
+        source_seed = int(args.seed) + source_index * 1_000_003
 
         checkpoint_scorer = (
             shared_checkpoint_scorer.bind_source(source_row) if shared_checkpoint_scorer is not None else None
@@ -655,9 +695,9 @@ def _main() -> int:
             source,
             edit_budget=int(source_row["edit_budget"]),
             candidate_budget=int(source_row["candidate_budget"]),
-            max_critic_forwards=args.max_critic_forwards,
+            max_critic_forwards=max_critic_forwards,
             score_function=score_function,
-            seed=args.seed,
+            seed=source_seed,
             beam_width=args.beam_width,
             population_size=args.genetic_population_size,
             oversample_factor=args.oversample_factor,
@@ -671,13 +711,18 @@ def _main() -> int:
                 "candidate_sequence": candidate,
                 "critic_score": score,
                 "source_critic_score": result.source_score,
-                "critic_forward_budget": args.max_critic_forwards,
+                "critic_forward_budget": max_critic_forwards,
+                "critic_forward_budget_rule": (
+                    "EXACT_GUIDED_CRITIC_CANDIDATE_FORWARD_EQUIVALENTS_PER_SOURCE"
+                    if critic_budgets is not None
+                    else "FIXED_NUMERIC_PER_SOURCE"
+                ),
                 "terminal_cause": "BUDGET_EXHAUSTED" if distance == int(source_row["edit_budget"]) else "EXPLICIT_STOP",
                 "generator_nfe": result.generator_nfe if index == 0 else 0,
                 "proposal_count": result.proposal_count if index == 0 else 0,
                 "critic_forwards": result.critic_forwards if index == 0 else 0,
                 "independent_evaluator_forwards": 0,
-                "seed": args.seed,
+                "seed": source_seed,
                 "search_hyperparameters": search_hyperparameters,
                 "peak_vram_mb": checkpoint_scorer.peak_vram_mb if checkpoint_scorer is not None and index == 0 else 0,
                 **execution_provenance,

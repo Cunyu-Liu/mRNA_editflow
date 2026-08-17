@@ -131,6 +131,9 @@ class FrozenMRNABERTOnlineEncoder:
     def cached_sequence_count(self) -> int:
         return len(self._cache)
 
+    def clear_cache(self) -> None:
+        self._cache.clear()
+
     def encode_sequences(self, sequences: Iterable[str]) -> torch.Tensor:
         ordered = [normalize_rna(sequence) for sequence in sequences]
         _require(bool(ordered), "no sequences were supplied")

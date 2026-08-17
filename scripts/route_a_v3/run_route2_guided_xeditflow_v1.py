@@ -7,6 +7,7 @@ import argparse
 import json
 import math
 import os
+import statistics
 import sys
 import time
 from collections import Counter
@@ -178,8 +179,17 @@ def execute(config: Mapping[str, Any]) -> dict[str, Any]:
     generator_nfe = 0
     replay_probe_nfe = 0
     counters: dict[str, int] = {}
+    per_source_compute = []
     started = time.time()
     for source_index, source_row in enumerate(sources):
+        critic.clear_source_caches()
+        source_model_batches_start = critic.model_batch_forward_count
+        source_candidate_equivalents_start = (
+            critic.candidate_forward_equivalent_count
+        )
+        source_replay_model_batches = 0
+        source_replay_candidate_equivalents = 0
+        source_generator_nfe = 0
         source = source_row["source_sequence"]
         region = str(source_row["region"]).replace("′", "").replace("'", "")
         _require(region in REGION, "source region is unsupported")
@@ -214,14 +224,26 @@ def execute(config: Mapping[str, Any]) -> dict[str, Any]:
                 root, guided_rate, seed=trajectory_seed, device=device
             )
             if candidate_index == 0:
+                replay_model_batches_start = critic.model_batch_forward_count
+                replay_candidate_equivalents_start = (
+                    critic.candidate_forward_equivalent_count
+                )
                 replay, replay_actions, replay_forwards = sample_one(
                     root, guided_rate, seed=trajectory_seed, device=device
+                )
+                source_replay_model_batches += (
+                    critic.model_batch_forward_count - replay_model_batches_start
+                )
+                source_replay_candidate_equivalents += (
+                    critic.candidate_forward_equivalent_count
+                    - replay_candidate_equivalents_start
                 )
                 replay_probe_failures += int(
                     replay != terminal or replay_actions != action_ids
                 )
                 replay_probe_nfe += replay_forwards
             generator_nfe += forwards
+            source_generator_nfe += forwards
             budget_violations += int(terminal.edit_count > source_row["edit_budget"])
             terminal_causes[terminal.terminal_cause] += 1
             rows.append({
@@ -235,11 +257,46 @@ def execute(config: Mapping[str, Any]) -> dict[str, Any]:
                 "generator_nfe": forwards,
                 "generated_candidate_grants_canonical_credit": False,
             })
+        source_model_batches = (
+            critic.model_batch_forward_count
+            - source_model_batches_start
+            - source_replay_model_batches
+        )
+        source_candidate_equivalents = (
+            critic.candidate_forward_equivalent_count
+            - source_candidate_equivalents_start
+            - source_replay_candidate_equivalents
+        )
+        _require(
+            source_model_batches > 0 and source_candidate_equivalents > 0,
+            "guided source cohort made no critic forward calls",
+        )
+        per_source_compute.append({
+            "source_key": source_row["source_key"],
+            "edit_budget": int(source_row["edit_budget"]),
+            "candidate_budget": int(source_row["candidate_budget"]),
+            "generator_nfe": source_generator_nfe,
+            "critic_model_batch_forward_count": source_model_batches,
+            "critic_candidate_forward_equivalent_count": source_candidate_equivalents,
+            "replay_probe_generator_nfe": replay_forwards,
+            "replay_probe_critic_model_batch_forward_count": source_replay_model_batches,
+            "replay_probe_critic_candidate_forward_equivalent_count": (
+                source_replay_candidate_equivalents
+            ),
+        })
     _require(replay_probe_failures == 0, "guided fixed-seed replay failed")
     _require(budget_violations == 0, "guided trajectory exceeded edit budget")
     unique_candidate_count = len({
         (row["source_key"], row["candidate_sequence"]) for row in rows
     })
+    matched_budget_values = [
+        row["critic_candidate_forward_equivalent_count"]
+        for row in per_source_compute
+    ]
+    guided_candidate_equivalents = sum(matched_budget_values)
+    guided_model_batches = sum(
+        row["critic_model_batch_forward_count"] for row in per_source_compute
+    )
     summary = {
         "schema_version": "route_a_v3_route2_guided_xeditflow_development.v1",
         "status": "GUIDED_XEDITFLOW_DEVELOPMENT_COMPLETE",
@@ -257,9 +314,24 @@ def execute(config: Mapping[str, Any]) -> dict[str, Any]:
         "base_flow_forward_count_including_replay_probes": counters.get(
             "base_flow_forwards", 0
         ),
-        "critic_model_batch_forward_count": critic.model_batch_forward_count,
-        "critic_candidate_forward_equivalent_count":
-        critic.candidate_forward_equivalent_count,
+        "critic_model_batch_forward_count": guided_model_batches,
+        "critic_candidate_forward_equivalent_count": guided_candidate_equivalents,
+        "critic_model_batch_forward_count_including_replay_probes": (
+            critic.model_batch_forward_count
+        ),
+        "critic_candidate_forward_equivalent_count_including_replay_probes": (
+            critic.candidate_forward_equivalent_count
+        ),
+        "matched_search_budget_rule": (
+            "EXACT_GUIDED_CRITIC_CANDIDATE_FORWARD_EQUIVALENTS_PER_SOURCE"
+        ),
+        "matched_search_budget_minimum": min(matched_budget_values),
+        "matched_search_budget_maximum": max(matched_budget_values),
+        "matched_search_budget_mean": statistics.fmean(matched_budget_values),
+        "matched_search_budget_median": statistics.median(matched_budget_values),
+        "per_source_compute_path": str(
+            output_dir / "guided_compute_by_source.jsonl"
+        ),
         "critic_parameter_updates": 0,
         "generator_parameter_updates": 0,
         "reward_signal": policy["reward_signal"],
@@ -282,6 +354,13 @@ def execute(config: Mapping[str, Any]) -> dict[str, Any]:
     )
     (output_dir / "generated_candidates.private.jsonl").write_text(
         "".join(json.dumps(row, sort_keys=True) + "\n" for row in rows),
+        encoding="utf-8",
+    )
+    (output_dir / "guided_compute_by_source.jsonl").write_text(
+        "".join(
+            json.dumps(row, sort_keys=True) + "\n"
+            for row in per_source_compute
+        ),
         encoding="utf-8",
     )
     serialized = json.dumps(summary, indent=2, sort_keys=True) + "\n"

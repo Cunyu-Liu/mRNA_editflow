@@ -208,3 +208,20 @@ def test_budgeted_scorer_batches_missing_candidates_and_counts_equivalents() -> 
     assert scorer.forward_count == 3
     assert scorer.score_available(["AAAA", "CAAA"])[0][1] == _score("AAAA")
     assert len(function.batches) == 1
+
+
+def test_guided_per_source_budget_table_is_exact_and_positive(tmp_path: Path) -> None:
+    module = _load()
+    path = tmp_path / "guided_compute.jsonl"
+    path.write_text(
+        '{"source_key":"S1","critic_candidate_forward_equivalent_count":17}\n'
+        '{"source_key":"S2","critic_candidate_forward_equivalent_count":29}\n',
+        encoding="utf-8",
+    )
+    assert module.load_critic_budgets_by_source(path) == {"S1": 17, "S2": 29}
+    path.write_text(
+        '{"source_key":"S1","critic_candidate_forward_equivalent_count":0}\n',
+        encoding="utf-8",
+    )
+    with pytest.raises(module.SearchBaselineError, match="budget is invalid"):
+        module.load_critic_budgets_by_source(path)

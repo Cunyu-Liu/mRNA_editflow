@@ -103,6 +103,12 @@ class FrozenRoute2MRNABERTCritic:
     def cached_potential_count(self) -> int:
         return len(self._potential_cache)
 
+    def clear_source_caches(self) -> None:
+        """Start an independently budgeted source cohort without stale scores."""
+
+        self._potential_cache.clear()
+        self.encoder.clear_cache()
+
     def score_candidates(
         self,
         source_sequence: str,

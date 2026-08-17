@@ -28,6 +28,9 @@ class FakeEncoder:
             rows.append(torch.tensor(counts + counts, dtype=torch.float32))
         return torch.stack(rows)
 
+    def clear_cache(self):
+        return None
+
 
 def _checkpoint(path: Path, *, result_stage="FINAL_ALL_DEVELOPMENT_REFIT") -> None:
     model_config = {
@@ -102,6 +105,13 @@ def test_state_potential_is_memoized(tmp_path: Path) -> None:
     assert critic.encoder.calls == 1
     assert critic.model_batch_forward_count == 1
     assert critic.candidate_forward_equivalent_count == 1
+    critic.clear_source_caches()
+    assert critic.cached_potential_count == 0
+    assert critic.encoder.calls == 1
+    third = critic.potential(state, endpoint_id="E", region="3UTR")
+    assert third == first
+    assert critic.model_batch_forward_count == 2
+    assert critic.candidate_forward_equivalent_count == 2
 
 
 def test_multiple_child_potentials_are_scored_in_one_batch(tmp_path: Path) -> None:
