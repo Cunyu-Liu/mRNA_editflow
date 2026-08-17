@@ -36,6 +36,31 @@ def _row(source_key: str, candidate: str, critic: float, evaluator: float, metho
     }
 
 
+def _evaluation(method_id: str, per_source: dict[str, dict]) -> dict:
+    return {
+        "schema_version": "route_a_v3_route2_generation_evaluation.v2",
+        "evaluation_release_state": "CLOSED",
+        "measured_neighborhood_pool": "DEVELOPMENT",
+        "generation": {"method_id": method_id},
+        "measured_neighborhood": {
+            "candidate_support_mode": "OPEN_GENERATED_SUPPORT",
+            "unknown_generated_candidates_are_zero_gain": False,
+            "source_closed_measured_ndcg_defined_count": 0,
+            "source_macro_closed_measured_ndcg_at_k": None,
+            "per_source": per_source,
+        },
+    }
+
+
+def _measured(candidate_recovery: float, top_k_recovery: float, ndcg, regret) -> dict:
+    return {
+        "candidate_recovery_rate": candidate_recovery,
+        "measured_top_k_recovery_at_k": top_k_recovery,
+        "recovered_measured_ndcg_at_k": ndcg,
+        "normalized_regret": regret,
+    }
+
+
 def _toy_inputs():
     config = {
         "schema_version": "route_a_v3_route2_exhaustive_small_space_reference.v1",
@@ -74,7 +99,39 @@ def _toy_inputs():
         "cpu_fallback_used": False,
     }
     suite = {"status": "MATCHED_GENERATION_BASELINE_SUITE_COMPLETED"}
-    return config, sources, exhaustive, methods, scoring, suite
+    exhaustive_evaluation = _evaluation(
+        "exhaustive",
+        {
+            "s1": _measured(0.50, 0.50, 0.80, None),
+            "s2": _measured(0.25, 0.50, 0.60, 0.40),
+        },
+    )
+    method_evaluations = {
+        "random_legal": _evaluation(
+            "random_legal",
+            {
+                "s1": _measured(0.25, 0.25, 0.70, None),
+                "s2": _measured(0.50, 0.75, 0.80, 0.20),
+            },
+        ),
+        "greedy": _evaluation(
+            "greedy",
+            {
+                "s1": _measured(0.50, 0.50, None, None),
+                "s2": _measured(0.25, 0.25, 0.55, None),
+            },
+        ),
+    }
+    return (
+        config,
+        sources,
+        exhaustive,
+        methods,
+        exhaustive_evaluation,
+        method_evaluations,
+        scoring,
+        suite,
+    )
 
 
 def test_real_reference_config_matches_frozen_protocol_and_jobs() -> None:
@@ -114,12 +171,23 @@ def test_real_reference_config_matches_frozen_protocol_and_jobs() -> None:
 
 def test_comparison_reports_critic_gap_recovery_and_evaluator_alignment() -> None:
     module = _load_module()
-    config, sources, exhaustive, methods, scoring, suite = _toy_inputs()
+    (
+        config,
+        sources,
+        exhaustive,
+        methods,
+        exhaustive_evaluation,
+        method_evaluations,
+        scoring,
+        suite,
+    ) = _toy_inputs()
     result = module.compare(
         config=config,
         source_rows=sources,
         exhaustive_rows=exhaustive,
         full_method_rows=methods,
+        exhaustive_evaluation=exhaustive_evaluation,
+        full_method_evaluations=method_evaluations,
         exhaustive_scoring_summary=scoring,
         full_suite_summary=suite,
     )
@@ -131,15 +199,39 @@ def test_comparison_reports_critic_gap_recovery_and_evaluator_alignment() -> Non
     assert by_method["random_legal"][
         "source_macro_independent_evaluator_advantage_over_exhaustive_critic_top32"
     ] == pytest.approx(0.05)
+    assert by_method["random_legal"][
+        "source_macro_candidate_recovery_advantage_over_exhaustive_critic_top32"
+    ] == pytest.approx(0.0)
+    assert by_method["random_legal"][
+        "source_macro_measured_top_k_recovery_advantage_over_exhaustive_critic_top32"
+    ] == pytest.approx(0.0)
+    assert by_method["random_legal"][
+        "source_macro_recovered_measured_ndcg_advantage_over_exhaustive_critic_top32"
+    ] == pytest.approx(0.05)
+    assert by_method["random_legal"][
+        "source_macro_normalized_regret_advantage_over_exhaustive_critic_top32"
+    ] == pytest.approx(0.20)
     assert by_method["greedy"]["source_macro_critic_optimality_gap"] == pytest.approx(0.15)
     assert by_method["greedy"]["critic_optimum_recovery_rate"] == pytest.approx(0.5)
     assert result["full_cohort_strongest_selector_eligible"] is False
+    assert result["measured_neighborhood_comparison_included"] is True
+    assert result["unknown_generated_outcomes_treated_as_zero"] is False
+    assert result["measured_superiority_claim_established"] is False
     assert result["evaluation_outcomes_accessed"] is False
 
 
 def test_comparison_rejects_candidate_that_exceeds_exhaustive_critic_optimum() -> None:
     module = _load_module()
-    config, sources, exhaustive, methods, scoring, suite = _toy_inputs()
+    (
+        config,
+        sources,
+        exhaustive,
+        methods,
+        exhaustive_evaluation,
+        method_evaluations,
+        scoring,
+        suite,
+    ) = _toy_inputs()
     methods["random_legal"][0]["critic_score"] = 1.1
     with pytest.raises(module.ExhaustiveReferenceComparisonError):
         module.compare(
@@ -147,6 +239,36 @@ def test_comparison_rejects_candidate_that_exceeds_exhaustive_critic_optimum() -
             source_rows=sources,
             exhaustive_rows=exhaustive,
             full_method_rows=methods,
+            exhaustive_evaluation=exhaustive_evaluation,
+            full_method_evaluations=method_evaluations,
+            exhaustive_scoring_summary=scoring,
+            full_suite_summary=suite,
+        )
+
+
+def test_comparison_rejects_open_support_that_assigns_unknown_outcomes_zero() -> None:
+    module = _load_module()
+    (
+        config,
+        sources,
+        exhaustive,
+        methods,
+        exhaustive_evaluation,
+        method_evaluations,
+        scoring,
+        suite,
+    ) = _toy_inputs()
+    exhaustive_evaluation["measured_neighborhood"][
+        "unknown_generated_candidates_are_zero_gain"
+    ] = True
+    with pytest.raises(module.ExhaustiveReferenceComparisonError):
+        module.compare(
+            config=config,
+            source_rows=sources,
+            exhaustive_rows=exhaustive,
+            full_method_rows=methods,
+            exhaustive_evaluation=exhaustive_evaluation,
+            full_method_evaluations=method_evaluations,
             exhaustive_scoring_summary=scoring,
             full_suite_summary=suite,
         )

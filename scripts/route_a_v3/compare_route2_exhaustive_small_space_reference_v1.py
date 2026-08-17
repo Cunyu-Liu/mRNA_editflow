@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Compare full-cohort baselines with the small-space exhaustive critic reference."""
+"""Compare baselines with a critic-exhaustive, independently scored, measured reference."""
 
 from __future__ import annotations
 
@@ -44,6 +44,10 @@ def _finite(value: Any, label: str) -> float:
     return result
 
 
+def _optional_finite(value: Any, label: str) -> float | None:
+    return None if value is None else _finite(value, label)
+
+
 def _group(rows: Iterable[Mapping[str, Any]]) -> dict[str, list[Mapping[str, Any]]]:
     grouped: dict[str, list[Mapping[str, Any]]] = defaultdict(list)
     for row in rows:
@@ -74,12 +78,57 @@ def _max_evaluator_uplift(rows: list[Mapping[str, Any]]) -> float:
     return max(uplifts)
 
 
+def _measured_results(
+    evaluation: Mapping[str, Any],
+    *,
+    method_id: str,
+    source_keys: set[str],
+    exact_source_coverage: bool,
+) -> dict[str, Mapping[str, Any]]:
+    _require(
+        evaluation.get("schema_version") == "route_a_v3_route2_generation_evaluation.v2",
+        f"generation evaluation schema changed: {method_id}",
+    )
+    _require(evaluation.get("evaluation_release_state") == "CLOSED", f"Evaluation opened: {method_id}")
+    _require(
+        evaluation.get("measured_neighborhood_pool") == "DEVELOPMENT",
+        f"measured pool changed: {method_id}",
+    )
+    generation = evaluation.get("generation", {})
+    _require(generation.get("method_id") == method_id, f"evaluation method changed: {method_id}")
+    measured = evaluation.get("measured_neighborhood", {})
+    _require(
+        measured.get("candidate_support_mode") == "OPEN_GENERATED_SUPPORT",
+        f"measured support mode changed: {method_id}",
+    )
+    _require(
+        measured.get("unknown_generated_candidates_are_zero_gain") is False,
+        f"unknown generated outcomes became zero gain: {method_id}",
+    )
+    _require(
+        measured.get("source_closed_measured_ndcg_defined_count") == 0
+        and measured.get("source_macro_closed_measured_ndcg_at_k") is None,
+        f"open-support closed measured NDCG became defined: {method_id}",
+    )
+    per_source = {
+        str(source_key): result
+        for source_key, result in measured.get("per_source", {}).items()
+    }
+    if exact_source_coverage:
+        _require(set(per_source) == source_keys, f"measured source coverage changed: {method_id}")
+    else:
+        _require(source_keys <= set(per_source), f"measured subset coverage changed: {method_id}")
+    return {source_key: per_source[source_key] for source_key in source_keys}
+
+
 def compare(
     *,
     config: Mapping[str, Any],
     source_rows: list[Mapping[str, Any]],
     exhaustive_rows: list[Mapping[str, Any]],
     full_method_rows: Mapping[str, list[Mapping[str, Any]]],
+    exhaustive_evaluation: Mapping[str, Any],
+    full_method_evaluations: Mapping[str, Mapping[str, Any]],
     exhaustive_scoring_summary: Mapping[str, Any],
     full_suite_summary: Mapping[str, Any],
 ) -> dict[str, Any]:
@@ -109,6 +158,16 @@ def compare(
     exhaustive_by_source = _group(exhaustive_rows)
     _require(set(exhaustive_by_source) == source_keys, "exhaustive source coverage differs")
     _require({str(row["method_id"]) for row in exhaustive_rows} == {"exhaustive"}, "reference method changed")
+    _require(
+        set(full_method_evaluations) == set(full_method_rows),
+        "full method evaluation set differs from candidate set",
+    )
+    exhaustive_measured = _measured_results(
+        exhaustive_evaluation,
+        method_id="exhaustive",
+        source_keys=source_keys,
+        exact_source_coverage=True,
+    )
 
     exhaustive_reference = {}
     for source_key in sorted(source_keys):
@@ -129,9 +188,19 @@ def compare(
         subset_rows = [row for row in rows if str(row["source_key"]) in source_keys]
         by_source = _group(subset_rows)
         _require(set(by_source) == source_keys, f"full method source coverage differs: {method_id}")
+        method_measured = _measured_results(
+            full_method_evaluations[method_id],
+            method_id=method_id,
+            source_keys=source_keys,
+            exact_source_coverage=False,
+        )
         critic_gaps = []
         recovered = []
         evaluator_advantages = []
+        candidate_recovery_advantages = []
+        measured_top_k_recovery_advantages = []
+        recovered_ndcg_advantages = []
+        normalized_regret_advantages = []
         per_source = {}
         for source_key in sorted(source_keys):
             method_rows = by_source[source_key]
@@ -148,15 +217,75 @@ def compare(
                 _max_evaluator_uplift(method_rows)
                 - reference["independent_evaluator_max_uplift_over_source"]
             )
+            reference_measured = exhaustive_measured[source_key]
+            method_measured_result = method_measured[source_key]
+            reference_candidate_recovery = _finite(
+                reference_measured.get("candidate_recovery_rate"),
+                f"exhaustive candidate recovery: {source_key}",
+            )
+            method_candidate_recovery = _finite(
+                method_measured_result.get("candidate_recovery_rate"),
+                f"method candidate recovery: {method_id}/{source_key}",
+            )
+            candidate_recovery_advantage = method_candidate_recovery - reference_candidate_recovery
+            reference_top_k_recovery = _finite(
+                reference_measured.get("measured_top_k_recovery_at_k"),
+                f"exhaustive measured top-k recovery: {source_key}",
+            )
+            method_top_k_recovery = _finite(
+                method_measured_result.get("measured_top_k_recovery_at_k"),
+                f"method measured top-k recovery: {method_id}/{source_key}",
+            )
+            measured_top_k_recovery_advantage = method_top_k_recovery - reference_top_k_recovery
+            reference_recovered_ndcg = _optional_finite(
+                reference_measured.get("recovered_measured_ndcg_at_k"),
+                f"exhaustive recovered measured NDCG: {source_key}",
+            )
+            method_recovered_ndcg = _optional_finite(
+                method_measured_result.get("recovered_measured_ndcg_at_k"),
+                f"method recovered measured NDCG: {method_id}/{source_key}",
+            )
+            recovered_ndcg_advantage = (
+                None
+                if reference_recovered_ndcg is None or method_recovered_ndcg is None
+                else method_recovered_ndcg - reference_recovered_ndcg
+            )
+            reference_regret = _optional_finite(
+                reference_measured.get("normalized_regret"),
+                f"exhaustive normalized regret: {source_key}",
+            )
+            method_regret = _optional_finite(
+                method_measured_result.get("normalized_regret"),
+                f"method normalized regret: {method_id}/{source_key}",
+            )
+            normalized_regret_advantage = (
+                None
+                if reference_regret is None or method_regret is None
+                else reference_regret - method_regret
+            )
             critic_gaps.append(critic_gap)
             recovered.append(float(optimum_recovered))
             evaluator_advantages.append(evaluator_advantage)
+            candidate_recovery_advantages.append(candidate_recovery_advantage)
+            measured_top_k_recovery_advantages.append(measured_top_k_recovery_advantage)
+            if recovered_ndcg_advantage is not None:
+                recovered_ndcg_advantages.append(recovered_ndcg_advantage)
+            if normalized_regret_advantage is not None:
+                normalized_regret_advantages.append(normalized_regret_advantage)
             per_source[source_key] = {
                 "exhaustive_critic_best_candidate": reference["critic_best_candidate"],
                 "method_critic_best_candidate": method_best_sequence,
                 "critic_optimality_gap": critic_gap,
                 "critic_optimum_recovered": optimum_recovered,
                 "independent_evaluator_advantage_over_exhaustive_critic_top32": evaluator_advantage,
+                "exhaustive_candidate_recovery_rate": reference_candidate_recovery,
+                "method_candidate_recovery_rate": method_candidate_recovery,
+                "candidate_recovery_advantage_over_exhaustive_critic_top32": candidate_recovery_advantage,
+                "exhaustive_measured_top_k_recovery_at_k": reference_top_k_recovery,
+                "method_measured_top_k_recovery_at_k": method_top_k_recovery,
+                "measured_top_k_recovery_advantage_over_exhaustive_critic_top32": measured_top_k_recovery_advantage,
+                "recovered_measured_ndcg_advantage_over_exhaustive_critic_top32": recovered_ndcg_advantage,
+                "normalized_regret_advantage_over_exhaustive_critic_top32": normalized_regret_advantage,
             }
         method_summaries.append(
             {
@@ -166,6 +295,24 @@ def compare(
                 "critic_optimum_recovery_rate": sum(recovered) / len(recovered),
                 "source_macro_independent_evaluator_advantage_over_exhaustive_critic_top32": (
                     sum(evaluator_advantages) / len(evaluator_advantages)
+                ),
+                "source_macro_candidate_recovery_advantage_over_exhaustive_critic_top32": (
+                    sum(candidate_recovery_advantages) / len(candidate_recovery_advantages)
+                ),
+                "source_macro_measured_top_k_recovery_advantage_over_exhaustive_critic_top32": (
+                    sum(measured_top_k_recovery_advantages) / len(measured_top_k_recovery_advantages)
+                ),
+                "paired_recovered_measured_ndcg_defined_source_count": len(recovered_ndcg_advantages),
+                "source_macro_recovered_measured_ndcg_advantage_over_exhaustive_critic_top32": (
+                    None
+                    if not recovered_ndcg_advantages
+                    else sum(recovered_ndcg_advantages) / len(recovered_ndcg_advantages)
+                ),
+                "paired_normalized_regret_defined_source_count": len(normalized_regret_advantages),
+                "source_macro_normalized_regret_advantage_over_exhaustive_critic_top32": (
+                    None
+                    if not normalized_regret_advantages
+                    else sum(normalized_regret_advantages) / len(normalized_regret_advantages)
                 ),
                 "per_source": per_source,
             }
@@ -180,10 +327,16 @@ def compare(
         "candidate_budget_per_source": int(config["candidate_budget_per_source"]),
         "critic_forward_budget_per_source": int(config["critic_forward_budget_per_source"]),
         "full_cohort_strongest_selector_eligible": False,
+        "measured_neighborhood_comparison_included": True,
+        "measured_candidate_support_mode": "OPEN_GENERATED_SUPPORT",
+        "unknown_generated_outcomes_treated_as_zero": False,
+        "measured_superiority_claim_established": False,
         "method_summaries": method_summaries,
         "evaluation_outcomes_accessed": False,
         "guided_xeditflow_run": False,
-        "scientific_claim_status": "DEVELOPMENT_SMALL_SPACE_REFERENCE_ONLY",
+        "scientific_claim_status": (
+            "DEVELOPMENT_OPEN_SUPPORT_CRITIC_INDEPENDENT_EVALUATOR_AND_MEASURED_RECOVERY_REFERENCE_ONLY"
+        ),
     }
 
 
@@ -202,6 +355,15 @@ def main() -> int:
         str(job["method_id"]): _read_jsonl(Path(str(job["output_path"])))
         for job in jobs["jobs"]
     }
+    protocol = _read_json(REPO_ROOT / str(config["matched_compute_protocol_config"]))
+    evaluation_root = Path(str(protocol["independent_evaluation_output_root"]))
+    full_method_evaluations = {
+        str(job["method_id"]): _read_json(
+            evaluation_root / f"{job['method_id']}_evaluation_v2.json"
+        )
+        for job in jobs["jobs"]
+    }
+    exhaustive_evaluation = _read_json(Path(str(config["generation_evaluation_output_path"])))
     exhaustive_summary = _read_json(
         Path(str(config["independent_scored_output_path"])).with_suffix(".jsonl.summary.json")
     )
@@ -211,6 +373,8 @@ def main() -> int:
         source_rows=source_rows,
         exhaustive_rows=exhaustive_rows,
         full_method_rows=full_method_rows,
+        exhaustive_evaluation=exhaustive_evaluation,
+        full_method_evaluations=full_method_evaluations,
         exhaustive_scoring_summary=exhaustive_summary,
         full_suite_summary=full_suite_summary,
     )

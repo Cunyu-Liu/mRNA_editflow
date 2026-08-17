@@ -184,6 +184,29 @@ def run_stage(spec: Mapping[str, Any], log_directory: Path) -> dict[str, Any]:
     return result
 
 
+def validate_comparison_output(comparison: Mapping[str, Any]) -> None:
+    _require(
+        comparison.get("status") == "SMALL_SPACE_EXHAUSTIVE_GUIDING_CRITIC_REFERENCE_COMPLETED",
+        "comparison did not reach its complete status",
+    )
+    _require(
+        comparison.get("measured_neighborhood_comparison_included") is True,
+        "comparison omitted Development measured-neighborhood evidence",
+    )
+    _require(
+        comparison.get("measured_candidate_support_mode") == "OPEN_GENERATED_SUPPORT",
+        "comparison measured-support mode changed",
+    )
+    _require(
+        comparison.get("unknown_generated_outcomes_treated_as_zero") is False,
+        "comparison treated unknown generated outcomes as zero",
+    )
+    _require(
+        comparison.get("measured_superiority_claim_established") is False,
+        "open-support comparison claimed measured superiority",
+    )
+
+
 def execute(config_path: Path, output_summary_path: Path | None = None) -> dict[str, Any]:
     config = _read_json(config_path)
     scoring_path = REPO_ROOT / str(config["independent_evaluator_scoring_config"])
@@ -214,10 +237,7 @@ def execute(config_path: Path, output_summary_path: Path | None = None) -> dict[
         for spec in build_commands(config, scoring_path, protocol, config_path):
             stages.append(run_stage(spec, log_directory))
         comparison = _read_json(Path(str(config["comparison_output_path"])))
-        _require(
-            comparison.get("status") == "SMALL_SPACE_EXHAUSTIVE_GUIDING_CRITIC_REFERENCE_COMPLETED",
-            "comparison did not reach its complete status",
-        )
+        validate_comparison_output(comparison)
         summary = {
             "schema_version": "route_a_v3_route2_exhaustive_small_space_reference_suite.v1",
             "status": "EXHAUSTIVE_SMALL_SPACE_REFERENCE_SUITE_COMPLETED",
@@ -228,10 +248,14 @@ def execute(config_path: Path, output_summary_path: Path | None = None) -> dict[
             "cpu_fallback_used": False,
             "evaluation_outcomes_accessed": False,
             "guided_xeditflow_run": False,
+            "measured_neighborhood_comparison_included": True,
+            "measured_candidate_support_mode": comparison["measured_candidate_support_mode"],
+            "unknown_generated_outcomes_treated_as_zero": False,
+            "measured_superiority_claim_established": False,
             "stage_results": stages,
             "comparison_output_path": config["comparison_output_path"],
             "wall_time_seconds": time.time() - started,
-            "scientific_claim_status": "DEVELOPMENT_SMALL_SPACE_REFERENCE_ONLY",
+            "scientific_claim_status": comparison["scientific_claim_status"],
         }
     except Exception as exc:
         if isinstance(exc, StageFailure):

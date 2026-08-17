@@ -108,6 +108,21 @@ def test_validation_rejects_incomplete_full_suite() -> None:
         module.validate_inputs(config, scoring, protocol, suite, adjudication)
 
 
+def test_comparison_output_requires_measured_open_support_without_zero_imputation() -> None:
+    module = _load_module()
+    comparison = {
+        "status": "SMALL_SPACE_EXHAUSTIVE_GUIDING_CRITIC_REFERENCE_COMPLETED",
+        "measured_neighborhood_comparison_included": True,
+        "measured_candidate_support_mode": "OPEN_GENERATED_SUPPORT",
+        "unknown_generated_outcomes_treated_as_zero": False,
+        "measured_superiority_claim_established": False,
+    }
+    module.validate_comparison_output(comparison)
+    comparison["unknown_generated_outcomes_treated_as_zero"] = True
+    with pytest.raises(module.ExhaustiveReferenceSuiteError):
+        module.validate_comparison_output(comparison)
+
+
 def test_stage_failure_is_terminal_and_preserves_log_paths(tmp_path: Path, monkeypatch) -> None:
     module = _load_module()
     monkeypatch.setattr(
