@@ -1,0 +1,159 @@
+{
+  "schema_version": "route_a_v3_route2_14_study_final_inventory.v1",
+  "inventory_id": "ROUTE_A_V3_ROUTE2_14_STUDY_FINAL_INVENTORY_V1",
+  "frozen_at": "2026-08-17",
+  "contract_goal": "Goal 1: 14-study canonical conversion and final data table",
+  "claim_boundary": "This inventory records materialized, rejected, unconvertible, auxiliary, and sealed outcomes. Zero canonical records do not imply missing work. Generated candidates never add canonical credit.",
+  "source_configs": {
+    "complete_manifest": "configs/route_a_v3_route2_complete_manifest_split_v1.json",
+    "development_manifest": "configs/route_a_v3_route2_development_manifest_split_v1.json",
+    "generation_eligibility": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/generation_eligibility/development_validation_v1/summary.json",
+    "final_excel": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/reports/goal1_14_study_final_inventory_v1/route2_14_study_final_table_v1.xlsx"
+  },
+  "totals": {
+    "study_units": 14,
+    "development_canonical_records": 126165,
+    "evaluation_canonical_records": 8068,
+    "evaluation_unexposed_canonical_records": 0,
+    "qualified_canonical_records": 6547,
+    "generated_candidate_canonical_credit": 0
+  },
+  "studies": [
+    {
+      "study_unit_id": "GSE200304",
+      "use_role": "DEVELOPMENT",
+      "terminal_status": "MATERIALIZED_QUALIFIED",
+      "canonical_records": 6547,
+      "canonical_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE200304/v1/canonical_records.jsonl",
+      "outcome_exposure": "DEVELOPMENT_EXPOSED",
+      "reason": "Qualified Development canonical materialization retained."
+    },
+    {
+      "study_unit_id": "GSE114002",
+      "use_role": "DEVELOPMENT",
+      "terminal_status": "MATERIALIZED_DEVELOPMENT_RELAXED",
+      "canonical_records": 3899,
+      "canonical_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE114002/v1/canonical_records.private.jsonl",
+      "outcome_exposure": "DEVELOPMENT_EXPOSED",
+      "reason": "Development-relaxed materialization; not credited as newly qualified."
+    },
+    {
+      "study_unit_id": "GSE149487",
+      "use_role": "DEVELOPMENT",
+      "terminal_status": "MATERIALIZED_DEVELOPMENT_RELAXED",
+      "canonical_records": 192,
+      "canonical_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE149487/v1/canonical_records.private.jsonl",
+      "outcome_exposure": "DEVELOPMENT_EXPOSED",
+      "reason": "Development-relaxed materialization; its two Validation tasks have no TRAIN support."
+    },
+    {
+      "study_unit_id": "GSE217518",
+      "use_role": "DEVELOPMENT",
+      "terminal_status": "MATERIALIZED_DEVELOPMENT_RELAXED",
+      "canonical_records": 4009,
+      "canonical_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE217518/v1/canonical_records.jsonl",
+      "outcome_exposure": "DEVELOPMENT_EXPOSED",
+      "reason": "Valid canonical materialization retained; a separate failed-geometry temporary attempt remains rejected."
+    },
+    {
+      "study_unit_id": "ENCSR854RUF",
+      "use_role": "DEVELOPMENT",
+      "terminal_status": "MATERIALIZED_DEVELOPMENT_RELAXED",
+      "canonical_records": 79800,
+      "canonical_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/ENCSR854RUF/v1/canonical_records.private.jsonl",
+      "outcome_exposure": "DEVELOPMENT_EXPOSED",
+      "reason": "Development-relaxed materialization; row count does not equal independent study count."
+    },
+    {
+      "study_unit_id": "GSE186455",
+      "use_role": "DEVELOPMENT",
+      "terminal_status": "MATERIALIZED_DEVELOPMENT_RELAXED",
+      "canonical_records": 752,
+      "canonical_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE186455/v1/canonical_records.private.jsonl",
+      "outcome_exposure": "DEVELOPMENT_EXPOSED",
+      "reason": "Development-relaxed materialization; not credited as newly qualified."
+    },
+    {
+      "study_unit_id": "GSE256185",
+      "use_role": "DEVELOPMENT",
+      "terminal_status": "UNCONVERTIBLE_FOR_ROUTE2_V1",
+      "canonical_records": 0,
+      "canonical_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE256185/v1/canonical_records.private.jsonl",
+      "outcome_exposure": "DEVELOPMENT_PREFLIGHT_EXPOSED",
+      "reason": "Published actions fall outside the frozen SUB+STOP V1 action space."
+    },
+    {
+      "study_unit_id": "GSE269595",
+      "use_role": "DEVELOPMENT",
+      "terminal_status": "MATERIALIZED_DEVELOPMENT_LISTWISE",
+      "canonical_records": 30966,
+      "canonical_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE269595/v1/canonical_records.private.jsonl",
+      "outcome_exposure": "DEVELOPMENT_EXPOSED",
+      "reason": "Development true-A2/listwise materialization; not an unseen Evaluation study."
+    },
+    {
+      "study_unit_id": "GSE232572",
+      "use_role": "EVALUATION",
+      "terminal_status": "MATERIALIZED_EVALUATION_OUTCOME_EXPOSED",
+      "canonical_records": 8068,
+      "canonical_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE232572/v1/canonical_records.private.jsonl",
+      "outcome_exposure": "OUTCOME_EXPOSED_BY_EXISTING_ZERO_SHOT",
+      "reason": "Materialized but no longer eligible for model selection or an unbiased final confirmation."
+    },
+    {
+      "study_unit_id": "E-MTAB-10902",
+      "use_role": "EVALUATION",
+      "terminal_status": "UNCONVERTIBLE_FOR_ROUTE2_V1",
+      "canonical_records": 0,
+      "canonical_path": null,
+      "outcome_exposure": "OUTCOME_NOT_READ",
+      "reason": "PUBLISHER_READ_QC_COUNT_MISMATCH: raw-read membership gives 5929 designs and unique-UMI membership gives 5730, neither reproducing the publisher-reported 5679; thresholds were not tuned after the fact.",
+      "evidence_paths": [
+        "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/raw_public/E-MTAB-10902/qc_membership_v1/qc_membership_summary.json",
+        "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/raw_public/E-MTAB-10902/qc_membership_v2/qc_membership_summary.json"
+      ]
+    },
+    {
+      "study_unit_id": "GSE145046",
+      "use_role": "AUXILIARY",
+      "terminal_status": "AUXILIARY_SUMMARY_ONLY",
+      "canonical_records": 0,
+      "canonical_path": null,
+      "outcome_exposure": "AUXILIARY_ONLY",
+      "reason": "Auxiliary evidence; not promoted into Development or Evaluation canonical outcome data."
+    },
+    {
+      "study_unit_id": "GSE207584",
+      "use_role": "NEGATIVE_CONTROL",
+      "terminal_status": "UNCONVERTIBLE_FOR_ROUTE2_V1",
+      "canonical_records": 0,
+      "canonical_path": null,
+      "outcome_exposure": "AGGREGATE_ONLY",
+      "reason": "Public evidence is aggregate-level and cannot produce record-level canonical rows."
+    },
+    {
+      "study_unit_id": "GSE261709",
+      "use_role": "NEGATIVE_CONTROL",
+      "terminal_status": "UNCONVERTIBLE_FOR_ROUTE2_V1",
+      "canonical_records": 0,
+      "canonical_path": null,
+      "outcome_exposure": "AGGREGATE_ONLY",
+      "reason": "Public evidence is aggregate-level and cannot produce record-level canonical rows."
+    },
+    {
+      "study_unit_id": "GSE246381",
+      "use_role": "SEALED_EXCLUDED",
+      "terminal_status": "SEALED_EXCLUDED",
+      "canonical_records": 0,
+      "canonical_path": null,
+      "outcome_exposure": "SEALED_NOT_READ",
+      "reason": "Remains sealed and excluded under the contract; it is not used to complete the current Evaluation axis."
+    }
+  ],
+  "goal1_adjudication": {
+    "scientific_data_table_status": "COMPLETE_WITH_DECLARED_UNCONVERTIBLE_STUDIES",
+    "evaluation_confirmation_status": "NOT_ESTABLISHED",
+    "delivery_status": "LOCAL_BRANCH_NOT_PUSHED",
+    "goal1_overall_status": "IMPLEMENTED_NOT_DELIVERED"
+  }
+}
