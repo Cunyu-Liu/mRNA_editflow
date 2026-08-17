@@ -1,0 +1,46 @@
+{
+  "schema_version": "route_a_v3_route2_partial_pooling_inner_split_audit.v1",
+  "status": "TRAIN_ONLY_GROUPED_INNER_SPLIT_MATERIALIZED",
+  "scientific_role": "TRAIN_ONLY_PARTIAL_POOLING_MODEL_SELECTION",
+  "inner_split_id": "PARTIAL_POOLING_INNER_SEED20260816_V1",
+  "source_development_manifest": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/manifests/route2_development_frozen_v1/development_manifest.jsonl",
+  "materialized_summary": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/manifests/route2_partial_pooling_inner_seed20260816_v1/summary.json",
+  "materialized_manifest": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/manifests/route2_partial_pooling_inner_seed20260816_v1/development_inner_manifest.jsonl",
+  "source_parent_split": "TRAIN",
+  "parent_record_counts": {
+    "TRAIN": 89580,
+    "VALIDATION": 18293,
+    "TEST": 18292
+  },
+  "inner_record_counts": {
+    "TRAIN": 63332,
+    "VALIDATION": 13126,
+    "TEST": 13122
+  },
+  "inner_component_counts": {
+    "TRAIN": 2802,
+    "VALIDATION": 1476,
+    "TEST": 1480
+  },
+  "connected_component_count": 5758,
+  "multitask_connected_component_count": 107,
+  "task_count": 7,
+  "component_overlap_across_inner_splits": 0,
+  "parent_development_validation_record_count_excluded": 18293,
+  "parent_development_test_record_count_excluded": 18292,
+  "parent_development_validation_outcomes_accessed": false,
+  "parent_development_test_outcomes_accessed": false,
+  "inner_test_outcomes_accessed": false,
+  "evaluation_outcomes_accessed": false,
+  "implementation_commit": "f01fbf7",
+  "fixed_route2_delivery_commit_at_audit_creation": "7a2213e",
+  "scientific_claim_status": "NOT_ESTABLISHED",
+  "does_not_authorize": [
+    "FORMAL_DEVELOPMENT_VALIDATION",
+    "FORMAL_DEVELOPMENT_TEST",
+    "EVALUATION",
+    "CRITIC_READY_FOR_GUIDANCE",
+    "GUIDED_XEDITFLOW",
+    "PUBLICATION_SUCCESS_CLAIM"
+  ]
+}
