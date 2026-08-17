@@ -98,6 +98,31 @@ $PY scripts/route_a_v3/train_route2_delta_predictor_v1.py \
 
 每个配置训练 100 epochs；TRAIN 为 89,580 条，约 559,900 次 optimizer updates；只使用 VALIDATION 选择 checkpoint。三个 loss 同结构、同数据和同 seed，用于直接检查可学习 uncertainty 是否吸收误差并导致 mean collapse。
 
+三个 run 全部完成后，用同一条冻结规则做汇总；不按 NLL 大小选择 learned-variance 模型：
+
+```bash
+$PY scripts/route_a_v3/summarize_route2_mrnabert_loss_comparison_v1.py \
+  --summary /mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/mrnabert_scaleup_v2/max_mean_only_seed20260816_gpu0_bf16_v1/training_summary.json \
+  --summary /mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/mrnabert_scaleup_v2/max_fixed_variance_seed20260816_gpu5_bf16_v1/training_summary.json \
+  --summary /mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/mrnabert_scaleup_v2/max_learned_variance_seed20260816_gpu3_bf16_v1/training_summary.json \
+  --output /mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/comparisons/mrnabert_loss_comparison_seed20260816_v1.json
+```
+
+选择后的 loss 还必须运行两个同预算 signal controls：
+
+- `WITHIN_EXACT_SOURCE_TASK_TRAIN_CANDIDATE_PERMUTATION`：候选 token 与其冻结 mRNABERT 表征一起按 source/task 内打乱；
+- `PARAMETER_MATCHED_PRETRAINED_SOURCE_ONLY`：参数规模匹配，但不读取 candidate-specific 信息。
+
+长任务的低频接力入口为：
+
+```bash
+nohup scripts/route_a_v3/schedule_route2_mrnabert_postselection_controls_v1.sh \
+  >/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/schedulers/mrnabert_postselection_controls_v1.log \
+  2>&1 </dev/null &
+```
+
+它每 15 分钟检查三个 summary；全部完成后只读取 Development VALIDATION 汇总并在 GPU 0/5 启动两个 controls。它不会读取 Development TEST、GSE232572、E-MTAB-10902，也不会自动启动 final seeds、全量 refit 或 guided XEditFlow。
+
 ## 7. 冻结 TEST 与最终拟合
 
 只在三种 loss 的 VALIDATION 比较完成后运行一次冻结 TEST：
