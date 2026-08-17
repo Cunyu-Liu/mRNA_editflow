@@ -17,6 +17,8 @@ PERMUTATION_CONFIG="${RUNTIME_CONFIG_ROOT}/selected_loss_candidate_permutation_s
 SOURCE_ONLY_CONFIG="${RUNTIME_CONFIG_ROOT}/selected_loss_source_only_seed20260816_gpu5_v1.json"
 PERMUTATION_RUN="${RUN_ROOT}/selected_loss_candidate_permutation_seed20260816_gpu0_v1"
 SOURCE_ONLY_RUN="${RUN_ROOT}/selected_loss_source_only_seed20260816_gpu5_v1"
+FINAL_CONFIG_DIR="${RUNTIME_CONFIG_ROOT}/final_seed_validation_v1"
+FINAL_RUN_ROOT="${RUN_ROOT}/final_seed_validation_v1"
 
 summaries=(
   "${HUBER_DIR}/training_summary.json"
@@ -105,3 +107,43 @@ fi
   --permutation-summary "${PERMUTATION_RUN}/training_summary.json" \
   --source-only-summary "${SOURCE_ONLY_RUN}/training_summary.json" \
   --output "${CONTROL_ADJUDICATION}"
+
+supports_final_seeds=$("${PYTHON}" -c \
+  'import json,sys; print(str(json.load(open(sys.argv[1]))["supports_final_seed_confirmation"]).lower())' \
+  "${CONTROL_ADJUDICATION}")
+if [[ "${supports_final_seeds}" != "true" ]]; then
+  printf '%s signal_controls_stop_before_final_seeds\n' "$(date -Is)"
+  exit 0
+fi
+
+"${PYTHON}" scripts/route_a_v3/prepare_route2_mrnabert_final_seed_configs_v1.py \
+  --selected-config "${selected_config}" \
+  --signal-adjudication "${CONTROL_ADJUDICATION}" \
+  --output-config-dir "${FINAL_CONFIG_DIR}" \
+  --run-root "${FINAL_RUN_ROOT}"
+
+final_seed_pids=()
+for seed_gpu in "20260822:0" "20260823:3" "20260824:5"; do
+  seed=${seed_gpu%%:*}
+  gpu=${seed_gpu##*:}
+  config="${FINAL_CONFIG_DIR}/mrnabert_edit_centered_${selected_loss}_final_seed${seed}.json"
+  log="${ROUTE2_ROOT}/mrnabert_final_seed${seed}_gpu${gpu}_v1.log"
+  "${PYTHON}" -u scripts/route_a_v3/train_route2_delta_predictor_v1.py \
+    --config "${config}" >"${log}" 2>&1 &
+  final_seed_pids+=("$!")
+done
+
+final_seed_failure=0
+set +e
+for pid in "${final_seed_pids[@]}"; do
+  wait "${pid}"
+  status=$?
+  if [[ "${status}" -ne 0 ]]; then
+    final_seed_failure=1
+  fi
+done
+set -e
+printf '%s final_seed_runs_finished failure=%s\n' "$(date -Is)" "${final_seed_failure}"
+if [[ "${final_seed_failure}" -ne 0 ]]; then
+  exit 1
+fi
