@@ -121,7 +121,7 @@ nohup scripts/route_a_v3/schedule_route2_mrnabert_postselection_controls_v1.sh \
   2>&1 </dev/null &
 ```
 
-它每 15 分钟检查三个 summary，并按固定顺序接力：loss VALIDATION 选择 → GPU 0/5 两个 signal controls → GPU 0/3/5 三个固定验证 seeds → 单次冻结 Development TEST → 全 126,165 条最终拟合。任一门槛不通过，后续阶段停止。该调度器始终不会读取 GSE232572、E-MTAB-10902，也不会自动启动 guided XEditFlow。
+它每 15 分钟检查三个 summary，并按固定顺序接力：loss VALIDATION 选择 → GPU 0/5 两个 signal controls → GPU 0/3/5 三个固定验证 seeds → 单次冻结 Development TEST → 全 126,165 条最终拟合 → 7 个 Development study × 3 seeds 的 TEST-preserving mRNABERT LOSO → 同样 21 个 matched global-scaled baseline LOSO → 三个 seed 的对齐汇总。随后等待 Flow V2 和在线 mRNABERT candidate encoder 的独立验证，组装 readiness；只有 `CRITIC_READY_FOR_GUIDANCE` 与 `FLOW_G0_READY` 同时成立，才会在空闲 GPU 0 上启动一次 guided XEditFlow Development run。任一门槛不通过，后续阶段停止。该调度器始终不会读取 GSE232572 或 E-MTAB-10902 的 Evaluation outcomes。
 
 ## 7. 冻结 TEST 与最终拟合
 
@@ -175,26 +175,56 @@ $PY scripts/route_a_v3/train_route2_delta_predictor_v1.py \
 - critic 使用 edit-centered attention pooling、edit max pooling、source mean/max 全局背景、region FiLM 和 source/candidate 反对称结构。
 - A100 数值对照通过后，正式 loss 比较已启用 BF16 autocast、fused AdamW、pinned memory 和 non-blocking transfer；
 - 实测 `num_workers=0` 对当前内存特征缓存最快，因此没有为了形式上的并行而增加 workers。
+- 新生成候选不在 canonical feature cache 中，因此已增加冻结 mRNABERT 在线编码器；它按 candidate batch 运行、在 trajectory 内做 sequence memoization，并先与 canonical cache 做数值对齐验证。
+- guided XEditFlow 的合法动作仍由 SUB+STOP kernel 枚举，hard mask 不交给 critic；base transition rate 使用冻结 critic 的 clipped mean-potential difference 做一致性倾斜，critic uncertainty 不进入 guidance。
 
 当前未启用：
 
 - FlashAttention：官方仓库附带的旧 Triton kernel 与服务器当前 Triton API 不兼容，因此现在使用官方 PyTorch attention fallback；
 - `torch.compile` 尚未启用；当前没有证据表明其编译开销能被这批固定长度的 critic 训练摊薄。
 
-FlashAttention 主要影响一次性的冻结特征构建，不能提升后续 100-epoch critic 的主体训练。当前使用的 BF16/fused 路径已经先通过独立吞吐与数值一致性测试，再用于全新的正式 runs；没有中途改变既有 run 的数值路径。
+FlashAttention 主要影响一次性的冻结特征构建和后续候选在线编码，不能提升 100-epoch critic 的主体训练。当前在线路径优先用 candidate batching 与 memoization 降低重复前向；在没有证明新的 attention kernel 与冻结 cache 数值一致前，不替换官方 PyTorch fallback。当前使用的 BF16/fused 路径已经先通过独立吞吐与数值一致性测试，再用于全新的正式 runs；没有中途改变既有 run 的数值路径。
 
-## 9. 2026-08-17 21:31 运行快照
+## 9. 2026-08-17 21:59 运行快照
 
 | 运行 | 当前 epoch | 最新 task-macro Spearman | 最新 task-macro standardized MAE | 状态 |
 |---|---:|---:|---:|---|
-| RNA-FM Huber | 31/100 | 0.0882 | 2.0912 | 运行中，历史对照 |
-| RNA-FM learned variance | 21/100 | 0.0717 | 1.8557 | 运行中，检查 uncertainty absorption |
-| RNA-FM fixed variance | 21/100 | 0.0567 | 1.9322 | 运行中，固定噪声对照 |
-| mRNABERT Huber | 10/100 | 0.0986 | 1.8628 | 运行中，当前主编码器 |
+| RNA-FM Huber | 34/100 | 0.0643 | 1.9672 | 运行中，历史对照 |
+| RNA-FM learned variance | 24/100 | 0.0908 | 1.8695 | 运行中，检查 uncertainty absorption |
+| RNA-FM fixed variance | 24/100 | 0.0592 | 1.8072 | 运行中，固定噪声对照 |
+| mRNABERT Huber | 14/100 | 0.1009 | 1.8918 | 运行中，当前主编码器 |
+| mRNABERT fixed variance | 0/100 | — | — | 等待 GPU 5 的 RNA-FM 前序完成 |
+| mRNABERT learned variance | 0/100 | — | — | 等待 GPU 3 的 RNA-FM 前序完成 |
 
-同信息最强已完成 baseline 的 task-macro Spearman 为 `0.131714`。表中只是运行中单个 epoch 的观察值，不是最终选择结果。三个 mRNABERT loss 尚未完成，所以 controls、final seeds、TEST、全量 refit 和 guided XEditFlow 均未启动。
+同信息最强已完成 baseline 的 task-macro Spearman 为 `0.131714`。表中只是运行中单个 epoch 的观察值，不是 best epoch 或最终选择结果。三个 mRNABERT loss 仍为 `0/3` 完成，所以 controls、final seeds、TEST、全量 refit、LOSO readiness 和 guided XEditFlow 均未启动。中央训练表当前登记 87 次尝试，其中 75 次已完成、3 次失败，其余为运行中或待完成状态；失败记录保留，不从表中删除。
 
-## 10. 低频查看进度
+## 10. Guidance readiness 与执行入口
+
+冻结 guidance policy：
+
+```text
+configs/route_a_v3_route2_mrnabert_guidance_reward_policy_v1.json
+```
+
+它只使用 standardized predicted mean；learned uncertainty 只做诊断，不进入 reward。在线 candidate encoder 的单次验证由下列低频调度器等待空闲 GPU 4 后执行：
+
+```bash
+nohup scripts/route_a_v3/schedule_route2_mrnabert_online_encoder_validation_v1.sh \
+  >/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/schedulers/mrnabert_online_encoder_validation_v1.log \
+  2>&1 </dev/null &
+```
+
+readiness 和 guided runner 分别为：
+
+```text
+scripts/route_a_v3/build_route2_mrnabert_guidance_readiness_input_v1.py
+scripts/route_a_v3/adjudicate_route2_readiness_v1.py
+scripts/route_a_v3/run_route2_guided_xeditflow_v1.py
+```
+
+guided runner 在 readiness 未全通过时会在读取 source manifest、base-flow checkpoint 和 critic checkpoint 之前停止；即使完成，它仍只代表 Development generation 完成，不代表 biological improvement，generated candidates 也不增加 canonical records。
+
+## 11. 低频查看进度
 
 运行中只在事件节点低频查看：
 
