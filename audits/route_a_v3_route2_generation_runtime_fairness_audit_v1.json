@@ -1,0 +1,24 @@
+{
+  "schema_version": "route_a_v3_route2_generation_runtime_fairness_audit.v1",
+  "status": "RUNTIME_FAIRNESS_REPAIR_IMPLEMENTED_NOT_RUN",
+  "finding": "PARALLEL_SHARED_GPU_EXECUTION_INVALIDATES_PER_METHOD_WALL_TIME_COMPARISON",
+  "affected_suite_output": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/audits/generation_search_baselines/matched_compute_seed20260816_v1/matched_generation_suite_final_summary_v1.json",
+  "affected_suite_scientific_role": "MATCHED_FORWARD_EQUIVALENT_QUALITY_ONLY",
+  "affected_suite_runtime_comparison_valid": false,
+  "reason": "Seven GPU methods were launched concurrently on one physical GPU and only stage-level wall time was retained.",
+  "required_repair": {
+    "gpu_stage_execution_mode": "SERIAL_SAME_GPU_RUNTIME_VALID",
+    "parallel_gpu_jobs_allowed": false,
+    "same_gpu_cohort_required": true,
+    "per_method_wall_time_required": true,
+    "per_method_peak_vram_required": true,
+    "quality_selector_changed": false
+  },
+  "runtime_valid_protocol": "configs/route_a_v3_route2_generation_matched_runtime_valid_protocol_v1.json",
+  "runtime_valid_evaluator_jobs": "configs/route_a_v3_route2_generation_runtime_valid_evaluator_jobs_gpu6_v1.json",
+  "runtime_valid_flow_config": "configs/route_a_v3_route2_base_flow_g0_matched_runtime_valid_seed20260816_gpu6_v1.json",
+  "runtime_valid_output": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/audits/generation_search_baselines/matched_runtime_valid_seed20260816_v1/matched_generation_suite_final_summary_v1.json",
+  "evaluation_outcomes_accessed": false,
+  "guided_xeditflow_run": false,
+  "scientific_claim_status": "NOT_ESTABLISHED"
+}

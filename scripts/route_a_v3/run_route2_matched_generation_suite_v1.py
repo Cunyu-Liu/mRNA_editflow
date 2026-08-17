@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import subprocess
 import sys
 import time
@@ -20,6 +21,8 @@ EVALUATE_SCRIPT = REPO_ROOT / "scripts" / "route_a_v3" / "evaluate_route2_genera
 COMPOSE_SCRIPT = REPO_ROOT / "scripts" / "route_a_v3" / "build_route2_generation_baseline_selection_input_v2.py"
 SELECT_SCRIPT = REPO_ROOT / "scripts" / "route_a_v3" / "select_route2_strongest_generation_baseline_v1.py"
 UNGUIDED_METHOD = "unguided_learned_base_flow_g0"
+PARALLEL_QUALITY_ONLY = "PARALLEL_SHARED_GPU_QUALITY_ONLY"
+SERIAL_RUNTIME_VALID = "SERIAL_SAME_GPU_RUNTIME_VALID"
 
 
 class MatchedGenerationSuiteError(RuntimeError):
@@ -71,6 +74,23 @@ def validate_suite_inputs(
         protocol.get("independent_evaluator_must_be_frozen_before_candidate_generation") is True,
         "independent evaluator is not required to be pre-frozen",
     )
+    execution_mode = str(protocol.get("gpu_stage_execution_mode", PARALLEL_QUALITY_ONLY))
+    _require(
+        execution_mode in {PARALLEL_QUALITY_ONLY, SERIAL_RUNTIME_VALID},
+        "unknown GPU-stage execution mode",
+    )
+    runtime_comparison_valid = execution_mode == SERIAL_RUNTIME_VALID
+    if runtime_comparison_valid:
+        _require(protocol.get("same_gpu_cohort_required") is True, "runtime comparison does not require one GPU cohort")
+        _require(protocol.get("parallel_gpu_jobs_allowed") is False, "runtime-valid suite permits concurrent GPU jobs")
+        _require(protocol.get("runtime_comparison_allowed") is True, "runtime comparison is not authorized")
+        _require(protocol.get("per_method_wall_time_required") is True, "per-method wall time is not required")
+        _require(protocol.get("per_method_peak_vram_required") is True, "per-method peak VRAM is not required")
+    else:
+        _require(
+            protocol.get("runtime_comparison_allowed", False) is False,
+            "parallel shared-GPU execution cannot authorize runtime comparison",
+        )
 
     required_methods = [str(value) for value in protocol["required_method_ids"]]
     job_by_method = {str(row["method_id"]): dict(row) for row in jobs["jobs"]}
@@ -107,11 +127,14 @@ def validate_suite_inputs(
         flow_config.get("source_eligibility_manifest") == shared_bindings["source_manifest_path"],
         "Flow G0 source manifest differs",
     )
+    _require(int(flow_config.get("seed")) == int(protocol["seed"]), "Flow G0 seed differs")
 
     return {
         "required_methods": required_methods,
         "job_by_method": job_by_method,
         "shared_bindings": shared_bindings,
+        "gpu_stage_execution_mode": execution_mode,
+        "runtime_comparison_valid": runtime_comparison_valid,
     }
 
 
@@ -272,6 +295,8 @@ def run_parallel_stage(
                 "return_code": return_code,
                 "stdout_path": str(stdout_path),
                 "stderr_path": str(stderr_path),
+                "wall_time_seconds": None,
+                "runtime_measurement_valid": False,
             }
         )
     print(
@@ -287,6 +312,140 @@ def run_parallel_stage(
     )
     _require(all(result["return_code"] == 0 for result in results), f"stage failed: {stage_name}")
     return results
+
+
+def run_serial_stage(
+    stage_name: str,
+    specs: Sequence[Mapping[str, Any]],
+    log_directory: Path,
+) -> list[dict[str, Any]]:
+    """Run GPU jobs one at a time so per-method wall time is interpretable."""
+    log_directory.mkdir(parents=True, exist_ok=True)
+    stage_started = time.time()
+    results = []
+    print(
+        json.dumps(
+            {
+                "event": "STAGE_STARTED",
+                "stage": stage_name,
+                "job_count": len(specs),
+                "execution_mode": SERIAL_RUNTIME_VALID,
+            }
+        ),
+        flush=True,
+    )
+    for spec in specs:
+        stdout_path = log_directory / f"{stage_name}.{spec['name']}.stdout.log"
+        stderr_path = log_directory / f"{stage_name}.{spec['name']}.stderr.log"
+        job_started = time.time()
+        with stdout_path.open("w", encoding="utf-8") as stdout_handle, stderr_path.open(
+            "w", encoding="utf-8"
+        ) as stderr_handle:
+            process = subprocess.run(
+                list(spec["command"]),
+                cwd=REPO_ROOT,
+                stdout=stdout_handle,
+                stderr=stderr_handle,
+                text=True,
+                check=False,
+            )
+        result = {
+            "name": str(spec["name"]),
+            "return_code": process.returncode,
+            "stdout_path": str(stdout_path),
+            "stderr_path": str(stderr_path),
+            "wall_time_seconds": time.time() - job_started,
+            "runtime_measurement_valid": True,
+        }
+        results.append(result)
+        _require(process.returncode == 0, f"stage failed: {stage_name}/{spec['name']}")
+    print(
+        json.dumps(
+            {
+                "event": "STAGE_COMPLETED",
+                "stage": stage_name,
+                "execution_mode": SERIAL_RUNTIME_VALID,
+                "wall_time_seconds": time.time() - stage_started,
+                "return_codes": {result["name"]: result["return_code"] for result in results},
+            }
+        ),
+        flush=True,
+    )
+    return results
+
+
+def _finite_nonnegative(value: Any, label: str) -> float:
+    _require(isinstance(value, (int, float)) and not isinstance(value, bool), f"{label} is not numeric")
+    result = float(value)
+    _require(math.isfinite(result) and result >= 0.0, f"{label} is not finite/nonnegative")
+    return result
+
+
+def build_method_runtime_summary(
+    protocol: Mapping[str, Any],
+    flow_config: Mapping[str, Any],
+    suite: Mapping[str, Any],
+    stage_results: Mapping[str, Sequence[Mapping[str, Any]]],
+) -> dict[str, Any]:
+    if not suite["runtime_comparison_valid"]:
+        return {
+            "gpu_stage_execution_mode": suite["gpu_stage_execution_mode"],
+            "runtime_comparison_valid": False,
+            "runtime_invalid_reason": "GPU_METHODS_EXECUTED_CONCURRENTLY_ON_ONE_DEVICE",
+            "method_runtime": None,
+        }
+
+    candidate_results = {str(row["name"]): row for row in stage_results["candidate_generation"]}
+    scoring_results = {str(row["name"]): row for row in stage_results["independent_evaluator_scoring"]}
+    _require(set(candidate_results) == set(suite["required_methods"]), "candidate runtime coverage differs")
+    _require(set(scoring_results) == set(suite["required_methods"]), "scoring runtime coverage differs")
+    evaluation_root = Path(str(protocol["independent_evaluation_output_root"]))
+    method_runtime: dict[str, dict[str, float]] = {}
+    for method_id in suite["required_methods"]:
+        candidate_result = candidate_results[method_id]
+        scoring_result = scoring_results[method_id]
+        _require(candidate_result.get("runtime_measurement_valid") is True, f"candidate runtime is invalid: {method_id}")
+        _require(scoring_result.get("runtime_measurement_valid") is True, f"scoring runtime is invalid: {method_id}")
+        candidate_wall = _finite_nonnegative(
+            candidate_result.get("wall_time_seconds"), f"candidate wall time: {method_id}"
+        )
+        scoring_wall = _finite_nonnegative(
+            scoring_result.get("wall_time_seconds"), f"scoring wall time: {method_id}"
+        )
+        evaluation = _read(evaluation_root / f"{method_id}_evaluation_v2.json")
+        per_source = evaluation["generation"]["per_source"]
+        candidate_peaks = [
+            _finite_nonnegative(row["peak_vram_mb"], f"candidate peak VRAM: {method_id}")
+            for row in per_source.values()
+            if row.get("peak_vram_mb") is not None
+        ]
+        if method_id == UNGUIDED_METHOD:
+            flow_summary = _read(Path(str(flow_config["output_directory"])) / "final_summary.json")
+            candidate_peak = _finite_nonnegative(
+                flow_summary.get("peak_vram_mb"), f"Flow candidate peak VRAM: {method_id}"
+            )
+        else:
+            _require(candidate_peaks, f"candidate peak VRAM is absent: {method_id}")
+            candidate_peak = max(candidate_peaks)
+        scored_output = Path(str(suite["job_by_method"][method_id]["output_path"]))
+        scoring_summary = _read(scored_output.with_suffix(scored_output.suffix + ".summary.json"))
+        scoring_peak = _finite_nonnegative(
+            scoring_summary.get("peak_vram_mb"), f"scoring peak VRAM: {method_id}"
+        )
+        method_runtime[method_id] = {
+            "candidate_generation_wall_time_seconds": candidate_wall,
+            "candidate_generation_peak_vram_mb": candidate_peak,
+            "independent_evaluator_scoring_wall_time_seconds": scoring_wall,
+            "independent_evaluator_scoring_peak_vram_mb": scoring_peak,
+            "total_serial_gpu_wall_time_seconds": candidate_wall + scoring_wall,
+            "peak_vram_mb": max(candidate_peak, scoring_peak),
+        }
+    return {
+        "gpu_stage_execution_mode": suite["gpu_stage_execution_mode"],
+        "runtime_comparison_valid": True,
+        "runtime_invalid_reason": None,
+        "method_runtime": method_runtime,
+    }
 
 
 def run_serial_command(name: str, command: Sequence[str], log_directory: Path) -> dict[str, Any]:
@@ -315,14 +474,15 @@ def execute(
     strongest_path = evaluation_root / "strongest_generation_baseline_v2.json"
     stage_results: dict[str, Any] = {}
     started = time.time()
+    gpu_stage_runner = run_serial_stage if suite["runtime_comparison_valid"] else run_parallel_stage
 
     try:
-        stage_results["candidate_generation"] = run_parallel_stage(
+        stage_results["candidate_generation"] = gpu_stage_runner(
             "candidate_generation",
             build_generation_commands(protocol, flow_config_path, suite),
             log_directory,
         )
-        stage_results["independent_evaluator_scoring"] = run_parallel_stage(
+        stage_results["independent_evaluator_scoring"] = gpu_stage_runner(
             "independent_evaluator_scoring",
             build_scoring_configs(jobs, suite, scoring_config_directory),
             log_directory,
@@ -359,6 +519,12 @@ def execute(
             log_directory,
         )
         strongest = _read(strongest_path)
+        runtime_summary = build_method_runtime_summary(
+            protocol,
+            flow_config,
+            suite,
+            stage_results,
+        )
         summary = {
             "schema_version": "route_a_v3_route2_matched_generation_suite.v1",
             "status": "MATCHED_GENERATION_BASELINE_SUITE_COMPLETED",
@@ -380,6 +546,7 @@ def execute(
             "stage_results": stage_results,
             "wall_time_seconds": time.time() - started,
             "scientific_claim_status": "INDEPENDENT_EVALUATOR_ONLY_MEASURED_OUTCOME_NOT_ESTABLISHED",
+            **runtime_summary,
         }
     except Exception as exc:
         summary = {
