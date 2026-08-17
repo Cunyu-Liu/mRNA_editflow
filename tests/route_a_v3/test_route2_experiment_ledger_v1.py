@@ -47,6 +47,14 @@ def _config(tmp_path: Path) -> dict:
         "seed": 17,
         "physical_gpu_index": 6,
         "device": "cuda:6",
+        "optimizer_name": "AdamW",
+        "training_precision": "FP32",
+        "encoder_attention_backend": "OFFICIAL_PYTORCH_FALLBACK",
+        "pretrained_position_encoding": "ALIBI_RELATIVE_BIAS",
+        "critic_position_features": "NORMALIZED_ABSOLUTE_PLUS_EDIT_GATED",
+        "num_workers": 0,
+        "pin_memory": False,
+        "torch_compile": False,
         "expected_trainable_parameter_count": 9_000_000,
         "expected_frozen_pretrained_parameter_count": 113_000_000,
         "output_directory": str(tmp_path / "run"),
@@ -98,6 +106,8 @@ def test_training_attempt_upsert_preserves_start_and_adds_final_metrics(tmp_path
     assert rows[0]["train_record_count"] == "90"
     assert rows[0]["optimizer_steps"] == "560"
     assert rows[0]["validation_spearman"] == "0.21"
+    assert rows[0]["pretrained_position_encoding"] == "ALIBI_RELATIVE_BIAS"
+    assert rows[0]["encoder_attention_backend"] == "OFFICIAL_PYTORCH_FALLBACK"
     assert json.loads(run_record.read_text())["status"] == "COMPLETED"
 
 

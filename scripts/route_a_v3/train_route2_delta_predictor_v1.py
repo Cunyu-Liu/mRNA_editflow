@@ -140,6 +140,7 @@ class FrozenPretrainedPairFeatures:
         self.width = int(self.source.shape[1])
         self.pretrained_parameter_count = int(payload["pretrained_parameter_count"])
         self.model_id = str(payload["model_id"])
+        self.attention_backend = str(payload.get("attention_backend", "UNKNOWN"))
 
     def pair(self, record_id: str) -> tuple[torch.Tensor, torch.Tensor]:
         index = self.index[record_id]
@@ -1126,6 +1127,15 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
         },
         "unknown training update mode",
     )
+    _require(config.get("optimizer_name", "AdamW") == "AdamW", "only AdamW is implemented")
+    _require(config.get("training_precision", "FP32") == "FP32", "only FP32 critic training is implemented")
+    _require(not bool(config.get("pin_memory", False)), "pin_memory is recorded but not implemented")
+    _require(not bool(config.get("torch_compile", False)), "torch_compile is recorded but not implemented")
+    if pretrained_features is not None and config.get("encoder_attention_backend"):
+        _require(
+            str(config["encoder_attention_backend"]) == pretrained_features.attention_backend,
+            "configured encoder attention backend differs from the frozen feature cache",
+        )
     sampler_class = SourceGroupBatchSampler if "pairwise" in loss_kind or "listwise" in loss_kind else LengthBucketBatchSampler
     samplers = {
         split: sampler_class(by_split[split], int(config["batch_size"]), int(config["seed"]), split == "TRAIN")
@@ -1471,6 +1481,18 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
         "loso_excluded_connected_other_study_record_count": excluded_bridge_count,
         "physical_gpu_index": int(config["physical_gpu_index"]),
         "device": str(device),
+        "optimizer_name": str(config.get("optimizer_name", "AdamW")),
+        "training_precision": str(config.get("training_precision", "FP32")),
+        "encoder_attention_backend": (
+            pretrained_features.attention_backend
+            if pretrained_features is not None
+            else None
+        ),
+        "pretrained_position_encoding": config.get("pretrained_position_encoding"),
+        "critic_position_features": config.get("critic_position_features"),
+        "num_workers": int(config.get("num_workers", 0)),
+        "pin_memory": bool(config.get("pin_memory", False)),
+        "torch_compile": bool(config.get("torch_compile", False)),
         "cpu_fallback_used": False,
         "cuda_training_tensors_verified": cuda_training_tensors_verified,
         "parameter_count": parameter_count,
