@@ -24,6 +24,8 @@ FROZEN_TEST_CONFIG="${RUNTIME_CONFIG_ROOT}/selected_loss_frozen_development_test
 FROZEN_TEST_RUN="${RUN_ROOT}/selected_loss_frozen_development_test_seed20260823_gpu0_v1"
 FINAL_REFIT_CONFIG="${RUNTIME_CONFIG_ROOT}/selected_loss_all126165_seed20260823_gpu0_v1.json"
 FINAL_REFIT_RUN="${RUN_ROOT}/selected_loss_all126165_seed20260823_gpu0_v1"
+LOSO_CONFIG_DIR="${RUNTIME_CONFIG_ROOT}/test_preserving_loso_v1"
+LOSO_RUN_ROOT="${RUN_ROOT}/test_preserving_loso_v1"
 
 summaries=(
   "${HUBER_DIR}/training_summary.json"
@@ -204,3 +206,42 @@ printf '%s starting_final_all126165_refit loss=%s seed=20260823 gpu=0\n' \
   --config "${FINAL_REFIT_CONFIG}" \
   >"${ROUTE2_ROOT}/mrnabert_final_all126165_seed20260823_gpu0_v1.log" 2>&1
 printf '%s final_all126165_refit_finished\n' "$(date -Is)"
+
+"${PYTHON}" scripts/route_a_v3/prepare_route2_mrnabert_test_preserving_loso_configs_v1.py \
+  --selected-config "${selected_config}" \
+  --three-seed-adjudication "${THREE_SEED_ADJUDICATION}" \
+  --output-config-dir "${LOSO_CONFIG_DIR}" \
+  --run-root "${LOSO_RUN_ROOT}"
+
+loso_studies=(
+  GSE200304 GSE114002 GSE149487 GSE217518 ENCSR854RUF GSE186455 GSE269595
+)
+for study in "${loso_studies[@]}"; do
+  study_label=$(printf '%s' "${study}" | tr '[:upper:]-' '[:lower:]_')
+  loso_pids=()
+  for seed_gpu in "20260822:0" "20260823:3" "20260824:5"; do
+    seed=${seed_gpu%%:*}
+    gpu=${seed_gpu##*:}
+    config="${LOSO_CONFIG_DIR}/mrnabert_${selected_loss}_loso_${study_label}_seed${seed}.json"
+    log="${ROUTE2_ROOT}/mrnabert_loso_${study_label}_seed${seed}_gpu${gpu}_v1.log"
+    "${PYTHON}" -u scripts/route_a_v3/train_route2_delta_predictor_v1.py \
+      --config "${config}" >"${log}" 2>&1 &
+    loso_pids+=("$!")
+  done
+  loso_failure=0
+  set +e
+  for pid in "${loso_pids[@]}"; do
+    wait "${pid}"
+    status=$?
+    if [[ "${status}" -ne 0 ]]; then
+      loso_failure=1
+    fi
+  done
+  set -e
+  printf '%s test_preserving_loso_finished study=%s failure=%s\n' \
+    "$(date -Is)" "${study}" "${loso_failure}"
+  if [[ "${loso_failure}" -ne 0 ]]; then
+    exit 1
+  fi
+done
+printf '%s all_test_preserving_loso_runs_finished test_remained_excluded=true\n' "$(date -Is)"
