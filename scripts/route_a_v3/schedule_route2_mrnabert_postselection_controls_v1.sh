@@ -30,6 +30,11 @@ BASELINE_LOSO_CONFIG_DIR="${RUNTIME_CONFIG_ROOT}/global_scaled_test_preserving_l
 BASELINE_LOSO_RUN_ROOT="${RUN_ROOT}/global_scaled_test_preserving_loso_v1"
 LOSO_AGGREGATION_INPUT_DIR="${ROUTE2_ROOT}/comparisons/mrnabert_test_preserving_loso_inputs_v1"
 LOSO_AGGREGATION_DIR="${ROUTE2_ROOT}/comparisons/mrnabert_test_preserving_loso_v1"
+FLOW_V2_TRAINING_SUMMARY="${ROUTE2_ROOT}/runs/base_flow_g0/position_progress_gpu_v2/training_summary.json"
+FLOW_V2_VALIDATION_SUMMARY="${ROUTE2_ROOT}/runs/base_flow_g0/position_progress_validation_gpu_v2/validation_summary.json"
+ONLINE_ENCODER_VALIDATION="${ROUTE2_ROOT}/runs/mrnabert_online_encoder_validation_v1/validation_summary.json"
+READINESS_INPUT="${ROUTE2_ROOT}/comparisons/mrnabert_guidance_readiness_input_v1.json"
+READINESS_ADJUDICATION="${ROUTE2_ROOT}/comparisons/mrnabert_guidance_readiness_adjudication_v1.json"
 
 summaries=(
   "${HUBER_DIR}/training_summary.json"
@@ -303,3 +308,37 @@ for seed in 20260822 20260823 20260824; do
     --output "${LOSO_AGGREGATION_DIR}/test_preserving_loso_seed${seed}.json"
 done
 printf '%s three_test_preserving_loso_aggregations_finished\n' "$(date -Is)"
+
+while [[ ! -f "${FLOW_V2_TRAINING_SUMMARY}" \
+  || ! -f "${FLOW_V2_VALIDATION_SUMMARY}" \
+  || ! -f "${ONLINE_ENCODER_VALIDATION}" ]]; do
+  printf '%s waiting_for_flow_v2_and_online_encoder_validation\n' "$(date -Is)"
+  sleep "${POLL_SECONDS}"
+done
+
+"${PYTHON}" scripts/route_a_v3/build_route2_mrnabert_guidance_readiness_input_v1.py \
+  --validation-training-summary "${FINAL_RUN_ROOT}/seed20260823_gpu3_${selected_loss}_v1/training_summary.json" \
+  --final-refit-summary "${FINAL_REFIT_RUN}/training_summary.json" \
+  --final-refit-checkpoint "${FINAL_REFIT_RUN}/delta_predictor_checkpoint.pt" \
+  --signal-adjudication "${CONTROL_ADJUDICATION}" \
+  --loso-result "${LOSO_AGGREGATION_DIR}/test_preserving_loso_seed20260822.json" \
+  --loso-result "${LOSO_AGGREGATION_DIR}/test_preserving_loso_seed20260823.json" \
+  --loso-result "${LOSO_AGGREGATION_DIR}/test_preserving_loso_seed20260824.json" \
+  --flow-training-summary "${FLOW_V2_TRAINING_SUMMARY}" \
+  --flow-validation-summary "${FLOW_V2_VALIDATION_SUMMARY}" \
+  --reward-policy configs/route_a_v3_route2_mrnabert_guidance_reward_policy_v1.json \
+  --online-encoder-validation "${ONLINE_ENCODER_VALIDATION}" \
+  --output "${READINESS_INPUT}"
+
+"${PYTHON}" scripts/route_a_v3/adjudicate_route2_readiness_v1.py \
+  --input "${READINESS_INPUT}" \
+  --output "${READINESS_ADJUDICATION}"
+
+guided_unlocked=$("${PYTHON}" -c \
+  'import json,sys; print(str(json.load(open(sys.argv[1]))["guided_unlocked"]).lower())' \
+  "${READINESS_ADJUDICATION}")
+if [[ "${guided_unlocked}" != "true" ]]; then
+  printf '%s readiness_stop_before_guided_xeditflow\n' "$(date -Is)"
+  exit 0
+fi
+printf '%s critic_and_flow_ready_guided_runner_is_separate_next_step\n' "$(date -Is)"
