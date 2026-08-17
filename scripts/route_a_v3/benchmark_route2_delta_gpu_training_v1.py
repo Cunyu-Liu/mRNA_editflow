@@ -251,6 +251,29 @@ def run_profile_or_record_oom(*args, **kwargs) -> dict[str, Any]:
             "scientific_metrics_computed": False,
             "evaluation_pool_records_read": 0,
         }
+    except RuntimeError as exc:
+        torch.cuda.empty_cache()
+        properties = torch.cuda.get_device_properties(device)
+        return {
+            "status": "BACKEND_RUNTIME_UNSUPPORTED",
+            "profile_id": str(profile["profile_id"]),
+            "batch_size": int(profile["batch_size"]),
+            "training_precision": str(profile["training_precision"]),
+            "fused_adamw": bool(profile.get("fused_adamw", False)),
+            "num_workers": int(profile.get("num_workers", 0)),
+            "pin_memory": bool(profile.get("pin_memory", False)),
+            "non_blocking_transfer": bool(
+                profile.get("non_blocking_transfer", False)
+            ),
+            "device_name": properties.name,
+            "device_total_memory_gib": properties.total_memory / (1024 ** 3),
+            "error_type": type(exc).__name__,
+            "error": str(exc).splitlines()[0],
+            "temporary_parameter_updates": 0,
+            "checkpoint_saved": False,
+            "scientific_metrics_computed": False,
+            "evaluation_pool_records_read": 0,
+        }
 
 
 def precision_probe(
@@ -355,8 +378,10 @@ def main() -> int:
         validation_count,
         withheld_count,
     ) = prepare(training_config)
-    profiles = [
-        run_profile_or_record_oom(
+    profiles = []
+    partial_results_path = output_dir / "profile_results.jsonl"
+    for profile in benchmark["profiles"]:
+        result = run_profile_or_record_oom(
             dataset,
             train_records,
             model_config,
@@ -366,16 +391,27 @@ def main() -> int:
             int(benchmark["warmup_steps"]),
             int(benchmark["measured_steps"]),
         )
-        for profile in benchmark["profiles"]
-    ]
-    precision_comparison = precision_probe(
-        dataset,
-        train_records,
-        model_config,
-        training_config,
-        benchmark,
-        device,
-    )
+        profiles.append(result)
+        with partial_results_path.open("a", encoding="utf-8") as handle:
+            handle.write(json.dumps(result, sort_keys=True) + "\n")
+    try:
+        precision_comparison = precision_probe(
+            dataset,
+            train_records,
+            model_config,
+            training_config,
+            benchmark,
+            device,
+        )
+        precision_comparison["status"] = "PASS"
+    except RuntimeError as exc:
+        torch.cuda.empty_cache()
+        precision_comparison = {
+            "status": "BACKEND_RUNTIME_UNSUPPORTED",
+            "precision_tolerance_pass": False,
+            "error_type": type(exc).__name__,
+            "error": str(exc).splitlines()[0],
+        }
     payload = {
         "schema_version": "route_a_v3_route2_gpu_training_benchmark.v1",
         "status": (
