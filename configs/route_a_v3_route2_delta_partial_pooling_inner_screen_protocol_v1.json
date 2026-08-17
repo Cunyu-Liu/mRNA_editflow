@@ -1,0 +1,46 @@
+{
+  "schema_version": "route_a_v3_route2_delta_partial_pooling_inner_screen_protocol.v1",
+  "status": "FROZEN_BEFORE_TRAIN_INNER_OUTCOMES",
+  "scientific_hypothesis": "A_ZERO_INITIALIZED_ENDPOINT_REGION_RESIDUAL_REDUCES_NEGATIVE_TRANSFER_RELATIVE_TO_THE_SHARED_0_08M_DELTA",
+  "single_changed_model_factor": "endpoint_region_residual",
+  "shared_arm_config": "configs/route_a_v3_route2_delta_partial_pooling_inner_shared_seed20260816_gpu6_v1.json",
+  "residual_arm_config": "configs/route_a_v3_route2_delta_partial_pooling_inner_residual_seed20260816_gpu6_v1.json",
+  "expected_result_stage": "TRAIN_INNER_VALIDATION_ONLY",
+  "expected_inner_split_id": "PARTIAL_POOLING_INNER_SEED20260816_V1",
+  "expected_record_counts": {
+    "TRAIN": 63332,
+    "VALIDATION": 13126
+  },
+  "expected_inner_test_record_count_withheld": 13122,
+  "expected_parent_development_validation_record_count_excluded": 18293,
+  "expected_parent_development_test_record_count_excluded": 18292,
+  "expected_task_count": 7,
+  "expected_seed": 20260816,
+  "expected_final_epoch": 8,
+  "expected_physical_gpu_index": 6,
+  "expected_parameter_counts": {
+    "shared": 80099,
+    "residual": 81009
+  },
+  "material_gain_rule": {
+    "minimum_task_macro_spearman_gain_inclusive": 0.01,
+    "minimum_tasks_with_strict_spearman_improvement": 4,
+    "maximum_task_macro_standardized_mae_ratio_inclusive": 1.02
+  },
+  "parent_development_validation_outcomes_accessed": false,
+  "parent_development_test_outcomes_accessed": false,
+  "inner_test_outcomes_accessed": false,
+  "evaluation_outcomes_accessed": false,
+  "pass_authorizes": [
+    "FREEZE_THREE_SEED_TRAIN_INNER_TEST_CONFIRMATION"
+  ],
+  "pass_does_not_authorize": [
+    "FORMAL_DEVELOPMENT_VALIDATION",
+    "FORMAL_DEVELOPMENT_TEST",
+    "EVALUATION",
+    "CRITIC_READY_FOR_GUIDANCE",
+    "GUIDED_XEDITFLOW",
+    "PUBLICATION_SUCCESS_CLAIM"
+  ],
+  "output_adjudication": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/method_repair_v3/partial_pooling_inner_screen_seed20260816/inner_validation_adjudication_v1.json"
+}

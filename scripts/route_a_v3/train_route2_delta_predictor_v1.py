@@ -49,6 +49,7 @@ TRAINING_UPDATE_STANDARD = "STANDARD"
 TRAINING_UPDATE_TASK_GRADIENT_NORM_CALIBRATED = (
     "TRAIN_TASK_GRADIENT_NORM_CALIBRATED"
 )
+TRAIN_INNER_VALIDATION_ONLY = "TRAIN_INNER_VALIDATION_ONLY"
 SHARED_EFFECT_EXCLUDED_PREFIXES = (
     "study.",
     "assay.",
@@ -305,6 +306,7 @@ def fixed_split_records(
             "HPO_VALIDATION_ONLY",
             "FROZEN_DEVELOPMENT_VALIDATION",
             "FROZEN_DEVELOPMENT_TEST",
+            TRAIN_INNER_VALIDATION_ONLY,
         },
         f"invalid result_stage for fixed split: {result_stage}",
     )
@@ -313,9 +315,58 @@ def fixed_split_records(
         for split in ("TRAIN", "VALIDATION", "TEST")
     }
     _require(all(complete.values()), "Development split is incomplete")
-    if result_stage in {"HPO_VALIDATION_ONLY", "FROZEN_DEVELOPMENT_VALIDATION"}:
+    if result_stage in {
+        "HPO_VALIDATION_ONLY",
+        "FROZEN_DEVELOPMENT_VALIDATION",
+        TRAIN_INNER_VALIDATION_ONLY,
+    }:
         return {split: complete[split] for split in ("TRAIN", "VALIDATION")}, len(complete["TEST"])
     return {"TRAIN": complete["TRAIN"] + complete["VALIDATION"], "TEST": complete["TEST"]}, 0
+
+
+def train_inner_stage_provenance(config: Mapping[str, Any]) -> dict[str, Any]:
+    """Validate and report that an inner run uses parent TRAIN outcomes only."""
+    if str(config.get("result_stage", "")) != TRAIN_INNER_VALIDATION_ONLY:
+        return {}
+    _require(
+        config.get("scientific_role")
+        == "TRAIN_ONLY_PARTIAL_POOLING_MODEL_SELECTION",
+        "TRAIN-inner scientific role changed",
+    )
+    _require(bool(config.get("inner_split_id")), "TRAIN-inner split id is empty")
+    for key in (
+        "parent_development_validation_outcomes_accessed",
+        "parent_development_test_outcomes_accessed",
+        "inner_test_outcomes_accessed",
+        "evaluation_outcomes_accessed",
+    ):
+        _require(config.get(key) is False, f"forbidden TRAIN-inner outcome access: {key}")
+    parent_validation_count = config.get(
+        "parent_development_validation_record_count_excluded"
+    )
+    parent_test_count = config.get("parent_development_test_record_count_excluded")
+    _require(
+        isinstance(parent_validation_count, int)
+        and not isinstance(parent_validation_count, bool)
+        and parent_validation_count > 0,
+        "invalid excluded parent Development Validation count",
+    )
+    _require(
+        isinstance(parent_test_count, int)
+        and not isinstance(parent_test_count, bool)
+        and parent_test_count > 0,
+        "invalid excluded parent Development Test count",
+    )
+    return {
+        "inner_split_id": str(config["inner_split_id"]),
+        "source_parent_split": "TRAIN",
+        "parent_development_validation_outcomes_accessed": False,
+        "parent_development_test_outcomes_accessed": False,
+        "parent_development_validation_record_count_excluded": parent_validation_count,
+        "parent_development_test_record_count_excluded": parent_test_count,
+        "inner_validation_outcomes_evaluated": True,
+        "inner_test_outcomes_evaluated": False,
+    }
 
 
 class LengthBucketBatchSampler(Sampler[list[int]]):
@@ -853,6 +904,7 @@ def predict(model, loader, device):
 
 def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
     _require(not output_dir.exists(), f"output already exists: {output_dir}")
+    inner_stage_provenance = train_inner_stage_provenance(config)
     device = require_cuda(str(config["device"]), int(config["physical_gpu_index"]))
     baseline_id = str(config["baseline_id"])
     _require(bool(baseline_id), "baseline identity is empty")
@@ -1244,9 +1296,20 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
     else:
         test_rows, test_metrics = [], None
     parameter_count = sum(parameter.numel() for parameter in model.parameters())
+    is_train_inner_stage = result_stage == TRAIN_INNER_VALIDATION_ONLY
+    reported_development_test_record_count_withheld = (
+        int(config["parent_development_test_record_count_excluded"])
+        if is_train_inner_stage
+        else development_test_record_count_withheld
+    )
     summary = {
         "schema_version": "route_a_v3_route2_delta_predictor_training.v1",
-        "status": "DELTA_PREDICTOR_DEVELOPMENT_GPU_RUN_COMPLETE",
+        "status": (
+            "DELTA_PREDICTOR_TRAIN_INNER_GPU_RUN_COMPLETE"
+            if is_train_inner_stage
+            else "DELTA_PREDICTOR_DEVELOPMENT_GPU_RUN_COMPLETE"
+        ),
+        "scientific_role": config.get("scientific_role"),
         "seed": int(config["seed"]),
         "baseline_id": baseline_id,
         "model_kind": model_kind,
@@ -1273,7 +1336,15 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
         "final_training_epoch": int(config["epochs"]),
         "result_stage": result_stage,
         "development_test_outcomes_evaluated": result_stage == "FROZEN_DEVELOPMENT_TEST",
-        "development_test_record_count_withheld": development_test_record_count_withheld,
+        "development_validation_outcomes_evaluated": (
+            not is_train_inner_stage
+            and result_stage
+            in {"HPO_VALIDATION_ONLY", "FROZEN_DEVELOPMENT_VALIDATION"}
+        ),
+        "development_test_record_count_withheld": reported_development_test_record_count_withheld,
+        "inner_test_record_count_withheld": (
+            development_test_record_count_withheld if is_train_inner_stage else 0
+        ),
         "development_validation_folded_into_training": result_stage == "FROZEN_DEVELOPMENT_TEST",
         "loso_holdout_study_unit_id": loso_holdout,
         "loso_excluded_connected_other_study_record_count": excluded_bridge_count,
@@ -1313,6 +1384,7 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
         "training_weight_unit": weighting_mode,
         "evaluation_outcomes_read": 0,
         "scientific_claim_status": "NOT_ESTABLISHED",
+        **inner_stage_provenance,
     }
     selected_checkpoint = dict(selected_checkpoint)
     selected_provenance = dict(selected_checkpoint["training_provenance"])

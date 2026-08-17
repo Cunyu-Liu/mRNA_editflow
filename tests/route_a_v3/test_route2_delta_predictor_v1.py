@@ -191,6 +191,44 @@ def test_endpoint_region_residual_starts_shared_and_preserves_exact_constraints(
     )
 
 
+def test_train_inner_stage_is_distinct_from_development_validation() -> None:
+    trainer = _load(TRAIN_PATH, "route2_delta_train_inner_stage_test")
+    records = [
+        trainer.DeltaRecord(
+            f"record-{split}", split, "A", "C", 1.0, f"group-{split}",
+            "study", "assay", "context", "endpoint", 0,
+        )
+        for split in ("TRAIN", "VALIDATION", "TEST")
+    ]
+    by_split, withheld_inner_test_count = trainer.fixed_split_records(
+        records, trainer.TRAIN_INNER_VALIDATION_ONLY
+    )
+    assert set(by_split) == {"TRAIN", "VALIDATION"}
+    assert withheld_inner_test_count == 1
+
+    config = {
+        "result_stage": trainer.TRAIN_INNER_VALIDATION_ONLY,
+        "scientific_role": "TRAIN_ONLY_PARTIAL_POOLING_MODEL_SELECTION",
+        "inner_split_id": "INNER_V1",
+        "parent_development_validation_outcomes_accessed": False,
+        "parent_development_test_outcomes_accessed": False,
+        "inner_test_outcomes_accessed": False,
+        "evaluation_outcomes_accessed": False,
+        "parent_development_validation_record_count_excluded": 11,
+        "parent_development_test_record_count_excluded": 13,
+    }
+    provenance = trainer.train_inner_stage_provenance(config)
+    assert provenance["source_parent_split"] == "TRAIN"
+    assert provenance["parent_development_validation_record_count_excluded"] == 11
+    assert provenance["parent_development_test_record_count_excluded"] == 13
+    assert provenance["inner_validation_outcomes_evaluated"] is True
+    assert provenance["inner_test_outcomes_evaluated"] is False
+
+    config["parent_development_validation_outcomes_accessed"] = True
+    with pytest.raises(trainer.DeltaTrainingError):
+        trainer.train_inner_stage_provenance(config)
+
+
 def test_normalized_position_channels_are_length_relative_and_edit_gated() -> None:
     module = _load(MODEL_PATH, "route2_delta_model_position_channel_test")
     padding_mask = torch.tensor([
