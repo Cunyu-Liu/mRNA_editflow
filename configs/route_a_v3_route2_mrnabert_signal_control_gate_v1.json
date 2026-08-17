@@ -1,0 +1,37 @@
+{
+  "schema_version": "route_a_v3_route2_mrnabert_signal_control_gate.v1",
+  "status": "FROZEN_BEFORE_MRNABERT_TERMINAL_LOSS_AND_CONTROL_OUTCOMES",
+  "selection_pool": "DEVELOPMENT_VALIDATION_ONLY",
+  "required_task_count": 9,
+  "strongest_same_information_baseline": {
+    "baseline_id": "method_repair_global_scaled_seed20260821",
+    "model_kind": "delta_anchored_position_aware_antisymmetric",
+    "task_macro_spearman": 0.13171439492559175,
+    "task_macro_standardized_mae": 1.806657840788394,
+    "training_summary_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/method_repair_v1/exploratory/global_scaled_seed20260821_gpu0_v1/training_summary.json",
+    "development_test_used": false,
+    "evaluation_used": false
+  },
+  "full_model_requirements": {
+    "task_macro_spearman_improvement_over_strongest_baseline": ">0",
+    "task_median_spearman": ">0"
+  },
+  "source_only_control_requirements": {
+    "task_macro_spearman_margin": ">0",
+    "minimum_tasks_won": 5
+  },
+  "candidate_permutation_control_requirements": {
+    "eligible_task_rule": "PREEXISTING_TRAIN_CHANGED_CANDIDATE_SEQUENCE_FRACTION_AT_LEAST_0.5",
+    "eligible_tasks": [
+      "MEAN_RIBOSOME_LOAD::region=0",
+      "PROXIMAL_POLYA_SITE_USAGE_LOG2_ODDS::region=1"
+    ],
+    "minimum_eligible_task_wins": 2,
+    "eligible_task_mean_margin": ">0"
+  },
+  "next_step_if_pass": "THREE_FRESH_SEED_FROZEN_HYPERPARAMETER_CONFIRMATION",
+  "development_test_accessed": false,
+  "evaluation_outcomes_accessed": false,
+  "guided_generation_authorized": false,
+  "scientific_claim_status": "NOT_ESTABLISHED"
+}
