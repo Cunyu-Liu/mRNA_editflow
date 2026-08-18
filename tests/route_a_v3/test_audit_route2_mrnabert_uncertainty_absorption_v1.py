@@ -134,3 +134,23 @@ def test_audit_rejects_prediction_membership_drift(tmp_path: Path) -> None:
     write_jsonl(summaries[0].parent / "validation_predictions.jsonl", rows[:-1])
     with pytest.raises(module.UncertaintyAuditError, match="exactly cover"):
         module.audit(summaries, comparison)
+
+
+def test_audit_accepts_float32_metric_roundoff_but_rejects_material_drift(tmp_path: Path) -> None:
+    module = load_module()
+    summaries, comparison = create_inputs(tmp_path)
+    summary_path = summaries[0]
+    summary = json.loads(summary_path.read_text())
+    recorded = summary["validation_metrics"]["task_macro_standardized_mae"]
+    summary["validation_metrics"]["task_macro_standardized_mae"] = (
+        recorded + module.FLOAT32_METRIC_RECONSTRUCTION_ATOL / 2
+    )
+    summary_path.write_text(json.dumps(summary))
+    module.audit(summaries, comparison)
+
+    summary["validation_metrics"]["task_macro_standardized_mae"] = (
+        recorded + module.FLOAT32_METRIC_RECONSTRUCTION_ATOL * 2
+    )
+    summary_path.write_text(json.dumps(summary))
+    with pytest.raises(module.UncertaintyAuditError, match="standardized MAE"):
+        module.audit(summaries, comparison)

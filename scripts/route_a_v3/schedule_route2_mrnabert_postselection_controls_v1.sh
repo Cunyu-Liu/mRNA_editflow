@@ -61,11 +61,15 @@ while true; do
 done
 
 cd "${REPO_ROOT}"
-"${PYTHON}" scripts/route_a_v3/summarize_route2_mrnabert_loss_comparison_v1.py \
-  --summary "${summaries[0]}" \
-  --summary "${summaries[1]}" \
-  --summary "${summaries[2]}" \
-  --output "${COMPARISON}"
+if [[ ! -f "${COMPARISON}" ]]; then
+  "${PYTHON}" scripts/route_a_v3/summarize_route2_mrnabert_loss_comparison_v1.py \
+    --summary "${summaries[0]}" \
+    --summary "${summaries[1]}" \
+    --summary "${summaries[2]}" \
+    --output "${COMPARISON}"
+else
+  printf '%s reusing_completed_loss_comparison=%s\n' "$(date -Is)" "${COMPARISON}"
+fi
 
 "${PYTHON}" scripts/route_a_v3/audit_route2_mrnabert_uncertainty_absorption_v1.py \
   --summary "${summaries[0]}" \

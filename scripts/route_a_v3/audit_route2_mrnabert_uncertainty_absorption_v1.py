@@ -20,6 +20,13 @@ EXPECTED_LOSSES = {
     "learned_variance_gaussian_nll",
 }
 
+# Training metrics are accumulated from float32 tensors, while this audit
+# reconstructs scaled targets from JSON-serialized canonical values and scales.
+# The reconstruction is scientifically identical but can differ at float32
+# round-off.  This tolerance remains much smaller than any reported metric
+# precision and still rejects a material metric mismatch.
+FLOAT32_METRIC_RECONSTRUCTION_ATOL = 5e-7
+
 
 class UncertaintyAuditError(RuntimeError):
     pass
@@ -172,7 +179,8 @@ def summarize_run(
         "recomputed task-macro Spearman differs from training summary",
     )
     require(
-        abs(result["task_macro_standardized_mae"] - float(recorded["task_macro_standardized_mae"])) < 1e-9,
+        abs(result["task_macro_standardized_mae"] - float(recorded["task_macro_standardized_mae"]))
+        <= FLOAT32_METRIC_RECONSTRUCTION_ATOL,
         "recomputed standardized MAE differs from training summary",
     )
     return result, truth
