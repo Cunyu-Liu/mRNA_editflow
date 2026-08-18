@@ -69,8 +69,30 @@ python scripts/route_a_v3/sync_route2_training_attempt_ledger_v1.py \
 - 学习方差模型还报告 prediction spread、预测标准差与绝对残差的相关性，用于识别 uncertainty 是否吸收误差或伴随 mean collapse；这些诊断不改变上述选择规则。
 - loss 选定后才运行 candidate permutation 与 parameter-matched source-only controls；controls 通过后才进入三个 final seeds、一次冻结 Development TEST 和全 126,165 条最终 refit。
 
+## mRNABERT Huber 首轮终态（2026-08-18）
+
+Huber 主实验已经完成 100 epochs。该终态只使用冻结 TRAIN/VALIDATION，Development TEST 18,292 条仍未读取，Evaluation outcome 读取数为 0，科学 claim 仍为 `NOT_ESTABLISHED`。
+
+| 项目 | 终态 |
+|---|---:|
+| TRAIN / VALIDATION | 89,580 / 18,293 |
+| optimizer updates | 559,900 |
+| 选择的 checkpoint epoch | 44 |
+| VALIDATION global Spearman | 0.198122 |
+| VALIDATION task-macro Spearman | 0.149988 |
+| VALIDATION task-macro standardized MAE | 2.108870 |
+| prediction std / target std | 0.074666 |
+| 总 wall time | 39,616.45 秒（约 11.0 小时） |
+| 实际平均 epoch 时间 | 396.16 秒 |
+| 实际平均 optimizer-step 时间 | 70.76 ms |
+| TRAIN records / wall second | 226.12 |
+
+此前 batch16 BF16/fused 微基准为约 242.88 records/s，因此完整 100-epoch 训练达到了微基准吞吐的约 93%。这说明当前没有严重的 DataLoader 饥饿；主要成本来自 batch16 下每 epoch 5,599 次参数更新。batch32 微基准约 339.45 records/s，显示后续完整匹配 cohort 仍有约 1.5 倍吞吐潜力，但必须等待 workers 0/4/8、batch32/64 的真实完整数据管线比较后再采用。
+
+Huber 的 prediction spread 已从早期近乎常数输出改善到目标标准差的约 7.47%，但仍明显偏窄；它当前不能单独通过 critic guidance gate。最终 loss 选择继续等待同配置的 fixed-variance 与 learned-variance 终态，并检查学习方差是否仅吸收残差。
+
 ## 记录边界
 
 - `training_attempts.csv` 是 Excel 可直接打开的跨实验总表；每个 run 的 `training_config.json` 保存该次尝试的完整参数，避免总表为了可读性遗漏长配置。
 - attention benchmark、encoder 一致性验证等没有参数更新的工程实验保存独立报告，不冒充训练尝试。
-- 后续若要扩展中央表字段，应在当前长训练全部结束后升级，避免正在运行的旧进程以旧表头覆盖新表头；当前运行期间不修改中央 CSV schema。
+- 长训练可能跨越代码更新。写表器现在保留任务启动时的 `code_commit`/`started_at`，并保留总表中它不认识的较新字段，避免旧进程结束时把新列静默删除。当前仍在运行的旧进程是在该修复前启动的；它们全部结束后要用各 run 的 `training_attempt.json` 做一次最终表头与生成器字段恢复。

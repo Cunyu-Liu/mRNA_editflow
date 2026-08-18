@@ -252,15 +252,23 @@ def record_training_attempt(
     with lock_path.open("a+") as lock:
         fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
         existing_rows: list[dict[str, str]] = []
+        existing_columns: list[str] = []
         if ledger_path.exists():
             with ledger_path.open(newline="", encoding="utf-8-sig") as handle:
-                existing_rows = list(csv.DictReader(handle))
+                reader = csv.DictReader(handle)
+                existing_rows = list(reader)
+                existing_columns = list(reader.fieldnames or [])
         match = next(
             (item for item in existing_rows if item.get("attempt_id") == row["attempt_id"]),
             None,
         )
         merged = dict(match or {})
         for key in TRAINING_ATTEMPT_COLUMNS:
+            if key in {"started_at", "code_commit"} and match and match.get(key):
+                # A long run may finish after the shared worktree advances.  Its
+                # start commit and start time describe the code that actually ran.
+                merged[key] = match[key]
+                continue
             value = row.get(key, "")
             if value not in {None, ""}:
                 merged[key] = value
@@ -270,12 +278,18 @@ def record_training_attempt(
             existing_rows.append(merged)
         else:
             existing_rows[existing_rows.index(match)] = merged
+        output_columns = list(TRAINING_ATTEMPT_COLUMNS)
+        output_columns.extend(
+            column
+            for column in existing_columns
+            if column and column not in output_columns
+        )
         temporary = ledger_path.with_suffix(ledger_path.suffix + ".tmp")
         with temporary.open("w", newline="", encoding="utf-8-sig") as handle:
-            writer = csv.DictWriter(handle, fieldnames=TRAINING_ATTEMPT_COLUMNS)
+            writer = csv.DictWriter(handle, fieldnames=output_columns)
             writer.writeheader()
             writer.writerows(
-                {column: item.get(column, "") for column in TRAINING_ATTEMPT_COLUMNS}
+                {column: item.get(column, "") for column in output_columns}
                 for item in existing_rows
             )
             handle.flush()

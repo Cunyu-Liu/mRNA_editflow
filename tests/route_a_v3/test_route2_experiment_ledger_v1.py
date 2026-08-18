@@ -118,6 +118,53 @@ def test_training_attempt_upsert_preserves_start_and_adds_final_metrics(tmp_path
     assert json.loads(run_record.read_text())["status"] == "COMPLETED"
 
 
+def test_long_run_preserves_start_commit_and_newer_ledger_columns(tmp_path: Path) -> None:
+    ledger = _load(MODULE_PATH, "route2_experiment_ledger_version_skew_test")
+    config = _config(tmp_path)
+    output_dir = Path(config["output_directory"])
+    output_dir.mkdir()
+    ledger_path = tmp_path / "attempts.csv"
+    run_record = output_dir / "training_attempt.json"
+
+    running = ledger.build_training_attempt_row(
+        config,
+        output_dir,
+        "RUNNING",
+        repository_root=ROOT,
+        details={
+            "started_at": "2026-08-17T10:00:00+08:00",
+            "code_commit": "commit-at-process-start",
+        },
+    )
+    ledger.record_training_attempt(ledger_path, run_record, running)
+
+    with ledger_path.open(newline="", encoding="utf-8-sig") as handle:
+        reader = csv.DictReader(handle)
+        rows = list(reader)
+        columns = list(reader.fieldnames or [])
+    columns.append("newer_training_field")
+    rows[0]["newer_training_field"] = "preserve-me"
+    with ledger_path.open("w", newline="", encoding="utf-8-sig") as handle:
+        writer = csv.DictWriter(handle, fieldnames=columns)
+        writer.writeheader()
+        writer.writerows(rows)
+
+    completed = ledger.build_training_attempt_row(
+        config,
+        output_dir,
+        "COMPLETED",
+        repository_root=ROOT,
+        details={"code_commit": "worktree-advanced-after-start"},
+    )
+    ledger.record_training_attempt(ledger_path, run_record, completed)
+
+    with ledger_path.open(newline="", encoding="utf-8-sig") as handle:
+        final_rows = list(csv.DictReader(handle))
+    assert final_rows[0]["code_commit"] == "commit-at-process-start"
+    assert final_rows[0]["started_at"] == "2026-08-17T10:00:00+08:00"
+    assert final_rows[0]["newer_training_field"] == "preserve-me"
+
+
 def test_backfill_marks_existing_run_completed(tmp_path: Path) -> None:
     sync = _load(SYNC_PATH, "route2_experiment_ledger_sync_test")
     run_dir = tmp_path / "run"
