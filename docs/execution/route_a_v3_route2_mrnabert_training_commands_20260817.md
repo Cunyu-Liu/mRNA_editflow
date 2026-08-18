@@ -203,13 +203,13 @@ CUDA_VISIBLE_DEVICES=4 /home/cunyuliu/miniconda3/envs/editflow/bin/python \
 | 运行 | 终态/当前状态 | task-macro Spearman | task-macro standardized MAE | 说明 |
 |---|---:|---:|---:|---|
 | RNA-FM Huber | 运行中 | — | — | 历史 encoder 对照；不使用其中间 epoch 做选择 |
-| RNA-FM learned variance | 运行中 | — | — | 历史 uncertainty 对照 |
-| RNA-FM fixed variance | 运行中 | — | — | 历史固定噪声对照 |
+| RNA-FM learned variance | **100/100 完成，best epoch 49** | 0.130418 | 1.935143 | global Spearman 0.200763；prediction std / target std 0.031654 |
+| RNA-FM fixed variance | **100/100 完成，best epoch 92** | 0.098003 | 2.306655 | global Spearman 0.174160；prediction std / target std 0.138453 |
 | mRNABERT Huber | **100/100 完成，best epoch 44** | **0.149988** | **2.108870** | global Spearman 0.198122；prediction std / target std 0.074666 |
-| mRNABERT fixed variance | 等待前序释放 GPU 5 | — | — | 尚未启动正式 mRNABERT run |
-| mRNABERT learned variance | 等待前序释放 GPU 3 | — | — | 尚未启动正式 mRNABERT run |
+| mRNABERT fixed variance | **运行中** | — | — | RNA-FM 前序完成后已自动在 GPU 5 启动 |
+| mRNABERT learned variance | **运行中** | — | — | RNA-FM 前序完成后已自动在 GPU 3 启动 |
 
-同信息最强已完成 baseline 的 task-macro Spearman 为 `0.131714`；Huber 单 seed 的暂时增量约为 `+0.01827`，还不能代替三种 loss、controls 或 three-seed 判断。三个 mRNABERT loss 当前为 `1/3` 完成，所以 controls、final seeds、TEST、全量 refit、LOSO readiness 和 guided XEditFlow 均未越级启动。中央训练表已经去除一个历史 Base Flow 重复身份，当前为 86 个唯一尝试、72 列：75 completed、3 running、3 failed、3 incomplete、2 stopped。
+同信息最强已完成 baseline 的 task-macro Spearman 为 `0.131714`；Huber 单 seed 的暂时增量约为 `+0.01827`，还不能代替三种 loss、controls 或 three-seed 判断。三个 mRNABERT loss 当前为 `1/3` 完成，所以 controls、final seeds、TEST、全量 refit、LOSO readiness 和 guided XEditFlow 均未越级启动。中央训练表在两个新 mRNABERT loss 启动后为 88 个唯一尝试、72 列：77 completed、3 running、3 failed、3 incomplete、2 stopped。
 
 ## 10. Guidance readiness 与执行入口
 
@@ -270,6 +270,7 @@ nohup scripts/route_a_v3/schedule_route2_independent_evaluator_gpu2_v3.sh \
 ## 12. 2026-08-18 10:13 追加快照
 
 - mRNABERT Huber 已完成，三种 loss 的正式 summary 为 `1/3`，所以 loss 选择、controls、three seeds、冻结 TEST 和全量 refit仍未越级启动；
+- RNA-FM fixed/learned-variance 历史对照已完成并同步中央表；对应 GPU 释放后，新的 mRNABERT fixed/learned-variance 已自动启动；
 - Huber 实际 wall time 为 39,616.45 秒，约 396.16 秒/epoch、70.76 ms/step 和 226.12 TRAIN records/s；相对 batch16 BF16 微基准约为 93%，没有严重 DataLoader 饥饿证据；
 - GPU 0–5 当前均有项目任务，显存状态正常，没有 CUDA/NaN/提前退出证据；
 - workers 0/4/8、batch32/64 数据管线测试正在等待 GPU 0 降低利用率；Base Flow V2、在线 mRNABERT encoder validation 和主 post-selection scheduler 继续低频等待各自条件；
