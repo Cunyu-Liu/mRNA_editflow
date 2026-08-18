@@ -57,7 +57,7 @@ python scripts/route_a_v3/sync_route2_training_attempt_ledger_v1.py \
 | critic 位置特征 | 已启用归一化绝对位置 + edit-gated 位置 | 让模型直接知道编辑发生在序列的相对位置，同时避免不同长度序列使用不可比的绝对索引。 |
 | Flash/SDPA attention | 正在做候选后端验证 | 不修改 ALiBi 语义；先做 attention primitive，再做完整 encoder 输出对齐与速度比较。只有缓存与新序列一致、且完整编码器实测至少提速 10% 才启用 PyTorch SDPA，否则继续使用官方实现。 |
 | `torch.compile` | 暂未启用 | 当前 trainer 明确记录为未实现；在没有端到端收益证据前不把编译开关写成已优化。 |
-| uncertainty head | 三种匹配 loss 正在比较 | Huber、固定方差 NLL、学习方差 NLL 使用同一数据、split、架构、seed 和训练预算；选择依赖均值预测表现，NLL 更低不能单独胜出。 |
+| uncertainty head | 三种匹配 loss 已完成，选择 Huber | learned variance 的不确定性与绝对残差相关，但 task-macro Spearman 和 standardized MAE 均弱于 Huber；NLL/方差诊断不覆盖均值预测选择规则。 |
 | Edit Flow 计算 | 已加入重复状态的 rate cache | 逻辑 trajectory 决策次数与真实 generator forward 次数分开记账，使 matched-budget baseline 使用实际计算成本。 |
 
 ## 当前三种 loss 的冻结比较口径
@@ -91,7 +91,17 @@ Huber 主实验已经完成 100 epochs。该终态只使用冻结 TRAIN/VALIDATI
 
 DataLoader 匹配 benchmark 随后在 batch32、BF16、fused AdamW、pinned memory、non-blocking transfer 下完成：workers0 为 290.58 records/s，workers4 为 310.94 records/s，workers8 为 291.50 records/s。三组 mean loss 完全一致且全部有限，Evaluation 读取数为 0。workers4 相对 workers0 提速约 7.0%，而 workers8 仅约 0.3%，说明 4 workers 是后续新正式训练的合理配置，继续增加到 8 只增加进程开销。该结论不追溯改变正在运行的三种 loss 比较。
 
-Huber 的 prediction spread 已从早期近乎常数输出改善到目标标准差的约 7.47%，但仍明显偏窄；它当前不能单独通过 critic guidance gate。最终 loss 选择继续等待同配置的 fixed-variance 与 learned-variance 终态，并检查学习方差是否仅吸收残差。
+Huber 的 prediction spread 已从早期近乎常数输出改善到目标标准差的约 7.47%，但仍明显偏窄；它当前不能单独通过 critic guidance gate。
+
+## 三种 mRNABERT loss 正式终态（2026-08-19）
+
+| loss | selected epoch | task-macro Spearman | task-macro standardized MAE | global Spearman | prediction std / target std |
+|---|---:|---:|---:|---:|---:|
+| Huber | 44 | **0.149988** | **2.108870** | **0.198122** | 0.074666 |
+| fixed variance Gaussian NLL | 54 | 0.120695 | 2.428299 | 0.171786 | 0.080062 |
+| learned variance Gaussian NLL | 84 | 0.123583 | 2.523861 | 0.176032 | 0.149625 |
+
+冻结均值性能规则选择 Huber。learned variance 的预测标准差与绝对残差 Spearman 为 `0.490600`，说明方差头确实学到了一部分残差尺度；但它的 task-macro Spearman 比 Huber 低 `0.026406`，standardized MAE 也更差。因此当前证据支持“uncertainty 吸收了部分误差尺度、却没有改善均值预测”，而不是“uncertainty head 已解决 mean collapse”。Huber candidate-permutation 和 parameter-matched source-only controls 已启动；在它们完成并通过前，不进入 final seeds、冻结 Development TEST 或全量 refit。
 
 ## 记录边界
 

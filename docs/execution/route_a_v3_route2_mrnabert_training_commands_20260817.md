@@ -198,18 +198,20 @@ CUDA_VISIBLE_DEVICES=4 /home/cunyuliu/miniconda3/envs/editflow/bin/python \
 
 该基准只筛查 `50/64/96/128/164 nt × batch 1/4/8` 下的数值误差、真实融合后端和速度。即使通过，也只允许继续做全编码器 cache 对齐与端到端吞吐验证，不会自动切换正式 encoder。位置编码继续使用官方双向 ALiBi；不会在加载同一预训练权重时改成 RoPE 或新的绝对位置编码。
 
-## 9. 2026-08-18 10:13 运行快照
+## 9. 2026-08-19 01:20 运行快照
 
 | 运行 | 终态/当前状态 | task-macro Spearman | task-macro standardized MAE | 说明 |
 |---|---:|---:|---:|---|
-| RNA-FM Huber | 运行中 | — | — | 历史 encoder 对照；不使用其中间 epoch 做选择 |
+| RNA-FM Huber | **100/100 完成，best epoch 94** | 0.124236 | 2.141658 | 历史 encoder 对照；global Spearman 0.202329 |
 | RNA-FM learned variance | **100/100 完成，best epoch 49** | 0.130418 | 1.935143 | global Spearman 0.200763；prediction std / target std 0.031654 |
 | RNA-FM fixed variance | **100/100 完成，best epoch 92** | 0.098003 | 2.306655 | global Spearman 0.174160；prediction std / target std 0.138453 |
 | mRNABERT Huber | **100/100 完成，best epoch 44** | **0.149988** | **2.108870** | global Spearman 0.198122；prediction std / target std 0.074666 |
-| mRNABERT fixed variance | **运行中** | — | — | RNA-FM 前序完成后已自动在 GPU 5 启动 |
-| mRNABERT learned variance | **运行中** | — | — | RNA-FM 前序完成后已自动在 GPU 3 启动 |
+| mRNABERT fixed variance | **100/100 完成，best epoch 54** | 0.120695 | 2.428299 | global Spearman 0.171786；prediction std / target std 0.080062 |
+| mRNABERT learned variance | **100/100 完成，best epoch 84** | 0.123583 | 2.523861 | global Spearman 0.176032；prediction std / target std 0.149625 |
 
-同信息最强已完成 baseline 的 task-macro Spearman 为 `0.131714`；Huber 单 seed 的暂时增量约为 `+0.01827`，还不能代替三种 loss、controls 或 three-seed 判断。三个 mRNABERT loss 当前为 `1/3` 完成，所以 controls、final seeds、TEST、全量 refit、LOSO readiness 和 guided XEditFlow 均未越级启动。中央训练表在两个新 mRNABERT loss 启动后为 88 个唯一尝试、72 列：77 completed、3 running、3 failed、3 incomplete、2 stopped。
+三种 mRNABERT loss 已按同一数据、split、seed、架构和训练预算完成。冻结选择规则选中 Huber：其 task-macro Spearman `0.149988` 高于 fixed variance 的 `0.120695` 和 learned variance 的 `0.123583`。learned variance 的预测不确定性与绝对残差存在正相关（Spearman `0.490600`），但均值任务相关性比 Huber 低 `0.026406`，standardized MAE 也更差；因此该 uncertainty head 有吸收残差尺度的迹象，却没有改善均值预测，不能因为 NLL 或方差诊断看起来合理而胜出。
+
+同信息最强已完成 baseline 的 task-macro Spearman 为 `0.131714`；Huber 单 seed 的增量为约 `+0.01827`，仍不能代替 candidate-permutation、source-only 或 three-seed 判断。uncertainty audit 起初因 float32 训练张量与 JSON 十进制复算产生约 `2.5×10⁻⁸` 的舍入差而误停，现已用明确的 float32 重算容差修复并保留实质漂移拒绝。Huber 的 candidate-permutation 与 parameter-matched source-only controls 已于 2026-08-19 01:19 在 GPU 0/5 启动；Development TEST、Evaluation outcomes、final seeds、全量 refit、LOSO readiness 和 guided XEditFlow 均未越级打开。中央训练表当前为 91 个唯一尝试、72 列：81 completed、2 running、3 failed、3 incomplete、2 stopped。
 
 ## 10. Guidance readiness 与执行入口
 
@@ -267,13 +269,14 @@ nohup scripts/route_a_v3/schedule_route2_independent_evaluator_gpu2_v3.sh \
 
 该调度器等待 Base Flow V2 的 GPU 2 任务完成后再启动，不与当前训练争卡。它只运行一次，不按结果追加 HPO；只有 task-macro Spearman 超过预冻结 candidate-permutation reference `0.1012476`、至少 5 个 task 为正且所有数据隔离检查通过，才标记为 qualified。无论 PASS 或 NO-GO，尝试都会自动写入中央训练表。
 
-## 12. 2026-08-18 10:13 追加快照
+## 12. 2026-08-19 01:20 追加快照
 
-- mRNABERT Huber 已完成，三种 loss 的正式 summary 为 `1/3`，所以 loss 选择、controls、three seeds、冻结 TEST 和全量 refit仍未越级启动；
-- RNA-FM fixed/learned-variance 历史对照已完成并同步中央表；对应 GPU 释放后，新的 mRNABERT fixed/learned-variance 已自动启动；
+- 三种 mRNABERT loss 已全部完成，正式选择 Huber；learned uncertainty 与残差相关但均值性能下降，因此不用于 loss 选择或 guidance reward；
+- Huber candidate-permutation 与 parameter-matched source-only controls 已启动；只有两项 control 的冻结判定通过后才进入三个 final seeds；
+- 三个 RNA-FM 历史对照均已完成并同步中央表，仅作为 encoder 历史对照；
 - Huber 实际 wall time 为 39,616.45 秒，约 396.16 秒/epoch、70.76 ms/step 和 226.12 TRAIN records/s；相对 batch16 BF16 微基准约为 93%，没有严重 DataLoader 饥饿证据；
-- GPU 0–5 当前均有项目任务，显存状态正常，没有 CUDA/NaN/提前退出证据；
-- workers 0/4/8 的 batch32 数据管线测试已完成：workers4 为 310.94 records/s，优于 workers0 的 290.58；workers8 为 291.50，没有继续扩 worker 的收益。该结果只用于后续新正式 cohort；Base Flow V2、在线 mRNABERT encoder validation 和主 post-selection scheduler 继续低频等待各自条件；
+- GPU 0–5 当前均有项目任务，显存状态正常；control 启动验收未见 CUDA/NaN/提前退出；
+- workers 0/4/8 的 batch32 数据管线测试已完成：workers4 为 310.94 records/s，优于 workers0 的 290.58；workers8 为 291.50，没有继续扩 worker 的收益。该结果只用于后续新正式 cohort；Base Flow V2、在线 mRNABERT encoder validation 和独立 evaluator 继续低频等待各自 GPU 条件；
 - 新增的独立评估器将等待 GPU 2 的 Base Flow 验证完成后再运行，不抢占现有任务；
 - 当前正式数据与 claim 状态仍为 `ordinary=1 / A1=1 / true-A2=0 / canonical=6,547 / NOT_ESTABLISHED`。
 
