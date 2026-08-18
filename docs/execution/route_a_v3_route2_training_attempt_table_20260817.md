@@ -51,7 +51,7 @@ python scripts/route_a_v3/sync_route2_training_attempt_ledger_v1.py \
 | 可训练 critic | 已启用约 9.34M 参数 edit-centered critic | 同时使用编辑位点注意力汇聚、编辑位点最大汇聚、全 source 均值/最大背景、预训练差分和共同背景；不是只看单个编辑位置。 |
 | 数值精度 | 已启用 BF16 | A100 实测与 FP32 输出满足预设一致性门，同时吞吐明显更高。 |
 | 优化器 | 已启用 fused AdamW | 已在当前 A100 训练 profile 中验证可运行；与 BF16 一起用于三种 loss 的匹配比较。 |
-| 数据搬运 | 已启用 pinned memory 与 non-blocking transfer | Development 特征已缓存；当前数据集在主进程内完成长度分桶，`num_workers=0` 是实测 profile 的组成部分，不把多 worker 当作默认更快。 |
+| 数据搬运 | 已启用 pinned memory 与 non-blocking transfer | Development 特征已缓存；匹配 benchmark 显示 batch32 下 workers4 比 workers0 提速约 7%，workers8 无进一步收益。后续新正式 cohort 使用 workers4；当前三种 loss 不改配置。 |
 | 批处理 | 已使用 length-bucket batch sampler | 减少不同长度序列混批造成的 padding 浪费；排名 loss 另使用 source-group sampler。 |
 | mRNABERT 位置编码 | 保留官方双向 ALiBi | 这是预训练模型的一部分；直接改成 RoPE 会造成架构与预训练权重不一致，因此不做无依据替换。 |
 | critic 位置特征 | 已启用归一化绝对位置 + edit-gated 位置 | 让模型直接知道编辑发生在序列的相对位置，同时避免不同长度序列使用不可比的绝对索引。 |
@@ -87,7 +87,9 @@ Huber 主实验已经完成 100 epochs。该终态只使用冻结 TRAIN/VALIDATI
 | 实际平均 optimizer-step 时间 | 70.76 ms |
 | TRAIN records / wall second | 226.12 |
 
-此前 batch16 BF16/fused 微基准为约 242.88 records/s，因此完整 100-epoch 训练达到了微基准吞吐的约 93%。这说明当前没有严重的 DataLoader 饥饿；主要成本来自 batch16 下每 epoch 5,599 次参数更新。batch32 微基准约 339.45 records/s，显示后续完整匹配 cohort 仍有约 1.5 倍吞吐潜力，但必须等待 workers 0/4/8、batch32/64 的真实完整数据管线比较后再采用。
+此前 batch16 BF16/fused 微基准为约 242.88 records/s，因此完整 100-epoch 训练达到了微基准吞吐的约 93%。这说明当前没有严重的 DataLoader 饥饿；主要成本来自 batch16 下每 epoch 5,599 次参数更新。此前 batch32/64 对照中 batch32 约 339.45 records/s、batch64 反而降至约 207.52，结合下面的 workers 对照，后续新正式 cohort 采用 batch32/workers4，而不采用 batch64 或 workers8。
+
+DataLoader 匹配 benchmark 随后在 batch32、BF16、fused AdamW、pinned memory、non-blocking transfer 下完成：workers0 为 290.58 records/s，workers4 为 310.94 records/s，workers8 为 291.50 records/s。三组 mean loss 完全一致且全部有限，Evaluation 读取数为 0。workers4 相对 workers0 提速约 7.0%，而 workers8 仅约 0.3%，说明 4 workers 是后续新正式训练的合理配置，继续增加到 8 只增加进程开销。该结论不追溯改变正在运行的三种 loss 比较。
 
 Huber 的 prediction spread 已从早期近乎常数输出改善到目标标准差的约 7.47%，但仍明显偏窄；它当前不能单独通过 critic guidance gate。最终 loss 选择继续等待同配置的 fixed-variance 与 learned-variance 终态，并检查学习方差是否仅吸收残差。
 
