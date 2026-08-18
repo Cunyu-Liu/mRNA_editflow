@@ -73,6 +73,12 @@ def sync_run(
     if not config_path.exists():
         raise ValueError(f"training_config.json is missing: {run_dir}")
     config = _load(config_path)
+    run_record_path = run_dir / "training_attempt.json"
+    if run_record_path.exists():
+        existing_run_record = _load(run_record_path)
+        for key in ("attempt_id", "baseline_id"):
+            if not config.get(key) and existing_run_record.get(key):
+                config[key] = existing_run_record[key]
     summary_path = run_dir / "training_summary.json"
     failure_path = run_dir.with_name(run_dir.name + ".failed.json")
     if summary_path.exists():
@@ -96,7 +102,7 @@ def sync_run(
         repository_root=REPO_ROOT,
         details=details,
     )
-    record_training_attempt(ledger_path, run_dir / "training_attempt.json", row)
+    record_training_attempt(ledger_path, run_record_path, row)
     return row
 
 

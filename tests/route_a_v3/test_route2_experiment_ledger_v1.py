@@ -184,6 +184,40 @@ def test_backfill_marks_existing_run_completed(tmp_path: Path) -> None:
     assert row["validation_task_macro_spearman"] == 0.3
 
 
+def test_backfill_reuses_existing_attempt_identity_when_config_lacks_it(
+    tmp_path: Path,
+) -> None:
+    sync = _load(SYNC_PATH, "route2_experiment_ledger_sync_identity_test")
+    run_dir = tmp_path / "development_v1"
+    run_dir.mkdir()
+    config = _config(tmp_path)
+    config.pop("baseline_id")
+    (run_dir / "training_config.json").write_text(json.dumps(config))
+    (run_dir / "training_summary.json").write_text(
+        json.dumps({"optimizer_steps": 10, "evaluation_record_count": 0})
+    )
+    (run_dir / "training_attempt.json").write_text(
+        json.dumps(
+            {
+                "attempt_id": "base-flow-seed17::development_v1",
+                "baseline_id": "base-flow-seed17",
+                "status": "RUNNING",
+            }
+        )
+    )
+
+    row = sync.sync_run(run_dir, tmp_path / "attempts.csv")
+
+    assert row["attempt_id"] == "base-flow-seed17::development_v1"
+    assert row["baseline_id"] == "base-flow-seed17"
+    with (tmp_path / "attempts.csv").open(
+        newline="", encoding="utf-8-sig"
+    ) as handle:
+        rows = list(csv.DictReader(handle))
+    assert len(rows) == 1
+    assert rows[0]["attempt_id"] == "base-flow-seed17::development_v1"
+
+
 def test_training_attempt_uses_run_id_when_baseline_id_is_absent(tmp_path: Path) -> None:
     ledger = _load(MODULE_PATH, "route2_experiment_ledger_run_id_test")
     config = _config(tmp_path)
