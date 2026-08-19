@@ -211,7 +211,7 @@ CUDA_VISIBLE_DEVICES=4 /home/cunyuliu/miniconda3/envs/editflow/bin/python \
 
 三种 mRNABERT loss 已按同一数据、split、seed、架构和训练预算完成。冻结选择规则选中 Huber：其 task-macro Spearman `0.149988` 高于 fixed variance 的 `0.120695` 和 learned variance 的 `0.123583`。learned variance 的预测不确定性与绝对残差存在正相关（Spearman `0.490600`），但均值任务相关性比 Huber 低 `0.026406`，standardized MAE 也更差；因此该 uncertainty head 有吸收残差尺度的迹象，却没有改善均值预测，不能因为 NLL 或方差诊断看起来合理而胜出。
 
-同信息最强已完成 baseline 的 task-macro Spearman 为 `0.131714`；Huber 单 seed 的增量为约 `+0.01827`，仍不能代替 candidate-permutation、source-only 或 three-seed 判断。uncertainty audit 起初因 float32 训练张量与 JSON 十进制复算产生约 `2.5×10⁻⁸` 的舍入差而误停，现已用明确的 float32 重算容差修复并保留实质漂移拒绝。Huber 的 candidate-permutation 与 parameter-matched source-only controls 已全部完成。candidate-permutation 的 task-macro Spearman 为 `0.100819`，完整模型高出 `0.049169`，并在两个预指定可判任务上都胜出；source-only 的 task-macro Spearman 为 `0.025703`，完整模型高出 `0.124285`，且在 9 个任务中胜出 7 个。冻结联合裁决为 `MRNABERT_SIGNAL_CONTROLS_SUPPORT_FINAL_SEED_CONFIRMATION`。这只允许进入 three-seed confirmation，不授权 guided generation，也不覆盖完整模型 standardized MAE 弱于两个 control 的事实。三个 Huber final seeds 已于 2026-08-19 11:34 在 GPU 0/3/5 启动；Development TEST、Evaluation outcomes、全量 refit、LOSO readiness 和 guided XEditFlow 均未越级打开。中央训练表当前为 94 个唯一尝试、72 列：83 completed、3 running、3 failed、3 incomplete、2 stopped。
+同信息最强已完成 baseline 的 task-macro Spearman 为 `0.131714`。Huber 的 candidate-permutation 与 parameter-matched source-only controls 均通过冻结联合判定，但 three-seed confirmation 没有复现单 seed 的正向增量：seed 20260822、20260823、20260824 的 task-macro Spearman 分别为 `0.116129`、`0.116908`、`0.137384`，相对 strongest baseline 的 margin 分别为 `-0.015586`、`-0.014806`、`+0.005669`。只有 1/3 seed 为正，因此终态为 `THREE_FINAL_SEEDS_DO_NOT_SUPPORT_FROZEN_DEVELOPMENT_TEST`。调度器已按预冻结规则停止，Development TEST、Evaluation outcomes、全量 refit、LOSO readiness 和 guided XEditFlow 均未打开。中央训练表当前为 94 个唯一尝试、72 列：86 completed、3 failed、3 incomplete、2 stopped。
 
 ## 10. Guidance readiness 与执行入口
 
@@ -272,7 +272,7 @@ nohup scripts/route_a_v3/schedule_route2_independent_evaluator_gpu2_v3.sh \
 ## 12. 2026-08-19 01:20 追加快照
 
 - 三种 mRNABERT loss 已全部完成，正式选择 Huber；learned uncertainty 与残差相关但均值性能下降，因此不用于 loss 选择或 guidance reward；
-- 两项 signal controls 已完成并通过冻结联合判定：permutation task-macro Spearman `0.100819`、source-only `0.025703`，完整 Huber 分别高 `0.049169` 和 `0.124285`；三个 final seeds 已在 GPU 0/3/5 启动；
+- 两项 signal controls 虽然通过，但 three-seed confirmation 失败：三个 task-macro Spearman 为 `0.116129 / 0.116908 / 0.137384`，只有 1/3 超过 strongest baseline；冻结 TEST、全量 refit和 guided XEditFlow 均未启动；
 - 三个 RNA-FM 历史对照均已完成并同步中央表，仅作为 encoder 历史对照；
 - Huber 实际 wall time 为 39,616.45 秒，约 396.16 秒/epoch、70.76 ms/step 和 226.12 TRAIN records/s；相对 batch16 BF16 微基准约为 93%，没有严重 DataLoader 饥饿证据；
 - GPU 0–5 当前均有项目任务，显存状态正常；control 启动验收未见 CUDA/NaN/提前退出；

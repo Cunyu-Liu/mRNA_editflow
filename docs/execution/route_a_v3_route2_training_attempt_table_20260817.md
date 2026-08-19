@@ -130,6 +130,20 @@ candidate-permutation control 已完成 100 epochs / 559,900 updates，Developme
 
 这个状态只支持三个固定 seed 的 Development VALIDATION 复现，不是科学 claim、不是 TEST 结果，也不授权 guided generation。三个 Huber final seeds（20260822、20260823、20260824）已分别在 GPU 0、3、5 启动；只有 three-seed 冻结判定继续通过，才允许单次打开 Development TEST。
 
+## three-seed confirmation 终态（2026-08-19）
+
+三个 final seeds 均完成 100 epochs / 559,900 updates，只使用冻结的 Development TRAIN/VALIDATION；Development TEST 与 Evaluation outcomes 均未读取。
+
+| seed | selected epoch | task-macro Spearman | strongest-baseline margin | task-macro standardized MAE | directional pass |
+|---:|---:|---:|---:|---:|---|
+| 20260822 | 6 | 0.116129 | -0.015586 | 1.799772 | false |
+| 20260823 | 86 | 0.116908 | -0.014806 | 2.079968 | false |
+| 20260824 | 25 | 0.137384 | +0.005669 | 1.956973 | true |
+
+三个 seed 的 task median 均为正，但预冻结规则要求三个 seed 相对 strongest same-information baseline 的 improvement 方向全部为正；实际只有 1/3 达到。因此裁决为 `THREE_FINAL_SEEDS_DO_NOT_SUPPORT_FROZEN_DEVELOPMENT_TEST`，`supports_single_frozen_development_test=false`。
+
+这表明先前 seed 20260816 的 `0.149988` 是不稳定结果，当前 mRNABERT critic 尚不能写成可重复优于强 baseline。调度器已在 VALIDATION 层停止：没有打开一次性 Development TEST，没有执行 all-126,165 refit，没有启动 LOSO readiness 或 guided XEditFlow。该负结果作为 Benchmark 与 generation-limits 论文路径的一部分保留，不追加临时 seed 或改阈值来追逐通过。
+
 ## 记录边界
 
 - `training_attempts.csv` 是 Excel 可直接打开的跨实验总表；每个 run 的 `training_config.json` 保存该次尝试的完整参数，避免总表为了可读性遗漏长配置。
