@@ -116,6 +116,20 @@ parameter-matched source-only control 已完成全部 100 epochs 和 559,900 次
 
 结果说明 candidate/edit 分支为跨 task 排序提供了明显信息，完整模型不是只靠 source/context 背景取得相关性；source-only 输出几乎塌缩为常数。与此同时，source-only 的 standardized MAE 更低，反映“更保守但缺乏排序能力”的预测可以在绝对误差上占优。最终 signal-control 判定必须同时纳入 candidate-permutation、相关性和冻结的误差规则，不能提前把该单项结果写成 gate PASS。
 
+## signal controls 联合终态与 three-seed 启动（2026-08-19）
+
+candidate-permutation control 已完成 100 epochs / 559,900 updates，Development TEST 与 Evaluation outcomes 均未读取。
+
+| 项目 | 完整 Huber | candidate permutation | source-only |
+|---|---:|---:|---:|
+| task-macro Spearman | **0.149988** | 0.100819 | 0.025703 |
+| task-macro standardized MAE | 2.108870 | **1.812514** | 1.841805 |
+| prediction std / target std | 0.074666 | 0.001155 | 0.001301 |
+
+冻结联合裁决的六项检查全部为 true：完整模型超过 strongest same-information baseline；task median 为正；在两个预指定可判任务上都胜过 permutation，平均 margin `0.109332`；超过 source-only 的 macro margin 为 `0.124285`，并在 9 个任务中胜出 7 个。因此状态为 `MRNABERT_SIGNAL_CONTROLS_SUPPORT_FINAL_SEED_CONFIRMATION`。
+
+这个状态只支持三个固定 seed 的 Development VALIDATION 复现，不是科学 claim、不是 TEST 结果，也不授权 guided generation。三个 Huber final seeds（20260822、20260823、20260824）已分别在 GPU 0、3、5 启动；只有 three-seed 冻结判定继续通过，才允许单次打开 Development TEST。
+
 ## 记录边界
 
 - `training_attempts.csv` 是 Excel 可直接打开的跨实验总表；每个 run 的 `training_config.json` 保存该次尝试的完整参数，避免总表为了可读性遗漏长配置。
