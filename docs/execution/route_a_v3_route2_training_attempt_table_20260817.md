@@ -103,6 +103,19 @@ Huber 的 prediction spread 已从早期近乎常数输出改善到目标标准�
 
 冻结均值性能规则选择 Huber。learned variance 的预测标准差与绝对残差 Spearman 为 `0.490600`，说明方差头确实学到了一部分残差尺度；但它的 task-macro Spearman 比 Huber 低 `0.026406`，standardized MAE 也更差。因此当前证据支持“uncertainty 吸收了部分误差尺度、却没有改善均值预测”，而不是“uncertainty head 已解决 mean collapse”。Huber candidate-permutation 和 parameter-matched source-only controls 已启动；在它们完成并通过前，不进入 final seeds、冻结 Development TEST 或全量 refit。
 
+## source-only control 终态（2026-08-19）
+
+parameter-matched source-only control 已完成全部 100 epochs 和 559,900 次 optimizer updates，使用相同 mRNABERT cache、critic 参数规模、Huber loss、TRAIN/VALIDATION、seed 和训练预算。Development TEST 与 Evaluation outcomes 均未读取。
+
+| 项目 | 完整 Huber | source-only control | 差值（完整－control） |
+|---|---:|---:|---:|
+| task-macro Spearman | 0.149988 | 0.025703 | +0.124285 |
+| global Spearman | 0.198122 | 0.068596 | +0.129527 |
+| task-macro standardized MAE | 2.108870 | 1.841805 | +0.267065 |
+| prediction std / target std | 0.074666 | 0.001301 | +0.073365 |
+
+结果说明 candidate/edit 分支为跨 task 排序提供了明显信息，完整模型不是只靠 source/context 背景取得相关性；source-only 输出几乎塌缩为常数。与此同时，source-only 的 standardized MAE 更低，反映“更保守但缺乏排序能力”的预测可以在绝对误差上占优。最终 signal-control 判定必须同时纳入 candidate-permutation、相关性和冻结的误差规则，不能提前把该单项结果写成 gate PASS。
+
 ## 记录边界
 
 - `training_attempts.csv` 是 Excel 可直接打开的跨实验总表；每个 run 的 `training_config.json` 保存该次尝试的完整参数，避免总表为了可读性遗漏长配置。
