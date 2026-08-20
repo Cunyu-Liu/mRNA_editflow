@@ -813,3 +813,38 @@ $PY scripts/route_a_v3/run_route2_mrnabert_critic_v2_loso_stage_v1.py \
 ```
 
 当前 TEST/refit/config gates 未 terminal，因此不得调用。
+
+## 29. Critic V2 Development generation 单 GPU stage runner 前瞻实现（2026-08-20）
+
+下游 V2 guided、matched-search 与 Development comparison 虽已完成硬切换，但三个
+入口仍各自固定 `cuda:0`，且没有在 GPU0-5 中按实时 free memory 选择可用卡并保持
+严格阶段顺序的统一 launcher。现已新增 V2-only Development generation stage
+runner，但没有启动。
+
+显式调用后，runner 首先读取 V2 readiness input/adjudication，并由 production
+guided validator 验证真实 dual readiness；校验未通过时，在 runtime config、log
+或 output 创建前停止。只有 readiness 通过后，才在 physical GPU0-5 中选择 free
+memory 最大且不少于 4096 MiB 的卡。三份 runtime config 只把冻结模板中的 `device`
+和 `physical_gpu_index` 改为所选 GPU，随后依次运行 guided XEditFlow、六方法 matched
+search 和 frozen independent-evaluator Development comparison。每个 child 启动前仅按
+900 秒间隔等待同一卡恢复 minimum free memory，不使用 utilization gate；任一 child
+失败即保留已有 evidence 并阻止后续阶段。
+
+runner 拒绝覆盖已有 runtime root、log root 或三个 stage 的 output directory。其完成
+状态仍明确 `development_test_opened=false`、`evaluation_opened=false`、generated
+candidates 无 canonical credit，且不建立 biological optimization claim。
+
+本次没有调用 runner、没有查询远端 GPU、没有创建 `/mnt` runtime/log/candidates/
+comparison artifacts，也没有读取 TEST、LOSO 或 Evaluation outcome。focused tests
+4/4 通过；与 V2 readiness、guided、matched-search、comparison 和 paper evidence
+合并的相邻合同回归为 37/37 通过。该任务没有参数更新，中央训练 CSV 不新增伪
+attempt；最近记录状态不变。
+
+未来只有真实 V2 readiness 已输出 `guided_unlocked=true` 且三个 stage 尚未开始时，
+才允许人工显式调用一次：
+
+```bash
+$PY scripts/route_a_v3/run_route2_mrnabert_critic_v2_development_generation_stage_v1.py
+```
+
+当前 control 及其下游 gates 未 terminal，因此不得调用。

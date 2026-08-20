@@ -339,3 +339,17 @@ aggregator 和 readiness 合并 focused suite 26/26 通过；paper evidence sour
 本次没有调用 runner，没有创建 log/run/input/result，也没有参数更新，所以中央 CSV
 不增加训练行。focused tests 8/8 只验证 planning/order/refusal，不执行 GPU 训练；
 最近已记录状态不变。
+
+## Critic V2 Development generation stage runner（2026-08-20）
+
+新增 V2-only 单 GPU launcher，在真实 dual readiness 通过后才可从 GPU0-5 中选择
+free memory 最大且不少于 4096 MiB 的卡，并严格按 guided XEditFlow → 六方法 matched
+search → frozen Development comparison 执行。三份 runtime config 只改变冻结模板的
+`device` 与 `physical_gpu_index`；已有 runtime/log/output root 时拒绝覆盖。每个 child
+前的等待只使用 free memory，默认 poll 900 秒，任一失败阻止后续 stage。
+
+本次没有调用 launcher，没有查询远端 GPU，没有创建 runtime config、log、generated
+candidate 或 comparison output，也没有读取 TEST/LOSO/Evaluation outcome。focused
+tests 4/4、相邻合同回归 37/37 通过且均不执行 GPU 训练。没有参数更新，因此中央
+CSV 不增加训练行，最近已记录的 100 个唯一 attempts/四个 Critic V2 RUNNING 状态
+不因本任务改变。
