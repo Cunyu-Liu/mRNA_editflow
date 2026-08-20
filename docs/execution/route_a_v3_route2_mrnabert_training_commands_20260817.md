@@ -990,8 +990,9 @@ generation templates、冻结 Development manifest、八份 canonical records、
 的 strongest baseline/online encoder/Flow readiness inputs 与 Flow checkpoint，共
 30 个路径；结果为 30/30 存在、missing=0。
 
-该核查只使用文件存在性元数据，没有打开文件内容、没有读取训练进度、Development
-TEST 或 final Evaluation outcome，也没有创建 future runtime/run/candidate artifact。
+路径枚举来自本地冻结协议和 runner 源码；远端核查只使用文件存在性元数据，没有
+打开生产数据或 outcome 文件内容、没有读取训练进度、Development TEST 或 final
+Evaluation outcome，也没有创建 future runtime/run/candidate artifact。
 因此不修改冻结协议、数据或 runner；focused static-input preflight 状态为 `PASS`，
 action 为 `NO_PATH_REPAIR_REQUIRED`。本任务没有参数更新，中央训练 CSV 不新增伪
 attempt；Critic V2 运行状态不因本任务改变。

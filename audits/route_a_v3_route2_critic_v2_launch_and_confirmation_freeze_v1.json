@@ -74,7 +74,8 @@
       "terminal_baseline_online_encoder_and_flow_readiness_inputs",
       "flow_checkpoint"
     ],
-    "file_contents_opened": false,
+    "enumeration_source": "LOCAL_FROZEN_PROTOCOL_AND_RUNNER_SOURCE_REVIEW",
+    "remote_production_data_or_outcome_file_contents_opened": false,
     "training_progress_read": false,
     "development_test_outcomes_accessed": false,
     "evaluation_outcomes_accessed": false,

@@ -430,6 +430,7 @@ paper focused tests 6/6，与 evaluator scorer/adjudicator 合并回归 12/12 �
 manifest、八份 canonical records、terminal baseline/online-encoder/Flow inputs 与
 Flow checkpoint 共 30 个路径全部存在，missing=0，故无需修复路径或重新部署数据。
 
-该 focused preflight 没有打开文件内容或训练进度，没有读取 Development TEST/final
-Evaluation outcome，也没有创建 future artifacts。它不进行参数更新，因此中央训练
-CSV 不增加伪 attempt；现有 Critic V2 运行状态不因本任务改变。
+路径枚举来自本地冻结协议和 runner 源码；远端 focused preflight 没有打开生产数据
+或 outcome 文件内容、训练进度，也没有读取 Development TEST/final Evaluation outcome
+或创建 future artifacts。它不进行参数更新，因此中央训练 CSV 不增加伪 attempt；
+现有 Critic V2 运行状态不因本任务改变。
