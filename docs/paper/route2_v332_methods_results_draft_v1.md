@@ -115,6 +115,17 @@ scales and per-task prediction/target standard deviations were not persisted,
 the global ratio alone cannot establish that every task underwent mean collapse.
 [claim:C-R2-017] [evidence:E-R2-EVAL-TRAIN,E-R2-EVAL-PROTOCOL]
 
+All 12 checks recorded by the frozen evaluator adjudication passed, covering run
+completion, frozen Development Validation use, TEST withholding, Evaluation
+closure, CUDA parameter updates, architecture and feature independence from the
+guiding critic, TRAIN-only task-robust scaling, complete task definition, the
+exact source-permutation margin, positive-task breadth and frozen evaluator
+identity. This authorized the already completed Development candidate rerun, but
+the adjudication retained `scientific_claim_status=NOT_ESTABLISHED`. The exact
+check IDs are retained in
+`route2_v332_independent_evaluator_qualification_checks_v1.csv`.
+[claim:C-R2-018] [evidence:E-R2-EVAL-ADJ,E-R2-EVAL-PROTOCOL]
+
 ### Genetic search led the independent-evaluator criterion, while unguided Flow led measured recovery
 
 All seven methods completed with hard legality 1.0 and zero edit-budget or

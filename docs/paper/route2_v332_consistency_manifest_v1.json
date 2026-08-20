@@ -81,6 +81,10 @@
       "global_target_std": 764.2945302862793,
       "global_prediction_std_over_target_std": 0.0022026649600126917,
       "prediction_spread_is_qualification_threshold": false,
+      "qualification_check_count": 12,
+      "all_qualification_checks_passed": true,
+      "candidate_rerun_authorized": true,
+      "qualification_check_table": "docs/paper/route2_v332_independent_evaluator_qualification_checks_v1.csv",
       "maximum_task_standardized_mae": {
         "task_id": "RNA_HALF_LIFE_MINUTES::region=0",
         "value": 9.220029033415157

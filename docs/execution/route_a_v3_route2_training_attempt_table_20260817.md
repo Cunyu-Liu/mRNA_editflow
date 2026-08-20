@@ -412,3 +412,13 @@ mean-collapse，并明确不为补齐该字段重跑 terminal evaluator。
 paper focused tests 5/5，与 evaluator scorer/adjudicator 合并回归 11/11 通过。没有
 读取 Development TEST/final Evaluation、没有参数或 gate 更新，因此中央 CSV 不增加
 训练行，现有 Critic V2 RUNNING 状态不变。
+
+## Independent evaluator qualification checks 论文补全（2026-08-20）
+
+新增 terminal adjudication 的 12-row exact qualification-check table，所有冻结 checks
+均为 true。`candidate_rerun_authorized=true` 只支持 Development candidate rerun，
+不覆盖同一裁决的 `scientific_claim_status=NOT_ESTABLISHED`。
+
+paper focused tests 6/6，与 evaluator scorer/adjudicator 合并回归 12/12 通过。没有
+读取 Development TEST/final Evaluation、没有参数更新，因此中央 CSV 不增加训练行，
+现有 Critic V2 RUNNING 状态不变。

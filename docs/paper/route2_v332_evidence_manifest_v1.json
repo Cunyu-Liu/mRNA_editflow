@@ -38,7 +38,7 @@
       "evidence_id": "E-R2-EVAL-ADJ",
       "kind": "terminal_adjudication",
       "location": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/comparisons/mrnabert_independent_evaluator_adjudication_v1.json",
-      "locator": "qualification threshold, margin, positive_task_count/task_count, development_test_outcomes_accessed=false and evaluation_outcomes_accessed=false",
+      "locator": "status/candidate_rerun_authorized/scientific_claim_status, exact 12 qualification checks, threshold/margin/task breadth and protected-outcome fields",
       "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING"
     },
     {

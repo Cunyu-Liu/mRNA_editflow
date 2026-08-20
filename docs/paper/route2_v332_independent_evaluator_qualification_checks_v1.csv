@@ -1,0 +1,13 @@
+qualification_check_id,passed
+all_expected_tasks_defined,true
+architecture_distinct_from_guiding_critic,true
+cuda_training_verified,true
+development_test_withheld,true
+evaluation_outcomes_closed,true
+exact_frozen_evaluator_identity,true
+full_context_without_pretrained_guide_features,true
+positive_task_breadth_reached,true
+run_completed,true
+task_macro_exceeds_exact_source_permutation,true
+train_only_frozen_validation_stage,true
+train_only_task_robust_target_scaling,true

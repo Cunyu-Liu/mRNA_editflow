@@ -12,6 +12,10 @@ BOOTSTRAP_TABLE = ROOT / "docs/paper/route2_v332_generation_bootstrap_table_v1.c
 EVALUATOR_TASK_TABLE = (
     ROOT / "docs/paper/route2_v332_independent_evaluator_task_table_v1.csv"
 )
+EVALUATOR_CHECK_TABLE = (
+    ROOT
+    / "docs/paper/route2_v332_independent_evaluator_qualification_checks_v1.csv"
+)
 READINESS = (
     ROOT
     / "configs/route_a_v3_route2_mrnabert_critic_v2_guidance_readiness_protocol_v1.json"
@@ -35,7 +39,7 @@ def test_claim_and_consistency_evidence_references_are_closed() -> None:
     assert len(evidence_ids) == len(set(evidence_ids)) == 15
 
     claims = re.findall(r"\[claim:([^\]]+)\]", draft)
-    assert len(claims) == len(set(claims)) == 17
+    assert len(claims) == len(set(claims)) == 18
 
     cited = set()
     for group in re.findall(r"\[evidence:([^\]]+)\]", draft):
@@ -162,3 +166,36 @@ def test_evaluator_global_spread_is_reported_without_post_hoc_gate() -> None:
     )
     assert gap["status"] == "PER_TASK_SPREAD_NOT_RECORDED_NO_TERMINAL_RERUN"
     assert "cannot establish that every task underwent mean collapse" in draft
+
+
+def test_evaluator_qualification_table_locks_exact_production_checks() -> None:
+    draft = DRAFT.read_text(encoding="utf-8")
+    consistency = _load(CONSISTENCY)
+    result = next(
+        row
+        for row in consistency["results"]
+        if row["result_id"] == "R-R2-EVALUATOR"
+    )
+    with EVALUATOR_CHECK_TABLE.open(newline="", encoding="utf-8") as handle:
+        rows = list(csv.DictReader(handle))
+
+    expected = {
+        "all_expected_tasks_defined",
+        "architecture_distinct_from_guiding_critic",
+        "cuda_training_verified",
+        "development_test_withheld",
+        "evaluation_outcomes_closed",
+        "exact_frozen_evaluator_identity",
+        "full_context_without_pretrained_guide_features",
+        "positive_task_breadth_reached",
+        "run_completed",
+        "task_macro_exceeds_exact_source_permutation",
+        "train_only_frozen_validation_stage",
+        "train_only_task_robust_target_scaling",
+    }
+    assert {row["qualification_check_id"] for row in rows} == expected
+    assert {row["passed"] for row in rows} == {"true"}
+    assert len(rows) == result["qualification_check_count"] == 12
+    assert result["all_qualification_checks_passed"] is True
+    assert result["candidate_rerun_authorized"] is True
+    assert "scientific_claim_status=NOT_ESTABLISHED" in draft

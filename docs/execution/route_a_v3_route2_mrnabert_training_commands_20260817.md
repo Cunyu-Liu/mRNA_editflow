@@ -964,3 +964,19 @@ evidence manifest 新增 exact prospective qualification protocol，当前 packe
 evaluator scorer/adjudicator 合并回归 11/11 通过。没有读取 Development TEST/final
 Evaluation、没有修改 gate 或参数，因此中央训练 CSV 不增加 attempt，Critic V2
 运行状态不因本任务改变。
+
+## 34. Independent evaluator qualification checks 补充表（2026-08-20）
+
+只读提取 terminal independent-evaluator adjudication 的 exact `checks`，新增
+`route2_v332_independent_evaluator_qualification_checks_v1.csv`。表中 12 项均为 true：
+run completion、frozen Development Validation、TEST withheld、Evaluation closed、
+CUDA update、与 guiding critic 的 architecture/feature independence、TRAIN-only
+task-robust scaling、全部 task defined、超过 exact source-permutation threshold、
+positive-task breadth 和 exact frozen evaluator identity。
+
+adjudication 的 `candidate_rerun_authorized=true` 只解释为已完成的 Development
+candidate rerun 授权；同一 artifact 的 `scientific_claim_status=NOT_ESTABLISHED`
+继续保留，不能写成 biological success。当前 paper packet 为 18 个唯一 claim
+markers、15 个 evidence sources。paper focused tests 6/6，与 evaluator
+scorer/adjudicator 合并回归 12/12 通过。本任务没有读取 Development TEST/final
+Evaluation、没有参数更新或新训练行，Critic V2 状态不因本任务改变。
