@@ -314,6 +314,8 @@ Base Flow V2 在本次检查开始时尚未启动，因为旧调度规则仍要�
 
 两个旧的 SDPA/attention backend 等待器当时仍固定等待 GPU 4，存在空闲窗口到来时先于 Base Flow 抢占该卡的风险。它们均只是等待 shell、没有 CUDA 子进程，已安全停止；Base Flow 训练、Base Flow validation 和独立 evaluator 三个主调度器保持运行。attention backend screen 与 full-encoder SDPA alignment 延后到 Base Flow validation 之后再恢复，不改变已完成的 official PyTorch fallback 一致性结论。
 
+Base Flow validation 的一次性汇总现在同时记录：candidate-budget mismatch、unique/duplicate candidate 数、global 与 source-macro unique rate、每条轨迹平均 generator NFE、候选输出/秒、含固定 seed replay 的 sampling invocation/秒与 generator NFE/秒。validation wall time 明确包含一次逐候选 replay，因此该吞吐是带可重放性检查的保守工程吞吐，不会冒充生产采样速度。任何 edit-budget violation、candidate-budget mismatch、replay failure 或 numerical failure 都使 `FLOW_G0_READY` 失败；无需为补采样效率另跑第二次 validation。
+
 中央训练尝试表保持 94 个唯一尝试，因为本次 online encoder 是零参数更新的工程验证，不应伪装成训练尝试；其完整终态保存在独立 validation summary，并在本节登记。下一个会进入中央训练表的新终态是 Base Flow V2 或独立 evaluator 的实际训练终态。
 
 ## 14. 低频查看进度

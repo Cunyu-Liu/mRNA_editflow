@@ -164,3 +164,33 @@ def test_g0_validation_reports_empirical_generation_score() -> None:
     for row in rows:
         by_sequence.setdefault(row["candidate_sequence"], set()).add(row["generation_score"])
     assert all(len(scores) == 1 for scores in by_sequence.values())
+
+
+def test_sampling_efficiency_summary_closes_budget_uniqueness_and_replay_compute() -> None:
+    module = _load()
+    rows = [
+        {"source_key": "s1", "candidate_sequence": "AAAA"},
+        {"source_key": "s1", "candidate_sequence": "AAAC"},
+        {"source_key": "s1", "candidate_sequence": "AAAC"},
+        {"source_key": "s2", "candidate_sequence": "CCCC"},
+        {"source_key": "s2", "candidate_sequence": "CCCA"},
+    ]
+    sources = [
+        {"source_key": "s1", "candidate_budget": 3},
+        {"source_key": "s2", "candidate_budget": 2},
+    ]
+    summary = module.sampling_efficiency_summary(
+        rows, sources, generator_nfe=10, elapsed_seconds=2.0
+    )
+    assert summary["candidate_budget_violation_count"] == 0
+    assert summary["unique_candidate_count"] == 4
+    assert summary["duplicate_candidate_count"] == 1
+    assert summary["global_unique_candidate_rate"] == pytest.approx(0.8)
+    assert summary["source_macro_unique_candidate_rate"] == pytest.approx((2 / 3 + 1.0) / 2)
+    assert summary["mean_generator_nfe_per_trajectory"] == pytest.approx(2.0)
+    assert summary["validation_candidate_outputs_per_second"] == pytest.approx(2.5)
+    assert summary["validation_sampling_invocation_count"] == 10
+    assert summary["validation_sampling_invocations_per_second"] == pytest.approx(5.0)
+    assert summary["validation_generator_nfe_with_replay"] == 20
+    assert summary["validation_generator_nfe_per_second_with_replay"] == pytest.approx(10.0)
+    assert summary["replay_sampling_overhead_included_in_wall_time"] is True

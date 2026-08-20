@@ -226,6 +226,52 @@ def learned_small_graph_check(model, checkpoint, device: torch.device) -> dict[s
     }
 
 
+def sampling_efficiency_summary(
+    candidate_rows: list[dict[str, Any]],
+    sources: list[dict[str, Any]],
+    *,
+    generator_nfe: int,
+    elapsed_seconds: float,
+) -> dict[str, Any]:
+    _require(candidate_rows, "no trajectories were sampled")
+    _require(elapsed_seconds > 0.0, "sampling wall time is not positive")
+    expected_by_source = {
+        str(source["source_key"]): int(source["candidate_budget"])
+        for source in sources
+    }
+    actual_by_source = Counter(str(row["source_key"]) for row in candidate_rows)
+    _require(set(actual_by_source) == set(expected_by_source), "sampled source coverage differs")
+    mismatch_count = sum(
+        abs(actual_by_source[source_key] - candidate_budget)
+        for source_key, candidate_budget in expected_by_source.items()
+    )
+    unique_by_source: dict[str, set[str]] = defaultdict(set)
+    for row in candidate_rows:
+        unique_by_source[str(row["source_key"])].add(str(row["candidate_sequence"]))
+    source_unique_rates = [
+        len(unique_by_source[source_key]) / actual_by_source[source_key]
+        for source_key in expected_by_source
+    ]
+    trajectory_count = len(candidate_rows)
+    unique_candidate_count = sum(len(values) for values in unique_by_source.values())
+    sampling_invocation_count = 2 * trajectory_count
+    generator_nfe_with_replay = 2 * generator_nfe
+    return {
+        "candidate_budget_violation_count": mismatch_count,
+        "unique_candidate_count": unique_candidate_count,
+        "duplicate_candidate_count": trajectory_count - unique_candidate_count,
+        "global_unique_candidate_rate": unique_candidate_count / trajectory_count,
+        "source_macro_unique_candidate_rate": math.fsum(source_unique_rates) / len(source_unique_rates),
+        "mean_generator_nfe_per_trajectory": generator_nfe / trajectory_count,
+        "validation_candidate_outputs_per_second": trajectory_count / elapsed_seconds,
+        "validation_sampling_invocation_count": sampling_invocation_count,
+        "validation_sampling_invocations_per_second": sampling_invocation_count / elapsed_seconds,
+        "validation_generator_nfe_with_replay": generator_nfe_with_replay,
+        "validation_generator_nfe_per_second_with_replay": generator_nfe_with_replay / elapsed_seconds,
+        "replay_sampling_overhead_included_in_wall_time": True,
+    }
+
+
 def validate(
     model,
     checkpoint,
@@ -306,14 +352,28 @@ def validate(
             / empirical_totals[row["source_key"]]
         )
     elapsed = time.time() - started
+    efficiency = sampling_efficiency_summary(
+        candidate_rows,
+        sources,
+        generator_nfe=total_actions,
+        elapsed_seconds=elapsed,
+    )
     small_graph = learned_small_graph_check(model, checkpoint, device)
+    numerical_failure_count = terminal_causes.get("NUMERICAL_FAILURE", 0)
+    ready = (
+        replay_failures == 0
+        and budget_violations == 0
+        and efficiency["candidate_budget_violation_count"] == 0
+        and numerical_failure_count == 0
+    )
     summary = {
         "schema_version": "route_a_v3_route2_base_flow_g0_validation.v1",
-        "status": "FLOW_G0_READY" if replay_failures == 0 and budget_violations == 0 else "FLOW_G0_VALIDATION_FAIL",
+        "status": "FLOW_G0_READY" if ready else "FLOW_G0_VALIDATION_FAIL",
         "source_budget_cohort_count": len(sources),
         "trajectory_count": len(candidate_rows),
         "hard_legality_rate": 1.0,
         "edit_budget_violation_count": budget_violations,
+        "numerical_failure_count": numerical_failure_count,
         "trajectory_replay_failure_count": replay_failures,
         "terminal_causes": dict(sorted(terminal_causes.items())),
         "generator_nfe": total_actions,
@@ -329,6 +389,7 @@ def validate(
         "evaluation_outcomes_read": 0,
         "generated_candidates_grant_canonical_credit": False,
         "biological_optimization_established": False,
+        **efficiency,
     }
     return candidate_rows, summary
 
