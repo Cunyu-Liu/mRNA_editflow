@@ -16,6 +16,10 @@ READINESS = (
     ROOT
     / "configs/route_a_v3_route2_mrnabert_critic_v2_guidance_readiness_protocol_v1.json"
 )
+EVALUATOR_PROTOCOL = (
+    ROOT
+    / "configs/route_a_v3_route2_mrnabert_independent_evaluator_qualification_v1.json"
+)
 
 
 def _load(path: Path) -> dict:
@@ -28,10 +32,10 @@ def test_claim_and_consistency_evidence_references_are_closed() -> None:
     consistency = _load(CONSISTENCY)
 
     evidence_ids = [row["evidence_id"] for row in evidence["sources"]]
-    assert len(evidence_ids) == len(set(evidence_ids)) == 14
+    assert len(evidence_ids) == len(set(evidence_ids)) == 15
 
     claims = re.findall(r"\[claim:([^\]]+)\]", draft)
-    assert len(claims) == len(set(claims)) == 16
+    assert len(claims) == len(set(claims)) == 17
 
     cited = set()
     for group in re.findall(r"\[evidence:([^\]]+)\]", draft):
@@ -131,3 +135,30 @@ def test_independent_evaluator_task_reporting_preserves_heterogeneity() -> None:
         "maximum_task_standardized_mae"
     ]["value"]
     assert "does not imply uniformly reliable task-level evaluation" in draft
+
+
+def test_evaluator_global_spread_is_reported_without_post_hoc_gate() -> None:
+    draft = DRAFT.read_text(encoding="utf-8")
+    consistency = _load(CONSISTENCY)
+    protocol = _load(EVALUATOR_PROTOCOL)
+    result = next(
+        row
+        for row in consistency["results"]
+        if row["result_id"] == "R-R2-EVALUATOR"
+    )
+    qualification = protocol["independent_evaluator_qualification"]
+
+    assert not any("prediction_std" in key for key in qualification)
+    assert result["prediction_spread_is_qualification_threshold"] is False
+    assert result["global_prediction_std"] == 1.6834847809909463
+    assert result["global_target_std"] == 764.2945302862793
+    assert result["global_prediction_std_over_target_std"] == (
+        result["global_prediction_std"] / result["global_target_std"]
+    )
+    gap = next(
+        row
+        for row in consistency["known_reporting_gaps"]
+        if row["gap_id"] == "GAP-R2-EVAL-TASK-SPREAD"
+    )
+    assert gap["status"] == "PER_TASK_SPREAD_NOT_RECORDED_NO_TERMINAL_RERUN"
+    assert "cannot establish that every task underwent mean collapse" in draft

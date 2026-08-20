@@ -400,3 +400,15 @@ paper 明确把该异质性与 narrowly passing macro gate 同时报告，不把
 focused tests 4/4，与 evaluator scorer/adjudicator 合并回归 10/10 通过。没有读取
 Development TEST/final Evaluation、没有参数更新，因此中央 CSV 不增加训练行，
 现有 Critic V2 RUNNING 状态不变。
+
+## Independent evaluator global spread 论文限制（2026-08-20）
+
+terminal summary 的 raw global prediction/target standard-deviation ratio 为
+`0.0022026649600126917`。冻结 evaluator qualification protocol 没有 spread
+threshold，因此没有事后改变 terminal qualification；同时，九 endpoint 尺度异质且
+per-task prediction/target spread 未持久化，paper 不以该 global ratio 推断每个 task
+mean-collapse，并明确不为补齐该字段重跑 terminal evaluator。
+
+paper focused tests 5/5，与 evaluator scorer/adjudicator 合并回归 11/11 通过。没有
+读取 Development TEST/final Evaluation、没有参数或 gate 更新，因此中央 CSV 不增加
+训练行，现有 Critic V2 RUNNING 状态不变。

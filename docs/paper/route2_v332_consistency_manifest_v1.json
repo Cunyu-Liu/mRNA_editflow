@@ -76,12 +76,21 @@
         -0.10916458562634956,
         0.7619576378536184
       ],
+      "global_spearman": 0.1790672456429279,
+      "global_prediction_std": 1.6834847809909463,
+      "global_target_std": 764.2945302862793,
+      "global_prediction_std_over_target_std": 0.0022026649600126917,
+      "prediction_spread_is_qualification_threshold": false,
       "maximum_task_standardized_mae": {
         "task_id": "RNA_HALF_LIFE_MINUTES::region=0",
         "value": 9.220029033415157
       },
       "task_table": "docs/paper/route2_v332_independent_evaluator_task_table_v1.csv",
-      "evidence_ids": ["E-R2-EVAL-TRAIN", "E-R2-EVAL-ADJ"]
+      "evidence_ids": [
+        "E-R2-EVAL-TRAIN",
+        "E-R2-EVAL-ADJ",
+        "E-R2-EVAL-PROTOCOL"
+      ]
     },
     {
       "result_id": "R-R2-GENERATION",
@@ -124,6 +133,12 @@
     "guided_xeditflow_authorized": false
   },
   "known_reporting_gaps": [
+    {
+      "gap_id": "GAP-R2-EVAL-TASK-SPREAD",
+      "description": "The terminal evaluator summary retains only global prediction_std and target_std; per-task prediction/target spread diagnostics were not persisted across the nine heterogeneous raw-scale endpoints.",
+      "action": "Report the global ratio as a compression diagnostic, do not add a post hoc qualification threshold, and do not infer that every task mean-collapsed.",
+      "status": "PER_TASK_SPREAD_NOT_RECORDED_NO_TERMINAL_RERUN"
+    },
     {
       "gap_id": "GAP-R2-GEN-WALL",
       "description": "Per-method generation wall time was not persisted for the six search methods; all 891 per-source wall_time_seconds values are null. The overall suite wall time and independent-evaluator scoring wall times are available.",

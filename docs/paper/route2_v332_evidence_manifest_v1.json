@@ -42,6 +42,13 @@
       "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING"
     },
     {
+      "evidence_id": "E-R2-EVAL-PROTOCOL",
+      "kind": "prospective_protocol",
+      "location": "configs/route_a_v3_route2_mrnabert_independent_evaluator_qualification_v1.json",
+      "locator": "predeclared task-macro/positive-task qualification gate, model independence and protected-outcome boundary; no prediction-spread threshold",
+      "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING"
+    },
+    {
       "evidence_id": "E-R2-GEN-SUITE",
       "kind": "terminal_suite_summary",
       "location": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/audits/generation_search_baselines/matched_compute_position_progress_seed20260816_v2/matched_generation_suite_summary_v2.json",

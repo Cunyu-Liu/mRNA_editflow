@@ -943,3 +943,24 @@ evidence manifest locator 也改为 terminal artifact 的精确字段：training
 当前 packet 为 16 个唯一 claim markers、14 个 evidence sources。paper focused tests
 4/4，与 evaluator scorer/adjudicator 合并回归 10/10 通过。本任务没有参数更新，中央
 训练 CSV 不增加伪 attempt；Critic V2 运行状态不因本论文任务改变。
+
+## 33. Independent evaluator global spread 限制与冻结 gate 核对（2026-08-20）
+
+九-task 表补全后进一步核对 terminal evaluator summary 与 prospective qualification
+protocol。raw global `prediction_std=1.6834847809909463`、
+`target_std=764.2945302862793`，ratio 为 `0.0022026649600126917`，是必须保留的
+compression diagnostic。
+
+冻结 qualification gate 只包含 task-macro Spearman exclusive threshold、minimum
+positive-task breadth、model independence、CUDA completion 和 protected-outcome
+closure；没有 prediction-spread threshold。因此不允许事后添加阈值或撤销已经合法
+terminal 的 qualification。另一方面，九个 endpoint 原始尺度高度异质，terminal
+summary 没有持久化 per-task prediction/target spread，故 global ratio 也不能单独
+证明每个 task 都 mean-collapse。paper 现同时报告该 diagnostic 与不可定位到 task
+的限制，并记录 `PER_TASK_SPREAD_NOT_RECORDED_NO_TERMINAL_RERUN`。
+
+evidence manifest 新增 exact prospective qualification protocol，当前 packet 为
+17 个唯一 claim markers、15 个 evidence sources。paper focused tests 5/5，与
+evaluator scorer/adjudicator 合并回归 11/11 通过。没有读取 Development TEST/final
+Evaluation、没有修改 gate 或参数，因此中央训练 CSV 不增加 attempt，Critic V2
+运行状态不因本任务改变。

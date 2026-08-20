@@ -105,6 +105,16 @@ and record counts summing to 18,293 are retained in
 `route2_v332_independent_evaluator_task_table_v1.csv`. [claim:C-R2-016]
 [evidence:E-R2-EVAL-TRAIN,E-R2-EVAL-ADJ]
 
+The raw global prediction standard deviation was 1.683485 versus a target
+standard deviation of 764.294530, a ratio of 0.002202665. Prediction spread was
+not a prespecified qualification threshold: the frozen gate used task-macro
+Spearman, positive-task breadth, model independence, CUDA completion and
+protected-outcome closure. The very small global ratio is nevertheless retained
+as a compression diagnostic. Because the nine endpoints use heterogeneous raw
+scales and per-task prediction/target standard deviations were not persisted,
+the global ratio alone cannot establish that every task underwent mean collapse.
+[claim:C-R2-017] [evidence:E-R2-EVAL-TRAIN,E-R2-EVAL-PROTOCOL]
+
 ### Genetic search led the independent-evaluator criterion, while unguided Flow led measured recovery
 
 All seven methods completed with hard legality 1.0 and zero edit-budget or
@@ -167,8 +177,11 @@ reported in this draft. [claim:C-R2-012]
 
 1. The independent evaluator cleared its threshold by only 0.0013180, and its
    task-level correlations were heterogeneous, including four nonpositive task
-   groups. It shares the broader Development evidence domain; it is isolated
-   from the guiding checkpoint but is not an external biological confirmation.
+   groups. Its raw global prediction-to-target spread ratio was 0.002202665, but
+   no per-task spread diagnostics were retained, so this global heterogeneous-
+   endpoint statistic cannot localize compression by task. It shares the broader
+   Development evidence domain; it is isolated from the guiding checkpoint but
+   is not an external biological confirmation.
 2. Open generated support contains candidates with unknown outcomes. Candidate
    recovery is observable, whereas closed measured NDCG is undefined under this
    support mode; unknown candidates were not assigned zero gain.
