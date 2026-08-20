@@ -155,3 +155,5 @@ candidate-permutation control 已完成 100 epochs / 559,900 updates，Developme
 在线冻结 mRNABERT 编码器已完成，状态为 `ONLINE_FROZEN_MRNABERT_MATCHES_CANONICAL_CACHE`：冻结参数量 113,389,056，64 个 embedding 对比的最大绝对差为 0.00951385（容差 0.01），中位吞吐 74.55 sequences/s，Evaluation records read 为 0。该任务没有参数更新，因此按本表既定边界保存在独立 validation summary，不增加中央训练尝试数；中央表仍为 94 个唯一尝试、86 completed、3 failed、3 incomplete、2 stopped。
 
 该工程成功不覆盖 mRNABERT critic 的 three-seed 失败。Development TEST、all-126,165 refit、LOSO、guided XEditFlow 和 GSE232572/E-MTAB-10902 Evaluation outcomes 仍保持未打开。Base Flow V2 的调度已改为只按剩余显存选择 GPU 0–5 中显存最多的一张卡，按当前约 1.04GB 的实际占用保留 2GB 最低可运行线，不再设置利用率 gate；其后依次进入 validation 与独立 evaluator。
+
+Base Flow V2 已作为正式工程训练尝试自动登记为 `COMPLETED`：817,957 trainable parameters、30 epochs、32,040 updates、BF16/fused AdamW、GPU 0、峰值显存 289.49MB、wall time 2,196.71 秒，selected epoch=1，best validation NLL=5.51248。TRAIN/VALIDATION 明显分叉，记录为 base-rate overfitting，不改变 `scientific_claim_status=NOT_ESTABLISHED`；后续只由一次 Flow G0 validation 裁决合法性和采样工程 readiness。

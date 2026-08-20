@@ -318,6 +318,20 @@ Base Flow validation 的一次性汇总现在同时记录：candidate-budget mis
 
 matched-budget suite 现已把“生成候选”和“用独立 evaluator 选择最强方法”拆开：若 evaluator 合格，继续七种方法的候选生成、独立评分、Development open-support evaluation 与 strongest selection；若 evaluator 为 NO-GO，仍按冻结预算生成七种候选并保留计算账本，但立即停止在评分与 selection 之前，终态写为 `MATCHED_GENERATION_CANDIDATES_COMPLETED_EVALUATOR_NO_GO`。因此 evaluator 失败不会让 Flow/搜索工程倒退，同时也不能被绕过来宣称最强方法或科学收益。
 
+Base Flow V2 训练已于 `2026-08-20T13:24:55+08:00` 完成并自动写入中央训练表。终态为 `LEARNED_BASE_FLOW_GPU_UPDATE_COMPLETE`：68,294 TRAIN、15,924 VALIDATION、18,292 withheld Development TEST、Evaluation read=0；817,957 个可训练参数，30 epochs、32,040 optimizer updates、BF16 + fused AdamW，GPU 0 峰值显存 289.49MB，总 wall time 2,196.71 秒，平均约 73.22 秒/epoch。position/progress features 均启用，critic 未进入训练。
+
+该 run 的 best validation NLL 为 5.51248，selected epoch=1。TRAIN NLL 从 5.12598 持续下降到 0.43646，而 VALIDATION NLL 在第 1 epoch 后明显恶化，说明 learned base-rate model 存在强过拟合；这不是 biological optimization 成功。工程上仍使用冻结的 epoch-1 checkpoint 继续一次合法性、可重放性、小图与采样效率 validation，验证终态将决定 `FLOW_G0_READY`，不会因为训练 loss 下降就提前通过。
+
+新的 matched-generation v2 调度器会等待 Flow validation 与独立 evaluator 终态，然后只按剩余显存在 GPU 0–5 中选择卡，使用新的 position/progress Base Flow checkpoint 与新的独立 evaluator checkpoint，在独立 v2 输出目录运行七种 matched-budget 方法。启动命令为：
+
+```bash
+nohup scripts/route_a_v3/schedule_route2_matched_generation_suite_v2.sh \
+  >/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/schedulers/matched_generation_suite_v2.log \
+  2>&1 </dev/null &
+```
+
+该调度器不会读取外部 Evaluation outcomes；evaluator NO-GO 时仍生成候选但停止在独立评分之前，qualified 时才完成评分与 strongest selection。旧 v1 输出不覆盖。
+
 中央训练尝试表保持 94 个唯一尝试，因为本次 online encoder 是零参数更新的工程验证，不应伪装成训练尝试；其完整终态保存在独立 validation summary，并在本节登记。下一个会进入中央训练表的新终态是 Base Flow V2 或独立 evaluator 的实际训练终态。
 
 ## 14. 低频查看进度
