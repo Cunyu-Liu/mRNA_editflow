@@ -79,7 +79,21 @@
       "point_leader_method_id": "genetic",
       "strongest_generation_baseline_id": "genetic",
       "bootstrap_iterations": 10000,
+      "bootstrap_seed": 20260816,
+      "bootstrap_analysis_unit": "SOURCE",
+      "bootstrap_source_count": 891,
+      "paired_comparison_count": 6,
+      "all_defined_bootstrap_iterations": 10000,
+      "all_leader_advantage_ci_95_lower_bounds_positive": true,
       "bootstrap_uncertainty_equivalent_method_ids": ["genetic"],
+      "nearest_competitor": {
+        "method_id": "generate_then_rerank",
+        "point_leader_advantage": 0.040228719771844945,
+        "leader_advantage_ci_95": [
+          0.018934459870160632,
+          0.06168808431503615
+        ]
+      },
       "scientific_claim_status": "INDEPENDENT_EVALUATOR_ONLY_MEASURED_OUTCOME_NOT_ESTABLISHED",
       "evidence_ids": ["E-R2-GEN-SUITE", "E-R2-GEN-SELECT"]
     },

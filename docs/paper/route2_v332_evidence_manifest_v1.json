@@ -59,7 +59,7 @@
       "evidence_id": "E-R2-GEN-SELECT",
       "kind": "terminal_baseline_selection",
       "location": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/audits/generation_search_baselines/matched_compute_position_progress_seed20260816_v2/strongest_generation_baseline_v2.json",
-      "locator": "all_candidates_ranked, paired bootstrap, strongest baseline and claim status",
+      "locator": "all_candidates_ranked, paired source bootstrap seed/iterations/exact intervals, strongest baseline and claim status",
       "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING"
     },
     {

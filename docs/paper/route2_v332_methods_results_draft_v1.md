@@ -47,12 +47,13 @@ was distinct from the guiding checkpoint, and all method selection used
 Development evidence. [claim:C-R2-004] [evidence:E-R2-GEN-SUITE,E-R2-GEN-INPUT,E-R2-GEN-SELECT]
 
 The primary selection metric was the source-macro maximum independent-evaluator
-uplift over the source. A paired source bootstrap used 10,000 iterations; methods
-whose leader-advantage interval included zero were treated as uncertainty-
-equivalent, with lower mean total forward-equivalents as the prespecified
-tiebreak. Measured-neighborhood candidate and top-k recovery were reported as
-separate Development diagnostics because generated candidates outside measured
-support have unknown outcomes. [claim:C-R2-005]
+uplift over the source. A paired bootstrap used the source as the analysis unit
+(`n = 891`), seed 20260816 and 10,000 iterations, all of which produced defined
+leader-advantage values. Methods whose leader-advantage interval included zero
+were treated as uncertainty-equivalent, with lower mean total forward-equivalents
+as the prespecified tiebreak. Measured-neighborhood candidate and top-k recovery
+were reported as separate Development diagnostics because generated candidates
+outside measured support have unknown outcomes. [claim:C-R2-005]
 [evidence:E-R2-GEN-SELECT,E-R2-GEN-INPUT]
 
 ### Prospective Critic V2 repair
@@ -127,6 +128,15 @@ ranking is a benchmark result: it shows that model-based uplift and recovery of
 the sparse measured neighborhood capture different properties, not that either
 method produces a verified biological improvement. [claim:C-R2-010]
 [evidence:E-R2-GEN-SELECT]
+
+All six paired comparisons supported the point ordering under the frozen
+bootstrap: every 95% leader-advantage interval had a lower bound greater than
+zero. Generate-then-rerank was the nearest competitor; genetic's source-macro
+advantage was 0.04022872 with a 95% interval of [0.01893446, 0.06168808]. This
+interval quantifies Development independent-evaluator separation only and does
+not provide external or measured biological validation. The exact six-row table
+is retained in `route2_v332_generation_bootstrap_table_v1.csv`.
+[claim:C-R2-015] [evidence:E-R2-GEN-SELECT]
 
 ### Predictor readiness remains unresolved
 

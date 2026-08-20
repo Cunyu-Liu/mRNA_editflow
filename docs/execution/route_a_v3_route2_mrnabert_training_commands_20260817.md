@@ -902,3 +902,23 @@ nohup scripts/route_a_v3/schedule_route2_mrnabert_critic_v2_post_confirmation_v1
 ```
 
 watcher 的存在不授权 TEST；唯一授权仍来自真实 three-seed adjudication PASS。
+
+## 31. Development generation bootstrap 统计报告补全（2026-08-20）
+
+等待下一次 control 低频窗口期间，只读复核了已经 terminal 的 frozen strongest-
+generation-baseline artifact；没有访问 Development TEST 或 final Evaluation。原 paper
+draft 已说明 genetic 是唯一 bootstrap uncertainty-equivalent 方法，但未完整报告
+analysis unit、bootstrap seed 和六个 leader-advantage intervals。
+
+现新增全精度 `route2_v332_generation_bootstrap_table_v1.csv`，固定记录 source-level
+paired bootstrap 的 891 个 analysis units、seed `20260816`、10,000 iterations 和六个
+竞争方法的 point advantage/95% interval。所有 10,000 次均定义，六个 interval 的
+lower bound 均大于 0；最近竞争者 generate-then-rerank 的 genetic advantage 为
+`0.040228719771844945`，95% interval 为
+`[0.018934459870160632, 0.06168808431503615]`。该结果只支持 frozen Development
+independent-evaluator separation，不提供 measured biological 或 external validation。
+
+Methods/results draft、evidence manifest 和 consistency manifest 已同步；当前 packet
+为 15 个唯一 claim markers、14 个唯一 evidence sources。paper focused tests 3/3，
+与 frozen selection producer/input 合并回归 17/17 通过。本任务没有参数更新，不向
+中央训练 CSV 增加伪 attempt；Critic V2 运行状态不因本论文任务改变。

@@ -373,3 +373,17 @@ Evaluation outcome。
 focused tests 7/7、本机与 A100 完整相邻生产合同回归均为 103/103。watcher 不进行
 参数更新，因此中央 CSV 不增加训练行；21:54 最近低频状态仍为 100 个唯一 attempts/
 四个 Critic V2 RUNNING，control adjudication absent。
+
+## Development generation bootstrap 论文统计补全（2026-08-20）
+
+只读复核 terminal strongest-generation-baseline artifact 后，新增六行全精度 paired
+source bootstrap 表，并同步 paper draft/evidence/consistency manifests。报告明确
+analysis unit 为 891 个 source、seed `20260816`、10,000/10,000 defined iterations；
+六个 genetic leader-advantage 95% intervals 的 lower bound 均大于 0，最近竞争者为
+generate-then-rerank，点差 `0.040228719771844945`，区间
+`[0.018934459870160632, 0.06168808431503615]`。解释边界仍限于 Development
+independent-evaluator separation。
+
+paper focused tests 3/3，与 frozen selection producer/input 合并回归 17/17 通过。
+没有读取 Development TEST/final Evaluation、没有参数更新，因此中央 CSV 不增加
+训练行，现有 Critic V2 RUNNING 状态不变。
