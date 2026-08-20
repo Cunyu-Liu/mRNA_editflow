@@ -38,6 +38,29 @@ from scripts.route_a_v3.run_route2_base_flow_g0_validation_v1 import (
 )
 
 
+GUIDED_CONFIG_SCHEMA = (
+    "route_a_v3_route2_mrnabert_critic_v2_guided_xeditflow_development.v1"
+)
+READINESS_INPUT_SCHEMA = (
+    "route_a_v3_route2_mrnabert_critic_v2_guidance_readiness_input.v1"
+)
+READINESS_ADJUDICATION_SCHEMA = (
+    "route_a_v3_route2_mrnabert_critic_v2_guidance_readiness_adjudication.v1"
+)
+ROUTE2_ROOT = Path("/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2")
+EXPECTED_READINESS_INPUT = (
+    ROUTE2_ROOT / "comparisons/mrnabert_critic_v2_guidance_readiness_input_v1.json"
+)
+EXPECTED_READINESS_ADJUDICATION = (
+    ROUTE2_ROOT
+    / "comparisons/mrnabert_critic_v2_guidance_readiness_adjudication_v1.json"
+)
+EXPECTED_CRITIC_CHECKPOINT = (
+    ROUTE2_ROOT
+    / "runs/mrnabert_critic_v2/all_development_refit_v1/seed20260823/delta_predictor_checkpoint.pt"
+)
+
+
 class GuidedRunError(RuntimeError):
     pass
 
@@ -54,40 +77,80 @@ def _read_json(path: Path, label: str) -> dict[str, Any]:
     return value
 
 
+def validate_guided_config(config: Mapping[str, Any]) -> None:
+    _require(
+        config.get("schema_version") == GUIDED_CONFIG_SCHEMA
+        and config.get("status") == "WAITING_FOR_CRITIC_V2_AND_FLOW_READINESS",
+        "historical or unexpected guided config is not authorized",
+    )
+    _require(
+        int(config.get("seed", -1)) == 20260825
+        and Path(str(config.get("readiness_input_path")))
+        == EXPECTED_READINESS_INPUT
+        and Path(str(config.get("readiness_adjudication_path")))
+        == EXPECTED_READINESS_ADJUDICATION
+        and Path(str(config.get("critic_checkpoint_path")))
+        == EXPECTED_CRITIC_CHECKPOINT,
+        "Critic V2 guided artifact binding differs",
+    )
+    _require(
+        config.get("matched_search_budget_rule")
+        == "GUIDED_TOTAL_FORWARD_EQUIVALENTS_AS_SEARCH_CRITIC_CAP_PER_SOURCE"
+        and config.get("evaluation_outcomes_accessed") is False
+        and config.get("generated_candidates_grant_canonical_credit") is False
+        and config.get("scientific_claim_status") == "NOT_ESTABLISHED",
+        "guided protected-outcome or compute policy differs",
+    )
+
+
 def validate_readiness(
     readiness_input: Mapping[str, Any],
     adjudication: Mapping[str, Any],
     config: Mapping[str, Any],
 ) -> None:
     _require(
-        readiness_input.get("schema_version") == "route_a_v3_route2_readiness_input.v1",
+        readiness_input.get("schema_version") == READINESS_INPUT_SCHEMA
+        and readiness_input.get("guided_generation_executed") is False
+        and readiness_input.get("evaluation_opened_by_readiness_builder") is False,
         "readiness input schema differs",
     )
     _require(
         adjudication.get("schema_version")
-        == "route_a_v3_route2_readiness_adjudication.v1"
+        == READINESS_ADJUDICATION_SCHEMA
         and adjudication.get("guided_unlocked") is True
         and adjudication.get("critic_status") == "CRITIC_READY_FOR_GUIDANCE"
-        and adjudication.get("flow_status") == "FLOW_G0_READY",
+        and adjudication.get("flow_status") == "FLOW_G0_READY"
+        and adjudication.get("guided_generation_status")
+        == "GUIDED_XEDITFLOW_DEVELOPMENT_ALLOWED"
+        and adjudication.get("guided_generation_executed") is False
+        and adjudication.get("evaluation_opened") is False
+        and adjudication.get("biological_optimization_established") is False,
         "critic and Flow are not ready for guided generation",
     )
     critic = readiness_input["critic"]
     flow = readiness_input["flow"]
+    online_encoder = critic["online_encoder_validation"]
     _require(
-        critic.get("generated_candidate_online_encoder_ready") is True,
+        online_encoder.get("status")
+        == "ONLINE_FROZEN_MRNABERT_MATCHES_CANONICAL_CACHE"
+        and online_encoder.get("novel_candidate_encoding_supported") is True
+        and online_encoder.get("evaluation_records_read") == 0,
         "online generated-candidate encoding is not ready",
     )
     _require(
-        critic.get("evaluation_records_used_for_training_hpo_threshold_or_reward") == 0,
+        critic["reward_policy"].get(
+            "evaluation_records_used_for_training_hpo_threshold_or_reward"
+        )
+        == 0,
         "Evaluation entered critic selection or reward",
     )
     _require(
-        Path(critic["final_refit_checkpoint"])
+        Path(critic["refit_checkpoint"])
         == Path(config["critic_checkpoint_path"]),
         "guided critic path differs from readiness evidence",
     )
     _require(
-        Path(flow["validation_checkpoint"])
+        Path(flow["checkpoint"])
         == Path(config["base_flow_checkpoint_path"]),
         "guided base-flow path differs from readiness evidence",
     )
@@ -179,6 +242,7 @@ def summarize_compute_rows(rows: list[Mapping[str, Any]]) -> dict[str, float | i
 
 
 def execute(config: Mapping[str, Any]) -> dict[str, Any]:
+    validate_guided_config(config)
     output_dir = Path(config["output_directory"])
     _require(not output_dir.exists(), f"guided output already exists: {output_dir}")
     readiness_input = _read_json(
@@ -341,7 +405,7 @@ def execute(config: Mapping[str, Any]) -> dict[str, Any]:
                 region=region,
             )
             rows.append({
-                "method_id": "frozen_mrnabert_critic_guided_xeditflow_v1",
+                "method_id": "frozen_mrnabert_critic_v2_guided_xeditflow_v1",
                 "source_key": source_row["source_key"],
                 "candidate_sequence": terminal.current_sequence,
                 "terminal_cause": terminal.terminal_cause,
@@ -434,7 +498,7 @@ def execute(config: Mapping[str, Any]) -> dict[str, Any]:
         row["critic_model_batch_forward_count"] for row in per_source_compute
     )
     summary = {
-        "schema_version": "route_a_v3_route2_guided_xeditflow_development.v1",
+        "schema_version": GUIDED_CONFIG_SCHEMA,
         "status": "GUIDED_XEDITFLOW_DEVELOPMENT_COMPLETE",
         "trajectory_count": len(rows),
         "source_budget_cohort_count": len(sources),

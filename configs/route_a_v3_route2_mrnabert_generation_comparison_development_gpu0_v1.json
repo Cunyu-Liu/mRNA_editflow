@@ -1,6 +1,7 @@
 {
   "schema_version": "route_a_v3_route2_mrnabert_generation_comparison_protocol.v1",
-  "status": "WAITING_FOR_GUIDED_AND_MATCHED_CANDIDATE_GENERATION",
+  "status": "RETIRED_HISTORICAL_V1_GUIDED_CANDIDATE_PATH_NOT_AUTHORIZED",
+  "replacement_config": "configs/route_a_v3_route2_mrnabert_critic_v2_generation_comparison_development_gpu0_v1.json",
   "device": "cuda:0",
   "physical_gpu_index": 0,
   "source_manifest_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/generation_eligibility/development_validation_v1/source_eligibility.jsonl",

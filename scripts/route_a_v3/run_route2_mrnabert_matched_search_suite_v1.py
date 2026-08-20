@@ -27,6 +27,33 @@ EXPECTED_METHODS = (
     "local_search",
     "generate_then_rerank",
 )
+MATCHED_CONFIG_SCHEMA = (
+    "route_a_v3_route2_mrnabert_critic_v2_matched_search_protocol.v1"
+)
+READINESS_INPUT_SCHEMA = (
+    "route_a_v3_route2_mrnabert_critic_v2_guidance_readiness_input.v1"
+)
+READINESS_ADJUDICATION_SCHEMA = (
+    "route_a_v3_route2_mrnabert_critic_v2_guidance_readiness_adjudication.v1"
+)
+GUIDED_SUMMARY_SCHEMA = (
+    "route_a_v3_route2_mrnabert_critic_v2_guided_xeditflow_development.v1"
+)
+ROUTE2_ROOT = Path("/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2")
+EXPECTED_READINESS_INPUT = (
+    ROUTE2_ROOT / "comparisons/mrnabert_critic_v2_guidance_readiness_input_v1.json"
+)
+EXPECTED_READINESS_ADJUDICATION = (
+    ROUTE2_ROOT
+    / "comparisons/mrnabert_critic_v2_guidance_readiness_adjudication_v1.json"
+)
+EXPECTED_CRITIC_CHECKPOINT = (
+    ROUTE2_ROOT
+    / "runs/mrnabert_critic_v2/all_development_refit_v1/seed20260823/delta_predictor_checkpoint.pt"
+)
+EXPECTED_GUIDED_ROOT = (
+    ROUTE2_ROOT / "runs/mrnabert_critic_v2/guided_xeditflow_development_v1"
+)
 
 
 class MatchedSearchSuiteError(RuntimeError):
@@ -53,6 +80,28 @@ def _read_jsonl(path: Path, label: str) -> list[dict[str, Any]]:
     return rows
 
 
+def validate_config_boundary(config: Mapping[str, Any]) -> None:
+    _require(
+        config.get("schema_version") == MATCHED_CONFIG_SCHEMA
+        and config.get("status") == "WAITING_FOR_CRITIC_V2_GUIDED_XEDITFLOW",
+        "historical or unexpected matched-search config is not authorized",
+    )
+    _require(
+        int(config.get("seed", -1)) == 20260825
+        and Path(str(config.get("readiness_input_path")))
+        == EXPECTED_READINESS_INPUT
+        and Path(str(config.get("readiness_adjudication_path")))
+        == EXPECTED_READINESS_ADJUDICATION
+        and Path(str(config.get("critic_checkpoint_path")))
+        == EXPECTED_CRITIC_CHECKPOINT
+        and Path(str(config.get("guided_summary_path")))
+        == EXPECTED_GUIDED_ROOT / "guided_summary.json"
+        and Path(str(config.get("guided_compute_by_source_path")))
+        == EXPECTED_GUIDED_ROOT / "guided_compute_by_source.jsonl",
+        "Critic V2 matched-search artifact binding differs",
+    )
+
+
 def validate_inputs(
     config: Mapping[str, Any],
     readiness_input: Mapping[str, Any],
@@ -62,9 +111,9 @@ def validate_inputs(
     compute_rows: Sequence[Mapping[str, Any]],
     source_rows: Sequence[Mapping[str, Any]],
 ) -> dict[str, int]:
+    validate_config_boundary(config)
     _require(
-        config.get("schema_version")
-        == "route_a_v3_route2_mrnabert_matched_search_protocol.v1",
+        config.get("schema_version") == MATCHED_CONFIG_SCHEMA,
         "matched-search schema differs",
     )
     _require(
@@ -100,22 +149,34 @@ def validate_inputs(
     )
     _require(
         readiness_input.get("schema_version")
-        == "route_a_v3_route2_readiness_input.v1"
+        == READINESS_INPUT_SCHEMA
+        and readiness_input.get("guided_generation_executed") is False
+        and readiness_input.get("evaluation_opened_by_readiness_builder") is False
+        and readiness_adjudication.get("schema_version")
+        == READINESS_ADJUDICATION_SCHEMA
         and readiness_adjudication.get("guided_unlocked") is True
         and readiness_adjudication.get("critic_status")
         == "CRITIC_READY_FOR_GUIDANCE"
-        and readiness_adjudication.get("flow_status") == "FLOW_G0_READY",
+        and readiness_adjudication.get("flow_status") == "FLOW_G0_READY"
+        and readiness_adjudication.get("guided_generation_status")
+        == "GUIDED_XEDITFLOW_DEVELOPMENT_ALLOWED"
+        and readiness_adjudication.get("guided_generation_executed") is False
+        and readiness_adjudication.get("evaluation_opened") is False,
         "critic and Flow readiness are not closed",
     )
     _require(
-        Path(readiness_input["critic"]["final_refit_checkpoint"])
+        Path(readiness_input["critic"]["refit_checkpoint"])
         == Path(str(config["critic_checkpoint_path"])),
         "matched search critic differs from guidance readiness",
     )
     _require(
-        guided_summary.get("status") == "GUIDED_XEDITFLOW_DEVELOPMENT_COMPLETE"
+        guided_summary.get("schema_version") == GUIDED_SUMMARY_SCHEMA
+        and guided_summary.get("status") == "GUIDED_XEDITFLOW_DEVELOPMENT_COMPLETE"
         and guided_summary.get("matched_search_budget_rule")
-        == config.get("critic_budget_rule"),
+        == config.get("critic_budget_rule")
+        and guided_summary.get("evaluation_outcomes_read") == 0
+        and guided_summary.get("generated_candidates_grant_canonical_credit") is False
+        and guided_summary.get("biological_optimization_established") is False,
         "guided run did not publish the frozen matching budget rule",
     )
     _require(
@@ -211,6 +272,7 @@ def _method_aggregate(path: Path, method_id: str) -> dict[str, Any]:
 
 def execute(config_path: Path) -> dict[str, Any]:
     config = _read_json(config_path, "matched-search config")
+    validate_config_boundary(config)
     output_directory = Path(str(config["output_directory"]))
     _require(not output_directory.exists(), f"matched-search output exists: {output_directory}")
     readiness_input = _read_json(Path(str(config["readiness_input_path"])), "readiness input")
@@ -275,7 +337,7 @@ def execute(config_path: Path) -> dict[str, Any]:
                 _method_aggregate(spec["output_path"], spec["method_id"])
             )
         summary = {
-            "schema_version": "route_a_v3_route2_mrnabert_matched_search_suite.v1",
+            "schema_version": "route_a_v3_route2_mrnabert_critic_v2_matched_search_suite.v1",
             "status": "MATCHED_MRNABERT_SEARCH_CANDIDATES_COMPLETE_NOT_SCIENTIFICALLY_SELECTED",
             "method_summaries": method_summaries,
             "method_count": len(method_summaries),
@@ -301,7 +363,7 @@ def execute(config_path: Path) -> dict[str, Any]:
         }
     except Exception as exc:
         summary = {
-            "schema_version": "route_a_v3_route2_mrnabert_matched_search_suite.v1",
+            "schema_version": "route_a_v3_route2_mrnabert_critic_v2_matched_search_suite.v1",
             "status": "MATCHED_MRNABERT_SEARCH_CANDIDATE_GENERATION_FAILED",
             "error_type": type(exc).__name__,
             "error_message": str(exc),

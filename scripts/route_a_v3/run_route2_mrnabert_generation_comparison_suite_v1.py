@@ -18,6 +18,21 @@ import numpy as np
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SCORE_SCRIPT = REPO_ROOT / "scripts/route_a_v3/score_route2_generation_independent_evaluator_v1.py"
 EVALUATE_SCRIPT = REPO_ROOT / "scripts/route_a_v3/evaluate_route2_generation_v1.py"
+COMPARISON_CONFIG_SCHEMA = (
+    "route_a_v3_route2_mrnabert_critic_v2_generation_comparison_protocol.v1"
+)
+GUIDED_METHOD = "frozen_mrnabert_critic_v2_guided_xeditflow_v1"
+ROUTE2_ROOT = Path("/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2")
+EXPECTED_CRITIC_CHECKPOINT = (
+    ROUTE2_ROOT
+    / "runs/mrnabert_critic_v2/all_development_refit_v1/seed20260823/delta_predictor_checkpoint.pt"
+)
+EXPECTED_GUIDED_ROOT = (
+    ROUTE2_ROOT / "runs/mrnabert_critic_v2/guided_xeditflow_development_v1"
+)
+EXPECTED_MATCHED_ROOT = (
+    ROUTE2_ROOT / "runs/mrnabert_critic_v2/matched_search_development_v1"
+)
 
 
 class GenerationComparisonError(RuntimeError):
@@ -75,12 +90,14 @@ def _paired_bootstrap(
 
 def validate_protocol(config: Mapping[str, Any]) -> tuple[str, tuple[str, ...]]:
     _require(
-        config.get("schema_version")
-        == "route_a_v3_route2_mrnabert_generation_comparison_protocol.v1",
+        config.get("schema_version") == COMPARISON_CONFIG_SCHEMA
+        and config.get("status")
+        == "WAITING_FOR_CRITIC_V2_GUIDED_AND_MATCHED_CANDIDATE_GENERATION",
         "generation comparison schema differs",
     )
     guided = str(config["guided_method_id"])
     baselines = tuple(str(value) for value in config["required_baseline_method_ids"])
+    _require(guided == GUIDED_METHOD, "historical guided method is not authorized")
     _require(guided not in baselines and len(baselines) == len(set(baselines)), "guided/baseline method identities overlap")
     _require(len(baselines) == 7 and "unguided_learned_base_flow_g0" in baselines, "seven required baselines are not frozen")
     _require(set(config["candidate_paths"]) == {guided, *baselines}, "candidate paths do not cover exact methods")
@@ -93,6 +110,29 @@ def validate_protocol(config: Mapping[str, Any]) -> tuple[str, tuple[str, ...]]:
     )
     _require(int(config["bootstrap_iterations"]) >= 1000, "bootstrap iteration count is too small")
     return guided, baselines
+
+
+def validate_config_boundary(config: Mapping[str, Any]) -> None:
+    guided, baselines = validate_protocol(config)
+    paths = {
+        key: Path(str(value)) for key, value in config["candidate_paths"].items()
+    }
+    _require(
+        Path(str(config.get("guided_compute_by_source_path")))
+        == EXPECTED_GUIDED_ROOT / "guided_compute_by_source.jsonl"
+        and Path(str(config.get("guiding_checkpoint_path")))
+        == EXPECTED_CRITIC_CHECKPOINT
+        and paths[guided]
+        == EXPECTED_GUIDED_ROOT / "generated_candidates.private.jsonl",
+        "Critic V2 comparison guided binding differs",
+    )
+    for method in baselines:
+        if method == "unguided_learned_base_flow_g0":
+            continue
+        _require(
+            paths[method] == EXPECTED_MATCHED_ROOT / f"{method}.private.jsonl",
+            f"Critic V2 matched candidate path differs: {method}",
+        )
 
 
 def method_statistics(
@@ -191,7 +231,7 @@ def select_comparison(
     lower, upper = guided_comparison["ci_95"]
     stable_advantage = lower > 0.0
     return {
-        "schema_version": "route_a_v3_route2_mrnabert_generation_comparison.v1",
+        "schema_version": "route_a_v3_route2_mrnabert_critic_v2_generation_comparison.v1",
         "status": (
             "DEVELOPMENT_INDEPENDENT_EVALUATOR_GUIDED_ADVANTAGE"
             if stable_advantage
@@ -224,6 +264,7 @@ def _run(command: list[str], stdout_path: Path, stderr_path: Path) -> None:
 
 def execute(config_path: Path) -> dict[str, Any]:
     config = _read_json(config_path, "generation comparison config")
+    validate_config_boundary(config)
     guided, baselines = validate_protocol(config)
     output_directory = Path(str(config["output_directory"]))
     _require(not output_directory.exists(), f"comparison output exists: {output_directory}")
@@ -233,7 +274,7 @@ def execute(config_path: Path) -> dict[str, Any]:
     output_directory.mkdir()
     if adjudication.get("status") != "INDEPENDENT_GENERATION_EVALUATOR_QUALIFIED":
         result = {
-            "schema_version": "route_a_v3_route2_mrnabert_generation_comparison.v1",
+            "schema_version": "route_a_v3_route2_mrnabert_critic_v2_generation_comparison.v1",
             "status": "BLOCKED_INDEPENDENT_EVALUATOR_NO_GO",
             "independent_evaluator_status": adjudication.get("status"),
             "candidate_generation_preserved": True,

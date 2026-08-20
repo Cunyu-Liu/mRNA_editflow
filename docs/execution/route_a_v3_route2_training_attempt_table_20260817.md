@@ -291,3 +291,16 @@ unauthorized。
 更新后的 packet 包含 14 个唯一 claim markers、13 个唯一 evidence sources，引用
 全部闭合；focused consistency tests 2/2 通过。该任务没有参数更新，因此中央 CSV
 不增加训练行，最近已记录的 100 个唯一 attempts/四个 Critic V2 RUNNING 状态不变。
+
+## Critic V2 Development generation 执行链硬切换（2026-08-20）
+
+审计确认历史 guided、matched-search 与 generation-comparison 入口仍绑定旧 V1
+readiness/refit/method/candidate paths，无法消费新 V2 readiness。现已直接切到
+V2-only schemas/configs：三个历史 config 标记 retired，现 runners 在 artifact read
+前拒绝旧 config；新链精确绑定 V2 readiness、final refit checkpoint、guided
+summary/compute、matched candidates 与 V2 guided method identity。
+
+真实 readiness packet、guided candidates、matched candidates 和 comparison output
+均未创建；TEST/LOSO/Evaluation outcome 未因本任务读取。三入口 focused tests
+16/16 通过。该任务没有参数更新，因此中央 CSV 不增加训练行，最近已记录的 100 个
+唯一 attempts/四个 Critic V2 RUNNING 状态不变。

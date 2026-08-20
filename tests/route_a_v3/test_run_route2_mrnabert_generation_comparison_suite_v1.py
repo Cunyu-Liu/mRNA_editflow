@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import sys
 from pathlib import Path
 
@@ -20,7 +21,7 @@ def _load():
     return module
 
 
-GUIDED = "frozen_mrnabert_critic_guided_xeditflow_v1"
+GUIDED = "frozen_mrnabert_critic_v2_guided_xeditflow_v1"
 BASELINES = (
     "random_legal", "greedy", "beam", "genetic", "local_search",
     "generate_then_rerank", "unguided_learned_base_flow_g0",
@@ -29,7 +30,8 @@ BASELINES = (
 
 def _config():
     return {
-        "schema_version": "route_a_v3_route2_mrnabert_generation_comparison_protocol.v1",
+        "schema_version": "route_a_v3_route2_mrnabert_critic_v2_generation_comparison_protocol.v1",
+        "status": "WAITING_FOR_CRITIC_V2_GUIDED_AND_MATCHED_CANDIDATE_GENERATION",
         "guided_method_id": GUIDED,
         "required_baseline_method_ids": list(BASELINES),
         "candidate_paths": {method: f"/{method}.jsonl" for method in (GUIDED, *BASELINES)},
@@ -111,3 +113,25 @@ def test_guided_compute_must_equal_frozen_per_source_budget() -> None:
     evaluations.update({method: _evaluation(method, {"S1": 0.0}) for method in BASELINES})
     with pytest.raises(module.GenerationComparisonError, match="matched total budget|guided accounting"):
         module.select_comparison(_config(), evaluations, budgets)
+
+
+def test_repository_config_uses_only_critic_v2_candidate_paths() -> None:
+    module = _load()
+    current = json.loads(
+        (
+            ROOT
+            / "configs/route_a_v3_route2_mrnabert_critic_v2_generation_comparison_development_gpu0_v1.json"
+        ).read_text(encoding="utf-8")
+    )
+    historical = json.loads(
+        (
+            ROOT
+            / "configs/route_a_v3_route2_mrnabert_generation_comparison_development_gpu0_v1.json"
+        ).read_text(encoding="utf-8")
+    )
+    module.validate_config_boundary(current)
+    assert historical["status"] == (
+        "RETIRED_HISTORICAL_V1_GUIDED_CANDIDATE_PATH_NOT_AUTHORIZED"
+    )
+    with pytest.raises(module.GenerationComparisonError, match="schema"):
+        module.validate_config_boundary(historical)

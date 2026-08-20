@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import math
 from pathlib import Path
 
@@ -24,33 +25,59 @@ class FakeCritic:
 
 def _readiness():
     return {
-        "schema_version": "route_a_v3_route2_readiness_input.v1",
+        "schema_version": runner.READINESS_INPUT_SCHEMA,
         "critic": {
-            "generated_candidate_online_encoder_ready": True,
-            "evaluation_records_used_for_training_hpo_threshold_or_reward": 0,
-            "final_refit_checkpoint": "/critic.pt",
+            "online_encoder_validation": {
+                "status": "ONLINE_FROZEN_MRNABERT_MATCHES_CANONICAL_CACHE",
+                "novel_candidate_encoding_supported": True,
+                "evaluation_records_read": 0,
+            },
+            "reward_policy": {
+                "evaluation_records_used_for_training_hpo_threshold_or_reward": 0,
+            },
+            "refit_checkpoint": str(runner.EXPECTED_CRITIC_CHECKPOINT),
         },
-        "flow": {"validation_checkpoint": "/flow.pt"},
+        "flow": {"checkpoint": "/flow.pt"},
+        "guided_generation_executed": False,
+        "evaluation_opened_by_readiness_builder": False,
     }
 
 
 def _adjudication():
     return {
-        "schema_version": "route_a_v3_route2_readiness_adjudication.v1",
+        "schema_version": runner.READINESS_ADJUDICATION_SCHEMA,
         "critic_status": "CRITIC_READY_FOR_GUIDANCE",
         "flow_status": "FLOW_G0_READY",
+        "guided_generation_status": "GUIDED_XEDITFLOW_DEVELOPMENT_ALLOWED",
         "guided_unlocked": True,
+        "guided_generation_executed": False,
+        "evaluation_opened": False,
+        "biological_optimization_established": False,
     }
 
 
 def _config():
     return {
-        "critic_checkpoint_path": "/critic.pt",
+        "schema_version": runner.GUIDED_CONFIG_SCHEMA,
+        "status": "WAITING_FOR_CRITIC_V2_AND_FLOW_READINESS",
+        "seed": 20260825,
+        "readiness_input_path": str(runner.EXPECTED_READINESS_INPUT),
+        "readiness_adjudication_path": str(
+            runner.EXPECTED_READINESS_ADJUDICATION
+        ),
+        "critic_checkpoint_path": str(runner.EXPECTED_CRITIC_CHECKPOINT),
         "base_flow_checkpoint_path": "/flow.pt",
+        "matched_search_budget_rule": (
+            "GUIDED_TOTAL_FORWARD_EQUIVALENTS_AS_SEARCH_CRITIC_CAP_PER_SOURCE"
+        ),
+        "evaluation_outcomes_accessed": False,
+        "generated_candidates_grant_canonical_credit": False,
+        "scientific_claim_status": "NOT_ESTABLISHED",
     }
 
 
 def test_readiness_must_unlock_exact_bound_checkpoints() -> None:
+    runner.validate_guided_config(_config())
     runner.validate_readiness(_readiness(), _adjudication(), _config())
     adjudication = _adjudication()
     adjudication["guided_unlocked"] = False
@@ -58,8 +85,36 @@ def test_readiness_must_unlock_exact_bound_checkpoints() -> None:
         runner.validate_readiness(_readiness(), adjudication, _config())
     config = _config()
     config["critic_checkpoint_path"] = "/other.pt"
+    with pytest.raises(runner.GuidedRunError, match="artifact binding"):
+        runner.validate_guided_config(config)
     with pytest.raises(runner.GuidedRunError, match="critic path differs"):
         runner.validate_readiness(_readiness(), _adjudication(), config)
+
+
+def test_historical_v1_config_is_rejected_before_artifact_access() -> None:
+    config = _config()
+    config["schema_version"] = "route_a_v3_route2_guided_xeditflow_development.v1"
+    with pytest.raises(runner.GuidedRunError, match="historical"):
+        runner.validate_guided_config(config)
+
+
+def test_repository_config_uses_only_critic_v2_readiness() -> None:
+    root = Path(__file__).resolve().parents[2]
+    current = json.loads(
+        (
+            root
+            / "configs/route_a_v3_route2_mrnabert_critic_v2_guided_xeditflow_development_gpu0_v1.json"
+        ).read_text(encoding="utf-8")
+    )
+    historical = json.loads(
+        (
+            root / "configs/route_a_v3_route2_guided_xeditflow_development_gpu0_v1.json"
+        ).read_text(encoding="utf-8")
+    )
+    runner.validate_guided_config(current)
+    assert historical["status"] == "RETIRED_HISTORICAL_V1_READINESS_PATH_NOT_AUTHORIZED"
+    with pytest.raises(runner.GuidedRunError, match="historical"):
+        runner.validate_guided_config(historical)
 
 
 def test_batched_guidance_matches_frozen_potential_difference() -> None:
@@ -107,7 +162,7 @@ def test_batched_guidance_matches_frozen_potential_difference() -> None:
 
 def test_online_encoder_and_evaluation_are_required() -> None:
     readiness = _readiness()
-    readiness["critic"]["generated_candidate_online_encoder_ready"] = False
+    readiness["critic"]["online_encoder_validation"]["novel_candidate_encoding_supported"] = False
     with pytest.raises(runner.GuidedRunError, match="online"):
         runner.validate_readiness(readiness, _adjudication(), _config())
 
@@ -156,6 +211,8 @@ def test_search_budget_matches_guided_total_not_only_critic() -> None:
             }
         ])
     readiness = _readiness()
-    readiness["critic"]["evaluation_records_used_for_training_hpo_threshold_or_reward"] = 1
+    readiness["critic"]["reward_policy"][
+        "evaluation_records_used_for_training_hpo_threshold_or_reward"
+    ] = 1
     with pytest.raises(runner.GuidedRunError, match="Evaluation"):
         runner.validate_readiness(readiness, _adjudication(), _config())

@@ -685,3 +685,44 @@ evidence sources，所有 draft/manifest 引用闭合。focused consistency test
 通过，并验证 seed、single-TEST report-only policy、LOSO study count 与双 readiness
 条件同冻结协议完全一致。该论文任务无参数更新，不向中央训练 CSV 增加伪 attempt；
 最近记录的 100 个唯一 attempts/四个 Critic V2 RUNNING 状态不因本任务改变。
+
+## 25. Critic V2 guided/matched/comparison 执行链硬切换（2026-08-20）
+
+下游审计发现一个真实阻塞：历史 guided runner/config、matched-search runner/config
+和 generation-comparison config 均绑定旧 V1 readiness、旧 refit checkpoint、旧
+guided method 或旧 candidate 目录。新 V2 readiness 即使未来 PASS，也会被旧入口
+拒绝或在后续消费者处断链。
+
+当前执行链已直接硬切换到 V2，不保留双 schema 兼容分支。三个历史 config 均标记
+为 `RETIRED_*_NOT_AUTHORIZED` 并指向各自 V2 replacement；guided 与 matched-search
+runner 会在读取任何 readiness artifact 前拒绝旧 config。新 V2 configs 精确绑定：
+
+- `mrnabert_critic_v2_guidance_readiness_{input,adjudication}_v1.json`；
+- V2 all-Development refit 的 seed-20260823 final checkpoint；
+- V2-specific guided output 与逐 source compute；
+- V2-specific matched-search candidate 目录；
+- `frozen_mrnabert_critic_v2_guided_xeditflow_v1` method identity。
+
+生成算法、mean-potential reward、legal `SUB + STOP`、fixed-seed replay、逐 source
+forward-equivalent matching、六种 search 方法、独立 evaluator 和 paired-bootstrap
+Development 比较规则均未改变。matched search 仍只生成 candidates，不在该 stage
+选择 strongest method；comparison 仍不构成 measured biological 或 external
+Evaluation success。
+
+本次只冻结并验证入口，没有构建真实 readiness packet，没有运行 guided/matched/
+comparison，没有创建 `/mnt` candidates/output，也没有读取 TEST、LOSO 或新的 final
+Evaluation outcome。三入口 focused suite 16/16 通过；定向检查确认 V2
+configs/runners/tests 中不含旧 V1 readiness/refit/method/candidate bindings。本任务
+没有参数更新，中央训练 CSV 不新增伪 attempt；最近记录的 100 个唯一 attempts/
+四个 Critic V2 RUNNING 状态不因本任务改变。
+
+未来三个 V2-only 配置依次为：
+
+```text
+configs/route_a_v3_route2_mrnabert_critic_v2_guided_xeditflow_development_gpu0_v1.json
+configs/route_a_v3_route2_mrnabert_critic_v2_matched_search_development_gpu0_v1.json
+configs/route_a_v3_route2_mrnabert_critic_v2_generation_comparison_development_gpu0_v1.json
+```
+
+只有 V2 readiness 真实 `guided_unlocked=true` 后，才可动态选择 GPU0-5 并从第一项
+开始；后两项分别还须等待前一项 terminal。当前不得调用任何一个入口。
