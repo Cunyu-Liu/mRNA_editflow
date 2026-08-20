@@ -456,3 +456,24 @@ TEST 与新 final Evaluation outcome 都未读取，guided generation 仍未授�
 `/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/schedulers/mrnabert_critic_v2_three_seeds_v1.log`。
 首条日志确认它正在等待 control adjudication；验收时 three-seed runtime、run
 和 adjudication 均未创建。A100 新增的 7 个 confirmation focused tests 全部通过。
+
+## 18. Route 2 V3.3.2 manuscript evidence packet（2026-08-20）
+
+等待 Critic V2 control terminal 期间，已建立本地、未向外部服务传输的
+evidence-bound Methods/Results draft、evidence manifest、consistency manifest
+和七方法全精度 CSV。所有事实句保留 claim/evidence markers，状态明确为
+`INTERNAL_EVIDENCE_BOUND_NOT_SUBMISSION_READY`，需负责人逐项 human
+verification 后才能并入正式稿。
+
+该 packet 保留两个不能被润色抹掉的结果：genetic 是独立 evaluator uplift
+criterion 的 Development strongest baseline；unguided Base Flow 则在 sparse
+measured-neighborhood candidate recovery 与 top-k recovery 上领先。两种排序不
+混写，也都不解释为 biological improvement。另记录一个真实 reporting gap：
+六个 search 方法的 per-method generation wall time 未持久化，所有 source-level
+字段均为 null；只报告 overall suite wall、独立 scoring wall 和 Base Flow 的独立
+341.56 秒汇总，不通过文件时间戳倒推缺失值，也不重跑 terminal suite。
+
+该论文任务没有参数更新，因此不向中央训练尝试表增加伪训练行；最近一次事件
+节点仍为 100 个唯一 attempts，其中四个 Critic V2 arms 为 RUNNING。packet
+一致性检查通过：13 个 claim markers、12 个 evidence sources、7 个唯一方法，
+所有 evidence references 均闭合。

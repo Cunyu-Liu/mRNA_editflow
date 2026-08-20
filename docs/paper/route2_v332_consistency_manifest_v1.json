@@ -1,0 +1,92 @@
+{
+  "schema_version": "route2_v332_consistency_manifest.v1",
+  "document_id": "route2-v332-methods-results-draft-v1",
+  "methods": [
+    {
+      "method_id": "M-R2-DATA",
+      "label": "Frozen Development split",
+      "analysis_intent": "DEVELOPMENT_MODEL_SELECTION_AND_ENGINEERING",
+      "record_counts": {
+        "total": 126165,
+        "train": 89580,
+        "validation": 18293,
+        "test_withheld": 18292
+      },
+      "evidence_ids": ["E-R2-CONTRACT", "E-R2-FRESH"]
+    },
+    {
+      "method_id": "M-R2-EVALUATOR",
+      "label": "Frozen independent generation evaluator",
+      "analysis_intent": "DEVELOPMENT_METHOD_SELECTION",
+      "model_kind": "siamese_cnn",
+      "trainable_parameter_count": 509845,
+      "epochs": 8,
+      "optimizer_steps": 22400,
+      "evidence_ids": ["E-R2-EVAL-TRAIN", "E-R2-EVAL-ADJ"]
+    },
+    {
+      "method_id": "M-R2-GENERATION",
+      "label": "Seven-method matched-budget generation/search suite",
+      "analysis_intent": "DEVELOPMENT_DESCRIPTIVE_AND_METHOD_SELECTION",
+      "source_count": 891,
+      "candidate_cap_per_source": 32,
+      "critic_forward_cap_per_source": 256,
+      "total_forward_equivalent_cap_per_source": 320,
+      "action_space": "SUB_PLUS_STOP",
+      "evidence_ids": ["E-R2-GEN-SUITE", "E-R2-GEN-INPUT", "E-R2-GEN-SELECT"]
+    },
+    {
+      "method_id": "M-R2-CRITIC-V2",
+      "label": "Task/study-balanced Critic V2 control screen",
+      "analysis_intent": "PROSPECTIVE_DEVELOPMENT_CONTROL_SCREEN",
+      "screen_seed": 20260825,
+      "status": "RUNNING",
+      "evidence_ids": ["E-R2-CRITIC-V2-PROTOCOL", "E-R2-CRITIC-V2-LAUNCH"]
+    }
+  ],
+  "results": [
+    {
+      "result_id": "R-R2-EVALUATOR",
+      "task_macro_spearman": 0.10256553571558498,
+      "task_macro_standardized_mae": 1.8078550850617527,
+      "exclusive_threshold": 0.1012475745988908,
+      "margin": 0.0013179611166941746,
+      "positive_task_count": 5,
+      "task_count": 9,
+      "evidence_ids": ["E-R2-EVAL-TRAIN", "E-R2-EVAL-ADJ"]
+    },
+    {
+      "result_id": "R-R2-GENERATION",
+      "suite_status": "MATCHED_GENERATION_BASELINE_SUITE_COMPLETED",
+      "suite_wall_time_seconds": 10959.641515254974,
+      "point_leader_method_id": "genetic",
+      "strongest_generation_baseline_id": "genetic",
+      "bootstrap_iterations": 10000,
+      "bootstrap_uncertainty_equivalent_method_ids": ["genetic"],
+      "scientific_claim_status": "INDEPENDENT_EVALUATOR_ONLY_MEASURED_OUTCOME_NOT_ESTABLISHED",
+      "evidence_ids": ["E-R2-GEN-SUITE", "E-R2-GEN-SELECT"]
+    },
+    {
+      "result_id": "R-R2-CRITIC-V1",
+      "seed_task_macro_spearman": [0.116129, 0.116908, 0.137384],
+      "seed_margin_over_strongest_baseline": [-0.015586, -0.014806, 0.005669],
+      "positive_margin_seed_count": 1,
+      "seed_count": 3,
+      "status": "THREE_FINAL_SEEDS_DO_NOT_SUPPORT_FROZEN_DEVELOPMENT_TEST",
+      "evidence_ids": ["E-R2-CONTRACT", "E-R2-CRITIC-V1"]
+    }
+  ],
+  "protected_outcomes": {
+    "development_test_opened": false,
+    "new_final_evaluation_opened": false,
+    "guided_xeditflow_authorized": false
+  },
+  "known_reporting_gaps": [
+    {
+      "gap_id": "GAP-R2-GEN-WALL",
+      "description": "Per-method generation wall time was not persisted for the six search methods; all 891 per-source wall_time_seconds values are null. The overall suite wall time and independent-evaluator scoring wall times are available.",
+      "action": "Report NOT_RECORDED; do not infer from file timestamps and do not rerun terminal methods."
+    }
+  ],
+  "submission_ready": false
+}

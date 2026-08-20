@@ -1,0 +1,95 @@
+{
+  "schema_version": "route2_v332_manuscript_evidence_manifest.v1",
+  "document_id": "route2-v332-methods-results-draft-v1",
+  "draft_status": "INTERNAL_EVIDENCE_BOUND_NOT_SUBMISSION_READY",
+  "confidentiality": "LOCAL_UNPUBLISHED_PROJECT_MATERIAL",
+  "external_transfer_performed": false,
+  "human_verification_required": true,
+  "sources": [
+    {
+      "evidence_id": "E-R2-CONTRACT",
+      "kind": "governing_contract",
+      "location": "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna 数据gate转向后的合同.md",
+      "locator": "V3.3.2 current snapshot, strict execution order, claim boundaries",
+      "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING"
+    },
+    {
+      "evidence_id": "E-R2-EXEC",
+      "kind": "execution_protocol",
+      "location": "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna V3.3.2 执行提示词.md",
+      "locator": "sections B-D and scientific expression boundary",
+      "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING"
+    },
+    {
+      "evidence_id": "E-R2-FRESH",
+      "kind": "local_audit",
+      "location": "audits/route_a_v3_route2_v332_freshness_and_critic_v2_freeze_v1.json",
+      "locator": "independent_evaluator, matched_generation, central_training_attempts, next_action",
+      "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING"
+    },
+    {
+      "evidence_id": "E-R2-EVAL-TRAIN",
+      "kind": "terminal_training_summary",
+      "location": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/independent_generation_evaluator/neural_medium_siamese_task_scaled_seed20260816_frozen_development_validation_gpu2_v3/training_summary.json",
+      "locator": "status, parameter/update budget, validation_metrics, protected-outcome fields",
+      "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING"
+    },
+    {
+      "evidence_id": "E-R2-EVAL-ADJ",
+      "kind": "terminal_adjudication",
+      "location": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/comparisons/mrnabert_independent_evaluator_adjudication_v1.json",
+      "locator": "qualification threshold, margin, task breadth, protected-outcome fields",
+      "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING"
+    },
+    {
+      "evidence_id": "E-R2-GEN-SUITE",
+      "kind": "terminal_suite_summary",
+      "location": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/audits/generation_search_baselines/matched_compute_position_progress_seed20260816_v2/matched_generation_suite_summary_v2.json",
+      "locator": "status, methods, budgets, stage return codes, total wall time, release state",
+      "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING"
+    },
+    {
+      "evidence_id": "E-R2-GEN-INPUT",
+      "kind": "terminal_selection_input",
+      "location": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/audits/generation_search_baselines/matched_compute_position_progress_seed20260816_v2/baseline_selection_input_v2.json",
+      "locator": "seven baseline_evaluations; generation and measured_neighborhood aggregates",
+      "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING"
+    },
+    {
+      "evidence_id": "E-R2-GEN-SELECT",
+      "kind": "terminal_baseline_selection",
+      "location": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/audits/generation_search_baselines/matched_compute_position_progress_seed20260816_v2/strongest_generation_baseline_v2.json",
+      "locator": "all_candidates_ranked, paired bootstrap, strongest baseline and claim status",
+      "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING"
+    },
+    {
+      "evidence_id": "E-R2-FLOW-MATCHED",
+      "kind": "terminal_flow_validation",
+      "location": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/base_flow_g0/matched_compute_position_progress_seed20260816_v2/validation_summary.json",
+      "locator": "FLOW_G0_READY, trajectory count, wall time, peak VRAM, guided/evaluation closure",
+      "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING"
+    },
+    {
+      "evidence_id": "E-R2-CRITIC-V1",
+      "kind": "terminal_adjudication",
+      "location": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/comparisons/mrnabert_three_seed_adjudication_v1.json",
+      "locator": "three seed margins and frozen TEST authorization",
+      "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING"
+    },
+    {
+      "evidence_id": "E-R2-CRITIC-V2-PROTOCOL",
+      "kind": "prospective_protocol",
+      "location": "configs/route_a_v3_route2_mrnabert_critic_v2_protocol_v1.json",
+      "locator": "hypothesis, four arms, screen seed, control gate, protected outcomes",
+      "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING"
+    },
+    {
+      "evidence_id": "E-R2-CRITIC-V2-LAUNCH",
+      "kind": "launch_audit",
+      "location": "audits/route_a_v3_route2_critic_v2_launch_and_confirmation_freeze_v1.json",
+      "locator": "four RUNNING arms, GPUs, central ledger, three-seed watcher",
+      "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING"
+    }
+  ],
+  "submission_ready": false
+}

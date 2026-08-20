@@ -189,3 +189,10 @@ positive-task count、相对三个 controls 的差距和非有限值/mean-collap
 首条日志为 `waiting_for_critic_v2_control_adjudication`。启动验收时，three-seed
 runtime config root、run root 与 adjudication 文件均不存在，符合 gate 前不创建
 seed 产物的冻结要求。A100 新增三种子配置/裁决的 7 个 focused tests 全部通过。
+
+等待期间完成的 Route 2 V3.3.2 manuscript evidence packet 属于零参数更新的
+论文/记录任务，不增加中央训练尝试。它把七方法 terminal Development 聚合表、
+独立 evaluator qualification、原 three-seed negative result、Critic V2 RUNNING
+状态和 protected-outcome boundary 绑定到 12 个 evidence IDs；一致性检查覆盖
+13 个 claims 与 7 个方法。六个 search 方法缺失 per-method generation wall time
+被明确记为 `NOT_RECORDED`，不据此重跑已 terminal 的 suite。
