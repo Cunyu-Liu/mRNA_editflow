@@ -1,0 +1,49 @@
+{
+  "schema_version": "route_a_v3_route2_mrnabert_critic_v2_frozen_test_protocol.v1",
+  "status": "FROZEN_BEFORE_CRITIC_V2_THREE_SEED_OUTCOMES",
+  "control_protocol": "configs/route_a_v3_route2_mrnabert_critic_v2_protocol_v1.json",
+  "three_seed_protocol": "configs/route_a_v3_route2_mrnabert_critic_v2_three_seed_protocol_v1.json",
+  "control_adjudication": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/comparisons/mrnabert_critic_v2_task_study_macro_controls_adjudication_v1.json",
+  "three_seed_adjudication": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/comparisons/mrnabert_critic_v2_task_study_macro_three_seed_adjudication_v1.json",
+  "selection_pool": "DEVELOPMENT_TRAIN_VALIDATION_ONLY",
+  "required_confirmation_seeds": [20260822, 20260823, 20260824],
+  "single_frozen_test_seed": 20260823,
+  "development_test_record_count": 18292,
+  "strongest_same_information_baseline": {
+    "baseline_id": "method_repair_global_scaled_seed20260821",
+    "task_macro_spearman": 0.13171439492559175,
+    "task_macro_standardized_mae": 1.806657840788394
+  },
+  "frozen_training_policy": {
+    "model_kind": "delta_pretrained_mrnabert_edit_centered_antisymmetric",
+    "training_weighting_mode": "TASK_THEN_STUDY_THEN_SOURCE_CONTEXT_ENDPOINT_GROUP",
+    "training_sampling_mode": "TASK_STUDY_SOURCE_GROUP_BALANCED_FIXED_DRAWS",
+    "loss_aggregation_mode": "TASK_MACRO_MEAN",
+    "training_update_mode": "STANDARD",
+    "target_scaling_mode": "TRAIN_TASK_ROBUST",
+    "loss_kind": "huber",
+    "huber_delta": 1.0,
+    "checkpoint_selection": "BEST_VALIDATION",
+    "checkpoint_metric": "TASK_MACRO_SPEARMAN_THEN_STANDARDIZED_MAE",
+    "epochs": 100,
+    "batch_size": 16,
+    "optimizer_name": "AdamW",
+    "learning_rate": 0.0001,
+    "weight_decay": 0.0001,
+    "training_precision": "BF16"
+  },
+  "test_policy": {
+    "result_stage": "FROZEN_DEVELOPMENT_TEST",
+    "run_mode": "FIXED_GROUPED_SPLIT",
+    "single_execution_only": true,
+    "checkpoint_selected_by": "DEVELOPMENT_VALIDATION_ONLY",
+    "test_used_for_checkpoint_selection": false,
+    "test_used_for_model_or_policy_selection": false
+  },
+  "runtime_config": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/mrnabert_critic_v2/runtime_configs/single_frozen_development_test_v1/seed20260823.json",
+  "run_directory": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/mrnabert_critic_v2/single_frozen_development_test_v1/seed20260823",
+  "development_test_outcomes_accessed": false,
+  "evaluation_outcomes_accessed": false,
+  "guided_generation_authorized": false,
+  "scientific_claim_status": "NOT_ESTABLISHED"
+}

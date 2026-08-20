@@ -200,3 +200,18 @@ seed 产物的冻结要求。A100 新增三种子配置/裁决的 7 个 focused 
 未来 matched/guided parallel stages 已补充逐方法 wall time 落盘；该记录修复
 没有参数更新、不新增中央训练尝试，也不追溯填充已 terminal baseline 的缺失
 字段。对应 focused suite tests 6/6 通过。
+
+## Critic V2 单次冻结 TEST 配置门（2026-08-20）
+
+Critic V2 control 尚在运行且 three-seed outcome 尚不存在时，已前瞻冻结独立的
+single-TEST protocol 和 V2-only config preparer。它固定 seed `20260823`，完整
+重放 control/three-seed/TEST 三份协议的同一训练 policy，保留
+`checkpoint_selection=BEST_VALIDATION`，并要求两个裁决 PASS、精确三 seed、3/3
+positive strongest-baseline margins、protected outcomes 未进入以及被选 confirmation
+config 身份一致。preparer 只会写出一次性 runtime config；不会训练，也不会自行
+读取 TEST。既有 runtime config 或 run directory 任一存在时均拒绝覆盖。
+
+本任务没有发生参数更新，也没有调用真实 preparer，因此中央 CSV 不增加一行；
+最近一次已记录的中央状态仍是 100 个唯一 attempts，其中四个 Critic V2 arms 为
+RUNNING。Development TEST 与 Evaluation 仍关闭。focused verification 覆盖新门
+和既有 three-seed 配置路径，共 14/14 通过。

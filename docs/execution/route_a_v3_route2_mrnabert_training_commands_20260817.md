@@ -484,3 +484,42 @@ measured-neighborhood candidate recovery 与 top-k recovery 上领先。两种�
 缺失值。focused suite tests 为 6/6 通过；额外的通用 entrypoint 检查中 21 项
 通过、2 项因本机系统 Python 缺少既有 `h5py` 依赖失败，失败脚本为 APARENT
 和 external-prediction baseline，与本次计时路径无关，未据此扩展修改范围。
+
+## 19. Critic V2 单次冻结 Development TEST 门前瞻冻结（2026-08-20）
+
+在 Critic V2 control screen 尚未 terminal、three-seed 结果尚不存在时，已完成
+V2-only 单次 Development TEST 配置门的前瞻冻结。审计确认历史 V1 preparer
+会把 checkpoint policy 改成 `FINAL_EPOCH`，且只绑定旧 V1 loss/裁决状态，不能
+复用于 Critic V2；V2 路径因此使用独立协议与独立 preparer，不修改历史负队列。
+
+冻结协议固定 seed `20260823`、Development TEST 记录数 18,292、GPU0-5、
+`BEST_VALIDATION` checkpoint selection 和完整 Critic V2 训练策略。preparer 只有在
+以下条件全部成立时才允许写出唯一 runtime config：control adjudication PASS；
+三个固定 seed `20260822/20260823/20260824` 的 adjudication PASS；3/3 seed 相对
+同一 strongest same-information baseline 的 margin 均为正；三个协议、两个裁决
+和被选 seed config 的 policy/seed/baseline/protected-outcome 字段完全一致。输出
+明确声明 TEST 不参与 checkpoint、模型或策略选择，Evaluation 保持关闭，并拒绝
+覆盖既有 runtime config 或 run directory。
+
+本次仅实现和验证 gate，没有调用 preparer，没有创建 `/mnt` runtime config 或
+run directory，更没有运行或读取 Development TEST。focused tests 与既有
+three-seed config tests 合并执行为 14/14 通过。该任务没有参数更新，因此不向
+中央训练尝试表增加伪 attempt；最近记录的 100 个唯一 attempts/4 个 Critic V2
+RUNNING 状态不因本任务改变。
+
+两个 V2 gate 将来真实 PASS 后，唯一允许的配置准备命令为：
+
+```bash
+$PY scripts/route_a_v3/prepare_route2_mrnabert_critic_v2_frozen_test_config_v1.py \
+  --selected-confirmation-config /mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/mrnabert_critic_v2/runtime_configs/task_study_macro_confirmation_seeds_v1/seed20260823.json \
+  --control-protocol configs/route_a_v3_route2_mrnabert_critic_v2_protocol_v1.json \
+  --confirmation-protocol configs/route_a_v3_route2_mrnabert_critic_v2_three_seed_protocol_v1.json \
+  --frozen-test-protocol configs/route_a_v3_route2_mrnabert_critic_v2_frozen_test_protocol_v1.json \
+  --control-adjudication /mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/comparisons/mrnabert_critic_v2_task_study_macro_controls_adjudication_v1.json \
+  --confirmation-adjudication /mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/comparisons/mrnabert_critic_v2_task_study_macro_three_seed_adjudication_v1.json \
+  --gpu "$GPU_INDEX"
+```
+
+其中 `GPU_INDEX` 必须在执行时设置为 GPU0-5 中显存足够的一张卡。这条命令只准备
+配置，不执行训练。当前 control/confirmation gate 未知，因此不得
+提前运行该命令，也不得从旧 V1 TEST→guided scheduler 绕过它。
