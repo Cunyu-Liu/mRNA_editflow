@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+printf 'RETIRED: historical V1 postselection scheduler is not authorized; use the Critic V2 gated schedulers\n' >&2
+exit 1
+
 REPO_ROOT="${REPO_ROOT:-/home/cunyuliu/mrna_editflow_goal/worktrees/route_a_v3_route2_method_repair_20260817}"
 ROUTE2_ROOT="${ROUTE2_ROOT:-/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2}"
 PYTHON="${PYTHON:-/home/cunyuliu/miniconda3/envs/editflow/bin/python}"

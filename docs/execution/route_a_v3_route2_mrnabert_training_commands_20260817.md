@@ -848,3 +848,51 @@ $PY scripts/route_a_v3/run_route2_mrnabert_critic_v2_development_generation_stag
 ```
 
 当前 control 及其下游 gates 未 terminal，因此不得调用。
+
+## 30. Critic V2 post-confirmation 全链 runner 与条件 watcher（2026-08-20）
+
+继续审计可执行衔接后确认一个真实缺口：Critic V2 three-seed watcher 在 PASS 后只
+输出“single frozen TEST authorized not started”并退出；TEST、refit、LOSO、readiness
+和 generation 虽各有冻结组件，但没有一个严格按 V3.3.2 顺序连接它们的 V2-only
+入口。同时，历史 `schedule_route2_mrnabert_postselection_controls_v1.sh` 仍保留旧
+V1 controls/TEST/refit/LOSO/guided 可执行路径。该历史 scheduler 现已在入口立即报
+retired 并退出，不提供兼容分支。
+
+新 post-confirmation runner 在任何 runtime/log/output 写入前，先由 production
+frozen-TEST builder 验证 control PASS、exact three-seed PASS、seed-20260823
+confirmation config 和完整八协议绑定，然后一次检查从 TEST 到 generation 的 19 个
+future targets 均未开始。唯一执行顺序固定为：
+
+```text
+single report-only Development TEST
+  -> all-126,165 Development refit
+  -> prepare 21 primary + 21 exactly matched baseline LOSO configs
+  -> paired six-GPU LOSO + three fixed-seed aggregations
+  -> Critic/Flow readiness input + adjudication
+  -> Development guided/matched/comparison only if guided_unlocked=true
+```
+
+TEST 与 refit 各自在 GPU0-5 中选择 free memory 最大且不少于 4096 MiB 的卡，等待
+只按 900 秒 free-memory poll，不使用 utilization。LOSO 与 generation 复用各自已冻结
+runner。TEST 指标只作为 terminal report 进入既有 refit/readiness schema，不触发
+结构、loss、seed、epoch、threshold 或 policy 分支；readiness NO-GO 时 generation
+不启动。全链始终保持 final Evaluation closed，generated candidates 无 canonical
+credit，也不建立 biological optimization claim。
+
+另新增一份 900 秒 conditional watcher：three-seed adjudication 不存在时只等待；
+NO-GO 时退出且不创建 stage artifacts；PASS 时才调用上述 runner。本次尚未启动该
+watcher 或 runner，没有查询新 GPU、没有打开 TEST、没有创建 `/mnt` runtime/log/
+run/LOSO/readiness/candidate/comparison artifact。focused tests 7/7，通过完整相邻
+生产合同回归 103/103。没有参数更新，中央训练 CSV 不新增伪 attempt；21:54 的最近
+低频状态仍为 100 个唯一 attempts/四个 Critic V2 RUNNING，control adjudication
+absent，两个既有 schedulers 存活。
+
+代码推送且 A100 同组测试通过后，才允许启动一份 watcher：
+
+```bash
+nohup scripts/route_a_v3/schedule_route2_mrnabert_critic_v2_post_confirmation_v1.sh \
+  >/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/schedulers/mrnabert_critic_v2_post_confirmation_v1.log \
+  2>&1 </dev/null &
+```
+
+watcher 的存在不授权 TEST；唯一授权仍来自真实 three-seed adjudication PASS。

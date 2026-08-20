@@ -353,3 +353,18 @@ candidate 或 comparison output，也没有读取 TEST/LOSO/Evaluation outcome�
 tests 4/4、相邻合同回归 37/37 通过且均不执行 GPU 训练。没有参数更新，因此中央
 CSV 不增加训练行，最近已记录的 100 个唯一 attempts/四个 Critic V2 RUNNING 状态
 不因本任务改变。
+
+## Critic V2 post-confirmation 全链 runner（2026-08-20）
+
+新增 V2-only post-confirmation runner 与 900 秒 conditional watcher，补齐 exact
+three-seed PASS 后的 single report-only TEST → all-Development refit → 21+21 paired
+LOSO → three-seed aggregation → Critic/Flow readiness → readiness-PASS-only Development
+generation 顺序。runner 在任何写入前使用 production TEST gate 并拒绝 19 个 future
+target 中任何已存在项；TEST/refit 只在 GPU0-5 中按不少于 4096 MiB 的最大 free
+memory 选择卡。历史 V1 postselection scheduler 已在入口立即 retired。
+
+本次没有启动新 watcher/runner，没有打开 TEST，没有创建 `/mnt` runtime、log、run、
+LOSO、readiness 或 candidates，也没有读取 TEST/LOSO/Evaluation outcome。focused
+tests 7/7、完整相邻生产合同回归 103/103 通过。没有参数更新，因此中央 CSV 不增加
+训练行；21:54 最近低频状态仍为 100 个唯一 attempts/四个 Critic V2 RUNNING，
+control adjudication absent。
