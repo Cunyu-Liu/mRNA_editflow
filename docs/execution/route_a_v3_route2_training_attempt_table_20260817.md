@@ -279,3 +279,15 @@ optimization claim。
 因本任务读取，guided generation 仍未授权。因此中央 CSV 不增加训练行；最近已记录
 的 100 个唯一 attempts/四个 Critic V2 RUNNING 状态不因本任务改变。新 focused
 tests 14/14、与历史 readiness 和 LOSO aggregation 的扩展回归 41/41 通过。
+
+## Critic V2 readiness 论文证据绑定（2026-08-20）
+
+Methods/results evidence packet 已把 V2 control、exact three seeds、单次
+report-only TEST、all-Development refit、三 seed matched LOSO 和 critic/Flow 双
+readiness 写成一条可核验的 prospective 方法链。没有写入 Critic V2 结果或读取新
+outcome；当前文字仍为 control RUNNING、TEST/Evaluation closed、guidance
+unauthorized。
+
+更新后的 packet 包含 14 个唯一 claim markers、13 个唯一 evidence sources，引用
+全部闭合；focused consistency tests 2/2 通过。该任务没有参数更新，因此中央 CSV
+不增加训练行，最近已记录的 100 个唯一 attempts/四个 Critic V2 RUNNING 状态不变。

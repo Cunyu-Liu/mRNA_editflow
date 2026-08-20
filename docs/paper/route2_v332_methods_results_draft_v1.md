@@ -67,6 +67,21 @@ global mRNABERT representation. The four arms share seed 20260825, 100 epochs,
 batch size 16 and the same TRAIN/VALIDATION budget. [claim:C-R2-006]
 [evidence:E-R2-CRITIC-V2-PROTOCOL,E-R2-CRITIC-V2-LAUNCH]
 
+### Prospective Critic V2 selection and readiness sequence
+
+Critic V2 may advance only through the frozen sequence of a passing four-arm
+control screen, three passing confirmation seeds (20260822, 20260823 and
+20260824), one Development TEST run at seed 20260823, an all-126,165-record
+refit, and three seed-level matched primary-versus-baseline LOSO aggregations.
+The single TEST uses 100 epochs and the final epoch because TRAIN and VALIDATION
+are folded together at that stage; TEST metrics are report-only and cannot select
+the architecture, loss, seed, epoch, threshold or policy. Each LOSO seed must
+contain seven aligned nonempty Development studies and have positive model-minus-
+baseline macro Spearman. Guided Development generation can be authorized only
+after both `CRITIC_READY_FOR_GUIDANCE` and `FLOW_G0_READY`; neither readiness
+state is a biological-success claim. [claim:C-R2-014]
+[evidence:E-R2-CONTRACT,E-R2-CRITIC-V2-READINESS]
+
 ## Results draft
 
 ### The independent evaluator narrowly crossed its frozen qualification threshold
@@ -176,7 +191,8 @@ Prohibited until later gates pass:
 - Accountable human verification of every evidence locator and numeric claim.
 - Critic V2 control and, conditionally, exact three-seed terminal adjudication.
 - The contract-ordered single TEST, all-record refit, predictor/baseline LOSO and
-  readiness stages if and only if the three-seed gate passes.
+  dual critic/Flow readiness stages if and only if every preceding frozen gate
+  passes.
 - Guided comparison only after critic and Flow readiness both hold.
 - Registration and use of a new, convertible, outcome-unexposed external
   Evaluation study.

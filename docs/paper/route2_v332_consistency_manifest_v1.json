@@ -42,6 +42,19 @@
       "screen_seed": 20260825,
       "status": "RUNNING",
       "evidence_ids": ["E-R2-CRITIC-V2-PROTOCOL", "E-R2-CRITIC-V2-LAUNCH"]
+    },
+    {
+      "method_id": "M-R2-CRITIC-V2-GATES",
+      "label": "Critic V2 frozen TEST/refit/LOSO/readiness sequence",
+      "analysis_intent": "PROSPECTIVE_DEVELOPMENT_SELECTION_AND_READINESS",
+      "status": "FROZEN_BEFORE_CRITIC_V2_THREE_SEED_OUTCOMES",
+      "required_seeds": [20260822, 20260823, 20260824],
+      "single_frozen_test_seed": 20260823,
+      "single_test_metric_policy": "REPORT_ONLY_NO_STRUCTURE_LOSS_SEED_EPOCH_THRESHOLD_OR_POLICY_SELECTION",
+      "required_loso_studies": 7,
+      "all_seed_model_minus_baseline_macro_spearman": ">0",
+      "guided_generation_requires": ["CRITIC_READY_FOR_GUIDANCE", "FLOW_G0_READY"],
+      "evidence_ids": ["E-R2-CONTRACT", "E-R2-CRITIC-V2-READINESS"]
     }
   ],
   "results": [

@@ -670,3 +670,18 @@ builder 的 required CLI 参数须逐一绑定七份冻结协议、control/three
 三个 LOSO 聚合、reward、encoder 与 Flow 的 exact terminal artifacts；输出位置由
 readiness protocol 固定，且不得覆盖。当前上游 gate 未 terminal，因此不得提前构建
 packet 或裁决，也不得回退到旧 V1 readiness。
+
+## 24. Route 2 V3.3.2 paper packet 的 Critic V2 readiness 绑定（2026-08-20）
+
+等待 Critic V2 control terminal 期间，Methods/results evidence draft 已补入完整的
+V2 前瞻顺序：control → exact three seeds → single report-only TEST → all-126,165
+refit → three positive matched LOSO aggregations → critic/Flow dual readiness。该段只
+描述已冻结方法，不添加任何 Critic V2 result；draft 仍明确写为 control RUNNING、
+Development TEST closed、guided XEditFlow unauthorized 和 final Evaluation closed。
+
+evidence manifest 新增 V2 readiness protocol-chain source，consistency manifest
+新增对应 prospective method；当前 packet 为 14 个唯一 claim markers、13 个唯一
+evidence sources，所有 draft/manifest 引用闭合。focused consistency tests 2/2
+通过，并验证 seed、single-TEST report-only policy、LOSO study count 与双 readiness
+条件同冻结协议完全一致。该论文任务无参数更新，不向中央训练 CSV 增加伪 attempt；
+最近记录的 100 个唯一 attempts/四个 Critic V2 RUNNING 状态不因本任务改变。
