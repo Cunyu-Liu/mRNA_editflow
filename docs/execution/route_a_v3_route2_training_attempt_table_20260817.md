@@ -422,3 +422,14 @@ paper focused tests 5/5，与 evaluator scorer/adjudicator 合并回归 11/11 �
 paper focused tests 6/6，与 evaluator scorer/adjudicator 合并回归 12/12 通过。没有
 读取 Development TEST/final Evaluation、没有参数更新，因此中央 CSV 不增加训练行，
 现有 Critic V2 RUNNING 状态不变。
+
+## Critic V2 post-confirmation 生产只读输入 preflight（2026-08-20）
+
+等待 control terminal 期间，按低频监控边界只检查了 post-confirmation 唯一 runner
+所需生产只读输入的文件存在性。冻结协议/config/entrypoint/templates、Development
+manifest、八份 canonical records、terminal baseline/online-encoder/Flow inputs 与
+Flow checkpoint 共 30 个路径全部存在，missing=0，故无需修复路径或重新部署数据。
+
+该 focused preflight 没有打开文件内容或训练进度，没有读取 Development TEST/final
+Evaluation outcome，也没有创建 future artifacts。它不进行参数更新，因此中央训练
+CSV 不增加伪 attempt；现有 Critic V2 运行状态不因本任务改变。

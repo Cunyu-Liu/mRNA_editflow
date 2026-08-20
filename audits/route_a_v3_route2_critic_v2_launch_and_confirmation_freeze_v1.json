@@ -59,6 +59,27 @@
     "control_scheduler_shell_syntax": "PASS",
     "confirmation_scheduler_shell_syntax": "PASS"
   },
+  "post_confirmation_static_input_preflight": {
+    "observed_at": "2026-08-20T23:45:47+08:00",
+    "status": "PASS",
+    "required_paths_checked": 30,
+    "missing_paths": 0,
+    "scope": [
+      "eight_frozen_critic_v2_protocols",
+      "reward_and_baseline_configs",
+      "three_execution_entrypoints",
+      "three_development_generation_templates",
+      "frozen_development_manifest",
+      "eight_canonical_record_files",
+      "terminal_baseline_online_encoder_and_flow_readiness_inputs",
+      "flow_checkpoint"
+    ],
+    "file_contents_opened": false,
+    "training_progress_read": false,
+    "development_test_outcomes_accessed": false,
+    "evaluation_outcomes_accessed": false,
+    "action": "NO_PATH_REPAIR_REQUIRED"
+  },
   "protected_outcomes": {
     "development_test_record_count_withheld": 18292,
     "development_test_outcomes_accessed": false,

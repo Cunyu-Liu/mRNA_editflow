@@ -980,3 +980,18 @@ candidate rerun 授权；同一 artifact 的 `scientific_claim_status=NOT_ESTABL
 markers、15 个 evidence sources。paper focused tests 6/6，与 evaluator
 scorer/adjudicator 合并回归 12/12 通过。本任务没有读取 Development TEST/final
 Evaluation、没有参数更新或新训练行，Critic V2 状态不因本任务改变。
+
+## 35. Critic V2 post-confirmation 生产只读输入 preflight（2026-08-20）
+
+按低频监控要求，等待 control terminal 期间没有查询 epoch/validation 进度，而是对
+post-confirmation 唯一 runner 的生产只读输入做一次存在性 preflight。检查范围为八份
+冻结 Critic V2 协议、reward/baseline configs、三个执行入口、三份 Development
+generation templates、冻结 Development manifest、八份 canonical records、已 terminal
+的 strongest baseline/online encoder/Flow readiness inputs 与 Flow checkpoint，共
+30 个路径；结果为 30/30 存在、missing=0。
+
+该核查只使用文件存在性元数据，没有打开文件内容、没有读取训练进度、Development
+TEST 或 final Evaluation outcome，也没有创建 future runtime/run/candidate artifact。
+因此不修改冻结协议、数据或 runner；focused static-input preflight 状态为 `PASS`，
+action 为 `NO_PATH_REPAIR_REQUIRED`。本任务没有参数更新，中央训练 CSV 不新增伪
+attempt；Critic V2 运行状态不因本任务改变。
