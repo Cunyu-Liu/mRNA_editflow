@@ -31,14 +31,14 @@
       "evidence_id": "E-R2-EVAL-TRAIN",
       "kind": "terminal_training_summary",
       "location": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/independent_generation_evaluator/neural_medium_siamese_task_scaled_seed20260816_frozen_development_validation_gpu2_v3/training_summary.json",
-      "locator": "status, parameter/update budget, validation_metrics, protected-outcome fields",
+      "locator": "status, parameter/update budget, validation_metrics.task_metrics for nine task-region groups, evaluation_outcomes_read=0",
       "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING"
     },
     {
       "evidence_id": "E-R2-EVAL-ADJ",
       "kind": "terminal_adjudication",
       "location": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/comparisons/mrnabert_independent_evaluator_adjudication_v1.json",
-      "locator": "qualification threshold, margin, task breadth, protected-outcome fields",
+      "locator": "qualification threshold, margin, positive_task_count/task_count, development_test_outcomes_accessed=false and evaluation_outcomes_accessed=false",
       "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING"
     },
     {

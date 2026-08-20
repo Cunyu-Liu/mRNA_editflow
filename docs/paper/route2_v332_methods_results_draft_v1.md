@@ -95,6 +95,16 @@ yielding `INDEPENDENT_GENERATION_EVALUATOR_QUALIFIED`. The small margin limits
 this result to Development method selection and does not constitute biological
 validation. [claim:C-R2-007] [evidence:E-R2-EVAL-TRAIN,E-R2-EVAL-ADJ]
 
+Performance was heterogeneous across the nine task-region groups. Task-level
+Spearman ranged from -0.1091646 for RNA half-life in region 0 to 0.7619576 for
+proximal poly(A)-site usage in region 1; five task correlations were positive.
+RNA half-life in region 0 also had a standardized MAE of 9.220029, compared with
+the task-macro standardized MAE of 1.807855. Thus the narrowly passing macro gate
+does not imply uniformly reliable task-level evaluation. Full-precision values
+and record counts summing to 18,293 are retained in
+`route2_v332_independent_evaluator_task_table_v1.csv`. [claim:C-R2-016]
+[evidence:E-R2-EVAL-TRAIN,E-R2-EVAL-ADJ]
+
 ### Genetic search led the independent-evaluator criterion, while unguided Flow led measured recovery
 
 All seven methods completed with hard legality 1.0 and zero edit-budget or
@@ -155,9 +165,10 @@ reported in this draft. [claim:C-R2-012]
 
 ## Concrete limitations and reporting gaps
 
-1. The independent evaluator cleared its threshold by only 0.0013180 and shares
-   the broader Development evidence domain; it is isolated from the guiding
-   checkpoint but is not an external biological confirmation.
+1. The independent evaluator cleared its threshold by only 0.0013180, and its
+   task-level correlations were heterogeneous, including four nonpositive task
+   groups. It shares the broader Development evidence domain; it is isolated
+   from the guiding checkpoint but is not an external biological confirmation.
 2. Open generated support contains candidates with unknown outcomes. Candidate
    recovery is observable, whereas closed measured NDCG is undefined under this
    support mode; unknown candidates were not assigned zero gain.

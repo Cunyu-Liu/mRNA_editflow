@@ -387,3 +387,16 @@ independent-evaluator separation。
 paper focused tests 3/3，与 frozen selection producer/input 合并回归 17/17 通过。
 没有读取 Development TEST/final Evaluation、没有参数更新，因此中央 CSV 不增加
 训练行，现有 Critic V2 RUNNING 状态不变。
+
+## Independent evaluator 九 task 论文报告补全（2026-08-20）
+
+只读复核 terminal Development evaluator summary/adjudication 后，新增九行全精度
+task-region 表。九组共 18,293 records；Spearman 从
+`-0.10916458562634956` 到 `0.7619576378536184`，5 组为正、4 组非正；
+`RNA_HALF_LIFE_MINUTES::region=0` standardized MAE `9.220029033415157` 为最大。
+paper 明确把该异质性与 narrowly passing macro gate 同时报告，不把 qualification
+扩写为均匀 task reliability 或 biological validation。
+
+focused tests 4/4，与 evaluator scorer/adjudicator 合并回归 10/10 通过。没有读取
+Development TEST/final Evaluation、没有参数更新，因此中央 CSV 不增加训练行，
+现有 Critic V2 RUNNING 状态不变。

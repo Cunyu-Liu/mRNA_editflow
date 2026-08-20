@@ -70,6 +70,17 @@
       "margin": 0.0013179611166941746,
       "positive_task_count": 5,
       "task_count": 9,
+      "nonpositive_task_count": 4,
+      "task_record_count_sum": 18293,
+      "task_spearman_range": [
+        -0.10916458562634956,
+        0.7619576378536184
+      ],
+      "maximum_task_standardized_mae": {
+        "task_id": "RNA_HALF_LIFE_MINUTES::region=0",
+        "value": 9.220029033415157
+      },
+      "task_table": "docs/paper/route2_v332_independent_evaluator_task_table_v1.csv",
       "evidence_ids": ["E-R2-EVAL-TRAIN", "E-R2-EVAL-ADJ"]
     },
     {

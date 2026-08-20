@@ -922,3 +922,24 @@ Methods/results draft、evidence manifest 和 consistency manifest 已同步；�
 为 15 个唯一 claim markers、14 个唯一 evidence sources。paper focused tests 3/3，
 与 frozen selection producer/input 合并回归 17/17 通过。本任务没有参数更新，不向
 中央训练 CSV 增加伪 attempt；Critic V2 运行状态不因本论文任务改变。
+
+## 32. Independent evaluator 九 task 异质性报告补全（2026-08-20）
+
+继续只读复核已经 terminal 的 Development independent-evaluator training summary
+和 adjudication；Development TEST 与 final Evaluation 未访问。原 draft 只给出
+task-macro Spearman `0.10256553571558498`、standardized MAE
+`1.8078550850617527` 和 5/9 positive，尚未展开九个 task-region groups。
+
+现新增全精度 `route2_v332_independent_evaluator_task_table_v1.csv`。九行 record count
+合计 18,293；task Spearman 范围为 `-0.10916458562634956` 至
+`0.7619576378536184`，其中 5 个正、4 个非正。`RNA_HALF_LIFE_MINUTES::region=0`
+的 standardized MAE 为 `9.220029033415157`，是九组最大值。因此 paper 现明确：
+evaluator narrowly passing macro gate 与 task-level heterogeneity 同时成立，不能把
+qualification 写成均匀跨 task 的可靠性或 biological validation。
+
+evidence manifest locator 也改为 terminal artifact 的精确字段：training summary 的
+`validation_metrics.task_metrics`/`evaluation_outcomes_read=0`，以及 adjudication 的
+`development_test_outcomes_accessed=false`、`evaluation_outcomes_accessed=false`。
+当前 packet 为 16 个唯一 claim markers、14 个 evidence sources。paper focused tests
+4/4，与 evaluator scorer/adjudicator 合并回归 10/10 通过。本任务没有参数更新，中央
+训练 CSV 不增加伪 attempt；Critic V2 运行状态不因本论文任务改变。

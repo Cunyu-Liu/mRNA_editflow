@@ -9,6 +9,9 @@ DRAFT = ROOT / "docs/paper/route2_v332_methods_results_draft_v1.md"
 EVIDENCE = ROOT / "docs/paper/route2_v332_evidence_manifest_v1.json"
 CONSISTENCY = ROOT / "docs/paper/route2_v332_consistency_manifest_v1.json"
 BOOTSTRAP_TABLE = ROOT / "docs/paper/route2_v332_generation_bootstrap_table_v1.csv"
+EVALUATOR_TASK_TABLE = (
+    ROOT / "docs/paper/route2_v332_independent_evaluator_task_table_v1.csv"
+)
 READINESS = (
     ROOT
     / "configs/route_a_v3_route2_mrnabert_critic_v2_guidance_readiness_protocol_v1.json"
@@ -28,7 +31,7 @@ def test_claim_and_consistency_evidence_references_are_closed() -> None:
     assert len(evidence_ids) == len(set(evidence_ids)) == 14
 
     claims = re.findall(r"\[claim:([^\]]+)\]", draft)
-    assert len(claims) == len(set(claims)) == 15
+    assert len(claims) == len(set(claims)) == 16
 
     cited = set()
     for group in re.findall(r"\[evidence:([^\]]+)\]", draft):
@@ -99,3 +102,32 @@ def test_generation_bootstrap_reporting_is_exact_and_source_paired() -> None:
     assert result["paired_comparison_count"] == 6
     assert result["all_leader_advantage_ci_95_lower_bounds_positive"] is True
     assert "Development independent-evaluator separation only" in draft
+
+
+def test_independent_evaluator_task_reporting_preserves_heterogeneity() -> None:
+    draft = DRAFT.read_text(encoding="utf-8")
+    consistency = _load(CONSISTENCY)
+    result = next(
+        row
+        for row in consistency["results"]
+        if row["result_id"] == "R-R2-EVALUATOR"
+    )
+    with EVALUATOR_TASK_TABLE.open(newline="", encoding="utf-8") as handle:
+        rows = list(csv.DictReader(handle))
+
+    assert len(rows) == result["task_count"] == 9
+    assert sum(int(row["record_count"]) for row in rows) == result[
+        "task_record_count_sum"
+    ] == 18293
+    spearman = [float(row["spearman"]) for row in rows]
+    assert sum(value > 0.0 for value in spearman) == result["positive_task_count"] == 5
+    assert sum(value <= 0.0 for value in spearman) == result[
+        "nonpositive_task_count"
+    ] == 4
+    assert [min(spearman), max(spearman)] == result["task_spearman_range"]
+    worst = max(rows, key=lambda row: float(row["standardized_mae"]))
+    assert worst["task_id"] == result["maximum_task_standardized_mae"]["task_id"]
+    assert float(worst["standardized_mae"]) == result[
+        "maximum_task_standardized_mae"
+    ]["value"]
+    assert "does not imply uniformly reliable task-level evaluation" in draft
