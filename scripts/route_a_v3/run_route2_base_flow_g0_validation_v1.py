@@ -7,6 +7,7 @@ import argparse
 import json
 import math
 import os
+import random
 import sys
 import time
 from collections import Counter, defaultdict
@@ -132,36 +133,43 @@ def _model_inputs(
 def _model_inputs_many(
     states: list[FlowState],
     *,
-    region_id: int,
-    assay_id: int,
-    context_id: int,
+    region_ids: list[int],
+    assay_ids: list[int],
+    context_ids: list[int],
     device: torch.device,
 ) -> tuple[torch.Tensor, ...]:
     _require(bool(states), "batched trajectory state list is empty")
-    length = len(states[0].source_sequence)
     _require(
-        all(len(state.source_sequence) == length for state in states),
-        "batched trajectory states do not share a sequence length",
+        len(states) == len(region_ids) == len(assay_ids) == len(context_ids),
+        "batched trajectory metadata length differs from state length",
     )
+    length = max(len(state.source_sequence) for state in states)
+    source_rows = []
+    current_rows = []
+    padding_rows = []
+    for state in states:
+        padding_count = length - len(state.source_sequence)
+        source_rows.append([TOKEN[base] for base in state.source_sequence] + [4] * padding_count)
+        current_rows.append([TOKEN[base] for base in state.current_sequence] + [4] * padding_count)
+        padding_rows.append([False] * len(state.source_sequence) + [True] * padding_count)
     source = torch.tensor(
-        [[TOKEN[base] for base in state.source_sequence] for state in states],
+        source_rows,
         dtype=torch.long,
         device=device,
     )
     current = torch.tensor(
-        [[TOKEN[base] for base in state.current_sequence] for state in states],
+        current_rows,
         dtype=torch.long,
         device=device,
     )
-    padding = torch.zeros_like(source, dtype=torch.bool)
-    batch = len(states)
+    padding = torch.tensor(padding_rows, dtype=torch.bool, device=device)
     return (
         source,
         current,
         padding,
-        torch.full((batch,), region_id, dtype=torch.long, device=device),
-        torch.full((batch,), assay_id, dtype=torch.long, device=device),
-        torch.full((batch,), context_id, dtype=torch.long, device=device),
+        torch.tensor(region_ids, dtype=torch.long, device=device),
+        torch.tensor(assay_ids, dtype=torch.long, device=device),
+        torch.tensor(context_ids, dtype=torch.long, device=device),
         torch.tensor([state.remaining_budget for state in states], dtype=torch.long, device=device),
     )
 
@@ -225,6 +233,101 @@ def sample_one(
 
 
 @torch.no_grad()
+def sample_many_roots(
+    model: Route2BaseFlowModel,
+    roots: list[FlowState],
+    *,
+    region_ids: list[int],
+    assay_ids: list[int],
+    context_ids: list[int],
+    seeds: list[int],
+    device: torch.device,
+    forward_batch_size: int,
+) -> tuple[list[tuple[FlowState, tuple[str, ...], int]], int]:
+    """Sample independent heterogeneous trajectories with batched GPU rates.
+
+    The model evaluates up to ``forward_batch_size`` active states together.
+    Each trajectory owns an independent seeded random stream; the categorical
+    choice is evaluated from the masked positive rates on the GPU.  SUB+STOP
+    has a one-to-one action-to-next-state map, so direct normalized rates are
+    the same embedded-jump distribution used by ``jump_distribution``.
+    """
+
+    _require(device.type == "cuda", "learned trajectory sampling requires CUDA")
+    _require(bool(roots), "trajectory root list is empty")
+    _require(
+        len(roots) == len(region_ids) == len(assay_ids) == len(context_ids) == len(seeds),
+        "trajectory roots, metadata, and seeds differ in length",
+    )
+    _require(forward_batch_size > 0, "trajectory forward batch size must be positive")
+    states = list(roots)
+    generators = [random.Random(seed) for seed in seeds]
+    actions_taken: list[list[str]] = [[] for _ in seeds]
+    forward_counts = [0 for _ in seeds]
+    model_forward_batch_count = 0
+
+    while True:
+        active = [index for index, state in enumerate(states) if state.terminal_cause is None]
+        if not active:
+            break
+        for start in range(0, len(active), forward_batch_size):
+            trajectory_indices = active[start:start + forward_batch_size]
+            active_states = [states[index] for index in trajectory_indices]
+            rates, masks = model.rates(*_model_inputs_many(
+                active_states,
+                region_ids=[region_ids[index] for index in trajectory_indices],
+                assay_ids=[assay_ids[index] for index in trajectory_indices],
+                context_ids=[context_ids[index] for index in trajectory_indices],
+                device=device,
+            ))
+            model_forward_batch_count += 1
+            weights = torch.where(
+                masks,
+                (rates.double() - float(model.support_floor)).clamp_min(0.0) + 1e-8,
+                torch.zeros_like(rates, dtype=torch.float64),
+            )
+            totals = weights.sum(dim=1)
+            _require(
+                bool(torch.isfinite(weights).all().item())
+                and bool(torch.isfinite(totals).all().item())
+                and bool((totals > 0.0).all().item()),
+                "batched model produced invalid total exit rate",
+            )
+            cumulative = weights.cumsum(dim=1) / totals.unsqueeze(1)
+            uniforms = torch.tensor(
+                [generators[index].random() for index in trajectory_indices],
+                dtype=torch.float64,
+                device=device,
+            )
+            choices = (cumulative < uniforms.unsqueeze(1)).sum(dim=1)
+            choices = choices.clamp_max(rates.shape[1] - 1)
+            row_ids = torch.arange(len(trajectory_indices), device=device)
+            _require(
+                bool(masks[row_ids, choices].all().item()),
+                "batched sampler selected a masked action",
+            )
+            padded_length = (rates.shape[1] - 1) // 4
+            for trajectory_index, flat_index in zip(
+                trajectory_indices, choices.tolist(), strict=True
+            ):
+                state = states[trajectory_index]
+                if flat_index == padded_length * 4:
+                    action = LegalAction(STOP)
+                else:
+                    position, alt_index = divmod(flat_index, 4)
+                    action = LegalAction("SUB", position, BASE[alt_index])
+                _require(action in legal_actions(state), "sampled action was not hard-legal")
+                child = apply_action(state, action)
+                actions_taken[trajectory_index].append(action.action_id)
+                states[trajectory_index] = child
+                forward_counts[trajectory_index] += 1
+
+    return [
+        (states[index], tuple(actions_taken[index]), forward_counts[index])
+        for index in range(len(seeds))
+    ], model_forward_batch_count
+
+
 def sample_many_same_root(
     model: Route2BaseFlowModel,
     root: FlowState,
@@ -235,85 +338,16 @@ def sample_many_same_root(
     seeds: list[int],
     device: torch.device,
 ) -> tuple[list[tuple[FlowState, tuple[str, ...], int]], int]:
-    """Sample independent trajectories while batching their model forwards.
-
-    Each trajectory retains its own CUDA generator and seed.  Only the learned
-    rate evaluation is batched, so legal actions, STOP behaviour, transition
-    aggregation, and replay semantics remain identical to scalar sampling.
-    """
-
-    _require(device.type == "cuda", "learned trajectory sampling requires CUDA")
-    _require(bool(seeds), "trajectory seed list is empty")
-    states = [root for _ in seeds]
-    generators = [torch.Generator(device=device).manual_seed(seed) for seed in seeds]
-    actions_taken: list[list[str]] = [[] for _ in seeds]
-    forward_counts = [0 for _ in seeds]
-    model_forward_batch_count = 0
-
-    while True:
-        active = [index for index, state in enumerate(states) if state.terminal_cause is None]
-        if not active:
-            break
-        active_states = [states[index] for index in active]
-        rates, masks = model.rates(*_model_inputs_many(
-            active_states,
-            region_id=region_id,
-            assay_id=assay_id,
-            context_id=context_id,
-            device=device,
-        ))
-        model_forward_batch_count += 1
-        length = len(root.source_sequence)
-        for row_index, trajectory_index in enumerate(active):
-            state = states[trajectory_index]
-            actions = legal_actions(state)
-            rate_by_action = {}
-            for action in actions:
-                flat_index = (
-                    length * 4
-                    if action.kind == STOP
-                    else int(action.position) * 4 + TOKEN[str(action.alt_base)]
-                )
-                _require(
-                    bool(masks[row_index, flat_index].item()),
-                    f"model mask rejected legal action: {action.action_id}",
-                )
-                rate = float(rates[row_index, flat_index].item())
-                _require(
-                    math.isfinite(rate) and rate > 0.0,
-                    f"model rate is invalid: {action.action_id}",
-                )
-                rate_by_action[action] = max(0.0, rate - model.support_floor)
-
-            def rate_function(_state, requested_actions, *, values=rate_by_action):
-                return {action: values[action] for action in requested_actions}
-
-            edges = jump_distribution(state, rate_function, support_floor=1e-8)
-            probabilities = torch.tensor(
-                [probability for _, _, probability in edges],
-                dtype=torch.float64,
-                device=device,
-            )
-            choice = int(torch.multinomial(
-                probabilities,
-                1,
-                generator=generators[trajectory_index],
-            ).item())
-            action, child, _probability = edges[choice]
-            _require(action in actions, "sampled action was not hard-legal")
-            if action.kind != STOP:
-                _require(
-                    action.position not in {position for position, _ in state.source_relative_edits},
-                    "sampled a repeated edit",
-                )
-            actions_taken[trajectory_index].append(action.action_id)
-            states[trajectory_index] = child
-            forward_counts[trajectory_index] += 1
-
-    return [
-        (states[index], tuple(actions_taken[index]), forward_counts[index])
-        for index in range(len(seeds))
-    ], model_forward_batch_count
+    return sample_many_roots(
+        model,
+        [root for _ in seeds],
+        region_ids=[region_id for _ in seeds],
+        assay_ids=[assay_id for _ in seeds],
+        context_ids=[context_id for _ in seeds],
+        seeds=seeds,
+        device=device,
+        forward_batch_size=len(seeds),
+    )
 
 
 def _enumerate_paths(root: FlowState, rate_function) -> dict[FlowState, float]:
@@ -408,16 +442,18 @@ def validate(
     *,
     device: torch.device,
     seed: int,
+    trajectory_forward_batch_size: int = 512,
     progress: Callable[[Mapping[str, Any]], None] | None = None,
 ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    _require(trajectory_forward_batch_size > 0, "trajectory forward batch size must be positive")
     candidate_rows = []
     terminal_causes = Counter()
     total_actions = 0
-    total_model_forward_batches_with_replay = 0
-    maximum_trajectory_batch_size = 0
     replay_failures = 0
     budget_violations = 0
     started = time.time()
+
+    trajectory_specs: list[dict[str, Any]] = []
     for source_index, source_row in enumerate(sources):
         source = source_row["source_sequence"]
         root = initial_state(
@@ -428,53 +464,83 @@ def validate(
         )
         region_text = str(source_row["region"]).replace("′", "").replace("'", "")
         _require(region_text in REGION, f"unsupported region: {source_row['region']}")
-        trajectory_seeds = [
-            seed + source_index * 1_000_003 + candidate_index
-            for candidate_index in range(source_row["candidate_budget"])
-        ]
-        maximum_trajectory_batch_size = max(maximum_trajectory_batch_size, len(trajectory_seeds))
-        sampled, primary_batch_count = sample_many_same_root(
-            model, root,
-            region_id=REGION[region_text],
-            assay_id=checkpoint["assay_vocab"].get(str(source_row["assay_id"]), 0),
-            context_id=checkpoint["context_vocab"].get(str(source_row["biological_context_id"]), 0),
-            seeds=trajectory_seeds,
-            device=device,
-        )
-        replayed, replay_batch_count = sample_many_same_root(
-            model, root,
-            region_id=REGION[region_text],
-            assay_id=checkpoint["assay_vocab"].get(str(source_row["assay_id"]), 0),
-            context_id=checkpoint["context_vocab"].get(str(source_row["biological_context_id"]), 0),
-            seeds=trajectory_seeds,
-            device=device,
-        )
-        total_model_forward_batches_with_replay += primary_batch_count + replay_batch_count
-        for candidate_index, (first, second) in enumerate(zip(sampled, replayed, strict=True)):
-            trajectory_seed = trajectory_seeds[candidate_index]
-            terminal, action_ids, forwards = first
-            replay_terminal, replay_actions, replay_forwards = second
-            replay_ok = terminal == replay_terminal and action_ids == replay_actions and forwards == replay_forwards
-            replay_failures += int(not replay_ok)
-            edit_count = terminal.edit_count
-            budget_violations += int(edit_count > source_row["edit_budget"])
-            total_actions += forwards
-            terminal_causes[terminal.terminal_cause] += 1
-            candidate_rows.append({
-                "method_id": "unguided_learned_base_flow_g0",
-                "source_key": source_row["source_key"],
-                "candidate_sequence": terminal.current_sequence,
-                "terminal_cause": terminal.terminal_cause,
-                "edit_count": edit_count,
-                "trajectory_actions": list(action_ids),
-                "trajectory_seed": trajectory_seed,
-                "trajectory_replay_ok": replay_ok,
-                "generator_nfe": forwards,
-                "critic_forwards": 0,
-                "independent_evaluator_forwards": 0,
-                "generated_candidate_grants_canonical_credit": False,
+        region_id = REGION[region_text]
+        assay_id = checkpoint["assay_vocab"].get(str(source_row["assay_id"]), 0)
+        context_id = checkpoint["context_vocab"].get(str(source_row["biological_context_id"]), 0)
+        for candidate_index in range(source_row["candidate_budget"]):
+            trajectory_specs.append({
+                "source_index": source_index,
+                "source_row": source_row,
+                "root": root,
+                "region_id": region_id,
+                "assay_id": assay_id,
+                "context_id": context_id,
+                "seed": seed + source_index * 1_000_003 + candidate_index,
             })
-        if progress is not None:
+
+    roots = [spec["root"] for spec in trajectory_specs]
+    region_ids = [spec["region_id"] for spec in trajectory_specs]
+    assay_ids = [spec["assay_id"] for spec in trajectory_specs]
+    context_ids = [spec["context_id"] for spec in trajectory_specs]
+    trajectory_seeds = [spec["seed"] for spec in trajectory_specs]
+    sampled, primary_batch_count = sample_many_roots(
+        model,
+        roots,
+        region_ids=region_ids,
+        assay_ids=assay_ids,
+        context_ids=context_ids,
+        seeds=trajectory_seeds,
+        device=device,
+        forward_batch_size=trajectory_forward_batch_size,
+    )
+    replayed, replay_batch_count = sample_many_roots(
+        model,
+        roots,
+        region_ids=region_ids,
+        assay_ids=assay_ids,
+        context_ids=context_ids,
+        seeds=trajectory_seeds,
+        device=device,
+        forward_batch_size=trajectory_forward_batch_size,
+    )
+    total_model_forward_batches_with_replay = primary_batch_count + replay_batch_count
+    completed_source_index = -1
+    for trajectory_index, (spec, first, second) in enumerate(zip(
+        trajectory_specs, sampled, replayed, strict=True
+    )):
+        source_index = int(spec["source_index"])
+        source_row = spec["source_row"]
+        trajectory_seed = int(spec["seed"])
+        terminal, action_ids, forwards = first
+        replay_terminal, replay_actions, replay_forwards = second
+        replay_ok = terminal == replay_terminal and action_ids == replay_actions and forwards == replay_forwards
+        replay_failures += int(not replay_ok)
+        edit_count = terminal.edit_count
+        budget_violations += int(edit_count > source_row["edit_budget"])
+        total_actions += forwards
+        terminal_causes[terminal.terminal_cause] += 1
+        candidate_rows.append({
+            "method_id": "unguided_learned_base_flow_g0",
+            "source_key": source_row["source_key"],
+            "candidate_sequence": terminal.current_sequence,
+            "terminal_cause": terminal.terminal_cause,
+            "edit_count": edit_count,
+            "trajectory_actions": list(action_ids),
+            "trajectory_seed": trajectory_seed,
+            "trajectory_replay_ok": replay_ok,
+            "generator_nfe": forwards,
+            "critic_forwards": 0,
+            "independent_evaluator_forwards": 0,
+            "generated_candidate_grants_canonical_credit": False,
+        })
+        next_source_index = (
+            int(trajectory_specs[trajectory_index + 1]["source_index"])
+            if trajectory_index + 1 < len(trajectory_specs)
+            else len(sources)
+        )
+        if next_source_index != source_index:
+            completed_source_index = source_index
+        if progress is not None and completed_source_index == source_index:
             progress({
                 "event": "SOURCE_COHORT_COMPLETED",
                 "completed_source_cohort_count": source_index + 1,
@@ -522,8 +588,11 @@ def validate(
         "wall_time_seconds": elapsed,
         "peak_vram_mb": torch.cuda.max_memory_allocated(device) / (1024 ** 2),
         "trajectory_sampling_device": str(device),
-        "sampler_execution_mode": "BATCHED_BY_SOURCE_COHORT_WITH_PER_TRAJECTORY_GENERATORS",
-        "maximum_trajectory_batch_size": maximum_trajectory_batch_size,
+        "trajectory_uniform_rng_device": "cpu",
+        "trajectory_uniform_rng": "PYTHON_MT19937_INDEPENDENT_STREAM_PER_TRAJECTORY",
+        "sampler_execution_mode": "GLOBAL_HETEROGENEOUS_BATCHED_GPU_RATES",
+        "trajectory_forward_batch_size": trajectory_forward_batch_size,
+        "maximum_trajectory_batch_size": min(trajectory_forward_batch_size, len(trajectory_specs)),
         "validation_model_forward_batch_count_with_replay": total_model_forward_batches_with_replay,
         "learned_parameter_update_checkpoint_loaded": True,
         "small_graph_reference": small_graph,
@@ -581,7 +650,13 @@ def execute(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
         "source_cohort_count": len(sources),
     })
     rows, summary = validate(
-        model, checkpoint, sources, device=device, seed=int(config["seed"]), progress=progress
+        model,
+        checkpoint,
+        sources,
+        device=device,
+        seed=int(config["seed"]),
+        trajectory_forward_batch_size=int(config.get("trajectory_forward_batch_size", 512)),
+        progress=progress,
     )
     summary["physical_gpu_index"] = int(config["physical_gpu_index"])
     summary["device"] = str(device)

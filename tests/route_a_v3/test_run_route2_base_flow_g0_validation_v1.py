@@ -84,6 +84,32 @@ def test_batched_trajectories_replay_with_independent_generators() -> None:
     assert all(result[0].terminal_cause in {"EXPLICIT_STOP", "BUDGET_EXHAUSTED"} for result in first)
 
 
+def test_global_batched_sampler_handles_heterogeneous_lengths_and_chunks() -> None:
+    module = _load()
+    model, _checkpoint, device = _cuda_model(module)
+    model.eval()
+    roots = [
+        module.initial_state("AC", budget=1, assay_id="a", context_id="c"),
+        module.initial_state("ACGU", budget=2, assay_id="a", context_id="c"),
+        module.initial_state("A", budget=1, assay_id="a", context_id="c"),
+    ]
+    kwargs = {
+        "region_ids": [0, 1, 0],
+        "assay_ids": [0, 0, 0],
+        "context_ids": [0, 0, 0],
+        "seeds": [21, 22, 23],
+        "device": device,
+        "forward_batch_size": 2,
+    }
+    first, first_batch_count = module.sample_many_roots(model, roots, **kwargs)
+    second, second_batch_count = module.sample_many_roots(model, roots, **kwargs)
+    assert first == second
+    assert first_batch_count == second_batch_count
+    assert first_batch_count >= 2
+    assert [result[0].source_sequence for result in first] == ["AC", "ACGU", "A"]
+    assert all(result[0].edit_count <= root.remaining_budget for result, root in zip(first, roots))
+
+
 def test_learned_small_graph_matches_complete_path_enumeration() -> None:
     module = _load()
     model, checkpoint, device = _cuda_model(module)
@@ -181,8 +207,9 @@ def test_g0_validation_reports_empirical_generation_score() -> None:
         model, checkpoint, sources, device=device, seed=7, progress=progress_rows.append
     )
     assert summary["trajectory_sampling_device"] == str(device)
-    assert summary["sampler_execution_mode"] == "BATCHED_BY_SOURCE_COHORT_WITH_PER_TRAJECTORY_GENERATORS"
+    assert summary["sampler_execution_mode"] == "GLOBAL_HETEROGENEOUS_BATCHED_GPU_RATES"
     assert summary["maximum_trajectory_batch_size"] == 6
+    assert summary["trajectory_uniform_rng_device"] == "cpu"
     assert summary["validation_model_forward_batch_count_with_replay"] > 0
     assert all(row["critic_forwards"] == 0 for row in rows)
     assert all(row["generation_score"] <= 0.0 for row in rows)
