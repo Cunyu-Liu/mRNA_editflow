@@ -232,3 +232,18 @@ epochs/`FINAL_EPOCH`、CUDA 参数更新和 Evaluation read=0。合同没有新�
 13/13 通过；包含 TEST gate、three-seed config 与 trainer split 的扩展 suite 为
 81 passed、4 个本机无 CUDA 的既有 skips。Development TEST、refit、LOSO、
 readiness、guided generation 与 Evaluation 仍关闭。
+
+## Critic V2 primary TEST-preserving LOSO 配置门（2026-08-20）
+
+已前瞻冻结 V2-only primary LOSO protocol/preparer。它只有在 exact
+all-Development refit config 与 terminal summary 验证通过后才生成 7 studies ×
+3 seeds 的 21 个 configs，不能再像历史路径那样只凭旧 three-seed status 绕过
+TEST/refit。每折使用 TRAIN/VALIDATION，排除跨 holdout 的 connected source
+components，Development TEST 18,292 条继续 withheld；checkpoint 为固定
+100-epoch `FINAL_EPOCH`，held-out study 不参与 checkpoint 选择。
+
+真实 LOSO preparer 和 21 个训练均未运行，因此中央 CSV 不增加行；最近已记录的
+100 个唯一 attempts/四个 Critic V2 RUNNING 状态不因本任务改变。新门 focused
+tests 12/12 通过；含共享六 GPU pairing 与 trainer split 的扩展 suite 为 70
+passed、4 个本机无 CUDA 的既有 skips。TEST/refit/LOSO/readiness/guidance/
+Evaluation 仍保持各自冻结边界。

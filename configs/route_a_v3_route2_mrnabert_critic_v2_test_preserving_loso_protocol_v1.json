@@ -1,0 +1,52 @@
+{
+  "schema_version": "route_a_v3_route2_mrnabert_critic_v2_test_preserving_loso_protocol.v1",
+  "status": "FROZEN_BEFORE_CRITIC_V2_THREE_SEED_OUTCOMES",
+  "all_development_refit_protocol": "configs/route_a_v3_route2_mrnabert_critic_v2_all_development_refit_protocol_v1.json",
+  "required_refit_status": "DELTA_PREDICTOR_DEVELOPMENT_GPU_RUN_COMPLETE",
+  "required_refit_stage": "FINAL_ALL_DEVELOPMENT_REFIT",
+  "holdout_studies": [
+    "GSE200304",
+    "GSE114002",
+    "GSE149487",
+    "GSE217518",
+    "ENCSR854RUF",
+    "GSE186455",
+    "GSE269595"
+  ],
+  "required_seeds": [20260822, 20260823, 20260824],
+  "physical_gpu_indices": [0, 1, 2, 3, 4, 5],
+  "assignment_policy": "STUDY_MAJOR_SEED_MINOR_ROUND_ROBIN_GPU0_TO_GPU5",
+  "required_config_count": 21,
+  "development_test_record_count_withheld_per_run": 18292,
+  "loso_data_policy": {
+    "input_partitions": ["TRAIN", "VALIDATION"],
+    "development_test_partition_used": false,
+    "holdout_unit": "STUDY_UNIT_ID",
+    "cross_study_connected_source_components_excluded_from_training": true
+  },
+  "frozen_loso_training_policy": {
+    "model_kind": "delta_pretrained_mrnabert_edit_centered_antisymmetric",
+    "training_weighting_mode": "TASK_THEN_STUDY_THEN_SOURCE_CONTEXT_ENDPOINT_GROUP",
+    "training_sampling_mode": "TASK_STUDY_SOURCE_GROUP_BALANCED_FIXED_DRAWS",
+    "loss_aggregation_mode": "TASK_MACRO_MEAN",
+    "training_update_mode": "STANDARD",
+    "target_scaling_mode": "TRAIN_TASK_ROBUST",
+    "loss_kind": "huber",
+    "huber_delta": 1.0,
+    "checkpoint_selection": "FINAL_EPOCH",
+    "checkpoint_metric": "TASK_MACRO_SPEARMAN_THEN_STANDARDIZED_MAE",
+    "epochs": 100,
+    "batch_size": 16,
+    "optimizer_name": "AdamW",
+    "learning_rate": 0.0001,
+    "weight_decay": 0.0001,
+    "training_precision": "BF16"
+  },
+  "runtime_config_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/mrnabert_critic_v2/runtime_configs/test_preserving_loso_v1",
+  "run_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/mrnabert_critic_v2/test_preserving_loso_v1",
+  "development_test_outcomes_accessed_by_loso": false,
+  "test_metrics_used_for_loso_selection": false,
+  "evaluation_outcomes_accessed": false,
+  "guided_generation_authorized": false,
+  "scientific_claim_status": "NOT_ESTABLISHED"
+}

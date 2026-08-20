@@ -560,3 +560,42 @@ $PY scripts/route_a_v3/prepare_route2_mrnabert_critic_v2_all_development_refit_c
 
 这条命令只写唯一 runtime config，不启动 refit；当前上游 gate 未 terminal，不得
 提前调用。
+
+## 21. Critic V2 primary TEST-preserving LOSO 门前瞻冻结（2026-08-20）
+
+已在 Critic V2 outcome 不存在时冻结 V2-only primary LOSO protocol/preparer。
+历史 V1 preparer 只依赖旧 three-seed PASS，不能证明单次 TEST 与 all-Development
+refit 已按顺序 terminal；新门必须先验证 exact V2 refit config 和 terminal summary，
+因此不能绕过 `TEST → refit → LOSO`。
+
+LOSO cohort 固定为 7 个非空 Development studies × seeds
+`20260822/20260823/20260824`，共 21 runs；study-major/seed-minor 按共享 schedule
+round-robin 分配 GPU0-5。每折只使用原始 TRAIN/VALIDATION，held-out study 作为
+assessment fold，跨入 holdout 的 connected source components 从训练中排除；原始
+Development TEST 18,292 条在每折继续 withheld。模型、Huber、task→study→source
+fixed draws、task-macro loss、robust scaling、batch16、100 epochs 均与 Critic V2
+冻结 policy 一致。checkpoint 固定为 `FINAL_EPOCH`，避免用 held-out study 选择
+checkpoint。
+
+preparer 还要求 refit 使用全部 126,165 条、100-epoch final checkpoint、CUDA
+参数更新且 Evaluation read=0。输出的每个 LOSO config 明确记录 earlier single
+TEST 已发生但其 metrics 未用于 LOSO selection；当前 LOSO run 自身的 TEST/Evaluation
+access 均为 false，guided generation 仍未授权。runtime config root 或任何 run
+target 已存在时均拒绝覆盖。
+
+本次没有调用真实 preparer、没有创建 21 个 `/mnt` runtime configs，也没有运行
+LOSO 或读取任何 protected outcome。新门 focused tests 12/12 通过；包含共享六 GPU
+配对和 trainer split 的扩展 suite 为 70 passed、4 个本机无 CUDA 的既有 skips。
+本任务没有参数更新，中央训练 CSV 不新增伪 attempt。
+
+仅在 exact V2 all-Development refit terminal 后，允许一次准备 21 个 configs：
+
+```bash
+$PY scripts/route_a_v3/prepare_route2_mrnabert_critic_v2_test_preserving_loso_configs_v1.py \
+  --refit-config /mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/mrnabert_critic_v2/runtime_configs/all_development_refit_v1/seed20260823.json \
+  --refit-summary /mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/mrnabert_critic_v2/all_development_refit_v1/seed20260823/training_summary.json \
+  --refit-protocol configs/route_a_v3_route2_mrnabert_critic_v2_all_development_refit_protocol_v1.json \
+  --loso-protocol configs/route_a_v3_route2_mrnabert_critic_v2_test_preserving_loso_protocol_v1.json
+```
+
+该命令只准备 configs，不调度 LOSO；当前上游 gate 未 terminal，不得提前运行。
