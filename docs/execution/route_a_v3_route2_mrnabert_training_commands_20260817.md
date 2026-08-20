@@ -235,7 +235,7 @@ nohup scripts/route_a_v3/schedule_route2_base_flow_v2_validation_v1.sh \
 configs/route_a_v3_route2_mrnabert_guidance_reward_policy_v1.json
 ```
 
-它只使用 standardized predicted mean；learned uncertainty 只做诊断，不进入 reward。在线 candidate encoder 的单次验证由下列低频调度器等待空闲 GPU 4 后执行：
+它只使用 standardized predicted mean；learned uncertainty 只做诊断，不进入 reward。在线 candidate encoder 的单次验证由下列低频调度器在 GPU 0–5 中等待满足相同空闲阈值的卡后执行：
 
 ```bash
 nohup scripts/route_a_v3/schedule_route2_mrnabert_online_encoder_validation_v1.sh \
@@ -273,7 +273,7 @@ configs/route_a_v3_route2_mrnabert_generation_comparison_development_gpu0_v1.jso
 
 ## 11. 独立评估器修复
 
-旧独立评估器曾直接混合不同 endpoint 的原始量纲，分钟级 half-life 误差会压倒 log-fold 和 usage，因此该 run 已作为 `STOPPED_PRETERMINAL_METHOD_INVALID` 保留，不能用于生成方法选择。新的单次预冻结 run 使用 TRAIN-only task robust scaling、独立的 0.51M Siamese CNN、Development VALIDATION 和 GPU 2；它不读取 mRNABERT 特征、Development TEST 或 Evaluation：
+旧独立评估器曾直接混合不同 endpoint 的原始量纲，分钟级 half-life 误差会压倒 log-fold 和 usage，因此该 run 已作为 `STOPPED_PRETERMINAL_METHOD_INVALID` 保留，不能用于生成方法选择。新的单次预冻结 run 使用 TRAIN-only task robust scaling、独立的 0.51M Siamese CNN 和 Development VALIDATION；它在 Base Flow validation 完成后从 GPU 0–5 中选择满足原空闲阈值的卡，不读取 mRNABERT 特征、Development TEST 或 Evaluation：
 
 ```bash
 nohup scripts/route_a_v3/schedule_route2_independent_evaluator_gpu2_v3.sh \
