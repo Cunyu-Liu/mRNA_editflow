@@ -6,8 +6,7 @@ ROUTE2_ROOT="${ROUTE2_ROOT:-/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2}"
 PYTHON="${PYTHON:-/home/cunyuliu/miniconda3/envs/editflow/bin/python}"
 POLL_SECONDS="${POLL_SECONDS:-900}"
 GPU_CANDIDATES="${GPU_CANDIDATES:-0 1 2 3 4 5}"
-MINIMUM_FREE_MB="${MINIMUM_FREE_MB:-24000}"
-MAXIMUM_UTILIZATION="${MAXIMUM_UTILIZATION:-70}"
+MINIMUM_FREE_MB="${MINIMUM_FREE_MB:-1024}"
 
 TRAINING_SUMMARY="${ROUTE2_ROOT}/runs/base_flow_g0/position_progress_gpu_v2/training_summary.json"
 VALIDATION_CONFIG_TEMPLATE="${REPO_ROOT}/configs/route_a_v3_route2_base_flow_g0_position_progress_validation_gpu2_v2.json"
@@ -44,7 +43,6 @@ while [[ -z "${selected_gpu}" ]]; do
     printf '%s base_flow_validation_gpu_candidate=%s free_mb=%s util=%s\n' \
       "$(date -Is)" "${gpu}" "${free_mb}" "${util}"
     if [[ "${free_mb}" -ge "${MINIMUM_FREE_MB}" \
-      && "${util}" -le "${MAXIMUM_UTILIZATION}" \
       && "${free_mb}" -gt "${best_free_mb}" ]]; then
       selected_gpu="${gpu}"
       best_free_mb="${free_mb}"
@@ -67,7 +65,7 @@ if [[ -e "${runtime_config}" ]]; then
   printf 'base-flow validation runtime config already exists: %s\n' "${runtime_config}" >&2
   exit 1
 fi
-"${PYTHON}" - "${VALIDATION_CONFIG_TEMPLATE}" "${runtime_config}" "${selected_gpu}" <<'PY'
+"${PYTHON}" - "${VALIDATION_CONFIG_TEMPLATE}" "${runtime_config}" "${selected_gpu}" "${MINIMUM_FREE_MB}" <<'PY'
 import json
 import sys
 from pathlib import Path
@@ -75,10 +73,12 @@ from pathlib import Path
 template_path = Path(sys.argv[1])
 output_path = Path(sys.argv[2])
 gpu = int(sys.argv[3])
+minimum_free_mb = int(sys.argv[4])
 config = json.loads(template_path.read_text(encoding="utf-8"))
 config["device"] = f"cuda:{gpu}"
 config["physical_gpu_index"] = gpu
-config["gpu_selection_policy"] = "FIRST_AVAILABLE_GPU_0_TO_5_WITH_ORIGINAL_FREE_MEMORY_AND_UTILIZATION_THRESHOLDS"
+config["gpu_selection_policy"] = "MOST_FREE_MEMORY_GPU_0_TO_5_WITH_TASK_MINIMUM_NO_UTILIZATION_GATE"
+config["gpu_selection_minimum_free_mb"] = minimum_free_mb
 output_path.write_text(json.dumps(config, indent=2, sort_keys=True) + "\n", encoding="utf-8")
 PY
 
