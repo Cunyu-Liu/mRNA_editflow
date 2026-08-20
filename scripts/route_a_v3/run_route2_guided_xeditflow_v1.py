@@ -41,6 +41,7 @@ from scripts.route_a_v3.run_route2_base_flow_g0_validation_v1 import (
 GUIDED_CONFIG_SCHEMA = (
     "route_a_v3_route2_mrnabert_critic_v2_guided_xeditflow_development.v1"
 )
+GUIDED_METHOD_ID = "frozen_mrnabert_critic_v2_guided_xeditflow_v1"
 READINESS_INPUT_SCHEMA = (
     "route_a_v3_route2_mrnabert_critic_v2_guidance_readiness_input.v1"
 )
@@ -405,7 +406,7 @@ def execute(config: Mapping[str, Any]) -> dict[str, Any]:
                 region=region,
             )
             rows.append({
-                "method_id": "frozen_mrnabert_critic_v2_guided_xeditflow_v1",
+                "method_id": GUIDED_METHOD_ID,
                 "source_key": source_row["source_key"],
                 "candidate_sequence": terminal.current_sequence,
                 "terminal_cause": terminal.terminal_cause,

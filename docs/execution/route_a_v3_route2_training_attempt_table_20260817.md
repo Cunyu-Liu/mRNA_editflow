@@ -304,3 +304,14 @@ summary/compute、matched candidates 与 V2 guided method identity。
 均未创建；TEST/LOSO/Evaluation outcome 未因本任务读取。三入口 focused tests
 16/16 通过。该任务没有参数更新，因此中央 CSV 不增加训练行，最近已记录的 100 个
 唯一 attempts/四个 Critic V2 RUNNING 状态不变。
+
+## Critic V2 readiness-to-comparison 合成合同验证（2026-08-20）
+
+新增端到端 focused test，使用真实 builder/adjudicator 输出结构与三份 production
+V2 configs，证明 readiness packet/adjudication 可连续通过 guided、matched-search
+和 generation-comparison 边界，并验证两端 V2 guided method identity 相同。测试仅
+使用合成 evidence 和临时 checkpoint，不读取真实 TEST/LOSO/Evaluation outcome，
+也不创建 candidates。
+
+readiness focused suite 15/15、合并下游与 paper 回归 33/33 通过。该验证没有参数
+更新，因此中央 CSV 不增加训练行，最近已记录状态不变。

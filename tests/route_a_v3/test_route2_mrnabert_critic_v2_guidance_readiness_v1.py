@@ -17,6 +17,14 @@ ADJUDICATOR_SCRIPT = (
     ROOT
     / "scripts/route_a_v3/adjudicate_route2_mrnabert_critic_v2_readiness_v1.py"
 )
+GUIDED_SCRIPT = ROOT / "scripts/route_a_v3/run_route2_guided_xeditflow_v1.py"
+MATCHED_SCRIPT = (
+    ROOT / "scripts/route_a_v3/run_route2_mrnabert_matched_search_suite_v1.py"
+)
+COMPARISON_SCRIPT = (
+    ROOT
+    / "scripts/route_a_v3/run_route2_mrnabert_generation_comparison_suite_v1.py"
+)
 PROTOCOL_PATHS = {
     "readiness": ROOT
     / "configs/route_a_v3_route2_mrnabert_critic_v2_guidance_readiness_protocol_v1.json",
@@ -441,3 +449,72 @@ def test_write_input_once_refuses_overwrite(tmp_path: Path) -> None:
     builder.write_input_once({"schema_version": "x"}, output)
     with pytest.raises(builder.CriticV2ReadinessInputError, match="already exists"):
         builder.write_input_once({"schema_version": "x"}, output)
+
+
+def test_real_readiness_output_contract_closes_the_v2_development_pipeline(
+    tmp_path: Path,
+) -> None:
+    builder, adjudicator = _modules()
+    guided = _load(GUIDED_SCRIPT, "critic_v2_guided_contract_test")
+    matched = _load(MATCHED_SCRIPT, "critic_v2_matched_contract_test")
+    comparison = _load(COMPARISON_SCRIPT, "critic_v2_comparison_contract_test")
+
+    payload = builder.build_input(**_builder_kwargs(tmp_path))
+    readiness_result = adjudicator.adjudicate(payload)
+
+    guided_config = json.loads(
+        (
+            ROOT
+            / "configs/route_a_v3_route2_mrnabert_critic_v2_guided_xeditflow_development_gpu0_v1.json"
+        ).read_text(encoding="utf-8")
+    )
+    payload["critic"]["refit_checkpoint"] = guided_config[
+        "critic_checkpoint_path"
+    ]
+    payload["flow"]["checkpoint"] = guided_config["base_flow_checkpoint_path"]
+    guided.validate_guided_config(guided_config)
+    guided.validate_readiness(payload, readiness_result, guided_config)
+
+    matched_config = json.loads(
+        (
+            ROOT
+            / "configs/route_a_v3_route2_mrnabert_critic_v2_matched_search_development_gpu0_v1.json"
+        ).read_text(encoding="utf-8")
+    )
+    guided_summary = {
+        "schema_version": guided.GUIDED_CONFIG_SCHEMA,
+        "status": "GUIDED_XEDITFLOW_DEVELOPMENT_COMPLETE",
+        "matched_search_budget_rule": matched_config["critic_budget_rule"],
+        "per_source_compute_path": matched_config[
+            "guided_compute_by_source_path"
+        ],
+        "evaluation_outcomes_read": 0,
+        "generated_candidates_grant_canonical_credit": False,
+        "biological_optimization_established": False,
+    }
+    budgets = matched.validate_inputs(
+        matched_config,
+        payload,
+        readiness_result,
+        {
+            "schema_version": (
+                "route_a_v3_route2_independent_generation_evaluator_adjudication.v1"
+            ),
+            "status": "INDEPENDENT_GENERATION_EVALUATOR_QUALIFIED",
+            "development_test_outcomes_accessed": False,
+            "evaluation_outcomes_accessed": False,
+        },
+        guided_summary,
+        [{"source_key": "S1", "matched_search_critic_forward_budget": 101}],
+        [{"source_key": "S1"}],
+    )
+    assert budgets == {"S1": 101}
+
+    comparison_config = json.loads(
+        (
+            ROOT
+            / "configs/route_a_v3_route2_mrnabert_critic_v2_generation_comparison_development_gpu0_v1.json"
+        ).read_text(encoding="utf-8")
+    )
+    comparison.validate_config_boundary(comparison_config)
+    assert comparison.GUIDED_METHOD == guided.GUIDED_METHOD_ID

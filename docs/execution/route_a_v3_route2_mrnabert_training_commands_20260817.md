@@ -726,3 +726,19 @@ configs/route_a_v3_route2_mrnabert_critic_v2_generation_comparison_development_g
 
 只有 V2 readiness 真实 `guided_unlocked=true` 后，才可动态选择 GPU0-5 并从第一项
 开始；后两项分别还须等待前一项 terminal。当前不得调用任何一个入口。
+
+## 26. Critic V2 readiness-to-comparison 合成端到端合同验证（2026-08-20）
+
+此前 readiness、guided、matched-search 与 comparison 各自的 focused tests 使用
+独立夹具，不能单独证明真实上游输出字段可由下游连续消费。现已增加一项合成端到端
+contract test：真实 readiness builder 组装完整 V2 packet，真实 adjudicator 产生
+dual-ready 裁决，再依次送入 production guided config/validator、matched-search
+consumer 和 comparison config boundary。测试还统一核对 guided output method ID 与
+comparison 所需 method ID，避免两端字符串漂移。
+
+该测试只使用合成 terminal evidence 和临时 checkpoint；为检查 production path
+contract，仅把 packet 中 checkpoint path 绑定到已冻结的未来 V2 config，不读取或
+创建任何真实 `/mnt` outcome。新的 readiness focused suite 为 15/15 通过；下游链、
+paper 与 readiness 合并回归为 33/33 通过。未运行 TEST/refit/LOSO/generation，未
+打开 Evaluation，也没有参数更新，因此中央训练 CSV 不增加伪 attempt；最近记录的
+100 个唯一 attempts/四个 Critic V2 RUNNING 状态不因本任务改变。
