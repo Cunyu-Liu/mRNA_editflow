@@ -260,3 +260,22 @@ pairwise-Huber、anchored position-aware policy；matched 不被错误表述为�
 个唯一 attempts/四个 Critic V2 RUNNING 状态不因本任务改变。新门 focused tests
 15/15、扩展 pairing/aggregation suite 27/27 通过。primary LOSO、baseline LOSO、
 readiness、guidance 与 Evaluation 都尚未执行。
+
+## Critic V2 guidance readiness 总闸门（2026-08-20）
+
+已前瞻冻结 V2-only readiness protocol，并实现一次性 evidence packet builder 与
+adjudicator。它不再接受旧 V1 signal-control 状态，而是逐级绑定 Critic V2
+control、三个固定 seed、单次冻结 TEST、all-126,165 refit、三个固定 seed 的
+7-study primary/matched-baseline LOSO 聚合、冻结 reward policy、online encoder
+以及 Flow G0 训练/验证与 checkpoint provenance。
+
+三个 LOSO seed 必须分别完整且 model-minus-baseline macro Spearman improvement
+大于 0；单次 TEST 数值只报告，不参与任何 readiness 阈值或后续选择。只有
+`CRITIC_READY_FOR_GUIDANCE` 与 `FLOW_G0_READY` 同时成立，才会输出 Development
+guided generation allowed；该裁决自身不执行 generation，也不建立 biological
+optimization claim。
+
+真实 readiness packet/adjudication 尚未创建，TEST/LOSO/Evaluation outcome 均未
+因本任务读取，guided generation 仍未授权。因此中央 CSV 不增加训练行；最近已记录
+的 100 个唯一 attempts/四个 Critic V2 RUNNING 状态不因本任务改变。新 focused
+tests 14/14、与历史 readiness 和 LOSO aggregation 的扩展回归 41/41 通过。

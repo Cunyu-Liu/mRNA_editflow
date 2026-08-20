@@ -633,3 +633,40 @@ $PY scripts/route_a_v3/prepare_route2_mrnabert_critic_v2_matched_baseline_loso_c
 
 该命令只准备 configs，不运行 baseline LOSO；当前上游 gate 未 terminal，不得提前
 调用。
+
+## 23. Critic V2 guidance readiness 总闸门前瞻冻结（2026-08-20）
+
+已新增独立的 V2-only readiness protocol、证据包 builder 与 adjudicator，替代只
+认识历史 V1 signal-control 的旧 readiness 路径。新总闸门把整条已冻结因果链绑定
+为：Critic V2 control PASS → 三个固定 seed PASS → 单次冻结 Development TEST
+合法完成 → all-126,165 refit 合法完成 → 三个固定 seed 各自完成 7-study primary /
+matched-baseline LOSO 聚合且 macro Spearman improvement 全部大于 0。LOSO 聚合器
+已经逐 run 验证 21 个 primary 与 21 个 matched-baseline provenance，因此 readiness
+只接受三个完整聚合结果，不重复读取或重新解释 42 份训练 summary。
+
+单次 TEST 在此只要求合法完成、指标字段存在且没有被用于结构、loss、seed、epoch、
+threshold 或 policy 选择；TEST 指标值本身完全不作为 readiness 阈值。最终 guidance
+解锁仍须同时满足 `CRITIC_READY_FOR_GUIDANCE` 与 `FLOW_G0_READY`，并要求冻结的
+reward policy、online frozen mRNABERT、final refit checkpoint、Base Flow checkpoint
+和 Evaluation-unused provenance 全部成立。readiness 裁决不会运行 guidance，也不把
+Flow G0 工程合法性或 critic readiness 写成 biological optimization claim。
+
+本次只完成前瞻冻结和实现：没有调用真实 builder/adjudicator，没有读取 TEST 数值、
+新的 final Evaluation outcome 或 LOSO outcome，没有创建 `/mnt` readiness packet，
+也没有授权 guided generation。focused tests 14/14 通过；与历史 readiness builder、
+adjudicator 和共享 LOSO aggregation 合并的回归为 41/41 通过。该任务没有参数更新，
+中央训练 CSV 不新增伪 attempt；最近记录的 100 个唯一 attempts/四个 Critic V2
+RUNNING 状态不因本任务改变。
+
+未来只有在上述所有真实前置产物均 terminal 后，才允许依次调用以下两个 V2-only
+入口一次：
+
+```text
+scripts/route_a_v3/build_route2_mrnabert_critic_v2_guidance_readiness_input_v1.py
+scripts/route_a_v3/adjudicate_route2_mrnabert_critic_v2_readiness_v1.py
+```
+
+builder 的 required CLI 参数须逐一绑定七份冻结协议、control/three-seed/TEST/refit、
+三个 LOSO 聚合、reward、encoder 与 Flow 的 exact terminal artifacts；输出位置由
+readiness protocol 固定，且不得覆盖。当前上游 gate 未 terminal，因此不得提前构建
+packet 或裁决，也不得回退到旧 V1 readiness。

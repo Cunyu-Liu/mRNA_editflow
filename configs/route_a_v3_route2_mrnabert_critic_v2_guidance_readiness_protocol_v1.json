@@ -1,0 +1,40 @@
+{
+  "schema_version": "route_a_v3_route2_mrnabert_critic_v2_guidance_readiness_protocol.v1",
+  "status": "FROZEN_BEFORE_CRITIC_V2_THREE_SEED_OUTCOMES",
+  "control_protocol": "configs/route_a_v3_route2_mrnabert_critic_v2_protocol_v1.json",
+  "three_seed_protocol": "configs/route_a_v3_route2_mrnabert_critic_v2_three_seed_protocol_v1.json",
+  "frozen_test_protocol": "configs/route_a_v3_route2_mrnabert_critic_v2_frozen_test_protocol_v1.json",
+  "all_development_refit_protocol": "configs/route_a_v3_route2_mrnabert_critic_v2_all_development_refit_protocol_v1.json",
+  "primary_loso_protocol": "configs/route_a_v3_route2_mrnabert_critic_v2_test_preserving_loso_protocol_v1.json",
+  "matched_baseline_loso_protocol": "configs/route_a_v3_route2_mrnabert_critic_v2_matched_baseline_loso_protocol_v1.json",
+  "reward_policy": "configs/route_a_v3_route2_mrnabert_guidance_reward_policy_v1.json",
+  "required_seeds": [20260822, 20260823, 20260824],
+  "required_loso_studies": 7,
+  "zero_record_development_studies": ["GSE256185"],
+  "single_frozen_test_seed": 20260823,
+  "single_test_metric_policy": "REPORT_ONLY_NO_STRUCTURE_LOSS_SEED_EPOCH_THRESHOLD_OR_POLICY_SELECTION",
+  "loso_gate": {
+    "all_three_seed_aggregations_complete": true,
+    "all_seed_model_minus_baseline_macro_spearman": ">0",
+    "development_test_preserved": true,
+    "evaluation_studies_included": 0
+  },
+  "critic_ready_requires": [
+    "CRITIC_V2_CONTROL_PASS",
+    "CRITIC_V2_THREE_SEED_PASS",
+    "ONE_FROZEN_TEST_COMPLETE_WITHOUT_TEST_SELECTION",
+    "ALL_126165_REFIT_COMPLETE",
+    "THREE_COMPLETE_POSITIVE_MATCHED_LOSO_AGGREGATIONS",
+    "FINAL_CRITIC_CHECKPOINT_PRESENT",
+    "GUIDANCE_REWARD_POLICY_FROZEN",
+    "ONLINE_FROZEN_MRNABERT_READY",
+    "EVALUATION_UNUSED"
+  ],
+  "guided_generation_requires": ["CRITIC_READY_FOR_GUIDANCE", "FLOW_G0_READY"],
+  "readiness_input_output": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/comparisons/mrnabert_critic_v2_guidance_readiness_input_v1.json",
+  "readiness_adjudication_output": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/comparisons/mrnabert_critic_v2_guidance_readiness_adjudication_v1.json",
+  "development_test_outcomes_accessed_at_protocol_freeze": false,
+  "evaluation_outcomes_accessed": false,
+  "guided_generation_authorized": false,
+  "scientific_claim_status": "NOT_ESTABLISHED"
+}
