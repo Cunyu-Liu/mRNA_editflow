@@ -223,6 +223,70 @@ def test_pretrained_source_only_control_is_candidate_invariant_and_parameter_mat
     assert torch.equal(first, second)
 
 
+def test_pretrained_edit_metadata_control_is_parameter_matched_and_has_no_candidate_global_input() -> None:
+    module = _load(MODEL_PATH, "route2_pretrained_edit_metadata_control_test")
+    common = {
+        "hidden_dim": 32,
+        "depth": 2,
+        "study_count": 1,
+        "assay_count": 1,
+        "context_count": 1,
+        "endpoint_count": 1,
+        "pretrained_width": 24,
+    }
+    main = module.Route2PretrainedEditCenteredDeltaPredictor(**common).eval()
+    control = module.Route2PretrainedEditCenteredDeltaPredictor(
+        **common, edit_metadata_only_control=True
+    ).eval()
+    assert sum(parameter.numel() for parameter in main.parameters()) == sum(
+        parameter.numel() for parameter in control.parameters()
+    )
+    source = torch.tensor([[0, 1, 2, 3]])
+    candidate = torch.tensor([[1, 1, 2, 3]])
+    second_edit = torch.tensor([[0, 1, 2, 0]])
+    padding = torch.zeros_like(source, dtype=torch.bool)
+    categories = torch.zeros(1, dtype=torch.long)
+    source_pretrained = torch.randn(1, 24)
+
+    def predict(candidate_tokens, candidate_pretrained):
+        return control(
+            source,
+            candidate_tokens,
+            padding,
+            categories,
+            categories,
+            categories,
+            categories,
+            categories,
+            source_pretrained,
+            candidate_pretrained,
+        )["mean"]
+
+    first = predict(candidate, torch.randn(1, 24))
+    changed_global = predict(candidate, torch.randn(1, 24))
+    changed_edit = predict(second_edit, torch.randn(1, 24))
+    identity = predict(source, torch.randn(1, 24))
+    assert torch.equal(first, changed_global)
+    assert not torch.equal(first, changed_edit)
+    assert torch.equal(identity, torch.zeros_like(identity))
+
+
+def test_pretrained_controls_are_mutually_exclusive() -> None:
+    module = _load(MODEL_PATH, "route2_pretrained_control_exclusivity_test")
+    with pytest.raises(ValueError, match="mutually exclusive"):
+        module.Route2PretrainedEditCenteredDeltaPredictor(
+            hidden_dim=16,
+            depth=1,
+            study_count=1,
+            assay_count=1,
+            context_count=1,
+            endpoint_count=1,
+            pretrained_width=8,
+            source_only_control=True,
+            edit_metadata_only_control=True,
+        )
+
+
 def test_final_refit_uses_all_development_records_without_internal_evaluation() -> None:
     trainer = _load(TRAIN_PATH, "route2_delta_final_all_refit_test")
     records = [
@@ -563,6 +627,88 @@ def test_task_balanced_weights_equalize_tasks_then_source_groups() -> None:
     weights = [dataset[index]["sample_weight"] for index in range(len(dataset))]
     assert sum(weights[:3]) == pytest.approx(weights[3])
     assert weights[0] + weights[1] == pytest.approx(weights[2])
+
+
+def test_task_study_group_weights_equalize_each_hierarchy_level() -> None:
+    trainer = _load(TRAIN_PATH, "route2_delta_task_study_weight_test")
+    records = [
+        trainer.DeltaRecord("a1", "TRAIN", "AAAA", "CAAA", 0.0, "A::g1", "A", "x", "c", "E1", 0),
+        trainer.DeltaRecord("a2", "TRAIN", "AAAA", "GAAA", 0.0, "A::g1", "A", "x", "c", "E1", 0),
+        trainer.DeltaRecord("a3", "TRAIN", "AAAA", "UAAA", 0.0, "A::g2", "A", "x", "c", "E1", 0),
+        trainer.DeltaRecord("b1", "TRAIN", "AAAA", "ACAA", 0.0, "B::g1", "B", "x", "c", "E1", 0),
+        trainer.DeltaRecord("c1", "TRAIN", "AAAA", "AGAA", 0.0, "C::g1", "C", "x", "c", "E2", 1),
+    ]
+    vocabs = {
+        field: trainer.build_vocab(records, field)
+        for field in ("study", "assay", "context", "endpoint")
+    }
+    dataset = trainer.DeltaDataset(
+        records,
+        vocabs,
+        weighting_mode="TASK_THEN_STUDY_THEN_SOURCE_CONTEXT_ENDPOINT_GROUP",
+    )
+    weights = [dataset[index]["sample_weight"] for index in range(len(dataset))]
+    assert sum(weights[:4]) == pytest.approx(weights[4])
+    assert sum(weights[:3]) == pytest.approx(weights[3])
+    assert weights[0] + weights[1] == pytest.approx(weights[2])
+    assert sum(weights) / len(weights) == pytest.approx(1.0)
+
+
+def test_task_study_balanced_sampler_has_fixed_budget_and_replays_epoch() -> None:
+    trainer = _load(TRAIN_PATH, "route2_delta_task_study_sampler_test")
+    records = [
+        trainer.DeltaRecord("a1", "TRAIN", "AAAA", "CAAA", 0.0, "A::g1", "A", "x", "c", "E1", 0),
+        trainer.DeltaRecord("a2", "TRAIN", "AAAAA", "CAAAA", 0.0, "A::g2", "A", "x", "c", "E1", 0),
+        trainer.DeltaRecord("b1", "TRAIN", "AAAAAA", "CAAAAA", 0.0, "B::g1", "B", "x", "c", "E1", 0),
+        trainer.DeltaRecord("c1", "TRAIN", "AAAAAAA", "CAAAAAA", 0.0, "C::g1", "C", "x", "c", "E2", 1),
+        trainer.DeltaRecord("c2", "TRAIN", "AAAAAAAA", "CAAAAAAA", 0.0, "C::g2", "C", "x", "c", "E2", 1),
+        trainer.DeltaRecord("c3", "TRAIN", "AAAAAAAAA", "CAAAAAAAA", 0.0, "C::g3", "C", "x", "c", "E2", 1),
+        trainer.DeltaRecord("c4", "TRAIN", "AAAAAAAAAA", "CAAAAAAAAA", 0.0, "C::g4", "C", "x", "c", "E2", 1),
+    ]
+    sampler = trainer.TaskStudyBalancedLengthBucketBatchSampler(
+        records, batch_size=3, seed=17, shuffle=True
+    )
+    first = [index for batch in sampler for index in batch]
+    replay = [index for batch in sampler for index in batch]
+    assert first == replay
+    assert len(first) == len(records)
+    task_counts = {}
+    task_study_counts = {}
+    for index in first:
+        record = records[index]
+        task = trainer.task_key(record.endpoint, record.region)
+        task_counts[task] = task_counts.get(task, 0) + 1
+        task_study_counts[(task, record.study)] = (
+            task_study_counts.get((task, record.study), 0) + 1
+        )
+    assert max(task_counts.values()) - min(task_counts.values()) <= 1
+    first_task = trainer.task_key("E1", 0)
+    first_task_studies = [
+        count for (task, _study), count in task_study_counts.items()
+        if task == first_task
+    ]
+    assert max(first_task_studies) - min(first_task_studies) <= 1
+    sampler.set_epoch(1)
+    assert [index for batch in sampler for index in batch] != first
+
+
+def test_task_macro_loss_gives_tasks_equal_weight() -> None:
+    trainer = _load(TRAIN_PATH, "route2_delta_task_macro_loss_test")
+    output = {"mean": torch.zeros(3), "log_variance": torch.zeros(3)}
+    batch = {
+        "task_keys": ["A", "A", "B"],
+        "scaled_target": torch.tensor([2.0, 2.0, 1.0]),
+        "target": torch.tensor([2.0, 2.0, 1.0]),
+        "sample_weight": torch.ones(3),
+    }
+    loss = trainer.task_macro_training_loss(
+        output, batch, "huber", 1.0, 1.0
+    )
+    record_weighted = trainer.training_loss(
+        output, batch, "huber", 1.0, 1.0
+    )
+    assert loss.item() == pytest.approx(1.0)
+    assert record_weighted.item() == pytest.approx(7.0 / 6.0)
 
 
 def test_transferable_context_masks_only_study_identity() -> None:

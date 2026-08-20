@@ -15,6 +15,9 @@ ROUTE2_PRETRAINED_EDIT_CENTERED_MODEL_KIND = (
 ROUTE2_PRETRAINED_EDIT_CENTERED_SOURCE_ONLY_KIND = (
     "delta_pretrained_mrnabert_edit_centered_source_only_control"
 )
+ROUTE2_PRETRAINED_EDIT_METADATA_CONTROL_KIND = (
+    "delta_pretrained_mrnabert_source_edit_metadata_control"
+)
 ROUTE2_LEGACY_RNAFM_EDIT_CENTERED_MODEL_KIND = (
     "delta_pretrained_rnafm_edit_centered_antisymmetric"
 )
@@ -325,7 +328,9 @@ class Route2PretrainedEditCenteredDeltaPredictor(nn.Module):
     an optional uncertainty head is symmetric and is used only in the matched
     learned-scale diagnostic arm.  The parameter-matched source-only control
     runs the same network with candidate tokens and embeddings replaced by the
-    source and intentionally does not claim antisymmetry.
+    source and intentionally does not claim antisymmetry.  The independent
+    edit-metadata control retains the source plus explicit local edit identity
+    and position, but removes the candidate's frozen/global representation.
     """
 
     def __init__(
@@ -341,6 +346,7 @@ class Route2PretrainedEditCenteredDeltaPredictor(nn.Module):
         region_count: int = 2,
         learned_uncertainty: bool = False,
         source_only_control: bool = False,
+        edit_metadata_only_control: bool = False,
     ):
         super().__init__()
         if hidden_dim < 16 or depth < 1 or pretrained_width < 1:
@@ -349,6 +355,9 @@ class Route2PretrainedEditCenteredDeltaPredictor(nn.Module):
             raise ValueError("categorical vocabularies must be non-empty")
         self.learned_uncertainty = learned_uncertainty
         self.source_only_control = source_only_control
+        if source_only_control and edit_metadata_only_control:
+            raise ValueError("source-only and edit-metadata controls are mutually exclusive")
+        self.edit_metadata_only_control = edit_metadata_only_control
         category_dim = max(4, hidden_dim // 8)
         self.nucleotide = nn.Embedding(5, hidden_dim, padding_idx=4)
         self.source_projection = nn.Linear(hidden_dim, hidden_dim)
@@ -497,6 +506,42 @@ class Route2PretrainedEditCenteredDeltaPredictor(nn.Module):
                 log_variance = torch.zeros_like(mean)
             else:
                 log_variance = self.log_variance_head(source_representation).squeeze(-1)
+                log_variance = log_variance.clamp(min=-8.0, max=6.0)
+            return {"mean": mean, "log_variance": log_variance}
+        if self.edit_metadata_only_control:
+            edited_representation = self._encode_pair(
+                source_tokens,
+                candidate_tokens,
+                padding_mask,
+                source_pretrained,
+                source_pretrained,
+                assay_ids,
+                context_ids,
+                endpoint_ids,
+                region_ids,
+            )
+            source_representation = self._encode_pair(
+                source_tokens,
+                source_tokens,
+                padding_mask,
+                source_pretrained,
+                source_pretrained,
+                assay_ids,
+                context_ids,
+                endpoint_ids,
+                region_ids,
+            )
+            mean = (
+                self.mean_head(edited_representation)
+                - self.mean_head(source_representation)
+            ).squeeze(-1)
+            if self.log_variance_head is None:
+                log_variance = torch.zeros_like(mean)
+            else:
+                log_variance = 0.5 * (
+                    self.log_variance_head(edited_representation)
+                    + self.log_variance_head(source_representation)
+                ).squeeze(-1)
                 log_variance = log_variance.clamp(min=-8.0, max=6.0)
             return {"mean": mean, "log_variance": log_variance}
         forward = self._encode_pair(

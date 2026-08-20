@@ -15,7 +15,7 @@
 | 身份 | attempt ID、baseline ID、用途、科学角色、代码 commit、输出目录 |
 | 数据 | canonical 文件、实际 study、区域、TRAIN/VALIDATION/TEST 数、Evaluation 读取数 |
 | 模型 | 模型类型、预训练模型、可训练参数、冻结参数、总有效参数 |
-| 训练 | loss、batch、epochs、学习率、weight decay、优化器、BF16/FP32、GPU、seed、optimizer steps、最佳 epoch |
+| 训练 | loss、loss aggregation、sampling/weighting mode、batch、epochs、学习率、weight decay、优化器、BF16/FP32、GPU、seed、optimizer steps、最佳 epoch |
 | 数据管线 | workers、pinned memory、non-blocking transfer、预训练特征缓存 |
 | 架构 | encoder attention backend、预训练位置编码、critic 位置特征、生成动作空间、生成器位置与轨迹时间特征 |
 | 结果 | VALIDATION/TEST 指标、峰值显存、耗时、状态、失败原因与解释备注 |

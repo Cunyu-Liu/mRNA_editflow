@@ -1,0 +1,81 @@
+{
+  "schema_version": "route_a_v3_route2_mrnabert_critic_v2_protocol.v1",
+  "status": "FROZEN_BEFORE_CRITIC_V2_TRAINING_OUTCOMES",
+  "design": "docs/plans/2026-08-20-route2-critic-v2-task-study-balanced-design.md",
+  "base_config": "configs/route_a_v3_route2_mrnabert_edit_max_mean_only_gpu6_v1.json",
+  "selection_pool": "DEVELOPMENT_TRAIN_VALIDATION_ONLY",
+  "development_record_count": 126165,
+  "development_train_record_count": 89580,
+  "development_validation_record_count": 18293,
+  "development_test_record_count_withheld": 18292,
+  "development_test_outcomes_accessed": false,
+  "evaluation_outcomes_accessed": false,
+  "screen_seed": 20260825,
+  "frozen_confirmation_seeds": [20260822, 20260823, 20260824],
+  "strongest_same_information_baseline": {
+    "baseline_id": "method_repair_global_scaled_seed20260821",
+    "model_kind": "delta_anchored_position_aware_antisymmetric",
+    "task_macro_spearman": 0.13171439492559175,
+    "task_macro_standardized_mae": 1.806657840788394,
+    "training_summary_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/method_repair_v1/exploratory/global_scaled_seed20260821_gpu0_v1/training_summary.json",
+    "development_test_used": false,
+    "evaluation_used": false
+  },
+  "frozen_training_policy": {
+    "model_kind": "delta_pretrained_mrnabert_edit_centered_antisymmetric",
+    "training_weighting_mode": "TASK_THEN_STUDY_THEN_SOURCE_CONTEXT_ENDPOINT_GROUP",
+    "training_sampling_mode": "TASK_STUDY_SOURCE_GROUP_BALANCED_FIXED_DRAWS",
+    "loss_aggregation_mode": "TASK_MACRO_MEAN",
+    "training_update_mode": "STANDARD",
+    "target_scaling_mode": "TRAIN_TASK_ROBUST",
+    "loss_kind": "huber",
+    "huber_delta": 1.0,
+    "checkpoint_selection": "BEST_VALIDATION",
+    "checkpoint_metric": "TASK_MACRO_SPEARMAN_THEN_STANDARDIZED_MAE",
+    "epochs": 100,
+    "batch_size": 16,
+    "optimizer_name": "AdamW",
+    "learning_rate": 0.0001,
+    "weight_decay": 0.0001,
+    "training_precision": "BF16"
+  },
+  "arms": {
+    "full": {
+      "scientific_role": "CRITIC_V2_FULL_SOURCE_CANDIDATE_EDIT",
+      "model_kind": "delta_pretrained_mrnabert_edit_centered_antisymmetric",
+      "candidate_control": "NONE"
+    },
+    "candidate_permutation": {
+      "scientific_role": "CRITIC_V2_MATCHED_CANDIDATE_PERMUTATION_CONTROL",
+      "model_kind": "delta_pretrained_mrnabert_edit_centered_antisymmetric",
+      "candidate_control": "WITHIN_EXACT_SOURCE_TASK_TRAIN_CANDIDATE_PERMUTATION"
+    },
+    "source_only": {
+      "scientific_role": "CRITIC_V2_PARAMETER_MATCHED_SOURCE_ONLY_CONTROL",
+      "model_kind": "delta_pretrained_mrnabert_edit_centered_source_only_control",
+      "candidate_control": "NONE"
+    },
+    "source_edit_metadata": {
+      "scientific_role": "CRITIC_V2_PARAMETER_MATCHED_SOURCE_EDIT_METADATA_NO_CANDIDATE_GLOBAL_CONTROL",
+      "model_kind": "delta_pretrained_mrnabert_source_edit_metadata_control",
+      "candidate_control": "NONE"
+    }
+  },
+  "control_gate": {
+    "required_task_count": 9,
+    "minimum_task_wins_over_source_only": 5,
+    "minimum_task_wins_over_source_edit_metadata": 5,
+    "permutation_eligible_tasks": [
+      "MEAN_RIBOSOME_LOAD::region=0",
+      "PROXIMAL_POLYA_SITE_USAGE_LOG2_ODDS::region=1"
+    ],
+    "minimum_permutation_eligible_task_wins": 2,
+    "primary_task_median_spearman": ">0",
+    "primary_margin_over_strongest_same_information_baseline": ">0"
+  },
+  "run_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/mrnabert_critic_v2/task_study_macro_screen_seed20260825_v1",
+  "runtime_config_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/mrnabert_critic_v2/runtime_configs/task_study_macro_screen_seed20260825_v1",
+  "adjudication_output": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/comparisons/mrnabert_critic_v2_task_study_macro_controls_adjudication_v1.json",
+  "guided_generation_authorized": false,
+  "scientific_claim_status": "NOT_ESTABLISHED"
+}

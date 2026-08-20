@@ -42,6 +42,8 @@ def _config(tmp_path: Path) -> dict:
         "huber_delta": 1.0,
         "metadata_mode": "FULL_CONTEXT",
         "training_weighting_mode": "STUDY_THEN_SOURCE_CONTEXT_ENDPOINT_GROUP",
+        "training_sampling_mode": "COMPLETE_PASS_LENGTH_BUCKET",
+        "loss_aggregation_mode": "RECORD_WEIGHTED",
         "target_scaling_mode": "TRAIN_TASK_ROBUST",
         "candidate_control": "NONE",
         "seed": 17,
@@ -113,6 +115,8 @@ def test_training_attempt_upsert_preserves_start_and_adds_final_metrics(tmp_path
     assert rows[0]["pretrained_position_encoding"] == "ALIBI_RELATIVE_BIAS"
     assert rows[0]["encoder_attention_backend"] == "OFFICIAL_PYTORCH_FALLBACK"
     assert rows[0]["optimizer_fused"] == "True"
+    assert rows[0]["training_sampling_mode"] == "COMPLETE_PASS_LENGTH_BUCKET"
+    assert rows[0]["loss_aggregation_mode"] == "RECORD_WEIGHTED"
     assert rows[0]["generation_action_space"] == "SUB_PLUS_STOP"
     assert rows[0]["algorithmic_time_feature"] == "CONSUMED_EDIT_BUDGET_FRACTION"
     assert json.loads(run_record.read_text())["status"] == "COMPLETED"

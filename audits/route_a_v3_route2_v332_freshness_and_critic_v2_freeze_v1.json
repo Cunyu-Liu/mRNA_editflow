@@ -1,0 +1,105 @@
+{
+  "schema_version": "route_a_v3_route2_v332_freshness_and_critic_v2_freeze.v1",
+  "snapshot_time": "2026-08-20T19:32:33+08:00",
+  "authority": {
+    "contract_version": "V3.3.2",
+    "development_test_outcomes_accessed": false,
+    "evaluation_outcomes_accessed": false,
+    "gse232572_role": "HISTORICALLY_OUTCOME_EXPOSED_TRANSFER_DIAGNOSTIC_NOT_FINAL_CONFIRMATION",
+    "e_mtab_10902_role": "UNCONVERTIBLE_FOR_ROUTE2_V1_OUTCOME_NOT_READ",
+    "replacement_evaluation_study_required": true
+  },
+  "git": {
+    "branch": "route-a-v3-route2-method-repair-20260817",
+    "local_head_before_critic_v2": "b9a5871",
+    "github_ahead_behind_after_fetch": [0, 0],
+    "a100_head_before_critic_v2": "3ecd5bc",
+    "a100_worktree_clean": true,
+    "preserved_unrelated_local_change": "docs/execution/route_a_v3_route2_next_goal_todo_handoff_20260820.md deleted in local worktree and not restored or staged"
+  },
+  "independent_evaluator": {
+    "training_status": "DELTA_PREDICTOR_DEVELOPMENT_GPU_RUN_COMPLETE",
+    "adjudication_status": "INDEPENDENT_GENERATION_EVALUATOR_QUALIFIED",
+    "model_kind": "siamese_cnn",
+    "trainable_parameter_count": 509845,
+    "epochs": 8,
+    "optimizer_steps": 22400,
+    "physical_gpu_index": 1,
+    "wall_time_seconds": 1150.6236474514008,
+    "task_macro_spearman": 0.10256553571558498,
+    "task_macro_standardized_mae": 1.8078550850617527,
+    "exclusive_threshold": 0.1012475745988908,
+    "margin": 0.0013179611166941746,
+    "positive_task_count": 5,
+    "task_count": 9,
+    "development_test_outcomes_accessed": false,
+    "evaluation_outcomes_accessed": false,
+    "adjudication_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/comparisons/mrnabert_independent_evaluator_adjudication_v1.json"
+  },
+  "matched_generation": {
+    "status": "MATCHED_GENERATION_BASELINE_SUITE_COMPLETED",
+    "source_count": 891,
+    "candidate_budget_per_source": 32,
+    "critic_forward_budget_per_source": 256,
+    "forward_equivalent_budget_per_source": 320,
+    "physical_gpu_index": 1,
+    "suite_wall_time_seconds": 10959.641515254974,
+    "required_methods": [
+      "random_legal",
+      "greedy",
+      "beam",
+      "genetic",
+      "local_search",
+      "generate_then_rerank",
+      "unguided_learned_base_flow_g0"
+    ],
+    "all_methods_hard_legality_rate": 1.0,
+    "all_methods_edit_budget_violation_count": 0,
+    "all_methods_candidate_budget_violation_count": 0,
+    "point_leader_method_id": "genetic",
+    "strongest_generation_baseline_id": "genetic",
+    "genetic_source_macro_independent_evaluator_max_uplift_over_source": 1.0978248587628674,
+    "genetic_source_macro_unique_candidate_rate": 1.0,
+    "genetic_source_macro_pairwise_hamming_diversity": 0.06826010142866316,
+    "genetic_mean_total_forward_equivalents_per_source": 231.4668911335578,
+    "unguided_flow_source_macro_candidate_recovery_rate": 0.20286195286195285,
+    "unguided_flow_source_macro_measured_top_k_recovery_at_k": 0.09797305278909313,
+    "scientific_claim_status": "INDEPENDENT_EVALUATOR_ONLY_MEASURED_OUTCOME_NOT_ESTABLISHED",
+    "suite_summary_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/audits/generation_search_baselines/matched_compute_position_progress_seed20260816_v2/matched_generation_suite_summary_v2.json",
+    "strongest_baseline_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/audits/generation_search_baselines/matched_compute_position_progress_seed20260816_v2/strongest_generation_baseline_v2.json",
+    "evaluation_outcomes_accessed": false,
+    "guided_xeditflow_run": false
+  },
+  "central_training_attempts": {
+    "unique_attempt_count": 96,
+    "latest_terminal_attempt_id": "independent_evaluator_neural_medium_siamese_task_scaled_seed20260816_frozen_development_validation::neural_medium_siamese_task_scaled_seed20260816_frozen_development_validation_gpu2_v3",
+    "latest_terminal_status": "COMPLETED",
+    "development_test_record_count_withheld": 18292,
+    "evaluation_record_count": 0,
+    "path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiment_tracking/route2_training_attempts.csv"
+  },
+  "gpu_memory_snapshot_mib": [
+    {"gpu": 0, "used": 36786, "free": 3656},
+    {"gpu": 1, "used": 37366, "free": 3075},
+    {"gpu": 2, "used": 28080, "free": 12362},
+    {"gpu": 3, "used": 31540, "free": 8901},
+    {"gpu": 4, "used": 29679, "free": 10763},
+    {"gpu": 5, "used": 31244, "free": 9197}
+  ],
+  "next_action": {
+    "status": "CRITIC_V2_PROSPECTIVELY_FROZEN_FOR_IMPLEMENTATION_AND_CONTROL_SCREEN",
+    "hypothesis": "TASK_STUDY_SOURCE_GROUP_BALANCED_FIXED_DRAWS_PLUS_TASK_MACRO_MEAN_HUBER",
+    "frozen_encoder": "mRNABERT",
+    "screen_seed": 20260825,
+    "frozen_confirmation_seeds": [20260822, 20260823, 20260824],
+    "strongest_same_information_baseline_task_macro_spearman": 0.13171439492559175,
+    "controls": [
+      "full_source_candidate_edit",
+      "candidate_permutation",
+      "parameter_matched_source_only",
+      "source_edit_metadata_without_candidate_global_representation"
+    ],
+    "development_test_authorized": false,
+    "guided_generation_authorized": false
+  }
+}

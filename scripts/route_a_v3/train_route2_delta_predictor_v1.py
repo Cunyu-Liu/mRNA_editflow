@@ -30,6 +30,7 @@ from core.route2_delta_predictor import (
     ROUTE2_EDIT_CENTERED_SOURCE_ONLY_KIND,
     ROUTE2_LEGACY_RNAFM_EDIT_CENTERED_MODEL_KIND,
     ROUTE2_PRETRAINED_EDIT_CENTERED_MODEL_KIND,
+    ROUTE2_PRETRAINED_EDIT_METADATA_CONTROL_KIND,
     ROUTE2_PRETRAINED_EDIT_CENTERED_SOURCE_ONLY_KIND,
     Route2DeltaPredictor,
     Route2EditCenteredDeltaPredictor,
@@ -57,6 +58,12 @@ TRAINING_UPDATE_STANDARD = "STANDARD"
 TRAINING_UPDATE_TASK_GRADIENT_NORM_CALIBRATED = (
     "TRAIN_TASK_GRADIENT_NORM_CALIBRATED"
 )
+TRAINING_SAMPLING_COMPLETE_PASS_LENGTH_BUCKET = "COMPLETE_PASS_LENGTH_BUCKET"
+TRAINING_SAMPLING_TASK_STUDY_SOURCE_GROUP_BALANCED = (
+    "TASK_STUDY_SOURCE_GROUP_BALANCED_FIXED_DRAWS"
+)
+LOSS_AGGREGATION_RECORD_WEIGHTED = "RECORD_WEIGHTED"
+LOSS_AGGREGATION_TASK_MACRO_MEAN = "TASK_MACRO_MEAN"
 SHARED_EFFECT_EXCLUDED_PREFIXES = (
     "study.",
     "assay.",
@@ -70,6 +77,7 @@ PRETRAINED_EDIT_CENTERED_MODEL_KINDS = {
     ROUTE2_PRETRAINED_EDIT_CENTERED_MODEL_KIND,
     ROUTE2_LEGACY_RNAFM_EDIT_CENTERED_MODEL_KIND,
     ROUTE2_PRETRAINED_EDIT_CENTERED_SOURCE_ONLY_KIND,
+    ROUTE2_PRETRAINED_EDIT_METADATA_CONTROL_KIND,
 }
 PRETRAINED_ANTISYMMETRIC_MODEL_KINDS = {
     ROUTE2_PRETRAINED_EDIT_CENTERED_MODEL_KIND,
@@ -209,6 +217,7 @@ class DeltaDataset(Dataset):
                 "SOURCE_CONTEXT_ENDPOINT_GROUP",
                 "STUDY_THEN_SOURCE_CONTEXT_ENDPOINT_GROUP",
                 "TASK_THEN_SOURCE_CONTEXT_ENDPOINT_GROUP",
+                "TASK_THEN_STUDY_THEN_SOURCE_CONTEXT_ENDPOINT_GROUP",
             },
             "unknown training weighting mode",
         )
@@ -258,7 +267,7 @@ class DeltaDataset(Dataset):
                 group: 1.0 / (len(study_groups[group_study[group]]) * size)
                 for group, size in self.group_sizes.items()
             }
-        else:
+        elif weighting_mode == "TASK_THEN_SOURCE_CONTEXT_ENDPOINT_GROUP":
             task_groups: dict[str, set[str]] = {}
             group_task = {}
             for row in records:
@@ -269,6 +278,22 @@ class DeltaDataset(Dataset):
                 group: 1.0 / (len(task_groups[group_task[group]]) * size)
                 for group, size in self.group_sizes.items()
             }
+        else:
+            task_study_groups: dict[str, dict[str, set[str]]] = {}
+            group_task_study = {}
+            for row in records:
+                task = task_key(row.endpoint, row.region)
+                task_study_groups.setdefault(task, {}).setdefault(
+                    row.study, set()
+                ).add(row.source_group)
+                group_task_study[row.source_group] = (task, row.study)
+            raw_weights = {}
+            for group, size in self.group_sizes.items():
+                task, study = group_task_study[group]
+                studies = task_study_groups[task]
+                raw_weights[group] = 1.0 / (
+                    len(studies) * len(studies[study]) * size
+                )
         raw_total = sum(raw_weights[row.source_group] for row in records)
         self.group_weights = {
             group: value * len(records) / raw_total for group, value in raw_weights.items()
@@ -523,6 +548,85 @@ class SourceGroupBatchSampler(Sampler[list[int]]):
         return len(self.batches)
 
 
+class TaskStudyBalancedLengthBucketBatchSampler(Sampler[list[int]]):
+    """Draw a fixed TRAIN budget through task, study, source group, then row.
+
+    Every hierarchy level is traversed in independently shuffled cycles.  This
+    gives exact or one-draw task/study balance while keeping the epoch draw count
+    equal to the original TRAIN record count.  Drawn rows are length bucketed
+    afterwards so the repair does not trade its estimand for avoidable padding.
+    """
+
+    def __init__(
+        self,
+        records: list[DeltaRecord],
+        batch_size: int,
+        seed: int,
+        shuffle: bool,
+    ):
+        _require(bool(records), "balanced sampler records are empty")
+        _require(batch_size > 0, "balanced sampler batch size must be positive")
+        _require(shuffle, "hierarchical balancing is TRAIN-only")
+        self.records = records
+        self.batch_size = batch_size
+        self.seed = seed
+        self.epoch = 0
+        hierarchy: dict[str, dict[str, dict[str, list[int]]]] = {}
+        for index, record in enumerate(records):
+            hierarchy.setdefault(
+                task_key(record.endpoint, record.region), {}
+            ).setdefault(record.study, {}).setdefault(
+                record.source_group, []
+            ).append(index)
+        self.hierarchy = hierarchy
+
+    def set_epoch(self, epoch: int) -> None:
+        self.epoch = epoch
+
+    def __iter__(self):
+        rng = random.Random(self.seed + self.epoch)
+        cycle_state: dict[tuple[str, ...], tuple[list[Any], int]] = {}
+
+        def choose(key: tuple[str, ...], values: Iterable[Any]) -> Any:
+            stable = list(values)
+            _require(bool(stable), f"balanced sampler level is empty: {key}")
+            order, cursor = cycle_state.get(key, ([], 0))
+            if cursor >= len(order):
+                order = list(stable)
+                rng.shuffle(order)
+                cursor = 0
+            value = order[cursor]
+            cycle_state[key] = (order, cursor + 1)
+            return value
+
+        draws = []
+        for _draw_index in range(len(self.records)):
+            task = choose(("task",), sorted(self.hierarchy))
+            study = choose(("study", task), sorted(self.hierarchy[task]))
+            group = choose(
+                ("group", task, study),
+                sorted(self.hierarchy[task][study]),
+            )
+            index = choose(
+                ("record", task, study, group),
+                self.hierarchy[task][study][group],
+            )
+            draws.append(index)
+
+        draws.sort(key=lambda index: len(self.records[index].source))
+        batches = [
+            draws[index:index + self.batch_size]
+            for index in range(0, len(draws), self.batch_size)
+        ]
+        rng.shuffle(batches)
+        for batch in batches:
+            rng.shuffle(batch)
+        yield from batches
+
+    def __len__(self):
+        return math.ceil(len(self.records) / self.batch_size)
+
+
 def evenly_spaced_batches(
     sampler: SourceGroupBatchSampler, maximum: int
 ) -> list[list[int]]:
@@ -748,6 +852,33 @@ def training_loss(
             huber_delta,
         )
     return ranking_loss(output, batch, loss_kind)
+
+
+def task_macro_training_loss(
+    output: Mapping[str, torch.Tensor],
+    batch: Mapping[str, Any],
+    loss_kind: str,
+    ranking_loss_weight: float,
+    huber_delta: float,
+) -> torch.Tensor:
+    """Give every task represented in the batch equal objective weight."""
+
+    by_task: dict[str, list[int]] = {}
+    for index, task in enumerate(batch["task_keys"]):
+        by_task.setdefault(str(task), []).append(index)
+    _require(bool(by_task), "training batch has no task keys")
+    losses = []
+    for _task, indices in sorted(by_task.items()):
+        losses.append(
+            training_loss(
+                _select_output(output, indices),
+                _select_batch(batch, indices),
+                loss_kind,
+                ranking_loss_weight,
+                huber_delta,
+            )
+        )
+    return torch.stack(losses).mean()
 
 
 def shared_effect_parameters(model: torch.nn.Module) -> list[tuple[str, torch.nn.Parameter]]:
@@ -1151,6 +1282,7 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
             "SOURCE_CONTEXT_ENDPOINT_GROUP",
             "STUDY_THEN_SOURCE_CONTEXT_ENDPOINT_GROUP",
             "TASK_THEN_SOURCE_CONTEXT_ENDPOINT_GROUP",
+            "TASK_THEN_STUDY_THEN_SOURCE_CONTEXT_ENDPOINT_GROUP",
         },
         "unknown training weighting mode",
     )
@@ -1286,6 +1418,42 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
         },
         "unknown training update mode",
     )
+    training_sampling_mode = str(
+        config.get(
+            "training_sampling_mode",
+            TRAINING_SAMPLING_COMPLETE_PASS_LENGTH_BUCKET,
+        )
+    )
+    _require(
+        training_sampling_mode in {
+            TRAINING_SAMPLING_COMPLETE_PASS_LENGTH_BUCKET,
+            TRAINING_SAMPLING_TASK_STUDY_SOURCE_GROUP_BALANCED,
+        },
+        "unknown training sampling mode",
+    )
+    loss_aggregation_mode = str(
+        config.get("loss_aggregation_mode", LOSS_AGGREGATION_RECORD_WEIGHTED)
+    )
+    _require(
+        loss_aggregation_mode in {
+            LOSS_AGGREGATION_RECORD_WEIGHTED,
+            LOSS_AGGREGATION_TASK_MACRO_MEAN,
+        },
+        "unknown loss aggregation mode",
+    )
+    if training_sampling_mode == TRAINING_SAMPLING_TASK_STUDY_SOURCE_GROUP_BALANCED:
+        _require(loss_kind == "huber", "Critic V2 balanced sampling is scoped to Huber")
+        _require(
+            weighting_mode
+            == "TASK_THEN_STUDY_THEN_SOURCE_CONTEXT_ENDPOINT_GROUP",
+            "Critic V2 balanced sampling requires task/study/source-group weights",
+        )
+    if loss_aggregation_mode == LOSS_AGGREGATION_TASK_MACRO_MEAN:
+        _require(loss_kind == "huber", "task-macro loss aggregation is scoped to Huber")
+        _require(
+            training_update_mode == TRAINING_UPDATE_STANDARD,
+            "task-macro aggregation cannot be combined with gradient calibration",
+        )
     _require(config.get("optimizer_name", "AdamW") == "AdamW", "only AdamW is implemented")
     training_precision = str(config.get("training_precision", "FP32"))
     _require(
@@ -1299,11 +1467,24 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
             str(config["encoder_attention_backend"]) == pretrained_features.attention_backend,
             "configured encoder attention backend differs from the frozen feature cache",
         )
-    sampler_class = SourceGroupBatchSampler if "pairwise" in loss_kind or "listwise" in loss_kind else LengthBucketBatchSampler
-    samplers = {
-        split: sampler_class(by_split[split], int(config["batch_size"]), int(config["seed"]), split == "TRAIN")
-        for split in datasets
-    }
+    samplers = {}
+    for split in datasets:
+        if (
+            split == "TRAIN"
+            and training_sampling_mode
+            == TRAINING_SAMPLING_TASK_STUDY_SOURCE_GROUP_BALANCED
+        ):
+            sampler_class = TaskStudyBalancedLengthBucketBatchSampler
+        elif "pairwise" in loss_kind or "listwise" in loss_kind:
+            sampler_class = SourceGroupBatchSampler
+        else:
+            sampler_class = LengthBucketBatchSampler
+        samplers[split] = sampler_class(
+            by_split[split],
+            int(config["batch_size"]),
+            int(config["seed"]),
+            split == "TRAIN",
+        )
     loader_options = data_loader_options(config)
     non_blocking_transfer = bool(config.get("non_blocking_transfer", False))
     _require(
@@ -1346,6 +1527,9 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
             "learned_uncertainty": loss_kind == "learned_variance_gaussian_nll",
             "source_only_control": (
                 model_kind == ROUTE2_PRETRAINED_EDIT_CENTERED_SOURCE_ONLY_KIND
+            ),
+            "edit_metadata_only_control": (
+                model_kind == ROUTE2_PRETRAINED_EDIT_METADATA_CONTROL_KIND
             ),
         }
         model = Route2PretrainedEditCenteredDeltaPredictor(
@@ -1455,6 +1639,8 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
             "result_stage": result_stage,
             "run_mode": run_mode,
             "training_update_mode": training_update_mode,
+            "training_sampling_mode": training_sampling_mode,
+            "loss_aggregation_mode": loss_aggregation_mode,
             "training_precision": training_precision,
             "optimizer_fused": optimizer_fused,
         }, sort_keys=True) + "\n",
@@ -1531,6 +1717,8 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
                 "metadata_mode": metadata_mode,
                 "training_weighting_mode": weighting_mode,
                 "training_update_mode": training_update_mode,
+                "training_sampling_mode": training_sampling_mode,
+                "loss_aggregation_mode": loss_aggregation_mode,
                 "task_gradient_calibration": task_gradient_calibration,
                 "training_precision": training_precision,
                 "optimizer_fused": optimizer_fused,
@@ -1569,6 +1757,14 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
                         output,
                         batch,
                         task_gradient_loss_multipliers,
+                        loss_kind,
+                        ranking_loss_weight,
+                        huber_delta,
+                    )
+                elif loss_aggregation_mode == LOSS_AGGREGATION_TASK_MACRO_MEAN:
+                    loss = task_macro_training_loss(
+                        output,
+                        batch,
                         loss_kind,
                         ranking_loss_weight,
                         huber_delta,
@@ -1661,6 +1857,10 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
         "model_kind": model_kind,
         "study_specific_scale_calibration": bool(config.get("study_specific_scale_calibration", False)),
         "loss_kind": loss_kind,
+        "huber_delta": huber_delta,
+        "batch_size": int(config["batch_size"]),
+        "learning_rate": float(config["learning_rate"]),
+        "weight_decay": float(config["weight_decay"]),
         "ranking_loss_weight": float(config.get("ranking_loss_weight", 1.0)) if loss_kind.startswith("huber_plus_") else None,
         "run_mode": run_mode,
         "included_study_unit_ids": included_studies,
@@ -1670,6 +1870,8 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
         "metadata_mode": metadata_mode,
         "training_weighting_mode": weighting_mode,
         "training_update_mode": training_update_mode,
+        "training_sampling_mode": training_sampling_mode,
+        "loss_aggregation_mode": loss_aggregation_mode,
         "task_gradient_calibration": task_gradient_calibration,
         "target_scaler": target_scaler.to_dict(),
         "candidate_control": candidate_control,
@@ -1744,6 +1946,7 @@ def train(config: Mapping[str, Any], output_dir: Path) -> dict[str, Any]:
         "identity_zero_by_construction": model_kind in {
             ROUTE2_DELTA_MODEL_KIND,
             ROUTE2_EDIT_CENTERED_MODEL_KIND,
+            ROUTE2_PRETRAINED_EDIT_METADATA_CONTROL_KIND,
             *PRETRAINED_ANTISYMMETRIC_MODEL_KINDS,
         },
         "edit_centered_pooling": model_kind in {

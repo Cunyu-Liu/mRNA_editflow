@@ -388,3 +388,34 @@ python -m json.tool \
 3. 保持冻结 TEST、all-126,165 refit、critic-guided XEditFlow 与外部 Evaluation 关闭；
 4. 根据生成 baseline 结果和 critic 失败原因，单独设计下一版 critic 的前瞻性假设，不复用 TEST、不事后放松 three-seed gate；
 5. 只有新的 critic cohort 重新满足 controls + three-seed readiness，才恢复步骤 8→9→10；步骤 12 永远最后执行。
+
+## 16. V3.3.2 freshness、generation terminal 与 Critic V2 冻结（2026-08-20 19:32）
+
+一次性 freshness check 已确认此前排在最前的两个任务都已经 terminal，故不得重复运行：
+
+- 独立 evaluator 的正式状态为 `INDEPENDENT_GENERATION_EVALUATOR_QUALIFIED`。它是 509,845 参数的独立 Siamese CNN，8 epochs / 22,400 updates，Development VALIDATION task-macro Spearman `0.102565536`，超过预冻结 exclusive threshold `0.101247575` 的 margin 为 `+0.001317961`，5/9 tasks 为正；Development TEST 和 Evaluation outcome 均未读取。该 margin 很小，只授权 Development 生成方法选择，不是 biological validation。
+- 七种 matched-budget generation/search 方法全部完成，suite 状态为 `MATCHED_GENERATION_BASELINE_SUITE_COMPLETED`。891 个 source、每 source 32 candidates、256 critic-forward budget 与 320 total forward-equivalents 的冻结口径未变；全部方法 hard legality=100%，edit/candidate budget violation=0。独立 evaluator 的 point leader 和冻结 strongest baseline 都是 `genetic`，source-macro independent-evaluator max uplift 为 `1.097825`。这仍是 `INDEPENDENT_EVALUATOR_ONLY_MEASURED_OUTCOME_NOT_ESTABLISHED`，不能写成 biological improvement。
+- 中央训练尝试表共有 96 个唯一 attempts，最新一行 evaluator 已从 RUNNING 更新为 COMPLETED；Development TEST 18,292 条继续 withheld，Evaluation record count 仍为 0。
+
+generation terminal 还显示：genetic 的 source-macro unique rate 为 `1.0`、pairwise Hamming diversity 为 `0.0682601`、平均 total forward-equivalents/source 为 `231.4669`；unguided Base Flow 的 measured-candidate recovery 和 measured top-k recovery 分别为 `0.202862` 与 `0.0979731`，但这些是 Development measured-neighborhood recovery，不是新 external Evaluation outcome。
+
+因此当前最靠前的未完成任务转为 Critic V2。其前瞻冻结假设只改变优化与信息 control，不改 encoder 或容量：
+
+```text
+fixed TRAIN draws:
+task -> study -> source-context-endpoint group -> record
+    + per-batch equal task-macro Huber aggregation
+    + frozen mRNABERT edit-centered 9.343M critic
+```
+
+四臂 screen 为 full、exact-source/task candidate permutation、parameter-matched source-only，以及独立的 `source + edit identity/position/context、无 candidate global mRNABERT representation` control。后者明确不是 source-only 的同义重复。现有 strongest same-information baseline `0.131714395` 继续冻结并复用，不重复运行。screen seed 为 `20260825`；只有 controls gate 通过，才允许再次运行预冻结的三个 seeds `20260822/20260823/20260824`，不得增加第四个 seed。
+
+Critic V2 代码、协议和调度器进入 Git 后，A100 只启动一份：
+
+```bash
+nohup scripts/route_a_v3/schedule_route2_mrnabert_critic_v2_controls_v1.sh \
+  >/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/schedulers/mrnabert_critic_v2_controls_v1.log \
+  2>&1 </dev/null &
+```
+
+调度器只在 GPU0–5 中按剩余显存选择四张满足实际最低显存的卡，不使用 utilization gate；每个 arm 启动和结束时由训练器自动更新中央尝试表。controls terminal 前不创建 three-seed 结果，Development TEST、all-126,165 refit、LOSO、guided XEditFlow 和新的 final Evaluation 全部保持关闭。GSE232572 只保留 historical transfer/diagnostic 角色；E-MTAB-10902 仍为 `UNCONVERTIBLE_FOR_ROUTE2_V1`，最终独立确认必须使用新的、可转换且 outcome 未暴露的 replacement study。
