@@ -363,8 +363,13 @@ generation 顺序。runner 在任何写入前使用 production TEST gate 并拒�
 target 中任何已存在项；TEST/refit 只在 GPU0-5 中按不少于 4096 MiB 的最大 free
 memory 选择卡。历史 V1 postselection scheduler 已在入口立即 retired。
 
-本次没有启动新 watcher/runner，没有打开 TEST，没有创建 `/mnt` runtime、log、run、
-LOSO、readiness 或 candidates，也没有读取 TEST/LOSO/Evaluation outcome。focused
-tests 7/7、完整相邻生产合同回归 103/103 通过。没有参数更新，因此中央 CSV 不增加
-训练行；21:54 最近低频状态仍为 100 个唯一 attempts/四个 Critic V2 RUNNING，
-control adjudication absent。
+代码推送且 A100 通过同组 103/103 回归后，conditional watcher 已启动一份：实际
+脚本 PID `380389`（launch wrapper PID `380388`），poll interval 900 秒，首条日志为
+`waiting_for_critic_v2_three_seed_adjudication`。启动验收时 19 个 downstream targets
+全部不存在。当前只有 scheduler 等待日志新增；runner 未调用，TEST 未打开，stage
+runtime/log/run、LOSO、readiness 和 candidates 均未创建，也未读取 TEST/LOSO/
+Evaluation outcome。
+
+focused tests 7/7、本机与 A100 完整相邻生产合同回归均为 103/103。watcher 不进行
+参数更新，因此中央 CSV 不增加训练行；21:54 最近低频状态仍为 100 个唯一 attempts/
+四个 Critic V2 RUNNING，control adjudication absent。

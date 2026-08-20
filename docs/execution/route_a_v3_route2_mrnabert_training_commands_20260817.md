@@ -880,14 +880,20 @@ runner。TEST 指标只作为 terminal report 进入既有 refit/readiness schem
 credit，也不建立 biological optimization claim。
 
 另新增一份 900 秒 conditional watcher：three-seed adjudication 不存在时只等待；
-NO-GO 时退出且不创建 stage artifacts；PASS 时才调用上述 runner。本次尚未启动该
-watcher 或 runner，没有查询新 GPU、没有打开 TEST、没有创建 `/mnt` runtime/log/
-run/LOSO/readiness/candidate/comparison artifact。focused tests 7/7，通过完整相邻
-生产合同回归 103/103。没有参数更新，中央训练 CSV 不新增伪 attempt；21:54 的最近
-低频状态仍为 100 个唯一 attempts/四个 Critic V2 RUNNING，control adjudication
-absent，两个既有 schedulers 存活。
+NO-GO 时退出且不创建 stage artifacts；PASS 时才调用上述 runner。代码推送并在
+A100 通过同组 103/103 回归后，该 watcher 已于 22:05 启动一份，实际脚本 PID
+`380389`（launch wrapper PID `380388`），日志为
+`/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/schedulers/mrnabert_critic_v2_post_confirmation_v1.log`。
+首条日志是 `waiting_for_critic_v2_three_seed_adjudication`；启动验收确认 19 个 downstream
+targets 全部不存在。
 
-代码推送且 A100 同组测试通过后，才允许启动一份 watcher：
+本次没有调用 post-confirmation runner、没有查询新 GPU、没有打开 TEST，也没有创建
+stage runtime/log/run/LOSO/readiness/candidate/comparison artifact；新增的 `/mnt` 文件
+只有 scheduler 等待日志。focused tests 7/7，完整相邻生产合同回归在本机和 A100
+均为 103/103。没有参数更新，中央训练 CSV 不新增伪 attempt；21:54 最近低频状态
+仍为 100 个唯一 attempts/四个 Critic V2 RUNNING，control adjudication absent。
+
+已使用的唯一 watcher 启动命令为：
 
 ```bash
 nohup scripts/route_a_v3/schedule_route2_mrnabert_critic_v2_post_confirmation_v1.sh \
