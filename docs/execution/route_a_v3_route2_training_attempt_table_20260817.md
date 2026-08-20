@@ -149,3 +149,9 @@ candidate-permutation control 已完成 100 epochs / 559,900 updates，Developme
 - `training_attempts.csv` 是 Excel 可直接打开的跨实验总表；每个 run 的 `training_config.json` 保存该次尝试的完整参数，避免总表为了可读性遗漏长配置。
 - attention benchmark、encoder 一致性验证等没有参数更新的工程实验保存独立报告，不冒充训练尝试。
 - 长训练可能跨越代码更新。写表器现在保留任务启动时的 `code_commit`/`started_at`，并保留总表中它不认识的较新字段，避免旧进程结束时把新列静默删除。当前仍在运行的旧进程是在该修复前启动的；它们全部结束后要用各 run 的 `training_attempt.json` 做一次最终表头与生成器字段恢复。
+
+## 2026-08-20 工程验证终态
+
+在线冻结 mRNABERT 编码器已完成，状态为 `ONLINE_FROZEN_MRNABERT_MATCHES_CANONICAL_CACHE`：冻结参数量 113,389,056，64 个 embedding 对比的最大绝对差为 0.00951385（容差 0.01），中位吞吐 74.55 sequences/s，Evaluation records read 为 0。该任务没有参数更新，因此按本表既定边界保存在独立 validation summary，不增加中央训练尝试数；中央表仍为 94 个唯一尝试、86 completed、3 failed、3 incomplete、2 stopped。
+
+该工程成功不覆盖 mRNABERT critic 的 three-seed 失败。Development TEST、all-126,165 refit、LOSO、guided XEditFlow 和 GSE232572/E-MTAB-10902 Evaluation outcomes 仍保持未打开。Base Flow V2 仍在等待满足原显存/利用率阈值的 GPU；其后才会依次进入 validation 与独立 evaluator。

@@ -294,7 +294,27 @@ nohup scripts/route_a_v3/schedule_route2_independent_evaluator_gpu2_v3.sh \
 - 独立评估器将等待 Base Flow 验证完成后再运行；Base Flow 训练/验证已改为在 GPU 0–5 中选择满足原空闲阈值的卡，不再永久绑定 GPU 2；
 - 当前正式数据与 claim 状态仍为 `ordinary=1 / A1=1 / true-A2=0 / canonical=6,547 / NOT_ESTABLISHED`。
 
-## 13. 低频查看进度
+## 13. 2026-08-20 在线编码器终态与并行工程进度
+
+在线 mRNABERT 编码器验证已于 `2026-08-20T12:17:39+08:00` 在动态选择的 physical GPU 0 上完成，终态为 `ONLINE_FROZEN_MRNABERT_MATCHES_CANONICAL_CACHE`。本次验证没有读取 Development TEST 或 GSE232572/E-MTAB-10902 Evaluation outcomes，也没有参数更新。
+
+| 检查项 | 结果 |
+|---|---:|
+| 冻结 mRNABERT 参数量 | 113,389,056 |
+| canonical-cache 对比 embedding 数 | 64 |
+| 最大绝对差 | 0.00951385 |
+| 预冻结容差 | 0.01 |
+| 中位编码吞吐 | 74.55 sequences/s |
+| novel candidate 在线编码 | 支持 |
+| Evaluation records read | 0 |
+
+这只闭合“新候选能否用同一个冻结 mRNABERT 在线编码，并与 canonical cache 在容差内一致”的工程条件；它不改变 three-seed 失败结论，也不授权 Development TEST、all-126,165 refit、LOSO、guided XEditFlow 或外部 Evaluation。当前 official PyTorch fallback backend 已能通过一致性验证；后续 SDPA/Flash Attention 检查只属于速度优化，不得被写成新的科学结果。
+
+Base Flow V2 动态调度器仍在扫描 GPU 0–5，但截至同一低频检查时没有 GPU 同时达到冻结的 `free_memory >= 24GB` 与 `utilization <= 70%` 条件，所以训练尚未启动。调度器、后续 validation 和独立 evaluator 仍正常等待；没有抢占或中断服务器上的正常 GPU 作业。
+
+中央训练尝试表保持 94 个唯一尝试，因为本次 online encoder 是零参数更新的工程验证，不应伪装成训练尝试；其完整终态保存在独立 validation summary，并在本节登记。下一个会进入中央训练表的新终态是 Base Flow V2 或独立 evaluator 的实际训练终态。
+
+## 14. 低频查看进度
 
 运行中只在事件节点低频查看：
 
