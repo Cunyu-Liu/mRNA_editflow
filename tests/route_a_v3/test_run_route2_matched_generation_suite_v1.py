@@ -1,6 +1,7 @@
 import importlib.util
 import json
 from pathlib import Path
+import sys
 
 import pytest
 
@@ -147,3 +148,27 @@ def test_evaluator_no_go_allows_candidate_generation_but_not_selection(
     assert result["independent_evaluator_scoring_run"] is False
     assert result["strongest_generation_baseline_selected"] is False
     assert result["evaluation_outcomes_accessed"] is False
+
+
+def test_parallel_stage_persists_each_job_wall_time(tmp_path: Path) -> None:
+    module = _load_module()
+    results = module.run_parallel_stage(
+        "timed",
+        [
+            {
+                "name": "short",
+                "command": [sys.executable, "-c", "import time; time.sleep(0.02)"],
+            },
+            {
+                "name": "long",
+                "command": [sys.executable, "-c", "import time; time.sleep(0.10)"],
+            },
+        ],
+        tmp_path / "logs",
+    )
+    assert [row["name"] for row in results] == ["short", "long"]
+    assert all(row["return_code"] == 0 for row in results)
+    assert all(row["wall_time_seconds"] > 0.0 for row in results)
+    assert results[1]["wall_time_seconds"] > results[0]["wall_time_seconds"]
+    assert all(Path(row["stdout_path"]).is_file() for row in results)
+    assert all(Path(row["stderr_path"]).is_file() for row in results)

@@ -477,3 +477,10 @@ measured-neighborhood candidate recovery 与 top-k recovery 上领先。两种�
 节点仍为 100 个唯一 attempts，其中四个 Critic V2 arms 为 RUNNING。packet
 一致性检查通过：13 个 claim markers、12 个 evidence sources、7 个唯一方法，
 所有 evidence references 均闭合。
+
+并行 stage runner 随后补充了未来运行的逐方法
+`wall_time_seconds`：每个 subprocess 从实际启动到退出由独立 wait 记录，不再
+用整阶段时长代替各方法时长。该改动不重跑 terminal baseline，也不回填既有
+缺失值。focused suite tests 为 6/6 通过；额外的通用 entrypoint 检查中 21 项
+通过、2 项因本机系统 Python 缺少既有 `h5py` 依赖失败，失败脚本为 APARENT
+和 external-prediction baseline，与本次计时路径无关，未据此扩展修改范围。

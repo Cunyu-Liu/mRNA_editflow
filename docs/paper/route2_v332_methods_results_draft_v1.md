@@ -143,7 +143,9 @@ reported in this draft. [claim:C-R2-012]
    overall suite wall time was 10,959.64 seconds, and independent scoring times
    were recorded, but file timestamps will not be used to reconstruct missing
    generation times. Unguided Flow separately recorded 341.56 seconds and
-   556.49 MiB peak VRAM. [claim:C-R2-013]
+   556.49 MiB peak VRAM. Future parallel stages now persist per-method wall time,
+   but this instrumentation does not retroactively fill the terminal suite.
+   [claim:C-R2-013]
    [evidence:E-R2-GEN-SUITE,E-R2-GEN-INPUT,E-R2-FLOW-MATCHED]
 5. Development TEST, TEST-preserving predictor/baseline LOSO, guided XEditFlow
    and a new outcome-unexposed convertible external Evaluation study remain

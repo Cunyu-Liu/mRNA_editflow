@@ -85,7 +85,8 @@
     {
       "gap_id": "GAP-R2-GEN-WALL",
       "description": "Per-method generation wall time was not persisted for the six search methods; all 891 per-source wall_time_seconds values are null. The overall suite wall time and independent-evaluator scoring wall times are available.",
-      "action": "Report NOT_RECORDED; do not infer from file timestamps and do not rerun terminal methods."
+      "action": "Report NOT_RECORDED; do not infer from file timestamps and do not rerun terminal methods. Future parallel stages now persist one wall_time_seconds value per method.",
+      "future_instrumentation_status": "IMPLEMENTED_FOR_FUTURE_RUNS_NO_RETROACTIVE_FILL"
     }
   ],
   "submission_ready": false

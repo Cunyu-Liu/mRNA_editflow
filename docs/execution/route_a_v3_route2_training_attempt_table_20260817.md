@@ -196,3 +196,7 @@ seed 产物的冻结要求。A100 新增三种子配置/裁决的 7 个 focused 
 状态和 protected-outcome boundary 绑定到 12 个 evidence IDs；一致性检查覆盖
 13 个 claims 与 7 个方法。六个 search 方法缺失 per-method generation wall time
 被明确记为 `NOT_RECORDED`，不据此重跑已 terminal 的 suite。
+
+未来 matched/guided parallel stages 已补充逐方法 wall time 落盘；该记录修复
+没有参数更新、不新增中央训练尝试，也不追溯填充已 terminal baseline 的缺失
+字段。对应 focused suite tests 6/6 通过。

@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import concurrent.futures
 import json
 import subprocess
 import sys
@@ -264,6 +265,7 @@ def run_parallel_stage(
         stderr_path = log_directory / f"{stage_name}.{spec['name']}.stderr.log"
         stdout_handle = stdout_path.open("w", encoding="utf-8")
         stderr_handle = stderr_path.open("w", encoding="utf-8")
+        job_started = time.monotonic()
         process = subprocess.Popen(
             list(spec["command"]),
             cwd=REPO_ROOT,
@@ -271,11 +273,32 @@ def run_parallel_stage(
             stderr=stderr_handle,
             text=True,
         )
-        processes.append((spec, process, stdout_handle, stderr_handle, stdout_path, stderr_path))
+        processes.append(
+            (
+                spec,
+                process,
+                job_started,
+                stdout_handle,
+                stderr_handle,
+                stdout_path,
+                stderr_path,
+            )
+        )
+
+    def wait_for_job(process: subprocess.Popen, job_started: float) -> tuple[int, float]:
+        return_code = process.wait()
+        return return_code, time.monotonic() - job_started
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=len(processes)) as executor:
+        futures = [
+            executor.submit(wait_for_job, process, job_started)
+            for _, process, job_started, _, _, _, _ in processes
+        ]
+        completed = [future.result() for future in futures]
 
     results = []
-    for spec, process, stdout_handle, stderr_handle, stdout_path, stderr_path in processes:
-        return_code = process.wait()
+    for process_row, (return_code, wall_time_seconds) in zip(processes, completed):
+        spec, _, _, stdout_handle, stderr_handle, stdout_path, stderr_path = process_row
         stdout_handle.close()
         stderr_handle.close()
         results.append(
@@ -284,6 +307,7 @@ def run_parallel_stage(
                 "return_code": return_code,
                 "stdout_path": str(stdout_path),
                 "stderr_path": str(stderr_path),
+                "wall_time_seconds": wall_time_seconds,
             }
         )
     print(
