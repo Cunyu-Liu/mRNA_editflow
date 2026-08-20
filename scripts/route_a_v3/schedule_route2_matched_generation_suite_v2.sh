@@ -8,7 +8,7 @@ POLL_SECONDS="${POLL_SECONDS:-900}"
 GPU_CANDIDATES="${GPU_CANDIDATES:-0 1 2 3 4 5}"
 MINIMUM_FREE_MB="${MINIMUM_FREE_MB:-4096}"
 
-FLOW_SUMMARY="${ROUTE2_ROOT}/runs/base_flow_g0/position_progress_validation_batched_v3/validation_summary.json"
+FLOW_SUMMARY="${ROUTE2_ROOT}/runs/base_flow_g0/position_progress_validation_batched_global_v4/validation_summary.json"
 FLOW_CHECKPOINT="${ROUTE2_ROOT}/runs/base_flow_g0/position_progress_gpu_v2/best.pt"
 EVALUATOR_ADJUDICATION="${ROUTE2_ROOT}/comparisons/mrnabert_independent_evaluator_adjudication_v1.json"
 EVALUATOR_RUN="${ROUTE2_ROOT}/runs/independent_generation_evaluator/neural_medium_siamese_task_scaled_seed20260816_frozen_development_validation_gpu2_v3"
