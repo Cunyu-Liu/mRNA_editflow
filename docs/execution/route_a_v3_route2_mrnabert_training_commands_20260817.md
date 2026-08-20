@@ -525,3 +525,38 @@ $PY scripts/route_a_v3/prepare_route2_mrnabert_critic_v2_frozen_test_config_v1.p
 其中 `GPU_INDEX` 必须在执行时设置为 GPU0-5 中显存足够的一张卡。这条命令只准备
 配置，不执行训练。当前 control/confirmation gate 未知，因此不得
 提前运行该命令，也不得从旧 V1 TEST→guided scheduler 绕过它。
+
+## 20. Critic V2 all-126,165 Development refit 门前瞻冻结（2026-08-20）
+
+在 Critic V2 three-seed 与单次 TEST outcome 均不存在时，已前瞻冻结独立的
+all-Development refit protocol 和 V2-only preparer。合同规定单次 TEST 后按固定
+结构/loss/policy refit，却没有规定再用 TEST 数值设一个新阈值；同时明确禁止按
+TEST 重选结构、loss、seed、epoch 或 threshold。因此 preparer 要求合法、完整、
+provenance-matched 的 TEST summary 和 metrics 字段存在，但完全不读取指标值做分支。
+
+refit 固定 seed `20260823`、全部 126,165 条 Development records、100 epochs、
+`FINAL_EPOCH`、同一 Critic V2 model/loss/sampling/aggregation/scaling policy 和
+GPU0-5。它要求 TEST 训练确实使用 TRAIN+VALIDATION 107,873 条并只在 TEST 上
+评估 18,292 条，CUDA 参数发生更新，Evaluation read=0；任何 stage、seed、
+baseline identity、policy、record counts 或 checkpoint provenance 漂移都会拒绝。
+输出声明 TEST metrics 未用于 refit selection，Evaluation/guidance 仍关闭，并拒绝
+覆盖既有 runtime config 或 run directory。
+
+本次没有调用真实 preparer，没有读取真实 TEST summary，也没有创建或运行 refit。
+新门 focused tests 13/13 通过；与 TEST gate、three-seed config 和训练器 split 合并
+验证为 81 passed、4 个本机无 CUDA 的既有 skips。该任务没有参数更新，因此中央
+训练 CSV 不新增伪 attempt。
+
+仅在单次 V2 TEST 合法 terminal 后，允许准备 refit config：
+
+```bash
+$PY scripts/route_a_v3/prepare_route2_mrnabert_critic_v2_all_development_refit_config_v1.py \
+  --frozen-test-config /mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/mrnabert_critic_v2/runtime_configs/single_frozen_development_test_v1/seed20260823.json \
+  --frozen-test-summary /mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/mrnabert_critic_v2/single_frozen_development_test_v1/seed20260823/training_summary.json \
+  --frozen-test-protocol configs/route_a_v3_route2_mrnabert_critic_v2_frozen_test_protocol_v1.json \
+  --refit-protocol configs/route_a_v3_route2_mrnabert_critic_v2_all_development_refit_protocol_v1.json \
+  --gpu "$GPU_INDEX"
+```
+
+这条命令只写唯一 runtime config，不启动 refit；当前上游 gate 未 terminal，不得
+提前调用。

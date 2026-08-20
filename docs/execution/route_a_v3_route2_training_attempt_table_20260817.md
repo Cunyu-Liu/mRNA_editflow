@@ -217,3 +217,18 @@ config 身份一致。preparer 只会写出一次性 runtime config；不会训�
 最近一次已记录的中央状态仍是 100 个唯一 attempts，其中四个 Critic V2 arms 为
 RUNNING。Development TEST 与 Evaluation 仍关闭。focused verification 覆盖新门
 和既有 three-seed 配置路径，共 14/14 通过。
+
+## Critic V2 all-Development refit 配置门（2026-08-20）
+
+已在 TEST outcome 不存在时冻结 V2-only all-126,165 refit protocol/preparer。
+它只接受 exact seed-20260823 V2 TEST config 与合法 terminal summary，验证同一
+model/loss/full policy、TRAIN+VALIDATION 107,873 条、TEST 18,292 条、固定 100
+epochs/`FINAL_EPOCH`、CUDA 参数更新和 Evaluation read=0。合同没有新增 TEST
+数值阈值，preparer 因而只要求 metrics 存在而不按其数值分支；合成负 TEST 指标
+仍生成同一个固定 refit config，防止事后重选。
+
+真实 preparer/refit 均未运行，所以中央 CSV 不增加记录，最近已记录的 100 个
+唯一 attempts/四个 Critic V2 RUNNING 状态不因本任务改变。新门 focused tests
+13/13 通过；包含 TEST gate、three-seed config 与 trainer split 的扩展 suite 为
+81 passed、4 个本机无 CUDA 的既有 skips。Development TEST、refit、LOSO、
+readiness、guided generation 与 Evaluation 仍关闭。
