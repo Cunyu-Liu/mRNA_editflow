@@ -215,6 +215,20 @@ CUDA_VISIBLE_DEVICES=4 /home/cunyuliu/miniconda3/envs/editflow/bin/python \
 
 ## 10. Guidance readiness 与执行入口
 
+Base Flow V2 不依赖 critic，可以继续完成 unguided `SUB+STOP` 工程验证。原训练等待器只盯 GPU 2，在该卡被其他正常作业持续占用时空等超过 60 小时。现在改为扫描 GPU 0–5，只有某张卡同时满足原阈值（空闲显存至少 24GB、利用率不高于 70%）才启动；不会抢占或终止已有作业，也不改变数据、模型、seed、30 epochs、BF16/fused 路径或输出目录。训练与验证分别使用：
+
+```bash
+nohup scripts/route_a_v3/schedule_route2_base_flow_v2_training_v1.sh \
+  >/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/schedulers/base_flow_v2_dynamic_gpu_training_v1.log \
+  2>&1 </dev/null &
+
+nohup scripts/route_a_v3/schedule_route2_base_flow_v2_validation_v1.sh \
+  >/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/schedulers/base_flow_v2_dynamic_gpu_validation_v1.log \
+  2>&1 </dev/null &
+```
+
+实际选中的 physical GPU 会写入 runtime config、training summary 和 CUDA provenance；目录名中的 `v2` 表示该实验版本，不再表示固定使用 GPU 2。
+
 冻结 guidance policy：
 
 ```text
@@ -267,7 +281,7 @@ nohup scripts/route_a_v3/schedule_route2_independent_evaluator_gpu2_v3.sh \
   2>&1 </dev/null &
 ```
 
-该调度器等待 Base Flow V2 的 GPU 2 任务完成后再启动，不与当前训练争卡。它只运行一次，不按结果追加 HPO；只有 task-macro Spearman 超过预冻结 candidate-permutation reference `0.1012476`、至少 5 个 task 为正且所有数据隔离检查通过，才标记为 qualified。无论 PASS 或 NO-GO，尝试都会自动写入中央训练表。
+该调度器等待 Base Flow V2 完成后再启动，不与当前训练争卡。它只运行一次，不按结果追加 HPO；只有 task-macro Spearman 超过预冻结 candidate-permutation reference `0.1012476`、至少 5 个 task 为正且所有数据隔离检查通过，才标记为 qualified。无论 PASS 或 NO-GO，尝试都会自动写入中央训练表。
 
 ## 12. 2026-08-19 01:20 追加快照
 
@@ -277,7 +291,7 @@ nohup scripts/route_a_v3/schedule_route2_independent_evaluator_gpu2_v3.sh \
 - Huber 实际 wall time 为 39,616.45 秒，约 396.16 秒/epoch、70.76 ms/step 和 226.12 TRAIN records/s；相对 batch16 BF16 微基准约为 93%，没有严重 DataLoader 饥饿证据；
 - GPU 0–5 当前均有项目任务，显存状态正常；control 启动验收未见 CUDA/NaN/提前退出；
 - workers 0/4/8 的 batch32 数据管线测试已完成：workers4 为 310.94 records/s，优于 workers0 的 290.58；workers8 为 291.50，没有继续扩 worker 的收益。该结果只用于后续新正式 cohort；Base Flow V2、在线 mRNABERT encoder validation 和独立 evaluator 继续低频等待各自 GPU 条件；
-- 新增的独立评估器将等待 GPU 2 的 Base Flow 验证完成后再运行，不抢占现有任务；
+- 独立评估器将等待 Base Flow 验证完成后再运行；Base Flow 训练/验证已改为在 GPU 0–5 中选择满足原空闲阈值的卡，不再永久绑定 GPU 2；
 - 当前正式数据与 claim 状态仍为 `ordinary=1 / A1=1 / true-A2=0 / canonical=6,547 / NOT_ESTABLISHED`。
 
 ## 13. 低频查看进度
