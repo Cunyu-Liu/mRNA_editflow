@@ -247,3 +247,16 @@ components，Development TEST 18,292 条继续 withheld；checkpoint 为固定
 tests 12/12 通过；含共享六 GPU pairing 与 trainer split 的扩展 suite 为 70
 passed、4 个本机无 CUDA 的既有 skips。TEST/refit/LOSO/readiness/guidance/
 Evaluation 仍保持各自冻结边界。
+
+## Critic V2 matched strongest-baseline LOSO 配置门（2026-08-20）
+
+已前瞻冻结 V2-only matched-baseline LOSO protocol/preparer。它读取未来 21 个
+primary configs 的配置元数据而非 outcome，并按 holdout study、seed、physical
+GPU 和 TEST-preserving split 一一配对。baseline 保留 native 8-epoch FP32、
+pairwise-Huber、anchored position-aware policy；matched 不被错误表述为相同容量或
+训练预算。每个 config 明确 TEST/TEST-metric selection/Evaluation 均关闭。
+
+真实 baseline configs 和训练未创建，因此中央 CSV 不增加行；最近已记录的 100
+个唯一 attempts/四个 Critic V2 RUNNING 状态不因本任务改变。新门 focused tests
+15/15、扩展 pairing/aggregation suite 27/27 通过。primary LOSO、baseline LOSO、
+readiness、guidance 与 Evaluation 都尚未执行。

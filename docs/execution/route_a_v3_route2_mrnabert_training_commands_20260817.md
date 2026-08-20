@@ -599,3 +599,37 @@ $PY scripts/route_a_v3/prepare_route2_mrnabert_critic_v2_test_preserving_loso_co
 ```
 
 该命令只准备 configs，不调度 LOSO；当前上游 gate 未 terminal，不得提前运行。
+
+## 22. Critic V2 matched strongest-baseline LOSO 门前瞻冻结（2026-08-20）
+
+已冻结 V2-only matched-baseline LOSO protocol/preparer。历史 baseline preparer
+只检查旧 three-seed PASS 布尔值，不能证明新 primary LOSO 已经由 TEST/refit 顺序
+合法生成，也不能验证逐 fold 配对；新门以未来 21 份 primary runtime configs 为
+只读输入，要求每个 `(holdout study, seed)` 唯一且完整，并逐一匹配相同 physical
+GPU、TEST-preserving split 与数据边界。
+
+matched 的含义固定为同一 study/seed/GPU/fold，而不是虚构相同模型容量或训练
+预算。baseline 保留使其成为 strongest same-information comparator 的 native
+policy：anchored position-aware antisymmetric model、transferable context、
+task→source weighting、TRAIN-task robust scaling、pairwise-Huber、batch32、8 epochs、
+FP32。held-out study 不用于 checkpoint 选择，因此 LOSO checkpoint 前瞻固定为
+`FINAL_EPOCH`。每个 baseline config 交叉记录 paired primary identity/path，且
+Development TEST 18,292 条、TEST metrics selection、Evaluation 和 guidance 均关闭。
+
+本次没有读取 primary outcome，没有调用真实 preparer，没有生成 baseline runtime
+configs 或启动训练。新门 focused tests 15/15 通过；包含共享 primary/baseline
+pairing、历史 baseline config 和 LOSO aggregation provenance 的扩展 suite 为
+27/27 通过。该任务没有参数更新，中央训练 CSV 不新增伪 attempt。
+
+仅在合法的 21 个 primary configs 已生成后，允许一次准备配对 baseline configs：
+
+```bash
+$PY scripts/route_a_v3/prepare_route2_mrnabert_critic_v2_matched_baseline_loso_configs_v1.py \
+  --base-config configs/route_a_v3_route2_method_repair_global_scaled_seed20260821_gpu0_v1.json \
+  --primary-config-root /mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/mrnabert_critic_v2/runtime_configs/test_preserving_loso_v1 \
+  --primary-protocol configs/route_a_v3_route2_mrnabert_critic_v2_test_preserving_loso_protocol_v1.json \
+  --baseline-protocol configs/route_a_v3_route2_mrnabert_critic_v2_matched_baseline_loso_protocol_v1.json
+```
+
+该命令只准备 configs，不运行 baseline LOSO；当前上游 gate 未 terminal，不得提前
+调用。
