@@ -184,3 +184,8 @@ Spearman、standardized MAE、prediction spread、strongest-baseline margin、
 positive-task count、相对三个 controls 的差距和非有限值/mean-collapse/尺度
 诊断。controls 必须 PASS 且 3/3 baseline margins 均大于 0，才只授权下一步
 单次冻结 Development TEST；confirmation scheduler 本身不会打开 TEST。
+
+条件式 watcher 已在 A100 以 PID `4148582` 启动，poll interval 为 900 秒；
+首条日志为 `waiting_for_critic_v2_control_adjudication`。启动验收时，three-seed
+runtime config root、run root 与 adjudication 文件均不存在，符合 gate 前不创建
+seed 产物的冻结要求。A100 新增三种子配置/裁决的 7 个 focused tests 全部通过。

@@ -39,13 +39,23 @@
     "starts_only_after_control_pass": true,
     "control_gaps": "REPORT_ONLY_CONTROL_GATE_ALREADY_FROZEN",
     "all_three_baseline_margins_must_be_positive": true,
-    "opens_development_test": false
+    "opens_development_test": false,
+    "watcher": {
+      "status": "WAITING_FOR_CRITIC_V2_CONTROL_ADJUDICATION",
+      "pid_at_observation": 4148582,
+      "poll_seconds": 900,
+      "log": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/schedulers/mrnabert_critic_v2_three_seeds_v1.log",
+      "runtime_config_root_exists": false,
+      "run_root_exists": false,
+      "adjudication_exists": false
+    }
   },
   "focused_verification": {
     "local_tests_passed": 74,
     "local_tests_skipped_cuda_only": 4,
     "local_warnings": 1,
-    "a100_focused_tests_passed": 57,
+    "a100_control_focused_tests_passed": 57,
+    "a100_confirmation_focused_tests_passed": 7,
     "control_scheduler_shell_syntax": "PASS",
     "confirmation_scheduler_shell_syntax": "PASS"
   },

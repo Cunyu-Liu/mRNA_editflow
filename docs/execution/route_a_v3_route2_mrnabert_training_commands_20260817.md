@@ -451,3 +451,8 @@ specific signal 已由前一 control gate 冻结裁决。
 另有一条 PyTorch Transformer warning，不影响判定。A100 项目环境的 control
 聚焦测试为 57 项通过。两个 scheduler 的 shell 语法检查均通过。Development
 TEST 与新 final Evaluation outcome 都未读取，guided generation 仍未授权。
+
+上述条件式 watcher 已在 A100 启动为 PID `4148582`，日志路径为
+`/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/schedulers/mrnabert_critic_v2_three_seeds_v1.log`。
+首条日志确认它正在等待 control adjudication；验收时 three-seed runtime、run
+和 adjudication 均未创建。A100 新增的 7 个 confirmation focused tests 全部通过。
