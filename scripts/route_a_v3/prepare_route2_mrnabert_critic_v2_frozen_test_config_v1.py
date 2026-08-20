@@ -173,7 +173,10 @@ def build_config(
         "result_stage": "FROZEN_DEVELOPMENT_TEST",
         "run_mode": "FIXED_GROUPED_SPLIT",
         "single_execution_only": True,
-        "checkpoint_selected_by": "DEVELOPMENT_VALIDATION_ONLY",
+        "development_validation_folded_into_training": True,
+        "validation_checkpoint_selection_before_test": "BEST_VALIDATION",
+        "checkpoint_selection": "FINAL_EPOCH",
+        "epoch_count_source": "FROZEN_100_EPOCH_POLICY_BEFORE_TEST",
         "test_used_for_checkpoint_selection": False,
         "test_used_for_model_or_policy_selection": False,
     }
@@ -370,6 +373,10 @@ def build_config(
             "device": f"cuda:{gpu}",
             "physical_gpu_index": gpu,
             "candidate_control": "NONE",
+            "validation_checkpoint_selection_before_test": "BEST_VALIDATION",
+            "checkpoint_selection": "FINAL_EPOCH",
+            "development_validation_folded_into_training": True,
+            "epoch_count_source": "FROZEN_100_EPOCH_POLICY_BEFORE_TEST",
             "development_test_outcomes_accessed": True,
             "evaluation_outcomes_accessed": False,
             "test_used_for_checkpoint_selection": False,
@@ -378,8 +385,10 @@ def build_config(
             "output_directory": str(frozen_test_protocol["run_directory"]),
             "notes": (
                 "One prospectively frozen Critic V2 Development TEST execution after "
-                "both V2 gates pass. Validation selects the checkpoint; TEST is not "
-                "used for checkpoint, model or policy selection; Evaluation remains closed."
+                "both V2 gates pass. TRAIN and Validation are folded into training for "
+                "the prospectively fixed 100 epochs, so the executable checkpoint is the "
+                "final epoch; TEST is not used for epoch, checkpoint, model or policy "
+                "selection; Evaluation remains closed."
             ),
         }
     )

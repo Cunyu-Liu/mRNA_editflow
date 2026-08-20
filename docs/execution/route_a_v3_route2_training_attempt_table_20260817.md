@@ -206,7 +206,9 @@ seed 产物的冻结要求。A100 新增三种子配置/裁决的 7 个 focused 
 Critic V2 control 尚在运行且 three-seed outcome 尚不存在时，已前瞻冻结独立的
 single-TEST protocol 和 V2-only config preparer。它固定 seed `20260823`，完整
 重放 control/three-seed/TEST 三份协议的同一训练 policy，保留
-`checkpoint_selection=BEST_VALIDATION`，并要求两个裁决 PASS、精确三 seed、3/3
+confirmation 的 `BEST_VALIDATION` 选择来源；由于 TEST 阶段会把 TRAIN+VALIDATION
+折入训练，可执行 TEST checkpoint 规则前瞻固定为 100 epochs + `FINAL_EPOCH`，
+不使用 TEST 选择 epoch。它要求两个裁决 PASS、精确三 seed、3/3
 positive strongest-baseline margins、protected outcomes 未进入以及被选 confirmation
 config 身份一致。preparer 只会写出一次性 runtime config；不会训练，也不会自行
 读取 TEST。既有 runtime config 或 run directory 任一存在时均拒绝覆盖。

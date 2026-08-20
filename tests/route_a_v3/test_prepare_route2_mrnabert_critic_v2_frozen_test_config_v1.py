@@ -135,7 +135,11 @@ def test_builds_exact_single_policy_matched_frozen_test_config() -> None:
     assert config["result_stage"] == "FROZEN_DEVELOPMENT_TEST"
     assert config["seed"] == 20260823
     assert config["physical_gpu_index"] == 4
-    assert config["checkpoint_selection"] == "BEST_VALIDATION"
+    assert config["validation_checkpoint_selection_before_test"] == "BEST_VALIDATION"
+    assert config["checkpoint_selection"] == "FINAL_EPOCH"
+    assert config["epochs"] == 100
+    assert config["epoch_count_source"] == "FROZEN_100_EPOCH_POLICY_BEFORE_TEST"
+    assert config["development_validation_folded_into_training"] is True
     assert config["checkpoint_metric"] == "TASK_MACRO_SPEARMAN_THEN_STANDARDIZED_MAE"
     assert config["training_sampling_mode"] == "TASK_STUDY_SOURCE_GROUP_BALANCED_FIXED_DRAWS"
     assert config["loss_aggregation_mode"] == "TASK_MACRO_MEAN"

@@ -36,7 +36,10 @@
     "result_stage": "FROZEN_DEVELOPMENT_TEST",
     "run_mode": "FIXED_GROUPED_SPLIT",
     "single_execution_only": true,
-    "checkpoint_selected_by": "DEVELOPMENT_VALIDATION_ONLY",
+    "development_validation_folded_into_training": true,
+    "validation_checkpoint_selection_before_test": "BEST_VALIDATION",
+    "checkpoint_selection": "FINAL_EPOCH",
+    "epoch_count_source": "FROZEN_100_EPOCH_POLICY_BEFORE_TEST",
     "test_used_for_checkpoint_selection": false,
     "test_used_for_model_or_policy_selection": false
   },

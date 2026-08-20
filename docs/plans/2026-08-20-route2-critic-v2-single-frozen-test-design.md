@@ -30,9 +30,12 @@ matching the prior frozen route and avoiding post-outcome seed selection. The
 output declares
 `development_test_outcomes_accessed=true` because executing that config would
 open TEST; it keeps Evaluation closed and targets GPU0-5. Checkpoint selection
-remains `BEST_VALIDATION`, exactly matching the frozen Critic V2 policy; TEST is
-never used for checkpoint, model or policy selection. The CLI refuses an
-existing config or run directory.
+before TEST remains `BEST_VALIDATION`. For the executable TEST run, the trainer
+folds Development TRAIN and VALIDATION into one training set, so the protocol
+prospectively fixes 100 epochs and selects `FINAL_EPOCH`; there is no Validation
+loader at this stage. This is a pre-outcome execution rule, not TEST-based epoch
+selection. TEST is never used for epoch, checkpoint, model or policy selection.
+The CLI refuses an existing config or run directory.
 
 ## Alternatives rejected
 

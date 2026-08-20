@@ -492,13 +492,15 @@ V2-only 单次 Development TEST 配置门的前瞻冻结。审计确认历史 V1
 会把 checkpoint policy 改成 `FINAL_EPOCH`，且只绑定旧 V1 loss/裁决状态，不能
 复用于 Critic V2；V2 路径因此使用独立协议与独立 preparer，不修改历史负队列。
 
-冻结协议固定 seed `20260823`、Development TEST 记录数 18,292、GPU0-5、
-`BEST_VALIDATION` checkpoint selection 和完整 Critic V2 训练策略。preparer 只有在
+冻结协议固定 seed `20260823`、Development TEST 记录数 18,292、GPU0-5 和
+完整 Critic V2 训练策略。confirmation 的选择来源保持 `BEST_VALIDATION`；单次
+TEST 会把 TRAIN+VALIDATION 折入训练，因此其可执行规则在 outcome 出现前固定为
+100 epochs + `FINAL_EPOCH`，TEST 不参与 epoch 或 checkpoint 选择。preparer 只有在
 以下条件全部成立时才允许写出唯一 runtime config：control adjudication PASS；
 三个固定 seed `20260822/20260823/20260824` 的 adjudication PASS；3/3 seed 相对
 同一 strongest same-information baseline 的 margin 均为正；三个协议、两个裁决
 和被选 seed config 的 policy/seed/baseline/protected-outcome 字段完全一致。输出
-明确声明 TEST 不参与 checkpoint、模型或策略选择，Evaluation 保持关闭，并拒绝
+明确声明 TEST 不参与 epoch、checkpoint、模型或策略选择，Evaluation 保持关闭，并拒绝
 覆盖既有 runtime config 或 run directory。
 
 本次仅实现和验证 gate，没有调用 preparer，没有创建 `/mnt` runtime config 或
