@@ -51,6 +51,25 @@ def test_claim_and_consistency_evidence_references_are_closed() -> None:
     assert "E-R2-CRITIC-V2-READINESS" in cited
 
 
+def test_evidence_source_paths_are_closed_without_overstating_verification() -> None:
+    evidence = _load(EVIDENCE)
+    preflight = evidence["source_path_preflight"]
+
+    assert preflight["status"] == "PASS"
+    assert preflight["source_locations_checked"] == len(evidence["sources"]) == 15
+    assert (
+        preflight["local_or_contract_locations_checked"]
+        + preflight["a100_mnt_locations_checked"]
+        == preflight["source_locations_checked"]
+    )
+    assert preflight["missing_locations"] == 0
+    assert preflight["check_scope"] == "FILE_EXISTENCE_ONLY_NO_EVIDENCE_CONTENT_OPENED"
+    assert preflight["human_content_verification_completed"] is False
+    assert preflight["submission_readiness_changed"] is False
+    assert evidence["human_verification_required"] is True
+    assert evidence["submission_ready"] is False
+
+
 def test_paper_packet_matches_frozen_critic_v2_readiness_boundary() -> None:
     draft = DRAFT.read_text(encoding="utf-8")
     consistency = _load(CONSISTENCY)

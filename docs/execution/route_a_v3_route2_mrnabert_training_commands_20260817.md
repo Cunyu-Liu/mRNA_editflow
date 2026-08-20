@@ -996,3 +996,16 @@ Evaluation outcome，也没有创建 future runtime/run/candidate artifact。
 因此不修改冻结协议、数据或 runner；focused static-input preflight 状态为 `PASS`，
 action 为 `NO_PATH_REPAIR_REQUIRED`。本任务没有参数更新，中央训练 CSV 不新增伪
 attempt；Critic V2 运行状态不因本任务改变。
+
+## 36. Paper evidence source locator 闭合核查（2026-08-20）
+
+等待 control terminal 期间，对 `route2_v332_evidence_manifest_v1.json` 的 15 个
+source locator 做一次存在性核查：本地仓库或合同路径 8/8、A100 `/mnt` 路径 7/7，
+合计 15/15 存在、missing=0。核查只看文件存在性，不打开 evidence 内容、训练进度、
+Development TEST 或 final Evaluation outcome。
+
+evidence manifest 新增 `source_path_preflight`，明确该 PASS 只表示 locator 闭合，
+不表示 human content verification 已完成，也不改变 submission readiness；
+`human_verification_required=true` 与 `submission_ready=false` 均保留。paper focused
+tests 现为 7/7。本任务没有参数更新，中央训练 CSV 不新增伪 attempt，Critic V2
+运行状态不因本任务改变。

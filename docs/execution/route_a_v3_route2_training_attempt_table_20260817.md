@@ -434,3 +434,13 @@ Flow checkpoint 共 30 个路径全部存在，missing=0，故无需修复路径
 或 outcome 文件内容、训练进度，也没有读取 Development TEST/final Evaluation outcome
 或创建 future artifacts。它不进行参数更新，因此中央训练 CSV 不增加伪 attempt；
 现有 Critic V2 运行状态不因本任务改变。
+
+## Paper evidence source locator 闭合核查（2026-08-20）
+
+paper evidence manifest 的 15 个 source locator 已完成一次文件存在性 preflight：
+本地仓库或合同路径 8/8、A100 `/mnt` 路径 7/7，missing=0。检查不打开 evidence
+内容、训练进度、Development TEST 或 final Evaluation outcome。
+
+manifest 明确保留 `human_verification_required=true` 与 `submission_ready=false`，
+locator PASS 不冒充人工内容验证。paper focused tests 7/7 通过。本任务没有参数更新，
+中央训练 CSV 不增加伪 attempt；现有 Critic V2 运行状态不因本任务改变。
