@@ -176,7 +176,7 @@ $PY scripts/route_a_v3/train_route2_delta_predictor_v1.py \
 - critic 显式加入归一化绝对位置和 edit-gated position channels；
 - critic 使用 edit-centered attention pooling、edit max pooling、source mean/max 全局背景、region FiLM 和 source/candidate 反对称结构。
 - A100 数值对照通过后，正式 loss 比较已启用 BF16 autocast、fused AdamW、pinned memory 和 non-blocking transfer；
-- 实测 `num_workers=0` 对当前内存特征缓存最快，因此没有为了形式上的并行而增加 workers。
+- workers 0/4/8 的同口径 batch32 基准显示 `num_workers=4` 最快：`310.94 records/s`，高于 workers0 的 `290.58 records/s`；workers8 为 `291.50 records/s`，继续增加 worker 没有收益。后续新的正式 cohort 使用 workers4；已经完成的 run 不追溯重跑。
 - 新生成候选不在 canonical feature cache 中，因此已增加冻结 mRNABERT 在线编码器；它按 candidate batch 运行、在 trajectory 内做 sequence memoization，并先与 canonical cache 做数值对齐验证。
 - 在线编码器和 guided potential cache 只在当前 source/budget cohort 内保留；进入下一个 source 时主动清空，避免对成千上万候选长期累积 768 维 embedding 而耗尽主存。
 - guided XEditFlow 的合法动作仍由 SUB+STOP kernel 枚举，hard mask 不交给 critic；base transition rate 使用冻结 critic 的 clipped mean-potential difference 做一致性倾斜，critic uncertainty 不进入 guidance。
@@ -332,7 +332,7 @@ nohup scripts/route_a_v3/schedule_route2_matched_generation_suite_v2.sh \
 
 该调度器不会读取外部 Evaluation outcomes；evaluator NO-GO 时仍生成候选但停止在独立评分之前，qualified 时才完成评分与 strongest selection。旧 v1 输出不覆盖。
 
-中央训练尝试表保持 94 个唯一尝试，因为本次 online encoder 是零参数更新的工程验证，不应伪装成训练尝试；其完整终态保存在独立 validation summary，并在本节登记。下一个会进入中央训练表的新终态是 Base Flow V2 或独立 evaluator 的实际训练终态。
+中央训练尝试表当前为 96 个唯一尝试、72 列：87 completed、3 failed、3 incomplete、2 stopped，以及 1 个正在运行的独立 evaluator。online encoder 是零参数更新的工程验证，不伪装成训练尝试；Base Flow V2 的训练终态已进入中央表。
 
 ## 14. 低频查看进度
 
@@ -349,3 +349,42 @@ tail -n 5 \
 python -m json.tool \
   /mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/mrnabert_scaleup_v2/max_mean_only_seed20260816_gpu0_bf16_v1/training_summary.json
 ```
+
+## 15. 2026-08-20 执行顺序复盘与当前裁定
+
+本节用于把原定 12 步与真实产物逐项对齐。它不根据后续结果改写原门槛，也不把未执行步骤写成完成。
+
+| # | 原定步骤 | 当前裁定 | 直接证据或原因 |
+|---:|---|---|---|
+| 1 | Huber 跑满 100 epochs 并保留 best checkpoint | **完成** | 100/100 epochs；best epoch 44；`best.pt`；wall time 39,616.45 秒；Development TEST 未读 |
+| 2 | workers 0/4/8 DataLoader benchmark | **完成** | workers4 最快：310.94 records/s；workers0 290.58；workers8 291.50 |
+| 3 | 实际 epoch 时间与瓶颈分析 | **完成** | 约 396.16 秒/epoch、70.76 ms/step；full loop 达 batch16 BF16 微基准的 93.1%，没有严重 loader starvation；batch64 实测退化，batch32 被选中 |
+| 4 | fixed-variance 与 learned-variance | **完成** | 两项均 100/100 epochs，与 Huber 使用同一数据、split、seed、架构和预算 |
+| 5 | 三种 loss 同 Validation 比较 | **完成** | Huber task-macro Spearman 0.149988；fixed 0.120695；learned 0.123583。learned uncertainty 与残差相关，但 mean 更差，因此选 Huber |
+| 6 | permutation、source-only、anchor-only、parameter-matched controls | **完成两次独立运行；术语需澄清** | candidate-permutation 已运行；source-only 已运行且参数量匹配。若 anchor-only 指“只保留 source/anchor”，它就是同一个 source-only control，不应重复计为第三次实验；若指“source + edit metadata、去掉 candidate sequence”，则目前 **未定义、未运行** |
+| 7 | 三个 final seeds | **完成但未通过** | 三个 margin 为 -0.015586、-0.014806、+0.005669；只有 1/3 为正；终态 `THREE_FINAL_SEEDS_DO_NOT_SUPPORT_FROZEN_DEVELOPMENT_TEST` |
+| 8 | 单次冻结 Development TEST | **按门槛停止，未打开** | three-seed gate 未通过；TEST outcomes read=0 |
+| 9 | 全部 126,165 records 最终 refit | **按门槛停止，未启动** | 该步骤依赖单次 TEST 记录；不能跳过失败门槛产生“最终模型” |
+| 10 | frozen-critic guided XEditFlow | **未授权、未启动** | critic readiness 未通过；不得用单 seed checkpoint 冒充冻结 critic。与 critic 无关的 Base Flow G0 已独立完成 |
+| 11 | 同预算搜索/生成 baseline | **正在准备** | Base Flow validation 已达到 `FLOW_G0_READY`；独立 evaluator 正在 Development TRAIN/VALIDATION 上训练，终态后由已启动的调度器进入七种 matched-budget 方法 |
+| 12 | GSE232572 / E-MTAB-10902 独立 Evaluation | **未开始，继续隔离** | 两个 Evaluation outcomes 均未读取；只有 Development 上的方法与预算冻结后才允许进入 |
+
+### 15.1 反思
+
+1. **记录中的 DataLoader 结论曾自相矛盾。** 早期文字写成 workers0 最快，但正式 benchmark 明确是 workers4 最快；本文件已修正，后续以正式 summary 为准。
+2. **“controls 通过”不应掩盖术语重叠。** 当前只有 candidate-permutation 与 parameter-matched source-only 两次真实运行；source-only 在本项目里就是只看 source anchor 的对照。除非先定义一个不同的信息边界，否则不制造一个同义的第三次 anchor-only run。
+3. **单 seed 的最好结果没有经受 three-seed 复现。** 这说明当前 critic 不能用于打开 TEST、最终 refit 或指导生成；增加 epoch、参数量或事后挑 seed 都不能修复这一结论。
+4. **工程线与科学线要分开。** Base Flow V2 的 legality、budget、replay 与 small-graph checks 已通过，说明生成器工程骨架可用；它不说明 biological optimization 成功，也不替代 critic gate。
+5. **当前独立 evaluator 是 Step 11 的必要基础设施，不是外部 Evaluation。** 它只读 Development TRAIN/VALIDATION，用来避免用生成器自己的 critic self-score 选择生成方法；无论 PASS 或 NO-GO，都不得读取 GSE232572/E-MTAB-10902。
+
+### 15.2 当前正在做什么、下一步做什么
+
+当前唯一新的 GPU 训练是独立 evaluator。它与 mRNABERT critic、生成器训练梯度和外部 Evaluation 隔离；中央表状态为 RUNNING。Base Flow V2 已完成，V4 validation 终态为 `FLOW_G0_READY`：891 个 source cohorts、28,512 条 trajectories、hard legality 100%、budget violation 0、replay failure 0、small-graph TV distance 0，source-macro unique candidate rate 0.882891。
+
+后续顺序冻结为：
+
+1. 等独立 evaluator 自然结束，只读取一次终态 summary/adjudication；
+2. evaluator qualified 时，运行并独立评分七种 matched-budget generation/search 方法；evaluator NO-GO 时仍完成候选生成与 compute ledger，但停止在方法评分和 strongest selection 之前；
+3. 保持冻结 TEST、all-126,165 refit、critic-guided XEditFlow 与外部 Evaluation 关闭；
+4. 根据生成 baseline 结果和 critic 失败原因，单独设计下一版 critic 的前瞻性假设，不复用 TEST、不事后放松 three-seed gate；
+5. 只有新的 critic cohort 重新满足 controls + three-seed readiness，才恢复步骤 8→9→10；步骤 12 永远最后执行。
