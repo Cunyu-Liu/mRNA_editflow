@@ -53,6 +53,37 @@ def test_fixed_seed_trajectory_replays_and_is_legal() -> None:
     assert forwards == len(actions)
 
 
+def test_batched_trajectories_replay_with_independent_generators() -> None:
+    module = _load()
+    model, _checkpoint, device = _cuda_model(module)
+    model.eval()
+    root = module.initial_state("ACGU", budget=3, assay_id="a", context_id="c")
+    seeds = [11, 12, 13, 14, 15, 16]
+    first, first_batch_count = module.sample_many_same_root(
+        model,
+        root,
+        region_id=0,
+        assay_id=0,
+        context_id=0,
+        seeds=seeds,
+        device=device,
+    )
+    second, second_batch_count = module.sample_many_same_root(
+        model,
+        root,
+        region_id=0,
+        assay_id=0,
+        context_id=0,
+        seeds=seeds,
+        device=device,
+    )
+    assert first == second
+    assert first_batch_count == second_batch_count
+    assert first_batch_count < sum(result[2] for result in first)
+    assert all(result[0].edit_count <= 3 for result in first)
+    assert all(result[0].terminal_cause in {"EXPLICIT_STOP", "BUDGET_EXHAUSTED"} for result in first)
+
+
 def test_learned_small_graph_matches_complete_path_enumeration() -> None:
     module = _load()
     model, checkpoint, device = _cuda_model(module)
@@ -150,6 +181,9 @@ def test_g0_validation_reports_empirical_generation_score() -> None:
         model, checkpoint, sources, device=device, seed=7, progress=progress_rows.append
     )
     assert summary["trajectory_sampling_device"] == str(device)
+    assert summary["sampler_execution_mode"] == "BATCHED_BY_SOURCE_COHORT_WITH_PER_TRAJECTORY_GENERATORS"
+    assert summary["maximum_trajectory_batch_size"] == 6
+    assert summary["validation_model_forward_batch_count_with_replay"] > 0
     assert all(row["critic_forwards"] == 0 for row in rows)
     assert all(row["generation_score"] <= 0.0 for row in rows)
     assert progress_rows == [{
