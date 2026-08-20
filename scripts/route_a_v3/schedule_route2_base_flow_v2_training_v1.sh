@@ -6,7 +6,7 @@ ROUTE2_ROOT="${ROUTE2_ROOT:-/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2}"
 PYTHON="${PYTHON:-/home/cunyuliu/miniconda3/envs/editflow/bin/python}"
 POLL_SECONDS="${POLL_SECONDS:-300}"
 GPU_CANDIDATES="${GPU_CANDIDATES:-0 1 2 3 4 5}"
-MINIMUM_FREE_MB="${MINIMUM_FREE_MB:-1024}"
+MINIMUM_FREE_MB="${MINIMUM_FREE_MB:-2048}"
 
 TEMPLATE_CONFIG="${REPO_ROOT}/configs/route_a_v3_route2_base_flow_g0_position_progress_gpu_v2.json"
 OUTPUT_DIRECTORY="${ROUTE2_ROOT}/runs/base_flow_g0/position_progress_gpu_v2"

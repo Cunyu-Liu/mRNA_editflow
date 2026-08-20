@@ -215,7 +215,7 @@ CUDA_VISIBLE_DEVICES=4 /home/cunyuliu/miniconda3/envs/editflow/bin/python \
 
 ## 10. Guidance readiness 与执行入口
 
-Base Flow V2 不依赖 critic，可以继续完成 unguided `SUB+STOP` 工程验证。原训练等待器只盯 GPU 2，在该卡被其他正常作业持续占用时空等超过 60 小时。当前规则扫描 GPU 0–5，只按剩余显存选择显存最多的一张卡，不再设置利用率门槛。历史 Base Flow G0 的峰值显存约 93MB，因此保留 1GB 的实际可运行下限以避免明显 OOM；这不是资源 gate。该修改不改变数据、模型、seed、30 epochs、BF16/fused 路径或输出目录。训练与验证分别使用：
+Base Flow V2 不依赖 critic，可以继续完成 unguided `SUB+STOP` 工程验证。原训练等待器只盯 GPU 2，在该卡被其他正常作业持续占用时空等超过 60 小时。当前规则扫描 GPU 0–5，只按剩余显存选择显存最多的一张卡，不再设置利用率门槛。新 run 启动后的实际占用约 1.04GB，因此保留 2GB 的任务最低可运行线以避免明显 OOM；这不是资源 gate。该修改不改变数据、模型、seed、30 epochs、BF16/fused 路径或输出目录。训练与验证分别使用：
 
 ```bash
 nohup scripts/route_a_v3/schedule_route2_base_flow_v2_training_v1.sh \
@@ -235,7 +235,7 @@ nohup scripts/route_a_v3/schedule_route2_base_flow_v2_validation_v1.sh \
 configs/route_a_v3_route2_mrnabert_guidance_reward_policy_v1.json
 ```
 
-它只使用 standardized predicted mean；learned uncertainty 只做诊断，不进入 reward。在线 candidate encoder 的单次验证由下列低频调度器在 GPU 0–5 中选择剩余显存最多且至少有 1GB 可用的卡执行，不使用利用率门槛：
+它只使用 standardized predicted mean；learned uncertainty 只做诊断，不进入 reward。在线 candidate encoder 的单次验证由下列低频调度器在 GPU 0–5 中选择剩余显存最多且至少有 4GB 可用的卡执行，不使用利用率门槛：
 
 ```bash
 nohup scripts/route_a_v3/schedule_route2_mrnabert_online_encoder_validation_v1.sh \
@@ -291,7 +291,7 @@ nohup scripts/route_a_v3/schedule_route2_independent_evaluator_gpu2_v3.sh \
 - Huber 实际 wall time 为 39,616.45 秒，约 396.16 秒/epoch、70.76 ms/step 和 226.12 TRAIN records/s；相对 batch16 BF16 微基准约为 93%，没有严重 DataLoader 饥饿证据；
 - GPU 0–5 当前均有项目任务，显存状态正常；control 启动验收未见 CUDA/NaN/提前退出；
 - workers 0/4/8 的 batch32 数据管线测试已完成：workers4 为 310.94 records/s，优于 workers0 的 290.58；workers8 为 291.50，没有继续扩 worker 的收益。该结果只用于后续新正式 cohort；Base Flow V2、在线 mRNABERT encoder validation 和独立 evaluator 继续低频等待各自 GPU 条件；
-- 独立评估器将等待 Base Flow 验证完成后再运行；Base Flow 训练/验证已改为在 GPU 0–5 中选择剩余显存最多且至少有 1GB 可用的卡，不再永久绑定 GPU 2，也不再以利用率为启动条件；
+- 独立评估器将等待 Base Flow 验证完成后再运行；Base Flow 训练/验证已改为在 GPU 0–5 中选择剩余显存最多且至少有 2GB 可用的卡，不再永久绑定 GPU 2，也不再以利用率为启动条件；
 - 当前正式数据与 claim 状态仍为 `ordinary=1 / A1=1 / true-A2=0 / canonical=6,547 / NOT_ESTABLISHED`。
 
 ## 13. 2026-08-20 在线编码器终态与并行工程进度
@@ -310,7 +310,7 @@ nohup scripts/route_a_v3/schedule_route2_independent_evaluator_gpu2_v3.sh \
 
 这只闭合“新候选能否用同一个冻结 mRNABERT 在线编码，并与 canonical cache 在容差内一致”的工程条件；它不改变 three-seed 失败结论，也不授权 Development TEST、all-126,165 refit、LOSO、guided XEditFlow 或外部 Evaluation。当前 official PyTorch fallback backend 已能通过一致性验证；后续 SDPA/Flash Attention 检查只属于速度优化，不得被写成新的科学结果。
 
-Base Flow V2 在本次检查开始时尚未启动，因为旧调度规则仍要求 `free_memory >= 24GB` 与 `utilization <= 70%`。该规则随后按负责人指令被替换：当前只按剩余显存选择 GPU 0–5 中显存最多的一张卡，默认最低 1GB，不再检查利用率。现有训练作业不会被终止；新任务允许与高利用率 GPU 上的既有任务共享计算时间。
+Base Flow V2 在本次检查开始时尚未启动，因为旧调度规则仍要求 `free_memory >= 24GB` 与 `utilization <= 70%`。该规则随后按负责人指令被替换：当前只按剩余显存选择 GPU 0–5 中显存最多的一张卡，Base Flow 默认最低 2GB，不再检查利用率。现有训练作业不会被终止；新任务允许与高利用率 GPU 上的既有任务共享计算时间。
 
 两个旧的 SDPA/attention backend 等待器当时仍固定等待 GPU 4，存在空闲窗口到来时先于 Base Flow 抢占该卡的风险。它们均只是等待 shell、没有 CUDA 子进程，已安全停止；Base Flow 训练、Base Flow validation 和独立 evaluator 三个主调度器保持运行。attention backend screen 与 full-encoder SDPA alignment 延后到 Base Flow validation 之后再恢复，不改变已完成的 official PyTorch fallback 一致性结论。
 
