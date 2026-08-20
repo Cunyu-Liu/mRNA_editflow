@@ -1,0 +1,27 @@
+{
+  "schema_version": "route_a_v3_route2_mrnabert_critic_v2_loso_aggregation_protocol.v1",
+  "status": "FROZEN_BEFORE_CRITIC_V2_THREE_SEED_OUTCOMES",
+  "primary_loso_protocol": "configs/route_a_v3_route2_mrnabert_critic_v2_test_preserving_loso_protocol_v1.json",
+  "matched_baseline_loso_protocol": "configs/route_a_v3_route2_mrnabert_critic_v2_matched_baseline_loso_protocol_v1.json",
+  "required_seeds": [20260822, 20260823, 20260824],
+  "required_loso_studies": [
+    "GSE200304",
+    "GSE114002",
+    "GSE149487",
+    "GSE217518",
+    "ENCSR854RUF",
+    "GSE186455",
+    "GSE269595"
+  ],
+  "zero_record_development_studies": ["GSE256185"],
+  "pairing_policy": "EXACT_PRIMARY_BASELINE_STUDY_SEED_PHYSICAL_GPU_AND_OUTPUT_BINDING",
+  "metric_source": "TERMINAL_TRAINING_SUMMARY_VALIDATION_METRICS",
+  "aggregation_input_schema": "route_a_v3_route2_loso_aggregation_input.v1",
+  "aggregation_output_schema": "route_a_v3_route2_loso_aggregation.v1",
+  "input_output_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/comparisons/mrnabert_critic_v2_test_preserving_loso_inputs_v1",
+  "aggregation_output_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/comparisons/mrnabert_critic_v2_test_preserving_loso_v1",
+  "development_test_outcomes_accessed": false,
+  "evaluation_outcomes_accessed": false,
+  "guided_generation_authorized": false,
+  "scientific_claim_status": "NOT_ESTABLISHED"
+}

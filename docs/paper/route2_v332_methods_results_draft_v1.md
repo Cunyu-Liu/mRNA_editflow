@@ -81,6 +81,7 @@ baseline macro Spearman. Guided Development generation can be authorized only
 after both `CRITIC_READY_FOR_GUIDANCE` and `FLOW_G0_READY`; neither readiness
 state is a biological-success claim. [claim:C-R2-014]
 [evidence:E-R2-CONTRACT,E-R2-CRITIC-V2-READINESS]
+[evidence:E-R2-CRITIC-V2-LOSO-AGG]
 
 ## Results draft
 

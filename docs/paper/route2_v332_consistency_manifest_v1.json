@@ -54,7 +54,11 @@
       "required_loso_studies": 7,
       "all_seed_model_minus_baseline_macro_spearman": ">0",
       "guided_generation_requires": ["CRITIC_READY_FOR_GUIDANCE", "FLOW_G0_READY"],
-      "evidence_ids": ["E-R2-CONTRACT", "E-R2-CRITIC-V2-READINESS"]
+      "evidence_ids": [
+        "E-R2-CONTRACT",
+        "E-R2-CRITIC-V2-READINESS",
+        "E-R2-CRITIC-V2-LOSO-AGG"
+      ]
     }
   ],
   "results": [

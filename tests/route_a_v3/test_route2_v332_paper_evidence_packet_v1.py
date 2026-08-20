@@ -23,7 +23,7 @@ def test_claim_and_consistency_evidence_references_are_closed() -> None:
     consistency = _load(CONSISTENCY)
 
     evidence_ids = [row["evidence_id"] for row in evidence["sources"]]
-    assert len(evidence_ids) == len(set(evidence_ids)) == 13
+    assert len(evidence_ids) == len(set(evidence_ids)) == 14
 
     claims = re.findall(r"\[claim:([^\]]+)\]", draft)
     assert len(claims) == len(set(claims)) == 14

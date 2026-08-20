@@ -315,3 +315,16 @@ V2 configs，证明 readiness packet/adjudication 可连续通过 guided、match
 
 readiness focused suite 15/15、合并下游与 paper 回归 33/33 通过。该验证没有参数
 更新，因此中央 CSV 不增加训练行，最近已记录状态不变。
+
+## Critic V2 LOSO aggregation-input 门（2026-08-20）
+
+新增 V2-only LOSO aggregation protocol/input builder，替代只识别历史 V1 run 名称
+的旧 builder。新路径从 21 primary + 21 matched-baseline runtime configs 读取 exact
+terminal summary paths，核对 study/seed/GPU/primary pairing 与 TEST/Evaluation
+boundary，生成三个固定 seed 的共享 aggregation inputs；统计仍由既有 aggregator
+完成。
+
+真实 LOSO inputs/results 未创建，任何 LOSO outcome 均未读取。新 builder、共享
+aggregator 和 readiness 合并 focused suite 26/26 通过；paper evidence source 数更新
+为 14，claim 数仍为 14。该任务没有参数更新，因此中央 CSV 不增加训练行，最近已
+记录状态不变。

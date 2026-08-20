@@ -20,6 +20,7 @@ EXPECTED_PROTOCOL_SCHEMAS = {
     "refit": "route_a_v3_route2_mrnabert_critic_v2_all_development_refit_protocol.v1",
     "primary_loso": "route_a_v3_route2_mrnabert_critic_v2_test_preserving_loso_protocol.v1",
     "baseline_loso": "route_a_v3_route2_mrnabert_critic_v2_matched_baseline_loso_protocol.v1",
+    "loso_aggregation": "route_a_v3_route2_mrnabert_critic_v2_loso_aggregation_protocol.v1",
 }
 
 
@@ -91,6 +92,7 @@ def _protocol_chain_frozen(protocols: Mapping[str, Any]) -> bool:
     refit = protocols["refit"]
     primary_loso = protocols["primary_loso"]
     baseline_loso = protocols["baseline_loso"]
+    loso_aggregation = protocols["loso_aggregation"]
     readiness = protocols["readiness"]
     seed_sets = (
         control.get("frozen_confirmation_seeds"),
@@ -98,6 +100,7 @@ def _protocol_chain_frozen(protocols: Mapping[str, Any]) -> bool:
         frozen_test.get("required_confirmation_seeds"),
         primary_loso.get("required_seeds"),
         baseline_loso.get("required_seeds"),
+        loso_aggregation.get("required_seeds"),
         readiness.get("required_seeds"),
     )
     if any(tuple(int(seed) for seed in seeds) != REQUIRED_SEEDS for seeds in seed_sets):
@@ -117,7 +120,20 @@ def _protocol_chain_frozen(protocols: Mapping[str, Any]) -> bool:
         frozen_test.get("strongest_same_information_baseline", {}).get("baseline_id"),
         baseline_loso.get("strongest_same_information_baseline", {}).get("baseline_id"),
     )
-    return len(set(baseline_ids)) == 1 and baseline_ids[0] == "method_repair_global_scaled_seed20260821"
+    return (
+        len(set(baseline_ids)) == 1
+        and baseline_ids[0] == "method_repair_global_scaled_seed20260821"
+        and readiness.get("loso_aggregation_protocol")
+        == "configs/route_a_v3_route2_mrnabert_critic_v2_loso_aggregation_protocol_v1.json"
+        and loso_aggregation.get("primary_loso_protocol")
+        == readiness.get("primary_loso_protocol")
+        and loso_aggregation.get("matched_baseline_loso_protocol")
+        == readiness.get("matched_baseline_loso_protocol")
+        and tuple(loso_aggregation.get("required_loso_studies", ()))
+        == tuple(primary_loso.get("holdout_studies", ()))
+        and loso_aggregation.get("zero_record_development_studies")
+        == ["GSE256185"]
+    )
 
 
 def _reward_policy_frozen(policy: Mapping[str, Any]) -> bool:

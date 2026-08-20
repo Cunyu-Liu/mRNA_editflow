@@ -39,6 +39,8 @@ PROTOCOL_PATHS = {
     / "configs/route_a_v3_route2_mrnabert_critic_v2_test_preserving_loso_protocol_v1.json",
     "baseline_loso": ROOT
     / "configs/route_a_v3_route2_mrnabert_critic_v2_matched_baseline_loso_protocol_v1.json",
+    "loso_aggregation": ROOT
+    / "configs/route_a_v3_route2_mrnabert_critic_v2_loso_aggregation_protocol_v1.json",
 }
 REWARD_POLICY = ROOT / "configs/route_a_v3_route2_mrnabert_guidance_reward_policy_v1.json"
 STUDIES = (

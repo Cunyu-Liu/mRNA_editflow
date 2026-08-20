@@ -666,7 +666,7 @@ scripts/route_a_v3/build_route2_mrnabert_critic_v2_guidance_readiness_input_v1.p
 scripts/route_a_v3/adjudicate_route2_mrnabert_critic_v2_readiness_v1.py
 ```
 
-builder 的 required CLI 参数须逐一绑定七份冻结协议、control/three-seed/TEST/refit、
+builder 的 required CLI 参数须逐一绑定八份冻结协议、control/three-seed/TEST/refit、
 三个 LOSO 聚合、reward、encoder 与 Flow 的 exact terminal artifacts；输出位置由
 readiness protocol 固定，且不得覆盖。当前上游 gate 未 terminal，因此不得提前构建
 packet 或裁决，也不得回退到旧 V1 readiness。
@@ -742,3 +742,40 @@ contract，仅把 packet 中 checkpoint path 绑定到已冻结的未来 V2 conf
 paper 与 readiness 合并回归为 33/33 通过。未运行 TEST/refit/LOSO/generation，未
 打开 Evaluation，也没有参数更新，因此中央训练 CSV 不增加伪 attempt；最近记录的
 100 个唯一 attempts/四个 Critic V2 RUNNING 状态不因本任务改变。
+
+## 27. Critic V2 三 seed LOSO aggregation-input 门前瞻冻结（2026-08-20）
+
+审计确认通用 LOSO aggregator 本身可以验证 V2 primary/baseline terminal training
+provenance，但历史三 seed input builder 硬编码旧 V1 的 `seed..._huber_v1` 与
+`seed..._global_scaled_v1` 路径，无法读取 V2 preparers 生成的 21+21 run identities。
+
+现已冻结独立 V2 aggregation protocol，并实现 V2-only input builder。它读取两侧
+runtime config roots 各 21 份 JSON，以 config 的 `output_directory` 为未来 terminal
+summary 路径依据，按 `(study, seed)` 核对 exact physical GPU、primary baseline ID、
+paired primary output、LOSO stage/split、TEST-preserving 与 Evaluation-unused 字段。
+每个 terminal summary 的 `validation_metrics` 被包装成 `LOSO::<study>` evaluation，
+交给既有通用 aggregator 统一处理 study 对齐、undefined Spearman 和 macro
+improvement；不复制统计实现。
+
+聚合协议固定 seeds `20260822/20260823/20260824`、7 个非空 Development studies、
+`GSE256185` 为 zero-record study，以及 V2-specific input/result roots。readiness
+protocol/builder/adjudicator 已显式绑定该协议，不能再由旧 V1 input builder 提供结果。
+
+本次没有调用真实 builder/aggregator，没有读取 LOSO summary，没有创建 `/mnt`
+inputs/results。新 builder + shared aggregator + readiness focused suite 26/26 通过；
+三个合成 seed 均得到 7-study aligned complete，且 protected boundary 保持关闭。
+paper evidence manifest 新增这份 prospective protocol，当前为 14 个 evidence
+sources，claim 数仍为 14。该任务没有参数更新，中央训练 CSV 不新增伪 attempt；
+最近记录的 100 个唯一 attempts/四个 Critic V2 RUNNING 状态不因本任务改变。
+
+只有 42 个 LOSO runs 全部合法 terminal 后，才允许先执行一次：
+
+```bash
+$PY scripts/route_a_v3/build_route2_mrnabert_critic_v2_loso_aggregation_inputs_v1.py \
+  --primary-protocol configs/route_a_v3_route2_mrnabert_critic_v2_test_preserving_loso_protocol_v1.json \
+  --baseline-protocol configs/route_a_v3_route2_mrnabert_critic_v2_matched_baseline_loso_protocol_v1.json \
+  --aggregation-protocol configs/route_a_v3_route2_mrnabert_critic_v2_loso_aggregation_protocol_v1.json
+```
+
+随后才可对三个固定 input 各调用一次共享 `aggregate_route2_loso_v1.py`，输出到协议
+冻结的 V2 aggregation result root。当前上游 gate 未 terminal，不得调用。

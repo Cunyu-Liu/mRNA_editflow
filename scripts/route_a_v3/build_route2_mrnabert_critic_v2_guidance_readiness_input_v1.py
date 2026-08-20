@@ -17,6 +17,7 @@ SCHEMAS = {
     "refit": "route_a_v3_route2_mrnabert_critic_v2_all_development_refit_protocol.v1",
     "primary_loso": "route_a_v3_route2_mrnabert_critic_v2_test_preserving_loso_protocol.v1",
     "baseline_loso": "route_a_v3_route2_mrnabert_critic_v2_matched_baseline_loso_protocol.v1",
+    "loso_aggregation": "route_a_v3_route2_mrnabert_critic_v2_loso_aggregation_protocol.v1",
 }
 FROZEN_STATUS = "FROZEN_BEFORE_CRITIC_V2_THREE_SEED_OUTCOMES"
 REQUIRED_SEEDS = (20260822, 20260823, 20260824)
@@ -65,6 +66,7 @@ def _validate_protocols(protocols: Mapping[str, Mapping[str, Any]]) -> None:
         "all_development_refit_protocol": "configs/route_a_v3_route2_mrnabert_critic_v2_all_development_refit_protocol_v1.json",
         "primary_loso_protocol": "configs/route_a_v3_route2_mrnabert_critic_v2_test_preserving_loso_protocol_v1.json",
         "matched_baseline_loso_protocol": "configs/route_a_v3_route2_mrnabert_critic_v2_matched_baseline_loso_protocol_v1.json",
+        "loso_aggregation_protocol": "configs/route_a_v3_route2_mrnabert_critic_v2_loso_aggregation_protocol_v1.json",
         "reward_policy": "configs/route_a_v3_route2_mrnabert_guidance_reward_policy_v1.json",
     }
     for key, expected in expected_bindings.items():

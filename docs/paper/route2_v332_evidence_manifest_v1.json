@@ -96,6 +96,13 @@
       "location": "configs/route_a_v3_route2_mrnabert_critic_v2_guidance_readiness_protocol_v1.json",
       "locator": "bound control, three-seed, report-only TEST, refit, primary/matched LOSO and dual critic/Flow readiness rules",
       "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING"
+    },
+    {
+      "evidence_id": "E-R2-CRITIC-V2-LOSO-AGG",
+      "kind": "prospective_protocol",
+      "location": "configs/route_a_v3_route2_mrnabert_critic_v2_loso_aggregation_protocol_v1.json",
+      "locator": "exact 21+21 fold pairing, three seeds, seven studies, zero-record study and aggregate input/output boundaries",
+      "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING"
     }
   ],
   "submission_ready": false
