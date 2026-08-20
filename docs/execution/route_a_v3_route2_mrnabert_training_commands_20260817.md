@@ -779,3 +779,37 @@ $PY scripts/route_a_v3/build_route2_mrnabert_critic_v2_loso_aggregation_inputs_v
 
 随后才可对三个固定 input 各调用一次共享 `aggregate_route2_loso_v1.py`，输出到协议
 冻结的 V2 aggregation result root。当前上游 gate 未 terminal，不得调用。
+
+## 28. Critic V2 paired LOSO 六 GPU stage runner 前瞻实现（2026-08-20）
+
+在补齐 aggregation input 后继续审计发现：V2 尚无可执行 launcher，唯一旧 scheduler
+仍硬编码 V1 config names、run roots 和 aggregation builder。现已新增 V2-only LOSO
+stage runner，但没有启动。
+
+runner 在任何 log/run 创建前读取并验证两侧各 21 份 runtime configs 与 V2 三份
+protocol，构造冻结的 6 个 physical-GPU queues。每个 `(study, seed)` 先在指定 GPU
+完成 Critic V2 primary，再在同一 GPU 完成 exact matched baseline；每张 GPU 内串行，
+GPU0-5 之间并行。每次启动前只检查 assigned GPU 的 free memory，默认阈值 4096 MiB、
+poll 900 秒，不使用 utilization gate。任何 worker 失败都会保留现有 evidence 并阻止
+aggregation；只有 42 runs 全部成功后，runner 才调用 V2 input builder 和共享
+aggregator 生成三个固定 seed results，然后停止，不自动进入 readiness/guidance。
+
+runner 拒绝已有 primary/baseline run、log、aggregation input 或 result root，避免
+重复 terminal 或覆盖 partial evidence。focused tests 8/8 通过，覆盖 21 unique
+pairs、六 GPU queues、V2 config filenames、primary-before-baseline、existing-root
+拒绝和 all-training-before-aggregation 顺序。该测试没有启动 subprocess/GPU。
+
+本次没有创建 `/mnt` stage artifact、没有运行 LOSO、没有读取 TEST/LOSO/Evaluation
+outcome，也没有参数更新或中央训练 CSV 新行。最近记录状态不因本任务改变。
+
+未来只有合法 21+21 configs 已准备且所有对应 run roots 均不存在时，允许人工显式
+调用一次：
+
+```bash
+$PY scripts/route_a_v3/run_route2_mrnabert_critic_v2_loso_stage_v1.py \
+  --primary-protocol configs/route_a_v3_route2_mrnabert_critic_v2_test_preserving_loso_protocol_v1.json \
+  --baseline-protocol configs/route_a_v3_route2_mrnabert_critic_v2_matched_baseline_loso_protocol_v1.json \
+  --aggregation-protocol configs/route_a_v3_route2_mrnabert_critic_v2_loso_aggregation_protocol_v1.json
+```
+
+当前 TEST/refit/config gates 未 terminal，因此不得调用。

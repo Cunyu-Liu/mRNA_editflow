@@ -328,3 +328,14 @@ boundary，生成三个固定 seed 的共享 aggregation inputs；统计仍由�
 aggregator 和 readiness 合并 focused suite 26/26 通过；paper evidence source 数更新
 为 14，claim 数仍为 14。该任务没有参数更新，因此中央 CSV 不增加训练行，最近已
 记录状态不变。
+
+## Critic V2 paired LOSO stage runner（2026-08-20）
+
+新增 V2-only 六 GPU runner，用未来已准备的 21 primary + 21 matched-baseline configs
+构造固定 GPU0-5 queues；每 fold 严格 primary 后 baseline，每卡串行、六卡并行，只以
+4096 MiB free-memory 为默认启动门。所有 42 runs 成功后才构建并聚合三个 seed，
+任一失败则保留 evidence 并停止。
+
+本次没有调用 runner，没有创建 log/run/input/result，也没有参数更新，所以中央 CSV
+不增加训练行。focused tests 8/8 只验证 planning/order/refusal，不执行 GPU 训练；
+最近已记录状态不变。

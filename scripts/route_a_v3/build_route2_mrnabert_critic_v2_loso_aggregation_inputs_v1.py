@@ -224,9 +224,13 @@ def build_inputs(
     baseline_protocol: Mapping[str, Any],
     aggregation_protocol: Mapping[str, Any],
 ) -> dict[int, dict[str, Any]]:
-    _validate_protocols(primary_protocol, baseline_protocol, aggregation_protocol)
-    primary_by_key = _index_configs(primary_configs, primary_protocol, primary=True)
-    baseline_by_key = _index_configs(baseline_configs, baseline_protocol, primary=False)
+    primary_by_key, baseline_by_key = validate_config_pairs(
+        primary_configs,
+        baseline_configs,
+        primary_protocol,
+        baseline_protocol,
+        aggregation_protocol,
+    )
 
     outputs: dict[int, dict[str, Any]] = {}
     for seed in FINAL_SEEDS:
@@ -235,15 +239,6 @@ def build_inputs(
         for study in HOLDOUT_STUDIES:
             primary_config = primary_by_key[(study, seed)]
             baseline_config = baseline_by_key[(study, seed)]
-            _require(
-                baseline_config.get("physical_gpu_index")
-                == primary_config.get("physical_gpu_index")
-                and baseline_config.get("paired_primary_baseline_id")
-                == primary_config.get("baseline_id")
-                and baseline_config.get("paired_primary_output_directory")
-                == primary_config.get("output_directory"),
-                f"primary/baseline pairing differs: {study}/{seed}",
-            )
             primary_summary = _terminal_summary(
                 primary_config, model_kind=PRIMARY_KIND, label="primary"
             )
@@ -288,6 +283,35 @@ def build_inputs(
             "evaluation_opened": False,
         }
     return outputs
+
+
+def validate_config_pairs(
+    primary_configs: Sequence[Mapping[str, Any]],
+    baseline_configs: Sequence[Mapping[str, Any]],
+    primary_protocol: Mapping[str, Any],
+    baseline_protocol: Mapping[str, Any],
+    aggregation_protocol: Mapping[str, Any],
+) -> tuple[
+    dict[tuple[str, int], Mapping[str, Any]],
+    dict[tuple[str, int], Mapping[str, Any]],
+]:
+    _validate_protocols(primary_protocol, baseline_protocol, aggregation_protocol)
+    primary_by_key = _index_configs(primary_configs, primary_protocol, primary=True)
+    baseline_by_key = _index_configs(baseline_configs, baseline_protocol, primary=False)
+    for study in HOLDOUT_STUDIES:
+        for seed in FINAL_SEEDS:
+            primary_config = primary_by_key[(study, seed)]
+            baseline_config = baseline_by_key[(study, seed)]
+            _require(
+                baseline_config.get("physical_gpu_index")
+                == primary_config.get("physical_gpu_index")
+                and baseline_config.get("paired_primary_baseline_id")
+                == primary_config.get("baseline_id")
+                and baseline_config.get("paired_primary_output_directory")
+                == primary_config.get("output_directory"),
+                f"primary/baseline pairing differs: {study}/{seed}",
+            )
+    return primary_by_key, baseline_by_key
 
 
 def _read_config_root(root: Path, label: str) -> list[dict[str, Any]]:
