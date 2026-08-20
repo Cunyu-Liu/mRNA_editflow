@@ -46,6 +46,7 @@ def test_suite_plan_covers_exact_methods_and_frozen_budgets(tmp_path: Path) -> N
     )
 
     assert suite["required_methods"] == protocol["required_method_ids"]
+    assert suite["evaluator_qualified"] is True
     assert len(suite["required_methods"]) == 7
     assert set(suite["job_by_method"]) == set(protocol["required_method_ids"])
 
@@ -85,7 +86,6 @@ def test_suite_plan_covers_exact_methods_and_frozen_budgets(tmp_path: Path) -> N
 @pytest.mark.parametrize(
     "field,value",
     [
-        ("status", "INDEPENDENT_GENERATION_EVALUATOR_NO_GO"),
         ("candidate_rerun_authorized", False),
         ("development_test_outcomes_accessed", True),
         ("evaluation_outcomes_accessed", True),
@@ -102,3 +102,48 @@ def test_suite_rejects_unqualified_or_exposed_evaluator(field: str, value: objec
             adjudication,
             _load(FLOW_CONFIG),
         )
+
+
+def test_evaluator_no_go_allows_candidate_generation_but_not_selection(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    module = _load_module()
+    protocol = _load(PROTOCOL)
+    jobs = _load(JOBS)
+    flow_config = _load(FLOW_CONFIG)
+    adjudication = {
+        "status": "INDEPENDENT_GENERATION_EVALUATOR_NO_GO",
+        "candidate_rerun_authorized": False,
+        "development_test_outcomes_accessed": False,
+        "evaluation_outcomes_accessed": False,
+    }
+    suite = module.validate_suite_inputs(protocol, jobs, adjudication, flow_config)
+    assert suite["evaluator_qualified"] is False
+
+    paths = {
+        tmp_path / "protocol.json": protocol,
+        tmp_path / "jobs.json": jobs,
+        tmp_path / "adjudication.json": adjudication,
+        tmp_path / "flow.json": flow_config,
+    }
+    monkeypatch.setattr(module, "_read", lambda path: paths[path])
+    stages = []
+
+    def fake_stage(stage_name, specs, log_directory):
+        stages.append(stage_name)
+        return [{"name": spec["name"], "return_code": 0} for spec in specs]
+
+    monkeypatch.setattr(module, "run_parallel_stage", fake_stage)
+    output = tmp_path / "summary.json"
+    result = module.execute(
+        protocol_path=tmp_path / "protocol.json",
+        jobs_path=tmp_path / "jobs.json",
+        evaluator_adjudication_path=tmp_path / "adjudication.json",
+        flow_config_path=tmp_path / "flow.json",
+        output_summary_path=output,
+    )
+    assert stages == ["candidate_generation"]
+    assert result["status"] == "MATCHED_GENERATION_CANDIDATES_COMPLETED_EVALUATOR_NO_GO"
+    assert result["independent_evaluator_scoring_run"] is False
+    assert result["strongest_generation_baseline_selected"] is False
+    assert result["evaluation_outcomes_accessed"] is False

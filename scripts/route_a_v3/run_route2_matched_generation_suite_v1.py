@@ -54,9 +54,20 @@ def validate_suite_inputs(
         == "route_a_v3_route2_generation_independent_evaluator_jobs.v1",
         "unexpected evaluator-jobs schema",
     )
-    _require(
+    evaluator_qualified = (
         adjudication.get("status") == "INDEPENDENT_GENERATION_EVALUATOR_QUALIFIED"
-        and adjudication.get("candidate_rerun_authorized") is True,
+        and adjudication.get("candidate_rerun_authorized") is True
+    )
+    evaluator_no_go = (
+        adjudication.get("status") == "INDEPENDENT_GENERATION_EVALUATOR_NO_GO"
+        and adjudication.get("candidate_rerun_authorized") is False
+    )
+    _require(
+        evaluator_qualified
+        or (
+            evaluator_no_go
+            and protocol.get("candidate_generation_may_continue_when_no_go") is True
+        ),
         "candidate generation is not authorized by the frozen evaluator adjudication",
     )
     _require(
@@ -112,6 +123,7 @@ def validate_suite_inputs(
         "required_methods": required_methods,
         "job_by_method": job_by_method,
         "shared_bindings": shared_bindings,
+        "evaluator_qualified": evaluator_qualified,
     }
 
 
@@ -322,6 +334,39 @@ def execute(
             build_generation_commands(protocol, flow_config_path, suite),
             log_directory,
         )
+        if not suite["evaluator_qualified"]:
+            summary = {
+                "schema_version": "route_a_v3_route2_matched_generation_suite.v1",
+                "status": "MATCHED_GENERATION_CANDIDATES_COMPLETED_EVALUATOR_NO_GO",
+                "required_method_ids": suite["required_methods"],
+                "source_manifest_path": protocol["source_manifest_path"],
+                "candidate_budget_per_source": protocol["candidate_budget_per_source"],
+                "critic_forward_budget_per_source": protocol[
+                    "search_critic_forward_budget_per_source"
+                ],
+                "forward_equivalent_budget_per_source": protocol[
+                    "forward_equivalent_budget_per_source"
+                ],
+                "candidate_support_mode": protocol["candidate_support_mode"],
+                "independent_evaluator_qualified": False,
+                "independent_evaluator_scoring_run": False,
+                "strongest_generation_baseline_selected": False,
+                "physical_gpu_index": protocol["physical_gpu_index"],
+                "execution_device": protocol["execution_device"],
+                "cpu_fallback_allowed": False,
+                "evaluation_outcomes_accessed": False,
+                "guided_xeditflow_run": False,
+                "stage_results": stage_results,
+                "wall_time_seconds": time.time() - started,
+                "scientific_claim_status": "NOT_ESTABLISHED",
+            }
+            output_summary_path.parent.mkdir(parents=True, exist_ok=True)
+            output_summary_path.write_text(
+                json.dumps(summary, indent=2, sort_keys=True) + "\n",
+                encoding="utf-8",
+            )
+            print(json.dumps(summary, sort_keys=True), flush=True)
+            return summary
         stage_results["independent_evaluator_scoring"] = run_parallel_stage(
             "independent_evaluator_scoring",
             build_scoring_configs(jobs, suite, scoring_config_directory),

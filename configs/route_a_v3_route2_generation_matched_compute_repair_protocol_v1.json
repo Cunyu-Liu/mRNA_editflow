@@ -65,6 +65,7 @@
   "candidate_support_mode": "OPEN_GENERATED_SUPPORT",
   "closed_measured_ndcg_may_not_be_used": true,
   "independent_evaluator_required_for_selection": true,
+  "candidate_generation_may_continue_when_no_go": true,
   "guided_xeditflow_allowed": false,
   "guided_blocker": "CRITIC_NOT_READY_FOR_GUIDANCE",
   "scientific_claim_status": "NOT_ESTABLISHED"

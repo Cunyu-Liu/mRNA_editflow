@@ -316,6 +316,8 @@ Base Flow V2 在本次检查开始时尚未启动，因为旧调度规则仍要�
 
 Base Flow validation 的一次性汇总现在同时记录：candidate-budget mismatch、unique/duplicate candidate 数、global 与 source-macro unique rate、每条轨迹平均 generator NFE、候选输出/秒、含固定 seed replay 的 sampling invocation/秒与 generator NFE/秒。validation wall time 明确包含一次逐候选 replay，因此该吞吐是带可重放性检查的保守工程吞吐，不会冒充生产采样速度。任何 edit-budget violation、candidate-budget mismatch、replay failure 或 numerical failure 都使 `FLOW_G0_READY` 失败；无需为补采样效率另跑第二次 validation。
 
+matched-budget suite 现已把“生成候选”和“用独立 evaluator 选择最强方法”拆开：若 evaluator 合格，继续七种方法的候选生成、独立评分、Development open-support evaluation 与 strongest selection；若 evaluator 为 NO-GO，仍按冻结预算生成七种候选并保留计算账本，但立即停止在评分与 selection 之前，终态写为 `MATCHED_GENERATION_CANDIDATES_COMPLETED_EVALUATOR_NO_GO`。因此 evaluator 失败不会让 Flow/搜索工程倒退，同时也不能被绕过来宣称最强方法或科学收益。
+
 中央训练尝试表保持 94 个唯一尝试，因为本次 online encoder 是零参数更新的工程验证，不应伪装成训练尝试；其完整终态保存在独立 validation summary，并在本节登记。下一个会进入中央训练表的新终态是 Base Flow V2 或独立 evaluator 的实际训练终态。
 
 ## 14. 低频查看进度
