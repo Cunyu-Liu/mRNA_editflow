@@ -1,0 +1,59 @@
+{
+  "schema_version": "route_a_v3_route2_critic_v2_launch_and_confirmation_freeze.v1",
+  "observed_at": "2026-08-20T20:05:35+08:00",
+  "control_screen": {
+    "status": "RUNNING",
+    "screen_seed": 20260825,
+    "scheduler_pid_at_observation": 4104921,
+    "scheduler_log": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/schedulers/mrnabert_critic_v2_controls_v1.log",
+    "arms": {
+      "full": {
+        "physical_gpu_index": 2,
+        "ledger_status": "RUNNING"
+      },
+      "candidate_permutation": {
+        "physical_gpu_index": 4,
+        "ledger_status": "RUNNING"
+      },
+      "source_only": {
+        "physical_gpu_index": 3,
+        "ledger_status": "RUNNING"
+      },
+      "source_edit_metadata": {
+        "physical_gpu_index": 5,
+        "ledger_status": "RUNNING"
+      }
+    },
+    "training_sampling_mode": "TASK_STUDY_SOURCE_GROUP_BALANCED_FIXED_DRAWS",
+    "loss_aggregation_mode": "TASK_MACRO_MEAN",
+    "terminal_metrics_available": false
+  },
+  "central_training_attempts": {
+    "total_unique_attempts": 100,
+    "critic_v2_running_attempts": 4
+  },
+  "conditional_confirmation": {
+    "status": "FROZEN_BEFORE_CRITIC_V2_THREE_SEED_OUTCOMES",
+    "seeds": [20260822, 20260823, 20260824],
+    "fourth_seed_allowed": false,
+    "starts_only_after_control_pass": true,
+    "control_gaps": "REPORT_ONLY_CONTROL_GATE_ALREADY_FROZEN",
+    "all_three_baseline_margins_must_be_positive": true,
+    "opens_development_test": false
+  },
+  "focused_verification": {
+    "local_tests_passed": 74,
+    "local_tests_skipped_cuda_only": 4,
+    "local_warnings": 1,
+    "a100_focused_tests_passed": 57,
+    "control_scheduler_shell_syntax": "PASS",
+    "confirmation_scheduler_shell_syntax": "PASS"
+  },
+  "protected_outcomes": {
+    "development_test_record_count_withheld": 18292,
+    "development_test_outcomes_accessed": false,
+    "evaluation_outcomes_accessed": false,
+    "guided_generation_authorized": false
+  },
+  "scientific_claim_status": "NOT_ESTABLISHED"
+}

@@ -157,3 +157,30 @@ candidate-permutation control 已完成 100 epochs / 559,900 updates，Developme
 该工程成功不覆盖 mRNABERT critic 的 three-seed 失败。Development TEST、all-126,165 refit、LOSO、guided XEditFlow 和 GSE232572/E-MTAB-10902 Evaluation outcomes 仍保持未打开。Base Flow V2 的调度已改为只按剩余显存选择 GPU 0–5 中显存最多的一张卡，按当前约 1.04GB 的实际占用保留 2GB 最低可运行线，不再设置利用率 gate；其后依次进入 validation 与独立 evaluator。
 
 Base Flow V2 已作为正式工程训练尝试自动登记为 `COMPLETED`：817,957 trainable parameters、30 epochs、32,040 updates、BF16/fused AdamW、GPU 0、峰值显存 289.49MB、wall time 2,196.71 秒，selected epoch=1，best validation NLL=5.51248。TRAIN/VALIDATION 明显分叉，记录为 base-rate overfitting，不改变 `scientific_claim_status=NOT_ESTABLISHED`；后续只由一次 Flow G0 validation 裁决合法性和采样工程 readiness。
+
+## Critic V2 control screen 启动与中央表状态（2026-08-20 20:05）
+
+一次 freshness check 先确认 independent evaluator adjudication 和七方法
+matched-generation suite 已经 terminal，故两者均未重复运行。Critic V2 的
+四臂 screen 随后只启动一份，screen seed 固定为 `20260825`：
+
+| arm | GPU | 中央表状态 | sampling | loss aggregation |
+|---|---:|---|---|---|
+| full | 2 | RUNNING | TASK_STUDY_SOURCE_GROUP_BALANCED_FIXED_DRAWS | TASK_MACRO_MEAN |
+| candidate permutation | 4 | RUNNING | TASK_STUDY_SOURCE_GROUP_BALANCED_FIXED_DRAWS | TASK_MACRO_MEAN |
+| parameter-matched source-only | 3 | RUNNING | TASK_STUDY_SOURCE_GROUP_BALANCED_FIXED_DRAWS | TASK_MACRO_MEAN |
+| source+edit metadata、无 candidate global representation | 5 | RUNNING | TASK_STUDY_SOURCE_GROUP_BALANCED_FIXED_DRAWS | TASK_MACRO_MEAN |
+
+中央训练尝试表当前为 100 个唯一 attempts，其中 4 个 Critic V2 arms 为
+RUNNING。它们都使用 Development TRAIN/VALIDATION、Huber、batch 16、100
+epochs、冻结 mRNABERT 和 9,342,914 参数 critic；此时尚无 terminal 指标，
+不得提前比较 arm 或书写 PASS/NO-GO。Development TEST 18,292 条继续
+withheld，Evaluation outcome 读取仍为 0。
+
+在 control outcome terminal 前，exact three-seed confirmation protocol 也已
+前瞻冻结：只允许 `20260822/20260823/20260824`，controls PASS 后动态选择
+GPU0-5 中三张显存足够的卡；不得补第四个 seed。裁决统一报告 task-macro
+Spearman、standardized MAE、prediction spread、strongest-baseline margin、
+positive-task count、相对三个 controls 的差距和非有限值/mean-collapse/尺度
+诊断。controls 必须 PASS 且 3/3 baseline margins 均大于 0，才只授权下一步
+单次冻结 Development TEST；confirmation scheduler 本身不会打开 TEST。

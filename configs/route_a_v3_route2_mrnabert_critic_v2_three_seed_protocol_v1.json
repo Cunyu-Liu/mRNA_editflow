@@ -1,0 +1,60 @@
+{
+  "schema_version": "route_a_v3_route2_mrnabert_critic_v2_three_seed_protocol.v1",
+  "status": "FROZEN_BEFORE_CRITIC_V2_THREE_SEED_OUTCOMES",
+  "control_protocol": "configs/route_a_v3_route2_mrnabert_critic_v2_protocol_v1.json",
+  "control_adjudication": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/comparisons/mrnabert_critic_v2_task_study_macro_controls_adjudication_v1.json",
+  "selection_pool": "DEVELOPMENT_TRAIN_VALIDATION_ONLY",
+  "required_seeds": [20260822, 20260823, 20260824],
+  "required_task_count": 9,
+  "strongest_same_information_baseline": {
+    "baseline_id": "method_repair_global_scaled_seed20260821",
+    "task_macro_spearman": 0.13171439492559175,
+    "task_macro_standardized_mae": 1.806657840788394
+  },
+  "frozen_training_policy": {
+    "model_kind": "delta_pretrained_mrnabert_edit_centered_antisymmetric",
+    "training_weighting_mode": "TASK_THEN_STUDY_THEN_SOURCE_CONTEXT_ENDPOINT_GROUP",
+    "training_sampling_mode": "TASK_STUDY_SOURCE_GROUP_BALANCED_FIXED_DRAWS",
+    "loss_aggregation_mode": "TASK_MACRO_MEAN",
+    "training_update_mode": "STANDARD",
+    "target_scaling_mode": "TRAIN_TASK_ROBUST",
+    "loss_kind": "huber",
+    "huber_delta": 1.0,
+    "checkpoint_selection": "BEST_VALIDATION",
+    "checkpoint_metric": "TASK_MACRO_SPEARMAN_THEN_STANDARDIZED_MAE",
+    "epochs": 100,
+    "batch_size": 16,
+    "optimizer_name": "AdamW",
+    "learning_rate": 0.0001,
+    "weight_decay": 0.0001,
+    "training_precision": "BF16"
+  },
+  "per_seed_required_reports": [
+    "task_macro_spearman",
+    "task_macro_standardized_mae",
+    "prediction_std",
+    "target_std",
+    "prediction_std_over_target_std",
+    "margin_over_strongest_same_information_baseline",
+    "positive_task_count",
+    "task_macro_gaps_over_each_control",
+    "nonfinite_metric_detected",
+    "mean_collapse_detected",
+    "scale_diagnostics"
+  ],
+  "gate": {
+    "control_adjudication_supports_three_frozen_seeds": true,
+    "all_three_seed_margins_over_strongest_same_information_baseline": ">0",
+    "all_seed_metrics_finite": true,
+    "all_seed_prediction_spreads_positive": true,
+    "task_macro_and_spread_ratio_replay": true,
+    "control_gap_policy": "REPORT_ONLY_CONTROL_GATE_ALREADY_FROZEN"
+  },
+  "run_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/mrnabert_critic_v2/task_study_macro_confirmation_seeds_v1",
+  "runtime_config_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/mrnabert_critic_v2/runtime_configs/task_study_macro_confirmation_seeds_v1",
+  "adjudication_output": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/comparisons/mrnabert_critic_v2_task_study_macro_three_seed_adjudication_v1.json",
+  "development_test_outcomes_accessed": false,
+  "evaluation_outcomes_accessed": false,
+  "guided_generation_authorized": false,
+  "scientific_claim_status": "NOT_ESTABLISHED"
+}

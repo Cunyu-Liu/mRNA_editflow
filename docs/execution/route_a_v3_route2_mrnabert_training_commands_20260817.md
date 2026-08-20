@@ -419,3 +419,35 @@ nohup scripts/route_a_v3/schedule_route2_mrnabert_critic_v2_controls_v1.sh \
 ```
 
 调度器只在 GPU0–5 中按剩余显存选择四张满足实际最低显存的卡，不使用 utilization gate；每个 arm 启动和结束时由训练器自动更新中央尝试表。controls terminal 前不创建 three-seed 结果，Development TEST、all-126,165 refit、LOSO、guided XEditFlow 和新的 final Evaluation 全部保持关闭。GSE232572 只保留 historical transfer/diagnostic 角色；E-MTAB-10902 仍为 `UNCONVERTIBLE_FOR_ROUTE2_V1`，最终独立确认必须使用新的、可转换且 outcome 未暴露的 replacement study。
+
+## 17. Critic V2 control RUNNING 与条件式 three-seed 路径（2026-08-20 20:05）
+
+Critic V2 control scheduler 已以 PID `4104921` 启动并完成四臂初始化：full
+在 GPU2、candidate permutation 在 GPU4、source-only 在 GPU3、source+edit
+metadata control 在 GPU5。中央训练表已出现四条 RUNNING，唯一 attempts 总数
+为 100；四条记录的 sampling 都是
+`TASK_STUDY_SOURCE_GROUP_BALANCED_FIXED_DRAWS`，loss aggregation 都是
+`TASK_MACRO_MEAN`。本节只记录启动事件，不读取 epoch 或 Validation outcome。
+
+三种子后继协议在 control terminal 前冻结，配置为：
+
+```text
+controls adjudication PASS
+  -> exact seeds 20260822 / 20260823 / 20260824
+  -> Development TRAIN/VALIDATION only
+  -> one prospective three-seed adjudication
+  -> stop after PASS/NO-GO; do not open TEST in this scheduler
+```
+
+后继 scheduler 每 15 分钟只检查 control adjudication 这个 terminal artifact。
+NO-GO 时不创建 seed runtime/run 目录；PASS 时才从 GPU0-5 选择三张剩余显存
+至少 4096 MiB 的卡。裁决除 3/3 strongest-baseline margin 外还完整输出
+standardized MAE、prediction spread、positive-task count、相对 permutation /
+source-only / source+edit-metadata controls 的 macro gap，以及 non-finite、mean
+collapse 和可重放尺度诊断。control gap 没有新增事后阈值，因为 candidate-
+specific signal 已由前一 control gate 冻结裁决。
+
+聚焦验证结果为 `74 passed, 4 skipped`；4 项均为本机无 CUDA 的既有 skip，
+另有一条 PyTorch Transformer warning，不影响判定。A100 项目环境的 control
+聚焦测试为 57 项通过。两个 scheduler 的 shell 语法检查均通过。Development
+TEST 与新 final Evaluation outcome 都未读取，guided generation 仍未授权。

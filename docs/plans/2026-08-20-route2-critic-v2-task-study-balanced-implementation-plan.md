@@ -55,6 +55,13 @@
 
 **Implementation:** Freeze the existing 0.131714 strongest baseline, one screen seed, three confirmation seeds, exact data/budget/modes, four arm definitions, and predeclared control thresholds. Generate runtime configs without overwriting outputs. The scheduler selects only GPU0-5 by available memory and runs one copy per arm. The adjudicator validates CUDA completion, parameter/budget matching, protected-outcome closure, task breadth, prediction-scale diagnostics, and the control margins; it authorizes only the frozen three seeds after PASS.
 
+The conditional confirmation scheduler is prepared prospectively but does not
+create seed configs until the control adjudication exists and passes. It polls
+that single terminal artifact every 15 minutes, chooses three sufficiently free
+GPUs from GPU0-5, runs exactly seeds 20260822/20260823/20260824, and writes one
+three-seed adjudication. It stops after reporting whether one frozen Development
+TEST is authorized; it never opens TEST itself.
+
 **Minimum verification:** Focused preparer/adjudicator tests, trainer tests, shell syntax check, and `git diff --check`. These checks detect config/gate drift that could authorize seeds from unmatched or protected-outcome runs; any failure blocks launch.
 
 **Independent review:** No separate agent — the user did not request delegation; the high-risk gate receives expanded targeted validation instead.

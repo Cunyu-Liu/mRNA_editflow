@@ -66,6 +66,17 @@ seeds `20260822`, `20260823`, and `20260824`. No fourth seed will be added. A
 failing gate is terminal for this Critic V2 hypothesis and leaves TEST, refit,
 LOSO, and guided XEditFlow closed.
 
+The confirmation protocol is also frozen before the control outcomes become
+terminal. It reuses the exact screen training policy and dynamically assigns the
+three seeds to three available GPUs in GPU0-5. Each seed reports task-macro
+Spearman, standardized MAE, prediction/target spread, strongest-baseline margin,
+positive-task count, and its task-macro gap to each screen control. Non-finite
+metrics, non-positive prediction spread, or metric replay failure are terminal
+diagnostic failures. Control gaps remain report-only because the candidate-
+specific information threshold has already been decided by the control gate.
+The next stage is authorized only when that gate passed and all three seed
+margins over the frozen strongest baseline are positive.
+
 ## Failure handling and verification
 
 Sampler tests will verify deterministic epoch replay, a fixed draw budget, and
