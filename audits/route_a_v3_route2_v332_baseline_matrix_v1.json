@@ -1,0 +1,97 @@
+{
+  "authority": {
+    "authority_rule": "V3.3.2 terminal audits override stale running and preterminal generation labels.",
+    "execution_protocol": "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/\u63d0\u793a\u8bcd/mrna V3.3.2 \u6267\u884c\u63d0\u793a\u8bcd.md",
+    "scientific_contract": "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/\u63d0\u793a\u8bcd/mrna \u6570\u636egate\u8f6c\u5411\u540e\u7684\u5408\u540c.md"
+  },
+  "claim_boundary": "The matrix establishes auditable Development coverage and declared gaps only; it contains no result metric and establishes no external superiority, biological optimization, Route A success, or final Evaluation claim.",
+  "contract_coverage_summary": {
+    "generation_guided_not_authorized_rows": 2,
+    "generation_literature_task_mismatch_rows": 1,
+    "generation_small_space_only_rows": 1,
+    "generation_terminal_matched_rows": 7,
+    "prediction_classical_rows": 6,
+    "prediction_external_common_task_executed_rows": 6,
+    "prediction_external_literature_or_task_mismatch_rows": 3,
+    "prediction_internal_control_rows": 11,
+    "prediction_neural_configured_not_terminal_independent_rows": 2,
+    "prediction_neural_rows": 7,
+    "prediction_neural_terminal_independent_rows": 5,
+    "prediction_primary_reference_terminal_no_go_rows": 1
+  },
+  "coverage_status_counts": {
+    "CONFIGURED_NOT_TERMINAL": 2,
+    "LITERATURE_ONLY_NOT_EXECUTED": 2,
+    "LITERATURE_ONLY_TASK_MISMATCH": 2,
+    "NOT_AUTHORIZED_DEPENDENCY_NO_GO": 2,
+    "PRIMARY_REFERENCE_NOT_BASELINE_WIN": 1,
+    "SATISFIED_COMMON_TASK_WITH_NATIVE_LIMIT": 6,
+    "SATISFIED_COMPONENT_WITH_LIMIT": 1,
+    "SATISFIED_COMPOSITE_WITH_LIMIT": 1,
+    "SATISFIED_SMALL_SPACE_WITH_LIMIT": 1,
+    "SATISFIED_STANDALONE": 20,
+    "SATISFIED_TERMINAL_MATCHED": 7
+  },
+  "execution_status_counts": {
+    "CONFIGURED_NOT_TERMINAL_INDEPENDENT_BASELINE": 2,
+    "EXECUTED_COMMON_TASK_DEVELOPMENT_VALIDATION": 6,
+    "EXECUTED_COMPONENT_WITHIN_ABSOLUTE_DIFFERENCE_PIPELINE": 1,
+    "EXECUTED_DEVELOPMENT_AND_TERMINAL_CONTROL": 2,
+    "EXECUTED_DEVELOPMENT_VALIDATION": 17,
+    "EXECUTED_TERMINAL_DEVELOPMENT_VALIDATION": 1,
+    "EXECUTED_TERMINAL_MATCHED_DEVELOPMENT": 7,
+    "LITERATURE_ONLY_NOT_EXECUTED": 2,
+    "LITERATURE_ONLY_TASK_MISMATCH": 2,
+    "MAPPED_COMPOSITE_DEVELOPMENT_CONTROL": 1,
+    "NOT_RUN_CRITIC_V2_NO_GO": 2,
+    "SMALL_SPACE_REFERENCE_NOT_FULL_COHORT_EXECUTION": 1,
+    "TERMINAL_CRITIC_V2_NO_GO": 1
+  },
+  "family_counts": {
+    "CLASSICAL": 6,
+    "INTERNAL_CONTROL": 11,
+    "NEURAL": 7,
+    "SEARCH_FLOW": 11,
+    "TASK_SPECIFIC_FOUNDATION": 10
+  },
+  "matrix_is_result_table": false,
+  "minimum_package_alignment": {
+    "MBP-08": "COMPLETE_DEVELOPMENT_ONLY",
+    "MBP-09": "COMPLETE_DEVELOPMENT_ONLY",
+    "MBP-10": "PARTIAL_GUIDED_NOT_AUTHORIZED",
+    "minimum_package_complete": false,
+    "submission_ready": false
+  },
+  "new_training_attempt_created": false,
+  "protected_outcomes": {
+    "development_test_read": false,
+    "generated_candidates_opened": false,
+    "guided_xeditflow_run": false,
+    "new_final_evaluation_read": false
+  },
+  "row_count": 45,
+  "schema_version": "route_a_v3_route2_v332_baseline_matrix.v1",
+  "scientific_claim_status": "NOT_ESTABLISHED",
+  "separate_future_artifacts": {
+    "native_common_arch_three_track_results_table_built": false,
+    "prediction_generation_matched_budget_numeric_matrix_built": false
+  },
+  "stale_status_overrides": [
+    {
+      "artifact": "configs/route_a_v3_route2_baseline_inventory_v1.json",
+      "current_authority": "Critic V2 terminal NO-GO control audit",
+      "stale_field": "primary mRNABERT HPO running"
+    },
+    {
+      "artifact": "configs/route_a_v3_route2_baseline_inventory_v1.json",
+      "current_authority": "seven-method terminal generation table and action-space geometry audit",
+      "stale_field": "preterminal generation execution labels"
+    }
+  ],
+  "status": "BASELINE_INVENTORY_MATRIX_RENDERED_DEVELOPMENT_ONLY",
+  "table_path": "docs/paper/route2_v332_baseline_matrix_v1.csv",
+  "track_counts": {
+    "GENERATION": 11,
+    "PREDICTION": 34
+  }
+}
