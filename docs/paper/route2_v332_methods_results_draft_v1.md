@@ -85,6 +85,17 @@ remain blank with an explicit recording status. Exact within-screen matching,
 same-information matching, generation-cap matching and prospective-not-executed
 budgets are separate states. [evidence:E-R2-MATCHED-BUDGET-SNAPSHOT,E-R2-MATCHED-BUDGET-BUILDER,E-R2-MATCHED-BUDGET-AUDIT]
 
+### Generation evidence layers and self-score boundary
+
+A separate nine-row table keeps guiding-critic self-score, frozen independent-
+evaluator score and measured-neighborhood evidence in different columns. Six
+critic-driven terminal methods have complete 891-source critic aggregates;
+unguided Base Flow has no critic call by design. All seven terminal methods have
+independent-evaluator and sparse measured-recovery aggregates, while first-order
+and frozen-critic guidance remain explicit Critic V2 NO-GO rows with blank numeric
+results. Undefined closed-support metrics remain blank rather than being encoded
+as zero. [evidence:E-R2-GEN-THREE-LAYER-SNAPSHOT,E-R2-GEN-THREE-LAYER-BUILDER,E-R2-GEN-THREE-LAYER-AUDIT]
+
 ### Independent generation evaluator
 
 Generation methods were compared with a frozen Siamese CNN evaluator trained
@@ -326,6 +337,19 @@ Values are source-macro Development aggregates unless identified as counts. The
 full-precision table and engineering columns are retained in
 `route2_v332_generation_baseline_table_v1.csv`. [claim:C-R2-009]
 [evidence:E-R2-GEN-INPUT,E-R2-GEN-SELECT,E-R2-FLOW-MATCHED]
+
+The explicit three-layer table shows both agreement and a scientifically
+important disagreement. Genetic search leads the six critic-scored methods on
+source-macro critic maximum uplift (1.191221) and also leads the independent
+evaluator (1.097825). Unguided Base Flow has no critic self-score, yet it leads
+candidate recovery (0.202862), whereas genetic recovery is 0.054433. Recovered
+measured NDCG is conditional on the recovered measured subset and has unequal
+defined-source support (11--400); it is not a closed-support ranking. Every
+method has zero sources with defined closed measured NDCG, and unknown generated
+candidates are not assigned zero gain. Thus critic/independent agreement does
+not substitute for measured outcome, the three layers are not placed on one
+numeric scale, and no biological or guided-generation improvement is established.
+[evidence:E-R2-GEN-THREE-LAYER-SNAPSHOT,E-R2-GEN-THREE-LAYER-AUDIT]
 
 Genetic search was the point leader and the only method in the 10,000-iteration
 bootstrap uncertainty-equivalent set, so it was frozen as the strongest

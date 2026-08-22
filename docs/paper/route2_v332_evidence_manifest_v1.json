@@ -8,10 +8,10 @@
   "independent_final_evaluation_performed": false,
   "human_verification_required": true,
   "source_path_preflight": {
-    "observed_at": "2026-08-22T16:08:41+08:00",
+    "observed_at": "2026-08-22T16:28:33+08:00",
     "status": "PASS",
-    "source_locations_checked": 41,
-    "local_or_contract_locations_checked": 28,
+    "source_locations_checked": 44,
+    "local_or_contract_locations_checked": 31,
     "a100_mnt_locations_checked": 13,
     "missing_locations": 0,
     "check_scope": "FILE_EXISTENCE_ONLY_NO_EVIDENCE_CONTENT_OPENED",
@@ -324,6 +324,29 @@
       "kind": "derived_prediction_generation_matched_budget_matrix_audit",
       "location": "audits/route_a_v3_route2_v332_matched_budget_baseline_matrix_v1.json",
       "locator": "14-row matrix; four exact Critic V2 screen rows, one non-update-matched strongest same-information hurdle, seven terminal generation rows, two guided dependency-NO-GO rows, six missing search wall times and zero fully contract-matched headline rows",
+      "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING",
+      "external_evidence": false
+    },
+    {
+      "evidence_id": "E-R2-GEN-THREE-LAYER-SNAPSHOT",
+      "kind": "frozen_terminal_generation_layer_aggregate_snapshot",
+      "location": "audits/route_a_v3_route2_v332_generation_three_layer_terminal_snapshot_v1.json",
+      "locator": "read-only 891-source aggregation of retained per-source guiding-critic self-score and sparse measured-neighborhood summaries for seven terminal methods; no candidate payload, protected outcome or missing-as-zero substitution",
+      "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING",
+      "external_evidence": false
+    },
+    {
+      "evidence_id": "E-R2-GEN-THREE-LAYER-BUILDER",
+      "kind": "reproducible_generation_three_layer_results_table_builder",
+      "location": "scripts/route_a_v3/build_route2_v332_generation_three_layer_results_table_v1.py",
+      "locator": "seven terminal methods plus two guided NO-GO boundaries; separate critic self-score, frozen independent-evaluator and sparse measured-evidence columns; blank undefined results, protected-outcome closure and overwrite refusal",
+      "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING"
+    },
+    {
+      "evidence_id": "E-R2-GEN-THREE-LAYER-AUDIT",
+      "kind": "derived_generation_three_layer_results_table_audit",
+      "location": "audits/route_a_v3_route2_v332_generation_three_layer_results_table_v1.json",
+      "locator": "9-row table with six critic-self-score rows, seven independent-evaluator rows, seven sparse measured-recovery rows, zero closed-measured-NDCG rows, two guided NO-GO rows and zero biological-improvement claim rows",
       "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING",
       "external_evidence": false
     }

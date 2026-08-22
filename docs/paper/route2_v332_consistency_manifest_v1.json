@@ -208,6 +208,34 @@
       ]
     },
     {
+      "method_id": "M-R2-GENERATION-THREE-LAYER-RESULTS",
+      "label": "Generation critic-self-score, independent-evaluator and measured-evidence separation",
+      "analysis_intent": "DEVELOPMENT_GENERATION_EVIDENCE_LAYER_SEPARATION_AND_SELF_SCORE_CLOSURE_AUDIT",
+      "status": "GENERATION_EVIDENCE_LAYERS_SEPARATED_NO_GUIDED_OR_BIOLOGICAL_CLAIM",
+      "row_count": 9,
+      "executed_terminal_method_rows": 7,
+      "guided_no_go_boundary_rows": 2,
+      "critic_self_score_numeric_rows": 6,
+      "independent_evaluator_numeric_rows": 7,
+      "measured_candidate_recovery_numeric_rows": 7,
+      "closed_measured_ndcg_numeric_rows": 0,
+      "three_layer_reporting_complete": true,
+      "guided_generation_comparison_complete": false,
+      "cross_layer_numeric_ranking_allowed": false,
+      "headline_generation_improvement_established": false,
+      "table": "docs/paper/route2_v332_generation_three_layer_results_table_v1.csv",
+      "audit": "audits/route_a_v3_route2_v332_generation_three_layer_results_table_v1.json",
+      "terminal_input_snapshot": "audits/route_a_v3_route2_v332_generation_three_layer_terminal_snapshot_v1.json",
+      "development_test_accessed": false,
+      "new_final_evaluation_accessed": false,
+      "guided_xeditflow_run": false,
+      "evidence_ids": [
+        "E-R2-GEN-THREE-LAYER-SNAPSHOT",
+        "E-R2-GEN-THREE-LAYER-BUILDER",
+        "E-R2-GEN-THREE-LAYER-AUDIT"
+      ]
+    },
+    {
       "method_id": "M-R2-FIGURES",
       "label": "Provisional general-manuscript figure assembly",
       "analysis_intent": "FROZEN_EVIDENCE_VISUALIZATION",
@@ -586,6 +614,7 @@
       "generation_literature_task_mismatch_rows": 1,
       "native_common_arch_three_track_results_table_built": true,
       "prediction_generation_matched_budget_numeric_matrix_built": true,
+      "generation_three_layer_result_table_built": true,
       "development_test_read": false,
       "new_final_evaluation_read": false,
       "guided_xeditflow_run": false,
@@ -594,7 +623,8 @@
         "E-R2-BASELINE-MATRIX-BUILDER",
         "E-R2-BASELINE-MATRIX-AUDIT",
         "E-R2-THREE-TRACK-AUDIT",
-        "E-R2-MATCHED-BUDGET-AUDIT"
+        "E-R2-MATCHED-BUDGET-AUDIT",
+        "E-R2-GEN-THREE-LAYER-AUDIT"
       ]
     },
     {
@@ -687,6 +717,41 @@
       ]
     },
     {
+      "result_id": "R-R2-GENERATION-THREE-LAYER-RESULTS",
+      "status": "GENERATION_EVIDENCE_LAYERS_SEPARATED_NO_GUIDED_OR_BIOLOGICAL_CLAIM",
+      "row_count": 9,
+      "executed_terminal_method_rows": 7,
+      "guided_no_go_boundary_rows": 2,
+      "critic_self_score_numeric_rows": 6,
+      "independent_evaluator_numeric_rows": 7,
+      "measured_candidate_recovery_numeric_rows": 7,
+      "closed_measured_ndcg_numeric_rows": 0,
+      "critic_self_score_leader_method_id": "genetic",
+      "critic_self_score_leader_value": 1.1912207428186161,
+      "independent_evaluator_leader_method_id": "genetic",
+      "independent_evaluator_leader_value": 1.0978248587628674,
+      "measured_candidate_recovery_leader_method_id": "unguided_learned_base_flow_g0",
+      "measured_candidate_recovery_leader_value": 0.20286195286195285,
+      "critic_and_independent_leader_same": true,
+      "measured_candidate_recovery_leader_differs": true,
+      "recovered_measured_ndcg_is_conditional_support_only": true,
+      "unknown_generated_candidates_are_zero_gain": false,
+      "three_layer_reporting_complete": true,
+      "guided_generation_comparison_complete": false,
+      "cross_layer_numeric_ranking_allowed": false,
+      "critic_or_independent_substitutes_for_measured_outcome": false,
+      "headline_generation_improvement_established": false,
+      "development_test_read": false,
+      "new_final_evaluation_read": false,
+      "guided_xeditflow_run": false,
+      "scientific_claim_status": "NOT_ESTABLISHED",
+      "evidence_ids": [
+        "E-R2-GEN-THREE-LAYER-SNAPSHOT",
+        "E-R2-GEN-THREE-LAYER-BUILDER",
+        "E-R2-GEN-THREE-LAYER-AUDIT"
+      ]
+    },
+    {
       "result_id": "R-R2-DEVELOPMENT-LEARNING-CURVES",
       "status": "PROVISIONAL_DEVELOPMENT_LEARNING_CURVES_FIGURE_RENDERED",
       "raw_unsmoothed_histories": true,
@@ -753,6 +818,9 @@
         "E-R2-MATCHED-BUDGET-SNAPSHOT",
         "E-R2-MATCHED-BUDGET-BUILDER",
         "E-R2-MATCHED-BUDGET-AUDIT",
+        "E-R2-GEN-THREE-LAYER-SNAPSHOT",
+        "E-R2-GEN-THREE-LAYER-BUILDER",
+        "E-R2-GEN-THREE-LAYER-AUDIT",
         "E-R2-FIGURE-BUILDER",
         "E-R2-FIGURE-MANIFEST",
         "E-R2-CONVERSION-FIGURE-BUILDER",

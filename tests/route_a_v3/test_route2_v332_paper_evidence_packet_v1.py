@@ -44,6 +44,15 @@ MATCHED_BUDGET_AUDIT = (
 MATCHED_BUDGET_SNAPSHOT = (
     ROOT / "audits/route_a_v3_route2_v332_matched_budget_terminal_input_snapshot_v1.json"
 )
+GENERATION_THREE_LAYER_TABLE = (
+    ROOT / "docs/paper/route2_v332_generation_three_layer_results_table_v1.csv"
+)
+GENERATION_THREE_LAYER_AUDIT = (
+    ROOT / "audits/route_a_v3_route2_v332_generation_three_layer_results_table_v1.json"
+)
+GENERATION_THREE_LAYER_SNAPSHOT = (
+    ROOT / "audits/route_a_v3_route2_v332_generation_three_layer_terminal_snapshot_v1.json"
+)
 DATASET_QUALIFICATION_TABLE = (
     ROOT / "docs/paper/route2_v332_dataset_qualification_table_v1.csv"
 )
@@ -83,7 +92,7 @@ def test_claim_and_consistency_evidence_references_are_closed() -> None:
     consistency = _load(CONSISTENCY)
 
     evidence_ids = [row["evidence_id"] for row in evidence["sources"]]
-    assert len(evidence_ids) == len(set(evidence_ids)) == 41
+    assert len(evidence_ids) == len(set(evidence_ids)) == 44
 
     claims = re.findall(r"\[claim:([^\]]+)\]", draft)
     assert len(claims) == len(set(claims)) == 22
@@ -103,14 +112,14 @@ def test_evidence_source_paths_are_closed_without_overstating_verification() -> 
     preflight = evidence["source_path_preflight"]
 
     assert preflight["status"] == "PASS"
-    assert preflight["source_locations_checked"] == len(evidence["sources"]) == 41
+    assert preflight["source_locations_checked"] == len(evidence["sources"]) == 44
     assert (
         preflight["local_or_contract_locations_checked"]
         + preflight["a100_mnt_locations_checked"]
         == preflight["source_locations_checked"]
     )
     assert preflight["missing_locations"] == 0
-    assert preflight["local_or_contract_locations_checked"] == 28
+    assert preflight["local_or_contract_locations_checked"] == 31
     assert preflight["a100_mnt_locations_checked"] == 13
     assert preflight["check_scope"] == "FILE_EXISTENCE_ONLY_NO_EVIDENCE_CONTENT_OPENED"
     assert preflight["human_content_verification_completed"] is False
@@ -178,6 +187,15 @@ def test_evidence_source_paths_are_closed_without_overstating_verification() -> 
     )
     assert by_id["E-R2-MATCHED-BUDGET-AUDIT"]["location"] == (
         "audits/route_a_v3_route2_v332_matched_budget_baseline_matrix_v1.json"
+    )
+    assert by_id["E-R2-GEN-THREE-LAYER-SNAPSHOT"]["location"] == (
+        "audits/route_a_v3_route2_v332_generation_three_layer_terminal_snapshot_v1.json"
+    )
+    assert by_id["E-R2-GEN-THREE-LAYER-BUILDER"]["location"] == (
+        "scripts/route_a_v3/build_route2_v332_generation_three_layer_results_table_v1.py"
+    )
+    assert by_id["E-R2-GEN-THREE-LAYER-AUDIT"]["location"] == (
+        "audits/route_a_v3_route2_v332_generation_three_layer_results_table_v1.json"
     )
 
 
@@ -399,8 +417,79 @@ def test_matched_budget_matrix_reports_exact_and_incomplete_matching_separately(
     assert baseline_result[
         "prediction_generation_matched_budget_numeric_matrix_built"
     ] is True
+    assert baseline_result["generation_three_layer_result_table_built"] is True
     assert "not update-budget matched" in draft
     assert "zero fully contract-matched headline comparison rows" in draft
+
+
+def test_generation_three_layer_table_preserves_self_score_and_measured_boundaries() -> None:
+    draft = " ".join(DRAFT.read_text(encoding="utf-8").split())
+    consistency = _load(CONSISTENCY)
+    audit = _load(GENERATION_THREE_LAYER_AUDIT)
+    snapshot = _load(GENERATION_THREE_LAYER_SNAPSHOT)
+    with GENERATION_THREE_LAYER_TABLE.open(newline="", encoding="utf-8") as handle:
+        rows = list(csv.DictReader(handle))
+
+    method = next(
+        row
+        for row in consistency["methods"]
+        if row["method_id"] == "M-R2-GENERATION-THREE-LAYER-RESULTS"
+    )
+    result = next(
+        row
+        for row in consistency["results"]
+        if row["result_id"] == "R-R2-GENERATION-THREE-LAYER-RESULTS"
+    )
+    assert len(rows) == audit["row_count"] == method["row_count"] == result["row_count"] == 9
+    assert audit["executed_terminal_method_rows"] == result[
+        "executed_terminal_method_rows"
+    ] == 7
+    assert audit["guided_no_go_boundary_rows"] == result[
+        "guided_no_go_boundary_rows"
+    ] == 2
+    assert audit["numeric_coverage"] == {
+        "critic_self_score_rows": result["critic_self_score_numeric_rows"],
+        "independent_evaluator_rows": result["independent_evaluator_numeric_rows"],
+        "measured_candidate_recovery_rows": result[
+            "measured_candidate_recovery_numeric_rows"
+        ],
+        "closed_measured_ndcg_rows": result["closed_measured_ndcg_numeric_rows"],
+        "biological_improvement_claim_rows": 0,
+    } == {
+        "critic_self_score_rows": 6,
+        "independent_evaluator_rows": 7,
+        "measured_candidate_recovery_rows": 7,
+        "closed_measured_ndcg_rows": 0,
+        "biological_improvement_claim_rows": 0,
+    }
+    executed = [
+        row
+        for row in rows
+        if row["result_status"] == "EXECUTED_TERMINAL_MATCHED_DEVELOPMENT"
+    ]
+    guided = [row for row in rows if row["result_status"] == "NOT_RUN_CRITIC_V2_NO_GO"]
+    assert len(executed) == 7 and len(guided) == 2
+    assert all(row["source_macro_closed_measured_ndcg_at_k"] == "" for row in rows)
+    assert all(row["cross_layer_numeric_ranking_allowed"] == "false" for row in rows)
+    assert all(row["biological_improvement_claim_allowed"] == "false" for row in rows)
+    assert all(row["development_test_read"] == "false" for row in rows)
+    assert all(row["new_final_evaluation_read"] == "false" for row in rows)
+    assert all(row["guided_executed"] == "false" for row in rows)
+    assert all(row["candidate_count"] == "" for row in guided)
+    flow = next(row for row in executed if row["method_id"] == "unguided_learned_base_flow_g0")
+    assert flow["critic_layer_status"] == "NOT_APPLICABLE_NO_CRITIC_CALLS"
+    assert flow["source_macro_critic_max_uplift_over_source"] == ""
+    assert result["critic_self_score_leader_method_id"] == "genetic"
+    assert result["independent_evaluator_leader_method_id"] == "genetic"
+    assert result["measured_candidate_recovery_leader_method_id"] == (
+        "unguided_learned_base_flow_g0"
+    )
+    assert result["critic_or_independent_substitutes_for_measured_outcome"] is False
+    assert result["headline_generation_improvement_established"] is False
+    assert snapshot["aggregation_policy"]["candidate_payload_opened"] is False
+    assert snapshot["aggregation_policy"]["missing_numeric_value_substituted_with_zero"] is False
+    assert "does not substitute for measured outcome" in draft
+    assert "zero sources with defined closed measured NDCG" in draft
 
 
 def test_provisional_figure_method_preserves_protected_outcome_boundary() -> None:
@@ -909,8 +998,12 @@ def test_minimum_benchmark_package_is_itemized_and_not_overcalled() -> None:
         "evidence_or_basis"
     ]
     assert by_id["MBP-10"]["status"] == "PARTIAL_GUIDED_NOT_AUTHORIZED"
+    assert "three-layer generation table" in by_id["MBP-10"]["evidence_or_basis"]
     assert by_id["MBP-11"]["status"] == "COMPLETE_HISTORICAL_NEGATIVE"
     assert by_id["MBP-13"]["status"] == "NOT_AVAILABLE_DOWNGRADE_REQUIRED"
+    assert "9-row critic/independent/measured" in by_id["MBP-16"][
+        "evidence_or_basis"
+    ]
     assert by_id["MBP-17"]["status"] == (
         "COMPLETE_WITH_PROVISIONAL_GENERAL_FIGURES"
     )
@@ -951,6 +1044,7 @@ def test_minimum_benchmark_package_is_itemized_and_not_overcalled() -> None:
     assert baseline_result["scientific_claim_status"] == "NOT_ESTABLISHED"
     assert baseline_result["native_common_arch_three_track_results_table_built"] is True
     assert baseline_result["prediction_generation_matched_budget_numeric_matrix_built"] is True
+    assert baseline_result["generation_three_layer_result_table_built"] is True
     assert all(row["development_test_accessed"] == "false" for row in baseline_rows)
     assert all(row["new_final_evaluation_accessed"] == "false" for row in baseline_rows)
     assert all(row["guided_executed"] == "false" for row in baseline_rows)
@@ -1018,6 +1112,28 @@ def test_minimum_benchmark_package_is_itemized_and_not_overcalled() -> None:
         "table": "docs/paper/route2_v332_matched_budget_baseline_matrix_v1.csv",
         "audit": "audits/route_a_v3_route2_v332_matched_budget_baseline_matrix_v1.json",
         "terminal_input_snapshot": "audits/route_a_v3_route2_v332_matched_budget_terminal_input_snapshot_v1.json",
+        "development_test_read": False,
+        "new_final_evaluation_read": False,
+        "guided_xeditflow_run": False,
+    }
+    assert audit["generation_three_layer_results_table"] == {
+        "status": "GENERATION_EVIDENCE_LAYERS_SEPARATED_NO_GUIDED_OR_BIOLOGICAL_CLAIM",
+        "row_count": 9,
+        "executed_terminal_method_rows": 7,
+        "guided_no_go_boundary_rows": 2,
+        "critic_self_score_numeric_rows": 6,
+        "independent_evaluator_numeric_rows": 7,
+        "measured_candidate_recovery_numeric_rows": 7,
+        "closed_measured_ndcg_numeric_rows": 0,
+        "three_layer_reporting_complete": True,
+        "guided_generation_comparison_complete": False,
+        "cross_layer_numeric_ranking_allowed": False,
+        "headline_generation_improvement_established": False,
+        "builder": "scripts/route_a_v3/build_route2_v332_generation_three_layer_results_table_v1.py",
+        "focused_test": "tests/route_a_v3/test_build_route2_v332_generation_three_layer_results_table_v1.py",
+        "table": "docs/paper/route2_v332_generation_three_layer_results_table_v1.csv",
+        "audit": "audits/route_a_v3_route2_v332_generation_three_layer_results_table_v1.json",
+        "terminal_input_snapshot": "audits/route_a_v3_route2_v332_generation_three_layer_terminal_snapshot_v1.json",
         "development_test_read": False,
         "new_final_evaluation_read": False,
         "guided_xeditflow_run": False,

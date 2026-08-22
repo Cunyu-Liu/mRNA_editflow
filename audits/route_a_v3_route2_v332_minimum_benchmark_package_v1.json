@@ -1,7 +1,7 @@
 {
   "schema_version": "route_a_v3_route2_v332_minimum_benchmark_package.v1",
   "status": "MINIMUM_BENCHMARK_PACKAGE_NOT_COMPLETE",
-  "observed_at": "2026-08-22T16:08:41+08:00",
+  "observed_at": "2026-08-22T16:28:33+08:00",
   "authority": {
     "scientific_contract": "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna 数据gate转向后的合同.md",
     "execution_protocol": "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna V3.3.2 执行提示词.md",
@@ -178,6 +178,28 @@
     "table": "docs/paper/route2_v332_matched_budget_baseline_matrix_v1.csv",
     "audit": "audits/route_a_v3_route2_v332_matched_budget_baseline_matrix_v1.json",
     "terminal_input_snapshot": "audits/route_a_v3_route2_v332_matched_budget_terminal_input_snapshot_v1.json",
+    "development_test_read": false,
+    "new_final_evaluation_read": false,
+    "guided_xeditflow_run": false
+  },
+  "generation_three_layer_results_table": {
+    "status": "GENERATION_EVIDENCE_LAYERS_SEPARATED_NO_GUIDED_OR_BIOLOGICAL_CLAIM",
+    "row_count": 9,
+    "executed_terminal_method_rows": 7,
+    "guided_no_go_boundary_rows": 2,
+    "critic_self_score_numeric_rows": 6,
+    "independent_evaluator_numeric_rows": 7,
+    "measured_candidate_recovery_numeric_rows": 7,
+    "closed_measured_ndcg_numeric_rows": 0,
+    "three_layer_reporting_complete": true,
+    "guided_generation_comparison_complete": false,
+    "cross_layer_numeric_ranking_allowed": false,
+    "headline_generation_improvement_established": false,
+    "builder": "scripts/route_a_v3/build_route2_v332_generation_three_layer_results_table_v1.py",
+    "focused_test": "tests/route_a_v3/test_build_route2_v332_generation_three_layer_results_table_v1.py",
+    "table": "docs/paper/route2_v332_generation_three_layer_results_table_v1.csv",
+    "audit": "audits/route_a_v3_route2_v332_generation_three_layer_results_table_v1.json",
+    "terminal_input_snapshot": "audits/route_a_v3_route2_v332_generation_three_layer_terminal_snapshot_v1.json",
     "development_test_read": false,
     "new_final_evaluation_read": false,
     "guided_xeditflow_run": false
