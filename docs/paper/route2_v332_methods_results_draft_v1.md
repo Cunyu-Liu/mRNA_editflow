@@ -73,6 +73,18 @@ The table reports unavailable numeric results as blank cells alongside explicit
 status and claim-boundary fields; it does not encode unavailable true-A2 results
 as zero performance. [evidence:E-R2-A1-TRUE-A2-TABLE-BUILDER,E-R2-A1-TRUE-A2-TABLE-AUDIT]
 
+### Prediction and Generation matched-budget reporting matrix
+
+A 14-row matrix reports budget comparability without treating every frozen
+comparison as exact matched. Prediction contains the four Critic V2 control-screen
+arms and the separately frozen strongest same-information hurdle. Generation
+contains seven terminal search/flow methods and two prospective guided methods
+closed by Critic V2 NO-GO. Numeric compute fields are copied from the central
+terminal ledger, frozen summary or terminal generation table; unavailable fields
+remain blank with an explicit recording status. Exact within-screen matching,
+same-information matching, generation-cap matching and prospective-not-executed
+budgets are separate states. [evidence:E-R2-MATCHED-BUDGET-SNAPSHOT,E-R2-MATCHED-BUDGET-BUILDER,E-R2-MATCHED-BUDGET-AUDIT]
+
 ### Independent generation evaluator
 
 Generation methods were compared with a frozen Siamese CNN evaluator trained
@@ -224,6 +236,32 @@ Evaluation records exist. Consequently, A1 and true-A2 are not placed in a
 cross-estimand numeric ranking, and the absence of a terminal true-A2 value is
 reported as unavailable rather than as a performance score of zero.
 [evidence:E-R2-A1-TRUE-A2-TABLE-BUILDER,E-R2-A1-TRUE-A2-TABLE-AUDIT]
+
+### Matched-budget reporting exposes rather than closes the remaining fairness gaps
+
+The four Critic V2 screen arms are exact matched within the frozen screen: each
+uses seed 20260825, 100 epochs, 559,900 optimizer steps, 9,342,914 trainable plus
+113,389,056 frozen parameters and the same grouped Development split. Their
+task-macro Spearman values are 0.1163707 for the full arm, 0.0801855 for candidate
+permutation, 0.0179762 for source-only and 0.0865578 for source-plus-edit metadata.
+The frozen strongest same-information hurdle is not update-budget matched: its
+terminal summary records 22,120 optimizer steps versus 559,900 for Critic V2.
+It nevertheless attains Spearman 0.1317144, leaving the full-arm margin at
+-0.0153437. The hurdle remains the frozen gate comparator, but the matrix does
+not relabel it as an exact compute-matched arm.
+[evidence:E-R2-MATCHED-BUDGET-SNAPSHOT,E-R2-MATCHED-BUDGET-AUDIT]
+
+All seven executed Generation rows share the 891-source cohort, `SUB+STOP`,
+source-specific edit budgets 1/3/5, candidate cap 32, critic-forward cap 256 and
+total forward-equivalent cap 320. Six methods reach 28,512 candidates; local
+search terminates at 21,027 while retaining the same per-source cap. However,
+algorithm-specific training/HPO is not a common numeric budget, six search-method
+generation wall times were not recorded, and first-order and frozen-critic
+guidance remain unexecuted NO-GO rows. Consequently the matrix has zero fully
+contract-matched headline comparison rows and
+`matched_budget_benchmark_execution_complete=false`; it is a complete reporting
+artifact, not evidence that the full matched-budget benchmark succeeded.
+[evidence:E-R2-MATCHED-BUDGET-BUILDER,E-R2-MATCHED-BUDGET-AUDIT]
 
 ### The independent evaluator narrowly crossed its frozen qualification threshold
 

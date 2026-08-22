@@ -555,6 +555,29 @@ publisher compliance；总体 `submission_ready=false`、Route A claim 仍
 `INCOMPLETE_NO_TERMINAL_RECORD`、1 `STOPPED_FOR_THROUGHPUT_REPAIR`、1
 `STOPPED_PRIORITY_REALLOCATION`。
 
+## Prediction/Generation matched-budget baseline matrix（2026-08-22）
+
+本项为非训练 paper-table/audit task，不新增或修改中央 CSV attempt。Goal 7 的 legal
+action/STOP-budget/base-guided method figure 已由既有 system architecture figure 与
+generation Figure 1 共同 terminal 覆盖，因此不重复 builder 或实验。随后新增一次性只读
+terminal compute snapshot、matched-budget matrix builder/focused tests、14-row CSV 与 audit。
+
+Prediction 侧四个 Critic V2 screen arms 在 seed/epochs/updates/parameter scale/split 上 exact
+matched；strongest same-information hurdle 只有 22,120 updates，相对 Critic V2 的 559,900
+updates 不是 exact compute match。Generation 侧七个 terminal 方法共享 source/action/edit/
+candidate/forward caps，但 algorithm-specific training/HPO 未形成共同 numeric budget，六个
+search wall times 未记录，两个 guided rows 因 Critic V2 NO-GO 保持无数值未执行。故矩阵
+reporting complete，但 full contract-matched execution incomplete，headline matched rows=0。
+
+GitHub builder commit `11d3ec0` 已推送且 A100 focused test 2/2；本机十一组联合 suite
+35/35。paper evidence sources=41（28 local/contract + 13 `/mnt`）、claim markers=22、
+figures/builders=6/5、MBP=14/3/1、blockers=MBP-10/13/14/15、`submission_ready=false`
+不变。中央 100 attempts 仍为 92 `COMPLETED`、3 `FAILED`、3
+`INCOMPLETE_NO_TERMINAL_RECORD`、1 `STOPPED_FOR_THROUGHPUT_REPAIR`、1
+`STOPPED_PRIORITY_REALLOCATION`。Development TEST、new final Evaluation、generated
+candidate outcome 与 guided XEditFlow 均未打开；A100 联合 35-test suite 等待 paper
+integration commit 推送后单次执行并补记。
+
 ## Dataset qualification/development table（2026-08-22）
 
 本项为非训练 paper-table task，不新增中央训练 attempt。新增可复现 builder、14-row

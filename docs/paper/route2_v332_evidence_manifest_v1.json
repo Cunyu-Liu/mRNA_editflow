@@ -8,10 +8,10 @@
   "independent_final_evaluation_performed": false,
   "human_verification_required": true,
   "source_path_preflight": {
-    "observed_at": "2026-08-22T15:56:40+08:00",
+    "observed_at": "2026-08-22T16:08:41+08:00",
     "status": "PASS",
-    "source_locations_checked": 38,
-    "local_or_contract_locations_checked": 25,
+    "source_locations_checked": 41,
+    "local_or_contract_locations_checked": 28,
     "a100_mnt_locations_checked": 13,
     "missing_locations": 0,
     "check_scope": "FILE_EXISTENCE_ONLY_NO_EVIDENCE_CONTENT_OPENED",
@@ -301,6 +301,29 @@
       "kind": "derived_a1_true_a2_task_results_table_audit",
       "location": "audits/route_a_v3_route2_v332_a1_true_a2_task_results_table_v1.json",
       "locator": "14-row reporting table; nine A1 numeric tasks totaling 18293 Development Validation records; 30966 Development listwise records but zero qualified true-A2 study credit, zero terminal true-A2 numeric rows and zero new independent Evaluation records",
+      "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING",
+      "external_evidence": false
+    },
+    {
+      "evidence_id": "E-R2-MATCHED-BUDGET-SNAPSHOT",
+      "kind": "frozen_terminal_compute_field_snapshot",
+      "location": "audits/route_a_v3_route2_v332_matched_budget_terminal_input_snapshot_v1.json",
+      "locator": "read-only central-ledger fields for four exact-matched Critic V2 arms and frozen-summary compute fields for the strongest same-information hurdle; protected-outcome closure",
+      "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING",
+      "external_evidence": false
+    },
+    {
+      "evidence_id": "E-R2-MATCHED-BUDGET-BUILDER",
+      "kind": "reproducible_prediction_generation_matched_budget_matrix_builder",
+      "location": "scripts/route_a_v3/build_route2_v332_matched_budget_baseline_matrix_v1.py",
+      "locator": "five Prediction and nine Generation rows; exact within-screen matching separated from same-information and prospective budget states; blank unavailable compute values, protected-outcome closure and overwrite refusal",
+      "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING"
+    },
+    {
+      "evidence_id": "E-R2-MATCHED-BUDGET-AUDIT",
+      "kind": "derived_prediction_generation_matched_budget_matrix_audit",
+      "location": "audits/route_a_v3_route2_v332_matched_budget_baseline_matrix_v1.json",
+      "locator": "14-row matrix; four exact Critic V2 screen rows, one non-update-matched strongest same-information hurdle, seven terminal generation rows, two guided dependency-NO-GO rows, six missing search wall times and zero fully contract-matched headline rows",
       "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING",
       "external_evidence": false
     }

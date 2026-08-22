@@ -179,6 +179,35 @@
       ]
     },
     {
+      "method_id": "M-R2-MATCHED-BUDGET-BASELINE-MATRIX",
+      "label": "Prediction and Generation matched-budget reporting matrix",
+      "analysis_intent": "DEVELOPMENT_BUDGET_COMPARABILITY_AND_EXECUTION_GAP_AUDIT",
+      "status": "MATCHED_BUDGET_REPORTING_MATRIX_RENDERED_CONTRACT_COMPLETE_MATCH_NOT_ESTABLISHED",
+      "row_count": 14,
+      "track_counts": {
+        "PREDICTION": 5,
+        "GENERATION": 9
+      },
+      "critic_v2_exact_within_screen_budget_rows": 4,
+      "strongest_same_information_hurdle_update_budget_matched": false,
+      "terminal_generation_rows": 7,
+      "guided_dependency_no_go_rows": 2,
+      "fully_contract_matched_headline_comparison_rows": 0,
+      "reporting_matrix_complete": true,
+      "matched_budget_benchmark_execution_complete": false,
+      "table": "docs/paper/route2_v332_matched_budget_baseline_matrix_v1.csv",
+      "audit": "audits/route_a_v3_route2_v332_matched_budget_baseline_matrix_v1.json",
+      "terminal_input_snapshot": "audits/route_a_v3_route2_v332_matched_budget_terminal_input_snapshot_v1.json",
+      "development_test_accessed": false,
+      "new_final_evaluation_accessed": false,
+      "guided_xeditflow_run": false,
+      "evidence_ids": [
+        "E-R2-MATCHED-BUDGET-SNAPSHOT",
+        "E-R2-MATCHED-BUDGET-BUILDER",
+        "E-R2-MATCHED-BUDGET-AUDIT"
+      ]
+    },
+    {
       "method_id": "M-R2-FIGURES",
       "label": "Provisional general-manuscript figure assembly",
       "analysis_intent": "FROZEN_EVIDENCE_VISUALIZATION",
@@ -555,15 +584,17 @@
       "generation_small_space_only_rows": 1,
       "generation_guided_not_authorized_rows": 2,
       "generation_literature_task_mismatch_rows": 1,
-      "native_common_arch_three_track_results_table_built": false,
-      "prediction_generation_matched_budget_numeric_matrix_built": false,
+      "native_common_arch_three_track_results_table_built": true,
+      "prediction_generation_matched_budget_numeric_matrix_built": true,
       "development_test_read": false,
       "new_final_evaluation_read": false,
       "guided_xeditflow_run": false,
       "scientific_claim_status": "NOT_ESTABLISHED",
       "evidence_ids": [
         "E-R2-BASELINE-MATRIX-BUILDER",
-        "E-R2-BASELINE-MATRIX-AUDIT"
+        "E-R2-BASELINE-MATRIX-AUDIT",
+        "E-R2-THREE-TRACK-AUDIT",
+        "E-R2-MATCHED-BUDGET-AUDIT"
       ]
     },
     {
@@ -621,6 +652,38 @@
       "evidence_ids": [
         "E-R2-A1-TRUE-A2-TABLE-BUILDER",
         "E-R2-A1-TRUE-A2-TABLE-AUDIT"
+      ]
+    },
+    {
+      "result_id": "R-R2-MATCHED-BUDGET-BASELINE-MATRIX",
+      "status": "MATCHED_BUDGET_REPORTING_MATRIX_RENDERED_CONTRACT_COMPLETE_MATCH_NOT_ESTABLISHED",
+      "row_count": 14,
+      "prediction_rows": 5,
+      "generation_rows": 9,
+      "numeric_result_rows": 12,
+      "critic_v2_exact_within_screen_budget_rows": 4,
+      "critic_v2_optimizer_steps": 559900,
+      "strongest_same_information_hurdle_optimizer_steps": 22120,
+      "strongest_same_information_hurdle_update_budget_matched": false,
+      "full_minus_hurdle_task_macro_spearman": -0.015343731738697977,
+      "terminal_generation_rows": 7,
+      "guided_dependency_no_go_rows": 2,
+      "search_method_wall_time_not_recorded_rows": 6,
+      "terminal_generation_wall_time_recorded_rows": 1,
+      "wall_time_recorded_rows_all_tracks": 6,
+      "peak_vram_recorded_rows_all_tracks": 12,
+      "fully_contract_matched_headline_comparison_rows": 0,
+      "reporting_matrix_complete": true,
+      "matched_budget_benchmark_execution_complete": false,
+      "cross_track_numeric_ranking_allowed": false,
+      "development_test_read": false,
+      "new_final_evaluation_read": false,
+      "guided_xeditflow_run": false,
+      "scientific_claim_status": "NOT_ESTABLISHED",
+      "evidence_ids": [
+        "E-R2-MATCHED-BUDGET-SNAPSHOT",
+        "E-R2-MATCHED-BUDGET-BUILDER",
+        "E-R2-MATCHED-BUDGET-AUDIT"
       ]
     },
     {
@@ -687,6 +750,9 @@
         "E-R2-PACKAGE-AUDIT",
         "E-R2-A1-TRUE-A2-TABLE-BUILDER",
         "E-R2-A1-TRUE-A2-TABLE-AUDIT",
+        "E-R2-MATCHED-BUDGET-SNAPSHOT",
+        "E-R2-MATCHED-BUDGET-BUILDER",
+        "E-R2-MATCHED-BUDGET-AUDIT",
         "E-R2-FIGURE-BUILDER",
         "E-R2-FIGURE-MANIFEST",
         "E-R2-CONVERSION-FIGURE-BUILDER",

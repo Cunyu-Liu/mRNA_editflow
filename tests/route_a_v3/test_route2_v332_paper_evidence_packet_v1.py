@@ -35,6 +35,15 @@ A1_TRUE_A2_TABLE = (
 A1_TRUE_A2_AUDIT = (
     ROOT / "audits/route_a_v3_route2_v332_a1_true_a2_task_results_table_v1.json"
 )
+MATCHED_BUDGET_TABLE = (
+    ROOT / "docs/paper/route2_v332_matched_budget_baseline_matrix_v1.csv"
+)
+MATCHED_BUDGET_AUDIT = (
+    ROOT / "audits/route_a_v3_route2_v332_matched_budget_baseline_matrix_v1.json"
+)
+MATCHED_BUDGET_SNAPSHOT = (
+    ROOT / "audits/route_a_v3_route2_v332_matched_budget_terminal_input_snapshot_v1.json"
+)
 DATASET_QUALIFICATION_TABLE = (
     ROOT / "docs/paper/route2_v332_dataset_qualification_table_v1.csv"
 )
@@ -74,7 +83,7 @@ def test_claim_and_consistency_evidence_references_are_closed() -> None:
     consistency = _load(CONSISTENCY)
 
     evidence_ids = [row["evidence_id"] for row in evidence["sources"]]
-    assert len(evidence_ids) == len(set(evidence_ids)) == 38
+    assert len(evidence_ids) == len(set(evidence_ids)) == 41
 
     claims = re.findall(r"\[claim:([^\]]+)\]", draft)
     assert len(claims) == len(set(claims)) == 22
@@ -94,14 +103,14 @@ def test_evidence_source_paths_are_closed_without_overstating_verification() -> 
     preflight = evidence["source_path_preflight"]
 
     assert preflight["status"] == "PASS"
-    assert preflight["source_locations_checked"] == len(evidence["sources"]) == 38
+    assert preflight["source_locations_checked"] == len(evidence["sources"]) == 41
     assert (
         preflight["local_or_contract_locations_checked"]
         + preflight["a100_mnt_locations_checked"]
         == preflight["source_locations_checked"]
     )
     assert preflight["missing_locations"] == 0
-    assert preflight["local_or_contract_locations_checked"] == 25
+    assert preflight["local_or_contract_locations_checked"] == 28
     assert preflight["a100_mnt_locations_checked"] == 13
     assert preflight["check_scope"] == "FILE_EXISTENCE_ONLY_NO_EVIDENCE_CONTENT_OPENED"
     assert preflight["human_content_verification_completed"] is False
@@ -160,6 +169,15 @@ def test_evidence_source_paths_are_closed_without_overstating_verification() -> 
     )
     assert by_id["E-R2-A1-TRUE-A2-TABLE-AUDIT"]["location"] == (
         "audits/route_a_v3_route2_v332_a1_true_a2_task_results_table_v1.json"
+    )
+    assert by_id["E-R2-MATCHED-BUDGET-SNAPSHOT"]["location"] == (
+        "audits/route_a_v3_route2_v332_matched_budget_terminal_input_snapshot_v1.json"
+    )
+    assert by_id["E-R2-MATCHED-BUDGET-BUILDER"]["location"] == (
+        "scripts/route_a_v3/build_route2_v332_matched_budget_baseline_matrix_v1.py"
+    )
+    assert by_id["E-R2-MATCHED-BUDGET-AUDIT"]["location"] == (
+        "audits/route_a_v3_route2_v332_matched_budget_baseline_matrix_v1.json"
     )
 
 
@@ -280,6 +298,109 @@ def test_a1_numeric_tasks_and_true_a2_result_boundaries_remain_separate() -> Non
     assert all(row["guided_xeditflow_run"] == "false" for row in rows)
     assert "does not encode unavailable true-A2 results as zero performance" in draft
     assert "A1 and true-A2 are not placed in a cross-estimand numeric ranking" in draft
+
+
+def test_matched_budget_matrix_reports_exact_and_incomplete_matching_separately() -> None:
+    draft = " ".join(DRAFT.read_text(encoding="utf-8").split())
+    consistency = _load(CONSISTENCY)
+    audit = _load(MATCHED_BUDGET_AUDIT)
+    snapshot = _load(MATCHED_BUDGET_SNAPSHOT)
+    with MATCHED_BUDGET_TABLE.open(newline="", encoding="utf-8") as handle:
+        rows = list(csv.DictReader(handle))
+
+    method = next(
+        row
+        for row in consistency["methods"]
+        if row["method_id"] == "M-R2-MATCHED-BUDGET-BASELINE-MATRIX"
+    )
+    result = next(
+        row
+        for row in consistency["results"]
+        if row["result_id"] == "R-R2-MATCHED-BUDGET-BASELINE-MATRIX"
+    )
+    baseline_result = next(
+        row
+        for row in consistency["results"]
+        if row["result_id"] == "R-R2-BASELINE-MATRIX"
+    )
+
+    assert len(rows) == audit["row_count"] == method["row_count"] == result["row_count"] == 14
+    assert audit["track_counts"] == method["track_counts"] == {
+        "PREDICTION": 5,
+        "GENERATION": 9,
+    }
+    assert result["prediction_rows"] == 5
+    assert result["generation_rows"] == 9
+    assert audit["numeric_result_row_count"] == result["numeric_result_rows"] == 12
+
+    prediction = [row for row in rows if row["track"] == "PREDICTION"]
+    exact_screen = [
+        row
+        for row in prediction
+        if row["training_or_hpo_budget_match_status"]
+        == "EXACT_MATCH_WITHIN_CRITIC_V2_SCREEN"
+    ]
+    assert len(exact_screen) == audit["prediction"][
+        "critic_v2_exact_within_screen_budget_rows"
+    ] == result["critic_v2_exact_within_screen_budget_rows"] == 4
+    assert {int(row["optimizer_steps"]) for row in exact_screen} == {
+        result["critic_v2_optimizer_steps"]
+    } == {559900}
+    hurdle = next(
+        row
+        for row in prediction
+        if row["method_id"] == "method_repair_global_scaled_seed20260821"
+    )
+    assert int(hurdle["optimizer_steps"]) == audit["prediction"][
+        "strongest_hurdle_optimizer_steps"
+    ] == result["strongest_same_information_hurdle_optimizer_steps"] == 22120
+    assert hurdle["training_or_hpo_budget_match_status"] == (
+        "SAME_INFORMATION_HURDLE_NOT_UPDATE_BUDGET_MATCHED_TO_CRITIC_V2"
+    )
+    assert audit["prediction"]["strongest_hurdle_update_budget_matched"] is result[
+        "strongest_same_information_hurdle_update_budget_matched"
+    ] is False
+    assert result["full_minus_hurdle_task_macro_spearman"] == -0.015343731738697977
+
+    generation = [row for row in rows if row["track"] == "GENERATION"]
+    terminal = [
+        row
+        for row in generation
+        if row["result_status"] == "EXECUTED_TERMINAL_MATCHED_DEVELOPMENT"
+    ]
+    guided = [
+        row for row in generation if row["result_status"] == "NOT_RUN_CRITIC_V2_NO_GO"
+    ]
+    assert len(terminal) == audit["generation"]["terminal_matched_method_rows"] == result[
+        "terminal_generation_rows"
+    ] == 7
+    assert len(guided) == audit["generation"]["guided_dependency_no_go_rows"] == result[
+        "guided_dependency_no_go_rows"
+    ] == 2
+    assert audit["generation"]["search_method_wall_time_not_recorded_rows"] == result[
+        "search_method_wall_time_not_recorded_rows"
+    ] == 6
+    assert all(row["numeric_result_available"] == "false" for row in guided)
+    assert all(row["guided_executed"] == "false" for row in rows)
+    assert all(row["development_test_read"] == "false" for row in rows)
+    assert all(row["new_final_evaluation_read"] == "false" for row in rows)
+
+    assert audit["compute_reporting"][
+        "fully_contract_matched_headline_comparison_row_count"
+    ] == result["fully_contract_matched_headline_comparison_rows"] == 0
+    assert audit["reporting_matrix_complete"] is method[
+        "reporting_matrix_complete"
+    ] is result["reporting_matrix_complete"] is True
+    assert audit["matched_budget_benchmark_execution_complete"] is method[
+        "matched_budget_benchmark_execution_complete"
+    ] is result["matched_budget_benchmark_execution_complete"] is False
+    assert snapshot["new_training_attempt_created"] is False
+    assert baseline_result["native_common_arch_three_track_results_table_built"] is True
+    assert baseline_result[
+        "prediction_generation_matched_budget_numeric_matrix_built"
+    ] is True
+    assert "not update-budget matched" in draft
+    assert "zero fully contract-matched headline comparison rows" in draft
 
 
 def test_provisional_figure_method_preserves_protected_outcome_boundary() -> None:
@@ -828,8 +949,8 @@ def test_minimum_benchmark_package_is_itemized_and_not_overcalled() -> None:
         "matrix_is_result_table"
     ] is baseline_audit["matrix_is_result_table"] is False
     assert baseline_result["scientific_claim_status"] == "NOT_ESTABLISHED"
-    assert baseline_result["native_common_arch_three_track_results_table_built"] is False
-    assert baseline_result["prediction_generation_matched_budget_numeric_matrix_built"] is False
+    assert baseline_result["native_common_arch_three_track_results_table_built"] is True
+    assert baseline_result["prediction_generation_matched_budget_numeric_matrix_built"] is True
     assert all(row["development_test_accessed"] == "false" for row in baseline_rows)
     assert all(row["new_final_evaluation_accessed"] == "false" for row in baseline_rows)
     assert all(row["guided_executed"] == "false" for row in baseline_rows)
@@ -876,6 +997,27 @@ def test_minimum_benchmark_package_is_itemized_and_not_overcalled() -> None:
         "focused_test": "tests/route_a_v3/test_build_route2_v332_a1_true_a2_task_results_table_v1.py",
         "table": "docs/paper/route2_v332_a1_true_a2_task_results_table_v1.csv",
         "audit": "audits/route_a_v3_route2_v332_a1_true_a2_task_results_table_v1.json",
+        "development_test_read": False,
+        "new_final_evaluation_read": False,
+        "guided_xeditflow_run": False,
+    }
+    assert audit["matched_budget_baseline_matrix"] == {
+        "status": "MATCHED_BUDGET_REPORTING_MATRIX_RENDERED_CONTRACT_COMPLETE_MATCH_NOT_ESTABLISHED",
+        "row_count": 14,
+        "prediction_rows": 5,
+        "generation_rows": 9,
+        "critic_v2_exact_within_screen_budget_rows": 4,
+        "strongest_same_information_hurdle_update_budget_matched": False,
+        "terminal_generation_rows": 7,
+        "guided_dependency_no_go_rows": 2,
+        "fully_contract_matched_headline_comparison_rows": 0,
+        "reporting_matrix_complete": True,
+        "matched_budget_benchmark_execution_complete": False,
+        "builder": "scripts/route_a_v3/build_route2_v332_matched_budget_baseline_matrix_v1.py",
+        "focused_test": "tests/route_a_v3/test_build_route2_v332_matched_budget_baseline_matrix_v1.py",
+        "table": "docs/paper/route2_v332_matched_budget_baseline_matrix_v1.csv",
+        "audit": "audits/route_a_v3_route2_v332_matched_budget_baseline_matrix_v1.json",
+        "terminal_input_snapshot": "audits/route_a_v3_route2_v332_matched_budget_terminal_input_snapshot_v1.json",
         "development_test_read": False,
         "new_final_evaluation_read": False,
         "guided_xeditflow_run": False,

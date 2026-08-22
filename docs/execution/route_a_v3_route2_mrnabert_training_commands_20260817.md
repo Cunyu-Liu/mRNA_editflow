@@ -1326,3 +1326,35 @@ paper integration commit `410053d` 推送并同步后，本机与 A100 十组 pa
 14/3/1、blockers=MBP-10/13/14/15、`submission_ready=false` 均保持。本任务不训练、不监控
 实时训练进度、不新增中央 attempt；100-row 的 92/3/3/1/1 终态分布不变，Development TEST、
 new final Evaluation、generated-candidate outcome 与 guided XEditFlow 均未打开。
+
+## 50. V3.3.2 Prediction/Generation matched-budget baseline matrix（2026-08-22）
+
+先按 Goal 7 做 terminal crosswalk：既有 predictor–XEditFlow–evaluator architecture figure
+已呈现 `SUB+STOP`、INS/DEL out-of-scope、1/3/5 budgets、legal mask、position/progress Base
+Flow、`FLOW_G0_READY` 与 guided NOT RUN；既有 generation Figure 1 已呈现 explicit STOP
+versus budget-exhaustion fractions。因此 legal action/STOP-budget/base-guided method-figure
+项由两张既有 terminal 图共同闭合，不重复生成。
+
+下一真实缺口新增只读 terminal compute snapshot、独立 builder、focused tests、14-row ×
+47-column CSV 与 audit。Prediction 5 行中，Critic V2 full/candidate-permutation/source-only/
+source-edit-metadata 四臂为 exact within-screen matched：同 seed 20260825、100 epochs、
+559,900 updates、9,342,914 trainable + 113,389,056 frozen parameters、同 grouped split；
+strongest same-information hurdle 虽是冻结 gate comparator，但只有 22,120 updates，因此明确
+标为 `SAME_INFORMATION_HURDLE_NOT_UPDATE_BUDGET_MATCHED_TO_CRITIC_V2`。full-minus-hurdle
+task-macro Spearman 仍为 `-0.015343731738697977`。
+
+Generation 9 行包含七个 terminal 方法和两个 guided NO-GO。七方法共享 891 sources、
+`SUB+STOP`、1/3/5 edit budgets、candidate cap 32、critic-forward cap 256 和 total-forward
+cap 320；六方法达到 28,512 candidates，local search 为 21,027。algorithm-specific
+training/HPO 不是共同 numeric budget，六个 search generation wall times 仍为
+`NOT_RECORDED_NO_TERMINAL_RERUN`，first-order 与 frozen-critic guidance 仍因 Critic V2
+NO-GO 不运行。因此 `reporting_matrix_complete=true`，但
+`matched_budget_benchmark_execution_complete=false`、fully contract-matched headline rows=0。
+
+GitHub builder commit `11d3ec0` 已推送，A100 focused test 2/2 passed；本机十一组联合
+focused suite 为 35/35。paper evidence sources=41（local/contract 28、A100 `/mnt` 13），
+claim markers=22、figures/builders=6/5、MBP=14/3/1、blockers=MBP-10/13/14/15 与
+`submission_ready=false` 不变。本任务不训练、不新增中央 attempt；100-row 的 92/3/3/1/1
+终态分布不变，Development TEST、new final Evaluation、generated-candidate outcome 与
+guided XEditFlow 均未打开。A100 联合 35-test suite 将在 paper integration commit 推送后
+单次执行并补记。

@@ -1,7 +1,7 @@
 {
   "schema_version": "route_a_v3_route2_v332_minimum_benchmark_package.v1",
   "status": "MINIMUM_BENCHMARK_PACKAGE_NOT_COMPLETE",
-  "observed_at": "2026-08-22T15:56:40+08:00",
+  "observed_at": "2026-08-22T16:08:41+08:00",
   "authority": {
     "scientific_contract": "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna 数据gate转向后的合同.md",
     "execution_protocol": "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna V3.3.2 执行提示词.md",
@@ -157,6 +157,27 @@
     "focused_test": "tests/route_a_v3/test_build_route2_v332_a1_true_a2_task_results_table_v1.py",
     "table": "docs/paper/route2_v332_a1_true_a2_task_results_table_v1.csv",
     "audit": "audits/route_a_v3_route2_v332_a1_true_a2_task_results_table_v1.json",
+    "development_test_read": false,
+    "new_final_evaluation_read": false,
+    "guided_xeditflow_run": false
+  },
+  "matched_budget_baseline_matrix": {
+    "status": "MATCHED_BUDGET_REPORTING_MATRIX_RENDERED_CONTRACT_COMPLETE_MATCH_NOT_ESTABLISHED",
+    "row_count": 14,
+    "prediction_rows": 5,
+    "generation_rows": 9,
+    "critic_v2_exact_within_screen_budget_rows": 4,
+    "strongest_same_information_hurdle_update_budget_matched": false,
+    "terminal_generation_rows": 7,
+    "guided_dependency_no_go_rows": 2,
+    "fully_contract_matched_headline_comparison_rows": 0,
+    "reporting_matrix_complete": true,
+    "matched_budget_benchmark_execution_complete": false,
+    "builder": "scripts/route_a_v3/build_route2_v332_matched_budget_baseline_matrix_v1.py",
+    "focused_test": "tests/route_a_v3/test_build_route2_v332_matched_budget_baseline_matrix_v1.py",
+    "table": "docs/paper/route2_v332_matched_budget_baseline_matrix_v1.csv",
+    "audit": "audits/route_a_v3_route2_v332_matched_budget_baseline_matrix_v1.json",
+    "terminal_input_snapshot": "audits/route_a_v3_route2_v332_matched_budget_terminal_input_snapshot_v1.json",
     "development_test_read": false,
     "new_final_evaluation_read": false,
     "guided_xeditflow_run": false
