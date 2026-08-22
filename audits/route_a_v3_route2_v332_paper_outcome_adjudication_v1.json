@@ -1,0 +1,132 @@
+{
+  "schema_version": "route_a_v3_route2_v332_paper_outcome_adjudication.v1",
+  "observed_at": "2026-08-22T17:17:44+08:00",
+  "authority": {
+    "scientific_contract": "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna 数据gate转向后的合同.md",
+    "execution_protocol": "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna V3.3.2 执行提示词.md",
+    "decision_rule": "Terminal prediction, generation, Evaluation and minimum-package evidence selects the manuscript route; route selection does not imply submission readiness."
+  },
+  "selected_final_paper_outcome": "BENCHMARK_PLUS_TRANSFER_AND_GENERATION_LIMITS_PAPER",
+  "final_paper_outcome_frozen": true,
+  "route_selection_status": "FROZEN_FORWARD_MANUSCRIPT_ROUTE_PACKAGE_INCOMPLETE_NOT_SUBMISSION_READY",
+  "outcome_trigger_fully_satisfied": false,
+  "submission_level_outcome_eligibility": false,
+  "submission_ready": false,
+  "outcome_adjudication": [
+    {
+      "outcome": "XEDITFLOW_PLUS_DELTA_PLUS_BENCHMARK_PAPER",
+      "selected": false,
+      "eligible": false,
+      "decisive_failed_conditions": [
+        "MINIMUM_BENCHMARK_PACKAGE_INCOMPLETE",
+        "NO_NEW_OUTCOME_UNEXPOSED_EXTERNAL_EVALUATION",
+        "CRITIC_READY_FOR_GUIDANCE_FALSE",
+        "GUIDED_XEDITFLOW_NOT_RUN_CRITIC_V2_NO_GO",
+        "NO_TERMINAL_TRUE_A2_NUMERIC_RANKING",
+        "NO_MEASURED_OR_INDEPENDENT_GUIDED_IMPROVEMENT"
+      ]
+    },
+    {
+      "outcome": "DELTA_MODEL_PLUS_BENCHMARK_PAPER",
+      "selected": false,
+      "eligible": false,
+      "decisive_failed_conditions": [
+        "NO_STABLE_PREDECLARED_OUTCOME_UNEXPOSED_EXTERNAL_PREDICTION_TASK_VALUE",
+        "EDIT_FLOW_GUIDED_COMPARISON_NOT_AUTHORIZED_OR_COMPLETE",
+        "BENCHMARK_PACKAGE_INCOMPLETE"
+      ]
+    },
+    {
+      "outcome": "BENCHMARK_PLUS_TRANSFER_AND_GENERATION_LIMITS_PAPER",
+      "selected": true,
+      "eligible": false,
+      "selection_basis": "CONTRACT_AUTOMATIC_FORWARD_ROUTE_AFTER_PREDICTOR_AND_GENERATOR_DO_NOT_BEAT_THEIR_STRONGEST_BASELINES",
+      "condition_status": {
+        "minimum_benchmark_package_complete": false,
+        "predictor_external_transfer_not_established_or_development_only": true,
+        "generator_measured_or_independent_improvement_not_established": true,
+        "negative_controls_data_geometry_and_error_analysis_support_not_single_implementation_failure": true,
+        "next_generation_dataset_requirements_declared": true
+      }
+    }
+  ],
+  "terminal_evidence": {
+    "minimum_package_itemwise_adjudication_complete": true,
+    "minimum_package_complete": false,
+    "minimum_package_blocking_requirement_ids": [
+      "MBP-10",
+      "MBP-13",
+      "MBP-14",
+      "MBP-15"
+    ],
+    "critic_v2_status": "CRITIC_V2_CONTROLS_DO_NOT_SUPPORT_THREE_FROZEN_SEEDS",
+    "critic_v2_full_minus_strongest_same_information_baseline_spearman": -0.015343731738697977,
+    "critic_ready_for_guidance": false,
+    "flow_g0_ready": true,
+    "guided_xeditflow_run": false,
+    "historical_transfer_study_id": "GSE232572",
+    "historical_transfer_preregistered_pass": false,
+    "historical_transfer_final_confirmation_eligible": false,
+    "new_outcome_unexposed_evaluation_record_count": 0,
+    "independent_final_evaluation_performed": false,
+    "generation_measured_or_independent_improvement_established": false,
+    "closed_measured_ndcg_numeric_rows": 0,
+    "error_domain_shift_analysis_complete": true,
+    "causal_failure_mechanism_established": false
+  },
+  "next_generation_dataset_requirements": [
+    {
+      "requirement_id": "NEXT-DATA-SOURCE-CANDIDATE",
+      "requirement": "Unambiguous source-candidate lineage with multiple experimentally measured candidates per source and source groups that remain separable across studies.",
+      "addresses": "Source-relative estimand identifiability and grouped external transfer."
+    },
+    {
+      "requirement_id": "NEXT-DATA-DENSE-POOL",
+      "requirement": "A closed, sufficiently dense measured candidate pool per source so within-source ranking, NDCG and regret are defined without assigning unknown generated candidates zero gain.",
+      "addresses": "True-A2 ranking and measured generation evaluation."
+    },
+    {
+      "requirement_id": "NEXT-DATA-REPLICATE-SE",
+      "requirement": "Biological replicate-level measurements with finite positive uncertainty for source and candidates, enough replication to estimate effect standard errors rather than treating barcodes as independent biological n.",
+      "addresses": "Calibrated error, uncertainty and source-group bootstrap interpretation."
+    },
+    {
+      "requirement_id": "NEXT-DATA-CONTEXT",
+      "requirement": "Explicit, frozen assay, biological-context, endpoint and transcript-region identities with repeated or balanced context coverage sufficient for context-specific error and transfer analysis.",
+      "addresses": "Region/assay/context shift identifiability."
+    },
+    {
+      "requirement_id": "NEXT-DATA-EXTERNAL-EXPOSURE",
+      "requirement": "At least one convertible independent study whose outcomes remain unexposed until predictor, generator, baselines, thresholds and adaptation policy are frozen.",
+      "addresses": "Unbiased zero-shot external confirmation and later separated adaptation."
+    }
+  ],
+  "claim_boundary": {
+    "selected_route_claim": "The terminal evidence selects the Benchmark+transfer/generation-limits manuscript route.",
+    "allowed_scientific_claim": "Current public data and terminal models do not support broad source-relative effect generalization or guided sequence optimization; the benchmark identifies data, legal-generation and independent-evaluation requirements.",
+    "not_allowed": [
+      "The minimum benchmark package is complete.",
+      "The selected manuscript route is submission-ready.",
+      "GSE232572 is an unbiased final confirmation.",
+      "Guided XEditFlow improves measured biology.",
+      "Region or context is a causal failure mechanism."
+    ]
+  },
+  "protected_outcomes": {
+    "development_test_read": false,
+    "new_final_evaluation_read": false,
+    "emtab10902_outcome_read": false,
+    "sealed_gse246381_read": false,
+    "guided_xeditflow_run": false
+  },
+  "evidence_ids": [
+    "E-R2-CONTRACT",
+    "E-R2-CRITIC-V2-ADJ",
+    "E-R2-CRITIC-V2-DIAG",
+    "E-R2-GSE232-HIST",
+    "E-R2-GEN-THREE-LAYER-AUDIT",
+    "E-R2-ERROR-DOMAIN-SHIFT-AUDIT",
+    "E-R2-PACKAGE-AUDIT"
+  ],
+  "scientific_claim_status": "BENCHMARK_AND_LIMITS_ROUTE_SELECTED_MODEL_AND_BIOLOGICAL_SUCCESS_NOT_ESTABLISHED"
+}

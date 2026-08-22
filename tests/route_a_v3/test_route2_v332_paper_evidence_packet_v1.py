@@ -78,6 +78,9 @@ ERROR_DOMAIN_SHIFT_TABLE = (
 ERROR_DOMAIN_SHIFT_AUDIT = (
     ROOT / "audits/route_a_v3_route2_v332_error_domain_shift_analysis_table_v1.json"
 )
+PAPER_OUTCOME_ADJUDICATION = (
+    ROOT / "audits/route_a_v3_route2_v332_paper_outcome_adjudication_v1.json"
+)
 READINESS = (
     ROOT
     / "configs/route_a_v3_route2_mrnabert_critic_v2_guidance_readiness_protocol_v1.json"
@@ -98,7 +101,7 @@ def test_claim_and_consistency_evidence_references_are_closed() -> None:
     consistency = _load(CONSISTENCY)
 
     evidence_ids = [row["evidence_id"] for row in evidence["sources"]]
-    assert len(evidence_ids) == len(set(evidence_ids)) == 48
+    assert len(evidence_ids) == len(set(evidence_ids)) == 49
 
     claims = re.findall(r"\[claim:([^\]]+)\]", draft)
     assert len(claims) == len(set(claims)) == 22
@@ -118,14 +121,14 @@ def test_evidence_source_paths_are_closed_without_overstating_verification() -> 
     preflight = evidence["source_path_preflight"]
 
     assert preflight["status"] == "PASS"
-    assert preflight["source_locations_checked"] == len(evidence["sources"]) == 48
+    assert preflight["source_locations_checked"] == len(evidence["sources"]) == 49
     assert (
         preflight["local_or_contract_locations_checked"]
         + preflight["a100_mnt_locations_checked"]
         == preflight["source_locations_checked"]
     )
     assert preflight["missing_locations"] == 0
-    assert preflight["local_or_contract_locations_checked"] == 34
+    assert preflight["local_or_contract_locations_checked"] == 35
     assert preflight["a100_mnt_locations_checked"] == 14
     assert preflight["check_scope"] == "FILE_EXISTENCE_ONLY_NO_EVIDENCE_CONTENT_OPENED"
     assert preflight["human_content_verification_completed"] is False
@@ -217,6 +220,9 @@ def test_evidence_source_paths_are_closed_without_overstating_verification() -> 
     )
     assert by_id["E-R2-ERROR-DOMAIN-SHIFT-AUDIT"]["location"] == (
         "audits/route_a_v3_route2_v332_error_domain_shift_analysis_table_v1.json"
+    )
+    assert by_id["E-R2-PAPER-OUTCOME-ADJUDICATION"]["location"] == (
+        "audits/route_a_v3_route2_v332_paper_outcome_adjudication_v1.json"
     )
 
 
@@ -1082,6 +1088,82 @@ def test_error_domain_shift_table_separates_development_and_historical_layers() 
     assert "outcome-exposed status precludes final confirmation" in draft
 
 
+def test_paper_outcome_route_is_frozen_without_overcalling_submission_eligibility() -> None:
+    draft = " ".join(DRAFT.read_text(encoding="utf-8").split())
+    consistency = _load(CONSISTENCY)
+    package = _load(MINIMUM_PACKAGE_AUDIT)
+    adjudication = _load(PAPER_OUTCOME_ADJUDICATION)
+    result = next(
+        row
+        for row in consistency["results"]
+        if row["result_id"] == "R-R2-PAPER-OUTCOME-ADJUDICATION"
+    )
+
+    selected = "BENCHMARK_PLUS_TRANSFER_AND_GENERATION_LIMITS_PAPER"
+    assert adjudication["selected_final_paper_outcome"] == result[
+        "selected_final_paper_outcome"
+    ] == package["summary"]["selected_final_paper_outcome"] == selected
+    assert adjudication["final_paper_outcome_frozen"] is result[
+        "final_paper_outcome_frozen"
+    ] is package["summary"]["current_final_paper_outcome_frozen"] is True
+    assert adjudication["route_selection_status"] == result[
+        "route_selection_status"
+    ] == "FROZEN_FORWARD_MANUSCRIPT_ROUTE_PACKAGE_INCOMPLETE_NOT_SUBMISSION_READY"
+    assert adjudication["outcome_trigger_fully_satisfied"] is result[
+        "outcome_trigger_fully_satisfied"
+    ] is package["summary"]["outcome_trigger_fully_satisfied"] is False
+    assert adjudication["submission_level_outcome_eligibility"] is result[
+        "submission_level_outcome_eligibility"
+    ] is package["summary"]["submission_level_outcome_eligibility"] is False
+    assert adjudication["submission_ready"] is result["submission_ready"] is False
+
+    outcomes = {row["outcome"]: row for row in adjudication["outcome_adjudication"]}
+    assert outcomes["XEDITFLOW_PLUS_DELTA_PLUS_BENCHMARK_PAPER"]["eligible"] is False
+    assert outcomes["DELTA_MODEL_PLUS_BENCHMARK_PAPER"]["eligible"] is False
+    outcome_c = outcomes[selected]
+    assert outcome_c["selected"] is True
+    assert outcome_c["eligible"] is False
+    assert outcome_c["condition_status"] == {
+        "minimum_benchmark_package_complete": False,
+        "predictor_external_transfer_not_established_or_development_only": True,
+        "generator_measured_or_independent_improvement_not_established": True,
+        "negative_controls_data_geometry_and_error_analysis_support_not_single_implementation_failure": True,
+        "next_generation_dataset_requirements_declared": True,
+    }
+
+    requirement_ids = [
+        row["requirement_id"]
+        for row in adjudication["next_generation_dataset_requirements"]
+    ]
+    assert requirement_ids == result["next_generation_dataset_requirement_ids"] == [
+        "NEXT-DATA-SOURCE-CANDIDATE",
+        "NEXT-DATA-DENSE-POOL",
+        "NEXT-DATA-REPLICATE-SE",
+        "NEXT-DATA-CONTEXT",
+        "NEXT-DATA-EXTERNAL-EXPOSURE",
+    ]
+    assert adjudication["terminal_evidence"]["minimum_package_complete"] is False
+    assert adjudication["terminal_evidence"]["critic_ready_for_guidance"] is False
+    assert adjudication["terminal_evidence"]["flow_g0_ready"] is True
+    assert adjudication["terminal_evidence"]["guided_xeditflow_run"] is False
+    assert adjudication["terminal_evidence"][
+        "historical_transfer_final_confirmation_eligible"
+    ] is False
+    assert adjudication["terminal_evidence"][
+        "new_outcome_unexposed_evaluation_record_count"
+    ] == 0
+    assert adjudication["terminal_evidence"][
+        "generation_measured_or_independent_improvement_established"
+    ] is False
+    assert all(value is False for value in adjudication["protected_outcomes"].values())
+    assert result["model_or_biological_success_established"] is False
+    assert "freezes the forward manuscript route" in draft
+    assert "This selection freezes manuscript direction, not eligibility" in draft
+    assert "sufficiently dense, closed measured candidate pool" in draft
+    assert "biological replicate-level values and finite, positive uncertainty" in draft
+    assert "outcomes unexposed until predictor, generator, baselines" in draft
+
+
 def test_historical_gse232572_transfer_remains_negative_and_nonconfirmatory() -> None:
     draft = " ".join(DRAFT.read_text(encoding="utf-8").split())
     consistency = _load(CONSISTENCY)
@@ -1195,8 +1277,17 @@ def test_minimum_benchmark_package_is_itemized_and_not_overcalled() -> None:
     assert audit["summary"]["minimum_package_complete"] is False
     assert result["minimum_package_complete"] is False
     assert audit["summary"]["submission_ready"] is result["submission_ready"] is False
-    assert audit["summary"]["current_final_paper_outcome_frozen"] is False
-    assert result["final_paper_outcome_frozen"] is False
+    assert audit["summary"]["current_final_paper_outcome_frozen"] is True
+    assert result["final_paper_outcome_frozen"] is True
+    assert audit["summary"]["selected_final_paper_outcome"] == result[
+        "selected_final_paper_outcome"
+    ] == "BENCHMARK_PLUS_TRANSFER_AND_GENERATION_LIMITS_PAPER"
+    assert audit["summary"]["outcome_trigger_fully_satisfied"] is result[
+        "outcome_trigger_fully_satisfied"
+    ] is False
+    assert audit["summary"]["submission_level_outcome_eligibility"] is result[
+        "submission_level_outcome_eligibility"
+    ] is False
 
     by_id = {row["requirement_id"]: row for row in rows}
     assert by_id["MBP-05"]["status"] == "COMPLETE"
@@ -1373,7 +1464,7 @@ def test_minimum_benchmark_package_is_itemized_and_not_overcalled() -> None:
         "DO_NOT_RUN_GUIDED_WITH_CURRENT_COHORT"
     )
     assert len(audit["stale_snapshot_findings"]) == 4
-    assert "conditional target route, not a frozen submission-ready outcome" in draft
+    assert "frozen forward manuscript route, not an achieved submission-ready outcome" in draft
     assert "itemwise closure is complete even though the package itself is not" in draft
     assert "minimum benchmark package or submission-ready paper is complete" in draft
 

@@ -16,8 +16,11 @@ three-seed readiness, Critic V2 failed its prospectively frozen control gate,
 guided XEditFlow remains unauthorized, and a new unexposed, convertible external
 Evaluation study is still required. The 18-item minimum benchmark package is
 also not yet complete, so this remains an internal evidence packet rather than a
-submission-ready benchmark paper. [claim:C-R2-001]
-[evidence:E-R2-CONTRACT,E-R2-CRITIC-V1,E-R2-CRITIC-V2-ADJ]
+submission-ready benchmark paper. The terminal evidence freezes the forward
+manuscript route to `BENCHMARK_PLUS_TRANSFER_AND_GENERATION_LIMITS_PAPER`, while
+the route's complete publication trigger and submission eligibility remain
+false. [claim:C-R2-001]
+[evidence:E-R2-CONTRACT,E-R2-CRITIC-V1,E-R2-CRITIC-V2-ADJ,E-R2-PAPER-OUTCOME-ADJUDICATION]
 
 ## Methods draft
 
@@ -549,8 +552,53 @@ written as PASS; itemwise closure is complete even though the package itself is
 not. Accordingly, the current
 deliverable is an internal Development benchmark plus historical-transfer and
 generation-limits evidence packet. `BENCHMARK_PLUS_TRANSFER_AND_GENERATION_LIMITS_PAPER`
-is the conditional target route, not a frozen submission-ready outcome.
-[claim:C-R2-022] [evidence:E-R2-CONTRACT,E-R2-PACKAGE-AUDIT]
+is the frozen forward manuscript route, not an achieved submission-ready
+outcome: its minimum-package trigger remains false.
+[claim:C-R2-022]
+[evidence:E-R2-CONTRACT,E-R2-PACKAGE-AUDIT,E-R2-PAPER-OUTCOME-ADJUDICATION]
+
+### The terminal manuscript route is frozen to Benchmark+limits
+
+Outcome A is ineligible because there is no new outcome-unexposed external
+Evaluation, Critic V2 is not ready for guidance, guided XEditFlow was not run,
+and neither terminal true-A2 ranking nor measured/independent guided improvement
+exists. Outcome B is ineligible because no predeclared outcome-unexposed
+external prediction task established stable Delta value and the guided Edit
+Flow comparison is not complete. The contract's automatic forward rule
+therefore selects Outcome C,
+`BENCHMARK_PLUS_TRANSFER_AND_GENERATION_LIMITS_PAPER`, after the predictor and
+generator failed to establish the required superiority over their strongest
+comparators.
+
+This selection freezes manuscript direction, not eligibility. Outcome C's
+negative-transfer, generation-limit, control, geometry and error-analysis
+conditions are supported, and the next-data requirements are declared below;
+however, `minimum_package_complete=false`, so
+`outcome_trigger_fully_satisfied=false` and `submission_ready=false`. Model,
+guided-generation and biological success remain unestablished.
+[evidence:E-R2-PAPER-OUTCOME-ADJUDICATION,E-R2-CRITIC-V2-ADJ,E-R2-GSE232-HIST,E-R2-GEN-THREE-LAYER-AUDIT,E-R2-ERROR-DOMAIN-SHIFT-AUDIT]
+
+## Discussion draft
+
+### A confirmatory Route 2 cohort requires denser and more explicit evidence
+
+The next dataset must bind each candidate unambiguously to its source and retain
+multiple experimentally measured candidates per source across separable study
+groups. Each source needs a sufficiently dense, closed measured candidate pool
+so within-source ranking, NDCG and regret are defined without assigning unknown
+generated candidates zero gain. This is the key difference between the present
+open-support recovery analysis and a measured true-A2 generation endpoint.
+
+Measurements should retain biological replicate-level values and finite,
+positive uncertainty for both source and candidates, with enough replication to
+estimate effect standard errors rather than counting barcodes as independent
+biological replicates. Assay, biological context, endpoint and transcript region
+must be explicit and frozen, with repeated or balanced context coverage that can
+support context-specific error and transfer estimates. Finally, at least one
+convertible independent study must keep outcomes unexposed until predictor,
+generator, baselines, thresholds and adaptation policy are frozen; its permanent
+zero-shot result must precede any calibration or few-shot adaptation.
+[evidence:E-R2-PAPER-OUTCOME-ADJUDICATION,E-R2-DATA-TABLE,E-R2-ERROR-DOMAIN-SHIFT-AUDIT,E-R2-CONTRACT]
 
 ## Concrete limitations and reporting gaps
 
@@ -615,8 +663,8 @@ Allowed:
   task-wide or calibration superiority over the strongest baseline.”
 - “The outcome-exposed GSE232572 historical diagnostic did not establish stable
   transfer under its preregistered rank-and-MAE rule.”
-- “The current internal packet defines a conditional Benchmark+limits route but
-  does not yet satisfy the complete minimum benchmark package.”
+- “The terminal evidence freezes the Benchmark+limits manuscript route, while
+  the minimum benchmark package and submission eligibility remain incomplete.”
 
 Prohibited until later gates pass:
 

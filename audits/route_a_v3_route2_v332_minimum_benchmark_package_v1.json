@@ -16,7 +16,10 @@
     "minimum_package_complete": false,
     "submission_ready": false,
     "current_honest_packet": "INTERNAL_DEVELOPMENT_BENCHMARK_PLUS_HISTORICAL_TRANSFER_AND_GENERATION_LIMITS_EVIDENCE_PACKET",
-    "current_final_paper_outcome_frozen": false,
+    "current_final_paper_outcome_frozen": true,
+    "selected_final_paper_outcome": "BENCHMARK_PLUS_TRANSFER_AND_GENERATION_LIMITS_PAPER",
+    "outcome_trigger_fully_satisfied": false,
+    "submission_level_outcome_eligibility": false,
     "target_conditional_outcome": "BENCHMARK_PLUS_TRANSFER_AND_GENERATION_LIMITS_PAPER"
   },
   "itemwise_closure": {
