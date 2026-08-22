@@ -620,8 +620,9 @@ parity、smoke、literature/task-mismatch 状态，没有原论文 native numeri
 3′UTR 或 nine-task scope 内横向比较。Track C 保留 aligned-A1 未 materialize、scratch/frozen
 非因果匹配、generic-trunk/region-adapter 缺项和两个 guided NO-GO。
 
-GitHub builder commit `e2a9b63` 已推送，A100 同步后 focused test 2/2；本机八组联合
-suite 27/27。paper evidence sources 从 31 增至 34（local/contract 22、A100 `/mnt` 12），
+GitHub builder commit `e2a9b63` 已推送，A100 同步后 focused test 2/2；paper integration
+commit `99136f6` 后，本机与 A100 八组联合 suite 均为 27/27。paper evidence sources
+从 31 增至 34（local/contract 22、A100 `/mnt` 12），
 claim markers=22、figures/builders=5/4、MBP=14/3/1、blockers=MBP-10/13/14/15 和
 `submission_ready=false` 不变。中央 100 个 attempts 的 92/3/3/1/1 终态分布不变。
 

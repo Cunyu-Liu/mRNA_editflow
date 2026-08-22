@@ -1265,8 +1265,9 @@ controls和七方法 generation suite。明确禁止跨 5′UTR/3′UTR/nine-tas
 A1 direct result 未 materialize；scratch-vs-frozen 和 generic-trunk-vs-region-adapter 不能
 由当前 terminal runs 作因果归因。
 
-GitHub commit `e2a9b63` 已推送，A100 builder focused test 2/2 passed；本机八组联合
-focused suite 27/27。paper evidence sources=34（local/contract 22、A100 `/mnt` 12），
+GitHub commit `e2a9b63` 已推送，A100 builder focused test 2/2 passed；paper integration
+commit `99136f6` 后，本机与 A100 八组联合 focused suite 均为 27/27。paper evidence
+sources=34（local/contract 22、A100 `/mnt` 12），
 claim markers=22、figures/builders=5/4、最低包=14/3/1、blockers=MBP-10/13/14/15、
 `submission_ready=false` 均保持。`reporting_table_complete=true` 但
 `three_track_benchmark_execution_complete=false`。本任务不新增中央 attempt，也未打开
