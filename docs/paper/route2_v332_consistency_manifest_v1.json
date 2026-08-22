@@ -82,6 +82,33 @@
         "E-R2-GSE232-HIST",
         "E-R2-PACKAGE-AUDIT"
       ]
+    },
+    {
+      "method_id": "M-R2-FIGURES",
+      "label": "Provisional general-manuscript figure assembly",
+      "analysis_intent": "FROZEN_EVIDENCE_VISUALIZATION",
+      "status": "PROVISIONAL_GENERAL_MANUSCRIPT_FIGURES_RENDERED",
+      "figure_count": 2,
+      "formats": ["png", "pdf", "svg"],
+      "raster_dpi": 300,
+      "target_journal": "PENDING_SELECTION",
+      "article_type": "PENDING_SELECTION",
+      "publisher_compliance_claimed": false,
+      "source_tables": [
+        "docs/paper/route2_v332_generation_action_space_geometry_table_v1.csv",
+        "docs/paper/route2_v332_critic_v2_task_diagnostic_table_v1.csv",
+        "audits/route_a_v3_route2_gse232572_zero_shot_summary_v1.json"
+      ],
+      "protected_outcomes": {
+        "development_test_read": false,
+        "new_final_evaluation_read": false,
+        "guided_xeditflow_run": false,
+        "historical_outcome_exposed_gse232572_read": true
+      },
+      "evidence_ids": [
+        "E-R2-FIGURE-BUILDER",
+        "E-R2-FIGURE-MANIFEST"
+      ]
     }
   ],
   "results": [
@@ -253,15 +280,14 @@
     {
       "result_id": "R-R2-MINIMUM-BENCHMARK-PACKAGE",
       "requirement_count": 18,
-      "complete_or_complete_with_declared_limits_count": 13,
-      "partial_count": 4,
+      "complete_or_complete_with_declared_limits_count": 14,
+      "partial_count": 3,
       "not_available_count": 1,
       "blocking_requirement_ids": [
         "MBP-10",
         "MBP-13",
         "MBP-14",
-        "MBP-15",
-        "MBP-17"
+        "MBP-15"
       ],
       "minimum_package_complete": false,
       "submission_ready": false,
@@ -270,7 +296,12 @@
       "final_paper_outcome_frozen": false,
       "table": "docs/paper/route2_v332_minimum_benchmark_package_table_v1.csv",
       "audit": "audits/route_a_v3_route2_v332_minimum_benchmark_package_v1.json",
-      "evidence_ids": ["E-R2-CONTRACT", "E-R2-PACKAGE-AUDIT"]
+      "evidence_ids": [
+        "E-R2-CONTRACT",
+        "E-R2-PACKAGE-AUDIT",
+        "E-R2-FIGURE-BUILDER",
+        "E-R2-FIGURE-MANIFEST"
+      ]
     }
   ],
   "protected_outcomes": {
@@ -301,9 +332,15 @@
     },
     {
       "gap_id": "GAP-R2-MINIMUM-BENCHMARK-PACKAGE",
-      "description": "Five requirements prevent the 18-item minimum benchmark package from being complete: authorized guided comparison, a new outcome-unexposed Evaluation study, its zero-shot/adaptation sequence, complete terminal timing fields and manuscript figure builders.",
+      "description": "Four requirements prevent the 18-item minimum benchmark package from being complete: authorized guided comparison, a new outcome-unexposed Evaluation study, its zero-shot/adaptation sequence and complete terminal timing fields.",
       "action": "Keep the packet internal and submission_ready=false; do not bypass the Critic V2 NO-GO, reconstruct terminal timing, or relabel historical GSE232572 as final confirmation.",
       "status": "MINIMUM_BENCHMARK_PACKAGE_NOT_COMPLETE"
+    },
+    {
+      "gap_id": "GAP-R2-FIGURE-TARGET-RULES",
+      "description": "Two reproducible provisional figures exist in PNG, PDF and SVG, but target journal, article type and submission phase have not been selected; publisher-specific dimensions and file rules therefore have not been claimed.",
+      "action": "After venue and phase selection, verify the official publisher instructions and regenerate the same frozen evidence if different export dimensions or formats are required.",
+      "status": "PROVISIONAL_GENERAL_FIGURES_TARGET_RULES_PENDING"
     }
   ],
   "submission_ready": false

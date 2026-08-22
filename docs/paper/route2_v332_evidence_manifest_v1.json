@@ -8,11 +8,11 @@
   "independent_final_evaluation_performed": false,
   "human_verification_required": true,
   "source_path_preflight": {
-    "observed_at": "2026-08-22T12:16:32+08:00",
+    "observed_at": "2026-08-22T12:35:00+08:00",
     "status": "PASS",
-    "source_locations_checked": 19,
-    "local_or_contract_locations_checked": 11,
-    "a100_mnt_locations_checked": 8,
+    "source_locations_checked": 21,
+    "local_or_contract_locations_checked": 12,
+    "a100_mnt_locations_checked": 9,
     "missing_locations": 0,
     "check_scope": "FILE_EXISTENCE_ONLY_NO_EVIDENCE_CONTENT_OPENED",
     "human_content_verification_completed": false,
@@ -150,9 +150,25 @@
       "evidence_id": "E-R2-PACKAGE-AUDIT",
       "kind": "derived_minimum_benchmark_package_audit",
       "location": "audits/route_a_v3_route2_v332_minimum_benchmark_package_v1.json",
-      "locator": "18 contract requirements, item-level statuses, five incomplete-package blockers, stale-snapshot authority overrides and protected-outcome closure",
+      "locator": "18 contract requirements, item-level statuses, four incomplete-package blockers, provisional figure status, stale-snapshot authority overrides and protected-outcome closure",
       "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING",
       "external_evidence": false
+    },
+    {
+      "evidence_id": "E-R2-FIGURE-BUILDER",
+      "kind": "reproducible_provisional_figure_builder",
+      "location": "scripts/route_a_v3/build_route2_v332_manuscript_figures_v1.py",
+      "locator": "two frozen-evidence figures; PNG/PDF/SVG export; provenance, alt text, protected-outcome closure and overwrite refusal",
+      "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING",
+      "publisher_compliance_claimed": false
+    },
+    {
+      "evidence_id": "E-R2-FIGURE-MANIFEST",
+      "kind": "terminal_provisional_figure_manifest",
+      "location": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/figures/route2_v332_v1/route2_v332_figure_manifest_v1.json",
+      "locator": "two figure IDs, exact source paths, output formats and byte counts, 300-dpi raster declaration, palette redundancy, target-journal pending and protected-outcome closure",
+      "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING",
+      "publisher_compliance_claimed": false
     }
   ],
   "submission_ready": false

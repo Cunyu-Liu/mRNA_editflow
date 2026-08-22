@@ -534,3 +534,23 @@ paper label 均由 V3.3.2 合同和 terminal evidence 覆盖，但不篡改冻�
 本机与 A100 focused suite 均为 30/30 passed。没有读取 Development TEST/new final
 Evaluation，没有运行 guided 或 E-MTAB-10902 outcome evaluation，也没有参数更新；
 中央训练 CSV 不新增 attempt，100-row 终态分布不变。
+
+## Provisional manuscript figure builders（2026-08-22）
+
+本项为非训练 manuscript-asset task，不新增中央训练 attempt。commit `a27e04a`
+新增可复现构建器与 focused tests；A100 builder test 2/2 passed，并在
+`/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/figures/route2_v332_v1/` 生成两图各
+PNG/PDF/SVG、alt text 与 provenance manifest。输入仅为冻结的 Development
+generation/action-space、terminal Critic V2 task diagnostic 和 outcome-exposed
+GSE232572 historical summary；Development TEST/new final Evaluation/guided 均未打开。
+
+本机 paper-packet + builder 联合 focused suite 为 14/14。MBP-17 由无 builder 的
+partial 更新为 `COMPLETE_WITH_PROVISIONAL_GENERAL_FIGURES`；最低包汇总为 14 complete/
+complete-with-declared-limits、3 partial、1 unavailable，四个 blocker 为 MBP-10、
+MBP-13、MBP-14、MBP-15。target journal/article type/submission phase 待定，未声称
+publisher compliance；总体 `submission_ready=false`、Route A claim 仍
+`NOT_ESTABLISHED`。
+
+中央 100 个唯一 attempts 的终态继续是 92 `COMPLETED`、3 `FAILED`、3
+`INCOMPLETE_NO_TERMINAL_RECORD`、1 `STOPPED_FOR_THROUGHPUT_REPAIR`、1
+`STOPPED_PRIORITY_REALLOCATION`。

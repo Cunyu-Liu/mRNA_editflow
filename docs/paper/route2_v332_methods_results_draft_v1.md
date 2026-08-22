@@ -71,6 +71,17 @@ dependency closures and reporting gaps; it cannot turn an unauthorized guided
 run or absent replacement Evaluation study into a completed item.
 [evidence:E-R2-CONTRACT,E-R2-GSE232-HIST,E-R2-PACKAGE-AUDIT]
 
+### Provisional figure assembly
+
+A reproducible builder renders two general-manuscript figures from the frozen
+generation/action-space table, the complete nine-task Critic V2 diagnostic and
+the explicitly outcome-exposed GSE232572 historical summary. Each figure is
+exported as 300-dpi PNG, PDF and SVG with an evidence manifest and alt text.
+Development TEST, new final Evaluation and guided XEditFlow remain unopened.
+The target journal, article type and submission phase are still pending, so no
+publisher-specific compliance is claimed.
+[evidence:E-R2-FIGURE-BUILDER,E-R2-FIGURE-MANIFEST]
+
 ### Prospectively frozen Critic V2 repair
 
 Critic V2 kept the frozen mRNABERT encoder and 9,342,914-parameter edit-centered
@@ -275,13 +286,14 @@ baseline.
 
 ### The minimum benchmark package remains incomplete
 
-Of the contract's 18 minimum-package items, 13 are complete or complete with an
-explicit limitation, four are partial and one is unavailable. The five items
+Of the contract's 18 minimum-package items, 14 are complete or complete with an
+explicit limitation, three are partial and one is unavailable. The four items
 that prevent a complete package are the matched guided/first-order comparison
 closed by Critic V2 NO-GO, the absence of a new outcome-unexposed replacement
 Evaluation study, the consequently unrun final zero-shot-to-adaptation sequence,
-missing terminal generation/STOP timing fields, and the absence of manuscript
-figure builders. The exact item-level statuses are retained in
+and missing terminal generation/STOP timing fields. Reproducible provisional
+figure builders now satisfy MBP-17, with target-journal export rules retained as
+an explicit limitation. The exact item-level statuses are retained in
 `route2_v332_minimum_benchmark_package_table_v1.csv`. Accordingly, the current
 deliverable is an internal Development benchmark plus historical-transfer and
 generation-limits evidence packet. `BENCHMARK_PLUS_TRANSFER_AND_GENERATION_LIMITS_PAPER`
@@ -330,8 +342,9 @@ is the conditional target route, not a frozen submission-ready outcome.
    confirmation.
 8. The minimum package is not complete. Guided comparison and new-study
    Evaluation remain legally unavailable, terminal timing fields cannot be
-   retroactively reconstructed, no manuscript figure builder is present, and
-   accountable human evidence verification remains pending.
+   retroactively reconstructed, the provisional figures still lack a selected
+   venue's export-rule verification, and accountable human evidence verification
+   remains pending.
 
 ## Allowed and prohibited wording at this stage
 
@@ -375,7 +388,10 @@ Prohibited until later gates pass:
 - Registration and use of a new, convertible, outcome-unexposed external
   Evaluation study.
 - Matched guided/first-order generation remains closed for the terminal cohort;
-  figure builders have not been created, and missing terminal timing fields must
-  remain explicitly missing rather than reconstructed.
-- Target venue, reporting guideline, author list, contributions, declarations,
-  funding, ethics applicability, data/code availability and AI-use disclosure.
+  missing terminal timing fields must remain explicitly missing rather than
+  reconstructed.
+- Target venue, article type and submission phase selection, followed by one
+  official publisher-rule check and any required format-only regeneration from
+  the same frozen evidence.
+- Reporting guideline, author list, contributions, declarations, funding,
+  ethics applicability, data/code availability and AI-use disclosure.

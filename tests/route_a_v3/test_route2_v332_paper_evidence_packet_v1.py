@@ -55,7 +55,7 @@ def test_claim_and_consistency_evidence_references_are_closed() -> None:
     consistency = _load(CONSISTENCY)
 
     evidence_ids = [row["evidence_id"] for row in evidence["sources"]]
-    assert len(evidence_ids) == len(set(evidence_ids)) == 19
+    assert len(evidence_ids) == len(set(evidence_ids)) == 21
 
     claims = re.findall(r"\[claim:([^\]]+)\]", draft)
     assert len(claims) == len(set(claims)) == 22
@@ -75,13 +75,15 @@ def test_evidence_source_paths_are_closed_without_overstating_verification() -> 
     preflight = evidence["source_path_preflight"]
 
     assert preflight["status"] == "PASS"
-    assert preflight["source_locations_checked"] == len(evidence["sources"]) == 19
+    assert preflight["source_locations_checked"] == len(evidence["sources"]) == 21
     assert (
         preflight["local_or_contract_locations_checked"]
         + preflight["a100_mnt_locations_checked"]
         == preflight["source_locations_checked"]
     )
     assert preflight["missing_locations"] == 0
+    assert preflight["local_or_contract_locations_checked"] == 12
+    assert preflight["a100_mnt_locations_checked"] == 9
     assert preflight["check_scope"] == "FILE_EXISTENCE_ONLY_NO_EVIDENCE_CONTENT_OPENED"
     assert preflight["human_content_verification_completed"] is False
     assert preflight["submission_readiness_changed"] is False
@@ -92,6 +94,36 @@ def test_evidence_source_paths_are_closed_without_overstating_verification() -> 
         "HISTORICALLY_OUTCOME_EXPOSED_TRANSFER_DIAGNOSTIC_NOT_FINAL_CONFIRMATION"
     )
     assert evidence["independent_final_evaluation_performed"] is False
+
+    by_id = {row["evidence_id"]: row for row in evidence["sources"]}
+    assert by_id["E-R2-FIGURE-BUILDER"]["publisher_compliance_claimed"] is False
+    assert by_id["E-R2-FIGURE-MANIFEST"]["location"].endswith(
+        "/route2_v332_v1/route2_v332_figure_manifest_v1.json"
+    )
+
+
+def test_provisional_figure_method_preserves_protected_outcome_boundary() -> None:
+    consistency = _load(CONSISTENCY)
+    method = next(
+        row for row in consistency["methods"] if row["method_id"] == "M-R2-FIGURES"
+    )
+
+    assert method["status"] == "PROVISIONAL_GENERAL_MANUSCRIPT_FIGURES_RENDERED"
+    assert method["figure_count"] == 2
+    assert method["formats"] == ["png", "pdf", "svg"]
+    assert method["raster_dpi"] == 300
+    assert method["target_journal"] == "PENDING_SELECTION"
+    assert method["publisher_compliance_claimed"] is False
+    assert method["protected_outcomes"] == {
+        "development_test_read": False,
+        "new_final_evaluation_read": False,
+        "guided_xeditflow_run": False,
+        "historical_outcome_exposed_gse232572_read": True,
+    }
+    assert method["evidence_ids"] == [
+        "E-R2-FIGURE-BUILDER",
+        "E-R2-FIGURE-MANIFEST",
+    ]
 
 
 def test_paper_packet_matches_frozen_critic_v2_readiness_boundary() -> None:
@@ -410,18 +442,18 @@ def test_minimum_benchmark_package_is_itemized_and_not_overcalled() -> None:
     assert [row["requirement_id"] for row in rows] == [
         f"MBP-{index:02d}" for index in range(1, 19)
     ]
-    assert sum(row["status"].startswith("COMPLETE") for row in rows) == 13
-    assert sum(row["status"].startswith("PARTIAL") for row in rows) == 4
+    assert sum(row["status"].startswith("COMPLETE") for row in rows) == 14
+    assert sum(row["status"].startswith("PARTIAL") for row in rows) == 3
     assert sum(row["status"].startswith("NOT_AVAILABLE") for row in rows) == 1
     assert audit["summary"]["requirement_count"] == result["requirement_count"] == 18
     assert audit["summary"]["complete_or_complete_with_declared_limits_count"] == (
         result["complete_or_complete_with_declared_limits_count"]
-    ) == 13
-    assert audit["summary"]["partial_count"] == result["partial_count"] == 4
+    ) == 14
+    assert audit["summary"]["partial_count"] == result["partial_count"] == 3
     assert audit["summary"]["not_available_count"] == result[
         "not_available_count"
     ] == 1
-    expected_blockers = ["MBP-10", "MBP-13", "MBP-14", "MBP-15", "MBP-17"]
+    expected_blockers = ["MBP-10", "MBP-13", "MBP-14", "MBP-15"]
     assert audit["blocking_requirement_ids"] == result[
         "blocking_requirement_ids"
     ] == expected_blockers
@@ -435,7 +467,14 @@ def test_minimum_benchmark_package_is_itemized_and_not_overcalled() -> None:
     assert by_id["MBP-10"]["status"] == "PARTIAL_GUIDED_NOT_AUTHORIZED"
     assert by_id["MBP-11"]["status"] == "COMPLETE_HISTORICAL_NEGATIVE"
     assert by_id["MBP-13"]["status"] == "NOT_AVAILABLE_DOWNGRADE_REQUIRED"
-    assert by_id["MBP-17"]["status"] == "PARTIAL_NO_FIGURE_BUILDERS"
+    assert by_id["MBP-17"]["status"] == (
+        "COMPLETE_WITH_PROVISIONAL_GENERAL_FIGURES"
+    )
+    assert audit["manuscript_figures"]["status"] == (
+        "PROVISIONAL_GENERAL_MANUSCRIPT_FIGURES_RENDERED"
+    )
+    assert audit["manuscript_figures"]["publisher_compliance_claimed"] is False
+    assert audit["manuscript_figures"]["new_final_evaluation_read"] is False
     assert audit["external_evaluation"]["replacement_study_registered"] is False
     assert audit["external_evaluation"]["new_final_evaluation_opened"] is False
     assert audit["guided_generation"]["frozen_critic_xeditflow_run"] is False

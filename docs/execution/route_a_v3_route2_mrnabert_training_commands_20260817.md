@@ -1118,3 +1118,27 @@ GSE232572 historical role 与旧 inventory role/delivery/running-state 字段由
 authority 覆盖。本机与 A100 inventory/split/baseline/E-MTAB/paper focused suite 均为
 30/30 passed。本任务不运行训练、guided、E-MTAB outcome 或新 final Evaluation，
 不新增中央 attempt，100-row 终态不变。
+
+## 41. Route 2 V3.3.2 provisional manuscript figure builders（2026-08-22）
+
+新增 `scripts/route_a_v3/build_route2_v332_manuscript_figures_v1.py` 与 focused
+tests，仅消费冻结的 generation/action-space table、完整九任务 Critic V2 diagnostic
+table 和已 outcome-exposed 的 GSE232572 historical summary。构建器输出两张通用稿件
+图，各含 PNG/PDF/SVG；另写 provenance manifest 与 alt text，并显式记录未读取
+Development TEST/new final Evaluation、未运行 guided XEditFlow。
+
+A100 已从 GitHub commit `a27e04a` 快进同步并在
+`/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/figures/route2_v332_v1/` 一次性生成
+8 个产物。A100 builder focused test 为 2/2；本机 paper-packet + builder 联合 focused
+suite 为 14/14。视觉复核已修正图例遮挡和标题/轴标签裁切；格式核查确认 PNG 为
+2160-px wide、300-dpi、全像素不透明，PDF 单页且字体嵌入，SVG 无 raster image。
+target journal/article type/submission phase 尚未选择，故
+`publisher_compliance_claimed=false`。
+
+MBP-17 更新为 `COMPLETE_WITH_PROVISIONAL_GENERAL_FIGURES`，18-item 汇总变为
+14 complete/complete-with-declared-limits、3 partial、1 unavailable；总体仍是
+`MINIMUM_BENCHMARK_PACKAGE_NOT_COMPLETE`。四个 blocker 保持 MBP-10 guided NO-GO、
+MBP-13 replacement Evaluation 缺失、MBP-14 final zero-shot/adaptation 未执行、
+MBP-15 terminal timing 缺失。此任务不训练或更新参数，不新增中央 attempt；100-row
+终态仍为 92 COMPLETED、3 FAILED、3 INCOMPLETE_NO_TERMINAL_RECORD、1
+STOPPED_FOR_THROUGHPUT_REPAIR、1 STOPPED_PRIORITY_REALLOCATION。

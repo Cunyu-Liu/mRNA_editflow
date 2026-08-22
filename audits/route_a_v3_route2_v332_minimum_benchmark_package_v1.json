@@ -1,7 +1,7 @@
 {
   "schema_version": "route_a_v3_route2_v332_minimum_benchmark_package.v1",
   "status": "MINIMUM_BENCHMARK_PACKAGE_NOT_COMPLETE",
-  "observed_at": "2026-08-22T12:16:32+08:00",
+  "observed_at": "2026-08-22T12:35:00+08:00",
   "authority": {
     "scientific_contract": "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna 数据gate转向后的合同.md",
     "execution_protocol": "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna V3.3.2 执行提示词.md",
@@ -9,8 +9,8 @@
   },
   "summary": {
     "requirement_count": 18,
-    "complete_or_complete_with_declared_limits_count": 13,
-    "partial_count": 4,
+    "complete_or_complete_with_declared_limits_count": 14,
+    "partial_count": 3,
     "not_available_count": 1,
     "minimum_package_complete": false,
     "submission_ready": false,
@@ -22,8 +22,7 @@
     "MBP-10",
     "MBP-13",
     "MBP-14",
-    "MBP-15",
-    "MBP-17"
+    "MBP-15"
   ],
   "blocker_classes": {
     "dependency_no_go": [
@@ -35,9 +34,6 @@
     ],
     "terminal_instrumentation_gap_no_rerun": [
       "MBP-15"
-    ],
-    "manuscript_asset_not_built": [
-      "MBP-17"
     ]
   },
   "historical_transfer": {
@@ -82,6 +78,25 @@
     "frozen_critic_xeditflow_run": false,
     "authorized_action": "DO_NOT_RUN_GUIDED_WITH_CURRENT_COHORT"
   },
+  "manuscript_figures": {
+    "status": "PROVISIONAL_GENERAL_MANUSCRIPT_FIGURES_RENDERED",
+    "figure_count": 2,
+    "builder": "scripts/route_a_v3/build_route2_v332_manuscript_figures_v1.py",
+    "focused_test": "tests/route_a_v3/test_build_route2_v332_manuscript_figures_v1.py",
+    "remote_output_directory": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/figures/route2_v332_v1",
+    "formats": [
+      "png",
+      "pdf",
+      "svg"
+    ],
+    "raster_dpi": 300,
+    "target_journal": "PENDING_SELECTION",
+    "article_type": "PENDING_SELECTION",
+    "publisher_compliance_claimed": false,
+    "development_test_read": false,
+    "new_final_evaluation_read": false,
+    "guided_xeditflow_run": false
+  },
   "stale_snapshot_findings": [
     {
       "artifact": "configs/route_a_v3_route2_14_study_final_inventory_v1.json",
@@ -113,7 +128,7 @@
   "table_path": "docs/paper/route2_v332_minimum_benchmark_package_table_v1.csv",
   "new_training_attempt_created": false,
   "next_authorized_work": [
-    "Build submission figures from frozen evidence tables without changing scientific gates.",
+    "Select a target venue, article type and submission phase before applying official publisher-specific export rules to the provisional figures.",
     "Complete accountable human evidence verification and manuscript metadata.",
     "Register a new convertible outcome-unexposed replacement Evaluation study before any final zero-shot/adaptation execution."
   ]
