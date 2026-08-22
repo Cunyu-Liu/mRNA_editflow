@@ -263,7 +263,7 @@ state is a biological-success claim. [claim:C-R2-014]
 [evidence:E-R2-CONTRACT,E-R2-CRITIC-V2-READINESS]
 [evidence:E-R2-CRITIC-V2-LOSO-AGG]
 
-## Results draft
+## Results
 
 ### Baseline coverage is Development-only and contains explicit unresolved rows
 

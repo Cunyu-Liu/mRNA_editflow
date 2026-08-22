@@ -20,7 +20,7 @@ def _load(path: Path) -> dict:
 
 def test_methods_section_is_complete_but_not_submission_ready() -> None:
     draft = DRAFT.read_text(encoding="utf-8")
-    methods = draft.split("## Methods\n", 1)[1].split("## Results draft", 1)[0]
+    methods = draft.split("## Methods\n", 1)[1].split("## Results\n", 1)[0]
     headings = re.findall(r"^### (.+)$", methods, flags=re.MULTILINE)
     audit = _load(AUDIT)
     consistency = _load(CONSISTENCY)
@@ -43,8 +43,8 @@ def test_methods_section_is_complete_but_not_submission_ready() -> None:
     assert all(value is False for value in audit["protected_outcomes"].values())
     assert consistency["manuscript_sections"]["methods"]["subsection_count"] == 14
     assert consistency["manuscript_sections"]["methods"]["submission_ready"] is False
-    assert consistency["manuscript_sections"]["results"]["status"].startswith(
-        "EVIDENCE_DRAFT"
+    assert consistency["manuscript_sections"]["results"]["status"] == (
+        "COMPLETE_INTERNAL_HUMAN_VERIFICATION_PENDING"
     )
 
 
@@ -70,7 +70,7 @@ def test_methods_report_terminal_actuals_and_current_figure_counts() -> None:
 
 def test_methods_evidence_ids_are_registered_and_claim_count_is_stable() -> None:
     draft = DRAFT.read_text(encoding="utf-8")
-    methods = draft.split("## Methods\n", 1)[1].split("## Results draft", 1)[0]
+    methods = draft.split("## Methods\n", 1)[1].split("## Results\n", 1)[0]
     evidence = _load(EVIDENCE)
     evidence_ids = {row["evidence_id"] for row in evidence["sources"]}
     cited = set()

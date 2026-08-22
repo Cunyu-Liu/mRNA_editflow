@@ -8,10 +8,10 @@
   "independent_final_evaluation_performed": false,
   "human_verification_required": true,
   "source_path_preflight": {
-    "observed_at": "2026-08-22T17:52:27+08:00",
+    "observed_at": "2026-08-22T17:59:28+08:00",
     "status": "PASS",
-    "source_locations_checked": 54,
-    "local_or_contract_locations_checked": 40,
+    "source_locations_checked": 55,
+    "local_or_contract_locations_checked": 41,
     "a100_mnt_locations_checked": 14,
     "missing_locations": 0,
     "check_scope": "FILE_EXISTENCE_ONLY_NO_EVIDENCE_CONTENT_OPENED",
@@ -424,6 +424,14 @@
       "kind": "derived_methods_section_completion_audit",
       "location": "audits/route_a_v3_route2_v332_methods_completion_v1.json",
       "locator": "14 required Methods subsections; frozen data-role, estimand, baseline, matched-budget, evaluator, generation, statistical, Critic V2 and conditional-readiness coverage; 7 figures from 6 builders; 509905 configured-expected versus 509845 terminal-actual evaluator parameter count retained; human verification and availability/submission states remain incomplete",
+      "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING",
+      "external_evidence": false
+    },
+    {
+      "evidence_id": "E-R2-RESULTS-COMPLETION-AUDIT",
+      "kind": "derived_results_section_completion_audit",
+      "location": "audits/route_a_v3_route2_v332_results_completion_v1.json",
+      "locator": "15 required Results subsections covering baseline and execution gaps, three reporting tracks, A1/true-A2, matched budgets, independent evaluator, generation layers and bootstrap, action geometry, error/domain shift, historical transfer, learning curves, Critic V1/V2 NO-GO, incomplete minimum package and frozen Benchmark+limits route; model, biological, external-transfer and guided success remain false",
       "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING",
       "external_evidence": false
     }
