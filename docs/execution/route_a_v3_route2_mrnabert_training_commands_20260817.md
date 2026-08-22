@@ -1956,3 +1956,6 @@ A100 不同步 post-screen commit，继续保持 active attempt 的 `22317ed` pr
 SMC 使用 base proposal 与 scalar-potential importance weight，未增加 action-ratio head。所有入口要求
 critic frozen TEST/refit/LOSO readiness 和 SetFlow confirmation 同时成立；当前调用会 fail closed。本机
 合并 focused=89/89、V3.3.2=96/96、compile/diff-check PASS；A100 测试延后到 C0/C1 terminal。
+
+18-grid preparer/adjudicator 也已实现但未运行：只生成 6 个 value jobs、18 个 screen jobs，固定
+seed20260904 和既定 selection order；focused=4/4、V3.3.2=96/96，readiness 前 fail closed。

@@ -54,6 +54,7 @@
   },
   "local_tests": {
     "post_screen_combined_focused_passed": 89,
+    "guidance_screen_prepare_adjudicate_focused_passed": 4,
     "exact_v332_passed": 96,
     "python_compile_passed": true,
     "git_diff_check_passed": true

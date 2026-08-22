@@ -1335,3 +1335,7 @@ value training、SMC、closed outcome benchmark 或任何 guidance grid combinat
 通过。A100 focused/V3.3.2 仍等待 active C0/C1 terminal 后统一同步；中央 attempt 只包含已启动的 C0/C1，
 本项实现没有新增 optimizer attempt。Development TEST/new final Evaluation read、critic/generator success、
 guidance authorization、model claim 与 submission-ready 均保持 false。
+
+guidance screen config preparer 进一步固定为 6 个 `κ×τ` value jobs 与精确 18 个 `κ×τ×βmax` generation/
+closed jobs，且只允许 base-flow seed20260904；adjudicator 只接受完整 18-grid 并按冻结的五级顺序选一次。
+focused=4/4、V3.3.2=96/96；readiness 未满足时 config preparation 本身硬失败，当前未 materialize job manifest。
