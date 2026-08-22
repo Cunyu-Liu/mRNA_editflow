@@ -204,7 +204,7 @@ def test_builder_exports_metric_separated_unsmoothed_learning_curves(tmp_path: P
         assert path.exists()
         assert path.stat().st_size == output_entry["bytes"] > 1000
     png = mpimg.imread(manifest["outputs"]["png"]["path"])
-    assert png.shape[:2] == (2220, 2400)
+    assert png.shape[:2] == (2520, 2400)
     assert png.shape[2] == 4
     assert png[:, :, 3].min() == 1.0
     svg = Path(manifest["outputs"]["svg"]["path"]).read_text(encoding="utf-8")

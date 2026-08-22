@@ -299,15 +299,24 @@ def _derive_inputs(
 
 
 def _panel_label(ax: plt.Axes, label: str) -> None:
-    ax.text(-0.14, 1.05, label, transform=ax.transAxes, fontweight="bold",
+    ax.text(-0.14, 1.06, label, transform=ax.transAxes, fontweight="bold",
             fontsize=10, va="bottom", ha="left")
 
 
 def _render(evidence: Mapping[str, Any]) -> plt.Figure:
-    fig, axes = plt.subplots(2, 2, figsize=(8.0, 7.4), layout="constrained")
+    fig, axes = plt.subplots(2, 2, figsize=(8.0, 8.4))
+    fig.subplots_adjust(
+        left=0.10,
+        right=0.97,
+        bottom=0.08,
+        top=0.73,
+        wspace=0.36,
+        hspace=0.56,
+    )
     fig.suptitle(
         "Route 2 frozen Development learning curves\n"
         "Raw terminal histories; metrics are panel-specific and not cross-comparable",
+        y=0.975,
         fontsize=11,
         fontweight="bold",
     )
@@ -318,7 +327,7 @@ def _render(evidence: Mapping[str, Any]) -> plt.Figure:
             row["epochs"], row["pooled_validation_spearman"],
             color=COLORS[index], linestyle=LINESTYLES[index], marker=MARKERS[index],
             markersize=3.0,
-            label=f'{row["label"]} (selected task-macro {row["selected_task_macro_spearman"]:.3f})',
+            label=f'{row["label"]} | TM {row["selected_task_macro_spearman"]:.3f}',
         )
     ax.set(
         xlabel="Epoch",
@@ -327,8 +336,9 @@ def _render(evidence: Mapping[str, Any]) -> plt.Figure:
         title="Predictor HPO\nCurves: pooled; legend values: separate selection metric",
     )
     ax.grid(axis="y")
-    ax.legend(loc="lower center", bbox_to_anchor=(0.5, 1.01), ncol=2,
-              frameon=False, columnspacing=0.8, handlelength=2.3)
+    ax.legend(loc="lower center", bbox_to_anchor=(0.5, 1.30), ncol=2,
+              frameon=False, columnspacing=0.65, handlelength=2.0,
+              handletextpad=0.4, borderaxespad=0.0)
     _panel_label(ax, "A")
 
     ax = axes[0, 1]
@@ -345,15 +355,16 @@ def _render(evidence: Mapping[str, Any]) -> plt.Figure:
             edgecolor=BLACK, linewidth=0.5, zorder=4,
         )
     ax.axhline(evidence["critic_hurdle"], color=BLACK, linestyle="--", linewidth=1.0,
-               label="Strongest same-information baseline")
+               label="Same-information baseline")
     ax.set(
         xlabel="Epoch",
         ylabel="Validation task-macro Spearman",
         title="Critic V2 control screen\nSelected checkpoints marked; terminal NO-GO",
     )
     ax.grid(axis="y")
-    ax.legend(loc="lower center", bbox_to_anchor=(0.5, 1.01), ncol=2,
-              frameon=False, columnspacing=0.8, handlelength=2.3)
+    ax.legend(loc="lower center", bbox_to_anchor=(0.5, 1.30), ncol=2,
+              frameon=False, columnspacing=0.65, handlelength=2.0,
+              handletextpad=0.4, borderaxespad=0.0)
     _panel_label(ax, "B")
 
     ax = axes[1, 0]
@@ -375,7 +386,15 @@ def _render(evidence: Mapping[str, Any]) -> plt.Figure:
         title="Independent evaluator\nQualified for Development method selection only",
     )
     ax.grid(axis="y")
-    ax.legend(loc="lower center", bbox_to_anchor=(0.5, 1.01), ncol=1, frameon=False)
+    ax.annotate(
+        "exclusive qualification threshold",
+        xy=(1.15, evaluator["exclusive_threshold"]),
+        xytext=(1.15, evaluator["exclusive_threshold"] + 0.0012),
+        color=VERMILLION,
+        fontsize=6.5,
+        ha="left",
+        va="bottom",
+    )
     _panel_label(ax, "C")
 
     ax = axes[1, 1]
@@ -395,8 +414,35 @@ def _render(evidence: Mapping[str, Any]) -> plt.Figure:
         title="Base Flow G0\nEngineering-only fit; validation loss worsens",
     )
     ax.grid(axis="y")
-    ax.legend(loc="lower center", bbox_to_anchor=(0.5, 1.01), ncol=3,
-              frameon=False, columnspacing=0.8)
+    ax.annotate(
+        "Validation NLL",
+        xy=(flow["epochs"][-1], flow["validation_nll"][-1]),
+        xytext=(-4, 5),
+        textcoords="offset points",
+        color=VERMILLION,
+        fontsize=6.8,
+        ha="right",
+        va="bottom",
+    )
+    ax.annotate(
+        "Train NLL",
+        xy=(flow["epochs"][-1], flow["train_nll"][-1]),
+        xytext=(-4, 5),
+        textcoords="offset points",
+        color=BLUE,
+        fontsize=6.8,
+        ha="right",
+        va="bottom",
+    )
+    ax.annotate(
+        "selected epoch 1",
+        xy=(flow["selected_epoch"], flow["validation_nll"][0]),
+        xytext=(10, 8),
+        textcoords="offset points",
+        fontsize=6.5,
+        ha="left",
+        va="bottom",
+    )
     _panel_label(ax, "D")
 
     return fig
@@ -547,7 +593,7 @@ were not read.
         "matplotlib_version": matplotlib.__version__,
         "python_version": platform.python_version(),
         "width_inches": 8.0,
-        "height_inches": 7.4,
+        "height_inches": 8.4,
         "raster_dpi": dpi,
         "background": "OPAQUE_WHITE",
         "raw_unsmoothed_histories": True,
