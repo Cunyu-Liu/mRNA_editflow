@@ -1351,10 +1351,10 @@ training/HPO 不是共同 numeric budget，六个 search generation wall times �
 NO-GO 不运行。因此 `reporting_matrix_complete=true`，但
 `matched_budget_benchmark_execution_complete=false`、fully contract-matched headline rows=0。
 
-GitHub builder commit `11d3ec0` 已推送，A100 focused test 2/2 passed；本机十一组联合
-focused suite 为 35/35。paper evidence sources=41（local/contract 28、A100 `/mnt` 13），
+GitHub builder commit `11d3ec0` 已推送，A100 focused test 2/2 passed；paper integration
+commit `a4d4f64` 推送并同步后，本机与 A100 十一组联合 focused suite 均为 35/35。
+paper evidence sources=41（local/contract 28、A100 `/mnt` 13），
 claim markers=22、figures/builders=6/5、MBP=14/3/1、blockers=MBP-10/13/14/15 与
 `submission_ready=false` 不变。本任务不训练、不新增中央 attempt；100-row 的 92/3/3/1/1
 终态分布不变，Development TEST、new final Evaluation、generated-candidate outcome 与
-guided XEditFlow 均未打开。A100 联合 35-test suite 将在 paper integration commit 推送后
-单次执行并补记。
+guided XEditFlow 均未打开。

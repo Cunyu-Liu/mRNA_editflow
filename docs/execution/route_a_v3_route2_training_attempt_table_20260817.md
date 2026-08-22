@@ -569,14 +569,14 @@ candidate/forward caps，但 algorithm-specific training/HPO 未形成共同 num
 search wall times 未记录，两个 guided rows 因 Critic V2 NO-GO 保持无数值未执行。故矩阵
 reporting complete，但 full contract-matched execution incomplete，headline matched rows=0。
 
-GitHub builder commit `11d3ec0` 已推送且 A100 focused test 2/2；本机十一组联合 suite
-35/35。paper evidence sources=41（28 local/contract + 13 `/mnt`）、claim markers=22、
+GitHub builder commit `11d3ec0` 已推送且 A100 focused test 2/2；paper integration commit
+`a4d4f64` 推送并同步后，本机与 A100 十一组联合 suite 均为 35/35。paper evidence
+sources=41（28 local/contract + 13 `/mnt`）、claim markers=22、
 figures/builders=6/5、MBP=14/3/1、blockers=MBP-10/13/14/15、`submission_ready=false`
 不变。中央 100 attempts 仍为 92 `COMPLETED`、3 `FAILED`、3
 `INCOMPLETE_NO_TERMINAL_RECORD`、1 `STOPPED_FOR_THROUGHPUT_REPAIR`、1
 `STOPPED_PRIORITY_REALLOCATION`。Development TEST、new final Evaluation、generated
-candidate outcome 与 guided XEditFlow 均未打开；A100 联合 35-test suite 等待 paper
-integration commit 推送后单次执行并补记。
+candidate outcome 与 guided XEditFlow 均未打开。
 
 ## Dataset qualification/development table（2026-08-22）
 
