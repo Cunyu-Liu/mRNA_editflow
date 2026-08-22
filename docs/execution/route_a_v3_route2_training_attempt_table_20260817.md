@@ -756,3 +756,29 @@ figures/builders=6/5、MBP=14/3/1、blockers=MBP-10/13/14/15 与
 `submission_ready=false` 不变。中央 100 个 attempts 仍为 92 `COMPLETED`、3 `FAILED`、
 3 `INCOMPLETE_NO_TERMINAL_RECORD`、1 `STOPPED_FOR_THROUGHPUT_REPAIR`、1
 `STOPPED_PRIORITY_REALLOCATION`；`scientific_claim_status=NOT_ESTABLISHED`。
+
+## Generation diversity / quality–cost / failure analysis figure（2026-08-22）
+
+本项为非训练 paper-figure task，不新增或修改中央 CSV attempt，也不查询训练/GPU 进度。
+交叉核查确认既有 Figure 1 已覆盖 evaluator/recovery、STOP/budget-exhaustion 和 candidate/
+duplication，但未把 quality 与 forward-equivalent cost 放在同一坐标，也未单独呈现 Hamming
+diversity；因此新增独立 builder、2 项 focused tests 和四面板 provisional figure，而不重跑
+七个 terminal 方法。输入仅为冻结的 7-row action-space geometry CSV 与 audit；未读取
+candidate payload、Development TEST、新 final Evaluation 或 guided outcome。
+
+独立 evaluator point-estimate quality–cost frontier 为 random legal / unguided Base Flow /
+genetic；sparse measured candidate-recovery frontier 为 random legal / unguided Base Flow。
+random legal 成本最低（64.00448933782268 mean forward-equivalents/source），genetic 独立
+evaluator uplift 最高（1.0978248587628674），Base Flow measured recovery 与 Hamming diversity
+最高（0.20286195286195285 / 0.0765737532452552）。Base Flow duplicate fraction 为
+0.11710858585858586；local-search cap shortfall fraction 为 0.2625210437710438。所有方法
+hard legality=1.0，edit/candidate-budget、no-legal-action、numerical failures 均为 0；无
+per-method uncertainty、完整 wall time 或 closed measured NDCG，不做 formal superiority claim。
+
+GitHub builder commit `559952c` 与 paper integration commit `e7af043` 已推送；A100 正式
+PNG/PDF/SVG、manifest 与 alt text 保存到 `/mnt/.../figures/route2_v332_v1/`。PNG 为
+2160×2100、约 300 dpi、全不透明；PDF 无 image resource 且含嵌入字体，SVG 无 raster
+image。该检查不等于 publisher compliance；target journal/article type/phase 仍 pending。
+本机与 A100 十三组联合 focused suite 均为 41/41。paper evidence sources=46（32
+local/contract + 14 `/mnt`）、claim markers=22、figures/builders=7/6、MBP=14/3/1、
+blockers=MBP-10/13/14/15、`submission_ready=false` 与中央 100-row 92/3/3/1/1 均不变。

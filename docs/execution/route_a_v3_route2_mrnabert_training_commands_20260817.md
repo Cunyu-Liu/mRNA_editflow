@@ -1383,3 +1383,26 @@ focused suite 38/38，本机同为 38/38。paper evidence sources=44（31 local/
 A100 `/mnt`），claim markers=22、figures/builders=6/5、MBP=14/3/1、
 blockers=MBP-10/13/14/15、`submission_ready=false` 与中央 100-row 的 92/3/3/1/1 终态
 均不变。first-order 与 frozen-critic guided generation 继续遵守 Critic V2 terminal NO-GO。
+
+## 52. V3.3.2 Generation diversity / quality–cost / failure analysis figure（2026-08-22）
+
+按 Goal 7 顺序交叉核查后发现真实图形缺口：既有 Figure 1 没有 performance-versus-cost
+坐标，也没有独立 Hamming-diversity panel。新增
+`build_route2_v332_generation_quality_cost_diversity_failure_figure_v1.py` 与 2 项 focused
+tests，只读取冻结的 7-method action-space geometry table/audit，不训练、不轮询、不展开
+generated candidates，不读取 Development TEST/new final Evaluation/guided outcome。
+
+四面板分别为 independent-evaluator uplift–forward-equivalent cost、sparse measured
+recovery–cost、Hamming diversity + unique rate，以及 duplicate/candidate-cap-shortfall
+failure geometry。point-estimate Pareto front 分别为 random/Flow/genetic 与 random/Flow；
+Base Flow 同时显示最高 recovery/diversity 和 0.117109 duplicate fraction，local search 显示
+0.262521 cap shortfall。所有 legality/budget/no-legal/numerical failure 为 0。没有 per-method
+uncertainty、六个 search wall time 或 closed measured NDCG，guided rows 不伪装成 executed。
+
+GitHub commits `559952c`/`e7af043` 已推送；A100 正式 PNG/PDF/SVG/manifest/alt text 位于
+`/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/figures/route2_v332_v1/`。视觉与文件检查确认
+PNG 2160×2100、约 300 dpi、全不透明，PDF 无 raster image resource 且字体嵌入，SVG 无
+raster image；`publisher_compliance_claimed=false`。本机/A100 十三组 focused suite 均为
+41/41；evidence sources=46（32 local/contract、14 A100 `/mnt`）、claims=22、
+figures/builders=7/6、MBP=14/3/1、blockers=MBP-10/13/14/15、`submission_ready=false` 和
+中央 100-row 的 92/3/3/1/1 终态不变。
