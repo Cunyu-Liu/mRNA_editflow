@@ -245,6 +245,28 @@
     "new_final_evaluation_read": false,
     "guided_xeditflow_run": false
   },
+  "selected_outcome_claim_evidence_table": {
+    "status": "SELECTED_OUTCOME_CLAIM_EVIDENCE_CLOSED_UNSUPPORTED_CLAIMS_EXPLICIT",
+    "selected_final_paper_outcome": "BENCHMARK_PLUS_TRANSFER_AND_GENERATION_LIMITS_PAPER",
+    "row_count": 35,
+    "draft_claim_marker_count": 22,
+    "supported_with_declared_boundary_row_count": 22,
+    "unsupported_claim_row_count": 13,
+    "unmapped_draft_claim_marker_count": 0,
+    "unknown_evidence_id_reference_count": 0,
+    "unsupported_claims_allowed_in_manuscript_count": 0,
+    "claim_evidence_table_complete": true,
+    "minimum_package_complete": false,
+    "outcome_trigger_fully_satisfied": false,
+    "submission_ready": false,
+    "builder": "scripts/route_a_v3/build_route2_v332_selected_outcome_claim_evidence_table_v1.py",
+    "focused_test": "tests/route_a_v3/test_build_route2_v332_selected_outcome_claim_evidence_table_v1.py",
+    "table": "docs/paper/route2_v332_selected_outcome_claim_evidence_table_v1.csv",
+    "audit": "audits/route_a_v3_route2_v332_selected_outcome_claim_evidence_table_v1.json",
+    "development_test_read": false,
+    "new_final_evaluation_read": false,
+    "guided_xeditflow_run": false
+  },
   "stale_snapshot_findings": [
     {
       "artifact": "configs/route_a_v3_route2_14_study_final_inventory_v1.json",

@@ -578,6 +578,17 @@ however, `minimum_package_complete=false`, so
 guided-generation and biological success remain unestablished.
 [evidence:E-R2-PAPER-OUTCOME-ADJUDICATION,E-R2-CRITIC-V2-ADJ,E-R2-GSE232-HIST,E-R2-GEN-THREE-LAYER-AUDIT,E-R2-ERROR-DOMAIN-SHIFT-AUDIT]
 
+The selected-outcome claim/evidence table closes all 22 claim markers in this
+draft to registered evidence IDs and an explicit scope boundary. It also lists
+13 unsupported statements covering Outcome A/B headlines, biological or guided
+success, external generation validation, equal realized candidate counts,
+INS/DEL, missing-as-zero treatment, historical final confirmation, package or
+submission completeness, unread E-MTAB outcomes and causal region/context
+mechanisms. No unsupported row is allowed in the selected-outcome manuscript;
+the table therefore records both the permitted Benchmark+limits narrative and
+the claims that remain unavailable.
+[evidence:E-R2-CLAIM-EVIDENCE-BUILDER,E-R2-CLAIM-EVIDENCE-AUDIT]
+
 ## Discussion draft
 
 ### A confirmatory Route 2 cohort requires denser and more explicit evidence

@@ -81,6 +81,12 @@ ERROR_DOMAIN_SHIFT_AUDIT = (
 PAPER_OUTCOME_ADJUDICATION = (
     ROOT / "audits/route_a_v3_route2_v332_paper_outcome_adjudication_v1.json"
 )
+SELECTED_OUTCOME_CLAIM_EVIDENCE_TABLE = (
+    ROOT / "docs/paper/route2_v332_selected_outcome_claim_evidence_table_v1.csv"
+)
+SELECTED_OUTCOME_CLAIM_EVIDENCE_AUDIT = (
+    ROOT / "audits/route_a_v3_route2_v332_selected_outcome_claim_evidence_table_v1.json"
+)
 READINESS = (
     ROOT
     / "configs/route_a_v3_route2_mrnabert_critic_v2_guidance_readiness_protocol_v1.json"
@@ -101,7 +107,7 @@ def test_claim_and_consistency_evidence_references_are_closed() -> None:
     consistency = _load(CONSISTENCY)
 
     evidence_ids = [row["evidence_id"] for row in evidence["sources"]]
-    assert len(evidence_ids) == len(set(evidence_ids)) == 49
+    assert len(evidence_ids) == len(set(evidence_ids)) == 51
 
     claims = re.findall(r"\[claim:([^\]]+)\]", draft)
     assert len(claims) == len(set(claims)) == 22
@@ -121,14 +127,14 @@ def test_evidence_source_paths_are_closed_without_overstating_verification() -> 
     preflight = evidence["source_path_preflight"]
 
     assert preflight["status"] == "PASS"
-    assert preflight["source_locations_checked"] == len(evidence["sources"]) == 49
+    assert preflight["source_locations_checked"] == len(evidence["sources"]) == 51
     assert (
         preflight["local_or_contract_locations_checked"]
         + preflight["a100_mnt_locations_checked"]
         == preflight["source_locations_checked"]
     )
     assert preflight["missing_locations"] == 0
-    assert preflight["local_or_contract_locations_checked"] == 35
+    assert preflight["local_or_contract_locations_checked"] == 37
     assert preflight["a100_mnt_locations_checked"] == 14
     assert preflight["check_scope"] == "FILE_EXISTENCE_ONLY_NO_EVIDENCE_CONTENT_OPENED"
     assert preflight["human_content_verification_completed"] is False
@@ -223,6 +229,12 @@ def test_evidence_source_paths_are_closed_without_overstating_verification() -> 
     )
     assert by_id["E-R2-PAPER-OUTCOME-ADJUDICATION"]["location"] == (
         "audits/route_a_v3_route2_v332_paper_outcome_adjudication_v1.json"
+    )
+    assert by_id["E-R2-CLAIM-EVIDENCE-BUILDER"]["location"] == (
+        "scripts/route_a_v3/build_route2_v332_selected_outcome_claim_evidence_table_v1.py"
+    )
+    assert by_id["E-R2-CLAIM-EVIDENCE-AUDIT"]["location"] == (
+        "audits/route_a_v3_route2_v332_selected_outcome_claim_evidence_table_v1.json"
     )
 
 
@@ -1164,6 +1176,76 @@ def test_paper_outcome_route_is_frozen_without_overcalling_submission_eligibilit
     assert "outcomes unexposed until predictor, generator, baselines" in draft
 
 
+def test_selected_outcome_claim_evidence_closes_markers_and_excludes_unsupported_claims() -> None:
+    draft = " ".join(DRAFT.read_text(encoding="utf-8").split())
+    consistency = _load(CONSISTENCY)
+    audit = _load(SELECTED_OUTCOME_CLAIM_EVIDENCE_AUDIT)
+    with SELECTED_OUTCOME_CLAIM_EVIDENCE_TABLE.open(
+        newline="", encoding="utf-8"
+    ) as handle:
+        rows = list(csv.DictReader(handle))
+    method = next(
+        row
+        for row in consistency["methods"]
+        if row["method_id"] == "M-R2-SELECTED-OUTCOME-CLAIM-EVIDENCE"
+    )
+    result = next(
+        row
+        for row in consistency["results"]
+        if row["result_id"] == "R-R2-SELECTED-OUTCOME-CLAIM-EVIDENCE"
+    )
+
+    assert len(rows) == audit["row_count"] == method["row_count"] == result[
+        "row_count"
+    ] == 35
+    assert audit["draft_claim_marker_count"] == method[
+        "draft_claim_marker_count"
+    ] == result["draft_claim_marker_count"] == 22
+    assert audit["supported_with_declared_boundary_row_count"] == result[
+        "supported_with_declared_boundary_row_count"
+    ] == 22
+    assert audit["unsupported_claim_row_count"] == method[
+        "unsupported_claim_row_count"
+    ] == result["unsupported_claim_row_count"] == 13
+    assert audit["unmapped_draft_claim_marker_count"] == result[
+        "unmapped_draft_claim_marker_count"
+    ] == 0
+    assert audit["unknown_evidence_id_reference_count"] == result[
+        "unknown_evidence_id_reference_count"
+    ] == 0
+    assert audit["unsupported_claims_allowed_in_manuscript_count"] == method[
+        "unsupported_claims_allowed_in_manuscript_count"
+    ] == result["unsupported_claims_allowed_in_manuscript_count"] == 0
+    assert audit["claim_evidence_table_complete"] is result[
+        "claim_evidence_table_complete"
+    ] is True
+
+    supported = [row for row in rows if row["claim_status"].startswith("SUPPORTED")]
+    unsupported = [row for row in rows if row["claim_status"] == "UNSUPPORTED"]
+    assert {row["claim_id"] for row in supported} == {
+        f"C-R2-{index:03d}" for index in range(1, 23)
+    }
+    assert {row["claim_id"] for row in unsupported} == {
+        f"U-R2-{index:03d}" for index in range(1, 14)
+    }
+    assert all(row["evidence_ids"] for row in rows)
+    assert all(row["allowed_in_selected_outcome_manuscript"] == "true" for row in supported)
+    assert all(row["allowed_in_selected_outcome_manuscript"] == "false" for row in unsupported)
+    assert all(row["minimum_package_complete"] == "false" for row in rows)
+    assert all(row["outcome_trigger_fully_satisfied"] == "false" for row in rows)
+    assert all(row["submission_ready"] == "false" for row in rows)
+    assert all(row["development_test_read"] == "false" for row in rows)
+    assert all(row["new_final_evaluation_read"] == "false" for row in rows)
+    assert all(row["guided_xeditflow_run"] == "false" for row in rows)
+    assert result["selected_final_paper_outcome"] == (
+        "BENCHMARK_PLUS_TRANSFER_AND_GENERATION_LIMITS_PAPER"
+    )
+    assert result["model_or_biological_success_established"] is False
+    assert "closes all 22 claim markers" in draft
+    assert "13 unsupported statements" in draft
+    assert "No unsupported row is allowed" in draft
+
+
 def test_historical_gse232572_transfer_remains_negative_and_nonconfirmatory() -> None:
     draft = " ".join(DRAFT.read_text(encoding="utf-8").split())
     consistency = _load(CONSISTENCY)
@@ -1307,6 +1389,9 @@ def test_minimum_benchmark_package_is_itemized_and_not_overcalled() -> None:
     assert "six reproducible figure builders" in by_id["MBP-17"]["evidence_or_basis"]
     assert "seven figures" in by_id["MBP-17"]["evidence_or_basis"]
     assert "12-row error/domain-shift" in by_id["MBP-17"]["evidence_or_basis"]
+    assert "35-row selected-outcome claim-evidence" in by_id["MBP-17"][
+        "evidence_or_basis"
+    ]
     assert audit["manuscript_figures"]["status"] == (
         "PROVISIONAL_GENERAL_MANUSCRIPT_FIGURES_RENDERED"
     )
@@ -1453,6 +1538,28 @@ def test_minimum_benchmark_package_is_itemized_and_not_overcalled() -> None:
         "focused_test": "tests/route_a_v3/test_build_route2_v332_error_domain_shift_analysis_table_v1.py",
         "table": "docs/paper/route2_v332_error_domain_shift_analysis_table_v1.csv",
         "audit": "audits/route_a_v3_route2_v332_error_domain_shift_analysis_table_v1.json",
+        "development_test_read": False,
+        "new_final_evaluation_read": False,
+        "guided_xeditflow_run": False,
+    }
+    assert audit["selected_outcome_claim_evidence_table"] == {
+        "status": "SELECTED_OUTCOME_CLAIM_EVIDENCE_CLOSED_UNSUPPORTED_CLAIMS_EXPLICIT",
+        "selected_final_paper_outcome": "BENCHMARK_PLUS_TRANSFER_AND_GENERATION_LIMITS_PAPER",
+        "row_count": 35,
+        "draft_claim_marker_count": 22,
+        "supported_with_declared_boundary_row_count": 22,
+        "unsupported_claim_row_count": 13,
+        "unmapped_draft_claim_marker_count": 0,
+        "unknown_evidence_id_reference_count": 0,
+        "unsupported_claims_allowed_in_manuscript_count": 0,
+        "claim_evidence_table_complete": True,
+        "minimum_package_complete": False,
+        "outcome_trigger_fully_satisfied": False,
+        "submission_ready": False,
+        "builder": "scripts/route_a_v3/build_route2_v332_selected_outcome_claim_evidence_table_v1.py",
+        "focused_test": "tests/route_a_v3/test_build_route2_v332_selected_outcome_claim_evidence_table_v1.py",
+        "table": "docs/paper/route2_v332_selected_outcome_claim_evidence_table_v1.csv",
+        "audit": "audits/route_a_v3_route2_v332_selected_outcome_claim_evidence_table_v1.json",
         "development_test_read": False,
         "new_final_evaluation_read": False,
         "guided_xeditflow_run": False,

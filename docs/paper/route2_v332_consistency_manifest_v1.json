@@ -259,6 +259,33 @@
       ]
     },
     {
+      "method_id": "M-R2-SELECTED-OUTCOME-CLAIM-EVIDENCE",
+      "label": "Selected Benchmark+limits claim/evidence and unsupported-claim closure",
+      "analysis_intent": "MANUSCRIPT_CLAIM_MARKER_EVIDENCE_CLOSURE_AND_UNSUPPORTED_CLAIM_EXCLUSION",
+      "status": "SELECTED_OUTCOME_CLAIM_EVIDENCE_CLOSED_UNSUPPORTED_CLAIMS_EXPLICIT",
+      "selected_final_paper_outcome": "BENCHMARK_PLUS_TRANSFER_AND_GENERATION_LIMITS_PAPER",
+      "row_count": 35,
+      "draft_claim_marker_count": 22,
+      "supported_with_declared_boundary_row_count": 22,
+      "unsupported_claim_row_count": 13,
+      "unmapped_draft_claim_marker_count": 0,
+      "unknown_evidence_id_reference_count": 0,
+      "unsupported_claims_allowed_in_manuscript_count": 0,
+      "minimum_package_complete": false,
+      "outcome_trigger_fully_satisfied": false,
+      "submission_ready": false,
+      "table": "docs/paper/route2_v332_selected_outcome_claim_evidence_table_v1.csv",
+      "audit": "audits/route_a_v3_route2_v332_selected_outcome_claim_evidence_table_v1.json",
+      "development_test_accessed": false,
+      "new_final_evaluation_accessed": false,
+      "guided_xeditflow_run": false,
+      "evidence_ids": [
+        "E-R2-CLAIM-EVIDENCE-BUILDER",
+        "E-R2-CLAIM-EVIDENCE-AUDIT",
+        "E-R2-PAPER-OUTCOME-ADJUDICATION"
+      ]
+    },
+    {
       "method_id": "M-R2-FIGURES",
       "label": "Provisional general-manuscript figure assembly",
       "analysis_intent": "FROZEN_EVIDENCE_VISUALIZATION",
@@ -954,6 +981,33 @@
       ]
     },
     {
+      "result_id": "R-R2-SELECTED-OUTCOME-CLAIM-EVIDENCE",
+      "status": "SELECTED_OUTCOME_CLAIM_EVIDENCE_CLOSED_UNSUPPORTED_CLAIMS_EXPLICIT",
+      "selected_final_paper_outcome": "BENCHMARK_PLUS_TRANSFER_AND_GENERATION_LIMITS_PAPER",
+      "final_paper_outcome_frozen": true,
+      "row_count": 35,
+      "draft_claim_marker_count": 22,
+      "supported_with_declared_boundary_row_count": 22,
+      "unsupported_claim_row_count": 13,
+      "unmapped_draft_claim_marker_count": 0,
+      "unknown_evidence_id_reference_count": 0,
+      "unsupported_claims_allowed_in_manuscript_count": 0,
+      "claim_evidence_table_complete": true,
+      "minimum_package_complete": false,
+      "outcome_trigger_fully_satisfied": false,
+      "submission_ready": false,
+      "model_or_biological_success_established": false,
+      "development_test_read": false,
+      "new_final_evaluation_read": false,
+      "guided_xeditflow_run": false,
+      "scientific_claim_status": "BENCHMARK_AND_LIMITS_CLAIMS_ONLY_MODEL_AND_BIOLOGICAL_SUCCESS_NOT_ESTABLISHED",
+      "evidence_ids": [
+        "E-R2-CLAIM-EVIDENCE-BUILDER",
+        "E-R2-CLAIM-EVIDENCE-AUDIT",
+        "E-R2-PAPER-OUTCOME-ADJUDICATION"
+      ]
+    },
+    {
       "result_id": "R-R2-MINIMUM-BENCHMARK-PACKAGE",
       "requirement_count": 18,
       "itemwise_adjudication_complete": true,
@@ -995,6 +1049,8 @@
         "E-R2-ERROR-DOMAIN-SHIFT-BUILDER",
         "E-R2-ERROR-DOMAIN-SHIFT-AUDIT",
         "E-R2-PAPER-OUTCOME-ADJUDICATION",
+        "E-R2-CLAIM-EVIDENCE-BUILDER",
+        "E-R2-CLAIM-EVIDENCE-AUDIT",
         "E-R2-FIGURE-BUILDER",
         "E-R2-FIGURE-MANIFEST",
         "E-R2-CONVERSION-FIGURE-BUILDER",

@@ -8,10 +8,10 @@
   "independent_final_evaluation_performed": false,
   "human_verification_required": true,
   "source_path_preflight": {
-    "observed_at": "2026-08-22T17:17:44+08:00",
+    "observed_at": "2026-08-22T17:29:13+08:00",
     "status": "PASS",
-    "source_locations_checked": 49,
-    "local_or_contract_locations_checked": 35,
+    "source_locations_checked": 51,
+    "local_or_contract_locations_checked": 37,
     "a100_mnt_locations_checked": 14,
     "missing_locations": 0,
     "check_scope": "FILE_EXISTENCE_ONLY_NO_EVIDENCE_CONTENT_OPENED",
@@ -386,6 +386,21 @@
       "kind": "terminal_three_outcome_manuscript_route_adjudication",
       "location": "audits/route_a_v3_route2_v332_paper_outcome_adjudication_v1.json",
       "locator": "A/B/C condition-level adjudication; Benchmark+transfer/generation-limits forward route frozen while minimum-package completeness, submission eligibility and model/biological success remain false; next-generation source/candidate, dense-pool, replicate/SE, context and external-exposure requirements",
+      "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING",
+      "external_evidence": false
+    },
+    {
+      "evidence_id": "E-R2-CLAIM-EVIDENCE-BUILDER",
+      "kind": "reproducible_selected_outcome_claim_evidence_table_builder",
+      "location": "scripts/route_a_v3/build_route2_v332_selected_outcome_claim_evidence_table_v1.py",
+      "locator": "automatic extraction of all 22 manuscript claim markers and adjacent evidence IDs; fixed scientific boundary map; 13 explicit unsupported A/B/guided/biological/final-confirmation/action-scope/missing-as-zero/causal claims; unknown-evidence and unmapped-claim rejection",
+      "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING"
+    },
+    {
+      "evidence_id": "E-R2-CLAIM-EVIDENCE-AUDIT",
+      "kind": "derived_selected_outcome_claim_evidence_table_audit",
+      "location": "audits/route_a_v3_route2_v332_selected_outcome_claim_evidence_table_v1.json",
+      "locator": "35-row selected Benchmark+limits claim table: 22 supported-with-declared-boundary rows, 13 unsupported rows, zero unmapped claim markers, zero unknown evidence IDs and zero unsupported claims allowed in the manuscript",
       "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING",
       "external_evidence": false
     }

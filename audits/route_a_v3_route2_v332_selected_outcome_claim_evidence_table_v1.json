@@ -1,0 +1,31 @@
+{
+  "claim_evidence_table_complete": true,
+  "draft_claim_marker_count": 22,
+  "duplicate_claim_id_count": 0,
+  "final_paper_outcome_frozen": true,
+  "minimum_package_complete": false,
+  "model_or_biological_success_established": false,
+  "outcome_trigger_fully_satisfied": false,
+  "protected_outcomes": {
+    "development_test_read": false,
+    "guided_xeditflow_run": false,
+    "new_final_evaluation_read": false
+  },
+  "row_count": 35,
+  "schema_version": "route_a_v3_route2_v332_selected_outcome_claim_evidence_table.v1",
+  "scientific_claim_status": "BENCHMARK_AND_LIMITS_CLAIMS_ONLY_MODEL_AND_BIOLOGICAL_SUCCESS_NOT_ESTABLISHED",
+  "selected_final_paper_outcome": "BENCHMARK_PLUS_TRANSFER_AND_GENERATION_LIMITS_PAPER",
+  "source_paths": {
+    "draft": "docs/paper/route2_v332_methods_results_draft_v1.md",
+    "evidence_manifest": "docs/paper/route2_v332_evidence_manifest_v1.json",
+    "paper_outcome_adjudication": "audits/route_a_v3_route2_v332_paper_outcome_adjudication_v1.json"
+  },
+  "status": "SELECTED_OUTCOME_CLAIM_EVIDENCE_CLOSED_UNSUPPORTED_CLAIMS_EXPLICIT",
+  "submission_ready": false,
+  "supported_with_declared_boundary_row_count": 22,
+  "table_path": "docs/paper/route2_v332_selected_outcome_claim_evidence_table_v1.csv",
+  "unknown_evidence_id_reference_count": 0,
+  "unmapped_draft_claim_marker_count": 0,
+  "unsupported_claim_row_count": 13,
+  "unsupported_claims_allowed_in_manuscript_count": 0
+}
