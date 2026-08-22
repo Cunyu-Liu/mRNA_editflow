@@ -1687,3 +1687,28 @@ validator focused tests=8/8；本机/A100 精确 V3.3.2 suite 均为 81/81。Git
 MBP=14/3/1、blockers=MBP-10/13/14/15、model/biological/external/guided success=false、
 human review complete=false、formal release/tag=false、`minimum_package_complete=false`、
 `outcome_trigger_fully_satisfied=false` 与 `submission_ready=false` 均不变。
+
+## 66. V3.3.2 legacy tracked-payload formal-release disposition audit（2026-08-22）
+
+本项无训练命令、GPU/训练进度轮询或新 attempt。只检查 5 个目标路径是否 tracked、文件 size 和
+非 payload 文本引用；没有打开 JSONL/Parquet 内容，没有 copy/delete/move，未改 legacy reader，
+未改 Git history，也未创建 formal tag/Release。
+
+tracked payloads 为 1 个 46,498-byte `excel_inventory.parquet` 和 4 个总计 34,739,577-byte legacy
+B0 JSONL，5 文件合计 34,786,075 bytes。Parquet 只有历史 producer、无当前 Route 2 consumer；4 个
+B0 JSONL 仍被 `audit_split_manifests.py`、`eval_tracks.py`、`leakage_audit.py`、
+`fm0_exposure_audit.py` 直接读取。旧 v3.1 contract 要求 active loader reject，但当前 test tree 未找到
+`SUPERSEDED_NOT_LOADABLE` / `LEGACY_B0_INVALIDATION_MANIFEST` negative-loader evidence。因此 formal
+release blocker 不只是文件仍 tracked，还包括 4-reader fail-close 尚未实现。
+
+disposition audit/memo 推荐：取得明确用户授权后，先 fail-close readers 并加 negative tests，再保存在
+`/mnt/.../route2/legacy_repository_payloads/`、迁移 Parquet 默认输出、停止 current HEAD tracking、加入
+窄 ignore 并重新裁决 RC；本任务不建议 shared-history rewrite，任何 history rewrite 需要独立授权。
+Code Availability statement/audit、consistency/evidence manifests 和 RC audit 已同步，evidence
+64→65（50→51 local/contract，`/mnt` 仍 14）。
+
+legacy/Code Availability/RC/evidence focused tests=31/31；本机/A100 精确 V3.3.2 suite 均为 85/85。
+GitHub core commit `5bd4424` 已推送，A100 自 `b93ba20` 快进到该 commit。中央 100-row 92/3/3/1/1、
+claims=22、MBP=14/3/1、blockers=MBP-10/13/14/15、model/biological/external/guided success=false、
+payload migration authorized=false、formal release/tag=false、`minimum_package_complete=false`、
+`outcome_trigger_fully_satisfied=false` 与 `submission_ready=false` 均不变。

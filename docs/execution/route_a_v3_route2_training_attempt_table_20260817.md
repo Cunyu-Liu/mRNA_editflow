@@ -979,6 +979,38 @@ figures/builders=7/6、MBP=14/3/1、blockers=MBP-10/13/14/15，中央 100-row 92
 `minimum_package_complete=false`、`outcome_trigger_fully_satisfied=false` 与
 `submission_ready=false` 均不变。
 
+## V3.3.2 legacy tracked-payload formal-release disposition audit（2026-08-22）
+
+按 internal GitHub RC blocker 顺序完成 5 个 legacy tracked payload 的只读 release-disposition
+核查。本项不训练、不轮询 GPU/训练进度，不读取 payload 内容、Development TEST、new final
+Evaluation、sealed GSE246381、E-MTAB-10902 outcome、generated-candidate outcome 或 guided
+outcome；中央 attempt 表没有新增行，仍为 100 total / 92 completed / 3 failed /
+3 incomplete / 1 stopped-throughput / 1 stopped-priority。
+
+路径/tracking/size/text-reference 核查确认：`data_registry/excel_inventory.parquet` 为 46,498 bytes；
+4 个 superseded B0 JSONL 合计 34,739,577 bytes；5 文件总计 34,786,075 bytes。它们全部仍 tracked，
+与 V3.3.2 formal Git payload boundary 冲突。Parquet 有历史 producer
+`scripts/data/import_excel_inventory.py`，没有当前 Route 2 consumer；四个 B0 JSONL 仍被 4 个可调用
+legacy entrypoints 直接读取：`audit_split_manifests.py`、`eval_tracks.py`、`leakage_audit.py` 和
+`fm0_exposure_audit.py`。旧 v3.1 合同要求 old B0 为 `SUPERSEDED_NOT_LOADABLE`，但当前没有找到
+active-loader negative-test evidence，因此先前仅写“禁止 active load”的说明不足以证明实现闭合。
+
+推荐顺序固定为：在用户明确授权后，先为 4 个 legacy readers 增加 fail-closed guards/negative tests，
+保持 JSONL 不修改；再将 5 个 payload 保存在
+`/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/legacy_repository_payloads/` 并把 Parquet producer 默认
+输出移出 Git tree；随后才停止 current HEAD tracking 并加入窄范围 ignore；最后重新裁决 RC。共享 Git
+history rewrite 不在本任务建议内，若要执行必须另行明确授权。当前没有 copy/delete/move、history
+rewrite、reader behavior change、formal tag 或 GitHub Release。
+
+Code Availability 已修正为：Route 2 runtime artifacts 位于 `/mnt`，但当前 working tree 仍含 5 个
+legacy data payload，formal-release payload boundary 不合规。新增 disposition audit/memo 与 4 项
+focused tests；legacy/Code Availability/RC/evidence focused tests=31/31。本机/A100 精确 V3.3.2 suite
+均为 85/85。GitHub core commit `5bd4424` 已推送；A100 自 `b93ba20` 一次 fast-forward 到该 commit。
+evidence=65（51 local/contract、14 `/mnt`），claims=22、figures/builders=7/6、MBP=14/3/1、
+blockers=MBP-10/13/14/15、formal release/tag=false、payload migration authorized=false、
+`minimum_package_complete=false`、`outcome_trigger_fully_satisfied=false` 与
+`submission_ready=false` 均不变。
+
 ## V3.3.2 Code Availability section completion（2026-08-22）
 
 按 Goal 7 顺序完成 Code Availability 内部 statement。本项不训练、不轮询 GPU/训练进度，不读取
