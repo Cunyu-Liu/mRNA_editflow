@@ -10,7 +10,8 @@
     "budget": "MINIMUM_SIX_METHOD_FULL_COHORT_WALL_TIME",
     "comparison_support": "COMMON_FULLY_COMPLETED_SOURCE_PREFIX",
     "partial_source_counted_as_complete": false,
-    "undefined_closed_source_filled_with_zero": false
+    "undefined_closed_source_filled_with_zero": false,
+    "metric_specific_defined_support_preserved": true
   },
   "method_inventory": [
     "first_order_guidance",
@@ -42,9 +43,9 @@
     "MISSING_EQUAL_WALL_ARTIFACT_AT_FINAL_ASSEMBLY"
   ],
   "verification": {
-    "focused_equal_wall_and_final_chain_passed": 49,
+    "focused_equal_wall_and_final_chain_passed": 50,
     "focused_equal_wall_and_final_chain_failed": 0,
-    "expanded_xedit_passed": 211,
+    "expanded_xedit_passed": 212,
     "expanded_xedit_failed": 0,
     "exact_v332_passed": 96,
     "exact_v332_failed": 0,

@@ -1519,8 +1519,8 @@ benchmark job，固定原 guiding checkpoint、256 critic forwards/source、popu
 既有 search hyperparameters，明确 `timing_only_no_baseline_reselection=true`。该 job 尚未运行，并继续受
 readiness 与 GPU0–5 约束。
 
-正确 Python 3.13 环境下扩展 XEdit focused cohort=211/211、精确 V3.3.2 cohort=96/96；本批定向
-equal-wall/final-chain tests=49/49，Python compile 与 diff-check PASS。默认 macOS Python 3.9 对既有
+正确 Python 3.13 环境下扩展 XEdit focused cohort=212/212、精确 V3.3.2 cohort=96/96；本批定向
+equal-wall/final-chain tests=50/50，Python compile 与 diff-check PASS。默认 macOS Python 3.9 对既有
 `zip(..., strict=True)` 的两项失败被确认是解释器不满足项目 Python≥3.10 要求，不据此改写正式实现。
 Development TEST/new Evaluation read=0，guidance/replacement Evaluation/submission-ready 状态不变；A100
 current-HEAD sync/test 仍等待 launch-head `22317ed` 的 active jobs terminal。

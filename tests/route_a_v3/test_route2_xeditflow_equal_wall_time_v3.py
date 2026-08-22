@@ -114,7 +114,25 @@ def test_equal_wall_preserves_undefined_closed_sources_without_zero_fill() -> No
     )
     invalid = copy.deepcopy(closed)
     invalid["full_soft_value_smc"]["per_source"][SOURCES[0]]["ndcg"] = 0.0
-    with pytest.raises(Exception, match="undefined source carries"):
+    with pytest.raises(Exception, match="undefined source carries NDCG"):
         equal_wall_time_sensitivity_v3(
             times, invalid, source_order=SOURCES, base_flow_training_seed=20260905
         )
+
+
+def test_equal_wall_preserves_defined_regret_and_top1_when_ndcg_is_undefined() -> None:
+    times, closed = _inputs()
+    for payload in closed.values():
+        payload["per_source"][SOURCES[0]] = {
+            "status": "UNDEFINED_ZERO_MEASURED_GAIN",
+            "ndcg": None,
+            "normalized_regret": 0.0,
+            "top_1_recall": 1.0,
+        }
+    result = equal_wall_time_sensitivity_v3(
+        times, closed, source_order=SOURCES, base_flow_training_seed=20260906
+    )
+    for method in result["methods"].values():
+        assert method["defined_source_count"] == method["source_count"] - 1
+        assert method["regret_defined_source_count"] == method["source_count"]
+        assert method["top_1_defined_source_count"] == method["source_count"]

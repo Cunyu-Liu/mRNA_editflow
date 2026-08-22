@@ -2281,5 +2281,5 @@ closed source 继续排除而不填零。
 
 这些配置当前未 materialize、timing job 未执行，因为 Critic/SetFlow readiness 尚未通过。没有读取
 Development TEST/new Evaluation，没有重训 Critic V2/Base Flow V2，也没有向中央 ledger 写入非训练行。
-本机正确 Python 3.13 环境下 XEdit focused=211/211、精确 V3.3.2=96/96；定向=49/49，compile/
+本机正确 Python 3.13 环境下 XEdit focused=212/212、精确 V3.3.2=96/96；定向=50/50，compile/
 diff-check PASS。A100 current-HEAD 测试等待 launch-head jobs terminal 后执行。

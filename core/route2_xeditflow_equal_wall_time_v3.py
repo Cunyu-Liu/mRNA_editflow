@@ -66,37 +66,47 @@ def _macro_on_sources(
     rows = closed.get("per_source")
     _require(isinstance(rows, Mapping), f"equal-wall closed per-source rows are absent: {method}")
     selected = [rows[key] for key in source_keys]
-    defined = []
+    ndcg_defined = []
+    regret_defined = []
+    top_1_defined = []
     for row in selected:
         if row.get("status") != "DEFINED":
             _require(
-                row.get("ndcg") is None
-                and row.get("normalized_regret") is None
-                and row.get("top_1_recall") is None,
-                f"equal-wall undefined source carries a metric: {method}",
+                row.get("ndcg") is None,
+                f"equal-wall undefined source carries NDCG: {method}",
             )
         else:
             _require(
-                all(
-                    isinstance(row.get(key), (int, float))
-                    and not isinstance(row.get(key), bool)
-                    and math.isfinite(float(row[key]))
-                    for key in ("ndcg", "normalized_regret", "top_1_recall")
-                ),
-                f"equal-wall defined source metric is invalid: {method}",
+                isinstance(row.get("ndcg"), (int, float))
+                and not isinstance(row.get("ndcg"), bool)
+                and math.isfinite(float(row["ndcg"])),
+                f"equal-wall defined source NDCG is invalid: {method}",
             )
-            defined.append(row)
-    _require(len(defined) >= 2, f"equal-wall closed defined support is too small: {method}")
+            ndcg_defined.append(float(row["ndcg"]))
+        for key, target in (
+            ("normalized_regret", regret_defined),
+            ("top_1_recall", top_1_defined),
+        ):
+            value = row.get(key)
+            if value is not None:
+                _require(
+                    isinstance(value, (int, float))
+                    and not isinstance(value, bool)
+                    and math.isfinite(float(value)),
+                    f"equal-wall source metric is invalid: {method}/{key}",
+                )
+                target.append(float(value))
+    _require(len(ndcg_defined) >= 2, f"equal-wall closed NDCG support is too small: {method}")
+    _require(len(regret_defined) >= 2, f"equal-wall closed regret support is too small: {method}")
+    _require(len(top_1_defined) >= 2, f"equal-wall closed top-1 support is too small: {method}")
     return {
         "source_count": len(selected),
-        "defined_source_count": len(defined),
-        "source_macro_ndcg": float(np.mean([float(row["ndcg"]) for row in defined])),
-        "source_macro_normalized_regret": float(
-            np.mean([float(row["normalized_regret"]) for row in defined])
-        ),
-        "source_macro_top_1_recall": float(
-            np.mean([float(row["top_1_recall"]) for row in defined])
-        ),
+        "defined_source_count": len(ndcg_defined),
+        "regret_defined_source_count": len(regret_defined),
+        "top_1_defined_source_count": len(top_1_defined),
+        "source_macro_ndcg": float(np.mean(ndcg_defined)),
+        "source_macro_normalized_regret": float(np.mean(regret_defined)),
+        "source_macro_top_1_recall": float(np.mean(top_1_defined)),
     }
 
 
