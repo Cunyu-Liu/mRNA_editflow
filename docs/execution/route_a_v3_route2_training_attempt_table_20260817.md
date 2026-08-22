@@ -915,3 +915,23 @@ markers、13 unsupported claims 和所有 protected fields 不变。GitHub core 
 evidence sources=54（40 local/contract、14 `/mnt`）、claims=22、figures/builders=7/6、
 MBP=14/3/1、blockers=MBP-10/13/14/15、`minimum_package_complete=false`、
 `submission_ready=false` 与中央 100-row 92/3/3/1/1 终态不变。
+
+## V3.3.2 Results section completion（2026-08-22）
+
+按 Goal 7 顺序完成 Results 内部证据稿闭包。本项不训练、不轮询 GPU/训练进度，不读取
+Development TEST、new final Evaluation、sealed payload、generated-candidate outcome 或 guided
+outcome。Results 的 15 个 subsection 已覆盖 baseline/三轨/A1-true-A2/matched budget、独立
+evaluator、七方法 generation、action geometry、quality-cost、error/domain shift、historical
+transfer、learning curves、Critic V1/V2 NO-GO、minimum package 与 final manuscript route。
+
+没有新增或重解释终态数值。completion audit 固定：45-row baseline inventory、52-row three-track、
+9 个 A1 numeric tasks、0 个 terminal true-A2 numeric rows、0 个 fully contract-matched headline rows、
+Critic V1 仅 1/3 seed margin positive、Critic V2 margin -0.015343731738697977、historical
+`preregistered_pass=false`、new unexposed Evaluation records=0。Results section complete 不建立
+model、biological、external-transfer 或 guided success，也不改变 14/3/1 package 和四个 blockers。
+
+GitHub core commit `86e63bf` 已推送，A100 自 `7ae4e57` 一次 fast-forward；本机/A100 全部
+V3.3.2 suite 均为 57/57。evidence sources=55（41 local/contract、14 `/mnt`）、claims=22、
+figures/builders=7/6、MBP=14/3/1、blockers=MBP-10/13/14/15、
+`minimum_package_complete=false`、`outcome_trigger_fully_satisfied=false`、
+`submission_ready=false` 与中央 100-row 92/3/3/1/1 终态不变。
