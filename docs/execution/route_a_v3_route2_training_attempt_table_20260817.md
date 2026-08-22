@@ -1050,3 +1050,35 @@ GitHub core commit `2adb8c3` 已推送；A100 工作树自 `52a41cb` 一次 fast
 （48 local/contract、14 `/mnt`），claims=22、figures/builders=7/6、MBP=14/3/1、
 blockers=MBP-10/13/14/15、formal GitHub release/tag=false、`minimum_package_complete=false`、
 `outcome_trigger_fully_satisfied=false` 与 `submission_ready=false` 均不变。
+
+## V3.3.2 accountable-human study-rights review packet preparation（2026-08-22）
+
+按 provider-rights evidence 后续顺序完成 14-study accountable-human review packet 的机器侧准备。
+本项不训练、不轮询 GPU/训练进度，不读取 Development TEST、new final Evaluation、sealed
+GSE246381、E-MTAB-10902 outcome、generated-candidate outcome 或 guided outcome；中央 attempt 表
+没有新增行，仍为 100 total / 92 completed / 3 failed / 3 incomplete /
+1 stopped-throughput / 1 stopped-priority。
+
+packet 为 14 rows × 42 columns：17 个冻结 machine-evidence fields、20 个人工判断/签署 fields 和
+5 个 protected-outcome fields。当前 14 rows 全部 `PENDING`，`COMPLETED=0`、`HOLD=0`、
+accountable signoff=0、target-journal policy checked=0、exact-file redistribution review authorization=0。
+人工姓名、角色、机构、日期、study-specific rights source、license/terms、analysis/publication decision、
+redistribution decision、exact-file scope、target journal、Data Availability approval 和 signoff 均保持空白；
+agent 没有代替 accountable human 填写或裁决。
+
+同一 builder 支持人工填表后的 completeness audit：机器证据不可改写；`COMPLETED` 必须具备身份、日期、
+rights source、non-outcome metadata/content scope、citation、use/redistribution、target-journal policy、
+Data Availability wording 和 signoff；exact-file authorization 必须列出精确文件范围；`PENDING` 或
+`HOLD` 不能授权 exact files。即使未来 14 rows 全部完成，review completion 也不自动成为 project
+release authorization，stable repository/version、code license、legacy tracked-payload policy 和最终
+release decision 仍是独立 gate。
+
+spreadsheets skill 的 artifact-operation marker 在 workspace 中仍缺失并返回 `MODULE_NOT_FOUND`；
+没有猜测路径、安装依赖、调用替代 workbook library、生成 XLSX 或声称视觉验证。bundled Python
+只读 CSV 核查通过：14×42、14 unique studies、machine/human/protected=17/20/5、0 formula-like
+cells。GitHub core commit `b93ba20` 已推送；A100 自 `2adb8c3` 一次 fast-forward 到该 commit。
+validator focused tests=8/8，本机/A100 精确 V3.3.2 suite 均为 81/81。evidence=64
+（50 local/contract、14 `/mnt`），claims=22、figures/builders=7/6、MBP=14/3/1、
+blockers=MBP-10/13/14/15、formal release/tag=false、human review complete=false、
+`minimum_package_complete=false`、`outcome_trigger_fully_satisfied=false` 与
+`submission_ready=false` 均不变。

@@ -1662,3 +1662,28 @@ focused provider/Data Availability/RC/evidence tests 为 31/31；本机/A100 精
 92/3/3/1/1、claims=22、MBP=14/3/1、blockers=MBP-10/13/14/15、model/biological/external/guided
 success=false、formal release/tag=false、`minimum_package_complete=false`、
 `outcome_trigger_fully_satisfied=false` 与 `submission_ready=false` 均不变。
+
+## 65. V3.3.2 accountable-human study-rights review packet preparation（2026-08-22）
+
+本项无训练命令、GPU/训练进度轮询或新 attempt。只使用已冻结的 14-study provider-evidence CSV
+生成 accountable-human decision register，不访问 accession outcome、canonical payload、Development
+TEST、new final Evaluation、sealed GSE246381、E-MTAB-10902 outcome 或 guided output。
+
+新增 14×42 CSV packet、review instructions、可重复 builder/validator、audit 和 8 项 focused tests。
+17 个 machine fields 从 provider evidence 逐字段冻结，20 个 human fields 初始为空，5 个 protected
+fields 固定 false；当前 pending/completed/hold=14/0/0，signoff=0，target-journal check=0，public
+release authorization=0。validator 拒绝机器证据改写、无身份/证据/signoff 的伪 `COMPLETED`、未列
+exact-file scope 的授权，以及任何 `PENDING`/`HOLD` exact-file authorization。完整人工 review 仍不
+自动成为 project release decision。
+
+Data Availability completion audit、consistency/evidence manifests 与 internal GitHub RC 已同步；
+evidence 62→64（48→50 local/contract，`/mnt` 仍 14）。spreadsheets skill 规定的 artifact-operation
+marker 再次因文件缺失返回 `MODULE_NOT_FOUND`；本项没有猜测/安装替代路径、没有使用替代 workbook
+library、没有生成 XLSX，也没有声称视觉工作簿验证。bundled Python 只读 CSV schema/全行投影核查为
+14×42、14 unique studies、machine/human/protected=17/20/5、0 formula-like cells。
+
+validator focused tests=8/8；本机/A100 精确 V3.3.2 suite 均为 81/81。GitHub core commit
+`b93ba20` 已推送，A100 自 `2adb8c3` 快进到该 commit。中央 100-row 92/3/3/1/1、claims=22、
+MBP=14/3/1、blockers=MBP-10/13/14/15、model/biological/external/guided success=false、
+human review complete=false、formal release/tag=false、`minimum_package_complete=false`、
+`outcome_trigger_fully_satisfied=false` 与 `submission_ready=false` 均不变。
