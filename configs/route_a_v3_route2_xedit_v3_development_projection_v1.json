@@ -1,0 +1,20 @@
+{
+  "schema_version": "route_a_v3_route2_development_projection_config.v3",
+  "status": "FROZEN_TRAIN_VALIDATION_ONLY_BEFORE_XEDIT_V3_OUTCOME_READ",
+  "development_manifest": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/manifests/route2_development_frozen_v1/development_manifest.jsonl",
+  "canonical_paths": [
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE200304/v1/canonical_records.jsonl",
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE114002/v1/canonical_records.private.jsonl",
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE149487/v1/canonical_records.private.jsonl",
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE217518/v1/canonical_records.jsonl",
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/ENCSR854RUF/v1/canonical_records.private.jsonl",
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE186455/v1/canonical_records.private.jsonl",
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE256185/v1/canonical_records.private.jsonl",
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/canonical/GSE269595/v1/canonical_records.private.jsonl"
+  ],
+  "endpoint_descriptor_registry": "configs/route_a_v3_route2_endpoint_descriptors_v1.json",
+  "included_splits": ["TRAIN", "VALIDATION"],
+  "development_test_outcomes_accessed": false,
+  "evaluation_outcomes_accessed": false,
+  "output_directory": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/projections/xedit_v3/development_train_validation_v1"
+}

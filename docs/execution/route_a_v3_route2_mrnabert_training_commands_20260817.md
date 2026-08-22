@@ -1787,3 +1787,20 @@ focused tests=42/42；本机精确 V3.3.2=96/96；A100 V3.3.2+importer=104/104�
 `b6fbdce` 已推送，A100 自 `1d899dd` 快进。中央 100-row 92/3/3/1/1、model/biological/external/guided
 success=false、formal release/tag=false、`minimum_package_complete=false`、
 `outcome_trigger_fully_satisfied=false` 与 `submission_ready=false` 均不变。
+
+## XEdit V3 方法修复启动与 projection-first 边界（2026-08-23）
+
+用户冻结 XEditCritic V3 的严格 `0.25 each seed / 0.30 median` Spearman gate，并选择 18M/42M
+XEditSetFlow capacity screen 与 soft-value SMC。机器协议位于
+`configs/route_a_v3_route2_xedit_v3_method_repair_protocol_v1.json`；本轮不修改历史 V2 terminal
+结果，也不授权额外 seed、阈值下调、TEST 后返调或 terminal rerun。
+
+新训练的第一项实现是 `DevelopmentProjectionV3`：builder 在 canonical full decode 前用
+`canonical_record_id` 查询 outcome-free frozen manifest，只有 TRAIN/VALIDATION 行才完整解析并写入
+projection。TEST 行不解码；通用 TEST projection 被拒绝。V3 critic/flow 后续只接受 projection，
+不再从 canonical outcome JSONL fallback。endpoint registry 同时提供给 full model 与 matched baseline，
+并明确区分 GSE149487 的两个无 TRAIN 支持 endpoint。
+
+真实 projection materialization 要在实现 commit 推送并同步 A100 后只运行一次。运行前不检查训练
+进度；运行本身不更新参数、不读取 TEST outcome、不增加中央 training attempt。输出固定到
+`/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/projections/xedit_v3/development_train_validation_v1/`。

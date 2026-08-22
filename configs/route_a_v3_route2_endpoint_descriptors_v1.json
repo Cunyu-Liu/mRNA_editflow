@@ -1,0 +1,67 @@
+{
+  "schema_version": "route_a_v3_route2_endpoint_descriptors.v1",
+  "status": "FROZEN_OUTCOME_FREE_BEFORE_XEDITCRITIC_V3_TRAINING",
+  "endpoints": [
+    {
+      "endpoint_id": "MEAN_RIBOSOME_LOAD",
+      "quantity_family": "RIBOSOME_LOAD",
+      "measurement_form": "LEVEL_DIFFERENCE",
+      "numerator_family": null,
+      "denominator_family": null
+    },
+    {
+      "endpoint_id": "MPRAU_ALLELIC_SKEW_LOG2_FOLD_CHANGE",
+      "quantity_family": "REPORTER_ACTIVITY",
+      "measurement_form": "ALLELIC_SKEW",
+      "numerator_family": "ALT_ALLELE_REPORTER_ABUNDANCE",
+      "denominator_family": "REF_ALLELE_REPORTER_ABUNDANCE"
+    },
+    {
+      "endpoint_id": "PROXIMAL_POLYA_SITE_USAGE_LOG2_ODDS",
+      "quantity_family": "POLYA_USAGE",
+      "measurement_form": "LOG2_ODDS",
+      "numerator_family": "PROXIMAL_SITE_USAGE",
+      "denominator_family": "DISTAL_SITE_USAGE"
+    },
+    {
+      "endpoint_id": "PUBLISHED_REF_VS_ALT_ACTIVITY_LMM_LOG2_FOLD_CHANGE",
+      "quantity_family": "REPORTER_ACTIVITY",
+      "measurement_form": "LOG2_FOLD",
+      "numerator_family": "ALT_ALLELE_REPORTER_ACTIVITY",
+      "denominator_family": "REF_ALLELE_REPORTER_ACTIVITY"
+    },
+    {
+      "endpoint_id": "RNA_HALF_LIFE_MINUTES",
+      "quantity_family": "RNA_STABILITY",
+      "measurement_form": "LEVEL_DIFFERENCE",
+      "numerator_family": null,
+      "denominator_family": null
+    },
+    {
+      "endpoint_id": "TOTAL_POLYSOME_TRANSLATION_EFFICIENCY",
+      "quantity_family": "TRANSLATION_EFFICIENCY",
+      "measurement_form": "LOG2_FOLD",
+      "numerator_family": "TOTAL_POLYSOME_RNA",
+      "denominator_family": "TOTAL_RNA"
+    },
+    {
+      "endpoint_id": "te_log2_polysome_over_totalrna",
+      "quantity_family": "TRANSLATION_EFFICIENCY",
+      "measurement_form": "LOG2_RATIO",
+      "numerator_family": "POLYSOME_RNA",
+      "denominator_family": "TOTAL_RNA"
+    },
+    {
+      "endpoint_id": "transcript_log2_totalrna_over_dna",
+      "quantity_family": "RNA_ABUNDANCE",
+      "measurement_form": "LOG2_RATIO",
+      "numerator_family": "TOTAL_RNA",
+      "denominator_family": "DNA_INPUT"
+    }
+  ],
+  "gse149487_endpoint_separation": {
+    "te_log2_polysome_over_totalrna": "TRANSLATION_EFFICIENCY_LOG2_POLYSOME_OVER_TOTAL_RNA",
+    "transcript_log2_totalrna_over_dna": "RNA_ABUNDANCE_LOG2_TOTAL_RNA_OVER_DNA"
+  },
+  "outcome_fields_present": false
+}

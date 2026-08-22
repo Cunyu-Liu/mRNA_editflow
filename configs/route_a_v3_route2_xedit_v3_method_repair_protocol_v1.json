@@ -1,0 +1,177 @@
+{
+  "schema_version": "route_a_v3_route2_xedit_v3_method_repair_protocol.v1",
+  "status": "FROZEN_PROSPECTIVE_BEFORE_XEDIT_V3_TRAINING_OR_VALIDATION_OUTCOME_READ",
+  "authorized_by_user": true,
+  "authority_order": [
+    "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna 数据gate转向后的合同.md",
+    "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna V3.3.2 执行提示词.md",
+    "THIS_PROSPECTIVE_STRICTER_METHOD_REPAIR_PROTOCOL"
+  ],
+  "historical_terminal_results_not_repeated": [
+    "CRITIC_V2_TERMINAL_NO_GO",
+    "BASE_FLOW_V2_FLOW_G0_READY_WITH_OVERFITTING",
+    "MATCHED_GENERATION_SEARCH_V2_TERMINAL"
+  ],
+  "protected_outcomes": {
+    "development_test": "CLOSED_UNTIL_CRITIC_V3_THREE_SEED_PASS",
+    "new_final_evaluation": "CLOSED_UNTIL_PREDICTOR_GENERATOR_BASELINES_AND_POLICY_FROZEN",
+    "historical_gse232572": "OUTCOME_EXPOSED_DIAGNOSTIC_ONLY",
+    "emtab10902": "UNCONVERTIBLE_DO_NOT_READ_OUTCOME",
+    "new_v3_training_input": "TRAIN_VALIDATION_PROJECTION_ONLY_NO_CANONICAL_OUTCOME_FALLBACK"
+  },
+  "development_projection": {
+    "config": "configs/route_a_v3_route2_xedit_v3_development_projection_v1.json",
+    "schema": "schemas/route_a_v3/development_projection_v3.schema.json",
+    "endpoint_descriptors": "configs/route_a_v3_route2_endpoint_descriptors_v1.json",
+    "allowed_splits": ["TRAIN", "VALIDATION"],
+    "test_full_decode_allowed": false,
+    "test_projection_requires_future_atomic_adjudicator": true
+  },
+  "critic": {
+    "screen_seed": 20260830,
+    "confirmation_seeds": [20260831, 20260901, 20260902],
+    "additional_seed_authorized": false,
+    "screen_arms": [
+      {"arm_id": "C0", "role": "MATCHED_ENDPOINT_AWARE_RAW_BASELINE", "selectable": false},
+      {"arm_id": "C1", "role": "WHOLE_SEQUENCE_MEAN_PRETRAINED_DIAGNOSTIC", "selectable": false},
+      {"arm_id": "C2", "role": "FROZEN_EDIT_SITE_TOKEN_XEDITCRITIC", "selectable": true},
+      {"arm_id": "C3", "role": "EDIT_SITE_TOKEN_XEDITCRITIC_LAST4_LORA", "selectable": true}
+    ],
+    "training": {
+      "batch_size": 32,
+      "precision": "BF16",
+      "optimizer": "AdamW",
+      "head_learning_rate": 0.0003,
+      "lora_learning_rate": 0.00003,
+      "weight_decay": 0.0001,
+      "gradient_clip_norm": 1.0,
+      "passes": 8,
+      "huber_only_passes": 7,
+      "final_pass_pairwise_weight": 0.25,
+      "task_sampling": "SQRT_TASK_SIZE_TASK_HOMOGENEOUS",
+      "maximum_record_repeats_per_pass": 4,
+      "pcgrad": false
+    },
+    "screen_gate": {
+      "minimum_task_macro_spearman": 0.25,
+      "minimum_margin_over_c0": 0.08,
+      "maximum_task_macro_standardized_mae": 1.7,
+      "minimum_positive_tasks": 8,
+      "minimum_task_wins_over_c0": 6,
+      "must_beat_source_only": true,
+      "must_beat_edit_metadata_only": true,
+      "must_beat_parameter_matched_no_candidate_sequence": true,
+      "minimum_permutation_eligible_task_wins": 2,
+      "prediction_spread_finite_nonzero": true
+    },
+    "selection": {
+      "eligible_arms": ["C2", "C3"],
+      "spearman_material_difference": 0.005,
+      "tie_choice": "C2"
+    },
+    "three_seed_gate": {
+      "minimum_each_seed_task_macro_spearman": 0.25,
+      "minimum_median_task_macro_spearman": 0.3,
+      "minimum_each_seed_margin_over_c0": 0.07,
+      "minimum_median_margin_over_c0": 0.1,
+      "minimum_positive_tasks_each_seed": 8,
+      "minimum_task_wins_over_c0_each_seed": 6,
+      "maximum_task_macro_standardized_mae": 1.7,
+      "paired_source_group_bootstrap_ci_lower_bound": ">0"
+    },
+    "frozen_test_gate": {
+      "minimum_task_macro_spearman": 0.25,
+      "minimum_margin_over_c0": 0.07,
+      "maximum_task_macro_standardized_mae": 1.7,
+      "minimum_positive_tasks": 8,
+      "paired_source_group_bootstrap_ci_lower_bound": ">0"
+    },
+    "loso_gate": {
+      "study_count": 7,
+      "seed_count": 3,
+      "minimum_each_seed_study_macro_spearman": 0.2,
+      "minimum_median_study_macro_spearman": 0.25,
+      "minimum_each_seed_margin": 0.05,
+      "minimum_positive_folds": 6,
+      "median_fold_margin": ">0",
+      "leave_gse269595_out_margin": ">0"
+    }
+  },
+  "setflow": {
+    "screen_seed": 20260903,
+    "confirmation_seeds": [20260904, 20260905, 20260906],
+    "additional_seed_authorized": false,
+    "action_space": ["SUB", "STOP"],
+    "excluded_actions": ["INS", "DEL"],
+    "screen_arms": [
+      {"arm_id": "F0", "role": "TERMINAL_BASE_FLOW_V2_READ_ONLY_REFERENCE", "selectable": false},
+      {"arm_id": "F1", "role": "LEGACY_CAPACITY_SET_MARGINAL_DIAGNOSTIC", "selectable": false},
+      {"arm_id": "F2", "role": "EIGHT_BLOCK_WIDTH384_XEDITSETFLOW", "selectable": true},
+      {"arm_id": "F3", "role": "TWELVE_BLOCK_WIDTH512_XEDITSETFLOW", "selectable": true}
+    ],
+    "training": {
+      "batch_size": 32,
+      "precision": "BF16",
+      "optimizer": "AdamW",
+      "learning_rate": 0.0003,
+      "weight_decay": 0.0001,
+      "gradient_clip_norm": 1.0,
+      "dropout": 0.1,
+      "maximum_passes": 12,
+      "early_stopping_patience": 2,
+      "objective": "ORDER_INVARIANT_SET_MARGINAL_LIKELIHOOD"
+    },
+    "screen_gate": {
+      "minimum_common_set_nll_relative_improvement": 0.1,
+      "minimum_source_macro_candidate_recovery": 0.25,
+      "minimum_source_macro_top_k_recovery": 0.15,
+      "minimum_source_macro_unique_candidate_rate": 0.9,
+      "hard_legality_rate": 1.0,
+      "maximum_edit_budget_violations": 0,
+      "maximum_candidate_budget_violations": 0,
+      "maximum_replay_failures": 0,
+      "maximum_numerical_failures": 0
+    },
+    "selection": {
+      "eligible_arms": ["F2", "F3"],
+      "candidate_recovery_material_difference": 0.01,
+      "tie_breakers": ["TOP_K_RECOVERY", "COMMON_SET_NLL", "SMALLER_F2"]
+    }
+  },
+  "guided": {
+    "status": "BLOCKED_UNTIL_CRITIC_V3_AND_SET_FLOW_V3_READINESS",
+    "critic_ensemble_size": 3,
+    "reward": "MEAN_ENDPOINT_CALIBRATED_Z_MINUS_KAPPA_TIMES_ENSEMBLE_SD",
+    "soft_value_rollouts_per_train_state": 8,
+    "guidance_grid": {
+      "kappa": [0.0, 0.5, 1.0],
+      "tau": [0.5, 1.0],
+      "beta_max": [0.5, 1.0, 2.0],
+      "combination_count": 18,
+      "additional_combinations_authorized": false
+    },
+    "smc": {
+      "particles": 32,
+      "ess_resample_threshold": 16,
+      "candidate_cap_per_source": 32,
+      "edit_budgets": [1, 3, 5],
+      "forward_equivalent_ceiling_per_source": 320
+    }
+  },
+  "gpu_policy": {
+    "physical_gpu_scope": [0, 1, 2, 3, 4, 5],
+    "sufficient_memory_only": true,
+    "parameter_updates": "CUDA_BF16_ONLY",
+    "cpu_fallback": "FORBIDDEN",
+    "first_check_minutes": 5,
+    "under_four_hours_check_minutes": 30,
+    "over_four_hours_check_minutes": 60
+  },
+  "terminal_failure_policy": {
+    "lower_threshold_after_result": false,
+    "add_seed_after_result": false,
+    "drop_baseline_after_result": false,
+    "repeat_terminal_experiment": false,
+    "new_method_requires_new_user_discussion_and_prospective_freeze": true
+  }
+}

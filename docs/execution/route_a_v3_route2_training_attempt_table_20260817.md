@@ -1193,3 +1193,26 @@ formal release/tag 与 `submission_ready` 仍为 false。
 migration/guard/Code Availability/RC/evidence focused tests=42/42；本机精确 V3.3.2 suite=96/96；
 A100 fresh current HEAD 完成 V3.3.2 96 项与 importer 8 项，合计 104/104。GitHub core commit
 `b6fbdce` 已推送，A100 自 `1d899dd` 一次 fast-forward 到该 commit。
+
+## 70. XEditCritic V3 + XEditSetFlow V3 prospective freeze and projection boundary（2026-08-23）
+
+用户在模型性能讨论后冻结新的联合方法修复：Critic 三 seed 每个 task-macro Spearman 至少 `0.25`、
+中位数至少 `0.30`、每 seed matched-baseline margin 至少 `0.07`、中位 margin 至少 `0.10`，并选择
+SetFlow + soft-value SMC 路线。新增 machine/human protocol 固定 Critic seeds
+`20260830/20260831/20260901/20260902`、SetFlow seeds `20260903/20260904/20260905/20260906`、
+容量 arms、训练策略、十八点 guidance grid、320 forward-equivalent/source ceiling 和 fail-terminal 规则；
+Critic V2、Base Flow V2 与 matched-generation V2 terminal 结果均不重跑。
+
+旧 predictor loader 的严格边界问题已如实记录：历史实现先完整解析 canonical row，再按 split 丢弃
+TEST；没有证据表明 TEST 进入 loss/checkpoint/metrics，但 legacy runs 不支持“protected outcome 字段从未
+解析”的最强措辞。新 `DevelopmentProjectionV3` 在完整 JSON decode 前只抽取 record id 并查询冻结
+manifest；只对 TRAIN/VALIDATION 行解码并写 label-bearing projection，TEST 行保持未解析。一般 TEST
+projection 不存在，未来只能由 three-seed PASS 后的一次性原子 adjudicator 实现。
+
+outcome-free endpoint registry 覆盖 Development 的八个 endpoint，并把 GSE149487 的 translation-
+efficiency ratio 与 RNA-abundance ratio 映射为不同 quantity/measurement semantics。projection schema、
+builder、CLI 和 loader 已实现；合成 protected TEST 行故意包含无法完整解析的 JSON payload，focused
+tests 仍能完成 TRAIN/VALIDATION projection，证明 TEST 行没有发生完整 decode。本项尚未在 A100
+materialize 真实 projection，不训练、不新增中央 attempt；中央表仍为 100 total / 92 completed /
+3 failed / 3 incomplete / 1 stopped-throughput / 1 stopped-priority。Development TEST 和新的 final
+Evaluation outcome 均未读取，model/generation/biological success 与 submission-ready 均为 false。

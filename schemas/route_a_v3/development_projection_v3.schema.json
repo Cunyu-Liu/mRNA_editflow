@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "route_a_v3/development_projection_v3.schema.json",
+  "title": "Route 2 DevelopmentProjectionV3",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "canonical_record_id",
+    "split",
+    "study_unit_id",
+    "connected_source_component_id",
+    "source_group_id",
+    "source_id",
+    "task_id",
+    "endpoint_id",
+    "endpoint_descriptor",
+    "region",
+    "region_id",
+    "assay_id",
+    "biological_context_id",
+    "source_sequence",
+    "candidate_sequence",
+    "source_relative_edits",
+    "direction_normalized_delta"
+  ],
+  "properties": {
+    "schema_version": {"const": "route_a_v3_route2_development_projection.v3"},
+    "canonical_record_id": {"type": "string", "minLength": 1},
+    "split": {"enum": ["TRAIN", "VALIDATION"]},
+    "study_unit_id": {"type": "string", "minLength": 1},
+    "connected_source_component_id": {"type": "string", "minLength": 1},
+    "source_group_id": {"type": "string", "minLength": 1},
+    "source_id": {"type": "string", "minLength": 1},
+    "task_id": {"type": "string", "minLength": 1},
+    "endpoint_id": {"type": "string", "minLength": 1},
+    "endpoint_descriptor": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["endpoint_id", "quantity_family", "measurement_form", "numerator_family", "denominator_family"],
+      "properties": {
+        "endpoint_id": {"type": "string", "minLength": 1},
+        "quantity_family": {"type": "string", "minLength": 1},
+        "measurement_form": {"type": "string", "minLength": 1},
+        "numerator_family": {"type": ["string", "null"]},
+        "denominator_family": {"type": ["string", "null"]}
+      }
+    },
+    "region": {"enum": ["5UTR", "3UTR"]},
+    "region_id": {"enum": [0, 1]},
+    "assay_id": {"type": "string", "minLength": 1},
+    "biological_context_id": {"type": "string", "minLength": 1},
+    "source_sequence": {"type": "string", "pattern": "^[ACGU]+$"},
+    "candidate_sequence": {"type": "string", "pattern": "^[ACGU]+$"},
+    "source_relative_edits": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["position", "source_base", "candidate_base"],
+        "properties": {
+          "position": {"type": "integer", "minimum": 0},
+          "source_base": {"enum": ["A", "C", "G", "U"]},
+          "candidate_base": {"enum": ["A", "C", "G", "U"]}
+        }
+      }
+    },
+    "direction_normalized_delta": {"type": "number"}
+  }
+}

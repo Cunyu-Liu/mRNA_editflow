@@ -1,0 +1,45 @@
+{
+  "schema_version": "route_a_v3_route2_xedit_v3_protocol_freeze_audit.v1",
+  "status": "PROSPECTIVE_METHOD_REPAIR_FROZEN_IMPLEMENTATION_STARTED",
+  "observed_date": "2026-08-23",
+  "authority": {
+    "main_contract": "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna 数据gate转向后的合同.md",
+    "execution_prompt": "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna V3.3.2 执行提示词.md",
+    "machine_protocol": "configs/route_a_v3_route2_xedit_v3_method_repair_protocol_v1.json",
+    "human_protocol": "docs/plans/2026-08-23-route2-xedit-v3-frozen-method-repair-protocol.md"
+  },
+  "protected_outcome_boundary": {
+    "development_test_outcomes_accessed": false,
+    "new_final_evaluation_outcomes_accessed": false,
+    "new_v3_training_input": "TRAIN_VALIDATION_PROJECTION_ONLY",
+    "general_test_projection_available": false
+  },
+  "historical_loader_disclosure": {
+    "canonical_rows_were_decoded_before_split_filtering": true,
+    "evidence_test_used_in_loss_checkpoint_or_metrics": false,
+    "strong_never_parsed_wording_supported_for_legacy_runs": false,
+    "historical_metrics_rewritten": false
+  },
+  "frozen_primary_thresholds": {
+    "critic_each_seed_task_macro_spearman": 0.25,
+    "critic_three_seed_median_task_macro_spearman": 0.3,
+    "critic_each_seed_margin_over_matched_baseline": 0.07,
+    "critic_three_seed_median_margin": 0.1,
+    "critic_maximum_task_macro_standardized_mae": 1.7,
+    "setflow_source_macro_candidate_recovery": 0.25,
+    "setflow_source_macro_top_k_recovery": 0.15,
+    "setflow_source_macro_unique_candidate_rate": 0.9
+  },
+  "implementation_state": {
+    "projection_builder": "IMPLEMENTED_FOCUSED_TESTED_NOT_YET_MATERIALIZED_ON_A100",
+    "endpoint_descriptor_registry": "IMPLEMENTED_OUTCOME_FREE",
+    "xeditcritic_v3": "NOT_YET_IMPLEMENTED",
+    "xeditsetflow_v3": "NOT_YET_IMPLEMENTED",
+    "guided_soft_value_smc": "BLOCKED_NOT_YET_IMPLEMENTED"
+  },
+  "training_attempt_created": false,
+  "model_success_established": false,
+  "generation_success_established": false,
+  "biological_optimization_established": false,
+  "submission_ready": false
+}
