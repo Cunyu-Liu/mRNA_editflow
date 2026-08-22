@@ -1822,3 +1822,21 @@ A100 GPU2 的真实 frozen mRNABERT smoke 验证得到 pretrained parameters=113
 tokenizer max length=1024；3 个请求位置全部返回 finite 768-d features，运行时 token-layout assertion 通过。
 本机/A100 focused tests 均为 8/8，本机/A100 精确 V3.3.2 suite 均为 96/96。完整 cache 尚未
 materialize，本项不训练、不新增中央 attempt，不读取 Development TEST 或新的 final Evaluation outcome。
+
+## XEditCritic V3 C0/C1/C2/C3 architecture and LoRA preflight（2026-08-23）
+
+已实现四臂共同的 outcome-free endpoint conditioner、hidden-65/depth-2 raw branch、C1 独立 global
+residual、C2/C3 8-layer width-512/8-head/FFN-2048 edit transformer、attention+max pooling、low-rank
+region/endpoint adapters 与 multiplicative-only study scale。study identity 不进入 shared effect trunk，
+unknown study scale 严格为 1 且没有 study intercept；主模型以共享 directional scorer 的差保证 swap
+antisymmetry和 identity zero。0.10 dropout 使用 forward/reverse 共享 mask，避免随机 mask 破坏差分约束。
+
+按真实 Development vocab 实例化的 trainable 参数为 C0=486,784、C1=1,798,528、C2=29,489,049。
+真实 mRNABERT last-four blocks 的目标模块为 combined Wqkv、attention output dense、gated FFN 与 FFN
+output；固定 rank-16/alpha-32 LoRA 精确增加 983,040 参数，故 C3 总数为 30,472,089。协议中的
+32–36M 是估计值；没有为追随估计而事后扩大 rank、block 数或 target projection。
+
+source-only、edit-metadata-only 与 parameter-matched no-candidate-sequence control 使用相同 full-model
+geometry；complete candidate-bundle permutation 留在 dataset layer。模型/LoRA focused tests 本机与
+A100 均为 10/10，精确 V3.3.2 suite 均为 96/96。训练尚未启动，不新增 attempt，不访问
+Development TEST 或新 final Evaluation outcome。

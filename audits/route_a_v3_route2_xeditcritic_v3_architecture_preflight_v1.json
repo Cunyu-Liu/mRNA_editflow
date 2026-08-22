@@ -1,0 +1,69 @@
+{
+  "schema_version": "route_a_v3_route2_xeditcritic_v3_architecture_preflight.v1",
+  "status": "C0_C1_C2_C3_ARCHITECTURE_AND_LORA_POLICY_IMPLEMENTED_TESTED_TRAINING_NOT_STARTED",
+  "observed_date": "2026-08-23",
+  "development_vocabulary_geometry_including_unknown": {
+    "study": 8,
+    "assay": 8,
+    "context": 29,
+    "quantity_family": 7,
+    "measurement_form": 6,
+    "numerator_family": 8,
+    "denominator_family": 7,
+    "region": 2
+  },
+  "trainable_parameter_counts": {
+    "C0_endpoint_aware_raw_cnn": 486784,
+    "C1_raw_plus_global_residual": 1798528,
+    "C2_frozen_edit_site_token_xeditcritic": 29489049,
+    "C3_xeditcritic_head": 29489049,
+    "C3_last_four_block_lora": 983040,
+    "C3_total": 30472089
+  },
+  "c3_parameter_count_note": "The prospective 32-36M value was an estimate. Exact rank-16 LoRA on the real combined Wqkv, attention output, gated FFN and FFN output modules adds 983,040 parameters, so the frozen C3 total is 30,472,089. Rank, blocks and target projections were not expanded after inspection.",
+  "architecture_contract": {
+    "raw_hidden": 65,
+    "raw_depth": 2,
+    "edit_transformer_depth": 8,
+    "edit_transformer_width": 512,
+    "edit_transformer_heads": 8,
+    "edit_transformer_ffn": 2048,
+    "configured_dropout": 0.1,
+    "paired_direction_dropout": true,
+    "endpoint_descriptors_shared_by_c0_and_full": true,
+    "study_identity_in_shared_effect_trunk": false,
+    "study_nuisance_intercept": false,
+    "unknown_study_scale": 1.0,
+    "strict_swap_antisymmetry": true,
+    "strict_identity_zero": true
+  },
+  "lora_contract": {
+    "last_block_indices": [8, 9, 10, 11],
+    "rank": 16,
+    "alpha": 32,
+    "dropout": 0.05,
+    "projections": [
+      "attention.self.Wqkv",
+      "attention.output.dense",
+      "mlp.gated_layers",
+      "mlp.wo"
+    ],
+    "other_encoder_parameters_trainable": false
+  },
+  "controls": [
+    "SOURCE_ONLY",
+    "EDIT_METADATA_ONLY",
+    "NO_CANDIDATE_SEQUENCE",
+    "COMPLETE_CANDIDATE_BUNDLE_PERMUTATION_AT_DATASET_LAYER"
+  ],
+  "tests": {
+    "local_focused_passed": 10,
+    "a100_focused_passed": 10,
+    "local_v332_passed": 96,
+    "a100_v332_passed": 96
+  },
+  "development_test_outcomes_accessed": false,
+  "new_final_evaluation_outcomes_accessed": false,
+  "training_attempt_created": false,
+  "model_success_established": false
+}

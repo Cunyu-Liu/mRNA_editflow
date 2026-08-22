@@ -1234,3 +1234,14 @@ sequence-position tensors 与 record ragged offsets，不截断 edit 数且不�
 mRNABERT real-model smoke 的 3/3 requested positions、768-d global/local tensors 全部 finite，参数数为
 113,389,056。完整 cache 尚未 materialize，Critic screen 尚未启动；Development TEST、新 final
 Evaluation outcome、model success、generation success 与 submission-ready 状态均未改变。
+
+## XEditCritic V3 architecture/LoRA preflight（2026-08-23）
+
+本项仍是训练前实现，不创建新 attempt，中央计数保持 100 / 92 / 3 / 3 / 1 / 1。C0/C1/C2
+trainable parameters 精确为 486,784 / 1,798,528 / 29,489,049；固定 last-four rank-16 LoRA 增加
+983,040，C3 总数为 30,472,089。该实际值低于协议的 32–36M 估计，但完全对应已冻结的真实
+mRNABERT combined-QKV/gated-FFN geometry；没有结果后扩 rank 或解冻额外 block。
+
+主模型 swap antisymmetry、identity zero、unknown-study scale=1、study-only multiplicative calibration、
+四 arm finite output 和三项 candidate-information control 的 parameter equality 已通过本机/A100 focused
+tests 10/10；精确 V3.3.2 为 96/96。Critic screen 仍未启动，model success 和 submission-ready 不变。
