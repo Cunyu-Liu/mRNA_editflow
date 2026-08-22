@@ -2283,3 +2283,14 @@ closed source 继续排除而不填零。
 Development TEST/new Evaluation，没有重训 Critic V2/Base Flow V2，也没有向中央 ledger 写入非训练行。
 本机正确 Python 3.13 环境下 XEdit focused=212/212、精确 V3.3.2=96/96；定向=50/50，compile/
 diff-check PASS。A100 current-HEAD 测试等待 launch-head jobs terminal 后执行。
+
+## 06:40 low-frequency combined screen check（2026-08-23）
+
+距 06:07:38 超过 30 分钟后完成一次合并检查。C1/F1/F2 elapsed=4:22:47/2:52:38/2:37:40，
+三个进程都存活，且对应 terminal summary、failure artifact、error marker 均不存在；检查没有读取 pass
+curve 或 Validation outcome。GPU0–5 free memory=2,569/6,581/3,177/4,489/4,307/7,525 MiB，
+没有可安全启动 C2/C3/F3 的设备；GPU6/7 未使用，capacity/batch 不变，无 CPU fallback。
+
+C1 从本次起进入超过 4 小时的 60 分钟监控节奏，next C1 check≥07:40:07；F1/F2 仍采用 30 分钟，
+next F-only check≥07:10:07。A100 launch HEAD 继续为 `22317ed`，中央 ledger 与 protected-outcome
+状态不变。

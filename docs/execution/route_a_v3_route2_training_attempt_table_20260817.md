@@ -1524,3 +1524,14 @@ equal-wall/final-chain tests=50/50，Python compile 与 diff-check PASS。默认
 `zip(..., strict=True)` 的两项失败被确认是解释器不满足项目 Python≥3.10 要求，不据此改写正式实现。
 Development TEST/new Evaluation read=0，guidance/replacement Evaluation/submission-ready 状态不变；A100
 current-HEAD sync/test 仍等待 launch-head `22317ed` 的 active jobs terminal。
+
+## 06:40 scheduled screen status（2026-08-23）
+
+C1/F1/F2 仍为同三个 RUNNING attempts，elapsed=4:22:47/2:52:38/2:37:40；进程均存活，terminal
+summary、failure artifact 与 error marker 全部不存在，因此中央 CSV 不改状态、不新增行，也没有读取活跃
+curve 或 performance metric。GPU0–5 free memory=2,569/6,581/3,177/4,489/4,307/7,525 MiB，
+utilization 均为 100%，仍不足以启动 C2/C3/F3；GPU6/7 未获授权且未使用。
+
+C1 已超过 4 小时，后续按合同改为 60 分钟间隔，下一次 C1 检查不早于 07:40:07；F1/F2 仍预计少于
+4 小时，下一次只检查 F1/F2，不早于 07:10:07。未降容量、未 CPU fallback，A100 HEAD 继续固定
+`22317ed`；Development TEST/new Evaluation 与 downstream authorization 状态不变。
