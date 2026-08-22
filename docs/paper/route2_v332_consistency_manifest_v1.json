@@ -102,6 +102,32 @@
       ]
     },
     {
+      "method_id": "M-R2-BASELINE-MATRIX",
+      "label": "Prediction and Generation baseline inventory matrix",
+      "analysis_intent": "DEVELOPMENT_COVERAGE_AND_LIMITATION_AUDIT",
+      "status": "BASELINE_INVENTORY_MATRIX_RENDERED_DEVELOPMENT_ONLY",
+      "matrix_is_result_table": false,
+      "row_count": 45,
+      "track_counts": {
+        "PREDICTION": 34,
+        "GENERATION": 11
+      },
+      "family_counts": {
+        "INTERNAL_CONTROL": 11,
+        "CLASSICAL": 6,
+        "NEURAL": 7,
+        "TASK_SPECIFIC_FOUNDATION": 10,
+        "SEARCH_FLOW": 11
+      },
+      "development_test_accessed": false,
+      "new_final_evaluation_accessed": false,
+      "guided_xeditflow_run": false,
+      "evidence_ids": [
+        "E-R2-BASELINE-MATRIX-BUILDER",
+        "E-R2-BASELINE-MATRIX-AUDIT"
+      ]
+    },
+    {
       "method_id": "M-R2-FIGURES",
       "label": "Provisional general-manuscript figure assembly",
       "analysis_intent": "FROZEN_EVIDENCE_VISUALIZATION",
@@ -455,6 +481,32 @@
         "E-R2-FLOW-MATCHED",
         "E-R2-PXE-ARCH-FIGURE-BUILDER",
         "E-R2-PXE-ARCH-FIGURE-MANIFEST"
+      ]
+    },
+    {
+      "result_id": "R-R2-BASELINE-MATRIX",
+      "status": "BASELINE_INVENTORY_MATRIX_RENDERED_DEVELOPMENT_ONLY",
+      "matrix_is_result_table": false,
+      "row_count": 45,
+      "prediction_rows": 34,
+      "generation_rows": 11,
+      "prediction_neural_terminal_independent_rows": 5,
+      "prediction_neural_configured_not_terminal_independent_rows": 2,
+      "prediction_external_common_task_executed_rows": 6,
+      "prediction_external_literature_or_task_mismatch_rows": 3,
+      "generation_terminal_matched_rows": 7,
+      "generation_small_space_only_rows": 1,
+      "generation_guided_not_authorized_rows": 2,
+      "generation_literature_task_mismatch_rows": 1,
+      "native_common_arch_three_track_results_table_built": false,
+      "prediction_generation_matched_budget_numeric_matrix_built": false,
+      "development_test_read": false,
+      "new_final_evaluation_read": false,
+      "guided_xeditflow_run": false,
+      "scientific_claim_status": "NOT_ESTABLISHED",
+      "evidence_ids": [
+        "E-R2-BASELINE-MATRIX-BUILDER",
+        "E-R2-BASELINE-MATRIX-AUDIT"
       ]
     },
     {

@@ -39,6 +39,18 @@ but add no qualified credit; six zero-record studies retain explicit
 unconvertible, auxiliary, aggregate-only or sealed reasons. Generated candidates
 add zero canonical credit. [evidence:E-R2-DATA-TABLE-BUILDER,E-R2-DATA-TABLE]
 
+### Prediction and generation baseline inventory
+
+A reproducible non-result matrix maps 45 contract requirements to the current
+Route 2 implementation and evidence state: 34 Prediction rows (11 internal
+controls, six classical baselines, seven neural baselines and 10 task-specific
+or foundation references) and 11 Generation rows. Each row separates its task
+interface, input information, Development execution state, terminal-evidence
+class, native-track limitation and protected-outcome boundary. The matrix carries
+no performance metric and is not the later native/common/architecture-controlled
+results table or the later matched-budget numeric matrix.
+[evidence:E-R2-BASELINE-MATRIX-BUILDER,E-R2-BASELINE-MATRIX-AUDIT]
+
 ### Independent generation evaluator
 
 Generation methods were compared with a frozen Siamese CNN evaluator trained
@@ -135,6 +147,19 @@ state is a biological-success claim. [claim:C-R2-014]
 [evidence:E-R2-CRITIC-V2-LOSO-AGG]
 
 ## Results draft
+
+### Baseline coverage is Development-only and contains explicit unresolved rows
+
+The matrix records six executed external common-task adapters, five independently
+terminal neural families and seven terminal matched Generation methods. It also
+keeps the standalone-study-mean requirement as a declared composite mapping, the
+absolute-candidate score as a component of the absolute-difference pipeline, and
+the ordinal/listwise neural rankers as configured without independent terminal
+selection. Exhaustive search remains a 190-source enumerable-subset reference;
+first-order and frozen-critic guidance remain unrun after the Critic V2 NO-GO;
+masked discrete flow/diffusion remains a literature-only task mismatch. These
+coverage facts do not establish superiority, biological optimization, external
+transfer or final Evaluation success. [evidence:E-R2-BASELINE-MATRIX-AUDIT]
 
 ### The independent evaluator narrowly crossed its frozen qualification threshold
 

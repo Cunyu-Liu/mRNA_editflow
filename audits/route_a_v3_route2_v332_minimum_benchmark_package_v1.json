@@ -1,7 +1,7 @@
 {
   "schema_version": "route_a_v3_route2_v332_minimum_benchmark_package.v1",
   "status": "MINIMUM_BENCHMARK_PACKAGE_NOT_COMPLETE",
-  "observed_at": "2026-08-22T14:42:30+08:00",
+  "observed_at": "2026-08-22T15:00:27+08:00",
   "authority": {
     "scientific_contract": "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna 数据gate转向后的合同.md",
     "execution_protocol": "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna V3.3.2 执行提示词.md",
@@ -103,6 +103,20 @@
     "target_journal": "PENDING_SELECTION",
     "article_type": "PENDING_SELECTION",
     "publisher_compliance_claimed": false,
+    "development_test_read": false,
+    "new_final_evaluation_read": false,
+    "guided_xeditflow_run": false
+  },
+  "baseline_matrix": {
+    "status": "BASELINE_INVENTORY_MATRIX_RENDERED_DEVELOPMENT_ONLY",
+    "row_count": 45,
+    "prediction_rows": 34,
+    "generation_rows": 11,
+    "builder": "scripts/route_a_v3/build_route2_v332_baseline_matrix_v1.py",
+    "focused_test": "tests/route_a_v3/test_build_route2_v332_baseline_matrix_v1.py",
+    "table": "docs/paper/route2_v332_baseline_matrix_v1.csv",
+    "audit": "audits/route_a_v3_route2_v332_baseline_matrix_v1.json",
+    "matrix_is_result_table": false,
     "development_test_read": false,
     "new_final_evaluation_read": false,
     "guided_xeditflow_run": false

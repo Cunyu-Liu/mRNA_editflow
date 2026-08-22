@@ -1227,3 +1227,25 @@ paper evidence sources 从 27 增至 29，figure count=5、builder count=4；22 
 MBP-17、最低包 14/3/1、四个 blockers 和 `submission_ready=false` 不变。本机与 A100
 六组联合 focused suite 均为 23/23。Development TEST、new final Evaluation、E-MTAB
 outcome、sealed GSE246381 与 guided XEditFlow 均未打开。
+
+## 46. V3.3.2 Prediction/Generation baseline inventory matrix（2026-08-22）
+
+按合同 baseline-matrix 顺序新增独立 builder、focused tests、45-row paper CSV 与审计。
+该产物是覆盖/状态矩阵而非结果表：Prediction 34 行覆盖 11 internal controls、6 classical、
+7 neural 和 10 task-specific/foundation references；Generation 11 行覆盖 random、
+exhaustive-small-space、greedy、beam、genetic、local search、generate-N-rerank、unguided
+Flow、first-order guidance、frozen-critic XEditFlow 与 masked discrete flow/diffusion。
+
+矩阵不把近似名称当成完成证据：anchored CNN 绑定已冻结选择的
+`delta_anchored_position_aware_antisymmetric`；ordinal/listwise 仅有配置而没有独立 terminal
+selection；study mean 是明确受限的 composite mapping；absolute-candidate predictor 只作为
+absolute-difference pipeline component。旧 baseline inventory 的 mRNABERT-running 和
+generation-preterminal 标签分别由 Critic V2 terminal NO-GO 与七方法 terminal table 覆盖。
+first-order/frozen-critic guided rows保持 `NOT_RUN_CRITIC_V2_NO_GO`。
+
+GitHub commit `589d263` 已推送，A100 快进同步后 builder test 2/2 passed。本机七组联合
+focused suite 为 25/25；paper evidence sources=31（local/contract 19、A100 `/mnt` 12），
+claim markers=22、figures/builders=5/4、最低包=14/3/1、blockers=MBP-10/13/14/15、
+`submission_ready=false` 均保持。此任务不训练或更新参数，不新增中央 attempt；
+Development TEST、new final Evaluation、E-MTAB outcome、sealed GSE246381、generated
+candidates 与 guided XEditFlow 均未打开。

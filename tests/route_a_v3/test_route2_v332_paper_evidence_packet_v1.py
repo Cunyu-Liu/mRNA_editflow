@@ -22,6 +22,10 @@ MINIMUM_PACKAGE_TABLE = (
 MINIMUM_PACKAGE_AUDIT = (
     ROOT / "audits/route_a_v3_route2_v332_minimum_benchmark_package_v1.json"
 )
+BASELINE_MATRIX_TABLE = ROOT / "docs/paper/route2_v332_baseline_matrix_v1.csv"
+BASELINE_MATRIX_AUDIT = (
+    ROOT / "audits/route_a_v3_route2_v332_baseline_matrix_v1.json"
+)
 DATASET_QUALIFICATION_TABLE = (
     ROOT / "docs/paper/route2_v332_dataset_qualification_table_v1.csv"
 )
@@ -61,7 +65,7 @@ def test_claim_and_consistency_evidence_references_are_closed() -> None:
     consistency = _load(CONSISTENCY)
 
     evidence_ids = [row["evidence_id"] for row in evidence["sources"]]
-    assert len(evidence_ids) == len(set(evidence_ids)) == 29
+    assert len(evidence_ids) == len(set(evidence_ids)) == 31
 
     claims = re.findall(r"\[claim:([^\]]+)\]", draft)
     assert len(claims) == len(set(claims)) == 22
@@ -81,14 +85,14 @@ def test_evidence_source_paths_are_closed_without_overstating_verification() -> 
     preflight = evidence["source_path_preflight"]
 
     assert preflight["status"] == "PASS"
-    assert preflight["source_locations_checked"] == len(evidence["sources"]) == 29
+    assert preflight["source_locations_checked"] == len(evidence["sources"]) == 31
     assert (
         preflight["local_or_contract_locations_checked"]
         + preflight["a100_mnt_locations_checked"]
         == preflight["source_locations_checked"]
     )
     assert preflight["missing_locations"] == 0
-    assert preflight["local_or_contract_locations_checked"] == 17
+    assert preflight["local_or_contract_locations_checked"] == 19
     assert preflight["a100_mnt_locations_checked"] == 12
     assert preflight["check_scope"] == "FILE_EXISTENCE_ONLY_NO_EVIDENCE_CONTENT_OPENED"
     assert preflight["human_content_verification_completed"] is False
@@ -117,6 +121,12 @@ def test_evidence_source_paths_are_closed_without_overstating_verification() -> 
     )
     assert by_id["E-R2-PXE-ARCH-FIGURE-MANIFEST"]["location"].endswith(
         "/route2_v332_predictor_xeditflow_evaluator_architecture_figure_v1_manifest.json"
+    )
+    assert by_id["E-R2-BASELINE-MATRIX-BUILDER"]["location"] == (
+        "scripts/route_a_v3/build_route2_v332_baseline_matrix_v1.py"
+    )
+    assert by_id["E-R2-BASELINE-MATRIX-AUDIT"]["location"] == (
+        "audits/route_a_v3_route2_v332_baseline_matrix_v1.json"
     )
 
 
@@ -572,12 +582,25 @@ def test_minimum_benchmark_package_is_itemized_and_not_overcalled() -> None:
     draft = " ".join(DRAFT.read_text(encoding="utf-8").split())
     consistency = _load(CONSISTENCY)
     audit = _load(MINIMUM_PACKAGE_AUDIT)
+    baseline_audit = _load(BASELINE_MATRIX_AUDIT)
     with MINIMUM_PACKAGE_TABLE.open(newline="", encoding="utf-8") as handle:
         rows = list(csv.DictReader(handle))
+    with BASELINE_MATRIX_TABLE.open(newline="", encoding="utf-8") as handle:
+        baseline_rows = list(csv.DictReader(handle))
     result = next(
         row
         for row in consistency["results"]
         if row["result_id"] == "R-R2-MINIMUM-BENCHMARK-PACKAGE"
+    )
+    baseline_method = next(
+        row
+        for row in consistency["methods"]
+        if row["method_id"] == "M-R2-BASELINE-MATRIX"
+    )
+    baseline_result = next(
+        row
+        for row in consistency["results"]
+        if row["result_id"] == "R-R2-BASELINE-MATRIX"
     )
 
     assert [row["requirement_id"] for row in rows] == [
@@ -619,6 +642,42 @@ def test_minimum_benchmark_package_is_itemized_and_not_overcalled() -> None:
     assert len(audit["manuscript_figures"]["focused_tests"]) == 4
     assert audit["manuscript_figures"]["publisher_compliance_claimed"] is False
     assert audit["manuscript_figures"]["new_final_evaluation_read"] is False
+    assert audit["baseline_matrix"] == {
+        "status": "BASELINE_INVENTORY_MATRIX_RENDERED_DEVELOPMENT_ONLY",
+        "row_count": 45,
+        "prediction_rows": 34,
+        "generation_rows": 11,
+        "builder": "scripts/route_a_v3/build_route2_v332_baseline_matrix_v1.py",
+        "focused_test": "tests/route_a_v3/test_build_route2_v332_baseline_matrix_v1.py",
+        "table": "docs/paper/route2_v332_baseline_matrix_v1.csv",
+        "audit": "audits/route_a_v3_route2_v332_baseline_matrix_v1.json",
+        "matrix_is_result_table": False,
+        "development_test_read": False,
+        "new_final_evaluation_read": False,
+        "guided_xeditflow_run": False,
+    }
+    assert len(baseline_rows) == baseline_audit["row_count"] == 45
+    assert baseline_method["row_count"] == baseline_result["row_count"] == 45
+    assert baseline_method["track_counts"] == {"PREDICTION": 34, "GENERATION": 11}
+    assert baseline_result["prediction_rows"] == 34
+    assert baseline_result["generation_rows"] == 11
+    assert baseline_result["prediction_neural_terminal_independent_rows"] == 5
+    assert baseline_result["prediction_neural_configured_not_terminal_independent_rows"] == 2
+    assert baseline_result["generation_terminal_matched_rows"] == 7
+    assert baseline_result["generation_guided_not_authorized_rows"] == 2
+    assert baseline_method["matrix_is_result_table"] is baseline_result[
+        "matrix_is_result_table"
+    ] is baseline_audit["matrix_is_result_table"] is False
+    assert baseline_result["scientific_claim_status"] == "NOT_ESTABLISHED"
+    assert baseline_result["native_common_arch_three_track_results_table_built"] is False
+    assert baseline_result["prediction_generation_matched_budget_numeric_matrix_built"] is False
+    assert all(row["development_test_accessed"] == "false" for row in baseline_rows)
+    assert all(row["new_final_evaluation_accessed"] == "false" for row in baseline_rows)
+    assert all(row["guided_executed"] == "false" for row in baseline_rows)
+    assert {
+        "spearman", "mae", "ndcg", "uplift", "recovery", "wall_time_seconds",
+        "generation_peak_vram_mb", "candidate_count", "nfe",
+    }.isdisjoint(baseline_rows[0])
     assert audit["external_evaluation"]["replacement_study_registered"] is False
     assert audit["external_evaluation"]["new_final_evaluation_opened"] is False
     assert audit["guided_generation"]["frozen_critic_xeditflow_run"] is False

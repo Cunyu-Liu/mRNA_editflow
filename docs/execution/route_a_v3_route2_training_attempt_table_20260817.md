@@ -626,3 +626,24 @@ A100 builder test 2/2 passed，并在 `/mnt/.../figures/route2_v332_v1/` 追加 
 manifest 与 alt text。paper packet 仍有 22 个 claim markers，evidence sources 增至 29；
 manuscript figures 现为 5 张、4 个 builders；本机与 A100 六组联合 focused suite 均为
 23/23，最低包与 100-row terminal 分布不变。
+
+## V3.3.2 Prediction/Generation baseline inventory matrix（2026-08-22）
+
+本项为非训练 paper-table/audit task，不新增中央 attempt，也不读取训练进度、Development
+TEST、新 final Evaluation、generated candidates 或 guided outcome。新增可复现 builder、
+45-row CSV、独立 audit 和 2-test focused suite；矩阵将 Prediction 34 行分为 internal
+controls 11、classical 6、neural 7、task-specific/foundation 10，并列出 Generation 11 行。
+
+矩阵明确保留 standalone study mean 的 composite mapping、absolute-candidate component
+限制、ordinal/listwise 两项 `CONFIGURED_NOT_TERMINAL_INDEPENDENT_BASELINE`、六个已执行
+common-task adapters 与三个 literature/task-mismatch references。Generation 侧以当前
+terminal table 覆盖旧 inventory：七个 matched methods terminal，exhaustive 仅 small-space
+reference，first-order 与 frozen-critic XEditFlow 因 Critic V2 NO-GO 未运行，masked discrete
+flow/diffusion 仅为 task-mismatch 文献对照。`matrix_is_result_table=false`，没有结果指标列。
+
+本机 builder focused test 2/2、七组联合 suite 25/25；A100 从 GitHub commit `589d263`
+快进后 builder focused test 2/2。paper packet evidence sources 由 29 增至 31（本地/合同
+19，A100 `/mnt` 12），claim markers 仍为 22，figures/builders 仍为 5/4；MBP 14/3/1、
+四个 blockers 和 `submission_ready=false` 不变。中央 100 个 attempts 的终态继续是 92
+`COMPLETED`、3 `FAILED`、3 `INCOMPLETE_NO_TERMINAL_RECORD`、1
+`STOPPED_FOR_THROUGHPUT_REPAIR`、1 `STOPPED_PRIORITY_REALLOCATION`。

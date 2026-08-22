@@ -8,10 +8,10 @@
   "independent_final_evaluation_performed": false,
   "human_verification_required": true,
   "source_path_preflight": {
-    "observed_at": "2026-08-22T14:42:30+08:00",
+    "observed_at": "2026-08-22T15:00:27+08:00",
     "status": "PASS",
-    "source_locations_checked": 29,
-    "local_or_contract_locations_checked": 17,
+    "source_locations_checked": 31,
+    "local_or_contract_locations_checked": 19,
     "a100_mnt_locations_checked": 12,
     "missing_locations": 0,
     "check_scope": "FILE_EXISTENCE_ONLY_NO_EVIDENCE_CONTENT_OPENED",
@@ -166,6 +166,22 @@
       "kind": "derived_minimum_benchmark_package_audit",
       "location": "audits/route_a_v3_route2_v332_minimum_benchmark_package_v1.json",
       "locator": "18 contract requirements, item-level statuses, four incomplete-package blockers, provisional figure status, stale-snapshot authority overrides and protected-outcome closure",
+      "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING",
+      "external_evidence": false
+    },
+    {
+      "evidence_id": "E-R2-BASELINE-MATRIX-BUILDER",
+      "kind": "reproducible_prediction_generation_baseline_inventory_matrix_builder",
+      "location": "scripts/route_a_v3/build_route2_v332_baseline_matrix_v1.py",
+      "locator": "45 contract coverage rows across Prediction and Generation; frozen-input validation, terminal-status overrides, protected-outcome closure, result-column exclusion and overwrite refusal",
+      "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING",
+      "external_evidence": false
+    },
+    {
+      "evidence_id": "E-R2-BASELINE-MATRIX-AUDIT",
+      "kind": "derived_prediction_generation_baseline_inventory_matrix_audit",
+      "location": "audits/route_a_v3_route2_v332_baseline_matrix_v1.json",
+      "locator": "45 rows: Prediction 34 and Generation 11; explicit standalone/composite/component/config-only/literature-only/dependency-NO-GO boundaries; table at docs/paper/route2_v332_baseline_matrix_v1.csv; matrix_is_result_table=false",
       "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING",
       "external_evidence": false
     },
