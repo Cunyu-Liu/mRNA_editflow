@@ -98,6 +98,13 @@ data/nmi_benchmark_v2/
 data_registry/search_artifacts/partial_downloads/
 benchmark_v21/external_data/
 
+# Legacy payloads preserved under the Route 2 /mnt storage root
+data_registry/excel_inventory.parquet
+data/b0_splits/split_study_disjoint.jsonl
+data/b0_splits/split_cross_region_transfer.jsonl
+data/b0_splits/split_5utr_source_disjoint.jsonl
+data/b0_splits/split_3utr_source_disjoint.jsonl
+
 # D1 large data artifacts (verifiable on server via SHA-256, too large for git)
 data/d1_canonical_records.jsonl
 data/data_exposure_ledger.jsonl

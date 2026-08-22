@@ -8,11 +8,11 @@
   "independent_final_evaluation_performed": false,
   "human_verification_required": true,
   "source_path_preflight": {
-    "observed_at": "2026-08-22T19:08:46+08:00",
+    "observed_at": "2026-08-22T22:28:35+08:00",
     "status": "PASS",
-    "source_locations_checked": 65,
+    "source_locations_checked": 66,
     "local_or_contract_locations_checked": 51,
-    "a100_mnt_locations_checked": 14,
+    "a100_mnt_locations_checked": 15,
     "missing_locations": 0,
     "check_scope": "FILE_EXISTENCE_ONLY_NO_EVIDENCE_CONTENT_OPENED",
     "human_content_verification_completed": false,
@@ -463,7 +463,15 @@
       "evidence_id": "E-R2-LEGACY-PAYLOAD-DISPOSITION-AUDIT",
       "kind": "derived_legacy_tracked_payload_release_disposition_audit",
       "location": "audits/route_a_v3_route2_v332_legacy_tracked_payload_release_disposition_v1.json",
-      "locator": "path/tracking/size/text-reference-only audit of one legacy Parquet and four superseded B0 JSONL files: five tracked files, 34786075 total bytes, four direct legacy B0 reader entrypoints now fail closed before input reads with focused negative-loader evidence, future Excel inventory Parquet defaults to the Route 2 /mnt data registry, no payload content opened or modified, and an ordered migration recommendation requiring explicit user authorization",
+      "locator": "authorized current-HEAD migration audit for one legacy Parquet and four superseded B0 JSONL files: zero tracked files after migration, five size-verified copies totalling 34786075 bytes under the Route 2 /mnt root, five exact ignore rules, four fail-closed reader entrypoints, no payload content opened, no shared-history rewrite and no formal tag or Release",
+      "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING",
+      "external_evidence": false
+    },
+    {
+      "evidence_id": "E-R2-LEGACY-PAYLOAD-MIGRATION-PROVENANCE",
+      "kind": "authorized_legacy_payload_migration_provenance",
+      "location": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/legacy_repository_payloads/PROVENANCE.md",
+      "locator": "source branch and pre-migration commit, authorized destination root, exact five-file source-to-destination mapping and byte sizes, no project-generated checksum, no shared-history rewrite, no formal tag or Release and no protected-outcome access",
       "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING",
       "external_evidence": false
     },
@@ -503,7 +511,7 @@
       "evidence_id": "E-R2-CODE-AVAILABILITY-COMPLETION-AUDIT",
       "kind": "derived_code_availability_section_completion_audit",
       "location": "audits/route_a_v3_route2_v332_code_availability_completion_v1.json",
-      "locator": "internal Code Availability statement binding the GitHub working-repository locator and Route 2 branch while retaining no public-access assertion, no V3.3.2 release tag or persistent archive, no archived container and no clean-environment Route 2 reproduction; five tracked legacy payloads keep the formal-release payload boundary non-compliant while all four direct readers now fail closed and future Excel inventory Parquet defaults outside Git; Proprietary package metadata, no standalone LICENSE and no code-on-request promise",
+      "locator": "internal Code Availability statement binding the GitHub working-repository locator and Route 2 branch while retaining no public-access assertion, no V3.3.2 release tag or persistent archive, no archived container and no clean-environment Route 2 reproduction; current HEAD tracks none of the five migrated legacy payloads, all four direct readers fail closed and future Excel inventory Parquet defaults outside Git; Proprietary package metadata, no standalone LICENSE and no code-on-request promise",
       "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING",
       "external_evidence": false
     },
@@ -511,7 +519,7 @@
       "evidence_id": "E-R2-GITHUB-RC-AUDIT",
       "kind": "derived_internal_github_branch_release_candidate_audit",
       "location": "audits/route_a_v3_route2_v332_github_release_candidate_v1.json",
-      "locator": "internal GitHub branch candidate with Route A README notice and complete internal Methods, Results, Discussion, Data Availability and Code Availability sections; formal tag/Release remains unauthorized because minimum-package, human evidence/rights/license, clean-environment, immutable-archive and tracked legacy JSONL/Parquet policy blockers remain",
+      "locator": "internal GitHub branch candidate with Route A README notice and complete internal Methods, Results, Discussion, Data Availability and Code Availability sections; the current-HEAD payload policy is resolved, while formal tag/Release remains unauthorized because minimum-package, human evidence/rights/license, clean-environment, immutable-archive and manuscript-metadata blockers remain",
       "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING",
       "external_evidence": false
     }

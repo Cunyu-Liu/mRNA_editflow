@@ -3,8 +3,10 @@
 > Historical audit retained as a small Git summary. The current producer now
 > defaults future generated Parquet output to
 > `/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/data_registry/excel_inventory.parquet`;
-> the output line below records the legacy run and does not authorize migration
-> or removal of the currently tracked file.
+> the output line below records the legacy run. Under explicit authorization,
+> that legacy payload was subsequently preserved under
+> `/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/legacy_repository_payloads/`
+> and removed from current-HEAD tracking without rewriting shared Git history.
 
 - input: `data/raw/codonflow_integrated_dataset_catalog_ranked.xlsx`
 - input sha256: `4c9dabb961de01d24c4ebf674b99784d5dec612c1bff4fa464d2c208d3b583d8`

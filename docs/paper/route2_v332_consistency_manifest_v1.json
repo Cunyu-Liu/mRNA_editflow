@@ -44,8 +44,8 @@
       "accountable_human_license_review_complete": false,
       "route2_current_readme_notice_complete": true,
       "route2_clean_environment_reproduction_complete": false,
-      "formal_release_payload_boundary_compliant": false,
-      "legacy_tracked_payload_policy_resolved": false,
+      "formal_release_payload_boundary_compliant": true,
+      "legacy_tracked_payload_policy_resolved": true,
       "immutable_release_assigned": false,
       "submission_ready": false
     }

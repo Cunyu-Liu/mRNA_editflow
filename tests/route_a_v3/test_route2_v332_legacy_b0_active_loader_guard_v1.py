@@ -75,12 +75,21 @@ def test_each_legacy_entrypoint_fails_before_reading_inputs(
     assert "does-not-exist-for-negative-loader-test" not in output
 
 
-def test_guarded_entrypoints_do_not_modify_legacy_payloads() -> None:
-    assert {
-        path.name: path.stat().st_size
-        for path in (ROOT / "data/b0_splits").glob("*.jsonl")
-        if path.name in LEGACY_SIZES
-    } == LEGACY_SIZES
+def test_guarded_entrypoints_do_not_require_payloads_in_current_head() -> None:
+    tracked = subprocess.run(
+        [
+            "git",
+            "ls-files",
+            "--",
+            *(f"data/b0_splits/{name}" for name in LEGACY_SIZES),
+        ],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.splitlines()
+
+    assert tracked == []
 
 
 def test_all_four_reader_sources_call_the_guard_before_loading() -> None:

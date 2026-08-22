@@ -940,21 +940,23 @@ file is tracked. Repository access therefore must not be interpreted as an
 independent grant of reuse rights. Large data, checkpoints, model weights,
 generated candidates and run products under
 `/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/` are not part of the Git code
-tree or a declared code release. Separately, the current working tree still
-tracks one legacy discovery Parquet and four superseded B0 JSONL payloads. The
-five files total 34,786,075 bytes and conflict with the V3.3.2 formal-release
-payload boundary. Four callable legacy entrypoints previously read the old B0
-split directory; they now fail closed with `SUPERSEDED_NOT_LOADABLE` before any
-input read, with focused negative-loader coverage. The legacy discovery
-producer now defaults future Parquet output to the Route 2 `/mnt` data registry
-while retaining its small audit summary in Git. No payload was opened, moved,
-deleted or modified for this audit, and the branch is not eligible for a formal
-release until the tracked-payload disposition is resolved.
+tree or a declared code release. Under explicit current-HEAD migration
+authorization, one legacy discovery Parquet and four superseded B0 JSONL files
+(34,786,075 bytes total) were preserved under the Route 2 `/mnt` root with a
+provenance note and removed from current-HEAD tracking; five exact ignore rules
+prevent re-addition. Four callable legacy entrypoints now fail closed with
+`SUPERSEDED_NOT_LOADABLE` before any input read, and the legacy discovery
+producer defaults future Parquet output to the Route 2 `/mnt` data registry
+while retaining its small audit summary in Git. Payload content was not opened,
+shared Git history was not rewritten and no formal tag or Release was created.
+This resolves the formal-release payload-boundary component only; other release
+and submission blockers remain, and the branch is not eligible for a formal
+release.
 No code-availability-on-request promise is made. A release claim requires an
 accountable license review, a Route 2-current README, an exact clean-environment
 reproduction check, a compliant payload boundary and an immutable tagged or
 archived version.
-[evidence:E-R2-CODE-AVAILABILITY-COMPLETION-AUDIT,E-R2-LEGACY-PAYLOAD-DISPOSITION-AUDIT,E-R2-CONTRACT,E-R2-DATA-AVAILABILITY-COMPLETION-AUDIT]
+[evidence:E-R2-CODE-AVAILABILITY-COMPLETION-AUDIT,E-R2-LEGACY-PAYLOAD-DISPOSITION-AUDIT,E-R2-LEGACY-PAYLOAD-MIGRATION-PROVENANCE,E-R2-CONTRACT,E-R2-DATA-AVAILABILITY-COMPLETION-AUDIT]
 
 ## Unresolved items before manuscript integration
 

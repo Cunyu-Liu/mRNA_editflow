@@ -1,61 +1,57 @@
-# Route 2 V3.3.2 legacy tracked-payload release disposition
+# Route 2 V3.3.2 legacy payload current-HEAD migration disposition
 
 ## Decision
 
-Do not create a formal tag or GitHub Release from the current HEAD. The four
-legacy B0 readers now fail closed on the superseded repository-root split
-directory. After explicit user authorization, preserve the five payloads under
-the Route 2 `/mnt` root and stop tracking them in the current Git tree. Do not
-rewrite shared Git history as part of this task; any repository-wide history
-rewrite requires separate authorization and coordination.
+The five legacy payloads have been preserved under
+`/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/legacy_repository_payloads/`
+and removed from current-HEAD tracking under explicit user authorization. Five
+exact ignore rules prevent the same generated paths from being re-added. The
+current-HEAD formal-release payload boundary is therefore compliant.
 
-## Evidence and conflict
+This resolution does not authorize a formal tag or GitHub Release. Minimum-
+package, accountable-human rights and license review, clean-environment
+reproduction, immutable archive and manuscript metadata/disclosure blockers
+remain. Shared Git history was not rewritten.
 
-The current tree tracks one 46,498-byte discovery Parquet and four superseded B0
-JSONL files totalling 34,739,577 bytes. The five-file total is 34,786,075 bytes.
-The V3.3.2 contract excludes raw/canonical JSONL and Parquet payloads from GitHub.
-The legacy v3.1 contract simultaneously requires the four old B0 JSONL files to
-remain unmodified as historical evidence and requires active loaders to reject
-them.
+## Preserved files
 
-The content of the five payloads was not opened for this audit. Path, tracking,
-size and text-reference checks found no current Route 2 V3.3.2 runtime consumer.
-Four callable legacy entrypoints previously directly read the old
-`data/b0_splits` directory:
+The migration covers exactly one 46,498-byte discovery Parquet and four
+superseded B0 JSONL files totalling 34,739,577 bytes. The five-file total is
+34,786,075 bytes. Each source/destination pair was checked by exact path and
+byte size after a no-overwrite copy; payload content was not opened and no
+project-generated checksum file was created.
 
-- `d1_staging/scripts/b0/audit_split_manifests.py`
-- `d1_staging/scripts/b0/eval_tracks.py`
-- `d1_staging/scripts/b0/leakage_audit.py`
-- `d1_staging/scripts/fm0/fm0_exposure_audit.py`
+| former current-HEAD path | preserved `/mnt` file | bytes |
+|---|---|---:|
+| `data_registry/excel_inventory.parquet` | `excel_inventory.parquet` | 46,498 |
+| `data/b0_splits/split_study_disjoint.jsonl` | `split_study_disjoint.jsonl` | 11,462,850 |
+| `data/b0_splits/split_cross_region_transfer.jsonl` | `split_cross_region_transfer.jsonl` | 11,299,013 |
+| `data/b0_splits/split_5utr_source_disjoint.jsonl` | `split_5utr_source_disjoint.jsonl` | 7,638,905 |
+| `data/b0_splits/split_3utr_source_disjoint.jsonl` | `split_3utr_source_disjoint.jsonl` | 4,338,809 |
 
-They now share `d1_staging/scripts/b0/legacy_split_guard.py`, which raises
-`SUPERSEDED_NOT_LOADABLE` before a canonical-record or split-manifest read when
-the requested split root is the preserved repository directory. Seven focused
-tests cover the shared guard, all four command entrypoints, unchanged JSONL
-sizes and guard-before-load ordering. The discovery Parquet has one producer,
-`scripts/data/import_excel_inventory.py`, but no current Route 2 consumer. That
-producer now defaults future Parquet output to
+The destination includes `PROVENANCE.md`, recording the source branch and
+pre-migration commit, exact file mapping, sizes, authorization boundary and the
+absence of shared-history rewrite or formal release.
+
+## Repository behavior after migration
+
+The four callable legacy B0 entrypoints remain fail closed on the repository-
+root `data/b0_splits` path through
+`d1_staging/scripts/b0/legacy_split_guard.py`. They raise
+`SUPERSEDED_NOT_LOADABLE` before canonical-record or split-manifest reads. The
+guard remains effective even though the four JSONL files are absent from a
+fresh checkout.
+
+The discovery Parquet producer now defaults future output to
 `/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/data_registry/excel_inventory.parquet`
-while retaining the small audit Markdown in Git. Its audit renderer records the
-actual selected Parquet path instead of a hard-coded repository path. This does
-not move or stop tracking the existing file. Retaining the five files in a
-formal release still violates the current Git payload boundary.
-
-## Ordered migration after authorization
-
-1. Preserve the five payloads under
-   `/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/legacy_repository_payloads/`
-   with a small provenance note. Do not create project-generated checksum files.
-2. After explicit deletion/migration authorization, stop tracking the five
-   payloads in the current HEAD and add narrow ignore rules for the same paths.
-3. Run focused and full V3.3.2 tests and re-adjudicate the internal release
-   candidate. A formal tag/Release remains unauthorized until that adjudication.
+while retaining the small historical audit Markdown in Git. Its renderer
+records the actual selected Parquet path.
 
 ## Current boundary
 
-This memo authorizes no deletion, move, copy, history rewrite, release or tag.
-It records narrow behavior changes to the four legacy readers and the future
-Excel-inventory output default only; no tracked payload was opened or modified.
-It corrects the release description: large Route 2 runtime artifacts remain
-outside Git, but five legacy data payloads are still tracked in the working
-repository and therefore keep the formal-release payload boundary non-compliant.
+Current HEAD tracks none of the five payloads. The payload-policy component of
+the internal release candidate is resolved, but public payload redistribution
+is not authorized: the 14-study accountable-human rights register still has
+zero completed/signoff rows. No Development TEST, new final Evaluation,
+E-MTAB-10902 outcome, sealed GSE246381 outcome or guided XEditFlow output was
+opened during this migration.

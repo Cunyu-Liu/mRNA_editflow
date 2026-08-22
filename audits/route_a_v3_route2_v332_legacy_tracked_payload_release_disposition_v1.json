@@ -1,111 +1,131 @@
 {
   "schema_version": "route_a_v3_route2_v332_legacy_tracked_payload_release_disposition.v1",
-  "status": "FIVE_LEGACY_PAYLOADS_TRACKED_FOUR_DIRECT_LEGACY_READERS_FAIL_CLOSED_PARQUET_PRODUCER_DEFAULT_OUTSIDE_GIT_FORMAL_RELEASE_BLOCKED_MIGRATION_NOT_AUTHORIZED",
-  "observed_at": "2026-08-22T19:30:27+08:00",
-  "scope": "PATH_TRACKING_SIZE_AND_TEXT_REFERENCE_AUDIT_ONLY_NO_PAYLOAD_CONTENT_OPENED",
+  "status": "CURRENT_HEAD_LEGACY_PAYLOAD_MIGRATION_COMPLETE_FIVE_MNT_COPIES_FOUR_READERS_FAIL_CLOSED_FORMAL_RELEASE_PAYLOAD_BOUNDARY_COMPLIANT",
+  "observed_at": "2026-08-22T22:28:35+08:00",
+  "scope": "AUTHORIZED_CURRENT_HEAD_TRACKING_MIGRATION_PATH_AND_SIZE_VERIFICATION_NO_PAYLOAD_CONTENT_OPENED",
   "authority": {
     "scientific_contract": "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna 数据gate转向后的合同.md",
     "execution_protocol": "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna V3.3.2 执行提示词.md",
     "legacy_contract": "docs/contracts/utr_editflow_goal_v3_1.md",
-    "release_candidate_audit": "audits/route_a_v3_route2_v332_github_release_candidate_v1.json"
+    "release_candidate_audit": "audits/route_a_v3_route2_v332_github_release_candidate_v1.json",
+    "user_authorized_current_head_migration": true,
+    "authorized_destination_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/legacy_repository_payloads/",
+    "shared_git_history_rewrite_authorized": false,
+    "formal_tag_or_release_authorized": false,
+    "public_payload_redistribution_authorized": false
   },
   "contract_boundary": {
     "current_v332_git_allows_raw_canonical_jsonl_or_parquet_payloads": false,
     "legacy_v31_requires_old_b0_files_unmodified": true,
     "legacy_v31_requires_active_loaders_to_reject_old_b0_files": true,
-    "current_and_legacy_requirements_need_deliberate_migration_order": true
+    "current_head_tracking_boundary_now_satisfied": true
   },
-  "tracked_payloads": [
+  "migrated_payloads": [
     {
-      "path": "data_registry/excel_inventory.parquet",
+      "source_path": "data_registry/excel_inventory.parquet",
+      "destination_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/legacy_repository_payloads/excel_inventory.parquet",
       "size_bytes": 46498,
       "kind": "LEGACY_DISCOVERY_PARQUET",
       "current_route2_v332_runtime_dependency": false,
-      "text_producer": "scripts/data/import_excel_inventory.py",
-      "current_disposition": "TRACKED_CONFLICTS_WITH_FORMAL_RELEASE_BOUNDARY_FUTURE_PRODUCER_DEFAULT_REDIRECTED_TO_MNT"
+      "tracked_in_current_head": false,
+      "destination_file_present": true,
+      "destination_size_verified": true
     },
     {
-      "path": "data/b0_splits/split_study_disjoint.jsonl",
+      "source_path": "data/b0_splits/split_study_disjoint.jsonl",
+      "destination_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/legacy_repository_payloads/split_study_disjoint.jsonl",
       "size_bytes": 11462850,
       "kind": "SUPERSEDED_LEGACY_B0_SPLIT_JSONL",
       "current_route2_v332_runtime_dependency": false,
-      "current_disposition": "TRACKED_UNMODIFIED_ACTIVE_LEGACY_READERS_FAIL_CLOSED_MIGRATION_NOT_AUTHORIZED"
+      "tracked_in_current_head": false,
+      "destination_file_present": true,
+      "destination_size_verified": true
     },
     {
-      "path": "data/b0_splits/split_cross_region_transfer.jsonl",
+      "source_path": "data/b0_splits/split_cross_region_transfer.jsonl",
+      "destination_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/legacy_repository_payloads/split_cross_region_transfer.jsonl",
       "size_bytes": 11299013,
       "kind": "SUPERSEDED_LEGACY_B0_SPLIT_JSONL",
       "current_route2_v332_runtime_dependency": false,
-      "current_disposition": "TRACKED_UNMODIFIED_ACTIVE_LEGACY_READERS_FAIL_CLOSED_MIGRATION_NOT_AUTHORIZED"
+      "tracked_in_current_head": false,
+      "destination_file_present": true,
+      "destination_size_verified": true
     },
     {
-      "path": "data/b0_splits/split_5utr_source_disjoint.jsonl",
+      "source_path": "data/b0_splits/split_5utr_source_disjoint.jsonl",
+      "destination_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/legacy_repository_payloads/split_5utr_source_disjoint.jsonl",
       "size_bytes": 7638905,
       "kind": "SUPERSEDED_LEGACY_B0_SPLIT_JSONL",
       "current_route2_v332_runtime_dependency": false,
-      "current_disposition": "TRACKED_UNMODIFIED_ACTIVE_LEGACY_READERS_FAIL_CLOSED_MIGRATION_NOT_AUTHORIZED"
+      "tracked_in_current_head": false,
+      "destination_file_present": true,
+      "destination_size_verified": true
     },
     {
-      "path": "data/b0_splits/split_3utr_source_disjoint.jsonl",
+      "source_path": "data/b0_splits/split_3utr_source_disjoint.jsonl",
+      "destination_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/legacy_repository_payloads/split_3utr_source_disjoint.jsonl",
       "size_bytes": 4338809,
       "kind": "SUPERSEDED_LEGACY_B0_SPLIT_JSONL",
       "current_route2_v332_runtime_dependency": false,
-      "current_disposition": "TRACKED_UNMODIFIED_ACTIVE_LEGACY_READERS_FAIL_CLOSED_MIGRATION_NOT_AUTHORIZED"
+      "tracked_in_current_head": false,
+      "destination_file_present": true,
+      "destination_size_verified": true
     }
   ],
-  "tracked_payload_file_count": 5,
-  "tracked_payload_total_size_bytes": 34786075,
+  "current_head_tracked_payload_file_count": 0,
+  "current_head_tracked_payload_total_size_bytes": 0,
+  "migrated_payload_file_count": 5,
+  "migrated_payload_total_size_bytes": 34786075,
   "legacy_b0_jsonl_file_count": 4,
   "legacy_b0_jsonl_total_size_bytes": 34739577,
-  "text_reference_inventory": {
-    "excel_inventory_parquet_producer_files": [
-      "scripts/data/import_excel_inventory.py"
-    ],
-    "excel_inventory_parquet_producer_default_output": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/data_registry/excel_inventory.parquet",
-    "excel_inventory_small_audit_default_output": "docs/data/excel_inventory_audit.md",
-    "excel_inventory_parquet_producer_default_inside_git": false,
-    "excel_inventory_parquet_current_route2_consumer_files": [],
+  "destination": {
+    "host": "cunyuliu@36.137.135.49",
+    "root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/legacy_repository_payloads/",
+    "payload_file_count": 5,
+    "payload_total_size_bytes": 34786075,
+    "provenance_note": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/legacy_repository_payloads/PROVENANCE.md",
+    "provenance_note_present": true,
+    "project_generated_checksum_files_created": false
+  },
+  "repository_controls": {
+    "exact_ignore_rule_count": 5,
+    "broad_data_registry_ignore_added": false,
+    "broad_b0_splits_ignore_added": false,
+    "legacy_b0_active_loader_guard_implementation": "d1_staging/scripts/b0/legacy_split_guard.py",
     "legacy_b0_direct_reader_entrypoints": [
       "d1_staging/scripts/b0/audit_split_manifests.py",
       "d1_staging/scripts/b0/eval_tracks.py",
       "d1_staging/scripts/b0/leakage_audit.py",
       "d1_staging/scripts/fm0/fm0_exposure_audit.py"
     ],
-    "legacy_b0_writer_entrypoints": [
-      "d1_staging/scripts/b0/build_split_manifests.py"
-    ],
-    "legacy_b0_invalidation_declaration_files": [
-      "d1_staging/scripts/b0/b0_v3_1_freezer.py",
-      "docs/contracts/utr_editflow_goal_v3_1.md"
-    ],
-    "legacy_b0_active_loader_guard_implementation": "d1_staging/scripts/b0/legacy_split_guard.py",
-    "legacy_b0_active_loader_negative_test_files": [
-      "tests/route_a_v3/test_route2_v332_legacy_b0_active_loader_guard_v1.py"
-    ]
+    "legacy_b0_direct_reader_entrypoint_count": 4,
+    "legacy_b0_guarded_direct_reader_count": 4,
+    "legacy_b0_unguarded_direct_reader_count": 0,
+    "legacy_b0_active_loader_negative_test_evidence_present": true,
+    "excel_inventory_parquet_producer": "scripts/data/import_excel_inventory.py",
+    "excel_inventory_parquet_producer_default_output": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/data_registry/excel_inventory.parquet",
+    "excel_inventory_small_audit_default_output": "docs/data/excel_inventory_audit.md",
+    "excel_inventory_parquet_producer_default_inside_git": false
   },
-  "legacy_b0_direct_reader_entrypoint_count": 4,
-  "legacy_b0_guarded_direct_reader_count": 4,
-  "legacy_b0_unguarded_direct_reader_count": 0,
-  "legacy_b0_active_loader_negative_test_evidence_present": true,
-  "current_head_formal_release_payload_boundary_compliant": false,
-  "code_availability_statement_requires_legacy_payload_qualification": true,
-  "recommended_disposition": {
-    "decision": "LEGACY_READERS_FAIL_CLOSED_AWAIT_EXPLICIT_USER_AUTHORIZATION_TO_MIGRATE_FIVE_PAYLOADS_OUT_OF_CURRENT_HEAD",
-    "reason": "The four direct legacy readers now reject the superseded repository-root B0 directory before any canonical or manifest input read, while preserving the four JSONL files unmodified. Future Excel inventory generation now defaults to the Route 2 /mnt data_registry while its small audit remains in Git. The five existing tracked payloads still violate the current V3.3.2 formal-release Git boundary, and their copy/removal remains outside this task without explicit authorization.",
-    "ordered_actions_not_yet_executed": [
-      "Copy the five payloads to /mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/legacy_repository_payloads/ with a small provenance note; do not add project-generated checksums.",
-      "After explicit deletion/migration authorization, stop tracking the five payloads in the current HEAD and add narrow ignore rules for the same generated paths.",
-      "Re-run focused and full V3.3.2 tests, then re-adjudicate the formal release candidate."
-    ],
-    "shared_git_history_rewrite_recommended_in_this_task": false,
-    "shared_git_history_rewrite_requires_separate_explicit_authorization": true,
-    "formal_release_or_tag_before_resolution_authorized": false
+  "release_adjudication": {
+    "current_head_formal_release_payload_boundary_compliant": true,
+    "legacy_tracked_payload_policy_resolved": true,
+    "decision": "CURRENT_HEAD_PAYLOAD_MIGRATION_COMPLETE_OTHER_RELEASE_AND_SUBMISSION_BLOCKERS_REMAIN",
+    "ordered_migration_actions_not_yet_executed": [],
+    "formal_release_or_tag_authorized": false,
+    "minimum_package_complete": false,
+    "outcome_trigger_fully_satisfied": false,
+    "submission_ready": false
   },
   "actions_performed": {
     "payload_content_opened": false,
-    "payload_copied": false,
-    "payload_deleted": false,
+    "payload_copied_to_authorized_mnt_root": true,
+    "payload_removed_from_current_head_tracking": true,
+    "source_worktree_payload_deleted_during_local_migration": false,
     "payload_moved": false,
+    "destination_payload_overwritten": false,
+    "exact_ignore_rules_added": true,
+    "provenance_note_written": true,
     "git_history_rewritten": false,
     "legacy_reader_behavior_changed": true,
     "excel_inventory_producer_default_changed": true,
@@ -118,7 +138,5 @@
     "sealed_gse246381_read": false,
     "guided_xeditflow_run": false
   },
-  "new_training_attempt_created": false,
-  "minimum_package_complete": false,
-  "submission_ready": false
+  "new_training_attempt_created": false
 }

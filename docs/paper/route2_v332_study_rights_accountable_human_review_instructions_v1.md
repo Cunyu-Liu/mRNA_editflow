@@ -35,7 +35,7 @@ After a human edits a copy of the CSV, validate it with this builder's
 internal consistency; it does not authenticate the reviewer or independently
 adjudicate the legal conclusion. Even 14 completed rows do not automatically
 authorize a public release: the exact release files, stable repository/version,
-code licence, tracked legacy-payload policy and final project release decision
+code licence, legacy-payload disposition evidence and final project release decision
 remain separate gates.
 
 ## Current manuscript wording boundary
