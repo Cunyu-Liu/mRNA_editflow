@@ -158,4 +158,3 @@ This form is path-consistent with the learned potential and prevents unrelated p
 | Soft-value SMC improves measured-neighborhood ranking without reward exploitation. | Frozen 18-cell screen, three-seed NDCG/regret/top-1 results, paired CIs, independent-evaluator margin. | Needs terminal evidence and is currently gate-blocked. |
 | The benchmark compares search methods fairly. | Common source/action/edit/candidate/forward caps, shared-score provenance, wall-time/VRAM records, exact source support. | Implemented prospectively; V3 result artifacts pending. |
 | The method generalizes beyond Development. | Passing LOSO plus one new outcome-unexposed convertible external Evaluation. | Needs evidence; no independent external confirmation is currently available. |
-
