@@ -240,7 +240,7 @@
       "label": "Provisional general-manuscript figure assembly",
       "analysis_intent": "FROZEN_EVIDENCE_VISUALIZATION",
       "status": "PROVISIONAL_GENERAL_MANUSCRIPT_FIGURES_RENDERED",
-      "figure_count": 6,
+      "figure_count": 7,
       "formats": ["png", "pdf", "svg"],
       "raster_dpi": 300,
       "target_journal": "PENDING_SELECTION",
@@ -284,7 +284,9 @@
         "E-R2-PXE-ARCH-FIGURE-BUILDER",
         "E-R2-PXE-ARCH-FIGURE-MANIFEST",
         "E-R2-LEARNING-CURVES-FIGURE-BUILDER",
-        "E-R2-LEARNING-CURVES-FIGURE-MANIFEST"
+        "E-R2-LEARNING-CURVES-FIGURE-MANIFEST",
+        "E-R2-GEN-QUALITY-COST-FIGURE-BUILDER",
+        "E-R2-GEN-QUALITY-COST-FIGURE-MANIFEST"
       ]
     }
   ],
@@ -792,6 +794,50 @@
       ]
     },
     {
+      "result_id": "R-R2-GENERATION-QUALITY-COST-DIVERSITY-FAILURE-FIGURE",
+      "status": "PROVISIONAL_GENERATION_QUALITY_COST_DIVERSITY_FAILURE_FIGURE_RENDERED",
+      "terminal_method_count": 7,
+      "cost_metric": "MEAN_TOTAL_FORWARD_EQUIVALENTS_PER_SOURCE",
+      "independent_evaluator_point_estimate_pareto_method_ids": [
+        "random_legal",
+        "unguided_learned_base_flow_g0",
+        "genetic"
+      ],
+      "measured_candidate_recovery_point_estimate_pareto_method_ids": [
+        "random_legal",
+        "unguided_learned_base_flow_g0"
+      ],
+      "lowest_cost_method_id": "random_legal",
+      "lowest_cost_mean_forward_equivalents_per_source": 64.00448933782268,
+      "highest_independent_evaluator_method_id": "genetic",
+      "highest_independent_evaluator_max_uplift": 1.0978248587628674,
+      "highest_measured_recovery_method_id": "unguided_learned_base_flow_g0",
+      "highest_measured_candidate_recovery_rate": 0.20286195286195285,
+      "highest_hamming_diversity_method_id": "unguided_learned_base_flow_g0",
+      "highest_source_macro_pairwise_hamming_diversity": 0.0765737532452552,
+      "flow_duplicate_candidate_fraction": 0.11710858585858586,
+      "local_search_candidate_cap_shortfall_fraction": 0.2625210437710438,
+      "all_method_hard_legality_rate": 1.0,
+      "total_edit_budget_violations": 0,
+      "total_candidate_budget_violations": 0,
+      "total_no_legal_action_terminals": 0,
+      "total_numerical_failure_terminals": 0,
+      "per_method_uncertainty_available": false,
+      "generation_wall_time_complete": false,
+      "closed_measured_ndcg_numeric_rows": 0,
+      "guided_methods_plotted_as_executed": false,
+      "development_test_read": false,
+      "new_final_evaluation_read": false,
+      "guided_xeditflow_run": false,
+      "publisher_compliance_claimed": false,
+      "scientific_claim_status": "NOT_ESTABLISHED",
+      "evidence_ids": [
+        "E-R2-GEN-QUALITY-COST-FIGURE-BUILDER",
+        "E-R2-GEN-QUALITY-COST-FIGURE-MANIFEST",
+        "E-R2-GEN-INPUT"
+      ]
+    },
+    {
       "result_id": "R-R2-MINIMUM-BENCHMARK-PACKAGE",
       "requirement_count": 18,
       "complete_or_complete_with_declared_limits_count": 14,
@@ -821,6 +867,8 @@
         "E-R2-GEN-THREE-LAYER-SNAPSHOT",
         "E-R2-GEN-THREE-LAYER-BUILDER",
         "E-R2-GEN-THREE-LAYER-AUDIT",
+        "E-R2-GEN-QUALITY-COST-FIGURE-BUILDER",
+        "E-R2-GEN-QUALITY-COST-FIGURE-MANIFEST",
         "E-R2-FIGURE-BUILDER",
         "E-R2-FIGURE-MANIFEST",
         "E-R2-CONVERSION-FIGURE-BUILDER",

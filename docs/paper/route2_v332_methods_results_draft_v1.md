@@ -96,6 +96,18 @@ and frozen-critic guidance remain explicit Critic V2 NO-GO rows with blank numer
 results. Undefined closed-support metrics remain blank rather than being encoded
 as zero. [evidence:E-R2-GEN-THREE-LAYER-SNAPSHOT,E-R2-GEN-THREE-LAYER-BUILDER,E-R2-GEN-THREE-LAYER-AUDIT]
 
+### Generation quality–cost, diversity and failure visualization
+
+A provisional four-panel figure uses the same frozen seven-method aggregate
+table without filtering. Two point-position panels pair independent-evaluator
+uplift or sparse measured candidate recovery with mean total forward-equivalents
+per source. A lollipop panel reports source-macro pairwise Hamming diversity and
+annotates unique-candidate rate, and a zero-baseline bar panel reports duplicate
+and candidate-cap-shortfall fractions. Per-method uncertainty is unavailable,
+six search wall times remain unrecorded, guided methods are not plotted as
+executed, and publisher rules remain pending.
+[evidence:E-R2-GEN-QUALITY-COST-FIGURE-BUILDER,E-R2-GEN-QUALITY-COST-FIGURE-MANIFEST]
+
 ### Independent generation evaluator
 
 Generation methods were compared with a frozen Siamese CNN evaluator trained
@@ -396,6 +408,26 @@ closed measured NDCG and candidates outside the measured neighborhood were not
 assigned zero gain or canonical intervention credit. Per-candidate algorithmic
 STOP time is not present in the terminal selection input and is reported as
 `NOT_RETAINED`, not reconstructed.
+
+### Quality–cost frontiers separate evaluator uplift from measured recovery
+
+Under the plotted point estimates, random legal search (64.0045 mean forward-
+equivalents), unguided Base Flow (124.4534) and genetic search (231.4669) form
+the descriptive independent-evaluator quality–cost frontier; the higher-cost
+generate-then-rerank, local-search, greedy and beam points are dominated on that
+pair of axes. For sparse measured candidate recovery, only random legal and
+unguided Base Flow remain on the descriptive frontier. These are Development
+point-estimate relationships without per-method intervals, not formal claims of
+superiority or biological efficacy.
+
+The diversity/failure panels expose different tradeoffs. Base Flow has the
+highest pairwise Hamming diversity (0.076574) but only 0.882891 source-macro
+unique rate, corresponding to a 0.117109 duplicate-candidate fraction. Local
+search has no duplicates but realizes 21,027 of the 28,512 candidate-row cap, a
+0.262521 shortfall. All seven methods retain hard legality 1.0 and zero edit-
+budget, candidate-budget, no-legal-action and numerical failures. Closed measured
+NDCG and complete wall time remain unavailable and are not imputed.
+[evidence:E-R2-GEN-QUALITY-COST-FIGURE-BUILDER,E-R2-GEN-QUALITY-COST-FIGURE-MANIFEST,E-R2-GEN-INPUT]
 
 ### Historical GSE232572 transfer did not meet its preregistered pass rule
 

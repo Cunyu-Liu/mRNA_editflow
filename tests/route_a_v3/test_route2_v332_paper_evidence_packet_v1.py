@@ -92,7 +92,7 @@ def test_claim_and_consistency_evidence_references_are_closed() -> None:
     consistency = _load(CONSISTENCY)
 
     evidence_ids = [row["evidence_id"] for row in evidence["sources"]]
-    assert len(evidence_ids) == len(set(evidence_ids)) == 44
+    assert len(evidence_ids) == len(set(evidence_ids)) == 46
 
     claims = re.findall(r"\[claim:([^\]]+)\]", draft)
     assert len(claims) == len(set(claims)) == 22
@@ -112,15 +112,15 @@ def test_evidence_source_paths_are_closed_without_overstating_verification() -> 
     preflight = evidence["source_path_preflight"]
 
     assert preflight["status"] == "PASS"
-    assert preflight["source_locations_checked"] == len(evidence["sources"]) == 44
+    assert preflight["source_locations_checked"] == len(evidence["sources"]) == 46
     assert (
         preflight["local_or_contract_locations_checked"]
         + preflight["a100_mnt_locations_checked"]
         == preflight["source_locations_checked"]
     )
     assert preflight["missing_locations"] == 0
-    assert preflight["local_or_contract_locations_checked"] == 31
-    assert preflight["a100_mnt_locations_checked"] == 13
+    assert preflight["local_or_contract_locations_checked"] == 32
+    assert preflight["a100_mnt_locations_checked"] == 14
     assert preflight["check_scope"] == "FILE_EXISTENCE_ONLY_NO_EVIDENCE_CONTENT_OPENED"
     assert preflight["human_content_verification_completed"] is False
     assert preflight["submission_readiness_changed"] is False
@@ -197,6 +197,15 @@ def test_evidence_source_paths_are_closed_without_overstating_verification() -> 
     assert by_id["E-R2-GEN-THREE-LAYER-AUDIT"]["location"] == (
         "audits/route_a_v3_route2_v332_generation_three_layer_results_table_v1.json"
     )
+    assert by_id["E-R2-GEN-QUALITY-COST-FIGURE-BUILDER"]["location"] == (
+        "scripts/route_a_v3/build_route2_v332_generation_quality_cost_diversity_failure_figure_v1.py"
+    )
+    assert by_id["E-R2-GEN-QUALITY-COST-FIGURE-MANIFEST"]["location"].endswith(
+        "/route2_v332_generation_quality_cost_diversity_failure_figure_v1_manifest.json"
+    )
+    assert by_id["E-R2-GEN-QUALITY-COST-FIGURE-MANIFEST"][
+        "publisher_compliance_claimed"
+    ] is False
 
 
 def test_dataset_qualification_table_closes_v332_role_and_credit_boundaries() -> None:
@@ -499,7 +508,7 @@ def test_provisional_figure_method_preserves_protected_outcome_boundary() -> Non
     )
 
     assert method["status"] == "PROVISIONAL_GENERAL_MANUSCRIPT_FIGURES_RENDERED"
-    assert method["figure_count"] == 6
+    assert method["figure_count"] == 7
     assert method["formats"] == ["png", "pdf", "svg"]
     assert method["raster_dpi"] == 300
     assert method["target_journal"] == "PENDING_SELECTION"
@@ -523,6 +532,8 @@ def test_provisional_figure_method_preserves_protected_outcome_boundary() -> Non
         "E-R2-PXE-ARCH-FIGURE-MANIFEST",
         "E-R2-LEARNING-CURVES-FIGURE-BUILDER",
         "E-R2-LEARNING-CURVES-FIGURE-MANIFEST",
+        "E-R2-GEN-QUALITY-COST-FIGURE-BUILDER",
+        "E-R2-GEN-QUALITY-COST-FIGURE-MANIFEST",
     ]
 
     result = next(
@@ -895,6 +906,68 @@ def test_generation_action_space_geometry_is_conserved_and_claim_bounded() -> No
     )
 
 
+def test_generation_quality_cost_diversity_failure_figure_is_claim_bounded() -> None:
+    draft = " ".join(DRAFT.read_text(encoding="utf-8").split())
+    consistency = _load(CONSISTENCY)
+    result = next(
+        row
+        for row in consistency["results"]
+        if row["result_id"]
+        == "R-R2-GENERATION-QUALITY-COST-DIVERSITY-FAILURE-FIGURE"
+    )
+    with ACTION_SPACE_GEOMETRY_TABLE.open(newline="", encoding="utf-8") as handle:
+        rows = list(csv.DictReader(handle))
+
+    def pareto(metric: str) -> set[str]:
+        front = set()
+        for row in rows:
+            cost = float(row["mean_total_forward_equivalents_per_source"])
+            quality = float(row[metric])
+            dominated = any(
+                float(other["mean_total_forward_equivalents_per_source"]) <= cost
+                and float(other[metric]) >= quality
+                and (
+                    float(other["mean_total_forward_equivalents_per_source"]) < cost
+                    or float(other[metric]) > quality
+                )
+                for other in rows
+                if other["method_id"] != row["method_id"]
+            )
+            if not dominated:
+                front.add(row["method_id"])
+        return front
+
+    assert len(rows) == result["terminal_method_count"] == 7
+    assert pareto("source_macro_independent_evaluator_max_uplift_over_source") == set(
+        result["independent_evaluator_point_estimate_pareto_method_ids"]
+    ) == {"random_legal", "unguided_learned_base_flow_g0", "genetic"}
+    assert pareto("source_macro_candidate_recovery_rate") == set(
+        result["measured_candidate_recovery_point_estimate_pareto_method_ids"]
+    ) == {"random_legal", "unguided_learned_base_flow_g0"}
+    assert result["lowest_cost_mean_forward_equivalents_per_source"] == 64.00448933782268
+    assert result["highest_independent_evaluator_max_uplift"] == 1.0978248587628674
+    assert result["highest_measured_candidate_recovery_rate"] == 0.20286195286195285
+    assert result["highest_source_macro_pairwise_hamming_diversity"] == 0.0765737532452552
+    assert result["flow_duplicate_candidate_fraction"] == 3339 / 28512
+    assert result["local_search_candidate_cap_shortfall_fraction"] == (
+        28512 - 21027
+    ) / 28512
+    assert result["all_method_hard_legality_rate"] == 1.0
+    assert result["total_edit_budget_violations"] == 0
+    assert result["total_candidate_budget_violations"] == 0
+    assert result["total_no_legal_action_terminals"] == 0
+    assert result["total_numerical_failure_terminals"] == 0
+    assert result["per_method_uncertainty_available"] is False
+    assert result["generation_wall_time_complete"] is False
+    assert result["closed_measured_ndcg_numeric_rows"] == 0
+    assert result["guided_methods_plotted_as_executed"] is False
+    assert result["publisher_compliance_claimed"] is False
+    assert result["scientific_claim_status"] == "NOT_ESTABLISHED"
+    assert "descriptive independent-evaluator quality–cost frontier" in draft
+    assert "without per-method intervals" in draft
+    assert "Closed measured NDCG and complete wall time remain unavailable" in draft
+
+
 def test_historical_gse232572_transfer_remains_negative_and_nonconfirmatory() -> None:
     draft = " ".join(DRAFT.read_text(encoding="utf-8").split())
     consistency = _load(CONSISTENCY)
@@ -1007,12 +1080,14 @@ def test_minimum_benchmark_package_is_itemized_and_not_overcalled() -> None:
     assert by_id["MBP-17"]["status"] == (
         "COMPLETE_WITH_PROVISIONAL_GENERAL_FIGURES"
     )
+    assert "six reproducible figure builders" in by_id["MBP-17"]["evidence_or_basis"]
+    assert "seven figures" in by_id["MBP-17"]["evidence_or_basis"]
     assert audit["manuscript_figures"]["status"] == (
         "PROVISIONAL_GENERAL_MANUSCRIPT_FIGURES_RENDERED"
     )
-    assert audit["manuscript_figures"]["figure_count"] == 6
-    assert len(audit["manuscript_figures"]["builders"]) == 5
-    assert len(audit["manuscript_figures"]["focused_tests"]) == 5
+    assert audit["manuscript_figures"]["figure_count"] == 7
+    assert len(audit["manuscript_figures"]["builders"]) == 6
+    assert len(audit["manuscript_figures"]["focused_tests"]) == 6
     assert audit["manuscript_figures"]["publisher_compliance_claimed"] is False
     assert audit["manuscript_figures"]["new_final_evaluation_read"] is False
     assert audit["baseline_matrix"] == {
