@@ -51,6 +51,17 @@ no performance metric and is not the later native/common/architecture-controlled
 results table or the later matched-budget numeric matrix.
 [evidence:E-R2-BASELINE-MATRIX-BUILDER,E-R2-BASELINE-MATRIX-AUDIT]
 
+### Native, common-task and architecture-controlled reporting tracks
+
+A separate 52-row table prevents native-paper capability, current canonical
+source-relative comparison and architecture-controlled explanation from being
+mixed. Track A contains 10 status-only native rows and no numeric reproduction;
+Track B contains 12 common-task rows, nine with Development numbers; Track C
+contains 30 architecture-controlled rows, 26 with Development numbers. Numeric
+comparisons are permitted only within the same declared task scope. Native rows,
+subset-pooled versus nine-task-macro rows and architecture diagnostics do not
+enter a shared ranking. [evidence:E-R2-THREE-TRACK-SNAPSHOT,E-R2-THREE-TRACK-BUILDER,E-R2-THREE-TRACK-AUDIT]
+
 ### Independent generation evaluator
 
 Generation methods were compared with a frozen Siamese CNN evaluator trained
@@ -160,6 +171,21 @@ first-order and frozen-critic guidance remain unrun after the Critic V2 NO-GO;
 masked discrete flow/diffusion remains a literature-only task mismatch. These
 coverage facts do not establish superiority, biological optimization, external
 transfer or final Evaluation success. [evidence:E-R2-BASELINE-MATRIX-AUDIT]
+
+### Three-track reporting is complete, but three-track execution is not
+
+No Track A row has an original-paper numeric native reproduction in the current
+packet. Track B retains six executed external common-task adapters plus the
+terminal Critic V2 negative result, its strongest same-information baseline and
+a legacy full-context reference; only eight rows are eligible for horizontal
+comparison, and only within their own 5′UTR, 3′UTR or nine-task scope. Track C
+reports matched architecture, control and generation results while preserving
+five execution/identifiability gaps: aligned A1-only versus A1+A2 was not
+materialized, scratch versus frozen embedding is not causal under the current
+unmatched runs, generic trunk versus region adapter is absent, and first-order
+and frozen-critic guidance remain unrun. Thus the reporting artifact is complete
+but the three-track benchmark execution is explicitly incomplete.
+[evidence:E-R2-THREE-TRACK-AUDIT]
 
 ### The independent evaluator narrowly crossed its frozen qualification threshold
 

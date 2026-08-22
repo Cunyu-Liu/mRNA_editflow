@@ -8,10 +8,10 @@
   "independent_final_evaluation_performed": false,
   "human_verification_required": true,
   "source_path_preflight": {
-    "observed_at": "2026-08-22T15:00:27+08:00",
+    "observed_at": "2026-08-22T15:18:15+08:00",
     "status": "PASS",
-    "source_locations_checked": 31,
-    "local_or_contract_locations_checked": 19,
+    "source_locations_checked": 34,
+    "local_or_contract_locations_checked": 22,
     "a100_mnt_locations_checked": 12,
     "missing_locations": 0,
     "check_scope": "FILE_EXISTENCE_ONLY_NO_EVIDENCE_CONTENT_OPENED",
@@ -182,6 +182,30 @@
       "kind": "derived_prediction_generation_baseline_inventory_matrix_audit",
       "location": "audits/route_a_v3_route2_v332_baseline_matrix_v1.json",
       "locator": "45 rows: Prediction 34 and Generation 11; explicit standalone/composite/component/config-only/literature-only/dependency-NO-GO boundaries; table at docs/paper/route2_v332_baseline_matrix_v1.csv; matrix_is_result_table=false",
+      "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING",
+      "external_evidence": false
+    },
+    {
+      "evidence_id": "E-R2-THREE-TRACK-SNAPSHOT",
+      "kind": "frozen_three_track_terminal_input_snapshot",
+      "location": "audits/route_a_v3_route2_v332_three_track_terminal_input_snapshot_v1.json",
+      "locator": "read-only field extraction from explicit frozen A100 Development-validation paths; six external common-task results, nine architecture-controlled prediction results, aligned-A1 result gap and protected-outcome closure",
+      "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING",
+      "external_evidence": false
+    },
+    {
+      "evidence_id": "E-R2-THREE-TRACK-BUILDER",
+      "kind": "reproducible_native_common_architecture_controlled_results_table_builder",
+      "location": "scripts/route_a_v3/build_route2_v332_three_track_results_table_v1.py",
+      "locator": "52 rows with strict track separation, within-task-scope comparison rules, status-only native rows, protected-outcome closure and overwrite refusal",
+      "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING",
+      "external_evidence": false
+    },
+    {
+      "evidence_id": "E-R2-THREE-TRACK-AUDIT",
+      "kind": "derived_native_common_architecture_controlled_results_table_audit",
+      "location": "audits/route_a_v3_route2_v332_three_track_results_table_v1.json",
+      "locator": "52 rows: native/common/architecture-controlled=10/12/30 and numeric=0/9/26; reporting table complete but benchmark execution incomplete; table at docs/paper/route2_v332_three_track_results_table_v1.csv",
       "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING",
       "external_evidence": false
     },

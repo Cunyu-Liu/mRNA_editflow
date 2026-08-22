@@ -128,6 +128,33 @@
       ]
     },
     {
+      "method_id": "M-R2-THREE-TRACK-RESULTS",
+      "label": "Native reproduction, common source-relative and architecture-controlled result separation",
+      "analysis_intent": "DEVELOPMENT_RESULT_REPORTING_AND_EXECUTION_GAP_AUDIT",
+      "status": "THREE_TRACK_REPORTING_TABLE_RENDERED_EXECUTION_GAPS_DECLARED",
+      "row_count": 52,
+      "track_counts": {
+        "NATIVE_REPRODUCTION": 10,
+        "COMMON_SOURCE_RELATIVE_TASK": 12,
+        "ARCH_CONTROLLED": 30
+      },
+      "numeric_result_counts": {
+        "NATIVE_REPRODUCTION": 0,
+        "COMMON_SOURCE_RELATIVE_TASK": 9,
+        "ARCH_CONTROLLED": 26
+      },
+      "reporting_table_complete": true,
+      "three_track_benchmark_execution_complete": false,
+      "development_test_accessed": false,
+      "new_final_evaluation_accessed": false,
+      "guided_xeditflow_run": false,
+      "evidence_ids": [
+        "E-R2-THREE-TRACK-SNAPSHOT",
+        "E-R2-THREE-TRACK-BUILDER",
+        "E-R2-THREE-TRACK-AUDIT"
+      ]
+    },
+    {
       "method_id": "M-R2-FIGURES",
       "label": "Provisional general-manuscript figure assembly",
       "analysis_intent": "FROZEN_EVIDENCE_VISUALIZATION",
@@ -507,6 +534,32 @@
       "evidence_ids": [
         "E-R2-BASELINE-MATRIX-BUILDER",
         "E-R2-BASELINE-MATRIX-AUDIT"
+      ]
+    },
+    {
+      "result_id": "R-R2-THREE-TRACK-RESULTS",
+      "status": "THREE_TRACK_REPORTING_TABLE_RENDERED_EXECUTION_GAPS_DECLARED",
+      "row_count": 52,
+      "native_rows": 10,
+      "common_task_rows": 12,
+      "architecture_controlled_rows": 30,
+      "native_numeric_rows": 0,
+      "common_task_numeric_rows": 9,
+      "architecture_controlled_numeric_rows": 26,
+      "headline_horizontal_comparison_eligible_rows": 8,
+      "reporting_table_complete": true,
+      "three_track_benchmark_execution_complete": false,
+      "native_results_enter_current_headline": false,
+      "common_task_results_compared_only_within_same_task_scope": true,
+      "architecture_controlled_results_enter_headline_horizontal_ranking": false,
+      "development_test_read": false,
+      "new_final_evaluation_read": false,
+      "guided_xeditflow_run": false,
+      "scientific_claim_status": "NOT_ESTABLISHED",
+      "evidence_ids": [
+        "E-R2-THREE-TRACK-SNAPSHOT",
+        "E-R2-THREE-TRACK-BUILDER",
+        "E-R2-THREE-TRACK-AUDIT"
       ]
     },
     {

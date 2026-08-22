@@ -1,7 +1,7 @@
 {
   "schema_version": "route_a_v3_route2_v332_minimum_benchmark_package.v1",
   "status": "MINIMUM_BENCHMARK_PACKAGE_NOT_COMPLETE",
-  "observed_at": "2026-08-22T15:00:27+08:00",
+  "observed_at": "2026-08-22T15:18:15+08:00",
   "authority": {
     "scientific_contract": "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna 数据gate转向后的合同.md",
     "execution_protocol": "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna V3.3.2 执行提示词.md",
@@ -117,6 +117,25 @@
     "table": "docs/paper/route2_v332_baseline_matrix_v1.csv",
     "audit": "audits/route_a_v3_route2_v332_baseline_matrix_v1.json",
     "matrix_is_result_table": false,
+    "development_test_read": false,
+    "new_final_evaluation_read": false,
+    "guided_xeditflow_run": false
+  },
+  "three_track_results_table": {
+    "status": "THREE_TRACK_REPORTING_TABLE_RENDERED_EXECUTION_GAPS_DECLARED",
+    "row_count": 52,
+    "native_rows": 10,
+    "common_task_rows": 12,
+    "architecture_controlled_rows": 30,
+    "native_numeric_rows": 0,
+    "common_task_numeric_rows": 9,
+    "architecture_controlled_numeric_rows": 26,
+    "reporting_table_complete": true,
+    "three_track_benchmark_execution_complete": false,
+    "builder": "scripts/route_a_v3/build_route2_v332_three_track_results_table_v1.py",
+    "focused_test": "tests/route_a_v3/test_build_route2_v332_three_track_results_table_v1.py",
+    "table": "docs/paper/route2_v332_three_track_results_table_v1.csv",
+    "audit": "audits/route_a_v3_route2_v332_three_track_results_table_v1.json",
     "development_test_read": false,
     "new_final_evaluation_read": false,
     "guided_xeditflow_run": false

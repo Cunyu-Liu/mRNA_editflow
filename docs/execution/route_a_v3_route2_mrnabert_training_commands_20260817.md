@@ -1250,3 +1250,25 @@ claim markers=22、figures/builders=5/4、最低包=14/3/1、blockers=MBP-10/13/
 `submission_ready=false` 均保持。此任务不训练或更新参数，不新增中央 attempt；
 Development TEST、new final Evaluation、E-MTAB outcome、sealed GSE246381、generated
 candidates 与 guided XEditFlow 均未打开。
+
+## 47. V3.3.2 NATIVE / COMMON / ARCH_CONTROLLED 三轨结果表（2026-08-22）
+
+按 Goal 7 顺序新增 terminal-input snapshot、独立 builder、focused tests、52-row CSV 与
+audit。表格严格拆分三轨：Track A 10 行全部为 status-only，native numeric=0；Track B
+12 行中 9 行有 Development 数值、8 行可在相同 task scope 内进入 headline 横向比较；
+Track C 30 行中 26 行有 Development 数值，剩余为 guided NO-GO 或未匹配因果对照。
+
+表中纳入六个 external common-task adapters、Critic V2 full/strongest same-information
+baseline/legacy reference、absolute/candidate controls、六个 neural HPO architecture rows、
+sequence/context/region/A1/single-study/study-scale/study-balance ablations、四个 Critic V2
+controls和七方法 generation suite。明确禁止跨 5′UTR/3′UTR/nine-task scope 排名；aligned
+A1 direct result 未 materialize；scratch-vs-frozen 和 generic-trunk-vs-region-adapter 不能
+由当前 terminal runs 作因果归因。
+
+GitHub commit `e2a9b63` 已推送，A100 builder focused test 2/2 passed；本机八组联合
+focused suite 27/27。paper evidence sources=34（local/contract 22、A100 `/mnt` 12），
+claim markers=22、figures/builders=5/4、最低包=14/3/1、blockers=MBP-10/13/14/15、
+`submission_ready=false` 均保持。`reporting_table_complete=true` 但
+`three_track_benchmark_execution_complete=false`。本任务不新增中央 attempt，也未打开
+Development TEST、new final Evaluation、E-MTAB outcome、sealed GSE246381、generated
+candidates 或 guided XEditFlow。

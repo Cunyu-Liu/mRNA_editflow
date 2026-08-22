@@ -26,6 +26,9 @@ BASELINE_MATRIX_TABLE = ROOT / "docs/paper/route2_v332_baseline_matrix_v1.csv"
 BASELINE_MATRIX_AUDIT = (
     ROOT / "audits/route_a_v3_route2_v332_baseline_matrix_v1.json"
 )
+THREE_TRACK_TABLE = ROOT / "docs/paper/route2_v332_three_track_results_table_v1.csv"
+THREE_TRACK_AUDIT = ROOT / "audits/route_a_v3_route2_v332_three_track_results_table_v1.json"
+THREE_TRACK_SNAPSHOT = ROOT / "audits/route_a_v3_route2_v332_three_track_terminal_input_snapshot_v1.json"
 DATASET_QUALIFICATION_TABLE = (
     ROOT / "docs/paper/route2_v332_dataset_qualification_table_v1.csv"
 )
@@ -65,7 +68,7 @@ def test_claim_and_consistency_evidence_references_are_closed() -> None:
     consistency = _load(CONSISTENCY)
 
     evidence_ids = [row["evidence_id"] for row in evidence["sources"]]
-    assert len(evidence_ids) == len(set(evidence_ids)) == 31
+    assert len(evidence_ids) == len(set(evidence_ids)) == 34
 
     claims = re.findall(r"\[claim:([^\]]+)\]", draft)
     assert len(claims) == len(set(claims)) == 22
@@ -85,14 +88,14 @@ def test_evidence_source_paths_are_closed_without_overstating_verification() -> 
     preflight = evidence["source_path_preflight"]
 
     assert preflight["status"] == "PASS"
-    assert preflight["source_locations_checked"] == len(evidence["sources"]) == 31
+    assert preflight["source_locations_checked"] == len(evidence["sources"]) == 34
     assert (
         preflight["local_or_contract_locations_checked"]
         + preflight["a100_mnt_locations_checked"]
         == preflight["source_locations_checked"]
     )
     assert preflight["missing_locations"] == 0
-    assert preflight["local_or_contract_locations_checked"] == 19
+    assert preflight["local_or_contract_locations_checked"] == 22
     assert preflight["a100_mnt_locations_checked"] == 12
     assert preflight["check_scope"] == "FILE_EXISTENCE_ONLY_NO_EVIDENCE_CONTENT_OPENED"
     assert preflight["human_content_verification_completed"] is False
@@ -127,6 +130,15 @@ def test_evidence_source_paths_are_closed_without_overstating_verification() -> 
     )
     assert by_id["E-R2-BASELINE-MATRIX-AUDIT"]["location"] == (
         "audits/route_a_v3_route2_v332_baseline_matrix_v1.json"
+    )
+    assert by_id["E-R2-THREE-TRACK-SNAPSHOT"]["location"] == (
+        "audits/route_a_v3_route2_v332_three_track_terminal_input_snapshot_v1.json"
+    )
+    assert by_id["E-R2-THREE-TRACK-BUILDER"]["location"] == (
+        "scripts/route_a_v3/build_route2_v332_three_track_results_table_v1.py"
+    )
+    assert by_id["E-R2-THREE-TRACK-AUDIT"]["location"] == (
+        "audits/route_a_v3_route2_v332_three_track_results_table_v1.json"
     )
 
 
@@ -583,10 +595,14 @@ def test_minimum_benchmark_package_is_itemized_and_not_overcalled() -> None:
     consistency = _load(CONSISTENCY)
     audit = _load(MINIMUM_PACKAGE_AUDIT)
     baseline_audit = _load(BASELINE_MATRIX_AUDIT)
+    three_track_audit = _load(THREE_TRACK_AUDIT)
+    three_track_snapshot = _load(THREE_TRACK_SNAPSHOT)
     with MINIMUM_PACKAGE_TABLE.open(newline="", encoding="utf-8") as handle:
         rows = list(csv.DictReader(handle))
     with BASELINE_MATRIX_TABLE.open(newline="", encoding="utf-8") as handle:
         baseline_rows = list(csv.DictReader(handle))
+    with THREE_TRACK_TABLE.open(newline="", encoding="utf-8") as handle:
+        three_track_rows = list(csv.DictReader(handle))
     result = next(
         row
         for row in consistency["results"]
@@ -601,6 +617,14 @@ def test_minimum_benchmark_package_is_itemized_and_not_overcalled() -> None:
         row
         for row in consistency["results"]
         if row["result_id"] == "R-R2-BASELINE-MATRIX"
+    )
+    three_track_method = next(
+        row for row in consistency["methods"]
+        if row["method_id"] == "M-R2-THREE-TRACK-RESULTS"
+    )
+    three_track_result = next(
+        row for row in consistency["results"]
+        if row["result_id"] == "R-R2-THREE-TRACK-RESULTS"
     )
 
     assert [row["requirement_id"] for row in rows] == [
@@ -678,6 +702,30 @@ def test_minimum_benchmark_package_is_itemized_and_not_overcalled() -> None:
         "spearman", "mae", "ndcg", "uplift", "recovery", "wall_time_seconds",
         "generation_peak_vram_mb", "candidate_count", "nfe",
     }.isdisjoint(baseline_rows[0])
+    assert audit["three_track_results_table"]["row_count"] == 52
+    assert audit["three_track_results_table"]["reporting_table_complete"] is True
+    assert audit["three_track_results_table"]["three_track_benchmark_execution_complete"] is False
+    assert len(three_track_rows) == three_track_audit["row_count"] == three_track_method["row_count"] == three_track_result["row_count"] == 52
+    assert three_track_method["track_counts"] == {
+        "NATIVE_REPRODUCTION": 10,
+        "COMMON_SOURCE_RELATIVE_TASK": 12,
+        "ARCH_CONTROLLED": 30,
+    }
+    assert three_track_result["native_numeric_rows"] == 0
+    assert three_track_result["common_task_numeric_rows"] == 9
+    assert three_track_result["architecture_controlled_numeric_rows"] == 26
+    assert three_track_result["headline_horizontal_comparison_eligible_rows"] == 8
+    assert three_track_result["reporting_table_complete"] is True
+    assert three_track_result["three_track_benchmark_execution_complete"] is False
+    assert three_track_result["native_results_enter_current_headline"] is False
+    assert three_track_result["common_task_results_compared_only_within_same_task_scope"] is True
+    assert three_track_snapshot["aligned_a1_comparison"]["direct_numeric_comparison_allowed"] is False
+    native_rows = [row for row in three_track_rows if row["track"] == "NATIVE_REPRODUCTION"]
+    assert len(native_rows) == 10
+    assert all(row["primary_metric_value"] == row["secondary_metric_value"] == "" for row in native_rows)
+    assert all(row["development_test_accessed"] == "false" for row in three_track_rows)
+    assert all(row["new_final_evaluation_accessed"] == "false" for row in three_track_rows)
+    assert all(row["guided_executed"] == "false" for row in three_track_rows)
     assert audit["external_evaluation"]["replacement_study_registered"] is False
     assert audit["external_evaluation"]["new_final_evaluation_opened"] is False
     assert audit["guided_generation"]["frozen_critic_xeditflow_run"] is False

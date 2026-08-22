@@ -607,6 +607,24 @@ focused suite 均为 21/21。中央 100 个 attempts 的 terminal 分布继续�
 `COMPLETED`、3 `FAILED`、3 `INCOMPLETE_NO_TERMINAL_RECORD`、1
 `STOPPED_FOR_THROUGHPUT_REPAIR`、1 `STOPPED_PRIORITY_REALLOCATION`。
 
+## V3.3.2 NATIVE / COMMON / ARCH_CONTROLLED 三轨结果表（2026-08-22）
+
+本项为非训练 paper-table/audit task，不新增中央 attempt。只读提取显式冻结的 A100
+Development-validation 小型 JSON 字段，形成版本化 terminal-input snapshot；未读取
+Development TEST、新 final Evaluation、generated candidates 或 guided outcome。
+
+新增 52-row 三轨表：`NATIVE_REPRODUCTION / COMMON_SOURCE_RELATIVE_TASK /
+ARCH_CONTROLLED` 行数为 10/12/30，数值结果行为 0/9/26。Track A 只保留 official/native
+parity、smoke、literature/task-mismatch 状态，没有原论文 native numeric reproduction，且
+不能进入当前 headline。Track B 的 8 个 headline-eligible 行只允许在各自相同的 5′UTR、
+3′UTR 或 nine-task scope 内横向比较。Track C 保留 aligned-A1 未 materialize、scratch/frozen
+非因果匹配、generic-trunk/region-adapter 缺项和两个 guided NO-GO。
+
+GitHub builder commit `e2a9b63` 已推送，A100 同步后 focused test 2/2；本机八组联合
+suite 27/27。paper evidence sources 从 31 增至 34（local/contract 22、A100 `/mnt` 12），
+claim markers=22、figures/builders=5/4、MBP=14/3/1、blockers=MBP-10/13/14/15 和
+`submission_ready=false` 不变。中央 100 个 attempts 的 92/3/3/1/1 终态分布不变。
+
 ## Predictor–Legal XEditFlow–Independent Evaluator architecture figure（2026-08-22）
 
 本项为非训练 paper-figure task，不新增中央 attempt。新增独立 builder/focused tests；
