@@ -116,6 +116,7 @@ def run(config: Mapping[str, Any], *, output_dir: Path) -> dict[str, Any]:
     _require(len(sources) == int(config["expected_source_count"]), "SMC source cohort changed")
     projection = load_projection_rows([Path(config["validation_projection_path"])], allowed_splits=("VALIDATION",))
     metadata = build_generation_metadata_v3(sources, projection, checkpoint["vocabs"])
+    _require(len(metadata) == len(sources), "SMC source metadata count changed")
     output_dir.parent.mkdir(parents=True, exist_ok=True)
     output_dir.mkdir()
     candidate_path = output_dir / "generated_candidates.private.jsonl"
@@ -129,7 +130,7 @@ def run(config: Mapping[str, Any], *, output_dir: Path) -> dict[str, Any]:
     maximum_compute = 0
     total_candidates = 0
     started = time.time()
-    for source_index, (source, source_metadata) in enumerate(zip(sources, metadata, strict=True)):
+    for source_index, (source, source_metadata) in enumerate(zip(sources, metadata)):
         root = initial_state(
             str(source["source_sequence"]),
             budget=int(source["edit_budget"]),

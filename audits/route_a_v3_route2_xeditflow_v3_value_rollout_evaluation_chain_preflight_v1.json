@@ -1,0 +1,100 @@
+{
+  "schema_version": "route_a_v3_route2_xeditflow_v3_value_rollout_evaluation_chain_preflight.v1",
+  "status": "IMPLEMENTED_LOCAL_TESTED_EXECUTION_BLOCKED_BY_FROZEN_READINESS",
+  "observed_date": "2026-08-23",
+  "setflow_execution": {
+    "f0": {
+      "status": "FROZEN_BASE_FLOW_V2_COMMON_SET_NLL_REPLAY_COMPLETE",
+      "common_validation_set_marginal_nll": 5.397907635224613,
+      "parameter_update_count": 0,
+      "parameter_changed_during_replay": false,
+      "development_test_outcomes_accessed": false,
+      "new_final_evaluation_outcomes_accessed": false,
+      "rerun_authorized": false
+    },
+    "f1": {
+      "seed": 20260903,
+      "physical_gpu": 1,
+      "last_observed_status": "RUNNING",
+      "central_attempt_written_before_optimizer": true
+    },
+    "f2": {
+      "seed": 20260903,
+      "physical_gpu": 3,
+      "last_observed_status": "RUNNING",
+      "central_attempt_written_before_optimizer": true
+    },
+    "f3": {
+      "status": "WAITING_FOR_SUFFICIENT_GPU_MEMORY",
+      "capacity_or_batch_reduced": false,
+      "cpu_fallback_used": false
+    },
+    "pre_python_launch_failures": [
+      "SHELL_PROCESS_SUBSTITUTION_QUOTING",
+      "REMOTE_JQ_UNAVAILABLE"
+    ],
+    "pre_python_failures_counted_as_scientific_attempts": false
+  },
+  "value_rollout_contract": {
+    "base_flow_training_seed": 20260904,
+    "authorized_split": "TRAIN",
+    "states_per_record": 2,
+    "state_subset_policy": "DETERMINISTIC_PASS_ZERO",
+    "rollouts_per_state": 8,
+    "critic_seeds": [20260831, 20260901, 20260902],
+    "critic_member_scores_streamed_separately": true,
+    "critic_population_sd_used": true,
+    "reward": "ENSEMBLE_MEAN_MINUS_KAPPA_TIMES_POPULATION_SD",
+    "study_neutral": true,
+    "unknown_study_scale": 1,
+    "independent_evaluator_used_for_value_targets": false,
+    "development_test_outcomes_accessed": false,
+    "new_final_evaluation_outcomes_accessed": false
+  },
+  "guidance_screen_chain": {
+    "predeclared_grid_combination_count": 18,
+    "decoder_seed": 20261001,
+    "bootstrap_iterations": 10000,
+    "candidate_chain": [
+      "RAW_SOFT_VALUE_SMC",
+      "POSTHOC_THREE_MEMBER_CRITIC_MECHANISM_DIAGNOSTIC",
+      "FROZEN_INDEPENDENT_EVALUATOR_SCORING"
+    ],
+    "critic_self_score_changes_generation_rank": false,
+    "critic_self_score_can_trigger_pass_alone": false,
+    "independent_evaluator_enters_generator_or_value_gradient": false,
+    "strongest_frozen_baseline_id": "genetic",
+    "strongest_frozen_baseline_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/audits/generation_search_baselines/matched_compute_position_progress_seed20260816_v2/strongest_generation_baseline_v2.json",
+    "independent_evaluator_checkpoint": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/independent_generation_evaluator/neural_medium_siamese_task_scaled_seed20260816_frozen_development_validation_gpu2_v3/delta_predictor_checkpoint.pt",
+    "open_support_closed_ndcg_filled_with_zero": false,
+    "closed_neighborhood_uses_separate_exact_permutation_runner": true
+  },
+  "interfaces": {
+    "guidance_protocol": "configs/route_a_v3_route2_xeditflow_v3_guidance_protocol_v1.json",
+    "value_rollout_core": "core/route2_xeditflow_value_rollouts_v3.py",
+    "value_rollout_runner": "scripts/route_a_v3/generate_route2_xeditflow_value_rollouts_v3.py",
+    "value_rollout_config_preparer": "scripts/route_a_v3/prepare_route2_xeditflow_value_rollout_config_v3.py",
+    "guidance_input_preparer": "scripts/route_a_v3/prepare_route2_xeditflow_guidance_screen_input_v3.py",
+    "critic_diagnostic_scorer": "scripts/route_a_v3/score_route2_xeditflow_critic_ensemble_v3.py",
+    "open_generation_evaluator": "scripts/route_a_v3/evaluate_route2_xeditflow_open_generation_v3.py",
+    "independent_evaluator_comparison": "scripts/route_a_v3/compare_route2_xeditflow_independent_evaluator_v3.py"
+  },
+  "tests": {
+    "local_focused_passed": 45,
+    "local_focused_failed": 0,
+    "exact_v332_passed": 96,
+    "exact_v332_failed": 0,
+    "python_compile_passed": true,
+    "git_diff_check_passed": true,
+    "a100_status": "PENDING_ACTIVE_SCREEN_JOBS_MUST_KEEP_LAUNCH_COMMIT_PROVENANCE",
+    "a100_current_head": "22317ed"
+  },
+  "authorization": {
+    "value_rollout_executed": false,
+    "value_network_trained": false,
+    "guidance_screen_executed": false,
+    "development_test_authorized": false,
+    "new_final_evaluation_authorized": false,
+    "submission_ready": false
+  }
+}

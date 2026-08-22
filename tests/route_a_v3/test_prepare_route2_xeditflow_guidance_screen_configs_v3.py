@@ -28,6 +28,13 @@ def test_prepare_guidance_screen_has_six_values_and_exact_eighteen_grid(tmp_path
         "validation_projection_path": "/mnt/validation.jsonl",
         "measured_neighborhood_path": "/mnt/measured.jsonl",
         "decoder_seed_base": 20261001,
+        "guiding_checkpoint_path": "/mnt/critic_refit.pt",
+        "independent_evaluator_checkpoint_path": "/mnt/evaluator.pt",
+        "strongest_generation_baseline_path": "/mnt/strongest.json",
+        "baseline_selection_input_path": "/mnt/baseline_input.json",
+        "independent_evaluator_bootstrap_iterations": 10_000,
+        "critic_refit_manifest_path": "/mnt/refit.json",
+        "mrnabert_model_path": "/mnt/mrnabert",
     }
     payload = build_guidance_screen_configs_v3(config)
     assert payload["value_job_count"] == 6
@@ -35,6 +42,8 @@ def test_prepare_guidance_screen_has_six_values_and_exact_eighteen_grid(tmp_path
     assert {tuple(row["combination"]) for row in payload["guidance_jobs"]} == set(GUIDANCE_GRID_V3)
     assert {row["training_config"]["base_flow_training_seed"] for row in payload["value_jobs"]} == {20260904}
     assert all(row["smc_config"]["reserved_terminal_critic_forwards"] == 3 for row in payload["guidance_jobs"])
+    assert all(row["open_metric_config"]["undefined_outcome_policy"] == "UNKNOWN_NOT_ZERO" for row in payload["guidance_jobs"])
+    assert all(row["independent_evaluator_config"]["evaluation_outcomes_used_to_select_evaluator"] == 0 for row in payload["guidance_jobs"])
     assert payload["additional_grid_combination_authorized"] is False
 
 

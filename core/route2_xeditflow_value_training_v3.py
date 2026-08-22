@@ -54,7 +54,7 @@ def _validate_state_row_v3(row: Mapping[str, Any], *, base_flow_seed: int) -> No
     current = str(row.get("current_sequence", ""))
     _require(bool(source) and len(source) == len(current), "value state sequence geometry differs")
     _require(set(source) <= set("ACGU") and set(current) <= set("ACGU"), "value state alphabet differs")
-    edited = sum(left != right for left, right in zip(source, current, strict=True))
+    edited = sum(left != right for left, right in zip(source, current))
     assigned = int(row.get("assigned_budget", -1))
     remaining = int(row.get("remaining_budget", -1))
     _require(assigned in {1, 3, 5}, "value state assigned budget differs")
@@ -269,4 +269,3 @@ def value_distillation_loss_v3(
     loss = F.huber_loss(predictions, targets, delta=1.0, reduction="mean")
     _require(bool(torch.isfinite(loss).item()), "value distillation loss is nonfinite")
     return loss
-

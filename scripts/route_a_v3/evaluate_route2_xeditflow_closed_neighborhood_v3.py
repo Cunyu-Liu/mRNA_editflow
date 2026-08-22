@@ -103,9 +103,10 @@ def run(config: Mapping[str, Any], *, output_dir: Path) -> dict[str, Any]:
     _require(len(source_by_key) == len(sources) == int(config["expected_source_count"]), "closed source cohort changed")
     projection = load_projection_rows([Path(config["validation_projection_path"])], allowed_splits=("VALIDATION",))
     metadata = build_generation_metadata_v3(sources, projection, checkpoint["vocabs"])
+    _require(len(metadata) == len(sources), "closed source metadata count changed")
     metadata_by_key = {
         str(source["source_key"]): item
-        for source, item in zip(sources, metadata, strict=True)
+        for source, item in zip(sources, metadata)
     }
     measured = _jsonl(Path(config["measured_neighborhood_path"]))
     by_source: dict[str, list[dict[str, Any]]] = defaultdict(list)

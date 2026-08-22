@@ -1980,3 +1980,40 @@ C1 elapsed=4,415 秒仍 RUNNING；下次至少 30 分钟后查。
 SetFlow source-token cache 全量载入 PASS：4,332,870,924 bytes、84,218 records、19,303 sources、
 2,817,781×768 float16 tokens，raw sequence=false、TEST/Evaluation=0。GPU0–5 仅余约
 2.6/9.9/3.2/7.9/4.3/7.0GB，均有其他合法任务；C2/C3 未启动，不终止他人任务、不降容量、不 CPU fallback。
+
+## XEditSetFlow screen execution 与 XEditFlow actual rollout/evaluator chain（2026-08-23）
+
+冻结 Base Flow V2 的 F0 common Validation 回放已经 terminal，且没有参数更新：common set-marginal
+NLL=5.397907635224613，`parameter_update_count=0`、`parameter_changed_during_replay=false`、
+Development TEST/Evaluation outcome access 均为 0。F0 是只读 reference，不会重训或重放。
+
+F1 seed20260903 已正式启动于 physical GPU1；F2 seed20260903 已正式启动于 physical GPU3。二者的
+runtime config、输出目录和中央 training attempt 均已在第一个 optimizer step 前写入，最近一次合同节奏内
+检查为 RUNNING、无 terminal summary、无 traceback/CUDA error。F3 因 GPU0–5 没有满足正式容量的空闲
+显存继续等待；没有降低 F3 capacity、batch，亦没有 CPU fallback。最初两次在 Python 入口前分别因 shell
+process-substitution 引号错误和远端缺少 `jq` 失败，未创建训练输出、未进入 optimizer、未写 scientific
+attempt；失败日志保留为运维事实，但不计为模型实验。C1 同期仍为 RUNNING；C2/C3 与 controls 继续等待
+足够显存。A100 保持 launch commit `22317ed`，在这些 active jobs terminal 前不改变其 provenance。
+
+已补齐 readiness 后实际执行所需的 XEditFlow V3 数据与评测链，而不只是配置骨架：
+
+- seed20260904 的 TRAIN state 固定每 record 两个 deterministic subset states，并由 frozen unguided
+  SetFlow 对每个 state 生成 K=8 terminal rollouts；
+- 三个 all-Development refit critic member 分别对 terminal candidate 评分，写 per-member streaming
+  artifact，并以 population SD 构造 `mean - κ × sd` 的 study-neutral reward；
+- value rollout 阶段禁止 independent evaluator，Development TEST 与 Evaluation outcome 路径均被阻断；
+- guidance screen 的每个预声明组合固定串联 raw SMC、post-hoc critic ensemble mechanism diagnostic、
+  open-support recovery/top-k/unique/G0 metrics 和 frozen independent-evaluator paired comparison；
+- post-hoc critic self-score 不改变生成分数或候选顺序，不能单独触发 PASS；independent evaluator 只用于
+  screen selection/tie-break 和 paired margin，不进入 generator/value gradient；
+- frozen strongest comparison 绑定历史 Development-only `genetic` baseline，decoder seed 固定为
+  20261001，paired bootstrap 固定为 10,000；
+- open support 不伪造 closed NDCG；closed measured-neighborhood 仍由独立 exact-permutation runner 提供。
+
+该链当前仅完成实现与本地验证，未生成 value targets、未训练 value network、未运行 guidance screen；
+Critic frozen TEST/refit/LOSO readiness 与 SetFlow confirmation 未同时 PASS 前所有入口继续 fail closed。
+本批实际链 focused tests=45/45，本地精确 V3.3.2 suite=96/96，Python compile 与 Git diff check PASS。
+测试同时发现并修复了本地 Python 3.9 不支持 `zip(..., strict=True)` 的可达兼容性问题；相关路径已有显式
+长度断言，修复不改变算法或正式 A100 Python 3.10 行为。A100 focused/V3.3.2 tests 与 current-HEAD sync
+继续等待 active screen jobs terminal，以免污染它们的 commit provenance。当前 guidance authorization、
+replacement Evaluation authorization 与 submission-ready 均为 false。

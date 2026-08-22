@@ -50,7 +50,7 @@ def sample_base_proposal_v3(
 ) -> list[int]:
     _require(bool(rows) and len(rows) == len(uniforms), "base proposal rows and uniforms differ")
     choices = []
-    for row, uniform in zip(rows, uniforms, strict=True):
+    for row, uniform in zip(rows, uniforms):
         rates = np.asarray(row.rates, dtype=float)
         _require(
             len(row.actions) == len(rates) > 0
@@ -90,9 +90,10 @@ def scalar_potential_rate_map_v3(
             beta_max=beta_max,
         )
     )
+    _require(len(rows[0].rates) == len(hard_legal), "guided base-rate count differs")
     result = {}
     for action, base_rate, child_value in zip(
-        hard_legal, rows[0].rates, potentials[1:], strict=True
+        hard_legal, rows[0].rates, potentials[1:]
     ):
         rate = float(base_rate) * math.exp(
             beta * (float(child_value) - float(potentials[0]))
@@ -134,7 +135,7 @@ def run_batched_potential_smc_v3(
         rows = list(rate_provider(active_states))
         base_calls += 1
         _require(len(rows) == len(active_states), "batched base-rate provider count differs")
-        for state, row in zip(active_states, rows, strict=True):
+        for state, row in zip(active_states, rows):
             legal = set(legal_actions(state))
             _require(len(row.actions) == len(set(row.actions)), "base-rate action is duplicated")
             _require(set(row.actions) == legal, "base-rate provider does not cover exactly hard-legal actions")
@@ -142,7 +143,7 @@ def run_batched_potential_smc_v3(
         choices = sample_base_proposal_v3(rows, uniforms=uniforms)
         children = [
             apply_action(state, row.actions[choice])
-            for state, row, choice in zip(active_states, rows, choices, strict=True)
+            for state, row, choice in zip(active_states, rows, choices)
         ]
         potentials = list(value_provider(active_states + children))
         value_calls += 1

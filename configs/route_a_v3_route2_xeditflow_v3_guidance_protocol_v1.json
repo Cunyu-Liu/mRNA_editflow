@@ -1,0 +1,45 @@
+{
+  "schema_version": "route_a_v3_route2_xeditflow_v3_guidance_protocol.v1",
+  "status": "FROZEN_PROSPECTIVE_BEFORE_CRITIC_SETFLOW_OR_GUIDANCE_OUTCOME_READ",
+  "critic_readiness_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v3/readiness_v1.json",
+  "critic_refit_manifest_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v3/posttest_v1/refit_manifest.json",
+  "setflow_confirmation_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v3/confirmation_v1/confirmation_gate.json",
+  "setflow_confirmation_runtime_config_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runtime_configs/xeditsetflow_v3/confirmation_v1/seed20260904.json",
+  "mrnabert_model_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/external_model_assets/mrnabert_a1eb7df25804d23f08646e1cb996b234d7208a40",
+  "value_rollout_output_dir": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditflow_v3/guidance_screen_v1/value_rollouts_seed20260904",
+  "guidance_screen_output_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditflow_v3/guidance_screen_v1",
+  "decoder_seed_base": 20261001,
+  "strongest_generation_baseline_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/audits/generation_search_baselines/matched_compute_position_progress_seed20260816_v2/strongest_generation_baseline_v2.json",
+  "baseline_selection_input_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/audits/generation_search_baselines/matched_compute_position_progress_seed20260816_v2/baseline_selection_input_v2.json",
+  "independent_evaluator_checkpoint_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/independent_generation_evaluator/neural_medium_siamese_task_scaled_seed20260816_frozen_development_validation_gpu2_v3/delta_predictor_checkpoint.pt",
+  "independent_evaluator_bootstrap_iterations": 10000,
+  "value_state_policy": {
+    "split": "TRAIN",
+    "base_flow_training_seed": 20260904,
+    "state_pass_index": 0,
+    "states_per_record": 2,
+    "rollouts_per_state": 8
+  },
+  "rollout_execution_policy": {
+    "sampling_state_batch_size": 128,
+    "trajectory_forward_batch_size": 64,
+    "critic_batch_size": 256,
+    "critic_online_microbatch_size": 4,
+    "training_precision": "BF16",
+    "allowed_physical_gpu_indices": [0, 1, 2, 3, 4, 5]
+  },
+  "critic_reward_policy": {
+    "critic_seeds": [20260831, 20260901, 20260902],
+    "study_policy": "UNKNOWN_STUDY_SCALE_FIXED_1",
+    "prediction_scale": "TASK_ROBUST_STANDARDIZED_EFFECT",
+    "independent_evaluator_used": false
+  },
+  "guidance_grid": {
+    "kappa": [0.0, 0.5, 1.0],
+    "temperature": [0.5, 1.0],
+    "beta_max": [0.5, 1.0, 2.0],
+    "additional_combination_authorized": false
+  },
+  "development_test_reopened": false,
+  "new_final_evaluation_outcomes_accessed": false
+}

@@ -47,6 +47,7 @@ def build_guidance_screen_configs_v3(config: Mapping[str, Any]) -> dict[str, Any
         _json(Path(config["setflow_confirmation_path"])),
     )
     _require(authorization["guidance_authorized"] is True, "guidance configs remain blocked before readiness")
+    _require(int(config.get("independent_evaluator_bootstrap_iterations", -1)) == 10_000, "guidance evaluator bootstrap count changed")
     output_root = Path(config["output_root"])
     gpu = int(config["physical_gpu_index"])
     value_jobs = []
@@ -122,6 +123,10 @@ def build_guidance_screen_configs_v3(config: Mapping[str, Any]) -> dict[str, Any
         }
         smc_output = output_root / "guidance_screen" / combination_id / "open_smc"
         closed_output = output_root / "guidance_screen" / combination_id / "closed"
+        raw_candidate_path = smc_output / "generated_candidates.private.jsonl"
+        critic_score_output = smc_output / "critic_ensemble"
+        candidate_path = critic_score_output / "critic_scored_candidates.private.jsonl"
+        evaluator_scored_path = smc_output / "independent_evaluator_scored_candidates.private.jsonl"
         smc_config = {
             **common,
             "schema_version": "route_a_v3_route2_xeditflow_smc_run_config.v1",
@@ -150,12 +155,66 @@ def build_guidance_screen_configs_v3(config: Mapping[str, Any]) -> dict[str, Any
             "undefined_source_policy": "EXCLUDE_NOT_ZERO_FILL",
             "output_dir": str(closed_output),
         }
+        critic_ensemble_config = {
+            "schema_version": "route_a_v3_route2_xeditflow_critic_ensemble_score_config.v1",
+            "critic_readiness_path": str(config["critic_readiness_path"]),
+            "setflow_confirmation_path": str(config["setflow_confirmation_path"]),
+            "critic_refit_manifest_path": str(config["critic_refit_manifest_path"]),
+            "mrnabert_model_path": str(config["mrnabert_model_path"]),
+            "source_eligibility_manifest": str(config["source_eligibility_manifest"]),
+            "validation_projection_path": str(config["validation_projection_path"]),
+            "candidate_path": str(raw_candidate_path),
+            "method_id": common["method_id"],
+            "base_flow_training_seed": 20260904,
+            "kappa": kappa,
+            "critic_batch_size": 256,
+            "critic_online_microbatch_size": 4,
+            "physical_gpu_index": gpu,
+            "device": f"cuda:{gpu}",
+            "output_dir": str(critic_score_output),
+        }
+        open_metric_config = {
+            "schema_version": "route_a_v3_route2_xeditflow_open_generation_config.v1",
+            "pool_assignment": "DEVELOPMENT",
+            "candidate_support_mode": "OPEN_GENERATED_SUPPORT",
+            "undefined_outcome_policy": "UNKNOWN_NOT_ZERO",
+            "source_eligibility_manifest": str(config["source_eligibility_manifest"]),
+            "candidate_path": str(candidate_path),
+            "measured_neighborhood_path": str(config["measured_neighborhood_path"]),
+            "measured_top_k": 10,
+        }
+        evaluator_config = {
+            "schema_version": "route_a_v3_route2_generation_independent_evaluator_job.v1",
+            "method_id": common["method_id"],
+            "evaluator_checkpoint_path": str(config["independent_evaluator_checkpoint_path"]),
+            "guiding_checkpoint_path": str(config["guiding_checkpoint_path"]),
+            "source_manifest_path": str(config["source_eligibility_manifest"]),
+            "evaluator_frozen_before_candidate_generation": True,
+            "evaluation_outcomes_used_to_select_evaluator": 0,
+            "device": f"cuda:{gpu}",
+            "physical_gpu_index": gpu,
+            "candidate_path": str(candidate_path),
+        }
+        evaluator_comparison_config = {
+            "schema_version": "route_a_v3_route2_xeditflow_independent_evaluator_comparison_config.v1",
+            "strongest_baseline_path": str(config["strongest_generation_baseline_path"]),
+            "baseline_selection_input_path": str(config["baseline_selection_input_path"]),
+            "source_eligibility_manifest": str(config["source_eligibility_manifest"]),
+            "guided_scored_candidate_path": str(evaluator_scored_path),
+            "bootstrap_iterations": 10_000,
+            "bootstrap_seed": int(config["decoder_seed_base"]) + len(guidance_jobs),
+        }
         guidance_jobs.append(
             {
                 "combination_id": combination_id,
                 "combination": [kappa, temperature, beta_max],
                 "smc_config": smc_config,
                 "closed_config": closed_config,
+                "critic_ensemble_config": critic_ensemble_config,
+                "open_metric_config": open_metric_config,
+                "independent_evaluator_config": evaluator_config,
+                "independent_evaluator_comparison_config": evaluator_comparison_config,
+                "independent_evaluator_scored_candidate_path": str(evaluator_scored_path),
                 "open_generation_metric_path": str(smc_output / "generation_metrics.json"),
                 "independent_evaluator_metric_path": str(smc_output / "independent_evaluator_metrics.json"),
             }
@@ -183,7 +242,14 @@ def write_manifest_v3(payload: Mapping[str, Any], output_dir: Path) -> None:
             path = output_dir / f"value_{kind}_{job['value_id']}.json"
             path.write_text(json.dumps(job[f"{kind}_config"], indent=2, sort_keys=True) + "\n", encoding="utf-8")
     for job in payload["guidance_jobs"]:
-        for kind in ("smc", "closed"):
+        for kind in (
+            "smc",
+            "closed",
+            "critic_ensemble",
+            "open_metric",
+            "independent_evaluator",
+            "independent_evaluator_comparison",
+        ):
             path = output_dir / f"{kind}_{job['combination_id']}.json"
             path.write_text(json.dumps(job[f"{kind}_config"], indent=2, sort_keys=True) + "\n", encoding="utf-8")
     (output_dir / "manifest.json").write_text(
