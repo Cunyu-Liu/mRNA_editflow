@@ -9,6 +9,7 @@ from scripts.route_a_v3.train_route2_xeditcritic_v3 import (
     TaskRobustScalerV3,
     XEditCriticCollatorV3,
     XEditCriticDatasetV3,
+    critic_v3_stage_partitions,
     fit_task_robust_scaler,
     study_source_group_weights,
     validation_metrics,
@@ -110,3 +111,19 @@ def test_target_scaler_is_zero_anchored_and_train_only_serializable() -> None:
     assert payload["center_subtracted"] is False
     assert scaler.scale("t", 0) > 0
     assert scaler.scale("unseen_validation_task", 0) == scaler.region_scales[0]
+
+
+def test_refit_uses_all_development_and_loso_neutralizes_heldout_study() -> None:
+    first = _record(0, split="TRAIN")
+    second = XEditCriticRecordV3(**{**_record(1, split="VALIDATION").__dict__, "study": "held"})
+    train, validation, neutral = critic_v3_stage_partitions(
+        [first, second], run_stage="REFIT"
+    )
+    assert {row.record_id for row in train} == {"r0", "r1"}
+    assert validation == [] and neutral == set()
+    train, validation, neutral = critic_v3_stage_partitions(
+        [first, second], run_stage="LOSO", held_out_study="held"
+    )
+    assert [row.record_id for row in train] == ["r0"]
+    assert [row.record_id for row in validation] == ["r1"]
+    assert neutral == {"held"}

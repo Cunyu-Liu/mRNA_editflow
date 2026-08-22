@@ -29,6 +29,7 @@ from core.route2_xeditcritic_ledger_v3 import (
     critic_v3_ledger_paths,
     critic_v3_seed_and_stage,
     require_critic_v3_confirmation_authorization,
+    require_critic_v3_posttest_authorization,
 )
 from core.route2_xeditcritic_training_data_v3 import (
     SqrtTaskStudySourcePassSamplerV3,
@@ -48,6 +49,7 @@ from scripts.route_a_v3.train_route2_xeditcritic_v3 import (
     _move,
     _require,
     _set_seed,
+    critic_v3_stage_partitions,
     fit_task_robust_scaler,
     require_cuda,
     validation_metrics,
@@ -160,6 +162,12 @@ def run(
             "confirmation does not authorize candidate-information controls",
         )
         require_critic_v3_confirmation_authorization(config, arm="C3")
+    elif run_stage in {"REFIT", "LOSO"}:
+        _require(
+            control_mode == "NONE" and not candidate_bundle_permutation,
+            "post-TEST stages do not authorize candidate-information controls",
+        )
+        require_critic_v3_posttest_authorization(config, arm="C3")
     _set_seed(seed)
     device = require_cuda(physical_gpu_index)
     run_id = "c3"
@@ -186,8 +194,13 @@ def run(
             load_projection_rows([Path(path) for path in config["projection_paths"]])
         )
         _require(len(records) == int(config["expected_record_count"]), "projection count changed")
-        train_records = [record for record in records if record.split == "TRAIN"]
-        validation_records = [record for record in records if record.split == "VALIDATION"]
+        train_records, validation_records, neutral_studies = critic_v3_stage_partitions(
+            records,
+            run_stage=run_stage,
+            held_out_study=config.get("held_out_study"),
+        )
+        _require(len(train_records) == int(config["expected_train_count"]), "TRAIN count changed")
+        _require(len(validation_records) == int(config["expected_validation_count"]), "VALIDATION count changed")
         record_by_id = {record.record_id: record for record in records}
         vocabs = build_vocabs(records)
         scaler = fit_task_robust_scaler(
@@ -221,6 +234,7 @@ def run(
             vocabs=vocabs,
             target_scaler=scaler,
             cache=cache,
+            neutral_studies=neutral_studies,
         )
         collator = XEditCriticCollatorV3(
             pretrained_width=int(config["pretrained_width"])
@@ -231,13 +245,17 @@ def run(
             seed=seed,
             repeat_cap=int(config["maximum_record_repeats_per_pass"]),
         )
-        validation_loader = DataLoader(
-            validation_dataset,
-            batch_size=int(config["batch_size"]),
-            shuffle=False,
-            collate_fn=collator,
-            num_workers=0,
-            pin_memory=True,
+        validation_loader = (
+            None
+            if not validation_records
+            else DataLoader(
+                validation_dataset,
+                batch_size=int(config["batch_size"]),
+                shuffle=False,
+                collate_fn=collator,
+                num_workers=0,
+                pin_memory=True,
+            )
         )
         model = XEditCriticV3(
             arm="C3",
@@ -392,17 +410,24 @@ def run(
                 if ranking_value is not None:
                     ranking_losses.append(ranking_value)
 
-            metrics = online_evaluate(
-                model,
-                encoder,
-                validation_loader,
-                device,
-                physical_microbatch_size=physical_microbatch_size,
-                prediction_output_path=(
-                    output_directory / "final_validation_predictions.jsonl"
-                    if pass_index == int(config["passes"]) - 1
-                    else None
-                ),
+            metrics = (
+                {
+                    "status": "NOT_APPLICABLE_ALL_DEVELOPMENT_REFIT",
+                    "task_count": 0,
+                }
+                if validation_loader is None
+                else online_evaluate(
+                    model,
+                    encoder,
+                    validation_loader,
+                    device,
+                    physical_microbatch_size=physical_microbatch_size,
+                    prediction_output_path=(
+                        output_directory / "final_validation_predictions.jsonl"
+                        if pass_index == int(config["passes"]) - 1
+                        else None
+                    ),
+                )
             )
             pass_row = {
                 "pass": pass_index + 1,
@@ -475,7 +500,10 @@ def run(
             "head_trainable_parameter_count": model.trainable_parameter_count,
             "lora_trainable_parameter_count": encoder.trainable_parameter_count,
             "total_trainable_parameter_count": model.trainable_parameter_count + encoder.trainable_parameter_count,
+            "train_record_count": len(train_records),
+            "validation_record_count": len(validation_records),
             "pass_count": len(pass_rows),
+            "selected_pass": int(config["passes"]),
             "update_count": update_count,
             "head_parameter_changed": head_parameter_changed,
             "lora_parameter_changed": lora_parameter_changed,
@@ -487,6 +515,17 @@ def run(
             "checkpoint_path": str(checkpoint_path),
             "validation_prediction_path": str(
                 output_directory / "final_validation_predictions.jsonl"
+            ) if validation_loader is not None else None,
+            "training_scope": (
+                "ALL_DEVELOPMENT"
+                if run_stage == "REFIT"
+                else "LEAVE_ONE_STUDY_OUT"
+                if run_stage == "LOSO"
+                else "FROZEN_TRAIN_VALIDATION"
+            ),
+            "held_out_study": config.get("held_out_study"),
+            "held_out_study_scale_policy": (
+                "UNKNOWN_STUDY_SCALE_FIXED_1" if run_stage == "LOSO" else None
             ),
             "elapsed_seconds": time.time() - started,
             "development_test_outcomes_accessed": False,

@@ -7,15 +7,28 @@ from pathlib import Path
 from typing import Any, Mapping
 
 
+POSTTEST_STUDIES_V3 = (
+    "GSE200304",
+    "GSE114002",
+    "GSE149487",
+    "GSE217518",
+    "GSE186455",
+    "GSE256185",
+    "GSE269595",
+)
+
+
 def critic_v3_seed_and_stage(config: Mapping[str, Any]) -> tuple[int, str]:
     stage = str(config.get("run_stage", "SCREEN"))
-    if stage not in {"SCREEN", "CONFIRMATION"}:
+    if stage not in {"SCREEN", "CONFIRMATION", "REFIT", "LOSO"}:
         raise ValueError(f"unsupported Critic V3 stage: {stage}")
     seed = int(config.get("seed", config["screen_seed"]))
     if stage == "SCREEN" and seed != 20260830:
         raise ValueError("Critic V3 screen seed differs from the freeze")
     if stage == "CONFIRMATION" and seed not in {20260831, 20260901, 20260902}:
         raise ValueError("Critic V3 confirmation seed is undeclared")
+    if stage in {"REFIT", "LOSO"} and seed not in {20260831, 20260901, 20260902}:
+        raise ValueError(f"Critic V3 {stage.lower()} seed is undeclared")
     return seed, stage
 
 
@@ -25,6 +38,8 @@ def require_critic_v3_confirmation_authorization(
     _, stage = critic_v3_seed_and_stage(config)
     if stage == "SCREEN":
         return
+    if stage != "CONFIRMATION":
+        raise ValueError("confirmation authorization called for a post-TEST stage")
     gate_path = Path(str(config["screen_gate_path"]))
     gate = json.loads(gate_path.read_text(encoding="utf-8"))
     selected = str(gate.get("selected_arm"))
@@ -38,6 +53,59 @@ def require_critic_v3_confirmation_authorization(
         raise ValueError("Critic V3 confirmation config selected arm differs from screen")
     if arm not in {"C0", selected}:
         raise ValueError("Critic V3 confirmation arm is not selected full model or matched C0")
+
+
+def _atomic_frozen_test_gate(config: Mapping[str, Any]) -> Mapping[str, Any]:
+    atomic = json.loads(
+        Path(str(config["atomic_frozen_test_path"])).read_text(encoding="utf-8")
+    )
+    if atomic.get("status") != "ATOMIC_FROZEN_DEVELOPMENT_TEST_TERMINAL":
+        raise ValueError("atomic frozen TEST artifact is not terminal")
+    gate = atomic.get("frozen_test_gate")
+    if not isinstance(gate, Mapping):
+        raise ValueError("atomic frozen TEST gate is absent")
+    return gate
+
+
+def require_critic_v3_posttest_authorization(
+    config: Mapping[str, Any], *, arm: str
+) -> None:
+    _, stage = critic_v3_seed_and_stage(config)
+    if stage not in {"REFIT", "LOSO"}:
+        return
+    confirmation = json.loads(
+        Path(str(config["three_seed_gate_path"])).read_text(encoding="utf-8")
+    )
+    selected = str(confirmation.get("selected_arm"))
+    if (
+        confirmation.get("status") != "XEDITCRITIC_V3_THREE_SEED_PASS"
+        or selected not in {"C2", "C3"}
+        or str(config.get("selected_arm")) != selected
+    ):
+        raise ValueError("Critic V3 post-TEST stage lacks a passing three-seed selection")
+    frozen_gate = _atomic_frozen_test_gate(config)
+    if (
+        frozen_gate.get("status") != "XEDITCRITIC_V3_FROZEN_TEST_PASS"
+        or frozen_gate.get("all_development_refit_authorized") is not True
+    ):
+        raise ValueError("Critic V3 frozen TEST does not authorize all-Development refit")
+    if stage == "REFIT":
+        if arm != selected:
+            raise ValueError("all-Development refit only authorizes the selected Critic arm")
+        return
+    if arm not in {"C0", selected}:
+        raise ValueError("LOSO arm is not selected full model or matched C0")
+    if str(config.get("held_out_study", "")) not in POSTTEST_STUDIES_V3:
+        raise ValueError("LOSO held-out study is undeclared")
+    refit = json.loads(
+        Path(str(config["refit_manifest_path"])).read_text(encoding="utf-8")
+    )
+    if (
+        refit.get("status") != "XEDITCRITIC_V3_ALL_DEVELOPMENT_REFIT_COMPLETE"
+        or refit.get("required_seeds") != [20260831, 20260901, 20260902]
+        or int(refit.get("completed_refit_count", -1)) != 3
+    ):
+        raise ValueError("LOSO remains blocked until all three refits complete")
 
 
 def critic_v3_attempt_config(
@@ -56,13 +124,20 @@ def critic_v3_attempt_config(
         else control_mode
     )
     pretrained = arm in {"C1", "C2", "C3"}
+    held_out_suffix = f"::{config['held_out_study']}" if stage == "LOSO" else ""
+    result_stage = {
+        "SCREEN": "DEVELOPMENT_VALIDATION",
+        "CONFIRMATION": "DEVELOPMENT_VALIDATION",
+        "REFIT": "ALL_DEVELOPMENT_REFIT",
+        "LOSO": "DEVELOPMENT_LOSO",
+    }[stage]
     return {
         **dict(config),
-        "attempt_id": f"xeditcritic_v3_{stage.lower()}_seed{seed}::{run_id}",
+        "attempt_id": f"xeditcritic_v3_{stage.lower()}_seed{seed}::{run_id}{held_out_suffix}",
         "baseline_id": f"xeditcritic_v3_{run_id}_seed{seed}",
         "attempt_purpose": f"XEDITCRITIC_V3_{stage}",
         "scientific_role": f"XEDITCRITIC_V3_{stage}_{arm}_{control}",
-        "result_stage": "DEVELOPMENT_VALIDATION",
+        "result_stage": result_stage,
         "run_mode": f"FROZEN_{stage}",
         "model_kind": f"XEDITCRITIC_V3_{arm}",
         "pretrained_model_id": (

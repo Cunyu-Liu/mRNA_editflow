@@ -34,6 +34,7 @@ from core.route2_xeditcritic_ledger_v3 import (
     critic_v3_ledger_paths,
     critic_v3_seed_and_stage,
     require_critic_v3_confirmation_authorization,
+    require_critic_v3_posttest_authorization,
 )
 from core.route2_xeditcritic_training_data_v3 import (
     PAD_TOKEN,
@@ -460,6 +461,27 @@ def _set_seed(seed: int) -> None:
     torch.cuda.manual_seed_all(seed)
 
 
+def critic_v3_stage_partitions(
+    records: Sequence[XEditCriticRecordV3],
+    *,
+    run_stage: str,
+    held_out_study: str | None = None,
+) -> tuple[list[XEditCriticRecordV3], list[XEditCriticRecordV3], set[str]]:
+    if run_stage in {"SCREEN", "CONFIRMATION"}:
+        return (
+            [record for record in records if record.split == "TRAIN"],
+            [record for record in records if record.split == "VALIDATION"],
+            set(),
+        )
+    if run_stage == "REFIT":
+        return list(records), [], set()
+    _require(run_stage == "LOSO" and bool(held_out_study), "Critic V3 stage partition differs")
+    train = [record for record in records if record.study != held_out_study]
+    validation = [record for record in records if record.study == held_out_study]
+    _require(bool(train) and bool(validation), "LOSO fold has an empty train or held-out partition")
+    return train, validation, {str(held_out_study)}
+
+
 def run(
     config: Mapping[str, Any],
     *,
@@ -479,6 +501,12 @@ def run(
             "confirmation does not authorize candidate-information controls",
         )
         require_critic_v3_confirmation_authorization(config, arm=arm)
+    elif run_stage in {"REFIT", "LOSO"}:
+        _require(
+            control_mode == "NONE" and not candidate_bundle_permutation,
+            "post-TEST stages do not authorize candidate-information controls",
+        )
+        require_critic_v3_posttest_authorization(config, arm=arm)
     _set_seed(seed)
     device = require_cuda(physical_gpu_index)
     run_id = arm.lower()
@@ -506,8 +534,11 @@ def run(
         )
         records = records_from_projection_rows(projection_rows)
         _require(len(records) == int(config["expected_record_count"]), "projection record count changed")
-        train_records = [record for record in records if record.split == "TRAIN"]
-        validation_records = [record for record in records if record.split == "VALIDATION"]
+        train_records, validation_records, neutral_studies = critic_v3_stage_partitions(
+            records,
+            run_stage=run_stage,
+            held_out_study=config.get("held_out_study"),
+        )
         _require(len(train_records) == int(config["expected_train_count"]), "TRAIN count changed")
         _require(len(validation_records) == int(config["expected_validation_count"]), "VALIDATION count changed")
         record_by_id = {record.record_id: record for record in records}
@@ -543,6 +574,7 @@ def run(
             vocabs=vocabs,
             target_scaler=scaler,
             cache=cache,
+            neutral_studies=neutral_studies,
         )
         collator = XEditCriticCollatorV3(pretrained_width=int(config["pretrained_width"]))
         sampler = SqrtTaskStudySourcePassSamplerV3(
@@ -551,13 +583,17 @@ def run(
             seed=seed,
             repeat_cap=int(config["maximum_record_repeats_per_pass"]),
         )
-        validation_loader = DataLoader(
-            validation_dataset,
-            batch_size=int(config["batch_size"]),
-            shuffle=False,
-            collate_fn=collator,
-            num_workers=0,
-            pin_memory=True,
+        validation_loader = (
+            None
+            if not validation_records
+            else DataLoader(
+                validation_dataset,
+                batch_size=int(config["batch_size"]),
+                shuffle=False,
+                collate_fn=collator,
+                num_workers=0,
+                pin_memory=True,
+            )
         )
         model = XEditCriticV3(
             arm=arm,
@@ -649,15 +685,22 @@ def run(
                 regression_losses.append(float(regression.detach().cpu()))
                 if ranking is not None:
                     ranking_losses.append(float(ranking.detach().cpu()))
-            metrics = evaluate(
-                model,
-                validation_loader,
-                device,
-                prediction_output_path=(
-                    output_directory / "final_validation_predictions.jsonl"
-                    if pass_index == int(config["passes"]) - 1
-                    else None
-                ),
+            metrics = (
+                {
+                    "status": "NOT_APPLICABLE_ALL_DEVELOPMENT_REFIT",
+                    "task_count": 0,
+                }
+                if validation_loader is None
+                else evaluate(
+                    model,
+                    validation_loader,
+                    device,
+                    prediction_output_path=(
+                        output_directory / "final_validation_predictions.jsonl"
+                        if pass_index == int(config["passes"]) - 1
+                        else None
+                    ),
+                )
             )
             pass_row = {
                 "pass": pass_index + 1,
@@ -718,6 +761,7 @@ def run(
             "train_record_count": len(train_records),
             "validation_record_count": len(validation_records),
             "pass_count": len(pass_rows),
+            "selected_pass": int(config["passes"]),
             "update_count": update_count,
             "parameter_changed": parameter_changed,
             "cuda_training_tensors_verified": True,
@@ -734,6 +778,17 @@ def run(
             "checkpoint_path": str(checkpoint_path),
             "validation_prediction_path": str(
                 output_directory / "final_validation_predictions.jsonl"
+            ) if validation_loader is not None else None,
+            "training_scope": (
+                "ALL_DEVELOPMENT"
+                if run_stage == "REFIT"
+                else "LEAVE_ONE_STUDY_OUT"
+                if run_stage == "LOSO"
+                else "FROZEN_TRAIN_VALIDATION"
+            ),
+            "held_out_study": config.get("held_out_study"),
+            "held_out_study_scale_policy": (
+                "UNKNOWN_STUDY_SCALE_FIXED_1" if run_stage == "LOSO" else None
             ),
             "elapsed_seconds": time.time() - started,
             "peak_vram_bytes": torch.cuda.max_memory_allocated(device),

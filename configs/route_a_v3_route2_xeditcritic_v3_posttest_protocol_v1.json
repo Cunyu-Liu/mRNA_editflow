@@ -1,0 +1,41 @@
+{
+  "schema_version": "route_a_v3_route2_xeditcritic_v3_posttest_protocol.v1",
+  "status": "PROSPECTIVE_FROZEN_BEFORE_FROZEN_TEST_OR_POSTTEST_TRAINING",
+  "authorization_order": [
+    "THREE_SEED_CONFIRMATION_PASS",
+    "ATOMIC_FROZEN_DEVELOPMENT_TEST_PASS",
+    "THREE_ALL_DEVELOPMENT_REFITS",
+    "THREE_BY_SEVEN_PAIRED_LOSO",
+    "GUIDANCE_READINESS_ADJUDICATION"
+  ],
+  "selected_arm": "FROM_THREE_SEED_GATE_C2_OR_C3",
+  "seeds": [20260831, 20260901, 20260902],
+  "all_development_refit": {
+    "record_count": 107873,
+    "split_inputs": ["TRAIN", "VALIDATION"],
+    "pass_count": "INTEGER_MEDIAN_OF_THREE_CONFIRMATION_SELECTED_PASSES",
+    "checkpoint_selection": "FINAL_FROZEN_PASS_NO_RESELECTION",
+    "matched_c0_refit_required": false
+  },
+  "loso": {
+    "studies": [
+      "GSE200304",
+      "GSE114002",
+      "GSE149487",
+      "GSE217518",
+      "GSE186455",
+      "GSE256185",
+      "GSE269595"
+    ],
+    "arms_per_fold": ["SELECTED_CRITIC", "MATCHED_C0"],
+    "held_out_study_scale": "UNKNOWN_STUDY_SCALE_FIXED_1",
+    "held_out_study_intercept": "FORBIDDEN",
+    "development_test_preserved": true,
+    "new_final_evaluation_outcome_reads": 0
+  },
+  "terminal_policy": {
+    "additional_seed_authorized": false,
+    "fold_deletion_after_result_authorized": false,
+    "threshold_change_after_result_authorized": false
+  }
+}

@@ -1339,3 +1339,13 @@ guidance authorization、model claim 与 submission-ready 均保持 false。
 guidance screen config preparer 进一步固定为 6 个 `κ×τ` value jobs 与精确 18 个 `κ×τ×βmax` generation/
 closed jobs，且只允许 base-flow seed20260904；adjudicator 只接受完整 18-grid 并按冻结的五级顺序选一次。
 focused=4/4、V3.3.2=96/96；readiness 未满足时 config preparation 本身硬失败，当前未 materialize job manifest。
+
+Critic post-TEST runtime 已补齐但仍未获运行授权：frozen TEST PASS 后只为 selected C2/C3 生成三个
+all-Development refit，pass count 固定为三 confirmation selected-pass 的整数中位数；三个 refit 完成后
+才生成 3 seeds × 7 held-out studies × selected/C0 的 42 个 paired LOSO jobs。REFIT 使用全部 107,873
+TRAIN+VALIDATION records 且不做 epoch 重选；LOSO held-out study 统一映射到 unknown study scale=1，
+不允许 study intercept。七 study inventory 含 dense-study stress test GSE269595，缺 fold/seed/arm 均不能 adjudicate。
+
+cache C0/C2 与 online-LoRA C3 trainer 均已支持 REFIT/LOSO partition；post-TEST authorization 只读取 atomic
+frozen TEST 的 PASS gate，不重新读取 TEST outcome。focused=26/26、V3.3.2=96/96、diff-check PASS。
+当前 atomic frozen TEST 尚未授权，因此未生成 refit/LOSO configs、未启动 3+42 个 jobs，中央 attempt 不变。

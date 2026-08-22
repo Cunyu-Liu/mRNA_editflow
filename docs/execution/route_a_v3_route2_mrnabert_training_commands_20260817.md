@@ -1959,3 +1959,8 @@ critic frozen TEST/refit/LOSO readiness 和 SetFlow confirmation 同时成立；
 
 18-grid preparer/adjudicator 也已实现但未运行：只生成 6 个 value jobs、18 个 screen jobs，固定
 seed20260904 和既定 selection order；focused=4/4、V3.3.2=96/96，readiness 前 fail closed。
+
+Critic post-TEST trainer 现支持两种仍被 gate 阻塞的 scope：`REFIT` 合并全部 TRAIN+VALIDATION 并固定三
+confirmation selected-pass 中位数；`LOSO` 对七 study 逐一 held out，同时运行 selected arm 与 matched C0，
+held-out study scale 强制为 unknown=1。manifest 分别精确为 3 和 42 jobs；focused=26/26、V3.3.2=96/96。
+atomic frozen TEST 未 PASS 前二者均不能准备或运行。
