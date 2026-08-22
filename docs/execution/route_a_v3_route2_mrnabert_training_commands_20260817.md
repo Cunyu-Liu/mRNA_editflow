@@ -1596,3 +1596,23 @@ GitHub core commit `2faff4a` 已推送，A100 自 `e6e807a` 快进；本机/A100
 blockers=MBP-10/13/14/15、中央 100-row 92/3/3/1/1、public release/right review/
 stable repository/submission readiness=false 或 pending，`minimum_package_complete=false` 与
 `outcome_trigger_fully_satisfied=false` 均不变。
+
+## 62. V3.3.2 Code Availability section completion（2026-08-22）
+
+本项无训练命令、GPU 轮询或新 attempt。新增 `Code Availability` section、completion audit 与
+3 项 focused tests；同步 consistency/evidence manifests 和未决清单。只读 Git remote/branch/tag、
+tracked environment descriptors 和 license/README 状态，不打开任何实验 outcome。
+
+statement 将 `https://github.com/Cunyu-Liu/mRNA_editflow` 与
+`route-a-v3-route2-method-repair-20260817` 写成 working repository locator/branch，不声称
+unauthenticated public access。当前无 Route 2 V3.3.2 tag、persistent archive identifier 或 archived
+container；`pyproject.toml`、`requirements-lock.txt`、`environment.yml`、`Dockerfile` 存在，但
+未完成 Route 2 clean-environment reproduction/human verification。README 仍指向早期 v2 authority；
+package metadata=`Proprietary`，无 standalone `LICENSE`。large artifacts 仍在 `/mnt/.../route2/`
+且不属于 code release；没有 code-availability-on-request promise。
+
+GitHub core commit `ceeae40` 已推送，A100 自 `2faff4a` 快进；本机/A100 V3.3.2 suite 均为
+66/66。evidence=58（44 local/contract、14 `/mnt`），claims=22、MBP=14/3/1、
+blockers=MBP-10/13/14/15、中央 100-row 92/3/3/1/1、release/license/environment/
+submission readiness=false 或 pending，`minimum_package_complete=false` 与
+`outcome_trigger_fully_satisfied=false` 均不变。

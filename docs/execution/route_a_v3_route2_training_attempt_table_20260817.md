@@ -978,3 +978,23 @@ V3.3.2 suite 均为 63/63。evidence sources=57（43 local/contract、14 `/mnt`�
 figures/builders=7/6、MBP=14/3/1、blockers=MBP-10/13/14/15，中央 100-row 92/3/3/1/1、
 `minimum_package_complete=false`、`outcome_trigger_fully_satisfied=false` 与
 `submission_ready=false` 均不变。
+
+## V3.3.2 Code Availability section completion（2026-08-22）
+
+按 Goal 7 顺序完成 Code Availability 内部 statement。本项不训练、不轮询 GPU/训练进度，不读取
+Development TEST、new final Evaluation、sealed payload、generated-candidate outcome 或 guided
+outcome。正文绑定 GitHub repository locator 和工作分支，但不把 locator/working branch 写成
+unauthenticated public access、immutable release 或 permanent archive。
+
+仓库存在 `pyproject.toml`、`requirements-lock.txt`、`environment.yml` 与 `Dockerfile`，记录
+Python 3.10 / PyTorch 2.5.1 环境；但 Route 2 V3.3.2 全证据流程尚未从这些描述执行独立 clean-
+environment reproduction 或 accountable-human verification。README authority header 仍早于当前
+Route A V3.3.2 合同；当前 HEAD 无 Route A release tag、persistent archive ID 或 archived container。
+package metadata 为 `Proprietary`，无 tracked standalone `LICENSE`，因此 repository access 不写成
+reuse grant。`/mnt/.../route2/` 大型 artifacts 不属于 Git code release；无 code-on-request promise。
+
+GitHub core commit `ceeae40` 已推送，A100 自 `2faff4a` 一次 fast-forward；本机/A100 全部
+V3.3.2 suite 均为 66/66。evidence sources=58（44 local/contract、14 `/mnt`），claims=22、
+figures/builders=7/6、MBP=14/3/1、blockers=MBP-10/13/14/15，中央 100-row 92/3/3/1/1、
+`minimum_package_complete=false`、`outcome_trigger_fully_satisfied=false`、public code release 与
+`submission_ready=false` 均不变。
