@@ -87,6 +87,12 @@ SELECTED_OUTCOME_CLAIM_EVIDENCE_TABLE = (
 SELECTED_OUTCOME_CLAIM_EVIDENCE_AUDIT = (
     ROOT / "audits/route_a_v3_route2_v332_selected_outcome_claim_evidence_table_v1.json"
 )
+DATA_RIGHTS_EXPOSURE_TABLE = (
+    ROOT / "docs/paper/route2_v332_data_rights_exposure_limitations_table_v1.csv"
+)
+DATA_RIGHTS_EXPOSURE_AUDIT = (
+    ROOT / "audits/route_a_v3_route2_v332_data_rights_exposure_limitations_table_v1.json"
+)
 READINESS = (
     ROOT
     / "configs/route_a_v3_route2_mrnabert_critic_v2_guidance_readiness_protocol_v1.json"
@@ -107,7 +113,7 @@ def test_claim_and_consistency_evidence_references_are_closed() -> None:
     consistency = _load(CONSISTENCY)
 
     evidence_ids = [row["evidence_id"] for row in evidence["sources"]]
-    assert len(evidence_ids) == len(set(evidence_ids)) == 51
+    assert len(evidence_ids) == len(set(evidence_ids)) == 53
 
     claims = re.findall(r"\[claim:([^\]]+)\]", draft)
     assert len(claims) == len(set(claims)) == 22
@@ -127,14 +133,14 @@ def test_evidence_source_paths_are_closed_without_overstating_verification() -> 
     preflight = evidence["source_path_preflight"]
 
     assert preflight["status"] == "PASS"
-    assert preflight["source_locations_checked"] == len(evidence["sources"]) == 51
+    assert preflight["source_locations_checked"] == len(evidence["sources"]) == 53
     assert (
         preflight["local_or_contract_locations_checked"]
         + preflight["a100_mnt_locations_checked"]
         == preflight["source_locations_checked"]
     )
     assert preflight["missing_locations"] == 0
-    assert preflight["local_or_contract_locations_checked"] == 37
+    assert preflight["local_or_contract_locations_checked"] == 39
     assert preflight["a100_mnt_locations_checked"] == 14
     assert preflight["check_scope"] == "FILE_EXISTENCE_ONLY_NO_EVIDENCE_CONTENT_OPENED"
     assert preflight["human_content_verification_completed"] is False
@@ -1244,6 +1250,69 @@ def test_selected_outcome_claim_evidence_closes_markers_and_excludes_unsupported
     assert "closes all 22 claim markers" in draft
     assert "13 unsupported statements" in draft
     assert "No unsupported row is allowed" in draft
+
+
+def test_data_rights_exposure_limitations_are_study_bound_and_not_overclaimed() -> None:
+    draft = " ".join(DRAFT.read_text(encoding="utf-8").split())
+    evidence = _load(EVIDENCE)
+    consistency = _load(CONSISTENCY)
+    package = _load(MINIMUM_PACKAGE_AUDIT)
+    audit = _load(DATA_RIGHTS_EXPOSURE_AUDIT)
+    with DATA_RIGHTS_EXPOSURE_TABLE.open(newline="", encoding="utf-8") as handle:
+        rows = list(csv.DictReader(handle))
+    method = next(
+        row
+        for row in consistency["methods"]
+        if row["method_id"] == "M-R2-DATA-RIGHTS-EXPOSURE-LIMITATIONS"
+    )
+    result = next(
+        row
+        for row in consistency["results"]
+        if row["result_id"] == "R-R2-DATA-RIGHTS-EXPOSURE-LIMITATIONS"
+    )
+    package_section = package["data_rights_exposure_limitations_table"]
+
+    assert len(rows) == audit["row_count"] == method["row_count"] == result[
+        "row_count"
+    ] == package_section["row_count"] == 14
+    assert sum(row["declared_public_redistribution_allowed"] == "true" for row in rows) == 1
+    assert sum(row["declared_public_redistribution_allowed"] == "false" for row in rows) == 8
+    assert sum(row["declared_public_redistribution_allowed"] == "" for row in rows) == 5
+    assert all(row["public_release_authorized"] == "false" for row in rows)
+    assert all(row["license_verification_status"].startswith("HUMAN_REVIEW_PENDING") for row in rows)
+    assert audit["converter_or_preflight_declaration_is_license_verification"] is False
+    assert audit["study_bound_human_verified_license_registry_present"] is False
+    assert audit["license_human_review_pending_count"] == method[
+        "license_human_review_pending_count"
+    ] == result["license_human_review_pending_count"] == 14
+    assert audit["public_release_authorized_count"] == method[
+        "public_release_authorized_count"
+    ] == result["public_release_authorized_count"] == package_section[
+        "public_release_authorized_count"
+    ] == 0
+    assert audit["data_rights_exposure_limitations_complete"] is result[
+        "data_rights_exposure_limitations_complete"
+    ] is package_section["data_rights_exposure_limitations_complete"] is True
+    assert result["minimum_package_complete"] is package_section[
+        "minimum_package_complete"
+    ] is False
+    assert result["submission_ready"] is package_section["submission_ready"] is False
+    assert all(value is False for value in audit["protected_outcomes"].values())
+
+    by_id = {row["evidence_id"]: row for row in evidence["sources"]}
+    assert by_id["E-R2-DATA-RIGHTS-EXPOSURE-BUILDER"]["location"] == (
+        "scripts/route_a_v3/build_route2_v332_data_rights_exposure_limitations_table_v1.py"
+    )
+    assert by_id["E-R2-DATA-RIGHTS-EXPOSURE-AUDIT"]["location"] == (
+        "audits/route_a_v3_route2_v332_data_rights_exposure_limitations_table_v1.json"
+    )
+    gaps = {row["gap_id"]: row for row in consistency["known_reporting_gaps"]}
+    assert gaps["GAP-R2-DATA-RIGHTS-HUMAN-VERIFICATION"]["status"] == (
+        "HUMAN_REVIEW_PENDING_PUBLIC_RELEASE_NOT_AUTHORIZED"
+    )
+    assert "Public accessibility, internal analysis permission and public redistribution authority were treated as distinct" in draft
+    assert "public study-payload release is authorized for zero rows" in draft
+    assert "must not claim that the Route 2 study payloads form an open-data package" in draft
 
 
 def test_historical_gse232572_transfer_remains_negative_and_nonconfirmatory() -> None:

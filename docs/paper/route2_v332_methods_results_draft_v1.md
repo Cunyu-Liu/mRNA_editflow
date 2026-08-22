@@ -611,6 +611,33 @@ generator, baselines, thresholds and adaptation policy are frozen; its permanent
 zero-shot result must precede any calibration or few-shot adaptation.
 [evidence:E-R2-PAPER-OUTCOME-ADJUDICATION,E-R2-DATA-TABLE,E-R2-ERROR-DOMAIN-SHIFT-AUDIT,E-R2-CONTRACT]
 
+## Data, rights and exposure limitations
+
+The 14-study qualification inventory distinguishes eight Development studies,
+one outcome-exposed historical transfer study, one conversion failure whose
+outcome was not read, two aggregate-only negative controls, one auxiliary study
+and one sealed excluded study. These roles are evidence boundaries, not labels
+of public release permission. Development contributes 126,165 canonical
+records, GSE232572 contributes 8,068 historically outcome-exposed records, and
+the unexposed final-Evaluation count remains zero. GSE232572 therefore cannot be
+relabelled as independent confirmation; E-MTAB-10902 and sealed GSE246381 supply
+no read outcome or record-level performance evidence.
+
+Public accessibility, internal analysis permission and public redistribution
+authority were treated as distinct. Current converter or preflight artifacts
+contain one `true` redistribution declaration, eight `false` declarations and
+five studies without a Boolean declaration. The single `true` value for
+GSE217518 is an operational converter policy, not an independently verified
+dataset license. The current 14-study inventory has no study-bound,
+accountable-human-verified license registry; all 14 rows therefore remain
+`HUMAN_REVIEW_PENDING`, and public study-payload release is authorized for zero
+rows. Until study-specific terms are bound and reviewed, the manuscript may
+report aggregate results and source locators but must not claim that the Route 2
+study payloads form an open-data package. Local supporting material also remains
+unpublished project material, and every evidence locator requires accountable
+human content verification before submission.
+[evidence:E-R2-DATA-TABLE,E-R2-DATA-RIGHTS-EXPOSURE-BUILDER,E-R2-DATA-RIGHTS-EXPOSURE-AUDIT]
+
 ## Concrete limitations and reporting gaps
 
 1. The independent evaluator cleared its threshold by only 0.0013180, and its
@@ -656,6 +683,10 @@ zero-shot result must precede any calibration or few-shot adaptation.
    retroactively reconstructed, the provisional figures still lack a selected
    venue's export-rule verification, and accountable human evidence verification
    remains pending.
+9. Public source access and converter output policy do not establish public
+   redistribution authority. No study payload is currently authorized for
+   public release from this project; aggregate reporting and source locators are
+   the current boundary pending study-specific accountable human license review.
 
 ## Allowed and prohibited wording at this stage
 
@@ -676,6 +707,8 @@ Allowed:
   transfer under its preregistered rank-and-MAE rule.”
 - “The terminal evidence freezes the Benchmark+limits manuscript route, while
   the minimum benchmark package and submission eligibility remain incomplete.”
+- “Aggregate results and source locators are reportable; study-payload public
+  redistribution remains unauthorized pending accountable human review.”
 
 Prohibited until later gates pass:
 
@@ -689,6 +722,8 @@ Prohibited until later gates pass:
 - “GSE232572 provides an independent final confirmation.”
 - “The minimum benchmark package or submission-ready paper is complete.”
 - “GSE232572 is an unbiased final confirmation” or “E-MTAB-10902 was evaluated.”
+- “Public repository access makes every Route 2 study payload freely
+  redistributable” or “the current converter policy is a verified data license.”
 
 ## Unresolved items before manuscript integration
 

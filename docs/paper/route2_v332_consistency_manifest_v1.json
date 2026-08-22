@@ -286,6 +286,32 @@
       ]
     },
     {
+      "method_id": "M-R2-DATA-RIGHTS-EXPOSURE-LIMITATIONS",
+      "label": "Study-bound data, rights and exposure limitation closure",
+      "analysis_intent": "MANUSCRIPT_LIMITATION_AND_RELEASE_BOUNDARY_REPORTING",
+      "status": "DATA_RIGHTS_EXPOSURE_LIMITATIONS_REPORTED_HUMAN_REVIEW_PENDING",
+      "row_count": 14,
+      "study_count": 14,
+      "declared_redistribution_true_count": 1,
+      "declared_redistribution_false_count": 8,
+      "declared_redistribution_not_boolean_count": 5,
+      "converter_or_preflight_declaration_is_license_verification": false,
+      "study_bound_human_verified_license_registry_present": false,
+      "license_human_review_pending_count": 14,
+      "public_release_authorized_count": 0,
+      "aggregate_and_locator_reporting_only": true,
+      "table": "docs/paper/route2_v332_data_rights_exposure_limitations_table_v1.csv",
+      "audit": "audits/route_a_v3_route2_v332_data_rights_exposure_limitations_table_v1.json",
+      "development_test_accessed": false,
+      "new_final_evaluation_accessed": false,
+      "guided_xeditflow_run": false,
+      "evidence_ids": [
+        "E-R2-DATA-TABLE",
+        "E-R2-DATA-RIGHTS-EXPOSURE-BUILDER",
+        "E-R2-DATA-RIGHTS-EXPOSURE-AUDIT"
+      ]
+    },
+    {
       "method_id": "M-R2-FIGURES",
       "label": "Provisional general-manuscript figure assembly",
       "analysis_intent": "FROZEN_EVIDENCE_VISUALIZATION",
@@ -1008,6 +1034,29 @@
       ]
     },
     {
+      "result_id": "R-R2-DATA-RIGHTS-EXPOSURE-LIMITATIONS",
+      "status": "DATA_RIGHTS_EXPOSURE_LIMITATIONS_REPORTED_HUMAN_REVIEW_PENDING",
+      "row_count": 14,
+      "study_count": 14,
+      "converter_or_preflight_declaration_is_license_verification": false,
+      "study_bound_human_verified_license_registry_present": false,
+      "license_human_review_pending_count": 14,
+      "public_release_authorized_count": 0,
+      "aggregate_and_locator_reporting_only": true,
+      "data_rights_exposure_limitations_complete": true,
+      "minimum_package_complete": false,
+      "submission_ready": false,
+      "development_test_read": false,
+      "new_final_evaluation_read": false,
+      "guided_xeditflow_run": false,
+      "scientific_claim_status": "LIMITATIONS_CLOSED_PUBLIC_REDISTRIBUTION_NOT_AUTHORIZED",
+      "evidence_ids": [
+        "E-R2-DATA-RIGHTS-EXPOSURE-BUILDER",
+        "E-R2-DATA-RIGHTS-EXPOSURE-AUDIT",
+        "E-R2-DATA-TABLE"
+      ]
+    },
+    {
       "result_id": "R-R2-MINIMUM-BENCHMARK-PACKAGE",
       "requirement_count": 18,
       "itemwise_adjudication_complete": true,
@@ -1101,6 +1150,12 @@
       "description": "Seven reproducible provisional figures from six builders exist in PNG, PDF and SVG, but target journal, article type and submission phase have not been selected; publisher-specific dimensions and file rules therefore have not been claimed.",
       "action": "After venue and phase selection, verify the official publisher instructions and regenerate the same frozen evidence if different export dimensions or formats are required.",
       "status": "PROVISIONAL_GENERAL_FIGURES_TARGET_RULES_PENDING"
+    },
+    {
+      "gap_id": "GAP-R2-DATA-RIGHTS-HUMAN-VERIFICATION",
+      "description": "The 14-study inventory has no study-bound, accountable-human-verified license registry. Converter and preflight output declarations are operational policies rather than independent license determinations.",
+      "action": "Report aggregate results and source locators only; do not publicly release study payloads or claim an open-data package until study-specific terms are bound and verified by an accountable human.",
+      "status": "HUMAN_REVIEW_PENDING_PUBLIC_RELEASE_NOT_AUTHORIZED"
     }
   ],
   "submission_ready": false

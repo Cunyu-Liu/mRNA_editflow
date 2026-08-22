@@ -1,0 +1,35 @@
+{
+  "aggregate_and_locator_reporting_only": true,
+  "authority": {
+    "dataset_qualification_table": "docs/paper/route2_v332_dataset_qualification_table_v1.csv",
+    "evidence_manifest": "docs/paper/route2_v332_evidence_manifest_v1.json",
+    "execution_protocol": "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/\u63d0\u793a\u8bcd/mrna V3.3.2 \u6267\u884c\u63d0\u793a\u8bcd.md",
+    "scientific_contract": "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/\u63d0\u793a\u8bcd/mrna \u6570\u636egate\u8f6c\u5411\u540e\u7684\u5408\u540c.md"
+  },
+  "claim_boundary": "Public accessibility and converter policy do not establish dataset redistribution authority. Until accountable human review binds study-specific terms, report aggregates and source locators but do not release study payloads or claim an open-data package.",
+  "converter_or_preflight_declaration_is_license_verification": false,
+  "data_rights_exposure_limitations_complete": true,
+  "declared_redistribution_value_counts": {
+    "false": 8,
+    "not_declared_as_boolean": 5,
+    "true": 1
+  },
+  "license_human_review_pending_count": 14,
+  "minimum_package_complete": false,
+  "new_training_attempt_created": false,
+  "protected_outcomes": {
+    "development_test_read": false,
+    "emtab10902_outcome_read": false,
+    "guided_xeditflow_run": false,
+    "new_final_evaluation_read": false,
+    "sealed_gse246381_read": false
+  },
+  "public_release_authorized_count": 0,
+  "row_count": 14,
+  "schema_version": "route_a_v3_route2_v332_data_rights_exposure_limitations.v1",
+  "status": "DATA_RIGHTS_EXPOSURE_LIMITATIONS_REPORTED_HUMAN_REVIEW_PENDING",
+  "study_bound_human_verified_license_registry_present": false,
+  "study_count": 14,
+  "submission_ready": false,
+  "table_path": "docs/paper/route2_v332_data_rights_exposure_limitations_table_v1.csv"
+}
