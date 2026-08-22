@@ -1164,3 +1164,32 @@ producer-boundary/legacy/Code Availability/RC focused tests=13/13；本机精确
 A100 自 `794df0d` 一次 fast-forward 到该 commit。formal release/tag=false、
 `minimum_package_complete=false`、`outcome_trigger_fully_satisfied=false` 与
 `submission_ready=false` 均不变。
+
+## V3.3.2 authorized legacy payload current-HEAD migration（2026-08-22）
+
+用户明确授权将 5 个 legacy payload 先保存到 Route 2 `/mnt` root，再停止 current-HEAD tracking 并
+加入窄 ignore；同时禁止 shared-history rewrite 和 formal tag/Release。本项不训练、不轮询 GPU/训练
+进度，不读取 Development TEST、new final Evaluation、sealed GSE246381、E-MTAB-10902 outcome、
+generated-candidate outcome 或 guided output；中央 attempt 表没有新增行，仍为 100 total /
+92 completed / 3 failed / 3 incomplete / 1 stopped-throughput / 1 stopped-priority。
+
+A100 preflight 确认五个源文件全部 tracked、大小与审计一致，目标目录不存在同名冲突。随后以无覆盖
+copy 保存到 `/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/legacy_repository_payloads/`；逐项验证
+source/destination byte size 一致，并写入 `PROVENANCE.md`。五文件合计 34,786,075 bytes，其中四个
+B0 JSONL 合计 34,739,577 bytes；没有打开 payload 内容，没有生成项目 checksum。
+
+current HEAD 已停止 tracking 这五个精确路径，`.gitignore` 只增加五条精确规则，不忽略整个
+`data_registry/` 或 `data/b0_splits/`。四个 legacy reader 继续在任何 input read 前抛出
+`SUPERSEDED_NOT_LOADABLE`；Excel inventory future default 继续指向 `/mnt/.../route2/data_registry/`。
+shared Git history 未改写，formal tag/Release 未创建，public payload redistribution 未授权。
+
+disposition/memo、Code Availability、manuscript、consistency/evidence manifests 与 internal RC 已
+重裁：current-HEAD tracked payload=0、migrated copies=5、payload-boundary compliant=true、legacy
+payload policy resolved=true。新增 `/mnt` provenance evidence，evidence 65→66（local/contract 仍 51，
+`/mnt` 14→15）。payload blocker 从 RC 移除，但 MBP=14/3/1、MBP-10/13/14/15、14-study human
+rights/signoff、clean-environment、immutable archive 和 manuscript metadata/disclosure blockers 不变；
+formal release/tag 与 `submission_ready` 仍为 false。
+
+migration/guard/Code Availability/RC/evidence focused tests=42/42；本机精确 V3.3.2 suite=96/96；
+A100 fresh current HEAD 完成 V3.3.2 96 项与 importer 8 项，合计 104/104。GitHub core commit
+`b6fbdce` 已推送，A100 自 `1d899dd` 一次 fast-forward 到该 commit。

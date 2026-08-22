@@ -1764,3 +1764,26 @@ producer-boundary/legacy/Code Availability/RC focused tests=13/13；本机精确
 中央 model/biological/external/guided success=false、payload migration authorized=false、formal
 release/tag=false、`minimum_package_complete=false`、`outcome_trigger_fully_satisfied=false` 与
 `submission_ready=false` 均不变。
+
+## 69. V3.3.2 authorized legacy payload current-HEAD migration（2026-08-22）
+
+本项无训练命令、GPU/训练进度轮询或新 attempt。用户授权的范围仅为五个精确 legacy payload 的
+`/mnt` 保存、current-HEAD 停止 tracking 和窄 ignore；shared Git history rewrite、formal tag/Release
+与 public payload redistribution 均未授权。Development TEST、new final Evaluation、sealed
+GSE246381、E-MTAB-10902 outcome、generated-candidate outcome 和 guided output 均未读取。
+
+A100 源 commit=`1d899dd`；五文件 preflight tracked/size 全部符合既有审计，目标目录原先不存在。
+无覆盖复制后，`/mnt/.../route2/legacy_repository_payloads/` 含五个 payload 和 `PROVENANCE.md`；逐项
+source/destination byte size 一致，无项目 checksum。随后对五个精确 Git path 执行 current-HEAD
+untracking，并加入五条 exact ignore；没有 broad directory ignore，没有 history rewrite。
+
+current-HEAD payload policy 已从 5 tracked / non-compliant 改为 0 tracked / 5 preserved / compliant。
+四个 B0 reader 仍为 4 guarded / 0 unguarded，future Excel Parquet default 仍在 `/mnt`。同步 legacy
+disposition、Code Availability、manuscript、consistency/evidence manifests 和 internal RC；evidence
+65→66（51 local/contract、15 `/mnt`）。RC formal blockers 从 6 减至 5，但 minimum package、human
+rights/license、clean-environment、immutable archive 和 venue/authorship/disclosures 仍未完成。
+
+focused tests=42/42；本机精确 V3.3.2=96/96；A100 V3.3.2+importer=104/104。GitHub core commit
+`b6fbdce` 已推送，A100 自 `1d899dd` 快进。中央 100-row 92/3/3/1/1、model/biological/external/guided
+success=false、formal release/tag=false、`minimum_package_complete=false`、
+`outcome_trigger_fully_satisfied=false` 与 `submission_ready=false` 均不变。
