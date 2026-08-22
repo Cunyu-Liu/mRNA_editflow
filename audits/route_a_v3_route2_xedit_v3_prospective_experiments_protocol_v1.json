@@ -1,0 +1,53 @@
+{
+  "schema_version": "route_a_v3_route2_xedit_v3_prospective_experiments_protocol.v1",
+  "status": "PROSPECTIVE_EXPERIMENTS_PROTOCOL_COMPLETE_RESULTS_NOT_ASSERTED",
+  "observed_date": "2026-08-23",
+  "artifact": "docs/paper/route2_xedit_v3_prospective_experiments_protocol_v1.md",
+  "research_questions": {
+    "critic_prediction": true,
+    "unguided_setflow": true,
+    "soft_value_smc_guidance": true,
+    "robustness_and_matched_compute": true,
+    "external_confirmation": true
+  },
+  "reporting_plan": {
+    "critic_tables": 4,
+    "setflow_tables": 2,
+    "generation_tables": 3,
+    "figures": 4,
+    "claim_to_experiment_map": true,
+    "screen_confirmation_test_loso_external_roles_separated": true,
+    "closed_and_open_estimands_separated": true,
+    "statistical_units_declared": true,
+    "negative_results_retained": true
+  },
+  "claim_boundary": {
+    "running_screen_result_claimed": false,
+    "v3_gate_claimed_passed": false,
+    "terminal_v2_results_rewritten": false,
+    "external_confirmation_claimed": false,
+    "submission_ready_claimed": false
+  },
+  "training_or_metric_effect": {
+    "optimizer_attempt_created": false,
+    "central_ledger_row_added": false,
+    "checkpoint_selection_changed": false,
+    "gate_threshold_changed": false,
+    "new_hyperparameter_grid_added": false
+  },
+  "protected_data": {
+    "development_test_outcomes_accessed": false,
+    "new_final_evaluation_outcomes_accessed": false
+  },
+  "tests": {
+    "focused_passed": 4,
+    "focused_failed": 0,
+    "local_exact_v332_passed": 96,
+    "local_exact_v332_failed": 0,
+    "git_diff_check_passed": true
+  },
+  "a100": {
+    "status": "PENDING_ACTIVE_SCREEN_JOBS_MUST_KEEP_LAUNCH_COMMIT_PROVENANCE",
+    "launch_head": "22317ed"
+  }
+}

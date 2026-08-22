@@ -1464,3 +1464,11 @@ error marker，因此中央 CSV 不改写状态、不新增行。GPU0–5 free m
 不新增行。文档覆盖 Critic/SetFlow/soft-value/SMC/closed-open benchmark 和真实参数量，所有性能、泛化与
 投稿结论均标记为仍需 terminal evidence；当前 V2 Results 未被改写。focused=3/3、V3.3.2=96/96、
 diff-check PASS，Development TEST/new Evaluation read=0；A100 sync/test 延后到现有 screen jobs terminal。
+
+## XEdit V3 prospective Experiments protocol（2026-08-23）
+
+本项是等待 formal jobs 时的论文/benchmark 报告冻结，不构成 optimizer attempt，中央 CSV 不新增行。
+新增协议把 Critic、unguided SetFlow、guided SMC、matched compute 和 future external confirmation 映射到
+九张预定表、四幅图及明确统计单位；closed/open/evaluator/self-score/compute 不合并，required negative
+task/fold rows 不选择性删除。focused=4/4、V3.3.2=96/96、JSON/diff-check PASS，protected outcome read=0；
+A100 HEAD 仍保持 `22317ed`，current-HEAD sync/test 等 active launch-head jobs terminal。

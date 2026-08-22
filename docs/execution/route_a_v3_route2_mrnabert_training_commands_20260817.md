@@ -2213,3 +2213,17 @@ terminal gate，并记录 C2/C3/F2/F3 的真实 trainable parameter count，而�
 均明确为 `Needs terminal evidence`；没有声明 V3 gate PASS、外部确认或 submission-ready，也没有把旧 open
 support metric 改写为 closed result。focused boundary tests=3/3、V3.3.2=96/96、diff-check PASS。本项不训练、
 不新增 ledger row、不读取 protected outcome；A100 sync/test 仍等待 active launch-head jobs terminal。
+
+## XEdit V3 prospective Experiments protocol（2026-08-23）
+
+等待 screen 的非污染窗口内新增 `docs/paper/route2_xedit_v3_prospective_experiments_protocol_v1.md`，前瞻
+冻结 RQ1 critic、RQ2 unguided SetFlow、RQ3 soft-value SMC、RQ4 robustness/matched compute 和 RQ5 external
+confirmation。协议规划 C-Screen/C-Confirm/C-Test/C-LOSO、F-Screen/F-Confirm、G-Closed/G-Open/G-Compute
+九张结果表和四幅图，并把 statistical unit、metric direction、support count、三 seed、paired bootstrap、
+320 forward-equivalent ceiling 与所有 terminal stopping rules 写入。
+
+closed measured-neighborhood、open-support、independent evaluator、critic self-score 和 compute 在报告层面严格
+分离；screen seed、decoder stream 与 training replicate 不混用，负面 task/fold 结果不得移出主表。文档不读取
+running curves/outcomes、不创建 optimizer attempt、不改变 grid/gate/checkpoint；所有 performance/external claim
+仍是 `Needs terminal evidence`。focused=4/4、精确 V3.3.2=96/96、JSON/diff-check PASS；A100 current-HEAD
+sync/test 继续等待 launch-head jobs terminal。
