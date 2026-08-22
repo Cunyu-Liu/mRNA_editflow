@@ -1,0 +1,45 @@
+{
+  "schema_version": "route_a_v3_route2_xedit_v3_prospective_methods_addendum.v1",
+  "status": "PROSPECTIVE_METHODS_DRAFT_COMPLETE_RESULTS_NOT_ASSERTED",
+  "observed_date": "2026-08-23",
+  "artifact": "docs/paper/route2_xedit_v3_prospective_methods_addendum_v1.md",
+  "coverage": {
+    "development_projection_and_endpoint_semantics": true,
+    "edit_site_token_representation": true,
+    "xeditcritic_v3_architecture_training_controls_and_gates": true,
+    "xeditsetflow_v3_objective_architecture_training_and_gates": true,
+    "conservative_reward_soft_value_and_potential_guidance": true,
+    "smc_and_compute_accounting": true,
+    "closed_and_open_benchmark_estimands": true,
+    "frozen_search_baseline_shared_scorer_boundary": true,
+    "statistical_units_and_terminal_decisions": true,
+    "reverse_outline_and_self_review": true,
+    "claim_evidence_map": true
+  },
+  "claim_boundary": {
+    "v3_performance_gate_claimed_passed": false,
+    "terminal_v2_results_rewritten": false,
+    "external_confirmation_claimed": false,
+    "submission_ready_claimed": false,
+    "performance_claims_marked_needs_terminal_evidence": true
+  },
+  "realized_trainable_parameter_counts": {
+    "critic_c2": 29489049,
+    "critic_c3": 30472089,
+    "setflow_f2": 16179014,
+    "setflow_f3": 42197158
+  },
+  "tests": {
+    "focused_passed": 3,
+    "focused_failed": 0,
+    "local_exact_v332_passed": 96,
+    "local_exact_v332_failed": 0,
+    "git_diff_check_passed": true,
+    "a100_status": "PENDING_ACTIVE_SCREEN_JOBS_MUST_KEEP_LAUNCH_COMMIT_PROVENANCE",
+    "a100_launch_head": "22317ed"
+  },
+  "protected_data": {
+    "development_test_outcomes_accessed": false,
+    "new_final_evaluation_outcomes_accessed": false
+  }
+}

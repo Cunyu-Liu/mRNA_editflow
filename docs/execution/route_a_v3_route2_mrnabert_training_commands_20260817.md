@@ -2201,3 +2201,15 @@ GPU0–5 free memory 为 2,591/7,043/3,175/5,193/4,267/7,701 MiB，utilization �
 C2/C3/F3 提供已判定所需的安全显存，因此不启动、不降容量、不 CPU fallback。远端工作树继续固定 launch
 HEAD `22317ed`；下一次状态检查不早于 `2026-08-23T06:04:56+08:00`。ledger、Development TEST、
 new Evaluation、guidance 和 submission 状态均不改变。
+
+## XEdit V3 prospective Methods addendum（2026-08-23）
+
+等待正式 screen 时新增独立的 `docs/paper/route2_xedit_v3_prospective_methods_addendum_v1.md`，不修改当前
+terminal V2 Results。addendum 按 ML Method 的模块化逻辑写明 projection/endpoint、edit-site token、
+Critic V3、SetFlow V3、soft value、potential-consistent SMC、closed/open benchmark、matched compute 与
+terminal gate，并记录 C2/C3/F2/F3 的真实 trainable parameter count，而非沿用容量估计。
+
+文档含 pipeline sketch、段落角色、reverse outline、五维自审和 claim–evidence map。所有性能与泛化 claim
+均明确为 `Needs terminal evidence`；没有声明 V3 gate PASS、外部确认或 submission-ready，也没有把旧 open
+support metric 改写为 closed result。focused boundary tests=3/3、V3.3.2=96/96、diff-check PASS。本项不训练、
+不新增 ledger row、不读取 protected outcome；A100 sync/test 仍等待 active launch-head jobs terminal。

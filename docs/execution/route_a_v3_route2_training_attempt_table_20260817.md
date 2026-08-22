@@ -1457,3 +1457,10 @@ C1/F1/F2 仍为既有三个 RUNNING attempts，elapsed=3:17:35/1:47:26/1:32:29�
 error marker，因此中央 CSV 不改写状态、不新增行。GPU0–5 free memory=2,591/7,043/3,175/5,193/
 4,267/7,701 MiB，仍不足以安全启动 C2/C3/F3；未降低容量或使用 CPU fallback。A100 HEAD 继续为
 `22317ed`，下一次检查不早于 06:04:56。protected outcome 与 downstream authorization 状态不变。
+
+## XEdit V3 prospective Methods addendum（2026-08-23）
+
+本项只新增 outcome-free 论文 Methods addendum 与 claim-boundary tests，不构成 optimizer attempt，中央 CSV
+不新增行。文档覆盖 Critic/SetFlow/soft-value/SMC/closed-open benchmark 和真实参数量，所有性能、泛化与
+投稿结论均标记为仍需 terminal evidence；当前 V2 Results 未被改写。focused=3/3、V3.3.2=96/96、
+diff-check PASS，Development TEST/new Evaluation read=0；A100 sync/test 延后到现有 screen jobs terminal。
