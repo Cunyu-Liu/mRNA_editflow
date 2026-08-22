@@ -1,0 +1,49 @@
+{
+  "authority": {
+    "execution_protocol": "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/\u63d0\u793a\u8bcd/mrna V3.3.2 \u6267\u884c\u63d0\u793a\u8bcd.md",
+    "inventory": "configs/route_a_v3_route2_14_study_final_inventory_v1.json",
+    "scientific_contract": "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/\u63d0\u793a\u8bcd/mrna \u6570\u636egate\u8f6c\u5411\u540e\u7684\u5408\u540c.md"
+  },
+  "authority_overrides": [
+    {
+      "current_v332_role": "HISTORICAL_OUTCOME_EXPOSED_TRANSFER_DIAGNOSTIC_NOT_FINAL_CONFIRMATION",
+      "frozen_inventory_role": "EVALUATION",
+      "reason": "Outcome exposure predates V3.3.2; the study cannot be re-frozen as final confirmation.",
+      "study_unit_id": "GSE232572"
+    }
+  ],
+  "claim_boundary": "Development-relaxed/listwise rows support Development benchmarking but add no qualified credit; historical outcome-exposed rows add no final-Evaluation credit; zero-record and sealed studies remain explicit.",
+  "new_training_attempt_created": false,
+  "protected_outcomes": {
+    "development_test_read": false,
+    "emtab10902_outcome_read": false,
+    "guided_xeditflow_run": false,
+    "new_final_evaluation_read": false,
+    "sealed_gse246381_read": false
+  },
+  "qualified_credit": {
+    "a1_studies": 1,
+    "only_credited_study_unit_id": "GSE200304",
+    "ordinary_studies": 1,
+    "true_a2_studies": 0
+  },
+  "record_totals": {
+    "development_canonical_records": 126165,
+    "final_evaluation_unexposed_canonical_records": 0,
+    "generated_candidate_canonical_credit": 0,
+    "historical_transfer_canonical_records": 8068,
+    "qualified_canonical_credit_records": 6547
+  },
+  "role_counts": {
+    "AUXILIARY": 1,
+    "CONVERSION_FAILURE_ONLY_OUTCOME_NOT_READ": 1,
+    "DEVELOPMENT": 8,
+    "HISTORICAL_OUTCOME_EXPOSED_TRANSFER_DIAGNOSTIC_NOT_FINAL_CONFIRMATION": 1,
+    "NEGATIVE_CONTROL": 2,
+    "SEALED_EXCLUDED": 1
+  },
+  "schema_version": "route_a_v3_route2_v332_dataset_qualification_table.v1",
+  "status": "DATASET_QUALIFICATION_DEVELOPMENT_TABLE_RENDERED",
+  "study_count": 14,
+  "table_path": "docs/paper/route2_v332_dataset_qualification_table_v1.csv"
+}

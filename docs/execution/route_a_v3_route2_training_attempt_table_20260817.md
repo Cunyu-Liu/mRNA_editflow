@@ -554,3 +554,18 @@ publisher compliance；总体 `submission_ready=false`、Route A claim 仍
 中央 100 个唯一 attempts 的终态继续是 92 `COMPLETED`、3 `FAILED`、3
 `INCOMPLETE_NO_TERMINAL_RECORD`、1 `STOPPED_FOR_THROUGHPUT_REPAIR`、1
 `STOPPED_PRIORITY_REALLOCATION`。
+
+## Dataset qualification/development table（2026-08-22）
+
+本项为非训练 paper-table task，不新增中央训练 attempt。新增可复现 builder、14-row
+CSV、审计 JSON 与 focused tests；输入仅为冻结的 14-study inventory。表中 Development
+records=`126,165`、historical outcome-exposed GSE232572=`8,068`、new final Evaluation
+unexposed records=`0`、qualified canonical credit=`6,547`，qualified study credit 固定为
+ordinary/A1/true-A2=`1/1/0`。GSE232572 的旧 inventory `EVALUATION` role 由 V3.3.2
+覆盖为 historical diagnostic；E-MTAB outcome、sealed GSE246381、Development TEST、
+new final Evaluation 与 guided 均未打开。
+
+paper packet 仍有 22 个 claim markers，evidence sources 增至 23；本机 dataset-table +
+paper-packet + figure-builder 联合 focused suite 为 17/17。中央 100 个唯一 attempts 的
+终态不变：92 `COMPLETED`、3 `FAILED`、3 `INCOMPLETE_NO_TERMINAL_RECORD`、1
+`STOPPED_FOR_THROUGHPUT_REPAIR`、1 `STOPPED_PRIORITY_REALLOCATION`。

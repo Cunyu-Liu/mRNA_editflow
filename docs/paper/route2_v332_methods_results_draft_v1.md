@@ -29,6 +29,16 @@ reported in this packet used TRAIN/VALIDATION or the Development measured
 neighborhood; Development TEST and the new final external Evaluation remained
 closed. [claim:C-R2-002] [evidence:E-R2-CONTRACT,E-R2-FRESH]
 
+The 14-study qualification table assigns eight study units and 126,165 records
+to Development, while keeping 8,068 GSE232572 records in an outcome-exposed
+historical-transfer role and assigning zero records to a new unexposed final
+Evaluation. Only GSE200304 contributes qualified credit: one ordinary study,
+one A1 study, zero true-A2 studies and 6,547 canonical records. Development-
+relaxed and listwise materializations remain usable for Development benchmarking
+but add no qualified credit; six zero-record studies retain explicit
+unconvertible, auxiliary, aggregate-only or sealed reasons. Generated candidates
+add zero canonical credit. [evidence:E-R2-DATA-TABLE-BUILDER,E-R2-DATA-TABLE]
+
 ### Independent generation evaluator
 
 Generation methods were compared with a frozen Siamese CNN evaluator trained

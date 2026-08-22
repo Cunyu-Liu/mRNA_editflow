@@ -8,10 +8,10 @@
   "independent_final_evaluation_performed": false,
   "human_verification_required": true,
   "source_path_preflight": {
-    "observed_at": "2026-08-22T12:35:00+08:00",
+    "observed_at": "2026-08-22T12:47:52+08:00",
     "status": "PASS",
-    "source_locations_checked": 21,
-    "local_or_contract_locations_checked": 12,
+    "source_locations_checked": 23,
+    "local_or_contract_locations_checked": 14,
     "a100_mnt_locations_checked": 9,
     "missing_locations": 0,
     "check_scope": "FILE_EXISTENCE_ONLY_NO_EVIDENCE_CONTENT_OPENED",
@@ -39,6 +39,21 @@
       "location": "audits/route_a_v3_route2_v332_freshness_and_critic_v2_freeze_v1.json",
       "locator": "independent_evaluator, matched_generation, central_training_attempts, next_action",
       "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING"
+    },
+    {
+      "evidence_id": "E-R2-DATA-TABLE-BUILDER",
+      "kind": "reproducible_dataset_qualification_table_builder",
+      "location": "scripts/route_a_v3/build_route2_v332_dataset_qualification_table_v1.py",
+      "locator": "14-study role and record conservation, qualification strata, current 1/1/0/6547 credit, GSE232572 authority override and protected-outcome closure",
+      "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING"
+    },
+    {
+      "evidence_id": "E-R2-DATA-TABLE",
+      "kind": "derived_dataset_qualification_development_table_audit",
+      "location": "audits/route_a_v3_route2_v332_dataset_qualification_table_v1.json",
+      "locator": "14 rows; Development 126165, historical transfer 8068, final unexposed Evaluation 0 and qualified credit 6547; table at docs/paper/route2_v332_dataset_qualification_table_v1.csv",
+      "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING",
+      "external_evidence": false
     },
     {
       "evidence_id": "E-R2-EVAL-TRAIN",

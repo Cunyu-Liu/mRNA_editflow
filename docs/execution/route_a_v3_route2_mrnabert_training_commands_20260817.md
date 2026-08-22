@@ -1143,3 +1143,24 @@ MBP-13 replacement Evaluation 缺失、MBP-14 final zero-shot/adaptation 未执�
 MBP-15 terminal timing 缺失。此任务不训练或更新参数，不新增中央 attempt；100-row
 终态仍为 92 COMPLETED、3 FAILED、3 INCOMPLETE_NO_TERMINAL_RECORD、1
 STOPPED_FOR_THROUGHPUT_REPAIR、1 STOPPED_PRIORITY_REALLOCATION。
+
+## 42. Route 2 V3.3.2 dataset qualification/development table（2026-08-22）
+
+新增 `build_route2_v332_dataset_qualification_table_v1.py`、14-row paper CSV、审计
+JSON 与 focused tests。构建器只读取冻结的 14-study inventory，不打开 canonical rows、
+Development TEST、新 final Evaluation outcome、E-MTAB outcome 或 sealed GSE246381。
+冻结 inventory 的 GSE232572 `EVALUATION` 字段由 V3.3.2 authority 显式规范化为
+`HISTORICAL_OUTCOME_EXPOSED_TRANSFER_DIAGNOSTIC_NOT_FINAL_CONFIRMATION`；旧 YAML
+`AUDIT_PENDING` registry 只作历史 lineage，不覆盖当前 terminal inventory。
+
+表内 8 个 Development study units 合计 126,165 records；历史 GSE232572 为 8,068；
+新 outcome-unexposed final Evaluation 为 0。只有 GSE200304 贡献 qualified credit：
+6,547 records、ordinary/A1/true-A2=`1/1/0`。Development-relaxed/listwise rows 不增加
+qualified credit，6 个 zero-record studies 保留 unconvertible/auxiliary/aggregate-only/
+sealed 原因，generated candidate canonical credit 为 0。paper packet 保持 22 个 claim
+markers，evidence sources 从 21 增至 23；本机 dataset-table + paper-packet + figure-builder
+联合 focused suite 为 17/17。
+
+本任务不训练或更新参数，不新增中央 attempt；100-row 终态仍为 92 COMPLETED、3
+FAILED、3 INCOMPLETE_NO_TERMINAL_RECORD、1 STOPPED_FOR_THROUGHPUT_REPAIR、1
+STOPPED_PRIORITY_REALLOCATION。guided、Development TEST 与 new final Evaluation 继续关闭。

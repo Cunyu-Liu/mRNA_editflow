@@ -12,7 +12,25 @@
         "validation": 18293,
         "test_withheld": 18292
       },
-      "evidence_ids": ["E-R2-CONTRACT", "E-R2-FRESH"]
+      "study_units": 14,
+      "development_study_units": 8,
+      "historical_transfer_study_units": 1,
+      "final_evaluation_unexposed_records": 0,
+      "qualified_credit": {
+        "ordinary_studies": 1,
+        "a1_studies": 1,
+        "true_a2_studies": 0,
+        "canonical_records": 6547,
+        "only_credited_study_unit_id": "GSE200304"
+      },
+      "dataset_qualification_table": "docs/paper/route2_v332_dataset_qualification_table_v1.csv",
+      "dataset_qualification_audit": "audits/route_a_v3_route2_v332_dataset_qualification_table_v1.json",
+      "evidence_ids": [
+        "E-R2-CONTRACT",
+        "E-R2-FRESH",
+        "E-R2-DATA-TABLE-BUILDER",
+        "E-R2-DATA-TABLE"
+      ]
     },
     {
       "method_id": "M-R2-EVALUATOR",
@@ -112,6 +130,32 @@
     }
   ],
   "results": [
+    {
+      "result_id": "R-R2-DATA-QUALIFICATION",
+      "status": "DATASET_QUALIFICATION_DEVELOPMENT_TABLE_RENDERED",
+      "study_count": 14,
+      "development_study_count": 8,
+      "zero_canonical_record_study_count": 6,
+      "development_canonical_records": 126165,
+      "historical_transfer_canonical_records": 8068,
+      "final_evaluation_unexposed_canonical_records": 0,
+      "qualified_canonical_credit_records": 6547,
+      "ordinary_study_credit": 1,
+      "a1_study_credit": 1,
+      "true_a2_study_credit": 0,
+      "generated_candidate_canonical_credit": 0,
+      "gse232572_current_role": "HISTORICAL_OUTCOME_EXPOSED_TRANSFER_DIAGNOSTIC_NOT_FINAL_CONFIRMATION",
+      "development_test_read": false,
+      "new_final_evaluation_read": false,
+      "sealed_gse246381_read": false,
+      "table": "docs/paper/route2_v332_dataset_qualification_table_v1.csv",
+      "audit": "audits/route_a_v3_route2_v332_dataset_qualification_table_v1.json",
+      "evidence_ids": [
+        "E-R2-DATA-TABLE-BUILDER",
+        "E-R2-DATA-TABLE",
+        "E-R2-CONTRACT"
+      ]
+    },
     {
       "result_id": "R-R2-EVALUATOR",
       "task_macro_spearman": 0.10256553571558498,

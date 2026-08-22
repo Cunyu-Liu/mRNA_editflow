@@ -22,6 +22,12 @@ MINIMUM_PACKAGE_TABLE = (
 MINIMUM_PACKAGE_AUDIT = (
     ROOT / "audits/route_a_v3_route2_v332_minimum_benchmark_package_v1.json"
 )
+DATASET_QUALIFICATION_TABLE = (
+    ROOT / "docs/paper/route2_v332_dataset_qualification_table_v1.csv"
+)
+DATASET_QUALIFICATION_AUDIT = (
+    ROOT / "audits/route_a_v3_route2_v332_dataset_qualification_table_v1.json"
+)
 GSE232572_HISTORICAL = (
     ROOT / "audits/route_a_v3_route2_gse232572_zero_shot_summary_v1.json"
 )
@@ -55,7 +61,7 @@ def test_claim_and_consistency_evidence_references_are_closed() -> None:
     consistency = _load(CONSISTENCY)
 
     evidence_ids = [row["evidence_id"] for row in evidence["sources"]]
-    assert len(evidence_ids) == len(set(evidence_ids)) == 21
+    assert len(evidence_ids) == len(set(evidence_ids)) == 23
 
     claims = re.findall(r"\[claim:([^\]]+)\]", draft)
     assert len(claims) == len(set(claims)) == 22
@@ -75,14 +81,14 @@ def test_evidence_source_paths_are_closed_without_overstating_verification() -> 
     preflight = evidence["source_path_preflight"]
 
     assert preflight["status"] == "PASS"
-    assert preflight["source_locations_checked"] == len(evidence["sources"]) == 21
+    assert preflight["source_locations_checked"] == len(evidence["sources"]) == 23
     assert (
         preflight["local_or_contract_locations_checked"]
         + preflight["a100_mnt_locations_checked"]
         == preflight["source_locations_checked"]
     )
     assert preflight["missing_locations"] == 0
-    assert preflight["local_or_contract_locations_checked"] == 12
+    assert preflight["local_or_contract_locations_checked"] == 14
     assert preflight["a100_mnt_locations_checked"] == 9
     assert preflight["check_scope"] == "FILE_EXISTENCE_ONLY_NO_EVIDENCE_CONTENT_OPENED"
     assert preflight["human_content_verification_completed"] is False
@@ -100,6 +106,56 @@ def test_evidence_source_paths_are_closed_without_overstating_verification() -> 
     assert by_id["E-R2-FIGURE-MANIFEST"]["location"].endswith(
         "/route2_v332_v1/route2_v332_figure_manifest_v1.json"
     )
+    assert by_id["E-R2-DATA-TABLE"]["location"] == (
+        "audits/route_a_v3_route2_v332_dataset_qualification_table_v1.json"
+    )
+
+
+def test_dataset_qualification_table_closes_v332_role_and_credit_boundaries() -> None:
+    draft = " ".join(DRAFT.read_text(encoding="utf-8").split())
+    consistency = _load(CONSISTENCY)
+    audit = _load(DATASET_QUALIFICATION_AUDIT)
+    with DATASET_QUALIFICATION_TABLE.open(newline="", encoding="utf-8") as handle:
+        rows = list(csv.DictReader(handle))
+    by_id = {row["study_unit_id"]: row for row in rows}
+    method = next(
+        row for row in consistency["methods"] if row["method_id"] == "M-R2-DATA"
+    )
+    result = next(
+        row
+        for row in consistency["results"]
+        if row["result_id"] == "R-R2-DATA-QUALIFICATION"
+    )
+
+    assert len(rows) == len(by_id) == audit["study_count"] == result["study_count"] == 14
+    assert sum(int(row["development_canonical_records"]) for row in rows) == (
+        result["development_canonical_records"]
+    ) == 126165
+    assert sum(int(row["historical_transfer_canonical_records"]) for row in rows) == (
+        result["historical_transfer_canonical_records"]
+    ) == 8068
+    assert sum(
+        int(row["final_evaluation_unexposed_canonical_records"]) for row in rows
+    ) == result["final_evaluation_unexposed_canonical_records"] == 0
+    assert sum(int(row["qualified_canonical_credit_records"]) for row in rows) == (
+        result["qualified_canonical_credit_records"]
+    ) == 6547
+    assert sum(int(row["canonical_records"]) == 0 for row in rows) == (
+        result["zero_canonical_record_study_count"]
+    ) == 6
+    assert method["qualified_credit"] == {
+        "ordinary_studies": 1,
+        "a1_studies": 1,
+        "true_a2_studies": 0,
+        "canonical_records": 6547,
+        "only_credited_study_unit_id": "GSE200304",
+    }
+    assert by_id["GSE232572"]["current_analysis_role_v332"] == (
+        result["gse232572_current_role"]
+    ) == "HISTORICAL_OUTCOME_EXPOSED_TRANSFER_DIAGNOSTIC_NOT_FINAL_CONFIRMATION"
+    assert result["new_final_evaluation_read"] is False
+    assert result["sealed_gse246381_read"] is False
+    assert "Generated candidates add zero canonical credit" in draft
 
 
 def test_provisional_figure_method_preserves_protected_outcome_boundary() -> None:
