@@ -17,7 +17,11 @@
       "submission_ready": false
     },
     "discussion": {
-      "status": "PARTIAL_NEXT_DATA_DRAFT_NOT_YET_SECTION_ADJUDICATED"
+      "status": "COMPLETE_INTERNAL_HUMAN_VERIFICATION_PENDING",
+      "subsection_count": 5,
+      "completion_audit": "audits/route_a_v3_route2_v332_discussion_completion_v1.json",
+      "human_verification_complete": false,
+      "submission_ready": false
     },
     "data_availability": {
       "status": "NOT_DRAFTED"

@@ -16,7 +16,7 @@ def _load(path: Path) -> dict:
 
 def test_results_section_is_complete_but_success_and_submission_are_false() -> None:
     draft = DRAFT.read_text(encoding="utf-8")
-    results = draft.split("## Results\n", 1)[1].split("## Discussion draft", 1)[0]
+    results = draft.split("## Results\n", 1)[1].split("## Discussion\n", 1)[0]
     headings = re.findall(r"^### (.+)$", results, flags=re.MULTILINE)
     audit = _load(AUDIT)
     consistency = _load(CONSISTENCY)
@@ -77,7 +77,7 @@ def test_results_terminal_facts_retain_negative_and_layered_boundaries() -> None
 
 def test_results_evidence_ids_are_registered_and_claim_count_is_stable() -> None:
     draft = DRAFT.read_text(encoding="utf-8")
-    results = draft.split("## Results\n", 1)[1].split("## Discussion draft", 1)[0]
+    results = draft.split("## Results\n", 1)[1].split("## Discussion\n", 1)[0]
     evidence = _load(EVIDENCE)
     evidence_ids = {row["evidence_id"] for row in evidence["sources"]}
     cited = set()

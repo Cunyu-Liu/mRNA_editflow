@@ -640,7 +640,94 @@ the table therefore records both the permitted Benchmark+limits narrative and
 the claims that remain unavailable.
 [evidence:E-R2-CLAIM-EVIDENCE-BUILDER,E-R2-CLAIM-EVIDENCE-AUDIT]
 
-## Discussion draft
+## Discussion
+
+### Benchmarking value lies in resolving the comparison boundary
+
+The evidence-supported contribution of this Route 2 cohort is a benchmark and
+failure-boundary analysis, rather than a claim that predictor or generator
+superiority has been established. The frozen controls distinguish candidate-
+specific information from source and edit-metadata shortcuts; the generation
+suite distinguishes evaluator uplift, measured-neighborhood recovery, action-
+space geometry and compute; and the historical transfer analysis records where
+rank and calibration criteria disagree. Together, these analyses make the
+negative outcome more informative than a single aggregate score because they
+localize which comparisons were passed, which decisive hurdles were not passed
+and which endpoints remain undefined.
+
+This interpretation does not convert the selected Benchmark+limits manuscript
+route into an achieved paper outcome. Four minimum-package blockers remain,
+there is no new outcome-unexposed external Evaluation, and the guided branch was
+closed by the Critic V2 control gate. The present packet can therefore support
+transparent reporting of Development benchmarks, historical-transfer limits
+and missing evidence, but not claims of model success, biological efficacy,
+external confirmation, package completeness or submission readiness.
+[evidence:E-R2-PAPER-OUTCOME-ADJUDICATION,E-R2-PACKAGE-AUDIT,E-R2-CLAIM-EVIDENCE-AUDIT]
+
+### Candidate-specific rank signal did not become task-wide superiority
+
+Critic V2 performed better than candidate permutation, source only and source
+plus edit metadata in the frozen control screen, and the two tasks eligible for
+candidate-permutation assessment both had positive full-minus-permutation rank
+margins. These comparisons are compatible with localized use of candidate-
+specific sequence information. They rule out the narrow explanation that the
+full model behaved exactly like those controls, but they do not show that the
+representation was sufficient across the heterogeneous task set.
+
+The decisive same-information comparison points in the other direction. The
+full model beat the strongest baseline on four of nine task correlations, lost
+on five and had worse standardized MAE on all nine. Its task-macro Spearman
+margin was -0.0153437, so the prospective gate correctly stopped before the
+three frozen seeds. Rank information and calibration should therefore be kept
+separate: localized positive rank margins coexist with failure to establish
+stable task-macro rank or error superiority. The post hoc sensitivity to the
+two 48-record tasks may motivate a future balanced design, but it cannot justify
+removing them, redefining the endpoint or assigning a sample-size mechanism.
+[evidence:E-R2-CRITIC-V2-ADJ,E-R2-CRITIC-V2-DIAG,E-R2-ERROR-DOMAIN-SHIFT-AUDIT]
+
+### Generation conclusions depend on the endpoint and its support
+
+The seven-method suite produced different leaders because its endpoints answer
+different questions. Genetic search led the frozen independent-evaluator
+criterion, whereas unguided Base Flow recovered the largest fraction of the
+sparse measured candidate neighborhood. The former is a Development model-
+selection score from an evaluator that only narrowly passed its qualification
+threshold; the latter measures overlap with an incomplete measured set under
+open generated support. Neither is a closed-support biological ranking, and no
+method had a defined closed measured NDCG source.
+
+The disagreement is therefore not a contradiction to be removed by choosing a
+preferred metric. It shows that predicted uplift and recovery of already
+measured neighbors capture different properties of candidate generation. The
+quality--cost, diversity and failure panels add further computational axes:
+Base Flow used fewer mean forward-equivalents than genetic search and was more
+pairwise diverse, but it produced within-source duplicates; local search
+returned fewer candidates than the cap. These point-estimate tradeoffs are
+useful for designing the next comparison, but without outcome-complete support
+and uncertainty for every frontier they do not establish biological or formal
+multi-objective superiority.
+[evidence:E-R2-GEN-SELECT,E-R2-GEN-THREE-LAYER-AUDIT,E-R2-EVAL-ADJ,E-R2-GEN-QUALITY-COST-FIGURE-MANIFEST]
+
+### Heterogeneity and historical transfer define a boundary, not a mechanism
+
+The Development task rows span seven studies, seven assays and a 251-fold range
+in record count. Study, assay, endpoint, region, biological context and task
+size are consequently entangled. Region-stratified summaries and the wide
+task-level evaluator range describe this cohort, but they cannot identify a
+causal region effect, a context effect or a single failure mechanism. The
+supported interpretation is heterogeneous performance under the available
+task geometry, with within-assay context-specific error still unidentifiable
+from the retained aggregates.
+
+GSE232572 strengthens the boundary without providing independent confirmation.
+All three historical zero-shot seeds had positive rank point differences over
+the baseline, but one rank interval crossed zero and calibration error favored
+the baseline for all three seeds. Because its outcomes were historically
+exposed, this study cannot replace a prospectively sealed Evaluation cohort even
+if a subset of its metrics appears favorable. The result leaves external
+transfer unresolved rather than proving either general transfer or universal
+non-transfer.
+[evidence:E-R2-ERROR-DOMAIN-SHIFT-AUDIT,E-R2-GSE232-HIST,E-R2-DATA-TABLE]
 
 ### A confirmatory Route 2 cohort requires denser and more explicit evidence
 

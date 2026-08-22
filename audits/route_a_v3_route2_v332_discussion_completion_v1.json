@@ -1,0 +1,79 @@
+{
+  "schema_version": "route_a_v3_route2_v332_discussion_completion.v1",
+  "status": "DISCUSSION_SECTION_COMPLETE_INTERNAL_HUMAN_VERIFICATION_PENDING",
+  "authority": {
+    "scientific_contract": "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna 数据gate转向后的合同.md",
+    "execution_protocol": "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna V3.3.2 执行提示词.md",
+    "manuscript": "docs/paper/route2_v332_methods_results_draft_v1.md",
+    "consistency_manifest": "docs/paper/route2_v332_consistency_manifest_v1.json",
+    "evidence_manifest": "docs/paper/route2_v332_evidence_manifest_v1.json"
+  },
+  "discussion_heading": "Discussion",
+  "discussion_subsection_count": 5,
+  "required_subsections": [
+    "Benchmarking value lies in resolving the comparison boundary",
+    "Candidate-specific rank signal did not become task-wide superiority",
+    "Generation conclusions depend on the endpoint and its support",
+    "Heterogeneity and historical transfer define a boundary, not a mechanism",
+    "A confirmatory Route 2 cohort requires denser and more explicit evidence"
+  ],
+  "coverage": {
+    "benchmark_and_limits_contribution_distinguished_from_success": true,
+    "localized_candidate_signal_distinguished_from_same_information_superiority": true,
+    "rank_and_calibration_interpretations_separated": true,
+    "generation_evaluator_and_measured_recovery_endpoints_separated": true,
+    "open_support_and_closed_measured_ndcg_limit_reported": true,
+    "quality_cost_diversity_and_failure_tradeoffs_reported_as_descriptive": true,
+    "task_region_context_heterogeneity_kept_non_causal": true,
+    "historical_outcome_exposure_and_negative_transfer_boundary_reported": true,
+    "confirmatory_source_candidate_replication_context_and_exposure_requirements_reported": true,
+    "unsupported_success_and_submission_claims_excluded": true,
+    "protected_outcomes_remain_closed": true
+  },
+  "terminal_interpretation_facts": {
+    "critic_v2_candidate_permutation_eligible_task_count": 2,
+    "critic_v2_positive_full_minus_permutation_task_count": 2,
+    "critic_v2_spearman_win_count_vs_strongest_baseline": 4,
+    "critic_v2_spearman_loss_count_vs_strongest_baseline": 5,
+    "critic_v2_standardized_mae_better_task_count_vs_strongest_baseline": 0,
+    "critic_v2_standardized_mae_worse_task_count_vs_strongest_baseline": 9,
+    "critic_v2_strongest_baseline_spearman_margin": -0.015343731738697977,
+    "independent_evaluator_threshold_margin": 0.001318,
+    "independent_evaluator_point_leader": "genetic",
+    "measured_candidate_recovery_point_leader": "base_flow_unguided",
+    "closed_measured_ndcg_defined_source_count_all_methods": 0,
+    "development_task_record_count_minimum": 48,
+    "development_task_record_count_maximum": 12048,
+    "development_task_record_count_ratio": 251.0,
+    "historical_gse232572_preregistered_pass": false,
+    "historical_gse232572_final_confirmation_eligible": false,
+    "minimum_package_complete": false,
+    "minimum_package_blocker_ids": [
+      "MBP-10",
+      "MBP-13",
+      "MBP-14",
+      "MBP-15"
+    ],
+    "selected_final_paper_outcome": "BENCHMARK_PLUS_TRANSFER_AND_GENERATION_LIMITS_PAPER"
+  },
+  "completion_boundary": {
+    "discussion_section_complete": true,
+    "human_evidence_content_verification_complete": false,
+    "causal_failure_mechanism_established": false,
+    "model_success_established": false,
+    "biological_success_established": false,
+    "external_transfer_established": false,
+    "guided_generation_success_established": false,
+    "minimum_package_complete": false,
+    "outcome_trigger_fully_satisfied": false,
+    "submission_ready": false
+  },
+  "protected_outcomes": {
+    "development_test_read": false,
+    "new_final_evaluation_read": false,
+    "emtab10902_outcome_read": false,
+    "sealed_gse246381_read": false,
+    "guided_xeditflow_run": false
+  },
+  "new_training_attempt_created": false
+}
