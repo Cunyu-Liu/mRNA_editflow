@@ -1,0 +1,42 @@
+{
+  "schema_version": "route_a_v3_route2_xedit_v3_projection_materialization.v1",
+  "status": "TRAIN_VALIDATION_PROJECTION_COMPLETE_TEST_UNPARSED",
+  "observed_date": "2026-08-23",
+  "implementation_commit": "1659633d6880faccb96b7e99794ff2f2a5b9388e",
+  "output_directory": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/projections/xedit_v3/development_train_validation_v1",
+  "manifest_record_counts": {
+    "TRAIN": 89580,
+    "VALIDATION": 18293,
+    "TEST": 18292
+  },
+  "projection_record_counts": {
+    "TRAIN": 89580,
+    "VALIDATION": 18293
+  },
+  "canonical_full_decode_counts": {
+    "TRAIN": 89580,
+    "VALIDATION": 18293,
+    "TEST": 0
+  },
+  "projection_byte_sizes": {
+    "train.jsonl": 139955582,
+    "validation.jsonl": 27545060,
+    "projection_summary.json": 1338
+  },
+  "endpoint_record_counts": {
+    "MEAN_RIBOSOME_LOAD": 3173,
+    "MPRAU_ALLELIC_SKEW_LOG2_FOLD_CHANGE": 67752,
+    "PROXIMAL_POLYA_SITE_USAGE_LOG2_ODDS": 28338,
+    "PUBLISHED_REF_VS_ALT_ACTIVITY_LMM_LOG2_FOLD_CHANGE": 478,
+    "RNA_HALF_LIFE_MINUTES": 3104,
+    "TOTAL_POLYSOME_TRANSLATION_EFFICIENCY": 4932,
+    "te_log2_polysome_over_totalrna": 48,
+    "transcript_log2_totalrna_over_dna": 48
+  },
+  "endpoint_descriptor_count": 8,
+  "gse149487_endpoints_distinguished": true,
+  "development_test_outcomes_accessed": false,
+  "new_final_evaluation_outcomes_accessed": false,
+  "training_attempt_created": false,
+  "materialization_may_be_repeated": false
+}

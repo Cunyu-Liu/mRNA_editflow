@@ -31,7 +31,7 @@
     "setflow_source_macro_unique_candidate_rate": 0.9
   },
   "implementation_state": {
-    "projection_builder": "IMPLEMENTED_FOCUSED_TESTED_NOT_YET_MATERIALIZED_ON_A100",
+    "projection_builder": "IMPLEMENTED_TESTED_AND_MATERIALIZED_ON_A100_TEST_UNPARSED",
     "endpoint_descriptor_registry": "IMPLEMENTED_OUTCOME_FREE",
     "xeditcritic_v3": "NOT_YET_IMPLEMENTED",
     "xeditsetflow_v3": "NOT_YET_IMPLEMENTED",

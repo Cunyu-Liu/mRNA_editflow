@@ -1212,7 +1212,12 @@ projection 不存在，未来只能由 three-seed PASS 后的一次性原子 adj
 outcome-free endpoint registry 覆盖 Development 的八个 endpoint，并把 GSE149487 的 translation-
 efficiency ratio 与 RNA-abundance ratio 映射为不同 quantity/measurement semantics。projection schema、
 builder、CLI 和 loader 已实现；合成 protected TEST 行故意包含无法完整解析的 JSON payload，focused
-tests 仍能完成 TRAIN/VALIDATION projection，证明 TEST 行没有发生完整 decode。本项尚未在 A100
-materialize 真实 projection，不训练、不新增中央 attempt；中央表仍为 100 total / 92 completed /
+tests 仍能完成 TRAIN/VALIDATION projection，证明 TEST 行没有发生完整 decode。
+
+实现 commit `1659633` 推送并在 A100 fast-forward 后，真实 projection 只 materialize 一次：TRAIN
+89,580 行 / 139,955,582 bytes，VALIDATION 18,293 行 / 27,545,060 bytes，TEST withheld 18,292；
+canonical full-decode counts 为 TRAIN=89,580、VALIDATION=18,293、TEST=0。八个 endpoint 的投影总数
+107,873，GSE149487 两个 descriptors 各 48 条且语义分离。A100 focused tests=11/11、既有精确
+V3.3.2 suite=96/96；本项不训练、不新增中央 attempt，中央表仍为 100 total / 92 completed /
 3 failed / 3 incomplete / 1 stopped-throughput / 1 stopped-priority。Development TEST 和新的 final
 Evaluation outcome 均未读取，model/generation/biological success 与 submission-ready 均为 false。

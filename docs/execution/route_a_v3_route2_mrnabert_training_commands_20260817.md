@@ -1801,6 +1801,8 @@ projection。TEST 行不解码；通用 TEST projection 被拒绝。V3 critic/fl
 不再从 canonical outcome JSONL fallback。endpoint registry 同时提供给 full model 与 matched baseline，
 并明确区分 GSE149487 的两个无 TRAIN 支持 endpoint。
 
-真实 projection materialization 要在实现 commit 推送并同步 A100 后只运行一次。运行前不检查训练
-进度；运行本身不更新参数、不读取 TEST outcome、不增加中央 training attempt。输出固定到
-`/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/projections/xedit_v3/development_train_validation_v1/`。
+实现 commit `1659633` 推送并同步 A100 后，真实 projection 已只运行一次并写入
+`/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/projections/xedit_v3/development_train_validation_v1/`：
+TRAIN=89,580、VALIDATION=18,293、TEST withheld=18,292，canonical full decode 的 TEST 计数为 0。
+A100 focused tests=11/11、既有精确 V3.3.2 suite=96/96。该 materialization 不更新参数、不读取 TEST
+outcome、不增加中央 training attempt，且不得再次运行覆盖。
