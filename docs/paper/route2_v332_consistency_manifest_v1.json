@@ -236,6 +236,29 @@
       ]
     },
     {
+      "method_id": "M-R2-ERROR-DOMAIN-SHIFT-ANALYSIS",
+      "label": "Layered Development error and historical domain-shift analysis",
+      "analysis_intent": "POST_HOC_DEVELOPMENT_TASK_REGION_ERROR_GEOMETRY_PLUS_HISTORICAL_OUTCOME_EXPOSED_TRANSFER_BOUNDARY",
+      "status": "ERROR_AND_DOMAIN_SHIFT_ANALYSIS_REPORTED_NO_CAUSAL_OR_FINAL_CONFIRMATION_CLAIM",
+      "row_count": 12,
+      "development_task_rows": 9,
+      "historical_seed_rows": 3,
+      "development_study_count": 7,
+      "development_assay_count": 7,
+      "within_assay_context_specific_error_metrics_available": false,
+      "cross_layer_numeric_pooling_allowed": false,
+      "external_transfer_established": false,
+      "table": "docs/paper/route2_v332_error_domain_shift_analysis_table_v1.csv",
+      "audit": "audits/route_a_v3_route2_v332_error_domain_shift_analysis_table_v1.json",
+      "development_test_accessed": false,
+      "new_final_evaluation_accessed": false,
+      "guided_xeditflow_run": false,
+      "evidence_ids": [
+        "E-R2-ERROR-DOMAIN-SHIFT-BUILDER",
+        "E-R2-ERROR-DOMAIN-SHIFT-AUDIT"
+      ]
+    },
+    {
       "method_id": "M-R2-FIGURES",
       "label": "Provisional general-manuscript figure assembly",
       "analysis_intent": "FROZEN_EVIDENCE_VISUALIZATION",
@@ -838,6 +861,57 @@
       ]
     },
     {
+      "result_id": "R-R2-ERROR-DOMAIN-SHIFT-ANALYSIS",
+      "status": "ERROR_AND_DOMAIN_SHIFT_ANALYSIS_REPORTED_NO_CAUSAL_OR_FINAL_CONFIRMATION_CLAIM",
+      "row_count": 12,
+      "development_task_rows": 9,
+      "historical_seed_rows": 3,
+      "development_validation_record_count_sum": 18293,
+      "historical_transfer_record_count": 8068,
+      "development_task_record_count_range": [48, 12048],
+      "development_task_record_count_max_to_min_ratio": 251.0,
+      "critic_v2_spearman_win_count_vs_strongest_baseline": 4,
+      "critic_v2_spearman_loss_count_vs_strongest_baseline": 5,
+      "critic_v2_nine_task_mean_spearman_margin_vs_strongest_baseline": -0.01534373173869797,
+      "critic_v2_standardized_mae_better_task_count_vs_strongest_baseline": 0,
+      "critic_v2_standardized_mae_worse_task_count_vs_strongest_baseline": 9,
+      "critic_v2_nine_task_mean_standardized_mae_margin_vs_strongest_baseline": 0.4161680105385127,
+      "independent_evaluator_positive_task_count": 5,
+      "independent_evaluator_task_spearman_range": [-0.10916458562634956, 0.7619576378536184],
+      "descriptive_region_summaries": {
+        "5UTR": {
+          "task_count": 4,
+          "validation_record_count_sum": 1226,
+          "critic_v2_mean_full_minus_strongest_baseline_spearman": -0.031473208428386926,
+          "independent_evaluator_task_macro_spearman": 0.02852402190396145
+        },
+        "3UTR": {
+          "task_count": 5,
+          "validation_record_count_sum": 17067,
+          "critic_v2_mean_full_minus_strongest_baseline_spearman": -0.0024401503869468017,
+          "independent_evaluator_task_macro_spearman": 0.16179874676488382
+        }
+      },
+      "region_summaries_are_post_hoc_and_confounded": true,
+      "within_assay_context_specific_error_metrics_available": false,
+      "historical_rank_improvement_ci_excludes_zero_seed_count": 2,
+      "historical_baseline_mae_minus_model_mae_negative_seed_count": 3,
+      "historical_preregistered_pass": false,
+      "historical_external_confirmation_eligible": false,
+      "cross_layer_numeric_pooling_allowed": false,
+      "causal_mechanism_established": false,
+      "development_test_read": false,
+      "new_final_evaluation_read": false,
+      "guided_xeditflow_run": false,
+      "scientific_claim_status": "NOT_ESTABLISHED",
+      "evidence_ids": [
+        "E-R2-ERROR-DOMAIN-SHIFT-BUILDER",
+        "E-R2-ERROR-DOMAIN-SHIFT-AUDIT",
+        "E-R2-CRITIC-V2-DIAG",
+        "E-R2-GSE232-HIST"
+      ]
+    },
+    {
       "result_id": "R-R2-MINIMUM-BENCHMARK-PACKAGE",
       "requirement_count": 18,
       "complete_or_complete_with_declared_limits_count": 14,
@@ -869,6 +943,8 @@
         "E-R2-GEN-THREE-LAYER-AUDIT",
         "E-R2-GEN-QUALITY-COST-FIGURE-BUILDER",
         "E-R2-GEN-QUALITY-COST-FIGURE-MANIFEST",
+        "E-R2-ERROR-DOMAIN-SHIFT-BUILDER",
+        "E-R2-ERROR-DOMAIN-SHIFT-AUDIT",
         "E-R2-FIGURE-BUILDER",
         "E-R2-FIGURE-MANIFEST",
         "E-R2-CONVERSION-FIGURE-BUILDER",
@@ -916,7 +992,7 @@
     },
     {
       "gap_id": "GAP-R2-FIGURE-TARGET-RULES",
-      "description": "Six reproducible provisional figures from five builders exist in PNG, PDF and SVG, but target journal, article type and submission phase have not been selected; publisher-specific dimensions and file rules therefore have not been claimed.",
+      "description": "Seven reproducible provisional figures from six builders exist in PNG, PDF and SVG, but target journal, article type and submission phase have not been selected; publisher-specific dimensions and file rules therefore have not been claimed.",
       "action": "After venue and phase selection, verify the official publisher instructions and regenerate the same frozen evidence if different export dimensions or formats are required.",
       "status": "PROVISIONAL_GENERAL_FIGURES_TARGET_RULES_PENDING"
     }

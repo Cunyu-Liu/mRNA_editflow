@@ -72,6 +72,12 @@ EVALUATOR_CHECK_TABLE = (
 CRITIC_V2_DIAGNOSTIC_TABLE = (
     ROOT / "docs/paper/route2_v332_critic_v2_task_diagnostic_table_v1.csv"
 )
+ERROR_DOMAIN_SHIFT_TABLE = (
+    ROOT / "docs/paper/route2_v332_error_domain_shift_analysis_table_v1.csv"
+)
+ERROR_DOMAIN_SHIFT_AUDIT = (
+    ROOT / "audits/route_a_v3_route2_v332_error_domain_shift_analysis_table_v1.json"
+)
 READINESS = (
     ROOT
     / "configs/route_a_v3_route2_mrnabert_critic_v2_guidance_readiness_protocol_v1.json"
@@ -92,7 +98,7 @@ def test_claim_and_consistency_evidence_references_are_closed() -> None:
     consistency = _load(CONSISTENCY)
 
     evidence_ids = [row["evidence_id"] for row in evidence["sources"]]
-    assert len(evidence_ids) == len(set(evidence_ids)) == 46
+    assert len(evidence_ids) == len(set(evidence_ids)) == 48
 
     claims = re.findall(r"\[claim:([^\]]+)\]", draft)
     assert len(claims) == len(set(claims)) == 22
@@ -112,14 +118,14 @@ def test_evidence_source_paths_are_closed_without_overstating_verification() -> 
     preflight = evidence["source_path_preflight"]
 
     assert preflight["status"] == "PASS"
-    assert preflight["source_locations_checked"] == len(evidence["sources"]) == 46
+    assert preflight["source_locations_checked"] == len(evidence["sources"]) == 48
     assert (
         preflight["local_or_contract_locations_checked"]
         + preflight["a100_mnt_locations_checked"]
         == preflight["source_locations_checked"]
     )
     assert preflight["missing_locations"] == 0
-    assert preflight["local_or_contract_locations_checked"] == 32
+    assert preflight["local_or_contract_locations_checked"] == 34
     assert preflight["a100_mnt_locations_checked"] == 14
     assert preflight["check_scope"] == "FILE_EXISTENCE_ONLY_NO_EVIDENCE_CONTENT_OPENED"
     assert preflight["human_content_verification_completed"] is False
@@ -206,6 +212,12 @@ def test_evidence_source_paths_are_closed_without_overstating_verification() -> 
     assert by_id["E-R2-GEN-QUALITY-COST-FIGURE-MANIFEST"][
         "publisher_compliance_claimed"
     ] is False
+    assert by_id["E-R2-ERROR-DOMAIN-SHIFT-BUILDER"]["location"] == (
+        "scripts/route_a_v3/build_route2_v332_error_domain_shift_analysis_table_v1.py"
+    )
+    assert by_id["E-R2-ERROR-DOMAIN-SHIFT-AUDIT"]["location"] == (
+        "audits/route_a_v3_route2_v332_error_domain_shift_analysis_table_v1.json"
+    )
 
 
 def test_dataset_qualification_table_closes_v332_role_and_credit_boundaries() -> None:
@@ -968,6 +980,108 @@ def test_generation_quality_cost_diversity_failure_figure_is_claim_bounded() -> 
     assert "Closed measured NDCG and complete wall time remain unavailable" in draft
 
 
+def test_error_domain_shift_table_separates_development_and_historical_layers() -> None:
+    draft = " ".join(DRAFT.read_text(encoding="utf-8").split())
+    consistency = _load(CONSISTENCY)
+    audit = _load(ERROR_DOMAIN_SHIFT_AUDIT)
+    with ERROR_DOMAIN_SHIFT_TABLE.open(newline="", encoding="utf-8") as handle:
+        rows = list(csv.DictReader(handle))
+
+    method = next(
+        row
+        for row in consistency["methods"]
+        if row["method_id"] == "M-R2-ERROR-DOMAIN-SHIFT-ANALYSIS"
+    )
+    result = next(
+        row
+        for row in consistency["results"]
+        if row["result_id"] == "R-R2-ERROR-DOMAIN-SHIFT-ANALYSIS"
+    )
+    development = [
+        row
+        for row in rows
+        if row["analysis_layer"] == "DEVELOPMENT_VALIDATION_TASK_ERROR_DIAGNOSTIC"
+    ]
+    historical = [
+        row
+        for row in rows
+        if row["analysis_layer"]
+        == "HISTORICAL_OUTCOME_EXPOSED_ZERO_SHOT_DOMAIN_SHIFT"
+    ]
+
+    assert len(rows) == audit["row_count"] == method["row_count"] == result["row_count"] == 12
+    assert len(development) == audit["development_task_rows"] == result[
+        "development_task_rows"
+    ] == 9
+    assert len(historical) == audit["historical_seed_rows"] == result[
+        "historical_seed_rows"
+    ] == 3
+    assert sum(int(row["record_count"]) for row in development) == result[
+        "development_validation_record_count_sum"
+    ] == 18293
+    assert {int(row["record_count"]) for row in historical} == {8068}
+    assert len({row["study_id"] for row in development}) == method[
+        "development_study_count"
+    ] == 7
+    assert len({row["assay_id"] for row in development}) == method[
+        "development_assay_count"
+    ] == 7
+    assert all(row["historical_seed"] == "" for row in development)
+    assert all(row["critic_v2_full_spearman"] == "" for row in historical)
+    assert all(row["independent_evaluator_spearman"] == "" for row in historical)
+    assert all(row["external_confirmation_eligible"] == "false" for row in rows)
+    assert all(row["development_test_read"] == "false" for row in rows)
+    assert all(row["new_final_evaluation_read"] == "false" for row in rows)
+    assert all(row["guided_xeditflow_run"] == "false" for row in rows)
+
+    geometry = audit["development_failure_geometry"]
+    assert geometry["critic_v2_spearman_win_count_vs_strongest_baseline"] == result[
+        "critic_v2_spearman_win_count_vs_strongest_baseline"
+    ] == 4
+    assert geometry["critic_v2_spearman_loss_count_vs_strongest_baseline"] == result[
+        "critic_v2_spearman_loss_count_vs_strongest_baseline"
+    ] == 5
+    assert geometry[
+        "critic_v2_standardized_mae_worse_task_count_vs_strongest_baseline"
+    ] == result[
+        "critic_v2_standardized_mae_worse_task_count_vs_strongest_baseline"
+    ] == 9
+    assert geometry["minimum_task_record_count"] == 48
+    assert geometry["maximum_task_record_count"] == 12048
+    assert geometry["maximum_to_minimum_task_record_count_ratio"] == 251.0
+    assert geometry["n48_exclusion_is_replacement_endpoint"] is False
+    assert geometry["causal_mechanism_established"] is result[
+        "causal_mechanism_established"
+    ] is False
+
+    assert audit["descriptive_region_summaries"]["5UTR"]["task_count"] == 4
+    assert audit["descriptive_region_summaries"]["3UTR"]["task_count"] == 5
+    assert result["region_summaries_are_post_hoc_and_confounded"] is True
+    assert audit["assay_context_resolution"][
+        "within_assay_context_specific_error_metrics_available"
+    ] is method["within_assay_context_specific_error_metrics_available"] is result[
+        "within_assay_context_specific_error_metrics_available"
+    ] is False
+    assert audit["historical_domain_shift"][
+        "rank_improvement_ci_excludes_zero_seed_count"
+    ] == result["historical_rank_improvement_ci_excludes_zero_seed_count"] == 2
+    assert audit["historical_domain_shift"][
+        "baseline_mae_minus_model_mae_negative_seed_count"
+    ] == result["historical_baseline_mae_minus_model_mae_negative_seed_count"] == 3
+    assert audit["historical_domain_shift"]["preregistered_pass"] is result[
+        "historical_preregistered_pass"
+    ] is False
+    assert audit["external_transfer_established"] is method[
+        "external_transfer_established"
+    ] is False
+    assert audit["metric_layer_separation"]["cross_layer_numeric_pooling_allowed"] is method[
+        "cross_layer_numeric_pooling_allowed"
+    ] is result["cross_layer_numeric_pooling_allowed"] is False
+    assert "251-fold range" in draft
+    assert "no region or context effect is claimed" in draft
+    assert "outcome-exposed status precludes final confirmation" in draft
+
+
 def test_historical_gse232572_transfer_remains_negative_and_nonconfirmatory() -> None:
     draft = " ".join(DRAFT.read_text(encoding="utf-8").split())
     consistency = _load(CONSISTENCY)
@@ -1082,6 +1196,7 @@ def test_minimum_benchmark_package_is_itemized_and_not_overcalled() -> None:
     )
     assert "six reproducible figure builders" in by_id["MBP-17"]["evidence_or_basis"]
     assert "seven figures" in by_id["MBP-17"]["evidence_or_basis"]
+    assert "12-row error/domain-shift" in by_id["MBP-17"]["evidence_or_basis"]
     assert audit["manuscript_figures"]["status"] == (
         "PROVISIONAL_GENERAL_MANUSCRIPT_FIGURES_RENDERED"
     )
@@ -1209,6 +1324,25 @@ def test_minimum_benchmark_package_is_itemized_and_not_overcalled() -> None:
         "table": "docs/paper/route2_v332_generation_three_layer_results_table_v1.csv",
         "audit": "audits/route_a_v3_route2_v332_generation_three_layer_results_table_v1.json",
         "terminal_input_snapshot": "audits/route_a_v3_route2_v332_generation_three_layer_terminal_snapshot_v1.json",
+        "development_test_read": False,
+        "new_final_evaluation_read": False,
+        "guided_xeditflow_run": False,
+    }
+    assert audit["error_domain_shift_analysis_table"] == {
+        "status": "ERROR_AND_DOMAIN_SHIFT_ANALYSIS_REPORTED_NO_CAUSAL_OR_FINAL_CONFIRMATION_CLAIM",
+        "row_count": 12,
+        "development_task_rows": 9,
+        "historical_seed_rows": 3,
+        "development_study_count": 7,
+        "development_assay_count": 7,
+        "within_assay_context_specific_error_metrics_available": False,
+        "cross_layer_numeric_pooling_allowed": False,
+        "external_transfer_established": False,
+        "reporting_table_complete": True,
+        "builder": "scripts/route_a_v3/build_route2_v332_error_domain_shift_analysis_table_v1.py",
+        "focused_test": "tests/route_a_v3/test_build_route2_v332_error_domain_shift_analysis_table_v1.py",
+        "table": "docs/paper/route2_v332_error_domain_shift_analysis_table_v1.csv",
+        "audit": "audits/route_a_v3_route2_v332_error_domain_shift_analysis_table_v1.json",
         "development_test_read": False,
         "new_final_evaluation_read": False,
         "guided_xeditflow_run": False,

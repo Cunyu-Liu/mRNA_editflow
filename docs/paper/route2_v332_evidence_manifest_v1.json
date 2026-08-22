@@ -10,8 +10,8 @@
   "source_path_preflight": {
     "observed_at": "2026-08-22T16:51:11+08:00",
     "status": "PASS",
-    "source_locations_checked": 46,
-    "local_or_contract_locations_checked": 32,
+    "source_locations_checked": 48,
+    "local_or_contract_locations_checked": 34,
     "a100_mnt_locations_checked": 14,
     "missing_locations": 0,
     "check_scope": "FILE_EXISTENCE_ONLY_NO_EVIDENCE_CONTENT_OPENED",
@@ -365,6 +365,21 @@
       "locator": "four-panel provisional figure with all seven terminal methods, exact point transformations and zero-failure boundary, PNG 2160x2100 at approximately 300 dpi, vector PDF/SVG outputs, alt text, protected-outcome closure and publisher metadata pending",
       "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING",
       "publisher_compliance_claimed": false
+    },
+    {
+      "evidence_id": "E-R2-ERROR-DOMAIN-SHIFT-BUILDER",
+      "kind": "reproducible_error_domain_shift_analysis_table_builder",
+      "location": "scripts/route_a_v3/build_route2_v332_error_domain_shift_analysis_table_v1.py",
+      "locator": "nine frozen Development task-region rows plus three historically outcome-exposed GSE232572 seed rows; study, assay, region and aggregate-context metadata; layer-specific blanks, post hoc non-causal limits, protected-outcome closure and overwrite refusal",
+      "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING"
+    },
+    {
+      "evidence_id": "E-R2-ERROR-DOMAIN-SHIFT-AUDIT",
+      "kind": "derived_error_domain_shift_analysis_table_audit",
+      "location": "audits/route_a_v3_route2_v332_error_domain_shift_analysis_table_v1.json",
+      "locator": "12-row layered table audit: Critic V2 task geometry, independent-evaluator heterogeneity, descriptive confounded region strata, unavailable within-assay context errors, and negative outcome-exposed historical transfer without final-confirmation eligibility",
+      "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING",
+      "external_evidence": false
     }
   ],
   "submission_ready": false

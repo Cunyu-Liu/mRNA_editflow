@@ -206,6 +206,25 @@
     "new_final_evaluation_read": false,
     "guided_xeditflow_run": false
   },
+  "error_domain_shift_analysis_table": {
+    "status": "ERROR_AND_DOMAIN_SHIFT_ANALYSIS_REPORTED_NO_CAUSAL_OR_FINAL_CONFIRMATION_CLAIM",
+    "row_count": 12,
+    "development_task_rows": 9,
+    "historical_seed_rows": 3,
+    "development_study_count": 7,
+    "development_assay_count": 7,
+    "within_assay_context_specific_error_metrics_available": false,
+    "cross_layer_numeric_pooling_allowed": false,
+    "external_transfer_established": false,
+    "reporting_table_complete": true,
+    "builder": "scripts/route_a_v3/build_route2_v332_error_domain_shift_analysis_table_v1.py",
+    "focused_test": "tests/route_a_v3/test_build_route2_v332_error_domain_shift_analysis_table_v1.py",
+    "table": "docs/paper/route2_v332_error_domain_shift_analysis_table_v1.csv",
+    "audit": "audits/route_a_v3_route2_v332_error_domain_shift_analysis_table_v1.json",
+    "development_test_read": false,
+    "new_final_evaluation_read": false,
+    "guided_xeditflow_run": false
+  },
   "stale_snapshot_findings": [
     {
       "artifact": "configs/route_a_v3_route2_14_study_final_inventory_v1.json",

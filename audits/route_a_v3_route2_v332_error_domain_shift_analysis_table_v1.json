@@ -1,0 +1,103 @@
+{
+  "assay_context_resolution": {
+    "context_effect_claim_allowed": false,
+    "development_assay_count": 7,
+    "development_study_count": 7,
+    "task_rows_aggregate_one_or_more_biological_contexts": true,
+    "within_assay_context_specific_error_metrics_available": false
+  },
+  "descriptive_region_summaries": {
+    "3UTR": {
+      "critic_v2_mean_full_minus_strongest_baseline_spearman": -0.0024401503869468017,
+      "critic_v2_mean_full_minus_strongest_baseline_standardized_mae": 0.08556281547659164,
+      "independent_evaluator_task_macro_spearman": 0.16179874676488382,
+      "interpretation": "DESCRIPTIVE_POST_HOC_REGION_STRATUM_CONFOUNDED_BY_STUDY_ASSAY_CONTEXT_ENDPOINT_AND_TASK_SIZE",
+      "task_count": 5,
+      "validation_record_count_sum": 17067
+    },
+    "5UTR": {
+      "critic_v2_mean_full_minus_strongest_baseline_spearman": -0.031473208428386926,
+      "critic_v2_mean_full_minus_strongest_baseline_standardized_mae": 0.8294245043659141,
+      "independent_evaluator_task_macro_spearman": 0.02852402190396145,
+      "interpretation": "DESCRIPTIVE_POST_HOC_REGION_STRATUM_CONFOUNDED_BY_STUDY_ASSAY_CONTEXT_ENDPOINT_AND_TASK_SIZE",
+      "task_count": 4,
+      "validation_record_count_sum": 1226
+    }
+  },
+  "development_failure_geometry": {
+    "causal_mechanism_established": false,
+    "critic_v2_nine_task_mean_spearman_margin_vs_strongest_baseline": -0.01534373173869797,
+    "critic_v2_nine_task_mean_standardized_mae_margin_vs_strongest_baseline": 0.4161680105385127,
+    "critic_v2_spearman_loss_count_vs_strongest_baseline": 5,
+    "critic_v2_spearman_win_count_vs_strongest_baseline": 4,
+    "critic_v2_standardized_mae_better_task_count_vs_strongest_baseline": 0,
+    "critic_v2_standardized_mae_worse_task_count_vs_strongest_baseline": 9,
+    "independent_evaluator_max_standardized_mae": 9.220029033415157,
+    "independent_evaluator_positive_task_count": 5,
+    "independent_evaluator_spearman_max": 0.7619576378536184,
+    "independent_evaluator_spearman_min": -0.10916458562634956,
+    "maximum_task_record_count": 12048,
+    "maximum_to_minimum_task_record_count_ratio": 251.0,
+    "minimum_task_record_count": 48,
+    "n48_exclusion_is_replacement_endpoint": false,
+    "remaining_seven_task_post_hoc_mean_spearman_margin_vs_strongest_baseline": 0.010485705883750515,
+    "task_count": 9,
+    "two_n48_task_sum_spearman_margin_vs_strongest_baseline": -0.21149352683453532
+  },
+  "development_task_rows": 9,
+  "development_validation_record_count_sum": 18293,
+  "error_domain_shift_analysis_complete": true,
+  "external_transfer_established": false,
+  "historical_domain_shift": {
+    "baseline_mae_minus_model_mae_negative_seed_count": 3,
+    "external_confirmation_eligible": false,
+    "outcome_exposure_status": "HISTORICALLY_OUTCOME_EXPOSED_NOT_FINAL_CONFIRMATION",
+    "preregistered_pass": false,
+    "rank_improvement_ci_excludes_zero_seed_count": 2,
+    "seed_count": 3,
+    "study_id": "GSE232572"
+  },
+  "historical_seed_rows": 3,
+  "historical_transfer_record_count": 8068,
+  "interpretation_limits": [
+    "Development task and region summaries are post hoc diagnostics, not replacement endpoints or causal effects.",
+    "Region summaries are confounded by study, assay, context, endpoint and task size.",
+    "Task rows aggregate biological contexts, so within-assay context-specific error is not identifiable from the persisted terminal aggregates.",
+    "GSE232572 is historically outcome-exposed and cannot serve as final confirmation.",
+    "Heterogeneous raw MAE values are not pooled across endpoints; standardized MAE is reported per task only."
+  ],
+  "metric_layer_separation": {
+    "cross_layer_missing_metrics_are_blank": true,
+    "cross_layer_numeric_pooling_allowed": false,
+    "development_rows_with_critic_metrics": 9,
+    "development_rows_with_independent_evaluator_metrics": 9,
+    "historical_rows_with_zero_shot_seed_metrics": 3
+  },
+  "protected_outcomes": {
+    "development_test_read": false,
+    "guided_xeditflow_run": false,
+    "new_final_evaluation_read": false
+  },
+  "row_count": 12,
+  "schema_version": "route_a_v3_route2_v332_error_domain_shift_analysis_table.v1",
+  "scientific_claim_status": "NOT_ESTABLISHED",
+  "source_paths": {
+    "converters": [
+      "configs/route_a_v3_route2_gse114002_converter_v1.json",
+      "configs/route_a_v3_route2_encsr854ruf_converter_v1.json",
+      "configs/route_a_v3_route2_gse269595_converter_v1.json",
+      "configs/route_a_v3_route2_gse186455_converter_v1.json",
+      "configs/route_a_v3_route2_gse217518_converter_v1.json",
+      "configs/route_a_v3_route2_gse200304_converter_v1.json",
+      "configs/route_a_v3_route2_gse149487_converter_v1.json",
+      "configs/route_a_v3_route2_gse232572_converter_v1.json"
+    ],
+    "critic_audit": "audits/route_a_v3_route2_critic_v2_task_failure_diagnostic_v1.json",
+    "critic_table": "docs/paper/route2_v332_critic_v2_task_diagnostic_table_v1.csv",
+    "dataset_table": "docs/paper/route2_v332_dataset_qualification_table_v1.csv",
+    "evaluator_table": "docs/paper/route2_v332_independent_evaluator_task_table_v1.csv",
+    "historical_audit": "audits/route_a_v3_route2_gse232572_zero_shot_summary_v1.json"
+  },
+  "status": "ERROR_AND_DOMAIN_SHIFT_ANALYSIS_REPORTED_NO_CAUSAL_OR_FINAL_CONFIRMATION_CLAIM",
+  "table_path": "docs/paper/route2_v332_error_domain_shift_analysis_table_v1.csv"
+}

@@ -429,6 +429,32 @@ budget, candidate-budget, no-legal-action and numerical failures. Closed measure
 NDCG and complete wall time remain unavailable and are not imputed.
 [evidence:E-R2-GEN-QUALITY-COST-FIGURE-BUILDER,E-R2-GEN-QUALITY-COST-FIGURE-MANIFEST,E-R2-GEN-INPUT]
 
+### Error geometry was task-dependent and did not establish region or context transfer
+
+The unified error/domain-shift table retains nine Development Validation
+task-region rows from seven studies and seven assays, with task counts ranging
+from 48 to 12,048 records (a 251-fold range). Critic V2 exceeded the strongest
+same-information baseline on Spearman in four of nine tasks and lost in five;
+its standardized MAE was worse in all nine. The nine-task mean margins were
+-0.0153437 for Spearman and +0.4161680 for standardized MAE, where positive MAE
+margin is worse. The independent evaluator was likewise heterogeneous: five of
+nine task correlations were positive, spanning -0.1091646 to 0.7619576, and its
+largest task-level standardized MAE was 9.220029. These jointly persisted
+patterns argue against a single implementation failure or a uniformly reliable
+task-level signal, but do not identify a causal failure mechanism.
+
+Descriptively, the four 5′UTR task rows (1,226 Validation records) had mean
+Critic V2 Spearman margin -0.0314732 and independent-evaluator task-macro
+Spearman 0.0285240; the five 3′UTR rows (17,067 records) had corresponding
+values -0.0024402 and 0.1617987. These region summaries are post hoc and are
+confounded by study, assay, biological context, endpoint and task size. The
+persisted terminal metrics aggregate one or more biological contexts per task,
+so within-assay context-specific error is not identifiable and no region or
+context effect is claimed. The same table places the three GSE232572 historical
+zero-shot seed rows in separate columns; their Development columns remain blank
+and their outcome-exposed status precludes final confirmation.
+[evidence:E-R2-ERROR-DOMAIN-SHIFT-BUILDER,E-R2-ERROR-DOMAIN-SHIFT-AUDIT,E-R2-CRITIC-V2-DIAG,E-R2-GSE232-HIST]
+
 ### Historical GSE232572 transfer did not meet its preregistered pass rule
 
 The model-minus-baseline task-macro Spearman point differences across the three
