@@ -1158,8 +1158,8 @@ Development TEST、新 final Evaluation outcome、E-MTAB outcome 或 sealed GSE2
 6,547 records、ordinary/A1/true-A2=`1/1/0`。Development-relaxed/listwise rows 不增加
 qualified credit，6 个 zero-record studies 保留 unconvertible/auxiliary/aggregate-only/
 sealed 原因，generated candidate canonical credit 为 0。paper packet 保持 22 个 claim
-markers，evidence sources 从 21 增至 23；本机 dataset-table + paper-packet + figure-builder
-联合 focused suite 为 17/17。
+markers，evidence sources 从 21 增至 23；本机与 A100 dataset-table + paper-packet +
+figure-builder 联合 focused suite 均为 17/17。
 
 本任务不训练或更新参数，不新增中央 attempt；100-row 终态仍为 92 COMPLETED、3
 FAILED、3 INCOMPLETE_NO_TERMINAL_RECORD、1 STOPPED_FOR_THROUGHPUT_REPAIR、1

@@ -565,7 +565,7 @@ ordinary/A1/true-A2=`1/1/0`。GSE232572 的旧 inventory `EVALUATION` role 由 V
 覆盖为 historical diagnostic；E-MTAB outcome、sealed GSE246381、Development TEST、
 new final Evaluation 与 guided 均未打开。
 
-paper packet 仍有 22 个 claim markers，evidence sources 增至 23；本机 dataset-table +
-paper-packet + figure-builder 联合 focused suite 为 17/17。中央 100 个唯一 attempts 的
+paper packet 仍有 22 个 claim markers，evidence sources 增至 23；本机与 A100
+dataset-table + paper-packet + figure-builder 联合 focused suite 均为 17/17。中央 100 个唯一 attempts 的
 终态不变：92 `COMPLETED`、3 `FAILED`、3 `INCOMPLETE_NO_TERMINAL_RECORD`、1
 `STOPPED_FOR_THROUGHPUT_REPAIR`、1 `STOPPED_PRIORITY_REALLOCATION`。
