@@ -943,10 +943,11 @@ generated candidates and run products under
 tree or a declared code release. Separately, the current working tree still
 tracks one legacy discovery Parquet and four superseded B0 JSONL payloads. The
 five files total 34,786,075 bytes and conflict with the V3.3.2 formal-release
-payload boundary; four callable legacy entrypoints still read the old B0 split
-directory, and no corresponding negative-loader test was found. No payload was
-opened, moved or deleted for this audit, and the branch is not eligible for a
-formal release until the legacy readers and payload disposition are resolved.
+payload boundary. Four callable legacy entrypoints previously read the old B0
+split directory; they now fail closed with `SUPERSEDED_NOT_LOADABLE` before any
+input read, with focused negative-loader coverage. No payload was opened, moved,
+deleted or modified for this audit, and the branch is not eligible for a formal
+release until the tracked-payload disposition is resolved.
 No code-availability-on-request promise is made. A release claim requires an
 accountable license review, a Route 2-current README, an exact clean-environment
 reproduction check, a compliant payload boundary and an immutable tagged or

@@ -45,6 +45,7 @@ if _D1_DIR not in sys.path:
 
 from canonical_schemas import UTREditRecord  # noqa: E402
 from edit_script_core import apply_edit_script  # noqa: E402
+from legacy_split_guard import reject_legacy_b0_splits  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -433,7 +434,7 @@ def audit_all_splits(
     canonical_records_path: str,
 ) -> Dict[str, Any]:
     """Audit all 4 split manifests."""
-    splits_dir = Path(splits_dir)
+    splits_dir = reject_legacy_b0_splits(splits_dir)
     manifest_map = {
         "5utr_source_disjoint": "split_5utr_source_disjoint.jsonl",
         "3utr_source_disjoint": "split_3utr_source_disjoint.jsonl",

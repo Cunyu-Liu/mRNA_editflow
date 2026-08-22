@@ -117,9 +117,11 @@ def test_candidate_registers_tracked_payload_policy_without_opening_or_removing_
     } <= set(evidence_ids)
     assert policy["tracked_payload_total_size_bytes"] == 34786075
     assert policy["legacy_b0_direct_reader_entrypoint_count"] == 4
-    assert policy["legacy_b0_active_loader_negative_test_evidence_present"] is False
+    assert policy["legacy_b0_guarded_direct_reader_count"] == 4
+    assert policy["legacy_b0_unguarded_direct_reader_count"] == 0
+    assert policy["legacy_b0_active_loader_negative_test_evidence_present"] is True
     assert policy["recommended_disposition"] == (
-        "AFTER_EXPLICIT_USER_AUTHORIZATION_FAIL_CLOSE_LEGACY_READERS_THEN_"
+        "LEGACY_READERS_FAIL_CLOSED_AWAIT_EXPLICIT_USER_AUTHORIZATION_TO_"
         "MIGRATE_FIVE_PAYLOADS_OUT_OF_CURRENT_HEAD"
     )
     assert "E-R2-GITHUB-RC-AUDIT" in evidence_ids

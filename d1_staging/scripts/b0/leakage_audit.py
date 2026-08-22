@@ -43,6 +43,7 @@ if _D1_DIR not in sys.path:
 
 from canonical_schemas import UTREditRecord  # noqa: E402
 from edit_script_core import apply_edit_script  # noqa: E402
+from legacy_split_guard import reject_legacy_b0_splits  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -553,7 +554,7 @@ def run_leakage_audit(
     canonical_records_path: str,
     exposure_ledger_path: str,
 ) -> Dict[str, Any]:
-    splits_dir = Path(splits_dir)
+    splits_dir = reject_legacy_b0_splits(splits_dir)
 
     print("Loading canonical records...")
     records_by_id = load_paired_records_by_id(canonical_records_path)

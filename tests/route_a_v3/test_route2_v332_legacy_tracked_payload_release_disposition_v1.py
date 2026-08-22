@@ -79,12 +79,12 @@ def test_five_payloads_are_tracked_with_declared_sizes_without_content_reads() -
         "payload_deleted": False,
         "payload_moved": False,
         "git_history_rewritten": False,
-        "legacy_reader_behavior_changed": False,
+        "legacy_reader_behavior_changed": True,
         "formal_release_or_tag_created": False,
     }
 
 
-def test_four_direct_legacy_readers_exist_and_negative_test_evidence_is_absent() -> None:
+def test_four_direct_legacy_readers_are_guarded_with_negative_test_evidence() -> None:
     audit = _load(AUDIT)
     readers = audit["text_reference_inventory"]["legacy_b0_direct_reader_entrypoints"]
 
@@ -94,20 +94,17 @@ def test_four_direct_legacy_readers_exist_and_negative_test_evidence_is_absent()
         text = (ROOT / path).read_text(encoding="utf-8")
         assert all(marker in text for marker in markers)
 
-    test_files = list((ROOT / "tests").rglob("*.py"))
-    staging_tests = ROOT / "d1_staging/tests"
-    if staging_tests.is_dir():
-        test_files.extend(staging_tests.rglob("*.py"))
-    this_file = Path(__file__).resolve()
-    other_test_text = "\n".join(
-        path.read_text(encoding="utf-8")
-        for path in test_files
-        if path.resolve() != this_file
+    negative_test = "tests/route_a_v3/test_route2_v332_legacy_b0_active_loader_guard_v1.py"
+    assert audit["text_reference_inventory"]["legacy_b0_active_loader_guard_implementation"] == (
+        "d1_staging/scripts/b0/legacy_split_guard.py"
     )
-    assert "SUPERSEDED_NOT_LOADABLE" not in other_test_text
-    assert "LEGACY_B0_INVALIDATION_MANIFEST" not in other_test_text
-    assert audit["legacy_b0_active_loader_negative_test_evidence_present"] is False
-    assert audit["text_reference_inventory"]["legacy_b0_active_loader_negative_test_files"] == []
+    assert audit["text_reference_inventory"]["legacy_b0_active_loader_negative_test_files"] == [
+        negative_test
+    ]
+    assert (ROOT / negative_test).is_file()
+    assert audit["legacy_b0_guarded_direct_reader_count"] == 4
+    assert audit["legacy_b0_unguarded_direct_reader_count"] == 0
+    assert audit["legacy_b0_active_loader_negative_test_evidence_present"] is True
 
 
 def test_release_documents_report_the_conflict_without_claiming_migration() -> None:
@@ -121,26 +118,29 @@ def test_release_documents_report_the_conflict_without_claiming_migration() -> N
     assert code["repository_facts"]["legacy_payload_migration_authorized"] is False
     policy = release["tracked_data_policy"]
     assert policy["legacy_b0_direct_reader_entrypoint_count"] == 4
-    assert policy["legacy_b0_active_loader_negative_test_evidence_present"] is False
+    assert policy["legacy_b0_guarded_direct_reader_count"] == 4
+    assert policy["legacy_b0_unguarded_direct_reader_count"] == 0
+    assert policy["legacy_b0_active_loader_negative_test_evidence_present"] is True
     assert policy["automatic_removal_performed"] is False
     assert "five files total 34,786,075 bytes" in draft
-    assert "no corresponding negative-loader test was found" in draft
+    assert "they now fail closed with `SUPERSEDED_NOT_LOADABLE`" in draft
     assert "not eligible for a formal release" in draft
     assert all(value is False for value in audit["protected_outcomes"].values())
 
 
-def test_recommendation_is_fail_close_then_migrate_and_requires_authorization() -> None:
+def test_recommendation_records_fail_close_and_requires_migration_authorization() -> None:
     audit = _load(AUDIT)
     recommendation = audit["recommended_disposition"]
     memo = MEMO.read_text(encoding="utf-8")
 
     assert recommendation["decision"] == (
-        "AFTER_EXPLICIT_USER_AUTHORIZATION_FAIL_CLOSE_LEGACY_READERS_THEN_"
+        "LEGACY_READERS_FAIL_CLOSED_AWAIT_EXPLICIT_USER_AUTHORIZATION_TO_"
         "MIGRATE_FIVE_PAYLOADS_OUT_OF_CURRENT_HEAD"
     )
-    assert len(recommendation["ordered_actions_not_yet_executed"]) == 5
+    assert len(recommendation["ordered_actions_not_yet_executed"]) == 4
     assert recommendation["shared_git_history_rewrite_recommended_in_this_task"] is False
     assert recommendation["shared_git_history_rewrite_requires_separate_explicit_authorization"] is True
     assert recommendation["formal_release_or_tag_before_resolution_authorized"] is False
     assert "Do not create a formal tag or GitHub Release from the current HEAD" in memo
+    assert "legacy B0 readers now fail closed" in memo
     assert "This memo authorizes no deletion, move, copy, history rewrite, release or tag" in memo

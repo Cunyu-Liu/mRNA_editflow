@@ -62,6 +62,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 
 from canonical_schemas import EVAL_TRACKS  # noqa: E402
+from legacy_split_guard import reject_legacy_b0_splits  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # Constants
@@ -441,6 +442,7 @@ def run_eval_track_audit(
     exposure_ledger_path: str,
 ) -> Dict[str, Any]:
     """Run the full B0-04 eval track assignment + ambiguity audit."""
+    splits_dir = str(reject_legacy_b0_splits(splits_dir))
     print("Loading canonical records...")
     canonical_records = load_canonical_records(canonical_records_path)
     print(f"  {len(canonical_records)} records")

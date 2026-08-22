@@ -120,22 +120,24 @@
     "legacy_b0_jsonl_total_size_bytes": 34739577,
     "tracked_payload_total_size_bytes": 34786075,
     "legacy_b0_direct_reader_entrypoint_count": 4,
+    "legacy_b0_guarded_direct_reader_count": 4,
+    "legacy_b0_unguarded_direct_reader_count": 0,
     "legacy_b0_direct_reader_entrypoints": [
       "d1_staging/scripts/b0/audit_split_manifests.py",
       "d1_staging/scripts/b0/eval_tracks.py",
       "d1_staging/scripts/b0/leakage_audit.py",
       "d1_staging/scripts/fm0/fm0_exposure_audit.py"
     ],
-    "legacy_b0_active_loader_negative_test_evidence_present": false,
-    "recommended_disposition": "AFTER_EXPLICIT_USER_AUTHORIZATION_FAIL_CLOSE_LEGACY_READERS_THEN_MIGRATE_FIVE_PAYLOADS_OUT_OF_CURRENT_HEAD",
-    "legacy_preservation_boundary": "The legacy v3.1 contract requires these B0 JSONL files to remain unmodified and requires active loaders to reject them, but four direct legacy readers remain and no negative-loader test was found. Fail-closing those readers must precede any explicitly authorized migration out of the current HEAD."
+    "legacy_b0_active_loader_negative_test_evidence_present": true,
+    "recommended_disposition": "LEGACY_READERS_FAIL_CLOSED_AWAIT_EXPLICIT_USER_AUTHORIZATION_TO_MIGRATE_FIVE_PAYLOADS_OUT_OF_CURRENT_HEAD",
+    "legacy_preservation_boundary": "The legacy v3.1 contract requires these B0 JSONL files to remain unmodified and active loaders to reject them. All four direct legacy readers now fail closed on the preserved repository-root directory with focused negative-loader coverage. Migration of the five tracked payloads out of the current HEAD still requires explicit user authorization."
   },
   "formal_release_blockers": [
     "The minimum benchmark package remains incomplete at 14 complete-or-limited, 3 partial and 1 unavailable, with blockers MBP-10, MBP-13, MBP-14 and MBP-15.",
     "Official provider evidence and a 14-study accountable-human decision register are prepared, but zero rows have accountable sign-off or target-journal policy verification; study-specific rights, evidence-content and code-license verification remains incomplete, and zero project payload redistributions are authorized.",
     "The Route 2 V3.3.2 workflow has not passed an exact clean-environment reproduction from the declared environment descriptors.",
     "No immutable release tag, archived container or persistent archive identifier has been assigned.",
-    "Five tracked legacy JSONL/Parquet payload files conflict with the current contract's formal Git release boundary; four direct legacy B0 readers and absent negative-loader tests require a fail-close step before any explicitly authorized migration.",
+    "Five tracked legacy JSONL/Parquet payload files conflict with the current contract's formal Git release boundary; all four direct legacy B0 readers now fail closed, but migration of the tracked payloads still requires explicit authorization.",
     "Target venue, authorship, contributions, declarations, funding, ethics applicability and AI-use disclosure remain pending."
   ],
   "release_boundary": {

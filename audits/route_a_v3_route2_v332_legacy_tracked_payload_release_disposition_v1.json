@@ -1,7 +1,7 @@
 {
   "schema_version": "route_a_v3_route2_v332_legacy_tracked_payload_release_disposition.v1",
-  "status": "FIVE_LEGACY_PAYLOADS_TRACKED_FOUR_DIRECT_LEGACY_READERS_REMAIN_FORMAL_RELEASE_BLOCKED_MIGRATION_NOT_AUTHORIZED",
-  "observed_at": "2026-08-22T19:08:46+08:00",
+  "status": "FIVE_LEGACY_PAYLOADS_TRACKED_FOUR_DIRECT_LEGACY_READERS_FAIL_CLOSED_FORMAL_RELEASE_BLOCKED_MIGRATION_NOT_AUTHORIZED",
+  "observed_at": "2026-08-22T19:23:59+08:00",
   "scope": "PATH_TRACKING_SIZE_AND_TEXT_REFERENCE_AUDIT_ONLY_NO_PAYLOAD_CONTENT_OPENED",
   "authority": {
     "scientific_contract": "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna 数据gate转向后的合同.md",
@@ -29,28 +29,28 @@
       "size_bytes": 11462850,
       "kind": "SUPERSEDED_LEGACY_B0_SPLIT_JSONL",
       "current_route2_v332_runtime_dependency": false,
-      "current_disposition": "TRACKED_UNMODIFIED_ACTIVE_LEGACY_READERS_MUST_BE_FAIL_CLOSED_BEFORE_MIGRATION"
+      "current_disposition": "TRACKED_UNMODIFIED_ACTIVE_LEGACY_READERS_FAIL_CLOSED_MIGRATION_NOT_AUTHORIZED"
     },
     {
       "path": "data/b0_splits/split_cross_region_transfer.jsonl",
       "size_bytes": 11299013,
       "kind": "SUPERSEDED_LEGACY_B0_SPLIT_JSONL",
       "current_route2_v332_runtime_dependency": false,
-      "current_disposition": "TRACKED_UNMODIFIED_ACTIVE_LEGACY_READERS_MUST_BE_FAIL_CLOSED_BEFORE_MIGRATION"
+      "current_disposition": "TRACKED_UNMODIFIED_ACTIVE_LEGACY_READERS_FAIL_CLOSED_MIGRATION_NOT_AUTHORIZED"
     },
     {
       "path": "data/b0_splits/split_5utr_source_disjoint.jsonl",
       "size_bytes": 7638905,
       "kind": "SUPERSEDED_LEGACY_B0_SPLIT_JSONL",
       "current_route2_v332_runtime_dependency": false,
-      "current_disposition": "TRACKED_UNMODIFIED_ACTIVE_LEGACY_READERS_MUST_BE_FAIL_CLOSED_BEFORE_MIGRATION"
+      "current_disposition": "TRACKED_UNMODIFIED_ACTIVE_LEGACY_READERS_FAIL_CLOSED_MIGRATION_NOT_AUTHORIZED"
     },
     {
       "path": "data/b0_splits/split_3utr_source_disjoint.jsonl",
       "size_bytes": 4338809,
       "kind": "SUPERSEDED_LEGACY_B0_SPLIT_JSONL",
       "current_route2_v332_runtime_dependency": false,
-      "current_disposition": "TRACKED_UNMODIFIED_ACTIVE_LEGACY_READERS_MUST_BE_FAIL_CLOSED_BEFORE_MIGRATION"
+      "current_disposition": "TRACKED_UNMODIFIED_ACTIVE_LEGACY_READERS_FAIL_CLOSED_MIGRATION_NOT_AUTHORIZED"
     }
   ],
   "tracked_payload_file_count": 5,
@@ -75,17 +75,21 @@
       "d1_staging/scripts/b0/b0_v3_1_freezer.py",
       "docs/contracts/utr_editflow_goal_v3_1.md"
     ],
-    "legacy_b0_active_loader_negative_test_files": []
+    "legacy_b0_active_loader_guard_implementation": "d1_staging/scripts/b0/legacy_split_guard.py",
+    "legacy_b0_active_loader_negative_test_files": [
+      "tests/route_a_v3/test_route2_v332_legacy_b0_active_loader_guard_v1.py"
+    ]
   },
   "legacy_b0_direct_reader_entrypoint_count": 4,
-  "legacy_b0_active_loader_negative_test_evidence_present": false,
+  "legacy_b0_guarded_direct_reader_count": 4,
+  "legacy_b0_unguarded_direct_reader_count": 0,
+  "legacy_b0_active_loader_negative_test_evidence_present": true,
   "current_head_formal_release_payload_boundary_compliant": false,
   "code_availability_statement_requires_legacy_payload_qualification": true,
   "recommended_disposition": {
-    "decision": "AFTER_EXPLICIT_USER_AUTHORIZATION_FAIL_CLOSE_LEGACY_READERS_THEN_MIGRATE_FIVE_PAYLOADS_OUT_OF_CURRENT_HEAD",
-    "reason": "Stopping tracking before fail-closing the four direct legacy readers would leave callable entrypoints with missing default inputs; preserving the five payloads in the formal release would violate the current V3.3.2 Git boundary.",
+    "decision": "LEGACY_READERS_FAIL_CLOSED_AWAIT_EXPLICIT_USER_AUTHORIZATION_TO_MIGRATE_FIVE_PAYLOADS_OUT_OF_CURRENT_HEAD",
+    "reason": "The four direct legacy readers now reject the superseded repository-root B0 directory before any canonical or manifest input read, while preserving the four JSONL files unmodified. The five tracked payloads still violate the current V3.3.2 formal-release Git boundary, and their copy/removal remains outside this task without explicit authorization.",
     "ordered_actions_not_yet_executed": [
-      "Add focused fail-closed guards and negative tests for the four legacy B0 readers while keeping the four JSONL files unmodified.",
       "Copy the five payloads to /mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/legacy_repository_payloads/ with a small provenance note; do not add project-generated checksums.",
       "Change the Excel inventory producer default away from the Git tree and retain only its small audit summary in Git.",
       "After explicit deletion/migration authorization, stop tracking the five payloads in the current HEAD and add narrow ignore rules for the same generated paths.",
@@ -101,7 +105,7 @@
     "payload_deleted": false,
     "payload_moved": false,
     "git_history_rewritten": false,
-    "legacy_reader_behavior_changed": false,
+    "legacy_reader_behavior_changed": true,
     "formal_release_or_tag_created": false
   },
   "protected_outcomes": {

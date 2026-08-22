@@ -48,6 +48,9 @@ from typing import Dict, List
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
+_B0_DIR = os.path.normpath(os.path.join(HERE, "..", "b0"))
+if _B0_DIR not in sys.path:
+    sys.path.insert(0, _B0_DIR)
 
 from fm0_common import (  # noqa: E402
     DEFAULT_OUTPUT_DIR,
@@ -56,6 +59,7 @@ from fm0_common import (  # noqa: E402
     load_config,
     write_json,
 )
+from legacy_split_guard import reject_legacy_b0_splits  # noqa: E402
 
 
 # ---------------------------------------------------------------------------
@@ -235,6 +239,7 @@ def cross_reference_b0_splits(b0_splits_dir: Path) -> List[dict]:
 
 
 def run_exposure_audit(records_path: Path, b0_splits_dir: Path) -> dict:
+    b0_splits_dir = reject_legacy_b0_splits(b0_splits_dir)
     cfg = load_config()
     ensure_offline_env()
 

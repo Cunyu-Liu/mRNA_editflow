@@ -83,7 +83,9 @@ def test_code_availability_retains_repository_environment_and_license_boundaries
     assert facts["legacy_tracked_payload_file_count"] == 5
     assert facts["legacy_tracked_payload_total_size_bytes"] == 34786075
     assert facts["legacy_b0_direct_reader_entrypoint_count"] == 4
-    assert facts["legacy_b0_active_loader_negative_test_evidence_present"] is False
+    assert facts["legacy_b0_guarded_direct_reader_count"] == 4
+    assert facts["legacy_b0_unguarded_direct_reader_count"] == 0
+    assert facts["legacy_b0_active_loader_negative_test_evidence_present"] is True
     assert facts["formal_release_payload_boundary_compliant"] is False
     assert facts["legacy_payload_migration_authorized"] is False
     assert facts["legacy_payload_content_opened_for_release_audit"] is False
@@ -93,8 +95,8 @@ def test_code_availability_retains_repository_environment_and_license_boundaries
     assert "no standalone `LICENSE` file is tracked" in section
     assert "No code-availability-on-request promise is made" in section
     assert "five files total 34,786,075 bytes" in section
-    assert "four callable legacy entrypoints" in section
-    assert "no corresponding negative-loader test was found" in section
+    assert "Four callable legacy entrypoints previously read" in section
+    assert "they now fail closed with `SUPERSEDED_NOT_LOADABLE`" in section
     assert "branch is not eligible for a formal release" in section
 
 
