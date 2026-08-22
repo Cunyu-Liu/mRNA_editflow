@@ -1,0 +1,39 @@
+{
+  "schema_version": "route_a_v3_route2_v332_study_rights_accountable_human_review_packet.v1",
+  "status": "ACCOUNTABLE_HUMAN_REVIEW_PACKET_TEMPLATE_READY_ZERO_REVIEWS_COMPLETED_PROJECT_RELEASE_NOT_AUTHORIZED",
+  "authority": {
+    "provider_evidence_table": "docs/paper/route2_v332_study_rights_provider_evidence_table_v1.csv",
+    "scientific_contract": "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna 数据gate转向后的合同.md",
+    "execution_protocol": "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna V3.3.2 执行提示词.md"
+  },
+  "row_count": 14,
+  "human_review_counts": {
+    "pending": 14,
+    "completed": 0,
+    "hold": 0
+  },
+  "analysis_citation_only_completed_count": 0,
+  "exact_file_redistribution_authorized_review_count": 0,
+  "rows_with_target_journal_policy_checked": 0,
+  "rows_with_accountable_human_signoff": 0,
+  "template_ready": true,
+  "machine_evidence_frozen": true,
+  "review_packet_requires_accountable_human_judgment": true,
+  "agent_review_substituted_for_human": false,
+  "human_content_and_rights_verification_complete": false,
+  "review_completion_is_project_release_authorization": false,
+  "project_public_release_authorized": false,
+  "stable_repository_version_assigned": false,
+  "minimum_package_complete": false,
+  "submission_ready": false,
+  "packet_path": "docs/paper/route2_v332_study_rights_accountable_human_review_packet_v1.csv",
+  "instructions_path": "docs/paper/route2_v332_study_rights_accountable_human_review_instructions_v1.md",
+  "protected_outcomes": {
+    "development_test_read": false,
+    "new_final_evaluation_read": false,
+    "emtab10902_outcome_read": false,
+    "sealed_gse246381_read": false,
+    "guided_xeditflow_run": false
+  },
+  "new_training_attempt_created": false
+}

@@ -58,12 +58,17 @@ def test_internal_branch_candidate_is_complete_but_formal_release_is_blocked() -
     assert packet["claim_marker_count"] == 22
     assert packet["supported_claim_row_count"] == 22
     assert packet["unsupported_claim_row_count"] == 13
-    assert packet["evidence_source_count"] == 62
-    assert packet["evidence_local_or_contract_count"] == 48
+    assert packet["evidence_source_count"] == 64
+    assert packet["evidence_local_or_contract_count"] == 50
     assert packet["evidence_a100_mnt_count"] == 14
     assert packet["provider_rights_evidence_row_count"] == 14
     assert packet["study_specific_license_record_present_count"] == 0
     assert packet["project_payload_redistribution_authorized_count"] == 0
+    assert packet["accountable_human_review_packet_template_ready"] is True
+    assert packet["accountable_human_review_packet_row_count"] == 14
+    assert packet["accountable_human_review_completed_count"] == 0
+    assert packet["rows_with_accountable_human_signoff"] == 0
+    assert packet["rows_with_target_journal_policy_checked"] == 0
     assert packet["fair_evidence_counts"] == {
         "findable": 14,
         "accessible_metadata": 14,
@@ -101,11 +106,13 @@ def test_candidate_registers_tracked_payload_policy_without_opening_or_removing_
         row["size_bytes"] for row in policy["tracked_legacy_b0_jsonl_files"]
     )
     evidence_ids = [row["evidence_id"] for row in evidence["sources"]]
-    assert len(evidence_ids) == len(set(evidence_ids)) == 62
+    assert len(evidence_ids) == len(set(evidence_ids)) == 64
     assert {
         "E-R2-RIGHTS-PROVIDER-SNAPSHOT",
         "E-R2-RIGHTS-PROVIDER-BUILDER",
         "E-R2-RIGHTS-PROVIDER-AUDIT",
+        "E-R2-RIGHTS-HUMAN-REVIEW-BUILDER",
+        "E-R2-RIGHTS-HUMAN-REVIEW-AUDIT",
     } <= set(evidence_ids)
     assert "E-R2-GITHUB-RC-AUDIT" in evidence_ids
     assert len(re.findall(r"\[claim:C-R2-\d{3}\]", draft)) == 22

@@ -8,10 +8,10 @@
   "independent_final_evaluation_performed": false,
   "human_verification_required": true,
   "source_path_preflight": {
-    "observed_at": "2026-08-22T18:39:39+08:00",
+    "observed_at": "2026-08-22T18:58:10+08:00",
     "status": "PASS",
-    "source_locations_checked": 62,
-    "local_or_contract_locations_checked": 48,
+    "source_locations_checked": 64,
+    "local_or_contract_locations_checked": 50,
     "a100_mnt_locations_checked": 14,
     "missing_locations": 0,
     "check_scope": "FILE_EXISTENCE_ONLY_NO_EVIDENCE_CONTENT_OPENED",
@@ -440,6 +440,22 @@
       "kind": "derived_study_rights_provider_evidence_table_audit",
       "location": "audits/route_a_v3_route2_v332_study_rights_provider_evidence_table_v1.json",
       "locator": "14 official provider and accession routes; 14 analysis/publication and citation routes, zero study-specific license records, zero project redistribution authorizations, 14 pending human reviews and FAIR evidence counts 14/14/0/0; table at docs/paper/route2_v332_study_rights_provider_evidence_table_v1.csv",
+      "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING",
+      "external_evidence": false
+    },
+    {
+      "evidence_id": "E-R2-RIGHTS-HUMAN-REVIEW-BUILDER",
+      "kind": "reproducible_accountable_human_study_rights_review_packet_builder_and_validator",
+      "location": "scripts/route_a_v3/build_route2_v332_study_rights_accountable_human_review_packet_v1.py",
+      "locator": "14-study, 42-field decision-register builder with frozen machine evidence, blank human judgment fields, completed/hold validation, exact-file scope requirement, protected-outcome closure and explicit separation of review completion from project release authorization",
+      "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING",
+      "external_evidence": false
+    },
+    {
+      "evidence_id": "E-R2-RIGHTS-HUMAN-REVIEW-AUDIT",
+      "kind": "derived_accountable_human_study_rights_review_packet_audit",
+      "location": "audits/route_a_v3_route2_v332_study_rights_accountable_human_review_packet_v1.json",
+      "locator": "review packet template ready for 14 studies with 14 pending, zero completed, zero held, zero accountable sign-offs, zero target-journal policy checks and zero project-release authorizations; packet and reviewer instructions are version controlled",
       "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING",
       "external_evidence": false
     },

@@ -47,6 +47,11 @@ def test_data_availability_is_complete_but_release_and_submission_are_false() ->
     assert current["provider_evidence_audit"] == (
         "audits/route_a_v3_route2_v332_study_rights_provider_evidence_table_v1.json"
     )
+    assert current["accountable_human_review_packet_audit"] == (
+        "audits/route_a_v3_route2_v332_study_rights_accountable_human_review_packet_v1.json"
+    )
+    assert current["accountable_human_review_packet_template_ready"] is True
+    assert current["accountable_human_review_completed_count"] == 0
     assert current["accountable_human_rights_review_complete"] is False
     assert current["provider_evidence_human_verification_complete"] is False
     assert current["fair_interoperability_assessment_complete"] is False
@@ -67,6 +72,12 @@ def test_data_availability_retains_rights_storage_and_promise_boundaries() -> No
         row
         for row in consistency["methods"]
         if row["method_id"] == "M-R2-STUDY-RIGHTS-PROVIDER-EVIDENCE"
+    )
+    review_method = next(
+        row
+        for row in consistency["methods"]
+        if row["method_id"]
+        == "M-R2-STUDY-RIGHTS-ACCOUNTABLE-HUMAN-REVIEW-PACKET"
     )
 
     assert facts["study_count"] == 14
@@ -89,6 +100,14 @@ def test_data_availability_retains_rights_storage_and_promise_boundaries() -> No
     }
     assert facts["official_provider_policy_is_study_specific_license"] is False
     assert facts["official_provider_evidence_human_verified"] is False
+    assert facts["accountable_human_review_packet_row_count"] == 14
+    assert facts["accountable_human_review_packet_template_ready"] is True
+    assert facts["accountable_human_review_completed_count"] == 0
+    assert facts["accountable_human_review_hold_count"] == 0
+    assert facts["rows_with_accountable_human_signoff"] == 0
+    assert facts["rows_with_target_journal_policy_checked"] == 0
+    assert facts["agent_review_substituted_for_accountable_human"] is False
+    assert facts["human_review_completion_is_project_release_authorization"] is False
     assert method["row_count"] == facts["provider_evidence_row_count"] == 14
     assert method["repository_accession_resolution_count"] == 14
     assert method["analysis_and_publication_use_route_supported_count"] == 14
@@ -97,6 +116,17 @@ def test_data_availability_retains_rights_storage_and_promise_boundaries() -> No
     assert method["fair_evidence_counts"] == facts["fair_evidence_counts"]
     assert method["human_content_and_rights_verification_complete"] is False
     assert method["submission_ready"] is False
+    assert review_method["row_count"] == 14
+    assert review_method["field_count"] == 42
+    assert review_method["human_review_counts"] == {
+        "pending": 14,
+        "completed": 0,
+        "hold": 0,
+    }
+    assert review_method["agent_review_substituted_for_human"] is False
+    assert review_method["human_content_and_rights_verification_complete"] is False
+    assert review_method["review_completion_is_project_release_authorization"] is False
+    assert review_method["project_public_release_authorized"] is False
     assert facts["third_party_current_access_verified_for_all_studies"] is False
     assert facts["third_party_reuse_terms_verified_for_all_studies"] is False
     assert facts["project_specific_study_payload_public_release_declared"] is False
@@ -126,6 +156,10 @@ def test_data_availability_evidence_is_registered_without_new_claim_markers() ->
 
     assert cited <= evidence_ids
     assert "E-R2-DATA-AVAILABILITY-COMPLETION-AUDIT" in evidence_ids
+    assert {
+        "E-R2-RIGHTS-HUMAN-REVIEW-BUILDER",
+        "E-R2-RIGHTS-HUMAN-REVIEW-AUDIT",
+    } <= evidence_ids
     assert {
         "E-R2-RIGHTS-PROVIDER-SNAPSHOT",
         "E-R2-RIGHTS-PROVIDER-BUILDER",

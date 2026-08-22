@@ -27,6 +27,9 @@
       "status": "COMPLETE_INTERNAL_RIGHTS_REVIEW_PENDING",
       "completion_audit": "audits/route_a_v3_route2_v332_data_availability_completion_v1.json",
       "provider_evidence_audit": "audits/route_a_v3_route2_v332_study_rights_provider_evidence_table_v1.json",
+      "accountable_human_review_packet_audit": "audits/route_a_v3_route2_v332_study_rights_accountable_human_review_packet_v1.json",
+      "accountable_human_review_packet_template_ready": true,
+      "accountable_human_review_completed_count": 0,
       "accountable_human_rights_review_complete": false,
       "provider_evidence_human_verification_complete": false,
       "fair_interoperability_assessment_complete": false,
@@ -395,6 +398,40 @@
         "E-R2-RIGHTS-PROVIDER-SNAPSHOT",
         "E-R2-RIGHTS-PROVIDER-BUILDER",
         "E-R2-RIGHTS-PROVIDER-AUDIT"
+      ]
+    },
+    {
+      "method_id": "M-R2-STUDY-RIGHTS-ACCOUNTABLE-HUMAN-REVIEW-PACKET",
+      "label": "Accountable-human study-rights decision register",
+      "analysis_intent": "PREPARE_AUDITABLE_HUMAN_RIGHTS_JUDGMENT_WITHOUT_AGENT_SUBSTITUTION",
+      "status": "HUMAN_REVIEW_PACKET_TEMPLATE_READY_ZERO_REVIEWS_COMPLETED_PROJECT_RELEASE_NOT_AUTHORIZED",
+      "row_count": 14,
+      "field_count": 42,
+      "human_review_counts": {
+        "pending": 14,
+        "completed": 0,
+        "hold": 0
+      },
+      "rows_with_accountable_human_signoff": 0,
+      "rows_with_target_journal_policy_checked": 0,
+      "machine_evidence_frozen": true,
+      "agent_review_substituted_for_human": false,
+      "human_content_and_rights_verification_complete": false,
+      "review_completion_is_project_release_authorization": false,
+      "project_public_release_authorized": false,
+      "builder": "scripts/route_a_v3/build_route2_v332_study_rights_accountable_human_review_packet_v1.py",
+      "packet": "docs/paper/route2_v332_study_rights_accountable_human_review_packet_v1.csv",
+      "instructions": "docs/paper/route2_v332_study_rights_accountable_human_review_instructions_v1.md",
+      "audit": "audits/route_a_v3_route2_v332_study_rights_accountable_human_review_packet_v1.json",
+      "focused_test": "tests/route_a_v3/test_build_route2_v332_study_rights_accountable_human_review_packet_v1.py",
+      "minimum_package_complete": false,
+      "submission_ready": false,
+      "development_test_accessed": false,
+      "new_final_evaluation_accessed": false,
+      "guided_xeditflow_run": false,
+      "evidence_ids": [
+        "E-R2-RIGHTS-HUMAN-REVIEW-BUILDER",
+        "E-R2-RIGHTS-HUMAN-REVIEW-AUDIT"
       ]
     },
     {
