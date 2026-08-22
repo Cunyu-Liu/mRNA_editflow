@@ -1,6 +1,7 @@
 import json
 import re
 import csv
+import math
 from pathlib import Path
 
 
@@ -15,6 +16,9 @@ EVALUATOR_TASK_TABLE = (
 EVALUATOR_CHECK_TABLE = (
     ROOT
     / "docs/paper/route2_v332_independent_evaluator_qualification_checks_v1.csv"
+)
+CRITIC_V2_DIAGNOSTIC_TABLE = (
+    ROOT / "docs/paper/route2_v332_critic_v2_task_diagnostic_table_v1.csv"
 )
 READINESS = (
     ROOT
@@ -36,10 +40,10 @@ def test_claim_and_consistency_evidence_references_are_closed() -> None:
     consistency = _load(CONSISTENCY)
 
     evidence_ids = [row["evidence_id"] for row in evidence["sources"]]
-    assert len(evidence_ids) == len(set(evidence_ids)) == 16
+    assert len(evidence_ids) == len(set(evidence_ids)) == 17
 
     claims = re.findall(r"\[claim:([^\]]+)\]", draft)
-    assert len(claims) == len(set(claims)) == 18
+    assert len(claims) == len(set(claims)) == 19
 
     cited = set()
     for group in re.findall(r"\[evidence:([^\]]+)\]", draft):
@@ -56,7 +60,7 @@ def test_evidence_source_paths_are_closed_without_overstating_verification() -> 
     preflight = evidence["source_path_preflight"]
 
     assert preflight["status"] == "PASS"
-    assert preflight["source_locations_checked"] == len(evidence["sources"]) == 16
+    assert preflight["source_locations_checked"] == len(evidence["sources"]) == 17
     assert (
         preflight["local_or_contract_locations_checked"]
         + preflight["a100_mnt_locations_checked"]
@@ -132,6 +136,72 @@ def test_paper_packet_reports_terminal_critic_v2_control_no_go_exactly() -> None
     assert result["scientific_claim_status"] == "NOT_ESTABLISHED"
     assert "No confirmation seed" in normalized_draft
     assert "failed its frozen control gate" in normalized_draft
+
+    with CRITIC_V2_DIAGNOSTIC_TABLE.open(
+        newline="", encoding="utf-8"
+    ) as handle:
+        rows = list(csv.DictReader(handle))
+    diagnostic = result["task_diagnostic"]
+    spearman_margins = [
+        float(row["full_minus_strongest_baseline_spearman"]) for row in rows
+    ]
+    mae_margins = [
+        float(row["full_minus_strongest_baseline_standardized_mae"])
+        for row in rows
+    ]
+    small_task_margins = [
+        margin
+        for row, margin in zip(rows, spearman_margins)
+        if int(row["record_count"]) == 48
+    ]
+    remaining_task_margins = [
+        margin
+        for row, margin in zip(rows, spearman_margins)
+        if int(row["record_count"]) != 48
+    ]
+
+    assert len(rows) == diagnostic["task_count"] == 9
+    assert sum(int(row["record_count"]) for row in rows) == diagnostic[
+        "validation_record_count_sum"
+    ] == 18293
+    assert [
+        min(int(row["record_count"]) for row in rows),
+        max(int(row["record_count"]) for row in rows),
+    ] == diagnostic["task_record_count_range"] == [48, 12048]
+    assert sum(margin > 0.0 for margin in spearman_margins) == diagnostic[
+        "full_spearman_win_count_vs_strongest_baseline"
+    ] == 4
+    assert sum(margin < 0.0 for margin in spearman_margins) == diagnostic[
+        "full_spearman_loss_count_vs_strongest_baseline"
+    ] == 5
+    assert sum(margin < 0.0 for margin in mae_margins) == diagnostic[
+        "full_standardized_mae_better_task_count_vs_strongest_baseline"
+    ] == 0
+    assert sum(margin > 0.0 for margin in mae_margins) == diagnostic[
+        "full_standardized_mae_worse_task_count_vs_strongest_baseline"
+    ] == 9
+    assert math.isclose(
+        sum(mae_margins) / len(mae_margins),
+        diagnostic["nine_task_mean_standardized_mae_margin_vs_strongest_baseline"],
+        rel_tol=0.0,
+        abs_tol=1e-15,
+    )
+    assert math.isclose(
+        sum(small_task_margins),
+        diagnostic["two_n48_task_sum_spearman_margin_vs_strongest_baseline"],
+        rel_tol=0.0,
+        abs_tol=1e-15,
+    )
+    assert math.isclose(
+        sum(remaining_task_margins) / len(remaining_task_margins),
+        diagnostic[
+            "remaining_seven_task_post_hoc_mean_spearman_margin_vs_strongest_baseline"
+        ],
+        rel_tol=0.0,
+        abs_tol=1e-15,
+    )
+    assert diagnostic["post_hoc_diagnostic_replaces_frozen_gate"] is False
+    assert "localized candidate-specific rank signal" in normalized_draft
 
 
 def test_generation_bootstrap_reporting_is_exact_and_source_paired() -> None:

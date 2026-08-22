@@ -154,7 +154,29 @@
       "supports_three_frozen_seeds": false,
       "status": "CRITIC_V2_CONTROLS_DO_NOT_SUPPORT_THREE_FROZEN_SEEDS",
       "scientific_claim_status": "NOT_ESTABLISHED",
-      "evidence_ids": ["E-R2-CRITIC-V2-PROTOCOL", "E-R2-CRITIC-V2-ADJ"]
+      "task_diagnostic": {
+        "task_count": 9,
+        "validation_record_count_sum": 18293,
+        "task_record_count_range": [48, 12048],
+        "full_positive_task_count": 7,
+        "full_prediction_std_over_target_std": 0.09643439549490583,
+        "full_spearman_win_count_vs_strongest_baseline": 4,
+        "full_spearman_loss_count_vs_strongest_baseline": 5,
+        "full_standardized_mae_better_task_count_vs_strongest_baseline": 0,
+        "full_standardized_mae_worse_task_count_vs_strongest_baseline": 9,
+        "nine_task_mean_standardized_mae_margin_vs_strongest_baseline": 0.4161680105385127,
+        "two_n48_task_sum_spearman_margin_vs_strongest_baseline": -0.21149352683453532,
+        "remaining_seven_task_post_hoc_mean_spearman_margin_vs_strongest_baseline": 0.010485705883750515,
+        "candidate_specific_signal": "LOCALLY_PRESENT_BUT_NOT_UNIFORMLY_STRONGER_THAN_BASELINE",
+        "post_hoc_diagnostic_replaces_frozen_gate": false,
+        "task_table": "docs/paper/route2_v332_critic_v2_task_diagnostic_table_v1.csv"
+      },
+      "terminal_forward_route": "BENCHMARK_PLUS_TRANSFER_AND_GENERATION_LIMITS_WITH_NEGATIVE_RESULT_AND_DATA_ACTION_SPACE_GEOMETRY",
+      "evidence_ids": [
+        "E-R2-CRITIC-V2-PROTOCOL",
+        "E-R2-CRITIC-V2-ADJ",
+        "E-R2-CRITIC-V2-DIAG"
+      ]
     }
   ],
   "protected_outcomes": {

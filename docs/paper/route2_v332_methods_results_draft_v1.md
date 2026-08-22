@@ -191,6 +191,33 @@ Development TEST, refit, LOSO, readiness or guided generation stage was opened.
 [claim:C-R2-012]
 [evidence:E-R2-CRITIC-V2-PROTOCOL,E-R2-CRITIC-V2-ADJ]
 
+### Critic V2 exposed localized candidate signal but not task-wide superiority
+
+The control result does not support the stronger interpretation that candidate
+sequence information was uniformly absent. On the two tasks prospectively
+eligible for candidate-permutation assessment, the full-minus-permutation
+Spearman margins were 0.1075058 for mean ribosome load and 0.1378853 for
+proximal poly(A)-site usage. The full model had seven positive task correlations
+and a prediction-to-target standard-deviation ratio of 0.0964344. Nevertheless,
+it beat the strongest baseline on only four of nine task correlations and lost
+on five; its standardized MAE was worse on all nine tasks, with a task-macro
+margin of +0.4161680 where lower is better. [claim:C-R2-019]
+[evidence:E-R2-CRITIC-V2-ADJ,E-R2-CRITIC-V2-DIAG]
+
+Task sizes ranged from 48 to 12,048 Validation records. The two 48-record tasks
+contributed a combined -0.2114935 full-minus-baseline Spearman margin; after
+excluding them only as a post hoc diagnostic, the remaining seven-task mean
+margin was +0.0104857. This sensitivity is consistent with a task-geometry
+limitation under equal-task selection, but it does not justify removing the two
+tasks, changing the frozen endpoint or claiming a causal sample-size mechanism.
+The full checkpoint was selected at epoch 98 versus epochs 12, 1 and 2 for the
+three controls, another descriptive sign of a harder optimization path rather
+than causal evidence. Full-precision task values are retained in
+`route2_v332_critic_v2_task_diagnostic_table_v1.csv`. The supported conclusion
+is therefore localized candidate-specific rank signal without stable
+task-macro or calibration superiority over the strongest same-information
+baseline.
+
 ## Concrete limitations and reporting gaps
 
 1. The independent evaluator cleared its threshold by only 0.0013180, and its
@@ -219,6 +246,9 @@ Development TEST, refit, LOSO, readiness or guided generation stage was opened.
    TEST-preserving predictor/baseline LOSO and guided XEditFlow for this cohort.
    A new outcome-unexposed convertible external Evaluation study also remains
    unavailable. No final biological or cross-study generation claim is unlocked.
+6. The Critic V2 task-size and selected-epoch analyses are post hoc failure
+   diagnostics. They describe where the frozen margin arose but do not replace
+   the nine-task gate, prove a causal mechanism or authorize another seed.
 
 ## Allowed and prohibited wording at this stage
 
@@ -231,6 +261,8 @@ Allowed:
 - “All seven methods produced legal candidates within the declared caps.”
 - “The original mRNABERT critic failed three-seed readiness, and Critic V2 failed
   its frozen control gate before confirmation seeds.”
+- “Critic V2 showed localized candidate-specific rank signal but did not achieve
+  task-wide or calibration superiority over the strongest baseline.”
 
 Prohibited until later gates pass:
 

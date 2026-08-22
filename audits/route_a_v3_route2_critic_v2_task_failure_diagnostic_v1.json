@@ -1,0 +1,65 @@
+{
+  "schema_version": "route_a_v3_route2_critic_v2_task_failure_diagnostic.v1",
+  "observed_at": "2026-08-22T12:04:00+08:00",
+  "analysis_scope": "TERMINAL_DEVELOPMENT_VALIDATION_ONLY_POST_HOC_FAILURE_GEOMETRY",
+  "source_summaries": {
+    "full": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/mrnabert_critic_v2/task_study_macro_screen_seed20260825_v1/full/training_summary.json",
+    "candidate_permutation": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/mrnabert_critic_v2/task_study_macro_screen_seed20260825_v1/candidate_permutation/training_summary.json",
+    "source_only": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/mrnabert_critic_v2/task_study_macro_screen_seed20260825_v1/source_only/training_summary.json",
+    "source_edit_metadata": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/mrnabert_critic_v2/task_study_macro_screen_seed20260825_v1/source_edit_metadata/training_summary.json",
+    "strongest_same_information_baseline": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/method_repair_v1/exploratory/global_scaled_seed20260821_gpu0_v1/training_summary.json",
+    "control_adjudication": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/comparisons/mrnabert_critic_v2_task_study_macro_controls_adjudication_v1.json"
+  },
+  "protected_outcomes": {
+    "development_test_opened": false,
+    "evaluation_opened": false,
+    "guided_generation_authorized": false
+  },
+  "task_table": "docs/paper/route2_v332_critic_v2_task_diagnostic_table_v1.csv",
+  "exact_observations": {
+    "task_count": 9,
+    "validation_record_count_sum": 18293,
+    "minimum_task_record_count": 48,
+    "maximum_task_record_count": 12048,
+    "maximum_to_minimum_task_record_count_ratio": 251.0,
+    "full_positive_task_count": 7,
+    "full_prediction_std_over_target_std": 0.09643439549490583,
+    "full_selected_epoch": 98,
+    "control_selected_epochs": {
+      "candidate_permutation": 12,
+      "source_only": 1,
+      "source_edit_metadata": 2
+    },
+    "frozen_candidate_signal_task_margins_over_permutation": {
+      "MEAN_RIBOSOME_LOAD::region=0": 0.10750582874835171,
+      "PROXIMAL_POLYA_SITE_USAGE_LOG2_ODDS::region=1": 0.13788530735618243
+    },
+    "full_spearman_win_count_vs_strongest_baseline": 4,
+    "full_spearman_loss_count_vs_strongest_baseline": 5,
+    "nine_task_mean_spearman_margin_vs_strongest_baseline": -0.01534373173869797,
+    "full_standardized_mae_better_task_count_vs_strongest_baseline": 0,
+    "full_standardized_mae_worse_task_count_vs_strongest_baseline": 9,
+    "nine_task_mean_standardized_mae_margin_vs_strongest_baseline": 0.4161680105385127,
+    "two_n48_task_sum_spearman_margin_vs_strongest_baseline": -0.21149352683453532,
+    "remaining_seven_task_post_hoc_mean_spearman_margin_vs_strongest_baseline": 0.010485705883750515
+  },
+  "diagnosis": {
+    "candidate_specific_signal": "LOCALLY_PRESENT_BUT_NOT_UNIFORMLY_STRONGER_THAN_BASELINE",
+    "primary_failure": "TASK_MACRO_SUPERIORITY_AND_CALIBRATION_NOT_ESTABLISHED",
+    "data_task_geometry": "VALIDATION_TASK_COUNTS_RANGE_48_TO_12048_AND_EQUAL_TASK_SELECTION_RETAINS_LOW_N_TASK_INFLUENCE",
+    "mean_collapse_explanation": "NOT_SUPPORTED_AS_SOLE_FAILURE_MODE_FULL_HAS_SEVEN_POSITIVE_TASKS_AND_NONZERO_SPREAD",
+    "optimization_difficulty": "FULL_SELECTED_EPOCH_98_VS_CONTROL_EPOCHS_1_12_DESCRIPTIVE_NOT_CAUSAL",
+    "causal_claim": "NOT_ESTABLISHED"
+  },
+  "interpretation_limits": [
+    "The two n=48 tasks are retained in the frozen nine-task gate and are not removed from adjudication.",
+    "The seven-task margin excluding the two n=48 tasks is a post hoc geometry diagnostic, not a replacement endpoint or success claim.",
+    "Selected-epoch differences do not prove an optimization mechanism.",
+    "Development Validation cannot establish external biological transfer or generated-candidate efficacy."
+  ],
+  "terminal_forward_route": "BENCHMARK_PLUS_TRANSFER_AND_GENERATION_LIMITS_WITH_NEGATIVE_RESULT_AND_DATA_ACTION_SPACE_GEOMETRY",
+  "additional_current_critic_seed_authorized": false,
+  "development_test_authorized": false,
+  "guided_xeditflow_authorized": false,
+  "scientific_claim_status": "NOT_ESTABLISHED"
+}

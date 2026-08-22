@@ -466,3 +466,17 @@ refit、LOSO、readiness 与 guided generation 均未开始。19 个冻结 downs
 `INCOMPLETE_NO_TERMINAL_RECORD`、1 `STOPPED_FOR_THROUGHPUT_REPAIR`、1
 `STOPPED_PRIORITY_REALLOCATION`。watcher NO-GO 空等修复提交 `990f941` 不发生参数
 更新，因此不新增训练 attempt；本机与 A100 focused tests 均为 8/8。
+
+## Critic V2 task-level failure diagnostic（2026-08-22）
+
+只读汇总已 terminal 的五份 Development VALIDATION summaries 后，full 相对 strongest
+baseline 的 Spearman 为 4/9 task wins、5/9 losses，task-macro margin
+`-0.01534373173869797`；standardized MAE 为 0/9 wins、9/9 losses，macro margin
+`+0.4161680105385127`。两个各 48 条的 task 合计 Spearman margin
+`-0.21149352683453532`，但它们继续保留在冻结 equal-task gate 中，不作事后删除。
+两个 frozen candidate-permutation tasks 的正 margin 则表明 candidate-specific signal
+局部存在、但不足以形成稳定跨-task优势。
+
+该诊断不发生参数更新，不新增或修改中央 CSV 行；Development TEST、Evaluation 和
+generated candidates 均未读取。全精度 task 表与受限解释见 paper/audit artifacts，
+forward route 为 Benchmark+limits negative result。

@@ -1039,3 +1039,29 @@ control adjudication，NO-GO 时以 0 退出且不创建 downstream artifact。f
 1 stopped for throughput repair、1 stopped for priority reallocation。完整终态证据保存于
 `audits/route_a_v3_route2_critic_v2_control_terminal_no_go_v1.json`；没有读取
 Development TEST 或 final Evaluation outcome。
+
+## 38. Critic V2 数据/任务 failure geometry（2026-08-22）
+
+按主合同对 terminal predictor failure 的要求，只读比较四臂 Critic V2 与冻结
+strongest same-information baseline 的 Development VALIDATION task metrics。九 task
+共 18,293 records，单 task 数量从 48 到 12,048，相差 251 倍。full 在冻结的两个
+candidate-permutation eligible tasks 上分别取得 `+0.10750582874835171` 与
+`+0.13788530735618243` Spearman margin，且有 7/9 positive tasks、全局
+prediction/target spread ratio `0.09643439549490583`；因此不能把失败简化成“完全没有
+candidate-specific signal”或单一 mean collapse。
+
+真正未满足的是跨 task 的 strongest-baseline superiority 与 calibration。full 相对
+strongest baseline 只赢 4/9 task、输 5/9，九-task mean Spearman margin 为
+`-0.01534373173869797`；standardized MAE 在 9/9 task 都更差，macro margin 为
+`+0.4161680105385127`（越低越好）。两个各 48-record tasks 的 Spearman margin 合计
+`-0.21149352683453532`；仅作 post hoc geometry diagnostic 排除它们时，其余七 task
+mean margin 为 `+0.010485705883750515`。该敏感性不能用于删除 task、重定义 gate 或
+授权新 seed，只支持“局部 candidate signal 被异质 task/低样本几何与跨任务校准不足
+抵消”的受限诊断。
+
+全精度九行表与解释边界保存于
+`docs/paper/route2_v332_critic_v2_task_diagnostic_table_v1.csv` 和
+`audits/route_a_v3_route2_critic_v2_task_failure_diagnostic_v1.json`。forward route 固定为
+Benchmark+historical transfer/generation limits+negative result+data/action-space geometry；
+不启动 TEST、更多 seed、guided XEditFlow 或 final Evaluation。本任务没有参数更新，
+中央训练 CSV 不增加 attempt。

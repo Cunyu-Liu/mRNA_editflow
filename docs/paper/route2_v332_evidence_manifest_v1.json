@@ -6,10 +6,10 @@
   "external_transfer_performed": false,
   "human_verification_required": true,
   "source_path_preflight": {
-    "observed_at": "2026-08-22T11:46:16+08:00",
+    "observed_at": "2026-08-22T12:04:00+08:00",
     "status": "PASS",
-    "source_locations_checked": 16,
-    "local_or_contract_locations_checked": 8,
+    "source_locations_checked": 17,
+    "local_or_contract_locations_checked": 9,
     "a100_mnt_locations_checked": 8,
     "missing_locations": 0,
     "check_scope": "FILE_EXISTENCE_ONLY_NO_EVIDENCE_CONTENT_OPENED",
@@ -113,6 +113,13 @@
       "kind": "terminal_adjudication",
       "location": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/comparisons/mrnabert_critic_v2_task_study_macro_controls_adjudication_v1.json",
       "locator": "four matched-budget terminal arms, exact frozen checks and margins, supports_three_frozen_seeds=false, protected-outcome closure",
+      "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING"
+    },
+    {
+      "evidence_id": "E-R2-CRITIC-V2-DIAG",
+      "kind": "derived_terminal_failure_diagnostic",
+      "location": "audits/route_a_v3_route2_critic_v2_task_failure_diagnostic_v1.json",
+      "locator": "nine-task full/control/baseline margins, task-size geometry, exact protected-outcome and post hoc interpretation limits",
       "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING"
     },
     {
