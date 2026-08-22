@@ -1472,3 +1472,11 @@ diff-check PASS，Development TEST/new Evaluation read=0；A100 sync/test 延后
 九张预定表、四幅图及明确统计单位；closed/open/evaluator/self-score/compute 不合并，required negative
 task/fold rows 不选择性删除。focused=4/4、V3.3.2=96/96、JSON/diff-check PASS，protected outcome read=0；
 A100 HEAD 仍保持 `22317ed`，current-HEAD sync/test 等 active launch-head jobs terminal。
+
+## XEditCritic V3 gate parameter-identity repair（2026-08-23）
+
+本项修复 screen/confirmation terminal artifact identity gate，不构成 optimizer attempt，中央 CSV 不新增行。
+gate 现核对四 arm 精确 trainable capacity、C0–C2 parameter change、C3 head+LoRA change 以及 C3 固定
+effective/physical microbatch；避免 wrong-capacity 或无学习更新的 summary 进入 adjudication。训练参数、数值
+threshold、seed、baseline 与 task 均不改变。focused=21/21、V3.3.2=96/96、compile/diff-check PASS，
+Development TEST/new Evaluation read=0；A100 sync/test 继续等待 launch-head jobs terminal。

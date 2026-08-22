@@ -1,0 +1,44 @@
+{
+  "schema_version": "route_a_v3_route2_xeditcritic_v3_gate_parameter_identity_preflight.v1",
+  "status": "IMPLEMENTED_LOCAL_TESTED_A100_SYNC_PENDING_ACTIVE_LAUNCH_HEAD_JOBS",
+  "observed_date": "2026-08-23",
+  "failure_prevented": "A terminal-looking screen or confirmation artifact with the wrong frozen capacity or without a verified learned update entering adjudication",
+  "gate_requirements": {
+    "exact_trainable_parameter_counts": {
+      "C0": 486784,
+      "C1": 1798528,
+      "C2": 29489049,
+      "C3": 30472089
+    },
+    "c0_c1_c2_parameter_changed_required": true,
+    "c3_head_parameter_changed_required": true,
+    "c3_lora_parameter_changed_required": true,
+    "c3_effective_batch_size": 32,
+    "c3_physical_microbatch_records": 1,
+    "screen_and_confirmation_both_enforced": true
+  },
+  "scientific_protocol": {
+    "performance_threshold_changed": false,
+    "seed_changed": false,
+    "baseline_changed": false,
+    "task_changed": false,
+    "training_configuration_changed": false,
+    "terminal_experiment_repeated": false
+  },
+  "tests": {
+    "focused_passed": 21,
+    "focused_failed": 0,
+    "local_exact_v332_passed": 96,
+    "local_exact_v332_failed": 0,
+    "python_compile_passed": true,
+    "git_diff_check_passed": true
+  },
+  "protected_data": {
+    "development_test_outcomes_accessed": false,
+    "new_final_evaluation_outcomes_accessed": false
+  },
+  "a100": {
+    "status": "PENDING_ACTIVE_SCREEN_JOBS_MUST_KEEP_LAUNCH_COMMIT_PROVENANCE",
+    "launch_head": "22317ed"
+  }
+}

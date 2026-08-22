@@ -38,7 +38,13 @@ def _summary(
     )
     is_permutation = run_id.endswith("_candidate_bundle_permutation")
     applicable = eligible_tasks or []
-    return {
+    parameter_counts = {
+        "C0": 486_784,
+        "C1": 1_798_528,
+        "C2": 29_489_049,
+        "C3": 30_472_089,
+    }
+    summary = {
         "status": "TERMINAL_SCREEN_ARM_COMPLETE",
         "run_id": run_id,
         "arm": arm,
@@ -54,7 +60,8 @@ def _summary(
         "cuda_training_tensors_verified": True,
         "cpu_fallback_used": False,
         "training_scope": "FROZEN_TRAIN_VALIDATION",
-        "trainable_parameter_count": 30_000_000 if arm in {"C2", "C3"} else 500_000,
+        "trainable_parameter_count": parameter_counts[arm],
+        "parameter_changed": arm != "C3",
         "development_test_outcomes_accessed": False,
         "new_final_evaluation_outcomes_accessed": False,
         "candidate_permutation_summary": {
@@ -77,6 +84,15 @@ def _summary(
             },
         },
     }
+    if arm == "C3":
+        summary.update({
+            "total_trainable_parameter_count": parameter_counts[arm],
+            "head_parameter_changed": True,
+            "lora_parameter_changed": True,
+            "effective_batch_size": 32,
+            "physical_microbatch_records": 1,
+        })
+    return summary
 
 
 def _screen() -> dict[str, dict]:
@@ -140,7 +156,22 @@ def test_misidentified_control_or_partial_permutation_hard_fails() -> None:
 def test_parameter_or_budget_mismatched_control_hard_fails() -> None:
     summaries = _screen()
     summaries["c2_no_candidate_sequence"]["trainable_parameter_count"] -= 1
-    with pytest.raises(Exception, match="parameter matched"):
+    with pytest.raises(Exception, match="frozen arm"):
+        adjudicate_critic_screen_v3(summaries)
+
+
+def test_screen_rejects_wrong_frozen_capacity_or_unverified_parameter_update() -> None:
+    summaries = _screen()
+    summaries["c2"]["trainable_parameter_count"] -= 1
+    with pytest.raises(Exception, match="frozen arm"):
+        adjudicate_critic_screen_v3(summaries)
+    summaries = _screen()
+    summaries["c1"]["parameter_changed"] = False
+    with pytest.raises(Exception, match="verified parameter update"):
+        adjudicate_critic_screen_v3(summaries)
+    summaries = _screen()
+    summaries["c3"]["lora_parameter_changed"] = False
+    with pytest.raises(Exception, match="head and LoRA"):
         adjudicate_critic_screen_v3(summaries)
     summaries = _screen()
     summaries["c3_edit_metadata_only"]["update_count"] -= 1
@@ -156,7 +187,12 @@ def test_protected_outcome_read_hard_fails() -> None:
 
 
 def _confirmation_summary(seed: int, arm: str, spearman: float) -> dict:
-    return {
+    parameter_counts = {
+        "C0": 486_784,
+        "C2": 29_489_049,
+        "C3": 30_472_089,
+    }
+    summary = {
         "status": "TERMINAL_CONFIRMATION_ARM_COMPLETE",
         "run_id": arm.lower(),
         "arm": arm,
@@ -173,6 +209,7 @@ def _confirmation_summary(seed: int, arm: str, spearman: float) -> dict:
         "cpu_fallback_used": False,
         "training_scope": "FROZEN_TRAIN_VALIDATION",
         "parameter_changed": True,
+        "trainable_parameter_count": parameter_counts[arm],
         "development_test_outcomes_accessed": False,
         "new_final_evaluation_outcomes_accessed": False,
         "final_validation": {
@@ -190,6 +227,15 @@ def _confirmation_summary(seed: int, arm: str, spearman: float) -> dict:
             },
         },
     }
+    if arm == "C3":
+        summary.update({
+            "total_trainable_parameter_count": parameter_counts[arm],
+            "head_parameter_changed": True,
+            "lora_parameter_changed": True,
+            "effective_batch_size": 32,
+            "physical_microbatch_records": 1,
+        })
+    return summary
 
 
 def _confirmation_payloads() -> dict[int, dict]:
@@ -239,6 +285,10 @@ def test_confirmation_rejects_wrong_control_identity_or_budget() -> None:
     payloads = _confirmation_payloads()
     payloads[20260902]["candidate_summary"]["update_count"] -= 1
     with pytest.raises(Exception, match="training budget"):
+        adjudicate_critic_confirmation_v3(payloads, selected_arm="C2")
+    payloads = _confirmation_payloads()
+    payloads[20260902]["candidate_summary"]["parameter_changed"] = False
+    with pytest.raises(Exception, match="verified parameter update"):
         adjudicate_critic_confirmation_v3(payloads, selected_arm="C2")
 
 

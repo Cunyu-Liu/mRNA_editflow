@@ -14,9 +14,52 @@ class XEditCriticGateError(RuntimeError):
     pass
 
 
+TRAINABLE_PARAMETER_COUNTS_V3 = {
+    "C0": 486_784,
+    "C1": 1_798_528,
+    "C2": 29_489_049,
+    "C3": 30_472_089,
+}
+
+
 def _require(condition: bool, message: str) -> None:
     if not condition:
         raise XEditCriticGateError(message)
+
+
+def _trainable_parameter_count_v3(summary: Mapping[str, Any]) -> int:
+    return int(
+        summary.get(
+            "total_trainable_parameter_count",
+            summary.get("trainable_parameter_count", -1),
+        )
+    )
+
+
+def _require_verified_parameter_update_v3(
+    summary: Mapping[str, Any], *, expected_arm: str
+) -> None:
+    _require(
+        _trainable_parameter_count_v3(summary)
+        == TRAINABLE_PARAMETER_COUNTS_V3[expected_arm],
+        "trainable parameter count differs from the frozen arm",
+    )
+    if expected_arm == "C3":
+        _require(
+            summary.get("head_parameter_changed") is True
+            and summary.get("lora_parameter_changed") is True,
+            "C3 lacks verified head and LoRA parameter updates",
+        )
+        _require(
+            int(summary.get("effective_batch_size", -1)) == 32
+            and int(summary.get("physical_microbatch_records", -1)) == 1,
+            "C3 effective or physical microbatch differs from the freeze",
+        )
+    else:
+        _require(
+            summary.get("parameter_changed") is True,
+            "cache arm lacks a verified parameter update",
+        )
 
 
 def _validate_screen_summary(
@@ -59,6 +102,7 @@ def _validate_screen_summary(
         and summary.get("training_scope") == "FROZEN_TRAIN_VALIDATION",
         "screen CUDA/precision/training scope differs",
     )
+    _require_verified_parameter_update_v3(summary, expected_arm=expected_arm)
     _require(summary.get("development_test_outcomes_accessed") is False, "screen arm accessed Development TEST outcome")
     _require(summary.get("new_final_evaluation_outcomes_accessed") is False, "screen arm accessed Evaluation outcome")
     final = summary.get("final_validation")
@@ -138,21 +182,10 @@ def evaluate_screen_candidate_v3(
         ),
         "candidate/control training budgets differ",
     )
-    candidate_parameter_count = int(
-        candidate_summary.get(
-            "total_trainable_parameter_count",
-            candidate_summary.get("trainable_parameter_count", -1),
-        )
-    )
-    _require(candidate_parameter_count > 0, "candidate parameter count is absent")
+    candidate_parameter_count = _trainable_parameter_count_v3(candidate_summary)
     _require(
         all(
-            int(
-                summary.get(
-                    "total_trainable_parameter_count",
-                    summary.get("trainable_parameter_count", -1),
-                )
-            )
+            _trainable_parameter_count_v3(summary)
             == candidate_parameter_count
             for summary in (*control_summaries.values(), permutation_summary)
         ),
@@ -451,14 +484,7 @@ def _validate_confirmation_summary_v3(
         and summary.get("training_scope") == "FROZEN_TRAIN_VALIDATION",
         "confirmation CUDA/precision/training scope differs",
     )
-    _require(
-        summary.get("parameter_changed") is True
-        or (
-            summary.get("head_parameter_changed") is True
-            and summary.get("lora_parameter_changed") is True
-        ),
-        "confirmation performed no verified parameter update",
-    )
+    _require_verified_parameter_update_v3(summary, expected_arm=expected_arm)
     _require(
         summary.get("development_test_outcomes_accessed") is False,
         "confirmation accessed Development TEST outcome",

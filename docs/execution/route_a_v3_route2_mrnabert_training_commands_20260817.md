@@ -2227,3 +2227,15 @@ closed measured-neighborhood、open-support、independent evaluator、critic sel
 running curves/outcomes、不创建 optimizer attempt、不改变 grid/gate/checkpoint；所有 performance/external claim
 仍是 `Needs terminal evidence`。focused=4/4、精确 V3.3.2=96/96、JSON/diff-check PASS；A100 current-HEAD
 sync/test 继续等待 launch-head jobs terminal。
+
+## XEditCritic V3 gate parameter-identity repair（2026-08-23）
+
+静态核对 runner→gate 契约发现：runner 已强制写入 learned parameter change，但 screen gate 原先只验证
+parameter count 非零及 control 间相等，没有复核 exact frozen arm capacity 或 parameter-change evidence。现
+screen 与 confirmation 共同要求 C0/C1/C2/C3 精确为 486,784/1,798,528/29,489,049/30,472,089 trainable
+parameters；C0–C2 必须 `parameter_changed=true`，C3 必须 head/LoRA 均 changed，并保持 effective batch=32、
+physical microbatch=1。
+
+该修复只验证 terminal artifact 已有字段，不改变模型、训练、seed、baseline、task 或数值 gate，对当前
+launch-head jobs 的将来 summary 兼容。focused gate/adjacent tests=21/21、V3.3.2=96/96、compile/diff-check
+PASS；protected outcome read=0，A100 sync/test 仍等待所有 `22317ed` active jobs terminal。
