@@ -1129,8 +1129,9 @@ Development TEST/new final Evaluation、未运行 guided XEditFlow。
 
 A100 已从 GitHub commit `a27e04a` 快进同步并在
 `/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/figures/route2_v332_v1/` 一次性生成
-8 个产物。A100 builder focused test 为 2/2；本机 paper-packet + builder 联合 focused
-suite 为 14/14。视觉复核已修正图例遮挡和标题/轴标签裁切；格式核查确认 PNG 为
+8 个产物。A100 builder focused test 为 2/2；同步审计记录后，A100 与本机
+paper-packet + builder 联合 focused suite 均为 14/14。视觉复核已修正图例遮挡和
+标题/轴标签裁切；格式核查确认 PNG 为
 2160-px wide、300-dpi、全像素不透明，PDF 单页且字体嵌入，SVG 无 raster image。
 target journal/article type/submission phase 尚未选择，故
 `publisher_compliance_claimed=false`。

@@ -544,8 +544,8 @@ PNG/PDF/SVG、alt text 与 provenance manifest。输入仅为冻结的 Developme
 generation/action-space、terminal Critic V2 task diagnostic 和 outcome-exposed
 GSE232572 historical summary；Development TEST/new final Evaluation/guided 均未打开。
 
-本机 paper-packet + builder 联合 focused suite 为 14/14。MBP-17 由无 builder 的
-partial 更新为 `COMPLETE_WITH_PROVISIONAL_GENERAL_FIGURES`；最低包汇总为 14 complete/
+本机与 A100 paper-packet + builder 联合 focused suite 均为 14/14。MBP-17 由无
+builder 的 partial 更新为 `COMPLETE_WITH_PROVISIONAL_GENERAL_FIGURES`；最低包汇总为 14 complete/
 complete-with-declared-limits、3 partial、1 unavailable，四个 blocker 为 MBP-10、
 MBP-13、MBP-14、MBP-15。target journal/article type/submission phase 待定，未声称
 publisher compliance；总体 `submission_ready=false`、Route A claim 仍
