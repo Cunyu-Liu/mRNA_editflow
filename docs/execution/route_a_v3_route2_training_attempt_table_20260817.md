@@ -612,6 +612,28 @@ focused suite 均为 18/18。evidence sources=48（34 local/contract + 14 `/mnt`
 figures/builders=7/6、中央 100-row 92/3/3/1/1 与
 `scientific_claim_status=NOT_ESTABLISHED` 均不变。
 
+## Final manuscript-route outcome adjudication（2026-08-22）
+
+本项为非训练 scientific/paper adjudication task，不新增中央 CSV attempt，不读取
+Development TEST、新 final Evaluation、generated candidates 或 guided outcome。按主合同
+A/B/C 的逐条触发条件冻结 final manuscript route：Outcome A 因最低包不完整、无新的
+outcome-unexposed Evaluation、Critic not ready、guided 未运行及无 terminal true-A2/guided
+improvement 而不合格；Outcome B 因无稳定 outcome-unexposed external prediction value、
+guided Edit Flow comparison 不完整及 benchmark package 不完整而不合格。
+
+合同的 automatic forward rule 因此将 route 冻结为
+`BENCHMARK_PLUS_TRANSFER_AND_GENERATION_LIMITS_PAPER`。该冻结只决定 manuscript direction，
+不等于投稿资格：`outcome_trigger_fully_satisfied=false`、
+`submission_level_outcome_eligibility=false`、`minimum_package_complete=false`、
+`submission_ready=false`。新增 outcome audit 同时声明下一代数据需要 source-candidate lineage、
+closed dense measured pool、biological replicate + finite positive SE、frozen/balanced context，
+以及 outcomes 在全套冻结前未暴露的 independent external study。
+
+GitHub commit `e211212` 已推送并在 A100 一次 fast-forward；本机与 A100 paper-evidence
+focused suite 均为 19/19。evidence sources=49（35 local/contract + 14 `/mnt`）、claims=22、
+figures/builders=7/6、MBP=14/3/1、中央 100-row 92/3/3/1/1 均不变；model、guided-generation
+与 biological success 仍未建立。
+
 ## Canonical conversion flow figure（2026-08-22）
 
 本项为非训练 paper-figure task，不新增中央 attempt。新增独立 builder/focused tests；

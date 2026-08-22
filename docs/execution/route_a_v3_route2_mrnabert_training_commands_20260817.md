@@ -1453,3 +1453,27 @@ GitHub commit `e6607f6` 已推送；A100 自 `39ce66d` 一次 fast-forward 到 `
 A100 paper-evidence focused suite 均为 18/18。evidence sources=48、claims=22、
 figures/builders=7/6、MBP=14/3/1、blockers=MBP-10/13/14/15、`submission_ready=false` 与
 中央 100-row 92/3/3/1/1 均不变。
+
+## 55. V3.3.2 Final manuscript-route outcome adjudication（2026-08-22）
+
+按 Goal 7 顺序逐条核对合同三种 outcome。任务不训练、不轮询 GPU/训练进度、不读取
+Development TEST/new final Evaluation/guided outcome。A 因 minimum package incomplete、
+无 outcome-unexposed external confirmation、Critic V2 NO-GO、guided not run 与无 true-A2/
+guided improvement 而 ineligible；B 因无 stable outcome-unexposed external prediction value、
+guided comparison 不完整与 package incomplete 而 ineligible。
+
+新增 `route_a_v3_route2_v332_paper_outcome_adjudication_v1.json`，将唯一 forward manuscript
+route 冻结为 `BENCHMARK_PLUS_TRANSFER_AND_GENERATION_LIMITS_PAPER`。严格分开 route 与
+eligibility：`final_paper_outcome_frozen=true`，但 `outcome_trigger_fully_satisfied=false`、
+`submission_level_outcome_eligibility=false`、`submission_ready=false`。Outcome C 的负面
+transfer/generation、controls/geometry/error 条件已支持；minimum package trigger 仍 false。
+
+论文 Discussion 同步加入五类 next-data requirement：unambiguous source/candidate lineage、
+closed dense measured pool、biological replicate/finite-positive SE、explicit frozen balanced
+assay/context/endpoint/region，以及 new convertible outcome-unexposed external study。未知 generated
+candidates 仍不赋零 gain，zero-shot 必须永久先于 adaptation。
+
+GitHub commit `e211212` 已推送；A100 自 `e6607f6` 一次 fast-forward 到 `e211212`，本机/
+A100 paper-evidence focused suite 均为 19/19。evidence sources=49（35 local/contract、14
+`/mnt`）、claims=22、figures/builders=7/6、MBP=14/3/1、blockers=MBP-10/13/14/15、
+中央 100-row 92/3/3/1/1 均不变。
