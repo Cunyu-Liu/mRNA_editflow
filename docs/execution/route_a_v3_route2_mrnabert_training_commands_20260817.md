@@ -1204,6 +1204,7 @@ image，主轮廓色对白底均超过 3:1。target journal/article type/submiss
 继续明确 `publisher_compliance_claimed=false`。
 
 paper packet evidence sources 从 25 增至 27，figure count 为 4、builder count 为 3；
-22 个 claim markers、MBP-17、最低包 14/3/1 与四个 blockers 均不变。本任务不训练或
-更新参数，不新增中央 attempt；Development TEST、new final Evaluation、E-MTAB outcome、
-sealed GSE246381 和 guided XEditFlow 均未打开。
+22 个 claim markers、MBP-17、最低包 14/3/1 与四个 blockers 均不变。本机与 A100
+五组联合 focused suite 均为 21/21。本任务不训练或更新参数，不新增中央 attempt；
+Development TEST、new final Evaluation、E-MTAB outcome、sealed GSE246381 和 guided
+XEditFlow 均未打开。

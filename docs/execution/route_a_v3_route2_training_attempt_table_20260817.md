@@ -602,6 +602,7 @@ failure-only/outcome-unread，GSE246381 保持 sealed/unread；未来 replacemen
 recorded → only then adaptation，zero-shot headline 不得覆盖。
 
 paper packet 仍有 22 个 claim markers，evidence sources 增至 27；manuscript figures
-现为 4 张、3 个 builders，MBP-17 和最低包 14/3/1 汇总不变。中央 100 个 attempts 的
-terminal 分布继续是 92 `COMPLETED`、3 `FAILED`、3 `INCOMPLETE_NO_TERMINAL_RECORD`、
-1 `STOPPED_FOR_THROUGHPUT_REPAIR`、1 `STOPPED_PRIORITY_REALLOCATION`。
+现为 4 张、3 个 builders，MBP-17 和最低包 14/3/1 汇总不变；本机与 A100 五组联合
+focused suite 均为 21/21。中央 100 个 attempts 的 terminal 分布继续是 92
+`COMPLETED`、3 `FAILED`、3 `INCOMPLETE_NO_TERMINAL_RECORD`、1
+`STOPPED_FOR_THROUGHPUT_REPAIR`、1 `STOPPED_PRIORITY_REALLOCATION`。
