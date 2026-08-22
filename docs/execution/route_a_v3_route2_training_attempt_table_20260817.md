@@ -687,3 +687,25 @@ PNG/PDF/SVG、manifest 与 alt text 已保存到 `/mnt/.../figures/route2_v332_v
 （23 local/contract + 13 `/mnt`）、claim markers=22、figures/builders=6/5；本机与 A100
 九组联合 focused suite 均为 29/29。MBP 14/3/1、
 四个 blockers、`submission_ready=false` 与中央 100-row 的 92/3/3/1/1 终态均不变。
+
+## A1 numeric-task / true-A2 availability and result-boundary table（2026-08-22）
+
+本项为非训练 paper-table/audit task，不新增或修改中央 CSV attempt，也不读取训练进度、
+Development TEST、新 final Evaluation、generated-candidate outcome 或 guided XEditFlow。
+已有 historical zero-shot figure 已满足对应交付项；replacement Evaluation study 不存在，
+所以不伪造 few-shot adaptation。新增 builder/focused tests、14-row CSV 与 audit，严格拆分
+9 个 A1 numeric Development Validation rows 和 5 个 true-A2 status/boundary rows。
+
+A1 共 18,293 records，5/9 task Spearman 为正；true-A2 侧虽有 GSE269595 的 30,966
+Development-exposed listwise records、已实现 evaluator 和已配置 listwise ranker，但
+qualified study credit=0、independent terminal numeric result=0 rows。open generated support
+下 closed measured NDCG 对七方法均无 defined source；new independent Evaluation records=0。
+缺失 true-A2 numeric values 留空，不以零增益替代，不与 A1 作跨 estimand 排名。
+
+GitHub builder commit `363c741` 已推送且 A100 focused test 2/2；本机十组联合 suite 32/32。
+paper evidence sources=38（25 local/contract + 13 `/mnt`）、claim markers=22、
+figures/builders=6/5、MBP=14/3/1、blockers=MBP-10/13/14/15 与
+`submission_ready=false` 不变。中央 100 个 attempts 仍为 92 `COMPLETED`、3 `FAILED`、
+3 `INCOMPLETE_NO_TERMINAL_RECORD`、1 `STOPPED_FOR_THROUGHPUT_REPAIR`、1
+`STOPPED_PRIORITY_REALLOCATION`。A100 联合 32-test suite 等待 paper integration commit
+推送后单次执行并补记。

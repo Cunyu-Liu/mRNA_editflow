@@ -29,6 +29,12 @@ BASELINE_MATRIX_AUDIT = (
 THREE_TRACK_TABLE = ROOT / "docs/paper/route2_v332_three_track_results_table_v1.csv"
 THREE_TRACK_AUDIT = ROOT / "audits/route_a_v3_route2_v332_three_track_results_table_v1.json"
 THREE_TRACK_SNAPSHOT = ROOT / "audits/route_a_v3_route2_v332_three_track_terminal_input_snapshot_v1.json"
+A1_TRUE_A2_TABLE = (
+    ROOT / "docs/paper/route2_v332_a1_true_a2_task_results_table_v1.csv"
+)
+A1_TRUE_A2_AUDIT = (
+    ROOT / "audits/route_a_v3_route2_v332_a1_true_a2_task_results_table_v1.json"
+)
 DATASET_QUALIFICATION_TABLE = (
     ROOT / "docs/paper/route2_v332_dataset_qualification_table_v1.csv"
 )
@@ -68,7 +74,7 @@ def test_claim_and_consistency_evidence_references_are_closed() -> None:
     consistency = _load(CONSISTENCY)
 
     evidence_ids = [row["evidence_id"] for row in evidence["sources"]]
-    assert len(evidence_ids) == len(set(evidence_ids)) == 36
+    assert len(evidence_ids) == len(set(evidence_ids)) == 38
 
     claims = re.findall(r"\[claim:([^\]]+)\]", draft)
     assert len(claims) == len(set(claims)) == 22
@@ -88,14 +94,14 @@ def test_evidence_source_paths_are_closed_without_overstating_verification() -> 
     preflight = evidence["source_path_preflight"]
 
     assert preflight["status"] == "PASS"
-    assert preflight["source_locations_checked"] == len(evidence["sources"]) == 36
+    assert preflight["source_locations_checked"] == len(evidence["sources"]) == 38
     assert (
         preflight["local_or_contract_locations_checked"]
         + preflight["a100_mnt_locations_checked"]
         == preflight["source_locations_checked"]
     )
     assert preflight["missing_locations"] == 0
-    assert preflight["local_or_contract_locations_checked"] == 23
+    assert preflight["local_or_contract_locations_checked"] == 25
     assert preflight["a100_mnt_locations_checked"] == 13
     assert preflight["check_scope"] == "FILE_EXISTENCE_ONLY_NO_EVIDENCE_CONTENT_OPENED"
     assert preflight["human_content_verification_completed"] is False
@@ -149,6 +155,12 @@ def test_evidence_source_paths_are_closed_without_overstating_verification() -> 
     assert by_id["E-R2-THREE-TRACK-AUDIT"]["location"] == (
         "audits/route_a_v3_route2_v332_three_track_results_table_v1.json"
     )
+    assert by_id["E-R2-A1-TRUE-A2-TABLE-BUILDER"]["location"] == (
+        "scripts/route_a_v3/build_route2_v332_a1_true_a2_task_results_table_v1.py"
+    )
+    assert by_id["E-R2-A1-TRUE-A2-TABLE-AUDIT"]["location"] == (
+        "audits/route_a_v3_route2_v332_a1_true_a2_task_results_table_v1.json"
+    )
 
 
 def test_dataset_qualification_table_closes_v332_role_and_credit_boundaries() -> None:
@@ -196,6 +208,78 @@ def test_dataset_qualification_table_closes_v332_role_and_credit_boundaries() ->
     assert result["new_final_evaluation_read"] is False
     assert result["sealed_gse246381_read"] is False
     assert "Generated candidates add zero canonical credit" in draft
+
+
+def test_a1_numeric_tasks_and_true_a2_result_boundaries_remain_separate() -> None:
+    draft = " ".join(DRAFT.read_text(encoding="utf-8").split())
+    consistency = _load(CONSISTENCY)
+    audit = _load(A1_TRUE_A2_AUDIT)
+    with A1_TRUE_A2_TABLE.open(newline="", encoding="utf-8") as handle:
+        rows = list(csv.DictReader(handle))
+
+    method = next(
+        row
+        for row in consistency["methods"]
+        if row["method_id"] == "M-R2-A1-TRUE-A2-TASK-RESULTS"
+    )
+    result = next(
+        row
+        for row in consistency["results"]
+        if row["result_id"] == "R-R2-A1-TRUE-A2-TASK-RESULTS"
+    )
+    a1_rows = [row for row in rows if row["result_row_id"].startswith("A1-")]
+    true_a2_rows = [row for row in rows if row["result_row_id"].startswith("A2-")]
+
+    assert len(rows) == audit["row_count"] == method["row_count"] == result["row_count"] == 14
+    assert len(a1_rows) == audit["a1_numeric_task_row_count"] == result[
+        "a1_numeric_task_rows"
+    ] == 9
+    assert sum(int(row["record_count"]) for row in a1_rows) == audit["a1"][
+        "development_validation_record_count"
+    ] == result["a1_development_validation_records"] == 18293
+    assert all(row["numeric_performance_result_available"] == "true" for row in a1_rows)
+    assert sum(float(row["primary_value"]) > 0.0 for row in a1_rows) == result[
+        "a1_positive_task_spearman_count"
+    ] == 5
+    assert [
+        min(float(row["primary_value"]) for row in a1_rows),
+        max(float(row["primary_value"]) for row in a1_rows),
+    ] == result["a1_task_spearman_range"]
+
+    assert len(true_a2_rows) == audit["true_a2_boundary_row_count"] == result[
+        "true_a2_boundary_rows"
+    ] == 5
+    assert all(
+        row["numeric_performance_result_available"] == "false"
+        for row in true_a2_rows
+    )
+    assert audit["true_a2"]["development_listwise_record_count"] == result[
+        "true_a2_development_listwise_records"
+    ] == 30966
+    assert audit["true_a2"]["qualified_true_a2_study_credit"] == result[
+        "qualified_true_a2_study_credit"
+    ] == 0
+    assert audit["true_a2_terminal_numeric_performance_row_count"] == result[
+        "true_a2_terminal_numeric_performance_rows"
+    ] == 0
+    assert audit["true_a2"]["closed_measured_ndcg_defined_source_count_all_methods"] == (
+        result["true_a2_closed_measured_ndcg_defined_source_count_all_methods"]
+    ) == 0
+    assert audit["true_a2"]["new_independent_evaluation_unexposed_record_count"] == (
+        result["true_a2_new_independent_evaluation_unexposed_records"]
+    ) == 0
+    assert audit["cross_estimand_numeric_ranking_allowed"] is result[
+        "cross_estimand_numeric_ranking_allowed"
+    ] is False
+    assert audit["open_support_recovery_substitutes_for_true_a2_ranking"] is result[
+        "open_support_recovery_substitutes_for_true_a2_ranking"
+    ] is False
+    assert all(row["external_confirmation_eligible"] == "false" for row in rows)
+    assert all(row["development_test_read"] == "false" for row in rows)
+    assert all(row["new_final_evaluation_read"] == "false" for row in rows)
+    assert all(row["guided_xeditflow_run"] == "false" for row in rows)
+    assert "does not encode unavailable true-A2 results as zero performance" in draft
+    assert "A1 and true-A2 are not placed in a cross-estimand numeric ranking" in draft
 
 
 def test_provisional_figure_method_preserves_protected_outcome_boundary() -> None:
@@ -699,6 +783,10 @@ def test_minimum_benchmark_package_is_itemized_and_not_overcalled() -> None:
     assert result["final_paper_outcome_frozen"] is False
 
     by_id = {row["requirement_id"]: row for row in rows}
+    assert by_id["MBP-05"]["status"] == "COMPLETE"
+    assert "route2_v332_a1_true_a2_task_results_table_v1.csv" in by_id["MBP-05"][
+        "evidence_or_basis"
+    ]
     assert by_id["MBP-10"]["status"] == "PARTIAL_GUIDED_NOT_AUTHORIZED"
     assert by_id["MBP-11"]["status"] == "COMPLETE_HISTORICAL_NEGATIVE"
     assert by_id["MBP-13"]["status"] == "NOT_AVAILABLE_DOWNGRADE_REQUIRED"
@@ -773,6 +861,25 @@ def test_minimum_benchmark_package_is_itemized_and_not_overcalled() -> None:
     assert all(row["development_test_accessed"] == "false" for row in three_track_rows)
     assert all(row["new_final_evaluation_accessed"] == "false" for row in three_track_rows)
     assert all(row["guided_executed"] == "false" for row in three_track_rows)
+    assert audit["a1_true_a2_task_results_table"] == {
+        "status": "A1_TRUE_A2_TASK_RESULTS_SEPARATED_TRUE_A2_NUMERIC_NOT_TERMINAL",
+        "row_count": 14,
+        "a1_numeric_task_rows": 9,
+        "a1_development_validation_records": 18293,
+        "true_a2_boundary_rows": 5,
+        "true_a2_development_listwise_records": 30966,
+        "qualified_true_a2_study_credit": 0,
+        "true_a2_terminal_numeric_performance_rows": 0,
+        "reporting_table_complete": True,
+        "cross_estimand_numeric_ranking_allowed": False,
+        "builder": "scripts/route_a_v3/build_route2_v332_a1_true_a2_task_results_table_v1.py",
+        "focused_test": "tests/route_a_v3/test_build_route2_v332_a1_true_a2_task_results_table_v1.py",
+        "table": "docs/paper/route2_v332_a1_true_a2_task_results_table_v1.csv",
+        "audit": "audits/route_a_v3_route2_v332_a1_true_a2_task_results_table_v1.json",
+        "development_test_read": False,
+        "new_final_evaluation_read": False,
+        "guided_xeditflow_run": False,
+    }
     assert audit["external_evaluation"]["replacement_study_registered"] is False
     assert audit["external_evaluation"]["new_final_evaluation_opened"] is False
     assert audit["guided_generation"]["frozen_critic_xeditflow_run"] is False

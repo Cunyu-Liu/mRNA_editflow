@@ -155,6 +155,30 @@
       ]
     },
     {
+      "method_id": "M-R2-A1-TRUE-A2-TASK-RESULTS",
+      "label": "A1 numeric-task and true-A2 availability/result-boundary separation",
+      "analysis_intent": "DEVELOPMENT_ESTIMAND_SPECIFIC_REPORTING_AND_INDEPENDENT_TRUE_A2_GAP_AUDIT",
+      "status": "A1_TRUE_A2_TASK_RESULTS_SEPARATED_TRUE_A2_NUMERIC_NOT_TERMINAL",
+      "row_count": 14,
+      "a1_numeric_task_rows": 9,
+      "a1_development_validation_records": 18293,
+      "true_a2_boundary_rows": 5,
+      "true_a2_development_listwise_records": 30966,
+      "qualified_true_a2_study_credit": 0,
+      "true_a2_terminal_numeric_performance_rows": 0,
+      "reporting_table_complete": true,
+      "cross_estimand_numeric_ranking_allowed": false,
+      "table": "docs/paper/route2_v332_a1_true_a2_task_results_table_v1.csv",
+      "audit": "audits/route_a_v3_route2_v332_a1_true_a2_task_results_table_v1.json",
+      "development_test_accessed": false,
+      "new_final_evaluation_accessed": false,
+      "guided_xeditflow_run": false,
+      "evidence_ids": [
+        "E-R2-A1-TRUE-A2-TABLE-BUILDER",
+        "E-R2-A1-TRUE-A2-TABLE-AUDIT"
+      ]
+    },
+    {
       "method_id": "M-R2-FIGURES",
       "label": "Provisional general-manuscript figure assembly",
       "analysis_intent": "FROZEN_EVIDENCE_VISUALIZATION",
@@ -569,6 +593,37 @@
       ]
     },
     {
+      "result_id": "R-R2-A1-TRUE-A2-TASK-RESULTS",
+      "status": "A1_TRUE_A2_TASK_RESULTS_SEPARATED_TRUE_A2_NUMERIC_NOT_TERMINAL",
+      "row_count": 14,
+      "a1_numeric_task_rows": 9,
+      "a1_development_validation_records": 18293,
+      "a1_positive_task_spearman_count": 5,
+      "a1_task_spearman_range": [
+        -0.10916458562634956,
+        0.7619576378536184
+      ],
+      "true_a2_boundary_rows": 5,
+      "true_a2_development_listwise_records": 30966,
+      "true_a2_evaluator_implementation_status": "COMPLETE",
+      "true_a2_listwise_baseline_status": "CONFIGURED_NOT_TERMINAL_INDEPENDENT_BASELINE",
+      "true_a2_closed_measured_ndcg_defined_source_count_all_methods": 0,
+      "true_a2_new_independent_evaluation_unexposed_records": 0,
+      "qualified_true_a2_study_credit": 0,
+      "true_a2_terminal_numeric_performance_rows": 0,
+      "reporting_table_complete": true,
+      "cross_estimand_numeric_ranking_allowed": false,
+      "open_support_recovery_substitutes_for_true_a2_ranking": false,
+      "development_test_read": false,
+      "new_final_evaluation_read": false,
+      "guided_xeditflow_run": false,
+      "scientific_claim_status": "NOT_ESTABLISHED",
+      "evidence_ids": [
+        "E-R2-A1-TRUE-A2-TABLE-BUILDER",
+        "E-R2-A1-TRUE-A2-TABLE-AUDIT"
+      ]
+    },
+    {
       "result_id": "R-R2-DEVELOPMENT-LEARNING-CURVES",
       "status": "PROVISIONAL_DEVELOPMENT_LEARNING_CURVES_FIGURE_RENDERED",
       "raw_unsmoothed_histories": true,
@@ -630,6 +685,8 @@
       "evidence_ids": [
         "E-R2-CONTRACT",
         "E-R2-PACKAGE-AUDIT",
+        "E-R2-A1-TRUE-A2-TABLE-BUILDER",
+        "E-R2-A1-TRUE-A2-TABLE-AUDIT",
         "E-R2-FIGURE-BUILDER",
         "E-R2-FIGURE-MANIFEST",
         "E-R2-CONVERSION-FIGURE-BUILDER",

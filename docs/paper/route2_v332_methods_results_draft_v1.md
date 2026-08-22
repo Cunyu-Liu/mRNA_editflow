@@ -62,6 +62,17 @@ comparisons are permitted only within the same declared task scope. Native rows,
 subset-pooled versus nine-task-macro rows and architecture diagnostics do not
 enter a shared ranking. [evidence:E-R2-THREE-TRACK-SNAPSHOT,E-R2-THREE-TRACK-BUILDER,E-R2-THREE-TRACK-AUDIT]
 
+### A1 numeric tasks and true-A2 result availability
+
+The estimand-specific table keeps source-relative A1 numeric effects separate
+from true-A2 ranking. A1 is the direction-normalized endpoint difference between
+a candidate and its source. True-A2 requires multiple real measured candidates
+for the same source, assay, context and endpoint and evaluates their within-source
+ranking. Generated candidates do not satisfy that measured-candidate definition.
+The table reports unavailable numeric results as blank cells alongside explicit
+status and claim-boundary fields; it does not encode unavailable true-A2 results
+as zero performance. [evidence:E-R2-A1-TRUE-A2-TABLE-BUILDER,E-R2-A1-TRUE-A2-TABLE-AUDIT]
+
 ### Independent generation evaluator
 
 Generation methods were compared with a frozen Siamese CNN evaluator trained
@@ -192,6 +203,27 @@ unmatched runs, generic trunk versus region adapter is absent, and first-order
 and frozen-critic guidance remain unrun. Thus the reporting artifact is complete
 but the three-track benchmark execution is explicitly incomplete.
 [evidence:E-R2-THREE-TRACK-AUDIT]
+
+### A1 has Development task metrics; true-A2 has no terminal numeric result
+
+The A1 portion contains nine Development Validation task-region rows totaling
+18,293 records. Task Spearman values range from -0.1091646 to 0.7619576 and are
+positive for five tasks. These are source-relative Development method-selection
+metrics, not final external confirmation. The true-A2 portion records 30,966
+GSE269595 Development listwise rows, a complete evaluator implementation and a
+configured listwise ranker, but GSE269595 is Development-exposed, grants zero
+qualified true-A2 study credit and supplies no independent terminal true-A2
+performance result. [evidence:E-R2-A1-TRUE-A2-TABLE-AUDIT]
+
+Across the 891-source terminal generation suite, open generated support leaves
+closed measured NDCG undefined for every method: zero sources have a defined
+closed-pool measured NDCG across all methods. Measured-neighborhood recovery is
+therefore not substituted for true-A2 ranking, and unknown generated candidates
+are not assigned zero gain. No new outcome-unexposed measured-neighborhood
+Evaluation records exist. Consequently, A1 and true-A2 are not placed in a
+cross-estimand numeric ranking, and the absence of a terminal true-A2 value is
+reported as unavailable rather than as a performance score of zero.
+[evidence:E-R2-A1-TRUE-A2-TABLE-BUILDER,E-R2-A1-TRUE-A2-TABLE-AUDIT]
 
 ### The independent evaluator narrowly crossed its frozen qualification threshold
 

@@ -8,10 +8,10 @@
   "independent_final_evaluation_performed": false,
   "human_verification_required": true,
   "source_path_preflight": {
-    "observed_at": "2026-08-22T15:37:47+08:00",
+    "observed_at": "2026-08-22T15:56:40+08:00",
     "status": "PASS",
-    "source_locations_checked": 36,
-    "local_or_contract_locations_checked": 23,
+    "source_locations_checked": 38,
+    "local_or_contract_locations_checked": 25,
     "a100_mnt_locations_checked": 13,
     "missing_locations": 0,
     "check_scope": "FILE_EXISTENCE_ONLY_NO_EVIDENCE_CONTENT_OPENED",
@@ -288,6 +288,21 @@
       "locator": "six predictor 8-epoch pooled curves with separate task-macro selection values, four raw 100-epoch Critic V2 control curves and same-information hurdle, 8-epoch evaluator qualification curve, 30-epoch Base Flow NLL overfitting curve, PNG/PDF/SVG outputs and protected-outcome closure",
       "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING",
       "publisher_compliance_claimed": false
+    },
+    {
+      "evidence_id": "E-R2-A1-TRUE-A2-TABLE-BUILDER",
+      "kind": "reproducible_a1_true_a2_task_results_table_builder",
+      "location": "scripts/route_a_v3/build_route2_v332_a1_true_a2_task_results_table_v1.py",
+      "locator": "nine A1 source-relative numeric Development Validation tasks, five true-A2 availability and result-boundary rows, blank unavailable numeric values, protected-outcome closure and overwrite refusal",
+      "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING"
+    },
+    {
+      "evidence_id": "E-R2-A1-TRUE-A2-TABLE-AUDIT",
+      "kind": "derived_a1_true_a2_task_results_table_audit",
+      "location": "audits/route_a_v3_route2_v332_a1_true_a2_task_results_table_v1.json",
+      "locator": "14-row reporting table; nine A1 numeric tasks totaling 18293 Development Validation records; 30966 Development listwise records but zero qualified true-A2 study credit, zero terminal true-A2 numeric rows and zero new independent Evaluation records",
+      "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING",
+      "external_evidence": false
     }
   ],
   "submission_ready": false

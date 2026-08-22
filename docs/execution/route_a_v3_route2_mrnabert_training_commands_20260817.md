@@ -1301,3 +1301,28 @@ figures/builders=6/5；本机与 A100 九组联合 focused suite 均为 29/29，
 blockers=MBP-10/13/14/15 与
 `submission_ready=false` 不变。此非训练任务不新增中央 attempt，100-row 的 92/3/3/1/1
 终态分布不变；Development TEST、new final Evaluation 与 guided XEditFlow 未打开。
+
+## 49. V3.3.2 A1 numeric-task / true-A2 availability and result-boundary table（2026-08-22）
+
+按 Goal 7 顺序先完成交叉核查：已有 Figure 2 已覆盖 GSE232572 outcome-exposed historical
+zero-shot transfer，且明确不作 final confirmation，因此不重复生成；replacement Evaluation
+study 不存在，few-shot adaptation 依法不可用。当前最靠前且可真实完成的缺项是 A1 与
+true-A2 task results 的估计量分离表。
+
+新增独立 builder、focused tests、14-row CSV 与 audit。9 个 A1 Development Validation
+numeric task rows 共 18,293 records，task Spearman 范围为
+`[-0.10916458562634956, 0.7619576378536184]`，5/9 为正；这只用于 Development
+generation-method selection。5 个 true-A2 rows 全部为 availability/result-boundary：
+GSE269595 有 30,966 Development-exposed listwise records 但 qualified true-A2 study
+credit=0；evaluator implementation complete，listwise ranker 仅 configured-not-terminal；
+open generated support 下七方法 closed measured NDCG defined-source count=0；新 independent
+Evaluation unexposed records=0。因此 terminal true-A2 numeric performance rows=0，缺失值保持
+空白，不以 0 performance 代替，也不作 A1/true-A2 cross-estimand numeric ranking。
+
+GitHub builder commit `363c741` 已推送，A100 快进后 builder focused test 2/2 passed；本机
+十组 paper/table/figure 联合 focused suite 为 32/32。paper evidence sources=38
+（local/contract 25、A100 `/mnt` 13），claim markers=22、figures/builders=6/5、最低包
+14/3/1、blockers=MBP-10/13/14/15、`submission_ready=false` 均保持。本任务不训练、不监控
+实时训练进度、不新增中央 attempt；100-row 的 92/3/3/1/1 终态分布不变，Development TEST、
+new final Evaluation、generated-candidate outcome 与 guided XEditFlow 均未打开。A100 联合
+32-test suite 将在 paper integration commit 推送后单次执行并补记。
