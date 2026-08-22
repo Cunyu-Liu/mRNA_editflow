@@ -1,0 +1,84 @@
+{
+  "schema_version": "route_a_v3_route2_xeditcritic_v3_cache_training_runner_preflight.v1",
+  "status": "C0_C1_C2_AND_CONTROLS_RUNNER_IMPLEMENTED_TESTED_C3_ONLINE_RUNNER_PENDING",
+  "observed_date": "2026-08-23",
+  "input_boundary": {
+    "training_input": "DevelopmentProjectionV3",
+    "cache_input": "EditSiteTokenCacheV3",
+    "canonical_outcome_fallback": false,
+    "allowed_splits": ["TRAIN", "VALIDATION"],
+    "development_test_outcomes_accessed": false,
+    "new_final_evaluation_outcomes_accessed": false
+  },
+  "training_contract": {
+    "screen_seed": 20260830,
+    "passes": 8,
+    "batch_size": 32,
+    "expected_updates": 22416,
+    "huber_only_passes": 7,
+    "ranking_pass": 8,
+    "ranking_weight": 0.25,
+    "ranking_pairs_same_task": true,
+    "ranking_pairs_different_source_group": true,
+    "checkpoint": "FINAL_PASS_FIXED_NO_RANKING_PHASE_RESELECTION",
+    "precision": "BF16",
+    "optimizer": "AdamW",
+    "head_learning_rate": 0.0003,
+    "weight_decay": 0.0001,
+    "gradient_clip_norm": 1.0,
+    "pcgrad": false
+  },
+  "actual_train_sampler_preflight": {
+    "train_record_count": 89580,
+    "train_task_count": 7,
+    "batches_per_pass": 2802,
+    "draws_per_pass": 89580,
+    "maximum_record_repeats_per_pass": 4,
+    "task_homogeneous_batches": true,
+    "task_allocations": {
+      "MEAN_RIBOSOME_LOAD::region=0": 7851,
+      "MPRAU_ALLELIC_SKEW_LOG2_FOLD_CHANGE::region=1": 37490,
+      "PROXIMAL_POLYA_SITE_USAGE_LOG2_ODDS::region=1": 25470,
+      "PUBLISHED_REF_VS_ALT_ACTIVITY_LMM_LOG2_FOLD_CHANGE::region=1": 816,
+      "RNA_HALF_LIFE_MINUTES::region=0": 3572,
+      "RNA_HALF_LIFE_MINUTES::region=1": 5232,
+      "TOTAL_POLYSOME_TRANSLATION_EFFICIENCY::region=1": 9149
+    }
+  },
+  "target_scaling": {
+    "task_robust": true,
+    "center_subtracted": false,
+    "fit_scope": "TRAIN_ONLY",
+    "unseen_validation_task_fallback": "TRAIN_REGION_THEN_TRAIN_GLOBAL"
+  },
+  "candidate_bundle_permutation": {
+    "exact_source_task_strata": true,
+    "recipient_count": 29271,
+    "changed_candidate_sequence_count": 29259,
+    "eligible_task_count": 6,
+    "minimum_gate_applicable_tasks": 2,
+    "complete_bundle_fields": [
+      "CANDIDATE_SEQUENCE",
+      "SOURCE_RELATIVE_EDIT_SET",
+      "CANDIDATE_GLOBAL_FEATURE",
+      "SOURCE_AND_CANDIDATE_EDIT_SITE_FEATURES"
+    ]
+  },
+  "a100_c0_forward_preflight": {
+    "physical_gpu_index": 5,
+    "gpu": "NVIDIA A100-PCIE-40GB",
+    "first_batch_size": 32,
+    "first_batch_task_count": 1,
+    "prediction_finite": true,
+    "trainable_parameter_count": 486784
+  },
+  "tests": {
+    "local_focused_passed": 11,
+    "a100_focused_passed": 11,
+    "local_v332_passed": 96,
+    "a100_v332_passed": 96
+  },
+  "training_attempt_created": false,
+  "critic_screen_started": false,
+  "model_success_established": false
+}

@@ -35,7 +35,8 @@
     "endpoint_descriptor_registry": "IMPLEMENTED_OUTCOME_FREE",
     "xeditcritic_v3_edit_site_feature_layer": "IMPLEMENTED_AND_A100_REAL_MODEL_SMOKE_TESTED_CACHE_NOT_YET_MATERIALIZED",
     "xeditcritic_v3_model_architecture": "C0_C1_C2_C3_AND_LAST4_LORA_IMPLEMENTED_TESTED",
-    "xeditcritic_v3_training_and_gates": "NOT_YET_IMPLEMENTED",
+    "xeditcritic_v3_cache_training_runner": "C0_C1_C2_AND_CONTROLS_IMPLEMENTED_TESTED_NOT_STARTED",
+    "xeditcritic_v3_c3_online_training_and_gates": "NOT_YET_IMPLEMENTED",
     "xeditsetflow_v3": "NOT_YET_IMPLEMENTED",
     "guided_soft_value_smc": "BLOCKED_NOT_YET_IMPLEMENTED"
   },

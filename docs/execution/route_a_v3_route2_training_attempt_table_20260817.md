@@ -1245,3 +1245,15 @@ mRNABERT combined-QKV/gated-FFN geometry；没有结果后扩 rank 或解冻额�
 主模型 swap antisymmetry、identity zero、unknown-study scale=1、study-only multiplicative calibration、
 四 arm finite output 和三项 candidate-information control 的 parameter equality 已通过本机/A100 focused
 tests 10/10；精确 V3.3.2 为 96/96。Critic screen 仍未启动，model success 和 submission-ready 不变。
+
+## XEditCritic V3 cache-arm runner preflight（2026-08-23）
+
+本项实现 C0/C1/C2 与三项同几何 control 的正式 runner，但尚未参数更新，中央 attempt 计数仍为
+100 / 92 / 3 / 3 / 1 / 1。真实 TRAIN sampler 为 89,580 draws 和 2,802 batches/pass，8 passes
+预计 22,416 updates；batch task-homogeneous、task allocation 按 sqrt size 且 record repeat cap=4。
+第 8 pass 只在同 task、不同 source group 间构造 ranking pair，final pass checkpoint 固定不再选峰值。
+
+exact source/task complete candidate-bundle permutation 覆盖 29,271 recipients，29,259 candidates
+实际改变、适用 task=6。两个无 TRAIN-support 的 Validation endpoint 只使用 TRAIN-region/global target
+scale fallback。A100 C0 batch-32 forward finite；focused/V3.3.2 本机与 A100 分别为 11/11、96/96。
+C3 online-LoRA runner 未完成，screen 未启动，protected outcome/model-success 状态不变。

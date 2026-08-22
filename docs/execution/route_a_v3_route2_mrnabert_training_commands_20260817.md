@@ -1840,3 +1840,19 @@ source-only、edit-metadata-only 与 parameter-matched no-candidate-sequence con
 geometry；complete candidate-bundle permutation 留在 dataset layer。模型/LoRA focused tests 本机与
 A100 均为 10/10，精确 V3.3.2 suite 均为 96/96。训练尚未启动，不新增 attempt，不访问
 Development TEST 或新 final Evaluation outcome。
+
+## XEditCritic V3 cache-arm training runner preflight（2026-08-23）
+
+新增 projection-only C0/C1/C2 runner、train-only zero-anchored task-robust scaler、study→source-group
+weights、sqrt(task-size) task-homogeneous pass sampler 和第 8 pass 的 cross-source-group pairwise logistic
+loss。没有 canonical outcome fallback；两个无 TRAIN support 的 GSE149487 Validation task 使用 TRAIN
+region、再 TRAIN global 的 scale fallback，不读取其 outcome 来拟合 scale。
+
+真实 TRAIN preflight 为 89,580 draws/pass、2,802 batches/pass、8 passes 预计 22,416 updates。七个
+TRAIN task 的 allocation 合计严格为 89,580；small task 达到 capacity 后自动重分配，任何 record 每
+pass 不超过四次。complete candidate-bundle permutation 在 exact source/task strata 内覆盖 29,271
+recipients，29,259 个 candidate sequence 实际改变，适用 task=6，超过 gate 所需的两个 task。
+
+A100 GPU5 的真实 C0 batch-32 forward 为 one-task batch、finite prediction、486,784 parameters。训练
+data/runner focused tests 本机/A100 均为 11/11，精确 V3.3.2 均为 96/96。C3 online-LoRA runner 仍待
+实现，cache-arm screen 尚未启动，本项没有新 training attempt 或 protected outcome access。

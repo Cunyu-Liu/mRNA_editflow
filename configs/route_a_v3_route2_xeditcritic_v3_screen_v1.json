@@ -1,0 +1,33 @@
+{
+  "schema_version": "route_a_v3_route2_xeditcritic_v3_screen_config.v1",
+  "status": "FROZEN_BEFORE_SCREEN_OUTCOME_READ",
+  "projection_paths": [
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/projections/xedit_v3/development_train_validation_v1/train.jsonl",
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/projections/xedit_v3/development_train_validation_v1/validation.jsonl"
+  ],
+  "edit_site_cache": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/pretrained_features/xeditcritic_v3/edit_site_token_cache_v1.pt",
+  "output_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v3/screen_seed_20260830",
+  "expected_record_count": 107873,
+  "expected_train_count": 89580,
+  "expected_validation_count": 18293,
+  "pretrained_width": 768,
+  "screen_seed": 20260830,
+  "passes": 8,
+  "batch_size": 32,
+  "precision": "BF16",
+  "optimizer": "AdamW",
+  "head_learning_rate": 0.0003,
+  "lora_learning_rate": 0.00003,
+  "weight_decay": 0.0001,
+  "gradient_clip_norm": 1.0,
+  "dropout": 0.1,
+  "huber_delta": 1.0,
+  "ranking_loss_weight": 0.25,
+  "ranking_pass": 8,
+  "maximum_record_repeats_per_pass": 4,
+  "target_scale_floor": 0.001,
+  "checkpoint_selection": "FINAL_PASS_FIXED_NO_RANKING_PHASE_RESELECTION",
+  "pcgrad": false,
+  "development_test_outcomes_accessed": false,
+  "new_final_evaluation_outcomes_accessed": false
+}
