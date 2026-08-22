@@ -31,6 +31,7 @@ def _artifacts(f2_recovery=0.26, f3_recovery=0.26, f2_top=0.16, f3_top=0.16, f2_
     for arm, nll, recovery, top in (
         ("f1", 8.0, 0.3, 0.2), ("f2", f2_nll, f2_recovery, f2_top), ("f3", f3_nll, f3_recovery, f3_top)
     ):
+        parameter_counts = {"f1": 818_021, "f2": 16_179_014, "f3": 42_197_158}
         training[arm] = {
             "status": "XEDITSETFLOW_V3_GPU_TRAINING_COMPLETE", "seed": 20260903, "arm": arm,
             "run_stage": "SCREEN", "selectable": arm in {"f2", "f3"},
@@ -38,6 +39,7 @@ def _artifacts(f2_recovery=0.26, f3_recovery=0.26, f2_top=0.16, f3_top=0.16, f2_
             "states_per_record_per_pass": 2, "effective_batch_size": 32,
             "maximum_passes": 12, "training_precision": "BF16",
             "parameter_changed": True, "cpu_fallback_used": False,
+            "trainable_parameter_count": parameter_counts[arm],
             "development_test_record_count_withheld": 18292,
             "critic_score_used": False, "independent_evaluator_used": False,
             "best_validation_common_set_marginal_nll": nll,
@@ -45,6 +47,9 @@ def _artifacts(f2_recovery=0.26, f3_recovery=0.26, f2_top=0.16, f3_top=0.16, f2_
         }
         validation[arm] = {
             "status": "FLOW_G0_READY", "seed": 20260903, "arm": arm,
+            "method_id": f"unguided_xeditsetflow_v3_{arm}_seed20260903",
+            "source_count": 891, "candidate_count": 28512,
+            "trajectory_forward_batch_size": 64,
             "cpu_fallback_used": False, "parameter_update_count": 0,
             "guided_critic_used": False, "independent_evaluator_used": False,
             "source_macro_candidate_recovery_rate": recovery,
@@ -52,7 +57,11 @@ def _artifacts(f2_recovery=0.26, f3_recovery=0.26, f2_top=0.16, f3_top=0.16, f2_
             "source_macro_unique_candidate_rate": 0.91, "hard_legality_rate": 1.0,
             "edit_budget_violation_count": 0, "candidate_budget_violation_count": 0,
             "trajectory_replay_failure_count": 0, "numerical_failure_count": 0,
-            "development_test_outcomes_accessed": False, "evaluation_outcomes_accessed": False,
+            "small_graph_reference": {"status": "PASS", "total_variation": 0.0, "tolerance": 1e-12},
+            "development_test_outcomes_accessed": False, "evaluation_records_read": 0,
+            "evaluation_outcomes_accessed": False,
+            "generated_candidates_grant_canonical_credit": False,
+            "biological_optimization_established": False,
         }
     return f0, training, validation
 
@@ -97,6 +106,7 @@ def _confirmation_artifacts(arm: str = "f2"):
             "maximum_passes": 12,
             "training_precision": "BF16",
             "parameter_changed": True,
+            "trainable_parameter_count": 16_179_014 if arm == "f2" else 42_197_158,
             "cpu_fallback_used": False,
             "critic_score_used": False,
             "independent_evaluator_used": False,
@@ -107,6 +117,10 @@ def _confirmation_artifacts(arm: str = "f2"):
             "status": "FLOW_G0_READY",
             "arm": arm,
             "seed": seed,
+            "method_id": f"unguided_xeditsetflow_v3_{arm}_seed{seed}",
+            "source_count": 891,
+            "candidate_count": 28512,
+            "trajectory_forward_batch_size": 64,
             "cpu_fallback_used": False,
             "parameter_update_count": 0,
             "guided_critic_used": False,
@@ -119,8 +133,14 @@ def _confirmation_artifacts(arm: str = "f2"):
             "candidate_budget_violation_count": 0,
             "trajectory_replay_failure_count": 0,
             "numerical_failure_count": 0,
+            "small_graph_reference": {
+                "status": "PASS", "total_variation": 0.0, "tolerance": 1e-12,
+            },
             "development_test_outcomes_accessed": False,
+            "evaluation_records_read": 0,
             "evaluation_outcomes_accessed": False,
+            "generated_candidates_grant_canonical_credit": False,
+            "biological_optimization_established": False,
         }
     return training, validation
 
@@ -176,3 +196,18 @@ def test_screen_and_confirmation_reject_misidentified_artifacts() -> None:
         adjudicate_setflow_confirmation_v3(
             training, validation, selected_arm="f2"
         )
+
+
+def test_screen_rejects_wrong_capacity_cohort_or_small_graph_evidence() -> None:
+    f0, training, validation = _artifacts()
+    training["f2"]["trainable_parameter_count"] -= 1
+    with pytest.raises(Exception, match="frozen arm"):
+        adjudicate_setflow_screen_v3(f0, training, validation)
+    f0, training, validation = _artifacts()
+    validation["f2"]["candidate_count"] -= 1
+    with pytest.raises(Exception, match="cohort or execution budget"):
+        adjudicate_setflow_screen_v3(f0, training, validation)
+    f0, training, validation = _artifacts()
+    validation["f3"]["small_graph_reference"]["total_variation"] = 1e-6
+    with pytest.raises(Exception, match="small-graph distribution exactness"):
+        adjudicate_setflow_screen_v3(f0, training, validation)

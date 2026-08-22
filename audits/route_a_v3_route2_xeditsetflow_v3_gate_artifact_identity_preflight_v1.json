@@ -1,0 +1,46 @@
+{
+  "schema_version": "route_a_v3_route2_xeditsetflow_v3_gate_artifact_identity_preflight.v1",
+  "status": "IMPLEMENTED_LOCAL_TESTED_A100_SYNC_PENDING_ACTIVE_LAUNCH_HEAD_JOBS",
+  "observed_date": "2026-08-23",
+  "failure_prevented": "A wrong-capacity or wrong-cohort unguided SetFlow artifact entering screen or confirmation adjudication without exactness and evidence-boundary proof",
+  "gate_requirements": {
+    "selectable_trainable_parameter_counts": {
+      "f2": 16179014,
+      "f3": 42197158
+    },
+    "validation_source_count": 891,
+    "validation_candidate_count": 28512,
+    "trajectory_forward_batch_size": 64,
+    "exact_arm_seed_method_identity": true,
+    "small_graph_total_variation_within_frozen_tolerance": true,
+    "parameter_update_count_during_validation_zero": true,
+    "guided_critic_and_independent_evaluator_absent": true,
+    "protected_outcome_reads_zero": true,
+    "generated_candidate_canonical_credit_false": true,
+    "biological_optimization_established_false": true,
+    "screen_and_confirmation_both_enforced": true
+  },
+  "scientific_protocol": {
+    "performance_threshold_changed": false,
+    "seed_changed": false,
+    "baseline_changed": false,
+    "training_configuration_changed": false,
+    "terminal_experiment_repeated": false
+  },
+  "tests": {
+    "setflow_focused_passed": 28,
+    "setflow_focused_failed": 0,
+    "local_exact_v332_passed": 96,
+    "local_exact_v332_failed": 0,
+    "python_compile_passed": true,
+    "git_diff_check_passed": true
+  },
+  "protected_data": {
+    "development_test_outcomes_accessed": false,
+    "new_final_evaluation_outcomes_accessed": false
+  },
+  "a100": {
+    "status": "PENDING_ACTIVE_SCREEN_JOBS_MUST_KEEP_LAUNCH_COMMIT_PROVENANCE",
+    "launch_head": "22317ed"
+  }
+}

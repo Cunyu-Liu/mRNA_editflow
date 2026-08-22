@@ -1480,3 +1480,11 @@ gate 现核对四 arm 精确 trainable capacity、C0–C2 parameter change、C3 
 effective/physical microbatch；避免 wrong-capacity 或无学习更新的 summary 进入 adjudication。训练参数、数值
 threshold、seed、baseline 与 task 均不改变。focused=21/21、V3.3.2=96/96、compile/diff-check PASS，
 Development TEST/new Evaluation read=0；A100 sync/test 继续等待 launch-head jobs terminal。
+
+## XEditSetFlow V3 gate artifact-identity repair（2026-08-23）
+
+本项只强化 SetFlow screen/confirmation 对既有 terminal fields 的验证，不新增 optimizer attempt 或中央 CSV
+行。gate 现要求 exact F2/F3 capacity、891-source/28,512-trajectory unguided cohort、method/batch identity、
+small-graph exactness、零 validation update/critic/evaluator/protected read，以及无 canonical/biological overclaim。
+数值 gate、seed、训练和 F0/V2 terminal 历史不变。focused=28/28、V3.3.2=96/96、compile/diff-check PASS；
+A100 current-HEAD sync/test 等 `22317ed` active jobs terminal。

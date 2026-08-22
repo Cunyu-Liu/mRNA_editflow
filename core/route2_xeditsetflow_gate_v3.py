@@ -12,6 +12,12 @@ class XEditSetFlowGateV3Error(RuntimeError):
     pass
 
 
+SELECTABLE_TRAINABLE_PARAMETER_COUNTS_V3 = {
+    "f2": 16_179_014,
+    "f3": 42_197_158,
+}
+
+
 def _require(condition: bool, message: str) -> None:
     if not condition:
         raise XEditSetFlowGateV3Error(message)
@@ -22,6 +28,50 @@ def _finite(value: Any, label: str) -> float:
     result = float(value)
     _require(math.isfinite(result), f"{label} is nonfinite")
     return result
+
+
+def _require_unguided_validation_identity_v3(
+    validation: Mapping[str, Any], *, arm: str, seed: int
+) -> None:
+    _require(
+        validation.get("arm") == arm
+        and int(validation.get("seed", -1)) == seed
+        and validation.get("method_id")
+        == f"unguided_xeditsetflow_v3_{arm}_seed{seed}",
+        "SetFlow unguided validation method identity differs",
+    )
+    _require(
+        int(validation.get("source_count", -1)) == 891
+        and int(validation.get("candidate_count", -1)) == 28_512
+        and int(validation.get("trajectory_forward_batch_size", -1)) == 64,
+        "SetFlow unguided validation cohort or execution budget differs",
+    )
+    _require(
+        validation.get("cpu_fallback_used") is False
+        and int(validation.get("parameter_update_count", -1)) == 0
+        and validation.get("guided_critic_used") is False
+        and validation.get("independent_evaluator_used") is False,
+        "SetFlow unguided validation provenance differs",
+    )
+    _require(
+        validation.get("development_test_outcomes_accessed") is False
+        and int(validation.get("evaluation_records_read", -1)) == 0
+        and validation.get("evaluation_outcomes_accessed") is False,
+        "SetFlow unguided validation accessed protected outcome",
+    )
+    _require(
+        validation.get("generated_candidates_grant_canonical_credit") is False
+        and validation.get("biological_optimization_established") is False,
+        "SetFlow unguided validation overclaims generated-candidate evidence",
+    )
+    small_graph = validation.get("small_graph_reference")
+    _require(
+        isinstance(small_graph, Mapping)
+        and small_graph.get("status") == "PASS"
+        and _finite(small_graph.get("total_variation"), "small-graph total variation")
+        <= _finite(small_graph.get("tolerance"), "small-graph tolerance"),
+        "SetFlow small-graph distribution exactness is absent or failed",
+    )
 
 
 def adjudicate_setflow_screen_v3(
@@ -83,12 +133,16 @@ def adjudicate_setflow_screen_v3(
             and train.get("independent_evaluator_used") is False,
             f"{arm} screen training provenance differs",
         )
-        _require(
-            valid.get("cpu_fallback_used") is False
-            and int(valid.get("parameter_update_count", -1)) == 0
-            and valid.get("guided_critic_used") is False
-            and valid.get("independent_evaluator_used") is False,
-            f"{arm} unguided validation provenance differs",
+        trainable_parameter_count = int(train.get("trainable_parameter_count", -1))
+        _require(trainable_parameter_count > 0, f"{arm} trainable parameter count is absent")
+        if arm in SELECTABLE_TRAINABLE_PARAMETER_COUNTS_V3:
+            _require(
+                trainable_parameter_count
+                == SELECTABLE_TRAINABLE_PARAMETER_COUNTS_V3[arm],
+                f"{arm} trainable parameter count differs from the frozen arm",
+            )
+        _require_unguided_validation_identity_v3(
+            valid, arm=arm, seed=20260903
         )
         _require(train.get("development_test_outcomes_accessed") is False and valid.get("development_test_outcomes_accessed") is False, f"{arm} accessed Development TEST")
         _require(train.get("evaluation_outcomes_accessed") is False and valid.get("evaluation_outcomes_accessed") is False, f"{arm} accessed Evaluation")
@@ -249,11 +303,12 @@ def adjudicate_setflow_confirmation_v3(
             f"SetFlow confirmation training provenance differs: {seed}",
         )
         _require(
-            valid.get("cpu_fallback_used") is False
-            and int(valid.get("parameter_update_count", -1)) == 0
-            and valid.get("guided_critic_used") is False
-            and valid.get("independent_evaluator_used") is False,
-            f"SetFlow confirmation validation provenance differs: {seed}",
+            int(trained.get("trainable_parameter_count", -1))
+            == SELECTABLE_TRAINABLE_PARAMETER_COUNTS_V3[selected_arm],
+            f"SetFlow confirmation trainable parameter count differs: {seed}",
+        )
+        _require_unguided_validation_identity_v3(
+            valid, arm=selected_arm, seed=seed
         )
         recovery = _finite(
             valid.get("source_macro_candidate_recovery_rate"), f"seed {seed} recovery"

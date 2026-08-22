@@ -2239,3 +2239,15 @@ physical microbatch=1。
 该修复只验证 terminal artifact 已有字段，不改变模型、训练、seed、baseline、task 或数值 gate，对当前
 launch-head jobs 的将来 summary 兼容。focused gate/adjacent tests=21/21、V3.3.2=96/96、compile/diff-check
 PASS；protected outcome read=0，A100 sync/test 仍等待所有 `22317ed` active jobs terminal。
+
+## XEditSetFlow V3 gate artifact-identity repair（2026-08-23）
+
+同类静态核查发现 SetFlow gate 原先未复核 selectable arm 精确容量、unguided validation cohort/method
+identity 和 small-graph exactness。现 screen/confirmation 共同要求 F2/F3 分别为 16,179,014/42,197,158
+trainable parameters，validation 为 exact arm/seed/method、891 sources、28,512 trajectories、forward batch64，
+small-graph TV 不超过冻结 tolerance；同时强制 validation parameter update=0、无 critic/evaluator、protected
+read=0、generated candidate 不获 canonical credit、biological optimization=false。
+
+该修复不改 set-marginal objective、checkpoint selection、threshold 或运行中的 F1/F2。SetFlow focused
+cohort=28/28、V3.3.2=96/96、compile/diff-check PASS。一次误写的不存在测试路径在 collection 前停止，随后
+使用实际 cohort 通过；不构成训练或科学 attempt。A100 sync/test 继续等待 `22317ed` jobs terminal。
