@@ -19,6 +19,7 @@ from core.route2_mrnabert_edit_site_features_v3 import (
     EncodedSequenceFeaturesV3,
     PositionFeature,
     extract_position_feature,
+    extract_nucleotide_token_hidden,
     format_utr_chunk,
     legacy_global_chunk_spans,
     official_masked_chunk_mean,
@@ -155,6 +156,62 @@ class FrozenMRNABERTEditSiteEncoderV3:
         )
         self.maximum_sequences_per_batch = int(maximum_sequences_per_batch)
         self.batch_token_budget = int(batch_token_budget)
+
+    def encode_full_nucleotide_tokens(
+        self,
+        sequences: Mapping[int, str],
+        *,
+        progress_callback: Callable[[int, int], None] | None = None,
+    ) -> dict[int, torch.Tensor]:
+        """Encode one source-side hidden state per nucleotide.
+
+        The frozen SetFlow V3 cohort has maximum source length 837, so its
+        source-token cache deliberately uses one complete chunk per source.
+        """
+
+        _require(bool(sequences), "no sequences were supplied")
+        _require(
+            max(map(len, sequences.values())) <= self.chunk_nucleotides,
+            "SetFlow source exceeds the prospectively frozen one-chunk boundary",
+        )
+        requests = [
+            _ChunkRequest(key, ChunkSpan(0, len(sequence)))
+            for key, sequence in sequences.items()
+        ]
+        batches = list(
+            _request_batches(
+                requests,
+                maximum_sequences=self.maximum_sequences_per_batch,
+                token_budget=self.batch_token_budget,
+            )
+        )
+        result: dict[int, torch.Tensor] = {}
+        with torch.inference_mode():
+            for batch_index, batch in enumerate(batches, start=1):
+                chunks = [sequences[item.sequence_key] for item in batch]
+                tokenized = self.tokenizer(
+                    [format_utr_chunk(chunk) for chunk in chunks],
+                    add_special_tokens=True,
+                    padding=True,
+                    truncation=False,
+                    return_tensors="pt",
+                )
+                tokenized = {
+                    key: value.to(self.device) for key, value in tokenized.items()
+                }
+                with torch.autocast(device_type="cuda", dtype=torch.bfloat16):
+                    last_hidden_state = self.model(**tokenized)[0]
+                for row_index, item in enumerate(batch):
+                    hidden = extract_nucleotide_token_hidden(
+                        last_hidden_state[row_index],
+                        tokenized["attention_mask"][row_index],
+                        chunk_length=item.span.length,
+                    )
+                    result[item.sequence_key] = hidden.float().cpu()
+                if progress_callback is not None:
+                    progress_callback(batch_index, len(batches))
+        _require(set(result) == set(sequences), "source-token encoding is incomplete")
+        return result
 
     def encode_requested_features(
         self,

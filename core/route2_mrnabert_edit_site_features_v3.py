@@ -170,6 +170,28 @@ def official_masked_chunk_mean(
     return (last_hidden_state * weights).sum(dim=0) / weights.sum().clamp_min(1)
 
 
+def extract_nucleotide_token_hidden(
+    last_hidden_state: torch.Tensor,
+    attention_mask: torch.Tensor,
+    *,
+    chunk_length: int,
+    leading_special_tokens: int = LEADING_SPECIAL_TOKENS,
+) -> torch.Tensor:
+    """Return exactly one hidden state per nucleotide, excluding specials."""
+
+    validate_token_layout(attention_mask, chunk_length=chunk_length)
+    _require(last_hidden_state.ndim == 2, "chunk hidden state must be token x hidden")
+    _require(
+        last_hidden_state.shape[0] == attention_mask.shape[0],
+        "hidden state and mask lengths differ",
+    )
+    start = int(leading_special_tokens)
+    result = last_hidden_state[start : start + chunk_length]
+    _require(result.shape[0] == chunk_length, "nucleotide token span changed")
+    _require(torch.isfinite(result).all().item(), "nucleotide token hidden is nonfinite")
+    return result
+
+
 def extract_position_feature(
     last_hidden_state: torch.Tensor,
     attention_mask: torch.Tensor,

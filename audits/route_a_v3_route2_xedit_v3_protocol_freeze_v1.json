@@ -33,12 +33,12 @@
   "implementation_state": {
     "projection_builder": "IMPLEMENTED_TESTED_AND_MATERIALIZED_ON_A100_TEST_UNPARSED",
     "endpoint_descriptor_registry": "IMPLEMENTED_OUTCOME_FREE",
-    "xeditcritic_v3_edit_site_feature_layer": "IMPLEMENTED_AND_A100_REAL_MODEL_SMOKE_TESTED_CACHE_NOT_YET_MATERIALIZED",
+    "xeditcritic_v3_edit_site_feature_layer": "IMPLEMENTED_A100_CACHE_MATERIALIZED_FULL_LOAD_VALIDATED_ALIGNMENT_PENDING",
     "xeditcritic_v3_model_architecture": "C0_C1_C2_C3_AND_LAST4_LORA_IMPLEMENTED_TESTED",
     "xeditcritic_v3_cache_training_runner": "C0_C1_C2_AND_CONTROLS_IMPLEMENTED_TESTED_NOT_STARTED",
     "xeditcritic_v3_c3_online_training_runner": "IMPLEMENTED_AND_A100_REAL_MODEL_FORWARD_BACKWARD_TESTED_NOT_STARTED",
     "xeditcritic_v3_screen_gate": "IMPLEMENTED_STRICT_12_ARTIFACT_GATE_NOT_ADJUDICATED",
-    "xeditsetflow_v3": "NOT_YET_IMPLEMENTED",
+    "xeditsetflow_v3": "F1_F2_F3_CACHE_TRAINING_VALIDATION_AND_SCREEN_GATE_IMPLEMENTED_LOCAL_TESTED_NOT_STARTED",
     "guided_soft_value_smc": "BLOCKED_NOT_YET_IMPLEMENTED"
   },
   "training_attempt_created": false,

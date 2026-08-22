@@ -1873,3 +1873,23 @@ screen adjudicator 硬要求 C0/C1、C2/C3 full、每个 selectable arm 三项�
 permutation，共 12 个 exact artifacts；缺失/多余 artifact 或 protected outcome read 均硬失败。C2/C3
 只有各自完整 gate 全通过才 eligible；差值大于 0.005 选高者，否则选 C2。screen PASS 只授权
 confirmation，不授权 Development TEST。focused tests 本机/A100=19/19，V3.3.2=96/96；训练未启动。
+
+## XEditCritic V3 cache materialization 与 XEditSetFlow V3 implementation preflight（2026-08-23）
+
+Critic edit-site cache 已在 A100 physical GPU2 按低频监控纪律完成；完整载入验证为 107,873 records、
+346,862 ragged edits、43,730 unique sequences、76,159 unique sequence-position、embedding width 768，
+artifact size 433,780,150 bytes。payload 内 raw sequence、Development TEST 与 Evaluation record 计数均为
+0。cache/online 数值对齐预设三条记录覆盖 133-nt/1-edit、164-nt/7-edit 和 837-nt/1-edit，容差在读取
+差异前固定为 max abs 0.02 / mean abs 0.005；真实 A100 对齐需 current HEAD 同步后执行。
+
+XEditSetFlow V3 已实现 projection-only、outcome-free 的 set-marginal state/target、task/source-group balanced
+sampler、逐 source float16 mRNABERT token cache、F1 原 V2 两层 trunk 目标诊断、F2 8×384 与 F3 12×512
+hybrid local-attention+dilated-depthwise trunk、hard mask before rate normalization、独立 STOP head、common
+Validation set-NLL patience-2 早停、冻结 F0 epoch-1 common-NLL 只读回放、32-candidate unguided replay/G0/
+recovery validation 和严格 F2/F3 screen gate。真实容量为 F2=16,179,014、F3=42,197,158；F1 不可入选。
+
+SetFlow eligible geometry 为 TRAIN 68,294、VALIDATION 15,924、over-budget 排除 21,286/2,369、19,303
+unique sources、2,817,781 source tokens、maximum length 837。source-token cache 与任何 F1/F2/F3 参数更新
+均尚未启动；Base Flow V2 不重训。新增/相邻本机 focused tests=36/36、精确 V3.3.2=96/96。中央训练
+attempt 仍为 100 total / 92 completed / 3 failed / 3 incomplete / 1 stopped-throughput / 1 stopped-priority；
+Development TEST、新 final Evaluation、critic/generator success、guided authorization 与 submission-ready 均不变。

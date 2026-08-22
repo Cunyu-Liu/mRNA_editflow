@@ -1268,3 +1268,16 @@ finite output、identity zero、983,040 LoRA parameters 的 gradient 和 0 non-L
 C3 使用 effective batch32 / physical microbatch1，screen gate 只有在 C2/C3 full 各自胜过三项同几何
 control、permutation、C0 及全部绝对门槛时才允许选择；PASS 不开放 TEST。focused/V3.3.2 本机与
 A100 为 19/19、96/96。cache-online 数值一致性等待完整 cache materialization 后执行；screen 未启动。
+
+## XEditCritic V3 cache terminal 与 XEditSetFlow V3 implementation preflight（2026-08-23）
+
+本项没有 parameter update，因此中央 training attempt 不新增，保持 100 / 92 / 3 / 3 / 1 / 1。
+Critic cache 已在 A100 GPU2 terminal materialize 并完整载入验证：107,873 records、346,862 edits、
+43,730 sequences、76,159 sequence-position，raw sequence/TEST/Evaluation record 均为 0；正式
+cache-online 三几何数值对齐在 current HEAD 同步后执行。
+
+SetFlow V3 的 F1/F2/F3、set-marginal loss、balanced sampler、source-token cache、common-NLL trainer、
+F0 epoch-1 read-only replay、unguided recovery/G0 validator 与 strict screen gate 已实现。F2/F3 精确
+trainable parameters 为 16,179,014 / 42,197,158；合法 cohort 为 TRAIN 68,294、VALIDATION 15,924。
+source cache 与 formal training 尚未启动，Base Flow V2 terminal 不重跑；本机 focused/V3.3.2 为
+36/36、96/96。Development TEST/Evaluation read、model/generation success 与 submission-ready 均为 false。

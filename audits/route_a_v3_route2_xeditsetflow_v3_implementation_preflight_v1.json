@@ -1,0 +1,49 @@
+{
+  "schema_version": "route_a_v3_route2_xeditsetflow_v3_implementation_preflight.v1",
+  "status": "IMPLEMENTED_LOCAL_TESTED_A100_VALIDATION_PENDING",
+  "observed_date": "2026-08-23",
+  "data_boundary": {
+    "training_input": "DevelopmentProjectionV3_TRAIN_VALIDATION_ONLY",
+    "eligible_train_record_count": 68294,
+    "eligible_validation_record_count": 15924,
+    "train_over_budget_excluded": 21286,
+    "validation_over_budget_excluded": 2369,
+    "unique_source_count": 19303,
+    "unique_source_token_count": 2817781,
+    "maximum_source_length": 837,
+    "development_test_outcomes_accessed": false,
+    "evaluation_outcomes_accessed": false
+  },
+  "model_arms": {
+    "F0": {"trainable_parameters": 817957, "role": "TERMINAL_READ_ONLY_REFERENCE", "retrained": false},
+    "F1": {"role": "SET_MARGINAL_OBJECTIVE_DIAGNOSTIC_NOT_SELECTABLE", "hidden_width": 256, "depth": 2},
+    "F2": {"trainable_parameters": 16179014, "width": 384, "depth": 8, "ffn_width": 1536, "selectable": true},
+    "F3": {"trainable_parameters": 42197158, "width": 512, "depth": 12, "ffn_width": 2048, "selectable": true}
+  },
+  "implemented_boundaries": {
+    "set_marginal_remaining_true_edit_mass": true,
+    "completed_stop_vs_structural_budget_exhaustion_distinct": true,
+    "hard_legality_before_rate_normalization": true,
+    "task_source_group_balanced_sampling": true,
+    "states_per_record_per_pass": 2,
+    "effective_batch_size": 32,
+    "common_validation_nll_early_stopping_patience": 2,
+    "f0_epoch1_read_only_replay": true,
+    "unguided_candidate_cap": 32,
+    "fixed_seed_replay": true,
+    "measured_recovery_and_top_k_reported": true,
+    "critic_used_in_training_or_validation": false,
+    "independent_evaluator_used_in_training_or_validation": false
+  },
+  "tests": {
+    "local_focused_passed": 36,
+    "local_v332_passed": 96,
+    "a100_focused_passed": null,
+    "a100_v332_passed": null
+  },
+  "source_token_cache_materialized": false,
+  "training_attempt_created": false,
+  "setflow_screen_started": false,
+  "generation_success_established": false,
+  "submission_ready": false
+}
