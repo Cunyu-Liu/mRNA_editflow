@@ -1091,5 +1091,6 @@ generation wall time未被 terminal input 保留，明确记为缺口而不重�
 新增 `route2_v332_generation_action_space_geometry_table_v1.csv`、
 `route_a_v3_route2_generation_action_space_geometry_v1.json`，paper packet 现为 20 个唯一
 claim markers、17 个 evidence sources。本机 focused suite 为 39 passed、5 skipped、
-0 failed。本任务不新增中央训练 attempt，100-row 终态分布不变；forward claim 保持
-Benchmark+limits+negative result+data/action-space geometry。
+0 failed；A100 完整环境同组为 44/44 passed。本任务不新增中央训练 attempt，100-row
+终态分布不变；forward claim 保持 Benchmark+limits+negative result+data/action-space
+geometry。

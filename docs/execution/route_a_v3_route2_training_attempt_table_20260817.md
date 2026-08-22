@@ -502,7 +502,7 @@ source count 为 0，未知 outcome 不按 zero gain 或 canonical credit 处理
 draft/evidence/consistency manifests。per-candidate algorithmic STOP time 与六个 search
 方法的 generation wall time 不在 terminal selection input 中，继续记为
 `NOT_RETAINED/NOT_RECORDED`，不重跑或反推。focused suite 本机为 39 passed、
-5 skipped、0 failed。
+5 skipped、0 failed；A100 完整环境同组为 44/44 passed。
 
 本任务没有参数更新，中央训练 CSV 不增加 attempt；100 个唯一 attempts 的终态仍为
 92 `COMPLETED`、3 `FAILED`、3 `INCOMPLETE_NO_TERMINAL_RECORD`、1
