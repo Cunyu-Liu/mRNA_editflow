@@ -163,6 +163,10 @@ def equal_wall_time_sensitivity_v3(
             and set(map(str, per_source)) == set(ordered_sources),
             f"equal-wall closed source inventory differs: {method}",
         )
+    _require(
+        len(set(accelerator_by_method.values())) == 1,
+        "equal-wall accelerator model differs across methods",
+    )
     common_budget = min(total_by_method.values())
     completed_counts = {
         method: _prefix_count_within_budget(values, common_budget)

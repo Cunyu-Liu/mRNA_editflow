@@ -87,6 +87,13 @@ def test_equal_wall_rejects_mismatched_source_order_or_missing_timing() -> None:
         equal_wall_time_sensitivity_v3(
             times, closed, source_order=SOURCES, base_flow_training_seed=20260904
         )
+    times, closed = _inputs()
+    for row in times["strongest_matched_baseline"]:
+        row["accelerator_name"] = "NVIDIA A100-PCIE-40GB"
+    with pytest.raises(Exception, match="accelerator model differs"):
+        equal_wall_time_sensitivity_v3(
+            times, closed, source_order=SOURCES, base_flow_training_seed=20260904
+        )
 
 
 def test_equal_wall_preserves_undefined_closed_sources_without_zero_fill() -> None:
