@@ -1577,3 +1577,22 @@ consistency/evidence manifests；claim markers 保持 22。GitHub core commit `e
 `/mnt`），MBP=14/3/1、blockers=MBP-10/13/14/15、中央 100-row 92/3/3/1/1、model/
 biological/external/guided success=false、`minimum_package_complete=false`、
 `outcome_trigger_fully_satisfied=false` 与 `submission_ready=false` 均不变。
+
+## 61. V3.3.2 Data Availability section completion（2026-08-22）
+
+本项无训练命令、GPU 轮询或新 attempt。新增 `Data Availability` section、completion audit 与
+3 项 focused tests；同步 consistency/evidence manifests 和未决清单，只读取已有 data-rights audit、
+qualification table、合同 storage boundary 与 package 状态，不打开任何 protected outcome。
+
+statement 记录第三方 accession/locator 但不替代 current access、redistribution 或 reuse authority；
+当前 14-study inventory 没有 accountable-human-verified study-bound license，14/14 rights rows
+pending、0/14 public payload release authorized。Git 中的小型 aggregate tables/manifests/audits 仍是
+internal version-controlled evidence packet，不声明永久 archive；大型 canonical data、run products、
+checkpoints、weights、generated candidates 和运行产物保持在 `/mnt/.../route2/`，不声明 public
+release。没有 DOI/persistent identifier、availability-on-request promise 或未获授权的未来开放承诺。
+
+GitHub core commit `2faff4a` 已推送，A100 自 `e6e807a` 快进；本机/A100 V3.3.2 suite 均为
+63/63。evidence=57（43 local/contract、14 `/mnt`），claims=22、MBP=14/3/1、
+blockers=MBP-10/13/14/15、中央 100-row 92/3/3/1/1、public release/right review/
+stable repository/submission readiness=false 或 pending，`minimum_package_complete=false` 与
+`outcome_trigger_fully_satisfied=false` 均不变。

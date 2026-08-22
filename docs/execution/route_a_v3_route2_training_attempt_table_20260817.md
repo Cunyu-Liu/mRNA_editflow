@@ -958,3 +958,23 @@ A100 首次测试选择命令因远端无 `rg` 而误收集旧全测试树，该
 claims=22、figures/builders=7/6、MBP=14/3/1、blockers=MBP-10/13/14/15，中央 100-row
 92/3/3/1/1、`minimum_package_complete=false`、`outcome_trigger_fully_satisfied=false` 与
 `submission_ready=false` 均不变。
+
+## V3.3.2 Data Availability section completion（2026-08-22）
+
+按 Goal 7 顺序完成 Data Availability 内部 statement。本项不训练、不轮询 GPU/训练进度，不读取
+Development TEST、new final Evaluation、sealed payload、generated-candidate outcome 或 guided
+outcome。章节将第三方 source accession/locator、小型 version-controlled aggregate evidence 和
+`/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/` 下的大型非公开产物明确分层。
+
+当前清单中 accountable-human-verified study-bound license=0，14/14 license rows 仍待人工审查，
+public study-payload release authorization=0/14。正文不把 locator 写成当前 access/reuse authority，
+不把工作分支写成永久 archive/open-data release，也不声明 study payload、model weights 或 generated
+candidates 已公开；没有 availability-on-request promise、persistent repository identifier 或未来开放
+承诺。Data Availability section complete 只表示内部诚实陈述闭合，rights/content review、public
+release readiness 与 submission readiness 仍未完成。
+
+GitHub core commit `2faff4a` 已推送，A100 自 `e6e807a` 一次 fast-forward；本机/A100 全部
+V3.3.2 suite 均为 63/63。evidence sources=57（43 local/contract、14 `/mnt`），claims=22、
+figures/builders=7/6、MBP=14/3/1、blockers=MBP-10/13/14/15，中央 100-row 92/3/3/1/1、
+`minimum_package_complete=false`、`outcome_trigger_fully_satisfied=false` 与
+`submission_ready=false` 均不变。
