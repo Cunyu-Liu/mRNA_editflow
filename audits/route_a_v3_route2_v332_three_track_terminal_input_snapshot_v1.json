@@ -1,0 +1,152 @@
+{
+  "schema_version": "route_a_v3_route2_v332_three_track_terminal_input_snapshot.v1",
+  "status": "FROZEN_DEVELOPMENT_TERMINAL_FIELDS_CAPTURED_FOR_THREE_TRACK_TABLE",
+  "observed_at": "2026-08-22T15:12:28+08:00",
+  "capture_method": "READ_ONLY_FIELD_EXTRACTION_FROM_EXPLICIT_FROZEN_A100_JSON_PATHS",
+  "external_common_task_results": {
+    "Optimus5Prime": {
+      "task": "GSE114002|5UTR|MEAN_RIBOSOME_LOAD",
+      "record_count": 730,
+      "source_group_count": 231,
+      "task_macro_spearman": 0.31317602731628674,
+      "mae": 0.38513114300155904,
+      "source_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/external_lr1e3_wd1e4_replay_gpu5_v1/optimus5prime/validation_evaluation.json"
+    },
+    "FramePool": {
+      "task": "GSE114002|5UTR|MEAN_RIBOSOME_LOAD",
+      "record_count": 730,
+      "source_group_count": 231,
+      "task_macro_spearman": 0.2956108288221467,
+      "mae": 0.3808403499524595,
+      "source_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/external_lr1e3_wd1e4_replay_gpu5_v1/framepool/validation_evaluation.json"
+    },
+    "RNA-FM_MULTI_MOLECULE_CONVERSION": {
+      "task": "GSE114002|5UTR|MEAN_RIBOSOME_LOAD",
+      "record_count": 730,
+      "source_group_count": 231,
+      "task_macro_spearman": 0.13693731732817227,
+      "mae": 0.47297901675762727,
+      "source_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/external_lr1e3_wd1e4_replay_gpu5_v1/multimolecule_rnafm_frozen_linear_probe/validation_evaluation.json"
+    },
+    "UTR-LM": {
+      "task": "GSE114002|5UTR|MEAN_RIBOSOME_LOAD",
+      "record_count": 730,
+      "source_group_count": 231,
+      "task_macro_spearman": 0.1107267878538859,
+      "mae": 0.4483427366649748,
+      "source_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/utrlm_lr1e3_wd1e4_replay_gpu5_v1/validation_evaluation.json"
+    },
+    "APARENT": {
+      "task": "GSE269595|3UTR|PROXIMAL_POLYA_SITE_USAGE_LOG2_ODDS",
+      "record_count": 2628,
+      "source_group_count": 902,
+      "task_macro_spearman": 0.7343148901021292,
+      "mae": 1.2895561683404064,
+      "source_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/aparent_v1/validation_evaluation.json"
+    },
+    "RNA-FM_MULTI_MOLECULE_BOTTLENECK_ADAPTER": {
+      "task": "GSE114002|5UTR|MEAN_RIBOSOME_LOAD",
+      "record_count": 730,
+      "source_group_count": null,
+      "task_macro_spearman": 0.12191892642433695,
+      "mae": 0.4508232065206762,
+      "source_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/rnafm_bottleneck_adapter_grid_v1/summary.json"
+    }
+  },
+  "arch_controlled_prediction_results": {
+    "candidate_only_ridge": {
+      "metric_scope": "NINE_TASK_MACRO",
+      "record_count": 18293,
+      "task_count": 9,
+      "task_macro_spearman": 0.02275764507287449,
+      "secondary_metric_name": "source_macro_mae_raw_heterogeneous_scale",
+      "secondary_metric_value": 177.35157571032065,
+      "source_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/classical_v1/candidate_only_ridge/validation_evaluation.json"
+    },
+    "absolute_candidate_difference_ridge": {
+      "metric_scope": "NINE_TASK_MACRO",
+      "record_count": 18293,
+      "task_count": 9,
+      "task_macro_spearman": -0.03315841346225332,
+      "secondary_metric_name": "source_macro_mae_raw_heterogeneous_scale",
+      "secondary_metric_value": 45.14187010643951,
+      "source_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_hpo/classical_v1/absolute_candidate_difference_ridge/validation_evaluation.json"
+    },
+    "delta_main_2m_sequence_and_region_only_lr3e4": {
+      "metric_scope": "NINE_TASK_MACRO",
+      "record_count": 18293,
+      "task_count": 9,
+      "task_macro_spearman": 0.13333163818624325,
+      "secondary_metric_name": "source_macro_mae_raw_heterogeneous_scale",
+      "secondary_metric_value": 24.045169350806347,
+      "source_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_ablation/delta_main_2m_sequence_and_region_only_lr3e4_v1/validation_evaluation.json"
+    },
+    "delta_main_2m_5utr_multistudy_lr3e4": {
+      "metric_scope": "REGION_SUBSET_POOLED",
+      "record_count": 1226,
+      "task_count": null,
+      "task_macro_spearman": 0.041536690920337065,
+      "secondary_metric_name": "mae_raw_subset_scale",
+      "secondary_metric_value": 307.8708748163799,
+      "source_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_ablation/delta_main_2m_5utr_multistudy_lr3e4_v1/training_summary.json"
+    },
+    "delta_main_2m_3utr_multistudy_lr3e4": {
+      "metric_scope": "REGION_SUBSET_POOLED",
+      "record_count": 17067,
+      "task_count": null,
+      "task_macro_spearman": 0.15586902172622497,
+      "secondary_metric_name": "mae_raw_subset_scale",
+      "secondary_metric_value": 1.6431550710334315,
+      "source_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_ablation/delta_main_2m_3utr_multistudy_lr3e4_v1/training_summary.json"
+    },
+    "delta_main_2m_a1_only_multistudy_lr3e4": {
+      "metric_scope": "A1_ONLY_SUBSET_POOLED",
+      "record_count": 15665,
+      "task_count": null,
+      "task_macro_spearman": -0.005644049923808609,
+      "secondary_metric_name": "mae_raw_subset_scale",
+      "secondary_metric_value": 25.498433262216366,
+      "source_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_ablation/delta_main_2m_a1_only_multistudy_lr3e4_v1/training_summary.json"
+    },
+    "delta_main_2m_gse200304_only_lr3e4": {
+      "metric_scope": "SINGLE_STUDY_POOLED",
+      "record_count": 1614,
+      "task_count": null,
+      "task_macro_spearman": 0.01289414029728175,
+      "secondary_metric_name": "mae_raw_subset_scale",
+      "secondary_metric_value": 0.16821105189344066,
+      "source_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_ablation/delta_main_2m_gse200304_only_lr3e4_v1/training_summary.json"
+    },
+    "delta_main_2m_study_scale_calibration_lr3e4": {
+      "metric_scope": "NINE_TASK_MACRO",
+      "record_count": 18293,
+      "task_count": 9,
+      "task_macro_spearman": 0.117115973861744,
+      "secondary_metric_name": "source_macro_mae_raw_heterogeneous_scale",
+      "secondary_metric_value": 24.003153620499116,
+      "source_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_ablation/delta_main_2m_study_scale_calibration_lr3e4_v1/validation_evaluation.json"
+    },
+    "delta_main_2m_without_study_balance_lr3e4": {
+      "metric_scope": "NINE_TASK_MACRO",
+      "record_count": 18293,
+      "task_count": 9,
+      "task_macro_spearman": 0.1181609702369466,
+      "secondary_metric_name": "source_macro_mae_raw_heterogeneous_scale",
+      "secondary_metric_value": 23.992052002802062,
+      "source_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/development_ablation/delta_main_2m_without_study_balance_lr3e4_v1/validation_evaluation.json"
+    }
+  },
+  "aligned_a1_comparison": {
+    "status": "INPUTS_FROZEN_RESULT_NOT_MATERIALIZED",
+    "config": "configs/route_a_v3_route2_aligned_a1_multistudy_validation_config_v1.json",
+    "direct_numeric_comparison_allowed": false
+  },
+  "protected_outcomes": {
+    "development_test_read": false,
+    "new_final_evaluation_read": false,
+    "guided_xeditflow_run": false,
+    "generated_candidates_opened": false
+  },
+  "new_training_attempt_created": false,
+  "scientific_claim_status": "NOT_ESTABLISHED"
+}

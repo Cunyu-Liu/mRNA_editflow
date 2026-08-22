@@ -1,0 +1,47 @@
+{
+  "authority": {
+    "execution_protocol": "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/\u63d0\u793a\u8bcd/mrna V3.3.2 \u6267\u884c\u63d0\u793a\u8bcd.md",
+    "scientific_contract": "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/\u63d0\u793a\u8bcd/mrna \u6570\u636egate\u8f6c\u5411\u540e\u7684\u5408\u540c.md"
+  },
+  "execution_gaps": [
+    "No original-paper numeric native reproduction is retained for any Track A row.",
+    "The aligned A1-only versus A1+A2 inputs are frozen but the aligned result is not materialized.",
+    "Scratch versus frozen embedding is not a matched causal contrast in current terminal runs.",
+    "Generic trunk versus region adapter is not a terminal matched generation contrast.",
+    "First-order and frozen-critic guided generation remain unrun after Critic V2 NO-GO."
+  ],
+  "headline_horizontal_comparison_eligible_rows": 8,
+  "input_snapshot": "audits/route_a_v3_route2_v332_three_track_terminal_input_snapshot_v1.json",
+  "interpretation_rules": {
+    "architecture_controlled_results_enter_headline_horizontal_ranking": false,
+    "common_task_results_may_be_compared_only_within_same_task_scope": true,
+    "native_results_enter_current_headline": false,
+    "subset_pooled_metrics_ranked_against_nine_task_macro": false,
+    "task_mismatch_models_enter_headline": false
+  },
+  "new_training_attempt_created": false,
+  "numeric_result_counts": {
+    "ARCH_CONTROLLED": 26,
+    "COMMON_SOURCE_RELATIVE_TASK": 9,
+    "NATIVE_REPRODUCTION": 0
+  },
+  "protected_outcomes": {
+    "development_test_read": false,
+    "generated_candidates_opened": false,
+    "guided_xeditflow_run": false,
+    "new_final_evaluation_read": false
+  },
+  "reporting_table_complete": true,
+  "row_count": 52,
+  "schema_version": "route_a_v3_route2_v332_three_track_results_table.v1",
+  "scientific_claim_status": "NOT_ESTABLISHED",
+  "status": "THREE_TRACK_REPORTING_TABLE_RENDERED_EXECUTION_GAPS_DECLARED",
+  "submission_ready": false,
+  "table_path": "docs/paper/route2_v332_three_track_results_table_v1.csv",
+  "three_track_benchmark_execution_complete": false,
+  "track_counts": {
+    "ARCH_CONTROLLED": 30,
+    "COMMON_SOURCE_RELATIVE_TASK": 12,
+    "NATIVE_REPRODUCTION": 10
+  }
+}
