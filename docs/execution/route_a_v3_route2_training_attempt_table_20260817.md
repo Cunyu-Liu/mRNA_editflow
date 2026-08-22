@@ -871,3 +871,26 @@ claim markers=22、figures/builders=7/6、MBP=14/3/1、blockers=MBP-10/13/14/15�
 `submission_ready=false` 与 `scientific_claim_status=NOT_ESTABLISHED` 不变。中央 100 个
 attempts 仍为 92 `COMPLETED`、3 `FAILED`、3 `INCOMPLETE_NO_TERMINAL_RECORD`、1
 `STOPPED_FOR_THROUGHPUT_REPAIR`、1 `STOPPED_PRIORITY_REALLOCATION`。
+
+## V3.3.2 Data / rights / exposure limitations closure（2026-08-22）
+
+按 Goal 7 顺序完成 data/rights/exposure limitation 交付。本项为非训练 paper-table/audit
+task，不新增或修改中央 CSV attempt，不查询 GPU/训练进度，不读取 Development TEST、new
+final Evaluation、sealed payload、generated-candidate outcome 或 guided outcome。新增可复现
+builder、2 项独立 focused tests、14-row × 22-column CSV 与 audit，并将逐研究边界写入
+manuscript、evidence/consistency manifests 和 MBP-18。
+
+当前转换器或 preflight 记录中有 1 个 `true`、8 个 `false` 与 5 个无 Boolean 的公开再分发
+声明；唯一 `true` 为 GSE217518 的 converter output policy，不是经人工验证的数据许可证。
+当前 14-study inventory 没有逐研究绑定、accountable-human-verified license registry；所以
+14/14 仍为 `HUMAN_REVIEW_PENDING`，public study-payload release authorization=0/14。当前
+publication boundary 仅允许 aggregate results 与 source locators，不能声称 open-data package。
+
+Spreadsheet artifact import/render 分三段覆盖全部 22 列，15 行含表头，无错列、公式错误或
+关键边界丢失；GSE217518 的 declared `true` 与 `public_release_authorized=false` 同行保留。
+GitHub core commit `fe3fb6b` 已推送，A100 自 `799e156` 一次 fast-forward；本机和 A100
+全部 V3.3.2 paper/table/figure suite 均为 51/51。paper evidence sources=53（39
+local/contract、14 `/mnt`）、claims=22、figures/builders=7/6、MBP=14/3/1、
+blockers=MBP-10/13/14/15、`submission_ready=false` 不变；中央 100-row 仍为 92
+`COMPLETED`、3 `FAILED`、3 `INCOMPLETE_NO_TERMINAL_RECORD`、1
+`STOPPED_FOR_THROUGHPUT_REPAIR`、1 `STOPPED_PRIORITY_REALLOCATION`。

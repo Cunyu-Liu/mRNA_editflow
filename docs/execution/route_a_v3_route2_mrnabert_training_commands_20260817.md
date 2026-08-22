@@ -1497,3 +1497,24 @@ GitHub commit `e211212` 已推送；A100 自 `e6607f6` 一次 fast-forward 到 `
 A100 paper-evidence focused suite 均为 19/19。evidence sources=49（35 local/contract、14
 `/mnt`）、claims=22、figures/builders=7/6、MBP=14/3/1、blockers=MBP-10/13/14/15、
 中央 100-row 92/3/3/1/1 均不变。
+
+## 57. V3.3.2 Data / rights / exposure limitations closure（2026-08-22）
+
+本项无训练命令、无 GPU 轮询、无新 attempt。只读现有 14-study qualification table、paper
+evidence confidentiality/human-verification boundary，以及 11 个当前 converter/preflight rights
+locators；没有打开 canonical rows、Development TEST、new final Evaluation、sealed payload、
+generated candidates 或 guided outcome。
+
+新增 `build_route2_v332_data_rights_exposure_limitations_table_v1.py`、2 项 focused tests、
+14-row × 22-column CSV 与独立 audit。表中保留 1 true / 8 false / 5 not-Boolean 的 operational
+redistribution declarations，但 converter/preflight declaration 明确不等于 license verification；
+14/14 license rows 保持 human-review pending，0/14 public release authorized。GSE217518 的
+converter `true` 不能升级为 dataset license；GSE256185 的 raw/derived row-level redistribution
+均保留 NOT_AUTHORIZED；GSE207584/GSE261709 的 aggregate/member rights 限制也逐项登记。
+
+Spreadsheet import/inspect/formula scan 与三段 visual render 覆盖全部 15×22 cells；本机与
+A100 全部 V3.3.2 paper/table/figure suite 均为 51/51。GitHub core commit `fe3fb6b` 已推送，
+A100 自 `799e156` 一次 fast-forward。evidence sources=53（39 local/contract、14 `/mnt`），
+claims=22、figures/builders=7/6、MBP=14/3/1、blockers=MBP-10/13/14/15、
+`minimum_package_complete=false`、`submission_ready=false` 与中央 100-row 的 92/3/3/1/1
+终态均不变。
