@@ -47,6 +47,16 @@
     "screen_failure_terminal_status": "XEDITCRITIC_V3_SCREEN_NO_GO",
     "screen_pass_does_not_authorize_development_test": true
   },
+  "central_attempt_recording": {
+    "ledger_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiment_tracking/route2_training_attempts.csv",
+    "running_recorded_before_first_optimizer_step": true,
+    "completed_or_failed_terminal_upsert": true,
+    "exact_attempt_id_per_required_artifact": true,
+    "withheld_development_test_count_recorded": 18292,
+    "evaluation_record_count": 0,
+    "cache_arm_parameter_change_required": true,
+    "c3_head_and_lora_parameter_change_required": true
+  },
   "tests": {
     "local_focused_passed": 19,
     "a100_focused_passed": 19,

@@ -23,9 +23,11 @@
     "c3_candidate_bundle_permutation"
   ],
   "screen_gate_output": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditcritic_v3/screen_seed_20260830/screen_gate.json",
+  "experiment_ledger_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiment_tracking/route2_training_attempts.csv",
   "expected_record_count": 107873,
   "expected_train_count": 89580,
   "expected_validation_count": 18293,
+  "withheld_development_test_record_count": 18292,
   "pretrained_width": 768,
   "screen_seed": 20260830,
   "passes": 8,

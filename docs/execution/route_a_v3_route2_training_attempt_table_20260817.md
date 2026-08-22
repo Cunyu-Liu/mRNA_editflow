@@ -1291,3 +1291,7 @@ repair commit `f1b6131` 的 A100 v2 同阈值 revalidation PASS，三几何 max/
 anchored backward smoke 仍有 983,040 LoRA gradients、0 frozen-encoder gradients，且无 optimizer step。
 因此本项仍不新增 training attempt。修复 focused/V3.3.2 A100=15/15、96/96，SetFlow 实现全 focused/
 V3.3.2 A100=36/36、96/96；formal screen 尚未启动，中央 100-row 计数不变。
+
+Critic V3 C0–C3 已接入中央 ledger：RUNNING 必须先于首个 optimizer step，terminal success/failure
+原子 upsert 同一 attempt id；cache arm 无参数变化、或 C3 head/LoRA 任一未变化均硬失败。focused/
+V3.3.2 本机=13/13、96/96。该实现本身不新增 attempt；只有正式 screen arm 启动才将中央表从100行增加。

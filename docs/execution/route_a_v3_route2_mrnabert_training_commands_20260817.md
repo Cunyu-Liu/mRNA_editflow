@@ -1906,3 +1906,9 @@ observed max/mean difference 均为精确 0。独立真实 164-nt/7-edit backwar
 983,040 LoRA 参数的 32 个 tensor 均收到 gradient，non-LoRA encoder gradient count=0，loss finite，峰值
 显存 684,938,752 bytes；因此 cache anchoring 没有把适配分支常数化。A100 修复 focused=15/15、
 V3.3.2=96/96；SetFlow 全 focused=36/36、V3.3.2=96/96。Critic/SetFlow formal training 仍未启动。
+
+Critic C0–C3 runner 的中央尝试记录已补齐：每个 exact screen artifact 使用唯一 attempt id，在第一个
+optimizer step 前写 RUNNING，成功或异常时原子 upsert COMPLETED/FAILED；记录 TRAIN/VALIDATION/
+withheld TEST=89,580/18,293/18,292、Evaluation=0、参数量、GPU、updates、最终 Validation metrics 与
+wall/VRAM。cache arms 必须证明参数变化，C3 必须分别证明 head 与 LoRA 变化，否则不能写 COMPLETED。
+ledger focused/V3.3.2 本机=13/13、96/96；正式 C0 尚未启动，因此中央表此刻仍为 100 行。

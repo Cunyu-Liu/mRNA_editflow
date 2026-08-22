@@ -22,6 +22,12 @@ if str(REPO_ROOT) not in sys.path:
 
 from core.route2_development_projection_v3 import load_projection_rows
 from core.route2_edit_site_token_cache_v3 import load_edit_site_token_cache_v3
+from core.route2_experiment_ledger import build_training_attempt_row, record_training_attempt
+from core.route2_xeditcritic_ledger_v3 import (
+    critic_v3_attempt_config,
+    critic_v3_attempt_details,
+    critic_v3_ledger_paths,
+)
 from core.route2_xeditcritic_training_data_v3 import (
     SqrtTaskStudySourcePassSamplerV3,
     build_exact_source_task_candidate_bundle_permutation,
@@ -157,6 +163,16 @@ def run(
     _require(not output_directory.exists(), f"terminal run directory already exists: {output_directory}")
     output_directory.mkdir(parents=True)
     started = time.time()
+    attempt_config = critic_v3_attempt_config(
+        config,
+        run_id=run_id,
+        arm="C3",
+        control_mode=control_mode,
+        candidate_bundle_permutation=candidate_bundle_permutation,
+        physical_gpu_index=physical_gpu_index,
+    )
+    ledger_path, attempt_path = critic_v3_ledger_paths(config, output_directory)
+    attempt_details = critic_v3_attempt_details(config)
     try:
         records = records_from_projection_rows(
             load_projection_rows([Path(path) for path in config["projection_paths"]])
@@ -248,6 +264,30 @@ def run(
             ],
             weight_decay=float(config["weight_decay"]),
         )
+        total_trainable = model.trainable_parameter_count + encoder.trainable_parameter_count
+        attempt_details = critic_v3_attempt_details(
+            config,
+            trainable_parameter_count=total_trainable,
+            train_record_count=len(train_records),
+            validation_record_count=len(validation_records),
+        )
+        attempt_details["frozen_pretrained_parameter_count"] = 113_389_056
+        attempt_details["total_effective_parameter_count"] = total_trainable + 113_389_056
+        record_training_attempt(
+            ledger_path,
+            attempt_path,
+            build_training_attempt_row(
+                attempt_config,
+                output_directory,
+                "RUNNING",
+                repository_root=REPO_ROOT,
+                details=attempt_details,
+            ),
+        )
+        initial_head_parameter = next(model.parameters()).detach().clone()
+        initial_lora_parameters = [
+            parameter.detach().clone() for parameter in encoder.lora_parameters()
+        ]
         physical_microbatch_size = int(config["c3_physical_microbatch_records"])
         pass_rows = []
         update_count = 0
@@ -373,6 +413,19 @@ def run(
                 flush=True,
             )
 
+        head_parameter_changed = not torch.equal(
+            initial_head_parameter, next(model.parameters()).detach()
+        )
+        lora_parameter_changed = any(
+            not torch.equal(before, after.detach())
+            for before, after in zip(
+                initial_lora_parameters, encoder.lora_parameters(), strict=True
+            )
+        )
+        _require(
+            update_count > 0 and head_parameter_changed and lora_parameter_changed,
+            "C3 performed no learned head/LoRA update",
+        )
         lora_state = {
             name: parameter.detach().cpu()
             for name, parameter in encoder.named_parameters()
@@ -416,6 +469,10 @@ def run(
             "total_trainable_parameter_count": model.trainable_parameter_count + encoder.trainable_parameter_count,
             "pass_count": len(pass_rows),
             "update_count": update_count,
+            "head_parameter_changed": head_parameter_changed,
+            "lora_parameter_changed": lora_parameter_changed,
+            "cuda_training_tensors_verified": True,
+            "cpu_fallback_used": False,
             "peak_vram_bytes": torch.cuda.max_memory_allocated(device),
             "passes": pass_rows,
             "final_validation": pass_rows[-1]["validation"],
@@ -429,6 +486,25 @@ def run(
         }
         (output_directory / "run_summary.json").write_text(
             json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        )
+        record_training_attempt(
+            ledger_path,
+            attempt_path,
+            build_training_attempt_row(
+                attempt_config,
+                output_directory,
+                "COMPLETED",
+                repository_root=REPO_ROOT,
+                details={
+                    **attempt_details,
+                    "optimizer_steps": update_count,
+                    "selected_epoch": int(config["passes"]),
+                    "validation_metrics": pass_rows[-1]["validation"],
+                    "wall_time_seconds": summary["elapsed_seconds"],
+                    "peak_vram_mb": summary["peak_vram_bytes"] / 1024**2,
+                    "notes": "terminal prospective cache-anchored last-four-LoRA Critic V3 screen arm; no TEST or Evaluation access",
+                },
+            ),
         )
         return summary
     except Exception as exc:
@@ -447,6 +523,22 @@ def run(
         }
         (output_directory / "failure.json").write_text(
             json.dumps(failure, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+        )
+        record_training_attempt(
+            ledger_path,
+            attempt_path,
+            build_training_attempt_row(
+                attempt_config,
+                output_directory,
+                "FAILED",
+                repository_root=REPO_ROOT,
+                details={
+                    **attempt_details,
+                    "error_type": type(exc).__name__,
+                    "error": str(exc),
+                    "wall_time_seconds": failure["elapsed_seconds"],
+                },
+            ),
         )
         raise
 
