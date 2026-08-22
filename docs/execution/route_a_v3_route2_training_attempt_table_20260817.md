@@ -1450,3 +1450,10 @@ forward。每个 metric config 显式记录其报告 method 与 score-table meth
 open support 的算法差异继续由 recovery/diversity/cost 表达。合并 focused=184/184、V3.3.2=96/96、
 compile/diff-check PASS；readiness 前未执行 metric，Development TEST/new Evaluation read=0。A100 sync/test
 仍等待 launch-head `22317ed` active screen jobs terminal。
+
+## 05:34 scheduled screen status（2026-08-23）
+
+C1/F1/F2 仍为既有三个 RUNNING attempts，elapsed=3:17:35/1:47:26/1:32:29；没有 terminal summary 或
+error marker，因此中央 CSV 不改写状态、不新增行。GPU0–5 free memory=2,591/7,043/3,175/5,193/
+4,267/7,701 MiB，仍不足以安全启动 C2/C3/F3；未降低容量或使用 CPU fallback。A100 HEAD 继续为
+`22317ed`，下一次检查不早于 06:04:56。protected outcome 与 downstream authorization 状态不变。

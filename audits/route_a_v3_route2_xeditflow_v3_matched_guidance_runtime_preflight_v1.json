@@ -76,9 +76,11 @@
     "latest_scheduled_check": {
       "critic_c1": "RUNNING_NO_TERMINAL_NO_ERROR_MARKER",
       "setflow_f1": "RUNNING_NO_TERMINAL_NO_ERROR_MARKER",
-      "setflow_f2": "RUNNING_NO_TERMINAL_NO_ERROR_MARKER"
+      "setflow_f2": "RUNNING_NO_TERMINAL_NO_ERROR_MARKER",
+      "checked_at": "2026-08-23T05:34:56+08:00",
+      "next_check_not_before": "2026-08-23T06:04:56+08:00"
     },
-    "gpu_0_to_5_free_memory_mb": [2569, 5217, 3235, 5169, 4265, 4963],
+    "gpu_0_to_5_free_memory_mb": [2591, 7043, 3175, 5193, 4267, 7701],
     "gpu_0_to_5_utilization_percent": [100, 100, 100, 100, 100, 100],
     "f3_started": false,
     "critic_c2_c3_started": false,
