@@ -1406,3 +1406,32 @@ raster image；`publisher_compliance_claimed=false`。本机/A100 十三组 focu
 41/41；evidence sources=46（32 local/contract、14 A100 `/mnt`）、claims=22、
 figures/builders=7/6、MBP=14/3/1、blockers=MBP-10/13/14/15、`submission_ready=false` 和
 中央 100-row 的 92/3/3/1/1 终态不变。
+
+## 53. V3.3.2 Error / domain-shift analysis（2026-08-22）
+
+按 Goal 7 顺序交叉核查后确认真实缺口：Critic V2 九任务 control diagnostic、independent
+evaluator 九任务 error table 与 GSE232572 outcome-exposed historical transfer 分散在不同
+artifact，尚无统一的 region/assay/context boundary table。新增
+`build_route2_v332_error_domain_shift_analysis_table_v1.py`、2 项 focused tests、12-row ×
+41-column CSV 与 audit；不训练、不轮询 GPU/训练进度，不读取 Development TEST/new final
+Evaluation/guided outcome。
+
+表格严格拆成 9 个 Development task-region rows 和 3 个 historical seed rows。Development
+部分覆盖 7 studies/7 assays、18,293 Validation records；Critic V2 task-level Spearman
+相对 strongest same-information baseline 为 4 win/5 loss，standardized MAE 为 0 win/9
+loss。task size 为 48--12,048；剔除两个 n=48 task 的七任务 margin 只保留为 post hoc
+geometry，不替换 frozen gate。independent evaluator 为 5/9 positive tasks，Spearman 范围
+[-0.10916458562634956, 0.7619576378536184]。
+
+5′UTR 的 4-task descriptive Critic margin/evaluator macro Spearman 为
+-0.031473208428386926 / 0.02852402190396145；3′UTR 的 5-task 对应值为
+-0.0024401503869468017 / 0.16179874676488382。两者被 study、assay、context、endpoint、
+task size 混杂，不作 region effect；terminal task aggregates 也不能识别 within-assay
+context error。三条 GSE232572 seed 保持历史 outcome-exposed 状态，rank CI 仅 2/3 排除
+零、MAE 三条均 favor baseline，不能作 final confirmation。Spreadsheet artifact 验证为
+12×41，跨层缺失字段保持空白，12 行 external confirmation 均 false。
+
+GitHub commit `39ce66d` 已推送；A100 自 `e7af043` 一次 fast-forward 到 `39ce66d`，本机/
+A100 十四组联合 focused suite 均为 44/44。paper evidence sources=48（34 local/contract、
+14 A100 `/mnt`）、claims=22、figures/builders=7/6、MBP=14/3/1、
+blockers=MBP-10/13/14/15、`submission_ready=false` 与中央 100-row 92/3/3/1/1 均不变。

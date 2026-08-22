@@ -782,3 +782,31 @@ image。该检查不等于 publisher compliance；target journal/article type/ph
 本机与 A100 十三组联合 focused suite 均为 41/41。paper evidence sources=46（32
 local/contract + 14 `/mnt`）、claim markers=22、figures/builders=7/6、MBP=14/3/1、
 blockers=MBP-10/13/14/15、`submission_ready=false` 与中央 100-row 92/3/3/1/1 均不变。
+
+## Error / domain-shift analysis（2026-08-22）
+
+本项为非训练 paper-table/audit task，不新增或修改中央 CSV attempt，也不查询训练/GPU
+进度。只读取已经封存的九任务 Development Validation critic/evaluator 汇总、converter
+元数据和 outcome-exposed GSE232572 历史 zero-shot 汇总；未读取 Development TEST、新
+final Evaluation、generated candidates 或 guided outcome。
+
+新增 builder、2 项 focused tests、12-row × 41-column CSV 与独立 audit。前 9 行按 study、
+assay、region 和 aggregate context 汇总 Development task error；后 3 行单独保留 GSE232572
+三个历史 seed，跨层不可用指标全部留空。Spreadsheet 类型/空值检查确认 9 个 Development
+行不含 historical metrics，3 个 historical 行不含 Development critic/evaluator metrics，
+12 行均为 `external_confirmation_eligible=false`。
+
+Critic V2 相对 strongest same-information baseline 的 task-level Spearman 为 4 胜 5 负，
+standardized MAE 为 0 胜 9 负；九任务平均 margin 分别为 -0.01534373173869797 和
++0.4161680105385127。task n 为 48--12,048（251 倍）。5′UTR/3′UTR 的 descriptive
+region summaries 分别来自 4/5 个不同 task，并被 study、assay、context、endpoint 和 task
+size 混杂；persisted terminal aggregates 不能识别 within-assay context effect。GSE232572
+仍有 2/3 rank-improvement CI 下界大于 0，但三条 seed 的 baseline-MAE minus model-MAE
+均为负，`preregistered_pass=false`，只作 negative historical transfer。
+
+GitHub commit `39ce66d` 已推送并在 A100 一次 fast-forward；本机与 A100 十四组联合
+focused suite 均为 44/44。paper evidence sources=48（34 local/contract + 14 `/mnt`）、
+claim markers=22、figures/builders=7/6、MBP=14/3/1、blockers=MBP-10/13/14/15、
+`submission_ready=false` 与 `scientific_claim_status=NOT_ESTABLISHED` 不变。中央 100 个
+attempts 仍为 92 `COMPLETED`、3 `FAILED`、3 `INCOMPLETE_NO_TERMINAL_RECORD`、1
+`STOPPED_FOR_THROUGHPUT_REPAIR`、1 `STOPPED_PRIORITY_REALLOCATION`。
