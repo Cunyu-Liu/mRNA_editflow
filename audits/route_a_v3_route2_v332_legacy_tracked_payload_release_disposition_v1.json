@@ -1,7 +1,7 @@
 {
   "schema_version": "route_a_v3_route2_v332_legacy_tracked_payload_release_disposition.v1",
-  "status": "FIVE_LEGACY_PAYLOADS_TRACKED_FOUR_DIRECT_LEGACY_READERS_FAIL_CLOSED_FORMAL_RELEASE_BLOCKED_MIGRATION_NOT_AUTHORIZED",
-  "observed_at": "2026-08-22T19:23:59+08:00",
+  "status": "FIVE_LEGACY_PAYLOADS_TRACKED_FOUR_DIRECT_LEGACY_READERS_FAIL_CLOSED_PARQUET_PRODUCER_DEFAULT_OUTSIDE_GIT_FORMAL_RELEASE_BLOCKED_MIGRATION_NOT_AUTHORIZED",
+  "observed_at": "2026-08-22T19:30:27+08:00",
   "scope": "PATH_TRACKING_SIZE_AND_TEXT_REFERENCE_AUDIT_ONLY_NO_PAYLOAD_CONTENT_OPENED",
   "authority": {
     "scientific_contract": "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna 数据gate转向后的合同.md",
@@ -22,7 +22,7 @@
       "kind": "LEGACY_DISCOVERY_PARQUET",
       "current_route2_v332_runtime_dependency": false,
       "text_producer": "scripts/data/import_excel_inventory.py",
-      "current_disposition": "TRACKED_CONFLICTS_WITH_FORMAL_RELEASE_BOUNDARY"
+      "current_disposition": "TRACKED_CONFLICTS_WITH_FORMAL_RELEASE_BOUNDARY_FUTURE_PRODUCER_DEFAULT_REDIRECTED_TO_MNT"
     },
     {
       "path": "data/b0_splits/split_study_disjoint.jsonl",
@@ -61,6 +61,9 @@
     "excel_inventory_parquet_producer_files": [
       "scripts/data/import_excel_inventory.py"
     ],
+    "excel_inventory_parquet_producer_default_output": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/data_registry/excel_inventory.parquet",
+    "excel_inventory_small_audit_default_output": "docs/data/excel_inventory_audit.md",
+    "excel_inventory_parquet_producer_default_inside_git": false,
     "excel_inventory_parquet_current_route2_consumer_files": [],
     "legacy_b0_direct_reader_entrypoints": [
       "d1_staging/scripts/b0/audit_split_manifests.py",
@@ -88,10 +91,9 @@
   "code_availability_statement_requires_legacy_payload_qualification": true,
   "recommended_disposition": {
     "decision": "LEGACY_READERS_FAIL_CLOSED_AWAIT_EXPLICIT_USER_AUTHORIZATION_TO_MIGRATE_FIVE_PAYLOADS_OUT_OF_CURRENT_HEAD",
-    "reason": "The four direct legacy readers now reject the superseded repository-root B0 directory before any canonical or manifest input read, while preserving the four JSONL files unmodified. The five tracked payloads still violate the current V3.3.2 formal-release Git boundary, and their copy/removal remains outside this task without explicit authorization.",
+    "reason": "The four direct legacy readers now reject the superseded repository-root B0 directory before any canonical or manifest input read, while preserving the four JSONL files unmodified. Future Excel inventory generation now defaults to the Route 2 /mnt data_registry while its small audit remains in Git. The five existing tracked payloads still violate the current V3.3.2 formal-release Git boundary, and their copy/removal remains outside this task without explicit authorization.",
     "ordered_actions_not_yet_executed": [
       "Copy the five payloads to /mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/legacy_repository_payloads/ with a small provenance note; do not add project-generated checksums.",
-      "Change the Excel inventory producer default away from the Git tree and retain only its small audit summary in Git.",
       "After explicit deletion/migration authorization, stop tracking the five payloads in the current HEAD and add narrow ignore rules for the same generated paths.",
       "Re-run focused and full V3.3.2 tests, then re-adjudicate the formal release candidate."
     ],
@@ -106,6 +108,7 @@
     "payload_moved": false,
     "git_history_rewritten": false,
     "legacy_reader_behavior_changed": true,
+    "excel_inventory_producer_default_changed": true,
     "formal_release_or_tag_created": false
   },
   "protected_outcomes": {

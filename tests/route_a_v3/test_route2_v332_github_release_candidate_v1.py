@@ -120,6 +120,11 @@ def test_candidate_registers_tracked_payload_policy_without_opening_or_removing_
     assert policy["legacy_b0_guarded_direct_reader_count"] == 4
     assert policy["legacy_b0_unguarded_direct_reader_count"] == 0
     assert policy["legacy_b0_active_loader_negative_test_evidence_present"] is True
+    assert policy["legacy_excel_inventory_producer_default_output"] == (
+        "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/data_registry/"
+        "excel_inventory.parquet"
+    )
+    assert policy["legacy_excel_inventory_producer_default_inside_git"] is False
     assert policy["recommended_disposition"] == (
         "LEGACY_READERS_FAIL_CLOSED_AWAIT_EXPLICIT_USER_AUTHORIZATION_TO_"
         "MIGRATE_FIVE_PAYLOADS_OUT_OF_CURRENT_HEAD"

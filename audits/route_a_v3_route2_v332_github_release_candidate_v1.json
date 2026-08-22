@@ -96,7 +96,7 @@
       {
         "path": "data_registry/excel_inventory.parquet",
         "size_bytes": 46498,
-        "current_reference_state": "REFERENCED_BY_LEGACY_DATA_IMPORT_AND_AUDIT_MATERIAL"
+        "current_reference_state": "TRACKED_LEGACY_OUTPUT_FUTURE_PRODUCER_DEFAULT_REDIRECTED_OUTSIDE_GIT"
       }
     ],
     "tracked_legacy_b0_jsonl_files": [
@@ -129,6 +129,8 @@
       "d1_staging/scripts/fm0/fm0_exposure_audit.py"
     ],
     "legacy_b0_active_loader_negative_test_evidence_present": true,
+    "legacy_excel_inventory_producer_default_output": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/data_registry/excel_inventory.parquet",
+    "legacy_excel_inventory_producer_default_inside_git": false,
     "recommended_disposition": "LEGACY_READERS_FAIL_CLOSED_AWAIT_EXPLICIT_USER_AUTHORIZATION_TO_MIGRATE_FIVE_PAYLOADS_OUT_OF_CURRENT_HEAD",
     "legacy_preservation_boundary": "The legacy v3.1 contract requires these B0 JSONL files to remain unmodified and active loaders to reject them. All four direct legacy readers now fail closed on the preserved repository-root directory with focused negative-loader coverage. Migration of the five tracked payloads out of the current HEAD still requires explicit user authorization."
   },

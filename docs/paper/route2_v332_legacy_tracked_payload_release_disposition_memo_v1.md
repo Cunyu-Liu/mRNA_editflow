@@ -33,27 +33,29 @@ They now share `d1_staging/scripts/b0/legacy_split_guard.py`, which raises
 the requested split root is the preserved repository directory. Seven focused
 tests cover the shared guard, all four command entrypoints, unchanged JSONL
 sizes and guard-before-load ordering. The discovery Parquet has one producer,
-`scripts/data/import_excel_inventory.py`, but no current Route 2 consumer.
-Retaining the five files in a formal release still violates the current Git
-payload boundary.
+`scripts/data/import_excel_inventory.py`, but no current Route 2 consumer. That
+producer now defaults future Parquet output to
+`/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/data_registry/excel_inventory.parquet`
+while retaining the small audit Markdown in Git. Its audit renderer records the
+actual selected Parquet path instead of a hard-coded repository path. This does
+not move or stop tracking the existing file. Retaining the five files in a
+formal release still violates the current Git payload boundary.
 
 ## Ordered migration after authorization
 
 1. Preserve the five payloads under
    `/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/legacy_repository_payloads/`
    with a small provenance note. Do not create project-generated checksum files.
-2. Change the Excel inventory producer default away from the Git tree, retaining
-   only its small audit summary in Git.
-3. After explicit deletion/migration authorization, stop tracking the five
+2. After explicit deletion/migration authorization, stop tracking the five
    payloads in the current HEAD and add narrow ignore rules for the same paths.
-4. Run focused and full V3.3.2 tests and re-adjudicate the internal release
+3. Run focused and full V3.3.2 tests and re-adjudicate the internal release
    candidate. A formal tag/Release remains unauthorized until that adjudication.
 
 ## Current boundary
 
 This memo authorizes no deletion, move, copy, history rewrite, release or tag.
-It records a narrow behavior change to the four legacy readers only; no tracked
-payload was opened or modified.
+It records narrow behavior changes to the four legacy readers and the future
+Excel-inventory output default only; no tracked payload was opened or modified.
 It corrects the release description: large Route 2 runtime artifacts remain
 outside Git, but five legacy data payloads are still tracked in the working
 repository and therefore keep the formal-release payload boundary non-compliant.

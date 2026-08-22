@@ -11,13 +11,28 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT))
 
 from scripts.data.import_excel_inventory import (
+    DEFAULT_AUDIT_PATH,
+    DEFAULT_PARQUET_PATH,
     EXPECTED_MODEL_ROWS,
     EXPECTED_RESOURCE_ROWS,
     INVENTORY_KINDS,
     acceptance_checks,
+    build_parser,
     build_inventory,
     classify_resource,
 )
+
+
+def test_default_generated_parquet_is_outside_git_and_audit_remains_in_git():
+    args = build_parser().parse_args([])
+    assert Path(args.parquet) == DEFAULT_PARQUET_PATH
+    assert DEFAULT_PARQUET_PATH == Path(
+        "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/data_registry/"
+        "excel_inventory.parquet"
+    )
+    assert REPO_ROOT not in DEFAULT_PARQUET_PATH.parents
+    assert Path(args.audit_md) == DEFAULT_AUDIT_PATH
+    assert DEFAULT_AUDIT_PATH == REPO_ROOT / "docs/data/excel_inventory_audit.md"
 
 
 def _write_catalog(path: Path, n_models: int = 0, n_resources: int = 0) -> None:
@@ -140,3 +155,5 @@ def test_cli_end_to_end(tmp_path):
     assert len(out) == EXPECTED_MODEL_ROWS + EXPECTED_RESOURCE_ROWS + EXPECTED_MODEL_ROWS
     text = audit.read_text(encoding="utf-8")
     assert "PASS" in text and "FAIL" not in text
+    assert f"- output: `{parquet}`" in text
+    assert "- output: `data_registry/excel_inventory.parquet`" not in text

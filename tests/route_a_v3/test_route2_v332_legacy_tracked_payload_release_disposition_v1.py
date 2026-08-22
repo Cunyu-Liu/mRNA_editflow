@@ -80,6 +80,7 @@ def test_five_payloads_are_tracked_with_declared_sizes_without_content_reads() -
         "payload_moved": False,
         "git_history_rewritten": False,
         "legacy_reader_behavior_changed": True,
+        "excel_inventory_producer_default_changed": True,
         "formal_release_or_tag_created": False,
     }
 
@@ -105,6 +106,15 @@ def test_four_direct_legacy_readers_are_guarded_with_negative_test_evidence() ->
     assert audit["legacy_b0_guarded_direct_reader_count"] == 4
     assert audit["legacy_b0_unguarded_direct_reader_count"] == 0
     assert audit["legacy_b0_active_loader_negative_test_evidence_present"] is True
+    inventory = audit["text_reference_inventory"]
+    assert inventory["excel_inventory_parquet_producer_default_output"] == (
+        "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/data_registry/"
+        "excel_inventory.parquet"
+    )
+    assert inventory["excel_inventory_small_audit_default_output"] == (
+        "docs/data/excel_inventory_audit.md"
+    )
+    assert inventory["excel_inventory_parquet_producer_default_inside_git"] is False
 
 
 def test_release_documents_report_the_conflict_without_claiming_migration() -> None:
@@ -124,6 +134,7 @@ def test_release_documents_report_the_conflict_without_claiming_migration() -> N
     assert policy["automatic_removal_performed"] is False
     assert "five files total 34,786,075 bytes" in draft
     assert "they now fail closed with `SUPERSEDED_NOT_LOADABLE`" in draft
+    assert "defaults future Parquet output to the Route 2 `/mnt` data registry" in draft
     assert "not eligible for a formal release" in draft
     assert all(value is False for value in audit["protected_outcomes"].values())
 
@@ -137,10 +148,11 @@ def test_recommendation_records_fail_close_and_requires_migration_authorization(
         "LEGACY_READERS_FAIL_CLOSED_AWAIT_EXPLICIT_USER_AUTHORIZATION_TO_"
         "MIGRATE_FIVE_PAYLOADS_OUT_OF_CURRENT_HEAD"
     )
-    assert len(recommendation["ordered_actions_not_yet_executed"]) == 4
+    assert len(recommendation["ordered_actions_not_yet_executed"]) == 3
     assert recommendation["shared_git_history_rewrite_recommended_in_this_task"] is False
     assert recommendation["shared_git_history_rewrite_requires_separate_explicit_authorization"] is True
     assert recommendation["formal_release_or_tag_before_resolution_authorized"] is False
     assert "Do not create a formal tag or GitHub Release from the current HEAD" in memo
     assert "legacy B0 readers now fail closed" in memo
+    assert "producer now defaults future Parquet output" in memo
     assert "This memo authorizes no deletion, move, copy, history rewrite, release or tag" in memo

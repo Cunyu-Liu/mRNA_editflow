@@ -20,6 +20,7 @@
     "package_metadata_and_standalone_license_state_reported": true,
     "large_artifacts_excluded_from_code_release": true,
     "legacy_tracked_payload_conflict_and_fail_closed_readers_reported": true,
+    "legacy_excel_inventory_producer_default_outside_git_reported": true,
     "code_availability_on_request_not_promised": true,
     "release_requirements_reported": true
   },
@@ -58,6 +59,8 @@
     "legacy_b0_guarded_direct_reader_count": 4,
     "legacy_b0_unguarded_direct_reader_count": 0,
     "legacy_b0_active_loader_negative_test_evidence_present": true,
+    "legacy_excel_inventory_producer_default_output": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/data_registry/excel_inventory.parquet",
+    "legacy_excel_inventory_producer_default_inside_git": false,
     "formal_release_payload_boundary_compliant": false,
     "legacy_payload_migration_authorized": false,
     "legacy_payload_content_opened_for_release_audit": false

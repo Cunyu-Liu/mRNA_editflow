@@ -463,7 +463,7 @@
       "evidence_id": "E-R2-LEGACY-PAYLOAD-DISPOSITION-AUDIT",
       "kind": "derived_legacy_tracked_payload_release_disposition_audit",
       "location": "audits/route_a_v3_route2_v332_legacy_tracked_payload_release_disposition_v1.json",
-      "locator": "path/tracking/size/text-reference-only audit of one legacy Parquet and four superseded B0 JSONL files: five tracked files, 34786075 total bytes, four direct legacy B0 reader entrypoints now fail closed before input reads with focused negative-loader evidence, no payload content opened or modified, and an ordered migration recommendation requiring explicit user authorization",
+      "locator": "path/tracking/size/text-reference-only audit of one legacy Parquet and four superseded B0 JSONL files: five tracked files, 34786075 total bytes, four direct legacy B0 reader entrypoints now fail closed before input reads with focused negative-loader evidence, future Excel inventory Parquet defaults to the Route 2 /mnt data registry, no payload content opened or modified, and an ordered migration recommendation requiring explicit user authorization",
       "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING",
       "external_evidence": false
     },
@@ -503,7 +503,7 @@
       "evidence_id": "E-R2-CODE-AVAILABILITY-COMPLETION-AUDIT",
       "kind": "derived_code_availability_section_completion_audit",
       "location": "audits/route_a_v3_route2_v332_code_availability_completion_v1.json",
-      "locator": "internal Code Availability statement binding the GitHub working-repository locator and Route 2 branch while retaining no public-access assertion, no V3.3.2 release tag or persistent archive, no archived container and no clean-environment Route 2 reproduction; five tracked legacy payloads keep the formal-release payload boundary non-compliant while all four direct readers now fail closed; Proprietary package metadata, no standalone LICENSE and no code-on-request promise",
+      "locator": "internal Code Availability statement binding the GitHub working-repository locator and Route 2 branch while retaining no public-access assertion, no V3.3.2 release tag or persistent archive, no archived container and no clean-environment Route 2 reproduction; five tracked legacy payloads keep the formal-release payload boundary non-compliant while all four direct readers now fail closed and future Excel inventory Parquet defaults outside Git; Proprietary package metadata, no standalone LICENSE and no code-on-request promise",
       "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING",
       "external_evidence": false
     },

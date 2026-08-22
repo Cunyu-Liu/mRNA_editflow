@@ -23,7 +23,7 @@ Mapping rules (deterministic, frozen for D0-01):
   code verification source (paper or official-repo URL evidence).
 
 Outputs:
-    data_registry/excel_inventory.parquet
+    /mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/data_registry/excel_inventory.parquet
     docs/data/excel_inventory_audit.md
 
 Usage:
@@ -39,6 +39,9 @@ from pathlib import Path
 import pandas as pd
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+ROUTE2_STORAGE_ROOT = Path("/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2")
+DEFAULT_PARQUET_PATH = ROUTE2_STORAGE_ROOT / "data_registry/excel_inventory.parquet"
+DEFAULT_AUDIT_PATH = REPO_ROOT / "docs/data/excel_inventory_audit.md"
 
 MODEL_SHEET = "模型适配排序"
 RESOURCE_SHEET = "数据集资源排序"
@@ -251,7 +254,12 @@ def _display_path(path: Path) -> str:
         return str(path)
 
 
-def render_audit_md(df: pd.DataFrame, excel_path: Path, checks) -> str:
+def render_audit_md(
+    df: pd.DataFrame,
+    excel_path: Path,
+    parquet_path: Path,
+    checks,
+) -> str:
     kind_counts = df["inventory_kind"].value_counts().to_dict()
     models = df[df["sheet"] == MODEL_SHEET]
     resources = df[df["sheet"] == RESOURCE_SHEET]
@@ -262,7 +270,7 @@ def render_audit_md(df: pd.DataFrame, excel_path: Path, checks) -> str:
         "",
         f"- input: `{_display_path(excel_path)}`",
         f"- input sha256: `{sha256_of(excel_path)}`",
-        f"- output: `data_registry/excel_inventory.parquet`",
+        f"- output: `{_display_path(parquet_path)}`",
         f"- total Excel data rows classified: {len(df)}",
         "",
         "## Sheet inventory",
@@ -325,7 +333,7 @@ def render_audit_md(df: pd.DataFrame, excel_path: Path, checks) -> str:
     return "\n".join(lines)
 
 
-def main(argv=None) -> int:
+def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--excel",
@@ -333,12 +341,17 @@ def main(argv=None) -> int:
     )
     parser.add_argument(
         "--parquet",
-        default=str(REPO_ROOT / "data_registry/excel_inventory.parquet"),
+        default=str(DEFAULT_PARQUET_PATH),
     )
     parser.add_argument(
         "--audit-md",
-        default=str(REPO_ROOT / "docs/data/excel_inventory_audit.md"),
+        default=str(DEFAULT_AUDIT_PATH),
     )
+    return parser
+
+
+def main(argv=None) -> int:
+    parser = build_parser()
     args = parser.parse_args(argv)
 
     excel_path = Path(args.excel)
@@ -354,7 +367,10 @@ def main(argv=None) -> int:
     checks = acceptance_checks(df)
     audit_path = Path(args.audit_md)
     audit_path.parent.mkdir(parents=True, exist_ok=True)
-    audit_path.write_text(render_audit_md(df, excel_path, checks), encoding="utf-8")
+    audit_path.write_text(
+        render_audit_md(df, excel_path, parquet_path, checks),
+        encoding="utf-8",
+    )
 
     for name, passed, detail in checks:
         print(f"{'PASS' if passed else 'FAIL'}: {name} ({detail})")

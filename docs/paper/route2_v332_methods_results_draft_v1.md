@@ -945,7 +945,9 @@ tracks one legacy discovery Parquet and four superseded B0 JSONL payloads. The
 five files total 34,786,075 bytes and conflict with the V3.3.2 formal-release
 payload boundary. Four callable legacy entrypoints previously read the old B0
 split directory; they now fail closed with `SUPERSEDED_NOT_LOADABLE` before any
-input read, with focused negative-loader coverage. No payload was opened, moved,
+input read, with focused negative-loader coverage. The legacy discovery
+producer now defaults future Parquet output to the Route 2 `/mnt` data registry
+while retaining its small audit summary in Git. No payload was opened, moved,
 deleted or modified for this audit, and the branch is not eligible for a formal
 release until the tracked-payload disposition is resolved.
 No code-availability-on-request promise is made. A release claim requires an
