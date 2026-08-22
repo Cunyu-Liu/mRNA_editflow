@@ -67,6 +67,15 @@ def validate_smc_run_config_v3(config: Mapping[str, Any]) -> None:
     _require(config.get("replay_check") is True, "SMC replay check was disabled")
 
 
+def total_maximum_forward_equivalents_v3(
+    generation_maximum: int, reserved_terminal_critic_forwards: int
+) -> int:
+    total = int(generation_maximum) + int(reserved_terminal_critic_forwards)
+    _require(0 <= generation_maximum and reserved_terminal_critic_forwards == 3, "SMC final compute components differ")
+    _require(total <= 320, "SMC final compute exceeds the matched ceiling")
+    return total
+
+
 def load_value_checkpoint_v3(
     path: Path,
     *,
@@ -251,7 +260,10 @@ def run(config: Mapping[str, Any], *, output_dir: Path) -> dict[str, Any]:
         "kappa": float(config["kappa"]),
         "temperature": float(config["temperature"]),
         "beta_max": float(config["beta_max"]),
-        "maximum_forward_equivalents_per_source": maximum_compute,
+        "maximum_generation_forward_equivalents_per_source": maximum_compute,
+        "maximum_forward_equivalents_per_source": total_maximum_forward_equivalents_v3(
+            maximum_compute, int(config["reserved_terminal_critic_forwards"])
+        ),
         "forward_equivalent_ceiling_per_source": 320,
         "reserved_terminal_critic_forwards_per_source": 3,
         "additional_sampling_rounds_used_when_candidate_cap_not_reached": True,

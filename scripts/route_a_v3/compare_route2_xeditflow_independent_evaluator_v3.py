@@ -73,7 +73,10 @@ def compare_independent_evaluator_v3(config: Mapping[str, Any]) -> dict[str, Any
     _require(strongest.get("evaluation_outcomes_accessed") is False, "strongest baseline accessed Evaluation")
     strongest_id = str(strongest["strongest_generation_baseline_id"])
     selection = _json(Path(config["baseline_selection_input_path"]))
-    _require(selection.get("selection_pool") == "DEVELOPMENT_VALIDATION", "baseline selection pool differs")
+    _require(
+        selection.get("selection_pool") == "DEVELOPMENT_MEASURED_NEIGHBORHOOD",
+        "baseline selection pool differs",
+    )
     _require(selection.get("evaluation_release_state") == "CLOSED", "baseline selection opened Evaluation")
     entries = [row for row in selection["baseline_evaluations"] if str(row["method_id"]) == strongest_id]
     _require(len(entries) == 1, "strongest baseline evaluation entry differs")

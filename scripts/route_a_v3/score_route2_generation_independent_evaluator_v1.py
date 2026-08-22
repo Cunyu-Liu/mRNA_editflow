@@ -55,6 +55,21 @@ def _require(condition: bool, message: str) -> None:
         raise IndependentEvaluatorError(message)
 
 
+def guiding_checkpoint_paths(config: Mapping[str, Any]) -> list[Path]:
+    multiple = config.get("guiding_checkpoint_paths")
+    singular = config.get("guiding_checkpoint_path")
+    _require(not (multiple is not None and singular is not None), "guiding checkpoint fields are ambiguous")
+    if multiple is not None:
+        _require(
+            isinstance(multiple, list)
+            and len(multiple) == 3
+            and len({str(value) for value in multiple}) == 3,
+            "guiding checkpoint ensemble differs",
+        )
+        return [Path(str(value)).resolve() for value in multiple]
+    return [] if singular is None else [Path(str(singular)).resolve()]
+
+
 def _normalize(value: Any) -> str:
     sequence = str(value).upper().replace("T", "U")
     _require(sequence and set(sequence) <= set(TOKEN), "sequence is outside the RNA alphabet")
@@ -278,9 +293,11 @@ def execute(config: Mapping[str, Any], output_path: Path) -> dict[str, Any]:
     _require(config["evaluator_frozen_before_candidate_generation"] is True, "independent evaluator was not pre-frozen")
     _require(config["evaluation_outcomes_used_to_select_evaluator"] == 0, "Evaluation selected the independent evaluator")
     evaluator_path = Path(config["evaluator_checkpoint_path"]).resolve()
-    guiding_path = config.get("guiding_checkpoint_path")
-    if guiding_path is not None:
-        _require(evaluator_path != Path(guiding_path).resolve(), "independent evaluator and guiding critic are the same checkpoint")
+    guiding_paths = guiding_checkpoint_paths(config)
+    _require(
+        all(evaluator_path != path for path in guiding_paths),
+        "independent evaluator and guiding critic are the same checkpoint",
+    )
     _require(str(config["device"]).startswith("cuda"), "independent evaluator scoring requires CUDA")
     _require(not os.environ.get("CUDA_VISIBLE_DEVICES"), "CUDA_VISIBLE_DEVICES remapping is forbidden for physical-device provenance")
     _require(torch.cuda.is_available(), "CUDA is unavailable")
@@ -311,10 +328,13 @@ def execute(config: Mapping[str, Any], output_path: Path) -> dict[str, Any]:
         ),
         "independent_evaluator_forwards_by_source": forwards,
         "evaluator_checkpoint_path": str(evaluator_path),
-        "guiding_checkpoint_path": None if guiding_path is None else str(Path(guiding_path).resolve()),
+        "guiding_checkpoint_path": (
+            str(guiding_paths[0]) if len(guiding_paths) == 1 else None
+        ),
+        "guiding_checkpoint_paths": [str(path) for path in guiding_paths],
         "evaluator_result_stage": scorer.training_provenance["result_stage"],
         "evaluator_frozen_before_candidate_generation": True,
-        "guiding_checkpoint_distinct": guiding_path is None or evaluator_path != Path(guiding_path).resolve(),
+        "guiding_checkpoint_distinct": all(evaluator_path != path for path in guiding_paths),
         "evaluation_outcomes_used_to_select_evaluator": 0,
         "physical_gpu_index": int(config["physical_gpu_index"]),
         "device": str(device),

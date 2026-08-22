@@ -1,0 +1,60 @@
+{
+  "schema_version": "route_a_v3_route2_xeditflow_v3_final_execution_chain_preflight.v1",
+  "status": "IMPLEMENTED_LOCAL_TESTED_EXECUTION_BLOCKED_BY_FROZEN_READINESS",
+  "observed_date": "2026-08-23",
+  "final_seed_pipeline": {
+    "base_flow_training_seeds": [20260904, 20260905, 20260906],
+    "methods_per_seed": 6,
+    "open_metric_jobs_per_seed": 5,
+    "closed_trajectory_jobs_per_seed": 4,
+    "closed_frozen_score_jobs_per_seed": 2,
+    "independent_evaluator_comparisons_per_seed": 1,
+    "source_paired_bootstrap_iterations": 10000,
+    "three_seed_manifest_required": true,
+    "fourth_training_seed_authorized": false
+  },
+  "corrected_runtime_boundaries": {
+    "frozen_strongest_selection_pool": "DEVELOPMENT_MEASURED_NEIGHBORHOOD",
+    "obsolete_selection_pool_string_removed": "DEVELOPMENT_VALIDATION",
+    "independent_evaluator_must_differ_from_all_three_critic_refit_checkpoints": true,
+    "critic_refit_seed_inventory": [20260831, 20260901, 20260902],
+    "frozen_strongest_method": "genetic",
+    "frozen_strongest_forward_ceiling": 320
+  },
+  "compute_accounting": {
+    "full_smc_generation_forwards_reported_separately": true,
+    "terminal_critic_members_reserved_and_executed": 3,
+    "headline_maximum_includes_terminal_critic_members": true,
+    "headline_ceiling_per_source": 320,
+    "previous_underreporting_path_fixed_before_execution": true
+  },
+  "finalization": {
+    "per_seed_evidence_assembler": "scripts/route_a_v3/assemble_route2_xeditflow_final_seed_evidence_v3.py",
+    "three_seed_manifest_composer": "scripts/route_a_v3/compose_route2_xeditflow_final_comparison_manifest_v3.py",
+    "terminal_adjudicator": "scripts/route_a_v3/adjudicate_route2_xeditflow_final_v3.py",
+    "replacement_evaluation_only_after_terminal_pass": true,
+    "submission_ready_after_internal_pass": false
+  },
+  "tests": {
+    "local_xeditflow_v3_focused_passed": 82,
+    "local_xeditflow_v3_focused_failed": 0,
+    "local_independent_evaluator_focused_passed": 4,
+    "local_independent_evaluator_focused_failed": 0,
+    "local_exact_v332_passed": 96,
+    "local_exact_v332_failed": 0,
+    "python_compile_passed": true,
+    "git_diff_check_passed": true,
+    "a100_status": "PENDING_ACTIVE_SCREEN_JOBS_MUST_KEEP_LAUNCH_COMMIT_PROVENANCE",
+    "a100_current_head": "22317ed"
+  },
+  "protected_data": {
+    "development_test_outcomes_accessed": false,
+    "new_final_evaluation_outcomes_accessed": false
+  },
+  "authorization": {
+    "final_seed_pipeline_executed": false,
+    "final_adjudication_executed": false,
+    "new_final_evaluation_authorized": false,
+    "submission_ready": false
+  }
+}

@@ -43,6 +43,7 @@ def build_final_generation_configs_v3(
     setflow_confirmation: Mapping[str, Any],
     critic_refit_manifest: Mapping[str, Any],
     guidance_screen_gate: Mapping[str, Any],
+    strongest_generation_baseline: Mapping[str, Any],
     setflow_runtimes: Mapping[int, Mapping[str, Any]],
 ) -> dict[str, Any]:
     _require(config.get("schema_version") == "route_a_v3_route2_xeditflow_final_generation_prepare.v1", "unexpected final-generation prepare schema")
@@ -52,6 +53,32 @@ def build_final_generation_configs_v3(
         critic_refit_manifest.get("status") == "XEDITCRITIC_V3_ALL_DEVELOPMENT_REFIT_COMPLETE"
         and len(critic_refit_manifest.get("checkpoints", ())) == 3,
         "final generation Critic refit differs",
+    )
+    ordered_critic_checkpoints = sorted(
+        critic_refit_manifest["checkpoints"], key=lambda row: int(row["seed"])
+    )
+    _require(
+        tuple(int(row["seed"]) for row in ordered_critic_checkpoints)
+        == (20260831, 20260901, 20260902),
+        "final generation Critic refit seeds differ",
+    )
+    critic_checkpoint_paths = [
+        str(row["checkpoint_path"])
+        for row in ordered_critic_checkpoints
+    ]
+    _require(len(set(critic_checkpoint_paths)) == 3, "final generation Critic checkpoint paths differ")
+    _require(
+        strongest_generation_baseline.get("status")
+        == "DEVELOPMENT_STRONGEST_GENERATION_BASELINE_FROZEN_INDEPENDENT_EVALUATOR_ONLY"
+        and strongest_generation_baseline.get("strongest_generation_baseline_id") == "genetic"
+        and strongest_generation_baseline.get("evaluation_outcomes_accessed") is False
+        and int(strongest_generation_baseline.get("forward_equivalent_budget_per_source", -1)) == 320,
+        "final generation strongest baseline differs",
+    )
+    _require(
+        str(config["independent_evaluator_checkpoint_path"])
+        == str(strongest_generation_baseline["independent_evaluator_checkpoint_path"]),
+        "final generation independent evaluator differs from frozen strongest selection",
     )
     _require(
         guidance_screen_gate.get("status") == "XEDITFLOW_V3_GUIDANCE_SCREEN_FROZEN"
@@ -307,6 +334,129 @@ def build_final_generation_configs_v3(
             "base_flow_training_seed": seed,
             "output_dir": str(seed_root / "generation" / "strongest_matched_baseline"),
         }
+        full_generation_root = seed_root / "generation" / "full_soft_value_smc"
+        full_raw_candidates = full_generation_root / "generated_candidates.private.jsonl"
+        full_critic_root = full_generation_root / "critic_ensemble"
+        full_scored_candidates = full_critic_root / "critic_scored_candidates.private.jsonl"
+        full_independent_scored = full_generation_root / "independent_evaluator_scored_candidates.private.jsonl"
+        metric_root = seed_root / "metrics"
+        full_critic_score_config = {
+            "schema_version": "route_a_v3_route2_xeditflow_critic_ensemble_score_config.v1",
+            "critic_readiness_path": str(config["critic_readiness_path"]),
+            "setflow_confirmation_path": str(config["setflow_confirmation_path"]),
+            "critic_refit_manifest_path": str(config["critic_refit_manifest_path"]),
+            "mrnabert_model_path": str(config["mrnabert_model_path"]),
+            "source_eligibility_manifest": str(runtime["source_eligibility_manifest"]),
+            "validation_projection_path": str(runtime["validation_projection_path"]),
+            "candidate_path": str(full_raw_candidates),
+            "method_id": "full_soft_value_smc",
+            "base_flow_training_seed": seed,
+            "kappa": kappa,
+            "critic_batch_size": 256,
+            "critic_online_microbatch_size": 4,
+            "physical_gpu_index": gpu,
+            "device": f"cuda:{gpu}",
+            "output_dir": str(full_critic_root),
+        }
+        open_metric_configs = {}
+        open_metric_output_paths = {}
+        for method in (
+            "full_soft_value_smc",
+            "unguided_setflow",
+            "first_order_guidance",
+            "simple_rate_guidance",
+            "generate_then_rerank",
+        ):
+            candidate_path = (
+                full_scored_candidates
+                if method == "full_soft_value_smc"
+                else seed_root / "generation" / method / "generated_candidates.private.jsonl"
+            )
+            open_metric_configs[method] = {
+                "schema_version": "route_a_v3_route2_xeditflow_open_generation_config.v1",
+                "pool_assignment": "DEVELOPMENT",
+                "candidate_support_mode": "OPEN_GENERATED_SUPPORT",
+                "undefined_outcome_policy": "UNKNOWN_NOT_ZERO",
+                "source_eligibility_manifest": str(runtime["source_eligibility_manifest"]),
+                "candidate_path": str(candidate_path),
+                "measured_neighborhood_path": str(config["measured_neighborhood_path"]),
+                "measured_top_k": 10,
+            }
+            open_metric_output_paths[method] = str(metric_root / f"open_{method}.json")
+        independent_evaluator_config = {
+            "schema_version": "route_a_v3_route2_generation_independent_evaluator_job.v1",
+            "method_id": "full_soft_value_smc",
+            "evaluator_checkpoint_path": str(config["independent_evaluator_checkpoint_path"]),
+            "guiding_checkpoint_paths": critic_checkpoint_paths,
+            "source_manifest_path": str(runtime["source_eligibility_manifest"]),
+            "evaluator_frozen_before_candidate_generation": True,
+            "evaluation_outcomes_used_to_select_evaluator": 0,
+            "device": f"cuda:{gpu}",
+            "physical_gpu_index": gpu,
+            "candidate_path": str(full_scored_candidates),
+        }
+        independent_evaluator_comparison_config = {
+            "schema_version": "route_a_v3_route2_xeditflow_independent_evaluator_comparison_config.v1",
+            "strongest_baseline_path": str(config["strongest_generation_baseline_path"]),
+            "baseline_selection_input_path": str(config["baseline_selection_input_path"]),
+            "source_eligibility_manifest": str(runtime["source_eligibility_manifest"]),
+            "guided_scored_candidate_path": str(full_independent_scored),
+            "bootstrap_iterations": 10_000,
+            "bootstrap_seed": int(config["decoder_seed_base"]) + seed,
+        }
+        closed_summary_paths = {
+            method: str(seed_root / "closed" / method / "run_summary.json")
+            for method in closed_trajectory_configs
+        }
+        closed_score_metric_output_paths = {
+            method: str(metric_root / f"closed_{method}.json")
+            for method in closed_score_metric_configs
+        }
+        closed_summary_paths.update(closed_score_metric_output_paths)
+        generation_summary_paths = {
+            "full_soft_value_smc": str(full_generation_root / "run_summary.json"),
+            **{
+                method: str(seed_root / "generation" / method / "run_summary.json")
+                for method in controls
+            },
+            "strongest_matched_baseline": str(
+                seed_root / "generation" / "strongest_matched_baseline" / "generation.json"
+            ),
+        }
+        open_summary_paths = {
+            **open_metric_output_paths,
+            "strongest_matched_baseline": str(
+                seed_root / "generation" / "strongest_matched_baseline" / "open.json"
+            ),
+        }
+        final_seed_evidence_config = {
+            "schema_version": "route_a_v3_route2_xeditflow_final_seed_evidence_config.v1",
+            "base_flow_training_seed": seed,
+            "methods": {
+                method: {
+                    "closed_summary_path": closed_summary_paths[method],
+                    "open_summary_path": open_summary_paths[method],
+                    "generation_summary_path": generation_summary_paths[method],
+                }
+                for method in (
+                    "full_soft_value_smc",
+                    "unguided_setflow",
+                    "first_order_guidance",
+                    "simple_rate_guidance",
+                    "generate_then_rerank",
+                    "strongest_matched_baseline",
+                )
+            },
+            "full_independent_evaluator_path": str(
+                metric_root / "independent_evaluator_full_vs_strongest.json"
+            ),
+            "full_candidate_path": str(full_scored_candidates),
+            "unguided_candidate_path": str(
+                seed_root / "generation" / "unguided_setflow" / "generated_candidates.private.jsonl"
+            ),
+            "bootstrap_iterations": 10_000,
+            "bootstrap_seed": int(config["decoder_seed_base"]) + seed + 100_000,
+        }
         seed_jobs.append(
             {
                 "base_flow_training_seed": seed,
@@ -321,9 +471,23 @@ def build_final_generation_configs_v3(
                 "closed_frozen_score_configs": closed_frozen_score_configs,
                 "closed_score_metric_configs": closed_score_metric_configs,
                 "strongest_adapter_job": strongest_adapter_job,
+                "full_critic_score_config": full_critic_score_config,
+                "open_metric_configs": open_metric_configs,
+                "open_metric_output_paths": open_metric_output_paths,
+                "independent_evaluator_config": independent_evaluator_config,
+                "independent_evaluator_scored_candidate_path": str(full_independent_scored),
+                "independent_evaluator_comparison_config": independent_evaluator_comparison_config,
+                "independent_evaluator_comparison_output_path": str(
+                    metric_root / "independent_evaluator_full_vs_strongest.json"
+                ),
+                "closed_score_metric_output_paths": closed_score_metric_output_paths,
+                "final_seed_evidence_config": final_seed_evidence_config,
+                "final_seed_evidence_output_dir": str(seed_root / "final_evidence"),
             }
         )
     _require(len(seed_jobs) == 3 and sum(job["value_rollout_config"] is not None for job in seed_jobs) == 2, "final generation job inventory differs")
+    final_comparison_path = output_root / "final_comparison" / "manifest.json"
+    final_adjudication_path = output_root / "final_comparison" / "adjudication.json"
     return {
         "schema_version": "route_a_v3_route2_xeditflow_final_generation_manifest.v1",
         "status": "XEDITFLOW_V3_FINAL_GENERATION_CONFIGS_PREPARED_NOT_STARTED",
@@ -333,6 +497,16 @@ def build_final_generation_configs_v3(
         "selected_setflow_arm": selected_arm,
         "required_base_flow_training_seeds": list(SEEDS),
         "seed_jobs": seed_jobs,
+        "three_seed_finalization": {
+            "guidance_screen_gate_path": str(config["guidance_screen_gate_path"]),
+            "seed_manifest_row_paths": [
+                str(output_root / f"seed{seed}" / "final_evidence" / "seed_manifest_row.json")
+                for seed in SEEDS
+            ],
+            "final_comparison_manifest_path": str(final_comparison_path),
+            "final_adjudication_path": str(final_adjudication_path),
+            "replacement_evaluation_authorized_only_by_final_adjudication": True,
+        },
         "additional_seed_authorized": False,
         "development_test_outcomes_accessed": False,
         "new_final_evaluation_outcomes_accessed": False,
@@ -358,7 +532,17 @@ def write_manifest_v3(payload: Mapping[str, Any], output_dir: Path) -> None:
         for method, config in job["closed_score_metric_configs"].items():
             (output_dir / f"closed_score_metric_{method}_seed{seed}.json").write_text(json.dumps(config, indent=2, sort_keys=True) + "\n", encoding="utf-8")
         (output_dir / f"strongest_adapter_seed{seed}.json").write_text(json.dumps(job["strongest_adapter_job"], indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        (output_dir / f"full_critic_score_seed{seed}.json").write_text(json.dumps(job["full_critic_score_config"], indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        for method, config in job["open_metric_configs"].items():
+            (output_dir / f"open_metric_{method}_seed{seed}.json").write_text(json.dumps(config, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        (output_dir / f"independent_evaluator_seed{seed}.json").write_text(json.dumps(job["independent_evaluator_config"], indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        (output_dir / f"independent_evaluator_comparison_seed{seed}.json").write_text(json.dumps(job["independent_evaluator_comparison_config"], indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        (output_dir / f"final_seed_evidence_seed{seed}.json").write_text(json.dumps(job["final_seed_evidence_config"], indent=2, sort_keys=True) + "\n", encoding="utf-8")
     (output_dir / "manifest.json").write_text(json.dumps(dict(payload), indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    (output_dir / "three_seed_finalization.json").write_text(
+        json.dumps(payload["three_seed_finalization"], indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
 
 
 def main() -> None:
@@ -374,6 +558,7 @@ def main() -> None:
         setflow_confirmation=_json(Path(config["setflow_confirmation_path"])),
         critic_refit_manifest=_json(Path(config["critic_refit_manifest_path"])),
         guidance_screen_gate=_json(Path(config["guidance_screen_gate_path"])),
+        strongest_generation_baseline=_json(Path(config["strongest_generation_baseline_path"])),
         setflow_runtimes={seed: _json(path) for seed, path in runtime_paths.items()},
     )
     write_manifest_v3(payload, args.output_dir)

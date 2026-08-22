@@ -42,7 +42,7 @@ def test_independent_evaluator_margin_is_source_paired(tmp_path) -> None:
         "per_source": {"s": {"independent_evaluator_score": {"max_uplift_over_source": 0.1}}},
     }
     selection.write_text(json.dumps({
-        "selection_pool": "DEVELOPMENT_VALIDATION",
+        "selection_pool": "DEVELOPMENT_MEASURED_NEIGHBORHOOD",
         "evaluation_release_state": "CLOSED",
         "baseline_evaluations": [{
             "method_id": "genetic",

@@ -113,3 +113,22 @@ def test_independent_evaluator_batches_unique_sequences_per_source() -> None:
     assert scorer.calls == [("AAAA", "CAAA", "GAAA")]
     assert forwards == {"S": 3}
     assert sum(row["independent_evaluator_forwards"] for row in rows) == 3
+
+
+def test_independent_evaluator_accepts_exact_three_member_guiding_ensemble() -> None:
+    module = _load()
+    paths = module.guiding_checkpoint_paths(
+        {"guiding_checkpoint_paths": ["/mnt/a.pt", "/mnt/b.pt", "/mnt/c.pt"]}
+    )
+    assert [path.name for path in paths] == ["a.pt", "b.pt", "c.pt"]
+    with pytest.raises(module.IndependentEvaluatorError, match="ensemble differs"):
+        module.guiding_checkpoint_paths(
+            {"guiding_checkpoint_paths": ["/mnt/a.pt", "/mnt/a.pt", "/mnt/c.pt"]}
+        )
+    with pytest.raises(module.IndependentEvaluatorError, match="ambiguous"):
+        module.guiding_checkpoint_paths(
+            {
+                "guiding_checkpoint_path": "/mnt/a.pt",
+                "guiding_checkpoint_paths": ["/mnt/a.pt", "/mnt/b.pt", "/mnt/c.pt"],
+            }
+        )

@@ -2111,3 +2111,22 @@ jobs、2 个 frozen-score jobs、2 个 score-metric jobs 与 1 个只读 stronge
 所有 runner 均受 Critic readiness + SetFlow confirmation 双 gate 阻塞，当前没有执行 closed benchmark、没有
 读取 Development TEST/new Evaluation outcome，也没有产生新的模型优势结果。本项不新增中央 optimizer
 attempt；A100 tests/sync 仍等 active screen jobs terminal 后执行，远端 HEAD 保持 `22317ed`。
+
+## XEditFlow V3 final execution chain 与 compute 修正（2026-08-23）
+
+final preparer 现不只生成训练/采样配置，而是为三个 frozen base-flow seed 串齐 full Critic ensemble scoring、
+五种新方法的 open metrics、六方法 closed metrics、full-vs-frozen-strongest independent-evaluator comparison、
+per-seed source-paired bootstrap、3×6 evidence manifest 和 terminal adjudication 输入。每个 seed 都绑定同一
+selected κ/τ/β，不进行第二次 HPO；三个 seed row 缺一不可进入最终裁决，第四个 training seed不被授权。
+
+实现过程中修复了两处会影响正式结果的 pre-execution 接线问题。第一，历史 strongest artifact 的真实
+selection pool 是 `DEVELOPMENT_MEASURED_NEIGHBORHOOD`，旧 comparison runner 错写为
+`DEVELOPMENT_VALIDATION`，会在真实 artifact 上硬失败；现已与冻结 selection schema 一致。第二，full SMC
+headline maximum 之前只包含 base+value forwards，漏掉已预留且由三名 critic member 实际执行的 3 次终态
+forward；现在同时报告 generation subtotal，并把 `+3` 纳入 assembler 读取的 maximum，超过 320 会硬失败。
+
+independent evaluator 现在必须同时区别于三个 frozen Critic refit checkpoints，而不是只比较一个路径；
+preparer 还核对 evaluator 路径、genetic strongest identity、320 ceiling 和三个 Critic seed inventory 与冻结
+artifacts 一致。本批 XEditFlow V3 focused=82/82，independent-evaluator focused=4/4，本地精确
+V3.3.2=96/96，compile/diff-check PASS。没有执行 final pipeline，没有读取 Development TEST/new
+Evaluation，也不改变 readiness/submission 状态；本项不新增中央 optimizer attempt。

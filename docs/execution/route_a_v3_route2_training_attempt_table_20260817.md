@@ -1384,6 +1384,19 @@ undefined source 不填零，旧 open NDCG 不复用；simple-rate 不被替换�
 通过，故本项只完成实现与 preflight，没有执行 closed outcome benchmark、没有访问 Development TEST 或
 new Evaluation；guidance、replacement Evaluation 和 submission-ready 仍为 false。
 
+## XEditFlow V3 final execution-chain preflight（2026-08-23）
+
+本项不新增 optimizer attempt。三个 frozen base-flow seed 的 full/control/closed/open/independent-evaluator/
+bootstrap/final-evidence job chain 已完整 materialize；每 seed 精确六方法，最终只允许 3×6 manifest。修复了
+两个正式执行前的可达错误：strongest selection pool 现使用真实冻结值
+`DEVELOPMENT_MEASURED_NEIGHBORHOOD`；full SMC headline compute 现把三名 terminal Critic member
+forwards 加入 generation subtotal，若总数超过 320/source 即失败。independent evaluator 也必须与三个
+Critic refit checkpoint 全部分离，并与 frozen genetic strongest artifact 中的 evaluator 路径一致。
+
+XEditFlow V3 focused=82/82、independent-evaluator focused=4/4、本机精确 V3.3.2=96/96、compile/
+diff-check PASS。当前所有 final jobs 仍被 readiness 双 gate 阻塞，未执行 final comparison，未访问
+Development TEST/new Evaluation；replacement Evaluation authorization=false，submission-ready=false。
+
 ## XEditCritic V3 C0 terminal 与 SetFlow source-cache terminal（2026-08-23）
 
 第二次合同节奏检查时，C0 已 terminal，C1 仍运行。C0 使用 seed20260830、8 passes、22,416 updates，

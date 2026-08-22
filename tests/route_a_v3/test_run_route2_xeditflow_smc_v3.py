@@ -2,7 +2,10 @@ from __future__ import annotations
 
 import pytest
 
-from scripts.route_a_v3.run_route2_xeditflow_smc_v3 import validate_smc_run_config_v3
+from scripts.route_a_v3.run_route2_xeditflow_smc_v3 import (
+    total_maximum_forward_equivalents_v3,
+    validate_smc_run_config_v3,
+)
 
 
 def _config():
@@ -26,6 +29,12 @@ def _config():
 
 def test_smc_run_config_matches_frozen_particles_grid_compute_and_replay() -> None:
     validate_smc_run_config_v3(_config())
+    assert total_maximum_forward_equivalents_v3(317, 3) == 320
+
+
+def test_smc_final_compute_rejects_unreported_terminal_overage() -> None:
+    with pytest.raises(Exception, match="exceeds"):
+        total_maximum_forward_equivalents_v3(318, 3)
 
 
 @pytest.mark.parametrize(
