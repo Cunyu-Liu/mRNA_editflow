@@ -14,6 +14,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from core.route2_xeditflow_gate_v3 import GUIDANCE_GRID_V3, authorize_xeditflow_guidance_v3
+from core.route2_xeditflow_guidance_v3 import TERMINAL_CRITIC_FORWARD_RESERVATION_V3
 
 
 class GuidanceScreenConfigV3Error(RuntimeError):
@@ -135,7 +136,7 @@ def build_guidance_screen_configs_v3(config: Mapping[str, Any]) -> dict[str, Any
             "ess_threshold": 16.0,
             "resampling": "STRATIFIED",
             "forward_equivalent_ceiling_per_source": 320,
-            "reserved_terminal_critic_forwards": 3,
+            "reserved_terminal_critic_forwards": TERMINAL_CRITIC_FORWARD_RESERVATION_V3,
             "maximum_sampling_rounds": 32,
             "action_space": "SUB+STOP",
             "replay_check": True,

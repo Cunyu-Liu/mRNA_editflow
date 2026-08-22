@@ -5,6 +5,7 @@ import pytest
 from scripts.route_a_v3.generate_route2_xeditflow_value_rollouts_v3 import (
     XEditFlowValueRolloutRunnerV3Error,
     _critic_examples_v3,
+    critic_member_forward_batch_count_v3,
     validate_value_rollout_config_v3,
 )
 
@@ -72,3 +73,28 @@ def test_generated_critic_examples_are_study_neutral_and_bundle_complete() -> No
     assert example["study"] == 0
     assert example["edits"] == ((1, "C", "A"),)
     assert example["target_scale"] == 1.0
+
+
+def test_critic_member_forward_count_uses_unique_rows_and_physical_microbatches() -> None:
+    descriptor = {
+        "quantity_family": "RNA abundance",
+        "measurement_form": "log2 fold",
+        "numerator_family": "__NONE__",
+        "denominator_family": "__NONE__",
+    }
+    rows = [
+        {
+            "source_sequence": "AAAAA",
+            "candidate_sequence": candidate,
+            "task_id": "task",
+            "endpoint_descriptor": descriptor,
+            "assay_category": "assay",
+            "context_category": "context",
+            "region_id": 0,
+        }
+        for candidate in ("CAAAA", "GAAAA", "UAAAA", "ACAAA", "AGAAA")
+    ]
+    rows.append(dict(rows[0]))
+    assert critic_member_forward_batch_count_v3(rows, microbatch_size=4) == 2
+    with pytest.raises(XEditFlowValueRolloutRunnerV3Error):
+        critic_member_forward_batch_count_v3([], microbatch_size=4)

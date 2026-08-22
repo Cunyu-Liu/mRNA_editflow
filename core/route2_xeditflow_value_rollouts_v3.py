@@ -244,16 +244,29 @@ def attach_candidate_critic_rewards_v3(
     member_rows: Mapping[int, Sequence[Mapping[str, Any]]],
     *,
     kappa: float,
+    microbatch_size: int,
 ) -> list[dict[str, Any]]:
     """Attach study-neutral ensemble diagnostics without changing generation rank."""
 
     _require(float(kappa) in {0.0, 0.5, 1.0}, "candidate Critic uncertainty penalty differs")
+    _require(microbatch_size > 0, "candidate Critic microbatch size is invalid")
     _require(tuple(sorted(member_rows)) == CRITIC_SEEDS_V3, "candidate Critic seeds differ")
     _require(
         all(len(member_rows[seed]) == len(candidate_rows) for seed in CRITIC_SEEDS_V3),
         "candidate Critic prediction counts differ",
     )
     result = []
+    candidate_counts_by_source: dict[str, int] = {}
+    for candidate in candidate_rows:
+        source_key = str(candidate["source_key"])
+        candidate_counts_by_source[source_key] = (
+            candidate_counts_by_source.get(source_key, 0) + 1
+        )
+    forward_equivalents_by_source = {
+        source_key: len(CRITIC_SEEDS_V3)
+        * math.ceil(candidate_count / microbatch_size)
+        for source_key, candidate_count in candidate_counts_by_source.items()
+    }
     billed_sources: set[str] = set()
     for index, candidate in enumerate(candidate_rows):
         predictions = []
@@ -269,7 +282,11 @@ def attach_candidate_critic_rewards_v3(
         sd = math.sqrt(math.fsum((value - mean) ** 2 for value in predictions) / 3.0)
         reward = mean - float(kappa) * sd
         source_key = str(candidate["source_key"])
-        critic_forwards = 0 if source_key in billed_sources else 3
+        critic_forwards = (
+            0
+            if source_key in billed_sources
+            else forward_equivalents_by_source[source_key]
+        )
         billed_sources.add(source_key)
         result.append(
             {

@@ -27,7 +27,7 @@ def _config():
         "resampling": "STRATIFIED",
         "forward_equivalent_ceiling_per_source": 320,
         "maximum_sampling_rounds": 32,
-        "reserved_terminal_critic_forwards": 3,
+        "reserved_terminal_critic_forwards": 24,
         "critic_online_microbatch_size": 4,
         "action_space": "SUB+STOP",
         "replay_check": True,

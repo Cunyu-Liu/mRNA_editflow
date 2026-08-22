@@ -18,6 +18,15 @@ class XEditFlowGuidanceV3Error(RuntimeError):
     pass
 
 
+CRITIC_ENSEMBLE_MEMBER_COUNT_V3 = 3
+CRITIC_ONLINE_MICROBATCH_SIZE_V3 = 4
+TERMINAL_CANDIDATE_CAP_V3 = 32
+TERMINAL_CRITIC_FORWARD_RESERVATION_V3 = (
+    CRITIC_ENSEMBLE_MEMBER_COUNT_V3
+    * math.ceil(TERMINAL_CANDIDATE_CAP_V3 / CRITIC_ONLINE_MICROBATCH_SIZE_V3)
+)
+
+
 def _require(condition: bool, message: str) -> None:
     if not condition:
         raise XEditFlowGuidanceV3Error(message)
@@ -523,3 +532,62 @@ class MatchedComputeRecordV2:
                 "numerical_failure_count": self.numerical_failure_count,
             },
         }
+
+
+def combine_primary_and_replay_compute_v3(
+    primary: Mapping[str, Any],
+    replay: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Count every network forward executed by a primary/replay pair."""
+
+    _require(
+        primary.get("schema_version") == replay.get("schema_version") == "MatchedComputeRecordV2",
+        "primary/replay compute schema differs",
+    )
+    _require(
+        str(primary.get("source_key")) == str(replay.get("source_key")),
+        "primary/replay compute source differs",
+    )
+    _require(
+        int(primary.get("candidate_count", -1)) == int(replay.get("candidate_count", -2)),
+        "primary/replay candidate count differs",
+    )
+    record = MatchedComputeRecordV2(
+        source_key=str(primary["source_key"]),
+        base_flow_forwards=int(primary["base_flow_forwards"])
+        + int(replay["base_flow_forwards"]),
+        value_forwards=int(primary["value_forwards"])
+        + int(replay["value_forwards"]),
+        critic_forwards_by_member=[
+            int(left) + int(right)
+            for left, right in zip(
+                primary["critic_forwards_by_member"],
+                replay["critic_forwards_by_member"],
+                strict=True,
+            )
+        ],
+        candidate_count=int(primary["candidate_count"]),
+        wall_time_seconds=float(primary["wall_time_seconds"])
+        + float(replay["wall_time_seconds"]),
+        peak_vram_mb=max(
+            float(primary.get("peak_vram_mb", 0.0)),
+            float(replay.get("peak_vram_mb", 0.0)),
+        ),
+        edit_budget_violation_count=int(
+            primary["failure_counters"]["edit_budget_violation_count"]
+        )
+        + int(replay["failure_counters"]["edit_budget_violation_count"]),
+        candidate_budget_violation_count=int(
+            primary["failure_counters"]["candidate_budget_violation_count"]
+        )
+        + int(replay["failure_counters"]["candidate_budget_violation_count"]),
+        replay_failure_count=int(primary["failure_counters"]["replay_failure_count"])
+        + int(replay["failure_counters"]["replay_failure_count"]),
+        numerical_failure_count=int(primary["failure_counters"]["numerical_failure_count"])
+        + int(replay["failure_counters"]["numerical_failure_count"]),
+    )
+    result = record.to_dict()
+    result["primary_forward_equivalents"] = int(primary["total_forward_equivalents"])
+    result["replay_forward_equivalents"] = int(replay["total_forward_equivalents"])
+    result["replay_forwards_counted"] = True
+    return result

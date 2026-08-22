@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import os
 import sys
 import time
@@ -179,7 +180,10 @@ def run(config: Mapping[str, Any], *, output_dir: Path) -> dict[str, Any]:
         _require(count == len(candidates), "Critic candidate member count differs")
     member_rows = {seed: _jsonl(member_paths[seed]) for seed in CRITIC_SEEDS_V3}
     scored = attach_candidate_critic_rewards_v3(
-        candidates, member_rows, kappa=float(config["kappa"])
+        candidates,
+        member_rows,
+        kappa=float(config["kappa"]),
+        microbatch_size=int(config["critic_online_microbatch_size"]),
     )
     scored_path = output_dir / "critic_scored_candidates.private.jsonl"
     scored_path.write_text(
@@ -187,7 +191,24 @@ def run(config: Mapping[str, Any], *, output_dir: Path) -> dict[str, Any]:
         encoding="utf-8",
     )
     source_count = len(sources)
-    _require(sum(int(row["critic_forwards"]) for row in scored) == source_count * 3, "Critic forward accounting differs")
+    candidate_count_by_source = {}
+    for row in candidates:
+        source_key = str(row["source_key"])
+        candidate_count_by_source[source_key] = (
+            candidate_count_by_source.get(source_key, 0) + 1
+        )
+    forward_equivalents_by_source = {
+        source_key: len(CRITIC_SEEDS_V3)
+        * math.ceil(
+            candidate_count / int(config["critic_online_microbatch_size"])
+        )
+        for source_key, candidate_count in candidate_count_by_source.items()
+    }
+    _require(
+        sum(int(row["critic_forwards"]) for row in scored)
+        == sum(forward_equivalents_by_source.values()),
+        "Critic forward accounting differs",
+    )
     summary = {
         "schema_version": "route_a_v3_route2_xeditflow_critic_ensemble_scoring.v3",
         "status": "XEDITFLOW_V3_CRITIC_ENSEMBLE_SCORING_COMPLETE",
@@ -198,7 +219,12 @@ def run(config: Mapping[str, Any], *, output_dir: Path) -> dict[str, Any]:
         "kappa": float(config["kappa"]),
         "source_count": source_count,
         "candidate_count": len(scored),
-        "critic_forward_equivalents_per_source": 3,
+        "maximum_critic_forward_equivalents_per_source": max(
+            forward_equivalents_by_source.values()
+        ),
+        "critic_online_microbatch_size": int(
+            config["critic_online_microbatch_size"]
+        ),
         "scored_candidate_path": str(scored_path),
         "critic_self_score_used_for_candidate_selection": False,
         "study_neutral": True,

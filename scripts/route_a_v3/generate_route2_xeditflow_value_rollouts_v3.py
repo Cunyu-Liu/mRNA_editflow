@@ -221,6 +221,29 @@ def _load_critic_member_v3(
     return model, encoder, vocabs
 
 
+def _deduplicate_critic_rows_v3(
+    rows: Sequence[Mapping[str, Any]],
+) -> tuple[list[Mapping[str, Any]], list[int]]:
+    unique_rows = []
+    identity_to_index: dict[tuple[Any, ...], int] = {}
+    inverse = []
+    for row in rows:
+        identity = _critic_candidate_identity_v3(row)
+        if identity not in identity_to_index:
+            identity_to_index[identity] = len(unique_rows)
+            unique_rows.append(row)
+        inverse.append(identity_to_index[identity])
+    return unique_rows, inverse
+
+
+def critic_member_forward_batch_count_v3(
+    rows: Sequence[Mapping[str, Any]], *, microbatch_size: int
+) -> int:
+    _require(bool(rows) and microbatch_size > 0, "loaded Critic score batch differs")
+    unique_rows, _inverse = _deduplicate_critic_rows_v3(rows)
+    return (len(unique_rows) + microbatch_size - 1) // microbatch_size
+
+
 @torch.no_grad()
 def _score_loaded_critic_member_rows_v3(
     rows: Sequence[Mapping[str, Any]],
@@ -235,15 +258,7 @@ def _score_loaded_critic_member_rows_v3(
     """Score one in-memory candidate batch without reloading frozen weights."""
 
     _require(bool(rows) and microbatch_size > 0, "loaded Critic score batch differs")
-    unique_rows = []
-    identity_to_index: dict[tuple[Any, ...], int] = {}
-    inverse = []
-    for row in rows:
-        identity = _critic_candidate_identity_v3(row)
-        if identity not in identity_to_index:
-            identity_to_index[identity] = len(unique_rows)
-            unique_rows.append(row)
-        inverse.append(identity_to_index[identity])
+    unique_rows, inverse = _deduplicate_critic_rows_v3(rows)
     raw_batch = XEditCriticCollatorV3(pretrained_width=768)(
         _critic_examples_v3(unique_rows, vocabs)
     )

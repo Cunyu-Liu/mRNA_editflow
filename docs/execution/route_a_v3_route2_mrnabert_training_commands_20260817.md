@@ -2309,3 +2309,23 @@ compile/diff-check PASS；新增测试实际记录 encoder batch sizes 为 `[1,1
 `audits/route_a_v3_route2_xeditcritic_v3_c3_singleton_ranking_preflight_v1.json`。本项不新增 optimizer attempt，
 不读取 Development TEST/new Evaluation；A100 sync/focused/V3.3.2 继续等待 launch-head `22317ed` 的 active
 jobs terminal，运行中的 C1/F1/F2 未被修改。
+
+## XEditFlow V3 physical-forward accounting repair（2026-08-23）
+
+在任何正式 guidance 执行前，静态核查发现 matched-compute 链把一次高层 critic scorer 调用计为每个成员
+一次 forward，但该调用会按冻结 microbatch=4 拆分候选；32-candidate terminal cap 的最坏计费应为
+`3 × ceil(32/4) = 24`，而不是 3。另有 deterministic replay 实际执行了 base/value forward，却只进入
+wall-time、没有进入 forward-equivalent；guidance-screen adjudicator 还会在 SMC summary 已含 reservation 后
+再次加 reservation。
+
+现统一以“一次物理模型 batch”为一个 forward-equivalent：critic reward provider 按去重后的候选数和真实
+microbatch 数分别计三个成员；terminal reservation 固定为 24；primary 与 replay 的实际 base/value/critic
+forward 在 source record 中合并；cache hit 不虚构 forward；guidance adjudicator直接消费已经包含 reservation
+的 `maximum_forward_equivalents_per_source`。SMC 剩余预算也改为减去实际 reservation，不再残留硬编码 3。
+
+该修复不改变候选、模型、reward、grid、seed、gate 或任何 terminal 结果；formal guidance 尚未获授权，因此
+没有结果重写。相关 compile PASS、计费/runtime/config/adjudication 定向测试=45/45，XEdit focused=209/209，
+精确 V3.3.2=96/96，JSON/diff-check PASS。审计为
+`audits/route_a_v3_route2_xeditflow_v3_physical_forward_accounting_preflight_v1.json`。本项不新增 optimizer
+attempt，不读取 Development TEST/new Evaluation；A100 sync/test 继续等待 launch-head `22317ed` 的 active
+jobs terminal。

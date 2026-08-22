@@ -1,0 +1,52 @@
+{
+  "schema_version": "route_a_v3_route2_xeditflow_v3_physical_forward_accounting_preflight.v1",
+  "status": "IMPLEMENTED_LOCAL_TESTED_A100_SYNC_DEFERRED_UNTIL_ACTIVE_LAUNCH_HEAD_JOBS_TERMINAL",
+  "observed_date": "2026-08-23",
+  "defects_found_before_formal_guidance": {
+    "critic_scorer_call_was_billed_as_one_batch_per_member": true,
+    "terminal_reservation_was_three_instead_of_physical_microbatches": true,
+    "deterministic_replay_forwards_were_excluded_from_forward_equivalents": true,
+    "guidance_adjudicator_double_added_terminal_reservation": true,
+    "smc_remaining_compute_subtracted_stale_literal_three": true
+  },
+  "frozen_accounting_semantics": {
+    "forward_equivalent_unit": "ONE_EXECUTED_PHYSICAL_MODEL_BATCH",
+    "critic_ensemble_member_count": 3,
+    "critic_online_microbatch_size": 4,
+    "terminal_candidate_cap": 32,
+    "terminal_critic_forward_reservation": 24,
+    "terminal_reservation_formula": "3_TIMES_CEIL_32_DIV_4",
+    "primary_and_replay_forwards_combined_before_ceiling": true,
+    "cache_hit_without_network_execution_charged_as_forward": false,
+    "per_source_forward_equivalent_ceiling": 320,
+    "adjudicator_consumes_summary_total_without_second_reservation": true
+  },
+  "scientific_scope": {
+    "formal_guidance_executed_before_repair": false,
+    "terminal_result_rewritten": false,
+    "model_or_candidate_distribution_changed": false,
+    "reward_grid_seed_or_gate_changed": false,
+    "optimizer_attempt_added": false,
+    "development_test_outcomes_accessed": false,
+    "new_final_evaluation_outcomes_accessed": false
+  },
+  "verification": {
+    "targeted_accounting_runtime_config_adjudication_passed": 45,
+    "targeted_failed": 0,
+    "local_xedit_focused_passed": 209,
+    "local_xedit_focused_failed": 0,
+    "local_exact_v332_passed": 96,
+    "local_exact_v332_failed": 0,
+    "python_compile_passed": true,
+    "json_validation_passed": true,
+    "git_diff_check_passed": true,
+    "a100_status": "PENDING_ACTIVE_SCREEN_JOBS_MUST_KEEP_LAUNCH_COMMIT_PROVENANCE",
+    "a100_launch_head": "22317ed"
+  },
+  "authorization": {
+    "guidance_authorized_now": false,
+    "development_test_authorized_now": false,
+    "new_final_evaluation_authorized_now": false,
+    "submission_ready": false
+  }
+}

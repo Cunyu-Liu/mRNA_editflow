@@ -76,7 +76,7 @@ def test_base_proposal_uses_positive_legal_rates_only() -> None:
         )
 
 
-def test_additional_smc_rounds_merge_mass_and_reserve_three_critic_calls() -> None:
+def test_additional_smc_rounds_merge_mass_and_reserve_terminal_microbatches() -> None:
     def result(sequence, base=2, value=2):
         return {
             "status": "XEDITFLOW_V3_SMC_COMPLETE",
@@ -98,7 +98,7 @@ def test_additional_smc_rounds_merge_mass_and_reserve_three_critic_calls() -> No
     assert merged["candidates"][0]["candidate_sequence"] == "A"
     assert merged["candidates"][0]["particle_multiplicity"] == 64
     assert merged["matched_compute"]["total_forward_equivalents"] == 12
-    assert merged["remaining_forward_equivalents_after_reservation"] == 305
+    assert merged["remaining_forward_equivalents_after_reservation"] == 284
 
 
 def test_exact_scalar_potential_rate_map_covers_all_legal_actions() -> None:

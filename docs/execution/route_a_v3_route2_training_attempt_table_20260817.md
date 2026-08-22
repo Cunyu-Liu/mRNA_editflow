@@ -1546,3 +1546,16 @@ mRNABERT，与声明 provenance 不符且形成 late-pass OOM 风险；现左右
 定向/相邻=20/20、Critic V3 focused=67/67、本地精确 V3.3.2=96/96、compile/diff-check PASS；A100 tests/
 current-HEAD sync 在 `22317ed` active jobs terminal 后执行。Development TEST/new Evaluation read=0，C3
 formal attempt 仍为未启动。
+
+## XEditFlow V3 physical-forward accounting preflight（2026-08-23）
+
+本项是 formal guidance 前的 matched-compute 计费修复，不构成 optimizer attempt，中央 CSV 不新增行，也
+不修改 C1/F1/F2 的 RUNNING 状态。原实现把 critic scorer 的内部 microbatch 忽略为每成员一次调用，并漏计
+deterministic replay 实际执行的 forward；32 candidates、microbatch4、三成员的 terminal reservation 因此从
+错误的 3 修正为 `3 × ceil(32/4) = 24`。
+
+所有 base/value/critic 现在按实际物理 batch 计费，primary/replay 合并后再检查 320 ceiling，cache hit 保持
+零新增 forward，guidance adjudicator 不再重复加 reservation。SMC remaining-compute 字段同步使用 24。该
+修复不改变模型、候选、seed、grid、gate 或 terminal evidence；compile PASS、相关定向=45/45、XEdit
+focused=209/209、本机精确 V3.3.2=96/96、JSON/diff-check PASS。A100 current-HEAD 验证等待 launch-head
+`22317ed` active jobs terminal。Development TEST/new Evaluation read=0。

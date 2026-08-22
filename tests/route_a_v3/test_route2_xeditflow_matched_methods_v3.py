@@ -109,7 +109,7 @@ def test_unguided_common_sampler_has_no_critic_or_value_charge() -> None:
     assert result["matched_compute"]["value_forwards"] == 0
     assert result["matched_compute"]["critic_forwards_by_member"] == [0, 0, 0]
     merged = merge_matched_control_rounds_v3([result], source_key="s")
-    assert merged["remaining_forward_equivalents_after_reservation"] == 316
+    assert merged["remaining_forward_equivalents_after_reservation"] == 295
 
 
 def test_critic_potential_smc_rejects_incomplete_legal_bundle() -> None:

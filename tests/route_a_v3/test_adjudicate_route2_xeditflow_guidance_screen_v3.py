@@ -33,7 +33,7 @@ def _manifest(tmp_path):
             **common,
             "status": "XEDITFLOW_V3_SMC_GENERATION_COMPLETE",
             "maximum_forward_equivalents_per_source": 200,
-            "reserved_terminal_critic_forwards_per_source": 3,
+            "reserved_terminal_critic_forwards_per_source": 24,
         })
         open_path = root / "open.json"
         evaluator_path = root / "evaluator.json"
@@ -56,6 +56,7 @@ def _manifest(tmp_path):
 def test_guidance_adjudicator_assembles_exact_grid_and_freezes_one_winner(tmp_path) -> None:
     results = assemble_screen_results_v3(_manifest(tmp_path))
     assert set(results) == set(GUIDANCE_GRID_V3)
+    assert all(row["total_forward_equivalents"] == 200 for row in results.values())
     gate = adjudicate_guidance_screen_v3(results)
     assert gate["status"] == "XEDITFLOW_V3_GUIDANCE_SCREEN_FROZEN"
     assert (

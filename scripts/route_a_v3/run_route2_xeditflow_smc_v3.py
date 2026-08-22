@@ -24,7 +24,11 @@ from core.route2_legal_xeditflow import initial_state
 from core.route2_source_token_cache_v3 import SourceTokenCacheIndexV3, load_source_token_cache_v3
 from core.route2_xeditflow_equal_wall_time_v3 import EQUAL_WALL_TIME_SCOPE_V3
 from core.route2_xeditflow_gate_v3 import authorize_xeditflow_guidance_v3
-from core.route2_xeditflow_guidance_v3 import MatchedComputeRecordV2, XEditValueV3
+from core.route2_xeditflow_guidance_v3 import (
+    TERMINAL_CRITIC_FORWARD_RESERVATION_V3,
+    XEditValueV3,
+    combine_primary_and_replay_compute_v3,
+)
 from core.route2_xeditflow_smc_runtime_v3 import (
     SetFlowValueProvidersV3,
     merge_smc_rounds_v3,
@@ -58,7 +62,11 @@ def validate_smc_run_config_v3(config: Mapping[str, Any]) -> None:
     _require(float(config.get("ess_threshold", -1)) == 16.0, "SMC ESS threshold changed")
     _require(config.get("resampling") == "STRATIFIED", "SMC resampling method changed")
     _require(int(config.get("forward_equivalent_ceiling_per_source", -1)) == 320, "SMC compute ceiling changed")
-    _require(int(config.get("reserved_terminal_critic_forwards", -1)) == 3, "SMC critic ensemble reservation changed")
+    _require(
+        int(config.get("reserved_terminal_critic_forwards", -1))
+        == TERMINAL_CRITIC_FORWARD_RESERVATION_V3,
+        "SMC critic ensemble reservation changed",
+    )
     _require(int(config.get("maximum_sampling_rounds", -1)) == 32, "SMC additional-round ceiling changed")
     _require(int(config.get("base_flow_training_seed", -1)) in {20260904, 20260905, 20260906}, "undeclared SMC base-flow training seed")
     _require(float(config.get("kappa", -1)) in {0.0, 0.5, 1.0}, "SMC kappa is outside the frozen grid")
@@ -72,7 +80,12 @@ def total_maximum_forward_equivalents_v3(
     generation_maximum: int, reserved_terminal_critic_forwards: int
 ) -> int:
     total = int(generation_maximum) + int(reserved_terminal_critic_forwards)
-    _require(0 <= generation_maximum and reserved_terminal_critic_forwards == 3, "SMC final compute components differ")
+    _require(
+        0 <= generation_maximum
+        and reserved_terminal_critic_forwards
+        == TERMINAL_CRITIC_FORWARD_RESERVATION_V3,
+        "SMC final compute components differ",
+    )
     _require(total <= 320, "SMC final compute exceeds the matched ceiling")
     return total
 
@@ -162,7 +175,7 @@ def run(config: Mapping[str, Any], *, output_dir: Path) -> dict[str, Any]:
         decoder_base = int(config["decoder_seed_base"]) + source_index * 1_000_003
         rounds = []
         replay_ok = True
-        maximum_round_cost = 2 * int(source["edit_budget"])
+        maximum_round_cost = 4 * int(source["edit_budget"])
         while len(rounds) < int(config["maximum_sampling_rounds"]):
             used = sum(
                 int(row["matched_compute"]["total_forward_equivalents"])
@@ -200,6 +213,10 @@ def run(config: Mapping[str, Any], *, output_dir: Path) -> dict[str, Any]:
             edit_budget_violations += int(result["edit_budget_violation_count"])
             candidate_budget_violations += int(result["candidate_budget_violation_count"])
             numerical_failures += int(result["numerical_failure_count"])
+            result = dict(result)
+            result["matched_compute"] = combine_primary_and_replay_compute_v3(
+                result["matched_compute"], replay["matched_compute"]
+            )
             rounds.append(result)
             merged = merge_smc_rounds_v3(
                 rounds,
@@ -233,7 +250,9 @@ def run(config: Mapping[str, Any], *, output_dir: Path) -> dict[str, Any]:
                     {
                         **compute,
                         "sampling_round_count": merged["sampling_round_count"],
-                        "reserved_terminal_critic_forwards": 3,
+                        "reserved_terminal_critic_forwards": int(
+                            config["reserved_terminal_critic_forwards"]
+                        ),
                         "remaining_forward_equivalents_after_reservation": merged[
                             "remaining_forward_equivalents_after_reservation"
                         ],
@@ -282,7 +301,9 @@ def run(config: Mapping[str, Any], *, output_dir: Path) -> dict[str, Any]:
             maximum_compute, int(config["reserved_terminal_critic_forwards"])
         ),
         "forward_equivalent_ceiling_per_source": 320,
-        "reserved_terminal_critic_forwards_per_source": 3,
+        "reserved_terminal_critic_forwards_per_source": int(
+            config["reserved_terminal_critic_forwards"]
+        ),
         "additional_sampling_rounds_used_when_candidate_cap_not_reached": True,
         "trajectory_replay_failure_count": replay_failures,
         "edit_budget_violation_count": edit_budget_violations,

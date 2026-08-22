@@ -25,7 +25,11 @@ from core.route2_legal_xeditflow import FlowState, initial_state, validate_state
 from core.route2_source_token_cache_v3 import SourceTokenCacheIndexV3, load_source_token_cache_v3
 from core.route2_xeditflow_equal_wall_time_v3 import EQUAL_WALL_TIME_SCOPE_V3
 from core.route2_xeditflow_gate_v3 import authorize_xeditflow_guidance_v3
-from core.route2_xeditflow_guidance_v3 import MatchedComputeRecordV2
+from core.route2_xeditflow_guidance_v3 import (
+    MatchedComputeRecordV2,
+    TERMINAL_CRITIC_FORWARD_RESERVATION_V3,
+    combine_primary_and_replay_compute_v3,
+)
 from core.route2_xeditflow_matched_methods_v3 import (
     CriticRewardBatchV3,
     ExactCriticRewardPotentialV3,
@@ -41,6 +45,7 @@ from core.route2_xeditsetflow_sampling_v3 import build_generation_metadata_v3
 from scripts.route_a_v3.generate_route2_xeditflow_value_rollouts_v3 import (
     _load_critic_member_v3,
     _score_loaded_critic_member_rows_v3,
+    critic_member_forward_batch_count_v3,
 )
 from scripts.route_a_v3.run_route2_base_flow_g0_validation_v1 import load_sources
 from scripts.route_a_v3.score_route2_xeditflow_critic_ensemble_v3 import _representatives_v3
@@ -83,7 +88,11 @@ def validate_matched_control_config_v3(config: Mapping[str, Any]) -> None:
     _require(config.get("resampling") == "STRATIFIED", "matched-control resampling changed")
     _require(int(config.get("forward_equivalent_ceiling_per_source", -1)) == 320, "matched-control compute ceiling changed")
     _require(int(config.get("maximum_sampling_rounds", -1)) == 32, "matched-control round ceiling changed")
-    _require(int(config.get("reserved_terminal_critic_forwards", -1)) == 3, "matched-control terminal reservation changed")
+    _require(
+        int(config.get("reserved_terminal_critic_forwards", -1))
+        == TERMINAL_CRITIC_FORWARD_RESERVATION_V3,
+        "matched-control terminal reservation changed",
+    )
     _require(int(config.get("critic_online_microbatch_size", -1)) == 4, "matched-control Critic microbatch changed")
     _require(config.get("action_space") == "SUB+STOP" and config.get("replay_check") is True, "matched-control legal/replay policy changed")
     gpu = int(config.get("physical_gpu_index", -1))
@@ -215,7 +224,10 @@ class BoundCriticEnsembleRewardV3:
             rewards = matrix.mean(axis=1) - self.parent.kappa * matrix.std(axis=1, ddof=0)
             for sequence, reward in zip(missing_sequences, rewards.tolist()):
                 self.cache[sequence] = float(reward)
-            member_calls = (1, 1, 1)
+            batches_per_member = critic_member_forward_batch_count_v3(
+                rows, microbatch_size=self.parent.microbatch_size
+            )
+            member_calls = (batches_per_member,) * 3
         return CriticRewardBatchV3(
             tuple(self.cache[state.current_sequence] for state in states),
             member_calls,
@@ -347,11 +359,19 @@ def run(config: Mapping[str, Any], *, output_dir: Path) -> dict[str, Any]:
         rounds = []
         replay_ok = True
         maximum_round_cost = int(source["edit_budget"]) * (
-            4 if sampling_method in {"first_order_guidance", "simple_rate_guidance"} else 1
+            50
+            if sampling_method in {"first_order_guidance", "simple_rate_guidance"}
+            else 2
         )
         while len(rounds) < int(config["maximum_sampling_rounds"]):
             used = sum(int(row["matched_compute"]["total_forward_equivalents"]) for row in rounds)
-            if rounds and used + maximum_round_cost + 3 > 320:
+            if (
+                rounds
+                and used
+                + maximum_round_cost
+                + TERMINAL_CRITIC_FORWARD_RESERVATION_V3
+                > 320
+            ):
                 break
             round_index = len(rounds)
             round_seed = decoder_base + round_index * 10_007
@@ -379,18 +399,22 @@ def run(config: Mapping[str, Any], *, output_dir: Path) -> dict[str, Any]:
             this_replay_ok = result["candidates"] == replay["candidates"] and result["resampling_events"] == replay["resampling_events"]
             replay_ok = replay_ok and this_replay_ok
             replay_failures += int(not this_replay_ok)
+            result = dict(result)
+            result["matched_compute"] = combine_primary_and_replay_compute_v3(
+                result["matched_compute"], replay["matched_compute"]
+            )
             rounds.append(result)
             merged = merge_matched_control_rounds_v3(
                 rounds,
                 source_key=str(source["source_key"]),
-                reserved_terminal_critic_forwards=3,
+                reserved_terminal_critic_forwards=TERMINAL_CRITIC_FORWARD_RESERVATION_V3,
             )
             if len(merged["candidates"]) >= 32:
                 break
         merged = merge_matched_control_rounds_v3(
             rounds,
             source_key=str(source["source_key"]),
-            reserved_terminal_critic_forwards=3,
+            reserved_terminal_critic_forwards=TERMINAL_CRITIC_FORWARD_RESERVATION_V3,
         )
         torch.cuda.synchronize(device)
         generation_without_posthoc_scoring_finished = time.perf_counter()

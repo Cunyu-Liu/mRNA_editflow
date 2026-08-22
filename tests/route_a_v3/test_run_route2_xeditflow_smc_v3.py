@@ -18,7 +18,7 @@ def _config():
         "ess_threshold": 16.0,
         "resampling": "STRATIFIED",
         "forward_equivalent_ceiling_per_source": 320,
-        "reserved_terminal_critic_forwards": 3,
+        "reserved_terminal_critic_forwards": 24,
         "maximum_sampling_rounds": 32,
         "base_flow_training_seed": 20260904,
         "kappa": 0.5,
@@ -31,12 +31,12 @@ def _config():
 
 def test_smc_run_config_matches_frozen_particles_grid_compute_and_replay() -> None:
     validate_smc_run_config_v3(_config())
-    assert total_maximum_forward_equivalents_v3(317, 3) == 320
+    assert total_maximum_forward_equivalents_v3(296, 24) == 320
 
 
 def test_smc_final_compute_rejects_unreported_terminal_overage() -> None:
     with pytest.raises(Exception, match="exceeds"):
-        total_maximum_forward_equivalents_v3(318, 3)
+        total_maximum_forward_equivalents_v3(297, 24)
 
 
 def test_smc_runner_persists_gpu_synchronized_per_source_generation_time() -> None:

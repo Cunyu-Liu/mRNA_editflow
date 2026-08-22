@@ -41,7 +41,7 @@ def test_prepare_guidance_screen_has_six_values_and_exact_eighteen_grid(tmp_path
     assert payload["guidance_combination_count"] == 18
     assert {tuple(row["combination"]) for row in payload["guidance_jobs"]} == set(GUIDANCE_GRID_V3)
     assert {row["training_config"]["base_flow_training_seed"] for row in payload["value_jobs"]} == {20260904}
-    assert all(row["smc_config"]["reserved_terminal_critic_forwards"] == 3 for row in payload["guidance_jobs"])
+    assert all(row["smc_config"]["reserved_terminal_critic_forwards"] == 24 for row in payload["guidance_jobs"])
     assert all(row["open_metric_config"]["undefined_outcome_policy"] == "UNKNOWN_NOT_ZERO" for row in payload["guidance_jobs"])
     assert all(row["independent_evaluator_config"]["evaluation_outcomes_used_to_select_evaluator"] == 0 for row in payload["guidance_jobs"])
     assert payload["additional_grid_combination_authorized"] is False

@@ -11,6 +11,7 @@ from core.route2_xeditflow_guidance_v3 import (
     PotentialTransitionSetV3,
     XEditValueV3,
     beta_schedule_v3,
+    combine_primary_and_replay_compute_v3,
     deduplicate_terminal_candidates_v3,
     effective_sample_size_v3,
     potential_guided_rates_v3,
@@ -119,6 +120,33 @@ def test_matched_compute_counts_each_critic_member_and_hard_ceiling() -> None:
     record.add_critic_forwards(0)
     with pytest.raises(Exception, match="ceiling"):
         record.to_dict()
+
+
+def test_primary_and_replay_network_forwards_are_both_counted() -> None:
+    primary = MatchedComputeRecordV2(
+        "source",
+        base_flow_forwards=5,
+        value_forwards=5,
+        critic_forwards_by_member=[8, 8, 8],
+        candidate_count=20,
+        wall_time_seconds=2.0,
+    ).to_dict()
+    replay = MatchedComputeRecordV2(
+        "source",
+        base_flow_forwards=5,
+        value_forwards=5,
+        critic_forwards_by_member=[0, 0, 0],
+        candidate_count=20,
+        wall_time_seconds=1.0,
+    ).to_dict()
+    combined = combine_primary_and_replay_compute_v3(primary, replay)
+    assert combined["base_flow_forwards"] == 10
+    assert combined["value_forwards"] == 10
+    assert combined["critic_forwards_by_member"] == [8, 8, 8]
+    assert combined["total_forward_equivalents"] == 44
+    assert combined["primary_forward_equivalents"] == 34
+    assert combined["replay_forward_equivalents"] == 10
+    assert combined["replay_forwards_counted"] is True
 
 
 def test_smc_importance_weight_matches_guided_rate_ratio() -> None:

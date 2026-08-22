@@ -55,7 +55,9 @@ def assemble_screen_results_v3(manifest: Mapping[str, Any]) -> dict[tuple[float,
             "closed_source_macro_normalized_regret": closed["source_macro_normalized_regret"],
             "independent_evaluator_paired_margin": evaluator["paired_margin_over_strongest_baseline"],
             "open_source_macro_candidate_recovery": open_metrics["source_macro_candidate_recovery"],
-            "total_forward_equivalents": smc["maximum_forward_equivalents_per_source"] + int(smc["reserved_terminal_critic_forwards_per_source"]),
+            "total_forward_equivalents": smc[
+                "maximum_forward_equivalents_per_source"
+            ],
             "development_test_outcomes_accessed": False,
             "new_final_evaluation_outcomes_accessed": False,
         }

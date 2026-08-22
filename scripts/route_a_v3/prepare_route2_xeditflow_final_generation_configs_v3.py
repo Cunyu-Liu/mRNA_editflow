@@ -14,6 +14,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from core.route2_xeditflow_gate_v3 import authorize_xeditflow_guidance_v3
+from core.route2_xeditflow_guidance_v3 import TERMINAL_CRITIC_FORWARD_RESERVATION_V3
 from scripts.route_a_v3.prepare_route2_xeditflow_guidance_screen_configs_v3 import combination_id_v3
 from scripts.route_a_v3.run_route2_xeditflow_matched_controls_v3 import METHODS
 
@@ -202,7 +203,7 @@ def build_final_generation_configs_v3(
             "ess_threshold": 16.0,
             "resampling": "STRATIFIED",
             "forward_equivalent_ceiling_per_source": 320,
-            "reserved_terminal_critic_forwards": 3,
+            "reserved_terminal_critic_forwards": TERMINAL_CRITIC_FORWARD_RESERVATION_V3,
             "maximum_sampling_rounds": 32,
             "action_space": "SUB+STOP",
             "replay_check": True,

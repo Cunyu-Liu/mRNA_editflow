@@ -15,6 +15,7 @@ from core.route2_legal_xeditflow import STOP, FlowState, LegalAction, apply_acti
 from core.route2_source_token_cache_v3 import SourceTokenCacheIndexV3
 from core.route2_xeditflow_guidance_v3 import (
     MatchedComputeRecordV2,
+    TERMINAL_CRITIC_FORWARD_RESERVATION_V3,
     beta_schedule_v3,
     deduplicate_terminal_candidates_v3,
     stratified_resample_v3,
@@ -222,12 +223,15 @@ def merge_smc_rounds_v3(
     round_results: Sequence[Mapping[str, Any]],
     *,
     source_key: str,
-    reserved_critic_forwards: int = 3,
+    reserved_critic_forwards: int = TERMINAL_CRITIC_FORWARD_RESERVATION_V3,
 ) -> dict[str, Any]:
     """Merge additional 32-particle rounds without exceeding matched compute."""
 
     _require(bool(round_results), "SMC round collection is empty")
-    _require(reserved_critic_forwards == 3, "terminal critic ensemble reservation differs")
+    _require(
+        reserved_critic_forwards == TERMINAL_CRITIC_FORWARD_RESERVATION_V3,
+        "terminal critic ensemble reservation differs",
+    )
     grouped: dict[str, list[Mapping[str, Any]]] = {}
     base_calls = 0
     value_calls = 0
@@ -268,10 +272,10 @@ def merge_smc_rounds_v3(
         "sampling_round_count": len(round_results),
         "candidates": candidates,
         "matched_compute": compute,
-        "reserved_terminal_critic_forwards": 3,
+        "reserved_terminal_critic_forwards": reserved_critic_forwards,
         "remaining_forward_equivalents_after_reservation": 320
         - compute["total_forward_equivalents"]
-        - 3,
+        - reserved_critic_forwards,
     }
 
 

@@ -89,19 +89,25 @@ def test_terminal_rollout_and_three_member_score_are_identity_bound() -> None:
         frozen_rollout_score_row_v3(rollout, members)
 
 
-def test_candidate_reward_bills_three_members_once_per_source() -> None:
+def test_candidate_reward_bills_each_member_microbatch_once_per_source() -> None:
     candidates = [
-        {"source_key": "s", "generation_rank": 1, "generation_score": 2.0},
-        {"source_key": "s", "generation_rank": 2, "generation_score": 1.0},
+        {
+            "source_key": "s",
+            "generation_rank": index + 1,
+            "generation_score": float(5 - index),
+        }
+        for index in range(5)
     ]
     members = {
         seed: [
             {"state_id": "s", "rollout_index": index, "critic_seed": seed, "study_neutral": True, "standardized_prediction": float(seed_index + index)}
-            for index in range(2)
+            for index in range(5)
         ]
         for seed_index, seed in enumerate((20260831, 20260901, 20260902))
     }
-    rows = attach_candidate_critic_rewards_v3(candidates, members, kappa=0.5)
-    assert [row["critic_forwards"] for row in rows] == [3, 0]
-    assert [row["generation_score"] for row in rows] == [2.0, 1.0]
+    rows = attach_candidate_critic_rewards_v3(
+        candidates, members, kappa=0.5, microbatch_size=4
+    )
+    assert [row["critic_forwards"] for row in rows] == [6, 0, 0, 0, 0]
+    assert [row["generation_score"] for row in rows] == [5.0, 4.0, 3.0, 2.0, 1.0]
     assert all(row["critic_self_score_used_for_candidate_selection"] is False for row in rows)

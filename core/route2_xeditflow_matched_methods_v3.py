@@ -13,6 +13,7 @@ import torch
 from core.route2_legal_xeditflow import FlowState, LegalAction, apply_action, legal_actions
 from core.route2_xeditflow_guidance_v3 import (
     MatchedComputeRecordV2,
+    TERMINAL_CRITIC_FORWARD_RESERVATION_V3,
     beta_schedule_v3,
     deduplicate_terminal_candidates_v3,
     stratified_resample_v3,
@@ -283,12 +284,16 @@ def merge_matched_control_rounds_v3(
     round_results: Sequence[Mapping[str, Any]],
     *,
     source_key: str,
-    reserved_terminal_critic_forwards: int = 3,
+    reserved_terminal_critic_forwards: int = TERMINAL_CRITIC_FORWARD_RESERVATION_V3,
 ) -> dict[str, Any]:
     """Merge repeated 32-particle control rounds under the common ceiling."""
 
     _require(bool(round_results), "matched-control round collection is empty")
-    _require(reserved_terminal_critic_forwards in {0, 3}, "matched-control terminal reservation differs")
+    _require(
+        reserved_terminal_critic_forwards
+        in {0, TERMINAL_CRITIC_FORWARD_RESERVATION_V3},
+        "matched-control terminal reservation differs",
+    )
     grouped: dict[str, list[Mapping[str, Any]]] = {}
     base_calls = 0
     value_calls = 0
