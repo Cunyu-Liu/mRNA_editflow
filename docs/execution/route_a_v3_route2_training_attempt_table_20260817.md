@@ -1372,6 +1372,18 @@ genetic guiding checkpoint 对 common measured candidates 评分才能产生，�
 A100 tests/sync 等 active screen jobs terminal 后执行。Development TEST/Evaluation outcomes 未读取，
 guidance 与 replacement Evaluation 均未授权，submission-ready=false。
 
+## XEditFlow V3 common closed producer preflight（2026-08-23）
+
+本项不训练，中央 optimizer attempt 表不新增行。三个 frozen base-flow seed 现在各自具备六方法 closed
+job inventory：full/unguided/first-order/simple-rate 用各自 scalar-potential transition distribution 的 exact
+all-permutation terminal probability；rerank 使用 frozen 三 Critic ensemble reward；strongest baseline 使用
+只读 genetic guiding checkpoint score。所有方法严格共享 Development Validation measured candidate cohort，
+undefined source 不填零，旧 open NDCG 不复用；simple-rate 不被替换成 terminal rerank。
+
+完整 XEditFlow V3 focused=81/81、本机精确 V3.3.2=96/96、compile/diff-check PASS。双 readiness gate 未
+通过，故本项只完成实现与 preflight，没有执行 closed outcome benchmark、没有访问 Development TEST 或
+new Evaluation；guidance、replacement Evaluation 和 submission-ready 仍为 false。
+
 ## XEditCritic V3 C0 terminal 与 SetFlow source-cache terminal（2026-08-23）
 
 第二次合同节奏检查时，C0 已 terminal，C1 仍运行。C0 使用 seed20260830、8 passes、22,416 updates，

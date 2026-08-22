@@ -2092,3 +2092,22 @@ benchmark 结果。
 `git diff --check` PASS。A100 tests/sync 继续等待 active screen jobs terminal，以保持 launch commit
 `22317ed` provenance。本项不更新参数、不新增中央 training attempt；Development TEST/new final
 Evaluation read、guidance authorization、model/generation success 与 submission-ready 仍为 false。
+
+## XEditFlow V3 六方法 common closed producers（2026-08-23）
+
+六种最终方法现已全部拥有与其冻结方法语义一致的 common closed producer。full soft-value SMC、unguided
+SetFlow、source-anchored first-order guidance 与 exact-current-Critic simple-rate guidance 都在每个最多五
+edit 的 measured candidate 上枚举全部路径，并对各自 transition distribution 的 terminal probability 精确
+求和。simple-rate 因而没有被错误降格为 terminal rerank；first-order 也继续使用 source-anchored 单编辑
+系数和，不能表达 interaction。
+
+generate-then-rerank 使用三 seed frozen XEditCritic V3 ensemble 的 terminal reward 对同一 candidate set
+排序；strongest matched baseline 使用已经冻结的 genetic guiding checkpoint 评分。两类 score table 不写入
+measured outcome，随后由统一 closed-score metric adapter 与 Development Validation outcome 合并。历史
+open-support NDCG 不参与该过程。final preparer 对三个 base-flow seed 各生成 4 个 exact-trajectory closed
+jobs、2 个 frozen-score jobs、2 个 score-metric jobs 与 1 个只读 strongest adapter job；不新增 HPO 或 seed。
+
+本批完整 XEditFlow V3 focused=81/81、本地精确 V3.3.2=96/96、Python compile 与 diff-check PASS。
+所有 runner 均受 Critic readiness + SetFlow confirmation 双 gate 阻塞，当前没有执行 closed benchmark、没有
+读取 Development TEST/new Evaluation outcome，也没有产生新的模型优势结果。本项不新增中央 optimizer
+attempt；A100 tests/sync 仍等 active screen jobs terminal 后执行，远端 HEAD 保持 `22317ed`。

@@ -1,0 +1,63 @@
+{
+  "schema_version": "route_a_v3_route2_xeditflow_v3_closed_method_producers_preflight.v1",
+  "status": "IMPLEMENTED_LOCAL_TESTED_EXECUTION_BLOCKED_BY_FROZEN_READINESS",
+  "observed_date": "2026-08-23",
+  "common_cohort": {
+    "pool_assignment": "DEVELOPMENT",
+    "split": "VALIDATION",
+    "analysis_unit": "SOURCE",
+    "maximum_enumerated_edits": 5,
+    "maximum_permutation_paths": 120,
+    "undefined_source_policy": "EXCLUDE_NOT_ZERO_FILL"
+  },
+  "closed_method_semantics": {
+    "full_soft_value_smc": "EXACT_ALL_PATH_TERMINAL_PROBABILITY_SOFT_VALUE_POTENTIAL",
+    "unguided_setflow": "EXACT_ALL_PATH_TERMINAL_PROBABILITY_ZERO_POTENTIAL",
+    "first_order_guidance": "EXACT_ALL_PATH_TERMINAL_PROBABILITY_SOURCE_ANCHORED_FIRST_ORDER_POTENTIAL",
+    "simple_rate_guidance": "EXACT_ALL_PATH_TERMINAL_PROBABILITY_CURRENT_CRITIC_REWARD_POTENTIAL",
+    "generate_then_rerank": "FROZEN_XEDITCRITIC_V3_ENSEMBLE_TERMINAL_REWARD",
+    "strongest_matched_baseline": "FROZEN_GENETIC_GUIDING_CHECKPOINT_SCORE"
+  },
+  "separation": {
+    "trajectory_methods_use_their_frozen_transition_distribution": true,
+    "rerank_and_search_methods_use_their_frozen_terminal_score": true,
+    "simple_rate_reduced_to_terminal_rerank": false,
+    "historical_open_ndcg_reused_as_closed": false,
+    "score_tables_include_measured_outcome": false,
+    "all_methods_share_exact_measured_candidate_cohort": true
+  },
+  "final_job_inventory": {
+    "base_flow_training_seeds": [20260904, 20260905, 20260906],
+    "trajectory_closed_jobs_per_seed": 4,
+    "frozen_score_jobs_per_seed": 2,
+    "frozen_score_metric_jobs_per_seed": 2,
+    "strongest_adapter_jobs_per_seed": 1,
+    "additional_training_seed_authorized": false
+  },
+  "interfaces": {
+    "trajectory_probability_runner": "scripts/route_a_v3/evaluate_route2_xeditflow_closed_neighborhood_v3.py",
+    "frozen_score_producer": "scripts/route_a_v3/score_route2_xeditflow_closed_frozen_methods_v3.py",
+    "frozen_score_metric_adapter": "scripts/route_a_v3/evaluate_route2_xeditflow_closed_scores_v3.py",
+    "final_job_preparer": "scripts/route_a_v3/prepare_route2_xeditflow_final_generation_configs_v3.py"
+  },
+  "tests": {
+    "local_xeditflow_v3_focused_passed": 81,
+    "local_xeditflow_v3_focused_failed": 0,
+    "local_exact_v332_passed": 96,
+    "local_exact_v332_failed": 0,
+    "python_compile_passed": true,
+    "git_diff_check_passed": true,
+    "a100_status": "PENDING_ACTIVE_SCREEN_JOBS_MUST_KEEP_LAUNCH_COMMIT_PROVENANCE",
+    "a100_current_head": "22317ed"
+  },
+  "protected_data": {
+    "development_test_outcomes_accessed": false,
+    "new_final_evaluation_outcomes_accessed": false
+  },
+  "authorization": {
+    "closed_jobs_executed": false,
+    "guidance_authorized": false,
+    "new_final_evaluation_authorized": false,
+    "submission_ready": false
+  }
+}

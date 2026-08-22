@@ -145,6 +145,7 @@ def build_guidance_screen_configs_v3(config: Mapping[str, Any]) -> dict[str, Any
         closed_config = {
             **common,
             "schema_version": "route_a_v3_route2_xeditflow_closed_neighborhood_config.v1",
+            "potential_kind": "SOFT_VALUE",
             "measured_neighborhood_path": str(config["measured_neighborhood_path"]),
             "pool_assignment": "DEVELOPMENT",
             "split": "VALIDATION",

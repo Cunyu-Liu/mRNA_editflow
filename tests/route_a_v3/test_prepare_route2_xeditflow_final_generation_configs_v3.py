@@ -16,6 +16,9 @@ def test_final_generation_prepares_three_seeds_without_second_hpo() -> None:
         "output_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/final",
         "decoder_seed_base": 20261001,
         "physical_gpu_index": 2,
+        "measured_neighborhood_path": "/mnt/measured.jsonl",
+        "strongest_generation_baseline_path": "/mnt/strongest.json",
+        "baseline_selection_input_path": "/mnt/selection.json",
     }
     critic = {
         "status": "CRITIC_READY_FOR_GUIDANCE", "frozen_test_passed": True,
@@ -58,4 +61,14 @@ def test_final_generation_prepares_three_seeds_without_second_hpo() -> None:
     assert manifest["seed_jobs"][2]["value_training_config"]["checkpoint_selection"] == "FINAL_PASS_NO_EPOCH_RESELECTION"
     assert all(len(job["matched_control_configs"]) == 4 for job in manifest["seed_jobs"])
     assert all(job["full_smc_config"]["decoder_seed_base"] == 20261001 for job in manifest["seed_jobs"])
+    assert all(set(job["closed_trajectory_configs"]) == {
+        "full_soft_value_smc", "unguided_setflow", "first_order_guidance", "simple_rate_guidance"
+    } for job in manifest["seed_jobs"])
+    assert all(job["closed_trajectory_configs"]["unguided_setflow"]["potential_kind"] == "ZERO" for job in manifest["seed_jobs"])
+    assert all(job["closed_trajectory_configs"]["first_order_guidance"]["potential_kind"] == "SOURCE_ANCHORED_FIRST_ORDER" for job in manifest["seed_jobs"])
+    assert all(set(job["closed_frozen_score_configs"]) == {
+        "generate_then_rerank", "strongest_matched_baseline"
+    } for job in manifest["seed_jobs"])
+    assert manifest["seed_jobs"][0]["closed_score_metric_configs"]["strongest_matched_baseline"]["score_transform"] == "SOURCEWISE_EXP_SHIFTED_MAX"
+    assert manifest["seed_jobs"][0]["strongest_adapter_job"]["base_flow_training_seed"] == 20260904
     assert manifest["additional_seed_authorized"] is False

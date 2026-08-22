@@ -25,17 +25,35 @@ from core.route2_closed_neighborhood_v3 import (
 )
 from core.route2_development_projection_v3 import load_projection_rows
 from core.route2_gpu_failure_evidence import cuda_device_observation, write_gpu_failure_evidence
-from core.route2_legal_xeditflow import FlowState, LegalAction
+from core.route2_legal_xeditflow import FlowState, LegalAction, initial_state
 from core.route2_source_token_cache_v3 import SourceTokenCacheIndexV3, load_source_token_cache_v3
 from core.route2_xeditflow_gate_v3 import authorize_xeditflow_guidance_v3
+from core.route2_xeditflow_matched_methods_v3 import (
+    ExactCriticRewardPotentialV3,
+    SourceAnchoredFirstOrderPotentialV3,
+    ZeroPotentialV3,
+)
 from core.route2_xeditflow_smc_runtime_v3 import (
+    SetFlowRateProviderV3,
     SetFlowValueProvidersV3,
     scalar_potential_rate_map_v3,
 )
 from core.route2_xeditsetflow_sampling_v3 import build_generation_metadata_v3
 from scripts.route_a_v3.run_route2_base_flow_g0_validation_v1 import load_sources
 from scripts.route_a_v3.run_route2_xeditflow_smc_v3 import load_value_checkpoint_v3
+from scripts.route_a_v3.run_route2_xeditflow_matched_controls_v3 import (
+    FrozenCriticEnsembleRewardV3,
+)
+from scripts.route_a_v3.score_route2_xeditflow_critic_ensemble_v3 import _representatives_v3
 from scripts.route_a_v3.validate_route2_xeditsetflow_v3 import load_setflow_checkpoint_v3
+
+
+POTENTIAL_KINDS_V3 = {
+    "SOFT_VALUE",
+    "ZERO",
+    "SOURCE_ANCHORED_FIRST_ORDER",
+    "EXACT_CRITIC_REWARD",
+}
 
 
 class ClosedNeighborhoodRunnerV3Error(RuntimeError):
@@ -75,6 +93,21 @@ def validate_closed_run_config_v3(config: Mapping[str, Any]) -> None:
     _require(config.get("analysis_unit") == "SOURCE", "closed analysis unit changed")
     _require(config.get("undefined_source_policy") == "EXCLUDE_NOT_ZERO_FILL", "closed undefined-source policy changed")
     _require(float(config.get("beta_max", -1)) in {0.5, 1.0, 2.0}, "closed beta is outside the frozen grid")
+    potential_kind = str(config.get("potential_kind"))
+    _require(potential_kind in POTENTIAL_KINDS_V3, "closed potential kind differs")
+    expected_method = {
+        "ZERO": "unguided_setflow",
+        "SOURCE_ANCHORED_FIRST_ORDER": "first_order_guidance",
+        "EXACT_CRITIC_REWARD": "simple_rate_guidance",
+    }.get(potential_kind)
+    if expected_method is not None:
+        _require(config.get("method_id") == expected_method, "closed method and potential differ")
+    if potential_kind == "SOFT_VALUE":
+        _require(bool(config.get("value_checkpoint_path")), "closed soft-value checkpoint is absent")
+    if potential_kind in {"SOURCE_ANCHORED_FIRST_ORDER", "EXACT_CRITIC_REWARD"}:
+        _require(float(config.get("kappa", -1)) in {0.0, 0.5, 1.0}, "closed Critic kappa differs")
+        _require(int(config.get("critic_online_microbatch_size", -1)) == 4, "closed Critic microbatch differs")
+        _require(bool(config.get("critic_refit_manifest_path")), "closed Critic refit manifest is absent")
 
 
 def run(config: Mapping[str, Any], *, output_dir: Path) -> dict[str, Any]:
@@ -96,7 +129,12 @@ def run(config: Mapping[str, Any], *, output_dir: Path) -> dict[str, Any]:
     arm = str(config["setflow_arm"])
     setflow, checkpoint = load_setflow_checkpoint_v3(Path(config["setflow_checkpoint_path"]), arm, device)
     _require(int(checkpoint["training_provenance"]["seed"]) == int(config["base_flow_training_seed"]), "closed SetFlow seed differs")
-    value = load_value_checkpoint_v3(Path(config["value_checkpoint_path"]), config=config, device=device)
+    potential_kind = str(config["potential_kind"])
+    value = (
+        load_value_checkpoint_v3(Path(config["value_checkpoint_path"]), config=config, device=device)
+        if potential_kind == "SOFT_VALUE"
+        else None
+    )
     cache = SourceTokenCacheIndexV3(load_source_token_cache_v3(Path(config["source_token_cache_path"])))
     sources = load_sources(Path(config["source_eligibility_manifest"]))
     source_by_key = {str(row["source_key"]): row for row in sources}
@@ -108,6 +146,22 @@ def run(config: Mapping[str, Any], *, output_dir: Path) -> dict[str, Any]:
         str(source["source_key"]): item
         for source, item in zip(sources, metadata)
     }
+    representatives = _representatives_v3(sources, projection)
+    critic = None
+    if potential_kind in {"SOURCE_ANCHORED_FIRST_ORDER", "EXACT_CRITIC_REWARD"}:
+        refit = _json(Path(config["critic_refit_manifest_path"]))
+        _require(refit.get("status") == "XEDITCRITIC_V3_ALL_DEVELOPMENT_REFIT_COMPLETE", "closed Critic refit is incomplete")
+        selected_arm = str(refit.get("selected_arm"))
+        _require(selected_arm in {"C2", "C3"}, "closed Critic arm differs")
+        checkpoints = {int(row["seed"]): Path(row["checkpoint_path"]) for row in refit["checkpoints"]}
+        critic = FrozenCriticEnsembleRewardV3(
+            checkpoint_paths=checkpoints,
+            selected_arm=selected_arm,
+            model_path=Path(config["mrnabert_model_path"]),
+            device=device,
+            kappa=float(config["kappa"]),
+            microbatch_size=int(config["critic_online_microbatch_size"]),
+        )
     measured = _jsonl(Path(config["measured_neighborhood_path"]))
     by_source: dict[str, list[dict[str, Any]]] = defaultdict(list)
     for row in measured:
@@ -124,18 +178,54 @@ def run(config: Mapping[str, Any], *, output_dir: Path) -> dict[str, Any]:
     scored_rows = []
     base_forward_calls = 0
     value_forward_calls = 0
+    critic_forward_calls = [0, 0, 0]
     unique_state_count = 0
     started = time.time()
     for source_key in sorted(source_by_key):
         source = source_by_key[source_key]
-        providers = SetFlowValueProvidersV3(
-            setflow_model=setflow,
-            setflow_arm=arm,
-            value_model=value,
-            metadata=metadata_by_key[source_key],
-            source_cache=cache,
-            device=device,
-        )
+        if potential_kind == "SOFT_VALUE":
+            assert value is not None
+            providers = SetFlowValueProvidersV3(
+                setflow_model=setflow,
+                setflow_arm=arm,
+                value_model=value,
+                metadata=metadata_by_key[source_key],
+                source_cache=cache,
+                device=device,
+            )
+            rate_provider = providers.rates
+            potential_provider = providers.values
+        else:
+            rates = SetFlowRateProviderV3(
+                setflow_model=setflow,
+                setflow_arm=arm,
+                metadata=metadata_by_key[source_key],
+                source_cache=cache,
+                device=device,
+            )
+            rate_provider = rates.rates
+            root = initial_state(
+                str(source["source_sequence"]),
+                budget=int(source["edit_budget"]),
+                assay_id=str(source["assay_id"]),
+                context_id=str(source["biological_context_id"]),
+            )
+            if potential_kind == "ZERO":
+                potential = ZeroPotentialV3()
+            else:
+                assert critic is not None
+                reward = critic.bind_source(source, representatives[source_key])
+                potential = (
+                    SourceAnchoredFirstOrderPotentialV3(root, reward)
+                    if potential_kind == "SOURCE_ANCHORED_FIRST_ORDER"
+                    else ExactCriticRewardPotentialV3(reward)
+                )
+
+            def potential_provider(states: Sequence[FlowState]) -> Sequence[float]:
+                batch = potential(states)
+                for member, count in enumerate(batch.forward_batches_by_member):
+                    critic_forward_calls[member] += int(count)
+                return batch.values
         rate_cache: dict[FlowState, dict[LegalAction, float]] = {}
 
         def rate_function(state: FlowState, actions: Sequence[LegalAction]) -> Mapping[LegalAction, float]:
@@ -144,12 +234,12 @@ def run(config: Mapping[str, Any], *, output_dir: Path) -> dict[str, Any]:
                 rate_cache[state] = scalar_potential_rate_map_v3(
                     state,
                     actions,
-                    providers.rates,
-                    providers.values,
+                    rate_provider,
+                    potential_provider,
                     beta_max=float(config["beta_max"]),
                 )
                 base_forward_calls += 1
-                value_forward_calls += 1
+                value_forward_calls += int(potential_kind == "SOFT_VALUE")
             _require(tuple(rate_cache[state]) == tuple(actions), "closed cached action order differs")
             return rate_cache[state]
 
@@ -183,6 +273,7 @@ def run(config: Mapping[str, Any], *, output_dir: Path) -> dict[str, Any]:
         "schema_version": "route_a_v3_route2_xeditflow_closed_neighborhood.v3",
         "status": "XEDITFLOW_V3_CLOSED_NEIGHBORHOOD_COMPLETE",
         "method_id": str(config["method_id"]),
+        "potential_kind": potential_kind,
         "setflow_arm": arm,
         "base_flow_training_seed": int(config["base_flow_training_seed"]),
         "kappa": float(config["kappa"]),
@@ -194,6 +285,7 @@ def run(config: Mapping[str, Any], *, output_dir: Path) -> dict[str, Any]:
         "unique_scored_state_count": unique_state_count,
         "base_flow_scoring_forward_calls": base_forward_calls,
         "value_scoring_forward_calls": value_forward_calls,
+        "critic_scoring_forward_calls_by_member": critic_forward_calls,
         "enumeration_wall_time_seconds": time.time() - started,
         "peak_vram_mb": torch.cuda.max_memory_allocated(device) / 1024**2,
         "pool_assignment": "DEVELOPMENT",

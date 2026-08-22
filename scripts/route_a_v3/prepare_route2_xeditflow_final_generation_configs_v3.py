@@ -191,6 +191,122 @@ def build_final_generation_configs_v3(
                 "critic_online_microbatch_size": 4,
                 "output_dir": str(seed_root / "generation" / method),
             }
+        closed_common = {
+            "critic_readiness_path": str(config["critic_readiness_path"]),
+            "setflow_confirmation_path": str(config["setflow_confirmation_path"]),
+            "setflow_arm": selected_arm,
+            "setflow_checkpoint_path": str(setflow_checkpoint),
+            "source_token_cache_path": str(runtime["source_token_cache_path"]),
+            "source_eligibility_manifest": str(runtime["source_eligibility_manifest"]),
+            "validation_projection_path": str(runtime["validation_projection_path"]),
+            "measured_neighborhood_path": str(config["measured_neighborhood_path"]),
+            "expected_source_count": 891,
+            "base_flow_training_seed": seed,
+            "kappa": kappa,
+            "temperature": temperature,
+            "beta_max": beta_max,
+            "pool_assignment": "DEVELOPMENT",
+            "split": "VALIDATION",
+            "maximum_enumerated_edits": 5,
+            "maximum_permutation_paths": 120,
+            "enumeration": "ALL_EDIT_PERMUTATIONS_EXACT_SUM",
+            "analysis_unit": "SOURCE",
+            "undefined_source_policy": "EXCLUDE_NOT_ZERO_FILL",
+            "physical_gpu_index": gpu,
+            "device": f"cuda:{gpu}",
+        }
+        closed_trajectory_configs = {
+            "full_soft_value_smc": {
+                **closed_common,
+                "schema_version": "route_a_v3_route2_xeditflow_closed_neighborhood_config.v1",
+                "method_id": "full_soft_value_smc",
+                "potential_kind": "SOFT_VALUE",
+                "value_checkpoint_path": str(value_checkpoint),
+                "output_dir": str(seed_root / "closed" / "full_soft_value_smc"),
+            },
+            "unguided_setflow": {
+                **closed_common,
+                "schema_version": "route_a_v3_route2_xeditflow_closed_neighborhood_config.v1",
+                "method_id": "unguided_setflow",
+                "potential_kind": "ZERO",
+                "output_dir": str(seed_root / "closed" / "unguided_setflow"),
+            },
+            "first_order_guidance": {
+                **closed_common,
+                "schema_version": "route_a_v3_route2_xeditflow_closed_neighborhood_config.v1",
+                "method_id": "first_order_guidance",
+                "potential_kind": "SOURCE_ANCHORED_FIRST_ORDER",
+                "critic_refit_manifest_path": str(config["critic_refit_manifest_path"]),
+                "mrnabert_model_path": str(config["mrnabert_model_path"]),
+                "critic_online_microbatch_size": 4,
+                "output_dir": str(seed_root / "closed" / "first_order_guidance"),
+            },
+            "simple_rate_guidance": {
+                **closed_common,
+                "schema_version": "route_a_v3_route2_xeditflow_closed_neighborhood_config.v1",
+                "method_id": "simple_rate_guidance",
+                "potential_kind": "EXACT_CRITIC_REWARD",
+                "critic_refit_manifest_path": str(config["critic_refit_manifest_path"]),
+                "mrnabert_model_path": str(config["mrnabert_model_path"]),
+                "critic_online_microbatch_size": 4,
+                "output_dir": str(seed_root / "closed" / "simple_rate_guidance"),
+            },
+        }
+        closed_frozen_score_configs = {}
+        closed_score_metric_configs = {}
+        for method in ("generate_then_rerank", "strongest_matched_baseline"):
+            score_root = seed_root / "closed_scores" / method
+            score_config = {
+                "schema_version": "route_a_v3_route2_xeditflow_closed_frozen_score_config.v1",
+                "method_id": method,
+                "critic_readiness_path": str(config["critic_readiness_path"]),
+                "setflow_confirmation_path": str(config["setflow_confirmation_path"]),
+                "source_eligibility_manifest": str(runtime["source_eligibility_manifest"]),
+                "measured_neighborhood_path": str(config["measured_neighborhood_path"]),
+                "pool_assignment": "DEVELOPMENT",
+                "split": "VALIDATION",
+                "expected_source_count": 891,
+                "base_flow_training_seed": seed,
+                "physical_gpu_index": gpu,
+                "device": f"cuda:{gpu}",
+                "output_dir": str(score_root),
+            }
+            if method == "generate_then_rerank":
+                score_config.update(
+                    {
+                        "critic_refit_manifest_path": str(config["critic_refit_manifest_path"]),
+                        "mrnabert_model_path": str(config["mrnabert_model_path"]),
+                        "validation_projection_path": str(runtime["validation_projection_path"]),
+                        "kappa": kappa,
+                        "critic_online_microbatch_size": 4,
+                    }
+                )
+            else:
+                score_config.update(
+                    {
+                        "strongest_generation_baseline_path": str(config["strongest_generation_baseline_path"]),
+                        "baseline_selection_input_path": str(config["baseline_selection_input_path"]),
+                    }
+                )
+            closed_frozen_score_configs[method] = score_config
+            closed_score_metric_configs[method] = {
+                "schema_version": "route_a_v3_route2_xeditflow_closed_score_config.v1",
+                "method_id": method,
+                "base_flow_training_seed": seed,
+                "pool_assignment": "DEVELOPMENT",
+                "split": "VALIDATION",
+                "analysis_unit": "SOURCE",
+                "undefined_source_policy": "EXCLUDE_NOT_ZERO_FILL",
+                "score_transform": "SOURCEWISE_EXP_SHIFTED_MAX",
+                "measured_neighborhood_path": str(config["measured_neighborhood_path"]),
+                "score_table_path": str(score_root / "frozen_method_scores.private.jsonl"),
+            }
+        strongest_adapter_job = {
+            "strongest_generation_baseline_path": str(config["strongest_generation_baseline_path"]),
+            "baseline_selection_input_path": str(config["baseline_selection_input_path"]),
+            "base_flow_training_seed": seed,
+            "output_dir": str(seed_root / "generation" / "strongest_matched_baseline"),
+        }
         seed_jobs.append(
             {
                 "base_flow_training_seed": seed,
@@ -201,6 +317,10 @@ def build_final_generation_configs_v3(
                 "value_training_config": value_training_config,
                 "full_smc_config": full_smc_config,
                 "matched_control_configs": controls,
+                "closed_trajectory_configs": closed_trajectory_configs,
+                "closed_frozen_score_configs": closed_frozen_score_configs,
+                "closed_score_metric_configs": closed_score_metric_configs,
+                "strongest_adapter_job": strongest_adapter_job,
             }
         )
     _require(len(seed_jobs) == 3 and sum(job["value_rollout_config"] is not None for job in seed_jobs) == 2, "final generation job inventory differs")
@@ -231,6 +351,13 @@ def write_manifest_v3(payload: Mapping[str, Any], output_dir: Path) -> None:
         (output_dir / f"full_soft_value_smc_seed{seed}.json").write_text(json.dumps(job["full_smc_config"], indent=2, sort_keys=True) + "\n", encoding="utf-8")
         for method, config in job["matched_control_configs"].items():
             (output_dir / f"{method}_seed{seed}.json").write_text(json.dumps(config, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        for method, config in job["closed_trajectory_configs"].items():
+            (output_dir / f"closed_trajectory_{method}_seed{seed}.json").write_text(json.dumps(config, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        for method, config in job["closed_frozen_score_configs"].items():
+            (output_dir / f"closed_frozen_score_{method}_seed{seed}.json").write_text(json.dumps(config, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        for method, config in job["closed_score_metric_configs"].items():
+            (output_dir / f"closed_score_metric_{method}_seed{seed}.json").write_text(json.dumps(config, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        (output_dir / f"strongest_adapter_seed{seed}.json").write_text(json.dumps(job["strongest_adapter_job"], indent=2, sort_keys=True) + "\n", encoding="utf-8")
     (output_dir / "manifest.json").write_text(json.dumps(dict(payload), indent=2, sort_keys=True) + "\n", encoding="utf-8")
 
 
