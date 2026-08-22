@@ -28,6 +28,7 @@ from core.route2_xeditsetflow_runtime_v3 import (
     early_stop_update_v3,
     setflow_batch_loss_v3,
 )
+from core.route2_xeditsetflow_gate_v3 import require_setflow_confirmation_authorization_v3
 from core.route2_xeditsetflow_training_v3 import (
     BalancedTaskSourceGroupPassSamplerV3,
     SetMarginalStateDatasetV3,
@@ -109,6 +110,7 @@ def train(config: Mapping[str, Any], *, arm: str, output_dir: Path) -> dict[str,
     _require(int(config["record_repeat_cap"]) == 4, "SetFlow record repeat cap changed")
     _require(int(config["maximum_passes"]) == 12 and int(config["early_stopping_patience"]) == 2, "SetFlow pass/early-stop rule changed")
     _require(int(config["seed"]) in {20260903, 20260904, 20260905, 20260906}, "undeclared SetFlow seed")
+    require_setflow_confirmation_authorization_v3(config, arm=arm)
     _require(torch.cuda.is_available(), "CUDA is unavailable; CPU fallback is forbidden")
     _require(not os.environ.get("CUDA_VISIBLE_DEVICES"), "CUDA_VISIBLE_DEVICES remapping is forbidden")
     device = torch.device(str(config["device"]))
@@ -299,6 +301,12 @@ def train(config: Mapping[str, Any], *, arm: str, output_dir: Path) -> dict[str,
         "arm": arm,
         "selectable": bool(ARM_CONFIGS_V3[arm]["selectable"]),
         "seed": int(config["seed"]),
+        "run_stage": str(
+            config.get(
+                "run_stage",
+                "SCREEN" if int(config["seed"]) == 20260903 else "CONFIRMATION",
+            )
+        ),
         "train_record_count": len(train_records),
         "validation_record_count": len(validation_records),
         "over_budget_excluded_record_counts": {

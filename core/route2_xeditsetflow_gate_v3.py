@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import math
+import json
+from pathlib import Path
 from typing import Any, Mapping
 
 
@@ -110,5 +112,129 @@ def adjudicate_setflow_screen_v3(
         "confirmation_authorized": selected is not None,
         "development_test_authorized": False,
         "guidance_authorized": False,
+        "additional_seed_authorized": False,
+    }
+
+
+SETFLOW_CONFIRMATION_SEEDS_V3 = (20260904, 20260905, 20260906)
+
+
+def require_setflow_confirmation_authorization_v3(
+    config: Mapping[str, Any], *, arm: str
+) -> None:
+    seed = int(config["seed"])
+    stage = str(config.get("run_stage", "SCREEN" if seed == 20260903 else "CONFIRMATION"))
+    if stage == "SCREEN":
+        _require(seed == 20260903, "SetFlow screen seed changed")
+        return
+    _require(stage == "CONFIRMATION", "SetFlow run stage is unsupported")
+    _require(seed in SETFLOW_CONFIRMATION_SEEDS_V3, "SetFlow confirmation seed is undeclared")
+    gate = json.loads(Path(str(config["screen_gate_path"])).read_text(encoding="utf-8"))
+    selected = str(gate.get("selected_arm"))
+    _require(
+        gate.get("status") == "XEDITSETFLOW_V3_SCREEN_PASS"
+        and gate.get("confirmation_authorized") is True,
+        "SetFlow screen does not authorize confirmation",
+    )
+    _require(
+        str(config.get("selected_arm")) == selected == arm,
+        "SetFlow confirmation arm differs from the screen selection",
+    )
+
+
+def adjudicate_setflow_confirmation_v3(
+    training: Mapping[int, Mapping[str, Any]],
+    validation: Mapping[int, Mapping[str, Any]],
+    *,
+    selected_arm: str,
+) -> dict[str, Any]:
+    _require(selected_arm in {"f2", "f3"}, "SetFlow confirmation arm is not F2/F3")
+    required = set(SETFLOW_CONFIRMATION_SEEDS_V3)
+    _require(
+        set(training) == set(validation) == required,
+        "SetFlow confirmation requires exactly the three frozen seeds",
+    )
+    seed_results = {}
+    for seed in SETFLOW_CONFIRMATION_SEEDS_V3:
+        trained = training[seed]
+        valid = validation[seed]
+        _require(
+            trained.get("status") == "XEDITSETFLOW_V3_GPU_TRAINING_COMPLETE",
+            f"SetFlow confirmation training is not terminal: {seed}",
+        )
+        _require(
+            valid.get("status") in {"FLOW_G0_READY", "FLOW_G0_VALIDATION_FAIL"},
+            f"SetFlow confirmation validation is not terminal: {seed}",
+        )
+        _require(
+            str(trained.get("arm")) == str(valid.get("arm")) == selected_arm,
+            f"SetFlow confirmation arm differs: {seed}",
+        )
+        _require(
+            int(trained.get("seed", -1)) == int(valid.get("seed", -2)) == seed,
+            f"SetFlow confirmation seed differs: {seed}",
+        )
+        _require(
+            trained.get("development_test_outcomes_accessed") is False
+            and valid.get("development_test_outcomes_accessed") is False
+            and trained.get("evaluation_outcomes_accessed") is False
+            and valid.get("evaluation_outcomes_accessed") is False,
+            f"SetFlow confirmation accessed protected outcome: {seed}",
+        )
+        recovery = _finite(
+            valid.get("source_macro_candidate_recovery_rate"), f"seed {seed} recovery"
+        )
+        top_k = _finite(
+            valid.get("source_macro_measured_top_k_recovery_at_k"), f"seed {seed} top-k"
+        )
+        unique = _finite(
+            valid.get("source_macro_unique_candidate_rate"), f"seed {seed} unique"
+        )
+        checks = {
+            "source_macro_recovery_at_least_0_25": recovery >= 0.25,
+            "source_macro_top_k_recovery_at_least_0_15": top_k >= 0.15,
+            "source_macro_unique_rate_at_least_0_90": unique >= 0.90,
+            "hard_legality_100pct": _finite(
+                valid.get("hard_legality_rate"), f"seed {seed} legality"
+            )
+            == 1.0,
+            "edit_budget_violation_zero": int(
+                valid.get("edit_budget_violation_count", -1)
+            )
+            == 0,
+            "candidate_budget_violation_zero": int(
+                valid.get("candidate_budget_violation_count", -1)
+            )
+            == 0,
+            "trajectory_replay_failure_zero": int(
+                valid.get("trajectory_replay_failure_count", -1)
+            )
+            == 0,
+            "numerical_failure_zero": int(valid.get("numerical_failure_count", -1))
+            == 0,
+            "protected_outcome_reads_zero": True,
+        }
+        seed_results[str(seed)] = {
+            "source_macro_candidate_recovery_rate": recovery,
+            "source_macro_measured_top_k_recovery_at_k": top_k,
+            "source_macro_unique_candidate_rate": unique,
+            "checks": checks,
+            "passed": all(checks.values()),
+        }
+    passed = all(row["passed"] for row in seed_results.values())
+    return {
+        "schema_version": "route_a_v3_route2_xeditsetflow_confirmation_gate.v1",
+        "status": (
+            "XEDITSETFLOW_V3_CONFIRMATION_PASS"
+            if passed
+            else "XEDITSETFLOW_V3_CONFIRMATION_NO_GO"
+        ),
+        "selected_arm": selected_arm,
+        "required_seeds": list(SETFLOW_CONFIRMATION_SEEDS_V3),
+        "seed_results": seed_results,
+        "flow_status": "FLOW_G0_READY" if passed else "FLOW_G0_NOT_READY",
+        "guidance_authorized": False,
+        "development_test_authorized": False,
+        "new_final_evaluation_authorized": False,
         "additional_seed_authorized": False,
     }

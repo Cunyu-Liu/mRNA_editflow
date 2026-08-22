@@ -27,6 +27,8 @@ from core.route2_xeditcritic_ledger_v3 import (
     critic_v3_attempt_config,
     critic_v3_attempt_details,
     critic_v3_ledger_paths,
+    critic_v3_seed_and_stage,
+    require_critic_v3_confirmation_authorization,
 )
 from core.route2_xeditcritic_training_data_v3 import (
     SqrtTaskStudySourcePassSamplerV3,
@@ -151,7 +153,13 @@ def run(
     physical_gpu_index: int,
 ) -> dict[str, Any]:
     _require(not (control_mode != "NONE" and candidate_bundle_permutation), "candidate controls cannot be combined")
-    seed = int(config["screen_seed"])
+    seed, run_stage = critic_v3_seed_and_stage(config)
+    if run_stage == "CONFIRMATION":
+        _require(
+            control_mode == "NONE" and not candidate_bundle_permutation,
+            "confirmation does not authorize candidate-information controls",
+        )
+        require_critic_v3_confirmation_authorization(config, arm="C3")
     _set_seed(seed)
     device = require_cuda(physical_gpu_index)
     run_id = "c3"
@@ -451,8 +459,8 @@ def run(
             checkpoint_path,
         )
         summary = {
-            "schema_version": "route_a_v3_route2_xeditcritic_v3_c3_screen_run.v1",
-            "status": "TERMINAL_SCREEN_ARM_COMPLETE",
+            "schema_version": f"route_a_v3_route2_xeditcritic_v3_c3_{run_stage.lower()}_run.v1",
+            "status": f"TERMINAL_{run_stage}_ARM_COMPLETE",
             "run_id": run_id,
             "arm": "C3",
             "control_mode": control_mode,
@@ -502,14 +510,14 @@ def run(
                     "validation_metrics": pass_rows[-1]["validation"],
                     "wall_time_seconds": summary["elapsed_seconds"],
                     "peak_vram_mb": summary["peak_vram_bytes"] / 1024**2,
-                    "notes": "terminal prospective cache-anchored last-four-LoRA Critic V3 screen arm; no TEST or Evaluation access",
+                    "notes": f"terminal prospective cache-anchored last-four-LoRA Critic V3 {run_stage.lower()} arm; no TEST or Evaluation access",
                 },
             ),
         )
         return summary
     except Exception as exc:
         failure = {
-            "schema_version": "route_a_v3_route2_xeditcritic_v3_c3_screen_failure.v1",
+            "schema_version": f"route_a_v3_route2_xeditcritic_v3_c3_{run_stage.lower()}_failure.v1",
             "status": "TERMINAL_IMPLEMENTATION_OR_RUNTIME_FAILURE",
             "arm": "C3",
             "control_mode": control_mode,

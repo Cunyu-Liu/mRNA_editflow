@@ -1,0 +1,40 @@
+{
+  "schema_version": "route_a_v3_route2_xeditsetflow_v3_confirmation_protocol.v1",
+  "status": "FROZEN_PROSPECTIVE_BEFORE_SCREEN_OR_CONFIRMATION_OUTCOME_READ",
+  "base_screen_config": "configs/route_a_v3_route2_xeditsetflow_v3_screen_v1.json",
+  "screen_gate_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v3/screen_seed_20260903/screen_gate.json",
+  "required_seeds": [20260904, 20260905, 20260906],
+  "additional_seed_authorized": false,
+  "selectable_arms": ["f2", "f3"],
+  "runtime_config_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runtime_configs/xeditsetflow_v3/confirmation_v1",
+  "run_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v3/confirmation_v1",
+  "confirmation_gate_output": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v3/confirmation_v1/confirmation_gate.json",
+  "training_policy": {
+    "states_per_record": 2,
+    "batch_size": 32,
+    "record_repeat_cap": 4,
+    "maximum_passes": 12,
+    "early_stopping_patience": 2,
+    "learning_rate": 0.0003,
+    "weight_decay": 0.0001,
+    "gradient_clip_norm": 1.0,
+    "dropout": 0.1,
+    "common_validation_state_seed": 2026090301,
+    "candidate_budget_per_source": 32
+  },
+  "gate": {
+    "minimum_each_seed_source_macro_candidate_recovery": 0.25,
+    "minimum_each_seed_source_macro_top_k_recovery": 0.15,
+    "minimum_each_seed_source_macro_unique_candidate_rate": 0.90,
+    "hard_legality_rate": 1.0,
+    "maximum_edit_budget_violations": 0,
+    "maximum_candidate_budget_violations": 0,
+    "maximum_replay_failures": 0,
+    "maximum_numerical_failures": 0
+  },
+  "development_test_outcomes_accessed": false,
+  "new_final_evaluation_outcomes_accessed": false,
+  "critic_score_used": false,
+  "independent_evaluator_used": false,
+  "guidance_authorized": false
+}

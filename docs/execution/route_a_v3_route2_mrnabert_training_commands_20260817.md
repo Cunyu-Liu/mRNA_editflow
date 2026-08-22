@@ -1912,3 +1912,28 @@ optimizer step 前写 RUNNING，成功或异常时原子 upsert COMPLETED/FAILED
 withheld TEST=89,580/18,293/18,292、Evaluation=0、参数量、GPU、updates、最终 Validation metrics 与
 wall/VRAM。cache arms 必须证明参数变化，C3 必须分别证明 head 与 LoRA 变化，否则不能写 COMPLETED。
 ledger focused/V3.3.2 本机=13/13、96/96；正式 C0 尚未启动，因此中央表此刻仍为 100 行。
+
+## XEdit V3 post-screen confirmation, atomic TEST, closed/guidance stack preflight（2026-08-23）
+
+Critic 与 SetFlow 已各自补齐 screen-PASS-only confirmation config builder 和 exact three-seed gate。Critic
+仅接受 20260831/20260901/20260902 的 selected C2/C3 + per-seed matched C0，并以 task 内 source-group
+paired bootstrap 的 task-macro Spearman CI 执行 3/3、median、MAE 与 task-win gate；SetFlow 仅接受
+20260904/20260905/20260906 的 selected F2/F3，三个 seed 均需满足 recovery/top-k/unique 和全 G0 correctness。
+任何 NO-GO 均不生成下一阶段授权，也不允许第四个 seed。
+
+一次性 frozen TEST runner 只有在 Critic three-seed PASS 后可运行。它先预载核验 6 个 checkpoint，再消费
+一次授权；canonical scan 对 TRAIN/VALIDATION 仍只提取 record id，只有 TEST=18,292 行完整解析。TEST
+edit-site base features 只在内存中按 frozen cache geometry 构建，C3 使用该 ephemeral base 加 online LoRA
+delta；不会写通用 TEST projection/cache，失败也不自动重试。frozen TEST、all-Development refit、LOSO 与
+guidance 当前均未授权、未执行。
+
+closed benchmark 已实现最多 5 edit 的全部排列精确求和（上限 120 paths），并以 source 为单位报告 NDCG、
+normalized regret、top-1 recall；少于两个 measured candidates 或 zero measured gain 保持 undefined，不填 0。
+soft-value core 固定三 seed uncertainty reward、K=8、6×384 scalar-only value、18 个 κ/τ/β 组合、32-particle
+SMC、ESS<16 stratified resampling、32 candidate cap、320 forward-equivalent ceiling 和三 critic member 分别
+计费。Critic frozen TEST/refit/7-study LOSO 四个 predecessor 未全 PASS 前 guidance authorization 为 false。
+
+本机 confirmation focused=39/39、closed=4/4、guidance core/gate=6/6+3/3、atomic TEST direct=3/3；本批
+A100 测试等待 active C0/C1 terminal 后再同步，避免运行中的 ledger 把非实际代码 commit 写成 provenance。
+C0/C1 已在 seed20260830 分别启动于 GPU0/GPU5；曾在 elapsed=64s 发生一次过早快照，已如实记为节奏错误，
+其后未补查，下一次合并检查延后到启动满 30 分钟。SetFlow source-cache 在此期间未被轮询。

@@ -1,0 +1,67 @@
+{
+  "schema_version": "route_a_v3_route2_xedit_v3_post_screen_stack_preflight.v1",
+  "status": "IMPLEMENTED_LOCAL_TESTED_A100_SYNC_DEFERRED_UNTIL_ACTIVE_SCREEN_TERMINAL",
+  "observed_date": "2026-08-23",
+  "confirmation": {
+    "critic_required_seeds": [20260831, 20260901, 20260902],
+    "critic_matched_baseline": "C0_PER_SEED",
+    "critic_bootstrap_unit": "SOURCE_GROUP_WITHIN_TASK",
+    "critic_bootstrap_iterations": 10000,
+    "setflow_required_seeds": [20260904, 20260905, 20260906],
+    "additional_seed_authorized": false,
+    "screen_no_go_hard_blocks_confirmation": true
+  },
+  "atomic_frozen_test": {
+    "three_seed_pass_required": true,
+    "checkpoint_count_preflight_before_outcome_access": 6,
+    "test_record_count": 18292,
+    "train_validation_full_decode_during_test": 0,
+    "general_test_projection_persisted": false,
+    "ephemeral_frozen_feature_view_only": true,
+    "candidate_and_matched_baseline_scored_in_one_access_event": true,
+    "automatic_retry_after_access_failure": false,
+    "new_final_evaluation_outcomes_accessed": false
+  },
+  "closed_and_guided": {
+    "closed_edit_permutation_ceiling": 5,
+    "closed_maximum_path_count": 120,
+    "undefined_sources_filled_with_zero": false,
+    "critic_ensemble_size": 3,
+    "soft_value_rollouts_per_state": 8,
+    "value_blocks": 6,
+    "value_width": 384,
+    "free_action_ratio_head_present": false,
+    "guidance_grid_combination_count": 18,
+    "particles": 32,
+    "ess_threshold": 16,
+    "candidate_cap": 32,
+    "forward_equivalent_ceiling": 320,
+    "critic_members_counted_separately": true
+  },
+  "readiness": {
+    "development_test_authorized_now": false,
+    "guidance_authorized_now": false,
+    "new_final_evaluation_authorized_now": false,
+    "submission_ready": false
+  },
+  "local_tests": {
+    "confirmation_focused_passed": 39,
+    "closed_neighborhood_focused_passed": 4,
+    "guidance_core_focused_passed": 6,
+    "guidance_gate_focused_passed": 3,
+    "atomic_test_direct_focused_passed": 3,
+    "exact_v332_passed_before_atomic_test_addition": 96
+  },
+  "a100_tests": {
+    "status": "PENDING_ACTIVE_C0_C1_SCREEN_MUST_KEEP_COMMIT_PROVENANCE",
+    "current_a100_head": "22317ed"
+  },
+  "monitoring_discipline": {
+    "c0_c1_launched": true,
+    "launch_seed": 20260830,
+    "early_snapshot_elapsed_seconds": 64,
+    "early_snapshot_was_a_timing_error": true,
+    "next_check_deferred_until_launch_elapsed_at_least_30_minutes": true,
+    "setflow_source_cache_polled_during_wait": false
+  }
+}

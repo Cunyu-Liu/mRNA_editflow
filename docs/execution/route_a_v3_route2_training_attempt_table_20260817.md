@@ -1295,3 +1295,13 @@ V3.3.2 A100=36/36、96/96；formal screen 尚未启动，中央 100-row 计数�
 Critic V3 C0–C3 已接入中央 ledger：RUNNING 必须先于首个 optimizer step，terminal success/failure
 原子 upsert 同一 attempt id；cache arm 无参数变化、或 C3 head/LoRA 任一未变化均硬失败。focused/
 V3.3.2 本机=13/13、96/96。该实现本身不新增 attempt；只有正式 screen arm 启动才将中央表从100行增加。
+
+正式 C0/C1 screen seed20260830 已分别在 A100 GPU0/GPU5 启动，使用 commit `22317ed`；启动前两个 exact
+output directories 均不存在。一次 elapsed=64s 的状态读取早于合同约定约 5 分钟，属于监控节奏错误；
+当时两进程均为 `Rl` 且两卡已有 CUDA 显存占用，但日志尚无 pass event，远端缺少 `rg` 导致 ledger 查询
+没有执行。没有立即补查，也没有把该快照当作正式 alive check；下一次合并检查延后到 launch elapsed≥30m。
+
+等待期间新增的 Critic/SetFlow confirmation、atomic TEST、closed benchmark、soft-value/SMC 和 readiness
+代码均未执行参数更新，因此不新增 training attempt。其 A100 sync/test 将等待 C0/C1 terminal，避免正在
+运行的 completion upsert 读取到不同于实际训练的 Git HEAD。Development TEST、new final Evaluation、
+guidance、model/generation success 与 submission-ready 状态均未改变。

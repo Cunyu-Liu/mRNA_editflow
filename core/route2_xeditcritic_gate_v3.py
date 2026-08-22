@@ -3,7 +3,11 @@
 from __future__ import annotations
 
 import math
+from collections import defaultdict
 from typing import Any, Mapping
+
+import numpy as np
+from scipy.stats import spearmanr
 
 
 class XEditCriticGateError(RuntimeError):
@@ -177,4 +181,475 @@ def adjudicate_critic_screen_v3(
         "confirmation_authorized": selected is not None,
         "development_test_authorized": False,
         "new_final_evaluation_authorized": False,
+    }
+
+
+CONFIRMATION_SEEDS_V3 = (20260831, 20260901, 20260902)
+
+
+def _spearman(values: list[float], predictions: list[float]) -> float | None:
+    if len(values) < 3 or np.std(values) == 0.0 or np.std(predictions) == 0.0:
+        return None
+    result = float(spearmanr(values, predictions).statistic)
+    return result if math.isfinite(result) else None
+
+
+def _task_macro_spearman_from_rows(
+    rows: list[Mapping[str, Any]], prediction_key: str
+) -> float | None:
+    by_task: dict[str, list[Mapping[str, Any]]] = defaultdict(list)
+    for row in rows:
+        by_task[str(row["task_id"])].append(row)
+    correlations = []
+    for task in sorted(by_task):
+        members = by_task[task]
+        correlation = _spearman(
+            [float(row["target"]) for row in members],
+            [float(row[prediction_key]) for row in members],
+        )
+        if correlation is None:
+            return None
+        correlations.append(correlation)
+    return float(np.mean(correlations)) if correlations else None
+
+
+def paired_source_group_task_macro_bootstrap_v3(
+    candidate_rows: list[Mapping[str, Any]],
+    baseline_rows: list[Mapping[str, Any]],
+    *,
+    iterations: int,
+    seed: int,
+) -> dict[str, Any]:
+    """Paired, task-stratified source-group bootstrap of task-macro Spearman."""
+    _require(iterations >= 1000, "confirmation bootstrap budget is below 1000")
+    candidate_by_id = {str(row["record_id"]): row for row in candidate_rows}
+    baseline_by_id = {str(row["record_id"]): row for row in baseline_rows}
+    _require(
+        len(candidate_by_id) == len(candidate_rows)
+        and len(baseline_by_id) == len(baseline_rows),
+        "confirmation prediction record is duplicated",
+    )
+    _require(
+        set(candidate_by_id) == set(baseline_by_id) and candidate_by_id,
+        "candidate/baseline confirmation records are not exactly paired",
+    )
+    aligned: list[dict[str, Any]] = []
+    for record_id in sorted(candidate_by_id):
+        candidate = candidate_by_id[record_id]
+        baseline = baseline_by_id[record_id]
+        for field in ("source_group_id", "task_id", "target", "scaled_target"):
+            _require(
+                candidate[field] == baseline[field],
+                f"candidate/baseline confirmation field differs: {record_id}/{field}",
+            )
+        aligned.append(
+            {
+                "record_id": record_id,
+                "source_group_id": str(candidate["source_group_id"]),
+                "task_id": str(candidate["task_id"]),
+                "target": float(candidate["target"]),
+                "candidate_prediction": float(candidate["prediction"]),
+                "baseline_prediction": float(baseline["prediction"]),
+            }
+        )
+    by_task_group: dict[str, dict[str, list[dict[str, Any]]]] = defaultdict(
+        lambda: defaultdict(list)
+    )
+    for row in aligned:
+        by_task_group[row["task_id"]][row["source_group_id"]].append(row)
+    _require(len(by_task_group) == 9, "confirmation bootstrap does not cover nine tasks")
+    _require(
+        all(len(groups) >= 2 for groups in by_task_group.values()),
+        "confirmation bootstrap task has fewer than two source groups",
+    )
+    point_candidate = _task_macro_spearman_from_rows(
+        aligned, "candidate_prediction"
+    )
+    point_baseline = _task_macro_spearman_from_rows(aligned, "baseline_prediction")
+    _require(
+        point_candidate is not None and point_baseline is not None,
+        "confirmation point task-macro Spearman is undefined",
+    )
+    rng = np.random.default_rng(seed)
+    differences = []
+    for _ in range(iterations):
+        sampled: list[Mapping[str, Any]] = []
+        for task in sorted(by_task_group):
+            groups = by_task_group[task]
+            keys = sorted(groups)
+            indices = rng.integers(0, len(keys), size=len(keys))
+            sampled.extend(
+                row for index in indices for row in groups[keys[int(index)]]
+            )
+        candidate_value = _task_macro_spearman_from_rows(
+            sampled, "candidate_prediction"
+        )
+        baseline_value = _task_macro_spearman_from_rows(
+            sampled, "baseline_prediction"
+        )
+        if candidate_value is not None and baseline_value is not None:
+            differences.append(candidate_value - baseline_value)
+    _require(
+        len(differences) >= int(iterations * 0.95),
+        "too few defined confirmation bootstrap iterations",
+    )
+    values = np.asarray(differences, dtype=float)
+    return {
+        "analysis_unit": "SOURCE_GROUP_WITHIN_TASK",
+        "task_count": len(by_task_group),
+        "source_group_count": sum(len(groups) for groups in by_task_group.values()),
+        "bootstrap_iterations": iterations,
+        "defined_bootstrap_iterations": len(differences),
+        "point_task_macro_spearman_difference": point_candidate - point_baseline,
+        "task_macro_spearman_difference_ci_95": [
+            float(np.quantile(values, 0.025)),
+            float(np.quantile(values, 0.975)),
+        ],
+    }
+
+
+def _validate_confirmation_summary_v3(
+    summary: Mapping[str, Any], *, seed: int, expected_arm: str
+) -> Mapping[str, Any]:
+    _require(
+        summary.get("status") == "TERMINAL_CONFIRMATION_ARM_COMPLETE",
+        "confirmation arm is not terminal-complete",
+    )
+    _require(int(summary.get("seed", -1)) == seed, "confirmation seed differs")
+    _require(str(summary.get("arm")) == expected_arm, "confirmation arm differs")
+    _require(
+        summary.get("development_test_outcomes_accessed") is False,
+        "confirmation accessed Development TEST outcome",
+    )
+    _require(
+        summary.get("new_final_evaluation_outcomes_accessed") is False,
+        "confirmation accessed Evaluation outcome",
+    )
+    final = summary.get("final_validation")
+    _require(isinstance(final, Mapping), "confirmation lacks final Validation metrics")
+    _require(int(final.get("task_count", 0)) == 9, "confirmation lacks nine tasks")
+    spread = float(final.get("prediction_std", float("nan")))
+    _require(math.isfinite(spread) and spread > 0.0, "confirmation prediction spread is invalid")
+    return final
+
+
+def adjudicate_critic_confirmation_v3(
+    seed_payloads: Mapping[int, Mapping[str, Any]],
+    *,
+    selected_arm: str,
+    required_seeds: tuple[int, ...] = CONFIRMATION_SEEDS_V3,
+) -> dict[str, Any]:
+    _require(selected_arm in {"C2", "C3"}, "confirmation selected arm is not C2/C3")
+    _require(
+        tuple(sorted(seed_payloads)) == tuple(sorted(required_seeds))
+        and len(seed_payloads) == 3,
+        "confirmation requires exactly the three frozen seeds",
+    )
+    seed_results: dict[str, dict[str, Any]] = {}
+    for seed in required_seeds:
+        payload = seed_payloads[seed]
+        _require(
+            set(payload) == {"candidate_summary", "baseline_summary", "bootstrap"},
+            f"confirmation seed payload is incomplete: {seed}",
+        )
+        candidate = _validate_confirmation_summary_v3(
+            payload["candidate_summary"], seed=seed, expected_arm=selected_arm
+        )
+        baseline = _validate_confirmation_summary_v3(
+            payload["baseline_summary"], seed=seed, expected_arm="C0"
+        )
+        _require(
+            set(candidate["tasks"]) == set(baseline["tasks"]),
+            f"confirmation task inventory differs: {seed}",
+        )
+        task_wins = sum(
+            candidate["tasks"][task]["spearman"]
+            > baseline["tasks"][task]["spearman"]
+            for task in candidate["tasks"]
+        )
+        candidate_spearman = float(candidate["task_macro_spearman"])
+        baseline_spearman = float(baseline["task_macro_spearman"])
+        candidate_mae = float(candidate["task_macro_standardized_mae"])
+        baseline_mae = float(baseline["task_macro_standardized_mae"])
+        bootstrap = payload["bootstrap"]
+        _require(
+            bootstrap.get("analysis_unit") == "SOURCE_GROUP_WITHIN_TASK",
+            f"confirmation bootstrap unit differs: {seed}",
+        )
+        _require(
+            int(bootstrap.get("task_count", -1)) == 9
+            and int(bootstrap.get("bootstrap_iterations", 0)) >= 1000
+            and int(bootstrap.get("defined_bootstrap_iterations", 0))
+            >= int(bootstrap.get("bootstrap_iterations", 0) * 0.95),
+            f"confirmation bootstrap coverage differs: {seed}",
+        )
+        ci = bootstrap.get("task_macro_spearman_difference_ci_95")
+        _require(
+            isinstance(ci, list) and len(ci) == 2,
+            f"confirmation bootstrap CI is absent: {seed}",
+        )
+        ci_lower = float(ci[0])
+        bootstrap_point = float(
+            bootstrap.get("point_task_macro_spearman_difference", float("nan"))
+        )
+        _require(
+            math.isclose(
+                bootstrap_point,
+                candidate_spearman - baseline_spearman,
+                rel_tol=0.0,
+                abs_tol=1e-12,
+            ),
+            f"confirmation bootstrap point estimate differs from summaries: {seed}",
+        )
+        checks = {
+            "task_macro_spearman_at_least_0_25": candidate_spearman >= 0.25,
+            "margin_over_c0_at_least_0_07": candidate_spearman - baseline_spearman >= 0.07,
+            "positive_task_count_at_least_8": int(candidate["positive_task_count"]) >= 8,
+            "task_wins_over_c0_at_least_6": task_wins >= 6,
+            "task_macro_standardized_mae_at_most_1_70": candidate_mae <= 1.70,
+            "mae_not_worse_than_c0": candidate_mae <= baseline_mae,
+            "paired_bootstrap_ci_lower_bound_positive": math.isfinite(ci_lower)
+            and ci_lower > 0.0,
+            "protected_outcome_reads_zero": True,
+        }
+        seed_results[str(seed)] = {
+            "candidate_task_macro_spearman": candidate_spearman,
+            "baseline_task_macro_spearman": baseline_spearman,
+            "margin_over_c0": candidate_spearman - baseline_spearman,
+            "candidate_task_macro_standardized_mae": candidate_mae,
+            "baseline_task_macro_standardized_mae": baseline_mae,
+            "positive_task_count": int(candidate["positive_task_count"]),
+            "task_wins_over_c0": task_wins,
+            "paired_bootstrap_ci_95": [float(ci[0]), float(ci[1])],
+            "checks": checks,
+            "passed": all(checks.values()),
+        }
+    spearmans = [
+        row["candidate_task_macro_spearman"] for row in seed_results.values()
+    ]
+    margins = [row["margin_over_c0"] for row in seed_results.values()]
+    cohort_checks = {
+        "exact_three_frozen_seeds": True,
+        "all_seed_checks_pass": all(row["passed"] for row in seed_results.values()),
+        "median_task_macro_spearman_at_least_0_30": float(np.median(spearmans))
+        >= 0.30,
+        "median_margin_over_c0_at_least_0_10": float(np.median(margins)) >= 0.10,
+    }
+    passed = all(cohort_checks.values())
+    return {
+        "schema_version": "route_a_v3_route2_xeditcritic_v3_three_seed_gate.v1",
+        "status": (
+            "XEDITCRITIC_V3_THREE_SEED_PASS"
+            if passed
+            else "XEDITCRITIC_V3_THREE_SEED_NO_GO"
+        ),
+        "selected_arm": selected_arm,
+        "required_seeds": list(required_seeds),
+        "seed_results": seed_results,
+        "median_task_macro_spearman": float(np.median(spearmans)),
+        "median_margin_over_c0": float(np.median(margins)),
+        "cohort_checks": cohort_checks,
+        "development_test_authorized": passed,
+        "all_development_refit_authorized": False,
+        "loso_authorized": False,
+        "guidance_authorized": False,
+        "new_final_evaluation_authorized": False,
+        "additional_seed_authorized": False,
+    }
+
+
+def adjudicate_critic_frozen_test_v3(
+    candidate: Mapping[str, Any],
+    baseline: Mapping[str, Any],
+    bootstrap: Mapping[str, Any],
+) -> dict[str, Any]:
+    for label, summary in (("candidate", candidate), ("baseline", baseline)):
+        _require(
+            summary.get("status") == "ATOMIC_FROZEN_DEVELOPMENT_TEST_EVALUATION_COMPLETE",
+            f"{label} frozen TEST summary is not terminal",
+        )
+        _require(
+            int(summary.get("test_record_count", -1)) == 18292,
+            f"{label} frozen TEST count differs",
+        )
+        _require(
+            summary.get("development_test_outcomes_accessed") is True
+            and int(summary.get("development_test_access_event_count", -1)) == 1,
+            f"{label} frozen TEST access was not atomic",
+        )
+        _require(
+            summary.get("new_final_evaluation_outcomes_accessed") is False,
+            f"{label} frozen TEST evaluation accessed new Evaluation",
+        )
+        _require(
+            summary.get("general_test_projection_persisted") is False,
+            f"{label} left a general TEST projection",
+        )
+    candidate_metrics = candidate.get("test_metrics")
+    baseline_metrics = baseline.get("test_metrics")
+    _require(
+        isinstance(candidate_metrics, Mapping) and isinstance(baseline_metrics, Mapping),
+        "frozen TEST metrics are missing",
+    )
+    _require(
+        int(candidate_metrics.get("task_count", -1))
+        == int(baseline_metrics.get("task_count", -2))
+        == 9,
+        "frozen TEST does not cover nine tasks",
+    )
+    candidate_spearman = float(candidate_metrics["task_macro_spearman"])
+    baseline_spearman = float(baseline_metrics["task_macro_spearman"])
+    candidate_mae = float(candidate_metrics["task_macro_standardized_mae"])
+    baseline_mae = float(baseline_metrics["task_macro_standardized_mae"])
+    ci = bootstrap.get("task_macro_spearman_difference_ci_95")
+    _require(
+        bootstrap.get("analysis_unit") == "SOURCE_GROUP_WITHIN_TASK"
+        and isinstance(ci, list)
+        and len(ci) == 2,
+        "frozen TEST paired bootstrap differs",
+    )
+    checks = {
+        "task_macro_spearman_at_least_0_25": candidate_spearman >= 0.25,
+        "margin_over_c0_at_least_0_07": candidate_spearman - baseline_spearman >= 0.07,
+        "task_macro_standardized_mae_at_most_1_70": candidate_mae <= 1.70,
+        "mae_not_worse_than_c0": candidate_mae <= baseline_mae,
+        "positive_task_count_at_least_8": int(candidate_metrics["positive_task_count"]) >= 8,
+        "paired_bootstrap_ci_lower_bound_positive": float(ci[0]) > 0.0,
+        "single_atomic_test_access": True,
+        "general_test_projection_not_persisted": True,
+        "new_final_evaluation_read_zero": True,
+    }
+    passed = all(checks.values())
+    return {
+        "schema_version": "route_a_v3_route2_xeditcritic_v3_frozen_test_gate.v1",
+        "status": (
+            "XEDITCRITIC_V3_FROZEN_TEST_PASS"
+            if passed
+            else "XEDITCRITIC_V3_FROZEN_TEST_NO_GO"
+        ),
+        "candidate_task_macro_spearman": candidate_spearman,
+        "baseline_task_macro_spearman": baseline_spearman,
+        "margin_over_c0": candidate_spearman - baseline_spearman,
+        "candidate_task_macro_standardized_mae": candidate_mae,
+        "baseline_task_macro_standardized_mae": baseline_mae,
+        "paired_bootstrap_ci_95": [float(ci[0]), float(ci[1])],
+        "checks": checks,
+        "all_development_refit_authorized": passed,
+        "loso_authorized": False,
+        "guidance_authorized": False,
+        "new_final_evaluation_authorized": False,
+    }
+
+
+def adjudicate_critic_loso_v3(
+    seed_results: Mapping[int, Mapping[str, Any]],
+) -> dict[str, Any]:
+    required_seeds = set(CONFIRMATION_SEEDS_V3)
+    _require(
+        set(seed_results) == required_seeds,
+        "Critic V3 LOSO requires exactly the three frozen seeds",
+    )
+    rows = {}
+    model_spearmans = []
+    for seed in CONFIRMATION_SEEDS_V3:
+        result = seed_results[seed]
+        _require(
+            result.get("status") == "XEDITCRITIC_V3_PAIRED_LOSO_COMPLETE",
+            f"Critic V3 LOSO seed is incomplete: {seed}",
+        )
+        _require(
+            int(result.get("held_out_study_count", -1)) == 7,
+            f"Critic V3 LOSO study count differs: {seed}",
+        )
+        _require(
+            result.get("development_test_outcomes_accessed") is False
+            and result.get("new_final_evaluation_outcomes_accessed") is False,
+            f"Critic V3 LOSO accessed protected outcome: {seed}",
+        )
+        fold_margins = result.get("fold_margins")
+        _require(
+            isinstance(fold_margins, Mapping)
+            and len(fold_margins) == 7
+            and "GSE269595" in fold_margins,
+            f"Critic V3 LOSO fold inventory differs: {seed}",
+        )
+        margins = [float(value) for value in fold_margins.values()]
+        _require(all(math.isfinite(value) for value in margins), f"Critic V3 LOSO margin is nonfinite: {seed}")
+        model = float(result["model_study_macro_spearman"])
+        baseline = float(result["baseline_study_macro_spearman"])
+        model_spearmans.append(model)
+        checks = {
+            "study_macro_spearman_at_least_0_20": model >= 0.20,
+            "margin_over_c0_at_least_0_05": model - baseline >= 0.05,
+            "positive_fold_margin_count_at_least_6": sum(value > 0.0 for value in margins) >= 6,
+            "median_fold_margin_positive": float(np.median(margins)) > 0.0,
+            "leave_gse269595_out_margin_positive": float(fold_margins["GSE269595"]) > 0.0,
+            "protected_outcome_reads_zero": True,
+        }
+        rows[str(seed)] = {
+            "model_study_macro_spearman": model,
+            "baseline_study_macro_spearman": baseline,
+            "margin_over_c0": model - baseline,
+            "fold_margins": {key: float(value) for key, value in sorted(fold_margins.items())},
+            "checks": checks,
+            "passed": all(checks.values()),
+        }
+    median_spearman = float(np.median(model_spearmans))
+    cohort_checks = {
+        "all_three_seed_checks_pass": all(row["passed"] for row in rows.values()),
+        "median_study_macro_spearman_at_least_0_25": median_spearman >= 0.25,
+    }
+    passed = all(cohort_checks.values())
+    return {
+        "schema_version": "route_a_v3_route2_xeditcritic_v3_loso_gate.v1",
+        "status": (
+            "XEDITCRITIC_V3_LOSO_PASS"
+            if passed
+            else "XEDITCRITIC_V3_LOSO_NO_GO"
+        ),
+        "required_seeds": list(CONFIRMATION_SEEDS_V3),
+        "seed_results": rows,
+        "median_study_macro_spearman": median_spearman,
+        "cohort_checks": cohort_checks,
+        "guidance_readiness_authorized": passed,
+        "new_final_evaluation_authorized": False,
+    }
+
+
+def adjudicate_critic_readiness_v3(
+    three_seed_gate: Mapping[str, Any],
+    frozen_test_gate: Mapping[str, Any],
+    refit_manifest: Mapping[str, Any],
+    loso_gate: Mapping[str, Any],
+) -> dict[str, Any]:
+    three_seed_passed = (
+        three_seed_gate.get("status") == "XEDITCRITIC_V3_THREE_SEED_PASS"
+        and three_seed_gate.get("development_test_authorized") is True
+    )
+    frozen_test_passed = (
+        frozen_test_gate.get("status") == "XEDITCRITIC_V3_FROZEN_TEST_PASS"
+        and frozen_test_gate.get("all_development_refit_authorized") is True
+    )
+    refit_complete = (
+        refit_manifest.get("status") == "XEDITCRITIC_V3_ALL_DEVELOPMENT_REFIT_COMPLETE"
+        and refit_manifest.get("required_seeds") == list(CONFIRMATION_SEEDS_V3)
+        and int(refit_manifest.get("completed_refit_count", -1)) == 3
+        and refit_manifest.get("development_test_outcomes_accessed_during_refit") is False
+        and refit_manifest.get("new_final_evaluation_outcomes_accessed") is False
+    )
+    loso_passed = (
+        loso_gate.get("status") == "XEDITCRITIC_V3_LOSO_PASS"
+        and loso_gate.get("guidance_readiness_authorized") is True
+    )
+    ready = three_seed_passed and frozen_test_passed and refit_complete and loso_passed
+    return {
+        "schema_version": "route_a_v3_route2_xeditcritic_v3_guidance_readiness.v1",
+        "status": "CRITIC_READY_FOR_GUIDANCE" if ready else "CRITIC_NOT_READY_FOR_GUIDANCE",
+        "three_seed_passed": three_seed_passed,
+        "frozen_test_passed": frozen_test_passed,
+        "all_development_refit_complete": refit_complete,
+        "loso_readiness_passed": loso_passed,
+        "guidance_authorized": ready,
+        "new_final_evaluation_authorized": False,
+        "submission_ready": False,
     }

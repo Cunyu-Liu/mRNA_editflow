@@ -2,8 +2,42 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from typing import Any, Mapping
+
+
+def critic_v3_seed_and_stage(config: Mapping[str, Any]) -> tuple[int, str]:
+    stage = str(config.get("run_stage", "SCREEN"))
+    if stage not in {"SCREEN", "CONFIRMATION"}:
+        raise ValueError(f"unsupported Critic V3 stage: {stage}")
+    seed = int(config.get("seed", config["screen_seed"]))
+    if stage == "SCREEN" and seed != 20260830:
+        raise ValueError("Critic V3 screen seed differs from the freeze")
+    if stage == "CONFIRMATION" and seed not in {20260831, 20260901, 20260902}:
+        raise ValueError("Critic V3 confirmation seed is undeclared")
+    return seed, stage
+
+
+def require_critic_v3_confirmation_authorization(
+    config: Mapping[str, Any], *, arm: str
+) -> None:
+    _, stage = critic_v3_seed_and_stage(config)
+    if stage == "SCREEN":
+        return
+    gate_path = Path(str(config["screen_gate_path"]))
+    gate = json.loads(gate_path.read_text(encoding="utf-8"))
+    selected = str(gate.get("selected_arm"))
+    if (
+        gate.get("status") != "XEDITCRITIC_V3_SCREEN_PASS"
+        or gate.get("confirmation_authorized") is not True
+        or selected not in {"C2", "C3"}
+    ):
+        raise ValueError("Critic V3 screen does not authorize confirmation")
+    if str(config.get("selected_arm")) != selected:
+        raise ValueError("Critic V3 confirmation config selected arm differs from screen")
+    if arm not in {"C0", selected}:
+        raise ValueError("Critic V3 confirmation arm is not selected full model or matched C0")
 
 
 def critic_v3_attempt_config(
@@ -15,6 +49,7 @@ def critic_v3_attempt_config(
     candidate_bundle_permutation: bool,
     physical_gpu_index: int,
 ) -> dict[str, Any]:
+    seed, stage = critic_v3_seed_and_stage(config)
     control = (
         "CANDIDATE_BUNDLE_PERMUTATION"
         if candidate_bundle_permutation
@@ -23,12 +58,12 @@ def critic_v3_attempt_config(
     pretrained = arm in {"C1", "C2", "C3"}
     return {
         **dict(config),
-        "attempt_id": f"xeditcritic_v3_screen_seed{config['screen_seed']}::{run_id}",
-        "baseline_id": f"xeditcritic_v3_{run_id}_seed{config['screen_seed']}",
-        "attempt_purpose": "XEDITCRITIC_V3_SCREEN",
-        "scientific_role": f"XEDITCRITIC_V3_{arm}_{control}",
+        "attempt_id": f"xeditcritic_v3_{stage.lower()}_seed{seed}::{run_id}",
+        "baseline_id": f"xeditcritic_v3_{run_id}_seed{seed}",
+        "attempt_purpose": f"XEDITCRITIC_V3_{stage}",
+        "scientific_role": f"XEDITCRITIC_V3_{stage}_{arm}_{control}",
         "result_stage": "DEVELOPMENT_VALIDATION",
-        "run_mode": "FROZEN_SCREEN",
+        "run_mode": f"FROZEN_{stage}",
         "model_kind": f"XEDITCRITIC_V3_{arm}",
         "pretrained_model_id": (
             "YYLY66/mRNABERT@a1eb7df25804d23f08646e1cb996b234d7208a40"
@@ -48,7 +83,7 @@ def critic_v3_attempt_config(
         "loss_aggregation_mode": "TASK_ROBUST_STANDARDIZED",
         "target_scaling_mode": "TRAIN_TASK_ROBUST_WITH_REGION_GLOBAL_FALLBACK",
         "candidate_control": control,
-        "seed": int(config["screen_seed"]),
+        "seed": seed,
         "physical_gpu_index": int(physical_gpu_index),
         "device": f"cuda:{physical_gpu_index}",
         "optimizer_name": "AdamW",

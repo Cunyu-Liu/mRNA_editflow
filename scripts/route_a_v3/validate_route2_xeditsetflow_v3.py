@@ -24,6 +24,7 @@ from core.route2_gpu_failure_evidence import cuda_device_observation, write_gpu_
 from core.route2_legal_xeditflow import exact_terminal_distribution, initial_state, jump_distribution
 from core.route2_source_token_cache_v3 import SourceTokenCacheIndexV3, assemble_source_token_cache_v3, load_source_token_cache_v3
 from core.route2_xeditsetflow_runtime_v3 import ARM_CONFIGS_V3, build_setflow_arm_v3
+from core.route2_xeditsetflow_gate_v3 import require_setflow_confirmation_authorization_v3
 from core.route2_xeditsetflow_sampling_v3 import (
     SetFlowGenerationMetadataV3,
     build_generation_metadata_v3,
@@ -135,6 +136,7 @@ def small_graph_exact_check_v3(model, arm: str, device: torch.device) -> dict[st
 
 def validate(config: Mapping[str, Any], *, arm: str, output_dir: Path) -> dict[str, Any]:
     _require(arm in ARM_CONFIGS_V3, "unknown SetFlow validation arm")
+    require_setflow_confirmation_authorization_v3(config, arm=arm)
     _require(not output_dir.exists(), f"terminal SetFlow validation output exists: {output_dir}")
     _require(torch.cuda.is_available(), "CUDA is unavailable; CPU fallback is forbidden")
     _require(not os.environ.get("CUDA_VISIBLE_DEVICES"), "CUDA_VISIBLE_DEVICES remapping is forbidden")
