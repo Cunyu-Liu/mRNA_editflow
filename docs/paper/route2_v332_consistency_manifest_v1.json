@@ -159,7 +159,7 @@
       "label": "Provisional general-manuscript figure assembly",
       "analysis_intent": "FROZEN_EVIDENCE_VISUALIZATION",
       "status": "PROVISIONAL_GENERAL_MANUSCRIPT_FIGURES_RENDERED",
-      "figure_count": 5,
+      "figure_count": 6,
       "formats": ["png", "pdf", "svg"],
       "raster_dpi": 300,
       "target_journal": "PENDING_SELECTION",
@@ -179,7 +179,11 @@
         "configs/route_a_v3_route2_mrnabert_independent_evaluator_qualification_v1.json",
         "configs/route_a_v3_route2_mrnabert_guidance_reward_policy_v1.json",
         "audits/route_a_v3_route2_v332_freshness_and_critic_v2_freeze_v1.json",
-        "audits/route_a_v3_route2_generation_action_space_geometry_v1.json"
+        "audits/route_a_v3_route2_generation_action_space_geometry_v1.json",
+        "audits/route_a_v3_route2_neural_hpo_selection_v1.json",
+        "audits/route_a_v3_route2_critic_v2_control_terminal_no_go_v1.json",
+        "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/independent_generation_evaluator/neural_medium_siamese_task_scaled_seed20260816_frozen_development_validation_gpu2_v3/training_summary.json",
+        "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/base_flow_g0/position_progress_gpu_v2/training_summary.json"
       ],
       "protected_outcomes": {
         "development_test_read": false,
@@ -197,7 +201,9 @@
         "E-R2-DEV-EVAL-ARCH-FIGURE-BUILDER",
         "E-R2-DEV-EVAL-ARCH-FIGURE-MANIFEST",
         "E-R2-PXE-ARCH-FIGURE-BUILDER",
-        "E-R2-PXE-ARCH-FIGURE-MANIFEST"
+        "E-R2-PXE-ARCH-FIGURE-MANIFEST",
+        "E-R2-LEARNING-CURVES-FIGURE-BUILDER",
+        "E-R2-LEARNING-CURVES-FIGURE-MANIFEST"
       ]
     }
   ],
@@ -563,6 +569,46 @@
       ]
     },
     {
+      "result_id": "R-R2-DEVELOPMENT-LEARNING-CURVES",
+      "status": "PROVISIONAL_DEVELOPMENT_LEARNING_CURVES_FIGURE_RENDERED",
+      "raw_unsmoothed_histories": true,
+      "cross_panel_metric_comparison_allowed": false,
+      "predictor_profile_count": 6,
+      "predictor_epoch_count": 8,
+      "predictor_curve_metric": "POOLED_DEVELOPMENT_VALIDATION_SPEARMAN",
+      "predictor_selection_metric": "DEVELOPMENT_VALIDATION_TASK_MACRO_SPEARMAN",
+      "critic_arm_count": 4,
+      "critic_epoch_count": 100,
+      "critic_status": "CRITIC_V2_CONTROLS_DO_NOT_SUPPORT_THREE_FROZEN_SEEDS",
+      "critic_full_selected_epoch": 98,
+      "critic_full_selected_task_macro_spearman": 0.11637066318689378,
+      "critic_strongest_same_information_hurdle": 0.13171439492559175,
+      "independent_evaluator_epoch_count": 8,
+      "independent_evaluator_selected_epoch": 8,
+      "independent_evaluator_selected_task_macro_spearman": 0.10256553571558498,
+      "independent_evaluator_exclusive_threshold": 0.1012475745988908,
+      "independent_evaluator_margin": 0.0013179611166941746,
+      "base_flow_epoch_count": 30,
+      "base_flow_selected_epoch": 1,
+      "base_flow_epoch1_validation_nll": 5.512483521877043,
+      "base_flow_epoch30_validation_nll": 9.939703254814608,
+      "base_flow_overfitting_pattern_visible": true,
+      "base_flow_guided_critic_used": false,
+      "base_flow_biological_optimization_established": false,
+      "development_test_read": false,
+      "new_final_evaluation_read": false,
+      "guided_xeditflow_run": false,
+      "publisher_compliance_claimed": false,
+      "scientific_claim_status": "NOT_ESTABLISHED",
+      "evidence_ids": [
+        "E-R2-FRESH",
+        "E-R2-CRITIC-V2-ADJ",
+        "E-R2-EVAL-TRAIN",
+        "E-R2-LEARNING-CURVES-FIGURE-BUILDER",
+        "E-R2-LEARNING-CURVES-FIGURE-MANIFEST"
+      ]
+    },
+    {
       "result_id": "R-R2-MINIMUM-BENCHMARK-PACKAGE",
       "requirement_count": 18,
       "complete_or_complete_with_declared_limits_count": 14,
@@ -591,7 +637,9 @@
         "E-R2-DEV-EVAL-ARCH-FIGURE-BUILDER",
         "E-R2-DEV-EVAL-ARCH-FIGURE-MANIFEST",
         "E-R2-PXE-ARCH-FIGURE-BUILDER",
-        "E-R2-PXE-ARCH-FIGURE-MANIFEST"
+        "E-R2-PXE-ARCH-FIGURE-MANIFEST",
+        "E-R2-LEARNING-CURVES-FIGURE-BUILDER",
+        "E-R2-LEARNING-CURVES-FIGURE-MANIFEST"
       ]
     }
   ],
@@ -629,7 +677,7 @@
     },
     {
       "gap_id": "GAP-R2-FIGURE-TARGET-RULES",
-      "description": "Five reproducible provisional figures from four builders exist in PNG, PDF and SVG, but target journal, article type and submission phase have not been selected; publisher-specific dimensions and file rules therefore have not been claimed.",
+      "description": "Six reproducible provisional figures from five builders exist in PNG, PDF and SVG, but target journal, article type and submission phase have not been selected; publisher-specific dimensions and file rules therefore have not been claimed.",
       "action": "After venue and phase selection, verify the official publisher instructions and regenerate the same frozen evidence if different export dimensions or formats are required.",
       "status": "PROVISIONAL_GENERAL_FIGURES_TARGET_RULES_PENDING"
     }

@@ -667,3 +667,22 @@ commit `589d263` 快进后 builder focused test 2/2，并在 paper integration c
 四个 blockers 和 `submission_ready=false` 不变。中央 100 个 attempts 的终态继续是 92
 `COMPLETED`、3 `FAILED`、3 `INCOMPLETE_NO_TERMINAL_RECORD`、1
 `STOPPED_FOR_THROUGHPUT_REPAIR`、1 `STOPPED_PRIORITY_REALLOCATION`。
+
+## Frozen Development learning curves（2026-08-22）
+
+本项为非训练 paper-figure task，不新增或修改中央 CSV attempt。新增独立 builder/focused
+tests，只读取六个 selected predictor、Critic V2 四个 control arms、independent evaluator
+与 Base Flow G0 的 terminal Development histories；不监控实时训练，不读取 Development
+TEST/new final Evaluation，也不运行 guided XEditFlow。所有曲线保持 raw/unsmoothed。
+
+预测器 8-epoch 曲线明确使用 pooled Validation Spearman，图例中的 final architecture
+selection 数值明确使用另算的 task-macro Spearman，禁止混用或跨 panel 排名。Critic full
+selected epoch 98 仍低于 strongest same-information baseline，terminal NO-GO 不变；
+evaluator 只保留 Development method-selection qualification；Base Flow 30-epoch NLL 图
+明确显示 epoch 1 后 validation loss 恶化，仍只属 engineering component。
+
+GitHub commits `f28d04f`/`9659da7` 已推送，A100 builder focused test 2/2 passed；正式
+PNG/PDF/SVG、manifest 与 alt text 已保存到 `/mnt/.../figures/route2_v332_v1/`，视觉和
+矢量/字体/不透明审计通过。paper evidence sources=36（23 local/contract + 13 `/mnt`）、
+claim markers=22、figures/builders=6/5；本机九组联合 focused suite 为 29/29。MBP 14/3/1、
+四个 blockers、`submission_ready=false` 与中央 100-row 的 92/3/3/1/1 终态均不变。

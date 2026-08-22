@@ -106,7 +106,7 @@ run or absent replacement Evaluation study into a completed item.
 
 ### Provisional figure assembly
 
-Four reproducible builders render five general-manuscript figures. Two result
+Five reproducible builders render six general-manuscript figures. Two result
 figures use the frozen generation/action-space table, the complete nine-task
 Critic V2 diagnostic and the explicitly outcome-exposed GSE232572 historical
 summary. A third canonical conversion-flow figure uses the 14-study
@@ -123,11 +123,17 @@ position/progress `SUB+STOP` Base Flow and architecturally distinct Siamese
 independent evaluator. It renders critic guidance as prospective, keeps critic
 self-score, independent method-selection score and unavailable measured outcome
 separate, and marks both evaluator-to-generator and generator-to-critic gradient
-paths as absent. Each figure is exported as 300-dpi PNG, PDF and SVG with an
+paths as absent. A sixth four-panel learning-curve figure draws raw, unsmoothed
+terminal Development histories for six selected predictor profiles, all four
+Critic V2 control arms, the independent evaluator and Base Flow G0. Predictor
+per-epoch curves use pooled Validation Spearman and keep their separately
+calculated task-macro architecture-selection values in the legend; the figure
+does not permit ranking across panel-specific metrics. Each figure is exported
+as 300-dpi PNG, PDF and SVG with an
 evidence manifest and alt text. Development TEST, new final Evaluation and guided
 XEditFlow remain unopened. The target journal, article type and submission phase
 are still pending, so no publisher-specific compliance is claimed.
-[evidence:E-R2-FIGURE-BUILDER,E-R2-FIGURE-MANIFEST,E-R2-CONVERSION-FIGURE-BUILDER,E-R2-CONVERSION-FIGURE-MANIFEST,E-R2-DEV-EVAL-ARCH-FIGURE-BUILDER,E-R2-DEV-EVAL-ARCH-FIGURE-MANIFEST,E-R2-PXE-ARCH-FIGURE-BUILDER,E-R2-PXE-ARCH-FIGURE-MANIFEST]
+[evidence:E-R2-FIGURE-BUILDER,E-R2-FIGURE-MANIFEST,E-R2-CONVERSION-FIGURE-BUILDER,E-R2-CONVERSION-FIGURE-MANIFEST,E-R2-DEV-EVAL-ARCH-FIGURE-BUILDER,E-R2-DEV-EVAL-ARCH-FIGURE-MANIFEST,E-R2-PXE-ARCH-FIGURE-BUILDER,E-R2-PXE-ARCH-FIGURE-MANIFEST,E-R2-LEARNING-CURVES-FIGURE-BUILDER,E-R2-LEARNING-CURVES-FIGURE-MANIFEST]
 
 ### Prospectively frozen Critic V2 repair
 
@@ -310,6 +316,22 @@ establish stable transfer because rank uncertainty remained for one seed and
 calibration error favored the baseline for every seed. This outcome is retained
 as negative historical transfer evidence and not as final Evaluation.
 [claim:C-R2-021] [evidence:E-R2-GSE232-HIST,E-R2-CONTRACT]
+
+### Frozen Development curves expose metric-specific selection dynamics
+
+The frozen Development learning curves retain rather than conceal the different
+selection dynamics. The predictor panel contains eight pooled-Validation epochs
+for six selected profiles, while the final architecture labels report a separate
+task-macro statistic and are not plotted curve coordinates. The Critic V2 full
+checkpoint was selected at epoch 98 with task-macro Spearman 0.1163707, still
+below the frozen strongest same-information hurdle of 0.1317144. The independent
+evaluator's selected final epoch reached 0.1025655 against its exclusive
+Development qualification threshold of 0.1012476. Base Flow G0 was selected at
+epoch 1: its Validation NLL was 5.5125 there and 9.9397 at epoch 30 while train
+NLL continued to fall, making the engineering overfitting pattern explicit.
+These panel-specific trajectories are descriptive and do not create a shared
+ranking, authorize guidance or establish biological optimization.
+[evidence:E-R2-LEARNING-CURVES-FIGURE-BUILDER,E-R2-LEARNING-CURVES-FIGURE-MANIFEST]
 
 ### Predictor readiness remains unresolved
 

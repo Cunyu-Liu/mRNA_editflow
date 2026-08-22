@@ -1273,3 +1273,30 @@ claim markers=22、figures/builders=5/4、最低包=14/3/1、blockers=MBP-10/13/
 `three_track_benchmark_execution_complete=false`。本任务不新增中央 attempt，也未打开
 Development TEST、new final Evaluation、E-MTAB outcome、sealed GSE246381、generated
 candidates 或 guided XEditFlow。
+
+## 48. V3.3.2 frozen Development learning curves（2026-08-22）
+
+按 Goal 7 顺序新增独立 learning-curve builder 与 focused tests，不训练、不监控实时进度，
+只读取已经 terminal 的 Development histories。四面板分别为六个 selected predictor
+profiles（各 8 epochs）、Critic V2 四个 control arms（各 100 epochs）、independent
+evaluator（8 epochs）和 Base Flow G0（30 epochs）。所有曲线均按原始 epoch 顺序绘制，
+没有平滑、插值或删点。
+
+预测器 per-epoch history 只有 pooled Validation Spearman，最终架构标签则来自独立计算的
+Development Validation task-macro Spearman；图和 manifest 明确禁止把两者混成同一指标或
+跨 panel 排名。Critic V2 full selected epoch 98 的 task-macro Spearman 为
+`0.11637066318689378`，仍低于 same-information hurdle `0.13171439492559175`，NO-GO
+不变。evaluator final epoch 为 `0.10256553571558498`，仅跨过 Development method-selection
+threshold `0.1012475745988908`。Base Flow selected epoch 1 Validation NLL 为
+`5.512483521877043`，epoch 30 为 `9.939703254814608`，图中保留 train 降、validation
+恶化的 engineering overfitting pattern；不声称 biological optimization。
+
+GitHub commits `f28d04f` 与 `9659da7` 已推送；A100 两次 builder focused test 均为 2/2，
+终态 PNG/PDF/SVG、manifest 与 alt text 保存于
+`/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/figures/route2_v332_v1/`。视觉与格式审计确认
+PNG `2400×2520`、约 300 dpi、全不透明，PDF 字体嵌入且无 raster image，SVG 无 raster
+image；`publisher_compliance_claimed=false`。paper evidence sources=36
+（local/contract 23、A100 `/mnt` 13），claim markers=22、figures/builders=6/5；本机九组
+联合 focused suite 为 29/29，最低包 14/3/1、blockers=MBP-10/13/14/15 与
+`submission_ready=false` 不变。此非训练任务不新增中央 attempt，100-row 的 92/3/3/1/1
+终态分布不变；Development TEST、new final Evaluation 与 guided XEditFlow 未打开。
