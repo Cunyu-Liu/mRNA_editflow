@@ -57,7 +57,21 @@
     "development_test_record_count": 0,
     "evaluation_record_count": 0,
     "full_load_validation_passed": true,
-    "cache_online_alignment": "PENDING_CURRENT_HEAD_A100_RUN"
+    "cache_online_alignment": "V1_RAW_ONLINE_TERMINAL_FAIL_RETAINED_V2_CACHE_ANCHORED_REPAIR_PENDING"
+  },
+  "cache_online_alignment_v1_terminal_failure": {
+    "status": "XEDITCRITIC_V3_CACHE_ONLINE_ALIGNMENT_FAIL",
+    "output_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/pretrained_features/xeditcritic_v3/cache_online_alignment_v1.json",
+    "maximum_absolute_tolerance": 0.02,
+    "mean_absolute_tolerance": 0.005,
+    "observed_maximum_absolute_difference": 0.0678863525390625,
+    "observed_mean_absolute_difference": 0.00028031009774167617,
+    "tolerance_changed_after_result": false,
+    "artifact_retained": true,
+    "diagnosis": "RAW_ONLINE_BF16_BATCH_PADDING_GEOMETRY_HAS_SPARSE_LOCAL_EXTREMA_DESPITE_SMALL_AGGREGATE_MEAN",
+    "repair": "CACHE_BASE_PLUS_DIFFERENTIABLE_ONLINE_ADAPTED_MINUS_ONLINE_ZERO_LORA_DELTA",
+    "repair_changes_model_capacity_or_gate": false,
+    "repair_revalidation": "PENDING"
   },
   "tests": {
     "local_focused_passed": 8,

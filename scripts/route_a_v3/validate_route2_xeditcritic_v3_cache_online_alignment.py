@@ -89,7 +89,10 @@ def validate(config, physical_gpu_index: int):
             for key, value in cached_batch.items()
         }
         with torch.inference_mode(), torch.autocast(device_type="cuda", dtype=torch.bfloat16):
-            online_batch = encoder(online_input)
+            if config.get("alignment_mode") == "CACHE_ANCHORED_ZERO_LORA_DELTA":
+                online_batch = encoder.forward_cache_anchored(online_input)
+            else:
+                online_batch = encoder(online_input)
         cached_features = {
             key: cached_batch[key].float()
             for key in (
@@ -134,6 +137,7 @@ def validate(config, physical_gpu_index: int):
             if not parameter.requires_grad
         ),
         "lora_trainable_parameter_count": encoder.trainable_parameter_count,
+        "alignment_mode": config.get("alignment_mode", "RAW_ONLINE_FEATURES"),
         "parameter_update_count": 0,
         "development_test_outcomes_accessed": False,
         "evaluation_outcomes_accessed": False,

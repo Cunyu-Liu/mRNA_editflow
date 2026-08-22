@@ -1281,3 +1281,8 @@ F0 epoch-1 read-only replay、unguided recovery/G0 validator 与 strict screen g
 trainable parameters 为 16,179,014 / 42,197,158；合法 cohort 为 TRAIN 68,294、VALIDATION 15,924。
 source cache 与 formal training 尚未启动，Base Flow V2 terminal 不重跑；本机 focused/V3.3.2 为
 36/36、96/96。Development TEST/Evaluation read、model/generation success 与 submission-ready 均为 false。
+
+cache-online v1 raw comparison 是零参数工程验证，不新增 training attempt。它按冻结 0.02/0.005
+max/mean gate 终态 FAIL（0.0678864/0.00028031）并保留；阈值未改。C3 runner 随后改为 cache-anchored
+LoRA delta，且 frozen encoder dropout 保持关闭；修复不改变 LoRA rank、可训练 block、head、seed、
+训练预算或科学 gate。v2 同阈值 A100 revalidation 尚未执行，Critic screen 仍未启动。

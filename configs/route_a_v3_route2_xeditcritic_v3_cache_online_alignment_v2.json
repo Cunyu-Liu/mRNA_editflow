@@ -1,0 +1,30 @@
+{
+  "schema_version": "route_a_v3_route2_xeditcritic_cache_online_alignment_config.v2",
+  "status": "FROZEN_ENGINEERING_REPAIR_AFTER_RETAINED_V1_FAILURE",
+  "prior_terminal_failure_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/pretrained_features/xeditcritic_v3/cache_online_alignment_v1.json",
+  "alignment_mode": "CACHE_ANCHORED_ZERO_LORA_DELTA",
+  "projection_paths": [
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/projections/xedit_v3/development_train_validation_v1/train.jsonl",
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/projections/xedit_v3/development_train_validation_v1/validation.jsonl"
+  ],
+  "edit_site_cache_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/pretrained_features/xeditcritic_v3/edit_site_token_cache_v1.pt",
+  "mrnabert_model_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/external_model_assets/mrnabert_a1eb7df25804d23f08646e1cb996b234d7208a40",
+  "preset_record_ids": [
+    "ENCSR854RUF:10_131978607_A_3'_End:context:GM12878",
+    "GSE269595:record:00001",
+    "GSE149487_PAIR_6e601b3df1fd12e56530::te_log2_polysome_over_totalrna"
+  ],
+  "preset_geometries": [
+    {"sequence_length": 133, "edit_count": 1},
+    {"sequence_length": 164, "edit_count": 7},
+    {"sequence_length": 837, "edit_count": 1}
+  ],
+  "maximum_absolute_tolerance": 0.02,
+  "mean_absolute_tolerance": 0.005,
+  "lora_rank": 16,
+  "lora_alpha": 32,
+  "lora_dropout": 0.05,
+  "output_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/pretrained_features/xeditcritic_v3/cache_online_alignment_v2.json",
+  "development_test_outcomes_accessed": false,
+  "evaluation_outcomes_accessed": false
+}

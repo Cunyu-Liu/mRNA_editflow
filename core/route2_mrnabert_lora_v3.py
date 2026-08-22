@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import math
+from contextlib import contextmanager
 from dataclasses import dataclass
 
 import torch
@@ -43,11 +44,28 @@ class LoRALinearV3(nn.Module):
         self.lora_a = nn.Parameter(torch.empty(self.rank, base.in_features))
         self.lora_b = nn.Parameter(torch.zeros(base.out_features, self.rank))
         nn.init.kaiming_uniform_(self.lora_a, a=math.sqrt(5))
+        self.residual_enabled = True
 
     def forward(self, values: torch.Tensor) -> torch.Tensor:
+        base = self.base(values)
+        if not self.residual_enabled:
+            return base
         residual_input = F.dropout(values, p=self.dropout, training=self.training)
         residual = F.linear(F.linear(residual_input, self.lora_a), self.lora_b)
-        return self.base(values) + self.scaling * residual
+        return base + self.scaling * residual
+
+
+@contextmanager
+def disabled_lora_residuals_v3(model: nn.Module):
+    modules = [module for module in model.modules() if isinstance(module, LoRALinearV3)]
+    previous = [module.residual_enabled for module in modules]
+    for module in modules:
+        module.residual_enabled = False
+    try:
+        yield
+    finally:
+        for module, enabled in zip(modules, previous, strict=True):
+            module.residual_enabled = enabled
 
 
 @dataclass(frozen=True)

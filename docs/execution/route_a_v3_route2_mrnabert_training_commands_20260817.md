@@ -1893,3 +1893,10 @@ unique sources、2,817,781 source tokens、maximum length 837。source-token cac
 均尚未启动；Base Flow V2 不重训。新增/相邻本机 focused tests=36/36、精确 V3.3.2=96/96。中央训练
 attempt 仍为 100 total / 92 completed / 3 failed / 3 incomplete / 1 stopped-throughput / 1 stopped-priority；
 Development TEST、新 final Evaluation、critic/generator success、guided authorization 与 submission-ready 均不变。
+
+首次 raw-online cache alignment 按预冻结 max/mean tolerance 0.02/0.005 终态 FAIL 并保留在
+`cache_online_alignment_v1.json`：overall max=0.0678864、mean=0.00028031；837-nt 样本 max=0.00360584，
+越界集中于短序列在不同 BF16 batch-padding geometry 下的少量 local extrema。阈值没有放宽，cache 也不
+覆盖重建。工程修复把 C3 表示定义为 `cached base + (online adapted - online zero-LoRA)`，并让 frozen
+encoder 始终 eval、只启用 LoRA dropout；零 LoRA 时应精确返回 cache，非零时保留可微 LoRA delta。
+原 FAIL 不删除；同一阈值的 v2 repair validation 需在新 current HEAD 上一次性执行。

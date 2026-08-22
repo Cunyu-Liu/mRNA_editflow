@@ -3,6 +3,7 @@ from __future__ import annotations
 import torch
 
 from scripts.route_a_v3.route2_mrnabert_lora_edit_site_encoder_v3 import (
+    anchor_online_lora_delta_to_cached_features_v3,
     populate_edit_features_from_hidden_v3,
 )
 
@@ -52,3 +53,18 @@ def test_padded_edit_slots_are_zero_and_keep_ragged_width() -> None:
     assert torch.equal(result["source_site"][0, 1:], torch.zeros(2, 4))
     result["source_site"].sum().backward()
     assert hidden.grad is not None
+
+
+def test_cache_anchor_is_exact_at_zero_delta_and_keeps_lora_gradient() -> None:
+    names = (
+        "source_site", "candidate_site", "source_window_mean", "candidate_window_mean",
+        "source_window_max", "candidate_window_max", "source_global", "candidate_global",
+    )
+    cached = {name: torch.randn(1, 2, 3) for name in names}
+    zero = {name: torch.randn(1, 2, 3) for name in names}
+    parameter = torch.tensor(0.0, requires_grad=True)
+    adapted = {name: zero[name] + parameter for name in names}
+    anchored = anchor_online_lora_delta_to_cached_features_v3(cached, adapted, zero)
+    assert all(torch.equal(anchored[name], cached[name]) for name in names)
+    sum(anchored[name].sum() for name in names).backward()
+    assert parameter.grad is not None and parameter.grad.item() == 48.0

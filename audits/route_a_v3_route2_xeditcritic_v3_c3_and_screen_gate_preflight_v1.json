@@ -53,7 +53,7 @@
     "local_v332_passed": 96,
     "a100_v332_passed": 96
   },
-  "cache_online_numerical_comparison": "PENDING_CACHE_MATERIALIZATION",
+  "cache_online_numerical_comparison": "V1_RAW_ONLINE_FAIL_RETAINED_CACHE_ANCHORED_ZERO_LORA_DELTA_REPAIR_IMPLEMENTED_LOCAL_TESTED_A100_REVALIDATION_PENDING",
   "development_test_outcomes_accessed": false,
   "new_final_evaluation_outcomes_accessed": false,
   "training_attempt_created": false,

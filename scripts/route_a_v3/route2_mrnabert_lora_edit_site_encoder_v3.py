@@ -12,7 +12,9 @@ from torch import nn
 
 from core.route2_mrnabert_edit_site_features_v3 import LOCAL_RADIUS
 from core.route2_mrnabert_lora_v3 import (
+    LoRALinearV3,
     MRNABERTLoRAInstallationV3,
+    disabled_lora_residuals_v3,
     install_last_four_mrnabert_lora_v3,
 )
 
@@ -83,6 +85,34 @@ def populate_edit_features_from_hidden_v3(
             feature_lists[key].append(torch.stack(per_record[key]))
     for key, records in feature_lists.items():
         result[key] = torch.stack(records)
+    return result
+
+
+_ANCHORED_FEATURE_NAMES = (
+    "source_site", "candidate_site",
+    "source_window_mean", "candidate_window_mean",
+    "source_window_max", "candidate_window_max",
+    "source_global", "candidate_global",
+)
+
+
+def anchor_online_lora_delta_to_cached_features_v3(
+    cached_batch: Mapping[str, Any],
+    adapted_online: Mapping[str, Any],
+    zero_lora_online: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Use the cache as base and retain only the differentiable LoRA delta."""
+
+    result = dict(adapted_online)
+    for name in _ANCHORED_FEATURE_NAMES:
+        cached = cached_batch[name].to(
+            device=adapted_online[name].device,
+            dtype=adapted_online[name].dtype,
+        )
+        _require(cached.shape == adapted_online[name].shape == zero_lora_online[name].shape, f"anchored feature geometry differs: {name}")
+        result[name] = cached + (
+            adapted_online[name] - zero_lora_online[name].detach()
+        )
     return result
 
 
@@ -166,6 +196,16 @@ class TrainableMRNABERTEditSiteEncoderV3(nn.Module):
         )
         return parameters
 
+    def train(self, mode: bool = True):
+        """Keep the frozen encoder deterministic; train only LoRA dropout."""
+
+        self.training = bool(mode)
+        self.model.eval()
+        for module in self.model.modules():
+            if isinstance(module, LoRALinearV3):
+                module.train(mode)
+        return self
+
     def _model_inputs(
         self, tokens: torch.Tensor, padding_mask: torch.Tensor
     ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
@@ -196,7 +236,7 @@ class TrainableMRNABERTEditSiteEncoderV3(nn.Module):
         token_type_ids = torch.zeros_like(input_ids)
         return input_ids, attention_mask, token_type_ids
 
-    def forward(self, batch: Mapping[str, Any]) -> dict[str, Any]:
+    def _online_features(self, batch: Mapping[str, Any]) -> dict[str, Any]:
         paired_tokens = torch.cat(
             (batch["source_tokens"], batch["candidate_tokens"]), dim=0
         )
@@ -225,4 +265,19 @@ class TrainableMRNABERTEditSiteEncoderV3(nn.Module):
             source_attention_mask=attention_mask[:batch_size],
             candidate_attention_mask=attention_mask[batch_size:],
             local_radius=self.local_radius,
+        )
+
+    def forward(self, batch: Mapping[str, Any]) -> dict[str, Any]:
+        return self._online_features(batch)
+
+    def forward_cache_anchored(self, batch: Mapping[str, Any]) -> dict[str, Any]:
+        _require(
+            all(name in batch for name in _ANCHORED_FEATURE_NAMES),
+            "cache-anchored online encoding lacks cached base features",
+        )
+        with torch.no_grad(), disabled_lora_residuals_v3(self.model):
+            zero_lora_online = self._online_features(batch)
+        adapted_online = self._online_features(batch)
+        return anchor_online_lora_delta_to_cached_features_v3(
+            batch, adapted_online, zero_lora_online
         )

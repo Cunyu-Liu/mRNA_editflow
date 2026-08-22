@@ -21,6 +21,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from core.route2_development_projection_v3 import load_projection_rows
+from core.route2_edit_site_token_cache_v3 import load_edit_site_token_cache_v3
 from core.route2_xeditcritic_training_data_v3 import (
     SqrtTaskStudySourcePassSamplerV3,
     build_exact_source_task_candidate_bundle_permutation,
@@ -33,6 +34,7 @@ from scripts.route_a_v3.route2_mrnabert_lora_edit_site_encoder_v3 import (
     TrainableMRNABERTEditSiteEncoderV3,
 )
 from scripts.route_a_v3.train_route2_xeditcritic_v3 import (
+    EditSiteCacheViewV3,
     XEditCriticCollatorV3,
     XEditCriticDatasetV3,
     _move,
@@ -90,7 +92,7 @@ def online_evaluate(
             ):
                 batch = _move(select_batch_rows(raw_batch, indices), device)
                 with torch.autocast(device_type="cuda", dtype=torch.bfloat16):
-                    feature_batch = encoder(batch)
+                    feature_batch = encoder.forward_cache_anchored(batch)
                     output = model(feature_batch)
                 scaled_prediction = output["mean"].float()
                 prediction = scaled_prediction * batch["target_scale"]
@@ -167,6 +169,10 @@ def run(
         scaler = fit_task_robust_scaler(
             train_records, floor=float(config["target_scale_floor"])
         )
+        cache = EditSiteCacheViewV3(
+            load_edit_site_token_cache_v3(Path(config["edit_site_cache"])),
+            set(record_by_id),
+        )
         if candidate_bundle_permutation:
             overrides, permutation_summary = build_exact_source_task_candidate_bundle_permutation(
                 train_records, seed=seed
@@ -182,7 +188,7 @@ def run(
             all_records=record_by_id,
             vocabs=vocabs,
             target_scaler=scaler,
-            cache=None,
+            cache=cache,
             candidate_bundle_overrides=overrides,
         )
         validation_dataset = XEditCriticDatasetV3(
@@ -190,7 +196,7 @@ def run(
             all_records=record_by_id,
             vocabs=vocabs,
             target_scaler=scaler,
-            cache=None,
+            cache=cache,
         )
         collator = XEditCriticCollatorV3(
             pretrained_width=int(config["pretrained_width"])
@@ -270,7 +276,7 @@ def run(
                 ):
                     batch = _move(select_batch_rows(raw_batch, indices), device)
                     with torch.autocast(device_type="cuda", dtype=torch.bfloat16):
-                        output = model(encoder(batch))
+                        output = model(encoder.forward_cache_anchored(batch))
                         per_record = F.huber_loss(
                             output["mean"],
                             batch["scaled_target"],
@@ -299,7 +305,9 @@ def run(
                             indices = [index for pair in selected_pairs for index in pair]
                             pair_batch = _move(select_batch_rows(raw_batch, indices), device)
                             with torch.autocast(device_type="cuda", dtype=torch.bfloat16):
-                                pair_output = model(encoder(pair_batch))["mean"]
+                                pair_output = model(
+                                    encoder.forward_cache_anchored(pair_batch)
+                                )["mean"]
                                 pair_target = pair_batch["scaled_target"]
                                 target_delta = pair_target[0::2] - pair_target[1::2]
                                 prediction_delta = pair_output[0::2] - pair_output[1::2]
