@@ -1349,3 +1349,7 @@ TRAIN+VALIDATION records 且不做 epoch 重选；LOSO held-out study 统一映�
 cache C0/C2 与 online-LoRA C3 trainer 均已支持 REFIT/LOSO partition；post-TEST authorization 只读取 atomic
 frozen TEST 的 PASS gate，不重新读取 TEST outcome。focused=26/26、V3.3.2=96/96、diff-check PASS。
 当前 atomic frozen TEST 尚未授权，因此未生成 refit/LOSO configs、未启动 3+42 个 jobs，中央 attempt 不变。
+
+最终 Critic readiness composer 只在 three-seed、atomic frozen TEST、三 refit、LOSO 四个 predecessor 全部
+PASS 时输出 `CRITIC_READY_FOR_GUIDANCE`；LOSO NO-GO 等任一失败保持 blocked。focused=12/12、
+V3.3.2=96/96。该 composer 不读取 record/outcome，且始终保持 new final Evaluation closed。

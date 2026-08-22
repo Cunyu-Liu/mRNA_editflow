@@ -1964,3 +1964,6 @@ Critic post-TEST trainer 现支持两种仍被 gate 阻塞的 scope：`REFIT` �
 confirmation selected-pass 中位数；`LOSO` 对七 study 逐一 held out，同时运行 selected arm 与 matched C0，
 held-out study scale 强制为 unknown=1。manifest 分别精确为 3 和 42 jobs；focused=26/26、V3.3.2=96/96。
 atomic frozen TEST 未 PASS 前二者均不能准备或运行。
+
+Critic readiness composer 已补齐，只有 four-predecessor PASS 才生成 guidance authorization；focused=12/12、
+V3.3.2=96/96。当前状态仍是 `CRITIC_NOT_READY_FOR_GUIDANCE`，未运行 composer。

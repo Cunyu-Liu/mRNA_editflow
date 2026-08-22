@@ -56,6 +56,7 @@
     "post_screen_combined_focused_passed": 89,
     "guidance_screen_prepare_adjudicate_focused_passed": 4,
     "critic_refit_loso_runtime_focused_passed": 26,
+    "critic_readiness_composition_focused_passed": 12,
     "exact_v332_passed": 96,
     "python_compile_passed": true,
     "git_diff_check_passed": true
