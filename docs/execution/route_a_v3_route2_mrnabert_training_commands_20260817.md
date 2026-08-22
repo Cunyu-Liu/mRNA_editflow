@@ -1636,3 +1636,29 @@ byte Parquet 与 4 个总计 34,739,577-byte legacy B0 JSONL 仍 tracked。它�
 formal-release blocker。GitHub core commit `52a41cb` 已推送，A100 自 `ceeae40` 快进；本机/A100
 V3.3.2 suite 均为 69/69。中央 100-row 92/3/3/1/1、model/biological/external/guided success、
 `minimum_package_complete`、`outcome_trigger_fully_satisfied` 与 `submission_ready` 均为 false。
+
+## 64. V3.3.2 official provider rights evidence and FAIR gap closure（2026-08-22）
+
+本项无训练命令、GPU/训练进度轮询或新 attempt。只读取官方 provider policy、选定的 accession/
+HTTP/license-field-count 元数据和既有 data-rights inventory；没有读取 Development TEST、new final
+Evaluation、GSE246381、E-MTAB-10902 或 generated-candidate outcome，也没有运行 guided XEditFlow。
+
+新增冻结 source snapshot、14×36 provider-evidence CSV、可重复 builder/audit 与 4 项 focused tests。
+provider 分布为 NCBI GEO=12、ENCODE=1、EMBL-EBI BioStudies ArrayExpress=1；官方 accession route
+resolved=14、analysis/publication/citation supported=14。一般 provider policy 没有提升为逐研究许可：
+study-specific license records=0、project redistribution authorizations=0、human reviews pending=14。
+GEO submitter-IP exception、ENCODE exact-bundle repackaging gap、迁移 E-MTAB record 的 license/release
+field 缺失均进入逐行表。FAIR evidence 为 findable/accessibility/interoperability/reusability=
+14/14/0/0；target journal-specific check 仍 pending。
+
+Data Availability、completion audit、consistency/evidence manifests 和 internal GitHub RC audit 已同步；
+evidence 从 59 增至 62（45→48 local/contract，`/mnt` 仍 14），public release 与 submission 边界不变。
+CSV focused validation 为 14 rows × 36 columns、14 unique studies、boolean domains valid、0 formula-like
+cells。由于 workspace 缺少 spreadsheets skill 要求的 artifact-operation marker，没有生成 XLSX 或
+声称视觉工作簿验证，也没有猜测/安装替代路径。
+
+focused provider/Data Availability/RC/evidence tests 为 31/31；本机/A100 精确 V3.3.2 suite 均为
+73/73。GitHub core commit `2adb8c3` 已推送，A100 自 `52a41cb` 快进到该 commit。中央 100-row
+92/3/3/1/1、claims=22、MBP=14/3/1、blockers=MBP-10/13/14/15、model/biological/external/guided
+success=false、formal release/tag=false、`minimum_package_complete=false`、
+`outcome_trigger_fully_satisfied=false` 与 `submission_ready=false` 均不变。

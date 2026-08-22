@@ -1020,3 +1020,33 @@ JSONL（合计 34,739,577 bytes）。它们违反当前 formal Git release bound
 `ceeae40` 一次 fast-forward；本机/A100 V3.3.2 suite 均为 69/69。中央 100-row 92/3/3/1/1、
 MBP blockers=MBP-10/13/14/15、`minimum_package_complete=false`、
 `outcome_trigger_fully_satisfied=false` 与 `submission_ready=false` 均不变。
+
+## V3.3.2 official provider rights evidence and FAIR gap closure（2026-08-22）
+
+按 Data Availability 后续顺序完成 14-study 官方 provider policy/accession evidence 表。本项不训练、
+不轮询 GPU/训练进度，不读取 Development TEST、new final Evaluation、sealed GSE246381、
+E-MTAB-10902 outcome、generated-candidate outcome 或 guided outcome；中央 attempt 表没有新增行，
+仍为 100 total / 92 completed / 3 failed / 3 incomplete / 1 stopped-throughput /
+1 stopped-priority。
+
+outcome-free 官方字段核查确认 12 个 GEO accession 均由 NCBI 官方 accession 服务返回，1 个 ENCODE
+accession 的官方 landing route 返回 HTTP 200，1 个迁移后的 E-MTAB accession 由 BioStudies API
+返回。NCBI 一般政策支持访问、使用与分发，但明确保留 submitter IP 例外；ENCODE 一般政策支持下载、
+分析与发表，但未逐项裁决本项目重打包；BioStudies 的 new-dataset CC0 范围没有追溯套用于迁移后的
+E-MTAB record，且所选 record-specific rights 字段中 license/release field 均为 0。因此 14/14
+analysis/publication/citation routes 可记录，但 study-specific license=0/14、project payload
+redistribution authorization=0/14、accountable human review pending=14/14。
+
+新增 14×36 CSV、冻结的 provider-source snapshot、可重复 builder、audit 和 4 项 focused tests；
+Data Availability 扩展为 5 个证据绑定段落。FAIR 当前只支持 findable=14、metadata-accessible=14，
+interoperable-metadata-assessed=0、reusable-license-complete=0；target journal 仍未选定，Springer
+Nature policy 只作 baseline。工作簿技能要求的 artifact-operation marker 在当前 workspace 缺失，
+因此没有绕过限制生成 XLSX，也没有声称完成视觉工作簿审查；改用项目原生 CSV schema、全列文本、
+布尔/公式样式值与可重复生成测试验证，结果为 14 rows × 36 columns、14 unique studies、0 formula-
+like cells。
+
+GitHub core commit `2adb8c3` 已推送；A100 工作树自 `52a41cb` 一次 fast-forward 到 `2adb8c3`。
+本机/A100 精确 V3.3.2 suite 均为 73/73，focused integration suite 为 31/31。evidence=62
+（48 local/contract、14 `/mnt`），claims=22、figures/builders=7/6、MBP=14/3/1、
+blockers=MBP-10/13/14/15、formal GitHub release/tag=false、`minimum_package_complete=false`、
+`outcome_trigger_fully_satisfied=false` 与 `submission_ready=false` 均不变。
