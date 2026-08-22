@@ -1208,3 +1208,21 @@ paper packet evidence sources 从 25 增至 27，figure count 为 4、builder co
 五组联合 focused suite 均为 21/21。本任务不训练或更新参数，不新增中央 attempt；
 Development TEST、new final Evaluation、E-MTAB outcome、sealed GSE246381 和 guided
 XEditFlow 均未打开。
+
+## 45. Predictor–Legal XEditFlow–Independent Evaluator architecture figure（2026-08-22）
+
+新增独立系统架构 builder 与 focused tests。证据输入限于冻结的小型组件配置、资格/奖励
+协议和 terminal summary audits；显式拒绝旧 generation-readiness audit 的陈旧 Base Flow
+参数。Panel A 分离 frozen mRNABERT Delta critic、position/progress legal `SUB+STOP` Base
+Flow、distinct Siamese evaluator；Panel B 分离 prospective frozen-critic potential、已执行的
+independent post-generation scoring 与尚不可用的 measured outcome，并标记全部无梯度边界。
+
+A100 从 GitHub commit `6798b6c` 快进，builder focused test 2/2 passed，在
+`/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/figures/route2_v332_v1/` 追加三格式、manifest
+与 alt text。视觉复核修复了旋转标签遮挡和 evaluator→measured outcome 的误导连线；PNG
+2160×2040、300 dpi、全不透明，PDF 单页且 DejaVu 嵌入，SVG 无 raster，所有主轮廓色
+对白底超过 3:1。`publisher_compliance_claimed=false`。
+
+paper evidence sources 从 27 增至 29，figure count=5、builder count=4；22 个 claims、
+MBP-17、最低包 14/3/1、四个 blockers 和 `submission_ready=false` 不变。Development TEST、
+new final Evaluation、E-MTAB outcome、sealed GSE246381 与 guided XEditFlow 均未打开。

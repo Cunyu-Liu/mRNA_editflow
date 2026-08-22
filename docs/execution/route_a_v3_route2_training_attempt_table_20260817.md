@@ -606,3 +606,22 @@ paper packet 仍有 22 个 claim markers，evidence sources 增至 27；manuscri
 focused suite 均为 21/21。中央 100 个 attempts 的 terminal 分布继续是 92
 `COMPLETED`、3 `FAILED`、3 `INCOMPLETE_NO_TERMINAL_RECORD`、1
 `STOPPED_FOR_THROUGHPUT_REPAIR`、1 `STOPPED_PRIORITY_REALLOCATION`。
+
+## Predictor–Legal XEditFlow–Independent Evaluator architecture figure（2026-08-22）
+
+本项为非训练 paper-figure task，不新增中央 attempt。新增独立 builder/focused tests；
+只读取冻结的 critic/Base Flow/evaluator configs、evaluator qualification 与 reward policy，
+以及小型 terminal freshness/geometry/minimum-package audits。旧 generation-readiness audit
+中的 205,717-parameter Base Flow 被识别为陈旧来源并排除，未覆盖 V3.3.2 的 V2 状态。
+
+图中分离 frozen mRNABERT 113,389,056 + trainable edit-centered Delta head 9,342,914、
+position/progress `SUB+STOP` Base Flow 和 distinct Siamese evaluator 509,845 actual
+parameters。Base Flow 只标 `FLOW_G0_READY` engineering；critic guidance 为虚线 prospective
+且 current NO-GO；evaluator 只作 Development method selection。critic self-score、
+independent evaluator score 与 unavailable measured outcome 分列；无 evaluator→generator
+gradient、无 generator→critic gradient、生成时 critic 不更新，generated candidates 不加
+canonical credit。
+
+A100 builder test 2/2 passed，并在 `/mnt/.../figures/route2_v332_v1/` 追加 PNG/PDF/SVG、
+manifest 与 alt text。paper packet 仍有 22 个 claim markers，evidence sources 增至 29；
+manuscript figures 现为 5 张、4 个 builders，最低包与 100-row terminal 分布不变。

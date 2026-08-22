@@ -106,7 +106,7 @@
       "label": "Provisional general-manuscript figure assembly",
       "analysis_intent": "FROZEN_EVIDENCE_VISUALIZATION",
       "status": "PROVISIONAL_GENERAL_MANUSCRIPT_FIGURES_RENDERED",
-      "figure_count": 4,
+      "figure_count": 5,
       "formats": ["png", "pdf", "svg"],
       "raster_dpi": 300,
       "target_journal": "PENDING_SELECTION",
@@ -119,7 +119,14 @@
         "docs/paper/route2_v332_dataset_qualification_table_v1.csv",
         "configs/route_a_v3_route2_method_repair_protocol_v2.json",
         "configs/route_a_v3_route2_mrnabert_critic_v2_guidance_readiness_protocol_v1.json",
-        "audits/route_a_v3_route2_v332_minimum_benchmark_package_v1.json"
+        "audits/route_a_v3_route2_v332_minimum_benchmark_package_v1.json",
+        "configs/route_a_v3_route2_mrnabert_edit_max_mean_only_gpu6_v1.json",
+        "configs/route_a_v3_route2_base_flow_g0_position_progress_gpu_v2.json",
+        "configs/route_a_v3_route2_independent_evaluator_neural_medium_task_scaled_gpu2_v3.json",
+        "configs/route_a_v3_route2_mrnabert_independent_evaluator_qualification_v1.json",
+        "configs/route_a_v3_route2_mrnabert_guidance_reward_policy_v1.json",
+        "audits/route_a_v3_route2_v332_freshness_and_critic_v2_freeze_v1.json",
+        "audits/route_a_v3_route2_generation_action_space_geometry_v1.json"
       ],
       "protected_outcomes": {
         "development_test_read": false,
@@ -135,7 +142,9 @@
         "E-R2-CONVERSION-FIGURE-BUILDER",
         "E-R2-CONVERSION-FIGURE-MANIFEST",
         "E-R2-DEV-EVAL-ARCH-FIGURE-BUILDER",
-        "E-R2-DEV-EVAL-ARCH-FIGURE-MANIFEST"
+        "E-R2-DEV-EVAL-ARCH-FIGURE-MANIFEST",
+        "E-R2-PXE-ARCH-FIGURE-BUILDER",
+        "E-R2-PXE-ARCH-FIGURE-MANIFEST"
       ]
     }
   ],
@@ -400,6 +409,55 @@
       ]
     },
     {
+      "result_id": "R-R2-PREDICTOR-XEDITFLOW-EVALUATOR-ARCHITECTURE",
+      "status": "PROVISIONAL_PREDICTOR_XEDITFLOW_EVALUATOR_ARCHITECTURE_FIGURE_RENDERED",
+      "delta_critic": {
+        "model_kind": "delta_pretrained_mrnabert_edit_centered_antisymmetric",
+        "frozen_encoder_parameter_count": 113389056,
+        "trainable_head_parameter_count": 9342914,
+        "total_effective_parameter_count": 122731970,
+        "critic_ready_for_guidance": false
+      },
+      "legal_xeditflow": {
+        "base_flow_model_kind": "route2_base_flow_sub_stop_position_progress",
+        "engineering_status": "FLOW_G0_READY",
+        "guided_xeditflow_run": false,
+        "action_types_in_scope": ["SUB", "STOP"],
+        "action_types_out_of_scope": ["INS", "DEL"],
+        "allowed_edit_budgets": [1, 3, 5],
+        "candidate_support_mode": "OPEN_GENERATED_SUPPORT",
+        "generated_candidates_add_canonical_credit": false
+      },
+      "independent_evaluator": {
+        "model_kind": "siamese_cnn",
+        "hidden_dim": 103,
+        "depth": 7,
+        "terminal_actual_trainable_parameter_count": 509845,
+        "architecture_distinct_from_guide": true,
+        "terminal_status": "INDEPENDENT_GENERATION_EVALUATOR_QUALIFIED",
+        "role": "DEVELOPMENT_GENERATION_METHOD_SELECTION_NOT_BIOLOGICAL_VALIDATION"
+      },
+      "frozen_feedback_boundaries": {
+        "critic_parameter_update_during_generation": false,
+        "generator_gradient_into_critic": false,
+        "evaluation_model_gradient_into_generator": false,
+        "evaluation_records_used_for_reward": 0
+      },
+      "development_test_read": false,
+      "new_final_evaluation_read": false,
+      "publisher_compliance_claimed": false,
+      "scientific_claim_status": "NOT_ESTABLISHED",
+      "evidence_ids": [
+        "E-R2-CRITIC-V2-PROTOCOL",
+        "E-R2-CRITIC-V2-ADJ",
+        "E-R2-EVAL-PROTOCOL",
+        "E-R2-EVAL-ADJ",
+        "E-R2-FLOW-MATCHED",
+        "E-R2-PXE-ARCH-FIGURE-BUILDER",
+        "E-R2-PXE-ARCH-FIGURE-MANIFEST"
+      ]
+    },
+    {
       "result_id": "R-R2-MINIMUM-BENCHMARK-PACKAGE",
       "requirement_count": 18,
       "complete_or_complete_with_declared_limits_count": 14,
@@ -426,7 +484,9 @@
         "E-R2-CONVERSION-FIGURE-BUILDER",
         "E-R2-CONVERSION-FIGURE-MANIFEST",
         "E-R2-DEV-EVAL-ARCH-FIGURE-BUILDER",
-        "E-R2-DEV-EVAL-ARCH-FIGURE-MANIFEST"
+        "E-R2-DEV-EVAL-ARCH-FIGURE-MANIFEST",
+        "E-R2-PXE-ARCH-FIGURE-BUILDER",
+        "E-R2-PXE-ARCH-FIGURE-MANIFEST"
       ]
     }
   ],
@@ -464,7 +524,7 @@
     },
     {
       "gap_id": "GAP-R2-FIGURE-TARGET-RULES",
-      "description": "Four reproducible provisional figures from three builders exist in PNG, PDF and SVG, but target journal, article type and submission phase have not been selected; publisher-specific dimensions and file rules therefore have not been claimed.",
+      "description": "Five reproducible provisional figures from four builders exist in PNG, PDF and SVG, but target journal, article type and submission phase have not been selected; publisher-specific dimensions and file rules therefore have not been claimed.",
       "action": "After venue and phase selection, verify the official publisher instructions and regenerate the same frozen evidence if different export dimensions or formats are required.",
       "status": "PROVISIONAL_GENERAL_FIGURES_TARGET_RULES_PENDING"
     }

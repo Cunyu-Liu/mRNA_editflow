@@ -83,7 +83,7 @@ run or absent replacement Evaluation study into a completed item.
 
 ### Provisional figure assembly
 
-Three reproducible builders render four general-manuscript figures. Two result
+Four reproducible builders render five general-manuscript figures. Two result
 figures use the frozen generation/action-space table, the complete nine-task
 Critic V2 diagnostic and the explicitly outcome-exposed GSE232572 historical
 summary. A third canonical conversion-flow figure uses the 14-study
@@ -95,11 +95,16 @@ TRAIN fitting, VALIDATION selection, the current Critic V2 NO-GO and conditional
 single report-only TEST access. It also separates historical GSE232572,
 unconvertible E-MTAB-10902 and sealed GSE246381 from a future replacement
 Evaluation chain whose zero-shot must be permanently recorded before adaptation.
-Each figure is exported as 300-dpi PNG, PDF and SVG with an evidence manifest
-and alt text. Development TEST, new final Evaluation and guided XEditFlow remain
-unopened. The target journal, article type and submission phase are still
-pending, so no publisher-specific compliance is claimed.
-[evidence:E-R2-FIGURE-BUILDER,E-R2-FIGURE-MANIFEST,E-R2-CONVERSION-FIGURE-BUILDER,E-R2-CONVERSION-FIGURE-MANIFEST,E-R2-DEV-EVAL-ARCH-FIGURE-BUILDER,E-R2-DEV-EVAL-ARCH-FIGURE-MANIFEST]
+A fifth system architecture figure separates the frozen mRNABERT Delta critic,
+position/progress `SUB+STOP` Base Flow and architecturally distinct Siamese
+independent evaluator. It renders critic guidance as prospective, keeps critic
+self-score, independent method-selection score and unavailable measured outcome
+separate, and marks both evaluator-to-generator and generator-to-critic gradient
+paths as absent. Each figure is exported as 300-dpi PNG, PDF and SVG with an
+evidence manifest and alt text. Development TEST, new final Evaluation and guided
+XEditFlow remain unopened. The target journal, article type and submission phase
+are still pending, so no publisher-specific compliance is claimed.
+[evidence:E-R2-FIGURE-BUILDER,E-R2-FIGURE-MANIFEST,E-R2-CONVERSION-FIGURE-BUILDER,E-R2-CONVERSION-FIGURE-MANIFEST,E-R2-DEV-EVAL-ARCH-FIGURE-BUILDER,E-R2-DEV-EVAL-ARCH-FIGURE-MANIFEST,E-R2-PXE-ARCH-FIGURE-BUILDER,E-R2-PXE-ARCH-FIGURE-MANIFEST]
 
 ### Prospectively frozen Critic V2 repair
 

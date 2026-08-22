@@ -8,11 +8,11 @@
   "independent_final_evaluation_performed": false,
   "human_verification_required": true,
   "source_path_preflight": {
-    "observed_at": "2026-08-22T14:30:42+08:00",
+    "observed_at": "2026-08-22T14:42:30+08:00",
     "status": "PASS",
-    "source_locations_checked": 27,
-    "local_or_contract_locations_checked": 16,
-    "a100_mnt_locations_checked": 11,
+    "source_locations_checked": 29,
+    "local_or_contract_locations_checked": 17,
+    "a100_mnt_locations_checked": 12,
     "missing_locations": 0,
     "check_scope": "FILE_EXISTENCE_ONLY_NO_EVIDENCE_CONTENT_OPENED",
     "human_content_verification_completed": false,
@@ -214,6 +214,22 @@
       "kind": "terminal_development_evaluation_architecture_figure_manifest",
       "location": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/figures/route2_v332_v1/route2_v332_development_evaluation_architecture_figure_v1_manifest.json",
       "locator": "126165 and 89580/18293/18292 Development boundaries, TEST report-only conditional, Critic V2 current NO-GO, GSE232572/E-MTAB-10902/GSE246381 role separation, replacement Evaluation absent with zero unexposed records, PNG/PDF/SVG outputs and protected-outcome closure",
+      "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING",
+      "publisher_compliance_claimed": false
+    },
+    {
+      "evidence_id": "E-R2-PXE-ARCH-FIGURE-BUILDER",
+      "kind": "reproducible_predictor_xeditflow_evaluator_architecture_figure_builder",
+      "location": "scripts/route_a_v3/build_route2_v332_predictor_xeditflow_evaluator_architecture_figure_v1.py",
+      "locator": "frozen mRNABERT Delta critic, position/progress SUB+STOP Base Flow, distinct Siamese evaluator, prospective versus executed information-flow styling, no-gradient feedback boundaries, alt text and overwrite refusal",
+      "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING",
+      "publisher_compliance_claimed": false
+    },
+    {
+      "evidence_id": "E-R2-PXE-ARCH-FIGURE-MANIFEST",
+      "kind": "terminal_predictor_xeditflow_evaluator_architecture_figure_manifest",
+      "location": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/figures/route2_v332_v1/route2_v332_predictor_xeditflow_evaluator_architecture_figure_v1_manifest.json",
+      "locator": "113389056 frozen encoder plus 9342914 trainable Delta head, SUB+STOP budgets 1/3/5 and FLOW_G0_READY engineering state, distinct 509845-parameter qualified evaluator, critic/evaluator/generator gradient separation, guided and protected-outcome closure, PNG/PDF/SVG outputs",
       "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING",
       "publisher_compliance_claimed": false
     }

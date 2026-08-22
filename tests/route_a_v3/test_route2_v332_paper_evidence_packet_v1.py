@@ -61,7 +61,7 @@ def test_claim_and_consistency_evidence_references_are_closed() -> None:
     consistency = _load(CONSISTENCY)
 
     evidence_ids = [row["evidence_id"] for row in evidence["sources"]]
-    assert len(evidence_ids) == len(set(evidence_ids)) == 27
+    assert len(evidence_ids) == len(set(evidence_ids)) == 29
 
     claims = re.findall(r"\[claim:([^\]]+)\]", draft)
     assert len(claims) == len(set(claims)) == 22
@@ -81,15 +81,15 @@ def test_evidence_source_paths_are_closed_without_overstating_verification() -> 
     preflight = evidence["source_path_preflight"]
 
     assert preflight["status"] == "PASS"
-    assert preflight["source_locations_checked"] == len(evidence["sources"]) == 27
+    assert preflight["source_locations_checked"] == len(evidence["sources"]) == 29
     assert (
         preflight["local_or_contract_locations_checked"]
         + preflight["a100_mnt_locations_checked"]
         == preflight["source_locations_checked"]
     )
     assert preflight["missing_locations"] == 0
-    assert preflight["local_or_contract_locations_checked"] == 16
-    assert preflight["a100_mnt_locations_checked"] == 11
+    assert preflight["local_or_contract_locations_checked"] == 17
+    assert preflight["a100_mnt_locations_checked"] == 12
     assert preflight["check_scope"] == "FILE_EXISTENCE_ONLY_NO_EVIDENCE_CONTENT_OPENED"
     assert preflight["human_content_verification_completed"] is False
     assert preflight["submission_readiness_changed"] is False
@@ -114,6 +114,9 @@ def test_evidence_source_paths_are_closed_without_overstating_verification() -> 
     )
     assert by_id["E-R2-DEV-EVAL-ARCH-FIGURE-MANIFEST"]["location"].endswith(
         "/route2_v332_development_evaluation_architecture_figure_v1_manifest.json"
+    )
+    assert by_id["E-R2-PXE-ARCH-FIGURE-MANIFEST"]["location"].endswith(
+        "/route2_v332_predictor_xeditflow_evaluator_architecture_figure_v1_manifest.json"
     )
 
 
@@ -171,7 +174,7 @@ def test_provisional_figure_method_preserves_protected_outcome_boundary() -> Non
     )
 
     assert method["status"] == "PROVISIONAL_GENERAL_MANUSCRIPT_FIGURES_RENDERED"
-    assert method["figure_count"] == 4
+    assert method["figure_count"] == 5
     assert method["formats"] == ["png", "pdf", "svg"]
     assert method["raster_dpi"] == 300
     assert method["target_journal"] == "PENDING_SELECTION"
@@ -191,6 +194,8 @@ def test_provisional_figure_method_preserves_protected_outcome_boundary() -> Non
         "E-R2-CONVERSION-FIGURE-MANIFEST",
         "E-R2-DEV-EVAL-ARCH-FIGURE-BUILDER",
         "E-R2-DEV-EVAL-ARCH-FIGURE-MANIFEST",
+        "E-R2-PXE-ARCH-FIGURE-BUILDER",
+        "E-R2-PXE-ARCH-FIGURE-MANIFEST",
     ]
 
     result = next(
@@ -233,6 +238,33 @@ def test_provisional_figure_method_preserves_protected_outcome_boundary() -> Non
         "ONLY_THEN_ALLOW_CALIBRATION_OR_FEW_SHOT_ADAPTATION",
         "ZERO_SHOT_REMAINS_HEADLINE",
     ]
+
+    system_architecture = next(
+        row
+        for row in consistency["results"]
+        if row["result_id"] == "R-R2-PREDICTOR-XEDITFLOW-EVALUATOR-ARCHITECTURE"
+    )
+    assert system_architecture["delta_critic"] == {
+        "model_kind": "delta_pretrained_mrnabert_edit_centered_antisymmetric",
+        "frozen_encoder_parameter_count": 113389056,
+        "trainable_head_parameter_count": 9342914,
+        "total_effective_parameter_count": 122731970,
+        "critic_ready_for_guidance": False,
+    }
+    assert system_architecture["legal_xeditflow"]["engineering_status"] == "FLOW_G0_READY"
+    assert system_architecture["legal_xeditflow"]["guided_xeditflow_run"] is False
+    assert system_architecture["legal_xeditflow"]["action_types_in_scope"] == ["SUB", "STOP"]
+    assert system_architecture["legal_xeditflow"]["action_types_out_of_scope"] == ["INS", "DEL"]
+    assert system_architecture["independent_evaluator"]["terminal_actual_trainable_parameter_count"] == 509845
+    assert system_architecture["independent_evaluator"]["architecture_distinct_from_guide"] is True
+    assert system_architecture["frozen_feedback_boundaries"] == {
+        "critic_parameter_update_during_generation": False,
+        "generator_gradient_into_critic": False,
+        "evaluation_model_gradient_into_generator": False,
+        "evaluation_records_used_for_reward": 0,
+    }
+    assert system_architecture["development_test_read"] is False
+    assert system_architecture["new_final_evaluation_read"] is False
 
 
 def test_paper_packet_matches_frozen_critic_v2_readiness_boundary() -> None:
@@ -582,9 +614,9 @@ def test_minimum_benchmark_package_is_itemized_and_not_overcalled() -> None:
     assert audit["manuscript_figures"]["status"] == (
         "PROVISIONAL_GENERAL_MANUSCRIPT_FIGURES_RENDERED"
     )
-    assert audit["manuscript_figures"]["figure_count"] == 4
-    assert len(audit["manuscript_figures"]["builders"]) == 3
-    assert len(audit["manuscript_figures"]["focused_tests"]) == 3
+    assert audit["manuscript_figures"]["figure_count"] == 5
+    assert len(audit["manuscript_figures"]["builders"]) == 4
+    assert len(audit["manuscript_figures"]["focused_tests"]) == 4
     assert audit["manuscript_figures"]["publisher_compliance_claimed"] is False
     assert audit["manuscript_figures"]["new_final_evaluation_read"] is False
     assert audit["external_evaluation"]["replacement_study_registered"] is False
