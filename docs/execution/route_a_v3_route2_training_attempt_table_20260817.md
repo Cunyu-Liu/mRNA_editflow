@@ -581,6 +581,6 @@ PNG/PDF/SVG conversion-flow figure、manifest 和 alt text，未覆盖原两图�
 图中精确保留 14 studies、Development 126,165、historical 8,068、new final Evaluation
 0、qualified/relaxed/listwise=`6,547/88,652/30,966` 和 split
 `89,580/18,293/18,292`；arrow width 明确不编码 magnitude。paper packet 仍有 22 个
-claim markers，evidence sources 增至 25；本机四组联合 focused suite 为 19/19。
+claim markers，evidence sources 增至 25；本机与 A100 四组联合 focused suite 均为 19/19。
 MBP-17 继续是 `COMPLETE_WITH_PROVISIONAL_GENERAL_FIGURES`，但最低包仍不完整且
 `submission_ready=false`。中央 100 个 attempts 的 terminal 分布不变。

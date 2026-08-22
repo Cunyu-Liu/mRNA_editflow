@@ -1182,7 +1182,7 @@ A100 commit `647de6f` builder focused test 为 2/2，并在
 均超过 3:1。target journal/article type/submission phase 待定，继续明确
 `publisher_compliance_claimed=false`。
 
-paper packet 仍为 22 个 claim markers，evidence sources 从 23 增至 25；本机四组联合
-focused suite 为 19/19。manuscript figures 现为 3 张、2 个 builders；MBP-17 status 和
+paper packet 仍为 22 个 claim markers，evidence sources 从 23 增至 25；本机与 A100
+四组联合 focused suite 均为 19/19。manuscript figures 现为 3 张、2 个 builders；MBP-17 status 和
 最低包 14/3/1 汇总不变，四个 blocker 仍为 MBP-10/13/14/15。本任务不训练或更新参数，
 不新增中央 attempt；100-row terminal 分布和 protected-outcome closure 不变。
