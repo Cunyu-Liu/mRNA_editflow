@@ -1806,3 +1806,19 @@ projection。TEST 行不解码；通用 TEST projection 被拒绝。V3 critic/fl
 TRAIN=89,580、VALIDATION=18,293、TEST withheld=18,292，canonical full decode 的 TEST 计数为 0。
 A100 focused tests=11/11、既有精确 V3.3.2 suite=96/96。该 materialization 不更新参数、不读取 TEST
 outcome、不增加中央 training attempt，且不得再次运行覆盖。
+
+## XEditCritic V3 edit-site token feature implementation preflight（2026-08-23）
+
+本项实现 cache/online 共用的唯一 token-offset 与 chunk policy：局部表示使用 1000-nt chunk、64-nt
+overlap、包含完整 clipped radius-16 window 的 most-centered chunk；site 与 local window 排除 special
+token，旧 official masked whole-chunk mean 只保留为独立 global residual。cache 使用 ragged record/edit
+offset，并以 shared sequence-position feature index 去重；持久化 payload 不写 raw sequence。
+
+只读 TRAIN/VALIDATION projection 的几何核查为 107,873 records、346,862 record-edits、最大 38
+edits/record、43,730 unique sequences、76,159 unique sequence-position pairs，证明多编辑不能按历史小
+budget 截断。Development 最大序列长度为 837；通用实现仍覆盖大于 1000 nt 的 overlap/final-anchor 情形。
+
+A100 GPU2 的真实 frozen mRNABERT smoke 验证得到 pretrained parameters=113,389,056、hidden=768、
+tokenizer max length=1024；3 个请求位置全部返回 finite 768-d features，运行时 token-layout assertion 通过。
+本机/A100 focused tests 均为 8/8，本机/A100 精确 V3.3.2 suite 均为 96/96。完整 cache 尚未
+materialize，本项不训练、不新增中央 attempt，不读取 Development TEST 或新的 final Evaluation outcome。

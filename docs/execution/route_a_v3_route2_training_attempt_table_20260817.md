@@ -1221,3 +1221,16 @@ canonical full-decode counts 为 TRAIN=89,580、VALIDATION=18,293、TEST=0。八
 V3.3.2 suite=96/96；本项不训练、不新增中央 attempt，中央表仍为 100 total / 92 completed /
 3 failed / 3 incomplete / 1 stopped-throughput / 1 stopped-priority。Development TEST 和新的 final
 Evaluation outcome 均未读取，model/generation/biological success 与 submission-ready 均为 false。
+
+## XEditCritic V3 edit-site token feature preflight（2026-08-23）
+
+本项是新训练前的表示/缓存实现，不创建训练 attempt；中央计数保持 100 total / 92 completed /
+3 failed / 3 incomplete / 1 stopped-throughput / 1 stopped-priority。新 builder 只接受已授权的
+`DevelopmentProjectionV3` TRAIN/VALIDATION，不能 fallback 到 canonical outcome JSONL。
+
+真实 projection 的 record/edit/unique-sequence/unique-sequence-position 几何为
+107,873 / 346,862 / 43,730 / 76,159，maximum edits/record=38；cache 使用 float16 shared
+sequence-position tensors 与 record ragged offsets，不截断 edit 数且不持久化 raw sequence。A100 frozen
+mRNABERT real-model smoke 的 3/3 requested positions、768-d global/local tensors 全部 finite，参数数为
+113,389,056。完整 cache 尚未 materialize，Critic screen 尚未启动；Development TEST、新 final
+Evaluation outcome、model success、generation success 与 submission-ready 状态均未改变。

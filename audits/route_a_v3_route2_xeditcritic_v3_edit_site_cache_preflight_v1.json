@@ -1,0 +1,55 @@
+{
+  "schema_version": "route_a_v3_route2_xeditcritic_v3_edit_site_cache_preflight.v1",
+  "status": "IMPLEMENTED_AND_A100_SMOKE_TESTED_NOT_YET_MATERIALIZED",
+  "observed_date": "2026-08-23",
+  "input_boundary": {
+    "input_type": "DevelopmentProjectionV3",
+    "allowed_splits": ["TRAIN", "VALIDATION"],
+    "canonical_outcome_fallback": false,
+    "development_test_outcomes_accessed": false,
+    "new_final_evaluation_outcomes_accessed": false
+  },
+  "observed_projection_geometry": {
+    "record_count": 107873,
+    "record_edit_count": 346862,
+    "mean_record_edit_count": 3.2154663354129394,
+    "maximum_record_edit_count": 38,
+    "unique_sequence_count": 43730,
+    "unique_sequence_position_count": 76159,
+    "maximum_sequence_length": 837,
+    "estimated_three_local_tensor_float16_gib": 0.32683897018432617
+  },
+  "frozen_feature_policy": {
+    "chunk_nucleotides": 1000,
+    "chunk_overlap": 64,
+    "local_radius": 16,
+    "chunk_selection": "MOST_CENTERED_CONTAINING_COMPLETE_CLIPPED_WINDOW",
+    "local_features": ["SITE_HIDDEN", "WINDOW_MEAN", "WINDOW_MAX"],
+    "derived_at_model_input": ["SITE_DELTA", "SITE_MEAN", "WINDOW_DELTA", "WINDOW_MEAN"],
+    "global_residual": "V2_OFFICIAL_MASKED_MEAN_NONOVERLAP_LENGTH_WEIGHTED",
+    "ragged_edit_offsets": true,
+    "maximum_edit_truncation": false,
+    "storage_dtype": "float16",
+    "raw_sequence_payload_written": 0
+  },
+  "a100_real_model_smoke": {
+    "physical_gpu_index": 2,
+    "model_id": "YYLY66/mRNABERT@a1eb7df25804d23f08646e1cb996b234d7208a40",
+    "pretrained_parameter_count": 113389056,
+    "embedding_width": 768,
+    "tokenizer_model_max_length": 1024,
+    "requested_position_count": 3,
+    "returned_position_count": 3,
+    "features_finite": true,
+    "token_layout_contract_passed": true
+  },
+  "tests": {
+    "local_focused_passed": 8,
+    "a100_focused_passed": 8,
+    "local_v332_passed": 96,
+    "a100_v332_passed": 96
+  },
+  "cache_materialized": false,
+  "training_attempt_created": false,
+  "model_success_established": false
+}

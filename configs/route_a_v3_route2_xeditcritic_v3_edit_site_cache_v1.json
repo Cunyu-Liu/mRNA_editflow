@@ -1,0 +1,23 @@
+{
+  "schema_version": "route_a_v3_route2_xeditcritic_v3_edit_site_cache_config.v1",
+  "status": "FROZEN_BEFORE_CACHE_CONSTRUCTION",
+  "projection_paths": [
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/projections/xedit_v3/development_train_validation_v1/train.jsonl",
+    "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/projections/xedit_v3/development_train_validation_v1/validation.jsonl"
+  ],
+  "expected_record_count": 107873,
+  "expected_unique_sequence_count": 43730,
+  "expected_unique_sequence_position_count": 76159,
+  "mrnabert_model_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/external_model_assets/mrnabert_a1eb7df25804d23f08646e1cb996b234d7208a40",
+  "model_id": "YYLY66/mRNABERT@a1eb7df25804d23f08646e1cb996b234d7208a40",
+  "chunk_nucleotides": 1000,
+  "chunk_overlap": 64,
+  "local_radius": 16,
+  "maximum_sequences_per_batch": 8,
+  "batch_token_budget": 4096,
+  "attention_backend": "OFFICIAL_PYTORCH_FALLBACK",
+  "device": "cuda:0",
+  "progress_every_batches": 1000,
+  "output_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/pretrained_features/xeditcritic_v3/edit_site_token_cache_v1.pt",
+  "summary_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/pretrained_features/xeditcritic_v3/edit_site_token_cache_v1.summary.json"
+}

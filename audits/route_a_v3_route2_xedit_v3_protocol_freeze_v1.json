@@ -33,7 +33,8 @@
   "implementation_state": {
     "projection_builder": "IMPLEMENTED_TESTED_AND_MATERIALIZED_ON_A100_TEST_UNPARSED",
     "endpoint_descriptor_registry": "IMPLEMENTED_OUTCOME_FREE",
-    "xeditcritic_v3": "NOT_YET_IMPLEMENTED",
+    "xeditcritic_v3_edit_site_feature_layer": "IMPLEMENTED_AND_A100_REAL_MODEL_SMOKE_TESTED_CACHE_NOT_YET_MATERIALIZED",
+    "xeditcritic_v3_model_and_training": "NOT_YET_IMPLEMENTED",
     "xeditsetflow_v3": "NOT_YET_IMPLEMENTED",
     "guided_soft_value_smc": "BLOCKED_NOT_YET_IMPLEMENTED"
   },
