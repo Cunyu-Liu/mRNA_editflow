@@ -1937,3 +1937,22 @@ SMC、ESS<16 stratified resampling、32 candidate cap、320 forward-equivalent c
 A100 测试等待 active C0/C1 terminal 后再同步，避免运行中的 ledger 把非实际代码 commit 写成 provenance。
 C0/C1 已在 seed20260830 分别启动于 GPU0/GPU5；曾在 elapsed=64s 发生一次过早快照，已如实记为节奏错误，
 其后未补查，下一次合并检查延后到启动满 30 分钟。SetFlow source-cache 在此期间未被轮询。
+
+到期后只做了一次精简合并检查：C0/C1 elapsed=1,913 秒且均存活，SetFlow source-cache elapsed=2,332 秒
+且仍存活，三个任务均无 terminal summary。没有读取 pass curve 或完整训练日志；下一次至少再间隔 30 分钟。
+A100 不同步 post-screen commit，继续保持 active attempt 的 `22317ed` provenance。
+
+## XEditFlow V3 value/SMC/closed runtime preflight（2026-08-23）
+
+新增组件尚未执行，当前只作为 readiness-gated code path：
+
+- `build_route2_xeditflow_value_targets_v3.py`：TRAIN-only，K=8，每 rollout 三 critic seeds；
+- `train_route2_xeditflow_value_v3.py`：6×384 scalar potential，固定 8 pass BF16 Huber final checkpoint；
+- `run_route2_xeditflow_smc_v3.py`：32 particles、ESS<16 stratified、candidate cap32、compute ceiling320，
+  预留 3 critic forwards；不足 cap 时在余量内追加冻结 seed rounds；
+- `evaluate_route2_xeditflow_closed_neighborhood_v3.py`：Development Validation、最多 5 edits/120 paths
+  exact order-invariant probability、source-level NDCG/regret/top-1，undefined 不填 0。
+
+SMC 使用 base proposal 与 scalar-potential importance weight，未增加 action-ratio head。所有入口要求
+critic frozen TEST/refit/LOSO readiness 和 SetFlow confirmation 同时成立；当前调用会 fail closed。本机
+合并 focused=89/89、V3.3.2=96/96、compile/diff-check PASS；A100 测试延后到 C0/C1 terminal。

@@ -1,0 +1,44 @@
+{
+  "schema_version": "route_a_v3_route2_xeditflow_value_protocol.v1",
+  "status": "PROSPECTIVE_FROZEN_BEFORE_GUIDANCE_AUTHORIZATION",
+  "authorization": {
+    "critic_status": "CRITIC_READY_FOR_GUIDANCE",
+    "setflow_status": "XEDITSETFLOW_V3_CONFIRMATION_PASS",
+    "development_test_reopened": false,
+    "new_final_evaluation_authorized": false
+  },
+  "target": {
+    "authorized_split": "TRAIN",
+    "base_flow_rollouts_per_state": 8,
+    "critic_ensemble_seeds": [20260831, 20260901, 20260902],
+    "base_flow_training_seeds": [20260904, 20260905, 20260906],
+    "uncertainty_penalties": [0.0, 0.5, 1.0],
+    "temperatures": [0.5, 1.0],
+    "independent_evaluator_used": false
+  },
+  "model": {
+    "blocks": 6,
+    "width": 384,
+    "heads": 8,
+    "ffn_width": 1536,
+    "local_attention_window": 64,
+    "output": "ONE_SCALAR_POTENTIAL",
+    "free_action_ratio_head_allowed": false
+  },
+  "training": {
+    "passes": 8,
+    "checkpoint": "FINAL_PASS_NO_EPOCH_RESELECTION",
+    "batch_size": 32,
+    "precision": "BF16",
+    "optimizer": "AdamW",
+    "learning_rate": 0.0003,
+    "weight_decay": 0.0001,
+    "gradient_clip_norm": 1.0,
+    "dropout": 0.1,
+    "loss": "HUBER_DELTA_1"
+  },
+  "protected_outcomes": {
+    "development_test_outcome_reads": 0,
+    "new_final_evaluation_outcome_reads": 0
+  }
+}

@@ -1305,3 +1305,33 @@ output directories 均不存在。一次 elapsed=64s 的状态读取早于合同
 代码均未执行参数更新，因此不新增 training attempt。其 A100 sync/test 将等待 C0/C1 terminal，避免正在
 运行的 completion upsert 读取到不同于实际训练的 Git HEAD。Development TEST、new final Evaluation、
 guidance、model/generation success 与 submission-ready 状态均未改变。
+
+到期后的单次合并检查显示 C0/C1 均仍存活，launch elapsed 均为 1,913 秒；SetFlow source-token cache
+仍存活，elapsed=2,332 秒，尚无 terminal summary。该检查没有读取 pass-level curve 或完整日志；下一次
+检查再次至少间隔 30 分钟。A100 工作树继续固定在训练启动 commit `22317ed`，后续 GitHub commit
+不在 active attempt terminal 前同步到 A100。
+
+## XEditFlow V3 value distillation、SMC runtime 与 closed evaluator preflight（2026-08-23）
+
+新增 readiness-gated value target assembler：只接受 TRAIN state，每 state 精确 8 个 frozen SetFlow rollout，
+每 rollout 精确接收 Critic seeds 20260831/20260901/20260902 的三个 study-neutral calibrated prediction；
+independent evaluator、Development TEST 与 new Evaluation 均不得进入 target。由于原协议未指定 value
+optimizer 的剩余细节，已在任何 outcome 结果前前瞻冻结为 8 个固定 passes、BF16/AdamW、batch32、
+Huber-delta1 与 final-pass checkpoint，不做 epoch 结果重选。
+
+新增实际 CUDA/BF16 scalar-value trainer、32-particle batched SMC provider/runner 和 exact closed evaluator。
+SMC 以 base transition 为 proposal、`exp{beta × [V(child)-V(state)]}` 为逐步 importance weight，因此加权
+粒子对应冻结的 potential-guided rate，且没有 free action-ratio head。ESS<16 时 stratified resampling；
+首轮不足 32 个唯一候选时使用新 decoder seed stream 追加 32-particle round，直到 cap 或 compute 余量不足。
+每 source 320 ceiling 中固定预留三次终态 critic member forward；三名 critic 必须分别计费。primary 与
+replay 使用相同 seed stream，replay 计算不伪装成独立 training repeat。
+
+closed evaluator 只允许 Development Validation measured-neighborhood，对每个最多 5-edit candidate 的所有
+排列精确求和，并在同一 source 内缓存已评分 state；source-level undefined NDCG 不填 0。上述入口均由
+`CRITIC_READY_FOR_GUIDANCE` + SetFlow three-seed confirmation 双 gate 阻塞，当前没有运行 value target、
+value training、SMC、closed outcome benchmark 或任何 guidance grid combination。
+
+合并本机 post-screen focused cohort=89/89，精确 V3.3.2=96/96，新增 Python compile 与 `git diff --check`
+通过。A100 focused/V3.3.2 仍等待 active C0/C1 terminal 后统一同步；中央 attempt 只包含已启动的 C0/C1，
+本项实现没有新增 optimizer attempt。Development TEST/new final Evaluation read、critic/generator success、
+guidance authorization、model claim 与 submission-ready 均保持 false。

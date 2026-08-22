@@ -30,13 +30,21 @@
     "soft_value_rollouts_per_state": 8,
     "value_blocks": 6,
     "value_width": 384,
+    "value_training_passes": 8,
+    "value_checkpoint_selection": "FINAL_PASS_NO_EPOCH_RESELECTION",
+    "value_training_loss": "HUBER_DELTA_1",
     "free_action_ratio_head_present": false,
     "guidance_grid_combination_count": 18,
     "particles": 32,
     "ess_threshold": 16,
     "candidate_cap": 32,
     "forward_equivalent_ceiling": 320,
-    "critic_members_counted_separately": true
+    "critic_members_counted_separately": true,
+    "terminal_critic_forward_reservation": 3,
+    "additional_sampling_rounds_allowed_within_remaining_compute": true,
+    "smc_proposal": "BASE_FLOW_TRANSITION",
+    "smc_incremental_weight": "EXP_BETA_TIMES_SCALAR_POTENTIAL_DIFFERENCE",
+    "closed_rate_state_cache_is_source_local": true
   },
   "readiness": {
     "development_test_authorized_now": false,
@@ -45,12 +53,10 @@
     "submission_ready": false
   },
   "local_tests": {
-    "confirmation_focused_passed": 39,
-    "closed_neighborhood_focused_passed": 4,
-    "guidance_core_focused_passed": 6,
-    "guidance_gate_focused_passed": 3,
-    "atomic_test_direct_focused_passed": 3,
-    "exact_v332_passed_before_atomic_test_addition": 96
+    "post_screen_combined_focused_passed": 89,
+    "exact_v332_passed": 96,
+    "python_compile_passed": true,
+    "git_diff_check_passed": true
   },
   "a100_tests": {
     "status": "PENDING_ACTIVE_C0_C1_SCREEN_MUST_KEEP_COMMIT_PROVENANCE",
@@ -61,7 +67,13 @@
     "launch_seed": 20260830,
     "early_snapshot_elapsed_seconds": 64,
     "early_snapshot_was_a_timing_error": true,
-    "next_check_deferred_until_launch_elapsed_at_least_30_minutes": true,
-    "setflow_source_cache_polled_during_wait": false
+    "scheduled_combined_check_elapsed_seconds": {
+      "critic_c0": 1913,
+      "critic_c1": 1913,
+      "setflow_source_cache": 2332
+    },
+    "scheduled_combined_check_result": "ALL_THREE_ALIVE_NO_TERMINAL_SUMMARY",
+    "next_check_minimum_interval_minutes": 30,
+    "full_training_logs_scanned": false
   }
 }

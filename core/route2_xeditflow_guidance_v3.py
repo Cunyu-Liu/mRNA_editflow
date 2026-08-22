@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass, field
-from typing import Any, Mapping, Sequence
+from typing import Any, Callable, Mapping, Sequence
 
 import numpy as np
 import torch
@@ -200,7 +200,10 @@ class XEditValueV3(nn.Module):
             }
         )
         hidden = self.input_norm(
-            self.source_pretrained_projection(pretrained) + self.state_projection(state)
+            self.source_pretrained_projection(
+                pretrained.to(self.source_pretrained_projection.weight.dtype)
+            )
+            + self.state_projection(state)
         ) * valid.unsqueeze(-1)
         for block in self.blocks:
             hidden = block(hidden, padding, condition)
@@ -262,6 +265,167 @@ def stratified_resample_v3(
         "ess_before": ess,
         "ancestor_indices": ancestors.astype(int).tolist(),
         "log_weights_after": [float(-math.log(32.0))] * 32,
+    }
+
+
+def smc_importance_transition_v3(
+    base_rates: torch.Tensor,
+    legal_mask: torch.Tensor,
+    current_potential: torch.Tensor,
+    child_potential: torch.Tensor,
+    *,
+    progress: torch.Tensor,
+    beta_max: float,
+    uniforms: torch.Tensor,
+) -> dict[str, torch.Tensor]:
+    """Propose from base rates and weight by the frozen scalar potential.
+
+    Multiplying the base proposal by ``exp(beta * (V(child)-V(state)))``
+    recovers the exact unnormalised guided rate without a free action-ratio.
+    """
+
+    guided_rates = potential_guided_rates_v3(
+        base_rates,
+        legal_mask,
+        current_potential,
+        child_potential,
+        progress=progress,
+        beta_max=beta_max,
+    )
+    _require(uniforms.shape == current_potential.shape, "SMC uniforms differ")
+    _require(
+        bool(torch.isfinite(uniforms).all().item())
+        and bool(((uniforms >= 0.0) & (uniforms < 1.0)).all().item()),
+        "SMC uniform is outside [0,1)",
+    )
+    proposal = torch.where(legal_mask, base_rates, torch.zeros_like(base_rates))
+    proposal = proposal / proposal.sum(dim=1, keepdim=True)
+    cumulative = proposal.double().cumsum(dim=1)
+    choices = (cumulative < uniforms.double().unsqueeze(1)).sum(dim=1).clamp_max(
+        base_rates.shape[1] - 1
+    )
+    rows = torch.arange(base_rates.shape[0], device=base_rates.device)
+    _require(bool(legal_mask[rows, choices].all().item()), "SMC proposal selected an illegal action")
+    beta = beta_schedule_v3(progress, beta_max=beta_max).to(base_rates)
+    increments = beta * (child_potential[rows, choices] - current_potential)
+    guided_probability = guided_rates / guided_rates.sum(dim=1, keepdim=True)
+    _require(
+        bool(torch.isfinite(increments).all().item())
+        and bool(torch.isfinite(guided_probability[legal_mask]).all().item()),
+        "SMC potential weight is nonfinite",
+    )
+    return {
+        "choice_indices": choices,
+        "log_weight_increment": increments,
+        "base_proposal_probability": proposal,
+        "guided_action_probability": guided_probability,
+        "guided_rates": guided_rates,
+    }
+
+
+@dataclass(frozen=True)
+class PotentialTransitionSetV3:
+    actions: tuple[Any, ...]
+    children: tuple[Any, ...]
+    base_rates: tuple[float, ...]
+    current_potential: float
+    child_potentials: tuple[float, ...]
+    progress: float
+
+
+def run_scalar_potential_smc_v3(
+    root_state: Any,
+    transition_provider: Callable[[Any], PotentialTransitionSetV3],
+    *,
+    particle_seeds: Sequence[int],
+    resampling_seed: int,
+    beta_max: float,
+    is_terminal: Callable[[Any], bool],
+    candidate_sequence: Callable[[Any], str],
+) -> dict[str, Any]:
+    """Replayable 32-particle SMC over an arbitrary hard-legal state graph."""
+
+    _require(len(particle_seeds) == 32, "formal SMC requires exactly 32 particle seeds")
+    _require(len(set(int(seed) for seed in particle_seeds)) == 32, "SMC particle seed stream is duplicated")
+    generators = [np.random.default_rng(int(seed)) for seed in particle_seeds]
+    particles = [root_state for _ in range(32)]
+    trajectories: list[list[Any]] = [[] for _ in range(32)]
+    log_weights = np.full(32, -math.log(32.0), dtype=float)
+    resampling_events = []
+    step = 0
+    while not all(is_terminal(state) for state in particles):
+        active = [index for index, state in enumerate(particles) if not is_terminal(state)]
+        _require(step <= 5, "SMC trajectory exceeded five edits plus structural termination")
+        for index in active:
+            transition = transition_provider(particles[index])
+            count = len(transition.actions)
+            _require(
+                count > 0
+                and len(transition.children) == count
+                and len(transition.base_rates) == count
+                and len(transition.child_potentials) == count,
+                "SMC transition geometry differs",
+            )
+            rates = torch.tensor([transition.base_rates], dtype=torch.float64)
+            legal = torch.ones_like(rates, dtype=torch.bool)
+            current = torch.tensor([transition.current_potential], dtype=torch.float64)
+            child = torch.tensor([transition.child_potentials], dtype=torch.float64)
+            progress = torch.tensor([transition.progress], dtype=torch.float64)
+            uniform = torch.tensor([generators[index].random()], dtype=torch.float64)
+            sampled = smc_importance_transition_v3(
+                rates,
+                legal,
+                current,
+                child,
+                progress=progress,
+                beta_max=beta_max,
+                uniforms=uniform,
+            )
+            choice = int(sampled["choice_indices"][0])
+            particles[index] = transition.children[choice]
+            trajectories[index].append(transition.actions[choice])
+            log_weights[index] += float(sampled["log_weight_increment"][0])
+        step += 1
+        resampling = stratified_resample_v3(
+            log_weights,
+            seed=int(resampling_seed) + step,
+            threshold=16.0,
+        )
+        resampling_events.append(
+            {
+                "step": step,
+                "ess_before": resampling["ess_before"],
+                "resampled": resampling["resampled"],
+            }
+        )
+        if resampling["resampled"]:
+            ancestors = resampling["ancestor_indices"]
+            particles = [particles[index] for index in ancestors]
+            trajectories = [list(trajectories[index]) for index in ancestors]
+            log_weights = np.asarray(resampling["log_weights_after"], dtype=float)
+    terminals = [
+        {
+            "candidate_sequence": candidate_sequence(state),
+            "log_weight": float(log_weights[index]),
+            "trajectory_actions": list(trajectories[index]),
+            "particle_slot": index,
+        }
+        for index, state in enumerate(particles)
+    ]
+    candidates = deduplicate_terminal_candidates_v3(terminals, candidate_cap=32)
+    return {
+        "schema_version": "route_a_v3_route2_xeditflow_potential_smc.v3",
+        "particle_count": 32,
+        "candidate_cap": 32,
+        "completed_steps": step,
+        "resampling_events": resampling_events,
+        "terminal_particle_count": 32,
+        "unique_candidate_count": len(candidates),
+        "candidates": candidates,
+        "fixed_seed_replayable": True,
+        "proposal": "BASE_FLOW_TRANSITION",
+        "incremental_importance_weight": "EXP_BETA_TIMES_SCALAR_POTENTIAL_DIFFERENCE",
+        "free_action_ratio_head_used": False,
     }
 
 
