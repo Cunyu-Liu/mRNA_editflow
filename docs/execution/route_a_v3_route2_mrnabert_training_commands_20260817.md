@@ -1967,3 +1967,6 @@ atomic frozen TEST 未 PASS 前二者均不能准备或运行。
 
 Critic readiness composer 已补齐，只有 four-predecessor PASS 才生成 guidance authorization；focused=12/12、
 V3.3.2=96/96。当前状态仍是 `CRITIC_NOT_READY_FOR_GUIDANCE`，未运行 composer。
+
+最终 three-seed XEditFlow adjudicator 也已实现：每 seed 必须有六 method metrics 和 source-paired bootstrap，
+严格 gate PASS 才打开 replacement Evaluation，且不会直接标记投稿 ready。focused=4/4、V3.3.2=96/96。

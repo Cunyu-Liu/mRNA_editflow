@@ -1353,3 +1353,8 @@ frozen TEST 的 PASS gate，不重新读取 TEST outcome。focused=26/26、V3.3.
 最终 Critic readiness composer 只在 three-seed、atomic frozen TEST、三 refit、LOSO 四个 predecessor 全部
 PASS 时输出 `CRITIC_READY_FOR_GUIDANCE`；LOSO NO-GO 等任一失败保持 blocked。focused=12/12、
 V3.3.2=96/96。该 composer 不读取 record/outcome，且始终保持 new final Evaluation closed。
+
+最终 XEditFlow adjudicator 现要求精确三个 base-flow seeds、每 seed 六个冻结 method roles、source-paired
+NDCG/evaluator bootstrap、matched compute 与 protected-read evidence，随后调用严格 three-seed gate。
+只有完整 PASS 才授权一次 replacement Evaluation；即使 PASS，`submission_ready` 仍保持 false，必须等待
+external measured outcome 复现。focused=4/4、V3.3.2=96/96；当前没有 final comparison artifacts，未运行。
