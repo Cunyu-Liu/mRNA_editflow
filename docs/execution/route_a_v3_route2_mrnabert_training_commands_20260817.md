@@ -1358,3 +1358,28 @@ claim markers=22、figures/builders=6/5、MBP=14/3/1、blockers=MBP-10/13/14/15 
 `submission_ready=false` 不变。本任务不训练、不新增中央 attempt；100-row 的 92/3/3/1/1
 终态分布不变，Development TEST、new final Evaluation、generated-candidate outcome 与
 guided XEditFlow 均未打开。
+
+## 51. V3.3.2 Generation critic / independent / measured 三层结果表（2026-08-22）
+
+按 Goal 7 顺序完成 measured / independent / critic-only generation result table。该任务
+不训练、不轮询 GPU 或训练进度，只对既有 terminal selection input 做一次只读聚合字段核查；
+没有展开 generated candidate payload，没有读取 Development TEST、新 final Evaluation 或
+guided outcome。版本化输入为
+`audits/route_a_v3_route2_v332_generation_three_layer_terminal_snapshot_v1.json`；新增 builder、
+2 项 focused tests、9-row × 31-column CSV 与独立 audit。Spreadsheet artifact 检查确认
+6 个 critic numeric rows、7 个 independent rows、7 个 measured-recovery rows、2 个 guided
+NO-GO rows；9 行 closed measured NDCG 均为空，guided 数值字段也全部为空。
+
+六个 critic-driven 方法的 guiding-critic self-score 均覆盖 891/891 sources；unguided Base
+Flow 的 critic 层为 `NOT_APPLICABLE_NO_CRITIC_CALLS`。genetic 同时领先 critic max uplift
+`1.1912207428186161` 与 independent-evaluator uplift `1.0978248587628674`，但 measured
+candidate recovery 由 unguided Base Flow 以 `0.20286195286195285` 领先，genetic 为
+`0.05443322109988777`。conditional recovered measured NDCG 仅覆盖 11--400 sources，且七
+方法 closed measured NDCG defined-source count 均为 0；因此禁止 self-score/independent
+替代 measured outcome，也不建立跨层 numeric ranking 或 biological improvement claim。
+
+GitHub commits `adcd9d4`/`3af0ac0` 已推送；A100 一次性同步到 `3af0ac0` 后十二组联合
+focused suite 38/38，本机同为 38/38。paper evidence sources=44（31 local/contract、13
+A100 `/mnt`），claim markers=22、figures/builders=6/5、MBP=14/3/1、
+blockers=MBP-10/13/14/15、`submission_ready=false` 与中央 100-row 的 92/3/3/1/1 终态
+均不变。first-order 与 frozen-critic guided generation 继续遵守 Critic V2 terminal NO-GO。

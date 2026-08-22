@@ -732,3 +732,27 @@ figures/builders=6/5、MBP=14/3/1、blockers=MBP-10/13/14/15 与
 `submission_ready=false` 不变。中央 100 个 attempts 仍为 92 `COMPLETED`、3 `FAILED`、
 3 `INCOMPLETE_NO_TERMINAL_RECORD`、1 `STOPPED_FOR_THROUGHPUT_REPAIR`、1
 `STOPPED_PRIORITY_REALLOCATION`。
+
+## Generation critic / independent / measured 三层结果表（2026-08-22）
+
+本项为非训练 paper-table/audit task，不新增或修改中央 CSV attempt。按低频监控约束只做
+一次权威 terminal selection input 的聚合字段核查；没有查询训练/GPU 进度，没有展开
+generated candidate payload，也没有读取 Development TEST、新 final Evaluation 或 guided
+outcome。新增只读 aggregate snapshot、独立 builder、focused tests、9-row × 31-column CSV
+和 audit；Spreadsheet 类型/空值检查确认所有 undefined 指标与 guided NO-GO 数值保持空白。
+
+七个已执行方法均有独立 evaluator 与稀疏 measured-recovery 汇总；六个 critic-driven 方法
+具有 891/891 source 的 guiding-critic self-score，unguided Base Flow 按设计无 critic 调用。
+genetic 的 source-macro critic max uplift 与 independent-evaluator max uplift 分别为
+`1.1912207428186161` 和 `1.0978248587628674`，两层均为最高；unguided Base Flow 的
+candidate recovery 为 `0.20286195286195285`，高于 genetic 的 `0.05443322109988777`。
+所有方法 closed measured NDCG defined-source count=0；conditional recovered NDCG 的支持数
+为 11--400，不作为 closed-support 横向排名。两个 guided 方法仍为 Critic V2 NO-GO。
+
+GitHub builder commit `adcd9d4` 与 paper integration commit `3af0ac0` 已推送；A100 从
+`a4d4f64` 一次性 fast-forward 到 `3af0ac0`，本机与 A100 十二组联合 focused suite 均为
+38/38。paper evidence sources=44（31 local/contract + 13 `/mnt`）、claim markers=22、
+figures/builders=6/5、MBP=14/3/1、blockers=MBP-10/13/14/15 与
+`submission_ready=false` 不变。中央 100 个 attempts 仍为 92 `COMPLETED`、3 `FAILED`、
+3 `INCOMPLETE_NO_TERMINAL_RECORD`、1 `STOPPED_FOR_THROUGHPUT_REPAIR`、1
+`STOPPED_PRIORITY_REALLOCATION`；`scientific_claim_status=NOT_ESTABLISHED`。
