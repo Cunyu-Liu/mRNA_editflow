@@ -1559,3 +1559,11 @@ deterministic replay 实际执行的 forward；32 candidates、microbatch4、三
 修复不改变模型、候选、seed、grid、gate 或 terminal evidence；compile PASS、相关定向=45/45、XEdit
 focused=209/209、本机精确 V3.3.2=96/96、JSON/diff-check PASS。A100 current-HEAD 验证等待 launch-head
 `22317ed` active jobs terminal。Development TEST/new Evaluation read=0。
+
+## 07:12 F-only scheduled screen status（2026-08-23）
+
+F1/F2 仍为同两个 RUNNING attempts，elapsed=3:25:07/3:10:09；均存活，没有 terminal/failure/error marker，
+未读取 curve 或 performance metric，因此中央 CSV 不改状态、不新增行。本次未检查 C1。GPU0–5 free
+memory=2,569/8,853/3,175/4,595/4,285/8,223 MiB，仍不足以启动 F3/C2/C3。下一次 F-only 检查不早于
+07:42:37，C1 仍不早于 07:40:07；A100 HEAD=`22317ed`，protected outcome 与 downstream authorization
+不变。

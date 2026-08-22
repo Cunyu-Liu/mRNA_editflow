@@ -1,0 +1,54 @@
+{
+  "schema_version": "route_a_v3_route2_xedit_v3_f_only_screen_health.v1",
+  "status": "F1_F2_ACTIVE_HEALTHY_NO_NEW_LAUNCH",
+  "observed_at": "2026-08-23T07:12:37+08:00",
+  "monitoring_policy": {
+    "previous_f_check_at": "2026-08-23T06:40:07+08:00",
+    "minimum_interval_minutes_satisfied": true,
+    "critic_c1_checked_in_this_observation": false,
+    "active_curves_or_performance_metrics_read": false,
+    "f1_f2_next_check_not_before": "2026-08-23T07:42:37+08:00",
+    "critic_c1_next_check_not_before": "2026-08-23T07:40:07+08:00"
+  },
+  "jobs": {
+    "f1": {
+      "pid": 1716291,
+      "elapsed_seconds": 12307,
+      "alive": true,
+      "terminal_summary_present": false,
+      "failure_artifact_present": false,
+      "error_marker_present": false,
+      "output_dir": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v3/screen_seed_20260903/f1"
+    },
+    "f2": {
+      "pid": 1822702,
+      "elapsed_seconds": 11409,
+      "alive": true,
+      "terminal_summary_present": false,
+      "failure_artifact_present": false,
+      "error_marker_present": false,
+      "output_dir": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/experiments/xeditsetflow_v3/screen_seed_20260903/f2"
+    }
+  },
+  "gpu_0_to_5_free_memory_mib": [2569, 8853, 3175, 4595, 4285, 8223],
+  "gpu_0_to_5_utilization_percent": [100, 100, 100, 100, 100, 100],
+  "launch_decision": {
+    "f3_started": false,
+    "critic_c2_or_c3_started": false,
+    "reason": "NO_AUTHORIZED_GPU_0_TO_5_HAS_SUFFICIENT_SAFE_FREE_MEMORY_FOR_ANOTHER_FROZEN_CAPACITY_ARM",
+    "capacity_reduced": false,
+    "cpu_fallback_used": false,
+    "gpu_6_or_7_used": false,
+    "other_process_terminated": false
+  },
+  "central_training_ledger_changed": false,
+  "repository": {
+    "a100_launch_head": "22317ed",
+    "a100_synced_to_current_head": false,
+    "local_and_github_current_head_at_observation": "8378abb"
+  },
+  "protected_data": {
+    "development_test_outcomes_accessed": false,
+    "new_final_evaluation_outcomes_accessed": false
+  }
+}

@@ -2329,3 +2329,15 @@ forward 在 source record 中合并；cache hit 不虚构 forward；guidance adj
 `audits/route_a_v3_route2_xeditflow_v3_physical_forward_accounting_preflight_v1.json`。本项不新增 optimizer
 attempt，不读取 Development TEST/new Evaluation；A100 sync/test 继续等待 launch-head `22317ed` 的 active
 jobs terminal。
+
+## 07:12 F-only low-frequency screen check（2026-08-23）
+
+按 F1/F2 不早于 07:10:07 的独立窗口，于 07:12:37 只检查两个 SetFlow PID；没有接触按 60 分钟节奏等待
+07:40:07 的 C1。F1/F2 elapsed=3:25:07/3:10:09，均存活，且 training summary、failure artifact 与声明的
+Traceback/CUDA OOM/Killed/RuntimeError marker 均不存在。没有读取 metrics.jsonl、pass curve 或 Validation
+outcome，因此中央 ledger 不改状态。
+
+GPU0–5 free memory=2,569/8,853/3,175/4,595/4,285/8,223 MiB，utilization 均为 100%，仍不足以安全启动
+F3/C2/C3；不降容量、不 CPU fallback、不使用 GPU6/7、不终止其他进程。F1/F2 下一次检查不早于
+07:42:37；C1 保持自己的下一检查时间 07:40:07。A100 launch HEAD=`22317ed`，current-HEAD sync 继续等待
+该 HEAD 的 active jobs terminal；Development TEST/new Evaluation 状态不变。
