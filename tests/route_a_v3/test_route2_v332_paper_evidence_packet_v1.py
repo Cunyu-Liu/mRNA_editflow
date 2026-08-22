@@ -10,6 +10,12 @@ DRAFT = ROOT / "docs/paper/route2_v332_methods_results_draft_v1.md"
 EVIDENCE = ROOT / "docs/paper/route2_v332_evidence_manifest_v1.json"
 CONSISTENCY = ROOT / "docs/paper/route2_v332_consistency_manifest_v1.json"
 BOOTSTRAP_TABLE = ROOT / "docs/paper/route2_v332_generation_bootstrap_table_v1.csv"
+ACTION_SPACE_GEOMETRY_TABLE = (
+    ROOT / "docs/paper/route2_v332_generation_action_space_geometry_table_v1.csv"
+)
+ACTION_SPACE_GEOMETRY_AUDIT = (
+    ROOT / "audits/route_a_v3_route2_generation_action_space_geometry_v1.json"
+)
 EVALUATOR_TASK_TABLE = (
     ROOT / "docs/paper/route2_v332_independent_evaluator_task_table_v1.csv"
 )
@@ -43,7 +49,7 @@ def test_claim_and_consistency_evidence_references_are_closed() -> None:
     assert len(evidence_ids) == len(set(evidence_ids)) == 17
 
     claims = re.findall(r"\[claim:([^\]]+)\]", draft)
-    assert len(claims) == len(set(claims)) == 19
+    assert len(claims) == len(set(claims)) == 20
 
     cited = set()
     for group in re.findall(r"\[evidence:([^\]]+)\]", draft):
@@ -238,6 +244,103 @@ def test_generation_bootstrap_reporting_is_exact_and_source_paired() -> None:
     assert result["paired_comparison_count"] == 6
     assert result["all_leader_advantage_ci_95_lower_bounds_positive"] is True
     assert "Development independent-evaluator separation only" in draft
+
+
+def test_generation_action_space_geometry_is_conserved_and_claim_bounded() -> None:
+    draft = DRAFT.read_text(encoding="utf-8")
+    normalized_draft = " ".join(draft.split())
+    consistency = _load(CONSISTENCY)
+    audit = _load(ACTION_SPACE_GEOMETRY_AUDIT)
+    with ACTION_SPACE_GEOMETRY_TABLE.open(
+        newline="", encoding="utf-8"
+    ) as handle:
+        rows = list(csv.DictReader(handle))
+
+    result = next(
+        row
+        for row in consistency["results"]
+        if row["result_id"] == "R-R2-GENERATION"
+    )
+    geometry = result["action_space_geometry"]
+
+    assert len(rows) == audit["conservation_checks"]["method_count"] == 7
+    assert {int(row["source_count"]) for row in rows} == {891}
+    assert {int(row["candidate_cap_per_source"]) for row in rows} == {32}
+    assert {row["candidate_support_mode"] for row in rows} == {
+        "OPEN_GENERATED_SUPPORT"
+    }
+    assert {
+        int(row["closed_measured_ndcg_defined_source_count"]) for row in rows
+    } == {0}
+
+    edit_distance_columns = [
+        f"edit_distance_{distance}_count" for distance in range(6)
+    ]
+    for row in rows:
+        candidate_count = int(row["candidate_count"])
+        assert sum(int(row[column]) for column in edit_distance_columns) == (
+            candidate_count
+        )
+        assert (
+            int(row["explicit_stop_count"])
+            + int(row["budget_exhausted_count"])
+            + int(row["no_legal_action_count"])
+            + int(row["numerical_failure_count"])
+        ) == candidate_count
+        assert (
+            int(row["unique_candidate_count"])
+            + int(row["duplicate_candidate_count"])
+        ) == candidate_count
+        assert float(row["hard_legality_rate"]) == 1.0
+        assert int(row["edit_budget_violation_count"]) == 0
+        assert int(row["candidate_budget_violation_count"]) == 0
+
+    local_search = next(row for row in rows if row["method_id"] == "local_search")
+    assert int(local_search["candidate_count"]) == geometry[
+        "local_search_candidate_count"
+    ] == 21027
+    assert [
+        int(local_search["source_candidate_count_min"]),
+        int(local_search["source_candidate_count_max"]),
+    ] == geometry["local_search_source_candidate_count_range"] == [3, 32]
+    assert float(local_search["source_candidate_count_mean"]) == geometry[
+        "local_search_mean_candidates_per_source"
+    ]
+
+    flow = next(
+        row
+        for row in rows
+        if row["method_id"] == "unguided_learned_base_flow_g0"
+    )
+    assert int(flow["unique_candidate_count"]) == geometry[
+        "flow_unique_candidate_count"
+    ] == 25173
+    assert int(flow["duplicate_candidate_count"]) == geometry[
+        "flow_duplicate_candidate_count"
+    ] == 3339
+    assert float(flow["budget_exhausted_rate"]) == geometry[
+        "highest_budget_exhausted_rate"
+    ] == 0.8702651515151515
+
+    assert audit["protocol_boundary"]["action_types_in_scope"] == ["SUB", "STOP"]
+    assert audit["protocol_boundary"]["action_types_out_of_scope"] == ["INS", "DEL"]
+    assert audit["protocol_boundary"]["development_test_outcomes_read"] == 0
+    assert audit["protocol_boundary"]["new_final_evaluation_outcomes_read"] == 0
+    assert audit["protocol_boundary"]["generated_candidates_grant_canonical_credit"] is False
+    assert audit["protocol_boundary"]["unknown_generated_candidates_are_zero_gain"] is False
+    assert geometry["total_no_legal_action_terminal_count"] == 0
+    assert geometry["total_numerical_failure_terminal_count"] == 0
+    assert "INS/DEL are outside this first-stage benchmark" in normalized_draft
+    assert "computational action-space properties" in normalized_draft
+
+    stop_gap = next(
+        row
+        for row in consistency["known_reporting_gaps"]
+        if row["gap_id"] == "GAP-R2-GEN-STOP-TIME"
+    )
+    assert stop_gap["status"] == (
+        "NOT_RETAINED_IN_TERMINAL_SELECTION_INPUT_NO_TERMINAL_RERUN"
+    )
 
 
 def test_independent_evaluator_task_reporting_preserves_heterogeneity() -> None:

@@ -1,0 +1,114 @@
+{
+  "schema_version": "route_a_v3_route2_generation_action_space_geometry.v1",
+  "status": "DEVELOPMENT_BENCHMARK_ACTION_SPACE_GEOMETRY_COMPLETE",
+  "observed_date": "2026-08-22",
+  "authority": {
+    "scientific_contract": "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna 数据gate转向后的合同.md",
+    "execution_protocol": "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna V3.3.2 执行提示词.md",
+    "terminal_selection_input": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/audits/generation_search_baselines/matched_compute_position_progress_seed20260816_v2/baseline_selection_input_v2.json",
+    "terminal_suite_summary": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/audits/generation_search_baselines/matched_compute_position_progress_seed20260816_v2/matched_generation_suite_summary_v2.json",
+    "terminal_strongest_selection": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/audits/generation_search_baselines/matched_compute_position_progress_seed20260816_v2/strongest_generation_baseline_v2.json",
+    "terminal_flow_summary": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/runs/base_flow_g0/matched_compute_position_progress_seed20260816_v2/validation_summary.json"
+  },
+  "protocol_boundary": {
+    "analysis_stage": "DEVELOPMENT_MEASURED_NEIGHBORHOOD_AND_FROZEN_INDEPENDENT_EVALUATOR",
+    "source_count": 891,
+    "candidate_cap_per_source": 32,
+    "critic_forward_budget_per_source": 256,
+    "forward_equivalent_budget_per_source": 320,
+    "action_types_in_scope": [
+      "SUB",
+      "STOP"
+    ],
+    "action_types_out_of_scope": [
+      "INS",
+      "DEL"
+    ],
+    "candidate_support_mode": "OPEN_GENERATED_SUPPORT",
+    "generated_candidates_grant_canonical_credit": false,
+    "unknown_generated_candidates_are_zero_gain": false,
+    "guided_xeditflow_run": false,
+    "development_test_outcomes_read": 0,
+    "new_final_evaluation_outcomes_read": 0
+  },
+  "aggregation_contract": {
+    "analysis_unit_for_source_macro_metrics": "SOURCE",
+    "terminal_cause_schema": [
+      "EXPLICIT_STOP",
+      "BUDGET_EXHAUSTED",
+      "NO_LEGAL_ACTION",
+      "NUMERICAL_FAILURE"
+    ],
+    "terminal_counter_serialization": "SPARSE_ZERO_KEYS_OMITTED",
+    "zero_count_interpretation": "The shared action graph distinguishes all four causes; evaluate_route2_generation_v1 serializes a Counter, so absent NO_LEGAL_ACTION and NUMERICAL_FAILURE keys are exact zeros when the recorded terminal counts otherwise conserve candidate count.",
+    "edit_distance_definition": "source-relative Hamming distance under SUB-only editing; zero is reachable by an immediate legal STOP",
+    "table_path": "docs/paper/route2_v332_generation_action_space_geometry_table_v1.csv"
+  },
+  "conservation_checks": {
+    "method_count": 7,
+    "candidate_count_matches_sum_of_source_candidate_counts": "7/7",
+    "edit_distance_counts_sum_to_candidate_count": "7/7",
+    "terminal_cause_counts_sum_to_candidate_count": "7/7",
+    "legal_candidate_count_matches_candidate_count": "7/7",
+    "source_count_matches_frozen_cohort": "7/7"
+  },
+  "cross_method_geometry": {
+    "six_methods_at_full_candidate_cap_for_all_sources": true,
+    "local_search_candidate_count": 21027,
+    "local_search_source_candidate_count_range": [
+      3,
+      32
+    ],
+    "local_search_mean_candidates_per_source": 23.5993265993266,
+    "observed_edit_distance_range": [
+      0,
+      5
+    ],
+    "all_method_hard_legality_rate": 1.0,
+    "total_edit_budget_violations": 0,
+    "total_candidate_budget_violations": 0,
+    "total_no_legal_action_terminals": 0,
+    "total_numerical_failure_terminals": 0,
+    "highest_explicit_stop_rate": {
+      "method_ids": [
+        "greedy",
+        "beam"
+      ],
+      "rate": 0.7048260381593715
+    },
+    "highest_budget_exhausted_rate": {
+      "method_id": "unguided_learned_base_flow_g0",
+      "rate": 0.8702651515151515
+    },
+    "flow_unique_candidate_count": 25173,
+    "flow_duplicate_candidate_count": 3339,
+    "flow_source_macro_unique_candidate_rate": 0.8828914141414141,
+    "search_method_duplicate_candidate_count": 0,
+    "closed_measured_ndcg_defined_source_count_all_methods": 0
+  },
+  "endpoint_separation": {
+    "independent_evaluator_point_leader": "genetic",
+    "measured_candidate_recovery_point_leader": "unguided_learned_base_flow_g0",
+    "interpretation": "Stopping, edit depth, uniqueness, independent-evaluator uplift and sparse measured-neighborhood recovery characterize different computational properties and must remain in separate columns."
+  },
+  "reporting_gaps": [
+    {
+      "gap_id": "GENERATION_SEARCH_METHOD_WALL_TIME",
+      "status": "NOT_RECORDED_NO_TERMINAL_RERUN",
+      "detail": "Per-method generation wall time is absent for the six search methods; the suite total and independent-scoring times remain available."
+    },
+    {
+      "gap_id": "PER_CANDIDATE_ALGORITHMIC_STOP_TIME",
+      "status": "NOT_RETAINED_IN_TERMINAL_SELECTION_INPUT_NO_TERMINAL_RERUN",
+      "detail": "Terminal-cause counts and edit-distance distributions are retained, but per-candidate algorithmic STOP time is not present in the terminal selection input."
+    },
+    {
+      "gap_id": "CLOSED_MEASURED_NDCG",
+      "status": "UNDEFINED_BY_OPEN_GENERATED_SUPPORT",
+      "detail": "All seven methods have zero sources with defined closed measured NDCG; unknown generated candidates are not assigned zero gain."
+    }
+  ],
+  "scientific_interpretation": "The terminal Development benchmark supports legal, budget-controlled SUB+STOP generation with method-dependent stopping, edit-depth and duplication geometry. It does not establish measured biological improvement, INS/DEL support, guided XEditFlow success or external generalization.",
+  "next_authorized_route": "BENCHMARK_PLUS_HISTORICAL_TRANSFER_AND_GENERATION_LIMITS_PLUS_NEGATIVE_RESULT_PLUS_DATA_ACTION_SPACE_GEOMETRY",
+  "new_training_attempt_created": false
+}

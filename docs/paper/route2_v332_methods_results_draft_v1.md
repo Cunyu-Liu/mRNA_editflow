@@ -170,6 +170,33 @@ not provide external or measured biological validation. The exact six-row table
 is retained in `route2_v332_generation_bootstrap_table_v1.csv`.
 [claim:C-R2-015] [evidence:E-R2-GEN-SELECT]
 
+### The shared action space produced method-dependent stopping, edit-depth and duplication geometry
+
+Candidate, edit-distance and terminal-cause counts conserved exactly for all
+seven methods. Observed source-relative edit distances ranged from zero to five;
+zero-edit candidates are reachable through an immediate legal STOP and do not
+represent an INS/DEL operation. Greedy and beam had the highest explicit-STOP
+fraction (0.704826 each), whereas unguided Base Flow had the highest
+budget-exhaustion fraction (0.870265). No `NO_LEGAL_ACTION` or
+`NUMERICAL_FAILURE` terminal was recorded. Local search returned 3--32
+candidates per source (mean 23.5993) rather than filling the cap for every
+source. Base Flow produced 25,173 unique sequences among 28,512 candidate rows,
+leaving 3,339 within-source duplicates; the six search methods had no duplicate
+candidate rows within source. These are computational action-space properties,
+not biological performance endpoints. [claim:C-R2-020]
+[evidence:E-R2-CONTRACT,E-R2-GEN-INPUT,E-R2-FLOW-MATCHED]
+
+The exact seven-method edit-distance histograms, terminal fractions, realized
+candidate ranges, uniqueness, compute, open-support recovery and independent-
+evaluator columns are retained in
+`route2_v332_generation_action_space_geometry_table_v1.csv`. The action space is
+restricted to source-anchored `SUB + STOP`; INS/DEL are outside this first-stage
+benchmark. All methods used open generated support, so zero sources had defined
+closed measured NDCG and candidates outside the measured neighborhood were not
+assigned zero gain or canonical intervention credit. Per-candidate algorithmic
+STOP time is not present in the terminal selection input and is reported as
+`NOT_RETAINED`, not reconstructed.
+
 ### Predictor readiness remains unresolved
 
 The first mRNABERT cohort produced three task-macro Spearman values of 0.116129,
@@ -229,7 +256,10 @@ baseline.
    is not an external biological confirmation.
 2. Open generated support contains candidates with unknown outcomes. Candidate
    recovery is observable, whereas closed measured NDCG is undefined under this
-   support mode; unknown candidates were not assigned zero gain.
+   support mode for all seven methods; unknown candidates were not assigned zero
+   gain. The action-space table therefore describes computational prioritization,
+   legality, stopping, edit depth, duplication and cost rather than measured
+   biological improvement.
 3. The genetic-versus-Flow ranking changes with the reported endpoint. The paper
    must keep independent-evaluator uplift and measured-neighborhood recovery in
    separate columns.
@@ -238,8 +268,10 @@ baseline.
    overall suite wall time was 10,959.64 seconds, and independent scoring times
    were recorded, but file timestamps will not be used to reconstruct missing
    generation times. Unguided Flow separately recorded 341.56 seconds and
-   556.49 MiB peak VRAM. Future parallel stages now persist per-method wall time,
-   but this instrumentation does not retroactively fill the terminal suite.
+   556.49 MiB peak VRAM. Per-candidate algorithmic STOP time is likewise absent
+   from the terminal selection input; terminal counts and edit depths do not
+   reconstruct that time. Future parallel stages now persist per-method wall
+   time, but this instrumentation does not retroactively fill the terminal suite.
    [claim:C-R2-013]
    [evidence:E-R2-GEN-SUITE,E-R2-GEN-INPUT,E-R2-FLOW-MATCHED]
 5. The Critic V2 control NO-GO prospectively closed Development TEST,
@@ -259,6 +291,8 @@ Allowed:
   independent-evaluator criterion.”
 - “Unguided Base Flow recovered more of the Development measured neighborhood.”
 - “All seven methods produced legal candidates within the declared caps.”
+- “The seven-method SUB+STOP benchmark showed method-dependent stopping,
+  edit-depth and duplicate-candidate geometry.”
 - “The original mRNABERT critic failed three-seed readiness, and Critic V2 failed
   its frozen control gate before confirmation seeds.”
 - “Critic V2 showed localized candidate-specific rank signal but did not achieve
@@ -271,6 +305,8 @@ Prohibited until later gates pass:
 - “Guided XEditFlow succeeds.”
 - “The generation results are externally validated.”
 - “Every method produced exactly 32 candidates per source.”
+- “The first-stage benchmark supports or validates INS/DEL.”
+- “A generated candidate outside measured support has zero measured gain.”
 - “GSE232572 is an unbiased final confirmation” or “E-MTAB-10902 was evaluated.”
 
 ## Unresolved items before manuscript integration

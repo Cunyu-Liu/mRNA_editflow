@@ -33,6 +33,11 @@
       "critic_forward_cap_per_source": 256,
       "total_forward_equivalent_cap_per_source": 320,
       "action_space": "SUB_PLUS_STOP",
+      "action_types_in_scope": ["SUB", "STOP"],
+      "action_types_out_of_scope": ["INS", "DEL"],
+      "candidate_support_mode": "OPEN_GENERATED_SUPPORT",
+      "action_space_geometry_table": "docs/paper/route2_v332_generation_action_space_geometry_table_v1.csv",
+      "action_space_geometry_audit": "audits/route_a_v3_route2_generation_action_space_geometry_v1.json",
       "evidence_ids": ["E-R2-GEN-SUITE", "E-R2-GEN-INPUT", "E-R2-GEN-SELECT"]
     },
     {
@@ -120,6 +125,31 @@
           0.06168808431503615
         ]
       },
+      "action_space_geometry": {
+        "candidate_count_conservation_method_count": 7,
+        "edit_distance_count_conservation_method_count": 7,
+        "terminal_count_conservation_method_count": 7,
+        "hard_legality_rate_all_methods": 1.0,
+        "total_edit_budget_violation_count": 0,
+        "total_candidate_budget_violation_count": 0,
+        "total_no_legal_action_terminal_count": 0,
+        "total_numerical_failure_terminal_count": 0,
+        "observed_edit_distance_range": [0, 5],
+        "local_search_candidate_count": 21027,
+        "local_search_source_candidate_count_range": [3, 32],
+        "local_search_mean_candidates_per_source": 23.5993265993266,
+        "highest_explicit_stop_method_ids": ["greedy", "beam"],
+        "highest_explicit_stop_rate": 0.7048260381593715,
+        "highest_budget_exhausted_method_id": "unguided_learned_base_flow_g0",
+        "highest_budget_exhausted_rate": 0.8702651515151515,
+        "flow_unique_candidate_count": 25173,
+        "flow_duplicate_candidate_count": 3339,
+        "closed_measured_ndcg_defined_source_count_all_methods": 0,
+        "generated_candidates_grant_canonical_credit": false,
+        "unknown_generated_candidates_are_zero_gain": false,
+        "table": "docs/paper/route2_v332_generation_action_space_geometry_table_v1.csv",
+        "audit": "audits/route_a_v3_route2_generation_action_space_geometry_v1.json"
+      },
       "scientific_claim_status": "INDEPENDENT_EVALUATOR_ONLY_MEASURED_OUTCOME_NOT_ESTABLISHED",
       "evidence_ids": ["E-R2-GEN-SUITE", "E-R2-GEN-SELECT"]
     },
@@ -196,6 +226,12 @@
       "description": "Per-method generation wall time was not persisted for the six search methods; all 891 per-source wall_time_seconds values are null. The overall suite wall time and independent-evaluator scoring wall times are available.",
       "action": "Report NOT_RECORDED; do not infer from file timestamps and do not rerun terminal methods. Future parallel stages now persist one wall_time_seconds value per method.",
       "future_instrumentation_status": "IMPLEMENTED_FOR_FUTURE_RUNS_NO_RETROACTIVE_FILL"
+    },
+    {
+      "gap_id": "GAP-R2-GEN-STOP-TIME",
+      "description": "The terminal selection input retains terminal-cause counts and edit-distance distributions but not per-candidate algorithmic STOP time.",
+      "action": "Report exact STOP counts and fractions, keep algorithmic STOP time as NOT_RETAINED, and do not reconstruct it from edit count or wall-clock timestamps.",
+      "status": "NOT_RETAINED_IN_TERMINAL_SELECTION_INPUT_NO_TERMINAL_RERUN"
     }
   ],
   "submission_ready": false

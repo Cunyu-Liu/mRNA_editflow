@@ -1065,3 +1065,31 @@ mean margin 为 `+0.010485705883750515`。该敏感性不能用于删除 task、
 Benchmark+historical transfer/generation limits+negative result+data/action-space geometry；
 不启动 TEST、更多 seed、guided XEditFlow 或 final Evaluation。本任务没有参数更新，
 中央训练 CSV 不增加 attempt。
+
+## 39. 七法 Development generation action-space geometry（2026-08-22）
+
+沿 Critic V2 terminal NO-GO 后的合同 forward route，只读聚合 terminal v2
+matched-generation selection input；没有读取 Development TEST 或 new final Evaluation，
+也没有打开 guided stage。七法均使用 891-source cohort、`SUB + STOP`、candidate cap
+32、critic cap 256 和 total forward-equivalent cap 320。candidate-count、edit-distance、
+terminal-cause 三组守恒检查均为 7/7，hard legality 全为 1.0，edit/candidate budget
+violation、`NO_LEGAL_ACTION`、`NUMERICAL_FAILURE` 全为 0。
+
+终态 geometry 显示：observed source-relative edit distance 为 0--5；zero-edit 来自合法
+immediate STOP，不表示 INS/DEL。greedy/beam explicit-STOP rate 最高，均为
+`0.7048260381593715`；unguided Base Flow budget-exhaustion rate 最高，为
+`0.8702651515151515`。local search 未强制填满 candidate cap，每 source 3--32 个、
+均值 `23.5993265993266`；Flow 28,512 rows 中有 25,173 unique、3,339 duplicates，
+其余六法 within-source duplicates 为 0。
+
+所有方法的 support mode 均为 `OPEN_GENERATED_SUPPORT`，closed measured NDCG defined
+source count 均为 0；因此 independent-evaluator uplift、measured-neighborhood recovery、
+stopping、edit depth、uniqueness 和 compute 继续分列，未知候选不赋 zero gain 或
+canonical intervention credit。per-candidate algorithmic STOP time 与六 search 方法
+generation wall time未被 terminal input 保留，明确记为缺口而不重跑或用时间戳反推。
+
+新增 `route2_v332_generation_action_space_geometry_table_v1.csv`、
+`route_a_v3_route2_generation_action_space_geometry_v1.json`，paper packet 现为 20 个唯一
+claim markers、17 个 evidence sources。本机 focused suite 为 39 passed、5 skipped、
+0 failed。本任务不新增中央训练 attempt，100-row 终态分布不变；forward claim 保持
+Benchmark+limits+negative result+data/action-space geometry。

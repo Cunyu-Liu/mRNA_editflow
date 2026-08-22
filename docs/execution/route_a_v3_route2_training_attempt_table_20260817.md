@@ -480,3 +480,31 @@ baseline 的 Spearman 为 4/9 task wins、5/9 losses，task-macro margin
 该诊断不发生参数更新，不新增或修改中央 CSV 行；Development TEST、Evaluation 和
 generated candidates 均未读取。全精度 task 表与受限解释见 paper/audit artifacts，
 forward route 为 Benchmark+limits negative result。
+
+## Generation action-space geometry 终态证据包（2026-08-22）
+
+只读汇总 terminal v2 matched-generation selection input 的七法 Development 聚合与
+per-source geometry，候选数、edit-distance 和 terminal-cause 计数均为 7/7 守恒。
+共享边界继续是 891 sources、每 source candidate cap 32、`SUB + STOP`；INS/DEL
+不在第一阶段范围。七法 hard legality 均为 1.0，edit/candidate budget violations、
+`NO_LEGAL_ACTION` 与 `NUMERICAL_FAILURE` 均为 0。
+
+终止与候选几何存在实质方法差异：greedy/beam explicit-STOP rate 均为
+`0.7048260381593715`，unguided Base Flow budget-exhaustion rate 为
+`0.8702651515151515`；local search 每 source 实际返回 3--32 个候选，均值
+`23.5993265993266`。Flow 的 28,512 candidate rows 中有 25,173 unique、3,339
+duplicates。所有方法均为 open generated support，closed measured NDCG defined
+source count 为 0，未知 outcome 不按 zero gain 或 canonical credit 处理。
+
+新增全精度表
+`docs/paper/route2_v332_generation_action_space_geometry_table_v1.csv` 与审计
+`audits/route_a_v3_route2_generation_action_space_geometry_v1.json`，并同步 paper
+draft/evidence/consistency manifests。per-candidate algorithmic STOP time 与六个 search
+方法的 generation wall time 不在 terminal selection input 中，继续记为
+`NOT_RETAINED/NOT_RECORDED`，不重跑或反推。focused suite 本机为 39 passed、
+5 skipped、0 failed。
+
+本任务没有参数更新，中央训练 CSV 不增加 attempt；100 个唯一 attempts 的终态仍为
+92 `COMPLETED`、3 `FAILED`、3 `INCOMPLETE_NO_TERMINAL_RECORD`、1
+`STOPPED_FOR_THROUGHPUT_REPAIR`、1 `STOPPED_PRIORITY_REALLOCATION`。Development
+TEST、guided XEditFlow 与 new final Evaluation outcome 均未打开。

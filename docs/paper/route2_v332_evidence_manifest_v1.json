@@ -70,7 +70,7 @@
       "evidence_id": "E-R2-GEN-INPUT",
       "kind": "terminal_selection_input",
       "location": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/audits/generation_search_baselines/matched_compute_position_progress_seed20260816_v2/baseline_selection_input_v2.json",
-      "locator": "seven baseline_evaluations; generation and measured_neighborhood aggregates",
+      "locator": "seven baseline_evaluations; generation and measured_neighborhood aggregates; per-source candidate count, unique count, edit-distance distribution, terminal causes and compute fields",
       "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING"
     },
     {
