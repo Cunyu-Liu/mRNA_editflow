@@ -1,0 +1,178 @@
+{
+  "schema_version": "route_a_v3_route2_v332_generation_three_layer_terminal_snapshot.v1",
+  "status": "TERMINAL_GENERATION_LAYER_AGGREGATES_CAPTURED_WITHOUT_CANDIDATE_PAYLOAD",
+  "observed_at": "2026-08-22T16:28:33+08:00",
+  "capture_method": "READ_ONLY_AGGREGATION_OF_TERMINAL_PER_SOURCE_SUMMARIES_NO_TRAINING_MONITORING",
+  "source_path": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/audits/generation_search_baselines/matched_compute_position_progress_seed20260816_v2/baseline_selection_input_v2.json",
+  "aggregation_policy": {
+    "source_unit_count": 891,
+    "critic_max_uplift": "MEAN_OVER_PER_SOURCE_CRITIC_SCORE_MAX_UPLIFT_OVER_SOURCE",
+    "critic_mean_uplift": "MEAN_OVER_PER_SOURCE_CRITIC_SCORE_MEAN_UPLIFT_OVER_SOURCE",
+    "candidate_payload_opened": false,
+    "generated_candidate_outcome_opened": false,
+    "missing_numeric_value_substituted_with_zero": false
+  },
+  "methods": [
+    {
+      "method_id": "random_legal",
+      "generation_source_count": 891,
+      "critic_candidate_count_sum": 28512,
+      "critic_candidate_count_min": 32,
+      "critic_candidate_count_max": 32,
+      "critic_defined_source_count": 891,
+      "source_macro_critic_max_uplift_over_source": 0.6083826913710529,
+      "source_macro_critic_mean_uplift_over_source": -0.009728889336953761,
+      "measured": {
+        "source_count": 891,
+        "source_macro_candidate_recovery_rate": 0.07697343808454919,
+        "source_macro_measured_top_k_recovery_at_k": 0.004769921436588103,
+        "source_macro_recovered_measured_ndcg_at_k": 0.46485108888512494,
+        "source_recovered_measured_ndcg_defined_count": 168,
+        "source_macro_closed_measured_ndcg_at_k": null,
+        "source_closed_measured_ndcg_defined_count": 0,
+        "source_macro_normalized_regret": null,
+        "source_normalized_regret_defined_count": 6,
+        "unknown_generated_candidates_are_zero_gain": false
+      }
+    },
+    {
+      "method_id": "greedy",
+      "generation_source_count": 891,
+      "critic_candidate_count_sum": 28512,
+      "critic_candidate_count_min": 32,
+      "critic_candidate_count_max": 32,
+      "critic_defined_source_count": 891,
+      "source_macro_critic_max_uplift_over_source": 0.8945380156958009,
+      "source_macro_critic_mean_uplift_over_source": 0.579550056563592,
+      "measured": {
+        "source_count": 891,
+        "source_macro_candidate_recovery_rate": 0.06584362139917695,
+        "source_macro_measured_top_k_recovery_at_k": 0.003647586980920314,
+        "source_macro_recovered_measured_ndcg_at_k": 0.5665481903412365,
+        "source_recovered_measured_ndcg_defined_count": 124,
+        "source_macro_closed_measured_ndcg_at_k": null,
+        "source_closed_measured_ndcg_defined_count": 0,
+        "source_macro_normalized_regret": null,
+        "source_normalized_regret_defined_count": 5,
+        "unknown_generated_candidates_are_zero_gain": false
+      }
+    },
+    {
+      "method_id": "beam",
+      "generation_source_count": 891,
+      "critic_candidate_count_sum": 28512,
+      "critic_candidate_count_min": 32,
+      "critic_candidate_count_max": 32,
+      "critic_defined_source_count": 891,
+      "source_macro_critic_max_uplift_over_source": 0.7157481758281438,
+      "source_macro_critic_mean_uplift_over_source": 0.4304653602661659,
+      "measured": {
+        "source_count": 891,
+        "source_macro_candidate_recovery_rate": 0.08024691358024691,
+        "source_macro_measured_top_k_recovery_at_k": 0.004395809951365507,
+        "source_macro_recovered_measured_ndcg_at_k": 0.5821372028246976,
+        "source_recovered_measured_ndcg_defined_count": 160,
+        "source_macro_closed_measured_ndcg_at_k": null,
+        "source_closed_measured_ndcg_defined_count": 0,
+        "source_macro_normalized_regret": null,
+        "source_normalized_regret_defined_count": 5,
+        "unknown_generated_candidates_are_zero_gain": false
+      }
+    },
+    {
+      "method_id": "genetic",
+      "generation_source_count": 891,
+      "critic_candidate_count_sum": 28512,
+      "critic_candidate_count_min": 32,
+      "critic_candidate_count_max": 32,
+      "critic_defined_source_count": 891,
+      "source_macro_critic_max_uplift_over_source": 1.1912207428186161,
+      "source_macro_critic_mean_uplift_over_source": 0.8166852227263738,
+      "measured": {
+        "source_count": 891,
+        "source_macro_candidate_recovery_rate": 0.05443322109988777,
+        "source_macro_measured_top_k_recovery_at_k": 0.0028058361391694723,
+        "source_macro_recovered_measured_ndcg_at_k": 0.5142369140428034,
+        "source_recovered_measured_ndcg_defined_count": 108,
+        "source_macro_closed_measured_ndcg_at_k": null,
+        "source_closed_measured_ndcg_defined_count": 0,
+        "source_macro_normalized_regret": null,
+        "source_normalized_regret_defined_count": 2,
+        "unknown_generated_candidates_are_zero_gain": false
+      }
+    },
+    {
+      "method_id": "local_search",
+      "generation_source_count": 891,
+      "critic_candidate_count_sum": 21027,
+      "critic_candidate_count_min": 3,
+      "critic_candidate_count_max": 32,
+      "critic_defined_source_count": 891,
+      "source_macro_critic_max_uplift_over_source": 0.8812244279617413,
+      "source_macro_critic_mean_uplift_over_source": 0.6035246400302642,
+      "measured": {
+        "source_count": 891,
+        "source_macro_candidate_recovery_rate": 0.0036475869809203137,
+        "source_macro_measured_top_k_recovery_at_k": 0.0022446689113355778,
+        "source_macro_recovered_measured_ndcg_at_k": 0.4682823351139952,
+        "source_recovered_measured_ndcg_defined_count": 11,
+        "source_macro_closed_measured_ndcg_at_k": null,
+        "source_closed_measured_ndcg_defined_count": 0,
+        "source_macro_normalized_regret": null,
+        "source_normalized_regret_defined_count": 0,
+        "unknown_generated_candidates_are_zero_gain": false
+      }
+    },
+    {
+      "method_id": "generate_then_rerank",
+      "generation_source_count": 891,
+      "critic_candidate_count_sum": 28512,
+      "critic_candidate_count_min": 32,
+      "critic_candidate_count_max": 32,
+      "critic_defined_source_count": 891,
+      "source_macro_critic_max_uplift_over_source": 0.8671468421398724,
+      "source_macro_critic_mean_uplift_over_source": 0.4592076547968585,
+      "measured": {
+        "source_count": 891,
+        "source_macro_candidate_recovery_rate": 0.06827534605312383,
+        "source_macro_measured_top_k_recovery_at_k": 0.004395809951365506,
+        "source_macro_recovered_measured_ndcg_at_k": 0.5976715096103061,
+        "source_recovered_measured_ndcg_defined_count": 136,
+        "source_macro_closed_measured_ndcg_at_k": null,
+        "source_closed_measured_ndcg_defined_count": 0,
+        "source_macro_normalized_regret": null,
+        "source_normalized_regret_defined_count": 6,
+        "unknown_generated_candidates_are_zero_gain": false
+      }
+    },
+    {
+      "method_id": "unguided_learned_base_flow_g0",
+      "generation_source_count": 891,
+      "critic_candidate_count_sum": null,
+      "critic_candidate_count_min": null,
+      "critic_candidate_count_max": null,
+      "critic_defined_source_count": 0,
+      "source_macro_critic_max_uplift_over_source": null,
+      "source_macro_critic_mean_uplift_over_source": null,
+      "measured": {
+        "source_count": 891,
+        "source_macro_candidate_recovery_rate": 0.20286195286195285,
+        "source_macro_measured_top_k_recovery_at_k": 0.09797305278909313,
+        "source_macro_recovered_measured_ndcg_at_k": 0.5081619176644783,
+        "source_recovered_measured_ndcg_defined_count": 400,
+        "source_macro_closed_measured_ndcg_at_k": null,
+        "source_closed_measured_ndcg_defined_count": 0,
+        "source_macro_normalized_regret": null,
+        "source_normalized_regret_defined_count": 165,
+        "unknown_generated_candidates_are_zero_gain": false
+      }
+    }
+  ],
+  "protected_outcomes": {
+    "development_test_read": false,
+    "new_final_evaluation_read": false,
+    "guided_xeditflow_run": false
+  },
+  "new_training_attempt_created": false,
+  "scientific_claim_status": "NOT_ESTABLISHED"
+}
