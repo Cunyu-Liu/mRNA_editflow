@@ -49,6 +49,8 @@ def test_final_generation_prepares_three_seeds_without_second_hpo() -> None:
         "strongest_generation_baseline_id": "genetic",
         "evaluation_outcomes_accessed": False,
         "forward_equivalent_budget_per_source": 320,
+        "critic_forward_budget_per_source": 256,
+        "guiding_checkpoint_path": "/mnt/guiding_critic.pt",
         "independent_evaluator_checkpoint_path": "/mnt/evaluator.pt",
     }
     runtimes = {
@@ -86,6 +88,24 @@ def test_final_generation_prepares_three_seeds_without_second_hpo() -> None:
     assert manifest["seed_jobs"][0]["closed_score_metric_configs"]["strongest_matched_baseline"]["score_transform"] == "SOURCEWISE_EXP_SHIFTED_MAX"
     assert manifest["seed_jobs"][0]["closed_score_metric_configs"]["strongest_matched_baseline"]["score_table_method_id"] == "strongest_matched_baseline"
     assert manifest["seed_jobs"][0]["strongest_adapter_job"]["base_flow_training_seed"] == 20260904
+    assert manifest["timed_strongest_baseline_config"]["method_id"] == "genetic"
+    assert manifest["timed_strongest_baseline_config"]["critic_forward_budget_per_source"] == 256
+    assert manifest["timed_strongest_baseline_config"]["timing_only_no_baseline_reselection"] is True
+    assert all(set(job["equal_wall_time_config"]["methods"]) == {
+        "full_soft_value_smc", "unguided_setflow", "first_order_guidance",
+        "simple_rate_guidance", "generate_then_rerank", "strongest_matched_baseline",
+    } for job in manifest["seed_jobs"])
+    assert all(
+        job["equal_wall_time_config"]["methods"]["strongest_matched_baseline"]["timing_format"]
+        == "SEARCH_CANDIDATE_JSONL"
+        for job in manifest["seed_jobs"]
+    )
+    assert all(
+        job["final_seed_evidence_config"]["equal_wall_time_sensitivity_path"].endswith(
+            "equal_wall_time_sensitivity.json"
+        )
+        for job in manifest["seed_jobs"]
+    )
     assert all(len(job["open_metric_configs"]) == 5 for job in manifest["seed_jobs"])
     assert manifest["seed_jobs"][0]["independent_evaluator_config"]["guiding_checkpoint_paths"] == [
         "/mnt/critic_20260831.pt", "/mnt/critic_20260901.pt", "/mnt/critic_20260902.pt"

@@ -69,10 +69,20 @@ def test_final_adjudicator_requires_exact_three_seed_six_method_evidence(tmp_pat
             "development_test_outcomes_accessed": False,
             "new_final_evaluation_outcomes_accessed": False,
         })
+        equal_wall = tmp_path / f"{seed}-equal-wall.json"
+        _write(equal_wall, {
+            "status": "XEDITFLOW_V3_EQUAL_WALL_TIME_SENSITIVITY_COMPLETE",
+            "base_flow_training_seed": seed,
+            "common_source_prefix_count": 2,
+            "methods": {method: {} for method in METHODS},
+            "development_test_outcomes_accessed": False,
+            "new_final_evaluation_outcomes_accessed": False,
+        })
         seeds.append({
             "base_flow_training_seed": seed,
             "methods": methods,
             "paired_bootstrap_path": str(bootstrap),
+            "equal_wall_time_sensitivity_path": str(equal_wall),
         })
     result = adjudicate_final_manifest_v3({
         "schema_version": "route_a_v3_route2_xeditflow_final_comparison_manifest.v1",

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from core.route2_legal_xeditflow import initial_state
@@ -86,3 +88,14 @@ def test_terminal_critic_calls_are_added_member_by_member() -> None:
     final = _final_compute_v3(compute, (1, 1, 1))
     assert final["critic_forwards_by_member"] == [3, 3, 3]
     assert final["total_forward_equivalents"] == 12
+
+
+def test_matched_control_runner_times_full_per_source_generation_scope() -> None:
+    source = Path(
+        "scripts/route_a_v3/run_route2_xeditflow_matched_controls_v3.py"
+    ).read_text(encoding="utf-8")
+    assert "torch.cuda.synchronize(device)" in source
+    assert "generation_without_posthoc_scoring_finished" in source
+    assert "posthoc_terminal_critic_scoring_in_equal_wall_time" in source
+    assert "source_equal_wall_peak_vram_mb" in source
+    assert "EQUAL_WALL_TIME_SCOPE_V3" in source

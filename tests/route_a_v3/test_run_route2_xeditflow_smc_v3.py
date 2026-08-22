@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from scripts.route_a_v3.run_route2_xeditflow_smc_v3 import (
@@ -35,6 +37,17 @@ def test_smc_run_config_matches_frozen_particles_grid_compute_and_replay() -> No
 def test_smc_final_compute_rejects_unreported_terminal_overage() -> None:
     with pytest.raises(Exception, match="exceeds"):
         total_maximum_forward_equivalents_v3(318, 3)
+
+
+def test_smc_runner_persists_gpu_synchronized_per_source_generation_time() -> None:
+    source = Path("scripts/route_a_v3/run_route2_xeditflow_smc_v3.py").read_text(
+        encoding="utf-8"
+    )
+    assert "torch.cuda.synchronize(device)" in source
+    assert "torch.cuda.reset_peak_memory_stats(device)" in source
+    assert "source_equal_wall_time_seconds" in source
+    assert "source_equal_wall_peak_vram_mb" in source
+    assert "EQUAL_WALL_TIME_SCOPE_V3" in source
 
 
 @pytest.mark.parametrize(

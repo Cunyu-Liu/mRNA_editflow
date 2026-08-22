@@ -103,6 +103,8 @@ def build_final_generation_configs_v3(
     _require(gpu in set(range(6)), "final generation GPU is outside 0-5")
     output_root = Path(str(config["output_root"]))
     _require(str(output_root).startswith("/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/"), "final generation outputs left Route 2 /mnt")
+    timed_strongest_root = output_root / "benchmark_resources" / "strongest_matched_baseline_timing"
+    timed_strongest_candidate_path = timed_strongest_root / "timed_genetic_candidates.private.jsonl"
     value_id = combination_id_v3(kappa, temperature)
     screen_value_checkpoint = Path(str(config["guidance_screen_output_root"])) / "value_models" / value_id / "value_checkpoint.pt"
     seed_jobs = []
@@ -422,6 +424,37 @@ def build_final_generation_configs_v3(
                 seed_root / "generation" / "strongest_matched_baseline" / "open.json"
             ),
         }
+        equal_wall_time_output_path = metric_root / "equal_wall_time_sensitivity.json"
+        equal_wall_time_config = {
+            "schema_version": "route_a_v3_route2_xeditflow_equal_wall_time_config.v1",
+            "base_flow_training_seed": seed,
+            "source_manifest_path": str(runtime["source_eligibility_manifest"]),
+            "methods": {
+                method: {
+                    "timing_path": (
+                        str(timed_strongest_candidate_path)
+                        if method == "strongest_matched_baseline"
+                        else str(seed_root / "generation" / method / "matched_compute.jsonl")
+                    ),
+                    "timing_format": (
+                        "SEARCH_CANDIDATE_JSONL"
+                        if method == "strongest_matched_baseline"
+                        else "MATCHED_COMPUTE_JSONL"
+                    ),
+                    "closed_summary_path": closed_summary_paths[method],
+                }
+                for method in (
+                    "full_soft_value_smc",
+                    "unguided_setflow",
+                    "first_order_guidance",
+                    "simple_rate_guidance",
+                    "generate_then_rerank",
+                    "strongest_matched_baseline",
+                )
+            },
+            "development_test_outcomes_accessed": False,
+            "new_final_evaluation_outcomes_accessed": False,
+        }
         final_seed_evidence_config = {
             "schema_version": "route_a_v3_route2_xeditflow_final_seed_evidence_config.v1",
             "base_flow_training_seed": seed,
@@ -449,6 +482,7 @@ def build_final_generation_configs_v3(
             ),
             "bootstrap_iterations": 10_000,
             "bootstrap_seed": int(config["decoder_seed_base"]) + seed + 100_000,
+            "equal_wall_time_sensitivity_path": str(equal_wall_time_output_path),
         }
         seed_jobs.append(
             {
@@ -474,11 +508,39 @@ def build_final_generation_configs_v3(
                     metric_root / "independent_evaluator_full_vs_strongest.json"
                 ),
                 "closed_score_metric_output_paths": closed_score_metric_output_paths,
+                "equal_wall_time_config": equal_wall_time_config,
+                "equal_wall_time_output_path": str(equal_wall_time_output_path),
                 "final_seed_evidence_config": final_seed_evidence_config,
                 "final_seed_evidence_output_dir": str(seed_root / "final_evidence"),
             }
         )
     _require(len(seed_jobs) == 3 and sum(job["value_rollout_config"] is not None for job in seed_jobs) == 2, "final generation job inventory differs")
+    timed_strongest_baseline_config = {
+        "schema_version": "route_a_v3_route2_xeditflow_strongest_timing_config.v1",
+        "method_id": "genetic",
+        "strongest_generation_baseline_path": str(config["strongest_generation_baseline_path"]),
+        "baseline_selection_input_path": str(config["baseline_selection_input_path"]),
+        "source_manifest_path": str(
+            setflow_runtimes[20260904]["source_eligibility_manifest"]
+        ),
+        "guiding_checkpoint_path": str(
+            strongest_generation_baseline["guiding_checkpoint_path"]
+        ),
+        "critic_forward_budget_per_source": int(
+            strongest_generation_baseline["critic_forward_budget_per_source"]
+        ),
+        "beam_width": 16,
+        "genetic_population_size": 32,
+        "oversample_factor": 8,
+        "exhaustive_space_limit": 4096,
+        "seed": 20260816,
+        "physical_gpu_index": gpu,
+        "device": f"cuda:{gpu}",
+        "output_dir": str(timed_strongest_root),
+        "timing_only_no_baseline_reselection": True,
+        "development_test_outcomes_accessed": False,
+        "new_final_evaluation_outcomes_accessed": False,
+    }
     shared_search_score_path = (
         output_root
         / "seed20260904"
@@ -536,6 +598,7 @@ def build_final_generation_configs_v3(
         "selected_setflow_arm": selected_arm,
         "required_base_flow_training_seeds": list(SEEDS),
         "seed_jobs": seed_jobs,
+        "timed_strongest_baseline_config": timed_strongest_baseline_config,
         "closed_search_baseline_benchmark": closed_search_baseline_benchmark,
         "three_seed_finalization": {
             "guidance_screen_gate_path": str(config["guidance_screen_gate_path"]),
@@ -577,7 +640,12 @@ def write_manifest_v3(payload: Mapping[str, Any], output_dir: Path) -> None:
             (output_dir / f"open_metric_{method}_seed{seed}.json").write_text(json.dumps(config, indent=2, sort_keys=True) + "\n", encoding="utf-8")
         (output_dir / f"independent_evaluator_seed{seed}.json").write_text(json.dumps(job["independent_evaluator_config"], indent=2, sort_keys=True) + "\n", encoding="utf-8")
         (output_dir / f"independent_evaluator_comparison_seed{seed}.json").write_text(json.dumps(job["independent_evaluator_comparison_config"], indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        (output_dir / f"equal_wall_time_seed{seed}.json").write_text(json.dumps(job["equal_wall_time_config"], indent=2, sort_keys=True) + "\n", encoding="utf-8")
         (output_dir / f"final_seed_evidence_seed{seed}.json").write_text(json.dumps(job["final_seed_evidence_config"], indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    (output_dir / "timed_strongest_baseline.json").write_text(
+        json.dumps(payload["timed_strongest_baseline_config"], indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
     benchmark = payload["closed_search_baseline_benchmark"]
     for method, config in benchmark["methods"].items():
         (output_dir / f"closed_search_baseline_{method}.json").write_text(

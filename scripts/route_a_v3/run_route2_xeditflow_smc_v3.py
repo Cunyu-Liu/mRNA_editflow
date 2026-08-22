@@ -22,6 +22,7 @@ from core.route2_development_projection_v3 import load_projection_rows
 from core.route2_gpu_failure_evidence import cuda_device_observation, write_gpu_failure_evidence
 from core.route2_legal_xeditflow import initial_state
 from core.route2_source_token_cache_v3 import SourceTokenCacheIndexV3, load_source_token_cache_v3
+from core.route2_xeditflow_equal_wall_time_v3 import EQUAL_WALL_TIME_SCOPE_V3
 from core.route2_xeditflow_gate_v3 import authorize_xeditflow_guidance_v3
 from core.route2_xeditflow_guidance_v3 import MatchedComputeRecordV2, XEditValueV3
 from core.route2_xeditflow_smc_runtime_v3 import (
@@ -138,8 +139,12 @@ def run(config: Mapping[str, Any], *, output_dir: Path) -> dict[str, Any]:
     candidate_budget_violations = 0
     maximum_compute = 0
     total_candidates = 0
+    run_peak_vram_mb = 0.0
     started = time.time()
     for source_index, (source, source_metadata) in enumerate(zip(sources, metadata)):
+        torch.cuda.synchronize(device)
+        torch.cuda.reset_peak_memory_stats(device)
+        source_generation_started = time.perf_counter()
         root = initial_state(
             str(source["source_sequence"]),
             budget=int(source["edit_budget"]),
@@ -209,6 +214,18 @@ def run(config: Mapping[str, Any], *, output_dir: Path) -> dict[str, Any]:
             reserved_critic_forwards=int(config["reserved_terminal_critic_forwards"]),
         )
         compute = dict(merged["matched_compute"])
+        torch.cuda.synchronize(device)
+        compute["source_equal_wall_time_seconds"] = (
+            time.perf_counter() - source_generation_started
+        )
+        compute["source_equal_wall_time_scope"] = EQUAL_WALL_TIME_SCOPE_V3
+        compute["source_equal_wall_peak_vram_mb"] = (
+            torch.cuda.max_memory_allocated(device) / 1024**2
+        )
+        compute["source_cuda_device_name"] = str(cuda["cuda_device_name"])
+        run_peak_vram_mb = max(
+            run_peak_vram_mb, float(compute["source_equal_wall_peak_vram_mb"])
+        )
         maximum_compute = max(maximum_compute, int(compute["total_forward_equivalents"]))
         with compute_path.open("a", encoding="utf-8") as handle:
             handle.write(
@@ -273,7 +290,8 @@ def run(config: Mapping[str, Any], *, output_dir: Path) -> dict[str, Any]:
         "numerical_failure_count": numerical_failures,
         "hard_legality_rate": 1.0,
         "wall_time_seconds_including_replay_check": time.time() - started,
-        "peak_vram_mb": torch.cuda.max_memory_allocated(device) / 1024**2,
+        "peak_vram_mb": run_peak_vram_mb,
+        "equal_wall_time_scope": EQUAL_WALL_TIME_SCOPE_V3,
         "cpu_fallback_used": False,
         "critic_self_score_used_for_selection": False,
         "independent_evaluator_used_for_gradient": False,

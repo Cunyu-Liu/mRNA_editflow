@@ -12,6 +12,7 @@ def test_final_manifest_composes_only_exact_three_seed_rows() -> None:
             "base_flow_training_seed": seed,
             "methods": {method: f"/{seed}/{method}.json" for method in METHODS},
             "paired_bootstrap_path": f"/{seed}/bootstrap.json",
+            "equal_wall_time_sensitivity_path": f"/{seed}/equal-wall.json",
         }
         for seed in (20260904, 20260905, 20260906)
     ]

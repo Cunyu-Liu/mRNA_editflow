@@ -1495,3 +1495,32 @@ C1/F1/F2 仍为既有三个 RUNNING attempts，elapsed=3:50:17/2:20:08/2:05:10�
 failure 或 error marker，因此中央 CSV 不改状态、不新增行。GPU0–5 free memory=2,569/9,095/3,153/5,209/
 4,267/5,919 MiB，仍不足以启动 C2/C3/F3；GPU6/7 未获授权，未使用。下一次检查不早于 06:37:38，
 A100 HEAD=`22317ed`，protected outcome 和 downstream authorization 均不改变。
+
+## XEditFlow V3 equal-wall-time / resource evidence repair（2026-08-23）
+
+本项不构成 optimizer attempt，中央训练 CSV 不新增行，也不更改 C1/F1/F2 的 RUNNING 状态。final
+matched-compute chain 原先只保证 320 forward-equivalent ceiling；full/control runner 的 aggregate wall time
+口径不同，历史 strongest genetic artifact 又没有 per-source generation time，因此无法真实完成冻结协议要求的
+same-cohort wall time、peak VRAM 与 equal-wall-time sensitivity。该缺口现于任何 final comparison 执行前修复。
+
+full SMC、四个 matched controls 与 frozen search runner 现逐 source 执行 CUDA synchronize，并记录统一的
+`A100_END_TO_END_GENERATION_INCLUDING_REPLAY_AND_REQUIRED_SELECTION_SCORING` 时间、该 scope 的 peak VRAM
+和设备名称。first-order/simple-rate/unguided 的 post-hoc terminal critic diagnostic 不计入 selection wall time；
+generate-then-rerank 的 terminal critic 决定排序，因此计入。旧 `peak_vram_mb` search 字段保留，避免破坏已有
+generation evaluator 接口。
+
+新增 equal-wall builder 要求精确六方法、冻结 891-source 顺序、A100、每 source 正计时、完全一致的 closed
+support 和 undefined-not-zero-fill；以六方法 full-cohort 最短总时间作为预算，只比较各方法都完整完成的共同
+source prefix，不把 partial source 计为完成。该 sensitivity 是报告性分析，不新增 performance threshold，
+但缺失或伪造资源证据会阻止 final seed assembly/adjudication。
+
+历史 strongest genetic 不追溯填充时间，也不改写 terminal 结果；final manifest 只新增一次 timing-only V3
+benchmark job，固定原 guiding checkpoint、256 critic forwards/source、population32、seed20260816 和其余
+既有 search hyperparameters，明确 `timing_only_no_baseline_reselection=true`。该 job 尚未运行，并继续受
+readiness 与 GPU0–5 约束。
+
+正确 Python 3.13 环境下扩展 XEdit focused cohort=211/211、精确 V3.3.2 cohort=96/96；本批定向
+equal-wall/final-chain tests=49/49，Python compile 与 diff-check PASS。默认 macOS Python 3.9 对既有
+`zip(..., strict=True)` 的两项失败被确认是解释器不满足项目 Python≥3.10 要求，不据此改写正式实现。
+Development TEST/new Evaluation read=0，guidance/replacement Evaluation/submission-ready 状态不变；A100
+current-HEAD sync/test 仍等待 launch-head `22317ed` 的 active jobs terminal。

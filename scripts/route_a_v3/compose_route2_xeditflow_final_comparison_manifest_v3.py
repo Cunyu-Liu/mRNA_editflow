@@ -40,6 +40,10 @@ def compose_final_comparison_manifest_v3(
         _require(seed in SEEDS and seed not in by_seed, "final comparison seed row differs")
         _require(isinstance(row.get("methods"), Mapping) and set(row["methods"]) == METHODS, f"final seed method inventory differs: {seed}")
         _require(bool(str(row.get("paired_bootstrap_path", ""))), f"final seed bootstrap path is absent: {seed}")
+        _require(
+            bool(str(row.get("equal_wall_time_sensitivity_path", ""))),
+            f"final seed equal-wall sensitivity path is absent: {seed}",
+        )
         by_seed[seed] = dict(row)
     _require(tuple(sorted(by_seed)) == SEEDS, "final comparison requires exactly three seed rows")
     return {

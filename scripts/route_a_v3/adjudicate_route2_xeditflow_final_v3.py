@@ -79,12 +79,28 @@ def assemble_final_payloads_v3(manifest: Mapping[str, Any]) -> dict[int, dict[st
             f"final closed-source support policy differs: {seed}",
         )
         _require(bootstrap.get("development_test_outcomes_accessed") is False and bootstrap.get("new_final_evaluation_outcomes_accessed") is False, f"final bootstrap accessed protected outcome: {seed}")
+        equal_wall = _json(Path(row["equal_wall_time_sensitivity_path"]))
+        _require(
+            equal_wall.get("status")
+            == "XEDITFLOW_V3_EQUAL_WALL_TIME_SENSITIVITY_COMPLETE"
+            and int(equal_wall.get("base_flow_training_seed", -1)) == seed
+            and isinstance(equal_wall.get("methods"), Mapping)
+            and set(equal_wall["methods"]) == METHODS
+            and 2 <= int(equal_wall.get("common_source_prefix_count", -1)) <= 891,
+            f"final equal-wall sensitivity is incomplete: {seed}",
+        )
+        _require(
+            equal_wall.get("development_test_outcomes_accessed") is False
+            and equal_wall.get("new_final_evaluation_outcomes_accessed") is False,
+            f"final equal-wall sensitivity accessed protected outcome: {seed}",
+        )
         payloads[seed] = {
             "methods": methods,
             "source_paired_ndcg_improvement_ci_95": bootstrap["source_paired_ndcg_improvement_ci_95"],
             "source_paired_independent_evaluator_margin_ci_95": bootstrap["source_paired_independent_evaluator_margin_ci_95"],
             "critic_self_score_increased": bool(bootstrap["critic_self_score_increased"]),
             "all_methods_matched_compute_ceiling_met": bool(bootstrap["all_methods_matched_compute_ceiling_met"]),
+            "equal_wall_time_sensitivity_complete": True,
             "development_test_outcomes_accessed": False,
             "new_final_evaluation_outcomes_accessed": False,
         }

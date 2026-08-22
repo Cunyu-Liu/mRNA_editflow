@@ -10,6 +10,7 @@ import math
 import os
 import random
 import sys
+import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable, Iterable, Mapping, Sequence
@@ -21,6 +22,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from core.route2_gpu_failure_evidence import cuda_device_observation, write_gpu_failure_evidence
+from core.route2_xeditflow_equal_wall_time_v3 import EQUAL_WALL_TIME_SCOPE_V3
 
 
 ALPHABET = ("A", "C", "G", "U")
@@ -688,6 +690,10 @@ def _main() -> int:
         checkpoint_scorer = (
             shared_checkpoint_scorer.bind_source(source_row) if shared_checkpoint_scorer is not None else None
         )
+        if checkpoint_scorer is not None:
+            torch.cuda.synchronize(checkpoint_scorer.device)
+            torch.cuda.reset_peak_memory_stats(checkpoint_scorer.device)
+        source_generation_started = time.perf_counter()
 
         def score_function(sequence: str, *, key=source_key, dynamic=checkpoint_scorer) -> float:
             if dynamic is not None:
@@ -711,6 +717,9 @@ def _main() -> int:
             oversample_factor=args.oversample_factor,
             exhaustive_space_limit=args.exhaustive_space_limit,
         )
+        if checkpoint_scorer is not None:
+            torch.cuda.synchronize(checkpoint_scorer.device)
+        source_generation_wall_time = time.perf_counter() - source_generation_started
         for index, (candidate, score) in enumerate(zip(result.candidates, result.scores)):
             distance = edit_count(source, candidate)
             output_rows.append({
@@ -732,7 +741,24 @@ def _main() -> int:
                 "independent_evaluator_forwards": 0,
                 "seed": source_seed,
                 "search_hyperparameters": search_hyperparameters,
-                "peak_vram_mb": checkpoint_scorer.peak_vram_mb if checkpoint_scorer is not None and index == 0 else 0,
+                "source_equal_wall_time_seconds": (
+                    source_generation_wall_time if index == 0 else 0.0
+                ),
+                "source_equal_wall_time_scope": (
+                    EQUAL_WALL_TIME_SCOPE_V3
+                    if index == 0
+                    else "COUNTED_ON_SOURCE_FIRST_ROW"
+                ),
+                "source_equal_wall_peak_vram_mb": (
+                    checkpoint_scorer.peak_vram_mb
+                    if checkpoint_scorer is not None and index == 0
+                    else 0.0
+                ),
+                "peak_vram_mb": (
+                    checkpoint_scorer.peak_vram_mb
+                    if checkpoint_scorer is not None and index == 0
+                    else 0.0
+                ),
                 **execution_provenance,
             })
     _require(not args.output.exists(), f"output already exists: {args.output}")

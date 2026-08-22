@@ -60,6 +60,28 @@ def _generation(method):
     }
 
 
+def _equal_wall(seed=20260904):
+    return {
+        "status": "XEDITFLOW_V3_EQUAL_WALL_TIME_SENSITIVITY_COMPLETE",
+        "base_flow_training_seed": seed,
+        "common_source_prefix_count": 2,
+        "methods": {
+            method: {
+                "accelerator_name": "NVIDIA A100-SXM4-80GB",
+                "full_cohort_generation_wall_time_seconds": 100.0,
+                "common_prefix_generation_wall_time_seconds": 2.0,
+                "peak_vram_mb": 1000.0,
+                "source_macro_ndcg": 0.7,
+                "source_macro_normalized_regret": 0.3,
+                "source_macro_top_1_recall": 0.5,
+            }
+            for method in METHODS
+        },
+        "development_test_outcomes_accessed": False,
+        "new_final_evaluation_outcomes_accessed": False,
+    }
+
+
 def test_final_seed_evidence_pairs_sources_without_zero_filling() -> None:
     values = {method: 0.6 for method in METHODS}
     values["full_soft_value_smc"] = 0.8
@@ -83,6 +105,7 @@ def test_final_seed_evidence_pairs_sources_without_zero_filling() -> None:
     payload = assemble_final_seed_evidence_v3(
         evidence,
         base_flow_training_seed=20260904,
+        equal_wall_time_sensitivity=_equal_wall(),
         full_independent_evaluator=evaluator,
         full_candidate_rows=[
             {"source_key": "a", "critic_self_score": 2.0},
@@ -104,6 +127,8 @@ def test_final_seed_evidence_pairs_sources_without_zero_filling() -> None:
     assert bootstrap["closed_method_source_support_exactly_matched"] is True
     assert bootstrap["defined_closed_source_count"] == 2
     assert set(payload["method_results"]) == METHODS
+    assert payload["method_results"]["full_soft_value_smc"]["metrics"]["peak_vram_mb"] == 1000.0
+    assert payload["equal_wall_time_sensitivity"]["common_source_prefix_count"] == 2
 
 
 def test_final_seed_evidence_rejects_mismatched_closed_source_support() -> None:
@@ -129,6 +154,7 @@ def test_final_seed_evidence_rejects_mismatched_closed_source_support() -> None:
         assemble_final_seed_evidence_v3(
             evidence,
             base_flow_training_seed=20260904,
+            equal_wall_time_sensitivity=_equal_wall(),
             full_independent_evaluator=evaluator,
             full_candidate_rows=[{"source_key": "a", "critic_self_score": 2.0}],
             unguided_candidate_rows=[{"source_key": "a", "critic_self_score": 1.0}],

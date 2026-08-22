@@ -112,6 +112,7 @@ def assemble_final_seed_evidence_v3(
     evidence: Mapping[str, Mapping[str, Any]],
     *,
     base_flow_training_seed: int,
+    equal_wall_time_sensitivity: Mapping[str, Any],
     full_independent_evaluator: Mapping[str, Any],
     full_candidate_rows: Sequence[Mapping[str, Any]],
     unguided_candidate_rows: Sequence[Mapping[str, Any]],
@@ -120,6 +121,20 @@ def assemble_final_seed_evidence_v3(
 ) -> dict[str, Any]:
     _require(base_flow_training_seed in SEEDS, "final evidence base-flow seed differs")
     _require(set(evidence) == METHODS, "final evidence method inventory differs")
+    _require(
+        equal_wall_time_sensitivity.get("status")
+        == "XEDITFLOW_V3_EQUAL_WALL_TIME_SENSITIVITY_COMPLETE"
+        and int(equal_wall_time_sensitivity.get("base_flow_training_seed", -1))
+        == base_flow_training_seed
+        and isinstance(equal_wall_time_sensitivity.get("methods"), Mapping)
+        and set(equal_wall_time_sensitivity["methods"]) == METHODS,
+        "final equal-wall-time sensitivity evidence is incomplete",
+    )
+    _require_unprotected(equal_wall_time_sensitivity, "equal-wall-time sensitivity")
+    common_prefix_count = int(
+        equal_wall_time_sensitivity.get("common_source_prefix_count", -1)
+    )
+    _require(2 <= common_prefix_count <= 891, "final equal-wall common prefix differs")
     _require(
         full_independent_evaluator.get("status") == "XEDITFLOW_V3_INDEPENDENT_EVALUATOR_COMPARISON_COMPLETE"
         and full_independent_evaluator.get("analysis_unit") == "SOURCE",
@@ -166,6 +181,12 @@ def assemble_final_seed_evidence_v3(
         maximum_compute = int(generation.get("maximum_forward_equivalents_per_source", -1))
         compute_ok = 0 <= maximum_compute <= 320
         all_compute_ok = all_compute_ok and compute_ok
+        equal_wall = equal_wall_time_sensitivity["methods"][method]
+        _require(
+            isinstance(equal_wall, Mapping)
+            and "A100" in str(equal_wall.get("accelerator_name", "")).upper(),
+            f"final equal-wall accelerator differs: {method}",
+        )
         metrics = {
             "closed_source_macro_ndcg": closed_macro_ndcg,
             "closed_source_macro_normalized_regret": _finite(closed.get("source_macro_normalized_regret"), f"closed macro regret {method}"),
@@ -184,6 +205,30 @@ def assemble_final_seed_evidence_v3(
             "trajectory_replay_failure_count": int(generation.get("trajectory_replay_failure_count", -1)),
             "numerical_failure_count": int(generation.get("numerical_failure_count", -1)),
             "maximum_forward_equivalents_per_source": maximum_compute,
+            "full_cohort_generation_wall_time_seconds": _finite(
+                equal_wall.get("full_cohort_generation_wall_time_seconds"),
+                f"full-cohort wall time {method}",
+            ),
+            "equal_wall_common_prefix_generation_wall_time_seconds": _finite(
+                equal_wall.get("common_prefix_generation_wall_time_seconds"),
+                f"common-prefix wall time {method}",
+            ),
+            "equal_wall_common_prefix_source_count": common_prefix_count,
+            "peak_vram_mb": _finite(
+                equal_wall.get("peak_vram_mb"), f"peak VRAM {method}"
+            ),
+            "equal_wall_source_macro_ndcg": _finite(
+                equal_wall.get("source_macro_ndcg"),
+                f"equal-wall NDCG {method}",
+            ),
+            "equal_wall_source_macro_normalized_regret": _finite(
+                equal_wall.get("source_macro_normalized_regret"),
+                f"equal-wall regret {method}",
+            ),
+            "equal_wall_source_macro_top_1_recall": _finite(
+                equal_wall.get("source_macro_top_1_recall"),
+                f"equal-wall top-1 {method}",
+            ),
         }
         method_results[method] = {
             "schema_version": "route_a_v3_route2_xeditflow_matched_method_metrics.v3",
@@ -271,6 +316,7 @@ def assemble_final_seed_evidence_v3(
     return {
         "method_results": method_results,
         "paired_bootstrap": bootstrap,
+        "equal_wall_time_sensitivity": dict(equal_wall_time_sensitivity),
     }
 
 
@@ -288,10 +334,17 @@ def write_final_seed_evidence_v3(
         method_paths[method] = str(path)
     bootstrap_path = output_dir / "paired_bootstrap.json"
     bootstrap_path.write_text(json.dumps(payload["paired_bootstrap"], indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    equal_wall_path = output_dir / "equal_wall_time_sensitivity.json"
+    equal_wall_path.write_text(
+        json.dumps(payload["equal_wall_time_sensitivity"], indent=2, sort_keys=True)
+        + "\n",
+        encoding="utf-8",
+    )
     manifest_row = {
         "base_flow_training_seed": int(payload["paired_bootstrap"]["base_flow_training_seed"]),
         "methods": method_paths,
         "paired_bootstrap_path": str(bootstrap_path),
+        "equal_wall_time_sensitivity_path": str(equal_wall_path),
     }
     (output_dir / "seed_manifest_row.json").write_text(json.dumps(manifest_row, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return manifest_row
@@ -315,6 +368,9 @@ def main() -> None:
     payload = assemble_final_seed_evidence_v3(
         evidence,
         base_flow_training_seed=int(config["base_flow_training_seed"]),
+        equal_wall_time_sensitivity=_json(
+            Path(config["equal_wall_time_sensitivity_path"])
+        ),
         full_independent_evaluator=_json(Path(config["full_independent_evaluator_path"])),
         full_candidate_rows=_jsonl(Path(config["full_candidate_path"])),
         unguided_candidate_rows=_jsonl(Path(config["unguided_candidate_path"])),

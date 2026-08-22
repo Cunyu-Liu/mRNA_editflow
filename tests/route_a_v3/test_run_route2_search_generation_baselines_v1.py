@@ -139,6 +139,12 @@ def test_checkpoint_search_requires_gpu_training_provenance_and_preserves_failur
     source = SCRIPT.read_text(encoding="utf-8")
     assert 'provenance.get("cuda_training_tensors_verified") is True' in source
     assert "write_gpu_failure_evidence(" in source
+    assert "torch.cuda.synchronize(checkpoint_scorer.device)" in source
+    assert "torch.cuda.reset_peak_memory_stats(checkpoint_scorer.device)" in source
+    assert '"source_equal_wall_time_seconds"' in source
+    assert '"source_equal_wall_peak_vram_mb"' in source
+    assert '"peak_vram_mb"' in source
+    assert "EQUAL_WALL_TIME_SCOPE_V3" in source
 
 
 def test_checkpoint_search_requires_frozen_observed_cuda_provenance() -> None:

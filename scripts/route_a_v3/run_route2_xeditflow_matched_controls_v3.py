@@ -23,6 +23,7 @@ from core.route2_development_projection_v3 import load_projection_rows
 from core.route2_gpu_failure_evidence import cuda_device_observation, write_gpu_failure_evidence
 from core.route2_legal_xeditflow import FlowState, initial_state, validate_state
 from core.route2_source_token_cache_v3 import SourceTokenCacheIndexV3, load_source_token_cache_v3
+from core.route2_xeditflow_equal_wall_time_v3 import EQUAL_WALL_TIME_SCOPE_V3
 from core.route2_xeditflow_gate_v3 import authorize_xeditflow_guidance_v3
 from core.route2_xeditflow_guidance_v3 import MatchedComputeRecordV2
 from core.route2_xeditflow_matched_methods_v3 import (
@@ -316,8 +317,12 @@ def run(config: Mapping[str, Any], *, output_dir: Path) -> dict[str, Any]:
     replay_failures = 0
     total_candidates = 0
     maximum_compute = 0
+    run_peak_vram_mb = 0.0
     started = time.time()
     for source_index, (source, source_metadata) in enumerate(zip(sources, metadata)):
+        torch.cuda.synchronize(device)
+        torch.cuda.reset_peak_memory_stats(device)
+        source_generation_started = time.perf_counter()
         root = initial_state(
             str(source["source_sequence"]),
             budget=int(source["edit_budget"]),
@@ -387,6 +392,11 @@ def run(config: Mapping[str, Any], *, output_dir: Path) -> dict[str, Any]:
             source_key=str(source["source_key"]),
             reserved_terminal_critic_forwards=3,
         )
+        torch.cuda.synchronize(device)
+        generation_without_posthoc_scoring_finished = time.perf_counter()
+        generation_without_posthoc_scoring_peak_vram_mb = (
+            torch.cuda.max_memory_allocated(device) / 1024**2
+        )
         terminal_states = [_terminal_state_from_candidate_v3(root, row) for row in merged["candidates"]]
         terminal_rewards = reward(terminal_states)
         candidates = list(merged["candidates"])
@@ -397,6 +407,30 @@ def run(config: Mapping[str, Any], *, output_dir: Path) -> dict[str, Any]:
             for state, value in zip(terminal_states, terminal_rewards.values)
         }
         compute = _final_compute_v3(merged["matched_compute"], terminal_rewards.forward_batches_by_member)
+        torch.cuda.synchronize(device)
+        source_with_terminal_scoring_finished = time.perf_counter()
+        source_with_terminal_scoring_peak_vram_mb = (
+            torch.cuda.max_memory_allocated(device) / 1024**2
+        )
+        terminal_scoring_required_for_selection = method == "generate_then_rerank"
+        compute["source_equal_wall_time_seconds"] = (
+            source_with_terminal_scoring_finished - source_generation_started
+            if terminal_scoring_required_for_selection
+            else generation_without_posthoc_scoring_finished - source_generation_started
+        )
+        compute["source_equal_wall_time_scope"] = EQUAL_WALL_TIME_SCOPE_V3
+        compute["source_equal_wall_peak_vram_mb"] = (
+            source_with_terminal_scoring_peak_vram_mb
+            if terminal_scoring_required_for_selection
+            else generation_without_posthoc_scoring_peak_vram_mb
+        )
+        compute["source_cuda_device_name"] = str(cuda["cuda_device_name"])
+        compute["posthoc_terminal_critic_scoring_in_equal_wall_time"] = (
+            terminal_scoring_required_for_selection
+        )
+        run_peak_vram_mb = max(
+            run_peak_vram_mb, source_with_terminal_scoring_peak_vram_mb
+        )
         maximum_compute = max(maximum_compute, int(compute["total_forward_equivalents"]))
         with compute_path.open("a", encoding="utf-8") as handle:
             handle.write(json.dumps({**compute, "sampling_round_count": len(rounds)}, sort_keys=True) + "\n")
@@ -452,7 +486,8 @@ def run(config: Mapping[str, Any], *, output_dir: Path) -> dict[str, Any]:
         "candidate_path": str(candidate_path),
         "compute_path": str(compute_path),
         "wall_time_seconds_including_replay_check": time.time() - started,
-        "peak_vram_mb": torch.cuda.max_memory_allocated(device) / 1024**2,
+        "peak_vram_mb": run_peak_vram_mb,
+        "equal_wall_time_scope": EQUAL_WALL_TIME_SCOPE_V3,
         "cpu_fallback_used": False,
         "development_test_outcomes_accessed": False,
         "new_final_evaluation_outcomes_accessed": False,

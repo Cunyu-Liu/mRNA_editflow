@@ -1,0 +1,63 @@
+{
+  "schema_version": "route_a_v3_route2_xeditflow_v3_equal_wall_time_preflight.v1",
+  "status": "XEDITFLOW_V3_EQUAL_WALL_TIME_CHAIN_IMPLEMENTED_NOT_EXECUTED",
+  "date": "2026-08-23",
+  "scientific_role": "FINAL_MATCHED_COMPUTE_RESOURCE_REPORTING_AND_EQUAL_WALL_TIME_SENSITIVITY",
+  "timing_scope": "A100_END_TO_END_GENERATION_INCLUDING_REPLAY_AND_REQUIRED_SELECTION_SCORING",
+  "source_policy": {
+    "frozen_source_count": 891,
+    "order": "FROZEN_MANIFEST_ORDER",
+    "budget": "MINIMUM_SIX_METHOD_FULL_COHORT_WALL_TIME",
+    "comparison_support": "COMMON_FULLY_COMPLETED_SOURCE_PREFIX",
+    "partial_source_counted_as_complete": false,
+    "undefined_closed_source_filled_with_zero": false
+  },
+  "method_inventory": [
+    "first_order_guidance",
+    "full_soft_value_smc",
+    "generate_then_rerank",
+    "simple_rate_guidance",
+    "strongest_matched_baseline",
+    "unguided_setflow"
+  ],
+  "strongest_baseline_timing_policy": {
+    "underlying_method": "genetic",
+    "timing_only": true,
+    "baseline_reselection": false,
+    "guiding_checkpoint_changed": false,
+    "critic_forward_budget_per_source": 256,
+    "genetic_population_size": 32,
+    "seed": 20260816,
+    "historical_terminal_performance_rewritten": false,
+    "execution_status": "NOT_STARTED_READINESS_BLOCKED"
+  },
+  "fail_closed_conditions": [
+    "MISSING_PER_SOURCE_TIMING",
+    "NON_A100_EXECUTION",
+    "SOURCE_ORDER_OR_INVENTORY_DRIFT",
+    "TIMING_SCOPE_DRIFT",
+    "MISSING_OR_MISMATCHED_CLOSED_SUPPORT",
+    "UNDEFINED_SOURCE_ZERO_FILL",
+    "MISSING_EQUAL_WALL_ARTIFACT_AT_FINAL_ASSEMBLY"
+  ],
+  "verification": {
+    "focused_equal_wall_and_final_chain_passed": 49,
+    "focused_equal_wall_and_final_chain_failed": 0,
+    "expanded_xedit_passed": 211,
+    "expanded_xedit_failed": 0,
+    "exact_v332_passed": 96,
+    "exact_v332_failed": 0,
+    "python_compile_passed": true,
+    "git_diff_check_passed": true,
+    "verified_python": "3.13.5",
+    "macos_system_python_3_9_not_used_for_final_verdict": true,
+    "a100_current_head_tests": "PENDING_ACTIVE_LAUNCH_HEAD_JOBS"
+  },
+  "central_training_attempt_added": false,
+  "optimizer_update_performed": false,
+  "development_test_outcomes_accessed": false,
+  "new_final_evaluation_outcomes_accessed": false,
+  "guidance_executed": false,
+  "replacement_evaluation_authorized": false,
+  "submission_ready": false
+}

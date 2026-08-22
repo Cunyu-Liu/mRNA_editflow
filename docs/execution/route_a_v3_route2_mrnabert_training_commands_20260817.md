@@ -2261,3 +2261,25 @@ elapsed=3:50:17/2:20:08/2:05:10，进程均存活，terminal summary、failure a
 GPU0–5 free memory=2,569/9,095/3,153/5,209/4,267/5,919 MiB，utilization 均为 100%，仍不具备 C2/C3/F3
 所需安全余量；GPU6/7 不在授权范围，未使用。未降容量、未 CPU fallback、未新建或重复 attempt。A100
 HEAD 保持 `22317ed`；下一次检查不早于 `2026-08-23T06:37:38+08:00`，protected outcome 状态不变。
+
+## XEditFlow V3 equal-wall-time sensitivity execution chain（2026-08-23）
+
+final generation 的六方法 runner 现输出 GPU-synchronized per-source A100 wall time 与 scope-specific peak
+VRAM。统一 scope 只包含生成、适用方法的 replay 和真正改变 candidate selection 的 scorer；不把 full/
+unguided/first-order/simple-rate 的 post-hoc critic diagnostic 充入 wall-time denominator。builder 使用冻结
+891-source manifest order 和最小 full-cohort method time，形成相同 fully completed source prefix；undefined
+closed source 继续排除而不填零。
+
+`prepare_route2_xeditflow_final_generation_configs_v3.py` 在双 readiness gate 通过后还会 materialize：
+
+- 一份共享的 `timed_strongest_baseline.json`，只允许原 genetic checkpoint/budget/hyperparameters/seed 的
+  timing-only 执行，不允许 baseline reselection；
+- 三份 `equal_wall_time_seed<seed>.json`，分别消费该 seed 的五个 V3 generation timing artifacts、共享
+  strongest timing artifact 和六个 closed summaries；
+- final seed evidence 对 equal-wall artifact fail closed，并把 full-cohort wall time、common-prefix wall time、
+  peak VRAM 及 prefix NDCG/regret/top-1 写入六方法 metrics；final composer/adjudicator 同样要求三份 artifact。
+
+这些配置当前未 materialize、timing job 未执行，因为 Critic/SetFlow readiness 尚未通过。没有读取
+Development TEST/new Evaluation，没有重训 Critic V2/Base Flow V2，也没有向中央 ledger 写入非训练行。
+本机正确 Python 3.13 环境下 XEdit focused=211/211、精确 V3.3.2=96/96；定向=49/49，compile/
+diff-check PASS。A100 current-HEAD 测试等待 launch-head jobs terminal 后执行。
