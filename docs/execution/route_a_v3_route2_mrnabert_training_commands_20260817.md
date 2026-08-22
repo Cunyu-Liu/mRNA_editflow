@@ -1243,8 +1243,9 @@ absolute-difference pipeline component。旧 baseline inventory 的 mRNABERT-run
 generation-preterminal 标签分别由 Critic V2 terminal NO-GO 与七方法 terminal table 覆盖。
 first-order/frozen-critic guided rows保持 `NOT_RUN_CRITIC_V2_NO_GO`。
 
-GitHub commit `589d263` 已推送，A100 快进同步后 builder test 2/2 passed。本机七组联合
-focused suite 为 25/25；paper evidence sources=31（local/contract 19、A100 `/mnt` 12），
+GitHub commit `589d263` 已推送，A100 快进同步后 builder test 2/2 passed；paper
+integration commit `4734eae` 后，本机与 A100 七组联合 focused suite 均为 25/25。
+paper evidence sources=31（local/contract 19、A100 `/mnt` 12），
 claim markers=22、figures/builders=5/4、最低包=14/3/1、blockers=MBP-10/13/14/15、
 `submission_ready=false` 均保持。此任务不训练或更新参数，不新增中央 attempt；
 Development TEST、new final Evaluation、E-MTAB outcome、sealed GSE246381、generated

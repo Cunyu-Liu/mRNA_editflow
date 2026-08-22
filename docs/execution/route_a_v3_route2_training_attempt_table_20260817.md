@@ -641,8 +641,9 @@ terminal table 覆盖旧 inventory：七个 matched methods terminal，exhaustiv
 reference，first-order 与 frozen-critic XEditFlow 因 Critic V2 NO-GO 未运行，masked discrete
 flow/diffusion 仅为 task-mismatch 文献对照。`matrix_is_result_table=false`，没有结果指标列。
 
-本机 builder focused test 2/2、七组联合 suite 25/25；A100 从 GitHub commit `589d263`
-快进后 builder focused test 2/2。paper packet evidence sources 由 29 增至 31（本地/合同
+本机 builder focused test 2/2；本机与 A100 七组联合 suite 均为 25/25。A100 从 GitHub
+commit `589d263` 快进后 builder focused test 2/2，并在 paper integration commit
+`4734eae` 后完成联合复核。paper packet evidence sources 由 29 增至 31（本地/合同
 19，A100 `/mnt` 12），claim markers 仍为 22，figures/builders 仍为 5/4；MBP 14/3/1、
 四个 blockers 和 `submission_ready=false` 不变。中央 100 个 attempts 的终态继续是 92
 `COMPLETED`、3 `FAILED`、3 `INCOMPLETE_NO_TERMINAL_RECORD`、1
