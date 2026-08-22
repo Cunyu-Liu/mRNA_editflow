@@ -893,6 +893,35 @@ GSE246381 and unread E-MTAB-10902 outcomes were not opened for this packet and
 are not presented as available result data.
 [evidence:E-R2-DATA-TABLE,E-R2-DATA-RIGHTS-EXPOSURE-AUDIT,E-R2-CONTRACT,E-R2-PACKAGE-AUDIT]
 
+## Code Availability
+
+The current Route 2 implementation, frozen configurations, evidence builders
+and focused tests are version-controlled in the GitHub repository located at
+`https://github.com/Cunyu-Liu/mRNA_editflow` on branch
+`route-a-v3-route2-method-repair-20260817`. This locator identifies the active
+working repository; it does not assert unauthenticated public access, a
+permanent archive or a released software version. No Route 2 V3.3.2 release tag,
+persistent archive identifier or archived container image has been assigned.
+
+The repository contains `pyproject.toml`, `requirements-lock.txt`,
+`environment.yml` and a `Dockerfile`. These files document a Python 3.10 and
+PyTorch 2.5.1 environment, but the complete Route 2 V3.3.2 evidence workflow has
+not yet been independently reproduced from them or verified by an accountable
+human. The current README authority header predates the governing Route A
+V3.3.2 contract and must not replace the contract, execution protocol or frozen
+manifests for this packet.
+
+Package metadata currently declares `Proprietary`, and no standalone `LICENSE`
+file is tracked. Repository access therefore must not be interpreted as an
+independent grant of reuse rights. Large data, checkpoints, model weights,
+generated candidates and run products under
+`/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/` are not part of the Git code
+tree or a declared code release. No code-availability-on-request promise is
+made. A release claim requires an accountable license review, a Route 2-current
+README, an exact clean-environment reproduction check and an immutable tagged or
+archived version.
+[evidence:E-R2-CODE-AVAILABILITY-COMPLETION-AUDIT,E-R2-CONTRACT,E-R2-DATA-AVAILABILITY-COMPLETION-AUDIT]
+
 ## Unresolved items before manuscript integration
 
 - Accountable human verification of every evidence locator and numeric claim.
@@ -907,5 +936,7 @@ are not presented as available result data.
 - Target venue, article type and submission phase selection, followed by one
   official publisher-rule check and any required format-only regeneration from
   the same frozen evidence.
+- A Route 2-current README, accountable code-license review, exact clean-
+  environment reproduction check and immutable release tag or archive.
 - Reporting guideline, author list, contributions, declarations, funding,
-  ethics applicability, code availability and AI-use disclosure.
+  ethics applicability and AI-use disclosure.

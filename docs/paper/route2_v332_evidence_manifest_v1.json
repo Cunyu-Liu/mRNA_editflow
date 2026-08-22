@@ -8,10 +8,10 @@
   "independent_final_evaluation_performed": false,
   "human_verification_required": true,
   "source_path_preflight": {
-    "observed_at": "2026-08-22T18:12:40+08:00",
+    "observed_at": "2026-08-22T18:17:28+08:00",
     "status": "PASS",
-    "source_locations_checked": 57,
-    "local_or_contract_locations_checked": 43,
+    "source_locations_checked": 58,
+    "local_or_contract_locations_checked": 44,
     "a100_mnt_locations_checked": 14,
     "missing_locations": 0,
     "check_scope": "FILE_EXISTENCE_ONLY_NO_EVIDENCE_CONTENT_OPENED",
@@ -448,6 +448,14 @@
       "kind": "derived_data_availability_section_completion_audit",
       "location": "audits/route_a_v3_route2_v332_data_availability_completion_v1.json",
       "locator": "internal Data Availability statement separating third-party source locators, small version-controlled aggregate evidence and non-public large project artifacts; zero human-verified study-bound licenses, zero of 14 study-payload release authorizations, no availability-on-request promise, no permanent archive and no public payload/weight/generated-candidate release",
+      "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING",
+      "external_evidence": false
+    },
+    {
+      "evidence_id": "E-R2-CODE-AVAILABILITY-COMPLETION-AUDIT",
+      "kind": "derived_code_availability_section_completion_audit",
+      "location": "audits/route_a_v3_route2_v332_code_availability_completion_v1.json",
+      "locator": "internal Code Availability statement binding the GitHub working-repository locator and Route 2 branch while retaining no public-access assertion, no V3.3.2 release tag or persistent archive, no archived container, no clean-environment Route 2 reproduction, a stale pre-Route-A README authority header, Proprietary package metadata, no standalone LICENSE and no code-on-request promise",
       "verification_state": "OPENED_BY_AGENT_HUMAN_VERIFICATION_PENDING",
       "external_evidence": false
     }

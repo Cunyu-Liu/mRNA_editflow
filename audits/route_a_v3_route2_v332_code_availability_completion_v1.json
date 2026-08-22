@@ -1,0 +1,71 @@
+{
+  "schema_version": "route_a_v3_route2_v332_code_availability_completion.v1",
+  "status": "CODE_AVAILABILITY_SECTION_COMPLETE_INTERNAL_RELEASE_REVIEW_PENDING",
+  "authority": {
+    "scientific_contract": "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna 数据gate转向后的合同.md",
+    "execution_protocol": "/Users/liucunyu/Documents/all_code/ZJU/mRNA_editflow/提示词/mrna V3.3.2 执行提示词.md",
+    "manuscript": "docs/paper/route2_v332_methods_results_draft_v1.md",
+    "consistency_manifest": "docs/paper/route2_v332_consistency_manifest_v1.json",
+    "evidence_manifest": "docs/paper/route2_v332_evidence_manifest_v1.json"
+  },
+  "code_availability_heading": "Code Availability",
+  "code_availability_paragraph_count": 3,
+  "coverage": {
+    "working_repository_and_branch_reported": true,
+    "repository_locator_separated_from_public_access_assertion": true,
+    "working_branch_separated_from_immutable_release": true,
+    "environment_descriptors_reported_without_reproduction_claim": true,
+    "stale_readme_authority_boundary_reported": true,
+    "package_metadata_and_standalone_license_state_reported": true,
+    "large_artifacts_excluded_from_code_release": true,
+    "code_availability_on_request_not_promised": true,
+    "release_requirements_reported": true
+  },
+  "repository_facts": {
+    "provider": "GITHUB",
+    "repository_locator": "https://github.com/Cunyu-Liu/mRNA_editflow",
+    "git_remote": "git@github.com:Cunyu-Liu/mRNA_editflow.git",
+    "working_branch": "route-a-v3-route2-method-repair-20260817",
+    "working_repository_locator_reported": true,
+    "unauthenticated_public_access_verified": false,
+    "route2_v332_release_tag_assigned": false,
+    "persistent_archive_identifier_assigned": false,
+    "archived_container_image_assigned": false,
+    "environment_descriptors": [
+      "pyproject.toml",
+      "requirements-lock.txt",
+      "environment.yml",
+      "Dockerfile"
+    ],
+    "python_version_documented": "3.10",
+    "torch_version_documented": "2.5.1",
+    "route2_v332_clean_environment_reproduction_complete": false,
+    "route2_v332_environment_human_verification_complete": false,
+    "readme_authority_header_current_for_route2_v332": false,
+    "pyproject_license_text": "Proprietary",
+    "standalone_license_file_tracked": false,
+    "accountable_human_code_license_review_complete": false,
+    "code_availability_on_request_promise_made": false,
+    "large_artifact_storage_root": "/mnt/cunyuliu/mrna_xeditflow_routea_v3/route2/",
+    "large_artifacts_in_git_code_release": false
+  },
+  "completion_boundary": {
+    "code_availability_section_complete": true,
+    "accountable_human_license_review_complete": false,
+    "route2_current_readme_complete": false,
+    "route2_clean_environment_reproduction_complete": false,
+    "immutable_release_assigned": false,
+    "public_code_release_claimed": false,
+    "minimum_package_complete": false,
+    "outcome_trigger_fully_satisfied": false,
+    "submission_ready": false
+  },
+  "protected_outcomes": {
+    "development_test_read": false,
+    "new_final_evaluation_read": false,
+    "emtab10902_outcome_read": false,
+    "sealed_gse246381_read": false,
+    "guided_xeditflow_run": false
+  },
+  "new_training_attempt_created": false
+}
