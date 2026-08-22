@@ -1319,10 +1319,10 @@ open generated support 下七方法 closed measured NDCG defined-source count=0�
 Evaluation unexposed records=0。因此 terminal true-A2 numeric performance rows=0，缺失值保持
 空白，不以 0 performance 代替，也不作 A1/true-A2 cross-estimand numeric ranking。
 
-GitHub builder commit `363c741` 已推送，A100 快进后 builder focused test 2/2 passed；本机
-十组 paper/table/figure 联合 focused suite 为 32/32。paper evidence sources=38
+GitHub builder commit `363c741` 已推送，A100 快进后 builder focused test 2/2 passed；
+paper integration commit `410053d` 推送并同步后，本机与 A100 十组 paper/table/figure
+联合 focused suite 均为 32/32。paper evidence sources=38
 （local/contract 25、A100 `/mnt` 13），claim markers=22、figures/builders=6/5、最低包
 14/3/1、blockers=MBP-10/13/14/15、`submission_ready=false` 均保持。本任务不训练、不监控
 实时训练进度、不新增中央 attempt；100-row 的 92/3/3/1/1 终态分布不变，Development TEST、
-new final Evaluation、generated-candidate outcome 与 guided XEditFlow 均未打开。A100 联合
-32-test suite 将在 paper integration commit 推送后单次执行并补记。
+new final Evaluation、generated-candidate outcome 与 guided XEditFlow 均未打开。

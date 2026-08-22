@@ -702,10 +702,10 @@ qualified study credit=0、independent terminal numeric result=0 rows。open gen
 下 closed measured NDCG 对七方法均无 defined source；new independent Evaluation records=0。
 缺失 true-A2 numeric values 留空，不以零增益替代，不与 A1 作跨 estimand 排名。
 
-GitHub builder commit `363c741` 已推送且 A100 focused test 2/2；本机十组联合 suite 32/32。
-paper evidence sources=38（25 local/contract + 13 `/mnt`）、claim markers=22、
+GitHub builder commit `363c741` 已推送且 A100 focused test 2/2；paper integration commit
+`410053d` 推送并同步后，本机与 A100 十组联合 suite 均为 32/32。paper evidence
+sources=38（25 local/contract + 13 `/mnt`）、claim markers=22、
 figures/builders=6/5、MBP=14/3/1、blockers=MBP-10/13/14/15 与
 `submission_ready=false` 不变。中央 100 个 attempts 仍为 92 `COMPLETED`、3 `FAILED`、
 3 `INCOMPLETE_NO_TERMINAL_RECORD`、1 `STOPPED_FOR_THROUGHPUT_REPAIR`、1
-`STOPPED_PRIORITY_REALLOCATION`。A100 联合 32-test suite 等待 paper integration commit
-推送后单次执行并补记。
+`STOPPED_PRIORITY_REALLOCATION`。
