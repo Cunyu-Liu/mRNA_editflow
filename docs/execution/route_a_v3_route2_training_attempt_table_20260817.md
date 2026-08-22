@@ -1257,3 +1257,14 @@ exact source/task complete candidate-bundle permutation 覆盖 29,271 recipients
 实际改变、适用 task=6。两个无 TRAIN-support 的 Validation endpoint 只使用 TRAIN-region/global target
 scale fallback。A100 C0 batch-32 forward finite；focused/V3.3.2 本机与 A100 分别为 11/11、96/96。
 C3 online-LoRA runner 未完成，screen 未启动，protected outcome/model-success 状态不变。
+
+## XEditCritic V3 C3 runner/screen gate preflight（2026-08-23）
+
+C3 online last-four-LoRA runner 与 12-artifact strict screen gate 已实现，但没有 optimizer step 或新
+attempt，中央计数保持 100 / 92 / 3 / 3 / 1 / 1。真实 A100 short-sequence forward/backward 仅验证
+finite output、identity zero、983,040 LoRA parameters 的 gradient 和 0 non-LoRA encoder gradients；
+不构成模型性能证据。
+
+C3 使用 effective batch32 / physical microbatch1，screen gate 只有在 C2/C3 full 各自胜过三项同几何
+control、permutation、C0 及全部绝对门槛时才允许选择；PASS 不开放 TEST。focused/V3.3.2 本机与
+A100 为 19/19、96/96。cache-online 数值一致性等待完整 cache materialization 后执行；screen 未启动。

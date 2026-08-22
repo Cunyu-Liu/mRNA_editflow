@@ -85,12 +85,7 @@ def test_pairwise_loss_uses_only_different_source_groups() -> None:
         prediction, target, ["g", "g", "h"], ["t", "t", "t"]
     )
     assert loss is not None
-    expected = torch.stack(
-        (
-            torch.nn.functional.softplus(-(prediction[2] - prediction[0])),
-            torch.nn.functional.softplus(-(prediction[2] - prediction[1])),
-        )
-    ).mean()
+    expected = torch.nn.functional.softplus(-(prediction[2] - prediction[0]))
     assert torch.allclose(loss, expected)
 
 

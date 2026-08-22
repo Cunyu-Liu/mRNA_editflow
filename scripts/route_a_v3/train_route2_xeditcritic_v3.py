@@ -251,6 +251,7 @@ class XEditCriticCollatorV3:
         source_edit_base_ids = torch.full((batch_size, maximum_edits), PAD_TOKEN, dtype=torch.long)
         candidate_edit_base_ids = torch.full_like(source_edit_base_ids, PAD_TOKEN)
         normalized_positions = torch.zeros((batch_size, maximum_edits), dtype=torch.float32)
+        edit_positions = torch.zeros((batch_size, maximum_edits), dtype=torch.long)
         local_names = ("site", "window_mean", "window_max")
         local = {
             f"{side}_{name}": torch.zeros(
@@ -275,6 +276,7 @@ class XEditCriticCollatorV3:
                 for edit_index, (position, source_base, candidate_base) in enumerate(edits):
                     source_edit_base_ids[batch_index, edit_index] = RNA_TOKEN[source_base]
                     candidate_edit_base_ids[batch_index, edit_index] = RNA_TOKEN[candidate_base]
+                    edit_positions[batch_index, edit_index] = position
                     normalized_positions[batch_index, edit_index] = position / denominator
             bundle = example.get("feature_bundle")
             if bundle is not None:
@@ -294,6 +296,7 @@ class XEditCriticCollatorV3:
             "source_edit_base_ids": source_edit_base_ids,
             "candidate_edit_base_ids": candidate_edit_base_ids,
             "normalized_edit_positions": normalized_positions,
+            "edit_positions": edit_positions,
             "study_ids": torch.tensor([example["study"] for example in examples], dtype=torch.long),
             "assay_ids": torch.tensor([example["assay"] for example in examples], dtype=torch.long),
             "context_ids": torch.tensor([example["context"] for example in examples], dtype=torch.long),
@@ -372,12 +375,16 @@ def evaluate(
     model: XEditCriticV3,
     loader: DataLoader,
     device: torch.device,
+    *,
+    prediction_output_path: Path | None = None,
 ) -> dict[str, Any]:
     targets: list[float] = []
     predictions: list[float] = []
     scaled_targets: list[float] = []
     scaled_predictions: list[float] = []
     tasks: list[str] = []
+    record_ids: list[str] = []
+    source_groups: list[str] = []
     model.eval()
     with torch.inference_mode():
         for raw_batch in loader:
@@ -391,7 +398,40 @@ def evaluate(
             scaled_targets.extend(batch["scaled_target"].float().cpu().tolist())
             scaled_predictions.extend(scaled_prediction.cpu().tolist())
             tasks.extend(batch["task_ids"])
-    return validation_metrics(targets, predictions, scaled_targets, scaled_predictions, tasks)
+            record_ids.extend(batch["record_ids"])
+            source_groups.extend(batch["source_groups"])
+    metrics = validation_metrics(
+        targets, predictions, scaled_targets, scaled_predictions, tasks
+    )
+    if prediction_output_path is not None:
+        _require(not prediction_output_path.exists(), "Validation prediction artifact already exists")
+        with prediction_output_path.open("w", encoding="utf-8") as handle:
+            for values in zip(
+                record_ids,
+                source_groups,
+                tasks,
+                targets,
+                predictions,
+                scaled_targets,
+                scaled_predictions,
+            ):
+                record_id, source_group, task, target, prediction, scaled_target, scaled_prediction = values
+                handle.write(
+                    json.dumps(
+                        {
+                            "record_id": record_id,
+                            "source_group_id": source_group,
+                            "task_id": task,
+                            "target": target,
+                            "prediction": prediction,
+                            "scaled_target": scaled_target,
+                            "scaled_prediction": scaled_prediction,
+                        },
+                        sort_keys=True,
+                    )
+                    + "\n"
+                )
+    return metrics
 
 
 def require_cuda(physical_gpu_index: int) -> torch.device:
@@ -562,7 +602,16 @@ def run(
                 regression_losses.append(float(regression.detach().cpu()))
                 if ranking is not None:
                     ranking_losses.append(float(ranking.detach().cpu()))
-            metrics = evaluate(model, validation_loader, device)
+            metrics = evaluate(
+                model,
+                validation_loader,
+                device,
+                prediction_output_path=(
+                    output_directory / "final_validation_predictions.jsonl"
+                    if pass_index == int(config["passes"]) - 1
+                    else None
+                ),
+            )
             pass_row = {
                 "pass": pass_index + 1,
                 "update_count_cumulative": update_count,
@@ -629,6 +678,9 @@ def run(
             "passes": pass_rows,
             "final_validation": final_metrics,
             "checkpoint_path": str(checkpoint_path),
+            "validation_prediction_path": str(
+                output_directory / "final_validation_predictions.jsonl"
+            ),
             "elapsed_seconds": time.time() - started,
             "development_test_outcomes_accessed": False,
             "new_final_evaluation_outcomes_accessed": False,

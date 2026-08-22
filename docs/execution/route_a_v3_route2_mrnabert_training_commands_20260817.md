@@ -1856,3 +1856,20 @@ recipients，29,259 个 candidate sequence 实际改变，适用 task=6，超过
 A100 GPU5 的真实 C0 batch-32 forward 为 one-task batch、finite prediction、486,784 parameters。训练
 data/runner focused tests 本机/A100 均为 11/11，精确 V3.3.2 均为 96/96。C3 online-LoRA runner 仍待
 实现，cache-arm screen 尚未启动，本项没有新 training attempt 或 protected outcome access。
+
+## XEditCritic V3 C3 online-LoRA runner and screen gate preflight（2026-08-23）
+
+C3 runner 以 physical microbatch=1、gradient accumulation 维持 effective batch=32 和与 cache arms 相同
+optimizer update 数；前七 pass 只回传 standardized Huber，第八 pass 在同一 effective update 内重新
+计算冻结的 disjoint cross-source-group ranking pairs。head/LoRA learning rates 分别固定为 3e-4/3e-5；
+checkpoint 只保存 983,040-parameter LoRA delta，不复制 113M frozen encoder。
+
+A100 GPU5 真实 mRNABERT 的 40-nt two-record forward/backward smoke 不执行 optimizer step：output finite、
+identity exact zero、32 个 LoRA parameter tensors 均有 gradient、non-LoRA encoder gradient count=0，峰值
+显存 884,616,192 bytes。完整 Development 最大长度 837 的正式显存需求仍必须等有足够空闲的 GPU
+再启动，不进行 CPU fallback。
+
+screen adjudicator 硬要求 C0/C1、C2/C3 full、每个 selectable arm 三项同几何 control 和 complete-bundle
+permutation，共 12 个 exact artifacts；缺失/多余 artifact 或 protected outcome read 均硬失败。C2/C3
+只有各自完整 gate 全通过才 eligible；差值大于 0.005 选高者，否则选 C2。screen PASS 只授权
+confirmation，不授权 Development TEST。focused tests 本机/A100=19/19，V3.3.2=96/96；训练未启动。

@@ -55,6 +55,7 @@ def test_collator_aligns_ragged_cache_bundle_and_explicit_edit_metadata() -> Non
     assert batch["source_site"].shape == (2, 1, 2)
     assert batch["source_edit_base_ids"].tolist() == [[0], [0]]
     assert batch["candidate_edit_base_ids"].tolist() == [[1], [1]]
+    assert batch["edit_positions"].tolist() == [[1], [1]]
     assert torch.allclose(
         batch["normalized_edit_positions"], torch.full((2, 1), 1 / 3)
     )

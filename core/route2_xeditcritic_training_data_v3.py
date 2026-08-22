@@ -367,23 +367,49 @@ def different_source_group_pairwise_logistic_loss(
     _require(predictions.ndim == targets.ndim == 1, "ranking tensors must be vectors")
     _require(len(predictions) == len(source_groups) == len(task_ids), "ranking bundle is misaligned")
     _require(len(set(task_ids)) == 1, "ranking batch is not task homogeneous")
-    count = len(predictions)
-    if count < 2:
-        return None
-    upper = torch.triu(
-        torch.ones((count, count), dtype=torch.bool, device=predictions.device),
-        diagonal=1,
+    pairs = different_source_group_pair_indices(
+        targets, source_groups, task_ids
     )
-    cross_group = torch.tensor(
-        [left != right for left in source_groups for right in source_groups],
-        dtype=torch.bool,
-        device=predictions.device,
-    ).reshape(count, count)
-    target_delta = targets[:, None] - targets[None, :]
-    eligible = upper & cross_group & target_delta.ne(0)
-    if not eligible.any():
+    if not pairs:
         return None
-    prediction_delta = predictions[:, None] - predictions[None, :]
+    left = torch.tensor([pair[0] for pair in pairs], device=predictions.device)
+    right = torch.tensor([pair[1] for pair in pairs], device=predictions.device)
+    target_delta = targets[left] - targets[right]
+    prediction_delta = predictions[left] - predictions[right]
     return torch.nn.functional.softplus(
-        -target_delta.sign()[eligible] * prediction_delta[eligible]
+        -target_delta.sign() * prediction_delta
     ).mean()
+
+
+def different_source_group_pair_indices(
+    targets: torch.Tensor,
+    source_groups: Sequence[str],
+    task_ids: Sequence[str],
+) -> list[tuple[int, int]]:
+    """Deterministically match disjoint legal ranking pairs inside one batch."""
+
+    _require(targets.ndim == 1, "ranking targets must be a vector")
+    _require(len(targets) == len(source_groups) == len(task_ids), "ranking bundle is misaligned")
+    _require(len(set(task_ids)) == 1, "ranking batch is not task homogeneous")
+    unused = list(range(len(targets)))
+    pairs: list[tuple[int, int]] = []
+    while len(unused) >= 2:
+        left = unused.pop(0)
+        partner_offset = next(
+            (
+                offset
+                for offset, right in enumerate(unused)
+                if source_groups[left] != source_groups[right]
+                and bool((targets[left] != targets[right]).item())
+            ),
+            None,
+        )
+        if partner_offset is None:
+            continue
+        right = unused.pop(partner_offset)
+        pairs.append((left, right))
+    _require(
+        all(source_groups[left] != source_groups[right] for left, right in pairs),
+        "same-source-group ranking pair was constructed",
+    )
+    return pairs
