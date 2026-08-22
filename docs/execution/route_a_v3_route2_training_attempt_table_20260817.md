@@ -1424,3 +1424,17 @@ ToeholdDesignBench 与其他用户任务占用；没有本项目可安全终止�
 没有写虚假 RUNNING ledger，也没有改变 batch/容量或 CPU fallback。中央表现为原 100 rows + C0/C1 两行：
 总计102，completed93，另有 C1 running1；旧 3 failed/3 incomplete/1 stopped-throughput/1 stopped-priority
 保持。A100 HEAD 仍为 `22317ed`，未同步后续代码。
+
+## XEdit V3 strict gate artifact-identity preflight（2026-08-23）
+
+本项是 outcome-free gate 审计与实现修复，不是新的 optimizer attempt，因此中央 CSV 不新增行，C0/C1/F1/F2
+既有状态也不因本项改变。Critic screen/confirmation 现要求 exact run、arm、control、完整 candidate-bundle
+permutation、parameter matching、split/pass/update 和 CUDA/BF16 provenance；SetFlow screen/confirmation 现
+要求 exact F0 frozen reference 与 F1/F2/F3 arm/role/split/budget/unguided provenance。最终 XEditFlow closed
+assembly 现要求六方法共享完全相同的 measured/defined source support，macro NDCG 与 defined-source mean
+一致，independent-evaluator headline margin 与 paired-source mean 一致；undefined source 继续排除而不填零。
+
+所有冻结数值 threshold、seed、baseline 和 selection order 不变。新增与相邻合并 XEdit V3 focused tests
+=183/183，精确 V3.3.2=96/96，compile/diff-check PASS；A100 tests/current-HEAD sync 继续等待 launch head
+`22317ed` 的 active C1/F1/F2 terminal。本项没有重复 C0、Critic V2、Base Flow V2 或其他 terminal 实验，
+Development TEST/new Evaluation read=0，guidance/replacement Evaluation/submission-ready 仍为 false。

@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 from pathlib import Path
 from typing import Any, Mapping
@@ -63,7 +64,20 @@ def assemble_final_payloads_v3(manifest: Mapping[str, Any]) -> dict[int, dict[st
             methods[method] = result["metrics"]
         bootstrap = _json(Path(row["paired_bootstrap_path"]))
         _require(bootstrap.get("status") == "XEDITFLOW_V3_SOURCE_PAIRED_BOOTSTRAP_COMPLETE", f"final bootstrap is incomplete: {seed}")
-        _require(bootstrap.get("analysis_unit") == "SOURCE", f"final bootstrap unit differs: {seed}")
+        _require(
+            bootstrap.get("analysis_unit") == "SOURCE"
+            and int(bootstrap.get("base_flow_training_seed", -1)) == seed
+            and int(bootstrap.get("bootstrap_iterations", -1)) == 10_000,
+            f"final bootstrap identity/unit differs: {seed}",
+        )
+        _require(
+            bootstrap.get("closed_method_source_support_exactly_matched") is True
+            and bootstrap.get("undefined_closed_sources_filled_with_zero") is False
+            and int(bootstrap.get("closed_source_count", -1))
+            >= int(bootstrap.get("defined_closed_source_count", -1))
+            >= 2,
+            f"final closed-source support policy differs: {seed}",
+        )
         _require(bootstrap.get("development_test_outcomes_accessed") is False and bootstrap.get("new_final_evaluation_outcomes_accessed") is False, f"final bootstrap accessed protected outcome: {seed}")
         payloads[seed] = {
             "methods": methods,
@@ -100,7 +114,9 @@ def main() -> None:
     _require(not args.output.exists(), f"final XEditFlow adjudication exists: {args.output}")
     result = adjudicate_final_manifest_v3(_json(args.manifest))
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    partial = args.output.with_suffix(args.output.suffix + ".partial")
+    partial.write_text(json.dumps(result, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    os.replace(partial, args.output)
     print(json.dumps(result, sort_keys=True))
 
 

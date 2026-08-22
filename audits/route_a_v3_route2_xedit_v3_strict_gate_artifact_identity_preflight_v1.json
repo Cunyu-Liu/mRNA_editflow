@@ -1,0 +1,65 @@
+{
+  "schema_version": "route_a_v3_route2_xedit_v3_strict_gate_artifact_identity_preflight.v1",
+  "status": "IMPLEMENTED_LOCAL_TESTED_FORMAL_SCREENS_STILL_RUNNING",
+  "observed_date": "2026-08-23",
+  "scope": {
+    "critic_screen_and_confirmation": true,
+    "setflow_screen_and_confirmation": true,
+    "xeditflow_final_closed_support_and_adjudication": true,
+    "numeric_thresholds_changed": false,
+    "training_or_evaluation_outcome_read": false
+  },
+  "critic_gate": {
+    "screen_run_arm_control_and_permutation_identity_required": true,
+    "screen_train_validation_pass_update_cuda_and_precision_provenance_required": true,
+    "candidate_information_controls_parameter_matched_to_full_arm": true,
+    "candidate_control_task_inventory_exactly_matched": true,
+    "candidate_permutation_exact_source_task_strata_required": true,
+    "candidate_permutation_complete_bundle_required": true,
+    "candidate_permutation_changed_sequence_and_recipient_counts_positive": true,
+    "confirmation_candidate_and_c0_budget_exactly_matched": true,
+    "confirmation_control_mode_none_and_parameter_update_verified": true,
+    "screen_thresholds_unchanged": true,
+    "three_seed_thresholds_unchanged": true
+  },
+  "setflow_gate": {
+    "f0_frozen_epoch_one_capacity_and_zero_update_required": true,
+    "f0_common_validation_support_and_protected_read_boundary_required": true,
+    "screen_arm_role_split_budget_cuda_and_unguided_identity_required": true,
+    "confirmation_exact_arm_role_split_budget_cuda_and_unguided_identity_required": true,
+    "screen_output_atomic_replace": true,
+    "screen_thresholds_unchanged": true,
+    "confirmation_thresholds_unchanged": true
+  },
+  "xeditflow_final_gate": {
+    "generation_method_and_seed_identity_required": true,
+    "closed_macro_ndcg_must_equal_defined_source_mean": true,
+    "all_six_methods_must_share_exact_closed_source_inventory": true,
+    "all_six_methods_must_share_exact_defined_source_inventory": true,
+    "undefined_sources_remain_excluded_not_zero_filled": true,
+    "independent_evaluator_margin_must_equal_paired_source_mean": true,
+    "bootstrap_seed_identity_iterations_and_support_policy_required": true,
+    "terminal_adjudication_output_atomic_replace": true,
+    "guided_numeric_thresholds_unchanged": true,
+    "reward_exploitation_logic_unchanged": true
+  },
+  "tests": {
+    "local_combined_xedit_v3_focused_passed": 183,
+    "local_combined_xedit_v3_focused_failed": 0,
+    "local_exact_v332_passed": 96,
+    "local_exact_v332_failed": 0,
+    "python_compile_passed": true,
+    "git_diff_check_passed": true,
+    "a100_status": "PENDING_ACTIVE_SCREEN_JOBS_MUST_KEEP_LAUNCH_COMMIT_PROVENANCE",
+    "a100_launch_head": "22317ed"
+  },
+  "formal_execution": {
+    "critic_c0_terminal_repeated": false,
+    "base_flow_v2_terminal_repeated": false,
+    "new_optimizer_attempt_created_by_this_task": false,
+    "development_test_outcomes_accessed": false,
+    "new_final_evaluation_outcomes_accessed": false,
+    "guidance_authorized": false,
+    "submission_ready": false
+  }
+}

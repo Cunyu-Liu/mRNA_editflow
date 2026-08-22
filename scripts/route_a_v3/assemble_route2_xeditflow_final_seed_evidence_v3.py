@@ -128,6 +128,7 @@ def assemble_final_seed_evidence_v3(
     _require_unprotected(full_independent_evaluator, "full independent evaluator")
     method_results = {}
     ndcg_by_method = {}
+    closed_source_inventory_by_method = {}
     all_compute_ok = True
     for method in sorted(METHODS):
         bundle = evidence[method]
@@ -143,14 +144,30 @@ def assemble_final_seed_evidence_v3(
             str(closed.get("method_id")) == str(opened.get("method_id")) == method,
             f"final method role differs: {method}",
         )
-        observed_seed = int(generation.get("base_flow_training_seed", base_flow_training_seed))
+        _require(str(generation.get("method_id")) == method, f"final generation role differs: {method}")
+        observed_seed = int(generation.get("base_flow_training_seed", -1))
         _require(observed_seed == base_flow_training_seed, f"final method seed differs: {method}")
         ndcg_by_method[method] = _defined_ndcg_by_source(closed, method)
+        closed_source_inventory_by_method[method] = set(
+            str(source_key) for source_key in closed["per_source"]
+        )
+        closed_macro_ndcg = _finite(
+            closed.get("source_macro_ndcg"), f"closed macro NDCG {method}"
+        )
+        _require(
+            math.isclose(
+                closed_macro_ndcg,
+                float(np.mean(list(ndcg_by_method[method].values()))),
+                rel_tol=0.0,
+                abs_tol=1e-12,
+            ),
+            f"closed macro NDCG does not equal defined-source mean: {method}",
+        )
         maximum_compute = int(generation.get("maximum_forward_equivalents_per_source", -1))
         compute_ok = 0 <= maximum_compute <= 320
         all_compute_ok = all_compute_ok and compute_ok
         metrics = {
-            "closed_source_macro_ndcg": _finite(closed.get("source_macro_ndcg"), f"closed macro NDCG {method}"),
+            "closed_source_macro_ndcg": closed_macro_ndcg,
             "closed_source_macro_normalized_regret": _finite(closed.get("source_macro_normalized_regret"), f"closed macro regret {method}"),
             "closed_source_macro_top_1_recall": _finite(closed.get("source_macro_top_1_recall"), f"closed macro top-1 {method}"),
             "open_source_macro_candidate_recovery": _finite(opened.get("source_macro_candidate_recovery"), f"open recovery {method}"),
@@ -177,14 +194,26 @@ def assemble_final_seed_evidence_v3(
             "development_test_outcomes_accessed": False,
             "new_final_evaluation_outcomes_accessed": False,
         }
+    reference_method = "full_soft_value_smc"
+    _require(
+        all(
+            inventory == closed_source_inventory_by_method[reference_method]
+            for inventory in closed_source_inventory_by_method.values()
+        )
+        and all(
+            set(values) == set(ndcg_by_method[reference_method])
+            for values in ndcg_by_method.values()
+        ),
+        "closed methods do not share the exact measured source support",
+    )
     full_ndcg = ndcg_by_method["full_soft_value_smc"]
     ndcg_cis = {}
     for label, other_method in (
         ("over_unguided", "unguided_setflow"),
         ("over_strongest_baseline", "strongest_matched_baseline"),
     ):
-        common = sorted(set(full_ndcg) & set(ndcg_by_method[other_method]))
-        _require(len(common) >= 2, f"paired closed source intersection is too small: {label}")
+        common = sorted(full_ndcg)
+        _require(len(common) >= 2, f"paired closed source support is too small: {label}")
         differences = [full_ndcg[key] - ndcg_by_method[other_method][key] for key in common]
         ndcg_cis[label] = source_paired_mean_bootstrap_ci_v3(
             differences,
@@ -193,8 +222,24 @@ def assemble_final_seed_evidence_v3(
         )
     evaluator_differences = full_independent_evaluator.get("per_source_paired_margin")
     _require(isinstance(evaluator_differences, Mapping) and len(evaluator_differences) >= 2, "final evaluator paired sources are absent")
+    evaluator_values = [
+        _finite(value, "per-source evaluator margin")
+        for value in evaluator_differences.values()
+    ]
+    _require(
+        math.isclose(
+            _finite(
+                full_independent_evaluator.get("paired_margin_over_strongest_baseline"),
+                "full evaluator margin",
+            ),
+            float(np.mean(evaluator_values)),
+            rel_tol=0.0,
+            abs_tol=1e-12,
+        ),
+        "independent-evaluator point margin does not equal the paired source mean",
+    )
     evaluator_ci = source_paired_mean_bootstrap_ci_v3(
-        [_finite(value, "per-source evaluator margin") for value in evaluator_differences.values()],
+        evaluator_values,
         iterations=bootstrap_iterations,
         seed=int(bootstrap_seed) + 2,
     )
@@ -216,6 +261,9 @@ def assemble_final_seed_evidence_v3(
         "source_paired_independent_evaluator_margin_ci_95": evaluator_ci,
         "critic_self_score_increased": critic_self_score_increased,
         "all_methods_matched_compute_ceiling_met": all_compute_ok,
+        "closed_source_count": len(closed_source_inventory_by_method[reference_method]),
+        "defined_closed_source_count": len(ndcg_by_method[reference_method]),
+        "closed_method_source_support_exactly_matched": True,
         "undefined_closed_sources_filled_with_zero": False,
         "development_test_outcomes_accessed": False,
         "new_final_evaluation_outcomes_accessed": False,

@@ -32,6 +32,25 @@ def adjudicate_setflow_screen_v3(
     _require(set(training) == {"f1", "f2", "f3"}, "SetFlow screen training arms are incomplete")
     _require(set(validation) == {"f1", "f2", "f3"}, "SetFlow screen validation arms are incomplete")
     _require(f0_replay.get("status") == "FROZEN_BASE_FLOW_V2_COMMON_SET_NLL_REPLAY_COMPLETE", "F0 common-NLL replay is not terminal")
+    _require(
+        int(f0_replay.get("selected_epoch", -1)) == 1
+        and int(f0_replay.get("trainable_parameter_count", -1)) == 817_957
+        and int(f0_replay.get("parameter_update_count", -1)) == 0
+        and f0_replay.get("parameter_changed_during_replay") is False,
+        "F0 replay is not the frozen read-only Base Flow V2 reference",
+    )
+    _require(
+        int(f0_replay.get("validation_record_count", -1)) == 15924
+        and int(f0_replay.get("validation_states_per_record", -1)) == 2,
+        "F0 common-validation cohort differs",
+    )
+    _require(
+        f0_replay.get("development_test_outcomes_accessed") is False
+        and f0_replay.get("evaluation_outcomes_accessed") is False
+        and f0_replay.get("critic_score_used") is False
+        and f0_replay.get("independent_evaluator_used") is False,
+        "F0 replay accessed protected/model-selection information",
+    )
     f0_nll = _finite(f0_replay.get("common_validation_set_marginal_nll"), "F0 common NLL")
     _require(f0_nll > 0.0, "F0 common NLL is not positive")
     rows: dict[str, dict[str, Any]] = {}
@@ -41,6 +60,36 @@ def adjudicate_setflow_screen_v3(
         _require(train.get("status") == "XEDITSETFLOW_V3_GPU_TRAINING_COMPLETE", f"{arm} training is not terminal")
         _require(valid.get("status") in {"FLOW_G0_READY", "FLOW_G0_VALIDATION_FAIL"}, f"{arm} validation is not terminal")
         _require(int(train.get("seed", -1)) == int(valid.get("seed", -2)) == 20260903, f"{arm} screen seed changed")
+        _require(
+            str(train.get("arm")) == str(valid.get("arm")) == arm
+            and train.get("run_stage") == "SCREEN"
+            and train.get("selectable") is (arm in {"f2", "f3"}),
+            f"{arm} screen arm/role identity differs",
+        )
+        _require(
+            int(train.get("train_record_count", -1)) == 68294
+            and int(train.get("validation_record_count", -1)) == 15924
+            and int(train.get("states_per_record_per_pass", -1)) == 2
+            and int(train.get("effective_batch_size", -1)) == 32
+            and int(train.get("maximum_passes", -1)) == 12,
+            f"{arm} screen split or training budget differs",
+        )
+        _require(
+            train.get("training_precision") == "BF16"
+            and train.get("parameter_changed") is True
+            and train.get("cpu_fallback_used") is False
+            and int(train.get("development_test_record_count_withheld", -1)) == 18292
+            and train.get("critic_score_used") is False
+            and train.get("independent_evaluator_used") is False,
+            f"{arm} screen training provenance differs",
+        )
+        _require(
+            valid.get("cpu_fallback_used") is False
+            and int(valid.get("parameter_update_count", -1)) == 0
+            and valid.get("guided_critic_used") is False
+            and valid.get("independent_evaluator_used") is False,
+            f"{arm} unguided validation provenance differs",
+        )
         _require(train.get("development_test_outcomes_accessed") is False and valid.get("development_test_outcomes_accessed") is False, f"{arm} accessed Development TEST")
         _require(train.get("evaluation_outcomes_accessed") is False and valid.get("evaluation_outcomes_accessed") is False, f"{arm} accessed Evaluation")
         nll = _finite(train.get("best_validation_common_set_marginal_nll"), f"{arm} common NLL")
@@ -171,6 +220,11 @@ def adjudicate_setflow_confirmation_v3(
             f"SetFlow confirmation arm differs: {seed}",
         )
         _require(
+            trained.get("run_stage") == "CONFIRMATION"
+            and trained.get("selectable") is True,
+            f"SetFlow confirmation role differs: {seed}",
+        )
+        _require(
             int(trained.get("seed", -1)) == int(valid.get("seed", -2)) == seed,
             f"SetFlow confirmation seed differs: {seed}",
         )
@@ -180,6 +234,26 @@ def adjudicate_setflow_confirmation_v3(
             and trained.get("evaluation_outcomes_accessed") is False
             and valid.get("evaluation_outcomes_accessed") is False,
             f"SetFlow confirmation accessed protected outcome: {seed}",
+        )
+        _require(
+            int(trained.get("train_record_count", -1)) == 68294
+            and int(trained.get("validation_record_count", -1)) == 15924
+            and int(trained.get("states_per_record_per_pass", -1)) == 2
+            and int(trained.get("effective_batch_size", -1)) == 32
+            and int(trained.get("maximum_passes", -1)) == 12
+            and trained.get("training_precision") == "BF16"
+            and trained.get("parameter_changed") is True
+            and trained.get("cpu_fallback_used") is False
+            and trained.get("critic_score_used") is False
+            and trained.get("independent_evaluator_used") is False,
+            f"SetFlow confirmation training provenance differs: {seed}",
+        )
+        _require(
+            valid.get("cpu_fallback_used") is False
+            and int(valid.get("parameter_update_count", -1)) == 0
+            and valid.get("guided_critic_used") is False
+            and valid.get("independent_evaluator_used") is False,
+            f"SetFlow confirmation validation provenance differs: {seed}",
         )
         recovery = _finite(
             valid.get("source_macro_candidate_recovery_rate"), f"seed {seed} recovery"

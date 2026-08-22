@@ -20,10 +20,45 @@ def _require(condition: bool, message: str) -> None:
 
 
 def _validate_screen_summary(
-    summary: Mapping[str, Any], *, expected_seed: int
+    summary: Mapping[str, Any],
+    *,
+    expected_seed: int,
+    expected_arm: str,
+    expected_run_id: str,
+    expected_control_mode: str = "NONE",
+    expected_candidate_permutation: bool = False,
 ) -> Mapping[str, Any]:
     _require(summary.get("status") == "TERMINAL_SCREEN_ARM_COMPLETE", "screen arm is not terminal-complete")
     _require(int(summary.get("seed", -1)) == expected_seed, "screen seed differs from the freeze")
+    _require(str(summary.get("arm")) == expected_arm, "screen arm identity differs")
+    _require(str(summary.get("run_id")) == expected_run_id, "screen run identity differs")
+    _require(
+        str(summary.get("control_mode")) == expected_control_mode,
+        "screen control identity differs",
+    )
+    _require(
+        summary.get("candidate_bundle_permutation")
+        is expected_candidate_permutation,
+        "screen candidate-permutation identity differs",
+    )
+    _require(
+        int(summary.get("train_record_count", -1)) == 89580
+        and int(summary.get("validation_record_count", -1)) == 18293,
+        "screen TRAIN/Validation inventory differs",
+    )
+    _require(
+        int(summary.get("pass_count", -1)) == 8
+        and int(summary.get("selected_pass", -1)) == 8
+        and int(summary.get("update_count", -1)) == 22416,
+        "screen training budget differs",
+    )
+    _require(
+        summary.get("precision") == "BF16"
+        and summary.get("cuda_training_tensors_verified") is True
+        and summary.get("cpu_fallback_used") is False
+        and summary.get("training_scope") == "FROZEN_TRAIN_VALIDATION",
+        "screen CUDA/precision/training scope differs",
+    )
     _require(summary.get("development_test_outcomes_accessed") is False, "screen arm accessed Development TEST outcome")
     _require(summary.get("new_final_evaluation_outcomes_accessed") is False, "screen arm accessed Evaluation outcome")
     final = summary.get("final_validation")
@@ -44,8 +79,19 @@ def evaluate_screen_candidate_v3(
 ) -> dict[str, Any]:
     arm = str(candidate_summary.get("arm"))
     _require(arm in {"C2", "C3"}, "only C2/C3 may enter the screen gate")
-    candidate = _validate_screen_summary(candidate_summary, expected_seed=expected_seed)
-    baseline = _validate_screen_summary(c0_summary, expected_seed=expected_seed)
+    arm_id = arm.lower()
+    candidate = _validate_screen_summary(
+        candidate_summary,
+        expected_seed=expected_seed,
+        expected_arm=arm,
+        expected_run_id=arm_id,
+    )
+    baseline = _validate_screen_summary(
+        c0_summary,
+        expected_seed=expected_seed,
+        expected_arm="C0",
+        expected_run_id="c0",
+    )
     required_controls = {
         "SOURCE_ONLY",
         "EDIT_METADATA_ONLY",
@@ -53,24 +99,86 @@ def evaluate_screen_candidate_v3(
     }
     _require(set(control_summaries) == required_controls, "candidate-information controls are incomplete")
     controls = {
-        name: _validate_screen_summary(summary, expected_seed=expected_seed)
+        name: _validate_screen_summary(
+            summary,
+            expected_seed=expected_seed,
+            expected_arm=arm,
+            expected_run_id=f"{arm_id}_{name.lower()}",
+            expected_control_mode=name,
+        )
         for name, summary in control_summaries.items()
     }
     permutation = _validate_screen_summary(
-        permutation_summary, expected_seed=expected_seed
+        permutation_summary,
+        expected_seed=expected_seed,
+        expected_arm=arm,
+        expected_run_id=f"{arm_id}_candidate_bundle_permutation",
+        expected_candidate_permutation=True,
     )
     candidate_tasks = candidate["tasks"]
     baseline_tasks = baseline["tasks"]
     _require(set(candidate_tasks) == set(baseline_tasks), "candidate/baseline task sets differ")
+    _require(
+        all(set(metrics["tasks"]) == set(candidate_tasks) for metrics in controls.values())
+        and set(permutation["tasks"]) == set(candidate_tasks),
+        "candidate/control task sets differ",
+    )
+    matched_budget_fields = (
+        "train_record_count",
+        "validation_record_count",
+        "pass_count",
+        "selected_pass",
+        "update_count",
+    )
+    _require(
+        all(
+            summary[field] == candidate_summary[field]
+            for summary in (*control_summaries.values(), permutation_summary)
+            for field in matched_budget_fields
+        ),
+        "candidate/control training budgets differ",
+    )
+    candidate_parameter_count = int(
+        candidate_summary.get(
+            "total_trainable_parameter_count",
+            candidate_summary.get("trainable_parameter_count", -1),
+        )
+    )
+    _require(candidate_parameter_count > 0, "candidate parameter count is absent")
+    _require(
+        all(
+            int(
+                summary.get(
+                    "total_trainable_parameter_count",
+                    summary.get("trainable_parameter_count", -1),
+                )
+            )
+            == candidate_parameter_count
+            for summary in (*control_summaries.values(), permutation_summary)
+        ),
+        "candidate-information control is not parameter matched",
+    )
     task_wins = sum(
         candidate_tasks[task]["spearman"] > baseline_tasks[task]["spearman"]
         for task in candidate_tasks
     )
-    permutation_tasks = set(
-        permutation_summary.get("candidate_permutation_summary", {}).get(
-            "eligible_tasks", []
-        )
+    permutation_evidence = permutation_summary.get("candidate_permutation_summary", {})
+    _require(
+        permutation_evidence.get("exact_source_task_strata") is True
+        and permutation_evidence.get("complete_candidate_bundle_permuted") is True
+        and int(permutation_evidence.get("recipient_count", 0)) > 0
+        and int(permutation_evidence.get("changed_candidate_sequence_count", 0)) > 0,
+        "candidate permutation did not permute the complete bundle",
     )
+    eligible_task_list = permutation_evidence.get("eligible_tasks", [])
+    _require(
+        isinstance(eligible_task_list, list)
+        and len(eligible_task_list) == len(set(eligible_task_list))
+        and int(permutation_evidence.get("eligible_task_count", -1))
+        == len(eligible_task_list),
+        "candidate permutation eligible-task inventory differs",
+    )
+    permutation_tasks = set(eligible_task_list)
     _require(len(permutation_tasks) >= 2, "candidate permutation has fewer than two applicable tasks")
     _require(permutation_tasks <= set(candidate_tasks), "permutation task is absent from candidate metrics")
     permutation_wins = sum(
@@ -137,7 +245,12 @@ def adjudicate_critic_screen_v3(
     }
     _require(set(summaries) == required, "screen artifact set is incomplete or unauthorized")
     # C1 is diagnostic-only but must be the frozen arm and outcome-clean.
-    _validate_screen_summary(summaries["c1"], expected_seed=expected_seed)
+    _validate_screen_summary(
+        summaries["c1"],
+        expected_seed=expected_seed,
+        expected_arm="C1",
+        expected_run_id="c1",
+    )
     results = {}
     for arm in ("c2", "c3"):
         results[arm.upper()] = evaluate_screen_candidate_v3(
@@ -318,6 +431,35 @@ def _validate_confirmation_summary_v3(
     _require(int(summary.get("seed", -1)) == seed, "confirmation seed differs")
     _require(str(summary.get("arm")) == expected_arm, "confirmation arm differs")
     _require(
+        str(summary.get("run_id")) == expected_arm.lower()
+        and summary.get("control_mode") == "NONE"
+        and summary.get("candidate_bundle_permutation") is False,
+        "confirmation run/control identity differs",
+    )
+    _require(
+        int(summary.get("train_record_count", -1)) == 89580
+        and int(summary.get("validation_record_count", -1)) == 18293
+        and int(summary.get("pass_count", -1)) == 8
+        and int(summary.get("selected_pass", -1)) == 8
+        and int(summary.get("update_count", -1)) == 22416,
+        "confirmation split or training budget differs",
+    )
+    _require(
+        summary.get("precision") == "BF16"
+        and summary.get("cuda_training_tensors_verified") is True
+        and summary.get("cpu_fallback_used") is False
+        and summary.get("training_scope") == "FROZEN_TRAIN_VALIDATION",
+        "confirmation CUDA/precision/training scope differs",
+    )
+    _require(
+        summary.get("parameter_changed") is True
+        or (
+            summary.get("head_parameter_changed") is True
+            and summary.get("lora_parameter_changed") is True
+        ),
+        "confirmation performed no verified parameter update",
+    )
+    _require(
         summary.get("development_test_outcomes_accessed") is False,
         "confirmation accessed Development TEST outcome",
     )
@@ -361,6 +503,20 @@ def adjudicate_critic_confirmation_v3(
         _require(
             set(candidate["tasks"]) == set(baseline["tasks"]),
             f"confirmation task inventory differs: {seed}",
+        )
+        _require(
+            all(
+                payload["candidate_summary"][field]
+                == payload["baseline_summary"][field]
+                for field in (
+                    "train_record_count",
+                    "validation_record_count",
+                    "pass_count",
+                    "selected_pass",
+                    "update_count",
+                )
+            ),
+            f"confirmation candidate/baseline budget differs: {seed}",
         )
         task_wins = sum(
             candidate["tasks"][task]["spearman"]

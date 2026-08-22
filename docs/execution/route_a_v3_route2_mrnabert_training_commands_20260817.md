@@ -2141,3 +2141,32 @@ Evaluation，也不改变 readiness/submission 状态；本项不新增中央 op
 约 32GB 以上设备占用，当前没有一张卡为 F3 或 C2/C3 留出足够安全余量，因此不降 batch/capacity、不
 CPU fallback，也不与高显存占用任务强行叠加。A100 HEAD 保持 `22317ed`；下一次状态检查至少间隔
 30 分钟，等待期继续本地无 outcome 的实现、测试与审计。
+
+## XEdit V3 strict gate artifact-identity audit（2026-08-23）
+
+在不读取任何新 outcome 的等待期完成了 Critic、SetFlow 与最终 XEditFlow gate 的逐条件审计。冻结的
+Spearman、MAE、recovery、NDCG、regret、paired-CI、3/3 seed 和 reward-exploitation 数值门槛均保持不变；
+修复的是此前 gate 对输入 artifact 身份约束不足的问题，而不是降低或新增结果阈值。
+
+Critic screen 现在除 12 个固定路径外，还硬校验 run/arm/control/permutation 身份、89,580/18,293 split、
+8 passes/22,416 updates、CUDA/BF16、完整 candidate-bundle permutation、任务 inventory，以及 C2/C3 与
+三项 candidate-information control 的参数和训练预算匹配。confirmation 同样要求 selected C2/C3 与每 seed
+C0 均为 `NONE` control、相同 split/pass/update budget，且确实发生 CUDA 参数更新。这样放错目录、复制同一
+summary 冒充 control、只打乱部分 candidate feature 或 parameter-mismatched artifact 都不能触发 PASS。
+
+SetFlow screen 现在把 F0 固定为 epoch-1、817,957 参数、零 replay update 的只读 Base Flow V2 reference，
+并核对 F1/F2/F3 的 arm/role、68,294/15,924 eligible split、2 states/record、batch32、最多12 passes、
+CUDA/BF16 与 unguided/no-evaluator provenance；confirmation 对三个固定 seed 使用相同约束。screen gate
+写入改为 partial 后原子替换，避免中断留下被误认作 terminal 的半文件。
+
+最终 closed benchmark assembly 现在要求六方法具有完全相同的 measured source inventory 和完全相同的
+defined-source inventory；source-macro NDCG 必须等于 defined source 的均值，undefined source 仍不得填零。
+independent-evaluator headline margin 必须等于其 per-source paired mean；final adjudicator 还核对 bootstrap
+seed identity、10,000 iterations 与 closed-support policy，并使用原子写入。此前若某一方法意外丢失 source，
+虽未填零仍可能在不同支持集上比较；该可达偏差已在任何正式 closed run 前消除。
+
+新增回归覆盖 misidentified/parameter-mismatched controls、partial permutation、SetFlow arm/provenance 错配和
+closed source-support 错配。合并 XEdit V3 focused cohort 本机为 183/183，精确 V3.3.2 cohort 为 96/96，
+Python compile 与 `git diff --check` 均通过。A100 测试与 current-HEAD sync 继续等待 head `22317ed` 启动的
+C1/F1/F2 全部 terminal，以保持训练 provenance；本项不新增 optimizer attempt，不读取 Development TEST/
+new Evaluation，不改变 guidance、replacement Evaluation 或 submission-ready 状态。

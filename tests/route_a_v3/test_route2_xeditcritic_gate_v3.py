@@ -27,15 +27,43 @@ def _summary(
     eligible_tasks: list[str] | None = None,
 ) -> dict:
     per_task = spearman if task_spearman is None else task_spearman
+    suffix_to_control = {
+        "_source_only": "SOURCE_ONLY",
+        "_edit_metadata_only": "EDIT_METADATA_ONLY",
+        "_no_candidate_sequence": "NO_CANDIDATE_SEQUENCE",
+    }
+    control_mode = next(
+        (mode for suffix, mode in suffix_to_control.items() if run_id.endswith(suffix)),
+        "NONE",
+    )
+    is_permutation = run_id.endswith("_candidate_bundle_permutation")
+    applicable = eligible_tasks or []
     return {
         "status": "TERMINAL_SCREEN_ARM_COMPLETE",
         "run_id": run_id,
         "arm": arm,
+        "control_mode": control_mode,
+        "candidate_bundle_permutation": is_permutation,
         "seed": 20260830,
+        "train_record_count": 89580,
+        "validation_record_count": 18293,
+        "pass_count": 8,
+        "selected_pass": 8,
+        "update_count": 22416,
+        "precision": "BF16",
+        "cuda_training_tensors_verified": True,
+        "cpu_fallback_used": False,
+        "training_scope": "FROZEN_TRAIN_VALIDATION",
+        "trainable_parameter_count": 30_000_000 if arm in {"C2", "C3"} else 500_000,
         "development_test_outcomes_accessed": False,
         "new_final_evaluation_outcomes_accessed": False,
         "candidate_permutation_summary": {
-            "eligible_tasks": eligible_tasks or [],
+            "exact_source_task_strata": is_permutation,
+            "complete_candidate_bundle_permuted": is_permutation,
+            "recipient_count": 100 if is_permutation else 0,
+            "changed_candidate_sequence_count": 99 if is_permutation else 0,
+            "eligible_task_count": len(applicable),
+            "eligible_tasks": applicable,
         },
         "final_validation": {
             "task_count": 9,
@@ -96,6 +124,30 @@ def test_missing_or_unauthorized_artifact_hard_fails() -> None:
         adjudicate_critic_screen_v3(summaries)
 
 
+def test_misidentified_control_or_partial_permutation_hard_fails() -> None:
+    summaries = _screen()
+    summaries["c2_source_only"]["control_mode"] = "NONE"
+    with pytest.raises(Exception, match="control identity"):
+        adjudicate_critic_screen_v3(summaries)
+    summaries = _screen()
+    summaries["c3_candidate_bundle_permutation"]["candidate_permutation_summary"][
+        "complete_candidate_bundle_permuted"
+    ] = False
+    with pytest.raises(Exception, match="complete bundle"):
+        adjudicate_critic_screen_v3(summaries)
+
+
+def test_parameter_or_budget_mismatched_control_hard_fails() -> None:
+    summaries = _screen()
+    summaries["c2_no_candidate_sequence"]["trainable_parameter_count"] -= 1
+    with pytest.raises(Exception, match="parameter matched"):
+        adjudicate_critic_screen_v3(summaries)
+    summaries = _screen()
+    summaries["c3_edit_metadata_only"]["update_count"] -= 1
+    with pytest.raises(Exception, match="training budget"):
+        adjudicate_critic_screen_v3(summaries)
+
+
 def test_protected_outcome_read_hard_fails() -> None:
     summaries = _screen()
     summaries["c3"]["development_test_outcomes_accessed"] = True
@@ -106,8 +158,21 @@ def test_protected_outcome_read_hard_fails() -> None:
 def _confirmation_summary(seed: int, arm: str, spearman: float) -> dict:
     return {
         "status": "TERMINAL_CONFIRMATION_ARM_COMPLETE",
+        "run_id": arm.lower(),
         "arm": arm,
+        "control_mode": "NONE",
+        "candidate_bundle_permutation": False,
         "seed": seed,
+        "train_record_count": 89580,
+        "validation_record_count": 18293,
+        "pass_count": 8,
+        "selected_pass": 8,
+        "update_count": 22416,
+        "precision": "BF16",
+        "cuda_training_tensors_verified": True,
+        "cpu_fallback_used": False,
+        "training_scope": "FROZEN_TRAIN_VALIDATION",
+        "parameter_changed": True,
         "development_test_outcomes_accessed": False,
         "new_final_evaluation_outcomes_accessed": False,
         "final_validation": {
@@ -163,6 +228,17 @@ def test_confirmation_gate_rejects_missing_or_extra_seed() -> None:
     payloads = _confirmation_payloads()
     payloads.pop(20260902)
     with pytest.raises(Exception, match="exactly the three frozen seeds"):
+        adjudicate_critic_confirmation_v3(payloads, selected_arm="C2")
+
+
+def test_confirmation_rejects_wrong_control_identity_or_budget() -> None:
+    payloads = _confirmation_payloads()
+    payloads[20260901]["baseline_summary"]["control_mode"] = "SOURCE_ONLY"
+    with pytest.raises(Exception, match="run/control identity"):
+        adjudicate_critic_confirmation_v3(payloads, selected_arm="C2")
+    payloads = _confirmation_payloads()
+    payloads[20260902]["candidate_summary"]["update_count"] -= 1
+    with pytest.raises(Exception, match="training budget"):
         adjudicate_critic_confirmation_v3(payloads, selected_arm="C2")
 
 

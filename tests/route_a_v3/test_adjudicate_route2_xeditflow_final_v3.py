@@ -53,6 +53,12 @@ def test_final_adjudicator_requires_exact_three_seed_six_method_evidence(tmp_pat
         _write(bootstrap, {
             "status": "XEDITFLOW_V3_SOURCE_PAIRED_BOOTSTRAP_COMPLETE",
             "analysis_unit": "SOURCE",
+            "base_flow_training_seed": seed,
+            "bootstrap_iterations": 10_000,
+            "closed_source_count": 3,
+            "defined_closed_source_count": 2,
+            "closed_method_source_support_exactly_matched": True,
+            "undefined_closed_sources_filled_with_zero": False,
             "source_paired_ndcg_improvement_ci_95": {
                 "over_unguided": [0.02, 0.14],
                 "over_strongest_baseline": [0.02, 0.14],

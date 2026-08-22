@@ -12,19 +12,41 @@ from core.route2_xeditsetflow_gate_v3 import (
 
 
 def _artifacts(f2_recovery=0.26, f3_recovery=0.26, f2_top=0.16, f3_top=0.16, f2_nll=8.0, f3_nll=8.0):
-    f0 = {"status": "FROZEN_BASE_FLOW_V2_COMMON_SET_NLL_REPLAY_COMPLETE", "common_validation_set_marginal_nll": 10.0}
+    f0 = {
+        "status": "FROZEN_BASE_FLOW_V2_COMMON_SET_NLL_REPLAY_COMPLETE",
+        "selected_epoch": 1,
+        "trainable_parameter_count": 817_957,
+        "parameter_update_count": 0,
+        "parameter_changed_during_replay": False,
+        "validation_record_count": 15924,
+        "validation_states_per_record": 2,
+        "common_validation_set_marginal_nll": 10.0,
+        "development_test_outcomes_accessed": False,
+        "evaluation_outcomes_accessed": False,
+        "critic_score_used": False,
+        "independent_evaluator_used": False,
+    }
     training = {}
     validation = {}
     for arm, nll, recovery, top in (
         ("f1", 8.0, 0.3, 0.2), ("f2", f2_nll, f2_recovery, f2_top), ("f3", f3_nll, f3_recovery, f3_top)
     ):
         training[arm] = {
-            "status": "XEDITSETFLOW_V3_GPU_TRAINING_COMPLETE", "seed": 20260903,
+            "status": "XEDITSETFLOW_V3_GPU_TRAINING_COMPLETE", "seed": 20260903, "arm": arm,
+            "run_stage": "SCREEN", "selectable": arm in {"f2", "f3"},
+            "train_record_count": 68294, "validation_record_count": 15924,
+            "states_per_record_per_pass": 2, "effective_batch_size": 32,
+            "maximum_passes": 12, "training_precision": "BF16",
+            "parameter_changed": True, "cpu_fallback_used": False,
+            "development_test_record_count_withheld": 18292,
+            "critic_score_used": False, "independent_evaluator_used": False,
             "best_validation_common_set_marginal_nll": nll,
             "development_test_outcomes_accessed": False, "evaluation_outcomes_accessed": False,
         }
         validation[arm] = {
-            "status": "FLOW_G0_READY", "seed": 20260903,
+            "status": "FLOW_G0_READY", "seed": 20260903, "arm": arm,
+            "cpu_fallback_used": False, "parameter_update_count": 0,
+            "guided_critic_used": False, "independent_evaluator_used": False,
             "source_macro_candidate_recovery_rate": recovery,
             "source_macro_measured_top_k_recovery_at_k": top,
             "source_macro_unique_candidate_rate": 0.91, "hard_legality_rate": 1.0,
@@ -66,6 +88,18 @@ def _confirmation_artifacts(arm: str = "f2"):
             "status": "XEDITSETFLOW_V3_GPU_TRAINING_COMPLETE",
             "arm": arm,
             "seed": seed,
+            "run_stage": "CONFIRMATION",
+            "selectable": True,
+            "train_record_count": 68294,
+            "validation_record_count": 15924,
+            "states_per_record_per_pass": 2,
+            "effective_batch_size": 32,
+            "maximum_passes": 12,
+            "training_precision": "BF16",
+            "parameter_changed": True,
+            "cpu_fallback_used": False,
+            "critic_score_used": False,
+            "independent_evaluator_used": False,
             "development_test_outcomes_accessed": False,
             "evaluation_outcomes_accessed": False,
         }
@@ -73,6 +107,10 @@ def _confirmation_artifacts(arm: str = "f2"):
             "status": "FLOW_G0_READY",
             "arm": arm,
             "seed": seed,
+            "cpu_fallback_used": False,
+            "parameter_update_count": 0,
+            "guided_critic_used": False,
+            "independent_evaluator_used": False,
             "source_macro_candidate_recovery_rate": 0.26,
             "source_macro_measured_top_k_recovery_at_k": 0.16,
             "source_macro_unique_candidate_rate": 0.91,
@@ -125,3 +163,16 @@ def test_confirmation_rejects_missing_seed_and_unselected_arm(tmp_path) -> None:
     require_setflow_confirmation_authorization_v3(config, arm="f3")
     with pytest.raises(Exception, match="differs"):
         require_setflow_confirmation_authorization_v3(config, arm="f2")
+
+
+def test_screen_and_confirmation_reject_misidentified_artifacts() -> None:
+    f0, training, validation = _artifacts()
+    training["f2"]["arm"] = "f3"
+    with pytest.raises(Exception, match="arm/role identity"):
+        adjudicate_setflow_screen_v3(f0, training, validation)
+    training, validation = _confirmation_artifacts()
+    validation[20260905]["guided_critic_used"] = True
+    with pytest.raises(Exception, match="validation provenance"):
+        adjudicate_setflow_confirmation_v3(
+            training, validation, selected_arm="f2"
+        )
